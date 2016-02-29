@@ -727,8 +727,8 @@ enum
 	kRenderFxClampMinScale,		// Keep this sprite from getting very small (SPRITES only!)
 };
 
-typedef int		func_t;
-typedef int		string_t;
+typedef unsigned int		func_t;
+typedef unsigned int		string_t;
 
 typedef unsigned char	byte;
 typedef unsigned short	word;

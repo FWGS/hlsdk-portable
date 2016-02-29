@@ -596,7 +596,7 @@ void CBreakable::Die( void )
 	// The more negative pev->health, the louder
 	// the sound should be.
 
-	fvol = RANDOM_FLOAT(0.85, 1.0) + (abs(pev->health) / 100.0);
+	fvol = RANDOM_FLOAT(0.85, 1.0) + (fabs(pev->health) / 100.0);
 
 	if (fvol > 1.0)
 		fvol = 1.0;
@@ -931,14 +931,13 @@ void CPushable :: Move( CBaseEntity *pOther, int push )
 		return;
 	}
 
-	// g-cont. fix pushable acceleration bug
+	// g-cont. fix pushable acceleration bug (reverted as it used in mods)
 	if ( pOther->IsPlayer() )
 	{
 		// Don't push unless the player is pushing forward and NOT use (pull)
-		if ( push && !(pevToucher->button & (IN_FORWARD|IN_MOVERIGHT|IN_MOVELEFT|IN_BACK)) )
+		if ( push && !(pevToucher->button & (IN_FORWARD|IN_USE)) )
 			return;
-		if ( !push && !(pevToucher->button & (IN_BACK)) ) return;
-			playerTouch = 1;
+		playerTouch = 1;
 	}
 
 	float factor;
