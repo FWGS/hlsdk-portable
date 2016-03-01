@@ -18,7 +18,7 @@
 #include <math.h>
 #include "hud.h"
 #include "cl_util.h"
-#include "triangleapi.h"
+//#include "triangleapi.h"
 
 
 #define MAX_LOGO_FRAMES 56
@@ -182,21 +182,57 @@ void ScaleColors( int &r, int &g, int &b, int a )
 	b = (int)(b * x);
 }
 
+const unsigned char colors[8][3] =
+{
+{127, 127, 127}, // additive cannot be black
+{255,   0,   0},
+{  0, 255,   0},
+{255, 255,   0},
+{  0,   0, 255},
+{  0, 255, 255},
+{255,   0, 255},
+{240, 180,  24}
+};
+
 int CHud :: DrawHudString(int xpos, int ypos, int iMaxX, char *szIt, int r, int g, int b )
 {
+	if( hud_textmode->value == 2 )
+	{
+		gEngfuncs.pfnDrawSetTextColor( r/255.0, g/255.0, b/255.0 );
+		return gEngfuncs.pfnDrawConsoleString( xpos, ypos, (char*) szIt );
+	}
 	// draw the string until we hit the null character or a newline character
 	for ( ; *szIt != 0 && *szIt != '\n'; szIt++ )
 	{
-		int next = xpos + gHUD.m_scrinfo.charWidths[ *szIt ]; // variable-width fonts look cool
-		if ( next > iMaxX )
+		int w = gHUD.m_scrinfo.charWidths[ 'M' ];
+		if ( xpos + w  > iMaxX )
 			return xpos;
+		if( *szIt == '^' && *(szIt + 1) >= '0' && *(szIt + 1) <= '7' )
+		{
+			szIt++;
+			r = colors[ *szIt - '0' ][0];
+			g = colors[ *szIt - '0' ][1];
+			b = colors[ *szIt - '0' ][2];
+			if( !*(++szIt))
+				return xpos;
+		}
 
-		TextMessageDrawChar( xpos, ypos, *szIt, r, g, b );
-		xpos = next;		
+		xpos += TextMessageDrawChar( xpos, ypos, *szIt, r, g, b );
 	}
 
 	return xpos;
 }
+
+int CHud :: DrawHudStringLen( char *szIt )
+{
+	int l = 0;
+	for ( ; *szIt != 0 && *szIt != '\n'; szIt++ )
+	{
+		l += gHUD.m_scrinfo.charWidths[ (unsigned int)*szIt ];
+	}
+	return l;
+}
+
 
 int CHud :: DrawHudNumberString( int xpos, int ypos, int iMinX, int iNumber, int r, int g, int b )
 {
@@ -210,21 +246,11 @@ int CHud :: DrawHudNumberString( int xpos, int ypos, int iMinX, int iNumber, int
 int CHud :: DrawHudStringReverse( int xpos, int ypos, int iMinX, char *szString, int r, int g, int b )
 {
 	// find the end of the string
-	for ( char *szIt = szString; *szIt != 0; szIt++ )
-	{ // we should count the length?		
-	}
-
-	// iterate throug the string in reverse
-	for ( szIt--;  szIt != (szString-1);  szIt-- )	
-	{
-		int next = xpos - gHUD.m_scrinfo.charWidths[ *szIt ]; // variable-width fonts look cool
-		if ( next < iMinX )
-			return xpos;
-		xpos = next;
-
-		TextMessageDrawChar( xpos, ypos, *szIt, r, g, b );
-	}
-
+	for( char *szIt = szString; *szIt != 0; szIt++ )
+		xpos -= gHUD.m_scrinfo.charWidths[ (unsigned char) *szIt ];
+	if( xpos < iMinX )
+		xpos = iMinX;
+	DrawHudString( xpos, ypos, gHUD.m_scrinfo.iWidth, szString, r, g, b );
 	return xpos;
 }
 
@@ -325,16 +351,8 @@ int CHud::GetNumWidth( int iNumber, int iFlags )
 
 void CHud::DrawDarkRectangle( int x, int y, int wide, int tall )
 {
-	FillRGBA( x, y, wide, tall, 0, 0, 0, 0 );
-	float m_flScale = 1;
-	gEngfuncs.pTriAPI->RenderMode( kRenderTransTexture );
-	gEngfuncs.pTriAPI->Begin(TRI_QUADS);
-	gEngfuncs.pTriAPI->Color4f(0.0, 0.0, 0.0, 0.6);
-	gEngfuncs.pTriAPI->Vertex3f(x * m_flScale, (y+tall)*m_flScale, 0);
-	gEngfuncs.pTriAPI->Vertex3f(x * m_flScale, y*m_flScale, 0);
-	gEngfuncs.pTriAPI->Vertex3f((x + wide)*m_flScale, y*m_flScale, 0);
-	gEngfuncs.pTriAPI->Vertex3f((x + wide)*m_flScale, (y+tall)*m_flScale, 0);
-	gEngfuncs.pTriAPI->End();
+	//gEngfuncs.pTriAPI->RenderMode( kRenderTransTexture );
+	gEngfuncs.pfnFillRGBABlend( x, y, wide, tall, 0, 0, 0, 255 * 0.6 );
 	FillRGBA( x+1, y, wide-1, 1, 255, 140, 0, 255 );
 	FillRGBA( x, y, 1, tall-1, 255, 140, 0, 255 );
 	FillRGBA( x+wide-1, y+1, 1, tall-1, 255, 140, 0, 255 );

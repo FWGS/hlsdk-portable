@@ -1,9 +1,9 @@
 /***
 *
 *	Copyright (c) 1999, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
+*
+*	This product contains software technology licensed from Id
+*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
 *	All Rights Reserved.
 *
 *   Use, distribution, and modification of this source code and/or resulting
@@ -90,8 +90,9 @@ int CHudMOTD :: Draw( float fTime )
 	gHUD.DrawDarkRectangle(xpos-5, ypos_r - 5, xmax - xpos+10, height + 10);
 	while ( *ch )
 	{
+		char *next_line;
 		int line_length = 0;  // count the length of the current line
-		for ( char *next_line = ch; *next_line != '\n' && *next_line != 0; next_line++ )
+		for ( next_line = ch; *next_line != '\n' && *next_line != 0; next_line++ )
 			line_length += gHUD.m_scrinfo.charWidths[ *next_line ];
 		char *top = next_line;
 		if ( *top == '\n' )
@@ -105,7 +106,7 @@ int CHudMOTD :: Draw( float fTime )
 
 		ypos += LINE_HEIGHT;
 
-		if ( top )  // restore 
+		if ( top )  // restore
 			*top = '\n';
 		ch = next_line;
 		if ( *ch == '\n' )
@@ -114,7 +115,7 @@ int CHudMOTD :: Draw( float fTime )
 		if ( ypos > (ScreenHeight - 20) )
 			break;  // don't let it draw too low
 	}
-	
+
 	return 1;
 }
 
@@ -133,7 +134,7 @@ int CHudMOTD :: MsgFunc_MOTD( const char *pszName, int iSize, void *pbuf )
 	if ( is_finished )
 	{
 		int length = 0;
-		
+
 		m_iMaxLength = 0;
 		m_iFlags |= HUD_ACTIVE;
 
@@ -151,7 +152,7 @@ int CHudMOTD :: MsgFunc_MOTD( const char *pszName, int iSize, void *pbuf )
 			}
 			length++;
 		}
-		
+
 		m_iLines++;
 		if( length > m_iMaxLength )
 		{

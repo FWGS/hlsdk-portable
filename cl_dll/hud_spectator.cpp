@@ -434,7 +434,7 @@ int CHudSpectator::Draw(float flTime)
 		
 		lx = strlen(string)*3; // 3 is avg. character length :)
 
-		gEngfuncs.pfnDrawSetTextColor( color[0], color[1], color[2] );
+		DrawSetTextColor( color[0], color[1], color[2] );
 		DrawConsoleString( m_vPlayerPos[i][0]-lx,m_vPlayerPos[i][1], string);
 		
 	}

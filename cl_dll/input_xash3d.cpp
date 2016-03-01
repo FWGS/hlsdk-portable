@@ -44,12 +44,12 @@ int ac_movecount;
 float rel_yaw;
 float rel_pitch;
 
-#define F 1<<0	// Forward
-#define B 1<<1	// Back
-#define L 1<<2	// Left
-#define R 1<<3	// Right
-#define T 1<<4	// Forward stop
-#define S 1<<5	// Side stop
+#define F 1U<<0	// Forward
+#define B 1U<<1	// Back
+#define L 1U<<2	// Left
+#define R 1U<<3	// Right
+#define T 1U<<4	// Forward stop
+#define S 1U<<5	// Side stop
 
 #define BUTTON_DOWN		1
 #define IMPULSE_DOWN	2
@@ -58,7 +58,7 @@ float rel_pitch;
 
 void IN_ToggleButtons( float forwardmove, float sidemove )
 {
-	static uint moveflags = T | S;
+	static unsigned int moveflags = T | S;
 
 	if( forwardmove )
 		moveflags &= ~T;
@@ -180,7 +180,7 @@ void IN_Move( float frametime, usercmd_t *cmd )
 		viewangles[YAW] += rel_yaw;
 		if( fLadder )
 		{
-			if( ( cl_laddermode->value == 1 ) )
+			if( cl_laddermode->value == 1 )
 				viewangles[YAW] -= ac_sidemove * 5;
 			ac_sidemove = 0;
 		}
