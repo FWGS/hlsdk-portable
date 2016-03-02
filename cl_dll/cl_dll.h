@@ -41,3 +41,5 @@ typedef int (*pfnUserMsgHook)(const char *pszName, int iSize, void *pbuf);
 #include <string.h>
 
 extern cl_enginefunc_t gEngfuncs;
+#include "../engine/mobility_int.h"
+extern mobile_engfuncs_t *gMobileEngfuncs;

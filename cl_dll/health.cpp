@@ -27,6 +27,7 @@
 #include "parsemsg.h"
 #include <string.h>
 
+#include "mobility_int.h"
 
 DECLARE_MESSAGE(m_Health, Health )
 DECLARE_MESSAGE(m_Health, Damage )
@@ -133,7 +134,17 @@ int CHudHealth:: MsgFunc_Damage(const char *pszName,  int iSize, void *pbuf )
 
 	// Actually took damage?
 	if ( damageTaken > 0 || armor > 0 )
+	{
 		CalcDamageDirection(vecFrom);
+
+                if( gMobileEngfuncs && damageTaken > 0 )
+                {
+                    float time = damageTaken * 4.0f;
+
+                    if( time > 200.0f ) time = 200.0f;
+                    gMobileEngfuncs->pfnVibrate( time, 0 );
+                }
+	}
 
 	return 1;
 }
