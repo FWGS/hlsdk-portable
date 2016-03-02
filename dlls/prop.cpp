@@ -89,9 +89,10 @@ public:
 	virtual int	BloodColor(void) { return DONT_BLEED; }
 	virtual void Killed(entvars_t *pevAttacker, int iGib);
 	void CheckRotate();
-	void RespawnThink();
-	void AngleThink();
-	void DeployThink();
+	void EXPORT RespawnThink();
+	void EXPORT AngleThink();
+	void EXPORT DeployThink();
+	void EXPORT DieThink();
 	void DamageSound( void );
 	void PropRespawn();
 	void KeyValue( KeyValueData* pkvd);
@@ -576,6 +577,8 @@ void CProp::Killed(entvars_t *pevAttacker, int iGib)
 
 void CProp::Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value)
 {
+	if( pev->health <= 0)
+		return;
 	if (m_owner2 != pActivator->edict())
 	{
 		if (pev->velocity.Length() < 100 && pActivator->IsPlayer())
@@ -645,6 +648,8 @@ void CProp::Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType,
 
 void CProp::Force(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value)
 {
+	if( pev->health <= 0 )
+		return;
 	if (m_owner2 != pActivator->edict())
 	{
 		if (pev->velocity.Length() < 100 && pActivator->IsPlayer())
@@ -749,6 +754,8 @@ void CProp::DeployThink( void )
 
 void CProp::BounceTouch(CBaseEntity *pOther)
 {
+	if( pev->health <= 0 )
+		return;
 	//ALERT( at_console, "BounceTouch: %f %f %f\n", pev->angles.x, pev->angles.y, pev->angles.z );
 	// only do damage if we're moving fairly fast
 	DeployThink();
@@ -776,8 +783,8 @@ void CProp::BounceTouch(CBaseEntity *pOther)
 	}
 	if( (pev->spawnflags & SF_PROP_BREAKABLE) && (pev->velocity.Length() > 700) )
 	{
-		Killed( VARS(m_attacker), GIB_NORMAL );
-		Die();
+		pev->nextthink = gpGlobals->time + 0.1;
+		SetThink( &CProp::DieThink );
 	}
 
 	pev->velocity = pev->velocity + pOther->pev->velocity;
@@ -913,7 +920,14 @@ void CProp::PropRespawn()
 void CProp::RespawnThink()
 {
 	if( !(pev->spawnflags & SF_PROP_RESPAWN))
+	{
+		if( pev->health <= 0 )
+		{
+			pev->nextthink = gpGlobals->time + 0.1;
+			SetThink( &CBaseEntity::SUB_Remove );
+		}
 		return;
+	}
 	PropRespawn();
 }
 
@@ -1023,6 +1037,11 @@ void CProp::AngleThink()
 	pev->angles.z = UTIL_AngleMod(pev->angles.z);
 }
 
+void CProp::DieThink()
+{
+	Killed( VARS(m_attacker), GIB_NORMAL );
+	Die();
+}
 
 int CProp::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType)
 {
@@ -1038,6 +1057,8 @@ int CProp::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flD
 
 	if ( !(pev->spawnflags & SF_PROP_BREAKABLE ) )
 		return 0;
+	if ( pev->health <= 0 )
+		return;
 	// Breakables take double damage from the crowbar
 	if ( bitsDamageType & DMG_CLUB )
 		flDamage *= 2;
@@ -1049,10 +1070,11 @@ int CProp::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flD
 
 	// do the damage
 	pev->health -= flDamage;
-	if (pev->health <= 0)
+	if ( pev->health <= 0 )
 	{
-		Killed( VARS(m_attacker), GIB_NORMAL );
-		Die();
+		// delayed explode
+		SetThink( &CProp::DieThink );
+		pev->nextthink = gpGlobals->time + 0.2;
 		return 0;
 	}
 
