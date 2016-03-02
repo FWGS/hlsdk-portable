@@ -454,7 +454,7 @@ void CBaseMonster :: RunTask ( Task_t *pTask )
 			{
 				pev->deadflag = DEAD_DEAD;
 				
-				ResetThink();
+				SetThink( NULL );
 				StopAnimation();
 
 				if ( !BBoxFlat() )

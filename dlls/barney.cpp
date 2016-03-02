@@ -424,7 +424,7 @@ void CBarney :: Spawn()
 	m_afCapability		= bits_CAP_HEAR | bits_CAP_TURN_HEAD | bits_CAP_DOORS_GROUP;
 
 	MonsterInit();
-	SetUse( FollowerUse );
+	SetUse( &FollowerUse );
 }
 
 //=========================================================
@@ -623,7 +623,7 @@ void CBarney::Killed( entvars_t *pevAttacker, int iGib )
 		CBaseEntity *pGun = DropItem( "weapon_9mmhandgun", vecGunPos, vecGunAngles );
 	}
 
-	ResetUse();	
+	SetUse( NULL );	
 	CTalkMonster::Killed( pevAttacker, iGib );
 }
 

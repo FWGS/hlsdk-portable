@@ -566,7 +566,7 @@ void CProp::Killed(entvars_t *pevAttacker, int iGib)
     pev->solid = SOLID_NOT;
     pev->effects |= EF_NODRAW;
     pev->nextthink = gpGlobals->time + m_flRespawnTime;
-    SetThink( CProp::RespawnThink );
+    SetThink( &CProp::RespawnThink );
     ResetTouch( );
     ResetUse( );
 }
@@ -605,7 +605,7 @@ void CProp::Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType,
                 m_pHolstered->pev->weaponmodel = 0;
                 m_pHolstered->pev->viewmodel = 0;
             }
-            SetThink( CProp::DeployThink );
+            SetThink( &CProp::DeployThink );
             pev->nextthink = gpGlobals->time + 0.2;
         }
     }
@@ -664,7 +664,7 @@ void CProp::Force(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useTyp
     }
 
     pev->nextthink = gpGlobals->time + m_flRespawnTime;
-    SetThink(CProp::RespawnThink);
+    SetThink( &CProp::RespawnThink);
 }
 
 void CProp::CheckRotate()
@@ -739,7 +739,7 @@ void CProp::DeployThink( void )
     if( m_pfnThink == &CProp::DeployThink )
     {
         pev->nextthink = gpGlobals->time + m_flRespawnTime;
-        SetThink( CProp::RespawnThink );
+        SetThink( &CProp::RespawnThink );
     }
 }
 
@@ -899,8 +899,8 @@ void CProp::PropRespawn()
     m_oldshape = (PropShape)-1;
     CheckRotate();
     pev->health = m_flSpawnHealth;
-    SetTouch(CProp::BounceTouch);
-    SetUse(CProp::Use);
+    SetTouch( &CProp::BounceTouch);
+    SetUse( &CProp::Use);
     pev->effects &= ~EF_NODRAW;
     pev->framerate = 1.0f;
 }
@@ -917,7 +917,7 @@ void CProp::RespawnThink()
 void CProp::AngleThink()
 {
     pev->nextthink = gpGlobals->time + m_flRespawnTime;
-    SetThink(CProp::RespawnThink);
+    SetThink( &CProp::RespawnThink);
     if (!(pev->flags & FL_ONGROUND || fabs(pev->velocity.z) < 40))
     {
         m_owner2 = m_attacker = 0;
@@ -928,7 +928,7 @@ void CProp::AngleThink()
         pev->angles.z += UTIL_AngleDiff(90, pev->angles.z) * 0.7;
         if (fabs(UTIL_AngleDiff(90, pev->angles.z)) > 0.1)
         {
-            SetThink(CProp::AngleThink);
+            SetThink( &CProp::AngleThink);
             pev->nextthink = gpGlobals->time + 0.1;
         }
         //ALERT( at_console, "AngleThink: %f %f %f\n", pev->angles.x, pev->angles.y, pev->angles.z );
@@ -938,7 +938,7 @@ void CProp::AngleThink()
     {
         if (fabs(UTIL_AngleDiff(90, pev->angles.z)) > 0.1)
         {
-            SetThink(CProp::AngleThink);
+            SetThink( &CProp::AngleThink);
             pev->nextthink = gpGlobals->time + 0.1;
         }
         pev->angles.z += UTIL_AngleDiff(0, pev->angles.z) * 0.7;
@@ -955,7 +955,7 @@ void CProp::AngleThink()
             //fabs(UTIL_AngleDiff(iangles.y, pev->angles.y)) > 0.1 ||
             fabs(UTIL_AngleDiff(iangles.z, pev->angles.z)) > 0.1)
         {
-            SetThink(CProp::AngleThink);
+            SetThink( &CProp::AngleThink);
             pev->nextthink = gpGlobals->time + 0.1;
         }
         pev->angles.x += UTIL_AngleDiff(iangles.x, pev->angles.x) * 0.6;
@@ -972,7 +972,7 @@ void CProp::AngleThink()
             fabs(UTIL_AngleDiff(iangles.y, pev->angles.y)) > 0.1 ||
             fabs(UTIL_AngleDiff(iangles.z, pev->angles.z)) > 0.1)
         {
-            SetThink(CProp::AngleThink);
+            SetThink( &CProp::AngleThink);
             pev->nextthink = gpGlobals->time + 0.1;
         }
         pev->angles.x += UTIL_AngleDiff(iangles.x, pev->angles.x) * 0.6;
@@ -1006,7 +1006,7 @@ void CProp::AngleThink()
         if (fabs(UTIL_AngleDiff(ianglex, pev->angles.x)) > 0.1 ||
             fabs(UTIL_AngleDiff(ianglez, pev->angles.z)) > 0.1 )
         {
-            SetThink(CProp::AngleThink);
+            SetThink( &CProp::AngleThink);
             pev->nextthink = gpGlobals->time + 0.1;
         }
         pev->angles.x += UTIL_AngleDiff(ianglex, pev->angles.x) * 0.6;

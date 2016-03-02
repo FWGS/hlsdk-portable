@@ -80,7 +80,7 @@ void CLaserSpot::Suspend( float flSuspendTime )
 {
 	pev->effects |= EF_NODRAW;
 	
-	SetThink( Revive );
+	SetThink( &Revive );
 	pev->nextthink = gpGlobals->time + flSuspendTime;
 }
 
@@ -91,7 +91,7 @@ void CLaserSpot::Revive( void )
 {
 	pev->effects &= ~EF_NODRAW;
 
-	ResetThink();
+	SetThink( NULL );
 }
 
 void CLaserSpot::Precache( void )
@@ -110,7 +110,7 @@ CRpgRocket *CRpgRocket::CreateRpgRocket( Vector vecOrigin, Vector vecAngles, CBa
 	UTIL_SetOrigin( pRocket->pev, vecOrigin );
 	pRocket->pev->angles = vecAngles;
 	pRocket->Spawn();
-	pRocket->SetTouch( CRpgRocket::RocketTouch );
+	pRocket->SetTouch( &CRpgRocket::RocketTouch );
 	pRocket->m_pLauncher = pLauncher;// remember what RPG fired me. 
 	pRocket->m_pLauncher->m_cActiveRockets++;// register this missile as active for the launcher
 	pRocket->pev->owner = pOwner->edict();
@@ -133,8 +133,8 @@ void CRpgRocket :: Spawn( void )
 
 	pev->classname = MAKE_STRING("rpg_rocket");
 
-	SetThink( IgniteThink );
-	SetTouch( ExplodeTouch );
+	SetThink( &IgniteThink );
+	SetTouch( &ExplodeTouch );
 
 	pev->angles.x -= 30;
 	UTIL_MakeVectors( pev->angles );
@@ -200,7 +200,7 @@ void CRpgRocket :: IgniteThink( void  )
 	m_flIgniteTime = gpGlobals->time;
 
 	// set to follow laser spot
-	SetThink( FollowThink );
+	SetThink( &FollowThink );
 	pev->nextthink = gpGlobals->time + 0.1;
 }
 

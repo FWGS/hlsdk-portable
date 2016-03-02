@@ -105,7 +105,7 @@ void CFuncMortarField :: Spawn( void )
 	SET_MODEL(ENT(pev), STRING(pev->model));    // set size and link into world
 	pev->movetype = MOVETYPE_NONE;
 	SetBits( pev->effects, EF_NODRAW );
-	SetUse( FieldUse );
+	SetUse( &FieldUse );
 	Precache();
 }
 
@@ -209,7 +209,7 @@ void CMortar::Spawn( )
 
 	pev->dmg		= 200;
 
-	SetThink( MortarExplode );
+	SetThink( &MortarExplode );
 	pev->nextthink = 0;
 
 	Precache( );
@@ -300,7 +300,7 @@ void CMortar::MortarExplode( void )
 	}
 	*/
 
-	SetThink( SUB_Remove );
+	SetThink( &SUB_Remove );
 	pev->nextthink = gpGlobals->time + 0.1;
 #endif
 

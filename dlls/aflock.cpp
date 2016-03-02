@@ -211,7 +211,7 @@ void CFlockingFlyerFlock :: SpawnFlock( void )
 		
 		pBoid->pev->frame = 0;
 		pBoid->pev->nextthink = gpGlobals->time + 0.2;
-		pBoid->SetThink( CFlockingFlyer :: IdleThink );
+		pBoid->SetThink( &CFlockingFlyer :: IdleThink );
 
 		if ( pBoid != pLeader ) 
 		{
@@ -229,7 +229,7 @@ void CFlockingFlyer :: Spawn( )
 	
 	pev->frame = 0;
 	pev->nextthink = gpGlobals->time + 0.1;
-	SetThink( IdleThink );
+	SetThink( &IdleThink );
 }
 
 //=========================================================
@@ -292,7 +292,7 @@ void CFlockingFlyer :: Killed( entvars_t *pevAttacker, int iGib )
 	UTIL_SetSize( pev, Vector(0,0,0), Vector(0,0,0) );
 	pev->movetype = MOVETYPE_TOSS;
 
-	SetThink ( FallHack );
+	SetThink( &FallHack );
 	pev->nextthink = gpGlobals->time + 0.1;
 }
 
@@ -308,7 +308,7 @@ void CFlockingFlyer :: FallHack( void )
 		else
 		{
 			pev->velocity = g_vecZero;
-			ResetThink();
+			SetThink( NULL );
 		}
 	}
 }
@@ -366,7 +366,7 @@ void CFlockingFlyer :: IdleThink( void )
 	// see if there's a client in the same pvs as the monster
 	if ( !FNullEnt( FIND_CLIENT_IN_PVS( edict() ) ) )
 	{
-		SetThink( Start );
+		SetThink( &Start );
 		pev->nextthink = gpGlobals->time + 0.1;
 	}
 }
@@ -380,11 +380,11 @@ void CFlockingFlyer :: Start( void )
 
 	if ( IsLeader() )
 	{
-		SetThink( FlockLeaderThink );
+		SetThink( &FlockLeaderThink );
 	}
 	else
 	{
-		SetThink( FlockFollowerThink );
+		SetThink( &FlockFollowerThink );
 	}
 
 /*
@@ -438,7 +438,7 @@ void CFlockingFlyer :: FormFlock( void )
 		}
 	}
 
-	SetThink( IdleThink );// now that flock is formed, go to idle and wait for a player to come along.
+	SetThink( &IdleThink );// now that flock is formed, go to idle and wait for a player to come along.
 	pev->nextthink = gpGlobals->time;
 }
  
@@ -673,7 +673,7 @@ void CFlockingFlyer :: FlockFollowerThink( void )
 	if ( IsLeader() || !InSquad() )
 	{
 		// the leader has been killed and this flyer suddenly finds himself the leader. 
-		SetThink ( FlockLeaderThink );
+		SetThink( &FlockLeaderThink );
 		return;
 	}
 

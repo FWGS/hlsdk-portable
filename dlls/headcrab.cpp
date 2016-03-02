@@ -324,7 +324,7 @@ void CHeadCrab :: RunTask ( Task_t *pTask )
 			if ( m_fSequenceFinished )
 			{
 				TaskComplete();
-				ResetTouch();
+				SetTouch( NULL );
 				m_IdealActivity = ACT_IDLE;
 			}
 			break;
@@ -360,7 +360,7 @@ void CHeadCrab :: LeapTouch ( CBaseEntity *pOther )
 		pOther->TakeDamage( pev, pev, GetDamageAmount(), DMG_SLASH );
 	}
 
-	ResetTouch();
+	SetTouch( NULL );
 }
 
 //=========================================================
@@ -385,7 +385,7 @@ void CHeadCrab :: StartTask ( Task_t *pTask )
 		{
 			EMIT_SOUND_DYN( edict(), CHAN_WEAPON, pAttackSounds[0], GetSoundVolue(), ATTN_IDLE, 0, GetVoicePitch() );
 			m_IdealActivity = ACT_RANGE_ATTACK1;
-			SetTouch ( LeapTouch );
+			SetTouch( &LeapTouch );
 			break;
 		}
 	default:

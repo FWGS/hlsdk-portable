@@ -58,8 +58,8 @@ void CAirtank :: Spawn( void )
 	UTIL_SetSize(pev, Vector( -16, -16, 0), Vector(16, 16, 36));
 	UTIL_SetOrigin( pev, pev->origin );
 
-	SetTouch( TankTouch );
-	SetThink( TankThink );
+	SetTouch( &TankTouch );
+	SetThink( &TankThink );
 
 	pev->flags |= FL_MONSTER;
 	pev->takedamage		= DAMAGE_YES;

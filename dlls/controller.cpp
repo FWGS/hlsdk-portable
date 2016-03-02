@@ -1170,8 +1170,8 @@ void CControllerHeadBall :: Spawn( void )
 	UTIL_SetSize(pev, Vector( 0, 0, 0), Vector(0, 0, 0));
 	UTIL_SetOrigin( pev, pev->origin );
 
-	SetThink( HuntThink );
-	SetTouch( BounceTouch );
+	SetThink( &HuntThink );
+	SetTouch( &BounceTouch );
 
 	m_vecIdeal = Vector( 0, 0, 0 );
 
@@ -1213,7 +1213,7 @@ void CControllerHeadBall :: HuntThink( void  )
 	// check world boundaries
 	if (gpGlobals->time - pev->dmgtime > 5 || pev->renderamt < 64 || m_hEnemy == NULL || m_hOwner == NULL || pev->origin.x < -4096 || pev->origin.x > 4096 || pev->origin.y < -4096 || pev->origin.y > 4096 || pev->origin.z < -4096 || pev->origin.z > 4096)
 	{
-		ResetTouch();
+		SetTouch( NULL );
 		UTIL_Remove( this );
 		return;
 	}
@@ -1257,7 +1257,7 @@ void CControllerHeadBall :: HuntThink( void  )
 
 		m_flNextAttack = gpGlobals->time + 3.0;
 
-		SetThink( DieThink );
+		SetThink( &DieThink );
 		pev->nextthink = gpGlobals->time + 0.3;
 	}
 
@@ -1364,8 +1364,8 @@ void CControllerZapBall :: Spawn( void )
 	UTIL_SetSize(pev, Vector( 0, 0, 0), Vector(0, 0, 0));
 	UTIL_SetOrigin( pev, pev->origin );
 
-	SetThink( AnimateThink );
-	SetTouch( ExplodeTouch );
+	SetThink( &AnimateThink );
+	SetTouch( &ExplodeTouch );
 
 	m_hOwner = Instance( pev->owner );
 	pev->dmgtime = gpGlobals->time; // keep track of when ball spawned
@@ -1389,7 +1389,7 @@ void CControllerZapBall :: AnimateThink( void  )
 
 	if (gpGlobals->time - pev->dmgtime > 5 || pev->velocity.Length() < 10)
 	{
-		ResetTouch();
+		SetTouch( NULL );
 		UTIL_Remove( this );
 	}
 }

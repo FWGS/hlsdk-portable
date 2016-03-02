@@ -317,10 +317,10 @@ void CBaseDoor::Spawn( )
 	// if the door is flagged for USE button activation only, use NULL touch function
 	if ( FBitSet ( pev->spawnflags, SF_DOOR_USE_ONLY ) )
 	{
-		ResetTouch();
+		SetTouch( NULL );
 	}
 	else // touchable button
-		SetTouch( DoorTouch );
+		SetTouch( &DoorTouch );
 }
  
 
@@ -509,7 +509,7 @@ void CBaseDoor::DoorTouch( CBaseEntity *pOther )
 	m_hActivator = pOther;// remember who activated the door
 
 	if (DoorActivate( ))
-		ResetTouch(); // Temporarily disable the touch function, until movement is finished.
+		SetTouch( NULL ); // Temporarily disable the touch function, until movement is finished.
 }
 
 
@@ -576,7 +576,7 @@ void CBaseDoor::DoorGoUp( void )
 
 	m_toggle_state = TS_GOING_UP;
 	
-	SetMoveDone( DoorHitTop );
+	SetMoveDone( &DoorHitTop );
 	if ( FClassnameIs(pev, "func_door_rotating"))		// !!! BUGBUG Triggered doors don't work with this yet
 	{
 		float	sign = 1.0;
@@ -625,13 +625,13 @@ void CBaseDoor::DoorHitTop( void )
 	{
 		// Re-instate touch method, movement is complete
 		if ( !FBitSet ( pev->spawnflags, SF_DOOR_USE_ONLY ) )
-			SetTouch( DoorTouch );
+			SetTouch( &DoorTouch );
 	}
 	else
 	{
 		// In flWait seconds, DoorGoDown will fire, unless wait is -1, then door stays open
 		pev->nextthink = pev->ltime + m_flWait;
-		SetThink( DoorGoDown );
+		SetThink( &DoorGoDown );
 
 		if ( m_flWait == -1 )
 		{
@@ -661,7 +661,7 @@ void CBaseDoor::DoorGoDown( void )
 #endif // DOOR_ASSERT
 	m_toggle_state = TS_GOING_DOWN;
 
-	SetMoveDone( DoorHitBottom );
+	SetMoveDone( &DoorHitBottom );
 	if ( FClassnameIs(pev, "func_door_rotating"))//rotating door
 		AngularMove( m_vecAngle1, pev->speed);
 	else
@@ -685,10 +685,10 @@ void CBaseDoor::DoorHitBottom( void )
 	// Re-instate touch method, cycle is complete
 	if ( FBitSet ( pev->spawnflags, SF_DOOR_USE_ONLY ) )
 	{// use only door
-		ResetTouch();
+		SetTouch( NULL );
 	}
 	else // touchable door
-		SetTouch( DoorTouch );
+		SetTouch( &DoorTouch );
 
 	SUB_UseTargets( m_hActivator, USE_TOGGLE, 0 ); // this isn't finished
 
@@ -862,10 +862,10 @@ void CRotDoor::Spawn( void )
 
 	if ( FBitSet ( pev->spawnflags, SF_DOOR_USE_ONLY ) )
 	{
-		ResetTouch();
+		SetTouch( NULL );
 	}
 	else // touchable button
-		SetTouch( DoorTouch );
+		SetTouch( &DoorTouch );
 }
 
 
@@ -935,7 +935,7 @@ void CMomentaryDoor::Spawn( void )
 		m_vecPosition2 = m_vecPosition1;
 		m_vecPosition1 = pev->origin;
 	}
-	ResetTouch();
+	SetTouch( NULL );
 	
 	Precache();
 }
@@ -1075,7 +1075,7 @@ void CMomentaryDoor::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYP
 			EMIT_SOUND(ENT(pev), CHAN_STATIC, (char*)STRING(pev->noiseMoving), 1, ATTN_NORM);
 
 		LinearMove( move, speed );
-		SetMoveDone( MomentaryMoveDone );
+		SetMoveDone( &MomentaryMoveDone );
 	}
 
 }

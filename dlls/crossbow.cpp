@@ -71,8 +71,8 @@ void CCrossbowBolt::Spawn( )
 	UTIL_SetOrigin( pev, pev->origin );
 	UTIL_SetSize(pev, Vector(0, 0, 0), Vector(0, 0, 0));
 
-	SetTouch( BoltTouch );
-	SetThink( BubbleThink );
+	SetTouch( &BoltTouch );
+	SetThink( &BubbleThink );
 	pev->nextthink = gpGlobals->time + 0.2;
 }
 
@@ -96,8 +96,8 @@ int	CCrossbowBolt :: Classify ( void )
 
 void CCrossbowBolt::BoltTouch( CBaseEntity *pOther )
 {
-	ResetTouch();
-	ResetThink();
+	SetTouch( NULL );
+	SetThink( NULL );
 
 	if (pOther->pev->takedamage)
 	{
@@ -139,7 +139,7 @@ void CCrossbowBolt::BoltTouch( CBaseEntity *pOther )
 	{
 		EMIT_SOUND_DYN(ENT(pev), CHAN_BODY, "weapons/xbow_hit1.wav", RANDOM_FLOAT(0.95, 1.0), ATTN_NORM, 0, 98 + RANDOM_LONG(0,7));
 
-		SetThink( SUB_Remove );
+		SetThink( &SUB_Remove );
 		pev->nextthink = gpGlobals->time;// this will get changed below if the bolt is allowed to stick in what it hit.
 
 		if ( FClassnameIs( pOther->pev, "worldspawn" ) )
@@ -179,7 +179,7 @@ void CCrossbowBolt::BoltTouch( CBaseEntity *pOther )
 
 	if ( g_pGameRules->IsMultiplayer() )
 	{
-		SetThink( ExplodeThink );
+		SetThink( &ExplodeThink );
 		pev->nextthink = gpGlobals->time + 0.1;
 	}
 }

@@ -640,7 +640,7 @@ void CTalkMonster :: Killed( entvars_t *pevAttacker, int iGib )
 	m_hTargetEnt = NULL;
 	// Don't finish that sentence
 	StopTalking();
-	ResetUse();
+	SetUse( NULL );
 	CBaseMonster::Killed( pevAttacker, iGib );
 }
 

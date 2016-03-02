@@ -111,29 +111,29 @@ void CMonsterMaker :: Spawn( )
 	{
 		if ( pev->spawnflags & SF_MONSTERMAKER_CYCLIC )
 		{
-			SetUse ( CyclicUse );// drop one monster each time we fire
+			SetUse( &CyclicUse );// drop one monster each time we fire
 		}
 		else
 		{
-			SetUse ( ToggleUse );// so can be turned on/off
+			SetUse( &ToggleUse );// so can be turned on/off
 		}
 
 		if ( FBitSet ( pev->spawnflags, SF_MONSTERMAKER_START_ON ) )
 		{// start making monsters as soon as monstermaker spawns
 			m_fActive = TRUE;
-			SetThink ( MakerThink );
+			SetThink( &MakerThink );
 		}
 		else
 		{// wait to be activated.
 			m_fActive = FALSE;
-			SetThink ( SUB_DoNothing );
+			SetThink( &SUB_DoNothing );
 		}
 	}
 	else
 	{// no targetname, just start.
 			pev->nextthink = gpGlobals->time + m_flDelay;
 			m_fActive = TRUE;
-			SetThink ( MakerThink );
+			SetThink( &MakerThink );
 	}
 
 	if ( m_cNumMonsters == 1 )
@@ -229,8 +229,8 @@ void CMonsterMaker::MakeMonster( void )
 	if ( m_cNumMonsters == 0 )
 	{
 		// Disable this forever.  Don't kill it because it still gets death notices
-		ResetThink();
-		ResetUse();
+		SetThink( NULL );
+		SetUse( NULL );
 	}
 }
 
@@ -254,12 +254,12 @@ void CMonsterMaker :: ToggleUse ( CBaseEntity *pActivator, CBaseEntity *pCaller,
 	if ( m_fActive )
 	{
 		m_fActive = FALSE;
-		ResetThink();
+		SetThink( NULL );
 	}
 	else
 	{
 		m_fActive = TRUE;
-		SetThink ( MakerThink );
+		SetThink( &MakerThink );
 	}
 
 	pev->nextthink = gpGlobals->time;

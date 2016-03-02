@@ -167,8 +167,8 @@ void COsprey :: Spawn( void )
 
 	InitBoneControllers();
 
-	SetThink( FindAllThink );
-	SetUse( CommandUse );
+	SetThink( &FindAllThink );
+	SetUse( &CommandUse );
 
 	if (!(pev->spawnflags & SF_WAITFORTRIGGER))
 	{
@@ -225,7 +225,7 @@ void COsprey :: FindAllThink( void )
 		UTIL_Remove( this );
 		return;
 	}
-	SetThink( FlyThink );
+	SetThink( &FlyThink );
 	pev->nextthink = gpGlobals->time + 0.1;
 	m_startTime = gpGlobals->time;
 }
@@ -257,7 +257,7 @@ void COsprey :: DeployThink( void )
 	vecSrc = pev->origin + vecForward * -64 + vecRight * -100 + vecUp * -96;
 	m_hRepel[3] = MakeGrunt( vecSrc );
 
-	SetThink( HoverThink );
+	SetThink( &HoverThink );
 	pev->nextthink = gpGlobals->time + 0.1;
 }
 
@@ -308,7 +308,7 @@ CBaseMonster *COsprey :: MakeGrunt( Vector vecSrc )
 			pBeam->PointEntInit( vecSrc + Vector(0,0,112), pGrunt->entindex() );
 			pBeam->SetFlags( BEAM_FSOLID );
 			pBeam->SetColor( 255, 255, 255 );
-			pBeam->SetThink( SUB_Remove );
+			pBeam->SetThink( &SUB_Remove );
 			pBeam->pev->nextthink = gpGlobals->time + -4096.0 * tr.flFraction / pGrunt->pev->velocity.z + 0.5;
 
 			// ALERT( at_console, "%d at %.0f %.0f %.0f\n", i, m_vecOrigin[i].x, m_vecOrigin[i].y, m_vecOrigin[i].z );  
@@ -336,7 +336,7 @@ void COsprey :: HoverThink( void )
 	if (i == 4)
 	{
 		m_startTime = gpGlobals->time;
-		SetThink( FlyThink );
+		SetThink( &FlyThink );
 	}
 
 	pev->nextthink = gpGlobals->time + 0.1;
@@ -396,7 +396,7 @@ void COsprey::FlyThink( void )
 	{
 		if (m_pGoalEnt->pev->speed == 0)
 		{
-			SetThink( DeployThink );
+			SetThink( &DeployThink );
 		}
 		do {
 			m_pGoalEnt = CBaseEntity::Instance( FIND_ENTITY_BY_TARGETNAME ( NULL, STRING( m_pGoalEnt->pev->target ) ) );
@@ -518,8 +518,8 @@ void COsprey :: Killed( entvars_t *pevAttacker, int iGib )
 	STOP_SOUND( ENT(pev), CHAN_STATIC, "apache/ap_rotor4.wav" );
 
 	UTIL_SetSize( pev, Vector( -32, -32, -64), Vector( 32, 32, 0) );
-	SetThink( DyingThink );
-	SetTouch( CrashTouch );
+	SetThink( &DyingThink );
+	SetTouch( &CrashTouch );
 	pev->nextthink = gpGlobals->time + 0.1;
 	pev->health = 0;
 	pev->takedamage = DAMAGE_NO;
@@ -532,7 +532,7 @@ void COsprey::CrashTouch( CBaseEntity *pOther )
 	// only crash if we hit something solid
 	if ( pOther->pev->solid == SOLID_BSP) 
 	{
-		ResetTouch();
+		SetTouch( NULL );
 		m_startTime = gpGlobals->time;
 		pev->nextthink = gpGlobals->time;
 		m_velocity = pev->velocity;

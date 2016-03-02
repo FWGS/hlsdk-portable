@@ -173,7 +173,7 @@ void CMultiSource::Spawn()
 	pev->movetype = MOVETYPE_NONE;
 	pev->nextthink = gpGlobals->time + 0.1;
 	pev->spawnflags |= SF_MULTI_INIT;	// Until it's initialized
-	SetThink(Register);
+	SetThink( &Register);
 }
 
 void CMultiSource::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
@@ -240,7 +240,7 @@ void CMultiSource::Register(void)
 	m_iTotal = 0;
 	memset( m_rgEntities, 0, MS_MAX_TARGETS * sizeof(EHANDLE) );
 
-	SetThink(SUB_DoNothing);
+	SetThink( &SUB_DoNothing);
 
 	// search for all entities which target this multisource (pev->targetname)
 
@@ -398,7 +398,7 @@ int CBaseButton::TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, fl
 	if ( code == BUTTON_NOTHING )
 		return 0;
 	// Temporarily disable the touch function, until movement is finished.
-	ResetTouch();
+	SetTouch( NULL );
 
 	m_hActivator = CBaseEntity::Instance( pevAttacker );
 	if ( m_hActivator == NULL )
@@ -455,7 +455,7 @@ void CBaseButton::Spawn( )
 
 	if ( FBitSet ( pev->spawnflags, SF_BUTTON_SPARK_IF_OFF ) )// this button should spark in OFF state
 	{
-		SetThink ( ButtonSpark );
+		SetThink( &ButtonSpark );
 		pev->nextthink = gpGlobals->time + 0.5;// no hurry, make sure everything else spawns
 	}
 
@@ -495,12 +495,12 @@ void CBaseButton::Spawn( )
 
 	if ( FBitSet ( pev->spawnflags, SF_BUTTON_TOUCH_ONLY ) ) // touchable button
 	{
-		SetTouch( ButtonTouch );
+		SetTouch( &ButtonTouch );
 	}
 	else 
 	{
-		ResetTouch();
-		SetUse	 ( ButtonUse );
+		SetTouch( NULL );
+		SetUse( &ButtonUse );
 	}
 }
 
@@ -567,7 +567,7 @@ void DoSpark(entvars_t *pev, const Vector &location )
 
 void CBaseButton::ButtonSpark ( void )
 {
-	SetThink ( ButtonSpark );
+	SetThink( &ButtonSpark );
 	pev->nextthink = gpGlobals->time + ( 0.1 + RANDOM_FLOAT ( 0, 1.5 ) );// spark again at random interval
 
 	DoSpark( pev, pev->mins );
@@ -646,7 +646,7 @@ void CBaseButton:: ButtonTouch( CBaseEntity *pOther )
 	}
 
 	// Temporarily disable the touch function, until movement is finished.
-	ResetTouch();
+	SetTouch( NULL );
 
 	if ( code == BUTTON_RETURN )
 	{
@@ -680,7 +680,7 @@ void CBaseButton::ButtonActivate( )
 	ASSERT(m_toggle_state == TS_AT_BOTTOM);
 	m_toggle_state = TS_GOING_UP;
 	
-	SetMoveDone( TriggerAndWait );
+	SetMoveDone( &TriggerAndWait );
 	if (!m_fRotating)
 		LinearMove( m_vecPosition2, pev->speed);
 	else
@@ -706,15 +706,15 @@ void CBaseButton::TriggerAndWait( void )
 		if ( !FBitSet ( pev->spawnflags, SF_BUTTON_TOUCH_ONLY ) ) // this button only works if USED, not touched!
 		{
 		// ALL buttons are now use only
-		ResetTouch();
+		SetTouch( NULL );
 		}
 		else
-			SetTouch( ButtonTouch );
+			SetTouch( &ButtonTouch );
 	}
 	else
 	{
 		pev->nextthink = pev->ltime + m_flWait;
-		SetThink( ButtonReturn );
+		SetThink( &ButtonReturn );
 	}
 	
 	pev->frame = 1;			// use alternate textures
@@ -732,7 +732,7 @@ void CBaseButton::ButtonReturn( void )
 	ASSERT(m_toggle_state == TS_AT_TOP);
 	m_toggle_state = TS_GOING_DOWN;
 	
-	SetMoveDone( ButtonBackHome );
+	SetMoveDone( &ButtonBackHome );
 	if (!m_fRotating)
 		LinearMove( m_vecPosition1, pev->speed);
 	else
@@ -781,15 +781,15 @@ void CBaseButton::ButtonBackHome( void )
 	if ( !FBitSet ( pev->spawnflags, SF_BUTTON_TOUCH_ONLY ) ) // this button only works if USED, not touched!
 	{
 	// All buttons are now use only	
-		ResetTouch();
+		SetTouch( NULL );
 	}
 	else
-		SetTouch( ButtonTouch );
+		SetTouch( &ButtonTouch );
 
 // reset think for a sparking button
 	if ( FBitSet ( pev->spawnflags, SF_BUTTON_SPARK_IF_OFF ) )
 	{
-		SetThink ( ButtonSpark );
+		SetThink( &ButtonSpark );
 		pev->nextthink = gpGlobals->time + 0.5;// no hurry.
 	}
 }
@@ -856,13 +856,13 @@ void CRotButton::Spawn( void )
 	// if the button is flagged for USE button activation only, take away it's touch function and add a use function
 	if ( !FBitSet ( pev->spawnflags, SF_BUTTON_TOUCH_ONLY ) )
 	{
-		ResetTouch();
-		SetUse	 ( ButtonUse );
+		SetTouch( NULL );
+		SetUse( &ButtonUse );
 	}
 	else // touchable button
-		SetTouch( ButtonTouch );
+		SetTouch( &ButtonTouch );
 
-	//SetTouch( ButtonTouch );
+	//SetTouch( &ButtonTouch );
 }
 
 
@@ -1049,7 +1049,7 @@ void CMomentaryRotButton::UpdateSelf( float value )
 		pev->nextthink += 0.1;
 	
 	pev->avelocity = (m_direction * pev->speed) * pev->movedir;
-	SetThink( Off );
+	SetThink( &Off );
 }
 
 void CMomentaryRotButton::UpdateTarget( float value )
@@ -1077,12 +1077,12 @@ void CMomentaryRotButton::Off( void )
 	m_lastUsed = 0;
 	if ( FBitSet( pev->spawnflags, SF_PENDULUM_AUTO_RETURN ) && m_returnSpeed > 0 )
 	{
-		SetThink( Return );
+		SetThink( &Return );
 		pev->nextthink = pev->ltime + 0.1;
 		m_direction = -1;
 	}
 	else
-		ResetThink();
+		SetThink( NULL );
 }
 
 void CMomentaryRotButton::Return( void )
@@ -1102,7 +1102,7 @@ void CMomentaryRotButton::UpdateSelfReturn( float value )
 		pev->avelocity = g_vecZero;
 		pev->angles = m_start;
 		pev->nextthink = -1;
-		ResetThink();
+		SetThink( NULL );
 	}
 	else
 	{
@@ -1147,21 +1147,21 @@ LINK_ENTITY_TO_CLASS(env_debris, CEnvSpark);
 
 void CEnvSpark::Spawn(void)
 {
-	ResetThink();
-	ResetUse();
+	SetThink( NULL );
+	SetUse( NULL );
 
 	if (FBitSet(pev->spawnflags, 32)) // Use for on/off
 	{
 		if (FBitSet(pev->spawnflags, 64)) // Start on
 		{
-			SetThink(SparkThink);	// start sparking
-			SetUse(SparkStop);		// set up +USE to stop sparking
+			SetThink( &SparkThink);	// start sparking
+			SetUse( &SparkStop);		// set up +USE to stop sparking
 		}
 		else
-			SetUse(SparkStart);
+			SetUse( &SparkStart);
 	}
 	else
-		SetThink(SparkThink);
+		SetThink( &SparkThink);
 		
 	pev->nextthink = gpGlobals->time + ( 0.1 + RANDOM_FLOAT ( 0, 1.5 ) );
 
@@ -1208,15 +1208,15 @@ void EXPORT CEnvSpark::SparkThink(void)
 
 void EXPORT CEnvSpark::SparkStart(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
-	SetUse(SparkStop);
-	SetThink(SparkThink);
+	SetUse( &SparkStop);
+	SetThink( &SparkThink);
 	pev->nextthink = gpGlobals->time + (0.1 + RANDOM_FLOAT ( 0, m_flDelay));
 }
 
 void EXPORT CEnvSpark::SparkStop(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
-	SetUse(SparkStart);
-	ResetThink();
+	SetUse( &SparkStart);
+	SetThink( NULL );
 }
 
 #define SF_BTARGET_USE		0x0001

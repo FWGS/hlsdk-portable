@@ -686,7 +686,7 @@ void CScientist :: Spawn( void )
 		pev->skin = 1;
 	
 	MonsterInit();
-	SetUse( FollowerUse );
+	SetUse( &FollowerUse );
 }
 
 //=========================================================
@@ -813,7 +813,7 @@ void CScientist :: DeathSound ( void )
 
 void CScientist::Killed( entvars_t *pevAttacker, int iGib )
 {
-	ResetUse();	
+	SetUse( NULL );	
 	CTalkMonster::Killed( pevAttacker, iGib );
 }
 
@@ -1240,7 +1240,7 @@ void CSittingScientist :: Spawn( )
 	pev->sequence = m_baseSequence + RANDOM_LONG(0,4);
 	ResetSequenceInfo( );
 	
-	SetThink (SittingThink);
+	SetThink( &SittingThink);
 	pev->nextthink = gpGlobals->time + 0.1;
 
 	DROP_TO_FLOOR ( ENT(pev) );

@@ -50,7 +50,7 @@ void CBaseMonster::CorpseFallThink( void )
 {
 	if ( pev->flags & FL_ONGROUND )
 	{
-		ResetThink();
+		SetThink( NULL );
 
 		SetSequenceBox( );
 		UTIL_SetOrigin( pev, pev->origin );// link into world.
@@ -79,7 +79,7 @@ void CBaseMonster :: MonsterInitDead( void )
 
 	// Setup health counters, etc.
 	BecomeDead();
-	SetThink( CorpseFallThink );
+	SetThink( &CorpseFallThink );
 	pev->nextthink = gpGlobals->time + 0.5;
 }
 
