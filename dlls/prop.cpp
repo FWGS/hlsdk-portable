@@ -782,7 +782,7 @@ void CProp::BounceTouch(CBaseEntity *pOther)
 		}
 		m_flNextAttack = gpGlobals->time + 1.0; // debounce
 	}
-	if( (pev->spawnflags & SF_PROP_BREAKABLE) && (pev->velocity.Length() > 700) )
+	if( (pev->spawnflags & SF_PROP_BREAKABLE) && (pev->velocity.Length() > 999) )
 	{
 		pev->nextthink = gpGlobals->time + 0.1;
 		SetThink( &CProp::DieThink );
