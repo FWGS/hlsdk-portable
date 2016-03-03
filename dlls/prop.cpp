@@ -397,7 +397,6 @@ void CProp::Die( void )
 {
 	Vector vecSpot;// shard origin
 	Vector vecVelocity;// shard velocity
-	CBaseEntity *pEntity = NULL;
 	char cFlag = 0;
 	int pitch;
 	float fvol;
@@ -557,10 +556,12 @@ void CProp::Die( void )
 	// Fire targets on break
 	SUB_UseTargets( NULL, USE_TOGGLE, 0 );
 
-	if ( Explodable() )
+	if ( Explodable() && (m_attacker != NULL) )
 	{
-		ExplosionCreate( pev->origin, pev->angles, m_attacker, ExplosionMagnitude(), TRUE );
+		ExplosionCreate( pev->origin, pev->angles, m_attacker, ExplosionMagnitude(), FALSE );
+		RadiusDamage ( pev->origin, pev, VARS(m_attacker), ExplosionMagnitude(), ExplosionMagnitude() * 2.5 , CLASS_NONE, DMG_BLAST );
 	}
+	UTIL_SetSize(pev, Vector( 0, 0, 0), Vector(0, 0, 0) );
 }
 
 void CProp::Killed(entvars_t *pevAttacker, int iGib)
@@ -571,8 +572,8 @@ void CProp::Killed(entvars_t *pevAttacker, int iGib)
 	pev->effects |= EF_NODRAW;
 	pev->nextthink = gpGlobals->time + m_flRespawnTime;
 	SetThink( &CProp::RespawnThink );
-	ResetTouch( );
-	ResetUse( );
+	SetTouch( NULL );
+	SetUse( NULL );
 }
 
 void CProp::Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value)
@@ -899,20 +900,21 @@ void CProp::Spawn(void)
 
 void CProp::PropRespawn()
 {
+	UTIL_SetSize(pev, Vector( 0, 0, 0), Vector(0, 0, 0) );
+	pev->effects &= ~EF_NODRAW;
 	pev->movetype = MOVETYPE_BOUNCE;
 	pev->solid = SOLID_SLIDEBOX;
-	pev->angles = spawnAngles;
 	pev->takedamage = DAMAGE_YES;
+	pev->health = m_flSpawnHealth;
 	pev->velocity = pev->avelocity = g_vecZero;
+	pev->angles = spawnAngles;
+	pev->deadflag = DEAD_NO;
 	SET_MODEL( ENT(pev), STRING(pev->model) );
-	UTIL_SetOrigin( pev, spawnOrigin );
-
 	m_oldshape = (PropShape)-1;
 	CheckRotate();
-	pev->health = m_flSpawnHealth;
-	SetTouch( &CProp::BounceTouch);
-	SetUse( &CProp::Use);
-	pev->effects &= ~EF_NODRAW;
+	SetTouch( &CProp::BounceTouch );
+	SetUse( &CProp::Use );
+
 	pev->framerate = 1.0f;
 	UTIL_SetOrigin( pev, spawnOrigin );
 }
