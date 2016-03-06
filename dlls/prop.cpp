@@ -782,7 +782,7 @@ void CProp::BounceTouch(CBaseEntity *pOther)
 		}
 		m_flNextAttack = gpGlobals->time + 1.0; // debounce
 	}
-	if( (pev->spawnflags & SF_PROP_BREAKABLE) && (pev->velocity.Length() > 999) )
+	if( (pOther->edict() != m_owner2) && (pev->spawnflags & SF_PROP_BREAKABLE) && (pev->velocity.Length() > 900) )
 	{
 		pev->nextthink = gpGlobals->time + 0.1;
 		SetThink( &CProp::DieThink );
@@ -1048,12 +1048,15 @@ void CProp::DieThink()
 int CProp::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType)
 {
 	Vector r = (pevInflictor->origin - pev->origin);
-	if (flDamage > 200 && ((CBaseEntity*)GET_PRIVATE(ENT(pevAttacker)))->IsPlayer())
+	if ( (!m_attacker
+		  || (pev->velocity.Length() < 700))
+		 && ((CBaseEntity*)GET_PRIVATE(ENT(pevAttacker)))->IsPlayer())
 		m_attacker = ENT(pevAttacker);
 	DeployThink();
 
 	pev->velocity = r * flDamage / -7;
 	pev->avelocity.x = pev->avelocity.x*0.5 + RANDOM_FLOAT(100, -100);
+	ALERT(at_console, "Takedmg: %s %s %f %f\n", STRING(pevInflictor->classname), STRING(pevAttacker->classname), flDamage, pev->health );
 
 	// now some func_breakable code
 
