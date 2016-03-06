@@ -201,13 +201,17 @@ int CHud :: DrawHudString(int xpos, int ypos, int iMaxX, char *szIt, int r, int 
 		gEngfuncs.pfnDrawSetTextColor( r/255.0, g/255.0, b/255.0 );
 		return gEngfuncs.pfnDrawConsoleString( xpos, ypos, (char*) szIt );
 	}
+
+	// xash3d: reset unicode state
+	TextMessageDrawChar( 0, 0, 0, 0, 0, 0 );
+
 	// draw the string until we hit the null character or a newline character
 	for ( ; *szIt != 0 && *szIt != '\n'; szIt++ )
 	{
 		int w = gHUD.m_scrinfo.charWidths[ 'M' ];
 		if ( xpos + w  > iMaxX )
 			return xpos;
-		if( *szIt == '^' && *(szIt + 1) >= '0' && *(szIt + 1) <= '7' )
+		if( (*szIt == '^') && (*(szIt + 1) >= '0') && (*(szIt + 1) <= '7') )
 		{
 			szIt++;
 			r = colors[ *szIt - '0' ][0];
@@ -216,8 +220,9 @@ int CHud :: DrawHudString(int xpos, int ypos, int iMaxX, char *szIt, int r, int 
 			if( !*(++szIt))
 				return xpos;
 		}
+		int c = (unsigned int)(unsigned char)*szIt;
 
-		xpos += TextMessageDrawChar( xpos, ypos, *szIt, r, g, b );
+		xpos += TextMessageDrawChar( xpos, ypos, c, r, g, b );
 	}
 
 	return xpos;
@@ -228,7 +233,7 @@ int CHud :: DrawHudStringLen( char *szIt )
 	int l = 0;
 	for ( ; *szIt != 0 && *szIt != '\n'; szIt++ )
 	{
-		l += gHUD.m_scrinfo.charWidths[ (unsigned int)*szIt ];
+		l += gHUD.m_scrinfo.charWidths[ (unsigned char)*szIt ];
 	}
 	return l;
 }
