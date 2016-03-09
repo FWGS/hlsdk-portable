@@ -17,6 +17,7 @@
 #define	ROLL	2 
 
 #ifdef _WIN32
+#include <windows.h>
 #else
 typedef struct point_s{
 	int x;
