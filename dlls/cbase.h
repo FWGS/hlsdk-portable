@@ -51,11 +51,7 @@ CBaseEntity
 
 // C functions for external declarations that call the appropriate C++ methods
 
-#ifdef _WIN32
-#define EXPORT	_declspec( dllexport )
-#else
-#define EXPORT	/* */
-#endif
+#include "exportdef.h"
 
 extern "C" EXPORT int GetEntityAPI( DLL_FUNCTIONS *pFunctionTable, int interfaceVersion );
 extern "C" EXPORT int GetEntityAPI2( DLL_FUNCTIONS *pFunctionTable, int *interfaceVersion );

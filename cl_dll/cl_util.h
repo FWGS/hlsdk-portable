@@ -15,7 +15,7 @@
 //
 // cl_util.h
 //
-
+#include "exportdef.h"
 #include "cvardef.h"
 
 #ifndef TRUE
