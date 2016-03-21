@@ -88,6 +88,12 @@ public:
 	virtual void BounceSound(void);
 	virtual int	BloodColor(void) { return DONT_BLEED; }
 	virtual void Killed(entvars_t *pevAttacker, int iGib);
+	virtual CBaseEntity * TouchGravGun( CBaseEntity *attacker )
+	{
+		m_owner2 = attacker->edict();
+		m_attacker = attacker->edict();
+		return attacker;
+	}
 	void CheckRotate();
 	void EXPORT RespawnThink();
 	void EXPORT AngleThink();
@@ -1063,7 +1069,7 @@ int CProp::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flD
 	if ( !(pev->spawnflags & SF_PROP_BREAKABLE ) )
 		return 0;
 	if ( pev->health <= 0 )
-		return;
+		return 0;
 	// Breakables take double damage from the crowbar
 	if ( bitsDamageType & DMG_CLUB )
 		flDamage *= 2;

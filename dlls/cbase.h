@@ -213,6 +213,7 @@ public:
 	}
 	virtual void Blocked( CBaseEntity *pOther ) { if (m_pfnBlocked) (this->*m_pfnBlocked)( pOther ); };
 
+	virtual CBaseEntity * TouchGravGun( CBaseEntity *attacker ){ return NULL; };
 	// allow engine to allocate instance data
     void *operator new( size_t stAllocateBlock, entvars_t *pev )
 	{
