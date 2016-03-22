@@ -49,7 +49,7 @@ public:
 	int iItemSlot(void) { return 4; }
 	int GetItemInfo(ItemInfo *p);
 	int AddToPlayer(CBasePlayer *pPlayer);
-	bool m_bHold = false;
+	int m_iStage = 0;
 	BOOL Deploy(void);
 	void Holster(int skiplocal = 0);
 	int m_iGrabFailures = 0;
@@ -66,7 +66,7 @@ public:
 	void WeaponIdle(void);
 	void Pull(CBaseEntity* ent, float force);
 	void GravAnim(int iAnim, int skiplocal, int body);
-	float mytime = gpGlobals->time;
+	float m_flNextGravgunAttack = gpGlobals->time;
 	float m_flAmmoUseTime;// since we use < 1 point of ammo per update, we subtract ammo on a timer.
 
 
@@ -163,8 +163,8 @@ void CGrav::Holster(int skiplocal /* = 0 */)
 	if (m_AimentEntity) { m_AimentEntity->pev->velocity = Vector(0, 0, 0); }
 	m_AimentEntity = NULL;
 	EndAttack();
-	m_bHold = false;
-	mytime = gpGlobals->time + 0.5;
+	m_iStage = 0;
+	m_flNextGravgunAttack = gpGlobals->time + 0.5;
 	m_pPlayer->m_flNextAttack = gpGlobals->time + 0.5;
 	GravAnim(GAUSS_HOLSTER,0,0);
 	SetThink(NULL);
@@ -202,6 +202,7 @@ void CGrav::Attack(void)
 {
 	if (m_AimentEntity) { m_AimentEntity = NULL; }
 	pev->nextthink = gpGlobals->time + 1.1;
+	m_flNextGravgunAttack - gpGlobals->time + 0.5;
 
 	UTIL_MakeVectors(m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle);
 	Vector vecAiming = gpGlobals->v_forward;
@@ -219,7 +220,7 @@ void CGrav::Attack(void)
 		m_flTimeWeaponIdle = gpGlobals->time + 0.04;
 		pev->fuser1 = gpGlobals->time + 0.1;
 		
-		m_bHold = false;
+		m_iStage = 0;
 		m_fireState = FIRE_CHARGE;
 	}
 	break;
@@ -241,7 +242,7 @@ void CGrav::Attack(void)
 		crosent = FindEntityForward4(m_pPlayer, 1000);
 		int oc = 0;
 		if (crosent) {
-			mytime = gpGlobals->time + 0.8;
+			m_flNextGravgunAttack = gpGlobals->time + 0.8;
 			oc = crosent->ObjectCaps();
 
 			int propc = (CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION) | FCAP_IMPULSE_USE | FCAP_CONTINUOUS_USE;
@@ -269,9 +270,9 @@ void CGrav::Attack(void)
 				EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, GRAV_SOUND_FAILRUN, 0.6, ATTN_NORM, 0, 70 + RANDOM_LONG(0, 34));
 			}
 		}
-		if (gpGlobals->time >= mytime)
+		if (gpGlobals->time >= m_flNextGravgunAttack)
 		{
-			mytime = gpGlobals->time + 0.7;
+			m_flNextGravgunAttack = gpGlobals->time + 0.7;
 			EndAttack();
 		}
 		if (m_fireMode = FIRE_NARROW) { EndAttack(); }
@@ -279,7 +280,7 @@ void CGrav::Attack(void)
 
 	}
 	
-		mytime = gpGlobals->time + 0.5;
+		m_flNextGravgunAttack = gpGlobals->time + 0.5;
 	
 	break;
 	}
@@ -425,7 +426,7 @@ void CGrav::GrabThink()
 
 	if (( m_iGrabFailures < 50 )&& m_AimentEntity && !m_AimentEntity->pev->deadflag)
 	{
-			if( ( m_AimentEntity->pev->origin - m_pPlayer->pev->origin).Length() > 250 )
+			if( ( m_AimentEntity->pev->origin - m_pPlayer->pev->origin).Length() > 150 )
 				m_iGrabFailures++;
 			else
 				m_iGrabFailures = 0;
@@ -446,7 +447,7 @@ void CGrav::GrabThink()
 			m_AimentEntity = NULL;
 		}
 		EndAttack();
-		m_bHold = false;
+		m_iStage = 0;
 	}
 
 
@@ -461,16 +462,31 @@ void CGrav::Pull(CBaseEntity* ent,float force){
 
 	Vector target = m_pPlayer->pev->origin + gpGlobals->v_forward * 75;
 	target.z += 32;
-	if ((target - VecBModelOrigin(ent->pev)).Length()>60){
+	if ((target - VecBModelOrigin(ent->pev)).Length() > 60){
 		target = m_pPlayer->pev->origin + gpGlobals->v_forward * 110 ;
 
 		target.z += 60;
 		
 
-		ALERT(at_console, "%s 1 : %f\n", STRING(ent->pev->classname), ((target - VecBModelOrigin(ent->pev)).Length()));
+		ALERT(at_console, "%s 1 %d : %f\n", STRING(ent->pev->classname), m_iStage, ((target - VecBModelOrigin(ent->pev)).Length()));
+
 	
-		ent->pev->velocity = (target - VecBModelOrigin(ent->pev)).Normalize()*300;
-		pev->velocity.z += 20;
+		if( !m_iStage )
+		{
+			ent->pev->velocity = (target - VecBModelOrigin( ent->pev )).Normalize()*300;
+			pev->velocity.z += 10;
+			if( (target - VecBModelOrigin( ent->pev )).Length() < 150 )
+			{
+				m_iStage = 1;
+				SetThink( &CGrav::GrabThink );
+				pev->nextthink = gpGlobals->time + 0.001;
+			}
+		}
+		else
+		{
+			ent->pev->velocity = (target - VecBModelOrigin(ent->pev)).Normalize()*550;
+			pev->velocity.z += 15;
+		}
 		ent->pev->velocity = ent->pev->velocity + m_pPlayer->pev->velocity;
 			/////
 #ifdef BEAMS
@@ -487,7 +503,7 @@ void CGrav::Pull(CBaseEntity* ent,float force){
 
 		
 		/////
-		ALERT(at_console, "%s 2: %f\n", STRING(ent->pev->classname), ent->pev->velocity.Length());
+		ALERT(at_console, "%s 2: %f\n", STRING(ent->pev->classname), m_iStage, ent->pev->velocity.Length());
 	}
 	else
 	{
@@ -505,9 +521,9 @@ void CGrav::Pull(CBaseEntity* ent,float force){
 		if(ent->pev->velocity.Length()>900)
 			ent->pev->velocity = (target - VecBModelOrigin(ent->pev)).Normalize() * 900;
 		ent->pev->velocity = ent->pev->velocity + m_pPlayer->pev->velocity;
-		m_bHold = true;
-		pev->nextthink = gpGlobals->time + 0.0001;
-		SetThink(&CGrav::GrabThink);
+		m_iStage = 2;
+		SetThink( &CGrav::GrabThink );
+		pev->nextthink = gpGlobals->time + 0.001;
 	}
 
 	
@@ -520,7 +536,7 @@ void CGrav::Pull(CBaseEntity* ent,float force){
 
 void CGrav::PrimaryAttack(void)
 {
-	if (mytime < gpGlobals->time)
+	if (m_flNextGravgunAttack < gpGlobals->time)
 	{
 	
 	
@@ -534,9 +550,9 @@ void CGrav::PrimaryAttack(void)
 
 void CGrav::SecondaryAttack(void)
 {
-	if (mytime < gpGlobals->time)
+	if (m_flNextGravgunAttack < gpGlobals->time)
 	{
-		if (m_bHold)
+		if (m_iStage)
 		{
 			if( m_fireState != FIRE_OFF )
 			{
@@ -544,9 +560,10 @@ void CGrav::SecondaryAttack(void)
 			}
 			EndAttack();
 			SetThink(NULL);
-			mytime = gpGlobals->time + 0.1;
+			m_flNextGravgunAttack = gpGlobals->time + 1.5;
 			//m_flTimeWeaponIdle = gpGlobals->time + 0.1;
-			m_bHold = false;
+
+			m_iStage = 0;
 			if( m_AimentEntity )
 			{
 				m_AimentEntity->pev->velocity = Vector(0,0,0);
@@ -714,7 +731,7 @@ void CGrav::EndAttack(void)
 	ALERT( at_console, "EndAttack()\n");
 	if (m_fireState != FIRE_OFF) //Checking the button just in case!.
 		bMakeNoise = true;
-	mytime = gpGlobals->time + 0.1;
+	m_flNextGravgunAttack = gpGlobals->time + 0.1;
 	m_flTimeWeaponIdle = gpGlobals->time + 0.2;
 
 	m_fireState = FIRE_OFF;
