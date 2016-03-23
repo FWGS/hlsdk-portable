@@ -264,7 +264,7 @@ void CProp::MaterialSoundRandom( edict_t *pEdict, Materials soundMaterial, float
 
 void CProp::Precache( void )
 {
-	const char *pGibName;
+	const char *pGibName = NULL;
 
 	if( !pev->model )
 		pev->model = MAKE_STRING( "models/xash/barrel_brown.mdl" );
@@ -326,8 +326,8 @@ void CProp::Precache( void )
 	MaterialSoundPrecache( m_Material );
 	if ( m_iszGibModel )
 		pGibName = STRING(m_iszGibModel);
-
-	m_idShard = PRECACHE_MODEL( (char *)pGibName );
+	if( pGibName )
+		m_idShard = PRECACHE_MODEL( (char *)pGibName );
 	PRECACHE_MODEL( (char *)STRING(pev->model) );
 }
 
@@ -336,7 +336,7 @@ void CProp::DamageSound( void )
 	int pitch;
 	float fvol;
 	char *rgpsz[6];
-	int i;
+	int i = 0;
 	int material = m_Material;
 
 //	if (RANDOM_LONG(0,1))
@@ -568,7 +568,7 @@ void CProp::Die( void )
 	// Fire targets on break
 	SUB_UseTargets( NULL, USE_TOGGLE, 0 );
 
-	if ( Explodable() && (m_attacker != NULL) )
+	if ( Explodable() && (m_attacker) )
 	{
 		ExplosionCreate( pev->origin, pev->angles, m_attacker->edict(), ExplosionMagnitude(), FALSE );
 		RadiusDamage ( pev->origin, pev, m_attacker->pev, ExplosionMagnitude(), ExplosionMagnitude() * 2.5 , CLASS_NONE, DMG_BLAST );
