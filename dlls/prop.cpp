@@ -36,6 +36,12 @@
 typedef enum { expRandom, expDirected} Explosions;
 typedef enum { matGlass = 0, matWood, matMetal, matFlesh, matCinderBlock, matCeilingTile, matComputer, matUnbreakableGlass, matRocks, matNone, matLastMaterial } Materials;
 
+// round() has problems, so just implement it here
+static inline int myround(float f)
+{
+	return (int)(f + 0.5);
+}
+
 //extern "C" void AngleVectors (const vec3_t angles, vec3_t forward, vec3_t right, vec3_t up);
 Vector UTIL_AngleVectorsF(const Vector &angles)
 {
@@ -975,9 +981,9 @@ void CProp::AngleThink()
 	else if (m_shape == SHAPE_BOX)
 	{
 		Vector iangles;
-		iangles.x = round( pev->angles.x / 90 ) * 90;
-		iangles.y = round( pev->angles.y / 90 ) * 90;
-		iangles.z = round( pev->angles.z / 90 ) * 90;
+		iangles.x = myround( pev->angles.x / 90 ) * 90;
+		iangles.y = myround( pev->angles.y / 90 ) * 90;
+		iangles.z = myround( pev->angles.z / 90 ) * 90;
 		if (fabs(UTIL_AngleDiff(iangles.x, pev->angles.x)) > 0.1 ||
 			//fabs(UTIL_AngleDiff(iangles.y, pev->angles.y)) > 0.1 ||
 			fabs(UTIL_AngleDiff(iangles.z, pev->angles.z)) > 0.1)
@@ -1009,9 +1015,10 @@ void CProp::AngleThink()
 	else if (m_shape == SHAPE_GENERIC)
 	{
 		float ianglex = 0, ianglez = 0, imaxanglediff=360.0f;
+		int i;
 		//  if first number is zero, it is angle
 		// all other zeroes is array end
-		for( int i = 0; (i < 10) && ( (i == 0 ) || m_iaCustomAnglesX[i] ); i++)
+		for( i = 0; (i < 10) && ( (i == 0 ) || m_iaCustomAnglesX[i] ); i++)
 		{
 			float anglediff = fabs(UTIL_AngleDiff(pev->angles.x, m_iaCustomAnglesX[i]));
 			if( imaxanglediff > anglediff )
@@ -1021,7 +1028,7 @@ void CProp::AngleThink()
 			}
 		}
 		imaxanglediff=360.0f;
-		for( int i = 0; (i < 10) && ( (i == 0 ) || m_iaCustomAnglesZ[i] ); i++)
+		for( i = 0; (i < 10) && ( (i == 0 ) || m_iaCustomAnglesZ[i] ); i++)
 		{
 			float anglediff = fabs(UTIL_AngleDiff(pev->angles.z, m_iaCustomAnglesZ[i]));
 			if( imaxanglediff > anglediff )
