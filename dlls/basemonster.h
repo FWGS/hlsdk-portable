@@ -330,6 +330,10 @@ public:
 
 	BOOL ExitScriptedSequence( );
 	BOOL CineCleanup( );
+	virtual bool TouchGravGun( CBaseEntity *attacker, int stage )
+	{
+		return true;
+	}
 
 	CBaseEntity* DropItem ( char *pszItemName, const Vector &vecPos, const Vector &vecAng );// drop an item.
 };

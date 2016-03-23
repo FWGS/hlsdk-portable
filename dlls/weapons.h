@@ -51,6 +51,11 @@ public:
 	virtual void BounceSound( void );
 	virtual int	BloodColor( void ) { return DONT_BLEED; }
 	virtual void Killed( entvars_t *pevAttacker, int iGib );
+	virtual bool TouchGravGun( CBaseEntity *attacker, int stage )
+	{
+		pev->owner = attacker->edict();
+		return true;
+	}
 
 	BOOL m_fRegisteredSound;// whether or not this grenade has issued its DANGER sound to the world sound list yet.
 };
