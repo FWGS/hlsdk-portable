@@ -330,9 +330,11 @@ public:
 
 	BOOL ExitScriptedSequence( );
 	BOOL CineCleanup( );
-	virtual bool TouchGravGun( CBaseEntity *attacker, int stage )
+	virtual float TouchGravGun( CBaseEntity *attacker, int stage )
 	{
-		return true;
+		if( (pev->maxs - pev->mins).Length() > 200 )
+			return 0;
+		return 200;
 	}
 
 	CBaseEntity* DropItem ( char *pszItemName, const Vector &vecPos, const Vector &vecAng );// drop an item.

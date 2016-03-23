@@ -69,9 +69,9 @@ public:
 	float		m_angle;
 	int			m_iszGibModel;
 	int			m_iszSpawnObject;
-	bool TouchGravGun( CBaseEntity *attacker, int stage )
+	virtual float TouchGravGun( CBaseEntity *attacker, int stage )
 	{
-		return true;
+		return 200;
 	}
 };
 

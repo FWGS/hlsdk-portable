@@ -309,6 +309,10 @@ public:
 	char m_SbarString1[ SBAR_STRING_SIZE ];
 	
 	float m_flNextChatTime;
+	virtual float TouchGravGun( CBaseEntity *attacker, int stage )
+	{
+		return 700;
+	}
 	
 };
 

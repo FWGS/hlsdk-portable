@@ -94,28 +94,44 @@ public:
 	virtual void BounceSound(void);
 	virtual int	BloodColor(void) { return DONT_BLEED; }
 	virtual void Killed(entvars_t *pevAttacker, int iGib);
-	virtual bool TouchGravGun( CBaseEntity *attacker, int stage )
+	virtual float TouchGravGun( CBaseEntity *attacker, int stage )
 	{
+		float speed = 2500;
 		if(stage)
 		{
 			pev->nextthink = gpGlobals->time + m_flRespawnTime;
 			SetThink( &CProp::RespawnThink);
 		}
+		if( stage == 2 )
+		{
+			UTIL_MakeVectors( attacker->pev->v_angle + attacker->pev->punchangle);
+			Vector atarget = UTIL_VecToAngles(gpGlobals->v_forward);
+			pev->angles.x = UTIL_AngleMod(pev->angles.x);
+			pev->angles.y = UTIL_AngleMod(pev->angles.y);
+			pev->angles.z = UTIL_AngleMod(pev->angles.z);
+			atarget.x = UTIL_AngleMod(atarget.x);
+			atarget.y = UTIL_AngleMod(atarget.y);
+			atarget.z = UTIL_AngleMod(atarget.z);
+			pev->avelocity.x = UTIL_AngleDiff(atarget.x, pev->angles.x) * 10;
+			pev->avelocity.y = UTIL_AngleDiff(atarget.y, pev->angles.y) * 10;
+			pev->avelocity.z = UTIL_AngleDiff(atarget.z, pev->angles.z) * 10;
+		}
 		if( !m_attacker)
 		{
 			m_owner2 = attacker;
 			m_attacker = attacker;
-			return true;
+			return speed;
 		}
 		if( m_attacker && ( pev->velocity.Length() < 600) )
 			m_attacker = attacker;
-			return true;
+			return speed;
 		if( ( stage == 2 ) && ( m_attacker == attacker ) )
 		{
 			m_owner2 = attacker;
-			return true;
+
+			return speed;
 		}
-		return false;
+		return 0;
 	}
 	void CheckRotate();
 	void EXPORT RespawnThink();
@@ -813,7 +829,7 @@ void CProp::BounceTouch(CBaseEntity *pOther)
 		}
 		m_flNextAttack = gpGlobals->time + 1.0; // debounce
 	}
-	if( (pOther != m_owner2) && (pev->spawnflags & SF_PROP_BREAKABLE) && (pev->velocity.Length() > 900) )
+	if( (pOther != m_owner2) && (pev->spawnflags & SF_PROP_BREAKABLE) && (pev->velocity.Length() > 1800) )
 	{
 		pev->nextthink = gpGlobals->time + 0.1;
 		SetThink( &CProp::DieThink );

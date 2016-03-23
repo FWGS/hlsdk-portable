@@ -211,9 +211,9 @@ public:
 		if (m_pfnUse) 
 			(this->*m_pfnUse)( pActivator, pCaller, useType, value );
 	}
-	virtual void Blocked( CBaseEntity *pOther ) { if (m_pfnBlocked) (this->*m_pfnBlocked)( pOther ); };
+	virtual void Blocked( CBaseEntity *pOther ) { if (m_pfnBlocked) (this->*m_pfnBlocked)( pOther ); }
 
-	virtual bool TouchGravGun( CBaseEntity *attacker, int stage ){ return false; };
+	virtual float TouchGravGun( CBaseEntity *attacker, int stage ){ return 0; }
 	// allow engine to allocate instance data
     void *operator new( size_t stAllocateBlock, entvars_t *pev )
 	{

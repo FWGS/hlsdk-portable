@@ -53,9 +53,9 @@ public:
 	BOOL Deploy(void);
 	void Holster(int skiplocal = 0);
 	int m_iGrabFailures = 0;
-	CBaseEntity* m_AimentEntity = NULL;
+	EHANDLE m_hAimentEntity;
 	void UpdateEffect(const Vector &startPoint, const Vector &endPoint, float timeBlend);
-	CBaseEntity *	FindEntityForward4(CBaseEntity *pMe, float radius);
+	CBaseEntity *	TraceForward(CBaseEntity *pMe, float radius);
 	void CreateEffect(void);
 	void DestroyEffect(void);
 	void EndAttack(void);
@@ -66,6 +66,7 @@ public:
 	void WeaponIdle(void);
 	void Pull(CBaseEntity* ent, float force);
 	void GravAnim(int iAnim, int skiplocal, int body);
+	CBaseEntity *GetCrossEnt( Vector gunpos, Vector aim );
 	float m_flNextGravgunAttack = gpGlobals->time;
 	float m_flAmmoUseTime;// since we use < 1 point of ammo per update, we subtract ammo on a timer.
 
@@ -87,15 +88,12 @@ public:
 		return false;
 	}
 
-	unsigned short m_usEgonStop;
-
 private:
 	float				m_shootTime;
 	GRAV_FIREMODE		m_fireMode;
 	float				m_shakeTime;
 	BOOL				m_deployed;
-
-	unsigned short m_usEgonFire;
+	float				m_fPushSpeed;
 };
 
 LINK_ENTITY_TO_CLASS(weapon_gravgun, CGrav);
@@ -160,8 +158,8 @@ void CGrav::Holster(int skiplocal /* = 0 */)
 {
 	
 	SetThink(NULL);
-	if (m_AimentEntity) { m_AimentEntity->pev->velocity = Vector(0, 0, 0); }
-	m_AimentEntity = NULL;
+	if (m_hAimentEntity) { m_hAimentEntity->pev->velocity = Vector(0, 0, 0); }
+	m_hAimentEntity = NULL;
 	EndAttack();
 	m_iStage = 0;
 	m_flNextGravgunAttack = gpGlobals->time + 0.5;
@@ -200,7 +198,6 @@ BOOL CGrav::HasAmmo(void)
 
 void CGrav::Attack(void)
 {
-	if (m_AimentEntity) { m_AimentEntity = NULL; m_iStage = 0; }
 	pev->nextthink = gpGlobals->time + 1.1;
 	m_flNextGravgunAttack - gpGlobals->time + 0.5;
 
@@ -238,36 +235,45 @@ void CGrav::Attack(void)
 		}
 		
 
-		CBaseEntity* crosent;
-		crosent = FindEntityForward4(m_pPlayer, 1000);
+		//CBaseEntity* crosent = TraceForward(m_pPlayer, 1000);
+		CBaseEntity* crossent = m_hAimentEntity;
+		m_hAimentEntity = NULL;
+		if( !crossent)
+			crossent = GetCrossEnt(vecSrc, gpGlobals->v_forward);
 		//int oc = 0;
-		if (crosent) {
+		if (crossent) {
 			m_flNextGravgunAttack = gpGlobals->time + 0.8;
 			//oc = crosent->ObjectCaps();
 
 			//int propc = (CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION) | FCAP_IMPULSE_USE | FCAP_CONTINUOUS_USE;
-	
-			if (crosent->TouchGravGun(m_pPlayer,3)) {
+			if( !(m_fPushSpeed = crossent->TouchGravGun(m_pPlayer,3) ) )
+			{
+				crossent = TraceForward(m_pPlayer, 1000);
+				if( !crossent || !(m_fPushSpeed = crossent->TouchGravGun(m_pPlayer,3)) )
+				{
+					EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, GRAV_SOUND_FAILRUN, 0.6, ATTN_NORM, 0, 70 + RANDOM_LONG(0, 34));
+					crossent = NULL;
+				}
+			}
+
+			if(crossent) {
 
 				
 				EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, GRAV_SOUND_STARTUP, 1, ATTN_NORM, 0, 70 + RANDOM_LONG(0, 34));
 					
 					//if (crosent->pev->flags& FL_ONGROUND) { pev->velocity = pev->velocity * 0.95; };
 		
-					crosent->TouchGravGun(m_pPlayer,3);
+					crossent->TouchGravGun(m_pPlayer,3);
 					Vector pusher = vecAiming;
-					pusher.x = pusher.x * 2500;
-					pusher.y = pusher.y * 2500;
-					pusher.z = pusher.z * 1700;
-					crosent->pev->velocity = pusher+m_pPlayer->pev->velocity;
-					crosent->pev->avelocity.y = pev->avelocity.y*3.5 + RANDOM_FLOAT(100, -100);
-					crosent->pev->avelocity.x = pev->avelocity.x*3.5 + RANDOM_FLOAT(100, -100);
-					crosent->pev->avelocity.z = pev->avelocity.z + 3;
+					pusher.x = pusher.x * m_fPushSpeed;
+					pusher.y = pusher.y * m_fPushSpeed;
+					pusher.z = pusher.z * m_fPushSpeed * 0.7;
+					crossent->pev->velocity = pusher+m_pPlayer->pev->velocity;
+					crossent->pev->avelocity.y = pev->avelocity.y*3.5 + RANDOM_FLOAT(100, -100);
+					crossent->pev->avelocity.x = pev->avelocity.x*3.5 + RANDOM_FLOAT(100, -100);
+					crossent->pev->avelocity.z = pev->avelocity.z + 3;
 				
 
-			}
-			else {
-				EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, GRAV_SOUND_FAILRUN, 0.6, ATTN_NORM, 0, 70 + RANDOM_LONG(0, 34));
 			}
 		}
 		if (gpGlobals->time >= m_flNextGravgunAttack)
@@ -330,22 +336,26 @@ void CGrav::Attack2(void)
 								
 							pev->fuser1 = 1000;
 						}
-						CBaseEntity* crossent = FindEntityForward4(m_pPlayer,500);
-
-						if (crossent && crossent->TouchGravGun(m_pPlayer, 0) ){
+						//CBaseEntity* crossent = TraceForward(m_pPlayer,500);
+						CBaseEntity* crossent = GetCrossEnt(vecSrc, gpGlobals->v_forward);
+						if( !crossent || !(m_fPushSpeed = crossent->TouchGravGun(m_pPlayer,3)) )
+						{
+							crossent = TraceForward(m_pPlayer, 1000);
+							if( !crossent || !(m_fPushSpeed = crossent->TouchGravGun(m_pPlayer,3)) )
+							{
+								EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, GRAV_SOUND_FAILRUN, 0.6, ATTN_NORM, 0, 70 + RANDOM_LONG(0, 34));
+								crossent = NULL;
+							}
+						}
+						if ( crossent ){
 							EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, GRAV_SOUND_RUN, 0.6, ATTN_NORM, 0, 70 + RANDOM_LONG(0, 34));
 							if(crossent->TouchGravGun(m_pPlayer, 0))
 							{
-								m_AimentEntity = crossent;
+								m_hAimentEntity = crossent;
 								Pull(crossent,5);
 								GravAnim(GAUSS_SPIN, 0, 0);
 							}
 					
-						}
-						else {
-						
-							EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, GRAV_SOUND_FAILRUN, 1, ATTN_NORM, 0, 70 + RANDOM_LONG(0, 34));
-						
 						}
 					
 	}
@@ -353,8 +363,40 @@ void CGrav::Attack2(void)
 	}
 
 }
- 
-CBaseEntity*  CGrav::FindEntityForward4(CBaseEntity *pMe,float radius)
+CBaseEntity *CGrav::GetCrossEnt( Vector gunpos, Vector aim )
+{
+	edict_t		*pEdict = g_engfuncs.pfnPEntityOfEntIndex( 1 );
+	edict_t		*pClosest = NULL;
+	Vector		vecLOS;
+	float flMaxDot = 0.4;
+	float flDot;
+
+	if ( !pEdict )
+		return NULL;
+
+	for ( int i = 1; i < gpGlobals->maxEntities; i++, pEdict++ )
+	{
+		if ( pEdict->free )	// Not in use
+			continue;
+		if( pEdict == m_pPlayer->edict() )
+			continue;
+		vecLOS = pEdict->v.absmin + ( pEdict->v.size * 0.5 ) - gunpos;
+		vecLOS = UTIL_ClampVectorToBox(vecLOS, pEdict->v.size * 0.5);
+
+		flDot = DotProduct(vecLOS, aim);
+		if (flDot > flMaxDot)
+		{
+			pClosest = pEdict;
+			flMaxDot = flDot;
+
+		}
+
+	}
+	return GET_PRIVATE(pClosest);
+
+}
+
+CBaseEntity*  CGrav::TraceForward(CBaseEntity *pMe,float radius)
 {
 
 #ifdef USEGUN
@@ -367,7 +409,7 @@ CBaseEntity*  CGrav::FindEntityForward4(CBaseEntity *pMe,float radius)
 	float flMaxDot = 0.4;
 	float flDot;
 
-	UTIL_MakeVectors(m_pPlayer->pev->v_angle);// so we know which way we are facing
+	UTIL_MakeVectors(m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle);// so we know which way we are facing
 
 	while ((pObject = UTIL_FindEntityInSphere(pObject, m_pPlayer->pev->origin, radius)) != NULL)
 	{//pObject->ObjectCaps() & (FCAP_ACROSS_TRANSITION | FCAP_CONTINUOUS_USE )&&
@@ -416,16 +458,16 @@ void CGrav::GrabThink()
 //CBaseEntity *ent = FindEntityForward4(m_pPlayer, 130);
 	
 
-	if (( m_iGrabFailures < 50 )&& m_AimentEntity && !m_AimentEntity->pev->deadflag)
+	if (( m_iGrabFailures < 50 )&& m_hAimentEntity && !m_hAimentEntity->pev->deadflag)
 	{
-			if( ( m_AimentEntity->pev->origin - m_pPlayer->pev->origin).Length() > 150 )
+			if( ( m_hAimentEntity->pev->origin - m_pPlayer->pev->origin).Length() > 150 )
 				m_iGrabFailures++;
 			else
 				m_iGrabFailures = 0;
 
-			UpdateEffect(pev->origin, m_AimentEntity->pev->origin, 1);
+			UpdateEffect(pev->origin, m_hAimentEntity->pev->origin, 1);
 
-			Pull(m_AimentEntity, 100);
+			Pull(m_hAimentEntity, 100);
 
 			pev->nextthink = gpGlobals->time + 0.001;
 	}
@@ -433,10 +475,10 @@ void CGrav::GrabThink()
 		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, GRAV_SOUND_OFF, 1, ATTN_NORM, 0, 70 + RANDOM_LONG(0, 34));
 		m_iGrabFailures = 0;
 		SetThink(NULL);
-		if(m_AimentEntity)
+		if(m_hAimentEntity)
 		{
-			m_AimentEntity->pev->velocity = Vector(0,0,0);
-			m_AimentEntity = NULL;
+			m_hAimentEntity->pev->velocity = Vector(0,0,0);
+			m_hAimentEntity = NULL;
 		}
 		EndAttack();
 		m_iStage = 0;
@@ -499,17 +541,7 @@ void CGrav::Pull(CBaseEntity* ent,float force)
 		ALERT(at_console, "%s 2: %f\n", STRING(ent->pev->classname), m_iStage, ent->pev->velocity.Length());
 	}
 	else
-	{
-		Vector atarget = UTIL_VecToAngles(gpGlobals->v_forward);
-
-		atarget.x = UTIL_AngleMod(atarget.x);
-		atarget.y = UTIL_AngleMod(atarget.y);
-		atarget.z = UTIL_AngleMod(atarget.z);
-		ent->pev->avelocity.x = UTIL_AngleDiff(atarget.x, ent->pev->angles.x) * 10;
-		ent->pev->avelocity.y = UTIL_AngleDiff(atarget.y, ent->pev->angles.y) * 10;
-		ent->pev->avelocity.z = UTIL_AngleDiff(atarget.z, ent->pev->angles.z) * 10;
-
-		
+	{	
 		ent->pev->velocity = (target - VecBModelOrigin(ent->pev))* 40;
 		if(ent->pev->velocity.Length()>900)
 			ent->pev->velocity = (target - VecBModelOrigin(ent->pev)).Normalize() * 900;
@@ -554,14 +586,14 @@ void CGrav::SecondaryAttack(void)
 			}
 			EndAttack();
 			SetThink(NULL);
-			m_flNextGravgunAttack = gpGlobals->time + 1.5;
+			m_flNextGravgunAttack = gpGlobals->time + 0.6;
 			//m_flTimeWeaponIdle = gpGlobals->time + 0.1;
 
 			m_iStage = 0;
-			if( m_AimentEntity )
+			if( m_hAimentEntity )
 			{
-				m_AimentEntity->pev->velocity = Vector(0,0,0);
-				m_AimentEntity = NULL;
+				m_hAimentEntity->pev->velocity = Vector(0,0,0);
+				m_hAimentEntity = NULL;
 			}
 		}
 		else {
