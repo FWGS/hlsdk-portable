@@ -200,7 +200,7 @@ BOOL CGrav::HasAmmo(void)
 
 void CGrav::Attack(void)
 {
-	if (m_AimentEntity) { m_AimentEntity = NULL; }
+	if (m_AimentEntity) { m_AimentEntity = NULL; m_iStage = 0; }
 	pev->nextthink = gpGlobals->time + 1.1;
 	m_flNextGravgunAttack - gpGlobals->time + 0.5;
 
@@ -240,21 +240,21 @@ void CGrav::Attack(void)
 
 		CBaseEntity* crosent;
 		crosent = FindEntityForward4(m_pPlayer, 1000);
-		int oc = 0;
+		//int oc = 0;
 		if (crosent) {
 			m_flNextGravgunAttack = gpGlobals->time + 0.8;
-			oc = crosent->ObjectCaps();
+			//oc = crosent->ObjectCaps();
 
-			int propc = (CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION) | FCAP_IMPULSE_USE | FCAP_CONTINUOUS_USE;
+			//int propc = (CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION) | FCAP_IMPULSE_USE | FCAP_CONTINUOUS_USE;
 	
-			if (oc == propc || crosent->IsPlayer()) {
+			if (crosent->TouchGravGun(m_pPlayer,3)) {
 
 				
 				EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, GRAV_SOUND_STARTUP, 1, ATTN_NORM, 0, 70 + RANDOM_LONG(0, 34));
 					
 					//if (crosent->pev->flags& FL_ONGROUND) { pev->velocity = pev->velocity * 0.95; };
 		
-					crosent->TouchGravGun(m_pPlayer);
+					crosent->TouchGravGun(m_pPlayer,3);
 					Vector pusher = vecAiming;
 					pusher.x = pusher.x * 2500;
 					pusher.y = pusher.y * 2500;
@@ -330,24 +330,16 @@ void CGrav::Attack2(void)
 								
 							pev->fuser1 = 1000;
 						}
-						CBaseEntity* crosent;
-						crosent = FindEntityForward4(m_pPlayer,500);
-						int oc = 0;
-						if (crosent){
+						CBaseEntity* crossent = FindEntityForward4(m_pPlayer,500);
 
-
-							oc = crosent->ObjectCaps();
-						}
-						int propc = (CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION | FCAP_IMPULSE_USE | FCAP_CONTINUOUS_USE);
-						//int propn2 = (CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION) | FCAP_IMPULSE_USE | FCAP_CONTINUOUS_USE | FCAP_DONT_SAVE;
-					
-
-						if (oc == propc ){
+						if (crossent && crossent->TouchGravGun(m_pPlayer, 0) ){
 							EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, GRAV_SOUND_RUN, 0.6, ATTN_NORM, 0, 70 + RANDOM_LONG(0, 34));
-							m_AimentEntity = crosent;
-							Pull(crosent,5);
-							m_AimentEntity->TouchGravGun(m_pPlayer);
-							GravAnim(GAUSS_SPIN, 0, 0);
+							if(crossent->TouchGravGun(m_pPlayer, 0))
+							{
+								m_AimentEntity = crossent;
+								Pull(crossent,5);
+								GravAnim(GAUSS_SPIN, 0, 0);
+							}
 					
 						}
 						else {
@@ -453,8 +445,8 @@ void CGrav::GrabThink()
 
 
 }
-void CGrav::Pull(CBaseEntity* ent,float force){
-	ent->TouchGravGun(m_pPlayer);
+void CGrav::Pull(CBaseEntity* ent,float force)
+{
 	UTIL_MakeVectors(m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle);
 	ent->pev->angles.x = UTIL_AngleMod(ent->pev->angles.x);
 	ent->pev->angles.y = UTIL_AngleMod(ent->pev->angles.y);
@@ -480,6 +472,7 @@ void CGrav::Pull(CBaseEntity* ent,float force){
 				m_iStage = 1;
 				SetThink( &CGrav::GrabThink );
 				pev->nextthink = gpGlobals->time + 0.001;
+				ent->TouchGravGun(m_pPlayer, 1);
 			}
 		}
 		else
@@ -524,6 +517,7 @@ void CGrav::Pull(CBaseEntity* ent,float force){
 		m_iStage = 2;
 		SetThink( &CGrav::GrabThink );
 		pev->nextthink = gpGlobals->time + 0.001;
+		ent->TouchGravGun(m_pPlayer, 2);
 	}
 
 	

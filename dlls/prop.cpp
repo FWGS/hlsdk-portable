@@ -94,11 +94,28 @@ public:
 	virtual void BounceSound(void);
 	virtual int	BloodColor(void) { return DONT_BLEED; }
 	virtual void Killed(entvars_t *pevAttacker, int iGib);
-	virtual CBaseEntity * TouchGravGun( CBaseEntity *attacker )
+	virtual bool TouchGravGun( CBaseEntity *attacker, int stage )
 	{
-		m_owner2 = attacker;
-		m_attacker = attacker;
-		return attacker;
+		if(stage)
+		{
+			pev->nextthink = gpGlobals->time + m_flRespawnTime;
+			SetThink( &CProp::RespawnThink);
+		}
+		if( !m_attacker)
+		{
+			m_owner2 = attacker;
+			m_attacker = attacker;
+			return true;
+		}
+		if( m_attacker && ( pev->velocity.Length() < 600) )
+			m_attacker = attacker;
+			return true;
+		if( ( stage == 2 ) && ( m_attacker == attacker ) )
+		{
+			m_owner2 = attacker;
+			return true;
+		}
+		return false;
 	}
 	void CheckRotate();
 	void EXPORT RespawnThink();
