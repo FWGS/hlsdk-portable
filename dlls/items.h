@@ -15,7 +15,6 @@
 #ifndef ITEMS_H
 #define ITEMS_H
 
-
 class CItem : public CBaseEntity
 {
 public:
@@ -24,6 +23,8 @@ public:
 	void	EXPORT ItemTouch( CBaseEntity *pOther );
 	void	EXPORT Materialize( void );
 	virtual BOOL MyTouch( CBasePlayer *pPlayer ) { return FALSE; };
+	virtual float TouchGravGun( CBaseEntity *attacker, int stage);
+	Vector m_SpawnPoint;
 };
 
 #endif // ITEMS_H

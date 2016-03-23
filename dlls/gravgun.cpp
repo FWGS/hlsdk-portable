@@ -269,9 +269,9 @@ void CGrav::Attack(void)
 					pusher.y = pusher.y * m_fPushSpeed;
 					pusher.z = pusher.z * m_fPushSpeed * 0.7;
 					crossent->pev->velocity = pusher+m_pPlayer->pev->velocity;
-					crossent->pev->avelocity.y = pev->avelocity.y*3.5 + RANDOM_FLOAT(100, -100);
-					crossent->pev->avelocity.x = pev->avelocity.x*3.5 + RANDOM_FLOAT(100, -100);
-					crossent->pev->avelocity.z = pev->avelocity.z + 3;
+					//crossent->pev->avelocity.y = pev->avelocity.y*3.5 + RANDOM_FLOAT(100, -100);
+					//crossent->pev->avelocity.x = pev->avelocity.x*3.5 + RANDOM_FLOAT(100, -100);
+					//crossent->pev->avelocity.z = pev->avelocity.z + 3;
 				
 
 			}
@@ -502,7 +502,7 @@ void CGrav::Pull(CBaseEntity* ent,float force)
 		target.z += 60;
 		
 
-		ALERT(at_console, "%s 1 %d : %f\n", STRING(ent->pev->classname), m_iStage, ((target - VecBModelOrigin(ent->pev)).Length()));
+		//ALERT(at_console, "%s 1 %d : %f\n", STRING(ent->pev->classname), m_iStage, ((target - VecBModelOrigin(ent->pev)).Length()));
 
 	
 		if( !m_iStage )
@@ -538,9 +538,9 @@ void CGrav::Pull(CBaseEntity* ent,float force)
 
 		
 		/////
-		ALERT(at_console, "%s 2: %f\n", STRING(ent->pev->classname), m_iStage, ent->pev->velocity.Length());
+		//ALERT(at_console, "%s 2: %f\n", STRING(ent->pev->classname), m_iStage, ent->pev->velocity.Length());
 	}
-	else
+	else if( ent->TouchGravGun(m_pPlayer, 2) )
 	{	
 		ent->pev->velocity = (target - VecBModelOrigin(ent->pev))* 40;
 		if(ent->pev->velocity.Length()>900)
@@ -549,12 +549,15 @@ void CGrav::Pull(CBaseEntity* ent,float force)
 		m_iStage = 2;
 		SetThink( &CGrav::GrabThink );
 		pev->nextthink = gpGlobals->time + 0.001;
-		ent->TouchGravGun(m_pPlayer, 2);
 	}
-
-	
-	
+	else
+	{
+		SetThink(NULL);
+		m_hAimentEntity = NULL;
+		EndAttack();
+		m_iStage = 0;
 	}
+}
 
 
 

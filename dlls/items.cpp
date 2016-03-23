@@ -92,6 +92,7 @@ void CItem::Spawn( void )
 	pev->movetype = MOVETYPE_TOSS;
 	pev->solid = SOLID_TRIGGER;
 	UTIL_SetOrigin( pev, pev->origin );
+	m_SpawnPoint = pev->origin;
 	UTIL_SetSize(pev, Vector(-16, -16, 0), Vector(16, 16, 16));
 	SetTouch( &ItemTouch);
 
@@ -149,13 +150,29 @@ CBaseEntity* CItem::Respawn( void )
 	SetTouch( NULL );
 	pev->effects |= EF_NODRAW;
 
-	UTIL_SetOrigin( pev, g_pGameRules->VecItemRespawnSpot( this ) );// blip to whereever you should respawn.
+	UTIL_SetOrigin( pev, m_SpawnPoint );// blip to whereever you should respawn.
 
 	SetThink( &Materialize );
 	pev->nextthink = g_pGameRules->FlItemRespawnTime( this ); 
 	return this;
 }
 
+float CItem::TouchGravGun( CBaseEntity *attacker, int stage)
+{
+	if( stage == 2 )
+		Touch(attacker);
+	if( pev->movetype == MOVETYPE_FOLLOW )
+		return 0;
+	if( pev->movetype == MOVETYPE_NONE )
+		return 0;
+	if( pev->effects & EF_NODRAW )
+		return 0;
+	//if( pev->mins == pev->maxs )
+		//return 0;
+	SetThink( &Materialize );
+	pev->nextthink = g_pGameRules->FlItemRespawnTime( this );
+	return 200;
+}
 void CItem::Materialize( void )
 {
 	if ( pev->effects & EF_NODRAW )
@@ -165,6 +182,8 @@ void CItem::Materialize( void )
 		pev->effects &= ~EF_NODRAW;
 		pev->effects |= EF_MUZZLEFLASH;
 	}
+	else
+		UTIL_SetOrigin( pev, m_SpawnPoint );// blip to whereever you should respawn.
 
 	SetTouch( &ItemTouch );
 }

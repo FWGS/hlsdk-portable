@@ -476,6 +476,7 @@ void CBasePlayerItem :: FallInit( void )
 	pev->solid = SOLID_BBOX;
 
 	UTIL_SetOrigin( pev, pev->origin );
+	m_SpawnPoint = pev->origin;
 	UTIL_SetSize(pev, Vector( 0, 0, 0), Vector(0, 0, 0) );//pointsize until it lands on the ground.
 	
 	SetTouch( &DefaultTouch );
@@ -576,7 +577,7 @@ CBaseEntity* CBasePlayerItem::Respawn( void )
 {
 	// make a copy of this weapon that is invisible and inaccessible to players (no touch function). The weapon spawn/respawn code
 	// will decide when to make the weapon visible and touchable.
-	CBaseEntity *pNewWeapon = CBaseEntity::Create( (char *)STRING( pev->classname ), g_pGameRules->VecWeaponRespawnSpot( this ), pev->angles, pev->owner );
+	CBaseEntity *pNewWeapon = CBaseEntity::Create( (char *)STRING( pev->classname ), m_SpawnPoint, pev->angles, pev->owner );
 
 	if ( pNewWeapon )
 	{
@@ -1066,6 +1067,7 @@ void CBasePlayerAmmo::Spawn( void )
 	pev->solid = SOLID_TRIGGER;
 	UTIL_SetSize(pev, Vector(-16, -16, 0), Vector(16, 16, 16));
 	UTIL_SetOrigin( pev, pev->origin );
+	m_SpawnPoint = pev->origin;
 
 	SetTouch( &DefaultTouch );
 }
@@ -1075,7 +1077,7 @@ CBaseEntity* CBasePlayerAmmo::Respawn( void )
 	pev->effects |= EF_NODRAW;
 	SetTouch( NULL );
 
-	UTIL_SetOrigin( pev, g_pGameRules->VecAmmoRespawnSpot( this ) );// move to wherever I'm supposed to repawn.
+	UTIL_SetOrigin( pev, m_SpawnPoint );// move to wherever I'm supposed to repawn.
 
 	SetThink( &Materialize );
 	pev->nextthink = g_pGameRules->FlAmmoRespawnTime( this );

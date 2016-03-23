@@ -285,6 +285,23 @@ public:
 
 	// int		m_iIdPrimary;										// Unique Id for primary ammo
 	// int		m_iIdSecondary;										// Unique Id for secondary ammo
+	Vector m_SpawnPoint;
+	virtual float TouchGravGun( CBaseEntity *attacker, int stage)
+	{
+		if( stage == 2 )
+		{
+			Touch( attacker );
+		}
+		if( pev->movetype == MOVETYPE_FOLLOW )
+			return 0;
+		if( pev->movetype == MOVETYPE_NONE )
+			return 0;
+		if( pev->effects & EF_NODRAW )
+			return 0;
+		//if( pev->mins == pev->maxs )
+			//return 0;
+		return 200;
+	}
 };
 
 
@@ -370,6 +387,23 @@ public:
 
 	CBaseEntity* Respawn( void );
 	void EXPORT Materialize( void );
+	virtual float TouchGravGun( CBaseEntity *attacker, int stage)
+	{
+		if( stage == 2 )
+		{
+			Touch( attacker );
+		}
+		if( pev->movetype == MOVETYPE_FOLLOW )
+			return 0;
+		if( pev->movetype == MOVETYPE_NONE )
+			return 0;
+		if( pev->effects & EF_NODRAW )
+			return 0;
+		//if( pev->mins == pev->maxs )
+			//return 0;
+		return 200;
+	}
+	Vector m_SpawnPoint;
 };
 
 
@@ -460,6 +494,15 @@ public:
 	int	m_rgAmmo[MAX_AMMO_SLOTS];// ammo quantities
 
 	int m_cAmmoTypes;// how many ammo types packed into this box (if packed by a level designer)
+	virtual float TouchGravGun( CBaseEntity *attacker, int stage)
+	{
+		if( stage == 2 )
+		{
+			Touch( attacker );
+			return 0;
+		}
+		return 200;
+	}
 };
 
 #ifdef CLIENT_DLL
