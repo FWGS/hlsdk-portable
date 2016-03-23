@@ -96,8 +96,8 @@ public:
 	virtual void Killed(entvars_t *pevAttacker, int iGib);
 	virtual CBaseEntity * TouchGravGun( CBaseEntity *attacker )
 	{
-		m_owner2 = attacker->edict();
-		m_attacker = attacker->edict();
+		m_owner2 = attacker;
+		m_attacker = attacker;
 		return attacker;
 	}
 	void CheckRotate();
@@ -138,13 +138,13 @@ public:
 	Vector spawnOrigin;
 	Vector spawnAngles;
 
-	edict_t *m_owner2;
-	edict_t *m_attacker;
+	EHANDLE m_owner2;
+	EHANDLE m_attacker;
 	float m_flNextAttack;
 	float m_flRespawnTime;
 	PropShape m_shape;
 	PropShape m_oldshape;
-	CBasePlayer *m_pHolstered;
+	EHANDLE m_pHolstered;
 	float m_flSpawnHealth;
 	int			m_idShard;
 	float		m_angle;
@@ -570,8 +570,8 @@ void CProp::Die( void )
 
 	if ( Explodable() && (m_attacker != NULL) )
 	{
-		ExplosionCreate( pev->origin, pev->angles, m_attacker, ExplosionMagnitude(), FALSE );
-		RadiusDamage ( pev->origin, pev, VARS(m_attacker), ExplosionMagnitude(), ExplosionMagnitude() * 2.5 , CLASS_NONE, DMG_BLAST );
+		ExplosionCreate( pev->origin, pev->angles, m_attacker->edict(), ExplosionMagnitude(), FALSE );
+		RadiusDamage ( pev->origin, pev, m_attacker->pev, ExplosionMagnitude(), ExplosionMagnitude() * 2.5 , CLASS_NONE, DMG_BLAST );
 	}
 	UTIL_SetSize(pev, Vector( 0, 0, 0), Vector(0, 0, 0) );
 }
@@ -592,24 +592,25 @@ void CProp::Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType,
 {
 	if( pev->health <= 0)
 		return;
-	if (m_owner2 != pActivator->edict())
+	if (m_owner2 != pActivator)
 	{
 		if (pev->velocity.Length() < 100 && pActivator->IsPlayer())
 		{
-			m_owner2 = m_attacker = pActivator->edict();
+			m_owner2 = m_attacker = pActivator;
 		}
 		else
 			return;
 	}
 	if( pActivator->IsPlayer() )
 	{
-		m_pHolstered = (CBasePlayer *) pActivator;
-		if( m_pHolstered )
+		m_pHolstered = pActivator;
+		CBasePlayer *player = (CBasePlayer*)pActivator;
+		if( player )
 		{
 
-			if ( m_pHolstered->m_pActiveItem )
+			if ( player->m_pActiveItem )
 			{
-				CBasePlayerWeapon *weapon = (CBasePlayerWeapon *) m_pHolstered->m_pActiveItem->GetWeaponPtr();
+				CBasePlayerWeapon *weapon = (CBasePlayerWeapon *) player->m_pActiveItem->GetWeaponPtr();
 
 
 				//m_Holstered->m_pActiveItem->Holster(); // strange bug here. ValveWHY?
@@ -620,18 +621,18 @@ void CProp::Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType,
 					weapon->m_flNextPrimaryAttack += 0.1;
 					weapon->m_flNextSecondaryAttack += 0.1;
 				}
-				m_pHolstered->m_iHideHUD |= HIDEHUD_WEAPONS;
-				m_pHolstered->pev->weaponmodel = 0;
-				m_pHolstered->pev->viewmodel = 0;
+				player->m_iHideHUD |= HIDEHUD_WEAPONS;
+				player->pev->weaponmodel = 0;
+				player->pev->viewmodel = 0;
 			}
 			SetThink( &CProp::DeployThink );
 			pev->nextthink = gpGlobals->time + 0.2;
 		}
 	}
-	Vector target = pActivator->pev->origin + UTIL_GetAimVector(m_owner2, 1000) * 50;
+	Vector target = pActivator->pev->origin + UTIL_GetAimVector(m_owner2->edict(), 1000) * 50;
 	target.z = target.z + 32;
 	pev->velocity = (target - VecBModelOrigin(pev)) * 10;
-	Vector atarget = UTIL_VecToAngles(UTIL_GetAimVector(m_owner2, 1000));
+	Vector atarget = UTIL_VecToAngles(UTIL_GetAimVector(m_owner2->edict(), 1000));
 	pev->angles.x = UTIL_AngleMod(pev->angles.x);
 	pev->angles.y = UTIL_AngleMod(pev->angles.y);
 	pev->angles.z = UTIL_AngleMod(pev->angles.z);
@@ -644,7 +645,7 @@ void CProp::Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType,
 	//pev->angles.z += (0 - pev->angles.z) * 0.06;
 	if ((pActivator->pev->button & (IN_ATTACK)))
 	{
-		pev->velocity = UTIL_GetAimVector(m_owner2, 1000) * 1000;
+		pev->velocity = UTIL_GetAimVector(m_owner2->edict(), 1000) * 1000;
 		pev->avelocity.y = pev->avelocity.y*1.5 + RANDOM_FLOAT(100, -100);
 		pev->avelocity.x = pev->avelocity.x*1.5 + RANDOM_FLOAT(100, -100);
 		//pev->avelocity.z = pev->avelocity.z*0.5 + RANDOM_FLOAT ( 100, -100 );
@@ -663,17 +664,17 @@ void CProp::Force(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useTyp
 {
 	if( pev->health <= 0 )
 		return;
-	if (m_owner2 != pActivator->edict())
+	if (m_owner2 != pActivator)
 	{
 		if (pev->velocity.Length() < 100 && pActivator->IsPlayer())
-			m_attacker = pActivator->edict();
+			m_attacker = pActivator;
 		else
 			return;
 	}
 
 	if ((pActivator->pev->button & (IN_ATTACK)))
 	{
-		pev->velocity = UTIL_GetAimVector(m_owner2, 3000) * 1000;
+		pev->velocity = UTIL_GetAimVector(m_owner2->edict(), 3000) * 1000;
 		pev->avelocity.y = pev->avelocity.y*1.5 + RANDOM_FLOAT(100, -100);
 		pev->avelocity.x = pev->avelocity.x*1.5 + RANDOM_FLOAT(100, -100);
 		//pev->avelocity.z = pev->avelocity.z*0.5 + RANDOM_FLOAT ( 100, -100 );
@@ -745,17 +746,18 @@ void CProp::DeployThink( void )
 {
 	if( m_pHolstered )
 	{
-		if( m_pHolstered->m_pActiveItem )
+		CBasePlayer *player = (CBasePlayer *)(CBaseEntity*)m_pHolstered;
+		if( player->m_pActiveItem )
 		{
-			m_pHolstered->m_pActiveItem->Deploy();
-			CBasePlayerWeapon *weapon = (CBasePlayerWeapon *) m_pHolstered->m_pActiveItem->GetWeaponPtr();
+			player->m_pActiveItem->Deploy();
+			CBasePlayerWeapon *weapon = (CBasePlayerWeapon *) player->m_pActiveItem->GetWeaponPtr();
 			if( weapon )
 			{
 				weapon->m_flNextPrimaryAttack = 0;
 				weapon->m_flNextSecondaryAttack = 0;
 			}
 		}
-		m_pHolstered ->m_iHideHUD &= ~HIDEHUD_WEAPONS;
+		player ->m_iHideHUD &= ~HIDEHUD_WEAPONS;
 		m_pHolstered = NULL;
 	}
 	if( m_pfnThink == &CProp::DeployThink )
@@ -775,11 +777,11 @@ void CProp::BounceTouch(CBaseEntity *pOther)
 
 	if ( m_flNextAttack < gpGlobals->time && pev->velocity.Length() > 300)
 	{
-		entvars_t *pevOwner = VARS(m_attacker);
+		entvars_t *pevOwner = m_attacker->pev;
 		if (pevOwner)
 		{
 			float dmg = 50 + pev->velocity.Length() / 40;
-			if (pOther->edict() == m_owner2)
+			if (pOther == m_owner2)
 			{
 				dmg = 5;
 				if (pOther->pev->button & (IN_USE))
@@ -794,7 +796,7 @@ void CProp::BounceTouch(CBaseEntity *pOther)
 		}
 		m_flNextAttack = gpGlobals->time + 1.0; // debounce
 	}
-	if( (pOther->edict() != m_owner2) && (pev->spawnflags & SF_PROP_BREAKABLE) && (pev->velocity.Length() > 900) )
+	if( (pOther != m_owner2) && (pev->spawnflags & SF_PROP_BREAKABLE) && (pev->velocity.Length() > 900) )
 	{
 		pev->nextthink = gpGlobals->time + 0.1;
 		SetThink( &CProp::DieThink );
@@ -1064,7 +1066,7 @@ int CProp::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flD
 	if ( (!m_attacker
 		  || (pev->velocity.Length() < 700))
 		 && ((CBaseEntity*)GET_PRIVATE(ENT(pevAttacker)))->IsPlayer())
-		m_attacker = ENT(pevAttacker);
+		m_attacker.Set(ENT(pevAttacker));
 	DeployThink();
 
 	pev->velocity = r * flDamage / -7;
