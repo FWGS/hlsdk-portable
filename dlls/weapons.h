@@ -285,12 +285,13 @@ public:
 
 	// int		m_iIdPrimary;										// Unique Id for primary ammo
 	// int		m_iIdSecondary;										// Unique Id for secondary ammo
-	Vector m_SpawnPoint;
+	Vector m_SpawnPoint = Vector( 0, 0, 0 );
 	virtual float TouchGravGun( CBaseEntity *attacker, int stage)
 	{
 		if( stage == 2 )
 		{
-			Touch( attacker );
+			if( (attacker->pev->origin - pev->origin ).Length() < 90 )
+				Touch( attacker );
 		}
 		if( pev->movetype == MOVETYPE_FOLLOW )
 			return 0;
@@ -391,7 +392,8 @@ public:
 	{
 		if( stage == 2 )
 		{
-			Touch( attacker );
+			if( (attacker->pev->origin - pev->origin ).Length() < 90 )
+				Touch( attacker );
 		}
 		if( pev->movetype == MOVETYPE_FOLLOW )
 			return 0;
@@ -496,9 +498,16 @@ public:
 	int m_cAmmoTypes;// how many ammo types packed into this box (if packed by a level designer)
 	virtual float TouchGravGun( CBaseEntity *attacker, int stage)
 	{
+		pev->framerate = 1;
+		pev->movetype = MOVETYPE_TOSS;
+		pev->gravity = 1;
+		if( pev->velocity.z > 20 )
+			pev->velocity.z = 20;
+
 		if( stage == 2 )
 		{
-			Touch( attacker );
+			if( (attacker->pev->origin - pev->origin ).Length() < 90 )
+				Touch( attacker );
 			return 0;
 		}
 		return 200;

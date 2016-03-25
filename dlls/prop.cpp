@@ -97,10 +97,12 @@ public:
 	virtual float TouchGravGun( CBaseEntity *attacker, int stage )
 	{
 		float speed = 2500;
+		if( pev->deadflag )
+			return 0;
 		if(stage)
 		{
 			pev->nextthink = gpGlobals->time + m_flRespawnTime;
-			SetThink( &CProp::RespawnThink);
+			SetThink( &CProp::RespawnThink );
 		}
 		if( stage == 2 )
 		{

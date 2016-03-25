@@ -380,7 +380,10 @@ CBaseEntity *CGrav::GetCrossEnt( Vector gunpos, Vector aim )
 			continue;
 		if( pEdict == m_pPlayer->edict() )
 			continue;
-		vecLOS = pEdict->v.absmin + ( pEdict->v.size * 0.5 ) - gunpos;
+		Vector origin = pEdict->v.origin;
+		//if( pEdict->v.solid == SOLID_BSP || pEdict->v.movetype == MOVETYPE_PUSHSTEP )
+			origin = VecBModelOrigin(&pEdict->v);
+		vecLOS = origin - gunpos;
 		vecLOS = UTIL_ClampVectorToBox(vecLOS, pEdict->v.size * 0.5);
 
 		flDot = DotProduct(vecLOS, aim);
@@ -456,16 +459,19 @@ CBaseEntity*  CGrav::TraceForward(CBaseEntity *pMe,float radius)
 void CGrav::GrabThink()
 {
 //CBaseEntity *ent = FindEntityForward4(m_pPlayer, 130);
-	
 
-	if (( m_iGrabFailures < 50 )&& m_hAimentEntity && !m_hAimentEntity->pev->deadflag)
+
+	if (( m_iGrabFailures < 50 )&& m_hAimentEntity )
 	{
-			if( ( m_hAimentEntity->pev->origin - m_pPlayer->pev->origin).Length() > 150 )
+			Vector origin = m_hAimentEntity->pev->origin;
+			if( m_hAimentEntity->IsBSPModel() )
+				origin = VecBModelOrigin(m_hAimentEntity->pev );
+			if( ( origin - m_pPlayer->pev->origin).Length() > 150 )
 				m_iGrabFailures++;
 			else
 				m_iGrabFailures = 0;
 
-			UpdateEffect(pev->origin, m_hAimentEntity->pev->origin, 1);
+			UpdateEffect(pev->origin, origin, 1);
 
 			Pull(m_hAimentEntity, 100);
 
@@ -489,6 +495,9 @@ void CGrav::GrabThink()
 }
 void CGrav::Pull(CBaseEntity* ent,float force)
 {
+	Vector origin = ent->pev->origin;
+	if( ent->IsBSPModel())
+		origin = VecBModelOrigin(ent->pev);
 	UTIL_MakeVectors(m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle);
 	ent->pev->angles.x = UTIL_AngleMod(ent->pev->angles.x);
 	ent->pev->angles.y = UTIL_AngleMod(ent->pev->angles.y);
@@ -496,7 +505,7 @@ void CGrav::Pull(CBaseEntity* ent,float force)
 
 	Vector target = m_pPlayer->pev->origin + gpGlobals->v_forward * 75;
 	target.z += 32;
-	if ((target - VecBModelOrigin(ent->pev)).Length() > 60){
+	if ((target - origin).Length() > 60){
 		target = m_pPlayer->pev->origin + gpGlobals->v_forward * 110 ;
 
 		target.z += 60;
@@ -507,9 +516,9 @@ void CGrav::Pull(CBaseEntity* ent,float force)
 	
 		if( !m_iStage )
 		{
-			ent->pev->velocity = (target - VecBModelOrigin( ent->pev )).Normalize()*300;
+			ent->pev->velocity = (target - origin).Normalize()*300;
 			pev->velocity.z += 10;
-			if( (target - VecBModelOrigin( ent->pev )).Length() < 150 )
+			if( (target - origin).Length() < 150 )
 			{
 				m_iStage = 1;
 				SetThink( &CGrav::GrabThink );
@@ -519,7 +528,7 @@ void CGrav::Pull(CBaseEntity* ent,float force)
 		}
 		else
 		{
-			ent->pev->velocity = (target - VecBModelOrigin(ent->pev)).Normalize()*550;
+			ent->pev->velocity = (target - origin).Normalize()*550;
 			pev->velocity.z += 15;
 		}
 		ent->pev->velocity = ent->pev->velocity + m_pPlayer->pev->velocity;
@@ -542,9 +551,9 @@ void CGrav::Pull(CBaseEntity* ent,float force)
 	}
 	else if( ent->TouchGravGun(m_pPlayer, 2) )
 	{	
-		ent->pev->velocity = (target - VecBModelOrigin(ent->pev))* 40;
+		ent->pev->velocity = (target - origin)* 40;
 		if(ent->pev->velocity.Length()>900)
-			ent->pev->velocity = (target - VecBModelOrigin(ent->pev)).Normalize() * 900;
+			ent->pev->velocity = (target - origin).Normalize() * 900;
 		ent->pev->velocity = ent->pev->velocity + m_pPlayer->pev->velocity;
 		m_iStage = 2;
 		SetThink( &CGrav::GrabThink );

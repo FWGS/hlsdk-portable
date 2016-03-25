@@ -92,7 +92,7 @@ void CItem::Spawn( void )
 	pev->movetype = MOVETYPE_TOSS;
 	pev->solid = SOLID_TRIGGER;
 	UTIL_SetOrigin( pev, pev->origin );
-	m_SpawnPoint = pev->origin;
+	m_SpawnPoint = Vector( 0, 0, 0 );
 	UTIL_SetSize(pev, Vector(-16, -16, 0), Vector(16, 16, 16));
 	SetTouch( &ItemTouch);
 
@@ -160,7 +160,8 @@ CBaseEntity* CItem::Respawn( void )
 float CItem::TouchGravGun( CBaseEntity *attacker, int stage)
 {
 	if( stage == 2 )
-		Touch(attacker);
+		if( (attacker->pev->origin - pev->origin ).Length() < 90 )
+			Touch( attacker );
 	if( pev->movetype == MOVETYPE_FOLLOW )
 		return 0;
 	if( pev->movetype == MOVETYPE_NONE )
@@ -181,9 +182,13 @@ void CItem::Materialize( void )
 		EMIT_SOUND_DYN( ENT(pev), CHAN_WEAPON, "items/suitchargeok1.wav", 1, ATTN_NORM, 0, 150 );
 		pev->effects &= ~EF_NODRAW;
 		pev->effects |= EF_MUZZLEFLASH;
+		if( m_SpawnPoint == Vector( 0, 0, 0 ) )
+			m_SpawnPoint = pev->origin;
 	}
-	else
+	else if( m_SpawnPoint != Vector( 0, 0, 0 ) )
 		UTIL_SetOrigin( pev, m_SpawnPoint );// blip to whereever you should respawn.
+
+	DROP_TO_FLOOR(ENT(pev));
 
 	SetTouch( &ItemTouch );
 }

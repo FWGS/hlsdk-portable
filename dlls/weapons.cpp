@@ -476,7 +476,6 @@ void CBasePlayerItem :: FallInit( void )
 	pev->solid = SOLID_BBOX;
 
 	UTIL_SetOrigin( pev, pev->origin );
-	m_SpawnPoint = pev->origin;
 	UTIL_SetSize(pev, Vector( 0, 0, 0), Vector(0, 0, 0) );//pointsize until it lands on the ground.
 	
 	SetTouch( &DefaultTouch );
@@ -528,8 +527,10 @@ void CBasePlayerItem::Materialize( void )
 	}
 
 	pev->solid = SOLID_TRIGGER;
-
-	UTIL_SetOrigin( pev, pev->origin );// link into world.
+	if( m_SpawnPoint != Vector(0, 0, 0) )
+		UTIL_SetOrigin( pev, m_SpawnPoint );// link into world.
+	else
+		UTIL_SetOrigin( pev, m_SpawnPoint = pev->origin );
 	SetTouch( &DefaultTouch);
 	SetThink( NULL );
 
@@ -1067,7 +1068,7 @@ void CBasePlayerAmmo::Spawn( void )
 	pev->solid = SOLID_TRIGGER;
 	UTIL_SetSize(pev, Vector(-16, -16, 0), Vector(16, 16, 16));
 	UTIL_SetOrigin( pev, pev->origin );
-	m_SpawnPoint = pev->origin;
+	m_SpawnPoint = Vector( 0, 0, 0 );
 
 	SetTouch( &DefaultTouch );
 }
@@ -1094,7 +1095,10 @@ void CBasePlayerAmmo::Materialize( void )
 		pev->effects &= ~EF_NODRAW;
 		pev->effects |= EF_MUZZLEFLASH;
 	}
-
+	if( m_SpawnPoint != Vector(0, 0, 0) )
+		UTIL_SetOrigin( pev, m_SpawnPoint );// link into world.
+	else
+		UTIL_SetOrigin( pev, m_SpawnPoint = pev->origin );
 	SetTouch( &DefaultTouch );
 }
 
@@ -1238,7 +1242,7 @@ void CWeaponBox::Spawn( void )
 	pev->movetype = MOVETYPE_TOSS;
 	pev->solid = SOLID_TRIGGER;
 
-	UTIL_SetSize( pev, g_vecZero, g_vecZero );
+	UTIL_SetSize( pev, Vector(-16,-16,-32), Vector(16,16,32) );
 
 	SET_MODEL( ENT(pev), "models/w_weaponbox.mdl");
 }
