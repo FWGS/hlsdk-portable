@@ -71,6 +71,7 @@ public:
 	int			m_iszSpawnObject;
 	virtual float TouchGravGun( CBaseEntity *attacker, int stage )
 	{
+		pev->framerate = 1;
 		return 200;
 	}
 };

@@ -14,7 +14,7 @@ LOCAL_MODULE_FILENAME = libserver_hardfp
 endif
 
 LOCAL_CFLAGS += -D_LINUX -DCLIENT_WEAPONS -Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf \
-	-fno-exceptions -w -fpermissive
+	-fno-exceptions -Wextra -Wno-write-strings -fpermissive
 
 LOCAL_CPPFLAGS := $(LOCAL_CFLAGS) -frtti -fpermissive
 
