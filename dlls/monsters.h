@@ -157,6 +157,8 @@ public:
 	
 	virtual float TouchGravGun( CBaseEntity *attacker, int stage )
 	{
+		pev->nextthink = gpGlobals->time + m_lifeTime;
+		if( stage ) pev->owner = attacker->edict();
 		return 700;
 	}
 

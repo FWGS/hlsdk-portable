@@ -118,13 +118,13 @@ public:
 			pev->avelocity.y = UTIL_AngleDiff(atarget.y, pev->angles.y) * 10;
 			pev->avelocity.z = UTIL_AngleDiff(atarget.z, pev->angles.z) * 10;
 		}
-		if( !m_attacker)
+		if( !m_attacker || m_attacker == this )
 		{
 			m_owner2 = attacker;
 			m_attacker = attacker;
 			return speed;
 		}
-		if( m_attacker && ( pev->velocity.Length() < 600) )
+		if( !m_owner2 && m_attacker && ( pev->velocity.Length() < 400) )
 			m_attacker = attacker;
 			return speed;
 		if( ( stage == 2 ) && ( m_attacker == attacker ) )
@@ -805,7 +805,10 @@ void CProp::DeployThink( void )
 void CProp::BounceTouch(CBaseEntity *pOther)
 {
 	if( pev->health <= 0 )
+	{
+		DieThink();
 		return;
+	}
 	//ALERT( at_console, "BounceTouch: %f %f %f\n", pev->angles.x, pev->angles.y, pev->angles.z );
 	// only do damage if we're moving fairly fast
 	DeployThink();

@@ -726,6 +726,20 @@ void CGib :: BounceGibTouch ( CBaseEntity *pOther )
 	}
 	else
 	{
+	if ( pev->velocity.Length() > 300)
+	{
+		entvars_t *pevOwner = pev;
+		if( pev->owner)
+			pevOwner = &pev->owner->v;
+		if(pevOwner)
+		{
+			float dmg = 10 + pev->velocity.Length() / 50;
+			TraceResult tr = UTIL_GetGlobalTrace();
+			ClearMultiDamage();
+			pOther->TraceAttack(pevOwner, dmg, gpGlobals->v_forward, &tr, DMG_CLUB);
+			ApplyMultiDamage(pev, pevOwner);
+		}
+	}
 		if ( g_Language != LANGUAGE_GERMAN && m_cBloodDecals > 0 && m_bloodColor != DONT_BLEED )
 		{
 			vecSpot = pev->origin + Vector ( 0 , 0 , 8 );//move up a bit, and trace down.
@@ -757,7 +771,7 @@ void CGib :: StickyGibTouch ( CBaseEntity *pOther )
 	TraceResult	tr;
 	
 	SetThink( &SUB_Remove );
-	pev->nextthink = gpGlobals->time + 10;
+	pev->nextthink = gpGlobals->time + 100;
 
 	if ( !FClassnameIs( pOther->pev, "worldspawn" ) )
 	{
@@ -796,7 +810,7 @@ void CGib :: Spawn( const char *szGibModel )
 	UTIL_SetSize(pev, Vector( 0, 0, 0), Vector(0, 0, 0));
 
 	pev->nextthink = gpGlobals->time + 4;
-	m_lifeTime = 25;
+	m_lifeTime = 250;
 	SetThink( &WaitTillLand );
 	SetTouch( &BounceGibTouch );
 

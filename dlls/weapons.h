@@ -54,7 +54,7 @@ public:
 	virtual float TouchGravGun( CBaseEntity *attacker, int stage )
 	{
 		pev->owner = attacker->edict();
-		return 200;
+		return 1000;
 	}
 
 	BOOL m_fRegisteredSound;// whether or not this grenade has issued its DANGER sound to the world sound list yet.
@@ -286,23 +286,7 @@ public:
 	// int		m_iIdPrimary;										// Unique Id for primary ammo
 	// int		m_iIdSecondary;										// Unique Id for secondary ammo
 	Vector m_SpawnPoint;
-	virtual float TouchGravGun( CBaseEntity *attacker, int stage)
-	{
-		if( stage == 2 )
-		{
-			if( (attacker->pev->origin - pev->origin ).Length() < 90 )
-				Touch( attacker );
-		}
-		if( pev->movetype == MOVETYPE_FOLLOW )
-			return 0;
-		if( pev->movetype == MOVETYPE_NONE )
-			return 0;
-		if( pev->effects & EF_NODRAW )
-			return 0;
-		//if( pev->mins == pev->maxs )
-			//return 0;
-		return 200;
-	}
+	virtual float TouchGravGun( CBaseEntity *attacker, int stage);
 };
 
 
@@ -388,23 +372,7 @@ public:
 
 	CBaseEntity* Respawn( void );
 	void EXPORT Materialize( void );
-	virtual float TouchGravGun( CBaseEntity *attacker, int stage)
-	{
-		if( stage == 2 )
-		{
-			if( (attacker->pev->origin - pev->origin ).Length() < 90 )
-				Touch( attacker );
-		}
-		if( pev->movetype == MOVETYPE_FOLLOW )
-			return 0;
-		if( pev->movetype == MOVETYPE_NONE )
-			return 0;
-		if( pev->effects & EF_NODRAW )
-			return 0;
-		//if( pev->mins == pev->maxs )
-			//return 0;
-		return 200;
-	}
+	virtual float TouchGravGun( CBaseEntity *attacker, int stage);
 	Vector m_SpawnPoint;
 };
 

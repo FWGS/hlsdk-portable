@@ -92,7 +92,6 @@ void CItem::Spawn( void )
 	pev->movetype = MOVETYPE_TOSS;
 	pev->solid = SOLID_TRIGGER;
 	UTIL_SetOrigin( pev, pev->origin );
-	m_SpawnPoint = Vector( 0, 0, 0 );
 	UTIL_SetSize(pev, Vector(-16, -16, 0), Vector(16, 16, 16));
 	SetTouch( &ItemTouch);
 
@@ -102,6 +101,7 @@ void CItem::Spawn( void )
 		UTIL_Remove( this );
 		return;
 	}
+	m_SpawnPoint = pev->origin;
 }
 
 extern int gEvilImpulse101;

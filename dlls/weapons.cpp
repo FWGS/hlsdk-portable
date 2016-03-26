@@ -535,6 +535,25 @@ void CBasePlayerItem::Materialize( void )
 	SetThink( NULL );
 
 }
+float CBasePlayerItem::TouchGravGun( CBaseEntity *attacker, int stage )
+	{
+		if( stage == 2 )
+		{
+			if( (attacker->pev->origin - pev->origin ).Length() < 90 )
+				Touch( attacker );
+		}
+		if( pev->movetype == MOVETYPE_FOLLOW )
+			return 0;
+		if( pev->movetype == MOVETYPE_NONE )
+			return 0;
+		if( pev->effects & EF_NODRAW )
+			return 0;
+		SetThink( &CBasePlayerItem::AttemptToMaterialize );
+		pev->nextthink = gpGlobals->time + 60;;
+		//if( pev->mins == pev->maxs )
+			//return 0;
+		return 200;
+	}
 
 //=========================================================
 // AttemptToMaterialize - the item is trying to rematerialize,
@@ -1068,7 +1087,7 @@ void CBasePlayerAmmo::Spawn( void )
 	pev->solid = SOLID_TRIGGER;
 	UTIL_SetSize(pev, Vector(-16, -16, 0), Vector(16, 16, 16));
 	UTIL_SetOrigin( pev, pev->origin );
-	m_SpawnPoint = Vector( 0, 0, 0 );
+	m_SpawnPoint = pev->origin;
 
 	SetTouch( &DefaultTouch );
 }
@@ -1085,7 +1104,25 @@ CBaseEntity* CBasePlayerAmmo::Respawn( void )
 
 	return this;
 }
-
+float CBasePlayerAmmo::TouchGravGun( CBaseEntity *attacker, int stage)
+{
+	if( stage == 2 )
+	{
+		if( (attacker->pev->origin - pev->origin ).Length() < 90 )
+			Touch( attacker );
+	}
+	if( pev->movetype == MOVETYPE_FOLLOW )
+		return 0;
+	if( pev->movetype == MOVETYPE_NONE )
+		return 0;
+	if( pev->effects & EF_NODRAW )
+		return 0;
+	//if( pev->mins == pev->maxs )
+		//return 0;
+	SetThink( &CBasePlayerAmmo::Materialize );
+	pev->nextthink = g_pGameRules->FlAmmoRespawnTime( this );
+	return 200;
+}
 void CBasePlayerAmmo::Materialize( void )
 {
 	if ( pev->effects & EF_NODRAW )
@@ -1095,10 +1132,11 @@ void CBasePlayerAmmo::Materialize( void )
 		pev->effects &= ~EF_NODRAW;
 		pev->effects |= EF_MUZZLEFLASH;
 	}
-	if( m_SpawnPoint != Vector(0, 0, 0) )
+	//if( m_SpawnPoint != Vector(0, 0, 0) )
 		UTIL_SetOrigin( pev, m_SpawnPoint );// link into world.
-	else
-		UTIL_SetOrigin( pev, m_SpawnPoint = pev->origin );
+	DROP_TO_FLOOR(edict());
+	//else
+	//	UTIL_SetOrigin( pev, m_SpawnPoint = pev->origin );
 	SetTouch( &DefaultTouch );
 }
 
