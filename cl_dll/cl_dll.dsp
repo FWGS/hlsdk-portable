@@ -43,7 +43,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 1
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /YX /c
-# ADD CPP /nologo /MT /W3 /GX /O2 /I "..\utils\vgui\include" /I "..\engine" /I "..\common" /I "..\pm_shared" /I "..\dlls" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "CLIENT_DLL" /D "CLIENT_WEAPONS" /YX /FD /c
+# ADD CPP /nologo /MT /W3 /GX /O2 /I "..\engine" /I "..\common" /I "..\pm_shared" /I "..\dlls" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "CLIENT_DLL" /D "CLIENT_WEAPONS" /YX /FD /c
 # SUBTRACT CPP /Z<none>
 # ADD BASE MTL /nologo /D "NDEBUG" /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
@@ -188,14 +188,6 @@ SOURCE=..\dlls\squeakgrenade.cpp
 # Begin Source File
 
 SOURCE=..\dlls\tripmine.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\game_shared\vgui_scrollbar2.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\game_shared\vgui_slider2.cpp
 # End Source File
 # Begin Source File
 
@@ -373,74 +365,6 @@ SOURCE=.\util.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\game_shared\vgui_checkbutton2.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\vgui_ClassMenu.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\vgui_ConsolePanel.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\vgui_ControlConfigPanel.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\vgui_CustomObjects.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\game_shared\vgui_grid.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\game_shared\vgui_helpers.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\vgui_int.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\game_shared\vgui_listbox.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\game_shared\vgui_loadtga.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\vgui_MOTDWindow.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\vgui_SchemeManager.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\vgui_ScorePanel.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\vgui_ServerBrowser.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\vgui_SpectatorPanel.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\vgui_TeamFortressViewport.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\vgui_teammenu.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\view.cpp
 # End Source File
 # End Group
@@ -561,41 +485,6 @@ SOURCE=.\util.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\util_vector.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\vgui_ConsolePanel.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\vgui_ControlConfigPanel.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\vgui_int.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\vgui_SchemeManager.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\vgui_ScorePanel.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\vgui_ServerBrowser.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\vgui_SpectatorPanel.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\vgui_TeamFortressViewport.h
-# End Source File
-# Begin Source File
 
 SOURCE=.\view.h
 # End Source File
@@ -606,10 +495,6 @@ SOURCE=..\game_shared\voice_banmgr.h
 # Begin Source File
 
 SOURCE=..\game_shared\voice_status.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\game_shared\voice_vgui_tweakdlg.h
 # End Source File
 # Begin Source File
 
