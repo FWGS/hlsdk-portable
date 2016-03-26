@@ -170,7 +170,7 @@ float CItem::TouchGravGun( CBaseEntity *attacker, int stage)
 		return 0;
 	//if( pev->mins == pev->maxs )
 		//return 0;
-	SetThink( &Materialize );
+	SetThink( &CItem::Materialize );
 	pev->nextthink = g_pGameRules->FlItemRespawnTime( this );
 	return 200;
 }
@@ -185,10 +185,8 @@ void CItem::Materialize( void )
 		if( m_SpawnPoint == Vector( 0, 0, 0 ) )
 			m_SpawnPoint = pev->origin;
 	}
-	else if( m_SpawnPoint != Vector( 0, 0, 0 ) )
+	if( m_SpawnPoint != Vector( 0, 0, 0 ) )
 		UTIL_SetOrigin( pev, m_SpawnPoint );// blip to whereever you should respawn.
-
-	DROP_TO_FLOOR(ENT(pev));
 
 	SetTouch( &ItemTouch );
 }

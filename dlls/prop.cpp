@@ -812,6 +812,8 @@ void CProp::BounceTouch(CBaseEntity *pOther)
 
 	if ( m_flNextAttack < gpGlobals->time && pev->velocity.Length() > 300)
 	{
+		if( !m_attacker )
+			m_attacker = this;
 		entvars_t *pevOwner = m_attacker->pev;
 		if (pevOwner)
 		{

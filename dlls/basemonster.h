@@ -334,7 +334,7 @@ public:
 	{
 		if( (pev->maxs - pev->mins).Length() > 200 )
 			return 0;
-		return 200;
+		return 700;
 	}
 
 	CBaseEntity* DropItem ( char *pszItemName, const Vector &vecPos, const Vector &vecAng );// drop an item.

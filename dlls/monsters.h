@@ -157,8 +157,7 @@ public:
 	
 	virtual float TouchGravGun( CBaseEntity *attacker, int stage )
 	{
-		pev->framerate = 1;
-		return 200;
+		return 700;
 	}
 
 	int		m_bloodColor;

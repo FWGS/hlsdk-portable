@@ -285,7 +285,7 @@ public:
 
 	// int		m_iIdPrimary;										// Unique Id for primary ammo
 	// int		m_iIdSecondary;										// Unique Id for secondary ammo
-	Vector m_SpawnPoint = Vector( 0, 0, 0 );
+	Vector m_SpawnPoint;
 	virtual float TouchGravGun( CBaseEntity *attacker, int stage)
 	{
 		if( stage == 2 )
