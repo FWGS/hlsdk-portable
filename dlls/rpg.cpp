@@ -284,7 +284,7 @@ void CRpgRocket :: FollowThink( void  )
 
 void CRpg::Reload( void )
 {
-	int iResult;
+	int iResult = 0;
 
 	if ( m_iClip == 1 )
 	{

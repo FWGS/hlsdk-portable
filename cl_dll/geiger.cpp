@@ -64,9 +64,9 @@ int CHudGeiger::MsgFunc_Geiger(const char *pszName,  int iSize, void *pbuf)
 int CHudGeiger::Draw (float flTime)
 {
 	int pct;
-	float flvol;
+	float flvol = 0;
 	int rg[3];
-	int i;
+	int i = 0;
 	
 	if (m_iGeigerRange < 1000 && m_iGeigerRange > 0)
 	{

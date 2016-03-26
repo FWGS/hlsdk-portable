@@ -24,6 +24,9 @@
 #include <stdio.h>  // NULL
 #include <math.h>   // sqrt
 #include <string.h> // strcpy
+#ifdef stricmp
+#include <strings.h> // strncasecmp
+#endif
 #include <stdlib.h> // atoi
 #include <ctype.h>  // isspace
 

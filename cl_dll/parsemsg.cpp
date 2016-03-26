@@ -142,7 +142,7 @@ char* READ_STRING( void )
 			break;
 		string[l] = c;
 		l++;
-	} while (l < sizeof(string)-1);
+	} while (l < (int)sizeof(string)-1);
 	
 	string[l] = 0;
 	
