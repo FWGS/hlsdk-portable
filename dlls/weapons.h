@@ -286,7 +286,9 @@ public:
 	// int		m_iIdPrimary;										// Unique Id for primary ammo
 	// int		m_iIdSecondary;										// Unique Id for secondary ammo
 	Vector m_SpawnPoint;
+#ifndef CLIENT_DLL
 	virtual float TouchGravGun( CBaseEntity *attacker, int stage);
+#endif
 };
 
 
@@ -372,7 +374,9 @@ public:
 
 	CBaseEntity* Respawn( void );
 	void EXPORT Materialize( void );
+#ifndef CLIENT_DLL
 	virtual float TouchGravGun( CBaseEntity *attacker, int stage);
+#endif
 	Vector m_SpawnPoint;
 };
 
