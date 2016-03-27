@@ -49,10 +49,10 @@ public:
 	int iItemSlot(void) { return 4; }
 	int GetItemInfo(ItemInfo *p);
 	int AddToPlayer(CBasePlayer *pPlayer);
-	int m_iStage = 0;
+	int m_iStage;
 	BOOL Deploy(void);
 	void Holster(int skiplocal = 0);
-	int m_iGrabFailures = 0;
+	int m_iGrabFailures;
 	EHANDLE m_hAimentEntity;
 	void UpdateEffect(const Vector &startPoint, const Vector &endPoint, float timeBlend);
 	CBaseEntity *	TraceForward(CBaseEntity *pMe, float radius);
@@ -66,13 +66,13 @@ public:
 	void WeaponIdle(void);
 	void Pull(CBaseEntity* ent, float force);
 	void GravAnim(int iAnim, int skiplocal, int body);
-	CBaseEntity *GetCrossEnt( Vector gunpos, Vector aim );
-	float m_flNextGravgunAttack = gpGlobals->time;
+	CBaseEntity *GetCrossEnt( Vector gunpos, Vector aim, float radius );
+	float m_flNextGravgunAttack;
 	float m_flAmmoUseTime;// since we use < 1 point of ammo per update, we subtract ammo on a timer.
 
 
 	void GrabThink(void);
-	void Fire(const Vector &vecOrigSrc, const Vector &vecDir);
+	float Fire(const Vector &vecOrigSrc, const Vector &vecDir);
 
 	BOOL HasAmmo(void);
 
@@ -224,7 +224,7 @@ void CGrav::Attack(void)
 
 	case FIRE_CHARGE:
 	{
-		Fire(vecSrc, vecAiming);
+		float dist = Fire(vecSrc, vecAiming);
 		m_pPlayer->m_iWeaponVolume = 20;
 
 		if (pev->fuser1 <= gpGlobals->time)
@@ -239,7 +239,7 @@ void CGrav::Attack(void)
 		CBaseEntity* crossent = m_hAimentEntity;
 		m_hAimentEntity = NULL;
 		if( !crossent)
-			crossent = GetCrossEnt(vecSrc, gpGlobals->v_forward);
+			crossent = GetCrossEnt(vecSrc, gpGlobals->v_forward, dist + 30);
 		//int oc = 0;
 		if (crossent) {
 			m_flNextGravgunAttack = gpGlobals->time + 0.8;
@@ -328,7 +328,8 @@ void CGrav::Attack2(void)
 
 	case FIRE_CHARGE:
 	{
-						Fire(vecSrc, vecAiming);
+						float dist = Fire(vecSrc, vecAiming);
+						ALERT( at_console, "dist: %f\n", dist );
 						m_pPlayer->m_iWeaponVolume = 100;
 
 						if (pev->fuser1 <= gpGlobals->time)
@@ -337,7 +338,7 @@ void CGrav::Attack2(void)
 							pev->fuser1 = 1000;
 						}
 						//CBaseEntity* crossent = TraceForward(m_pPlayer,500);
-						CBaseEntity* crossent = GetCrossEnt(vecSrc, gpGlobals->v_forward);
+						CBaseEntity* crossent = GetCrossEnt(vecSrc, gpGlobals->v_forward, dist );
 						if( !crossent || !(m_fPushSpeed = crossent->TouchGravGun(m_pPlayer,3)) )
 						{
 							crossent = TraceForward(m_pPlayer, 1000);
@@ -348,6 +349,7 @@ void CGrav::Attack2(void)
 							}
 						}
 						if ( crossent ){
+							m_fireMode = FIRE_NARROW;
 							EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, GRAV_SOUND_RUN, 0.6, ATTN_NORM, 0, 70 + RANDOM_LONG(0, 34));
 							if(crossent->TouchGravGun(m_pPlayer, 0))
 							{
@@ -363,12 +365,12 @@ void CGrav::Attack2(void)
 	}
 
 }
-CBaseEntity *CGrav::GetCrossEnt( Vector gunpos, Vector aim )
+CBaseEntity *CGrav::GetCrossEnt( Vector gunpos, Vector aim, float radius )
 {
 	edict_t		*pEdict = g_engfuncs.pfnPEntityOfEntIndex( 1 );
 	edict_t		*pClosest = NULL;
 	Vector		vecLOS;
-	float flMaxDot = 0.4;
+	float flMaxDot = 0.9;
 	float flDot;
 
 	if ( !pEdict )
@@ -378,24 +380,28 @@ CBaseEntity *CGrav::GetCrossEnt( Vector gunpos, Vector aim )
 	{
 		if ( pEdict->free )	// Not in use
 			continue;
-		if( pEdict == m_pPlayer->edict() )
-			continue;
 		Vector origin = pEdict->v.origin;
 		//if( pEdict->v.solid == SOLID_BSP || pEdict->v.movetype == MOVETYPE_PUSHSTEP )
 			origin = VecBModelOrigin(&pEdict->v);
 		vecLOS = origin - gunpos;
+		if( vecLOS.Length() > radius )
+			continue;
+		if( pEdict == m_pPlayer->edict() )
+			continue;
+		ALERT( at_console, "len: %f\n", vecLOS.Length() );
 		vecLOS = UTIL_ClampVectorToBox(vecLOS, pEdict->v.size * 0.5);
 
 		flDot = DotProduct(vecLOS, aim);
 		if (flDot > flMaxDot)
 		{
+			/// TODO: add second trace here
 			pClosest = pEdict;
 			flMaxDot = flDot;
 
 		}
 
 	}
-	return GET_PRIVATE(pClosest);
+	return CBaseEntity::Instance(pClosest);
 
 }
 
@@ -615,7 +621,7 @@ void CGrav::SecondaryAttack(void)
 
 	}
 }
-void CGrav::Fire(const Vector &vecOrigSrc, const Vector &vecDir)
+float CGrav::Fire(const Vector &vecOrigSrc, const Vector &vecDir)
 {
 	Vector vecDest = vecOrigSrc + vecDir * 2048;
 	edict_t		*pentIgnore;
@@ -626,9 +632,10 @@ void CGrav::Fire(const Vector &vecOrigSrc, const Vector &vecDir)
 	UTIL_TraceLine(vecOrigSrc, vecDest, dont_ignore_monsters, pentIgnore, &tr);
 
 	if (tr.fAllSolid)
-		return;
+		return (tr.vecEndPos - tmpSrc).Length();
 
 	UpdateEffect(tmpSrc, tr.vecEndPos, 1);
+	return (tr.vecEndPos - tmpSrc).Length();
 }
 
 
