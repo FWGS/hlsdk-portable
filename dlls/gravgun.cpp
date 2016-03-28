@@ -185,9 +185,6 @@ p->pszAmmo1 = NULL;
 	return 1;
 }
 
-//#define USEGUN 1
-
-
 BOOL CGrav::HasAmmo(void)
 {
 	
@@ -238,43 +235,36 @@ void CGrav::Attack(void)
 		//CBaseEntity* crosent = TraceForward(m_pPlayer, 1000);
 		CBaseEntity* crossent = m_hAimentEntity;
 		m_hAimentEntity = NULL;
-		if( !crossent)
+		if( !crossent )
 			crossent = GetCrossEnt(vecSrc, gpGlobals->v_forward, dist + 30);
-		//int oc = 0;
-		if (crossent) {
+		if( !crossent || !( m_fPushSpeed = crossent->TouchGravGun(m_pPlayer,3) ) )
+			crossent = TraceForward(m_pPlayer, 1000);
+		if(crossent && (m_fPushSpeed = crossent->TouchGravGun(m_pPlayer,3) ) )
+		{
 			m_flNextGravgunAttack = gpGlobals->time + 0.8;
-			//oc = crosent->ObjectCaps();
+			DestroyEffect();
+			m_fireMode = FIRE_WIDE;
+			Vector origin = crossent->pev->origin;
+			if(crossent->IsBSPModel())
+				origin = VecBModelOrigin( crossent->pev );
+			UpdateEffect( vecSrc, origin, 1 );
 
-			//int propc = (CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION) | FCAP_IMPULSE_USE | FCAP_CONTINUOUS_USE;
-			if( !(m_fPushSpeed = crossent->TouchGravGun(m_pPlayer,3) ) )
-			{
-				crossent = TraceForward(m_pPlayer, 1000);
-				if( !crossent || !(m_fPushSpeed = crossent->TouchGravGun(m_pPlayer,3)) )
-				{
-					EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, GRAV_SOUND_FAILRUN, 0.6, ATTN_NORM, 0, 70 + RANDOM_LONG(0, 34));
-					crossent = NULL;
-				}
-			}
 
-			if(crossent) {
+			EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, GRAV_SOUND_STARTUP, 1, ATTN_NORM, 0, 70 + RANDOM_LONG(0, 34));
 
-				
-				EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, GRAV_SOUND_STARTUP, 1, ATTN_NORM, 0, 70 + RANDOM_LONG(0, 34));
-					
-					//if (crosent->pev->flags& FL_ONGROUND) { pev->velocity = pev->velocity * 0.95; };
-		
-					crossent->TouchGravGun(m_pPlayer,3);
-					Vector pusher = vecAiming;
-					pusher.x = pusher.x * m_fPushSpeed;
-					pusher.y = pusher.y * m_fPushSpeed;
-					pusher.z = pusher.z * m_fPushSpeed * 0.7;
-					crossent->pev->velocity = pusher+m_pPlayer->pev->velocity;
-					//crossent->pev->avelocity.y = pev->avelocity.y*3.5 + RANDOM_FLOAT(100, -100);
-					//crossent->pev->avelocity.x = pev->avelocity.x*3.5 + RANDOM_FLOAT(100, -100);
-					//crossent->pev->avelocity.z = pev->avelocity.z + 3;
-				
+			//if (crosent->pev->flags& FL_ONGROUND) { pev->velocity = pev->velocity * 0.95; };
 
-			}
+			//crossent->TouchGravGun(m_pPlayer,3);
+			Vector pusher = vecAiming;
+			pusher.x = pusher.x * m_fPushSpeed;
+			pusher.y = pusher.y * m_fPushSpeed;
+			pusher.z = pusher.z * m_fPushSpeed * 0.7;
+			crossent->pev->velocity = pusher+m_pPlayer->pev->velocity;
+		}
+		else
+		{
+			EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, GRAV_SOUND_FAILRUN, 0.6, ATTN_NORM, 0, 70 + RANDOM_LONG(0, 34));
+			crossent = NULL;
 		}
 		if (gpGlobals->time >= m_flNextGravgunAttack)
 		{
@@ -285,7 +275,7 @@ void CGrav::Attack(void)
 	}
 	
 	m_flNextGravgunAttack = gpGlobals->time + 0.5;
-	pev->nextthink = gpGlobals->time + 0.3;
+	pev->nextthink = gpGlobals->time + 0.2;
 	SetThink( &CGrav::DestroyEffect );
 	
 	break;
@@ -353,7 +343,10 @@ void CGrav::Attack2(void)
 			if ( crossent ){
 				DestroyEffect();
 				m_fireMode = FIRE_NARROW;
-				UpdateEffect( vecSrc, crossent->pev->origin, 1 );
+				Vector origin = crossent->pev->origin;
+				if(crossent->IsBSPModel())
+					origin = VecBModelOrigin( crossent->pev );
+				UpdateEffect( vecSrc, origin, 1 );
 				EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, GRAV_SOUND_RUN, 0.6, ATTN_NORM, 0, 70 + RANDOM_LONG(0, 34));
 				if(crossent->TouchGravGun(m_pPlayer, 0))
 				{
