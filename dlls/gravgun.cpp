@@ -281,12 +281,12 @@ void CGrav::Attack(void)
 			m_flNextGravgunAttack = gpGlobals->time + 0.7;
 			EndAttack();
 		}
-		if (m_fireMode = FIRE_NARROW) { EndAttack(); }
-
 
 	}
 	
-		m_flNextGravgunAttack = gpGlobals->time + 0.5;
+	m_flNextGravgunAttack = gpGlobals->time + 0.5;
+	pev->nextthink = gpGlobals->time + 0.3;
+	SetThink( &CGrav::DestroyEffect );
 	
 	break;
 	}
@@ -316,51 +316,61 @@ void CGrav::Attack2(void)
 
 	switch (m_fireState)
 	{
-	case FIRE_OFF:
-	{
-		GravAnim(GAUSS_FIRE, 1, 0);
-					 m_pPlayer->m_iWeaponVolume = 20;
-				
-					 m_fireState = FIRE_CHARGE;
-				
-	}
+		case FIRE_OFF:
+		{
+			GravAnim(GAUSS_FIRE, 1, 0);
+			m_pPlayer->m_iWeaponVolume = 20;
+
+			m_fireState = FIRE_CHARGE;
+			m_fireMode = FIRE_WIDE;
+
+		}
 		break;
 
-	case FIRE_CHARGE:
-	{
-						float dist = Fire(vecSrc, vecAiming);
-						ALERT( at_console, "dist: %f\n", dist );
-						m_pPlayer->m_iWeaponVolume = 100;
+		case FIRE_CHARGE:
+		{
+			float dist = Fire(vecSrc, vecAiming) + 30;
+			m_flNextGravgunAttack = gpGlobals->time + 0.1;
+			//ALERT( at_console, "dist: %f\n", dist );
+			m_pPlayer->m_iWeaponVolume = 100;
 
-						if (pev->fuser1 <= gpGlobals->time)
-						{
-								
-							pev->fuser1 = 1000;
-						}
-						//CBaseEntity* crossent = TraceForward(m_pPlayer,500);
-						CBaseEntity* crossent = GetCrossEnt(vecSrc, gpGlobals->v_forward, dist );
-						if( !crossent || !(m_fPushSpeed = crossent->TouchGravGun(m_pPlayer,3)) )
-						{
-							crossent = TraceForward(m_pPlayer, 1000);
-							if( !crossent || !(m_fPushSpeed = crossent->TouchGravGun(m_pPlayer,3)) )
-							{
-								EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, GRAV_SOUND_FAILRUN, 0.6, ATTN_NORM, 0, 70 + RANDOM_LONG(0, 34));
-								crossent = NULL;
-							}
-						}
-						if ( crossent ){
-							m_fireMode = FIRE_NARROW;
-							EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, GRAV_SOUND_RUN, 0.6, ATTN_NORM, 0, 70 + RANDOM_LONG(0, 34));
-							if(crossent->TouchGravGun(m_pPlayer, 0))
-							{
-								m_hAimentEntity = crossent;
-								Pull(crossent,5);
-								GravAnim(GAUSS_SPIN, 0, 0);
-							}
-					
-						}
-					
-	}
+			if (pev->fuser1 <= gpGlobals->time)
+			{
+
+				pev->fuser1 = 1000;
+			}
+			//CBaseEntity* crossent = TraceForward(m_pPlayer,500);
+			CBaseEntity* crossent = GetCrossEnt(vecSrc, gpGlobals->v_forward, dist );
+			if( !crossent || !(m_fPushSpeed = crossent->TouchGravGun(m_pPlayer,0)) )
+			{
+				crossent = TraceForward(m_pPlayer, 1000);
+				if( !crossent || !(m_fPushSpeed = crossent->TouchGravGun(m_pPlayer,0)) )
+				{
+					EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, GRAV_SOUND_FAILRUN, 0.6, ATTN_NORM, 0, 70 + RANDOM_LONG(0, 34));
+					crossent = NULL;
+				}
+			}
+			if ( crossent ){
+				DestroyEffect();
+				m_fireMode = FIRE_NARROW;
+				UpdateEffect( vecSrc, crossent->pev->origin, 1 );
+				EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, GRAV_SOUND_RUN, 0.6, ATTN_NORM, 0, 70 + RANDOM_LONG(0, 34));
+				if(crossent->TouchGravGun(m_pPlayer, 0))
+				{
+					m_hAimentEntity = crossent;
+					Pull(crossent,5);
+					GravAnim(GAUSS_SPIN, 0, 0);
+				}
+
+			}
+			else
+			{
+				if( m_fireMode == FIRE_NARROW )
+					DestroyEffect();
+
+				m_fireMode = FIRE_WIDE;
+			}
+		}
 		break;
 	}
 
@@ -376,97 +386,65 @@ CBaseEntity *CGrav::GetCrossEnt( Vector gunpos, Vector aim, float radius )
 	if ( !pEdict )
 		return NULL;
 
+	edict_t *player = m_pPlayer->edict();
+
+	// uncomment this for profiling
+	int tracecount = 0;
+
 	for ( int i = 1; i < gpGlobals->maxEntities; i++, pEdict++ )
 	{
 		if ( pEdict->free )	// Not in use
 			continue;
-		Vector origin = pEdict->v.origin;
-		//if( pEdict->v.solid == SOLID_BSP || pEdict->v.movetype == MOVETYPE_PUSHSTEP )
-			origin = VecBModelOrigin(&pEdict->v);
+
+		if( pEdict->v.solid == SOLID_BSP || pEdict->v.movetype == MOVETYPE_PUSHSTEP )
+			continue; //bsp models will be found by trace later
+
+		Vector origin = VecBModelOrigin(&pEdict->v);
+
 		vecLOS = origin - gunpos;
+
+		// too far, ignore it now
 		if( vecLOS.Length() > radius )
 			continue;
-		if( pEdict == m_pPlayer->edict() )
+
+		// ignore player
+		if( pEdict == player )
 			continue;
-		ALERT( at_console, "len: %f\n", vecLOS.Length() );
+
+		//ALERT( at_console, "len: %f\n", vecLOS.Length() );
 		vecLOS = UTIL_ClampVectorToBox(vecLOS, pEdict->v.size * 0.5);
 
 		flDot = DotProduct(vecLOS, aim);
-		if (flDot > flMaxDot)
-		{
-			/// TODO: add second trace here
-			pClosest = pEdict;
-			flMaxDot = flDot;
-
-		}
-
+		if (flDot <= flMaxDot)
+			continue;
+		tracecount++;
+		TraceResult tr;
+		UTIL_TraceLine(gunpos, origin, missile, player, &tr);
+		if( ( tr.vecEndPos - gunpos ).Length() < (origin - gunpos).Length())
+			continue;
+		pClosest = pEdict;
+		flMaxDot = flDot;
 	}
+
+	ALERT( at_console, "tracecount: %d\n", tracecount );
+
 	return CBaseEntity::Instance(pClosest);
 
 }
 
 CBaseEntity*  CGrav::TraceForward(CBaseEntity *pMe,float radius)
 {
-
-#ifdef USEGUN
-	
-
-
-	CBaseEntity *pObject = NULL;
-	CBaseEntity *pClosest = NULL;
-	Vector		vecLOS;
-	float flMaxDot = 0.4;
-	float flDot;
-
-	UTIL_MakeVectors(m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle);// so we know which way we are facing
-
-	while ((pObject = UTIL_FindEntityInSphere(pObject, m_pPlayer->pev->origin, radius)) != NULL)
-	{//pObject->ObjectCaps() & (FCAP_ACROSS_TRANSITION | FCAP_CONTINUOUS_USE )&&
-		if (pObject!=m_pPlayer) {
-			vecLOS = (VecBModelOrigin(pObject->pev) - (m_pPlayer->pev->origin + m_pPlayer->pev->view_ofs));
-			vecLOS = UTIL_ClampVectorToBox(vecLOS, pObject->pev->size * 0.5);
-
-			flDot = DotProduct(vecLOS, gpGlobals->v_forward);
-			if (flDot > flMaxDot&&pClosest != m_pPlayer)
-			{
-				pClosest = pObject;
-				flMaxDot = flDot;
-
-			}
-			ALERT(at_console, "%s : %f\n", STRING(pObject->pev->classname), flDot);
-		}
-	}
-
-		pObject = pClosest;
-	
-	
-	return pObject;
-
-
-
-
-
-#else
 	TraceResult tr;
-
 	UTIL_MakeVectors(pMe->pev->v_angle);
 	UTIL_TraceLine(pMe->pev->origin + pMe->pev->view_ofs, pMe->pev->origin + pMe->pev->view_ofs + gpGlobals->v_forward * radius, missile, pMe->edict(), &tr);
-	if (tr.flFraction != 1.0 && !FNullEnt(tr.pHit))
-	{
-		CBaseEntity *pHit = CBaseEntity::Instance(tr.pHit);
-		return pHit;
-	}
-#endif
+	if( tr.flFraction != 1.0 && !FNullEnt(tr.pHit) )
+		return CBaseEntity::Instance(tr.pHit);
 	return NULL;
 }
-//Failure traces counter for GrabThink
 
 //Used for prop grab and 
 void CGrav::GrabThink()
 {
-//CBaseEntity *ent = FindEntityForward4(m_pPlayer, 130);
-
-
 	if (( m_iGrabFailures < 50 )&& m_hAimentEntity )
 	{
 			Vector origin = m_hAimentEntity->pev->origin;
@@ -505,10 +483,6 @@ void CGrav::Pull(CBaseEntity* ent,float force)
 	if( ent->IsBSPModel())
 		origin = VecBModelOrigin(ent->pev);
 	UTIL_MakeVectors(m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle);
-	ent->pev->angles.x = UTIL_AngleMod(ent->pev->angles.x);
-	ent->pev->angles.y = UTIL_AngleMod(ent->pev->angles.y);
-	ent->pev->angles.z = UTIL_AngleMod(ent->pev->angles.z);
-
 	Vector target = m_pPlayer->pev->origin + gpGlobals->v_forward * 75;
 	target.z += 32;
 	if ((target - origin).Length() > 60){
@@ -557,7 +531,7 @@ void CGrav::Pull(CBaseEntity* ent,float force)
 	}
 	else if( ent->TouchGravGun(m_pPlayer, 2) )
 	{	
-		ent->pev->velocity = (target - origin)* 40;
+		ent->pev->velocity = (target - origin)* 35;
 		if(ent->pev->velocity.Length()>900)
 			ent->pev->velocity = (target - origin).Normalize() * 900;
 		ent->pev->velocity = ent->pev->velocity + m_pPlayer->pev->velocity;
@@ -602,6 +576,7 @@ void CGrav::SecondaryAttack(void)
 			{
 				return;
 			}
+			//m_fireMode = FIRE_WIDE;
 			EndAttack();
 			SetThink(NULL);
 			m_flNextGravgunAttack = gpGlobals->time + 0.6;
@@ -615,7 +590,6 @@ void CGrav::SecondaryAttack(void)
 			}
 		}
 		else {
-			m_fireMode = FIRE_NARROW;
 			Attack2();
 		}
 

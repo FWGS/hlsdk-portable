@@ -118,6 +118,11 @@ public:
 			pev->avelocity.y = UTIL_AngleDiff(atarget.y, pev->angles.y) * 10;
 			pev->avelocity.z = UTIL_AngleDiff(atarget.z, pev->angles.z) * 10;
 		}
+		if( stage == 3 )
+		{
+			pev->avelocity.y = pev->avelocity.y*1.5 + RANDOM_FLOAT(100, -100);
+			pev->avelocity.x = pev->avelocity.x*1.5 + RANDOM_FLOAT(100, -100);
+		}
 		if( !m_attacker || m_attacker == this )
 		{
 			m_owner2 = attacker;
