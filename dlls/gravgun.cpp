@@ -413,7 +413,7 @@ CBaseEntity *CGrav::GetCrossEnt( Vector gunpos, Vector aim, float radius )
 		tracecount++;
 		TraceResult tr;
 		UTIL_TraceLine(gunpos, origin, missile, player, &tr);
-		if( ( tr.vecEndPos - gunpos ).Length() < (origin - gunpos).Length())
+		if( ( tr.vecEndPos - gunpos ).Length() + 30 < (origin - gunpos).Length())
 			continue;
 		pClosest = pEdict;
 		flMaxDot = flDot;
