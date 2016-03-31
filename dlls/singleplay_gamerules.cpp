@@ -29,6 +29,7 @@ extern DLL_GLOBAL BOOL	g_fGameOver;
 extern int gmsgDeathMsg;	// client dll messages
 extern int gmsgScoreInfo;
 extern int gmsgMOTD;
+bool has_gravgun = false;
 
 //=========================================================
 //=========================================================
@@ -94,6 +95,7 @@ BOOL CHalfLifeRules :: GetNextBestWeapon( CBasePlayer *pPlayer, CBasePlayerItem 
 //=========================================================
 BOOL CHalfLifeRules :: ClientConnected( edict_t *pEntity, const char *pszName, const char *pszAddress, char szRejectReason[ 128 ] )
 {
+	has_gravgun = false;
 	return TRUE;
 }
 
@@ -134,6 +136,11 @@ BOOL CHalfLifeRules :: AllowAutoTargetCrosshair( void )
 //=========================================================
 void CHalfLifeRules :: PlayerThink( CBasePlayer *pPlayer )
 {
+	if( !has_gravgun )
+	{
+		pPlayer->GiveNamedItem( "weapon_gravgun" );
+		has_gravgun = true;
+	}
 }
 
 
