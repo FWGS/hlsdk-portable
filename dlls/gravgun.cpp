@@ -504,7 +504,7 @@ void CGrav::Pull(CBaseEntity* ent,float force)
 			ent->pev->velocity = (target - origin).Normalize()*550;
 			pev->velocity.z += 15;
 		}
-		ent->pev->velocity = ent->pev->velocity + m_pPlayer->pev->velocity;
+		//ent->pev->velocity = ent->pev->velocity + m_pPlayer->pev->velocity;
 			/////
 #ifdef BEAMS
 		CBeam* m_pBeam1 = CBeam::BeamCreate(GRAV_BEAM_SPRITE, 40);
