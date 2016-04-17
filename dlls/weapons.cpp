@@ -1066,7 +1066,7 @@ void CBasePlayerAmmo::Spawn( void )
 	UTIL_SetSize(pev, Vector(-16, -16, 0), Vector(16, 16, 16));
 	UTIL_SetOrigin( pev, pev->origin );
 
-	SetTouch( &CBaseEntity::DefaultTouch );
+	SetTouch( &CBasePlayerAmmo::DefaultTouch );
 }
 
 CBaseEntity* CBasePlayerAmmo::Respawn( void )
