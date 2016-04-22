@@ -1973,7 +1973,7 @@ void CSave :: WritePositionVector( const char *pname, const float *value, int co
 }
 
 
-void CSave :: WriteFunction( const char *pname, void **data, int count )
+void CSave :: WriteFunction( const char *pname, const int *data, int count )
 {
 	const char *functionName;
 
@@ -2141,7 +2141,7 @@ int CSave :: WriteFields( const char *pname, void *pBaseData, TYPEDESCRIPTION *p
 		break;
 
 		case FIELD_FUNCTION:
-			WriteFunction( pTest->fieldName, (void **)pOutputData, pTest->fieldSize );
+			WriteFunction( pTest->fieldName, (int *)pOutputData, pTest->fieldSize );
 		break;
 		default:
 			ALERT( at_error, "Bad field type\n" );

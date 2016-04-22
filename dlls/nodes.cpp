@@ -40,7 +40,7 @@ CGraph	WorldGraph;
 
 LINK_ENTITY_TO_CLASS( info_node, CNodeEnt );
 LINK_ENTITY_TO_CLASS( info_node_air, CNodeEnt );
-#ifdef __linux__
+#ifdef _LINUX
 #include <unistd.h>
 #include <sys/stat.h>
 #define CreateDirectory(p, n) mkdir(p, 0777)
@@ -636,6 +636,7 @@ int CGraph :: FindShortestPath ( int *piPath, int iStart, int iDest, int iHull, 
 	}
 	else
 	{
+		int i;
 		CQueuePriority	queue;
 
 		switch( iHull )
@@ -656,7 +657,7 @@ int CGraph :: FindShortestPath ( int *piPath, int iStart, int iDest, int iHull, 
 
 		// Mark all the nodes as unvisited.
 		//
-		for ( int i = 0; i < m_cNodes; i++)
+		for ( i = 0; i < m_cNodes; i++)
 		{
 			m_pNodes[ i ].m_flClosestSoFar = -1.0;
 		}
@@ -888,7 +889,7 @@ int	CGraph :: FindNearestNode ( const Vector &vecOrigin,  int afNodeTypes )
 	m_CheckedCounter++;
 	if (m_CheckedCounter == 0)
 	{
-		for (int i = 0; i < m_cNodes; i++)
+		for ( i = 0; i < m_cNodes; i++ )
 		{
 			m_di[i].m_CheckedEvent = 0;
 		}
@@ -1274,7 +1275,8 @@ int CGraph :: LinkVisibleNodes ( CLink *pLinkPool, FILE *file, int *piBadNode )
 					fprintf ( file, "  Entity on connection: %s, name: %s  Model: %s", STRING( VARS( pTraceEnt )->classname ), STRING ( VARS( pTraceEnt )->targetname ), STRING ( VARS(tr.pHit)->model ) );
 				}
 				
-				fprintf ( file, "\n", j );
+				//fprintf ( file, "\n", j );
+				fprintf ( file, "\n" );
 			}
 
 			pLinkPool [ cTotalLinks ].m_iDestNode = j;
@@ -1459,12 +1461,12 @@ void CTestHull :: Spawn( entvars_t *pevMasterNode )
 
 	if ( WorldGraph.m_fGraphPresent )
 	{// graph loaded from disk, so we don't need the test hull
-		SetThink( &SUB_Remove );
+		SetThink( &CBaseEntity::SUB_Remove );
 		pev->nextthink = gpGlobals->time;
 	}
 	else
 	{
-		SetThink( &DropDelay );
+		SetThink( &CTestHull::DropDelay );
 		pev->nextthink = gpGlobals->time + 1;
 	}
 
@@ -1484,7 +1486,7 @@ void CTestHull::DropDelay ( void )
 
 	UTIL_SetOrigin ( VARS(pev), WorldGraph.m_pNodes[ 0 ].m_vecOrigin );
 
-	SetThink( &CallBuildNodeGraph );
+	SetThink( &CTestHull::CallBuildNodeGraph );
 
 	pev->nextthink = gpGlobals->time + 1;
 }
@@ -1593,7 +1595,7 @@ void CTestHull::CallBuildNodeGraph( void )
 //=========================================================
 void CTestHull :: BuildNodeGraph( void )
 {
-	TraceResult	tr;
+	//TraceResult	tr;
 	FILE	*file;
 
 	char	szNrpFilename [MAX_PATH];// text node report filename
@@ -1632,7 +1634,7 @@ void CTestHull :: BuildNodeGraph( void )
 	float	flDist;
 	int		step;
 
-	SetThink( &SUB_Remove );// no matter what happens, the hull gets rid of itself.
+	SetThink( &CBaseEntity::SUB_Remove );// no matter what happens, the hull gets rid of itself.
 	pev->nextthink = gpGlobals->time;
 
 // 	malloc a swollen temporary connection pool that we trim down after we know exactly how many connections there are.
@@ -1744,7 +1746,7 @@ void CTestHull :: BuildNodeGraph( void )
 	{
 		ALERT ( at_aiconsole, "**ConnectVisibleNodes FAILED!\n" );
 		
-		SetThink( &ShowBadNode );// send the hull off to show the offending node.
+		SetThink( &CTestHull::ShowBadNode );// send the hull off to show the offending node.
 		//pev->solid = SOLID_NOT;
 		pev->origin = WorldGraph.m_pNodes[ iBadNode ].m_vecOrigin;
 		
@@ -1883,17 +1885,17 @@ void CTestHull :: BuildNodeGraph( void )
 						switch ( hull )
 						{
 						case NODE_SMALL_HULL:	// if this hull can't fit, nothing can, so drop the connection
-							fprintf ( file, "NODE_SMALL_HULL step %f\n", step );
+							fprintf ( file, "NODE_SMALL_HULL step %d\n", step );
 							pTempPool[ pSrcNode->m_iFirstLink + j ].m_afLinkInfo &= ~(bits_LINK_SMALL_HULL | bits_LINK_HUMAN_HULL | bits_LINK_LARGE_HULL);
 							fSkipRemainingHulls = TRUE;// don't bother checking larger hulls
 							break;
 						case NODE_HUMAN_HULL:
-							fprintf ( file, "NODE_HUMAN_HULL step %f\n", step );
+							fprintf ( file, "NODE_HUMAN_HULL step %d\n", step );
 							pTempPool[ pSrcNode->m_iFirstLink + j ].m_afLinkInfo &= ~(bits_LINK_HUMAN_HULL | bits_LINK_LARGE_HULL);
 							fSkipRemainingHulls = TRUE;// don't bother checking larger hulls
 							break;
 						case NODE_LARGE_HULL:
-							fprintf ( file, "NODE_LARGE_HULL step %f\n", step );
+							fprintf ( file, "NODE_LARGE_HULL step %d\n", step );
 							pTempPool[ pSrcNode->m_iFirstLink + j ].m_afLinkInfo &= ~bits_LINK_LARGE_HULL;
 							break;
 						}
@@ -2722,6 +2724,7 @@ int Primes[NUMBER_OF_PRIMES] =
 
 void CGraph::HashChoosePrimes(int TableSize)
 {
+    int iPrime, iZone;
     int LargestPrime = TableSize/2;
     if (LargestPrime > Primes[NUMBER_OF_PRIMES-2])
     {
@@ -2733,7 +2736,7 @@ void CGraph::HashChoosePrimes(int TableSize)
     // We divide this interval into 16 equal sized zones. We want to find
     // one prime number that best represents that zone.
     //
-    for (int iZone = 1, iPrime = 0; iPrime < 16; iZone += Spacing)
+    for ( iZone = 1, iPrime = 0; iPrime < 16; iZone += Spacing )
     {
         // Search for a prime number that is less than the target zone
         // number given by iZone.
@@ -2789,9 +2792,9 @@ void CGraph::SortNodes(void)
 	// After assigning new node numbers to everything, we move
 	// things and patchup the links.
 	//
-	int iNodeCnt = 0;
+	int i, iNodeCnt = 0;
 	m_pNodes[0].m_iPreviousNode = iNodeCnt++;
-	for (int i = 1; i < m_cNodes; i++)
+	for (i = 1; i < m_cNodes; i++)
 	{
 		m_pNodes[i].m_iPreviousNode = UNNUMBERED_NODE;
 	}
@@ -2847,6 +2850,7 @@ void CGraph::SortNodes(void)
 
 void CGraph::BuildLinkLookups(void)
 {
+	int i;
 	m_nHashLinks = 3*m_cLinks/2 + 3;
 
 	HashChoosePrimes(m_nHashLinks);
@@ -2856,7 +2860,7 @@ void CGraph::BuildLinkLookups(void)
 		ALERT(at_aiconsole, "Couldn't allocated Link Lookup Table.\n");
 		return;
 	}
-	for (int i = 0; i < m_nHashLinks; i++)
+	for ( i = 0; i < m_nHashLinks; i++ )
 	{
 		m_pHashLinks[i] = ENTRY_STATE_EMPTY;
 	}
@@ -2882,6 +2886,7 @@ void CGraph::BuildLinkLookups(void)
 
 void CGraph::BuildRegionTables(void)
 {
+	int i, j;
 	if (m_di) free(m_di);
 
 	// Go ahead and setup for range searching the nodes for FindNearestNodes
@@ -2896,7 +2901,7 @@ void CGraph::BuildRegionTables(void)
 	// Calculate regions for all the nodes.
 	//
 	//
-	for (int i = 0; i < 3; i++)
+	for ( i = 0; i < 3; i++ )
 	{
 		m_RegionMin[i] =  999999999.0; // just a big number out there;
 		m_RegionMax[i] = -999999999.0; // just a big number out there;
@@ -2926,7 +2931,7 @@ void CGraph::BuildRegionTables(void)
 
 	for (i = 0; i < 3; i++)
 	{
-		for (int j = 0; j < NUM_RANGES; j++)
+		for (j = 0; j < NUM_RANGES; j++)
 		{
 			m_RangeStart[i][j] = 255;
 			m_RangeEnd[i][j] = 0;
@@ -3029,6 +3034,7 @@ void CGraph::BuildRegionTables(void)
 
 void CGraph :: ComputeStaticRoutingTables( void )
 {
+	int iFrom;
 	int nRoutes = m_cNodes*m_cNodes;
 #define FROM_TO(x,y) ((x)*m_cNodes+(y))
 	short *Routes = new short[nRoutes];
@@ -3060,7 +3066,7 @@ void CGraph :: ComputeStaticRoutingTables( void )
 
 				// Initialize Routing table to uncalculated.
 				//
-				for (int iFrom = 0; iFrom < m_cNodes; iFrom++)
+				for (iFrom = 0; iFrom < m_cNodes; iFrom++)
 				{
 					for (int iTo = 0; iTo < m_cNodes; iTo++)
 					{
@@ -3276,7 +3282,8 @@ void CGraph :: ComputeStaticRoutingTables( void )
 					int nRoute = p - pRoute;
 					if (m_pRouteInfo)
 					{
-						for (int i = 0; i < m_nRouteInfo - nRoute; i++)
+						int i;
+						for (i = 0; i < m_nRouteInfo - nRoute; i++)
 						{
 							if (memcmp(m_pRouteInfo + i, pRoute, nRoute) == 0)
 							{
@@ -3312,10 +3319,11 @@ void CGraph :: ComputeStaticRoutingTables( void )
 		}		
 		ALERT( at_aiconsole, "Size of Routes = %d\n", nTotalCompressedSize);
 	}
-	if (Routes) delete[] Routes;
-	if (BestNextNodes) delete[] BestNextNodes;
-	if (pRoute) delete[] pRoute;
-	if (pMyPath) delete[] pMyPath;
+	if ( Routes ) delete[] Routes;
+	if ( BestNextNodes ) delete[] BestNextNodes;
+	if ( pRoute ) delete[] pRoute;
+	if ( pMyPath ) delete[] pMyPath;
+
 	Routes = 0;
 	BestNextNodes = 0;
 	pRoute = 0;
@@ -3331,6 +3339,7 @@ void CGraph :: ComputeStaticRoutingTables( void )
 //
 void CGraph :: TestRoutingTables( void )
 {
+	int i;
 	int *pMyPath = new int[m_cNodes];
 	int *pMyPath2 = new int[m_cNodes];
 	if (pMyPath && pMyPath2)
@@ -3368,7 +3377,7 @@ void CGraph :: TestRoutingTables( void )
 						//
 #if 1
 						float flDistance1 = 0.0;
-						for (int i = 0; i < cPathSize1-1; i++)
+						for ( i = 0; i < cPathSize1-1; i++ )
 						{
 							// Find the link from pMyPath[i] to pMyPath[i+1]
 							//
@@ -3422,7 +3431,7 @@ void CGraph :: TestRoutingTables( void )
 #endif
 							ALERT(at_aiconsole, "Routing is inconsistent!!!\n");
 							ALERT(at_aiconsole, "(%d to %d |%d/%d)1:", iFrom, iTo, iHull, iCap);
-							for (int i = 0; i < cPathSize1; i++)
+							for ( i = 0; i < cPathSize1; i++ )
 							{
 								ALERT(at_aiconsole, "%d ", pMyPath[i]);
 							}
@@ -3446,8 +3455,8 @@ void CGraph :: TestRoutingTables( void )
 
 EnoughSaid:
 
-	if (pMyPath) delete pMyPath;
-	if (pMyPath2) delete pMyPath2;
+	if (pMyPath) delete[] pMyPath;
+	if (pMyPath2) delete[] pMyPath2;
 	pMyPath = 0;
 	pMyPath2 = 0;
 }
@@ -3559,7 +3568,7 @@ void CNodeViewer::Spawn( )
 	ALERT( at_aiconsole, "%d nodes\n", m_nVisited );
 
 	m_iDraw = 0;
-	SetThink( &DrawThink );
+	SetThink( &CNodeViewer::DrawThink );
 	pev->nextthink = gpGlobals->time;
 }
 
