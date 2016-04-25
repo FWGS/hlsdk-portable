@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Set your package name here -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+      package="in.celest.xash3d.gravgun"
+      android:versionCode="1"
+      android:versionName="1.0">
+    <uses-sdk android:minSdkVersion="3" android:targetSdkVersion="5"/>
+    <!-- Set your application name here -->
+    <application android:label="Half-Life Gravgun" android:debuggable="true" android:icon="@drawable/gravgun">
+    <!-- Set your launcher title here -->
+        <activity android:name="in.celest.xash3d.LauncherActivity"
+                  android:label="Half-Life Gravgun"
+			android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+	        <receiver android:name="in.celest.xash3d.InstallReceiver">
+                        <intent-filter android:priority="100">
+                                <category android:name="android.intent.category.DEFAULT" />
+                                <action android:name="android.intent.action.PACKAGE_ADDED"  />
+                                <action android:name="android.intent.action.PACKAGE_CHANGED" />
+                                <action android:name="android.intent.action.PACKAGE_INSTALL" />
+                                <action android:name="android.intent.action.PACKAGE_REMOVED" />
+                                <action android:name="android.intent.action.PACKAGE_REPLACED" />
+                                <data android:scheme="package" />
+                        </intent-filter>
+                </receiver>
+
+    </application>
+</manifest> 
