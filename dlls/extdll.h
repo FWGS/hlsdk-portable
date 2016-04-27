@@ -39,7 +39,17 @@
 #define NOSERVICE
 #define NOMCX
 #define NOIME
+#define HSPRITE HSPRITE_w32
 #include "windows.h"
+#undef HSPRITE
+#ifdef __amd64__
+#ifndef min
+#define min(a,b)  (((a) < (b)) ? (a) : (b))
+#endif
+#ifndef max
+#define max(a,b)  (((a) > (b)) ? (a) : (b))
+#endif
+#endif
 #else // _WIN32
 #define FALSE 0
 #define TRUE (!FALSE)
