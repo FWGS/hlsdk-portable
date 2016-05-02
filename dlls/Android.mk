@@ -99,8 +99,8 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
            rat.cpp \
            roach.cpp \
            rpg.cpp \
-           satchel.cpp \
-           schedule.cpp \
+		   satchel.cpp \
+		   schedule.cpp \
            scientist.cpp \
            scripted.cpp \
            shotgun.cpp \
@@ -125,7 +125,7 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
            xen.cpp \
            zombie.cpp \
            prop.cpp \
-           gravgun.cpp \
+		   gravgun.cpp \
 	   ../pm_shared/pm_debug.c \
 	   ../pm_shared/pm_math.c \
 	   ../pm_shared/pm_shared.c \

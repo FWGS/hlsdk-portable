@@ -78,7 +78,7 @@ void CSatchelCharge :: Spawn( void )
 	UTIL_SetOrigin( pev, pev->origin );
 
 	SetTouch( &CSatchelCharge::SatchelSlide );
-	SetUse( &CSatchelCharge::DetonateUse );
+	SetUse( &CGrenade::DetonateUse );
 	SetThink( &CSatchelCharge::SatchelThink );
 	pev->nextthink = gpGlobals->time + 0.1;
 
@@ -322,7 +322,7 @@ void CSatchel::Holster( int skiplocal /* = 0 */ )
 	if ( !m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] && !m_chargeReady )
 	{
 		m_pPlayer->pev->weapons &= ~(1<<WEAPON_SATCHEL);
-		SetThink( &CSatchel::DestroyItem );
+		SetThink( &CBasePlayerItem::DestroyItem );
 		pev->nextthink = gpGlobals->time + 0.1;
 	}
 }

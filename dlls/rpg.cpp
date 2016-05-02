@@ -80,7 +80,7 @@ void CLaserSpot::Suspend( float flSuspendTime )
 {
 	pev->effects |= EF_NODRAW;
 	
-	SetThink( &Revive );
+	SetThink( &CLaserSpot::Revive );
 	pev->nextthink = gpGlobals->time + flSuspendTime;
 }
 
@@ -133,8 +133,8 @@ void CRpgRocket :: Spawn( void )
 
 	pev->classname = MAKE_STRING("rpg_rocket");
 
-	SetThink( &IgniteThink );
-	SetTouch( &ExplodeTouch );
+	SetThink( &CRpgRocket::IgniteThink );
+	SetTouch( &CGrenade::ExplodeTouch );
 
 	pev->angles.x -= 30;
 	UTIL_MakeVectors( pev->angles );
@@ -200,7 +200,7 @@ void CRpgRocket :: IgniteThink( void  )
 	m_flIgniteTime = gpGlobals->time;
 
 	// set to follow laser spot
-	SetThink( &FollowThink );
+	SetThink( &CRpgRocket::FollowThink );
 	pev->nextthink = gpGlobals->time + 0.1;
 }
 

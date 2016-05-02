@@ -65,6 +65,7 @@ int CHudMenu :: VidInit( void )
 int CHudMenu :: Draw( float flTime )
 {
 	int i;
+
 	// check for if menu is set to disappear
 	if ( m_flShutoffTime > 0 )
 	{

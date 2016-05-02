@@ -107,6 +107,7 @@ int CHudStatusIcons::MsgFunc_StatusIcon( const char *pszName, int iSize, void *p
 void CHudStatusIcons::EnableIcon( char *pszIconName, unsigned char red, unsigned char green, unsigned char blue )
 {
 	int i;
+
 	// check to see if the sprite is in the current list
 	for ( i = 0; i < MAX_ICONSPRITES; i++ )
 	{
