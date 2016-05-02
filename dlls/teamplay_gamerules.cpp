@@ -69,7 +69,7 @@ CHalfLifeTeamplay :: CHalfLifeTeamplay()
 extern cvar_t timeleft, fragsleft;
 
 #include "voice_gamemgr.h"
-extern CVoiceGameMgr	g_VoiceGameMgr;
+//extern CVoiceGameMgr	g_VoiceGameMgr;
 
 void CHalfLifeTeamplay :: Think ( void )
 {
@@ -80,7 +80,7 @@ void CHalfLifeTeamplay :: Think ( void )
 	int frags_remaining = 0;
 	int time_remaining = 0;
 
-	g_VoiceGameMgr.Update(gpGlobals->frametime);
+	//g_VoiceGameMgr.Update(gpGlobals->frametime);
 
 	if ( g_fGameOver )   // someone else quit the game already
 	{
@@ -145,8 +145,8 @@ void CHalfLifeTeamplay :: Think ( void )
 //=========================================================
 BOOL CHalfLifeTeamplay :: ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 {
-	if(g_VoiceGameMgr.ClientCommand(pPlayer, pcmd))
-		return TRUE;
+	//if(g_VoiceGameMgr.ClientCommand(pPlayer, pcmd))
+		//return TRUE;
 
 	if ( FStrEq( pcmd, "menuselect" ) )
 	{
