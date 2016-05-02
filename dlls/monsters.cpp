@@ -2091,7 +2091,9 @@ void CBaseMonster :: StartMonster ( void )
 		if (!WALK_MOVE ( ENT(pev), 0, 0, WALKMOVE_NORMAL ) )
 		{
 			ALERT(at_error, "Monster %s stuck in wall--level design error\n", STRING(pev->classname));
+#ifdef _DEBUG
 			pev->effects = EF_BRIGHTFIELD;
+#endif
 		}
 	}
 	else 
