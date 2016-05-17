@@ -134,7 +134,7 @@ void V_NormalizeAngles( float *angles )
 	}
 }
 
-/*
+
 ===================
 V_InterpolateAngles
 
@@ -466,7 +466,7 @@ void V_CalcNormalRefdef ( struct ref_params_s *pparams )
 	waterOffset = 0;
 	if ( pparams->waterlevel >= 2 )
 	{
-		int		i, contents, waterDist, waterEntity;
+		int		contents, waterDist, waterEntity;
 		vec3_t	point;
 		waterDist = cl_waterdist->value;
 
@@ -661,7 +661,6 @@ void V_CalcNormalRefdef ( struct ref_params_s *pparams )
 		( pparams->smoothing && ( pparams->maxclients > 1 ) ) )
 	{
 		int foundidx;
-		int i;
 		float t;
 
 		if ( cl_vsmoothing->value < 0.0 )

@@ -933,7 +933,7 @@ void CBasePlayer::Killed( entvars_t *pevAttacker, int iGib )
 	pev->angles.x = 0;
 	pev->angles.z = 0;
 
-	SetThink( &PlayerDeathThink);
+	SetThink( &CBasePlayer::PlayerDeathThink);
 	pev->nextthink = gpGlobals->time + 0.1;
 }
 
@@ -1979,7 +1979,7 @@ void CBasePlayer::CheckTimeBasedDamage()
 		return;
 
 	// only check for time based damage approx. every 2 seconds
-	if (abs(gpGlobals->time - m_tbdPrev) < 2.0)
+	if ( fabs( gpGlobals->time - m_tbdPrev ) < 2.0 )
 		return;
 	
 	m_tbdPrev = gpGlobals->time;
@@ -2200,7 +2200,7 @@ void CBasePlayer::CheckSuitUpdate()
 		// play a sentence off of the end of the queue
 		for (i = 0; i < CSUITPLAYLIST; i++)
 			{
-			if (isentence = m_rgSuitPlayList[isearch])
+			if ( ( isentence = m_rgSuitPlayList[isearch] ) )
 				break;
 			
 			if (++isearch == CSUITPLAYLIST)
@@ -3209,7 +3209,7 @@ void CBloodSplat::Spawn ( entvars_t *pevOwner )
 	pev->angles = pevOwner->v_angle;
 	pev->owner = ENT(pevOwner);
 
-	SetThink( &Spray );
+	SetThink( &CBloodSplat::Spray );
 	pev->nextthink = gpGlobals->time + 0.1;
 }
 
@@ -3224,7 +3224,7 @@ void CBloodSplat::Spray ( void )
 
 		UTIL_BloodDecalTrace( &tr, BLOOD_COLOR_RED );
 	}
-	SetThink( &SUB_Remove );
+	SetThink( &CBaseEntity::SUB_Remove );
 	pev->nextthink = gpGlobals->time + 0.1;
 }
 
@@ -3537,7 +3537,7 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 
 	case 107:
 		{
-			TraceResult tr;
+			//TraceResult tr;
 
 			edict_t		*pWorld = g_engfuncs.pfnPEntityOfEntIndex( 0 );
 
@@ -3587,7 +3587,7 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		if ( pEntity )
 		{
 			if ( pEntity->pev->takedamage )
-				pEntity->SetThink( &SUB_Remove);
+				pEntity->SetThink( &CBaseEntity::SUB_Remove);
 		}
 		break;
 	}
@@ -4726,7 +4726,7 @@ void CRevertSaved :: Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYP
 {
 	UTIL_ScreenFadeAll( pev->rendercolor, Duration(), HoldTime(), pev->renderamt, FFADE_OUT );
 	pev->nextthink = gpGlobals->time + MessageTime();
-	SetThink( &MessageThink );
+	SetThink( &CRevertSaved::MessageThink );
 }
 
 
@@ -4737,7 +4737,7 @@ void CRevertSaved :: MessageThink( void )
 	if ( nextThink > 0 ) 
 	{
 		pev->nextthink = gpGlobals->time + nextThink;
-		SetThink( &LoadThink );
+		SetThink( &CRevertSaved::LoadThink );
 	}
 	else
 		LoadThink();

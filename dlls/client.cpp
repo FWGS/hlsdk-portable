@@ -217,7 +217,7 @@ void Host_Say( edict_t *pEntity, int teamonly )
 {
 	CBasePlayer *client;
 	int		j;
-	char	*p;
+	char	*p, *pc;
 	char	text[128];
 	char    szTemp[256];
 	const char *cpSay = "say";
@@ -269,7 +269,7 @@ void Host_Say( edict_t *pEntity, int teamonly )
 	}
 
 // make sure the text has content
-	for ( char *pc = p; pc != NULL && *pc != 0; pc++ )
+	for ( pc = p; pc != NULL && *pc != 0; pc++ )
 	{
 		if ( !isspace( *pc ) )
 		{

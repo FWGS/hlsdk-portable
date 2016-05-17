@@ -280,6 +280,7 @@ int CHud :: GetSpriteIndex( const char *SpriteName )
 
 void CHud :: VidInit( void )
 {
+	int j;
 	m_scrinfo.iSize = sizeof(m_scrinfo);
 	GetScreenInfo(&m_scrinfo);
 
@@ -307,7 +308,7 @@ void CHud :: VidInit( void )
 			// count the number of sprites of the appropriate res
 			m_iSpriteCount = 0;
 			client_sprite_t *p = m_pSpriteList;
-			for ( int j = 0; j < m_iSpriteCountAllRes; j++ )
+			for ( j = 0; j < m_iSpriteCountAllRes; j++ )
 			{
 				if ( p->iRes == m_iRes )
 					m_iSpriteCount++;
@@ -346,7 +347,7 @@ void CHud :: VidInit( void )
 
 		// count the number of sprites of the appropriate res
 		m_iSpriteCount = 0;
-		for ( int j = 0; j < m_iSpriteCountAllRes; j++ )
+		for ( j = 0; j < m_iSpriteCountAllRes; j++ )
 		{
 			if ( p->iRes == m_iRes )
 				m_iSpriteCount++;

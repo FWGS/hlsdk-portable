@@ -686,7 +686,7 @@ void CScientist :: Spawn( void )
 		pev->skin = 1;
 	
 	MonsterInit();
-	SetUse( &FollowerUse );
+	SetUse( &CTalkMonster::FollowerUse );
 }
 
 //=========================================================
@@ -1012,7 +1012,7 @@ MONSTERSTATE CScientist :: GetIdealState ( void )
 			if ( IsFollowing() )
 			{
 				int relationship = IRelationship( m_hEnemy );
-				if ( relationship != R_FR || relationship != R_HT && !HasConditions( bits_COND_LIGHT_DAMAGE | bits_COND_HEAVY_DAMAGE ) )
+				if ( relationship != R_FR || ( relationship != R_HT && !HasConditions( bits_COND_LIGHT_DAMAGE | bits_COND_HEAVY_DAMAGE ) ) )
 				{
 					// Don't go to combat if you're following the player
 					m_IdealMonsterState = MONSTERSTATE_ALERT;
@@ -1240,7 +1240,7 @@ void CSittingScientist :: Spawn( )
 	pev->sequence = m_baseSequence + RANDOM_LONG(0,4);
 	ResetSequenceInfo( );
 	
-	SetThink( &SittingThink);
+	SetThink( &CSittingScientist::SittingThink);
 	pev->nextthink = gpGlobals->time + 0.1;
 
 	DROP_TO_FLOOR ( ENT(pev) );
