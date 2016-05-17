@@ -113,7 +113,7 @@ void CGrenade::Explode( TraceResult *pTrace, int bitsDamageType )
 	}
 
 	pev->effects |= EF_NODRAW;
-	SetThink( &Smoke );
+	SetThink( &CGrenade::Smoke );
 	pev->velocity = g_vecZero;
 	pev->nextthink = gpGlobals->time + 0.3;
 
@@ -156,7 +156,7 @@ void CGrenade::Killed( entvars_t *pevAttacker, int iGib )
 // Timed grenade, this think is called when time runs out.
 void CGrenade::DetonateUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
-	SetThink( &Detonate );
+	SetThink( &CGrenade::Detonate );
 	pev->nextthink = gpGlobals->time;
 }
 
@@ -164,7 +164,7 @@ void CGrenade::PreDetonate( void )
 {
 	CSoundEnt::InsertSound ( bits_SOUND_DANGER, pev->origin, 400, 0.3 );
 
-	SetThink( &Detonate );
+	SetThink( &CGrenade::Detonate );
 	pev->nextthink = gpGlobals->time + 1;
 }
 
@@ -331,7 +331,7 @@ void CGrenade :: TumbleThink( void )
 
 	if (pev->dmgtime <= gpGlobals->time)
 	{
-		SetThink( &Detonate );
+		SetThink( &CGrenade::Detonate );
 	}
 	if (pev->waterlevel != 0)
 	{

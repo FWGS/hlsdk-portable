@@ -198,7 +198,7 @@ int CHud :: DrawHudString(int xpos, int ypos, int iMaxX, char *szIt, int r, int 
 {
 	if( hud_textmode->value == 2 )
 	{
-		gEngfuncs.pfnDrawSetTextColor( r/255.0, g/255.0, b/255.0 );
+		gEngfuncs.pfnDrawSetTextColor( r/255.0f, g/255.0f, b/255.0f );
 		return gEngfuncs.pfnDrawConsoleString( xpos, ypos, (char*) szIt );
 	}
 

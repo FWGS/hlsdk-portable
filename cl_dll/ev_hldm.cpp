@@ -1378,7 +1378,9 @@ enum EGON_FIREMODE { FIRE_NARROW, FIRE_WIDE};
 #define EGON_SOUND_RUN			"weapons/egon_run3.wav"
 #define EGON_SOUND_STARTUP		"weapons/egon_windup2.wav"
 
+#ifndef ARRAYSIZE
 #define ARRAYSIZE(p)		(sizeof(p)/sizeof(p[0]))
+#endif
 
 BEAM *pBeam;
 BEAM *pBeam2;

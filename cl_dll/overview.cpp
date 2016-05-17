@@ -47,7 +47,7 @@ int CHudOverview::VidInit()
 //-----------------------------------------------------------------------------
 int CHudOverview::Draw(float flTime)
 {
-#if 0
+/*
 	// only draw in overview mode
 	if (!gEngfuncs.Overview_GetOverviewState())
 		return 1;
@@ -147,7 +147,7 @@ int CHudOverview::Draw(float flTime)
 		}
 	}
 
-#endif
+*/
 	return 1;
 }
 
