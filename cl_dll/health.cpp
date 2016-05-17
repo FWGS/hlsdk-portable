@@ -390,7 +390,8 @@ int CHudHealth::DrawDamage(float flTime)
 	ScaleColors(r, g, b, a);
 
 	// Draw all the items
-	for (int i = 0; i < NUM_DMG_TYPES; i++)
+	int i;
+	for (i = 0; i < NUM_DMG_TYPES; i++)
 	{
 		if (m_bitsDamage & giDmgFlags[i])
 		{

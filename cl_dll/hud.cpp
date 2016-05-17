@@ -307,7 +307,8 @@ void CHud :: VidInit( void )
 			// count the number of sprites of the appropriate res
 			m_iSpriteCount = 0;
 			client_sprite_t *p = m_pSpriteList;
-			for ( int j = 0; j < m_iSpriteCountAllRes; j++ )
+			int j;
+			for (j = 0; j < m_iSpriteCountAllRes; j++ )
 			{
 				if ( p->iRes == m_iRes )
 					m_iSpriteCount++;
@@ -315,7 +316,7 @@ void CHud :: VidInit( void )
 			}
 
 			// allocated memory for sprite handle arrays
- 			m_rghSprites = new HSPRITE[m_iSpriteCount];
+ 			m_rghSprites = new SpriteHandle_t[m_iSpriteCount];
 			m_rgrcRects = new wrect_t[m_iSpriteCount];
 			m_rgszSpriteNames = new char[m_iSpriteCount * MAX_SPRITE_NAME_LENGTH];
 
@@ -346,7 +347,8 @@ void CHud :: VidInit( void )
 
 		// count the number of sprites of the appropriate res
 		m_iSpriteCount = 0;
-		for ( int j = 0; j < m_iSpriteCountAllRes; j++ )
+		int j;
+		for (j = 0; j < m_iSpriteCountAllRes; j++ )
 		{
 			if ( p->iRes == m_iRes )
 				m_iSpriteCount++;
@@ -358,7 +360,7 @@ void CHud :: VidInit( void )
 		delete [] m_rgszSpriteNames;
 
 		// allocated memory for sprite handle arrays
- 		m_rghSprites = new HSPRITE[m_iSpriteCount];
+ 		m_rghSprites = new SpriteHandle_t[m_iSpriteCount];
 		m_rgrcRects = new wrect_t[m_iSpriteCount];
 		m_rgszSpriteNames = new char[m_iSpriteCount * MAX_SPRITE_NAME_LENGTH];
 

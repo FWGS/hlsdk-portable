@@ -20,6 +20,7 @@
 #include "../engine/keydefs.h"
 #include "view.h"
 #include "windows.h"
+//#include <cmath>
 
 #define MOUSE_BUTTON_COUNT 5
 
@@ -306,7 +307,7 @@ void IN_MouseMove ( float frametime, usercmd_t *cmd)
 
 	if ( in_mlook.state & 1)
 	{
-		V_StopPitchDrift ();
+		//V_StopPitchDrift ();
 	}
 
 	//jjb - this disbles normal mouse control if the user is trying to 
@@ -762,7 +763,7 @@ void IN_JoyMove ( float frametime, usercmd_t *cmd )
 				// y=ax^b; where a = 300 and b = 1.3
 				// also x values are in increments of 800 (so this is factored out)
 				// then bounds check result to level out excessively high spin rates
-				fTemp = 300.0 * pow(abs(fAxisValue) / 800.0, 1.3);
+				fTemp = 300.0 * pow(fabs(fAxisValue) / 800.0, 1.3);
 				if (fTemp > 14000.0)
 					fTemp = 14000.0;
 				// restore direction information
@@ -791,7 +792,7 @@ void IN_JoyMove ( float frametime, usercmd_t *cmd )
 					{
 						viewangles[PITCH] += (fAxisValue * joy_pitchsensitivity->value) * aspeed * cl_pitchspeed->value;
 					}
-					V_StopPitchDrift();
+					//V_StopPitchDrift();
 				}
 				else
 				{
@@ -801,7 +802,7 @@ void IN_JoyMove ( float frametime, usercmd_t *cmd )
 					// *** the bug always has the lookspring feature on
 					if(lookspring->value == 0.0)
 					{
-						V_StopPitchDrift();
+						//V_StopPitchDrift();
 					}
 				}
 			}
@@ -863,7 +864,7 @@ void IN_JoyMove ( float frametime, usercmd_t *cmd )
 					{
 						viewangles[PITCH] += (fAxisValue * joy_pitchsensitivity->value) * speed * 180.0;
 					}
-					V_StopPitchDrift();
+					//V_StopPitchDrift();
 				}
 				else
 				{
@@ -873,7 +874,7 @@ void IN_JoyMove ( float frametime, usercmd_t *cmd )
 					// *** the bug always has the lookspring feature on
 					if( lookspring->value == 0.0 )
 					{
-						V_StopPitchDrift();
+						//V_StopPitchDrift();
 					}
 				}
 			}

@@ -43,11 +43,11 @@ static int DEATHNOTICE_DISPLAY_TIME = 6;
 
 DeathNoticeItem rgDeathNoticeList[ MAX_DEATHNOTICES + 1 ];
 
-float g_ColorBlue[3]	= { 0.6, 0.8, 1.0 };
-float g_ColorRed[3]		= { 1.0, 0.25, 0.25 };
-float g_ColorGreen[3]	= { 0.6, 1.0, 0.6 };
-float g_ColorYellow[3]	= { 1.0, 0.7, 0.0 };
-float g_ColorGrey[3]	= { 0.8, 0.8, 0.8 };
+float g_ColorBlue[3]	= { 0.6f, 0.8f, 1.0f };
+float g_ColorRed[3]		= { 1.0f, 0.25f, 0.25f };
+float g_ColorGreen[3]	= { 0.6f, 1.0f, 0.6f };
+float g_ColorYellow[3]	= { 1.0f, 0.7f, 0.0f };
+float g_ColorGrey[3]	= { 0.8f, 0.8f, 0.8f };
 
 float *GetClientColor( int clientIndex )
 {
@@ -171,7 +171,8 @@ int CHudDeathNotice :: MsgFunc_DeathMsg( const char *pszName, int iSize, void *p
 
 	gHUD.m_Spectator.DeathMessage(victim);
 
-	for ( int i = 0; i < MAX_DEATHNOTICES; i++ )
+	int i;
+	for (i = 0; i < MAX_DEATHNOTICES; i++ )
 	{
 		if ( rgDeathNoticeList[i].iId == 0 )
 			break;

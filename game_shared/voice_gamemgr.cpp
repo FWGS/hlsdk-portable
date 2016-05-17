@@ -136,7 +136,7 @@ void CVoiceGameMgr::Update(double frametime)
 }
 
 
-void CVoiceGameMgr::ClientConnected(edict_t *pEdict)
+void CVoiceGameMgr::ClientConnected(edict_t * pEdict)
 {
 	int index = ENTINDEX(pEdict) - 1;
 	
@@ -217,7 +217,8 @@ void CVoiceGameMgr::UpdateMasks()
 
 	bool bAllTalk = !!g_engfuncs.pfnCVarGetFloat( "sv_alltalk" );
 
-	for(int iClient=0; iClient < m_nMaxPlayers; iClient++)
+	int iClient;
+	for(iClient=0; iClient < m_nMaxPlayers; iClient++)
 	{
 		CBaseEntity *pEnt = UTIL_PlayerByIndex(iClient+1);
 		if(!pEnt || !pEnt->IsPlayer())

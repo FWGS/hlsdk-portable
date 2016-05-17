@@ -84,16 +84,18 @@ inline struct cvar_s *CVAR_CREATE( const char *cv, const char *val, const int fl
 #define AngleVectors (*gEngfuncs.pfnAngleVectors)
 extern cvar_t *hud_textmode;
 extern float g_hud_text_color[3];
-inline int DrawSetTextColor(float r, float g, float b)
+inline void DrawSetTextColor(float r, float g, float b)
 {
 	if( hud_textmode->value == 1 )
 		g_hud_text_color[0]=r, g_hud_text_color[1] = g, g_hud_text_color[2] = b;
 	else
 		gEngfuncs.pfnDrawSetTextColor( r, g, b );
+
+	return;
 }
 // Gets the height & width of a sprite,  at the specified frame
-inline int SPR_Height( HSPRITE x, int f )	{ return gEngfuncs.pfnSPR_Height(x, f); }
-inline int SPR_Width( HSPRITE x, int f )	{ return gEngfuncs.pfnSPR_Width(x, f); }
+inline int SPR_Height(SpriteHandle_t x, int f )	{ return gEngfuncs.pfnSPR_Height(x, f); }
+inline int SPR_Width(SpriteHandle_t x, int f )	{ return gEngfuncs.pfnSPR_Width(x, f); }
 
 inline 	client_textmessage_t	*TextMessageGet( const char *pName ) { return gEngfuncs.pfnTextMessageGet( pName ); }
 inline 	int						TextMessageDrawChar( int x, int y, int number, int r, int g, int b ) 
@@ -104,14 +106,14 @@ inline 	int						TextMessageDrawChar( int x, int y, int number, int r, int g, in
 inline int DrawConsoleString( int x, int y, const char *string )
 {
 	if( hud_textmode->value == 1 )
-		return gHUD.DrawHudString( x, y, 9999, (char*)string, 255*g_hud_text_color[0], 255*g_hud_text_color[1], 255*g_hud_text_color[2]);
+		return gHUD.DrawHudString( x, y, 9999, (char*)string, (int)(255*g_hud_text_color[0]), (int)(255*g_hud_text_color[1]), (int)(255*g_hud_text_color[2]));
 	return gEngfuncs.pfnDrawConsoleString( x, y, (char*) string );
 }
 
 inline void GetConsoleStringSize( const char *string, int *width, int *height )
 {
 	if( hud_textmode->value == 1 )
-		*height = 13, *width = gHUD.DrawHudStringLen(string);
+		*height = 13, *width = gHUD.DrawHudStringLen((char*)string);
 	else
 		gEngfuncs.pfnDrawConsoleStringLen( (char*)string, width, height );
 }
@@ -153,6 +155,7 @@ void ScaleColors( int &r, int &g, int &b, int a );
 #define VectorAdd(a,b,c) {(c)[0]=(a)[0]+(b)[0];(c)[1]=(a)[1]+(b)[1];(c)[2]=(a)[2]+(b)[2];}
 #define VectorCopy(a,b) {(b)[0]=(a)[0];(b)[1]=(a)[1];(b)[2]=(a)[2];}
 inline void VectorClear(float *a) { a[0]=0.0;a[1]=0.0;a[2]=0.0;}
+
 float Length(const float *v);
 void VectorMA (const float *veca, float scale, const float *vecb, float *vecc);
 void VectorScale (const float *in, float scale, float *out);
@@ -173,4 +176,4 @@ inline void UnpackRGB(int &r, int &g, int &b, unsigned long ulRGB)\
 	b = ulRGB & 0xFF;\
 }
 
-HSPRITE LoadSprite(const char *pszName);
+SpriteHandle_t LoadSprite(const char *pszName);

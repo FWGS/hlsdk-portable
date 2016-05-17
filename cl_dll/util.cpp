@@ -17,6 +17,9 @@
 //
 // implementation of class-less helper functions
 //
+#ifndef DEFINE_UTIL
+#define DEFINE_UTIL
+#endif
 
 #include "stdio.h"
 #include "stdlib.h"
@@ -30,15 +33,15 @@
 #define M_PI		3.14159265358979323846	// matches value in gcc v2 math.h
 #endif
 
-extern vec3_t vec3_origin;
 
-double sqrt(double x);
+vec3_t vec3_origin(0, 0, 0);
+
+//double sqrt(double x);
 
 float Length(const float *v)
 {
 	int		i;
 	float	length;
-	
 	length = 0;
 	for (i=0 ; i< 3 ; i++)
 		length += v[i]*v[i];
@@ -116,7 +119,7 @@ void VectorMA (const float *veca, float scale, const float *vecb, float *vecc)
 	vecc[2] = veca[2] + scale*vecb[2];
 }
 
-HSPRITE LoadSprite(const char *pszName)
+SpriteHandle_t LoadSprite(const char *pszName)
 {
 	int i;
 	char sz[256]; 
