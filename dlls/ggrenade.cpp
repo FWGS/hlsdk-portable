@@ -368,14 +368,14 @@ CGrenade *CGrenade::ShootContact( entvars_t *pevOwner, Vector vecStart, Vector v
 	pGrenade->pev->owner = ENT(pevOwner);
 	
 	// make monsters afaid of it while in the air
-	pGrenade->SetThink( &DangerSoundThink );
+	pGrenade->SetThink( &CGrenade::DangerSoundThink );
 	pGrenade->pev->nextthink = gpGlobals->time;
 	
 	// Tumble in air
 	pGrenade->pev->avelocity.x = RANDOM_FLOAT ( -100, -500 );
 	
 	// Explode on contact
-	pGrenade->SetTouch( &ExplodeTouch );
+	pGrenade->SetTouch( &CGrenade::ExplodeTouch );
 
 	pGrenade->pev->dmg = gSkillData.plrDmgM203Grenade;
 
@@ -392,14 +392,14 @@ CGrenade * CGrenade:: ShootTimed( entvars_t *pevOwner, Vector vecStart, Vector v
 	pGrenade->pev->angles = UTIL_VecToAngles(pGrenade->pev->velocity);
 	pGrenade->pev->owner = ENT(pevOwner);
 	
-	pGrenade->SetTouch( &BounceTouch );	// Bounce if touched
+	pGrenade->SetTouch( &CGrenade::BounceTouch );	// Bounce if touched
 	
 	// Take one second off of the desired detonation time and set the think to PreDetonate. PreDetonate
 	// will insert a DANGER sound into the world sound list and delay detonation for one second so that 
 	// the grenade explodes after the exact amount of time specified in the call to ShootTimed(). 
 
 	pGrenade->pev->dmgtime = gpGlobals->time + time;
-	pGrenade->SetThink( &TumbleThink );
+	pGrenade->SetThink( &CGrenade::TumbleThink );
 	pGrenade->pev->nextthink = gpGlobals->time + 0.1;
 	if (time < 0.1)
 	{
@@ -442,9 +442,9 @@ CGrenade * CGrenade :: ShootSatchelCharge( entvars_t *pevOwner, Vector vecStart,
 	pGrenade->pev->owner = ENT(pevOwner);
 	
 	// Detonate in "time" seconds
-	pGrenade->SetThink( &SUB_DoNothing );
-	pGrenade->SetUse( &DetonateUse );
-	pGrenade->SetTouch( &SlideTouch );
+	pGrenade->SetThink( &CBaseEntity::SUB_DoNothing );
+	pGrenade->SetUse( &CGrenade::DetonateUse );
+	pGrenade->SetTouch( &CGrenade::SlideTouch );
 	pGrenade->pev->spawnflags = SF_DETONATE;
 
 	pGrenade->pev->friction = 0.9;

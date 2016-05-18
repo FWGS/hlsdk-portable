@@ -121,7 +121,7 @@ void CSquidSpit::Shoot( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity
 	pSpit->pev->velocity = vecVelocity;
 	pSpit->pev->owner = ENT(pevOwner);
 
-	pSpit->SetThink( &Animate );
+	pSpit->SetThink( &CSquidSpit::Animate );
 	pSpit->pev->nextthink = gpGlobals->time + 0.1;
 }
 
@@ -328,7 +328,7 @@ BOOL CBullsquid :: CheckRangeAttack1 ( float flDot, float flDist )
 	{
 		if ( m_hEnemy != NULL )
 		{
-			if ( fabs( pev->origin.z - m_hEnemy->pev->origin.z ) > 256 )
+			if ( abs( pev->origin.z - m_hEnemy->pev->origin.z ) > 256 )
 			{
 				// don't try to spit at someone up really high or down really low.
 				return FALSE;

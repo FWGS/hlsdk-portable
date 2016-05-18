@@ -115,7 +115,7 @@ void CGib :: SpawnStickyGibs( entvars_t *pevVictim, Vector vecOrigin, int cGibs 
 			pGib->pev->movetype = MOVETYPE_TOSS;
 			pGib->pev->solid = SOLID_BBOX;
 			UTIL_SetSize ( pGib->pev, Vector ( 0, 0 ,0 ), Vector ( 0, 0, 0 ) );
-			pGib->SetTouch( &StickyGibTouch );
+			pGib->SetTouch( &CGib::StickyGibTouch );
 			pGib->SetThink( NULL );
 		}
 		pGib->LimitVelocity();
@@ -739,7 +739,7 @@ void CGib :: BounceGibTouch ( CBaseEntity *pOther )
 		if ( m_material != matNone && RANDOM_LONG(0,2) == 0 )
 		{
 			float volume;
-			float zvel = fabs(pev->velocity.z);
+			float zvel = abs(pev->velocity.z);
 		
 			volume = 0.8 * min(1.0, ((float)zvel) / 450.0);
 
