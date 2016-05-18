@@ -241,6 +241,8 @@ void CAR2::PrimaryAttack()
 	}
 
 	MyAnim(iAnim);
+	if( m_pBeam1 )
+		UTIL_Remove(m_pBeam1);
 
 	m_pBeam1 = CBeam::BeamCreate(AR2_BEAM_SPRITE, 40);
 	m_pBeam1->SetFlags(BEAM_FSINE);
@@ -268,7 +270,9 @@ void CAR2::PrimaryAttack()
 
 void CAR2::Cleaner(void) {
 
-	UTIL_Remove(m_pBeam1);
+	if( m_pBeam1 )
+		UTIL_Remove(m_pBeam1);
+	m_pBeam1 = 0;
 }
 
 void CAR2::SecondaryAttack(void)
