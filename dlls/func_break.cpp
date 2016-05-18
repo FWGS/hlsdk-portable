@@ -359,7 +359,7 @@ void CBreakable::DamageSound( void )
 	int pitch;
 	float fvol;
 	char *rgpsz[6];
-	int i;
+	int i = 0;
 	int material = m_Material;
 
 //	if (RANDOM_LONG(0,1))
@@ -729,7 +729,8 @@ void CBreakable::Die( void )
 	int count = UTIL_EntitiesInBox( pList, 256, mins, maxs, FL_ONGROUND );
 	if ( count )
 	{
-		for ( int i = 0; i < count; i++ )
+		int i;
+		for (i = 0; i < count; i++ )
 		{
 			ClearBits( pList[i]->pev->flags, FL_ONGROUND );
 			pList[i]->pev->groundentity = NULL;

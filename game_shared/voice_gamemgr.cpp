@@ -179,7 +179,7 @@ bool CVoiceGameMgr::ClientCommand(CBasePlayer *pPlayer, const char *cmd)
 		for(int i=1; i < CMD_ARGC(); i++)
 		{
 			unsigned long mask = 0;
-			sscanf(CMD_ARGV(i), "%x", &mask);
+			sscanf(CMD_ARGV(i), "%lx", &mask);
 
 			if(i <= VOICE_MAX_PLAYERS_DW)
 			{
@@ -239,7 +239,7 @@ void CVoiceGameMgr::UpdateMasks()
 			// Build a mask of who they can hear based on the game rules.
 			for(int iOtherClient=0; iOtherClient < m_nMaxPlayers; iOtherClient++)
 			{
-				CBaseEntity *pEnt = UTIL_PlayerByIndex(iOtherClient+1);
+				pEnt = UTIL_PlayerByIndex(iOtherClient+1);
 				if(pEnt && pEnt->IsPlayer() && 
 					(bAllTalk || m_pHelper->CanPlayerHearPlayer(pPlayer, (CBasePlayer*)pEnt)) )
 				{

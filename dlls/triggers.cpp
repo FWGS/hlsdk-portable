@@ -1122,7 +1122,7 @@ void CBaseTrigger :: MultiTouch( CBaseEntity *pOther )
 	// Only touch clients, monsters, or pushables (depending on flags)
 	if ( ((pevToucher->flags & FL_CLIENT) && !(pev->spawnflags & SF_TRIGGER_NOCLIENTS)) ||
 		 ((pevToucher->flags & FL_MONSTER) && (pev->spawnflags & SF_TRIGGER_ALLOWMONSTERS)) ||
-		 (pev->spawnflags & SF_TRIGGER_PUSHABLES) && FClassnameIs(pevToucher,"func_pushable") )
+		 ( ( pev->spawnflags & SF_TRIGGER_PUSHABLES ) && FClassnameIs( pevToucher,"func_pushable" ) ) )
 	{
 
 #if 0

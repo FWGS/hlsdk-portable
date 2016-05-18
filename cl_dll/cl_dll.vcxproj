@@ -252,7 +252,6 @@
     <ClInclude Include="studio_util.h" />
     <ClInclude Include="util_vector.h" />
     <ClInclude Include="view.h" />
-    <ClInclude Include="wrect.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

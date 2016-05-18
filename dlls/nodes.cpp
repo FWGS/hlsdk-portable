@@ -40,7 +40,7 @@ CGraph	WorldGraph;
 
 LINK_ENTITY_TO_CLASS(info_node, CNodeEnt);
 LINK_ENTITY_TO_CLASS(info_node_air, CNodeEnt);
-#ifdef __linux__
+#ifdef _LINUX
 #include <unistd.h>
 #include <sys/stat.h>
 #define CreateDirectory(p, n) mkdir(p, 0777)
@@ -1595,7 +1595,7 @@ void CTestHull::CallBuildNodeGraph(void)
 //=========================================================
 void CTestHull::BuildNodeGraph(void)
 {
-	TraceResult	tr;
+	//TraceResult	tr;
 	FILE	*file;
 
 	char	szNrpFilename[MAX_PATH];// text node report filename
@@ -2724,6 +2724,7 @@ int Primes[NUMBER_OF_PRIMES] =
 
 void CGraph::HashChoosePrimes(int TableSize)
 {
+	int iPrime, iZone, jPrime;
 	int LargestPrime = TableSize / 2;
 	if (LargestPrime > Primes[NUMBER_OF_PRIMES - 2])
 	{
@@ -2735,13 +2736,13 @@ void CGraph::HashChoosePrimes(int TableSize)
 	// We divide this interval into 16 equal sized zones. We want to find
 	// one prime number that best represents that zone.
 	//
-	for (int iZone = 1, iPrime = 0; iPrime < 16; iZone += Spacing)
+	for (iZone = 1, iPrime = 0; iPrime < 16; iZone += Spacing)
 	{
 		// Search for a prime number that is less than the target zone
 		// number given by iZone.
 		//
 		int Lower = Primes[0];
-		for (int jPrime = 0; Primes[jPrime] != 0; jPrime++)
+		for (jPrime = 0; Primes[jPrime] != 0; jPrime++)
 		{
 			if (jPrime != 0 && TableSize % Primes[jPrime] == 0) continue;
 			int Upper = Primes[jPrime];
@@ -2765,7 +2766,6 @@ void CGraph::HashChoosePrimes(int TableSize)
 
 	// Alternate negative and positive numbers
 	//
-	int iPrime;
 	for (iPrime = 0; iPrime < 16; iPrime += 2)
 	{
 		m_HashPrimes[iPrime] = TableSize - m_HashPrimes[iPrime];
@@ -3457,8 +3457,8 @@ void CGraph::TestRoutingTables(void)
 
 EnoughSaid:
 
-	if (pMyPath) delete pMyPath;
-	if (pMyPath2) delete pMyPath2;
+	if (pMyPath) delete[] pMyPath;
+	if (pMyPath2) delete[] pMyPath2;
 	pMyPath = 0;
 	pMyPath2 = 0;
 	}

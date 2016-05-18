@@ -90,8 +90,7 @@ inline void DrawSetTextColor(float r, float g, float b)
 		g_hud_text_color[0]=r, g_hud_text_color[1] = g, g_hud_text_color[2] = b;
 	else
 		gEngfuncs.pfnDrawSetTextColor( r, g, b );
-
-	return;
+	//return;
 }
 // Gets the height & width of a sprite,  at the specified frame
 inline int SPR_Height(SpriteHandle_t x, int f )	{ return gEngfuncs.pfnSPR_Height(x, f); }

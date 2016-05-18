@@ -293,9 +293,6 @@
     <ClInclude Include="view.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="wrect.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\game_shared\voice_banmgr.h">
       <Filter>Header Files</Filter>
     </ClInclude>
