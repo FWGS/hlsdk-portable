@@ -385,6 +385,7 @@ void W_Precache(void)
 #endif
 
 	UTIL_PrecacheOtherWeapon( "weapon_gravgun" );
+	UTIL_PrecacheOtherWeapon( "weapon_ar2" );
 
 #if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
 	if ( g_pGameRules->IsDeathmatch() )

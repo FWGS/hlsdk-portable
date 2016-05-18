@@ -126,6 +126,7 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
            zombie.cpp \
            prop.cpp \
            gravgun.cpp \
+           ar2.cpp \
 	   ../pm_shared/pm_debug.c \
 	   ../pm_shared/pm_math.c \
 	   ../pm_shared/pm_shared.c
