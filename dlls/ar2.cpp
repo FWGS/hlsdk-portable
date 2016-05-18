@@ -1,0 +1,432 @@
+/***
+*AR2 Impulse Rifle from HALF-LIFE 2 , rewritten to hlsdk by Solexid.
+*Uses custom models and sounds
+*
+****/
+
+#include "extdll.h"
+#include "util.h"
+#include "customentity.h"
+#include "cbase.h"
+#include "monsters.h"
+#include "weapons.h"
+#include "nodes.h"
+#include "player.h"
+#include "soundent.h"
+#include "gamerules.h"
+
+#define AR2_BEAM_SPRITE		"sprites/xbeam1.spr"
+#define WEAPON_AR2			19
+enum AR2_e
+{
+	AR2_LONGIDLE = 0,
+	AR2_IDLE1,
+	AR2_LAUNCH,
+	AR2_RELOAD,
+	AR2_DEPLOY,
+	AR2_FIRE1,
+	AR2_FIRE2,
+	AR2_FIRE3,
+};
+
+
+
+LINK_ENTITY_TO_CLASS(weapon_ar2, CAR2);
+// TO WEAPONS.h
+//
+//class CAR2 : public CBasePlayerWeapon
+//{
+//public:
+//	void Spawn(void);
+//	void Precache(void);
+//	int iItemSlot(void) { return 3; }
+//	int GetItemInfo(ItemInfo *p);
+//	int AddToPlayer(CBasePlayer *pPlayer);
+//	CBeam* m_pBeam1;
+//	void PrimaryAttack(void);
+//	void Cleaner(void);
+//	void SecondaryAttack(void);
+//	int SecondaryAmmoIndex(void);
+//	BOOL Deploy(void);
+//	void Holster(int skiplocal);
+//	void MyAnim(int iAnim);
+//	void Reload(void);
+//	void WeaponIdle(void);
+//	float m_flNextAnimTime;
+//	int m_iShell;
+//
+//	virtual BOOL UseDecrement(void)
+//	{
+//		return false;
+//
+//	}
+//
+//};
+
+
+//=========================================================
+//=========================================================
+int CAR2::SecondaryAmmoIndex(void)
+{
+	return m_iSecondaryAmmoType;
+}
+
+void CAR2::Spawn()
+{
+	pev->classname = MAKE_STRING("weapon_ar2"); // hack to allow for old names
+	Precache();
+	SET_MODEL(ENT(pev), "models/w_ar2.mdl");
+	m_iId = WEAPON_AR2;
+
+	m_iDefaultAmmo = 30;
+
+	FallInit();// get ready to fall down.
+}
+
+
+void CAR2::Precache(void)
+{
+	PRECACHE_MODEL("models/v_ar2.mdl");
+	PRECACHE_MODEL("models/w_ar2.mdl");
+	PRECACHE_MODEL("models/p_ar2.mdl");
+
+	m_iShell = PRECACHE_MODEL("models/shell.mdl");// brass shellTE_MODEL
+
+	PRECACHE_MODEL("models/ar2grenade.mdl");	// grenade
+
+	PRECACHE_MODEL("models/w_9mmARclip.mdl");
+	PRECACHE_SOUND("items/9mmclip1.wav");
+
+	PRECACHE_SOUND("items/clipinsert1.wav");
+	PRECACHE_SOUND("items/cliprelease1.wav");
+
+	PRECACHE_SOUND("ar2s1.wav");// H to the K
+
+	PRECACHE_SOUND("ar2launch.wav");
+
+	PRECACHE_SOUND("weapons/357_cock1.wav");
+
+}
+
+int CAR2::GetItemInfo(ItemInfo *p)
+{
+	p->pszName = STRING(pev->classname);
+	p->pszAmmo1 = "9mm";
+	p->iMaxAmmo1 = _9MM_MAX_CARRY;
+	p->pszAmmo2 = "ARgrenades";
+	p->iMaxAmmo2 = M203_GRENADE_MAX_CARRY;
+	p->iMaxClip = 30;
+	p->iSlot = 2;
+	p->iPosition = 3;
+	p->iFlags = 0;
+	p->iId = m_iId = WEAPON_AR2;
+	p->iWeight = 25;
+
+	return 1;
+}
+
+int CAR2::AddToPlayer(CBasePlayer *pPlayer)
+{
+	if (CBasePlayerWeapon::AddToPlayer(pPlayer))
+	{
+		MESSAGE_BEGIN(MSG_ONE, gmsgWeapPickup, NULL, pPlayer->pev);
+		WRITE_BYTE(m_iId);
+		MESSAGE_END();
+		return TRUE;
+	}
+	return FALSE;
+}
+
+BOOL CAR2::Deploy()
+{
+	return DefaultDeploy("models/v_ar2.mdl", "models/p_ar2.mdl", AR2_DEPLOY, "MP5");
+}
+void CAR2::Holster(int skiplocal /* = 0 */)
+{
+
+	MyAnim(AR2_DEPLOY);
+}
+void CAR2::MyAnim(int iAnim)
+{
+
+	m_pPlayer->pev->weaponanim = iAnim;
+
+
+
+	MESSAGE_BEGIN(MSG_ONE, SVC_WEAPONANIM, NULL, m_pPlayer->pev);
+	WRITE_BYTE(iAnim); // sequence number
+	WRITE_BYTE(pev->body); // weaponmodel bodygroup.
+	MESSAGE_END();
+}
+void CAR2::PrimaryAttack()
+{
+	// don't fire underwater
+	if (m_pPlayer->pev->waterlevel == 3)
+	{
+		PlayEmptySound();
+		m_flNextPrimaryAttack =gpGlobals->time+0.15;
+		return;
+	}
+
+	if (m_iClip <= 0)
+	{
+		PlayEmptySound();
+		m_flNextPrimaryAttack = gpGlobals->time + 0.15;
+		return;
+	}
+
+	m_pPlayer->m_iWeaponVolume = NORMAL_GUN_VOLUME;
+	m_pPlayer->m_iWeaponFlash = NORMAL_GUN_FLASH;
+
+	m_iClip--;
+
+
+	m_pPlayer->pev->effects = (int)(m_pPlayer->pev->effects) | EF_MUZZLEFLASH;
+
+	// player "shoot" animation
+	m_pPlayer->SetAnimation(PLAYER_ATTACK1);
+
+	Vector vecSrc = m_pPlayer->GetGunPosition();
+	Vector vecAiming = m_pPlayer->GetAutoaimVector(AUTOAIM_10DEGREES);
+	Vector vecDir;
+
+#ifdef CLIENT_DLL
+	if (!bIsMultiplayer())
+#else
+	if (!g_pGameRules->IsMultiplayer())
+#endif
+	{
+		// optimized multiplayer. Widened to make it easier to hit a moving player
+		vecDir = m_pPlayer->FireBulletsPlayer(25, vecSrc, vecAiming, VECTOR_CONE_3DEGREES, 8192, BULLET_PLAYER_MP5, 0, 1, m_pPlayer->pev, m_pPlayer->random_seed);
+	}
+	else
+	{
+		// single player spread
+		vecDir = m_pPlayer->FireBulletsPlayer(20, vecSrc, vecAiming, VECTOR_CONE_1DEGREES, 8192, BULLET_PLAYER_MP5, 0, 1, m_pPlayer->pev, m_pPlayer->random_seed);
+	}
+
+	int iAnim;
+	switch (RANDOM_LONG(0, 2))
+	{
+	case 0:
+		iAnim = AR2_FIRE1;
+		break;
+
+	default:
+	case 1:
+		iAnim = AR2_FIRE2;
+		break;
+	case 2:
+		iAnim = AR2_FIRE3;
+		break;
+	}
+
+	MyAnim(iAnim);
+
+	m_pBeam1 = CBeam::BeamCreate(AR2_BEAM_SPRITE, 40);
+	m_pBeam1->SetFlags(BEAM_FSINE);
+	m_pBeam1->pev->spawnflags |= SF_BEAM_TEMPORARY;	
+	m_pBeam1->pev->owner = m_pPlayer->edict();
+	m_pBeam1->SetEndAttachment(1);
+	m_pBeam1->SetStartPos(this->pev->origin + this->pev->view_ofs + gpGlobals->v_forward * 1000 + gpGlobals->v_up * 20 + gpGlobals->v_right * 5 + gpGlobals->v_forward * 30);
+	m_pBeam1->SetEndPos(this->pev->origin + pev->view_ofs +gpGlobals->v_up*20+gpGlobals->v_right*5+gpGlobals->v_forward*30);
+	m_pBeam1->SetWidth(15);
+	m_pBeam1->SetBrightness(255);
+	EMIT_SOUND(ENT(pev), CHAN_VOICE, "ar2s1.wav", 1, ATTN_NORM);
+	
+	if (!m_iClip && m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0)
+		// HEV suit - indicate out of ammo condition
+		m_pPlayer->SetSuitUpdate("!HEV_AMO0", FALSE, 0);
+	SetThink(&CAR2::Cleaner);
+	pev->nextthink = gpGlobals->time + 0.03;
+	m_flNextPrimaryAttack = gpGlobals->time + (0.08);
+
+	if (m_flNextPrimaryAttack < gpGlobals->time  )
+		m_flNextPrimaryAttack = gpGlobals->time +  0.02;
+
+	m_flTimeWeaponIdle = gpGlobals->time  + UTIL_SharedRandomFloat(m_pPlayer->random_seed, 10, 15);
+}
+
+void CAR2::Cleaner(void) {
+
+	UTIL_Remove(m_pBeam1);
+}
+
+void CAR2::SecondaryAttack(void)
+{
+	// don't fire underwater
+	if (m_pPlayer->pev->waterlevel == 3)
+	{
+		PlayEmptySound();
+		m_flNextPrimaryAttack = gpGlobals->time + 0.15;
+		return;
+	}
+
+	if (m_pPlayer->m_rgAmmo[m_iSecondaryAmmoType] == 0)
+	{
+		PlayEmptySound();
+		return;
+	}
+
+	m_pPlayer->m_iWeaponVolume = NORMAL_GUN_VOLUME;
+	m_pPlayer->m_iWeaponFlash = BRIGHT_GUN_FLASH;
+
+	m_pPlayer->m_iExtraSoundTypes = bits_SOUND_DANGER;
+	m_pPlayer->m_flStopExtraSoundTime = gpGlobals->time + 0.7;
+
+	m_pPlayer->m_rgAmmo[m_iSecondaryAmmoType]--;
+
+	// player "shoot" animation
+	m_pPlayer->SetAnimation(PLAYER_ATTACK1);
+
+	UTIL_MakeVectors(m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle);
+
+	CGrenade::AR2Shoot(m_pPlayer->pev,
+		m_pPlayer->pev->origin + m_pPlayer->pev->view_ofs + gpGlobals->v_forward * 16,
+		gpGlobals->v_forward * 1300,5);
+
+
+	EMIT_SOUND(ENT(pev), CHAN_VOICE, "ar2launch.wav", 0.75, ATTN_NORM);	
+	MyAnim(AR2_LAUNCH);
+
+	m_flNextPrimaryAttack = gpGlobals->time + 1;
+	m_flNextSecondaryAttack = gpGlobals->time + 2;
+	m_flTimeWeaponIdle = gpGlobals->time + + 5;// idle pretty soon after shooting.
+
+	if (!m_pPlayer->m_rgAmmo[m_iSecondaryAmmoType])
+		// HEV suit - indicate out of ammo condition
+		m_pPlayer->SetSuitUpdate("!HEV_AMO0", FALSE, 0);
+}
+
+void CAR2::Reload(void)
+{
+	;
+	 
+	if (m_pPlayer->ammo_9mm <= 0)
+		return;
+
+	DefaultReload(30, AR2_RELOAD, 1.0);
+	
+}
+
+
+void CAR2::WeaponIdle(void)
+{
+	ResetEmptySound();
+
+	m_pPlayer->GetAutoaimVector(AUTOAIM_5DEGREES);
+
+	if (m_flTimeWeaponIdle >gpGlobals->time)
+		return;
+
+	int iAnim;
+	switch (RANDOM_LONG(0, 1))
+	{
+	case 0:
+		iAnim = AR2_LONGIDLE;
+		break;
+
+	default:
+	case 1:
+		iAnim = AR2_IDLE1;
+		break;
+	}
+
+	MyAnim(iAnim);
+
+	m_flTimeWeaponIdle = gpGlobals->time+UTIL_SharedRandomFloat(m_pPlayer->random_seed, 10, 15); // how long till we do this again.
+}
+
+
+
+//CGrenade * AR2Shoot(entvars_t * pevOwner, Vector vecStart, Vector vecVelocity, float time); to weapons.h
+CGrenade * CGrenade::AR2Shoot(entvars_t *pevOwner, Vector vecStart, Vector vecVelocity, float time)
+{
+	CGrenade *pGrenade = GetClassPtr((CGrenade *)NULL);
+	pGrenade->Spawn();
+	UTIL_SetOrigin(pGrenade->pev, vecStart);
+	pGrenade->pev->velocity = vecVelocity;
+	pGrenade->pev->movetype = MOVETYPE_BOUNCEMISSILE;
+	pGrenade->pev->angles = UTIL_VecToAngles(pGrenade->pev->velocity);
+	pGrenade->pev->owner = ENT(pevOwner);
+
+	UTIL_SetSize(pGrenade->pev, Vector(-5, -5, -5), Vector(5, 5, 5));
+	pGrenade->SetTouch(&CGrenade::AR2Touch);	// Bounce if touched
+
+	pGrenade->pev->dmgtime = gpGlobals->time + time;
+	pGrenade->SetThink(&CGrenade::TumbleThink);
+	pGrenade->pev->nextthink = gpGlobals->time + 0.1;
+	if (time < 0.1)
+	{
+		pGrenade->pev->nextthink = gpGlobals->time;
+		pGrenade->pev->velocity = Vector(0, 0, 0);
+	}
+
+	pGrenade->pev->sequence = RANDOM_LONG(3, 6);
+	pGrenade->pev->framerate = 1.0;
+
+
+	pGrenade->pev->gravity = 0.5;
+	pGrenade->pev->friction = 0.8;
+
+	SET_MODEL(ENT(pGrenade->pev), "models/ar2grenade.mdl");
+	pGrenade->pev->dmg = 30;
+
+	return pGrenade;
+}
+//void AR2Touch(CBaseEntity * pOther); to weapons.h
+
+void CGrenade::AR2Touch(CBaseEntity *pOther)
+{
+	// don't hit the guy that launched this sphere
+	if (pOther->edict() == pev->owner)
+		return;
+
+	// only do damage if we're moving fairly fast
+	if (m_flNextAttack < gpGlobals->time )
+	{
+		entvars_t *pevOwner = VARS(pev->owner);
+		if (pevOwner)
+		{
+			TraceResult tr = UTIL_GetGlobalTrace();
+			ClearMultiDamage();
+			pOther->TraceAttack(pevOwner, 250, gpGlobals->v_forward, &tr, DMG_CLUB);
+			ApplyMultiDamage(pev, pevOwner);
+		}
+		m_flNextAttack = gpGlobals->time + 0.03; // debounce
+	}
+
+	Vector vecTestVelocity;
+	vecTestVelocity = pev->velocity;
+
+	if (!m_fRegisteredSound && vecTestVelocity.Length() <= 60)
+	{
+		CSoundEnt::InsertSound(bits_SOUND_DANGER, pev->origin, pev->dmg / 0.4, 0.3);
+		m_fRegisteredSound = TRUE;
+	}
+
+	{
+		// play bounce sound
+		switch (RANDOM_LONG(0, 2))
+		{
+		case 0:	EMIT_SOUND(ENT(pev), CHAN_VOICE, "weapons/grenade_hit1.wav", 0.25, ATTN_NORM);	break;
+		case 1:	EMIT_SOUND(ENT(pev), CHAN_VOICE, "weapons/grenade_hit2.wav", 0.25, ATTN_NORM);	break;
+		case 2:	EMIT_SOUND(ENT(pev), CHAN_VOICE, "weapons/grenade_hit3.wav", 0.25, ATTN_NORM);	break;
+		}
+	}
+	pev->framerate = pev->velocity.Length() / 200.0;
+	
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
