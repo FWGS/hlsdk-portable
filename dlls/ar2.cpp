@@ -59,12 +59,17 @@ public:
 };
 
 LINK_ENTITY_TO_CLASS(weapon_ar2, CAR2);
-class CAR2Ball: public CGrenade
+class CAR2Ball: public CBaseEntity
 {
 public:
 	static CAR2Ball *AR2Shoot(entvars_t *pevOwner, Vector vecStart, Vector vecVelocity, float time);
 	void AR2Touch(CBaseEntity *pOther);
+	void Precache();
 	void Spawn();
+	void AR2Think();
+	void Detonate();
+	void Explode(TraceResult *tr, int);
+	int TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
 	virtual float TouchGravGun( CBaseEntity *attacker, int stage )
 	{
 		pev->owner = attacker->edict();
@@ -80,11 +85,285 @@ public:
 
 		return 1600;
 	}
+	float m_flNextAttack;
+	bool m_fRegisteredSound;
+	int m_iShockWaveTexture;
 };
 
 LINK_ENTITY_TO_CLASS(ar2grenade, CAR2Ball);
 //=========================================================
 //=========================================================
+
+int CAR2Ball::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType)
+{
+	Vector r = (pevInflictor->origin - pev->origin);
+	pev->velocity = r * flDamage / -7;
+	pev->avelocity.x = pev->avelocity.x*0.5 + RANDOM_FLOAT(100, -100);
+
+}
+
+void CAR2Ball::Precache()
+{
+	m_iShockWaveTexture = PRECACHE_MODEL( "sprites/shockwave.spr" );
+	PRECACHE_MODEL( "models/ar2grenade.mdl" );
+}
+
+void CAR2Ball::Spawn()
+{
+	Precache();
+	pev->movetype = MOVETYPE_BOUNCE;
+	pev->solid = SOLID_SLIDEBOX;
+	UTIL_SetOrigin(pev, pev->origin);
+	SetTouch(&CAR2Ball::AR2Touch);	// Bounce if touched
+
+	SetThink(&CAR2Ball::AR2Think);
+	pev->nextthink = gpGlobals->time + 0.1;
+	pev->dmgtime = gpGlobals->time + 99999;
+	pev->takedamage = DAMAGE_YES;
+	pev->sequence = RANDOM_LONG(3, 6);
+	pev->framerate = 1.0;
+	pev->effects = EF_LIGHT;
+	pev->rendermode = kRenderTransAdd;
+	pev->renderfx = kRenderFxDistort;
+	pev->renderamt = 256;
+
+	pev->gravity = 0.0005;
+	pev->friction = 0;
+
+	SET_MODEL(ENT(pev), "models/ar2grenade.mdl");
+	pev->dmg = 60;
+	m_fRegisteredSound = FALSE;
+	UTIL_SetSize(pev, Vector(-16, -16, -16), Vector(16, 16, 16));
+	UTIL_SetOrigin(pev, pev->origin);
+	pev->avelocity.x = RANDOM_LONG(-1000, 1000);
+	pev->avelocity.y = RANDOM_LONG(-1000, 1000);
+
+}
+
+CAR2Ball * CAR2Ball::AR2Shoot(entvars_t *pevOwner, Vector vecStart, Vector vecVelocity, float time)
+{
+	CAR2Ball *pGrenade = (CAR2Ball *)CBaseEntity::Create( "ar2grenade", vecStart, vecVelocity, ENT(pevOwner) );
+	pGrenade->Spawn();
+	UTIL_SetOrigin(pGrenade->pev, vecStart);
+	pGrenade->pev->velocity = vecVelocity;
+
+	pGrenade->pev->angles = UTIL_VecToAngles(pGrenade->pev->velocity);
+	pGrenade->pev->owner = ENT(pevOwner);
+
+	pGrenade->pev->dmgtime = gpGlobals->time + time;
+
+	if (time < 0.1)
+	{
+		pGrenade->pev->nextthink = gpGlobals->time;
+		pGrenade->pev->velocity = Vector(0, 0, 0);
+	}
+
+	return pGrenade;
+}
+
+void CAR2Ball::AR2Touch(CBaseEntity *pOther)
+{
+	// don't hit the guy that launched this sphere
+	if (pOther->edict() == pev->owner)
+		return;
+
+	if( ( pev->velocity.Length() >= 500 ) && (pev->dmgtime - gpGlobals->time > 5 ) )
+	{
+		ALERT( at_console, "Slow detonate\n");
+		pev->dmgtime = gpGlobals->time + 5 ;
+	}
+
+	if( pev->velocity.Length() >= 100 )
+	{
+		ALERT( at_console, "Decreasing dmgtime %f\n", pev->dmg - gpGlobals->time );
+		pev->dmgtime -= pev->velocity.Length() / 5000;
+	}
+
+	// only do damage if we're moving fairly fast
+	if (m_flNextAttack < gpGlobals->time )
+	{
+		entvars_t *pevOwner = VARS(pev->owner);
+		if( !pevOwner )
+			pevOwner = pev;
+		TraceResult tr = UTIL_GetGlobalTrace();
+		ClearMultiDamage();
+		pOther->TraceAttack(pevOwner, 250, gpGlobals->v_forward, &tr, DMG_CLUB);
+		if( pOther->IsPlayer() || pOther->IsMoving() )
+			pev->velocity = gpGlobals->v_forward.Normalize() * 1600;
+		ApplyMultiDamage(pev, pevOwner);
+		m_flNextAttack = gpGlobals->time + 0.03; // debounce
+	}
+
+	if( !pev->velocity.Length() )
+		pev->velocity.z += 100;
+
+	Vector vecTestVelocity;
+	vecTestVelocity = pev->velocity;
+
+	if (!m_fRegisteredSound && vecTestVelocity.Length() <= 60)
+	{
+		CSoundEnt::InsertSound(bits_SOUND_DANGER, pev->origin, pev->dmg / 0.4, 0.3);
+		m_fRegisteredSound = TRUE;
+	}
+
+	{
+		// play bounce sound
+		switch (RANDOM_LONG(0, 2))
+		{
+		case 0:	EMIT_SOUND(ENT(pev), CHAN_VOICE, "weapons/grenade_hit1.wav", 0.25, ATTN_NORM);	break;
+		case 1:	EMIT_SOUND(ENT(pev), CHAN_VOICE, "weapons/grenade_hit2.wav", 0.25, ATTN_NORM);	break;
+		case 2:	EMIT_SOUND(ENT(pev), CHAN_VOICE, "weapons/grenade_hit3.wav", 0.25, ATTN_NORM);	break;
+		}
+	}
+
+	pev->framerate = pev->velocity.Length() / 200.0;
+	if( pev->framerate > 0.8 )
+		pev->framerate = 0.8;
+	if( pev->framerate < 0.1 )
+		pev->framerate = 0.1;
+	pev->effects |= EF_BRIGHTLIGHT;
+	pev->velocity = pev->velocity + pOther->pev->velocity;
+}
+
+void CAR2Ball::AR2Think()
+{
+	if (!IsInWorld())
+	{
+		UTIL_Remove( this );
+		return;
+	}
+
+	pev->nextthink = gpGlobals->time + 0.1;
+
+	if (pev->dmgtime - 1 < gpGlobals->time)
+	{
+		CSoundEnt::InsertSound ( bits_SOUND_DANGER, pev->origin + pev->velocity * (pev->dmgtime - gpGlobals->time), 400, 0.1 );
+	}
+
+	if (pev->dmgtime <= gpGlobals->time)
+	{
+		pev->renderfx = kRenderFxExplode;
+		SetThink( &CAR2Ball::Detonate );
+	}
+	if (pev->waterlevel != 0)
+	{
+		SetThink( &CAR2Ball::Detonate );
+	}
+	pev->effects &= ~EF_BRIGHTLIGHT;
+}
+void CAR2Ball::Detonate( void )
+{
+	TraceResult tr;
+	Vector		vecSpot;// trace starts here!
+
+	vecSpot = pev->origin + Vector ( 0 , 0 , 8 );
+	UTIL_TraceLine ( vecSpot, vecSpot + Vector ( 0, 0, -40 ),  ignore_monsters, ENT(pev), & tr);
+
+	Explode( &tr, DMG_SHOCK );
+}
+
+// UNDONE: temporary scorching for PreAlpha - find a less sleazy permenant solution.
+void CAR2Ball::Explode( TraceResult *pTrace, int bitsDamageType )
+{
+	float		flRndSound;// sound randomizer
+
+	pev->model = iStringNull;//invisible
+	pev->solid = SOLID_NOT;// intangible
+
+	pev->takedamage = DAMAGE_NO;
+
+	// Pull out of the wall a bit
+	if ( pTrace->flFraction != 1.0 )
+	{
+		pev->origin = pTrace->vecEndPos + (pTrace->vecPlaneNormal * (pev->dmg - 24) * 0.6);
+	}
+
+	int iContents = UTIL_PointContents ( pev->origin );
+
+
+	// blast circles
+	MESSAGE_BEGIN( MSG_PAS, SVC_TEMPENTITY, pev->origin );
+		WRITE_BYTE( TE_BEAMCYLINDER );
+		WRITE_COORD( pev->origin.x);
+		WRITE_COORD( pev->origin.y);
+		WRITE_COORD( pev->origin.z + 16);
+		WRITE_COORD( pev->origin.x);
+		WRITE_COORD( pev->origin.y);
+		WRITE_COORD( pev->origin.z + 16 + 384 / .2); // reach damage radius over .3 seconds
+		WRITE_SHORT( m_iShockWaveTexture );
+		WRITE_BYTE( 0 ); // startframe
+		WRITE_BYTE( 0 ); // framerate
+		WRITE_BYTE( 2 ); // life
+		WRITE_BYTE( 16 );  // width
+		WRITE_BYTE( 0 );   // noise
+
+		WRITE_BYTE( 255 );
+		WRITE_BYTE( 255 );
+		WRITE_BYTE( 255 );
+
+		WRITE_BYTE( 255 ); //brightness
+		WRITE_BYTE( 0 );		// speed
+	MESSAGE_END();
+
+	MESSAGE_BEGIN( MSG_PAS, SVC_TEMPENTITY, pev->origin );
+		WRITE_BYTE( TE_BEAMCYLINDER );
+		WRITE_COORD( pev->origin.x);
+		WRITE_COORD( pev->origin.y);
+		WRITE_COORD( pev->origin.z + 16);
+		WRITE_COORD( pev->origin.x);
+		WRITE_COORD( pev->origin.y);
+		WRITE_COORD( pev->origin.z + 16 + ( 384/ 2 ) / .2); // reach damage radius over .3 seconds
+		WRITE_SHORT( m_iShockWaveTexture );
+		WRITE_BYTE( 0 ); // startframe
+		WRITE_BYTE( 0 ); // framerate
+		WRITE_BYTE( 2 ); // life
+		WRITE_BYTE( 16 );  // width
+		WRITE_BYTE( 0 );   // noise
+
+		WRITE_BYTE( 255 );
+		WRITE_BYTE( 255 );
+		WRITE_BYTE( 255 );
+
+		WRITE_BYTE( 255 ); //brightness
+		WRITE_BYTE( 0 );		// speed
+	MESSAGE_END();
+
+
+	CSoundEnt::InsertSound ( bits_SOUND_COMBAT, pev->origin, NORMAL_EXPLOSION_VOLUME, 3.0 );
+	entvars_t *pevOwner;
+	if ( pev->owner )
+		pevOwner = VARS( pev->owner );
+	else
+		pevOwner = NULL;
+
+	pev->owner = NULL; // can't traceline attack owner if this is set
+
+	RadiusDamage ( pev->origin, pev, pevOwner, 30, 200, CLASS_NONE, bitsDamageType );
+	RadiusDamage ( pev->origin, pev, pevOwner, 200, 30, CLASS_NONE, bitsDamageType );
+
+
+	flRndSound = RANDOM_FLOAT( 0 , 1 );
+
+	switch ( RANDOM_LONG( 0, 2 ) )
+	{
+		case 0:	EMIT_SOUND(ENT(pev), CHAN_VOICE, "weapons/debris1.wav", 0.55, ATTN_NORM);	break;
+		case 1:	EMIT_SOUND(ENT(pev), CHAN_VOICE, "weapons/debris2.wav", 0.55, ATTN_NORM);	break;
+		case 2:	EMIT_SOUND(ENT(pev), CHAN_VOICE, "weapons/debris3.wav", 0.55, ATTN_NORM);	break;
+	}
+
+	pev->effects |= EF_NODRAW;
+	SetThink( &CAR2Ball::SUB_Remove );
+	pev->velocity = g_vecZero;
+	pev->nextthink = gpGlobals->time + 0.3;
+/*
+	if (iContents != CONTENTS_WATER)
+	{
+		int sparkCount = RANDOM_LONG(0,3);
+		for ( int i = 0; i < sparkCount; i++ )
+			Create( "spark_shower", pev->origin, pTrace->vecPlaneNormal, NULL );
+	}*/
+}
+
 int CAR2::SecondaryAmmoIndex(void)
 {
 	return m_iSecondaryAmmoType;
@@ -92,7 +371,7 @@ int CAR2::SecondaryAmmoIndex(void)
 
 void CAR2::Spawn()
 {
-	pev->classname = MAKE_STRING("weapon_ar2"); // hack to allow for old names
+	pev->classname = MAKE_STRING("weapon_ar2");
 	Precache();
 	SET_MODEL(ENT(pev), "models/w_ar2.mdl");
 	m_iId = WEAPON_AR2;
@@ -210,7 +489,7 @@ void CAR2::PrimaryAttack()
 	Vector vecAiming = m_pPlayer->GetAutoaimVector(AUTOAIM_10DEGREES);
 	Vector vecDir;
 
-	vecDir = m_pPlayer->FireBulletsPlayer(5, vecSrc, vecAiming, VECTOR_CONE_3DEGREES, 8192, BULLET_PLAYER_MP5, 0, 15, m_pPlayer->pev, m_pPlayer->random_seed);
+	vecDir = m_pPlayer->FireBulletsPlayer(5, vecSrc, vecAiming, VECTOR_CONE_3DEGREES, 8192, BULLET_PLAYER_MP5, 0, 3, m_pPlayer->pev, m_pPlayer->random_seed);
 
 	int iAnim;
 	switch (RANDOM_LONG(0, 2))
@@ -349,113 +628,5 @@ void CAR2::WeaponIdle(void)
 	MyAnim(iAnim);
 
 	m_flTimeWeaponIdle = gpGlobals->time+UTIL_SharedRandomFloat(m_pPlayer->random_seed, 10, 15); // how long till we do this again.
-
-}
-
-void CAR2Ball::Spawn()
-{
-	pev->movetype = MOVETYPE_BOUNCE;
-	pev->solid = SOLID_SLIDEBOX;
-	UTIL_SetOrigin(pev, pev->origin);
-	SetTouch(&CAR2Ball::AR2Touch);	// Bounce if touched
-
-	SetThink(&CAR2Ball::TumbleThink);
-	pev->nextthink = gpGlobals->time + 0.1;
-	pev->dmgtime = gpGlobals->time + 99999;
-	pev->sequence = RANDOM_LONG(3, 6);
-	pev->framerate = 1.0;
-	pev->effects = EF_LIGHT;
-	pev->rendermode = kRenderTransAdd;
-	pev->renderamt = 256;
-
-	pev->gravity = 0.0005;
-	pev->friction = 0;
-
-	SET_MODEL(ENT(pev), "models/ar2grenade.mdl");
-	pev->dmg = 30;
-	m_fRegisteredSound = FALSE;
-	UTIL_SetSize(pev, Vector(-16, -16, -16), Vector(16, 16, 16));
-	UTIL_SetOrigin(pev, pev->origin);
-	pev->avelocity.x = RANDOM_LONG(-1000, 1000);
-	pev->avelocity.y = RANDOM_LONG(-1000, 1000);
-
-}
-
-CAR2Ball * CAR2Ball::AR2Shoot(entvars_t *pevOwner, Vector vecStart, Vector vecVelocity, float time)
-{
-	CAR2Ball *pGrenade = (CAR2Ball *)CBaseEntity::Create( "ar2grenade", vecStart, vecVelocity, ENT(pevOwner) );
-	pGrenade->Spawn();
-	UTIL_SetOrigin(pGrenade->pev, vecStart);
-	pGrenade->pev->velocity = vecVelocity;
-
-	pGrenade->pev->angles = UTIL_VecToAngles(pGrenade->pev->velocity);
-	pGrenade->pev->owner = ENT(pevOwner);
-
-	pGrenade->pev->dmgtime = gpGlobals->time + time;
-
-	if (time < 0.1)
-	{
-		pGrenade->pev->nextthink = gpGlobals->time;
-		pGrenade->pev->velocity = Vector(0, 0, 0);
-	}
-
-	return pGrenade;
-}
-
-void CAR2Ball::AR2Touch(CBaseEntity *pOther)
-{
-	// don't hit the guy that launched this sphere
-	if (pOther->edict() == pev->owner)
-		return;
-
-	if( ( pev->velocity.Length() >= 500 ) && (pev->dmgtime - gpGlobals->time > 5 ) )
-	{
-		ALERT( at_console, "Slow detonate\n");
-		pev->dmgtime = gpGlobals->time + 5 ;
-	}
-
-	if( pev->velocity.Length() >= 100 )
-	{
-		ALERT( at_console, "Decreasing dmgtime %f\n", pev->dmg - gpGlobals->time );
-		pev->dmgtime -= pev->velocity.Length() / 5000;
-	}
-
-	// only do damage if we're moving fairly fast
-	if (m_flNextAttack < gpGlobals->time )
-	{
-		entvars_t *pevOwner = VARS(pev->owner);
-		if( !pevOwner )
-			pevOwner = pev;
-		TraceResult tr = UTIL_GetGlobalTrace();
-		ClearMultiDamage();
-		pOther->TraceAttack(pevOwner, 250, gpGlobals->v_forward, &tr, DMG_CLUB);
-		if( pOther->IsPlayer() || pOther->IsMoving() )
-			pev->velocity = gpGlobals->v_forward.Normalize() * 1600;
-		ApplyMultiDamage(pev, pevOwner);
-		m_flNextAttack = gpGlobals->time + 0.03; // debounce
-	}
-
-	if( !pev->velocity.Length() )
-		pev->velocity.z += 100;
-
-	Vector vecTestVelocity;
-	vecTestVelocity = pev->velocity;
-
-	if (!m_fRegisteredSound && vecTestVelocity.Length() <= 60)
-	{
-		CSoundEnt::InsertSound(bits_SOUND_DANGER, pev->origin, pev->dmg / 0.4, 0.3);
-		m_fRegisteredSound = TRUE;
-	}
-
-	{
-		// play bounce sound
-		switch (RANDOM_LONG(0, 2))
-		{
-		case 0:	EMIT_SOUND(ENT(pev), CHAN_VOICE, "weapons/grenade_hit1.wav", 0.25, ATTN_NORM);	break;
-		case 1:	EMIT_SOUND(ENT(pev), CHAN_VOICE, "weapons/grenade_hit2.wav", 0.25, ATTN_NORM);	break;
-		case 2:	EMIT_SOUND(ENT(pev), CHAN_VOICE, "weapons/grenade_hit3.wav", 0.25, ATTN_NORM);	break;
-		}
-	}
-	pev->framerate = pev->velocity.Length() / 200.0;
 
 }
