@@ -158,11 +158,12 @@ int CAR2::AddToPlayer(CBasePlayer *pPlayer)
 
 BOOL CAR2::Deploy()
 {
+	Cleaner();
 	return DefaultDeploy("models/v_ar2.mdl", "models/p_ar2.mdl", AR2_DEPLOY, "MP5");
 }
 void CAR2::Holster(int skiplocal /* = 0 */)
 {
-
+	Cleaner();
 	MyAnim(AR2_DEPLOY);
 }
 void CAR2::MyAnim(int iAnim)
@@ -245,12 +246,13 @@ void CAR2::PrimaryAttack()
 		UTIL_Remove(m_pBeam1);
 
 	m_pBeam1 = CBeam::BeamCreate(AR2_BEAM_SPRITE, 40);
+	m_pBeam1->PointEntInit(pev->origin, m_pPlayer->entindex());
 	m_pBeam1->SetFlags(BEAM_FSINE);
 	m_pBeam1->pev->spawnflags |= SF_BEAM_TEMPORARY;
 	m_pBeam1->pev->owner = m_pPlayer->edict();
 	m_pBeam1->SetEndAttachment(1);
-	m_pBeam1->SetStartPos(this->pev->origin + this->pev->view_ofs + gpGlobals->v_forward * 1000 + gpGlobals->v_up * 20 + gpGlobals->v_right * 5 + gpGlobals->v_forward * 30);
-	m_pBeam1->SetEndPos(this->pev->origin + pev->view_ofs +gpGlobals->v_up*20+gpGlobals->v_right*5+gpGlobals->v_forward*30);
+	m_pBeam1->SetStartPos( gpGlobals->trace_endpos );
+	//m_pBeam1->SetEndPos(this->pev->origin + pev->view_ofs +gpGlobals->v_up*20+gpGlobals->v_right*5+gpGlobals->v_forward*30);
 	m_pBeam1->SetWidth(15);
 	m_pBeam1->SetBrightness(255);
 	EMIT_SOUND(ENT(pev), CHAN_VOICE, "ar2s1.wav", 1, ATTN_NORM);
@@ -272,7 +274,7 @@ void CAR2::Cleaner(void) {
 
 	if( m_pBeam1 )
 		UTIL_Remove(m_pBeam1);
-	m_pBeam1 = 0;
+	m_pBeam1 = NULL;
 }
 
 void CAR2::SecondaryAttack(void)
@@ -319,6 +321,7 @@ void CAR2::SecondaryAttack(void)
 	if (!m_pPlayer->m_rgAmmo[m_iSecondaryAmmoType])
 		// HEV suit - indicate out of ammo condition
 		m_pPlayer->SetSuitUpdate("!HEV_AMO0", FALSE, 0);
+	Cleaner();
 }
 
 void CAR2::Reload(void)
@@ -358,6 +361,7 @@ void CAR2::WeaponIdle(void)
 	MyAnim(iAnim);
 
 	m_flTimeWeaponIdle = gpGlobals->time+UTIL_SharedRandomFloat(m_pPlayer->random_seed, 10, 15); // how long till we do this again.
+	Cleaner();
 }
 
 void CAR2Ball::Spawn()
