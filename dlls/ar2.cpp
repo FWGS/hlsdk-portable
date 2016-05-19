@@ -210,20 +210,7 @@ void CAR2::PrimaryAttack()
 	Vector vecAiming = m_pPlayer->GetAutoaimVector(AUTOAIM_10DEGREES);
 	Vector vecDir;
 
-#ifdef CLIENT_DLL
-	if (!bIsMultiplayer())
-#else
-	if (!g_pGameRules->IsMultiplayer())
-#endif
-	{
-		// optimized multiplayer. Widened to make it easier to hit a moving player
-		vecDir = m_pPlayer->FireBulletsPlayer(25, vecSrc, vecAiming, VECTOR_CONE_3DEGREES, 8192, BULLET_PLAYER_MP5, 0, 1, m_pPlayer->pev, m_pPlayer->random_seed);
-	}
-	else
-	{
-		// single player spread
-		vecDir = m_pPlayer->FireBulletsPlayer(20, vecSrc, vecAiming, VECTOR_CONE_1DEGREES, 8192, BULLET_PLAYER_MP5, 0, 1, m_pPlayer->pev, m_pPlayer->random_seed);
-	}
+	vecDir = m_pPlayer->FireBulletsPlayer(5, vecSrc, vecAiming, VECTOR_CONE_3DEGREES, 8192, BULLET_PLAYER_MP5, 0, 15, m_pPlayer->pev, m_pPlayer->random_seed);
 
 	int iAnim;
 	switch (RANDOM_LONG(0, 2))
@@ -242,30 +229,31 @@ void CAR2::PrimaryAttack()
 	}
 
 	MyAnim(iAnim);
-	if( m_pBeam1 )
-		UTIL_Remove(m_pBeam1);
+	if( !m_pBeam1 )
+	{
 
-	m_pBeam1 = CBeam::BeamCreate(AR2_BEAM_SPRITE, 40);
-	m_pBeam1->PointEntInit(pev->origin, m_pPlayer->entindex());
-	m_pBeam1->SetFlags(BEAM_FSINE);
-	m_pBeam1->pev->spawnflags |= SF_BEAM_TEMPORARY;
-	m_pBeam1->pev->owner = m_pPlayer->edict();
-	m_pBeam1->SetEndAttachment(1);
-	m_pBeam1->SetStartPos( gpGlobals->trace_endpos );
-	//m_pBeam1->SetEndPos(this->pev->origin + pev->view_ofs +gpGlobals->v_up*20+gpGlobals->v_right*5+gpGlobals->v_forward*30);
-	m_pBeam1->SetWidth(15);
-	m_pBeam1->SetBrightness(255);
+		m_pBeam1 = CBeam::BeamCreate(AR2_BEAM_SPRITE, 40);
+		m_pBeam1->PointEntInit(pev->origin, m_pPlayer->entindex());
+		m_pBeam1->SetFlags(BEAM_FSINE);
+		m_pBeam1->pev->spawnflags |= SF_BEAM_TEMPORARY;
+		m_pBeam1->pev->owner = m_pPlayer->edict();
+		m_pBeam1->SetEndAttachment(1);
+		m_pBeam1->SetStartPos( gpGlobals->trace_endpos );
+		//meam1->SetEndPos(this->pev->origin + pev->view_ofs +gpGlobals->v_up*20+gpGlobals->v_right*5+gpGlobals->v_forward*30);
+		m_pBeam1->SetWidth(15);
+		m_pBeam1->SetBrightness(255);
+
+		SetThink(&CAR2::Cleaner);
+		pev->nextthink = gpGlobals->time + 0.05;
+	}
 	EMIT_SOUND(ENT(pev), CHAN_VOICE, "ar2s1.wav", 1, ATTN_NORM);
 
 	if (!m_iClip && m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0)
 		// HEV suit - indicate out of ammo condition
 		m_pPlayer->SetSuitUpdate("!HEV_AMO0", FALSE, 0);
 	SetThink(&CAR2::Cleaner);
-	pev->nextthink = gpGlobals->time + 0.03;
-	m_flNextPrimaryAttack = gpGlobals->time + (0.08);
-
-	if (m_flNextPrimaryAttack < gpGlobals->time  )
-		m_flNextPrimaryAttack = gpGlobals->time +  0.02;
+	
+	m_flNextPrimaryAttack = gpGlobals->time + 0.1;
 
 	m_flTimeWeaponIdle = gpGlobals->time  + UTIL_SharedRandomFloat(m_pPlayer->random_seed, 10, 15);
 }
@@ -275,6 +263,7 @@ void CAR2::Cleaner(void) {
 	if( m_pBeam1 )
 		UTIL_Remove(m_pBeam1);
 	m_pBeam1 = NULL;
+	SetThink( NULL );
 }
 
 void CAR2::SecondaryAttack(void)
@@ -321,7 +310,6 @@ void CAR2::SecondaryAttack(void)
 	if (!m_pPlayer->m_rgAmmo[m_iSecondaryAmmoType])
 		// HEV suit - indicate out of ammo condition
 		m_pPlayer->SetSuitUpdate("!HEV_AMO0", FALSE, 0);
-	Cleaner();
 }
 
 void CAR2::Reload(void)
@@ -361,7 +349,7 @@ void CAR2::WeaponIdle(void)
 	MyAnim(iAnim);
 
 	m_flTimeWeaponIdle = gpGlobals->time+UTIL_SharedRandomFloat(m_pPlayer->random_seed, 10, 15); // how long till we do this again.
-	Cleaner();
+
 }
 
 void CAR2Ball::Spawn()
@@ -429,7 +417,7 @@ void CAR2Ball::AR2Touch(CBaseEntity *pOther)
 	if( pev->velocity.Length() >= 100 )
 	{
 		ALERT( at_console, "Decreasing dmgtime %f\n", pev->dmg - gpGlobals->time );
-		pev->dmgtime -= pev->velocity.Length() / 3000;
+		pev->dmgtime -= pev->velocity.Length() / 5000;
 	}
 
 	// only do damage if we're moving fairly fast
