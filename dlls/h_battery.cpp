@@ -198,3 +198,86 @@ void CRecharge::Off(void)
 	else
 		SetThink( &CBaseEntity::SUB_DoNothing );
 }
+
+class CMegaCharge: public CRecharge
+{
+	void Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
+	{
+		// if it's not a player, ignore
+		if (!FClassnameIs(pActivator->pev, "player"))
+			return;
+
+		// if there is no juice left, turn it off
+		if (m_iJuice <= 0)
+		{
+			pev->frame = 1;
+			Off();
+		}
+
+		// if the player doesn't have the suit, or there is no juice left, make the deny noise
+		if ((m_iJuice <= 0) || (!(pActivator->pev->weapons & (1<<WEAPON_SUIT))))
+		{
+			if (m_flSoundTime <= gpGlobals->time)
+			{
+				m_flSoundTime = gpGlobals->time + 0.62;
+				EMIT_SOUND(ENT(pev), CHAN_ITEM, "items/suitchargeno1.wav", 0.85, ATTN_NORM );
+			}
+			return;
+		}
+
+		pev->nextthink = pev->ltime + 0.25;
+		SetThink( &CRecharge::Off);
+
+		// Time to recharge yet?
+
+		if (m_flNextCharge >= gpGlobals->time)
+			return;
+
+		// Make sure that we have a caller
+		if (!pActivator)
+			return;
+
+		m_hActivator = pActivator;
+
+		//only recharge the player
+
+		if (!m_hActivator->IsPlayer() )
+			return;
+
+		// Play the on sound or the looping charging sound
+		if (!m_iOn)
+		{
+			m_iOn++;
+			EMIT_SOUND(ENT(pev), CHAN_ITEM, "items/suitchargeok1.wav", 0.85, ATTN_NORM );
+			m_flSoundTime = 0.56 + gpGlobals->time;
+		}
+		if ((m_iOn == 1) && (m_flSoundTime <= gpGlobals->time))
+		{
+			m_iOn++;
+			EMIT_SOUND(ENT(pev), CHAN_STATIC, "items/suitcharge1.wav", 0.85, ATTN_NORM );
+		}
+
+
+		// charge the player
+		if( m_hActivator->pev->health < 100 )
+		{
+			m_hActivator->pev->health += 50;
+			if (m_hActivator->pev->health > 100)
+				m_hActivator->pev->armorvalue = 100;
+			m_iJuice -= 5;
+		}
+		else if (m_hActivator->pev->armorvalue < 200)
+		{
+			m_iJuice -= 5;
+			m_hActivator->pev->armorvalue += 50;
+
+			if (m_hActivator->pev->armorvalue > 200)
+				m_hActivator->pev->armorvalue = 200;
+		}
+
+		// govern the rate of charge
+		m_flNextCharge = gpGlobals->time + 0.1;
+	}
+};
+
+LINK_ENTITY_TO_CLASS(func_megacharge, CMegaCharge);
