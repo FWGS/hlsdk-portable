@@ -263,7 +263,7 @@ class CMegaCharge: public CRecharge
 		{
 			m_hActivator->pev->health += 50;
 			if (m_hActivator->pev->health > 100)
-				m_hActivator->pev->armorvalue = 100;
+				m_hActivator->pev->health = 100;
 			m_iJuice -= 5;
 		}
 		else if (m_hActivator->pev->armorvalue < 200)
