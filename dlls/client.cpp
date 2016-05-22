@@ -374,6 +374,8 @@ called each time a player uses a "cmd" command
 */
 extern float g_flWeaponCheat;
 
+void DumpProps(); // prop.cpp
+
 // Use CMD_ARGV,  CMD_ARGV, and CMD_ARGC to get pointers the character string command.
 void ClientCommand( edict_t *pEntity )
 {
@@ -480,6 +482,11 @@ void ClientCommand( edict_t *pEntity )
 	{
 		// clear 'Unknown command: VModEnable' in singleplayer
 		return;
+	}
+	else if( FStrEq(pcmd, "dumpprops") )
+	{
+		if ( g_flWeaponCheat != 0.0 )
+			DumpProps();
 	}
 	else
 	{

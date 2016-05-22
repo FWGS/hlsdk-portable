@@ -1252,3 +1252,74 @@ void CProp::KeyValue( KeyValueData* pkvd )
 	else
 		CBaseEntity::KeyValue( pkvd );
 }
+#include <stdio.h>
+void DumpProps()
+{
+	edict_t		*pEdict = g_engfuncs.pfnPEntityOfEntIndex( 1 );
+	FILE *f = fopen( "props.ent", "wb" );
+
+	if( !f )
+		return;
+
+	for ( int j = 1; j < gpGlobals->maxEntities; j++, pEdict++ )
+	{
+		if ( pEdict->free )	// Not in use
+			continue;
+
+		if ( strcmp( STRING( pEdict->v.classname ), "prop" ) )
+			 continue;
+		CProp *prop = (CProp *)CBaseEntity::Instance(pEdict);
+
+		fprintf( f, "{\n");
+		fprintf( f, "\"classname\" \"prop\"\n");
+		if( pEdict->v.model )
+			fprintf( f, "\"model\" \"%s\"\n", STRING( pEdict->v.model ));
+		fprintf( f, "\"spawnflags\" \"%d\"\n", pEdict->v.spawnflags );
+		fprintf( f, "\"angles\" \"%d %d %d\"\n", (int)pEdict->v.angles.x, (int)pEdict->v.angles.y, (int)pEdict->v.angles.z );
+		fprintf( f, "\"origin\" \"%d %d %d\"\n", (int)pEdict->v.origin.x, (int)pEdict->v.origin.y, (int)pEdict->v.origin.z );
+		if( prop->m_shape != 1 )
+			fprintf( f, "\"shape\" \"%d\"\n", (int)(((int)prop->m_shape) > 1? (int)(prop->m_shape): (int)(!(int)prop->m_shape)) );
+		fprintf( f, "\"hmin\" \"%d %d %d\"\n", (int)prop->minsH.x, (int)prop->minsH.y, (int)prop->minsH.z );
+		fprintf( f, "\"hmax\" \"%d %d %d\"\n", (int)prop->maxsH.x, (int)prop->maxsH.y, (int)prop->maxsH.z );
+		if( prop->m_shape > 1 )
+		{
+			fprintf( f, "\"vmin\" \"%d %d %d\"\n", (int)prop->minsV.x, (int)prop->minsV.y, (int)prop->minsV.z );
+			fprintf( f, "\"vmax\" \"%d %d %d\"\n", (int)prop->maxsV.x, (int)prop->maxsV.y, (int)prop->maxsV.z );
+		}
+		if( prop->m_Material )
+			fprintf( f, "\"material\" \"%d\"\n", prop->m_Material );
+		if( pEdict->v.health != 30 )
+			fprintf( f, "\"health\" \"%d\"\n", (int)pEdict->v.health );
+		if( prop->m_shape == SHAPE_GENERIC)
+		{
+			int i;
+			if( !( !prop->m_iaCustomAnglesX[0] && !prop->m_iaCustomAnglesX[1] ) )
+			{
+				fprintf( f, "\"customanglesx\" \"%d", prop->m_iaCustomAnglesX[0] );
+
+				for( i = 1; (i < 10) && ( prop->m_iaCustomAnglesX[i] ); i++ )
+					fprintf( f, " %d", prop->m_iaCustomAnglesX[i] );
+
+				fprintf( f, "\"\n" );
+			}
+			if( !( !prop->m_iaCustomAnglesZ[0] && !prop->m_iaCustomAnglesZ[1] ) )
+			{
+				fprintf( f, "\"customanglesz\" \"%d", prop->m_iaCustomAnglesZ[0] );
+
+				for( i = 1; (i < 10) && ( prop->m_iaCustomAnglesZ[i] ); i++ )
+					fprintf( f, " %d", prop->m_iaCustomAnglesZ[i] );
+
+				fprintf( f, "\"\n" );
+			}
+		}
+		if( prop->m_Explosion == expDirected )
+			fprintf( f, "\"explosion\" \"directed\"\n" );
+
+		if( prop->m_iszGibModel )
+			fprintf( f, "\"gibmodel\" \"%s\"\n", STRING( prop->m_iszGibModel ) );
+
+		if( pEdict->v.impulse )
+			fprintf( f, "\"impulse\" \"%d\"\n", pEdict->v.impulse );
+		fprintf( f, "}\n" );
+	}
+}
