@@ -409,10 +409,10 @@ void CAR2::Precache(void)
 int CAR2::GetItemInfo(ItemInfo *p)
 {
 	p->pszName = STRING(pev->classname);
-	p->pszAmmo1 = "9mm";
-	p->iMaxAmmo1 = _9MM_MAX_CARRY;
-	p->pszAmmo2 = "ARgrenades";
-	p->iMaxAmmo2 = M203_GRENADE_MAX_CARRY;
+	p->pszAmmo1 = "AR2";
+	p->iMaxAmmo1 = 120;
+	p->pszAmmo2 = "AR2grenades";
+	p->iMaxAmmo2 = 3;
 	p->iMaxClip = 30;
 	p->iSlot = 2;
 	p->iPosition = 3;
@@ -630,3 +630,58 @@ void CAR2::WeaponIdle(void)
 	m_flTimeWeaponIdle = gpGlobals->time+UTIL_SharedRandomFloat(m_pPlayer->random_seed, 10, 15); // how long till we do this again.
 
 }
+
+
+
+class CAR2Ammo : public CBasePlayerAmmo
+{
+	void Spawn( void )
+	{
+		Precache( );
+		SET_MODEL(ENT(pev), "models/w_chainammo.mdl");
+		CBasePlayerAmmo::Spawn( );
+	}
+	void Precache( void )
+	{
+		PRECACHE_MODEL ("models/w_chainammo.mdl");
+		PRECACHE_SOUND("items/9mmclip1.wav");
+	}
+	BOOL AddAmmo( CBaseEntity *pOther )
+	{
+		int bResult = (pOther->GiveAmmo( 30, "AR2", 120) != -1);
+		if (bResult)
+		{
+			EMIT_SOUND(ENT(pev), CHAN_ITEM, "items/9mmclip1.wav", 1, ATTN_NORM);
+		}
+		return bResult;
+	}
+};
+LINK_ENTITY_TO_CLASS( ammo_ar2, CAR2Ammo );
+
+
+class CAR2AmmoGrenade : public CBasePlayerAmmo
+{
+	void Spawn( void )
+	{
+		Precache( );
+		SET_MODEL(ENT(pev), "models/w_ARgrenade.mdl");
+		CBasePlayerAmmo::Spawn( );
+	}
+	void Precache( void )
+	{
+		PRECACHE_MODEL ("models/w_ARgrenade.mdl");
+		PRECACHE_SOUND("items/9mmclip1.wav");
+	}
+	BOOL AddAmmo( CBaseEntity *pOther )
+	{
+		int bResult = (pOther->GiveAmmo( 1, "AR2grenades", 3 ) != -1);
+
+		if (bResult)
+		{
+			EMIT_SOUND(ENT(pev), CHAN_ITEM, "items/9mmclip1.wav", 1, ATTN_NORM);
+		}
+		return bResult;
+	}
+};
+
+LINK_ENTITY_TO_CLASS( ammo_ar2_altfire, CAR2AmmoGrenade );
