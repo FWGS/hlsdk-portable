@@ -99,6 +99,7 @@ public:
 		float speed = 2500;
 		if( pev->deadflag )
 			return 0;
+		pev->movetype = MOVETYPE_BOUNCE;
 		if(stage)
 		{
 			pev->nextthink = gpGlobals->time + m_flRespawnTime;
@@ -632,6 +633,7 @@ void CProp::Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType,
 {
 	if( pev->health <= 0)
 		return;
+	pev->movetype = MOVETYPE_BOUNCE;
 	if (m_owner2 != pActivator)
 	{
 		if (pev->velocity.Length() < 100 && pActivator->IsPlayer())
@@ -814,6 +816,7 @@ void CProp::BounceTouch(CBaseEntity *pOther)
 		DieThink();
 		return;
 	}
+	pev->movetype = MOVETYPE_BOUNCE;
 	//ALERT( at_console, "BounceTouch: %f %f %f\n", pev->angles.x, pev->angles.y, pev->angles.z );
 	// only do damage if we're moving fairly fast
 	DeployThink();
@@ -946,6 +949,16 @@ void CProp::Spawn(void)
 	}
 	m_flCollideFriction = 0.7;
 	m_flFloorFriction = 0.5;
+	if( !(pev->spawnflags & SF_PROP_FIXED ) )
+	{
+		UTIL_SetSize( pev, minsH, maxsH );
+		if( m_shape < 3 )
+			CheckRotate();
+
+		UTIL_SetOrigin( pev, pev->origin );
+
+		DROP_TO_FLOOR( edict() );
+	}
 	spawnOrigin = pev->origin;
 	spawnAngles = pev->angles;
 	m_flSpawnHealth = pev->health;
@@ -961,7 +974,10 @@ void CProp::PropRespawn()
 {
 	UTIL_SetSize(pev, Vector( 0, 0, 0), Vector(0, 0, 0) );
 	pev->effects &= ~EF_NODRAW;
-	pev->movetype = MOVETYPE_BOUNCE;
+	if( pev->spawnflags & SF_PROP_FIXED )
+		pev->movetype = MOVETYPE_NONE;
+	else
+		pev->movetype = MOVETYPE_BOUNCE;
 	pev->solid = SOLID_SLIDEBOX;
 	pev->takedamage = DAMAGE_YES;
 	pev->health = m_flSpawnHealth;
