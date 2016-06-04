@@ -37,8 +37,8 @@ extern Vector VecBModelOrigin( entvars_t* pevBModel );
 extern entvars_t *g_pevLastInflictor;
 
 #define GERMAN_GIB_COUNT		4
-#define	HUMAN_GIB_COUNT			6
-#define ALIEN_GIB_COUNT			4
+#define	HUMAN_GIB_COUNT			12
+#define ALIEN_GIB_COUNT			8
 
 
 // HACKHACK -- The gib velocity equations don't work
