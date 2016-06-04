@@ -46,7 +46,7 @@ BOOL WINAPI DllMain(
     }
 	return TRUE;
 }
-#endif^M
+#endif
 
 extern "C" void DLLEXPORT GiveFnptrsToDll( enginefuncs_t* pengfuncsFromEngine, globalvars_t *pGlobals )
 {
