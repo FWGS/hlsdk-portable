@@ -562,16 +562,16 @@ void CProp::Die( void )
 		WRITE_COORD( vecVelocity.z );
 
 		// randomization
-		WRITE_BYTE( 10 );
+		WRITE_BYTE( 8 );
 
 		// Model
 		WRITE_SHORT( m_idShard );	//model id#
 
 		// # of shards
-		WRITE_BYTE( 0 );	// let client decide
+		WRITE_BYTE( 50 );	// let client decide
 
 		// duration
-		WRITE_BYTE( 25 );// 2.5 seconds
+		WRITE_BYTE( 250 );// 2.5 seconds
 
 		// flags
 		WRITE_BYTE( cFlag );
@@ -627,6 +627,8 @@ void CProp::Killed(entvars_t *pevAttacker, int iGib)
 	SetThink( &CProp::RespawnThink );
 	SetTouch( NULL );
 	SetUse( NULL );
+	//m_owner2 = NULL;
+	//m_attacker = NULL;
 }
 
 void CProp::Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value)
@@ -965,7 +967,7 @@ void CProp::Spawn(void)
 	if( m_flSpawnHealth <= 0 )
 		m_flSpawnHealth = 30;
 	if( !m_flRespawnTime )
-		m_flRespawnTime = 20;
+		m_flRespawnTime = 80;
 	pev->dmg = 100;
 	PropRespawn();
 }
@@ -992,6 +994,8 @@ void CProp::PropRespawn()
 
 	pev->framerate = 1.0f;
 	UTIL_SetOrigin( pev, spawnOrigin );
+	m_owner2 = NULL;
+	m_attacker = NULL;
 }
 
 void CProp::RespawnThink()
