@@ -311,7 +311,9 @@ public:
 	float m_flNextChatTime;
 	virtual float TouchGravGun( CBaseEntity *attacker, int stage )
 	{
-		return 700;
+		if( stage == 3 )
+			return 200;
+		return 0;
 	}
 	
 };
