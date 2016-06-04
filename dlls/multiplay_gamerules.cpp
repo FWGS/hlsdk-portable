@@ -43,7 +43,9 @@ extern int g_teamplay;
 
 float g_flIntermissionStartTime = 0;
 
-//CVoiceGameMgr	g_VoiceGameMgr;
+#ifndef NO_VOICEGAMEMGR
+CVoiceGameMgr	g_VoiceGameMgr;
+#endif
 
 class CMultiplayGameMgrHelper : public IVoiceGameMgrHelper
 {
@@ -69,8 +71,10 @@ static CMultiplayGameMgrHelper g_GameMgrHelper;
 
 CHalfLifeMultiplay :: CHalfLifeMultiplay()
 {
-	//g_VoiceGameMgr.Init(&g_GameMgrHelper, gpGlobals->maxClients);
-
+#ifndef NO_VOICEGAMEMGR
+	g_VoiceGameMgr.Init(&g_GameMgrHelper, gpGlobals->maxClients);
+#endif
+	
 	RefreshSkillData();
 	m_flIntermissionEndTime = 0;
 	g_flIntermissionStartTime = 0;
@@ -116,9 +120,11 @@ CHalfLifeMultiplay :: CHalfLifeMultiplay()
 
 BOOL CHalfLifeMultiplay::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 {
-	//if(g_VoiceGameMgr.ClientCommand(pPlayer, pcmd))
-		//return TRUE;
-
+#ifndef NO_VOICEGAMEMGR
+	if(g_VoiceGameMgr.ClientCommand(pPlayer, pcmd))
+		return TRUE;
+#endif
+	
 	return CGameRules::ClientCommand(pPlayer, pcmd);
 }
 
@@ -186,8 +192,9 @@ extern cvar_t mp_chattime;
 //=========================================================
 void CHalfLifeMultiplay :: Think ( void )
 {
-	//g_VoiceGameMgr.Update(gpGlobals->frametime);
-
+#ifndef NO_VOICEGAMEMGR
+	g_VoiceGameMgr.Update(gpGlobals->frametime);
+#endif
 	///// Check game rules /////
 	static int last_frags;
 	static int last_time;
@@ -397,7 +404,9 @@ BOOL CHalfLifeMultiplay :: GetNextBestWeapon( CBasePlayer *pPlayer, CBasePlayerI
 //=========================================================
 BOOL CHalfLifeMultiplay :: ClientConnected( edict_t *pEntity, const char *pszName, const char *pszAddress, char szRejectReason[ 128 ] )
 {
-	//g_VoiceGameMgr.ClientConnected(pEntity);
+#ifndef NO_VOICEGAMEMGR
+	g_VoiceGameMgr.ClientConnected(pEntity);
+#endif
 	return TRUE;
 }
 
@@ -573,8 +582,8 @@ void CHalfLifeMultiplay :: PlayerSpawn( CBasePlayer *pPlayer )
 	{
 		pPlayer->GiveNamedItem( "weapon_crowbar" );
 		pPlayer->GiveNamedItem( "weapon_9mmhandgun" );
-		pPlayer->GiveAmmo( 68, "9mm", _9MM_MAX_CARRY );// 4 full reloads
 		pPlayer->GiveNamedItem( "weapon_gravgun" );
+		pPlayer->GiveAmmo( 68, "9mm", _9MM_MAX_CARRY );// 4 full reloads
 	}
 }
 

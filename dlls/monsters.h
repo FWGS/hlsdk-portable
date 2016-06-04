@@ -154,7 +154,6 @@ public:
 	static	void SpawnHeadGib( entvars_t *pevVictim );
 	static	void SpawnRandomGibs( entvars_t *pevVictim, int cGibs, int human );
 	static  void SpawnStickyGibs( entvars_t *pevVictim, Vector vecOrigin, int cGibs );
-	
 	virtual float TouchGravGun( CBaseEntity *attacker, int stage )
 	{
 		pev->nextthink = gpGlobals->time + m_lifeTime;

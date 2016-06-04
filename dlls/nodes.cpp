@@ -3323,7 +3323,6 @@ void CGraph :: ComputeStaticRoutingTables( void )
 	if ( BestNextNodes ) delete[] BestNextNodes;
 	if ( pRoute ) delete[] pRoute;
 	if ( pMyPath ) delete[] pMyPath;
-
 	Routes = 0;
 	BestNextNodes = 0;
 	pRoute = 0;

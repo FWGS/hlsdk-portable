@@ -167,7 +167,7 @@ int CHudDeathNotice :: MsgFunc_DeathMsg( const char *pszName, int iSize, void *p
 
 	char killedwith[32];
 	strcpy( killedwith, "d_" );
-	strncat( killedwith, READ_STRING(), 31 );
+	strncat( killedwith, READ_STRING(), sizeof(killedwith) );
 
 
 	gHUD.m_Spectator.DeathMessage(victim);

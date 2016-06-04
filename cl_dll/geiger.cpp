@@ -67,7 +67,6 @@ int CHudGeiger::Draw (float flTime)
 	float flvol = 0.0f;
 	int rg[3];
 	int i = 0;
-	
 	if (m_iGeigerRange < 1000 && m_iGeigerRange > 0)
 	{
 		// peicewise linear is better than continuous formula for this

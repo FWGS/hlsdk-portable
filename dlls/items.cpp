@@ -174,6 +174,7 @@ float CItem::TouchGravGun( CBaseEntity *attacker, int stage)
 	pev->nextthink = g_pGameRules->FlItemRespawnTime( this );
 	return 200;
 }
+
 void CItem::Materialize( void )
 {
 	if ( pev->effects & EF_NODRAW )

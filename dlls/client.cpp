@@ -204,8 +204,10 @@ void ClientPutInServer( edict_t *pEntity )
 
 }
 
-//#include "voice_gamemgr.h"
-//extern CVoiceGameMgr g_VoiceGameMgr;
+#ifndef NO_VOICEGAMEMGR
+#include "voice_gamemgr.h"
+extern CVoiceGameMgr g_VoiceGameMgr;
+#endif
 
 //// HOST_SAY
 // String comes in as
@@ -314,8 +316,10 @@ void Host_Say( edict_t *pEntity, int teamonly )
 			continue;
 
 		// can the receiver hear the sender? or has he muted him?
-		//if ( g_VoiceGameMgr.PlayerHasBlockedPlayer( client, player ) )
-			//continue;
+#ifndef NO_VOICEGAMEMGR
+		if ( g_VoiceGameMgr.PlayerHasBlockedPlayer( client, player ) )
+			continue;
+#endif
 
 		if ( teamonly && g_pGameRules->PlayerRelationship(client, CBaseEntity::Instance(pEntity)) != GR_TEAMMATE )
 			continue;

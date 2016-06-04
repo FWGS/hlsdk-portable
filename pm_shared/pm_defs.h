@@ -81,6 +81,7 @@ typedef struct physent_s
 	vec3_t		vuser3;
 	vec3_t		vuser4;
 } physent_t;
+
 typedef struct hull_s hull_t;
 
 typedef struct playermove_s

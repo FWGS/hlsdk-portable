@@ -532,10 +532,11 @@ void CBasePlayerItem::Materialize( void )
 		UTIL_SetOrigin( pev, m_SpawnPoint );// link into world.
 	else
 		UTIL_SetOrigin( pev, m_SpawnPoint = pev->origin );
+	
 	SetTouch( &CBasePlayerItem::DefaultTouch );
 	SetThink( NULL );
-
 }
+
 float CBasePlayerItem::TouchGravGun( CBaseEntity *attacker, int stage )
 	{
 		if( stage == 2 )
@@ -555,6 +556,11 @@ float CBasePlayerItem::TouchGravGun( CBaseEntity *attacker, int stage )
 			//return 0;
 		return 200;
 	}
+
+	UTIL_SetOrigin( pev, pev->origin );// link into world.
+	SetTouch( &CBasePlayerItem::DefaultTouch);
+	SetThink( NULL );
+}
 
 //=========================================================
 // AttemptToMaterialize - the item is trying to rematerialize,

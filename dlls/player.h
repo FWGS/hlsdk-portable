@@ -309,13 +309,13 @@ public:
 	char m_SbarString1[ SBAR_STRING_SIZE ];
 	
 	float m_flNextChatTime;
+
 	virtual float TouchGravGun( CBaseEntity *attacker, int stage )
 	{
 		if( stage == 3 )
 			return 200;
 		return 0;
-	}
-	
+	}	
 };
 
 #define AUTOAIM_2DEGREES  0.0348994967025

@@ -2378,7 +2378,7 @@ int CRestore::ReadField( void *pBaseData, TYPEDESCRIPTION *pFields, int fieldCou
 						if ( strlen( (char *)pInputData ) == 0 )
 							*((void**)pOutputData) = 0;
 						else
-							*((void**)pOutputData) = FUNCTION_FROM_NAME( (char *)pInputData );
+							*((void**)pOutputData) = (void**)FUNCTION_FROM_NAME( (char *)pInputData );
 					break;
 
 					default:

@@ -98,6 +98,7 @@ typedef struct client_textmessage_s
 #else
 #define longlong_t long long
 #endif
+
 typedef struct hud_player_info_s
 {
 	char		*name;
