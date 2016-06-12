@@ -538,28 +538,23 @@ void CBasePlayerItem::Materialize( void )
 }
 
 float CBasePlayerItem::TouchGravGun( CBaseEntity *attacker, int stage )
+{
+	if( stage == 2 )
 	{
-		if( stage == 2 )
-		{
-			if( (attacker->pev->origin - pev->origin ).Length() < 90 )
-				Touch( attacker );
-		}
-		if( pev->movetype == MOVETYPE_FOLLOW )
-			return 0;
-		if( pev->movetype == MOVETYPE_NONE )
-			return 0;
-		if( pev->effects & EF_NODRAW )
-			return 0;
-		SetThink( &CBasePlayerItem::AttemptToMaterialize );
-		pev->nextthink = gpGlobals->time + 60;;
-		//if( pev->mins == pev->maxs )
-			//return 0;
-		return 200;
+		if( (attacker->pev->origin - pev->origin ).Length() < 90 )
+			Touch( attacker );
 	}
-
-	UTIL_SetOrigin( pev, pev->origin );// link into world.
-	SetTouch( &CBasePlayerItem::DefaultTouch);
-	SetThink( NULL );
+	if( pev->movetype == MOVETYPE_FOLLOW )
+		return 0;
+	if( pev->movetype == MOVETYPE_NONE )
+		return 0;
+	if( pev->effects & EF_NODRAW )
+		return 0;
+	SetThink( &CBasePlayerItem::AttemptToMaterialize );
+	pev->nextthink = gpGlobals->time + 60;;
+	//if( pev->mins == pev->maxs )
+		//return 0;
+	return 200;
 }
 
 //=========================================================
