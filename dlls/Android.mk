@@ -14,7 +14,7 @@ LOCAL_MODULE_FILENAME = libserver_hardfp
 endif
 
 LOCAL_CFLAGS += -D_LINUX -DCLIENT_WEAPONS -Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf \
-	-fno-exceptions -w
+	-fno-exceptions -DNO_VOICEGAMEMGR -w
 
 LOCAL_CPPFLAGS := $(LOCAL_CFLAGS) -frtti
 
@@ -126,8 +126,8 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
            zombie.cpp \
 	   ../pm_shared/pm_debug.c \
 	   ../pm_shared/pm_math.c \
-	   ../pm_shared/pm_shared.c \
-	   ../game_shared/voice_gamemgr.cpp
+	   ../pm_shared/pm_shared.c
+#	   ../game_shared/voice_gamemgr.cpp
 
 LOCAL_LDLIBS := -llog
 
