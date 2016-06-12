@@ -21,7 +21,7 @@
 #include "pm_shared.h"
 #include "pm_movevars.h"
 #include "pm_debug.h"
-#include <stdio.h>  // NULL
+//#include <stdio.h>  // NULL
 #include <math.h>   // sqrt
 #include <string.h> // strcpy
 #ifdef stricmp
