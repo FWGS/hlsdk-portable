@@ -200,12 +200,78 @@ class CItemSuit : public CItem
 
 LINK_ENTITY_TO_CLASS(item_suit, CItemSuit);
 
+class CItemArmorVest : public CItem
+{
+	void Spawn( void )
+	{
+		Precache( );
+		SET_MODEL(ENT(pev), "models/barney_vest.mdl");
+		CItem::Spawn( );
+	}
+	void Precache( void )
+	{
+		PRECACHE_MODEL ("models/barney_vest.mdl");
+		PRECACHE_SOUND( "items/gunpickup2.wav" );
+	}
+	BOOL MyTouch( CBasePlayer *pPlayer )
+	{
+		if ((pPlayer->pev->armorvalue < MAX_NORMAL_BATTERY) &&
+			(pPlayer->pev->weapons & (1<<WEAPON_SUIT)))
+		{
+			pPlayer->pev->armorvalue += 60;
+			pPlayer->pev->armorvalue = min(pPlayer->pev->armorvalue, MAX_NORMAL_BATTERY);
 
+			EMIT_SOUND( pPlayer->edict(), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM );
+
+			MESSAGE_BEGIN( MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev );
+				WRITE_STRING( STRING(pev->classname) );
+			MESSAGE_END();
+			return TRUE;
+		}
+		return FALSE;
+	}
+};
+
+LINK_ENTITY_TO_CLASS(item_armorvest, CItemArmorVest);
+
+class CItemHelmet : public CItem
+{
+	void Spawn( void )
+	{ 
+		Precache( );
+		SET_MODEL( ENT(pev), "models/barney_helmet.mdl" );
+		CItem::Spawn( );
+	}
+	void Precache( void )
+	{
+		PRECACHE_MODEL( "models/barney_helmet.mdl" );
+		PRECACHE_SOUND( "items/gunpickup2.wav" );
+	}
+	BOOL MyTouch( CBasePlayer *pPlayer )
+	{
+		if ((pPlayer->pev->armorvalue < MAX_NORMAL_BATTERY) &&
+			(pPlayer->pev->weapons & (1<<WEAPON_SUIT)))
+		{
+			pPlayer->pev->armorvalue += 40;
+			pPlayer->pev->armorvalue = min(pPlayer->pev->armorvalue, MAX_NORMAL_BATTERY);
+
+			EMIT_SOUND( pPlayer->edict(), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM );
+
+			MESSAGE_BEGIN( MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev );
+				WRITE_STRING( STRING(pev->classname) );
+			MESSAGE_END();
+			return TRUE;
+		}
+		return FALSE;
+	}
+};
+
+LINK_ENTITY_TO_CLASS(item_helmet, CItemHelmet);
 
 class CItemBattery : public CItem
 {
 	void Spawn( void )
-	{ 
+	{
 		Precache( );
 		SET_MODEL(ENT(pev), "models/w_battery.mdl");
 		CItem::Spawn( );
@@ -217,11 +283,6 @@ class CItemBattery : public CItem
 	}
 	BOOL MyTouch( CBasePlayer *pPlayer )
 	{
-		if ( pPlayer->pev->deadflag != DEAD_NO )
-		{
-			return FALSE;
-		}
-
 		if ((pPlayer->pev->armorvalue < MAX_NORMAL_BATTERY) &&
 			(pPlayer->pev->weapons & (1<<WEAPON_SUIT)))
 		{
