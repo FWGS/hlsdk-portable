@@ -338,6 +338,11 @@ void CBreakable::Precache( void )
 		
 		PRECACHE_SOUND ("debris/bustceiling.wav");  
 		break;
+	case matNone:
+	case matLastMaterial:
+		break;
+	default:
+		break;
 	}
 	MaterialSoundPrecache( m_Material );
 	if ( m_iszGibModel )
@@ -510,11 +515,13 @@ void CBreakable::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vec
 					case 1: EMIT_SOUND(ENT(pev), CHAN_VOICE, "buttons/spark6.wav", flVolume, ATTN_NORM);	break;
 				}
 			}
-			break;
+				break;
 			
 			case matUnbreakableGlass:
 				UTIL_Ricochet( ptr->vecEndPos, RANDOM_FLOAT(0.5,1.5) );
-			break;
+				break;
+			default:
+				break;
 		}
 	}
 
@@ -663,6 +670,12 @@ void CBreakable::Die( void )
 
 	case matCeilingTile:
 		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "debris/bustceiling.wav", fvol, ATTN_NORM, 0, pitch);
+		break;
+	case matNone:
+	case matLastMaterial:
+	case matUnbreakableGlass:
+		break;
+	default:
 		break;
 	}
     

@@ -219,14 +219,11 @@ void CHoundeye :: SetYawSpeed ( void )
 		ys = 60;
 		break;
 	case ACT_WALK:
-		ys = 90;
-		break;
 	case ACT_RUN:	
-		ys = 90;
-		break;
 	case ACT_TURN_LEFT:
 	case ACT_TURN_RIGHT:
-		ys = 90;
+		break;
+	default:
 		break;
 	}
 
@@ -1298,6 +1295,8 @@ Schedule_t *CHoundeye :: GetSchedule( void )
 			}
 			break;
 		}
+	default:
+			break;
 	}
 
 	return CSquadMonster :: GetSchedule();

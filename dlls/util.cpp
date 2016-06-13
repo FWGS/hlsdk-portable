@@ -2098,19 +2098,21 @@ int CSave :: WriteFields( const char *pname, void *pBaseData, TYPEDESCRIPTION *p
 				{
 					case FIELD_EVARS:
 						entityArray[j] = EntityIndex( ((entvars_t **)pOutputData)[j] );
-					break;
+						break;
 					case FIELD_CLASSPTR:
 						entityArray[j] = EntityIndex( ((CBaseEntity **)pOutputData)[j] );
-					break;
+						break;
 					case FIELD_EDICT:
 						entityArray[j] = EntityIndex( ((edict_t **)pOutputData)[j] );
-					break;
+						break;
 					case FIELD_ENTITY:
 						entityArray[j] = EntityIndex( ((EOFFSET *)pOutputData)[j] );
-					break;
+						break;
 					case FIELD_EHANDLE:
 						entityArray[j] = EntityIndex( (CBaseEntity *)(((EHANDLE *)pOutputData)[j]) );
-					break;
+						break;
+					default:
+						break;
 				}
 			}
 			WriteInt( pTest->fieldName, entityArray, pTest->fieldSize );

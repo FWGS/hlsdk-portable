@@ -1060,7 +1060,7 @@ Schedule_t *CBullsquid :: GetSchedule( void )
 		}
 	case MONSTERSTATE_COMBAT:
 		{
-// dead enemy
+			// dead enemy
 			if ( HasConditions( bits_COND_ENEMY_DEAD ) )
 			{
 				// call base class, all code to handle dead enemies is centralized there.
@@ -1116,6 +1116,8 @@ Schedule_t *CBullsquid :: GetSchedule( void )
 
 			break;
 		}
+	default:
+			break;
 	}
 
 	return CBaseMonster :: GetSchedule();
@@ -1266,6 +1268,8 @@ MONSTERSTATE CBullsquid :: GetIdealState ( void )
 			}
 			break;
 		}
+	default:
+			break;
 	}
 
 	m_IdealMonsterState = CBaseMonster :: GetIdealState();

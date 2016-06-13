@@ -813,6 +813,8 @@ void CBaseTurret::SetTurretAnim(TURRET_ANIM anim)
 		case TURRET_ANIM_DIE:
 			pev->framerate		= 1.0;
 			break;
+		default:
+			break;
 		}
 		//ALERT(at_console, "Turret anim #%d\n", anim);
 	}

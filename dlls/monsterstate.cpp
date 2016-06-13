@@ -50,6 +50,8 @@ void CBaseMonster :: SetState ( MONSTERSTATE State )
 			ALERT ( at_aiconsole, "Stripped\n" );
 		}
 		break;
+	default:
+		break;
 	}
 
 	m_MonsterState = State;
@@ -226,6 +228,8 @@ MONSTERSTATE CBaseMonster :: GetIdealState ( void )
 
 	case MONSTERSTATE_DEAD:
 		m_IdealMonsterState = MONSTERSTATE_DEAD;
+		break;
+	default:
 		break;
 	}
 

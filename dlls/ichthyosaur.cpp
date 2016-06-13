@@ -534,11 +534,11 @@ Schedule_t* CIchthyosaur::GetSchedule()
 	case MONSTERSTATE_IDLE:
 		m_flightSpeed = 80;
 		return GetScheduleOfType( SCHED_IDLE_WALK );
-
+		break;
 	case MONSTERSTATE_ALERT:
 		m_flightSpeed = 150;
 		return GetScheduleOfType( SCHED_IDLE_WALK );
-
+		break;
 	case MONSTERSTATE_COMBAT:
 		m_flMaxSpeed = 400;
 		// eat them
@@ -561,6 +561,9 @@ Schedule_t* CIchthyosaur::GetSchedule()
 		}
 
 		return GetScheduleOfType( SCHED_STANDOFF );
+		break;
+	default:
+		break;
 	}
 
 	return CFlyingMonster :: GetSchedule();

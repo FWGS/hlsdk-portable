@@ -702,7 +702,7 @@ Schedule_t *CBarney :: GetSchedule ( void )
 	{
 	case MONSTERSTATE_COMBAT:
 		{
-// dead enemy
+			// dead enemy
 			if ( HasConditions( bits_COND_ENEMY_DEAD ) )
 			{
 				// call base class, all code to handle dead enemies is centralized there.
@@ -755,6 +755,8 @@ Schedule_t *CBarney :: GetSchedule ( void )
 
 		// try to say something about smells
 		TrySmellTalk();
+		break;
+	default:
 		break;
 	}
 	

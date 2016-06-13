@@ -731,12 +731,6 @@ Schedule_t *CController :: GetSchedule ( void )
 {
 	switch	( m_MonsterState )
 	{
-	case MONSTERSTATE_IDLE:
-		break;
-
-	case MONSTERSTATE_ALERT:
-		break;
-
 	case MONSTERSTATE_COMBAT:
 		{
 			Vector vecTmp = Intersect( Vector( 0, 0, 0 ), Vector( 100, 4, 7 ), Vector( 2, 10, -3 ), 20.0 );
@@ -751,6 +745,11 @@ Schedule_t *CController :: GetSchedule ( void )
 				// m_iFrustration++;
 			}
 		}
+		break;
+        case MONSTERSTATE_IDLE:
+        case MONSTERSTATE_ALERT:
+                break;
+	default:
 		break;
 	}
 

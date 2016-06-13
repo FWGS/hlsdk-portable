@@ -617,6 +617,8 @@ void CScientist :: SetYawSpeed ( void )
 	case ACT_TURN_RIGHT:
 		ys = 120;
 		break;
+	default:
+		break;
 	}
 
 	pev->yaw_speed = ys;
@@ -996,6 +998,8 @@ Schedule_t *CScientist :: GetSchedule ( void )
 
 		return slScientistCover;			// Run & Cower
 		break;
+	default:
+		break;
 	}
 	
 	return CTalkMonster::GetSchedule();
@@ -1057,6 +1061,8 @@ MONSTERSTATE CScientist :: GetIdealState ( void )
 
 			}
 		}
+		break;
+	default:
 		break;
 	}
 

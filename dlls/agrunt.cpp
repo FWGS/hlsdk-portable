@@ -1081,7 +1081,7 @@ Schedule_t *CAGrunt :: GetSchedule ( void )
 	{
 	case MONSTERSTATE_COMBAT:
 		{
-// dead enemy
+			// dead enemy
 			if ( HasConditions( bits_COND_ENEMY_DEAD ) )
 			{
 				// call base class, all code to handle dead enemies is centralized there.
@@ -1093,7 +1093,7 @@ Schedule_t *CAGrunt :: GetSchedule ( void )
 				return GetScheduleOfType( SCHED_WAKE_ANGRY );
 			}
 
-	// zap player!
+			// zap player!
 			if ( HasConditions ( bits_COND_CAN_MELEE_ATTACK1 ) )
 			{
 				AttackSound();// this is a total hack. Should be parto f the schedule
@@ -1105,7 +1105,7 @@ Schedule_t *CAGrunt :: GetSchedule ( void )
 				return GetScheduleOfType( SCHED_SMALL_FLINCH );
 			}
 
-	// can attack
+			// can attack
 			if ( HasConditions ( bits_COND_CAN_RANGE_ATTACK1 ) && OccupySlot ( bits_SLOTS_AGRUNT_HORNET ) )
 			{
 				return GetScheduleOfType ( SCHED_RANGE_ATTACK1 );
@@ -1118,6 +1118,9 @@ Schedule_t *CAGrunt :: GetSchedule ( void )
 
 			return GetScheduleOfType ( SCHED_STANDOFF );
 		}
+		break;
+	default:
+		break;
 	}
 
 	return CSquadMonster :: GetSchedule();
