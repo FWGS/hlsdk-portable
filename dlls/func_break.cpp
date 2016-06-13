@@ -283,7 +283,7 @@ void CBreakable::MaterialSoundRandom( edict_t *pEdict, Materials soundMaterial, 
 
 void CBreakable::Precache( void )
 {
-	const char *pGibName;
+	const char *pGibName = NULL;
 
     switch (m_Material) 
 	{
