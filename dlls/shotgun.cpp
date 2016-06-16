@@ -140,12 +140,7 @@ void CShotgun::PrimaryAttack()
 	m_iClip--;
 
 	int flags;
-#if defined( CLIENT_WEAPONS )
-	flags = FEV_NOTHOST;
-#else
 	flags = 0;
-#endif
-
 
 	m_pPlayer->pev->effects = (int)(m_pPlayer->pev->effects) | EF_MUZZLEFLASH;
 
@@ -212,11 +207,7 @@ void CShotgun::SecondaryAttack( void )
 
 
 	int flags;
-#if defined( CLIENT_WEAPONS )
-	flags = FEV_NOTHOST;
-#else
 	flags = 0;
-#endif
 
 	m_pPlayer->pev->effects = (int)(m_pPlayer->pev->effects) | EF_MUZZLEFLASH;
 

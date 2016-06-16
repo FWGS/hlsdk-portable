@@ -479,11 +479,7 @@ public:
 
 	virtual BOOL UseDecrement( void )
 	{ 
-#if defined( CLIENT_WEAPONS )
-		return TRUE;
-#else
 		return FALSE;
-#endif
 	}
 
 private:
@@ -514,11 +510,7 @@ public:
 
 	virtual BOOL UseDecrement( void )
 	{ 
-#if defined( CLIENT_WEAPONS )
-		return TRUE;
-#else
 		return FALSE;
-#endif
 	}
 private:
 	unsigned short m_usCrowbar;
@@ -544,11 +536,7 @@ public:
 
 	virtual BOOL UseDecrement( void )
 	{ 
-#if defined( CLIENT_WEAPONS )
-		return TRUE;
-#else
 		return FALSE;
-#endif
 	}
 
 private:
@@ -575,11 +563,7 @@ public:
 
 	virtual BOOL UseDecrement( void )
 	{ 
-#if defined( CLIENT_WEAPONS )
-		return TRUE;
-#else
 		return FALSE;
-#endif
 	}
 
 private:
@@ -609,11 +593,7 @@ public:
 
 	virtual BOOL UseDecrement( void )
 	{ 
-#if defined( CLIENT_WEAPONS )
-		return TRUE;
-#else
 		return FALSE;
-#endif
 	}
 
 private:
@@ -649,11 +629,7 @@ public:
 
 	virtual BOOL UseDecrement( void )
 	{ 
-#if defined( CLIENT_WEAPONS )
-		return TRUE;
-#else
 		return FALSE;
-#endif
 	}
 
 private:
@@ -709,11 +685,7 @@ public:
 
 	virtual BOOL UseDecrement( void )
 	{ 
-#if defined( CLIENT_WEAPONS )
-		return TRUE;
-#else
 		return FALSE;
-#endif
 	}
 
 private:
@@ -776,11 +748,7 @@ public:
 
 	virtual BOOL UseDecrement( void )
 	{ 
-#if defined( CLIENT_WEAPONS )
-		return TRUE;
-#else
 		return FALSE;
-#endif
 	}
 
 private:
@@ -835,11 +803,7 @@ public:
 
 	virtual BOOL UseDecrement( void )
 	{ 
-#if defined( CLIENT_WEAPONS )
-		return TRUE;
-#else
 		return FALSE;
-#endif
 	}
 
 	unsigned short m_usEgonStop;
@@ -877,11 +841,7 @@ public:
 
 	virtual BOOL UseDecrement( void )
 	{ 
-#if defined( CLIENT_WEAPONS )
-		return TRUE;
-#else
 		return FALSE;
-#endif
 	}
 private:
 	unsigned short m_usHornetFire;
@@ -905,11 +865,7 @@ public:
 	
 	virtual BOOL UseDecrement( void )
 	{ 
-#if defined( CLIENT_WEAPONS )
-		return TRUE;
-#else
 		return FALSE;
-#endif
 	}
 };
 
@@ -941,11 +897,7 @@ public:
 	
 	virtual BOOL UseDecrement( void )
 	{ 
-#if defined( CLIENT_WEAPONS )
-		return TRUE;
-#else
 		return FALSE;
-#endif
 	}
 };
 
@@ -971,11 +923,7 @@ public:
 
 	virtual BOOL UseDecrement( void )
 	{ 
-#if defined( CLIENT_WEAPONS )
-		return TRUE;
-#else
 		return FALSE;
-#endif
 	}
 
 private:
@@ -1000,13 +948,8 @@ public:
 
 	virtual BOOL UseDecrement( void )
 	{ 
-#if defined( CLIENT_WEAPONS )
-		return TRUE;
-#else
 		return FALSE;
-#endif
 	}
-
 private:
 	unsigned short m_usSnarkFire;
 };

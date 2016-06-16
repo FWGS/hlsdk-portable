@@ -469,11 +469,7 @@ void CRpg::PrimaryAttack()
 		// Ken signed up for this as a global change (sjb)
 
 		int flags;
-#if defined( CLIENT_WEAPONS )
-	flags = FEV_NOTHOST;
-#else
-	flags = 0;
-#endif
+		flags = 0;
 
 		PLAYBACK_EVENT( flags, m_pPlayer->edict(), m_usRpg );
 

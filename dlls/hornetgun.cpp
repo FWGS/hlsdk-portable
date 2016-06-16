@@ -154,11 +154,7 @@ void CHgun::PrimaryAttack()
 	m_pPlayer->m_iWeaponFlash = DIM_GUN_FLASH;
 
 	int flags;
-#if defined( CLIENT_WEAPONS )
-	flags = FEV_NOTHOST;
-#else
 	flags = 0;
-#endif
 
 	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usHornetFire, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, FIREMODE_TRACK, 0, 0, 0 );
 
@@ -241,11 +237,7 @@ void CHgun::SecondaryAttack( void )
 #endif
 
 	int flags;
-#if defined( CLIENT_WEAPONS )
-	flags = FEV_NOTHOST;
-#else
 	flags = 0;
-#endif
 
 	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usHornetFire, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, FIREMODE_FAST, 0, 0, 0 );
 
