@@ -38,7 +38,7 @@ int CHudBattery::Init(void)
 	gHUD.AddHudElem(this);
 
 	return 1;
-};
+}
 
 
 int CHudBattery::VidInit(void)
@@ -52,7 +52,7 @@ int CHudBattery::VidInit(void)
 	m_iHeight = m_prc2->bottom - m_prc1->top;
 	m_fFade = 0;
 	return 1;
-};
+}
 
 int CHudBattery:: MsgFunc_Battery(const char *pszName,  int iSize, void *pbuf )
 {

@@ -31,7 +31,7 @@ public:
 			SCRIPT_WAIT,				// Waiting on everyone in the script to be ready
 			SCRIPT_CLEANUP,					// Cancelling the script / cleaning up
 			SCRIPT_WALK_TO_MARK,
-			SCRIPT_RUN_TO_MARK,
+			SCRIPT_RUN_TO_MARK
 		} SCRIPTSTATE;
 
 
@@ -104,7 +104,7 @@ public:
 
 	Vector				m_HackedGunPos;	// HACK until we can query end of gun
 
-// Scripted sequence Info
+	// Scripted sequence Info
 	SCRIPTSTATE			m_scriptState;		// internal cinematic state
 	CCineMonster		*m_pCine;
 
@@ -115,11 +115,11 @@ public:
 
 	void KeyValue( KeyValueData *pkvd );
 
-// monster use function
+	// monster use function
 	void EXPORT			MonsterUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
 	void EXPORT			CorpseUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
 
-// overrideable Monster member functions
+	// overrideable Monster member functions
 	
 	virtual int	 BloodColor( void ) { return m_bloodColor; }
 
@@ -131,14 +131,14 @@ public:
 	virtual BOOL	IsAlive( void ) { return (pev->deadflag != DEAD_DEAD); }
 	virtual BOOL	ShouldFadeOnDeath( void );
 
-// Basic Monster AI functions
+	// Basic Monster AI functions
 	virtual float ChangeYaw ( int speed );
 	float VecToYaw( Vector vecDir );
 	float FlYawDiff ( void ); 
 
 	float DamageForce( float damage );
 
-// stuff written for new state machine
+	// stuff written for new state machine
 		virtual void MonsterThink( void );
 		void EXPORT	CallMonsterThink( void ) { this->MonsterThink(); }
 		virtual int IRelationship ( CBaseEntity *pTarget );
@@ -333,7 +333,4 @@ public:
 
 	CBaseEntity* DropItem ( char *pszItemName, const Vector &vecPos, const Vector &vecAng );// drop an item.
 };
-
-
-
 #endif // BASEMONSTER_H

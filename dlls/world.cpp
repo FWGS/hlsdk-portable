@@ -112,7 +112,7 @@ public:
 	void	EXPORT TriggerDecal( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
 };
 
-LINK_ENTITY_TO_CLASS( infodecal, CDecal );
+LINK_ENTITY_TO_CLASS( infodecal, CDecal )
 
 // UNDONE:  These won't get sent to joining players in multi-player
 void CDecal :: Spawn( void )
@@ -162,7 +162,6 @@ void CDecal :: TriggerDecal ( CBaseEntity *pActivator, CBaseEntity *pCaller, USE
 	pev->nextthink = gpGlobals->time + 0.1;
 }
 
-
 void CDecal :: StaticDecal( void )
 {
 	TraceResult trace;
@@ -181,13 +180,12 @@ void CDecal :: StaticDecal( void )
 	SUB_Remove();
 }
 
-
 void CDecal :: KeyValue( KeyValueData *pkvd )
 {
 	if (FStrEq(pkvd->szKeyName, "texture"))
 	{
 		pev->skin = DECAL_INDEX( pkvd->szValue );
-		
+
 		// Found
 		if ( pev->skin >= 0 )
 			return;
@@ -197,14 +195,13 @@ void CDecal :: KeyValue( KeyValueData *pkvd )
 		CBaseEntity::KeyValue( pkvd );
 }
 
-
 // Body queue class here.... It's really just CBaseEntity
 class CCorpse : public CBaseEntity
 {
 	virtual int ObjectCaps( void ) { return FCAP_DONT_SAVE; }	
 };
 
-LINK_ENTITY_TO_CLASS( bodyque, CCorpse );
+LINK_ENTITY_TO_CLASS( bodyque, CCorpse )
 
 static void InitBodyQue(void)
 {
@@ -212,17 +209,16 @@ static void InitBodyQue(void)
 
 	g_pBodyQueueHead = CREATE_NAMED_ENTITY( istrClassname );
 	entvars_t *pev = VARS(g_pBodyQueueHead);
-	
+
 	// Reserve 3 more slots for dead bodies
 	for ( int i = 0; i < 3; i++ )
 	{
 		pev->owner = CREATE_NAMED_ENTITY( istrClassname );
 		pev = VARS(pev->owner);
 	}
-	
+
 	pev->owner = g_pBodyQueueHead;
 }
-
 
 //
 // make a body que entry for the given ent so the ent can be respawned elsewhere
@@ -252,7 +248,7 @@ void CopyToBodyQue(entvars_t *pev)
 	//pevHead->goalstarttime = pev->goalstarttime;
 	//pevHead->goalframe	= pev->goalframe;
 	//pevHead->goalendtime = pev->goalendtime ;
-	
+
 	pevHead->sequence = pev->sequence;
 	pevHead->animtime = pev->animtime;
 
@@ -260,7 +256,6 @@ void CopyToBodyQue(entvars_t *pev)
 	UTIL_SetSize(pevHead, pev->mins, pev->maxs);
 	g_pBodyQueueHead = pevHead->owner;
 }
-
 
 CGlobalState::CGlobalState( void )
 {
@@ -281,19 +276,17 @@ globalentity_t *CGlobalState :: Find( string_t globalname )
 	globalentity_t *pTest;
 	const char *pEntityName = STRING(globalname);
 
-	
 	pTest = m_pList;
 	while ( pTest )
 	{
 		if ( FStrEq( pEntityName, pTest->name ) )
 			break;
-	
+
 		pTest = pTest->pNext;
 	}
 
 	return pTest;
 }
-
 
 // This is available all the time now on impulse 104, remove later
 //#ifdef _DEBUG
@@ -312,7 +305,6 @@ void CGlobalState :: DumpGlobals( void )
 }
 //#endif
 
-
 void CGlobalState :: EntityAdd( string_t globalname, string_t mapName, GLOBALESTATE state )
 {
 	ASSERT( !Find(globalname) );
@@ -327,7 +319,6 @@ void CGlobalState :: EntityAdd( string_t globalname, string_t mapName, GLOBALEST
 	m_listCount++;
 }
 
-
 void CGlobalState :: EntitySetState( string_t globalname, GLOBALESTATE state )
 {
 	globalentity_t *pEnt = Find( globalname );
@@ -336,14 +327,12 @@ void CGlobalState :: EntitySetState( string_t globalname, GLOBALESTATE state )
 		pEnt->state = state;
 }
 
-
 const globalentity_t *CGlobalState :: EntityFromTable( string_t globalname )
 {
 	globalentity_t *pEnt = Find( globalname );
 
 	return pEnt;
 }
-
 
 GLOBALESTATE CGlobalState :: EntityGetState( string_t globalname )
 {
@@ -354,21 +343,19 @@ GLOBALESTATE CGlobalState :: EntityGetState( string_t globalname )
 	return GLOBAL_OFF;
 }
 
-
 // Global Savedata for Delay
-TYPEDESCRIPTION	CGlobalState::m_SaveData[] = 
+TYPEDESCRIPTION	CGlobalState::m_SaveData[] =
 {
 	DEFINE_FIELD( CGlobalState, m_listCount, FIELD_INTEGER ),
 };
 
 // Global Savedata for Delay
-TYPEDESCRIPTION	gGlobalEntitySaveData[] = 
+TYPEDESCRIPTION	gGlobalEntitySaveData[] =
 {
 	DEFINE_ARRAY( globalentity_t, name, FIELD_CHARACTER, 64 ),
 	DEFINE_ARRAY( globalentity_t, levelName, FIELD_CHARACTER, 32 ),
 	DEFINE_FIELD( globalentity_t, state, FIELD_INTEGER ),
 };
-
 
 int CGlobalState::Save( CSave &save )
 {
@@ -395,11 +382,10 @@ int CGlobalState::Restore( CRestore &restore )
 	int i, listCount;
 	globalentity_t tmpEntity;
 
-
 	ClearStates();
 	if ( !restore.ReadFields( "GLOBAL", this, m_SaveData, ARRAYSIZE(m_SaveData) ) )
 		return 0;
-	
+
 	listCount = m_listCount;	// Get new list count
 	m_listCount = 0;				// Clear loaded data
 
@@ -420,7 +406,6 @@ void CGlobalState::EntityUpdate( string_t globalname, string_t mapname )
 		strcpy( pEnt->levelName, STRING(mapname) );
 }
 
-
 void CGlobalState::ClearStates( void )
 {
 	globalentity_t *pFree = m_pList;
@@ -433,20 +418,17 @@ void CGlobalState::ClearStates( void )
 	Reset();
 }
 
-
 void SaveGlobalState( SAVERESTOREDATA *pSaveData )
 {
 	CSave saveHelper( pSaveData );
 	gGlobalState.Save( saveHelper );
 }
 
-
 void RestoreGlobalState( SAVERESTOREDATA *pSaveData )
 {
 	CRestore restoreHelper( pSaveData );
 	gGlobalState.Restore( restoreHelper );
 }
-
 
 void ResetGlobalState( void )
 {
@@ -461,7 +443,7 @@ void ResetGlobalState( void )
 // This spawns first when each level begins.
 //=======================
 
-LINK_ENTITY_TO_CLASS( worldspawn, CWorld );
+LINK_ENTITY_TO_CLASS( worldspawn, CWorld )
 
 #define SF_WORLD_DARK		0x0001		// Fade from black at startup
 #define SF_WORLD_TITLE		0x0002		// Display game title at startup
@@ -479,7 +461,6 @@ void CWorld :: Spawn( void )
 void CWorld :: Precache( void )
 {
 	g_pLastSpawn = NULL;
-	
 #if 1
 	CVAR_SET_STRING("sv_gravity", "800"); // 67ft/sec
 	CVAR_SET_STRING("sv_stepsize", "18");
@@ -487,7 +468,6 @@ void CWorld :: Precache( void )
 	CVAR_SET_STRING("sv_gravity", "384"); // 32ft/sec
 	CVAR_SET_STRING("sv_stepsize", "24");
 #endif
-
 	CVAR_SET_STRING("room_type", "0");// clear DSP
 
 	// Set up game rules
@@ -512,25 +492,21 @@ void CWorld :: Precache( void )
 
 	InitBodyQue();
 	
-// init sentence group playback stuff from sentences.txt.
-// ok to call this multiple times, calls after first are ignored.
-
+	// init sentence group playback stuff from sentences.txt.
+	// ok to call this multiple times, calls after first are ignored.
 	SENTENCEG_Init();
 
-// init texture type array from materials.txt
-
+	// init texture type array from materials.txt
 	TEXTURETYPE_Init();
 
-
-// the area based ambient sounds MUST be the first precache_sounds
-
-// player precaches     
+	// the area based ambient sounds MUST be the first precache_sounds
+	// player precaches
 	W_Precache ();									// get weapon precaches
 
 	ClientPrecache();
 
-// sounds used from C physics code
-	PRECACHE_SOUND("common/null.wav");				// clears sound channels
+	// sounds used from C physics code
+	PRECACHE_SOUND("common/null.wav");// clears sound channels
 
 	PRECACHE_SOUND( "items/suitchargeok1.wav" );//!!! temporary sound for respawning weapons.
 	PRECACHE_SOUND( "items/gunpickup2.wav" );// player picks up a gun.
@@ -554,51 +530,52 @@ void CWorld :: Precache( void )
 	PRECACHE_SOUND ("weapons/ric3.wav");
 	PRECACHE_SOUND ("weapons/ric4.wav");
 	PRECACHE_SOUND ("weapons/ric5.wav");
-//
-// Setup light animation tables. 'a' is total darkness, 'z' is maxbright.
-//
+
+	//
+	// Setup light animation tables. 'a' is total darkness, 'z' is maxbright.
+	//
 
 	// 0 normal
 	LIGHT_STYLE(0, "m");
-	
+
 	// 1 FLICKER (first variety)
 	LIGHT_STYLE(1, "mmnmmommommnonmmonqnmmo");
-	
+
 	// 2 SLOW STRONG PULSE
 	LIGHT_STYLE(2, "abcdefghijklmnopqrstuvwxyzyxwvutsrqponmlkjihgfedcba");
-	
+
 	// 3 CANDLE (first variety)
 	LIGHT_STYLE(3, "mmmmmaaaaammmmmaaaaaabcdefgabcdefg");
-	
+
 	// 4 FAST STROBE
 	LIGHT_STYLE(4, "mamamamamama");
-	
+
 	// 5 GENTLE PULSE 1
 	LIGHT_STYLE(5,"jklmnopqrstuvwxyzyxwvutsrqponmlkj");
-	
+
 	// 6 FLICKER (second variety)
 	LIGHT_STYLE(6, "nmonqnmomnmomomno");
-	
+
 	// 7 CANDLE (second variety)
 	LIGHT_STYLE(7, "mmmaaaabcdefgmmmmaaaammmaamm");
-	
+
 	// 8 CANDLE (third variety)
 	LIGHT_STYLE(8, "mmmaaammmaaammmabcdefaaaammmmabcdefmmmaaaa");
-	
+
 	// 9 SLOW STROBE (fourth variety)
 	LIGHT_STYLE(9, "aaaaaaaazzzzzzzz");
-	
+
 	// 10 FLUORESCENT FLICKER
 	LIGHT_STYLE(10, "mmamammmmammamamaaamammma");
 
 	// 11 SLOW PULSE NOT FADE TO BLACK
 	LIGHT_STYLE(11, "abcdefghijklmnopqrrqponmlkjihgfedcba");
-	
+
 	// 12 UNDERWATER LIGHT MUTATION
 	// this light only distorts the lightmap - no contribution
 	// is made to the brightness of affected surfaces
 	LIGHT_STYLE(12, "mmnnmmnnnmmnn");
-	
+
 	// styles 32-62 are assigned by the light program for switchable lights
 
 	// 63 testing
@@ -607,18 +584,21 @@ void CWorld :: Precache( void )
 	for ( int i = 0; i < ARRAYSIZE(gDecals); i++ )
 		gDecals[i].index = DECAL_INDEX( gDecals[i].name );
 
-// init the WorldGraph.
+	// init the WorldGraph.
 	WorldGraph.InitGraph();
 
-// make sure the .NOD file is newer than the .BSP file.
+	// make sure the .NOD file is newer than the .BSP file.
 	if ( !WorldGraph.CheckNODFile ( ( char * )STRING( gpGlobals->mapname ) ) )
-	{// NOD file is not present, or is older than the BSP file.
+	{
+		// NOD file is not present, or is older than the BSP file.
 		WorldGraph.AllocNodes ();
 	}
 	else
-	{// Load the node graph for this level
+	{
+		// Load the node graph for this level
 		if ( !WorldGraph.FLoadGraph ( (char *)STRING( gpGlobals->mapname ) ) )
-		{// couldn't load, so alloc and prepare to build a graph.
+		{
+			// couldn't load, so alloc and prepare to build a graph.
 			ALERT ( at_console, "*Error opening .NOD file\n" );
 			WorldGraph.AllocNodes ();
 		}
@@ -676,7 +656,6 @@ void CWorld :: Precache( void )
 	// g-cont. moved here so cheats will working on restore level
 	g_flWeaponCheat = CVAR_GET_FLOAT( "sv_cheats" );  // Is the impulse 101 command allowed?
 }
-
 
 //
 // Just to ignore the "wad" field.
@@ -777,7 +756,7 @@ int DispatchCreateEntity( edict_t *pent, const char *szName )
 			// BUGBUG: old classname hanging in memory
 			pent->v.classname = ALLOC_STRING( "item_battery" );
 
-//			ALERT( at_console, "DispatchCreateEntity: replace %s with %s\n", szName, STRING( pent->v.classname ));
+			//ALERT( at_console, "DispatchCreateEntity: replace %s with %s\n", szName, STRING( pent->v.classname ));
 
 			SpawnEdict( &pent->v );
 			return 0;	// handled
@@ -798,7 +777,7 @@ int DispatchPhysicsEntity( edict_t *pEdict )
 
 	if( !pEntity )
 	{
-//		ALERT( at_console, "skip %s [%i] without private data\n", STRING( pEdict->v.classname ), ENTINDEX( pEdict )); 
+		//ALERT( at_console, "skip %s [%i] without private data\n", STRING( pEdict->v.classname ), ENTINDEX( pEdict )); 
 		return 0;	// not initialized
 	}
 
@@ -813,11 +792,11 @@ int DispatchPhysicsEntity( edict_t *pEdict )
 		thinktime = pEntity->pev->nextthink;
 		if( thinktime <= 0.0f || thinktime > PHYSICS_TIME() + gpGlobals->frametime )
 			return 1;
-		
+
 		if( thinktime < PHYSICS_TIME( ))
 			thinktime = PHYSICS_TIME();	// don't let things stay in the past.
-						// it is possible to start that way
-						// by a trigger with a local time.
+							// it is possible to start that way
+							// by a trigger with a local time.
 		pEntity->pev->nextthink = 0.0f;
 		gpGlobals->time = thinktime;
 
@@ -828,7 +807,6 @@ int DispatchPhysicsEntity( edict_t *pEdict )
 		pEntity->pev->origin.z -= 1;
 		LINK_ENTITY( pEdict, true );
 #endif
-
 		return 1;	// handled
 	}
 #endif

@@ -44,7 +44,6 @@
 class CSound
 {
 public:
-
 	void	Clear ( void );
 	void	Reset ( void );
 
@@ -67,12 +66,11 @@ public:
 class CSoundEnt : public CBaseEntity 
 {
 public:
-
 	void Precache ( void );
 	void Spawn( void );
 	void Think( void );
 	void Initialize ( void );
-	
+
 	static void		InsertSound ( int iType, const Vector &vecOrigin, int iVolume, float flDuration );
 	static void		FreeSound ( int iSound, int iPrevious );
 	static int		ActiveList( void );// return the head of the active list
@@ -84,7 +82,7 @@ public:
 	int		ISoundsInList ( int iListType );
 	int		IAllocSound ( void );
 	virtual int		ObjectCaps( void ) { return FCAP_DONT_SAVE; }
-	
+
 	int		m_iFreeSound;	// index of the first sound in the free sound list
 	int		m_iActiveSound; // indes of the first sound in the active sound list
 	int		m_cLastActiveSounds; // keeps track of the number of active sounds at the last update. (for diagnostic work)

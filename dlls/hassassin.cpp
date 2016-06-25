@@ -38,7 +38,7 @@ enum
 	SCHED_ASSASSIN_EXPOSED = LAST_COMMON_SCHEDULE + 1,// cover was blown.
 	SCHED_ASSASSIN_JUMP,	// fly through the air
 	SCHED_ASSASSIN_JUMP_ATTACK,	// fly through the air and shoot
-	SCHED_ASSASSIN_JUMP_LAND, // hit and run away
+	SCHED_ASSASSIN_JUMP_LAND // hit and run away
 };
 
 //=========================================================
@@ -47,9 +47,8 @@ enum
 
 enum
 {
-	TASK_ASSASSIN_FALL_TO_GROUND = LAST_COMMON_TASK + 1, // falling and waiting to hit ground
+	TASK_ASSASSIN_FALL_TO_GROUND = LAST_COMMON_TASK + 1 // falling and waiting to hit ground
 };
-
 
 //=========================================================
 // Monster's Anim Events Go Here
@@ -57,7 +56,6 @@ enum
 #define		ASSASSIN_AE_SHOOT1	1
 #define		ASSASSIN_AE_TOSS1	2
 #define		ASSASSIN_AE_JUMP	3
-
 
 #define bits_MEMORY_BADJUMP		(bits_MEMORY_CUSTOM1)
 
@@ -104,8 +102,8 @@ public:
 
 	int		m_iShell;
 };
-LINK_ENTITY_TO_CLASS( monster_human_assassin, CHAssassin );
 
+LINK_ENTITY_TO_CLASS( monster_human_assassin, CHAssassin )
 
 TYPEDESCRIPTION	CHAssassin::m_SaveData[] = 
 {
@@ -123,8 +121,7 @@ TYPEDESCRIPTION	CHAssassin::m_SaveData[] =
 	DEFINE_FIELD( CHAssassin, m_iFrustration, FIELD_INTEGER ),
 };
 
-IMPLEMENT_SAVERESTORE( CHAssassin, CBaseMonster );
-
+IMPLEMENT_SAVERESTORE( CHAssassin, CBaseMonster )
 
 //=========================================================
 // DieSound
@@ -152,12 +149,11 @@ int CHAssassin :: ISoundMask ( void)
 			bits_SOUND_PLAYER;
 }
 
-
 //=========================================================
 // Classify - indicates this monster's place in the 
 // relationship table.
 //=========================================================
-int	CHAssassin :: Classify ( void )
+int CHAssassin :: Classify ( void )
 {
 	return	CLASS_HUMAN_MILITARY;
 }
@@ -183,7 +179,6 @@ void CHAssassin :: SetYawSpeed ( void )
 
 	pev->yaw_speed = ys;
 }
-
 
 //=========================================================
 // Shoot
@@ -233,7 +228,6 @@ void CHAssassin :: Shoot ( void )
 
 	m_cAmmoLoaded--;
 }
-
 
 //=========================================================
 // HandleAnimEvent - catches the monster-specific messages
@@ -317,8 +311,6 @@ void CHAssassin :: Precache()
 
 	m_iShell = PRECACHE_MODEL ("models/shell.mdl");// brass shell
 }	
-	
-
 
 //=========================================================
 // AI Schedules Specific to this monster
@@ -355,7 +347,6 @@ Schedule_t	slAssassinFail[] =
 	},
 };
 
-
 //=========================================================
 // Enemy exposed Agrunt's cover
 //=========================================================
@@ -377,7 +368,6 @@ Schedule_t slAssassinExposed[] =
 		"AssassinExposed",
 	},
 };
-
 
 //=========================================================
 // Take cover from enemy! Tries lateral cover before node 
@@ -408,7 +398,6 @@ Schedule_t	slAssassinTakeCoverFromEnemy[] =
 		"AssassinTakeCoverFromEnemy"
 	},
 };
-
 
 //=========================================================
 // Take cover from enemy! Tries lateral cover before node 
@@ -442,7 +431,6 @@ Schedule_t	slAssassinTakeCoverFromEnemy2[] =
 	},
 };
 
-
 //=========================================================
 // hide from the loudest sound source
 //=========================================================
@@ -467,10 +455,6 @@ Schedule_t	slAssassinTakeCoverFromBestSound[] =
 		"AssassinTakeCoverFromBestSound"
 	},
 };
-
-
-
-
 
 //=========================================================
 // AlertIdle Schedules
@@ -501,8 +485,6 @@ Schedule_t	slAssassinHide[] =
 	},
 };
 
-
-
 //=========================================================
 // HUNT Schedules
 //=========================================================
@@ -528,7 +510,6 @@ Schedule_t slAssassinHunt[] =
 	},
 };
 
-
 //=========================================================
 // Jumping Schedules
 //=========================================================
@@ -550,7 +531,6 @@ Schedule_t	slAssassinJump[] =
 	},
 };
 
-
 //=========================================================
 // repel 
 //=========================================================
@@ -560,7 +540,6 @@ Task_t	tlAssassinJumpAttack[] =
 	// { TASK_SET_ACTIVITY,		(float)ACT_FLY	},
 	{ TASK_ASSASSIN_FALL_TO_GROUND, (float)0		},
 };
-
 
 Schedule_t	slAssassinJumpAttack[] =
 {
@@ -572,7 +551,6 @@ Schedule_t	slAssassinJumpAttack[] =
 		"AssassinJumpAttack"
 	},
 };
-
 
 //=========================================================
 // repel 
@@ -617,8 +595,7 @@ DEFINE_CUSTOM_SCHEDULES( CHAssassin )
 	slAssassinJumpLand,
 };
 
-IMPLEMENT_CUSTOM_SCHEDULES( CHAssassin, CBaseMonster );
-
+IMPLEMENT_CUSTOM_SCHEDULES( CHAssassin, CBaseMonster )
 
 //=========================================================
 // CheckMeleeAttack1 - jump like crazy if the enemy gets too close. 
@@ -706,7 +683,6 @@ BOOL CHAssassin :: CheckRangeAttack2 ( float flDot, float flDist )
 	return FALSE;
 }
 
-
 //=========================================================
 // RunAI
 //=========================================================
@@ -755,7 +731,6 @@ void CHAssassin :: RunAI( void )
 	}
 }
 
-
 //=========================================================
 // StartTask
 //=========================================================
@@ -780,7 +755,6 @@ void CHAssassin :: StartTask ( Task_t *pTask )
 		break;
 	}
 }
-
 
 //=========================================================
 // RunTask 
@@ -1013,5 +987,4 @@ Schedule_t* CHAssassin :: GetScheduleOfType ( int Type )
 
 	return CBaseMonster :: GetScheduleOfType( Type );
 }
-
 #endif

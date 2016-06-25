@@ -24,7 +24,6 @@
 #include	"monsters.h"
 #include	"schedule.h"
 
-
 //=========================================================
 // Monster's Anim Events Go Here
 //=========================================================
@@ -64,28 +63,28 @@ public:
 	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
 };
 
-LINK_ENTITY_TO_CLASS( monster_zombie, CZombie );
+LINK_ENTITY_TO_CLASS( monster_zombie, CZombie )
 
-const char *CZombie::pAttackHitSounds[] = 
+const char *CZombie::pAttackHitSounds[] =
 {
 	"zombie/claw_strike1.wav",
 	"zombie/claw_strike2.wav",
 	"zombie/claw_strike3.wav",
 };
 
-const char *CZombie::pAttackMissSounds[] = 
+const char *CZombie::pAttackMissSounds[] =
 {
 	"zombie/claw_miss1.wav",
 	"zombie/claw_miss2.wav",
 };
 
-const char *CZombie::pAttackSounds[] = 
+const char *CZombie::pAttackSounds[] =
 {
 	"zombie/zo_attack1.wav",
 	"zombie/zo_attack2.wav",
 };
 
-const char *CZombie::pIdleSounds[] = 
+const char *CZombie::pIdleSounds[] =
 {
 	"zombie/zo_idle1.wav",
 	"zombie/zo_idle2.wav",
@@ -93,14 +92,14 @@ const char *CZombie::pIdleSounds[] =
 	"zombie/zo_idle4.wav",
 };
 
-const char *CZombie::pAlertSounds[] = 
+const char *CZombie::pAlertSounds[] =
 {
 	"zombie/zo_alert10.wav",
 	"zombie/zo_alert20.wav",
 	"zombie/zo_alert30.wav",
 };
 
-const char *CZombie::pPainSounds[] = 
+const char *CZombie::pPainSounds[] =
 {
 	"zombie/zo_pain1.wav",
 	"zombie/zo_pain2.wav",
@@ -110,7 +109,7 @@ const char *CZombie::pPainSounds[] =
 // Classify - indicates this monster's place in the 
 // relationship table.
 //=========================================================
-int	CZombie :: Classify ( void )
+int CZombie :: Classify ( void )
 {
 	return	CLASS_ALIEN_MONSTER;
 }
@@ -124,13 +123,11 @@ void CZombie :: SetYawSpeed ( void )
 	int ys;
 
 	ys = 120;
-
 #if 0
 	switch ( m_Activity )
 	{
 	}
 #endif
-
 	pev->yaw_speed = ys;
 }
 
@@ -181,7 +178,6 @@ void CZombie :: AttackSound( void )
 	EMIT_SOUND_DYN ( ENT(pev), CHAN_VOICE, pAttackSounds[ RANDOM_LONG(0,ARRAYSIZE(pAttackSounds)-1) ], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG(-5,5) );
 }
 
-
 //=========================================================
 // HandleAnimEvent - catches the monster-specific messages
 // that occur when tagged animation frames are played.
@@ -193,7 +189,7 @@ void CZombie :: HandleAnimEvent( MonsterEvent_t *pEvent )
 		case ZOMBIE_AE_ATTACK_RIGHT:
 		{
 			// do stuff for this event.
-	//		ALERT( at_console, "Slash right!\n" );
+			//ALERT( at_console, "Slash right!\n" );
 			CBaseEntity *pHurt = CheckTraceHullAttack( 70, gSkillData.zombieDmgOneSlash, DMG_SLASH );
 			if ( pHurt )
 			{
@@ -213,11 +209,10 @@ void CZombie :: HandleAnimEvent( MonsterEvent_t *pEvent )
 				AttackSound();
 		}
 		break;
-
 		case ZOMBIE_AE_ATTACK_LEFT:
 		{
 			// do stuff for this event.
-	//		ALERT( at_console, "Slash left!\n" );
+			//ALERT( at_console, "Slash left!\n" );
 			CBaseEntity *pHurt = CheckTraceHullAttack( 70, gSkillData.zombieDmgOneSlash, DMG_SLASH );
 			if ( pHurt )
 			{
@@ -236,7 +231,6 @@ void CZombie :: HandleAnimEvent( MonsterEvent_t *pEvent )
 				AttackSound();
 		}
 		break;
-
 		case ZOMBIE_AE_ATTACK_BOTH:
 		{
 			// do stuff for this event.
@@ -257,7 +251,6 @@ void CZombie :: HandleAnimEvent( MonsterEvent_t *pEvent )
 				AttackSound();
 		}
 		break;
-
 		default:
 			CBaseMonster::HandleAnimEvent( pEvent );
 			break;
@@ -312,13 +305,11 @@ void CZombie :: Precache()
 
 	for ( i = 0; i < ARRAYSIZE( pPainSounds ); i++ )
 		PRECACHE_SOUND((char *)pPainSounds[i]);
-}	
+}
 
 //=========================================================
 // AI Schedules Specific to this monster
 //=========================================================
-
-
 
 int CZombie::IgnoreConditions ( void )
 {
@@ -342,5 +333,4 @@ int CZombie::IgnoreConditions ( void )
 	}
 
 	return iIgnore;
-	
 }

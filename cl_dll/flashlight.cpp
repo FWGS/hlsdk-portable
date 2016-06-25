@@ -45,7 +45,7 @@ int CHudFlashlight::Init(void)
 	gHUD.AddHudElem(this);
 
 	return 1;
-};
+}
 
 void CHudFlashlight::Reset(void)
 {
@@ -68,7 +68,7 @@ int CHudFlashlight::VidInit(void)
 	m_iWidth = m_prc2->right - m_prc2->left;
 
 	return 1;
-};
+}
 
 int CHudFlashlight:: MsgFunc_FlashBat(const char *pszName,  int iSize, void *pbuf )
 {

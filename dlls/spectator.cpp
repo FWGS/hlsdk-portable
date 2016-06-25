@@ -18,6 +18,7 @@
 
 // Spectator functions
 // 
+
 #include	"extdll.h"
 #include	"util.h"
 #include	"cbase.h"
@@ -36,7 +37,7 @@ void CBaseSpectator::SpectatorConnect(void)
 	pev->flags = FL_SPECTATOR;
 	pev->solid = SOLID_NOT;
 	pev->movetype = MOVETYPE_NOCLIP;
-	
+
 	m_pGoalEnt = NULL;
 }
 
@@ -64,7 +65,7 @@ void CBaseSpectator::SpectatorImpulseCommand(void)
 	edict_t         *pPreviousGoal;
 	edict_t         *pCurrentGoal;
 	BOOL			bFound;
-	
+
 	switch (pev->impulse)
 	{
 	case 1:
@@ -96,7 +97,7 @@ void CBaseSpectator::SpectatorImpulseCommand(void)
 
 		if (!bFound)  // Didn't find a good spot.
 			break;
-		
+
 		pGoal = pCurrentGoal;
 		UTIL_SetOrigin( pev, pGoal->v.origin );
 		pev->angles = pGoal->v.angles;
@@ -144,6 +145,6 @@ void CBaseSpectator::Spawn()
 	pev->flags = FL_SPECTATOR;
 	pev->solid = SOLID_NOT;
 	pev->movetype = MOVETYPE_NOCLIP;
-	
+
 	m_pGoalEnt = NULL;
 }

@@ -25,23 +25,22 @@
 #include	"hornet.h"
 #include	"gamerules.h"
 
-
 int iHornetTrail;
 int iHornetPuff;
 
-LINK_ENTITY_TO_CLASS( hornet, CHornet );
+LINK_ENTITY_TO_CLASS( hornet, CHornet )
 
 //=========================================================
 // Save/Restore
 //=========================================================
-TYPEDESCRIPTION	CHornet::m_SaveData[] = 
+TYPEDESCRIPTION	CHornet::m_SaveData[] =
 {
 	DEFINE_FIELD( CHornet, m_flStopAttack, FIELD_TIME ),
 	DEFINE_FIELD( CHornet, m_iHornetType, FIELD_INTEGER ),
 	DEFINE_FIELD( CHornet, m_flFlySpeed, FIELD_FLOAT ),
 };
 
-IMPLEMENT_SAVERESTORE( CHornet, CBaseMonster );
+IMPLEMENT_SAVERESTORE( CHornet, CBaseMonster )
 
 //=========================================================
 // don't let hornets gib, ever.
@@ -113,7 +112,6 @@ void CHornet :: Spawn( void )
 	pev->nextthink = gpGlobals->time + 0.1;
 	ResetSequenceInfo( );
 }
-
 
 void CHornet :: Precache()
 {
@@ -215,7 +213,6 @@ old colors
 			break;
 	
 */
-
 	// trail
 	MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
 		WRITE_BYTE(  TE_BEAMFOLLOW );
@@ -264,7 +261,8 @@ void CHornet :: TrackTarget ( void )
 
 	// UNDONE: The player pointer should come back after returning from another level
 	if ( m_hEnemy == NULL )
-	{// enemy is dead.
+	{
+		// enemy is dead.
 		Look( 512 );
 		m_hEnemy = BestVisibleEnemy( );
 	}
@@ -289,7 +287,8 @@ void CHornet :: TrackTarget ( void )
 	flDelta = DotProduct ( vecFlightDir, vecDirToEnemy );
 	
 	if ( flDelta < 0.5 )
-	{// hafta turn wide again. play sound
+	{
+		// hafta turn wide again. play sound
 		switch (RANDOM_LONG(0,2))
 		{
 		case 0:	EMIT_SOUND( ENT(pev), CHAN_VOICE, "hornet/ag_buzz1.wav", HORNET_BUZZ_VOLUME, ATTN_NORM);	break;
@@ -299,7 +298,8 @@ void CHornet :: TrackTarget ( void )
 	}
 
 	if ( flDelta <= 0 && m_iHornetType == HORNET_TYPE_RED )
-	{// no flying backwards, but we don't want to invert this, cause we'd go fast when we have to turn REAL far.
+	{
+		// no flying backwards, but we don't want to invert this, cause we'd go fast when we have to turn REAL far.
 		flDelta = 0.25;
 	}
 
@@ -308,7 +308,6 @@ void CHornet :: TrackTarget ( void )
 	if ( pev->owner && (pev->owner->v.flags & FL_MONSTER) )
 	{
 		// random pattern only applies to hornets fired by monsters, not players. 
-
 		pev->velocity.x += RANDOM_FLOAT ( -0.10, 0.10 );// scramble the flight dir a bit.
 		pev->velocity.y += RANDOM_FLOAT ( -0.10, 0.10 );
 		pev->velocity.z += RANDOM_FLOAT ( -0.10, 0.10 );
@@ -367,7 +366,8 @@ void CHornet :: TrackTarget ( void )
 void CHornet :: TrackTouch ( CBaseEntity *pOther )
 {
 	if ( pOther->edict() == pev->owner || pOther->pev->modelindex == pev->modelindex )
-	{// bumped into the guy that shot it.
+	{
+		// bumped into the guy that shot it.
 		pev->solid = SOLID_NOT;
 		return;
 	}
@@ -398,10 +398,11 @@ void CHornet::DartTouch( CBaseEntity *pOther )
 void CHornet::DieTouch ( CBaseEntity *pOther )
 {
 	if ( pOther && pOther->pev->takedamage )
-	{// do the damage
-
+	{
+		// do the damage
 		switch (RANDOM_LONG(0,2))
-		{// buzz when you plug someone
+		{
+			// buzz when you plug someone
 			case 0:	EMIT_SOUND( ENT(pev), CHAN_VOICE, "hornet/ag_hornethit1.wav", 1, ATTN_NORM);	break;
 			case 1:	EMIT_SOUND( ENT(pev), CHAN_VOICE, "hornet/ag_hornethit2.wav", 1, ATTN_NORM);	break;
 			case 2:	EMIT_SOUND( ENT(pev), CHAN_VOICE, "hornet/ag_hornethit3.wav", 1, ATTN_NORM);	break;
@@ -416,4 +417,3 @@ void CHornet::DieTouch ( CBaseEntity *pOther )
 	SetThink( &CBaseEntity::SUB_Remove );
 	pev->nextthink = gpGlobals->time + 1;// stick around long enough for the sound to finish!
 }
-

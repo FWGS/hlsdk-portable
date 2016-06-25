@@ -36,7 +36,8 @@ public:
 	int  Classify ( void );
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
 };
-LINK_ENTITY_TO_CLASS( my_monster, CMyMonster );
+
+LINK_ENTITY_TO_CLASS( my_monster, CMyMonster )
 
 //=========================================================
 // Classify - indicates this monster's place in the 
@@ -109,7 +110,7 @@ void CMyMonster :: Precache()
 	PRECACHE_SOUND("mysound.wav");
 
 	PRECACHE_MODEL("models/mymodel.mdl");
-}	
+}
 
 //=========================================================
 // AI Schedules Specific to this monster

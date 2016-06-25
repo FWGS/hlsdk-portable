@@ -28,7 +28,7 @@ enum w_squeak_e {
 	WSQUEAK_IDLE1 = 0,
 	WSQUEAK_FIDGET,
 	WSQUEAK_JUMP,
-	WSQUEAK_RUN,
+	WSQUEAK_RUN
 };
 
 enum squeak_e {
@@ -55,7 +55,7 @@ class CSqueakGrenade : public CGrenade
 
 	virtual int		Save( CSave &save ); 
 	virtual int		Restore( CRestore &restore );
-	
+
 	static	TYPEDESCRIPTION m_SaveData[];
 
 	static float m_flNextBounceSoundTime;
@@ -72,8 +72,9 @@ class CSqueakGrenade : public CGrenade
 
 float CSqueakGrenade::m_flNextBounceSoundTime = 0;
 
-LINK_ENTITY_TO_CLASS( monster_snark, CSqueakGrenade );
-TYPEDESCRIPTION	CSqueakGrenade::m_SaveData[] = 
+LINK_ENTITY_TO_CLASS( monster_snark, CSqueakGrenade )
+
+TYPEDESCRIPTION	CSqueakGrenade::m_SaveData[] =
 {
 	DEFINE_FIELD( CSqueakGrenade, m_flDie, FIELD_TIME ),
 	DEFINE_FIELD( CSqueakGrenade, m_vecTarget, FIELD_VECTOR ),
@@ -83,7 +84,7 @@ TYPEDESCRIPTION	CSqueakGrenade::m_SaveData[] =
 	DEFINE_FIELD( CSqueakGrenade, m_hOwner, FIELD_EHANDLE ),
 };
 
-IMPLEMENT_SAVERESTORE( CSqueakGrenade, CGrenade );
+IMPLEMENT_SAVERESTORE( CSqueakGrenade, CGrenade )
 
 #define SQUEEK_DETONATE_DELAY	15.0
 
@@ -112,6 +113,7 @@ int CSqueakGrenade :: Classify ( void )
 void CSqueakGrenade :: Spawn( void )
 {
 	Precache( );
+
 	// motor
 	pev->movetype = MOVETYPE_BOUNCE;
 	pev->solid = SOLID_BBOX;
@@ -158,7 +160,6 @@ void CSqueakGrenade::Precache( void )
 	PRECACHE_SOUND("squeek/sqk_deploy1.wav");
 }
 
-
 void CSqueakGrenade :: Killed( entvars_t *pevAttacker, int iGib )
 {
 	pev->model = iStringNull;// make invisible
@@ -194,8 +195,6 @@ void CSqueakGrenade :: GibMonster( void )
 {
 	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "common/bodysplat.wav", 0.75, ATTN_NORM, 0, 200);		
 }
-
-
 
 void CSqueakGrenade::HuntThink( void )
 {
@@ -240,7 +239,7 @@ void CSqueakGrenade::HuntThink( void )
 		return;
 
 	m_flNextHunt = gpGlobals->time + 2.0;
-	
+
 	CBaseEntity *pOther = NULL;
 	Vector vecDir;
 	TraceResult tr;
@@ -315,7 +314,6 @@ void CSqueakGrenade::HuntThink( void )
 	pev->angles.z = 0;
 	pev->angles.x = 0;
 }
-
 
 void CSqueakGrenade::SuperBounceTouch( CBaseEntity *pOther )
 {
@@ -406,11 +404,9 @@ void CSqueakGrenade::SuperBounceTouch( CBaseEntity *pOther )
 
 	m_flNextBounceSoundTime = gpGlobals->time + 0.5;// half second.
 }
-
 #endif
 
-LINK_ENTITY_TO_CLASS( weapon_snark, CSqueak );
-
+LINK_ENTITY_TO_CLASS( weapon_snark, CSqueak )
 
 void CSqueak::Spawn( )
 {
@@ -427,7 +423,6 @@ void CSqueak::Spawn( )
 	pev->framerate = 1.0;
 }
 
-
 void CSqueak::Precache( void )
 {
 	PRECACHE_MODEL("models/w_sqknest.mdl");
@@ -439,7 +434,6 @@ void CSqueak::Precache( void )
 
 	m_usSnarkFire = PRECACHE_EVENT ( 1, "events/snarkfire.sc" );
 }
-
 
 int CSqueak::GetItemInfo(ItemInfo *p)
 {
@@ -458,8 +452,6 @@ int CSqueak::GetItemInfo(ItemInfo *p)
 	return 1;
 }
 
-
-
 BOOL CSqueak::Deploy( )
 {
 	// play hunt sound
@@ -475,7 +467,6 @@ BOOL CSqueak::Deploy( )
 	return DefaultDeploy( "models/v_squeak.mdl", "models/p_squeak.mdl", SQUEAK_UP, "squeak" );
 }
 
-
 void CSqueak::Holster( int skiplocal /* = 0 */ )
 {
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
@@ -487,11 +478,10 @@ void CSqueak::Holster( int skiplocal /* = 0 */ )
 		pev->nextthink = gpGlobals->time + 0.1;
 		return;
 	}
-	
+
 	SendWeaponAnim( SQUEAK_DOWN );
 	EMIT_SOUND(ENT(m_pPlayer->pev), CHAN_WEAPON, "common/null.wav", 1.0, ATTN_NORM);
 }
-
 
 void CSqueak::PrimaryAttack()
 {
@@ -518,19 +508,16 @@ void CSqueak::PrimaryAttack()
 #else
 	flags = 0;
 #endif
-
 	    PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usSnarkFire, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, 0, 0, 0, 0 );
 
 		if ( tr.fAllSolid == 0 && tr.fStartSolid == 0 && tr.flFraction > 0.25 )
 		{
 			// player "shoot" animation
 			m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
-
 #ifndef CLIENT_DLL
 			CBaseEntity *pSqueak = CBaseEntity::Create( "monster_snark", tr.vecEndPos, m_pPlayer->pev->v_angle, m_pPlayer->edict() );
 			pSqueak->pev->velocity = gpGlobals->v_forward * 200 + m_pPlayer->pev->velocity;
 #endif
-
 			// play hunt sound
 			float flRndSound = RANDOM_FLOAT ( 0 , 1 );
 
@@ -551,12 +538,10 @@ void CSqueak::PrimaryAttack()
 	}
 }
 
-
 void CSqueak::SecondaryAttack( void )
 {
 
 }
-
 
 void CSqueak::WeaponIdle( void )
 {
@@ -597,5 +582,4 @@ void CSqueak::WeaponIdle( void )
 	}
 	SendWeaponAnim( iAnim );
 }
-
 #endif

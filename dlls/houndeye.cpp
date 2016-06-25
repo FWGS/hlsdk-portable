@@ -59,7 +59,7 @@ enum
 {
 	SCHED_HOUND_AGITATED = LAST_COMMON_SCHEDULE + 1,
 	SCHED_HOUND_HOP_RETREAT,
-	SCHED_HOUND_FAIL,
+	SCHED_HOUND_FAIL
 };
 
 //=========================================================
@@ -99,10 +99,10 @@ public:
 	Schedule_t *GetScheduleOfType ( int Type );
 	Schedule_t *GetSchedule( void );
 
-	int	Save( CSave &save ); 
+	int Save( CSave &save ); 
 	int Restore( CRestore &restore );
 
-	CUSTOM_SCHEDULES;
+	CUSTOM_SCHEDULES
 	static TYPEDESCRIPTION m_SaveData[];
 
 	int m_iSpriteTexture;
@@ -110,7 +110,8 @@ public:
 	BOOL m_fDontBlink;// don't try to open/close eye if this bit is set!
 	Vector	m_vecPackCenter; // the center of the pack. The leader maintains this by averaging the origins of all pack members.
 };
-LINK_ENTITY_TO_CLASS( monster_houndeye, CHoundeye );
+
+LINK_ENTITY_TO_CLASS( monster_houndeye, CHoundeye )
 
 TYPEDESCRIPTION	CHoundeye::m_SaveData[] = 
 {
@@ -120,7 +121,7 @@ TYPEDESCRIPTION	CHoundeye::m_SaveData[] =
 	DEFINE_FIELD( CHoundeye, m_vecPackCenter, FIELD_POSITION_VECTOR ),
 };
 
-IMPLEMENT_SAVERESTORE( CHoundeye, CSquadMonster );
+IMPLEMENT_SAVERESTORE( CHoundeye, CSquadMonster )
 
 //=========================================================
 // Classify - indicates this monster's place in the 
@@ -548,7 +549,6 @@ void CHoundeye :: WriteBeamColor ( void )
 	WRITE_BYTE( bGreen );
 	WRITE_BYTE( bBlue  );
 }
-		
 
 //=========================================================
 // SonicAttack
@@ -608,7 +608,6 @@ void CHoundeye :: SonicAttack ( void )
 		WRITE_BYTE( 0 );		// speed
 	MESSAGE_END();
 
-
 	CBaseEntity *pEntity = NULL;
 	// iterate on all entities in the vicinity.
 	while ((pEntity = UTIL_FindEntityInSphere( pEntity, pev->origin, HOUNDEYE_MAX_ATTACK_RADIUS )) != NULL)
@@ -616,8 +615,8 @@ void CHoundeye :: SonicAttack ( void )
 		if ( pEntity->pev->takedamage != DAMAGE_NO )
 		{
 			if ( !FClassnameIs(pEntity->pev, "monster_houndeye") )
-			{// houndeyes don't hurt other houndeyes with their attack
-
+			{
+				// houndeyes don't hurt other houndeyes with their attack
 				// houndeyes do FULL damage if the ent in question is visible. Half damage otherwise.
 				// This means that you must get out of the houndeye's attack range entirely to avoid damage.
 				// Calculate full damage first
@@ -663,7 +662,7 @@ void CHoundeye :: SonicAttack ( void )
 		}
 	}
 }
-		
+
 //=========================================================
 // start task
 //=========================================================
@@ -745,7 +744,6 @@ void CHoundeye :: StartTask ( Task_t *pTask )
 				}
 			}
 */
-
 			break;
 		}
 	case TASK_SPECIAL_ATTACK1:
@@ -782,7 +780,6 @@ void CHoundeye :: RunTask ( Task_t *pTask )
 			{
 				TaskComplete();
 			}
-			
 			break;
 		}
 	case TASK_HOUND_CLOSE_EYE:
@@ -827,7 +824,6 @@ void CHoundeye :: RunTask ( Task_t *pTask )
 				SonicAttack(); 
 				TaskComplete();
 			}
-
 			break;
 		}
 	default:
@@ -853,11 +849,13 @@ void CHoundeye::PrescheduleThink ( void )
 	if ( !m_fDontBlink )
 	{
 		if ( ( pev->skin == 0 ) && RANDOM_LONG(0,0x7F) == 0 )
-		{// start blinking!
+		{
+			// start blinking!
 			pev->skin = HOUNDEYE_EYE_FRAMES - 1;
 		}
 		else if ( pev->skin != 0 )
-		{// already blinking
+		{
+			// already blinking
 			pev->skin--;
 		}
 	}
@@ -964,7 +962,7 @@ Task_t	tlHoundSleep[] =
 
 Schedule_t	slHoundSleep[] =
 {
-	{ 
+	{
 		tlHoundSleep,
 		ARRAYSIZE ( tlHoundSleep ), 
 		bits_COND_HEAR_SOUND	|
@@ -1019,7 +1017,6 @@ Schedule_t	slHoundWakeUrgent[] =
 		"WakeUrgent"
 	},
 };
-
 
 Task_t	tlHoundSpecialAttack1[] =
 {
@@ -1140,7 +1137,7 @@ DEFINE_CUSTOM_SCHEDULES( CHoundeye )
 	slHoundCombatFailNoPVS,
 };
 
-IMPLEMENT_CUSTOM_SCHEDULES( CHoundeye, CSquadMonster );
+IMPLEMENT_CUSTOM_SCHEDULES( CHoundeye, CSquadMonster )
 
 //=========================================================
 // GetScheduleOfType 
@@ -1259,7 +1256,7 @@ Schedule_t *CHoundeye :: GetSchedule( void )
 	{
 	case MONSTERSTATE_COMBAT:
 		{
-// dead enemy
+			// dead enemy
 			if ( HasConditions( bits_COND_ENEMY_DEAD ) )
 			{
 				// call base class, all code to handle dead enemies is centralized there.

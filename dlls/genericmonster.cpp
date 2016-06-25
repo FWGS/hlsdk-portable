@@ -38,7 +38,8 @@ public:
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
 	int ISoundMask ( void );
 };
-LINK_ENTITY_TO_CLASS( monster_generic, CGenericMonster );
+
+LINK_ENTITY_TO_CLASS( monster_generic, CGenericMonster )
 
 //=========================================================
 // Classify - indicates this monster's place in the 

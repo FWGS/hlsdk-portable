@@ -24,8 +24,6 @@
 #include "util.h"
 #include "cbase.h"
 
-
-
 class CLight : public CPointEntity
 {
 public:
@@ -42,7 +40,8 @@ private:
 	int		m_iStyle;
 	int		m_iszPattern;
 };
-LINK_ENTITY_TO_CLASS( light, CLight );
+
+LINK_ENTITY_TO_CLASS( light, CLight )
 
 TYPEDESCRIPTION	CLight::m_SaveData[] = 
 {
@@ -50,8 +49,7 @@ TYPEDESCRIPTION	CLight::m_SaveData[] =
 	DEFINE_FIELD( CLight, m_iszPattern, FIELD_STRING ),
 };
 
-IMPLEMENT_SAVERESTORE( CLight, CPointEntity );
-
+IMPLEMENT_SAVERESTORE( CLight, CPointEntity )
 
 //
 // Cache user-entity-field values until spawn is called.
@@ -96,7 +94,7 @@ void CLight :: Spawn( void )
 	
 	if (m_iStyle >= 32)
 	{
-//		CHANGE_METHOD(ENT(pev), em_use, light_use);
+		//CHANGE_METHOD(ENT(pev), em_use, light_use);
 		if (FBitSet(pev->spawnflags, SF_LIGHT_START_OFF))
 			LIGHT_STYLE(m_iStyle, "a");
 		else if (m_iszPattern)
@@ -105,7 +103,6 @@ void CLight :: Spawn( void )
 			LIGHT_STYLE(m_iStyle, "m");
 	}
 }
-
 
 void CLight :: Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
@@ -133,8 +130,7 @@ void CLight :: Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useT
 //
 // shut up spawn functions for new spotlights
 //
-LINK_ENTITY_TO_CLASS( light_spot, CLight );
-
+LINK_ENTITY_TO_CLASS( light_spot, CLight )
 
 class CEnvLight : public CLight
 {
@@ -143,7 +139,7 @@ public:
 	void	Spawn( void );
 };
 
-LINK_ENTITY_TO_CLASS( light_environment, CEnvLight );
+LINK_ENTITY_TO_CLASS( light_environment, CEnvLight )
 
 void CEnvLight::KeyValue( KeyValueData* pkvd )
 {
@@ -181,7 +177,6 @@ void CEnvLight::KeyValue( KeyValueData* pkvd )
 		CLight::KeyValue( pkvd );
 	}
 }
-
 
 void CEnvLight :: Spawn( void )
 {

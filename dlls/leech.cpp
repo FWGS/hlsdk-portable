@@ -34,20 +34,15 @@
 // Try this on a model with hulls/tracehull?
 //
 
-
 #include	"float.h"
 #include	"extdll.h"
 #include	"util.h"
 #include	"cbase.h"
 #include	"monsters.h"
 
-
-
-
 // Animation events
 #define LEECH_AE_ATTACK		1
 #define LEECH_AE_FLOP		2
-
 
 // Movement constants
 
@@ -60,14 +55,11 @@
 #define		LEECH_SIZEX				10
 #define		LEECH_FRAMETIME			0.1
 
-
-
 #define DEBUG_BEAMS		0
 
 #if DEBUG_BEAMS
 #include "effects.h"
 #endif
-
 
 class CLeech : public CBaseMonster
 {
@@ -141,11 +133,9 @@ private:
 #endif
 };
 
+LINK_ENTITY_TO_CLASS( monster_leech, CLeech )
 
-
-LINK_ENTITY_TO_CLASS( monster_leech, CLeech );
-
-TYPEDESCRIPTION	CLeech::m_SaveData[] = 
+TYPEDESCRIPTION	CLeech::m_SaveData[] =
 {
 	DEFINE_FIELD( CLeech, m_flTurning, FIELD_FLOAT ),
 	DEFINE_FIELD( CLeech, m_fPathBlocked, FIELD_BOOLEAN ),
@@ -161,8 +151,7 @@ TYPEDESCRIPTION	CLeech::m_SaveData[] =
 	DEFINE_FIELD( CLeech, m_attackSoundTime, FIELD_TIME ),
 };
 
-IMPLEMENT_SAVERESTORE( CLeech, CBaseMonster );
-
+IMPLEMENT_SAVERESTORE( CLeech, CBaseMonster )
 
 const char *CLeech::pAttackSounds[] =
 {
@@ -177,7 +166,6 @@ const char *CLeech::pAlertSounds[] =
 	"leech/leech_alert2.wav",
 };
 
-
 void CLeech::Spawn( void )
 {
 	Precache();
@@ -185,7 +173,7 @@ void CLeech::Spawn( void )
 	// Just for fun
 	//	SET_MODEL(ENT(pev), "models/icky.mdl");
 	
-//	UTIL_SetSize( pev, g_vecZero, g_vecZero );
+	//UTIL_SetSize( pev, g_vecZero, g_vecZero );
 	UTIL_SetSize( pev, Vector(-1,-1,0), Vector(1,1,2));
 	// Don't push the minz down too much or the water check will fail because this entity is really point-sized
 	pev->solid			= SOLID_SLIDEBOX;
@@ -208,13 +196,10 @@ void CLeech::Spawn( void )
 	m_stateTime = gpGlobals->time + RANDOM_FLOAT( 1, 5 );
 }
 
-
 void CLeech::Activate( void )
 {
 	RecalculateWaterlevel();
 }
-
-
 
 void CLeech::RecalculateWaterlevel( void )
 {
@@ -238,7 +223,6 @@ void CLeech::RecalculateWaterlevel( void )
 	m_height = RANDOM_FLOAT( m_bottom, m_top );
 	m_waterTime = gpGlobals->time + RANDOM_FLOAT( 5, 7 );
 }
-
 
 void CLeech::SwitchLeechState( void )
 {
@@ -264,15 +248,12 @@ void CLeech::SwitchLeechState( void )
 	}
 }
 
-
 int CLeech::IRelationship( CBaseEntity *pTarget )
 {
 	if ( pTarget->IsPlayer() )
 		return R_DL;
 	return CBaseMonster::IRelationship( pTarget );
 }
-
-
 
 void CLeech::AttackSound( void )
 {
@@ -283,12 +264,10 @@ void CLeech::AttackSound( void )
 	}
 }
 
-
 void CLeech::AlertSound( void )
 {
 	EMIT_SOUND_DYN ( ENT(pev), CHAN_VOICE, pAlertSounds[ RANDOM_LONG(0,ARRAYSIZE(pAlertSounds)-1) ], 1.0, ATTN_NORM * 0.5, 0, PITCH_NORM );
 }
-
 
 void CLeech::Precache( void )
 {
@@ -303,7 +282,6 @@ void CLeech::Precache( void )
 		PRECACHE_SOUND((char *)pAlertSounds[i]);
 }
 
-
 int CLeech::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )
 {
 	pev->velocity = g_vecZero;
@@ -316,7 +294,6 @@ int CLeech::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float f
 
 	return CBaseMonster::TakeDamage( pevInflictor, pevAttacker, flDamage, bitsDamageType );
 }
-
 
 void CLeech::HandleAnimEvent( MonsterEvent_t *pEvent )
 {
@@ -338,23 +315,19 @@ void CLeech::HandleAnimEvent( MonsterEvent_t *pEvent )
 			dir = dir.Normalize();
 			face = face.Normalize();
 
-			
 			if ( DotProduct(dir, face) > 0.9 )		// Only take damage if the leech is facing the prey
 				pEnemy->TakeDamage( pev, pev, gSkillData.leechDmgBite, DMG_SLASH );
 		}
 		m_stateTime -= 2;
 		break;
-	
 	case LEECH_AE_FLOP:
 		// Play flop sound
 		break;
-	
 	default:
 		CBaseMonster::HandleAnimEvent( pEvent );
 		break;
 	}
 }
-
 
 void CLeech::MakeVectors( void )
 {
@@ -362,7 +335,6 @@ void CLeech::MakeVectors( void )
 	tmp.x = -tmp.x;
 	UTIL_MakeVectors ( tmp );
 }
-
 
 //
 // ObstacleDistance - returns normalized distance to obstacle
@@ -419,7 +391,6 @@ float CLeech::ObstacleDistance( CBaseEntity *pTarget )
 	return 1.0;
 }
 
-
 void CLeech::DeadThink( void )
 {
 	if ( m_fSequenceFinished )
@@ -453,8 +424,6 @@ void CLeech::DeadThink( void )
 		}
 	}
 }
-
-
 
 void CLeech::UpdateMotion( void )
 {
@@ -530,7 +499,6 @@ void CLeech::UpdateMotion( void )
 	}
 	float flInterval = StudioFrameAdvance();
 	DispatchAnimEvents ( flInterval );
-
 #if DEBUG_BEAMS
 	if ( !m_pb )
 		m_pb = CBeam::BeamCreate( "sprites/laserbeam.spr", 5 );
@@ -552,7 +520,6 @@ void CLeech::UpdateMotion( void )
 	m_pt->SetColor( 0, 0, 255 );
 #endif
 }
-
 
 void CLeech::SwimThink( void )
 {
@@ -612,9 +579,7 @@ void CLeech::SwimThink( void )
 			else
 				targetSpeed *= 2;
 		}
-
 		break;
-
 	default:
 		if ( m_zTime < gpGlobals->time )
 		{
@@ -625,13 +590,13 @@ void CLeech::SwimThink( void )
 		if ( RANDOM_LONG( 0, 100 ) < 10 )
 			targetYaw = RANDOM_LONG( -30, 30 );
 		pTarget = NULL;
+
 		// oldorigin test
 		if ( (pev->origin - pev->oldorigin).Length() < 1 )
 		{
 			// If leech didn't move, there must be something blocking it, so try to turn
 			m_sideTime = 0;
 		}
-
 		break;
 	}
 
@@ -686,7 +651,6 @@ void CLeech::SwimThink( void )
 	UpdateMotion();
 }
 
-
 void CLeech::Killed(entvars_t *pevAttacker, int iGib)
 {
 	Vector			vecSplatDir;
@@ -719,5 +683,3 @@ void CLeech::Killed(entvars_t *pevAttacker, int iGib)
 	pev->takedamage = DAMAGE_NO;
 	SetThink( &CLeech::DeadThink );
 }
-
-

@@ -22,12 +22,10 @@
 #include	"monsters.h"
 #include	"schedule.h"
 
-
 //=========================================================
 // Monster's Anim Events Go Here
 //=========================================================
 #define	BLOATER_AE_ATTACK_MELEE1		0x01
-
 
 class CBloater : public CBaseMonster
 {
@@ -49,7 +47,7 @@ public:
 	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
 };
 
-LINK_ENTITY_TO_CLASS( monster_bloater, CBloater );
+LINK_ENTITY_TO_CLASS( monster_bloater, CBloater )
 
 //=========================================================
 // Classify - indicates this monster's place in the 
@@ -69,13 +67,11 @@ void CBloater :: SetYawSpeed ( void )
 	int ys;
 
 	ys = 120;
-
 #if 0
 	switch ( m_Activity )
 	{
 	}
 #endif
-
 	pev->yaw_speed = ys;
 }
 
@@ -161,7 +157,6 @@ void CBloater :: AttackSnd( void )
 #endif
 }
 
-
 //=========================================================
 // HandleAnimEvent - catches the monster-specific messages
 // that occur when tagged animation frames are played.
@@ -171,11 +166,11 @@ void CBloater :: HandleAnimEvent( MonsterEvent_t *pEvent )
 	switch( pEvent->event )
 	{
 		case BLOATER_AE_ATTACK_MELEE1:
-		{
-			// do stuff for this event.
-			AttackSnd();
-		}
-		break;
+			{
+				// do stuff for this event.
+				AttackSnd();
+			}
+			break;
 
 		default:
 			CBaseMonster::HandleAnimEvent( pEvent );

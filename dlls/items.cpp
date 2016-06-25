@@ -39,7 +39,7 @@ public:
 	int		m_iType;
 };
 
-LINK_ENTITY_TO_CLASS(world_items, CWorldItem);
+LINK_ENTITY_TO_CLASS(world_items, CWorldItem)
 
 void CWorldItem::KeyValue(KeyValueData *pkvd)
 {
@@ -85,7 +85,6 @@ void CWorldItem::Spawn( void )
 
 	REMOVE_ENTITY(edict());
 }
-
 
 void CItem::Spawn( void )
 {
@@ -198,9 +197,7 @@ class CItemSuit : public CItem
 	}
 };
 
-LINK_ENTITY_TO_CLASS(item_suit, CItemSuit);
-
-
+LINK_ENTITY_TO_CLASS(item_suit, CItemSuit)
 
 class CItemBattery : public CItem
 {
@@ -236,17 +233,16 @@ class CItemBattery : public CItem
 			MESSAGE_BEGIN( MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev );
 				WRITE_STRING( STRING(pev->classname) );
 			MESSAGE_END();
-
-			
+	
 			// Suit reports new power level
 			// For some reason this wasn't working in release build -- round it.
 			pct = (int)( (float)(pPlayer->pev->armorvalue * 100.0) * (1.0/MAX_NORMAL_BATTERY) + 0.5);
 			pct = (pct / 5);
 			if (pct > 0)
 				pct--;
-		
+	
 			sprintf( szcharge,"!HEV_%1dP", pct );
-			
+
 			//EMIT_SOUND_SUIT(ENT(pev), szcharge);
 			pPlayer->SetSuitUpdate(szcharge, FALSE, SUIT_NEXT_IN_30SEC);
 			return TRUE;		
@@ -255,8 +251,7 @@ class CItemBattery : public CItem
 	}
 };
 
-LINK_ENTITY_TO_CLASS(item_battery, CItemBattery);
-
+LINK_ENTITY_TO_CLASS( item_battery, CItemBattery )
 
 class CItemAntidote : public CItem
 {
@@ -279,8 +274,7 @@ class CItemAntidote : public CItem
 	}
 };
 
-LINK_ENTITY_TO_CLASS(item_antidote, CItemAntidote);
-
+LINK_ENTITY_TO_CLASS( item_antidote, CItemAntidote )
 
 class CItemSecurity : public CItem
 {
@@ -301,7 +295,7 @@ class CItemSecurity : public CItem
 	}
 };
 
-LINK_ENTITY_TO_CLASS(item_security, CItemSecurity);
+LINK_ENTITY_TO_CLASS( item_security, CItemSecurity )
 
 class CItemLongJump : public CItem
 {
@@ -339,4 +333,4 @@ class CItemLongJump : public CItem
 	}
 };
 
-LINK_ENTITY_TO_CLASS( item_longjump, CItemLongJump );
+LINK_ENTITY_TO_CLASS( item_longjump, CItemLongJump )

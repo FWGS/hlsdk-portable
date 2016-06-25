@@ -51,16 +51,16 @@ public:
 	EHANDLE m_hTalkTarget;
 	float m_flTalkTime;
 };
-LINK_ENTITY_TO_CLASS( monster_gman, CGMan );
 
+LINK_ENTITY_TO_CLASS( monster_gman, CGMan )
 
 TYPEDESCRIPTION	CGMan::m_SaveData[] = 
 {
 	DEFINE_FIELD( CGMan, m_hTalkTarget, FIELD_EHANDLE ),
 	DEFINE_FIELD( CGMan, m_flTalkTime, FIELD_TIME ),
 };
-IMPLEMENT_SAVERESTORE( CGMan, CBaseMonster );
 
+IMPLEMENT_SAVERESTORE( CGMan, CBaseMonster )
 
 //=========================================================
 // Classify - indicates this monster's place in the 
@@ -140,11 +140,9 @@ void CGMan :: Precache()
 	PRECACHE_MODEL( "models/gman.mdl" );
 }	
 
-
 //=========================================================
 // AI Schedules Specific to this monster
 //=========================================================
-
 
 void CGMan :: StartTask( Task_t *pTask )
 {
@@ -200,7 +198,6 @@ void CGMan :: RunTask( Task_t *pTask )
 	}
 }
 
-
 //=========================================================
 // Override all damage
 //=========================================================
@@ -220,13 +217,11 @@ int CGMan :: TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float 
 	return TRUE;
 }
 
-
 void CGMan::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType)
 {
 	UTIL_Ricochet( ptr->vecEndPos, 1.0 );
 	AddMultiDamage( pevAttacker, this, flDamage, bitsDamageType );
 }
-
 
 void CGMan::PlayScriptedSentence( const char *pszSentence, float duration, float volume, float attenuation, BOOL bConcurrent, CBaseEntity *pListener )
 {

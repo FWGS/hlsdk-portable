@@ -35,8 +35,7 @@ TYPEDESCRIPTION	CBaseAnimating::m_SaveData[] =
 	DEFINE_FIELD( CBaseMonster, m_fSequenceLoops, FIELD_BOOLEAN ),
 };
 
-IMPLEMENT_SAVERESTORE( CBaseAnimating, CBaseDelay );
-
+IMPLEMENT_SAVERESTORE( CBaseAnimating, CBaseDelay )
 
 //=========================================================
 // StudioFrameAdvance - advance the animation frame up to the current time
@@ -104,7 +103,6 @@ int CBaseAnimating :: LookupSequence ( const char *label )
 	return ::LookupSequence( pmodel, label );
 }
 
-
 //=========================================================
 //=========================================================
 void CBaseAnimating :: ResetSequenceInfo ( )
@@ -118,8 +116,6 @@ void CBaseAnimating :: ResetSequenceInfo ( )
 	m_fSequenceFinished = FALSE;
 	m_flLastEventCheck = gpGlobals->time;
 }
-
-
 
 //=========================================================
 //=========================================================
@@ -164,7 +160,6 @@ void CBaseAnimating :: DispatchAnimEvents ( float flInterval )
 		HandleAnimEvent( &event );
 	}
 }
-
 
 //=========================================================
 //=========================================================
@@ -245,7 +240,6 @@ int CBaseAnimating :: GetBodygroup( int iGroup )
 {
 	return ::GetBodygroup( GET_MODEL_PTR( ENT(pev) ), pev, iGroup );
 }
-
 
 int CBaseAnimating :: ExtractBbox( int sequence, float *mins, float *maxs )
 {

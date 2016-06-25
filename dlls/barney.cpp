@@ -85,10 +85,10 @@ public:
 	// UNDONE: What is this for?  It isn't used?
 	float	m_flPlayerDamage;// how much pain has the player inflicted on me?
 
-	CUSTOM_SCHEDULES;
+	CUSTOM_SCHEDULES
 };
 
-LINK_ENTITY_TO_CLASS( monster_barney, CBarney );
+LINK_ENTITY_TO_CLASS( monster_barney, CBarney )
 
 TYPEDESCRIPTION	CBarney::m_SaveData[] = 
 {
@@ -99,7 +99,7 @@ TYPEDESCRIPTION	CBarney::m_SaveData[] =
 	DEFINE_FIELD( CBarney, m_flPlayerDamage, FIELD_FLOAT ),
 };
 
-IMPLEMENT_SAVERESTORE( CBarney, CTalkMonster );
+IMPLEMENT_SAVERESTORE( CBarney, CTalkMonster )
 
 //=========================================================
 // AI Schedules Specific to this monster
@@ -171,7 +171,6 @@ Schedule_t	slBaFaceTarget[] =
 	},
 };
 
-
 Task_t	tlIdleBaStand[] =
 {
 	{ TASK_STOP_MOVING,			0				},
@@ -212,8 +211,7 @@ DEFINE_CUSTOM_SCHEDULES( CBarney )
 	slIdleBaStand,
 };
 
-
-IMPLEMENT_CUSTOM_SCHEDULES( CBarney, CTalkMonster );
+IMPLEMENT_CUSTOM_SCHEDULES( CBarney, CTalkMonster )
 
 void CBarney :: StartTask( Task_t *pTask )
 {
@@ -236,9 +234,6 @@ void CBarney :: RunTask( Task_t *pTask )
 		break;
 	}
 }
-
-
-
 
 //=========================================================
 // ISoundMask - returns a bit mask indicating which types
@@ -276,8 +271,8 @@ void CBarney :: AlertSound( void )
 			PlaySentence( "BA_ATTACK", RANDOM_FLOAT(2.8, 3.2), VOL_NORM, ATTN_IDLE );
 		}
 	}
-
 }
+
 //=========================================================
 // SetYawSpeed - allows each sequence to have a different
 // turn rate associated with it.
@@ -307,7 +302,6 @@ void CBarney :: SetYawSpeed ( void )
 	pev->yaw_speed = ys;
 }
 
-
 //=========================================================
 // CheckRangeAttack1
 //=========================================================
@@ -334,7 +328,6 @@ BOOL CBarney :: CheckRangeAttack1 ( float flDot, float flDist )
 	}
 	return FALSE;
 }
-
 
 //=========================================================
 // BarneyFirePistol - shoots one round from the pistol at
@@ -453,8 +446,7 @@ void CBarney :: Precache()
 
 // Init talk data
 void CBarney :: TalkInit()
-{
-	
+{	
 	CTalkMonster::TalkInit();
 
 	// scientists speach group names (group names are in sentences.txt)
@@ -487,7 +479,6 @@ void CBarney :: TalkInit()
 	m_voicePitch = 100;
 }
 
-
 static BOOL IsFacing( entvars_t *pevTest, const Vector &reference )
 {
 	Vector vecDir = (reference - pevTest->origin);
@@ -497,6 +488,7 @@ static BOOL IsFacing( entvars_t *pevTest, const Vector &reference )
 	angle = pevTest->v_angle;
 	angle.x = 0;
 	UTIL_MakeVectorsPrivate( angle, forward, NULL, NULL );
+
 	// He's facing me, he meant it
 	if ( DotProduct( forward, vecDir ) > 0.96 )	// +/- 15 degrees or so
 	{
@@ -504,7 +496,6 @@ static BOOL IsFacing( entvars_t *pevTest, const Vector &reference )
 	}
 	return FALSE;
 }
-
 
 int CBarney :: TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType)
 {
@@ -545,7 +536,6 @@ int CBarney :: TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, floa
 
 	return ret;
 }
-
 	
 //=========================================================
 // PainSound
@@ -600,6 +590,7 @@ void CBarney::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir
 				flDamage = 0.01;
 			}
 		}
+
 		// always a head shot
 		ptr->iHitgroup = HITGROUP_HEAD;
 		break;
@@ -608,11 +599,11 @@ void CBarney::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir
 	CTalkMonster::TraceAttack( pevAttacker, flDamage, vecDir, ptr, bitsDamageType );
 }
 
-
 void CBarney::Killed( entvars_t *pevAttacker, int iGib )
 {
 	if ( pev->body < BARNEY_BODY_GUNGONE )
-	{// drop the gun!
+	{
+		// drop the gun!
 		Vector vecGunPos;
 		Vector vecGunAngles;
 
@@ -768,16 +759,10 @@ MONSTERSTATE CBarney :: GetIdealState ( void )
 	return CTalkMonster::GetIdealState();
 }
 
-
-
 void CBarney::DeclineFollowing( void )
 {
 	PlaySentence( "BA_POK", 2, VOL_NORM, ATTN_NORM );
 }
-
-
-
-
 
 //=========================================================
 // DEAD BARNEY PROP
@@ -814,7 +799,7 @@ void CDeadBarney::KeyValue( KeyValueData *pkvd )
 		CBaseMonster::KeyValue( pkvd );
 }
 
-LINK_ENTITY_TO_CLASS( monster_barney_dead, CDeadBarney );
+LINK_ENTITY_TO_CLASS( monster_barney_dead, CDeadBarney )
 
 //=========================================================
 // ********** DeadBarney SPAWN **********
@@ -839,5 +824,3 @@ void CDeadBarney :: Spawn( )
 
 	MonsterInitDead();
 }
-
-

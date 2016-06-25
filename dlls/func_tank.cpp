@@ -12,6 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
+
 #include "extdll.h"
 #include "util.h"
 #include "cbase.h"
@@ -20,7 +21,6 @@
 #include "explode.h"
 
 #include "player.h"
-
 
 #define SF_TANK_ACTIVE			0x0001
 #define SF_TANK_PLAYER			0x0002
@@ -35,7 +35,7 @@ enum TANKBULLET
 	TANK_BULLET_NONE = 0,
 	TANK_BULLET_9MM = 1,
 	TANK_BULLET_MP5 = 2,
-	TANK_BULLET_12MM = 3,
+	TANK_BULLET_12MM = 3
 };
 
 //			Custom damage
@@ -94,7 +94,6 @@ public:
 	void StopControl( void );
 	void ControllerPostFrame( void );
 
-
 protected:
 	CBasePlayer* m_pController;
 	float		m_flNextAttack;
@@ -130,7 +129,6 @@ protected:
 	int			m_iszMaster;	// Master entity (game_team_master or multisource)
 };
 
-
 TYPEDESCRIPTION	CFuncTank::m_SaveData[] = 
 {
 	DEFINE_FIELD( CFuncTank, m_yawCenter, FIELD_FLOAT ),
@@ -161,7 +159,7 @@ TYPEDESCRIPTION	CFuncTank::m_SaveData[] =
 	DEFINE_FIELD( CFuncTank, m_iszMaster, FIELD_STRING ),
 };
 
-IMPLEMENT_SAVERESTORE( CFuncTank, CBaseEntity );
+IMPLEMENT_SAVERESTORE( CFuncTank, CBaseEntity )
 
 static Vector gTankSpread[] =
 {
@@ -171,8 +169,8 @@ static Vector gTankSpread[] =
 	Vector( 0.1, 0.1, 0.1 ),	// large cone
 	Vector( 0.25, 0.25, 0.25 ),	// extra-large cone
 };
-#define MAX_FIRING_SPREADS ARRAYSIZE(gTankSpread)
 
+#define MAX_FIRING_SPREADS ARRAYSIZE(gTankSpread)
 
 void CFuncTank :: Spawn( void )
 {
@@ -198,7 +196,6 @@ void CFuncTank :: Spawn( void )
 	pev->oldorigin = pev->origin;
 }
 
-
 void CFuncTank :: Precache( void )
 {
 	if ( m_iszSpriteSmoke )
@@ -209,7 +206,6 @@ void CFuncTank :: Precache( void )
 	if ( pev->noise )
 		PRECACHE_SOUND( (char *)STRING(pev->noise) );
 }
-
 
 void CFuncTank :: KeyValue( KeyValueData *pkvd )
 {
@@ -416,7 +412,6 @@ void CFuncTank :: ControllerPostFrame( void )
 }
 ////////////// END NEW STUFF //////////////
 
-
 void CFuncTank :: Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
 	if ( pev->spawnflags & SF_TANK_CANCONTROL )
@@ -451,13 +446,10 @@ void CFuncTank :: Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE u
 	}
 }
 
-
 edict_t *CFuncTank :: FindTarget( edict_t *pPlayer )
 {
 	return pPlayer;
 }
-
-
 
 BOOL CFuncTank :: InRange( float range )
 {
@@ -468,7 +460,6 @@ BOOL CFuncTank :: InRange( float range )
 
 	return TRUE;
 }
-
 
 void CFuncTank :: Think( void )
 {
@@ -539,10 +530,9 @@ void CFuncTank::TrackTarget( void )
 		}
 
 		// Track sight origin
-
-// !!! I'm not sure what i changed
+		// !!! I'm not sure what i changed
 		direction = m_sightOrigin - pev->origin;
-//		direction = m_sightOrigin - barrelEnd;
+		//direction = m_sightOrigin - barrelEnd;
 		angles = UTIL_VecToAngles( direction );
 
 		// Calculate the additional rotation to point the end of the barrel at the target (not the gun's center) 
@@ -623,7 +613,6 @@ void CFuncTank::TrackTarget( void )
 		m_fireLast = 0;
 }
 
-
 // If barrel is offset, add in additional rotation
 void CFuncTank::AdjustAnglesForBarrel( Vector &angles, float distance )
 {
@@ -646,7 +635,6 @@ void CFuncTank::AdjustAnglesForBarrel( Vector &angles, float distance )
 		}
 	}
 }
-
 
 // Fire targets and spawn sprites
 void CFuncTank::Fire( const Vector &barrelEnd, const Vector &forward, entvars_t *pevAttacker )
@@ -676,7 +664,6 @@ void CFuncTank::Fire( const Vector &barrelEnd, const Vector &forward, entvars_t 
 	m_fireLast = gpGlobals->time;
 }
 
-
 void CFuncTank::TankTrace( const Vector &vecStart, const Vector &vecForward, const Vector &vecSpread, TraceResult &tr )
 {
 	// get circular gaussian spread
@@ -694,7 +681,6 @@ void CFuncTank::TankTrace( const Vector &vecStart, const Vector &vecForward, con
 	vecEnd = vecStart + vecDir * 4096;
 	UTIL_TraceLine( vecStart, vecEnd, dont_ignore_monsters, edict(), &tr );
 }
-
 	
 void CFuncTank::StartRotSound( void )
 {
@@ -703,7 +689,6 @@ void CFuncTank::StartRotSound( void )
 	pev->spawnflags |= SF_TANK_SOUNDON;
 	EMIT_SOUND( edict(), CHAN_STATIC, (char*)STRING(pev->noise), 0.85, ATTN_NORM);
 }
-
 
 void CFuncTank::StopRotSound( void )
 {
@@ -717,7 +702,8 @@ class CFuncTankGun : public CFuncTank
 public:
 	void Fire( const Vector &barrelEnd, const Vector &forward, entvars_t *pevAttacker );
 };
-LINK_ENTITY_TO_CLASS( func_tank, CFuncTankGun );
+
+LINK_ENTITY_TO_CLASS( func_tank, CFuncTankGun )
 
 void CFuncTankGun::Fire( const Vector &barrelEnd, const Vector &forward, entvars_t *pevAttacker )
 {
@@ -759,8 +745,6 @@ void CFuncTankGun::Fire( const Vector &barrelEnd, const Vector &forward, entvars
 		CFuncTank::Fire( barrelEnd, forward, pevAttacker );
 }
 
-
-
 class CFuncTankLaser : public CFuncTank
 {
 public:
@@ -778,7 +762,8 @@ private:
 	CLaser	*m_pLaser;
 	float	m_laserTime;
 };
-LINK_ENTITY_TO_CLASS( func_tanklaser, CFuncTankLaser );
+
+LINK_ENTITY_TO_CLASS( func_tanklaser, CFuncTankLaser )
 
 TYPEDESCRIPTION	CFuncTankLaser::m_SaveData[] = 
 {
@@ -786,7 +771,7 @@ TYPEDESCRIPTION	CFuncTankLaser::m_SaveData[] =
 	DEFINE_FIELD( CFuncTankLaser, m_laserTime, FIELD_TIME ),
 };
 
-IMPLEMENT_SAVERESTORE( CFuncTankLaser, CFuncTank );
+IMPLEMENT_SAVERESTORE( CFuncTankLaser, CFuncTank )
 
 void CFuncTankLaser::Activate( void )
 {
@@ -801,7 +786,6 @@ void CFuncTankLaser::Activate( void )
 	}
 }
 
-
 void CFuncTankLaser::KeyValue( KeyValueData *pkvd )
 {
 	if (FStrEq(pkvd->szKeyName, "laserentity"))
@@ -812,7 +796,6 @@ void CFuncTankLaser::KeyValue( KeyValueData *pkvd )
 	else
 		CFuncTank::KeyValue( pkvd );
 }
-
 
 CLaser *CFuncTankLaser::GetLaser( void )
 {
@@ -837,7 +820,6 @@ CLaser *CFuncTankLaser::GetLaser( void )
 	return m_pLaser;
 }
 
-
 void CFuncTankLaser::Think( void )
 {
 	if ( m_pLaser && (gpGlobals->time > m_laserTime) )
@@ -845,7 +827,6 @@ void CFuncTankLaser::Think( void )
 
 	CFuncTank::Think();
 }
-
 
 void CFuncTankLaser::Fire( const Vector &barrelEnd, const Vector &forward, entvars_t *pevAttacker )
 {
@@ -886,15 +867,14 @@ public:
 	void Precache( void );
 	void Fire( const Vector &barrelEnd, const Vector &forward, entvars_t *pevAttacker );
 };
-LINK_ENTITY_TO_CLASS( func_tankrocket, CFuncTankRocket );
+
+LINK_ENTITY_TO_CLASS( func_tankrocket, CFuncTankRocket )
 
 void CFuncTankRocket::Precache( void )
 {
 	UTIL_PrecacheOther( "rpg_rocket" );
 	CFuncTank::Precache();
 }
-
-
 
 void CFuncTankRocket::Fire( const Vector &barrelEnd, const Vector &forward, entvars_t *pevAttacker )
 {
@@ -916,15 +896,14 @@ void CFuncTankRocket::Fire( const Vector &barrelEnd, const Vector &forward, entv
 		CFuncTank::Fire( barrelEnd, forward, pev );
 }
 
-
 class CFuncTankMortar : public CFuncTank
 {
 public:
 	void KeyValue( KeyValueData *pkvd );
 	void Fire( const Vector &barrelEnd, const Vector &forward, entvars_t *pevAttacker );
 };
-LINK_ENTITY_TO_CLASS( func_tankmortar, CFuncTankMortar );
 
+LINK_ENTITY_TO_CLASS( func_tankmortar, CFuncTankMortar );
 
 void CFuncTankMortar::KeyValue( KeyValueData *pkvd )
 {
@@ -936,7 +915,6 @@ void CFuncTankMortar::KeyValue( KeyValueData *pkvd )
 	else
 		CFuncTank::KeyValue( pkvd );
 }
-
 
 void CFuncTankMortar::Fire( const Vector &barrelEnd, const Vector &forward, entvars_t *pevAttacker )
 {
@@ -962,8 +940,6 @@ void CFuncTankMortar::Fire( const Vector &barrelEnd, const Vector &forward, entv
 		CFuncTank::Fire( barrelEnd, forward, pev );
 }
 
-
-
 //============================================================================
 // FUNC TANK CONTROLS
 //============================================================================
@@ -981,29 +957,29 @@ public:
 
 	CFuncTank *m_pTank;
 };
-LINK_ENTITY_TO_CLASS( func_tankcontrols, CFuncTankControls );
+
+LINK_ENTITY_TO_CLASS( func_tankcontrols, CFuncTankControls )
 
 TYPEDESCRIPTION	CFuncTankControls::m_SaveData[] = 
 {
 	DEFINE_FIELD( CFuncTankControls, m_pTank, FIELD_CLASSPTR ),
 };
 
-IMPLEMENT_SAVERESTORE( CFuncTankControls, CBaseEntity );
+IMPLEMENT_SAVERESTORE( CFuncTankControls, CBaseEntity )
 
 int	CFuncTankControls :: ObjectCaps( void ) 
 { 
 	return (CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION) | FCAP_IMPULSE_USE; 
 }
 
-
 void CFuncTankControls :: Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
-{ // pass the Use command onto the controls
+{
+	// pass the Use command onto the controls
 	if ( m_pTank )
 		m_pTank->Use( pActivator, pCaller, useType, value );
 
 	ASSERT( m_pTank != NULL );	// if this fails,  most likely means save/restore hasn't worked properly
 }
-
 
 void CFuncTankControls :: Think( void )
 {

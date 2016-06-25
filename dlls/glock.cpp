@@ -34,9 +34,8 @@ enum glock_e {
 	GLOCK_ADD_SILENCER
 };
 
-LINK_ENTITY_TO_CLASS( weapon_glock, CGlock );
-LINK_ENTITY_TO_CLASS( weapon_9mmhandgun, CGlock );
-
+LINK_ENTITY_TO_CLASS( weapon_glock, CGlock )
+LINK_ENTITY_TO_CLASS( weapon_9mmhandgun, CGlock )
 
 void CGlock::Spawn( )
 {
@@ -49,7 +48,6 @@ void CGlock::Spawn( )
 
 	FallInit();// get ready to fall down.
 }
-
 
 void CGlock::Precache( void )
 {
@@ -121,13 +119,11 @@ void CGlock::GlockFire( float flSpread , float flCycleTime, BOOL fUseAutoAim )
 	m_pPlayer->pev->effects = (int)(m_pPlayer->pev->effects) | EF_MUZZLEFLASH;
 
 	int flags;
-
 #if defined( CLIENT_WEAPONS )
 	flags = FEV_NOTHOST;
 #else
 	flags = 0;
 #endif
-
 	// player "shoot" animation
 	m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
 
@@ -170,7 +166,6 @@ void CGlock::GlockFire( float flSpread , float flCycleTime, BOOL fUseAutoAim )
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
 }
 
-
 void CGlock::Reload( void )
 {
 	if ( m_pPlayer->ammo_9mm <= 0 )
@@ -188,8 +183,6 @@ void CGlock::Reload( void )
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
 	}
 }
-
-
 
 void CGlock::WeaponIdle( void )
 {
@@ -225,13 +218,6 @@ void CGlock::WeaponIdle( void )
 	}
 }
 
-
-
-
-
-
-
-
 class CGlockAmmo : public CBasePlayerAmmo
 {
 	void Spawn( void )
@@ -255,20 +241,6 @@ class CGlockAmmo : public CBasePlayerAmmo
 		return FALSE;
 	}
 };
-LINK_ENTITY_TO_CLASS( ammo_glockclip, CGlockAmmo );
-LINK_ENTITY_TO_CLASS( ammo_9mmclip, CGlockAmmo );
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+LINK_ENTITY_TO_CLASS( ammo_glockclip, CGlockAmmo )
+LINK_ENTITY_TO_CLASS( ammo_9mmclip, CGlockAmmo )
 

@@ -15,6 +15,7 @@
 //
 // teamplay_gamerules.cpp
 //
+
 #include	"extdll.h"
 #include	"util.h"
 #include	"cbase.h"
@@ -136,7 +137,6 @@ void CHalfLifeRules :: PlayerThink( CBasePlayer *pPlayer )
 {
 }
 
-
 //=========================================================
 //=========================================================
 BOOL CHalfLifeRules :: FPlayerCanRespawn( CBasePlayer *pPlayer )
@@ -238,7 +238,6 @@ int CHalfLifeRules::ItemShouldRespawn( CItem *pItem )
 {
 	return GR_ITEM_RESPAWN_NO;
 }
-
 
 //=========================================================
 // At what time in the future may this Item respawn?

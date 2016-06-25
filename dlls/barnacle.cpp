@@ -65,7 +65,8 @@ public:
 	}
 #endif
 };
-LINK_ENTITY_TO_CLASS( monster_barnacle, CBarnacle );
+
+LINK_ENTITY_TO_CLASS( monster_barnacle, CBarnacle )
 
 TYPEDESCRIPTION	CBarnacle::m_SaveData[] = 
 {
@@ -78,8 +79,7 @@ TYPEDESCRIPTION	CBarnacle::m_SaveData[] =
 	DEFINE_FIELD( CBarnacle, m_flCachedLength, FIELD_FLOAT ),
 };
 
-IMPLEMENT_SAVERESTORE( CBarnacle, CBaseMonster );
-
+IMPLEMENT_SAVERESTORE( CBarnacle, CBaseMonster )
 
 //=========================================================
 // Classify - indicates this monster's place in the 
@@ -173,8 +173,7 @@ void CBarnacle :: BarnacleThink ( void )
 
 	if ( m_hEnemy != NULL )
 	{
-// barnacle has prey.
-
+		// barnacle has prey.
 		if ( !m_hEnemy->IsAlive() )
 		{
 			// someone (maybe even the barnacle) killed the prey. Reset barnacle.
@@ -193,7 +192,7 @@ void CBarnacle :: BarnacleThink ( void )
 				return;
 			}
 
-	// still pulling prey.
+			// still pulling prey.
 			Vector vecNewEnemyOrigin = m_hEnemy->pev->origin;
 			vecNewEnemyOrigin.x = pev->origin.x;
 			vecNewEnemyOrigin.y = pev->origin.y;
@@ -207,7 +206,7 @@ void CBarnacle :: BarnacleThink ( void )
 
 			if ( fabs( pev->origin.z - ( vecNewEnemyOrigin.z + m_hEnemy->pev->view_ofs.z - 8 ) ) < BARNACLE_BODY_HEIGHT )
 			{
-		// prey has just been lifted into position ( if the victim origin + eye height + 8 is higher than the bottom of the barnacle, it is assumed that the head is within barnacle's body )
+				// prey has just been lifted into position ( if the victim origin + eye height + 8 is higher than the bottom of the barnacle, it is assumed that the head is within barnacle's body )
 				m_fLiftingPrey = FALSE;
 
 				EMIT_SOUND( ENT(pev), CHAN_WEAPON, "barnacle/bcl_bite3.wav", 1, ATTN_NORM );	
@@ -227,8 +226,7 @@ void CBarnacle :: BarnacleThink ( void )
 		}
 		else
 		{
-	// prey is lifted fully into feeding position and is dangling there.
-
+			// prey is lifted fully into feeding position and is dangling there.
 			pVictim = m_hEnemy->MyMonsterPointer();
 
 			if ( m_flKillVictimTime != -1 && gpGlobals->time > m_flKillVictimTime )
@@ -260,14 +258,14 @@ void CBarnacle :: BarnacleThink ( void )
 	}
 	else
 	{
-// barnacle has no prey right now, so just idle and check to see if anything is touching the tongue.
-
+		// barnacle has no prey right now, so just idle and check to see if anything is touching the tongue.
 		// If idle and no nearby client, don't think so often
 		if ( FNullEnt( FIND_CLIENT_IN_PVS( edict() ) ) )
 			pev->nextthink = gpGlobals->time + RANDOM_FLOAT(1,1.5);	// Stagger a bit to keep barnacles from thinking on the same frame
 
 		if ( m_fSequenceFinished )
-		{// this is done so barnacle will fidget.
+		{
+			// this is done so barnacle will fidget.
 			SetActivity ( ACT_IDLE );
 			m_flTongueAdj = -100;
 		}

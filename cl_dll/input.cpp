@@ -27,8 +27,6 @@ extern "C"
 #include <string.h>
 #include <ctype.h>
 
-
-
 extern "C" 
 {
 	struct kbutton_s DLLEXPORT *KB_Find( const char *name );
@@ -381,8 +379,8 @@ int DLLEXPORT HUD_Key_Event( int down, int keynum, const char *pszCurrentBinding
 	return 1;
 }
 
-void IN_BreakDown( void ) { KeyDown( &in_break );};
-void IN_BreakUp( void ) { KeyUp( &in_break ); };
+void IN_BreakDown( void ) { KeyDown( &in_break ); }
+void IN_BreakUp( void ) { KeyUp( &in_break ); }
 void IN_KLookDown (void) {KeyDown(&in_klook);}
 void IN_KLookUp (void) {KeyUp(&in_klook);}
 void IN_JLookDown (void) {KeyDown(&in_jlook);}

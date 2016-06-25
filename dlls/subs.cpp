@@ -33,14 +33,12 @@ extern BOOL FEntIsVisible(entvars_t* pev, entvars_t* pevTarget);
 
 extern DLL_GLOBAL int g_iSkillLevel;
 
-
 // Landmark class
 void CPointEntity :: Spawn( void )
 {
 	pev->solid = SOLID_NOT;
-//	UTIL_SetSize(pev, g_vecZero, g_vecZero);
+	//UTIL_SetSize(pev, g_vecZero, g_vecZero);
 }
-
 
 class CNullEntity : public CBaseEntity
 {
@@ -48,13 +46,13 @@ public:
 	void Spawn( void );
 };
 
-
 // Null Entity, remove on startup
 void CNullEntity :: Spawn( void )
 {
 	REMOVE_ENTITY(ENT(pev));
 }
-LINK_ENTITY_TO_CLASS(info_null,CNullEntity);
+
+LINK_ENTITY_TO_CLASS(info_null,CNullEntity)
 
 class CBaseDMStart : public CPointEntity
 {
@@ -66,9 +64,9 @@ private:
 };
 
 // These are the new entry points to entities. 
-LINK_ENTITY_TO_CLASS(info_player_deathmatch,CBaseDMStart);
-LINK_ENTITY_TO_CLASS(info_player_start,CPointEntity);
-LINK_ENTITY_TO_CLASS(info_landmark,CPointEntity);
+LINK_ENTITY_TO_CLASS( info_player_deathmatch, CBaseDMStart )
+LINK_ENTITY_TO_CLASS(info_player_start,CPointEntity)
+LINK_ENTITY_TO_CLASS(info_landmark,CPointEntity)
 
 void CBaseDMStart::KeyValue( KeyValueData *pkvd )
 {
@@ -132,13 +130,13 @@ void CBaseEntity :: SUB_DoNothing( void )
 
 
 // Global Savedata for Delay
-TYPEDESCRIPTION	CBaseDelay::m_SaveData[] = 
+TYPEDESCRIPTION	CBaseDelay::m_SaveData[] =
 {
 	DEFINE_FIELD( CBaseDelay, m_flDelay, FIELD_FLOAT ),
 	DEFINE_FIELD( CBaseDelay, m_iszKillTarget, FIELD_STRING ),
 };
 
-IMPLEMENT_SAVERESTORE( CBaseDelay, CBaseEntity );
+IMPLEMENT_SAVERESTORE( CBaseDelay, CBaseEntity )
 
 void CBaseDelay :: KeyValue( KeyValueData *pkvd )
 {
@@ -157,7 +155,6 @@ void CBaseDelay :: KeyValue( KeyValueData *pkvd )
 		CBaseEntity::KeyValue( pkvd );
 	}
 }
-
 
 /*
 ==============================
@@ -209,8 +206,7 @@ void FireTargets( const char *targetName, CBaseEntity *pActivator, CBaseEntity *
 	}
 }
 
-LINK_ENTITY_TO_CLASS( DelayedUse, CBaseDelay );
-
+LINK_ENTITY_TO_CLASS( DelayedUse, CBaseDelay )
 
 void CBaseDelay :: SUB_UseTargets( CBaseEntity *pActivator, USE_TYPE useType, float value )
 {
@@ -232,7 +228,7 @@ void CBaseDelay :: SUB_UseTargets( CBaseEntity *pActivator, USE_TYPE useType, fl
 		pTemp->pev->nextthink = gpGlobals->time + m_flDelay;
 
 		pTemp->SetThink( &CBaseDelay::DelayThink );
-		
+
 		// Save the useType
 		pTemp->pev->button = (int)useType;
 		pTemp->m_iszKillTarget = m_iszKillTarget;
@@ -283,7 +279,6 @@ void CBaseDelay :: SUB_UseTargets( CBaseEntity *pActivator, USE_TYPE useType, fl
 	}
 }
 
-
 /*
 void CBaseDelay :: SUB_UseTargetsEntMethod( void )
 {
@@ -314,9 +309,6 @@ void SetMovedir( entvars_t *pev )
 	pev->angles = g_vecZero;
 }
 
-
-
-
 void CBaseDelay::DelayThink( void )
 {
 	CBaseEntity *pActivator = NULL;
@@ -325,14 +317,14 @@ void CBaseDelay::DelayThink( void )
 	{
 		pActivator = CBaseEntity::Instance( pev->owner );	
 	}
+
 	// The use type is cached (and stashed) in pev->button
 	SUB_UseTargets( pActivator, (USE_TYPE)pev->button, 0 );
 	REMOVE_ENTITY(ENT(pev));
 }
 
-
 // Global Savedata for Toggle
-TYPEDESCRIPTION	CBaseToggle::m_SaveData[] = 
+TYPEDESCRIPTION	CBaseToggle::m_SaveData[] =
 {
 	DEFINE_FIELD( CBaseToggle, m_toggle_state, FIELD_INTEGER ),
 	DEFINE_FIELD( CBaseToggle, m_flActivateFinished, FIELD_TIME ),
@@ -354,8 +346,8 @@ TYPEDESCRIPTION	CBaseToggle::m_SaveData[] =
 	DEFINE_FIELD( CBaseToggle, m_sMaster, FIELD_STRING),
 	DEFINE_FIELD( CBaseToggle, m_bitsDamageInflict, FIELD_INTEGER ),	// damage type inflicted
 };
-IMPLEMENT_SAVERESTORE( CBaseToggle, CBaseAnimating );
 
+IMPLEMENT_SAVERESTORE( CBaseToggle, CBaseAnimating )
 
 void CBaseToggle::KeyValue( KeyValueData *pkvd )
 {
@@ -394,8 +386,8 @@ pev->origin traveling at flSpeed
 void CBaseToggle ::  LinearMove( Vector	vecDest, float flSpeed )
 {
 	ASSERTSZ(flSpeed != 0, "LinearMove:  no speed is defined!");
-//	ASSERTSZ(m_pfnCallWhenMoveDone != NULL, "LinearMove: no post-move function defined");
-	
+	//ASSERTSZ(m_pfnCallWhenMoveDone != NULL, "LinearMove: no post-move function defined");
+
 	m_vecFinalDest = vecDest;
 
 	// Already there?
@@ -404,10 +396,10 @@ void CBaseToggle ::  LinearMove( Vector	vecDest, float flSpeed )
 		LinearMoveDone();
 		return;
 	}
-		
+	
 	// set destdelta to the vector needed to move
 	Vector vecDestDelta = vecDest - pev->origin;
-	
+
 	// divide vector length by speed to get time to reach dest
 	float flTravelTime = vecDestDelta.Length() / flSpeed;
 
@@ -418,7 +410,6 @@ void CBaseToggle ::  LinearMove( Vector	vecDest, float flSpeed )
 	// scale the destdelta vector by the time spent traveling to get velocity
 	pev->velocity = vecDestDelta / flTravelTime;
 }
-
 
 /*
 ============
@@ -454,8 +445,8 @@ Just like LinearMove, but rotational.
 void CBaseToggle :: AngularMove( Vector vecDestAngle, float flSpeed )
 {
 	ASSERTSZ(flSpeed != 0, "AngularMove:  no speed is defined!");
-//	ASSERTSZ(m_pfnCallWhenMoveDone != NULL, "AngularMove: no post-move function defined");
-	
+	//ASSERTSZ(m_pfnCallWhenMoveDone != NULL, "AngularMove: no post-move function defined");
+
 	m_vecFinalAngle = vecDestAngle;
 
 	// Already there?
@@ -464,10 +455,10 @@ void CBaseToggle :: AngularMove( Vector vecDestAngle, float flSpeed )
 		AngularMoveDone();
 		return;
 	}
-	
+
 	// set destdelta to the vector needed to move
 	Vector vecDestDelta = vecDestAngle - pev->angles;
-	
+
 	// divide by speed to get time to reach dest
 	float flTravelTime = vecDestDelta.Length() / flSpeed;
 
@@ -478,7 +469,6 @@ void CBaseToggle :: AngularMove( Vector vecDestAngle, float flSpeed )
 	// scale the destdelta vector by the time spent traveling to get velocity
 	pev->avelocity = vecDestDelta / flTravelTime;
 }
-
 
 /*
 ============
@@ -494,7 +484,6 @@ void CBaseToggle :: AngularMoveDone( void )
 		(this->*m_pfnCallWhenMoveDone)();
 }
 
-
 float CBaseToggle :: AxisValue( int flags, const Vector &angles )
 {
 	if ( FBitSet(flags, SF_DOOR_ROTATE_Z) )
@@ -504,7 +493,6 @@ float CBaseToggle :: AxisValue( int flags, const Vector &angles )
 
 	return angles.y;
 }
-
 
 void CBaseToggle :: AxisDir( entvars_t *pev )
 {
@@ -516,18 +504,16 @@ void CBaseToggle :: AxisDir( entvars_t *pev )
 		pev->movedir = Vector ( 0, 1, 0 );		// around y-axis
 }
 
-
 float CBaseToggle :: AxisDelta( int flags, const Vector &angle1, const Vector &angle2 )
 {
 	if ( FBitSet (flags, SF_DOOR_ROTATE_Z) )
 		return angle1.z - angle2.z;
-	
+
 	if ( FBitSet (flags, SF_DOOR_ROTATE_X) )
 		return angle1.x - angle2.x;
 
 	return angle1.y - angle2.y;
 }
-
 
 /*
 =============
@@ -536,17 +522,14 @@ FEntIsVisible
 returns TRUE if the passed entity is visible to caller, even if not infront ()
 =============
 */
-	BOOL
-FEntIsVisible(
-	entvars_t*		pev,
-	entvars_t*		pevTarget)
-	{
+BOOL FEntIsVisible( entvars_t* pev, entvars_t* pevTarget)
+{
 	Vector vecSpot1 = pev->origin + pev->view_ofs;
 	Vector vecSpot2 = pevTarget->origin + pevTarget->view_ofs;
 	TraceResult tr;
 
 	UTIL_TraceLine(vecSpot1, vecSpot2, ignore_monsters, ENT(pev), &tr);
-	
+
 	if (tr.fInOpen && tr.fInWater)
 		return FALSE;                   // sight line crossed contents
 
@@ -554,6 +537,4 @@ FEntIsVisible(
 		return TRUE;
 
 	return FALSE;
-	}
-
-
+}

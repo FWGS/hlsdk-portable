@@ -36,7 +36,6 @@
 
 #define MONSTER_CUT_CORNER_DIST		8 // 8 means the monster's bounding box is contained without the box of the node in WC
 
-
 Vector VecBModelOrigin( entvars_t* pevBModel );
 
 extern DLL_GLOBAL	BOOL	g_fDrawLines;
@@ -44,8 +43,6 @@ extern DLL_GLOBAL	short	g_sModelIndexLaser;// holds the index for the laser beam
 extern DLL_GLOBAL	short	g_sModelIndexLaserDot;// holds the index for the laser beam dot
 
 extern CGraph WorldGraph;// the world node graph
-
-
 
 // Global Savedata for monster
 // UNDONE: Save schedule data?  Can this be done?  We may
@@ -74,15 +71,15 @@ TYPEDESCRIPTION	CBaseMonster::m_SaveData[] =
 	DEFINE_FIELD( CBaseMonster, m_iScheduleIndex, FIELD_INTEGER ),
 	DEFINE_FIELD( CBaseMonster, m_afConditions, FIELD_INTEGER ),
 	//WayPoint_t			m_Route[ ROUTE_SIZE ];
-//	DEFINE_FIELD( CBaseMonster, m_movementGoal, FIELD_INTEGER ),
-//	DEFINE_FIELD( CBaseMonster, m_iRouteIndex, FIELD_INTEGER ),
-//	DEFINE_FIELD( CBaseMonster, m_moveWaitTime, FIELD_FLOAT ),
+	//DEFINE_FIELD( CBaseMonster, m_movementGoal, FIELD_INTEGER ),
+	//DEFINE_FIELD( CBaseMonster, m_iRouteIndex, FIELD_INTEGER ),
+	//DEFINE_FIELD( CBaseMonster, m_moveWaitTime, FIELD_FLOAT ),
 
 	DEFINE_FIELD( CBaseMonster, m_vecMoveGoal, FIELD_POSITION_VECTOR ),
 	DEFINE_FIELD( CBaseMonster, m_movementActivity, FIELD_INTEGER ),
 
-	//		int					m_iAudibleList; // first index of a linked list of sounds that the monster can hear.
-//	DEFINE_FIELD( CBaseMonster, m_afSoundTypes, FIELD_INTEGER ),
+	//int					m_iAudibleList; // first index of a linked list of sounds that the monster can hear.
+	//DEFINE_FIELD( CBaseMonster, m_afSoundTypes, FIELD_INTEGER ),
 	DEFINE_FIELD( CBaseMonster, m_vecLastPosition, FIELD_POSITION_VECTOR ),
 	DEFINE_FIELD( CBaseMonster, m_iHintNode, FIELD_INTEGER ),
 	DEFINE_FIELD( CBaseMonster, m_afMemory, FIELD_INTEGER ),
@@ -110,7 +107,8 @@ TYPEDESCRIPTION	CBaseMonster::m_SaveData[] =
 	DEFINE_FIELD( CBaseMonster, m_pCine, FIELD_CLASSPTR ),
 };
 
-//IMPLEMENT_SAVERESTORE( CBaseMonster, CBaseToggle );
+//IMPLEMENT_SAVERESTORE( CBaseMonster, CBaseToggle )
+
 int CBaseMonster::Save( CSave &save )
 {
 	if ( !CBaseToggle::Save(save) )
@@ -140,7 +138,6 @@ int CBaseMonster::Restore( CRestore &restore )
 
 	return status;
 }
-
 
 //=========================================================
 // Eat - makes a monster full for a little while.
@@ -244,7 +241,7 @@ void CBaseMonster :: Listen ( void )
 			else
 			{
 				// if not a sound, must be a smell - determine if it's just a scent, or if it's a food scent
-//				if ( g_pSoundEnt->m_SoundPool[ iSound ].m_iType & ( bits_SOUND_MEAT | bits_SOUND_CARCASS ) )
+				//if ( g_pSoundEnt->m_SoundPool[ iSound ].m_iType & ( bits_SOUND_MEAT | bits_SOUND_CARCASS ) )
 				if ( pCurrentSound->m_iType & ( bits_SOUND_MEAT | bits_SOUND_CARCASS ) )
 				{
 					// the detected scent is a food item, so set both conditions.
@@ -258,14 +255,13 @@ void CBaseMonster :: Listen ( void )
 					SetConditions( bits_COND_SMELL );
 				}
 			}
-
-//			m_afSoundTypes |= g_pSoundEnt->m_SoundPool[ iSound ].m_iType;
+			//m_afSoundTypes |= g_pSoundEnt->m_SoundPool[ iSound ].m_iType;
 			m_afSoundTypes |= pCurrentSound->m_iType;
 
 			m_iAudibleList = iSound;
 		}
 
-//		iSound = g_pSoundEnt->m_SoundPool[ iSound ].m_iNext;
+		//iSound = g_pSoundEnt->m_SoundPool[ iSound ].m_iNext;
 		iSound = pCurrentSound->m_iNext;
 	}
 }
@@ -341,6 +337,7 @@ void CBaseMonster :: Look ( int iDistance )
 							CBaseMonster *pClient;
 
 							pClient = pSightEnt->MyMonsterPointer();
+
 							// don't link this client in the list if the monster is wait till seen and the player isn't facing the monster
 							if ( pSightEnt && !pClient->FInViewCone( this ) )
 							{
@@ -393,7 +390,7 @@ void CBaseMonster :: Look ( int iDistance )
 			}
 		}
 	}
-	
+
 	SetConditions( iSighted );
 }
 
@@ -512,8 +509,6 @@ CSound* CBaseMonster :: PBestScent ( void )
 	return NULL;
 }
 
-
-
 //=========================================================
 // Monster Think - calls out to core AI functions and handles this
 // monster's specific animation events
@@ -522,13 +517,13 @@ void CBaseMonster :: MonsterThink ( void )
 {
 	pev->nextthink = gpGlobals->time + 0.1;// keep monster thinking.
 
-
 	RunAI();
 
 	float flInterval = StudioFrameAdvance( ); // animate
-// start or end a fidget
-// This needs a better home -- switching animations over time should be encapsulated on a per-activity basis
-// perhaps MaintainActivity() or a ShiftAnimationOverTime() or something.
+
+	// start or end a fidget
+	// This needs a better home -- switching animations over time should be encapsulated on a per-activity basis
+	// perhaps MaintainActivity() or a ShiftAnimationOverTime() or something.
 	if ( m_MonsterState != MONSTERSTATE_SCRIPT && m_MonsterState != MONSTERSTATE_DEAD && m_Activity == ACT_IDLE && m_fSequenceFinished )
 	{
 		int iSequence;
@@ -671,22 +666,18 @@ BOOL CBaseMonster :: FRefreshRoute ( void )
 			}
 			returnCode = TRUE;
 			break;
-
 		case MOVEGOAL_ENEMY:
 			returnCode = BuildRoute( m_vecEnemyLKP, bits_MF_TO_ENEMY, m_hEnemy );
 			break;
-
 		case MOVEGOAL_LOCATION:
 			returnCode = BuildRoute( m_vecMoveGoal, bits_MF_TO_LOCATION, NULL );
 			break;
-
 		case MOVEGOAL_TARGETENT:
 			if (m_hTargetEnt != NULL)
 			{
 				returnCode = BuildRoute( m_hTargetEnt->pev->origin, bits_MF_TO_TARGETENT, m_hTargetEnt );
 			}
 			break;
-
 		case MOVEGOAL_NODE:
 			returnCode = FGetNodeRoute( m_vecMoveGoal );
 //			if ( returnCode )
@@ -707,27 +698,24 @@ BOOL CBaseMonster::MoveToEnemy( Activity movementAct, float waitTime )
 	return FRefreshRoute();
 }
 
-
 BOOL CBaseMonster::MoveToLocation( Activity movementAct, float waitTime, const Vector &goal )
 {
 	m_movementActivity = movementAct;
 	m_moveWaitTime = waitTime;
-	
+
 	m_movementGoal = MOVEGOAL_LOCATION;
 	m_vecMoveGoal = goal;
 	return FRefreshRoute();
 }
 
-
 BOOL CBaseMonster::MoveToTarget( Activity movementAct, float waitTime )
 {
 	m_movementActivity = movementAct;
 	m_moveWaitTime = waitTime;
-	
+
 	m_movementGoal = MOVEGOAL_TARGETENT;
 	return FRefreshRoute();
 }
-
 
 BOOL CBaseMonster::MoveToNode( Activity movementAct, float waitTime, const Vector &goal )
 {
@@ -738,7 +726,6 @@ BOOL CBaseMonster::MoveToNode( Activity movementAct, float waitTime, const Vecto
 	m_vecMoveGoal = goal;
 	return FRefreshRoute();
 }
-
 
 #ifdef _DEBUG
 void DrawRoute( entvars_t *pev, WayPoint_t *m_Route, int m_iRouteIndex, int r, int g, int b )
@@ -780,7 +767,6 @@ void DrawRoute( entvars_t *pev, WayPoint_t *m_Route, int m_iRouteIndex, int r, i
 		if ( (m_Route[ i ].iType & bits_MF_IS_GOAL) || (m_Route[ i+1 ].iType == 0) )
 			break;
 
-		
 		MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
 			WRITE_BYTE( TE_BEAMPOINTS );
 			WRITE_COORD( m_Route[ i ].vecLocation.x );
@@ -806,7 +792,6 @@ void DrawRoute( entvars_t *pev, WayPoint_t *m_Route, int m_iRouteIndex, int r, i
 	}
 }
 #endif
-
 
 int ShouldSimplify( int routeType )
 {
@@ -845,7 +830,7 @@ void CBaseMonster :: RouteSimplify( CBaseEntity *pTargetEnt )
 	// Can't simplify a direct route!
 	if ( count < 2 )
 	{
-//		DrawRoute( pev, m_Route, m_iRouteIndex, 0, 0, 255 );
+		//DrawRoute( pev, m_Route, m_iRouteIndex, 0, 0, 255 );
 		return;
 	}
 
@@ -900,12 +885,12 @@ void CBaseMonster :: RouteSimplify( CBaseEntity *pTargetEnt )
 	ASSERT( i < count );
 	outRoute[outCount] = m_Route[ m_iRouteIndex + i ];
 	outCount++;
-	
+
 	// Terminate
 	outRoute[outCount].iType = 0;
 	ASSERT( outCount < (ROUTE_SIZE*2) );
 
-// Copy the simplified route, disable for testing
+	// Copy the simplified route, disable for testing
 	m_iRouteIndex = 0;
 	for ( i = 0; i < ROUTE_SIZE && i < outCount; i++ )
 	{
@@ -1009,7 +994,7 @@ void CBaseMonster :: CheckAttacks ( CBaseEntity *pTarget, float flDist )
 	// we know the enemy is in front now. We'll find which attacks the monster is capable of by
 	// checking for corresponding Activities in the model file, then do the simple checks to validate
 	// those attack types.
-	
+
 	// Clear all attack conditions
 	ClearConditions( bits_COND_CAN_RANGE_ATTACK1 | bits_COND_CAN_RANGE_ATTACK2 | bits_COND_CAN_MELEE_ATTACK1 |bits_COND_CAN_MELEE_ATTACK2 );
 
@@ -1061,7 +1046,7 @@ int CBaseMonster :: CheckEnemy ( CBaseEntity *pEnemy )
 
 	iUpdatedLKP = FALSE;
 	ClearConditions ( bits_COND_ENEMY_FACING_ME );
-	
+
 	if ( !FVisible( pEnemy ) )
 	{
 		ASSERT(!HasConditions(bits_COND_SEE_ENEMY));
@@ -1078,9 +1063,11 @@ int CBaseMonster :: CheckEnemy ( CBaseEntity *pEnemy )
 	}
 
 	Vector vecEnemyPos = pEnemy->pev->origin;
+
 	// distance to enemy's origin
 	flDistToEnemy = ( vecEnemyPos - pev->origin ).Length();
 	vecEnemyPos.z += pEnemy->pev->size.z * 0.5;
+
 	// distance to enemy's head
 	float flDistToEnemy2 = (vecEnemyPos - pev->origin).Length();
 	if (flDistToEnemy2 < flDistToEnemy)
@@ -1247,11 +1234,9 @@ void CBaseMonster :: SetActivity ( Activity NewActivity )
 	}
 
 	m_Activity = NewActivity; // Go ahead and set this so it doesn't keep trying when the anim is not present
-	
+
 	// In case someone calls this with something other than the ideal activity
 	m_IdealActivity = m_Activity;
-
-
 }
 
 //=========================================================
@@ -1306,8 +1291,7 @@ int CBaseMonster :: CheckLocalMove ( const Vector &vecStart, const Vector &vecEn
 	int		iReturn;
 
 	vecStartPos = pev->origin;
-	
-	
+
 	flYaw = UTIL_VecToYaw ( vecEnd - vecStart );// build a yaw that points to the goal.
 	flDist = ( vecEnd - vecStart ).Length2D();// get the distance.
 	iReturn = LOCALMOVE_VALID;// assume everything will be ok.
@@ -1322,7 +1306,7 @@ int CBaseMonster :: CheckLocalMove ( const Vector &vecStart, const Vector &vecEn
 
 	//pev->origin.z = vecStartPos.z;//!!!HACKHACK
 
-//	pev->origin = vecStart;
+	//pev->origin = vecStart;
 
 /*
 	if ( flDist > 1024 )
@@ -1343,12 +1327,12 @@ int CBaseMonster :: CheckLocalMove ( const Vector &vecStart, const Vector &vecEn
 
 		if ( (flStep + LOCAL_STEP_SIZE) >= (flDist-1) )
 			stepSize = (flDist - flStep) - 1;
-		
-//		UTIL_ParticleEffect ( pev->origin, g_vecZero, 255, 25 );
+
+		//UTIL_ParticleEffect ( pev->origin, g_vecZero, 255, 25 );
 
 		if ( !WALK_MOVE( ENT(pev), flYaw, stepSize, WALKMOVE_CHECKONLY ) )
-		{// can't take the next step, fail!
-
+		{
+			// can't take the next step, fail!
 			if ( pflDist != NULL )
 			{
 				*pflDist = flStep;
@@ -1362,9 +1346,9 @@ int CBaseMonster :: CheckLocalMove ( const Vector &vecStart, const Vector &vecEn
 			else
 			{
 				// If we're going toward an entity, and we're almost getting there, it's OK.
-//				if ( pTarget && fabs( flDist - iStep ) < LOCAL_STEP_SIZE )
-//					fReturn = TRUE;
-//				else
+				//if ( pTarget && fabs( flDist - iStep ) < LOCAL_STEP_SIZE )
+				//	fReturn = TRUE;
+				//else
 				iReturn = LOCALMOVE_INVALID;
 				break;
 			}
@@ -1398,7 +1382,6 @@ int CBaseMonster :: CheckLocalMove ( const Vector &vecStart, const Vector &vecEn
 
 	return iReturn;
 }
-
 
 float CBaseMonster :: OpenDoorAndWait( entvars_t *pevDoor )
 {
@@ -1441,7 +1424,6 @@ float CBaseMonster :: OpenDoorAndWait( entvars_t *pevDoor )
 
 	return gpGlobals->time + flTravelTime;
 }
-
 
 //=========================================================
 // AdvanceRoute - poorly named function that advances the 
@@ -1490,7 +1472,7 @@ void CBaseMonster :: AdvanceRoute ( float distance )
 						if (pevDoor)
 						{
 							m_flMoveWaitFinished = OpenDoorAndWait( pevDoor );
-//							ALERT( at_aiconsole, "Wating for door %.2f\n", m_flMoveWaitFinished-gpGlobals->time );
+							//ALERT( at_aiconsole, "Wating for door %.2f\n", m_flMoveWaitFinished-gpGlobals->time );
 						}
 					}
 				}
@@ -1507,7 +1489,6 @@ void CBaseMonster :: AdvanceRoute ( float distance )
 		}
 	}
 }
-
 
 int CBaseMonster :: RouteClassify( int iMoveFlag )
 {
@@ -1541,11 +1522,11 @@ BOOL CBaseMonster :: BuildRoute ( const Vector &vecGoal, int iMoveFlag, CBaseEnt
 	RouteNew();
 	m_movementGoal = RouteClassify( iMoveFlag );
 
-// so we don't end up with no moveflags
+	// so we don't end up with no moveflags
 	m_Route[ 0 ].vecLocation = vecGoal;
 	m_Route[ 0 ].iType = iMoveFlag | bits_MF_IS_GOAL;
 
-// check simple local move
+	// check simple local move
 	iLocalMove = CheckLocalMove( pev->origin, vecGoal, pTarget, &flDist );
 
 	if ( iLocalMove == LOCALMOVE_VALID )
@@ -1553,7 +1534,8 @@ BOOL CBaseMonster :: BuildRoute ( const Vector &vecGoal, int iMoveFlag, CBaseEnt
 		// monster can walk straight there!
 		return TRUE;
 	}
-// try to triangulate around any obstacles.
+
+	// try to triangulate around any obstacles.
 	else if ( iLocalMove != LOCALMOVE_INVALID_DONT_TRIANGULATE && FTriangulate( pev->origin, vecGoal, flDist, pTarget, &vecApex ) )
 	{
 		// there is a slightly more complicated path that allows the monster to reach vecGoal
@@ -1562,7 +1544,6 @@ BOOL CBaseMonster :: BuildRoute ( const Vector &vecGoal, int iMoveFlag, CBaseEnt
 
 		m_Route[ 1 ].vecLocation = vecGoal;
 		m_Route[ 1 ].iType = iMoveFlag | bits_MF_IS_GOAL;
-
 			/*
 			WRITE_BYTE(MSG_BROADCAST, SVC_TEMPENTITY);
 			WRITE_BYTE(MSG_BROADCAST, TE_SHOWLINE);
@@ -1573,15 +1554,14 @@ BOOL CBaseMonster :: BuildRoute ( const Vector &vecGoal, int iMoveFlag, CBaseEnt
 			WRITE_COORD(MSG_BROADCAST, vecApex.y );
 			WRITE_COORD(MSG_BROADCAST, vecApex.z + 128 );
 			*/
-
 		RouteSimplify( pTarget );
 		return TRUE;
 	}
 
-// last ditch, try nodes
+	// last ditch, try nodes
 	if ( FGetNodeRoute( vecGoal ) )
 	{
-//		ALERT ( at_console, "Can get there on nodes\n" );
+		//ALERT ( at_console, "Can get there on nodes\n" );
 		m_vecMoveGoal = vecGoal;
 		RouteSimplify( pTarget );
 		return TRUE;
@@ -1602,7 +1582,6 @@ void CBaseMonster :: InsertWaypoint ( Vector vecLocation, int afMoveFlags )
 {
 	int			i, type;
 
-	
 	// we have to save some Index and Type information from the real
 	// path_corner or node waypoint that the monster was trying to reach. This makes sure that data necessary 
 	// to refresh the original path exists even in the new waypoints that don't correspond directy to a path_corner
@@ -1666,7 +1645,7 @@ BOOL CBaseMonster :: FTriangulate ( const Vector &vecStart , const Vector &vecEn
 	}
 
 	vecFarSide = m_Route[ m_iRouteIndex ].vecLocation;
-	
+
 	vecDir = vecDir * sizeX * 2;
 	if (pev->movetype == MOVETYPE_FLY)
 		vecDirUp = vecDirUp * sizeZ * 2;
@@ -1695,7 +1674,6 @@ BOOL CBaseMonster :: FTriangulate ( const Vector &vecStart , const Vector &vecEn
 			WRITE_COORD( vecLeft.z );
 		MESSAGE_END();
 #endif
-
 #if 0
 		if (pev->movetype == MOVETYPE_FLY)
 		{
@@ -1720,7 +1698,6 @@ BOOL CBaseMonster :: FTriangulate ( const Vector &vecStart , const Vector &vecEn
 			MESSAGE_END();
 		}
 #endif
-
 		if ( CheckLocalMove( pev->origin, vecRight, pTargetEnt, NULL ) == LOCALMOVE_VALID )
 		{
 			if ( CheckLocalMove ( vecRight, vecFarSide, pTargetEnt, NULL ) == LOCALMOVE_VALID )
@@ -1816,7 +1793,7 @@ void CBaseMonster :: Move ( float flInterval )
 			return;
 		}
 	}
-	
+
 	if ( m_flMoveWaitFinished > gpGlobals->time )
 		return;
 
@@ -1835,7 +1812,6 @@ void CBaseMonster :: Move ( float flInterval )
 // Debug, draw the route
 //	DrawRoute( pev, m_Route, m_iRouteIndex, 0, 200, 0 );
 #endif
-
 	// if the monster is moving directly towards an entity (enemy for instance), we'll set this pointer
 	// to that entity for the CheckLocalMove and Triangulate functions.
 	pTargetEnt = NULL;
@@ -1843,7 +1819,7 @@ void CBaseMonster :: Move ( float flInterval )
 	// local move to waypoint.
 	vecDir = ( m_Route[ m_iRouteIndex ].vecLocation - pev->origin ).Normalize();
 	flWaypointDist = ( m_Route[ m_iRouteIndex ].vecLocation - pev->origin ).Length2D();
-	
+
 	MakeIdealYaw ( m_Route[ m_iRouteIndex ].vecLocation );
 	ChangeYaw ( pev->yaw_speed );
 
@@ -1856,7 +1832,7 @@ void CBaseMonster :: Move ( float flInterval )
 	{
 		flCheckDist = DIST_TO_CHECK;
 	}
-	
+
 	if ( (m_Route[ m_iRouteIndex ].iType & (~bits_MF_NOT_TO_MASK)) == bits_MF_TO_ENEMY )
 	{
 		// only on a PURE move to enemy ( i.e., ONLY MF_TO_ENEMY set, not MF_TO_ENEMY and DETOUR )
@@ -1877,6 +1853,7 @@ void CBaseMonster :: Move ( float flInterval )
 
 		// Can't move, stop
 		Stop();
+
 		// Blocking entity is in global trace_ent
 		pBlocker = CBaseEntity::Instance( gpGlobals->trace_ent );
 		if (pBlocker)
@@ -1905,8 +1882,9 @@ void CBaseMonster :: Move ( float flInterval )
 			}
 			else
 			{
-//				ALERT ( at_aiconsole, "Couldn't Triangulate\n" );
+				//ALERT ( at_aiconsole, "Couldn't Triangulate\n" );
 				Stop();
+
 				// Only do this once until your route is cleared
 				if ( m_moveWaitTime > 0 && !(m_afMemory & bits_MEMORY_MOVE_FAILED) )
 				{
@@ -1964,7 +1942,6 @@ void CBaseMonster :: Move ( float flInterval )
 	}
 }
 
-
 BOOL CBaseMonster:: ShouldAdvanceRoute( float flWaypointDist )
 {
 	if ( flWaypointDist <= MONSTER_CUT_CORNER_DIST )
@@ -1976,11 +1953,10 @@ BOOL CBaseMonster:: ShouldAdvanceRoute( float flWaypointDist )
 	return FALSE;
 }
 
-
 void CBaseMonster::MoveExecute( CBaseEntity *pTargetEnt, const Vector &vecDir, float flInterval )
 {
-//	float flYaw = UTIL_VecToYaw ( m_Route[ m_iRouteIndex ].vecLocation - pev->origin );// build a yaw that points to the goal.
-//	WALK_MOVE( ENT(pev), flYaw, m_flGroundSpeed * flInterval, WALKMOVE_NORMAL );
+	//float flYaw = UTIL_VecToYaw ( m_Route[ m_iRouteIndex ].vecLocation - pev->origin );// build a yaw that points to the goal.
+	//WALK_MOVE( ENT(pev), flYaw, m_flGroundSpeed * flInterval, WALKMOVE_NORMAL );
 	if ( m_IdealActivity != m_movementActivity )
 		m_IdealActivity = m_movementActivity;
 
@@ -1996,7 +1972,6 @@ void CBaseMonster::MoveExecute( CBaseEntity *pTargetEnt, const Vector &vecDir, f
 	// ALERT( at_console, "dist %f\n", m_flGroundSpeed * pev->framerate * flInterval );
 }
 
-
 //=========================================================
 // MonsterInit - after a monster is spawned, it needs to 
 // be dropped into the world, checked for mobility problems,
@@ -2010,7 +1985,7 @@ void CBaseMonster :: MonsterInit ( void )
 	if (!g_pGameRules->FAllowMonsters())
 	{
 		pev->flags |= FL_KILLME;		// Post this because some monster code modifies class data after calling this function
-//		REMOVE_ENTITY(ENT(pev));
+		//REMOVE_ENTITY(ENT(pev));
 		return;
 	}
 
@@ -2087,6 +2062,7 @@ void CBaseMonster :: StartMonster ( void )
 	{
 		pev->origin.z += 1;
 		DROP_TO_FLOOR ( ENT(pev) );
+
 		// Try to move the monster to make sure it's not stuck in a brush.
 		if (!WALK_MOVE ( ENT(pev), 0, 0, WALKMOVE_NORMAL ) )
 		{
@@ -2121,12 +2097,11 @@ void CBaseMonster :: StartMonster ( void )
 				ALERT(at_warning, "ReadyMonster--monster's initial goal '%s' is not a path_corner", STRING(pev->target));
 			}
 #endif
-
 			// set the monster up to walk a path corner path. 
 			// !!!BUGBUG - this is a minor bit of a hack.
 			// JAYJAY
 			m_movementGoal = MOVEGOAL_PATHCORNER;
-			
+
 			if ( pev->movetype == MOVETYPE_FLY )
 				m_movementActivity = ACT_FLY;
 			else
@@ -2140,7 +2115,7 @@ void CBaseMonster :: StartMonster ( void )
 			ChangeSchedule( GetScheduleOfType( SCHED_IDLE_WALK ) );
 		}
 	}
-	
+
 	//SetState ( m_IdealMonsterState );
 	//SetActivity ( m_IdealActivity );
 
@@ -2148,7 +2123,7 @@ void CBaseMonster :: StartMonster ( void )
 	// Spread think times so that they don't all happen at the same time (Carmack)
 	SetThink( &CBaseMonster::CallMonsterThink );
 	pev->nextthink += RANDOM_FLOAT(0.1, 0.4); // spread think times.
-	
+
 	if ( !FStringNull(pev->targetname) )// wait until triggered
 	{
 		SetState( MONSTERSTATE_IDLE );
@@ -2158,7 +2133,6 @@ void CBaseMonster :: StartMonster ( void )
 	}
 }
 
-
 void CBaseMonster :: MovementComplete( void ) 
 { 
 	switch( m_iTaskStatus )
@@ -2167,21 +2141,17 @@ void CBaseMonster :: MovementComplete( void )
 	case TASKSTATUS_RUNNING:
 		m_iTaskStatus = TASKSTATUS_RUNNING_TASK;
 		break;
-
 	case TASKSTATUS_RUNNING_MOVEMENT:
 		TaskComplete();
 		break;
-	
 	case TASKSTATUS_RUNNING_TASK:
 		ALERT( at_error, "Movement completed twice!\n" );
 		break;
-
 	case TASKSTATUS_COMPLETE:		
 		break;
 	}
 	m_movementGoal = MOVEGOAL_NONE;
 }
-
 
 int CBaseMonster::TaskIsRunning( void )
 {
@@ -2328,7 +2298,6 @@ BOOL CBaseMonster :: FindCover ( Vector vecThreat, Vector vecViewOffset, float f
 	return FALSE;
 }
 
-
 //=========================================================
 // BuildNearestRoute - tries to build a route as close to the target
 // as possible, even if there isn't a path to the final point.
@@ -2414,8 +2383,6 @@ BOOL CBaseMonster :: BuildNearestRoute ( Vector vecThreat, Vector vecViewOffset,
 	return FALSE;
 }
 
-
-
 //=========================================================
 // BestVisibleEnemy - this functions searches the link
 // list whose head is the caller's m_pLink field, and returns
@@ -2473,7 +2440,6 @@ CBaseEntity *CBaseMonster :: BestVisibleEnemy ( void )
 	return pReturn;
 }
 
-
 //=========================================================
 // MakeIdealYaw - gets a yaw value for the caller that would
 // face the supplied vector. Value is stuffed into the monster's
@@ -2482,7 +2448,7 @@ CBaseEntity *CBaseMonster :: BestVisibleEnemy ( void )
 void CBaseMonster :: MakeIdealYaw( Vector vecTarget )
 {
 	Vector	vecProjection;
-	
+
 	// strafing monster needs to face 90 degrees away from its goal
 	if ( m_movementActivity == ACT_STRAFE_LEFT )
 	{
@@ -2521,10 +2487,8 @@ float	CBaseMonster::FlYawDiff ( void )
 		return 0;
 	}
 
-
 	return UTIL_AngleDiff( pev->ideal_yaw, flCurrentYaw );
 }
-
 
 //=========================================================
 // Changeyaw - turns a monster towards its ideal_yaw
@@ -2552,16 +2516,18 @@ float CBaseMonster::ChangeYaw ( int yawSpeed )
 		}
 
 		if (move > 0)
-		{// turning to the monster's left
+		{
+			// turning to the monster's left
 			if (move > speed)
 				move = speed;
 		}
 		else
-		{// turning to the monster's right
+		{
+			// turning to the monster's right
 			if (move < -speed)
 				move = -speed;
 		}
-		
+
 		pev->angles.y = UTIL_AngleMod (current + move);
 
 		// turn head in desired direction only if they have a turnable head
@@ -2591,7 +2557,6 @@ float	CBaseMonster::VecToYaw ( Vector vecDir )
 
 	return UTIL_VecToYaw( vecDir );
 }
-
 
 //=========================================================
 // SetEyePosition
@@ -2638,19 +2603,17 @@ void CBaseMonster :: HandleAnimEvent( MonsterEvent_t *pEvent )
 		if ( m_MonsterState == MONSTERSTATE_SCRIPT )
 		{
 			pev->deadflag = DEAD_NO;
+
 			// This is for life/death sequences where the player can determine whether a character is dead or alive after the script 
 			pev->health = pev->max_health;
 		}
 		break;
-
 	case SCRIPT_EVENT_SOUND:			// Play a named wave file
 		EMIT_SOUND( edict(), CHAN_BODY, pEvent->options, 1.0, ATTN_IDLE );
 		break;
-
 	case SCRIPT_EVENT_SOUND_VOICE:
 		EMIT_SOUND( edict(), CHAN_VOICE, pEvent->options, 1.0, ATTN_IDLE );
 		break;
-
 	case SCRIPT_EVENT_SENTENCE_RND1:		// Play a named sentence group 33% of the time
 		if (RANDOM_LONG(0,2) == 0)
 			break;
@@ -2658,27 +2621,22 @@ void CBaseMonster :: HandleAnimEvent( MonsterEvent_t *pEvent )
 	case SCRIPT_EVENT_SENTENCE:			// Play a named sentence group
 		SENTENCEG_PlayRndSz( edict(), pEvent->options, 1.0, ATTN_IDLE, 0, 100 );
 		break;
-
 	case SCRIPT_EVENT_FIREEVENT:		// Fire a trigger
 		FireTargets( pEvent->options, this, this, USE_TOGGLE, 0 );
 		break;
-
 	case SCRIPT_EVENT_NOINTERRUPT:		// Can't be interrupted from now on
 		if ( m_pCine )
 			m_pCine->AllowInterrupt( FALSE );
 		break;
-
 	case SCRIPT_EVENT_CANINTERRUPT:		// OK to interrupt now
 		if ( m_pCine )
 			m_pCine->AllowInterrupt( TRUE );
 		break;
-
 #if 0
 	case SCRIPT_EVENT_INAIR:			// Don't DROP_TO_FLOOR()
 	case SCRIPT_EVENT_ENDANIMATION:		// Set ending animation sequence to
 		break;
 #endif
-
 	case MONSTER_EVENT_BODYDROP_HEAVY:
 		if ( pev->flags & FL_ONGROUND )
 		{
@@ -2692,7 +2650,6 @@ void CBaseMonster :: HandleAnimEvent( MonsterEvent_t *pEvent )
 			}
 		}
 		break;
-
 	case MONSTER_EVENT_BODYDROP_LIGHT:
 		if ( pev->flags & FL_ONGROUND )
 		{
@@ -2706,24 +2663,19 @@ void CBaseMonster :: HandleAnimEvent( MonsterEvent_t *pEvent )
 			}
 		}
 		break;
-
 	case MONSTER_EVENT_SWISHSOUND:
 		{
 			// NO MONSTER may use this anim event unless that monster's precache precaches this sound!!!
 			EMIT_SOUND( ENT(pev), CHAN_BODY, "zombie/claw_miss2.wav", 1, ATTN_NORM );
 			break;
 		}
-
 	default:
 		ALERT( at_aiconsole, "Unhandled animation event %d for %s\n", pEvent->event, STRING(pev->classname) );
 		break;
-
 	}
 }
 
-
 // Combat
-
 Vector CBaseMonster :: GetGunPosition( )
 {
 	UTIL_MakeVectors(pev->angles);
@@ -2739,17 +2691,9 @@ Vector CBaseMonster :: GetGunPosition( )
 	return vecSrc;
 }
 
-
-
-
-
 //=========================================================
 // NODE GRAPH
 //=========================================================
-
-
-
-
 
 //=========================================================
 // FGetNodeRoute - tries to build an entire node path from
@@ -2773,13 +2717,13 @@ BOOL CBaseMonster :: FGetNodeRoute ( Vector vecDest )
 	if ( iSrcNode == -1 )
 	{
 		// no node nearest self
-//		ALERT ( at_aiconsole, "FGetNodeRoute: No valid node near self!\n" );
+		//ALERT ( at_aiconsole, "FGetNodeRoute: No valid node near self!\n" );
 		return FALSE;
 	}
 	else if ( iDestNode == -1 )
 	{
 		// no node nearest target
-//		ALERT ( at_aiconsole, "FGetNodeRoute: No valid node near target!\n" );
+		//ALERT ( at_aiconsole, "FGetNodeRoute: No valid node near target!\n" );
 		return FALSE;
 	}
 
@@ -2823,13 +2767,13 @@ BOOL CBaseMonster :: FGetNodeRoute ( Vector vecDest )
 	{
 		iNumToCopy = ROUTE_SIZE;
 	}
-	
+
 	for ( i = 0 ; i < iNumToCopy; i++ )
 	{
 		m_Route[ i ].vecLocation = WorldGraph.m_pNodes[ iPath[ i ] ].m_vecOrigin;
 		m_Route[ i ].iType = bits_MF_TO_NODE;
 	}
-	
+
 	if ( iNumToCopy < ROUTE_SIZE )
 	{
 		m_Route[ iNumToCopy ].vecLocation = vecDest;
@@ -2885,8 +2829,7 @@ int CBaseMonster :: FindHintNode ( void )
 	WorldGraph.m_iLastActiveIdleSearch = 0;// start at the top of the list for the next search.
 
 	return NO_NODE;
-}
-			
+}		
 
 void CBaseMonster::ReportAIState( void )
 {
@@ -3122,7 +3065,6 @@ int CBaseMonster :: CanPlaySequence( BOOL fDisregardMonsterState, int interruptL
 	return FALSE;
 }
 
-
 //=========================================================
 // FindLateralCover - attempts to locate a spot in the world
 // directly to the left or right of the caller that will
@@ -3144,7 +3086,7 @@ BOOL CBaseMonster :: FindLateralCover ( const Vector &vecThreat, const Vector &v
 	UTIL_MakeVectors ( pev->angles );
 	vecStepRight = gpGlobals->v_right * COVER_DELTA;
 	vecStepRight.z = 0; 
-	
+
 	vecLeftTest = vecRightTest = pev->origin;
 
 	for ( i = 0 ; i < COVER_CHECKS ; i++ )
@@ -3184,7 +3126,6 @@ BOOL CBaseMonster :: FindLateralCover ( const Vector &vecThreat, const Vector &v
 	return FALSE;
 }
 
-
 Vector CBaseMonster :: ShootAtEnemy( const Vector &shootOrigin )
 {
 	CBaseEntity *pEnemy = m_hEnemy;
@@ -3196,8 +3137,6 @@ Vector CBaseMonster :: ShootAtEnemy( const Vector &shootOrigin )
 	else
 		return gpGlobals->v_forward;
 }
-
-
 
 //=========================================================
 // FacingIdeal - tells us if a monster is facing its ideal
@@ -3230,7 +3169,6 @@ BOOL CBaseMonster :: FCanActiveIdle ( void )
 	return FALSE;
 }
 
-
 void CBaseMonster::PlaySentence( const char *pszSentence, float duration, float volume, float attenuation )
 {
 	if ( pszSentence && IsAlive() )
@@ -3242,18 +3180,15 @@ void CBaseMonster::PlaySentence( const char *pszSentence, float duration, float 
 	}
 }
 
-
 void CBaseMonster::PlayScriptedSentence( const char *pszSentence, float duration, float volume, float attenuation, BOOL bConcurrent, CBaseEntity *pListener )
-{ 
+{
 	PlaySentence( pszSentence, duration, volume, attenuation );
 }
-
 
 void CBaseMonster::SentenceStop( void )
 {
 	EMIT_SOUND( edict(), CHAN_VOICE, "common/null.wav", 1.0, ATTN_IDLE );
 }
-
 
 void CBaseMonster::CorpseFallThink( void )
 {
@@ -3279,11 +3214,11 @@ void CBaseMonster :: MonsterInitDead( void )
 	pev->frame = 0;
 	ResetSequenceInfo( );
 	pev->framerate = 0;
-	
+
 	// Copy health
 	pev->max_health		= pev->health;
 	pev->deadflag		= DEAD_DEAD;
-	
+
 	UTIL_SetSize(pev, g_vecZero, g_vecZero );
 	UTIL_SetOrigin( pev, pev->origin );
 
@@ -3408,7 +3343,6 @@ BOOL CBaseMonster :: GetEnemy ( void )
 	return FALSE;// monster has no enemy
 }
 
-
 //=========================================================
 // DropItem - dead monster drops named item 
 //=========================================================
@@ -3436,7 +3370,6 @@ CBaseEntity* CBaseMonster :: DropItem ( char *pszItemName, const Vector &vecPos,
 	}
 
 }
-
 
 BOOL CBaseMonster :: ShouldFadeOnDeath( void )
 {

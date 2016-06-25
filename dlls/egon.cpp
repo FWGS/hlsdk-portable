@@ -49,7 +49,7 @@ enum egon_e {
 	EGON_HOLSTER
 };
 
-LINK_ENTITY_TO_CLASS( weapon_egon, CEgon );
+LINK_ENTITY_TO_CLASS( weapon_egon, CEgon )
 
 void CEgon::Spawn( )
 {
@@ -61,7 +61,6 @@ void CEgon::Spawn( )
 
 	FallInit();// get ready to fall down.
 }
-
 
 void CEgon::Precache( void )
 {
@@ -277,10 +276,7 @@ void CEgon::Fire( const Vector &vecOrigSrc, const Vector &vecDir )
 			m_pSprite->pev->effects |= EF_NODRAW;
 		}
 	}
-
-
 #endif
-
 	float timedist;
 
 	switch ( m_fireMode )
@@ -408,14 +404,11 @@ void CEgon::UpdateEffect( const Vector &startPoint, const Vector &endPoint, floa
 		m_pSprite->pev->frame = 0;
 
 	m_pNoise->SetStartPos( endPoint );
-
 #endif
-
 }
 
 void CEgon::CreateEffect( void )
 {
-
 #ifndef CLIENT_DLL
 	DestroyEffect();
 
@@ -458,9 +451,7 @@ void CEgon::CreateEffect( void )
 		m_pNoise->SetNoise( 2 );
 	}
 #endif
-
 }
-
 
 void CEgon::DestroyEffect( void )
 {
@@ -485,10 +476,7 @@ void CEgon::DestroyEffect( void )
 		m_pSprite = NULL;
 	}
 #endif
-
 }
-
-
 
 void CEgon::WeaponIdle( void )
 {
@@ -563,6 +551,6 @@ class CEgonAmmo : public CBasePlayerAmmo
 		return FALSE;
 	}
 };
-LINK_ENTITY_TO_CLASS( ammo_egonclip, CEgonAmmo );
+LINK_ENTITY_TO_CLASS( ammo_egonclip, CEgonAmmo )
 
 #endif

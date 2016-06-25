@@ -38,8 +38,6 @@ enum satchel_radio_e {
 	SATCHEL_RADIO_HOLSTER
 };
 
-
-
 class CSatchelCharge : public CGrenade
 {
 	void Spawn( void );
@@ -52,7 +50,8 @@ class CSatchelCharge : public CGrenade
 public:
 	void Deactivate( void );
 };
-LINK_ENTITY_TO_CLASS( monster_satchel, CSatchelCharge );
+
+LINK_ENTITY_TO_CLASS( monster_satchel, CSatchelCharge )
 
 //=========================================================
 // Deactivate - do whatever it is we do to an orphaned 
@@ -63,7 +62,6 @@ void CSatchelCharge::Deactivate( void )
 	pev->solid = SOLID_NOT;
 	UTIL_Remove( this );
 }
-
 
 void CSatchelCharge :: Spawn( void )
 {
@@ -89,7 +87,6 @@ void CSatchelCharge :: Spawn( void )
 	// ResetSequenceInfo( );
 	pev->sequence = 1;
 }
-
 
 void CSatchelCharge::SatchelSlide( CBaseEntity *pOther )
 {
@@ -119,7 +116,6 @@ void CSatchelCharge::SatchelSlide( CBaseEntity *pOther )
 	}
 	StudioFrameAdvance( );
 }
-
 
 void CSatchelCharge :: SatchelThink( void )
 {
@@ -167,9 +163,7 @@ void CSatchelCharge :: BounceSound( void )
 	}
 }
 
-
-LINK_ENTITY_TO_CLASS( weapon_satchel, CSatchel );
-
+LINK_ENTITY_TO_CLASS( weapon_satchel, CSatchel )
 
 //=========================================================
 // CALLED THROUGH the newly-touched weapon's instance. The existing player weapon is pOriginal
@@ -223,7 +217,6 @@ void CSatchel::Spawn( )
 	FallInit();// get ready to fall down.
 }
 
-
 void CSatchel::Precache( void )
 {
 	PRECACHE_MODEL("models/v_satchel.mdl");
@@ -234,7 +227,6 @@ void CSatchel::Precache( void )
 
 	UTIL_PrecacheOther( "monster_satchel" );
 }
-
 
 int CSatchel::GetItemInfo(ItemInfo *p)
 {
@@ -304,7 +296,6 @@ BOOL CSatchel::Deploy( )
 	return TRUE;
 }
 
-
 void CSatchel::Holster( int skiplocal /* = 0 */ )
 {
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
@@ -326,8 +317,6 @@ void CSatchel::Holster( int skiplocal /* = 0 */ )
 		pev->nextthink = gpGlobals->time + 0.1;
 	}
 }
-
-
 
 void CSatchel::PrimaryAttack()
 {
@@ -364,7 +353,6 @@ void CSatchel::PrimaryAttack()
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.5;
 		break;
 		}
-
 	case 2:
 		// we're reloading, don't allow fire
 		{
@@ -373,7 +361,6 @@ void CSatchel::PrimaryAttack()
 	}
 }
 
-
 void CSatchel::SecondaryAttack( void )
 {
 	if ( m_chargeReady != 2 )
@@ -381,7 +368,6 @@ void CSatchel::SecondaryAttack( void )
 		Throw( );
 	}
 }
-
 
 void CSatchel::Throw( void )
 {
@@ -416,7 +402,6 @@ void CSatchel::Throw( void )
 	}
 }
 
-
 void CSatchel::WeaponIdle( void )
 {
 	if ( m_flTimeWeaponIdle > UTIL_WeaponTimeBase() )
@@ -448,7 +433,6 @@ void CSatchel::WeaponIdle( void )
 #else
 		LoadVModel ( "models/v_satchel.mdl", m_pPlayer );
 #endif
-
 		SendWeaponAnim( SATCHEL_DRAW );
 
 		// use tripmine animations
@@ -490,5 +474,4 @@ void DeactivateSatchels( CBasePlayer *pOwner )
 		pFind = FIND_ENTITY_BY_CLASSNAME( pFind, "monster_satchel" );
 	}
 }
-
 #endif

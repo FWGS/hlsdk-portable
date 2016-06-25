@@ -34,7 +34,7 @@ class CShower : public CBaseEntity
 	int ObjectCaps( void ) { return FCAP_DONT_SAVE; }
 };
 
-LINK_ENTITY_TO_CLASS( spark_shower, CShower );
+LINK_ENTITY_TO_CLASS( spark_shower, CShower )
 
 void CShower::Spawn( void )
 {
@@ -56,7 +56,6 @@ void CShower::Spawn( void )
 
 	pev->angles = g_vecZero;
 }
-
 
 void CShower::Think( void )
 {
@@ -103,8 +102,8 @@ TYPEDESCRIPTION	CEnvExplosion::m_SaveData[] =
 	DEFINE_FIELD( CEnvExplosion, m_spriteScale, FIELD_INTEGER ),
 };
 
-IMPLEMENT_SAVERESTORE( CEnvExplosion, CBaseMonster );
-LINK_ENTITY_TO_CLASS( env_explosion, CEnvExplosion );
+IMPLEMENT_SAVERESTORE( CEnvExplosion, CBaseMonster )
+LINK_ENTITY_TO_CLASS( env_explosion, CEnvExplosion )
 
 void CEnvExplosion::KeyValue( KeyValueData *pkvd )
 {
@@ -252,7 +251,6 @@ void CEnvExplosion::Smoke( void )
 		UTIL_Remove( this );
 	}
 }
-
 
 // HACKHACK -- create one of these and fake a keyvalue to get the right explosion setup
 void ExplosionCreate( const Vector &center, const Vector &angles, edict_t *pOwner, int magnitude, BOOL doDamage )

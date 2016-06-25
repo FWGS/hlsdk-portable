@@ -34,8 +34,8 @@ enum python_e {
 	PYTHON_IDLE3
 };
 
-LINK_ENTITY_TO_CLASS( weapon_python, CPython );
-LINK_ENTITY_TO_CLASS( weapon_357, CPython );
+LINK_ENTITY_TO_CLASS( weapon_python, CPython )
+LINK_ENTITY_TO_CLASS( weapon_357, CPython )
 
 int CPython::GetItemInfo(ItemInfo *p)
 {
@@ -78,7 +78,6 @@ void CPython::Spawn( )
 	FallInit();// get ready to fall down.
 }
 
-
 void CPython::Precache( void )
 {
 	PRECACHE_MODEL("models/v_357.mdl");
@@ -114,7 +113,6 @@ BOOL CPython::Deploy( )
 
 	return DefaultDeploy( "models/v_357.mdl", "models/p_357.mdl", PYTHON_DRAW, "python", UseDecrement(), pev->body );
 }
-
 
 void CPython::Holster( int skiplocal /* = 0 */ )
 {
@@ -188,7 +186,6 @@ void CPython::PrimaryAttack()
 	// player "shoot" animation
 	m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
 
-
 	UTIL_MakeVectors( m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle );
 
 	Vector vecSrc	 = m_pPlayer->GetGunPosition( );
@@ -197,13 +194,12 @@ void CPython::PrimaryAttack()
 	Vector vecDir;
 	vecDir = m_pPlayer->FireBulletsPlayer( 1, vecSrc, vecAiming, VECTOR_CONE_1DEGREES, 8192, BULLET_PLAYER_357, 0, 0, m_pPlayer->pev, m_pPlayer->random_seed );
 
-    int flags;
+	int flags;
 #if defined( CLIENT_WEAPONS )
 	flags = FEV_NOTHOST;
 #else
 	flags = 0;
 #endif
-
 	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usFirePython, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, vecDir.x, vecDir.y, 0, 0, 0, 0 );
 
 	if (!m_iClip && m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0)
@@ -213,7 +209,6 @@ void CPython::PrimaryAttack()
 	m_flNextPrimaryAttack = 0.75;
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
 }
-
 
 void CPython::Reload( void )
 {
@@ -238,7 +233,6 @@ void CPython::Reload( void )
 		m_flSoundDelay = 1.5;
 	}
 }
-
 
 void CPython::WeaponIdle( void )
 {
@@ -289,8 +283,6 @@ void CPython::WeaponIdle( void )
 	SendWeaponAnim( iAnim, UseDecrement() ? 1 : 0, bUseScope );
 }
 
-
-
 class CPythonAmmo : public CBasePlayerAmmo
 {
 	void Spawn( void )
@@ -314,7 +306,6 @@ class CPythonAmmo : public CBasePlayerAmmo
 		return FALSE;
 	}
 };
-LINK_ENTITY_TO_CLASS( ammo_357, CPythonAmmo );
 
-
+LINK_ENTITY_TO_CLASS( ammo_357, CPythonAmmo )
 #endif

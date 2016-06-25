@@ -97,7 +97,7 @@ public:
 	virtual float GetSoundVolue( void ) { return 1.0; }
 	Schedule_t* GetScheduleOfType ( int Type );
 
-	CUSTOM_SCHEDULES;
+	CUSTOM_SCHEDULES
 
 	static const char *pIdleSounds[];
 	static const char *pAlertSounds[];
@@ -106,7 +106,8 @@ public:
 	static const char *pDeathSounds[];
 	static const char *pBiteSounds[];
 };
-LINK_ENTITY_TO_CLASS( monster_headcrab, CHeadCrab );
+
+LINK_ENTITY_TO_CLASS( monster_headcrab, CHeadCrab )
 
 DEFINE_CUSTOM_SCHEDULES( CHeadCrab )
 {
@@ -114,24 +115,27 @@ DEFINE_CUSTOM_SCHEDULES( CHeadCrab )
 	slHCRangeAttack1Fast,
 };
 
-IMPLEMENT_CUSTOM_SCHEDULES( CHeadCrab, CBaseMonster );
+IMPLEMENT_CUSTOM_SCHEDULES( CHeadCrab, CBaseMonster )
 
-const char *CHeadCrab::pIdleSounds[] = 
+const char *CHeadCrab::pIdleSounds[] =
 {
 	"headcrab/hc_idle1.wav",
 	"headcrab/hc_idle2.wav",
 	"headcrab/hc_idle3.wav",
 };
-const char *CHeadCrab::pAlertSounds[] = 
+
+const char *CHeadCrab::pAlertSounds[] =
 {
 	"headcrab/hc_alert1.wav",
 };
-const char *CHeadCrab::pPainSounds[] = 
+
+const char *CHeadCrab::pPainSounds[] =
 {
 	"headcrab/hc_pain1.wav",
 	"headcrab/hc_pain2.wav",
 	"headcrab/hc_pain3.wav",
 };
+
 const char *CHeadCrab::pAttackSounds[] = 
 {
 	"headcrab/hc_attack1.wav",
@@ -168,7 +172,6 @@ Vector CHeadCrab :: Center ( void )
 {
 	return Vector( pev->origin.x, pev->origin.y, pev->origin.z + 6 );
 }
-
 
 Vector CHeadCrab :: BodyTarget( const Vector &posSrc ) 
 { 
@@ -310,7 +313,6 @@ void CHeadCrab :: Precache()
 	PRECACHE_MODEL("models/headcrab.mdl");
 }	
 
-
 //=========================================================
 // RunTask 
 //=========================================================
@@ -394,7 +396,6 @@ void CHeadCrab :: StartTask ( Task_t *pTask )
 		}
 	}
 }
-
 
 //=========================================================
 // CheckRangeAttack1
@@ -480,7 +481,6 @@ Schedule_t* CHeadCrab :: GetScheduleOfType ( int Type )
 	return CBaseMonster::GetScheduleOfType( Type );
 }
 
-
 class CBabyCrab : public CHeadCrab
 {
 public:
@@ -493,7 +493,8 @@ public:
 	virtual int GetVoicePitch( void ) { return PITCH_NORM + RANDOM_LONG(40,50); }
 	virtual float GetSoundVolue( void ) { return 0.8; }
 };
-LINK_ENTITY_TO_CLASS( monster_babycrab, CBabyCrab );
+
+LINK_ENTITY_TO_CLASS( monster_babycrab, CBabyCrab )
 
 void CBabyCrab :: Spawn( void )
 {
@@ -512,12 +513,10 @@ void CBabyCrab :: Precache( void )
 	CHeadCrab::Precache();
 }
 
-
 void CBabyCrab :: SetYawSpeed ( void )
 {
 	pev->yaw_speed = 120;
 }
-
 
 BOOL CBabyCrab :: CheckRangeAttack1( float flDot, float flDist )
 {
@@ -533,7 +532,6 @@ BOOL CBabyCrab :: CheckRangeAttack1( float flDot, float flDist )
 
 	return FALSE;
 }
-
 
 Schedule_t* CBabyCrab :: GetScheduleOfType ( int Type )
 {

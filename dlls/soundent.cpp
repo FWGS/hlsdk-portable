@@ -12,14 +12,14 @@
 *   without written permission from Valve LLC.
 *
 ****/
+
 #include	"extdll.h"
 #include	"util.h"
 #include	"cbase.h"
 #include	"monsters.h"
 #include	"soundent.h"
 
-
-LINK_ENTITY_TO_CLASS( soundent, CSoundEnt );
+LINK_ENTITY_TO_CLASS( soundent, CSoundEnt )
 
 CSoundEnt *pSoundEnt;
 
@@ -123,7 +123,6 @@ void CSoundEnt :: Think ( void )
 		ALERT ( at_aiconsole, "Soundlist: %d / %d  (%d)\n", ISoundsInList( SOUNDLISTTYPE_ACTIVE ),ISoundsInList( SOUNDLISTTYPE_FREE ), ISoundsInList( SOUNDLISTTYPE_ACTIVE ) - m_cLastActiveSounds );
 		m_cLastActiveSounds = ISoundsInList ( SOUNDLISTTYPE_ACTIVE );
 	}
-
 }
 
 //=========================================================
@@ -150,7 +149,7 @@ void CSoundEnt :: FreeSound ( int iSound, int iPrevious )
 	{
 		// iSound is not the head of the active list, so
 		// must fix the index for the Previous sound
-//		pSoundEnt->m_SoundPool[ iPrevious ].m_iNext = m_SoundPool[ iSound ].m_iNext;
+		//pSoundEnt->m_SoundPool[ iPrevious ].m_iNext = m_SoundPool[ iSound ].m_iNext;
 		pSoundEnt->m_SoundPool[ iPrevious ].m_iNext = pSoundEnt->m_SoundPool[ iSound ].m_iNext;
 	}
 	else 
@@ -235,14 +234,14 @@ void CSoundEnt :: Initialize ( void )
 	m_iActiveSound = SOUNDLIST_EMPTY;
 
 	for ( i = 0 ; i < MAX_WORLD_SOUNDS ; i++ )
-	{// clear all sounds, and link them into the free sound list.
+	{
+		// clear all sounds, and link them into the free sound list.
 		m_SoundPool[ i ].Clear();
 		m_SoundPool[ i ].m_iNext = i + 1;
 	}
 
 	m_SoundPool[ i - 1 ].m_iNext = SOUNDLIST_EMPTY;// terminate the list here.
 
-	
 	// now reserve enough sounds for each client
 	for ( i = 0 ; i < gpGlobals->maxClients ; i++ )
 	{

@@ -39,7 +39,7 @@ enum shotgun_e {
 	SHOTGUN_IDLE_DEEP
 };
 
-LINK_ENTITY_TO_CLASS( weapon_shotgun, CShotgun );
+LINK_ENTITY_TO_CLASS( weapon_shotgun, CShotgun )
 
 void CShotgun::Spawn( )
 {
@@ -51,7 +51,6 @@ void CShotgun::Spawn( )
 
 	FallInit();// get ready to fall
 }
-
 
 void CShotgun::Precache( void )
 {
@@ -91,7 +90,6 @@ int CShotgun::AddToPlayer( CBasePlayer *pPlayer )
 	return FALSE;
 }
 
-
 int CShotgun::GetItemInfo(ItemInfo *p)
 {
 	p->pszName = STRING(pev->classname);
@@ -108,8 +106,6 @@ int CShotgun::GetItemInfo(ItemInfo *p)
 
 	return 1;
 }
-
-
 
 BOOL CShotgun::Deploy( )
 {
@@ -146,7 +142,6 @@ void CShotgun::PrimaryAttack()
 	flags = 0;
 #endif
 
-
 	m_pPlayer->pev->effects = (int)(m_pPlayer->pev->effects) | EF_MUZZLEFLASH;
 
 	Vector vecSrc	 = m_pPlayer->GetGunPosition( );
@@ -170,7 +165,6 @@ void CShotgun::PrimaryAttack()
 
 	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usSingleFire, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, vecDir.x, vecDir.y, 0, 0, 0, 0 );
 
-
 	if (!m_iClip && m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0)
 		// HEV suit - indicate out of ammo condition
 		m_pPlayer->SetSuitUpdate("!HEV_AMO0", FALSE, 0);
@@ -186,7 +180,6 @@ void CShotgun::PrimaryAttack()
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.75;
 	m_fInSpecialReload = 0;
 }
-
 
 void CShotgun::SecondaryAttack( void )
 {
@@ -210,14 +203,12 @@ void CShotgun::SecondaryAttack( void )
 
 	m_iClip -= 2;
 
-
 	int flags;
 #if defined( CLIENT_WEAPONS )
 	flags = FEV_NOTHOST;
 #else
 	flags = 0;
 #endif
-
 	m_pPlayer->pev->effects = (int)(m_pPlayer->pev->effects) | EF_MUZZLEFLASH;
 
 	// player "shoot" animation
@@ -260,9 +251,7 @@ void CShotgun::SecondaryAttack( void )
 		m_flTimeWeaponIdle = 1.5;
 
 	m_fInSpecialReload = 0;
-
 }
-
 
 void CShotgun::Reload( void )
 {
@@ -309,7 +298,6 @@ void CShotgun::Reload( void )
 		m_fInSpecialReload = 1;
 	}
 }
-
 
 void CShotgun::WeaponIdle( void )
 {
@@ -371,8 +359,6 @@ void CShotgun::WeaponIdle( void )
 	}
 }
 
-
-
 class CShotgunAmmo : public CBasePlayerAmmo
 {
 	void Spawn( void )
@@ -396,6 +382,5 @@ class CShotgunAmmo : public CBasePlayerAmmo
 		return FALSE;
 	}
 };
-LINK_ENTITY_TO_CLASS( ammo_buckshot, CShotgunAmmo );
 
-
+LINK_ENTITY_TO_CLASS( ammo_buckshot, CShotgunAmmo )

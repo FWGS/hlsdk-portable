@@ -12,6 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
+
 #include "extdll.h"
 #include "plane.h"
 
@@ -33,7 +34,6 @@ void CPlane :: InitializePlane ( const Vector &vecNormal, const Vector &vecPoint
 	m_flDist = DotProduct ( m_vecNormal, vecPoint );
 	m_fInitialized = TRUE;
 }
-
 
 //=========================================================
 // PointInFront - determines whether the given vector is 
@@ -57,4 +57,3 @@ BOOL CPlane :: PointInFront ( const Vector &vecPoint )
 
 	return FALSE;
 }
-

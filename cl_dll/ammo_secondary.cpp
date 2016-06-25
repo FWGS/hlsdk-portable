@@ -24,8 +24,8 @@
 #include <stdio.h>
 #include "parsemsg.h"
 
-DECLARE_MESSAGE( m_AmmoSecondary, SecAmmoVal );
-DECLARE_MESSAGE( m_AmmoSecondary, SecAmmoIcon );
+DECLARE_MESSAGE( m_AmmoSecondary, SecAmmoVal )
+DECLARE_MESSAGE( m_AmmoSecondary, SecAmmoIcon )
 
 int CHudAmmoSecondary :: Init( void )
 {

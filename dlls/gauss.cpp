@@ -25,7 +25,6 @@
 #include "shake.h"
 #include "gamerules.h"
 
-
 #define	GAUSS_PRIMARY_CHARGE_VOLUME	256// how loud gauss is while charging
 #define GAUSS_PRIMARY_FIRE_VOLUME	450// how loud gauss is when discharged
 
@@ -41,7 +40,7 @@ enum gauss_e {
 	GAUSS_DRAW
 };
 
-LINK_ENTITY_TO_CLASS( weapon_gauss, CGauss );
+LINK_ENTITY_TO_CLASS( weapon_gauss, CGauss )
 
 float CGauss::GetFullChargeTime( void )
 {
@@ -71,7 +70,6 @@ void CGauss::Spawn( )
 
 	FallInit();// get ready to fall down.
 }
-
 
 void CGauss::Precache( void )
 {
@@ -139,7 +137,6 @@ void CGauss::Holster( int skiplocal /* = 0 */ )
 	SendWeaponAnim( GAUSS_HOLSTER );
 	m_fInAttack = 0;
 }
-
 
 void CGauss::PrimaryAttack()
 {
@@ -335,7 +332,6 @@ void CGauss::StartFire( void )
 	if (m_fInAttack != 3)
 	{
 		//ALERT ( at_console, "Time:%f Damage:%f\n", gpGlobals->time - m_pPlayer->m_flStartCharge, flDamage );
-
 #ifndef CLIENT_DLL
 		float flZVel = m_pPlayer->pev->velocity.z;
 
@@ -345,7 +341,6 @@ void CGauss::StartFire( void )
 		}
 
 		if ( !g_pGameRules->IsMultiplayer() )
-
 		{
 			// in deathmatch, gauss can pop you up into the air. Not in single play.
 			m_pPlayer->pev->velocity.z = flZVel;
@@ -380,8 +375,7 @@ void CGauss::Fire( Vector vecOrigSrc, Vector vecDir, float flDamage )
 #ifdef CLIENT_DLL
 	if ( m_fPrimaryFire == false )
 		 g_irunninggausspred = true;
-#endif
-	
+#endif	
 	// The main firing event is sent unreliably so it won't be delayed.
 	PLAYBACK_EVENT_FULL( FEV_NOTHOST, m_pPlayer->edict(), m_usGaussFire, 0.0, (float *)&m_pPlayer->pev->origin, (float *)&m_pPlayer->pev->angles, flDamage, 0.0, 0, 0, m_fPrimaryFire ? 1 : 0, 0 );
 
@@ -395,9 +389,8 @@ void CGauss::Fire( Vector vecOrigSrc, Vector vecDir, float flDamage )
 	/*ALERT( at_console, "%f %f %f\n%f %f %f\n", 
 		vecSrc.x, vecSrc.y, vecSrc.z, 
 		vecDest.x, vecDest.y, vecDest.z );*/
-	
 
-//	ALERT( at_console, "%f %f\n", tr.flFraction, flMaxFrac );
+	//ALERT( at_console, "%f %f\n", tr.flFraction, flMaxFrac );
 
 #ifndef CLIENT_DLL
 	while (flDamage > 10 && nMaxHits > 0)
@@ -535,9 +528,6 @@ void CGauss::Fire( Vector vecOrigSrc, Vector vecDir, float flDamage )
 	// ALERT( at_console, "%d bytes\n", nTotal );
 }
 
-
-
-
 void CGauss::WeaponIdle( void )
 {
 	ResetEmptySound( );
@@ -588,11 +578,6 @@ void CGauss::WeaponIdle( void )
 	}
 }
 
-
-
-
-
-
 class CGaussAmmo : public CBasePlayerAmmo
 {
 	void Spawn( void )
@@ -616,6 +601,6 @@ class CGaussAmmo : public CBasePlayerAmmo
 		return FALSE;
 	}
 };
-LINK_ENTITY_TO_CLASS( ammo_gaussclip, CGaussAmmo );
 
+LINK_ENTITY_TO_CLASS( ammo_gaussclip, CGaussAmmo )
 #endif

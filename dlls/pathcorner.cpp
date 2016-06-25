@@ -38,15 +38,15 @@ private:
 	float	m_flWait;
 };
 
-LINK_ENTITY_TO_CLASS( path_corner, CPathCorner );
+LINK_ENTITY_TO_CLASS( path_corner, CPathCorner )
 
 // Global Savedata for Delay
-TYPEDESCRIPTION	CPathCorner::m_SaveData[] = 
+TYPEDESCRIPTION	CPathCorner::m_SaveData[] =
 {
 	DEFINE_FIELD( CPathCorner, m_flWait, FIELD_FLOAT ),
 };
 
-IMPLEMENT_SAVERESTORE( CPathCorner, CPointEntity );
+IMPLEMENT_SAVERESTORE( CPathCorner, CPointEntity )
 
 //
 // Cache user-entity-field values until spawn is called.
@@ -61,7 +61,6 @@ void CPathCorner :: KeyValue( KeyValueData *pkvd )
 	else 
 		CPointEntity::KeyValue( pkvd );
 }
-
 
 void CPathCorner :: Spawn( )
 {
@@ -116,9 +115,7 @@ void CPathCorner :: Touch( CBaseEntity *pOther )
 }
 #endif
 
-
-
-TYPEDESCRIPTION	CPathTrack::m_SaveData[] = 
+TYPEDESCRIPTION	CPathTrack::m_SaveData[] =
 {
 	DEFINE_FIELD( CPathTrack, m_length, FIELD_FLOAT ),
 	DEFINE_FIELD( CPathTrack, m_pnext, FIELD_CLASSPTR ),
@@ -127,8 +124,8 @@ TYPEDESCRIPTION	CPathTrack::m_SaveData[] =
 	DEFINE_FIELD( CPathTrack, m_altName, FIELD_STRING ),
 };
 
-IMPLEMENT_SAVERESTORE( CPathTrack, CBaseEntity );
-LINK_ENTITY_TO_CLASS( path_track, CPathTrack );
+IMPLEMENT_SAVERESTORE( CPathTrack, CBaseEntity )
+LINK_ENTITY_TO_CLASS( path_track, CPathTrack )
 
 //
 // Cache user-entity-field values until spawn is called.
@@ -174,7 +171,6 @@ void CPathTrack :: Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE 
 	}
 }
 
-
 void CPathTrack :: Link( void  )
 {
 	edict_t *pentTarget;
@@ -211,7 +207,6 @@ void CPathTrack :: Link( void  )
 	}
 }
 
-
 void CPathTrack :: Spawn( void )
 {
 	pev->solid = SOLID_TRIGGER;
@@ -225,7 +220,6 @@ void CPathTrack :: Spawn( void )
 	pev->nextthink = gpGlobals->time + 0.5;
 #endif
 }
-
 
 void CPathTrack::Activate( void )
 {
@@ -243,7 +237,6 @@ CPathTrack	*CPathTrack :: ValidPath( CPathTrack	*ppath, int testFlag )
 
 	return ppath;
 }
-
 
 void CPathTrack :: Project( CPathTrack *pstart, CPathTrack *pend, Vector *origin, float dist )
 {
@@ -273,15 +266,12 @@ CPathTrack *CPathTrack::GetPrevious( void )
 	return m_pprevious;
 }
 
-
-
 void CPathTrack::SetPrevious( CPathTrack *pprev )
 {
 	// Only set previous if this isn't my alternate path
 	if ( pprev && !FStrEq( STRING(pprev->pev->targetname), STRING(m_altName) ) )
 		m_pprevious = pprev;
 }
-
 
 // Assumes this is ALWAYS enabled
 CPathTrack *CPathTrack :: LookAhead( Vector *origin, float dist, int move )
@@ -364,7 +354,6 @@ CPathTrack *CPathTrack :: LookAhead( Vector *origin, float dist, int move )
 
 	return pcurrent;
 }
-
 	
 // Assumes this is ALWAYS enabled
 CPathTrack *CPathTrack :: Nearest( Vector origin )
@@ -404,7 +393,6 @@ CPathTrack *CPathTrack :: Nearest( Vector origin )
 	return pnearest;
 }
 
-
 CPathTrack *CPathTrack::Instance( edict_t *pent )
 { 
 	if ( FClassnameIs( pent, "path_track" ) )
@@ -412,8 +400,7 @@ CPathTrack *CPathTrack::Instance( edict_t *pent )
 	return NULL;
 }
 
-
-	// DEBUGGING CODE
+// DEBUGGING CODE
 #if PATH_SPARKLE_DEBUG
 void CPathTrack :: Sparkle( void )
 {
@@ -425,4 +412,3 @@ void CPathTrack :: Sparkle( void )
 		UTIL_ParticleEffect(pev->origin, Vector(0,0,100), 84, 10);
 }
 #endif
-

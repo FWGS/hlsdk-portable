@@ -20,7 +20,7 @@ typedef	enum
 
 	BULLET_MONSTER_9MM,
 	BULLET_MONSTER_MP5,
-	BULLET_MONSTER_12MM,
+	BULLET_MONSTER_12MM
 } Bullet;
 
 enum glock_e {
@@ -58,7 +58,7 @@ enum mp5_e
 	MP5_DEPLOY,
 	MP5_FIRE1,
 	MP5_FIRE2,
-	MP5_FIRE3,
+	MP5_FIRE3
 };
 
 enum python_e {

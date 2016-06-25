@@ -13,7 +13,6 @@
 *
 ****/
 
-
 #include	"extdll.h"
 #include	"util.h"
 #include	"cbase.h"
@@ -22,11 +21,9 @@
 #include	"nodes.h"
 #include	"talkmonster.h"
 
-
 float	CTalkMonster::g_talkWaitTime = 0;		// time delay until it's ok to speak: used so that two NPCs don't talk at once
 
 /*********************************************************/
-
 
 CGraph	WorldGraph;
 void CGraph :: InitGraph( void ) { }
@@ -37,14 +34,11 @@ int CGraph :: FSetGraphPointers ( void ) { return 0; }
 void CGraph :: ShowNodeConnections ( int iNode ) { }
 int	CGraph :: FindNearestNode ( const Vector &vecOrigin,  int afNodeTypes ) { return 0; }
 
-
 /*********************************************************/
-
 
 void	CBaseMonster :: ReportAIState( void ) { }
 float 	CBaseMonster :: ChangeYaw ( int speed ) { return 0; }
 void	CBaseMonster :: MakeIdealYaw( Vector vecTarget ) { }
-
 
 void CBaseMonster::CorpseFallThink( void )
 {
@@ -58,6 +52,7 @@ void CBaseMonster::CorpseFallThink( void )
 	else
 		pev->nextthink = gpGlobals->time + 0.1;
 }
+
 // Call after animation/pose is set up
 void CBaseMonster :: MonsterInitDead( void )
 {
@@ -82,7 +77,6 @@ void CBaseMonster :: MonsterInitDead( void )
 	SetThink( &CorpseFallThink );
 	pev->nextthink = gpGlobals->time + 0.5;
 }
-
 
 BOOL	CBaseMonster :: ShouldFadeOnDeath( void ) 
 { 
@@ -121,7 +115,6 @@ int CBaseMonster::IRelationship ( CBaseEntity *pTarget )
 
 	return iEnemy[ Classify() ][ pTarget->Classify() ];
 }
-
 
 //=========================================================
 // Look - Base class monster function to find enemies or 
@@ -204,7 +197,6 @@ void CBaseMonster :: Look ( int iDistance )
 	
 	SetConditions( iSighted );
 }
-
 
 //=========================================================
 // BestVisibleEnemy - this functions searches the link

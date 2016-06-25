@@ -51,7 +51,6 @@ public:
 	string_t m_iszMonsterClassname;// classname of the monster(s) that will be created.
 	
 	int	 m_cNumMonsters;// max number of monsters this ent can create
-
 	
 	int  m_cLiveChildren;// how many monsters made by this monster maker that are currently alive
 	int	 m_iMaxLiveChildren;// max number of monsters that this maker may have out at one time.
@@ -62,9 +61,9 @@ public:
 	BOOL m_fFadeChildren;// should we make the children fadeout?
 };
 
-LINK_ENTITY_TO_CLASS( monstermaker, CMonsterMaker );
+LINK_ENTITY_TO_CLASS( monstermaker, CMonsterMaker )
 
-TYPEDESCRIPTION	CMonsterMaker::m_SaveData[] = 
+TYPEDESCRIPTION	CMonsterMaker::m_SaveData[] =
 {
 	DEFINE_FIELD( CMonsterMaker, m_iszMonsterClassname, FIELD_STRING ),
 	DEFINE_FIELD( CMonsterMaker, m_cNumMonsters, FIELD_INTEGER ),
@@ -75,12 +74,10 @@ TYPEDESCRIPTION	CMonsterMaker::m_SaveData[] =
 	DEFINE_FIELD( CMonsterMaker, m_fFadeChildren, FIELD_BOOLEAN ),
 };
 
-
-IMPLEMENT_SAVERESTORE( CMonsterMaker, CBaseMonster );
+IMPLEMENT_SAVERESTORE( CMonsterMaker, CBaseMonster )
 
 void CMonsterMaker :: KeyValue( KeyValueData *pkvd )
 {
-	
 	if ( FStrEq(pkvd->szKeyName, "monstercount") )
 	{
 		m_cNumMonsters = atoi(pkvd->szValue);
@@ -100,7 +97,6 @@ void CMonsterMaker :: KeyValue( KeyValueData *pkvd )
 		CBaseMonster::KeyValue( pkvd );
 }
 
-
 void CMonsterMaker :: Spawn( )
 {
 	pev->solid = SOLID_NOT;
@@ -119,21 +115,24 @@ void CMonsterMaker :: Spawn( )
 		}
 
 		if ( FBitSet ( pev->spawnflags, SF_MONSTERMAKER_START_ON ) )
-		{// start making monsters as soon as monstermaker spawns
+		{
+			// start making monsters as soon as monstermaker spawns
 			m_fActive = TRUE;
 			SetThink( &CMonsterMaker::MakerThink );
 		}
 		else
-		{// wait to be activated.
+		{
+			// wait to be activated.
 			m_fActive = FALSE;
 			SetThink( &CBaseEntity::SUB_DoNothing );
 		}
 	}
 	else
-	{// no targetname, just start.
-			pev->nextthink = gpGlobals->time + m_flDelay;
-			m_fActive = TRUE;
-			SetThink( &CMonsterMaker::MakerThink );
+	{
+		// no targetname, just start.
+		pev->nextthink = gpGlobals->time + m_flDelay;
+		m_fActive = TRUE;
+		SetThink( &CMonsterMaker::MakerThink );
 	}
 
 	if ( m_cNumMonsters == 1 )
@@ -164,7 +163,8 @@ void CMonsterMaker::MakeMonster( void )
 	entvars_t		*pevCreate;
 
 	if ( m_iMaxLiveChildren > 0 && m_cLiveChildren >= m_iMaxLiveChildren )
-	{// not allowed to make a new one yet. Too many live ones out right now.
+	{
+		// not allowed to make a new one yet. Too many live ones out right now.
 		return;
 	}
 
@@ -275,7 +275,6 @@ void CMonsterMaker :: MakerThink ( void )
 	MakeMonster();
 }
 
-
 //=========================================================
 //=========================================================
 void CMonsterMaker :: DeathNotice ( entvars_t *pevChild )
@@ -288,5 +287,3 @@ void CMonsterMaker :: DeathNotice ( entvars_t *pevChild )
 		pevChild->owner = NULL;
 	}
 }
-
-

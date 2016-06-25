@@ -22,7 +22,7 @@
 #include <string.h>
 #include <stdio.h>
 
-DECLARE_MESSAGE( m_DeathNotice, DeathMsg );
+DECLARE_MESSAGE( m_DeathNotice, DeathMsg )
 
 struct DeathNoticeItem {
 	char szKiller[MAX_PLAYER_NAME_LENGTH*2];

@@ -53,9 +53,9 @@ public:
 	int m_fControl;
 };
 
-LINK_ENTITY_TO_CLASS( func_mortar_field, CFuncMortarField );
+LINK_ENTITY_TO_CLASS( func_mortar_field, CFuncMortarField )
 
-TYPEDESCRIPTION	CFuncMortarField::m_SaveData[] = 
+TYPEDESCRIPTION	CFuncMortarField::m_SaveData[] =
 {
 	DEFINE_FIELD( CFuncMortarField, m_iszXController, FIELD_STRING ),
 	DEFINE_FIELD( CFuncMortarField, m_iszYController, FIELD_STRING ),
@@ -65,8 +65,7 @@ TYPEDESCRIPTION	CFuncMortarField::m_SaveData[] =
 	DEFINE_FIELD( CFuncMortarField, m_fControl, FIELD_INTEGER ),
 };
 
-IMPLEMENT_SAVERESTORE( CFuncMortarField, CBaseToggle );
-
+IMPLEMENT_SAVERESTORE( CFuncMortarField, CBaseToggle )
 
 void CFuncMortarField :: KeyValue( KeyValueData *pkvd )
 {
@@ -97,7 +96,6 @@ void CFuncMortarField :: KeyValue( KeyValueData *pkvd )
 	}
 }
 
-
 // Drop bombs from above
 void CFuncMortarField :: Spawn( void )
 {
@@ -109,14 +107,12 @@ void CFuncMortarField :: Spawn( void )
 	Precache();
 }
 
-
 void CFuncMortarField :: Precache( void )
 {
 	PRECACHE_SOUND ("weapons/mortar.wav");
 	PRECACHE_SOUND ("weapons/mortarhit.wav");
 	PRECACHE_MODEL( "sprites/lgtning.spr" );
 }
-
 
 // If connected to a table, then use the table controllers, else hit where the trigger is.
 void CFuncMortarField :: FieldUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
@@ -188,7 +184,6 @@ void CFuncMortarField :: FieldUse( CBaseEntity *pActivator, CBaseEntity *pCaller
 	}
 }
 
-
 class CMortar : public CGrenade
 {
 public:
@@ -200,7 +195,7 @@ public:
 	int m_spriteTexture;
 };
 
-LINK_ENTITY_TO_CLASS( monster_mortar, CMortar );
+LINK_ENTITY_TO_CLASS( monster_mortar, CMortar )
 
 void CMortar::Spawn( )
 {
@@ -213,10 +208,7 @@ void CMortar::Spawn( )
 	pev->nextthink = 0;
 
 	Precache( );
-
-
 }
-
 
 void CMortar::Precache( )
 {
@@ -278,7 +270,6 @@ void CMortar::MortarExplode( void )
 
 	Explode( &tr, DMG_BLAST | DMG_MORTAR );
 	UTIL_ScreenShake( tr.vecEndPos, 25.0, 150.0, 1.0, 750 );
-
 #if 0
 	int pitch = RANDOM_LONG(95,124);
 	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "weapons/mortarhit.wav", 1.0, 0.55, 0, pitch);
@@ -303,9 +294,7 @@ void CMortar::MortarExplode( void )
 	SetThink( &SUB_Remove );
 	pev->nextthink = gpGlobals->time + 0.1;
 #endif
-
 }
-
 
 #if 0
 void CMortar::ShootTimed( EVARS *pevOwner, Vector vecStart, float time )

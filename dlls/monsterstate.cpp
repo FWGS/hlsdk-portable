@@ -37,13 +37,11 @@ void CBaseMonster :: SetState ( MONSTERSTATE State )
 		ALERT ( at_aiconsole, "State Changed to %d\n", State );
 	}
 */
-	
 	switch( State )
 	{
-	
+
 	// Drop enemy pointers when going to idle
 	case MONSTERSTATE_IDLE:
-
 		if ( m_hEnemy != NULL )
 		{
 			m_hEnemy = NULL;// not allowed to have an enemy anymore.
@@ -128,7 +126,6 @@ MONSTERSTATE CBaseMonster :: GetIdealState ( void )
 	switch ( m_MonsterState )
 	{
 	case MONSTERSTATE_IDLE:
-		
 		/*
 		IDLE goes to ALERT upon hearing a sound
 		-IDLE goes to ALERT upon being injured
@@ -225,7 +222,6 @@ MONSTERSTATE CBaseMonster :: GetIdealState ( void )
 			ExitScriptedSequence();	// This will set the ideal state
 		}
 		break;
-
 	case MONSTERSTATE_DEAD:
 		m_IdealMonsterState = MONSTERSTATE_DEAD;
 		break;
@@ -235,4 +231,3 @@ MONSTERSTATE CBaseMonster :: GetIdealState ( void )
 
 	return m_IdealMonsterState;
 }
-

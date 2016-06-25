@@ -142,7 +142,8 @@ public:
 	int m_iaCustomAnglesX[10];
 	int m_iaCustomAnglesZ[10];
 };
-LINK_ENTITY_TO_CLASS(prop, CProp);
+
+LINK_ENTITY_TO_CLASS(prop, CProp)
 
 const char *CProp::pSoundsWood[] =
 {
@@ -174,7 +175,6 @@ const char *CProp::pSoundsConcrete[] =
 	"debris/concrete2.wav",
 	"debris/concrete3.wav",
 };
-
 
 const char *CProp::pSoundsGlass[] =
 {
@@ -208,14 +208,11 @@ const char **CProp::MaterialSoundList( Materials precacheMaterial, int &soundCou
 		pSoundList = pSoundsMetal;
 		soundCount = ARRAYSIZE(pSoundsMetal);
 		break;
-
 	case matCinderBlock:
 	case matRocks:
 		pSoundList = pSoundsConcrete;
 		soundCount = ARRAYSIZE(pSoundsConcrete);
 		break;
-
-
 	case matCeilingTile:
 	case matNone:
 	default:
@@ -279,7 +276,6 @@ void CProp::Precache( void )
 		PRECACHE_SOUND("debris/bustmetal1.wav");
 		PRECACHE_SOUND("debris/bustmetal2.wav");
 		break;
-
 	case matUnbreakableGlass:
 	case matGlass:
 		pGibName = "models/glassgibs.mdl";
@@ -327,8 +323,8 @@ void CProp::DamageSound( void )
 	int i;
 	int material = m_Material;
 
-//	if (RANDOM_LONG(0,1))
-//		return;
+	//if (RANDOM_LONG(0,1))
+	//	return;
 
 	if (RANDOM_LONG(0,2))
 		pitch = PITCH_NORM;
@@ -350,21 +346,18 @@ void CProp::DamageSound( void )
 		rgpsz[2] = "debris/glass3.wav";
 		i = 3;
 		break;
-
 	case matWood:
 		rgpsz[0] = "debris/wood1.wav";
 		rgpsz[1] = "debris/wood2.wav";
 		rgpsz[2] = "debris/wood3.wav";
 		i = 3;
 		break;
-
 	case matMetal:
 		rgpsz[0] = "debris/metal1.wav";
 		rgpsz[1] = "debris/metal3.wav";
 		rgpsz[2] = "debris/metal2.wav";
 		i = 2;
 		break;
-
 	case matFlesh:
 		rgpsz[0] = "debris/flesh1.wav";
 		rgpsz[1] = "debris/flesh2.wav";
@@ -374,7 +367,6 @@ void CProp::DamageSound( void )
 		rgpsz[5] = "debris/flesh7.wav";
 		i = 6;
 		break;
-
 	case matRocks:
 	case matCinderBlock:
 		rgpsz[0] = "debris/concrete1.wav";
@@ -382,7 +374,6 @@ void CProp::DamageSound( void )
 		rgpsz[2] = "debris/concrete3.wav";
 		i = 3;
 		break;
-
 	case matCeilingTile:
 		// UNDONE: no ceiling tile shard sound yet
 		i = 0;
@@ -414,7 +405,6 @@ void CProp::Die( void )
 	if (fvol > 1.0)
 		fvol = 1.0;
 
-
 	switch (m_Material)
 	{
 	case matGlass:
@@ -427,7 +417,6 @@ void CProp::Die( void )
 		}
 		cFlag = BREAK_GLASS;
 		break;
-
 	case matWood:
 		switch ( RANDOM_LONG(0,1) )
 		{
@@ -438,7 +427,6 @@ void CProp::Die( void )
 		}
 		cFlag = BREAK_WOOD;
 		break;
-
 	case matComputer:
 	case matMetal:
 		switch ( RANDOM_LONG(0,1) )
@@ -450,7 +438,6 @@ void CProp::Die( void )
 		}
 		cFlag = BREAK_METAL;
 		break;
-
 	case matFlesh:
 		switch ( RANDOM_LONG(0,1) )
 		{
@@ -461,7 +448,6 @@ void CProp::Die( void )
 		}
 		cFlag = BREAK_FLESH;
 		break;
-
 	case matRocks:
 	case matCinderBlock:
 		switch ( RANDOM_LONG(0,1) )
@@ -473,12 +459,10 @@ void CProp::Die( void )
 		}
 		cFlag = BREAK_CONCRETE;
 		break;
-
 	case matCeilingTile:
 		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "debris/bustceiling.wav", fvol, ATTN_NORM, 0, pitch);
 		break;
 	}
-
 
 	if (m_Explosion == expDirected)
 		vecVelocity = g_vecAttackDir * 200;
@@ -553,6 +537,7 @@ void CProp::Die( void )
 	pev->targetname = 0;
 
 	pev->solid = SOLID_NOT;
+
 	// Fire targets on break
 	SUB_UseTargets( NULL, USE_TOGGLE, 0 );
 
@@ -598,7 +583,6 @@ void CProp::Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType,
 			if ( m_pHolstered->m_pActiveItem )
 			{
 				CBasePlayerWeapon *weapon = (CBasePlayerWeapon *) m_pHolstered->m_pActiveItem->GetWeaponPtr();
-
 
 				//m_Holstered->m_pActiveItem->Holster(); // strange bug here. ValveWHY?
 
@@ -795,7 +779,6 @@ void CProp::BounceTouch(CBaseEntity *pOther)
 		CheckRotate();
 		if (m_shape == SHAPE_CYL_H)
 		{
-
 			pev->velocity.x *= fabs(dp) * 0.8 + 0.2;
 			pev->velocity.y *= fabs(dp) * 0.8 + 0.2;
 			pev->velocity.z -= 20;
@@ -831,7 +814,6 @@ void CProp::BounceTouch(CBaseEntity *pOther)
 			pev->velocity.y *= m_flFloorFriction;
 			pev->velocity.z -= 10;
 		}
-
 	}
 	else
 	{
@@ -874,7 +856,6 @@ void CProp::BounceSound(void)
 
 void CProp::Spawn(void)
 {
-
 	Precache();
 
 	if( minsH == g_vecZero )
@@ -932,8 +913,6 @@ void CProp::RespawnThink()
 	}
 	PropRespawn();
 }
-
-
 
 void CProp::AngleThink()
 {
@@ -1059,7 +1038,6 @@ int CProp::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flD
 	ALERT(at_console, "Takedmg: %s %s %f %f\n", STRING(pevInflictor->classname), STRING(pevAttacker->classname), flDamage, pev->health );
 
 	// now some func_breakable code
-
 	if ( !(pev->spawnflags & SF_PROP_BREAKABLE ) )
 		return 0;
 	if ( pev->health <= 0 )
@@ -1085,10 +1063,10 @@ int CProp::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flD
 
 	// Make a shard noise each time func breakable is hit.
 	// Don't play shard noise if cbreakable actually died.
-
 	DamageSound();
 	return 1;
 }
+
 void CProp::KeyValue( KeyValueData* pkvd )
 {
 	ALERT( at_console, "%s %s\n", pkvd->szKeyName, pkvd->szValue);

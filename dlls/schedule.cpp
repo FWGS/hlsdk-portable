@@ -16,6 +16,7 @@
 // schedule.cpp - functions and data pertaining to the 
 // monsters' AI scheduling system.
 //=========================================================
+
 #include "extdll.h"
 #include "util.h"
 #include "cbase.h"
@@ -60,7 +61,7 @@ void CBaseMonster :: ClearSchedule( void )
 BOOL CBaseMonster :: FScheduleDone ( void )
 {
 	ASSERT( m_pSchedule != NULL );
-	
+
 	if ( m_iScheduleIndex == m_pSchedule->cTasks )
 	{
 		return TRUE;
@@ -106,7 +107,7 @@ void CBaseMonster :: ChangeSchedule ( Schedule_t *pNewSchedule )
 	if ( FClassnameIs( pev, "monster_human_grunt" ) )
 	{
 		Task_t *pTask = GetTask();
-		
+
 		if ( pTask )
 		{
 			const char *pName = NULL;
@@ -119,7 +120,7 @@ void CBaseMonster :: ChangeSchedule ( Schedule_t *pNewSchedule )
 			{
 				pName = "No Schedule";
 			}
-			
+
 			if ( !pName )
 			{
 				pName = "Unknown";
@@ -129,7 +130,6 @@ void CBaseMonster :: ChangeSchedule ( Schedule_t *pNewSchedule )
 		}
 	}
 #endif// 0
-
 }
 
 //=========================================================
@@ -161,7 +161,7 @@ int CBaseMonster :: IScheduleFlags ( void )
 	{
 		return 0;
 	}
-	
+
 	// strip off all bits excepts the ones capable of breaking this schedule.
 	return m_afConditions & m_pSchedule->iInterruptMask;
 }
@@ -192,7 +192,6 @@ BOOL CBaseMonster :: FScheduleValid ( void )
 			UTIL_Sparks( tmp );
 		}
 #endif // DEBUG
-
 		// some condition has interrupted the schedule, or the schedule is done
 		return FALSE;
 	}
@@ -218,7 +217,7 @@ void CBaseMonster :: MaintainSchedule ( void )
 			NextScheduledTask();                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
 		}
 
-	// validate existing schedule 
+		// validate existing schedule 
 		if ( !FScheduleValid() || m_MonsterState != m_IdealMonsterState )
 		{
 			// if we come into this block of code, the schedule is going to have to be changed.
@@ -250,6 +249,7 @@ void CBaseMonster :: MaintainSchedule ( void )
 					pNewSchedule = GetScheduleOfType( m_failSchedule );
 				else
 					pNewSchedule = GetScheduleOfType( SCHED_FAIL );
+
 				// schedule was invalid because the current task failed to start or complete
 				ALERT ( at_aiconsole, "Schedule Failed at %d!\n", m_iScheduleIndex );
 				ChangeSchedule( pNewSchedule );
@@ -278,7 +278,7 @@ void CBaseMonster :: MaintainSchedule ( void )
 		{
 			SetActivity ( m_IdealActivity );
 		}
-		
+
 		if ( !TaskIsComplete() && m_iTaskStatus != TASKSTATUS_NEW )
 			break;
 	}
@@ -317,7 +317,6 @@ void CBaseMonster :: RunTask ( Task_t *pTask )
 			}
 			break;
 		}
-
 	case TASK_PLAY_SEQUENCE_FACE_ENEMY:
 	case TASK_PLAY_SEQUENCE_FACE_TARGET:
 		{
@@ -336,7 +335,6 @@ void CBaseMonster :: RunTask ( Task_t *pTask )
 				TaskComplete();
 		}
 		break;
-
 	case TASK_PLAY_SEQUENCE:
 	case TASK_PLAY_ACTIVE_IDLE:
 		{
@@ -346,8 +344,6 @@ void CBaseMonster :: RunTask ( Task_t *pTask )
 			}
 			break;
 		}
-
-
 	case TASK_FACE_ENEMY:
 		{
 			MakeIdealYaw( m_vecEnemyLKP );
@@ -416,6 +412,7 @@ void CBaseMonster :: RunTask ( Task_t *pTask )
 			else
 			{
 				distance = ( m_vecMoveGoal - pev->origin ).Length2D();
+
 				// Re-evaluate when you think your finished, or the target has moved too far
 				if ( (distance < pTask->flData) || (m_vecMoveGoal - m_hTargetEnt->pev->origin).Length() > pTask->flData * 0.5 )
 				{
@@ -436,7 +433,6 @@ void CBaseMonster :: RunTask ( Task_t *pTask )
 				else if ( distance >= 270 && m_movementActivity != ACT_RUN )
 					m_movementActivity = ACT_RUN;
 			}
-
 			break;
 		}
 	case TASK_WAIT_FOR_MOVEMENT:
@@ -453,7 +449,7 @@ void CBaseMonster :: RunTask ( Task_t *pTask )
 			if ( m_fSequenceFinished && pev->frame >= 255 )
 			{
 				pev->deadflag = DEAD_DEAD;
-				
+
 				SetThink( NULL );
 				StopAnimation();
 
@@ -461,7 +457,7 @@ void CBaseMonster :: RunTask ( Task_t *pTask )
 				{
 					// a bit of a hack. If a corpses' bbox is positioned such that being left solid so that it can be attacked will
 					// block the player on a slope or stairs, the corpse is made nonsolid. 
-//					pev->solid = SOLID_NOT;
+					//pev->solid = SOLID_NOT;
 					UTIL_SetSize ( pev, Vector ( -4, -4, 0 ), Vector ( 4, 4, 1 ) );
 				}
 				else // !!!HACKHACK - put monster in a thin, wide bounding box until we fix the solid type/bounding volume problem
@@ -554,11 +550,13 @@ void CBaseMonster :: SetTurnActivity ( void )
 	flYD = FlYawDiff();
 
 	if ( flYD <= -45 && LookupActivity ( ACT_TURN_RIGHT ) != ACTIVITY_NOT_AVAILABLE )
-	{// big right turn
+	{
+		// big right turn
 		m_IdealActivity = ACT_TURN_RIGHT;
 	}
 	else if ( flYD > 45 && LookupActivity ( ACT_TURN_LEFT ) != ACTIVITY_NOT_AVAILABLE )
-	{// big left turn
+	{
+		// big left turn
 		m_IdealActivity = ACT_TURN_LEFT;
 	}
 }
@@ -575,7 +573,7 @@ void CBaseMonster :: StartTask ( Task_t *pTask )
 	case TASK_TURN_RIGHT:
 		{
 			float flCurrentYaw;
-			
+
 			flCurrentYaw = UTIL_AngleMod( pev->angles.y );
 			pev->ideal_yaw = UTIL_AngleMod( flCurrentYaw - pTask->flData );
 			SetTurnActivity();
@@ -584,7 +582,7 @@ void CBaseMonster :: StartTask ( Task_t *pTask )
 	case TASK_TURN_LEFT:
 		{
 			float flCurrentYaw;
-			
+
 			flCurrentYaw = UTIL_AngleMod( pev->angles.y );
 			pev->ideal_yaw = UTIL_AngleMod( flCurrentYaw + pTask->flData );
 			SetTurnActivity();
@@ -673,7 +671,6 @@ void CBaseMonster :: StartTask ( Task_t *pTask )
 			{
 				TaskFail();
 			}
-
 			break;
 		}
 	case TASK_FIND_NEAR_NODE_COVER_FROM_ENEMY:
@@ -744,8 +741,8 @@ void CBaseMonster :: StartTask ( Task_t *pTask )
 			{
 				// Find cover from self if no enemy available
 				pevCover = pev;
-//				TaskFail();
-//				return;
+				//TaskFail();
+				//return;
 			}
 			else
 				pevCover = m_hEnemy->pev;
@@ -819,12 +816,10 @@ void CBaseMonster :: StartTask ( Task_t *pTask )
 			SetTurnActivity();
 			break;
 		}
-	
 	case TASK_FACE_LASTPOSITION:
 		MakeIdealYaw ( m_vecLastPosition );
 		SetTurnActivity(); 
 		break;
-
 	case TASK_FACE_TARGET:
 		if ( m_hTargetEnt != NULL )
 		{
@@ -867,12 +862,14 @@ void CBaseMonster :: StartTask ( Task_t *pTask )
 		}
 	case TASK_WAIT:
 	case TASK_WAIT_FACE_ENEMY:
-		{// set a future time that tells us when the wait is over.
+		{
+			// set a future time that tells us when the wait is over.
 			m_flWaitFinished = gpGlobals->time + pTask->flData;	
 			break;
 		}
 	case TASK_WAIT_RANDOM:
-		{// set a future time that tells us when the wait is over.
+		{
+			// set a future time that tells us when the wait is over.
 			m_flWaitFinished = gpGlobals->time + RANDOM_FLOAT( 0.1, pTask->flData );
 			break;
 		}
@@ -901,6 +898,7 @@ void CBaseMonster :: StartTask ( Task_t *pTask )
 					newActivity = ACT_WALK;
 				else
 					newActivity = ACT_RUN;
+
 				// This monster can't do this!
 				if ( LookupActivity( newActivity ) == ACTIVITY_NOT_AVAILABLE )
 					TaskComplete();
@@ -1042,7 +1040,6 @@ void CBaseMonster :: StartTask ( Task_t *pTask )
 			}
 			break;
 		}
-
 	case TASK_GET_PATH_TO_TARGET:
 		{
 			RouteClear();
@@ -1106,7 +1103,7 @@ void CBaseMonster :: StartTask ( Task_t *pTask )
 			}
 			break;
 		}
-case TASK_GET_PATH_TO_BESTSCENT:
+	case TASK_GET_PATH_TO_BESTSCENT:
 		{
 			CSound *pScent;
 
@@ -1120,7 +1117,7 @@ case TASK_GET_PATH_TO_BESTSCENT:
 			{
 				// no way to get there =(
 				ALERT ( at_aiconsole, "GetPathToBestScent failed!!\n" );
-				
+
 				TaskFail();
 			}
 			break;
@@ -1180,8 +1177,6 @@ case TASK_GET_PATH_TO_BESTSCENT:
 			TaskComplete();
 			break;
 		}
-
-
 	case TASK_WAIT_FOR_MOVEMENT:
 		{
 			if (FRouteClear())
@@ -1190,7 +1185,6 @@ case TASK_GET_PATH_TO_BESTSCENT:
 			}
 			break;
 		}
-
 	case TASK_EAT:
 		{
 			Eat( pTask->flData );
@@ -1205,7 +1199,7 @@ case TASK_GET_PATH_TO_BESTSCENT:
 	case TASK_DIE:
 		{
 			RouteClear();	
-			
+
 			m_IdealActivity = GetDeathActivity();
 
 			pev->deadflag = DEAD_DYING;
@@ -1260,7 +1254,6 @@ case TASK_GET_PATH_TO_BESTSCENT:
 			}
 			else
 				m_IdealActivity = ACT_IDLE;
-
 			break;
 		}
 	case TASK_PLAY_SCRIPT:
@@ -1298,24 +1291,20 @@ case TASK_GET_PATH_TO_BESTSCENT:
 			RouteClear();
 			break;
 		}
-
 	case TASK_SUGGEST_STATE:
 		{
 			m_IdealMonsterState = (MONSTERSTATE)(int)pTask->flData;
 			TaskComplete();
 			break;
 		}
-
 	case TASK_SET_FAIL_SCHEDULE:
 		m_failSchedule = (int)pTask->flData;
 		TaskComplete();
 		break;
-
 	case TASK_CLEAR_FAIL_SCHEDULE:
 		m_failSchedule = SCHED_NONE;
 		TaskComplete();
 		break;
-
 	default:
 		{
 			ALERT ( at_aiconsole, "No StartTask entry for %d\n", (SHARED_TASKS)pTask->iTask );
@@ -1397,7 +1386,6 @@ Schedule_t *CBaseMonster :: GetSchedule ( void )
 					return GetScheduleOfType( SCHED_ALERT_SMALL_FLINCH );
 				}
 			}
-
 			else if ( HasConditions ( bits_COND_HEAR_SOUND ) )
 			{
 				return GetScheduleOfType( SCHED_ALERT_FACE );

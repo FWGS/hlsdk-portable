@@ -8,6 +8,7 @@
 //=========================================================
 // playermonster - for scripted sequence use.
 //=========================================================
+
 #include	"extdll.h"
 #include	"util.h"
 #include	"cbase.h"
@@ -31,13 +32,14 @@ public:
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
 	int ISoundMask ( void );
 };
-LINK_ENTITY_TO_CLASS( monster_player, CPlayerMonster );
+
+LINK_ENTITY_TO_CLASS( monster_player, CPlayerMonster )
 
 //=========================================================
 // Classify - indicates this monster's place in the 
 // relationship table.
 //=========================================================
-int	CPlayerMonster :: Classify ( void )
+int CPlayerMonster :: Classify ( void )
 {
 	return	CLASS_PLAYER_ALLY;
 }
@@ -99,7 +101,6 @@ void CPlayerMonster :: Spawn()
 	pev->health			= 8;
 	m_flFieldOfView		= 0.5;// indicates the width of this monster's forward view cone ( as a dotproduct result )
 	m_MonsterState		= MONSTERSTATE_NONE;
-
 
 	MonsterInit();
 	if ( pev->spawnflags & SF_MONSTERPLAYER_NOTSOLID )

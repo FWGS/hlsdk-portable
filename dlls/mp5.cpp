@@ -32,14 +32,11 @@ enum mp5_e
 	MP5_DEPLOY,
 	MP5_FIRE1,
 	MP5_FIRE2,
-	MP5_FIRE3,
+	MP5_FIRE3
 };
 
-
-
-LINK_ENTITY_TO_CLASS( weapon_mp5, CMP5 );
-LINK_ENTITY_TO_CLASS( weapon_9mmAR, CMP5 );
-
+LINK_ENTITY_TO_CLASS( weapon_mp5, CMP5 )
+LINK_ENTITY_TO_CLASS( weapon_9mmAR, CMP5 )
 
 //=========================================================
 //=========================================================
@@ -59,7 +56,6 @@ void CMP5::Spawn( )
 
 	FallInit();// get ready to fall down.
 }
-
 
 void CMP5::Precache( void )
 {
@@ -124,7 +120,6 @@ BOOL CMP5::Deploy( )
 	return DefaultDeploy( "models/v_9mmAR.mdl", "models/p_9mmAR.mdl", MP5_DEPLOY, "mp5" );
 }
 
-
 void CMP5::PrimaryAttack()
 {
 	// don't fire underwater
@@ -147,7 +142,6 @@ void CMP5::PrimaryAttack()
 
 	m_iClip--;
 
-
 	m_pPlayer->pev->effects = (int)(m_pPlayer->pev->effects) | EF_MUZZLEFLASH;
 
 	// player "shoot" animation
@@ -156,7 +150,6 @@ void CMP5::PrimaryAttack()
 	Vector vecSrc	 = m_pPlayer->GetGunPosition( );
 	Vector vecAiming = m_pPlayer->GetAutoaimVector( AUTOAIM_5DEGREES );
 	Vector vecDir;
-
 #ifdef CLIENT_DLL
 	if ( !bIsMultiplayer() )
 #else
@@ -172,13 +165,12 @@ void CMP5::PrimaryAttack()
 		vecDir = m_pPlayer->FireBulletsPlayer( 1, vecSrc, vecAiming, VECTOR_CONE_3DEGREES, 8192, BULLET_PLAYER_MP5, 2, 0, m_pPlayer->pev, m_pPlayer->random_seed );
 	}
 
-  int flags;
+	int flags;
 #if defined( CLIENT_WEAPONS )
 	flags = FEV_NOTHOST;
 #else
 	flags = 0;
 #endif
-
 	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usMP5, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, vecDir.x, vecDir.y, 0, 0, 0, 0 );
 
 	if (!m_iClip && m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0)
@@ -192,8 +184,6 @@ void CMP5::PrimaryAttack()
 
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
 }
-
-
 
 void CMP5::SecondaryAttack( void )
 {
@@ -235,7 +225,6 @@ void CMP5::SecondaryAttack( void )
 #else
 	flags = 0;
 #endif
-
 	PLAYBACK_EVENT( flags, m_pPlayer->edict(), m_usMP52 );
 	
 	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 1;
@@ -254,7 +243,6 @@ void CMP5::Reload( void )
 
 	DefaultReload( MP5_MAX_CLIP, MP5_RELOAD, 1.5 );
 }
-
 
 void CMP5::WeaponIdle( void )
 {
@@ -283,8 +271,6 @@ void CMP5::WeaponIdle( void )
 	m_flTimeWeaponIdle = UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 ); // how long till we do this again.
 }
 
-
-
 class CMP5AmmoClip : public CBasePlayerAmmo
 {
 	void Spawn( void )
@@ -308,10 +294,9 @@ class CMP5AmmoClip : public CBasePlayerAmmo
 		return bResult;
 	}
 };
-LINK_ENTITY_TO_CLASS( ammo_mp5clip, CMP5AmmoClip );
-LINK_ENTITY_TO_CLASS( ammo_9mmAR, CMP5AmmoClip );
 
-
+LINK_ENTITY_TO_CLASS( ammo_mp5clip, CMP5AmmoClip )
+LINK_ENTITY_TO_CLASS( ammo_9mmAR, CMP5AmmoClip )
 
 class CMP5Chainammo : public CBasePlayerAmmo
 {
@@ -336,8 +321,8 @@ class CMP5Chainammo : public CBasePlayerAmmo
 		return bResult;
 	}
 };
-LINK_ENTITY_TO_CLASS( ammo_9mmbox, CMP5Chainammo );
 
+LINK_ENTITY_TO_CLASS( ammo_9mmbox, CMP5Chainammo )
 
 class CMP5AmmoGrenade : public CBasePlayerAmmo
 {
@@ -363,23 +348,6 @@ class CMP5AmmoGrenade : public CBasePlayerAmmo
 		return bResult;
 	}
 };
-LINK_ENTITY_TO_CLASS( ammo_mp5grenades, CMP5AmmoGrenade );
-LINK_ENTITY_TO_CLASS( ammo_ARgrenades, CMP5AmmoGrenade );
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+LINK_ENTITY_TO_CLASS( ammo_mp5grenades, CMP5AmmoGrenade )
+LINK_ENTITY_TO_CLASS( ammo_ARgrenades, CMP5AmmoGrenade )

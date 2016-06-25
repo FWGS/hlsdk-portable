@@ -12,6 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
+
 #include "extdll.h"
 #include "util.h"
 #include "cbase.h"
@@ -29,27 +30,24 @@ class CHealthKit : public CItem
 	void Spawn( void );
 	void Precache( void );
 	BOOL MyTouch( CBasePlayer *pPlayer );
-
 /*
 	virtual int		Save( CSave &save ); 
 	virtual int		Restore( CRestore &restore );
 	
 	static	TYPEDESCRIPTION m_SaveData[];
 */
-
 };
 
-
-LINK_ENTITY_TO_CLASS( item_healthkit, CHealthKit );
+LINK_ENTITY_TO_CLASS( item_healthkit, CHealthKit )
 
 /*
-TYPEDESCRIPTION	CHealthKit::m_SaveData[] = 
+TYPEDESCRIPTION	CHealthKit::m_SaveData[] =
 {
 
 };
 
 
-IMPLEMENT_SAVERESTORE( CHealthKit, CItem);
+IMPLEMENT_SAVERESTORE( CHealthKit, CItem)
 */
 
 void CHealthKit :: Spawn( void )
@@ -96,8 +94,6 @@ BOOL CHealthKit::MyTouch( CBasePlayer *pPlayer )
 	return FALSE;
 }
 
-
-
 //-------------------------------------------------------------
 // Wall mounted health kit
 //-------------------------------------------------------------
@@ -132,10 +128,9 @@ TYPEDESCRIPTION CWallHealth::m_SaveData[] =
 	DEFINE_FIELD( CWallHealth, m_flSoundTime, FIELD_TIME),
 };
 
-IMPLEMENT_SAVERESTORE( CWallHealth, CBaseEntity );
+IMPLEMENT_SAVERESTORE( CWallHealth, CBaseEntity )
 
-LINK_ENTITY_TO_CLASS(func_healthcharger, CWallHealth);
-
+LINK_ENTITY_TO_CLASS(func_healthcharger, CWallHealth)
 
 void CWallHealth::KeyValue( KeyValueData *pkvd )
 {
@@ -167,8 +162,7 @@ void CWallHealth::Spawn()
 	UTIL_SetSize(pev, pev->mins, pev->maxs);
 	SET_MODEL(ENT(pev), STRING(pev->model) );
 	m_iJuice = gSkillData.healthchargerCapacity;
-	pev->frame = 0;			
-
+	pev->frame = 0;
 }
 
 void CWallHealth::Precache()
@@ -177,7 +171,6 @@ void CWallHealth::Precache()
 	PRECACHE_SOUND("items/medshotno1.wav");
 	PRECACHE_SOUND("items/medcharge4.wav");
 }
-
 
 void CWallHealth::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 { 
@@ -210,7 +203,6 @@ void CWallHealth::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE u
 	SetThink( &CWallHealth::Off );
 
 	// Time to recharge yet?
-
 	if (m_flNextCharge >= gpGlobals->time)
 		return;
 
@@ -226,7 +218,6 @@ void CWallHealth::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE u
 		m_iOn++;
 		EMIT_SOUND(ENT(pev), CHAN_STATIC, "items/medcharge4.wav", 1.0, ATTN_NORM );
 	}
-
 
 	// charge the player
 	if ( pActivator->TakeHealth( 1, DMG_GENERIC ) )

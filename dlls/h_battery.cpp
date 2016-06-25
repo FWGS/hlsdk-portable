@@ -58,10 +58,9 @@ TYPEDESCRIPTION CRecharge::m_SaveData[] =
 	DEFINE_FIELD( CRecharge, m_flSoundTime, FIELD_TIME ),
 };
 
-IMPLEMENT_SAVERESTORE( CRecharge, CBaseEntity );
+IMPLEMENT_SAVERESTORE( CRecharge, CBaseEntity )
 
-LINK_ENTITY_TO_CLASS(func_recharge, CRecharge);
-
+LINK_ENTITY_TO_CLASS( func_recharge, CRecharge )
 
 void CRecharge::KeyValue( KeyValueData *pkvd )
 {
@@ -102,7 +101,6 @@ void CRecharge::Precache()
 	PRECACHE_SOUND("items/suitchargeno1.wav");
 	PRECACHE_SOUND("items/suitchargeok1.wav");
 }
-
 
 void CRecharge::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 { 
@@ -159,7 +157,6 @@ void CRecharge::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE use
 		m_iOn++;
 		EMIT_SOUND(ENT(pev), CHAN_STATIC, "items/suitcharge1.wav", 0.85, ATTN_NORM );
 	}
-
 
 	// charge the player
 	if (m_hActivator->pev->armorvalue < 100)

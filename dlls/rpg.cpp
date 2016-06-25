@@ -36,14 +36,14 @@ enum rpg_e {
 	RPG_HOLSTER2,	// unloaded
 	RPG_DRAW_UL,	// unloaded
 	RPG_IDLE_UL,	// unloaded idle
-	RPG_FIDGET_UL,	// unloaded fidget
+	RPG_FIDGET_UL	// unloaded fidget
 };
 
-LINK_ENTITY_TO_CLASS( weapon_rpg, CRpg );
+LINK_ENTITY_TO_CLASS( weapon_rpg, CRpg )
 
 #ifndef CLIENT_DLL
 
-LINK_ENTITY_TO_CLASS( laser_spot, CLaserSpot );
+LINK_ENTITY_TO_CLASS( laser_spot, CLaserSpot )
 
 //=========================================================
 //=========================================================
@@ -99,7 +99,7 @@ void CLaserSpot::Precache( void )
 	PRECACHE_MODEL("sprites/laserdot.spr");
 };
 
-LINK_ENTITY_TO_CLASS( rpg_rocket, CRpgRocket );
+LINK_ENTITY_TO_CLASS( rpg_rocket, CRpgRocket )
 
 //=========================================================
 //=========================================================
@@ -204,7 +204,6 @@ void CRpgRocket :: IgniteThink( void  )
 	pev->nextthink = gpGlobals->time + 0.1;
 }
 
-
 void CRpgRocket :: FollowThink( void  )
 {
 	CBaseEntity *pOther = NULL;
@@ -280,8 +279,6 @@ void CRpgRocket :: FollowThink( void  )
 }
 #endif
 
-
-
 void CRpg::Reload( void )
 {
 	int iResult = 0;
@@ -355,7 +352,6 @@ void CRpg::Spawn( )
 	FallInit();// get ready to fall down.
 }
 
-
 void CRpg::Precache( void )
 {
 	PRECACHE_MODEL("models/w_rpg.mdl");
@@ -413,7 +409,6 @@ BOOL CRpg::Deploy( )
 	return DefaultDeploy( "models/v_rpg.mdl", "models/p_rpg.mdl", RPG_DRAW1, "rpg" );
 }
 
-
 BOOL CRpg::CanHolster( void )
 {
 	if ( m_fSpotActive && m_cActiveRockets )
@@ -440,10 +435,7 @@ void CRpg::Holster( int skiplocal /* = 0 */ )
 		m_pSpot = NULL;
 	}
 #endif
-
 }
-
-
 
 void CRpg::PrimaryAttack()
 {
@@ -490,7 +482,6 @@ void CRpg::PrimaryAttack()
 	UpdateSpot( );
 }
 
-
 void CRpg::SecondaryAttack()
 {
 	m_fSpotActive = ! m_fSpotActive;
@@ -502,10 +493,8 @@ void CRpg::SecondaryAttack()
 		m_pSpot = NULL;
 	}
 #endif
-
 	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.2;
 }
-
 
 void CRpg::WeaponIdle( void )
 {
@@ -547,11 +536,8 @@ void CRpg::WeaponIdle( void )
 	}
 }
 
-
-
 void CRpg::UpdateSpot( void )
 {
-
 #ifndef CLIENT_DLL
 	if (m_fSpotActive)
 	{
@@ -570,9 +556,7 @@ void CRpg::UpdateSpot( void )
 		UTIL_SetOrigin( m_pSpot->pev, tr.vecEndPos );
 	}
 #endif
-
 }
-
 
 class CRpgAmmo : public CBasePlayerAmmo
 {
@@ -613,6 +597,6 @@ class CRpgAmmo : public CBasePlayerAmmo
 		return FALSE;
 	}
 };
-LINK_ENTITY_TO_CLASS( ammo_rpgclip, CRpgAmmo );
 
+LINK_ENTITY_TO_CLASS( ammo_rpgclip, CRpgAmmo )
 #endif

@@ -19,7 +19,6 @@
 #include "decals.h"
 #include "gamerules.h"
 
-
 float AmmoDamage( const char *pName )
 {
 	if ( !pName )
@@ -49,7 +48,6 @@ float AmmoDamage( const char *pName )
 	return 0;
 }
 
-
 void UpdateStatsFile( float dataTime, char *pMapname, float health, float ammo, int skillLevel )
 {
 	FILE *fp;
@@ -60,7 +58,6 @@ void UpdateStatsFile( float dataTime, char *pMapname, float health, float ammo, 
 	fprintf( fp, "%6.2f, %6.2f, %6.2f, %s, %2d\n", dataTime, health, ammo, pMapname, skillLevel );
 	fclose( fp );
 }
-
 
 #define AMMO_THRESHOLD		10			// This much ammo goes by before it is "interesting"
 #define HEALTH_THRESHOLD	10			// Same for health
@@ -103,7 +100,7 @@ void UpdateStats( CBasePlayer *pPlayer )
 		while (p)
 		{
 			ItemInfo II;
-			
+
 			memset(&II, 0, sizeof(II));
 			p->GetItemInfo(&II);
 
@@ -153,4 +150,3 @@ void InitStats( CBasePlayer *pPlayer )
 {
 	gStats.lastGameTime = gpGlobals->time;	// Fixup stats time
 }
-

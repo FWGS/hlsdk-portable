@@ -20,10 +20,8 @@
 #include "hud.h"
 #include "cl_util.h"
 #include "parsemsg.h"
-
 #include <string.h>
 #include <stdio.h>
-
 
 #define MAX_MENU_STRING	512
 char g_szMenuString[MAX_MENU_STRING];
@@ -31,7 +29,7 @@ char g_szPrelocalisedMenuString[MAX_MENU_STRING];
 
 int KB_ConvertString( char *in, char **ppout );
 
-DECLARE_MESSAGE( m_Menu, ShowMenu );
+DECLARE_MESSAGE( m_Menu, ShowMenu )
 
 int CHudMenu :: Init( void )
 {

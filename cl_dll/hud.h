@@ -44,7 +44,7 @@ enum
 { 
 	MAX_PLAYERS = 64,
 	MAX_TEAMS = 64,
-	MAX_TEAM_NAME = 16,
+	MAX_TEAM_NAME = 16
 };
 
 typedef struct {
@@ -277,7 +277,7 @@ protected:
 	enum { 
 		MAX_STATUSTEXT_LENGTH = 128,
 		MAX_STATUSBAR_VALUES = 8,
-		MAX_STATUSBAR_LINES = 2,
+		MAX_STATUSBAR_LINES = 2
 	};
 
 	char m_szStatusText[MAX_STATUSBAR_LINES][MAX_STATUSTEXT_LENGTH];  // a text string describing how the status bar is to be drawn
@@ -547,9 +547,8 @@ public:
 
 	enum { 
 		MAX_ICONSPRITENAME_LENGTH = MAX_SPRITE_NAME_LENGTH,
-		MAX_ICONSPRITES = 4,
+		MAX_ICONSPRITES = 4
 	};
-
 	
 	//had to make these public so CHud could access them (to enable concussion icon)
 	//could use a friend declaration instead...
@@ -573,8 +572,6 @@ private:
 //
 //-----------------------------------------------------
 //
-
-
 
 class CHud
 {
@@ -631,7 +628,6 @@ public:
 	{
 		return m_rgrcRects[index];
 	}
-
 	
 	int GetSpriteIndex( const char *SpriteName );	// gets a sprite index, for use in the m_rghSprites[] array
 
@@ -652,7 +648,6 @@ public:
 	CHudStatusIcons m_StatusIcons;
 	CHudScoreboard	m_Scoreboard;
 	CHudMOTD	m_MOTD;
-
 
 	void Init( void );
 	void VidInit( void );
@@ -690,7 +685,6 @@ public:
 	float GetSensitivity();
 
 };
-
 
 extern CHud gHUD;
 

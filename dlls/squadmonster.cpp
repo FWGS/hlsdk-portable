@@ -15,6 +15,7 @@
 //=========================================================
 // Squadmonster  functions
 //=========================================================
+
 #include "extdll.h"
 #include "util.h"
 #include "cbase.h"
@@ -28,7 +29,7 @@
 //=========================================================
 // Save/Restore
 //=========================================================
-TYPEDESCRIPTION	CSquadMonster::m_SaveData[] = 
+TYPEDESCRIPTION	CSquadMonster::m_SaveData[] =
 {
 	DEFINE_FIELD( CSquadMonster, m_hSquadLeader, FIELD_EHANDLE ),
 	DEFINE_ARRAY( CSquadMonster, m_hSquadMember, FIELD_EHANDLE, MAX_SQUAD_MEMBERS - 1 ),
@@ -38,12 +39,9 @@ TYPEDESCRIPTION	CSquadMonster::m_SaveData[] =
 	DEFINE_FIELD( CSquadMonster, m_flLastEnemySightTime, FIELD_TIME ),
 
 	DEFINE_FIELD( CSquadMonster, m_iMySlot, FIELD_INTEGER ),
-
-
 };
 
-IMPLEMENT_SAVERESTORE( CSquadMonster, CBaseMonster );
-
+IMPLEMENT_SAVERESTORE( CSquadMonster, CBaseMonster )
 
 //=========================================================
 // OccupySlot - if any slots of the passed slots are 
@@ -89,7 +87,7 @@ BOOL CSquadMonster :: OccupySlot( int iDesiredSlots )
 				// No, use this bit
 				pSquadLeader->m_afSquadSlots |= iMask;
 				m_iMySlot = iMask;
-//				ALERT ( at_aiconsole, "Took slot %d - %d\n", i, m_hSquadLeader->m_afSquadSlots );
+				//ALERT ( at_aiconsole, "Took slot %d - %d\n", i, m_hSquadLeader->m_afSquadSlots );
 				return TRUE;
 			}
 		}
@@ -105,7 +103,7 @@ void CSquadMonster :: VacateSlot()
 {
 	if ( m_iMySlot != bits_NO_SLOT && InSquad() )
 	{
-//		ALERT ( at_aiconsole, "Vacated Slot %d - %d\n", m_iMySlot, m_hSquadLeader->m_afSquadSlots );
+		//ALERT ( at_aiconsole, "Vacated Slot %d - %d\n", m_iMySlot, m_hSquadLeader->m_afSquadSlots );
 		MySquadLeader()->m_afSquadSlots &= ~m_iMySlot;
 		m_iMySlot = bits_NO_SLOT;
 	}
@@ -205,7 +203,6 @@ BOOL CSquadMonster :: SquadAdd( CSquadMonster *pAdd )
 	// should complain here
 }
 
-
 //=========================================================
 // 
 // SquadPasteEnemyInfo - called by squad members that have
@@ -275,7 +272,6 @@ void CSquadMonster :: SquadMakeEnemy ( CBaseEntity *pEnemy )
 	}
 }
 
-
 //=========================================================
 //
 // SquadCount(), return the number of members of this squad
@@ -298,7 +294,6 @@ int CSquadMonster :: SquadCount( void )
 	return squadCount;
 }
 
-
 //=========================================================
 //
 // SquadRecruit(), get some monsters of my classification and
@@ -309,7 +304,6 @@ int CSquadMonster :: SquadRecruit( int searchRadius, int maxMembers )
 {
 	int squadCount;
 	int iMyClass = Classify();// cache this monster's class
-
 
 	// Don't recruit if I'm already in a group
 	if ( InSquad() )
@@ -342,7 +336,7 @@ int CSquadMonster :: SquadRecruit( int searchRadius, int maxMembers )
 					squadCount++;
 				}
 			}
-	
+
 			pEntity = UTIL_FindEntityByString( pEntity, "netname", STRING( pev->netname ) );
 		}
 	}
@@ -432,7 +426,7 @@ void CSquadMonster :: StartMonster( void )
 
 		if ( iSquadSize )
 		{
-		  ALERT ( at_aiconsole, "Squad of %d %s formed\n", iSquadSize, STRING( pev->classname ) );
+			ALERT ( at_aiconsole, "Squad of %d %s formed\n", iSquadSize, STRING( pev->classname ) );
 		}
 
 		if ( IsLeader() && FClassnameIs ( pev, "monster_human_grunt" ) )
@@ -440,7 +434,6 @@ void CSquadMonster :: StartMonster( void )
 			SetBodygroup( 1, 1 ); // UNDONE: truly ugly hack
 			pev->skin = 0;
 		}
-
 	}
 }
 
@@ -486,13 +479,11 @@ BOOL CSquadMonster :: NoFriendlyFire( void )
 	leftPlane.InitializePlane ( gpGlobals->v_right, vecLeftSide );
 	rightPlane.InitializePlane ( v_left, vecRightSide );
 	backPlane.InitializePlane ( gpGlobals->v_forward, pev->origin );
-
 /*
 	ALERT ( at_console, "LeftPlane: %f %f %f : %f\n", leftPlane.m_vecNormal.x, leftPlane.m_vecNormal.y, leftPlane.m_vecNormal.z, leftPlane.m_flDist );
 	ALERT ( at_console, "RightPlane: %f %f %f : %f\n", rightPlane.m_vecNormal.x, rightPlane.m_vecNormal.y, rightPlane.m_vecNormal.z, rightPlane.m_flDist );
 	ALERT ( at_console, "BackPlane: %f %f %f : %f\n", backPlane.m_vecNormal.x, backPlane.m_vecNormal.y, backPlane.m_vecNormal.z, backPlane.m_flDist );
 */
-
 	CSquadMonster *pSquadLeader = MySquadLeader();
 	for (int i = 0; i < MAX_SQUAD_MEMBERS; i++)
 	{
@@ -522,7 +513,7 @@ MONSTERSTATE CSquadMonster :: GetIdealState ( void )
 	int	iConditions;
 
 	iConditions = IScheduleFlags();
-	
+
 	// If no schedule conditions, the new ideal state is probably the reason we're in here.
 	switch ( m_MonsterState )
 	{
@@ -605,21 +596,17 @@ BOOL CSquadMonster :: SquadMemberInRange ( const Vector &vecLocation, float flDi
 	return FALSE;
 }
 
-
 extern Schedule_t	slChaseEnemyFailed[];
 
 Schedule_t *CSquadMonster::GetScheduleOfType( int iType )
 {
 	switch ( iType )
 	{
-
 	case SCHED_CHASE_ENEMY_FAILED:
 		{
 			return &slChaseEnemyFailed[ 0 ];
 		}
-	
 	default:
 		return CBaseMonster::GetScheduleOfType( iType );
 	}
 }
-

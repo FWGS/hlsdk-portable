@@ -24,7 +24,6 @@
 #include "hornet.h"
 #include "gamerules.h"
 
-
 enum hgun_e {
 	HGUN_IDLE1 = 0,
 	HGUN_FIDGETSWAY,
@@ -40,8 +39,7 @@ enum firemode_e
 	FIREMODE_FAST
 };
 
-
-LINK_ENTITY_TO_CLASS( weapon_hornetgun, CHgun );
+LINK_ENTITY_TO_CLASS( weapon_hornetgun, CHgun )
 
 BOOL CHgun::IsUseable( void )
 {
@@ -60,7 +58,6 @@ void CHgun::Spawn( )
 	FallInit();// get ready to fall down.
 }
 
-
 void CHgun::Precache( void )
 {
 	PRECACHE_MODEL("models/v_hgun.mdl");
@@ -76,7 +73,6 @@ int CHgun::AddToPlayer( CBasePlayer *pPlayer )
 {
 	if ( CBasePlayerWeapon::AddToPlayer( pPlayer ) )
 	{
-
 #ifndef CLIENT_DLL
 		if ( g_pGameRules->IsMultiplayer() )
 		{
@@ -84,7 +80,6 @@ int CHgun::AddToPlayer( CBasePlayer *pPlayer )
 			pPlayer->m_rgAmmo[ PrimaryAmmoIndex() ] = HORNET_MAX_CARRY;
 		}
 #endif
-
 		MESSAGE_BEGIN( MSG_ONE, gmsgWeapPickup, NULL, pPlayer->pev );
 			WRITE_BYTE( m_iId );
 		MESSAGE_END();
@@ -110,7 +105,6 @@ int CHgun::GetItemInfo(ItemInfo *p)
 	return 1;
 }
 
-
 BOOL CHgun::Deploy( )
 {
 	return DefaultDeploy( "models/v_hgun.mdl", "models/p_hgun.mdl", HGUN_UP, "hive" );
@@ -128,7 +122,6 @@ void CHgun::Holster( int skiplocal /* = 0 */ )
 	}
 }
 
-
 void CHgun::PrimaryAttack()
 {
 	Reload( );
@@ -137,7 +130,6 @@ void CHgun::PrimaryAttack()
 	{
 		return;
 	}
-
 #ifndef CLIENT_DLL
 	UTIL_MakeVectors( m_pPlayer->pev->v_angle );
 
@@ -146,10 +138,8 @@ void CHgun::PrimaryAttack()
 
 	m_flRechargeTime = gpGlobals->time + 0.5;
 #endif
-	
 	m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]--;
 	
-
 	m_pPlayer->m_iWeaponVolume = QUIET_GUN_VOLUME;
 	m_pPlayer->m_iWeaponFlash = DIM_GUN_FLASH;
 
@@ -161,8 +151,6 @@ void CHgun::PrimaryAttack()
 #endif
 
 	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usHornetFire, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, FIREMODE_TRACK, 0, 0, 0 );
-
-	
 
 	// player "shoot" animation
 	m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
@@ -176,8 +164,6 @@ void CHgun::PrimaryAttack()
 
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
 }
-
-
 
 void CHgun::SecondaryAttack( void )
 {
@@ -239,16 +225,13 @@ void CHgun::SecondaryAttack( void )
 
 	m_flRechargeTime = gpGlobals->time + 0.5;
 #endif
-
 	int flags;
 #if defined( CLIENT_WEAPONS )
 	flags = FEV_NOTHOST;
 #else
 	flags = 0;
 #endif
-
 	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usHornetFire, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, FIREMODE_FAST, 0, 0, 0 );
-
 
 	m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]--;
 	m_pPlayer->m_iWeaponVolume = NORMAL_GUN_VOLUME;
@@ -261,7 +244,6 @@ void CHgun::SecondaryAttack( void )
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
 }
 
-
 void CHgun::Reload( void )
 {
 	if (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] >= HORNET_MAX_CARRY)
@@ -273,7 +255,6 @@ void CHgun::Reload( void )
 		m_flRechargeTime += 0.5;
 	}
 }
-
 
 void CHgun::WeaponIdle( void )
 {
@@ -301,5 +282,4 @@ void CHgun::WeaponIdle( void )
 	}
 	SendWeaponAnim( iAnim );
 }
-
 #endif

@@ -37,8 +37,7 @@ public:
 	float		CeilingZ( const Vector &position );
 	float		FloorZ( const Vector &position );
 	BOOL		ProbeZ( const Vector &position, const Vector &probe, float *pFraction );
-	
-	
+
 	// UNDONE:  Save/restore this stuff!!!
 protected:
 	Vector		m_vecTravel;		// Current direction
@@ -47,7 +46,4 @@ protected:
 	float		m_momentum;			// Weight for desired vs. momentum velocity
 	const char	*m_pFlapSound;
 };
-
-
-#endif		//FLYINGMONSTER_H
-
+#endif //FLYINGMONSTER_H

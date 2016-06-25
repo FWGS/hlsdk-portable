@@ -15,6 +15,7 @@
 //
 // teamplay_gamerules.cpp
 //
+
 #include	"extdll.h"
 #include	"util.h"
 #include	"cbase.h"
@@ -63,8 +64,8 @@ public:
 		return true;
 	}
 };
-static CMultiplayGameMgrHelper g_GameMgrHelper;
 
+static CMultiplayGameMgrHelper g_GameMgrHelper;
 
 //*********************************************************
 // Rules for the half-life multiplayer game.
@@ -125,7 +126,6 @@ BOOL CHalfLifeMultiplay::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 	if(g_VoiceGameMgr.ClientCommand(pPlayer, pcmd))
 		return TRUE;
 #endif
-
 	return CGameRules::ClientCommand(pPlayer, pcmd);
 }
 
@@ -133,10 +133,10 @@ BOOL CHalfLifeMultiplay::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 //=========================================================
 void CHalfLifeMultiplay::RefreshSkillData( void )
 {
-// load all default values
+	// load all default values
 	CGameRules::RefreshSkillData();
 
-// override some values for multiplay.
+	// override some values for multiplay.
 
 	// suitcharger
 	gSkillData.suitchargerCapacity = 30;
@@ -282,7 +282,6 @@ void CHalfLifeMultiplay :: Think ( void )
 	last_frags = frags_remaining;
 	last_time  = time_remaining;
 }
-
 
 //=========================================================
 //=========================================================
@@ -616,7 +615,6 @@ int CHalfLifeMultiplay :: IPointsForKill( CBasePlayer *pAttacker, CBasePlayer *p
 	return 1;
 }
 
-
 //=========================================================
 // PlayerKilled - someone/something killed this player
 //=========================================================
@@ -626,7 +624,6 @@ void CHalfLifeMultiplay :: PlayerKilled( CBasePlayer *pVictim, entvars_t *pKille
 
 	pVictim->m_iDeaths += 1;
 
-
 	FireTargets( "game_playerdie", pVictim, pVictim, USE_TOGGLE, 0 );
 	CBasePlayer *peKiller = NULL;
 	CBaseEntity *ktmp = CBaseEntity::Instance( pKiller );
@@ -634,7 +631,8 @@ void CHalfLifeMultiplay :: PlayerKilled( CBasePlayer *pVictim, entvars_t *pKille
 		peKiller = (CBasePlayer*)ktmp;
 
 	if ( pVictim->pev == pKiller )  
-	{  // killed self
+	{
+		// killed self
 		pKiller->frags -= 1;
 	}
 	else if ( ktmp && ktmp->IsPlayer() )
@@ -645,7 +643,8 @@ void CHalfLifeMultiplay :: PlayerKilled( CBasePlayer *pVictim, entvars_t *pKille
 		FireTargets( "game_playerkill", ktmp, ktmp, USE_TOGGLE, 0 );
 	}
 	else
-	{  // killed by the world
+	{
+		// killed by the world
 		pKiller->frags -= 1;
 	}
 
@@ -1014,7 +1013,6 @@ int CHalfLifeMultiplay::ItemShouldRespawn( CItem *pItem )
 	return GR_ITEM_RESPAWN_YES;
 }
 
-
 //=========================================================
 // At what time in the future may this Item respawn?
 //=========================================================
@@ -1081,7 +1079,6 @@ float CHalfLifeMultiplay::FlHealthChargerRechargeTime( void )
 	return 60;
 }
 
-
 float CHalfLifeMultiplay::FlHEVChargerRechargeTime( void )
 {
 	return 30;
@@ -1111,7 +1108,6 @@ edict_t *CHalfLifeMultiplay::GetPlayerSpawnSpot( CBasePlayer *pPlayer )
 
 	return pentSpawnSpot;
 }
-
 
 //=========================================================
 //=========================================================
@@ -1228,13 +1224,13 @@ char *COM_Parse (char *data)
 {
 	int             c;
 	int             len;
-	
+
 	len = 0;
 	com_token[0] = 0;
-	
+
 	if (!data)
 		return NULL;
-		
+
 // skip whitespace
 skipwhite:
 	while ( (c = *data) <= ' ')
@@ -1243,17 +1239,16 @@ skipwhite:
 			return NULL;                    // end of file;
 		data++;
 	}
-	
-// skip // comments
+
+	// skip // comments
 	if (c=='/' && data[1] == '/')
 	{
 		while (*data && *data != '\n')
 			data++;
 		goto skipwhite;
 	}
-	
 
-// handle quoted strings specially
+	// handle quoted strings specially
 	if (c == '\"')
 	{
 		data++;
@@ -1270,7 +1265,7 @@ skipwhite:
 		}
 	}
 
-// parse single characters
+	// parse single characters
 	if (c=='{' || c=='}'|| c==')'|| c=='(' || c=='\'' || c == ',' )
 	{
 		com_token[len] = c;
@@ -1279,7 +1274,7 @@ skipwhite:
 		return data+1;
 	}
 
-// parse a regular word
+	// parse a regular word
 	do
 	{
 		com_token[len] = c;
@@ -1289,7 +1284,7 @@ skipwhite:
 	if (c=='{' || c=='}'|| c==')'|| c=='(' || c=='\'' || c == ',' )
 			break;
 	} while (c>32);
-	
+
 	com_token[len] = 0;
 	return data;
 }
@@ -1316,8 +1311,6 @@ int COM_TokenWaiting( char *buffer )
 
 	return 0;
 }
-
-
 
 /*
 ==============
@@ -1440,7 +1433,7 @@ int ReloadMapCycleFile( char *filename, mapcycle_t *cycle )
 		item = item->next;
 	}
 	item->next = cycle->items;
-	
+
 	cycle->next_item = item->next;
 
 	return 1;
@@ -1483,7 +1476,7 @@ void ExtractCommandString( char *s, char *szCommand )
 	// Now make rules happen
 	char	pkey[512];
 	char	value[512];	// use two buffers so compares
-								// work without stomping on each other
+				// work without stomping on each other
 	char	*o;
 	
 	if ( *s == '\\' )
@@ -1680,7 +1673,7 @@ void CHalfLifeMultiplay :: SendMOTDToClient( edict_t *client )
 	while ( pFileList && *pFileList && char_count < MAX_MOTD_LENGTH )
 	{
 		char chunk[MAX_MOTD_CHUNK+1];
-		
+
 		if ( strlen( pFileList ) < MAX_MOTD_CHUNK )
 		{
 			strcpy( chunk, pFileList );
@@ -1705,5 +1698,3 @@ void CHalfLifeMultiplay :: SendMOTDToClient( edict_t *client )
 
 	FREE_FILE( aFileList );
 }
-	
-

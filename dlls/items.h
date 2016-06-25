@@ -15,7 +15,6 @@
 #ifndef ITEMS_H
 #define ITEMS_H
 
-
 class CItem : public CBaseEntity
 {
 public:

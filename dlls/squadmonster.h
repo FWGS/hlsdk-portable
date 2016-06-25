@@ -19,7 +19,6 @@
 
 #define	SF_SQUADMONSTER_LEADER	32
 
-
 #define bits_NO_SLOT		0
 
 // HUMAN GRUNT SLOTS
@@ -117,4 +116,3 @@ public:
 	MONSTERSTATE GetIdealState ( void );
 	Schedule_t	*GetScheduleOfType ( int iType );
 };
-

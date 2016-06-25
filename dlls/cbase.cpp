@@ -12,6 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
+
 #include	"extdll.h"
 #include	"util.h"
 #include	"cbase.h"
@@ -128,7 +129,6 @@ int GetEntityAPI2( DLL_FUNCTIONS *pFunctionTable, int *interfaceVersion )
 }
 #endif
 
-
 int DispatchSpawn( edict_t *pent )
 {
 	CBaseEntity *pEntity = (CBaseEntity *)GET_PRIVATE(pent);
@@ -202,10 +202,10 @@ void DispatchKeyValue( edict_t *pentKeyvalue, KeyValueData *pkvd )
 	pEntity->KeyValue( pkvd );
 }
 
-
 // HACKHACK -- this is a hack to keep the node graph entity from "touching" things (like triggers)
 // while it builds the graph
 BOOL gTouchDisabled = FALSE;
+
 void DispatchTouch( edict_t *pentTouched, edict_t *pentOther )
 {
 	if ( gTouchDisabled )
@@ -217,7 +217,6 @@ void DispatchTouch( edict_t *pentTouched, edict_t *pentOther )
 	if ( pEntity && pOther && ! ((pEntity->pev->flags | pOther->pev->flags) & FL_KILLME) )
 		pEntity->Touch( pOther );
 }
-
 
 void DispatchUse( edict_t *pentUsed, edict_t *pentOther )
 {
@@ -281,7 +280,6 @@ void DispatchSave( edict_t *pent, SAVERESTOREDATA *pSaveData )
 	}
 }
 
-
 // Find the matching global entity.  Spit out an error if the designer made entities of
 // different classes with the same global name
 CBaseEntity *FindGlobalEntity( string_t classname, string_t globalname )
@@ -299,7 +297,6 @@ CBaseEntity *FindGlobalEntity( string_t classname, string_t globalname )
 
 	return pReturn;
 }
-
 
 int DispatchRestore( edict_t *pent, SAVERESTOREDATA *pSaveData, int globalEntity )
 {
@@ -321,7 +318,6 @@ int DispatchRestore( edict_t *pent, SAVERESTOREDATA *pSaveData, int globalEntity
 			pSaveData->size = pSaveData->pTable[pSaveData->currentIndex].location;
 			pSaveData->pCurrentData = pSaveData->pBaseData + pSaveData->size;
 			// -------------------
-
 
 			const globalentity_t *pGlobal = gGlobalState.EntityFromTable( tmpVars.globalname );
 			
@@ -368,14 +364,12 @@ int DispatchRestore( edict_t *pent, SAVERESTOREDATA *pSaveData, int globalEntity
 
 		// Again, could be deleted, get the pointer again.
 		pEntity = (CBaseEntity *)GET_PRIVATE(pent);
-
 #if 0
 		if ( pEntity && pEntity->pev->globalname && globalEntity ) 
 		{
 			ALERT( at_console, "Global %s is %s\n", STRING(pEntity->pev->globalname), STRING(pEntity->pev->model) );
 		}
 #endif
-
 		// Is this an overriding global entity (coming over the transition), or one restoring in a level
 		if ( globalEntity )
 		{
@@ -412,7 +406,6 @@ int DispatchRestore( edict_t *pent, SAVERESTOREDATA *pSaveData, int globalEntity
 	return 0;
 }
 
-
 void DispatchObjectCollsionBox( edict_t *pent )
 {
 	CBaseEntity *pEntity = (CBaseEntity *)GET_PRIVATE(pent);
@@ -424,20 +417,17 @@ void DispatchObjectCollsionBox( edict_t *pent )
 		SetObjectCollisionBox( &pent->v );
 }
 
-
 void SaveWriteFields( SAVERESTOREDATA *pSaveData, const char *pname, void *pBaseData, TYPEDESCRIPTION *pFields, int fieldCount )
 {
 	CSave saveHelper( pSaveData );
 	saveHelper.WriteFields( pname, pBaseData, pFields, fieldCount );
 }
 
-
 void SaveReadFields( SAVERESTOREDATA *pSaveData, const char *pname, void *pBaseData, TYPEDESCRIPTION *pFields, int fieldCount )
 {
 	CRestore restoreHelper( pSaveData );
 	restoreHelper.ReadFields( pname, pBaseData, pFields, fieldCount );
 }
-
 
 edict_t * EHANDLE::Get( void ) 
 { 
@@ -449,7 +439,7 @@ edict_t * EHANDLE::Get( void )
 			return NULL;
 	}
 	return NULL; 
-};
+}
 
 edict_t * EHANDLE::Set( edict_t *pent ) 
 { 
@@ -457,14 +447,12 @@ edict_t * EHANDLE::Set( edict_t *pent )
 	if (pent) 
 		m_serialnumber = m_pent->serialnumber; 
 	return pent; 
-};
-
+}
 
 EHANDLE :: operator CBaseEntity *() 
 { 
 	return (CBaseEntity *)GET_PRIVATE( Get( ) ); 
-};
-
+}
 
 CBaseEntity * EHANDLE :: operator = (CBaseEntity *pEntity)
 {
@@ -492,14 +480,13 @@ CBaseEntity * EHANDLE :: operator -> ()
 	return (CBaseEntity *)GET_PRIVATE( Get( ) ); 
 }
 
-
 // give health
 int CBaseEntity :: TakeHealth( float flHealth, int bitsDamageType )
 {
 	if (!pev->takedamage)
 		return 0;
 
-// heal
+	// heal
 	if ( pev->health >= pev->max_health )
 		return 0;
 
@@ -534,12 +521,11 @@ int CBaseEntity :: TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, 
 		vecTemp = pevInflictor->origin - ( VecBModelOrigin(pev) );
 	}
 
-// this global is still used for glass and other non-monster killables, along with decals.
+	// this global is still used for glass and other non-monster killables, along with decals.
 	g_vecAttackDir = vecTemp.Normalize();
 		
-// save damage based on the target's armor level
-
-// figure momentum add (don't let hurt brushes or other triggers move player)
+	// save damage based on the target's armor level
+	// figure momentum add (don't let hurt brushes or other triggers move player)
 	if ((!FNullEnt(pevInflictor)) && (pev->movetype == MOVETYPE_WALK || pev->movetype == MOVETYPE_STEP) && (pevAttacker->solid != SOLID_TRIGGER) )
 	{
 		Vector vecDir = pev->origin - (pevInflictor->absmin + pevInflictor->absmax) * 0.5;
@@ -552,7 +538,7 @@ int CBaseEntity :: TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, 
 		pev->velocity = pev->velocity + vecDir * flForce;
 	}
 
-// do the damage
+	// do the damage
 	pev->health -= flDamage;
 	if (pev->health <= 0)
 	{
@@ -563,14 +549,12 @@ int CBaseEntity :: TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, 
 	return 1;
 }
 
-
 void CBaseEntity :: Killed( entvars_t *pevAttacker, int iGib )
 {
 	pev->takedamage = DAMAGE_NO;
 	pev->deadflag = DEAD_DEAD;
 	UTIL_Remove( this );
 }
-
 
 CBaseEntity *CBaseEntity::GetNextTarget( void )
 {
@@ -594,7 +578,6 @@ TYPEDESCRIPTION	CBaseEntity::m_SaveData[] =
 	DEFINE_FIELD( CBaseEntity, m_pfnBlocked, FIELD_FUNCTION ),
 };
 
-
 int CBaseEntity::Save( CSave &save )
 {
 	if ( save.WriteEntVars( "ENTVARS", pev ) )
@@ -611,12 +594,11 @@ int CBaseEntity::Restore( CRestore &restore )
 	if ( status )
 		status = restore.ReadFields( "BASE", this, m_SaveData, ARRAYSIZE(m_SaveData) );
 
-    if ( pev->modelindex != 0 && !FStringNull(pev->model) )
+	if ( pev->modelindex != 0 && !FStringNull(pev->model) )
 	{
 		Vector mins, maxs;
 		mins = pev->mins;	// Set model is about to destroy these
 		maxs = pev->maxs;
-
 
 		PRECACHE_MODEL( (char *)STRING(pev->model) );
 		SET_MODEL(ENT(pev), STRING(pev->model));
@@ -625,7 +607,6 @@ int CBaseEntity::Restore( CRestore &restore )
 
 	return status;
 }
-
 
 // Initialize absmin & absmax to the appropriate box
 void SetObjectCollisionBox( entvars_t *pev )
@@ -666,14 +647,12 @@ void SetObjectCollisionBox( entvars_t *pev )
 	pev->absmax.z += 1;
 }
 
-
 void CBaseEntity::SetObjectCollisionBox( void )
 {
 	::SetObjectCollisionBox( pev );
 }
 
-
-int	CBaseEntity :: Intersects( CBaseEntity *pOther )
+int CBaseEntity :: Intersects( CBaseEntity *pOther )
 {
 	if ( pOther->pev->absmin.x > pev->absmax.x ||
 		 pOther->pev->absmin.y > pev->absmax.y ||
@@ -737,7 +716,7 @@ int CBaseEntity::ShouldToggle( USE_TYPE useType, BOOL currentState )
 }
 
 
-int	CBaseEntity :: DamageDecal( int bitsDamageType )
+int CBaseEntity :: DamageDecal( int bitsDamageType )
 {
 	if ( pev->rendermode == kRenderTransAlpha )
 		return -1;
@@ -747,8 +726,6 @@ int	CBaseEntity :: DamageDecal( int bitsDamageType )
 
 	return DECAL_GUNSHOT1 + RANDOM_LONG(0,4);
 }
-
-
 
 // NOTE: szName must be a pointer to constant memory, e.g. "monster_class" because the entity
 // will keep a pointer to it after this call.
@@ -770,5 +747,3 @@ CBaseEntity * CBaseEntity::Create( char *szName, const Vector &vecOrigin, const 
 	DispatchSpawn( pEntity->edict() );
 	return pEntity;
 }
-
-

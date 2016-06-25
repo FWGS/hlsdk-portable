@@ -1181,7 +1181,7 @@ enum crossbow_e {
 	CROSSBOW_DRAW1,		// full
 	CROSSBOW_DRAW2,		// empty
 	CROSSBOW_HOLSTER1,	// full
-	CROSSBOW_HOLSTER2,	// empty
+	CROSSBOW_HOLSTER2	// empty
 };
 
 //=====================
@@ -1322,7 +1322,7 @@ enum rpg_e {
 	RPG_HOLSTER2,	// unloaded
 	RPG_DRAW_UL,	// unloaded
 	RPG_IDLE_UL,	// unloaded idle
-	RPG_FIDGET_UL,	// unloaded fidget
+	RPG_FIDGET_UL	// unloaded fidget
 };
 
 void EV_FireRpg( event_args_t *args )
@@ -1552,7 +1552,7 @@ enum tripmine_e {
 	TRIPMINE_HOLSTER,
 	TRIPMINE_DRAW,
 	TRIPMINE_WORLD,
-	TRIPMINE_GROUND,
+	TRIPMINE_GROUND
 };
 
 //We only check if it's possible to put a trip mine

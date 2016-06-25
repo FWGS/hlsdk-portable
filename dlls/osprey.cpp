@@ -12,6 +12,7 @@
 *   use or distribution of this code by or to any unlicensed person is illegal.
 *
 ****/
+
 #include "extdll.h"
 #include "util.h"
 #include "cbase.h"
@@ -30,10 +31,7 @@ typedef struct
 	Vector  vecAngles;
 } t_ospreygrunt;
 
-
-
 #define SF_WAITFORTRIGGER	0x40
-
 
 #define MAX_CARRY	24
 
@@ -105,9 +103,9 @@ public:
 	int m_iDoRightSmokePuff;
 };
 
-LINK_ENTITY_TO_CLASS( monster_osprey, COsprey );
+LINK_ENTITY_TO_CLASS( monster_osprey, COsprey )
 
-TYPEDESCRIPTION	COsprey::m_SaveData[] = 
+TYPEDESCRIPTION	COsprey::m_SaveData[] =
 {
 	DEFINE_FIELD( COsprey, m_pGoalEnt, FIELD_CLASSPTR ),
 	DEFINE_FIELD( COsprey, m_vel1, FIELD_VECTOR ),
@@ -139,8 +137,8 @@ TYPEDESCRIPTION	COsprey::m_SaveData[] =
 	DEFINE_FIELD( COsprey, m_iDoLeftSmokePuff, FIELD_INTEGER ),
 	DEFINE_FIELD( COsprey, m_iDoRightSmokePuff, FIELD_INTEGER ),
 };
-IMPLEMENT_SAVERESTORE( COsprey, CBaseMonster );
 
+IMPLEMENT_SAVERESTORE( COsprey, CBaseMonster )
 
 void COsprey :: Spawn( void )
 {
@@ -179,7 +177,6 @@ void COsprey :: Spawn( void )
 	m_ang2 = pev->angles;
 	m_vel2 = pev->velocity;
 }
-
 
 void COsprey::Precache( void )
 {
@@ -230,7 +227,6 @@ void COsprey :: FindAllThink( void )
 	m_startTime = gpGlobals->time;
 }
 
-
 void COsprey :: DeployThink( void )
 {
 	UTIL_MakeAimVectors( pev->angles );
@@ -261,8 +257,6 @@ void COsprey :: DeployThink( void )
 	pev->nextthink = gpGlobals->time + 0.1;
 }
 
-
-
 BOOL COsprey :: HasDead( )
 {
 	for (int i = 0; i < m_iUnits; i++)
@@ -278,7 +272,6 @@ BOOL COsprey :: HasDead( )
 	}
 	return FALSE;
 }
-
 
 CBaseMonster *COsprey :: MakeGrunt( Vector vecSrc )
 {
@@ -321,7 +314,6 @@ CBaseMonster *COsprey :: MakeGrunt( Vector vecSrc )
 	return NULL;
 }
 
-
 void COsprey :: HoverThink( void )
 {
 	int i;
@@ -343,7 +335,6 @@ void COsprey :: HoverThink( void )
 	UTIL_MakeAimVectors( pev->angles );
 	ShowDamage( );
 }
-
 
 void COsprey::UpdateGoal( )
 {
@@ -380,7 +371,6 @@ void COsprey::UpdateGoal( )
 	}
 }
 
-
 void COsprey::FlyThink( void )
 {
 	StudioFrameAdvance( );
@@ -407,7 +397,6 @@ void COsprey::FlyThink( void )
 	Flight( );
 	ShowDamage( );
 }
-
 
 void COsprey::Flight( )
 {
@@ -484,12 +473,10 @@ void COsprey::Flight( )
 
 }
 
-
 void COsprey::HitTouch( CBaseEntity *pOther )
 {
 	pev->nextthink = gpGlobals->time + 2.0;
 }
-
 
 /*
 int COsprey::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )
@@ -506,8 +493,6 @@ int COsprey::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float 
 	return 0;
 }
 */
-
-
 
 void COsprey :: Killed( entvars_t *pevAttacker, int iGib )
 {
@@ -538,7 +523,6 @@ void COsprey::CrashTouch( CBaseEntity *pOther )
 		m_velocity = pev->velocity;
 	}
 }
-
 
 void COsprey :: DyingThink( void )
 {
@@ -728,7 +712,6 @@ void COsprey :: DyingThink( void )
 	}
 }
 
-
 void COsprey :: ShowDamage( void )
 {
 	if (m_iDoLeftSmokePuff > 0 || RANDOM_LONG(0,99) > m_flLeftHealth)
@@ -762,7 +745,6 @@ void COsprey :: ShowDamage( void )
 			m_iDoRightSmokePuff--;
 	}
 }
-
 
 void COsprey::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType)
 {
@@ -798,8 +780,3 @@ void COsprey::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir
 		UTIL_Sparks( ptr->vecEndPos );
 	}
 }
-
-
-
-
-

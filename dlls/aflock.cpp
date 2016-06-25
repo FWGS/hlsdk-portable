@@ -55,7 +55,7 @@ TYPEDESCRIPTION	CFlockingFlyerFlock::m_SaveData[] =
 	DEFINE_FIELD( CFlockingFlyerFlock, m_flFlockRadius, FIELD_FLOAT ),
 };
 
-IMPLEMENT_SAVERESTORE( CFlockingFlyerFlock, CBaseMonster );
+IMPLEMENT_SAVERESTORE( CFlockingFlyerFlock, CBaseMonster )
 
 //=========================================================
 //=========================================================
@@ -106,8 +106,9 @@ public:
 	float	m_flAlertTime;
 	float	m_flFlockNextSoundTime;
 };
-LINK_ENTITY_TO_CLASS( monster_flyer, CFlockingFlyer );
-LINK_ENTITY_TO_CLASS( monster_flyer_flock, CFlockingFlyerFlock );
+
+LINK_ENTITY_TO_CLASS( monster_flyer, CFlockingFlyer )
+LINK_ENTITY_TO_CLASS( monster_flyer_flock, CFlockingFlyerFlock )
 
 TYPEDESCRIPTION	CFlockingFlyer::m_SaveData[] = 
 {
@@ -125,7 +126,7 @@ TYPEDESCRIPTION	CFlockingFlyer::m_SaveData[] =
 //	DEFINE_FIELD( CFlockingFlyer, m_flFlockNextSoundTime, FIELD_TIME ),	// don't need to save
 };
 
-IMPLEMENT_SAVERESTORE( CFlockingFlyer, CBaseMonster );
+IMPLEMENT_SAVERESTORE( CFlockingFlyer, CBaseMonster )
 
 //=========================================================
 //=========================================================
@@ -162,7 +163,6 @@ void CFlockingFlyerFlock :: Precache( )
 
 	PrecacheFlockSounds();
 }
-
 
 void CFlockingFlyerFlock :: PrecacheFlockSounds( void )
 {
@@ -549,7 +549,6 @@ BOOL CFlockingFlyer :: FPathBlocked( )
 	return	fBlocked;
 }
 
-
 //=========================================================
 // Leader boids use this think every tenth
 //=========================================================
@@ -785,7 +784,6 @@ void CFlockingFlyer :: FlockFollowerThink( void )
 	// if we make it this far, boids path is CLEAR!
 	m_fCourseAdjust = FALSE;
 */
-	
 
 //=========================================================
 //
@@ -813,6 +811,7 @@ void CFlockingFlyer :: SquadAdd( CFlockingFlyer *pAdd )
 	m_pSquadNext = pAdd;
 	pAdd->m_pSquadLeader = this;
 }
+
 //=========================================================
 //
 // SquadRemove(), remove pRemove from my squad.
@@ -872,6 +871,7 @@ void CFlockingFlyer :: SquadRemove( CFlockingFlyer *pRemove )
 	else
 		SquadDisband();
 }
+
 //=========================================================
 //
 // SquadCount(), return the number of members of this squad

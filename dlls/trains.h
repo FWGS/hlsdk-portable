@@ -40,7 +40,7 @@ public:
 	void		Spawn( void );
 	void		Activate( void );
 	void		KeyValue( KeyValueData* pkvd);
-	
+
 	void		SetPrevious( CPathTrack *pprevious );
 	void		Link( void );
 	void		Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
@@ -63,14 +63,12 @@ public:
 #if PATH_SPARKLE_DEBUG
 	void EXPORT Sparkle(void);
 #endif
-
 	float		m_length;
 	string_t	m_altName;
 	CPathTrack	*m_pnext;
 	CPathTrack	*m_pprevious;
 	CPathTrack	*m_paltpath;
 };
-
 
 class CFuncTrackTrain : public CBaseEntity
 {
@@ -123,5 +121,4 @@ public:
 private:
 	unsigned short m_usAdjustPitch;
 };
-
 #endif

@@ -12,6 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
+
 #include "extdll.h"
 #include "util.h"
 #include "cbase.h"
@@ -19,7 +20,6 @@
 #include "weapons.h"
 #include "nodes.h"
 #include "player.h"
-
 
 #define	HANDGRENADE_PRIMARY_VOLUME		450
 
@@ -34,9 +34,7 @@ enum handgrenade_e {
 	HANDGRENADE_DRAW
 };
 
-
-LINK_ENTITY_TO_CLASS( weapon_handgrenade, CHandGrenade );
-
+LINK_ENTITY_TO_CLASS( weapon_handgrenade, CHandGrenade )
 
 void CHandGrenade::Spawn( )
 {
@@ -47,12 +45,10 @@ void CHandGrenade::Spawn( )
 #ifndef CLIENT_DLL
 	pev->dmg = gSkillData.plrDmgHandGrenade;
 #endif
-
 	m_iDefaultAmmo = HANDGRENADE_DEFAULT_GIVE;
 
 	FallInit();// get ready to fall down.
 }
-
 
 void CHandGrenade::Precache( void )
 {
@@ -77,7 +73,6 @@ int CHandGrenade::GetItemInfo(ItemInfo *p)
 
 	return 1;
 }
-
 
 BOOL CHandGrenade::Deploy( )
 {
@@ -121,7 +116,6 @@ void CHandGrenade::PrimaryAttack()
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.5;
 	}
 }
-
 
 void CHandGrenade::WeaponIdle( void )
 {
@@ -227,7 +221,3 @@ void CHandGrenade::WeaponIdle( void )
 		SendWeaponAnim( iAnim );
 	}
 }
-
-
-
-

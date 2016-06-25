@@ -12,6 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
+
 #ifndef MONSTEREVENT_H
 #define MONSTEREVENT_H
 
@@ -31,4 +32,4 @@ typedef struct
 
 #define MONSTER_EVENT_SWISHSOUND		2010
 
-#endif		// MONSTEREVENT_H
+#endif //MONSTEREVENT_H

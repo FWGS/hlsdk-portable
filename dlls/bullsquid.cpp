@@ -31,7 +31,6 @@
 
 int			   iSquidSpitSprite;
 	
-
 //=========================================================
 // monster-specific schedule types
 //=========================================================
@@ -42,7 +41,7 @@ enum
 	SCHED_SQUID_SEECRAB,
 	SCHED_SQUID_EAT,
 	SCHED_SQUID_SNIFF_AND_EAT,
-	SCHED_SQUID_WALLOW,
+	SCHED_SQUID_WALLOW
 };
 
 //=========================================================
@@ -50,7 +49,7 @@ enum
 //=========================================================
 enum 
 {
-	TASK_SQUID_HOPTURN = LAST_COMMON_TASK + 1,
+	TASK_SQUID_HOPTURN = LAST_COMMON_TASK + 1
 };
 
 //=========================================================
@@ -72,14 +71,14 @@ public:
 	int  m_maxFrame;
 };
 
-LINK_ENTITY_TO_CLASS( squidspit, CSquidSpit );
+LINK_ENTITY_TO_CLASS( squidspit, CSquidSpit )
 
 TYPEDESCRIPTION	CSquidSpit::m_SaveData[] = 
 {
 	DEFINE_FIELD( CSquidSpit, m_maxFrame, FIELD_INTEGER ),
 };
 
-IMPLEMENT_SAVERESTORE( CSquidSpit, CBaseEntity );
+IMPLEMENT_SAVERESTORE( CSquidSpit, CBaseEntity )
 
 void CSquidSpit:: Spawn( void )
 {
@@ -225,16 +224,17 @@ public:
 	float m_flLastHurtTime;// we keep track of this, because if something hurts a squid, it will forget about its love of headcrabs for a while.
 	float m_flNextSpitTime;// last time the bullsquid used the spit attack.
 };
-LINK_ENTITY_TO_CLASS( monster_bullchicken, CBullsquid );
 
-TYPEDESCRIPTION	CBullsquid::m_SaveData[] = 
+LINK_ENTITY_TO_CLASS( monster_bullchicken, CBullsquid )
+
+TYPEDESCRIPTION	CBullsquid::m_SaveData[] =
 {
 	DEFINE_FIELD( CBullsquid, m_fCanThreatDisplay, FIELD_BOOLEAN ),
 	DEFINE_FIELD( CBullsquid, m_flLastHurtTime, FIELD_TIME ),
 	DEFINE_FIELD( CBullsquid, m_flNextSpitTime, FIELD_TIME ),
 };
 
-IMPLEMENT_SAVERESTORE( CBullsquid, CBaseMonster );
+IMPLEMENT_SAVERESTORE( CBullsquid, CBaseMonster )
 
 //=========================================================
 // IgnoreConditions 
@@ -257,7 +257,6 @@ int CBullsquid::IgnoreConditions ( void )
 			iIgnore = bits_COND_SMELL | bits_COND_SMELL_FOOD;
 		}
 	}
-
 
 	return iIgnore;
 }
@@ -626,7 +625,6 @@ void CBullsquid :: HandleAnimEvent( MonsterEvent_t *pEvent )
 				// squid throws its prey IF the prey is a client. 
 				CBaseEntity *pHurt = CheckTraceHullAttack( 70, 0, 0 );
 
-
 				if ( pHurt )
 				{
 					// croonchy bite sound
@@ -729,7 +727,6 @@ void CBullsquid :: Precache()
 
 	PRECACHE_SOUND("bullchicken/bc_spithit1.wav");
 	PRECACHE_SOUND("bullchicken/bc_spithit2.wav");
-
 }	
 
 //=========================================================
@@ -767,7 +764,6 @@ void CBullsquid :: AttackSound ( void )
 	}
 }
 
-
 //========================================================
 // RunAI - overridden for bullsquid because there are things
 // that need to be checked every think.
@@ -796,7 +792,6 @@ void CBullsquid :: RunAI ( void )
 			pev->framerate = 1.25;
 		}
 	}
-
 }
 
 //========================================================
@@ -1014,7 +1009,7 @@ DEFINE_CUSTOM_SCHEDULES( CBullsquid )
 	slSquidWallow
 };
 
-IMPLEMENT_CUSTOM_SCHEDULES( CBullsquid, CBaseMonster );
+IMPLEMENT_CUSTOM_SCHEDULES( CBullsquid, CBaseMonster )
 
 //=========================================================
 // GetSchedule 
@@ -1240,7 +1235,6 @@ void CBullsquid :: RunTask ( Task_t *pTask )
 	}
 }
 
-
 //=========================================================
 // GetIdealState - Overridden for Bullsquid to deal with
 // the feature that makes it lose interest in headcrabs for 
@@ -1276,4 +1270,3 @@ MONSTERSTATE CBullsquid :: GetIdealState ( void )
 
 	return m_IdealMonsterState;
 }
-

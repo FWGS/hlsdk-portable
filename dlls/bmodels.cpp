@@ -60,7 +60,7 @@ public:
 	virtual int	ObjectCaps( void ) { return CBaseEntity :: ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
 };
 
-LINK_ENTITY_TO_CLASS( func_wall, CFuncWall );
+LINK_ENTITY_TO_CLASS( func_wall, CFuncWall )
 
 void CFuncWall :: Spawn( void )
 {
@@ -73,13 +73,11 @@ void CFuncWall :: Spawn( void )
 	pev->flags |= FL_WORLDBRUSH;
 }
 
-
 void CFuncWall :: Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
 	if ( ShouldToggle( useType, (int)(pev->frame)) )
 		pev->frame = 1 - pev->frame;
 }
-
 
 #define SF_WALL_START_OFF		0x0001
 
@@ -93,7 +91,7 @@ public:
 	BOOL	IsOn( void );
 };
 
-LINK_ENTITY_TO_CLASS( func_wall_toggle, CFuncWallToggle );
+LINK_ENTITY_TO_CLASS( func_wall_toggle, CFuncWallToggle )
 
 void CFuncWallToggle :: Spawn( void )
 {
@@ -102,14 +100,12 @@ void CFuncWallToggle :: Spawn( void )
 		TurnOff();
 }
 
-
 void CFuncWallToggle :: TurnOff( void )
 {
 	pev->solid = SOLID_NOT;
 	pev->effects |= EF_NODRAW;
 	UTIL_SetOrigin( pev, pev->origin );
 }
-
 
 void CFuncWallToggle :: TurnOn( void )
 {
@@ -118,14 +114,12 @@ void CFuncWallToggle :: TurnOn( void )
 	UTIL_SetOrigin( pev, pev->origin );
 }
 
-
 BOOL CFuncWallToggle :: IsOn( void )
 {
 	if ( pev->solid == SOLID_NOT )
 		return FALSE;
 	return TRUE;
 }
-
 
 void CFuncWallToggle :: Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
@@ -140,7 +134,6 @@ void CFuncWallToggle :: Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_
 	}
 }
 
-
 #define SF_CONVEYOR_VISUAL		0x0001
 #define SF_CONVEYOR_NOTSOLID	0x0002
 
@@ -152,7 +145,8 @@ public:
 	void	UpdateSpeed( float speed );
 };
 
-LINK_ENTITY_TO_CLASS( func_conveyor, CFuncConveyor );
+LINK_ENTITY_TO_CLASS( func_conveyor, CFuncConveyor )
+
 void CFuncConveyor :: Spawn( void )
 {
 	SetMovedir( pev );
@@ -174,7 +168,6 @@ void CFuncConveyor :: Spawn( void )
 	UpdateSpeed( pev->speed );
 }
 
-
 // HACKHACK -- This is ugly, but encode the speed in the rendercolor to avoid adding more data to the network stream
 void CFuncConveyor :: UpdateSpeed( float speed )
 {
@@ -190,14 +183,11 @@ void CFuncConveyor :: UpdateSpeed( float speed )
 	pev->rendercolor.z = (speedCode & 0xFF);
 }
 
-
 void CFuncConveyor :: Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
     pev->speed = -pev->speed;
 	UpdateSpeed( pev->speed );
 }
-
-
 
 // =================== FUNC_ILLUSIONARY ==============================================
 
@@ -214,7 +204,7 @@ public:
 	virtual int	ObjectCaps( void ) { return CBaseEntity :: ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
 };
 
-LINK_ENTITY_TO_CLASS( func_illusionary, CFuncIllusionary );
+LINK_ENTITY_TO_CLASS( func_illusionary, CFuncIllusionary )
 
 void CFuncIllusionary :: KeyValue( KeyValueData *pkvd )
 {
@@ -240,7 +230,6 @@ void CFuncIllusionary :: Spawn( void )
 	//	MAKE_STATIC(ENT(pev));
 }
 
-
 // -------------------------------------------------------------------------------
 //
 // Monster only clip brush
@@ -259,7 +248,7 @@ public:
 	void	Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value ) {}		// Clear out func_wall's use function
 };
 
-LINK_ENTITY_TO_CLASS( func_monsterclip, CFuncMonsterClip );
+LINK_ENTITY_TO_CLASS( func_monsterclip, CFuncMonsterClip )
 
 void CFuncMonsterClip::Spawn( void )
 {
@@ -268,7 +257,6 @@ void CFuncMonsterClip::Spawn( void )
 		pev->effects = EF_NODRAW;
 	pev->flags |= FL_MONSTERCLIP;
 }
-
 
 // =================== FUNC_ROTATING ==============================================
 class CFuncRotating : public CBaseEntity
@@ -307,10 +295,9 @@ TYPEDESCRIPTION	CFuncRotating::m_SaveData[] =
 	DEFINE_FIELD( CFuncRotating, m_sounds, FIELD_INTEGER )
 };
 
-IMPLEMENT_SAVERESTORE( CFuncRotating, CBaseEntity );
+IMPLEMENT_SAVERESTORE( CFuncRotating, CBaseEntity )
 
-
-LINK_ENTITY_TO_CLASS( func_rotating, CFuncRotating );
+LINK_ENTITY_TO_CLASS( func_rotating, CFuncRotating )
 
 void CFuncRotating :: KeyValue( KeyValueData* pkvd)
 {
@@ -357,7 +344,6 @@ check either the X_AXIS or Y_AXIS box to change that.
 
 REVERSE will cause the it to rotate in the opposite direction.
 */
-
 
 void CFuncRotating :: Spawn( )
 {
@@ -443,7 +429,6 @@ void CFuncRotating :: Spawn( )
 	Precache( );
 }
 
-
 void CFuncRotating :: Precache( void )
 {
 	char* szSoundFile = (char*) STRING(pev->message);
@@ -457,7 +442,8 @@ void CFuncRotating :: Precache( void )
 		PRECACHE_SOUND(szSoundFile);
 			
 		pev->noiseRunning = ALLOC_STRING(szSoundFile);
-	} else
+	}
+	else
 	{
 		// otherwise use preset sound
 		switch (m_sounds)
@@ -508,8 +494,6 @@ void CFuncRotating :: Precache( void )
 		pev->nextthink = pev->ltime + 1.5;
 	}
 }
-
-
 
 //
 // Touch - will hurt others based on how fast the brush is spinning
@@ -573,10 +557,8 @@ void CFuncRotating :: RampPitchVol (int fUp)
 		pitch = PITCH_NORM-1;
 
 	// change the fan's vol and pitch
-
 	EMIT_SOUND_DYN(ENT(pev), CHAN_STATIC, (char *)STRING(pev->noiseRunning), 
 		fvol, m_flAttenuation, SND_CHANGE_PITCH | SND_CHANGE_VOL, pitch);
-
 }
 
 //
@@ -592,9 +574,9 @@ void CFuncRotating :: SpinUp( void )
 	vecAVel = pev->avelocity;// cache entity's rotational velocity
 
 	// if we've met or exceeded target speed, set target speed and stop thinking
-	if (	fabs(vecAVel.x) >= fabs(pev->movedir.x * pev->speed)	&&
-			fabs(vecAVel.y) >= fabs(pev->movedir.y * pev->speed)	&&
-			fabs(vecAVel.z) >= fabs(pev->movedir.z * pev->speed) )
+	if( fabs( vecAVel.x ) >= fabs( pev->movedir.x * pev->speed ) &&
+		fabs( vecAVel.y ) >= fabs( pev->movedir.y * pev->speed ) &&
+		fabs( vecAVel.z ) >= fabs( pev->movedir.z * pev->speed ) )
 	{
 		pev->avelocity = pev->movedir * pev->speed;// set speed in case we overshot
 		EMIT_SOUND_DYN(ENT(pev), CHAN_STATIC, (char *)STRING(pev->noiseRunning), 
@@ -706,24 +688,14 @@ void CFuncRotating :: RotatingUse( CBaseEntity *pActivator, CBaseEntity *pCaller
 	}
 }
 
-
 //
 // RotatingBlocked - An entity has blocked the brush
 //
 void CFuncRotating :: Blocked( CBaseEntity *pOther )
-
 {
 	pOther->TakeDamage( pev, pev, pev->dmg, DMG_CRUSH);
 }
-
-
-
-
-
-
 //#endif
-
-
 class CPendulum : public CBaseEntity
 {
 public:
@@ -751,9 +723,9 @@ public:
 	vec3_t	m_start;
 };
 
-LINK_ENTITY_TO_CLASS( func_pendulum, CPendulum );
+LINK_ENTITY_TO_CLASS( func_pendulum, CPendulum )
 
-TYPEDESCRIPTION	CPendulum::m_SaveData[] = 
+TYPEDESCRIPTION	CPendulum::m_SaveData[] =
 {
 	DEFINE_FIELD( CPendulum, m_accel, FIELD_FLOAT ),
 	DEFINE_FIELD( CPendulum, m_distance, FIELD_FLOAT ),
@@ -765,9 +737,7 @@ TYPEDESCRIPTION	CPendulum::m_SaveData[] =
 	DEFINE_FIELD( CPendulum, m_start, FIELD_VECTOR ),
 };
 
-IMPLEMENT_SAVERESTORE( CPendulum, CBaseEntity );
-
-
+IMPLEMENT_SAVERESTORE( CPendulum, CBaseEntity )
 
 void CPendulum :: KeyValue( KeyValueData *pkvd )
 {
@@ -784,7 +754,6 @@ void CPendulum :: KeyValue( KeyValueData *pkvd )
 	else 
 		CBaseEntity::KeyValue( pkvd );
 }
-
 
 void CPendulum :: Spawn( void )
 {
@@ -824,7 +793,6 @@ void CPendulum :: Spawn( void )
 	}
 }
 
-
 void CPendulum :: PendulumUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
 	if ( pev->speed )		// Pendulum is moving, stop it and auto-return if necessary
@@ -855,7 +823,6 @@ void CPendulum :: PendulumUse( CBaseEntity *pActivator, CBaseEntity *pCaller, US
 	}
 }
 
-
 void CPendulum :: Stop( void )
 {
 	pev->angles = m_start;
@@ -864,12 +831,10 @@ void CPendulum :: Stop( void )
 	pev->avelocity = g_vecZero;
 }
 
-
 void CPendulum::Blocked( CBaseEntity *pOther )
 {
 	m_time = gpGlobals->time;
 }
-
 
 void CPendulum :: Swing( void )
 {
@@ -912,7 +877,6 @@ void CPendulum :: Swing( void )
 	}
 }
 
-
 void CPendulum :: Touch ( CBaseEntity *pOther )
 {
 	entvars_t	*pevOther = pOther->pev;
@@ -954,5 +918,3 @@ void CPendulum :: RopeTouch ( CBaseEntity *pOther )
 	pevOther->velocity = g_vecZero;
 	pevOther->movetype = MOVETYPE_NONE;
 }
-
-

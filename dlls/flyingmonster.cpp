@@ -12,6 +12,7 @@
 *   use or distribution of this code by or to any unlicensed person is illegal.
 *
 ****/
+
 #include	"extdll.h"
 #include	"util.h"
 #include	"cbase.h"
@@ -21,7 +22,6 @@
 
 #define FLYING_AE_FLAP		(8)
 #define FLYING_AE_FLAPSOUND	(9)
-
 
 extern DLL_GLOBAL edict_t		*g_pBodyQueueHead;
 
@@ -57,12 +57,10 @@ int CFlyingMonster :: CheckLocalMove ( const Vector &vecStart, const Vector &vec
 	return LOCALMOVE_VALID;
 }
 
-
 BOOL CFlyingMonster :: FTriangulate ( const Vector &vecStart , const Vector &vecEnd, float flDist, CBaseEntity *pTargetEnt, Vector *pApex )
 {
 	return CBaseMonster::FTriangulate( vecStart, vecEnd, flDist, pTargetEnt, pApex );
 }
-
 
 Activity CFlyingMonster :: GetStoppedActivity( void )
 { 
@@ -71,7 +69,6 @@ Activity CFlyingMonster :: GetStoppedActivity( void )
 
 	return ACT_HOVER; 
 }
-
 
 void CFlyingMonster :: Stop( void ) 
 { 
@@ -85,7 +82,6 @@ void CFlyingMonster :: Stop( void )
 	pev->angles.x = 0;
 	m_vecTravel = g_vecZero;
 }
-
 
 float CFlyingMonster :: ChangeYaw( int speed )
 {
@@ -106,7 +102,6 @@ float CFlyingMonster :: ChangeYaw( int speed )
 	return CBaseMonster::ChangeYaw( speed );
 }
 
-
 void CFlyingMonster :: Killed( entvars_t *pevAttacker, int iGib )
 {
 	pev->movetype = MOVETYPE_STEP;
@@ -116,7 +111,6 @@ void CFlyingMonster :: Killed( entvars_t *pevAttacker, int iGib )
 	CBaseMonster::Killed( pevAttacker, iGib );
 }
 
-
 void CFlyingMonster :: HandleAnimEvent( MonsterEvent_t *pEvent )
 {
 	switch( pEvent->event )
@@ -124,18 +118,15 @@ void CFlyingMonster :: HandleAnimEvent( MonsterEvent_t *pEvent )
 	case FLYING_AE_FLAP:
 		m_flightSpeed = 400;
 		break;
-
 	case FLYING_AE_FLAPSOUND:
 		if ( m_pFlapSound )
 			EMIT_SOUND( edict(), CHAN_BODY, m_pFlapSound, 1, ATTN_NORM );	
 		break;
-
 	default:
 		CBaseMonster::HandleAnimEvent( pEvent );
 		break;
 	}
 }
-
 
 void CFlyingMonster :: Move( float flInterval )
 {
@@ -143,7 +134,6 @@ void CFlyingMonster :: Move( float flInterval )
 		m_flGroundSpeed = m_flightSpeed;
 	CBaseMonster::Move( flInterval );
 }
-
 
 BOOL CFlyingMonster:: ShouldAdvanceRoute( float flWaypointDist )
 {
@@ -156,7 +146,6 @@ BOOL CFlyingMonster:: ShouldAdvanceRoute( float flWaypointDist )
 
 	return FALSE;
 }
-
 
 void CFlyingMonster::MoveExecute( CBaseEntity *pTargetEnt, const Vector &vecDir, float flInterval )
 {
@@ -180,7 +169,7 @@ void CFlyingMonster::MoveExecute( CBaseEntity *pTargetEnt, const Vector &vecDir,
 		}
 		else
 			m_flightSpeed = UTIL_Approach( 20, m_flightSpeed, 300 * gpGlobals->frametime );
-		
+
 		if ( CheckLocalMove ( pev->origin, vecMove, pTargetEnt, NULL ) )
 		{
 			m_vecTravel = (vecMove - pev->origin);
@@ -197,7 +186,6 @@ void CFlyingMonster::MoveExecute( CBaseEntity *pTargetEnt, const Vector &vecDir,
 	else
 		CBaseMonster::MoveExecute( pTargetEnt, vecDir, flInterval );
 }
-
 
 float CFlyingMonster::CeilingZ( const Vector &position )
 {
@@ -278,4 +266,3 @@ float CFlyingMonster::FloorZ( const Vector &position )
 
 	return down.z;
 }
-

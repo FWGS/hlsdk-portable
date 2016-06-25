@@ -27,7 +27,6 @@
 #include	"weapons.h"
 #include	"soundent.h"
 
-
 #define ACT_T_IDLE		1010
 #define ACT_T_TAP			1020
 #define ACT_T_STRIKE		1030
@@ -108,12 +107,10 @@ public:
 	static const char *pHitWater[];
 };
 
-
-
 int CTentacle :: g_fFlySound;
 int CTentacle :: g_fSquirmSound;
 
-LINK_ENTITY_TO_CLASS( monster_tentacle, CTentacle );
+LINK_ENTITY_TO_CLASS( monster_tentacle, CTentacle )
 
 // stike sounds
 #define TE_NONE -1
@@ -121,13 +118,13 @@ LINK_ENTITY_TO_CLASS( monster_tentacle, CTentacle );
 #define TE_DIRT 1
 #define TE_WATER 2
 
-const char *CTentacle::pHitSilo[] = 
+const char *CTentacle::pHitSilo[] =
 {
 	"tentacle/te_strike1.wav",
 	"tentacle/te_strike2.wav",
 };
 
-const char *CTentacle::pHitDirt[] = 
+const char *CTentacle::pHitDirt[] =
 {
 	"player/pl_dirt1.wav",
 	"player/pl_dirt2.wav",
@@ -135,7 +132,7 @@ const char *CTentacle::pHitDirt[] =
 	"player/pl_dirt4.wav",
 };
 
-const char *CTentacle::pHitWater[] = 
+const char *CTentacle::pHitWater[] =
 {
 	"player/pl_slosh1.wav",
 	"player/pl_slosh2.wav",
@@ -143,8 +140,7 @@ const char *CTentacle::pHitWater[] =
 	"player/pl_slosh4.wav",
 };
 
-
-TYPEDESCRIPTION	CTentacle::m_SaveData[] = 
+TYPEDESCRIPTION	CTentacle::m_SaveData[] =
 {
 	DEFINE_FIELD( CTentacle, m_flInitialYaw, FIELD_FLOAT ),
 	DEFINE_FIELD( CTentacle, m_iGoalAnim, FIELD_INTEGER ),
@@ -164,8 +160,8 @@ TYPEDESCRIPTION	CTentacle::m_SaveData[] =
 	DEFINE_FIELD( CTentacle, m_vecPrevSound, FIELD_POSITION_VECTOR ),
 	DEFINE_FIELD( CTentacle, m_flPrevSoundTime, FIELD_TIME ),
 };
-IMPLEMENT_SAVERESTORE( CTentacle, CBaseMonster );
 
+IMPLEMENT_SAVERESTORE( CTentacle, CBaseMonster )
 
 // animation sequence aliases 
 typedef enum
@@ -231,15 +227,11 @@ typedef enum
 	TENTACLE_ANIM_none
 } TENTACLE_ANIM;
 
-
-
-
-
 //=========================================================
 // Classify - indicates this monster's place in the 
 // relationship table.
 //=========================================================
-int	CTentacle :: Classify ( void )
+int CTentacle :: Classify ( void )
 {
 	return	CLASS_ALIEN_MONSTER;
 }
@@ -262,7 +254,7 @@ void CTentacle :: Spawn( )
 
 	pev->takedamage		= DAMAGE_AIM;
 	pev->flags			|= FL_MONSTER;
-	
+
 	m_bloodColor		= BLOOD_COLOR_GREEN;
 
 	SetThink( &CTentacle::Start );
@@ -321,7 +313,6 @@ void CTentacle :: Precache( )
 	PRECACHE_SOUND_ARRAY( pHitWater );
 }
 
-
 CTentacle::CTentacle( )
 {
 	m_flMaxYaw = 65;
@@ -339,13 +330,10 @@ void CTentacle::KeyValue( KeyValueData *pkvd )
 	{
 		m_iTapSound = atoi(pkvd->szValue);
 		pkvd->fHandled = TRUE;
-
 	}
 	else
 		CBaseMonster::KeyValue( pkvd );
 }
-
-
 
 int CTentacle :: Level( float dz )
 {
@@ -357,7 +345,6 @@ int CTentacle :: Level( float dz )
 		return 2;
 	return 3;
 }
-
 
 float CTentacle :: MyHeight( )
 {
@@ -373,7 +360,6 @@ float CTentacle :: MyHeight( )
 	return 0;
 }
 
-
 int CTentacle :: MyLevel( )
 {
 	switch( pev->sequence )
@@ -385,7 +371,6 @@ int CTentacle :: MyLevel( )
 	case TENTACLE_ANIM_Temp1_to_Floor:
 	case TENTACLE_ANIM_Floor_to_Lev1:
 		return 0;
-
 	case TENTACLE_ANIM_Floor_Idle:
 	case TENTACLE_ANIM_Floor_Fidget_Pissed:
 	case TENTACLE_ANIM_Floor_Fidget_SmallRise:
@@ -396,7 +381,6 @@ int CTentacle :: MyLevel( )
 	case TENTACLE_ANIM_Floor_Rear:
 	case TENTACLE_ANIM_Floor_Rear_Idle:
 		return 0;
-
 	case TENTACLE_ANIM_Lev1_Idle:
 	case TENTACLE_ANIM_Lev1_Fidget_Claw:
 	case TENTACLE_ANIM_Lev1_Fidget_Shake:
@@ -407,10 +391,8 @@ int CTentacle :: MyLevel( )
 	case TENTACLE_ANIM_Lev1_Rear:
 	case TENTACLE_ANIM_Lev1_Rear_Idle:
 		return 1;
-
 	case TENTACLE_ANIM_Lev1_to_Lev2:
 		return 1;
-
 	case TENTACLE_ANIM_Lev2_Idle:
 	case TENTACLE_ANIM_Lev2_Fidget_Shake:
 	case TENTACLE_ANIM_Lev2_Fidget_Swing:
@@ -421,10 +403,8 @@ int CTentacle :: MyLevel( )
 	case TENTACLE_ANIM_Lev2_Rear:
 	case TENTACLE_ANIM_Lev2_Rear_Idle:
 		return 2;
-
 	case TENTACLE_ANIM_Lev2_to_Lev3:
 		return 2;
-
 	case TENTACLE_ANIM_Lev3_Idle:
 	case TENTACLE_ANIM_Lev3_Fidget_Shake:
 	case TENTACLE_ANIM_Lev3_Fidget_Side:
@@ -435,13 +415,11 @@ int CTentacle :: MyLevel( )
 	case TENTACLE_ANIM_Lev3_Rear:
 	case TENTACLE_ANIM_Lev3_Rear_Idle:
 		return 3;
-
 	case TENTACLE_ANIM_Lev1_Door_reach:
 		return -1;
 	}
 	return -1;
 }
-
 
 void CTentacle :: Test( void )
 {
@@ -450,8 +428,6 @@ void CTentacle :: Test( void )
 	StudioFrameAdvance( );
 	pev->nextthink = gpGlobals->time + 0.1;
 }
-
-
 
 //
 // TentacleThink
@@ -705,8 +681,6 @@ void CTentacle :: Cycle( void )
 	}
 }
 
-
-
 void CTentacle::CommandUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
 	// ALERT( at_console, "%s triggered %d\n", STRING( pev->targetname ), useType ); 
@@ -734,8 +708,6 @@ void CTentacle::CommandUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_T
 	}
 
 }
-
-
 
 void CTentacle :: DieThink( void )
 {
@@ -810,7 +782,6 @@ void CTentacle :: DieThink( void )
 	}
 }
 
-
 void CTentacle :: HandleAnimEvent( MonsterEvent_t *pEvent )
 {
 	char *sound;
@@ -843,20 +814,16 @@ void CTentacle :: HandleAnimEvent( MonsterEvent_t *pEvent )
           gpGlobals->force_retouch++;
 		}
 		break;
-
 	case 3: // start killing swing
 		m_iHitDmg = 200;
 		// UTIL_EmitAmbientSound(ENT(pev), pev->origin + Vector( 0, 0, MyHeight()), "tentacle/te_swing1.wav", 1.0, ATTN_NORM, 0, 100);
 		break;
-
 	case 4: // end killing swing
 		m_iHitDmg = 25;
 		break;
-
 	case 5: // just "whoosh" sound
 		// UTIL_EmitAmbientSound(ENT(pev), pev->origin + Vector( 0, 0, MyHeight()), "tentacle/te_swing2.wav", 1.0, ATTN_NORM, 0, 100);
 		break;
-
 	case 2:	// tap scrape
 	case 6: // light tap
 		{
@@ -882,8 +849,6 @@ void CTentacle :: HandleAnimEvent( MonsterEvent_t *pEvent )
 			}
 		}
 		break;
-
-
 	case 7: // roar
 		switch( RANDOM_LONG(0,1) )
 		{
@@ -893,32 +858,26 @@ void CTentacle :: HandleAnimEvent( MonsterEvent_t *pEvent )
 
 		UTIL_EmitAmbientSound(ENT(pev), pev->origin + Vector( 0, 0, MyHeight()), sound, 1.0, ATTN_NORM, 0, 100);
 		break;
-
 	case 8: // search
 		switch( RANDOM_LONG(0,1) )
 		{
 		case 0: sound = "tentacle/te_search1.wav"; break;
 		case 1: sound = "tentacle/te_search2.wav"; break;
 		}
-
 		UTIL_EmitAmbientSound(ENT(pev), pev->origin + Vector( 0, 0, MyHeight()), sound, 1.0, ATTN_NORM, 0, 100);
 		break;
-
 	case 9: // swing
 		switch( RANDOM_LONG(0,1) )
 		{
 		case 0: sound = "tentacle/te_move1.wav"; break;
 		case 1: sound = "tentacle/te_move2.wav"; break;
 		}
-
 		UTIL_EmitAmbientSound(ENT(pev), pev->origin + Vector( 0, 0, MyHeight()), sound, 1.0, ATTN_NORM, 0, 100);
 		break;
-
 	default:
 		CBaseMonster::HandleAnimEvent( pEvent );
 	}
 }
-
 
 //
 // TentacleStart
@@ -932,7 +891,7 @@ void CTentacle :: Start( void )
 	{
 		EMIT_SOUND (ENT(pev), CHAN_BODY, "ambience/flies.wav", 1, ATTN_NORM );
 		g_fFlySound = TRUE;
-//		pev->nextthink = gpGlobals-> time + 0.1;
+		//pev->nextthink = gpGlobals-> time + 0.1;
 	}
 	else if ( !g_fSquirmSound )
 	{
@@ -942,9 +901,6 @@ void CTentacle :: Start( void )
 	
 	pev->nextthink = gpGlobals->time + 0.1;
 }
-
-
-
 
 void CTentacle :: HitTouch( CBaseEntity *pOther )
 {
@@ -982,7 +938,6 @@ void CTentacle :: HitTouch( CBaseEntity *pOther )
 	// ALERT( at_console, "%.0f : %s : %d\n", pev->angles.y, STRING( pOther->pev->classname ), tr.iHitgroup );
 }
 
-
 int CTentacle::TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType )
 {
 	if (flDamage > pev->health)
@@ -996,16 +951,11 @@ int CTentacle::TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, floa
 	return 1;
 }
 
-
-
-
 void CTentacle :: Killed( entvars_t *pevAttacker, int iGib )
 {
 	m_iGoalAnim = TENTACLE_ANIM_Pit_Idle;
 	return;
 }
-
-
 
 class CTentacleMaw : public CBaseMonster
 {
@@ -1014,7 +964,7 @@ public:
 	void Precache( );
 };
 
-LINK_ENTITY_TO_CLASS( monster_tentaclemaw, CTentacleMaw );
+LINK_ENTITY_TO_CLASS( monster_tentaclemaw, CTentacleMaw )
 
 //
 // Tentacle Spawn
@@ -1031,7 +981,7 @@ void CTentacleMaw :: Spawn( )
 	pev->health			= 75;
 	pev->yaw_speed		= 8;
 	pev->sequence		= 0;
-	
+
 	pev->angles.x		= 90;
 	// ResetSequenceInfo( );
 }
@@ -1040,5 +990,4 @@ void CTentacleMaw :: Precache( )
 {
 	PRECACHE_MODEL("models/maw.mdl");
 }
-
 #endif
