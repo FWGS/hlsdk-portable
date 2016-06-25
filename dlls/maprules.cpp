@@ -26,7 +26,7 @@
 #include "eiface.h"
 #include "util.h"
 #include "gamerules.h"
-#include "maprules.h"
+//#include "maprules.h" //empty file
 #include "cbase.h"
 #include "player.h"
 
