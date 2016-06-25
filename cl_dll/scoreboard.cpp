@@ -38,12 +38,12 @@ int g_iPlayerClass;
 
 //#include "vgui_TeamFortressViewport.h"
 
-DECLARE_COMMAND( m_Scoreboard, ShowScores );
-DECLARE_COMMAND( m_Scoreboard, HideScores );
+DECLARE_COMMAND( m_Scoreboard, ShowScores )
+DECLARE_COMMAND( m_Scoreboard, HideScores )
 
-DECLARE_MESSAGE( m_Scoreboard, ScoreInfo );
-DECLARE_MESSAGE( m_Scoreboard, TeamInfo );
-DECLARE_MESSAGE( m_Scoreboard, TeamScore );
+DECLARE_MESSAGE( m_Scoreboard, ScoreInfo )
+DECLARE_MESSAGE( m_Scoreboard, TeamInfo )
+DECLARE_MESSAGE( m_Scoreboard, TeamScore )
 
 int CHudScoreboard :: Init( void )
 {

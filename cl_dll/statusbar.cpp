@@ -26,8 +26,8 @@
 #include <string.h>
 #include <stdio.h>
 
-DECLARE_MESSAGE( m_StatusBar, StatusText );
-DECLARE_MESSAGE( m_StatusBar, StatusValue );
+DECLARE_MESSAGE( m_StatusBar, StatusText )
+DECLARE_MESSAGE( m_StatusBar, StatusValue )
 
 #define STATUSBAR_ID_LINE		1
 

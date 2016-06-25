@@ -59,7 +59,7 @@ public:
 	Schedule_t* GetScheduleOfType ( int Type );
 	void StartTask ( Task_t *pTask );
 	void RunTask ( Task_t *pTask );
-	CUSTOM_SCHEDULES;
+	CUSTOM_SCHEDULES
 
 	void Stop( void );
 	void Move ( float flInterval );

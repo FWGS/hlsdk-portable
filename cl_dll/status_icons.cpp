@@ -25,7 +25,7 @@
 #include "parsemsg.h"
 #include "event_api.h"
 
-DECLARE_MESSAGE( m_StatusIcons, StatusIcon );
+DECLARE_MESSAGE( m_StatusIcons, StatusIcon )
 
 int CHudStatusIcons::Init( void )
 {

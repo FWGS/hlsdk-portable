@@ -57,7 +57,7 @@ public:
 	int		m_iMode;
 	// -----------------------------
 };
-LINK_ENTITY_TO_CLASS( monster_cockroach, CRoach );
+LINK_ENTITY_TO_CLASS( monster_cockroach, CRoach )
 
 //=========================================================
 // ISoundMask - returns a bit mask indicating which types

@@ -21,7 +21,7 @@ extern "C"
 {
 	void DLLEXPORT HUD_DrawNormalTriangles( void );
 	void DLLEXPORT HUD_DrawTransparentTriangles( void );
-};
+}
 
 //#define TEST_IT
 #if defined( TEST_IT )

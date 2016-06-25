@@ -242,7 +242,7 @@ public:
 	virtual int		Restore( CRestore &restore );
 	static	TYPEDESCRIPTION m_SaveData[];
 
-	CUSTOM_SCHEDULES;
+	CUSTOM_SCHEDULES
 
 private:
 	static const char *pAttackHitSounds[];

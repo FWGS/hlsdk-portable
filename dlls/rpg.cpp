@@ -71,7 +71,7 @@ void CLaserSpot::Spawn( void )
 
 	SET_MODEL(ENT(pev), "sprites/laserdot.spr");
 	UTIL_SetOrigin( pev, pev->origin );
-};
+}
 
 //=========================================================
 // Suspend- make the laser sight invisible. 
@@ -97,7 +97,7 @@ void CLaserSpot::Revive( void )
 void CLaserSpot::Precache( void )
 {
 	PRECACHE_MODEL("sprites/laserdot.spr");
-};
+}
 
 LINK_ENTITY_TO_CLASS( rpg_rocket, CRpgRocket )
 

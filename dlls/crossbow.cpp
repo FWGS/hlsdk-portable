@@ -46,7 +46,8 @@ class CCrossbowBolt : public CBaseEntity
 public:
 	static CCrossbowBolt *BoltCreate( void );
 };
-LINK_ENTITY_TO_CLASS( crossbow_bolt, CCrossbowBolt );
+
+LINK_ENTITY_TO_CLASS( crossbow_bolt, CCrossbowBolt )
 
 CCrossbowBolt *CCrossbowBolt::BoltCreate( void )
 {
@@ -557,7 +558,8 @@ class CCrossbowAmmo : public CBasePlayerAmmo
 		return FALSE;
 	}
 };
-LINK_ENTITY_TO_CLASS( ammo_crossbow, CCrossbowAmmo );
+
+LINK_ENTITY_TO_CLASS( ammo_crossbow, CCrossbowAmmo )
 
 
 

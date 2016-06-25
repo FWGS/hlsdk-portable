@@ -80,7 +80,7 @@ public:
 	void RunTask ( Task_t *pTask );
 	void DeathSound ( void );
 	void IdleSound ( void );
-	CUSTOM_SCHEDULES;
+	CUSTOM_SCHEDULES
 
 	int	Save( CSave &save ); 
 	int Restore( CRestore &restore );
