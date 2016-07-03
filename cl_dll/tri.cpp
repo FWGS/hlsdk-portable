@@ -40,7 +40,7 @@ void Draw_Triangles( void )
 
 	// Load it up with some bogus data
 	player = gEngfuncs.GetLocalPlayer();
-	if ( !player )
+	if( !player )
 		return;
 
 	org = player->origin;
@@ -48,18 +48,18 @@ void Draw_Triangles( void )
 	org.x += 50;
 	org.y += 50;
 
-	if (gHUD.m_hsprCursor == 0)
+	if( gHUD.m_hsprCursor == 0 )
 	{
 		char sz[256];
 		sprintf( sz, "sprites/cursor.spr" );
 		gHUD.m_hsprCursor = SPR_Load( sz );
 	}
 
-	if ( !gEngfuncs.pTriAPI->SpriteTexture( (struct model_s *)gEngfuncs.GetSpritePointer( gHUD.m_hsprCursor ), 0 ))
+	if( !gEngfuncs.pTriAPI->SpriteTexture( (struct model_s *)gEngfuncs.GetSpritePointer( gHUD.m_hsprCursor ), 0 ) )
 	{
 		return;
 	}
-	
+
 	// Create a triangle, sigh
 	gEngfuncs.pTriAPI->RenderMode( kRenderNormal );
 	gEngfuncs.pTriAPI->CullFace( TRI_NONE );
@@ -86,7 +86,6 @@ void Draw_Triangles( void )
 	gEngfuncs.pTriAPI->End();
 	gEngfuncs.pTriAPI->RenderMode( kRenderNormal );
 }
-
 #endif
 
 /*
@@ -98,9 +97,7 @@ Non-transparent triangles-- add them here
 */
 void DLLEXPORT HUD_DrawNormalTriangles( void )
 {
-
 	gHUD.m_Spectator.DrawOverview();
-	
 #if defined( TEST_IT )
 //	Draw_Triangles();
 #endif
@@ -115,7 +112,6 @@ Render any triangles with transparent rendermode needs here
 */
 void DLLEXPORT HUD_DrawTransparentTriangles( void )
 {
-
 #if defined( TEST_IT )
 //	Draw_Triangles();
 #endif

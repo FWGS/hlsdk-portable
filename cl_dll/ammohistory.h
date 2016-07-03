@@ -26,8 +26,8 @@ private:
 	WEAPON		rgWeapons[MAX_WEAPONS];	// Weapons Array
 
 	// counts of weapons * ammo
-	WEAPON*		rgSlots[MAX_WEAPON_SLOTS+1][MAX_WEAPON_POSITIONS+1];	// The slots currently in use by weapons.  The value is a pointer to the weapon;  if it's NULL, no weapon is there
-	int			riAmmo[MAX_AMMO_TYPES];							// count of each ammo type
+	WEAPON*		rgSlots[MAX_WEAPON_SLOTS + 1][MAX_WEAPON_POSITIONS + 1];	// The slots currently in use by weapons.  The value is a pointer to the weapon;  if it's NULL, no weapon is there
+	int			riAmmo[MAX_AMMO_TYPES];					// count of each ammo type
 
 public:
 	void Init( void )
@@ -49,25 +49,25 @@ public:
 	WEAPON *GetWeapon( int iId ) { return &rgWeapons[iId]; }
 	void AddWeapon( WEAPON *wp ) 
 	{ 
-		rgWeapons[ wp->iId ] = *wp;	
-		LoadWeaponSprites( &rgWeapons[ wp->iId ] );
+		rgWeapons[wp->iId] = *wp;	
+		LoadWeaponSprites( &rgWeapons[wp->iId] );
 	}
 
 	void PickupWeapon( WEAPON *wp )
 	{
-		rgSlots[ wp->iSlot ][ wp->iSlotPos ] = wp;
+		rgSlots[wp->iSlot][wp->iSlotPos] = wp;
 	}
 
 	void DropWeapon( WEAPON *wp )
 	{
-		rgSlots[ wp->iSlot ][ wp->iSlotPos ] = NULL;
+		rgSlots[wp->iSlot][wp->iSlotPos] = NULL;
 	}
 
 	void DropAllWeapons( void )
 	{
-		for ( int i = 0; i < MAX_WEAPONS; i++ )
+		for( int i = 0; i < MAX_WEAPONS; i++ )
 		{
-			if ( rgWeapons[i].iId )
+			if( rgWeapons[i].iId )
 				DropWeapon( &rgWeapons[i] );
 		}
 	}
@@ -93,7 +93,6 @@ public:
 };
 
 extern WeaponsResource gWR;
-
 
 #define MAX_HISTORY 12
 enum {
@@ -138,6 +137,3 @@ public:
 };
 
 extern HistoryResource gHR;
-
-
-

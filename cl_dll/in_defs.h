@@ -19,12 +19,12 @@
 #ifdef _WIN32
 #include <windows.h>
 #else
-typedef struct point_s{
+typedef struct point_s
+{
 	int x;
 	int y;
 } POINT;
 #define GetCursorPos(x)
 #define SetCursorPos(x,y)
 #endif
-
 #endif

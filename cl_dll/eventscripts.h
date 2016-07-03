@@ -55,8 +55,8 @@
 #define DMG_AIMED			(1 << 28)   // Does Hit location damage
 #define DMG_WALLPIERCING	(1 << 29)	// Blast Damages ents through walls
 
-#define DMG_CALTROP				(1<<30)
-#define DMG_HALLUC				(1<<31)
+#define DMG_CALTROP				(1 << 30)
+#define DMG_HALLUC				(1 << 31)
 
 // Some of these are HL/TFC specific?
 void EV_EjectBrass( float *origin, float *velocity, float rotation, int model, int soundtype );
