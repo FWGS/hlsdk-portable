@@ -1129,7 +1129,7 @@ int CProp::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flD
 {
 	Vector r = (pevInflictor->origin - pev->origin);
 	if ( (!m_attacker
-		  || (pev->velocity.Length() < 700))
+		  || (pev->velocity.Length() < 700)) && ((CBaseEntity*)GET_PRIVATE(ENT(pevAttacker)))
 		 && ((CBaseEntity*)GET_PRIVATE(ENT(pevAttacker)))->IsPlayer())
 		m_attacker.Set(ENT(pevAttacker));
 	DeployThink();
