@@ -54,6 +54,8 @@ float rel_pitch;
 #define IMPULSE_DOWN	2
 #define IMPULSE_UP		4
 
+bool CL_IsDead();
+Vector dead_viewangles(0, 0, 0);
 
 void IN_ToggleButtons( float forwardmove, float sidemove )
 {
@@ -152,9 +154,17 @@ void IN_ClientLookEvent( float relyaw, float relpitch )
 void IN_Move( float frametime, usercmd_t *cmd )
 {
 	Vector viewangles;
-	gEngfuncs.GetViewAngles( viewangles );
 	bool fLadder = false;
-	if( cl_laddermode->value !=2 ) fLadder = gEngfuncs.GetLocalPlayer()->curstate.movetype == MOVETYPE_FLY;
+	
+	if( gHUD.m_iIntermission )
+		return; // we can't move during intermission
+	
+	if( cl_laddermode->value != 2 )
+	{
+		cl_entity_t *pplayer = gEngfuncs.GetLocalPlayer();
+		if( pplayer )
+			fLadder = pplayer->curstate.movetype == MOVETYPE_FLY;
+	}
 	//if(ac_forwardmove || ac_sidemove)
 	//gEngfuncs.Con_Printf("Move: %f %f %f %f\n", ac_forwardmove, ac_sidemove, rel_pitch, rel_yaw);
 #if 0
@@ -163,39 +173,49 @@ void IN_Move( float frametime, usercmd_t *cmd )
 		V_StopPitchDrift();
 	}
 #endif
-	if( !gHUD.m_iIntermission )
+	if( CL_IsDead() )
 	{
-		if( gHUD.GetSensitivity() != 0 )
-		{
-			rel_yaw *= gHUD.GetSensitivity();
-			rel_pitch *= gHUD.GetSensitivity();
-		}
-		else
-		{
-			rel_yaw *= sensitivity->value;
-			rel_pitch *= sensitivity->value;
-		}
-
-		viewangles[YAW] += rel_yaw;
-		if( fLadder )
-		{
-			if( cl_laddermode->value == 1 )
-				viewangles[YAW] -= ac_sidemove * 5;
-			ac_sidemove = 0;
-		}
-		if(gHUD.m_MOTD.m_bShow)
-			gHUD.m_MOTD.scroll += rel_pitch;
-		else
-		viewangles[PITCH] += rel_pitch;
-			if (viewangles[PITCH] > cl_pitchdown->value)
-				viewangles[PITCH] = cl_pitchdown->value;
-			if (viewangles[PITCH] < -cl_pitchup->value)
-				viewangles[PITCH] = -cl_pitchup->value;
+		viewangles = dead_viewangles; // HACKHACK: see below
 	}
-	float rgfl[3];
-	viewangles.CopyToArray( rgfl );
-	gEngfuncs.SetViewAngles( rgfl );
+	else
+	{
+		gEngfuncs.GetViewAngles( viewangles );
+	}
+	if( gHUD.GetSensitivity() != 0 )
+	{
+		rel_yaw *= gHUD.GetSensitivity();
+		rel_pitch *= gHUD.GetSensitivity();
+	}
+	else
+	{
+		rel_yaw *= sensitivity->value;
+		rel_pitch *= sensitivity->value;
+	}
+	viewangles[YAW] += rel_yaw;
+	if( fLadder )
+	{
+		if( cl_laddermode->value == 1 )
+			viewangles[YAW] -= ac_sidemove * 5;
+		ac_sidemove = 0;
+	}
+	if(gHUD.m_MOTD.m_bShow)
+		gHUD.m_MOTD.scroll += rel_pitch;
+	else
+		viewangles[PITCH] += rel_pitch;
 	
+	if (viewangles[PITCH] > cl_pitchdown->value)
+		viewangles[PITCH] = cl_pitchdown->value;
+	if (viewangles[PITCH] < -cl_pitchup->value)
+		viewangles[PITCH] = -cl_pitchup->value;
+	
+	// HACKHACK: change viewangles directly in viewcode, 
+	// so viewangles when player is dead will not be changed on server
+	if( !CL_IsDead() )
+	{
+		gEngfuncs.SetViewAngles( viewangles );
+	}
+	
+	dead_viewangles = viewangles; // keep them actual
 	if( ac_movecount )
 	{
 		IN_ToggleButtons( ac_forwardmove / ac_movecount, ac_sidemove / ac_movecount );
@@ -206,7 +226,6 @@ void IN_Move( float frametime, usercmd_t *cmd )
 			cmd->forwardmove *= cl_movespeedkey->value;
 			cmd->sidemove *= cl_movespeedkey->value;
 		}
-
 	}
 	
 	ac_sidemove = ac_forwardmove = rel_pitch = rel_yaw = 0;

@@ -78,6 +78,7 @@ extern cvar_t	*cl_forwardspeed;
 extern cvar_t	*chase_active;
 extern cvar_t	*scr_ofsx, *scr_ofsy, *scr_ofsz;
 extern cvar_t	*cl_vsmoothing;
+extern Vector   dead_viewangles;
 
 #define	CAM_MODE_RELAX		1
 #define CAM_MODE_FOCUS		2
@@ -434,7 +435,7 @@ void V_CalcNormalRefdef ( struct ref_params_s *pparams )
 		ent = gEngfuncs.GetLocalPlayer();
 	}
 	
-	// view is the weapon model (only visible from inside body )
+	// view is the weapon model (only visible from inside body)
 	view = gEngfuncs.GetViewModel();
 
 	// transform the view offset by the model's matrix to get the offset from
@@ -446,7 +447,14 @@ void V_CalcNormalRefdef ( struct ref_params_s *pparams )
 	pparams->vieworg[2] += ( bob );
 	VectorAdd( pparams->vieworg, pparams->viewheight, pparams->vieworg );
 
-	VectorCopy ( pparams->cl_viewangles, pparams->viewangles );
+	if( pparams->health <= 0 )
+	{
+		VectorCopy( dead_viewangles, pparams->viewangles );
+	}
+	else
+	{
+		VectorCopy ( pparams->cl_viewangles, pparams->viewangles );
+	}
 
 	gEngfuncs.V_CalcShake();
 	gEngfuncs.V_ApplyShake( pparams->vieworg, pparams->viewangles, 1.0 );
@@ -525,7 +533,14 @@ void V_CalcNormalRefdef ( struct ref_params_s *pparams )
 	V_AddIdle ( pparams );
 
 	// offsets
-	VectorCopy( pparams->cl_viewangles, angles );
+	if ( pparams->health <= 0 )
+	{
+		VectorCopy( dead_viewangles, angles );
+	}
+	else
+	{
+		VectorCopy( pparams->cl_viewangles, angles );
+	}
 
 	AngleVectors ( angles, pparams->forward, pparams->right, pparams->up );
 
@@ -559,8 +574,14 @@ void V_CalcNormalRefdef ( struct ref_params_s *pparams )
 	}
 	
 	// Give gun our viewangles
-	VectorCopy ( pparams->cl_viewangles, view->angles );
-	
+	if ( pparams->health <= 0 )
+	{
+		VectorCopy( dead_viewangles, view->angles );
+	}
+	else
+	{
+		VectorCopy ( pparams->cl_viewangles, view->angles );
+	}
 	// set up gun position
 	V_CalcGunAngle ( pparams );
 
@@ -611,7 +632,7 @@ void V_CalcNormalRefdef ( struct ref_params_s *pparams )
 	VectorAdd ( pparams->viewangles, pparams->punchangle, pparams->viewangles );
 
 	// Include client side punch, too
-	VectorAdd ( pparams->viewangles, (float *)&ev_punchangle, pparams->viewangles);
+	VectorAdd ( pparams->viewangles, (float *)&ev_punchangle, pparams->viewangles );
 
 	V_DropPunchAngle ( pparams->frametime, (float *)&ev_punchangle );
 
@@ -623,7 +644,7 @@ void V_CalcNormalRefdef ( struct ref_params_s *pparams )
 		
 		steptime = pparams->time - lasttime;
 		if (steptime < 0)
-	//FIXME		I_Error ("steptime < 0");
+		//FIXME		I_Error ("steptime < 0");
 			steptime = 0;
 
 		oldz += steptime * 150;
