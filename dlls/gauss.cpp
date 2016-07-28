@@ -583,8 +583,9 @@ void CGauss::WeaponIdle( void )
 			iAnim = GAUSS_FIDGET;
 			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 3;
 		}
+#ifndef CLIENT_DLL
 		SendWeaponAnim( iAnim );
-		
+#endif
 	}
 }
 

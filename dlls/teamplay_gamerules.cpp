@@ -68,9 +68,10 @@ CHalfLifeTeamplay :: CHalfLifeTeamplay()
 
 extern cvar_t timeleft, fragsleft;
 
+#ifndef NO_VOICEGAMEMGR
 #include "voice_gamemgr.h"
 extern CVoiceGameMgr	g_VoiceGameMgr;
-
+#endif
 void CHalfLifeTeamplay :: Think ( void )
 {
 	///// Check game rules /////
@@ -80,8 +81,9 @@ void CHalfLifeTeamplay :: Think ( void )
 	int frags_remaining = 0;
 	int time_remaining = 0;
 
+#ifndef NO_VOICEGAMEMGR
 	g_VoiceGameMgr.Update(gpGlobals->frametime);
-
+#endif
 	if ( g_fGameOver )   // someone else quit the game already
 	{
 		CHalfLifeMultiplay::Think();
@@ -145,8 +147,11 @@ void CHalfLifeTeamplay :: Think ( void )
 //=========================================================
 BOOL CHalfLifeTeamplay :: ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 {
+
+#ifndef NO_VOICEGAMEMGR
 	if(g_VoiceGameMgr.ClientCommand(pPlayer, pcmd))
 		return TRUE;
+#endif
 
 	if ( FStrEq( pcmd, "menuselect" ) )
 	{
@@ -286,7 +291,8 @@ void CHalfLifeTeamplay::ChangePlayerTeam( CBasePlayer *pPlayer, const char *pTea
 	}
 
 	// copy out the team name from the model
-	strncpy( pPlayer->m_szTeamName, pTeamName, TEAM_NAME_LENGTH );
+	if( pPlayer->m_szTeamName != pTeamName )
+		strncpy( pPlayer->m_szTeamName, pTeamName, TEAM_NAME_LENGTH );
 
 	g_engfuncs.pfnSetClientKeyValue( clientIndex, g_engfuncs.pfnGetInfoKeyBuffer( pPlayer->edict() ), "model", pPlayer->m_szTeamName );
 	g_engfuncs.pfnSetClientKeyValue( clientIndex, g_engfuncs.pfnGetInfoKeyBuffer( pPlayer->edict() ), "team", pPlayer->m_szTeamName );
