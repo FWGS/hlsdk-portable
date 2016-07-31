@@ -25,28 +25,28 @@ float	CTalkMonster::g_talkWaitTime = 0;		// time delay until it's ok to speak: u
 
 /*********************************************************/
 
-CGraph	WorldGraph;
-void CGraph :: InitGraph( void ) { }
-int CGraph :: FLoadGraph ( char *szMapName ) { return FALSE; }
-int CGraph :: AllocNodes ( void ) { return FALSE; }
-int CGraph :: CheckNODFile ( char *szMapName ) { return FALSE; }
-int CGraph :: FSetGraphPointers ( void ) { return 0; }
-void CGraph :: ShowNodeConnections ( int iNode ) { }
-int	CGraph :: FindNearestNode ( const Vector &vecOrigin,  int afNodeTypes ) { return 0; }
+CGraph WorldGraph;
+void CGraph::InitGraph( void ) { }
+int CGraph::FLoadGraph( char *szMapName ) { return FALSE; }
+int CGraph::AllocNodes( void ) { return FALSE; }
+int CGraph::CheckNODFile( char *szMapName ) { return FALSE; }
+int CGraph::FSetGraphPointers( void ) { return 0; }
+void CGraph::ShowNodeConnections( int iNode ) { }
+int CGraph::FindNearestNode( const Vector &vecOrigin, int afNodeTypes ) { return 0; }
 
 /*********************************************************/
 
-void	CBaseMonster :: ReportAIState( void ) { }
-float 	CBaseMonster :: ChangeYaw ( int speed ) { return 0; }
-void	CBaseMonster :: MakeIdealYaw( Vector vecTarget ) { }
+void CBaseMonster::ReportAIState( void ) { }
+float CBaseMonster::ChangeYaw( int speed ) { return 0; }
+void CBaseMonster::MakeIdealYaw( Vector vecTarget ) { }
 
 void CBaseMonster::CorpseFallThink( void )
 {
-	if ( pev->flags & FL_ONGROUND )
+	if( pev->flags & FL_ONGROUND )
 	{
 		SetThink( NULL );
 
-		SetSequenceBox( );
+		SetSequenceBox();
 		UTIL_SetOrigin( pev, pev->origin );// link into world.
 	}
 	else
@@ -54,22 +54,22 @@ void CBaseMonster::CorpseFallThink( void )
 }
 
 // Call after animation/pose is set up
-void CBaseMonster :: MonsterInitDead( void )
+void CBaseMonster::MonsterInitDead( void )
 {
 	InitBoneControllers();
 
-	pev->solid			= SOLID_BBOX;
-	pev->movetype		= MOVETYPE_TOSS;// so he'll fall to ground
+	pev->solid = SOLID_BBOX;
+	pev->movetype = MOVETYPE_TOSS;// so he'll fall to ground
 
 	pev->frame = 0;
-	ResetSequenceInfo( );
+	ResetSequenceInfo();
 	pev->framerate = 0;
-	
+
 	// Copy health
-	pev->max_health		= pev->health;
-	pev->deadflag		= DEAD_DEAD;
-	
-	UTIL_SetSize(pev, g_vecZero, g_vecZero );
+	pev->max_health	= pev->health;
+	pev->deadflag = DEAD_DEAD;
+
+	UTIL_SetSize( pev, g_vecZero, g_vecZero );
 	UTIL_SetOrigin( pev, pev->origin );
 
 	// Setup health counters, etc.
@@ -78,22 +78,22 @@ void CBaseMonster :: MonsterInitDead( void )
 	pev->nextthink = gpGlobals->time + 0.5;
 }
 
-BOOL	CBaseMonster :: ShouldFadeOnDeath( void ) 
-{ 
-	return FALSE; 
+BOOL CBaseMonster::ShouldFadeOnDeath( void ) 
+{
+	return FALSE;
 }
 
-BOOL	CBaseMonster :: FCheckAITrigger ( void ) 
-{ 
-	return FALSE; 
+BOOL CBaseMonster::FCheckAITrigger( void ) 
+{
+	return FALSE;
 }
 
-void	CBaseMonster :: KeyValue( KeyValueData *pkvd ) 
+void CBaseMonster::KeyValue( KeyValueData *pkvd ) 
 {  
 	CBaseToggle::KeyValue( pkvd ); 
 }
 
-int CBaseMonster::IRelationship ( CBaseEntity *pTarget )
+int CBaseMonster::IRelationship( CBaseEntity *pTarget )
 {
 	static int iEnemy[14][14] =
 	{			 //   NONE	 MACH	 PLYR	 HPASS	 HMIL	 AMIL	 APASS	 AMONST	APREY	 APRED	 INSECT	PLRALY	PBWPN	ABWPN
@@ -113,7 +113,7 @@ int CBaseMonster::IRelationship ( CBaseEntity *pTarget )
 	/*ABIOWEAPON*/	{ R_NO	,R_NO	,R_DL	,R_DL	,R_DL	,R_AL	,R_NO	,R_DL	,R_DL	,R_NO	,R_NO	,R_DL,	R_DL,	R_NO	}
 	};
 
-	return iEnemy[ Classify() ][ pTarget->Classify() ];
+	return iEnemy[Classify()][pTarget->Classify()];
 }
 
 //=========================================================
@@ -128,33 +128,33 @@ int CBaseMonster::IRelationship ( CBaseEntity *pTarget )
 // (linked via each ent's m_pLink field)
 //
 //=========================================================
-void CBaseMonster :: Look ( int iDistance )
+void CBaseMonster::Look( int iDistance )
 {
-	int	iSighted = 0;
+	int iSighted = 0;
 
 	// DON'T let visibility information from last frame sit around!
-	ClearConditions(bits_COND_SEE_HATE | bits_COND_SEE_DISLIKE | bits_COND_SEE_ENEMY | bits_COND_SEE_FEAR | bits_COND_SEE_NEMESIS | bits_COND_SEE_CLIENT);
+	ClearConditions( bits_COND_SEE_HATE | bits_COND_SEE_DISLIKE | bits_COND_SEE_ENEMY | bits_COND_SEE_FEAR | bits_COND_SEE_NEMESIS | bits_COND_SEE_CLIENT );
 
 	m_pLink = NULL;
 
-	CBaseEntity	*pSightEnt = NULL;// the current visible entity that we're dealing with
+	CBaseEntity *pSightEnt = NULL;// the current visible entity that we're dealing with
 
 	CBaseEntity *pList[100];
 
 	Vector delta = Vector( iDistance, iDistance, iDistance );
 
 	// Find only monsters/clients in box, NOT limited to PVS
-	int count = UTIL_EntitiesInBox( pList, 100, pev->origin - delta, pev->origin + delta, FL_CLIENT|FL_MONSTER );
-	for ( int i = 0; i < count; i++ )
+	int count = UTIL_EntitiesInBox( pList, 100, pev->origin - delta, pev->origin + delta, FL_CLIENT | FL_MONSTER );
+	for( int i = 0; i < count; i++ )
 	{
 		pSightEnt = pList[i];
-		if ( pSightEnt != this && pSightEnt->pev->health > 0 )
+		if( pSightEnt != this && pSightEnt->pev->health > 0 )
 		{
 			// the looker will want to consider this entity
 			// don't check anything else about an entity that can't be seen, or an entity that you don't care about.
-			if ( IRelationship( pSightEnt ) != R_NO && FInViewCone( pSightEnt ) && !FBitSet( pSightEnt->pev->flags, FL_NOTARGET ) && FVisible( pSightEnt ) )
+			if( IRelationship( pSightEnt ) != R_NO && FInViewCone( pSightEnt ) && !FBitSet( pSightEnt->pev->flags, FL_NOTARGET ) && FVisible( pSightEnt ) )
 			{
-				if ( pSightEnt->IsPlayer() )
+				if( pSightEnt->IsPlayer() )
 				{
 					// if we see a client, remember that (mostly for scripted AI)
 					iSighted |= bits_COND_SEE_CLIENT;
@@ -163,7 +163,7 @@ void CBaseMonster :: Look ( int iDistance )
 				pSightEnt->m_pLink = m_pLink;
 				m_pLink = pSightEnt;
 
-				if ( pSightEnt == m_hEnemy )
+				if( pSightEnt == m_hEnemy )
 				{
 					// we know this ent is visible, so if it also happens to be our enemy, store that now.
 					iSighted |= bits_COND_SEE_ENEMY;
@@ -171,30 +171,30 @@ void CBaseMonster :: Look ( int iDistance )
 
 				// don't add the Enemy's relationship to the conditions. We only want to worry about conditions when
 				// we see monsters other than the Enemy.
-				switch ( IRelationship ( pSightEnt ) )
+				switch( IRelationship( pSightEnt ) )
 				{
-				case	R_NM:
+				case R_NM:
 					iSighted |= bits_COND_SEE_NEMESIS;		
 					break;
-				case	R_HT:		
+				case R_HT:		
 					iSighted |= bits_COND_SEE_HATE;		
 					break;
-				case	R_DL:
+				case R_DL:
 					iSighted |= bits_COND_SEE_DISLIKE;
 					break;
-				case	R_FR:
+				case R_FR:
 					iSighted |= bits_COND_SEE_FEAR;
 					break;
-				case    R_AL:
+				case R_AL:
 					break;
 				default:
-					ALERT ( at_aiconsole, "%s can't assess %s\n", STRING(pev->classname), STRING(pSightEnt->pev->classname ) );
+					ALERT( at_aiconsole, "%s can't assess %s\n", STRING( pev->classname ), STRING(pSightEnt->pev->classname ) );
 					break;
 				}
 			}
 		}
 	}
-	
+
 	SetConditions( iSighted );
 }
 
@@ -207,43 +207,43 @@ void CBaseMonster :: Look ( int iDistance )
 // !!!UNDONE - currently, this only returns the closest enemy.
 // we'll want to consider distance, relationship, attack types, back turned, etc.
 //=========================================================
-CBaseEntity *CBaseMonster :: BestVisibleEnemy ( void )
+CBaseEntity *CBaseMonster::BestVisibleEnemy( void )
 {
 	CBaseEntity	*pReturn;
 	CBaseEntity	*pNextEnt;
-	int			iNearest;
-	int			iDist;
-	int			iBestRelationship;
+	int		iNearest;
+	int		iDist;
+	int		iBestRelationship;
 
 	iNearest = 8192;// so first visible entity will become the closest.
 	pNextEnt = m_pLink;
 	pReturn = NULL;
 	iBestRelationship = R_NO;
 
-	while ( pNextEnt != NULL )
+	while( pNextEnt != NULL )
 	{
-		if ( pNextEnt->IsAlive() )
+		if( pNextEnt->IsAlive() )
 		{
-			if ( IRelationship( pNextEnt) > iBestRelationship )
+			if( IRelationship( pNextEnt ) > iBestRelationship )
 			{
 				// this entity is disliked MORE than the entity that we 
 				// currently think is the best visible enemy. No need to do 
 				// a distance check, just get mad at this one for now.
-				iBestRelationship = IRelationship ( pNextEnt );
+				iBestRelationship = IRelationship( pNextEnt );
 				iNearest = ( pNextEnt->pev->origin - pev->origin ).Length();
 				pReturn = pNextEnt;
 			}
-			else if ( IRelationship( pNextEnt) == iBestRelationship )
+			else if( IRelationship( pNextEnt ) == iBestRelationship )
 			{
 				// this entity is disliked just as much as the entity that
 				// we currently think is the best visible enemy, so we only
 				// get mad at it if it is closer.
 				iDist = ( pNextEnt->pev->origin - pev->origin ).Length();
-				
-				if ( iDist <= iNearest )
+
+				if( iDist <= iNearest )
 				{
 					iNearest = iDist;
-					iBestRelationship = IRelationship ( pNextEnt );
+					iBestRelationship = IRelationship( pNextEnt );
 					pReturn = pNextEnt;
 				}
 			}
