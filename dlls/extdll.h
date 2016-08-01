@@ -15,7 +15,6 @@
 #ifndef EXTDLL_H
 #define EXTDLL_H
 
-
 //
 // Global header file for extension DLLs
 //
@@ -57,15 +56,14 @@ typedef int BOOL;
 #define max(a,b)  (((a) > (b)) ? (a) : (b))
 #endif
 
-
 // Misc C-runtime library headers
 #include "stdio.h"
 #include "stdlib.h"
 #include "math.h"
 
 // Header file containing definition of globalvars_t and entvars_t
-typedef unsigned int	func_t;					//
-typedef unsigned int	string_t;				// from engine's pr_comp.h;
+typedef unsigned int func_t;
+typedef unsigned int string_t;				// from engine's pr_comp.h;
 typedef float vec_t;				// needed before including progdefs.h
 
 // Vector class
@@ -84,5 +82,4 @@ typedef float vec_t;				// needed before including progdefs.h
 
 // Shared header between the client DLL and the game DLLs
 #include "cdll_dll.h"
-
 #endif //EXTDLL_H
