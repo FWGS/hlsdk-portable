@@ -26,7 +26,9 @@
 #include	"skill.h"
 #include	"game.h"
 #include	"items.h"
+#ifndef NO_VOICEGAMEMGR
 #include	"voice_gamemgr.h"
+#endif
 #include	"hltv.h"
 
 extern DLL_GLOBAL CGameRules *g_pGameRules;
@@ -46,7 +48,6 @@ float g_flIntermissionStartTime = 0;
 
 #ifndef NO_VOICEGAMEMGR
 CVoiceGameMgr	g_VoiceGameMgr;
-#endif
 
 class CMultiplayGameMgrHelper : public IVoiceGameMgrHelper
 {
@@ -66,7 +67,7 @@ public:
 };
 
 static CMultiplayGameMgrHelper g_GameMgrHelper;
-
+#endif
 //*********************************************************
 // Rules for the half-life multiplayer game.
 //*********************************************************
