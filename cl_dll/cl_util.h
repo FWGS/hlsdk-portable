@@ -43,29 +43,29 @@ inline float CVAR_GET_FLOAT( const char *x ) {	return gEngfuncs.pfnGetCvarFloat(
 inline char* CVAR_GET_STRING( const char *x ) {	return gEngfuncs.pfnGetCvarString( (char*)x ); }
 inline struct cvar_s *CVAR_CREATE( const char *cv, const char *val, const int flags ) {	return gEngfuncs.pfnRegisterVariable( (char*)cv, (char*)val, flags ); }
 
-#define SPR_Load( *gEngfuncs.pfnSPR_Load )
-#define SPR_Set( *gEngfuncs.pfnSPR_Set )
-#define SPR_Frames( *gEngfuncs.pfnSPR_Frames )
-#define SPR_GetList( *gEngfuncs.pfnSPR_GetList )
+#define SPR_Load ( *gEngfuncs.pfnSPR_Load )
+#define SPR_Set ( *gEngfuncs.pfnSPR_Set )
+#define SPR_Frames ( *gEngfuncs.pfnSPR_Frames )
+#define SPR_GetList ( *gEngfuncs.pfnSPR_GetList )
 
 // SPR_Draw  draws a the current sprite as solid
-#define SPR_Draw( *gEngfuncs.pfnSPR_Draw )
+#define SPR_Draw ( *gEngfuncs.pfnSPR_Draw )
 // SPR_DrawHoles  draws the current sprites, with color index255 not drawn (transparent)
-#define SPR_DrawHoles( *gEngfuncs.pfnSPR_DrawHoles )
+#define SPR_DrawHoles ( *gEngfuncs.pfnSPR_DrawHoles )
 // SPR_DrawAdditive  adds the sprites RGB values to the background  (additive transulency)
-#define SPR_DrawAdditive( *gEngfuncs.pfnSPR_DrawAdditive )
+#define SPR_DrawAdditive ( *gEngfuncs.pfnSPR_DrawAdditive )
 
 // SPR_EnableScissor  sets a clipping rect for HUD sprites. (0,0) is the top-left hand corner of the screen.
-#define SPR_EnableScissor( *gEngfuncs.pfnSPR_EnableScissor )
+#define SPR_EnableScissor ( *gEngfuncs.pfnSPR_EnableScissor )
 // SPR_DisableScissor  disables the clipping rect
-#define SPR_DisableScissor( *gEngfuncs.pfnSPR_DisableScissor )
+#define SPR_DisableScissor ( *gEngfuncs.pfnSPR_DisableScissor )
 //
-#define FillRGBA( *gEngfuncs.pfnFillRGBA )
+#define FillRGBA ( *gEngfuncs.pfnFillRGBA )
 
 // ScreenHeight returns the height of the screen, in pixels
-#define ScreenHeight( gHUD.m_scrinfo.iHeight )
+#define ScreenHeight ( gHUD.m_scrinfo.iHeight )
 // ScreenWidth returns the width of the screen, in pixels
-#define ScreenWidth( gHUD.m_scrinfo.iWidth )
+#define ScreenWidth ( gHUD.m_scrinfo.iWidth )
 
 // Use this to set any co-ords in 640x480 space
 #define XRES(x)		( (int)( float(x) * ( (float)ScreenWidth / 640.0f ) + 0.5f ) )
@@ -75,11 +75,11 @@ inline struct cvar_s *CVAR_CREATE( const char *cv, const char *val, const int fl
 #define XPROJECT(x)	( ( 1.0f + (x) ) * ScreenWidth * 0.5f )
 #define YPROJECT(y)	( ( 1.0f - (y) ) * ScreenHeight * 0.5f )
 
-#define GetScreenInfo( *gEngfuncs.pfnGetScreenInfo )
-#define ServerCmd( *gEngfuncs.pfnServerCmd )
-#define ClientCmd( *gEngfuncs.pfnClientCmd )
-#define SetCrosshair( *gEngfuncs.pfnSetCrosshair )
-#define AngleVectors( *gEngfuncs.pfnAngleVectors )
+#define GetScreenInfo ( *gEngfuncs.pfnGetScreenInfo )
+#define ServerCmd ( *gEngfuncs.pfnServerCmd )
+#define ClientCmd ( *gEngfuncs.pfnClientCmd )
+#define SetCrosshair ( *gEngfuncs.pfnSetCrosshair )
+#define AngleVectors ( *gEngfuncs.pfnAngleVectors )
 extern cvar_t *hud_textmode;
 extern float g_hud_text_color[3];
 inline void DrawSetTextColor( float r, float g, float b )
@@ -135,7 +135,7 @@ inline void CenterPrint( const char *string )
 }
 
 // returns the players name of entity no.
-#define GetPlayerInfo( *gEngfuncs.pfnGetPlayerInfo )
+#define GetPlayerInfo ( *gEngfuncs.pfnGetPlayerInfo )
 
 // sound functions
 inline void PlaySound( char *szSound, float vol ) { gEngfuncs.pfnPlaySoundByName( szSound, vol ); }

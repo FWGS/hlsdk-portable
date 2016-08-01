@@ -107,7 +107,7 @@ int SCOREBOARD_WIDTH = 320;
 // Y positions
 #define ROW_GAP  13
 #define ROW_RANGE_MIN 15
-#define ROW_RANGE_MAX( ScreenHeight - 50 )
+#define ROW_RANGE_MAX ( ScreenHeight - 50 )
 
 int CHudScoreboard::Draw( float fTime )
 {
