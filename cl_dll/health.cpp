@@ -379,7 +379,6 @@ int CHudHealth::DrawDamage(float flTime)
 {
 	int i, r, g, b, a;
 	DAMAGE_IMAGE *pdmg;
-	int i;
 
 	if (!m_bitsDamage)
 		return 1;
