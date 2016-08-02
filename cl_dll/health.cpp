@@ -125,7 +125,7 @@ int CHudHealth::MsgFunc_Damage( const char *pszName, int iSize, void *pbuf )
 
 	vec3_t vecFrom;
 
-	for ( int i = 0; i < 3; i++ )
+	for( int i = 0; i < 3; i++ )
 		vecFrom[i] = READ_COORD();
 
 	UpdateTiles( gHUD.m_flTime, bitsDamage );
@@ -240,8 +240,8 @@ int CHudHealth::Draw( float flTime )
 
 void CHudHealth::CalcDamageDirection( vec3_t vecFrom )
 {
-	vec3_t	forward, right, up;
-	float	side, front;
+	vec3_t forward, right, up;
+	float side, front;
 	vec3_t vecOrigin, vecAngles;
 
 	if( !vecFrom[0] && !vecFrom[1] && !vecFrom[2] )
@@ -376,25 +376,14 @@ int CHudHealth::DrawDamage( float flTime )
 	int i, r, g, b, a;
 	DAMAGE_IMAGE *pdmg;
 
-	if (!m_bitsDamage)
+	if( !m_bitsDamage )
 		return 1;
 
 	UnpackRGB( r, g, b, RGB_YELLOWISH );
 
-	a = (int)( fabs( sin( flTime * 2 ) ) * 256.0);
+	a = (int)( fabs( sin( flTime * 2 ) ) * 256.0 );
 
 	ScaleColors( r, g, b, a );
-
-	// Draw all the items
-	for( i = 0; i < NUM_DMG_TYPES; i++ )
-	{
-		if (m_bitsDamage & giDmgFlags[i])
-		{
-			pdmg = &m_dmg[i];
-			SPR_Set(gHUD.GetSprite(m_HUD_dmg_bio + i), r, g, b );
-			SPR_DrawAdditive(0, pdmg->x, pdmg->y, &gHUD.GetSpriteRect(m_HUD_dmg_bio + i));
-		}
-	}
 
 	// check for bits that should be expired
 	for( i = 0; i < NUM_DMG_TYPES; i++ )
@@ -402,6 +391,10 @@ int CHudHealth::DrawDamage( float flTime )
 		if( m_bitsDamage & giDmgFlags[i] )
 		{
 			pdmg = &m_dmg[i];
+
+			// Draw all the items
+			SPR_Set( gHUD.GetSprite( m_HUD_dmg_bio + i ), r, g, b );
+			SPR_DrawAdditive( 0, pdmg->x, pdmg->y, &gHUD.GetSpriteRect( m_HUD_dmg_bio + i ) );
 
 			pdmg->fExpire = min( flTime + DMG_IMAGE_LIFE, pdmg->fExpire );
 
