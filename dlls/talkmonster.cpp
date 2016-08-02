@@ -466,12 +466,12 @@ void CTalkMonster::StartTask( Task_t *pTask )
 
 void CTalkMonster::RunTask( Task_t *pTask )
 {
+	edict_t *pPlayer;
+
 	switch( pTask->iTask )
 	{
 	case TASK_TLK_CLIENT_STARE:
 	case TASK_TLK_LOOK_AT_CLIENT:
-		edict_t *pPlayer;
-
 		// track head to the client for a while.
 		if( m_MonsterState == MONSTERSTATE_IDLE &&
 			 !IsMoving() &&
@@ -517,7 +517,7 @@ void CTalkMonster::RunTask( Task_t *pTask )
 	case TASK_FACE_PLAYER:
 		{
 			// Get edict for one player
-			edict_t *pPlayer = g_engfuncs.pfnPEntityOfEntIndex( 1 );
+			pPlayer = g_engfuncs.pfnPEntityOfEntIndex( 1 );
 
 			if( pPlayer )
 			{

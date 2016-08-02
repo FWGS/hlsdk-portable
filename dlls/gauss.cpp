@@ -469,7 +469,7 @@ void CGauss::Fire( Vector vecOrigSrc, Vector vecDir, float flDamage )
 						// trace backwards to find exit point
 						UTIL_TraceLine( beam_tr.vecEndPos, tr.vecEndPos, dont_ignore_monsters, pentIgnore, &beam_tr );
 
-						float n = (beam_tr.vecEndPos - tr.vecEndPos).Length( );
+						n = ( beam_tr.vecEndPos - tr.vecEndPos ).Length();
 
 						if( n < flDamage )
 						{
