@@ -156,7 +156,7 @@ void CGameRules::RefreshSkillData ( void )
 	gSkillData.gargantuaHealth = GetSkillCvar( "sk_gargantua_health" );
 	gSkillData.gargantuaDmgSlash = GetSkillCvar( "sk_gargantua_dmg_slash" );
 	gSkillData.gargantuaDmgFire = GetSkillCvar( "sk_gargantua_dmg_fire" );
-	gSkillData.gargantuaDmgStomp = GetSkillCvar( "sk_gargantua_dmg_stomp ");
+	gSkillData.gargantuaDmgStomp = GetSkillCvar( "sk_gargantua_dmg_stomp" );
 
 	// Hassassin
 	gSkillData.hassassinHealth = GetSkillCvar( "sk_hassassin_health" );
