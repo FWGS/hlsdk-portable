@@ -35,7 +35,7 @@ int CHudAmmoSecondary::Init( void )
 	gHUD.AddHudElem(this);
 	m_HUD_ammoicon = 0;
 
-	for ( int i = 0; i < MAX_SEC_AMMO_VALUES; i++ )
+	for( int i = 0; i < MAX_SEC_AMMO_VALUES; i++ )
 		m_iAmmoAmounts[i] = -1;  // -1 means don't draw this value
 
 	Reset();
@@ -55,7 +55,7 @@ int CHudAmmoSecondary::VidInit( void )
 
 int CHudAmmoSecondary::Draw( float flTime )
 {
-	if ( ( gHUD.m_iHideHUDDisplay & ( HIDEHUD_WEAPONS | HIDEHUD_ALL ) ) )
+	if( ( gHUD.m_iHideHUDDisplay & ( HIDEHUD_WEAPONS | HIDEHUD_ALL ) ) )
 		return 1;
 
 	// draw secondary ammo icons above normal ammo readout

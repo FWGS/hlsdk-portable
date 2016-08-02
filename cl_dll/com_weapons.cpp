@@ -268,8 +268,26 @@ stub functions for such things as precaching.  So we don't have to modify weapon
  is compiled into both game and client .dlls.
 ======================
 */
-int				stub_PrecacheModel		( char* s ) { return 0; }
-int				stub_PrecacheSound		( char* s ) { return 0; }
-unsigned short	stub_PrecacheEvent		( int type, const char *s ) { return 0; }
-const char		*stub_NameForFunction	( unsigned long function ) { return "func"; }
-void			stub_SetModel			( edict_t *e, const char *m ) {}
+int stub_PrecacheModel( char* s )
+{
+	return 0;
+}
+
+int stub_PrecacheSound( char* s )
+{
+	return 0;
+}
+
+unsigned short stub_PrecacheEvent( int type, const char *s )
+{
+	return 0;
+}
+
+const char *stub_NameForFunction( unsigned long function )
+{
+	return "func";
+}
+
+void stub_SetModel( edict_t *e, const char *m )
+{
+}

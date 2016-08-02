@@ -42,19 +42,19 @@ ItemInfo CBasePlayerItem::ItemInfoArray[MAX_WEAPONS];
 void EMIT_SOUND_DYN( edict_t *entity, int channel, const char *sample, float volume, float attenuation, int flags, int pitch ) { }
 
 // CBaseEntity Stubs
-int CBaseEntity :: TakeHealth( float flHealth, int bitsDamageType ) { return 1; }
-int CBaseEntity :: TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType ) { return 1; }
+int CBaseEntity::TakeHealth( float flHealth, int bitsDamageType ) { return 1; }
+int CBaseEntity::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType ) { return 1; }
 CBaseEntity *CBaseEntity::GetNextTarget( void ) { return NULL; }
 int CBaseEntity::Save( CSave &save ) { return 1; }
 int CBaseEntity::Restore( CRestore &restore ) { return 1; }
 void CBaseEntity::SetObjectCollisionBox( void ) { }
-int CBaseEntity :: Intersects( CBaseEntity *pOther ) { return 0; }
-void CBaseEntity :: MakeDormant( void ) { }
-int CBaseEntity :: IsDormant( void ) { return 0; }
-BOOL CBaseEntity :: IsInWorld( void ) { return TRUE; }
+int CBaseEntity::Intersects( CBaseEntity *pOther ) { return 0; }
+void CBaseEntity::MakeDormant( void ) { }
+int CBaseEntity::IsDormant( void ) { return 0; }
+BOOL CBaseEntity::IsInWorld( void ) { return TRUE; }
 int CBaseEntity::ShouldToggle( USE_TYPE useType, BOOL currentState ) { return 0; }
-int CBaseEntity :: DamageDecal( int bitsDamageType ) { return -1; }
-CBaseEntity * CBaseEntity::Create( char *szName, const Vector &vecOrigin, const Vector &vecAngles, edict_t *pentOwner ) { return NULL; }
+int CBaseEntity::DamageDecal( int bitsDamageType ) { return -1; }
+CBaseEntity *CBaseEntity::Create( char *szName, const Vector &vecOrigin, const Vector &vecAngles, edict_t *pentOwner ) { return NULL; }
 void CBaseEntity::SUB_Remove( void ) { }
 
 // CBaseDelay Stubs
