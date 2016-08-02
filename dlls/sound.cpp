@@ -1269,6 +1269,7 @@ void SENTENCEG_Init()
 		return;
 
 	memset( buffer, 0, 512 );
+	memset( szgroup, 0, 64 );
 	// for each line in the file...
 	while( memfgets( pMemFile, fileSize, filePos, buffer, 511 ) != NULL )
 	{
@@ -1321,7 +1322,6 @@ void SENTENCEG_Init()
 
 		buffer[j + 1] = 0;
 
-		memset( szgroup, 0, 64 );
 		// if new name doesn't match previous group name, 
 		// make a new group.
 		if( strcmp( szgroup, &( buffer[i] ) ) )
