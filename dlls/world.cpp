@@ -462,18 +462,19 @@ void CWorld::Precache( void )
 {
 	g_pLastSpawn = NULL;
 #if 1
-	CVAR_SET_STRING("sv_gravity", "800"); // 67ft/sec
-	CVAR_SET_STRING("sv_stepsize", "18");
+	CVAR_SET_STRING( "sv_gravity", "800" ); // 67ft/sec
+	CVAR_SET_STRING( "sv_stepsize", "18" );
 #else
-	CVAR_SET_STRING("sv_gravity", "384"); // 32ft/sec
-	CVAR_SET_STRING("sv_stepsize", "24");
+	CVAR_SET_STRING( "sv_gravity", "384" ); // 32ft/sec
+	CVAR_SET_STRING( "sv_stepsize", "24" );
 #endif
-	CVAR_SET_STRING("room_type", "0");// clear DSP
+	CVAR_SET_STRING( "room_type", "0" );// clear DSP
 
 	// Set up game rules
 	if( g_pGameRules )
 	{
 		delete g_pGameRules;
+		g_pGameRules = NULL;
 	}
 
 	g_pGameRules = InstallGameRules();
