@@ -263,9 +263,8 @@ void UTIL_PrecacheOtherWeapon( const char *szClassname )
 
 	if( pEntity )
 	{
-		ItemInfo II;
+		ItemInfo II = {0};
 		pEntity->Precache();
-		memset( &II, 0, sizeof II );
 		if( ( (CBasePlayerItem*)pEntity )->GetItemInfo( &II ) )
 		{
 			CBasePlayerItem::ItemInfoArray[II.iId] = II;
@@ -279,8 +278,6 @@ void UTIL_PrecacheOtherWeapon( const char *szClassname )
 			{
 				AddAmmoNameToAmmoRegistry( II.pszAmmo2 );
 			}
-
-			memset( &II, 0, sizeof II );
 		}
 	}
 

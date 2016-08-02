@@ -99,9 +99,8 @@ void UpdateStats( CBasePlayer *pPlayer )
 		CBasePlayerItem *p = pPlayer->m_rgpPlayerItems[i];
 		while( p )
 		{
-			ItemInfo II;
+			ItemInfo II = {0};
 
-			memset( &II, 0, sizeof(II) );
 			p->GetItemInfo( &II );
 
 			int index = pPlayer->GetAmmoIndex( II.pszAmmo1 );

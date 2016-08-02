@@ -518,11 +518,9 @@ const char *CHalfLifeTeamplay::TeamWithFewestPlayers( void )
 {
 	int i;
 	int minPlayers = MAX_TEAMS;
-	int teamCount[MAX_TEAMS];
+	int teamCount[MAX_TEAMS] = {0};
 	char *pTeamName = NULL;
 
-	memset( teamCount, 0, MAX_TEAMS * sizeof(int) );
-	
 	// loop through all clients, count number of players on each team
 	for( i = 1; i <= gpGlobals->maxClients; i++ )
 	{

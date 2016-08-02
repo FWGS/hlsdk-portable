@@ -192,7 +192,7 @@ void PM_InitTextureTypes()
 	char buffer[512];
 	int i, j;
 	byte *pMemFile;
-	int fileSize, filePos = 0;
+	int fileSize, filePos;
 	static qboolean bTextureTypeInit = false;
 
 	if( bTextureTypeInit )
@@ -202,13 +202,13 @@ void PM_InitTextureTypes()
 	memset( grgchTextureType, 0, CTEXTURESMAX );
 
 	gcTextures = 0;
-	memset( buffer, 0, 512 );
 
 	fileSize = pmove->COM_FileSize( "sound/materials.txt" );
 	pMemFile = pmove->COM_LoadFile( "sound/materials.txt", 5, NULL );
 	if( !pMemFile )
 		return;
 
+	memset( buffer, 0, 512 );
 	filePos = 0;
 	// for each line in the file...
 	while( pmove->memfgets( pMemFile, fileSize, &filePos, buffer, 511 ) != NULL && (gcTextures < CTEXTURESMAX ) )

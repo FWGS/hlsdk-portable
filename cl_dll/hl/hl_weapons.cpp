@@ -688,10 +688,8 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 	int buttonsChanged;
 	CBasePlayerWeapon *pWeapon = NULL;
 	CBasePlayerWeapon *pCurrent;
-	weapon_data_t nulldata, *pfrom, *pto;
+	weapon_data_t nulldata = {0}, *pfrom, *pto;
 	static int lasthealth;
-
-	memset( &nulldata, 0, sizeof(nulldata) );
 
 	HUD_InitClientWeapons();
 

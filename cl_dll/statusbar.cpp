@@ -73,8 +73,7 @@ void CHudStatusBar::Reset( void )
 void CHudStatusBar::ParseStatusString( int line_num )
 {
 	// localise string first
-	char szBuffer[MAX_STATUSTEXT_LENGTH];
-	memset( szBuffer, 0, sizeof szBuffer );
+	char szBuffer[MAX_STATUSTEXT_LENGTH] = {0};
 	gHUD.m_TextMessage.LocaliseTextString( m_szStatusText[line_num], szBuffer, MAX_STATUSTEXT_LENGTH );
 
 	// parse m_szStatusText & m_iStatusValues into m_szStatusBar

@@ -1261,8 +1261,6 @@ void SENTENCEG_Init()
 	gcallsentences = 0;
 
 	memset( rgsentenceg, 0, CSENTENCEG_MAX * sizeof(SENTENCEG) );
-	memset( buffer, 0, 512 );
-	memset( szgroup, 0, 64 );
 	isentencegs = -1;
 
 	int filePos = 0, fileSize;
@@ -1270,6 +1268,7 @@ void SENTENCEG_Init()
 	if( !pMemFile )
 		return;
 
+	memset( buffer, 0, 512 );
 	// for each line in the file...
 	while( memfgets( pMemFile, fileSize, filePos, buffer, 511 ) != NULL )
 	{
@@ -1322,6 +1321,7 @@ void SENTENCEG_Init()
 
 		buffer[j + 1] = 0;
 
+		memset( szgroup, 0, 64 );
 		// if new name doesn't match previous group name, 
 		// make a new group.
 		if( strcmp( szgroup, &( buffer[i] ) ) )
@@ -1527,12 +1527,12 @@ void TEXTURETYPE_Init()
 	memset( grgchTextureType, 0, CTEXTURESMAX );
 
 	gcTextures = 0;
-	memset( buffer, 0, 512 );
 
 	pMemFile = g_engfuncs.pfnLoadFileForMe( "sound/materials.txt", &fileSize );
 	if( !pMemFile )
 		return;
 
+	memset( buffer, 0, 512 );
 	// for each line in the file...
 	while( memfgets( pMemFile, fileSize, filePos, buffer, 511 ) != NULL && ( gcTextures < CTEXTURESMAX) )
 	{

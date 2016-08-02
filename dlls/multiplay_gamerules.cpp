@@ -1319,7 +1319,6 @@ Parses mapcycle.txt file into mapcycle_t structure
 */
 int ReloadMapCycleFile( char *filename, mapcycle_t *cycle )
 {
-	char szBuffer[MAX_RULE_BUFFER];
 	char szMap[32];
 	int length;
 	char *pFileList;
@@ -1332,8 +1331,8 @@ int ReloadMapCycleFile( char *filename, mapcycle_t *cycle )
 		// the first map name in the file becomes the default
 		while( 1 )
 		{
+			char szBuffer[MAX_RULE_BUFFER] = {0};
 			hasbuffer = 0;
-			memset( szBuffer, 0, MAX_RULE_BUFFER );
 
 			pFileList = COM_Parse( pFileList );
 			if( strlen( com_token ) <= 0 )

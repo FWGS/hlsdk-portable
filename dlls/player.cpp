@@ -660,12 +660,11 @@ void CBasePlayer::PackDeadPlayerItems( void )
 	int iWeaponRules;
 	int iAmmoRules;
 	int i;
-	CBasePlayerWeapon *rgpPackWeapons[20];// 20 hardcoded for now. How to determine exactly how many weapons we have?
+	CBasePlayerWeapon *rgpPackWeapons[20] = {0};// 20 hardcoded for now. How to determine exactly how many weapons we have?
 	int iPackAmmo[MAX_AMMO_SLOTS + 1];
 	int iPW = 0;// index into packweapons array
 	int iPA = 0;// index into packammo array
 
-	memset( rgpPackWeapons, NULL, sizeof(rgpPackWeapons) );
 	memset( iPackAmmo, -1, sizeof(iPackAmmo) );
 
 	// get the game rules
@@ -1624,11 +1623,10 @@ void CBasePlayer::InitStatusBar()
 
 void CBasePlayer::UpdateStatusBar()
 {
-	int newSBarState[SBAR_END];
+	int newSBarState[SBAR_END] = {0};
 	char sbuf0[SBAR_STRING_SIZE];
 	char sbuf1[ SBAR_STRING_SIZE ];
 
-	memset( newSBarState, 0, sizeof(newSBarState) );
 	strcpy( sbuf0, m_SbarString0 );
 	strcpy( sbuf1, m_SbarString1 );
 

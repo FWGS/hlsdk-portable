@@ -914,8 +914,7 @@ void CHudServers::RequestBroadcastList( int clearpending )
 	m_nDone = 0;
 	m_dStarted = m_fElapsed;
 
-	netadr_t adr;
-	memset( &adr, 0, sizeof(adr) );
+	netadr_t adr = {0};
 
 	if( clearpending )
 	{

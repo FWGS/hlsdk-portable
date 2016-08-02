@@ -1489,8 +1489,6 @@ int GetWeaponData( struct edict_s *player, struct weapon_data_s *info )
 	CBasePlayer *pl = (CBasePlayer *)CBasePlayer::Instance( pev );
 	CBasePlayerWeapon *gun;
 
-	ItemInfo II;
-
 	memset( info, 0, 32 * sizeof(weapon_data_t) );
 
 	if( !pl )
@@ -1509,8 +1507,8 @@ int GetWeaponData( struct edict_s *player, struct weapon_data_s *info )
 				gun = (CBasePlayerWeapon *)pPlayerItem->GetWeaponPtr();
 				if( gun && gun->UseDecrement() )
 				{
+					ItemInfo II = {0};
 					// Get The ID.
-					memset( &II, 0, sizeof(II) );
 					gun->GetItemInfo( &II );
 
 					if( II.iId >= 0 && II.iId < 32 )
@@ -1610,8 +1608,7 @@ void UpdateClientData( const struct edict_s *ent, int sendweapons, struct client
 				gun = (CBasePlayerWeapon *)pl->m_pActiveItem->GetWeaponPtr();
 				if( gun && gun->UseDecrement() )
 				{
-					ItemInfo II;
-					memset( &II, 0, sizeof(II) );
+					ItemInfo II = {0};
 					gun->GetItemInfo( &II );
 
 					cd->m_iId = II.iId;
