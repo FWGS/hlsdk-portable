@@ -38,7 +38,7 @@ extern globalvars_t				*gpGlobals;
 #define STRING(offset)		(const char *)(gpGlobals->pStringBase + (int)offset)
 
 #if !defined __amd64__ || defined(CLIENT_DLL)
-#define MAKE_STRING(str)	((int)str - (int)STRING(0))
+#define MAKE_STRING(str)	((int)(size_t)str - (int)(size_t)STRING(0))
 #else
 #define MAKE_STRING ALLOC_STRING
 #endif
