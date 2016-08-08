@@ -60,9 +60,8 @@ typedef enum
 	TLK_WOUND,
 	TLK_MORTAL,
 
-	TLK_CGROUPS,					// MUST be last entry
+	TLK_CGROUPS					// MUST be last entry
 } TALKGROUPNAMES;
-
 
 enum
 {
@@ -71,7 +70,7 @@ enum
 	SCHED_MOVE_AWAY_FOLLOW,	// same, but follow afterward
 	SCHED_MOVE_AWAY_FAIL,	// Turn back toward player
 
-	LAST_TALKMONSTER_SCHEDULE,		// MUST be last
+	LAST_TALKMONSTER_SCHEDULE		// MUST be last
 };
 
 enum
@@ -92,7 +91,7 @@ enum
 	TASK_TLK_IDEALYAW,		// set ideal yaw to face who I'm talking to
 	TASK_FACE_PLAYER,		// Face the player
 
-	LAST_TALKMONSTER_TASK,			// MUST be last
+	LAST_TALKMONSTER_TASK			// MUST be last
 };
 
 class CTalkMonster : public CBaseMonster
@@ -122,7 +121,6 @@ public:
 	void			HandleAnimEvent( MonsterEvent_t *pEvent );
 	void			PrescheduleThink( void );
 	
-
 	// Conversations / communication
 	int				GetVoicePitch( void );
 	void			IdleRespond( void );
@@ -137,6 +135,7 @@ public:
 	void			ShutUpFriends( void );
 	BOOL			IsTalking( void );
 	void			Talk( float flDuration );	
+
 	// For following
 	BOOL			CanFollow( void );
 	BOOL			IsFollowing( void ) { return m_hTargetEnt != NULL && m_hTargetEnt->IsPlayer(); }
@@ -170,14 +169,12 @@ public:
 	float		m_flStopTalkTime;// when in the future that I'll be done saying this sentence.
 
 	EHANDLE		m_hTalkTarget;	// who to look at while talking
-	CUSTOM_SCHEDULES;
+	CUSTOM_SCHEDULES
 };
-
 
 // Clients can push talkmonsters out of their way
 #define		bits_COND_CLIENT_PUSH		( bits_COND_SPECIAL1 )
 // Don't see a client right now.
 #define		bits_COND_CLIENT_UNSEEN		( bits_COND_SPECIAL2 )
 
-
-#endif		//TALKMONSTER_H
+#endif //TALKMONSTER_H

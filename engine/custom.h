@@ -31,7 +31,7 @@ typedef enum
 	t_decal,
 	t_generic,
 	t_eventscript,
-	t_world,			// Fake type for world, is really t_model
+	t_world			// Fake type for world, is really t_model
 } resourcetype_t;
 
 typedef struct

@@ -36,7 +36,7 @@
 // PM_PlayerTrace results.
 #include "pmtrace.h"
 
-
+#include "com_model.h"
 #include "usercmd.h"
 
 // physent_t
