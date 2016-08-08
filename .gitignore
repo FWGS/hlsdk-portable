@@ -6,3 +6,4 @@
 *.a
 *.framework
 *.exe
+build/
