@@ -65,8 +65,8 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
            gman.cpp \
            h_ai.cpp \
            h_battery.cpp \
-           h_cine.cpp \
            h_cycler.cpp \
+           h_cine.cpp \
            h_export.cpp \
            handgrenade.cpp \
            hassassin.cpp \
@@ -114,8 +114,8 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
            subs.cpp \
            talkmonster.cpp \
            teamplay_gamerules.cpp \
-           tempmonster.cpp \
            tentacle.cpp \
+           tempentity.cpp \
            triggers.cpp \
            tripmine.cpp \
            turret.cpp \

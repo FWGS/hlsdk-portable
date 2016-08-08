@@ -34,8 +34,8 @@ int CHudOverview::Init()
 //-----------------------------------------------------------------------------
 int CHudOverview::VidInit()
 {
-	m_hsprPlayer = gEngfuncs.pfnSPR_Load("sprites/ring.spr");
-	m_hsprViewcone = gEngfuncs.pfnSPR_Load("sprites/camera.spr");
+	m_hsprPlayer = gEngfuncs.pfnSPR_Load( "sprites/ring.spr" );
+	m_hsprViewcone = gEngfuncs.pfnSPR_Load( "sprites/camera.spr" );
 
 	return 1;
 }
@@ -45,42 +45,42 @@ int CHudOverview::VidInit()
 // Input  : flTime - 
 //			intermission - 
 //-----------------------------------------------------------------------------
-int CHudOverview::Draw(float flTime)
+int CHudOverview::Draw( float flTime )
 {
 #if 0
 	// only draw in overview mode
-	if (!gEngfuncs.Overview_GetOverviewState())
+	if( !gEngfuncs.Overview_GetOverviewState() )
 		return 1;
 
 	// make sure we have player info
-//	gViewPort->GetAllPlayersInfo();
+	//gViewPort->GetAllPlayersInfo();
 	gHUD.m_Scoreboard.GetAllPlayersInfo();
 
 	// calculate player size on the overview
 	int x1, y1, x2, y2;
-	float v0[3]={0,0,0}, v1[3]={64,64,0};
-	gEngfuncs.Overview_WorldToScreen(v0, &x1, &y1);
-	gEngfuncs.Overview_WorldToScreen(v1, &x2, &y2);
-	float scale = abs(x2 - x1);
+	float v0[3] = { 0.0f }, v1[3] = { 64.0f, 64.0f };
+	gEngfuncs.Overview_WorldToScreen( v0, &x1, &y1 );
+	gEngfuncs.Overview_WorldToScreen( v1, &x2, &y2 );
+	float scale = abs( x2 - x1 );
 
 	// loop through all the players and draw them on the map
-	for (int i = 1; i < MAX_PLAYERS; i++)
+	for( int i = 1; i < MAX_PLAYERS; i++ )
 	{
-		cl_entity_t *pl = gEngfuncs.GetEntityByIndex(i);
+		cl_entity_t *pl = gEngfuncs.GetEntityByIndex( i );
 
-		if (pl && pl->player && pl->curstate.health > 0 && pl->curstate.solid != SOLID_NOT)
+		if( pl && pl->player && pl->curstate.health > 0 && pl->curstate.solid != SOLID_NOT )
 		{
 			int x, y, z = 0;
-			float v[3]={pl->origin[0], pl->origin[1], 0};
-			gEngfuncs.Overview_WorldToScreen(v, &x, &y);
+			float v[3] = { pl->origin[0], pl->origin[1], 0 };
+			gEngfuncs.Overview_WorldToScreen( v, &x, &y );
 
 			// hack in some team colors
 			float r, g, bc;
-			if (g_PlayerExtraInfo[i].teamnumber == 1)
+			if( g_PlayerExtraInfo[i].teamnumber == 1 )
 			{
 				r = 0.0f; g = 0.0f; bc = 1.0f;
 			}
-			else if (g_PlayerExtraInfo[i].teamnumber == 2)
+			else if( g_PlayerExtraInfo[i].teamnumber == 2 )
 			{
 				r = 1.0f; g = 0.0f; bc = 0.0f;
 			}
@@ -91,50 +91,50 @@ int CHudOverview::Draw(float flTime)
 			}
 
 			// set the current texture
-			gEngfuncs.pTriAPI->SpriteTexture((struct model_s *)gEngfuncs.GetSpritePointer(m_hsprPlayer), 0);
+			gEngfuncs.pTriAPI->SpriteTexture( (struct model_s *)gEngfuncs.GetSpritePointer( m_hsprPlayer ), 0 );
 
 			// additive render mode
-			gEngfuncs.pTriAPI->RenderMode(kRenderTransAdd);
+			gEngfuncs.pTriAPI->RenderMode( kRenderTransAdd );
 
 			// no culling
-			gEngfuncs.pTriAPI->CullFace(TRI_NONE);
+			gEngfuncs.pTriAPI->CullFace( TRI_NONE );
 
 			// draw a square
-			gEngfuncs.pTriAPI->Begin(TRI_QUADS);
+			gEngfuncs.pTriAPI->Begin( TRI_QUADS );
 
 			// set the color to be that of the team
-			gEngfuncs.pTriAPI->Color4f(r, g, bc, 1.0f);
+			gEngfuncs.pTriAPI->Color4f( r, g, bc, 1.0f );
 
 			// calculate rotational matrix
 			vec3_t a, b, angles;
 			float rmatrix[3][4];	// transformation matrix
-			VectorCopy(pl->angles, angles);
+			VectorCopy( pl->angles, angles );
 			angles[0] = 0.0f;
 			angles[1] += 90.f;
 			angles[1] = -angles[1];
 			angles[2] = 0.0f;
-			AngleMatrix(angles, rmatrix);
+			AngleMatrix( angles, rmatrix );
 			a[2] = 0;
 
 			a[0] = -scale; a[1] = -scale;
-			VectorTransform(a, rmatrix , b );
+			VectorTransform( a, rmatrix, b );
 			gEngfuncs.pTriAPI->TexCoord2f( 0, 0 );
-			gEngfuncs.pTriAPI->Vertex3f(x + b[0], y + b[1], z);
+			gEngfuncs.pTriAPI->Vertex3f( x + b[0], y + b[1], z );
 
-			a[0]=-scale; a[1] = scale;
-			VectorTransform(a, rmatrix , b );
+			a[0] = -scale; a[1] = scale;
+			VectorTransform( a, rmatrix, b );
 			gEngfuncs.pTriAPI->TexCoord2f( 0, 1 );
-			gEngfuncs.pTriAPI->Vertex3f (x + b[0], y + b[1], z);
-			
-			a[0]=scale; a[1] = scale;
-			VectorTransform(a, rmatrix , b );
-			gEngfuncs.pTriAPI->TexCoord2f( 1, 1 );
-			gEngfuncs.pTriAPI->Vertex3f (x + b[0], y + b[1], z);
+			gEngfuncs.pTriAPI->Vertex3f( x + b[0], y + b[1], z );
 
-			a[0]=scale; a[1] = -scale;
-			VectorTransform(a, rmatrix , b );
+			a[0] = scale; a[1] = scale;
+			VectorTransform( a, rmatrix, b );
+			gEngfuncs.pTriAPI->TexCoord2f( 1, 1 );
+			gEngfuncs.pTriAPI->Vertex3f( x + b[0], y + b[1], z );
+
+			a[0] = scale; a[1] = -scale;
+			VectorTransform( a, rmatrix, b );
 			gEngfuncs.pTriAPI->TexCoord2f( 1, 0 );
-			gEngfuncs.pTriAPI->Vertex3f (x + b[0], y + b[1], z);
+			gEngfuncs.pTriAPI->Vertex3f( x + b[0], y + b[1], z );
 
 			// finish up
 			gEngfuncs.pTriAPI->End();
@@ -142,11 +142,10 @@ int CHudOverview::Draw(float flTime)
 
 			// draw the players name and health underneath
 			char string[256];
-			sprintf(string, "%s (%i%%)", g_PlayerInfoList[i].name, pl->curstate.health);
-			DrawConsoleString(x, y + (1.1 * scale), string);
+			sprintf( string, "%s (%i%%)", g_PlayerInfoList[i].name, pl->curstate.health );
+			DrawConsoleString( x, y + ( 1.1 * scale ), string );
 		}
 	}
-
 #endif
 	return 1;
 }
@@ -156,8 +155,7 @@ int CHudOverview::Draw(float flTime)
 //-----------------------------------------------------------------------------
 void CHudOverview::InitHUDData()
 {
-//  this block would force the spectator view to be on
-//	gEngfuncs.Overview_SetDrawOverview( 1 );
-//	gEngfuncs.Overview_SetDrawInset( 0 );
+	//this block would force the spectator view to be on
+	//gEngfuncs.Overview_SetDrawOverview( 1 );
+	//gEngfuncs.Overview_SetDrawInset( 0 );
 }
-

@@ -42,6 +42,4 @@ int ExtractBbox( void *pmodel, int sequence, float *mins, float *maxs );
 
 // From /engine/studio.h
 #define STUDIO_LOOPING		0x0001
-
-
 #endif	//ANIMATION_H

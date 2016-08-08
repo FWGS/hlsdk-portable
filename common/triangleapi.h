@@ -19,7 +19,7 @@
 typedef enum 
 {
 	TRI_FRONT = 0,
-	TRI_NONE = 1,
+	TRI_NONE = 1
 } TRICULLSTYLE;
 
 #define TRI_API_VERSION	1

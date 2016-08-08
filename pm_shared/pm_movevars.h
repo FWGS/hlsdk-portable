@@ -50,5 +50,4 @@ struct movevars_s
 };
 
 extern movevars_t movevars;
-
 #endif
