@@ -24,8 +24,7 @@ WPN_SHARED_OBJDIR=$(WPN_SHARED_SRCDIR)/obj
 PM_SHARED_OBJDIR=$(PM_SHARED_SRCDIR)/obj
 GAME_SHARED_OBJDIR=$(GAME_SHARED_SRCDIR)/obj
 
-BASE_CFLAGS=	-Dstricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp \
-		-DCLIENT_WEAPONS -DNO_VOICEGAMEMGR
+BASE_CFLAGS=	-Dstricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp
 
 #safe optimization
 CFLAGS=$(BASE_CFLAGS) -m32 -w -O1
