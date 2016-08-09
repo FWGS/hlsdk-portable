@@ -32,7 +32,7 @@ extern "C"
 cl_enginefunc_t gEngfuncs;
 CHud gHUD;
 mobile_engfuncs_t *gMobileEngfuncs = NULL;
-void InitInput (void);
+void InitInput( void );
 void EV_HookEvents( void );
 void IN_Commands( void );
 
@@ -73,16 +73,16 @@ int DLLEXPORT HUD_GetHullBounds( int hullnumber, float *mins, float *maxs )
 {
 	int iret = 0;
 
-	switch ( hullnumber )
+	switch( hullnumber )
 	{
 	case 0:				// Normal player
-		mins = Vector(-16, -16, -36);
-		maxs = Vector(16, 16, 36);
+		mins = Vector( -16, -16, -36 );
+		maxs = Vector( 16, 16, 36 );
 		iret = 1;
 		break;
 	case 1:				// Crouched player
-		mins = Vector(-16, -16, -18 );
-		maxs = Vector(16, 16, 18 );
+		mins = Vector( -16, -16, -18 );
+		maxs = Vector( 16, 16, 18 );
 		iret = 1;
 		break;
 	case 2:				// Point based hull
@@ -103,7 +103,7 @@ HUD_ConnectionlessPacket
   size of the response_buffer, so you must zero it out if you choose not to respond.
 ================================
 */
-int	DLLEXPORT HUD_ConnectionlessPacket( const struct netadr_s *net_from, const char *args, char *response_buffer, int *response_buffer_size )
+int DLLEXPORT HUD_ConnectionlessPacket( const struct netadr_s *net_from, const char *args, char *response_buffer, int *response_buffer_size )
 {
 	// Parse stuff from args
 	int max_buffer_size = *response_buffer_size;
@@ -136,16 +136,34 @@ int DLLEXPORT Initialize( cl_enginefunc_t *pEnginefuncs, int iVersion )
 {
 	gEngfuncs = *pEnginefuncs;
 
-	if (iVersion != CLDLL_INTERFACE_VERSION)
+	if( iVersion != CLDLL_INTERFACE_VERSION )
 		return 0;
 
-	memcpy(&gEngfuncs, pEnginefuncs, sizeof(cl_enginefunc_t));
+	memcpy( &gEngfuncs, pEnginefuncs, sizeof(cl_enginefunc_t) );
 
 	EV_HookEvents();
 
 	return 1;
 }
 
+/*
+=================
+HUD_GetRect
+
+VGui stub
+=================
+*/
+int *HUD_GetRect( void )
+{
+	static int extent[4];
+
+	extent[0] = gEngfuncs.GetWindowCenterX() - ScreenWidth / 2;
+	extent[1] = gEngfuncs.GetWindowCenterY() - ScreenHeight / 2;
+	extent[2] = gEngfuncs.GetWindowCenterX() + ScreenWidth / 2;
+	extent[3] = gEngfuncs.GetWindowCenterY() + ScreenHeight / 2;
+
+	return extent;
+}
 
 /*
 ==========================
@@ -180,7 +198,6 @@ void DLLEXPORT HUD_Init( void )
 	gHUD.Init();
 }
 
-
 /*
 ==========================
 	HUD_Redraw
@@ -197,7 +214,6 @@ int DLLEXPORT HUD_Redraw( float time, int intermission )
 	return 1;
 }
 
-
 /*
 ==========================
 	HUD_UpdateClientData
@@ -211,11 +227,11 @@ returns 1 if anything has been changed, 0 otherwise.
 ==========================
 */
 
-int DLLEXPORT HUD_UpdateClientData(client_data_t *pcldata, float flTime )
+int DLLEXPORT HUD_UpdateClientData( client_data_t *pcldata, float flTime )
 {
 	IN_Commands();
 
-	return gHUD.UpdateClientData(pcldata, flTime );
+	return gHUD.UpdateClientData( pcldata, flTime );
 }
 
 /*
@@ -240,9 +256,8 @@ Called by engine every frame that client .dll is loaded
 */
 
 void DLLEXPORT HUD_Frame( double time )
-{
+{	gEngfuncs.VGui_ViewportPaintBackground(HUD_GetRect());
 }
-
 
 /*
 ==========================
@@ -252,7 +267,7 @@ Called when a player starts or stops talking.
 ==========================
 */
 
-void DLLEXPORT HUD_VoiceStatus(int entindex, qboolean bTalking)
+void DLLEXPORT HUD_VoiceStatus( int entindex, qboolean bTalking )
 {
 
 }
@@ -272,7 +287,7 @@ void DLLEXPORT HUD_DirectorMessage( int iSize, void *pbuf )
 
 void DLLEXPORT HUD_MobilityInterface( mobile_engfuncs_t *gpMobileEngfuncs )
 {
-    if( gpMobileEngfuncs->version != MOBILITY_API_VERSION )
-        return;
-    gMobileEngfuncs = gpMobileEngfuncs;
+	if( gpMobileEngfuncs->version != MOBILITY_API_VERSION )
+		return;
+	gMobileEngfuncs = gpMobileEngfuncs;
 }

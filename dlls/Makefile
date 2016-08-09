@@ -9,7 +9,8 @@ DLLNAME=hl
 ARCH=i386
 
 #make sure this is the correct compiler for your system
-CC=gcc
+CC?=gcc
+CXX?=g++
 
 DLL_SRCDIR=.
 ENGINE_SRCDIR=../engine
@@ -24,10 +25,10 @@ PM_SHARED_OBJDIR=$(PM_SHARED_SRCDIR)/obj
 GAME_SHARED_OBJDIR=$(GAME_SHARED_SRCDIR)/obj
 
 BASE_CFLAGS=	-Dstricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp \
-		-DCLIENT_WEAPONS
+		-DCLIENT_WEAPONS -DNO_VOICEGAMEMGR
 
 #safe optimization
-CFLAGS=$(BASE_CFLAGS) -w -m486 -O1
+CFLAGS=$(BASE_CFLAGS) -m32 -w -O1
 
 #full optimization
 #CFLAGS=$(BASE_CFLAGS) -w -O1 -m486 -ffast-math -funroll-loops \
@@ -46,6 +47,7 @@ SHLIBCFLAGS=-fPIC
 SHLIBLDFLAGS=-shared
 
 DO_CC=$(CC) $(CFLAGS) $(SHLIBCFLAGS) $(INCLUDEDIRS) -o $@ -c $<
+DO_CXX=$(CXX) $(CFLAGS) $(SHLIBCFLAGS) $(INCLUDEDIRS) -o $@ -c $<
 
 #############################################################################
 # SETUP AND BUILD
@@ -53,13 +55,13 @@ DO_CC=$(CC) $(CFLAGS) $(SHLIBCFLAGS) $(INCLUDEDIRS) -o $@ -c $<
 #############################################################################
 
 $(DLL_OBJDIR)/%.o: $(DLL_SRCDIR)/%.cpp
-	$(DO_CC)
+	$(DO_CXX)
 
 $(WPN_SHARED_OBJDIR)/%.o: $(WPN_SHARED_SRCDIR)/%.cpp
-	$(DO_CC)
+	$(DO_CXX)
 
 $(GAME_SHARED_OBJDIR)/%.o: $(GAME_SHARED_SRCDIR)/%.cpp
-	$(DO_CC)
+	$(DO_CXX)
 
 $(PM_SHARED_OBJDIR)/%.o: $(PM_SHARED_SRCDIR)/%.c
 	$(DO_CC)
@@ -161,14 +163,14 @@ OBJ = \
 	$(DLL_OBJDIR)/world.o \
 	$(DLL_OBJDIR)/xen.o \
 	$(DLL_OBJDIR)/zombie.o \
-	$(WPN_SHARED_OBJDIR)/hl_wpn_glock.o \
-	$(GAME_SHARED_OBJDIR)/voice_gamemgr.o \
+	$(DLL_OBJDIR)/glock.o \
 	$(PM_SHARED_OBJDIR)/pm_debug.o \
 	$(PM_SHARED_OBJDIR)/pm_math.o \
-	$(PM_SHARED_OBJDIR)/pm_shared.o
+	$(PM_SHARED_OBJDIR)/pm_shared.o 
+#	$(GAME_SHARED_OBJDIR)/voice_gamemgr.o
 
 $(DLLNAME)_$(ARCH).$(SHLIBEXT) : neat $(OBJ)
-	$(CC) $(CFLAGS) $(SHLIBLDFLAGS) $(LDFLAGS) -o $@ $(OBJ)
+	$(CXX) $(CFLAGS) $(SHLIBLDFLAGS) $(LDFLAGS) -o $@ $(OBJ)
 
 neat:
 	-mkdir $(DLL_OBJDIR)

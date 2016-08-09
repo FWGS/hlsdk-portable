@@ -34,18 +34,18 @@ extern int gmsgItemPickup;
 class CWorldItem : public CBaseEntity
 {
 public:
-	void	KeyValue(KeyValueData *pkvd ); 
-	void	Spawn( void );
-	int		m_iType;
+	void KeyValue( KeyValueData *pkvd ); 
+	void Spawn( void );
+	int m_iType;
 };
 
-LINK_ENTITY_TO_CLASS(world_items, CWorldItem);
+LINK_ENTITY_TO_CLASS( world_items, CWorldItem )
 
-void CWorldItem::KeyValue(KeyValueData *pkvd)
+void CWorldItem::KeyValue( KeyValueData *pkvd )
 {
-	if (FStrEq(pkvd->szKeyName, "type"))
+	if( FStrEq( pkvd->szKeyName, "type" ) )
 	{
-		m_iType = atoi(pkvd->szValue);
+		m_iType = atoi( pkvd->szValue );
 		pkvd->fHandled = TRUE;
 	}
 	else
@@ -56,7 +56,7 @@ void CWorldItem::Spawn( void )
 {
 	CBaseEntity *pEntity = NULL;
 
-	switch (m_iType) 
+	switch( m_iType ) 
 	{
 	case 44: // ITEM_BATTERY:
 		pEntity = CBaseEntity::Create( "item_battery", pev->origin, pev->angles );
@@ -72,7 +72,7 @@ void CWorldItem::Spawn( void )
 		break;
 	}
 
-	if (!pEntity)
+	if( !pEntity )
 	{
 		ALERT( at_console, "unable to create world_item %d\n", m_iType );
 	}
@@ -83,19 +83,18 @@ void CWorldItem::Spawn( void )
 		pEntity->pev->spawnflags = pev->spawnflags;
 	}
 
-	REMOVE_ENTITY(edict());
+	REMOVE_ENTITY( edict() );
 }
-
 
 void CItem::Spawn( void )
 {
 	pev->movetype = MOVETYPE_TOSS;
 	pev->solid = SOLID_TRIGGER;
 	UTIL_SetOrigin( pev, pev->origin );
-	UTIL_SetSize(pev, Vector(-16, -16, 0), Vector(16, 16, 16));
+	UTIL_SetSize( pev, Vector( -16, -16, 0 ), Vector( 16, 16, 16 ) );
 	SetTouch( &CItem::ItemTouch );
 
-	if (DROP_TO_FLOOR(ENT(pev)) == 0)
+	if( DROP_TO_FLOOR(ENT( pev ) ) == 0 )
 	{
 		ALERT(at_error, "Item %s fell out of level at %f,%f,%f\n", STRING( pev->classname ), pev->origin.x, pev->origin.y, pev->origin.z);
 		UTIL_Remove( this );
@@ -108,7 +107,7 @@ extern int gEvilImpulse101;
 void CItem::ItemTouch( CBaseEntity *pOther )
 {
 	// if it's not a player, ignore
-	if ( !pOther->IsPlayer() )
+	if( !pOther->IsPlayer() )
 	{
 		return;
 	}
@@ -116,20 +115,20 @@ void CItem::ItemTouch( CBaseEntity *pOther )
 	CBasePlayer *pPlayer = (CBasePlayer *)pOther;
 
 	// ok, a player is touching this item, but can he have it?
-	if ( !g_pGameRules->CanHaveItem( pPlayer, this ) )
+	if( !g_pGameRules->CanHaveItem( pPlayer, this ) )
 	{
 		// no? Ignore the touch.
 		return;
 	}
 
-	if (MyTouch( pPlayer ))
+	if( MyTouch( pPlayer ) )
 	{
 		SUB_UseTargets( pOther, USE_TOGGLE, 0 );
 		SetTouch( NULL );
 		
 		// player grabbed the item. 
 		g_pGameRules->PlayerGotItem( pPlayer, this );
-		if ( g_pGameRules->ItemShouldRespawn( this ) == GR_ITEM_RESPAWN_YES )
+		if( g_pGameRules->ItemShouldRespawn( this ) == GR_ITEM_RESPAWN_YES )
 		{
 			Respawn(); 
 		}
@@ -138,7 +137,7 @@ void CItem::ItemTouch( CBaseEntity *pOther )
 			UTIL_Remove( this );
 		}
 	}
-	else if (gEvilImpulse101)
+	else if( gEvilImpulse101 )
 	{
 		UTIL_Remove( this );
 	}
@@ -158,10 +157,10 @@ CBaseEntity* CItem::Respawn( void )
 
 void CItem::Materialize( void )
 {
-	if ( pev->effects & EF_NODRAW )
+	if( pev->effects & EF_NODRAW )
 	{
 		// changing from invisible state to visible.
-		EMIT_SOUND_DYN( ENT(pev), CHAN_WEAPON, "items/suitchargeok1.wav", 1, ATTN_NORM, 0, 150 );
+		EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, "items/suitchargeok1.wav", 1, ATTN_NORM, 0, 150 );
 		pev->effects &= ~EF_NODRAW;
 		pev->effects |= EF_MUZZLEFLASH;
 	}
@@ -175,56 +174,56 @@ class CItemSuit : public CItem
 {
 	void Spawn( void )
 	{ 
-		Precache( );
-		SET_MODEL(ENT(pev), "models/w_suit.mdl");
-		CItem::Spawn( );
+		Precache();
+		SET_MODEL( ENT( pev ), "models/w_suit.mdl" );
+		CItem::Spawn();
 	}
 	void Precache( void )
 	{
-		PRECACHE_MODEL ("models/w_suit.mdl");
+		PRECACHE_MODEL( "models/w_suit.mdl" );
 	}
 	BOOL MyTouch( CBasePlayer *pPlayer )
 	{
-		if ( pPlayer->pev->weapons & (1<<WEAPON_SUIT) )
+		if( pPlayer->pev->weapons & ( 1<<WEAPON_SUIT ) )
 			return FALSE;
 
-		if ( pev->spawnflags & SF_SUIT_SHORTLOGON )
-			EMIT_SOUND_SUIT(pPlayer->edict(), "!HEV_A0");		// short version of suit logon,
+		if( pev->spawnflags & SF_SUIT_SHORTLOGON )
+			EMIT_SOUND_SUIT( pPlayer->edict(), "!HEV_A0" );		// short version of suit logon,
 		else
-			EMIT_SOUND_SUIT(pPlayer->edict(), "!HEV_AAx");	// long version of suit logon
+			EMIT_SOUND_SUIT( pPlayer->edict(), "!HEV_AAx" );	// long version of suit logon
 
-		pPlayer->pev->weapons |= (1<<WEAPON_SUIT);
+		pPlayer->pev->weapons |= ( 1 << WEAPON_SUIT );
 		return TRUE;
 	}
 };
 
-LINK_ENTITY_TO_CLASS(item_suit, CItemSuit);
+LINK_ENTITY_TO_CLASS( item_suit, CItemSuit )
 
 class CItemArmorVest : public CItem
 {
 	void Spawn( void )
 	{
-		Precache( );
-		SET_MODEL(ENT(pev), "models/barney_vest.mdl");
-		CItem::Spawn( );
+		Precache();
+		SET_MODEL( ENT( pev ), "models/barney_vest.mdl" );
+		CItem::Spawn();
 	}
 	void Precache( void )
 	{
-		PRECACHE_MODEL ("models/barney_vest.mdl");
+		PRECACHE_MODEL( "models/barney_vest.mdl" );
 		PRECACHE_SOUND( "items/gunpickup2.wav" );
 	}
 	BOOL MyTouch( CBasePlayer *pPlayer )
 	{
-		if ((pPlayer->pev->armorvalue < MAX_NORMAL_BATTERY) &&
-			(pPlayer->pev->weapons & (1<<WEAPON_SUIT)))
+		if( ( pPlayer->pev->armorvalue < MAX_NORMAL_BATTERY ) &&
+			( pPlayer->pev->weapons & ( 1 << WEAPON_SUIT ) ) )
 		{
 			pPlayer->pev->armorvalue += 60;
-			pPlayer->pev->armorvalue = min(pPlayer->pev->armorvalue, MAX_NORMAL_BATTERY);
+			pPlayer->pev->armorvalue = min( pPlayer->pev->armorvalue, MAX_NORMAL_BATTERY );
 
 			EMIT_SOUND( pPlayer->edict(), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM );
 
 			MESSAGE_BEGIN( MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev );
-				WRITE_STRING( STRING(pev->classname) );
+				WRITE_STRING( STRING( pev->classname ) );
 			MESSAGE_END();
 			return TRUE;
 		}
@@ -232,15 +231,15 @@ class CItemArmorVest : public CItem
 	}
 };
 
-LINK_ENTITY_TO_CLASS(item_armorvest, CItemArmorVest);
+LINK_ENTITY_TO_CLASS( item_armorvest, CItemArmorVest )
 
 class CItemHelmet : public CItem
 {
 	void Spawn( void )
 	{ 
-		Precache( );
-		SET_MODEL( ENT(pev), "models/barney_helmet.mdl" );
-		CItem::Spawn( );
+		Precache();
+		SET_MODEL( ENT( pev ), "models/barney_helmet.mdl" );
+		CItem::Spawn();
 	}
 	void Precache( void )
 	{
@@ -249,16 +248,16 @@ class CItemHelmet : public CItem
 	}
 	BOOL MyTouch( CBasePlayer *pPlayer )
 	{
-		if ((pPlayer->pev->armorvalue < MAX_NORMAL_BATTERY) &&
-			(pPlayer->pev->weapons & (1<<WEAPON_SUIT)))
+		if( ( pPlayer->pev->armorvalue < MAX_NORMAL_BATTERY ) &&
+			( pPlayer->pev->weapons & ( 1 << WEAPON_SUIT ) ) )
 		{
 			pPlayer->pev->armorvalue += 40;
-			pPlayer->pev->armorvalue = min(pPlayer->pev->armorvalue, MAX_NORMAL_BATTERY);
+			pPlayer->pev->armorvalue = min( pPlayer->pev->armorvalue, MAX_NORMAL_BATTERY );
 
 			EMIT_SOUND( pPlayer->edict(), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM );
 
 			MESSAGE_BEGIN( MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev );
-				WRITE_STRING( STRING(pev->classname) );
+				WRITE_STRING( STRING( pev->classname ) );
 			MESSAGE_END();
 			return TRUE;
 		}
@@ -266,94 +265,91 @@ class CItemHelmet : public CItem
 	}
 };
 
-LINK_ENTITY_TO_CLASS(item_helmet, CItemHelmet);
+LINK_ENTITY_TO_CLASS( item_helmet, CItemHelmet )
 
 class CItemBattery : public CItem
 {
 	void Spawn( void )
 	{
-		Precache( );
-		SET_MODEL(ENT(pev), "models/w_battery.mdl");
-		CItem::Spawn( );
+		Precache();
+		SET_MODEL( ENT( pev ), "models/w_battery.mdl" );
+		CItem::Spawn();
 	}
 	void Precache( void )
 	{
-		PRECACHE_MODEL ("models/w_battery.mdl");
+		PRECACHE_MODEL( "models/w_battery.mdl" );
 		PRECACHE_SOUND( "items/gunpickup2.wav" );
 	}
 	BOOL MyTouch( CBasePlayer *pPlayer )
 	{
-		if ((pPlayer->pev->armorvalue < MAX_NORMAL_BATTERY) &&
-			(pPlayer->pev->weapons & (1<<WEAPON_SUIT)))
+		if( ( pPlayer->pev->armorvalue < MAX_NORMAL_BATTERY ) &&
+			( pPlayer->pev->weapons & ( 1 << WEAPON_SUIT ) ) )
 		{
 			int pct;
 			char szcharge[64];
 
 			pPlayer->pev->armorvalue += gSkillData.batteryCapacity;
-			pPlayer->pev->armorvalue = min(pPlayer->pev->armorvalue, MAX_NORMAL_BATTERY);
+			pPlayer->pev->armorvalue = min( pPlayer->pev->armorvalue, MAX_NORMAL_BATTERY );
 
 			EMIT_SOUND( pPlayer->edict(), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM );
 
 			MESSAGE_BEGIN( MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev );
-				WRITE_STRING( STRING(pev->classname) );
+				WRITE_STRING( STRING( pev->classname ) );
 			MESSAGE_END();
 
-			
 			// Suit reports new power level
 			// For some reason this wasn't working in release build -- round it.
-			pct = (int)( (float)(pPlayer->pev->armorvalue * 100.0) * (1.0/MAX_NORMAL_BATTERY) + 0.5);
-			pct = (pct / 5);
-			if (pct > 0)
+			pct = (int)( (float)( pPlayer->pev->armorvalue * 100.0 ) * ( 1.0 / MAX_NORMAL_BATTERY ) + 0.5 );
+			pct = ( pct / 5 );
+			if( pct > 0 )
 				pct--;
-		
+
 			sprintf( szcharge,"!HEV_%1dP", pct );
-			
-			//EMIT_SOUND_SUIT(ENT(pev), szcharge);
-			pPlayer->SetSuitUpdate(szcharge, FALSE, SUIT_NEXT_IN_30SEC);
-			return TRUE;		
+
+			//EMIT_SOUND_SUIT( ENT( pev ), szcharge );
+			pPlayer->SetSuitUpdate( szcharge, FALSE, SUIT_NEXT_IN_30SEC);
+			return TRUE;
 		}
 		return FALSE;
 	}
 };
 
-LINK_ENTITY_TO_CLASS(item_battery, CItemBattery);
-
+LINK_ENTITY_TO_CLASS( item_battery, CItemBattery )
 
 class CItemAntidote : public CItem
 {
 	void Spawn( void )
 	{ 
-		Precache( );
-		SET_MODEL(ENT(pev), "models/w_antidote.mdl");
-		CItem::Spawn( );
+		Precache();
+		SET_MODEL( ENT( pev ), "models/w_antidote.mdl" );
+		CItem::Spawn();
 	}
 	void Precache( void )
 	{
-		PRECACHE_MODEL ("models/w_antidote.mdl");
+		PRECACHE_MODEL( "models/w_antidote.mdl" );
 	}
 	BOOL MyTouch( CBasePlayer *pPlayer )
 	{
-		pPlayer->SetSuitUpdate("!HEV_DET4", FALSE, SUIT_NEXT_IN_1MIN);
-		
+		pPlayer->SetSuitUpdate( "!HEV_DET4", FALSE, SUIT_NEXT_IN_1MIN );
+
 		pPlayer->m_rgItems[ITEM_ANTIDOTE] += 1;
 		return TRUE;
 	}
 };
 
-LINK_ENTITY_TO_CLASS(item_antidote, CItemAntidote);
-
+LINK_ENTITY_TO_CLASS( item_antidote, CItemAntidote )
 
 class CItemSecurity : public CItem
 {
 	void Spawn( void )
 	{ 
-		Precache( );
-		SET_MODEL(ENT(pev), "models/w_security.mdl");
-		CItem::Spawn( );
+		Precache();
+		SET_MODEL( ENT( pev ), "models/w_security.mdl" );
+		CItem::Spawn();
 	}
 	void Precache( void )
 	{
-		PRECACHE_MODEL ("models/w_security.mdl");
+		PRECACHE_MODEL( "models/w_security.mdl" );
 	}
 	BOOL MyTouch( CBasePlayer *pPlayer )
 	{
@@ -362,35 +358,35 @@ class CItemSecurity : public CItem
 	}
 };
 
-LINK_ENTITY_TO_CLASS(item_security, CItemSecurity);
+LINK_ENTITY_TO_CLASS( item_security, CItemSecurity )
 
 class CItemLongJump : public CItem
 {
 	void Spawn( void )
 	{ 
-		Precache( );
-		SET_MODEL(ENT(pev), "models/w_longjump.mdl");
-		CItem::Spawn( );
+		Precache();
+		SET_MODEL( ENT( pev ), "models/w_longjump.mdl" );
+		CItem::Spawn();
 	}
 	void Precache( void )
 	{
-		PRECACHE_MODEL ("models/w_longjump.mdl");
+		PRECACHE_MODEL( "models/w_longjump.mdl" );
 	}
 	BOOL MyTouch( CBasePlayer *pPlayer )
 	{
-		if ( pPlayer->m_fLongJump )
+		if( pPlayer->m_fLongJump )
 		{
 			return FALSE;
 		}
 
-		if ( ( pPlayer->pev->weapons & (1<<WEAPON_SUIT) ) )
+		if( ( pPlayer->pev->weapons & ( 1 << WEAPON_SUIT ) ) )
 		{
 			pPlayer->m_fLongJump = TRUE;// player now has longjump module
 
 			g_engfuncs.pfnSetPhysicsKeyValue( pPlayer->edict(), "slj", "1" );
 
 			MESSAGE_BEGIN( MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev );
-				WRITE_STRING( STRING(pev->classname) );
+				WRITE_STRING( STRING( pev->classname ) );
 			MESSAGE_END();
 
 			EMIT_SOUND_SUIT( pPlayer->edict(), "!HEV_A1" );	// Play the longjump sound UNDONE: Kelly? correct sound?
@@ -400,4 +396,4 @@ class CItemLongJump : public CItem
 	}
 };
 
-LINK_ENTITY_TO_CLASS( item_longjump, CItemLongJump );
+LINK_ENTITY_TO_CLASS( item_longjump, CItemLongJump )

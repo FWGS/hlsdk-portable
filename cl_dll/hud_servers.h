@@ -33,9 +33,8 @@ void ServerPing( int server );
 void ServerRules( int server );
 void ServerPlayers( int server );
 
-int	ServersGetCount( void );
+int ServersGetCount( void );
 const char *ServersGetInfo( int server );
-int	ServersIsQuerying( void );
+int ServersIsQuerying( void );
 void SortServers( const char *fieldname );
-
 #endif // HUD_SERVERSH

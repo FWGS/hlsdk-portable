@@ -55,7 +55,6 @@ public:
 	BOOL m_fRegisteredSound;// whether or not this grenade has issued its DANGER sound to the world sound list yet.
 };
 
-
 // constant items
 #define ITEM_HEALTHKIT		1
 #define ITEM_ANTIDOTE		2
@@ -85,9 +84,7 @@ public:
 
 #define MAX_WEAPONS			32
 
-
 #define MAX_NORMAL_BATTERY	100
-
 
 // weapon weight factors (for auto-switching)   (-1 = noswitch)
 #define CROWBAR_WEIGHT		0
@@ -104,7 +101,6 @@ public:
 #define SNARK_WEIGHT		5
 #define SATCHEL_WEIGHT		-10
 #define TRIPMINE_WEIGHT		-10
-
 
 // weapon clip/carry ammo capacities
 #define URANIUM_MAX_CARRY		100
@@ -138,7 +134,6 @@ public:
 #define SATCHEL_MAX_CLIP		WEAPON_NOCLIP
 #define TRIPMINE_MAX_CLIP		WEAPON_NOCLIP
 #define SNARK_MAX_CLIP			WEAPON_NOCLIP
-
 
 // the default amount of ammo that comes with each gun when it spawns
 #define GLOCK_DEFAULT_GIVE			17
@@ -182,9 +177,8 @@ typedef	enum
 
 	BULLET_MONSTER_9MM,
 	BULLET_MONSTER_MP5,
-	BULLET_MONSTER_12MM,
+	BULLET_MONSTER_12MM
 } Bullet;
-
 
 #define ITEM_FLAG_SELECTONEMPTY		1
 #define ITEM_FLAG_NOAUTORELOAD		2
@@ -223,7 +217,7 @@ public:
 
 	virtual int		Save( CSave &save );
 	virtual int		Restore( CRestore &restore );
-	
+
 	static	TYPEDESCRIPTION m_SaveData[];
 
 	virtual int AddToPlayer( CBasePlayer *pPlayer );	// return TRUE if the item you want the item added to the player inventory
@@ -282,14 +276,13 @@ public:
 	// int		m_iIdSecondary;										// Unique Id for secondary ammo
 };
 
-
 // inventory items that 
 class CBasePlayerWeapon : public CBasePlayerItem
 {
 public:
 	virtual int		Save( CSave &save );
 	virtual int		Restore( CRestore &restore );
-	
+
 	static	TYPEDESCRIPTION m_SaveData[];
 
 	// generic weapon versions of CBasePlayerItem calls
@@ -331,7 +324,7 @@ public:
 	virtual BOOL ShouldWeaponIdle( void ) {return FALSE; };
 	virtual void Holster( int skiplocal = 0 );
 	virtual BOOL UseDecrement( void ) { return FALSE; };
-	
+
 	int	PrimaryAmmoIndex(); 
 	int	SecondaryAmmoIndex(); 
 
@@ -352,9 +345,7 @@ public:
 	int		m_fInReload;										// Are we in the middle of a reload;
 
 	int		m_iDefaultAmmo;// how much ammo you get when you pick up this weapon as placed by a level designer.
-
 };
-
 
 class CBasePlayerAmmo : public CBaseEntity
 {
@@ -366,7 +357,6 @@ public:
 	CBaseEntity* Respawn( void );
 	void EXPORT Materialize( void );
 };
-
 
 extern DLL_GLOBAL	short	g_sModelIndexLaser;// holds the index for the laser beam
 extern DLL_GLOBAL	const char *g_pModelNameLaser;
@@ -396,7 +386,6 @@ typedef struct
 } MULTIDAMAGE;
 
 extern MULTIDAMAGE gMultiDamage;
-
 
 #define LOUD_GUN_VOLUME			1000
 #define NORMAL_GUN_VOLUME		600
@@ -448,7 +437,7 @@ public:
 	BOOL HasWeapon( CBasePlayerItem *pCheckItem );
 	BOOL PackWeapon( CBasePlayerItem *pWeapon );
 	BOOL PackAmmo( int iszName, int iCount );
-	
+
 	CBasePlayerItem	*m_rgpPlayerItems[MAX_ITEM_TYPES];// one slot for each 
 
 	int m_rgiszAmmo[MAX_AMMO_SLOTS];// ammo names
@@ -484,12 +473,10 @@ public:
 
 private:
 	int m_iShell;
-	
 
 	unsigned short m_usFireGlock1;
 	unsigned short m_usFireGlock2;
 };
-
 
 class CCrowbar : public CBasePlayerWeapon
 {
@@ -604,14 +591,11 @@ private:
 class CShotgun : public CBasePlayerWeapon
 {
 public:
-
 #ifndef CLIENT_DLL
 	int		Save( CSave &save );
 	int		Restore( CRestore &restore );
 	static	TYPEDESCRIPTION m_SaveData[];
 #endif
-
-
 	void Spawn( void );
 	void Precache( void );
 	int iItemSlot( ) { return 3; }
@@ -647,20 +631,18 @@ class CLaserSpot : public CBaseEntity
 public:
 	void Suspend( float flSuspendTime );
 	void EXPORT Revive( void );
-	
+
 	static CLaserSpot *CreateSpot( void );
 };
 
 class CRpg : public CBasePlayerWeapon
 {
 public:
-
 #ifndef CLIENT_DLL
 	int		Save( CSave &save );
 	int		Restore( CRestore &restore );
 	static	TYPEDESCRIPTION m_SaveData[];
 #endif
-
 	void Spawn( void );
 	void Precache( void );
 	void Reload( void );
@@ -690,7 +672,6 @@ public:
 
 private:
 	unsigned short m_usRpg;
-
 };
 
 class CRpgRocket : public CGrenade
@@ -714,13 +695,11 @@ public:
 class CGauss : public CBasePlayerWeapon
 {
 public:
-
 #ifndef CLIENT_DLL
 	int		Save( CSave &save );
 	int		Restore( CRestore &restore );
 	static	TYPEDESCRIPTION m_SaveData[];
 #endif
-
 	void Spawn( void );
 	void Precache( void );
 	int iItemSlot( void ) { return 4; }
@@ -733,7 +712,7 @@ public:
 	void PrimaryAttack( void );
 	void SecondaryAttack( void );
 	void WeaponIdle( void );
-	
+
 	void StartFire( void );
 	void Fire( Vector vecOrigSrc, Vector vecDirShooting, float flDamage );
 	float GetFullChargeTime( void );
@@ -764,7 +743,6 @@ public:
 	int		Restore( CRestore &restore );
 	static	TYPEDESCRIPTION m_SaveData[];
 #endif
-
 	void Spawn( void );
 	void Precache( void );
 	int iItemSlot( void ) { return 4; }
@@ -794,7 +772,7 @@ public:
 	BOOL HasAmmo( void );
 
 	void UseAmmo( int count );
-	
+
 	enum EGON_FIREMODE { FIRE_NARROW, FIRE_WIDE};
 
 	CBeam				*m_pBeam;
@@ -836,7 +814,7 @@ public:
 	float m_flNextAnimTime;
 
 	float m_flRechargeTime;
-	
+
 	int m_iFirePhase;// don't save me.
 
 	virtual BOOL UseDecrement( void )
@@ -846,8 +824,6 @@ public:
 private:
 	unsigned short m_usHornetFire;
 };
-
-
 
 class CHandGrenade : public CBasePlayerWeapon
 {
@@ -862,7 +838,7 @@ public:
 	BOOL CanHolster( void );
 	void Holster( int skiplocal = 0 );
 	void WeaponIdle( void );
-	
+
 	virtual BOOL UseDecrement( void )
 	{ 
 		return FALSE;
@@ -872,13 +848,11 @@ public:
 class CSatchel : public CBasePlayerWeapon
 {
 public:
-
 #ifndef CLIENT_DLL
 	int		Save( CSave &save );
 	int		Restore( CRestore &restore );
 	static	TYPEDESCRIPTION m_SaveData[];
 #endif
-
 	void Spawn( void );
 	void Precache( void );
 	int iItemSlot( void ) { return 5; }
@@ -890,17 +864,16 @@ public:
 	BOOL CanDeploy( void );
 	BOOL Deploy( void );
 	BOOL IsUseable( void );
-	
+
 	void Holster( int skiplocal = 0 );
 	void WeaponIdle( void );
 	void Throw( void );
-	
+
 	virtual BOOL UseDecrement( void )
 	{ 
 		return FALSE;
 	}
 };
-
 
 class CTripmine : public CBasePlayerWeapon
 {
@@ -928,7 +901,6 @@ public:
 
 private:
 	unsigned short m_usTripFire;
-
 };
 
 class CSqueak : public CBasePlayerWeapon
@@ -953,6 +925,4 @@ public:
 private:
 	unsigned short m_usSnarkFire;
 };
-
-
 #endif // WEAPONS_H

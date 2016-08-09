@@ -54,6 +54,8 @@ float rel_pitch;
 #define IMPULSE_DOWN	2
 #define IMPULSE_UP		4
 
+bool CL_IsDead();
+Vector dead_viewangles(0, 0, 0);
 
 void IN_ToggleButtons( float forwardmove, float sidemove )
 {
@@ -91,47 +93,46 @@ void IN_ToggleButtons( float forwardmove, float sidemove )
 		}
 	}
 
-	if ( forwardmove > 0.7 && !( moveflags & F ))
+	if( forwardmove > 0.7 && !( moveflags & F ) )
 	{
 		moveflags |= F;
 		in_forward.state |= BUTTON_DOWN;
 	}
-	if ( forwardmove < 0.7 && ( moveflags & F ))
+	if( forwardmove < 0.7 && ( moveflags & F ) )
 	{
 		moveflags &= ~F;
 		in_forward.state &= ~BUTTON_DOWN;
 	}
-	if ( forwardmove < -0.7 && !( moveflags & B ))
+	if( forwardmove < -0.7 && !( moveflags & B ) )
 	{
 		moveflags |= B;
 		in_back.state |= BUTTON_DOWN;
 	}
-	if ( forwardmove > -0.7 && ( moveflags & B ))
+	if( forwardmove > -0.7 && ( moveflags & B ) )
 	{
 		moveflags &= ~B;
 		in_back.state &= ~BUTTON_DOWN;
 	}
-	if ( sidemove > 0.9 && !( moveflags & R ))
+	if( sidemove > 0.9 && !( moveflags & R ) )
 	{
 		moveflags |= R;
 		in_moveright.state |= BUTTON_DOWN;
 	}
-	if ( sidemove < 0.9 && ( moveflags & R ))
+	if( sidemove < 0.9 && ( moveflags & R ) )
 	{
 		moveflags &= ~R;
 		in_moveright.state &= ~BUTTON_DOWN;
 	}
-	if ( sidemove < -0.9 && !( moveflags & L ))
+	if( sidemove < -0.9 && !( moveflags & L ) )
 	{
 		moveflags |= L;
 		in_moveleft.state |= BUTTON_DOWN;
 	}
-	if ( sidemove > -0.9 && ( moveflags & L ))
+	if( sidemove > -0.9 && ( moveflags & L ) )
 	{
 		moveflags &= ~L;
 		in_moveleft.state &= ~BUTTON_DOWN;
 	}
-
 }
 
 void IN_ClientMoveEvent( float forwardmove, float sidemove )
@@ -148,13 +149,22 @@ void IN_ClientLookEvent( float relyaw, float relpitch )
 	rel_yaw += relyaw;
 	rel_pitch += relpitch;
 }
+
 // Rotate camera and add move values to usercmd
 void IN_Move( float frametime, usercmd_t *cmd )
 {
 	Vector viewangles;
-	gEngfuncs.GetViewAngles( viewangles );
 	bool fLadder = false;
-	if( cl_laddermode->value !=2 ) fLadder = gEngfuncs.GetLocalPlayer()->curstate.movetype == MOVETYPE_FLY;
+
+	if( gHUD.m_iIntermission )
+		return; // we can't move during intermission
+
+	if( cl_laddermode->value != 2 )
+	{
+		cl_entity_t *pplayer = gEngfuncs.GetLocalPlayer();
+		if( pplayer )
+			fLadder = pplayer->curstate.movetype == MOVETYPE_FLY;
+	}
 	//if(ac_forwardmove || ac_sidemove)
 	//gEngfuncs.Con_Printf("Move: %f %f %f %f\n", ac_forwardmove, ac_sidemove, rel_pitch, rel_yaw);
 #if 0
@@ -163,52 +173,64 @@ void IN_Move( float frametime, usercmd_t *cmd )
 		V_StopPitchDrift();
 	}
 #endif
-	if( !gHUD.m_iIntermission )
+	if( CL_IsDead() )
 	{
-		if( gHUD.GetSensitivity() != 0 )
-		{
-			rel_yaw *= gHUD.GetSensitivity();
-			rel_pitch *= gHUD.GetSensitivity();
-		}
-		else
-		{
-			rel_yaw *= sensitivity->value;
-			rel_pitch *= sensitivity->value;
-		}
-
-		viewangles[YAW] += rel_yaw;
-		if( fLadder )
-		{
-			if( cl_laddermode->value == 1 )
-				viewangles[YAW] -= ac_sidemove * 5;
-			ac_sidemove = 0;
-		}
-		if(gHUD.m_MOTD.m_bShow)
-			gHUD.m_MOTD.scroll += rel_pitch;
-		else
-		viewangles[PITCH] += rel_pitch;
-			if (viewangles[PITCH] > cl_pitchdown->value)
-				viewangles[PITCH] = cl_pitchdown->value;
-			if (viewangles[PITCH] < -cl_pitchup->value)
-				viewangles[PITCH] = -cl_pitchup->value;
+		viewangles = dead_viewangles; // HACKHACK: see below
 	}
-	float rgfl[3];
-	viewangles.CopyToArray( rgfl );
-	gEngfuncs.SetViewAngles( rgfl );
+	else
+	{
+		gEngfuncs.GetViewAngles( viewangles );
+	}
+	if( gHUD.GetSensitivity() != 0 )
+	{
+		rel_yaw *= gHUD.GetSensitivity();
+		rel_pitch *= gHUD.GetSensitivity();
+	}
+	else
+	{
+		rel_yaw *= sensitivity->value;
+		rel_pitch *= sensitivity->value;
+	}
+	viewangles[YAW] += rel_yaw;
+	if( fLadder )
+	{
+		if( cl_laddermode->value == 1 )
+			viewangles[YAW] -= ac_sidemove * 5;
+		ac_sidemove = 0;
+	}
+	if( gHUD.m_MOTD.m_bShow )
+		gHUD.m_MOTD.scroll += rel_pitch;
+	else
+		viewangles[PITCH] += rel_pitch;
+
+	if( viewangles[PITCH] > cl_pitchdown->value )
+		viewangles[PITCH] = cl_pitchdown->value;
+	if( viewangles[PITCH] < -cl_pitchup->value )
+		viewangles[PITCH] = -cl_pitchup->value;
 	
+	// HACKHACK: change viewangles directly in viewcode, 
+	// so viewangles when player is dead will not be changed on server
+	if( !CL_IsDead() )
+	{
+		gEngfuncs.SetViewAngles( viewangles );
+	}
+
+	dead_viewangles = viewangles; // keep them actual
 	if( ac_movecount )
 	{
 		IN_ToggleButtons( ac_forwardmove / ac_movecount, ac_sidemove / ac_movecount );
-		if( ac_forwardmove ) cmd->forwardmove  = ac_forwardmove * cl_forwardspeed->value / ac_movecount;
-		if( ac_sidemove ) cmd->sidemove  = ac_sidemove * cl_sidespeed->value / ac_movecount;
-		if (in_speed.state & 1)
+
+		if( ac_forwardmove )
+			cmd->forwardmove = ac_forwardmove * cl_forwardspeed->value / ac_movecount;
+		if( ac_sidemove )
+			cmd->sidemove  = ac_sidemove * cl_sidespeed->value / ac_movecount;
+		if( ( in_speed.state & 1 ) && ( ac_sidemove || ac_forwardmove ) )
 		{
 			cmd->forwardmove *= cl_movespeedkey->value;
 			cmd->sidemove *= cl_movespeedkey->value;
 		}
-
 	}
-	
+
 	ac_sidemove = ac_forwardmove = rel_pitch = rel_yaw = 0;
 	ac_movecount = 0;
 }
@@ -219,55 +241,56 @@ extern "C" void DLLEXPORT IN_MouseEvent( int mstate )
 	// perform button actions
 	for( int i = 0; i < 5; i++ )
 	{
-		if(( mstate & (1 << i)) && !( mouse_oldbuttonstate & (1 << i)))
+		if( ( mstate & ( 1 << i ) ) && !( mouse_oldbuttonstate & ( 1 << i ) ) )
 		{
 			gEngfuncs.Key_Event( K_MOUSE1 + i, 1 );
 		}
 
-		if( !( mstate & (1 << i)) && ( mouse_oldbuttonstate & (1 << i)))
+		if( !( mstate & ( 1 << i ) ) && ( mouse_oldbuttonstate & ( 1 << i ) ) )
 		{
 			gEngfuncs.Key_Event( K_MOUSE1 + i, 0 );
 		}
 	}	
-	
+
 	mouse_oldbuttonstate = mstate;
 }
 
 // Stubs
 
-extern "C" void DLLEXPORT IN_ClearStates ( void )
+extern "C" void DLLEXPORT IN_ClearStates( void )
 {
-	//gEngfuncs.Con_Printf("IN_ClearStates\n");
+	//gEngfuncs.Con_Printf( "IN_ClearStates\n" );
 }
 
-extern "C" void DLLEXPORT IN_ActivateMouse ( void )
+extern "C" void DLLEXPORT IN_ActivateMouse( void )
 {
-	//gEngfuncs.Con_Printf("IN_ActivateMouse\n");
+	//gEngfuncs.Con_Printf( "IN_ActivateMouse\n" );
 }
 
-extern "C" void DLLEXPORT IN_DeactivateMouse ( void )
+extern "C" void DLLEXPORT IN_DeactivateMouse( void )
 {
-	//gEngfuncs.Con_Printf("IN_DeactivateMouse\n");
+	//gEngfuncs.Con_Printf( "IN_DeactivateMouse\n" );
 }
 
-extern "C" void DLLEXPORT IN_Accumulate ( void )
+extern "C" void DLLEXPORT IN_Accumulate( void )
 {
-	//gEngfuncs.Con_Printf("IN_Accumulate\n");
+	//gEngfuncs.Con_Printf( "IN_Accumulate\n" );
 }
 
-void IN_Commands ( void )
+void IN_Commands( void )
 {
-	//gEngfuncs.Con_Printf("IN_Commands\n");
+	//gEngfuncs.Con_Printf( "IN_Commands\n" );
 }
 
-void IN_Shutdown ( void )
+void IN_Shutdown( void )
 {
 }
+
 // Register cvars and reset data
 void IN_Init( void )
 {
-	sensitivity = gEngfuncs.pfnRegisterVariable ( "sensitivity", "3", FCVAR_ARCHIVE );
-	in_joystick = gEngfuncs.pfnRegisterVariable ( "joystick", "0", FCVAR_ARCHIVE );
-	cl_laddermode = gEngfuncs.pfnRegisterVariable ( "cl_laddermode", "2", FCVAR_ARCHIVE );
+	sensitivity = gEngfuncs.pfnRegisterVariable( "sensitivity", "3", FCVAR_ARCHIVE );
+	in_joystick = gEngfuncs.pfnRegisterVariable( "joystick", "0", FCVAR_ARCHIVE );
+	cl_laddermode = gEngfuncs.pfnRegisterVariable( "cl_laddermode", "2", FCVAR_ARCHIVE );
 	ac_forwardmove = ac_sidemove = rel_yaw = rel_pitch = 0;
 }

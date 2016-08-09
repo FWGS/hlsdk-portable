@@ -27,7 +27,6 @@
 #include "physcallback.h"
 #endif
 
-
 #include <string.h>
 #include <ctype.h>
 inline void MESSAGE_BEGIN( int msg_dest, int msg_type, const float *pOrigin, entvars_t *ent );  // implementation later in this file
@@ -38,7 +37,7 @@ extern globalvars_t				*gpGlobals;
 #define STRING(offset)		(const char *)(gpGlobals->pStringBase + (int)offset)
 
 #if !defined __amd64__ || defined(CLIENT_DLL)
-#define MAKE_STRING(str)	((int)str - (int)STRING(0))
+#define MAKE_STRING(str)	((int)(size_t)str - (int)(size_t)STRING(0))
 #else
 #define MAKE_STRING ALLOC_STRING
 #endif
@@ -46,18 +45,18 @@ extern globalvars_t				*gpGlobals;
 inline edict_t *FIND_ENTITY_BY_CLASSNAME(edict_t *entStart, const char *pszName) 
 {
 	return FIND_ENTITY_BY_STRING(entStart, "classname", pszName);
-}	
+}
 
 inline edict_t *FIND_ENTITY_BY_TARGETNAME(edict_t *entStart, const char *pszName) 
 {
 	return FIND_ENTITY_BY_STRING(entStart, "targetname", pszName);
-}	
+}
 
 // for doing a reverse lookup. Say you have a door, and want to find its button.
 inline edict_t *FIND_ENTITY_BY_TARGET(edict_t *entStart, const char *pszName) 
 {
 	return FIND_ENTITY_BY_STRING(entStart, "target", pszName);
-}	
+}
 
 // Keeps clutter down a bit, when writing key-value pairs
 #define WRITEKEY_INT(pf, szKeyName, iKeyValue) ENGINE_FPRINTF(pf, "\"%s\" \"%d\"\n", szKeyName, iKeyValue)
@@ -100,7 +99,6 @@ typedef int BOOL;
 
 #define LINK_ENTITY_TO_CLASS(mapClassName,DLLClassName) extern "C" EXPORT void mapClassName( entvars_t *pev ); void mapClassName( entvars_t *pev ) { GetClassPtr( (DLLClassName *)pev ); }
 
-
 //
 // Conversion among the three types of "entity", including identity-conversions.
 //
@@ -129,7 +127,10 @@ inline EOFFSET OFFSET(entvars_t *pev)
 #endif
 	return OFFSET(ENT(pev)); 
 }
-inline entvars_t *VARS(entvars_t *pev)					{ return pev; }
+inline entvars_t *VARS(entvars_t *pev)
+{
+	return pev;
+}
 
 inline entvars_t *VARS(edict_t *pent)			
 { 
@@ -172,7 +173,6 @@ inline BOOL FStringNull(int iString)			{ return iString == iStringNull; }
 
 typedef enum 
 {
-
 	MONSTERSTATE_NONE = 0,
 	MONSTERSTATE_IDLE,
 	MONSTERSTATE_COMBAT,
@@ -182,27 +182,34 @@ typedef enum
 	MONSTERSTATE_SCRIPT,
 	MONSTERSTATE_PLAYDEAD,
 	MONSTERSTATE_DEAD
-
 } MONSTERSTATE;
 
 
 
 // Things that toggle (buttons/triggers/doors) need this
 typedef enum
-	{
+{
 	TS_AT_TOP,
 	TS_AT_BOTTOM,
 	TS_GOING_UP,
 	TS_GOING_DOWN
-	} TOGGLE_STATE;
+} TOGGLE_STATE;
 
 // Misc useful
 inline BOOL FStrEq(const char*sz1, const char*sz2)
-	{ return (strcmp(sz1, sz2) == 0); }
+{
+	return (strcmp(sz1, sz2) == 0);
+}
+
 inline BOOL FClassnameIs(edict_t* pent, const char* szClassname)
-	{ return FStrEq(STRING(VARS(pent)->classname), szClassname); }
+{
+	return FStrEq(STRING(VARS(pent)->classname), szClassname);
+}
+
 inline BOOL FClassnameIs(entvars_t* pev, const char* szClassname)
-	{ return FStrEq(STRING(pev->classname), szClassname); }
+{
+	return FStrEq(STRING(pev->classname), szClassname);
+}
 
 class CBaseEntity;
 
@@ -249,11 +256,30 @@ extern void			UTIL_ShowMessageAll		( const char *pString );
 extern void			UTIL_ScreenFadeAll		( const Vector &color, float fadeTime, float holdTime, int alpha, int flags );
 extern void			UTIL_ScreenFade			( CBaseEntity *pEntity, const Vector &color, float fadeTime, float fadeHold, int alpha, int flags );
 
-typedef enum { ignore_monsters=1, dont_ignore_monsters=0, missile=2 } IGNORE_MONSTERS;
-typedef enum { ignore_glass=1, dont_ignore_glass=0 } IGNORE_GLASS;
+typedef enum
+{
+	ignore_monsters = 1,
+	dont_ignore_monsters = 0,
+	missile=2
+} IGNORE_MONSTERS;
+
+typedef enum
+{
+	ignore_glass = 1,
+	dont_ignore_glass = 0
+} IGNORE_GLASS;
+
 extern void			UTIL_TraceLine			(const Vector &vecStart, const Vector &vecEnd, IGNORE_MONSTERS igmon, edict_t *pentIgnore, TraceResult *ptr);
 extern void			UTIL_TraceLine			(const Vector &vecStart, const Vector &vecEnd, IGNORE_MONSTERS igmon, IGNORE_GLASS ignoreGlass, edict_t *pentIgnore, TraceResult *ptr);
-enum { point_hull=0, human_hull=1, large_hull=2, head_hull=3 };
+
+enum
+{
+	point_hull = 0,
+	human_hull = 1,
+	large_hull = 2,
+	head_hull = 3
+};
+
 extern void			UTIL_TraceHull			(const Vector &vecStart, const Vector &vecEnd, IGNORE_MONSTERS igmon, int hullNumber, edict_t *pentIgnore, TraceResult *ptr);
 extern TraceResult	UTIL_GetGlobalTrace		(void);
 extern void			UTIL_TraceModel			(const Vector &vecStart, const Vector &vecEnd, int hullNumber, edict_t *pentModel, TraceResult *ptr);
@@ -296,6 +322,7 @@ extern void			UTIL_PrecacheOther( const char *szClassname );
 
 // prints a message to each client
 extern void			UTIL_ClientPrintAll( int msg_dest, const char *msg_name, const char *param1 = NULL, const char *param2 = NULL, const char *param3 = NULL, const char *param4 = NULL );
+
 inline void			UTIL_CenterPrintAll( const char *msg_name, const char *param1 = NULL, const char *param2 = NULL, const char *param3 = NULL, const char *param4 = NULL ) 
 {
 	UTIL_ClientPrintAll( HUD_PRINTCENTER, msg_name, param1, param2, param3, param4 );
@@ -311,7 +338,6 @@ extern void ClientPrint( entvars_t *client, int msg_dest, const char *msg_name, 
 // prints a message to the HUD say (chat)
 extern void			UTIL_SayText( const char *pText, CBaseEntity *pEntity );
 extern void			UTIL_SayTextAll( const char *pText, CBaseEntity *pEntity );
-
 
 typedef struct hudtextparms_s
 {
@@ -362,7 +388,6 @@ void DBG_AssertFunction(BOOL fExpr, const char* szExpr, const char* szFile, int 
 #define ASSERTSZ(f, sz)
 #endif	// !DEBUG
 
-
 extern DLL_GLOBAL const Vector g_vecZero;
 
 //
@@ -405,7 +430,6 @@ extern DLL_GLOBAL int			g_Language;
 #define SF_PENDULUM_AUTO_RETURN		16
 #define	SF_PENDULUM_PASSABLE		32
 
-
 #define SF_BRUSH_ROTATE_SMALLRADIUS	128
 #define SF_BRUSH_ROTATE_MEDIUMRADIUS 256
 #define SF_BRUSH_ROTATE_LARGERADIUS 512
@@ -431,8 +455,6 @@ extern DLL_GLOBAL int			g_Language;
 #define SVC_WEAPONANIM		35
 #define SVC_ROOMTYPE		37
 #define	SVC_DIRECTOR		51
-
-
 
 // triggers
 #define	SF_TRIGGER_ALLOWMONSTERS	1// monsters allowed to fire this trigger
@@ -461,13 +483,12 @@ extern DLL_GLOBAL int			g_Language;
 
 #define SF_TRIG_PUSH_ONCE		1
 
-
 // Sound Utilities
 
 // sentence groups
 #define CBSENTENCENAME_MAX 16
 #define CVOXFILESENTENCEMAX		1536		// max number of sentences in game. NOTE: this must match
-											// CVOXFILESENTENCEMAX in engine\sound.h!!!
+							// CVOXFILESENTENCEMAX in engine\sound.h!!!
 
 extern char gszallsentencenames[CVOXFILESENTENCEMAX][CBSENTENCENAME_MAX];
 extern int gcallsentences;
