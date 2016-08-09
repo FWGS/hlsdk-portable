@@ -2238,38 +2238,38 @@ void CItemSoda::CanTouch( CBaseEntity *pOther )
 //=========================================================
 // env_warpball
 //=========================================================
-#define SF_REMOVE_ON_FIRE		0x0001
+#define SF_REMOVE_ON_FIRE	0x0001
 #define SF_KILL_CENTER		0x0002
 
 class CEnvWarpBall : public CBaseEntity
 {
 public:
-	void	Precache( void );
-	void	Spawn( void ) { Precache(); }
-	void	Think( void );
-	void	KeyValue( KeyValueData *pkvd );
-	void	Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
-	virtual int	ObjectCaps( void ) { return CBaseEntity :: ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
+	void Precache( void );
+	void Spawn( void ) { Precache(); }
+	void Think( void );
+	void KeyValue( KeyValueData *pkvd );
+	void Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+	virtual int ObjectCaps( void ) { return CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
 	Vector vecOrigin;
 };
 
-LINK_ENTITY_TO_CLASS( env_warpball, CEnvWarpBall );
+LINK_ENTITY_TO_CLASS( env_warpball, CEnvWarpBall )
 
-void CEnvWarpBall :: KeyValue( KeyValueData *pkvd )
+void CEnvWarpBall::KeyValue( KeyValueData *pkvd )
 {
-	if (FStrEq(pkvd->szKeyName, "radius"))
+	if( FStrEq( pkvd->szKeyName, "radius" ) )
 	{
-		pev->button = atoi(pkvd->szValue);
+		pev->button = atoi( pkvd->szValue );
 		pkvd->fHandled = TRUE;
 	}
-	if (FStrEq(pkvd->szKeyName, "warp_target"))
+	if( FStrEq( pkvd->szKeyName, "warp_target" ) )
 	{
-		pev->message = ALLOC_STRING(pkvd->szValue);
+		pev->message = ALLOC_STRING( pkvd->szValue );
 		pkvd->fHandled = TRUE;
 	}
-	if (FStrEq(pkvd->szKeyName, "damage_delay"))
+	if( FStrEq( pkvd->szKeyName, "damage_delay" ) )
 	{
-		pev->frags = atof(pkvd->szValue);
+		pev->frags = atof( pkvd->szValue );
 		pkvd->fHandled = TRUE;
 	}
 	else
@@ -2291,43 +2291,44 @@ void CEnvWarpBall::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE 
 	TraceResult tr;
 	Vector vecDest;
 	CBeam *pBeam;
-	CBaseEntity *pEntity = UTIL_FindEntityByTargetname ( NULL, STRING(pev->message));
+	CBaseEntity *pEntity = UTIL_FindEntityByTargetname( NULL, STRING( pev->message ) );
 	edict_t *pos;
 
-	if(pEntity)//target found ?
+	if( pEntity )//target found ?
 	{
 		vecOrigin = pEntity->pev->origin;
 		pos = pEntity->edict();
 	}
 	else
-	{         //use as center
-	        vecOrigin = pev->origin;
-	        pos = edict();
+	{
+		//use as center
+		vecOrigin = pev->origin;
+		pos = edict();
 	}
 	EMIT_SOUND( pos, CHAN_BODY, "debris/beamstart2.wav", 1, ATTN_NORM );
 	UTIL_ScreenShake( vecOrigin, 6, 160, 1.0, pev->button );
 	CSprite *pSpr = CSprite::SpriteCreate( "sprites/Fexplo1.spr", vecOrigin, TRUE );
 	pSpr->AnimateAndDie( 18 );
-	pSpr->SetTransparency(kRenderGlow,  77, 210, 130,  255, kRenderFxNoDissipation);
+	pSpr->SetTransparency( kRenderGlow,  77, 210, 130,  255, kRenderFxNoDissipation );
 	EMIT_SOUND( pos, CHAN_ITEM, "debris/beamstart7.wav", 1, ATTN_NORM );
-	int iBeams = RANDOM_LONG(20, 40);
-	while (iDrawn < iBeams && iTimes < (iBeams * 3))
+	int iBeams = RANDOM_LONG( 20, 40 );
+	while( iDrawn < iBeams && iTimes < ( iBeams * 3 ) )
 	{
-		vecDest = pev->button * (Vector(RANDOM_FLOAT(-1,1), RANDOM_FLOAT(-1,1), RANDOM_FLOAT(-1,1)).Normalize());
-		UTIL_TraceLine( vecOrigin, vecOrigin + vecDest, ignore_monsters, NULL, &tr);
-		if (tr.flFraction != 1.0)
+		vecDest = pev->button * ( Vector( RANDOM_FLOAT( -1, 1 ), RANDOM_FLOAT( -1, 1 ), RANDOM_FLOAT( -1, 1 ) ).Normalize() );
+		UTIL_TraceLine( vecOrigin, vecOrigin + vecDest, ignore_monsters, NULL, &tr );
+		if( tr.flFraction != 1.0 )
 		{
 			// we hit something.
 			iDrawn++;
-			pBeam = CBeam::BeamCreate("sprites/lgtning.spr", 200);
+			pBeam = CBeam::BeamCreate( "sprites/lgtning.spr", 200 );
 			pBeam->PointsInit( vecOrigin, tr.vecEndPos );
 			pBeam->SetColor( 20, 243, 20 );
 			pBeam->SetNoise( 65 );
 			pBeam->SetBrightness( 220 );
 			pBeam->SetWidth( 30 );
 			pBeam->SetScrollRate( 35 );
-			pBeam->SetThink(&CBeam:: SUB_Remove );
-			pBeam->pev->nextthink = gpGlobals->time + RANDOM_FLOAT(0.5, 1.6);
+			pBeam->SetThink(&CBeam::SUB_Remove );
+			pBeam->pev->nextthink = gpGlobals->time + RANDOM_FLOAT( 0.5, 1.6 );
 		}
 		iTimes++;
 	}
@@ -2336,18 +2337,18 @@ void CEnvWarpBall::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE 
 
 void CEnvWarpBall::Think( void )
 {
-	SUB_UseTargets( this, USE_TOGGLE, 0);
+	SUB_UseTargets( this, USE_TOGGLE, 0 );
 
-	if ( pev->spawnflags & SF_KILL_CENTER )
+	if( pev->spawnflags & SF_KILL_CENTER )
 	{
 		CBaseEntity *pMonster = NULL;
 
-		while ((pMonster = UTIL_FindEntityInSphere( pMonster, vecOrigin, 72 )) != NULL)
+		while( ( pMonster = UTIL_FindEntityInSphere( pMonster, vecOrigin, 72 ) ) != NULL )
 		{
-			if ( FBitSet( pMonster->pev->flags, FL_MONSTER ) || FClassnameIs( pMonster->pev, "player"))
+			if( FBitSet( pMonster->pev->flags, FL_MONSTER ) || FClassnameIs( pMonster->pev, "player" ) )
 			pMonster->TakeDamage ( pev, pev, 100, DMG_GENERIC );
 		}
 	}
-	if ( pev->spawnflags & SF_REMOVE_ON_FIRE ) UTIL_Remove( this );
+	if( pev->spawnflags & SF_REMOVE_ON_FIRE )
+		UTIL_Remove( this );
 }
-

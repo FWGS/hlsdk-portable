@@ -2045,7 +2045,7 @@ public:
 	int ObjectCaps( void ) { return CBaseDelay::ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
 };
 
-LINK_ENTITY_TO_CLASS( trigger_playerfreeze, CTriggerPlayerFreeze );
+LINK_ENTITY_TO_CLASS( trigger_playerfreeze, CTriggerPlayerFreeze )
 
 void CTriggerPlayerFreeze::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {

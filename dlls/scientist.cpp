@@ -787,7 +787,7 @@ int CScientist::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, flo
 {
 	if( pevInflictor && pevInflictor->flags & FL_CLIENT )
 	{
-		if ( !FClassnameIs(pev, "monster_rosenberg"))
+		if( !FClassnameIs( pev, "monster_rosenberg" ) )
 		{
 			Remember( bits_MEMORY_PROVOKED );
 			StopFollowing( TRUE );
@@ -999,7 +999,7 @@ Schedule_t *CScientist::GetSchedule( void )
 				}
 				return GetScheduleOfType( SCHED_TARGET_FACE );	// Just face and follow.
 			}
-			else if ( !FClassnameIs(pev, "monster_rosenberg")) // UNDONE: When afraid, scientist won't move out of your way.  Keep This?  If not, write move away scared
+			else if( !FClassnameIs( pev, "monster_rosenberg" ) ) // UNDONE: When afraid, scientist won't move out of your way.  Keep This?  If not, write move away scared
 			{
 				if( HasConditions( bits_COND_NEW_ENEMY ) ) // I just saw something new and scary, react
 					return GetScheduleOfType( SCHED_FEAR );					// React to something scary

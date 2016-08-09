@@ -976,9 +976,9 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 	else
 		state->eflags &= ~EFLAG_SLERP;
 	
-	state->scale	  = ent->v.scale;
-	state->solid	  = ent->v.solid;
-	state->colormap   = ent->v.colormap;
+	state->scale		= ent->v.scale;
+	state->solid		= ent->v.solid;
+	state->colormap		= ent->v.colormap;
 
 	state->movetype		= ent->v.movetype;
 	state->sequence		= ent->v.sequence;
@@ -995,12 +995,12 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 		state->blending[i] = ent->v.blending[i];
 	}
 
-	state->rendermode    = ent->v.rendermode;
-	state->renderamt     = ent->v.renderamt; 
-	state->renderfx      = ent->v.renderfx;
-	state->rendercolor.r = ent->v.rendercolor[0];
-	state->rendercolor.g = ent->v.rendercolor[1];
-	state->rendercolor.b = ent->v.rendercolor[2];
+	state->rendermode	= ent->v.rendermode;
+	state->renderamt	= ent->v.renderamt; 
+	state->renderfx		= ent->v.renderfx;
+	state->rendercolor.r	= ent->v.rendercolor[0];
+	state->rendercolor.g	= ent->v.rendercolor[1];
+	state->rendercolor.b	= ent->v.rendercolor[2];
 
 	state->aiment = 0;
 	if( ent->v.aiment )
@@ -1074,9 +1074,9 @@ void CreateBaseline( int player, int eindex, struct entity_state_s *baseline, st
 	baseline->rendermode		= (byte)entity->v.rendermode;
 	baseline->renderamt		= (byte)entity->v.renderamt;
 
-	baseline->rendercolor.r	= (byte)entity->v.rendercolor[0];
-	baseline->rendercolor.g	= (byte)entity->v.rendercolor[1];
-	baseline->rendercolor.b	= (byte)entity->v.rendercolor[2];
+	baseline->rendercolor.r		= (byte)entity->v.rendercolor[0];
+	baseline->rendercolor.g		= (byte)entity->v.rendercolor[1];
+	baseline->rendercolor.b		= (byte)entity->v.rendercolor[2];
 
 	baseline->renderfx		= (byte)entity->v.renderfx;
 
@@ -1368,7 +1368,7 @@ void RegisterEncoders( void )
 
 int GetWeaponData( struct edict_s *player, struct weapon_data_s *info )
 {
-	memset( info, 0, 32 * sizeof( weapon_data_t ) );
+	memset( info, 0, 32 * sizeof(weapon_data_t) );
 	return 1;
 }
 
