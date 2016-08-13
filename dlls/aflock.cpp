@@ -160,7 +160,7 @@ void CFlockingFlyerFlock::Spawn()
 void CFlockingFlyerFlock::Precache()
 {
 	//PRECACHE_MODEL( "models/aflock.mdl" );		
-	PRECACHE_MODEL( "models/boid.mdl ");
+	PRECACHE_MODEL( "models/boid.mdl" );
 
 	PrecacheFlockSounds();
 }

@@ -1025,10 +1025,10 @@ void CMomentaryDoor::Precache( void )
 	switch( m_bStopSnd )
 	{
 	case 0:
-		pev->noiseArrived = ALLOC_STRING(" common/null.wav ");
+		pev->noiseArrived = ALLOC_STRING( "common/null.wav" );
 		break;
 	case 1:
-		PRECACHE_SOUND(" doors/doorstop1.wav ");
+		PRECACHE_SOUND( "doors/doorstop1.wav" );
 		pev->noiseArrived = ALLOC_STRING( "doors/doorstop1.wav" );
 		break;
 	case 2:
