@@ -1,0 +1,33 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "hl", "dlls\hl.vcxproj", "{6366ED8E-57FB-4037-BD4D-72765FE18D63}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cl_dll", "cl_dll\cl_dll.vcxproj", "{04D4239A-A9B9-48AA-AF65-F558F8AE2B88}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Profile|Win32 = Profile|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6366ED8E-57FB-4037-BD4D-72765FE18D63}.Debug|Win32.ActiveCfg = Debug|Win32
+		{6366ED8E-57FB-4037-BD4D-72765FE18D63}.Debug|Win32.Build.0 = Debug|Win32
+		{6366ED8E-57FB-4037-BD4D-72765FE18D63}.Profile|Win32.ActiveCfg = Profile|Win32
+		{6366ED8E-57FB-4037-BD4D-72765FE18D63}.Profile|Win32.Build.0 = Profile|Win32
+		{6366ED8E-57FB-4037-BD4D-72765FE18D63}.Release|Win32.ActiveCfg = Release|Win32
+		{6366ED8E-57FB-4037-BD4D-72765FE18D63}.Release|Win32.Build.0 = Release|Win32
+		{04D4239A-A9B9-48AA-AF65-F558F8AE2B88}.Debug|Win32.ActiveCfg = Debug|Win32
+		{04D4239A-A9B9-48AA-AF65-F558F8AE2B88}.Debug|Win32.Build.0 = Debug|Win32
+		{04D4239A-A9B9-48AA-AF65-F558F8AE2B88}.Profile|Win32.ActiveCfg = Release|Win32
+		{04D4239A-A9B9-48AA-AF65-F558F8AE2B88}.Profile|Win32.Build.0 = Release|Win32
+		{04D4239A-A9B9-48AA-AF65-F558F8AE2B88}.Release|Win32.ActiveCfg = Release|Win32
+		{04D4239A-A9B9-48AA-AF65-F558F8AE2B88}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

@@ -22,7 +22,7 @@ public:
 	void InitHUDData( void );
 
 private:
-	HSPRITE m_hsprPlayer;
-	HSPRITE m_hsprViewcone;
+	SpriteHandle_t m_hsprPlayer;
+	SpriteHandle_t m_hsprViewcone;
 };
 #endif // OVERVIEW_H

@@ -1129,7 +1129,7 @@ void CHudSpectator::DrawOverviewEntities()
 		if( !m_OverviewEntities[i].hSprite )
 			continue;
 
-		hSpriteModel = (struct model_s *)gEngfuncs.GetSpritePointer( m_OverviewEntities[i].hSprite );
+		hSpriteModel = (struct model_s *)gEngfuncs.GetSpritePointer( m_OverviewEntities[i].SpriteHandle_t );
 		ent = m_OverviewEntities[i].entity;
 
 		gEngfuncs.pTriAPI->SpriteTexture( hSpriteModel, 0 );
@@ -1328,7 +1328,7 @@ void CHudSpectator::CheckOverviewEntities()
 
 bool CHudSpectator::AddOverviewEntity( int type, struct cl_entity_s *ent, const char *modelname)
 {
-	HSPRITE	hSprite = 0;
+	SpriteHandle_t	hSprite = 0;
 	double  duration = -1.0f;	// duration -1 means show it only this frame;
 
 	if( !ent )
@@ -1374,7 +1374,7 @@ void CHudSpectator::DeathMessage( int victim )
 		AddOverviewEntityToList(m_hsprPlayerDead, pl, gEngfuncs.GetClientTime() + 2.0f );
 }
 
-bool CHudSpectator::AddOverviewEntityToList(HSPRITE sprite, cl_entity_t *ent, double killTime)
+bool CHudSpectator::AddOverviewEntityToList(SpriteHandle_t sprite, cl_entity_t *ent, double killTime)
 {
 	for( int i = 0; i < MAX_OVERVIEW_ENTITIES; i++ )
 	{
