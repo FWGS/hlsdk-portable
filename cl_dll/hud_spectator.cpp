@@ -842,7 +842,7 @@ bool CHudSpectator::ParseOverviewFile()
 	m_OverviewData.layersHeights[0] = 0.0f;
 	strcpy( m_OverviewData.map, gEngfuncs.pfnGetLevelName() );
 
-	if( strlen( m_OverviewData.map ) == 0 )
+	if( m_OverviewData.map[0] == '\0' )
 		return false; // not active yet
 
 	strcpy( levelname, m_OverviewData.map + 5 );
@@ -1129,7 +1129,7 @@ void CHudSpectator::DrawOverviewEntities()
 		if( !m_OverviewEntities[i].hSprite )
 			continue;
 
-		hSpriteModel = (struct model_s *)gEngfuncs.GetSpritePointer( m_OverviewEntities[i].SpriteHandle_t );
+		hSpriteModel = (struct model_s *)gEngfuncs.GetSpritePointer( m_OverviewEntities[i].hSprite );
 		ent = m_OverviewEntities[i].entity;
 
 		gEngfuncs.pTriAPI->SpriteTexture( hSpriteModel, 0 );

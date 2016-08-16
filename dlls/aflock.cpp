@@ -840,6 +840,9 @@ void CFlockingFlyer::SquadRemove( CFlockingFlyer *pRemove )
 		{
 			CFlockingFlyer *pLeader = m_pSquadNext;
 
+			if (!pLeader) //!m_pSquadNext tripped analyser.
+				return;
+
 			// copy the enemy LKP to the new leader
 			pLeader->m_vecEnemyLKP = m_vecEnemyLKP;
 

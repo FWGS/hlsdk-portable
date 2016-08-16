@@ -308,11 +308,6 @@ void PM_ViewEntity( void )
 	if (trace.ent > 0)  // Not the world
 	{
 		pcolor = 111;
-	}
-	
-	// Draw the hull or bbox.
-	if (trace.ent > 0)
-	{
 		PM_DrawPhysEntBBox(trace.ent, pcolor, 0.3f);
 	}
 }

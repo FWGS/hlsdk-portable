@@ -1438,7 +1438,7 @@ void CChangeLevel::UseChangeLevel( CBaseEntity *pActivator, CBaseEntity *pCaller
 void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 {
 	edict_t	*pentLandmark;
-	LEVELLIST levels[16];
+	//LEVELLIST levels[16];
 
 	ASSERT( !FStrEq( m_szMapName, "" ) );
 

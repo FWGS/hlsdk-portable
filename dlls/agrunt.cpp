@@ -1133,17 +1133,7 @@ Schedule_t *CAGrunt::GetScheduleOfType( int Type )
 		return &slAGruntTakeCoverFromEnemy[0];
 		break;
 	case SCHED_RANGE_ATTACK1:
-		if( HasConditions( bits_COND_SEE_ENEMY ) )
-		{
-			//normal attack
-			return &slAGruntRangeAttack1[0];
-		}
-		else
-		{
-			// attack an unseen enemy
-			// return &slAGruntHiddenRangeAttack[0];
-			return &slAGruntRangeAttack1[0];
-		}
+		return &slAGruntRangeAttack1[0];
 		break;
 	case SCHED_AGRUNT_THREAT_DISPLAY:
 		return &slAGruntThreatDisplay[0];

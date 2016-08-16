@@ -846,6 +846,9 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 		player.m_pActiveItem = g_pWpns[from->client.m_iId];
 	}
 
+	if (!player.m_pActiveItem)
+		return;
+
 	if( player.m_pActiveItem->m_iId == WEAPON_RPG )
 	{
 		( (CRpg *)player.m_pActiveItem )->m_fSpotActive = (int)from->client.vuser2[1];
@@ -946,7 +949,7 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 
 		if( !pCurrent )
 		{
-			memset( pto, 0, sizeof(weapon_data_t) );
+			memset( pto, 0, sizeof(*pto) );
 			continue;
 		}
 

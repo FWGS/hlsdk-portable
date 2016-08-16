@@ -1021,6 +1021,7 @@ CHudServers::CHudServers( void )
 	m_nRequesting		= 0;
 	m_dStarted		= 0.0;
 	m_nDone			= 0;
+	m_nServerCount = 0;
 	m_pServerList		= NULL;
 	m_pServers		= NULL;
 	m_pActiveList		= NULL;

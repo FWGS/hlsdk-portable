@@ -84,7 +84,7 @@ inline edict_t *FIND_ENTITY_BY_TARGET(edict_t *entStart, const char *pszName)
 typedef int EOFFSET;
 
 // In case it's not alread defined
-typedef int BOOL;
+typedef int BOOL; //-V677
 
 // In case this ever changes
 #define M_PI			3.14159265358979323846
