@@ -13,9 +13,9 @@ ifeq ($(TARGET_ARCH_ABI),armeabi-v7a-hard)
 LOCAL_MODULE_FILENAME = libserver_hardfp
 endif
 
-# Xash doesn't have any voice chat, so remove it from gamedll too.
-LOCAL_CFLAGS += -D_LINUX -DCLIENT_WEAPONS -DNO_VOICEGAMEMGR -Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf \
-	-fno-exceptions -Wextra -Wno-write-strings
+LOCAL_CFLAGS += -D_LINUX -DCLIENT_WEAPONS -Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf \
+	-fno-exceptions -DNO_VOICEGAMEMGR -w
+
 
 LOCAL_CPPFLAGS := $(LOCAL_CFLAGS) -frtti
 
@@ -66,8 +66,8 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
            gman.cpp \
            h_ai.cpp \
            h_battery.cpp \
-           h_cine.cpp \
            h_cycler.cpp \
+           h_cine.cpp \
            h_export.cpp \
            handgrenade.cpp \
            hassassin.cpp \
@@ -115,8 +115,8 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
            subs.cpp \
            talkmonster.cpp \
            teamplay_gamerules.cpp \
-           tempmonster.cpp \
            tentacle.cpp \
+           tempmonster.cpp \
            triggers.cpp \
            tripmine.cpp \
            turret.cpp \

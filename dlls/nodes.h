@@ -88,7 +88,6 @@ public:
 	float	m_flWeight;// length of the link line segment
 };
 
-
 typedef struct
 {
 	int m_SortedBy[3];
@@ -105,6 +104,7 @@ typedef struct
 // CGraph 
 //=========================================================
 #define	GRAPH_VERSION	(int)16// !!!increment this whever graph/node/link classes change, to obsolesce older disk files.
+
 class CGraph
 {
 public:
@@ -269,7 +269,6 @@ class CNodeEnt : public CBaseEntity
 	short m_sHintActivity;
 };
 
-
 //=========================================================
 // CStack - last in, first out.
 //=========================================================
@@ -288,7 +287,6 @@ private:
 	int		m_stack[ MAX_STACK_NODES ];
 	int		m_level;
 };
-
 
 //=========================================================
 // CQueue - first in, first out.
@@ -368,7 +366,7 @@ enum
 	HINT_TACTICAL_AMBUSH,
 
 	HINT_STUKA_PERCH = 300,
-	HINT_STUKA_LANDING,
+	HINT_STUKA_LANDING
 };
 
 extern CGraph WorldGraph;

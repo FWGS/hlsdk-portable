@@ -15,9 +15,7 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-
 #include "pm_materials.h"
-
 
 #define PLAYER_FATAL_FALL_SPEED		1024// approx 60 feet
 #define PLAYER_MAX_SAFE_FALL_SPEED	580// approx 20 feet
@@ -28,13 +26,13 @@
 //
 // Player PHYSICS FLAGS bits
 //
-#define		PFLAG_ONLADDER		( 1<<0 )
-#define		PFLAG_ONSWING		( 1<<0 )
-#define		PFLAG_ONTRAIN		( 1<<1 )
-#define		PFLAG_ONBARNACLE	( 1<<2 )
-#define		PFLAG_DUCKING		( 1<<3 )		// In the process of ducking, but totally squatted yet
-#define		PFLAG_USING			( 1<<4 )		// Using a continuous entity
-#define		PFLAG_OBSERVER		( 1<<5 )		// player is locked in stationary cam mode. Spectators can move, observers can't.
+#define PFLAG_ONLADDER		( 1<<0 )
+#define PFLAG_ONSWING		( 1<<0 )
+#define PFLAG_ONTRAIN		( 1<<1 )
+#define PFLAG_ONBARNACLE	( 1<<2 )
+#define PFLAG_DUCKING		( 1<<3 )		// In the process of ducking, but totally squatted yet
+#define PFLAG_USING		( 1<<4 )		// Using a continuous entity
+#define PFLAG_OBSERVER		( 1<<5 )		// player is locked in stationary cam mode. Spectators can move, observers can't.
 
 //
 // generic player
@@ -69,7 +67,7 @@ typedef enum
 	PLAYER_JUMP,
 	PLAYER_SUPERJUMP,
 	PLAYER_DIE,
-	PLAYER_ATTACK1,
+	PLAYER_ATTACK1
 } PLAYER_ANIM;
 
 #define MAX_ID_RANGE 2048
@@ -80,7 +78,7 @@ enum sbar_data
 	SBAR_ID_TARGETNAME = 1,
 	SBAR_ID_TARGETHEALTH,
 	SBAR_ID_TARGETARMOR,
-	SBAR_END,
+	SBAR_END
 };
 
 #define CHAT_INTERVAL 1.0f
@@ -96,20 +94,20 @@ public:
 	int					m_iExtraSoundTypes;// additional classification for this weapon's sound
 	int					m_iWeaponFlash;// brightness of the weapon flash
 	float				m_flStopExtraSoundTime;
-	
+
 	float				m_flFlashLightTime;	// Time until next battery draw/Recharge
 	int					m_iFlashBattery;		// Flashlight Battery Draw
 
 	int					m_afButtonLast;
 	int					m_afButtonPressed;
 	int					m_afButtonReleased;
-	
+
 	edict_t			   *m_pentSndLast;			// last sound entity to modify player room type
 	float				m_flSndRoomtype;		// last roomtype set by sound entity
 	float				m_flSndRange;			// dist from player to sound entity
 
 	float				m_flFallVelocity;
-	
+
 	int					m_rgItems[MAX_ITEMS];
 	int					m_fKnownItem;		// True when a new item needs to be added
 	int					m_fNewAmmo;			// True when a new item has been added
@@ -117,8 +115,7 @@ public:
 	unsigned int		m_afPhysicsFlags;	// physics flags - set when 'normal' physics should be revisited or overriden
 	float				m_fNextSuicideTime; // the time after which the player can next use the suicide command
 
-
-// these are time-sensitive things that we keep track of
+	// these are time-sensitive things that we keep track of
 	float				m_flTimeStepSound;	// when the last stepping sound was made
 	float				m_flTimeWeaponIdle; // when to play another weapon idle animation.
 	float				m_flSwimTime;		// how long player has been underwater
@@ -144,7 +141,7 @@ public:
 	int					m_idrownrestored;		// track drowning damage restored
 
 	int					m_bitsHUDDamage;		// Damage bits for the current fame. These get sent to 
-												// the hude via the DAMAGE message
+										// the hude via the DAMAGE message
 	BOOL				m_fInitHUD;				// True when deferred HUD restart msg needs to be sent
 	BOOL				m_fGameHUDInitialized;
 	int					m_iTrain;				// Train control position
@@ -164,11 +161,13 @@ public:
 	int			m_iClientHideHUD;
 	int			m_iFOV;			// field of view
 	int			m_iClientFOV;	// client's known FOV
+
 	// usable player items 
 	CBasePlayerItem	*m_rgpPlayerItems[MAX_ITEM_TYPES];
 	CBasePlayerItem *m_pActiveItem;
 	CBasePlayerItem *m_pClientActiveItem;  // client version of the active item
 	CBasePlayerItem *m_pLastItem;
+
 	// shared ammo slots
 	int	m_rgAmmo[MAX_AMMO_SLOTS];
 	int	m_rgAmmoLast[MAX_AMMO_SLOTS];
@@ -188,7 +187,7 @@ public:
 	virtual void Spawn( void );
 	void Pain( void );
 
-//	virtual void Think( void );
+	//virtual void Think( void );
 	virtual void Jump( void );
 	virtual void Duck( void );
 	virtual void PreThink( void );
@@ -229,7 +228,7 @@ public:
 	BOOL			FlashlightIsOn( void );
 	void			FlashlightTurnOn( void );
 	void			FlashlightTurnOff( void );
-	
+
 	void UpdatePlayerSound ( void );
 	void DeathSound ( void );
 
@@ -298,7 +297,7 @@ public:
 	float m_flAmmoStartCharge;
 	float m_flPlayAftershock;
 	float m_flNextAmmoBurn;// while charging, when to absorb another unit of player's ammo?
-	
+
 	//Player ID
 	void InitStatusBar( void );
 	void UpdateStatusBar( void );
@@ -307,7 +306,7 @@ public:
 	float m_flStatusBarDisappearDelay;
 	char m_SbarString0[ SBAR_STRING_SIZE ];
 	char m_SbarString1[ SBAR_STRING_SIZE ];
-	
+
 	float m_flNextChatTime;
 
 	virtual float TouchGravGun( CBaseEntity *attacker, int stage )
@@ -315,14 +314,13 @@ public:
 		if( stage == 3 )
 			return 200;
 		return 0;
-	}	
+	}
 };
 
 #define AUTOAIM_2DEGREES  0.0348994967025
 #define AUTOAIM_5DEGREES  0.08715574274766
 #define AUTOAIM_8DEGREES  0.1391731009601
 #define AUTOAIM_10DEGREES 0.1736481776669
-
 
 extern int	gmsgHudText;
 extern BOOL gInitHUD;

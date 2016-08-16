@@ -7,11 +7,11 @@
 		#define EXPORT __declspec(dllexport) // Note: actually gcc seems to also supports this syntax.
 	#endif
 #else
-  #if __GNUC__ >= 4
-	#define EXPORT __attribute__ ((visibility ("default")))
-   #else
-	#define EXPORT
-  #endif
+	#if __GNUC__ >= 4
+		#define EXPORT __attribute__ ((visibility ("default")))
+	#else
+		#define EXPORT
+	#endif
 #endif
 #define DLLEXPORT EXPORT
 #define _DLLEXPORT EXPORT

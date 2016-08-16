@@ -1,0 +1,14 @@
+language: cpp
+compiler: 
+  - gcc
+  - clang
+os:
+  - linux
+  - osx
+sudo: true
+before_script:
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install gcc-multilib g++-multilib; fi
+script:
+  - mkdir -p build && cd build
+  - cmake ../ -DCMAKE_EXE_LINKER_FLAGS="-Wl,--no-undefined" -DUSE_VOICEMGR=0 && make -j3 && rm -rf *
+  - cmake ../ -DCMAKE_EXE_LINKER_FLAGS="-Wl,--no-undefined" -DUSE_VOICEMGR=1 && make -j3 && rm -rf *

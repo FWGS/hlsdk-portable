@@ -27,7 +27,7 @@
 // g_runfuncs is true if this is the first time we've "predicated" a particular movement/firing
 //  command.  If it is 1, then we should play events/sounds etc., otherwise, we just will be
 //  updating state info, but not firing events
-int	g_runfuncs = 0;
+int g_runfuncs = 0;
 
 // During our weapon prediction processing, we'll need to reference some data that is part of
 //  the final state passed into the postthink functionality.  We'll set this pointer and then
@@ -41,14 +41,14 @@ COM_Log
 Log debug messages to file ( appends )
 ====================
 */
-void COM_Log( char *pszFile, char *fmt, ...)
+void COM_Log( char *pszFile, char *fmt, ... )
 {
 	va_list		argptr;
 	char		string[1024];
 	FILE *fp;
 	char *pfilename;
-	
-	if ( !pszFile )
+
+	if( !pszFile )
 	{
 		pfilename = "c:\\hllog.txt";
 	}
@@ -57,15 +57,15 @@ void COM_Log( char *pszFile, char *fmt, ...)
 		pfilename = pszFile;
 	}
 
-	va_start (argptr,fmt);
-	vsprintf (string, fmt,argptr);
-	va_end (argptr);
+	va_start( argptr, fmt );
+	vsprintf( string, fmt, argptr );
+	va_end( argptr );
 
 	fp = fopen( pfilename, "a+t");
-	if (fp)
+	if( fp )
 	{
-		fprintf(fp, "%s", string);
-		fclose(fp);
+		fprintf( fp, "%s", string );
+		fclose( fp );
 	}
 }
 
@@ -83,7 +83,7 @@ Change weapon model animation
 void HUD_SendWeaponAnim( int iAnim, int body, int force )
 {
 	// Don't actually change it.
-	if ( !g_runfuncs && !force )
+	if( !g_runfuncs && !force )
 		return;
 
 	g_currentanim = iAnim;
@@ -113,7 +113,7 @@ Play a sound, if we are seeing this command for the first time
 */
 void HUD_PlaySound( char *sound, float volume )
 {
-	if ( !g_runfuncs || !g_finalstate )
+	if( !g_runfuncs || !g_finalstate )
 		return;
 
 	gEngfuncs.pfnPlaySoundByNameAtLocation( sound, volume, (float *)&g_finalstate->playerstate.origin );
@@ -132,7 +132,7 @@ void HUD_PlaybackEvent( int flags, const edict_t *pInvoker, unsigned short event
 	vec3_t org;
 	vec3_t ang;
 
-	if ( !g_runfuncs || !g_finalstate )
+	if( !g_runfuncs || !g_finalstate )
 	     return;
 
 	// Weapon prediction events are assumed to occur at the player's origin
@@ -151,7 +151,6 @@ void HUD_SetMaxSpeed( const edict_t *ed, float speed )
 {
 }
 
-
 /*
 =====================
 UTIL_WeaponTimeBase
@@ -167,7 +166,7 @@ float UTIL_WeaponTimeBase( void )
 
 static unsigned int glSeed = 0; 
 
-unsigned int seed_table[ 256 ] =
+unsigned int seed_table[256] =
 {
 	28985, 27138, 26457, 9451, 17764, 10909, 28790, 8716, 6361, 4853, 17798, 21977, 19643, 20662, 10834, 20103,
 	27067, 28634, 18623, 25849, 8576, 26234, 23887, 18228, 32587, 4836, 3306, 1811, 3035, 24559, 18399, 315,
@@ -188,16 +187,16 @@ unsigned int seed_table[ 256 ] =
 };
 
 unsigned int U_Random( void ) 
-{ 
+{
 	glSeed *= 69069; 
-	glSeed += seed_table[ glSeed & 0xff ];
- 
-	return ( ++glSeed & 0x0fffffff ); 
+	glSeed += seed_table[glSeed & 0xff];
+
+	return ( ++glSeed & 0x0fffffff );
 } 
 
 void U_Srand( unsigned int seed )
 {
-	glSeed = seed_table[ seed & 0xff ];
+	glSeed = seed_table[seed & 0xff];
 }
 
 /*
@@ -212,7 +211,7 @@ int UTIL_SharedRandomLong( unsigned int seed, int low, int high )
 	U_Srand( (int)seed + low + high );
 
 	range = high - low + 1;
-	if ( !(range - 1) )
+	if( !( range - 1 ) )
 	{
 		return low;
 	}
@@ -225,7 +224,7 @@ int UTIL_SharedRandomLong( unsigned int seed, int low, int high )
 
 		offset = rnum % range;
 
-		return (low + offset);
+		return ( low + offset );
 	}
 }
 
@@ -236,7 +235,6 @@ UTIL_SharedRandomFloat
 */
 float UTIL_SharedRandomFloat( unsigned int seed, float low, float high )
 {
-	//
 	unsigned int range;
 
 	U_Srand( (int)seed + *(int *)&low + *(int *)&high );
@@ -245,7 +243,7 @@ float UTIL_SharedRandomFloat( unsigned int seed, float low, float high )
 	U_Random();
 
 	range = high - low;
-	if ( !range )
+	if( !range )
 	{
 		return low;
 	}
@@ -258,7 +256,7 @@ float UTIL_SharedRandomFloat( unsigned int seed, float low, float high )
 
 		offset = (float)tensixrand / 65536.0;
 
-		return (low + offset * range );
+		return ( low + offset * range );
 	}
 }
 
@@ -270,8 +268,26 @@ stub functions for such things as precaching.  So we don't have to modify weapon
  is compiled into both game and client .dlls.
 ======================
 */
-int				stub_PrecacheModel		( char* s ) { return 0; }
-int				stub_PrecacheSound		( char* s ) { return 0; }
-unsigned short	stub_PrecacheEvent		( int type, const char *s ) { return 0; }
-const char		*stub_NameForFunction	( unsigned long function ) { return "func"; }
-void			stub_SetModel			( edict_t *e, const char *m ) {}
+int stub_PrecacheModel( char* s )
+{
+	return 0;
+}
+
+int stub_PrecacheSound( char* s )
+{
+	return 0;
+}
+
+unsigned short stub_PrecacheEvent( int type, const char *s )
+{
+	return 0;
+}
+
+const char *stub_NameForFunction( unsigned long function )
+{
+	return "func";
+}
+
+void stub_SetModel( edict_t *e, const char *m )
+{
+}

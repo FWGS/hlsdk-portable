@@ -30,4 +30,4 @@ extern server_physics_api_t g_physfuncs;
 #define GET_SERVER_STATE	(*g_physfuncs.pfnServerState)
 #define HOST_ERROR		(*g_physfuncs.pfnHost_Error)
 
-#endif		//PHYSCALLBACK_H
+#endif //PHYSCALLBACK_H

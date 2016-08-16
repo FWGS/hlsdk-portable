@@ -43,7 +43,6 @@ protected:
 	unsigned int	HashString( const char *pszToken );
 };
 
-
 class CSave : public CSaveRestoreBuffer
 {
 public:
@@ -125,7 +124,6 @@ private:
 		return restore.ReadFields( #derivedClass, this, m_SaveData, ARRAYSIZE(m_SaveData) );\
 	}
 
-
 typedef enum { GLOBAL_OFF = 0, GLOBAL_ON = 1, GLOBAL_DEAD = 2 } GLOBALESTATE;
 
 typedef struct globalentity_s globalentity_t;
@@ -166,4 +164,4 @@ private:
 
 extern CGlobalState gGlobalState;
 
-#endif		//SAVERESTORE_H
+#endif //SAVERESTORE_H

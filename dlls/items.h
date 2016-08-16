@@ -18,13 +18,14 @@
 class CItem : public CBaseEntity
 {
 public:
-	void	Spawn( void );
-	CBaseEntity*	Respawn( void );
-	void	EXPORT ItemTouch( CBaseEntity *pOther );
-	void	EXPORT Materialize( void );
-	virtual BOOL MyTouch( CBasePlayer *pPlayer ) { return FALSE; };
+	void Spawn( void );
+	CBaseEntity *Respawn( void );
+	void EXPORT ItemTouch( CBaseEntity *pOther );
+	void EXPORT Materialize( void );
+	virtual BOOL MyTouch( CBasePlayer *pPlayer )
+	{
+		return FALSE;
+	};
 	virtual float TouchGravGun( CBaseEntity *attacker, int stage);
-	Vector m_SpawnPoint;
 };
-
 #endif // ITEMS_H
