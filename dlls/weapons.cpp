@@ -478,6 +478,8 @@ void CBasePlayerItem::FallThink( void )
 //=========================================================
 void CBasePlayerItem::Materialize( void )
 {
+	ALERT( at_console, "Materialize: %s\n", STRING(pev->classname) );
+
 	if( pev->effects & EF_NODRAW )
 	{
 		// changing from invisible state to visible.
@@ -509,8 +511,11 @@ float CBasePlayerItem::TouchGravGun( CBaseEntity *attacker, int stage )
 		return 0;
 	if( pev->effects & EF_NODRAW )
 		return 0;
-	SetThink( &CBasePlayerItem::AttemptToMaterialize );
-	pev->nextthink = gpGlobals->time + 60;;
+	if( m_pfnThink == NULL || m_pfnThink == &CBasePlayerItem::AttemptToMaterialize )
+	{
+		SetThink( &CBasePlayerItem::AttemptToMaterialize );
+		pev->nextthink = g_pGameRules->FlWeaponRespawnTime(this);
+	}
 	//if( pev->mins == pev->maxs )
 		//return 0;
 	return 200;
