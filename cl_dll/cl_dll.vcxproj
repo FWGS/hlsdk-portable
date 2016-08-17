@@ -199,7 +199,7 @@
     <ClCompile Include="hud_spectator.cpp" />
     <ClCompile Include="hud_update.cpp" />
     <ClCompile Include="input.cpp" />
-    <ClCompile Include="inputw32.cpp" />
+    <ClCompile Include="input_xash3d.cpp" />
     <ClCompile Include="in_camera.cpp" />
     <ClCompile Include="menu.cpp" />
     <ClCompile Include="message.cpp" />
