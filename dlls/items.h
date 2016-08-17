@@ -27,5 +27,6 @@ public:
 		return FALSE;
 	};
 	virtual float TouchGravGun( CBaseEntity *attacker, int stage);
+	Vector m_SpawnPoint;
 };
 #endif // ITEMS_H

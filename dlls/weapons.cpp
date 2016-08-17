@@ -350,7 +350,7 @@ void W_Precache( void )
 
 	// hornetgun
 	UTIL_PrecacheOtherWeapon( "weapon_hornetgun" );
-
+#endif
 	UTIL_PrecacheOtherWeapon( "weapon_gravgun" );
 	UTIL_PrecacheOtherWeapon( "weapon_ar2" );
 

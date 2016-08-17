@@ -156,6 +156,7 @@ public:
 		return 700;
 	}
 
+	float   m_flNextAttack;
 	int m_bloodColor;
 	int m_cBloodDecals;
 	int m_material;

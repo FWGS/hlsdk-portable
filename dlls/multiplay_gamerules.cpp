@@ -48,7 +48,6 @@ float g_flIntermissionStartTime = 0;
 
 #ifndef NO_VOICEGAMEMGR
 CVoiceGameMgr	g_VoiceGameMgr;
-#endif
 
 class CMultiplayGameMgrHelper : public IVoiceGameMgrHelper
 {
