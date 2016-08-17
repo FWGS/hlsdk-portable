@@ -38,7 +38,16 @@ cvar_t teamlist		= { "mp_teamlist","hgrunt;scientist", FCVAR_SERVER };
 cvar_t teamoverride	= { "mp_teamoverride","1" };
 cvar_t defaultteam	= { "mp_defaultteam","0" };
 cvar_t allowmonsters	= { "mp_allowmonsters","0", FCVAR_SERVER };
-
+cvar_t cvar_allow_gravgun = { "mp_allow_gravgun","1", FCVAR_SERVER };
+cvar_t cvar_allow_ar2 = { "mp_allow_ar2","0", FCVAR_SERVER };
+cvar_t cvar_ar2_mp5 = { "mp_ar2_mp5","0", FCVAR_SERVER };
+cvar_t cvar_ar2_balls = { "mp_ar2_balls","0", FCVAR_SERVER };
+cvar_t cvar_ar2_bullets = { "mp_ar2_bullets","0", FCVAR_SERVER };
+cvar_t cvar_wresptime = { "mp_wresptime","20", FCVAR_SERVER };
+cvar_t cvar_iresptime = { "mp_iresptime","30", FCVAR_SERVER };
+cvar_t cvar_gibtime{ "mp_gibtime","250", FCVAR_SERVER };
+cvar_t cvar_hgibcount{ "mp_hgibcount","12", FCVAR_SERVER };
+cvar_t cvar_agibcount{ "mp_agibcount","8", FCVAR_SERVER };
 cvar_t mp_chattime	= { "mp_chattime","10", FCVAR_SERVER };
 
 // Engine Cvars
@@ -471,6 +480,16 @@ void GameDLLInit( void )
 	CVAR_REGISTER( &teamoverride );
 	CVAR_REGISTER( &defaultteam );
 	CVAR_REGISTER( &allowmonsters );
+	CVAR_REGISTER( &cvar_allow_ar2 );
+	CVAR_REGISTER( &cvar_allow_gravgun );
+	CVAR_REGISTER( &cvar_ar2_mp5 );
+	CVAR_REGISTER( &cvar_ar2_bullets );
+	CVAR_REGISTER( &cvar_ar2_balls );
+	CVAR_REGISTER( &cvar_wresptime );
+	CVAR_REGISTER( &cvar_iresptime );
+	CVAR_REGISTER( &cvar_gibtime );
+	CVAR_REGISTER( &cvar_hgibcount );
+	CVAR_REGISTER( &cvar_agibcount );
 
 	CVAR_REGISTER( &mp_chattime );
 

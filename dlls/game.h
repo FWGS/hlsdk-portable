@@ -35,6 +35,17 @@ extern cvar_t teamlist;
 extern cvar_t teamoverride;
 extern cvar_t defaultteam;
 extern cvar_t allowmonsters;
+extern cvar_t cvar_allow_gravgun;
+extern cvar_t cvar_allow_ar2;
+extern cvar_t cvar_ar2_mp5;
+extern cvar_t cvar_ar2_bullets;
+extern cvar_t cvar_ar2_balls;
+extern cvar_t cvar_wresptime;
+extern cvar_t cvar_iresptime;
+
+extern cvar_t cvar_gibtime;
+extern cvar_t cvar_hgibcount;
+extern cvar_t cvar_agibcount;
 
 // Engine Cvars
 extern cvar_t *g_psv_gravity;

@@ -40,10 +40,6 @@ extern int gmsgServerName;
 
 extern int g_teamplay;
 
-#define ITEM_RESPAWN_TIME	30
-#define WEAPON_RESPAWN_TIME	20
-#define AMMO_RESPAWN_TIME	20
-
 float g_flIntermissionStartTime = 0;
 
 #ifndef NO_VOICEGAMEMGR
@@ -581,7 +577,15 @@ void CHalfLifeMultiplay::PlayerSpawn( CBasePlayer *pPlayer )
 	{
 		pPlayer->GiveNamedItem( "weapon_crowbar" );
 		pPlayer->GiveNamedItem( "weapon_9mmhandgun" );
-		pPlayer->GiveNamedItem( "weapon_gravgun" );
+		if( cvar_allow_gravgun.value)
+			pPlayer->GiveNamedItem( "weapon_gravgun" );
+		if( cvar_allow_ar2.value )
+			pPlayer->GiveNamedItem( "weapon_ar2" );
+		if( !cvar_ar2_mp5.value )
+		{
+			pPlayer->GiveAmmo( cvar_ar2_bullets.value, "AR2", 120 );
+			pPlayer->GiveAmmo( cvar_ar2_balls.value, "AR2grenades", 3 );
+		}
 		pPlayer->GiveAmmo( 68, "9mm", _9MM_MAX_CARRY );// 4 full reloads
 	}
 }
@@ -907,7 +911,7 @@ float CHalfLifeMultiplay::FlWeaponRespawnTime( CBasePlayerItem *pWeapon )
 		}
 	}
 
-	return gpGlobals->time + WEAPON_RESPAWN_TIME;
+	return gpGlobals->time + cvar_wresptime.value;
 }
 
 // when we are within this close to running out of entities,  items 
@@ -1017,7 +1021,7 @@ int CHalfLifeMultiplay::ItemShouldRespawn( CItem *pItem )
 //=========================================================
 float CHalfLifeMultiplay::FlItemRespawnTime( CItem *pItem )
 {
-	return gpGlobals->time + ITEM_RESPAWN_TIME;
+	return gpGlobals->time + cvar_iresptime.value;
 }
 
 //=========================================================
@@ -1061,7 +1065,7 @@ int CHalfLifeMultiplay::AmmoShouldRespawn( CBasePlayerAmmo *pAmmo )
 //=========================================================
 float CHalfLifeMultiplay::FlAmmoRespawnTime( CBasePlayerAmmo *pAmmo )
 {
-	return gpGlobals->time + AMMO_RESPAWN_TIME;
+	return gpGlobals->time + cvar_wresptime.value;
 }
 
 //=========================================================
