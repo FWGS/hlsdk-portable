@@ -280,6 +280,7 @@ public:
 	// int		m_iIdPrimary;										// Unique Id for primary ammo
 	// int		m_iIdSecondary;										// Unique Id for secondary ammo
 	Vector m_SpawnPoint;
+	Vector m_SpawnAngles;
 #ifndef CLIENT_DLL
 	virtual float TouchGravGun( CBaseEntity *attacker, int stage);
 #endif
@@ -369,6 +370,7 @@ public:
 	virtual float TouchGravGun( CBaseEntity *attacker, int stage);
 #endif
 	Vector m_SpawnPoint;
+	Vector m_SpawnAngles;
 };
 
 extern DLL_GLOBAL	short	g_sModelIndexLaser;// holds the index for the laser beam
@@ -460,17 +462,17 @@ public:
 	virtual float TouchGravGun( CBaseEntity *attacker, int stage)
 	{
 		pev->framerate = 1;
-		pev->movetype = MOVETYPE_TOSS;
+		pev->movetype = MOVETYPE_BOUNCE;
 		pev->gravity = 1;
 		if( pev->velocity.z > 20 )
 			pev->velocity.z = 20;
 
-		if( stage == 2 )
+		/*if( stage == 2 )
 		{
 			if( (attacker->pev->origin - pev->origin ).Length() < 90 )
 				Touch( attacker );
 			return 0;
-		}
+		}*/
 		return 200;
 	}
 };

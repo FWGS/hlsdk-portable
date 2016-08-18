@@ -264,12 +264,11 @@ const char **CProp::MaterialSoundList( Materials precacheMaterial, int &soundCou
 
 	case matCinderBlock:
 	case matRocks:
+	case matCeilingTile:
 		pSoundList = pSoundsConcrete;
 		soundCount = ARRAYSIZE(pSoundsConcrete);
 		break;
 
-
-	case matCeilingTile:
 	case matNone:
 	default:
 		soundCount = 0;
@@ -310,6 +309,8 @@ void CProp::Precache( void )
 	if( !pev->model )
 		pev->model = MAKE_STRING( "models/xash/barrel_brown.mdl" );
 
+	if( m_Material == matGlass && !(pev->spawnflags & SF_PROP_BREAKABLE) )
+		m_Material = matWood;
 	switch (m_Material)
 	{
 	case matWood:
@@ -438,7 +439,10 @@ void CProp::DamageSound( void )
 
 	case matCeilingTile:
 		// UNDONE: no ceiling tile shard sound yet
-		i = 0;
+		rgpsz[0] = "debris/concrete1.wav";
+		rgpsz[1] = "debris/concrete2.wav";
+		rgpsz[2] = "debris/concrete3.wav";
+		i = 3;
 		break;
 	}
 
@@ -928,12 +932,7 @@ void CProp::BounceTouch(CBaseEntity *pOther)
 
 void CProp::BounceSound(void)
 {
-	switch (RANDOM_LONG(0, 2))
-	{
-	case 0:	EMIT_SOUND(ENT(pev), CHAN_VOICE, "weapons/grenade_hit1.wav", 0.25, ATTN_NORM);	break;
-	case 1:	EMIT_SOUND(ENT(pev), CHAN_VOICE, "weapons/grenade_hit2.wav", 0.25, ATTN_NORM);	break;
-	case 2:	EMIT_SOUND(ENT(pev), CHAN_VOICE, "weapons/grenade_hit3.wav", 0.25, ATTN_NORM);	break;
-	}
+	MaterialSoundRandom( edict(), m_Material, 0.2 );
 }
 
 void CProp::Spawn(void)

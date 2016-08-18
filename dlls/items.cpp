@@ -90,6 +90,8 @@ void CItem::Spawn( void )
 {
 	pev->movetype = MOVETYPE_TOSS;
 	pev->solid = SOLID_TRIGGER;
+	pev->velocity = Vector( 0, 0, 0 );
+	pev->avelocity = Vector( 0, 0, 0 );
 	UTIL_SetOrigin( pev, pev->origin );
 	UTIL_SetSize( pev, Vector( -16, -16, 0 ), Vector( 16, 16, 16 ) );
 	SetTouch( &CItem::ItemTouch );
@@ -101,15 +103,31 @@ void CItem::Spawn( void )
 		return;
 	}
 	m_SpawnPoint = pev->origin;
+	m_SpawnAngles = pev->angles;
 }
 
 extern int gEvilImpulse101;
 
 void CItem::ItemTouch( CBaseEntity *pOther )
 {
+	pev->velocity = ( pev->velocity + pOther->pev->velocity) / 2;
+	pev->avelocity = pev->avelocity / 3;
 	// if it's not a player, ignore
 	if( !pOther->IsPlayer() )
 	{
+		if( pev->velocity.Length() < 5 )
+			pev->velocity = Vector( 0, 0 ,0 );
+		SetThink( &CItem::Materialize );
+		pev->nextthink = g_pGameRules->FlItemRespawnTime( this );
+		if( ( pOther->pev->solid == SOLID_BSP || pOther->entindex() == 0 ) && pev->movetype == MOVETYPE_BOUNCE && pev->velocity.Length() )
+		switch( RANDOM_LONG( 0, 2 ) )
+		{
+			case 0:EMIT_SOUND( ENT( pev ), CHAN_VOICE, "debris/concrete1.wav", 0.15, ATTN_NORM );break;
+			case 1:EMIT_SOUND( ENT( pev ), CHAN_VOICE, "debris/concrete2.wav", 0.15, ATTN_NORM );break;
+			case 2:EMIT_SOUND( ENT( pev ), CHAN_VOICE, "debris/concrete3.wav", 0.15, ATTN_NORM );break;
+		}
+		else if( !( pev->flags & FL_ONGROUND ) || !( (pOther->pev->solid == SOLID_BSP) || (pOther->entindex() <= 1) ) )
+			pev->movetype = MOVETYPE_TOSS;
 		return;
 	}
 
@@ -142,6 +160,11 @@ void CItem::ItemTouch( CBaseEntity *pOther )
 	{
 		UTIL_Remove( this );
 	}
+	else
+	{
+		pev->movetype = MOVETYPE_TOSS;
+		pev->velocity = Vector( 0 ,0 ,0 );
+	}
 }
 
 CBaseEntity* CItem::Respawn( void )
@@ -169,13 +192,30 @@ float CItem::TouchGravGun( CBaseEntity *attacker, int stage)
 		return 0;
 	//if( pev->mins == pev->maxs )
 		//return 0;
+	if( stage == 2 )
+	{
+		UTIL_MakeVectors( attacker->pev->v_angle + attacker->pev->punchangle);
+		float atarget = UTIL_VecToAngles(gpGlobals->v_forward).y;
+		pev->angles.y = UTIL_AngleMod(pev->angles.y);
+		atarget = UTIL_AngleMod(atarget);
+		pev->avelocity.y = UTIL_AngleDiff(atarget, pev->angles.y) * 10;
+
+	}
+	if( stage == 3 )
+	{
+		pev->avelocity.y = pev->avelocity.y*1.5 + RANDOM_FLOAT(100, -100);
+	}
 	SetThink( &CItem::Materialize );
 	pev->nextthink = g_pGameRules->FlItemRespawnTime( this );
-	return 200;
+	pev->movetype = MOVETYPE_BOUNCE;
+	return 400;
 }
 
 void CItem::Materialize( void )
 {
+	pev->velocity = Vector( 0, 0, 0 );
+	pev->avelocity = Vector( 0, 0, 0 );
+	pev->movetype = MOVETYPE_TOSS;
 	if( pev->effects & EF_NODRAW )
 	{
 		// changing from invisible state to visible.
@@ -183,10 +223,16 @@ void CItem::Materialize( void )
 		pev->effects &= ~EF_NODRAW;
 		pev->effects |= EF_MUZZLEFLASH;
 		if( m_SpawnPoint == Vector( 0, 0, 0 ) )
+		{
 			m_SpawnPoint = pev->origin;
+			m_SpawnAngles = pev->angles;
+		}
 	}
 	if( m_SpawnPoint != Vector( 0, 0, 0 ) )
+	{
+		pev->angles = m_SpawnAngles;
 		UTIL_SetOrigin( pev, m_SpawnPoint );// blip to whereever you should respawn.
+	}
 
 	SetTouch( &CItem::ItemTouch );
 }

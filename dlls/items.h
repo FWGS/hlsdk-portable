@@ -28,5 +28,6 @@ public:
 	};
 	virtual float TouchGravGun( CBaseEntity *attacker, int stage);
 	Vector m_SpawnPoint;
+	Vector m_SpawnAngles;
 };
 #endif // ITEMS_H

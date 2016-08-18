@@ -478,8 +478,6 @@ void CBasePlayerItem::FallThink( void )
 //=========================================================
 void CBasePlayerItem::Materialize( void )
 {
-	ALERT( at_console, "Materialize: %s\n", STRING(pev->classname) );
-
 	if( pev->effects & EF_NODRAW )
 	{
 		// changing from invisible state to visible.
@@ -489,10 +487,19 @@ void CBasePlayerItem::Materialize( void )
 	}
 
 	pev->solid = SOLID_TRIGGER;
+	pev->movetype = MOVETYPE_TOSS;
+	pev->velocity = Vector( 0, 0, 0 );
+	pev->avelocity = Vector( 0, 0, 0 );
 	if( m_SpawnPoint != Vector(0, 0, 0) )
+	{
+		pev->angles = m_SpawnAngles;
 		UTIL_SetOrigin( pev, m_SpawnPoint );// link into world.
+	}
 	else
+	{
+		m_SpawnAngles = pev->angles;
 		UTIL_SetOrigin( pev, m_SpawnPoint = pev->origin );
+	}
 	
 	SetTouch( &CBasePlayerItem::DefaultTouch );
 	SetThink( NULL );
@@ -500,6 +507,8 @@ void CBasePlayerItem::Materialize( void )
 
 float CBasePlayerItem::TouchGravGun( CBaseEntity *attacker, int stage )
 {
+	if( m_pfnTouch == &CBasePlayerItem::DefaultTouch )
+		pev->movetype = MOVETYPE_BOUNCE;
 	if( stage == 2 )
 	{
 		if( (attacker->pev->origin - pev->origin ).Length() < 90 )
@@ -511,6 +520,19 @@ float CBasePlayerItem::TouchGravGun( CBaseEntity *attacker, int stage )
 		return 0;
 	if( pev->effects & EF_NODRAW )
 		return 0;
+	if( stage == 2 )
+	{
+		UTIL_MakeVectors( attacker->pev->v_angle + attacker->pev->punchangle);
+		float atarget = UTIL_VecToAngles(gpGlobals->v_forward).y;
+		pev->angles.y = UTIL_AngleMod(pev->angles.y);
+		atarget = UTIL_AngleMod(atarget);
+		pev->avelocity.y = UTIL_AngleDiff(atarget, pev->angles.y) * 10;
+
+	}
+	if( stage == 3 )
+	{
+		pev->avelocity.y = pev->avelocity.y*1.5 + RANDOM_FLOAT(100, -100);
+	}
 	if( m_pfnThink == NULL || m_pfnThink == &CBasePlayerItem::AttemptToMaterialize )
 	{
 		SetThink( &CBasePlayerItem::AttemptToMaterialize );
@@ -518,7 +540,7 @@ float CBasePlayerItem::TouchGravGun( CBaseEntity *attacker, int stage )
 	}
 	//if( pev->mins == pev->maxs )
 		//return 0;
-	return 200;
+	return 400;
 }
 
 //=========================================================
@@ -587,9 +609,31 @@ CBaseEntity* CBasePlayerItem::Respawn( void )
 
 void CBasePlayerItem::DefaultTouch( CBaseEntity *pOther )
 {
+	pev->velocity = ( pev->velocity + pOther->pev->velocity) / 2;
+	pev->avelocity = pev->avelocity / 3;
 	// if it's not a player, ignore
 	if( !pOther->IsPlayer() )
+	{
+		if( pev->velocity.Length() < 5 )
+			pev->velocity = Vector( 0, 0 ,0 );
+		if( m_pfnThink == NULL || m_pfnThink == &CBasePlayerItem::AttemptToMaterialize )
+		{
+			SetThink( &CBasePlayerItem::AttemptToMaterialize );
+			pev->nextthink = g_pGameRules->FlWeaponRespawnTime(this);
+			if( ( pOther->pev->solid == SOLID_BSP || pOther->entindex() == 0 )&& !(pev->flags & FL_ONGROUND) && pev->movetype == MOVETYPE_BOUNCE && pev->velocity.Length() )
+			switch( RANDOM_LONG( 0, 4 ) )
+			{
+				case 0:EMIT_SOUND( ENT( pev ), CHAN_VOICE, "debris/metal4.wav", 0.15, ATTN_NORM );break;
+				case 1:EMIT_SOUND( ENT( pev ), CHAN_VOICE, "debris/metal1.wav", 0.15, ATTN_NORM );break;
+				case 2:EMIT_SOUND( ENT( pev ), CHAN_VOICE, "doors/doorstop4.wav", 0.15, ATTN_NORM );break;
+				case 3:EMIT_SOUND( ENT( pev ), CHAN_VOICE, "debris/metal6.wav", 0.15, ATTN_NORM );break;
+				case 4:EMIT_SOUND( ENT( pev ), CHAN_VOICE, "debris/metal3.wav", 0.15, ATTN_NORM );break;
+			}
+			else if( !( pev->flags & FL_ONGROUND ) || !( (pOther->pev->solid == SOLID_BSP) || (pOther->entindex() <= 1) ) )
+				pev->movetype = MOVETYPE_TOSS;
+		}
 		return;
+	}
 
 	CBasePlayer *pPlayer = (CBasePlayer *)pOther;
 
@@ -607,6 +651,11 @@ void CBasePlayerItem::DefaultTouch( CBaseEntity *pOther )
 	{
 		AttachToPlayer( pPlayer );
 		EMIT_SOUND( ENT( pPlayer->pev ), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM );
+	}
+	else
+	{
+		pev->movetype = MOVETYPE_TOSS;
+		pev->velocity = Vector( 0 ,0 ,0 );
 	}
 
 	SUB_UseTargets( pOther, USE_TOGGLE, 0 ); // UNDONE: when should this happen?
@@ -1044,6 +1093,7 @@ void CBasePlayerAmmo::Spawn( void )
 	UTIL_SetSize( pev, Vector( -16, -16, 0 ), Vector( 16, 16, 16 ) );
 	UTIL_SetOrigin( pev, pev->origin );
 	m_SpawnPoint = pev->origin;
+	m_SpawnAngles = pev->angles;
 
 	SetTouch( &CBasePlayerAmmo::DefaultTouch );
 }
@@ -1062,6 +1112,8 @@ CBaseEntity* CBasePlayerAmmo::Respawn( void )
 }
 float CBasePlayerAmmo::TouchGravGun( CBaseEntity *attacker, int stage)
 {
+	if( m_pfnTouch == &CBasePlayerAmmo::DefaultTouch )
+		pev->movetype = MOVETYPE_BOUNCE;
 	if( stage == 2 )
 	{
 		if( (attacker->pev->origin - pev->origin ).Length() < 90 )
@@ -1073,10 +1125,26 @@ float CBasePlayerAmmo::TouchGravGun( CBaseEntity *attacker, int stage)
 		return 0;
 	if( pev->effects & EF_NODRAW )
 		return 0;
-	//if( pev->mins == pev->maxs )
-		//return 0;
-	SetThink( &CBasePlayerAmmo::Materialize );
-	pev->nextthink = g_pGameRules->FlAmmoRespawnTime( this );
+
+	if( stage == 2 )
+	{
+		UTIL_MakeVectors( attacker->pev->v_angle + attacker->pev->punchangle);
+		float atarget = UTIL_VecToAngles(gpGlobals->v_forward).y;
+		pev->angles.y = UTIL_AngleMod(pev->angles.y);
+		atarget = UTIL_AngleMod(atarget);
+		pev->avelocity.y = UTIL_AngleDiff(atarget, pev->angles.y) * 10;
+
+	}
+	if( stage == 3 )
+	{
+		pev->avelocity.y = pev->avelocity.y*1.5 + RANDOM_FLOAT(100, -100);
+	}
+
+	if( m_pfnThink == NULL || m_pfnThink == &CBasePlayerAmmo::Materialize )
+	{
+		SetThink( &CBasePlayerAmmo::Materialize );
+		pev->nextthink = g_pGameRules->FlAmmoRespawnTime( this );
+	}
 	return 200;
 }
 void CBasePlayerAmmo::Materialize( void )
@@ -1089,17 +1157,41 @@ void CBasePlayerAmmo::Materialize( void )
 		pev->effects |= EF_MUZZLEFLASH;
 	}
 	//if( m_SpawnPoint != Vector(0, 0, 0) )
+	pev->angles = m_SpawnAngles;
 		UTIL_SetOrigin( pev, m_SpawnPoint );// link into world.
 	DROP_TO_FLOOR(edict());
+	pev->movetype = MOVETYPE_TOSS;
 	//else
 	//	UTIL_SetOrigin( pev, m_SpawnPoint = pev->origin );
 	SetTouch( &CBasePlayerAmmo::DefaultTouch );
+	pev->velocity = Vector( 0, 0, 0 );
+	pev->avelocity = Vector( 0, 0, 0 );
 }
 
 void CBasePlayerAmmo::DefaultTouch( CBaseEntity *pOther )
 {
+	pev->velocity = ( pev->velocity + pOther->pev->velocity) / 2;
+	pev->avelocity = pev->avelocity / 3;
+
+
 	if( !pOther->IsPlayer() )
 	{
+		if( pev->velocity.Length() < 5 )
+			pev->velocity = Vector( 0, 0 ,0 );
+		if( m_pfnThink == NULL || m_pfnThink == &CBasePlayerAmmo::Materialize )
+		{
+			SetThink( &CBasePlayerAmmo::Materialize );
+			pev->nextthink = g_pGameRules->FlAmmoRespawnTime(this);
+			if( ( pOther->pev->solid == SOLID_BSP || pOther->entindex() == 0 ) && !(pev->flags & FL_ONGROUND) && pev->movetype == MOVETYPE_BOUNCE && pev->velocity.Length() )
+			switch( RANDOM_LONG( 0, 2 ) )
+			{
+				case 0:EMIT_SOUND( ENT( pev ), CHAN_VOICE, "debris/concrete1.wav", 0.15, ATTN_NORM );break;
+				case 1:EMIT_SOUND( ENT( pev ), CHAN_VOICE, "debris/concrete2.wav", 0.15, ATTN_NORM );break;
+				case 2:EMIT_SOUND( ENT( pev ), CHAN_VOICE, "debris/concrete3.wav", 0.15, ATTN_NORM );break;
+			}
+			else if( !( pev->flags & FL_ONGROUND ) || !( (pOther->pev->solid == SOLID_BSP) || (pOther->entindex() <= 1) ) )
+				pev->movetype = MOVETYPE_TOSS;
+		}
 		return;
 	}
 
@@ -1122,6 +1214,11 @@ void CBasePlayerAmmo::DefaultTouch( CBaseEntity *pOther )
 		SetTouch( NULL );
 		SetThink( &CBaseEntity::SUB_Remove );
 		pev->nextthink = gpGlobals->time + .1;
+	}
+	else
+	{
+		pev->movetype = MOVETYPE_TOSS;
+		pev->velocity = Vector( 0 ,0 ,0 );
 	}
 }
 
@@ -1233,7 +1330,7 @@ void CWeaponBox::Spawn( void )
 {
 	Precache();
 
-	pev->movetype = MOVETYPE_TOSS;
+	pev->movetype = MOVETYPE_BOUNCE;
 	pev->solid = SOLID_TRIGGER;
 
 	UTIL_SetSize( pev, Vector(-16,-16,-32), Vector(16,16,32) );
@@ -1273,10 +1370,14 @@ void CWeaponBox::Kill( void )
 //=========================================================
 void CWeaponBox::Touch( CBaseEntity *pOther )
 {
-	if( !( pev->flags & FL_ONGROUND ) )
+	/*if( !( pev->flags & FL_ONGROUND ) )
 	{
 		return;
-	}
+	}*/
+	pev->velocity = ( pev->velocity + pOther->pev->velocity) / 2;
+
+	if( pev->velocity.Length() > 300 )
+		return;
 
 	if( !pOther->IsPlayer() )
 	{
