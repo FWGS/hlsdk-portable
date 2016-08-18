@@ -250,7 +250,7 @@ void CGrav::Attack(void)
 			UpdateEffect( vecSrc, origin, 1 );
 
 
-			EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, GRAV_SOUND_STARTUP, 1, ATTN_NORM, 0, 70 + RANDOM_LONG(0, 34));
+			EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, GRAV_SOUND_STARTUP, 0.2, ATTN_NORM, 0, 70 + RANDOM_LONG(0, 34));
 
 			//if (crosent->pev->flags& FL_ONGROUND) { pev->velocity = pev->velocity * 0.95; };
 
@@ -263,7 +263,7 @@ void CGrav::Attack(void)
 		}
 		else
 		{
-			EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, GRAV_SOUND_FAILRUN, 0.6, ATTN_NORM, 0, 70 + RANDOM_LONG(0, 34));
+			EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, GRAV_SOUND_FAILRUN, 0.6, ATTN_NORM, 0, 70 + RANDOM_LONG(0, 34));
 			crossent = NULL;
 		}
 		if (gpGlobals->time >= m_flNextGravgunAttack)
@@ -336,7 +336,7 @@ void CGrav::Attack2(void)
 				crossent = TraceForward(m_pPlayer, 1000);
 				if( !crossent || !(m_fPushSpeed = crossent->TouchGravGun(m_pPlayer,0)) )
 				{
-					EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, GRAV_SOUND_FAILRUN, 0.6, ATTN_NORM, 0, 70 + RANDOM_LONG(0, 34));
+					EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, GRAV_SOUND_FAILRUN, 0.6, ATTN_NORM, 0, 70 + RANDOM_LONG(0, 34));
 					crossent = NULL;
 				}
 			}
@@ -347,7 +347,7 @@ void CGrav::Attack2(void)
 				if(crossent->IsBSPModel())
 					origin = VecBModelOrigin( crossent->pev );
 				UpdateEffect( vecSrc, origin, 1 );
-				EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, GRAV_SOUND_RUN, 0.6, ATTN_NORM, 0, 70 + RANDOM_LONG(0, 34));
+				EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, GRAV_SOUND_RUN, 0.6, ATTN_NORM, 0, 70 + RANDOM_LONG(0, 34));
 				if(crossent->TouchGravGun(m_pPlayer, 0))
 				{
 					m_hAimentEntity = crossent;
@@ -455,7 +455,7 @@ void CGrav::GrabThink()
 			pev->nextthink = gpGlobals->time + 0.001;
 	}
 	else{
-		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, GRAV_SOUND_OFF, 1, ATTN_NORM, 0, 70 + RANDOM_LONG(0, 34));
+		EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, GRAV_SOUND_OFF, 1, ATTN_NORM, 0, 70 + RANDOM_LONG(0, 34));
 		m_iGrabFailures = 0;
 		SetThink(NULL);
 		if(m_hAimentEntity)
@@ -579,6 +579,7 @@ void CGrav::SecondaryAttack(void)
 			if( m_hAimentEntity )
 			{
 				m_hAimentEntity->pev->velocity = Vector(0,0,0);
+				EMIT_SOUND( ENT( m_hAimentEntity->pev ), CHAN_VOICE, "weapons/357_cock1.wav", 0.8, ATTN_NORM );
 				m_hAimentEntity = NULL;
 			}
 		}

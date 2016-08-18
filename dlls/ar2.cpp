@@ -76,18 +76,36 @@ public:
 		pev->owner = attacker->edict();
 
 		if( stage == 3 )
-			pev->dmgtime = gpGlobals->time + 5 ;
+		{
+			pev->dmgtime = gpGlobals->time + 6 ;
+			// play launch sound
+			switch (RANDOM_LONG(0, 2))
+			{
+				case 0:	EMIT_SOUND(ENT(pev), CHAN_VOICE, "ar2/ar2launch1.wav", 1, ATTN_NORM);	break;
+				case 1:	EMIT_SOUND(ENT(pev), CHAN_VOICE, "ar2/ar2launch2.wav", 1, ATTN_NORM);	break;
+			}
+			m_fGravgunSound = false;
+		}
 
-		if( stage == 2 && gpGlobals->time - pev->dmgtime > 15 )
-			pev->dmgtime = gpGlobals->time + 15 ;
+		if( stage == 2 && gpGlobals->time - pev->dmgtime < 15 )
+		{
+			pev->dmgtime = gpGlobals->time + 20 ;
+			if( !m_fGravgunSound )
+			{
+				EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "ar2/ar2gravgun.wav", 0.2, ATTN_NORM, 0, 70 + RANDOM_LONG(0, 34));
+				m_fGravgunSound = true;
+			}
+		}
 
 		if( stage == 1 )
-			pev->dmgtime = gpGlobals->time + 15 ;
+			pev->dmgtime = gpGlobals->time + 20 ;
 
 		return 1600;
 	}
 	float m_flNextAttack;
 	bool m_fRegisteredSound;
+	bool m_fGravgunSound;
+	float m_flLastSound;
 	int m_iShockWaveTexture;
 };
 
@@ -98,8 +116,8 @@ LINK_ENTITY_TO_CLASS(ar2grenade, CAR2Ball);
 int CAR2Ball::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType)
 {
 	Vector r = (pevInflictor->origin - pev->origin);
-	pev->velocity = r * flDamage / -7;
-	pev->avelocity.x = pev->avelocity.x*0.5 + RANDOM_FLOAT(100, -100);
+	pev->velocity = pev->velocity + r * flDamage / -7;
+	pev->avelocity.x = pev->avelocity.x * 0.5 + RANDOM_FLOAT(100, -100);
 
 }
 
@@ -134,7 +152,7 @@ void CAR2Ball::Spawn()
 	SET_MODEL(ENT(pev), "models/ar2grenade.mdl");
 	pev->dmg = 60;
 	m_fRegisteredSound = FALSE;
-	UTIL_SetSize(pev, Vector(-16, -16, -16), Vector(16, 16, 16));
+	UTIL_SetSize(pev, Vector(-8, -8, -8), Vector(8, 8, 8));
 	UTIL_SetOrigin(pev, pev->origin);
 	pev->avelocity.x = RANDOM_LONG(-1000, 1000);
 	pev->avelocity.y = RANDOM_LONG(-1000, 1000);
@@ -158,6 +176,12 @@ CAR2Ball * CAR2Ball::AR2Shoot(entvars_t *pevOwner, Vector vecStart, Vector vecVe
 		pGrenade->pev->nextthink = gpGlobals->time;
 		pGrenade->pev->velocity = Vector(0, 0, 0);
 	}
+	// play launch sound
+	switch (RANDOM_LONG(0, 2))
+	{
+		case 0:	EMIT_SOUND(ENT(pGrenade->pev), CHAN_VOICE, "ar2/ar2launch1.wav", 1, ATTN_NORM);	break;
+		case 1:	EMIT_SOUND(ENT(pGrenade->pev), CHAN_VOICE, "ar2/ar2launch2.wav", 1, ATTN_NORM);	break;
+	}
 
 	return pGrenade;
 }
@@ -167,18 +191,6 @@ void CAR2Ball::AR2Touch(CBaseEntity *pOther)
 	// don't hit the guy that launched this sphere
 	if (pOther->edict() == pev->owner)
 		return;
-
-	if( ( pev->velocity.Length() >= 500 ) && (pev->dmgtime - gpGlobals->time > 5 ) )
-	{
-		ALERT( at_console, "Slow detonate\n");
-		pev->dmgtime = gpGlobals->time + 5 ;
-	}
-
-	if( pev->velocity.Length() >= 100 )
-	{
-		ALERT( at_console, "Decreasing dmgtime %f\n", pev->dmg - gpGlobals->time );
-		pev->dmgtime -= pev->velocity.Length() / 5000;
-	}
 
 	// only do damage if we're moving fairly fast
 	if (m_flNextAttack < gpGlobals->time )
@@ -190,7 +202,17 @@ void CAR2Ball::AR2Touch(CBaseEntity *pOther)
 		ClearMultiDamage();
 		pOther->TraceAttack(pevOwner, 250, gpGlobals->v_forward, &tr, DMG_CLUB);
 		if( pOther->IsPlayer() || pOther->IsMoving() )
+		{
 			pev->velocity = gpGlobals->v_forward.Normalize() * 1600;
+			// play bounce sound
+			switch (RANDOM_LONG(0, 2))
+			{
+				case 0:	EMIT_SOUND(ENT(pev), CHAN_VOICE, "ar2/ar2strike1.wav", 1, ATTN_NORM);	break;
+				case 1:	EMIT_SOUND(ENT(pev), CHAN_VOICE, "ar2/ar2strike2.wav", 1, ATTN_NORM);	break;
+			}
+			m_fGravgunSound = false;
+			m_flLastSound = gpGlobals->time;
+		}
 		ApplyMultiDamage(pev, pevOwner);
 		m_flNextAttack = gpGlobals->time + 0.03; // debounce
 	}
@@ -207,14 +229,16 @@ void CAR2Ball::AR2Touch(CBaseEntity *pOther)
 		m_fRegisteredSound = TRUE;
 	}
 
+	if( gpGlobals->time - m_flLastSound > 0.12 )
 	{
 		// play bounce sound
 		switch (RANDOM_LONG(0, 2))
 		{
-		case 0:	EMIT_SOUND(ENT(pev), CHAN_VOICE, "weapons/grenade_hit1.wav", 0.25, ATTN_NORM);	break;
-		case 1:	EMIT_SOUND(ENT(pev), CHAN_VOICE, "weapons/grenade_hit2.wav", 0.25, ATTN_NORM);	break;
-		case 2:	EMIT_SOUND(ENT(pev), CHAN_VOICE, "weapons/grenade_hit3.wav", 0.25, ATTN_NORM);	break;
+			case 0:	EMIT_SOUND(ENT(pev), CHAN_VOICE, "ar2/ar2bounce1.wav", 0.5, ATTN_NORM);	break;
+			case 1:	EMIT_SOUND(ENT(pev), CHAN_VOICE, "ar2/ar2bounce2.wav", 0.5, ATTN_NORM);	break;
 		}
+		m_fGravgunSound = false;
+		m_flLastSound = gpGlobals->time;
 	}
 
 	pev->framerate = pev->velocity.Length() / 200.0;
@@ -343,17 +367,14 @@ void CAR2Ball::Explode( TraceResult *pTrace, int bitsDamageType )
 	RadiusDamage ( pev->origin, pev, pevOwner, 200, 30, CLASS_NONE, bitsDamageType );
 
 
-	flRndSound = RANDOM_FLOAT( 0 , 1 );
+	//flRndSound = RANDOM_FLOAT( 0 , 1 );
 
-	switch ( RANDOM_LONG( 0, 2 ) )
-	{
-		case 0:	EMIT_SOUND(ENT(pev), CHAN_VOICE, "weapons/debris1.wav", 0.55, ATTN_NORM);	break;
-		case 1:	EMIT_SOUND(ENT(pev), CHAN_VOICE, "weapons/debris2.wav", 0.55, ATTN_NORM);	break;
-		case 2:	EMIT_SOUND(ENT(pev), CHAN_VOICE, "weapons/debris3.wav", 0.55, ATTN_NORM);	break;
-	}
+
+	EMIT_SOUND(ENT(pev), CHAN_VOICE, "ar2/ar2explosion.wav", 1, ATTN_NORM);
 
 	pev->effects |= EF_NODRAW;
 	SetThink( &CAR2Ball::SUB_Remove );
+	SetTouch( NULL );
 	pev->velocity = g_vecZero;
 	pev->nextthink = gpGlobals->time + 0.3;
 /*
@@ -536,7 +557,7 @@ void CAR2::PrimaryAttack()
 		SetThink(&CAR2::Cleaner);
 		pev->nextthink = gpGlobals->time + 0.05;
 	}
-	EMIT_SOUND(ENT(pev), CHAN_VOICE, "ar2s1.wav", 1, ATTN_NORM);
+	EMIT_SOUND(ENT(pev), CHAN_WEAPON, "ar2s1.wav", 1, ATTN_NORM);
 
 	if (!m_iClip && m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0)
 		// HEV suit - indicate out of ammo condition
@@ -589,8 +610,9 @@ void CAR2::SecondaryAttack(void)
 		m_pPlayer->pev->origin + m_pPlayer->pev->view_ofs + gpGlobals->v_forward * 16,
 		gpGlobals->v_forward * 1600,5);
 
-
-	EMIT_SOUND(ENT(pev), CHAN_VOICE, "ar2launch.wav", 0.75, ATTN_NORM);
+	// reload sound
+	if( m_pPlayer->m_rgAmmo[m_iSecondaryAmmoType] )
+		EMIT_SOUND(ENT(pev), CHAN_VOICE, "ar2launch.wav", 0.75, ATTN_NORM);
 	MyAnim(AR2_LAUNCH);
 
 	m_flNextPrimaryAttack = gpGlobals->time + 1;
