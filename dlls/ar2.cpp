@@ -626,9 +626,7 @@ void CAR2::SecondaryAttack(void)
 
 void CAR2::Reload(void)
 {
-	;
-
-	if (m_pPlayer->ammo_9mm <= 0)
+	if( cvar_ar2_mp5.value && m_pPlayer->ammo_9mm <= 0 )
 		return;
 
 	DefaultReload(30, AR2_RELOAD, 1.0);
@@ -671,12 +669,14 @@ class CAR2Ammo : public CBasePlayerAmmo
 	void Spawn( void )
 	{
 		Precache( );
-		SET_MODEL(ENT(pev), "models/w_chainammo.mdl");
+		SET_MODEL(ENT(pev), "models/combine_rifle_cartridge01.mdl");
+		pev->angles = Vector( -90, 0, 0 );
 		CBasePlayerAmmo::Spawn( );
+		UTIL_SetSize( pev, Vector( -16, -16, -3 ), Vector( 16, 16, 13 ) );
 	}
 	void Precache( void )
 	{
-		PRECACHE_MODEL ("models/w_chainammo.mdl");
+		PRECACHE_MODEL ("models/combine_rifle_cartridge01.mdl");
 		PRECACHE_SOUND("items/9mmclip1.wav");
 	}
 	BOOL AddAmmo( CBaseEntity *pOther )
@@ -697,12 +697,14 @@ class CAR2AmmoGrenade : public CBasePlayerAmmo
 	void Spawn( void )
 	{
 		Precache( );
-		SET_MODEL(ENT(pev), "models/w_ARgrenade.mdl");
+		SET_MODEL(ENT(pev), "models/combine_rifle_ammo01.mdl");
 		CBasePlayerAmmo::Spawn( );
+
+
 	}
 	void Precache( void )
 	{
-		PRECACHE_MODEL ("models/w_ARgrenade.mdl");
+		PRECACHE_MODEL ("models/combine_rifle_ammo01.mdl");
 		PRECACHE_SOUND("items/9mmclip1.wav");
 	}
 	BOOL AddAmmo( CBaseEntity *pOther )
