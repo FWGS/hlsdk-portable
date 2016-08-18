@@ -343,7 +343,8 @@ void CGrav::Attack2(void)
 				}
 			}
 			if ( crossent ){
-				DestroyEffect();
+				if(m_fireMode != FIRE_NARROW)
+					DestroyEffect();
 				m_fireMode = FIRE_NARROW;
 				Vector origin = crossent->pev->origin;
 				if(crossent->IsBSPModel())

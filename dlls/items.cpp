@@ -207,7 +207,11 @@ float CItem::TouchGravGun( CBaseEntity *attacker, int stage)
 	}
 	SetThink( &CItem::Materialize );
 	pev->nextthink = g_pGameRules->FlItemRespawnTime( this );
-	pev->movetype = MOVETYPE_BOUNCE;
+	if( ( pev->movetype == MOVETYPE_TOSS ) && ( stage > 1 ) )
+	{
+		pev->movetype = MOVETYPE_BOUNCE;
+		pev->velocity = Vector( 0, 0, 0 );
+	}
 	return 400;
 }
 

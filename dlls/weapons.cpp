@@ -507,8 +507,11 @@ void CBasePlayerItem::Materialize( void )
 
 float CBasePlayerItem::TouchGravGun( CBaseEntity *attacker, int stage )
 {
-	if( m_pfnTouch == &CBasePlayerItem::DefaultTouch )
+	if( ( pev->movetype == MOVETYPE_TOSS ) && ( stage > 1 ) && ( m_pfnTouch == &CBasePlayerItem::DefaultTouch ) )
+	{
 		pev->movetype = MOVETYPE_BOUNCE;
+		pev->velocity = Vector( 0, 0, 0 );
+	}
 	if( stage == 2 )
 	{
 		if( (attacker->pev->origin - pev->origin ).Length() < 90 )
@@ -522,8 +525,9 @@ float CBasePlayerItem::TouchGravGun( CBaseEntity *attacker, int stage )
 		return 0;
 	if( stage == 2 )
 	{
-		UTIL_MakeVectors( attacker->pev->v_angle + attacker->pev->punchangle);
-		float atarget = UTIL_VecToAngles(gpGlobals->v_forward).y;
+		//UTIL_MakeVectors( attacker->pev->v_angle + attacker->pev->punchangle);
+		//float atarget = UTIL_VecToAngles(gpGlobals->v_forward).y;
+		float atarget = attacker->pev->v_angle.y;
 		pev->angles.y = UTIL_AngleMod(pev->angles.y);
 		atarget = UTIL_AngleMod(atarget);
 		pev->avelocity.y = UTIL_AngleDiff(atarget, pev->angles.y) * 10;
@@ -1112,8 +1116,11 @@ CBaseEntity* CBasePlayerAmmo::Respawn( void )
 }
 float CBasePlayerAmmo::TouchGravGun( CBaseEntity *attacker, int stage)
 {
-	if( m_pfnTouch == &CBasePlayerAmmo::DefaultTouch )
+	if( ( pev->movetype == MOVETYPE_TOSS ) && ( stage > 1 ) && ( m_pfnTouch == &CBasePlayerAmmo::DefaultTouch ) )
+	{
 		pev->movetype = MOVETYPE_BOUNCE;
+		pev->velocity = Vector( 0, 0, 0 );
+	}
 	if( stage == 2 )
 	{
 		if( (attacker->pev->origin - pev->origin ).Length() < 90 )
@@ -1128,8 +1135,9 @@ float CBasePlayerAmmo::TouchGravGun( CBaseEntity *attacker, int stage)
 
 	if( stage == 2 )
 	{
-		UTIL_MakeVectors( attacker->pev->v_angle + attacker->pev->punchangle);
-		float atarget = UTIL_VecToAngles(gpGlobals->v_forward).y;
+		//UTIL_MakeVectors( attacker->pev->v_angle + attacker->pev->punchangle);
+		//float atarget = UTIL_VecToAngles(gpGlobals->v_forward).y;
+		float atarget = attacker->pev->v_angle.y;
 		pev->angles.y = UTIL_AngleMod(pev->angles.y);
 		atarget = UTIL_AngleMod(atarget);
 		pev->avelocity.y = UTIL_AngleDiff(atarget, pev->angles.y) * 10;
@@ -1145,7 +1153,7 @@ float CBasePlayerAmmo::TouchGravGun( CBaseEntity *attacker, int stage)
 		SetThink( &CBasePlayerAmmo::Materialize );
 		pev->nextthink = g_pGameRules->FlAmmoRespawnTime( this );
 	}
-	return 200;
+	return 500;
 }
 void CBasePlayerAmmo::Materialize( void )
 {
