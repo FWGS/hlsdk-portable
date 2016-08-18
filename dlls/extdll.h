@@ -51,12 +51,6 @@ typedef int BOOL;
 #include <limits.h>
 #include <stdarg.h>
 #endif //_WIN32
-#ifndef min
-#define min(a,b)  (((a) < (b)) ? (a) : (b))
-#endif
-#ifndef max
-#define max(a,b)  (((a) > (b)) ? (a) : (b))
-#endif
 
 // Misc C-runtime library headers
 #include "stdio.h"
@@ -84,4 +78,11 @@ typedef float vec_t;				// needed before including progdefs.h
 
 // Shared header between the client DLL and the game DLLs
 #include "cdll_dll.h"
+#ifndef min
+#define min(a,b)  (((a) < (b)) ? (a) : (b))
+#endif
+#ifndef max
+#define max(a,b)  (((a) > (b)) ? (a) : (b))
+#endif
+
 #endif //EXTDLL_H
