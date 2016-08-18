@@ -250,7 +250,7 @@ void CGrav::Attack(void)
 			UpdateEffect( vecSrc, origin, 1 );
 
 
-			EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, GRAV_SOUND_STARTUP, 0.2, ATTN_NORM, 0, 70 + RANDOM_LONG(0, 34));
+			EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, GRAV_SOUND_STARTUP, 0.1, ATTN_NORM, 0, 70 + RANDOM_LONG(0, 34));
 
 			//if (crosent->pev->flags& FL_ONGROUND) { pev->velocity = pev->velocity * 0.95; };
 
@@ -263,7 +263,7 @@ void CGrav::Attack(void)
 		}
 		else
 		{
-			EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, GRAV_SOUND_FAILRUN, 0.6, ATTN_NORM, 0, 70 + RANDOM_LONG(0, 34));
+			EMIT_SOUND(ENT(pev), CHAN_WEAPON, "gravgun/dry.wav", 0.6, ATTN_NORM);
 			crossent = NULL;
 		}
 		if (gpGlobals->time >= m_flNextGravgunAttack)
@@ -334,9 +334,11 @@ void CGrav::Attack2(void)
 			if( !crossent || !(m_fPushSpeed = crossent->TouchGravGun(m_pPlayer,0)) )
 			{
 				crossent = TraceForward(m_pPlayer, 1000);
-				if( !crossent || !(m_fPushSpeed = crossent->TouchGravGun(m_pPlayer,0)) )
+				if( !crossent )
+					EMIT_SOUND(ENT(pev), CHAN_WEAPON, "gravgun/dry.wav", 0.3, ATTN_NORM);
+				else if( !(m_fPushSpeed = crossent->TouchGravGun(m_pPlayer,0)) )
 				{
-					EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, GRAV_SOUND_FAILRUN, 0.6, ATTN_NORM, 0, 70 + RANDOM_LONG(0, 34));
+					EMIT_SOUND(ENT(pev), CHAN_WEAPON, GRAV_SOUND_FAILRUN, 0.3, ATTN_NORM);
 					crossent = NULL;
 				}
 			}
@@ -347,7 +349,7 @@ void CGrav::Attack2(void)
 				if(crossent->IsBSPModel())
 					origin = VecBModelOrigin( crossent->pev );
 				UpdateEffect( vecSrc, origin, 1 );
-				EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, GRAV_SOUND_RUN, 0.6, ATTN_NORM, 0, 70 + RANDOM_LONG(0, 34));
+				EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "gravgun/pickup.wav", 0.6, ATTN_NORM, 0, 70 + RANDOM_LONG(0, 34));
 				if(crossent->TouchGravGun(m_pPlayer, 0))
 				{
 					m_hAimentEntity = crossent;
@@ -687,6 +689,7 @@ void CGrav::CreateEffect(void)
 		m_pBeam->SetNoise(5);
 		m_pNoise->SetColor(0, 255, 0);
 		m_pNoise->SetNoise(2);
+		EMIT_SOUND_DYN(ENT(m_pBeam->pev), CHAN_VOICE, "gravgun/hold.wav", 0.2, ATTN_NORM, 0, 70 + RANDOM_LONG(0, 34));
 	}
 #endif
 
@@ -699,6 +702,8 @@ void CGrav::DestroyEffect(void)
 #ifndef CLIENT_DLL
 	if (m_pBeam)
 	{
+		if( m_fireMode == FIRE_NARROW )
+			EMIT_SOUND( ENT(m_pBeam->pev), CHAN_VOICE, "gravgun/drop.wav", 0.2, ATTN_NORM );
 		UTIL_Remove(m_pBeam);
 		m_pBeam = NULL;
 	}
