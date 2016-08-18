@@ -382,7 +382,7 @@ CBaseEntity *CGrav::GetCrossEnt( Vector gunpos, Vector aim, float radius )
 	edict_t *player = m_pPlayer->edict();
 
 	// uncomment this for profiling
-	int tracecount = 0;
+	// int tracecount = 0;
 
 	for ( int i = 1; i < gpGlobals->maxEntities; i++, pEdict++ )
 	{
@@ -410,7 +410,7 @@ CBaseEntity *CGrav::GetCrossEnt( Vector gunpos, Vector aim, float radius )
 		flDot = DotProduct(vecLOS, aim);
 		if (flDot <= flMaxDot)
 			continue;
-		tracecount++;
+		//tracecount++;
 		TraceResult tr;
 		UTIL_TraceLine(gunpos, origin, missile, player, &tr);
 		if( ( tr.vecEndPos - gunpos ).Length() + 30 < (origin - gunpos).Length())
@@ -419,7 +419,7 @@ CBaseEntity *CGrav::GetCrossEnt( Vector gunpos, Vector aim, float radius )
 		flMaxDot = flDot;
 	}
 
-	ALERT( at_console, "tracecount: %d\n", tracecount );
+	//ALERT( at_console, "tracecount: %d\n", tracecount );
 
 	return CBaseEntity::Instance(pClosest);
 
@@ -741,7 +741,7 @@ void CGrav::EndAttack(void)
 {
 	bool bMakeNoise = false;
    // if (m_AimentEntity&&m_AimentEntity->pev->velocity.Length() > 100&& (m_AimentEntity->pev->origin-m_pPlayer->pev->origin).Length()<100) { m_AimentEntity->pev->velocity = m_AimentEntity->pev->velocity / 10; }
-	ALERT( at_console, "EndAttack()\n");
+	//ALERT( at_console, "EndAttack()\n");
 	if (m_fireState != FIRE_OFF) //Checking the button just in case!.
 		bMakeNoise = true;
 	m_flNextGravgunAttack = gpGlobals->time + 0.1;
