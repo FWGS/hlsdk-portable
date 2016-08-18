@@ -45,9 +45,9 @@ cvar_t cvar_ar2_balls = { "mp_ar2_balls","0", FCVAR_SERVER };
 cvar_t cvar_ar2_bullets = { "mp_ar2_bullets","0", FCVAR_SERVER };
 cvar_t cvar_wresptime = { "mp_wresptime","20", FCVAR_SERVER };
 cvar_t cvar_iresptime = { "mp_iresptime","30", FCVAR_SERVER };
-cvar_t cvar_gibtime{ "mp_gibtime","250", FCVAR_SERVER };
-cvar_t cvar_hgibcount{ "mp_hgibcount","12", FCVAR_SERVER };
-cvar_t cvar_agibcount{ "mp_agibcount","8", FCVAR_SERVER };
+cvar_t cvar_gibtime = { "mp_gibtime","250", FCVAR_SERVER };
+cvar_t cvar_hgibcount = { "mp_hgibcount","12", FCVAR_SERVER };
+cvar_t cvar_agibcount = { "mp_agibcount","8", FCVAR_SERVER };
 cvar_t mp_chattime	= { "mp_chattime","10", FCVAR_SERVER };
 
 // Engine Cvars
