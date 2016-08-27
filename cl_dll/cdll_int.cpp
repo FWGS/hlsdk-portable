@@ -36,6 +36,11 @@ void InitInput( void );
 void EV_HookEvents( void );
 void IN_Commands( void );
 
+extern cvar_t *cl_upspeed;
+extern cvar_t *cl_forwardspeed;
+extern cvar_t *cl_backspeed;
+extern cvar_t *cl_sidespeed;
+
 /*
 ========================== 
     Initialize
@@ -178,6 +183,14 @@ so the HUD can reinitialize itself.
 int DLLEXPORT HUD_VidInit( void )
 {
 	gHUD.VidInit();
+
+	//
+	// Fixup player speed.
+	//
+	cl_upspeed->value	=
+	cl_forwardspeed->value	=
+	cl_backspeed->value	=
+	cl_sidespeed->value	= 200;
 
 	return 1;
 }

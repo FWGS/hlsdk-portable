@@ -51,7 +51,7 @@ set (SVDLL_SOURCES
 	defaultai.cpp
 	doors.cpp
 	effects.cpp
-	egon.cpp
+#	egon.cpp
 	explode.cpp
 	flyingmonster.cpp
 	func_break.cpp
@@ -59,24 +59,24 @@ set (SVDLL_SOURCES
 	game.cpp
 	gamerules.cpp
 	gargantua.cpp
-	gauss.cpp
+#	gauss.cpp
 	genericmonster.cpp
 	ggrenade.cpp
 	globals.cpp
-	glock.cpp
+#	glock.cpp
 	gman.cpp
 	h_ai.cpp
 	h_battery.cpp
 	h_cine.cpp
 	h_cycler.cpp
 	h_export.cpp
-	handgrenade.cpp
+#	handgrenade.cpp
 	hassassin.cpp
 	headcrab.cpp
 	healthkit.cpp
 	hgrunt.cpp
 	hornet.cpp
-	hornetgun.cpp
+#	hornetgun.cpp
 	houndeye.cpp
 	ichthyosaur.cpp
 	islave.cpp
@@ -88,7 +88,7 @@ set (SVDLL_SOURCES
 	monsters.cpp
 	monsterstate.cpp
 	mortar.cpp
-	mp5.cpp
+#	mp5.cpp
 	multiplay_gamerules.cpp
 	nihilanth.cpp
 	nodes.cpp
@@ -97,7 +97,7 @@ set (SVDLL_SOURCES
 	plane.cpp
 	plats.cpp
 	player.cpp
-	python.cpp
+#	python.cpp
 	rat.cpp
 	roach.cpp
 	rpg.cpp
@@ -129,9 +129,21 @@ set (SVDLL_SOURCES
 	../pm_shared/pm_debug.c
 	../pm_shared/pm_math.c
 	../pm_shared/pm_shared.c
+	poke646/bradnailer.cpp
+	poke646/cmlwbr.cpp
+	poke646/firetrail.cpp
+	poke646/genericmodel.cpp
+	poke646/heaterpipe.cpp
+	poke646/nail.cpp
+	poke646/nailgun.cpp
+	poke646/pipebomb.cpp
+	poke646/robocop.cpp
+	poke646/weapon_pipebomb.cpp
+	poke646/xenspit.cpp
+	poke646/xensquasher.cpp
 )
 	
-include_directories (. wpn_shared ../common ../engine ../pm_shared ../game_shared ../public)
+include_directories (. wpn_shared poke646 ../common ../engine ../pm_shared ../game_shared ../public)
 
 if(USE_VOICEMGR)
 	set(SVDLL_SOURCES

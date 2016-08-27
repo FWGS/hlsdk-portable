@@ -787,6 +787,8 @@ void ClientPrecache( void )
 
 	if( giPrecacheGrunt )
 		UTIL_PrecacheOther( "monster_human_grunt" );
+
+	PRECACHE_SOUND("player/breathe2.wav");
 }
 
 /*
@@ -1618,10 +1620,13 @@ void UpdateClientData( const struct edict_s *ent, int sendweapons, struct client
 					cd->vuser4.y = pl->m_rgAmmo[gun->m_iPrimaryAmmoType];
 					cd->vuser4.z = pl->m_rgAmmo[gun->m_iSecondaryAmmoType];
 
-					if( pl->m_pActiveItem->m_iId == WEAPON_RPG )
+					if( pl->m_pActiveItem->m_iId == WEAPON_BRADNAILER || pl->m_pActiveItem->m_iId == WEAPON_NAILGUN )
 					{
-						cd->vuser2.y = ( (CRpg *)pl->m_pActiveItem )->m_fSpotActive;
-						cd->vuser2.z = ( (CRpg *)pl->m_pActiveItem )->m_cActiveRockets;
+						cd->vuser2.y = pl->ammo_nails;
+					}
+					else if( pl->m_pActiveItem->m_iId == WEAPON_XS )
+					{
+						cd->vuser2.y = pl->ammo_xencandy;
 					}
 				}
 			}

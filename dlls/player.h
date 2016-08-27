@@ -60,6 +60,18 @@
 
 #define TEAM_NAME_LENGTH	16
 
+//
+// Player exert.
+//
+
+#define PLAYER_EXERT_LEVEL_MIN			0
+#define PLAYER_EXERT_LEVEL_MAX			50
+#define PLAYER_EXERT_RATE			0.2f
+
+#define PLAYER_BREATHE_LEVEL			5
+#define PLAYER_BREATHE_VOLUME_MAX		2.0f
+#define PLAYER_BREATHE_SOUND			"player/breathe2.wav"
+
 typedef enum
 {
 	PLAYER_IDLE,
@@ -308,6 +320,36 @@ public:
 	char m_SbarString1[ SBAR_STRING_SIZE ];
 
 	float m_flNextChatTime;
+
+	// Music
+	BOOL m_bSong01_Played;
+	BOOL m_bSong02_Played;
+	BOOL m_bSong03_Played;
+	BOOL m_bSong04_Played;
+	BOOL m_bSong05_Played;
+	BOOL m_bSong06_Played;
+	float m_flMusicCheckWait;
+
+	//
+	// Exert
+	//
+	void IncrementExertLevel( int amount );
+	void DecrementExertLevel( int amount );
+	void SetExertLevel( int level );
+	int GetExertLevel( void ) const;
+
+	void UpdateExertLevel( void );
+
+	int m_iExertLevel;
+	float m_flExertRate;
+	float m_flExertUpdateStart;
+
+	// HUD visibility
+	void ShowPlayerHUD( BOOL bInstant = FALSE );
+	void HidePlayerHUD( BOOL bInstant = FALSE );
+
+	BOOL m_fHudVisible;
+	BOOL m_fUpdateHudVisibility;
 };
 
 #define AUTOAIM_2DEGREES  0.0348994967025

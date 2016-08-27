@@ -51,14 +51,14 @@ IMPLEMENT_SAVERESTORE( CHealthKit, CItem )
 void CHealthKit::Spawn( void )
 {
 	Precache();
-	SET_MODEL( ENT( pev ), "models/w_medkit.mdl" );
+	SET_MODEL( ENT( pev ), "models/w_medibox.mdl" );
 
 	CItem::Spawn();
 }
 
 void CHealthKit::Precache( void )
 {
-	PRECACHE_MODEL( "models/w_medkit.mdl" );
+	PRECACHE_MODEL( "models/w_medibox.mdl" );
 	PRECACHE_SOUND( "items/smallmedkit1.wav" );
 }
 

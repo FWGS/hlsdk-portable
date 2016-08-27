@@ -116,6 +116,23 @@ TYPEDESCRIPTION	CBasePlayer::m_playerSaveData[] =
 	DEFINE_FIELD( CBasePlayer, m_iHideHUD, FIELD_INTEGER ),
 	DEFINE_FIELD( CBasePlayer, m_iFOV, FIELD_INTEGER ),
 
+	// Music
+	DEFINE_FIELD( CBasePlayer, m_bSong01_Played, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CBasePlayer, m_bSong02_Played, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CBasePlayer, m_bSong03_Played, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CBasePlayer, m_bSong04_Played, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CBasePlayer, m_bSong05_Played, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CBasePlayer, m_bSong06_Played, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CBasePlayer, m_flMusicCheckWait, FIELD_TIME ),
+
+	// Player exert.
+	DEFINE_FIELD( CBasePlayer, m_iExertLevel, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_flExertRate, FIELD_FLOAT ),
+	DEFINE_FIELD( CBasePlayer, m_flExertUpdateStart, FIELD_TIME ),
+
+	DEFINE_FIELD( CBasePlayer, m_fHudVisible, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CBasePlayer, m_fUpdateHudVisibility, FIELD_BOOLEAN ),
+
 	//DEFINE_FIELD( CBasePlayer, m_fDeadTime, FIELD_FLOAT ), // only used in multiplayer games
 	//DEFINE_FIELD( CBasePlayer, m_fGameHUDInitialized, FIELD_INTEGER ), // only used in multiplayer games
 	//DEFINE_FIELD( CBasePlayer, m_flStopExtraSoundTime, FIELD_TIME ),
@@ -184,6 +201,9 @@ int gmsgTeamNames = 0;
 int gmsgStatusText = 0;
 int gmsgStatusValue = 0;
 
+int gmsgStartUp = 0;
+int gmsgScope = 0;
+
 void LinkUserMessages( void )
 {
 	// Already taken care of?
@@ -228,6 +248,9 @@ void LinkUserMessages( void )
 
 	gmsgStatusText = REG_USER_MSG( "StatusText", -1 );
 	gmsgStatusValue = REG_USER_MSG( "StatusValue", 3 );
+
+	gmsgStartUp = REG_USER_MSG( "StartUp", 2 );
+	gmsgScope = REG_USER_MSG( "Scope", 1 );
 }
 
 LINK_ENTITY_TO_CLASS( player, CBasePlayer )
@@ -348,9 +371,6 @@ void CBasePlayer::DeathSound( void )
 		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/pl_pain7.wav", 1, ATTN_NORM );
 		break;
 	}
-
-	// play one of the suit death alarms
-	EMIT_GROUPNAME_SUIT( ENT( pev ), "HEV_DEAD" );
 }
 
 // override takehealth
@@ -804,7 +824,11 @@ void CBasePlayer::RemoveAllItems( BOOL removeSuit )
 	pev->weaponmodel = 0;
 
 	if( removeSuit )
+	{
 		pev->weapons = 0;
+
+		HidePlayerHUD();
+	}
 	else
 		pev->weapons &= ~WEAPON_ALLWEAPONS;
 
@@ -1092,6 +1116,8 @@ void CBasePlayer::TabulateAmmo()
 	ammo_rockets = AmmoInventory( GetAmmoIndex( "rockets" ) );
 	ammo_uranium = AmmoInventory( GetAmmoIndex( "uranium" ) );
 	ammo_hornets = AmmoInventory( GetAmmoIndex( "Hornets" ) );
+	ammo_nails = AmmoInventory( GetAmmoIndex( "nails" ) );
+	ammo_xencandy = AmmoInventory( GetAmmoIndex( "xencandy" ) );
 }
 
 /*
@@ -1839,6 +1865,59 @@ void CBasePlayer::PreThink( void )
 	{
 		pev->velocity = g_vecZero;
 	}
+
+	// Only try to play music if wait time has elapsed.
+	if( m_flMusicCheckWait <= gpGlobals->time )
+	{
+		if( !m_bSong01_Played )
+		{
+			if( FStrEq( STRING( gpGlobals->mapname ), "po_haz01" ) )
+			{
+				CLIENT_COMMAND( edict(), "mp3 play media/hazard.mp3\n" );
+				m_bSong01_Played = TRUE;
+			}
+		}
+		if( !m_bSong02_Played )
+		{
+			if( FStrEq( STRING( gpGlobals->mapname ), "po_aud01" ) )
+			{
+				CLIENT_COMMAND( edict(), "mp3 play media/audion.mp3\n" );
+				m_bSong02_Played = TRUE;
+			}
+		}
+		if( !m_bSong03_Played )
+		{
+			if( FStrEq( STRING( gpGlobals->mapname ), "po_sew01" ) )
+			{
+				CLIENT_COMMAND( edict(), "mp3 play media/sewer.mp3\n" );
+				m_bSong03_Played = TRUE;
+			}
+		}
+		if( !m_bSong04_Played )
+		{
+			if( FStrEq( STRING( gpGlobals->mapname ), "po_lib01" ) )
+			{
+				CLIENT_COMMAND( edict(), "mp3 play media/library.mp3\n" );
+				m_bSong04_Played = TRUE;
+			}
+		}
+		if( !m_bSong05_Played )
+		{
+			if( FStrEq( STRING( gpGlobals->mapname ), "po_eas01" ) )
+			{
+				CLIENT_COMMAND( edict(), "mp3 play media/eastend.mp3\n" );
+				m_bSong05_Played = TRUE;
+			}
+		}
+		if( !m_bSong06_Played )
+		{
+			if( FStrEq( STRING( gpGlobals->mapname ), "credits" ) )
+			{
+				CLIENT_COMMAND( edict(), "mp3 play media/credits.mp3\n" );
+				m_bSong06_Played = TRUE;
+			}
+		}
+	}
 }
 /* Time based Damage works as follows: 
 	1) There are several types of timebased damage:
@@ -1945,7 +2024,6 @@ void CBasePlayer::CheckTimeBasedDamage()
 				bDuration = NERVEGAS_DURATION;
 				break;
 			case itbd_Poison:
-				TakeDamage( pev, pev, POISON_DAMAGE, DMG_GENERIC );
 				bDuration = POISON_DURATION;
 				break;
 			case itbd_Radiation:
@@ -2056,7 +2134,7 @@ Augmentation
 	Reanimation (w/adrenaline)
 		Causes the player to come back to life after he has been dead for 3 seconds. 
 		Will not work if player was gibbed. Single use.
-	Long Jump
+[5;5~	Long Jump
 		Used by hitting the ??? key(s). Caused the player to further than normal.
 	SCUBA	
 		Used automatically after picked up and after player enters the water. 
@@ -2181,89 +2259,7 @@ void CBasePlayer::CheckSuitUpdate()
 
 void CBasePlayer::SetSuitUpdate( char *name, int fgroup, int iNoRepeatTime )
 {
-	int i;
-	int isentence;
-	int iempty = -1;
 
-	// Ignore suit updates if no suit
-	if( !( pev->weapons & ( 1 << WEAPON_SUIT ) ) )
-		return;
-
-	if( g_pGameRules->IsMultiplayer() )
-	{
-		// due to static channel design, etc. We don't play HEV sounds in multiplayer right now.
-		return;
-	}
-
-	// if name == NULL, then clear out the queue
-	if( !name )
-	{
-		for( i = 0; i < CSUITPLAYLIST; i++ )
-			m_rgSuitPlayList[i] = 0;
-		return;
-	}
-
-	// get sentence or group number
-	if( !fgroup )
-	{
-		isentence = SENTENCEG_Lookup( name, NULL );
-		if( isentence < 0 )
-			return;
-	}
-	else
-		// mark group number as negative
-		isentence = -SENTENCEG_GetIndex( name );
-
-	// check norepeat list - this list lets us cancel
-	// the playback of words or sentences that have already
-	// been played within a certain time.
-	for( i = 0; i < CSUITNOREPEAT; i++ )
-	{
-		if( isentence == m_rgiSuitNoRepeat[i] )
-		{
-			// this sentence or group is already in 
-			// the norepeat list
-			if( m_rgflSuitNoRepeatTime[i] < gpGlobals->time )
-			{
-				// norepeat time has expired, clear it out
-				m_rgiSuitNoRepeat[i] = 0;
-				m_rgflSuitNoRepeatTime[i] = 0.0;
-				iempty = i;
-				break;
-			}
-			else
-			{
-				// don't play, still marked as norepeat
-				return;
-			}
-		}
-		// keep track of empty slot
-		if( !m_rgiSuitNoRepeat[i] )
-			iempty = i;
-	}
-
-	// sentence is not in norepeat list, save if norepeat time was given
-	if( iNoRepeatTime )
-	{
-		if( iempty < 0 )
-			iempty = RANDOM_LONG( 0, CSUITNOREPEAT - 1 ); // pick random slot to take over
-		m_rgiSuitNoRepeat[iempty] = isentence;
-		m_rgflSuitNoRepeatTime[iempty] = iNoRepeatTime + gpGlobals->time;
-	}
-
-	// find empty spot in queue, or overwrite last spot
-	m_rgSuitPlayList[m_iSuitPlayNext++] = isentence;
-	if( m_iSuitPlayNext == CSUITPLAYLIST )
-		m_iSuitPlayNext = 0;
-
-	if( m_flSuitUpdate <= gpGlobals->time )
-	{
-		if( m_flSuitUpdate == 0 )
-			// play queue is empty, don't delay too long before playback
-			m_flSuitUpdate = gpGlobals->time + SUITFIRSTUPDATETIME;
-		else 
-			m_flSuitUpdate = gpGlobals->time + SUITUPDATETIME; 
-	}
 }
 
 /*
@@ -2495,6 +2491,8 @@ void CBasePlayer::PostThink()
 
 	UpdatePlayerSound();
 
+	UpdateExertLevel();
+
 	// Track button info so we can detect 'pressed' and 'released' buttons next frame
 	m_afButtonLast = pev->button;
 
@@ -2688,12 +2686,12 @@ ReturnSpot:
 void CBasePlayer::Spawn( void )
 {
 	pev->classname = MAKE_STRING( "player" );
-	pev->health = 100;
+	pev->health = 50;
 	pev->armorvalue = 0;
 	pev->takedamage = DAMAGE_AIM;
 	pev->solid = SOLID_SLIDEBOX;
 	pev->movetype = MOVETYPE_WALK;
-	pev->max_health = pev->health;
+	pev->max_health = 100;
 	pev->flags &= FL_PROXY;	// keep proxy flag sey by engine
 	pev->flags |= FL_CLIENT;
 	pev->air_finished = gpGlobals->time + 12;
@@ -2774,6 +2772,17 @@ void CBasePlayer::Spawn( void )
 	m_lastx = m_lasty = 0;
 
 	m_flNextChatTime = gpGlobals->time;
+
+	m_bSong01_Played =
+	m_bSong02_Played =
+	m_bSong03_Played =
+	m_bSong04_Played =
+	m_bSong05_Played =
+	m_bSong06_Played = FALSE;
+
+	m_fHudVisible = FALSE;
+	m_fUpdateHudVisibility = FALSE;
+	m_flMusicCheckWait = gpGlobals->time + 0.1f; // Give a bit of time before attempting to use MP3 player.
 
 	g_pGameRules->PlayerSpawn( this );
 }
@@ -2898,6 +2907,10 @@ int CBasePlayer::Restore( CRestore &restore )
 	//			Barring that, we clear it out here instead of using the incorrect restored time value.
 	m_flNextAttack = UTIL_WeaponTimeBase();
 #endif
+	m_fUpdateHudVisibility = TRUE;
+
+	m_flMusicCheckWait = gpGlobals->time + 0.5f;
+
 	return status;
 }
 
@@ -3279,15 +3292,6 @@ void CBasePlayer::ImpulseCommands()
 			gmsgLogo = 0;
 		break;
 	case 100:
-        // temporary flashlight for level designers
-		if( FlashlightIsOn() )
-		{
-			FlashlightTurnOff();
-		}
-		else 
-		{
-			FlashlightTurnOn();
-		}
 		break;
 	case 201:
 		// paint decal
@@ -3347,31 +3351,19 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 	case 101:
 		gEvilImpulse101 = TRUE;
 		GiveNamedItem( "item_suit" );
-		GiveNamedItem( "item_battery" );
-		GiveNamedItem( "weapon_crowbar" );
-		GiveNamedItem( "weapon_9mmhandgun" );
-		GiveNamedItem( "ammo_9mmclip" );
+		GiveNamedItem( "weapon_heaterpipe" );
 		GiveNamedItem( "weapon_shotgun" );
 		GiveNamedItem( "ammo_buckshot" );
-		GiveNamedItem( "weapon_9mmAR" );
-		GiveNamedItem( "ammo_9mmAR" );
-		GiveNamedItem( "ammo_ARgrenades" );
-		GiveNamedItem( "weapon_handgrenade" );
-		GiveNamedItem( "weapon_tripmine" );
-#ifndef OEM_BUILD
-		GiveNamedItem( "weapon_357" );
-		GiveNamedItem( "ammo_357" );
-		GiveNamedItem( "weapon_crossbow" );
-		GiveNamedItem( "ammo_crossbow" );
-		GiveNamedItem( "weapon_egon" );
-		GiveNamedItem( "weapon_gauss" );
-		GiveNamedItem( "ammo_gaussclip" );
-		GiveNamedItem( "weapon_rpg" );
-		GiveNamedItem( "ammo_rpgclip" );
-		GiveNamedItem( "weapon_satchel" );
-		GiveNamedItem( "weapon_snark" );
-		GiveNamedItem( "weapon_hornetgun" );
-#endif
+		GiveNamedItem( "weapon_cmlwbr" );
+		GiveNamedItem( "ammo_bolts" );
+		GiveNamedItem( "weapon_pipebomb" );
+		GiveNamedItem( "weapon_bradnailer" );
+		GiveNamedItem( "ammo_nailclip" );
+		GiveNamedItem( "ammo_nailround" );
+		GiveNamedItem( "weapon_nailgun" );
+		GiveNamedItem( "weapon_xs" );
+		GiveNamedItem( "ammo_xencandy" );
+
 		gEvilImpulse101 = FALSE;
 		break;
 	case 102:
@@ -3778,6 +3770,77 @@ void CBasePlayer::UpdateClientData( void )
 		InitStatusBar();
 	}
 
+	//
+	// Poke646 & Vendetta - Give suit to toggle hud on map po_aud01 or po_orl01
+	//
+	if( !( pev->weapons & ( 1 << WEAPON_SUIT ) ) )
+	{
+		if( FStrEq( STRING( gpGlobals->mapname ), "po_haz01" ) )
+		{
+			pev->weapons |= ( 1 << WEAPON_SUIT );
+
+			// Force HUD update.
+			m_fHudVisible = TRUE;
+
+			//
+			// Make HUD completely transparent.
+			//
+			HidePlayerHUD( TRUE );
+		}
+		else if( FStrEq( STRING( gpGlobals->mapname ), "po_aud01" ) )
+		{
+			pev->weapons |= ( 1 << WEAPON_SUIT );
+
+			//
+			// Make HUD completely transparent and slowly increase it's alpha.
+			//
+			ShowPlayerHUD();
+		}
+		else if( FStrEq( STRING( gpGlobals->mapname ), "credits" ) )
+		{
+			pev->weapons = 0;
+
+			//
+			// Make HUD completely transparent and slowly increase it's alpha.
+			//
+			HidePlayerHUD( TRUE );
+		}
+	}
+
+	// Update HUD visibility.
+	if( m_fUpdateHudVisibility )
+	{
+		// If player is frozen, tell client to hide HUD,
+		// if visible.
+		if( ( pev->flags & FL_FROZEN ) && m_fHudVisible )
+		{
+			if( pev->weapons & ( 1 << WEAPON_SUIT ) )
+			{
+				HidePlayerHUD();
+			}
+		}
+		// If player is not frozen, tell client to show HUD,
+		// if not visible.
+		else if( !( pev->flags & FL_FROZEN ) && !m_fHudVisible )
+		{
+			if( pev->weapons & ( 1 << WEAPON_SUIT ) )
+			{
+				ShowPlayerHUD();
+			}
+		}
+		else
+		{
+			if( pev->weapons & ( 1 << WEAPON_SUIT ) )
+			{
+				m_fHudVisible = FALSE;
+
+				ShowPlayerHUD( TRUE );
+			}
+		}
+
+		m_fUpdateHudVisibility = FALSE;
+	}
+
 	if( m_iHideHUD != m_iClientHideHUD )
 	{
 		MESSAGE_BEGIN( MSG_ONE, gmsgHideWeapon, NULL, pev );
@@ -3807,6 +3870,7 @@ void CBasePlayer::UpdateClientData( void )
 
 	if( pev->health != m_iClientHealth )
 	{
+#define clamp( val, min, max ) ( ((val) > (max)) ? (max) : ( ((val) < (min)) ? (min) : (val) ) )
 		int iHealth = max( pev->health, 0 );  // make sure that no negative health values are sent
 
 		// send "health" update message
@@ -4442,6 +4506,82 @@ BOOL CBasePlayer::SwitchWeapon( CBasePlayerItem *pWeapon )
 	return TRUE;
 }
 
+void CBasePlayer::IncrementExertLevel( int amount )
+{
+	m_iExertLevel += min( amount, PLAYER_EXERT_LEVEL_MAX - m_iExertLevel );
+}
+
+void CBasePlayer::DecrementExertLevel( int amount )
+{
+	m_iExertLevel -= min( amount, m_iExertLevel );
+}
+
+void CBasePlayer::SetExertLevel( int level )
+{
+	m_iExertLevel = clamp( level, PLAYER_EXERT_LEVEL_MIN, PLAYER_EXERT_LEVEL_MAX );
+}
+
+int CBasePlayer::GetExertLevel( void ) const
+{
+	return m_iExertLevel;
+}
+
+void CBasePlayer::UpdateExertLevel( void )
+{
+	if( m_iExertLevel > PLAYER_EXERT_LEVEL_MIN )
+	{
+		// Slowly decrease exert level.
+		if( ( gpGlobals->time - m_flExertUpdateStart ) > m_flExertRate )
+		{
+			float temp = (float)m_iExertLevel * 0.0625f;
+
+			if( temp < 1 )
+				temp = 1;
+
+			m_iExertLevel -= min( m_iExertLevel, temp );
+
+			m_flExertRate = PLAYER_EXERT_RATE;
+			m_flExertUpdateStart = gpGlobals->time;
+		}
+	}
+
+#ifndef CLIENT_DLL
+	// ALERT( at_console, "Player exert level: %d\n", m_iExertLevel );
+#endif
+}
+
+void CBasePlayer::ShowPlayerHUD( BOOL bInstant )
+{
+	if( m_fHudVisible )
+		return;
+
+	m_fHudVisible = TRUE;
+
+	MESSAGE_BEGIN( MSG_ONE, gmsgStartUp, NULL, pev );
+		WRITE_BYTE( 255 );	// Target alpha
+	if( bInstant )
+		WRITE_BYTE( 255 );	// Startup alpha
+	else
+		WRITE_BYTE( 0 );	// Startup alpha
+	MESSAGE_END();
+}
+
+void CBasePlayer::HidePlayerHUD( BOOL bInstant )
+{
+	if( !m_fHudVisible )
+		return;
+
+	m_fHudVisible = FALSE;
+
+	MESSAGE_BEGIN( MSG_ONE, gmsgStartUp, NULL, pev );
+		WRITE_BYTE( 0 );	// Target alpha
+	if( bInstant )
+		WRITE_BYTE( 0 );	// Startup alpha
+	else
+		WRITE_BYTE( 255 );	// Startup alpha
+	MESSAGE_END();
+}
+
 //=========================================================
 // Dead HEV suit prop
 //=========================================================
@@ -4534,7 +4674,12 @@ void CStripWeapons::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE
 	}
 
 	if( pPlayer )
-		pPlayer->RemoveAllItems( FALSE );
+	{
+		if( !FStrEq( STRING( gpGlobals->mapname ), "po_xen01" ) )
+			pPlayer->RemoveAllItems( TRUE );
+		else
+			pPlayer->RemoveAllItems( FALSE );
+	}
 }
 
 class CRevertSaved : public CPointEntity

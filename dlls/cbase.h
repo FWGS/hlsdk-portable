@@ -340,6 +340,9 @@ public:
 	int ammo_uranium;
 	int ammo_hornets;
 	int ammo_argrens;
+	int ammo_nails;
+	int ammo_xencandy;
+
 	//Special stuff for grenades and satchels.
 	float m_flStartThrow;
 	float m_flReleaseThrow;
@@ -348,6 +351,7 @@ public:
 
 	enum EGON_FIRESTATE { FIRE_OFF, FIRE_CHARGE };
 	int m_fireState;
+	int m_thrownByPlayer;
 };
 
 // Ugly technique to override base member functions

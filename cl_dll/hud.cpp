@@ -77,6 +77,11 @@ int __MsgFunc_GameMode( const char *pszName, int iSize, void *pbuf )
 	return gHUD.MsgFunc_GameMode( pszName, iSize, pbuf );
 }
 
+int __MsgFunc_StartUp( const char *pszName, int iSize, void *pbuf )
+{
+	return gHUD.MsgFunc_StartUp( pszName, iSize, pbuf );
+}
+
 // TFFree Command Menu
 void __CmdFunc_OpenCommandMenu( void )
 {
@@ -160,6 +165,7 @@ void CHud::Init( void )
 	HOOK_MESSAGE( ViewMode );
 	HOOK_MESSAGE( SetFOV );
 	HOOK_MESSAGE( Concuss );
+	HOOK_MESSAGE( StartUp );
 
 	// TFFree CommandMenu
 	HOOK_COMMAND( "+commandmenu", OpenCommandMenu );
@@ -188,6 +194,8 @@ void CHud::Init( void )
 
 	m_iLogo = 0;
 	m_iFOV = 0;
+	m_flAlpha = 0;
+	m_flTargetAlpha = 0;
 
 	CVAR_CREATE( "zoom_sensitivity_ratio", "1.2", 0 );
 	default_fov = CVAR_CREATE( "default_fov", "90", 0 );
@@ -227,6 +235,7 @@ void CHud::Init( void )
 	m_AmmoSecondary.Init();
 	m_TextMessage.Init();
 	m_StatusIcons.Init();
+	m_Scope.Init();
 	m_MOTD.Init();
 	m_Scoreboard.Init();
 
@@ -396,6 +405,7 @@ void CHud::VidInit( void )
 	m_AmmoSecondary.VidInit();
 	m_TextMessage.VidInit();
 	m_StatusIcons.VidInit();
+	m_Scope.VidInit();
 	m_Scoreboard.VidInit();
 	m_MOTD.VidInit();
 }
@@ -576,4 +586,31 @@ void CHud::AddHudElem( CHudBase *phudelem )
 float CHud::GetSensitivity( void )
 {
 	return m_flMouseSensitivity;
+}
+
+int CHud::MsgFunc_StartUp( const char *pszName, int iSize, void *pbuf )
+{
+       BEGIN_READ( pbuf, iSize );
+
+	// Target alpha
+	float alpha = READ_BYTE();
+
+	if( alpha < 0 )
+		alpha = 0;
+	else if( alpha > 255 )
+		alpha = 255;
+
+	m_flTargetAlpha = alpha;
+
+	// Start alpha
+	alpha = READ_BYTE();
+
+	if( alpha < 0 )
+		alpha = 0;
+	else if( alpha > 255 )
+		alpha = 255;
+
+	m_flAlpha = alpha;
+
+	return 1;
 }

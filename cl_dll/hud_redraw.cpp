@@ -79,6 +79,8 @@ void CHud::Think( void )
 	}
 }
 
+void HUD_DrawOrthoTriangles( void );
+
 // Redraw
 // step through the local data,  placing the appropriate graphics & text as appropriate
 // returns 1 if they've changed, 0 otherwise
@@ -103,6 +105,8 @@ int CHud::Redraw( float flTime, int intermission )
 
 	// if no redrawing is necessary
 	// return 0;
+
+	HUD_DrawOrthoTriangles();
 
 	if( m_pCvarDraw->value )
 	{
@@ -168,6 +172,17 @@ int CHud::Redraw( float flTime, int intermission )
 		SPR_DrawAdditive( 0, mx, my, NULL );
 	}
 	*/
+
+	//
+	// Slowly increase HUD alpha value.
+	//
+	if( m_flAlpha != m_flTargetAlpha )
+	{
+		if( m_flAlpha < m_flTargetAlpha )
+			m_flAlpha = min( m_flAlpha + 2, m_flTargetAlpha );
+		else if( m_flAlpha > m_flTargetAlpha )
+			m_flAlpha = max( m_flAlpha - 8, m_flTargetAlpha );
+	}
 
 	return 1;
 }

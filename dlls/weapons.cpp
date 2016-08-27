@@ -45,6 +45,7 @@ DLL_GLOBAL	short g_sModelIndexWExplosion;// holds the index for the underwater e
 DLL_GLOBAL	short g_sModelIndexBubbles;// holds the index for the bubbles model
 DLL_GLOBAL	short g_sModelIndexBloodDrop;// holds the sprite index for the initial blood
 DLL_GLOBAL	short g_sModelIndexBloodSpray;// holds the sprite index for splattered blood
+DLL_GLOBAL	short g_sModelIndexShockwave;// holds the index for the shockwave explosion
 
 ItemInfo CBasePlayerItem::ItemInfoArray[MAX_WEAPONS];
 AmmoInfo CBasePlayerItem::AmmoInfoArray[MAX_AMMO_SLOTS];
@@ -169,6 +170,7 @@ void DecalGunshot( TraceResult *pTrace, int iBulletType )
 		case BULLET_MONSTER_MP5:
 		case BULLET_PLAYER_BUCKSHOT:
 		case BULLET_PLAYER_357:
+		case BULLET_PLAYER_NAIL:
 		default:
 			// smoke and decal
 			UTIL_GunshotDecalTrace( pTrace, DamageDecal( pEntity, DMG_BULLET ) );
@@ -300,57 +302,33 @@ void W_Precache( void )
 	UTIL_PrecacheOther( "item_security" );
 	UTIL_PrecacheOther( "item_longjump" );
 
+	// heaterpipe
+	UTIL_PrecacheOtherWeapon( "weapon_heaterpipe" );
+
 	// shotgun
 	UTIL_PrecacheOtherWeapon( "weapon_shotgun" );
 	UTIL_PrecacheOther( "ammo_buckshot" );
 
-	// crowbar
-	UTIL_PrecacheOtherWeapon( "weapon_crowbar" );
+	// cmlwbr
+	UTIL_PrecacheOtherWeapon( "weapon_cmlwbr" );
+	UTIL_PrecacheOther( "ammo_bolts" );
 
-	// glock
-	UTIL_PrecacheOtherWeapon( "weapon_9mmhandgun" );
-	UTIL_PrecacheOther( "ammo_9mmclip" );
+	// pipebomb
+	UTIL_PrecacheOtherWeapon( "weapon_pipebomb" );
 
-	// mp5
-	UTIL_PrecacheOtherWeapon( "weapon_9mmAR" );
-	UTIL_PrecacheOther( "ammo_9mmAR" );
-	UTIL_PrecacheOther( "ammo_ARgrenades" );
+	// bradnailer
+	UTIL_PrecacheOtherWeapon( "weapon_bradnailer" );
+	UTIL_PrecacheOther( "ammo_nailclip" );
+	UTIL_PrecacheOther( "ammo_nailround" );
+
+	// nailgun
+	UTIL_PrecacheOtherWeapon( "weapon_nailgun" );
+
+	// xen squasher
+	UTIL_PrecacheOtherWeapon( "weapon_xs" );
+	UTIL_PrecacheOther( "ammo_xencandy" );
 
 #if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
-	// python
-	UTIL_PrecacheOtherWeapon( "weapon_357" );
-	UTIL_PrecacheOther( "ammo_357" );
-
-	// gauss
-	UTIL_PrecacheOtherWeapon( "weapon_gauss" );
-	UTIL_PrecacheOther( "ammo_gaussclip" );
-
-	// rpg
-	UTIL_PrecacheOtherWeapon( "weapon_rpg" );
-	UTIL_PrecacheOther( "ammo_rpgclip" );
-
-	// crossbow
-	UTIL_PrecacheOtherWeapon( "weapon_crossbow" );
-	UTIL_PrecacheOther( "ammo_crossbow" );
-
-	// egon
-	UTIL_PrecacheOtherWeapon( "weapon_egon" );
-#endif
-	// tripmine
-	UTIL_PrecacheOtherWeapon( "weapon_tripmine" );
-#if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
-	// satchel charge
-	UTIL_PrecacheOtherWeapon( "weapon_satchel" );
-#endif
-	// hand grenade
-	UTIL_PrecacheOtherWeapon("weapon_handgrenade");
-#if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
-	// squeak grenade
-	UTIL_PrecacheOtherWeapon( "weapon_snark" );
-
-	// hornetgun
-	UTIL_PrecacheOtherWeapon( "weapon_hornetgun" );
-
 	if( g_pGameRules->IsDeathmatch() )
 	{
 		UTIL_PrecacheOther( "weaponbox" );// container for dropped deathmatch weapons
@@ -365,6 +343,10 @@ void W_Precache( void )
 
 	g_sModelIndexLaser = PRECACHE_MODEL( (char *)g_pModelNameLaser );
 	g_sModelIndexLaserDot = PRECACHE_MODEL( "sprites/laserdot.spr" );
+
+	g_sModelIndexShockwave = PRECACHE_MODEL( "sprites/shockwave.spr" ); // shockwave explosion
+
+	PRECACHE_MODEL( "sprites/wallsmoke.spr" );
 
 	// used by explosions
 	PRECACHE_MODEL( "models/grenade.mdl" );
@@ -382,6 +364,13 @@ void W_Precache( void )
 	PRECACHE_SOUND( "weapons/bullet_hit2.wav" );	// hit by bullet
 
 	PRECACHE_SOUND( "items/weapondrop1.wav" );// weapon falls to the ground
+
+	PRECACHE_MODEL( "models/w_grenade.mdl" );
+
+	PRECACHE_SOUND( "weapons/brad_hit1.wav" );	// hit by nail
+	PRECACHE_SOUND( "weapons/brad_hit2.wav" );	// hit by nail
+
+	UTIL_PrecacheOther( "fire_trail" );	// pipebomb explosion effect.
 }
 
 TYPEDESCRIPTION	CBasePlayerItem::m_SaveData[] =
@@ -1130,6 +1119,38 @@ void CBasePlayerWeapon::RetireWeapon( void )
 	g_pGameRules->GetNextBestWeapon( m_pPlayer, this );
 }
 
+//=========================================================================
+// GetNextAttackDelay - An accurate way of calcualting the next attack time.
+//=========================================================================
+float CBasePlayerWeapon::GetNextAttackDelay( float delay )
+{
+	if( m_flLastFireTime == 0 || m_flNextPrimaryAttack == -1 )
+	{
+		// At this point, we are assuming that the client has stopped firing
+		// and we are going to reset our book keeping variables.
+		m_flLastFireTime = gpGlobals->time;
+		m_flPrevPrimaryAttack = delay;
+	}
+
+	// calculate the time between this shot and the previous
+	float flTimeBetweenFires = gpGlobals->time - m_flLastFireTime;
+	float flCreep = 0.0f;
+	if( flTimeBetweenFires > 0 )
+		flCreep = flTimeBetweenFires - m_flPrevPrimaryAttack; // postive or negative
+
+	// save the last fire time
+	m_flLastFireTime = gpGlobals->time;
+
+	float flNextAttack = UTIL_WeaponTimeBase() + delay - flCreep;
+	// we need to remember what the m_flNextPrimaryAttack time is set to for each shot,
+	// store it as m_flPrevPrimaryAttack.
+	m_flPrevPrimaryAttack = flNextAttack - UTIL_WeaponTimeBase();
+	//char szMsg[256];
+	//_snprintf( szMsg, sizeof(szMsg), "next attack time: %0.4f\n", gpGlobals->time + flNextAttack );
+	//OutputDebugString( szMsg );
+	return flNextAttack;
+}
+
 //*********************************************************
 // weaponbox code:
 //*********************************************************
@@ -1527,3 +1548,29 @@ TYPEDESCRIPTION	CSatchel::m_SaveData[] =
 };
 
 IMPLEMENT_SAVERESTORE( CSatchel, CBasePlayerWeapon )
+
+TYPEDESCRIPTION	CCmlwbr::m_SaveData[] =
+{
+	DEFINE_FIELD( CCmlwbr, m_fInAttack, FIELD_INTEGER ),
+	DEFINE_FIELD( CCmlwbr, m_fInZoom, FIELD_INTEGER ),
+};
+
+IMPLEMENT_SAVERESTORE( CCmlwbr, CBasePlayerWeapon )
+
+TYPEDESCRIPTION	CXenSquasher::m_SaveData[] =
+{
+	DEFINE_FIELD( CXenSquasher, m_fInAttack, FIELD_INTEGER ),
+	//DEFINE_FIELD( CGauss, m_flStartCharge, FIELD_TIME ),
+	//DEFINE_FIELD( CGauss, m_flPlayAftershock, FIELD_TIME ),
+	//DEFINE_FIELD( CGauss, m_flNextAmmoBurn, FIELD_TIME ),
+	DEFINE_FIELD( CXenSquasher, m_fPrimaryFire, FIELD_BOOLEAN ),
+};
+
+IMPLEMENT_SAVERESTORE( CXenSquasher, CBasePlayerWeapon )
+
+TYPEDESCRIPTION	CPipeBomb::m_SaveData[] =
+{
+	DEFINE_FIELD( CPipeBomb, m_thrownByPlayer, FIELD_INTEGER ),
+};
+
+IMPLEMENT_SAVERESTORE( CPipeBomb, CSatchel )

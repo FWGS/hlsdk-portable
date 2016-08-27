@@ -31,18 +31,24 @@ set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS}")
 set (CLDLL_SOURCES 
 	../dlls/crossbow.cpp 
 	../dlls/crowbar.cpp 
-	../dlls/egon.cpp 
-	../dlls/gauss.cpp 
-	../dlls/handgrenade.cpp 
-	../dlls/hornetgun.cpp 
-	../dlls/mp5.cpp 
-	../dlls/python.cpp 
+#	../dlls/egon.cpp 
+#	../dlls/gauss.cpp 
+#	../dlls/handgrenade.cpp 
+#	../dlls/hornetgun.cpp 
+#	../dlls/mp5.cpp 
+#	../dlls/python.cpp 
 	../dlls/rpg.cpp 
 	../dlls/satchel.cpp 
 	../dlls/shotgun.cpp 
 	../dlls/squeakgrenade.cpp 
 	../dlls/tripmine.cpp 
-	../dlls/glock.cpp
+#	../dlls/glock.cpp
+	../dlls/poke646/bradnailer.cpp
+	../dlls/poke646/cmlwbr.cpp
+	../dlls/poke646/heaterpipe.cpp
+	../dlls/poke646/nailgun.cpp
+	../dlls/poke646/weapon_pipebomb.cpp
+	../dlls/poke646/xensquasher.cpp
 	ev_hldm.cpp 
 	hl/hl_baseentity.cpp
 	hl/hl_events.cpp
@@ -78,6 +84,7 @@ set (CLDLL_SOURCES
 	../pm_shared/pm_debug.c
 	../pm_shared/pm_math.c
 	../pm_shared/pm_shared.c
+	poke646/scope.cpp
 	saytext.cpp
 	status_icons.cpp
 	statusbar.cpp
@@ -91,7 +98,7 @@ set (CLDLL_SOURCES
 	input_xash3d.cpp
 	scoreboard.cpp
 	MOTD.cpp)
-include_directories (. hl/ ../dlls ../dlls/wpn_shared ../common ../engine ../pm_shared ../game_shared ../public)
+include_directories (. hl/ poke646 ../dlls ../dlls/poke646 ../dlls/wpn_shared ../common ../engine ../pm_shared ../game_shared ../public)
 
 if(USE_VOICEMGR)
 	#set(CLDLL_SOURCES

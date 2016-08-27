@@ -56,6 +56,35 @@ void CGrenade::Explode( TraceResult *pTrace, int bitsDamageType )
 
 	pev->takedamage = DAMAGE_NO;
 
+	if( FClassnameIs( pev, "monster_pipebomb" ) )
+	{
+		int trailCount = RANDOM_LONG( 1, 4 );
+		for( int i = 0; i < trailCount; i++ )
+			Create( "fire_trail", pev->origin, pTrace->vecPlaneNormal, NULL );
+
+		// blast circles
+		MESSAGE_BEGIN( MSG_PAS, SVC_TEMPENTITY, pev->origin );
+		WRITE_BYTE( TE_BEAMCYLINDER );
+			WRITE_COORD( pev->origin.x );
+			WRITE_COORD( pev->origin.y );
+			WRITE_COORD( pev->origin.z + 16 );
+			WRITE_COORD( pev->origin.x );
+			WRITE_COORD( pev->origin.y );
+			WRITE_COORD( pev->origin.z + 16 + 384 ); // reach damage radius over .3 seconds
+			WRITE_SHORT( g_sModelIndexShockwave );
+			WRITE_BYTE( 0 ); // startframe
+			WRITE_BYTE( 0 ); // framerate
+			WRITE_BYTE( 3 ); // life
+			WRITE_BYTE( 16 ); // width
+			WRITE_BYTE( 0 ); // noise
+			WRITE_BYTE( 255 ); // r
+			WRITE_BYTE( 255 ); // g
+			WRITE_BYTE( 255 ); // b
+			WRITE_BYTE( 255 ); //brightness
+			WRITE_BYTE( 0 ); // speed
+		MESSAGE_END();
+	}
+
 	// Pull out of the wall a bit
 	if( pTrace->flFraction != 1.0 )
 	{

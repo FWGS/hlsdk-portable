@@ -71,6 +71,8 @@ public:
 	BYTE m_bLockedSentence;	
 	BYTE m_bUnlockedSound;	
 	BYTE m_bUnlockedSentence;
+	BOOL m_bIsEndBossDoor;
+	int m_iNumTimesItWasOpen;
 };
 
 TYPEDESCRIPTION	CBaseDoor::m_SaveData[] =
@@ -83,6 +85,9 @@ TYPEDESCRIPTION	CBaseDoor::m_SaveData[] =
 	DEFINE_FIELD( CBaseDoor, m_bLockedSentence, FIELD_CHARACTER ),
 	DEFINE_FIELD( CBaseDoor, m_bUnlockedSound, FIELD_CHARACTER ),
 	DEFINE_FIELD( CBaseDoor, m_bUnlockedSentence, FIELD_CHARACTER ),
+
+	DEFINE_FIELD( CBaseDoor, m_bIsEndBossDoor, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CBaseDoor, m_iNumTimesItWasOpen, FIELD_INTEGER ),
 };
 
 IMPLEMENT_SAVERESTORE( CBaseDoor, CBaseToggle )
@@ -316,6 +321,18 @@ void CBaseDoor::Spawn()
 	}
 	else // touchable button
 		SetTouch( &CBaseDoor::DoorTouch );
+
+	m_bIsEndBossDoor = FALSE;
+	m_iNumTimesItWasOpen = 0;
+
+	if( FStrEq( STRING( gpGlobals->mapname ), "pv_asl02" ) && FStrEq( STRING( pev->targetname ), "robogate" ) )
+	{
+		m_bIsEndBossDoor = TRUE;
+	}
+	else
+	{
+		m_bIsEndBossDoor = FALSE;
+	}
 }
  
 void CBaseDoor::SetToggleState( int state )
@@ -661,22 +678,41 @@ void CBaseDoor::DoorHitTop( void )
 	ASSERT( m_toggle_state == TS_GOING_UP );
 	m_toggle_state = TS_AT_TOP;
 
-	// toggle-doors don't come down automatically, they wait for refire.
-	if( FBitSet( pev->spawnflags, SF_DOOR_NO_AUTO_RETURN ) )
+	m_iNumTimesItWasOpen++;
+
+	if( m_bIsEndBossDoor )
 	{
-		// Re-instate touch method, movement is complete
-		if( !FBitSet( pev->spawnflags, SF_DOOR_USE_ONLY ) )
-			SetTouch( &CBaseDoor::DoorTouch );
+		if( m_iNumTimesItWasOpen < 2 )
+		{
+			// In flWait seconds, DoorGoDown will fire, unless wait is -1, then door stays open
+			pev->nextthink = pev->ltime + 1;
+			SetThink( &CBaseDoor::DoorGoDown );
+		}
+		else
+		{
+			m_flWait = -1;
+			pev->nextthink = -1;
+		}
 	}
 	else
 	{
-		// In flWait seconds, DoorGoDown will fire, unless wait is -1, then door stays open
-		pev->nextthink = pev->ltime + m_flWait;
-		SetThink( &CBaseDoor::DoorGoDown );
-
-		if( m_flWait == -1 )
+		// toggle-doors don't come down automatically, they wait for refire.
+		if( FBitSet( pev->spawnflags, SF_DOOR_NO_AUTO_RETURN ) )
 		{
-			pev->nextthink = -1;
+			// Re-instate touch method, movement is complete
+			if( !FBitSet( pev->spawnflags, SF_DOOR_USE_ONLY ) )
+				SetTouch( &CBaseDoor::DoorTouch );
+		}
+		else
+		{
+			// In flWait seconds, DoorGoDown will fire, unless wait is -1, then door stays open
+			pev->nextthink = pev->ltime + m_flWait;
+			SetThink( &CBaseDoor::DoorGoDown );
+
+			if( m_flWait == -1 )
+			{
+				pev->nextthink = -1;
+			}
 		}
 	}
 

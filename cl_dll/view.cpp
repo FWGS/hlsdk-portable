@@ -1309,21 +1309,14 @@ int V_FindViewModelByWeaponModel( int weaponindex )
 {
 	static char *modelmap[][2] =
 	{
-		{ "models/p_crossbow.mdl",	"models/v_crossbow.mdl" },
-		{ "models/p_crowbar.mdl",	"models/v_crowbar.mdl" },
-		{ "models/p_egon.mdl",		"models/v_egon.mdl" },
-		{ "models/p_gauss.mdl",		"models/v_gauss.mdl" },
-		{ "models/p_9mmhandgun.mdl",	"models/v_9mmhandgun.mdl" },
-		{ "models/p_grenade.mdl",	"models/v_grenade.mdl" },
-		{ "models/p_hgun.mdl",		"models/v_hgun.mdl" },
-		{ "models/p_9mmAR.mdl",		"models/v_9mmAR.mdl" },
-		{ "models/p_357.mdl",		"models/v_357.mdl" },
-		{ "models/p_rpg.mdl",		"models/v_rpg.mdl" },
-		{ "models/p_shotgun.mdl",	"models/v_shotgun.mdl" },
-		{ "models/p_squeak.mdl",	"models/v_squeak.mdl" },
-		{ "models/p_tripmine.mdl",	"models/v_tripmine.mdl" },
-		{ "models/p_satchel_radio.mdl",	"models/v_satchel_radio.mdl" },
-		{ "models/p_satchel.mdl",	"models/v_satchel.mdl" },
+		{ "models/p_bradnailer.mdl", "models/v_bradnailer.mdl" },
+		{ "models/p_cmlwbr.mdl", "models/v_cmlwbr.mdl" },
+		{ "models/p_heaterpipe.mdl", "models/v_heaterpipe.mdl" },
+		{ "models/p_nailgun.mdl", "models/v_nailgun.mdl" },
+		{ "models/p_pipebomb.mdl", "models/v_pipebomb.mdl" },
+		{ "models/p_pipebomb_watch.mdl","models/v_pipebomb_watch.mdl" },
+		{ "models/p_shotgun.mdl", "models/v_shotgun.mdl" },
+		{ "models/p_xs.mdl", "models/v_xs.mdl" },
 		{ NULL, NULL }
 	};
 

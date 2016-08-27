@@ -222,6 +222,12 @@ void CGameRules::RefreshSkillData ( void )
 	// Sentry Turret
 	gSkillData.sentryHealth = GetSkillCvar( "sk_sentry_health" );
 
+	// RoboCop
+	gSkillData.robocopHealth = GetSkillCvar( "sk_robocop_health" );
+	gSkillData.robocopDmgMortar = GetSkillCvar( "sk_robocop_dmg_mortar" );
+	gSkillData.robocopDmgFist = GetSkillCvar( "sk_robocop_dmg_fist" );
+	gSkillData.robocopSWRadius = GetSkillCvar( "sk_robocop_sw_radius" );
+
 	// PLAYER WEAPONS
 
 	// Crowbar whack
@@ -301,6 +307,9 @@ void CGameRules::RefreshSkillData ( void )
 	gSkillData.plrStomach = GetSkillCvar( "sk_player_stomach" );
 	gSkillData.plrLeg = GetSkillCvar( "sk_player_leg" );
 	gSkillData.plrArm = GetSkillCvar( "sk_player_arm" );
+
+	// Nails
+	gSkillData.plrDmgNail = GetSkillCvar( "sk_plr_nail" );
 }
 
 //=========================================================

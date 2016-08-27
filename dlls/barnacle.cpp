@@ -22,6 +22,7 @@
 #include	"monsters.h"
 #include	"schedule.h"
 
+#define SF_BARNACLE_SPAWN_XENCANDY	1
 #define	BARNACLE_BODY_HEIGHT	44 // how 'tall' the barnacle's model is.
 #define BARNACLE_PULL_SPEED		8
 #define BARNACLE_KILL_VICTIM_DELAY	5 // how many seconds after pulling prey in to gib them. 
@@ -54,6 +55,7 @@ public:
 	BOOL m_fTongueExtended;
 	BOOL m_fLiftingPrey;
 	float m_flTongueAdj;
+	BOOL  m_fXenCandySpawned;
 
 	// FIXME: need a custom barnacle model with non-generic hitgroup
 	// otherwise we can apply to damage to tongue instead of body
@@ -101,7 +103,24 @@ void CBarnacle::HandleAnimEvent( MonsterEvent_t *pEvent )
 	switch( pEvent->event )
 	{
 	case BARNACLE_AE_PUKEGIB:
-		CGib::SpawnRandomGibs( pev, 1, 1 );	
+		CGib::SpawnRandomGibs( pev, 1, 1 );
+		if( ( pev->spawnflags & SF_BARNACLE_SPAWN_XENCANDY ) && !m_fXenCandySpawned )
+		{
+			Vector vecSrc = pev->origin + Vector( 0, 0, -16 );
+
+			Vector vecAngles = pev->angles;
+			vecAngles.x = vecAngles.z = 0;
+			vecAngles.y = RANDOM_LONG(0, 36) * 10;
+
+			CBaseEntity*pItem = DropItem( "ammo_xencandy", vecSrc, vecAngles );
+
+			if( pItem )
+			{
+				pItem->pev->owner = edict();
+
+				m_fXenCandySpawned = TRUE;
+			}
+		}
 		break;
 	default:
 		CBaseMonster::HandleAnimEvent( pEvent );
@@ -141,6 +160,8 @@ void CBarnacle::Spawn()
 	pev->nextthink = gpGlobals->time + 0.5;
 
 	UTIL_SetOrigin( pev, pev->origin );
+
+	m_fXenCandySpawned = FALSE;
 }
 
 int CBarnacle::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )
@@ -414,7 +435,9 @@ void CBarnacle::Precache()
 	PRECACHE_SOUND( "barnacle/bcl_chew3.wav" );
 	PRECACHE_SOUND( "barnacle/bcl_die1.wav" );
 	PRECACHE_SOUND( "barnacle/bcl_die3.wav" );
-}	
+
+	UTIL_PrecacheOther( "ammo_xencandy" );
+}
 
 //=========================================================
 // TongueTouchEnt - does a trace along the barnacle's tongue

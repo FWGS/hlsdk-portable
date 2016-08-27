@@ -275,42 +275,6 @@ int CHGrunt::IRelationship( CBaseEntity *pTarget )
 //=========================================================
 void CHGrunt::GibMonster( void )
 {
-	Vector vecGunPos;
-	Vector vecGunAngles;
-
-	if( GetBodygroup( 2 ) != 2 )
-	{
-		// throw a gun if the grunt has one
-		GetAttachment( 0, vecGunPos, vecGunAngles );
-
-		CBaseEntity *pGun;
-
-		if( FBitSet( pev->weapons, HGRUNT_SHOTGUN ) )
-		{
-			pGun = DropItem( "weapon_shotgun", vecGunPos, vecGunAngles );
-		}
-		else
-		{
-			pGun = DropItem( "weapon_9mmAR", vecGunPos, vecGunAngles );
-		}
-
-		if( pGun )
-		{
-			pGun->pev->velocity = Vector( RANDOM_FLOAT( -100, 100 ), RANDOM_FLOAT( -100, 100 ), RANDOM_FLOAT( 200, 300 ) );
-			pGun->pev->avelocity = Vector( 0, RANDOM_FLOAT( 200, 400 ), 0 );
-		}
-
-		if( FBitSet( pev->weapons, HGRUNT_GRENADELAUNCHER ) )
-		{
-			pGun = DropItem( "ammo_ARgrenades", vecGunPos, vecGunAngles );
-			if ( pGun )
-			{
-				pGun->pev->velocity = Vector( RANDOM_FLOAT( -100, 100 ), RANDOM_FLOAT( -100, 100 ), RANDOM_FLOAT( 200, 300 ) );
-				pGun->pev->avelocity = Vector( 0, RANDOM_FLOAT( 200, 400 ), 0 );
-			}
-		}
-	}
-
 	CBaseMonster::GibMonster();
 }
 
@@ -848,30 +812,6 @@ void CHGrunt::HandleAnimEvent( MonsterEvent_t *pEvent )
 	switch( pEvent->event )
 	{
 		case HGRUNT_AE_DROP_GUN:
-		{
-			Vector vecGunPos;
-			Vector vecGunAngles;
-
-			GetAttachment( 0, vecGunPos, vecGunAngles );
-
-			// switch to body group with no gun.
-			SetBodygroup( GUN_GROUP, GUN_NONE );
-
-			// now spawn a gun.
-			if( FBitSet( pev->weapons, HGRUNT_SHOTGUN ) )
-			{
-				 DropItem( "weapon_shotgun", vecGunPos, vecGunAngles );
-			}
-			else
-			{
-				 DropItem( "weapon_9mmAR", vecGunPos, vecGunAngles );
-			}
-
-			if( FBitSet( pev->weapons, HGRUNT_GRENADELAUNCHER ) )
-			{
-				DropItem( "ammo_ARgrenades", BodyTarget( pev->origin ), vecGunAngles );
-			}
-		}
 			break;
 		case HGRUNT_AE_RELOAD:
 			EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "hgrunt/gr_reload1.wav", 1, ATTN_NORM );
@@ -1011,21 +951,6 @@ void CHGrunt::Spawn()
 		m_cClipSize = GRUNT_CLIP_SIZE;
 	}
 	m_cAmmoLoaded = m_cClipSize;
-
-	if( RANDOM_LONG( 0, 99 ) < 80 )
-		pev->skin = 0;	// light skin
-	else
-		pev->skin = 1;	// dark skin
-
-	if( FBitSet( pev->weapons, HGRUNT_SHOTGUN ) )
-	{
-		SetBodygroup( HEAD_GROUP, HEAD_SHOTGUN );
-	}
-	else if( FBitSet( pev->weapons, HGRUNT_GRENADELAUNCHER ) )
-	{
-		SetBodygroup( HEAD_GROUP, HEAD_M203 );
-		pev->skin = 1; // alway dark skin
-	}
 
 	CTalkMonster::g_talkWaitTime = 0;
 
@@ -2448,39 +2373,6 @@ void CDeadHGrunt::Spawn( void )
 
 	// Corpses have less health
 	pev->health = 8;
-
-	// map old bodies onto new bodies
-	switch( pev->body )
-	{
-	case 0:
-		// Grunt with Gun
-		pev->body = 0;
-		pev->skin = 0;
-		SetBodygroup( HEAD_GROUP, HEAD_GRUNT );
-		SetBodygroup( GUN_GROUP, GUN_MP5 );
-		break;
-	case 1:
-		// Commander with Gun
-		pev->body = 0;
-		pev->skin = 0;
-		SetBodygroup( HEAD_GROUP, HEAD_COMMANDER );
-		SetBodygroup( GUN_GROUP, GUN_MP5 );
-		break;
-	case 2:
-		// Grunt no Gun
-		pev->body = 0;
-		pev->skin = 0;
-		SetBodygroup( HEAD_GROUP, HEAD_GRUNT );
-		SetBodygroup( GUN_GROUP, GUN_NONE );
-		break;
-	case 3:
-		// Commander no Gun
-		pev->body = 0;
-		pev->skin = 0;
-		SetBodygroup( HEAD_GROUP, HEAD_COMMANDER );
-		SetBodygroup( GUN_GROUP, GUN_NONE );
-		break;
-	}
 
 	MonsterInitDead();
 }

@@ -27,6 +27,10 @@
 #include "parsemsg.h"
 #include <string.h>
 
+#ifndef M_PI
+#define M_PI	3.14159265358979323846
+#endif
+
 #include "mobility_int.h"
 
 DECLARE_MESSAGE( m_Health, Health )
@@ -57,7 +61,7 @@ int CHudHealth::Init( void )
 {
 	HOOK_MESSAGE( Health );
 	HOOK_MESSAGE( Damage );
-	m_iHealth = 100;
+	m_iHealth = 50;
 	m_fFade = 0;
 	m_iFlags = 0;
 	m_bitsDamage = 0;
@@ -169,9 +173,8 @@ void CHudHealth::GetPainColor( int &r, int &g, int &b )
 	}
 	else
 	{
-		r = 250;
-		g = 0;
-		b = 0;
+		UnpackRGB( r, g, b, RGB_YELLOWISH );
+		g = b = 255 * fabs( sin( gEngfuncs.GetClientTime() * M_PI * 2.0f ) );
 	}
 #endif
 }
@@ -199,10 +202,10 @@ int CHudHealth::Draw( float flTime )
 		}
 
 		// Fade the health number back to dim
-		a = MIN_ALPHA + ( m_fFade / FADE_TIME ) * 128;
+		a = min( gHUD.m_flAlpha, MIN_ALPHA ) + ( m_fFade / FADE_TIME ) * 128;
 	}
 	else
-		a = MIN_ALPHA;
+		a = min( gHUD.m_flAlpha, MIN_ALPHA );
 
 	// If health is getting low, make it bright red
 	if( m_iHealth <= 15 )
@@ -215,23 +218,22 @@ int CHudHealth::Draw( float flTime )
 	if( gHUD.m_iWeaponBits & ( 1 << ( WEAPON_SUIT ) ) )
 	{
 		HealthWidth = gHUD.GetSpriteRect( gHUD.m_HUD_number_0 ).right - gHUD.GetSpriteRect( gHUD.m_HUD_number_0 ).left;
-		int CrossWidth = gHUD.GetSpriteRect( m_HUD_cross ).right - gHUD.GetSpriteRect( m_HUD_cross ).left;
 
-		y = ScreenHeight - gHUD.m_iFontHeight - gHUD.m_iFontHeight / 2;
-		x = CrossWidth / 2;
+		struct rect_s cross = gHUD.GetSpriteRect( m_HUD_cross );
+
+		int CrossWidth = cross.right - cross.left;
+		int CrossHeight = cross.bottom - cross.top;
+
+		y = ScreenHeight - gHUD.m_iFontHeight / 2 - CrossHeight;
+		x = CrossWidth;
 
 		SPR_Set( gHUD.GetSprite( m_HUD_cross ), r, g, b );
-		SPR_DrawAdditive( 0, x, y, &gHUD.GetSpriteRect( m_HUD_cross ) );
+		SPR_DrawAdditive( 0, x, y, &cross );
 
-		x = CrossWidth + HealthWidth / 2;
+		y = ScreenHeight - gHUD.m_iFontHeight - gHUD.m_iFontHeight / 2;
+		x = CrossWidth * 2.0f + HealthWidth;
 
 		x = gHUD.DrawHudNumber( x, y, DHN_3DIGITS | DHN_DRAWZERO, m_iHealth, r, g, b );
-
-		x += HealthWidth / 2;
-
-		int iHeight = gHUD.m_iFontHeight;
-		int iWidth = HealthWidth / 10;
-		FillRGBA( x, y, iWidth, iHeight, 255, 160, 0, a );
 	}
 
 	DrawDamage( flTime );

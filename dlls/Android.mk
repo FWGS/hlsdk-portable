@@ -21,6 +21,7 @@ LOCAL_CPPFLAGS := $(LOCAL_CFLAGS) -frtti
 LOCAL_C_INCLUDES := $(SDL_PATH)/include \
 		    $(LOCAL_PATH)/. \
 		    $(LOCAL_PATH)/wpn_shared \
+		    $(LOCAL_PATH)/poke646 \
 		    $(LOCAL_PATH)/../common \
 		    $(LOCAL_PATH)/../engine/common \
 		    $(LOCAL_PATH)/../engine \
@@ -49,7 +50,6 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
            defaultai.cpp \
            doors.cpp \
            effects.cpp \
-           egon.cpp \
            explode.cpp \
            flyingmonster.cpp \
            func_break.cpp \
@@ -57,24 +57,20 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
            game.cpp \
            gamerules.cpp \
            gargantua.cpp \
-           gauss.cpp \
            genericmonster.cpp \
            ggrenade.cpp \
            globals.cpp \
-           glock.cpp \
            gman.cpp \
            h_ai.cpp \
            h_battery.cpp \
            h_cycler.cpp \
            h_cine.cpp \
            h_export.cpp \
-           handgrenade.cpp \
            hassassin.cpp \
            headcrab.cpp \
            healthkit.cpp \
            hgrunt.cpp \
            hornet.cpp \
-           hornetgun.cpp \
            houndeye.cpp \
            ichthyosaur.cpp \
            islave.cpp \
@@ -86,7 +82,6 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
            monsters.cpp \
            monsterstate.cpp \
            mortar.cpp \
-           mp5.cpp \
            multiplay_gamerules.cpp \
            nihilanth.cpp \
            nodes.cpp \
@@ -95,7 +90,6 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
            plane.cpp \
            plats.cpp \
            player.cpp \
-           python.cpp \
            rat.cpp \
            roach.cpp \
            rpg.cpp \
@@ -126,7 +120,19 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
            zombie.cpp \
 	   ../pm_shared/pm_debug.c \
 	   ../pm_shared/pm_math.c \
-	   ../pm_shared/pm_shared.c
+	   ../pm_shared/pm_shared.c \
+	   poke646/bradnailer.cpp \
+	   poke646/cmlwbr.cpp \
+	   poke646/firetrail.cpp \
+	   poke646/genericmodel.cpp \
+	   poke646/heaterpipe.cpp \
+	   poke646/nail.cpp \
+	   poke646/nailgun.cpp \
+	   poke646/pipebomb.cpp \
+	   poke646/robocop.cpp \
+	   poke646/weapon_pipebomb.cpp \
+	   poke646/xenspit.cpp \
+	   poke646/xensquasher.cpp
 #	   ../game_shared/voice_gamemgr.cpp
 
 LOCAL_LDLIBS := -llog

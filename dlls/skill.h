@@ -89,6 +89,11 @@ struct skilldata_t
 	float miniturretHealth;
 	float sentryHealth;
 
+	float robocopHealth;
+	float robocopDmgMortar;
+	float robocopDmgFist;
+	float robocopSWRadius;
+
 	// Player Weapons
 	float plrDmgCrowbar;
 	float plrDmg9MM;
@@ -133,6 +138,8 @@ struct skilldata_t
 	float plrStomach;
 	float plrLeg;
 	float plrArm;
+
+	float plrDmgNail;
 };
 
 extern	DLL_GLOBAL	skilldata_t	gSkillData;
