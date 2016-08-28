@@ -841,13 +841,11 @@ void CHGrunt::HandleAnimEvent( MonsterEvent_t *pEvent )
 {
 	Vector vecShootDir;
 	Vector vecShootOrigin;
-
+	Vector vecGunPos;
+        Vector vecGunAngles;
 	switch( pEvent->event )
 	{
 		case HGRUNT_AE_DROP_GUN:
-			Vector	vecGunPos;
-			Vector	vecGunAngles;
-
 			GetAttachment( 0, vecGunPos, vecGunAngles );
 
 			// switch to body group with no gun.

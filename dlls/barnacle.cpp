@@ -141,8 +141,6 @@ void CBarnacle::Spawn()
 	pev->nextthink = gpGlobals->time + 0.5;
 
 	UTIL_SetOrigin( pev, pev->origin );
-
-	m_fXenCandySpawned = FALSE;
 }
 
 int CBarnacle::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )
