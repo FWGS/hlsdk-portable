@@ -132,7 +132,8 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
 	   poke646/robocop.cpp \
 	   poke646/weapon_pipebomb.cpp \
 	   poke646/xenspit.cpp \
-	   poke646/xensquasher.cpp
+	   poke646/xensquasher.cpp \
+	   vendetta/par21.cpp
 #	   ../game_shared/voice_gamemgr.cpp
 
 LOCAL_LDLIBS := -llog

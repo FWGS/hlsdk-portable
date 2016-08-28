@@ -50,6 +50,7 @@ SRCS+=../dlls/poke646/heaterpipe.cpp
 SRCS+=../dlls/poke646/nailgun.cpp
 SRCS+=../dlls/poke646/weapon_pipebomb.cpp
 SRCS+=../dlls/poke646/xensquasher.cpp
+SRCS+=../dlls/vendetta/par21.cpp
 #SRCS+=../game_shared/voice_banmgr.cpp
 #SRCS+=../game_shared/voice_status.cpp
 SRCS+=./ammo.cpp
