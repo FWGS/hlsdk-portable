@@ -79,6 +79,7 @@ TYPEDESCRIPTION	CBarnacle::m_SaveData[] =
 	DEFINE_FIELD( CBarnacle, m_fLiftingPrey, FIELD_BOOLEAN ),
 	DEFINE_FIELD( CBarnacle, m_flTongueAdj, FIELD_FLOAT ),
 	DEFINE_FIELD( CBarnacle, m_flCachedLength, FIELD_FLOAT ),
+	DEFINE_FIELD( CBarnacle, m_fXenCandySpawned, FIELD_BOOLEAN ),
 };
 
 IMPLEMENT_SAVERESTORE( CBarnacle, CBaseMonster )
