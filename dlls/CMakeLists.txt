@@ -141,6 +141,7 @@ set (SVDLL_SOURCES
 	poke646/weapon_pipebomb.cpp
 	poke646/xenspit.cpp
 	poke646/xensquasher.cpp
+	vendetta/par21.cpp
 )
 	
 include_directories (. wpn_shared poke646 ../common ../engine ../pm_shared ../game_shared ../public)

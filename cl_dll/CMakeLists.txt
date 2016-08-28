@@ -49,6 +49,7 @@ set (CLDLL_SOURCES
 	../dlls/poke646/nailgun.cpp
 	../dlls/poke646/weapon_pipebomb.cpp
 	../dlls/poke646/xensquasher.cpp
+	../dlls/vendetta/par21.cpp
 	ev_hldm.cpp 
 	hl/hl_baseentity.cpp
 	hl/hl_events.cpp
