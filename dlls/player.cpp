@@ -1873,7 +1873,7 @@ void CBasePlayer::PreThink( void )
 		{
 			if( FStrEq( STRING( gpGlobals->mapname ), "po_haz01" ) )
 			{
-				CLIENT_COMMAND( edict(), "mp3 play media/hazard.mp3\n" );
+				CLIENT_COMMAND( edict(), "play sound/mp3/hazard.mp3\n" );
 				m_bSong01_Played = TRUE;
 			}
 		}
@@ -1881,7 +1881,7 @@ void CBasePlayer::PreThink( void )
 		{
 			if( FStrEq( STRING( gpGlobals->mapname ), "po_aud01" ) )
 			{
-				CLIENT_COMMAND( edict(), "mp3 play media/audion.mp3\n" );
+				CLIENT_COMMAND( edict(), "play sound/mp3/audion.mp3\n" );
 				m_bSong02_Played = TRUE;
 			}
 		}
@@ -1889,7 +1889,7 @@ void CBasePlayer::PreThink( void )
 		{
 			if( FStrEq( STRING( gpGlobals->mapname ), "po_sew01" ) )
 			{
-				CLIENT_COMMAND( edict(), "mp3 play media/sewer.mp3\n" );
+				CLIENT_COMMAND( edict(), "play sound/mp3/sewer.mp3\n" );
 				m_bSong03_Played = TRUE;
 			}
 		}
@@ -1897,7 +1897,7 @@ void CBasePlayer::PreThink( void )
 		{
 			if( FStrEq( STRING( gpGlobals->mapname ), "po_lib01" ) )
 			{
-				CLIENT_COMMAND( edict(), "mp3 play media/library.mp3\n" );
+				CLIENT_COMMAND( edict(), "play sound/mp3/library.mp3\n" );
 				m_bSong04_Played = TRUE;
 			}
 		}
@@ -1905,7 +1905,7 @@ void CBasePlayer::PreThink( void )
 		{
 			if( FStrEq( STRING( gpGlobals->mapname ), "po_eas01" ) )
 			{
-				CLIENT_COMMAND( edict(), "mp3 play media/eastend.mp3\n" );
+				CLIENT_COMMAND( edict(), "play sound/mp3/eastend.mp3\n" );
 				m_bSong05_Played = TRUE;
 			}
 		}
@@ -1913,7 +1913,7 @@ void CBasePlayer::PreThink( void )
 		{
 			if( FStrEq( STRING( gpGlobals->mapname ), "credits" ) )
 			{
-				CLIENT_COMMAND( edict(), "mp3 play media/credits.mp3\n" );
+				CLIENT_COMMAND( edict(), "play sound/mp3/credits.mp3\n" );
 				m_bSong06_Played = TRUE;
 			}
 		}
