@@ -1548,6 +1548,9 @@ Vector CBaseEntity::FireBulletsPlayer( ULONG cShots, Vector vecSrc, Vector vecDi
 			case BULLET_PLAYER_NAIL:
 				pEntity->TraceAttack( pevAttacker, 0, vecDir, &tr, DMG_BULLET );
 				break;
+			case BULLET_PLAYER_PAR21:
+				pEntity->TraceAttack( pevAttacker, gSkillData.plrDmgPar21, vecDir, &tr, DMG_BULLET );
+				break;
 			}
 		}
 		// make bullet trails

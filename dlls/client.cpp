@@ -1628,6 +1628,11 @@ void UpdateClientData( const struct edict_s *ent, int sendweapons, struct client
 					{
 						cd->vuser2.y = pl->ammo_xencandy;
 					}
+					else if( pl->m_pActiveItem->m_iId == WEAPON_PAR21 )
+					{
+						cd->vuser2.y = pl->ammo_par21;
+						cd->vuser2.z = pl->ammo_m203grens;
+					}
 				}
 			}
 		}

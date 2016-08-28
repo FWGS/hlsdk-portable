@@ -146,6 +146,7 @@ typedef	enum
 	BULLET_PLAYER_CROWBAR, // crowbar swipe
 	BULLET_PLAYER_NAIL, // nails
 	BULLET_PLAYER_XS, // xen squasher
+	BULLET_PLAYER_PAR21,
 
 	BULLET_MONSTER_9MM,
 	BULLET_MONSTER_MP5,
@@ -1172,4 +1173,37 @@ public:
 private:
 	unsigned short m_usReload;
 };
+
+class CPar21 : public CBasePlayerWeapon
+{
+public:
+	void Spawn( void );
+	void Precache( void );
+	int iItemSlot( void ) { return 2; }
+	int GetItemInfo( ItemInfo *p);
+	int AddToPlayer( CBasePlayer *pPlayer );
+
+	void PrimaryAttack( void );
+	void SecondaryAttack( void );
+	int SecondaryAmmoIndex( void );
+	BOOL Deploy( void );
+	void Reload( void );
+	void WeaponIdle( void );
+	int m_iShell;
+
+	virtual BOOL UseDecrement( void )
+	{
+#if defined( CLIENT_WEAPONS )
+		return TRUE;
+#else
+		return FALSE;
+#endif
+	}
+
+private:
+	unsigned short m_usReload;
+	unsigned short m_usPar21;
+	unsigned short m_usM203;
+};
+
 #endif // WEAPONS_H

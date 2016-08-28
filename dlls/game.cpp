@@ -461,6 +461,11 @@ cvar_t	sk_plr_nail1 = { "sk_plr_nail1", "0" };
 cvar_t	sk_plr_nail2 = { "sk_plr_nail2", "0" };
 cvar_t	sk_plr_nail3 = { "sk_plr_nail3", "0" };
 
+// Par21 Round
+cvar_t	sk_plr_par21_bullet1 = { "sk_plr_par21_bullet1", "0" };
+cvar_t	sk_plr_par21_bullet2 = { "sk_plr_par21_bullet2", "0" };
+cvar_t	sk_plr_par21_bullet3 = { "sk_plr_par21_bullet3", "0" };
+
 // END Cvars for Skill Level settings
 
 // Register your console variables here
@@ -890,6 +895,11 @@ void GameDLLInit( void )
 	CVAR_REGISTER( &sk_plr_nail1 );
 	CVAR_REGISTER( &sk_plr_nail2 );
 	CVAR_REGISTER( &sk_plr_nail3 );
+
+	// Par21 Round
+	CVAR_REGISTER( &sk_plr_par21_bullet1 );
+	CVAR_REGISTER( &sk_plr_par21_bullet2 );
+	CVAR_REGISTER( &sk_plr_par21_bullet3 );
 
 // END REGISTER CVARS FOR SKILL LEVEL STUFF
 

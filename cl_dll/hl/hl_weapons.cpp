@@ -57,9 +57,7 @@ CHeaterPipe g_HeaterPipe;
 CCmlwbr g_Cmlwbr;
 CShotgun g_Shotgun;
 CPipeBomb g_PipeBomb;
-CBradnailer g_Bradnailer;
-CNailgun g_Nailgun;
-CXenSquasher g_Xs;
+CPar21 g_Par21;
 /*
 ======================
 AlertMessage
@@ -619,9 +617,7 @@ void HUD_InitClientWeapons( void )
 	HUD_PrepEntity( &g_Shotgun, &player );
 	HUD_PrepEntity( &g_Cmlwbr, &player );
 	HUD_PrepEntity( &g_PipeBomb, &player );
-	HUD_PrepEntity( &g_Bradnailer, &player );
-	HUD_PrepEntity( &g_Nailgun, &player );
-	HUD_PrepEntity( &g_Xs, &player );
+	HUD_PrepEntity( &g_Par21, &player );
 }
 
 /*
@@ -697,14 +693,8 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 	case WEAPON_PIPEBOMB:
 		pWeapon = &g_PipeBomb;
 		break;
-	case WEAPON_BRADNAILER:
-		pWeapon = &g_Bradnailer;
-		break;
-	case WEAPON_NAILGUN:
-		pWeapon = &g_Nailgun;
-		break;
-	case WEAPON_XS:
-		pWeapon = &g_Xs;
+	case WEAPON_PAR21:
+		pWeapon = &g_Par21;
 		break;
 	}
 
@@ -818,6 +808,11 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 	{
 		player.ammo_xencandy = (int)from->client.vuser2[1];
 	}
+	else if( player.m_pActiveItem->m_iId == WEAPON_PAR21 )
+	{
+		player.ammo_par21 = (int)from->client.vuser2[1];
+		player.ammo_m203grens = (int)from->client.vuser2[2];
+	}
 
 	// Don't go firing anything if we have died.
 	// Or if we don't have a weapon model deployed
@@ -888,6 +883,11 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 	else if( player.m_pActiveItem->m_iId == WEAPON_XS )
 	{
 		from->client.vuser2[1] = player.ammo_xencandy;
+	}
+	else if( player.m_pActiveItem->m_iId == WEAPON_PAR21 )
+	{
+		from->client.vuser2[1] = player.ammo_par21;
+		from->client.vuser2[2] = player.ammo_m203grens;
 	}
 
 	// Make sure that weapon animation matches what the game .dll is telling us

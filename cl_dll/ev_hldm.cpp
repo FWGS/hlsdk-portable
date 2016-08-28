@@ -78,6 +78,8 @@ void EV_FireCmlwbr(struct event_args_s *args);
 void EV_SpinXS(struct event_args_s *args);
 void EV_FireXS(struct event_args_s *args);
 void EV_Reload(struct event_args_s *args);
+void EV_FirePar21(struct event_args_s *args);
+void EV_M203(struct event_args_s *args);
 }
 
 #define VECTOR_CONE_1DEGREES Vector( 0.00873, 0.00873, 0.00873 )
@@ -371,6 +373,7 @@ void EV_HLDM_DecalGunshot( pmtrace_t *pTrace, int iBulletType )
 		case BULLET_PLAYER_BUCKSHOT:
 		case BULLET_PLAYER_357:
 		//case BULLET_PLAYER_NAIL:
+		case BULLET_PLAYER_PAR21:
 		default:
 			// smoke and decal
 			EV_HLDM_GunshotDecalTrace( pTrace, EV_HLDM_DamageDecal( pe ) );
@@ -411,6 +414,7 @@ int EV_HLDM_CheckTracer( int idx, float *vecSrc, float *end, float *forward, flo
 		{
 		case BULLET_PLAYER_MP5:
 		case BULLET_PLAYER_NAIL:
+		case BULLET_PLAYER_PAR21:
 		case BULLET_MONSTER_MP5:
 		case BULLET_MONSTER_9MM:
 		case BULLET_MONSTER_12MM:
@@ -508,6 +512,13 @@ void EV_HLDM_FireBullets( int idx, float *forward, float *right, float *up, int 
 				{
 					EV_HLDM_PlayTextureSound( idx, &tr, vecSrc, vecEnd, iBulletType );
 					// EV_HLDM_DecalGunshot( &tr, iBulletType );
+				}
+				break;
+			case BULLET_PLAYER_PAR21:
+				if( !tracer )
+				{
+					EV_HLDM_PlayTextureSound( idx, &tr, vecSrc, vecEnd, iBulletType );
+					EV_HLDM_DecalGunshot( &tr, iBulletType );
 				}
 				break;
 			}
@@ -1825,7 +1836,7 @@ enum bradnailer_e
 	BRADNAILER_ADD_SILENCER,
 	BRADNAILER_UPRIGHT_TO_TILT,
 	BRADNAILER_TILT_TO_UPRIGHT,
-	BRADNAILER_FASTSHOOT,
+	BRADNAILER_FASTSHOOT
 };
 
 void EV_FireBradnailer( event_args_t *args )
@@ -1891,7 +1902,7 @@ enum nailgun_e
 	NAILGUN_FIRE3,
 	NAILGUN_DEPLOY_EMPTY,
 	NAILGUN_LONGIDLE_EMPTY,
-	NAILGUN_IDLE1_EMPTY,
+	NAILGUN_IDLE1_EMPTY
 };
 
 void EV_FireNailgun( event_args_t *args )
@@ -1950,7 +1961,7 @@ enum cmlwbr_e
 	CMLWBR_DRAW1,		// drawn
 	CMLWBR_DRAW2,		// undrawn
 	CMLWBR_HOLSTER1,	// drawn
-	CMLWBR_HOLSTER2,	// undrawn
+	CMLWBR_HOLSTER2		// undrawn
 };
 
 //TODO: Fully predict the fliying bolt.
@@ -1990,7 +2001,7 @@ enum xensquasher_e
 	XS_FIRE2,
 	XS_HOLSTER,
 	XS_DRAW,
-	XS_RELOAD,
+	XS_RELOAD
 };
 
 void EV_SpinXS( event_args_t *args )
@@ -2104,4 +2115,104 @@ void EV_Reload( event_args_t *args )
 
 //======================
 //	 RELOAD END
+//======================
+
+//======================
+//	 PAR21 START 
+//======================
+
+enum par21_e
+{
+	PAR21_LONGIDLE = 0,
+	PAR21_IDLE1,
+	PAR21_LAUNCH,
+	PAR21_RELOAD,
+	PAR21_DEPLOY,
+	PAR21_FIRE1,
+	PAR21_FIRE2,
+	PAR21_FIRE3
+};
+
+void EV_FirePar21( struct event_args_s *args )
+{
+	int idx;
+	vec3_t origin;
+	vec3_t angles;
+	vec3_t velocity;
+
+	vec3_t ShellVelocity;
+	vec3_t ShellOrigin;
+	int shell;
+	vec3_t vecSrc, vecAiming;
+	vec3_t up, right, forward;
+	float flSpread = 0.01;
+
+	idx = args->entindex;
+	VectorCopy( args->origin, origin );
+	VectorCopy( args->angles, angles );
+	VectorCopy( args->velocity, velocity );
+
+	AngleVectors( angles, forward, right, up );
+
+	shell = gEngfuncs.pEventAPI->EV_FindModelIndex( "models/shell.mdl" );// brass shell
+
+	if( EV_IsLocal( idx ) )
+	{
+		// Add muzzle flash to current weapon model
+		EV_MuzzleFlash();
+		gEngfuncs.pEventAPI->EV_WeaponAnimation( PAR21_FIRE1 + gEngfuncs.pfnRandomLong( 0, 2 ), 2 );
+
+		V_PunchAxis( 0, gEngfuncs.pfnRandomFloat( -2, 2 ) );
+	}
+
+	EV_GetDefaultShellInfo( args, origin, velocity, ShellVelocity, ShellOrigin, forward, right, up, 20, -12, 4 );
+
+	EV_EjectBrass( ShellOrigin, ShellVelocity, angles[YAW], shell, TE_BOUNCE_SHELL );
+
+	switch( gEngfuncs.pfnRandomLong( 0, 2 ) )
+	{
+	case 0:
+		gEngfuncs.pEventAPI->EV_PlaySound( idx, origin, CHAN_WEAPON, "weapons/par21_1.wav", 1, ATTN_NORM, 0, 94 + gEngfuncs.pfnRandomLong( 0, 0xf ) );
+		break;
+	case 1:
+		gEngfuncs.pEventAPI->EV_PlaySound( idx, origin, CHAN_WEAPON, "weapons/par21_2.wav", 1, ATTN_NORM, 0, 94 + gEngfuncs.pfnRandomLong( 0, 0xf ) );
+		break;
+	case 2:
+		gEngfuncs.pEventAPI->EV_PlaySound( idx, origin, CHAN_WEAPON, "weapons/par21_3.wav", 1, ATTN_NORM, 0, 94 + gEngfuncs.pfnRandomLong( 0, 0xf ) );
+		break;
+	}
+
+	EV_GetGunPosition( args, vecSrc, origin );
+	VectorCopy( forward, vecAiming );
+
+	EV_HLDM_FireBullets( idx, forward, right, up, 1, vecSrc, vecAiming, 8192, BULLET_PLAYER_PAR21, 2, &tracerCount[idx - 1], args->fparam1, args->fparam2 );
+}
+
+void EV_M203( struct event_args_s *args )
+{
+	int idx;
+	vec3_t origin;
+
+	idx = args->entindex;
+	VectorCopy( args->origin, origin );
+
+	if( EV_IsLocal( idx ) )
+	{
+		gEngfuncs.pEventAPI->EV_WeaponAnimation( PAR21_LAUNCH, 2 );
+		V_PunchAxis( 0, -10 );
+	}
+
+	switch( gEngfuncs.pfnRandomLong( 0, 1 ) )
+	{
+	case 0:
+		gEngfuncs.pEventAPI->EV_PlaySound( idx, origin, CHAN_WEAPON, "weapons/glauncher.wav", 1, ATTN_NORM, 0, 94 + gEngfuncs.pfnRandomLong( 0, 0xf ) );
+		break;
+	case 1:
+		gEngfuncs.pEventAPI->EV_PlaySound( idx, origin, CHAN_WEAPON, "weapons/glauncher2.wav", 1, ATTN_NORM, 0, 94 + gEngfuncs.pfnRandomLong( 0, 0xf ) );
+		break;
+	}
+}
+
+//======================
+//	 PAR21 END 
 //======================

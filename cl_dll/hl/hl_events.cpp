@@ -48,6 +48,8 @@ void EV_FireCmlwbr( struct event_args_s *args );
 void EV_SpinXS( struct event_args_s *args );
 void EV_FireXS( struct event_args_s *args );
 void EV_Reload( struct event_args_s *args );
+void EV_FirePar21( struct event_args_s *args );
+void EV_M203( struct event_args_s *args );
 }
 
 /*
@@ -92,4 +94,6 @@ void Game_HookEvents( void )
 	gEngfuncs.pfnHookEvent( "events/xsspin.sc", EV_SpinXS );
 	gEngfuncs.pfnHookEvent( "events/xs.sc", EV_FireXS );
 	gEngfuncs.pfnHookEvent( "events/reload.sc", EV_Reload );
+	gEngfuncs.pfnHookEvent( "events/par21.sc", EV_FirePar21 );
+	gEngfuncs.pfnHookEvent( "events/m203.sc", EV_M203 );
 }

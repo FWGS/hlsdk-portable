@@ -275,6 +275,39 @@ int CHGrunt::IRelationship( CBaseEntity *pTarget )
 //=========================================================
 void CHGrunt::GibMonster( void )
 {
+	Vector	vecGunPos;
+	Vector	vecGunAngles;
+
+	if( GetBodygroup(2) != 2 )
+	{
+		// throw a gun if the grunt has one
+		GetAttachment( 0, vecGunPos, vecGunAngles );
+
+		CBaseEntity *pGun;
+
+		// Only drop items such as par21 and m203 grenades
+		if( FBitSet( pev->weapons, HGRUNT_9MMAR ) )
+		{
+			pGun = DropItem( "weapon_par21", vecGunPos, vecGunAngles );
+		}
+
+		if( pGun )
+		{
+			pGun->pev->velocity = Vector( RANDOM_FLOAT( -100, 100 ), RANDOM_FLOAT( -100, 100 ), RANDOM_FLOAT( 200, 300 ) );
+			pGun->pev->avelocity = Vector( 0, RANDOM_FLOAT( 200, 400 ), 0 );
+		}
+
+		if( FBitSet( pev->weapons, HGRUNT_GRENADELAUNCHER ) )
+		{
+			pGun = DropItem( "ammo_m203grenade", vecGunPos, vecGunAngles );
+			if( pGun )
+			{
+				pGun->pev->velocity = Vector( RANDOM_FLOAT( -100, 100 ), RANDOM_FLOAT( -100, 100 ), RANDOM_FLOAT( 200, 300 ) );
+				pGun->pev->avelocity = Vector( 0, RANDOM_FLOAT( 200, 400 ), 0 );
+			}
+		}
+	}
+
 	CBaseMonster::GibMonster();
 }
 
@@ -812,6 +845,25 @@ void CHGrunt::HandleAnimEvent( MonsterEvent_t *pEvent )
 	switch( pEvent->event )
 	{
 		case HGRUNT_AE_DROP_GUN:
+			Vector	vecGunPos;
+			Vector	vecGunAngles;
+
+			GetAttachment( 0, vecGunPos, vecGunAngles );
+
+			// switch to body group with no gun.
+			SetBodygroup( GUN_GROUP, GUN_NONE );
+
+			// now spawn a gun.
+
+			// Only drop items such as par21 and m203 grenades
+			if( FBitSet( pev->weapons, HGRUNT_9MMAR ) )
+			{
+				DropItem( "weapon_par21", vecGunPos, vecGunAngles );
+			}
+			if( FBitSet( pev->weapons, HGRUNT_GRENADELAUNCHER ) )
+			{
+				DropItem( "ammo_m203grenade", BodyTarget( pev->origin ), vecGunAngles );
+			}
 			break;
 		case HGRUNT_AE_RELOAD:
 			EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "hgrunt/gr_reload1.wav", 1, ATTN_NORM );

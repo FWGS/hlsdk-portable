@@ -1118,6 +1118,8 @@ void CBasePlayer::TabulateAmmo()
 	ammo_hornets = AmmoInventory( GetAmmoIndex( "Hornets" ) );
 	ammo_nails = AmmoInventory( GetAmmoIndex( "nails" ) );
 	ammo_xencandy = AmmoInventory( GetAmmoIndex( "xencandy" ) );
+	ammo_par21 = AmmoInventory( GetAmmoIndex( "par21" ) );
+	ammo_m203grens = AmmoInventory( GetAmmoIndex( "M203grenades" ) );
 }
 
 /*
@@ -1871,51 +1873,47 @@ void CBasePlayer::PreThink( void )
 	{
 		if( !m_bSong01_Played )
 		{
-			if( FStrEq( STRING( gpGlobals->mapname ), "po_haz01" ) )
+			if( FStrEq( STRING( gpGlobals->mapname ), "pv_intro" ) )
 			{
-				CLIENT_COMMAND( edict(), "play sound/mp3/hazard.mp3\n" );
+				CLIENT_COMMAND( edict(), "play sound/mp3/int.mp3\n" );
 				m_bSong01_Played = TRUE;
 			}
 		}
 		if( !m_bSong02_Played )
 		{
-			if( FStrEq( STRING( gpGlobals->mapname ), "po_aud01" ) )
+			if( FStrEq( STRING( gpGlobals->mapname ), "pv_orl01" ) )
 			{
-				CLIENT_COMMAND( edict(), "play sound/mp3/audion.mp3\n" );
+				CLIENT_COMMAND( edict(), "play sound/mp3/orl.mp3\n" );
 				m_bSong02_Played = TRUE;
 			}
 		}
 		if( !m_bSong03_Played )
 		{
-			if( FStrEq( STRING( gpGlobals->mapname ), "po_sew01" ) )
+			if( FStrEq( STRING( gpGlobals->mapname ), "pv_ntc01" ) )
 			{
-				CLIENT_COMMAND( edict(), "play sound/mp3/sewer.mp3\n" );
+				CLIENT_COMMAND( edict(), "play sound/mp3/ntc.mp3\n" );
 				m_bSong03_Played = TRUE;
 			}
 		}
 		if( !m_bSong04_Played )
 		{
-			if( FStrEq( STRING( gpGlobals->mapname ), "po_lib01" ) )
+			if( FStrEq( STRING( gpGlobals->mapname ), "pv_ntc05" ) )
 			{
-				CLIENT_COMMAND( edict(), "play sound/mp3/library.mp3\n" );
+				CLIENT_COMMAND( edict(), "play sound/mp3/asl.mp3\n" );
 				m_bSong04_Played = TRUE;
 			}
 		}
 		if( !m_bSong05_Played )
 		{
-			if( FStrEq( STRING( gpGlobals->mapname ), "po_eas01" ) )
+			if( FStrEq( STRING( gpGlobals->mapname ), "pv_outro" ) )
 			{
-				CLIENT_COMMAND( edict(), "play sound/mp3/eastend.mp3\n" );
+				CLIENT_COMMAND( edict(), "play sound/mp3/out.mp3\n" );
 				m_bSong05_Played = TRUE;
 			}
 		}
 		if( !m_bSong06_Played )
 		{
-			if( FStrEq( STRING( gpGlobals->mapname ), "credits" ) )
-			{
-				CLIENT_COMMAND( edict(), "play sound/mp3/credits.mp3\n" );
-				m_bSong06_Played = TRUE;
-			}
+			m_bSong06_Played = TRUE;
 		}
 	}
 }
@@ -2024,6 +2022,7 @@ void CBasePlayer::CheckTimeBasedDamage()
 				bDuration = NERVEGAS_DURATION;
 				break;
 			case itbd_Poison:
+				TakeDamage( pev, pev, POISON_DAMAGE, DMG_GENERIC );
 				bDuration = POISON_DURATION;
 				break;
 			case itbd_Radiation:
@@ -2686,12 +2685,12 @@ ReturnSpot:
 void CBasePlayer::Spawn( void )
 {
 	pev->classname = MAKE_STRING( "player" );
-	pev->health = 50;
+	pev->health = 100;
 	pev->armorvalue = 0;
 	pev->takedamage = DAMAGE_AIM;
 	pev->solid = SOLID_SLIDEBOX;
 	pev->movetype = MOVETYPE_WALK;
-	pev->max_health = 100;
+	pev->max_health = pev->health;
 	pev->flags &= FL_PROXY;	// keep proxy flag sey by engine
 	pev->flags |= FL_CLIENT;
 	pev->air_finished = gpGlobals->time + 12;
@@ -3357,12 +3356,10 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		GiveNamedItem( "weapon_cmlwbr" );
 		GiveNamedItem( "ammo_bolts" );
 		GiveNamedItem( "weapon_pipebomb" );
-		GiveNamedItem( "weapon_bradnailer" );
-		GiveNamedItem( "ammo_nailclip" );
-		GiveNamedItem( "ammo_nailround" );
-		GiveNamedItem( "weapon_nailgun" );
-		GiveNamedItem( "weapon_xs" );
-		GiveNamedItem( "ammo_xencandy" );
+		GiveNamedItem( "weapon_par21" );
+		GiveNamedItem( "ammo_par21_clip" );
+		GiveNamedItem( "ammo_par21_grenade" );
+		GiveNamedItem( "ammo_m203grenade" );
 
 		gEvilImpulse101 = FALSE;
 		break;
@@ -3775,19 +3772,7 @@ void CBasePlayer::UpdateClientData( void )
 	//
 	if( !( pev->weapons & ( 1 << WEAPON_SUIT ) ) )
 	{
-		if( FStrEq( STRING( gpGlobals->mapname ), "po_haz01" ) )
-		{
-			pev->weapons |= ( 1 << WEAPON_SUIT );
-
-			// Force HUD update.
-			m_fHudVisible = TRUE;
-
-			//
-			// Make HUD completely transparent.
-			//
-			HidePlayerHUD( TRUE );
-		}
-		else if( FStrEq( STRING( gpGlobals->mapname ), "po_aud01" ) )
+		if( FStrEq( STRING( gpGlobals->mapname ), "pv_orl01" ) )
 		{
 			pev->weapons |= ( 1 << WEAPON_SUIT );
 
@@ -3795,15 +3780,6 @@ void CBasePlayer::UpdateClientData( void )
 			// Make HUD completely transparent and slowly increase it's alpha.
 			//
 			ShowPlayerHUD();
-		}
-		else if( FStrEq( STRING( gpGlobals->mapname ), "credits" ) )
-		{
-			pev->weapons = 0;
-
-			//
-			// Make HUD completely transparent and slowly increase it's alpha.
-			//
-			HidePlayerHUD( TRUE );
 		}
 	}
 
@@ -4674,12 +4650,7 @@ void CStripWeapons::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE
 	}
 
 	if( pPlayer )
-	{
-		if( !FStrEq( STRING( gpGlobals->mapname ), "po_xen01" ) )
-			pPlayer->RemoveAllItems( TRUE );
-		else
-			pPlayer->RemoveAllItems( FALSE );
-	}
+		pPlayer->RemoveAllItems( TRUE );
 }
 
 class CRevertSaved : public CPointEntity

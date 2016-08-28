@@ -342,6 +342,8 @@ public:
 	int ammo_argrens;
 	int ammo_nails;
 	int ammo_xencandy;
+	int ammo_par21;
+	int ammo_m203grens;
 
 	//Special stuff for grenades and satchels.
 	float m_flStartThrow;

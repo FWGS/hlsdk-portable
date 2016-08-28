@@ -61,7 +61,7 @@ int CHudHealth::Init( void )
 {
 	HOOK_MESSAGE( Health );
 	HOOK_MESSAGE( Damage );
-	m_iHealth = 50;
+	m_iHealth = 100;
 	m_fFade = 0;
 	m_iFlags = 0;
 	m_bitsDamage = 0;

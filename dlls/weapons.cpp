@@ -171,6 +171,7 @@ void DecalGunshot( TraceResult *pTrace, int iBulletType )
 		case BULLET_PLAYER_BUCKSHOT:
 		case BULLET_PLAYER_357:
 		case BULLET_PLAYER_NAIL:
+		case BULLET_PLAYER_PAR21:
 		default:
 			// smoke and decal
 			UTIL_GunshotDecalTrace( pTrace, DamageDecal( pEntity, DMG_BULLET ) );
@@ -316,17 +317,11 @@ void W_Precache( void )
 	// pipebomb
 	UTIL_PrecacheOtherWeapon( "weapon_pipebomb" );
 
-	// bradnailer
-	UTIL_PrecacheOtherWeapon( "weapon_bradnailer" );
-	UTIL_PrecacheOther( "ammo_nailclip" );
-	UTIL_PrecacheOther( "ammo_nailround" );
-
-	// nailgun
-	UTIL_PrecacheOtherWeapon( "weapon_nailgun" );
-
-	// xen squasher
-	UTIL_PrecacheOtherWeapon( "weapon_xs" );
-	UTIL_PrecacheOther( "ammo_xencandy" );
+	// par21
+	UTIL_PrecacheOtherWeapon( "weapon_par21" );
+	UTIL_PrecacheOther( "ammo_par21_clip" );
+	UTIL_PrecacheOther( "ammo_par21_grenade" );
+	UTIL_PrecacheOther( "ammo_m203grenade" );
 
 #if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
 	if( g_pGameRules->IsDeathmatch() )
