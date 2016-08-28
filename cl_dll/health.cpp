@@ -219,7 +219,7 @@ int CHudHealth::Draw( float flTime )
 	{
 		HealthWidth = gHUD.GetSpriteRect( gHUD.m_HUD_number_0 ).right - gHUD.GetSpriteRect( gHUD.m_HUD_number_0 ).left;
 
-		struct rect_s cross = gHUD.GetSpriteRect( m_HUD_cross );
+		wrect_t cross = gHUD.GetSpriteRect( m_HUD_cross );
 
 		int CrossWidth = cross.right - cross.left;
 		int CrossHeight = cross.bottom - cross.top;
