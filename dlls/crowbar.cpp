@@ -83,7 +83,8 @@ int CCrowbar::GetItemInfo( ItemInfo *p )
 
 BOOL CCrowbar::Deploy()
 {
-	return DefaultDeploy( "models/v_crowbar.mdl", "models/p_crowbar.mdl", CROWBAR_DRAW, "crowbar" );
+	// Yo Den
+	return DefaultDeploy( "models/v_crowbar.mdl", "models/null.mdl", CROWBAR_DRAW, "crowbar" );
 }
 
 void CCrowbar::Holster( int skiplocal /* = 0 */ )

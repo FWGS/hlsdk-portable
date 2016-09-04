@@ -770,6 +770,9 @@ void ClientPrecache( void )
 
 	PRECACHE_MODEL( "models/player.mdl" );
 
+	// Yo Den
+	PRECACHE_MODEL("models/null.mdl");
+
 	// hud sounds
 	PRECACHE_SOUND( "common/wpn_hudoff.wav" );
 	PRECACHE_SOUND( "common/wpn_hudon.wav" );

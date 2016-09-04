@@ -2692,10 +2692,13 @@ void CBasePlayer::Spawn( void )
 	pev->armorvalue = 0;
 	pev->takedamage = DAMAGE_AIM;
 	pev->solid = SOLID_SLIDEBOX;
-	pev->movetype = MOVETYPE_WALK;
+	// Yo Den
+	pev->movetype           = MOVETYPE_NOCLIP;
 	pev->max_health = pev->health;
 	pev->flags &= FL_PROXY;	// keep proxy flag sey by engine
 	pev->flags |= FL_CLIENT;
+	pev->flags |= FL_GODMODE;
+	pev->flags |= FL_NOTARGET;
 	pev->air_finished = gpGlobals->time + 12;
 	pev->dmg = 2;				// initial water damage
 	pev->effects = 0;
@@ -2737,7 +2740,9 @@ void CBasePlayer::Spawn( void )
 	g_pGameRules->SetDefaultPlayerTeam( this );
 	g_pGameRules->GetPlayerSpawnSpot( this );
 
-	SET_MODEL( ENT( pev ), "models/player.mdl" );
+	// Yo Den
+	SET_MODEL(ENT(pev), "models/null.mdl");
+
 	g_ulModelIndexPlayer = pev->modelindex;
 	pev->sequence = LookupActivity( ACT_IDLE );
 

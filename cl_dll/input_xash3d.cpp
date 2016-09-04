@@ -191,6 +191,7 @@ void IN_Move( float frametime, usercmd_t *cmd )
 		rel_yaw *= sensitivity->value;
 		rel_pitch *= sensitivity->value;
 	}
+# if 0
 	viewangles[YAW] += rel_yaw;
 	if( fLadder )
 	{
@@ -207,7 +208,10 @@ void IN_Move( float frametime, usercmd_t *cmd )
 		viewangles[PITCH] = cl_pitchdown->value;
 	if( viewangles[PITCH] < -cl_pitchup->value )
 		viewangles[PITCH] = -cl_pitchup->value;
-	
+#else
+	cmd->forwardmove = -rel_pitch * 400;
+	cmd->sidemove = -rel_yaw * 400;
+#endif	
 	// HACKHACK: change viewangles directly in viewcode, 
 	// so viewangles when player is dead will not be changed on server
 	if( !CL_IsDead() )

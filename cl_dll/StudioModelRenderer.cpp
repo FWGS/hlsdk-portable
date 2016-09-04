@@ -1372,7 +1372,8 @@ int CStudioModelRenderer::StudioDrawPlayer( int flags, entity_state_t *pplayer )
 	if( m_nPlayerIndex < 0 || m_nPlayerIndex >= gEngfuncs.GetMaxClients() )
 		return 0;
 
-	m_pRenderModel = IEngineStudio.SetupPlayerModel( m_nPlayerIndex );
+	// Yo Den
+	m_pRenderModel = m_pCurrentEntity->model;
 	if( m_pRenderModel == NULL )
 		return 0;
 
