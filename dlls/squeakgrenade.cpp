@@ -54,6 +54,15 @@ class CSqueakGrenade : public CGrenade
 	void Killed( entvars_t *pevAttacker, int iGib );
 	void GibMonster( void );
 
+	float TouchGravGun( CBaseEntity *attacker, int stage )
+	{
+		if( stage == 2 )
+			pev->sequence = WSQUEAK_IDLE1;
+		m_flDie = gpGlobals->time + 30;
+		m_hOwner = attacker;
+		return 700;
+	}
+
 	virtual int Save( CSave &save ); 
 	virtual int Restore( CRestore &restore );
 
@@ -267,8 +276,8 @@ void CSqueakGrenade::HuntThink( void )
 
 	// higher pitch as squeeker gets closer to detonation time
 	float flpitch = 155.0 - 60.0 * ( ( m_flDie - gpGlobals->time ) / SQUEEK_DETONATE_DELAY );
-	if( flpitch < 80 )
-		flpitch = 80;
+	if( flpitch < 100 )
+		flpitch = 100;
 
 	if( m_hEnemy != NULL )
 	{
@@ -338,6 +347,9 @@ void CSqueakGrenade::SuperBounceTouch( CBaseEntity *pOther )
 
 	// higher pitch as squeeker gets closer to detonation time
 	flpitch = 155.0 - 60.0 * ( ( m_flDie - gpGlobals->time ) / SQUEEK_DETONATE_DELAY );
+
+	if( flpitch < 100 )
+		flpitch = 100;
 
 	if( pOther->pev->takedamage && m_flNextAttack < gpGlobals->time )
 	{
