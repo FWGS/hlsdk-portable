@@ -131,7 +131,7 @@ void CAR2Ball::Spawn()
 {
 	Precache();
 	pev->movetype = MOVETYPE_BOUNCE;
-	pev->solid = SOLID_SLIDEBOX;
+	pev->solid = SOLID_BBOX;
 	UTIL_SetOrigin(pev, pev->origin);
 	SetTouch(&CAR2Ball::AR2Touch);	// Bounce if touched
 
@@ -152,7 +152,8 @@ void CAR2Ball::Spawn()
 	SET_MODEL(ENT(pev), "models/ar2grenade.mdl");
 	pev->dmg = 60;
 	m_fRegisteredSound = FALSE;
-	UTIL_SetSize(pev, Vector(-8, -8, -8), Vector(8, 8, 8));
+	//UTIL_SetSize(pev, Vector(-8, -8, -8), Vector(8, 8, 8));
+	UTIL_SetSize( pev, Vector( -4, -4, -4 ), Vector( 4, 4, 4 ) );
 	UTIL_SetOrigin(pev, pev->origin);
 	pev->avelocity.x = RANDOM_LONG(-1000, 1000);
 	pev->avelocity.y = RANDOM_LONG(-1000, 1000);
@@ -605,10 +606,16 @@ void CAR2::SecondaryAttack(void)
 	m_pPlayer->SetAnimation(PLAYER_ATTACK1);
 
 	UTIL_MakeVectors(m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle);
-
-	CAR2Ball::AR2Shoot(m_pPlayer->pev,
-		m_pPlayer->pev->origin + m_pPlayer->pev->view_ofs + gpGlobals->v_forward * 16,
-		gpGlobals->v_forward * 1600,5);
+	Vector vecSrc = m_pPlayer->pev->origin + m_pPlayer->pev->view_ofs;
+	TraceResult tr;
+	Vector forward = gpGlobals->v_forward;
+	UTIL_TraceLine( vecSrc, vecSrc + gpGlobals->v_forward * 16, ignore_monsters, ENT( m_pPlayer->pev ), &tr );
+	if( tr.flFraction != 1.0 )
+	{
+		vecSrc = tr.vecEndPos + ( tr.vecPlaneNormal * 15 );
+	}
+	CAR2Ball::AR2Shoot(m_pPlayer->pev,vecSrc,
+		forward * 1600,5);
 
 	// reload sound
 	if( m_pPlayer->m_rgAmmo[m_iSecondaryAmmoType] )
