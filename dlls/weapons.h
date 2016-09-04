@@ -746,6 +746,17 @@ public:
 	void EXPORT RocketTouch( CBaseEntity *pOther );
 	static CRpgRocket *CreateRpgRocket( Vector vecOrigin, Vector vecAngles, CBaseEntity *pOwner, CRpg *pLauncher );
 
+	virtual float TouchGravGun( CBaseEntity *attacker, int stage )
+	{
+		pev->owner = attacker->edict();
+		if( stage >= 2 )
+		{
+			UTIL_MakeVectors( attacker->pev->v_angle + attacker->pev->punchangle);
+			pev->angles = UTIL_VecToAngles(gpGlobals->v_forward);
+		}
+		return 1000;
+	}
+
 	int m_iTrail;
 	float m_flIgniteTime;
 	CRpg *m_pLauncher;// pointer back to the launcher that fired me. 

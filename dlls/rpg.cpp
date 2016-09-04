@@ -263,10 +263,13 @@ void CRpgRocket::FollowThink( void )
 			STOP_SOUND( ENT( pev ), CHAN_VOICE, "weapons/rocket1.wav" );
 		}
 		pev->velocity = pev->velocity * 0.2 + vecTarget * flSpeed * 0.798;
+		/*
+		// WHY???
 		if( pev->waterlevel == 0 && pev->velocity.Length() < 1500 )
 		{
 			Detonate();
 		}
+		*/
 	}
 	// ALERT( at_console, "%.0f\n", flSpeed );
 
