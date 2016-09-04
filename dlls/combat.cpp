@@ -193,7 +193,7 @@ void CGib::SpawnRandomGibs( entvars_t *pevVictim, int cGibs, int human )
 		}
 		else
 		{
-			if( human )
+			if( human & 1 )
 			{
 				// human pieces
 				pGib->Spawn( "models/hgibs.mdl" );
@@ -247,6 +247,19 @@ void CGib::SpawnRandomGibs( entvars_t *pevVictim, int cGibs, int human )
 			UTIL_SetSize( pGib->pev, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ) );
 		}
 		pGib->LimitVelocity();
+		if(human & 2)
+		{
+			pGib->m_lifeTime = 0.3;
+			pGib->pev->renderfx = kRenderFxGlowShell;
+			pGib->pev->renderamt = 100;
+
+			pGib->pev->rendermode = kRenderTransTexture;
+
+			pGib->pev->solid = SOLID_NOT;
+
+			pGib->pev->nextthink = gpGlobals->time + 0.1;
+			pGib->SetThink( &CBaseEntity::SUB_FadeOut );
+		}
 	}
 }
 
@@ -299,6 +312,7 @@ void CBaseMonster::GibMonster( void )
 {
 	TraceResult	tr;
 	BOOL		gibbed = FALSE;
+	byte disintegrate = (!!( m_bitsDamageType & DMG_DISINTEGRATE )) << 1;
 
 	EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "common/bodysplat.wav", 1, ATTN_NORM );
 
@@ -308,7 +322,7 @@ void CBaseMonster::GibMonster( void )
 		if( CVAR_GET_FLOAT( "violence_hgibs" ) != 0 )	// Only the player will ever get here
 		{
 			CGib::SpawnHeadGib( pev );
-			CGib::SpawnRandomGibs( pev, 4, 1 );	// throw some human gibs.
+			CGib::SpawnRandomGibs( pev, 4, 1 | disintegrate );	// throw some human gibs.
 		}
 		gibbed = TRUE;
 	}
@@ -316,7 +330,7 @@ void CBaseMonster::GibMonster( void )
 	{
 		if( CVAR_GET_FLOAT( "violence_agibs" ) != 0 )	// Should never get here, but someone might call it directly
 		{
-			CGib::SpawnRandomGibs( pev, 4, 0 );	// Throw alien gibs
+			CGib::SpawnRandomGibs( pev, 4, disintegrate );	// Throw alien gibs
 		}
 		gibbed = TRUE;
 	}

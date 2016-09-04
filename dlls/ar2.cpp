@@ -201,11 +201,11 @@ void CAR2Ball::AR2Touch(CBaseEntity *pOther)
 			pevOwner = pev;
 		TraceResult tr = UTIL_GetGlobalTrace();
 		ClearMultiDamage();
-		pOther->TraceAttack(pevOwner, 250, gpGlobals->v_forward, &tr, DMG_CLUB);
+		pOther->TraceAttack(pevOwner, 2500, gpGlobals->v_forward, &tr, DMG_CLUB | DMG_DISINTEGRATE);
 		if( pOther->IsPlayer() || pOther->IsMoving() )
 		{
 			pev->velocity = gpGlobals->v_forward.Normalize() * 1600;
-			// play bounce sound
+			// play strike sound
 			switch (RANDOM_LONG(0, 2))
 			{
 				case 0:	EMIT_SOUND(ENT(pev), CHAN_VOICE, "ar2/ar2strike1.wav", 1, ATTN_NORM);	break;

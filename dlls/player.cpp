@@ -671,7 +671,7 @@ void CBasePlayer::PackDeadPlayerItems( void )
 	iWeaponRules = g_pGameRules->DeadPlayerWeapons( this );
  	iAmmoRules = g_pGameRules->DeadPlayerAmmo( this );
 
-	if( iWeaponRules == GR_PLR_DROP_GUN_NO && iAmmoRules == GR_PLR_DROP_AMMO_NO )
+	if( iWeaponRules == GR_PLR_DROP_GUN_NO && iAmmoRules == GR_PLR_DROP_AMMO_NO && !(m_bitsDamageType & DMG_DISINTEGRATE) )
 	{
 		// nothing to pack. Remove the weapons and return. Don't call create on the box!
 		RemoveAllItems( TRUE );
