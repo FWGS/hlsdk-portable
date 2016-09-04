@@ -424,6 +424,8 @@ void CHornet::DieTouch( CBaseEntity *pOther )
 				break;
 		}
 
+		if( !pev->owner )
+			pev->owner = edict();
 		pOther->TakeDamage( pev, VARS( pev->owner ), pev->dmg, DMG_BULLET );
 	}
 
