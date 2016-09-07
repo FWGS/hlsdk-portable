@@ -9,14 +9,14 @@ LIBNAME := hl
 
 CFLAGS := -pipe
 CFLAGS += \
-		  -D_LINUX -DCLIENT_WEAPONS -DNO_VOICEGAMEMGR \
-		  -Dstricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf
+    -D_LINUX -DCLIENT_WEAPONS -DNO_VOICEGAMEMGR \
+    -Dstricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf
 
 CFLAGS_RELEASE := -Ofast -w
 CFLAGS_DEBUG := -Wall -Wno-invalid-offsetof
 
-CXX_ONLY_FLAGS := -std=c++11
-C_ONLY_FLAGS := -std=c99
+CXX_ONLY_FLAGS := 
+C_ONLY_FLAGS := 
 
 CFLAGS_OPT_X86 := -march=native -mtune=native
 CFLAGS_OPT_ARM := -mthumb -mfloat-abi=hard -mfpu=neon -mvectorize-with-neon-quad -mcpu=cortex-a9
@@ -157,23 +157,23 @@ COMPILE_ARCH := $(COMPILE_ARCH:i%86=x86)
 COMPILE_ARCH := $(COMPILE_ARCH:arm%=arm)
 
 ifeq ($(ARCH), i86pc)
-		  COMPILE_ARCH := x86
+    COMPILE_ARCH := x86
 endif
 ifeq ($(ARCH), x64)
-		  COMPILE_ARCH := x86_64
+    COMPILE_ARCH := x86_64
 endif
 ifeq ($(ARCH), amd64)
-		  COMPILE_ARCH := x86_64
+    COMPILE_ARCH := x86_64
 endif
 
 ifeq ($(COMPILE_ARCH), x86)
-		  CFLAGS += $(CFLAGS_OPT_X86)
+    CFLAGS += $(CFLAGS_OPT_X86)
 endif
 ifeq ($(COMPILE_ARCH), x86_64)
-		  CFLAGS += $(CFLAGS_OPT_X86)
+    CFLAGS += $(CFLAGS_OPT_X86)
 endif
 ifeq ($(COMPILE_ARCH), arm)
-		  CFLAGS += $(CFLAGS_OPT_ARM)
+    CFLAGS += $(CFLAGS_OPT_ARM)
 endif
 
 release: CFLAGS += $(CFLAGS_RELEASE)
