@@ -1,189 +1,217 @@
+# Makefile for server library
+# Copyright © THE-Swank 2016
 
-#
-# Half-Life Full SDK 2.3 hl_i386.so Makefile for x86 Linux
-#
-# October 2002 by Leon Hartwig (hartwig@valvesoftware.com)
-#
+CC ?= gcc
+CXX ?= g++
+ARCH ?= $(shell uname -m)
 
-DLLNAME=hl
+LIBNAME := hl
 
-ARCH=i386
+CFLAGS := -pipe
+CFLAGS += \
+    -D_LINUX -DCLIENT_WEAPONS -DNO_VOICEGAMEMGR \
+    -Dstricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf
 
-#make sure this is the correct compiler for your system
-CC?=gcc
-CXX?=g++
+CFLAGS_RELEASE := -Ofast -w
+CFLAGS_DEBUG := -Wall -Wno-invalid-offsetof -g -Og
 
-DLL_SRCDIR=.
-ENGINE_SRCDIR=../engine
-COMMON_SRCDIR=../common
-WPN_SHARED_SRCDIR=./wpn_shared
-PM_SHARED_SRCDIR=../pm_shared
-GAME_SHARED_SRCDIR=../game_shared
+CXX_ONLY_FLAGS := 
+C_ONLY_FLAGS := 
 
-DLL_OBJDIR=$(DLL_SRCDIR)/obj
-WPN_SHARED_OBJDIR=$(WPN_SHARED_SRCDIR)/obj
-PM_SHARED_OBJDIR=$(PM_SHARED_SRCDIR)/obj
-GAME_SHARED_OBJDIR=$(GAME_SHARED_SRCDIR)/obj
+CFLAGS_OPT_X86 := -march=native -mtune=native
+CFLAGS_OPT_ARM := -mthumb -mfloat-abi=hard -mfpu=neon -mvectorize-with-neon-quad -mcpu=cortex-a9
 
-BASE_CFLAGS=	-Dstricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp \
-		-DCLIENT_WEAPONS -DNO_VOICEGAMEMGR
+LDLIBS := -lstdc++ -lm -lc
+LDFLAGS := -fvisibility=hidden -Wl,--no-warn-mismatch
 
-#safe optimization
-CFLAGS=$(BASE_CFLAGS) -m32 -w -O1
+SRC_DIR := .
+ENGINE_SRC_DIR := ../engine
+COMMON_SRC_DIR := ../common
+PM_SHARED_SRC_DIR := ../pm_shared
+GAME_SHARED_SRC_DIR := ../game_shared
 
-#full optimization
-#CFLAGS=$(BASE_CFLAGS) -w -O1 -m486 -ffast-math -funroll-loops \
-	-fomit-frame-pointer -fexpensive-optimizations \
-	-malign-loops=2 -malign-jumps=2 -malign-functions=2
+OBJ_DIR := $(SRC_DIR)/obj
+PM_SHARED_OBJ_DIR := $(PM_SHARED_SRC_DIR)/obj
 
-#use these when debugging 
-#CFLAGS=$(BASE_CFLAGS) -g
+INCLUDES := \
+    -I . \
+    -I $(ENGINE_SRC_DIR) \
+    -I $(COMMON_SRC_DIR) \
+    -I $(PM_SHARED_SRC_DIR) \
+    -I $(GAME_SHARED_SRC_DIR)
 
-INCLUDEDIRS=-I. -I$(ENGINE_SRCDIR) -I$(COMMON_SRCDIR) -I$(PM_SHARED_SRCDIR) -I$(GAME_SHARED_SRCDIR)
+OBJECTS := \
+    $(OBJ_DIR)/aflock.o \
+    $(OBJ_DIR)/agrunt.o \
+    $(OBJ_DIR)/airtank.o \
+    $(OBJ_DIR)/animating.o \
+    $(OBJ_DIR)/animation.o \
+    $(OBJ_DIR)/apache.o \
+    $(OBJ_DIR)/barnacle.o \
+    $(OBJ_DIR)/barney.o \
+    $(OBJ_DIR)/bigmomma.o \
+    $(OBJ_DIR)/bloater.o \
+    $(OBJ_DIR)/bmodels.o \
+    $(OBJ_DIR)/bullsquid.o \
+    $(OBJ_DIR)/buttons.o \
+    $(OBJ_DIR)/cbase.o \
+    $(OBJ_DIR)/client.o \
+    $(OBJ_DIR)/combat.o \
+    $(OBJ_DIR)/controller.o \
+    $(OBJ_DIR)/crossbow.o \
+    $(OBJ_DIR)/crowbar.o \
+    $(OBJ_DIR)/defaultai.o \
+    $(OBJ_DIR)/doors.o \
+    $(OBJ_DIR)/effects.o \
+    $(OBJ_DIR)/egon.o \
+    $(OBJ_DIR)/explode.o \
+    $(OBJ_DIR)/flyingmonster.o \
+    $(OBJ_DIR)/func_break.o \
+    $(OBJ_DIR)/func_tank.o \
+    $(OBJ_DIR)/game.o \
+    $(OBJ_DIR)/gamerules.o \
+    $(OBJ_DIR)/gargantua.o \
+    $(OBJ_DIR)/gauss.o \
+    $(OBJ_DIR)/genericmonster.o \
+    $(OBJ_DIR)/ggrenade.o \
+    $(OBJ_DIR)/globals.o \
+    $(OBJ_DIR)/glock.o \
+    $(OBJ_DIR)/gman.o \
+    $(OBJ_DIR)/h_ai.o \
+    $(OBJ_DIR)/h_battery.o \
+    $(OBJ_DIR)/h_cine.o \
+    $(OBJ_DIR)/h_cycler.o \
+    $(OBJ_DIR)/h_export.o \
+    $(OBJ_DIR)/handgrenade.o \
+    $(OBJ_DIR)/hassassin.o \
+    $(OBJ_DIR)/headcrab.o \
+    $(OBJ_DIR)/healthkit.o \
+    $(OBJ_DIR)/hgrunt.o \
+    $(OBJ_DIR)/hornet.o \
+    $(OBJ_DIR)/hornetgun.o \
+    $(OBJ_DIR)/houndeye.o \
+    $(OBJ_DIR)/ichthyosaur.o \
+    $(OBJ_DIR)/islave.o \
+    $(OBJ_DIR)/items.o \
+    $(OBJ_DIR)/leech.o \
+    $(OBJ_DIR)/lights.o \
+    $(OBJ_DIR)/maprules.o \
+    $(OBJ_DIR)/monstermaker.o \
+    $(OBJ_DIR)/monsters.o \
+    $(OBJ_DIR)/monsterstate.o \
+    $(OBJ_DIR)/mortar.o \
+    $(OBJ_DIR)/mp5.o \
+    $(OBJ_DIR)/multiplay_gamerules.o \
+    $(OBJ_DIR)/nihilanth.o \
+    $(OBJ_DIR)/nodes.o \
+    $(OBJ_DIR)/osprey.o \
+    $(OBJ_DIR)/pathcorner.o \
+    $(OBJ_DIR)/plane.o \
+    $(OBJ_DIR)/plats.o \
+    $(OBJ_DIR)/player.o \
+    $(OBJ_DIR)/python.o \
+    $(OBJ_DIR)/rat.o \
+    $(OBJ_DIR)/roach.o \
+    $(OBJ_DIR)/rpg.o \
+    $(OBJ_DIR)/satchel.o \
+    $(OBJ_DIR)/schedule.o \
+    $(OBJ_DIR)/scientist.o \
+    $(OBJ_DIR)/scripted.o \
+    $(OBJ_DIR)/shotgun.o \
+    $(OBJ_DIR)/singleplay_gamerules.o \
+    $(OBJ_DIR)/skill.o \
+    $(OBJ_DIR)/sound.o \
+    $(OBJ_DIR)/soundent.o \
+    $(OBJ_DIR)/spectator.o \
+    $(OBJ_DIR)/squadmonster.o \
+    $(OBJ_DIR)/squeakgrenade.o \
+    $(OBJ_DIR)/subs.o \
+    $(OBJ_DIR)/talkmonster.o \
+    $(OBJ_DIR)/teamplay_gamerules.o \
+    $(OBJ_DIR)/tempmonster.o \
+    $(OBJ_DIR)/tentacle.o \
+    $(OBJ_DIR)/triggers.o \
+    $(OBJ_DIR)/tripmine.o \
+    $(OBJ_DIR)/turret.o \
+    $(OBJ_DIR)/util.o \
+    $(OBJ_DIR)/weapons.o \
+    $(OBJ_DIR)/world.o \
+    $(OBJ_DIR)/xen.o \
+    $(PM_SHARED_OBJ_DIR)/pm_debug.o \
+    $(PM_SHARED_OBJ_DIR)/pm_math.o \
+    $(PM_SHARED_OBJ_DIR)/pm_shared.o
 
-LDFLAGS=
-
-SHLIBEXT=so
-SHLIBCFLAGS=-fPIC
-SHLIBLDFLAGS=-shared
-
-DO_CC=$(CC) $(CFLAGS) $(SHLIBCFLAGS) $(INCLUDEDIRS) -o $@ -c $<
-DO_CXX=$(CXX) $(CFLAGS) $(SHLIBCFLAGS) $(INCLUDEDIRS) -o $@ -c $<
-
-#############################################################################
-# SETUP AND BUILD
-# GAME
-#############################################################################
-
-$(DLL_OBJDIR)/%.o: $(DLL_SRCDIR)/%.cpp
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	$(DO_CXX)
 
-$(WPN_SHARED_OBJDIR)/%.o: $(WPN_SHARED_SRCDIR)/%.cpp
-	$(DO_CXX)
-
-$(GAME_SHARED_OBJDIR)/%.o: $(GAME_SHARED_SRCDIR)/%.cpp
-	$(DO_CXX)
-
-$(PM_SHARED_OBJDIR)/%.o: $(PM_SHARED_SRCDIR)/%.c
+$(PM_SHARED_OBJ_DIR)/%.o: $(PM_SHARED_SRC_DIR)/%.c
 	$(DO_CC)
 
-OBJ = \
-	$(DLL_OBJDIR)/aflock.o \
-	$(DLL_OBJDIR)/agrunt.o \
-	$(DLL_OBJDIR)/airtank.o \
-	$(DLL_OBJDIR)/animating.o \
-	$(DLL_OBJDIR)/animation.o \
-	$(DLL_OBJDIR)/apache.o \
-	$(DLL_OBJDIR)/barnacle.o \
-	$(DLL_OBJDIR)/barney.o \
-	$(DLL_OBJDIR)/bigmomma.o \
-	$(DLL_OBJDIR)/bloater.o \
-	$(DLL_OBJDIR)/bmodels.o \
-	$(DLL_OBJDIR)/bullsquid.o \
-	$(DLL_OBJDIR)/buttons.o \
-	$(DLL_OBJDIR)/cbase.o \
-	$(DLL_OBJDIR)/client.o \
-	$(DLL_OBJDIR)/combat.o \
-	$(DLL_OBJDIR)/controller.o \
-	$(DLL_OBJDIR)/crossbow.o \
-	$(DLL_OBJDIR)/crowbar.o \
-	$(DLL_OBJDIR)/defaultai.o \
-	$(DLL_OBJDIR)/doors.o \
-	$(DLL_OBJDIR)/effects.o \
-	$(DLL_OBJDIR)/egon.o \
-	$(DLL_OBJDIR)/explode.o \
-	$(DLL_OBJDIR)/flyingmonster.o \
-	$(DLL_OBJDIR)/func_break.o \
-	$(DLL_OBJDIR)/func_tank.o \
-	$(DLL_OBJDIR)/game.o \
-	$(DLL_OBJDIR)/gamerules.o \
-	$(DLL_OBJDIR)/gargantua.o \
-	$(DLL_OBJDIR)/gauss.o \
-	$(DLL_OBJDIR)/genericmonster.o \
-	$(DLL_OBJDIR)/ggrenade.o \
-	$(DLL_OBJDIR)/globals.o \
-	$(DLL_OBJDIR)/gman.o \
-	$(DLL_OBJDIR)/h_ai.o \
-	$(DLL_OBJDIR)/h_battery.o \
-	$(DLL_OBJDIR)/h_cine.o \
-	$(DLL_OBJDIR)/h_cycler.o \
-	$(DLL_OBJDIR)/h_export.o \
-	$(DLL_OBJDIR)/handgrenade.o \
-	$(DLL_OBJDIR)/hassassin.o \
-	$(DLL_OBJDIR)/headcrab.o \
-	$(DLL_OBJDIR)/healthkit.o \
-	$(DLL_OBJDIR)/hgrunt.o \
-	$(DLL_OBJDIR)/hornet.o \
-	$(DLL_OBJDIR)/hornetgun.o \
-	$(DLL_OBJDIR)/houndeye.o \
-	$(DLL_OBJDIR)/ichthyosaur.o \
-	$(DLL_OBJDIR)/islave.o \
-	$(DLL_OBJDIR)/items.o \
-	$(DLL_OBJDIR)/leech.o \
-	$(DLL_OBJDIR)/lights.o \
-	$(DLL_OBJDIR)/maprules.o \
-	$(DLL_OBJDIR)/monstermaker.o \
-	$(DLL_OBJDIR)/monsters.o \
-	$(DLL_OBJDIR)/monsterstate.o \
-	$(DLL_OBJDIR)/mortar.o \
-	$(DLL_OBJDIR)/mp5.o \
-	$(DLL_OBJDIR)/multiplay_gamerules.o \
-	$(DLL_OBJDIR)/nihilanth.o \
-	$(DLL_OBJDIR)/nodes.o \
-	$(DLL_OBJDIR)/osprey.o \
-	$(DLL_OBJDIR)/pathcorner.o \
-	$(DLL_OBJDIR)/plane.o \
-	$(DLL_OBJDIR)/plats.o \
-	$(DLL_OBJDIR)/player.o \
-	$(DLL_OBJDIR)/python.o \
-	$(DLL_OBJDIR)/rat.o \
-	$(DLL_OBJDIR)/roach.o \
-	$(DLL_OBJDIR)/rpg.o \
-	$(DLL_OBJDIR)/satchel.o \
-	$(DLL_OBJDIR)/schedule.o \
-	$(DLL_OBJDIR)/scientist.o \
-	$(DLL_OBJDIR)/scripted.o \
-	$(DLL_OBJDIR)/shotgun.o \
-	$(DLL_OBJDIR)/singleplay_gamerules.o \
-	$(DLL_OBJDIR)/skill.o \
-	$(DLL_OBJDIR)/sound.o \
-	$(DLL_OBJDIR)/soundent.o \
-	$(DLL_OBJDIR)/spectator.o \
-	$(DLL_OBJDIR)/squadmonster.o \
-	$(DLL_OBJDIR)/squeakgrenade.o \
-	$(DLL_OBJDIR)/subs.o \
-	$(DLL_OBJDIR)/talkmonster.o \
-	$(DLL_OBJDIR)/teamplay_gamerules.o \
-	$(DLL_OBJDIR)/tempmonster.o \
-	$(DLL_OBJDIR)/tentacle.o \
-	$(DLL_OBJDIR)/triggers.o \
-	$(DLL_OBJDIR)/tripmine.o \
-	$(DLL_OBJDIR)/turret.o \
-	$(DLL_OBJDIR)/util.o \
-	$(DLL_OBJDIR)/weapons.o \
-	$(DLL_OBJDIR)/world.o \
-	$(DLL_OBJDIR)/xen.o \
-	$(DLL_OBJDIR)/zombie.o \
-	$(DLL_OBJDIR)/glock.o \
-	$(PM_SHARED_OBJDIR)/pm_debug.o \
-	$(PM_SHARED_OBJDIR)/pm_math.o \
-	$(PM_SHARED_OBJDIR)/pm_shared.o 
-#	$(GAME_SHARED_OBJDIR)/voice_gamemgr.o
+##############################
 
-$(DLLNAME)_$(ARCH).$(SHLIBEXT) : neat $(OBJ)
-	$(CXX) $(CFLAGS) $(SHLIBLDFLAGS) $(LDFLAGS) -o $@ $(OBJ)
+DO_CC = $(CC) $(CFLAGS) $(C_ONLY_FLAGS) $(INCLUDES) -fPIC -c $< -o $@
+DO_CXX = $(CXX) $(CFLAGS) $(CXX_ONLY_FLAGS) $(INCLUDES) -fPIC -c $< -o $@
 
-neat:
-	-mkdir $(DLL_OBJDIR)
-	-mkdir $(WPN_SHARED_OBJDIR)
-	-mkdir $(GAME_SHARED_OBJDIR)
-	-mkdir $(PM_SHARED_OBJDIR)
+COMPILE_ARCH := $(ARCH)
+COMPILE_ARCH := $(COMPILE_ARCH:i%86=x86)
+COMPILE_ARCH := $(COMPILE_ARCH:arm%=arm)
+
+ifeq ($(ARCH), i86pc)
+    COMPILE_ARCH := x86
+endif
+ifeq ($(ARCH), x64)
+    COMPILE_ARCH := x86_64
+endif
+ifeq ($(ARCH), amd64)
+    COMPILE_ARCH := x86_64
+endif
+
+ifeq ($(COMPILE_ARCH), x86)
+    CFLAGS += $(CFLAGS_OPT_X86)
+endif
+ifeq ($(COMPILE_ARCH), x86_64)
+    CFLAGS += $(CFLAGS_OPT_X86)
+endif
+ifeq ($(COMPILE_ARCH), arm)
+    CFLAGS += $(CFLAGS_OPT_ARM)
+endif
+
+release: CFLAGS += $(CFLAGS_RELEASE)
+release: build printresult
+
+debug: CFLAGS += $(CFLAGS_DEBUG)
+debug: build printresult
+
+build: createobjdir $(OBJECTS)
+	$(CXX) $(CFLAGS) $(LDFLAGS) $(LDLIBS) -shared -o $(LIBNAME).so $(OBJECTS)
+
+printresult:
+	@echo ""
+	@echo " #########################"
+	@echo " #   Build info          #"
+	@echo " #########################"
+	@echo "  target: $(LIBNAME).so"
+	@echo "  size: `stat -c%s $(LIBNAME).so`"
+	@echo ""
+	@echo "  COMPILE_ARCH: $(COMPILE_ARCH)"
+	@echo "  CC: $(CC)"
+	@echo "  CXX: $(CXX)"
+	@echo "  CFLAGS: $(CFLAGS)"
+	@echo "  C_ONLY_FLAGS: $(C_ONLY_FLAGS)"
+	@echo "  CXX_ONLY_FLAGS: $(CXX_ONLY_FLAGS)"
+	@echo "  LDFLAGS: $(LDLIBS) $(LDFLAGS)"
+	@echo "  OBJECTS: $(OBJECTS)"
+	@echo ""
+	@echo " #########################"
+	@if [ -s $(LIBNAME).so ]; then \
+	    echo " #   Build succesfuly!  #"; \
+	else \
+	    echo " #   Build FAIL!        #"; \
+	fi
+	@echo " #########################"
+
+createobjdir:
+	-mkdir $(OBJ_DIR) $(PM_SHARED_OBJ_DIR)
+
 clean:
-	-rm -f $(OBJ)
-	-rm -f $(DLLNAME)_$(ARCH).$(SHLIBEXT)
-spotless: clean
-	-rm -r $(DLL_OBJDIR)
-	-rm -r $(WPN_SHARED_OBJDIR)
-	-rm -r $(GAME_SHARED_OBJDIR)
-	-rm -r $(PM_SHARED_OBJDIR)
-
+	-rm -rf $(OBJ_DIR) $(PM_SHARED_OBJ_DIR) $(LIBNAME).so
