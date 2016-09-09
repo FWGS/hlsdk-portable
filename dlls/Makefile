@@ -13,7 +13,7 @@ CFLAGS += \
     -Dstricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf
 
 CFLAGS_RELEASE := -Ofast -w
-CFLAGS_DEBUG := -Wall -Wno-invalid-offsetof
+CFLAGS_DEBUG := -Wall -Wno-invalid-offsetof -g -Og
 
 CXX_ONLY_FLAGS := 
 C_ONLY_FLAGS := 
@@ -177,13 +177,38 @@ ifeq ($(COMPILE_ARCH), arm)
 endif
 
 release: CFLAGS += $(CFLAGS_RELEASE)
-release: build
+release: build printresult
 
 debug: CFLAGS += $(CFLAGS_DEBUG)
-debug: build
+debug: build printresult
 
 build: createobjdir $(OBJECTS)
 	$(CXX) $(CFLAGS) $(LDFLAGS) $(LDLIBS) -shared -o $(LIBNAME).so $(OBJECTS)
+
+printresult:
+	@echo ""
+	@echo " #########################"
+	@echo " #   Build info          #"
+	@echo " #########################"
+	@echo "  target: $(LIBNAME).so"
+	@echo "  size: `stat -c%s $(LIBNAME).so`"
+	@echo ""
+	@echo "  COMPILE_ARCH: $(COMPILE_ARCH)"
+	@echo "  CC: $(CC)"
+	@echo "  CXX: $(CXX)"
+	@echo "  CFLAGS: $(CFLAGS)"
+	@echo "  C_ONLY_FLAGS: $(C_ONLY_FLAGS)"
+	@echo "  CXX_ONLY_FLAGS: $(CXX_ONLY_FLAGS)"
+	@echo "  LDFLAGS: $(LDLIBS) $(LDFLAGS)"
+	@echo "  OBJECTS: $(OBJECTS)"
+	@echo ""
+	@echo " #########################"
+	@if [ -s $(LIBNAME).so ]; then \
+	    echo " #   Build succesfuly!  #"; \
+	else \
+	    echo " #   Build FAIL!        #"; \
+	fi
+	@echo " #########################"
 
 createobjdir:
 	-mkdir $(OBJ_DIR) $(PM_SHARED_OBJ_DIR)
