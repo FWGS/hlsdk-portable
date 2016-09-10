@@ -118,7 +118,7 @@ int CAR2Ball::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float 
 	Vector r = (pevInflictor->origin - pev->origin);
 	pev->velocity = pev->velocity + r * flDamage / -7;
 	pev->avelocity.x = pev->avelocity.x * 0.5 + RANDOM_FLOAT(100, -100);
-
+	return 1;
 }
 
 void CAR2Ball::Precache()

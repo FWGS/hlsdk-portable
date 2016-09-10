@@ -402,12 +402,14 @@ void CCrossbow::FireSniperBolt()
 		CBaseEntity::Instance( tr.pHit )->TraceAttack( m_pPlayer->pev, 120, vecDir, &tr, DMG_BULLET | DMG_NEVERGIB ); 
 		ApplyMultiDamage( pev, m_pPlayer->pev );
 	}
+#if 0
 	CCrossbowBolt *pBolt = CCrossbowBolt::BoltCreate();
 	pBolt->pev->origin = tr.vecEndPos;
 	pBolt->pev->angles = -anglesAim;
 	pBolt->pev->owner = m_pPlayer->edict();
 	pBolt->pev->avelocity.z = 10;
 	pBolt->SetTouch( NULL );
+#endif
 #endif
 }
 
