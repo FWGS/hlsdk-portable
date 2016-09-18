@@ -522,9 +522,6 @@ void CBaseMonster::BecomeDead( void )
 
 BOOL CBaseMonster::ShouldGibMonster( int iGib )
 {
-	if( ( iGib == GIB_NORMAL && pev->health < GIB_HEALTH_VALUE ) || ( iGib == GIB_ALWAYS ) )
-		return TRUE;
-
 	return FALSE;
 }
 
