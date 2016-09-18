@@ -1533,3 +1533,4 @@ TYPEDESCRIPTION	CPython::m_SaveData[] =
 	DEFINE_FIELD( CPython, m_flSoundDelay, FIELD_TIME ),
 };
 
+IMPLEMENT_SAVERESTORE( CPython, CBasePlayerWeapon )
