@@ -25,6 +25,7 @@ LOCAL_CFLAGS += -DCLIENT_DLL=1
 
 SRCS=
 SRCS_C=
+SRCS+=blackops/nightvision.cpp
 SRCS+=../dlls/crossbow.cpp
 SRCS+=../dlls/crowbar.cpp
 SRCS+=../dlls/egon.cpp
