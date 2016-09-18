@@ -231,7 +231,7 @@ int CHudHealth::Draw( float flTime )
 
 		int iHeight = gHUD.m_iFontHeight;
 		int iWidth = HealthWidth / 10;
-		FillRGBA( x, y, iWidth, iHeight, 255, 160, 0, a );
+		FillRGBA( x, y, iWidth, iHeight, r, g, b, a );
 	}
 
 	DrawDamage( flTime );

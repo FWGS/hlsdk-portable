@@ -240,7 +240,7 @@ void CHudMessage::MessageDrawScan( client_textmessage_t *pMessage, float time )
 {
 	int i, j, length, width;
 	const char *pText;
-	unsigned char line[80];
+	unsigned char line[512];
 
 	pText = pMessage->pMessage;
 	// Count lines

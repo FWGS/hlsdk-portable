@@ -181,16 +181,14 @@ class CItemSuit : public CItem
 	void Precache( void )
 	{
 		PRECACHE_MODEL( "models/w_suit.mdl" );
+		PRECACHE_SOUND( "items/vest_pickup.wav" );
 	}
 	BOOL MyTouch( CBasePlayer *pPlayer )
 	{
 		if( pPlayer->pev->weapons & ( 1<<WEAPON_SUIT ) )
 			return FALSE;
 
-		if( pev->spawnflags & SF_SUIT_SHORTLOGON )
-			EMIT_SOUND_SUIT( pPlayer->edict(), "!HEV_A0" );		// short version of suit logon,
-		else
-			EMIT_SOUND_SUIT( pPlayer->edict(), "!HEV_AAx" );	// long version of suit logon
+		EMIT_SOUND( pPlayer->edict(), CHAN_ITEM, "items/vest_pickup.wav", 1, ATTN_NORM );
 
 		pPlayer->pev->weapons |= ( 1 << WEAPON_SUIT );
 		return TRUE;

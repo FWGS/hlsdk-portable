@@ -470,6 +470,17 @@ void ClientCommand( edict_t *pEntity )
 	{
 		// MenuSelect returns true only if the command is properly handled,  so don't print a warning
 	}*/
+	else if( FStrEq( pcmd, "nightvision" ) )
+	{
+		CBasePlayer * pPlayer = GetClassPtr( (CBasePlayer *)pev );
+		if( pPlayer )
+		{
+			if( !pPlayer->FlashlightIsOn() )
+				pPlayer->FlashlightTurnOn();
+			else
+				pPlayer->FlashlightTurnOff();
+		}
+	}
 	else if( FStrEq( pcmd, "VModEnable" ) )
 	{
 		// clear 'Unknown command: VModEnable' in singleplayer

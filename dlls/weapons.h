@@ -538,6 +538,12 @@ public:
 #endif
 	}
 
+#ifndef CLIENT_DLL
+	int Save( CSave &save );
+	int Restore( CRestore &restore );
+	static TYPEDESCRIPTION m_SaveData[];
+#endif
+
 private:
 	unsigned short m_usFirePython;
 };

@@ -2381,3 +2381,65 @@ void CTriggerCamera::Move()
 	float fraction = 2 * gpGlobals->frametime;
 	pev->velocity = ( ( pev->movedir * pev->speed ) * fraction ) + ( pev->velocity * ( 1 - fraction ) );
 }
+
+//
+// Adapted from TWHL - Using mp3s in Steam
+//
+class CTargetMP3Audio : public CBaseTrigger
+{
+public:
+	virtual int Save( CSave &save );
+	virtual int Restore( CRestore &restore );
+	static TYPEDESCRIPTION m_SaveData[];
+
+	void Spawn( void );
+	void KeyValue( KeyValueData *pkvd );
+
+	void Touch( CBaseEntity *pOther );
+
+	int m_iszTrack;
+	BOOL m_bTriggered;
+};
+
+LINK_ENTITY_TO_CLASS( trigger_mp3audio, CTargetMP3Audio );
+
+TYPEDESCRIPTION	CTargetMP3Audio::m_SaveData[] =
+{
+	DEFINE_FIELD( CTargetMP3Audio, m_bTriggered, FIELD_BOOLEAN ),
+};
+
+IMPLEMENT_SAVERESTORE( CTargetMP3Audio, CBaseTrigger );
+
+void CTargetMP3Audio::KeyValue( KeyValueData *pkvd )
+{
+	if( FStrEq( pkvd->szKeyName, "track" ) )
+	{
+		m_iszTrack = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else
+		CBaseTrigger::KeyValue( pkvd );
+}
+
+void CTargetMP3Audio::Spawn( void )
+{
+	InitTrigger();
+
+	m_bTriggered = FALSE;
+}
+
+void CTargetMP3Audio::Touch( CBaseEntity *pOther )
+{
+	if( m_bTriggered )
+		return;
+
+	if( !pOther || !pOther->IsPlayer() )
+		return;
+
+	m_bTriggered = TRUE;
+
+	if( FStrEq( STRING( gpGlobals->mapname ), "ops_17th" ) )
+	{
+		CLIENT_COMMAND( pOther->edict(), "play media/Suspense07.mp3\n" );
+	}
+}
