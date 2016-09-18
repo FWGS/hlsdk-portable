@@ -29,6 +29,7 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_LINUX -DCLIENT_WEAPONS -Dstricmp=strcasec
 set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS}")
 
 set (SVDLL_SOURCES 
+	blackops/hudtoggle.cpp
 	agrunt.cpp
 	airtank.cpp
 	aflock.cpp
