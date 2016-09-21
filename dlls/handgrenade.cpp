@@ -26,13 +26,14 @@
 enum handgrenade_e
 {
 	HANDGRENADE_IDLE = 0,
-	HANDGRENADE_FIDGET,
+	HANDGRENADE_DRAW,
 	HANDGRENADE_PINPULL,
-	HANDGRENADE_THROW1,	// toss
-	HANDGRENADE_THROW2,	// medium
-	HANDGRENADE_THROW3,	// hard
 	HANDGRENADE_HOLSTER,
-	HANDGRENADE_DRAW
+	HANDGRENADE_THROW,
+	HANDGRENADE_EXPLODING_IDLE,
+	HANDGRENADE_EXPLODING_DRAW,
+	HANDGRENADE_EXPLODING_PINPULL,
+	HANDGRENADE_EXPLODING_THROW
 };
 
 LINK_ENTITY_TO_CLASS( weapon_handgrenade, CHandGrenade )
@@ -152,18 +153,7 @@ void CHandGrenade::WeaponIdle( void )
 
 		CGrenade::ShootTimed( m_pPlayer->pev, vecSrc, vecThrow, time );
 
-		if( flVel < 500 )
-		{
-			SendWeaponAnim( HANDGRENADE_THROW1 );
-		}
-		else if( flVel < 1000 )
-		{
-			SendWeaponAnim( HANDGRENADE_THROW2 );
-		}
-		else
-		{
-			SendWeaponAnim( HANDGRENADE_THROW3 );
-		}
+		SendWeaponAnim( HANDGRENADE_THROW );
 
 		// player "shoot" animation
 		m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
@@ -206,6 +196,9 @@ void CHandGrenade::WeaponIdle( void )
 
 	if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] )
 	{
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 31.0 / 10.0;
+		SendWeaponAnim( HANDGRENADE_IDLE );
+
 		int iAnim;
 		float flRand = UTIL_SharedRandomFloat( m_pPlayer->random_seed, 0, 1 );
 		if( flRand <= 0.75 )

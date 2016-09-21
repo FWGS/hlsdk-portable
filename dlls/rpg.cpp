@@ -26,15 +26,13 @@
 enum rpg_e
 {
 	RPG_IDLE = 0,
-	RPG_FIDGET,
-	RPG_RELOAD,		// to reload
-	RPG_FIRE2,		// to empty
-	RPG_HOLSTER1,	// loaded
-	RPG_DRAW1,		// loaded
-	RPG_HOLSTER2,	// unloaded
-	RPG_DRAW_UL,	// unloaded
-	RPG_IDLE_UL,	// unloaded idle
-	RPG_FIDGET_UL	// unloaded fidget
+	RPG_DRAW1,
+	RPG_AIMED,
+	RPG_LAUNCH,
+	RPG_DOWN_TO_UP,
+	RPG_UP_TO_DOWN,
+	RPG_RELOAD_AIMED,
+	RPG_RELOAD_IDLE
 };
 
 LINK_ENTITY_TO_CLASS( weapon_rpg, CRpg )
@@ -132,16 +130,16 @@ void CRpgRocket::Spawn( void )
 	pev->classname = MAKE_STRING( "rpg_rocket" );
 
 	SetThink( &CRpgRocket::IgniteThink );
-	SetTouch( &CGrenade::ExplodeTouch );
+	SetTouch( &CRpgRocket::ExplodeTouch );
 
-	pev->angles.x -= 30;
+	pev->angles.x -= 1;
 	UTIL_MakeVectors( pev->angles );
-	pev->angles.x = -( pev->angles.x + 30 );
+	pev->angles.x = -( pev->angles.x + 1 );
 
 	pev->velocity = gpGlobals->v_forward * 250;
-	pev->gravity = 0.5;
+	pev->gravity = 0.0;
 
-	pev->nextthink = gpGlobals->time + 0.4;
+	pev->nextthink = gpGlobals->time + 0.05;
 
 	pev->dmg = gSkillData.plrDmgRPG;
 }
@@ -194,8 +192,58 @@ void CRpgRocket::IgniteThink( void )
 
 	m_flIgniteTime = gpGlobals->time;
 
-	// set to follow laser spot
-	SetThink( &CRpgRocket::FollowThink );
+	// Move in forward direction. Ignore guiding.
+	SetThink( &CRpgRocket::FlyThink );
+	pev->nextthink = gpGlobals->time + 0.1;
+}
+
+void CRpgRocket::FlyThink( void )
+{
+	Vector vecTarget;
+
+	UTIL_MakeAimVectors( pev->angles );
+
+	vecTarget = gpGlobals->v_forward;
+
+	pev->angles = UTIL_VecToAngles( vecTarget );
+
+	// this acceleration and turning math is totally wrong, but it seems to respond well so don't change it.
+	float flSpeed = pev->velocity.Length();
+	if( gpGlobals->time - m_flIgniteTime < 1.0 )
+	{
+		pev->velocity = pev->velocity * 0.2 + vecTarget * ( flSpeed * 0.8 + 400 );
+		if( pev->waterlevel == 3 )
+		{
+			// go slow underwater
+			if( pev->velocity.Length() > 300 )
+			{
+				pev->velocity = pev->velocity.Normalize() * 300;
+			}
+			UTIL_BubbleTrail( pev->origin - pev->velocity * 0.1, pev->origin, 4 );
+		}
+		else
+		{
+			if( pev->velocity.Length() > 2000 )
+			{
+				pev->velocity = pev->velocity.Normalize() * 2000;
+			}
+		}
+	}
+	else
+	{
+		if( pev->effects & EF_LIGHT )
+		{
+			pev->effects = 0;
+			STOP_SOUND( ENT( pev ), CHAN_VOICE, "weapons/rocket1.wav" );
+		}
+		pev->velocity = pev->velocity * 0.2 + vecTarget * flSpeed * 0.798;
+		if( pev->waterlevel == 0 && pev->velocity.Length() < 1500 )
+		{
+			Detonate();
+		}
+	}
+	// ALERT( at_console, "%.0f\n", flSpeed );
+
 	pev->nextthink = gpGlobals->time + 0.1;
 }
 
@@ -299,23 +347,8 @@ void CRpg::Reload( void )
 	
 	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5;
 
-	if( m_cActiveRockets && m_fSpotActive )
-	{
-		// no reloading when there are active missiles tracking the designator.
-		// ward off future autoreload attempts by setting next attack time into the future for a bit. 
-		return;
-	}
-
-#ifndef CLIENT_DLL
-	if( m_pSpot && m_fSpotActive )
-	{
-		m_pSpot->Suspend( 2.1 );
-		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 2.1;
-	}
-#endif
-
 	if( m_iClip == 0 )
-		iResult = DefaultReload( RPG_MAX_CLIP, RPG_RELOAD, 2 );
+		iResult = DefaultReload( RPG_MAX_CLIP, RPG_RELOAD_IDLE, 3.5 );
 
 	if( iResult )
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
@@ -327,7 +360,7 @@ void CRpg::Spawn()
 	m_iId = WEAPON_RPG;
 
 	SET_MODEL( ENT( pev ), "models/w_rpg.mdl" );
-	m_fSpotActive = 1;
+	m_fSpotActive = 0;
 
 #ifdef CLIENT_DLL
 	if( bIsMultiplayer() )
@@ -394,22 +427,11 @@ int CRpg::AddToPlayer( CBasePlayer *pPlayer )
 
 BOOL CRpg::Deploy()
 {
-	if( m_iClip == 0 )
-	{
-		return DefaultDeploy( "models/v_rpg.mdl", "models/p_rpg.mdl", RPG_DRAW_UL, "rpg" );
-	}
-
 	return DefaultDeploy( "models/v_rpg.mdl", "models/p_rpg.mdl", RPG_DRAW1, "rpg" );
 }
 
 BOOL CRpg::CanHolster( void )
 {
-	if( m_fSpotActive && m_cActiveRockets )
-	{
-		// can't put away while guiding a missile.
-		return FALSE;
-	}
-
 	return TRUE;
 }
 
@@ -418,16 +440,6 @@ void CRpg::Holster( int skiplocal /* = 0 */ )
 	m_fInReload = FALSE;// cancel any reload in progress.
 
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
-
-	SendWeaponAnim( RPG_HOLSTER1 );
-
-#ifndef CLIENT_DLL
-	if( m_pSpot )
-	{
-		m_pSpot->Killed( NULL, GIB_NEVER );
-		m_pSpot = NULL;
-	}
-#endif
 }
 
 void CRpg::PrimaryAttack()
@@ -471,27 +483,14 @@ void CRpg::PrimaryAttack()
 		PlayEmptySound();
 		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.2;
 	}
-	UpdateSpot();
 }
 
 void CRpg::SecondaryAttack()
 {
-	m_fSpotActive = !m_fSpotActive;
-
-#ifndef CLIENT_DLL
-	if( !m_fSpotActive && m_pSpot )
-	{
-		m_pSpot->Killed( NULL, GIB_NORMAL );
-		m_pSpot = NULL;
-	}
-#endif
-	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.2;
 }
 
 void CRpg::WeaponIdle( void )
 {
-	UpdateSpot();
-
 	ResetEmptySound();
 
 	if( m_flTimeWeaponIdle > UTIL_WeaponTimeBase() )
@@ -499,28 +498,8 @@ void CRpg::WeaponIdle( void )
 
 	if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] )
 	{
-		int iAnim;
-		float flRand = UTIL_SharedRandomFloat( m_pPlayer->random_seed, 0, 1 );
-		if( flRand <= 0.75 || m_fSpotActive )
-		{
-			if( m_iClip == 0 )
-				iAnim = RPG_IDLE_UL;
-			else
-				iAnim = RPG_IDLE;
-
-			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 90.0 / 15.0;
-		}
-		else
-		{
-			if( m_iClip == 0 )
-				iAnim = RPG_FIDGET_UL;
-			else
-				iAnim = RPG_FIDGET;
-
-			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 3.0;
-		}
-
-		SendWeaponAnim( iAnim );
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 2.0 / 20.0;
+		SendWeaponAnim( RPG_IDLE );
 	}
 	else
 	{

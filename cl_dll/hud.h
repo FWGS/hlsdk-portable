@@ -559,6 +559,39 @@ private:
 //
 //-----------------------------------------------------
 //
+class CHudScope : public CHudBase
+{
+public:
+	virtual int Init( void );
+	virtual int VidInit( void );
+	virtual int Draw( float fTime );
+	virtual void Reset( void );
+	int MsgFunc_Scope( const char *pszName, int iSize, void *pbuf );
+
+private:
+	enum
+	{
+		SCOPE_U_L = 0,	// Up - Left
+		SCOPE_U_M_L,	// Up - Middle - Left
+		SCOPE_U_M_R,	// Up - Middle - Right
+		SCOPE_U_R,		// Up - Right
+		SCOPE_M_L,		// Middle - Left
+		SCOPE_M_R,		// Middle - right
+		SCOPE_L_L,		// Low - left
+		SCOPE_L_M_L,	// Low - middle - left
+		SCOPE_L_M_R,	// Low - middle - right
+		SCOPE_L_R,		// Low - right
+
+		SCOPE_HSPRITE_COUNT // <-- Must be the last.
+	};
+
+	HSPRITE m_scopes[SCOPE_HSPRITE_COUNT];
+	int m_ScopeSize;
+};
+
+//
+//-----------------------------------------------------
+//
 class CHud
 {
 private:
@@ -631,6 +664,7 @@ public:
 	CHudAmmoSecondary	m_AmmoSecondary;
 	CHudTextMessage m_TextMessage;
 	CHudStatusIcons m_StatusIcons;
+	CHudScope	m_Scope;
 	CHudScoreboard	m_Scoreboard;
 	CHudMOTD	m_MOTD;
 

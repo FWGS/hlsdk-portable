@@ -32,7 +32,7 @@ extern CGraph WorldGraph;
 // houndeye does 20 points of damage spread over a sphere 384 units in diameter, and each additional 
 // squad member increases the BASE damage by 110%, per the spec.
 #define HOUNDEYE_MAX_SQUAD_SIZE			4
-#define	HOUNDEYE_MAX_ATTACK_RADIUS		384
+#define	HOUNDEYE_MAX_ATTACK_RADIUS		144
 #define	HOUNDEYE_SQUAD_BONUS			(float)1.1
 
 #define HOUNDEYE_EYE_FRAMES 4 // how many different switchable maps for the eye
@@ -98,6 +98,7 @@ public:
 	BOOL FCanActiveIdle( void );
 	Schedule_t *GetScheduleOfType( int Type );
 	Schedule_t *GetSchedule( void );
+	int IRelationship(CBaseEntity *pTarget);
 
 	int Save( CSave &save );
 	int Restore( CRestore &restore );
@@ -290,8 +291,17 @@ void CHoundeye::HandleAnimEvent( MonsterEvent_t *pEvent )
 				break;
 			}
 		case HOUND_AE_THUMP:
-			// emit the shockwaves
-			SonicAttack();
+			{
+				// SOUND HERE!
+				CBaseEntity *pHurt = CheckTraceHullAttack( 70, gSkillData.bullsquidDmgBite, DMG_SLASH );
+
+				if( pHurt )
+				{
+					pHurt->pev->punchangle.x = 5;
+					pHurt->pev->velocity = pHurt->pev->velocity - gpGlobals->v_forward * 16;
+					pHurt->pev->velocity = pHurt->pev->velocity + gpGlobals->v_up * 2;
+				}
+			}
 			break;
 		case HOUND_AE_ANGERSOUND1:
 			EMIT_SOUND( ENT( pev ), CHAN_VOICE, "houndeye/he_pain3.wav", 1, ATTN_NORM );
@@ -323,7 +333,7 @@ void CHoundeye::Spawn()
 
 	pev->solid		= SOLID_SLIDEBOX;
 	pev->movetype		= MOVETYPE_STEP;
-	m_bloodColor		= BLOOD_COLOR_YELLOW;
+	m_bloodColor		= BLOOD_COLOR_RED;
 	pev->effects		= 0;
 	pev->health		= gSkillData.houndeyeHealth;
 	pev->yaw_speed		= 5;//!!! should we put this in the monster's changeanim function since turn rates may vary with state/anim?
@@ -1292,4 +1302,14 @@ Schedule_t *CHoundeye::GetSchedule( void )
 	}
 
 	return CSquadMonster::GetSchedule();
+}
+
+int CHoundeye::IRelationship( CBaseEntity *pTarget )
+{
+	if( FClassnameIs( pTarget->pev, "monster_human_grunt" ) || FClassnameIs( pTarget->pev, "monster_grunt_repel" ) )
+	{
+		return R_NO;
+	}
+
+	return CSquadMonster::IRelationship( pTarget );
 }

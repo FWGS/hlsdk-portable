@@ -267,6 +267,10 @@ int CHGrunt::IRelationship( CBaseEntity *pTarget )
 		return R_NM;
 	}
 
+	if( FClassnameIs( pTarget->pev, "monster_houndeye" ) )
+	{
+		return R_NO;
+	}
 	return CSquadMonster::IRelationship( pTarget );
 }
 
