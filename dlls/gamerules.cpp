@@ -309,7 +309,7 @@ void CGameRules::RefreshSkillData ( void )
 	gSkillData.plrArm = GetSkillCvar( "sk_player_arm" );
 
 	// Nails
-	gSkillData.plrDmgNail = GetSkillCvar( "sk_plr_nail" );
+	gSkillData.plrDmgNail = GetSkillCvar( "sk_9mmAR_bullet" );
 }
 
 //=========================================================
