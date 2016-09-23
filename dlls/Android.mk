@@ -126,7 +126,9 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
            zombie.cpp \
 	   ../pm_shared/pm_debug.c \
 	   ../pm_shared/pm_math.c \
-	   ../pm_shared/pm_shared.c
+	   ../pm_shared/pm_shared.c \
+	   TheGate/command.cpp \
+	   TheGate/scientist2.cpp
 #	   ../game_shared/voice_gamemgr.cpp
 
 LOCAL_LDLIBS := -llog
