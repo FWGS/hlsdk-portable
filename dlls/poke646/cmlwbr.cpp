@@ -100,13 +100,8 @@ int CCmlwbr::GetItemInfo(ItemInfo *p)
 	p->pszAmmo2 = NULL;
 	p->iMaxAmmo2 = -1;
 	p->iMaxClip = CMLWBR_MAX_CLIP;
-#if !defined ( VENDETTA )
 	p->iSlot = 2;
 	p->iPosition = 1;
-#else
-	p->iSlot = 3;
-	p->iPosition = 0;
-#endif // !defined ( VENDETTA )
 	p->iId = WEAPON_CMLWBR;
 	p->iFlags = 0;
 	p->iWeight = CMLWBR_WEIGHT;

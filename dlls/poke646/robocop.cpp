@@ -467,12 +467,10 @@ void CRoboCop::Spawn()
 
 	m_pTemp = NULL;
 
-#if defined ( POKE646_DLL )
 	if (FStrEq(STRING(gpGlobals->mapname), "po_xen01") || FStrEq(STRING(gpGlobals->mapname), "pv_asl02"))
 	{
 		CreateRoboCopNodes( this );
 	}
-#endif // defined ( POKE646_DLL )
 
 	MonsterInit();
 
@@ -552,7 +550,6 @@ BOOL CRoboCop::CheckMeleeAttack1(float flDot, float flDist)
 //=========================================================
 BOOL CRoboCop::CheckRangeAttack1(float flDot, float flDist)
 {
-#if !defined ( VENDETTA )
 	if (m_flNextMortarAttack > gpGlobals->time)
 		return FALSE;
 
@@ -560,7 +557,6 @@ BOOL CRoboCop::CheckRangeAttack1(float flDot, float flDist)
 	{
 		return TRUE;
 	}
-#endif // !defined ( VENDETTA )
 	return FALSE;
 }
 
@@ -643,13 +639,11 @@ Schedule_t* CRoboCop::GetSchedule()
 				return GetScheduleOfType(SCHED_MELEE_ATTACK1);
 			}
 
-#if !defined ( VENDETTA )
 			// laser attack.
 			if (HasConditions(bits_COND_CAN_RANGE_ATTACK1))
 			{
 				return GetScheduleOfType(SCHED_RANGE_ATTACK1);
 			}
-#endif // !defined ( VENDETTA )
 
 			return GetScheduleOfType(SCHED_CHASE_ENEMY);
 		}
@@ -1383,22 +1377,6 @@ void CRoboCop::BeamUpdate(void)
 
 void CreateRoboCopNodes(CRoboCop* pOwner)
 {
-#if defined ( VENDETTA )
-	BEGIN_RC_SECTOR(0, pOwner)
-		ADD_RC_NODE(1920, -320, 744);
-		ADD_RC_NODE(2168, -264, 744);
-		ADD_RC_NODE(2272, -416, 744);
-		ADD_RC_NODE(2120, -504, 744);
-		ADD_RC_NODE(2392, -608, 744);
-		ADD_RC_NODE(2208, -640, 744);
-		ADD_RC_NODE(2032, -672, 744);
-		ADD_RC_NODE(2112, -832, 744);
-		ADD_RC_NODE(2272, -896, 744);
-		ADD_RC_NODE(2112, -960, 744);
-		ADD_RC_NODE(2120, -1080, 744);
-		ADD_RC_NODE(2120, -1192, 744);
-	END_RC_SECTOR()
-#else
 	BEGIN_RC_SECTOR(0, pOwner)
 		ADD_RC_NODE(-256, 2272, 256);
 		ADD_RC_NODE(-768, 2272, 256);
@@ -1435,5 +1413,4 @@ void CreateRoboCopNodes(CRoboCop* pOwner)
 		ADD_RC_NODE(-416, 1120, 256);
 		ADD_RC_NODE(-256, 1184, 256);
 	END_RC_SECTOR()
-#endif // defined ( VENDETTA )
 }
