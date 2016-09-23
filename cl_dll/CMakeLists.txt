@@ -90,7 +90,8 @@ set (CLDLL_SOURCES
 	view.cpp
 	input_xash3d.cpp
 	scoreboard.cpp
-	MOTD.cpp)
+	MOTD.cpp
+	TheGate/scope.cpp)
 include_directories (. hl/ ../dlls ../dlls/wpn_shared ../common ../engine ../pm_shared ../game_shared ../public)
 
 if(USE_VOICEMGR)
