@@ -467,12 +467,10 @@ void CRoboCop::Spawn()
 
 	m_pTemp = NULL;
 
-#if defined ( POKE646_DLL )
 	if (FStrEq(STRING(gpGlobals->mapname), "po_xen01") || FStrEq(STRING(gpGlobals->mapname), "pv_asl02"))
 	{
 		CreateRoboCopNodes( this );
 	}
-#endif // defined ( POKE646_DLL )
 
 	MonsterInit();
 
@@ -552,15 +550,6 @@ BOOL CRoboCop::CheckMeleeAttack1(float flDot, float flDist)
 //=========================================================
 BOOL CRoboCop::CheckRangeAttack1(float flDot, float flDist)
 {
-#if !defined ( VENDETTA )
-	if (m_flNextMortarAttack > gpGlobals->time)
-		return FALSE;
-
-	if (flDist > ROBOCOP_MELEE_ATTACK_DIST && flDist < ROBOCOP_RANGE_ATTACK_DIST && !HasConditions(bits_COND_CAN_MELEE_ATTACK1))
-	{
-		return TRUE;
-	}
-#endif // !defined ( VENDETTA )
 	return FALSE;
 }
 
@@ -642,14 +631,6 @@ Schedule_t* CRoboCop::GetSchedule()
 			{
 				return GetScheduleOfType(SCHED_MELEE_ATTACK1);
 			}
-
-#if !defined ( VENDETTA )
-			// laser attack.
-			if (HasConditions(bits_COND_CAN_RANGE_ATTACK1))
-			{
-				return GetScheduleOfType(SCHED_RANGE_ATTACK1);
-			}
-#endif // !defined ( VENDETTA )
 
 			return GetScheduleOfType(SCHED_CHASE_ENEMY);
 		}
@@ -1383,7 +1364,6 @@ void CRoboCop::BeamUpdate(void)
 
 void CreateRoboCopNodes(CRoboCop* pOwner)
 {
-#if defined ( VENDETTA )
 	BEGIN_RC_SECTOR(0, pOwner)
 		ADD_RC_NODE(1920, -320, 744);
 		ADD_RC_NODE(2168, -264, 744);
@@ -1398,42 +1378,4 @@ void CreateRoboCopNodes(CRoboCop* pOwner)
 		ADD_RC_NODE(2120, -1080, 744);
 		ADD_RC_NODE(2120, -1192, 744);
 	END_RC_SECTOR()
-#else
-	BEGIN_RC_SECTOR(0, pOwner)
-		ADD_RC_NODE(-256, 2272, 256);
-		ADD_RC_NODE(-768, 2272, 256);
-		ADD_RC_NODE(-416, 1856, 256);
-		ADD_RC_NODE(-256, 1728, 256);
-		ADD_RC_NODE(-380, 1472, 256);
-	END_RC_SECTOR()
-
-	BEGIN_RC_SECTOR(1, pOwner)
-		ADD_RC_NODE(-1792, 2272, 256);
-		ADD_RC_NODE(-1280, 2272, 256);
-		ADD_RC_NODE(-1536, 2016, 256);
-		ADD_RC_NODE(-1104, 1856, 256);
-		ADD_RC_NODE(-1792, 1728, 256);
-		ADD_RC_NODE(-1280, 1728, 256);
-		ADD_RC_NODE(-1536, 1472, 256);
-		ADD_RC_NODE(-1232, 1472, 256);
-	END_RC_SECTOR()
-
-	BEGIN_RC_SECTOR(2, pOwner)
-		ADD_RC_NODE(-1792, 672, 256);
-		ADD_RC_NODE(-1280, 672, 256);
-		ADD_RC_NODE(-1536, 928, 256);
-		ADD_RC_NODE(-1024, 896, 256);
-		ADD_RC_NODE(-1792, 1184, 256);
-		ADD_RC_NODE(-1424, 1200, 256);
-		ADD_RC_NODE(-1120, 1120, 256);
-	END_RC_SECTOR()
-
-	BEGIN_RC_SECTOR(3, pOwner)
-		ADD_RC_NODE(-256, 672, 256);
-		ADD_RC_NODE(-768, 672, 256);
-		ADD_RC_NODE(-512, 896, 256);
-		ADD_RC_NODE(-416, 1120, 256);
-		ADD_RC_NODE(-256, 1184, 256);
-	END_RC_SECTOR()
-#endif // defined ( VENDETTA )
 }
