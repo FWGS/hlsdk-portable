@@ -312,7 +312,7 @@ void CGameRules::RefreshSkillData ( void )
 	gSkillData.plrDmgNail = GetSkillCvar( "sk_plr_nail" );
 
 	// Par21
-	gSkillData.plrDmgPar21 = GetSkillCvar( "sk_plr_par21_bullet" );
+	gSkillData.plrDmgPar21 = GetSkillCvar( "sk_9mmAR_bullet" );
 }
 
 //=========================================================
