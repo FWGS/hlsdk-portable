@@ -25,19 +25,21 @@ LOCAL_CFLAGS += -DCLIENT_DLL=1
 
 SRCS=
 SRCS_C=
+SRCS+=../dlls/eftd/ak47.cpp
+SRCS+=../dlls/eftd/mac10.cpp
 SRCS+=../dlls/crossbow.cpp
 SRCS+=../dlls/crowbar.cpp
-SRCS+=../dlls/egon.cpp
+#SRCS+=../dlls/egon.cpp
 SRCS+=./ev_hldm.cpp
-SRCS+=../dlls/gauss.cpp
+#SRCS+=../dlls/gauss.cpp
 SRCS+=../dlls/handgrenade.cpp
 SRCS+=./hl/hl_baseentity.cpp
 SRCS+=./hl/hl_events.cpp
 SRCS+=./hl/hl_objects.cpp
 SRCS+=./hl/hl_weapons.cpp
-SRCS+=../dlls/hornetgun.cpp
+#SRCS+=../dlls/hornetgun.cpp
 SRCS+=../dlls/mp5.cpp
-SRCS+=../dlls/python.cpp
+#SRCS+=../dlls/python.cpp
 SRCS+=../dlls/rpg.cpp
 SRCS+=../dlls/satchel.cpp
 SRCS+=../dlls/shotgun.cpp

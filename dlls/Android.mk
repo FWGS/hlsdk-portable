@@ -49,7 +49,6 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
            defaultai.cpp \
            doors.cpp \
            effects.cpp \
-           egon.cpp \
            explode.cpp \
            flyingmonster.cpp \
            func_break.cpp \
@@ -57,7 +56,6 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
            game.cpp \
            gamerules.cpp \
            gargantua.cpp \
-           gauss.cpp \
            genericmonster.cpp \
            ggrenade.cpp \
            globals.cpp \
@@ -74,7 +72,6 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
            healthkit.cpp \
            hgrunt.cpp \
            hornet.cpp \
-           hornetgun.cpp \
            houndeye.cpp \
            ichthyosaur.cpp \
            islave.cpp \
@@ -95,7 +92,6 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
            plane.cpp \
            plats.cpp \
            player.cpp \
-           python.cpp \
            rat.cpp \
            roach.cpp \
            rpg.cpp \
@@ -124,6 +120,10 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
            world.cpp \
            xen.cpp \
            zombie.cpp \
+	   eftd/ak47.cpp \
+	   eftd/mac10.cpp \
+	   eftd/hassault.cpp \
+	   eftd/diablo.cpp \
 	   ../pm_shared/pm_debug.c \
 	   ../pm_shared/pm_math.c \
 	   ../pm_shared/pm_shared.c
