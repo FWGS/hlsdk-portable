@@ -393,17 +393,44 @@ void CCrossbow::FireSniperBolt()
 
 void CCrossbow::FireBolt()
 {
-	TraceResult tr;
-
-	if( m_iClip == 0 )
+	// don't fire underwater
+	if( m_pPlayer->pev->waterlevel == 3 )
 	{
 		PlayEmptySound();
+		m_flNextPrimaryAttack = 0.15;
 		return;
 	}
 
-	m_pPlayer->m_iWeaponVolume = QUIET_GUN_VOLUME;
+	if( m_iClip <= 0 )
+	{
+		if( !m_fFireOnEmpty )
+			Reload();
+		else
+		{
+			EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_WEAPON, "weapons/357_cock1.wav", 0.8, ATTN_NORM );
+			m_flNextPrimaryAttack = 0.15;
+		}
+
+		return;
+	}
+
+	m_pPlayer->m_iWeaponVolume = LOUD_GUN_VOLUME;
+	m_pPlayer->m_iWeaponFlash = BRIGHT_GUN_FLASH;
 
 	m_iClip--;
+
+	m_pPlayer->pev->effects = (int)( m_pPlayer->pev->effects ) | EF_MUZZLEFLASH;
+
+	// player "shoot" animation
+	m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
+
+	UTIL_MakeVectors( m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle );
+
+	Vector vecSrc = m_pPlayer->GetGunPosition();
+	Vector vecAiming = m_pPlayer->GetAutoaimVector( AUTOAIM_10DEGREES );
+
+	Vector vecDir;
+	vecDir = m_pPlayer->FireBulletsPlayer( 1, vecSrc, vecAiming, VECTOR_CONE_1DEGREES, 8192, BULLET_PLAYER_SNIPER, 0, 0, m_pPlayer->pev, m_pPlayer->random_seed );
 
 	int flags;
 #if defined( CLIENT_WEAPONS )
@@ -412,49 +439,11 @@ void CCrossbow::FireBolt()
 	flags = 0;
 #endif
 
-	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usCrossbow, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, 0, 0, m_iClip, m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType], 0, 0 );
+	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usCrossbow, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, vecDir.x, vecDir.y, m_iClip, m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType], 0, 0 );
 
-	// player "shoot" animation
-	m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
+	m_flNextPrimaryAttack = m_flNextSecondaryAttack = GetNextAttackDelay( 0.75 );
 
-	Vector anglesAim = m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle;
-	UTIL_MakeVectors( anglesAim );
-
-	anglesAim.x	= -anglesAim.x;
-	Vector vecSrc	= m_pPlayer->GetGunPosition() - gpGlobals->v_up * 2;
-	Vector vecDir	= gpGlobals->v_forward;
-
-#ifndef CLIENT_DLL
-	CCrossbowBolt *pBolt = CCrossbowBolt::BoltCreate();
-	pBolt->pev->origin = vecSrc;
-	pBolt->pev->angles = anglesAim;
-	pBolt->pev->owner = m_pPlayer->edict();
-
-	if( m_pPlayer->pev->waterlevel == 3 )
-	{
-		pBolt->pev->velocity = vecDir * BOLT_WATER_VELOCITY;
-		pBolt->pev->speed = BOLT_WATER_VELOCITY;
-	}
-	else
-	{
-		pBolt->pev->velocity = vecDir * BOLT_AIR_VELOCITY;
-		pBolt->pev->speed = BOLT_AIR_VELOCITY;
-	}
-	pBolt->pev->avelocity.z = 10;
-#endif
-
-	if( !m_iClip && m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0 )
-		// HEV suit - indicate out of ammo condition
-		m_pPlayer->SetSuitUpdate( "!HEV_AMO0", FALSE, 0 );
-
-	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.75;
-
-	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.75;
-
-	if( m_iClip != 0 )
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 5.0;
-	else
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.75;
+	m_flTimeWeaponIdle = UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
 }
 
 void CCrossbow::SecondaryAttack()

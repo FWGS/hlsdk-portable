@@ -408,6 +408,45 @@ void CBasePlayer::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector ve
 		SpawnBlood( ptr->vecEndPos, BloodColor(), flDamage );// a little surface blood.
 		TraceBleed( flDamage, vecDir, ptr, bitsDamageType );
 		AddMultiDamage( pevAttacker, this, flDamage, bitsDamageType );
+
+		if( bitsDamageType & ( DMG_BLAST | DMG_SHOCK | DMG_SONIC | DMG_ENERGYBEAM ) )
+		{
+			float flRand = RANDOM_FLOAT( 0, 1 );
+
+			// Blast damage always trigger pain sounds.
+			if( bitsDamageType & DMG_BLAST )
+				flRand = 0;
+
+			//
+			// 25% chances playing damage location based pain sound.
+			//
+			if( flRand <= 0.25 )
+			{
+				switch( ptr->iHitgroup )
+				{
+				case HITGROUP_HEAD:
+					EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/pain/pain_head.wav", 1, ATTN_NORM );
+					break;
+				case HITGROUP_CHEST:
+					EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/pain/pain_chest.wav", 1, ATTN_NORM );
+					break;
+				case HITGROUP_STOMACH:
+					EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/pain/pain_stomach.wav", 1, ATTN_NORM );
+					break;
+				case HITGROUP_LEFTARM:
+				case HITGROUP_RIGHTARM:
+					EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/pain/pain_arm.wav", 1, ATTN_NORM );
+					break;
+				case HITGROUP_LEFTLEG:
+				case HITGROUP_RIGHTLEG:
+					EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/pain/pain_leg.wav", 1, ATTN_NORM );
+					break;
+				default:
+					EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/pain/spout.wav", 1, ATTN_NORM );
+					break;
+				}
+			}
+		}
 	}
 }
 
@@ -420,6 +459,18 @@ void CBasePlayer::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector ve
 
 #define ARMOR_RATIO	0.2	// Armor Takes 80% of the damage
 #define ARMOR_BONUS	0.5	// Each Point of Armor is work 1/x points of health
+
+// Damage values for determine the amount of fade to apply.
+#define DAMAGE_FADE_MIN			0
+#define DAMAGE_FADE_MAX			100
+
+// Alpha value for damage hold.
+#define DAMAGE_ALPHA_MIN		20
+#define DAMAGE_ALPHA_MAX		255
+
+// Amount of time to hold fade effect.
+#define DAMAGE_HOLD_MIN			0.5
+#define DAMAGE_HOLD_MAX			0.8
 
 int CBasePlayer::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )
 {
@@ -480,6 +531,56 @@ int CBasePlayer::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 			pev->armorvalue -= flArmor;
 
 		flDamage = flNew;
+	}
+
+	// Fade the screen.
+	if( flDamage > DAMAGE_FADE_MIN && !( bitsDamageType & ( DMG_DROWN ) ) )
+	{
+		// ALERT( at_console, "Damage: %f\n", flDamage );
+
+		// if the damage amount is superior to our health,
+		// completely fade the screen.
+		if( flDamage >= pev->health )
+		{
+			UTIL_ScreenFade( this, Vector( 128, 0, 0 ), 0.8f, 0, 255, FFADE_IN );
+		}
+		else
+		{
+			float flDmg = flDamage;
+
+			// Clamp damage fade amount.
+			if( flDmg > DAMAGE_FADE_MAX )
+				flDmg = DAMAGE_FADE_MAX;
+
+			// ALERT( at_console, "Resulting Damage: %f\n", flDmg );
+
+			// Calculate fade hold based on damage amount.
+			float fadehold;
+			fadehold = DAMAGE_HOLD_MIN + ( ( flDmg * ( DAMAGE_HOLD_MAX - DAMAGE_HOLD_MIN ) ) / DAMAGE_FADE_MAX );
+
+			// Clamp final fade hold value.
+			if( fadehold < DAMAGE_HOLD_MIN )
+				fadehold = DAMAGE_HOLD_MIN;
+			else if( fadehold > DAMAGE_HOLD_MAX )
+				fadehold = DAMAGE_HOLD_MAX;
+
+			// ALERT( at_console, "Resulting fadehold: %f\n", fadehold );
+
+			// Calculate alpha based on damage amount.
+			int alpha;
+			alpha = DAMAGE_ALPHA_MIN + ( ( flDmg * ( DAMAGE_ALPHA_MAX - DAMAGE_ALPHA_MIN ) ) / DAMAGE_FADE_MAX );
+
+			// Clamp final alpha value.
+			if( alpha < DAMAGE_ALPHA_MIN )
+				alpha = DAMAGE_ALPHA_MIN;
+			else if( alpha > DAMAGE_ALPHA_MAX )
+				alpha = DAMAGE_ALPHA_MAX;
+
+			// ALERT( at_console, "Resulting alpha: %d\n", alpha );
+
+			// Send screen fade.
+			UTIL_ScreenFade( this, Vector( 128, 0, 0 ), 0.8f, fadehold, alpha, FFADE_IN );
+		}
 	}
 
 	// this cast to INT is critical!!! If a player ends up with 0.5 health, the engine will get that
@@ -890,7 +991,7 @@ void CBasePlayer::Killed( entvars_t *pevAttacker, int iGib )
 	MESSAGE_END();
 
 	// UNDONE: Put this in, but add FFADE_PERMANENT and make fade time 8.8 instead of 4.12
-	// UTIL_ScreenFade( edict(), Vector( 128, 0, 0 ), 6, 15, 255, FFADE_OUT | FFADE_MODULATE );
+	UTIL_ScreenFade( this, Vector(128, 0, 0), 12, 15, 192, FFADE_OUT | FFADE_STAYOUT );
 
 	if( ( pev->health < -40 && iGib != GIB_NEVER ) || iGib == GIB_ALWAYS )
 	{
@@ -1092,6 +1193,8 @@ void CBasePlayer::TabulateAmmo()
 	ammo_rockets = AmmoInventory( GetAmmoIndex( "rockets" ) );
 	ammo_uranium = AmmoInventory( GetAmmoIndex( "uranium" ) );
 	ammo_hornets = AmmoInventory( GetAmmoIndex( "Hornets" ) );
+	ammo_ak47 = AmmoInventory( GetAmmoIndex( "ak47" ) );
+	ammo_mac10 = AmmoInventory( GetAmmoIndex( "mac10" ) );
 }
 
 /*
@@ -2194,76 +2297,6 @@ void CBasePlayer::SetSuitUpdate( char *name, int fgroup, int iNoRepeatTime )
 		// due to static channel design, etc. We don't play HEV sounds in multiplayer right now.
 		return;
 	}
-
-	// if name == NULL, then clear out the queue
-	if( !name )
-	{
-		for( i = 0; i < CSUITPLAYLIST; i++ )
-			m_rgSuitPlayList[i] = 0;
-		return;
-	}
-
-	// get sentence or group number
-	if( !fgroup )
-	{
-		isentence = SENTENCEG_Lookup( name, NULL );
-		if( isentence < 0 )
-			return;
-	}
-	else
-		// mark group number as negative
-		isentence = -SENTENCEG_GetIndex( name );
-
-	// check norepeat list - this list lets us cancel
-	// the playback of words or sentences that have already
-	// been played within a certain time.
-	for( i = 0; i < CSUITNOREPEAT; i++ )
-	{
-		if( isentence == m_rgiSuitNoRepeat[i] )
-		{
-			// this sentence or group is already in 
-			// the norepeat list
-			if( m_rgflSuitNoRepeatTime[i] < gpGlobals->time )
-			{
-				// norepeat time has expired, clear it out
-				m_rgiSuitNoRepeat[i] = 0;
-				m_rgflSuitNoRepeatTime[i] = 0.0;
-				iempty = i;
-				break;
-			}
-			else
-			{
-				// don't play, still marked as norepeat
-				return;
-			}
-		}
-		// keep track of empty slot
-		if( !m_rgiSuitNoRepeat[i] )
-			iempty = i;
-	}
-
-	// sentence is not in norepeat list, save if norepeat time was given
-	if( iNoRepeatTime )
-	{
-		if( iempty < 0 )
-			iempty = RANDOM_LONG( 0, CSUITNOREPEAT - 1 ); // pick random slot to take over
-		m_rgiSuitNoRepeat[iempty] = isentence;
-		m_rgflSuitNoRepeatTime[iempty] = iNoRepeatTime + gpGlobals->time;
-	}
-
-	// find empty spot in queue, or overwrite last spot
-	m_rgSuitPlayList[m_iSuitPlayNext++] = isentence;
-	if( m_iSuitPlayNext == CSUITPLAYLIST )
-		m_iSuitPlayNext = 0;
-
-	if( m_flSuitUpdate <= gpGlobals->time )
-	{
-		if( m_flSuitUpdate == 0 )
-			// play queue is empty, don't delay too long before playback
-			m_flSuitUpdate = gpGlobals->time + SUITFIRSTUPDATETIME;
-		else 
-			m_flSuitUpdate = gpGlobals->time + SUITUPDATETIME; 
-	}
 }
 
 /*
@@ -3345,7 +3378,6 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		}
 		break;
 	case 101:
-		gEvilImpulse101 = TRUE;
 		GiveNamedItem( "item_suit" );
 		GiveNamedItem( "item_battery" );
 		GiveNamedItem( "weapon_crowbar" );
@@ -3358,20 +3390,18 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		GiveNamedItem( "ammo_ARgrenades" );
 		GiveNamedItem( "weapon_handgrenade" );
 		GiveNamedItem( "weapon_tripmine" );
-#ifndef OEM_BUILD
-		GiveNamedItem( "weapon_357" );
-		GiveNamedItem( "ammo_357" );
 		GiveNamedItem( "weapon_crossbow" );
 		GiveNamedItem( "ammo_crossbow" );
-		GiveNamedItem( "weapon_egon" );
-		GiveNamedItem( "weapon_gauss" );
-		GiveNamedItem( "ammo_gaussclip" );
 		GiveNamedItem( "weapon_rpg" );
 		GiveNamedItem( "ammo_rpgclip" );
 		GiveNamedItem( "weapon_satchel" );
 		GiveNamedItem( "weapon_snark" );
-		GiveNamedItem( "weapon_hornetgun" );
-#endif
+
+		GiveNamedItem( "weapon_ak47" );
+		GiveNamedItem( "ammo_ak47" );
+		GiveNamedItem( "weapon_mac10" );
+		GiveNamedItem( "ammo_mac10" );
+
 		gEvilImpulse101 = FALSE;
 		break;
 	case 102:

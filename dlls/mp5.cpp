@@ -54,6 +54,10 @@ void CMP5::Spawn()
 
 	m_iDefaultAmmo = MP5_DEFAULT_GIVE;
 
+	m_fSpotActive = 1;
+#ifndef CLIENT_DLL
+	m_pSpot = NULL;
+#endif
 	FallInit();// get ready to fall down.
 }
 
@@ -84,6 +88,8 @@ void CMP5::Precache( void )
 
 	m_usMP5 = PRECACHE_EVENT( 1, "events/mp5.sc" );
 	m_usMP52 = PRECACHE_EVENT( 1, "events/mp52.sc" );
+
+	UTIL_PrecacheOther( "laser_spot" );
 }
 
 int CMP5::GetItemInfo( ItemInfo *p )
@@ -117,7 +123,29 @@ int CMP5::AddToPlayer( CBasePlayer *pPlayer )
 
 BOOL CMP5::Deploy()
 {
-	return DefaultDeploy( "models/v_9mmAR.mdl", "models/p_9mmAR.mdl", MP5_DEPLOY, "mp5" );
+	BOOL bResult = DefaultDeploy( "models/v_9mmAR.mdl", "models/p_9mmAR.mdl", MP5_DEPLOY, "mp5" );
+
+	if( bResult )
+	{
+		m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 1;
+	}
+
+	return bResult;
+}
+
+void CMP5::Holster( int skiplocal /*= 0*/ )
+{
+	m_fInReload = FALSE;// cancel any reload in progress.
+
+	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
+
+#ifndef CLIENT_DLL
+	if( m_pSpot )
+	{
+		m_pSpot->Killed( NULL, GIB_NEVER );
+		m_pSpot = NULL;
+	}
+#endif
 }
 
 void CMP5::PrimaryAttack()
@@ -150,20 +178,21 @@ void CMP5::PrimaryAttack()
 	Vector vecSrc = m_pPlayer->GetGunPosition();
 	Vector vecAiming = m_pPlayer->GetAutoaimVector( AUTOAIM_5DEGREES );
 	Vector vecDir;
-#ifdef CLIENT_DLL
-	if( !bIsMultiplayer() )
-#else
-	if( !g_pGameRules->IsMultiplayer() )
-#endif
+
+	Vector vecSpread;
+ 
+	// Allow for higher accuracy when the player is crouching.
+	if( m_pPlayer->pev->flags & FL_DUCKING )
 	{
-		// optimized multiplayer. Widened to make it easier to hit a moving player
-		vecDir = m_pPlayer->FireBulletsPlayer( 1, vecSrc, vecAiming, VECTOR_CONE_6DEGREES, 8192, BULLET_PLAYER_MP5, 2, 0, m_pPlayer->pev, m_pPlayer->random_seed );
+		vecSpread = VECTOR_CONE_1DEGREES;
 	}
 	else
 	{
-		// single player spread
-		vecDir = m_pPlayer->FireBulletsPlayer( 1, vecSrc, vecAiming, VECTOR_CONE_3DEGREES, 8192, BULLET_PLAYER_MP5, 2, 0, m_pPlayer->pev, m_pPlayer->random_seed );
+		vecSpread = VECTOR_CONE_3DEGREES;
 	}
+
+	// single player spread
+	vecDir = m_pPlayer->FireBulletsPlayer( 1, vecSrc, vecAiming, vecSpread, 8192, BULLET_PLAYER_MP5, 2, 0, m_pPlayer->pev, m_pPlayer->random_seed );
 
 	int flags;
 #if defined( CLIENT_WEAPONS )
@@ -183,6 +212,8 @@ void CMP5::PrimaryAttack()
 		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.1;
 
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
+
+	UpdateSpot();
 }
 
 void CMP5::SecondaryAttack( void )
@@ -234,6 +265,13 @@ void CMP5::SecondaryAttack( void )
 	if( !m_pPlayer->m_rgAmmo[m_iSecondaryAmmoType] )
 		// HEV suit - indicate out of ammo condition
 		m_pPlayer->SetSuitUpdate( "!HEV_AMO0", FALSE, 0 );
+
+#ifndef CLIENT_DLL
+	if( m_pSpot && m_fSpotActive )
+	{
+		m_pSpot->Suspend( 1 );
+	}
+#endif
 }
 
 void CMP5::Reload( void )
@@ -241,11 +279,24 @@ void CMP5::Reload( void )
 	if( m_pPlayer->ammo_9mm <= 0 )
 		return;
 
-	DefaultReload( MP5_MAX_CLIP, MP5_RELOAD, 1.5 );
+	int iResult = DefaultReload( MP5_MAX_CLIP, MP5_RELOAD, 3.0 );
+
+	if( iResult )
+	{
+#ifndef CLIENT_DLL
+		if( m_pSpot && m_fSpotActive )
+		{
+			m_pSpot->Suspend( 3.0 );
+			m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 3.0;
+		}
+#endif
+	}
 }
 
 void CMP5::WeaponIdle( void )
 {
+	UpdateSpot();
+
 	ResetEmptySound();
 
 	m_pPlayer->GetAutoaimVector( AUTOAIM_5DEGREES );
@@ -268,6 +319,29 @@ void CMP5::WeaponIdle( void )
 	SendWeaponAnim( iAnim );
 
 	m_flTimeWeaponIdle = UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 ); // how long till we do this again.
+}
+
+void CMP5::UpdateSpot( void )
+{
+#ifndef CLIENT_DLL
+	if( m_fSpotActive )
+	{
+		if( !m_pSpot )
+		{
+			m_pSpot = CLaserSpot::CreateSpot();
+			m_pSpot->pev->scale = 0.5;
+		}
+
+		UTIL_MakeVectors( m_pPlayer->pev->v_angle );
+		Vector vecSrc = m_pPlayer->GetGunPosition();;
+		Vector vecAiming = gpGlobals->v_forward;
+
+		TraceResult tr;
+		UTIL_TraceLine( vecSrc, vecSrc + vecAiming * 8192, dont_ignore_monsters, ENT( m_pPlayer->pev ), &tr );
+
+		UTIL_SetOrigin( m_pSpot->pev, tr.vecEndPos );
+	}
+#endif
 }
 
 class CMP5AmmoClip : public CBasePlayerAmmo

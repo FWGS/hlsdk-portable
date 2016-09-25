@@ -835,9 +835,6 @@ int CHudAmmo::Draw( float flTime )
 	// Draw Weapon Menu
 	DrawWList( flTime );
 
-	// Draw ammo pickup history
-	gHR.DrawAmmoHistory( flTime );
-
 	if( !( m_iFlags & HUD_ACTIVE ) )
 		return 0;
 

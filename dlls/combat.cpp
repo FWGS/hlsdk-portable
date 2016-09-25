@@ -1336,6 +1336,9 @@ void CBaseMonster::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector v
 		SpawnBlood( ptr->vecEndPos, BloodColor(), flDamage );// a little surface blood.
 		TraceBleed( flDamage, vecDir, ptr, bitsDamageType );
 		AddMultiDamage( pevAttacker, this, flDamage, bitsDamageType );
+
+		// Spawn blood stream.
+		UTIL_BloodStream( ptr->vecEndPos, -vecDir, ( BloodColor() == BLOOD_COLOR_RED ) ? 70 : BloodColor(), RANDOM_LONG( 4, 5 ) * 10 );
 	}
 }
 
@@ -1402,6 +1405,9 @@ void CBaseEntity::FireBullets( ULONG cShots, Vector vecSrc, Vector vecDirShootin
 			case BULLET_MONSTER_MP5:
 			case BULLET_MONSTER_9MM:
 			case BULLET_MONSTER_12MM:
+			case BULLET_MONSTER_AK47:
+			case BULLET_MONSTER_MAC10:
+			case BULLET_MONSTER_HVMG:
 			default:
 				MESSAGE_BEGIN( MSG_PAS, SVC_TEMPENTITY, vecTracerSrc );
 					WRITE_BYTE( TE_TRACER );
@@ -1459,6 +1465,24 @@ void CBaseEntity::FireBullets( ULONG cShots, Vector vecSrc, Vector vecDirShootin
 					UTIL_DecalTrace( &tr, DECAL_GLASSBREAK1 + RANDOM_LONG( 0, 2 ) );
 				}
 
+				break;
+			case BULLET_MONSTER_AK47:
+				pEntity->TraceAttack( pevAttacker, gSkillData.monDmgMP5, vecDir, &tr, DMG_BULLET );
+
+				TEXTURETYPE_PlaySound( &tr, vecSrc, vecEnd, iBulletType );
+				DecalGunshot( &tr, iBulletType );
+				break;
+			case BULLET_MONSTER_HVMG:
+				pEntity->TraceAttack(pevAttacker, gSkillData.monDmgHvmg, vecDir, &tr, DMG_BULLET );
+
+				TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType);
+				DecalGunshot(&tr, iBulletType);
+				break;
+			case BULLET_MONSTER_MAC10:
+				pEntity->TraceAttack( pevAttacker, gSkillData.monDmgMac10, vecDir, &tr, DMG_BULLET );
+
+				TEXTURETYPE_PlaySound( &tr, vecSrc, vecEnd, iBulletType );
+				DecalGunshot( &tr, iBulletType );
 				break;
 			}
 		}
@@ -1544,6 +1568,15 @@ Vector CBaseEntity::FireBulletsPlayer( ULONG cShots, Vector vecSrc, Vector vecDi
 					UTIL_DecalTrace( &tr, DECAL_GLASSBREAK1 + RANDOM_LONG( 0, 2 ) );
 				}
 
+				break;
+			case BULLET_PLAYER_AK47:
+				pEntity->TraceAttack( pevAttacker, gSkillData.plrDmgAK47, vecDir, &tr, DMG_BULLET );
+				break;
+			case BULLET_PLAYER_MAC10:
+				pEntity->TraceAttack( pevAttacker, gSkillData.plrDmgMac10, vecDir, &tr, DMG_BULLET );
+				break;
+			case BULLET_PLAYER_SNIPER:
+				pEntity->TraceAttack( pevAttacker, gSkillData.plrDmgCrossbowMonster, vecDir, &tr, DMG_BULLET );
 				break;
 			}
 		}

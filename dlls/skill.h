@@ -133,6 +133,18 @@ struct skilldata_t
 	float plrStomach;
 	float plrLeg;
 	float plrArm;
+
+	float diabloHealth;
+	float diabloDmgOneSlash;
+	float diabloDmgBothSlash;
+
+	float hassaultHealth;
+
+	float plrDmgAK47;
+	float plrDmgMac10;
+
+	float monDmgHvmg;
+	float monDmgMac10;
 };
 
 extern	DLL_GLOBAL	skilldata_t	gSkillData;

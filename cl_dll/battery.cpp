@@ -25,6 +25,12 @@
 #include <string.h>
 #include <stdio.h>
 
+#define ARMOR_BAR_LEFT		40
+#define ARMOR_BAR_BOTTOM	96
+
+#define ARMOR_BAR_WIDTH		20
+#define ARMOR_BAR_HEIGHT	150
+
 DECLARE_MESSAGE( m_Battery, Battery )
 
 int CHudBattery::Init( void )
@@ -74,19 +80,29 @@ int CHudBattery::Draw( float flTime )
 	if( gHUD.m_iHideHUDDisplay & HIDEHUD_HEALTH )
 		return 1;
 
-	int r, g, b, x, y, a;
-	wrect_t rc;
-
-	rc = *m_prc2;
-	rc.top  += m_iHeight * ( (float)( 100 - ( min( 100,m_iBat ) ) ) * 0.01 );	// battery can go from 0 to 100 so * 0.01 goes from 0 to 1
-
-	UnpackRGB( r, g, b, RGB_YELLOWISH );
-
 	if( !( gHUD.m_iWeaponBits & ( 1 << ( WEAPON_SUIT ) ) ) )
 		return 1;
 
+	int r, g, b, x, y, a;
+	int iWidth, iHeight;
+
+	iWidth = ARMOR_BAR_WIDTH;
+	iHeight = ARMOR_BAR_HEIGHT;
+
+	x = ScreenWidth - ARMOR_BAR_LEFT;
+	y = ScreenHeight - ARMOR_BAR_BOTTOM - iHeight;
+
+	// Draw empty transparent bar.
+	r = g = b = 255;
+	a = 16;
+
+	FillRGBA( x, y, iWidth, iHeight, r, g, b, a );
+
+	// Draw armor level bar.
+	UnpackRGB( r, g, b, RGB_YELLOWISH );
+
 	// Has health changed? Flash the health #
-	if( m_fFade )
+	/*if( m_fFade )
 	{
 		if( m_fFade > FADE_TIME )
 			m_fFade = FADE_TIME;
@@ -99,35 +115,15 @@ int CHudBattery::Draw( float flTime )
 		}
 
 		// Fade the health number back to dim
+
 		a = MIN_ALPHA + ( m_fFade / FADE_TIME ) * 128;
 	}
-	else
+	else*/
 		a = MIN_ALPHA;
 
-	ScaleColors( r, g, b, a );
+	iHeight = ( m_iBat * ARMOR_BAR_HEIGHT ) / 100;
 
-	int iOffset = ( m_prc1->bottom - m_prc1->top ) / 6;
-
-	y = ScreenHeight - gHUD.m_iFontHeight - gHUD.m_iFontHeight / 2;
-	x = ScreenWidth / 5;
-
-	// make sure we have the right sprite handles
-	if( !m_hSprite1 )
-		m_hSprite1 = gHUD.GetSprite( gHUD.GetSpriteIndex( "suit_empty" ) );
-	if( !m_hSprite2 )
-		m_hSprite2 = gHUD.GetSprite( gHUD.GetSpriteIndex( "suit_full" ) );
-
-	SPR_Set( m_hSprite1, r, g, b );
-	SPR_DrawAdditive( 0,  x, y - iOffset, m_prc1 );
-
-	if( rc.bottom > rc.top )
-	{
-		SPR_Set( m_hSprite2, r, g, b );
-		SPR_DrawAdditive( 0, x, y - iOffset + ( rc.top - m_prc2->top ), &rc );
-	}
-
-	x += ( m_prc1->right - m_prc1->left );
-	x = gHUD.DrawHudNumber( x, y, DHN_3DIGITS | DHN_DRAWZERO, m_iBat, r, g, b );
+	gEngfuncs.pfnFillRGBABlend( x, y + ( ARMOR_BAR_HEIGHT - iHeight ), ARMOR_BAR_WIDTH, iHeight, r, g, b, a );
 
 	return 1;
 }

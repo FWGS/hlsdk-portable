@@ -439,6 +439,44 @@ cvar_t	sk_player_leg1	= { "sk_player_leg1","1" };
 cvar_t	sk_player_leg2	= { "sk_player_leg2","1" };
 cvar_t	sk_player_leg3	= { "sk_player_leg3","1" };
 
+// Diablo
+cvar_t	sk_diablo_health1 = { "sk_diablo_health1", "0" };
+cvar_t	sk_diablo_health2 = { "sk_diablo_health2", "0" };
+cvar_t	sk_diablo_health3 = { "sk_diablo_health3", "0" };
+
+cvar_t	sk_diablo_dmg_one_slash1 = { "sk_diablo_dmg_one_slash1", "0" };
+cvar_t	sk_diablo_dmg_one_slash2 = { "sk_diablo_dmg_one_slash2", "0" };
+cvar_t	sk_diablo_dmg_one_slash3 = { "sk_diablo_dmg_one_slash3", "0" };
+
+cvar_t	sk_diablo_dmg_both_slash1 = { "sk_diablo_dmg_both_slash1", "0" };
+cvar_t	sk_diablo_dmg_both_slash2 = { "sk_diablo_dmg_both_slash2", "0" };
+cvar_t	sk_diablo_dmg_both_slash3 = { "sk_diablo_dmg_both_slash3", "0" };
+
+// Hassault
+cvar_t	sk_hassault_health1 = { "sk_hassault_health1", "0" };
+cvar_t	sk_hassault_health2 = { "sk_hassault_health2", "0" };
+cvar_t	sk_hassault_health3 = { "sk_hassault_health3", "0" };
+
+// AK47 Round
+cvar_t	sk_plr_ak47_bullet1 = { "sk_plr_ak47_bullet1", "0" };
+cvar_t	sk_plr_ak47_bullet2 = { "sk_plr_ak47_bullet2", "0" };
+cvar_t	sk_plr_ak47_bullet3 = { "sk_plr_ak47_bullet3", "0" };
+
+// Mac10 Round
+cvar_t	sk_plr_mac10_bullet1 = { "sk_plr_mac10_bullet1", "0" };
+cvar_t	sk_plr_mac10_bullet2 = { "sk_plr_mac10_bullet2", "0" };
+cvar_t	sk_plr_mac10_bullet3 = { "sk_plr_mac10_bullet3", "0" };
+
+// Heavy machine gun round
+cvar_t	sk_hvmg_bullet1 = { "sk_hvmg_bullet1", "0" };
+cvar_t	sk_hvmg_bullet2 = { "sk_hvmg_bullet2", "0" };
+cvar_t	sk_hvmg_bullet3 = { "sk_hvmg_bullet3", "0" };
+
+// Grunt Mac10
+cvar_t	sk_mac10_bullet1 = { "sk_mac10_bullet1", "0" };
+cvar_t	sk_mac10_bullet2 = { "sk_mac10_bullet2", "0" };
+cvar_t	sk_mac10_bullet3 = { "sk_mac10_bullet3", "0" };
+
 // END Cvars for Skill Level settings
 
 // Register your console variables here
@@ -847,6 +885,45 @@ void GameDLLInit( void )
 	CVAR_REGISTER( &sk_player_leg1 );
 	CVAR_REGISTER( &sk_player_leg2 );
 	CVAR_REGISTER( &sk_player_leg3 );
+
+	// Diablo
+	CVAR_REGISTER( &sk_diablo_health1 );
+	CVAR_REGISTER( &sk_diablo_health2 );
+	CVAR_REGISTER( &sk_diablo_health3 );
+
+	CVAR_REGISTER( &sk_diablo_dmg_one_slash1 );
+	CVAR_REGISTER( &sk_diablo_dmg_one_slash2 );
+	CVAR_REGISTER( &sk_diablo_dmg_one_slash3 );
+
+	CVAR_REGISTER( &sk_diablo_dmg_both_slash1 );
+	CVAR_REGISTER( &sk_diablo_dmg_both_slash2 );
+	CVAR_REGISTER( &sk_diablo_dmg_both_slash3 );
+
+	// Hassault
+	CVAR_REGISTER( &sk_hassault_health1 );
+	CVAR_REGISTER( &sk_hassault_health2 );
+	CVAR_REGISTER( &sk_hassault_health3 );
+
+	// AK47 Round
+	CVAR_REGISTER( &sk_plr_ak47_bullet1 );
+	CVAR_REGISTER( &sk_plr_ak47_bullet2 );
+	CVAR_REGISTER( &sk_plr_ak47_bullet3 );
+
+	// Mac10 Round
+	CVAR_REGISTER( &sk_plr_mac10_bullet1 );
+	CVAR_REGISTER( &sk_plr_mac10_bullet2 );
+	CVAR_REGISTER( &sk_plr_mac10_bullet3 );
+
+	// Heavy machine gun round
+	CVAR_REGISTER( &sk_hvmg_bullet1 );
+	CVAR_REGISTER( &sk_hvmg_bullet2 );
+	CVAR_REGISTER( &sk_hvmg_bullet3 );
+
+	// Grunt Mac10
+	CVAR_REGISTER( &sk_mac10_bullet1 );
+	CVAR_REGISTER( &sk_mac10_bullet2 );
+	CVAR_REGISTER( &sk_mac10_bullet3 );
+
 // END REGISTER CVARS FOR SKILL LEVEL STUFF
 
 	SERVER_COMMAND( "exec skill.cfg\n" );

@@ -52,6 +52,31 @@ extern int g_teamplay;
 
 void LinkUserMessages( void );
 
+static const char* g_pszTrainMaps[] =
+{
+	"t000",
+	"t001",
+	"t002",
+	"t003",
+	"t004",
+};
+
+BOOL IsHazardCourseLevel( const char* szMapName )
+{
+	for( size_t i = 0; i < ARRAYSIZE( g_pszTrainMaps ); i++ )
+	{
+		if( FStrEq( szMapName, g_pszTrainMaps[i] ) )
+			return TRUE;
+	}
+
+	return FALSE;
+}
+
+BOOL IsCurrentLevelTraining( void )
+{
+	return IsHazardCourseLevel( STRING( gpGlobals->mapname ) );
+}
+
 /*
  * used by kill command and disconnect command
  * ROBIN: Moved here from player.cpp, to allow multiple player models
@@ -787,6 +812,13 @@ void ClientPrecache( void )
 
 	if( giPrecacheGrunt )
 		UTIL_PrecacheOther( "monster_human_grunt" );
+
+	PRECACHE_SOUND( "player/pain/pain_arm.wav" );
+	PRECACHE_SOUND( "player/pain/pain_chest.wav" );
+	PRECACHE_SOUND( "player/pain/pain_head.wav" );
+	PRECACHE_SOUND( "player/pain/pain_leg.wav" );
+	PRECACHE_SOUND( "player/pain/pain_stomach.wav" );
+	PRECACHE_SOUND( "player/pain/spout.wav" );
 }
 
 /*
@@ -1622,6 +1654,14 @@ void UpdateClientData( const struct edict_s *ent, int sendweapons, struct client
 					{
 						cd->vuser2.y = ( (CRpg *)pl->m_pActiveItem )->m_fSpotActive;
 						cd->vuser2.z = ( (CRpg *)pl->m_pActiveItem )->m_cActiveRockets;
+					}
+					else if( pl->m_pActiveItem->m_iId == WEAPON_AK47 )
+					{
+						cd->vuser2.y = pl->ammo_ak47;
+					}
+					else if( pl->m_pActiveItem->m_iId == WEAPON_MAC10 )
+					{
+						cd->vuser2.y = pl->ammo_mac10;
 					}
 				}
 			}

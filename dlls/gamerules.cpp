@@ -301,6 +301,26 @@ void CGameRules::RefreshSkillData ( void )
 	gSkillData.plrStomach = GetSkillCvar( "sk_player_stomach" );
 	gSkillData.plrLeg = GetSkillCvar( "sk_player_leg" );
 	gSkillData.plrArm = GetSkillCvar( "sk_player_arm" );
+
+	// Diablo
+	gSkillData.diabloHealth = GetSkillCvar( "sk_diablo_health" );
+	gSkillData.diabloDmgOneSlash = GetSkillCvar( "sk_diablo_dmg_one_slash" );
+	gSkillData.diabloDmgBothSlash = GetSkillCvar( "sk_diablo_dmg_both_slash" );
+
+	// Hassault 
+	gSkillData.hassaultHealth = GetSkillCvar( "sk_hassault_health" );
+
+	// AK47 Round
+	gSkillData.plrDmgAK47 = GetSkillCvar( "sk_plr_ak47_bullet" );
+
+	// Mac10 Round
+	gSkillData.plrDmgMac10 = GetSkillCvar( "sk_plr_mac10_bullet" );
+
+	// Heavy machine gun round
+	gSkillData.monDmgHvmg = GetSkillCvar( "sk_hvmg_bullet" );
+
+	// Grunt Mac10
+	gSkillData.monDmgMac10 = GetSkillCvar( "sk_mac10_bullet" );
 }
 
 //=========================================================

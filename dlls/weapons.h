@@ -61,22 +61,19 @@ public:
 #define ITEM_SECURITY		3
 #define ITEM_BATTERY		4
 
-#define WEAPON_NONE				0
+#define WEAPON_NONE			0
 #define WEAPON_CROWBAR			1
 #define	WEAPON_GLOCK			2
-#define WEAPON_PYTHON			3
-#define WEAPON_MP5				4
-#define WEAPON_CHAINGUN			5
-#define WEAPON_CROSSBOW			6
-#define WEAPON_SHOTGUN			7
-#define WEAPON_RPG				8
-#define WEAPON_GAUSS			9
-#define WEAPON_EGON				10
-#define WEAPON_HORNETGUN		11
-#define WEAPON_HANDGRENADE		12
-#define WEAPON_TRIPMINE			13
-#define	WEAPON_SATCHEL			14
-#define	WEAPON_SNARK			15
+#define WEAPON_MP5			3
+#define WEAPON_CROSSBOW			4
+#define WEAPON_SHOTGUN			5
+#define WEAPON_RPG			6
+#define WEAPON_HANDGRENADE		7
+#define WEAPON_TRIPMINE			8
+#define WEAPON_SATCHEL			9
+#define WEAPON_SNARK			10
+#define WEAPON_MAC10			11
+#define WEAPON_AK47			12
 
 #define WEAPON_ALLWEAPONS		(~(1<<WEAPON_SUIT))
 
@@ -101,69 +98,65 @@ public:
 #define SNARK_WEIGHT		5
 #define SATCHEL_WEIGHT		-10
 #define TRIPMINE_WEIGHT		-10
+#define MAC10_WEIGHT		10
+#define AK47_WEIGHT			15
 
 // weapon clip/carry ammo capacities
-#define URANIUM_MAX_CARRY		100
-#define	_9MM_MAX_CARRY			250
-#define _357_MAX_CARRY			36
-#define BUCKSHOT_MAX_CARRY		125
+#define	_9MM_MAX_CARRY			210
+#define BUCKSHOT_MAX_CARRY		96
 #define BOLT_MAX_CARRY			50
 #define ROCKET_MAX_CARRY		5
-#define HANDGRENADE_MAX_CARRY	10
-#define SATCHEL_MAX_CARRY		5
-#define TRIPMINE_MAX_CARRY		5
-#define SNARK_MAX_CARRY			15
-#define HORNET_MAX_CARRY		8
-#define M203_GRENADE_MAX_CARRY	10
+#define HANDGRENADE_MAX_CARRY		10
+#define SATCHEL_MAX_CARRY		10
+#define TRIPMINE_MAX_CARRY		10
+#define SNARK_MAX_CARRY			10
+#define M203_GRENADE_MAX_CARRY		8
+#define MAC10_MAX_CARRY			240
+#define AK47_MAX_CARRY			180
 
 // the maximum amount of ammo each weapon's clip can hold
 #define WEAPON_NOCLIP			-1
 
 //#define CROWBAR_MAX_CLIP		WEAPON_NOCLIP
-#define GLOCK_MAX_CLIP			17
-#define PYTHON_MAX_CLIP			6
-#define MP5_MAX_CLIP			50
-#define MP5_DEFAULT_AMMO		25
+#define GLOCK_MAX_CLIP			7
+#define MP5_MAX_CLIP			30
+#define MP5_DEFAULT_AMMO		30
 #define SHOTGUN_MAX_CLIP		8
 #define CROSSBOW_MAX_CLIP		5
 #define RPG_MAX_CLIP			1
-#define GAUSS_MAX_CLIP			WEAPON_NOCLIP
-#define EGON_MAX_CLIP			WEAPON_NOCLIP
-#define HORNETGUN_MAX_CLIP		WEAPON_NOCLIP
-#define HANDGRENADE_MAX_CLIP	WEAPON_NOCLIP
+#define HANDGRENADE_MAX_CLIP		WEAPON_NOCLIP
 #define SATCHEL_MAX_CLIP		WEAPON_NOCLIP
 #define TRIPMINE_MAX_CLIP		WEAPON_NOCLIP
 #define SNARK_MAX_CLIP			WEAPON_NOCLIP
+#define MAC10_MAX_CLIP			30
+#define AK47_MAX_CLIP			30
 
 // the default amount of ammo that comes with each gun when it spawns
-#define GLOCK_DEFAULT_GIVE			17
-#define PYTHON_DEFAULT_GIVE			6
-#define MP5_DEFAULT_GIVE			25
-#define MP5_DEFAULT_AMMO			25
+#define GLOCK_DEFAULT_GIVE		7
+#define MP5_DEFAULT_GIVE		30
+#define MP5_DEFAULT_AMMO		30
 #define MP5_M203_DEFAULT_GIVE		0
 #define SHOTGUN_DEFAULT_GIVE		12
 #define CROSSBOW_DEFAULT_GIVE		5
-#define RPG_DEFAULT_GIVE			1
-#define GAUSS_DEFAULT_GIVE			20
-#define EGON_DEFAULT_GIVE			20
+#define RPG_DEFAULT_GIVE		1
 #define HANDGRENADE_DEFAULT_GIVE	5
 #define SATCHEL_DEFAULT_GIVE		1
 #define TRIPMINE_DEFAULT_GIVE		1
-#define SNARK_DEFAULT_GIVE			5
-#define HIVEHAND_DEFAULT_GIVE		8
+#define SNARK_DEFAULT_GIVE		5
+#define MAC10_DEFAULT_GIVE		30
+#define AK47_DEFAULT_GIVE		30
 
 // The amount of ammo given to a player by an ammo item.
-#define AMMO_URANIUMBOX_GIVE	20
 #define AMMO_GLOCKCLIP_GIVE		GLOCK_MAX_CLIP
-#define AMMO_357BOX_GIVE		PYTHON_MAX_CLIP
 #define AMMO_MP5CLIP_GIVE		MP5_MAX_CLIP
 #define AMMO_CHAINBOX_GIVE		200
 #define AMMO_M203BOX_GIVE		2
-#define AMMO_BUCKSHOTBOX_GIVE	12
-#define AMMO_CROSSBOWCLIP_GIVE	CROSSBOW_MAX_CLIP
+#define AMMO_BUCKSHOTBOX_GIVE		12
+#define AMMO_CROSSBOWCLIP_GIVE		CROSSBOW_MAX_CLIP
 #define AMMO_RPGCLIP_GIVE		RPG_MAX_CLIP
-#define AMMO_URANIUMBOX_GIVE	20
 #define AMMO_SNARKBOX_GIVE		5
+#define AMMO_MAC10_GIVE			MAC10_MAX_CLIP
+#define AMMO_AK47_GIVE			AK47_MAX_CLIP
 
 // bullet types
 typedef	enum
@@ -174,10 +167,16 @@ typedef	enum
 	BULLET_PLAYER_357, // python
 	BULLET_PLAYER_BUCKSHOT, // shotgun
 	BULLET_PLAYER_CROWBAR, // crowbar swipe
+	BULLET_PLAYER_AK47,
+	BULLET_PLAYER_MAC10,
+	BULLET_PLAYER_SNIPER,
 
 	BULLET_MONSTER_9MM,
 	BULLET_MONSTER_MP5,
-	BULLET_MONSTER_12MM
+	BULLET_MONSTER_12MM,
+	BULLET_MONSTER_AK47,
+	BULLET_MONSTER_HVMG,
+	BULLET_MONSTER_MAC10
 } Bullet;
 
 #define ITEM_FLAG_SELECTONEMPTY		1
@@ -463,6 +462,7 @@ public:
 	void SecondaryAttack( void );
 	void GlockFire( float flSpread, float flCycleTime, BOOL fUseAutoAim );
 	BOOL Deploy( void );
+	void Holster( int skiplocal = 0 );
 	void Reload( void );
 	void WeaponIdle( void );
 
@@ -542,6 +542,8 @@ private:
 	unsigned short m_usFirePython;
 };
 
+class CLaserSpot;
+
 class CMP5 : public CBasePlayerWeapon
 {
 public:
@@ -568,6 +570,18 @@ public:
 		return FALSE;
 #endif
 	}
+
+#ifndef CLIENT_DLL
+	int Save( CSave &save );
+	int Restore( CRestore &restore );
+	static TYPEDESCRIPTION m_SaveData[];
+#endif
+	void Holster( int skiplocal = 0 );
+
+	void UpdateSpot( void );
+
+	CLaserSpot *m_pSpot;
+	int m_fSpotActive;
 
 private:
 	unsigned short m_usMP5;
@@ -981,5 +995,39 @@ public:
 
 private:
 	unsigned short m_usSnarkFire;
+};
+
+class CAK47 : public CMP5
+{
+public:
+	void Spawn( void );
+	void Precache( void );
+	int GetItemInfo( ItemInfo *p );
+
+	void PrimaryAttack( void );
+	void SecondaryAttack( void ) {}
+	BOOL Deploy( void );
+	void Reload( void );
+	void WeaponIdle( void );
+
+private:
+	unsigned short m_usAK47;
+};
+
+class CMac10 : public CMP5
+{
+public:
+	void Spawn( void );
+	void Precache( void );
+	int GetItemInfo( ItemInfo *p );
+
+	void PrimaryAttack( void );
+	void SecondaryAttack( void ) {}
+	BOOL Deploy( void );
+	void Reload( void );
+	void WeaponIdle( void );
+
+private:
+	unsigned short m_usMac10;
 };
 #endif // WEAPONS_H

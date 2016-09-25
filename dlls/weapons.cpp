@@ -169,6 +169,12 @@ void DecalGunshot( TraceResult *pTrace, int iBulletType )
 		case BULLET_MONSTER_MP5:
 		case BULLET_PLAYER_BUCKSHOT:
 		case BULLET_PLAYER_357:
+		case BULLET_PLAYER_AK47:
+		case BULLET_MONSTER_AK47:
+		case BULLET_MONSTER_HVMG:
+		case BULLET_PLAYER_MAC10:
+		case BULLET_MONSTER_MAC10:
+		case BULLET_PLAYER_SNIPER:
 		default:
 			// smoke and decal
 			UTIL_GunshotDecalTrace( pTrace, DamageDecal( pEntity, DMG_BULLET ) );
@@ -316,15 +322,6 @@ void W_Precache( void )
 	UTIL_PrecacheOther( "ammo_9mmAR" );
 	UTIL_PrecacheOther( "ammo_ARgrenades" );
 
-#if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
-	// python
-	UTIL_PrecacheOtherWeapon( "weapon_357" );
-	UTIL_PrecacheOther( "ammo_357" );
-
-	// gauss
-	UTIL_PrecacheOtherWeapon( "weapon_gauss" );
-	UTIL_PrecacheOther( "ammo_gaussclip" );
-
 	// rpg
 	UTIL_PrecacheOtherWeapon( "weapon_rpg" );
 	UTIL_PrecacheOther( "ammo_rpgclip" );
@@ -333,24 +330,27 @@ void W_Precache( void )
 	UTIL_PrecacheOtherWeapon( "weapon_crossbow" );
 	UTIL_PrecacheOther( "ammo_crossbow" );
 
-	// egon
-	UTIL_PrecacheOtherWeapon( "weapon_egon" );
-#endif
 	// tripmine
 	UTIL_PrecacheOtherWeapon( "weapon_tripmine" );
-#if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
+
 	// satchel charge
 	UTIL_PrecacheOtherWeapon( "weapon_satchel" );
-#endif
+
 	// hand grenade
-	UTIL_PrecacheOtherWeapon("weapon_handgrenade");
-#if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
+	UTIL_PrecacheOtherWeapon( "weapon_handgrenade" );
+
 	// squeak grenade
 	UTIL_PrecacheOtherWeapon( "weapon_snark" );
 
-	// hornetgun
-	UTIL_PrecacheOtherWeapon( "weapon_hornetgun" );
+	// AK47
+	UTIL_PrecacheOtherWeapon( "weapon_ak47" );
+	UTIL_PrecacheOther( "ammo_ak47" );
 
+	// Mac10
+	UTIL_PrecacheOtherWeapon( "weapon_mac10" );
+	UTIL_PrecacheOther( "ammo_mac10" );
+
+#if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
 	if( g_pGameRules->IsDeathmatch() )
 	{
 		UTIL_PrecacheOther( "weaponbox" );// container for dropped deathmatch weapons
@@ -365,6 +365,9 @@ void W_Precache( void )
 
 	g_sModelIndexLaser = PRECACHE_MODEL( (char *)g_pModelNameLaser );
 	g_sModelIndexLaserDot = PRECACHE_MODEL( "sprites/laserdot.spr" );
+
+	PRECACHE_MODEL( "sprites/wallsmoke.spr" );
+	PRECACHE_MODEL( "sprites/groundsmoke.spr" );
 
 	// used by explosions
 	PRECACHE_MODEL( "models/grenade.mdl" );
@@ -1496,34 +1499,16 @@ TYPEDESCRIPTION	CShotgun::m_SaveData[] =
 
 IMPLEMENT_SAVERESTORE( CShotgun, CBasePlayerWeapon )
 
-TYPEDESCRIPTION	CGauss::m_SaveData[] =
-{
-	DEFINE_FIELD( CGauss, m_fInAttack, FIELD_INTEGER ),
-	//DEFINE_FIELD( CGauss, m_flStartCharge, FIELD_TIME ),
-	//DEFINE_FIELD( CGauss, m_flPlayAftershock, FIELD_TIME ),
-	//DEFINE_FIELD( CGauss, m_flNextAmmoBurn, FIELD_TIME ),
-	DEFINE_FIELD( CGauss, m_fPrimaryFire, FIELD_BOOLEAN ),
-};
-
-IMPLEMENT_SAVERESTORE( CGauss, CBasePlayerWeapon )
-
-TYPEDESCRIPTION	CEgon::m_SaveData[] =
-{
-	//DEFINE_FIELD( CEgon, m_pBeam, FIELD_CLASSPTR ),
-	//DEFINE_FIELD( CEgon, m_pNoise, FIELD_CLASSPTR ),
-	//DEFINE_FIELD( CEgon, m_pSprite, FIELD_CLASSPTR ),
-	DEFINE_FIELD( CEgon, m_shootTime, FIELD_TIME ),
-	DEFINE_FIELD( CEgon, m_fireState, FIELD_INTEGER ),
-	DEFINE_FIELD( CEgon, m_fireMode, FIELD_INTEGER ),
-	DEFINE_FIELD( CEgon, m_shakeTime, FIELD_TIME ),
-	DEFINE_FIELD( CEgon, m_flAmmoUseTime, FIELD_TIME ),
-};
-
-IMPLEMENT_SAVERESTORE( CEgon, CBasePlayerWeapon )
-
 TYPEDESCRIPTION	CSatchel::m_SaveData[] = 
 {
 	DEFINE_FIELD( CSatchel, m_chargeReady, FIELD_INTEGER ),
 };
 
 IMPLEMENT_SAVERESTORE( CSatchel, CBasePlayerWeapon )
+
+TYPEDESCRIPTION	CMP5::m_SaveData[] =
+{
+	DEFINE_FIELD( CMP5, m_fSpotActive, FIELD_INTEGER ),
+};
+
+IMPLEMENT_SAVERESTORE( CMP5, CBasePlayerWeapon );

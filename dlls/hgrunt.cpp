@@ -45,6 +45,8 @@ int g_fGruntQuestion;				// true if an idle grunt asked a question. Cleared when
 
 extern DLL_GLOBAL int		g_iSkillLevel;
 
+BOOL IsCurrentLevelTraining( void );
+
 //=========================================================
 // monster-specific DEFINE's
 //=========================================================
@@ -61,16 +63,22 @@ extern DLL_GLOBAL int		g_iSkillLevel;
 #define HGRUNT_HANDGRENADE			( 1 << 1)
 #define HGRUNT_GRENADELAUNCHER			( 1 << 2)
 #define HGRUNT_SHOTGUN				( 1 << 3)
-
+#define HGRUNT_AK47				( 1 << 0)
+#define HGRUNT_MAC10				( 1 << 3)
 #define HEAD_GROUP					1
 #define HEAD_GRUNT					0
 #define HEAD_COMMANDER					1
 #define HEAD_SHOTGUN					2
 #define HEAD_M203					3
+#define HEAD_ARCTIC					0
 #define GUN_GROUP					2
 #define GUN_MP5						0
 #define GUN_SHOTGUN					1
 #define GUN_NONE					2
+#define GUN_AK47					0
+#define GUN_MAC10					1
+
+#define GF_SNOWGRUNT					1
 
 //=========================================================
 // Monster's Anim Events Go Here
@@ -140,7 +148,10 @@ public:
 	void PainSound( void );
 	void IdleSound( void );
 	Vector GetGunPosition( void );
-	void Shoot( void );
+	void Shoot( Vector vecSpread, int iBulletType );
+	void ShootMP5( Vector vecSpread );
+	void ShootAK47( Vector vecSpread );
+	void ShootMac10( Vector vecSpread );
 	void Shotgun( void );
 	void PrescheduleThink( void );
 	void GibMonster( void );
@@ -184,6 +195,10 @@ public:
 	int m_iSentence;
 
 	static const char *pGruntSentences[];
+
+	BOOL IsSnowGrunt() const;
+
+	int m_iGruntFlags;
 };
 
 LINK_ENTITY_TO_CLASS( monster_human_grunt, CHGrunt )
@@ -202,6 +217,7 @@ TYPEDESCRIPTION	CHGrunt::m_SaveData[] =
 	//DEFINE_FIELD( CShotgun, m_iBrassShell, FIELD_INTEGER ),
 	//DEFINE_FIELD( CShotgun, m_iShotgunShell, FIELD_INTEGER ),
 	DEFINE_FIELD( CHGrunt, m_iSentence, FIELD_INTEGER ),
+	DEFINE_FIELD( CHGrunt, m_iGruntFlags, FIELD_INTEGER ),
 };
 
 IMPLEMENT_SAVERESTORE( CHGrunt, CSquadMonster )
@@ -285,29 +301,43 @@ void CHGrunt::GibMonster( void )
 
 		CBaseEntity *pGun;
 
-		if( FBitSet( pev->weapons, HGRUNT_SHOTGUN ) )
+		if( !IsSnowGrunt() )
 		{
-			pGun = DropItem( "weapon_shotgun", vecGunPos, vecGunAngles );
+			if( FBitSet( pev->weapons, HGRUNT_SHOTGUN ) )
+			{
+				pGun = DropItem( "weapon_shotgun", vecGunPos, vecGunAngles );
+			}
+			else
+			{
+				pGun = DropItem( "weapon_9mmAR", vecGunPos, vecGunAngles );
+			}
+
+			if( FBitSet( pev->weapons, HGRUNT_GRENADELAUNCHER ) )
+			{
+				pGun = DropItem( "ammo_ARgrenades", vecGunPos, vecGunAngles );
+				if( pGun )
+				{
+					pGun->pev->velocity = Vector( RANDOM_FLOAT( -100, 100 ), RANDOM_FLOAT( -100, 100 ), RANDOM_FLOAT( 200, 300 ) );
+					pGun->pev->avelocity = Vector( 0, RANDOM_FLOAT( 200, 400 ), 0 );
+				}
+			}
 		}
 		else
 		{
-			pGun = DropItem( "weapon_9mmAR", vecGunPos, vecGunAngles );
+			if( FBitSet( pev->weapons, HGRUNT_MAC10 ) )
+			{
+				pGun = DropItem( "weapon_mac10", vecGunPos, vecGunAngles );
+			}
+			else
+			{
+				pGun = DropItem( "weapon_ak47", vecGunPos, vecGunAngles );
+			}
 		}
 
 		if( pGun )
 		{
 			pGun->pev->velocity = Vector( RANDOM_FLOAT( -100, 100 ), RANDOM_FLOAT( -100, 100 ), RANDOM_FLOAT( 200, 300 ) );
 			pGun->pev->avelocity = Vector( 0, RANDOM_FLOAT( 200, 400 ), 0 );
-		}
-
-		if( FBitSet( pev->weapons, HGRUNT_GRENADELAUNCHER ) )
-		{
-			pGun = DropItem( "ammo_ARgrenades", vecGunPos, vecGunAngles );
-			if ( pGun )
-			{
-				pGun->pev->velocity = Vector( RANDOM_FLOAT( -100, 100 ), RANDOM_FLOAT( -100, 100 ), RANDOM_FLOAT( 200, 300 ) );
-				pGun->pev->avelocity = Vector( 0, RANDOM_FLOAT( 200, 400 ), 0 );
-			}
 		}
 	}
 
@@ -332,6 +362,9 @@ int CHGrunt::ISoundMask( void )
 //=========================================================
 BOOL CHGrunt::FOkToSpeak( void )
 {
+	if( IsCurrentLevelTraining() )
+		return FALSE;
+
 	// if someone else is talking, don't speak
 	if( gpGlobals->time <= CTalkMonster::g_talkWaitTime )
 		return FALSE;
@@ -785,7 +818,7 @@ Vector CHGrunt::GetGunPosition()
 //=========================================================
 // Shoot
 //=========================================================
-void CHGrunt::Shoot( void )
+void CHGrunt::Shoot( Vector vecSpread, int iBulletType )
 {
 	if( m_hEnemy == NULL )
 	{
@@ -799,7 +832,7 @@ void CHGrunt::Shoot( void )
 
 	Vector vecShellVelocity = gpGlobals->v_right * RANDOM_FLOAT( 40, 90 ) + gpGlobals->v_up * RANDOM_FLOAT( 75, 200 ) + gpGlobals->v_forward * RANDOM_FLOAT( -40, 40 );
 	EjectBrass( vecShootOrigin - vecShootDir * 24, vecShellVelocity, pev->angles.y, m_iBrassShell, TE_BOUNCE_SHELL );
-	FireBullets( 1, vecShootOrigin, vecShootDir, VECTOR_CONE_10DEGREES, 2048, BULLET_MONSTER_MP5 ); // shoot +-5 degrees
+	FireBullets( 1, vecShootOrigin, vecShootDir, vecSpread, 2048, iBulletType ); // shoot +-5 degrees
 
 	pev->effects |= EF_MUZZLEFLASH;
 
@@ -836,6 +869,47 @@ void CHGrunt::Shotgun( void )
 	SetBlending( 0, angDir.x );
 }
 
+void CHGrunt::ShootMP5( Vector vecSpread )
+{
+	Shoot( vecSpread, BULLET_MONSTER_MP5 );
+}
+
+void CHGrunt::ShootAK47( Vector vecSpread )
+{
+	Shoot( vecSpread, BULLET_MONSTER_AK47 );
+
+	switch( RANDOM_LONG( 0, 2 ) )
+	{
+	case 0:
+		EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "weapons/Hks1.wav", 1, ATTN_NORM );
+		break;
+	case 1:
+		EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "weapons/Hks2.wav", 1, ATTN_NORM );
+		break;
+	case 2:
+		EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "weapons/Hks3.wav", 1, ATTN_NORM );
+		break;
+	}
+}
+
+void CHGrunt::ShootMac10( Vector vecSpread )
+{
+	Shoot( vecSpread, BULLET_MONSTER_MAC10 );
+
+	switch( RANDOM_LONG( 0, 2 ) )
+	{
+	case 0:
+		EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "weapons/mac1.wav", 1, ATTN_NORM );
+		break;
+	case 1:
+		EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "weapons/mac2.wav", 1, ATTN_NORM );
+		break;
+	case 2:
+		EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "weapons/mac3.wav", 1, ATTN_NORM );
+		break;
+	}
+}
+
 //=========================================================
 // HandleAnimEvent - catches the monster-specific messages
 // that occur when tagged animation frames are played.
@@ -858,18 +932,35 @@ void CHGrunt::HandleAnimEvent( MonsterEvent_t *pEvent )
 			SetBodygroup( GUN_GROUP, GUN_NONE );
 
 			// now spawn a gun.
-			if( FBitSet( pev->weapons, HGRUNT_SHOTGUN ) )
+
+			// Regular soldier model.
+			if( !IsSnowGrunt() )
 			{
-				 DropItem( "weapon_shotgun", vecGunPos, vecGunAngles );
+				// Shotgun.
+				if( FBitSet( pev->weapons, HGRUNT_SHOTGUN ) )
+				{
+					DropItem( "weapon_shotgun", vecGunPos, vecGunAngles );
+				}
+				else
+				{
+					DropItem( "weapon_9mmAR", vecGunPos, vecGunAngles );
+				}
+				if( FBitSet( pev->weapons, HGRUNT_GRENADELAUNCHER ) )
+				{
+					DropItem( "ammo_ARgrenades", BodyTarget( pev->origin ), vecGunAngles );
+				}
 			}
+			// Snow soldier model.
 			else
 			{
-				 DropItem( "weapon_9mmAR", vecGunPos, vecGunAngles );
-			}
-
-			if( FBitSet( pev->weapons, HGRUNT_GRENADELAUNCHER ) )
-			{
-				DropItem( "ammo_ARgrenades", BodyTarget( pev->origin ), vecGunAngles );
+				if( FBitSet( pev->weapons, HGRUNT_MAC10 ) )
+				{
+					DropItem( "weapon_mac10", vecGunPos, vecGunAngles );
+				}
+				else
+				{
+					DropItem( "weapon_ak47", vecGunPos, vecGunAngles );
+				}
 			}
 		}
 			break;
@@ -908,25 +999,45 @@ void CHGrunt::HandleAnimEvent( MonsterEvent_t *pEvent )
 			break;
 		case HGRUNT_AE_BURST1:
 		{
-			if( FBitSet( pev->weapons, HGRUNT_9MMAR ) )
+			// Regular soldier model.
+			if( !IsSnowGrunt() )
 			{
-				Shoot();
-
-				// the first round of the three round burst plays the sound and puts a sound in the world sound list.
-				if( RANDOM_LONG( 0, 1 ) )
+				// MP5
+				if( FBitSet( pev->weapons, HGRUNT_9MMAR ) )
 				{
-					EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "hgrunt/gr_mgun1.wav", 1, ATTN_NORM );
+					ShootMP5( VECTOR_CONE_10DEGREES );
+
+					// the first round of the three round burst plays the sound and puts a sound in the world sound list.
+					if( RANDOM_LONG( 0, 1 ) )
+					{
+						EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "hgrunt/gr_mgun1.wav", 1, ATTN_NORM );
+					}
+					else
+					{
+						EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "hgrunt/gr_mgun2.wav", 1, ATTN_NORM );
+					}
 				}
+				// Shotgun
 				else
 				{
-					EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "hgrunt/gr_mgun2.wav", 1, ATTN_NORM );
+					Shotgun();
+
+					EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "weapons/sbarrel1.wav", 1, ATTN_NORM );
 				}
 			}
+			// Snow soldier model.
 			else
 			{
-				Shotgun();
-
-				EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "weapons/sbarrel1.wav", 1, ATTN_NORM );
+				// AK47
+				if( FBitSet( pev->weapons, HGRUNT_AK47 ) )
+				{
+					ShootAK47( VECTOR_CONE_10DEGREES );
+				}
+				// Mac10
+				else
+				{
+					ShootMac10( VECTOR_CONE_10DEGREES );
+				}
 			}
 
 			CSoundEnt::InsertSound( bits_SOUND_COMBAT, pev->origin, 384, 0.3 );
@@ -934,7 +1045,26 @@ void CHGrunt::HandleAnimEvent( MonsterEvent_t *pEvent )
 			break;
 		case HGRUNT_AE_BURST2:
 		case HGRUNT_AE_BURST3:
-			Shoot();
+			// Regular soldier model.
+			if( !IsSnowGrunt() )
+			{
+				// MP5
+				Shoot( VECTOR_CONE_10DEGREES, BULLET_MONSTER_MP5 );
+			}
+			// Snow soldier model.
+			else
+			{
+				// AK47
+				if( FBitSet( pev->weapons, HGRUNT_AK47 ) )
+				{
+					ShootAK47( VECTOR_CONE_10DEGREES );
+				}
+				// Mac10
+				else
+				{
+					ShootMac10( VECTOR_CONE_10DEGREES );
+				}
+			}
 			break;
 		case HGRUNT_AE_KICK:
 		{
@@ -972,7 +1102,19 @@ void CHGrunt::Spawn()
 {
 	Precache();
 
-	SET_MODEL( ENT( pev ), "models/hgrunt.mdl" );
+	char* szModel = (char*)STRING( pev->model );
+	if( !szModel || !*szModel )
+	{
+		szModel = "models/hgrunt.mdl";
+		pev->model = ALLOC_STRING( szModel );
+	}
+	else if( !FStrEq( szModel, "models/hgrunt.mdl" ) )
+	{
+		szModel = "models/hgruntsnow.mdl";
+		pev->model = ALLOC_STRING( szModel );
+	}
+
+	SET_MODEL( ENT( pev ), szModel );
 	UTIL_SetSize( pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX );
 
 	pev->solid		= SOLID_SLIDEBOX;
@@ -993,38 +1135,63 @@ void CHGrunt::Spawn()
 
 	m_HackedGunPos = Vector( 0, 0, 55 );
 
-	if( pev->weapons == 0 )
+	m_iGruntFlags = 0;
+
+	// Check to see if this is a regular or snow grunt model.
+	if( !FStrEq( STRING( pev->model ), "models/hgrunt.mdl" ) )
 	{
-		// initialize to original values
-		pev->weapons = HGRUNT_9MMAR | HGRUNT_HANDGRENADE;
-		// pev->weapons = HGRUNT_SHOTGUN;
-		// pev->weapons = HGRUNT_9MMAR | HGRUNT_GRENADELAUNCHER;
+		m_iGruntFlags |= GF_SNOWGRUNT;
 	}
 
-	if( FBitSet( pev->weapons, HGRUNT_SHOTGUN ) )
+	// Regular soldier model.
+	if( !IsSnowGrunt() )
 	{
-		SetBodygroup( GUN_GROUP, GUN_SHOTGUN );
-		m_cClipSize = 8;
+		if( pev->weapons == 0 )
+		{
+			// initialize to original values
+			pev->weapons = HGRUNT_9MMAR | HGRUNT_HANDGRENADE;
+		}
+
+		if( FBitSet( pev->weapons, HGRUNT_SHOTGUN ) )
+		{
+			SetBodygroup( GUN_GROUP, GUN_SHOTGUN );
+			m_cClipSize = 8;
+		}
+		else
+		{
+			m_cClipSize = 27;
+		}
+
+		if( FBitSet( pev->weapons, HGRUNT_SHOTGUN ) )
+		{
+			SetBodygroup( HEAD_GROUP, HEAD_SHOTGUN );
+		}
+		else if( FBitSet( pev->weapons, HGRUNT_GRENADELAUNCHER ) )
+		{
+			SetBodygroup( HEAD_GROUP, HEAD_M203 );
+		}
 	}
+	// Snow grunt model.
 	else
 	{
-		m_cClipSize = GRUNT_CLIP_SIZE;
-	}
-	m_cAmmoLoaded = m_cClipSize;
+		if( pev->weapons == 0 )
+		{
+			// initialize to original values
+			pev->weapons = HGRUNT_AK47 | HGRUNT_HANDGRENADE;
+		}
 
-	if( RANDOM_LONG( 0, 99 ) < 80 )
-		pev->skin = 0;	// light skin
-	else
-		pev->skin = 1;	// dark skin
+		// Snow grunt weapons do not incorporate grenade launchers.
+		pev->weapons &= ~HGRUNT_GRENADELAUNCHER;
 
-	if( FBitSet( pev->weapons, HGRUNT_SHOTGUN ) )
-	{
-		SetBodygroup( HEAD_GROUP, HEAD_SHOTGUN );
-	}
-	else if( FBitSet( pev->weapons, HGRUNT_GRENADELAUNCHER ) )
-	{
-		SetBodygroup( HEAD_GROUP, HEAD_M203 );
-		pev->skin = 1; // alway dark skin
+		if( FBitSet( pev->weapons, HGRUNT_MAC10 ) )
+		{
+			SetBodygroup( GUN_GROUP, GUN_MAC10 );
+		}
+
+		m_cClipSize = 27;
+
+		// Only one arctic head available.
+		SetBodygroup( HEAD_GROUP, HEAD_ARCTIC );
 	}
 
 	CTalkMonster::g_talkWaitTime = 0;
@@ -1038,6 +1205,7 @@ void CHGrunt::Spawn()
 void CHGrunt::Precache()
 {
 	PRECACHE_MODEL( "models/hgrunt.mdl" );
+	PRECACHE_MODEL( "models/hgruntsnow.mdl" );
 
 	PRECACHE_SOUND( "hgrunt/gr_mgun1.wav" );
 	PRECACHE_SOUND( "hgrunt/gr_mgun2.wav" );
@@ -1059,6 +1227,14 @@ void CHGrunt::Precache()
 	PRECACHE_SOUND( "weapons/sbarrel1.wav" );
 
 	PRECACHE_SOUND( "zombie/claw_miss2.wav" );// because we use the basemonster SWIPE animation event
+
+	PRECACHE_SOUND( "weapons/Hks1.wav" );
+	PRECACHE_SOUND( "weapons/Hks2.wav" );
+	PRECACHE_SOUND( "weapons/Hks3.wav" );
+
+	PRECACHE_SOUND( "weapons/mac1.wav" );
+	PRECACHE_SOUND( "weapons/mac2.wav" );
+	PRECACHE_SOUND( "weapons/mac3.wav" );
 
 	// get voice pitch
 	if( RANDOM_LONG( 0, 1 ) )
@@ -1855,15 +2031,33 @@ void CHGrunt::SetActivity( Activity NewActivity )
 		}
 		else
 		{
-			if( m_fStanding )
+			// Regular soldier model.
+			if( !IsSnowGrunt() )
 			{
-				// get aimable sequence
-				iSequence = LookupSequence( "standing_shotgun" );
+				if( m_fStanding )
+				{
+					// get aimable sequence
+					iSequence = LookupSequence( "standing_shotgun" );
+				}
+				else
+				{
+					// get crouching shoot
+					iSequence = LookupSequence( "crouching_shotgun" );
+				}
 			}
+			// Snow soldier model.
 			else
 			{
-				// get crouching shoot
-				iSequence = LookupSequence( "crouching_shotgun" );
+				if( m_fStanding )
+				{
+					// get aimable sequence
+					iSequence = LookupSequence( "standing_mp5" );
+				}
+				else
+				{
+					// get crouching shoot
+					iSequence = LookupSequence( "crouching_mp5" );
+				}
 			}
 		}
 		break;
@@ -2337,6 +2531,11 @@ Schedule_t *CHGrunt::GetScheduleOfType( int Type )
 			return CSquadMonster::GetScheduleOfType( Type );
 		}
 	}
+}
+
+BOOL CHGrunt::IsSnowGrunt( void ) const
+{
+	return m_iGruntFlags & GF_SNOWGRUNT;
 }
 
 //=========================================================
