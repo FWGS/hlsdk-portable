@@ -29,6 +29,10 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_LINUX -DCLIENT_WEAPONS -Dstricmp=strcasec
 set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS}")
 
 set (SVDLL_SOURCES 
+	eftd/ak47.cpp
+	eftd/mac10.cpp
+	eftd/hassault.cpp
+	eftd/diablo.cpp
 	agrunt.cpp
 	airtank.cpp
 	aflock.cpp
@@ -51,7 +55,7 @@ set (SVDLL_SOURCES
 	defaultai.cpp
 	doors.cpp
 	effects.cpp
-	egon.cpp
+#	egon.cpp
 	explode.cpp
 	flyingmonster.cpp
 	func_break.cpp
@@ -59,7 +63,7 @@ set (SVDLL_SOURCES
 	game.cpp
 	gamerules.cpp
 	gargantua.cpp
-	gauss.cpp
+#	gauss.cpp
 	genericmonster.cpp
 	ggrenade.cpp
 	globals.cpp
@@ -76,7 +80,7 @@ set (SVDLL_SOURCES
 	healthkit.cpp
 	hgrunt.cpp
 	hornet.cpp
-	hornetgun.cpp
+#	hornetgun.cpp
 	houndeye.cpp
 	ichthyosaur.cpp
 	islave.cpp
@@ -97,7 +101,7 @@ set (SVDLL_SOURCES
 	plane.cpp
 	plats.cpp
 	player.cpp
-	python.cpp
+#	python.cpp
 	rat.cpp
 	roach.cpp
 	rpg.cpp
