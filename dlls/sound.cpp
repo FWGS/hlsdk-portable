@@ -1739,7 +1739,7 @@ float TEXTURETYPE_PlaySound( TraceResult *ptr,  Vector vecSrc, Vector vecEnd, in
 			return 0.0; // crowbar already makes this sound
 		fvol = 1.0;
 		fvolbar = 0.2;
-		if( iBulletType == BULLET_PLAYER_NAIL )
+		if( iBulletType == BULLET_PLAYER_NAIL1 || iBulletType == BULLET_PLAYER_NAIL2 )
 		{
 			rgsz[0] = "weapons/brad_hit1.wav";
 			rgsz[1] = "weapons/brad_hit2.wav";

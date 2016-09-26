@@ -144,7 +144,8 @@ typedef	enum
 	BULLET_PLAYER_357, // python
 	BULLET_PLAYER_BUCKSHOT, // shotgun
 	BULLET_PLAYER_CROWBAR, // crowbar swipe
-	BULLET_PLAYER_NAIL, // nails
+	BULLET_PLAYER_NAIL1, // bradnailer nails
+	BULLET_PLAYER_NAIL2, // nailgun nails
 	BULLET_PLAYER_XS, // xen squasher
 
 	BULLET_MONSTER_9MM,

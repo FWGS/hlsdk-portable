@@ -1523,9 +1523,11 @@ Vector CBaseEntity::FireBulletsPlayer( ULONG cShots, Vector vecSrc, Vector vecDi
 			{
 			default:
 			case BULLET_PLAYER_9MM:
+			case BULLET_PLAYER_NAIL1:
 				pEntity->TraceAttack( pevAttacker, gSkillData.plrDmg9MM, vecDir, &tr, DMG_BULLET );
 				break;
 			case BULLET_PLAYER_MP5:
+			case BULLET_PLAYER_NAIL2:
 				pEntity->TraceAttack( pevAttacker, gSkillData.plrDmgMP5, vecDir, &tr, DMG_BULLET );
 				break;
 			case BULLET_PLAYER_BUCKSHOT:
@@ -1544,9 +1546,6 @@ Vector CBaseEntity::FireBulletsPlayer( ULONG cShots, Vector vecSrc, Vector vecDi
 					UTIL_DecalTrace( &tr, DECAL_GLASSBREAK1 + RANDOM_LONG( 0, 2 ) );
 				}
 
-				break;
-			case BULLET_PLAYER_NAIL:
-				pEntity->TraceAttack( pevAttacker, 0, vecDir, &tr, DMG_BULLET );
 				break;
 			}
 		}

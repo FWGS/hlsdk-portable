@@ -83,7 +83,7 @@ void CNail::NailTouch(CBaseEntity *pOther)
 		// UNDONE: this needs to call TraceAttack instead
 		ClearMultiDamage();
 
-		pOther->TraceAttack(pevOwner, gSkillData.plrDmgNail, pev->velocity.Normalize(), &tr, DMG_NEVERGIB);
+		pOther->TraceAttack(pevOwner, 0, pev->velocity.Normalize(), &tr, DMG_NEVERGIB);
 
 		ApplyMultiDamage(pev, pevOwner);
 

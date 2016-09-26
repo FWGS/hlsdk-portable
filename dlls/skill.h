@@ -138,8 +138,6 @@ struct skilldata_t
 	float plrStomach;
 	float plrLeg;
 	float plrArm;
-
-	float plrDmgNail;
 };
 
 extern	DLL_GLOBAL	skilldata_t	gSkillData;

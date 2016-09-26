@@ -456,11 +456,6 @@ cvar_t	sk_player_leg1	= { "sk_player_leg1","1" };
 cvar_t	sk_player_leg2	= { "sk_player_leg2","1" };
 cvar_t	sk_player_leg3	= { "sk_player_leg3","1" };
 
-// Nails
-cvar_t	sk_plr_nail1 = { "sk_plr_nail1", "0" };
-cvar_t	sk_plr_nail2 = { "sk_plr_nail2", "0" };
-cvar_t	sk_plr_nail3 = { "sk_plr_nail3", "0" };
-
 // END Cvars for Skill Level settings
 
 // Register your console variables here
@@ -885,11 +880,6 @@ void GameDLLInit( void )
 	CVAR_REGISTER( &sk_player_leg1 );
 	CVAR_REGISTER( &sk_player_leg2 );
 	CVAR_REGISTER( &sk_player_leg3 );
-
-	// Nails
-	CVAR_REGISTER( &sk_plr_nail1 );
-	CVAR_REGISTER( &sk_plr_nail2 );
-	CVAR_REGISTER( &sk_plr_nail3 );
 
 // END REGISTER CVARS FOR SKILL LEVEL STUFF
 
