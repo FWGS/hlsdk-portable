@@ -602,6 +602,10 @@ void CBaseMonster::Killed( entvars_t *pevAttacker, int iGib )
 
 	Remember( bits_MEMORY_KILLED );
 
+	CBaseEntity *activator = CBaseEntity::Instance( pevAttacker );
+	if( activator && activator->IsPlayer() )
+		activator->AddPoints( 1, true );
+
 	// clear the deceased's sound channels.(may have been firing or reloading when killed)
 	EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "common/null.wav", 1, ATTN_NORM );
 	m_IdealMonsterState = MONSTERSTATE_DEAD;

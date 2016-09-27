@@ -23,6 +23,7 @@
 #include "decals.h"
 #include "func_break.h"
 #include "shake.h"
+#include "game.h"
 
 #define	SF_GIBSHOOTER_REPEATABLE		1 // allows a gibshooter to be refired
 
@@ -1943,8 +1944,14 @@ void CFade::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType
 	if( pev->spawnflags & SF_FADE_MODULATE )
 		fadeFlags |= FFADE_MODULATE;
 
-	if( pev->spawnflags & SF_FADE_ONLYONE )
+	if( mp_coop.value || pev->spawnflags & SF_FADE_ONLYONE )
 	{
+		if( !pActivator || pActivator->IsNetClient() )
+		{
+			if( !pCaller )
+				return;
+			pActivator = pCaller;
+		}
 		if( pActivator->IsNetClient() )
 		{
 			UTIL_ScreenFade( pActivator, pev->rendercolor, Duration(), HoldTime(), pev->renderamt, fadeFlags );

@@ -3738,6 +3738,17 @@ void CBasePlayer::SendAmmoUpdate( void )
 	}
 }
 
+float CBasePlayer::TouchGravGun( CBaseEntity *attacker, int stage )
+{
+	if( stage == 3 )
+		return 200;
+	if( mp_gravgun_players.value )
+	{
+		return 200;
+	}
+	return 0;
+}
+
 /*
 =========================================================
 	UpdateClientData

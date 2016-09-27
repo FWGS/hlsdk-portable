@@ -47,6 +47,8 @@ extern cvar_t cvar_gibtime;
 extern cvar_t cvar_hgibcount;
 extern cvar_t cvar_agibcount;
 
+extern cvar_t mp_gravgun_players;
+extern cvar_t mp_coop;
 // Engine Cvars
 extern cvar_t *g_psv_gravity;
 extern cvar_t *g_psv_aim;

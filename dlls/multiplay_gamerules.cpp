@@ -640,8 +640,11 @@ void CHalfLifeMultiplay::PlayerKilled( CBasePlayer *pVictim, entvars_t *pKiller,
 	}
 	else if( ktmp && ktmp->IsPlayer() )
 	{
-		// if a player dies in a deathmatch game and the killer is a client, award the killer some points
-		pKiller->frags += IPointsForKill( peKiller, pVictim );
+		if( mp_coop.value )
+			pKiller->frags -= 10;
+		else
+			// if a player dies in a deathmatch game and the killer is a client, award the killer some points
+			pKiller->frags += IPointsForKill( peKiller, pVictim );
 
 		FireTargets( "game_playerkill", ktmp, ktmp, USE_TOGGLE, 0 );
 	}
