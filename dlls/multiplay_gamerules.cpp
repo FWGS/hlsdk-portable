@@ -64,6 +64,28 @@ public:
 
 static CMultiplayGameMgrHelper g_GameMgrHelper;
 #endif
+
+// Collect all weapons tat player touchet in coop ant give to all players at spawn
+class CWeaponList
+{
+	char weapons[64][256];
+	int m_iWeapons;
+public:
+	void AddWeapon( const char *classname )
+	{
+		int i;
+		for(i = 0; i < m_iWeapons;i++)
+			if(!strcmp(weapons[i], classname))
+				return;
+		strcpy(weapons[m_iWeapons++], classname);
+	}
+	void GiveToPlayer(CBasePlayer *player)
+	{
+		for(int i = 0; i < m_iWeapons;i++)
+			player->GiveNamedItem(weapons[i]);
+	}
+} g_WeaponList;
+
 //*********************************************************
 // Rules for the half-life multiplayer game.
 //*********************************************************
@@ -587,6 +609,8 @@ void CHalfLifeMultiplay::PlayerSpawn( CBasePlayer *pPlayer )
 			pPlayer->GiveAmmo( cvar_ar2_balls.value, "AR2grenades", 3 );
 		}
 		pPlayer->GiveAmmo( 68, "9mm", _9MM_MAX_CARRY );// 4 full reloads
+		if(mp_coop.value)
+		g_WeaponList.GiveToPlayer(pPlayer);
 	}
 }
 
@@ -903,6 +927,8 @@ void CHalfLifeMultiplay::DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, 
 //=========================================================
 void CHalfLifeMultiplay::PlayerGotWeapon( CBasePlayer *pPlayer, CBasePlayerItem *pWeapon )
 {
+	if(mp_coop.value)
+		g_WeaponList.AddWeapon(STRING(pWeapon->pev->classname));
 }
 
 //=========================================================
@@ -1011,6 +1037,8 @@ BOOL CHalfLifeMultiplay::CanHaveItem( CBasePlayer *pPlayer, CItem *pItem )
 //=========================================================
 void CHalfLifeMultiplay::PlayerGotItem( CBasePlayer *pPlayer, CItem *pItem )
 {
+	if(mp_coop.value)
+		g_WeaponList.AddWeapon(STRING(pItem->pev->classname));
 }
 
 //=========================================================
@@ -1046,6 +1074,9 @@ Vector CHalfLifeMultiplay::VecItemRespawnSpot( CItem *pItem )
 //=========================================================
 void CHalfLifeMultiplay::PlayerGotAmmo( CBasePlayer *pPlayer, char *szName, int iCount )
 {
+
+	if(mp_coop.value)
+		g_WeaponList.AddWeapon(szName);
 }
 
 //=========================================================

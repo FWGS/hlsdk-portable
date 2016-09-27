@@ -1205,6 +1205,7 @@ void CBasePlayerAmmo::DefaultTouch( CBaseEntity *pOther )
 
 	if( AddAmmo( pOther ) )
 	{
+		g_pGameRules->PlayerGotAmmo( NULL, (char*)STRING(pev->classname), 0);
 		if( g_pGameRules->AmmoShouldRespawn( this ) == GR_AMMO_RESPAWN_YES )
 		{
 			Respawn();
