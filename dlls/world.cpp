@@ -38,7 +38,7 @@
 extern CGraph WorldGraph;
 extern CSoundEnt *pSoundEnt;
 
-extern CBaseEntity				*g_pLastSpawn;
+extern EHANDLE				g_pLastSpawn;
 DLL_GLOBAL edict_t				*g_pBodyQueueHead;
 CGlobalState					gGlobalState;
 extern DLL_GLOBAL int				gDisplayTitle;

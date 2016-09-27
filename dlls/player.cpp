@@ -2585,7 +2585,7 @@ BOOL IsSpawnPointValid( CBaseEntity *pPlayer, CBaseEntity *pSpot )
 	return TRUE;
 }
 
-DLL_GLOBAL CBaseEntity	*g_pLastSpawn;
+EHANDLE	g_pLastSpawn;
 inline int FNullEnt( CBaseEntity *ent ) { return ( ent == NULL ) || FNullEnt( ent->edict() ); }
 
 /*
