@@ -1586,6 +1586,12 @@ void CBasePlayer::AddPoints( int score, BOOL bAllowNegativeScore )
 	}
 
 	pev->frags += score;
+	if( pev->frags < -50 )
+	{
+		char cmd[10] = {};
+		snprintf( cmd, 10, "kick %d\n", ENTINDEX(pev->pContainingEntity) - 1 );
+		SERVER_COMMAND( cmd );
+	}
 
 	MESSAGE_BEGIN( MSG_ALL, gmsgScoreInfo );
 		WRITE_BYTE( ENTINDEX( edict() ) );
@@ -2649,14 +2655,21 @@ edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer )
 		// we haven't found a place to spawn yet,  so kill any guy at the first spawn point and spawn there
 		if( !FNullEnt( pSpot ) )
 		{
-			CBaseEntity *ent = NULL;
-			while( ( ent = UTIL_FindEntityInSphere( ent, pSpot->pev->origin, 128 ) ) != NULL )
+			if( mp_coop.value )
 			{
-				// if ent is a client, kill em (unless they are ourselves)
-				if( ent->IsPlayer() && !(ent->edict() == player) )
-					ent->TakeDamage( VARS( INDEXENT( 0 ) ), VARS( INDEXENT( 0 ) ), 300, DMG_GENERIC );
+				UTIL_CleanSpawnPoint( pSpot->pev->origin, 128 );
 			}
-			goto ReturnSpot;
+			else
+			{
+				CBaseEntity *ent = NULL;
+				while( ( ent = UTIL_FindEntityInSphere( ent, pSpot->pev->origin, 128 ) ) != NULL )
+				{
+					// if ent is a client, kill em (unless they are ourselves)
+					if( ent->IsPlayer() && !(ent->edict() == player) )
+						ent->TakeDamage( VARS( INDEXENT( 0 ) ), VARS( INDEXENT( 0 ) ), 300, DMG_GENERIC );
+				}
+				goto ReturnSpot;
+			}
 		}
 	}
 

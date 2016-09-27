@@ -492,6 +492,11 @@ void ClientCommand( edict_t *pEntity )
 		if ( g_flWeaponCheat != 0.0 )
 			DumpProps();
 	}
+	else if( FStrEq(pcmd, "unblock") )
+	{
+		if ( mp_coop.value )
+			UTIL_CleanSpawnPoint( pev->origin, 150 );
+	}
 	else
 	{
 		// tell the user they entered an unknown command

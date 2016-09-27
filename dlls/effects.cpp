@@ -1944,6 +1944,15 @@ void CFade::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType
 	if( pev->spawnflags & SF_FADE_MODULATE )
 		fadeFlags |= FFADE_MODULATE;
 
+	if( mp_coop.value )
+	{
+		if( pev->dmg_take > 1 )
+			pev->dmg_take = 1;
+
+		if( pev->dmg_save > 1 )
+			pev->dmg_save = 1;
+	}
+
 	if( mp_coop.value || pev->spawnflags & SF_FADE_ONLYONE )
 	{
 		if( !pActivator || pActivator->IsNetClient() )

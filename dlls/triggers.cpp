@@ -27,6 +27,7 @@
 #include "saverestore.h"
 #include "trains.h"			// trigger_camera has train functionality
 #include "gamerules.h"
+#include "game.h"
 
 #define	SF_TRIGGER_PUSH_START_OFF	2//spawnflag that makes trigger_push spawn turned OFF
 #define SF_TRIGGER_HURT_TARGETONCE	1// Only fire hurt target once
@@ -78,8 +79,11 @@ void CFrictionModifier::Spawn( void )
 // Sets toucher's friction to m_frictionFraction (1.0 = normal friction)
 void CFrictionModifier::ChangeFriction( CBaseEntity *pOther )
 {
-	if( pOther->pev->movetype != MOVETYPE_BOUNCEMISSILE && pOther->pev->movetype != MOVETYPE_BOUNCE )
-		pOther->pev->friction = m_frictionFraction;
+	if( !mp_coop.value )
+	{
+		if( pOther->pev->movetype != MOVETYPE_BOUNCEMISSILE && pOther->pev->movetype != MOVETYPE_BOUNCE )
+			pOther->pev->friction = m_frictionFraction;
+	}
 }
 
 // Sets toucher's friction to m_frictionFraction (1.0 = normal friction)
@@ -1878,6 +1882,7 @@ void CBaseTrigger::TeleportTouch( CBaseEntity *pOther )
 
 	Vector tmp = VARS( pentTarget )->origin;
 
+	UTIL_CleanSpawnPoint( tmp, 150 );
 	if( pOther->IsPlayer() )
 	{
 		tmp.z -= pOther->pev->mins.z;// make origin adjustments in case the teleportee is a player. (origin in center, not at feet)

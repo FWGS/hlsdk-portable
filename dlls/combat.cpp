@@ -592,6 +592,7 @@ void CBaseMonster::Killed( entvars_t *pevAttacker, int iGib )
 {
 	unsigned int	cCount = 0;
 	BOOL		fDone = FALSE;
+	int classs = Classify();
 
 	if( HasMemory( bits_MEMORY_KILLED ) )
 	{
@@ -603,8 +604,20 @@ void CBaseMonster::Killed( entvars_t *pevAttacker, int iGib )
 	Remember( bits_MEMORY_KILLED );
 
 	CBaseEntity *activator = CBaseEntity::Instance( pevAttacker );
-	if( activator && activator->IsPlayer() )
-		activator->AddPoints( 1, true );
+	if( classs == CLASS_HUMAN_PASSIVE || classs == CLASS_PLAYER_ALLY )
+	{
+		if( activator && activator->IsPlayer() )
+		{
+			activator->pev->frags -= 30;
+			activator->AddPoints( 0, true );
+			activator->pev->frags -= 50;
+		}
+	}
+	else if( classs >= 5 )
+	{
+		if( activator && activator->IsPlayer() )
+			activator->AddPoints( 1, true );
+	}
 
 	// clear the deceased's sound channels.(may have been firing or reloading when killed)
 	EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "common/null.wav", 1, ATTN_NORM );

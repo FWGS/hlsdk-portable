@@ -1578,6 +1578,22 @@ void UTIL_StripToken( const char *pKey, char *pDest )
 	pDest[i] = 0;
 }
 
+void UTIL_CleanSpawnPoint( Vector origin, float dist )
+{
+	CBaseEntity *ent = NULL;
+	while( ( ent = UTIL_FindEntityInSphere( ent, origin, dist ) ) != NULL )
+	{
+		if( ent->IsPlayer() )
+		{
+			TraceResult tr = {0};
+			UTIL_TraceHull( ent->pev->origin + Vector( 0, 0, 36), ent->pev->origin + Vector( RANDOM_FLOAT( -150, 150 ), RANDOM_FLOAT( -150, 150 ), 0 ), dont_ignore_monsters, human_hull, ent->edict(), &tr);
+			//UTIL_TraceModel( ent->pev->origin + Vector( 0, 0, 36), ent->pev->origin + Vector( RANDOM_FLOAT( -150, 150 ), RANDOM_FLOAT( -150, 150 ), 0 ), 0, ent->edict(), &tr);
+
+			UTIL_SetOrigin(ent->pev, tr.vecEndPos);
+		}
+	}
+}
+
 // --------------------------------------------------------------
 //
 // CSave
