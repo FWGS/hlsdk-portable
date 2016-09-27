@@ -1837,29 +1837,39 @@ void CBaseTrigger::TeleportTouch( CBaseEntity *pOther )
 	entvars_t *pevToucher = pOther->pev;
 	edict_t	*pentTarget = NULL;
 
-	// Only teleport monsters or clients
-	if( !FBitSet( pevToucher->flags, FL_CLIENT | FL_MONSTER ) )
-		return;
-
-	if( !UTIL_IsMasterTriggered( m_sMaster, pOther ) )
-		return;
- 	
-	if( !( pev->spawnflags & SF_TRIGGER_ALLOWMONSTERS ) )
+	if( !(pev->spawnflags & SF_TRIGGER_TELEPORTALL) )
 	{
-		// no monsters allowed!
-		if( FBitSet( pevToucher->flags, FL_MONSTER ) )
-		{
+		// Only teleport monsters or clients
+		if( !FBitSet( pevToucher->flags, FL_CLIENT | FL_MONSTER ) )
 			return;
+
+		if( !UTIL_IsMasterTriggered( m_sMaster, pOther ) )
+			return;
+
+		if( !( pev->spawnflags & SF_TRIGGER_ALLOWMONSTERS ) )
+		{
+			// no monsters allowed!
+			if( FBitSet( pevToucher->flags, FL_MONSTER ) )
+			{
+				return;
+			}
+		}
+
+		if( ( pev->spawnflags & SF_TRIGGER_NOCLIENTS ) )
+		{
+			// no clients allowed
+			if( pOther->IsPlayer() )
+			{
+				return;
+			}
 		}
 	}
-
-	if( ( pev->spawnflags & SF_TRIGGER_NOCLIENTS ) )
+	else
 	{
-		// no clients allowed
-		if( pOther->IsPlayer() )
-		{
+		if( pOther->IsBSPModel() )
 			return;
-		}
+		if(pOther == this)
+			return;
 	}
 
 	pentTarget = FIND_ENTITY_BY_TARGETNAME( pentTarget, STRING( pev->target ) );
@@ -1878,8 +1888,10 @@ void CBaseTrigger::TeleportTouch( CBaseEntity *pOther )
 	pevToucher->flags &= ~FL_ONGROUND;
 
 	UTIL_SetOrigin( pevToucher, tmp );
-
-	pevToucher->angles = pentTarget->v.angles;
+	if( pev->spawnflags & SF_TRIGGER_PORTAL )
+		pevToucher->angles = pevToucher->angles + pentTarget->v.angles;
+	else
+		pevToucher->angles = pentTarget->v.angles;
 
 	if( pOther->IsPlayer() )
 	{
@@ -1887,7 +1899,8 @@ void CBaseTrigger::TeleportTouch( CBaseEntity *pOther )
 	}
 
 	pevToucher->fixangle = TRUE;
-	pevToucher->velocity = pevToucher->basevelocity = g_vecZero;
+	if( !( pev->spawnflags & SF_TRIGGER_PORTAL ) )
+		pevToucher->velocity = pevToucher->basevelocity = g_vecZero;
 }
 
 class CTriggerTeleport : public CBaseTrigger
