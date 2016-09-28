@@ -1329,6 +1329,8 @@ public:
 	char m_szLandmarkName[cchMapNameMost];		// trigger_changelevel only:  landmark on next map
 	int m_changeTarget;
 	float m_changeTargetDelay;
+	unsigned int m_uTouchCount;
+	bool m_bUsed;
 };
 
 LINK_ENTITY_TO_CLASS( trigger_changelevel, CChangeLevel )
@@ -1382,6 +1384,8 @@ When the player touches this, he gets sent to the map listed in the "map" variab
 */
 void CChangeLevel::Spawn( void )
 {
+	m_uTouchCount = 0;
+	m_bUsed = false;
 	if( FStrEq( m_szMapName, "" ) )
 		ALERT( at_console, "a trigger_changelevel doesn't have a map" );
 
@@ -1436,6 +1440,8 @@ edict_t *CChangeLevel::FindLandmark( const char *pLandmarkName )
 //=========================================================
 void CChangeLevel::UseChangeLevel( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
+	// if not activated by touch, do not count players
+	m_bUsed = true;
 	ChangeLevelNow( pActivator );
 }
 
@@ -1446,10 +1452,57 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 
 	ASSERT( !FStrEq( m_szMapName, "" ) );
 
+	if(mp_coop_changelevel.value)
+	{
+		// if not activated by touch, do not count players
+		if( !m_bUsed )
+		{
+			m_uTouchCount |= ENTINDEX( pActivator->edict() );
+			unsigned int count1 = m_uTouchCount;
+			unsigned int count2 = 0;
+			unsigned int i = 0;
+
+			// count set bits
+			count1 = count1 - ((count1 >> 1) & 0x55555555);
+			count1 = (count1 & 0x33333333) + ((count1 >> 2) & 0x33333333);
+			count1 = (((count1 + (count1 >> 4)) & 0x0F0F0F0F) * 0x01010101) >> 24;
+
+			// loop through all clients, count number of players
+			for( i = 1; i <= gpGlobals->maxClients; i++ )
+			{
+				CBaseEntity *plr = UTIL_PlayerByIndex( i );
+
+				if( plr )
+				{
+					count2++;
+				}
+			}
+
+			i = 0;
+
+			if( count1 > 1 && count1 < count2 / 3 )
+				i = count1 - count1 < count2 / 3;
+			if( count1 > 1 && count1 < count2 / 3 )
+				i = 1;
+
+			if( i )
+				UTIL_ClientPrintAll( HUD_PRINTNOTIFY, UTIL_VarArgs( "%s touched end of map, next is %s %s, %d to go\n",
+					( pActivator->pev->netname && STRING( pActivator->pev->netname )[0] != 0 ) ? STRING( pActivator->pev->netname ) : "unconnected",
+					st_szNextMap, st_szNextSpot, i ) );
+
+			if( count1 > 1 && count1 < count2 / 3 )
+				return;
+
+			if( count1 == 1 && count2 == 2 )
+				return;
+		}
+	}
 	// Don't work in deathmatch
-	if( g_pGameRules->IsDeathmatch() )
+	else if( g_pGameRules->IsDeathmatch() )
 		return;
 
+	m_uTouchCount = 0;
+	m_bUsed = false;
 	// Some people are firing these multiple times in a frame, disable
 	if( gpGlobals->time == pev->dmgtime )
 		return;
