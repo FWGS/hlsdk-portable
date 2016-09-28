@@ -28,6 +28,7 @@
 #include "skill.h"
 #include "items.h"
 #include "gamerules.h"
+#include "game.h"
 
 extern int gmsgItemPickup;
 
@@ -257,7 +258,7 @@ class CItemSuit : public CItem
 	}
 	BOOL MyTouch( CBasePlayer *pPlayer )
 	{
-		if( pPlayer->pev->weapons & ( 1<<WEAPON_SUIT ) )
+		if( !mp_coop.value && pPlayer->pev->weapons & ( 1<<WEAPON_SUIT ) )
 			return FALSE;
 
 		if( pev->spawnflags & SF_SUIT_SHORTLOGON )
