@@ -64,6 +64,9 @@ edict_t *CGameRules::GetPlayerSpawnSpot( CBasePlayer *pPlayer )
 {
 	edict_t *pentSpawnSpot = EntSelectSpawnPoint( pPlayer );
 
+	if( mp_coop.value )
+		UTIL_CleanSpawnPoint( pentSpawnSpot->v.origin, 100 );
+
 	pPlayer->pev->origin = VARS( pentSpawnSpot )->origin + Vector( 0, 0, 1 );
 	pPlayer->pev->v_angle  = g_vecZero;
 	pPlayer->pev->velocity = g_vecZero;
