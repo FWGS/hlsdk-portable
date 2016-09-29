@@ -61,6 +61,23 @@ bool CoopGetSpawnPoint( Vector *point, Vector *angles);
 
 bool CoopRestorePlayerCoords(CBaseEntity *player, Vector *origin, Vector *angles );
 
+Vector FixupSpawnPoint(Vector spawn)
+{
+	int i = 0;
+	while( i < 10 ) // 10 player heights
+	{
+		Vector point = spawn + Vector( 0, 0, 36 * i );
+		TraceResult tr;
+		UTIL_TraceHull( point, point, missile, 1, NULL, &tr );
+		if( !tr.fStartSolid )
+			return point;
+		i = -i;
+		if( i >= 0 )
+			i++;
+	}
+	return spawn;
+}
+
 //=========================================================
 //=========================================================
 edict_t *CGameRules::GetPlayerSpawnSpot( CBasePlayer *pPlayer )
@@ -78,6 +95,7 @@ edict_t *CGameRules::GetPlayerSpawnSpot( CBasePlayer *pPlayer )
 	if( mp_coop_changelevel.value && !CoopRestorePlayerCoords( pPlayer, &pPlayer->pev->origin, &pPlayer->pev->angles ))
 		CoopGetSpawnPoint( &pPlayer->pev->origin, &pPlayer->pev->angles );
 	pPlayer->pev->fixangle = TRUE;
+	pPlayer->pev->origin = FixupSpawnPoint( pPlayer->pev->origin );
 
 	return pentSpawnSpot;
 }
