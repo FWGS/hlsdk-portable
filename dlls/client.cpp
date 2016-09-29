@@ -670,11 +670,23 @@ void PlayerPostThink( edict_t *pEntity )
 		pPlayer->PostThink( );
 }
 
-
-
+void CoopClearData( void );
+void CoopClearWeaponList( void );
 void ParmsNewLevel( void )
 {
+	// retrieve the pointer to the save data
+	SAVERESTOREDATA *pSaveData = (SAVERESTOREDATA *)gpGlobals->pSaveData;
+
+	if ( pSaveData )
+		pSaveData->connectionCount = BuildChangeList( pSaveData->levelList, MAX_LEVEL_CONNECTIONS );
+	else
+		if( mp_coop_changelevel.value )
+		{
+			CoopClearData();
+			CoopClearWeaponList();
+		}
 }
+
 
 
 void ParmsChangeLevel( void )
@@ -684,6 +696,13 @@ void ParmsChangeLevel( void )
 
 	if ( pSaveData )
 		pSaveData->connectionCount = BuildChangeList( pSaveData->levelList, MAX_LEVEL_CONNECTIONS );
+	else
+		if( mp_coop_changelevel.value )
+		{
+			CoopClearData();
+			CoopClearWeaponList();
+		}
+
 }
 
 

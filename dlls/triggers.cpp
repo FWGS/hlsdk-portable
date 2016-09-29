@@ -1445,6 +1445,92 @@ void CChangeLevel::UseChangeLevel( CBaseEntity *pActivator, CBaseEntity *pCaller
 	ChangeLevelNow( pActivator );
 }
 
+struct SavedCoords
+{
+	char ip[32][32];
+	Vector origin[32];
+	Vector angles[32];
+	char landmark[32];
+	Vector triggerorigin;
+	Vector triggerangles;
+	Vector offset;
+	int iCount;
+	bool valid;
+	bool validoffset;
+	bool validspawnpoint;
+} g_SavedCoords;
+void CoopClearData( void )
+{
+	// nullify
+	SavedCoords l_SavedCoords = {};
+	g_SavedCoords = l_SavedCoords;
+}
+
+static void validateoffset( void )
+{
+	if( !g_SavedCoords.validoffset)
+	{
+		edict_t *landmark = CChangeLevel::FindLandmark(g_SavedCoords.landmark);
+		if(landmark)
+			g_SavedCoords.offset = landmark->v.origin - g_SavedCoords.offset;
+		else
+			g_SavedCoords.offset = g_vecZero;
+		g_SavedCoords.validoffset = true;
+	}
+}
+
+bool CoopRestorePlayerCoords(CBaseEntity *player, Vector *origin, Vector *angles )
+{
+	if(!g_SavedCoords.valid)
+		return false;
+	validateoffset();
+	// compute player by IQ
+	char *ip = g_engfuncs.pfnInfoKeyValue( g_engfuncs.pfnGetInfoKeyBuffer( player->edict() ), "ip" );
+	for( int i = 0;i < g_SavedCoords.iCount;i++)
+	{
+		if(!strcmp(ip, g_SavedCoords.ip[i]))
+		{
+			TraceResult tr;
+			Vector point = g_SavedCoords.origin[i] + g_SavedCoords.offset;
+
+			UTIL_TraceHull( point, point, missile, human_hull, NULL, &tr );
+			g_SavedCoords.ip[i][0] = 0;
+
+			if( tr.fStartSolid )
+				return false;
+			*origin = point;
+			*angles = g_SavedCoords.angles[i];
+			return true;
+		}
+	}
+	return false;
+}
+
+bool CoopGetSpawnPoint( Vector *point, Vector *angles)
+{
+	if(!g_SavedCoords.valid)
+		return false;
+	validateoffset();
+	*point = g_SavedCoords.triggerorigin + g_SavedCoords.offset;
+	*angles = g_SavedCoords.triggerangles;
+	if( !g_SavedCoords.validspawnpoint )
+	{
+		TraceResult tr;
+		Vector angle;
+		UTIL_MakeVectorsPrivate( *angles, (float*)&angle, NULL, NULL );
+		UTIL_TraceHull( *point, *point + angle * 100, missile, human_hull, NULL, &tr );
+		if( !tr.fStartSolid )
+		{
+			g_SavedCoords.triggerorigin = tr.vecEndPos;
+			g_SavedCoords.validspawnpoint = true;
+		}
+		else
+			g_SavedCoords.valid = false;
+	}
+
+	return true;
+}
+
 void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 {
 	edict_t	*pentLandmark;
@@ -1454,9 +1540,11 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 
 	if(mp_coop_changelevel.value)
 	{
+		SavedCoords l_SavedCoords = {};
 		// if not activated by touch, do not count players
 		if( !m_bUsed )
 		{
+
 			m_uTouchCount |= ENTINDEX( pActivator->edict() );
 			unsigned int count1 = m_uTouchCount;
 			unsigned int count2 = 0;
@@ -1475,6 +1563,17 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 				if( plr )
 				{
 					count2++;
+					char *ip = g_engfuncs.pfnInfoKeyValue( g_engfuncs.pfnGetInfoKeyBuffer( plr->edict() ), "ip" );
+
+					// player touched trigger, save it's coordinates
+					if( m_uTouchCount & (i - 1) )
+					{
+						strcpy(l_SavedCoords.ip[l_SavedCoords.iCount], ip );
+						l_SavedCoords.origin[l_SavedCoords.iCount] = plr->pev->origin;
+						l_SavedCoords.angles[l_SavedCoords.iCount] = plr->pev->angles;
+						l_SavedCoords.iCount++;
+					}
+
 				}
 			}
 
@@ -1495,7 +1594,13 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 
 			if( count1 == 1 && count2 == 2 )
 				return;
+			g_SavedCoords.triggerangles = pActivator->pev->angles;
+			g_SavedCoords.triggerorigin = pActivator->pev->origin;
+			g_SavedCoords.valid = true;
 		}
+		g_SavedCoords = l_SavedCoords;
+
+
 	}
 	// Don't work in deathmatch
 	else if( g_pGameRules->IsDeathmatch() )
@@ -1544,7 +1649,8 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 	if( !FNullEnt( pentLandmark ) )
 	{
 		strcpy( st_szNextSpot, m_szLandmarkName );
-		gpGlobals->vecLandmarkOffset = VARS( pentLandmark )->origin;
+		strcpy( g_SavedCoords.landmark, m_szLandmarkName );
+		g_SavedCoords.offset = gpGlobals->vecLandmarkOffset = VARS( pentLandmark )->origin;
 	}
 	//ALERT( at_console, "Level touches %d levels\n", ChangeList( levels, 16 ) );
 	ALERT( at_console, "CHANGE LEVEL: %s %s\n", st_szNextMap, st_szNextSpot );

@@ -57,6 +57,9 @@ BOOL CGameRules::CanHaveAmmo( CBasePlayer *pPlayer, const char *pszAmmoName, int
 
 	return FALSE;
 }
+bool CoopGetSpawnPoint( Vector *point, Vector *angles);
+
+bool CoopRestorePlayerCoords(CBaseEntity *player, Vector *origin, Vector *angles );
 
 //=========================================================
 //=========================================================
@@ -72,6 +75,8 @@ edict_t *CGameRules::GetPlayerSpawnSpot( CBasePlayer *pPlayer )
 	pPlayer->pev->velocity = g_vecZero;
 	pPlayer->pev->angles = VARS( pentSpawnSpot )->angles;
 	pPlayer->pev->punchangle = g_vecZero;
+	if( mp_coop_changelevel.value && !CoopRestorePlayerCoords( pPlayer, &pPlayer->pev->origin, &pPlayer->pev->angles ))
+		CoopGetSpawnPoint( &pPlayer->pev->origin, &pPlayer->pev->angles );
 	pPlayer->pev->fixangle = TRUE;
 
 	return pentSpawnSpot;

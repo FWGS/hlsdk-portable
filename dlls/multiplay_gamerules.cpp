@@ -84,7 +84,16 @@ public:
 		for(int i = 0; i < m_iWeapons;i++)
 			player->GiveNamedItem(weapons[i]);
 	}
+	void Clear()
+	{
+		m_iWeapons = 0;
+	}
 } g_WeaponList;
+
+void CoopClearWeaponList( void )
+{
+	g_WeaponList.Clear();
+}
 
 //*********************************************************
 // Rules for the half-life multiplayer game.
