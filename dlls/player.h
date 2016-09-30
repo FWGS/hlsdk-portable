@@ -310,6 +310,7 @@ public:
 	float m_flNextChatTime;
 
 	virtual float TouchGravGun( CBaseEntity *attacker, int stage );
+	float m_flSpawnTime;
 };
 
 #define AUTOAIM_2DEGREES  0.0348994967025

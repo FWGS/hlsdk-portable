@@ -2787,6 +2787,7 @@ void CBasePlayer::Spawn( void )
 	m_lastx = m_lasty = 0;
 
 	m_flNextChatTime = gpGlobals->time;
+	m_flSpawnTime = gpGlobals->time;
 
 	g_pGameRules->PlayerSpawn( this );
 }

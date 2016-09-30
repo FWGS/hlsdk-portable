@@ -1559,8 +1559,8 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 			{
 				CBaseEntity *plr = UTIL_PlayerByIndex( i );
 
-				// count only players in the transition volume
-				if( plr && InTransitionVolume( plr, m_szLandmarkName ) )
+				// count only players spawned more 90 seconds ago
+				if( plr && plr->IsPlayer() && (gpGlobals->time -((CBasePlayer*)plr)->m_flSpawnTime ) > 90 )
 				{
 					count2++;
 					char *ip = g_engfuncs.pfnInfoKeyValue( g_engfuncs.pfnGetInfoKeyBuffer( plr->edict() ), "ip" );
@@ -1568,11 +1568,14 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 					// player touched trigger, save it's coordinates
 					if( m_uTouchCount & (i - 1) )
 					{
-						count1++;
-						strcpy(l_SavedCoords.ip[l_SavedCoords.iCount], ip );
-						l_SavedCoords.origin[l_SavedCoords.iCount] = plr->pev->origin;
-						l_SavedCoords.angles[l_SavedCoords.iCount] = plr->pev->angles;
-						l_SavedCoords.iCount++;
+						if( InTransitionVolume( plr, m_szLandmarkName ))
+						{
+							count1++;
+							strcpy(l_SavedCoords.ip[l_SavedCoords.iCount], ip );
+							l_SavedCoords.origin[l_SavedCoords.iCount] = plr->pev->origin;
+							l_SavedCoords.angles[l_SavedCoords.iCount] = plr->pev->angles;
+							l_SavedCoords.iCount++;
+						}
 					}
 
 				}
@@ -1647,10 +1650,10 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 		}
 	}
 
-	// shedule remove first info_player_start
-	CBaseEntity *playerstart = FIND_ENTITY_BY_CLASSNAME( NULL, "info_player_start" );
-	if( playerstart )
-		playerstart->pev->flags |= FL_KILLME;
+	// shedule remove ke^w on first info_player_start
+	edict_t *playerstart = FIND_ENTITY_BY_CLASSNAME( NULL, "info_player_start" );
+	if( !FNullEnt(playerstart) )
+		playerstart->v.flags |= FL_KILLME;
 
 	// This object will get removed in the call to CHANGE_LEVEL, copy the params into "safe" memory
 	strcpy( st_szNextMap, m_szMapName );
