@@ -63,9 +63,18 @@ public:
 private:
 };
 
+class CBasePlayerStart : public CPointEntity
+{
+public:
+	// prevent transition as FCAP_ACROSS_TRANSITION does not help
+	virtual int ObjectCaps( void ) { return CPointEntity::ObjectCaps() | FCAP_DONT_SAVE; }
+
+private:
+};
+
 // These are the new entry points to entities. 
 LINK_ENTITY_TO_CLASS( info_player_deathmatch, CBaseDMStart )
-LINK_ENTITY_TO_CLASS( info_player_start, CPointEntity )
+LINK_ENTITY_TO_CLASS( info_player_start, CBasePlayerStart )
 LINK_ENTITY_TO_CLASS( info_landmark, CPointEntity )
 
 void CBaseDMStart::KeyValue( KeyValueData *pkvd )

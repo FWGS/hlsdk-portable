@@ -1506,27 +1506,31 @@ bool CoopRestorePlayerCoords(CBaseEntity *player, Vector *origin, Vector *angles
 	return false;
 }
 
-bool CoopGetSpawnPoint( Vector *point, Vector *angles)
+bool CoopGetSpawnPoint( Vector *origin, Vector *angles)
 {
 	if(!g_SavedCoords.valid)
 		return false;
 	validateoffset();
-	*point = g_SavedCoords.triggerorigin + g_SavedCoords.offset;
+	Vector point = g_SavedCoords.triggerorigin + g_SavedCoords.offset;
 	*angles = g_SavedCoords.triggerangles;
 	if( !g_SavedCoords.validspawnpoint )
 	{
 		TraceResult tr;
 		Vector angle;
 		UTIL_MakeVectorsPrivate( *angles, (float*)&angle, NULL, NULL );
-		UTIL_TraceHull( *point, *point + angle * 100, missile, human_hull, NULL, &tr );
-		if( !tr.fStartSolid )
+		UTIL_TraceHull( point, point + angle * 100, missile, human_hull, NULL, &tr );
+		if( !tr.fStartSolid && !tr.fAllSolid )
 		{
 			g_SavedCoords.triggerorigin = tr.vecEndPos;
 			g_SavedCoords.validspawnpoint = true;
 		}
 		else
+		{
 			g_SavedCoords.valid = false;
+			return false;
+		}
 	}
+	*origin = point;
 
 	return true;
 }
@@ -1546,21 +1550,17 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 		{
 
 			m_uTouchCount |= ENTINDEX( pActivator->edict() );
-			unsigned int count1 = m_uTouchCount;
+			unsigned int count1 = 0;
 			unsigned int count2 = 0;
 			unsigned int i = 0;
-
-			// count set bits
-			count1 = count1 - ((count1 >> 1) & 0x55555555);
-			count1 = (count1 & 0x33333333) + ((count1 >> 2) & 0x33333333);
-			count1 = (((count1 + (count1 >> 4)) & 0x0F0F0F0F) * 0x01010101) >> 24;
 
 			// loop through all clients, count number of players
 			for( i = 1; i <= gpGlobals->maxClients; i++ )
 			{
 				CBaseEntity *plr = UTIL_PlayerByIndex( i );
 
-				if( plr )
+				// count only players in the transition volume
+				if( plr && InTransitionVolume( plr, m_szLandmarkName ) )
 				{
 					count2++;
 					char *ip = g_engfuncs.pfnInfoKeyValue( g_engfuncs.pfnGetInfoKeyBuffer( plr->edict() ), "ip" );
@@ -1568,6 +1568,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 					// player touched trigger, save it's coordinates
 					if( m_uTouchCount & (i - 1) )
 					{
+						count1++;
 						strcpy(l_SavedCoords.ip[l_SavedCoords.iCount], ip );
 						l_SavedCoords.origin[l_SavedCoords.iCount] = plr->pev->origin;
 						l_SavedCoords.angles[l_SavedCoords.iCount] = plr->pev->angles;
@@ -1594,6 +1595,15 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 
 			if( count1 == 1 && count2 == 2 )
 				return;
+
+			// check if it is near spawn point
+			Vector point, angles;
+			if( CoopGetSpawnPoint(&point, &angles ) )
+				if( (VecBModelOrigin(pev) - point).Length() < 200 )
+					// need almost all players agree to go back
+					if( count2 - count1 > 1 )
+						return;
+
 			g_SavedCoords.triggerangles = pActivator->pev->angles;
 			g_SavedCoords.triggerorigin = pActivator->pev->origin;
 			g_SavedCoords.valid = true;
