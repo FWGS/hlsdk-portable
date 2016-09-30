@@ -1647,6 +1647,11 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 		}
 	}
 
+	// shedule remove first info_player_start
+	CBaseEntity *playerstart = FIND_ENTITY_BY_CLASSNAME( NULL, "info_player_start" );
+	if( playerstart )
+		playerstart->pev->flags |= FL_KILLME;
+
 	// This object will get removed in the call to CHANGE_LEVEL, copy the params into "safe" memory
 	strcpy( st_szNextMap, m_szMapName );
 
