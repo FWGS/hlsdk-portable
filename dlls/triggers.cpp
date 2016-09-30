@@ -1488,7 +1488,7 @@ bool CoopRestorePlayerCoords(CBaseEntity *player, Vector *origin, Vector *angles
 	char *ip = g_engfuncs.pfnInfoKeyValue( g_engfuncs.pfnGetInfoKeyBuffer( player->edict() ), "ip" );
 	for( int i = 0;i < g_SavedCoords.iCount;i++)
 	{
-		if(!strcmp(ip, g_SavedCoords.ip[i]))
+		if(ip && ip[0] && !strcmp(ip, g_SavedCoords.ip[i]) )
 		{
 			TraceResult tr;
 			Vector point = g_SavedCoords.origin[i] + g_SavedCoords.offset;
@@ -1548,6 +1548,12 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 		// if not activated by touch, do not count players
 		if( !m_bUsed )
 		{
+			hudtextparms_t params = {};
+			params.fadeinTime = 0.5;
+			params.fadeoutTime = .5;
+			params.holdTime = 10;
+			params.r2 = params.g2 = params.b2 = params.a2 = params.r1 = params.g1 = params.b1 = params.a1 = 255;
+
 
 			m_uTouchCount |= ENTINDEX( pActivator->edict() );
 			unsigned int count1 = 0;
@@ -1583,15 +1589,23 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 
 			i = 0;
 
+			if( !count2 )
+			{
+				UTIL_HudMessageAll( params, "Cannot change level: Not enough players!" );
+				return;
+			}
+
 			if( count1 > 1 && count1 < count2 / 3 )
 				i = count1 - count1 < count2 / 3;
 			if( count1 > 1 && count1 < count2 / 3 )
 				i = 1;
 
 			if( i )
-				UTIL_ClientPrintAll( HUD_PRINTNOTIFY, UTIL_VarArgs( "%s touched end of map, next is %s %s, %d to go\n",
+				UTIL_HudMessageAll( params, UTIL_VarArgs( "%s touched end of map, next is %s %s, %d to go\n",
 					( pActivator->pev->netname && STRING( pActivator->pev->netname )[0] != 0 ) ? STRING( pActivator->pev->netname ) : "unconnected",
 					st_szNextMap, st_szNextSpot, i ) );
+
+			ALERT( at_console, "^3CHANGELEVEL:^7 %d %d\n", count2, count1 );
 
 			if( count1 > 1 && count1 < count2 / 3 )
 				return;
@@ -1602,14 +1616,15 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 			// check if it is near spawn point
 			Vector point, angles;
 			if( CoopGetSpawnPoint(&point, &angles ) )
-				if( (VecBModelOrigin(pev) - point).Length() < 200 )
+				if( (VecBModelOrigin(pev) - point).Length() < 500 )
 					// need almost all players agree to go back
-					if( count2 - count1 > 1 )
+					if( count2 - count1 > 0 )
 						return;
 
-			g_SavedCoords.triggerangles = pActivator->pev->angles;
-			g_SavedCoords.triggerorigin = pActivator->pev->origin;
-			g_SavedCoords.valid = true;
+			l_SavedCoords.triggerangles = pActivator->pev->angles;
+			l_SavedCoords.triggerorigin = pActivator->pev->origin;
+			l_SavedCoords.valid = true;
+			ALERT( at_console, "^2CHANGELEVEL:^7 %d %d %f\n", count2, count1, (VecBModelOrigin(pev) - point).Length() );
 		}
 		g_SavedCoords = l_SavedCoords;
 

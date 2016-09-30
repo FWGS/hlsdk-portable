@@ -64,6 +64,7 @@ bool CoopRestorePlayerCoords(CBaseEntity *player, Vector *origin, Vector *angles
 Vector FixupSpawnPoint(Vector spawn)
 {
 	int i = 0;
+	// predict that spawn point is almost correct
 	while( i < 10 ) // 10 player heights
 	{
 		Vector point = spawn + Vector( 0, 0, 36 * i );
