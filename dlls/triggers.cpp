@@ -1331,6 +1331,9 @@ public:
 	float m_changeTargetDelay;
 	unsigned int m_uTouchCount;
 	bool m_bUsed;
+	Vector m_vecSpawnOrigin;
+	Vector m_vecSpawnAngles;
+	bool m_fSpawnSaved;
 };
 
 LINK_ENTITY_TO_CLASS( trigger_changelevel, CChangeLevel )
@@ -1458,6 +1461,7 @@ struct SavedCoords
 	bool valid;
 	bool validoffset;
 	bool validspawnpoint;
+	int changeback;
 } g_SavedCoords;
 void CoopClearData( void )
 {
@@ -1556,6 +1560,14 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 
 
 			m_uTouchCount |= ENTINDEX( pActivator->edict() );
+
+			// Keep first toucher coords to save correct spawn angles
+			if( !m_fSpawnSaved )
+			{
+				m_vecSpawnOrigin = pActivator->pev->origin;
+				m_vecSpawnAngles = pActivator->pev->angles;
+				m_fSpawnSaved = true;
+			}
 			unsigned int count1 = 0;
 			unsigned int count2 = 0;
 			unsigned int i = 0;
@@ -1565,8 +1577,8 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 			{
 				CBaseEntity *plr = UTIL_PlayerByIndex( i );
 
-				// count only players spawned more 90 seconds ago
-				if( plr && plr->IsPlayer() && (gpGlobals->time -((CBasePlayer*)plr)->m_flSpawnTime ) > 90 )
+				// count only players spawned more 30 seconds ago
+				if( plr && plr->IsPlayer() && (gpGlobals->time -((CBasePlayer*)plr)->m_flSpawnTime ) > 30 )
 				{
 					count2++;
 					char *ip = g_engfuncs.pfnInfoKeyValue( g_engfuncs.pfnGetInfoKeyBuffer( plr->edict() ), "ip" );
@@ -1574,9 +1586,9 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 					// player touched trigger, save it's coordinates
 					if( m_uTouchCount & (i - 1) )
 					{
+						count1++;
 						if( InTransitionVolume( plr, m_szLandmarkName ))
 						{
-							count1++;
 							strcpy(l_SavedCoords.ip[l_SavedCoords.iCount], ip );
 							l_SavedCoords.origin[l_SavedCoords.iCount] = plr->pev->origin;
 							l_SavedCoords.angles[l_SavedCoords.iCount] = plr->pev->angles;
@@ -1591,7 +1603,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 
 			if( !count2 )
 			{
-				UTIL_HudMessageAll( params, "Cannot change level: Not enough players!" );
+				UTIL_HudMessageAll( params, "Cannot change level: Not enough players! Wait 30 sec before you may changelevel!" );
 				return;
 			}
 
@@ -1618,11 +1630,22 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 			if( CoopGetSpawnPoint(&point, &angles ) )
 				if( (VecBModelOrigin(pev) - point).Length() < 500 )
 					// need almost all players agree to go back
-					if( count2 - count1 > 0 )
+					if( count2 - count1 > 1 )
+					{
+						UTIL_HudMessageAll( params, UTIL_VarArgs( "%s requested to changelevel backwards, but not enough players\n",
+							( pActivator->pev->netname && STRING( pActivator->pev->netname )[0] != 0 ) ? STRING( pActivator->pev->netname ) : "unconnected",
+							st_szNextMap, st_szNextSpot, i ) );
 						return;
+					}
+			/* not done, need to send confirmation menus
+					else if (g_SavedCoords.changeback < 2)
+					{
+						UTIL_ChangebackMenu(( pActivator->pev->netname && STRING( pActivator->pev->netname )[0] != 0 ) ? STRING( pActivator->pev->netname ) : "unconnected");
+						return;
+					}*/
 
-			l_SavedCoords.triggerangles = pActivator->pev->angles;
-			l_SavedCoords.triggerorigin = pActivator->pev->origin;
+			l_SavedCoords.triggerangles = m_vecSpawnAngles;
+			l_SavedCoords.triggerorigin = m_vecSpawnOrigin;
 			l_SavedCoords.valid = true;
 			ALERT( at_console, "^2CHANGELEVEL:^7 %d %d %f\n", count2, count1, (VecBModelOrigin(pev) - point).Length() );
 		}
