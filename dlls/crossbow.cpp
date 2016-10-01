@@ -443,10 +443,6 @@ void CCrossbow::FireBolt()
 	pBolt->pev->avelocity.z = 10;
 #endif
 
-	if( !m_iClip && m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0 )
-		// HEV suit - indicate out of ammo condition
-		m_pPlayer->SetSuitUpdate( "!HEV_AMO0", FALSE, 0 );
-
 	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.75;
 
 	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.75;

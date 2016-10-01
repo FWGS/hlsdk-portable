@@ -20,7 +20,7 @@
 // CHud handles the message, calculation, and drawing the HUD
 //
 
-#define RGB_YELLOWISH 0x00FFA000 //255,160,0
+#define RGB_YELLOWISH 0x00FFFFFF //255,255,255
 #define RGB_REDISH 0x00FF1010 //255,160,0
 #define RGB_GREENISH 0x0000A000 //0,160,0
 
@@ -652,6 +652,10 @@ public:
 	void _cdecl MsgFunc_ViewMode( const char *pszName, int iSize, void *pbuf );
 	int _cdecl MsgFunc_SetFOV( const char *pszName,  int iSize, void *pbuf );
 	int  _cdecl MsgFunc_Concuss( const char *pszName, int iSize, void *pbuf );
+	void _cdecl MsgFunc_Firstperson( const char *pszName, int iSize, void *pbuf );
+	void _cdecl MsgFunc_Thirdperson( const char *pszName, int iSize, void *pbuf );
+	void _cdecl MsgFunc_PlayerModel( const char *pszName, int iSize, void *pbuf );
+	void _cdecl MsgFunc_DeathCam( const char *pszName, int iSize, void *pbuf );
 
 	// Screen information
 	SCREENINFO	m_scrinfo;

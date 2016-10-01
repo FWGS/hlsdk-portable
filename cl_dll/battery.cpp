@@ -74,6 +74,12 @@ int CHudBattery::Draw( float flTime )
 	if( gHUD.m_iHideHUDDisplay & HIDEHUD_HEALTH )
 		return 1;
 
+	//
+	// HL: Visitors - Only draw (kevlar vest) value if non-zero.
+	//
+	if( m_iBat <= 0 )
+		return 1;
+
 	int r, g, b, x, y, a;
 	wrect_t rc;
 

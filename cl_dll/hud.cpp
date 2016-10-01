@@ -77,6 +77,30 @@ int __MsgFunc_GameMode( const char *pszName, int iSize, void *pbuf )
 	return gHUD.MsgFunc_GameMode( pszName, iSize, pbuf );
 }
 
+int __MsgFunc_Firstperson( const char *pszName, int iSize, void *pbuf )
+{
+	gHUD.MsgFunc_Firstperson( pszName, iSize, pbuf );
+	return 1;
+}
+
+int __MsgFunc_Thirdperson( const char *pszName, int iSize, void *pbuf )
+{
+	gHUD.MsgFunc_Thirdperson( pszName, iSize, pbuf );
+	return 1;
+}
+
+int __MsgFunc_PlayerModel( const char *pszName, int iSize, void *pbuf )
+{
+	gHUD.MsgFunc_PlayerModel( pszName, iSize, pbuf );
+	return 1;
+}
+
+int __MsgFunc_DeathCam( const char *pszName, int iSize, void *pbuf )
+{
+	gHUD.MsgFunc_DeathCam( pszName, iSize, pbuf );
+	return 1;
+}
+
 // TFFree Command Menu
 void __CmdFunc_OpenCommandMenu( void )
 {
@@ -160,6 +184,10 @@ void CHud::Init( void )
 	HOOK_MESSAGE( ViewMode );
 	HOOK_MESSAGE( SetFOV );
 	HOOK_MESSAGE( Concuss );
+	HOOK_MESSAGE( Firstperson );
+	HOOK_MESSAGE( Thirdperson );
+	HOOK_MESSAGE( PlayerModel );
+	HOOK_MESSAGE( DeathCam );
 
 	// TFFree CommandMenu
 	HOOK_COMMAND( "+commandmenu", OpenCommandMenu );

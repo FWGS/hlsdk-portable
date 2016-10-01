@@ -111,6 +111,8 @@ BOOL CPython::Deploy()
 		pev->body = 0;
 	}
 
+	m_flSoundDelay = 0;
+
 	return DefaultDeploy( "models/v_357.mdl", "models/p_357.mdl", PYTHON_DRAW, "python", UseDecrement(), pev->body );
 }
 
@@ -126,6 +128,8 @@ void CPython::Holster( int skiplocal /* = 0 */ )
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 1.0;
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
 	SendWeaponAnim( PYTHON_HOLSTER );
+
+	m_flSoundDelay = 0;
 }
 
 void CPython::SecondaryAttack( void )
@@ -202,10 +206,6 @@ void CPython::PrimaryAttack()
 #endif
 	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usFirePython, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, vecDir.x, vecDir.y, 0, 0, 0, 0 );
 
-	if( !m_iClip && m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0 )
-		// HEV suit - indicate out of ammo condition
-		m_pPlayer->SetSuitUpdate( "!HEV_AMO0", FALSE, 0 );
-
 	m_flNextPrimaryAttack = 0.75;
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
 }
@@ -227,9 +227,10 @@ void CPython::Reload( void )
 #else
 	bUseScope = g_pGameRules->IsMultiplayer();
 #endif
-	if( DefaultReload( 6, PYTHON_RELOAD, 2.0, bUseScope ) )
+	int iResult = DefaultReload( PYTHON_MAX_CLIP, PYTHON_RELOAD, 2.0, bUseScope );
+	if( iResult )
 	{
-		m_flSoundDelay = 1.5;
+		m_flSoundDelay = gpGlobals->time + 1.5;
 	}
 }
 
@@ -240,7 +241,7 @@ void CPython::WeaponIdle( void )
 	m_pPlayer->GetAutoaimVector( AUTOAIM_10DEGREES );
 
 	// ALERT( at_console, "%.2f\n", gpGlobals->time - m_flSoundDelay );
-	if( m_flSoundDelay != 0 && m_flSoundDelay <= UTIL_WeaponTimeBase() )
+	if( m_flSoundDelay != 0 && ( m_flSoundDelay <= UTIL_WeaponTimeBase() || m_flSoundDelay <= gpGlobals->time ) )
 	{
 		EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_WEAPON, "weapons/357_reload1.wav", RANDOM_FLOAT( 0.8, 0.9 ), ATTN_NORM );
 		m_flSoundDelay = 0;

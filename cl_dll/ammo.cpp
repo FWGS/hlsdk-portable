@@ -951,7 +951,7 @@ int DrawBar( int x, int y, int width, int height, float f )
 		// Always show at least one pixel if we have ammo.
 		if( w <= 0 )
 			w = 1;
-		UnpackRGB( r, g, b, RGB_GREENISH );
+		UnpackRGB( r, g, b, RGB_YELLOWISH );
 		FillRGBA( x, y, w, height, r, g, b, 255 );
 		x += w;
 		width -= w;

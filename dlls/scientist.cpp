@@ -27,14 +27,16 @@
 #include	"animation.h"
 #include	"soundent.h"
 
-#define NUM_SCIENTIST_HEADS		4 // four heads available for scientist model
+#define NUM_SCIENTIST_HEADS		6 // four heads available for scientist model
 
 enum
 {
 	HEAD_GLASSES = 0,
 	HEAD_EINSTEIN = 1,
 	HEAD_LUTHER = 2,
-	HEAD_SLICK = 3
+	HEAD_SLICK = 3,
+	HEAD_NEW_BLACK = 4,
+	HEAD_NEW_WHITE = 5
 };
 
 enum
@@ -661,7 +663,7 @@ void CScientist::Spawn( void )
 	}
 
 	// Luther is black, make his hands black
-	if( pev->body == HEAD_LUTHER )
+	if( pev->body == HEAD_LUTHER || pev->body == HEAD_NEW_BLACK )
 		pev->skin = 1;
 
 	MonsterInit();
@@ -723,7 +725,7 @@ void CScientist::TalkInit()
 	m_szGrp[TLK_MORTAL] = "SC_MORTAL";
 
 	// get voice for head
-	switch( pev->body % 3 )
+	switch( pev->body % 6 )
 	{
 	default:
 	case HEAD_GLASSES:
@@ -738,6 +740,12 @@ void CScientist::TalkInit()
 	case HEAD_SLICK:
 		m_voicePitch = 100;
 		break;	//slick
+	case HEAD_NEW_BLACK:
+		m_voicePitch = 90;
+		break;	// new black
+	case HEAD_NEW_WHITE:
+		m_voicePitch = 110;
+		break; // new white
 	}
 }
 
@@ -1142,7 +1150,7 @@ void CDeadScientist::Spawn()
 	}
 
 	// Luther is black, make his hands black
-	if( pev->body == HEAD_LUTHER )
+	if( pev->body == HEAD_LUTHER || pev->body == HEAD_NEW_BLACK )
 		pev->skin = 1;
 	else
 		pev->skin = 0;
@@ -1233,7 +1241,7 @@ void CSittingScientist::Spawn()
 	}
 
 	// Luther is black, make his hands black
-	if( pev->body == HEAD_LUTHER )
+	if( pev->body == HEAD_LUTHER || pev->body == HEAD_NEW_BLACK )
 		pev->skin = 1;
 
 	m_baseSequence = LookupSequence( "sitlookleft" );
