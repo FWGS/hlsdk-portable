@@ -126,7 +126,12 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
            zombie.cpp \
 	   ../pm_shared/pm_debug.c \
 	   ../pm_shared/pm_math.c \
-	   ../pm_shared/pm_shared.c
+	   ../pm_shared/pm_shared.c \
+	   visitors/flashlight.cpp \
+	   visitors/kevlar.cpp \
+	   visitors/massn.cpp \
+	   visitors/pipe.cpp \
+	   visitors/sniper.cpp
 #	   ../game_shared/voice_gamemgr.cpp
 
 LOCAL_LDLIBS := -llog
