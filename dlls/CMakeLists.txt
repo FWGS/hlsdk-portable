@@ -129,6 +129,11 @@ set (SVDLL_SOURCES
 	../pm_shared/pm_debug.c
 	../pm_shared/pm_math.c
 	../pm_shared/pm_shared.c
+	visitors/flashlight.cpp
+	visitors/kevlar.cpp
+	visitors/massn.cpp
+	visitors/pipe.cpp
+	visitors/sniper.cpp
 )
 	
 include_directories (. wpn_shared ../common ../engine ../pm_shared ../game_shared ../public)

@@ -400,7 +400,7 @@ void DLLEXPORT CAM_Think( void )
 	if( cam_deathcam_enabled )
 	{
 		// Store new values.
-		camAngles[PITCH} = 90;
+		camAngles[PITCH] = 90;
 		camAngles[YAW] = cam_deathcam_yaw;
 		camAngles[ROLL] = 0;
 
