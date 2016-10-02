@@ -2605,7 +2605,7 @@ USES AND SETS GLOBAL g_pLastSpawn
 */
 edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer )
 {
-	CBaseEntity *pSpot;
+	CBaseEntity *pSpot = NULL;
 	edict_t *player;
 
 	player = pPlayer->edict();
@@ -2674,15 +2674,22 @@ edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer )
 	}
 
 	// If startspot is set, (re)spawn there.
-	if( FStringNull( gpGlobals->startspot ) || !strlen(STRING( gpGlobals->startspot ) ) )
+	if( mp_coop.value || FStringNull( gpGlobals->startspot ) || !strlen(STRING( gpGlobals->startspot ) ) )
 	{
-		pSpot = UTIL_FindEntityByClassname( NULL, "info_player_start" );
-		if( !FNullEnt( pSpot ) )
-			goto ReturnSpot;
+		pSpot = NULL;
+		while( pSpot = UTIL_FindEntityByClassname( pSpot, "info_player_start" ) )
+		{
+			TraceResult tr;
+			UTIL_TraceHull( pSpot->pev->origin, pSpot->pev->origin , missile, 1, NULL, &tr );
+			if( !tr.fStartSolid && !tr.fAllSolid && !FNullEnt( pSpot ) )
+				goto ReturnSpot;
+		}
 	}
-	else
+	// landmark may still exists when no spawn spot
+	if( FNullEnt( pSpot ) )
 	{
 		pSpot = UTIL_FindEntityByTargetname( NULL, STRING( gpGlobals->startspot ) );
+
 		if( !FNullEnt( pSpot ) )
 			goto ReturnSpot;
 	}
