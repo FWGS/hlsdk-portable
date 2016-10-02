@@ -65,12 +65,12 @@ Vector FixupSpawnPoint(Vector spawn)
 {
 	int i = 0;
 	// predict that spawn point is almost correct
-	while( i < 10 ) // 10 player heights
+	while( i < 2 ) // 2 player heights
 	{
 		Vector point = spawn + Vector( 0, 0, 36 * i );
 		TraceResult tr;
-		UTIL_TraceHull( point, point, missile, 1, NULL, &tr );
-		if( !tr.fStartSolid )
+		UTIL_TraceHull( point, point, ignore_monsters, 1, NULL, &tr );
+		if( !tr.fStartSolid && !tr.fAllSolid )
 			return point;
 		i = -i;
 		if( i >= 0 )
