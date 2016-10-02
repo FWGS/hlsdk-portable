@@ -23,6 +23,7 @@
 #include "player.h"
 #include "soundent.h"
 #include "gamerules.h"
+#include "squeakgrenade.h"
 
 enum w_squeak_e
 {
@@ -43,34 +44,6 @@ enum squeak_e
 };
 
 #ifndef CLIENT_DLL
-class CSqueakGrenade : public CGrenade
-{
-	void Spawn( void );
-	void Precache( void );
-	int Classify( void );
-	void EXPORT SuperBounceTouch( CBaseEntity *pOther );
-	void EXPORT HuntThink( void );
-	int BloodColor( void ) { return BLOOD_COLOR_YELLOW; }
-	void Killed( entvars_t *pevAttacker, int iGib );
-	void GibMonster( void );
-
-	virtual int Save( CSave &save ); 
-	virtual int Restore( CRestore &restore );
-
-	static TYPEDESCRIPTION m_SaveData[];
-
-	static float m_flNextBounceSoundTime;
-
-	// CBaseEntity *m_pTarget;
-	float m_flDie;
-	Vector m_vecTarget;
-	float m_flNextHunt;
-	float m_flNextHit;
-	Vector m_posPrev;
-	EHANDLE m_hOwner;
-	int m_iMyClass;
-};
-
 float CSqueakGrenade::m_flNextBounceSoundTime = 0;
 
 LINK_ENTITY_TO_CLASS( monster_snark, CSqueakGrenade )

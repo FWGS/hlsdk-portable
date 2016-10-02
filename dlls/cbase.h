@@ -340,6 +340,14 @@ public:
 	int ammo_uranium;
 	int ammo_hornets;
 	int ammo_argrens;
+	int ammo_bow;
+	int ammo_buffalo;
+	int ammo_cannon;
+	int ammo_colts;
+	int ammo_gattlinggun;
+	int ammo_pistol;
+	int ammo_winchesterclip;
+
 	//Special stuff for grenades and satchels.
 	float m_flStartThrow;
 	float m_flReleaseThrow;

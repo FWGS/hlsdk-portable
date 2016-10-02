@@ -1309,21 +1309,19 @@ int V_FindViewModelByWeaponModel( int weaponindex )
 {
 	static char *modelmap[][2] =
 	{
-		{ "models/p_crossbow.mdl",	"models/v_crossbow.mdl" },
-		{ "models/p_crowbar.mdl",	"models/v_crowbar.mdl" },
-		{ "models/p_egon.mdl",		"models/v_egon.mdl" },
-		{ "models/p_gauss.mdl",		"models/v_gauss.mdl" },
-		{ "models/p_9mmhandgun.mdl",	"models/v_9mmhandgun.mdl" },
-		{ "models/p_grenade.mdl",	"models/v_grenade.mdl" },
-		{ "models/p_hgun.mdl",		"models/v_hgun.mdl" },
-		{ "models/p_9mmAR.mdl",		"models/v_9mmAR.mdl" },
-		{ "models/p_357.mdl",		"models/v_357.mdl" },
-		{ "models/p_rpg.mdl",		"models/v_rpg.mdl" },
-		{ "models/p_shotgun.mdl",	"models/v_shotgun.mdl" },
-		{ "models/p_squeak.mdl",	"models/v_squeak.mdl" },
-		{ "models/p_tripmine.mdl",	"models/v_tripmine.mdl" },
-		{ "models/p_satchel_radio.mdl",	"models/v_satchel_radio.mdl" },
-		{ "models/p_satchel.mdl",	"models/v_satchel.mdl" },
+		{ "models/p_beartrap.mdl", "models/v_beartrap.mdl" },
+		{ "models/p_buffalogun.mdl", "models/v_buffalogun.mdl" },
+		{ "models/p_cannon.mdl", "models/v_cannon.mdl" },
+		{ "models/p_chicken.mdl", "models/v_chicken.mdl" },
+		{ "models/p_colts.mdl", "models/v_colts.mdl" },
+		{ "models/p_dynamite.mdl", "models/v_dynamite.mdl" },
+		{ "models/p_gattlinggun.mdl", "models/v_gattlinggun.mdl" },
+		{ "models/p_knife.mdl", "models/v_knife.mdl" },
+		{ "models/p_pick.mdl", "models/v_pick.mdl" },
+		{ "models/p_pistol.mdl", "models/v_pistol.mdl" },
+		{ "models/p_scorpion.mdl", "models/v_scorpion.mdl" },
+		{ "models/p_shotgun.mdl", "models/v_shotgun.mdl" },
+		{ "models/p_winchester.mdl", "models/v_winchester.mdl" },
 		{ NULL, NULL }
 	};
 

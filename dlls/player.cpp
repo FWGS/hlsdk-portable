@@ -1092,6 +1092,14 @@ void CBasePlayer::TabulateAmmo()
 	ammo_rockets = AmmoInventory( GetAmmoIndex( "rockets" ) );
 	ammo_uranium = AmmoInventory( GetAmmoIndex( "uranium" ) );
 	ammo_hornets = AmmoInventory( GetAmmoIndex( "Hornets" ) );
+
+	ammo_bow = AmmoInventory( GetAmmoIndex( "bow" ) );
+	ammo_buffalo = AmmoInventory( GetAmmoIndex( "buffalo" ) );
+	ammo_cannon = AmmoInventory( GetAmmoIndex( "cannon" ) );
+	ammo_colts = AmmoInventory( GetAmmoIndex( "colts" ) );
+	ammo_gattlinggun = AmmoInventory( GetAmmoIndex( "gattlinggun" ) );
+	ammo_pistol = AmmoInventory( GetAmmoIndex( "pistol" ) );
+	ammo_winchesterclip = AmmoInventory( GetAmmoIndex( "winchesterclip" ) );
 }
 
 /*
@@ -3180,7 +3188,7 @@ CBaseEntity *FindEntityForward( CBaseEntity *pMe )
 
 BOOL CBasePlayer::FlashlightIsOn( void )
 {
-	return FBitSet( pev->effects, EF_DIMLIGHT );
+	return FBitSet( pev->effects, EF_BRIGHTLIGHT );
 }
 
 void CBasePlayer::FlashlightTurnOn( void )
@@ -3193,7 +3201,7 @@ void CBasePlayer::FlashlightTurnOn( void )
 	if( (pev->weapons & ( 1 << WEAPON_SUIT ) ) )
 	{
 		EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, SOUND_FLASHLIGHT_ON, 1.0, ATTN_NORM, 0, PITCH_NORM );
-		SetBits( pev->effects, EF_DIMLIGHT );
+		SetBits( pev->effects, EF_BRIGHTLIGHT );
 		MESSAGE_BEGIN( MSG_ONE, gmsgFlashlight, NULL, pev );
 			WRITE_BYTE( 1 );
 			WRITE_BYTE( m_iFlashBattery );
@@ -3206,7 +3214,7 @@ void CBasePlayer::FlashlightTurnOn( void )
 void CBasePlayer::FlashlightTurnOff( void )
 {
 	EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, SOUND_FLASHLIGHT_OFF, 1.0, ATTN_NORM, 0, PITCH_NORM );
-	ClearBits( pev->effects, EF_DIMLIGHT );
+	ClearBits( pev->effects, EF_BRIGHTLIGHT );
 	MESSAGE_BEGIN( MSG_ONE, gmsgFlashlight, NULL, pev );
 		WRITE_BYTE( 0 );
 		WRITE_BYTE( m_iFlashBattery );
@@ -3346,32 +3354,31 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		break;
 	case 101:
 		gEvilImpulse101 = TRUE;
+
 		GiveNamedItem( "item_suit" );
 		GiveNamedItem( "item_battery" );
-		GiveNamedItem( "weapon_crowbar" );
-		GiveNamedItem( "weapon_9mmhandgun" );
-		GiveNamedItem( "ammo_9mmclip" );
+		GiveNamedItem( "weapon_beartrap" );
+		GiveNamedItem( "weapon_bow" );
+		GiveNamedItem( "ammo_bow" );
+		GiveNamedItem( "weapon_buffalo" );
+		GiveNamedItem( "ammo_buffalo" );
+		GiveNamedItem( "weapon_colts" );
+		GiveNamedItem( "ammo_colts" );
+		GiveNamedItem( "weapon_dynamite" );
+		GiveNamedItem( "weapon_gattlinggun" );
+		GiveNamedItem( "ammo_gattlinggun" );
+		GiveNamedItem( "weapon_cannon" );
+		GiveNamedItem( "ammo_cannon" );
+		GiveNamedItem( "weapon_knife" );
+		GiveNamedItem( "weapon_pick" );
+		GiveNamedItem( "weapon_pistol" );
+		GiveNamedItem( "ammo_pistol" );
+		GiveNamedItem( "weapon_scorpion" );
 		GiveNamedItem( "weapon_shotgun" );
 		GiveNamedItem( "ammo_buckshot" );
-		GiveNamedItem( "weapon_9mmAR" );
-		GiveNamedItem( "ammo_9mmAR" );
-		GiveNamedItem( "ammo_ARgrenades" );
-		GiveNamedItem( "weapon_handgrenade" );
-		GiveNamedItem( "weapon_tripmine" );
-#ifndef OEM_BUILD
-		GiveNamedItem( "weapon_357" );
-		GiveNamedItem( "ammo_357" );
-		GiveNamedItem( "weapon_crossbow" );
-		GiveNamedItem( "ammo_crossbow" );
-		GiveNamedItem( "weapon_egon" );
-		GiveNamedItem( "weapon_gauss" );
-		GiveNamedItem( "ammo_gaussclip" );
-		GiveNamedItem( "weapon_rpg" );
-		GiveNamedItem( "ammo_rpgclip" );
-		GiveNamedItem( "weapon_satchel" );
-		GiveNamedItem( "weapon_snark" );
-		GiveNamedItem( "weapon_hornetgun" );
-#endif
+		GiveNamedItem( "weapon_winchester" );
+		GiveNamedItem( "ammo_winchesterclip" );
+
 		gEvilImpulse101 = FALSE;
 		break;
 	case 102:

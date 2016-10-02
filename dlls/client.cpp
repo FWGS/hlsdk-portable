@@ -1623,6 +1623,34 @@ void UpdateClientData( const struct edict_s *ent, int sendweapons, struct client
 						cd->vuser2.y = ( (CRpg *)pl->m_pActiveItem )->m_fSpotActive;
 						cd->vuser2.z = ( (CRpg *)pl->m_pActiveItem )->m_cActiveRockets;
 					}
+					else if( pl->m_pActiveItem->m_iId == WEAPON_BOW )
+					{
+						cd->vuser2.y = pl->ammo_bow;
+					}
+					else if( pl->m_pActiveItem->m_iId == WEAPON_BUFFALO )
+					{
+						cd->vuser2.y = pl->ammo_buffalo;
+					}
+					else if( pl->m_pActiveItem->m_iId == WEAPON_CANNON )
+					{
+						cd->vuser2.y = pl->ammo_cannon;
+					}
+					else if( pl->m_pActiveItem->m_iId == WEAPON_COLTS )
+					{
+						cd->vuser2.y = pl->ammo_colts;
+					}
+					else if( pl->m_pActiveItem->m_iId == WEAPON_GATTLINGGUN )
+					{
+						cd->vuser2.y = pl->ammo_gattlinggun;
+					}
+					else if( pl->m_pActiveItem->m_iId == WEAPON_PISTOL )
+					{
+						cd->vuser2.y = pl->ammo_pistol;
+					}
+					else if( pl->m_pActiveItem->m_iId == WEAPON_WINCHESTER )
+					{
+						cd->vuser2.y = pl->ammo_winchesterclip;
+					}
 				}
 			}
 		}

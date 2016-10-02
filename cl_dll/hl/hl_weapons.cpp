@@ -68,6 +68,17 @@ CSatchel g_Satchel;
 CTripmine g_Tripmine;
 CSqueak g_Snark;
 
+CBuffalo g_Buffalo;
+CCannon g_Cannon;
+CColts g_Colts;
+CHandDynamite g_HandDyn;
+CKnife g_Knife;
+CPick g_Pick;
+CPistol g_Pistol;
+CScorp g_Scorp;
+CShotgun2 g_Shotgun2;
+CWinchester g_Winchester;
+
 /*
 ======================
 AlertMessage
@@ -623,20 +634,16 @@ void HUD_InitClientWeapons( void )
 	HUD_PrepEntity( &player, NULL );
 
 	// Allocate slot(s) for each weapon that we are going to be predicting
-	HUD_PrepEntity( &g_Glock, &player );
-	HUD_PrepEntity( &g_Crowbar, &player );
-	HUD_PrepEntity( &g_Python, &player );
-	HUD_PrepEntity( &g_Mp5, &player );
-	HUD_PrepEntity( &g_Crossbow, &player );
-	HUD_PrepEntity( &g_Shotgun, &player );
-	HUD_PrepEntity( &g_Rpg, &player );
-	HUD_PrepEntity( &g_Gauss, &player );
-	HUD_PrepEntity( &g_Egon, &player );
-	HUD_PrepEntity( &g_HGun, &player );
-	HUD_PrepEntity( &g_HandGren, &player );
-	HUD_PrepEntity( &g_Satchel, &player );
-	HUD_PrepEntity( &g_Tripmine, &player );
-	HUD_PrepEntity( &g_Snark, &player );
+	HUD_PrepEntity( &g_Buffalo, &player );
+	HUD_PrepEntity( &g_Cannon, &player );
+	HUD_PrepEntity( &g_Colts, &player );
+	HUD_PrepEntity( &g_HandDyn, &player );
+	HUD_PrepEntity( &g_Knife, &player );
+	HUD_PrepEntity( &g_Pick, &player );
+	HUD_PrepEntity( &g_Pistol, &player );
+	HUD_PrepEntity( &g_Scorp, &player );
+	HUD_PrepEntity( &g_Shotgun2, &player );
+	HUD_PrepEntity( &g_Winchester, &player );
 }
 
 /*
@@ -700,48 +707,51 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 	// FIXME, make this a method in each weapon?  where you pass in an entity_state_t *?
 	switch( from->client.m_iId )
 	{
-		case WEAPON_CROWBAR:
-			pWeapon = &g_Crowbar;
+		case WEAPON_KNIFE:
+			pWeapon = &g_Knife;
 			break;
-		case WEAPON_GLOCK:
-			pWeapon = &g_Glock;
+		case WEAPON_PICK:
+			pWeapon = &g_Pick;
 			break;
-		case WEAPON_PYTHON:
-			pWeapon = &g_Python;
+		case WEAPON_PISTOL:
+			pWeapon = &g_Pistol;
 			break;
-		case WEAPON_MP5:
-			pWeapon = &g_Mp5;
+		case WEAPON_COLTS:
+			pWeapon = &g_Colts;
 			break;
-		case WEAPON_CROSSBOW:
-			pWeapon = &g_Crossbow;
+		case WEAPON_WINCHESTER:
+			pWeapon = &g_Winchester;
 			break;
 		case WEAPON_SHOTGUN:
-			pWeapon = &g_Shotgun;
+			pWeapon = &g_Shotgun2;
 			break;
-		case WEAPON_RPG:
-			pWeapon = &g_Rpg;
+		case WEAPON_SCORPION:
+			pWeapon = &g_Scorp;
 			break;
-		case WEAPON_GAUSS:
-			pWeapon = &g_Gauss;
+		case WEAPON_DYNAMITE:
+			pWeapon = &g_HandDyn;
 			break;
-		case WEAPON_EGON:
-			pWeapon = &g_Egon;
+#if 0
+		case WEAPON_GATTLINGGUN:
+			pWeapon = &;
 			break;
-		case WEAPON_HORNETGUN:
-			pWeapon = &g_HGun;
+#endif
+		case WEAPON_BUFFALO:
+			pWeapon = &g_Buffalo;
 			break;
-		case WEAPON_HANDGRENADE:
-			pWeapon = &g_HandGren;
+#if 0
+		case WEAPON_BOW:
+			pWeapon = &;
 			break;
-		case WEAPON_SATCHEL:
-			pWeapon = &g_Satchel;
+#endif
+		case WEAPON_CANNON:
+			pWeapon = &g_Cannon;
 			break;
-		case WEAPON_TRIPMINE:
-			pWeapon = &g_Tripmine;
+#if 0
+		case WEAPON_BEARTRAP:
+			pWeapon = &;
 			break;
-		case WEAPON_SNARK:
-			pWeapon = &g_Snark;
-			break;
+#endif // 0
 	}
 
 	// Store pointer to our destination entity_state_t so we can get our origin, etc. from it
@@ -851,6 +861,34 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 		( (CRpg *)player.m_pActiveItem )->m_fSpotActive = (int)from->client.vuser2[1];
 		( (CRpg *)player.m_pActiveItem )->m_cActiveRockets = (int)from->client.vuser2[2];
 	}
+	else if( player.m_pActiveItem->m_iId == WEAPON_BOW )
+	{
+		player.ammo_bow = (int)from->client.vuser2[1];
+	}
+	else if( player.m_pActiveItem->m_iId == WEAPON_BUFFALO )
+	{
+		player.ammo_buffalo = (int)from->client.vuser2[1];
+	}
+	else if( player.m_pActiveItem->m_iId == WEAPON_CANNON )
+	{
+		player.ammo_cannon = (int)from->client.vuser2[1];
+	}
+	else if( player.m_pActiveItem->m_iId == WEAPON_COLTS )
+	{
+		player.ammo_colts = (int)from->client.vuser2[1];
+	}
+	else if( player.m_pActiveItem->m_iId == WEAPON_GATTLINGGUN )
+	{
+		player.ammo_gattlinggun = (int)from->client.vuser2[1];
+	}
+	else if( player.m_pActiveItem->m_iId == WEAPON_PISTOL )
+	{
+		player.ammo_pistol = (int)from->client.vuser2[1];
+	}
+	else if( player.m_pActiveItem->m_iId == WEAPON_WINCHESTER )
+	{
+		player.ammo_winchesterclip = (int)from->client.vuser2[1];
+	}
 
 	// Don't go firing anything if we have died.
 	// Or if we don't have a weapon model deployed
@@ -918,6 +956,34 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 	{
 		from->client.vuser2[1] = ( (CRpg *)player.m_pActiveItem)->m_fSpotActive;
 		from->client.vuser2[2] = ( (CRpg *)player.m_pActiveItem)->m_cActiveRockets;
+	}
+	else if( player.m_pActiveItem->m_iId == WEAPON_BOW )
+	{
+		from->client.vuser2[1]  = player.ammo_bow;
+	}
+	else if( player.m_pActiveItem->m_iId == WEAPON_BUFFALO )
+	{
+		from->client.vuser2[1] = player.ammo_buffalo;
+	}
+	else if( player.m_pActiveItem->m_iId == WEAPON_CANNON )
+	{
+		from->client.vuser2[1] = player.ammo_cannon;
+	}
+	else if( player.m_pActiveItem->m_iId == WEAPON_COLTS )
+	{
+		from->client.vuser2[1] = player.ammo_colts;
+	}
+	else if( player.m_pActiveItem->m_iId == WEAPON_GATTLINGGUN )
+	{
+		from->client.vuser2[1] = player.ammo_gattlinggun;
+	}
+	else if( player.m_pActiveItem->m_iId == WEAPON_PISTOL )
+	{
+		from->client.vuser2[1] = player.ammo_pistol;
+	}
+	else if( player.m_pActiveItem->m_iId == WEAPON_WINCHESTER )
+	{
+		from->client.vuser2[1] = player.ammo_winchesterclip;
 	}
 
 	// Make sure that weapon animation matches what the game .dll is telling us

@@ -55,28 +55,56 @@ public:
 	BOOL m_fRegisteredSound;// whether or not this grenade has issued its DANGER sound to the world sound list yet.
 };
 
+class CDynamite : public CGrenade
+{
+public:
+	void Spawn( void );
+	static CGrenade *ShootTimed(entvars_t *pevOwner, Vector vecStart, Vector vecVelocity, float time );
+};
+
+class CCannonBall : public CGrenade
+{
+public:
+	void Spawn( void );
+	static CGrenade *ShootContact( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity );
+};
+
 // constant items
 #define ITEM_HEALTHKIT		1
 #define ITEM_ANTIDOTE		2
 #define ITEM_SECURITY		3
 #define ITEM_BATTERY		4
 
-#define WEAPON_NONE				0
-#define WEAPON_CROWBAR			1
-#define	WEAPON_GLOCK			2
-#define WEAPON_PYTHON			3
-#define WEAPON_MP5				4
-#define WEAPON_CHAINGUN			5
-#define WEAPON_CROSSBOW			6
-#define WEAPON_SHOTGUN			7
-#define WEAPON_RPG				8
-#define WEAPON_GAUSS			9
-#define WEAPON_EGON				10
-#define WEAPON_HORNETGUN		11
-#define WEAPON_HANDGRENADE		12
-#define WEAPON_TRIPMINE			13
-#define	WEAPON_SATCHEL			14
-#define	WEAPON_SNARK			15
+#define WEAPON_NONE			0
+#define WEAPON_KNIFE			1
+#define WEAPON_PICK			2
+#define WEAPON_PISTOL			3
+#define WEAPON_COLTS			4
+#define WEAPON_WINCHESTER		5
+#define WEAPON_SHOTGUN			6
+#define WEAPON_SCORPION			7
+#define WEAPON_DYNAMITE			8
+#define WEAPON_GATTLINGGUN		9
+#define WEAPON_BUFFALO			10
+#define WEAPON_BOW			11
+#define WEAPON_CANNON			12
+#define WEAPON_BEARTRAP			13
+
+#define WEAPON_CROWBAR			-1
+#define	WEAPON_GLOCK			-1
+#define WEAPON_PYTHON			-1
+#define WEAPON_MP5			-1
+#define WEAPON_CHAINGUN			-1
+#define WEAPON_CROSSBOW			-1
+//#define WEAPON_SHOTGUN		-1
+#define WEAPON_RPG			-1
+#define WEAPON_GAUSS			-1
+#define WEAPON_EGON			-1
+#define WEAPON_HORNETGUN		-1
+#define WEAPON_HANDGRENADE		-1
+#define WEAPON_TRIPMINE			-1
+#define	WEAPON_SATCHEL			-1
+#define	WEAPON_SNARK			-1
 
 #define WEAPON_ALLWEAPONS		(~(1<<WEAPON_SUIT))
 
@@ -102,6 +130,19 @@ public:
 #define SATCHEL_WEIGHT		-10
 #define TRIPMINE_WEIGHT		-10
 
+#define KNIFE_WEIGHT			0
+#define PICK_WEIGHT			0
+#define PISTOL_WEIGHT			10
+#define COLTS_WEIGHT			15
+#define WINCHESTER_WEIGHT		15
+#define SCORPION_WEIGHT			5
+#define DYNAMITE_WEIGHT			5
+#define GATTLINGGUN_WEIGHT		20
+#define BUFFALO_WEIGHT			20
+#define BOW_WEIGHT			15
+#define CANNON_WEIGHT			20
+#define BEARTRAP_WEIGHT			-10
+
 // weapon clip/carry ammo capacities
 #define URANIUM_MAX_CARRY		100
 #define	_9MM_MAX_CARRY			250
@@ -116,6 +157,18 @@ public:
 #define HORNET_MAX_CARRY		8
 #define M203_GRENADE_MAX_CARRY	10
 
+#define PISTOL_MAX_CARRY		36
+#define COLTS_MAX_CARRY			36
+#define WINCHESTER_MAX_CARRY		70
+#define SCORPION_MAX_CARRY		20
+#define DYNAMITE_MAX_CARRY		20
+#define GATTLINGGUN_MAX_CARRY		200
+#define BUFFALO_MAX_CARRY		20
+#define BOW_MAX_CARRY			35
+#define CANNON_MAX_CARRY		8
+#define BEARTRAP_MAX_CARRY		10
+#define SHOTGUN_MAX_CARRY		32
+
 // the maximum amount of ammo each weapon's clip can hold
 #define WEAPON_NOCLIP			-1
 
@@ -124,7 +177,7 @@ public:
 #define PYTHON_MAX_CLIP			6
 #define MP5_MAX_CLIP			50
 #define MP5_DEFAULT_AMMO		25
-#define SHOTGUN_MAX_CLIP		8
+//#define SHOTGUN_MAX_CLIP		8
 #define CROSSBOW_MAX_CLIP		5
 #define RPG_MAX_CLIP			1
 #define GAUSS_MAX_CLIP			WEAPON_NOCLIP
@@ -135,13 +188,25 @@ public:
 #define TRIPMINE_MAX_CLIP		WEAPON_NOCLIP
 #define SNARK_MAX_CLIP			WEAPON_NOCLIP
 
+#define PISTOL_MAX_CLIP			6
+#define COLTS_MAX_CLIP			12
+#define WINCHESTER_MAX_CLIP		11
+#define SCORPION_MAX_CLIP		WEAPON_NOCLIP
+#define DYNAMITE_MAX_CLIP		WEAPON_NOCLIP
+#define GATTLINGGUN_MAX_CLIP		100
+#define BUFFALO_MAX_CLIP		1
+#define BOW_MAX_CLIP			1
+#define CANNON_MAX_CLIP			1
+#define BEARTRAP_MAX_CLIP		WEAPON_NOCLIP
+#define SHOTGUN_MAX_CLIP		2
+
 // the default amount of ammo that comes with each gun when it spawns
 #define GLOCK_DEFAULT_GIVE			17
 #define PYTHON_DEFAULT_GIVE			6
 #define MP5_DEFAULT_GIVE			25
 #define MP5_DEFAULT_AMMO			25
 #define MP5_M203_DEFAULT_GIVE		0
-#define SHOTGUN_DEFAULT_GIVE		12
+//#define SHOTGUN_DEFAULT_GIVE		12
 #define CROSSBOW_DEFAULT_GIVE		5
 #define RPG_DEFAULT_GIVE			1
 #define GAUSS_DEFAULT_GIVE			20
@@ -151,6 +216,18 @@ public:
 #define TRIPMINE_DEFAULT_GIVE		1
 #define SNARK_DEFAULT_GIVE			5
 #define HIVEHAND_DEFAULT_GIVE		8
+
+#define PISTOL_DEFAULT_GIVE			6
+#define COLTS_DEFAULT_GIVE			12
+#define WINCHESTER_DEFAULT_GIVE			11
+#define SCORPION_DEFAULT_GIVE			5
+#define DYNAMITE_DEFAULT_GIVE			5
+#define GATTLINGGUN_DEFAULT_GIVE		100
+#define BUFFALO_DEFAULT_GIVE			1
+#define BOW_DEFAULT_GIVE			1
+#define CANNON_DEFAULT_GIVE			1
+#define BEARTRAP_DEFAULT_GIVE			2
+#define SHOTGUN_DEFAULT_GIVE			2
 
 // The amount of ammo given to a player by an ammo item.
 #define AMMO_URANIUMBOX_GIVE	20
@@ -164,6 +241,18 @@ public:
 #define AMMO_RPGCLIP_GIVE		RPG_MAX_CLIP
 #define AMMO_URANIUMBOX_GIVE	20
 #define AMMO_SNARKBOX_GIVE		5
+
+#define AMMO_PISTOL_GIVE			6
+#define AMMO_COLTS_GIVE				36
+#define AMMO_WINCHESTERCLIP_GIVE		11
+#define AMMO_SCORPION_GIVE			5
+#define AMMO_DYNAMITE_GIVE			5
+#define AMMO_GATTLINGGUN_GIVE			100
+#define AMMO_BUFFALO_GIVE			5
+#define AMMO_BOW_GIVE				5
+#define AMMO_CANNON_GIVE			2
+#define AMMO_BEARTRAP_GIVE			2
+#define AMMO_SHOTGUN_GIVE			AMMO_BUCKSHOTBOX_GIVE
 
 // bullet types
 typedef	enum
@@ -331,6 +420,7 @@ public:
 	void PrintState( void );
 
 	virtual CBasePlayerItem *GetWeaponPtr( void ) { return (CBasePlayerItem *)this; };
+	float GetNextAttackDelay( float delay );
 
 	float m_flPumpTime;
 	int		m_fInSpecialReload;									// Are we in the middle of a reload for the shotguns
@@ -345,6 +435,10 @@ public:
 	int		m_fInReload;										// Are we in the middle of a reload;
 
 	int		m_iDefaultAmmo;// how much ammo you get when you pick up this weapon as placed by a level designer.
+
+	// hle time creep vars
+	float m_flPrevPrimaryAttack;
+	float m_flLastFireTime;
 };
 
 class CBasePlayerAmmo : public CBaseEntity
@@ -981,5 +1075,212 @@ public:
 
 private:
 	unsigned short m_usSnarkFire;
+};
+
+class CKnife : public CCrowbar
+{
+public:
+	void Spawn( void );
+	void Precache( void );
+	int GetItemInfo( ItemInfo *p );
+
+	void PrimaryAttack( void );
+	int Swing( int fFirst );
+	BOOL Deploy( void );
+	void Holster( int skiplocal = 0 );
+
+private:
+	unsigned short m_usKnife;
+};
+
+class CPick : public CCrowbar
+{
+public:
+	void Spawn( void );
+	void Precache( void );
+	int GetItemInfo( ItemInfo *p );
+
+	void PrimaryAttack( void );
+	int Swing( int fFirst );
+	BOOL Deploy( void );
+	void Holster( int skiplocal = 0 );
+
+private:
+	unsigned short m_usPick;
+};
+
+class CPistol : public CGlock
+{
+public:
+#ifndef CLIENT_DLL
+	int Save( CSave &save );
+	int Restore( CRestore &restore );
+	static TYPEDESCRIPTION m_SaveData[];
+#endif
+	void Spawn( void );
+	void Precache( void );
+	int iItemSlot( void ) { return 2; }
+	int GetItemInfo( ItemInfo *p );
+
+	void PrimaryAttack( void );
+	void SecondaryAttack( void );
+	void GlockFire( float flSpread, float flCycleTime, BOOL fUseAutoAim, BOOL fSecondary );
+	BOOL Deploy( void );
+	void Holster( int skiplocal = 0 );
+	void Reload( void );
+	void WeaponIdle( void );
+	void ItemPostFrame( void );
+
+	BOOL CanAttack( float attack_time, float curtime, BOOL isPredicted );
+
+	void StartQuickFire( void );
+	void FireQuick( void );
+	void FinishQuickFire( void );
+
+	enum QUICKFIRE_STATE
+	{
+		QFSTATE_NONE = 0,
+		QFSTATE_READY,
+		QFSTATE_SHOOT,
+		QFSTATE_RELAX
+	};
+
+	int m_iQuickFireState;
+	float m_flNextQuickFire;
+
+private:
+	int m_iShell;
+	unsigned short m_usPistol;
+};
+
+class CColts : public CPython
+{
+public:
+	void Spawn( void );
+	void Precache( void );
+	int iItemSlot( void ) { return 2; }
+	int GetItemInfo( ItemInfo *p );
+	int AddToPlayer( CBasePlayer *pPlayer );
+	void PrimaryAttack( void );
+	void SecondaryAttack( void );
+	BOOL Deploy( void );
+	void Holster( int skiplocal = 0 );
+	void Reload( void );
+	void WeaponIdle( void );
+	BOOL PlayEmptySound( void );
+
+	void ColtsFire( float flSpread, float flCycleTime, BOOL fDualFire, BOOL fLeftAttack );
+
+	BOOL& m_fLeftAttack = CPython::m_fInZoom;
+
+private:
+	unsigned short m_usColts;
+};
+
+class CWinchester : public CShotgun
+{
+public:
+	void Spawn( void );
+	void Precache( void );
+	int iItemSlot() { return 3; }
+	int GetItemInfo( ItemInfo *p );
+
+	void PrimaryAttack( void );
+	void SecondaryAttack( void );
+	BOOL Deploy();
+	void Reload( void );
+	void WeaponIdle( void );
+
+	BOOL PlayEmptySound( void );
+
+private:
+	unsigned short m_usWinchester;
+};
+
+class CShotgun2 : public CShotgun
+{
+public:
+	void Spawn( void );
+	void Precache( void );
+	int iItemSlot() { return 3; }
+	int GetItemInfo( ItemInfo *p );
+
+	void PrimaryAttack( void );
+	void SecondaryAttack( void );
+	BOOL Deploy();
+	void Reload( void );
+	void WeaponIdle( void );
+
+	void ShotgunFire( float flSpread, float flCycleTime, float flIdleTime, BOOL fUseAutoAim, BOOL fSecondary );
+
+private:
+	unsigned short m_usShotgun;
+};
+
+class CHandDynamite : public CHandGrenade
+{
+public:
+	void Spawn( void );
+	void Precache( void );
+	int GetItemInfo( ItemInfo *p );
+
+	void PrimaryAttack( void );
+	BOOL Deploy( void );
+	void WeaponIdle( void );
+};
+
+class CBuffalo : public CBasePlayerWeapon
+{
+public:
+	void Spawn( void );
+	void Precache( void );
+	int iItemSlot( void ) { return 3; }
+	int GetItemInfo( ItemInfo *p );
+	int AddToPlayer( CBasePlayer *pPlayer );
+	void PrimaryAttack( void );
+	BOOL Deploy( void );
+	void Holster( int skiplocal = 0 );
+	void Reload( void );
+	void WeaponIdle( void );
+
+private:
+	unsigned short m_usBuffalo;
+};
+
+class CCannon : public CHandGrenade
+{
+public:
+	void Spawn( void );
+	void Precache( void );
+	int iItemSlot( void ) { return 4; }
+	int GetItemInfo( ItemInfo *p );
+
+	void PrimaryAttack( void );
+	BOOL Deploy( void );
+	BOOL CanHolster( void );
+	void Holster( int skiplocal = 0 );
+	void WeaponIdle( void );
+	void Reload( void );
+	void ItemPostFrame( void );
+};
+
+class CScorp : public CSqueak
+{
+public:
+	void Spawn( void );
+	void Precache( void );
+	int iItemSlot( void ) { return 5; }
+	int GetItemInfo( ItemInfo *p );
+
+	void PrimaryAttack( void );
+	void SecondaryAttack( void );
+	BOOL Deploy( void );
+	void Holster( int skiplocal = 0 );
+	void WeaponIdle( void );
+
+	static const char* pHuntSounds[];
+
+private:
+	unsigned short m_usScorp;
 };
 #endif // WEAPONS_H
