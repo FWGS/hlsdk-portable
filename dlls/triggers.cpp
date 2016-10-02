@@ -1402,6 +1402,15 @@ void CChangeLevel::Spawn( void )
 	InitTrigger();
 	if( !( pev->spawnflags & SF_CHANGELEVEL_USEONLY ) )
 		SetTouch( &CChangeLevel::TouchChangeLevel );
+	if( mp_coop_changelevel.value )
+	{
+		// set color (got from XDM)
+		pev->effects &= ~EF_NODRAW;
+		pev->rendermode = kRenderTransColor;
+		pev->rendercolor.y = 255;
+		pev->renderamt = 127;
+		pev->renderfx = kRenderFxPulseFast;
+	}
 	//ALERT( at_console, "TRANSITION: %s (%s)\n", m_szMapName, m_szLandmarkName );
 }
 
@@ -1500,7 +1509,7 @@ bool CoopRestorePlayerCoords(CBaseEntity *player, Vector *origin, Vector *angles
 			UTIL_TraceHull( point, point, missile, human_hull, NULL, &tr );
 			g_SavedCoords.ip[i][0] = 0;
 
-			if( tr.fStartSolid )
+			if( tr.fStartSolid || tr.fAllSolid )
 				return false;
 			*origin = point;
 			*angles = g_SavedCoords.angles[i];
@@ -1514,14 +1523,18 @@ bool CoopGetSpawnPoint( Vector *origin, Vector *angles)
 {
 	if(!g_SavedCoords.valid)
 		return false;
-	validateoffset();
-	Vector point = g_SavedCoords.triggerorigin + g_SavedCoords.offset;
+
+	Vector point = g_SavedCoords.triggerorigin;
 	*angles = g_SavedCoords.triggerangles;
 	if( !g_SavedCoords.validspawnpoint )
 	{
 		TraceResult tr;
 		Vector angle;
 		UTIL_MakeVectorsPrivate( *angles, (float*)&angle, NULL, NULL );
+		validateoffset();
+		point = point + g_SavedCoords.offset;
+		//UTIL_TraceHull( point, point, ignore_monsters, human_hull, NULL, &tr );
+
 		UTIL_TraceHull( point, point + angle * 100, missile, human_hull, NULL, &tr );
 		if( !tr.fStartSolid && !tr.fAllSolid )
 		{
@@ -1531,6 +1544,7 @@ bool CoopGetSpawnPoint( Vector *origin, Vector *angles)
 		else
 		{
 			g_SavedCoords.valid = false;
+			ALERT( at_console, "CoopGetSpawnPoint: trace failed");
 			return false;
 		}
 	}
@@ -1616,13 +1630,18 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 				UTIL_HudMessageAll( params, UTIL_VarArgs( "%s touched end of map, next is %s %s, %d to go\n",
 					( pActivator->pev->netname && STRING( pActivator->pev->netname )[0] != 0 ) ? STRING( pActivator->pev->netname ) : "unconnected",
 					st_szNextMap, st_szNextSpot, i ) );
+			if( count2 )
+			{
+				pev->rendercolor.x = count1 * 255 / count2;
+				pev->rendercolor.y = 255 - pev->rendercolor.x;
+			}
 
 			ALERT( at_console, "^3CHANGELEVEL:^7 %d %d\n", count2, count1 );
 
 			if( count1 > 1 && count1 < count2 / 3 )
 				return;
 
-			if( count1 == 1 && count2 == 2 )
+			if( count1 <= 1 && count2 == 2 )
 				return;
 
 			// check if it is near spawn point
@@ -1689,9 +1708,9 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 	}
 
 	// shedule remove ke^w on first info_player_start
-	edict_t *playerstart = FIND_ENTITY_BY_CLASSNAME( NULL, "info_player_start" );
+	/*edict_t *playerstart = FIND_ENTITY_BY_CLASSNAME( NULL, "info_player_start" );
 	if( !FNullEnt(playerstart) )
-		playerstart->v.flags |= FL_KILLME;
+		playerstart->v.flags |= FL_KILLME;*/
 
 	// This object will get removed in the call to CHANGE_LEVEL, copy the params into "safe" memory
 	strcpy( st_szNextMap, m_szMapName );
