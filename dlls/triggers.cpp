@@ -1648,7 +1648,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 			m_uTouchCount |=  1 << ( ENTINDEX( pActivator->edict() ) - 1);
 
 			// Keep first toucher coords to save correct spawn angles
-			if( !m_fSpawnSaved )
+			if( !m_fSpawnSaved && pActivator->IsPlayer() )
 			{
 				m_vecSpawnOrigin = pActivator->pev->origin;
 				m_vecSpawnAngles = pActivator->pev->angles;
@@ -1737,10 +1737,24 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 				}*/
 			}
 
-			l_SavedCoords.triggerangles = m_vecSpawnAngles;
-			l_SavedCoords.triggerorigin = m_vecSpawnOrigin;
-			l_SavedCoords.valid = true;
+			if( m_fSpawnSaved )
+			{
+				l_SavedCoords.triggerangles = m_vecSpawnAngles;
+				l_SavedCoords.triggerorigin = m_vecSpawnOrigin;
+				l_SavedCoords.valid = true;
+			}
 			ALERT( at_console, "^2CHANGELEVEL:^7 %d %d %d\n", count2, count1, (int)m_fIsBack);
+		}
+		else
+		{
+			// Get current player's coordinated
+			if( pActivator && pActivator->IsPlayer() )
+			{
+				l_SavedCoords.triggerangles = pActivator->pev->angles;
+				l_SavedCoords.triggerorigin = pActivator->pev->origin;
+				l_SavedCoords.valid = true;
+			}
+
 		}
 		CoopSaveTrain( pActivator, &l_SavedCoords );
 		g_SavedCoords = l_SavedCoords;
