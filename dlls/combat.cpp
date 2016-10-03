@@ -882,6 +882,19 @@ int CBaseMonster::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, f
 	{
 		return DeadTakeDamage( pevInflictor, pevAttacker, flDamage, bitsDamageType );
 	}
+	CBaseEntity *activator = CBaseEntity::Instance( pevAttacker );
+	if( mp_coop_nofriendlyfire.value )
+	{
+		if( activator && activator->IsPlayer() )
+		{
+			int classs = Classify();
+			if( classs == CLASS_HUMAN_PASSIVE || classs == CLASS_PLAYER_ALLY )
+			{
+
+				return 0;
+			}
+		}
+	}
 
 	if( pev->deadflag == DEAD_NO )
 	{

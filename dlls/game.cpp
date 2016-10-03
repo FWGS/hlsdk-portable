@@ -52,7 +52,8 @@ cvar_t mp_chattime	= { "mp_chattime","10", FCVAR_SERVER };
 cvar_t mp_gravgun_players = { "mp_gravgun_players", "0", FCVAR_SERVER };
 cvar_t mp_coop = { "mp_coop", "0", FCVAR_SERVER };
 cvar_t mp_coop_changelevel = { "mp_coop_changelevel", "0", FCVAR_SERVER };
-
+cvar_t mp_coop_nofriendlyfire = { "mp_coop_nofriendlyfire", "0", FCVAR_SERVER };
+cvar_t mp_coop_disabledmap = { "mp_coop_disabledmap", "", FCVAR_SERVER };
 // Engine Cvars
 cvar_t *g_psv_gravity = NULL;
 cvar_t *g_psv_aim = NULL;
@@ -496,6 +497,8 @@ void GameDLLInit( void )
 	CVAR_REGISTER( &mp_gravgun_players );
 	CVAR_REGISTER( &mp_coop );
 	CVAR_REGISTER( &mp_coop_changelevel );
+	CVAR_REGISTER( &mp_coop_nofriendlyfire );
+	CVAR_REGISTER( &mp_coop_disabledmap );
 
 
 	CVAR_REGISTER( &mp_chattime );
