@@ -1591,6 +1591,7 @@ void CBasePlayer::AddPoints( int score, BOOL bAllowNegativeScore )
 		char cmd[10] = {};
 		snprintf( cmd, 10, "kick %d\n", ENTINDEX(pev->pContainingEntity) - 1 );
 		SERVER_COMMAND( cmd );
+		pev->frags = 0;
 	}
 
 	MESSAGE_BEGIN( MSG_ALL, gmsgScoreInfo );
@@ -2680,7 +2681,7 @@ edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer )
 		while( pSpot = UTIL_FindEntityByClassname( pSpot, "info_player_start" ) )
 		{
 			TraceResult tr;
-			UTIL_TraceHull( pSpot->pev->origin, pSpot->pev->origin , missile, 1, NULL, &tr );
+			UTIL_TraceHull( pSpot->pev->origin, pSpot->pev->origin , missile, human_hull, NULL, &tr );
 			if( !tr.fStartSolid && !tr.fAllSolid && !FNullEnt( pSpot ) )
 				goto ReturnSpot;
 		}
@@ -2693,6 +2694,9 @@ edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer )
 		if( !FNullEnt( pSpot ) )
 			goto ReturnSpot;
 	}
+
+	if( FNullEnt( pSpot ) )
+		pSpot = UTIL_FindEntityByClassname( NULL, "info_player_start" );
 
 ReturnSpot:
 	if( FNullEnt( pSpot ) )
