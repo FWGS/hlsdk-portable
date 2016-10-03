@@ -4640,7 +4640,7 @@ void CRevertSaved::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE 
 {
 	if( !mp_coop.value )
 		UTIL_ScreenFadeAll( pev->rendercolor, Duration(), HoldTime(), pev->renderamt, FFADE_OUT );
-	else if( pActivator->IsPlayer() )
+	else if( pActivator && pActivator->IsPlayer() )
 		pActivator->TakeDamage( pev, pev, 3000, DMG_CRUSH );
 	pev->nextthink = gpGlobals->time + MessageTime();
 	SetThink( &CRevertSaved::MessageThink );
