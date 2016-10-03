@@ -4638,7 +4638,10 @@ void CRevertSaved::KeyValue( KeyValueData *pkvd )
 
 void CRevertSaved::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
-	UTIL_ScreenFadeAll( pev->rendercolor, Duration(), HoldTime(), pev->renderamt, FFADE_OUT );
+	if( !mp_coop.value )
+		UTIL_ScreenFadeAll( pev->rendercolor, Duration(), HoldTime(), pev->renderamt, FFADE_OUT );
+	else if( pActivator->IsPlayer() )
+		pActivator->TakeDamage( pev, pev, 3000, DMG_CRUSH );
 	pev->nextthink = gpGlobals->time + MessageTime();
 	SetThink( &CRevertSaved::MessageThink );
 }
