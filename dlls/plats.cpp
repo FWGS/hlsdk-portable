@@ -25,6 +25,7 @@
 #include "cbase.h"
 #include "trains.h"
 #include "saverestore.h"
+#include "game.h"
 
 static void PlatSpawnInsideTrigger(entvars_t* pevPlatform);
 
@@ -1129,6 +1130,22 @@ void CFuncTrackTrain::Next( void )
 		ALERT( at_aiconsole, "TRAIN(%s): Lost path\n", STRING( pev->targetname ) );
 		StopSound();
 		return;
+	}
+
+	// prevent train without players going to other map
+	if( mp_coop.value && pev->globalname && STRING( pev->globalname )[0] )
+	{
+		CBaseEntity *pList;
+		Vector mins = pev->absmin;
+		Vector maxs = pev->absmax;
+		maxs.z += 8;
+		int count = UTIL_EntitiesInBox( &pList, 1, mins, maxs, FL_ONGROUND );
+		if( !count || !pList->IsPlayer() )
+		{
+			pev->velocity = g_vecZero;
+			NextThink( pev->ltime + time, TRUE );
+			return;
+		}
 	}
 
 	UpdateSound();
