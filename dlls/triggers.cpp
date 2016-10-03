@@ -1313,6 +1313,7 @@ public:
 	void EXPORT TriggerChangeLevel( void );
 	void EXPORT ExecuteChangeLevel( void );
 	void EXPORT TouchChangeLevel( CBaseEntity *pOther );
+	void EXPORT UpdateColor();
 	void ChangeLevelNow( CBaseEntity *pActivator );
 
 	static edict_t *FindLandmark( const char *pLandmarkName );
@@ -1406,30 +1407,43 @@ void CChangeLevel::Spawn( void )
 		SetTouch( &CChangeLevel::TouchChangeLevel );
 		if( mp_coop_changelevel.value )
 		{
-			Vector origin = VecBModelOrigin(pev);
-			Vector point, angles;
-			CBaseEntity *pPlayer;
 			if( gpGlobals->startspot && STRING(gpGlobals->startspot) && !strcmp(STRING(gpGlobals->startspot), m_szLandmarkName) )
 				m_fIsBack = true;
-			if( !m_fIsBack && CoopGetSpawnPoint( &point, &angles ) )
-				if( (origin - point).Length() < 500 )
-					m_fIsBack = true;
-			if( !m_fIsBack && (pPlayer = UTIL_FindEntityByClassname( NULL, "info_player_start" ))  )
-				if( (origin - pPlayer->pev->origin).Length() < 1000 )
-					m_fIsBack = true;
-
 			// set color (got from XDM)
-			pev->effects &= ~EF_NODRAW;
-			pev->rendermode = kRenderTransColor;
-			if( m_fIsBack)
+			if( m_fIsBack )
 				pev->rendercolor.z = 255;
 			else
 				pev->rendercolor.y = 255;
 			pev->renderamt = 127;
-			pev->renderfx = kRenderFxPulseFast;
+
+			pev->effects &= ~EF_NODRAW;
+			pev->rendermode = kRenderTransColor;
+			SetThink( &CChangeLevel::UpdateColor );
+			pev->nextthink = gpGlobals->time + 2;
 		}
 	}
 	//ALERT( at_console, "TRANSITION: %s (%s)\n", m_szMapName, m_szLandmarkName );
+}
+
+void CChangeLevel::UpdateColor( void )
+{
+	Vector origin = VecBModelOrigin(pev);
+	Vector point, angles;
+	CBaseEntity *pPlayer;
+	pev->nextthink = gpGlobals->time + 30;
+
+	if( !m_fIsBack && (pPlayer = UTIL_FindEntityByClassname( NULL, "info_player_start" ))  )
+		if( (origin - pPlayer->pev->origin).Length() < 500 )
+			m_fIsBack = true;
+	if( !m_fIsBack && CoopGetSpawnPoint( &point, &angles ) )
+		if( (origin - point).Length() < 500 )
+			m_fIsBack = true;
+	pev->rendercolor.x = 0;
+	if( m_fIsBack )
+		pev->rendercolor.z = 255;
+	else
+		pev->rendercolor.y = 255;
+
 }
 
 void CChangeLevel::ExecuteChangeLevel( void )
@@ -1508,7 +1522,7 @@ static void validateoffset( void )
 		if(landmark)
 			g_SavedCoords.offset = landmark->v.origin - g_SavedCoords.offset;
 		else
-			g_SavedCoords.offset = g_vecZero;
+			g_SavedCoords.offset = g_vecZero - g_SavedCoords.offset;
 		g_SavedCoords.validoffset = true;
 	}
 }
@@ -1637,7 +1651,10 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 	}
 	// forget touch by some fool
 	if( gpGlobals->time - pev->dmgtime > 30)
+	{
 		m_uTouchCount = 0;
+		pev->nextthink = gpGlobals->time + 30;
+	}
 
 	if(mp_coop_changelevel.value)
 	{
