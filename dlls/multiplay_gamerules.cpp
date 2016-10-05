@@ -95,6 +95,88 @@ void CoopClearWeaponList( void )
 	g_WeaponList.Clear();
 }
 
+
+void BecomeSpectator( CBasePlayer *pPlayer )
+{
+	//pPlayer->m_bDoneFirstSpawn = true;
+	pPlayer->pev->takedamage = DAMAGE_NO;
+	pPlayer->pev->flags |= FL_SPECTATOR;
+	pPlayer->pev->flags |= FL_NOTARGET;
+	pPlayer->pev->effects |= EF_NODRAW;
+	pPlayer->pev->solid = SOLID_NOT;
+	pPlayer->pev->movetype = MOVETYPE_NOCLIP;
+	pPlayer->pev->modelindex = 0;
+	pPlayer->pev->health = 1;
+	pPlayer->m_pGoalEnt = NULL;
+	return;
+}
+
+void SpawnPlayer( CBasePlayer *pPlayer )
+{
+	pPlayer->m_state = STATE_SPAWNED;
+	pPlayer->m_iRespawnFrames = 0;
+	pPlayer->pev->effects &= ~EF_NODRAW;
+
+	pPlayer->pev->takedamage = DAMAGE_YES;
+	pPlayer->pev->flags &= ~FL_SPECTATOR;
+	pPlayer->pev->movetype = MOVETYPE_WALK;
+	pPlayer->Spawn();
+
+}
+
+extern int gmsgShowMenu;
+
+void ShowMenu( CBasePlayer *pPlayer, const char *title, int count, const char **slot )
+{
+	char buf[128], *pbuf = buf;
+	short int flags = 1<<9;
+	pbuf += sprintf( pbuf, "^2%s:\n", title );
+	for( int i = 0; i < count; i++ )
+	{
+		pbuf += sprintf( pbuf, "^3%d.^7 %s\n", i+1, slot[i]);
+		flags |= 1<<i;
+	}
+	MESSAGE_BEGIN(MSG_ONE, gmsgShowMenu, NULL, pPlayer->pev);
+	WRITE_SHORT( flags ); // slots
+	WRITE_CHAR( -1 ); // show time
+	WRITE_BYTE( 0 ); // need more
+	WRITE_STRING( buf );
+	MESSAGE_END();
+	CLIENT_COMMAND( pPlayer->edict(), "exec touch_default/numbers.cfg\n");
+}
+
+void CoopMenu( CBasePlayer *pPlayer )
+{
+	if( pPlayer->m_state == STATE_SPAWNED )
+	{
+
+		if( mp_coop.value )
+		{
+			const char *menu[] = {
+				"Force respawn",
+				"Unblock",
+				"Become spectator",
+				//"Vote changelevel"
+			};
+			ShowMenu( pPlayer, "Coop menu", ARRAYSIZE( menu ), menu );
+		}
+	}
+	else if ( pPlayer->m_state == STATE_SPECTATOR )
+	{
+		if( mp_coop.value )
+		{
+			const char *menu[] = {
+				"Spawn",
+				"Close menu"
+			};
+			ShowMenu( pPlayer, "Spectator menu", ARRAYSIZE( menu ), menu );
+		}
+	}
+}
+
+int g_iMenu;
+
+
 //*********************************************************
 // Rules for the half-life multiplayer game.
 //*********************************************************
@@ -152,6 +234,59 @@ BOOL CHalfLifeMultiplay::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 	if( g_VoiceGameMgr.ClientCommand( pPlayer, pcmd ) )
 		return TRUE;
 #endif
+	if( FStrEq( pcmd, "joincoop" ) )
+	{
+		if( pPlayer->m_state == STATE_SPECTATOR_BEGIN )
+			SpawnPlayer( pPlayer );
+		else
+			ClientPrint( pPlayer->pev, HUD_PRINTCONSOLE, "You cannot use joincoop now!" );
+
+		return TRUE;
+	}
+	if( FStrEq( pcmd, "menuselect" ) )
+	{
+		int imenu = atoi( CMD_ARGV( 1 ) );
+		switch( pPlayer->m_state )
+		{
+			case STATE_SPECTATOR_BEGIN:
+			case STATE_SPECTATOR:
+				if( imenu == 1 )
+				{
+					SpawnPlayer( pPlayer );
+				}
+				if( imenu == 2 )
+				{
+					pPlayer->m_state = STATE_SPECTATOR;
+				}
+			case STATE_SPAWNED:
+				if( imenu == 1 )
+				{
+					SpawnPlayer( pPlayer );
+				}
+				if( imenu == 2 )
+				{
+					UTIL_CleanSpawnPoint( pPlayer->pev->origin, 150 );
+				}
+				if( imenu == 3 )
+				{
+					pPlayer->RemoveAllItems( TRUE );
+					BecomeSpectator( pPlayer );
+				}
+			default:
+			break;
+		}
+		return TRUE;
+	}
+	if( FStrEq( pcmd, "coopmenu" ) )
+	{
+		if( !g_iMenu )
+			CoopMenu( pPlayer );
+		else
+			ClientPrint( pPlayer->pev, HUD_PRINTCONSOLE, "You cannot use coopmenu now!" );
+
+		return TRUE;
+	}
+
 	return CGameRules::ClientCommand( pPlayer, pcmd );
 }
 
@@ -505,6 +640,20 @@ void CHalfLifeMultiplay::InitHUD( CBasePlayer *pl )
 		MESSAGE_BEGIN( MSG_ONE, SVC_INTERMISSION, NULL, pl->edict() );
 		MESSAGE_END();
 	}
+
+	if( pl->m_state == STATE_SPECTATOR_BEGIN )
+	{
+
+		if( mp_coop.value )
+		{
+			const char *menu[] = {
+				"Join coop",
+				"Join spectators"
+			};
+			ShowMenu( pl, "COOP SERVER", ARRAYSIZE( menu ), menu );
+		}
+	}
+
 }
 
 //=========================================================
@@ -576,6 +725,10 @@ BOOL CHalfLifeMultiplay::FPlayerCanTakeDamage( CBasePlayer *pPlayer, CBaseEntity
 //=========================================================
 void CHalfLifeMultiplay::PlayerThink( CBasePlayer *pPlayer )
 {
+	if( !mp_coop.value && pPlayer->m_state == STATE_SPECTATOR_BEGIN )
+		if( pPlayer->m_afButtonPressed & ( IN_DUCK | IN_ATTACK | IN_ATTACK2 | IN_USE | IN_JUMP ) )
+			SpawnPlayer( pPlayer );
+
 	if( g_fGameOver )
 	{
 		// check for button presses
@@ -595,6 +748,13 @@ void CHalfLifeMultiplay::PlayerSpawn( CBasePlayer *pPlayer )
 {
 	BOOL		addDefault;
 	CBaseEntity	*pWeaponEntity = NULL;
+
+	if( pPlayer->m_state == STATE_CONNECTED )
+	{
+		pPlayer->m_state = STATE_SPECTATOR_BEGIN;
+		BecomeSpectator( pPlayer );
+		return;
+	}
 
 	pPlayer->pev->weapons |= ( 1 << WEAPON_SUIT );
 

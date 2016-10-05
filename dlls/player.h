@@ -83,6 +83,15 @@ enum sbar_data
 
 #define CHAT_INTERVAL 1.0f
 
+enum PlayerState
+{
+	STATE_CONNECTED = 0,
+	STATE_SPECTATOR_BEGIN,
+	STATE_SPAWNED,
+	STATE_SPECTATOR,
+	STATE_POINT_SELECT
+};
+
 class CBasePlayer : public CBaseMonster
 {
 public:
@@ -201,9 +210,9 @@ public:
 	virtual void StartSneaking( void ) { m_tSneaking = gpGlobals->time - 1; }
 	virtual void StopSneaking( void ) { m_tSneaking = gpGlobals->time + 30; }
 	virtual BOOL IsSneaking( void ) { return m_tSneaking <= gpGlobals->time; }
-	virtual BOOL IsAlive( void ) { return (pev->deadflag == DEAD_NO) && pev->health > 0; }
+	virtual BOOL IsAlive( void ) { return (pev->deadflag == DEAD_NO) && pev->health > 0 || ( pev->flags & FL_SPECTATOR ); }
 	virtual BOOL ShouldFadeOnDeath( void ) { return FALSE; }
-	virtual	BOOL IsPlayer( void ) { return TRUE; }			// Spectators should return FALSE for this, they aren't "players" as far as game logic is concerned
+	virtual	BOOL IsPlayer( void ) { return !( pev->flags & FL_SPECTATOR ); }			// Spectators should return FALSE for this, they aren't "players" as far as game logic is concerned
 
 	virtual BOOL IsNetClient( void ) { return TRUE; }		// Bots should return FALSE for this, they can't receive NET messages
 															// Spectators should return TRUE for this
@@ -311,6 +320,7 @@ public:
 
 	virtual float TouchGravGun( CBaseEntity *attacker, int stage );
 	float m_flSpawnTime;
+	PlayerState m_state;
 };
 
 #define AUTOAIM_2DEGREES  0.0348994967025

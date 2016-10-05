@@ -161,6 +161,12 @@ void ClientKill( edict_t *pEntity )
 {
 	entvars_t *pev = &pEntity->v;
 
+	if( pev->flags & FL_SPECTATOR )
+	{
+		pev->health = 1;
+		return;
+	}
+
 	CBasePlayer *pl = (CBasePlayer*) CBasePlayer::Instance( pev );
 
 	if ( pl->m_fNextSuicideTime > gpGlobals->time )
@@ -471,7 +477,7 @@ void ClientCommand( edict_t *pEntity )
 	{
 		GetClassPtr((CBasePlayer *)pev)->SelectLastItem();
 	}
-	else if ( FStrEq( pcmd, "spectate" ) && (pev->flags & FL_PROXY) )	// added for proxy support
+	else if ( FStrEq( pcmd, "spectate" ) )	// added for proxy support
 	{
 		CBasePlayer * pPlayer = GetClassPtr((CBasePlayer *)pev);
 

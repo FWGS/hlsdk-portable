@@ -833,6 +833,9 @@ void CBasePlayer::Killed( entvars_t *pevAttacker, int iGib )
 {
 	CSound *pSound;
 
+	if( pev->flags & FL_SPECTATOR )
+		return;
+
 	// Holster weapon immediately, to allow it to cleanup
 	if( m_pActiveItem )
 		m_pActiveItem->Holster();
@@ -3523,6 +3526,8 @@ int CBasePlayer::AddPlayerItem( CBasePlayerItem *pItem )
 {
 	CBasePlayerItem *pInsert;
 
+	if( pev->flags & FL_SPECTATOR )
+		return FALSE;
 	pInsert = m_rgpPlayerItems[pItem->iItemSlot()];
 
 	while( pInsert )
