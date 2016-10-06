@@ -280,6 +280,7 @@ void CBreakable::Precache( void )
 
 	switch( m_Material )
 	{
+	default:
 	case matWood:
 		pGibName = "models/woodgibs.mdl";
 
@@ -332,8 +333,6 @@ void CBreakable::Precache( void )
 		break;
 	case matNone:
 	case matLastMaterial:
-		break;
-	default:
 		break;
 	}
 	MaterialSoundPrecache( m_Material );

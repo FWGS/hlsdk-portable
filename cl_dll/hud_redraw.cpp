@@ -79,6 +79,8 @@ void CHud::Think( void )
 	}
 }
 
+void HUD_DrawOrthoTriangles( void );
+
 // Redraw
 // step through the local data,  placing the appropriate graphics & text as appropriate
 // returns 1 if they've changed, 0 otherwise
@@ -125,6 +127,9 @@ int CHud::Redraw( float flTime, int intermission )
 			pList = pList->pNext;
 		}
 	}
+
+	//omega;draw orthogonal triangles
+	HUD_DrawOrthoTriangles();
 
 	// are we in demo mode? do we need to draw the logo in the top corner?
 	if( m_iLogo )
@@ -267,7 +272,7 @@ int CHud::DrawHudNumber( int x, int y, int iFlags, int iNumber, int r, int g, in
 		{
 			k = iNumber / 100;
 			SPR_Set( GetSprite( m_HUD_number_0 + k ), r, g, b );
-			SPR_DrawAdditive( 0, x, y, &GetSpriteRect( m_HUD_number_0 + k ) );
+			SPR_DrawHoles( 0, x, y, &GetSpriteRect( m_HUD_number_0 + k ) );
 			x += iWidth;
 		}
 		else if( iFlags & ( DHN_3DIGITS ) )
@@ -281,7 +286,7 @@ int CHud::DrawHudNumber( int x, int y, int iFlags, int iNumber, int r, int g, in
 		{
 			k = ( iNumber % 100 ) / 10;
 			SPR_Set( GetSprite( m_HUD_number_0 + k ), r, g, b );
-			SPR_DrawAdditive( 0, x, y, &GetSpriteRect( m_HUD_number_0 + k ) );
+			SPR_DrawHoles( 0, x, y, &GetSpriteRect( m_HUD_number_0 + k ) );
 			x += iWidth;
 		}
 		else if( iFlags & ( DHN_3DIGITS | DHN_2DIGITS ) )
@@ -293,7 +298,7 @@ int CHud::DrawHudNumber( int x, int y, int iFlags, int iNumber, int r, int g, in
 		// SPR_Draw ones
 		k = iNumber % 10;
 		SPR_Set( GetSprite( m_HUD_number_0 + k ), r, g, b );
-		SPR_DrawAdditive( 0,  x, y, &GetSpriteRect( m_HUD_number_0 + k ) );
+		SPR_DrawHoles( 0,  x, y, &GetSpriteRect( m_HUD_number_0 + k ) );
 		x += iWidth;
 	}
 	else if( iFlags & DHN_DRAWZERO )
@@ -314,7 +319,7 @@ int CHud::DrawHudNumber( int x, int y, int iFlags, int iNumber, int r, int g, in
 		}
 
 		// SPR_Draw ones
-		SPR_DrawAdditive( 0,  x, y, &GetSpriteRect( m_HUD_number_0 ) );
+		SPR_DrawHoles( 0,  x, y, &GetSpriteRect( m_HUD_number_0 ) );
 		x += iWidth;
 	}
 

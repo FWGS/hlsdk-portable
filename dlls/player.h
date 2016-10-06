@@ -308,6 +308,13 @@ public:
 	char m_SbarString1[ SBAR_STRING_SIZE ];
 
 	float m_flNextChatTime;
+
+	void SwitchToFlashlight( void );
+
+	void UpdateStamina( void );
+	int m_iStaminaLevel;
+	float m_flStaminaStart;
+	BOOL m_bCinematicCompleted;
 };
 
 #define AUTOAIM_2DEGREES  0.0348994967025

@@ -267,15 +267,15 @@ int CHudAmmo::Init( void )
 	HOOK_MESSAGE( AmmoX );
 
 	HOOK_COMMAND( "slot1", Slot1 );
-	HOOK_COMMAND( "slot2", Slot2 );
-	HOOK_COMMAND( "slot3", Slot3 );
-	HOOK_COMMAND( "slot4", Slot4 );
-	HOOK_COMMAND( "slot5", Slot5 );
-	HOOK_COMMAND( "slot6", Slot6 );
-	HOOK_COMMAND( "slot7", Slot7 );
-	HOOK_COMMAND( "slot8", Slot8 );
-	HOOK_COMMAND( "slot9", Slot9 );
-	HOOK_COMMAND( "slot10", Slot10 );
+	HOOK_COMMAND( "slot2", Slot1 );
+	HOOK_COMMAND( "slot3", Slot1 );
+	HOOK_COMMAND( "slot4", Slot1 );
+	HOOK_COMMAND( "slot5", Slot1 );
+	HOOK_COMMAND( "slot6", Slot1 );
+	HOOK_COMMAND( "slot7", Slot1 );
+	HOOK_COMMAND( "slot8", Slot1 );
+	HOOK_COMMAND( "slot9", Slot1 );
+	HOOK_COMMAND( "slot10", Slot1 );
 	HOOK_COMMAND( "cancelselect", Close );
 	HOOK_COMMAND( "invnext", NextWeapon );
 	HOOK_COMMAND( "invprev", PrevWeapon );
@@ -859,7 +859,7 @@ int CHudAmmo::Draw( float flTime )
 	if( m_fFade > 0 )
 		m_fFade -= ( gHUD.m_flTimeDelta * 20 );
 
-	UnpackRGB( r, g, b, RGB_YELLOWISH );
+	UnpackRGB( r, g, b, RGB_WHITEISH );
 
 	ScaleColors( r, g, b, a );
 
@@ -887,7 +887,7 @@ int CHudAmmo::Draw( float flTime )
 
 			x += AmmoWidth / 2;
 
-			UnpackRGB( r,g,b, RGB_YELLOWISH );
+			UnpackRGB( r,g,b, RGB_WHITEISH );
 
 			// draw the | bar
 			FillRGBA( x, y, iBarWidth, gHUD.m_iFontHeight, r, g, b, a );
@@ -905,10 +905,13 @@ int CHudAmmo::Draw( float flTime )
 			x = gHUD.DrawHudNumber( x, y, iFlags | DHN_3DIGITS, gWR.CountAmmo( pw->iAmmoType ), r, g, b );
 		}
 
+		UnpackRGB( r, g, b, RGB_WHITEISH );
+		ScaleColors( r, g, b, 128 );
+
 		// Draw the ammo Icon
 		int iOffset = ( m_pWeapon->rcAmmo.bottom - m_pWeapon->rcAmmo.top ) / 8;
 		SPR_Set( m_pWeapon->hAmmo, r, g, b );
-		SPR_DrawAdditive( 0, x, y - iOffset, &m_pWeapon->rcAmmo );
+		SPR_DrawHoles( 0, x, y - iOffset, &m_pWeapon->rcAmmo );
 	}
 
 	// Does weapon have seconday ammo?
@@ -923,10 +926,13 @@ int CHudAmmo::Draw( float flTime )
 			x = ScreenWidth - 4 * AmmoWidth - iIconWidth;
 			x = gHUD.DrawHudNumber( x, y, iFlags | DHN_3DIGITS, gWR.CountAmmo( pw->iAmmo2Type ), r, g, b );
 
+			UnpackRGB( r, g, b, RGB_WHITEISH );
+			ScaleColors( r, g, b, 128 );
+
 			// Draw the ammo Icon
 			SPR_Set( m_pWeapon->hAmmo2, r, g, b );
-			int iOffset = ( m_pWeapon->rcAmmo2.bottom - m_pWeapon->rcAmmo2.top) / 8;
-			SPR_DrawAdditive(0, x, y - iOffset, &m_pWeapon->rcAmmo2 );
+			int iOffset = ( m_pWeapon->rcAmmo2.bottom - m_pWeapon->rcAmmo2.top ) / 8;
+			SPR_DrawHoles( 0, x, y - iOffset, &m_pWeapon->rcAmmo2 );
 		}
 	}
 	return 1;
@@ -1025,7 +1031,7 @@ int CHudAmmo::DrawWList( float flTime )
 	{
 		int iWidth;
 
-		UnpackRGB( r, g, b, RGB_YELLOWISH );
+		UnpackRGB( r, g, b, RGB_WHITEISH );
 
 		if( iActiveSlot == i )
 			a = 255;
@@ -1076,34 +1082,31 @@ int CHudAmmo::DrawWList( float flTime )
 				if( !p || !p->iId )
 					continue;
 
-				UnpackRGB( r, g, b, RGB_YELLOWISH );
+				UnpackRGB( r, g, b, RGB_WHITEISH );
 
 				// if active, then we must have ammo.
 				if( gpActiveSel == p )
 				{
 					SPR_Set( p->hActive, r, g, b );
-					SPR_DrawAdditive( 0, x, y, &p->rcActive );
+					SPR_Draw( 0, x, y, &p->rcActive );
 
 					SPR_Set( gHUD.GetSprite( m_HUD_selection ), r, g, b );
-					SPR_DrawAdditive( 0, x, y, &gHUD.GetSpriteRect( m_HUD_selection ) );
+					SPR_Draw( 0, x, y, &gHUD.GetSpriteRect( m_HUD_selection ) );
 				}
 				else
 				{
 					// Draw Weapon if Red if no ammo
 					if( gWR.HasAmmo( p ) )
-						ScaleColors( r, g, b, 192 );
+						ScaleColors( r, g, b, 255 );
 					else
 					{
 						UnpackRGB( r, g, b, RGB_REDISH );
-						ScaleColors( r, g, b, 128 );
+						ScaleColors( r, g, b, 255 );
 					}
 
 					SPR_Set( p->hInactive, r, g, b );
-					SPR_DrawAdditive( 0, x, y, &p->rcInactive );
+					SPR_Draw( 0, x, y, &p->rcInactive );
 				}
-
-				// Draw Ammo Bar
-				DrawAmmoBar( p, x + giABWidth / 2, y, giABWidth, giABHeight );
 				
 				y += p->rcActive.bottom - p->rcActive.top + 5;
 			}
@@ -1113,7 +1116,7 @@ int CHudAmmo::DrawWList( float flTime )
 		else
 		{
 			// Draw Row of weapons.
-			UnpackRGB( r, g, b, RGB_YELLOWISH );
+			UnpackRGB( r, g, b, RGB_WHITEISH );
 
 			for( int iPos = 0; iPos < MAX_WEAPON_POSITIONS; iPos++ )
 			{

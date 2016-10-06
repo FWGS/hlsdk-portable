@@ -116,6 +116,10 @@ TYPEDESCRIPTION	CBasePlayer::m_playerSaveData[] =
 	DEFINE_FIELD( CBasePlayer, m_iHideHUD, FIELD_INTEGER ),
 	DEFINE_FIELD( CBasePlayer, m_iFOV, FIELD_INTEGER ),
 
+	DEFINE_FIELD( CBasePlayer, m_flStaminaStart, FIELD_TIME ),
+	DEFINE_FIELD( CBasePlayer, m_iStaminaLevel, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_bCinematicCompleted, FIELD_BOOLEAN ),
+
 	//DEFINE_FIELD( CBasePlayer, m_fDeadTime, FIELD_FLOAT ), // only used in multiplayer games
 	//DEFINE_FIELD( CBasePlayer, m_fGameHUDInitialized, FIELD_INTEGER ), // only used in multiplayer games
 	//DEFINE_FIELD( CBasePlayer, m_flStopExtraSoundTime, FIELD_TIME ),
@@ -184,6 +188,10 @@ int gmsgTeamNames = 0;
 int gmsgStatusText = 0;
 int gmsgStatusValue = 0;
 
+int gmsgCinematic = 0;
+int gmsgGlow = 0;
+int gmsgDeathVision = 0;
+
 void LinkUserMessages( void )
 {
 	// Already taken care of?
@@ -228,6 +236,10 @@ void LinkUserMessages( void )
 
 	gmsgStatusText = REG_USER_MSG( "StatusText", -1 );
 	gmsgStatusValue = REG_USER_MSG( "StatusValue", 3 );
+
+	gmsgCinematic = REG_USER_MSG( "Cinematic", 1 );
+	gmsgGlow = REG_USER_MSG( "Glow", 1 );
+	gmsgDeathVision = REG_USER_MSG( "DeathVision", 1 );
 }
 
 LINK_ENTITY_TO_CLASS( player, CBasePlayer )
@@ -890,7 +902,21 @@ void CBasePlayer::Killed( entvars_t *pevAttacker, int iGib )
 	MESSAGE_END();
 
 	// UNDONE: Put this in, but add FFADE_PERMANENT and make fade time 8.8 instead of 4.12
-	// UTIL_ScreenFade( edict(), Vector( 128, 0, 0 ), 6, 15, 255, FFADE_OUT | FFADE_MODULATE );
+	// ==========================================
+	// Code changes for- Night at the Office:
+	// ==========================================
+	//
+	// -Fade on Death. When the Player dies A full screen sprite
+	//  is loaded onto the screen and the Screen slowly fades out
+	//  to white, with accompanying ringing sound.
+
+	// Fade screen to white.
+	UTIL_ScreenFade( this, Vector( 255, 255, 255 ), 6, 15, 255, FFADE_OUT );
+
+	// Tell client to draw death vision.
+	MESSAGE_BEGIN( MSG_ONE, gmsgDeathVision, NULL, pev );
+		WRITE_BYTE( 0 );
+	MESSAGE_END();
 
 	if( ( pev->health < -40 && iGib != GIB_NEVER ) || iGib == GIB_ALWAYS )
 	{
@@ -1092,6 +1118,7 @@ void CBasePlayer::TabulateAmmo()
 	ammo_rockets = AmmoInventory( GetAmmoIndex( "rockets" ) );
 	ammo_uranium = AmmoInventory( GetAmmoIndex( "uranium" ) );
 	ammo_hornets = AmmoInventory( GetAmmoIndex( "Hornets" ) );
+	ammo_ak47 = AmmoInventory( GetAmmoIndex( "ak47" ) );
 }
 
 /*
@@ -1839,6 +1866,8 @@ void CBasePlayer::PreThink( void )
 	{
 		pev->velocity = g_vecZero;
 	}
+
+	UpdateStamina();
 }
 /* Time based Damage works as follows: 
 	1) There are several types of timebased damage:
@@ -2181,89 +2210,7 @@ void CBasePlayer::CheckSuitUpdate()
 
 void CBasePlayer::SetSuitUpdate( char *name, int fgroup, int iNoRepeatTime )
 {
-	int i;
-	int isentence;
-	int iempty = -1;
-
-	// Ignore suit updates if no suit
-	if( !( pev->weapons & ( 1 << WEAPON_SUIT ) ) )
-		return;
-
-	if( g_pGameRules->IsMultiplayer() )
-	{
-		// due to static channel design, etc. We don't play HEV sounds in multiplayer right now.
-		return;
-	}
-
-	// if name == NULL, then clear out the queue
-	if( !name )
-	{
-		for( i = 0; i < CSUITPLAYLIST; i++ )
-			m_rgSuitPlayList[i] = 0;
-		return;
-	}
-
-	// get sentence or group number
-	if( !fgroup )
-	{
-		isentence = SENTENCEG_Lookup( name, NULL );
-		if( isentence < 0 )
-			return;
-	}
-	else
-		// mark group number as negative
-		isentence = -SENTENCEG_GetIndex( name );
-
-	// check norepeat list - this list lets us cancel
-	// the playback of words or sentences that have already
-	// been played within a certain time.
-	for( i = 0; i < CSUITNOREPEAT; i++ )
-	{
-		if( isentence == m_rgiSuitNoRepeat[i] )
-		{
-			// this sentence or group is already in 
-			// the norepeat list
-			if( m_rgflSuitNoRepeatTime[i] < gpGlobals->time )
-			{
-				// norepeat time has expired, clear it out
-				m_rgiSuitNoRepeat[i] = 0;
-				m_rgflSuitNoRepeatTime[i] = 0.0;
-				iempty = i;
-				break;
-			}
-			else
-			{
-				// don't play, still marked as norepeat
-				return;
-			}
-		}
-		// keep track of empty slot
-		if( !m_rgiSuitNoRepeat[i] )
-			iempty = i;
-	}
-
-	// sentence is not in norepeat list, save if norepeat time was given
-	if( iNoRepeatTime )
-	{
-		if( iempty < 0 )
-			iempty = RANDOM_LONG( 0, CSUITNOREPEAT - 1 ); // pick random slot to take over
-		m_rgiSuitNoRepeat[iempty] = isentence;
-		m_rgflSuitNoRepeatTime[iempty] = iNoRepeatTime + gpGlobals->time;
-	}
-
-	// find empty spot in queue, or overwrite last spot
-	m_rgSuitPlayList[m_iSuitPlayNext++] = isentence;
-	if( m_iSuitPlayNext == CSUITPLAYLIST )
-		m_iSuitPlayNext = 0;
-
-	if( m_flSuitUpdate <= gpGlobals->time )
-	{
-		if( m_flSuitUpdate == 0 )
-			// play queue is empty, don't delay too long before playback
-			m_flSuitUpdate = gpGlobals->time + SUITFIRSTUPDATETIME;
-		else 
-			m_flSuitUpdate = gpGlobals->time + SUITUPDATETIME; 
-	}
+	return;
 }
 
 /*
@@ -2775,6 +2722,10 @@ void CBasePlayer::Spawn( void )
 
 	m_flNextChatTime = gpGlobals->time;
 
+	m_flStaminaStart = 0;
+	m_iStaminaLevel = 100;
+	m_bCinematicCompleted = FALSE;
+
 	g_pGameRules->PlayerSpawn( this );
 }
 
@@ -2898,6 +2849,9 @@ int CBasePlayer::Restore( CRestore &restore )
 	//			Barring that, we clear it out here instead of using the incorrect restored time value.
 	m_flNextAttack = UTIL_WeaponTimeBase();
 #endif
+	// Do not draw cinematic after loading.
+	m_bCinematicCompleted = TRUE;
+
 	return status;
 }
 
@@ -3185,34 +3139,10 @@ BOOL CBasePlayer::FlashlightIsOn( void )
 
 void CBasePlayer::FlashlightTurnOn( void )
 {
-	if( !g_pGameRules->FAllowFlashlight() )
-	{
-		return;
-	}
-
-	if( (pev->weapons & ( 1 << WEAPON_SUIT ) ) )
-	{
-		EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, SOUND_FLASHLIGHT_ON, 1.0, ATTN_NORM, 0, PITCH_NORM );
-		SetBits( pev->effects, EF_DIMLIGHT );
-		MESSAGE_BEGIN( MSG_ONE, gmsgFlashlight, NULL, pev );
-			WRITE_BYTE( 1 );
-			WRITE_BYTE( m_iFlashBattery );
-		MESSAGE_END();
-
-		m_flFlashLightTime = FLASH_DRAIN_TIME + gpGlobals->time;
-	}
 }
 
 void CBasePlayer::FlashlightTurnOff( void )
 {
-	EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, SOUND_FLASHLIGHT_OFF, 1.0, ATTN_NORM, 0, PITCH_NORM );
-	ClearBits( pev->effects, EF_DIMLIGHT );
-	MESSAGE_BEGIN( MSG_ONE, gmsgFlashlight, NULL, pev );
-		WRITE_BYTE( 0 );
-		WRITE_BYTE( m_iFlashBattery );
-	MESSAGE_END();
-
-	m_flFlashLightTime = FLASH_CHARGE_TIME + gpGlobals->time;
 }
 
 /*
@@ -3279,16 +3209,15 @@ void CBasePlayer::ImpulseCommands()
 			gmsgLogo = 0;
 		break;
 	case 100:
-        // temporary flashlight for level designers
-		if( FlashlightIsOn() )
+	{
+		// If the player has the torch and is not using it,
+		// requested to turn on the flashlight,
+		// change weapon to flashlight.
+		if( ( pev->weapons & ( 1 << WEAPON_TORCH ) ) && m_pActiveItem && !FClassnameIs( m_pActiveItem->pev, "weapon_torch" ) )
 		{
-			FlashlightTurnOff();
+			SwitchToFlashlight();
 		}
-		else 
-		{
-			FlashlightTurnOn();
-		}
-		break;
+	}
 	case 201:
 		// paint decal
 		if( gpGlobals->time < m_flNextDecalTime )
@@ -3346,8 +3275,10 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		break;
 	case 101:
 		gEvilImpulse101 = TRUE;
+
 		GiveNamedItem( "item_suit" );
-		GiveNamedItem( "item_battery" );
+		GiveNamedItem( "weapon_holster" );
+		GiveNamedItem( "weapon_torch" );
 		GiveNamedItem( "weapon_crowbar" );
 		GiveNamedItem( "weapon_9mmhandgun" );
 		GiveNamedItem( "ammo_9mmclip" );
@@ -3355,23 +3286,7 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		GiveNamedItem( "ammo_buckshot" );
 		GiveNamedItem( "weapon_9mmAR" );
 		GiveNamedItem( "ammo_9mmAR" );
-		GiveNamedItem( "ammo_ARgrenades" );
-		GiveNamedItem( "weapon_handgrenade" );
-		GiveNamedItem( "weapon_tripmine" );
-#ifndef OEM_BUILD
-		GiveNamedItem( "weapon_357" );
-		GiveNamedItem( "ammo_357" );
-		GiveNamedItem( "weapon_crossbow" );
-		GiveNamedItem( "ammo_crossbow" );
-		GiveNamedItem( "weapon_egon" );
-		GiveNamedItem( "weapon_gauss" );
-		GiveNamedItem( "ammo_gaussclip" );
-		GiveNamedItem( "weapon_rpg" );
-		GiveNamedItem( "ammo_rpgclip" );
-		GiveNamedItem( "weapon_satchel" );
-		GiveNamedItem( "weapon_snark" );
-		GiveNamedItem( "weapon_hornetgun" );
-#endif
+
 		gEvilImpulse101 = FALSE;
 		break;
 	case 102:
@@ -3670,6 +3585,16 @@ void CBasePlayer::ItemPostFrame()
 	if( m_pTank != NULL )
 		return;
 
+	if( m_pActiveItem )
+	{
+		CBasePlayerWeapon*pWeapon = (CBasePlayerWeapon*)m_pActiveItem;
+
+		// This function always gets called to update the current weapon,
+		// regardless of next attack time.
+		if( pWeapon )
+			pWeapon->ItemPostFrame_Always();
+	}
+
 #if defined( CLIENT_WEAPONS )
 	if( m_flNextAttack > 0 )
 #else
@@ -3799,9 +3724,38 @@ void CBasePlayer::UpdateClientData( void )
 	// HACKHACK -- send the message to display the game title
 	if( gDisplayTitle )
 	{
-		MESSAGE_BEGIN( MSG_ONE, gmsgShowGameTitle, NULL, pev );
-		WRITE_BYTE( 0 );
-		MESSAGE_END();
+		if( !m_bCinematicCompleted )
+		{
+			// ==========================================
+			// Code changes for- Night at the Office:
+			// ==========================================
+			//
+			// -Cinematic bars. Changed the game title code to display widescreen bars,
+			//  used in the opening of the main game. The bars are active while player
+			//  is stuck into position, to give a cinematic feel to the opening sequence.
+			//  So the player wont think he is genuinely stuck into the environment.
+
+			int duration = 0;
+
+			// training level.
+			if( FStrEq( STRING( gpGlobals->mapname ), "trn1" ) )
+			{
+				duration = 34;
+			}
+			// start level.
+			else if( FStrEq( STRING( gpGlobals->mapname ), "f14" ) )
+			{
+				duration = 41;
+			}
+
+			// Tell client to show cinematic bars.
+			MESSAGE_BEGIN( MSG_ONE, gmsgCinematic, NULL, pev );
+				WRITE_BYTE( duration );
+			MESSAGE_END();
+
+			// Only do this once.
+			m_bCinematicCompleted = TRUE;
+		}
 		gDisplayTitle = 0;
 	}
 
@@ -4442,6 +4396,93 @@ BOOL CBasePlayer::SwitchWeapon( CBasePlayerItem *pWeapon )
 	return TRUE;
 }
 
+// ==========================================
+// Code changes for- Night at the Office:
+// ==========================================
+//
+// -Stamina. Stamina running in background, if player runs 
+//  for a continued amount of time, he gets tired and begins
+//  to breathe heavily. Recover stamina by standing still, 
+//  or walking slowly.
+
+//
+// Player stamina.
+//
+
+#define STAMINA_LEVEL_MIN			0
+#define STAMINA_LEVEL_MAX			100
+#define STAMINA_LEVEL_LOW			25
+#define STAMINA_DRAIN_DELAY			0.5f
+
+void CBasePlayer::UpdateStamina( void )
+{
+	int speed = pev->velocity.Length2D();
+
+	// Ensure that player is on ground.
+	if( ( pev->flags & FL_ONGROUND ) )
+	{
+		float nextDrain = STAMINA_DRAIN_DELAY;
+
+		if( pev->flags & FL_DUCKING )
+			nextDrain *= 2; // When ducking, drain twice less faster.
+
+		if( speed > 0 )
+		{
+			// ALERT( at_console, "DRAINING STAMINA\n" );
+
+			// Player is moving, drain stamina level.
+			if( ( gpGlobals->time - m_flStaminaStart ) > nextDrain )
+			{
+				if( m_iStaminaLevel > STAMINA_LEVEL_MIN )
+					m_iStaminaLevel--;
+
+				m_flStaminaStart = gpGlobals->time;
+			}
+		}
+		else
+		{
+			// ALERT( at_console, "RECOVERING STAMINA\n" );
+
+			// Player is immobile, regen stamina level.
+			if( ( gpGlobals->time - m_flStaminaStart ) > nextDrain )
+			{
+				if( m_iStaminaLevel < STAMINA_LEVEL_MAX )
+					m_iStaminaLevel++;
+
+				m_flStaminaStart = gpGlobals->time;
+			}
+		}
+
+		if( m_iStaminaLevel < STAMINA_LEVEL_LOW )
+			EMIT_SOUND_DYN( ENT( pev ), CHAN_STATIC, "player/breathe2.wav", 0.15f, ATTN_NORM, SND_CHANGE_VOL | SND_CHANGE_PITCH, PITCH_NORM );
+		else
+			STOP_SOUND( ENT( pev ), CHAN_STATIC, "player/breathe2.wav" );
+	}
+
+	// ALERT( at_console, "Player stamina level: %d\n", m_iStaminaLevel );
+}
+
+void CBasePlayer::SwitchToFlashlight( void )
+{
+	// go through all of the weapons and find the torch weapon.
+	for( int i = 0; i < MAX_ITEM_TYPES; i++ )
+	{
+		CBasePlayerItem *pPlayerItem = m_rgpPlayerItems[i];
+
+		while( pPlayerItem )
+		{
+			if( pPlayerItem && pPlayerItem->m_iId == WEAPON_TORCH )
+			{
+				// Switch to torch.
+				SwitchWeapon( pPlayerItem );
+				return;
+			}
+
+			pPlayerItem = pPlayerItem->m_pNext;
+		}
+	}
+}
+
 //=========================================================
 // Dead HEV suit prop
 //=========================================================
@@ -4534,7 +4575,16 @@ void CStripWeapons::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE
 	}
 
 	if( pPlayer )
-		pPlayer->RemoveAllItems( FALSE );
+	{
+		if( FStrEq( STRING( gpGlobals->mapname ), "f16a" ) && FStrEq( STRING( pev->targetname ),"strip" ) )
+		{
+			pPlayer->RemoveAllItems( TRUE );
+		}
+		else
+		{
+			pPlayer->RemoveAllItems( FALSE );
+		}
+	}
 }
 
 class CRevertSaved : public CPointEntity

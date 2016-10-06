@@ -45,7 +45,20 @@ void CGlock::Spawn()
 	m_iId = WEAPON_GLOCK;
 	SET_MODEL( ENT( pev ), "models/w_9mmhandgun.mdl" );
 
-	m_iDefaultAmmo = GLOCK_DEFAULT_GIVE;
+	SetClipModel( "models/w_9mmclip.mdl" );
+
+	// ==========================================
+	// Code changes for- Night at the Office:
+	// ==========================================
+	//
+	// -Randomised Ammo. Picking up a gun from a fallen terrorist 
+	//  will not give you a pre-defined amount of bullets. The exact 
+	//  number is random (depending on the gun and clip size), which 
+	//  means the player will constantly need to keep a check on the 
+	//  ammo as it will no longer be 'comfortable' for the player to 
+	//  waste ammo.
+ 
+	m_iDefaultAmmo = DefaultAmmoBySkill( GLOCK_MAX_CLIP, gSkillData.iSkillLevel );
 
 	FallInit();// get ready to fall down.
 }
@@ -77,8 +90,8 @@ int CGlock::GetItemInfo( ItemInfo *p )
 	p->pszAmmo2 = NULL;
 	p->iMaxAmmo2 = -1;
 	p->iMaxClip = GLOCK_MAX_CLIP;
-	p->iSlot = 1;
-	p->iPosition = 0;
+	p->iSlot = 0;
+	p->iPosition = 3;
 	p->iFlags = 0;
 	p->iId = m_iId = WEAPON_GLOCK;
 	p->iWeight = GLOCK_WEIGHT;
@@ -88,32 +101,56 @@ int CGlock::GetItemInfo( ItemInfo *p )
 
 BOOL CGlock::Deploy()
 {
-	// pev->body = 1;
-	return DefaultDeploy( "models/v_9mmhandgun.mdl", "models/p_9mmhandgun.mdl", GLOCK_DRAW, "onehanded", /*UseDecrement() ? 1 : 0*/ 0 );
+	BOOL bResult = DefaultDeploy( "models/v_9mmhandgun.mdl", "models/p_9mmhandgun.mdl", GLOCK_DRAW, "onehanded", /*UseDecrement() ? 1 : 0*/ 0 );
+
+	if( bResult )
+	{
+		m_fInAttack = 0;
+	}
+
+	return bResult;
+}
+
+void CGlock::Holster( int skiplocal /*= 0*/ )
+{
+	m_fInReload = FALSE;// cancel any reload in progress.
+
+	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
+	SendWeaponAnim( GLOCK_HOLSTER );
+
+	m_fInAttack = 0;
 }
 
 void CGlock::SecondaryAttack( void )
 {
-	GlockFire( 0.1, 0.2, FALSE );
 }
 
 void CGlock::PrimaryAttack( void )
 {
-	GlockFire( 0.01, 0.3, TRUE );
+	GlockFire( 0.01, 0.2, TRUE );
 }
 
 void CGlock::GlockFire( float flSpread, float flCycleTime, BOOL fUseAutoAim )
 {
+	// Do not allow attack unless primary attack key was released.
+	if( m_fInAttack )
+		return;
+
 	if( m_iClip <= 0 )
 	{
-		if( m_fFireOnEmpty )
+		if( !m_fFireOnEmpty )
+			Reload();
+		else
 		{
-			PlayEmptySound();
-			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.2;
+			EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_WEAPON, "weapons/357_cock1.wav", 0.8, ATTN_NORM );
+			m_flNextPrimaryAttack = GetNextAttackDelay( 0.2 );
 		}
 
 		return;
 	}
+
+	// Prevent from continuously refire.
+	m_fInAttack = 1;
 
 	m_iClip--;
 
@@ -182,6 +219,9 @@ void CGlock::Reload( void )
 	if( iResult )
 	{
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
+
+		// Unblock primary attack.
+		m_fInAttack = 0;
 	}
 }
 
@@ -190,6 +230,12 @@ void CGlock::WeaponIdle( void )
 	ResetEmptySound();
 
 	m_pPlayer->GetAutoaimVector( AUTOAIM_10DEGREES );
+
+	//
+	// Unblock primary attack.
+	// This will only occur if players released primary attack key.
+	//
+	m_fInAttack = 0;
 
 	if( m_flTimeWeaponIdle > UTIL_WeaponTimeBase() )
 		return;

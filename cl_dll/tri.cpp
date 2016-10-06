@@ -112,7 +112,28 @@ Render any triangles with transparent rendermode needs here
 */
 void DLLEXPORT HUD_DrawTransparentTriangles( void )
 {
+	gHUD.m_Glow.DrawGlow();
 #if defined( TEST_IT )
 //	Draw_Triangles();
 #endif
+}
+
+//
+// Code adapted from tutorial written by Toni Sergi, aka - twlomega.
+//
+// http://twhl.info/articulator.php?art=114
+//
+
+/*
+=================
+HUD_DrawOrthoTriangles
+Orthogonal Triangles -- (relative to resolution,
+smackdab on the screen) add them here
+=================
+*/
+void HUD_DrawOrthoTriangles( void )
+{
+	gHUD.m_Health.DrawPain2();
+	gHUD.m_DeathVision.DrawDeathVision();
+	gHUD.m_Cinematic.DrawCinematic();
 }

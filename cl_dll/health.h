@@ -110,6 +110,7 @@ public:
 	float m_fAttackFront, m_fAttackRear, m_fAttackLeft, m_fAttackRight;
 	void GetPainColor( int &r, int &g, int &b );
 	float m_fFade;
+	void DrawPain2( void );
 
 private:
 	HSPRITE m_hSprite;
@@ -121,4 +122,15 @@ private:
 	int DrawDamage( float fTime );
 	void CalcDamageDirection( vec3_t vecFrom );
 	void UpdateTiles( float fTime, long bits );
+
+	HSPRITE m_hSprite1;
+	HSPRITE m_hSprite2;
+	wrect_t *m_prc1;
+	wrect_t *m_prc2;
+	int m_iHeight;		// width of the health innards
+
+	HSPRITE m_hPainFront;
+	HSPRITE m_hPainLeft;
+	HSPRITE m_hPainRight;
+	HSPRITE m_hPainRear;
 };

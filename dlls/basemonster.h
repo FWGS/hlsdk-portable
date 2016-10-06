@@ -327,6 +327,8 @@ public:
 	BOOL ExitScriptedSequence();
 	BOOL CineCleanup();
 
+	void StartPatrol( CBaseEntity *path );
+
 	CBaseEntity* DropItem ( char *pszItemName, const Vector &vecPos, const Vector &vecAng );// drop an item.
 };
 #endif // BASEMONSTER_H

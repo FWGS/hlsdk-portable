@@ -32,12 +32,10 @@ enum gauss_e
 	CROWBAR_IDLE = 0,
 	CROWBAR_DRAW,
 	CROWBAR_HOLSTER,
-	CROWBAR_ATTACK1HIT,
-	CROWBAR_ATTACK1MISS,
-	CROWBAR_ATTACK2MISS,
-	CROWBAR_ATTACK2HIT,
-	CROWBAR_ATTACK3MISS,
-	CROWBAR_ATTACK3HIT
+	CROWBAR_AIM,
+	CROWBAR_HOLD,
+	CROWBAR_RELEASEHIT,
+	CROWBAR_RELEASEMISS
 };
 
 
@@ -75,7 +73,7 @@ int CCrowbar::GetItemInfo( ItemInfo *p )
 	p->iMaxAmmo2 = -1;
 	p->iMaxClip = WEAPON_NOCLIP;
 	p->iSlot = 0;
-	p->iPosition = 0;
+	p->iPosition = 2;
 	p->iId = WEAPON_CROWBAR;
 	p->iWeight = CROWBAR_WEIGHT;
 	return 1;
@@ -83,7 +81,14 @@ int CCrowbar::GetItemInfo( ItemInfo *p )
 
 BOOL CCrowbar::Deploy()
 {
+	m_flReleaseThrow = -1;
 	return DefaultDeploy( "models/v_crowbar.mdl", "models/p_crowbar.mdl", CROWBAR_DRAW, "crowbar" );
+}
+
+BOOL CCrowbar::CanHolster( void )
+{
+	// can only holster crowbar when not primed!
+	return ( m_flStartThrow == 0 );
 }
 
 void CCrowbar::Holster( int skiplocal /* = 0 */ )
@@ -138,10 +143,17 @@ void FindHullIntersection( const Vector &vecSrc, TraceResult &tr, float *mins, f
 
 void CCrowbar::PrimaryAttack()
 {
-	if( !Swing( 1 ) )
+	if( !m_flStartThrow )
 	{
-		SetThink( &CCrowbar::SwingAgain );
-		pev->nextthink = gpGlobals->time + 0.1;
+		m_flStartThrow = gpGlobals->time;
+		m_flReleaseThrow = 0;
+
+		SendWeaponAnim( CROWBAR_AIM );
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.45;
+	}
+	else if( m_flTimeWeaponIdle <= UTIL_WeaponTimeBase() )
+	{
+		SendWeaponAnim( CROWBAR_HOLD );
 	}
 }
 
@@ -199,18 +211,7 @@ int CCrowbar::Swing( int fFirst )
 	}
 	else
 	{
-		switch( ( ( m_iSwing++ ) % 2 ) + 1 )
-		{
-		case 0:
-			SendWeaponAnim( CROWBAR_ATTACK1HIT );
-			break;
-		case 1:
-			SendWeaponAnim( CROWBAR_ATTACK2HIT );
-			break;
-		case 2:
-			SendWeaponAnim( CROWBAR_ATTACK3HIT );
-			break;
-		}
+		SendWeaponAnim( CROWBAR_RELEASEHIT );
 
 		// player "shoot" animation
 		m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
@@ -297,10 +298,46 @@ int CCrowbar::Swing( int fFirst )
 
 		m_pPlayer->m_iWeaponVolume = flVol * CROWBAR_WALLHIT_VOLUME;
 #endif
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.25;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5;
 
 		SetThink( &CCrowbar::Smack );
 		pev->nextthink = UTIL_WeaponTimeBase() + 0.2;
 	}
 	return fDidHit;
+}
+
+void CCrowbar::WeaponIdle( void )
+{
+	if( m_flReleaseThrow == 0 && m_flStartThrow )
+		 m_flReleaseThrow = gpGlobals->time;
+
+	if( m_flTimeWeaponIdle > UTIL_WeaponTimeBase() )
+		return;
+
+	if( m_flStartThrow )
+	{
+		if( !Swing( 1 ) )
+		{
+			SetThink( &CCrowbar::SwingAgain );
+			pev->nextthink = gpGlobals->time + 0.1;
+		}
+
+		m_flReleaseThrow = 0;
+		m_flStartThrow = 0;
+		m_flNextPrimaryAttack = GetNextAttackDelay( 0.5 );
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.5;
+		return;
+	}
+	else if( m_flReleaseThrow > 0 )
+	{
+		// we've finished the throw, restart.
+		m_flStartThrow = 0;
+
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
+		m_flReleaseThrow = -1;
+		return;
+	}
+
+	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 35.0 / 13.0;
+	SendWeaponAnim( CROWBAR_IDLE );
 }

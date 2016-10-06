@@ -324,4 +324,59 @@ public:
 	int	m_iszSpriteName;
 	Vector	m_firePosition;
 };
+
+/ Screen shake
+class CShake : public CPointEntity
+{
+public:
+	void	Spawn(void);
+	void	Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value);
+	void	KeyValue(KeyValueData *pkvd);
+
+	inline	float	Amplitude(void) { return pev->scale; }
+	inline	float	Frequency(void) { return pev->dmg_save; }
+	inline	float	Duration(void) { return pev->dmg_take; }
+	inline	float	Radius(void) { return pev->dmg; }
+
+	inline	void	SetAmplitude(float amplitude) { pev->scale = amplitude; }
+	inline	void	SetFrequency(float frequency) { pev->dmg_save = frequency; }
+	inline	void	SetDuration(float duration) { pev->dmg_take = duration; }
+	inline	void	SetRadius(float radius) { pev->dmg = radius; }
+private:
+};
+
+class CGib;
+
+class CGibShooter : public CBaseDelay
+{
+public:
+	void	Spawn(void);
+	void	Precache(void);
+	void	KeyValue(KeyValueData *pkvd);
+	void EXPORT ShootThink(void);
+	void Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value);
+
+	virtual CGib *CreateGib(void);
+
+	virtual int		Save(CSave &save);
+	virtual int		Restore(CRestore &restore);
+	static	TYPEDESCRIPTION m_SaveData[];
+
+	int	m_iGibs;
+	int m_iGibCapacity;
+	int m_iGibMaterial;
+	int m_iGibModelIndex;
+	float m_flGibVelocity;
+	float m_flVariance;
+	float m_flGibLife;
+};
+
+class CEnvShooter : public CGibShooter
+{
+public:
+	void		Precache(void);
+	void		KeyValue(KeyValueData *pkvd);
+
+	CGib		*CreateGib(void);
+};
 #endif		//EFFECTS_H

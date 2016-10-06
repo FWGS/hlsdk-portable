@@ -94,6 +94,21 @@ int CHudHealth::VidInit( void )
 	giDmgHeight = gHUD.GetSpriteRect( m_HUD_dmg_bio ).right - gHUD.GetSpriteRect( m_HUD_dmg_bio ).left;
 	giDmgWidth = gHUD.GetSpriteRect( m_HUD_dmg_bio ).bottom - gHUD.GetSpriteRect( m_HUD_dmg_bio ).top;
 
+	int HUD_health_empty = gHUD.GetSpriteIndex( "health1" );
+	int HUD_health_full = gHUD.GetSpriteIndex( "health2" );
+
+	m_hSprite1 = m_hSprite2 = 0;  // delaying get sprite handles until we know the sprites are loaded
+
+	m_prc1 = &gHUD.GetSpriteRect( HUD_health_empty );
+	m_prc2 = &gHUD.GetSpriteRect( HUD_health_full );
+
+	m_iHeight = m_prc2->bottom - m_prc1->top;
+
+	m_hPainFront = LoadSprite( "sprites/pain_front.spr" );
+	m_hPainLeft = LoadSprite( "sprites/pain_left.spr" );
+	m_hPainRight = LoadSprite( "sprites/pain_right.spr" );
+	m_hPainRear = LoadSprite( "sprites/pain_rear.spr" );
+
 	return 1;
 }
 
@@ -165,7 +180,7 @@ void CHudHealth::GetPainColor( int &r, int &g, int &b )
 #else
 	if( m_iHealth > 25 )
 	{
-		UnpackRGB( r, g, b, RGB_YELLOWISH );
+		UnpackRGB( r, g, b, RGB_WHITEISH );
 	}
 	else
 	{
@@ -178,15 +193,13 @@ void CHudHealth::GetPainColor( int &r, int &g, int &b )
 
 int CHudHealth::Draw( float flTime )
 {
-	int r, g, b;
-	int a = 0, x, y;
-	int HealthWidth;
-
 	if( ( gHUD.m_iHideHUDDisplay & HIDEHUD_HEALTH ) || gEngfuncs.IsSpectateOnly() )
 		return 1;
 
-	if( !m_hSprite )
-		m_hSprite = LoadSprite( PAIN_NAME );
+	if( !( gHUD.m_iWeaponBits & ( 1 << ( WEAPON_SUIT ) ) ) )
+		return 1;
+
+	int r, g, b, x, y, a;
 
 	// Has health changed? Flash the health #
 	if( m_fFade )
@@ -204,38 +217,90 @@ int CHudHealth::Draw( float flTime )
 	else
 		a = MIN_ALPHA;
 
-	// If health is getting low, make it bright red
-	if( m_iHealth <= 15 )
+	int fDrawNewHUD = ( gHUD.m_pCvarNewHud && gHUD.m_pCvarNewHud->value == 1 ) ? TRUE : FALSE;
+	 
+	//
+	// Draw new HUD
+	//
+	if( fDrawNewHUD )
+	{
+		// ==========================================
+		// Code changes for- Night at the Office:
+		// ==========================================
+		//
+		// -Sprite based Health meter. Instead of showing the health numerically, it is represented visually. 
+		//  There are no health pick-ups so wasn't relevant to give a specific health value on the HUD.
+		//  i.e. The closer sprite is to being covered in red, the closer you are to death.
+
+		wrect_t rc;
+
+		rc = *m_prc2;
+
+		rc.bottom -= m_iHeight * ( (float)( 100 - ( min( 100, m_iHealth ) ) ) * 0.01 ); // health can go from 0 to 100 so * 0.01 goes from 0 to 1
+
+		UnpackRGB( r, g, b, RGB_WHITEISH );
+
 		a = 255;
 
-	GetPainColor( r, g, b );
-	ScaleColors( r, g, b, a );
+		ScaleColors( r, g, b, a );
 
-	// Only draw health if we have the suit.
-	if( gHUD.m_iWeaponBits & ( 1 << ( WEAPON_SUIT ) ) )
+		int iOffset = ( m_prc1->bottom - m_prc1->top );
+
+		y = ScreenHeight - 5;
+		x = 10;
+
+		// make sure we have the right sprite handles
+		if( !m_hSprite1 )
+			m_hSprite1 = gHUD.GetSprite( gHUD.GetSpriteIndex( "health1" ) );
+		if( !m_hSprite2 )
+			m_hSprite2 = gHUD.GetSprite( gHUD.GetSpriteIndex( "health2" ) );
+
+		SPR_Set( m_hSprite1, r, g, b );
+		SPR_DrawHoles( 0, x, y - iOffset, m_prc1 );
+
+		if( m_iHealth <= 100 )
+		{
+			SPR_Set( m_hSprite2, r, g, b );
+			SPR_DrawHoles( 0, x, y - iOffset + ( rc.top - m_prc2->top ), &rc );
+		}
+	}
+	//
+	// Draw old HUD
+	//
+	else
 	{
-		HealthWidth = gHUD.GetSpriteRect( gHUD.m_HUD_number_0 ).right - gHUD.GetSpriteRect( gHUD.m_HUD_number_0 ).left;
-		int CrossWidth = gHUD.GetSpriteRect( m_HUD_cross ).right - gHUD.GetSpriteRect( m_HUD_cross ).left;
+		int HealthWidth;
 
-		y = ScreenHeight - gHUD.m_iFontHeight - gHUD.m_iFontHeight / 2;
-		x = CrossWidth / 2;
+		if( !m_hSprite )
+			m_hSprite = LoadSprite( PAIN_NAME );
 
-		SPR_Set( gHUD.GetSprite( m_HUD_cross ), r, g, b );
-		SPR_DrawAdditive( 0, x, y, &gHUD.GetSpriteRect( m_HUD_cross ) );
+		// If health is getting low, make it bright red
+		if( m_iHealth <= 15 )
+			a = 255;
 
-		x = CrossWidth + HealthWidth / 2;
+		GetPainColor( r, g, b );
+		ScaleColors( r, g, b, a );
 
-		x = gHUD.DrawHudNumber( x, y, DHN_3DIGITS | DHN_DRAWZERO, m_iHealth, r, g, b );
+		// Only draw health if we have the suit.
+		if( gHUD.m_iWeaponBits & ( 1 << ( WEAPON_SUIT ) ) )
+		{
+			HealthWidth = gHUD.GetSpriteRect( gHUD.m_HUD_number_0 ).right - gHUD.GetSpriteRect( gHUD.m_HUD_number_0 ).left;
+			int CrossWidth = gHUD.GetSpriteRect( m_HUD_cross ).right - gHUD.GetSpriteRect( m_HUD_cross ).left;
 
-		x += HealthWidth / 2;
+			y = ScreenHeight - gHUD.m_iFontHeight - gHUD.m_iFontHeight / 2;
+			x = CrossWidth / 2;
 
-		int iHeight = gHUD.m_iFontHeight;
-		int iWidth = HealthWidth / 10;
-		FillRGBA( x, y, iWidth, iHeight, 255, 160, 0, a );
+			SPR_Set(gHUD.GetSprite( m_HUD_cross ), r, g, b );
+			SPR_DrawAdditive( 0, x, y, &gHUD.GetSpriteRect( m_HUD_cross ) );
+
+			x = CrossWidth + HealthWidth / 2;
+
+			x = gHUD.DrawHudNumber( x, y, DHN_3DIGITS | DHN_DRAWZERO, m_iHealth, r, g, b );
+		}
 	}
 
 	DrawDamage( flTime );
-	return DrawPain( flTime );
+	return 1;
 }
 
 void CHudHealth::CalcDamageDirection( vec3_t vecFrom )

@@ -300,6 +300,12 @@ void W_Precache( void )
 	UTIL_PrecacheOther( "item_security" );
 	UTIL_PrecacheOther( "item_longjump" );
 
+	// holster
+	UTIL_PrecacheOtherWeapon("weapon_holster");
+
+	// torch
+	UTIL_PrecacheOtherWeapon("weapon_torch");
+
 	// shotgun
 	UTIL_PrecacheOtherWeapon( "weapon_shotgun" );
 	UTIL_PrecacheOther( "ammo_buckshot" );
@@ -317,40 +323,6 @@ void W_Precache( void )
 	UTIL_PrecacheOther( "ammo_ARgrenades" );
 
 #if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
-	// python
-	UTIL_PrecacheOtherWeapon( "weapon_357" );
-	UTIL_PrecacheOther( "ammo_357" );
-
-	// gauss
-	UTIL_PrecacheOtherWeapon( "weapon_gauss" );
-	UTIL_PrecacheOther( "ammo_gaussclip" );
-
-	// rpg
-	UTIL_PrecacheOtherWeapon( "weapon_rpg" );
-	UTIL_PrecacheOther( "ammo_rpgclip" );
-
-	// crossbow
-	UTIL_PrecacheOtherWeapon( "weapon_crossbow" );
-	UTIL_PrecacheOther( "ammo_crossbow" );
-
-	// egon
-	UTIL_PrecacheOtherWeapon( "weapon_egon" );
-#endif
-	// tripmine
-	UTIL_PrecacheOtherWeapon( "weapon_tripmine" );
-#if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
-	// satchel charge
-	UTIL_PrecacheOtherWeapon( "weapon_satchel" );
-#endif
-	// hand grenade
-	UTIL_PrecacheOtherWeapon("weapon_handgrenade");
-#if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
-	// squeak grenade
-	UTIL_PrecacheOtherWeapon( "weapon_snark" );
-
-	// hornetgun
-	UTIL_PrecacheOtherWeapon( "weapon_hornetgun" );
-
 	if( g_pGameRules->IsDeathmatch() )
 	{
 		UTIL_PrecacheOther( "weaponbox" );// container for dropped deathmatch weapons
@@ -382,6 +354,8 @@ void W_Precache( void )
 	PRECACHE_SOUND( "weapons/bullet_hit2.wav" );	// hit by bullet
 
 	PRECACHE_SOUND( "items/weapondrop1.wav" );// weapon falls to the ground
+
+	PRECACHE_MODEL( "models/w_grenade.mdl" );
 }
 
 TYPEDESCRIPTION	CBasePlayerItem::m_SaveData[] =
@@ -413,6 +387,8 @@ TYPEDESCRIPTION	CBasePlayerWeapon::m_SaveData[] =
 	DEFINE_FIELD( CBasePlayerWeapon, m_iDefaultAmmo, FIELD_INTEGER ),
 	//DEFINE_FIELD( CBasePlayerWeapon, m_iClientClip, FIELD_INTEGER ), reset to zero on load so hud gets updated correctly
 	//DEFINE_FIELD( CBasePlayerWeapon, m_iClientWeaponState, FIELD_INTEGER ), reset to zero on load so hud gets updated correctly
+	DEFINE_FIELD( CBasePlayerWeapon, m_iszClipModel, FIELD_STRING ),
+	DEFINE_FIELD( CBasePlayerWeapon, m_flDropClipTime, FIELD_TIME ),
 };
 
 IMPLEMENT_SAVERESTORE( CBasePlayerWeapon, CBasePlayerItem )
@@ -601,15 +577,38 @@ void CBasePlayerWeapon::ItemPostFrame( void )
 	if( ( m_fInReload ) && ( m_pPlayer->m_flNextAttack <= UTIL_WeaponTimeBase() ) )
 	{
 		// complete the reload. 
-		int j = min( iMaxClip() - m_iClip, m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]);	
 
-		// Add them to the clip
-		m_iClip += j;
-		m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] -= j;
+		int remainingAmmunition = m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType];
+
+		// ==========================================
+		// Code changes for- Night at the Office:
+		// ==========================================
+		//
+		// -Realistic Reloading. Should the player reload when his current clip 
+		//  is NOT empty, he will lose all the remaining bullets from that clip.
+		//  As oppose to them being 'calculated' from the ammo pool.
+
+		if( remainingAmmunition < iMaxClip() )
+		{
+			// This means that the player has less than a clip, in the ammunition pool.
+			m_iClip = remainingAmmunition; // Give what's remaining.
+			m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] = 0; // Empty ammo pool.
+		}
+		else
+		{
+			// This means that the player still has a clip or higher, in the ammunition pool.
+			m_iClip = iMaxClip();
+			m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] -= m_iClip; // Remove an entire clip.
+		}
 
 		m_pPlayer->TabulateAmmo();
 
 		m_fInReload = FALSE;
+	}
+
+	if( !( m_pPlayer->pev->button & IN_ATTACK ) )
+	{
+		m_flLastFireTime = 0.0f;
 	}
 
 	if( ( m_pPlayer->pev->button & IN_ATTACK2 ) && CanAttack( m_flNextSecondaryAttack, gpGlobals->time, UseDecrement() ) )
@@ -943,6 +942,7 @@ BOOL CBasePlayerWeapon::DefaultDeploy( char *szViewModel, char *szWeaponModel, i
 
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.0;
+	m_flLastFireTime = 0.0f;
 
 	return TRUE;
 }
@@ -965,6 +965,13 @@ BOOL CBasePlayerWeapon::DefaultReload( int iClipSize, int iAnim, float fDelay, i
 	m_fInReload = TRUE;
 
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 3;
+
+	// Drop an instance of current weapon clip on the ground.
+	if( !FStringNull( GetClipModel() ) )
+	{
+		m_flDropClipTime = gpGlobals->time + GetDropClipDelay();
+	}
+
 	return TRUE;
 }
 
@@ -1128,6 +1135,109 @@ void CBasePlayerWeapon::RetireWeapon( void )
 	//m_pPlayer->pev->viewmodelindex = NULL;
 
 	g_pGameRules->GetNextBestWeapon( m_pPlayer, this );
+}
+
+void CBasePlayerWeapon::ItemPostFrame_Always( void )
+{
+	// Check if it is time to drop the clip.
+	if( m_fInReload && m_flDropClipTime != 0 && m_flDropClipTime <= gpGlobals->time )
+	{
+		DropClip();
+		m_flDropClipTime = 0;
+	}
+}
+
+// ==========================================
+// Code changes for- Night at the Office:
+// ==========================================
+//
+// -Randomised Ammo. Picking up a gun from a fallen terrorist 
+//  will not give you a pre-defined amount of bullets. The exact 
+//  number is random (depending on the gun and clip size), which 
+//  means the player will constantly need to keep a check on the 
+//  ammo as it will no longer be 'comfortable' for the player to 
+//  waste ammo.
+
+int CBasePlayerWeapon::DefaultAmmoBySkill(int iMaxClip, int iSkillLevel)
+{
+	int iDefaultAmmo = 0;
+
+	switch( iSkillLevel )
+	{
+	default:
+	case SKILL_EASY:
+		// Random ammunition equal or superior to 75% clip capacity.
+		iDefaultAmmo = RANDOM_LONG( (int)( ceilf( iMaxClip * 0.75f ) ), iMaxClip );
+		break;
+	case SKILL_MEDIUM:
+		// Random ammunition equal or superior to 50% clip capacity.
+		iDefaultAmmo = RANDOM_LONG( (int)( ceilf( iMaxClip * 0.5f ) ), iMaxClip );
+		break;
+	case SKILL_HARD:
+		// Random ammunition equal or superior to 25% clip capacity.
+		iDefaultAmmo = RANDOM_LONG( (int)( ceilf( iMaxClip * 0.25f ) ), iMaxClip );
+		break;
+	}
+
+	return iDefaultAmmo;
+}
+
+string_t CBasePlayerWeapon::GetClipModel() const
+{
+	return m_iszClipModel;
+}
+
+void CBasePlayerWeapon::SetClipModel( const char* szModel )
+{
+	m_iszClipModel = ALLOC_STRING( szModel );
+}
+
+// ==========================================
+// Code changes for- Night at the Office:
+// ==========================================
+//
+// -Clip Dropping. An extension of the realistic reloading. 
+//  Whenever a gun with a weapon clip is reloaded, a clip 
+//  model is 'ejected' onto the floor.
+
+void CBasePlayerWeapon::DropClip( void )
+{
+	UTIL_MakeVectors( m_pPlayer->pev->angles );
+	CWeaponClip *pClip = GetClassPtr( (CWeaponClip *)NULL );
+	pClip->pev->angles.x = pClip->pev->angles.z = 0;
+	pClip->pev->origin = pev->origin + gpGlobals->v_forward * -16;
+	pClip->Spawn( STRING( GetClipModel() ) );
+	pClip->pev->owner = edict();
+	pClip->pev->avelocity = Vector( RANDOM_FLOAT( 200, 400 ), RANDOM_FLOAT( 200, 400 ), 0.0f );
+}
+
+float CBasePlayerWeapon::GetNextAttackDelay( float delay )
+{	
+	if( m_flLastFireTime == 0 || m_flNextPrimaryAttack == -1 )
+	{
+		// At this point, we are assuming that the client has stopped firing
+		// and we are going to reset our book keeping variables.
+		m_flLastFireTime = gpGlobals->time;
+		m_flPrevPrimaryAttack = delay;
+	}
+
+	// calculate the time between this shot and the previous
+	float flTimeBetweenFires = gpGlobals->time - m_flLastFireTime;
+	float flCreep = 0.0f;
+	if( flTimeBetweenFires > 0 )
+		flCreep = flTimeBetweenFires - m_flPrevPrimaryAttack; // postive or negative
+
+	// save the last fire time
+	m_flLastFireTime = gpGlobals->time;
+
+	float flNextAttack = UTIL_WeaponTimeBase() + delay - flCreep;
+	// we need to remember what the m_flNextPrimaryAttack time is set to for each shot, 
+	// store it as m_flPrevPrimaryAttack.
+	m_flPrevPrimaryAttack = flNextAttack - UTIL_WeaponTimeBase();
+	//char szMsg[256];
+	//_snprintf( szMsg, sizeof(szMsg), "next attack time: %0.4f\n", gpGlobals->time + flNextAttack );
+	//OutputDebugString( szMsg );
+	return flNextAttack;
 }
 
 //*********************************************************

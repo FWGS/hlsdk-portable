@@ -1466,6 +1466,8 @@ void CBaseEntity::FireBullets( ULONG cShots, Vector vecSrc, Vector vecDirShootin
 		UTIL_BubbleTrail( vecSrc, tr.vecEndPos, ( flDistance * tr.flFraction ) / 64.0 );
 	}
 	ApplyMultiDamage( pev, pevAttacker );
+
+	MuzzleLight( vecSrc, 200, 255, 255, 255, 0.1f, 0 );
 }
 
 /*
@@ -1551,6 +1553,8 @@ Vector CBaseEntity::FireBulletsPlayer( ULONG cShots, Vector vecSrc, Vector vecDi
 		UTIL_BubbleTrail( vecSrc, tr.vecEndPos, ( flDistance * tr.flFraction ) / 64.0 );
 	}
 	ApplyMultiDamage( pev, pevAttacker );
+
+	MuzzleLight( vecSrc, 200, 255, 255, 255, 0.1f, 0 );
 
 	return Vector( x * vecSpread.x, y * vecSpread.y, 0.0 );
 }
@@ -1672,4 +1676,31 @@ void CBaseMonster::MakeDamageBloodDecal( int cCount, float flNoise, TraceResult 
 			UTIL_BloodDecalTrace( &Bloodtr, BloodColor() );
 		}
 	}
+}
+
+// ==========================================
+// Code changes for- Night at the Office:
+// ==========================================
+//
+// -Muzzle light. Light emitted onto maps when guns are fired.
+// (both player and enemy)
+
+void CBaseEntity::MuzzleLight( Vector vecSrc, float flRadius, byte r, byte g, byte b, float flTime, float flDecay )
+{
+	int iRadius = (int)( flRadius * 0.1f );
+	int iTime = (int)( flTime * 10 );
+	int iDecay  = (int)( flDecay * 0.1f );
+
+	MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
+		WRITE_BYTE( TE_DLIGHT );
+		WRITE_COORD( vecSrc.x );	// X
+		WRITE_COORD( vecSrc.y );	// Y
+		WRITE_COORD( vecSrc.z );	// Z
+		WRITE_BYTE( iRadius );	// radius * 0.1
+		WRITE_BYTE( r );		// r
+		WRITE_BYTE( g );		// g
+		WRITE_BYTE( b );		// b
+		WRITE_BYTE( iTime );	// time * 10
+		WRITE_BYTE( iDecay );	// decay * 0.1
+	MESSAGE_END();
 }
