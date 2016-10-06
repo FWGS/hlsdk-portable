@@ -94,7 +94,7 @@ void CoopClearWeaponList( void )
 {
 	g_WeaponList.Clear();
 }
-
+extern int g_iMenu;
 
 void BecomeSpectator( CBasePlayer *pPlayer )
 {
@@ -126,7 +126,7 @@ void SpawnPlayer( CBasePlayer *pPlayer )
 
 extern int gmsgShowMenu;
 
-void ShowMenu( CBasePlayer *pPlayer, const char *title, int count, const char **slot )
+void ShowMenu( CBasePlayer *pPlayer, const char *title, int count, const char **slot, signed char time = -1 )
 {
 	char buf[128], *pbuf = buf;
 	short int flags = 1<<9;
@@ -138,7 +138,7 @@ void ShowMenu( CBasePlayer *pPlayer, const char *title, int count, const char **
 	}
 	MESSAGE_BEGIN(MSG_ONE, gmsgShowMenu, NULL, pPlayer->pev);
 	WRITE_SHORT( flags ); // slots
-	WRITE_CHAR( -1 ); // show time
+	WRITE_CHAR( time ); // show time
 	WRITE_BYTE( 0 ); // need more
 	WRITE_STRING( buf );
 	MESSAGE_END();
@@ -156,7 +156,7 @@ void CoopMenu( CBasePlayer *pPlayer )
 				"Force respawn",
 				"Unblock",
 				"Become spectator",
-				//"Vote changelevel"
+				"Vote changelevel"
 			};
 			ShowMenu( pPlayer, "Coop menu", ARRAYSIZE( menu ), menu );
 		}
@@ -174,7 +174,7 @@ void CoopMenu( CBasePlayer *pPlayer )
 	}
 }
 
-int g_iMenu;
+void CoopVoteMenu( CBasePlayer *pPlayer );
 
 
 //*********************************************************
@@ -228,6 +228,8 @@ CHalfLifeMultiplay::CHalfLifeMultiplay()
 	}
 }
 
+void CoopProcessMenu( CBasePlayer *pPlayer, int imenu );
+
 BOOL CHalfLifeMultiplay::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 {
 #ifndef NO_VOICEGAMEMGR
@@ -246,6 +248,7 @@ BOOL CHalfLifeMultiplay::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 	if( FStrEq( pcmd, "menuselect" ) )
 	{
 		int imenu = atoi( CMD_ARGV( 1 ) );
+
 		switch( pPlayer->m_state )
 		{
 			case STATE_SPECTATOR_BEGIN:
@@ -259,6 +262,11 @@ BOOL CHalfLifeMultiplay::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 					pPlayer->m_state = STATE_SPECTATOR;
 				}
 			case STATE_SPAWNED:
+				if( g_iMenu )
+				{
+					CoopProcessMenu( pPlayer, imenu );
+					return TRUE;
+				}
 				if( imenu == 1 )
 				{
 					SpawnPlayer( pPlayer );
@@ -271,6 +279,10 @@ BOOL CHalfLifeMultiplay::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 				{
 					pPlayer->RemoveAllItems( TRUE );
 					BecomeSpectator( pPlayer );
+				}
+				if( imenu == 4 )
+				{
+					CoopVoteMenu( pPlayer );
 				}
 			default:
 			break;

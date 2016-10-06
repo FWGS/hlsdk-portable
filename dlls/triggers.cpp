@@ -1513,6 +1513,146 @@ void CoopClearData( void )
 	SavedCoords l_SavedCoords = {};
 	g_SavedCoords = l_SavedCoords;
 }
+int g_iMenu;
+void ShowMenu( CBasePlayer *pPlayer, const char *title, int count, const char **slot, signed char time = -1 );
+// Show to all spawned players: voting, etc..
+class GlobalMenu
+{
+public:
+
+	int m_iConfirm;
+	int m_iVoteCount;
+	int m_iMaxCount;
+	float flTime;
+	const char *maps[5];
+	int votes[5];
+	CBaseEntity *triggers[5];
+	EHANDLE m_pTrigger;
+
+	void Process( CBasePlayer *pPlayer, int imenu )
+	{
+		if( pPlayer->pev->flags & FL_SPECTATOR )
+			return;
+		if( gpGlobals->time - flTime > 30 )
+		{
+			g_iMenu = 0;
+			return;
+		}
+
+		switch( g_iMenu )
+		{
+		case 1: // touch blue trigger
+			m_iVoteCount++;
+			if( imenu == 1 ) // confirm
+			{
+				m_iConfirm++;
+			}
+			if( imenu == 2 ) // cancel
+			{
+				m_iConfirm--;
+			}
+			break;
+		case 2: // vote by request
+			if( imenu < m_iConfirm )
+			{
+				votes[imenu]++;
+				m_iVoteCount++;
+				if( m_iVoteCount == m_iMaxCount )
+				{
+					for( int i = 0; i < m_iConfirm; i++ )
+						if( votes[i] == m_iMaxCount )
+						{
+							if( triggers[i])
+								triggers[i]->Use( NULL, NULL, USE_TOGGLE, 0 );
+							g_iMenu = 0;
+						}
+
+				}
+
+			}
+		}
+	}
+	void ShowGlobalMenu( const char *title, int count, const char **menu )
+	{
+		int count2 = 0;
+		for( int i = 1; i <= gpGlobals->maxClients; i++ )
+		{
+			CBaseEntity *plr = UTIL_PlayerByIndex( i );
+
+			if( plr && plr->IsPlayer() )
+			{
+				count2++;
+				ShowMenu( (CBasePlayer *)plr, title, count, menu, 30 );
+
+			}
+		}
+		m_iMaxCount = count2;
+	}
+
+	void ConfirmMenu( CBaseEntity *trigger, const char *mapname )
+	{
+		if( g_iMenu && gpGlobals->time - flTime < 30 )
+			return; // wait 30s befor new confirm vote
+		g_iMenu = 1;
+		flTime = gpGlobals->time;
+		m_pTrigger = trigger;
+		const char *menu[] = {
+			"Confirm",
+			"Cancel"
+		};
+		ShowGlobalMenu(UTIL_VarArgs("Confirm changing map to %s?", mapname), ARRAYSIZE(menu), menu);
+
+	}
+	void VoteMenu( CBasePlayer *player )
+	{
+		if( g_iMenu && gpGlobals->time - flTime < 30 )
+			return; // wait 30s befor new confirm vote
+		CBaseEntity *pTrigger = NULL;
+		int i;
+		g_iMenu = 2;
+		while( pTrigger = UTIL_FindEntityByClassname( pTrigger, "trigger_changelevel" ) )
+		{
+			  CChangeLevel *ent = (CChangeLevel *)pTrigger;
+			  votes[i] = 0;
+			  triggers[i] = pTrigger;
+			  maps[i++] = ent->m_szMapName;
+
+
+		}
+		votes[i] = 0;
+		triggers[i] = NULL;
+		maps[i++] = "Keep this map";
+		m_iConfirm = i;
+		m_iVoteCount = 0;
+		ShowGlobalMenu(UTIL_VarArgs("%s requested to force change map", ""), i, maps);
+
+	}
+
+
+};
+GlobalMenu g_GlobalMenu;
+
+void CoopVoteMenu( CBasePlayer *pPlayer )
+{
+	int count;
+	for( int i = 1; i <= gpGlobals->maxClients; i++ )
+	{
+		CBaseEntity *plr = UTIL_PlayerByIndex( i );
+
+		if( plr && plr->IsPlayer() )
+		{
+			count++;
+		}
+	}
+	if( count < 5 )
+		return;
+	g_GlobalMenu.VoteMenu(pPlayer);
+}
+
+void CoopProcessMenu( CBasePlayer *pPlayer, int imenu )
+{
+	return g_GlobalMenu.Process( pPlayer, imenu );
+}
 
 static void validateoffset( void )
 {
@@ -1739,19 +1879,13 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 
 			if( m_fIsBack )
 			{
-				if( count2 - count1 > 1 )
+				if( g_iMenu != 1 )
 				{
-					UTIL_HudMessageAll( params, UTIL_VarArgs( "%s requested to changelevel backwards, but not enough players\n",
-						( pActivator->pev->netname && STRING( pActivator->pev->netname )[0] != 0 ) ? STRING( pActivator->pev->netname ) : "unconnected",
-						st_szNextMap, st_szNextSpot, i ) );
+					g_GlobalMenu.ConfirmMenu( this, m_szMapName );
 					return;
 				}
-				/* not done, need to send confirmation menus
-				else if (g_SavedCoords.changeback < 2)
-				{
-					UTIL_ChangebackMenu(( pActivator->pev->netname && STRING( pActivator->pev->netname )[0] != 0 ) ? STRING( pActivator->pev->netname ) : "unconnected");
+				if( g_GlobalMenu.m_iConfirm < count2 )
 					return;
-				}*/
 			}
 
 			if( m_fSpawnSaved )
