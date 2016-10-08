@@ -21,73 +21,12 @@
 #include "weapons.h"
 #include "nodes.h"
 #include "effects.h"
+#include "apache.h"
 
 extern DLL_GLOBAL int		g_iSkillLevel;
 
 #define SF_WAITFORTRIGGER	(0x04 | 0x40) // UNDONE: Fix!
 #define SF_NOWRECKAGE		0x08
-
-class CApache : public CBaseMonster
-{
-	int Save( CSave &save );
-	int Restore( CRestore &restore );
-	static	TYPEDESCRIPTION m_SaveData[];
-
-	void Spawn( void );
-	void Precache( void );
-	int Classify( void ) { return CLASS_HUMAN_MILITARY; };
-	int BloodColor( void ) { return DONT_BLEED; }
-	void Killed( entvars_t *pevAttacker, int iGib );
-	void GibMonster( void );
-
-	void SetObjectCollisionBox( void )
-	{
-		pev->absmin = pev->origin + Vector( -300, -300, -172 );
-		pev->absmax = pev->origin + Vector( 300, 300, 8 );
-	}
-
-	void EXPORT HuntThink( void );
-	void EXPORT FlyTouch( CBaseEntity *pOther );
-	void EXPORT CrashTouch( CBaseEntity *pOther );
-	void EXPORT DyingThink( void );
-	void EXPORT StartupUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
-	void EXPORT NullThink( void );
-
-	void ShowDamage( void );
-	void Flight( void );
-	void FireRocket( void );
-	BOOL FireGun( void );
-
-	int  TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType );
-	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType );
-
-	int m_iRockets;
-	float m_flForce;
-	float m_flNextRocket;
-
-	Vector m_vecTarget;
-	Vector m_posTarget;
-
-	Vector m_vecDesired;
-	Vector m_posDesired;
-
-	Vector m_vecGoal;
-
-	Vector m_angGun;
-	float m_flLastSeen;
-	float m_flPrevSeen;
-
-	int m_iSoundState; // don't save this
-
-	int m_iSpriteTexture;
-	int m_iExplode;
-	int m_iBodyGibs;
-
-	float m_flGoalSpeed;
-
-	int m_iDoSmokePuff;
-	CBeam *m_pBeam;
-};
 
 LINK_ENTITY_TO_CLASS( monster_apache, CApache )
 
@@ -122,7 +61,7 @@ void CApache::Spawn( void )
 	pev->movetype = MOVETYPE_FLY;
 	pev->solid = SOLID_BBOX;
 
-	SET_MODEL( ENT( pev ), "models/apache.mdl" );
+	SET_MODEL( ENT( pev ), (char*)STRING( pev->model ) );
 	UTIL_SetSize( pev, Vector( -32, -32, -64 ), Vector( 32, 32, 0 ) );
 	UTIL_SetOrigin( pev, pev->origin );
 
@@ -154,7 +93,8 @@ void CApache::Spawn( void )
 
 void CApache::Precache( void )
 {
-	PRECACHE_MODEL( "models/apache.mdl" );
+	PRECACHE_MODEL( "models/apache2.mdl" );
+	PRECACHE_MODEL( "models/huey_apache.mdl" );
 
 	PRECACHE_SOUND( "apache/ap_rotor1.wav" );
 	PRECACHE_SOUND( "apache/ap_rotor2.wav" );
@@ -397,6 +337,14 @@ void CApache::DyingThink( void )
 			WRITE_BYTE( BREAK_METAL );
 		MESSAGE_END();
 
+		//
+		// AI Trigger target on death.
+		//
+		if( m_iTriggerCondition == AITRIGGER_DEATH && !FStringNull( m_iszTriggerTarget ) )
+		{
+			FireTargets( STRING( m_iszTriggerTarget ), this, this, USE_TOGGLE, 0 );
+			m_iTriggerCondition = AITRIGGER_NONE;
+		}
 		SetThink( &CBaseEntity::SUB_Remove );
 		pev->nextthink = gpGlobals->time + 0.1;
 	}
@@ -915,8 +863,8 @@ void CApache::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir
 	}
 	else
 	{
-		// do half damage in the body
-		// AddMultiDamage( pevAttacker, this, flDamage / 2.0, bitsDamageType );
+		// do tenth damage in the body
+		AddMultiDamage( pevAttacker, this, flDamage / 10.0, bitsDamageType );
 		UTIL_Ricochet( ptr->vecEndPos, 2.0 );
 	}
 }

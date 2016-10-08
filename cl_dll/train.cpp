@@ -24,6 +24,8 @@
 #include <stdio.h>
 #include "parsemsg.h"
 
+extern bool bIsMultiplayer( void );
+
 DECLARE_MESSAGE( m_Train, Train )
 
 int CHudTrain::Init( void )
@@ -53,7 +55,15 @@ int CHudTrain::Draw( float fTime )
 	{
 		int r, g, b, x, y;
 
-		UnpackRGB( r, g, b, RGB_YELLOWISH );
+		if( bIsMultiplayer() )
+		{
+			UnpackRGB( r, g, b, RGB_YELLOWISH );
+		}
+		else
+		{
+			UnpackRGB( r, g, b, RGB_REDISH );
+		}
+
 		SPR_Set( m_hSprite, r, g, b );
 
 		// This should show up to the right and part way up the armor number

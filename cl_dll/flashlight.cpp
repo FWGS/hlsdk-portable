@@ -25,6 +25,8 @@
 #include <string.h>
 #include <stdio.h>
 
+extern bool bIsMultiplayer( void );
+
 DECLARE_MESSAGE( m_Flash, FlashBat )
 DECLARE_MESSAGE( m_Flash, Flashlight )
 
@@ -114,10 +116,17 @@ int CHudFlashlight::Draw( float flTime )
 	else
 		a = MIN_ALPHA;
 
-	if( m_flBat < 0.20 )
-		UnpackRGB( r,g,b, RGB_REDISH );
+	if( bIsMultiplayer() )
+	{
+		if( m_flBat < 0.20 )
+			UnpackRGB( r, g, b, RGB_REDISH );
+		else
+			UnpackRGB( r, g, b, RGB_YELLOWISH );
+	}
 	else
-		UnpackRGB( r,g,b, RGB_YELLOWISH );
+	{
+		UnpackRGB( r, g, b, RGB_REDISH );
+	}
 
 	ScaleColors( r, g, b, a );
 

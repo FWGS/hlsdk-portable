@@ -559,6 +559,24 @@ private:
 //
 //-----------------------------------------------------
 //
+
+class CHudZoom : public CHudBase
+{
+public:
+	int Init( void );
+	int VidInit( void );
+	int Draw( float flTime );
+	void Reset( void );
+	int MsgFunc_Zoom( const char *pszName, int iSize, void *pbuf );
+
+private:
+	int m_fOn;
+	WEAPON* m_pWeapon;
+};
+
+//
+//-----------------------------------------------------
+//
 class CHud
 {
 private:
@@ -631,6 +649,7 @@ public:
 	CHudAmmoSecondary	m_AmmoSecondary;
 	CHudTextMessage m_TextMessage;
 	CHudStatusIcons m_StatusIcons;
+	CHudZoom	m_Zoom;
 	CHudScoreboard	m_Scoreboard;
 	CHudMOTD	m_MOTD;
 

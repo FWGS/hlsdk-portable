@@ -62,6 +62,9 @@ void CCrowbar::Precache( void )
 	PRECACHE_SOUND( "weapons/cbar_hitbod2.wav" );
 	PRECACHE_SOUND( "weapons/cbar_hitbod3.wav" );
 	PRECACHE_SOUND( "weapons/cbar_miss1.wav" );
+	PRECACHE_SOUND( "kelly/cbar_hitkelly1.wav" );
+	PRECACHE_SOUND( "kelly/cbar_hitkelly2.wav" );
+	PRECACHE_SOUND( "kelly/cbar_hitkelly3.wav" );
 
 	m_usCrowbar = PRECACHE_EVENT( 1, "events/crowbar.sc" );
 }
@@ -242,19 +245,40 @@ int CCrowbar::Swing( int fFirst )
 		{
 			if( pEntity->Classify() != CLASS_NONE && pEntity->Classify() != CLASS_MACHINE )
 			{
-				// play thwack or smack sound
-				switch( RANDOM_LONG( 0, 2 ) )
+				// Skeletons make different hit sounds.
+				if( pEntity->Classify() == CLASS_SKELETON )
 				{
-				case 0:
-					EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/cbar_hitbod1.wav", 1, ATTN_NORM );
-					break;
-				case 1:
-					EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/cbar_hitbod2.wav", 1, ATTN_NORM );
-					break;
-				case 2:
-					EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/cbar_hitbod3.wav", 1, ATTN_NORM );
-					break;
+					// play thwack or smack sound
+					switch( RANDOM_LONG( 0, 2 ) )
+					{
+					case 0:
+						EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_ITEM, "kelly/cbar_hitkelly1.wav", 1, ATTN_NORM );
+						break;
+					case 1:
+						EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_ITEM, "kelly/cbar_hitkelly2.wav", 1, ATTN_NORM );
+						break;
+					case 2:
+						EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_ITEM, "kelly/cbar_hitkelly3.wav", 1, ATTN_NORM );
+						break;
+					}
 				}
+				else
+				{
+					// play thwack or smack sound
+					switch( RANDOM_LONG( 0, 2 ) )
+					{
+					case 0:
+						EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/cbar_hitbod1.wav", 1, ATTN_NORM );
+						break;
+					case 1:
+						EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/cbar_hitbod2.wav", 1, ATTN_NORM );
+						break;
+					case 2:
+						EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/cbar_hitbod3.wav", 1, ATTN_NORM );
+						break;
+					}
+				}
+
 				m_pPlayer->m_iWeaponVolume = CROWBAR_BODYHIT_VOLUME;
 				if( !pEntity->IsAlive() )
 					return TRUE;

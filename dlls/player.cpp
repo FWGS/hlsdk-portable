@@ -184,6 +184,8 @@ int gmsgTeamNames = 0;
 int gmsgStatusText = 0;
 int gmsgStatusValue = 0;
 
+int gmsgZoom = 0;
+
 void LinkUserMessages( void )
 {
 	// Already taken care of?
@@ -228,6 +230,8 @@ void LinkUserMessages( void )
 
 	gmsgStatusText = REG_USER_MSG( "StatusText", -1 );
 	gmsgStatusValue = REG_USER_MSG( "StatusValue", 3 );
+
+	gmsgZoom = REG_USER_MSG( "Zoom", 2 );
 }
 
 LINK_ENTITY_TO_CLASS( player, CBasePlayer )
@@ -1092,6 +1096,9 @@ void CBasePlayer::TabulateAmmo()
 	ammo_rockets = AmmoInventory( GetAmmoIndex( "rockets" ) );
 	ammo_uranium = AmmoInventory( GetAmmoIndex( "uranium" ) );
 	ammo_hornets = AmmoInventory( GetAmmoIndex( "Hornets" ) );
+	ammo_ap9 = AmmoInventory( GetAmmoIndex( "ap9" ) );
+	ammo_taurus = AmmoInventory( GetAmmoIndex( "taurus" ) );
+	ammo_sniper = AmmoInventory( GetAmmoIndex( "sniper" ) );
 }
 
 /*
@@ -1411,7 +1418,19 @@ void CBasePlayer::PlayerUse( void )
 					m_afPhysicsFlags |= PFLAG_ONTRAIN;
 					m_iTrain = TrainSpeed( pTrain->pev->speed, pTrain->pev->impulse );
 					m_iTrain |= TRAIN_NEW;
-					EMIT_SOUND( ENT( pev ), CHAN_ITEM, "plats/train_use1.wav", 0.8, ATTN_NORM );
+					char* usesound = "plats/train_use1.wav";
+
+					CFuncTrackTrain* pTrackTrain = (CFuncTrackTrain*)pTrain;
+
+					if  pTrackTrain && pTrackTrain->UseCustomSounds() )
+					{
+						if( pTrackTrain->IsCar() )
+							usesound = "plats/train_use2.wav";
+						else if( pTrackTrain->IsTrain() )
+							usesound = "plats/train_use6.wav";
+					}
+
+					EMIT_SOUND( ENT( pev ), CHAN_ITEM, usesound, 0.8, ATTN_NORM );
 					return;
 				}
 			}
@@ -2181,89 +2200,6 @@ void CBasePlayer::CheckSuitUpdate()
 
 void CBasePlayer::SetSuitUpdate( char *name, int fgroup, int iNoRepeatTime )
 {
-	int i;
-	int isentence;
-	int iempty = -1;
-
-	// Ignore suit updates if no suit
-	if( !( pev->weapons & ( 1 << WEAPON_SUIT ) ) )
-		return;
-
-	if( g_pGameRules->IsMultiplayer() )
-	{
-		// due to static channel design, etc. We don't play HEV sounds in multiplayer right now.
-		return;
-	}
-
-	// if name == NULL, then clear out the queue
-	if( !name )
-	{
-		for( i = 0; i < CSUITPLAYLIST; i++ )
-			m_rgSuitPlayList[i] = 0;
-		return;
-	}
-
-	// get sentence or group number
-	if( !fgroup )
-	{
-		isentence = SENTENCEG_Lookup( name, NULL );
-		if( isentence < 0 )
-			return;
-	}
-	else
-		// mark group number as negative
-		isentence = -SENTENCEG_GetIndex( name );
-
-	// check norepeat list - this list lets us cancel
-	// the playback of words or sentences that have already
-	// been played within a certain time.
-	for( i = 0; i < CSUITNOREPEAT; i++ )
-	{
-		if( isentence == m_rgiSuitNoRepeat[i] )
-		{
-			// this sentence or group is already in 
-			// the norepeat list
-			if( m_rgflSuitNoRepeatTime[i] < gpGlobals->time )
-			{
-				// norepeat time has expired, clear it out
-				m_rgiSuitNoRepeat[i] = 0;
-				m_rgflSuitNoRepeatTime[i] = 0.0;
-				iempty = i;
-				break;
-			}
-			else
-			{
-				// don't play, still marked as norepeat
-				return;
-			}
-		}
-		// keep track of empty slot
-		if( !m_rgiSuitNoRepeat[i] )
-			iempty = i;
-	}
-
-	// sentence is not in norepeat list, save if norepeat time was given
-	if( iNoRepeatTime )
-	{
-		if( iempty < 0 )
-			iempty = RANDOM_LONG( 0, CSUITNOREPEAT - 1 ); // pick random slot to take over
-		m_rgiSuitNoRepeat[iempty] = isentence;
-		m_rgflSuitNoRepeatTime[iempty] = iNoRepeatTime + gpGlobals->time;
-	}
-
-	// find empty spot in queue, or overwrite last spot
-	m_rgSuitPlayList[m_iSuitPlayNext++] = isentence;
-	if( m_iSuitPlayNext == CSUITPLAYLIST )
-		m_iSuitPlayNext = 0;
-
-	if( m_flSuitUpdate <= gpGlobals->time )
-	{
-		if( m_flSuitUpdate == 0 )
-			// play queue is empty, don't delay too long before playback
-			m_flSuitUpdate = gpGlobals->time + SUITFIRSTUPDATETIME;
-		else 
-			m_flSuitUpdate = gpGlobals->time + SUITUPDATETIME; 
-	}
 }
 
 /*
@@ -3347,7 +3283,6 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 	case 101:
 		gEvilImpulse101 = TRUE;
 		GiveNamedItem( "item_suit" );
-		GiveNamedItem( "item_battery" );
 		GiveNamedItem( "weapon_crowbar" );
 		GiveNamedItem( "weapon_9mmhandgun" );
 		GiveNamedItem( "ammo_9mmclip" );
@@ -3370,8 +3305,19 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		GiveNamedItem( "ammo_rpgclip" );
 		GiveNamedItem( "weapon_satchel" );
 		GiveNamedItem( "weapon_snark" );
-		GiveNamedItem( "weapon_hornetgun" );
 #endif
+		GiveNamedItem( "weapon_th_ap9" );
+		GiveNamedItem( "ammo_th_ap9" );
+		GiveNamedItem( "weapon_th_chaingun" );
+		GiveNamedItem( "weapon_th_medkit" );
+		GiveNamedItem( "weapon_th_shovel" );
+		GiveNamedItem( "weapon_einar1" );
+		GiveNamedItem( "weapon_th_sniper" );
+		GiveNamedItem( "ammo_th_sniper" );
+		GiveNamedItem( "weapon_th_spanner" );
+		GiveNamedItem( "weapon_th_taurus" );
+		GiveNamedItem( "ammo_th_taurus" );
+
 		gEvilImpulse101 = FALSE;
 		break;
 	case 102:

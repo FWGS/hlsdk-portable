@@ -101,6 +101,7 @@ typedef void(CBaseEntity::*USEPTR)( CBaseEntity *pActivator, CBaseEntity *pCalle
 #define CLASS_PLAYER_ALLY		11
 #define CLASS_PLAYER_BIOWEAPON		12 // hornets and snarks.launched by players
 #define CLASS_ALIEN_BIOWEAPON		13 // hornets and snarks.launched by the alien menace
+#define CLASS_SKELETON			14
 #define	CLASS_BARNACLE			99 // special because no one pays attention to it, and it eats a wide cross-section of creatures.
 
 class CBaseEntity;
@@ -340,6 +341,10 @@ public:
 	int ammo_uranium;
 	int ammo_hornets;
 	int ammo_argrens;
+	int ammo_ap9;
+	int ammo_taurus;
+	int ammo_sniper;
+
 	//Special stuff for grenades and satchels.
 	float m_flStartThrow;
 	float m_flReleaseThrow;

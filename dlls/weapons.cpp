@@ -46,6 +46,8 @@ DLL_GLOBAL	short g_sModelIndexBubbles;// holds the index for the bubbles model
 DLL_GLOBAL	short g_sModelIndexBloodDrop;// holds the sprite index for the initial blood
 DLL_GLOBAL	short g_sModelIndexBloodSpray;// holds the sprite index for splattered blood
 
+DLL_GLOBAL	short g_sModelIndexFThrow; // holds the index for the flamethrower
+
 ItemInfo CBasePlayerItem::ItemInfoArray[MAX_WEAPONS];
 AmmoInfo CBasePlayerItem::AmmoInfoArray[MAX_AMMO_SLOTS];
 
@@ -169,6 +171,10 @@ void DecalGunshot( TraceResult *pTrace, int iBulletType )
 		case BULLET_MONSTER_MP5:
 		case BULLET_PLAYER_BUCKSHOT:
 		case BULLET_PLAYER_357:
+		case BULLET_PLAYER_AP9:
+		case BULLET_PLAYER_CHAINGUN:
+		case BULLET_PLAYER_SNIPER:
+		case BULLET_PLAYER_TAURUS:
 		default:
 			// smoke and decal
 			UTIL_GunshotDecalTrace( pTrace, DamageDecal( pEntity, DMG_BULLET ) );
@@ -347,10 +353,33 @@ void W_Precache( void )
 #if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
 	// squeak grenade
 	UTIL_PrecacheOtherWeapon( "weapon_snark" );
+#endif
+	// ap9
+	UTIL_PrecacheOtherWeapon( "weapon_th_ap9" );
+	UTIL_PrecacheOther( "ammo_th_ap9" );
 
-	// hornetgun
-	UTIL_PrecacheOtherWeapon( "weapon_hornetgun" );
+	// chaingun
+	UTIL_PrecacheOtherWeapon( "weapon_th_chaingun" );
 
+	// medkit
+	UTIL_PrecacheOtherWeapon( "weapon_th_medkit" );
+
+	// shovel
+	UTIL_PrecacheOtherWeapon( "weapon_th_shovel" );
+
+	// sniper
+	UTIL_PrecacheOtherWeapon( "weapon_einar1" );
+	UTIL_PrecacheOtherWeapon( "weapon_th_sniper" );
+	UTIL_PrecacheOther( "ammo_th_sniper" );
+
+	// spanner
+	UTIL_PrecacheOtherWeapon( "weapon_th_spanner" );
+
+	// taurus
+	UTIL_PrecacheOtherWeapon( "weapon_th_taurus" );
+	UTIL_PrecacheOther( "ammo_th_taurus" );
+
+#if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
 	if( g_pGameRules->IsDeathmatch() )
 	{
 		UTIL_PrecacheOther( "weaponbox" );// container for dropped deathmatch weapons
@@ -365,6 +394,8 @@ void W_Precache( void )
 
 	g_sModelIndexLaser = PRECACHE_MODEL( (char *)g_pModelNameLaser );
 	g_sModelIndexLaserDot = PRECACHE_MODEL( "sprites/laserdot.spr" );
+
+	g_sModelIndexFThrow = PRECACHE_MODEL( "sprites/fthrow.spr" );
 
 	// used by explosions
 	PRECACHE_MODEL( "models/grenade.mdl" );
@@ -382,6 +413,9 @@ void W_Precache( void )
 	PRECACHE_SOUND( "weapons/bullet_hit2.wav" );	// hit by bullet
 
 	PRECACHE_SOUND( "items/weapondrop1.wav" );// weapon falls to the ground
+
+	// Precached here since hand grenade no longer precaches it.
+	PRECACHE_MODEL( "models/w_grenade.mdl" );
 }
 
 TYPEDESCRIPTION	CBasePlayerItem::m_SaveData[] =
@@ -610,6 +644,11 @@ void CBasePlayerWeapon::ItemPostFrame( void )
 		m_pPlayer->TabulateAmmo();
 
 		m_fInReload = FALSE;
+	}
+
+	if( !( m_pPlayer->pev->button & IN_ATTACK ) )
+	{
+		m_flLastFireTime = 0.0f;
 	}
 
 	if( ( m_pPlayer->pev->button & IN_ATTACK2 ) && CanAttack( m_flNextSecondaryAttack, gpGlobals->time, UseDecrement() ) )
@@ -943,6 +982,7 @@ BOOL CBasePlayerWeapon::DefaultDeploy( char *szViewModel, char *szWeaponModel, i
 
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.0;
+	m_flLastFireTime = 0.0f;
 
 	return TRUE;
 }
@@ -1130,6 +1170,37 @@ void CBasePlayerWeapon::RetireWeapon( void )
 	g_pGameRules->GetNextBestWeapon( m_pPlayer, this );
 }
 
+/=========================================================================
+// GetNextAttackDelay - An accurate way of calcualting the next attack time.
+//=========================================================================
+float CBasePlayerWeapon::GetNextAttackDelay( float delay )
+{	
+	if( m_flLastFireTime == 0 || m_flNextPrimaryAttack == -1 )
+	{
+		// At this point, we are assuming that the client has stopped firing
+		// and we are going to reset our book keeping variables.
+		m_flLastFireTime = gpGlobals->time;
+		m_flPrevPrimaryAttack = delay;
+	}
+
+	// calculate the time between this shot and the previous
+	float flTimeBetweenFires = gpGlobals->time - m_flLastFireTime;
+	float flCreep = 0.0f;
+	if( flTimeBetweenFires > 0 )
+		flCreep = flTimeBetweenFires - m_flPrevPrimaryAttack; // postive or negative
+
+	// save the last fire time
+	m_flLastFireTime = gpGlobals->time;
+
+	float flNextAttack = UTIL_WeaponTimeBase() + delay - flCreep;
+	// we need to remember what the m_flNextPrimaryAttack time is set to for each shot, 
+	// store it as m_flPrevPrimaryAttack.
+	m_flPrevPrimaryAttack = flNextAttack - UTIL_WeaponTimeBase();
+	//char szMsg[256];
+	//_snprintf( szMsg, sizeof(szMsg), "next attack time: %0.4f\n", gpGlobals->time + flNextAttack );
+	//OutputDebugString( szMsg );
+	return flNextAttack;
+}
 //*********************************************************
 // weaponbox code:
 //*********************************************************
@@ -1527,3 +1598,40 @@ TYPEDESCRIPTION	CSatchel::m_SaveData[] =
 };
 
 IMPLEMENT_SAVERESTORE( CSatchel, CBasePlayerWeapon )
+
+TYPEDESCRIPTION	CGlock::m_SaveData[] =
+{
+	DEFINE_FIELD( CGlock, m_fSilencerOn, FIELD_BOOLEAN ),
+};
+
+IMPLEMENT_SAVERESTORE( CGlock, CBasePlayerWeapon );
+
+TYPEDESCRIPTION	CPython::m_SaveData[] =
+{
+	DEFINE_FIELD( CPython, m_flSoundDelay, FIELD_TIME ),
+};
+
+IMPLEMENT_SAVERESTORE( CPython, CBasePlayerWeapon );
+
+TYPEDESCRIPTION	CAP9::m_SaveData[] =
+{
+	DEFINE_FIELD( CAP9, m_iBurstShots, FIELD_INTEGER ),
+};
+
+IMPLEMENT_SAVERESTORE( CAP9, CBasePlayerWeapon );
+
+TYPEDESCRIPTION	CSniper::m_SaveData[] =
+{
+	DEFINE_FIELD( CSniper, m_fInZoom, FIELD_BOOLEAN ),
+};
+
+IMPLEMENT_SAVERESTORE( CSniper, CBasePlayerWeapon )
+
+#if 0
+TYPEDESCRIPTION	CEinar1::m_SaveData[] =
+{
+	DEFINE_FIELD( CEinar1, m_fInZoom, FIELD_BOOLEAN ),
+};
+
+IMPLEMENT_SAVERESTORE( CEinar1, CBasePlayerWeapon )
+#endif

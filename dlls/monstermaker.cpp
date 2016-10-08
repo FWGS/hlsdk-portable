@@ -22,6 +22,7 @@
 #include "cbase.h"
 #include "monsters.h"
 #include "saverestore.h"
+#include "barney.h"
 
 // Monstermaker spawnflags
 #define	SF_MONSTERMAKER_START_ON	1 // start active ( if has targetname )
@@ -214,6 +215,18 @@ void CMonsterMaker::MakeMonster( void )
 	if( pev->spawnflags & SF_MONSTERMAKER_MONSTERCLIP )
 		SetBits( pevCreate->spawnflags, SF_MONSTER_HITMONSTERCLIP );
 
+	// Override monster blood color.
+	if( pev->spawnflags & SF_MONSTER_REDBLOOD )
+		SetBits( pevCreate->spawnflags, SF_MONSTER_REDBLOOD );
+
+	// Override monster relationship.
+	if( pev->spawnflags & SF_MONSTER_ZOMBIECOP )
+		SetBits( pevCreate->spawnflags, SF_MONSTER_ZOMBIECOP );
+
+	// Override monster framerate.
+	if( pev->spawnflags & SF_MONSTER_FASTZOMBIEMODE )
+		SetBits( pevCreate->spawnflags, SF_MONSTER_FASTZOMBIEMODE );
+
 	DispatchSpawn( ENT( pevCreate ) );
 	pevCreate->owner = edict();
 
@@ -222,6 +235,10 @@ void CMonsterMaker::MakeMonster( void )
 		// if I have a netname (overloaded), give the child monster that name as a targetname
 		pevCreate->targetname = pev->netname;
 	}
+
+	CBarney* pBarney = (CBarney*)CBaseEntity::Instance( pevCreate );
+	if( pBarney )
+		pBarney->FixupBarneySkin( ( pev->spawnflags & SF_MONSTER_ZOMBIECOP ) ? TRUE : FALSE );
 
 	m_cLiveChildren++;// count this monster
 	m_cNumMonsters--;

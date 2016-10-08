@@ -223,18 +223,18 @@ old colors
 		switch( m_iHornetType )
 		{
 		case HORNET_TYPE_RED:
-			WRITE_BYTE( 179 );   // r, g, b
-			WRITE_BYTE( 39 );   // r, g, b
-			WRITE_BYTE( 14 );   // r, g, b
+			WRITE_BYTE( 255 );   // r, g, b
+			WRITE_BYTE( 0 );   // r, g, b
+			WRITE_BYTE( 255 );   // r, g, b
 			break;
 		case HORNET_TYPE_ORANGE:
-			WRITE_BYTE( 255 );   // r, g, b
-			WRITE_BYTE( 128 );   // r, g, b
 			WRITE_BYTE( 0 );   // r, g, b
+			WRITE_BYTE( 255 );   // r, g, b
+			WRITE_BYTE( 255 );   // r, g, b
 			break;
 		}
 
-		WRITE_BYTE( 128 );	// brightness
+		WRITE_BYTE( 0 );	// brightness
 	MESSAGE_END();
 }
 

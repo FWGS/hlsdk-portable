@@ -40,6 +40,12 @@
 #include	"soundent.h"
 #include	"effects.h"
 #include	"customentity.h"
+#include	"hgrunt.h"
+
+//
+// Spawn flags
+//
+#define SF_HGRUNT_ZSOLDIER		64
 
 int g_fGruntQuestion;				// true if an idle grunt asked a question. Cleared when someone answers.
 
@@ -71,6 +77,9 @@ extern DLL_GLOBAL int		g_iSkillLevel;
 #define GUN_MP5						0
 #define GUN_SHOTGUN					1
 #define GUN_NONE					2
+#define PARACHUTE_GROUP					3
+#define PARACHUTE_OFF					0
+#define PARACHUTE_ON					1
 
 //=========================================================
 // Monster's Anim Events Go Here
@@ -119,73 +128,6 @@ enum
 //=========================================================
 #define bits_COND_GRUNT_NOFIRE	( bits_COND_SPECIAL1 )
 
-class CHGrunt : public CSquadMonster
-{
-public:
-	void Spawn( void );
-	void Precache( void );
-	void SetYawSpeed( void );
-	int Classify( void );
-	int ISoundMask( void );
-	void HandleAnimEvent( MonsterEvent_t *pEvent );
-	BOOL FCanCheckAttacks( void );
-	BOOL CheckMeleeAttack1( float flDot, float flDist );
-	BOOL CheckRangeAttack1( float flDot, float flDist );
-	BOOL CheckRangeAttack2( float flDot, float flDist );
-	void CheckAmmo( void );
-	void SetActivity( Activity NewActivity );
-	void StartTask( Task_t *pTask );
-	void RunTask( Task_t *pTask );
-	void DeathSound( void );
-	void PainSound( void );
-	void IdleSound( void );
-	Vector GetGunPosition( void );
-	void Shoot( void );
-	void Shotgun( void );
-	void PrescheduleThink( void );
-	void GibMonster( void );
-	void SpeakSentence( void );
-
-	int Save( CSave &save ); 
-	int Restore( CRestore &restore );
-
-	CBaseEntity *Kick( void );
-	Schedule_t *GetSchedule( void );
-	Schedule_t *GetScheduleOfType( int Type );
-	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType);
-	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
-
-	int IRelationship( CBaseEntity *pTarget );
-
-	BOOL FOkToSpeak( void );
-	void JustSpoke( void );
-
-	CUSTOM_SCHEDULES
-	static TYPEDESCRIPTION m_SaveData[];
-
-	// checking the feasibility of a grenade toss is kind of costly, so we do it every couple of seconds,
-	// not every server frame.
-	float m_flNextGrenadeCheck;
-	float m_flNextPainTime;
-	float m_flLastEnemySightTime;
-
-	Vector m_vecTossVelocity;
-
-	BOOL m_fThrowGrenade;
-	BOOL m_fStanding;
-	BOOL m_fFirstEncounter;// only put on the handsign show in the squad's first encounter.
-	int m_cClipSize;
-
-	int m_voicePitch;
-
-	int m_iBrassShell;
-	int m_iShotgunShell;
-
-	int m_iSentence;
-
-	static const char *pGruntSentences[];
-};
-
 LINK_ENTITY_TO_CLASS( monster_human_grunt, CHGrunt )
 
 TYPEDESCRIPTION	CHGrunt::m_SaveData[] =
@@ -202,6 +144,7 @@ TYPEDESCRIPTION	CHGrunt::m_SaveData[] =
 	//DEFINE_FIELD( CShotgun, m_iBrassShell, FIELD_INTEGER ),
 	//DEFINE_FIELD( CShotgun, m_iShotgunShell, FIELD_INTEGER ),
 	DEFINE_FIELD( CHGrunt, m_iSentence, FIELD_INTEGER ),
+	DEFINE_FIELD( CHGrunt, m_iGruntFlags, FIELD_INTEGER ),
 };
 
 IMPLEMENT_SAVERESTORE( CHGrunt, CSquadMonster )
@@ -332,6 +275,10 @@ int CHGrunt::ISoundMask( void )
 //=========================================================
 BOOL CHGrunt::FOkToSpeak( void )
 {
+	// Zombie soldiers do not speak.
+	if( IsZombieSoldier() )
+		return FALSE;
+
 	// if someone else is talking, don't speak
 	if( gpGlobals->time <= CTalkMonster::g_talkWaitTime )
 		return FALSE;
@@ -632,6 +579,19 @@ int CHGrunt::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float 
 	return CSquadMonster::TakeDamage( pevInflictor, pevAttacker, flDamage, bitsDamageType );
 }
 
+void CHGrunt::Killed( entvars_t *pevAttacker, int iGib )
+{
+	//
+	// If a grunt is killed while using a parachute, update
+	// bodygroup to make it invisible.
+	//
+	if( GetBodygroup( PARACHUTE_GROUP ) == PARACHUTE_ON )
+	{
+		SetBodygroup( PARACHUTE_GROUP, PARACHUTE_OFF );
+	}
+
+	CSquadMonster::Killed( pevAttacker, iGib );
+}
 //=========================================================
 // SetYawSpeed - allows each sequence to have a different
 // turn rate associated with it.
@@ -741,6 +701,9 @@ void CHGrunt::CheckAmmo( void )
 //=========================================================
 int CHGrunt::Classify( void )
 {
+	if( IsZombieSoldier() )
+		return CLASS_ALIEN_MONSTER;
+
 	return CLASS_HUMAN_MILITARY;
 }
 
@@ -972,7 +935,33 @@ void CHGrunt::Spawn()
 {
 	Precache();
 
-	SET_MODEL( ENT( pev ), "models/hgrunt.mdl" );
+	m_iGruntFlags = 0;
+
+	// Check if this is a zombie soldier.
+	if( pev->spawnflags & SF_HGRUNT_ZSOLDIER )
+	{
+		m_iGruntFlags |= GF_ZSOLDIER;
+	}
+
+	char* szModel = (char*)STRING( pev->model );
+
+	// If this is a zombie soldier with a regular grunt model,
+	// switch to appropriate model.
+	if( IsZombieSoldier() && !FStrEq( szModel, "models/zgrunt.mdl" ) )
+	{
+		szModel = "models/zgrunt.mdl";
+		pev->model = ALLOC_STRING( szModel );
+	}
+	else
+	{
+		// Pick regular grunt model.
+		szModel = "models/hgrunt.mdl";
+		pev->model = ALLOC_STRING( szModel );
+	}
+
+	// Set new model.
+	SET_MODEL( ENT( pev ), (char*)STRING( pev->model ) );
+
 	UTIL_SetSize( pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX );
 
 	pev->solid		= SOLID_SLIDEBOX;
@@ -1038,6 +1027,7 @@ void CHGrunt::Spawn()
 void CHGrunt::Precache()
 {
 	PRECACHE_MODEL( "models/hgrunt.mdl" );
+	PRECACHE_MODEL( "models/zgrunt.mdl" );
 
 	PRECACHE_SOUND( "hgrunt/gr_mgun1.wav" );
 	PRECACHE_SOUND( "hgrunt/gr_mgun2.wav" );
@@ -1201,6 +1191,11 @@ void CHGrunt::DeathSound( void )
 		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "hgrunt/gr_die3.wav", 1, ATTN_IDLE );	
 		break;
 	}
+}
+
+BOOL CHGrunt::IsZombieSoldier( void ) const
+{
+	return ( m_iGruntFlags & GF_ZSOLDIER );
 }
 
 //=========================================================
@@ -1910,6 +1905,17 @@ void CHGrunt::SetActivity( Activity NewActivity )
 		}
 		iSequence = LookupActivity( NewActivity );
 		break;
+	case ACT_LAND:
+		//
+		// If a grunt landed using a parachute, update
+		// bodygroup to make it invisible.
+		//
+		if( GetBodygroup( PARACHUTE_GROUP ) == PARACHUTE_ON )
+		{
+			SetBodygroup( PARACHUTE_GROUP, PARACHUTE_OFF );
+		}
+		iSequence = LookupActivity( NewActivity );
+		break;
 	default:
 		iSequence = LookupActivity( NewActivity );
 		break;
@@ -2212,13 +2218,31 @@ Schedule_t *CHGrunt::GetScheduleOfType( int Type )
 			}
 			else
 			{
-				if( RANDOM_LONG( 0, 1 ) )
+				// Zombie soldiers cannot use grenades.
+				if( IsZombieSoldier() )
 				{
 					return &slGruntTakeCover[0];
 				}
 				else
 				{
-					return &slGruntGrenadeCover[0];
+					// Regular cover.
+					if( RANDOM_LONG( 0, 1 ) )
+					{
+						return &slGruntTakeCover[0];
+					}
+					else
+					{
+						if( !FClassnameIs( pev,"monster_th_cyberfranklin" ) )
+						{
+							// Regular grenade cover.
+							return &slGruntGrenadeCover[0];
+						}
+						else
+						{
+							// Prevent Cyber franklin from dropping grenades down.
+							return &slGruntTakeCover[0];
+						}
+					}
 				}
 			}
 		}
@@ -2343,15 +2367,7 @@ Schedule_t *CHGrunt::GetScheduleOfType( int Type )
 // CHGruntRepel - when triggered, spawns a monster_human_grunt
 // repelling down a line.
 //=========================================================
-
-class CHGruntRepel : public CBaseMonster
-{
-public:
-	void Spawn( void );
-	void Precache( void );
-	void EXPORT RepelUse ( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
-	int m_iSpriteTexture;	// Don't save, precache
-};
+#define SF_REPEL_PARACHUTE		32
 
 LINK_ENTITY_TO_CLASS( monster_grunt_repel, CHGruntRepel )
 
@@ -2386,6 +2402,23 @@ void CHGruntRepel::RepelUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_
 	// UNDONE: position?
 	pGrunt->m_vecLastPosition = tr.vecEndPos;
 
+	//
+	// Fix trigger condition targets.
+	//
+	pGrunt->m_iszTriggerTarget = m_iszTriggerTarget;
+	pGrunt->m_iTriggerCondition = m_iTriggerCondition;
+
+	// If this is a parachuted grunt, set parachute
+	// bodygroup visible.
+	if( pev->spawnflags & SF_REPEL_PARACHUTE )
+	{
+		pGrunt->SetBodygroup( PARACHUTE_GROUP, PARACHUTE_ON );
+
+		// Do not spawn beam. Return.
+		UTIL_Remove( this );
+		return;
+	}
+
 	CBeam *pBeam = CBeam::BeamCreate( "sprites/rope.spr", 10 );
 	pBeam->PointEntInit( pev->origin + Vector( 0, 0, 112 ), pGrunt->entindex() );
 	pBeam->SetFlags( BEAM_FSOLID );
@@ -2399,18 +2432,6 @@ void CHGruntRepel::RepelUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_
 //=========================================================
 // DEAD HGRUNT PROP
 //=========================================================
-class CDeadHGrunt : public CBaseMonster
-{
-public:
-	void Spawn( void );
-	int Classify( void ) { return CLASS_HUMAN_MILITARY; }
-
-	void KeyValue( KeyValueData *pkvd );
-
-	int m_iPose;// which sequence to display	-- temporary, don't need to save
-	static char *m_szPoses[3];
-};
-
 char *CDeadHGrunt::m_szPoses[] = { "deadstomach", "deadside", "deadsitting" };
 
 void CDeadHGrunt::KeyValue( KeyValueData *pkvd )
@@ -2432,7 +2453,28 @@ LINK_ENTITY_TO_CLASS( monster_hgrunt_dead, CDeadHGrunt )
 void CDeadHGrunt::Spawn( void )
 {
 	PRECACHE_MODEL( "models/hgrunt.mdl" );
-	SET_MODEL( ENT( pev ), "models/hgrunt.mdl" );
+	PRECACHE_MODEL( "models/zgrunt.mdl" );
+
+	char* szModel = (char*)STRING( pev->model );
+
+	//
+	// Pick regular grunt model.
+	//
+	if( !szModel || !*szModel )
+	{
+		szModel = "models/hgrunt.mdl";
+		pev->model = ALLOC_STRING( szModel );
+	} 
+	// If this is a zombie soldier with a regular grunt model,
+	// switch to appropriate model.
+	else if( ( pev->spawnflags & SF_HGRUNT_ZSOLDIER ) && !FStrEq( szModel, "models/zgrunt.mdl" ) )
+	{
+		szModel = "models/zgrunt.mdl";
+		pev->model = ALLOC_STRING( szModel );
+	}
+
+	// Set new model.
+	SET_MODEL( ENT( pev ), (char*)STRING( pev->model ) )
 
 	pev->effects		= 0;
 	pev->yaw_speed		= 8;

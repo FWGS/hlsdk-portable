@@ -439,6 +439,84 @@ cvar_t	sk_player_leg1	= { "sk_player_leg1","1" };
 cvar_t	sk_player_leg2	= { "sk_player_leg2","1" };
 cvar_t	sk_player_leg3	= { "sk_player_leg3","1" };
 
+// MONSTERS
+
+// Baby Kelly
+cvar_t	sk_babykelly_health1 = { "sk_babykelly_health1", "0" };
+cvar_t	sk_babykelly_health2 = { "sk_babykelly_health2", "0" };
+cvar_t	sk_babykelly_health3 = { "sk_babykelly_health3", "0" };
+
+// Boss
+cvar_t	sk_boss_health1 = { "sk_boss_health1", "0" };
+cvar_t	sk_boss_health2 = { "sk_boss_health2", "0" };
+cvar_t	sk_boss_health3 = { "sk_boss_health3", "0" };
+
+cvar_t	sk_cyberfranklin_health1 = { "sk_cyberfranklin_health1", "0" };
+cvar_t	sk_cyberfranklin_health2 = { "sk_cyberfranklin_health2", "0" };
+cvar_t	sk_cyberfranklin_health3 = { "sk_cyberfranklin_health3", "0" };
+
+// Houndeye
+cvar_t	sk_houndeye_dmg_bite1 = { "sk_houndeye_dmg_bite1", "0" };
+cvar_t	sk_houndeye_dmg_bite2 = { "sk_houndeye_dmg_bite2", "0" };
+cvar_t	sk_houndeye_dmg_bite3 = { "sk_houndeye_dmg_bite3", "0" };
+
+// Megasquid
+cvar_t	sk_megasquid_health1 = { "sk_megasquid_health1", "0" };
+cvar_t	sk_megasquid_health2 = { "sk_megasquid_health2", "0" };
+cvar_t	sk_megasquid_health3 = { "sk_megasquid_health3", "0" };
+
+// Zombie bull
+cvar_t	sk_zombiebull_health1 = { "sk_zombiebull_health1", "0" };
+cvar_t	sk_zombiebull_health2 = { "sk_zombiebull_health2", "0" };
+cvar_t	sk_zombiebull_health3 = { "sk_zombiebull_health3", "0" };
+
+cvar_t	sk_zombiebull_dmg_bite1 = { "sk_zombiebull_dmg_bite1", "0" };
+cvar_t	sk_zombiebull_dmg_bite2 = { "sk_zombiebull_dmg_bite2", "0" };
+cvar_t	sk_zombiebull_dmg_bite3 = { "sk_zombiebull_dmg_bite3", "0" };
+
+cvar_t	sk_zombiebull_dmg_whip1 = { "sk_zombiebull_dmg_whip1", "0" };
+cvar_t	sk_zombiebull_dmg_whip2 = { "sk_zombiebull_dmg_whip2", "0" };
+cvar_t	sk_zombiebull_dmg_whip3 = { "sk_zombiebull_dmg_whip3", "0" };
+
+// PLAYER WEAPONS
+
+// Shovel
+cvar_t	sk_plr_shovel1 = { "sk_plr_shovel1", "0" };
+cvar_t	sk_plr_shovel2 = { "sk_plr_shovel2", "0" };
+cvar_t	sk_plr_shovel3 = { "sk_plr_shovel3", "0" };
+
+// Spanner
+cvar_t	sk_plr_spanner1 = { "sk_plr_spanner1", "0" };
+cvar_t	sk_plr_spanner2 = { "sk_plr_spanner2", "0" };
+cvar_t	sk_plr_spanner3 = { "sk_plr_spanner3", "0" };
+
+// AP9 Round
+cvar_t	sk_plr_ap9_bullet1 = { "sk_plr_ap9_bullet1", "0" };
+cvar_t	sk_plr_ap9_bullet2 = { "sk_plr_ap9_bullet2", "0" };
+cvar_t	sk_plr_ap9_bullet3 = { "sk_plr_ap9_bullet3", "0" };
+
+// Taurus Round
+cvar_t	sk_plr_taurus_bullet1 = { "sk_plr_taurus_bullet1", "0" };
+cvar_t	sk_plr_taurus_bullet2 = { "sk_plr_taurus_bullet2", "0" };
+cvar_t	sk_plr_taurus_bullet3 = { "sk_plr_taurus_bullet3", "0" };
+
+// Sniper Round
+cvar_t	sk_plr_sniper_bullet1 = { "sk_plr_sniper_bullet1", "0" };
+cvar_t	sk_plr_sniper_bullet2 = { "sk_plr_sniper_bullet2", "0" };
+cvar_t	sk_plr_sniper_bullet3 = { "sk_plr_sniper_bullet3", "0" };
+
+// Flamethrower
+cvar_t	sk_plr_flame1 = { "sk_plr_flame1", "0" };
+cvar_t	sk_plr_flame2 = { "sk_plr_flame2", "0" };
+cvar_t	sk_plr_flame3 = { "sk_plr_flame3", "0" };
+
+// HEALTH/SUIT CHARGE DISTRIBUTION
+
+// Medkit
+cvar_t	sk_medkit1 = { "sk_medkit1", "0" };
+cvar_t	sk_medkit2 = { "sk_medkit2", "0" };
+cvar_t	sk_medkit3 = { "sk_medkit3", "0" };
+
 // END Cvars for Skill Level settings
 
 // Register your console variables here
@@ -847,6 +925,86 @@ void GameDLLInit( void )
 	CVAR_REGISTER( &sk_player_leg1 );
 	CVAR_REGISTER( &sk_player_leg2 );
 	CVAR_REGISTER( &sk_player_leg3 );
+
+	// MONSTERS
+
+	// Baby Kelly
+	CVAR_REGISTER( &sk_babykelly_health1 );
+	CVAR_REGISTER( &sk_babykelly_health2 );
+	CVAR_REGISTER( &sk_babykelly_health3 );
+
+	// Boss
+	CVAR_REGISTER( &sk_boss_health1 );
+	CVAR_REGISTER( &sk_boss_health2 );
+	CVAR_REGISTER( &sk_boss_health3 );
+
+	// Cyber Franklin
+	CVAR_REGISTER( &sk_cyberfranklin_health1 );
+	CVAR_REGISTER( &sk_cyberfranklin_health2 );
+	CVAR_REGISTER( &sk_cyberfranklin_health3 );
+
+	// Houndeye
+	CVAR_REGISTER( &sk_houndeye_dmg_bite1 );
+	CVAR_REGISTER( &sk_houndeye_dmg_bite2 );
+	CVAR_REGISTER( &sk_houndeye_dmg_bite3 );
+
+	// Megasquid
+	CVAR_REGISTER( &sk_megasquid_health1 );
+	CVAR_REGISTER( &sk_megasquid_health2 );
+	CVAR_REGISTER( &sk_megasquid_health3 );
+
+	// Zombie bull
+	CVAR_REGISTER( &sk_zombiebull_health1 );
+	CVAR_REGISTER( &sk_zombiebull_health2 );
+	CVAR_REGISTER( &sk_zombiebull_health3 );
+
+	CVAR_REGISTER( &sk_zombiebull_dmg_bite1 );
+	CVAR_REGISTER( &sk_zombiebull_dmg_bite2 );
+	CVAR_REGISTER( &sk_zombiebull_dmg_bite3 );
+
+	CVAR_REGISTER( &sk_zombiebull_dmg_whip1 );
+	CVAR_REGISTER( &sk_zombiebull_dmg_whip2 );
+	CVAR_REGISTER( &sk_zombiebull_dmg_whip3 );
+
+	// PLAYER WEAPONS
+
+	// Shovel
+	CVAR_REGISTER( &sk_plr_shovel1 );
+	CVAR_REGISTER( &sk_plr_shovel2 );
+	CVAR_REGISTER( &sk_plr_shovel3 );
+
+	// Spanner
+	CVAR_REGISTER( &sk_plr_spanner1 );
+	CVAR_REGISTER( &sk_plr_spanner2 );
+	CVAR_REGISTER( &sk_plr_spanner3 );
+
+	// AP9 Round
+	CVAR_REGISTER( &sk_plr_ap9_bullet1 );
+	CVAR_REGISTER( &sk_plr_ap9_bullet2 );
+	CVAR_REGISTER( &sk_plr_ap9_bullet3 );
+
+	// Taurus Round
+	CVAR_REGISTER( &sk_plr_taurus_bullet1 );
+	CVAR_REGISTER( &sk_plr_taurus_bullet2 );
+	CVAR_REGISTER( &sk_plr_taurus_bullet3 );
+
+	// Sniper Round
+	CVAR_REGISTER( &sk_plr_sniper_bullet1 );
+	CVAR_REGISTER( &sk_plr_sniper_bullet2 );
+	CVAR_REGISTER( &sk_plr_sniper_bullet3 );
+
+	// Flamethrower
+	CVAR_REGISTER( &sk_plr_flame1 );
+	CVAR_REGISTER( &sk_plr_flame2 );
+	CVAR_REGISTER( &sk_plr_flame3 );
+
+	// HEALTH/SUIT CHARGE DISTRIBUTION
+
+	// Medkit
+	CVAR_REGISTER( &sk_medkit1 );
+	CVAR_REGISTER( &sk_medkit2 );
+	CVAR_REGISTER( &sk_medkit3 );
+
 // END REGISTER CVARS FOR SKILL LEVEL STUFF
 
 	SERVER_COMMAND( "exec skill.cfg\n" );

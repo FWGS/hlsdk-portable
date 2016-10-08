@@ -22,6 +22,7 @@
 #include	"monsters.h"
 #include	"schedule.h"
 #include	"game.h"
+#include	"headcrab.h"
 
 //=========================================================
 // Monster's Anim Events Go Here
@@ -68,43 +69,6 @@ Schedule_t slHCRangeAttack1Fast[] =
 		0,
 		"HCRAFast"
 	},
-};
-
-class CHeadCrab : public CBaseMonster
-{
-public:
-	void Spawn( void );
-	void Precache( void );
-	void RunTask ( Task_t *pTask );
-	void StartTask ( Task_t *pTask );
-	void SetYawSpeed ( void );
-	void EXPORT LeapTouch ( CBaseEntity *pOther );
-	Vector Center( void );
-	Vector BodyTarget( const Vector &posSrc );
-	void PainSound( void );
-	void DeathSound( void );
-	void IdleSound( void );
-	void AlertSound( void );
-	void PrescheduleThink( void );
-	int  Classify ( void );
-	void HandleAnimEvent( MonsterEvent_t *pEvent );
-	BOOL CheckRangeAttack1 ( float flDot, float flDist );
-	BOOL CheckRangeAttack2 ( float flDot, float flDist );
-	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
-
-	virtual float GetDamageAmount( void ) { return gSkillData.headcrabDmgBite; }
-	virtual int GetVoicePitch( void ) { return 100; }
-	virtual float GetSoundVolue( void ) { return 1.0; }
-	Schedule_t* GetScheduleOfType ( int Type );
-
-	CUSTOM_SCHEDULES
-
-	static const char *pIdleSounds[];
-	static const char *pAlertSounds[];
-	static const char *pPainSounds[];
-	static const char *pAttackSounds[];
-	static const char *pDeathSounds[];
-	static const char *pBiteSounds[];
 };
 
 LINK_ENTITY_TO_CLASS( monster_headcrab, CHeadCrab )
@@ -260,9 +224,7 @@ void CHeadCrab::HandleAnimEvent( MonsterEvent_t *pEvent )
 				vecJumpDir = Vector( gpGlobals->v_forward.x, gpGlobals->v_forward.y, gpGlobals->v_up.z ) * 350;
 			}
 
-			int iSound = RANDOM_LONG(0,2);
-			if( iSound != 0 )
-				EMIT_SOUND_DYN( edict(), CHAN_VOICE, pAttackSounds[iSound], GetSoundVolue(), ATTN_IDLE, 0, GetVoicePitch() );
+			AttackSound();
 
 			pev->velocity = vecJumpDir;
 			m_flNextAttack = gpGlobals->time + 2;
@@ -286,7 +248,7 @@ void CHeadCrab::Spawn()
 
 	pev->solid		= SOLID_SLIDEBOX;
 	pev->movetype		= MOVETYPE_STEP;
-	m_bloodColor		= BLOOD_COLOR_GREEN;
+	m_bloodColor		= BLOOD_COLOR_RED;
 	pev->effects		= 0;
 	pev->health		= gSkillData.headcrabHealth;
 	pev->view_ofs		= Vector( 0, 0, 20 );// position of the eyes relative to monster's origin.
@@ -465,6 +427,16 @@ void CHeadCrab::PainSound( void )
 void CHeadCrab::DeathSound( void )
 {
 	EMIT_SOUND_DYN( edict(), CHAN_VOICE, RANDOM_SOUND_ARRAY( pDeathSounds ), GetSoundVolue(), ATTN_IDLE, 0, GetVoicePitch() );
+}
+
+//=========================================================
+// AttackSound 
+//=========================================================
+void CHeadCrab::AttackSound( void )
+{
+	int iSound = RANDOM_LONG(0, 2);
+	if( iSound != 0 )
+		EMIT_SOUND_DYN( edict(), CHAN_VOICE, pAttackSounds[iSound], GetSoundVolue(), ATTN_IDLE, 0, GetVoicePitch() );
 }
 
 Schedule_t *CHeadCrab::GetScheduleOfType( int Type )

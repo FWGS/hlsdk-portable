@@ -98,6 +98,10 @@ CGrenade *CGrenade::ShootTimed( entvars_t *pevOwner, Vector vecStart, Vector vec
 CGrenade *CGrenade::ShootContact( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity ){ return 0; }
 void CGrenade::DetonateUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value ){ }
 
+// CTnt Stubs
+void CTnt::Spawn( void ) { }
+CGrenade *CTnt::ShootTimed( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity, float time ){ return 0; }
+
 void UTIL_Remove( CBaseEntity *pEntity ){ }
 struct skilldata_t gSkillData;
 void UTIL_SetSize( entvars_t *pev, const Vector &vecMin, const Vector &vecMax ){ }
@@ -314,6 +318,7 @@ int CBasePlayerItem::Restore( class CRestore & ) { return 1; }
 int CBasePlayerItem::Save( class CSave & ) { return 1; }
 int CBasePlayerWeapon::Restore( class CRestore & ) { return 1; }
 int CBasePlayerWeapon::Save( class CSave & ) { return 1; }
+float CBasePlayerWeapon::GetNextAttackDelay( float flTime ) { return flTime; }
 void CBasePlayerItem::SetObjectCollisionBox( void ) { }
 void CBasePlayerItem::FallInit( void ) { }
 void CBasePlayerItem::FallThink( void ) { }

@@ -123,12 +123,14 @@ public:
 	
 	// Conversations / communication
 	int				GetVoicePitch( void );
-	void			IdleRespond( void );
+	virtual void			IdleRespond( void );
 	int				FIdleSpeak( void );
 	int				FIdleStare( void );
 	int				FIdleHello( void );
 	void			IdleHeadTurn( Vector &vecFriend );
-	int				FOkToSpeak( void );
+	virtual int		FOkToSpeak( void );
+	int				FWoundSpeak( void );
+	int				FMortalSpeak( void );
 	void			TrySmellTalk( void );
 	CBaseEntity		*EnumFriends( CBaseEntity *pentPrevious, int listNumber, BOOL bTrace );
 	void			AlertFriends( void );

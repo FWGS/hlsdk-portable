@@ -68,6 +68,15 @@ CSatchel g_Satchel;
 CTripmine g_Tripmine;
 CSqueak g_Snark;
 
+CShovel g_Shovel;
+CSpanner g_Spanner;
+CAP9 g_AP9;
+CTaurus g_Taurus;
+CHKG36 g_HKG36;
+CEinar1 g_Einar1;
+CChaingun g_Chaingun;
+CMedkit g_Medkit;
+
 /*
 ======================
 AlertMessage
@@ -637,6 +646,14 @@ void HUD_InitClientWeapons( void )
 	HUD_PrepEntity( &g_Satchel, &player );
 	HUD_PrepEntity( &g_Tripmine, &player );
 	HUD_PrepEntity( &g_Snark, &player );
+	HUD_PrepEntity( &g_Shovel, &player );
+	HUD_PrepEntity( &g_Spanner, &player );
+	HUD_PrepEntity( &g_AP9, &player );
+	HUD_PrepEntity( &g_Taurus, &player );
+	HUD_PrepEntity( &g_HKG36, &player );
+	HUD_PrepEntity( &g_Einar1, &player );
+	HUD_PrepEntity( &g_Chaingun, &player );
+	HUD_PrepEntity( &g_Medkit, &player );
 }
 
 /*
@@ -741,6 +758,30 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 			break;
 		case WEAPON_SNARK:
 			pWeapon = &g_Snark;
+			break;
+		case WEAPON_SHOVEL:
+			pWeapon = &g_Shovel;
+			break;
+		case WEAPON_SPANNER:
+			pWeapon = &g_Spanner;
+			break;
+		case WEAPON_AP9:
+			pWeapon = &g_AP9;
+			break;
+		case WEAPON_TAURUS:
+			pWeapon = &g_Taurus;
+			break;
+		case WEAPON_HKG36:
+			pWeapon = &g_HKG36;
+			break;
+		case WEAPON_EINAR1:
+			pWeapon = &g_Einar1;
+			break;
+		case WEAPON_CHAINGUN:
+			pWeapon = &g_Chaingun;
+			break;
+		case WEAPON_MEDKIT:
+			pWeapon = &g_Medkit;
 			break;
 	}
 
@@ -851,6 +892,18 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 		( (CRpg *)player.m_pActiveItem )->m_fSpotActive = (int)from->client.vuser2[1];
 		( (CRpg *)player.m_pActiveItem )->m_cActiveRockets = (int)from->client.vuser2[2];
 	}
+	else if( player.m_pActiveItem->m_iId== WEAPON_AP9 )
+	{
+		player.ammo_ap9 = (int)from->client.vuser1[1];
+	}
+	else if( player.m_pActiveItem->m_iId == WEAPON_TAURUS )
+	{
+		player.ammo_taurus = (int)from->client.vuser1[1];
+	}
+	else if( player.m_pActiveItem->m_iId == WEAPON_EINAR1 || player.m_pActiveItem->m_iId == WEAPON_HKG36 )
+	{
+		player.ammo_sniper = (int)from->client.vuser1[1];
+	}
 
 	// Don't go firing anything if we have died.
 	// Or if we don't have a weapon model deployed
@@ -919,6 +972,18 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 		from->client.vuser2[1] = ( (CRpg *)player.m_pActiveItem)->m_fSpotActive;
 		from->client.vuser2[2] = ( (CRpg *)player.m_pActiveItem)->m_cActiveRockets;
 	}
+	else if( player.m_pActiveItem->m_iId == WEAPON_AP9 )
+	{
+		from->client.vuser1[1] = player.ammo_ap9;
+	}
+	else if( player.m_pActiveItem->m_iId == WEAPON_TAURUS )
+	{
+		from->client.vuser1[1] = player.ammo_taurus;
+	}
+	else if( player.m_pActiveItem->m_iId == WEAPON_EINAR1 || player.m_pActiveItem->m_iId == WEAPON_HKG36 )
+	{
+		from->client.vuser1[1] = player.ammo_sniper;
+	}
 
 	// Make sure that weapon animation matches what the game .dll is telling us
 	//  over the wire ( fixes some animation glitches )
@@ -933,6 +998,9 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 		//Show laser sight/scope combo
 		if( pWeapon == &g_Python && bIsMultiplayer() )
 			 body = 1;
+
+		if( pWeapon == &g_Glock && ( (CGlock*)pWeapon )->m_fSilencerOn )
+			body = 1;
 
 		// Force a fixed anim down to viewmodel
 		HUD_SendWeaponAnim( to->client.weaponanim, body, 1 );

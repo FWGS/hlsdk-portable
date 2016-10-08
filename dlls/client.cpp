@@ -748,6 +748,8 @@ void ClientPrecache( void )
 	PRECACHE_SOUND( "debris/wood3.wav" );
 
 	PRECACHE_SOUND( "plats/train_use1.wav" );		// use a train
+	PRECACHE_SOUND( "plats/train_use2.wav" );
+	PRECACHE_SOUND( "plats/train_use6.wav" );
 
 	PRECACHE_SOUND( "buttons/spark5.wav" );		// hit computer texture
 	PRECACHE_SOUND( "buttons/spark6.wav" );
@@ -787,6 +789,8 @@ void ClientPrecache( void )
 
 	if( giPrecacheGrunt )
 		UTIL_PrecacheOther( "monster_human_grunt" );
+
+	UTIL_PrecacheOther( "monster_th_cyberfranklin" );
 }
 
 /*
@@ -1622,6 +1626,18 @@ void UpdateClientData( const struct edict_s *ent, int sendweapons, struct client
 					{
 						cd->vuser2.y = ( (CRpg *)pl->m_pActiveItem )->m_fSpotActive;
 						cd->vuser2.z = ( (CRpg *)pl->m_pActiveItem )->m_cActiveRockets;
+					}
+					else if( pl->m_pActiveItem->m_iId == WEAPON_AP9 )
+					{
+						cd->vuser2.y = pl->ammo_ap9;
+					}
+					else if( pl->m_pActiveItem->m_iId == WEAPON_TAURUS )
+					{
+						cd->vuser2.y = pl->ammo_taurus;
+					}
+					else if( pl->m_pActiveItem->m_iId == WEAPON_EINAR1 || pl->m_pActiveItem->m_iId == WEAPON_HKG36 )
+					{
+						cd->vuser2.y = pl->ammo_sniper;
 					}
 				}
 			}

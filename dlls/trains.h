@@ -20,6 +20,7 @@
 #define SF_TRACKTRAIN_NOCONTROL		0x0002
 #define SF_TRACKTRAIN_FORWARDONLY	0x0004
 #define SF_TRACKTRAIN_PASSABLE		0x0008
+#define SF_TRACKTRAIN_TH_SOUNDS		0x0020
 
 // Spawnflag for CPathTrack
 #define SF_PATH_DISABLED		0x00000001
@@ -117,6 +118,10 @@ public:
 	float m_flVolume;
 	float m_flBank;
 	float m_oldSpeed;
+
+	BOOL UseCustomSounds( void ) const;
+	BOOL IsCar( void ) const;
+	BOOL IsTrain( void ) const;
 
 private:
 	unsigned short m_usAdjustPitch;

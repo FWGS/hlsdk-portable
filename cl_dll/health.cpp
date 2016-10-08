@@ -29,6 +29,8 @@
 
 #include "mobility_int.h"
 
+extern bool bIsMultiplayer( void );
+
 DECLARE_MESSAGE( m_Health, Health )
 DECLARE_MESSAGE( m_Health, Damage )
 
@@ -165,7 +167,14 @@ void CHudHealth::GetPainColor( int &r, int &g, int &b )
 #else
 	if( m_iHealth > 25 )
 	{
-		UnpackRGB( r, g, b, RGB_YELLOWISH );
+		if( bIsMultiplayer() )
+		{
+			UnpackRGB( r, g, b, RGB_YELLOWISH );
+		}
+		else
+		{
+			UnpackRGB( r, g, b, RGB_REDISH );
+		}
 	}
 	else
 	{
@@ -226,12 +235,6 @@ int CHudHealth::Draw( float flTime )
 		x = CrossWidth + HealthWidth / 2;
 
 		x = gHUD.DrawHudNumber( x, y, DHN_3DIGITS | DHN_DRAWZERO, m_iHealth, r, g, b );
-
-		x += HealthWidth / 2;
-
-		int iHeight = gHUD.m_iFontHeight;
-		int iWidth = HealthWidth / 10;
-		FillRGBA( x, y, iWidth, iHeight, 255, 160, 0, a );
 	}
 
 	DrawDamage( flTime );
@@ -378,6 +381,15 @@ int CHudHealth::DrawDamage( float flTime )
 
 	if( !m_bitsDamage )
 		return 1;
+
+	if( bIsMultiplayer() )
+	{
+		UnpackRGB( r, g, b, RGB_YELLOWISH );
+	}
+	else
+	{
+		UnpackRGB( r, g, b, RGB_REDISH );
+	}
 
 	UnpackRGB( r, g, b, RGB_YELLOWISH );
 

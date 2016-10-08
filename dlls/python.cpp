@@ -75,6 +75,8 @@ void CPython::Spawn()
 
 	m_iDefaultAmmo = PYTHON_DEFAULT_GIVE;
 
+	m_flSoundDelay = 0;
+
 	FallInit();// get ready to fall down.
 }
 
@@ -227,9 +229,11 @@ void CPython::Reload( void )
 #else
 	bUseScope = g_pGameRules->IsMultiplayer();
 #endif
-	if( DefaultReload( 6, PYTHON_RELOAD, 2.0, bUseScope ) )
+	int iResult = DefaultReload( PYTHON_MAX_CLIP, PYTHON_RELOAD, 2.0, bUseScope );
+
+	if( iResult )
 	{
-		m_flSoundDelay = 1.5;
+		m_flSoundDelay = gpGlobals->time + 1.5;
 	}
 }
 
@@ -240,7 +244,7 @@ void CPython::WeaponIdle( void )
 	m_pPlayer->GetAutoaimVector( AUTOAIM_10DEGREES );
 
 	// ALERT( at_console, "%.2f\n", gpGlobals->time - m_flSoundDelay );
-	if( m_flSoundDelay != 0 && m_flSoundDelay <= UTIL_WeaponTimeBase() )
+	if( m_flSoundDelay != 0 && ( m_flSoundDelay <= UTIL_WeaponTimeBase() || m_flSoundDelay <= gpGlobals->time ) )
 	{
 		EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_WEAPON, "weapons/357_reload1.wav", RANDOM_FLOAT( 0.8, 0.9 ), ATTN_NORM );
 		m_flSoundDelay = 0;

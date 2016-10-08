@@ -617,20 +617,6 @@ void CWorld::Precache( void )
 	// g-cont. moved here to right restore global WaveHeight on save\restore level
 	CVAR_SET_FLOAT( "sv_wateramp", pev->scale );
 
-	if( pev->netname )
-	{
-		ALERT( at_aiconsole, "Chapter title: %s\n", STRING( pev->netname ) );
-		CBaseEntity *pEntity = CBaseEntity::Create( "env_message", g_vecZero, g_vecZero, NULL );
-		if( pEntity )
-		{
-			pEntity->SetThink( &CBaseEntity::SUB_CallUseToggle );
-			pEntity->pev->message = pev->netname;
-			pev->netname = 0;
-			pEntity->pev->nextthink = gpGlobals->time + 0.3;
-			pEntity->pev->spawnflags = SF_MESSAGE_ONCE;
-		}
-	}
-
 	if( pev->spawnflags & SF_WORLD_DARK )
 		CVAR_SET_FLOAT( "v_dark", 1.0 );
 	else

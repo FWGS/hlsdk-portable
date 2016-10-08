@@ -28,6 +28,8 @@
 
 #include "ammohistory.h"
 
+extern bool bIsMultiplayer( void );
+
 WEAPON *gpActiveSel;	// NULL means off, 1 means just the menu bar, otherwise
 						// this points to the active weapon menu item
 WEAPON *gpLastSel;		// Last weapon menu selection 
@@ -542,8 +544,17 @@ int CHudAmmo::MsgFunc_HideWeapon( const char *pszName, int iSize, void *pbuf )
 	}
 	else
 	{
-		if ( m_pWeapon )
-			SetCrosshair( m_pWeapon->hCrosshair, m_pWeapon->rcCrosshair, 255, 255, 255 );
+		if( m_pWeapon )
+		{
+			if( bIsMultiplayer() )
+			{
+				SetCrosshair( m_pWeapon->hCrosshair, m_pWeapon->rcCrosshair, 255, 255, 255 );
+			}
+			else
+			{
+				SetCrosshair( m_pWeapon->hCrosshair, m_pWeapon->rcCrosshair, 255, 0, 0 );
+			}
+		}
 	}
 
 	return 1;
@@ -608,18 +619,53 @@ int CHudAmmo::MsgFunc_CurWeapon( const char *pszName, int iSize, void *pbuf )
 	{
 		// normal crosshairs
 		if( fOnTarget && m_pWeapon->hAutoaim )
-			SetCrosshair( m_pWeapon->hAutoaim, m_pWeapon->rcAutoaim, 255, 255, 255 );
+		{
+			if( bIsMultiplayer() )
+			{
+				SetCrosshair( m_pWeapon->hAutoaim, m_pWeapon->rcAutoaim, 255, 255, 255 );
+			}
+			else
+			{
+				SetCrosshair( m_pWeapon->hAutoaim, m_pWeapon->rcAutoaim, 255, 0, 0 );
+			}
+		}
 		else
-			SetCrosshair( m_pWeapon->hCrosshair, m_pWeapon->rcCrosshair, 255, 255, 255 );
+		{
+			if( bIsMultiplayer() )
+			{
+				SetCrosshair( m_pWeapon->hCrosshair, m_pWeapon->rcCrosshair, 255, 255, 255 );
+			}
+			else
+			{
+				SetCrosshair( m_pWeapon->hCrosshair, m_pWeapon->rcCrosshair, 255, 0, 0 );
+			}
+		}
 	}
 	else
 	{
 		// zoomed crosshairs
 		if( fOnTarget && m_pWeapon->hZoomedAutoaim )
-			SetCrosshair( m_pWeapon->hZoomedAutoaim, m_pWeapon->rcZoomedAutoaim, 255, 255, 255 );
+		{
+			if( bIsMultiplayer() )
+			{
+				SetCrosshair( m_pWeapon->hZoomedAutoaim, m_pWeapon->rcZoomedAutoaim, 255, 255, 255);
+			}
+			else
+			{
+				SetCrosshair( m_pWeapon->hZoomedAutoaim, m_pWeapon->rcZoomedAutoaim, 255, 0, 0);
+			}
+		}
 		else
-			SetCrosshair( m_pWeapon->hZoomedCrosshair, m_pWeapon->rcZoomedCrosshair, 255, 255, 255 );
-
+		{
+			if( bIsMultiplayer() )
+			{
+				SetCrosshair( m_pWeapon->hZoomedCrosshair, m_pWeapon->rcZoomedCrosshair, 255, 255, 255 );
+			}
+			else
+			{
+				SetCrosshair( m_pWeapon->hZoomedCrosshair, m_pWeapon->rcZoomedCrosshair, 255, 0, 0 );
+			}
+		}
 	}
 
 	m_fFade = 200.0f; //!!!
@@ -859,7 +905,14 @@ int CHudAmmo::Draw( float flTime )
 	if( m_fFade > 0 )
 		m_fFade -= ( gHUD.m_flTimeDelta * 20 );
 
-	UnpackRGB( r, g, b, RGB_YELLOWISH );
+	if( bIsMultiplayer() )
+	{
+		UnpackRGB( r, g, b, RGB_YELLOWISH );
+	}
+	else
+	{
+		UnpackRGB( r, g, b, RGB_REDISH );
+	}
 
 	ScaleColors( r, g, b, a );
 
@@ -887,7 +940,14 @@ int CHudAmmo::Draw( float flTime )
 
 			x += AmmoWidth / 2;
 
-			UnpackRGB( r,g,b, RGB_YELLOWISH );
+			if( bIsMultiplayer() )
+			{
+				UnpackRGB( r, g, b, RGB_YELLOWISH );
+			}
+			else
+			{
+				UnpackRGB( r, g, b, RGB_REDISH );
+			}
 
 			// draw the | bar
 			FillRGBA( x, y, iBarWidth, gHUD.m_iFontHeight, r, g, b, a );
@@ -957,7 +1017,7 @@ int DrawBar( int x, int y, int width, int height, float f )
 		width -= w;
 	}
 
-	UnpackRGB( r, g, b, RGB_YELLOWISH );
+	UnpackRGB( r, g, b, RGB_REDISH );
 
 	FillRGBA( x, y, width, height, r, g, b, 128 );
 

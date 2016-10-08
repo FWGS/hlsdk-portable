@@ -24,6 +24,7 @@
 #include "effects.h"
 #include "customentity.h"
 #include "gamerules.h"
+#include "flame.h"
 
 #define	EGON_PRIMARY_VOLUME		450
 #define EGON_BEAM_SPRITE		"sprites/xbeam1.spr"
@@ -79,6 +80,10 @@ void CEgon::Precache( void )
 	PRECACHE_MODEL( EGON_FLARE_SPRITE );
 
 	PRECACHE_SOUND( "weapons/357_cock1.wav" );
+
+	PRECACHE_SOUND( "weapons/flmfire2.wav" );
+
+	UTIL_PrecacheOther( "flame" );
 
 	m_usEgonFire = PRECACHE_EVENT( 1, "events/egon_fire.sc" );
 	m_usEgonStop = PRECACHE_EVENT( 1, "events/egon_stop.sc" );
@@ -232,8 +237,59 @@ void CEgon::Attack( void )
 
 void CEgon::PrimaryAttack( void )
 {
-	m_fireMode = FIRE_WIDE;
-	Attack();
+	// don't fire underwater
+	if( m_pPlayer->pev->waterlevel == 3 )
+	{
+		PlayEmptySound();
+		m_flNextPrimaryAttack = m_flNextSecondaryAttack = GetNextAttackDelay( 0.2 );
+		return;
+	}
+
+	if( !HasAmmo() )
+	{
+		m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.25;
+		PlayEmptySound();
+		return;
+	}
+
+	m_pPlayer->m_iWeaponVolume = EGON_PRIMARY_VOLUME;
+
+	// player "shoot" animation
+	m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
+
+	UseAmmo( 1 );
+
+	int flags;
+#if defined( CLIENT_WEAPONS )
+	flags = FEV_NOTHOST;
+#else
+	flags = 0;
+#endif
+	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usEgonFire, 0, (float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, 0, 0, 0, 0 );
+
+#ifndef CLIENT_DLL
+	Vector	position, velocity;
+	Vector forward, right, up;
+
+	UTIL_MakeVectors( m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle );
+
+	forward = gpGlobals->v_forward;
+	right = gpGlobals->v_right;
+	up = gpGlobals->v_up;
+
+	position = m_pPlayer->pev->origin + m_pPlayer->pev->view_ofs;
+	position = position + forward * 16;
+	position = position + right * RANDOM_FLOAT( 4, 6 );
+	position = position + up * RANDOM_FLOAT( 1, 2 );
+
+	velocity = forward * 400;
+	velocity = velocity + right * ( RANDOM_LONG(0, 1 ) ? 16 : -16 );
+	velocity = velocity + up * ( RANDOM_LONG( 0, 1 ) ? 16 : -8 );
+
+	CFlame::Shoot( m_pPlayer->pev, position, velocity );
+#endif
+	m_flNextPrimaryAttack = m_flNextSecondaryAttack = GetNextAttackDelay( 0.2f );
+	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.1;
 }
 
 void CEgon::Fire( const Vector &vecOrigSrc, const Vector &vecDir )
@@ -475,9 +531,6 @@ void CEgon::WeaponIdle( void )
 	if( m_flTimeWeaponIdle > UTIL_WeaponTimeBase() )
 		return;
 
-	if( m_fireState != FIRE_OFF )
-		 EndAttack();
-
 	int iAnim;
 
 	float flRand = RANDOM_FLOAT( 0, 1 );
@@ -519,13 +572,13 @@ class CEgonAmmo : public CBasePlayerAmmo
 	void Spawn( void )
 	{ 
 		Precache();
-		SET_MODEL( ENT( pev ), "models/w_chainammo.mdl" );
+		SET_MODEL( ENT( pev ), "models/w_gas.mdl" );
 		CBasePlayerAmmo::Spawn();
 	}
 
 	void Precache( void )
 	{
-		PRECACHE_MODEL( "models/w_chainammo.mdl" );
+		PRECACHE_MODEL( "models/w_gas.mdl" );
 		PRECACHE_SOUND( "items/9mmclip1.wav" );
 	}
 

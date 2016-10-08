@@ -32,7 +32,7 @@ extern CGraph WorldGraph;
 // houndeye does 20 points of damage spread over a sphere 384 units in diameter, and each additional 
 // squad member increases the BASE damage by 110%, per the spec.
 #define HOUNDEYE_MAX_SQUAD_SIZE			4
-#define	HOUNDEYE_MAX_ATTACK_RADIUS		384
+#define	HOUNDEYE_MAX_ATTACK_RADIUS		96
 #define	HOUNDEYE_SQUAD_BONUS			(float)1.1
 
 #define HOUNDEYE_EYE_FRAMES 4 // how many different switchable maps for the eye
@@ -277,7 +277,23 @@ void CHoundeye::HandleAnimEvent( MonsterEvent_t *pEvent )
 			WarnSound();
 			break;
 		case HOUND_AE_STARTATTACK:
-			WarmUpSound();
+			{
+				// SOUND HERE!
+				CBaseEntity *pHurt = CheckTraceHullAttack( 80, gSkillData.houndeyeDmgBite, DMG_SLASH );
+
+				if( pHurt )
+				{
+					if( pHurt->pev->flags & ( FL_CLIENT | FL_MONSTER ) )
+					{
+						pHurt->pev->punchangle.x = 2;
+					}
+
+					pHurt->pev->velocity = pHurt->pev->velocity - gpGlobals->v_forward * 16;
+					pHurt->pev->velocity = pHurt->pev->velocity + gpGlobals->v_up * 8;
+				}
+
+				WarmUpSound();
+			}
 			break;
 		case HOUND_AE_HOPBACK:
 			{
@@ -290,8 +306,6 @@ void CHoundeye::HandleAnimEvent( MonsterEvent_t *pEvent )
 				break;
 			}
 		case HOUND_AE_THUMP:
-			// emit the shockwaves
-			SonicAttack();
 			break;
 		case HOUND_AE_ANGERSOUND1:
 			EMIT_SOUND( ENT( pev ), CHAN_VOICE, "houndeye/he_pain3.wav", 1, ATTN_NORM );
@@ -323,7 +337,7 @@ void CHoundeye::Spawn()
 
 	pev->solid		= SOLID_SLIDEBOX;
 	pev->movetype		= MOVETYPE_STEP;
-	m_bloodColor		= BLOOD_COLOR_YELLOW;
+	m_bloodColor		= BLOOD_COLOR_RED;
 	pev->effects		= 0;
 	pev->health		= gSkillData.houndeyeHealth;
 	pev->yaw_speed		= 5;//!!! should we put this in the monster's changeanim function since turn rates may vary with state/anim?
@@ -365,6 +379,7 @@ void CHoundeye::Precache()
 	PRECACHE_SOUND( "houndeye/he_pain5.wav" );
 
 	PRECACHE_SOUND( "houndeye/he_attack1.wav" );
+	PRECACHE_SOUND( "houndeye/he_attack2.wav" );
 	PRECACHE_SOUND( "houndeye/he_attack3.wav" );
 
 	PRECACHE_SOUND( "houndeye/he_blast1.wav" );
@@ -398,13 +413,16 @@ void CHoundeye::IdleSound( void )
 //=========================================================
 void CHoundeye::WarmUpSound( void )
 {
-	switch( RANDOM_LONG( 0, 1 ) )
+	switch( RANDOM_LONG( 0, 2 ) )
 	{
 	case 0:
 		EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "houndeye/he_attack1.wav", 0.7, ATTN_NORM );	
 		break;
 	case 1:
 		EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "houndeye/he_attack3.wav", 0.7, ATTN_NORM );	
+		break;
+	case 2:
+		EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "houndeye/he_attack2.wav", 0.7, ATTN_NORM );
 		break;
 	}
 }

@@ -23,6 +23,7 @@
 #include	"scripted.h"
 #include	"soundent.h"
 #include	"animation.h"
+#include	"barney.h"
 
 //=========================================================
 // Talking monster base class
@@ -644,6 +645,10 @@ CBaseEntity *CTalkMonster::EnumFriends( CBaseEntity *pPrevious, int listNumber, 
 
 void CTalkMonster::AlertFriends( void )
 {
+	// Do not alert friends if this is a zombie cop.
+	if( FClassnameIs( pev, "monster_barney" ) && ( (CBarney*)this )->IsZombieCop() )
+		return;
+
 	CBaseEntity *pFriend = NULL;
 	int i;
 
@@ -653,7 +658,7 @@ void CTalkMonster::AlertFriends( void )
 		while( ( pFriend = EnumFriends( pFriend, i, TRUE ) ) )
 		{
 			CBaseMonster *pMonster = pFriend->MyMonsterPointer();
-			if( pMonster->IsAlive() )
+			if( pMonster->IsAlive() && pMonster->Classify() == Classify() )
 			{
 				// don't provoke a friend that's playing a death animation. They're a goner
 				pMonster->m_afMemory |= bits_MEMORY_PROVOKED;
@@ -1147,9 +1152,13 @@ int CTalkMonster::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, f
 		// if player damaged this entity, have other friends talk about it
 		if( pevAttacker && m_MonsterState != MONSTERSTATE_PRONE && FBitSet( pevAttacker->flags, FL_CLIENT ) )
 		{
+			// Do not tell friends to stop shooting if this is a zombie cop.
+			if( FClassnameIs( pev, "monster_barney" ) && ( (CBarney*)this )->IsZombieCop() )
+				return CBaseMonster::TakeDamage( pevInflictor, pevAttacker, flDamage, bitsDamageType );
+
 			CBaseEntity *pFriend = FindNearestFriend( FALSE );
 
-			if( pFriend && pFriend->IsAlive() )
+			if( pFriend && pFriend->IsAlive() && pFriend->Classify() == Classify() )
 			{
 				// only if not dead or dying!
 				CTalkMonster *pTalkMonster = (CTalkMonster *)pFriend;
@@ -1190,8 +1199,12 @@ Schedule_t *CTalkMonster::GetScheduleOfType( int Type )
 			{
 				//SENTENCEG_PlayRndSz( ENT( pev ), m_szGrp[TLK_WOUND], 1.0, ATTN_IDLE, 0, GetVoicePitch() );
 				//CTalkMonster::g_talkWaitTime = gpGlobals->time + RANDOM_FLOAT( 2.8, 3.2 );
-				PlaySentence( m_szGrp[TLK_WOUND], RANDOM_FLOAT( 2.8, 3.2 ), VOL_NORM, ATTN_IDLE );
-				SetBits( m_bitsSaid, bit_saidWoundLight );
+
+				if( FWoundSpeak() )
+				{
+					SetBits( m_bitsSaid, bit_saidWoundLight );
+				}
+
 				return slIdleStand;
 			}
 			// sustained heavy wounds?
@@ -1199,8 +1212,12 @@ Schedule_t *CTalkMonster::GetScheduleOfType( int Type )
 			{
 				//SENTENCEG_PlayRndSz( ENT( pev ), m_szGrp[TLK_MORTAL], 1.0, ATTN_IDLE, 0, GetVoicePitch() );
 				//CTalkMonster::g_talkWaitTime = gpGlobals->time + RANDOM_FLOAT( 2.8, 3.2 );
-				PlaySentence( m_szGrp[TLK_MORTAL], RANDOM_FLOAT( 2.8, 3.2 ), VOL_NORM, ATTN_IDLE );
-				SetBits( m_bitsSaid, bit_saidWoundHeavy );
+
+				if( FMortalSpeak() )
+				{
+					SetBits( m_bitsSaid, bit_saidWoundHeavy );
+				}
+
 				return slIdleStand;
 			}
 
@@ -1407,3 +1424,24 @@ void CTalkMonster::Precache( void )
 	if( m_iszUnUse )
 		m_szGrp[TLK_UNUSE] = STRING( m_iszUnUse );
 }
+
+int CTalkMonster::FWoundSpeak( void )
+{
+	if( !FOkToSpeak() )
+		return FALSE;
+
+	PlaySentence( m_szGrp[TLK_WOUND], RANDOM_FLOAT( 2.8, 3.2 ), VOL_NORM, ATTN_IDLE );
+
+	return TRUE;
+}
+
+int CTalkMonster::FMortalSpeak( void )
+{
+	if( !FOkToSpeak() )
+		return FALSE;
+
+	PlaySentence( m_szGrp[TLK_MORTAL], RANDOM_FLOAT( 2.8, 3.2 ), VOL_NORM, ATTN_IDLE );
+
+	return TRUE;
+}
+
