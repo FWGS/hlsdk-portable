@@ -145,34 +145,7 @@ void ShowMenu( CBasePlayer *pPlayer, const char *title, int count, const char **
 	CLIENT_COMMAND( pPlayer->edict(), "exec touch_default/numbers.cfg\n");
 }
 
-void CoopMenu( CBasePlayer *pPlayer )
-{
-	if( pPlayer->m_state == STATE_SPAWNED )
-	{
-
-		if( mp_coop.value )
-		{
-			const char *menu[] = {
-				"Force respawn",
-				"Unblock",
-				"Become spectator",
-				"Vote changelevel"
-			};
-			ShowMenu( pPlayer, "Coop menu", ARRAYSIZE( menu ), menu );
-		}
-	}
-	else if ( pPlayer->m_state == STATE_SPECTATOR )
-	{
-		if( mp_coop.value )
-		{
-			const char *menu[] = {
-				"Spawn",
-				"Close menu"
-			};
-			ShowMenu( pPlayer, "Spectator menu", ARRAYSIZE( menu ), menu );
-		}
-	}
-}
+void CoopMenu( CBasePlayer *pPlayer );
 
 void CoopVoteMenu( CBasePlayer *pPlayer );
 
@@ -241,7 +214,7 @@ BOOL CHalfLifeMultiplay::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 		if( pPlayer->m_state == STATE_SPECTATOR_BEGIN )
 			SpawnPlayer( pPlayer );
 		else
-			ClientPrint( pPlayer->pev, HUD_PRINTCONSOLE, "You cannot use joincoop now!" );
+			ClientPrint( pPlayer->pev, HUD_PRINTCONSOLE, "You cannot use joincoop now!\n\n" );
 
 		return TRUE;
 	}
@@ -294,7 +267,7 @@ BOOL CHalfLifeMultiplay::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 		if( !g_iMenu )
 			CoopMenu( pPlayer );
 		else
-			ClientPrint( pPlayer->pev, HUD_PRINTCONSOLE, "You cannot use coopmenu now!" );
+			ClientPrint( pPlayer->pev, HUD_PRINTCONSOLE, "You cannot use coopmenu now!\n\n" );
 
 		return TRUE;
 	}

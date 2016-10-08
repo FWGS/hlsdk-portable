@@ -1523,17 +1523,17 @@ public:
 	int m_iConfirm;
 	int m_iVoteCount;
 	int m_iMaxCount;
-	float flTime;
+	float m_flTime;
 	const char *maps[5];
 	int votes[5];
-	CBaseEntity *triggers[5];
+	CChangeLevel *triggers[5];
 	EHANDLE m_pTrigger;
 
 	void Process( CBasePlayer *pPlayer, int imenu )
 	{
 		if( pPlayer->pev->flags & FL_SPECTATOR )
 			return;
-		if( gpGlobals->time - flTime > 30 )
+		if( gpGlobals->time - m_flTime > 30 )
 		{
 			g_iMenu = 0;
 			return;
@@ -1553,17 +1553,26 @@ public:
 			}
 			break;
 		case 2: // vote by request
+			MESSAGE_BEGIN( MSG_ALL, 8, NULL ); // svc_print
+				WRITE_BYTE( 3 ); // PRINT_CHAT
+				WRITE_STRING( UTIL_VarArgs( "%s^7 selected ^3%s\n", ( pPlayer->pev->netname && STRING( pPlayer->pev->netname )[0] != 0 ) ? STRING( pPlayer->pev->netname ) : "unconnected", maps[imenu - 1] ));
+			MESSAGE_END();
+
 			if( imenu < m_iConfirm )
 			{
-				votes[imenu]++;
+				votes[imenu-1]++;
 				m_iVoteCount++;
-				if( m_iVoteCount == m_iMaxCount )
+
+				if( m_iVoteCount >= m_iMaxCount )
 				{
-					for( int i = 0; i < m_iConfirm; i++ )
-						if( votes[i] == m_iMaxCount )
+					for( int i = 0; i <= m_iConfirm; i++ )
+						if( votes[i] >= m_iMaxCount )
 						{
 							if( triggers[i])
-								triggers[i]->Use( NULL, NULL, USE_TOGGLE, 0 );
+							{
+								triggers[i]->m_bUsed = true;
+								triggers[i]->ChangeLevelNow( NULL );
+							}
 							g_iMenu = 0;
 						}
 
@@ -1591,10 +1600,10 @@ public:
 
 	void ConfirmMenu( CBaseEntity *trigger, const char *mapname )
 	{
-		if( g_iMenu && gpGlobals->time - flTime < 30 )
+		if( g_iMenu && gpGlobals->time - m_flTime < 30 )
 			return; // wait 30s befor new confirm vote
 		g_iMenu = 1;
-		flTime = gpGlobals->time;
+		m_flTime = gpGlobals->time;
 		m_pTrigger = trigger;
 		const char *menu[] = {
 			"Confirm",
@@ -1605,16 +1614,17 @@ public:
 	}
 	void VoteMenu( CBasePlayer *player )
 	{
-		if( g_iMenu && gpGlobals->time - flTime < 30 )
+		if( g_iMenu && gpGlobals->time - m_flTime < 30 )
 			return; // wait 30s befor new confirm vote
 		CBaseEntity *pTrigger = NULL;
 		int i;
 		g_iMenu = 2;
+		m_flTime = gpGlobals->time;
 		while( pTrigger = UTIL_FindEntityByClassname( pTrigger, "trigger_changelevel" ) )
 		{
 			  CChangeLevel *ent = (CChangeLevel *)pTrigger;
 			  votes[i] = 0;
-			  triggers[i] = pTrigger;
+			  triggers[i] = ent;
 			  maps[i++] = ent->m_szMapName;
 
 
@@ -1634,7 +1644,7 @@ GlobalMenu g_GlobalMenu;
 
 void CoopVoteMenu( CBasePlayer *pPlayer )
 {
-	int count;
+	int count = 0;
 	for( int i = 1; i <= gpGlobals->maxClients; i++ )
 	{
 		CBaseEntity *plr = UTIL_PlayerByIndex( i );
@@ -1645,8 +1655,41 @@ void CoopVoteMenu( CBasePlayer *pPlayer )
 		}
 	}
 	if( count < 5 )
+	{
+		ClientPrint( pPlayer->pev, HUD_PRINTCENTER, "Need at least 5 players to vote changelevel!\n" );
 		return;
+	}
 	g_GlobalMenu.VoteMenu(pPlayer);
+}
+void CoopMenu( CBasePlayer *pPlayer )
+{
+	if( g_iMenu && gpGlobals->time - g_GlobalMenu.m_flTime < 30 )
+		return; // global menu active
+	if( pPlayer->m_state == STATE_SPAWNED )
+	{
+
+		if( mp_coop.value )
+		{
+			const char *menu[] = {
+				"Force respawn",
+				"Unblock",
+				"Become spectator",
+				"Vote changelevel"
+			};
+			ShowMenu( pPlayer, "Coop menu", ARRAYSIZE( menu ), menu );
+		}
+	}
+	else if ( pPlayer->m_state == STATE_SPECTATOR )
+	{
+		if( mp_coop.value )
+		{
+			const char *menu[] = {
+				"Spawn",
+				"Close menu"
+			};
+			ShowMenu( pPlayer, "Spectator menu", ARRAYSIZE( menu ), menu );
+		}
+	}
 }
 
 void CoopProcessMenu( CBasePlayer *pPlayer, int imenu )
