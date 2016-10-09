@@ -321,6 +321,7 @@ public:
 	virtual float TouchGravGun( CBaseEntity *attacker, int stage );
 	float m_flSpawnTime;
 	PlayerState m_state;
+	bool m_fTouchMenu;
 };
 
 #define AUTOAIM_2DEGREES  0.0348994967025

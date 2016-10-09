@@ -121,6 +121,7 @@ void SpawnPlayer( CBasePlayer *pPlayer )
 	pPlayer->pev->flags &= ~FL_SPECTATOR;
 	pPlayer->pev->movetype = MOVETYPE_WALK;
 	pPlayer->Spawn();
+	CLIENT_COMMAND( pPlayer->edict(), "touch_show _coopm*\n" );
 
 }
 
@@ -128,21 +129,36 @@ extern int gmsgShowMenu;
 
 void ShowMenu( CBasePlayer *pPlayer, const char *title, int count, const char **slot, signed char time = -1 )
 {
-	char buf[128], *pbuf = buf;
-	short int flags = 1<<9;
-	pbuf += sprintf( pbuf, "^2%s:\n", title );
-	for( int i = 0; i < count; i++ )
+	if( pPlayer->m_fTouchMenu)
 	{
-		pbuf += sprintf( pbuf, "^3%d.^7 %s\n", i+1, slot[i]);
-		flags |= 1<<i;
+		char buf[256];
+		#define MENU_STR(VAR) (#VAR)
+		sprintf( buf, MENU_STR(slot10\ntouch_hide _coops*\ntouch_show _coops\ntouch_addbutton "_coopst" "#%s" "" 0.16 0.11 0.41 0.3 0 255 0 255 78 1.5\n), title);
+		CLIENT_COMMAND( pPlayer->edict(), buf);
+		for( int i = 0; i < count; i++ )
+		{
+			sprintf( buf, MENU_STR(touch_settexture _coops%d "#%d. %s"\ntouch_show _coops%d\n), i+1, i+1, slot[i], i + 1 );
+			CLIENT_COMMAND( pPlayer->edict(), buf);
+		}
 	}
-	MESSAGE_BEGIN(MSG_ONE, gmsgShowMenu, NULL, pPlayer->pev);
-	WRITE_SHORT( flags ); // slots
-	WRITE_CHAR( time ); // show time
-	WRITE_BYTE( 0 ); // need more
-	WRITE_STRING( buf );
-	MESSAGE_END();
-	CLIENT_COMMAND( pPlayer->edict(), "exec touch_default/numbers.cfg\n");
+	else
+	{
+		char buf[128], *pbuf = buf;
+		short int flags = 1<<9;
+		pbuf += sprintf( pbuf, "^2%s:\n", title );
+		for( int i = 0; i < count; i++ )
+		{
+			pbuf += sprintf( pbuf, "^3%d.^7 %s\n", i+1, slot[i]);
+			flags |= 1<<i;
+		}
+		MESSAGE_BEGIN(MSG_ONE, gmsgShowMenu, NULL, pPlayer->pev);
+		WRITE_SHORT( flags ); // slots
+		WRITE_CHAR( time ); // show time
+		WRITE_BYTE( 0 ); // need more
+		WRITE_STRING( buf );
+		MESSAGE_END();
+	}
+	//CLIENT_COMMAND( pPlayer->edict(), "exec touch_default/numbers.cfg\n");
 }
 
 void CoopMenu( CBasePlayer *pPlayer );
@@ -229,11 +245,14 @@ BOOL CHalfLifeMultiplay::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 				if( imenu == 1 )
 				{
 					SpawnPlayer( pPlayer );
+					pPlayer->m_state = STATE_SPAWNED;
 				}
 				if( imenu == 2 )
 				{
 					pPlayer->m_state = STATE_SPECTATOR;
+					CLIENT_COMMAND( pPlayer->edict(), "touch_show _coopm*\n" );
 				}
+			break;
 			case STATE_SPAWNED:
 				if( g_iMenu )
 				{
@@ -242,6 +261,7 @@ BOOL CHalfLifeMultiplay::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 				}
 				if( imenu == 1 )
 				{
+					pPlayer->RemoveAllItems( TRUE );
 					SpawnPlayer( pPlayer );
 				}
 				if( imenu == 2 )
@@ -252,6 +272,7 @@ BOOL CHalfLifeMultiplay::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 				{
 					pPlayer->RemoveAllItems( TRUE );
 					BecomeSpectator( pPlayer );
+					pPlayer->m_state = STATE_SPECTATOR;
 				}
 				if( imenu == 4 )
 				{
@@ -726,7 +747,7 @@ void CHalfLifeMultiplay::PlayerThink( CBasePlayer *pPlayer )
 		pPlayer->m_afButtonReleased = 0;
 	}
 }
-
+extern EHANDLE				g_pLastSpawn;
 //=========================================================
 //=========================================================
 void CHalfLifeMultiplay::PlayerSpawn( CBasePlayer *pPlayer )
@@ -737,6 +758,7 @@ void CHalfLifeMultiplay::PlayerSpawn( CBasePlayer *pPlayer )
 	if( pPlayer->m_state == STATE_CONNECTED )
 	{
 		pPlayer->m_state = STATE_SPECTATOR_BEGIN;
+		pPlayer->RemoveAllItems( TRUE );
 		BecomeSpectator( pPlayer );
 		return;
 	}

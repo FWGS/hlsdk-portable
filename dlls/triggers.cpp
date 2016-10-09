@@ -1425,27 +1425,6 @@ void CChangeLevel::Spawn( void )
 	//ALERT( at_console, "TRANSITION: %s (%s)\n", m_szMapName, m_szLandmarkName );
 }
 
-void CChangeLevel::UpdateColor( void )
-{
-	Vector origin = VecBModelOrigin(pev);
-	Vector point, angles;
-	CBaseEntity *pPlayer;
-	pev->nextthink = gpGlobals->time + 30;
-
-	if( !m_fIsBack && (pPlayer = UTIL_FindEntityByClassname( NULL, "info_player_start" ))  )
-		if( (origin - pPlayer->pev->origin).Length() < 500 )
-			m_fIsBack = true;
-	if( !m_fIsBack && CoopGetSpawnPoint( &point, &angles ) )
-		if( (origin - point).Length() < 500 )
-			m_fIsBack = true;
-	pev->rendercolor.x = 0;
-	if( m_fIsBack )
-		pev->rendercolor.z = 255;
-	else
-		pev->rendercolor.y = 255;
-
-}
-
 void CChangeLevel::ExecuteChangeLevel( void )
 {
 	MESSAGE_BEGIN( MSG_ALL, SVC_CDTRACK );
@@ -1642,6 +1621,34 @@ public:
 };
 GlobalMenu g_GlobalMenu;
 
+
+
+void CChangeLevel::UpdateColor( void )
+{
+	Vector origin = VecBModelOrigin(pev);
+	Vector point, angles;
+	CBaseEntity *pPlayer;
+	pev->nextthink = gpGlobals->time + 30;
+
+	if( !m_fIsBack && (pPlayer = UTIL_FindEntityByClassname( NULL, "info_player_start" ))  )
+		if( (origin - pPlayer->pev->origin).Length() < 500 )
+			m_fIsBack = true;
+	if( !m_fIsBack && CoopGetSpawnPoint( &point, &angles ) )
+		if( (origin - point).Length() < 500 )
+			m_fIsBack = true;
+	pev->rendercolor = g_vecZero;
+	if( m_fIsBack )
+		pev->rendercolor.z = 255;
+	else
+		pev->rendercolor.y = 255;
+	if( gpGlobals->time - g_GlobalMenu.m_flTime > 30 )
+	{
+		g_iMenu = 0;
+		g_GlobalMenu.m_iConfirm = 0;
+	}
+
+}
+
 void CoopVoteMenu( CBasePlayer *pPlayer )
 {
 	int count = 0;
@@ -1746,12 +1753,14 @@ bool CoopGetSpawnPoint( Vector *origin, Vector *angles)
 	if( g_SavedCoords.trainsaved )
 	{
 		CBaseEntity *train = UTIL_FindEntityByString( NULL, "globalname", g_SavedCoords.trainglobal );
+		if( !train ) train = UTIL_FindEntityByString( NULL, "classname", g_SavedCoords.trainglobal );
 		if( train )
 		{
 			*angles = g_SavedCoords.triggerangles;
 			*origin = VecBModelOrigin(train->pev) + g_SavedCoords.trainoffset;
 			return true;
 		}
+		ALERT( at_console, "Failed to get train %s (map design error?)\n", g_SavedCoords.trainglobal );
 	}
 	Vector point = g_SavedCoords.triggerorigin;
 	*angles = g_SavedCoords.triggerangles;
@@ -1769,11 +1778,13 @@ bool CoopGetSpawnPoint( Vector *origin, Vector *angles)
 		{
 			g_SavedCoords.triggerorigin = tr.vecEndPos;
 			g_SavedCoords.validspawnpoint = true;
+			if( tr.pHit && FClassnameIs( tr.pHit, "func_door" ) )
+				tr.pHit->v.solid = SOLID_NOT;
 		}
 		else
 		{
 			g_SavedCoords.valid = false;
-			ALERT( at_console, "CoopGetSpawnPoint: trace failed");
+			ALERT( at_console, "CoopGetSpawnPoint: trace failed\n");
 			return false;
 		}
 	}
@@ -1807,12 +1818,17 @@ void CoopSaveTrain( CBaseEntity *pPlayer, SavedCoords *coords)
 
 	CBaseEntity *train = CoopGetPlayerTrain(pPlayer);
 	if( !train )
+	{
+		ALERT( at_console, "^1NO TRAIN!\n");
 		return;
+	}
+	ALERT( at_console, "^1TRAIN IS %s", STRING( train->pev->classname ) );
+
 	strcpy( coords->trainglobal, STRING(train->pev->globalname) );
 	coords->trainoffset = pPlayer->pev->origin - VecBModelOrigin(train->pev);
 	coords->trainsaved = true;
 }
-
+void BecomeSpectator( CBasePlayer *pPlayer );
 void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 {
 	edict_t	*pentLandmark;
@@ -1922,6 +1938,11 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 
 			if( m_fIsBack )
 			{
+				if( gpGlobals->time - g_GlobalMenu.m_flTime > 30 )
+				{
+					g_iMenu = 0;
+					g_GlobalMenu.m_iConfirm = 0;
+				}
 				if( g_iMenu != 1 )
 				{
 					g_GlobalMenu.ConfirmMenu( this, m_szMapName );
@@ -2014,6 +2035,19 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 
 	//ALERT( at_console, "Level touches %d levels\n", ChangeList( levels, 16 ) );
 	ALERT( at_console, "CHANGE LEVEL: %s %s\n", st_szNextMap, st_szNextSpot );
+	// loop through all clients, count number of players
+	for( int i = 1; i <= gpGlobals->maxClients; i++ )
+	{
+		CBasePlayer *plr = (CBasePlayer*)UTIL_PlayerByIndex( i );
+
+		// reset all players state
+		if( plr )
+		{
+			plr->m_state = STATE_CONNECTED;
+			plr->RemoveAllItems( TRUE );
+			BecomeSpectator( plr );
+		}
+	}
 	CHANGE_LEVEL( st_szNextMap, st_szNextSpot );
 }
 

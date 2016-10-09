@@ -207,6 +207,7 @@ void ClientPutInServer( edict_t *pEntity )
 
 	pPlayer->pev->iuser1 = 0;
 	pPlayer->pev->iuser2 = 0;
+	g_engfuncs.pfnQueryClientCvarValue2( pEntity, "touch_enable", 111 );
 
 }
 
@@ -375,7 +376,6 @@ void Host_Say( edict_t *pEntity, int teamonly )
 	}
 }
 
-
 /*
 ===========
 ClientCommand
@@ -502,6 +502,31 @@ void ClientCommand( edict_t *pEntity )
 	{
 		if ( mp_coop.value )
 			UTIL_CleanSpawnPoint( pev->origin, 150 );
+	}
+	else if( FStrEq(pcmd, "m1"))
+	{
+#define MENU_STR(VAR) (#VAR)
+		CLIENT_COMMAND( pEntity,
+			MENU_STR(touch_addbutton "_coops" "*black" "" 0.15 0.1 0.4 0.72 0 0 0 128 334\ntouch_addbutton "_coopst" "#COOP MENU" "" 0.16 0.11 0.41 0.3 0 255 0 255 78 1.5\nm2\n)
+			);
+	}
+	else if( FStrEq(pcmd, "m2"))
+	{
+		CLIENT_COMMAND( pEntity,
+			MENU_STR(touch_addbutton "_coops1" "#1. Join coop" "menuselect 1;touch_hide _coops*" 0.16 0.21 0.39 0.3 255 255 255 255 334 1.5\ntouch_addbutton "_coops2" "#2. Become spectator" "menuselect 2;touch_hide _coops*" 0.16 0.31 0.39 0.4 255 255 255 255 334 1.5\nm3\n)
+			);
+	}
+	else if( FStrEq(pcmd, "m3"))
+	{
+		CLIENT_COMMAND( pEntity,
+			MENU_STR(touch_addbutton "_coops3" "#" "menuselect 3;touch_hide _coops*" 0.16 0.41 0.39 0.5 255 255 255 255 335 1.5\ntouch_addbutton "_coops4" "#" "menuselect 4;touch_hide _coops*" 0.16 0.51 0.39 0.6 255 255 255 255 335 1.5\nm4\n)
+			);
+	}
+	else if( FStrEq(pcmd, "m4"))
+	{
+		CLIENT_COMMAND( pEntity,
+			MENU_STR(touch_addbutton "_coops5" "#" "menuselect 5;touch_hide _coops*" 0.16 0.61 0.39 0.7 255 255 255 255 335 1.5;wait;slot10\n)
+);
 	}
 	else
 	{
@@ -1811,6 +1836,18 @@ void CreateInstancedBaselines ( void )
 	// Destroy objects.
 	//UTIL_Remove( pc );
 }
+
+void CvarValue2( const edict_t *pEnt, int requestID, const char *cvarName, const char *value )
+{
+	if( pEnt && requestID == 111  && FStrEq( cvarName , "touch_enable" ) && atoi( value) )
+	{
+		CBasePlayer *player = (CBasePlayer * ) CBaseEntity::Instance( (edict_t*)pEnt );
+		player->m_fTouchMenu = !!atof( value );
+		CLIENT_COMMAND((edict_t*)pEnt, "touch_addbutton \"_coopm\" \"*black\" \"coopmenu\" 0 0.77 0.15 0.83 0 0 0 128 335\ntouch_addbutton \"_coopmt\" \"#COOP MENU\" \"\" 0 0.77 0.16 0.83 255 255 127 255 79 2\nm1\n");
+	}
+
+}
+
 
 /*
 ================================

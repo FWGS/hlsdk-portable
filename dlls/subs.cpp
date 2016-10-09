@@ -68,6 +68,10 @@ class CBasePlayerStart : public CPointEntity
 public:
 	// prevent transition as FCAP_ACROSS_TRANSITION does not help
 	//virtual int ObjectCaps( void ) { return CPointEntity::ObjectCaps() | FCAP_DONT_SAVE; }
+	void Spawn()
+	{
+		pev->netname = gpGlobals->mapname;
+	}
 
 private:
 };

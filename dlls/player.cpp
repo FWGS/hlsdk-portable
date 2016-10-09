@@ -2684,9 +2684,20 @@ edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer )
 		while( pSpot = UTIL_FindEntityByClassname( pSpot, "info_player_start" ) )
 		{
 			TraceResult tr;
+			if( FNullEnt( pSpot ) )
+				continue;
+			// only spawnpoints from current map are valid
+			if( !FStrEq( STRING( pSpot->pev->netname ), STRING( gpGlobals->mapname ) ) )
+				continue;
+			// check if it is placed in wall
 			UTIL_TraceHull( pSpot->pev->origin, pSpot->pev->origin , missile, human_hull, NULL, &tr );
-			if( !tr.fStartSolid && !tr.fAllSolid && !FNullEnt( pSpot ) )
-				goto ReturnSpot;
+			if( tr.fStartSolid || tr.fAllSolid  )
+				continue;
+			// trace down to find if there is no floor
+			UTIL_TraceHull( pSpot->pev->origin, pSpot->pev->origin - Vector( 0, 0, -200 ) , missile, human_hull, NULL, &tr );
+			if( tr.vecEndPos.z - pSpot->pev->origin.z < -190 )
+				continue;
+			goto ReturnSpot;
 		}
 	}
 	// landmark may still exists when no spawn spot
@@ -2869,8 +2880,11 @@ void CBasePlayer::RenewItems( void )
 
 int CBasePlayer::Restore( CRestore &restore )
 {
+
+
 	if( !CBaseMonster::Restore( restore ) )
 		return 0;
+
 
 	int status = restore.ReadFields( "PLAYER", this, m_playerSaveData, ARRAYSIZE( m_playerSaveData ) );
 
@@ -2926,6 +2940,14 @@ int CBasePlayer::Restore( CRestore &restore )
 	//			Barring that, we clear it out here instead of using the incorrect restored time value.
 	m_flNextAttack = UTIL_WeaponTimeBase();
 #endif
+
+	// restored player has some bugs untill respawned
+	if( mp_coop_changelevel.value )
+	{
+		m_state = STATE_CONNECTED;
+		SetThink( &CBasePlayer::Spawn );
+		pev->nextthink = gpGlobals->time + 0.5;
+	}
 	return status;
 }
 
