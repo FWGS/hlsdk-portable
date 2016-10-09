@@ -20,6 +20,7 @@ LOCAL_CPPFLAGS := $(LOCAL_CFLAGS) -frtti
 
 LOCAL_C_INCLUDES := $(SDL_PATH)/include \
 		    $(LOCAL_PATH)/. \
+		    $(LOCAL_PATH)/hunger \
 		    $(LOCAL_PATH)/wpn_shared \
 		    $(LOCAL_PATH)/../common \
 		    $(LOCAL_PATH)/../engine/common \
@@ -124,6 +125,25 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
            world.cpp \
            xen.cpp \
            zombie.cpp \
+	   hunger/ap9.cpp \
+	   hunger/babykelly.cpp \
+	   hunger/boss.cpp \
+	   hunger/chaingun.cpp \
+	   hunger/chicken.cpp \
+	   hunger/civilian.cpp \
+	   hunger/cyberfranklin.cpp \
+	   hunger/flame.cpp \
+	   hunger/hand.cpp \
+	   hunger/hkg36.cpp \
+	   hunger/medkit.cpp \
+	   hunger/megasquid.cpp \
+	   hunger/shovel.cpp \
+	   hunger/sniper.cpp \
+	   hunger/spanner.cpp \
+	   hunger/taurus.cpp \
+	   hunger/tnt.cpp \
+	   hunger/weapon_einar1.cpp \
+	   hunger/zombiebull.cpp \
 	   ../pm_shared/pm_debug.c \
 	   ../pm_shared/pm_math.c \
 	   ../pm_shared/pm_shared.c

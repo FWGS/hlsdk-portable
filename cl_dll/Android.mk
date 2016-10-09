@@ -25,6 +25,16 @@ LOCAL_CFLAGS += -DCLIENT_DLL=1
 
 SRCS=
 SRCS_C=
+SRCS+=./hunger/zoom.cpp
+SRCS+=../dlls/hunger/ap9.cpp
+SRCS+=../dlls/hunger/chaingun.cpp
+SRCS+=../dlls/hunger/hkg36.cpp
+SRCS+=../dlls/hunger/medkit.cpp
+SRCS+=../dlls/hunger/shovel.cpp
+SRCS+=../dlls/hunger/sniper.cpp
+SRCS+=../dlls/hunger/spanner.cpp
+SRCS+=../dlls/hunger/taurus.cpp
+SRCS+=../dlls/hunger/weapon_einar1.cpp
 SRCS+=../dlls/crossbow.cpp
 SRCS+=../dlls/crowbar.cpp
 SRCS+=../dlls/egon.cpp
