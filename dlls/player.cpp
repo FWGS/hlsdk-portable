@@ -1422,7 +1422,7 @@ void CBasePlayer::PlayerUse( void )
 
 					CFuncTrackTrain* pTrackTrain = (CFuncTrackTrain*)pTrain;
 
-					if  pTrackTrain && pTrackTrain->UseCustomSounds() )
+					if( pTrackTrain && pTrackTrain->UseCustomSounds() )
 					{
 						if( pTrackTrain->IsCar() )
 							usesound = "plats/train_use2.wav";

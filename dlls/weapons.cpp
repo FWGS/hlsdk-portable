@@ -1170,7 +1170,7 @@ void CBasePlayerWeapon::RetireWeapon( void )
 	g_pGameRules->GetNextBestWeapon( m_pPlayer, this );
 }
 
-/=========================================================================
+//=========================================================================
 // GetNextAttackDelay - An accurate way of calcualting the next attack time.
 //=========================================================================
 float CBasePlayerWeapon::GetNextAttackDelay( float delay )

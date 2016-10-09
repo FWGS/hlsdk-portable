@@ -2474,7 +2474,7 @@ void CDeadHGrunt::Spawn( void )
 	}
 
 	// Set new model.
-	SET_MODEL( ENT( pev ), (char*)STRING( pev->model ) )
+	SET_MODEL( ENT( pev ), (char*)STRING( pev->model ) );
 
 	pev->effects		= 0;
 	pev->yaw_speed		= 8;
