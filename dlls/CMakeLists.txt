@@ -28,7 +28,26 @@ set (SVDLL_LIBRARY server)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_LINUX -DCLIENT_WEAPONS -Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf -D_vsnprintf=vsnprintf -fno-exceptions -w")
 set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS}")
 
-set (SVDLL_SOURCES 
+set(SVDLL_SOURCES 
+	hunger/ap9.cpp
+	hunger/babykelly.cpp
+	hunger/boss.cpp
+	hunger/chaingun.cpp
+	hunger/chicken.cpp
+	hunger/civilian.cpp
+	hunger/cyberfranklin.cpp
+	hunger/flame.cpp
+	hunger/hand.cpp
+	hunger/hkg36.cpp
+	hunger/medkit.cpp
+	hunger/megasquid.cpp
+	hunger/shovel.cpp
+	hunger/sniper.cpp
+	hunger/spanner.cpp
+	hunger/taurus.cpp
+	hunger/tnt.cpp
+	hunger/weapon_einar1.cpp
+	hunger/zombiebull.cpp
 	agrunt.cpp
 	airtank.cpp
 	aflock.cpp
@@ -131,7 +150,7 @@ set (SVDLL_SOURCES
 	../pm_shared/pm_shared.c
 )
 	
-include_directories (. wpn_shared ../common ../engine ../pm_shared ../game_shared ../public)
+include_directories (. hunger wpn_shared ../common ../engine ../pm_shared ../game_shared ../public)
 
 if(USE_VOICEMGR)
 	set(SVDLL_SOURCES

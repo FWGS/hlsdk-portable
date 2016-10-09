@@ -29,6 +29,16 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-write-strings -DLINUX -D_LINUX -Dstricm
 set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS}")
 
 set (CLDLL_SOURCES 
+	hunger/zoom.cpp
+	../dlls/hunger/ap9.cpp
+	../dlls/hunger/chaingun.cpp
+	../dlls/hunger/hkg36.cpp
+	../dlls/hunger/medkit.cpp
+	../dlls/hunger/shovel.cpp
+	../dlls/hunger/sniper.cpp
+	../dlls/hunger/spanner.cpp
+	../dlls/hunger/taurus.cpp
+	../dlls/hunger/weapon_einar1.cpp
 	../dlls/crossbow.cpp 
 	../dlls/crowbar.cpp 
 	../dlls/egon.cpp 
