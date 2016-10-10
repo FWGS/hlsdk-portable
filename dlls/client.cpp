@@ -51,7 +51,7 @@ extern int gmsgSayText;
 extern int g_teamplay;
 
 void LinkUserMessages( void );
-
+void BecomeSpectator( CBasePlayer *pPlayer );
 /*
  * used by kill command and disconnect command
  * ROBIN: Moved here from player.cpp, to allow multiple player models
@@ -198,9 +198,10 @@ void ClientPutInServer( edict_t *pEntity )
 
 	pPlayer = GetClassPtr((CBasePlayer *)pev);
 	pPlayer->SetCustomDecalFrames(-1); // Assume none;
+	pPlayer->m_state = STATE_CONNECTED;
 
 	// Allocate a CBasePlayer for pev, and call spawn
-	pPlayer->Spawn() ;
+	pPlayer->Spawn();
 
 	// Reset interpolation during first frame
 	pPlayer->pev->effects |= EF_NOINTERP;
@@ -662,6 +663,22 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 
 	// Link user messages here to make sure first client can get them...
 	LinkUserMessages();
+	if( mp_coop.value )
+	{
+		for( int i = 1; i <= gpGlobals->maxClients; i++ )
+		{
+			CBasePlayer *plr = (CBasePlayer*)UTIL_PlayerByIndex( i );
+
+			// reset all players state
+			if( plr )
+			{
+				plr->m_state = STATE_CONNECTED;
+				plr->RemoveAllItems( TRUE );
+				BecomeSpectator( plr );
+				plr->pev->nextthink = gpGlobals->time + 1;
+			}
+		}
+	}
 }
 
 
