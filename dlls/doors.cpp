@@ -22,7 +22,7 @@
 #include "util.h"
 #include "cbase.h"
 #include "doors.h"
-
+#include "game.h"
 extern void SetMovedir( entvars_t *ev );
 
 #define noiseMoving noise1
@@ -52,6 +52,19 @@ public:
 
 	// used to selectivly override defaults
 	void EXPORT DoorTouch( CBaseEntity *pOther );
+	void EXPORT CoopTouch( CBaseEntity *pOther )
+	{
+		if( !m_fActivated )
+			return;
+		if( pOther && pOther->IsPlayer() )
+		{
+			if( pOther->pev->groundentity == edict() )
+				return;
+			if( !(pOther->pev->button & IN_USE) )
+				return;
+			DoorActivate();
+		}
+	}
 
 	// local functions
 	int DoorActivate();
@@ -71,6 +84,7 @@ public:
 	BYTE m_bLockedSentence;	
 	BYTE m_bUnlockedSound;	
 	BYTE m_bUnlockedSentence;
+	bool m_fActivated;
 };
 
 TYPEDESCRIPTION	CBaseDoor::m_SaveData[] =
@@ -312,7 +326,10 @@ void CBaseDoor::Spawn()
 	// if the door is flagged for USE button activation only, use NULL touch function
 	if( FBitSet( pev->spawnflags, SF_DOOR_USE_ONLY ) )
 	{
-		SetTouch( NULL );
+		if( mp_coop.value )
+			SetTouch( &CBaseDoor::CoopTouch );
+		else
+			SetTouch( NULL );
 	}
 	else // touchable button
 		SetTouch( &CBaseDoor::DoorTouch );
@@ -545,6 +562,8 @@ void CBaseDoor::DoorTouch( CBaseEntity *pOther )
 	{
 		// play locked sound
 		PlayLockSounds( pev, &m_ls, TRUE, FALSE );
+		if( mp_coop.value )
+			CoopTouch( pOther );
 		return; 
 	}
 
@@ -562,7 +581,15 @@ void CBaseDoor::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE use
 	m_hActivator = pActivator;
 	// if not ready to be used, ignore "use" command.
 	if( m_toggle_state == TS_AT_BOTTOM || ( FBitSet( pev->spawnflags, SF_DOOR_NO_AUTO_RETURN ) && m_toggle_state == TS_AT_TOP ) )
+	{
+		if( mp_coop.value )
+		{
+			// allow open door that closed sometime
+			if( pev->size.x < 50 || pev->size.y < 50 )
+				m_fActivated = true;
+		}
 		DoorActivate();
+	}
 }
 
 //
@@ -667,6 +694,10 @@ void CBaseDoor::DoorHitTop( void )
 		// Re-instate touch method, movement is complete
 		if( !FBitSet( pev->spawnflags, SF_DOOR_USE_ONLY ) )
 			SetTouch( &CBaseDoor::DoorTouch );
+		else if( mp_coop.value )
+			SetTouch( &CBaseDoor::CoopTouch );
+		else
+			SetTouch( NULL );
 	}
 	else
 	{
@@ -725,7 +756,10 @@ void CBaseDoor::DoorHitBottom( void )
 	if( FBitSet( pev->spawnflags, SF_DOOR_USE_ONLY ) )
 	{
 		// use only door
-		SetTouch( NULL );
+		if( mp_coop.value )
+			SetTouch( &CBaseDoor::CoopTouch );
+		else
+			SetTouch( NULL );
 	}
 	else // touchable door
 		SetTouch( &CBaseDoor::DoorTouch );
