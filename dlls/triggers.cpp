@@ -789,6 +789,16 @@ void CTriggerHurt::Spawn( void )
 	if( !FStringNull( pev->targetname ) )
 	{
 		SetUse( &CBaseTrigger::ToggleUse );
+		if( mp_coop.value )
+		{
+			if( pev->size.x > 200 && pev->size.y > 200 && pev->size.z > 200 )
+			{
+				//it seems that it covers whole room or map
+				if( pev->dmg > 10 )
+					// trying to kill everything? Not in coop!
+					pev->dmg = 3;
+			}
+		}
 	}
 	else
 	{
@@ -1596,7 +1606,7 @@ public:
 		if( g_iMenu && gpGlobals->time - m_flTime < 30 )
 			return; // wait 30s befor new confirm vote
 		CBaseEntity *pTrigger = NULL;
-		int i;
+		int i = 0;
 		g_iMenu = 2;
 		m_flTime = gpGlobals->time;
 		while( pTrigger = UTIL_FindEntityByClassname( pTrigger, "trigger_changelevel" ) )
@@ -1661,9 +1671,9 @@ void CoopVoteMenu( CBasePlayer *pPlayer )
 			count++;
 		}
 	}
-	if( count < 5 )
+	if( count < 4 )
 	{
-		ClientPrint( pPlayer->pev, HUD_PRINTCENTER, "Need at least 5 players to vote changelevel!\n" );
+		ClientPrint( pPlayer->pev, HUD_PRINTCENTER, "Need at least 4 players to vote changelevel!\n" );
 		return;
 	}
 	g_GlobalMenu.VoteMenu(pPlayer);
@@ -2046,8 +2056,12 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 			plr->m_state = STATE_CONNECTED;
 			plr->RemoveAllItems( TRUE );
 			BecomeSpectator( plr );
+			plr->SetThink( &CBasePlayer::Spawn );
+			plr->pev->nextthink = gpGlobals->time + 1;
 		}
 	}
+	g_iMenu = 0;
+	g_GlobalMenu.m_iConfirm = 0;
 	CHANGE_LEVEL( st_szNextMap, st_szNextSpot );
 }
 
