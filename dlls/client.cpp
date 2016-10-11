@@ -77,7 +77,21 @@ called when a player connects to a server
 ============
 */
 BOOL ClientConnect( edict_t *pEntity, const char *pszName, const char *pszAddress, char szRejectReason[ 128 ]  )
-{	
+{
+	if( pEntity )
+	{
+		CBasePlayer *pl = (CBasePlayer *)CBaseEntity::Instance( pEntity ) ;
+		if( pl )
+		{
+			pl->m_state = STATE_CONNECTED;
+			pl->RemoveAllItems( TRUE );
+			BecomeSpectator( pl );
+			ClientPutInServer( pl->edict() );
+		}
+	}
+
+	g_engfuncs.pfnQueryClientCvarValue2( pEntity, "touch_enable", 111 );
+
 	return g_pGameRules->ClientConnected( pEntity, pszName, pszAddress, szRejectReason );
 
 // a client connecting during an intermission can cause problems
@@ -125,6 +139,10 @@ void ClientDisconnect( edict_t *pEntity )
 	UTIL_SetOrigin ( &pEntity->v, pEntity->v.origin );
 
 	g_pGameRules->ClientDisconnected( pEntity );
+	CBasePlayer *pPlayer = (CBasePlayer*)CBaseEntity::Instance( pEntity );
+	if( pPlayer )
+		pPlayer->m_state = STATE_UNINITIALIZED;
+
 }
 
 
@@ -198,17 +216,22 @@ void ClientPutInServer( edict_t *pEntity )
 
 	pPlayer = GetClassPtr((CBasePlayer *)pev);
 	pPlayer->SetCustomDecalFrames(-1); // Assume none;
+	if( pPlayer->m_state == STATE_UNINITIALIZED )
+		g_engfuncs.pfnQueryClientCvarValue2( pEntity, "touch_enable", 111 );
+
 	pPlayer->m_state = STATE_CONNECTED;
 
 	// Allocate a CBasePlayer for pev, and call spawn
 	pPlayer->Spawn();
+
+	pPlayer->RemoveAllItems( TRUE );
+	BecomeSpectator( pPlayer );
 
 	// Reset interpolation during first frame
 	pPlayer->pev->effects |= EF_NOINTERP;
 
 	pPlayer->pev->iuser1 = 0;
 	pPlayer->pev->iuser2 = 0;
-	g_engfuncs.pfnQueryClientCvarValue2( pEntity, "touch_enable", 111 );
 
 }
 
@@ -672,10 +695,10 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 			// reset all players state
 			if( plr )
 			{
-				plr->m_state = STATE_CONNECTED;
+				plr->m_state = STATE_UNINITIALIZED;
 				plr->RemoveAllItems( TRUE );
 				BecomeSpectator( plr );
-				plr->pev->nextthink = gpGlobals->time + 1;
+				plr->Spawn();
 			}
 		}
 	}

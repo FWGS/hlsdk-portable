@@ -578,6 +578,8 @@ BOOL CHalfLifeMultiplay::ClientConnected( edict_t *pEntity, const char *pszName,
 extern int gmsgSayText;
 extern int gmsgGameMode;
 
+void ClientPutInServer( edict_t *client );
+
 void CHalfLifeMultiplay::UpdateGameMode( CBasePlayer *pPlayer )
 {
 	MESSAGE_BEGIN( MSG_ONE, gmsgGameMode, NULL, pPlayer->edict() );
@@ -646,6 +648,9 @@ void CHalfLifeMultiplay::InitHUD( CBasePlayer *pl )
 		MESSAGE_BEGIN( MSG_ONE, SVC_INTERMISSION, NULL, pl->edict() );
 		MESSAGE_END();
 	}
+
+	if( pl->m_state <= STATE_CONNECTED )
+		ClientPutInServer( pl->edict() );
 
 	if( pl->m_state == STATE_SPECTATOR_BEGIN )
 	{
@@ -734,6 +739,15 @@ void CHalfLifeMultiplay::PlayerThink( CBasePlayer *pPlayer )
 	if( !mp_coop.value && pPlayer->m_state == STATE_SPECTATOR_BEGIN )
 		if( pPlayer->m_afButtonPressed & ( IN_DUCK | IN_ATTACK | IN_ATTACK2 | IN_USE | IN_JUMP ) )
 			SpawnPlayer( pPlayer );
+	if( pPlayer->m_state == STATE_UNINITIALIZED )
+		if( pPlayer->m_afButtonPressed )
+		{
+			//ClientPutInServer( pPlayer->edict() );
+			// clean prediction lags after changelevel
+			CLIENT_COMMAND( pPlayer->edict(), "reconnect\n" );
+			pPlayer->m_afButtonPressed = 0;
+			return;
+		}
 
 	if( g_fGameOver )
 	{
@@ -754,6 +768,12 @@ void CHalfLifeMultiplay::PlayerSpawn( CBasePlayer *pPlayer )
 {
 	BOOL		addDefault;
 	CBaseEntity	*pWeaponEntity = NULL;
+
+	if( pPlayer->m_state == STATE_UNINITIALIZED )
+	{
+		ClientPutInServer( pPlayer->edict() );
+		return;
+	}
 
 	if( pPlayer->m_state == STATE_CONNECTED )
 	{

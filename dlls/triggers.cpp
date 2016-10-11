@@ -2007,7 +2007,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 	}*/
 
 	// Create an entity to fire the changetarget
-	if( m_changeTarget )
+	if( m_changeTarget && pPlayer )
 	{
 		CFireAndDie *pFireAndDie = GetClassPtr( (CFireAndDie *)NULL );
 		if( pFireAndDie )
@@ -2045,7 +2045,9 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 
 	//ALERT( at_console, "Level touches %d levels\n", ChangeList( levels, 16 ) );
 	ALERT( at_console, "CHANGE LEVEL: %s %s\n", st_szNextMap, st_szNextSpot );
-	// loop through all clients, count number of players
+	g_iMenu = 0;
+	g_GlobalMenu.m_iConfirm = 0;
+	// loop through all clients, reset state
 	for( int i = 1; i <= gpGlobals->maxClients; i++ )
 	{
 		CBasePlayer *plr = (CBasePlayer*)UTIL_PlayerByIndex( i );
@@ -2058,10 +2060,13 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 			BecomeSpectator( plr );
 			plr->SetThink( &CBasePlayer::Spawn );
 			plr->pev->nextthink = gpGlobals->time + 1;
+			//CLIENT_COMMAND( plr->edict(), "connect the-swank.pp.ua:27017\n" );
+			//MESSAGE_BEGIN( MSG_ONE, 2, NULL, plr->pev ); // svc_disconnect after stufftext
+			//MESSAGE_END();
+			//SERVER_COMMAND( UTIL_VarArgs( "kick %d\n", i-1 ) );
+			//SERVER_EXECUTE();
 		}
 	}
-	g_iMenu = 0;
-	g_GlobalMenu.m_iConfirm = 0;
 	CHANGE_LEVEL( st_szNextMap, st_szNextSpot );
 }
 
