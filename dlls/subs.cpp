@@ -26,6 +26,7 @@
 #include "saverestore.h"
 #include "nodes.h"
 #include "doors.h"
+#include "game.h"
 
 extern CGraph WorldGraph;
 
@@ -428,6 +429,20 @@ After moving, set origin to exact final destination, call "move done" function
 */
 void CBaseToggle::LinearMoveDone( void )
 {
+	// stupid bug: Linear move is broken during changelevel
+	if( mp_coop.value && pev->globalname )
+	{
+		Vector vecDestDelta = m_vecFinalDest - pev->origin;
+		if( vecDestDelta.Length() > 50 )
+		{
+			pev->nextthink = -1;
+			float speed =  pev->velocity.Length();
+			if( speed < 10 )
+				speed = 10;
+			LinearMove( m_vecFinalDest, 10);
+			return;
+		}
+	}
 	UTIL_SetOrigin( pev, m_vecFinalDest );
 	pev->velocity = g_vecZero;
 	pev->nextthink = -1;
