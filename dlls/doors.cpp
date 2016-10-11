@@ -62,6 +62,11 @@ public:
 				return;
 			if( !(pOther->pev->button & IN_USE) )
 				return;
+			if( pev->target )
+			{
+			    pev->target = 0;
+			    m_savedtarget = pev->target;
+			}
 			DoorActivate();
 		}
 	}
@@ -85,6 +90,7 @@ public:
 	BYTE m_bUnlockedSound;	
 	BYTE m_bUnlockedSentence;
 	bool m_fActivated;
+	string_t m_savedtarget;
 };
 
 TYPEDESCRIPTION	CBaseDoor::m_SaveData[] =
@@ -588,6 +594,8 @@ void CBaseDoor::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE use
 			if( pev->size.x < 50 || pev->size.y < 50 )
 				m_fActivated = true;
 		}
+		if( !pev->target && m_savedtarget )
+			pev->target = m_savedtarget, m_savedtarget = 0;
 		DoorActivate();
 	}
 }
