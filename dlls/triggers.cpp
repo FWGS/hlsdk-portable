@@ -1879,6 +1879,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 				m_vecSpawnOrigin = pActivator->pev->origin;
 				m_vecSpawnAngles = pActivator->pev->angles;
 				m_fSpawnSaved = true;
+				CoopSaveTrain( pActivator, &l_SavedCoords );
 			}
 			unsigned int count1 = 0;
 			unsigned int count2 = 0;
