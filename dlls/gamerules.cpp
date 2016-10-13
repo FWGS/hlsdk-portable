@@ -305,49 +305,49 @@ void CGameRules::RefreshSkillData ( void )
 	// MONSTERS
 
 	// Baby kelly
-	gSkillData.babykellyhealth = GetSkillCvar( "sk_babykelly_health" );
+	gSkillData.babykellyhealth = GetSkillCvar( "sk_islave_health" );
 
 	// Boss 
-	gSkillData.bossHealth = GetSkillCvar( "sk_boss_health" );
+	gSkillData.bossHealth = GetSkillCvar( "sk_apache_health" );
 
 	// Cyber Franklin
-	gSkillData.cyberfranklinHealth = GetSkillCvar( "sk_cyberfranklin_health" );
+	gSkillData.cyberfranklinHealth = GetSkillCvar( "sk_apache_health" );
 
 	// Houndeye
-	gSkillData.houndeyeDmgBite = GetSkillCvar( "sk_houndeye_dmg_bite" );
+	gSkillData.houndeyeDmgBite = GetSkillCvar( "sk_hgrunt_kick" );
 
 	// Megasquid
-	gSkillData.megasquidHealth = GetSkillCvar( "sk_megasquid_health" );
+	gSkillData.megasquidHealth = GetSkillCvar( "sk_bullsquid_health" );
 
 	// Zombie bull
-	gSkillData.zombiebullHealth = GetSkillCvar( "sk_zombiebull_health" );
-	gSkillData.zombiebullDmgBite = GetSkillCvar( "sk_zombiebull_dmg_bite" );
-	gSkillData.zombiebullDmgWhip = GetSkillCvar( "sk_zombiebull_dmg_whip" );
+	gSkillData.zombiebullHealth = GetSkillCvar( "sk_bullsquid_health" );
+	gSkillData.zombiebullDmgBite = GetSkillCvar( "sk_bullsquid_dmg_bite" );
+	gSkillData.zombiebullDmgWhip = GetSkillCvar( "sk_bullsquid_dmg_whip" );
 
 	// PLAYER WEAPONS
 
 	// Shovel
-	gSkillData.plrDmgShovel = GetSkillCvar( "sk_plr_shovel" );
+	gSkillData.plrDmgShovel = GetSkillCvar( "sk_plr_crowbar" );
 
 	// Spanner
-	gSkillData.plrDmgSpanner = GetSkillCvar( "sk_plr_spanner" );
+	gSkillData.plrDmgSpanner = GetSkillCvar( "sk_plr_crowbar" );
 
 	// AP9 Round
-	gSkillData.plrDmgAP9 = GetSkillCvar( "sk_plr_ap9_bullet" );
+	gSkillData.plrDmgAP9 = GetSkillCvar( "sk_plr_9mmAR_bullet" );
 
 	// Taurus Round
-	gSkillData.plrDmgTaurus = GetSkillCvar( "sk_plr_taurus_bullet" );
+	gSkillData.plrDmgTaurus = GetSkillCvar( "sk_plr_9mm_bullet" );
 
 	// Sniper Round
-	gSkillData.plrDmgSniper = GetSkillCvar( "sk_plr_sniper_bullet" );
+	gSkillData.plrDmgSniper = GetSkillCvar( "sk_plr_xbow_bolt_monster" );
 
 	// Flamethrower
-	gSkillData.plrDmgFlame = GetSkillCvar( "sk_plr_flame" );
+	gSkillData.plrDmgFlame = GetSkillCvar( "sk_plr_egon_wide" );
 
 	// HEALTH/CHARGE
 
 	// Medkit
-	gSkillData.medkitHeal = GetSkillCvar( "sk_medkit" );
+	gSkillData.medkitHeal = GetSkillCvar( "sk_scientist_heal" );
 }
 
 //=========================================================

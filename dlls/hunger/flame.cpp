@@ -47,7 +47,7 @@ void CFlame::Spawn(void)
 	SET_MODEL(ENT(pev), "sprites/fthrow.spr");
 	pev->frame = 0;
 	pev->scale = RANDOM_FLOAT(0.9f, 1.1f);
-	pev->dmg = gSkillData.plrDmgFlame;
+	pev->dmg = gSkillData.plrDmgFlame * 1.3;
 
 	UTIL_SetSize(pev, Vector(0, 0, 0), Vector(0, 0, 0));
 
