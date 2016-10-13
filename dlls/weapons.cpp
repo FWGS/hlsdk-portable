@@ -1578,7 +1578,7 @@ void CBasePlayerWeapon::PrintState( void )
 
 	ALERT( at_console, "m_iclip:  %i\n", m_iClip );
 }
-
+/*
 TYPEDESCRIPTION	CRpg::m_SaveData[] =
 {
 	DEFINE_FIELD( CRpg, m_fSpotActive, FIELD_INTEGER ),
@@ -1586,7 +1586,7 @@ TYPEDESCRIPTION	CRpg::m_SaveData[] =
 };
 
 IMPLEMENT_SAVERESTORE( CRpg, CBasePlayerWeapon )
-
+*/
 TYPEDESCRIPTION	CRpgRocket::m_SaveData[] =
 {
 	DEFINE_FIELD( CRpgRocket, m_flIgniteTime, FIELD_TIME ),
@@ -1605,7 +1605,7 @@ TYPEDESCRIPTION	CShotgun::m_SaveData[] =
 };
 
 IMPLEMENT_SAVERESTORE( CShotgun, CBasePlayerWeapon )
-
+/*
 TYPEDESCRIPTION	CGauss::m_SaveData[] =
 {
 	DEFINE_FIELD( CGauss, m_fInAttack, FIELD_INTEGER ),
@@ -1636,4 +1636,4 @@ TYPEDESCRIPTION	CSatchel::m_SaveData[] =
 	DEFINE_FIELD( CSatchel, m_chargeReady, FIELD_INTEGER ),
 };
 
-IMPLEMENT_SAVERESTORE( CSatchel, CBasePlayerWeapon )
+IMPLEMENT_SAVERESTORE( CSatchel, CBasePlayerWeapon )*/

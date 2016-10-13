@@ -325,7 +325,7 @@ public:
 	Vector	m_firePosition;
 };
 
-/ Screen shake
+// Screen shake
 class CShake : public CPointEntity
 {
 public:

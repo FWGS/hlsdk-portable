@@ -689,7 +689,7 @@ public:
 	float m_flIgniteTime;
 	CRpg *m_pLauncher;// pointer back to the launcher that fired me. 
 };
-
+/*
 class CGauss : public CBasePlayerWeapon
 {
 public:
@@ -892,7 +892,7 @@ public:
 #endif
 	}
 };
-
+*/
 class CTripmine : public CBasePlayerWeapon
 {
 public:
