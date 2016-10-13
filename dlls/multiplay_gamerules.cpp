@@ -740,11 +740,11 @@ void CHalfLifeMultiplay::PlayerThink( CBasePlayer *pPlayer )
 		if( pPlayer->m_afButtonPressed & ( IN_DUCK | IN_ATTACK | IN_ATTACK2 | IN_USE | IN_JUMP ) )
 			SpawnPlayer( pPlayer );
 	if( pPlayer->m_state == STATE_UNINITIALIZED )
-		if( pPlayer->m_afButtonPressed )
+		if( pPlayer->m_afButtonPressed || pPlayer->pev->button )
 		{
-			//ClientPutInServer( pPlayer->edict() );
+			ClientPutInServer( pPlayer->edict() );
 			// clean prediction lags after changelevel
-			CLIENT_COMMAND( pPlayer->edict(), "reconnect\n" );
+			//CLIENT_COMMAND( pPlayer->edict(), "reconnect\n" );
 			pPlayer->m_afButtonPressed = 0;
 			return;
 		}

@@ -83,14 +83,14 @@ BOOL ClientConnect( edict_t *pEntity, const char *pszName, const char *pszAddres
 		CBasePlayer *pl = (CBasePlayer *)CBaseEntity::Instance( pEntity ) ;
 		if( pl )
 		{
-			pl->m_state = STATE_CONNECTED;
+			pl->m_state = STATE_UNINITIALIZED;
 			pl->RemoveAllItems( TRUE );
 			BecomeSpectator( pl );
-			ClientPutInServer( pl->edict() );
+			//ClientPutInServer( pl->edict() );
 		}
 	}
 
-	g_engfuncs.pfnQueryClientCvarValue2( pEntity, "touch_enable", 111 );
+	//g_engfuncs.pfnQueryClientCvarValue2( pEntity, "touch_enable", 111 );
 
 	return g_pGameRules->ClientConnected( pEntity, pszName, pszAddress, szRejectReason );
 
@@ -698,7 +698,7 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 				plr->m_state = STATE_UNINITIALIZED;
 				plr->RemoveAllItems( TRUE );
 				BecomeSpectator( plr );
-				plr->Spawn();
+				//plr->Spawn();
 			}
 		}
 	}
@@ -718,6 +718,9 @@ void PlayerPreThink( edict_t *pEntity )
 
 	entvars_t *pev = &pEntity->v;
 	CBasePlayer *pPlayer = (CBasePlayer *)GET_PRIVATE(pEntity);
+
+	if( !pPlayer )
+	ClientPutInServer( pEntity );
 
 	if (pPlayer)
 		pPlayer->PreThink( );
@@ -742,6 +745,7 @@ void PlayerPostThink( edict_t *pEntity )
 }
 
 void CoopClearData( void );
+void CoopApplyData( void );
 void CoopClearWeaponList( void );
 void ParmsNewLevel( void )
 {
@@ -749,7 +753,10 @@ void ParmsNewLevel( void )
 	SAVERESTOREDATA *pSaveData = (SAVERESTOREDATA *)gpGlobals->pSaveData;
 
 	if ( pSaveData )
+	{
 		pSaveData->connectionCount = BuildChangeList( pSaveData->levelList, MAX_LEVEL_CONNECTIONS );
+		CoopApplyData();
+	}
 	else
 		if( mp_coop_changelevel.value )
 		{
@@ -766,7 +773,10 @@ void ParmsChangeLevel( void )
 	SAVERESTOREDATA *pSaveData = (SAVERESTOREDATA *)gpGlobals->pSaveData;
 
 	if ( pSaveData )
+	{
 		pSaveData->connectionCount = BuildChangeList( pSaveData->levelList, MAX_LEVEL_CONNECTIONS );
+		CoopApplyData();
+	}
 	else
 		if( mp_coop_changelevel.value )
 		{

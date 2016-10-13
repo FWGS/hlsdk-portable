@@ -1495,7 +1495,8 @@ struct SavedCoords
 	bool trainsaved;
 	Vector trainoffset;
 	char trainglobal[256];
-} g_SavedCoords;
+} g_SavedCoords, s_SavedCoords;
+
 
 
 void CoopClearData( void )
@@ -1503,6 +1504,11 @@ void CoopClearData( void )
 	// nullify
 	SavedCoords l_SavedCoords = {};
 	g_SavedCoords = l_SavedCoords;
+}
+
+void CoopApplyData( void )
+{
+	g_SavedCoords = s_SavedCoords;
 }
 
 int g_iMenu;
@@ -1868,7 +1874,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 	if( !strcmp( m_szMapName, mp_coop_disabledmap.string ) )
 	{
 		UTIL_HudMessageAll( params, UTIL_VarArgs( "MAP %S IS DISABLED", m_szMapName ) );
-
+		return;
 	}
 	// forget touch by some fool
 	if( gpGlobals->time - pev->dmgtime > 30)
@@ -1997,7 +2003,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 
 		}
 		CoopSaveTrain( pActivator, &l_SavedCoords );
-		g_SavedCoords = l_SavedCoords;
+		s_SavedCoords = l_SavedCoords;
 
 
 
@@ -2054,8 +2060,8 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 	if( !FNullEnt( pentLandmark ) )
 	{
 		strcpy( st_szNextSpot, m_szLandmarkName );
-		strcpy( g_SavedCoords.landmark, m_szLandmarkName );
-		g_SavedCoords.offset = gpGlobals->vecLandmarkOffset = VARS( pentLandmark )->origin;
+		strcpy( s_SavedCoords.landmark, m_szLandmarkName );
+		s_SavedCoords.offset = gpGlobals->vecLandmarkOffset = VARS( pentLandmark )->origin;
 	}
 
 	//ALERT( at_console, "Level touches %d levels\n", ChangeList( levels, 16 ) );
@@ -2070,19 +2076,23 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 		// reset all players state
 		if( plr )
 		{
-			plr->m_state = STATE_CONNECTED;
+			plr->m_state = STATE_UNINITIALIZED;
 			plr->RemoveAllItems( TRUE );
 			BecomeSpectator( plr );
-			plr->SetThink( &CBasePlayer::Spawn );
-			plr->pev->nextthink = gpGlobals->time + 1;
-			//CLIENT_COMMAND( plr->edict(), "connect the-swank.pp.ua:27017\n" );
+			//plr->SetThink( &CBasePlayer::Spawn );
+			//plr->pev->nextthink = gpGlobals->time + 1;
+			// HACK: force perform reconnection
+			CLIENT_COMMAND( plr->edict(), "reconnect\n" );
+			
+			//CLIENT_COMMAND( plr->edict(), "alias cmd \"reconnect;unalias cmd\"\n" );
 			//MESSAGE_BEGIN( MSG_ONE, 2, NULL, plr->pev ); // svc_disconnect after stufftext
 			//MESSAGE_END();
 			//SERVER_COMMAND( UTIL_VarArgs( "kick %d\n", i-1 ) );
 			//SERVER_EXECUTE();
 		}
 	}
-	CHANGE_LEVEL( st_szNextMap, st_szNextSpot );
+	SERVER_COMMAND( UTIL_VarArgs( "wait;wait;wait;wait;wait;changelevel %s %s\n", st_szNextMap, st_szNextSpot ) );
+	//CHANGE_LEVEL( st_szNextMap, st_szNextSpot );
 }
 
 //
