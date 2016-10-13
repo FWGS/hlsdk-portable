@@ -108,6 +108,7 @@ LOCAL_C_INCLUDES := $(LOCAL_PATH)/. \
 		 $(LOCAL_PATH)/../engine \
 		 $(LOCAL_PATH)/../game_shared \
 		 $(LOCAL_PATH)/../dlls \
+		 $(LOCAL_PATH)/../dlls/hunger \
 		 $(LOCAL_PATH)/../pm_shared
 LOCAL_CFLAGS += $(DEFINES) $(INCLUDES)
 
