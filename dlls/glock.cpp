@@ -106,9 +106,7 @@ int CGlock::GetItemInfo( ItemInfo *p )
 
 BOOL CGlock::Deploy()
 {
-#ifdef CLIENT_DLL
-	pev->body = 1;
-#endif
+	pev->body = SILENCER_ON;
 	return DefaultDeploy( "models/v_9mmhandgun.mdl", "models/p_9mmhandgun.mdl", GLOCK_DRAW, "onehanded", UseDecrement(), pev->body );
 }
 void CGlock::Holster( int skiplocal /*= 0*/ )
@@ -138,6 +136,8 @@ void CGlock::SecondaryAttack( void )
 
 		SendWeaponAnim( GLOCK_HOLSTER, 1, SILENCER_OFF );
 
+		pev->body = SILENCER_ON;
+
 		m_flNextPrimaryAttack = m_flNextSecondaryAttack = GetNextAttackDelay( 2.0 );
 	}
 	else
@@ -148,6 +148,8 @@ void CGlock::SecondaryAttack( void )
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 2.4; // 3.3
 
 		SendWeaponAnim( GLOCK_ADD_SILENCER, 1, SILENCER_ON );
+
+		pev->body = SILENCER_OFF;
 
 		m_flNextPrimaryAttack = m_flNextSecondaryAttack = GetNextAttackDelay( 3.4 );
 	}
