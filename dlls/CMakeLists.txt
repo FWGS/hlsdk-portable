@@ -29,6 +29,19 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_LINUX -DCLIENT_WEAPONS -Dstricmp=strcasec
 set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS}")
 
 set (SVDLL_SOURCES 
+	noffice/civilian.cpp
+	noffice/dave.cpp
+	noffice/female.cpp
+	noffice/clip.cpp
+	noffice/flashlightspot.cpp
+	noffice/furniture_passable.cpp
+	noffice/holster.cpp
+	noffice/news.cpp
+	noffice/player_freeze.cpp
+	noffice/random_shake.cpp
+	noffice/random_shooter.cpp
+	noffice/terrorist.cpp
+	noffice/torch.cpp
 	agrunt.cpp
 	airtank.cpp
 	aflock.cpp
@@ -46,12 +59,12 @@ set (SVDLL_SOURCES
 	client.cpp
 	combat.cpp
 	controller.cpp
-	crossbow.cpp
+#	crossbow.cpp
 	crowbar.cpp
 	defaultai.cpp
 	doors.cpp
 	effects.cpp
-	egon.cpp
+#	egon.cpp
 	explode.cpp
 	flyingmonster.cpp
 	func_break.cpp
@@ -59,7 +72,7 @@ set (SVDLL_SOURCES
 	game.cpp
 	gamerules.cpp
 	gargantua.cpp
-	gauss.cpp
+#	gauss.cpp
 	genericmonster.cpp
 	ggrenade.cpp
 	globals.cpp
@@ -70,13 +83,13 @@ set (SVDLL_SOURCES
 	h_cine.cpp
 	h_cycler.cpp
 	h_export.cpp
-	handgrenade.cpp
+#	handgrenade.cpp
 	hassassin.cpp
 	headcrab.cpp
 	healthkit.cpp
 	hgrunt.cpp
 	hornet.cpp
-	hornetgun.cpp
+#	hornetgun.cpp
 	houndeye.cpp
 	ichthyosaur.cpp
 	islave.cpp
@@ -97,11 +110,11 @@ set (SVDLL_SOURCES
 	plane.cpp
 	plats.cpp
 	player.cpp
-	python.cpp
+#	python.cpp
 	rat.cpp
 	roach.cpp
 	rpg.cpp
-	satchel.cpp
+#	satchel.cpp
 	schedule.cpp
 	scientist.cpp
 	scripted.cpp
@@ -112,7 +125,7 @@ set (SVDLL_SOURCES
 	soundent.cpp
 	spectator.cpp
 	squadmonster.cpp
-	squeakgrenade.cpp
+#	squeakgrenade.cpp
 	subs.cpp
 	talkmonster.cpp
 	teamplay_gamerules.cpp
@@ -131,7 +144,7 @@ set (SVDLL_SOURCES
 	../pm_shared/pm_shared.c
 )
 	
-include_directories (. wpn_shared ../common ../engine ../pm_shared ../game_shared ../public)
+include_directories (. wpn_shared ../common ../engine ../pm_shared ../game_shared ../public noffice)
 
 if(USE_VOICEMGR)
 	set(SVDLL_SOURCES

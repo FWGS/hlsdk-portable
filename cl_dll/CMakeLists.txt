@@ -29,18 +29,24 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-write-strings -DLINUX -D_LINUX -Dstricm
 set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS}")
 
 set (CLDLL_SOURCES 
-	../dlls/crossbow.cpp 
+	noffice/glow.cpp
+	noffice/pain.cpp
+	noffice/cinematic.cpp
+	noffice/deathvision.cpp
+	../dlls/noffice/torch.cpp
+	../dlls/noffice/holster.cpp
+#	../dlls/crossbow.cpp 
 	../dlls/crowbar.cpp 
-	../dlls/egon.cpp 
-	../dlls/gauss.cpp 
-	../dlls/handgrenade.cpp 
-	../dlls/hornetgun.cpp 
+#	../dlls/egon.cpp 
+#	../dlls/gauss.cpp 
+#	../dlls/handgrenade.cpp 
+#	../dlls/hornetgun.cpp 
 	../dlls/mp5.cpp 
-	../dlls/python.cpp 
+#	../dlls/python.cpp 
 	../dlls/rpg.cpp 
-	../dlls/satchel.cpp 
+#	../dlls/satchel.cpp 
 	../dlls/shotgun.cpp 
-	../dlls/squeakgrenade.cpp 
+#	../dlls/squeakgrenade.cpp 
 	../dlls/tripmine.cpp 
 	../dlls/glock.cpp
 	ev_hldm.cpp 
