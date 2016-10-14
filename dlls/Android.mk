@@ -20,6 +20,7 @@ LOCAL_CPPFLAGS := $(LOCAL_CFLAGS) -frtti
 
 LOCAL_C_INCLUDES := $(SDL_PATH)/include \
 		    $(LOCAL_PATH)/. \
+		    $(LOCAL_PATH)/noffice \
 		    $(LOCAL_PATH)/wpn_shared \
 		    $(LOCAL_PATH)/../common \
 		    $(LOCAL_PATH)/../engine/common \
@@ -44,12 +45,10 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
            client.cpp \
            combat.cpp \
            controller.cpp \
-           crossbow.cpp \
            crowbar.cpp \
            defaultai.cpp \
            doors.cpp \
            effects.cpp \
-           egon.cpp \
            explode.cpp \
            flyingmonster.cpp \
            func_break.cpp \
@@ -57,7 +56,6 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
            game.cpp \
            gamerules.cpp \
            gargantua.cpp \
-           gauss.cpp \
            genericmonster.cpp \
            ggrenade.cpp \
            globals.cpp \
@@ -68,13 +66,11 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
            h_cycler.cpp \
            h_cine.cpp \
            h_export.cpp \
-           handgrenade.cpp \
            hassassin.cpp \
            headcrab.cpp \
            healthkit.cpp \
            hgrunt.cpp \
            hornet.cpp \
-           hornetgun.cpp \
            houndeye.cpp \
            ichthyosaur.cpp \
            islave.cpp \
@@ -95,11 +91,9 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
            plane.cpp \
            plats.cpp \
            player.cpp \
-           python.cpp \
            rat.cpp \
            roach.cpp \
            rpg.cpp \
-           satchel.cpp \
            schedule.cpp \
            scientist.cpp \
            scripted.cpp \
@@ -110,7 +104,6 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
            soundent.cpp \
            spectator.cpp \
            squadmonster.cpp \
-           squeakgrenade.cpp \
            subs.cpp \
            talkmonster.cpp \
            teamplay_gamerules.cpp \
@@ -124,6 +117,19 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
            world.cpp \
            xen.cpp \
            zombie.cpp \
+	   noffice/civilian.cpp \
+	   noffice/dave.cpp \
+	   noffice/female.cpp \
+	   noffice/clip.cpp \
+	   noffice/flashlightspot.cpp \
+	   noffice/furniture_passable.cpp \
+	   noffice/holster.cpp \
+	   noffice/news.cpp \
+	   noffice/player_freeze.cpp \
+	   noffice/random_shake.cpp \
+	   noffice/random_shooter.cpp \
+	   noffice/terrorist.cpp \
+	   noffice/torch.cpp \
 	   ../pm_shared/pm_debug.c \
 	   ../pm_shared/pm_math.c \
 	   ../pm_shared/pm_shared.c
