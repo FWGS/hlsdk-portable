@@ -94,7 +94,7 @@ void CTriggerCommand::PlayMP3(CBaseEntity* pClient, const char* song)
 	ASSERT(pClient != NULL);
 
 	char cmd[128];
-	sprintf(cmd, "play media/%s.mp3\n", song);
+	sprintf(cmd, "play sound/mp3/%s.mp3\n", song);
 
 	CLIENT_COMMAND(ENT(pClient->pev),cmd);
 }
