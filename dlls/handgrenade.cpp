@@ -198,20 +198,5 @@ void CHandGrenade::WeaponIdle( void )
 	{
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 31.0 / 10.0;
 		SendWeaponAnim( HANDGRENADE_IDLE );
-
-		int iAnim;
-		float flRand = UTIL_SharedRandomFloat( m_pPlayer->random_seed, 0, 1 );
-		if( flRand <= 0.75 )
-		{
-			iAnim = HANDGRENADE_IDLE;
-			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );// how long till we do this again.
-		}
-		else
-		{
-			iAnim = HANDGRENADE_FIDGET;
-			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 75.0 / 30.0;
-		}
-
-		SendWeaponAnim( iAnim );
 	}
 }
