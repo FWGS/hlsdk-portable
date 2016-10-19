@@ -2082,7 +2082,8 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 			//plr->SetThink( &CBasePlayer::Spawn );
 			//plr->pev->nextthink = gpGlobals->time + 1;
 			// HACK: force perform reconnection
-			CLIENT_COMMAND( plr->edict(), "reconnect\n" );
+			if( mp_coop_reconnect_hack.value )
+				CLIENT_COMMAND( plr->edict(), "reconnect\n" );
 			
 			//CLIENT_COMMAND( plr->edict(), "alias cmd \"reconnect;unalias cmd\"\n" );
 			//MESSAGE_BEGIN( MSG_ONE, 2, NULL, plr->pev ); // svc_disconnect after stufftext
@@ -2091,8 +2092,10 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 			//SERVER_EXECUTE();
 		}
 	}
-	SERVER_COMMAND( UTIL_VarArgs( "wait;wait;wait;wait;wait;changelevel %s %s\n", st_szNextMap, st_szNextSpot ) );
-	//CHANGE_LEVEL( st_szNextMap, st_szNextSpot );
+	if( mp_coop_reconnect_hack.value )
+		SERVER_COMMAND( UTIL_VarArgs( "wait;wait;wait;wait;wait;changelevel %s %s\n", st_szNextMap, st_szNextSpot ) );
+	else
+		CHANGE_LEVEL( st_szNextMap, st_szNextSpot );
 }
 
 //

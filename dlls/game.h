@@ -54,6 +54,7 @@ extern cvar_t mp_coop_nofriendlyfire;
 extern cvar_t mp_coop_disabledmap;
 extern cvar_t mp_unduck;
 extern cvar_t mp_semclip;
+extern cvar_t mp_coop_reconnect_hack;
 extern bool g_fSavedDuck;
 
 // Engine Cvars
