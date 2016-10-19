@@ -2743,6 +2743,8 @@ edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer )
 			goto ReturnSpot;
 		}
 	}
+
+#if 0
 	// landmark may still exists when no spawn spot
 	if( FNullEnt( pSpot ) )
 	{
@@ -2754,11 +2756,13 @@ edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer )
 
 	if( FNullEnt( pSpot ) )
 		pSpot = UTIL_FindEntityByClassname( NULL, "info_player_start" );
+#endif
 
 ReturnSpot:
 	if( FNullEnt( pSpot ) )
 	{
 		ALERT( at_error, "PutClientInServer: no info_player_start on level" );
+		g_pLastSpawn = NULL;
 		return INDEXENT( 0 );
 	}
 

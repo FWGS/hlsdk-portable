@@ -749,6 +749,12 @@ void CHalfLifeMultiplay::PlayerThink( CBasePlayer *pPlayer )
 			return;
 		}
 
+	if( pPlayer->m_state == STATE_POINT_SELECT )
+	{
+		if( pPlayer->m_afButtonPressed & ( IN_DUCK | IN_ATTACK | IN_ATTACK2 | IN_USE | IN_JUMP ) )
+			SpawnPlayer( pPlayer );
+	}
+
 	if( g_fGameOver )
 	{
 		// check for button presses
@@ -778,6 +784,13 @@ void CHalfLifeMultiplay::PlayerSpawn( CBasePlayer *pPlayer )
 	if( pPlayer->m_state == STATE_CONNECTED )
 	{
 		pPlayer->m_state = STATE_SPECTATOR_BEGIN;
+		pPlayer->RemoveAllItems( TRUE );
+		BecomeSpectator( pPlayer );
+		return;
+	}
+
+	if( pPlayer->m_state == STATE_POINT_SELECT )
+	{
 		pPlayer->RemoveAllItems( TRUE );
 		BecomeSpectator( pPlayer );
 		return;
