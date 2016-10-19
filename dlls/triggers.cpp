@@ -1496,14 +1496,21 @@ struct SavedCoords
 	Vector trainoffset;
 	char trainglobal[256];
 } g_SavedCoords;
+
+
 void CoopClearData( void )
 {
 	// nullify
 	SavedCoords l_SavedCoords = {};
 	g_SavedCoords = l_SavedCoords;
 }
+
 int g_iMenu;
+
 void ShowMenu( CBasePlayer *pPlayer, const char *title, int count, const char **slot, signed char time = -1 );
+
+bool g_fSavedDuck;
+
 // Show to all spawned players: voting, etc..
 class GlobalMenu
 {
@@ -1741,7 +1748,8 @@ bool CoopRestorePlayerCoords(CBaseEntity *player, Vector *origin, Vector *angles
 			TraceResult tr;
 			Vector point = g_SavedCoords.origin[i] + g_SavedCoords.offset;
 
-			UTIL_TraceHull( point, point, missile, human_hull, NULL, &tr );
+			UTIL_TraceHull( point, point, missile, (mp_unduck.value&&g_fSavedDuck)?head_hull:human_hull, NULL, &tr );
+
 			g_SavedCoords.ip[i][0] = 0;
 
 			if( tr.fStartSolid || tr.fAllSolid )
@@ -1783,7 +1791,11 @@ bool CoopGetSpawnPoint( Vector *origin, Vector *angles)
 		point = point + g_SavedCoords.offset;
 		//UTIL_TraceHull( point, point, ignore_monsters, human_hull, NULL, &tr );
 
-		UTIL_TraceHull( point, point + angle * 100, missile, human_hull, NULL, &tr );
+		if( mp_unduck.value )
+			UTIL_TraceHull( point, point + angle * 100, missile, head_hull, NULL, &tr );
+		else
+			UTIL_TraceHull( point, point + angle * 100, missile, human_hull, NULL, &tr );
+
 		if( !tr.fStartSolid && !tr.fAllSolid )
 		{
 			g_SavedCoords.triggerorigin = tr.vecEndPos;
@@ -1973,12 +1985,14 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 		}
 		else
 		{
+			g_fSavedDuck = false;
 			// Get current player's coordinated
 			if( pActivator && pActivator->IsPlayer() )
 			{
 				l_SavedCoords.triggerangles = pActivator->pev->angles;
 				l_SavedCoords.triggerorigin = pActivator->pev->origin;
 				l_SavedCoords.valid = true;
+				g_fSavedDuck = !!(pActivator->pev->flags & FL_DUCKING);
 			}
 
 		}

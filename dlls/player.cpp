@@ -1849,6 +1849,35 @@ void CBasePlayer::PreThink( void )
 	{
 		pev->velocity = g_vecZero;
 	}
+
+	if( mp_unduck.value )
+	{
+		if( (pev->button & IN_DUCK) && !(pev->button & IN_JUMP) )
+		{
+			TraceResult tr;
+			UTIL_TraceHull( pev->origin, pev->origin, ignore_monsters, human_hull, edict(), &tr );
+			if( tr.fStartSolid )
+			{
+				pev->view_ofs.z = 12;
+				pev->flags |= FL_DUCKING;
+				FixPlayerCrouchStuck(edict());
+				UTIL_SetSize( pev, VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX );
+			}
+		}
+	}
+
+	if( mp_semclip.value )
+	{
+		for( int i = 1; i <= gpGlobals->maxClients; i++ )
+		{
+			CBaseEntity *plr = UTIL_PlayerByIndex( i );
+
+			if( plr && plr->pev->solid == SOLID_SLIDEBOX && plr->IsPlayer() )
+			{
+				plr->pev->solid = SOLID_TRIGGER;
+			}
+		}
+	}
 }
 /* Time based Damage works as follows: 
 	1) There are several types of timebased damage:
@@ -2418,6 +2447,20 @@ void CBasePlayer::PostThink()
 	if( !IsAlive() )
 		goto pt_end;
 
+	if( mp_semclip.value )
+	{
+		for( int i = 1; i < gpGlobals->maxClients; i++ )
+		{
+			CBaseEntity *plr = UTIL_PlayerByIndex( i );
+
+			if( plr && plr->pev->solid == SOLID_TRIGGER && plr->IsPlayer() )
+			{
+				plr->pev->solid = SOLID_SLIDEBOX;
+				UTIL_SetOrigin(pev, pev->origin);
+			}
+		}
+	}
+
 	// Handle Tank controlling
 	if( m_pTank != NULL )
 	{
@@ -2690,7 +2733,7 @@ edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer )
 			if( !FStrEq( STRING( pSpot->pev->netname ), STRING( gpGlobals->mapname ) ) )
 				continue;
 			// check if it is placed in wall
-			UTIL_TraceHull( pSpot->pev->origin, pSpot->pev->origin , missile, human_hull, NULL, &tr );
+			UTIL_TraceHull( pSpot->pev->origin, pSpot->pev->origin , missile, (mp_unduck.value&&g_fSavedDuck)?head_hull:human_hull, NULL, &tr );
 			if( tr.fStartSolid || tr.fAllSolid  )
 				continue;
 			// trace down to find if there is no floor

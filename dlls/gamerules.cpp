@@ -69,7 +69,7 @@ Vector FixupSpawnPoint(Vector spawn)
 	{
 		Vector point = spawn + Vector( 0, 0, 36 * i );
 		TraceResult tr;
-		UTIL_TraceHull( point, point, ignore_monsters, 1, NULL, &tr );
+		UTIL_TraceHull( point, point, ignore_monsters, (mp_unduck.value&&g_fSavedDuck)?head_hull:human_hull, NULL, &tr );
 		if( !tr.fStartSolid && !tr.fAllSolid )
 			return point;
 		i = -i;
@@ -98,6 +98,8 @@ edict_t *CGameRules::GetPlayerSpawnSpot( CBasePlayer *pPlayer )
 		CoopGetSpawnPoint( &pPlayer->pev->origin, &pPlayer->pev->angles );
 	pPlayer->pev->fixangle = TRUE;
 	pPlayer->pev->origin = FixupSpawnPoint( pPlayer->pev->origin );
+	if( g_fSavedDuck )
+		pPlayer->pev->flags |= FL_DUCKING;
 
 	return pentSpawnSpot;
 }

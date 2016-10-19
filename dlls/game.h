@@ -52,6 +52,9 @@ extern cvar_t mp_coop;
 extern cvar_t mp_coop_changelevel;
 extern cvar_t mp_coop_nofriendlyfire;
 extern cvar_t mp_coop_disabledmap;
+extern cvar_t mp_unduck;
+extern cvar_t mp_semclip;
+extern bool g_fSavedDuck;
 
 // Engine Cvars
 extern cvar_t *g_psv_gravity;
