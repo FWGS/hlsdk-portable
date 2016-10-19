@@ -745,7 +745,11 @@ int CScientist::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, flo
 {
 	if( pevInflictor && pevInflictor->flags & FL_CLIENT )
 	{
-		Remember( bits_MEMORY_PROVOKED );
+		if( pevAttacker->health <= 10 )
+			Forget( bits_MEMORY_PROVOKED );
+		else
+			Remember( bits_MEMORY_PROVOKED );
+
 		StopFollowing( TRUE );
 	}
 

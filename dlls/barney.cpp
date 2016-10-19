@@ -512,7 +512,10 @@ int CBarney::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float 
 				// Alright, now I'm pissed!
 				PlaySentence( "BA_MAD", 4, VOL_NORM, ATTN_NORM );
 
-				Remember( bits_MEMORY_PROVOKED );
+				if( pevAttacker->health <= 10 )
+					Forget( bits_MEMORY_PROVOKED );
+				else
+					Remember( bits_MEMORY_PROVOKED );
 				StopFollowing( TRUE );
 			}
 			else

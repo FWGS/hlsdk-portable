@@ -890,7 +890,7 @@ int CBaseMonster::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, f
 			int classs = Classify();
 			if( classs == CLASS_HUMAN_PASSIVE || classs == CLASS_PLAYER_ALLY )
 			{
-
+				activator->TakeDamage( pevInflictor, pevAttacker, flDamage*1.5, bitsDamageType );
 				return 0;
 			}
 		}
