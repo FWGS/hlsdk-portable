@@ -1544,7 +1544,7 @@ void FixPlayerCrouchStuck( edict_t *pPlayer )
 	// Move up as many as 18 pixels if the player is stuck.
 	for( int i = 0; i < 18; i++ )
 	{
-		UTIL_TraceHull( pPlayer->v.origin, pPlayer->v.origin, dont_ignore_monsters, head_hull, pPlayer, &trace );
+		UTIL_TraceHull( pPlayer->v.origin, pPlayer->v.origin, missile, head_hull, pPlayer, &trace );
 		if( trace.fStartSolid )
 			pPlayer->v.origin.z++;
 		else
@@ -1725,7 +1725,7 @@ void CBasePlayer::UpdateStatusBar()
 #define	CLIMB_SPEED_DEC			15	// climbing deceleration rate
 #define	CLIMB_PUNCH_X			-7  // how far to 'punch' client X axis when climbing
 #define CLIMB_PUNCH_Z			7	// how far to 'punch' client Z axis when climbing
-
+float g_flSemclipTime;
 void CBasePlayer::PreThink( void )
 {
 	int buttonsChanged = ( m_afButtonLast ^ pev->button );	// These buttons have changed this frame
@@ -1866,6 +1866,24 @@ void CBasePlayer::PreThink( void )
 		}
 	}
 
+	// keep semclip 0.5 seconds
+	if( mp_semclip.value && (gpGlobals->time - g_flSemclipTime < 0.5 ) )
+	{
+		for( int i = 1; i <= gpGlobals->maxClients; i++ )
+		{
+			CBaseEntity *plr = UTIL_PlayerByIndex( i );
+
+			if( plr && plr->pev->solid == SOLID_SLIDEBOX && plr->IsPlayer() )
+			{
+				plr->pev->solid = SOLID_NOT;
+			}
+		}
+	}
+}
+
+void CBasePlayer::Touch( CBaseEntity *pOther )
+{
+    if( pOther && pOther->IsPlayer() )
 	if( mp_semclip.value )
 	{
 		for( int i = 1; i <= gpGlobals->maxClients; i++ )
@@ -1874,9 +1892,10 @@ void CBasePlayer::PreThink( void )
 
 			if( plr && plr->pev->solid == SOLID_SLIDEBOX && plr->IsPlayer() )
 			{
-				plr->pev->solid = SOLID_TRIGGER;
+				plr->pev->solid = SOLID_NOT;
 			}
 		}
+		g_flSemclipTime = gpGlobals->time;
 	}
 }
 /* Time based Damage works as follows: 
@@ -2453,10 +2472,10 @@ void CBasePlayer::PostThink()
 		{
 			CBaseEntity *plr = UTIL_PlayerByIndex( i );
 
-			if( plr && plr->pev->solid == SOLID_TRIGGER && plr->IsPlayer() )
+			if( plr && plr->pev->solid == SOLID_NOT && plr->IsPlayer() )
 			{
 				plr->pev->solid = SOLID_SLIDEBOX;
-				UTIL_SetOrigin(pev, pev->origin);
+				UTIL_SetOrigin(plr->pev, plr->pev->origin);
 			}
 		}
 	}
@@ -2862,6 +2881,7 @@ void CBasePlayer::Spawn( void )
 	m_flSpawnTime = gpGlobals->time;
 
 	g_pGameRules->PlayerSpawn( this );
+	g_flSemclipTime = 0;
 }
 
 void CBasePlayer::Precache( void )

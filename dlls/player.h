@@ -323,6 +323,7 @@ public:
 	float m_flSpawnTime;
 	PlayerState m_state;
 	bool m_fTouchMenu;
+	virtual void Touch( CBaseEntity *pOther );
 };
 
 #define AUTOAIM_2DEGREES  0.0348994967025

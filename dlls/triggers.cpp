@@ -1548,6 +1548,11 @@ public:
 			if( imenu == 1 ) // confirm
 			{
 				m_iConfirm++;
+			MESSAGE_BEGIN( MSG_ALL, 8, NULL ); // svc_print
+				WRITE_BYTE( 3 ); // PRINT_CHAT
+				WRITE_STRING( UTIL_VarArgs( "%s^7 confirmed map change\n", ( pPlayer->pev->netname && STRING( pPlayer->pev->netname )[0] != 0 ) ? STRING( pPlayer->pev->netname ) : "unconnected"));
+			MESSAGE_END();
+
 			}
 			if( imenu == 2 ) // cancel
 			{
@@ -2139,6 +2144,9 @@ int BuildChangeList( LEVELLIST *pLevelList, int maxList )
 int CChangeLevel::InTransitionVolume( CBaseEntity *pEntity, char *pVolumeName )
 {
 	edict_t	*pentVolume;
+
+	if( !pEntity )
+		return 0;
 
 	if( pEntity->ObjectCaps() & FCAP_FORCE_TRANSITION )
 		return 1;
