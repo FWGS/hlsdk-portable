@@ -87,7 +87,9 @@ edict_t *CGameRules::GetPlayerSpawnSpot( CBasePlayer *pPlayer )
 	if( pPlayer->m_state == STATE_POINT_SELECT )
 	{
 		pPlayer->m_state = STATE_SPAWNED;
-		return pentSpawnSpot;
+		if(pPlayer->pev->origin.Length() > 8192)
+			pPlayer->pev->origin = g_vecZero;
+		return NULL;
 	}
 
 	if( mp_coop.value )
