@@ -1508,7 +1508,11 @@ void CoopClearData( void )
 
 void CoopApplyData( void )
 {
-	g_SavedCoords = s_SavedCoords;
+	if( s_SavedCoords.valid )
+	{
+		g_SavedCoords = s_SavedCoords;
+		s_SavedCoords = {};
+	}
 }
 
 int g_iMenu;
@@ -1875,6 +1879,8 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 
 	ASSERT( !FStrEq( m_szMapName, "" ) );
 
+	if( s_SavedCoords.valid )
+		return; //already pending
 
 	if( !strcmp( m_szMapName, mp_coop_disabledmap.string ) )
 	{
@@ -1919,7 +1925,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 					count2++;
 
 					// player touched trigger, save it's coordinates
-					if( m_uTouchCount & (i - 1) )
+					if( m_uTouchCount & (1<<(i - 1)) )
 					{
 						count1++;
 						if( InTransitionVolume( plr, m_szLandmarkName ))
@@ -1937,7 +1943,8 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 			}
 
 			i = 0;
-
+			if( !l_SavedCoords.trainsaved )
+			{
 			if( !count2 )
 			{
 				UTIL_HudMessageAll( params, "Cannot change level: Not enough players! Wait 30 sec before you may changelevel!" );
@@ -1985,6 +1992,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 				if( g_GlobalMenu.m_iConfirm < count2 )
 					return;
 			}
+			}
 
 			if( m_fSpawnSaved )
 			{
@@ -1997,7 +2005,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 		else
 		{
 			g_fSavedDuck = false;
-			// Get current player's coordinated
+			// Get current player's coordinates
 			if( pActivator && pActivator->IsPlayer() )
 			{
 				l_SavedCoords.triggerangles = pActivator->pev->angles;
