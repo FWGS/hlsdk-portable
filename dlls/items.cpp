@@ -176,7 +176,8 @@ CBaseEntity* CItem::Respawn( void )
 	UTIL_SetOrigin( pev, m_SpawnPoint );// blip to whereever you should respawn.
 
 	SetThink( &CItem::Materialize );
-	pev->nextthink = g_pGameRules->FlItemRespawnTime( this ); 
+	pev->nextthink = g_pGameRules->FlItemRespawnTime( this );
+	pev->target = 0;
 	return this;
 }
 
