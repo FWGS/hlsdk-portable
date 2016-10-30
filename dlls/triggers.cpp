@@ -1500,6 +1500,7 @@ struct SavedCoords
 	char trainglobal[256];
 	int trainuser1;
 	bool fUsed;
+	bool fDuck;
 } g_SavedCoords, s_SavedCoords;
 
 
@@ -1518,8 +1519,9 @@ void CoopApplyData( void )
 	{
 		g_SavedCoords = s_SavedCoords;
 		s_SavedCoords = {};
-		g_fPause = false;
+		g_fSavedDuck = g_SavedCoords.fDuck;
 	}
+	g_fPause = false;
 	ALERT( at_console, "^2CoopApplyData()\n" );
 }
 
@@ -1529,6 +1531,15 @@ void ShowMenu( CBasePlayer *pPlayer, const char *title, int count, const char **
 
 bool g_fSavedDuck;
 
+#define CoopPlayerName( pPlayer ) ( ( pPlayer->pev->netname && STRING( pPlayer->pev->netname )[0] != 0 ) ? STRING( pPlayer->pev->netname ) : "unconnected" )
+
+void CoopKickPlayer(CBaseEntity *pPlayer)
+{
+	if( !pPlayer )
+		return;
+	SERVER_COMMAND( UTIL_VarArgs( "kick %d\n", ENTINDEX(pPlayer->pev->pContainingEntity) - 1 ) );
+}
+
 // Show to all spawned players: voting, etc..
 class GlobalMenu
 {
@@ -1537,11 +1548,13 @@ public:
 	int m_iConfirm;
 	int m_iVoteCount;
 	int m_iMaxCount;
+	int m_iBanCount;
 	float m_flTime;
 	const char *maps[5];
 	int votes[5];
 	CChangeLevel *triggers[5];
 	EHANDLE m_pTrigger;
+	EHANDLE m_pPlayer;
 
 	void Process( CBasePlayer *pPlayer, int imenu )
 	{
@@ -1557,9 +1570,15 @@ public:
 		{
 		case 1: // touch blue trigger
 			m_iVoteCount++;
+
 			if( imenu == 1 ) // confirm
 			{
-				m_iConfirm++;
+			if( m_iBanCount >= 2 )
+			{
+				CoopKickPlayer( pPlayer );
+				m_iConfirm--;
+				return;
+			}				m_iConfirm++;
 			MESSAGE_BEGIN( MSG_ALL, 8, NULL ); // svc_print
 				WRITE_BYTE( 3 ); // PRINT_CHAT
 				WRITE_STRING( UTIL_VarArgs( "%s^7 confirmed map change\n", ( pPlayer->pev->netname && STRING( pPlayer->pev->netname )[0] != 0 ) ? STRING( pPlayer->pev->netname ) : "unconnected"));
@@ -1569,6 +1588,14 @@ public:
 			if( imenu == 2 ) // cancel
 			{
 				m_iConfirm--;
+				if( pPlayer == m_pPlayer )
+					m_iConfirm -= 100; // player mistake
+			}
+			if( imenu == 3 )
+			{
+				m_iBanCount++;
+				if( m_iBanCount >= 2 && m_iConfirm > -50 )
+					CoopKickPlayer( m_pPlayer );
 			}
 			break;
 		case 2: // vote by request
@@ -1581,6 +1608,9 @@ public:
 			{
 				votes[imenu-1]++;
 				m_iVoteCount++;
+
+				if( votes[1] >= 2 ) // two players vote for ban
+					CoopKickPlayer( m_pPlayer );
 
 				if( m_iVoteCount >= m_iMaxCount )
 				{
@@ -1615,23 +1645,26 @@ public:
 			}
 		}
 		m_iMaxCount = count2;
+		m_iBanCount = 0;
 	}
 
-	void ConfirmMenu( CBaseEntity *trigger, const char *mapname )
+	void ConfirmMenu( CBasePlayer *pPlayer, CBaseEntity *trigger, const char *mapname )
 	{
 		if( g_iMenu && gpGlobals->time - m_flTime < 30 )
 			return; // wait 30s befor new confirm vote
 		g_iMenu = 1;
 		m_flTime = gpGlobals->time;
 		m_pTrigger = trigger;
+		m_pPlayer = pPlayer;
 		const char *menu[] = {
 			"Confirm",
-			"Cancel"
+			"Cancel",
+			"BAN"
 		};
 		ShowGlobalMenu(UTIL_VarArgs("Confirm changing map to %s?", mapname), ARRAYSIZE(menu), menu);
 
 	}
-	void VoteMenu( CBasePlayer *player )
+	void VoteMenu( CBasePlayer *pPlayer )
 	{
 		if( g_iMenu && gpGlobals->time - m_flTime < 30 )
 			return; // wait 30s befor new confirm vote
@@ -1639,7 +1672,9 @@ public:
 		int i = 0;
 		g_iMenu = 2;
 		m_flTime = gpGlobals->time;
-		while( pTrigger = UTIL_FindEntityByClassname( pTrigger, "trigger_changelevel" ) )
+		maps[i++] = "Keep this map";
+		maps[i++] = "BAN";
+		while( (pTrigger = UTIL_FindEntityByClassname( pTrigger, "trigger_changelevel" )) && (i < 5) )
 		{
 			  CChangeLevel *ent = (CChangeLevel *)pTrigger;
 			  votes[i] = 0;
@@ -1650,10 +1685,10 @@ public:
 		}
 		votes[i] = 0;
 		triggers[i] = NULL;
-		maps[i++] = "Keep this map";
 		m_iConfirm = i;
 		m_iVoteCount = 0;
-		ShowGlobalMenu(UTIL_VarArgs("%s requested to force change map", ""), i, maps);
+		m_pPlayer = pPlayer;
+		ShowGlobalMenu(UTIL_VarArgs("%s requested to force change map", CoopPlayerName( pPlayer ) ), i, maps);
 
 	}
 
@@ -1972,6 +2007,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 						count1++;
 						if( InTransitionVolume( plr, m_szLandmarkName ))
 						{
+							l_SavedCoords.fDuck |= !!(plr->pev->flags & FL_DUCKING);
 							CoopSaveTrain( plr, &l_SavedCoords );
 							char *ip = g_engfuncs.pfnInfoKeyValue( g_engfuncs.pfnGetInfoKeyBuffer( plr->edict() ), "ip" );
 							strcpy(l_SavedCoords.ip[l_SavedCoords.iCount], ip );
@@ -2028,7 +2064,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 				}
 				if( g_iMenu != 1 )
 				{
-					g_GlobalMenu.ConfirmMenu( this, m_szMapName );
+					g_GlobalMenu.ConfirmMenu( (CBasePlayer*)pActivator, this, m_szMapName );
 					return;
 				}
 				if( g_GlobalMenu.m_iConfirm < count2 )
@@ -2046,14 +2082,14 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 		}
 		else
 		{
-			g_fSavedDuck = false;
+			l_SavedCoords.fDuck = false;
 			// Get current player's coordinates
 			if( pActivator && pActivator->IsPlayer() )
 			{
 				l_SavedCoords.triggerangles = pActivator->pev->angles;
 				l_SavedCoords.triggerorigin = pActivator->pev->origin;
 				valid = true;
-				g_fSavedDuck = !!(pActivator->pev->flags & FL_DUCKING);
+				l_SavedCoords.fDuck |= !!(pActivator->pev->flags & FL_DUCKING);
 			}
 
 		}
