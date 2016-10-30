@@ -103,6 +103,8 @@ TYPEDESCRIPTION	CBaseDoor::m_SaveData[] =
 	DEFINE_FIELD( CBaseDoor, m_bLockedSentence, FIELD_CHARACTER ),
 	DEFINE_FIELD( CBaseDoor, m_bUnlockedSound, FIELD_CHARACTER ),
 	DEFINE_FIELD( CBaseDoor, m_bUnlockedSentence, FIELD_CHARACTER ),
+	DEFINE_FIELD( CBaseDoor, m_fActivated, FIELD_CHARACTER ),
+	DEFINE_FIELD( CBaseDoor, m_savedtarget, FIELD_STRING ),
 };
 
 IMPLEMENT_SAVERESTORE( CBaseDoor, CBaseToggle )

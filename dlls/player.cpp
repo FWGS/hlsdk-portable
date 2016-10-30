@@ -1544,7 +1544,7 @@ void FixPlayerCrouchStuck( edict_t *pPlayer )
 	// Move up as many as 18 pixels if the player is stuck.
 	for( int i = 0; i < 18; i++ )
 	{
-		UTIL_TraceHull( pPlayer->v.origin, pPlayer->v.origin, missile, head_hull, pPlayer, &trace );
+		UTIL_TraceHull( pPlayer->v.origin, pPlayer->v.origin, ignore_monsters, head_hull, pPlayer, &trace );
 		if( trace.fStartSolid )
 			pPlayer->v.origin.z++;
 		else

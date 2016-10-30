@@ -760,6 +760,7 @@ void CFuncTrain::Next( void )
 		SetBits(pev->effects, EF_NOINTERP);
 		UTIL_SetOrigin(pev, pTarg->pev->origin - (pev->mins + pev->maxs)* 0.5);
 		Wait(); // Get on with doing the next path corner.
+		pev->iuser1++; // Invalidate state for coop
 	}
 	else
 	{

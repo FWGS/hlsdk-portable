@@ -56,6 +56,7 @@ extern cvar_t mp_unduck;
 extern cvar_t mp_semclip;
 extern cvar_t mp_coop_reconnect_hack;
 extern bool g_fSavedDuck;
+extern bool g_fPause;
 
 // Engine Cvars
 extern cvar_t *g_psv_gravity;

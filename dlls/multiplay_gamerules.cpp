@@ -752,7 +752,7 @@ void CHalfLifeMultiplay::PlayerThink( CBasePlayer *pPlayer )
 	if( pPlayer->m_state == STATE_POINT_SELECT )
 	{
 		if( pPlayer->m_afButtonPressed & ( IN_DUCK | IN_ATTACK | IN_ATTACK2 | IN_USE | IN_JUMP ) )
-			SpawnPlayer( pPlayer );
+			pPlayer->Spawn();
 	}
 
 	if( g_fGameOver )
@@ -789,12 +789,14 @@ void CHalfLifeMultiplay::PlayerSpawn( CBasePlayer *pPlayer )
 		return;
 	}
 
-	if( pPlayer->m_state == STATE_POINT_SELECT )
+	if( pPlayer->m_state == STATE_POINT_SELECT && !(pPlayer->pev->flags & FL_SPECTATOR) )
 	{
 		pPlayer->RemoveAllItems( TRUE );
 		BecomeSpectator( pPlayer );
 		return;
 	}
+
+	g_fPause = false;
 
 	pPlayer->pev->weapons |= ( 1 << WEAPON_SUIT );
 
@@ -1355,10 +1357,12 @@ int CHalfLifeMultiplay::DeadPlayerAmmo( CBasePlayer *pPlayer )
 edict_t *CHalfLifeMultiplay::GetPlayerSpawnSpot( CBasePlayer *pPlayer )
 {
 	edict_t *pentSpawnSpot = CGameRules::GetPlayerSpawnSpot( pPlayer );	
-	if( IsMultiplayer() && pentSpawnSpot->v.target )
+	if( IsMultiplayer() && pentSpawnSpot && pentSpawnSpot->v.target )
 	{
 		FireTargets( STRING( pentSpawnSpot->v.target ), pPlayer, pPlayer, USE_TOGGLE, 0 );
 	}
+	if( !pentSpawnSpot )
+		ALERT( at_console, "GetPlayerSpawnSpot: pentSpawnSpot is NULL\n" );
 
 	return pentSpawnSpot;
 }

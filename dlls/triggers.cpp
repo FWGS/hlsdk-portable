@@ -1297,18 +1297,21 @@ LINK_ENTITY_TO_CLASS( fireanddie, CFireAndDie )
 
 void CFireAndDie::Spawn( void )
 {
+	ALERT( at_console, "fireanddie: spawn!\n");
 	pev->classname = MAKE_STRING( "fireanddie" );
 	// Don't call Precache() - it should be called on restore
 }
 
 void CFireAndDie::Precache( void )
 {
+	ALERT( at_console, "fireanddie: precache!\n");
 	// This gets called on restore
 	pev->nextthink = gpGlobals->time + m_flDelay;
 }
 
 void CFireAndDie::Think( void )
 {
+	ALERT( at_console, "fireanddie: firing!\n");
 	SUB_UseTargets( this, USE_TOGGLE, 0 );
 	UTIL_Remove( this );
 }
@@ -1495,6 +1498,8 @@ struct SavedCoords
 	bool trainsaved;
 	Vector trainoffset;
 	char trainglobal[256];
+	int trainuser1;
+	bool fUsed;
 } g_SavedCoords, s_SavedCoords;
 
 
@@ -1506,13 +1511,16 @@ void CoopClearData( void )
 	g_SavedCoords = l_SavedCoords;
 }
 
+bool g_fPause;
 void CoopApplyData( void )
 {
 	if( s_SavedCoords.valid )
 	{
 		g_SavedCoords = s_SavedCoords;
 		s_SavedCoords = {};
+		g_fPause = false;
 	}
+	ALERT( at_console, "^2CoopApplyData()\n" );
 }
 
 int g_iMenu;
@@ -1787,10 +1795,11 @@ bool CoopGetSpawnPoint( Vector *origin, Vector *angles)
 	{
 		CBaseEntity *train = UTIL_FindEntityByString( NULL, "globalname", g_SavedCoords.trainglobal );
 		if( !train ) train = UTIL_FindEntityByString( NULL, "classname", g_SavedCoords.trainglobal );
-		if( train )
+		if( train && ( !g_SavedCoords.trainuser1 || train->pev->iuser1 == g_SavedCoords.trainuser1 ) )
 		{
 			*angles = g_SavedCoords.triggerangles;
 			*origin = VecBModelOrigin(train->pev) + g_SavedCoords.trainoffset;
+			g_SavedCoords.trainuser1 = train->pev->iuser1;
 			return true;
 		}
 		ALERT( at_console, "Failed to get train %s (map design error?)\n", g_SavedCoords.trainglobal );
@@ -1806,22 +1815,24 @@ bool CoopGetSpawnPoint( Vector *origin, Vector *angles)
 		point = point + g_SavedCoords.offset;
 		//UTIL_TraceHull( point, point, ignore_monsters, human_hull, NULL, &tr );
 
-		if( mp_unduck.value )
+		if( mp_unduck.value && g_fSavedDuck && !g_SavedCoords.fUsed )
 			UTIL_TraceHull( point, point + angle * 100, missile, head_hull, NULL, &tr );
 		else
 			UTIL_TraceHull( point, point + angle * 100, missile, human_hull, NULL, &tr );
 
 		if( !tr.fStartSolid && !tr.fAllSolid )
 		{
-			g_SavedCoords.triggerorigin = tr.vecEndPos;
-			g_SavedCoords.validspawnpoint = true;
+			//g_SavedCoords.triggerorigin = tr.vecEndPos;
+			//g_SavedCoords.validspawnpoint = true;
 			if( tr.pHit && FClassnameIs( tr.pHit, "func_door" ) )
 				tr.pHit->v.solid = SOLID_NOT;
+			ALERT( at_console, "CoopGetSpawnPoint: ^2offset set\n");
+			
 		}
 		else
 		{
-			g_SavedCoords.valid = false;
-			ALERT( at_console, "CoopGetSpawnPoint: trace failed\n");
+			//g_SavedCoords.valid = false;
+			ALERT( at_console, "CoopGetSpawnPoint: ^2trace failed\n");
 			return false;
 		}
 	}
@@ -1832,11 +1843,24 @@ bool CoopGetSpawnPoint( Vector *origin, Vector *angles)
 
 CBaseEntity *CoopGetPlayerTrain( CBaseEntity *pPlayer)
 {
+	CBaseEntity *train = NULL;
+
 	if( !pPlayer)
 		return NULL;
-	if( FNullEnt(pPlayer->pev->groundentity))
-		return NULL;
-	CBaseEntity *train = CBaseEntity::Instance(pPlayer->pev->groundentity);
+
+	if( !pPlayer->IsPlayer() )
+	{
+		// activated by path track
+		train = pPlayer;
+	}
+	else
+	{
+		if( FNullEnt(pPlayer->pev->groundentity))
+			return NULL;
+
+		train = CBaseEntity::Instance(pPlayer->pev->groundentity);
+	}
+
 	if( !train )
 		return NULL;
 	if( !train->pev->globalname ||!STRING(train->pev->globalname) || !STRING(train->pev->globalname)[0] )
@@ -1859,7 +1883,24 @@ void CoopSaveTrain( CBaseEntity *pPlayer, SavedCoords *coords)
 		ALERT( at_console, "^1NO TRAIN!\n");
 		return;
 	}
-	ALERT( at_console, "^1TRAIN IS %s", STRING( train->pev->classname ) );
+	ALERT( at_console, "^1TRAIN IS %s\n", STRING( train->pev->classname ) );
+
+	if( !pPlayer->IsPlayer() )
+	{
+		// it is trainnitself, try find player on it
+		CBaseEntity *pList;
+		Vector mins = pPlayer->pev->absmin;
+		Vector maxs = pPlayer->pev->absmax;
+		maxs.z += 72;
+		int count = UTIL_EntitiesInBox( &pList, 1, mins, maxs, FL_ONGROUND );
+		if( count && pList && pList->IsPlayer() )
+			pPlayer = pList;
+		else
+		{
+			ALERT( at_console, "Train without players\n" );
+			return;
+		}
+	}
 
 	strcpy( coords->trainglobal, STRING(train->pev->globalname) );
 	coords->trainoffset = pPlayer->pev->origin - VecBModelOrigin(train->pev);
@@ -1875,6 +1916,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 	params.fadeoutTime = .5;
 	params.holdTime = 10;
 	params.r2 = params.g2 = params.b2 = params.a2 = params.r1 = params.g1 = params.b1 = params.a1 = 255;
+	bool valid = false;
 
 
 	ASSERT( !FStrEq( m_szMapName, "" ) );
@@ -1957,7 +1999,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 				i = 1;
 
 			if( i )
-				UTIL_HudMessageAll( params, UTIL_VarArgs( "%s touched end of map, next is %s %s, %d to go\n",
+				UTIL_HudMessageAll( params, UTIL_VarArgs( "%s touched end of map, next is %s %s, %d to go",
 					( pActivator->pev->netname && STRING( pActivator->pev->netname )[0] != 0 ) ? STRING( pActivator->pev->netname ) : "unconnected",
 					st_szNextMap, st_szNextSpot, i ) );
 			if( count2 )
@@ -1974,8 +2016,8 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 			if( count1 > 1 && count1 < count2 / 3 )
 				return;
 
-			if( count1 <= 1 && count2 == 2 )
-				return;
+			//if( count1 <= 1 && count2 == 2 )
+			//	return;
 
 			if( m_fIsBack )
 			{
@@ -1998,7 +2040,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 			{
 				l_SavedCoords.triggerangles = m_vecSpawnAngles;
 				l_SavedCoords.triggerorigin = m_vecSpawnOrigin;
-				l_SavedCoords.valid = true;
+				valid = true;
 			}
 			ALERT( at_console, "^2CHANGELEVEL:^7 %d %d %d\n", count2, count1, (int)m_fIsBack);
 		}
@@ -2010,7 +2052,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 			{
 				l_SavedCoords.triggerangles = pActivator->pev->angles;
 				l_SavedCoords.triggerorigin = pActivator->pev->origin;
-				l_SavedCoords.valid = true;
+				valid = true;
 				g_fSavedDuck = !!(pActivator->pev->flags & FL_DUCKING);
 			}
 
@@ -2033,28 +2075,47 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 
 	pev->dmgtime = gpGlobals->time;
 
-	CBaseEntity *pPlayer = CBaseEntity::Instance( g_engfuncs.pfnPEntityOfEntIndex( 1 ) );
-	/*if( !InTransitionVolume( pPlayer, m_szLandmarkName ) )
+	CBaseEntity *pPlayer = NULL;
+	if( pActivator && pActivator->IsPlayer() )
+		pPlayer = pActivator;
+
+	if( !pPlayer )
+	{
+		int count = 0;
+		for( int i = 1; i <= gpGlobals->maxClients; i++ )
+			{
+				CBaseEntity *plr = UTIL_PlayerByIndex( i );
+
+				if( plr && plr->IsPlayer() )
+				{
+						if( InTransitionVolume( plr, m_szLandmarkName ))
+						{
+							count++;
+						}
+
+				}
+			}
+		if( !count )
+		{
+			ALERT( at_console, "There are no players in transition volume %s, aborting\n", m_szLandmarkName );
+			return;
+		}
+		ALERT( at_console, "There are %d players in transition volume %s\n", count, m_szLandmarkName );
+			
+	}
+	else if( !InTransitionVolume( pPlayer, m_szLandmarkName ) )
 	{
 		ALERT( at_console, "Player isn't in the transition volume %s, aborting\n", m_szLandmarkName );
 		return;
+	}
+	//else
+/* if !pPlayer
+	{
+		ALERT( at_console, ", aborting\n" );
+		return;
+
 	}*/
 
-	// Create an entity to fire the changetarget
-	if( m_changeTarget && pPlayer )
-	{
-		CFireAndDie *pFireAndDie = GetClassPtr( (CFireAndDie *)NULL );
-		if( pFireAndDie )
-		{
-			// Set target and delay
-			pFireAndDie->pev->target = m_changeTarget;
-			pFireAndDie->m_flDelay = m_changeTargetDelay;
-			pFireAndDie->pev->origin = pPlayer->pev->origin;
-
-			// Call spawn
-			DispatchSpawn( pFireAndDie->edict() );
-		}
-	}
 
 	// shedule remove ke^w on first info_player_start
 	/*edict_t *playerstart = FIND_ENTITY_BY_CLASSNAME( NULL, "info_player_start" );
@@ -2075,6 +2136,25 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 		strcpy( st_szNextSpot, m_szLandmarkName );
 		strcpy( s_SavedCoords.landmark, m_szLandmarkName );
 		s_SavedCoords.offset = gpGlobals->vecLandmarkOffset = VARS( pentLandmark )->origin;
+	}
+
+	// Create an entity to fire the changetarget
+	if( m_changeTarget )
+	{
+		CFireAndDie *pFireAndDie = GetClassPtr( (CFireAndDie *)NULL );
+		if( pFireAndDie )
+		{
+			// Set target and delay
+			pFireAndDie->pev->target = m_changeTarget;
+			pFireAndDie->m_flDelay = m_changeTargetDelay + 1;
+			if( pPlayer )
+				pFireAndDie->pev->origin = pPlayer->pev->origin;
+			else if( !FNullEnt( pentLandmark ) )
+				pFireAndDie->pev->origin = VARS( pentLandmark )->origin; // always in landmark's PVS
+
+			// Call spawn
+			DispatchSpawn( pFireAndDie->edict() );
+		}
 	}
 
 	//ALERT( at_console, "Level touches %d levels\n", ChangeList( levels, 16 ) );
@@ -2105,6 +2185,9 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 			//SERVER_EXECUTE();
 		}
 	}
+	g_fPause = true;
+	s_SavedCoords.fUsed = m_bUsed;
+	s_SavedCoords.valid = valid;
 	if( mp_coop_reconnect_hack.value )
 		SERVER_COMMAND( UTIL_VarArgs( "wait;wait;wait;wait;wait;changelevel %s %s\n", st_szNextMap, st_szNextSpot ) );
 	else
@@ -2165,6 +2248,9 @@ int CChangeLevel::InTransitionVolume( CBaseEntity *pEntity, char *pVolumeName )
 		if( pEntity->pev->aiment != NULL )
 			pEntity = CBaseEntity::Instance( pEntity->pev->aiment );
 	}
+
+	if( !pEntity )
+		return 0;
 
 	int inVolume = 1;	// Unless we find a trigger_transition, everything is in the volume
 
@@ -2262,8 +2348,11 @@ int CChangeLevel::ChangeList( LEVELLIST *pLevelList, int maxList )
 							pEntList[entityCount] = pEntity;
 							entityFlags[entityCount] = flags;
 							entityCount++;
-							if( entityCount > MAX_ENTITY )
-								ALERT( at_error, "Too many entities across a transition!" );
+							if( entityCount >= MAX_ENTITY )
+							{
+								ALERT( at_error, "Too many entities across a transition!\n" );
+								break;
+							}
 						}
 						//else
 						//	ALERT( at_console, "Failed %s\n", STRING( pEntity->pev->classname ) );

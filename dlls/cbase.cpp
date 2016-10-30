@@ -207,6 +207,9 @@ BOOL gTouchDisabled = FALSE;
 
 void DispatchTouch( edict_t *pentTouched, edict_t *pentOther )
 {
+	if( g_fPause )
+		return;
+
 	if( gTouchDisabled )
 		return;
 
@@ -219,6 +222,9 @@ void DispatchTouch( edict_t *pentTouched, edict_t *pentOther )
 
 void DispatchUse( edict_t *pentUsed, edict_t *pentOther )
 {
+	if( g_fPause )
+		return;
+
 	CBaseEntity *pEntity = (CBaseEntity *)GET_PRIVATE( pentUsed );
 	CBaseEntity *pOther = (CBaseEntity *)GET_PRIVATE( pentOther );
 
@@ -228,6 +234,12 @@ void DispatchUse( edict_t *pentUsed, edict_t *pentOther )
 
 void DispatchThink( edict_t *pent )
 {
+	if( g_fPause )
+	{
+		pent->v.nextthink = gpGlobals->time;
+		return;
+	}
+
 	CBaseEntity *pEntity = (CBaseEntity *)GET_PRIVATE( pent );
 	if( pEntity )
 	{
@@ -240,6 +252,9 @@ void DispatchThink( edict_t *pent )
 
 void DispatchBlocked( edict_t *pentBlocked, edict_t *pentOther )
 {
+	if( g_fPause )
+		return;
+
 	CBaseEntity *pEntity = (CBaseEntity *)GET_PRIVATE( pentBlocked );
 	CBaseEntity *pOther = (CBaseEntity *)GET_PRIVATE( pentOther );
 

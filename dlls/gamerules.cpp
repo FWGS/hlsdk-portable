@@ -87,8 +87,13 @@ edict_t *CGameRules::GetPlayerSpawnSpot( CBasePlayer *pPlayer )
 	if( pPlayer->m_state == STATE_POINT_SELECT )
 	{
 		pPlayer->m_state = STATE_SPAWNED;
-		if(pPlayer->pev->origin.Length() > 8192)
-			pPlayer->pev->origin = g_vecZero;
+		pPlayer->pev->effects &= ~EF_NODRAW;
+
+		pPlayer->pev->takedamage = DAMAGE_YES;
+		pPlayer->pev->flags &= ~FL_SPECTATOR;
+		pPlayer->pev->movetype = MOVETYPE_WALK;
+		CLIENT_COMMAND( pPlayer->edict(), "touch_show _coopm*\n" );
+
 		return NULL;
 	}
 
@@ -105,20 +110,25 @@ edict_t *CGameRules::GetPlayerSpawnSpot( CBasePlayer *pPlayer )
 	if( mp_coop_changelevel.value && !CoopRestorePlayerCoords( pPlayer, &pPlayer->pev->origin, &pPlayer->pev->angles ))
 		if( !CoopGetSpawnPoint( &pPlayer->pev->origin, &pPlayer->pev->angles ) )
 		{
-			if( pPlayer->m_state == STATE_SPAWNED && !g_pLastSpawn )
+			if( !g_pLastSpawn )
 			{
 				hudtextparms_t params = {};
 				params.fadeinTime = 0.5;
 				params.fadeoutTime = .5;
 				params.holdTime = 10;
-				params.channel = 1;
-				params.y = 100;
+				params.channel = 0;
+				params.y = 0;
 				params.r2 = params.g2 = params.b2 = params.a2 = params.r1 = params.g1 = params.b1 = params.a1 = 255;
 
 
-				UTIL_HudMessage( pPlayer, params, "Server cannot select a spawnpoint, please fly to it manually and press attack button\n" );
+				UTIL_HudMessage( pPlayer, params, "Server cannot select a spawnpoint, please fly to it manually and press attack button" );
 				// select spawn point
 				pPlayer->m_state = STATE_POINT_SELECT;
+				pPlayer->m_afButtonPressed = 0;
+				
+				if(pPlayer->pev->origin.Length() > 8192)
+					pPlayer->pev->origin = g_vecZero;
+		
 
 			}
 		}
