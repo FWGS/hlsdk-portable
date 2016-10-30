@@ -1576,7 +1576,7 @@ public:
 			if( m_iBanCount >= 2 )
 			{
 				CoopKickPlayer( pPlayer );
-				m_iConfirm--;
+				m_iConfirm-= 5;
 				return;
 			}				m_iConfirm++;
 			MESSAGE_BEGIN( MSG_ALL, 8, NULL ); // svc_print
@@ -1609,8 +1609,11 @@ public:
 				votes[imenu-1]++;
 				m_iVoteCount++;
 
-				if( votes[1] >= 2 ) // two players vote for ban
+				if( votes[1] >= 2 )
+				{	
+					 // two players vote for ban
 					CoopKickPlayer( m_pPlayer );
+				}
 
 				if( m_iVoteCount >= m_iMaxCount )
 				{

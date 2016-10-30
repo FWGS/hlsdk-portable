@@ -276,6 +276,13 @@ void DispatchSave( edict_t *pent, SAVERESTOREDATA *pSaveData )
 		if( pEntity->ObjectCaps() & FCAP_DONT_SAVE )
 			return;
 
+		if( mp_coop_changelevel.value && pent->v.movetype == MOVETYPE_FOLLOW )
+		{
+			// players will not be saved, it's items too
+			if( ENTINDEX( pent->v.aiment ) > 0 && ENTINDEX( pent->v.aiment ) <= gpGlobals->maxClients )
+				return;
+		}
+
 		// These don't use ltime & nextthink as times really, but we'll fudge around it.
 		if( pEntity->pev->movetype == MOVETYPE_PUSH )
 		{
