@@ -94,7 +94,7 @@ NEW_DLL_FUNCTIONS gNewDLLFunctions =
 };
 
 
-extern "C" int GetNewDLLFunctions(NEW_DLL_FUNCTIONS *pFunctionTable, int *interfaceVersion)
+extern "C" int DLLEXPORT EXPORT2 GetNewDLLFunctions(NEW_DLL_FUNCTIONS *pFunctionTable, int *interfaceVersion)
 {
 	if(!pFunctionTable || *interfaceVersion != NEW_DLL_FUNCTIONS_VERSION)
 	{
