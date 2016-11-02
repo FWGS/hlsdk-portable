@@ -1895,7 +1895,7 @@ void CvarValue2( const edict_t *pEnt, int requestID, const char *cvarName, const
 	{
 		CBasePlayer *player = (CBasePlayer * ) CBaseEntity::Instance( (edict_t*)pEnt );
 		player->m_fTouchMenu = !!atof( value );
-		CLIENT_COMMAND((edict_t*)pEnt, "touch_addbutton \"_coopm\" \"*black\" \"coopmenu\" 0 0.77 0.15 0.83 0 0 0 128 335\ntouch_addbutton \"_coopmt\" \"#COOP MENU\" \"\" 0 0.77 0.16 0.83 255 255 127 255 79 2\nm1\n");
+		CLIENT_COMMAND((edict_t*)pEnt, "touch_addbutton \"_coopm\" \"*black\" \"coopmenu\" 0 0.05 0.15 0.11 0 0 0 128 335\ntouch_addbutton \"_coopmt\" \"#COOP MENU\" \"\" 0 0.05 0.16 0.11 255 255 127 255 79 2\nm1\n");
 	}
 
 }
