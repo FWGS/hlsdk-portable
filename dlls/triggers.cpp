@@ -1856,9 +1856,9 @@ bool CoopGetSpawnPoint( Vector *origin, Vector *angles)
 		if( mp_unduck.value && g_fSavedDuck && !g_SavedCoords.fUsed )
 			UTIL_TraceHull( point, point + angle * 100, missile, head_hull, NULL, &tr );
 		else
-			UTIL_TraceHull( point, point + angle * 100, missile, human_hull, NULL, &tr );
+			UTIL_TraceHull( point, point + angle * 100, ignore_monsters, human_hull, NULL, &tr );
 
-		if( !tr.fStartSolid && !tr.fAllSolid )
+		if( !tr.fStartSolid && !tr.fAllSolid || ENTINDEX( tr.pHit ) && ENTINDEX( tr.pHit ) <= gpGlobals->maxClients )
 		{
 			//g_SavedCoords.triggerorigin = tr.vecEndPos;
 			//g_SavedCoords.validspawnpoint = true;
