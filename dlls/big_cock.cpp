@@ -13,6 +13,10 @@
 #include "nodes.h"
 #include "player.h"
 
+#define WEAPON_BIG_COCK 18
+#define BIG_COCK_WEIGHT 21
+
+
 enum glock_e {
 	GLOCK_IDLE1 = 0,
 	GLOCK_IDLE2,
