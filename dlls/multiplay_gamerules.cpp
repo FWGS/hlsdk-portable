@@ -225,72 +225,75 @@ BOOL CHalfLifeMultiplay::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 	if( g_VoiceGameMgr.ClientCommand( pPlayer, pcmd ) )
 		return TRUE;
 #endif
-	if( FStrEq( pcmd, "joincoop" ) )
+	if( mp_coop.value )
 	{
-		if( pPlayer->m_state == STATE_SPECTATOR_BEGIN )
-			SpawnPlayer( pPlayer );
-		else
-			ClientPrint( pPlayer->pev, HUD_PRINTCONSOLE, "You cannot use joincoop now!\n\n" );
-
-		return TRUE;
-	}
-	if( FStrEq( pcmd, "menuselect" ) )
-	{
-		int imenu = atoi( CMD_ARGV( 1 ) );
-
-		switch( pPlayer->m_state )
+		if( FStrEq( pcmd, "joincoop" ) )
 		{
-			case STATE_SPECTATOR_BEGIN:
-			case STATE_SPECTATOR:
-				if( imenu == 1 )
-				{
-					SpawnPlayer( pPlayer );
-					pPlayer->m_state = STATE_SPAWNED;
-				}
-				if( imenu == 2 )
-				{
-					pPlayer->m_state = STATE_SPECTATOR;
-					CLIENT_COMMAND( pPlayer->edict(), "touch_show _coopm*\n" );
-				}
-			break;
-			case STATE_SPAWNED:
-				if( g_iMenu )
-				{
-					CoopProcessMenu( pPlayer, imenu );
-					return TRUE;
-				}
-				if( imenu == 1 )
-				{
-					pPlayer->RemoveAllItems( TRUE );
-					SpawnPlayer( pPlayer );
-				}
-				if( imenu == 2 )
-				{
-					UTIL_CleanSpawnPoint( pPlayer->pev->origin, 150 );
-				}
-				if( imenu == 3 )
-				{
-					pPlayer->RemoveAllItems( TRUE );
-					BecomeSpectator( pPlayer );
-					pPlayer->m_state = STATE_SPECTATOR;
-				}
-				if( imenu == 4 )
-				{
-					CoopVoteMenu( pPlayer );
-				}
-			default:
-			break;
-		}
-		return TRUE;
-	}
-	if( FStrEq( pcmd, "coopmenu" ) )
-	{
-		if( !g_iMenu )
-			CoopMenu( pPlayer );
-		else
-			ClientPrint( pPlayer->pev, HUD_PRINTCONSOLE, "You cannot use coopmenu now!\n\n" );
+			if( pPlayer->m_state == STATE_SPECTATOR_BEGIN )
+				SpawnPlayer( pPlayer );
+			else
+				ClientPrint( pPlayer->pev, HUD_PRINTCONSOLE, "You cannot use joincoop now!\n\n" );
 
-		return TRUE;
+			return TRUE;
+		}
+		if( FStrEq( pcmd, "menuselect" ) )
+		{
+			int imenu = atoi( CMD_ARGV( 1 ) );
+
+			switch( pPlayer->m_state )
+			{
+				case STATE_SPECTATOR_BEGIN:
+				case STATE_SPECTATOR:
+					if( imenu == 1 )
+					{
+						SpawnPlayer( pPlayer );
+						pPlayer->m_state = STATE_SPAWNED;
+					}
+					if( imenu == 2 )
+					{
+						pPlayer->m_state = STATE_SPECTATOR;
+						CLIENT_COMMAND( pPlayer->edict(), "touch_show _coopm*\n" );
+					}
+				break;
+				case STATE_SPAWNED:
+					if( g_iMenu )
+					{
+						CoopProcessMenu( pPlayer, imenu );
+						return TRUE;
+					}
+					if( imenu == 1 )
+					{
+						pPlayer->RemoveAllItems( TRUE );
+						SpawnPlayer( pPlayer );
+					}
+					if( imenu == 2 )
+					{
+						UTIL_CleanSpawnPoint( pPlayer->pev->origin, 150 );
+					}
+					if( imenu == 3 )
+					{
+						pPlayer->RemoveAllItems( TRUE );
+						BecomeSpectator( pPlayer );
+						pPlayer->m_state = STATE_SPECTATOR;
+					}
+					if( imenu == 4 )
+					{
+						CoopVoteMenu( pPlayer );
+					}
+				default:
+				break;
+			}
+			return TRUE;
+		}
+		if( FStrEq( pcmd, "coopmenu" ) )
+		{
+			if( !g_iMenu )
+				CoopMenu( pPlayer );
+			else
+				ClientPrint( pPlayer->pev, HUD_PRINTCONSOLE, "You cannot use coopmenu now!\n\n" );
+
+			return TRUE;
+		}
 	}
 
 	return CGameRules::ClientCommand( pPlayer, pcmd );
@@ -652,16 +655,20 @@ void CHalfLifeMultiplay::InitHUD( CBasePlayer *pl )
 	if( pl->m_state <= STATE_CONNECTED )
 		ClientPutInServer( pl->edict() );
 
-	if( pl->m_state == STATE_SPECTATOR_BEGIN )
+	if( mp_coop.value )
 	{
 
-		if( mp_coop.value )
+		if( pl->m_state == STATE_SPECTATOR_BEGIN )
 		{
-			const char *menu[] = {
-				"Join coop",
-				"Join spectators"
-			};
-			ShowMenu( pl, "COOP SERVER", ARRAYSIZE( menu ), menu );
+
+			if( mp_coop.value )
+			{
+				const char *menu[] = {
+					"Join coop",
+					"Join spectators"
+				};
+				ShowMenu( pl, "COOP SERVER", ARRAYSIZE( menu ), menu );
+			}
 		}
 	}
 
@@ -781,7 +788,7 @@ void CHalfLifeMultiplay::PlayerSpawn( CBasePlayer *pPlayer )
 		return;
 	}
 
-	if( pPlayer->m_state == STATE_CONNECTED )
+	if( mp_spectator.value && pPlayer->m_state == STATE_CONNECTED )
 	{
 		pPlayer->m_state = STATE_SPECTATOR_BEGIN;
 		pPlayer->RemoveAllItems( TRUE );
@@ -789,7 +796,7 @@ void CHalfLifeMultiplay::PlayerSpawn( CBasePlayer *pPlayer )
 		return;
 	}
 
-	if( pPlayer->m_state == STATE_POINT_SELECT && !(pPlayer->pev->flags & FL_SPECTATOR) )
+	if( mp_coop.value && pPlayer->m_state == STATE_POINT_SELECT && !(pPlayer->pev->flags & FL_SPECTATOR) )
 	{
 		pPlayer->RemoveAllItems( TRUE );
 		BecomeSpectator( pPlayer );

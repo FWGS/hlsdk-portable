@@ -27,6 +27,7 @@
 #include	"scripted.h"
 #include	"weapons.h"
 #include	"soundent.h"
+#include	"game.h"
 
 //=========================================================
 // Monster's Anim Events Go Here
@@ -512,9 +513,7 @@ int CBarney::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float 
 				// Alright, now I'm pissed!
 				PlaySentence( "BA_MAD", 4, VOL_NORM, ATTN_NORM );
 
-				if( pevAttacker->health <= 10 )
-					Forget( bits_MEMORY_PROVOKED );
-				else
+				if( !mp_coop_noangry.value )
 					Remember( bits_MEMORY_PROVOKED );
 				StopFollowing( TRUE );
 			}

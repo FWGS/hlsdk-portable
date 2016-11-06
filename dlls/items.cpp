@@ -177,7 +177,8 @@ CBaseEntity* CItem::Respawn( void )
 
 	SetThink( &CItem::Materialize );
 	pev->nextthink = g_pGameRules->FlItemRespawnTime( this );
-	pev->target = 0;
+	if( mp_coop.value)
+		pev->target = 0;
 	return this;
 }
 

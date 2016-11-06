@@ -595,9 +595,10 @@ void CBaseDoor::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE use
 			// allow open door that closed sometime
 			if( pev->size.x < 50 || pev->size.y < 50 )
 				m_fActivated = true;
+			if( !pev->target && m_savedtarget )
+				pev->target = m_savedtarget, m_savedtarget = 0;
 		}
-		if( !pev->target && m_savedtarget )
-			pev->target = m_savedtarget, m_savedtarget = 0;
+
 		DoorActivate();
 	}
 }

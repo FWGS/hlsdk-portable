@@ -26,6 +26,7 @@
 #include	"scripted.h"
 #include	"animation.h"
 #include	"soundent.h"
+#include	"game.h"
 
 #define NUM_SCIENTIST_HEADS		4 // four heads available for scientist model
 
@@ -745,9 +746,7 @@ int CScientist::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, flo
 {
 	if( pevInflictor && pevInflictor->flags & FL_CLIENT )
 	{
-		if( pevAttacker->health <= 10 )
-			Forget( bits_MEMORY_PROVOKED );
-		else
+		if( !mp_coop_noangry.value )
 			Remember( bits_MEMORY_PROVOKED );
 
 		StopFollowing( TRUE );

@@ -55,6 +55,9 @@ extern cvar_t mp_coop_disabledmap;
 extern cvar_t mp_unduck;
 extern cvar_t mp_semclip;
 extern cvar_t mp_coop_reconnect_hack;
+extern cvar_t mp_coop_noangry;
+extern cvar_t mp_spectator;
+
 extern bool g_fSavedDuck;
 extern bool g_fPause;
 
