@@ -2201,6 +2201,8 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 	g_iMenu = 0;
 	g_GlobalMenu.m_iConfirm = 0;
 	// loop through all clients, reset state
+	if( mp_coop_changelevel.value )
+	{
 	for( int i = 1; i <= gpGlobals->maxClients; i++ )
 	{
 		CBasePlayer *plr = (CBasePlayer*)UTIL_PlayerByIndex( i );
@@ -2225,6 +2227,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 		}
 	}
 	g_fPause = true;
+	}
 	s_SavedCoords.fUsed = m_bUsed;
 	s_SavedCoords.valid = valid;
 	if( mp_coop_reconnect_hack.value )
