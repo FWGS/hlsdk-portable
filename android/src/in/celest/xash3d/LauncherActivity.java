@@ -56,7 +56,7 @@ public class LauncherActivity extends Activity {
 		launcher.addView(startButton);
         setContentView(launcher);
 		mPref = getSharedPreferences("mod", 0);
-		extractPAK(this, false);
+		InstallReceiver.extractPAK(this, false);
 		cmdArgs.setText(mPref.getString("argv","-dev 3 -log"));
 	}
 
@@ -77,27 +77,4 @@ public class LauncherActivity extends Activity {
 		intent.putExtra("pakfile", getFilesDir().getAbsolutePath() + "/extras.pak" );
 		startActivity(intent);
     }
-
-        public static void extractPAK(Context context, Boolean force) {
-                if(isExtracting)
-                        return;
-                isExtracting = true;
-                try {
-                if( mPref == null )
-                        mPref = context.getSharedPreferences("mod", 0);
-                if( mPref.getInt( "pakversion", 0 ) == PAK_VERSION && !force )
-                        return;
-                        extractFile(context, "extras.pak");
-
-                        SharedPreferences.Editor editor = mPref.edit();
-                        editor.putInt( "pakversion", PAK_VERSION );
-                        editor.commit();
-                        editor.apply();
-                } catch( Exception e )
-                {
-                        Log.e( TAG, "Failed to extract PAK:" + e.toString() );
-                }
-                isExtracting = false;
-        }
-
 }
