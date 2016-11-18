@@ -2049,7 +2049,7 @@ void CMessage::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useT
 {
 	CBaseEntity *pPlayer = NULL;
 
-	if( pev->spawnflags & SF_MESSAGE_ALL )
+	if( pev->spawnflags & SF_MESSAGE_ALL || mp_coop.value )
 		UTIL_ShowMessageAll( STRING( pev->message ) );
 	else
 	{
