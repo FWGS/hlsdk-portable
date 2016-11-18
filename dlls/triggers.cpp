@@ -2872,6 +2872,8 @@ public:
 	void KeyValue( KeyValueData *pkvd );
 	void Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
 	void EXPORT FollowTarget( void );
+	void EXPORT CoopThink( void );
+	void EXPORT CoopFollowTarget( void );
 	void Move( void );
 
 	virtual int Save( CSave &save );
@@ -2956,6 +2958,96 @@ void CTriggerCamera::KeyValue( KeyValueData *pkvd )
 		CBaseDelay::KeyValue( pkvd );
 }
 
+void CTriggerCamera::CoopThink()
+{
+	m_hPlayer = NULL;
+
+	for( int i = 1; i <= gpGlobals->maxClients; i++ )
+	{
+		CBasePlayer *plr = (CBasePlayer*)UTIL_PlayerByIndex( i );
+
+		// for all players
+		if( plr && plr->IsPlayer() )
+		{
+			m_hPlayer = plr;
+			SET_VIEW( plr->edict(), edict() );
+			
+			SET_MODEL( ENT( pev ), STRING( plr->pev->model ) );
+
+			if( FBitSet( pev->spawnflags, SF_CAMERA_PLAYER_TAKECONTROL ) )
+			{
+				( (CBasePlayer *)plr )->EnableControl( FALSE );
+			}
+		}
+	}
+	if( !m_hPlayer )
+	{
+		SetThink( &CTriggerCamera::CoopThink );
+		pev->nextthink = gpGlobals->time + 1;
+		return;
+	}
+	m_flReturnTime = gpGlobals->time + m_flWait;
+	pev->speed = m_initialSpeed;
+	m_targetSpeed = m_initialSpeed;
+
+	if( FBitSet( pev->spawnflags, SF_CAMERA_PLAYER_TARGET ) )
+	{
+		m_hTarget = m_hPlayer;
+	}
+	else
+	{
+		m_hTarget = GetNextTarget();
+	}
+
+	// Nothing to look at!
+	if( m_hTarget == NULL )
+	{
+		return;
+	}
+
+	
+
+	if( m_sPath )
+	{
+		m_pentPath = Instance( FIND_ENTITY_BY_TARGETNAME( NULL, STRING( m_sPath ) ) );
+	}
+	else
+	{
+		m_pentPath = NULL;
+	}
+
+	m_flStopTime = gpGlobals->time;
+	if( m_pentPath )
+	{
+		if( m_pentPath->pev->speed != 0 )
+			m_targetSpeed = m_pentPath->pev->speed;
+		
+		m_flStopTime += m_pentPath->GetDelay();
+	}
+
+	// copy over player information
+	if( FBitSet(pev->spawnflags, SF_CAMERA_PLAYER_POSITION ) )
+	{
+		CBaseEntity *plr = m_hPlayer;
+		UTIL_SetOrigin( pev, plr->pev->origin + plr->pev->view_ofs );
+		pev->angles.x = -plr->pev->angles.x;
+		pev->angles.y = plr->pev->angles.y;
+		pev->angles.z = 0;
+		pev->velocity = plr->pev->velocity;
+	}
+	else
+	{
+		pev->velocity = Vector( 0, 0, 0 );
+	}
+
+	// follow the player down
+	SetThink( &CTriggerCamera::CoopFollowTarget );
+	pev->nextthink = gpGlobals->time;
+
+	m_moveDistance = 0;
+	Move();
+}
+
 void CTriggerCamera::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
 	if( !ShouldToggle( useType, m_state ) )
@@ -2968,10 +3060,20 @@ void CTriggerCamera::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYP
 		m_flReturnTime = gpGlobals->time;
 		return;
 	}
+
+	if( mp_coop.value )
+	{
+		CoopThink();
+		return;
+	}
+
 	if( !pActivator || !pActivator->IsPlayer() )
 	{
 		pActivator = CBaseEntity::Instance( g_engfuncs.pfnPEntityOfEntIndex( 1 ) );
 	}
+
+	if( !pActivator )
+		return;
 
 	m_hPlayer = pActivator;
 
@@ -3097,6 +3199,84 @@ void CTriggerCamera::FollowTarget()
 
 	Move();
 }
+
+void CTriggerCamera::CoopFollowTarget()
+{
+//	if( m_hPlayer == NULL )
+//		return;
+
+	if( m_hTarget == NULL || m_flReturnTime < gpGlobals->time )
+	{
+		for( int i = 1; i <= gpGlobals->maxClients; i++ )
+		{
+			CBasePlayer *plr = (CBasePlayer*)UTIL_PlayerByIndex( i );
+
+			// for all players
+			if( plr && plr->IsPlayer() )
+			{
+				SET_VIEW( plr->edict(), plr->edict() );
+				plr->EnableControl( TRUE );
+			}
+		}
+		SUB_UseTargets( this, USE_TOGGLE, 0 );
+		pev->avelocity = Vector( 0, 0, 0 );
+		m_state = 0;
+		return;
+	}
+
+	for( int i = 1; i <= gpGlobals->maxClients; i++ )
+	{
+		CBasePlayer *plr = (CBasePlayer*)UTIL_PlayerByIndex( i );
+
+		// for all players
+		if( plr && plr->IsPlayer() )
+		{
+			SET_VIEW( plr->edict(), edict() );
+
+			if( FBitSet( pev->spawnflags, SF_CAMERA_PLAYER_TAKECONTROL ) )
+			{
+				plr->EnableControl( FALSE );
+			}
+		}
+	}
+
+	Vector vecGoal = UTIL_VecToAngles( m_hTarget->pev->origin - pev->origin );
+	vecGoal.x = -vecGoal.x;
+
+	if( pev->angles.y > 360 )
+		pev->angles.y -= 360;
+
+	if( pev->angles.y < 0 )
+		pev->angles.y += 360;
+
+	float dx = vecGoal.x - pev->angles.x;
+	float dy = vecGoal.y - pev->angles.y;
+
+	if( dx < -180 )
+		dx += 360;
+	if( dx > 180 )
+		dx = dx - 360;
+	
+	if( dy < -180 ) 
+		dy += 360;
+	if( dy > 180 ) 
+		dy = dy - 360;
+
+	pev->avelocity.x = dx * 40 * gpGlobals->frametime;
+	pev->avelocity.y = dy * 40 * gpGlobals->frametime;
+
+	if( !( FBitSet( pev->spawnflags, SF_CAMERA_PLAYER_TAKECONTROL ) ) )
+	{
+		pev->velocity = pev->velocity * 0.8;
+		if( pev->velocity.Length() < 10.0 )
+			pev->velocity = g_vecZero;
+	}
+
+	pev->nextthink = gpGlobals->time;
+
+	Move();
+}
+
 
 void CTriggerCamera::Move()
 {
