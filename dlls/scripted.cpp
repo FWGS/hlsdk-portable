@@ -1157,22 +1157,10 @@ public:
 	void Spawn( void );
 	void Die( void );
 	int Classify( void );
-	virtual int ObjectCaps( void );
+	virtual int ObjectCaps( void ) { return ( CBaseMonster::ObjectCaps() & ~FCAP_ACROSS_TRANSITION ); }
 };
 
 LINK_ENTITY_TO_CLASS( monster_furniture, CFurniture )
-
-int CFurniture::ObjectCaps( void )
-{
-	int caps = ( CBaseMonster::ObjectCaps() & ~FCAP_ACROSS_TRANSITION );
-
-	if( FStrEq( STRING( gpGlobals->mapname ), "gate18" ) )
-	{
-		caps |= FCAP_DONT_SAVE;
-	}
-
-	return caps;
-}
 
 //=========================================================
 // Furniture is killed

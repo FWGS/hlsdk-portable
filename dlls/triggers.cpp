@@ -779,20 +779,6 @@ void CTargetCDAudio::Play( void )
 
 void CTriggerHurt::Spawn( void )
 {
-	//
-	// The Gate:
-	//
-	// Remove to prevent a crash.
-	//
-	if( FStrEq( STRING( gpGlobals->mapname ), "tombtest2" ) )
-	{
-		if( !FStringNull( pev->targetname ) && FStrEq( STRING( pev->targetname ), "secondspikes" ) )
-		{
-			UTIL_Remove( this );
-			return;
-		}
-	}
-
 	InitTrigger();
 	SetTouch( &CBaseTrigger::HurtTouch );
 
