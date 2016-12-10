@@ -90,6 +90,7 @@ We have a minimum width of 1-320 - we could have the field widths scale with it?
 
 // X positions
 // relative to the side of the scoreboard
+#define COLDICE_FRAGS   600
 #define NAME_RANGE_MIN  20
 #define NAME_RANGE_MAX  145
 #define KILLS_RANGE_MIN 130
@@ -115,8 +116,8 @@ int CHudScoreboard::Draw( float fTime )
 	int FAR_RIGHT;
 	gHUD.m_iNoConsolePrint &= ~( 1 << 0 );
 
-	if( !m_iShowscoresHeld && gHUD.m_Health.m_iHealth > 0 && !gHUD.m_iIntermission )
-		return 1;
+//	if( !m_iShowscoresHeld && gHUD.m_Health.m_iHealth > 0 && !gHUD.m_iIntermission )
+//		return 1;
 	
 	gHUD.m_iNoConsolePrint |= 1 << 0;
 
@@ -145,15 +146,18 @@ int CHudScoreboard::Draw( float fTime )
 	FAR_RIGHT = can_show_packetloss ? PL_RANGE_MAX : PING_RANGE_MAX;
 	FAR_RIGHT += 5;
 	gHUD.DrawDarkRectangle( xpos - 5, ypos - 5, FAR_RIGHT, ROW_RANGE_MAX );
-	if( !gHUD.m_Teamplay )
-		gHUD.DrawHudString( xpos, ypos, NAME_RANGE_MAX + xpos_rel, "Player", 255, 140, 0 );
-	else
-		gHUD.DrawHudString( xpos, ypos, NAME_RANGE_MAX + xpos_rel, "Teams", 255, 140, 0 );
+	//if( !gHUD.m_Teamplay )
+	if(  m_iShowscoresHeld )
+	{
+		 gHUD.DrawHudString( xpos, ypos, ScreenWidth, "Connected Cold Ice Players", 0, 113, 230 );
+	}
+	//else
+	//gHUD.DrawHudString( xpos, ypos, NAME_RANGE_MAX + xpos_rel, "Teams", 0, 113, 230 );
 
-	gHUD.DrawHudStringReverse( KILLS_RANGE_MAX + xpos_rel, ypos, 0, "kills", 255, 140, 0 );
-	gHUD.DrawHudString( DIVIDER_POS + xpos_rel, ypos, ScreenWidth, "/", 255, 140, 0 );
-	gHUD.DrawHudString( DEATHS_RANGE_MIN + xpos_rel + 5, ypos, ScreenWidth, "deaths", 255, 140, 0 );
-	gHUD.DrawHudString( PING_RANGE_MAX + xpos_rel - 35, ypos, ScreenWidth, "latency", 255, 140, 0 );
+	//gHUD.DrawHudStringReverse( KILLS_RANGE_MAX + xpos_rel, ypos, 0, "kills", 0, 113, 230 );
+	//gHUD.DrawHudString( DIVIDER_POS + xpos_rel, ypos, ScreenWidth, "/", 0, 113, 230 );
+	//gHUD.DrawHudString( DEATHS_RANGE_MIN + xpos_rel + 5, ypos, ScreenWidth, "deaths", 0, 113, 230 );
+	//gHUD.DrawHudString( PING_RANGE_MAX + xpos_rel - 35, ypos, ScreenWidth, "latency", 0, 113, 230 );
 
 	if( can_show_packetloss )
 	{
@@ -163,7 +167,7 @@ int CHudScoreboard::Draw( float fTime )
 	list_slot += 1.2;
 	ypos = ROW_RANGE_MIN + ( list_slot * ROW_GAP );
 	xpos = NAME_RANGE_MIN + xpos_rel;
-	FillRGBA( xpos - 4, ypos, FAR_RIGHT -2, 1, 255, 140, 0, 255 );  // draw the seperator line
+	//FillRGBA( xpos - 4, ypos, FAR_RIGHT -2, 1, 255, 0, 113, 230 );  // draw the seperator line
 
 	list_slot += 0.8;
 
@@ -268,23 +272,23 @@ int CHudScoreboard::Draw( float fTime )
 		if( team_info->ownteam ) // if it is their team, draw the background different color
 		{
 			// overlay the background in blue,  then draw the score text over it
-			FillRGBA( NAME_RANGE_MIN + xpos_rel - 5, ypos, FAR_RIGHT, ROW_GAP, 0, 0, 255, 70 );
+			//FillRGBA( NAME_RANGE_MIN + xpos_rel - 5, ypos, FAR_RIGHT, ROW_GAP, 0, 0, 255, 70 );
 		}
 
 		// draw their name (left to right)
-		gHUD.DrawHudString( xpos, ypos, NAME_RANGE_MAX + xpos_rel, team_info->name, r, g, b );
+		//gHUD.DrawHudString( xpos, ypos, NAME_RANGE_MAX + xpos_rel, team_info->name, r, g, b );
 
 		// draw kills (right to left)
 		xpos = KILLS_RANGE_MAX + xpos_rel;
-		gHUD.DrawHudNumberString( xpos, ypos, KILLS_RANGE_MIN + xpos_rel, team_info->frags, r, g, b );
+		//gHUD.DrawHudNumberString( xpos, ypos, KILLS_RANGE_MIN + xpos_rel, team_info->frags, r, g, b );
 
 		// draw divider
 		xpos = DIVIDER_POS + xpos_rel;
-		gHUD.DrawHudString( xpos, ypos, xpos + 20, "/", r, g, b );
+		//gHUD.DrawHudString( xpos, ypos, xpos + 20, "/", r, g, b );
 
 		// draw deaths
 		xpos = DEATHS_RANGE_MAX + xpos_rel;
-		gHUD.DrawHudNumberString( xpos, ypos, DEATHS_RANGE_MIN + xpos_rel, team_info->deaths, r, g, b );
+		//gHUD.DrawHudNumberString( xpos, ypos, DEATHS_RANGE_MIN + xpos_rel, team_info->deaths, r, g, b );
 
 		// draw ping
 		// draw ping & packetloss
@@ -292,7 +296,7 @@ int CHudScoreboard::Draw( float fTime )
 		sprintf( buf, "%d", team_info->ping );
 		xpos = ( ( PING_RANGE_MAX - PING_RANGE_MIN ) / 2) + PING_RANGE_MIN + xpos_rel + 25;
 		UnpackRGB( r, g, b, RGB_YELLOWISH );
-		gHUD.DrawHudStringReverse( xpos, ypos, xpos - 50, buf, r, g, b );
+		//gHUD.DrawHudStringReverse( xpos, ypos, xpos - 50, buf, r, g, b );
 
 		//  Packetloss removed on Kelly 'shipping nazi' Bailey's orders
 		if( can_show_packetloss )
@@ -380,63 +384,76 @@ int CHudScoreboard::DrawPlayers( int xpos_rel, float list_slot, int nameoffset, 
 		int r = 255, g = 255, b = 255;
 		float *colors = GetClientColor( best_player );
 		r *= colors[0], g *= colors[1], b *= colors[2];
-		if( best_player == m_iLastKilledBy && m_fLastKillTime && m_fLastKillTime > gHUD.m_flTime )
+		if( m_iShowscoresHeld )
 		{
 			if( pl_info->thisplayer )
-			{
-				// green is the suicide color? i wish this could do grey...
-				FillRGBA( NAME_RANGE_MIN + xpos_rel - 5, ypos, FAR_RIGHT, ROW_GAP, 80, 155, 0, 70 );
-			}
+				gHUD.DrawHudString( xpos + nameoffset, ypos, NAME_RANGE_MAX + xpos_rel, pl_info->name, 0, 113, 230 );
 			else
-			{
-				// Highlight the killers name - overlay the background in red,  then draw the score text over it
-				FillRGBA( NAME_RANGE_MIN + xpos_rel - 5, ypos, FAR_RIGHT, ROW_GAP, 255, 0, 0, ( (float)15 * (float)( m_fLastKillTime - gHUD.m_flTime ) ) );
-			}
-		}
-		else if( pl_info->thisplayer ) // if it is their name, draw it a different color
-		{
-			// overlay the background in blue,  then draw the score text over it
-			FillRGBA( NAME_RANGE_MIN + xpos_rel - 5, ypos, FAR_RIGHT, ROW_GAP, 0, 0, 255, 70 );
-		}
+				gHUD.DrawHudString( xpos + nameoffset, ypos, NAME_RANGE_MAX + xpos_rel, pl_info->name, r, g, b );
+                }
 
-		// draw their name (left to right)
-		gHUD.DrawHudString( xpos + nameoffset, ypos, NAME_RANGE_MAX + xpos_rel, pl_info->name, r, g, b );
+		ypos = 12;
+		xpos = ( ScreenWidth - 30 - 100 / 2 ) - 40;
 
-		// draw kills (right to left)
-		xpos = KILLS_RANGE_MAX + xpos_rel;
-		gHUD.DrawHudNumberString( xpos, ypos, KILLS_RANGE_MIN + xpos_rel, g_PlayerExtraInfo[best_player].frags, r, g, b );
-
-		// draw divider
-		xpos = DIVIDER_POS + xpos_rel;
-		gHUD.DrawHudString( xpos, ypos, xpos + 20, "/", r, g, b );
-
-		// draw deaths
-		xpos = DEATHS_RANGE_MAX + xpos_rel;
-		gHUD.DrawHudNumberString( xpos, ypos, DEATHS_RANGE_MIN + xpos_rel, g_PlayerExtraInfo[best_player].deaths, r, g, b );
-
+		// draw place value
+		if( pl_info->thisplayer && list_slot == 2 )
+			gHUD.DrawHudString( xpos, ypos, ScreenWidth, "1st", 0, 255, 0 );
+		else if( pl_info->thisplayer && list_slot == 3 )
+			gHUD.DrawHudString( xpos, ypos, ScreenWidth, "2nd", 0, 255, 0 );
+		else if( pl_info->thisplayer && list_slot == 4 )
+			gHUD.DrawHudString( xpos, ypos, ScreenWidth, "3rd", 0, 255, 0 );
+		else if( pl_info->thisplayer && list_slot == 5 )
+			gHUD.DrawHudString( xpos, ypos, ScreenWidth, "4th", 255, 128, 0 );
+		else if( pl_info->thisplayer && list_slot == 6 )
+			gHUD.DrawHudString( xpos, ypos, ScreenWidth, "5th", 255, 128, 0 );
+		else if( pl_info->thisplayer && list_slot == 7 )
+			gHUD.DrawHudString( xpos, ypos, ScreenWidth, "6th", 255, 128, 0 );
+		else if( pl_info->thisplayer && list_slot == 8 )
+			gHUD.DrawHudString( xpos, ypos, ScreenWidth, "7th", 255, 128, 0 );
+		else if( pl_info->thisplayer && list_slot == 9 )
+			gHUD.DrawHudString( xpos, ypos, ScreenWidth, "8th", 255, 128, 0 );
+		else if( pl_info->thisplayer && list_slot == 10 )
+			gHUD.DrawHudString( xpos, ypos, ScreenWidth, "9th", 255, 128, 0 );
+		else if( pl_info->thisplayer && list_slot == 11 )
+			gHUD.DrawHudString( xpos, ypos, ScreenWidth, "10th", 255, 128, 0 );
+		else if( pl_info->thisplayer && list_slot >= 11 )
+			gHUD.DrawHudString( xpos, ypos, ScreenWidth, ">10th", 255, 0, 0 );
 		// draw ping & packetloss
 		static char buf[64];
 		sprintf( buf, "%d", g_PlayerInfoList[best_player].ping );
-		xpos = ( ( PING_RANGE_MAX - PING_RANGE_MIN ) / 2 ) + PING_RANGE_MIN + xpos_rel + 25;
-		gHUD.DrawHudStringReverse( xpos, ypos, xpos - 50, buf, r, g, b );
+		xpos = ((PING_RANGE_MAX - PING_RANGE_MIN) / 2) + PING_RANGE_MIN + xpos_rel;
+		ypos = ROW_RANGE_MIN + (list_slot * ROW_GAP);
 
-		//  Packetloss removed on Kelly 'shipping nazi' Bailey's orders
-		if( can_show_packetloss )
+		if( m_iShowscoresHeld )
 		{
-			if( g_PlayerInfoList[best_player].packetloss >= 63 )
-			{
-				UnpackRGB( r, g, b, RGB_REDISH );
-				sprintf( buf, " !!!!" );
-			}
-			else
-			{
-				sprintf( buf, "  %d", g_PlayerInfoList[best_player].packetloss );
-			}
+			gHUD.DrawHudStringReverse( xpos, ypos, xpos - 50, buf, r, g, b );
 
-			xpos = ( ( PL_RANGE_MAX - PL_RANGE_MIN ) / 2 ) + PL_RANGE_MIN + xpos_rel + 25;
+			xpos = xpos + 50;
 
-			gHUD.DrawHudString( xpos, ypos, xpos+50, buf, r, g, b );
-		}
+			// draw kills (right to left)
+			xpos = KILLS_RANGE_MAX + xpos_rel;
+			gHUD.DrawHudNumberString( xpos, ypos, KILLS_RANGE_MIN + xpos_rel, m_PlayerExtraInfo[best_player].frags, r, g, b );
+
+			ypos = 60;
+			xpos = ( ScreenWidth - 30 - 100 / 2 ) - 40;
+			gHUD.DrawHudString( xpos, ypos, ScreenWidth, "--Cold Ice--", 0, 113, 230 );
+			gHUD.DrawHudString( xpos, ypos + 12, ScreenWidth, " Build 1.99a", 255, 255, 255 );
+			gHUD.DrawHudString( xpos, ypos + 24, ScreenWidth, " *11/12/99*", 255, 255, 255 );
+			gHUD.DrawHudString( xpos, ypos + 48, ScreenWidth, "-Smart Hud-", 0, 113, 230 );
+			gHUD.DrawHudString( xpos, ypos + 60, ScreenWidth, " Build .99a", 255, 255, 255 );
+                }
+
+		int x, y;
+
+		if( pl_info->thisplayer )
+                {
+			y = 12;
+			x = ScreenWidth - 30 - 100/2 ;
+			gHUD.DrawHudString( x - 40, 0, ScreenWidth, pl_info->name, 0, 113, 230 );
+			gHUD.DrawHudNumberString( x + 40, y, DEATHS_RANGE_MIN + xpos_rel, m_PlayerExtraInfo[best_player].deaths, r, g, b );
+			gHUD.DrawHudNumberString( x + 10, y, DEATHS_RANGE_MIN + xpos_rel, m_PlayerExtraInfo[best_player].frags, r, g, b );
+			gHUD.DrawHudStringReverse( x + 80, y, DEATHS_RANGE_MIN + xpos_rel, buf, 255, 255, 255 );
+                }
 
 		pl_info->name = NULL;  // set the name to be NULL, so this client won't get drawn again
 		list_slot++;

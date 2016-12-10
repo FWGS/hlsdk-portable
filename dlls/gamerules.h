@@ -65,6 +65,13 @@ public:
 	virtual void Think( void ) = 0;// GR_Think - runs every server frame, should handle any timer tasks, periodic events, etc.
 	virtual BOOL IsAllowedToSpawn( CBaseEntity *pEntity ) = 0;  // Can this item spawn (eg monsters don't spawn in deathmatch).
 
+	// rocket arena
+	virtual BOOL IsRocketArena( void ) { return FALSE; };
+	// railgun arena
+	virtual BOOL IsRailArena( void ) { return FALSE; };
+	// FW arena
+	virtual BOOL IsFWArena( void ) { return FALSE; };
+
 	virtual BOOL FAllowFlashlight( void ) = 0;// Are players allowed to switch on their flashlight?
 	virtual BOOL FShouldSwitchWeapon( CBasePlayer *pPlayer, CBasePlayerItem *pWeapon ) = 0;// should the player switch to this weapon?
 	virtual BOOL GetNextBestWeapon( CBasePlayer *pPlayer, CBasePlayerItem *pCurrentWeapon ) = 0;// I can't use this weapon anymore, get me the next best one.
@@ -74,7 +81,7 @@ public:
 	virtual BOOL IsDeathmatch( void ) = 0;//is this a deathmatch game?
 	virtual BOOL IsTeamplay( void ) { return FALSE; };// is this deathmatch game being played with team rules?
 	virtual BOOL IsCoOp( void ) = 0;// is this a coop game?
-	virtual const char *GetGameDescription( void ) { return "Half-Life"; }  // this is the game name that gets seen in the server browser
+	virtual const char *GetGameDescription( void ) { return "Cold Ice"; }  // this is the game name that gets seen in the server browser
 	
 	// Client connection/disconnection
 	virtual BOOL ClientConnected( edict_t *pEntity, const char *pszName, const char *pszAddress, char szRejectReason[128] ) = 0;// a client just connected to the server (player hasn't spawned yet)
@@ -274,6 +281,8 @@ public:
 	virtual BOOL IsDeathmatch( void );
 	virtual BOOL IsCoOp( void );
 
+	virtual const char *GetGameDescription( void ) { return "Cold Ice DM"; }
+
 	// Client connection/disconnection
 	// If ClientConnected returns FALSE, the connection is rejected and the user is provided the reason specified in
 	//  svRejectReason
@@ -349,6 +358,9 @@ public:
 	// Monsters
 	virtual BOOL FAllowMonsters( void );
 
+	// Cold Ice Menu
+	BOOL ClientCommand( CBasePlayer *pPlayer, const char *pcmd );
+
 	// Immediately end a multiplayer game
 	virtual void EndMultiplayerGame( void ) { GoToIntermission(); }
 
@@ -361,3 +373,225 @@ protected:
 };
 
 extern DLL_GLOBAL CGameRules *g_pGameRules;
+
+/=========================================================
+// CRocketArena
+//=========================================================
+class CRocketArena : public CGameRules
+{
+public:
+	CRocketArena();
+
+	// GR_Think
+	virtual void Think( void );
+	virtual void RefreshSkillData( void );
+	virtual BOOL IsAllowedToSpawn( CBaseEntity *pEntity );
+	virtual BOOL FAllowFlashlight( void );
+	virtual BOOL FShouldSwitchWeapon( CBasePlayer *pPlayer, CBasePlayerItem *pWeapon );
+	virtual BOOL GetNextBestWeapon( CBasePlayer *pPlayer, CBasePlayerItem *pCurrentWeapon );
+
+	// Functions to verify the single/multiplayer status of a game
+	virtual BOOL IsMultiplayer( void );
+	virtual BOOL IsDeathmatch( void );
+	virtual BOOL IsCoOp( void );
+	virtual BOOL IsRocketArena( void );
+
+	virtual const char *GetGameDescription( void ) { return "Cold Ice Rocket Arena"; }  // this is the game name that gets seen in the server browser
+
+	virtual BOOL ClientConnected( edict_t *pEntity, const char *pszName, const char *pszAddress, char szRejectReason[ 128 ] );
+	virtual void InitHUD( CBasePlayer *pl );		// the client dll is ready for updating
+	virtual void ClientDisconnected( edict_t *pClient );
+	virtual void UpdateGameMode( CBasePlayer *pPlayer );  // the client needs to be informed of the current game mode
+	virtual float FlPlayerFallDamage( CBasePlayer *pPlayer );
+	virtual BOOL  FPlayerCanTakeDamage( CBasePlayer *pPlayer, CBaseEntity *pAttacker );
+	virtual void PlayerSpawn( CBasePlayer *pPlayer );
+	virtual void PlayerThink( CBasePlayer *pPlayer );
+	virtual BOOL FPlayerCanRespawn( CBasePlayer *pPlayer );
+	virtual float FlPlayerSpawnTime( CBasePlayer *pPlayer );
+	virtual edict_t *GetPlayerSpawnSpot( CBasePlayer *pPlayer );
+	virtual BOOL AllowAutoTargetCrosshair( void );
+	virtual int IPointsForKill( CBasePlayer *pAttacker, CBasePlayer *pKilled );
+	virtual void PlayerKilled( CBasePlayer *pVictim, entvars_t *pKiller, entvars_t *pInflictor );
+	virtual void DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, entvars_t *pInflictor );
+	virtual void PlayerGotWeapon( CBasePlayer *pPlayer, CBasePlayerItem *pWeapon );
+	virtual BOOL CanHavePlayerItem( CBasePlayer *pPlayer, CBasePlayerItem *pWeapon );
+	virtual int WeaponShouldRespawn( CBasePlayerItem *pWeapon );
+	virtual float FlWeaponRespawnTime( CBasePlayerItem *pWeapon );
+	virtual float FlWeaponTryRespawn( CBasePlayerItem *pWeapon );
+	virtual Vector VecWeaponRespawnSpot( CBasePlayerItem *pWeapon );
+	virtual BOOL CanHaveItem( CBasePlayer *pPlayer, CItem *pItem );
+	virtual void PlayerGotItem( CBasePlayer *pPlayer, CItem *pItem );
+	virtual int ItemShouldRespawn( CItem *pItem );
+	virtual float FlItemRespawnTime( CItem *pItem );
+	virtual Vector VecItemRespawnSpot( CItem *pItem );
+	virtual void PlayerGotAmmo( CBasePlayer *pPlayer, char *szName, int iCount );
+	virtual int AmmoShouldRespawn( CBasePlayerAmmo *pAmmo );
+	virtual float FlAmmoRespawnTime( CBasePlayerAmmo *pAmmo );
+	virtual Vector VecAmmoRespawnSpot( CBasePlayerAmmo *pAmmo );
+	virtual float FlHealthChargerRechargeTime( void );
+	virtual float FlHEVChargerRechargeTime( void );
+	virtual int DeadPlayerWeapons( CBasePlayer *pPlayer );
+	virtual int DeadPlayerAmmo( CBasePlayer *pPlayer );	
+	virtual const char *GetTeamID( CBaseEntity *pEntity ) {return "";}
+	virtual int PlayerRelationship( CBaseEntity *pPlayer, CBaseEntity *pTarget );
+	virtual BOOL PlayTextureSounds( void ) { return FALSE; }
+	virtual BOOL PlayFootstepSounds( CBasePlayer *pl, float fvol );
+	virtual BOOL FAllowMonsters( void );
+	BOOL ClientCommand( CBasePlayer *pPlayer, const char *pcmd );
+	virtual void EndMultiplayerGame( void ) { GoToIntermission(); }
+
+protected:
+	virtual void ChangeLevel( void );
+	virtual void GoToIntermission( void );
+	float m_flIntermissionEndTime;
+	BOOL m_iEndIntermissionButtonHit;
+	void SendMOTDToClient( edict_t *client );
+};
+
+//=========================================================
+// CRailArena
+//=========================================================
+class CRailArena : public CGameRules
+{
+public:
+	CRailArena();
+
+	// GR_Think
+	virtual void Think( void );
+	virtual void RefreshSkillData( void );
+	virtual BOOL IsAllowedToSpawn( CBaseEntity *pEntity );
+	virtual BOOL FAllowFlashlight( void );
+	virtual BOOL FShouldSwitchWeapon( CBasePlayer *pPlayer, CBasePlayerItem *pWeapon );
+	virtual BOOL GetNextBestWeapon( CBasePlayer *pPlayer, CBasePlayerItem *pCurrentWeapon );
+
+	// Functions to verify the single/multiplayer status of a game
+	virtual BOOL IsMultiplayer( void );
+	virtual BOOL IsDeathmatch( void );
+	virtual BOOL IsCoOp( void );
+	virtual BOOL IsRailArena( void );
+
+	virtual const char *GetGameDescription( void ) { return "Cold Ice Railgun Arena"; }  // this is the game name that gets seen in the server browser
+
+	virtual BOOL ClientConnected( edict_t *pEntity, const char *pszName, const char *pszAddress, char szRejectReason[ 128 ] );
+	virtual void InitHUD( CBasePlayer *pl );		// the client dll is ready for updating
+	virtual void ClientDisconnected( edict_t *pClient );
+	virtual void UpdateGameMode( CBasePlayer *pPlayer );  // the client needs to be informed of the current game mode
+	virtual float FlPlayerFallDamage( CBasePlayer *pPlayer );
+	virtual BOOL  FPlayerCanTakeDamage( CBasePlayer *pPlayer, CBaseEntity *pAttacker );
+	virtual void PlayerSpawn( CBasePlayer *pPlayer );
+	virtual void PlayerThink( CBasePlayer *pPlayer );
+	virtual BOOL FPlayerCanRespawn( CBasePlayer *pPlayer );
+	virtual float FlPlayerSpawnTime( CBasePlayer *pPlayer );
+	virtual edict_t *GetPlayerSpawnSpot( CBasePlayer *pPlayer );
+	virtual BOOL AllowAutoTargetCrosshair( void );
+	virtual int IPointsForKill( CBasePlayer *pAttacker, CBasePlayer *pKilled );
+	virtual void PlayerKilled( CBasePlayer *pVictim, entvars_t *pKiller, entvars_t *pInflictor );
+	virtual void DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, entvars_t *pInflictor );
+	virtual void PlayerGotWeapon( CBasePlayer *pPlayer, CBasePlayerItem *pWeapon );
+	virtual BOOL CanHavePlayerItem( CBasePlayer *pPlayer, CBasePlayerItem *pWeapon );
+	virtual int WeaponShouldRespawn( CBasePlayerItem *pWeapon );
+	virtual float FlWeaponRespawnTime( CBasePlayerItem *pWeapon );
+	virtual float FlWeaponTryRespawn( CBasePlayerItem *pWeapon );
+	virtual Vector VecWeaponRespawnSpot( CBasePlayerItem *pWeapon );
+	virtual BOOL CanHaveItem( CBasePlayer *pPlayer, CItem *pItem );
+	virtual void PlayerGotItem( CBasePlayer *pPlayer, CItem *pItem );
+	virtual int ItemShouldRespawn( CItem *pItem );
+	virtual float FlItemRespawnTime( CItem *pItem );
+	virtual Vector VecItemRespawnSpot( CItem *pItem );
+	virtual void PlayerGotAmmo( CBasePlayer *pPlayer, char *szName, int iCount );
+	virtual int AmmoShouldRespawn( CBasePlayerAmmo *pAmmo );
+	virtual float FlAmmoRespawnTime( CBasePlayerAmmo *pAmmo );
+	virtual Vector VecAmmoRespawnSpot( CBasePlayerAmmo *pAmmo );
+	virtual float FlHealthChargerRechargeTime( void );
+	virtual float FlHEVChargerRechargeTime( void );
+	virtual int DeadPlayerWeapons( CBasePlayer *pPlayer );
+	virtual int DeadPlayerAmmo( CBasePlayer *pPlayer );	
+	virtual const char *GetTeamID( CBaseEntity *pEntity ) {return "";}
+	virtual int PlayerRelationship( CBaseEntity *pPlayer, CBaseEntity *pTarget );
+	virtual BOOL PlayTextureSounds( void ) { return FALSE; }
+	virtual BOOL PlayFootstepSounds( CBasePlayer *pl, float fvol );
+	virtual BOOL FAllowMonsters( void );
+	BOOL ClientCommand( CBasePlayer *pPlayer, const char *pcmd );
+	virtual void EndMultiplayerGame( void ) { GoToIntermission(); }
+
+protected:
+	virtual void ChangeLevel( void );
+	virtual void GoToIntermission( void );
+	float m_flIntermissionEndTime;
+	BOOL m_iEndIntermissionButtonHit;
+	void SendMOTDToClient( edict_t *client );
+};
+
+//=========================================================
+// CFWArena
+//=========================================================
+class CFWArena : public CGameRules
+{
+public:
+	CFWArena();
+
+	// GR_Think
+	virtual void Think( void );
+	virtual void RefreshSkillData( void );
+	virtual BOOL IsAllowedToSpawn( CBaseEntity *pEntity );
+	virtual BOOL FAllowFlashlight( void );
+	virtual BOOL FShouldSwitchWeapon( CBasePlayer *pPlayer, CBasePlayerItem *pWeapon );
+	virtual BOOL GetNextBestWeapon( CBasePlayer *pPlayer, CBasePlayerItem *pCurrentWeapon );
+
+	// Functions to verify the single/multiplayer status of a game
+	virtual BOOL IsMultiplayer( void );
+	virtual BOOL IsDeathmatch( void );
+	virtual BOOL IsCoOp( void );
+	virtual BOOL IsFWArena( void );
+
+	virtual const char *GetGameDescription( void ) { return "Cold Ice FW Arena"; }  // this is the game name that gets seen in the server browser
+
+	virtual BOOL ClientConnected( edict_t *pEntity, const char *pszName, const char *pszAddress, char szRejectReason[ 128 ] );
+	virtual void InitHUD( CBasePlayer *pl );		// the client dll is ready for updating
+	virtual void ClientDisconnected( edict_t *pClient );
+	virtual void UpdateGameMode( CBasePlayer *pPlayer );  // the client needs to be informed of the current game mode
+	virtual float FlPlayerFallDamage( CBasePlayer *pPlayer );
+	virtual BOOL  FPlayerCanTakeDamage( CBasePlayer *pPlayer, CBaseEntity *pAttacker );
+	virtual void PlayerSpawn( CBasePlayer *pPlayer );
+	virtual void PlayerThink( CBasePlayer *pPlayer );
+	virtual BOOL FPlayerCanRespawn( CBasePlayer *pPlayer );
+	virtual float FlPlayerSpawnTime( CBasePlayer *pPlayer );
+	virtual edict_t *GetPlayerSpawnSpot( CBasePlayer *pPlayer );
+	virtual BOOL AllowAutoTargetCrosshair( void );
+	virtual int IPointsForKill( CBasePlayer *pAttacker, CBasePlayer *pKilled );
+	virtual void PlayerKilled( CBasePlayer *pVictim, entvars_t *pKiller, entvars_t *pInflictor );
+	virtual void DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, entvars_t *pInflictor );
+	virtual void PlayerGotWeapon( CBasePlayer *pPlayer, CBasePlayerItem *pWeapon );
+	virtual BOOL CanHavePlayerItem( CBasePlayer *pPlayer, CBasePlayerItem *pWeapon );
+	virtual int WeaponShouldRespawn( CBasePlayerItem *pWeapon );
+	virtual float FlWeaponRespawnTime( CBasePlayerItem *pWeapon );
+	virtual float FlWeaponTryRespawn( CBasePlayerItem *pWeapon );
+	virtual Vector VecWeaponRespawnSpot( CBasePlayerItem *pWeapon );
+	virtual BOOL CanHaveItem( CBasePlayer *pPlayer, CItem *pItem );
+	virtual void PlayerGotItem( CBasePlayer *pPlayer, CItem *pItem );
+	virtual int ItemShouldRespawn( CItem *pItem );
+	virtual float FlItemRespawnTime( CItem *pItem );
+	virtual Vector VecItemRespawnSpot( CItem *pItem );
+	virtual void PlayerGotAmmo( CBasePlayer *pPlayer, char *szName, int iCount );
+	virtual int AmmoShouldRespawn( CBasePlayerAmmo *pAmmo );
+	virtual float FlAmmoRespawnTime( CBasePlayerAmmo *pAmmo );
+	virtual Vector VecAmmoRespawnSpot( CBasePlayerAmmo *pAmmo );
+	virtual float FlHealthChargerRechargeTime( void );
+	virtual float FlHEVChargerRechargeTime( void );
+	virtual int DeadPlayerWeapons( CBasePlayer *pPlayer );
+	virtual int DeadPlayerAmmo( CBasePlayer *pPlayer );	
+	virtual const char *GetTeamID( CBaseEntity *pEntity ) {return "";}
+	virtual int PlayerRelationship( CBaseEntity *pPlayer, CBaseEntity *pTarget );
+	virtual BOOL PlayTextureSounds( void ) { return FALSE; }
+	virtual BOOL PlayFootstepSounds( CBasePlayer *pl, float fvol );
+	virtual BOOL FAllowMonsters( void );
+	BOOL ClientCommand( CBasePlayer *pPlayer, const char *pcmd );
+	virtual void EndMultiplayerGame( void ) { GoToIntermission(); }
+
+protected:
+	virtual void ChangeLevel( void );
+	virtual void GoToIntermission( void );
+	float m_flIntermissionEndTime;
+	BOOL m_iEndIntermissionButtonHit;
+	void SendMOTDToClient( edict_t *client );
+};

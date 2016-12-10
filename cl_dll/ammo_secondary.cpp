@@ -77,8 +77,8 @@ int CHudAmmoSecondary::Draw( float flTime )
 		x -= ( gHUD.GetSpriteRect( m_HUD_ammoicon ).right - gHUD.GetSpriteRect( m_HUD_ammoicon ).left );
 		y -= ( gHUD.GetSpriteRect( m_HUD_ammoicon ).top - gHUD.GetSpriteRect( m_HUD_ammoicon ).bottom );
 
-		SPR_Set( gHUD.GetSprite( m_HUD_ammoicon ), r, g, b );
-		SPR_DrawAdditive( 0, x, y, &gHUD.GetSpriteRect( m_HUD_ammoicon ) );
+		SPR_Set( gHUD.GetSprite( m_HUD_ammoicon ), 255, 255, 255 );
+		SPR_DrawHoles( 0, x, y, &gHUD.GetSpriteRect( m_HUD_ammoicon ) );
 	}
 	else
 	{

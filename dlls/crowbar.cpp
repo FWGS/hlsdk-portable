@@ -1,15 +1,15 @@
 /***
 *
-*	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
+*	Copyright (c) 1999, Cold Ice Modification.
 *	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
-*	All Rights Reserved.
+*	This code has been written by SlimShady ( darcuri@optonline.net )
 *
 *   Use, distribution, and modification of this source code and/or resulting
 *   object code is restricted to non-commercial enhancements to products from
 *   Valve LLC.  All other use, distribution, or modification is prohibited
-*   without written permission from Valve LLC.
+*   without written permission from Valve LLC and from the Cold Ice team.
+*
+*   Please if you use this code in any public form, please give us credit.
 *
 ****/
 
@@ -26,6 +26,7 @@
 #define	CROWBAR_WALLHIT_VOLUME 512
 
 LINK_ENTITY_TO_CLASS( weapon_crowbar, CCrowbar )
+LINK_ENTITY_TO_CLASS( weapon_fwcrowbar, CCrowbar )
 
 enum gauss_e
 {
@@ -68,7 +69,7 @@ void CCrowbar::Precache( void )
 
 int CCrowbar::GetItemInfo( ItemInfo *p )
 {
-	p->pszName = STRING( pev->classname );
+	p->pszName = "weapon_crowbar";
 	p->pszAmmo1 = NULL;
 	p->iMaxAmmo1 = -1;
 	p->pszAmmo2 = NULL;
@@ -79,6 +80,18 @@ int CCrowbar::GetItemInfo( ItemInfo *p )
 	p->iId = WEAPON_CROWBAR;
 	p->iWeight = CROWBAR_WEIGHT;
 	return 1;
+}
+
+int CCrowbar::AddToPlayer( CBasePlayer *pPlayer )
+{
+       if( CBasePlayerWeapon::AddToPlayer( pPlayer ) )
+       {
+               MESSAGE_BEGIN( MSG_ONE, gmsgWeapPickup, NULL, pPlayer->pev );
+                       WRITE_BYTE( m_iId );
+               MESSAGE_END();
+               return TRUE;
+       }
+       return FALSE;
 }
 
 BOOL CCrowbar::Deploy()

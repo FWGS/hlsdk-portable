@@ -231,7 +231,7 @@ void CHud::Init( void )
 	m_Scoreboard.Init();
 
 	m_Menu.Init();
-	
+	//m_Smart.Init();
 	MsgFunc_ResetHUD( 0, 0, NULL );
 }
 
@@ -393,6 +393,7 @@ void CHud::VidInit( void )
 	m_DeathNotice.VidInit();
 	m_SayText.VidInit();
 	m_Menu.VidInit();
+	//m_Smart.Init();
 	m_AmmoSecondary.VidInit();
 	m_TextMessage.VidInit();
 	m_StatusIcons.VidInit();

@@ -40,6 +40,14 @@ cvar_t defaultteam	= { "mp_defaultteam","0" };
 cvar_t allowmonsters	= { "mp_allowmonsters","0", FCVAR_SERVER };
 
 cvar_t mp_chattime	= { "mp_chattime","10", FCVAR_SERVER };
+cvar_t runes		= { "mp_runes","1", FCVAR_SERVER };
+cvar_t hook		= { "mp_hook","1", FCVAR_SERVER };
+
+cvar_t allownuke	= { "mp_allownuke","1", FCVAR_SERVER };
+
+cvar_t rocketarena	= { "mp_rocketarena","0", FCVAR_SERVER };
+cvar_t railarena	= { "mp_railarena","0", FCVAR_SERVER };
+cvar_t fwarena		= { "mp_fwarena","0", FCVAR_SERVER };
 
 // Engine Cvars
 cvar_t *g_psv_gravity = NULL;
@@ -456,6 +464,15 @@ void GameDLLInit( void )
 	CVAR_REGISTER( &teamplay );
 	CVAR_REGISTER( &fraglimit );
 	CVAR_REGISTER( &timelimit );
+
+	CVAR_REGISTER( &rocketarena );
+	CVAR_REGISTER( &railarena );
+	CVAR_REGISTER( &fwarena );
+
+	CVAR_REGISTER( &hook );
+	CVAR_REGISTER( &runes );
+
+	CVAR_REGISTER( &allownuke );
 
 	CVAR_REGISTER( &fragsleft );
 	CVAR_REGISTER( &timeleft );

@@ -377,7 +377,7 @@ CGrenade *CGrenade::ShootContact( entvars_t *pevOwner, Vector vecStart, Vector v
 	// Explode on contact
 	pGrenade->SetTouch( &CGrenade::ExplodeTouch );
 
-	pGrenade->pev->dmg = gSkillData.plrDmgM203Grenade;
+	pGrenade->pev->dmg = gSkillData.plrDmgContact;
 
 	return pGrenade;
 }
@@ -479,5 +479,169 @@ void CGrenade::UseSatchelCharges( entvars_t *pevOwner, SATCHELCODE code )
 		pentFind = FIND_ENTITY_BY_CLASSNAME( pentFind, "grenade" );
 	}
 }
+
+//=============================================================================================
+// Cluster Grenade Code
+//=============================================================================================
+CGrenade *CGrenade::ShootCluster( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity, float time )
+{
+	CGrenade *pGrenade = GetClassPtr( (CGrenade *)NULL );
+	pGrenade->Spawn();
+	UTIL_SetOrigin( pGrenade->pev, vecStart );
+	pGrenade->pev->velocity = vecVelocity;
+	pGrenade->pev->angles = UTIL_VecToAngles( pGrenade->pev->velocity );
+	pGrenade->pev->owner = ENT( pevOwner );
+
+	pGrenade->SetTouch( BounceTouch );
+
+	pGrenade->pev->dmgtime = gpGlobals->time + time;
+	pGrenade->SetThink( TumbleThink );
+	pGrenade->pev->nextthink = gpGlobals->time + 0.1;
+
+	if( time < 0.1 )
+	{
+		pGrenade->pev->nextthink = gpGlobals->time;
+		pGrenade->pev->velocity = Vector( 0, 0, 0 );
+	}
+
+	pGrenade->pev->sequence = RANDOM_LONG( 3, 6 );
+	pGrenade->pev->framerate = 1.0;
+
+	pGrenade->pev->gravity = 0.5;
+	pGrenade->pev->friction = 0.8;
+
+	SET_MODEL( ENT( pGrenade->pev ), "models/cluster.mdl" );
+	pGrenade->pev->dmg = 100;
+
+	return pGrenade;
+}
+
+CGrenade *CGrenade::ShootClusterGrenade( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity, float time )
+{
+	CGrenade *pGrenade = GetClassPtr( (CGrenade *)NULL );
+	pGrenade->Spawn();
+	UTIL_SetOrigin( pGrenade->pev, vecStart );
+	pGrenade->pev->velocity = vecVelocity;
+	pGrenade->pev->angles = UTIL_VecToAngles( pGrenade->pev->velocity );
+	pGrenade->pev->owner = ENT( pevOwner );
+
+	pGrenade->clusterOwner = pevOwner;
+
+	pGrenade->SetTouch( BounceTouch );
+
+	pGrenade->pev->dmgtime = gpGlobals->time + time;
+	pGrenade->SetThink( ClusterTumbleThink );
+	pGrenade->pev->nextthink = gpGlobals->time + 0.1;
+
+	if( time < 0.1 )
+	{
+		pGrenade->pev->nextthink = gpGlobals->time;
+		pGrenade->pev->velocity = Vector( 0, 0, 0 );
+	}
+
+	pGrenade->pev->sequence = RANDOM_LONG( 3, 6 );
+	pGrenade->pev->framerate = 1.0;
+
+	pGrenade->pev->gravity = 0.5;
+	pGrenade->pev->friction = 0.8;
+
+	SET_MODEL( ENT( pGrenade->pev ), "models/clustergrenade.mdl" );
+	pGrenade->pev->dmg = 100;
+
+	return pGrenade;
+}
+void CGrenade::ClusterTumbleThink( void )
+{
+	if( !IsInWorld() )
+	{
+		UTIL_Remove( this );
+		return;
+	}
+
+	StudioFrameAdvance();
+	pev->nextthink = gpGlobals->time + 0.1;
+
+	if( pev->dmgtime - 1 < gpGlobals->time )
+	{
+		CSoundEnt::InsertSound( bits_SOUND_DANGER, pev->origin + pev->velocity * ( pev->dmgtime - gpGlobals->time ), 400, 0.1 );
+	}
+
+	if (pev->dmgtime <= gpGlobals->time)
+	{
+		SetThink( ClusterLaunch);
+	}
+	if (pev->waterlevel != 0)
+	{
+		pev->velocity = pev->velocity * 0.5;
+		pev->framerate = 0.2;
+	}
+}
+void CGrenade::ClusterLaunch( void )
+{
+	pev->velocity.z = 600;//jump up!!
+
+	int iContents = UTIL_PointContents( pev->origin );
+	int iScale;
+
+	pev->dmg = 40;//initial booster demage
+	iScale = 10;
+
+	MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, pev->origin );
+		WRITE_BYTE( TE_EXPLOSION);		
+		WRITE_COORD( pev->origin.x );
+		WRITE_COORD( pev->origin.y );
+		WRITE_COORD( pev->origin.z );
+		if( iContents != CONTENTS_WATER )
+		{
+			WRITE_SHORT( g_sModelIndexFireball );
+		}
+		else
+		{
+			WRITE_SHORT( g_sModelIndexWExplosion );
+		}
+		WRITE_BYTE( iScale ); // scale * 10
+		WRITE_BYTE( 15 ); // framerate
+		WRITE_BYTE( TE_EXPLFLAG_NONE );
+	MESSAGE_END();
+
+	entvars_t *pevOwner;
+
+	if( pev->owner )
+		pevOwner = VARS( pev->owner );
+	else
+		pevOwner = NULL;
+
+	struct edict_s *preowner;
+	preowner=pev->owner;
+
+	pev->owner = NULL; // can't traceline attack owner if this is set
+
+	::RadiusDamage( pev->origin, pev, pevOwner, pev->dmg, 128, CLASS_NONE, DMG_BLAST | DMG_ALWAYSGIB );
+
+	pev->owner = preowner;
+
+	pev->dmg = 60;
+
+	SetThink( ClusterDetonate );
+
+	pev->nextthink = gpGlobals->time + 1.2;
+}
+
+void CGrenade::ClusterDetonate( void )
+{
+	Detonate();
+
+	//Launch 6 grenades at random angles
+	CGrenade::ShootCluster( clusterOwner, pev->origin, Vector( RANDOM_LONG( -200, 200 ), RANDOM_LONG( -200, 200 ), RANDOM_LONG( -200, 200 ) ) * RANDOM_LONG( 5, 10 ), RANDOM_FLOAT( 1.00, 5.00 ) );
+	CGrenade::ShootCluster( clusterOwner, pev->origin, Vector( RANDOM_LONG( -200, 200 ), RANDOM_LONG( -200, 200 ), RANDOM_LONG( -200, 200 ) ) * RANDOM_LONG( 5, 10 ), RANDOM_FLOAT( 1.00, 5.00 ) );
+	CGrenade::ShootCluster( clusterOwner, pev->origin, Vector( RANDOM_LONG( -200, 200 ), RANDOM_LONG( -200, 200 ), RANDOM_LONG( -200, 200 ) ) * RANDOM_LONG( 5, 10 ), RANDOM_FLOAT( 1.00, 5.00 ) );
+	CGrenade::ShootCluster( clusterOwner, pev->origin, Vector( RANDOM_LONG( -200, 200 ), RANDOM_LONG( -200, 200 ), RANDOM_LONG( -200, 200 ) ) * RANDOM_LONG( 5, 10 ), RANDOM_FLOAT( 1.00, 5.00 ) );
+	CGrenade::ShootCluster( clusterOwner, pev->origin, Vector( RANDOM_LONG( -200, 200 ), RANDOM_LONG( -200, 200 ), RANDOM_LONG( -200, 200 ) ) * RANDOM_LONG( 5, 10 ), RANDOM_FLOAT( 1.00, 5.00 ) );
+	CGrenade::ShootCluster( clusterOwner, pev->origin, Vector( RANDOM_LONG( -200, 200 ), RANDOM_LONG( -200, 200 ), RANDOM_LONG( -200, 200 ) ) * RANDOM_LONG( 5, 10 ), RANDOM_FLOAT( 1.00, 5.00 ) );
+
+	UTIL_Remove( this );
+}
+//=============================================================================================
+//=============================================================================================
 
 //======================end grenade

@@ -35,7 +35,45 @@ extern int gmsgMOTD;
 //=========================================================
 CHalfLifeRules::CHalfLifeRules( void )
 {
-	RefreshSkillData();
+	CGameRules::RefreshSkillData();
+
+	// override some values for multiplay.
+
+	// suitcharger
+	gSkillData.suitchargerCapacity = 30;
+
+	// Crowbar whack
+	gSkillData.plrDmgCrowbar = 25;
+
+	// Knife whack
+	gSkillData.plrDmgKnife = 28;
+
+	// Sword whack
+	gSkillData.plrDmgSword = 32;
+
+	// Glock Round
+	gSkillData.plrDmg9MM = 12;
+
+	// MP5 Round
+	gSkillData.plrDmgMP5 = 12;
+
+	// Bolt
+	gSkillData.plrDmgBoltgun = 15;
+
+	// Contact grenade
+	gSkillData.plrDmgContact = 120;
+
+	// Rocket
+	gSkillData.plrDmgRocket = 145;
+
+	// Railgun Slug
+	gSkillData.plrDmgRailgun = 100;
+
+	// IRF Tripmine
+	gSkillData.plrDmgTripmine = 130;
+
+	// Buckshot
+	gSkillData.plrDmgBuckshot = 8;
 }
 
 //=========================================================

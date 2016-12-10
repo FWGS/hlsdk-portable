@@ -143,42 +143,41 @@ void CHalfLifeMultiplay::RefreshSkillData( void )
 	// Crowbar whack
 	gSkillData.plrDmgCrowbar = 25;
 
+	// Knife whack
+	gSkillData.plrDmgKnife = 28;
+
+	// Sword whack
+	gSkillData.plrDmgSword = 32;
+
 	// Glock Round
 	gSkillData.plrDmg9MM = 12;
-
-	// 357 Round
-	gSkillData.plrDmg357 = 40;
 
 	// MP5 Round
 	gSkillData.plrDmgMP5 = 12;
 
-	// M203 grenade
-	gSkillData.plrDmgM203Grenade = 100;
+	// 765mm Round
+	gSkillData.plrDmgRifle = 200;
 
-	// Shotgun buckshot
-	gSkillData.plrDmgBuckshot = 20;// fewer pellets in deathmatch
+	// Bolt
+	gSkillData.plrDmgBoltgun = 15;
 
-	// Crossbow
-	gSkillData.plrDmgCrossbowClient = 20;
+	// Contact grenade
+	gSkillData.plrDmgContact = 120;
 
-	// RPG
-	gSkillData.plrDmgRPG = 120;
+	// Cluster grenade
+	gSkillData.plrDmgClusterGrenade = 50;
 
-	// Egon
-	gSkillData.plrDmgEgonWide = 20;
-	gSkillData.plrDmgEgonNarrow = 10;
+	// Rocket
+	gSkillData.plrDmgRocket = 145;
 
-	// Hand Grendade
-	gSkillData.plrDmgHandGrenade = 100;
+	// Railgun Slug
+	gSkillData.plrDmgRailgun = 100;
 
-	// Satchel Charge
-	gSkillData.plrDmgSatchel = 120;
+	// IRF Tripmine
+	gSkillData.plrDmgTripmine = 130;
 
-	// Tripmine
-	gSkillData.plrDmgTripmine = 150;
-
-	// hornet
-	gSkillData.plrDmgHornet = 10;
+	// Buckshot
+	gSkillData.plrDmgBuckshot = 8;
 }
 
 // longest the intermission can last, in seconds
@@ -278,6 +277,12 @@ void CHalfLifeMultiplay::Think( void )
 
 	last_frags = frags_remaining;
 	last_time = time_remaining;
+
+	if( CVAR_GET_FLOAT( "rocket_arena" ) == 1 )
+	{
+		GoToIntermission ();
+		CVAR_SET_FLOAT( "rocket_arena", 2 );
+	}
 }
 
 //=========================================================
@@ -478,6 +483,9 @@ void CHalfLifeMultiplay::InitHUD( CBasePlayer *pl )
 		MESSAGE_BEGIN( MSG_ONE, SVC_INTERMISSION, NULL, pl->edict() );
 		MESSAGE_END();
 	}
+	pl->StartSpectator();
+	pl->m_nMenu = Menu_Wep;
+	ShowMenu( pl, 0x7, 0, 0,"Welcome to Cold Ice Beta1 2x\n\nCold-Ice Deathmatch Mode\n\nPlease choose a weapon.\n1. Knife\n2. Crowbar\n3. Sword" );
 }
 
 //=========================================================
@@ -562,6 +570,90 @@ void CHalfLifeMultiplay::PlayerThink( CBasePlayer *pPlayer )
 
 //=========================================================
 //=========================================================
+BOOL CHalfLifeMultiplay::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
+{
+	if( FStrEq( pcmd, "menuselect" ) )
+	{
+		int slot = atoi( CMD_ARGV( 1 ) );
+
+		//=============================================================
+		//=============================================================
+		switch( pPlayer->m_nMenu )
+		{
+			case Menu_Spec:
+				if( slot == 1 )
+					pPlayer->StopSpectator();
+				else if( slot == 2 ) 
+				{
+					pPlayer->StartSpectator();
+					ShowMenu( pPlayer, 0x1, 0, 0, "Currently In Spectator Mode:\n\nHit Key 1 to exit and join the game.  " );
+				}
+				break;
+			//=============================================================
+			//=============================================================
+			case Menu_Wep:
+				if( slot == 1 )
+					pPlayer->m_cWeapon1 = "weapon_knife";
+				else if( slot == 2 )
+					pPlayer->m_cWeapon1 = "weapon_crowbar";
+				else if( slot == 3 )
+					pPlayer->m_cWeapon1 = "weapon_sword";
+
+				pPlayer->m_nMenu = Menu_Spec;
+				ShowMenu( pPlayer, 0x3, 0, 0,"Choose a play option:\n\n1. Join Game\n2. Observe Game" );
+				break;
+			//=============================================================
+			//=============================================================
+			case Menu_Change:
+				if( slot == 1 )
+					pPlayer->m_cWeapon1 = "weapon_knife";
+				else if( slot == 2 )
+					pPlayer->m_cWeapon1 = "weapon_crowbar";
+				else if( slot == 3 )
+					pPlayer->m_cWeapon1 = "weapon_sword";
+
+				ShowMenu( pPlayer, 0x7, 3, 0,"Your manual weapon choice will be changed on\nthe next respawn" );
+				break;
+			//=============================================================
+			//=============================================================
+		}
+		return TRUE;
+	}
+		//=============================================================
+		//=============================================================
+		if( FStrEq( pcmd, "rune_status" ) )
+		{
+
+			if( pPlayer->m_iPlayerRune == RUNE_SPEED )
+				ShowMenu( pPlayer, 0x1, 5, 0, "You Have Rune: Speed" );
+			else if( pPlayer->m_iPlayerRune == RUNE_RESIST )
+				ShowMenu( pPlayer, 0x1, 5, 0, "You Have Rune: Resist" );
+			else if( pPlayer->m_iPlayerRune == RUNE_STRENGTH )
+				ShowMenu( pPlayer, 0x1, 5, 0, "You Have Rune: Strength" );
+			else if( pPlayer->m_iPlayerRune == RUNE_HEALTH )
+				ShowMenu( pPlayer, 0x1, 5, 0, "You Have Rune: Regeneration" );
+			else if( pPlayer->m_iPlayerRune == RUNE_ROCKETARENA )
+				ShowMenu( pPlayer, 0x1, 5, 0, "You Have Rune: Rocket Arena Special" );
+			else
+				ShowMenu( pPlayer, 0x1, 5, 0, "You Have No Runes." );
+
+			return TRUE;
+		}
+		//=============================================================
+		//=============================================================
+		if( FStrEq( pcmd, "changeweapons" ) )
+		{
+			pPlayer->m_nMenu = Menu_Change;
+			ShowMenu( pPlayer, 0x7, 0, 0,"Weapons Change:\n\nPlease choose a weapon.\n1. Knife\n2. Crowbar\n3. Sword" );
+
+			return TRUE;
+		}
+
+	return FALSE;
+}
+
+//=========================================================
+//=========================================================
 void CHalfLifeMultiplay::PlayerSpawn( CBasePlayer *pPlayer )
 {
 	BOOL		addDefault;
@@ -579,9 +671,8 @@ void CHalfLifeMultiplay::PlayerSpawn( CBasePlayer *pPlayer )
 
 	if( addDefault )
 	{
-		pPlayer->GiveNamedItem( "weapon_crowbar" );
-		pPlayer->GiveNamedItem( "weapon_9mmhandgun" );
-		pPlayer->GiveAmmo( 68, "9mm", _9MM_MAX_CARRY );// 4 full reloads
+		pPlayer->GiveNamedItem( pPlayer->m_cWeapon1 );
+		pPlayer->GiveNamedItem( "weapon_ppk" );
 	}
 }
 
@@ -589,7 +680,7 @@ void CHalfLifeMultiplay::PlayerSpawn( CBasePlayer *pPlayer )
 //=========================================================
 BOOL CHalfLifeMultiplay::FPlayerCanRespawn( CBasePlayer *pPlayer )
 {
-	return TRUE;
+	return pPlayer->m_fWantRespawn;
 }
 
 //=========================================================
@@ -673,12 +764,6 @@ void CHalfLifeMultiplay::PlayerKilled( CBasePlayer *pVictim, entvars_t *pKiller,
 		// let the killer paint another decal as soon as he'd like.
 		PK->m_flNextDecalTime = gpGlobals->time;
 	}
-#ifndef HLDEMO_BUILD
-	if( pVictim->HasNamedPlayerItem( "weapon_satchel" ) )
-	{
-		DeactivateSatchels( pVictim );
-	}
-#endif
 }
 
 //=========================================================
@@ -691,10 +776,6 @@ void CHalfLifeMultiplay::DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, 
 
 	const char *killer_weapon_name = "world";		// by default, the player is killed by the world
 	int killer_index = 0;
-
-	// Hack to fix name change
-	char *tau = "tau_cannon";
-	char *gluon = "gluon gun";
 
 	if( pKiller->flags & FL_CLIENT )
 	{
@@ -736,12 +817,6 @@ void CHalfLifeMultiplay::DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, 
 		WRITE_BYTE( ENTINDEX( pVictim->edict() ) );		// the victim
 		WRITE_STRING( killer_weapon_name );		// what they were killed by (should this be a string?)
 	MESSAGE_END();
-
-	// replace the code names with the 'real' names
-	if( !strcmp( killer_weapon_name, "egon" ) )
-		killer_weapon_name = gluon;
-	else if( !strcmp( killer_weapon_name, "gauss" ) )
-		killer_weapon_name = tau;
 
 	if( pVictim->pev == pKiller )  
 	{

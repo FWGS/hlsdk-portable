@@ -20,7 +20,7 @@
 // CHud handles the message, calculation, and drawing the HUD
 //
 
-#define RGB_YELLOWISH 0x00FFA000 //255,160,0
+#define RGB_YELLOWISH 0x000071E6 //0,113,230
 #define RGB_REDISH 0x00FF1010 //255,160,0
 #define RGB_GREENISH 0x0000A000 //0,160,0
 
@@ -42,8 +42,8 @@ typedef struct
 
 enum 
 { 
-	MAX_PLAYERS = 64,
-	MAX_TEAMS = 64,
+	MAX_PLAYERS = 16,
+	MAX_TEAMS = 2,
 	MAX_TEAM_NAME = 16
 };
 
@@ -130,6 +130,8 @@ private:
 	WEAPON *m_pWeapon;
 	int m_HUD_bucket0;
 	int m_HUD_selection;
+	int m_HUD_back;
+	int m_HUD_wselect;
 };
 
 //
@@ -320,6 +322,7 @@ struct extra_player_info_t
 {
 	short frags;
 	short deaths;
+	short ping;
 	short playerclass;
 	short teamnumber;
 	char teamname[MAX_TEAM_NAME];
@@ -536,7 +539,7 @@ public:
 	enum
 	{
 		MAX_ICONSPRITENAME_LENGTH = MAX_SPRITE_NAME_LENGTH,
-		MAX_ICONSPRITES = 4
+		MAX_ICONSPRITES = 32
 	};
 	
 	//had to make these public so CHud could access them (to enable concussion icon)

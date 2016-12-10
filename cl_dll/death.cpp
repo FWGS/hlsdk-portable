@@ -37,7 +37,7 @@ struct DeathNoticeItem {
 	float *VictimColor;
 };
 
-#define MAX_DEATHNOTICES	4
+#define MAX_DEATHNOTICES	1
 static int DEATHNOTICE_DISPLAY_TIME = 6;
 
 #define DEATHNOTICE_TOP		32
@@ -90,7 +90,7 @@ int CHudDeathNotice::VidInit( void )
 
 int CHudDeathNotice::Draw( float flTime )
 {
-	int x, y, r, g, b;
+	int x, y;
 
 	for( int i = 0; i < MAX_DEATHNOTICES; i++ )
 	{
@@ -113,39 +113,29 @@ int CHudDeathNotice::Draw( float flTime )
 		//if( gViewPort && gViewPort->AllowedToPrintText() )
 		{
 			// Draw the death notice
-			y = YRES( DEATHNOTICE_TOP ) + 2 + ( 20 * i );  //!!!
+			y = 60;  //!!!
+			x = 0;
 
 			int id = ( rgDeathNoticeList[i].iId == -1 ) ? m_HUD_d_skull : rgDeathNoticeList[i].iId;
-			x = ScreenWidth - ConsoleStringLen( rgDeathNoticeList[i].szVictim ) - ( gHUD.GetSpriteRect(id).right - gHUD.GetSpriteRect(id).left );
 
 			if( !rgDeathNoticeList[i].iSuicide )
 			{
 				x -= ( 5 + ConsoleStringLen( rgDeathNoticeList[i].szKiller ) );
 
 				// Draw killers name
-				if( rgDeathNoticeList[i].KillerColor )
-					DrawSetTextColor( rgDeathNoticeList[i].KillerColor[0], rgDeathNoticeList[i].KillerColor[1], rgDeathNoticeList[i].KillerColor[2] );
-				x = 5 + DrawConsoleString( x, y, rgDeathNoticeList[i].szKiller );
-			}
-
-			r = 255; g = 80; b = 0;
-			if( rgDeathNoticeList[i].iTeamKill )
-			{
-				r = 10;	g = 240; b = 10;  // display it in sickly green
+				x = 5 + gHUD.DrawHudString(  x, y, ScreenWidth, rgDeathNoticeList[i].szKiller, 255, 255, 255 );
 			}
 
 			// Draw death weapon
-			SPR_Set( gHUD.GetSprite(id), r, g, b );
-			SPR_DrawAdditive( 0, x, y, &gHUD.GetSpriteRect(id) );
+			SPR_Set( gHUD.GetSprite(id), 255, 255, 255 );
+			SPR_DrawHoles( 0, x, y, &gHUD.GetSpriteRect(id) );
 
 			x += ( gHUD.GetSpriteRect(id).right - gHUD.GetSpriteRect(id).left );
 
 			// Draw victims name (if it was a player that was killed)
 			if( rgDeathNoticeList[i].iNonPlayerKill == FALSE )
 			{
-				if( rgDeathNoticeList[i].VictimColor )
-					DrawSetTextColor( rgDeathNoticeList[i].VictimColor[0], rgDeathNoticeList[i].VictimColor[1], rgDeathNoticeList[i].VictimColor[2] );
-				x = DrawConsoleString( x, y, rgDeathNoticeList[i].szVictim );
+				gHUD.DrawHudString(  x, y, ScreenWidth, rgDeathNoticeList[i].szVictim, 255, 255, 255 );
 			}
 		}
 	}
@@ -281,12 +271,6 @@ int CHudDeathNotice::MsgFunc_DeathMsg( const char *pszName, int iSize, void *pbu
 		if( *killedwith && (*killedwith > 13 ) && strcmp( killedwith, "d_world" ) && !rgDeathNoticeList[i].iTeamKill )
 		{
 			ConsolePrint( " with " );
-
-			// replace the code names with the 'real' names
-			if( !strcmp( killedwith + 2, "egon" ) )
-				strcpy( killedwith, "d_gluon gun" );
-			if ( !strcmp( killedwith + 2, "gauss" ) )
-				strcpy( killedwith, "d_tau cannon" );
 
 			ConsolePrint( killedwith + 2 ); // skip over the "d_" part
 		}

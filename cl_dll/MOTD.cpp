@@ -103,7 +103,7 @@ int CHudMOTD::Draw( float fTime )
 
 		// find where to start drawing the line
 		if( ( ypos > ROW_RANGE_MIN ) && ( ypos + LINE_HEIGHT <= ypos_r + height ) )
-			gHUD.DrawHudString( xpos, ypos, xmax, ch, 255, 180, 0 );
+			gHUD.DrawHudString( xpos, ypos, xmax, ch, 0, 113, 230 );
 
 		ypos += LINE_HEIGHT;
 

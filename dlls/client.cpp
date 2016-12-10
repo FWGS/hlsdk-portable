@@ -447,6 +447,19 @@ void ClientCommand( edict_t *pEntity )
 			CLIENT_PRINTF( pEntity, print_console, UTIL_VarArgs( "\"fov\" is \"%d\"\n", (int)GetClassPtr( (CBasePlayer *)pev )->m_iFOV ) );
 		}
 	}
+	else if( FStrEq( pcmd, "+hook" ) )
+	{
+		if( CVAR_GET_FLOAT( "mp_hook" ) > 0 )
+		{
+			GetClassPtr( (CBasePlayer *)pev )->FireHook();
+			GetClassPtr( (CBasePlayer *)pev )->m_fHookButton = TRUE;
+		}
+	}
+	else if( FStrEq( pcmd, "-hook" ) )
+	{
+			if( CVAR_GET_FLOAT( "mp_hook" ) > 0 )
+			GetClassPtr( (CBasePlayer *)pev )->m_fHookButton = FALSE;
+	}
 	else if( FStrEq( pcmd, "use" ) )
 	{
 		GetClassPtr( (CBasePlayer *)pev )->SelectItem( (char *)CMD_ARGV( 1 ) );
@@ -466,6 +479,21 @@ void ClientCommand( edict_t *pEntity )
 		edict_t *pentSpawnSpot = g_pGameRules->GetPlayerSpawnSpot( pPlayer );
 		pPlayer->StartObserver( pev->origin, VARS( pentSpawnSpot )->angles );
 	}
+	//Begin Runes
+	else if( FStrEq( pcmd, "drop_rune" ) )
+	{
+		GetClassPtr( (CBasePlayer *)pev )->DropRune();
+	}
+	//End Runes
+	/*
+	else if( FStrEq( pcmd, "addbot" ) )
+	{
+		ALERT( at_console, "\nBot Play has been taken out. Caused way too many crashes to be playable at this time.\n" );
+	}
+	else if( FStrEq( pcmd, "mp_bots" ) )
+	{
+		ALERT( at_console, "\nBot Play has been taken out.\n" );
+	}*/
 	/*else if( g_pGameRules->ClientCommand( GetClassPtr( (CBasePlayer *)pev ), pcmd ) )
 	{
 		// MenuSelect returns true only if the command is properly handled,  so don't print a warning
@@ -785,6 +813,10 @@ void ClientPrecache( void )
 	PRECACHE_SOUND( "player/geiger2.wav" );
 	PRECACHE_SOUND( "player/geiger1.wav" );
 
+	// rune sounds
+	PRECACHE_SOUND( "houndeye/he_attack1.wav" );
+	PRECACHE_SOUND( "items/medshot4.wav" );
+
 	if( giPrecacheGrunt )
 		UTIL_PrecacheOther( "monster_human_grunt" );
 }
@@ -801,7 +833,7 @@ const char *GetGameDescription()
 	if( g_pGameRules ) // this function may be called before the world has spawned, and the game rules initialized
 		return g_pGameRules->GetGameDescription();
 	else
-		return "Half-Life";
+		return "Cold Ice";
 }
 
 /*

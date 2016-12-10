@@ -313,6 +313,8 @@ int CHudAmmo::VidInit( void )
 	m_HUD_bucket0 = gHUD.GetSpriteIndex( "bucket1" );
 	m_HUD_selection = gHUD.GetSpriteIndex( "selection" );
 
+	m_HUD_back= gHUD.GetSpriteIndex( "backammo" );
+
 	ghsprBuckets = gHUD.GetSprite( m_HUD_bucket0 );
 	giBucketWidth = gHUD.GetSpriteRect( m_HUD_bucket0 ).right - gHUD.GetSpriteRect( m_HUD_bucket0 ).left;
 	giBucketHeight = gHUD.GetSpriteRect( m_HUD_bucket0 ).bottom - gHUD.GetSpriteRect( m_HUD_bucket0 ).top;
@@ -824,7 +826,6 @@ void CHudAmmo::UserCmd_PrevWeapon( void )
 int CHudAmmo::Draw( float flTime )
 {
 	int a, x, y, r, g, b;
-	int AmmoWidth;
 
 	if( !( gHUD.m_iWeaponBits & ( 1 << ( WEAPON_SUIT ) ) ) )
 		return 1;
@@ -844,15 +845,67 @@ int CHudAmmo::Draw( float flTime )
 	if( !m_pWeapon )
 		return 0;
 
+	//==========================================================================
+	// draw the current weapon
+	//==========================================================================
 	WEAPON *pw = m_pWeapon; // shorthand
 
+	y = 24;
+	x = ( ScreenWidth - 30 - 100 / 2 ) - 40;
+
+	if( !strcmp( pw->szName, "weapon_crowbar" ) )
+		gHUD.DrawHudString( x, y, ScreenWidth, "Crowbar", 255, 255, 255 );
+	else if( !strcmp( pw->szName, "weapon_knife" ) )
+		gHUD.DrawHudString( x, y, ScreenWidth, "Knife", 255, 255, 255 );
+	else if( !strcmp( pw->szName, "weapon_sword" ) )
+		gHUD.DrawHudString( x, y, ScreenWidth, "Sword", 255, 255, 255 );
+	else if( !strcmp( pw->szName, "weapon_ppk" ) )
+		gHUD.DrawHudString( x, y, ScreenWidth, "Walter PPK", 255, 255, 255 );
+	else if( !strcmp( pw->szName, "weapon_mag60" ) )
+		gHUD.DrawHudString( x, y, ScreenWidth, "Mag 60", 255, 255, 255 );
+	else if( !strcmp( pw->szName, "weapon_m16" ) )
+		gHUD.DrawHudString( x, y, ScreenWidth, "M4 Carbine", 255, 255, 255 );
+	else if( !strcmp( pw->szName, "weapon_uzi" ) )
+		gHUD.DrawHudString( x, y, ScreenWidth, "9mm Uzi", 255, 255, 255 );
+	else if( !strcmp( pw->szName, "weapon_doubleuzi" ) )
+		gHUD.DrawHudString( x, y, ScreenWidth, "Twin 9mm Uzi's", 255, 255, 255 );
+	else if( !strcmp( pw->szName, "weapon_mac10" ) )
+		gHUD.DrawHudString( x, y, ScreenWidth, "Mac - 10", 255, 255, 255 );
+	else if( !strcmp( pw->szName, "weapon_ashotgun" ) )
+		gHUD.DrawHudString( x, y, ScreenWidth, "Assault Shotgun", 255, 255, 255 );
+	else if( !strcmp( pw->szName, "weapon_sshotgun" ) )
+		gHUD.DrawHudString( x, y, ScreenWidth, "12-Gauge Shotgun", 255, 255, 255 );
+	else if( !strcmp( pw->szName, "weapon_chaingun" ) )
+		gHUD.DrawHudString( x, y, ScreenWidth, "Chaingun", 255, 255, 255 );
+	else if( !strcmp( pw->szName, "weapon_rifle" ) )
+		gHUD.DrawHudString( x, y, ScreenWidth, "Sniper Rifle", 255, 255, 255 );
+	else if( !strcmp( pw->szName, "weapon_grenadel" ) )
+		gHUD.DrawHudString( x, y, ScreenWidth, "Grenade Launcher", 255, 255, 255 );
+	else if( !strcmp( pw->szName, "weapon_rocketl" ) )
+		gHUD.DrawHudString( x, y, ScreenWidth, "Rocket Launcher", 255, 255, 255 );
+	else if( !strcmp( pw->szName, "weapon_chumtoad" ) )
+		gHUD.DrawHudString( x, y, ScreenWidth, "Chumtoad", 255, 255, 255 );
+	else if( !strcmp( pw->szName, "weapon_boltgun" ) )
+		gHUD.DrawHudString( x, y, ScreenWidth, "Boltgun", 255, 255, 255 );
+	else if( !strcmp( pw->szName, "weapon_ifrtripmine" ) )
+		gHUD.DrawHudString( x, y, ScreenWidth, "IFR Tripmine", 255, 255, 255 );
+	else if( !strcmp( pw->szName, "weapon_clustergrenade" ) )
+		gHUD.DrawHudString( x, y, ScreenWidth, "Cluster Grenade", 255, 255, 255 );
+	else if( !strcmp( pw->szName, "weapon_tnt" ) )
+		gHUD.DrawHudString( x, y, ScreenWidth, "Dynamite Vest", 255, 255, 255 );
+	else if( !strcmp( pw->szName, "weapon_railgun" ) )
+		gHUD.DrawHudString( x, y, ScreenWidth, "Railgun", 255, 255, 255 );
+	else if( !strcmp( pw->szName, "weapon_pulserifle" ) )
+		gHUD.DrawHudString( x, y, ScreenWidth, "Pulse-Rifle", 255, 255, 255 );
+	else if( !strcmp( pw->szName, "weapon_nuke" ) )
+		gHUD.DrawHudString( x, y, ScreenWidth, "Nuke Launcher", 255, 255, 255 );
+
+	//===========================================================================
 	// SPR_Draw Ammo
 	if( ( pw->iAmmoType < 0 ) && ( pw->iAmmo2Type < 0 ) )
 		return 0;
 
 	int iFlags = DHN_DRAWZERO; // draw 0 values
-
-	AmmoWidth = gHUD.GetSpriteRect( gHUD.m_HUD_number_0 ).right - gHUD.GetSpriteRect( gHUD.m_HUD_number_0 ).left;
 
 	a = (int)max( MIN_ALPHA, m_fFade );
 
@@ -863,70 +916,62 @@ int CHudAmmo::Draw( float flTime )
 
 	ScaleColors( r, g, b, a );
 
-	// Does this weapon have a clip?
-	y = ScreenHeight - gHUD.m_iFontHeight - gHUD.m_iFontHeight / 2;
-
 	// Does weapon have any ammo at all?
 	if( m_pWeapon->iAmmoType > 0 )
 	{
-		int iIconWidth = m_pWeapon->rcAmmo.right - m_pWeapon->rcAmmo.left;
-
 		if( pw->iClip >= 0 )
 		{
-			// room for the number and the '|' and the current ammo
-			x = ScreenWidth - ( 8 * AmmoWidth ) - iIconWidth;
-			x = gHUD.DrawHudNumber( x, y, iFlags | DHN_3DIGITS, pw->iClip, r, g, b );
+			y = ScreenHeight - 14;
+			x = ScreenWidth - 35;
+
+			gHUD.DrawHudNumberString( x, y, 0, pw->iClip, 255, 255, 255 );
 
 			wrect_t rc;
 			rc.top = 0;
 			rc.left = 0;
-			rc.right = AmmoWidth;
+			rc.right = 0;
 			rc.bottom = 100;
 
-			int iBarWidth =  AmmoWidth / 10;
-
-			x += AmmoWidth / 2;
-
-			UnpackRGB( r,g,b, RGB_YELLOWISH );
-
-			// draw the | bar
-			FillRGBA( x, y, iBarWidth, gHUD.m_iFontHeight, r, g, b, a );
-
-			x += iBarWidth + AmmoWidth / 2;
+			x += ScreenWidth - 5;
 
 			// GL Seems to need this
 			ScaleColors( r, g, b, a );
-			x = gHUD.DrawHudNumber( x, y, iFlags | DHN_3DIGITS, gWR.CountAmmo( pw->iAmmoType ), r, g, b );
+			gHUD.DrawHudNumberString( x, y, 0, gWR.CountAmmo( pw->iAmmoType ), 255, 255, 255 );
 		}
 		else
 		{
-			// SPR_Draw a bullets only line
-			x = ScreenWidth - 4 * AmmoWidth - iIconWidth;
-			x = gHUD.DrawHudNumber( x, y, iFlags | DHN_3DIGITS, gWR.CountAmmo( pw->iAmmoType ), r, g, b );
+			y = ScreenHeight - 14;
+			x = ScreenWidth - 5;
+			gHUD.DrawHudNumberString( x, y, 0, gWR.CountAmmo( pw->iAmmoType ), 255, 255, 255 );
 		}
+/*
+		y = ScreenHeight - gHUD.m_iFontHeight - gHUD.m_iFontHeight * 2;
+		x = ScreenWidth - gHUD.m_iFontHeight - gHUD.m_iFontHeight * 9.0;
 
 		// Draw the ammo Icon
-		int iOffset = ( m_pWeapon->rcAmmo.bottom - m_pWeapon->rcAmmo.top ) / 8;
-		SPR_Set( m_pWeapon->hAmmo, r, g, b );
-		SPR_DrawAdditive( 0, x, y - iOffset, &m_pWeapon->rcAmmo );
+		if( ScreenWidth < 640 )
+		{
+
+		}
+		else
+		{
+			int iOffset = ( m_pWeapon->rcAmmo.right - m_pWeapon->rcAmmo.left );
+			SPR_Set( m_pWeapon->hAmmo, 255, 255, 255 );
+			SPR_DrawHoles( 0, x, y - iOffset, &m_pWeapon->rcAmmo );
+		}
+*/
 	}
 
 	// Does weapon have seconday ammo?
 	if( pw->iAmmo2Type > 0 )
 	{
-		int iIconWidth = m_pWeapon->rcAmmo2.right - m_pWeapon->rcAmmo2.left;
-
 		// Do we have secondary ammo?
 		if( ( pw->iAmmo2Type != 0 ) && ( gWR.CountAmmo( pw->iAmmo2Type ) > 0 ) )
 		{
-			y -= gHUD.m_iFontHeight + gHUD.m_iFontHeight / 4;
-			x = ScreenWidth - 4 * AmmoWidth - iIconWidth;
-			x = gHUD.DrawHudNumber( x, y, iFlags | DHN_3DIGITS, gWR.CountAmmo( pw->iAmmo2Type ), r, g, b );
+			y = ScreenHeight - 30;
+			x = ScreenWidth - 5;
 
-			// Draw the ammo Icon
-			SPR_Set( m_pWeapon->hAmmo2, r, g, b );
-			int iOffset = ( m_pWeapon->rcAmmo2.bottom - m_pWeapon->rcAmmo2.top) / 8;
-			SPR_DrawAdditive(0, x, y - iOffset, &m_pWeapon->rcAmmo2 );
+			gHUD.DrawHudNumberString( x, y, 0, gWR.CountAmmo( pw->iAmmo2Type ), 255, 255, 255 );
 		}
 	}
 	return 1;
@@ -966,7 +1011,7 @@ int DrawBar( int x, int y, int width, int height, float f )
 
 void DrawAmmoBar( WEAPON *p, int x, int y, int width, int height )
 {
-	if( !p )
+/*	if( !p )
 		return;
 
 	if( p->iAmmoType != -1 )
@@ -976,6 +1021,8 @@ void DrawAmmoBar( WEAPON *p, int x, int y, int width, int height )
 
 		float f = (float)gWR.CountAmmo( p->iAmmoType ) / (float)p->iMax1;
 		
+		x += 20;
+
 		x = DrawBar( x, y, width, height, f );
 
 		// Do we have secondary ammo too?
@@ -988,6 +1035,7 @@ void DrawAmmoBar( WEAPON *p, int x, int y, int width, int height )
 			DrawBar( x, y, width, height, f );
 		}
 	}
+*/
 }
 
 //
@@ -1007,8 +1055,8 @@ int CHudAmmo::DrawWList( float flTime )
 	else 
 		iActiveSlot = gpActiveSel->iSlot;
 
-	x = 10; //!!!
-	y = 10; //!!!
+	x = 0; //Bucket
+	y = 10; //Bucket
 
 	// Ensure that there are available choices in the active slot
 	if( iActiveSlot > 0 )
@@ -1038,27 +1086,27 @@ int CHudAmmo::DrawWList( float flTime )
 		// make active slot wide enough to accomodate gun pictures
 		if( i == iActiveSlot )
 		{
-			WEAPON *p = gWR.GetFirstPos( iActiveSlot );
-			if( p )
-				iWidth = p->rcActive.right - p->rcActive.left;
-			else
-				iWidth = giBucketWidth;
+			//WEAPON *p = gWR.GetFirstPos( iActiveSlot );
+			//if( p )
+				iWidth = 20;
+			//else
+			//	iWidth = giBucketWidth;
 		}
 		else
 			iWidth = giBucketWidth;
 
-		SPR_DrawAdditive( 0, x, y, &gHUD.GetSpriteRect( m_HUD_bucket0 + i ) );
+		//SPR_DrawHoles( 0, x, y, &gHUD.GetSpriteRect( m_HUD_bucket0 + i ) );
 		
 		x += iWidth + 5;
 	}
 
-	a = 128; //!!!
-	x = 10;
+	a = 255; //!!!
+	x = 0; // actual weapon box
 
 	// Draw all of the buckets
 	for( i = 0; i < MAX_WEAPON_SLOTS; i++ )
 	{
-		y = giBucketHeight + 10;
+		y = 4;
 
 		// If this is the active slot, draw the bigger pictures,
 		// otherwise just draw boxes
@@ -1067,7 +1115,7 @@ int CHudAmmo::DrawWList( float flTime )
 			WEAPON *p = gWR.GetFirstPos( i );
 			int iWidth = giBucketWidth;
 			if( p )
-				iWidth = p->rcActive.right - p->rcActive.left;
+				iWidth = 15;
 
 			for( int iPos = 0; iPos < MAX_WEAPON_POSITIONS; iPos++ )
 			{
@@ -1081,31 +1129,158 @@ int CHudAmmo::DrawWList( float flTime )
 				// if active, then we must have ammo.
 				if( gpActiveSel == p )
 				{
-					SPR_Set( p->hActive, r, g, b );
-					SPR_DrawAdditive( 0, x, y, &p->rcActive );
-
-					SPR_Set( gHUD.GetSprite( m_HUD_selection ), r, g, b );
-					SPR_DrawAdditive( 0, x, y, &gHUD.GetSpriteRect( m_HUD_selection ) );
+					if( !strcmp( p->szName, "weapon_crowbar" ) )
+						gHUD.DrawHudString( x, y, ScreenWidth, "Crowbar", 255, 255, 255 );
+					else if( !strcmp( p->szName, "weapon_knife" ) )
+						gHUD.DrawHudString( x, y, ScreenWidth, "Knife", 255, 255, 255 );
+					else if( !strcmp( p->szName, "weapon_sword" ) )
+						gHUD.DrawHudString( x, y, ScreenWidth, "Sword", 255, 255, 255 );
+					else if( !strcmp( p->szName, "weapon_ppk" ) )
+						gHUD.DrawHudString( x, y, ScreenWidth, "Walter PPK", 255, 255, 255 );
+					else if( !strcmp( p->szName, "weapon_mag60" ) )
+						gHUD.DrawHudString( x, y, ScreenWidth, "Mag 60", 255, 255, 255 );
+					else if( !strcmp( p->szName, "weapon_m16" ) )
+						gHUD.DrawHudString( x, y, ScreenWidth, "M4 Carbine", 255, 255, 255 );
+					else if( !strcmp( p->szName, "weapon_uzi" ) )
+						gHUD.DrawHudString( x, y, ScreenWidth, "9mm Uzi", 255, 255, 255 );
+					else if( !strcmp( p->szName, "weapon_doubleuzi" ) )
+						gHUD.DrawHudString( x, y, ScreenWidth, "9mm Twin Uzi's", 255, 255, 255 );
+					else if( !strcmp( p->szName, "weapon_mac10" ) )
+						gHUD.DrawHudString( x, y, ScreenWidth, "Mac - 10", 255, 255, 255 );
+					else if( !strcmp( p->szName, "weapon_ashotgun" ) )
+						gHUD.DrawHudString( x, y, ScreenWidth, "Assault Shotgun", 255, 255, 255 );
+					else if( !strcmp( p->szName, "weapon_sshotgun" ) )
+						gHUD.DrawHudString( x, y, ScreenWidth, "12-Gauge Shotgun", 255, 255, 255 );
+					else if( !strcmp( p->szName, "weapon_chaingun" ) )
+						gHUD.DrawHudString( x, y, ScreenWidth, "Chaingun", 255, 255, 255 );
+					else if( !strcmp( p->szName, "weapon_rifle" ) )
+						gHUD.DrawHudString( x, y, ScreenWidth, "Sniper Rifle", 255, 255, 255 );
+					else if( !strcmp( p->szName, "weapon_grenadel" ) )
+						gHUD.DrawHudString( x, y, ScreenWidth, "Grenade Launcher", 255, 255, 255 );
+					else if( !strcmp( p->szName, "weapon_rocketl" ) )
+						gHUD.DrawHudString( x, y, ScreenWidth, "Rocket Launcher", 255, 255, 255 );
+					else if( !strcmp( p->szName, "weapon_chumtoad" ) )
+						gHUD.DrawHudString( x, y, ScreenWidth, "Chumtoad", 255, 255, 255 );
+					else if( !strcmp( p->szName, "weapon_boltgun" ) )
+						gHUD.DrawHudString( x, y, ScreenWidth, "Boltgun", 255, 255, 255 );
+					else if( !strcmp( p->szName, "weapon_ifrtripmine" ) )
+						gHUD.DrawHudString( x, y, ScreenWidth, "IFR Tripmine", 255, 255, 255 );
+					else if( !strcmp( p->szName, "weapon_clustergrenade" ) )
+						gHUD.DrawHudString( x, y, ScreenWidth, "Cluster Grenade", 255, 255, 255 );
+					else if( !strcmp( p->szName, "weapon_tnt" ) )
+						gHUD.DrawHudString( x, y, ScreenWidth, "Dynamite Vest", 255, 255, 255 );
+					else if( !strcmp( p->szName, "weapon_railgun" ) )
+						gHUD.DrawHudString( x, y, ScreenWidth, "Railgun", 255, 255, 255 );
+					else if( !strcmp( p->szName, "weapon_pulserifle" ) )
+						gHUD.DrawHudString( x, y, ScreenWidth, "Pulse-Rifle", 255, 255, 255 );
+					else if( !strcmp( p->szName, "weapon_nuke" ) )
+						gHUD.DrawHudString( x, y, ScreenWidth, "Nuke Launcher", 255, 255, 255 );
 				}
 				else
 				{
 					// Draw Weapon if Red if no ammo
-					if( gWR.HasAmmo( p ) )
-						ScaleColors( r, g, b, 192 );
-					else
+					if( !gWR.HasAmmo( p ) )
 					{
-						UnpackRGB( r, g, b, RGB_REDISH );
-						ScaleColors( r, g, b, 128 );
+						if( !strcmp( p->szName, "weapon_crowbar" ) )
+							gHUD.DrawHudString( x, y, ScreenWidth, "Crowbar", 255, 0, 0  );
+						else if( !strcmp( p->szName, "weapon_knife" ) )
+							gHUD.DrawHudString( x, y, ScreenWidth, "Knife", 255, 0, 0  );
+						else if( !strcmp( p->szName, "weapon_sword" ) )
+							gHUD.DrawHudString( x, y, ScreenWidth, "Sword", 255, 0, 0  );
+						else if( !strcmp( p->szName, "weapon_ppk" ) )
+							gHUD.DrawHudString( x, y, ScreenWidth, "Walter PPK", 255, 0, 0  );
+						else if( !strcmp( p->szName, "weapon_mag60" ) )
+							gHUD.DrawHudString( x, y, ScreenWidth, "Mag 60", 255, 0, 0 );
+						else if( !strcmp( p->szName, "weapon_m16" ) )
+							gHUD.DrawHudString( x, y, ScreenWidth, "M4 Carbine", 255, 0, 0  );
+						else if( !strcmp( p->szName, "weapon_uzi" ) )
+							gHUD.DrawHudString( x, y, ScreenWidth, "9mm Uzi", 255, 0, 0  );
+						else if( !strcmp( p->szName, "weapon_doubleuzi" ) )
+							gHUD.DrawHudString( x, y, ScreenWidth, "9mm Twin Uzi's", 255, 0, 0  );
+						else if( !strcmp( p->szName, "weapon_mac10" ) )
+							gHUD.DrawHudString( x, y, ScreenWidth, "Mac - 10", 255, 0, 0  );
+						else if( !strcmp( p->szName, "weapon_ashotgun" ) )
+							gHUD.DrawHudString( x, y, ScreenWidth, "Assault Shotgun", 255, 0, 0  );
+						else if( !strcmp( p->szName, "weapon_sshotgun" ) )
+							gHUD.DrawHudString( x, y, ScreenWidth, "12-Gauge Shotgun", 255, 0, 0  );
+						else if( !strcmp( p->szName, "weapon_chaingun" ) )
+							gHUD.DrawHudString( x, y, ScreenWidth, "Chaingun", 255, 0, 0  );
+						else if( !strcmp( p->szName, "weapon_rifle" ) )
+							gHUD.DrawHudString( x, y, ScreenWidth, "Sniper Rifle", 255, 0, 0 );
+						else if( !strcmp( p->szName, "weapon_grenadel" ) )
+							gHUD.DrawHudString( x, y, ScreenWidth, "Grenade Launcher", 255, 0, 0  );
+						else if( !strcmp( p->szName, "weapon_rocketl" ) )
+							gHUD.DrawHudString( x, y, ScreenWidth, "Rocket Launcher", 255, 0, 0  );
+						else if( !strcmp( p->szName, "weapon_chumtoad" ) )
+							gHUD.DrawHudString( x, y, ScreenWidth, "Chumtoad", 255, 0, 0 );
+						else if( !strcmp( p->szName, "weapon_boltgun" ) )
+							gHUD.DrawHudString( x, y, ScreenWidth, "Boltgun", 255, 0, 0  );
+						else if( !strcmp( p->szName, "weapon_ifrtripmine" ) )
+							gHUD.DrawHudString( x, y, ScreenWidth, "IFR Tripmine", 255, 0, 0 );
+						else if( !strcmp( p->szName, "weapon_clustergrenade" ) )
+							gHUD.DrawHudString( x, y, ScreenWidth, "Cluster Grenade", 255, 0, 0 );
+						else if( !strcmp( p->szName, "weapon_tnt" ) )
+							gHUD.DrawHudString( x, y, ScreenWidth, "Dynamite Vest", 255, 0, 0 );
+						else if( !strcmp( p->szName, "weapon_railgun" ) )
+							gHUD.DrawHudString( x, y, ScreenWidth, "Railgun", 255, 0, 0 );
+						else if( !strcmp( p->szName, "weapon_pulserifle" ) )
+							gHUD.DrawHudString( x, y, ScreenWidth, "Pulse-Rifle", 255, 0, 0 );
+						else if( !strcmp( p->szName, "weapon_nuke" ) )
+							gHUD.DrawHudString( x, y, ScreenWidth, "Nuke Launcher", 255, 0, 0 );
 					}
 
-					SPR_Set( p->hInactive, r, g, b );
-					SPR_DrawAdditive( 0, x, y, &p->rcInactive );
+					if( !strcmp( p->szName, "weapon_crowbar" ) )
+						gHUD.DrawHudString( x, y, ScreenWidth, "Crowbar", 0, 113, 230 );
+					else if( !strcmp( p->szName, "weapon_knife" ) )
+						gHUD.DrawHudString( x, y, ScreenWidth, "Knife", 0, 113, 230 );
+					else if( !strcmp( p->szName, "weapon_sword" ) )
+						gHUD.DrawHudString( x, y, ScreenWidth, "Sword", 0, 113, 230 );
+					else if( !strcmp( p->szName, "weapon_ppk" ) )
+						gHUD.DrawHudString( x, y, ScreenWidth, "Walter PPK", 0, 113, 230 );
+					else if( !strcmp( p->szName, "weapon_mag60" ) )
+						gHUD.DrawHudString( x, y, ScreenWidth, "Mag 60", 0, 113, 230 );
+					else if( !strcmp( p->szName, "weapon_m16" ) )
+						gHUD.DrawHudString( x, y, ScreenWidth, "M4 Carbine", 0, 113, 230 );
+					else if( !strcmp( p->szName, "weapon_uzi" ) )
+						gHUD.DrawHudString( x, y, ScreenWidth, "9mm Uzi", 0, 113, 230 );
+					else if( !strcmp( p->szName, "weapon_doubleuzi" ) )
+						gHUD.DrawHudString( x, y, ScreenWidth, "9mm Twin Uzi's", 0, 113, 230 );
+					else if( !strcmp( p->szName, "weapon_mac10" ) )
+						gHUD.DrawHudString( x, y, ScreenWidth, "Mac - 10", 0, 113, 230 );
+					else if( !strcmp( p->szName, "weapon_ashotgun" ) )
+						gHUD.DrawHudString( x, y, ScreenWidth, "Assault Shotgun", 0, 113, 230 );
+					else if( !strcmp( p->szName, "weapon_sshotgun" ) )
+						gHUD.DrawHudString( x, y, ScreenWidth, "12-Gauge Shotgun", 0, 113, 230 );
+					else if( !strcmp( p->szName, "weapon_chaingun" ) )
+						gHUD.DrawHudString( x, y, ScreenWidth, "Chaingun", 0, 113, 230 );
+					else if( !strcmp( p->szName, "weapon_rifle" ) )
+						gHUD.DrawHudString( x, y, ScreenWidth, "Sniper Rifle", 0, 113, 230 );
+					else if( !strcmp( p->szName, "weapon_grenadel" ) )
+						gHUD.DrawHudString( x, y, ScreenWidth, "Grenade Launcher", 0, 113, 230 );
+					else if( !strcmp( p->szName, "weapon_rocketl" ) )
+						gHUD.DrawHudString( x, y, ScreenWidth, "Rocket Launcher", 0, 113, 230 );
+					else if( !strcmp( p->szName, "weapon_chumtoad" ) )
+						gHUD.DrawHudString( x, y, ScreenWidth, "Chumtoad", 0, 113, 230 );
+					else if( !strcmp( p->szName, "weapon_boltgun" ) )
+						gHUD.DrawHudString( x, y, ScreenWidth, "Boltgun", 0, 113, 230 );
+					else if( !strcmp( p->szName, "weapon_ifrtripmine" ) )
+						gHUD.DrawHudString( x, y, ScreenWidth, "IFR Tripmine", 0, 113, 230 );
+					else if( !strcmp( p->szName, "weapon_clustergrenade" ) )
+						gHUD.DrawHudString( x, y, ScreenWidth, "Cluster Grenade", 0, 113, 230 );
+					else if( !strcmp( p->szName, "weapon_tnt" ) )
+						gHUD.DrawHudString( x, y, ScreenWidth, "Dynamite Vest", 0, 113, 230 );
+					else if( !strcmp( p->szName, "weapon_railgun" ) )
+						gHUD.DrawHudString( x, y, ScreenWidth, "Railgun", 0, 113, 230 );
+					else if( !strcmp( p->szName, "weapon_pulserifle" ) )
+						gHUD.DrawHudString( x, y, ScreenWidth, "Pulse-Rifle", 0, 113, 230 );
+					else if( !strcmp( p->szName, "weapon_nuke" ) )
+						gHUD.DrawHudString( x, y, ScreenWidth, "Nuke Launcher", 0, 113, 230 );
 				}
 
 				// Draw Ammo Bar
-				DrawAmmoBar( p, x + giABWidth / 2, y, giABWidth, giABHeight );
+				//DrawAmmoBar( p, x + giABWidth / 2, y, giABWidth, giABHeight );
 				
-				y += p->rcActive.bottom - p->rcActive.top + 5;
+				y += 14
 			}
 
 			x += iWidth + 5;
@@ -1133,9 +1308,9 @@ int CHudAmmo::DrawWList( float flTime )
 					a = 96;
 				}
 
-				FillRGBA( x, y, giBucketWidth, giBucketHeight, r, g, b, a );
+				//FillRGBA( x, y, giBucketWidth, giBucketHeight, r, g, b, a );
 
-				y += giBucketHeight + 5;
+				y += 14;
 			}
 
 			x += giBucketWidth + 5;

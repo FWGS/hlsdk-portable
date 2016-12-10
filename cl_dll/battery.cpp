@@ -78,7 +78,7 @@ int CHudBattery::Draw( float flTime )
 	wrect_t rc;
 
 	rc = *m_prc2;
-	rc.top  += m_iHeight * ( (float)( 100 - ( min( 100,m_iBat ) ) ) * 0.01 );	// battery can go from 0 to 100 so * 0.01 goes from 0 to 1
+	rc.top  += m_iHeight * ( (float)( 200 - ( min( 200,m_iBat ) ) ) * 0.005 );	// battery can go from 0 to 100 so * 0.01 goes from 0 to 1
 
 	UnpackRGB( r, g, b, RGB_YELLOWISH );
 
@@ -108,8 +108,11 @@ int CHudBattery::Draw( float flTime )
 
 	int iOffset = ( m_prc1->bottom - m_prc1->top ) / 6;
 
-	y = ScreenHeight - gHUD.m_iFontHeight - gHUD.m_iFontHeight / 2;
-	x = ScreenWidth / 5;
+	int HUD_suit_full = gHUD.GetSpriteIndex( "cross" );
+	int BatWidth = gHUD.GetSpriteRect( HUD_suit_full ).right - gHUD.GetSpriteRect( HUD_suit_full ).left;
+
+	y = ScreenHeight - 20;
+	x = BatWidth / 2;
 
 	// make sure we have the right sprite handles
 	if( !m_hSprite1 )
@@ -117,17 +120,18 @@ int CHudBattery::Draw( float flTime )
 	if( !m_hSprite2 )
 		m_hSprite2 = gHUD.GetSprite( gHUD.GetSpriteIndex( "suit_full" ) );
 
-	SPR_Set( m_hSprite1, r, g, b );
-	SPR_DrawAdditive( 0,  x, y - iOffset, m_prc1 );
-
+	SPR_Set( m_hSprite1, 255, 255, 255 );
+	SPR_DrawHoles( 0, x, y - iOffset, m_prc1 );
+/*
 	if( rc.bottom > rc.top )
 	{
-		SPR_Set( m_hSprite2, r, g, b );
-		SPR_DrawAdditive( 0, x, y - iOffset + ( rc.top - m_prc2->top ), &rc );
+		SPR_Set( m_hSprite2, 255, 255, 255 );
+		SPR_DrawHoles( 0, x, y - iOffset + ( rc.top - m_prc2->top ), &rc );
 	}
-
-	x += ( m_prc1->right - m_prc1->left );
-	x = gHUD.DrawHudNumber( x, y, DHN_3DIGITS | DHN_DRAWZERO, m_iBat, r, g, b );
+*/
+	x = BatWidth + 35;
+	y = ScreenHeight - 18;
+	gHUD.DrawHudNumberString( x, y, 0, m_iBat, 255, 255, 255 );
 
 	return 1;
 }

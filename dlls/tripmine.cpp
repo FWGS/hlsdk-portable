@@ -1,15 +1,15 @@
 /***
 *
-*	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
+*	Copyright (c) 1999, Cold Ice Modification.
 *	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
-*	All Rights Reserved.
+*	This code has been written by SlimShady ( darcuri@optonline.net )
 *
 *   Use, distribution, and modification of this source code and/or resulting
 *   object code is restricted to non-commercial enhancements to products from
 *   Valve LLC.  All other use, distribution, or modification is prohibited
-*   without written permission from Valve LLC.
+*   without written permission from Valve LLC and from the Cold Ice team.
+*
+*   Please if you use this code in any public form, please give us credit.
 *
 ****/
 
@@ -198,7 +198,7 @@ void CTripmineGrenade::PowerupThink( void )
 		// disable
 		STOP_SOUND( ENT( pev ), CHAN_VOICE, "weapons/mine_deploy.wav" );
 		STOP_SOUND( ENT( pev ), CHAN_BODY, "weapons/mine_charge.wav" );
-		CBaseEntity *pMine = Create( "weapon_tripmine", pev->origin + m_vecDir * 24, pev->angles );
+		CBaseEntity *pMine = Create( "weapon_ifrtripmine", pev->origin + m_vecDir * 24, pev->angles );
 		pMine->pev->spawnflags |= SF_NORESPAWN;
 
 		SetThink( &CBaseEntity::SUB_Remove );
@@ -249,9 +249,9 @@ void CTripmineGrenade::MakeBeam( void )
 
 	m_pBeam = CBeam::BeamCreate( g_pModelNameLaser, 10 );
 	m_pBeam->PointEntInit( vecTmpEnd, entindex() );
-	m_pBeam->SetColor( 0, 214, 198 );
+	m_pBeam->SetColor( 0, 113, 230 );
 	m_pBeam->SetScrollRate( 255 );
-	m_pBeam->SetBrightness( 64 );
+	m_pBeam->SetBrightness( 4 );
 }
 
 void CTripmineGrenade::BeamBreakThink( void )
@@ -307,8 +307,6 @@ int CTripmineGrenade::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacke
 {
 	if( gpGlobals->time < m_flPowerUp && flDamage < pev->health )
 	{
-		// disable
-		// Create( "weapon_tripmine", pev->origin + m_vecDir * 24, pev->angles );
 		SetThink( &CBaseEntity::SUB_Remove );
 		pev->nextthink = gpGlobals->time + 0.1;
 		KillBeam();
@@ -342,11 +340,12 @@ void CTripmineGrenade::DelayDeathThink( void )
 	Explode( &tr, DMG_BLAST );
 }
 #endif
-
+LINK_ENTITY_TO_CLASS( weapon_ifrtripmine, CTripmine );
 LINK_ENTITY_TO_CLASS( weapon_tripmine, CTripmine )
 
 void CTripmine::Spawn()
 {
+	pev->classname = MAKE_STRING("weapon_ifrtripmine");
 	Precache();
 	m_iId = WEAPON_TRIPMINE;
 	SET_MODEL( ENT( pev ), "models/v_tripmine.mdl" );
@@ -388,7 +387,7 @@ int CTripmine::GetItemInfo( ItemInfo *p )
 	p->iMaxAmmo2 = -1;
 	p->iMaxClip = WEAPON_NOCLIP;
 	p->iSlot = 4;
-	p->iPosition = 2;
+	p->iPosition = 3;
 	p->iId = m_iId = WEAPON_TRIPMINE;
 	p->iWeight = TRIPMINE_WEIGHT;
 	p->iFlags = ITEM_FLAG_LIMITINWORLD | ITEM_FLAG_EXHAUSTIBLE;

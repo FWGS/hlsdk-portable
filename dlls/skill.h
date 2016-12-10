@@ -91,20 +91,18 @@ struct skilldata_t
 
 	// Player Weapons
 	float plrDmgCrowbar;
+	float plrDmgKnife;
+	float plrDmgSword;
 	float plrDmg9MM;
-	float plrDmg357;
 	float plrDmgMP5;
-	float plrDmgM203Grenade;
+	float plrDmgRifle;
 	float plrDmgBuckshot;
-	float plrDmgCrossbowClient;
-	float plrDmgCrossbowMonster;
-	float plrDmgRPG;
-	float plrDmgGauss;
-	float plrDmgEgonNarrow;
-	float plrDmgEgonWide;
-	float plrDmgHornet;
-	float plrDmgHandGrenade;
-	float plrDmgSatchel;
+	float plrDmgBoltgun;
+	float plrDmgContact;
+	float plrDmgClusterGrenade;
+	float plrDmgRocket;
+	float plrDmgRailgun;
+	float plrDmgPulse;
 	float plrDmgTripmine;
 	
 	// weapons shared by monsters

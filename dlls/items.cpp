@@ -1,15 +1,15 @@
 /***
 *
-*	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
-*	All Rights Reserved.
+*	Copyright (c) 1999, Cold Ice Modification.
+*
+*	This code has been written by SlimShady ( darcuri@optonline.net )
 *
 *   Use, distribution, and modification of this source code and/or resulting
 *   object code is restricted to non-commercial enhancements to products from
 *   Valve LLC.  All other use, distribution, or modification is prohibited
-*   without written permission from Valve LLC.
+*   without written permission from Valve LLC and from the Cold Ice team.
+*
+*   Please if you use this code in any public form, please give us credit.
 *
 ****/
 /*
@@ -60,12 +60,6 @@ void CWorldItem::Spawn( void )
 	{
 	case 44: // ITEM_BATTERY:
 		pEntity = CBaseEntity::Create( "item_battery", pev->origin, pev->angles );
-		break;
-	case 42: // ITEM_ANTIDOTE:
-		pEntity = CBaseEntity::Create( "item_antidote", pev->origin, pev->angles );
-		break;
-	case 43: // ITEM_SECURITY:
-		pEntity = CBaseEntity::Create( "item_security", pev->origin, pev->angles );
 		break;
 	case 45: // ITEM_SUIT:
 		pEntity = CBaseEntity::Create( "item_suit", pev->origin, pev->angles );
@@ -204,12 +198,12 @@ class CItemBattery : public CItem
 	void Spawn( void )
 	{ 
 		Precache();
-		SET_MODEL( ENT( pev ), "models/w_battery.mdl" );
+		SET_MODEL( ENT( pev ), "models/items/w_battery.mdl" );
 		CItem::Spawn();
 	}
 	void Precache( void )
 	{
-		PRECACHE_MODEL( "models/w_battery.mdl" );
+		PRECACHE_MODEL( "models/items/w_battery.mdl" );
 		PRECACHE_SOUND( "items/gunpickup2.wav" );
 	}
 	BOOL MyTouch( CBasePlayer *pPlayer )
@@ -243,7 +237,7 @@ class CItemBattery : public CItem
 
 			sprintf( szcharge,"!HEV_%1dP", pct );
 
-			//EMIT_SOUND_SUIT( ENT( pev ), szcharge );
+			EMIT_SOUND_SUIT( ENT( pPlayer->pev ), szcharge );
 			pPlayer->SetSuitUpdate( szcharge, FALSE, SUIT_NEXT_IN_30SEC);
 			return TRUE;
 		}
@@ -253,49 +247,29 @@ class CItemBattery : public CItem
 
 LINK_ENTITY_TO_CLASS( item_battery, CItemBattery )
 
-class CItemAntidote : public CItem
+class CItemPrecache : public CItem
 {
 	void Spawn( void )
 	{ 
 		Precache();
-		SET_MODEL( ENT( pev ), "models/w_antidote.mdl" );
+		//SET_MODEL( ENT( pev ), "models/models/items/w_battery.mdl" );
 		CItem::Spawn();
 	}
 	void Precache( void )
 	{
-		PRECACHE_MODEL( "models/w_antidote.mdl" );
-	}
-	BOOL MyTouch( CBasePlayer *pPlayer )
-	{
-		pPlayer->SetSuitUpdate( "!HEV_DET4", FALSE, SUIT_NEXT_IN_1MIN );
-
-		pPlayer->m_rgItems[ITEM_ANTIDOTE] += 1;
-		return TRUE;
+		PRECACHE_MODEL( "models/items/w_battery.mdl" );
+		PRECACHE_SOUND( "items/gunpickup2.wav" );
 	}
 };
 
-LINK_ENTITY_TO_CLASS( item_antidote, CItemAntidote )
-
-class CItemSecurity : public CItem
-{
-	void Spawn( void )
-	{ 
-		Precache();
-		SET_MODEL( ENT( pev ), "models/w_security.mdl" );
-		CItem::Spawn();
-	}
-	void Precache( void )
-	{
-		PRECACHE_MODEL( "models/w_security.mdl" );
-	}
-	BOOL MyTouch( CBasePlayer *pPlayer )
-	{
-		pPlayer->m_rgItems[ITEM_SECURITY] += 1;
-		return TRUE;
-	}
-};
-
-LINK_ENTITY_TO_CLASS( item_security, CItemSecurity )
+LINK_ENTITY_TO_CLASS( ammo_ARgrenades, CItemPrecache );
+LINK_ENTITY_TO_CLASS( ammo_357, CItemPrecache );
+LINK_ENTITY_TO_CLASS( ammo_gaussclip, CItemPrecache );
+LINK_ENTITY_TO_CLASS( ammo_rpgclip , CItemPrecache );
+LINK_ENTITY_TO_CLASS( weapon_9mmhandgun, CItemPrecache );
+LINK_ENTITY_TO_CLASS( ammo_9mmAR, CItemPrecache );
+LINK_ENTITY_TO_CLASS( ammo_crossbow, CItemPrecache );
+LINK_ENTITY_TO_CLASS( ammo_buckshot, CItemPrecache );
 
 class CItemLongJump : public CItem
 {

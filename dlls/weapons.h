@@ -1,15 +1,15 @@
 /***
 *
-*	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
+*	Copyright (c) 1999, Cold Ice Modification. 
 *	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
-*	All Rights Reserved.
+*	This code has been written by SlimShady ( darcuri@optonline.net )
 *
 *   Use, distribution, and modification of this source code and/or resulting
 *   object code is restricted to non-commercial enhancements to products from
 *   Valve LLC.  All other use, distribution, or modification is prohibited
-*   without written permission from Valve LLC.
+*   without written permission from Valve LLC and from the Cold Ice team.
+*
+*   Please if you use this code in any public form, please give us credit.
 *
 ****/
 #ifndef WEAPONS_H
@@ -20,7 +20,7 @@
 class CBasePlayer;
 extern int gmsgWeapPickup;
 
-void DeactivateSatchels( CBasePlayer *pOwner );
+//void DeactivateSatchels( CBasePlayer *pOwner );
 
 // Contact Grenade / Timed grenade / Satchel Charge
 class CGrenade : public CBaseMonster
@@ -30,14 +30,23 @@ public:
 
 	typedef enum { SATCHEL_DETONATE = 0, SATCHEL_RELEASE } SATCHELCODE;
 
-	static CGrenade *ShootTimed( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity, float time );
 	static CGrenade *ShootContact( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity );
 	static CGrenade *ShootSatchelCharge( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity );
 	static void UseSatchelCharges( entvars_t *pevOwner, SATCHELCODE code );
 
+	static CGrenade *ShootTimed( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity, float time );
+
+	static CGrenade *ShootClusterGrenade( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity, float time );
+	static CGrenade *ShootCluster( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity, float time );
+
 	void Explode( Vector vecSrc, Vector vecAim );
 	void Explode( TraceResult *pTrace, int bitsDamageType );
 	void EXPORT Smoke( void );
+
+	void EXPORT ClusterTumbleThink( void );
+	void EXPORT ClusterLaunch( void );
+	void EXPORT ClusterDetonate( void );
+	entvars_t *clusterOwner;
 
 	void EXPORT BounceTouch( CBaseEntity *pOther );
 	void EXPORT SlideTouch( CBaseEntity *pOther );
@@ -57,26 +66,32 @@ public:
 
 // constant items
 #define ITEM_HEALTHKIT		1
-#define ITEM_ANTIDOTE		2
-#define ITEM_SECURITY		3
-#define ITEM_BATTERY		4
+#define ITEM_BATTERY		2
 
-#define WEAPON_NONE				0
-#define WEAPON_CROWBAR			1
-#define	WEAPON_GLOCK			2
-#define WEAPON_PYTHON			3
-#define WEAPON_MP5				4
-#define WEAPON_CHAINGUN			5
-#define WEAPON_CROSSBOW			6
-#define WEAPON_SHOTGUN			7
-#define WEAPON_RPG				8
-#define WEAPON_GAUSS			9
-#define WEAPON_EGON				10
-#define WEAPON_HORNETGUN		11
-#define WEAPON_HANDGRENADE		12
-#define WEAPON_TRIPMINE			13
-#define	WEAPON_SATCHEL			14
-#define	WEAPON_SNARK			15
+#define WEAPON_NONE		0
+#define WEAPON_CROWBAR		1
+#define WEAPON_KNIFE		2
+#define WEAPON_SWORD		3
+#define WEAPON_PPK              4
+#define WEAPON_MAG60            5
+#define WEAPON_M16		6
+#define WEAPON_UZI		7
+#define WEAPON_MAC10		8
+#define WEAPON_DOUBLEUZI	9
+#define WEAPON_ASHOTGUN		10
+#define WEAPON_SSHOTGUN		11
+#define WEAPON_CHAINGUN		12
+#define WEAPON_RIFLE		13
+#define WEAPON_BOLTGUN		14
+#define WEAPON_GRENADEL		15
+#define WEAPON_CLUSTERGRENADE	16
+#define WEAPON_RAILGUN		17
+#define WEAPON_PULSERIFLE	18
+#define WEAPON_CHUMTOAD		19
+#define WEAPON_ROCKETL		20
+#define WEAPON_TNT		21
+#define WEAPON_TRIPMINE		22
+#define WEAPON_NUKE		23
 
 #define WEAPON_ALLWEAPONS		(~(1<<WEAPON_SUIT))
 
@@ -88,92 +103,118 @@ public:
 
 // weapon weight factors (for auto-switching)   (-1 = noswitch)
 #define CROWBAR_WEIGHT		0
-#define GLOCK_WEIGHT		10
-#define PYTHON_WEIGHT		15
-#define MP5_WEIGHT			15
-#define SHOTGUN_WEIGHT		15
-#define CROSSBOW_WEIGHT		10
-#define RPG_WEIGHT			20
-#define GAUSS_WEIGHT		20
-#define EGON_WEIGHT			20
-#define HORNETGUN_WEIGHT	10
-#define HANDGRENADE_WEIGHT	5
-#define SNARK_WEIGHT		5
-#define SATCHEL_WEIGHT		-10
-#define TRIPMINE_WEIGHT		-10
+#define KNIFE_WEIGHT		2
+#define SWORD_WEIGHT		4
+#define PPK_WEIGHT		10
+#define BOLTGUN_WEIGHT		10
+#define SSHOTGUN_WEIGHT		12
+#define MAG60_WEIGHT		14
+#define ASHOTGUN_WEIGHT		15
+#define CHAINGUN_WEIGHT		15
+#define M16_WEIGHT		15
+#define UZI_WEIGHT		15
+#define RAILGUN_WEIGHT		16
+#define MAC10_WEIGHT		16
+#define GRENADEL_WEIGHT		18
+#define PULSERIFLE_WEIGHT	18
+#define RIFLE_WEIGHT		20
+#define DOUBLEUZI_WEIGHT	20
+#define ROCKETL_WEIGHT		20
+#define TRIPMINE_WEIGHT		20
+#define CHUMTOAD_WEIGHT		22
+#define CLUSTERGRENADE_WEIGHT	24
+#define TNT_WEIGHT		30
+#define NUKE_WEIGHT		40
 
 // weapon clip/carry ammo capacities
-#define URANIUM_MAX_CARRY		100
-#define	_9MM_MAX_CARRY			250
-#define _357_MAX_CARRY			36
-#define BUCKSHOT_MAX_CARRY		125
-#define BOLT_MAX_CARRY			50
-#define ROCKET_MAX_CARRY		5
-#define HANDGRENADE_MAX_CARRY	10
-#define SATCHEL_MAX_CARRY		5
-#define TRIPMINE_MAX_CARRY		5
-#define SNARK_MAX_CARRY			15
-#define HORNET_MAX_CARRY		8
-#define M203_GRENADE_MAX_CARRY	10
+#define PPK_MAX_CARRY		64
+#define MAG60_MAX_CARRY		128
+#define M16_MAX_CARRY		75
+#define UZI_MAX_CARRY		96
+#define MAC10_MAX_CARRY		96
+#define DOUBLEUZI_MAX_CARRY	192
+#define BUCKSHOT_MAX_CARRY	96
+#define BOLTGUN_MAX_CARRY	50
+#define CHAINGUN_MAX_CARRY	200
+#define RIFLE_MAX_CARRY		20
+#define GRENADEL_MAX_CARRY	18
+#define CLUSTERGRENADE_MAX_CARRY 2
+#define TIMED_MAX_CARRY		8
+#define RAILGUN_MAX_CARRY	100
+#define PULSERIFLE_MAX_CARRY	100
+#define CHUMTOAD_MAX_CARRY	5
+#define ROCKETL_MAX_CARRY	5
+#define HELIROCKET_MAX_CARRY	2
+#define TRIPMINE_MAX_CARRY	2
+#define TNT_MAX_CARRY		1
+#define NUKE_MAX_CARRY		2
 
 // the maximum amount of ammo each weapon's clip can hold
 #define WEAPON_NOCLIP			-1
 
 //#define CROWBAR_MAX_CLIP		WEAPON_NOCLIP
-#define GLOCK_MAX_CLIP			17
-#define PYTHON_MAX_CLIP			6
-#define MP5_MAX_CLIP			50
-#define MP5_DEFAULT_AMMO		25
-#define SHOTGUN_MAX_CLIP		8
-#define CROSSBOW_MAX_CLIP		5
-#define RPG_MAX_CLIP			1
-#define GAUSS_MAX_CLIP			WEAPON_NOCLIP
-#define EGON_MAX_CLIP			WEAPON_NOCLIP
-#define HORNETGUN_MAX_CLIP		WEAPON_NOCLIP
-#define HANDGRENADE_MAX_CLIP	WEAPON_NOCLIP
-#define SATCHEL_MAX_CLIP		WEAPON_NOCLIP
-#define TRIPMINE_MAX_CLIP		WEAPON_NOCLIP
-#define SNARK_MAX_CLIP			WEAPON_NOCLIP
+#define PPK_MAX_CLIP		8
+#define MAG60_MAX_CLIP		28
+#define M16_MAX_CLIP		30
+#define UZI_MAX_CLIP		32
+#define MAC10_MAX_CLIP		32
+#define DOUBLEUZI_MAX_CLIP	64
+#define SSHOTGUN_MAX_CLIP	2
+#define ASHOTGUN_MAX_CLIP	16
+#define CHAINGUN_MAX_CLIP	100
+#define RIFLE_MAX_CLIP		10
+#define BOLTGUN_MAX_CLIP	30
+#define GRENADEL_MAX_CLIP	6
+#define ROCKETL_MAX_CLIP	1
+#define NUKE_MAX_CLIP		1
 
 // the default amount of ammo that comes with each gun when it spawns
-#define GLOCK_DEFAULT_GIVE			17
-#define PYTHON_DEFAULT_GIVE			6
-#define MP5_DEFAULT_GIVE			25
-#define MP5_DEFAULT_AMMO			25
-#define MP5_M203_DEFAULT_GIVE		0
-#define SHOTGUN_DEFAULT_GIVE		12
-#define CROSSBOW_DEFAULT_GIVE		5
-#define RPG_DEFAULT_GIVE			1
-#define GAUSS_DEFAULT_GIVE			20
-#define EGON_DEFAULT_GIVE			20
-#define HANDGRENADE_DEFAULT_GIVE	5
-#define SATCHEL_DEFAULT_GIVE		1
-#define TRIPMINE_DEFAULT_GIVE		1
-#define SNARK_DEFAULT_GIVE			5
-#define HIVEHAND_DEFAULT_GIVE		8
+#define PPK_DEFAULT_GIVE		72
+#define MAG60_DEFAULT_GIVE		156
+#define M16_DEFAULT_GIVE		105
+#define UZI_DEFAULT_GIVE		128
+#define MAC10_DEFAULT_GIVE		128
+#define DOUBLEUZI_DEFAULT_GIVE		64
+#define SSHOTGUN_DEFAULT_GIVE		98
+#define ASHOTGUN_DEFAULT_GIVE		112
+#define CHAINGUN_DEFAULT_GIVE		260
+#define RIFLE_DEFAULT_GIVE		30
+#define BOLTGUN_DEFAULT_GIVE		105
+#define GRENADEL_DEFAULT_GIVE		24
+#define CLUSTERGRENADE_DEFAULT_GIVE	1
+#define RAILGUN_DEFAULT_GIVE		100
+#define PULSERIFLE_DEFAULT_GIVE		100
+#define CHUMTOAD_DEFAULT_GIVE		5
+#define ROCKETL_DEFAULT_GIVE		6
+#define TRIPMINE_DEFAULT_GIVE		2
+#define TNT_DEFAULT_GIVE		1
+#define NUKE_DEFAULT_GIVE		3
 
 // The amount of ammo given to a player by an ammo item.
-#define AMMO_URANIUMBOX_GIVE	20
-#define AMMO_GLOCKCLIP_GIVE		GLOCK_MAX_CLIP
-#define AMMO_357BOX_GIVE		PYTHON_MAX_CLIP
-#define AMMO_MP5CLIP_GIVE		MP5_MAX_CLIP
-#define AMMO_CHAINBOX_GIVE		200
-#define AMMO_M203BOX_GIVE		2
-#define AMMO_BUCKSHOTBOX_GIVE	12
-#define AMMO_CROSSBOWCLIP_GIVE	CROSSBOW_MAX_CLIP
-#define AMMO_RPGCLIP_GIVE		RPG_MAX_CLIP
-#define AMMO_URANIUMBOX_GIVE	20
-#define AMMO_SNARKBOX_GIVE		5
+#define AMMO_PPKCLIP_GIVE		24
+#define AMMO_MAGCLIP_GIVE		28
+#define AMMO_M16CLIP_GIVE		30
+#define AMMO_UZICLIP_GIVE		32
+#define AMMO_BUCKSHOTBOX_GIVE		24
+#define AMMO_CHAINGUNBOX_GIVE		60
+#define AMMO_RIFLECLIP_GIVE		10
+#define AMMO_BOLTGUN_GIVE		30
+#define AMMO_RAILSLUG_GIVE		25
+#define AMMO_PULSEAMMO_GIVE		25
+#define AMMO_CONTACT_GIVE		2
+#define AMMO_TIMED_GIVE			2
+#define AMMO_ROCKET_GIVE		2
+#define AMMO_NUKECLIP_GIVE		1
 
 // bullet types
 typedef	enum
 {
 	BULLET_NONE = 0,
-	BULLET_PLAYER_9MM, // glock
-	BULLET_PLAYER_MP5, // mp5
-	BULLET_PLAYER_357, // python
-	BULLET_PLAYER_BUCKSHOT, // shotgun
-	BULLET_PLAYER_CROWBAR, // crowbar swipe
+	BULLET_PLAYER_CROWBAR,
+	BULLET_PLAYER_9MM,
+	BULLET_PLAYER_MP5,
+	BULLET_PLAYER_765MM,
+	BULLET_PLAYER_BUCKSHOT,
 
 	BULLET_MONSTER_9MM,
 	BULLET_MONSTER_MP5,
@@ -344,6 +385,7 @@ public:
 	int		m_iClientWeaponState;								// the last version of the weapon state sent to hud dll (is current weapon, is on target)
 	int		m_fInReload;										// Are we in the middle of a reload;
 
+	int		menu_on;
 	int		m_iDefaultAmmo;// how much ammo you get when you pick up this weapon as placed by a level designer.
 };
 

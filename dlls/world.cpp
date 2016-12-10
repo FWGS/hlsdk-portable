@@ -504,6 +504,9 @@ void CWorld::Precache( void )
 	// player precaches
 	W_Precache();				// get weapon precaches
 
+	// Create Some Runes
+	CWorldRunes *WorldRunes = CWorldRunes::Create();
+
 	ClientPrecache();
 
 	// sounds used from C physics code
@@ -511,6 +514,9 @@ void CWorld::Precache( void )
 
 	PRECACHE_SOUND( "items/suitchargeok1.wav" );//!!! temporary sound for respawning weapons.
 	PRECACHE_SOUND( "items/gunpickup2.wav" );// player picks up a gun.
+
+	PRECACHE_SOUND( "items/cliprelease1.wav" );
+	PRECACHE_SOUND( "items/clipinsert1.wav" );
 
 	PRECACHE_SOUND( "common/bodydrop3.wav" );// dead bodies hitting the ground (animation events)
 	PRECACHE_SOUND( "common/bodydrop4.wav" );

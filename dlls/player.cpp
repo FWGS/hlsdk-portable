@@ -405,6 +405,10 @@ void CBasePlayer::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector ve
 			break;
 		}
 
+		//rune support
+		flDamage = RuneDamage( pevAttacker, flDamage );
+		flDamage = RuneProtect( flDamage );
+
 		SpawnBlood( ptr->vecEndPos, BloodColor(), flDamage );// a little surface blood.
 		TraceBleed( flDamage, vecDir, ptr, bitsDamageType );
 		AddMultiDamage( pevAttacker, this, flDamage, bitsDamageType );
@@ -436,6 +440,10 @@ int CBasePlayer::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 
 	flBonus = ARMOR_BONUS;
 	flRatio = ARMOR_RATIO;
+
+	// rune support
+	flDamage = RuneDamage( pevAttacker, flDamage );
+	flDamage = RuneProtect( flDamage );
 
 	if( ( bitsDamageType & DMG_BLAST ) && g_pGameRules->IsMultiplayer() )
 	{
@@ -884,6 +892,9 @@ void CBasePlayer::Killed( entvars_t *pevAttacker, int iGib )
 
 	// reset FOV
 	pev->fov = m_iFOV = m_iClientFOV = 0;
+
+	// rune spawn
+	SpawnRunes();
 
 	MESSAGE_BEGIN( MSG_ONE, gmsgSetFOV, NULL, pev );
 		WRITE_BYTE( 0 );
@@ -1364,14 +1375,100 @@ void CBasePlayer::StartObserver( Vector vecPosition, Vector vecViewAngle )
 
 	pev->view_ofs = g_vecZero;
 	pev->angles = pev->v_angle = vecViewAngle;
-	pev->fixangle = TRUE;
+	pev->fixangle = FALSE;
 	pev->solid = SOLID_NOT;
 	pev->takedamage = DAMAGE_NO;
-	pev->movetype = MOVETYPE_NONE;
+	pev->movetype = MOVETYPE_NOCLIP;
 	pev->modelindex = 0;
 	UTIL_SetOrigin( pev, vecPosition );
 }
 
+void CBasePlayer::StartSpectator( void )
+{
+	if( observerflag )
+		return;
+
+	//if( IsAlive() )
+	//     return;
+
+	const char *pcmd = CMD_ARGV( 0 );
+
+	observerflag = TRUE;
+	RemoveAllItems( TRUE );
+	pev->deadflag = DEAD_DEAD;
+	m_fWantRespawn = FALSE;
+
+	// no intermission spot. Push them up in the air, looking down at their corpse
+	TraceResult tr;
+	UTIL_TraceLine( pev->origin, pev->origin + Vector( 0, 0, 128 ), ignore_monsters, edict(), &tr );
+	StartObserver( tr.vecEndPos, UTIL_VecToAngles( tr.vecEndPos - pev->origin ) );
+
+	return;
+}
+
+void CBasePlayer::SpectatorMove( void )
+{
+	if( !observerflag )
+		return;
+
+	if( m_afButtonPressed & IN_FORWARD )
+	{
+		//Ok vectors kick ass...
+		Vector vecSrc = pev->origin;
+		Vector vecAiming = gpGlobals->v_forward;
+		Vector vecTarget = gpGlobals->v_forward;
+		Vector vecDir;
+
+		//Traceline does to... We use it to find where to fly at.
+		TraceResult tr;
+		UTIL_TraceLine ( vecSrc, vecSrc + vecAiming * 8192, dont_ignore_monsters, ENT( pev ), &tr );
+
+		float flSpeed = pev->velocity.Length();
+		vecDir = tr.vecEndPos - pev->origin;
+		vecTarget = vecDir;
+		pev->velocity = ( pev->velocity * 0.2 + vecTarget * ( flSpeed * 0.2 + 400 ) ).Normalize() * 350;
+		pev->velocity.z += 25; //i dunno if this does anything anymore
+	}
+}
+
+void CBasePlayer::StopSpectator( void )
+{
+	if( !observerflag )
+		return;
+
+	pev->deadflag = DEAD_NO;
+	observerflag = FALSE;
+	m_fWantRespawn = TRUE;
+
+	pev->button = 0;
+	m_iRespawnFrames = 0;
+
+	respawn( pev, !( m_afPhysicsFlags & PFLAG_OBSERVER ) );
+	pev->nextthink = -1;
+}
+
+void CBasePlayer::StartMenu( void )
+{
+	if( observerflag )
+		return;
+
+	if( IsAlive() )
+		return;
+
+	observerflag = TRUE;
+	RemoveAllItems( TRUE );
+	pev->deadflag = DEAD_DEAD;
+	m_fWantRespawn = FALSE;
+
+	// no intermission spot. Push them up in the air, looking down at their corpse
+	TraceResult tr;
+	UTIL_TraceLine( pev->origin, pev->origin + Vector( 0, 0, 128 ), ignore_monsters, edict(), &tr );
+	StartObserver( tr.vecEndPos, UTIL_VecToAngles( tr.vecEndPos - pev->origin ) );
+
+	return;
+}
+
+//---------------------------------------------------------------------------
 //
 // PlayerUse - handles USE keypress
 //
@@ -1725,6 +1822,8 @@ void CBasePlayer::PreThink( void )
 	m_afButtonPressed =  buttonsChanged & pev->button;		// The changed ones still down are "pressed"
 	m_afButtonReleased = buttonsChanged & ( ~pev->button );	// The ones not down are "released"
 
+	SpectatorMove();
+
 	g_pGameRules->PlayerThink( this );
 
 	if( g_fGameOver )
@@ -1824,6 +1923,17 @@ void CBasePlayer::PreThink( void )
 	// If trying to duck, already ducked, or in the process of ducking
 	if( ( pev->button & IN_DUCK ) || FBitSet( pev->flags,FL_DUCKING ) || ( m_afPhysicsFlags & PFLAG_DUCKING ) )
 		Duck();
+
+	if( m_iPlayerRune & RUNE_SPEED )
+	{
+		RuneSpeed();
+		return;
+	}
+
+	if( m_iPlayerRune & RUNE_HEALTH )
+	{
+		RuneHeal();
+	}
 
 	if( !FBitSet( pev->flags, FL_ONGROUND ) )
 	{
@@ -1986,12 +2096,6 @@ void CBasePlayer::CheckTimeBasedDamage()
 				if( ( ( i == itbd_NerveGas ) && ( m_rgbTimeBasedDamage[i] < NERVEGAS_DURATION ) ) ||
 					( ( i == itbd_Poison ) && ( m_rgbTimeBasedDamage[i] < POISON_DURATION ) ) )
 				{
-					if( m_rgItems[ITEM_ANTIDOTE] )
-					{
-						m_rgbTimeBasedDamage[i] = 0;
-						m_rgItems[ITEM_ANTIDOTE]--;
-						SetSuitUpdate( "!HEV_HEAL4", FALSE, SUIT_REPEAT_OK );
-					}
 				}
 
 				// decrement damage duration, detect when done.
@@ -2715,6 +2819,8 @@ void CBasePlayer::Spawn( void )
 	pev->fov = m_iFOV = 0;// init field of view.
 	m_iClientFOV = -1; // make sure fov reset is sent
 
+	m_iPlayerRune = 0; // no rune
+
 	m_flNextDecalTime = 0;// let this player decal as soon as he spawns.
 
 	m_flgeigerDelay = gpGlobals->time + 2.0;	// wait a few seconds until user-defined message registrations
@@ -3344,34 +3450,42 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 			Create( "monster_human_grunt", pev->origin + gpGlobals->v_forward * 128, pev->angles );
 		}
 		break;
-	case 101:
+	case 43:
 		gEvilImpulse101 = TRUE;
-		GiveNamedItem( "item_suit" );
-		GiveNamedItem( "item_battery" );
-		GiveNamedItem( "weapon_crowbar" );
-		GiveNamedItem( "weapon_9mmhandgun" );
-		GiveNamedItem( "ammo_9mmclip" );
-		GiveNamedItem( "weapon_shotgun" );
-		GiveNamedItem( "ammo_buckshot" );
-		GiveNamedItem( "weapon_9mmAR" );
-		GiveNamedItem( "ammo_9mmAR" );
-		GiveNamedItem( "ammo_ARgrenades" );
-		GiveNamedItem( "weapon_handgrenade" );
-		GiveNamedItem( "weapon_tripmine" );
-#ifndef OEM_BUILD
-		GiveNamedItem( "weapon_357" );
-		GiveNamedItem( "ammo_357" );
-		GiveNamedItem( "weapon_crossbow" );
-		GiveNamedItem( "ammo_crossbow" );
-		GiveNamedItem( "weapon_egon" );
-		GiveNamedItem( "weapon_gauss" );
-		GiveNamedItem( "ammo_gaussclip" );
-		GiveNamedItem( "weapon_rpg" );
-		GiveNamedItem( "ammo_rpgclip" );
-		GiveNamedItem( "weapon_satchel" );
-		GiveNamedItem( "weapon_snark" );
-		GiveNamedItem( "weapon_hornetgun" );
-#endif
+		GiveNamedItem( "weapon_knife" );
+		GiveNamedItem( "weapon_sword" );
+		GiveNamedItem( "weapon_ppk" );
+		GiveNamedItem( "ammo_ppkclip" );
+		GiveNamedItem( "weapon_mag60" );
+		GiveNamedItem( "ammo_magclip" );
+		GiveNamedItem( "weapon_m16" );
+		GiveNamedItem( "ammo_m16clip" );
+		GiveNamedItem( "weapon_uzi" );
+		GiveNamedItem( "weapon_doubleuzi" );
+		GiveNamedItem( "ammo_uziclip" );
+		GiveNamedItem( "weapon_ashotgun" );
+		GiveNamedItem( "ammo_buckshotbox" );
+		GiveNamedItem( "weapon_sshotgun" );
+		GiveNamedItem( "weapon_chaingun" );
+		GiveNamedItem( "ammo_chaingunbox" );
+		GiveNamedItem( "weapon_rifle" );
+		GiveNamedItem( "ammo_rifleclip" );
+		GiveNamedItem( "weapon_grenadel" );
+		GiveNamedItem( "ammo_contact" );
+		GiveNamedItem( "ammo_timed" );
+		GiveNamedItem( "weapon_rocketl" );
+		GiveNamedItem( "ammo_rocket" );
+		GiveNamedItem( "weapon_boltgun" );
+		GiveNamedItem( "ammo_boltgun" );
+		GiveNamedItem( "weapon_chumtoad" );
+		GiveNamedItem( "weapon_tnt" );
+		GiveNamedItem( "weapon_railgun" );
+		GiveNamedItem( "ammo_railslug" );
+		GiveNamedItem( "weapon_pulserifle" );
+		GiveNamedItem( "weapon_ifrtripmine" );
+		GiveNamedItem( "weapon_clustergrenade" );
+		GiveNamedItem( "weapon_nuke" );
+		GiveNamedItem( "ammo_nukeclip" );
 		gEvilImpulse101 = FALSE;
 		break;
 	case 102:
@@ -4443,6 +4557,240 @@ BOOL CBasePlayer::SwitchWeapon( CBasePlayerItem *pWeapon )
 }
 
 //=========================================================
+// Cold Ice Grapple Hook
+//=========================================================
+class CHook : public CBaseEntity
+{
+	void Spawn( void );
+
+	int Classify( void ); 
+	void EXPORT HookTouch( CBaseEntity *pOther );
+	void KillHook( void );
+	void Think( void );
+	Vector m_vPlayerHangOrigin;
+	BOOL m_fPlayerAtEnd;
+	short ropesprite;
+public:
+	static CHook *HookCreate( void );
+	void Precache( void );
+	CBasePlayer *pevOwner;
+};
+
+LINK_ENTITY_TO_CLASS( grapple_hook, CHook )
+
+CHook *CHook::HookCreate( void )
+{
+	CHook *pHook = GetClassPtr( (CHook *)NULL );
+	pHook->pev->classname = MAKE_STRING( "hook" );
+	pHook->Spawn();
+	return pHook;
+}
+
+void CHook::Spawn()
+{
+	Precache();
+	pev->movetype = MOVETYPE_FLY;
+	pev->solid = SOLID_BBOX;
+	pev->gravity = -0.01;
+
+	SET_MODEL( ENT( pev ), "models/bolt.mdl" );
+
+	UTIL_SetOrigin( pev, pev->origin );
+	UTIL_SetSize( pev, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ) );
+
+	SetTouch( CHook::HookTouch );
+}
+
+
+void CHook::Precache()
+{
+	PRECACHE_MODEL( "models/bolt.mdl" );
+
+	PRECACHE_SOUND( "weapons/xbow_hitbod1.wav" );
+	PRECACHE_SOUND( "weapons/xbow_hitbod2.wav" );
+
+	PRECACHE_SOUND( "weapons/xbow_fly1.wav" );
+	PRECACHE_SOUND( "weapons/xbow_hit1.wav" );
+	PRECACHE_SOUND( "weapons/grapple/deploy.wav" );
+
+	ropesprite = PRECACHE_MODEL( "sprites/smoke.spr" );
+}
+
+int CHook::Classify( void )
+{
+	return CLASS_NONE;
+}
+
+void CHook::HookTouch( CBaseEntity *pOther )
+{
+	SetTouch( NULL );
+	SetThink( NULL );
+	if( pOther->pev->takedamage )
+	{
+		TraceResult tr = UTIL_GetGlobalTrace();
+		entvars_t *Owner;
+		Owner = VARS( pev->owner );
+		pOther->TraceAttack( Owner, 5, pev->velocity.Normalize(), &tr, DMG_NEVERGIB ); 
+		ApplyMultiDamage( pev, Owner );
+		pev->velocity = Vector( 0, 0, 0 );
+
+		switch( RANDOM_LONG( 0, 1 ) )
+		{
+			case 0:
+				EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "weapons/xbow_hitbod1.wav", 1, ATTN_NORM );
+				break;
+			case 1:
+				EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "weapons/xbow_hitbod2.wav", 1, ATTN_NORM );
+				break;
+		}
+		pevOwner->m_fHookButton = FALSE;
+		pevOwner->pev->movetype = MOVETYPE_WALK;
+		pevOwner->m_fActiveHook = FALSE;
+		pevOwner->m_fHookInWall = FALSE;
+		pevOwner->pev->gravity = 1;
+		m_fPlayerAtEnd = FALSE;
+		SUB_Remove();
+
+		if( !g_pGameRules->IsMultiplayer() )
+		{
+			Killed( pev, GIB_NEVER );
+		}
+		return;
+	}
+	else
+	{
+		EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, "weapons/xbow_hit1.wav", RANDOM_FLOAT( 0.95, 1.0 ), ATTN_NORM, 0, 98 + RANDOM_LONG( 0, 7 ) );
+		{
+			Vector vecDir = pev->velocity.Normalize();
+			UTIL_SetOrigin( pev, pev->origin - vecDir * 12 );
+			pev->angles = UTIL_VecToAngles( vecDir );
+			pev->solid = SOLID_NOT;
+			pev->movetype = MOVETYPE_FLY;
+			pev->velocity = Vector( 0, 0, 0 );
+			pev->avelocity.z = 0;
+			pev->angles.z = RANDOM_LONG( 0, 360 );
+			SetThink( CHook::Think );
+			pev->nextthink = gpGlobals->time + 0.01;
+
+			pevOwner->m_fHookInWall = TRUE; 
+			pevOwner->m_fActiveHook = TRUE;
+			pevOwner->pev->movetype = MOVETYPE_FLY;
+
+		}
+
+		UTIL_Sparks( pev->origin ); 
+
+	}
+}
+
+void CHook::KillHook( void ) 
+{
+	pevOwner->m_fHookButton = FALSE;
+	pevOwner->pev->movetype = MOVETYPE_WALK;
+	pevOwner->m_fActiveHook = FALSE;
+	pevOwner->m_fHookInWall = FALSE;
+	pevOwner->pev->gravity = 1;
+	m_fPlayerAtEnd = FALSE;
+	SUB_Remove();
+}
+
+void CHook::Think( void )
+{
+	if( !pevOwner->IsAlive() )
+	{
+		KillHook();
+		return;
+	}
+
+	if( !pevOwner->m_fHookButton )
+	{
+		KillHook();
+		return;
+	}
+
+	MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY ); 
+		WRITE_BYTE( TE_BEAMENTS ); 
+		WRITE_SHORT( pevOwner->entindex() );
+		WRITE_SHORT( this->entindex() );
+		WRITE_SHORT( ropesprite ); 
+		WRITE_BYTE( 1 );
+		WRITE_BYTE( 0 );
+		WRITE_BYTE( 1 );
+		WRITE_BYTE( 10 );
+		WRITE_BYTE( 0 );
+		WRITE_BYTE( 0 ); //Red
+		WRITE_BYTE( 113 ); //Green
+		WRITE_BYTE( 230 ); //Blue
+		WRITE_BYTE( 185 ); //Brightness
+		WRITE_BYTE( 10 );
+	MESSAGE_END();
+
+	if( pevOwner->m_fHookInWall )
+	{  
+		if( !m_fPlayerAtEnd ) 
+		{
+			if( ( pev->origin - pevOwner->pev->origin ).Length() >= 50.0 ) 
+			{
+				pevOwner->pev->velocity = ( ( pev->origin - pevOwner->pev->origin ) + pevOwner->m_vVecDirHookMove ) * 3.0; 
+				pevOwner->pev->speed = 150;
+			}
+			else
+			{
+				m_vPlayerHangOrigin = pevOwner->pev->origin;
+				m_fPlayerAtEnd = TRUE;
+			}
+		}
+		if( m_fPlayerAtEnd )
+		{
+			pevOwner->pev->origin = m_vPlayerHangOrigin;
+			pevOwner->pev->velocity = Vector( 0, 0, 0 );
+			pevOwner->pev->gravity = -.001;
+			pevOwner->pev->speed = -.001;
+		}
+	}
+
+	pev->nextthink = gpGlobals->time + 0.01;
+}
+
+#define HOOK_SPEED 1200
+
+void CBasePlayer::FireHook( void )
+{
+	if( m_fActiveHook )
+		return;
+
+	if( !IsAlive() ) 
+		return;
+
+	TraceResult tr;
+	m_iWeaponVolume = 300;
+
+	EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, "weapons/grapple/deploy.wav", RANDOM_FLOAT( 0.95, 1.0 ), ATTN_NORM, 0, 93 + RANDOM_LONG( 0, 0xF ) );
+
+	Vector anglesAim = pev->v_angle + pev->punchangle;
+	UTIL_MakeVectors( anglesAim );
+
+	anglesAim.x = -anglesAim.x;
+	Vector vecSrc = GetGunPosition() - gpGlobals->v_up * 2;
+	Vector vecDir = gpGlobals->v_forward;
+	CHook *pHook = CHook::HookCreate();
+	m_fActiveHook = TRUE;
+	pHook->pev->origin = vecSrc;
+	pHook->pev->angles = anglesAim;
+	pHook->pev->owner = edict();
+	pHook->pevOwner = this;
+
+	pHook->pev->velocity = vecDir * HOOK_SPEED;
+	pHook->pev->speed = HOOK_SPEED;
+
+	m_vVecDirHookMove = vecDir;
+
+	pev->punchangle.x -= 2;
+}
+//=========================================================
+//=========================================================
+
+//=========================================================
 // Dead HEV suit prop
 //=========================================================
 class CDeadHEV : public CBaseMonster
@@ -4662,3 +5010,155 @@ void CInfoIntermission::Think( void )
 }
 
 LINK_ENTITY_TO_CLASS( info_intermission, CInfoIntermission )
+
+//=========================================================
+//=========================================================
+extern int gmsgShowMenu; // the message # for ShowMenu
+
+void ShowMenu( CBasePlayer *pPlayer, int bitsValidSlots, int nDisplayTime, BOOL fNeedMore, char *pszText )
+{
+	MESSAGE_BEGIN( MSG_ONE, gmsgShowMenu, NULL, pPlayer->pev );
+		WRITE_SHORT( bitsValidSlots );
+		WRITE_CHAR( nDisplayTime );
+		WRITE_BYTE( fNeedMore );
+		WRITE_STRING( pszText);
+	MESSAGE_END();
+}
+//=========================================================
+//=========================================================
+
+//=========================================================
+// Runes
+//=========================================================
+float CBasePlayer::RuneDamage( entvars_t *pevAttacker, float flDamage )
+{
+	if( GetClassPtr( (CBasePlayer*)pevAttacker )->m_iPlayerRune == RUNE_STRENGTH )
+	{
+		flDamage = flDamage * 1.5;
+	}
+
+	return flDamage;
+}
+
+float CBasePlayer::RuneProtect( float flDamage )
+{
+	if( m_iPlayerRune & RUNE_RESIST )
+	{
+		flDamage = flDamage * 0.75;
+	}
+
+	return flDamage;
+}
+
+void CBasePlayer::RuneHeal()
+{
+	if( m_flRuneHealTime > gpGlobals->time )
+		return;
+
+	if( pev->health < 100.0 )
+	{
+		pev->health = pev->health + 1.0;
+		m_flRuneHealTime = gpGlobals->time + 1.0;
+
+		return;
+	}
+
+	if( pev->armorvalue < 100.0 )
+	{
+		pev->armorvalue = pev->armorvalue + 1.0;
+		m_flRuneHealTime = gpGlobals->time + 2.0;
+
+		return;
+	}
+}
+
+void CBasePlayer::RuneSpeed()
+{
+	if( !FBitSet( pev->flags, FL_ONGROUND ) )
+	{
+		pev->movetype = MOVETYPE_WALK;
+
+		return;
+	}
+
+	if( pev->button & IN_FORWARD )
+	{
+		pev->movetype = MOVETYPE_FLY;
+		UTIL_MakeVectors( pev->v_angle + pev->punchangle ); 
+		Vector New_Position = pev->origin + gpGlobals->v_forward * 500;
+
+		pev->velocity = New_Position- pev->origin;
+
+		return;
+	}
+
+	if( pev->button & IN_BACK )
+	{
+		pev->movetype = MOVETYPE_FLY;
+		UTIL_MakeVectors( pev->v_angle + pev->punchangle ); 
+		Vector New_Position = pev->origin - gpGlobals->v_forward * 500;
+		pev->velocity = New_Position- pev->origin;
+
+		return;
+	}
+
+	if( pev->button & IN_MOVERIGHT )
+	{
+		pev->movetype = MOVETYPE_FLY;
+		UTIL_MakeVectors( pev->v_angle + pev->punchangle ); 
+		Vector New_Position = pev->origin + gpGlobals->v_right * 500;
+		pev->velocity = New_Position- pev->origin;
+
+		return;
+	}
+
+	if( pev->button & IN_MOVELEFT )
+	{
+		pev->movetype = MOVETYPE_FLY;
+		UTIL_MakeVectors( pev->v_angle + pev->punchangle ); 
+		Vector New_Position = pev->origin - gpGlobals->v_right * 500;
+		pev->velocity = New_Position- pev->origin;
+
+		return;
+	}
+}
+
+void CBasePlayer::DropRune()
+{
+	SpawnRunes();
+	m_iPlayerRune = 0;
+}
+
+void CBasePlayer::SpawnRunes()
+{
+	if( !m_iPlayerRune )
+		return;
+
+	CBaseEntity *CRune;
+
+	char *sz_Rune;
+
+	switch( m_iPlayerRune )
+	{
+		case RUNE_SPEED:
+			sz_Rune = "rune_speed";
+			break;
+		case RUNE_STRENGTH:
+			sz_Rune = "rune_strength";
+			break;
+		case RUNE_RESIST:
+			sz_Rune = "rune_resist";
+			break;
+		case RUNE_HEALTH:
+			sz_Rune = "rune_health";
+			break;
+		case RUNE_ROCKETARENA:
+			sz_Rune = "rune_rocketarena";
+			break;
+		default:
+			ALERT( at_console, "Unable to determine rune\n" );
+			break;
+	}
+
+	CRune = CBaseEntity::Create( sz_Rune, pev->origin + Vector( 0, 50, 0 ), Vector( 0, 0, 0 ), NULL );
+}

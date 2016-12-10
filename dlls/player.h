@@ -83,6 +83,51 @@ enum sbar_data
 
 #define CHAT_INTERVAL 1.0f
 
+enum _Menu
+{
+	Menu_Spec,
+
+	Menu_WepSel,
+	Menu_WepMan,
+	Menu_WepHand,
+	Menu_WepAss,
+	Menu_WepShot,
+	Menu_WepExp,
+	Menu_WepEper,
+
+	Menu_AmmoSel,
+	Menu_AmmoBul,
+	Menu_AmmoExp,
+	Menu_AmmoMisc,
+
+	Menu_Wep,
+	Menu_Change
+};
+
+//=========================================================
+// Runes
+//=========================================================
+#define RUNE_SPEED		( 1 << 0 )
+#define RUNE_STRENGTH		( 1 << 1 )
+#define RUNE_RESIST		( 1 << 2 )
+#define RUNE_HEALTH		( 1 << 3 )
+#define RUNE_ROCKETARENA	( 1 << 4 )
+
+class CWorldRunes : public CBaseEntity
+{
+public: 
+	CBaseEntity *m_pSpot;
+	void Spawn();
+	static CWorldRunes *Create();
+	void SpawnRunes();
+	void Precache();
+	void CreateRune( char *sz_RuneClass );
+
+	CBaseEntity *SelectSpawnPoint( CBaseEntity *pSpot );
+};
+//=========================================================
+//=========================================================
+
 class CBasePlayer : public CBaseMonster
 {
 public:
@@ -94,6 +139,11 @@ public:
 	int					m_iExtraSoundTypes;// additional classification for this weapon's sound
 	int					m_iWeaponFlash;// brightness of the weapon flash
 	float				m_flStopExtraSoundTime;
+
+	float m_fHookInWall;
+	float m_fActiveHook;
+	float m_fHookButton;
+	Vector m_vVecDirHookMove;
 
 	float				m_flFlashLightTime;	// Time until next battery draw/Recharge
 	int					m_iFlashBattery;		// Flashlight Battery Draw
@@ -184,11 +234,41 @@ public:
 
 	char m_szTeamName[TEAM_NAME_LENGTH];
 
+//=========================================================
+// Runes
+//=========================================================
+	int m_iPlayerRune;
+	void SpawnRunes();
+	void RuneSpeed();
+	float RuneDamage( entvars_t*, float );
+	float m_flRuneHealTime;
+	void RuneHeal();
+	float RuneProtect( float );
+	void DropRune();
+//=========================================================
+//=========================================================
+
 	virtual void Spawn( void );
 	void Pain( void );
 
+	//-------------------------------
+	// Cold Ice Menu & Spectator Code
+	//-------------------------------
+
+	_Menu m_nMenu;
+	BOOL m_fWantRespawn;
+
+	char *m_cWeapon1;
+
+	virtual void StartSpectator( void );
+	virtual void SpectatorMove( void );
+	virtual void StopSpectator( void );
+	virtual void StartMenu( void );
+	//-------------------------------
+
 	//virtual void Think( void );
 	virtual void Jump( void );
+	virtual void FireHook( void );
 	virtual void Duck( void );
 	virtual void PreThink( void );
 	virtual void PostThink( void );
@@ -204,6 +284,8 @@ public:
 	virtual BOOL IsAlive( void ) { return (pev->deadflag == DEAD_NO) && pev->health > 0; }
 	virtual BOOL ShouldFadeOnDeath( void ) { return FALSE; }
 	virtual	BOOL IsPlayer( void ) { return TRUE; }			// Spectators should return FALSE for this, they aren't "players" as far as game logic is concerned
+
+	virtual int BloodColor( void ) { return BLOOD_COLOR_RED; } // Bleed Baby!
 
 	virtual BOOL IsNetClient( void ) { return TRUE; }		// Bots should return FALSE for this, they can't receive NET messages
 															// Spectators should return TRUE for this
@@ -243,6 +325,8 @@ public:
 
 	void StartDeathCam( void );
 	void StartObserver( Vector vecPosition, Vector vecViewAngle );
+
+	int observerflag;
 
 	void AddPoints( int score, BOOL bAllowNegativeScore );
 	void AddPointsToTeam( int score, BOOL bAllowNegativeScore );
@@ -317,5 +401,10 @@ public:
 
 extern int	gmsgHudText;
 extern BOOL gInitHUD;
+
+//----------------------------------------
+// Menu Declaration
+//----------------------------------------
+void ShowMenu( CBasePlayer *pPlayer, int bitsValidSlots, int nDisplayTime, BOOL fNeedMore, char *pszText );
 
 #endif // PLAYER_H

@@ -266,8 +266,8 @@ int CHud::DrawHudNumber( int x, int y, int iFlags, int iNumber, int r, int g, in
 		if( iNumber >= 100 )
 		{
 			k = iNumber / 100;
-			SPR_Set( GetSprite( m_HUD_number_0 + k ), r, g, b );
-			SPR_DrawAdditive( 0, x, y, &GetSpriteRect( m_HUD_number_0 + k ) );
+			SPR_Set( GetSprite( m_HUD_number_0 + k ), 255, 255, 255 );
+			SPR_DrawHoles( 0, x, y, &GetSpriteRect( m_HUD_number_0 + k ) );
 			x += iWidth;
 		}
 		else if( iFlags & ( DHN_3DIGITS ) )
@@ -280,8 +280,8 @@ int CHud::DrawHudNumber( int x, int y, int iFlags, int iNumber, int r, int g, in
 		if( iNumber >= 10 )
 		{
 			k = ( iNumber % 100 ) / 10;
-			SPR_Set( GetSprite( m_HUD_number_0 + k ), r, g, b );
-			SPR_DrawAdditive( 0, x, y, &GetSpriteRect( m_HUD_number_0 + k ) );
+			SPR_Set( GetSprite( m_HUD_number_0 + k ), 255, 255, 255 );
+			SPR_DrawHoles( 0, x, y, &GetSpriteRect( m_HUD_number_0 + k ) );
 			x += iWidth;
 		}
 		else if( iFlags & ( DHN_3DIGITS | DHN_2DIGITS ) )
@@ -292,13 +292,13 @@ int CHud::DrawHudNumber( int x, int y, int iFlags, int iNumber, int r, int g, in
 
 		// SPR_Draw ones
 		k = iNumber % 10;
-		SPR_Set( GetSprite( m_HUD_number_0 + k ), r, g, b );
-		SPR_DrawAdditive( 0,  x, y, &GetSpriteRect( m_HUD_number_0 + k ) );
+		SPR_Set( GetSprite( m_HUD_number_0 + k ), 255, 255, 255 );
+		SPR_DrawHoles( 0,  x, y, &GetSpriteRect( m_HUD_number_0 + k ) );
 		x += iWidth;
 	}
 	else if( iFlags & DHN_DRAWZERO )
 	{
-		SPR_Set( GetSprite( m_HUD_number_0 ), r, g, b );
+		SPR_Set( GetSprite( m_HUD_number_0 ), 255, 255, 255 );
 
 		// SPR_Draw 100's
 		if( iFlags & ( DHN_3DIGITS ) )
@@ -314,7 +314,7 @@ int CHud::DrawHudNumber( int x, int y, int iFlags, int iNumber, int r, int g, in
 		}
 
 		// SPR_Draw ones
-		SPR_DrawAdditive( 0,  x, y, &GetSpriteRect( m_HUD_number_0 ) );
+		SPR_DrawHoles( 0,  x, y, &GetSpriteRect( m_HUD_number_0 ) );
 		x += iWidth;
 	}
 

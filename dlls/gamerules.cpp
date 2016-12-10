@@ -230,40 +230,11 @@ void CGameRules::RefreshSkillData ( void )
 	// Glock Round
 	gSkillData.plrDmg9MM = GetSkillCvar( "sk_plr_9mm_bullet" );
 
-	// 357 Round
-	gSkillData.plrDmg357 = GetSkillCvar( "sk_plr_357_bullet" );
-
 	// MP5 Round
 	gSkillData.plrDmgMP5 = GetSkillCvar( "sk_plr_9mmAR_bullet" );
 
-	// M203 grenade
-	gSkillData.plrDmgM203Grenade = GetSkillCvar( "sk_plr_9mmAR_grenade" );
-
 	// Shotgun buckshot
 	gSkillData.plrDmgBuckshot = GetSkillCvar( "sk_plr_buckshot" );
-
-	// Crossbow
-	gSkillData.plrDmgCrossbowClient = GetSkillCvar( "sk_plr_xbow_bolt_client" );
-	gSkillData.plrDmgCrossbowMonster = GetSkillCvar( "sk_plr_xbow_bolt_monster" );
-
-	// RPG
-	gSkillData.plrDmgRPG = GetSkillCvar( "sk_plr_rpg" );
-
-	// Gauss gun
-	gSkillData.plrDmgGauss = GetSkillCvar( "sk_plr_gauss" );
-
-	// Egon Gun
-	gSkillData.plrDmgEgonNarrow = GetSkillCvar( "sk_plr_egon_narrow" );
-	gSkillData.plrDmgEgonWide = GetSkillCvar( "sk_plr_egon_wide" );
-
-	// Hand Grendade
-	gSkillData.plrDmgHandGrenade = GetSkillCvar( "sk_plr_hand_grenade" );
-
-	// Satchel Charge
-	gSkillData.plrDmgSatchel = GetSkillCvar( "sk_plr_satchel" );
-
-	// Tripmine
-	gSkillData.plrDmgTripmine = GetSkillCvar( "sk_plr_tripmine" );
 
 	// MONSTER WEAPONS
 	gSkillData.monDmg12MM = GetSkillCvar( "sk_12mm_bullet" );
@@ -272,14 +243,6 @@ void CGameRules::RefreshSkillData ( void )
 
 	// MONSTER HORNET
 	gSkillData.monDmgHornet = GetSkillCvar( "sk_hornet_dmg" );
-
-	// PLAYER HORNET
-// Up to this point, player hornet damage and monster hornet damage were both using
-// monDmgHornet to determine how much damage to do. In tuning the hivehand, we now need
-// to separate player damage and monster hivehand damage. Since it's so late in the project, we've
-// added plrDmgHornet to the SKILLDATA struct, but not to the engine CVar list, so it's inaccesible
-// via SKILLS.CFG. Any player hivehand tuning must take place in the code. (sjb)
-	gSkillData.plrDmgHornet = 7;
 
 	// HEALTH/CHARGE
 	gSkillData.suitchargerCapacity = GetSkillCvar( "sk_suitcharger" );
@@ -325,6 +288,21 @@ CGameRules *InstallGameRules( void )
 			// teamplay
 			g_teamplay = 1;
 			return new CHalfLifeTeamplay;
+		}
+		if( CVAR_GET_FLOAT( "mp_rocketarena" ) > 0 )
+		{
+			// rocket arena
+			return new CRocketArena;
+		}
+		if( CVAR_GET_FLOAT( "mp_railarena" ) > 0 )
+		{
+			// rail arena
+			return new CRailArena;
+		}
+		if( CVAR_GET_FLOAT( "mp_fwarena" ) > 0 )
+		{
+			// fw arena
+			return new CFWArena;
 		}
 		if( (int)gpGlobals->deathmatch == 1 )
 		{
