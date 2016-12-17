@@ -632,9 +632,9 @@ void HUD_InitClientWeapons( void )
 	HUD_PrepEntity( &g_Crossbow, &player );
 	HUD_PrepEntity( &g_Shotgun, &player );
 	HUD_PrepEntity( &g_Rpg, &player );
-	HUD_PrepEntity( &g_Gauss, &player );
+	//HUD_PrepEntity( &g_Gauss, &player );
 	//HUD_PrepEntity( &g_Egon, &player );
-	//HUD_PrepEntity( &g_HGun, &player );
+	HUD_PrepEntity( &g_HGun, &player );
 	HUD_PrepEntity( &g_HandGren, &player );
 	HUD_PrepEntity( &g_Satchel, &player );
 	HUD_PrepEntity( &g_Tripmine, &player );
