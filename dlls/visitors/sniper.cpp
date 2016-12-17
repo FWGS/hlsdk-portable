@@ -38,10 +38,10 @@ int CSniper::GetItemInfo(ItemInfo *p)
 	p->iMaxAmmo1 = _357_MAX_CARRY;
 	p->pszAmmo2 = NULL;
 	p->iMaxAmmo2 = -1;
-	p->iMaxClip = CROSSBOW_MAX_CLIP;
+	p->iMaxClip = SNIPER_MAX_CLIP;
 	p->iFlags = 0;
-	p->iSlot = 2;
-	p->iPosition = 3;
+	p->iSlot = 3;
+	p->iPosition = 1;
 	p->iId = m_iId = WEAPON_SNIPER;
 	p->iWeight = PYTHON_WEIGHT;
 
@@ -66,7 +66,7 @@ void CSniper::Spawn()
 	m_iId = WEAPON_SNIPER;
 	SET_MODEL(ENT(pev), "models/w_sniper.mdl");
 
-	m_iDefaultAmmo = CROSSBOW_DEFAULT_GIVE;
+	m_iDefaultAmmo = SNIPER_DEFAULT_GIVE;
 
 	FallInit();// get ready to fall down.
 }
@@ -184,7 +184,7 @@ void CSniper::Reload(void)
 	if (m_pPlayer->ammo_357 <= 0)
 		return;
 
-	int iResult = DefaultReload(CROSSBOW_MAX_CLIP, SNIPER_RELOAD, 2.0);
+	int iResult = DefaultReload(SNIPER_MAX_CLIP, SNIPER_RELOAD, 2.0);
 
 	if (iResult)
 	{
