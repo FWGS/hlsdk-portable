@@ -60,8 +60,8 @@ CMP5 g_Mp5;
 CCrossbow g_Crossbow;
 CShotgun g_Shotgun;
 CRpg g_Rpg;
-CGauss g_Gauss;
-CEgon g_Egon;
+//CGauss g_Gauss;
+//CEgon g_Egon;
 CHgun g_HGun;
 CHandGrenade g_HandGren;
 CSatchel g_Satchel;
@@ -633,8 +633,8 @@ void HUD_InitClientWeapons( void )
 	HUD_PrepEntity( &g_Shotgun, &player );
 	HUD_PrepEntity( &g_Rpg, &player );
 	HUD_PrepEntity( &g_Gauss, &player );
-	HUD_PrepEntity( &g_Egon, &player );
-	HUD_PrepEntity( &g_HGun, &player );
+	//HUD_PrepEntity( &g_Egon, &player );
+	//HUD_PrepEntity( &g_HGun, &player );
 	HUD_PrepEntity( &g_HandGren, &player );
 	HUD_PrepEntity( &g_Satchel, &player );
 	HUD_PrepEntity( &g_Tripmine, &player );
@@ -725,12 +725,13 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 		case WEAPON_RPG:
 			pWeapon = &g_Rpg;
 			break;
-		case WEAPON_GAUSS:
+/*		case WEAPON_GAUSS:
 			pWeapon = &g_Gauss;
 			break;
 		case WEAPON_EGON:
 			pWeapon = &g_Egon;
 			break;
+*/
 		case WEAPON_HORNETGUN:
 			pWeapon = &g_HGun;
 			break;

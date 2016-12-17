@@ -323,8 +323,8 @@ void W_Precache( void )
 	UTIL_PrecacheOther( "ammo_357" );
 
 	// gauss
-	UTIL_PrecacheOtherWeapon( "weapon_gauss" );
-	UTIL_PrecacheOther( "ammo_gaussclip" );
+	//UTIL_PrecacheOtherWeapon( "weapon_gauss" );
+	//UTIL_PrecacheOther( "ammo_gaussclip" );
 
 	// rpg
 	UTIL_PrecacheOtherWeapon( "weapon_rpg" );
@@ -335,7 +335,7 @@ void W_Precache( void )
 	UTIL_PrecacheOther( "ammo_crossbow" );
 
 	// egon
-	UTIL_PrecacheOtherWeapon( "weapon_egon" );
+	//UTIL_PrecacheOtherWeapon( "weapon_egon" );
 #endif
 	// tripmine
 	UTIL_PrecacheOtherWeapon( "weapon_tripmine" );
@@ -1552,7 +1552,7 @@ TYPEDESCRIPTION	CShotgun::m_SaveData[] =
 };
 
 IMPLEMENT_SAVERESTORE( CShotgun, CBasePlayerWeapon )
-
+/*
 TYPEDESCRIPTION	CGauss::m_SaveData[] =
 {
 	DEFINE_FIELD( CGauss, m_fInAttack, FIELD_INTEGER ),
@@ -1577,7 +1577,7 @@ TYPEDESCRIPTION	CEgon::m_SaveData[] =
 };
 
 IMPLEMENT_SAVERESTORE( CEgon, CBasePlayerWeapon )
-
+*/
 TYPEDESCRIPTION	CSatchel::m_SaveData[] = 
 {
 	DEFINE_FIELD( CSatchel, m_chargeReady, FIELD_INTEGER ),

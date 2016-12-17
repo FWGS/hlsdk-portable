@@ -49,7 +49,6 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
            defaultai.cpp \
            doors.cpp \
            effects.cpp \
-           egon.cpp \
            explode.cpp \
            flyingmonster.cpp \
            func_break.cpp \
@@ -57,7 +56,6 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
            game.cpp \
            gamerules.cpp \
            gargantua.cpp \
-           gauss.cpp \
            genericmonster.cpp \
            ggrenade.cpp \
            globals.cpp \

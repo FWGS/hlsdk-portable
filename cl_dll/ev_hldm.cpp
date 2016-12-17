@@ -57,14 +57,14 @@ void EV_FireShotGunDouble( struct event_args_s *args );
 void EV_FireMP5( struct event_args_s *args );
 void EV_FireMP52( struct event_args_s *args );
 void EV_FirePython( struct event_args_s *args );
-void EV_FireGauss( struct event_args_s *args );
-void EV_SpinGauss( struct event_args_s *args );
+//void EV_FireGauss( struct event_args_s *args );
+//void EV_SpinGauss( struct event_args_s *args );
 void EV_Crowbar( struct event_args_s *args );
 void EV_FireCrossbow( struct event_args_s *args );
 void EV_FireCrossbow2( struct event_args_s *args );
 void EV_FireRpg( struct event_args_s *args );
-void EV_EgonFire( struct event_args_s *args );
-void EV_EgonStop( struct event_args_s *args );
+//void EV_EgonFire( struct event_args_s *args );
+//void EV_EgonStop( struct event_args_s *args );
 void EV_HornetGunFire( struct event_args_s *args );
 void EV_TripmineFire( struct event_args_s *args );
 void EV_SnarkFire( struct event_args_s *args );
@@ -820,7 +820,7 @@ void EV_FirePython( event_args_t *args )
 //	   GAUSS START 
 //======================
 #define SND_CHANGE_PITCH	(1 << 7)		// duplicated in protocol.h change sound pitch
-
+/*
 void EV_SpinGauss( event_args_t *args )
 {
 	int idx;
@@ -842,22 +842,23 @@ void EV_SpinGauss( event_args_t *args )
 
 	gEngfuncs.pEventAPI->EV_PlaySound( idx, origin, CHAN_WEAPON, "ambience/pulsemachine.wav", 1.0, ATTN_NORM, iSoundState, pitch );
 }
-
+*/
 /*
 ==============================
 EV_StopPreviousGauss
 
 ==============================
 */
+/*
 void EV_StopPreviousGauss( int idx )
 {
 	// Make sure we don't have a gauss spin event in the queue for this guy
 	gEngfuncs.pEventAPI->EV_KillEvents( idx, "events/gaussspin.sc" );
 	gEngfuncs.pEventAPI->EV_StopSound( idx, CHAN_WEAPON, "ambience/pulsemachine.wav" );
 }
-
+*/
 extern float g_flApplyVel;
-
+/*
 void EV_FireGauss( event_args_t *args )
 {
 	int idx;
@@ -1124,7 +1125,7 @@ void EV_FireGauss( event_args_t *args )
 			VectorAdd( tr.endpos, forward, vecSrc );
 		}
 	}
-}
+}*/
 //======================
 //	   GAUSS END 
 //======================
@@ -1369,7 +1370,7 @@ void EV_FireRpg( event_args_t *args )
 //======================
 //	     RPG END 
 //======================
-
+/*
 //======================
 //	    EGON END 
 //======================
@@ -1409,12 +1410,12 @@ enum EGON_FIREMODE
 #define EGON_SOUND_OFF			"weapons/egon_off1.wav"
 #define EGON_SOUND_RUN			"weapons/egon_run3.wav"
 #define EGON_SOUND_STARTUP		"weapons/egon_windup2.wav"
-
+*/
 #define ARRAYSIZE(p)		( sizeof(p) /sizeof(p[0]) )
 
 BEAM *pBeam;
 BEAM *pBeam2;
-
+/*
 void EV_EgonFire( event_args_t *args )
 {
 	int idx, iFireState, iFireMode;
@@ -1524,7 +1525,7 @@ void EV_EgonStop( event_args_t *args )
 			pBeam2 = NULL;
 		}
 	}
-}
+}*/
 //======================
 //	    EGON END 
 //======================
