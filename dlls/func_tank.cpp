@@ -390,6 +390,8 @@ void CFuncTank::StopControl()
 void CFuncTank::ControllerPostFrame( void )
 {
 	ASSERT( m_pController != NULL );
+	if (!m_pController)
+		return;
 
 	if( gpGlobals->time < m_flNextAttack )
 		return;

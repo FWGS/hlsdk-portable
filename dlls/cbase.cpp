@@ -509,15 +509,9 @@ int CBaseEntity::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 	
 	// if Attacker == Inflictor, the attack was a melee or other instant-hit attack.
 	// (that is, no actual entity projectile was involved in the attack so use the shooter's origin). 
-	if( pevAttacker == pevInflictor )	
-	{
-		vecTemp = pevInflictor->origin - VecBModelOrigin( pev );
-	}
-	else
-	// an actual missile was involved.
-	{
-		vecTemp = pevInflictor->origin - VecBModelOrigin( pev );
-	}
+
+	vecTemp = pevInflictor->origin - VecBModelOrigin( pev );
+
 
 	// this global is still used for glass and other non-monster killables, along with decals.
 	g_vecAttackDir = vecTemp.Normalize();

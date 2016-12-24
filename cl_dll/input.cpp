@@ -669,7 +669,7 @@ Returns 0.25 if a key was pressed and released during the frame,
 */
 float CL_KeyState( kbutton_t *key )
 {
-	float		val = 0.0;
+	float		val = 0.0f;
 	int		impulsedown, impulseup, down;
 
 	impulsedown = key->state & 2;
@@ -679,19 +679,19 @@ float CL_KeyState( kbutton_t *key )
 	if( impulsedown && !impulseup )
 	{
 		// pressed and held this frame?
-		val = down ? 0.5 : 0.0;
+		val = down ? 0.5f : 0.0f;
 	}
 
 	if( impulseup && !impulsedown )
 	{
 		// released this frame?
-		val = down ? 0.0 : 0.0;
+		val = 0.0f;
 	}
 
 	if( !impulsedown && !impulseup )
 	{
 		// held the entire frame?
-		val = down ? 1.0 : 0.0;
+		val = down ? 1.0f : 0.0f;
 	}
 
 	if( impulsedown && impulseup )
@@ -699,12 +699,12 @@ float CL_KeyState( kbutton_t *key )
 		if( down )
 		{
 			// released and re-pressed this frame
-			val = 0.75;	
+			val = 0.75f;	
 		}
 		else
 		{
 			// pressed and released this frame
-			val = 0.25;	
+			val = 0.25f;	
 		}
 	}
 

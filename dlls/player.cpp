@@ -504,7 +504,7 @@ int CBasePlayer::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 
 	// how bad is it, doc?
 	ftrivial = ( pev->health > 75 || m_lastDamageAmount < 5 );
-	fmajor = ( m_lastDamageAmount > 25 );
+	fmajor = ( m_lastDamageAmount > 25 ); //-V602
 	fcritical = ( pev->health < 30 );
 
 	// handle all bits set in this damage message,

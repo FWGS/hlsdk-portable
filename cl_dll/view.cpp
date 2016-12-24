@@ -78,7 +78,7 @@ extern cvar_t	*cl_forwardspeed;
 extern cvar_t	*chase_active;
 extern cvar_t	*scr_ofsx, *scr_ofsy, *scr_ofsz;
 extern cvar_t	*cl_vsmoothing;
-extern Vector   dead_viewangles;
+extern  Vector   dead_viewangles;
 
 #define	CAM_MODE_RELAX		1
 #define CAM_MODE_FOCUS		2
@@ -110,9 +110,9 @@ cvar_t	*cl_chasedist;
 cvar_t	v_iyaw_cycle		= {"v_iyaw_cycle", "2", 0, 2};
 cvar_t	v_iroll_cycle		= {"v_iroll_cycle", "0.5", 0, 0.5};
 cvar_t	v_ipitch_cycle		= {"v_ipitch_cycle", "1", 0, 1};
-cvar_t	v_iyaw_level		= {"v_iyaw_level", "0.3", 0, 0.3};
-cvar_t	v_iroll_level		= {"v_iroll_level", "0.1", 0, 0.1};
-cvar_t	v_ipitch_level		= {"v_ipitch_level", "0.3", 0, 0.3};
+cvar_t	v_iyaw_level		= {"v_iyaw_level", "0.3", 0, 0.3f};
+cvar_t	v_iroll_level		= {"v_iroll_level", "0.1", 0, 0.1f};
+cvar_t	v_ipitch_level		= {"v_ipitch_level", "0.3", 0, 0.3f};
 
 float	v_idlescale;  // used by TFC for concussion grenade effect
 

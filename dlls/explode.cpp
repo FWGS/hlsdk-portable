@@ -164,11 +164,11 @@ void CEnvExplosion::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE
 	{
 		pev->origin = tr.vecEndPos + ( tr.vecPlaneNormal * ( m_iMagnitude - 24 ) * 0.6 );
 	}
-	else
+	/*else
 	{
-		pev->origin = pev->origin;
-	}
-
+		pev->origin = pev->origin; // ?
+	}*/
+	
 	// draw decal
 	if( !( pev->spawnflags & SF_ENVEXPLOSION_NODECAL ) )
 	{

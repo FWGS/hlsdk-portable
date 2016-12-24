@@ -219,6 +219,8 @@ int CCrowbar::Swing( int fFirst )
 		// hit
 		fDidHit = TRUE;
 		CBaseEntity *pEntity = CBaseEntity::Instance( tr.pHit );
+		if (!pEntity)
+			return -1;
 
 		ClearMultiDamage();
 

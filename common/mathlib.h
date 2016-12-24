@@ -27,7 +27,7 @@ typedef vec_t vec4_t[4];	// x,y,z,w
 
 struct mplane_s;
 
-extern vec3_t vec3_origin;
+extern vec3_t vec3_origin_c;
 extern	int nanmask;
 
 #define	IS_NAN(x) (((*(int *)&x)&nanmask)==nanmask)

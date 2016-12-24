@@ -335,7 +335,6 @@ void CBaseMonster::Look( int iDistance )
 						if( pev->spawnflags & SF_MONSTER_WAIT_TILL_SEEN )
 						{
 							CBaseMonster *pClient;
-
 							pClient = pSightEnt->MyMonsterPointer();
 
 							// don't link this client in the list if the monster is wait till seen and the player isn't facing the monster

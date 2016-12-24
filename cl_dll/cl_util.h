@@ -91,8 +91,8 @@ inline void DrawSetTextColor( float r, float g, float b )
 }
 
 // Gets the height & width of a sprite,  at the specified frame
-inline int SPR_Height( HSPRITE x, int f )	{ return gEngfuncs.pfnSPR_Height(x, f); }
-inline int SPR_Width( HSPRITE x, int f )	{ return gEngfuncs.pfnSPR_Width(x, f); }
+inline int SPR_Height( SpriteHandle_t x, int f )	{ return gEngfuncs.pfnSPR_Height(x, f); }
+inline int SPR_Width( SpriteHandle_t x, int f )	{ return gEngfuncs.pfnSPR_Width(x, f); }
 
 inline 	client_textmessage_t	*TextMessageGet( const char *pName ) { return gEngfuncs.pfnTextMessageGet( pName ); }
 inline 	int						TextMessageDrawChar( int x, int y, int number, int r, int g, int b ) 
@@ -103,7 +103,7 @@ inline 	int						TextMessageDrawChar( int x, int y, int number, int r, int g, in
 inline int DrawConsoleString( int x, int y, const char *string )
 {
 	if( hud_textmode->value == 1 )
-		return gHUD.DrawHudString( x, y, 9999, (char*)string, 255 * g_hud_text_color[0], 255 * g_hud_text_color[1], 255 * g_hud_text_color[2] );
+		return gHUD.DrawHudString( x, y, 9999, (char*)string, (int)(255 * g_hud_text_color[0]), (int)(255 * g_hud_text_color[1]), (int)(255 * g_hud_text_color[2]) );
 	return gEngfuncs.pfnDrawConsoleString( x, y, (char*) string );
 }
 
@@ -172,4 +172,4 @@ inline void UnpackRGB( int &r, int &g, int &b, unsigned long ulRGB )\
 	b = ulRGB & 0xFF;\
 }
 
-HSPRITE LoadSprite( const char *pszName );
+SpriteHandle_t LoadSprite( const char *pszName );

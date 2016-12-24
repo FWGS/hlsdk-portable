@@ -310,7 +310,7 @@ void CHud::VidInit( void )
 			}
 
 			// allocated memory for sprite handle arrays
- 			m_rghSprites = new HSPRITE[m_iSpriteCount];
+ 			m_rghSprites = new SpriteHandle_t[m_iSpriteCount];
 			m_rgrcRects = new wrect_t[m_iSpriteCount];
 			m_rgszSpriteNames = new char[m_iSpriteCount * MAX_SPRITE_NAME_LENGTH];
 
@@ -353,7 +353,7 @@ void CHud::VidInit( void )
 		delete[] m_rgszSpriteNames;
 
 		// allocated memory for sprite handle arrays
- 		m_rghSprites = new HSPRITE[m_iSpriteCount];
+ 		m_rghSprites = new SpriteHandle_t[m_iSpriteCount];
 		m_rgrcRects = new wrect_t[m_iSpriteCount];
 		m_rgszSpriteNames = new char[m_iSpriteCount * MAX_SPRITE_NAME_LENGTH];
 

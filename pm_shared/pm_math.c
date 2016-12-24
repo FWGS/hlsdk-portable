@@ -18,6 +18,7 @@
 #include "const.h"
 #include <math.h>
 
+
 // up / down
 #define	PITCH	0
 // left / right
@@ -27,7 +28,8 @@
 
 #pragma warning(disable : 4244)
 
-vec3_t vec3_origin = { 0,0,0 };
+vec3_t vec3_origin_c = { 0 , 0 , 0 };
+
 int nanmask = 255 << 23;
 
 float anglemod( float a )
