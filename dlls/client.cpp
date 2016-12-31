@@ -1288,6 +1288,8 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 	if ( !player )
 	{
 		state->playerclass  = ent->v.playerclass;
+		if( ent->v.deadflag == DEAD_DEAD )
+			state->solid = SOLID_NOT;
 	}
 
 	// Special stuff for players only
@@ -1305,6 +1307,15 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 //		
 		state->usehull      = ( ent->v.flags & FL_DUCKING ) ? 1 : 0;
 		state->health		= ent->v.health;
+
+		// semclip prediction
+		if( mp_semclip.value )
+		{
+			state->solid = SOLID_NOT;
+			if( !ent->v.velocity[0] && !ent->v.velocity[1]  )
+			if( ent != host )
+				state->movetype = MOVETYPE_NONE;
+		}
 	}
 
 	return 1;
