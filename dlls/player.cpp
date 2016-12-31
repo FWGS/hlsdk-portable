@@ -2481,7 +2481,7 @@ void CBasePlayer::PostThink()
 	}
 
 	// Handle Tank controlling
-	if( m_pTank != NULL )
+	if( m_pTank && m_state == STATE_SPAWNED )
 	{
 		// if they've moved too far from the gun,  or selected a weapon, unuse the gun
 		if( m_pTank->OnControls( pev ) && !pev->weaponmodel )
