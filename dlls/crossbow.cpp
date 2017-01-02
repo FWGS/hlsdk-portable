@@ -168,8 +168,8 @@ void CCrossbowBolt::BoltTouch( CBaseEntity *pOther )
 			pev->nextthink = gpGlobals->time + 10.0;			
 
 			// g-cont. Setup movewith feature
-			pev->movetype = MOVETYPE_COMPOUND;	// set movewith type
-			pev->aiment = ENT( pOther->pev );	// set parent
+			//pev->movetype = MOVETYPE_COMPOUND;	// set movewith type
+			//pev->aiment = ENT( pOther->pev );	// set parent
 		}
 
 		if( UTIL_PointContents( pev->origin ) != CONTENTS_WATER )
