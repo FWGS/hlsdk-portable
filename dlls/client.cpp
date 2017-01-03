@@ -1290,6 +1290,9 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 		state->playerclass  = ent->v.playerclass;
 		if( ent->v.deadflag == DEAD_DEAD )
 			state->solid = SOLID_NOT;
+		if( ent->v.movetype == MOVETYPE_WALK || ent->v.movetype == MOVETYPE_STEP )
+			//state->effects |= EF_NOINTERP;
+			state->movetype = MOVETYPE_TOSS;
 	}
 
 	// Special stuff for players only
