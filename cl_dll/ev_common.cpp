@@ -24,9 +24,9 @@
 
 #include "eventscripts.h"
 #include "event_api.h"
-#include "pm_shared.h"
+//#include "pm_shared.h"
 
-#define IS_FIRSTPERSON_SPEC ( g_iUser1 == OBS_IN_EYE || ( g_iUser1 && ( gHUD.m_Spectator.m_pip->value == INSET_IN_EYE ) ) )
+//#define IS_FIRSTPERSON_SPEC ( g_iUser1 == OBS_IN_EYE || ( g_iUser1 && ( gHUD.m_Spectator.m_pip->value == INSET_IN_EYE ) ) )
 /*
 =================
 GetEntity
@@ -87,11 +87,7 @@ Is the entity == the local player
 */
 qboolean EV_IsLocal( int idx )
 {
-	// check if we are in some way in first person spec mode
-	if( IS_FIRSTPERSON_SPEC )
-		return ( g_iUser2 == idx );
-	else
-		return gEngfuncs.pEventAPI->EV_IsLocal( idx - 1 ) ? true : false;
+	return gEngfuncs.pEventAPI->EV_IsLocal( idx - 1 ) ? true : false;
 }
 
 /*
@@ -114,7 +110,7 @@ void EV_GetGunPosition( event_args_t *args, float *pos, float *origin )
 	if( EV_IsPlayer( idx ) )
 	{
 		// in spec mode use entity viewheigh, not own
-		if( EV_IsLocal( idx ) && !IS_FIRSTPERSON_SPEC )
+		if( EV_IsLocal( idx ) )
 		{
 			// Grab predicted result for local player
 			gEngfuncs.pEventAPI->EV_LocalPlayerViewheight( view_ofs );

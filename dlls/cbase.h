@@ -331,6 +331,11 @@ public:
 	virtual	BOOL FVisible( CBaseEntity *pEntity );
 	virtual	BOOL FVisible( const Vector &vecOrigin );
 
+	// QUAKECLASSIC
+	BOOL m_bAxHitMe;
+	void Spawn_Telefog( Vector vecOrg, CBaseEntity *pOther );
+	Vector m_vecTeleAngles;
+
 	//We use this variables to store each ammo count.
 	int ammo_9mm;
 	int ammo_357;
@@ -602,6 +607,7 @@ public:
 #define DMG_SLOWBURN		(1 << 21)	// in an oven
 #define DMG_SLOWFREEZE		(1 << 22)	// in a subzero freezer
 #define DMG_MORTAR			(1 << 23)	// Hit by air raid (done to distinguish grenade from mortar)
+#define DMG_IGNORE_MAXHEALTH (1<< 24)	// Used by TakeHealth only. Ignores the player's max health when healing.
 
 // these are the damage types that are allowed to gib corpses
 #define DMG_GIB_CORPSE		( DMG_CRUSH | DMG_FALL | DMG_BLAST | DMG_SONIC | DMG_CLUB )
@@ -781,3 +787,16 @@ public:
 	void Precache( void );
 	void KeyValue( KeyValueData *pkvd );
 };
+
+class CClientFog : public CBaseEntity
+{
+public:
+	void Spawn( void );
+	void KeyValue( KeyValueData *pkvd );
+
+	float m_iStartDist;
+	float m_iEndDist;
+};
+
+// QUAKECLASSIC
+extern char *g_szDeathType;

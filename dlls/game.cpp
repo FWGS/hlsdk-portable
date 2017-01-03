@@ -17,6 +17,9 @@
 #include "util.h"
 #include "game.h"
 
+// QUAKECLASSIC
+cvar_t rj		= { "rj", "0" };
+
 cvar_t displaysoundlist = {"displaysoundlist","0"};
 
 // multiplayer server rules
@@ -29,7 +32,7 @@ cvar_t fraglimit	= {"mp_fraglimit","0", FCVAR_SERVER };
 cvar_t timelimit	= { "mp_timelimit","0", FCVAR_SERVER };
 cvar_t friendlyfire	= { "mp_friendlyfire","0", FCVAR_SERVER };
 cvar_t falldamage	= { "mp_falldamage","0", FCVAR_SERVER };
-cvar_t weaponstay	= { "mp_weaponstay","0", FCVAR_SERVER };
+cvar_t weaponstay	= { "mp_weaponstay","1", FCVAR_SERVER };
 cvar_t forcerespawn	= { "mp_forcerespawn","1", FCVAR_SERVER };
 cvar_t flashlight	= { "mp_flashlight","0", FCVAR_SERVER };
 cvar_t aimcrosshair	= { "mp_autocrosshair","1", FCVAR_SERVER };
@@ -450,6 +453,9 @@ void GameDLLInit( void )
 	g_psv_gravity = CVAR_GET_POINTER( "sv_gravity" );
 	g_psv_aim = CVAR_GET_POINTER( "sv_aim" );
 	g_footsteps = CVAR_GET_POINTER( "mp_footsteps" );
+
+	// QUAKECLASSIC
+	CVAR_REGISTER( &rj );
 
 	CVAR_REGISTER( &displaysoundlist );
 

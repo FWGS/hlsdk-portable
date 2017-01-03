@@ -24,7 +24,6 @@
 #include "util.h"
 #include "cbase.h"
 #include "nodes.h"
-#include "soundent.h"
 #include "client.h"
 #include "decals.h"
 #include "skill.h"
@@ -36,7 +35,6 @@
 #include "physcallback.h"
 
 extern CGraph WorldGraph;
-extern CSoundEnt *pSoundEnt;
 
 extern CBaseEntity				*g_pLastSpawn;
 DLL_GLOBAL edict_t				*g_pBodyQueueHead;
@@ -470,6 +468,12 @@ void CWorld::Precache( void )
 #endif
 	CVAR_SET_STRING( "room_type", "0" );// clear DSP
 
+	// QUAKECLASSIC
+	// Set various physics cvars to Quake's values
+	CVAR_SET_STRING( "sv_friction", "4" );
+	CVAR_SET_STRING( "sv_maxspeed", "400" );
+	CVAR_SET_STRING( "sv_airaccelerate", "0.7" );
+
 	// Set up game rules
 	if( g_pGameRules )
 	{
@@ -480,16 +484,6 @@ void CWorld::Precache( void )
 	g_pGameRules = InstallGameRules();
 
 	//!!!UNDONE why is there so much Spawn code in the Precache function? I'll just keep it here 
-
-	///!!!LATER - do we want a sound ent in deathmatch? (sjb)
-	//pSoundEnt = CBaseEntity::Create( "soundent", g_vecZero, g_vecZero, edict() );
-	pSoundEnt = GetClassPtr( ( CSoundEnt *)NULL );
-	pSoundEnt->Spawn();
-
-	if( !pSoundEnt )
-	{
-		ALERT ( at_console, "**COULD NOT CREATE SOUNDENT**\n" );
-	}
 
 	InitBodyQue();
 
@@ -505,6 +499,9 @@ void CWorld::Precache( void )
 	W_Precache();				// get weapon precaches
 
 	ClientPrecache();
+
+	// QUAKECLASSIC
+	QuakeClassicPrecache();
 
 	// sounds used from C physics code
 	PRECACHE_SOUND( "common/null.wav" );// clears sound channels
@@ -617,6 +614,8 @@ void CWorld::Precache( void )
 	// g-cont. moved here to right restore global WaveHeight on save\restore level
 	CVAR_SET_FLOAT( "sv_wateramp", pev->scale );
 
+	// QUAKECLASSIC: No Fades
+	/*
 	if( pev->netname )
 	{
 		ALERT( at_aiconsole, "Chapter title: %s\n", STRING( pev->netname ) );
@@ -630,12 +629,14 @@ void CWorld::Precache( void )
 			pEntity->pev->spawnflags = SF_MESSAGE_ONCE;
 		}
 	}
-
+	*/
+	// QUAKECLASSIC: No Darkness
+	/*
 	if( pev->spawnflags & SF_WORLD_DARK )
 		CVAR_SET_FLOAT( "v_dark", 1.0 );
 	else
 		CVAR_SET_FLOAT( "v_dark", 0.0 );
-
+	*/
 	pev->spawnflags &= ~SF_WORLD_DARK;		// g-cont. don't apply fade after save\restore
 
 	if( pev->spawnflags & SF_WORLD_TITLE )

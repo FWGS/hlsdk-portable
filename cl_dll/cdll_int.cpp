@@ -76,13 +76,13 @@ int DLLEXPORT HUD_GetHullBounds( int hullnumber, float *mins, float *maxs )
 	switch( hullnumber )
 	{
 	case 0:				// Normal player
-		mins = Vector( -16, -16, -36 );
-		maxs = Vector( 16, 16, 36 );
+		mins = Vector( -16, -16, -32 );
+		maxs = Vector( 16, 16, 32 );
 		iret = 1;
 		break;
 	case 1:				// Crouched player
-		mins = Vector( -16, -16, -18 );
-		maxs = Vector( 16, 16, 18 );
+		mins = Vector( -16, -16, -32 );
+		maxs = Vector( 16, 16, 32 );
 		iret = 1;
 		break;
 	case 2:				// Point based hull
@@ -229,8 +229,6 @@ returns 1 if anything has been changed, 0 otherwise.
 
 int DLLEXPORT HUD_UpdateClientData( client_data_t *pcldata, float flTime )
 {
-	IN_Commands();
-
 	return gHUD.UpdateClientData( pcldata, flTime );
 }
 
@@ -256,7 +254,9 @@ Called by engine every frame that client .dll is loaded
 */
 
 void DLLEXPORT HUD_Frame( double time )
-{	gEngfuncs.VGui_ViewportPaintBackground(HUD_GetRect());
+{
+	IN_Commands();
+	gEngfuncs.VGui_ViewportPaintBackground(HUD_GetRect());
 }
 
 /*

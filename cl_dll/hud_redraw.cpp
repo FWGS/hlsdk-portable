@@ -18,6 +18,7 @@
 #include <math.h>
 #include "hud.h"
 #include "cl_util.h"
+#include <string.h>
 //#include "triangleapi.h"
 
 #define MAX_LOGO_FRAMES 56
@@ -29,16 +30,9 @@ int grgLogoFrame[MAX_LOGO_FRAMES] =
 	29, 29, 29, 29, 29, 28, 27, 26, 25, 24, 30, 31 
 };
 
-extern int g_iVisibleMouse;
-
-float HUD_GetFOV( void );
-
-extern cvar_t *sensitivity;
-
 // Think
 void CHud::Think( void )
 {
-	int newfov;
 	HUDLIST *pList = m_pHudList;
 
 	while( pList )
@@ -46,29 +40,6 @@ void CHud::Think( void )
 		if( pList->p->m_iFlags & HUD_ACTIVE )
 			pList->p->Think();
 		pList = pList->pNext;
-	}
-
-	newfov = HUD_GetFOV();
-	if( newfov == 0 )
-	{
-		m_iFOV = default_fov->value;
-	}
-	else
-	{
-		m_iFOV = newfov;
-	}
-
-	// the clients fov is actually set in the client data update section of the hud
-	// Set a new sensitivity
-	if( m_iFOV == default_fov->value )
-	{
-		// reset to saved sensitivity
-		m_flMouseSensitivity = 0;
-	}
-	else
-	{
-		// set a new sensitivity that is proportional to the change from the FOV default
-		m_flMouseSensitivity = sensitivity->value * ((float)newfov / (float)default_fov->value) * CVAR_GET_FLOAT("zoom_sensitivity_ratio");
 	}
 
 	// think about default fov
@@ -99,11 +70,10 @@ int CHud::Redraw( float flTime, int intermission )
 		m_flShotTime = 0;
 	}
 
-	m_iIntermission = intermission;
-
 	// if no redrawing is necessary
 	// return 0;
 
+	// draw all registered HUD elements
 	if( m_pCvarDraw->value )
 	{
 		HUDLIST *pList = m_pHudList;
@@ -147,28 +117,6 @@ int CHud::Redraw( float flTime, int intermission )
 		SPR_DrawAdditive( i, x, y, NULL );
 	}
 
-	/*
-	if( g_iVisibleMouse )
-	{
-		void IN_GetMousePos( int *mx, int *my );
-		int mx, my;
-
-		IN_GetMousePos( &mx, &my );
-
-		if( m_hsprCursor == 0 )
-		{
-			char sz[256];
-			sprintf( sz, "sprites/cursor.spr" );
-			m_hsprCursor = SPR_Load( sz );
-		}
-
-		SPR_Set( m_hsprCursor, 250, 250, 250 );
-
-		// Draw the logo at 20 fps
-		SPR_DrawAdditive( 0, mx, my, NULL );
-	}
-	*/
-
 	return 1;
 }
 
@@ -178,6 +126,132 @@ void ScaleColors( int &r, int &g, int &b, int a )
 	r = (int)( r * x );
 	g = (int)( g * x );
 	b = (int)( b * x );
+}
+
+/*
+===========================
+int ReturnStringPixelLength ( char *Hihi )
+
+Returns a integer representing the length of the string passed
+===========================
+*/
+int CHud::ReturnStringPixelLength( char *Hihi )
+{
+	int iNameLength = 0;
+
+	int strleng = ( strlen( Hihi ) );
+
+	for( int har = 0; har < strleng; har++ )
+		iNameLength += gHUD.m_scrinfo.charWidths[Hihi[har]];
+
+	return iNameLength;
+}
+
+int LastColor;
+
+int CHud::DrawHudStringCTF( int xpos, int ypos, int iMaxX, char *szIt, int r, int g, int b )
+{
+	int WantColor = 0;
+	int Color = 0;
+
+	// draw the string until we hit the null character or a newline character
+	for( ; *szIt != 0 && *szIt != '\n'; szIt++ )
+	{
+		int next;// = xpos + gHUD.m_scrinfo.charWidths[*szIt]; // variable-width fonts look cool
+
+		if( next > iMaxX )
+			return xpos;
+
+		if( *szIt == '\\' )
+		{
+			if( Color > 0 )
+				Color = 0;
+
+			WantColor = 1;
+		}
+
+		if( WantColor == 1 && *szIt == 'w' )
+		{
+			Color = 1;
+			LastColor = Color;
+		}
+
+		if( WantColor == 1 && *szIt == 'g' )
+		{
+			Color = 2;
+			LastColor = Color;
+                }
+
+		if( WantColor == 1 && *szIt == 'b' )
+		{
+			Color = 3;
+			LastColor = Color;
+		}
+
+		if( WantColor == 1 && *szIt == 'r' )
+		{
+			Color = 4;
+			LastColor = Color;
+		}
+
+		if( WantColor == 1 && *szIt == 'y' )
+		{
+			Color = 5;
+			LastColor = Color;
+		}
+
+		if( WantColor == 1 && *szIt == 'q' )
+		{
+			Color = 6;
+			LastColor = Color;
+		}
+
+		if( Color == 0 && WantColor == 0 )
+		{
+			if( LastColor == 1 )
+				TextMessageDrawChar( xpos, ypos, *szIt, 255, 255, 255 );
+			if( LastColor == 2 )
+				TextMessageDrawChar( xpos, ypos, *szIt, 0, 79, 0 );
+			if( LastColor == 3 )
+				TextMessageDrawChar( xpos, ypos, *szIt, 0, 0, 200 );
+			if( LastColor == 4 )
+				TextMessageDrawChar( xpos, ypos, *szIt, 200, 0, 0 );
+			if( LastColor == 5 )
+				TextMessageDrawChar( xpos, ypos, *szIt, 198, 221, 66 );
+			if( LastColor == 6 )
+				TextMessageDrawChar( xpos, ypos, *szIt, 136, 136, 136 );
+
+			else if( LastColor == 0)
+				TextMessageDrawChar( xpos, ypos, *szIt, r, g, b );
+
+			next = xpos + gHUD.m_scrinfo.charWidths[(unsigned char)*szIt];
+		}
+		else if( Color > 0 && WantColor == 0 )
+		{
+			if( Color == 1 )
+				TextMessageDrawChar( xpos, ypos, *szIt, 255, 255, 255 );
+			if( Color == 2 )
+				TextMessageDrawChar( xpos, ypos, *szIt, 0, 79, 0 );
+			if( Color == 3 )
+				TextMessageDrawChar( xpos, ypos, *szIt, 0, 0, 200 );
+			if( Color == 4 )
+				TextMessageDrawChar( xpos, ypos, *szIt, 200, 0, 0 );
+			if( Color == 5 )
+				TextMessageDrawChar( xpos, ypos, *szIt, 198, 221, 66 );
+			if( Color == 6 )
+
+			next = xpos + gHUD.m_scrinfo.charWidths[(unsigned char)*szIt];
+		}
+		/*else if( Color > 0 && WantColor == 1 )
+		{
+			//next = xpos + ( gHUD.m_scrinfo.charWidths[*szIt] * 2 ); // variable-width fonts look cool
+			WantColor = 0;
+		}*/
+
+		xpos = next;
+        }
+
+	return xpos;
 }
 
 const unsigned char colors[8][3] =

@@ -40,10 +40,14 @@ extern int gmsgServerName;
 
 extern int g_teamplay;
 
+bool g_bHaveMOTD;
+
+#define INTERMISSION_TIME	60
 #define ITEM_RESPAWN_TIME	30
 #define WEAPON_RESPAWN_TIME	20
 #define AMMO_RESPAWN_TIME	20
 
+char *g_szDeathType;
 float g_flIntermissionStartTime = 0;
 
 #ifndef NO_VOICEGAMEMGR
@@ -76,10 +80,20 @@ CHalfLifeMultiplay::CHalfLifeMultiplay()
 #ifndef NO_VOICEGAMEMGR
 	g_VoiceGameMgr.Init( &g_GameMgrHelper, gpGlobals->maxClients );
 #endif
+	int length;
+
+	char *pFileList = (char*)LOAD_FILE_FOR_ME( "motd.txt", &length );
+
+	if( pFileList )
+		g_bHaveMOTD = true;
+	else
+		g_bHaveMOTD = false;
+
 	RefreshSkillData();
 	m_flIntermissionEndTime = 0;
 	g_flIntermissionStartTime = 0;
-	
+	m_flGameEndTime = 0.0;
+
 	// 11/8/98
 	// Modified by YWB:  Server .cfg file is now a cvar, so that 
 	//  server ops can run multiple game servers, with different server .cfg files,
@@ -210,7 +224,7 @@ void CHalfLifeMultiplay::Think( void )
 		if( time < 1 )
 			CVAR_SET_STRING( "mp_chattime", "1" );
 		else if( time > MAX_INTERMISSION_TIME )
-			CVAR_SET_STRING( "mp_chattime", UTIL_dtos1( MAX_INTERMISSION_TIME ) );
+			CVAR_SET_STRING( "mp_chattime", UTIL_dtos1( INTERMISSION_TIME ) );
 
 		m_flIntermissionEndTime = g_flIntermissionStartTime + mp_chattime.value;
 
@@ -218,10 +232,17 @@ void CHalfLifeMultiplay::Think( void )
 		if( m_flIntermissionEndTime < gpGlobals->time )
 		{
 			if( m_iEndIntermissionButtonHit  // check that someone has pressed a key, or the max intermission time is over
-				|| ( ( g_flIntermissionStartTime + MAX_INTERMISSION_TIME ) < gpGlobals->time ) ) 
+				|| ( ( g_flIntermissionStartTime + INTERMISSION_TIME ) < gpGlobals->time ) ) 
 				ChangeLevel(); // intermission is over
 		}
 
+		return;
+	}
+
+	if( m_flGameEndTime != 0.0 && m_flGameEndTime <= gpGlobals->time )
+	{
+		GoToIntermission();
+		m_flGameEndTime = 0.0;
 		return;
 	}
 
@@ -230,13 +251,13 @@ void CHalfLifeMultiplay::Think( void )
 
 	time_remaining = (int)( flTimeLimit ? ( flTimeLimit - gpGlobals->time ) : 0);
 
-	if( flTimeLimit != 0 && gpGlobals->time >= flTimeLimit )
+	if( flTimeLimit != 0 && gpGlobals->time >= flTimeLimit && m_flGameEndTime == 0.0 )
 	{
 		GoToIntermission();
 		return;
 	}
 
-	if( flFragLimit )
+	if( flFragLimit && m_flGameEndTime == 0.0 )
 	{
 		int bestfrags = 9999;
 		int remain;
@@ -248,7 +269,7 @@ void CHalfLifeMultiplay::Think( void )
 
 			if( pPlayer && pPlayer->pev->frags >= flFragLimit )
 			{
-				GoToIntermission();
+				m_flGameEndTime = gpGlobals->time + 1.5;
 				return;
 			}
 
@@ -531,7 +552,7 @@ float CHalfLifeMultiplay::FlPlayerFallDamage( CBasePlayer *pPlayer )
 	default:
 	case 0:
 		// fixed
-		return 10;
+		return 5;
 		break;
 	}
 } 
@@ -567,7 +588,7 @@ void CHalfLifeMultiplay::PlayerSpawn( CBasePlayer *pPlayer )
 	BOOL		addDefault;
 	CBaseEntity	*pWeaponEntity = NULL;
 
-	pPlayer->pev->weapons |= ( 1 << WEAPON_SUIT );
+	pPlayer->pev->weapons |= ( 1 << IT_AXE );
 
 	addDefault = TRUE;
 
@@ -579,9 +600,14 @@ void CHalfLifeMultiplay::PlayerSpawn( CBasePlayer *pPlayer )
 
 	if( addDefault )
 	{
-		pPlayer->GiveNamedItem( "weapon_crowbar" );
-		pPlayer->GiveNamedItem( "weapon_9mmhandgun" );
-		pPlayer->GiveAmmo( 68, "9mm", _9MM_MAX_CARRY );// 4 full reloads
+		// Start with init ammoload
+		pPlayer->m_iAmmoShells = 25;
+
+		// Start with shotgun and axe
+		pPlayer->GiveNamedItem( "weapon_quakegun" );
+		pPlayer->m_iQuakeItems |= ( IT_SHOTGUN | IT_AXE );
+		pPlayer->m_iQuakeWeapon = pPlayer->W_BestWeapon();
+		pPlayer->W_SetCurrentAmmo();
 	}
 }
 
@@ -611,6 +637,12 @@ BOOL CHalfLifeMultiplay::AllowAutoTargetCrosshair( void )
 int CHalfLifeMultiplay::IPointsForKill( CBasePlayer *pAttacker, CBasePlayer *pKilled )
 {
 	return 1;
+}
+
+void CHalfLifeMultiplay::ClientUserInfoChanged( CBasePlayer *pPlayer, char *infobuffer )
+{
+	pPlayer->m_iFOV = atoi( g_engfuncs.pfnInfoKeyValue( infobuffer, "cl_fov" ) );
+	pPlayer->m_iAutoWepSwitch = atoi( g_engfuncs.pfnInfoKeyValue( infobuffer, "cl_autowepswitch" ) );
 }
 
 //=========================================================
@@ -643,7 +675,7 @@ void CHalfLifeMultiplay::PlayerKilled( CBasePlayer *pVictim, entvars_t *pKiller,
 	else
 	{
 		// killed by the world
-		pKiller->frags -= 1;
+		 pVictim->pev->frags -= 1;
 	}
 
 	// update the scores
@@ -673,12 +705,6 @@ void CHalfLifeMultiplay::PlayerKilled( CBasePlayer *pVictim, entvars_t *pKiller,
 		// let the killer paint another decal as soon as he'd like.
 		PK->m_flNextDecalTime = gpGlobals->time;
 	}
-#ifndef HLDEMO_BUILD
-	if( pVictim->HasNamedPlayerItem( "weapon_satchel" ) )
-	{
-		DeactivateSatchels( pVictim );
-	}
-#endif
 }
 
 //=========================================================
@@ -696,6 +722,14 @@ void CHalfLifeMultiplay::DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, 
 	char *tau = "tau_cannon";
 	char *gluon = "gluon gun";
 
+	// QUAKECLASSIC
+	// Might have overridden
+	if( g_szDeathType )
+	{
+		killer_weapon_name = g_szDeathType;
+	}
+	else
+	{
 	if( pKiller->flags & FL_CLIENT )
 	{
 		killer_index = ENTINDEX( ENT( pKiller ) );
@@ -707,29 +741,55 @@ void CHalfLifeMultiplay::DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, 
 				// If the inflictor is the killer,  then it must be their current weapon doing the damage
 				CBasePlayer *pPlayer = (CBasePlayer*)CBaseEntity::Instance( pKiller );
 
-				if( pPlayer->m_pActiveItem )
+				switch( pPlayer->m_iQuakeWeapon )
+                                {
+						case IT_AXE:
+							killer_weapon_name = "weapon_axe";
+							break;
+						case IT_SHOTGUN:
+							killer_weapon_name = "weapon_shotgun";
+							break;
+						case IT_SUPER_SHOTGUN:
+							killer_weapon_name = "weapon_doubleshotgun";
+							break;
+						case IT_NAILGUN:
+							killer_weapon_name = "weapon_nailgun";
+							break;
+						case IT_SUPER_NAILGUN:
+							killer_weapon_name = "weapon_supernail";
+							break;
+						case IT_GRENADE_LAUNCHER:
+							killer_weapon_name = "weapon_grenadel";
+							break;
+						case IT_ROCKET_LAUNCHER:
+							killer_weapon_name = "weapon_rocketl";
+							break;
+						case IT_LIGHTNING:
+							killer_weapon_name = "weapon_lightning";
+							break;
+						default:
+							killer_weapon_name = "Empty";
+					}
+				}
+				else
 				{
-					killer_weapon_name = pPlayer->m_pActiveItem->pszName();
+					killer_weapon_name = STRING( pevInflictor->classname );  // it's just that easy
 				}
 			}
-			else
-			{
-				killer_weapon_name = STRING( pevInflictor->classname );  // it's just that easy
-			}
 		}
-	}
-	else
-	{
-		killer_weapon_name = STRING( pevInflictor->classname );
-	}
+		else
+		{
+			killer_weapon_name = STRING( pevInflictor->classname );
+		}
 
-	// strip the monster_* or weapon_* from the inflictor's classname
-	if( strncmp( killer_weapon_name, "weapon_", 7 ) == 0 )
-		killer_weapon_name += 7;
-	else if( strncmp( killer_weapon_name, "monster_", 8 ) == 0 )
-		killer_weapon_name += 8;
-	else if( strncmp( killer_weapon_name, "func_", 5 ) == 0 )
-		killer_weapon_name += 5;
+		// strip the monster_* or weapon_* from the inflictor's classname
+		if( strncmp( killer_weapon_name, "weapon_", 7 ) == 0 )
+			killer_weapon_name += 7;
+		else if( strncmp( killer_weapon_name, "monster_", 8 ) == 0 )
+			killer_weapon_name += 8;
+		else if( strncmp( killer_weapon_name, "func_", 5 ) == 0 )
+			killer_weapon_name += 5;
+	}
 
 	MESSAGE_BEGIN( MSG_ALL, gmsgDeathMsg );
 		WRITE_BYTE( killer_index );						// the killer
@@ -1117,12 +1177,12 @@ int CHalfLifeMultiplay::PlayerRelationship( CBaseEntity *pPlayer, CBaseEntity *p
 
 BOOL CHalfLifeMultiplay::PlayFootstepSounds( CBasePlayer *pl, float fvol )
 {
-	if( g_footsteps && g_footsteps->value == 0 )
+/*	if( g_footsteps && g_footsteps->value == 0 )
 		return FALSE;
 
 	if( pl->IsOnLadder() || pl->pev->velocity.Length2D() > 220 )
 		return TRUE;  // only make step sounds in multiplayer if the player is moving fast enough
-
+*/
 	return FALSE;
 }
 
@@ -1140,7 +1200,6 @@ BOOL CHalfLifeMultiplay::FAllowMonsters( void )
 
 //=========================================================
 //======== CHalfLifeMultiplay private functions ===========
-#define INTERMISSION_TIME		6
 
 void CHalfLifeMultiplay::GoToIntermission( void )
 {
@@ -1154,8 +1213,8 @@ void CHalfLifeMultiplay::GoToIntermission( void )
 	int time = (int)CVAR_GET_FLOAT( "mp_chattime" );
 	if( time < 1 )
 		CVAR_SET_STRING( "mp_chattime", "1" );
-	else if( time > MAX_INTERMISSION_TIME )
-		CVAR_SET_STRING( "mp_chattime", UTIL_dtos1( MAX_INTERMISSION_TIME ) );
+	else if( time > INTERMISSION_TIME )
+		CVAR_SET_STRING( "mp_chattime", UTIL_dtos1( INTERMISSION_TIME ) );
 
 	m_flIntermissionEndTime = gpGlobals->time + ( (int)mp_chattime.value );
 	g_flIntermissionStartTime = gpGlobals->time;

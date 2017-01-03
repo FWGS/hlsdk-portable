@@ -19,13 +19,17 @@
 #include "hud.h"
 #include "cl_util.h"
 #include "parsemsg.h"
-#include "r_efx.h"
+//#include "r_efx.h"
 
-#define MAX_CLIENTS 32
-
-extern BEAM *pBeam;
-extern BEAM *pBeam2;
-
+#define MAX_TELES 256
+Vector g_vecTeleMins[MAX_TELES];
+Vector g_vecTeleMaxs[MAX_TELES];
+int g_iTeleNum;
+bool g_bLoadedTeles;
+        
+float g_iFogColor[3];
+float g_iStartDist;
+float g_iEndDist;
 /// USER-DEFINED SERVER MESSAGE HANDLERS
 
 int CHud::MsgFunc_ResetHUD( const char *pszName, int iSize, void *pbuf )
@@ -51,15 +55,31 @@ int CHud::MsgFunc_ResetHUD( const char *pszName, int iSize, void *pbuf )
 	return 1;
 }
 
-void CAM_ToFirstPerson( void );
-
-void CHud::MsgFunc_ViewMode( const char *pszName, int iSize, void *pbuf )
-{
-	CAM_ToFirstPerson();
-}
-
 void CHud::MsgFunc_InitHUD( const char *pszName, int iSize, void *pbuf )
 {
+	g_iTeleNum = 0;
+	g_bLoadedTeles = false;
+	int i;
+
+	//Clear all the teleporters
+	for( i = 0; i < MAX_TELES; i++ )
+	{
+		g_vecTeleMins[i].x = 0.0;
+		g_vecTeleMins[i].y = 0.0;
+		g_vecTeleMins[i].z = 0.0;
+
+		g_vecTeleMaxs[i].x = 0.0;
+		g_vecTeleMaxs[i].y = 0.0;
+		g_vecTeleMaxs[i].z = 0.0;
+	}
+	/***** FOG CLEARING JIBBA JABBA *****/
+	for( i = 0; i < 3; i++ )
+		g_iFogColor[i] = 0.0;
+
+	g_iStartDist = 0.0f;
+	g_iEndDist = 0.0f;
+	/***** FOG CLEARING JIBBA JABBA *****/
+
 	// prepare all hud data
 	HUDLIST *pList = m_pHudList;
 
@@ -70,8 +90,25 @@ void CHud::MsgFunc_InitHUD( const char *pszName, int iSize, void *pbuf )
 		pList = pList->pNext;
 	}
 
-	//Probably not a good place to put this.
-	pBeam = pBeam2 = NULL;
+	BEGIN_READ( pbuf, iSize );
+	g_iTeleNum = READ_BYTE();
+
+	for( i = 0; i < g_iTeleNum; i++ )
+	{
+		g_vecTeleMins[i].x = READ_COORD();
+		g_vecTeleMins[i].y = READ_COORD();
+		g_vecTeleMins[i].z = READ_COORD();
+		g_vecTeleMaxs[i].x = READ_COORD();
+		g_vecTeleMaxs[i].y = READ_COORD();
+		g_vecTeleMaxs[i].z = READ_COORD();
+	}
+
+	for( i = 0; i < 3; i++ )
+		g_iFogColor[i] = READ_SHORT(); // Should just get a byte.
+
+	//If they both are 0, it means no fog for this level.
+	g_iStartDist = READ_SHORT();
+	g_iEndDist = READ_SHORT();
 }
 
 int CHud::MsgFunc_GameMode( const char *pszName, int iSize, void *pbuf )
@@ -113,5 +150,14 @@ int CHud::MsgFunc_Concuss( const char *pszName, int iSize, void *pbuf )
 		this->m_StatusIcons.EnableIcon( "dmg_concuss", 255, 160, 0 );
 	else
 		this->m_StatusIcons.DisableIcon( "dmg_concuss" );
+	return 1;
+}
+
+// QUAKECLASSIC
+int CHud::MsgFunc_QItems( const char *pszName, int iSize, void *pbuf )
+{
+	BEGIN_READ( pbuf, iSize );
+	m_iQuakeItems = READ_LONG();
+
 	return 1;
 }

@@ -309,6 +309,9 @@ extern void			UTIL_Remove( CBaseEntity *pEntity );
 extern BOOL			UTIL_IsValidEntity( edict_t *pent );
 extern BOOL			UTIL_TeamsMatch( const char *pTeamName1, const char *pTeamName2 );
 
+// create a TENT projectile on all clients
+extern void			UTIL_ClientProjectile( const Vector &vecOrigin, const Vector &vecVelocity, short sModelIndex, int iOwnerIndex, int iLife );
+
 // Use for ease-in, ease-out style interpolation (accel/decel)
 extern float		UTIL_SplineFraction( float value, float scale );
 
@@ -437,16 +440,19 @@ extern DLL_GLOBAL int			g_Language;
 #define PUSH_BLOCK_ONLY_X	1
 #define PUSH_BLOCK_ONLY_Y	2
 
-#define VEC_HULL_MIN		Vector(-16, -16, -36)
-#define VEC_HULL_MAX		Vector( 16,  16,  36)
+// QUAKECLASSIC: Different player sizes
+//#define VEC_HULL_MIN		Vector(-16, -16, -32)
+//#define VEC_HULL_MAX		Vector( 16,  16,  32)
+#define VEC_HULL_MIN		Vector( -16, -16, -24 )
+#define VEC_HULL_MAX		Vector( 16, 16, 32 )
 #define VEC_HUMAN_HULL_MIN	Vector( -16, -16, 0 )
 #define VEC_HUMAN_HULL_MAX	Vector( 16, 16, 72 )
 #define VEC_HUMAN_HULL_DUCK	Vector( 16, 16, 36 )
 
-#define VEC_VIEW			Vector( 0, 0, 28 )
+#define VEC_VIEW			Vector( 0, 0, 18 )
 
-#define VEC_DUCK_HULL_MIN	Vector(-16, -16, -18 )
-#define VEC_DUCK_HULL_MAX	Vector( 16,  16,  18)
+#define VEC_DUCK_HULL_MIN	Vector(-16, -16, -32 )
+#define VEC_DUCK_HULL_MAX	Vector( 16,  16,  32)
 #define VEC_DUCK_VIEW		Vector( 0, 0, 12 )
 
 #define SVC_TEMPENTITY		23
@@ -454,6 +460,8 @@ extern DLL_GLOBAL int			g_Language;
 #define SVC_CDTRACK			32
 #define SVC_WEAPONANIM		35
 #define SVC_ROOMTYPE		37
+#define SVC_ADDANGLE		38		// [vec3] add this angle to the view angle
+#define SVC_NEWUSERMSG		39
 #define	SVC_DIRECTOR		51
 
 // triggers
@@ -567,3 +575,33 @@ int UTIL_SharedRandomLong( unsigned int seed, int low, int high );
 float UTIL_SharedRandomFloat( unsigned int seed, float low, float high );
 
 float UTIL_WeaponTimeBase( void );
+
+typedef enum
+{
+	RED = 1,
+	BLUE,
+	GREEN,
+	YELLOW,
+	WHITE
+}printcolor_t;
+
+typedef enum
+{
+	F_IN_OUT,
+	CREDITS,
+	SCANOUT
+}printeffect_t;
+
+typedef enum
+{
+	WIN_MSG,
+	CRITICAL,
+	INFO,
+	LEADER_HIT,
+	MISC_SHIT,
+	CHASECAM,
+	CHASECAM_TARGET,
+	NOTIFY
+}effectchannel_t;
+
+extern void EffectPrint( CBasePlayer *pPlayer, int color, int effect, int channel, char *text );

@@ -269,7 +269,7 @@ void DLLEXPORT IN_MouseEvent( int mstate )
 {
 	int i;
 
-	if( iMouseInUse || g_iVisibleMouse )
+	if( !mouseactive )
 		return;
 
 	// perform button actions
@@ -305,7 +305,7 @@ void IN_MouseMove( float frametime, usercmd_t *cmd )
 
 	//jjb - this disbles normal mouse control if the user is trying to 
 	//      move the camera, or if the mouse cursor is visible or if we're in intermission
-	if( !iMouseInUse && !g_iVisibleMouse && !gHUD.m_iIntermission )
+	if( !iMouseInUse && !g_iVisibleMouse )
 	{
 		GetCursorPos( &current_pos );
 

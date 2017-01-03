@@ -20,11 +20,10 @@ typedef	enum
 
 	BULLET_MONSTER_9MM,
 	BULLET_MONSTER_MP5,
-	BULLET_MONSTER_12MM
-}Bullet;
+	BULLET_MONSTER_12MM,
+} Bullet;
 
-enum glock_e
-{
+enum glock_e {
 	GLOCK_IDLE1 = 0,
 	GLOCK_IDLE2,
 	GLOCK_IDLE3,
@@ -37,8 +36,7 @@ enum glock_e
 	GLOCK_ADD_SILENCER
 };
 
-enum shotgun_e
-{
+enum shotgun_e {
 	SHOTGUN_IDLE = 0,
 	SHOTGUN_FIRE,
 	SHOTGUN_FIRE2,
@@ -60,11 +58,10 @@ enum mp5_e
 	MP5_DEPLOY,
 	MP5_FIRE1,
 	MP5_FIRE2,
-	MP5_FIRE3
+	MP5_FIRE3,
 };
 
-enum python_e
-{
+enum python_e {
 	PYTHON_IDLE1 = 0,
 	PYTHON_FIDGET,
 	PYTHON_FIRE1,
@@ -78,8 +75,7 @@ enum python_e
 #define	GAUSS_PRIMARY_CHARGE_VOLUME	256// how loud gauss is while charging
 #define GAUSS_PRIMARY_FIRE_VOLUME	450// how loud gauss is when discharged
 
-enum gauss_e
-{
+enum gauss_e {
 	GAUSS_IDLE = 0,
 	GAUSS_IDLE2,
 	GAUSS_FIDGET,
@@ -91,8 +87,10 @@ enum gauss_e
 	GAUSS_DRAW
 };
 
+int EV_HLDM_DamageDecal( int entity, int bitsDamageType );
 void EV_HLDM_GunshotDecalTrace( pmtrace_t *pTrace, char *decalName );
 void EV_HLDM_DecalGunshot( pmtrace_t *pTrace, int iBulletType );
 int EV_HLDM_CheckTracer( int idx, float *vecSrc, float *end, float *forward, float *right, int iBulletType, int iTracerFreq, int *tracerCount );
-void EV_HLDM_FireBullets( int idx, float *forward, float *right, float *up, int cShots, float *vecSrc, float *vecDirShooting, float flDistance, int iBulletType, int iTracerFreq, int *tracerCount, float flSpreadX, float flSpreadY );
+void EV_HLDM_FireBullets( int idx, float *forward, float *right, float *up, int cShots, float *vecSrc, float *vecDirShooting, float *vecSpread, float flDistance, int iBulletType, int iTracerFreq, int *tracerCount );
+
 #endif // EV_HLDMH

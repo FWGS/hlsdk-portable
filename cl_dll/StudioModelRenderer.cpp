@@ -453,6 +453,21 @@ void CStudioModelRenderer::StudioSetUpTransform( int trivial_accept )
 	angles[PITCH] = m_pCurrentEntity->curstate.angles[PITCH];
 	angles[YAW] = m_pCurrentEntity->curstate.angles[YAW];
 
+	//Adrian - Have the model rotate ( weapon world models, powerups and armor. )
+	//Yeah, we're too lazy to animate them!.
+	if( strstr( m_pCurrentEntity->model->name, "g_" ) || strstr( m_pCurrentEntity->model->name, "pow_" ) || strstr( m_pCurrentEntity->model->name, "armour" ) )
+	{
+		float timemod;
+
+		timemod = fmod( gEngfuncs.GetClientTime(), 2.0 );
+
+		m_pCurrentEntity->angles[0] = 0;
+		m_pCurrentEntity->angles[YAW] = timemod * 180.0 - 90.0;
+		m_pCurrentEntity->angles[2] = 0;
+
+		VectorCopy( m_pCurrentEntity->angles, m_pCurrentEntity->curstate.angles );
+	}
+
 	//Con_DPrintf( "Angles %4.2f prev %4.2f for %i\n", angles[PITCH], m_pCurrentEntity->index );
 	//Con_DPrintf( "movetype %d %d\n", m_pCurrentEntity->movetype, m_pCurrentEntity->aiment );
 	if( m_pCurrentEntity->curstate.movetype == MOVETYPE_STEP )
@@ -929,6 +944,12 @@ void CStudioModelRenderer::StudioSetupBones( void )
 
 		if( pbones[i].parent == -1 )
 		{
+			//Adrian - Scale the player's model height down
+			//NOTE: This is only relative for a few models,
+			//some other models might need a different number.
+			if( m_pCurrentEntity->player )
+				bonematrix[2][2] *= 0.89; // (2,2) is Z component
+
 			if( IEngineStudio.IsHardware() )
 			{
 				ConcatTransforms( (*m_protationmatrix), bonematrix, (*m_pbonetransform)[i] );
@@ -1160,6 +1181,10 @@ int CStudioModelRenderer::StudioDrawModel( int flags )
 		IEngineStudio.StudioDynamicLight( m_pCurrentEntity, &lighting );
 
 		IEngineStudio.StudioEntityLight( &lighting );
+
+		//Scale the spike model lighting by a factor of 30 ( H4X!! )
+		if( strstr( m_pCurrentEntity->model->name, "spike.mdl" ) )
+			lighting.ambientlight *= 30;
 
 		// model and frame independant
 		IEngineStudio.StudioSetupLighting( &lighting );
@@ -1463,6 +1488,9 @@ int CStudioModelRenderer::StudioDrawPlayer( int flags, entity_state_t *pplayer )
 
 		IEngineStudio.StudioEntityLight( &lighting );
 
+		//Scale player model lighting by a factor of 100 ( H4X!! )
+		lighting.ambientlight *= 100;
+
 		// model and frame independant
 		IEngineStudio.StudioSetupLighting( &lighting );
 
@@ -1493,6 +1521,26 @@ int CStudioModelRenderer::StudioDrawPlayer( int flags, entity_state_t *pplayer )
 
 			m_pStudioHeader = (studiohdr_t *)IEngineStudio.Mod_Extradata( pweaponmodel );
 			IEngineStudio.StudioSetHeader( m_pStudioHeader );
+
+			//Animate p_ model.
+			if( strstr( pweaponmodel->name, "p_nail2.mdl" ) )
+			{
+				if( m_pCurrentEntity->curstate.sequence == 50 )
+					m_pCurrentEntity->curstate.sequence = 1;
+				else
+					m_pCurrentEntity->curstate.sequence = 0;
+
+				StudioSetupBones();
+			}
+			else if( strstr( pweaponmodel->name, "p_rock.mdl" ) )
+			{
+				if( m_pCurrentEntity->curstate.sequence == 46 )
+					m_pCurrentEntity->curstate.sequence = 1;
+				else
+					m_pCurrentEntity->curstate.sequence = 0;
+
+				StudioSetupBones();
+			}
 
 			StudioMergeBones( pweaponmodel );
 
@@ -1547,8 +1595,22 @@ void CStudioModelRenderer::StudioRenderModel( void )
 
 	if( m_pCurrentEntity->curstate.renderfx == kRenderFxGlowShell )
 	{
-		m_pCurrentEntity->curstate.renderfx = kRenderFxNone;
-		StudioRenderFinal();
+		if( strstr( m_pCurrentEntity->model->name, "v_" ) )
+		{
+			if( m_pCurrentEntity->curstate.renderamt != 5 )
+			{
+				m_pCurrentEntity->curstate.renderfx = kRenderFxNone;
+				StudioRenderFinal();
+			}
+		}
+		else
+		{
+			if( m_pCurrentEntity->curstate.renderamt != 5 && m_pCurrentEntity->curstate.rendermode != kRenderTransColor )
+			{
+				m_pCurrentEntity->curstate.renderfx = kRenderFxNone;
+				StudioRenderFinal();
+			}
+		}
 
 		if( !IEngineStudio.IsHardware() )
 		{

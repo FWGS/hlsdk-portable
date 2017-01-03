@@ -35,6 +35,10 @@ extern client_sprite_t *GetSpriteList( client_sprite_t *pList, const char *psz, 
 
 extern cvar_t *sensitivity;
 cvar_t *cl_lw = NULL;
+cvar_t *cl_autowepswitch;
+cvar_t *cl_rollspeed;
+cvar_t *cl_rollangle;
+cvar_t *cl_fov;
 
 void ShutdownInput( void );
 
@@ -56,12 +60,6 @@ int __MsgFunc_InitHUD( const char *pszName, int iSize, void *pbuf )
 	return 1;
 }
 
-int __MsgFunc_ViewMode( const char *pszName, int iSize, void *pbuf )
-{
-	gHUD.MsgFunc_ViewMode( pszName, iSize, pbuf );
-	return 1;
-}
-
 int __MsgFunc_SetFOV( const char *pszName, int iSize, void *pbuf )
 {
 	return gHUD.MsgFunc_SetFOV( pszName, iSize, pbuf );
@@ -77,79 +75,26 @@ int __MsgFunc_GameMode( const char *pszName, int iSize, void *pbuf )
 	return gHUD.MsgFunc_GameMode( pszName, iSize, pbuf );
 }
 
-// TFFree Command Menu
-void __CmdFunc_OpenCommandMenu( void )
-{
-}
-
-// TFC "special" command
-void __CmdFunc_InputPlayerSpecial( void )
-{
-}
-
-void __CmdFunc_CloseCommandMenu( void )
-{
-}
-
-void __CmdFunc_ForceCloseCommandMenu( void )
-{
-}
-
 void __CmdFunc_ToggleServerBrowser( void )
 {
 }
 
-// TFFree Command Menu Message Handlers
-int __MsgFunc_ValClass( const char *pszName, int iSize, void *pbuf )
-{
-	return 0;
-}
-
-int __MsgFunc_TeamNames( const char *pszName, int iSize, void *pbuf )
-{
-	return 0;
-}
-
-int __MsgFunc_Feign( const char *pszName, int iSize, void *pbuf )
-{
-	return 0;
-}
-
-int __MsgFunc_Detpack( const char *pszName, int iSize, void *pbuf )
-{
-	return 0;
-}
-
-int __MsgFunc_VGUIMenu( const char *pszName, int iSize, void *pbuf )
-{
-	return 0;
-}
-
-int __MsgFunc_BuildSt( const char *pszName, int iSize, void *pbuf )
-{
-	return 0;
-}
-
-int __MsgFunc_RandomPC( const char *pszName, int iSize, void *pbuf )
-{
-	return 0;
-}
- 
 int __MsgFunc_ServerName( const char *pszName, int iSize, void *pbuf )
 {
 	return 0;
 }
 
-int __MsgFunc_Spectator( const char *pszName, int iSize, void *pbuf )
+// QUAKECLASSIC
+int __MsgFunc_QItems( const char *pszName, int iSize, void *pbuf )
+{
+	return gHUD.MsgFunc_QItems( pszName, iSize, pbuf );
+}
+
+int __MsgFunc_ScoreInfo( const char *pszName, int iSize, void *pbuf )
 {
 	return 0;
 }
 
-int __MsgFunc_AllowSpec( const char *pszName, int iSize, void *pbuf )
-{
-	return 0;
-}
- 
 // This is called every time the DLL is loaded
 void CHud::Init( void )
 {
@@ -157,33 +102,18 @@ void CHud::Init( void )
 	HOOK_MESSAGE( ResetHUD );
 	HOOK_MESSAGE( GameMode );
 	HOOK_MESSAGE( InitHUD );
-	HOOK_MESSAGE( ViewMode );
 	HOOK_MESSAGE( SetFOV );
 	HOOK_MESSAGE( Concuss );
 
-	// TFFree CommandMenu
-	HOOK_COMMAND( "+commandmenu", OpenCommandMenu );
-	HOOK_COMMAND( "-commandmenu", CloseCommandMenu );
-	HOOK_COMMAND( "ForceCloseCommandMenu", ForceCloseCommandMenu );
-	HOOK_COMMAND( "special", InputPlayerSpecial );
 	HOOK_COMMAND( "togglebrowser", ToggleServerBrowser );
 
-	HOOK_MESSAGE( ValClass );
-	HOOK_MESSAGE( TeamNames );
-	HOOK_MESSAGE( Feign );
-	HOOK_MESSAGE( Detpack );
-	HOOK_MESSAGE( BuildSt );
-	HOOK_MESSAGE( RandomPC );
 	HOOK_MESSAGE( ServerName );
 
-	HOOK_MESSAGE( Spectator );
-	HOOK_MESSAGE( AllowSpec );
-
-	// VGUI Menus
-	HOOK_MESSAGE( VGUIMenu );
-
-	CVAR_CREATE( "hud_classautokill", "1", FCVAR_ARCHIVE | FCVAR_USERINFO );		// controls whether or not to suicide immediately on TF class switch
-	CVAR_CREATE( "hud_takesshots", "0", FCVAR_ARCHIVE );		// controls whether or not to automatically take screenshots at the end of a round
+	// QUAKECLASSIC
+	HOOK_MESSAGE( QItems );
+	HOOK_MESSAGE( ScoreInfo );
+	//HOOK_MESSAGE( TeamScore );
+	HOOK_MESSAGE( TeamInfo );
 	hud_textmode = CVAR_CREATE ( "hud_textmode", "0", FCVAR_ARCHIVE );
 
 	m_iLogo = 0;
@@ -194,6 +124,13 @@ void CHud::Init( void )
 	m_pCvarStealMouse = CVAR_CREATE( "hud_capturemouse", "1", FCVAR_ARCHIVE );
 	m_pCvarDraw = CVAR_CREATE( "hud_draw", "1", FCVAR_ARCHIVE );
 	cl_lw = gEngfuncs.pfnGetCvarPointer( "cl_lw" );
+
+	/************************ CLIENT CVAR DEFINITIONS ************************/
+	cl_autowepswitch = gEngfuncs.pfnRegisterVariable( "cl_autowepswitch", "2", FCVAR_USERINFO | FCVAR_ARCHIVE );
+	cl_rollangle = gEngfuncs.pfnRegisterVariable( "cl_rollangle", "0.65", FCVAR_CLIENTDLL | FCVAR_ARCHIVE );
+	cl_rollspeed = gEngfuncs.pfnRegisterVariable( "cl_rollspeed", "300", FCVAR_CLIENTDLL | FCVAR_ARCHIVE );
+	cl_fov = gEngfuncs.pfnRegisterVariable( "cl_fov", "90", FCVAR_USERINFO | FCVAR_ARCHIVE );
+	/************************ CLIENT CVAR DEFINITIONS ************************/
 
 	m_pSpriteList = NULL;
 
@@ -220,7 +157,7 @@ void CHud::Init( void )
 	m_Geiger.Init();
 	m_Train.Init();
 	m_Battery.Init();
-	m_Flash.Init();
+	//m_Flash.Init();
 	m_Message.Init();
 	m_StatusBar.Init();
 	m_DeathNotice.Init();
@@ -396,6 +333,7 @@ void CHud::VidInit( void )
 	m_AmmoSecondary.VidInit();
 	m_TextMessage.VidInit();
 	m_StatusIcons.VidInit();
+	m_Spectator.VidInit();
 	m_Scoreboard.VidInit();
 	m_MOTD.VidInit();
 }
@@ -484,6 +422,7 @@ Returns last FOV
 */
 float HUD_GetFOV( void )
 {
+	/*
 	if( gEngfuncs.pDemoAPI->IsRecording() )
 	{
 		// Write it
@@ -501,6 +440,7 @@ float HUD_GetFOV( void )
 	{
 		g_lastFOV = g_demozoom;
 	}
+	*/
 	return g_lastFOV;
 }
 
@@ -510,12 +450,6 @@ int CHud::MsgFunc_SetFOV( const char *pszName,  int iSize, void *pbuf )
 
 	int newfov = READ_BYTE();
 	int def_fov = CVAR_GET_FLOAT( "default_fov" );
-
-	//Weapon prediction already takes care of changing the fog. ( g_lastFOV ).
-	if( cl_lw && cl_lw->value )
-		return 1;
-
-	g_lastFOV = newfov;
 
 	if( newfov == 0 )
 	{

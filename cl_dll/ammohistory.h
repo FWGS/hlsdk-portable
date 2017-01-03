@@ -17,7 +17,7 @@
 //
 
 // this is the max number of items in each bucket
-#define MAX_WEAPON_POSITIONS		MAX_WEAPON_SLOTS
+#define MAX_WEAPON_POSITIONS		1
 
 class WeaponsResource
 {
@@ -55,12 +55,12 @@ public:
 
 	void PickupWeapon( WEAPON *wp )
 	{
-		rgSlots[wp->iSlot][wp->iSlotPos] = wp;
+		rgSlots[wp->iSlot][0] = wp;
 	}
 
 	void DropWeapon( WEAPON *wp )
 	{
-		rgSlots[wp->iSlot][wp->iSlotPos] = NULL;
+		rgSlots[wp->iSlot][0] = NULL;
 	}
 
 	void DropAllWeapons( void )

@@ -23,6 +23,7 @@
 #define RGB_YELLOWISH 0x00FFA000 //255,160,0
 #define RGB_REDISH 0x00FF1010 //255,160,0
 #define RGB_GREENISH 0x0000A000 //0,160,0
+#define RGB_NORMAL 0x00FFFFFF // 255,255,255
 
 #include "wrect.h"
 #include "cl_dll.h"
@@ -101,6 +102,8 @@ public:
 	void Think( void );
 	void Reset( void );
 	int DrawWList( float flTime );
+	int DrawFastList( float flTime );
+	float m_flFastListTime;
 	int MsgFunc_CurWeapon( const char *pszName, int iSize, void *pbuf );
 	int MsgFunc_WeaponList( const char *pszName, int iSize, void *pbuf );
 	int MsgFunc_AmmoX( const char *pszName, int iSize, void *pbuf );
@@ -124,6 +127,11 @@ public:
 	void _cdecl UserCmd_NextWeapon( void );
 	void _cdecl UserCmd_PrevWeapon( void );
 
+	int m_iXPosition;
+	int m_iNumberXPosition;
+	HSPRITE m_sprAmmoSprite;
+	int m_HUD_Ammo;
+	wrect_t *m_prc1;
 private:
 	float m_fFade;
 	RGBA  m_rgba;
@@ -271,14 +279,24 @@ protected:
 		MAX_STATUSBAR_LINES = 2
 	};
 
+	HSPRITE m_hArmor;
+	HSPRITE m_hHealth;
+	int m_iArmorSpriteIndex;
+	int m_iHealthSpriteIndex;
+
 	char m_szStatusText[MAX_STATUSBAR_LINES][MAX_STATUSTEXT_LENGTH];  // a text string describing how the status bar is to be drawn
 	char m_szStatusBar[MAX_STATUSBAR_LINES][MAX_STATUSTEXT_LENGTH];	// the constructed bar that is drawn
 	int m_iStatusValues[MAX_STATUSBAR_VALUES];  // an array of values for use in the status bar
 
-	int m_bReparseString; // set to TRUE whenever the m_szStatusBar needs to be recalculated
+	char m_szName[MAX_STATUSBAR_LINES][MAX_STATUSTEXT_LENGTH];
+	char m_szHealth[MAX_STATUSBAR_LINES][MAX_STATUSTEXT_LENGTH];
+	char m_szArmor[MAX_STATUSBAR_LINES][MAX_STATUSTEXT_LENGTH];
 
 	// an array of colors...one color for each line
 	float *m_pflNameColors[MAX_STATUSBAR_LINES];
+	int m_iTeamMate[MAX_STATUSBAR_LINES];
+
+	int m_bReparseString; // set to TRUE whenever the m_szStatusBar needs to be recalculated
 };
 
 //
@@ -358,6 +376,8 @@ public:
 
 private:
 	int m_HUD_d_skull;  // sprite index of skull icon
+
+	char szText[256][4];
 };
 
 //
@@ -394,9 +414,7 @@ public:
 	int MsgFunc_SayText( const char *pszName, int iSize, void *pbuf );
 	void SayTextPrint( const char *pszBuf, int iBufSize, int clientIndex = -1 );
 	void EnsureTextFitsInOneLineAndWrapIfHaveTo( int line );
-	friend class CHudSpectator;
 
-private:
 	struct cvar_s *	m_HUD_saytext;
 	struct cvar_s *	m_HUD_saytext_time;
 };
@@ -425,6 +443,7 @@ private:
 //
 //-----------------------------------------------------
 //
+/*
 class CHudFlashlight: public CHudBase
 {
 public:
@@ -448,7 +467,7 @@ private:
 	float m_fFade;
 	int m_iWidth;		// width of the battery innards
 };
-
+*/
 //
 //-----------------------------------------------------
 //
@@ -586,9 +605,14 @@ public:
 	cvar_t  *m_pCvarStealMouse;
 	cvar_t	*m_pCvarDraw;
 
+	// QUAKECLASSIC
+	int m_iQuakeItems;
+
 	int m_iFontHeight;
 	int DrawHudNumber( int x, int y, int iFlags, int iNumber, int r, int g, int b );
 	int DrawHudString( int x, int y, int iMaxX, char *szString, int r, int g, int b );
+	int DrawHudStringCTFint x, int y, int iMaxX, char *szString, int r, int g, int b );
+	int ReturnStringPixelLength( char *Hihi );
 	int DrawHudStringReverse( int xpos, int ypos, int iMinX, char *szString, int r, int g, int b );
 	int DrawHudNumberString( int xpos, int ypos, int iMinX, int iNumber, int r, int g, int b );
 	int GetNumWidth( int iNumber, int iFlags );
@@ -622,7 +646,6 @@ public:
 	CHudGeiger		m_Geiger;
 	CHudBattery		m_Battery;
 	CHudTrain		m_Train;
-	CHudFlashlight	m_Flash;
 	CHudMessage		m_Message;
 	CHudStatusBar   m_StatusBar;
 	CHudDeathNotice m_DeathNotice;
@@ -649,9 +672,11 @@ public:
 	int _cdecl MsgFunc_Logo( const char *pszName,  int iSize, void *pbuf );
 	int _cdecl MsgFunc_ResetHUD( const char *pszName,  int iSize, void *pbuf );
 	void _cdecl MsgFunc_InitHUD( const char *pszName, int iSize, void *pbuf );
-	void _cdecl MsgFunc_ViewMode( const char *pszName, int iSize, void *pbuf );
 	int _cdecl MsgFunc_SetFOV( const char *pszName,  int iSize, void *pbuf );
 	int  _cdecl MsgFunc_Concuss( const char *pszName, int iSize, void *pbuf );
+
+	// QUAKECLASSIC
+	int  _cdecl MsgFunc_QItems( const char *pszName, int iSize, void *pbuf );
 
 	// Screen information
 	SCREENINFO	m_scrinfo;
@@ -672,8 +697,6 @@ public:
 
 extern CHud gHUD;
 
-extern int g_iPlayerClass;
-extern int g_iTeamNumber;
 extern int g_iUser1;
 extern int g_iUser2;
 extern int g_iUser3;

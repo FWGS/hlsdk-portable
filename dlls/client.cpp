@@ -30,7 +30,7 @@
 #include "player.h"
 #include "spectator.h"
 #include "client.h"
-#include "soundent.h"
+//#include "soundent.h"
 #include "gamerules.h"
 #include "game.h"
 #include "customentity.h"
@@ -44,9 +44,17 @@ extern DLL_GLOBAL BOOL		g_fGameOver;
 extern DLL_GLOBAL int		g_iSkillLevel;
 extern DLL_GLOBAL ULONG		g_ulFrameCount;
 
+extern bool g_bHaveMOTD;
+
 extern void CopyToBodyQue( entvars_t* pev );
 extern int giPrecacheGrunt;
 extern int gmsgSayText;
+
+extern unsigned short g_sGibbed;
+extern unsigned short g_sTeleport;
+extern unsigned short g_sTrail;
+extern unsigned short g_sExplosion;
+extern unsigned short g_usPowerUp;
 
 extern int g_teamplay;
 
@@ -107,16 +115,6 @@ void ClientDisconnect( edict_t *pEntity )
 		WRITE_STRING( text );
 	MESSAGE_END();
 
-	CSound *pSound;
-	pSound = CSoundEnt::SoundPointerForIndex( CSoundEnt::ClientSoundIndex( pEntity ) );
-	{
-		// since this client isn't around to think anymore, reset their sound. 
-		if( pSound )
-		{
-			pSound->Reset();
-		}
-	}
-
 	// since the edict doesn't get deleted, fix it so it doesn't interfere.
 	pEntity->v.takedamage = DAMAGE_NO;// don't attract autoaim
 	pEntity->v.solid = SOLID_NOT;// nonsolid
@@ -167,7 +165,7 @@ void ClientKill( edict_t *pEntity )
 
 	// have the player kill themself
 	pev->health = 0;
-	pl->Killed( pev, GIB_NEVER );
+	pl->Killed( pev, GIB_ALWAYS );
 
 	//pev->modelindex = g_ulModelIndexPlayer;
 	//pev->frags -= 2;		// extra penalty
@@ -189,6 +187,8 @@ void ClientPutInServer( edict_t *pEntity )
 
 	pPlayer = GetClassPtr( (CBasePlayer *)pev );
 	pPlayer->SetCustomDecalFrames( -1 ); // Assume none;
+
+	pPlayer->m_bHadFirstSpawn = false;
 
 	// Allocate a CBasePlayer for pev, and call spawn
 	pPlayer->Spawn();
@@ -431,30 +431,11 @@ void ClientCommand( edict_t *pEntity )
 			}
 		}
 	}
-	else if( FStrEq( pcmd, "drop" ) )
-	{
-		// player is dropping an item. 
-		GetClassPtr( (CBasePlayer *)pev )->DropPlayerItem( (char *)CMD_ARGV( 1 ) );
-	}
-	else if( FStrEq( pcmd, "fov" ) )
-	{
-		if( g_flWeaponCheat && CMD_ARGC() > 1 )
-		{
-			GetClassPtr( (CBasePlayer *)pev )->m_iFOV = atoi( CMD_ARGV( 1 ) );
-		}
-		else
-		{
-			CLIENT_PRINTF( pEntity, print_console, UTIL_VarArgs( "\"fov\" is \"%d\"\n", (int)GetClassPtr( (CBasePlayer *)pev )->m_iFOV ) );
-		}
-	}
-	else if( FStrEq( pcmd, "use" ) )
-	{
-		GetClassPtr( (CBasePlayer *)pev )->SelectItem( (char *)CMD_ARGV( 1 ) );
-	}
-	else if( ( ( pstr = strstr( pcmd, "weapon_" ) ) != NULL ) && ( pstr == pcmd ) )
-	{
-		GetClassPtr( (CBasePlayer *)pev )->SelectItem( pcmd );
-	}
+	else if( pPlayer->m_bHadFirstSpawn == false && g_bHaveMOTD )
+        {
+			pPlayer->m_bHadFirstSpawn = true;
+			pPlayer->Spawn();
+        }
 	else if( FStrEq( pcmd, "lastinv" ) )
 	{
 		GetClassPtr( (CBasePlayer *)pev )->SelectLastItem();
@@ -470,6 +451,18 @@ void ClientCommand( edict_t *pEntity )
 	{
 		// MenuSelect returns true only if the command is properly handled,  so don't print a warning
 	}*/
+	else if( FStrEq( pcmd, "specmode" ) ) // new spectator mode
+	{
+		CBasePlayer *pPlayer = GetClassPtr( (CBasePlayer *)pev );
+		if( pPlayer->IsObserver() )
+			pPlayer->Observer_SetMode( atoi( CMD_ARGV( 1 ) ) );
+	}
+	else if( FStrEq( pcmd, "follownext" ) ) // follow next player
+	{
+		CBasePlayer *pPlayer = GetClassPtr( (CBasePlayer *)pev );
+		if( pPlayer->IsObserver() )
+			pPlayer->Observer_FindNextPlayer();
+	}
 	else if( FStrEq( pcmd, "VModEnable" ) )
 	{
 		// clear 'Unknown command: VModEnable' in singleplayer
@@ -551,6 +544,21 @@ void ClientUserInfoChanged( edict_t *pEntity, char *infobuffer )
 				g_engfuncs.pfnInfoKeyValue( infobuffer, "name" ) );
 		}
 	}
+
+	// QUAKECLASSIC
+	// Weapon switching behaviour
+	( (CBasePlayer*)pEntity )->m_iWeaponSwitch = 8;
+	char *st = g_engfuncs.pfnInfoKeyValue( infobuffer, "w_switch" );
+	if( st && st[0] )
+	{
+		( (CBasePlayer*)pEntity )->m_iWeaponSwitch = atoi( st );
+	}
+	( (CBasePlayer*)pEntity )->m_iBackpackSwitch = 8;
+	st = g_engfuncs.pfnInfoKeyValue( infobuffer, "b_switch" );
+	if( st && st[0] )
+	{
+		( (CBasePlayer*)pEntity )->m_iBackpackSwitch = atoi( st );
+        }
 
 	g_pGameRules->ClientUserInfoChanged( GetClassPtr( (CBasePlayer *)&pEntity->v ), infobuffer );
 }
@@ -762,11 +770,23 @@ void ClientPrecache( void )
 	PRECACHE_SOUND( "common/bodysplat.wav" );
 
 	// player pain sounds
-	PRECACHE_SOUND( "player/pl_pain2.wav" );
-	PRECACHE_SOUND( "player/pl_pain4.wav" );
-	PRECACHE_SOUND( "player/pl_pain5.wav" );
-	PRECACHE_SOUND( "player/pl_pain6.wav" );
-	PRECACHE_SOUND( "player/pl_pain7.wav" );
+	PRECACHE_SOUND( "player/pain1.wav" );
+	PRECACHE_SOUND( "player/pain2.wav" );
+	PRECACHE_SOUND( "player/pain3.wav" );
+	PRECACHE_SOUND( "player/pain4.wav" );
+	PRECACHE_SOUND( "player/pain5.wav" );
+	PRECACHE_SOUND( "player/pain6.wav" );
+	PRECACHE_SOUND( "player/drown1.wav" );
+	PRECACHE_SOUND( "player/drown2.wav" );
+	PRECACHE_SOUND( "player/lburn1.wav" );
+	PRECACHE_SOUND( "player/lburn2.wav" );
+	PRECACHE_SOUND( "player/death1.wav" );
+	PRECACHE_SOUND( "player/death2.wav" );
+	PRECACHE_SOUND( "player/death3.wav" );
+	PRECACHE_SOUND( "player/death4.wav" );
+	PRECACHE_SOUND( "player/death5.wav" );
+
+	PRECACHE_SOUND( "player/h2odeath.wav" );
 
 	PRECACHE_MODEL( "models/player.mdl" );
 
@@ -777,13 +797,58 @@ void ClientPrecache( void )
 	PRECACHE_SOUND( "common/wpn_select.wav" );
 	PRECACHE_SOUND( "common/wpn_denyselect.wav" );
 
-	// geiger sounds
-	PRECACHE_SOUND( "player/geiger6.wav" );
-	PRECACHE_SOUND( "player/geiger5.wav" );
-	PRECACHE_SOUND( "player/geiger4.wav" );
-	PRECACHE_SOUND( "player/geiger3.wav" );
-	PRECACHE_SOUND( "player/geiger2.wav" );
-	PRECACHE_SOUND( "player/geiger1.wav" );
+	PRECACHE_SOUND( "player/gib.wav" );
+
+	PRECACHE_MODEL( "models/gib_1.mdl" );
+	PRECACHE_MODEL( "models/gib_2.mdl" );
+	PRECACHE_MODEL( "models/gib_3.mdl" );
+
+	PRECACHE_SOUND( "player/plyrjmp8.wav" );
+
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/p_crowbar.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/p_light.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/p_nail.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/p_nail2.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/p_rock.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/p_rock2.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/p_shot.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/p_shot2.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/spike.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/rocket.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/grenade.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/backpack.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/backpack.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/armor_g.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/armor_r.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/armor_y.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/armor_y.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/b_nail0.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/b_nail1.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/g_light.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/g_nail.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/g_nail2.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/g_rock.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/g_rock2.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/g_shot2.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/pow_invis.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/pow_quad.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/pow_invuln.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/suit.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/w_battery.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/w_batteryl.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/w_medkit.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/w_medkitl.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/w_medkits.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/w_rpgammo.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/w_rpgammo_big.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/w_shotbox.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/w_shotbox_big.mdl" );
+
+	g_sGibbed = PRECACHE_EVENT( 1, "events/gibs.sc" );
+	g_sTeleport = PRECACHE_EVENT( 1, "events/teleport.sc" );
+	g_sTrail = PRECACHE_EVENT( 1, "events/trail.sc" );
+	g_sExplosion = PRECACHE_EVENT( 1, "events/explosion.sc" );
+	g_usPowerUp = PRECACHE_EVENT( 1, "events/powerup.sc" );
 
 	if( giPrecacheGrunt )
 		UTIL_PrecacheOther( "monster_human_grunt" );
@@ -801,7 +866,7 @@ const char *GetGameDescription()
 	if( g_pGameRules ) // this function may be called before the world has spawned, and the game rules initialized
 		return g_pGameRules->GetGameDescription();
 	else
-		return "Half-Life";
+		return "DMC";
 }
 
 /*
@@ -1000,7 +1065,10 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 	// If pSet is NULL, then the test will always succeed and the entity will be added to the update
 	if( ent != host )
 	{
-		if( !ENGINE_CHECK_VISIBILITY( (const struct edict_s *)ent, pSet ) )
+		//We still want to show all ents for a quick period ( max 700ms of lag ) for when we predict teleporters
+		//if we don't do this, the entities on the other side wont show until the real origin comes thru and reaches
+		//the new PVS/PAS.
+		if( !ENGINE_CHECK_VISIBILITY( (const struct edict_s *)ent, pSet ) && ent->v.fuser4 < gpGlobals->time )
 		{
 			// env_sky is visible always
 			if( !FClassnameIs( ent, "env_sky" ) )
@@ -1560,7 +1628,7 @@ void UpdateClientData( const struct edict_s *ent, int sendweapons, struct client
 
 	cd->waterlevel		= ent->v.waterlevel;
 	cd->watertype		= ent->v.watertype;
-	cd->weapons		= ent->v.weapons;
+	//cd->weapons		= ent->v.weapons;
 
 	// Vectors
 	cd->origin		= ent->v.origin;
@@ -1583,6 +1651,11 @@ void UpdateClientData( const struct edict_s *ent, int sendweapons, struct client
 	cd->pushmsec		= ent->v.pushmsec;
 
 #if defined( CLIENT_WEAPONS )
+	// Observer
+	cd->iuser1 = ent->v.iuser1;
+	cd->iuser2 = ent->v.iuser2;
+	cd->iuser3 = ent->v.iuser3;
+
 	if( sendweapons )
 	{
 		entvars_t *pev = (entvars_t *)&ent->v;
@@ -1601,6 +1674,7 @@ void UpdateClientData( const struct edict_s *ent, int sendweapons, struct client
 			cd->ammo_rockets = pl->ammo_rockets;
 			cd->ammo_cells = pl->ammo_uranium;
 			cd->vuser2.x = pl->ammo_hornets;
+			cd->weapons = pl->m_iQuakeItems;
 
 			if( pl->m_pActiveItem )
 			{
@@ -1625,6 +1699,16 @@ void UpdateClientData( const struct edict_s *ent, int sendweapons, struct client
 					}
 				}
 			}
+			cd->fuser1 = (float)pl->m_iQuakeWeapon;
+			cd->iuser4 = gpGlobals->deathmatch;
+			cd->fuser2 = pl->m_iNailOffset > 0 ? 1.0 : 0.0;
+
+			cd->iuser3 = pl->m_iQuakeItems;
+
+			cd->ammo_shells = pl->m_iAmmoShells;
+			cd->ammo_nails = pl->m_iAmmoNails;
+			cd->ammo_cells = pl->m_iAmmoCells;
+			cd->ammo_rockets = pl->m_iAmmoRockets;
 		}
 	}
 #endif
@@ -1645,6 +1729,13 @@ void CmdStart( const edict_t *player, const struct usercmd_s *cmd, unsigned int 
 
 	if( !pl )
 		return;
+
+	if( cmd->weaponselect != 0 )
+	{
+		usercmd_t *c = (usercmd_t *)cmd;
+		pl->W_ChangeWeapon( c->weaponselect );
+		c->weaponselect = 0;
+	}
 
 	if( pl->pev->groupinfo != 0 )
 	{

@@ -107,7 +107,6 @@ public:
 	int m_iHealth;
 	int m_HUD_dmg_bio;
 	int m_HUD_cross;
-	float m_fAttackFront, m_fAttackRear, m_fAttackLeft, m_fAttackRight;
 	void GetPainColor( int &r, int &g, int &b );
 	float m_fFade;
 
@@ -119,6 +118,7 @@ private:
 	int m_bitsDamage;
 	int DrawPain( float fTime );
 	int DrawDamage( float fTime );
+	float m_fAttackFront, m_fAttackRear, m_fAttackLeft, m_fAttackRight;
 	void CalcDamageDirection( vec3_t vecFrom );
 	void UpdateTiles( float fTime, long bits );
 };

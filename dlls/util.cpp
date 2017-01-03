@@ -156,6 +156,55 @@ void UTIL_ParametricRocket( entvars_t *pev, Vector vecOrigin, Vector vecAngles, 
 	pev->impacttime = gpGlobals->time + travelTime;
 }
 
+void UTIL_ClientProjectile( const Vector &vecOrigin, const Vector &vecVelocity, short sModelIndex, int iOwnerIndex, int iLife )
+{
+	// we'd like to just send this projectile to a person in the shooter's PAS. However 
+	// the projectile won't be sent to a player outside of water if shot from inside water
+	// and vice-versa, so we do a trace here to figure out if the trace starts or stops in water.
+	// if it crosses contents, we'll just broadcast the projectile. Otherwise, just send to PVS
+	// of the trace's endpoint. 
+	BOOL fBroadcast;
+
+	fBroadcast = FALSE; // assume we're just gonna send this message to PVS. 
+	
+	TraceResult tr;
+	Vector vecTraceDir;
+
+	vecTraceDir = vecVelocity.Normalize();
+
+	UTIL_TraceLine( vecOrigin, vecOrigin + vecTraceDir * 4096, ignore_monsters, ENT( iOwnerIndex ), &tr );
+
+	if( UTIL_PointContents( vecOrigin ) != UTIL_PointContents( tr.vecEndPos ) )
+	{
+		fBroadcast = TRUE;
+	}
+
+	if( fBroadcast )
+	{
+		// The projectile is going to cross content types 
+		// (which will block PVS/PAS). Send to every client
+		MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
+	}
+	else
+	{
+		// just the PVS of where the projectile will hit.
+		MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, tr.vecEndPos );
+	}
+		WRITE_BYTE( TE_PROJECTILE );
+		WRITE_COORD( vecOrigin.x );
+		WRITE_COORD( vecOrigin.y );
+		WRITE_COORD( vecOrigin.z );
+
+		WRITE_COORD( vecVelocity.x );
+		WRITE_COORD( vecVelocity.y );
+		WRITE_COORD( vecVelocity.z );
+
+		WRITE_SHORT( sModelIndex );
+		WRITE_BYTE( iLife );
+		WRITE_BYTE( (BYTE)iOwnerIndex );
+	MESSAGE_END();
+}
+
 int g_groupmask = 0;
 int g_groupop = 0;
 
@@ -376,6 +425,113 @@ float UTIL_AngleDiff( float destAngle, float srcAngle )
 			delta += 360;
 	}
 	return delta;
+}
+
+void EffectPrint( CBasePlayer *pPlayer, int color, int effect, int channel, char *text )
+{
+	hudtextparms_t	m_TesParms = {0};
+
+	if( channel == WIN_MSG )
+	{
+		m_TesParms.x = -1;
+		m_TesParms.y = 0.4;
+	}
+
+	if( channel == NOTIFY )
+	{
+		m_TesParms.x = -1;
+		m_TesParms.y = 0.9;
+	}
+	else if( channel == INFO )
+	{
+		m_TesParms.x = 0;
+		m_TesParms.y = 0.85;
+	}
+	else if( channel == LEADER_HIT )
+	{
+		m_TesParms.x = -1;
+		m_TesParms.y = 1.0;
+	}
+	else if( channel == CRITICAL )
+	{
+		m_TesParms.x = -1;
+		m_TesParms.y = 0.7;
+	}
+	else if( channel == MISC_SHIT )
+	{
+		m_TesParms.x = -1;
+		m_TesParms.y = 0.25;
+	}
+	else if( channel == CHASECAM )
+	{
+		m_TesParms.x = 0.0;
+		m_TesParms.y = 0.3;
+	}
+	else if( channel == CHASECAM_TARGET )
+	{
+		m_TesParms.x = 0.09;
+		m_TesParms.y = 0.3;
+	}
+
+	m_TesParms.channel = channel;
+
+	/*
+	effect = F_IN_OUT - FADE IN / FADE OUT
+	effect = CREDITS - CREDITS
+	effect = SCANOUT - SCAN OUT
+	*/
+
+	m_TesParms.effect = effect;
+
+	if( color == BLUE ) // Blue Color
+	{
+		m_TesParms.r1 = 0;
+		m_TesParms.g1 = 0;
+		m_TesParms.b1 = 255;
+		m_TesParms.a1 = 0;
+	}
+	else if( color == RED ) // Red Color
+	{
+		m_TesParms.r1 = 255;
+		m_TesParms.g1 = 0;
+		m_TesParms.b1 = 0;
+		m_TesParms.a1 = 0;
+	}
+	else if( color == WHITE ) //Whitey Color
+	{
+		m_TesParms.r1 = 255;
+		m_TesParms.g1 = 255;
+		m_TesParms.b1 = 200;
+	}
+
+	//This is the second color in the effect, this is white for now...
+	m_TesParms.r2 = 255;
+	m_TesParms.g2 = 255;
+	m_TesParms.b2 = 255;
+	m_TesParms.a2 = 0;
+
+	//Fade In Time
+	if( effect == SCANOUT )
+		m_TesParms.fadeinTime = 0.01;
+	else
+		m_TesParms.fadeinTime = 0.3;
+
+	//Fade Out Time
+	m_TesParms.fadeoutTime = 0.3;
+
+	//Time the Effect is going to be up
+	if( effect == F_IN_OUT )
+		m_TesParms.holdTime = 1.5;
+	else
+		m_TesParms.holdTime = 3.5;
+
+	//Time the effect is aplied (?)
+	m_TesParms.fxTime = 0.25;
+
+	if( pPlayer == NULL )
+		UTIL_HudMessageAll( m_TesParms, text );
+	else
+		UTIL_HudMessage( pPlayer, m_TesParms, text );		
 }
 
 Vector UTIL_VecToAngles( const Vector &vec )
@@ -1469,16 +1625,16 @@ void UTIL_BubbleTrail( Vector from, Vector to, int count )
 	float flHeight = UTIL_WaterLevel( from, from.z, from.z + 256 );
 	flHeight = flHeight - from.z;
 
+	// Return if the start point isn't in water
 	if( flHeight < 8 )
-	{
-		flHeight = UTIL_WaterLevel( to, to.z, to.z + 256 );
-		flHeight = flHeight - to.z;
-		if( flHeight < 8 )
-			return;
+		return;
 
-		// UNDONE: do a ploink sound
-		flHeight = flHeight + to.z - from.z;
-	}
+	flHeight = UTIL_WaterLevel( to, to.z, to.z + 256 );
+	flHeight = flHeight - to.z;
+	if( flHeight < 8 )
+		return;
+	// UNDONE: do a ploink sound
+	flHeight = flHeight + to.z - from.z;
 
 	if( count > 255 )
 		count = 255;

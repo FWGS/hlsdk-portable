@@ -156,8 +156,8 @@ void IN_Move( float frametime, usercmd_t *cmd )
 	Vector viewangles;
 	bool fLadder = false;
 
-	if( gHUD.m_iIntermission )
-		return; // we can't move during intermission
+//	if( gHUD.m_iIntermission )
+//		return; // we can't move during intermission
 
 	if( cl_laddermode->value != 2 )
 	{

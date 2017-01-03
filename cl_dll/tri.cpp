@@ -23,6 +23,11 @@ extern "C"
 	void DLLEXPORT HUD_DrawTransparentTriangles( void );
 }
 
+extern float g_iFogColor[3];
+extern float g_iStartDist;
+extern float g_iEndDist;
+extern int g_iWaterLevel;
+
 //#define TEST_IT
 #if defined( TEST_IT )
 
@@ -87,6 +92,14 @@ void Draw_Triangles( void )
 	gEngfuncs.pTriAPI->RenderMode( kRenderNormal );
 }
 #endif
+
+//Render fog ( duh ).
+void RenderFog( void )
+{
+	//Not in water and we want fog.
+	bool bFog = g_iWaterLevel < 2 && g_iStartDist >= 0 && g_iEndDist >= 0;
+	gEngfuncs.pTriAPI->Fog ( g_iFogColor, g_iStartDist, g_iEndDist, bFog );
+}
 
 /*
 =================

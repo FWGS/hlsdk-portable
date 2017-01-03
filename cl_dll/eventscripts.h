@@ -10,7 +10,7 @@
 #define EVENTSCRIPTSH
 
 // defaults for clientinfo messages
-#define	DEFAULT_VIEWHEIGHT	28
+#define	DEFAULT_VIEWHEIGHT	22
 #define VEC_DUCK_VIEW 12
 
 #define FTENT_FADEOUT			0x00000080

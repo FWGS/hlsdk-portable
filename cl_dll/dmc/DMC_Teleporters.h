@@ -5,15 +5,12 @@
 // $NoKeywords: $
 //=============================================================================
 
-#if !defined( DEMOH )
-#define DEMOH
+#if !defined( DMC_TELEPORTERS_H )
+#define DMC_TELEPORTERS_H
+#ifdef _WIN32
 #pragma once
-
-// Types of demo messages we can write/parse
-enum
-{
-	TYPE_USER = 0
-};
-
-void Demo_WriteBuffer( int type, int size, unsigned char *buffer );
 #endif
+
+void Dmc_CheckTeleporters( struct local_state_s *from, struct local_state_s *to );
+
+#endif // DMC_TELEPORTERS_H

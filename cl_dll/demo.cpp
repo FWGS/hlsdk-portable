@@ -19,12 +19,6 @@
 #include "demo_api.h"
 #include <memory.h>
 
-int g_demosniper = 0;
-int g_demosniperdamage = 0;
-float g_demosniperorg[3];
-float g_demosniperangles[3];
-float g_demozoom;
-
 // FIXME:  There should be buffer helper functions to avoid all of the *(int *)& crap.
 
 extern "C" 
@@ -62,38 +56,11 @@ Engine wants us to parse some data from the demo stream
 void DLLEXPORT Demo_ReadBuffer( int size, unsigned char *buffer )
 {
 	int type;
-	int i = 0;
 
 	type = *(int *)buffer;
-	i += sizeof(int);
 	switch( type )
 	{
-	case TYPE_SNIPERDOT:
-		g_demosniper = *(int *)&buffer[i];
-		i += sizeof(int);
-		
-		if( g_demosniper )
-		{
-			g_demosniperdamage = *(int *)&buffer[i];
-			i += sizeof(int);
-
-			g_demosniperangles[0] = *(float *)&buffer[i];
-			i += sizeof(float);
-			g_demosniperangles[1] = *(float *)&buffer[i];
-			i += sizeof(float);
-			g_demosniperangles[2] = *(float *)&buffer[i];
-			i += sizeof(float);
-			g_demosniperorg[0] = *(float *)&buffer[i];
-			i += sizeof(float);
-			g_demosniperorg[1] = *(float *)&buffer[i];
-			i += sizeof(float);
-			g_demosniperorg[2] = *(float *)&buffer[i];
-			i += sizeof(float);
-		}
-		break;
-	case TYPE_ZOOM:
-		g_demozoom = *(float *)&buffer[i];
-		i += sizeof(float);
+	case TYPE_USER:
 		break;
 	default:
 		gEngfuncs.Con_DPrintf( "Unknown demo buffer type, skipping.\n" );

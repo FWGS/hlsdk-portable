@@ -18,13 +18,13 @@
 
 #include "hud.h"
 #include "cl_util.h"
-#include "const.h"
-#include "entity_state.h"
-#include "cl_entity.h"
+//#include "const.h"
+//#include "entity_state.h"
+//#include "cl_entity.h"
 #include <string.h>
 #include <stdio.h>
 #include "parsemsg.h"
-#include "event_api.h"
+//#include "event_api.h"
 
 DECLARE_MESSAGE( m_StatusIcons, StatusIcon )
 
@@ -53,8 +53,6 @@ void CHudStatusIcons::Reset( void )
 // Draw status icons along the left-hand side of the screen
 int CHudStatusIcons::Draw( float flTime )
 {
-	if( gEngfuncs.IsSpectateOnly() )
-		return 1;
 	// find starting position to draw from, along right-hand side of screen
 	int x = 5;
 	int y = ScreenHeight / 2;
@@ -142,11 +140,11 @@ void CHudStatusIcons::EnableIcon( char *pszIconName, unsigned char red, unsigned
 	strcpy( m_IconList[i].szSpriteName, pszIconName );
 
 	// Hack: Play Timer sound when a grenade icon is played (in 0.8 seconds)
-	if( strstr(m_IconList[i].szSpriteName, "grenade") )
+/*	if( strstr(m_IconList[i].szSpriteName, "grenade") )
 	{
 		cl_entity_t *pthisplayer = gEngfuncs.GetLocalPlayer();
 		gEngfuncs.pEventAPI->EV_PlaySound( pthisplayer->index, pthisplayer->origin, CHAN_STATIC, "weapons/timer.wav", 1.0, ATTN_NORM, 0, PITCH_NORM );
-	}
+	}*/
 }
 
 void CHudStatusIcons::DisableIcon( char *pszIconName )

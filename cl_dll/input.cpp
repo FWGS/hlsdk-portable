@@ -36,8 +36,6 @@ extern "C"
 	int DLLEXPORT HUD_Key_Event( int eventcode, int keynum, const char *pszCurrentBinding );
 }
 
-extern int g_iAlive;
-
 extern int g_weaponselect;
 extern cl_enginefunc_t gEngfuncs;
 
@@ -543,9 +541,6 @@ void IN_StrafeUp( void )
 	KeyUp( &in_strafe );
 }
 
-// needs capture by hud/vgui also
-extern void __CmdFunc_InputPlayerSpecial( void );
-
 void IN_Attack2Down( void )
 {
 	KeyDown( &in_attack2 );
@@ -863,7 +858,7 @@ void DLLEXPORT CL_CreateMove( float frametime, struct usercmd_s *cmd, int active
 	gEngfuncs.GetViewAngles( (float *)viewangles );
 	// Set current view angles.
 
-	if( g_iAlive )
+	if( gHUD.m_Health.m_iHealth > 0 )
 	{
 		VectorCopy( viewangles, cmd->viewangles );
 		VectorCopy( viewangles, oldangles );

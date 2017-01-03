@@ -27,9 +27,9 @@
 #include "monsters.h"
 #include "weapons.h"
 #include "nodes.h"
-#include "soundent.h"
 #include "decals.h"
 #include "gamerules.h"
+#include "quake_gun.h"
 
 extern CGraph WorldGraph;
 extern int gEvilImpulse101;
@@ -291,84 +291,20 @@ void W_Precache( void )
 	memset( CBasePlayerItem::AmmoInfoArray, 0, sizeof(CBasePlayerItem::AmmoInfoArray) );
 	giAmmoIndex = 0;
 
-	// custom items...
+	// quake gun
+	UTIL_PrecacheOtherWeapon( "weapon_quakegun" );
+	AddAmmoNameToAmmoRegistry( "shells" );
+	AddAmmoNameToAmmoRegistry( "nails" );
+	AddAmmoNameToAmmoRegistry( "rockets" );
+	AddAmmoNameToAmmoRegistry( "cells" );
 
-	// common world objects
-	UTIL_PrecacheOther( "item_suit" );
-	UTIL_PrecacheOther( "item_battery" );
-	UTIL_PrecacheOther( "item_antidote" );
-	UTIL_PrecacheOther( "item_security" );
-	UTIL_PrecacheOther( "item_longjump" );
-
-	// shotgun
-	UTIL_PrecacheOtherWeapon( "weapon_shotgun" );
-	UTIL_PrecacheOther( "ammo_buckshot" );
-
-	// crowbar
-	UTIL_PrecacheOtherWeapon( "weapon_crowbar" );
-
-	// glock
-	UTIL_PrecacheOtherWeapon( "weapon_9mmhandgun" );
-	UTIL_PrecacheOther( "ammo_9mmclip" );
-
-	// mp5
-	UTIL_PrecacheOtherWeapon( "weapon_9mmAR" );
-	UTIL_PrecacheOther( "ammo_9mmAR" );
-	UTIL_PrecacheOther( "ammo_ARgrenades" );
-
-#if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
-	// python
-	UTIL_PrecacheOtherWeapon( "weapon_357" );
-	UTIL_PrecacheOther( "ammo_357" );
-
-	// gauss
-	UTIL_PrecacheOtherWeapon( "weapon_gauss" );
-	UTIL_PrecacheOther( "ammo_gaussclip" );
-
-	// rpg
-	UTIL_PrecacheOtherWeapon( "weapon_rpg" );
-	UTIL_PrecacheOther( "ammo_rpgclip" );
-
-	// crossbow
-	UTIL_PrecacheOtherWeapon( "weapon_crossbow" );
-	UTIL_PrecacheOther( "ammo_crossbow" );
-
-	// egon
-	UTIL_PrecacheOtherWeapon( "weapon_egon" );
-#endif
-	// tripmine
-	UTIL_PrecacheOtherWeapon( "weapon_tripmine" );
-#if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
-	// satchel charge
-	UTIL_PrecacheOtherWeapon( "weapon_satchel" );
-#endif
-	// hand grenade
-	UTIL_PrecacheOtherWeapon("weapon_handgrenade");
-#if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
-	// squeak grenade
-	UTIL_PrecacheOtherWeapon( "weapon_snark" );
-
-	// hornetgun
-	UTIL_PrecacheOtherWeapon( "weapon_hornetgun" );
-
-	if( g_pGameRules->IsDeathmatch() )
-	{
-		UTIL_PrecacheOther( "weaponbox" );// container for dropped deathmatch weapons
-	}
-#endif
+	// global sprites
 	g_sModelIndexFireball = PRECACHE_MODEL( "sprites/zerogxplode.spr" );// fireball
 	g_sModelIndexWExplosion = PRECACHE_MODEL( "sprites/WXplo1.spr" );// underwater fireball
 	g_sModelIndexSmoke = PRECACHE_MODEL( "sprites/steam1.spr" );// smoke
 	g_sModelIndexBubbles = PRECACHE_MODEL( "sprites/bubble.spr" );//bubbles
 	g_sModelIndexBloodSpray = PRECACHE_MODEL( "sprites/bloodspray.spr" ); // initial blood
 	g_sModelIndexBloodDrop = PRECACHE_MODEL( "sprites/blood.spr" ); // splattered blood 
-
-	g_sModelIndexLaser = PRECACHE_MODEL( (char *)g_pModelNameLaser );
-	g_sModelIndexLaserDot = PRECACHE_MODEL( "sprites/laserdot.spr" );
-
-	// used by explosions
-	PRECACHE_MODEL( "models/grenade.mdl" );
-	PRECACHE_MODEL( "sprites/explode1.spr" );
 
 	PRECACHE_SOUND( "weapons/debris1.wav" );// explosion aftermaths
 	PRECACHE_SOUND( "weapons/debris2.wav" );// explosion aftermaths
@@ -382,6 +318,16 @@ void W_Precache( void )
 	PRECACHE_SOUND( "weapons/bullet_hit2.wav" );	// hit by bullet
 
 	PRECACHE_SOUND( "items/weapondrop1.wav" );// weapon falls to the ground
+
+	PRECACHE_EVENT( 1, "events/shotgun1.sc" );
+	PRECACHE_EVENT( 1, "events/shotgun2.sc" );
+	PRECACHE_EVENT( 1, "events/axe.sc" );
+	PRECACHE_EVENT( 1, "events/axeswing.sc" );
+	PRECACHE_EVENT( 1, "events/rocket.sc" );
+	PRECACHE_EVENT( 1, "events/grenade.sc" );
+	PRECACHE_EVENT( 1, "events/lightning.sc" );
+	PRECACHE_EVENT( 1, "events/spike.sc" );
+	PRECACHE_EVENT( 1, "events/superspike.sc" );
 }
 
 TYPEDESCRIPTION	CBasePlayerItem::m_SaveData[] =
@@ -564,7 +510,7 @@ void CBasePlayerItem::DefaultTouch( CBaseEntity *pOther )
 	// can I have this?
 	if( !g_pGameRules->CanHavePlayerItem( pPlayer, this ) )
 	{
-		if( gEvilImpulse101 )
+		if( gEvilImpulse101 || FClassnameIs( pev, "weapon_quakegun" ) )
 		{
 			UTIL_Remove( this );
 		}
@@ -607,8 +553,6 @@ void CBasePlayerWeapon::ItemPostFrame( void )
 		m_iClip += j;
 		m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] -= j;
 
-		m_pPlayer->TabulateAmmo();
-
 		m_fInReload = FALSE;
 	}
 
@@ -619,7 +563,6 @@ void CBasePlayerWeapon::ItemPostFrame( void )
 			m_fFireOnEmpty = TRUE;
 		}
 
-		m_pPlayer->TabulateAmmo();
 		SecondaryAttack();
 		m_pPlayer->pev->button &= ~IN_ATTACK2;
 	}
@@ -630,7 +573,6 @@ void CBasePlayerWeapon::ItemPostFrame( void )
 			m_fFireOnEmpty = TRUE;
 		}
 
-		m_pPlayer->TabulateAmmo();
 		PrimaryAttack();
 	}
 	else if( m_pPlayer->pev->button & IN_RELOAD && iMaxClip() != WEAPON_NOCLIP && !m_fInReload ) 
@@ -641,24 +583,17 @@ void CBasePlayerWeapon::ItemPostFrame( void )
 	else if( !( m_pPlayer->pev->button & ( IN_ATTACK | IN_ATTACK2 ) ) )
 	{
 		// no fire buttons down
-		m_fFireOnEmpty = FALSE;
+		if( !m_bPlayedIdleAnim )
+		{
+			m_bPlayedIdleAnim = TRUE;
+			SendWeaponAnim( 0, 1 );
 
-		if( !IsUseable() && m_flNextPrimaryAttack < ( UseDecrement() ? 0.0 : gpGlobals->time ) ) 
-		{
-			// weapon isn't useable, switch.
-			if( !( iFlags() & ITEM_FLAG_NOAUTOSWITCHEMPTY ) && g_pGameRules->GetNextBestWeapon( m_pPlayer, this ) )
+			if( m_pPlayer->m_iQuakeWeapon == IT_LIGHTNING )
 			{
-				m_flNextPrimaryAttack = ( UseDecrement() ? 0.0 : gpGlobals->time ) + 0.3;
-				return;
-			}
-		}
-		else
-		{
-			// weapon is useable. Reload if empty and weapon has waited as long as it has to after firing
-			if( m_iClip == 0 && !(iFlags() & ITEM_FLAG_NOAUTORELOAD ) && m_flNextPrimaryAttack < ( UseDecrement() ? 0.0 : gpGlobals->time ) )
-			{
-				Reload();
-				return;
+				PLAYBACK_EVENT_FULL( FEV_NOTHOST, m_pPlayer->edict(), m_pPlayer->m_usLightning, 0, (float *)&m_pPlayer->pev->origin, (float *)&m_pPlayer->pev->angles, 0.0, 0.0, 0, 1, 0, 0 );
+
+				if( m_pPlayer->m_pActiveItem )
+					( (CQuakeGun*)m_pPlayer->m_pActiveItem )->DestroyEffect();
 			}
 		}
 
@@ -774,26 +709,48 @@ int CBasePlayerWeapon::UpdateClientData( CBasePlayer *pPlayer )
 		bSend = TRUE;
 	}
 
-	// This is the current or last weapon, so the state will need to be updated
-	if( this == pPlayer->m_pActiveItem || this == pPlayer->m_pClientActiveItem )
-	{
-		if( pPlayer->m_pActiveItem != pPlayer->m_pClientActiveItem )
-		{
-			bSend = TRUE;
-		}
-	}
-
-	// If the ammo, state, or fov has changed, update the weapon
-	if( m_iClip != m_iClientClip || state != m_iClientWeaponState || pPlayer->m_iFOV != pPlayer->m_iClientFOV )
-	{
+	// See if the Quake Gun has changed "weapons"
+	if( pPlayer->m_iQuakeWeapon != pPlayer->m_iClientQuakeWeapon )
 		bSend = TRUE;
+
+	// QUAKECLASSIC
+	m_iClip = 0;
+
+	int iId;
+
+	switch( pPlayer->m_iQuakeWeapon )
+	{
+		case IT_AXE:
+			iId = IT_AXE;
+			break;
+		case IT_SHOTGUN:
+			iId = IT_SHOTGUN;
+			break;
+		case IT_SUPER_SHOTGUN:
+			iId = IT_SUPER_SHOTGUN;
+			break;
+		case IT_NAILGUN:
+			iId = IT_NAILGUN;
+			break;
+		case IT_SUPER_NAILGUN:
+			iId = IT_SUPER_NAILGUN;
+			break;
+		case IT_GRENADE_LAUNCHER:
+			iId = IT_GRENADE_LAUNCHER;
+			break;
+		case IT_ROCKET_LAUNCHER:
+			iId = IT_ROCKET_LAUNCHER;
+			break;
+		case IT_LIGHTNING:
+			iId = IT_LIGHTNING;
+			break;
 	}
 
 	if( bSend )
 	{
 		MESSAGE_BEGIN( MSG_ONE, gmsgCurWeapon, NULL, pPlayer->pev );
 			WRITE_BYTE( state );
-			WRITE_BYTE( m_iId );
+			WRITE_BYTE( iId );
 			WRITE_BYTE( m_iClip );
 		MESSAGE_END();
 
@@ -935,7 +892,8 @@ BOOL CBasePlayerWeapon::DefaultDeploy( char *szViewModel, char *szWeaponModel, i
 	if( !CanDeploy() )
 		return FALSE;
 
-	m_pPlayer->TabulateAmmo();
+	m_bPlayedIdleAnim = FALSE;
+
 	m_pPlayer->pev->viewmodel = MAKE_STRING( szViewModel );
 	m_pPlayer->pev->weaponmodel = MAKE_STRING( szWeaponModel );
 	strcpy( m_pPlayer->m_szAnimExtention, szAnimExt );
@@ -960,7 +918,7 @@ BOOL CBasePlayerWeapon::DefaultReload( int iClipSize, int iAnim, float fDelay, i
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + fDelay;
 
 	//!!UNDONE -- reload sound goes here !!!
-	SendWeaponAnim( iAnim, UseDecrement() ? 1 : 0 );
+	SendWeaponAnim( iAnim );
 
 	m_fInReload = TRUE;
 
@@ -1456,74 +1414,4 @@ void CWeaponBox::SetObjectCollisionBox( void )
 
 void CBasePlayerWeapon::PrintState( void )
 {
-	ALERT( at_console, "primary:  %f\n", m_flNextPrimaryAttack );
-	ALERT( at_console, "idle   :  %f\n", m_flTimeWeaponIdle );
-
-	//ALERT( at_console, "nextrl :  %f\n", m_flNextReload );
-	//ALERT( at_console, "nextpum:  %f\n", m_flPumpTime );
-
-	//ALERT( at_console, "m_frt  :  %f\n", m_fReloadTime );
-	ALERT( at_console, "m_finre:  %i\n", m_fInReload );
-	//ALERT( at_console, "m_finsr:  %i\n", m_fInSpecialReload );
-
-	ALERT( at_console, "m_iclip:  %i\n", m_iClip );
 }
-
-TYPEDESCRIPTION	CRpg::m_SaveData[] =
-{
-	DEFINE_FIELD( CRpg, m_fSpotActive, FIELD_INTEGER ),
-	DEFINE_FIELD( CRpg, m_cActiveRockets, FIELD_INTEGER ),
-};
-
-IMPLEMENT_SAVERESTORE( CRpg, CBasePlayerWeapon )
-
-TYPEDESCRIPTION	CRpgRocket::m_SaveData[] =
-{
-	DEFINE_FIELD( CRpgRocket, m_flIgniteTime, FIELD_TIME ),
-	DEFINE_FIELD( CRpgRocket, m_pLauncher, FIELD_CLASSPTR ),
-};
-
-IMPLEMENT_SAVERESTORE( CRpgRocket, CGrenade )
-
-TYPEDESCRIPTION	CShotgun::m_SaveData[] =
-{
-	DEFINE_FIELD( CShotgun, m_flNextReload, FIELD_TIME ),
-	DEFINE_FIELD( CShotgun, m_fInSpecialReload, FIELD_INTEGER ),
-	DEFINE_FIELD( CShotgun, m_flNextReload, FIELD_TIME ),
-	// DEFINE_FIELD( CShotgun, m_iShell, FIELD_INTEGER ),
-	DEFINE_FIELD( CShotgun, m_flPumpTime, FIELD_TIME ),
-};
-
-IMPLEMENT_SAVERESTORE( CShotgun, CBasePlayerWeapon )
-
-TYPEDESCRIPTION	CGauss::m_SaveData[] =
-{
-	DEFINE_FIELD( CGauss, m_fInAttack, FIELD_INTEGER ),
-	//DEFINE_FIELD( CGauss, m_flStartCharge, FIELD_TIME ),
-	//DEFINE_FIELD( CGauss, m_flPlayAftershock, FIELD_TIME ),
-	//DEFINE_FIELD( CGauss, m_flNextAmmoBurn, FIELD_TIME ),
-	DEFINE_FIELD( CGauss, m_fPrimaryFire, FIELD_BOOLEAN ),
-};
-
-IMPLEMENT_SAVERESTORE( CGauss, CBasePlayerWeapon )
-
-TYPEDESCRIPTION	CEgon::m_SaveData[] =
-{
-	//DEFINE_FIELD( CEgon, m_pBeam, FIELD_CLASSPTR ),
-	//DEFINE_FIELD( CEgon, m_pNoise, FIELD_CLASSPTR ),
-	//DEFINE_FIELD( CEgon, m_pSprite, FIELD_CLASSPTR ),
-	DEFINE_FIELD( CEgon, m_shootTime, FIELD_TIME ),
-	DEFINE_FIELD( CEgon, m_fireState, FIELD_INTEGER ),
-	DEFINE_FIELD( CEgon, m_fireMode, FIELD_INTEGER ),
-	DEFINE_FIELD( CEgon, m_shakeTime, FIELD_TIME ),
-	DEFINE_FIELD( CEgon, m_flAmmoUseTime, FIELD_TIME ),
-};
-
-IMPLEMENT_SAVERESTORE( CEgon, CBasePlayerWeapon )
-
-TYPEDESCRIPTION	CSatchel::m_SaveData[] = 
-{
-	DEFINE_FIELD( CSatchel, m_chargeReady, FIELD_INTEGER ),
-};
-
-IMPLEMENT_SAVERESTORE( CSatchel, CBasePlayerWeapon )

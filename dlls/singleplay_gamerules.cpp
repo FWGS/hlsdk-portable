@@ -121,6 +121,14 @@ float CHalfLifeRules::FlPlayerFallDamage( CBasePlayer *pPlayer )
 //=========================================================
 void CHalfLifeRules::PlayerSpawn( CBasePlayer *pPlayer )
 {
+	// Start with init ammoload
+	pPlayer->m_iAmmoShells = 25;
+
+	// Start with shotgun and axe
+	pPlayer->GiveNamedItem( "weapon_quakegun" );
+	pPlayer->m_iQuakeItems |= ( IT_SHOTGUN | IT_AXE );
+	pPlayer->m_iQuakeWeapon = pPlayer->W_BestWeapon();
+	pPlayer->W_SetCurrentAmmo();
 }
 
 //=========================================================

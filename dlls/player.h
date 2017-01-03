@@ -78,8 +78,11 @@ enum sbar_data
 	SBAR_ID_TARGETNAME = 1,
 	SBAR_ID_TARGETHEALTH,
 	SBAR_ID_TARGETARMOR,
+	SBAR_ID_TARGETTEAM,
 	SBAR_END
 };
+
+#define PLAYER_MAX_SPEED 300
 
 #define CHAT_INTERVAL 1.0f
 
@@ -185,7 +188,6 @@ public:
 	char m_szTeamName[TEAM_NAME_LENGTH];
 
 	virtual void Spawn( void );
-	void Pain( void );
 
 	//virtual void Think( void );
 	virtual void Jump( void );
@@ -212,7 +214,6 @@ public:
 	virtual int		Save( CSave &save );
 	virtual int		Restore( CRestore &restore );
 	void RenewItems(void);
-	void PackDeadPlayerItems( void );
 	void RemoveAllItems( BOOL removeSuit );
 	BOOL SwitchWeapon( CBasePlayerItem *pWeapon );
 
@@ -229,7 +230,6 @@ public:
 	void			FlashlightTurnOn( void );
 	void			FlashlightTurnOff( void );
 
-	void UpdatePlayerSound ( void );
 	void DeathSound ( void );
 
 	int Classify ( void );
@@ -308,7 +308,134 @@ public:
 	char m_SbarString1[ SBAR_STRING_SIZE ];
 
 	float m_flNextChatTime;
+
+	// Observer camera
+	void	Observer_FindNextPlayer();
+	void	Observer_HandleButtons();
+	void	Observer_SetMode( int iMode );
+	EHANDLE	m_hObserverTarget;
+	float	m_flNextObserverInput;
+	int		IsObserver() { return pev->iuser1; };
+
+
+	// QUAKECLASSIC
+	// Player
+	void	Pain( CBaseEntity *pAttacker );
+	float	m_flPainSoundFinished;
+
+	BOOL	m_bHadFirstSpawn;	// used to handle the MOTD
+
+	// Weapon selection
+	int		W_BestWeapon( void );
+	void	W_SetCurrentAmmo( int sendanim = 1 );
+	BOOL	W_CheckNoAmmo( void );
+	void	W_ChangeWeapon( int iWeaponNumber );
+	void	W_CycleWeaponCommand( void );
+	void	W_CycleWeaponReverseCommand( void );
+
+	// Weapon functionality
+	void	Q_FireBullets(int iShots, Vector vecDir, Vector vecSpread);
+	void	LightningDamage( Vector p1, Vector p2, CBaseEntity *pAttacker, float flDamage,Vector vecDir);
+
+	// Weapons
+	void	W_Attack( int iQuadSound );
+	void	W_FireAxe( void );
+	void	W_FireShotgun( int QuadSound );
+	void	W_FireSuperShotgun( int QuadSound );
+	void	W_FireRocket( int QuadSound );
+	void	W_FireLightning( int QuadSound );
+	void	W_FireGrenade( int QuadSound );
+	void	W_FireSuperSpikes( int QuadSound );
+	void	W_FireSpikes( int QuadSound );
+
+	// Ammunition
+	void	CheckAmmo( void );
+	int		*m_pCurrentAmmo;		// Always points to one of the four ammo counts below
+	int		m_iAmmoRockets;
+	int		m_iAmmoCells;
+	int		m_iAmmoShells;
+	int		m_iAmmoNails;
+
+	// Backpacks
+	void	DropBackpack( void );
+
+	// Weapons
+	void	Deathmatch_Weapon( int iOldWeapon, int iNewWeapon );
+	int		m_iQuakeWeapon;
+	int		m_iClientQuakeWeapon;	// The last status of the m_iQuakeWeapon sent to the client.
+	int		m_iQuakeItems;
+	int		m_iClientQuakeItems;	// The last status of the m_iQuakeItems sent to the client.
+	int		m_iWeaponSwitch;
+	int		m_iBackpackSwitch;
+	int		m_iAutoWepSwitch;
+
+	// Weapon Data
+	float	m_flAxeFire;
+	float	m_flLightningTime;
+	int		m_iNailOffset;
+	float	m_flNextQuadSound;
+
+	// Powerups
+	float	m_flSuperDamageFinished;
+	float	m_flInvincibleFinished;
+	float	m_flInvisibleFinished;
+	float	m_flRadsuitFinished;
+	void	PowerUpThink( void ); //Checks powerup timers and hadles their effects
+	char	m_chOldModel[64];			      //Save the player's model here
+	bool	m_bPlayedQuadSound;
+	bool	m_bPlayedEnvSound;
+	bool	m_bPlayedInvSound;
+	bool	m_bPlayedProtectSound;
+
+	BOOL	m_bLostInvincSound;
+	BOOL	m_bLostInvisSound;
+	BOOL	m_bLostSuperSound;
+	BOOL	m_bLostRadSound;
+	float	m_fInvincSound;
+	float	m_fSuperSound;
+
+	unsigned short m_usShotgunSingle;
+	unsigned short m_usShotgunDouble;
+	unsigned short m_usAxe;
+	unsigned short m_usAxeSwing;
+	unsigned short m_usRocket;
+	unsigned short m_usGrenade;
+	unsigned short m_usLightning;
+	unsigned short m_usSpike;
+	unsigned short m_usSuperSpike;
 };
+
+// QUAKECLASSIC
+#define Q_SMALL_PUNCHANGLE_KICK		-2
+#define Q_BIG_PUNCHANGLE_KICK		-4
+
+#define IT_AXE                          (1 << 0)
+#define IT_SHOTGUN                      (1 << 1)
+#define IT_SUPER_SHOTGUN                (1 << 2)
+#define IT_NAILGUN                      (1 << 3)
+#define IT_SUPER_NAILGUN                (1 << 4)
+#define IT_GRENADE_LAUNCHER             (1 << 5)
+#define IT_ROCKET_LAUNCHER              (1 << 6)
+#define IT_LIGHTNING                    (1 << 7)
+#define IT_EXTRA_WEAPON                 (1 << 8)
+
+#define IT_SHELLS                       (1 << 9)
+#define IT_NAILS                        (1 << 10)
+#define IT_ROCKETS                      (1 << 11)
+#define IT_CELLS                        (1 << 12)
+
+#define IT_ARMOR1                       (1 << 13)
+#define IT_ARMOR2                       (1 << 14)
+#define IT_ARMOR3                       (1 << 15)
+#define IT_SUPERHEALTH                  (1 << 16)
+
+#define IT_KEY1                         (1 << 17)
+#define IT_KEY2                         (1 << 18)
+
+#define IT_INVISIBILITY                 (1 << 19)
+#define IT_INVULNERABILITY              (1 << 20)
+#define IT_SUIT                         (1 << 21)
+#define IT_QUAD                         (1 << 22)
 
 #define AUTOAIM_2DEGREES  0.0348994967025
 #define AUTOAIM_5DEGREES  0.08715574274766
@@ -317,5 +444,7 @@ public:
 
 extern int	gmsgHudText;
 extern BOOL gInitHUD;
+
+#define MAX_TELES 256
 
 #endif // PLAYER_H

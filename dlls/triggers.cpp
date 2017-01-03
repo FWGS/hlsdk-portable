@@ -37,8 +37,14 @@
 
 extern DLL_GLOBAL BOOL		g_fGameOver;
 
+extern Vector g_vecTeleMins[MAX_TELES];
+extern Vector g_vecTeleMaxs[MAX_TELES];
+extern int g_iTeleNum;
+
 extern void SetMovedir(entvars_t* pev);
 extern Vector VecBModelOrigin( entvars_t* pevBModel );
+
+extern unsigned short g_sTeleport;
 
 class CFrictionModifier : public CBaseEntity
 {
@@ -502,6 +508,7 @@ public:
 	void KeyValue( KeyValueData *pkvd );
 	void EXPORT MultiTouch( CBaseEntity *pOther );
 	void EXPORT HurtTouch( CBaseEntity *pOther );
+	void EXPORT EnvTouch( CBaseEntity *pOther );
 	void EXPORT CDAudioTouch( CBaseEntity *pOther );
 	void ActivateMultiTrigger( CBaseEntity *pActivator );
 	void EXPORT MultiWaitOver( void );
@@ -528,7 +535,7 @@ void CBaseTrigger::InitTrigger()
 	pev->solid = SOLID_TRIGGER;
 	pev->movetype = MOVETYPE_NONE;
 	SET_MODEL(ENT(pev), STRING( pev->model ) );    // set size and link into world
-	if( CVAR_GET_FLOAT( "showtriggers" ) == 0 )
+	//if( CVAR_GET_FLOAT( "showtriggers" ) == 0 )
 		SetBits( pev->effects, EF_NODRAW );
 }
 
@@ -564,6 +571,14 @@ public:
 };
 
 LINK_ENTITY_TO_CLASS( trigger_hurt, CTriggerHurt )
+
+class CTriggerEnvHurt : public CBaseTrigger
+{
+public:
+	void Spawn( void );
+};
+
+LINK_ENTITY_TO_CLASS( trigger_env_hurt, CTriggerEnvHurt );
 
 //
 // trigger_monsterjump
@@ -702,7 +717,7 @@ void PlayCDTrack( int iTrack )
 // only plays for ONE client, so only use in single play!
 void CTriggerCDAudio::PlayTrack( void )
 {
-	PlayCDTrack( (int)pev->health );
+	//PlayCDTrack( (int)pev->health );
 
 	SetTouch( NULL );
 	UTIL_Remove( this );
@@ -767,11 +782,149 @@ void CTargetCDAudio::Think( void )
 
 void CTargetCDAudio::Play( void ) 
 {
-	PlayCDTrack( (int)pev->health );
+	//PlayCDTrack( (int)pev->health );
 	UTIL_Remove( this );
 }
 
 //=====================================
+
+/*
+==========================
+CTriggerEnvHurt
+Used to represent Slime or Lava
+==========================
+*/
+
+void CTriggerEnvHurt::Spawn( void )
+{
+	InitTrigger();
+	SetTouch( EnvTouch );
+
+	if( FBitSet( pev->spawnflags, SF_TRIGGER_HURT_START_OFF ) )// if flagged to Start Turned Off, make trigger nonsolid.
+		pev->solid = SOLID_NOT;
+
+	UTIL_SetOrigin( pev, pev->origin ); // Link into the list
+}
+
+// When touched, a hurt trigger does DMG points of damage each half-second
+void CBaseTrigger::EnvTouch( CBaseEntity *pOther )
+{
+	float fldmg;
+
+	if( !pOther->pev->takedamage )
+		return;
+
+	if( ( pev->spawnflags & SF_TRIGGER_HURT_CLIENTONLYTOUCH ) && !pOther->IsPlayer() )
+	{
+		// this trigger is only allowed to touch clients, and this ain't a client.
+		return;
+	}
+
+	if( ( pev->spawnflags & SF_TRIGGER_HURT_NO_CLIENTS ) && pOther->IsPlayer() )
+		return;
+
+	// HACKHACK -- In multiplayer, players touch this based on packet receipt.
+	// So the players who send packets later aren't always hurt.  Keep track of
+	// how much time has passed and whether or not you've touched that player
+	if( g_pGameRules->IsMultiplayer() )
+	{
+		if( pev->dmgtime > gpGlobals->time )
+		{
+			if( gpGlobals->time != pev->pain_finished )
+			{
+				// too early to hurt again, and not same frame with a different entity
+				if( pOther->IsPlayer() )
+				{
+					int playerMask = 1 << ( pOther->entindex() - 1 );
+
+					// If I've already touched this player (this time), then bail out
+					if( pev->impulse & playerMask )
+						return;
+
+					// Mark this player as touched
+					// BUGBUG - There can be only 32 players!
+					pev->impulse |= playerMask;
+				}
+				else
+				{
+					return;
+				}
+			}
+		}
+		else
+		{
+			// New clock, "un-touch" all players
+			pev->impulse = 0;
+			if( pOther->IsPlayer() )
+			{
+				int playerMask = 1 << ( pOther->entindex() - 1 );
+
+				// Mark this player as touched
+				// BUGBUG - There can be only 32 players!
+				pev->impulse |= playerMask;
+			}
+		}
+	}
+	else	// Original code -- single player
+	{
+		if( pev->dmgtime > gpGlobals->time && gpGlobals->time != pev->pain_finished )
+		{
+			// too early to hurt again, and not same frame with a different entity
+			return;
+		}
+	}
+
+	//We are in slime
+	if( m_bitsDamageInflict & DMG_ACID )
+	{
+		pev->dmg = 4; //Default damage of 4
+		fldmg = (float)( pev->dmg * pOther->pev->waterlevel ); // pev->damage plus our current waterlevel
+
+		pev->dmgtime = gpGlobals->time + 1.0; //Next damage in 1 second
+	}
+	//We are in lava
+	else if( m_bitsDamageInflict & DMG_BURN )
+	{
+		pev->dmg = 10; //Default damage of 10
+		fldmg = (float)( pev->dmg * pOther->pev->waterlevel );	// pev->damage plus our current waterlevel
+
+		if( pOther->IsPlayer() )
+		{
+			if( ( (CBasePlayer *)pOther )->m_iQuakeItems & IT_SUIT ) // Wearing the suit slows down the next damage time
+				pev->dmgtime = gpGlobals->time + 1.0;
+			else
+				pev->dmgtime = gpGlobals->time + 0.2;
+		}
+		else
+			pev->dmgtime = gpGlobals->time + 0.2;
+	}
+
+	if( fldmg < 0 )
+		pOther->TakeHealth( -fldmg, m_bitsDamageInflict );
+	else
+		pOther->TakeDamage( pev, pev, fldmg, m_bitsDamageInflict );
+
+	// Store pain time so we can get all of the other entities on this frame
+	pev->pain_finished = gpGlobals->time;
+ 
+	if( pev->target )
+	{
+		// trigger has a target it wants to fire. 
+		if( pev->spawnflags & SF_TRIGGER_HURT_CLIENTONLYFIRE )
+		{
+			// if the toucher isn't a client, don't fire the target!
+			if( !pOther->IsPlayer() )
+			{
+				return;
+			}
+		}
+
+		SUB_UseTargets( pOther, USE_TOGGLE, 0 );
+		if( pev->spawnflags & SF_TRIGGER_HURT_TARGETONCE )
+			pev->target = 0;
+	}
+}
+
 //
 // trigger_hurt - hurts anything that touches it. if the trigger has a targetname, firing it will toggle state
 //
@@ -1803,6 +1956,10 @@ void CTriggerPush::Touch( CBaseEntity *pOther )
 		return;
 	}
 
+	//Only players
+	if( !pOther->IsPlayer() )
+		return;
+
 	if( pevToucher->solid != SOLID_NOT && pevToucher->solid != SOLID_BSP )
 	{
 		// Instant trigger, just transfer velocity and remove
@@ -1828,66 +1985,149 @@ void CTriggerPush::Touch( CBaseEntity *pOther )
 	}
 }
 
+//========================================================================================
+// TELEPORT TRIGGERS
+//========================================================================================
+
+//-----------------------------------------------------------------------------
+// Purpose: Teleport Death entity. Kills anything it touches
+//-----------------------------------------------------------------------------
+class CTeleDeath : public CBaseTrigger
+{
+public:
+	void Spawn( void );
+	void EXPORT DeathTouch( CBaseEntity *pOther );
+};
+
+LINK_ENTITY_TO_CLASS( teledeath, CTeleDeath )
+
+void CTeleDeath::Spawn( void )
+{
+	pev->movetype = MOVETYPE_NONE;
+	pev->solid = SOLID_TRIGGER;
+	pev->angles = g_vecZero;
+
+	// Owner is the player who's spawned this
+	CBaseEntity *pOwner = CBaseEntity::Instance( pev->owner );
+	if( !pOwner )
+		return;
+
+	UTIL_SetSize( pev, pOwner->pev->mins - Vector( 1, 1, 1 ), pOwner->pev->maxs + Vector( 1, 1, 1 ) );
+	UTIL_SetOrigin( pev, pev->origin );
+
+	SetTouch( DeathTouch );
+	pev->nextthink = gpGlobals->time + 0.2;
+	SetThink( SUB_Remove );
+
+	// Touch still players
+	gpGlobals->force_retouch = 2;
+}
+
+void CTeleDeath::DeathTouch( CBaseEntity *pOther )
+{
+	CBaseEntity *pOwner = CBaseEntity::Instance( pev->owner );
+
+	if( pOther == pOwner )
+		return;
+
+	// frag anyone who teleports in on top of an invincible player
+	if( pOther->IsPlayer() )
+	{
+		if( ( (CBasePlayer*)pOther )->m_flInvincibleFinished > gpGlobals->time )
+		{
+			// Note: This did not work in Quake. Fixed in QUAKECLASSIC.
+			if( pOwner->IsPlayer() )
+			{
+				g_szDeathType = "teledeath2";
+				pOwner->TakeDamage( pOwner->pev, pOwner->pev, 1000, DMG_GENERIC | DMG_ALWAYSGIB );
+				return;
+			}
+		}
+	}
+
+	if( pOther->pev->health )
+	{
+		g_szDeathType = "teledeath";
+		pOther->TakeDamage( pOther->pev, pOwner->pev, 1000, DMG_GENERIC | DMG_ALWAYSGIB );
+	}
+}
+
 //======================================
 // teleport trigger
 //
 //
+// QUAKECLASSIC: Different bitflags
+#define	TELE_PLAYER_ONLY	1
+#define	TELE_SILENT		2
+
+//-----------------------------------------------------------------------------
+// Purpose: Spawn a teleport fog at the vector specified
+//-----------------------------------------------------------------------------
+void CBaseEntity::Spawn_Telefog( Vector vecOrg, CBaseEntity *pOther )
+{
+	//Moved to the client
+	PLAYBACK_EVENT_FULL( FEV_GLOBAL | FEV_NOTHOST, pOther->edict(), g_sTeleport, 0.0, (float *)&vecOrg, (float *)&g_vecZero, 0.0, 0.0, 0, 0, 0, 0 );
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Kill anything at the teleport destination
+//-----------------------------------------------------------------------------
 void CBaseTrigger::TeleportTouch( CBaseEntity *pOther )
 {
-	entvars_t *pevToucher = pOther->pev;
-	edict_t	*pentTarget = NULL;
-
-	// Only teleport monsters or clients
-	if( !FBitSet( pevToucher->flags, FL_CLIENT | FL_MONSTER ) )
-		return;
-
-	if( !UTIL_IsMasterTriggered( m_sMaster, pOther ) )
-		return;
- 	
-	if( !( pev->spawnflags & SF_TRIGGER_ALLOWMONSTERS ) )
+	// no clients allowed?
+	if( ( pev->spawnflags & TELE_PLAYER_ONLY ) )
 	{
-		// no monsters allowed!
-		if( FBitSet( pevToucher->flags, FL_MONSTER ) )
-		{
-			return;
-		}
-	}
-
-	if( ( pev->spawnflags & SF_TRIGGER_NOCLIENTS ) )
-	{
-		// no clients allowed
 		if( pOther->IsPlayer() )
-		{
 			return;
-		}
 	}
 
+	// only teleport living creatures
+	if( pOther->pev->health <= 0 || pOther->pev->solid != SOLID_SLIDEBOX )
+		return;
+
+	SUB_UseTargets( this, USE_TOGGLE, 0 );
+
+	// put a tfog where the player was
+	Spawn_Telefog( pOther->pev->origin, pOther );
+
+	edict_t	*pentTarget = NULL;
 	pentTarget = FIND_ENTITY_BY_TARGETNAME( pentTarget, STRING( pev->target ) );
 	if( FNullEnt( pentTarget ) )
-	   return;	
+		return;
 
-	Vector tmp = VARS( pentTarget )->origin;
+	// spawn a tfog flash in front of the destination
+	CBaseEntity *pTarget = CBaseEntity::Instance( pentTarget );
+	UTIL_MakeVectors( pTarget->m_vecTeleAngles );
+	Vector vecNewOrg = pTarget->pev->origin + ( gpGlobals->v_forward * 32 );
+	pTarget->Spawn_Telefog( vecNewOrg, pOther );
 
-	if( pOther->IsPlayer() )
+	// Spawn teledeath at destination
+	CTeleDeath *pDeath = GetClassPtr( (CTeleDeath *)NULL );
+	pDeath->pev->owner = pOther->edict();
+	pDeath->pev->origin = pTarget->pev->origin;
+	pDeath->Spawn();
+
+	// May be killed by teleporting onto an invulnerable player
+	if( !pOther->pev->health )
 	{
-		tmp.z -= pOther->pev->mins.z;// make origin adjustments in case the teleportee is a player. (origin in center, not at feet)
+		pOther->pev->origin = pTarget->pev->origin;
+		pOther->pev->velocity = ( gpGlobals->v_forward * pOther->pev->velocity.x ) + ( gpGlobals->v_forward * pOther->pev->velocity.y );
+		return;
 	}
 
-	tmp.z++;
+	// Move the player
+	UTIL_SetOrigin( pOther->pev, pTarget->pev->origin );
+	pOther->pev->angles = pTarget->m_vecTeleAngles;
 
-	pevToucher->flags &= ~FL_ONGROUND;
-
-	UTIL_SetOrigin( pevToucher, tmp );
-
-	pevToucher->angles = pentTarget->v.angles;
-
-	if( pOther->IsPlayer() )
+	if (pOther->IsPlayer())
 	{
-		pevToucher->v_angle = pentTarget->v.angles;
+		//pOther->pev->fixangle = 1;		// turn this way immediately
+		
+		//Err, why is this here?
+		pOther->pev->fuser4 = gpGlobals->time + 0.7;
+		pOther->pev->velocity = gpGlobals->v_forward * 300;
 	}
-
-	pevToucher->fixangle = TRUE;
-	pevToucher->velocity = pevToucher->basevelocity = g_vecZero;
+	pOther->pev->flags &= ~FL_ONGROUND;
 }
 
 class CTriggerTeleport : public CBaseTrigger
@@ -1903,6 +2143,31 @@ void CTriggerTeleport::Spawn( void )
 	InitTrigger();
 
 	SetTouch( &CBaseTrigger::TeleportTouch );
+
+	g_vecTeleMins[g_iTeleNum] = pev->absmin; 
+	g_vecTeleMaxs[g_iTeleNum] = pev->absmax;
+
+	g_iTeleNum++;
+
+	if( !( pev->spawnflags & TELE_SILENT ) )
+	{
+		PRECACHE_SOUND( "ambience/hum1.wav" );
+		UTIL_EmitAmbientSound( ENT( pev ), ( pev->mins + pev->maxs ) * 0.5, "ambience/hum1.wav", 0.5, ATTN_STATIC, 0, 100 );
+	}
+}
+
+class CTriggerTeleportDest : public CBaseTrigger
+{
+public:
+	void Spawn( void );
+};
+
+void CTriggerTeleportDest::Spawn( void )
+{
+	m_vecTeleAngles = pev->angles;
+	pev->angles = g_vecZero;
+	pev->origin.z += 27;
+	UTIL_SetOrigin( pev, pev->origin );
 }
 
 LINK_ENTITY_TO_CLASS( info_teleport_destination, CPointEntity )
@@ -2381,3 +2646,29 @@ void CTriggerCamera::Move()
 	float fraction = 2 * gpGlobals->frametime;
 	pev->velocity = ( ( pev->movedir * pev->speed ) * fraction ) + ( pev->velocity * ( 1 - fraction ) );
 }
+
+void CClientFog::KeyValue( KeyValueData *pkvd )
+{
+	if( FStrEq( pkvd->szKeyName, "startdist" ) )
+	{
+		m_iStartDist = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "enddist" ) )
+	{
+		m_iEndDist = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else
+		CBaseEntity::KeyValue( pkvd );
+}
+
+void CClientFog::Spawn( void )
+{
+	pev->movetype = MOVETYPE_NOCLIP;
+	pev->solid = SOLID_NOT;				// Remove model & collisions
+	pev->renderamt = 0;				// The engine won't draw this model if this is set to 0 and blending is on
+	pev->rendermode = kRenderTransTexture;
+}
+
+LINK_ENTITY_TO_CLASS( env_fog, CClientFog )

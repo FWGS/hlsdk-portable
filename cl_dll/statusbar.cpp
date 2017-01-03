@@ -31,8 +31,8 @@ DECLARE_MESSAGE( m_StatusBar, StatusValue )
 
 #define STATUSBAR_ID_LINE		1
 
-float *GetClientColor( int clientIndex );
-extern float g_ColorYellow[3];
+extern int GetTeamIndex( int clientIndex );
+int g_iNameColors;
 
 int CHudStatusBar::Init( void )
 {
@@ -43,13 +43,19 @@ int CHudStatusBar::Init( void )
 
 	Reset();
 
-	CVAR_CREATE( "hud_centerid", "0", FCVAR_ARCHIVE );
+	//CVAR_CREATE( "hud_centerid", "0", FCVAR_ARCHIVE );
 
 	return 1;
 }
 
 int CHudStatusBar::VidInit( void )
 {
+	m_iArmorSpriteIndex = gHUD.GetSpriteIndex( "armor_bar" );
+	m_hArmor = gHUD.GetSprite( m_iArmorSpriteIndex );
+
+	m_iHealthSpriteIndex = gHUD.GetSpriteIndex( "health_bar" );
+	m_hHealth = gHUD.GetSprite( m_iHealthSpriteIndex );
+
 	// Load sprites here
 	return 1;
 }
@@ -64,147 +70,136 @@ void CHudStatusBar::Reset( void )
 	memset( m_iStatusValues, 0, sizeof m_iStatusValues );
 
 	m_iStatusValues[0] = 1;  // 0 is the special index, which always returns true
-
-	// reset our colors for the status bar lines (yellow is default)
-	for ( i = 0; i < MAX_STATUSBAR_LINES; i++ )
-		m_pflNameColors[i] = g_ColorYellow;
 }
 
 void CHudStatusBar::ParseStatusString( int line_num )
 {
-	// localise string first
-	char szBuffer[MAX_STATUSTEXT_LENGTH] = {0};
-	gHUD.m_TextMessage.LocaliseTextString( m_szStatusText[line_num], szBuffer, MAX_STATUSTEXT_LENGTH );
-
-	// parse m_szStatusText & m_iStatusValues into m_szStatusBar
-	memset( m_szStatusBar[line_num], 0, MAX_STATUSTEXT_LENGTH );
-	char *src = szBuffer;
-	char *dst = m_szStatusBar[line_num];
-
-	char *src_start = src, *dst_start = dst;
-
-	while( *src != 0 )
-	{
-		while( *src == '\n' )
-			src++;  // skip over any newlines
-
-		if( ( ( src - src_start ) >= MAX_STATUSTEXT_LENGTH ) || ( ( dst - dst_start ) >= MAX_STATUSTEXT_LENGTH ) )
-			break;
-
-		int index = atoi( src );
-		// should we draw this line?
-		if( ( index >= 0 && index < MAX_STATUSBAR_VALUES ) && ( m_iStatusValues[index] != 0 ) )
-		{
-			// parse this line and append result to the status bar
-			while ( *src >= '0' && *src <= '9' )
-				src++;
-
-			if( *src == '\n' || *src == 0 )
-				continue; // no more left in this text line
-
-			// copy the text, char by char, until we hit a % or a \n
-			while( *src != '\n' && *src != 0 )
-			{
-				if( *src != '%' )
-				{
-					// just copy the character
-					*dst = *src;
-					dst++, src++;
-				}
-				else
-				{
-					// get the descriptor
-					char valtype = *(++src); // move over %
-
-					// if it's a %, draw a % sign
-					if ( valtype == '%' )
-					{
-						*dst = valtype;
-						dst++, src++;
-						continue;
-					}
-
-					// move over descriptor, then get and move over the index
-					index = atoi( ++src ); 
-					while( *src >= '0' && *src <= '9' )
-						src++;
-
-					if( index >= 0 && index < MAX_STATUSBAR_VALUES )
-					{
-						int indexval = m_iStatusValues[index];
-
-						// get the string to substitute in place of the %XX
-						char szRepString[MAX_PLAYER_NAME_LENGTH];
-						switch( valtype )
-						{
-						case 'p':  // player name
-							GetPlayerInfo( indexval, &g_PlayerInfoList[indexval] );
-							if( g_PlayerInfoList[indexval].name != NULL )
-							{
-								strncpy( szRepString, g_PlayerInfoList[indexval].name, MAX_PLAYER_NAME_LENGTH );
-								m_pflNameColors[line_num] = GetClientColor( indexval );
-							}
-							else
-							{
-								strcpy( szRepString, "******" );
-							}
-							break;
-						case 'i':  // number
-							sprintf( szRepString, "%d", indexval );
-							break;
-						default:
-							szRepString[0] = 0;
-						}
-
-						for( char *cp = szRepString; *cp != 0 && ( ( dst - dst_start ) < MAX_STATUSTEXT_LENGTH ); cp++, dst++ )
-							*dst = *cp;
-					}
-				}
-			}
-		}
-		else
-		{
-			// skip to next line of text
-			while( *src != 0 && *src != '\n' )
-				src++;
-		}
+	int indexval = m_iStatusValues[1];
+	GetPlayerInfo( indexval, &g_PlayerInfoList[indexval] );
+	if( g_PlayerInfoList[indexval].name != NULL )
+        {
+		strncpy( m_szName[line_num], g_PlayerInfoList[indexval].name, MAX_PLAYER_NAME_LENGTH );
 	}
+	else
+	{
+		strncpy( m_szName[line_num], "******", MAX_PLAYER_NAME_LENGTH );
+	}
+	g_iNameColors = GetTeamIndex( indexval );
+
+	indexval = m_iStatusValues[2];
+	sprintf( m_szHealth[line_num], ":%d", indexval );
+
+	indexval = m_iStatusValues[3];
+	sprintf( m_szArmor[line_num], ":%d", indexval );
+	m_iTeamMate[line_num] = m_iStatusValues[5];
 }
 
 int CHudStatusBar::Draw( float fTime )
 {
+	int r, g, b, a, name_r, name_g, name_b;
+
 	if( m_bReparseString )
 	{
 		for( int i = 0; i < MAX_STATUSBAR_LINES; i++ )
 		{
-			m_pflNameColors[i] = g_ColorYellow;
 			ParseStatusString( i );
 		}
 		m_bReparseString = FALSE;
 	}
 
-	int Y_START = ScreenHeight - YRES( 32 + 4 );
+	//Not Watching anyone
+	if( m_iStatusValues[1] == 0 )
+	{
+		m_iFlags &= ~HUD_ACTIVE;
+		return 1;
+	}
 
 	// Draw the status bar lines
 	for( int i = 0; i < MAX_STATUSBAR_LINES; i++ )
 	{
-		int TextHeight, TextWidth;
-		GetConsoleStringSize( m_szStatusBar[i], &TextWidth, &TextHeight );
+		int TextHeight = 0, TextWidth = 0;
 
-		int x = 4;
-		int y = Y_START - ( 4 + TextHeight * i ); // draw along bottom of screen
-
-		// let user set status ID bar centering
-		if( ( i == STATUSBAR_ID_LINE ) && CVAR_GET_FLOAT( "hud_centerid" ) )
+		//Ugly way to get
+		if( m_iTeamMate[i] )
 		{
-			x = max( 0, max( 2, ( ScreenWidth - TextWidth ) ) / 2 );
-			y = ( ScreenHeight / 2 ) + ( TextHeight * CVAR_GET_FLOAT( "hud_centerid" ) );
+			TotalTextWidth += gHUD.ReturnStringPixelLength( m_szName[i] );
+			TotalTextWidth += gHUD.ReturnStringPixelLength( m_szHealth[i] );
+			TotalTextWidth += gHUD.ReturnStringPixelLength( m_szArmor[i] );
+			TotalTextWidth += 48;
+			TextHeight = gHUD.m_scrinfo.iCharHeight;
 		}
+		else
+			TotalTextWidth += gHUD.ReturnStringPixelLength( m_szName[i] );
 
-		if( m_pflNameColors[i] )
-			DrawSetTextColor( m_pflNameColors[i][0], m_pflNameColors[i][1], m_pflNameColors[i][2] );
+		TextHeight = gHUD.m_scrinfo.iCharHeight;
 
-		DrawConsoleString( x, y, m_szStatusBar[i] );
+		if( g_iNameColors == 1 )
+		{
+			name_r = 255;
+			name_g = 50;
+			name_b = 50;
+		}
+		else if( g_iNameColors == 2 )
+		{
+			name_r = 50;
+			name_g = 50;
+			name_b = 255;
+		}
+		else
+			name_r = name_g = name_b = 255;
+
+		int Y_START;
+		if( ScreenHeight >= 480 )
+			Y_START = ScreenHeight - 55;
+		else
+			Y_START = ScreenHeight - 45;
+
+		int x = gHUD.m_Ammo.m_iNumberXPosition;
+		int y = Y_START; // = ( ScreenHeight / 2 ) + ( TextHeight * 3 );
+
+		int x_offset;
+		a = 200;
+
+		UnpackRGB( r, g, b, RGB_NORMAL);
+		ScaleColors( r, g, b, a );
+		ScaleColors( name_r, name_g, name_b, 125 );
+
+		//Draw the name First
+		gHUD.DrawHudString( x, y, 1024, m_szName[i], name_r, name_g, name_b );
+
+		if( !m_iTeamMate[i] )
+			continue;
+
+		//Get the length in pixels for the name
+		x_offset = gHUD.ReturnStringPixelLength( m_szName[i] );
+
+		//Add the offset
+		x += ( x_offset + 8 );
+
+		//Now draw the Sprite for the health
+		SPR_Set( m_hHealth, r, g, b );
+		SPR_DrawHoles( 0, x , y, &gHUD.GetSpriteRect( m_iHealthSpriteIndex ) );
+
+		//Add the sprite width size
+		x += 16;
+
+		//Draw the health value ( x + offset for the name lenght + width of the sprite )
+		gHUD.DrawHudString( x, y, 1024, m_szHealth[i], name_r, name_g, name_b );
+
+		//Get the length in pixels for the health
+		x_offset = gHUD.ReturnStringPixelLength( m_szHealth[i] );
+
+		//Add the offset
+		x += ( x_offset + 8 );
+
+		//Now draw the Sprite for the Armor
+		SPR_Set( m_hArmor, r, g, b );
+		SPR_DrawHoles( 0, x, y, &gHUD.GetSpriteRect( m_iArmorSpriteIndex ) );
+
+		x += 16;
+
+		//Draw the armor value ( x + offset for the name lenght + width of the sprite )
+		gHUD.DrawHudString( x, y, 1024, m_szArmor[i], name_r, name_g, name_b );
 	}
 
 	return 1;
@@ -257,6 +252,8 @@ int CHudStatusBar::MsgFunc_StatusValue( const char *pszName, int iSize, void *pb
 		return 1; // index out of range
 
 	m_iStatusValues[index] = READ_SHORT();
+
+	m_iFlags |= HUD_ACTIVE;
 
 	m_bReparseString = TRUE;
 

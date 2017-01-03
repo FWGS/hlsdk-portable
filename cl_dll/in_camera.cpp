@@ -460,7 +460,7 @@ void CAM_ToThirdPerson( void )
 {
 	vec3_t viewangles;
 #if !defined( _DEBUG )
-	if( gEngfuncs.GetMaxClients() > 1 )
+	//if( gEngfuncs.GetMaxClients() > 1 )
 	{
 		// no thirdperson in multiplayer.
 		return;
@@ -642,7 +642,7 @@ void CAM_EndDistance( void )
 
 int DLLEXPORT CL_IsThirdPerson( void )
 {
-	return ( cam_thirdperson ? 1 : 0 ) || ( g_iUser1 && ( g_iUser2 == gEngfuncs.GetLocalPlayer()->index ) );
+	return cam_thirdperson ? 1 : 0;
 }
 
 void DLLEXPORT CL_CameraOffset( float *ofs )

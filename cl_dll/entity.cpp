@@ -15,6 +15,7 @@
 #include "entity_types.h"
 #include "studio_event.h" // def. of mstudioevent_t
 #include "r_efx.h"
+#include "usercmd.h"
 #include "event_api.h"
 #include "pm_defs.h"
 #include "pmtrace.h"	
@@ -23,8 +24,6 @@
 void Game_AddObjects( void );
 
 extern vec3_t v_origin;
-
-int g_iAlive = 1;
 
 extern "C"
 {
@@ -86,15 +85,9 @@ void DLLEXPORT HUD_TxferLocalOverrides( struct entity_state_s *state, const stru
 {
 	VectorCopy( client->origin, state->origin );
 
-	// Spectator
+	// Observer
 	state->iuser1 = client->iuser1;
 	state->iuser2 = client->iuser2;
-
-	// Duck prevention
-	state->iuser3 = client->iuser3;
-
-	// Fire prevention
-	state->iuser4 = client->iuser4;
 }
 
 /*
@@ -152,9 +145,6 @@ void DLLEXPORT HUD_ProcessPlayerState( struct entity_state_s *dst, const struct 
 	cl_entity_t *player = gEngfuncs.GetLocalPlayer();	// Get the local player's index
 	if( dst->number == player->index )
 	{
-		g_iPlayerClass = dst->playerclass;
-		g_iTeamNumber = dst->team;
-
 		g_iUser1 = src->iuser1;
 		g_iUser2 = src->iuser2;
 		g_iUser3 = src->iuser3;
@@ -192,15 +182,9 @@ void DLLEXPORT HUD_TxferPredictionData( struct entity_state_s *ps, const struct 
 
 	pcd->deadflag				= ppcd->deadflag;
 
-	// Spectating or not dead == get control over view angles.
-	g_iAlive = ( ppcd->iuser1 || ( pcd->deadflag == DEAD_NO ) ) ? 1 : 0;
-
-	// Spectator
+	// Observer
 	pcd->iuser1					= ppcd->iuser1;
 	pcd->iuser2					= ppcd->iuser2;
-
-	// Duck prevention
-	pcd->iuser3 = ppcd->iuser3;
 
 	if( gEngfuncs.IsSpectateOnly() )
 	{
@@ -211,16 +195,14 @@ void DLLEXPORT HUD_TxferPredictionData( struct entity_state_s *ps, const struct 
 		pcd->iuser3 = g_iUser3; // second target
 	}
 
-	// Fire prevention
-	pcd->iuser4 					= ppcd->iuser4;
-
+	// m_iQuakeItems
+	pcd->iuser3					= ppcd->iuser3;
+	// m_iQuakeWeapon #
+	pcd->fuser1					= ppcd->fuser1;
+	// m_iNailIndex
 	pcd->fuser2					= ppcd->fuser2;
+	// m_iRuneStatus
 	pcd->fuser3					= ppcd->fuser3;
-
-	VectorCopy( ppcd->vuser1, pcd->vuser1 );
-	VectorCopy( ppcd->vuser2, pcd->vuser2 );
-	VectorCopy( ppcd->vuser3, pcd->vuser3 );
-	VectorCopy( ppcd->vuser4, pcd->vuser4 );
 
 	memcpy( wd, pwd, 32 * sizeof(weapon_data_t) );
 }
@@ -311,7 +293,6 @@ void ParticleCallback( struct particle_s *particle, float frametime )
 	}
 }
 
-cvar_t *color = NULL;
 void Particles( void )
 {
 	static float lasttime;
@@ -319,13 +300,8 @@ void Particles( void )
 
 	curtime = gEngfuncs.GetClientTime();
 
-	if( ( curtime - lasttime ) < 2.0 )
+	if( ( curtime - lasttime ) < 10.0 )
 		return;
-
-	if( !color )
-	{
-		color = gEngfuncs.pfnRegisterVariable ( "color","255 0 0", 0 );
-	}
 
 	lasttime = curtime;
 
@@ -333,7 +309,7 @@ void Particles( void )
 	particle_t *p;
 	int i, j;
 
-	for( i = 0; i < 1000; i++ )
+	for( i = 0; i < 100; i++ )
 	{
 		int r, g, b;
 		p = gEngfuncs.pEfxAPI->R_AllocParticle( ParticleCallback );
@@ -342,26 +318,15 @@ void Particles( void )
 
 		for( j = 0; j < 3; j++ )
 		{
-			p->org[j] = v_origin[j] + gEngfuncs.pfnRandomFloat( -32.0, 32.0 );
+			p->org[j] = v_origin[j];
 			p->vel[j] = gEngfuncs.pfnRandomFloat( -100.0, 100.0 );
 		}
 
-		if( color )
-		{
-			sscanf( color->string, "%i %i %i", &r, &g, &b );
-		}
-		else
-		{
-			r = 192;
-			g = 0;
-			b = 0;
-		}
-
-		p->color = gEngfuncs.pEfxAPI->R_LookupColor( r, g, b );
+		p->color = gEngfuncs.pfnRandomLong( 0, 255 );
 		gEngfuncs.pEfxAPI->R_GetPackedColor( &p->packedColor, p->color );
 
 		// p->die is set to current time so all you have to do is add an additional time to it
-		p->die += 3.0;
+		p->die += 5.0;
 	}
 }
 */
@@ -893,7 +858,12 @@ void DLLEXPORT HUD_TempEntUpdate (
 
 			if( pTemp->flags & FTENT_SMOKETRAIL )
 			{
-				gEngfuncs.pEfxAPI->R_RocketTrail( pTemp->entity.prevstate.origin, pTemp->entity.origin, 1 );
+				if( pTemp->entity.baseline.sequence == 69 ) // Little smoke
+					gEngfuncs.pEfxAPI->R_RocketTrail( pTemp->entity.prevstate.origin, pTemp->entity.origin, 1 );
+				else if( pTemp->entity.baseline.sequence == 70 ) // Rocket Powered smoke( heh? )
+					gEngfuncs.pEfxAPI->R_RocketTrail( pTemp->entity.prevstate.origin, pTemp->entity.origin, 0 );
+				else
+					gEngfuncs.pEfxAPI->R_RocketTrail( pTemp->entity.prevstate.origin, pTemp->entity.origin, 2 );
 			}
 
 			if( pTemp->flags & FTENT_GRAVITY )
