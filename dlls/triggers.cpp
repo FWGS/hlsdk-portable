@@ -1349,6 +1349,7 @@ public:
 	Vector m_vecSpawnAngles;
 	bool m_fSpawnSaved;
 	bool m_fIsBack;
+	bool m_fSkipSpawnCheck; // skip 30 seconds check when called by multimanager or trigger_once
 };
 
 LINK_ENTITY_TO_CLASS( trigger_changelevel, CChangeLevel )
@@ -1478,6 +1479,10 @@ void CChangeLevel::UseChangeLevel( CBaseEntity *pActivator, CBaseEntity *pCaller
 {
 	// if not activated by touch, do not count players
 	m_bUsed = true;
+	if( pCaller && FClassnameIs( pCaller->edict(), "multimanager" ) || FClassnameIs( pCaller->edict(), "trigger_once" ) )
+		m_fSkipSpawnCheck = true;
+	else
+		m_fSkipSpawnCheck = false;
 	ChangeLevelNow( pActivator );
 }
 
@@ -1945,6 +1950,24 @@ void CoopSaveTrain( CBaseEntity *pPlayer, SavedCoords *coords)
 	coords->trainsaved = true;
 }
 void BecomeSpectator( CBasePlayer *pPlayer );
+
+CBaseEntity *FindTriggerTransition( char *pVolumeName )
+{
+	edict_t *pentVolume = FIND_ENTITY_BY_TARGETNAME( NULL, pVolumeName );
+
+	while( !FNullEnt( pentVolume ) )
+	{
+		CBaseEntity *pVolume = CBaseEntity::Instance( pentVolume );
+
+		if( pVolume && FClassnameIs( pVolume->pev, "trigger_transition" ) )
+		{
+			return pVolume;
+		}
+		pentVolume = FIND_ENTITY_BY_TARGETNAME( pentVolume, pVolumeName );
+	}
+	return NULL;
+}
+
 void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 {
 	edict_t	*pentLandmark;
@@ -2125,7 +2148,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 			{
 				CBaseEntity *plr = UTIL_PlayerByIndex( i );
 
-				if( plr && plr->IsPlayer() )
+				if( plr && plr->IsPlayer() && ( !FindTriggerTransition( m_szLandmarkName ) || (gpGlobals->time -((CBasePlayer*)plr)->m_flSpawnTime ) > 30 ) || m_fSkipSpawnCheck )
 				{
 						if( InTransitionVolume( plr, m_szLandmarkName ))
 						{
@@ -2142,7 +2165,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 		ALERT( at_console, "There are %d players in transition volume %s\n", count, m_szLandmarkName );
 			
 	}
-	else if( !InTransitionVolume( pPlayer, m_szLandmarkName ) )
+	else if( !m_fSkipSpawnCheck && ( (gpGlobals->time -((CBasePlayer*)pPlayer)->m_flSpawnTime ) < 30 ) && FindTriggerTransition( m_szLandmarkName ) && !InTransitionVolume( pPlayer, m_szLandmarkName ) )
 	{
 		ALERT( at_console, "Player isn't in the transition volume %s, aborting\n", m_szLandmarkName );
 		return;
@@ -2243,6 +2266,8 @@ void CChangeLevel::TouchChangeLevel( CBaseEntity *pOther )
 {
 	if( !FClassnameIs( pOther->pev, "player" ) )
 		return;
+
+	m_fSkipSpawnCheck = false;
 
 	ChangeLevelNow( pOther );
 }
