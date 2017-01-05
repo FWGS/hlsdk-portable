@@ -117,7 +117,7 @@ int CHudStatusBar::Draw( float fTime )
 	// Draw the status bar lines
 	for( int i = 0; i < MAX_STATUSBAR_LINES; i++ )
 	{
-		int TextHeight = 0, TextWidth = 0;
+		int TextHeight = 0, TotalTextWidth = 0;
 
 		//Ugly way to get
 		if( m_iTeamMate[i] )

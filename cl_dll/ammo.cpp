@@ -415,7 +415,7 @@ void WeaponsResource::SelectSlot( int iSlot, int fAdvance, int iDirection )
 	if( gHUD.m_Menu.m_fMenuDisplayed && ( fAdvance  == FALSE ) && ( iDirection == 1 ) )	
 	{
 		// menu is overriding slot use commands
-		gHUD.m_Menu.SelectMenuItem( iSlot + 1 );  // slots are one off the key numbers
+		gHUD.m_Menu.SelectMenuItem( iSlot );
 		return;
 	}
 
@@ -552,7 +552,7 @@ int CHudAmmo::MsgFunc_CurWeapon( const char *pszName, int iSize, void *pbuf )
 
 	int iState = READ_BYTE();
 	int iId = READ_BYTE();
-	int iClip = READ_CHAR();
+	int iClip = READ_BYTE();
 
 	// detect if we're also on target
 	if( iState > 1 )
@@ -643,52 +643,52 @@ void CHudAmmo::SlotInput( int iSlot )
 
 void CHudAmmo::UserCmd_Slot1( void )
 {
-	SlotInput( 0 );
+	SlotInput( 1 );
 }
 
 void CHudAmmo::UserCmd_Slot2( void )
 {
-	SlotInput( 1 );
+	SlotInput( 2 );
 }
 
 void CHudAmmo::UserCmd_Slot3( void )
 {
-	SlotInput( 2 );
+	SlotInput( 3 );
 }
 
 void CHudAmmo::UserCmd_Slot4( void )
 {
-	SlotInput( 3 );
+	SlotInput( 4 );
 }
 
 void CHudAmmo::UserCmd_Slot5( void )
 {
-	SlotInput( 4 );
+	SlotInput( 5 );
 }
 
 void CHudAmmo::UserCmd_Slot6( void )
 {
-	SlotInput( 5 );
+	SlotInput( 6 );
 }
 
 void CHudAmmo::UserCmd_Slot7( void )
 {
-	SlotInput( 6 );
+	SlotInput( 7 );
 }
 
 void CHudAmmo::UserCmd_Slot8( void )
 {
-	SlotInput( 7 );
+	SlotInput( 8 );
 }
 
 void CHudAmmo::UserCmd_Slot9( void )
 {
-	SlotInput( 8 );
+	SlotInput( 9 );
 }
 
 void CHudAmmo::UserCmd_Slot10( void )
 {
-	SlotInput( 9 );
+	SlotInput( 10 );
 }
 
 void CHudAmmo::UserCmd_Close( void )
@@ -723,7 +723,7 @@ void CHudAmmo::UserCmd_NextWeapon( void )
 
 	for( int loop = 0; loop <= 1; loop++ )
 	{
-		for( ; slot < MAX_WEAPON_SLOTS; slot++ )
+		for( ; slot < MAX_WEAPON_SLOTS + 1; slot++ )
 		{
 			for( ; pos < MAX_WEAPON_POSITIONS; pos++ )
 			{
@@ -988,7 +988,7 @@ int CHudAmmo::DrawWList( float flTime )
 	x = 10;
 
 	// Draw all of the buckets
-	for( i = 0; i < MAX_WEAPON_SLOTS; i++ )
+	for( i = 1; i < MAX_WEAPON_SLOTS + 1; i++ )
 	{
 		y = giBucketHeight + 10;
 
