@@ -260,8 +260,6 @@ class CHalfLifeMultiplay : public CGameRules
 public:
 	CHalfLifeMultiplay();
 
-	virtual BOOL ClientCommand( CBasePlayer *pPlayer, const char *pcmd );
-
 	// GR_Think
 	virtual void Think( void );
 	virtual void RefreshSkillData( void );

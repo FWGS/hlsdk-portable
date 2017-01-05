@@ -82,9 +82,6 @@ int CHudBattery::Draw( float flTime )
 
 	UnpackRGB( r, g, b, RGB_YELLOWISH );
 
-	if( !( gHUD.m_iWeaponBits & ( 1 << ( 4096 ) ) ) )
-		return 1;
-
 	// Has health changed? Flash the health #
 	if( m_fFade )
 	{

@@ -61,7 +61,7 @@ void CQuakeItem::Spawn()
 	pev->movetype = MOVETYPE_TOSS;
 	pev->solid = SOLID_TRIGGER;
 	
-	SetTouch(ItemTouch);
+	SetTouch( &CQuakeItem::ItemTouch );
 
 	if (DROP_TO_FLOOR(ENT(pev)) == 0)
 	{
@@ -83,7 +83,7 @@ void CQuakeItem::Materialize()
 {
 	// Become visible and touchable
 	pev->effects &= ~EF_NODRAW;
-	SetTouch( ItemTouch );
+	SetTouch( &CQuakeItem::ItemTouch );
 
 	// Play respawn sound
 	EMIT_SOUND( ENT(pev), CHAN_WEAPON, "items/itembk2.wav", 1, ATTN_NORM );
@@ -98,10 +98,9 @@ void CQuakeItem::Respawn( float flTime )
 	SetTouch( NULL );
 
 	// Come back in time
-	SetThink ( Materialize );
+	SetThink( &CQuakeItem::Materialize );
 	pev->nextthink = gpGlobals->time + flTime;
 }
-
 
 //-----------------------------------------------------------------------------
 // Purpose: Touch function that calls the virtual touch function
@@ -238,7 +237,7 @@ BOOL CItemHealth::MyTouch( CBasePlayer *pPlayer )
 		pPlayer->m_iQuakeItems |= IT_SUPERHEALTH;
 		if (gpGlobals->deathmatch != 4)
 		{
-			SetThink( MegahealthRot );
+			SetThink( &CItemHealth::MegahealthRot );
 			pev->nextthink = gpGlobals->time + 5;
 		}
 		m_hRotTarget = pPlayer;
@@ -272,7 +271,7 @@ void CItemHealth::MegahealthRot( void )
 	// Respawn if it's not DM==2
 	if (gpGlobals->deathmatch != 2)
 	{
-		SetThink ( Materialize );
+		SetThink( &CQuakeItem::Materialize );
 		pev->nextthink = gpGlobals->time + 20;
 	}
 	else
@@ -1356,7 +1355,7 @@ void CItemBackpack::Spawn()
 	UTIL_SetOrigin( pev, pev->origin );
 	SET_MODEL(ENT(pev), "models/backpack.mdl");
 
-	SetTouch(ItemTouch);
+	SetTouch( &CItemBackpack::ItemTouch );
 }
 
 // Drop a backpack containing this player's ammo/weapons
@@ -1406,7 +1405,7 @@ void CBasePlayer::DropBackpack()
 
 	// Remove after 2 mins
 	pPack->pev->nextthink = gpGlobals->time + 120;
-	pPack->SetThink( SUB_Remove );
+	pPack->SetThink( &CBasePlayer::SUB_Remove );
 
 	// Remove all weapons
 	m_iQuakeItems = 0;

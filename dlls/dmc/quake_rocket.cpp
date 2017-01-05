@@ -49,11 +49,11 @@ CQuakeRocket *CQuakeRocket::CreateRocket( Vector vecOrigin, Vector vecAngles, CB
 	pRocket->pev->angles = UTIL_VecToAngles( vecAngles );
 	
 	// Touch
-	pRocket->SetTouch( CQuakeRocket::RocketTouch );
+	pRocket->SetTouch( &CQuakeRocket::RocketTouch );
 
 	// Safety Remove
 	pRocket->pev->nextthink = gpGlobals->time + 5;
-	pRocket->SetThink( SUB_Remove );
+	pRocket->SetThink( &CBaseEntity::SUB_Remove );
 
 	// Effects
 //	pRocket->pev->effects |= EF_LIGHT;
@@ -87,7 +87,7 @@ CQuakeRocket *CQuakeRocket::CreateGrenade( Vector vecOrigin, Vector vecVelocity,
 	pRocket->pev->friction = 0.5;
 
 	// Touch
-	pRocket->SetTouch( CQuakeRocket::GrenadeTouch );
+	pRocket->SetTouch( &CQuakeRocket::GrenadeTouch );
 
 	// set newmis duration
 	if ( gpGlobals->deathmatch == 4 )
@@ -98,7 +98,7 @@ CQuakeRocket *CQuakeRocket::CreateGrenade( Vector vecOrigin, Vector vecVelocity,
 	}
 
 	pRocket->pev->nextthink = gpGlobals->time + 2.5;
-	pRocket->SetThink( CQuakeRocket::GrenadeExplode );
+	pRocket->SetThink( &CQuakeRocket::GrenadeExplode );
 
 	PLAYBACK_EVENT_FULL (FEV_GLOBAL, pRocket->edict(), g_sTrail, 0.0, 
 	(float *)&g_vecZero, (float *)&g_vecZero, 0.7, 0.0, pRocket->entindex(), GRENADE_TRAIL, 0, 0);

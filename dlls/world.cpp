@@ -42,6 +42,7 @@ CGlobalState					gGlobalState;
 extern DLL_GLOBAL int				gDisplayTitle;
 
 extern void W_Precache( void );
+extern void QuakeClassicPrecache( void );
 
 //
 // This must match the list in util.h

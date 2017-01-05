@@ -5,7 +5,7 @@
 // $NoKeywords: $
 //=============================================================================
 
-#include "extdll.h"
+#include "hud.h"
 #include "entity_state.h"
 #include "pm_defs.h"
 #include "pm_shared.h"
@@ -17,6 +17,7 @@
 #include "event_flags.h"
 #include "DMC_BSPFile.h"
 #include "cl_util.h"
+#include <string.h>
 
 extern "C" playermove_t *pmove;
 extern int g_runfuncs;

@@ -798,7 +798,7 @@ Used to represent Slime or Lava
 void CTriggerEnvHurt::Spawn( void )
 {
 	InitTrigger();
-	SetTouch( EnvTouch );
+	SetTouch( &CBaseTrigger::EnvTouch );
 
 	if( FBitSet( pev->spawnflags, SF_TRIGGER_HURT_START_OFF ) )// if flagged to Start Turned Off, make trigger nonsolid.
 		pev->solid = SOLID_NOT;
@@ -2015,9 +2015,9 @@ void CTeleDeath::Spawn( void )
 	UTIL_SetSize( pev, pOwner->pev->mins - Vector( 1, 1, 1 ), pOwner->pev->maxs + Vector( 1, 1, 1 ) );
 	UTIL_SetOrigin( pev, pev->origin );
 
-	SetTouch( DeathTouch );
+	SetTouch( &CTeleDeath::DeathTouch );
 	pev->nextthink = gpGlobals->time + 0.2;
-	SetThink( SUB_Remove );
+	SetThink( &CBaseEntity::SUB_Remove );
 
 	// Touch still players
 	gpGlobals->force_retouch = 2;

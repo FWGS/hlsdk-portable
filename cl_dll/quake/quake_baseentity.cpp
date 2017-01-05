@@ -239,8 +239,8 @@ void CBasePlayer::PlayerUse ( void ) { }
 void CBasePlayer::Jump() { }
 void CBasePlayer::Duck( ) { }
 int  CBasePlayer::Classify ( void ) { return 0; }
-void CBasePlayer :: PlayStepSound(int step, float fvol) { }	
-void CBasePlayer :: UpdateStepSound( void ) { }
+//void CBasePlayer :: PlayStepSound(int step, float fvol) { }	
+//void CBasePlayer :: UpdateStepSound( void ) { }
 void CBasePlayer::PreThink(void) { }
 void CBasePlayer::CheckTimeBasedDamage()  { }
 void CBasePlayer :: UpdateGeigerCounter( void ) { }

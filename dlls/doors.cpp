@@ -632,18 +632,20 @@ void CBaseDoor::DoorGoUp( void )
 	// emit door moving and stop sounds on CHAN_STATIC so that the multicast doesn't
 	// filter them out and leave a client stuck with looping door sounds!
 	if( !FBitSet( pev->spawnflags, SF_DOOR_SILENT ) && m_bIsReopening == false )
+	{
+		// don't play sounds too often
+		if( m_fNextSoundPlay < gpGlobals->time )
 		{
-			// don't play sounds too often
-			if( m_fNextSoundPlay < gpGlobals->time )
-			{
-				PLAYBACK_EVENT_FULL( FEV_RELIABLE, NULL, m_usDoorGoUp, 0.0, (float *)&Center(), (float *)&g_vecZero, 0.0, 0.0, ( m_bMoveSnd << 8 ) | ( m_bStopSnd & 0xff ), 0, 0, 0 );
+			Vector vecCenter( Center() );
+			float *pCenter = (float *)&vecCenter;
+			PLAYBACK_EVENT_FULL( FEV_RELIABLE, NULL, m_usDoorGoUp, 0.0, pCenter, (float *)&g_vecZero, 0.0, 0.0, ( m_bMoveSnd << 8 ) | ( m_bStopSnd & 0xff ), 0, 0, 0 );
 #if defined ( OLD_SOUNDS )
-				STOP_SOUND( ENT( pev ), CHAN_STATIC, (char*)STRING( pev->noiseMoving ) );
-				if( m_toggle_state != TS_GOING_UP && m_toggle_state != TS_GOING_DOWN )
-					EMIT_SOUND( ENT( pev ), CHAN_STATIC, (char*)STRING( pev->noiseMoving ), 1, ATTN_NORM );
+			STOP_SOUND( ENT( pev ), CHAN_STATIC, (char*)STRING( pev->noiseMoving ) );
+			if( m_toggle_state != TS_GOING_UP && m_toggle_state != TS_GOING_DOWN )
+				EMIT_SOUND( ENT( pev ), CHAN_STATIC, (char*)STRING( pev->noiseMoving ), 1, ATTN_NORM );
 #endif
-			}
-
+		}
+	}
 	m_toggle_state = TS_GOING_UP;
 
 	SetMoveDone( &CBaseDoor::DoorHitTop );
@@ -686,8 +688,9 @@ void CBaseDoor::DoorHitTop( void )
 		if( ( ( m_fNextSoundPlay < gpGlobals->time ) && !m_bIsReopening ) || ( !m_bStoppedOpenSound ) )
 		{
 			m_bStoppedOpenSound = true;
- 
-			PLAYBACK_EVENT_FULL( FEV_RELIABLE, NULL, m_usDoorHitTop, 0.0, (float *)&Center(), (float *)&g_vecZero, 0.0, 0.0, ( m_bMoveSnd << 8 ) | ( m_bStopSnd & 0xff ), 0, 0, 0 );
+			Vector vecCenter( Center() );
+			float *pCenter = (float *)&vecCenter; 
+			PLAYBACK_EVENT_FULL( FEV_RELIABLE, NULL, m_usDoorHitTop, 0.0, pCenter, (float *)&g_vecZero, 0.0, 0.0, ( m_bMoveSnd << 8 ) | ( m_bStopSnd & 0xff ), 0, 0, 0 );
 
 #if defined ( OLD_SOUNDS )
 			STOP_SOUND( ENT( pev ), CHAN_STATIC, (char*)STRING( pev->noiseMoving ) );
@@ -736,13 +739,16 @@ void CBaseDoor::DoorGoDown( void )
 		// don't play sounds too often
 		if( m_fNextSoundPlay < gpGlobals->time )
 		{
-			PLAYBACK_EVENT_FULL( FEV_RELIABLE, NULL, m_usDoorGoDown, 0.0, (float *)&Center(), (float *)&g_vecZero, 0.0, 0.0, ( m_bMoveSnd << 8 ) | ( m_bStopSnd & 0xff ), 0, 0, 0 );
+			Vector vecCenter( Center() );
+			float *pCenter = (float *)&vecCenter;
+			PLAYBACK_EVENT_FULL( FEV_RELIABLE, NULL, m_usDoorGoDown, 0.0, pCenter, (float *)&g_vecZero, 0.0, 0.0, ( m_bMoveSnd << 8 ) | ( m_bStopSnd & 0xff ), 0, 0, 0 );
 #if defined ( OLD_SOUNDS )
 			STOP_SOUND( ENT( pev ), CHAN_STATIC, (char*)STRING( pev->noiseMoving ) );
 			if( m_toggle_state != TS_GOING_UP && m_toggle_state != TS_GOING_DOWN )
 				EMIT_SOUND( ENT( pev ), CHAN_STATIC, (char*)STRING( pev->noiseMoving ), 1, ATTN_NORM );	
 #endif
 		}
+	}
 #ifdef DOOR_ASSERT
 	ASSERT( m_toggle_state == TS_AT_TOP );
 #endif // DOOR_ASSERT
@@ -765,7 +771,9 @@ void CBaseDoor::DoorHitBottom( void )
 		// don't play sounds too often
 		if( m_fNextSoundPlay < gpGlobals->time )
 		{
-			PLAYBACK_EVENT_FULL( FEV_RELIABLE, NULL, m_usDoorHitBottom, 0.0, (float *)&Center(), (float *)&g_vecZero, 0.0, 0.0, ( m_bMoveSnd << 8 ) | ( m_bStopSnd & 0xff ), 0, 0, 0 );
+			Vector vecCenter( Center() );
+			float *pCenter = (float *)&vecCenter;
+			PLAYBACK_EVENT_FULL( FEV_RELIABLE, NULL, m_usDoorHitBottom, 0.0, pCenter, (float *)&g_vecZero, 0.0, 0.0, ( m_bMoveSnd << 8 ) | ( m_bStopSnd & 0xff ), 0, 0, 0 );
 #if defined ( OLD_SOUNDS )
 			STOP_SOUND( ENT( pev ), CHAN_STATIC, (char*)STRING( pev->noiseMoving ) );
 			EMIT_SOUND( ENT( pev ), CHAN_STATIC, (char*)STRING( pev->noiseArrived ), 1, ATTN_NORM );

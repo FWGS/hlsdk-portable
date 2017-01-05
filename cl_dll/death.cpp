@@ -161,13 +161,9 @@ int CHudDeathNotice::Draw( float flTime )
 
 			x += ( gHUD.GetSpriteRect(id).right - gHUD.GetSpriteRect(id).left );
 
-			// Draw victims name (if it was a player that was killed)
-			if( rgDeathNoticeList[i].iNonPlayerKill == FALSE )
-			{
-				if( rgDeathNoticeList[i].VictimColor )
-					DrawSetTextColor( rgDeathNoticeList[i].VictimColor[0], rgDeathNoticeList[i].VictimColor[1], rgDeathNoticeList[i].VictimColor[2] );
-				x = DrawConsoleString( x, y, rgDeathNoticeList[i].szVictim );
-			}
+			if( rgDeathNoticeList[i].VictimColor )
+				DrawSetTextColor( rgDeathNoticeList[i].VictimColor[0], rgDeathNoticeList[i].VictimColor[1], rgDeathNoticeList[i].VictimColor[2] );
+			x = DrawConsoleString( x, y, rgDeathNoticeList[i].szVictim );
 		}
 	}
 

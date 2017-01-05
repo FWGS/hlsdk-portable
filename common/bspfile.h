@@ -131,13 +131,13 @@ typedef struct
 	int	fileofs;
 	int	filelen;
 } dlump_t;
-
+/*
 typedef struct
 {
 	int	version;
 	dlump_t	lumps[HEADER_LUMPS];
 } dheader_t;
-
+*/
 typedef struct
 {
 	int	version;

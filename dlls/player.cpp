@@ -220,7 +220,7 @@ void LinkUserMessages( void )
 	gmsgInitHUD = REG_USER_MSG( "InitHUD", -1 );		// called every time a new player joins the server
 	gmsgShowGameTitle = REG_USER_MSG( "GameTitle", 1 );
 	gmsgDeathMsg = REG_USER_MSG( "DeathMsg", -1 );
-	gmsgScoreInfo = REG_USER_MSG( "ScoreInfo", 7 );
+	gmsgScoreInfo = REG_USER_MSG( "ScoreInfo", 9 );
 	gmsgTeamInfo = REG_USER_MSG( "TeamInfo", -1 );  // sets the name of a player's team
 	gmsgTeamScore = REG_USER_MSG( "TeamScore", -1 );  // sets the score of a team on the scoreboard
 	gmsgGameMode = REG_USER_MSG( "GameMode", 1 );
@@ -246,7 +246,7 @@ void LinkUserMessages( void )
 LINK_ENTITY_TO_CLASS( player, CBasePlayer )
 
 // QUAKECLASSIC: Play pain sounds
-void CBasePlayer::Pain( void )
+void CBasePlayer::Pain( CBaseEntity *pAttacker )
 {
 	if( pev->health < 0 )
 		return;
@@ -1332,103 +1332,6 @@ void CBasePlayer::AddPointsToTeam( int score, BOOL bAllowNegativeScore )
 			{
 				pPlayer->AddPoints( score, bAllowNegativeScore );
 			}
-		}
-	}
-}
-
-
-//Player ID
-void CBasePlayer::InitStatusBar()
-{
-	m_flStatusBarDisappearDelay = 0;
-	m_SbarString1[0] = m_SbarString0[0] = 0; 
-}
-
-void CBasePlayer::UpdateStatusBar()
-{
-	int newSBarState[SBAR_END] = {0};
-	char sbuf0[SBAR_STRING_SIZE];
-	char sbuf1[ SBAR_STRING_SIZE ];
-
-	strcpy( sbuf0, m_SbarString0 );
-	strcpy( sbuf1, m_SbarString1 );
-
-	// Find an ID Target
-	TraceResult tr;
-	UTIL_MakeVectors( pev->v_angle + pev->punchangle );
-	Vector vecSrc = EyePosition();
-	Vector vecEnd = vecSrc + ( gpGlobals->v_forward * MAX_ID_RANGE );
-	UTIL_TraceLine( vecSrc, vecEnd, dont_ignore_monsters, edict(), &tr );
-
-	if( tr.flFraction != 1.0 )
-	{
-		if( !FNullEnt( tr.pHit ) )
-		{
-			CBaseEntity *pEntity = CBaseEntity::Instance( tr.pHit );
-
-			if( pEntity->Classify() == CLASS_PLAYER )
-			{
-				newSBarState[SBAR_ID_TARGETNAME] = ENTINDEX( pEntity->edict() );
-				strcpy( sbuf1, "1 %p1\n2 Health: %i2%%\n3 Armor: %i3%%" );
-
-				// allies and medics get to see the targets health
-				if( g_pGameRules->PlayerRelationship( this, pEntity ) == GR_TEAMMATE )
-				{
-					newSBarState[SBAR_ID_TARGETHEALTH] = 100 * ( pEntity->pev->health / pEntity->pev->max_health );
-					newSBarState[SBAR_ID_TARGETARMOR] = pEntity->pev->armorvalue; //No need to get it % based since 100 it's the max.
-				}
-
-				m_flStatusBarDisappearDelay = gpGlobals->time + 1.0;
-			}
-		}
-		else if( m_flStatusBarDisappearDelay > gpGlobals->time )
-		{
-			// hold the values for a short amount of time after viewing the object
-			newSBarState[SBAR_ID_TARGETNAME] = m_izSBarState[SBAR_ID_TARGETNAME];
-			newSBarState[SBAR_ID_TARGETHEALTH] = m_izSBarState[SBAR_ID_TARGETHEALTH];
-			newSBarState[SBAR_ID_TARGETARMOR] = m_izSBarState[SBAR_ID_TARGETARMOR];
-		}
-	}
-
-	BOOL bForceResend = FALSE;
-
-	if( strcmp( sbuf0, m_SbarString0 ) )
-	{
-		MESSAGE_BEGIN( MSG_ONE, gmsgStatusText, NULL, pev );
-			WRITE_BYTE( 0 );
-			WRITE_STRING( sbuf0 );
-		MESSAGE_END();
-
-		strcpy( m_SbarString0, sbuf0 );
-
-		// make sure everything's resent
-		bForceResend = TRUE;
-	}
-
-	if( strcmp( sbuf1, m_SbarString1 ) )
-	{
-		MESSAGE_BEGIN( MSG_ONE, gmsgStatusText, NULL, pev );
-			WRITE_BYTE( 1 );
-			WRITE_STRING( sbuf1 );
-		MESSAGE_END();
-
-		strcpy( m_SbarString1, sbuf1 );
-
-		// make sure everything's resent
-		bForceResend = TRUE;
-	}
-
-	// Check values and send if they don't match
-	for( int i = 1; i < SBAR_END; i++ )
-	{
-		if( newSBarState[i] != m_izSBarState[i] || bForceResend )
-		{
-			MESSAGE_BEGIN( MSG_ONE, gmsgStatusValue, NULL, pev );
-				WRITE_BYTE( i );
-				WRITE_SHORT( newSBarState[i] );
-			MESSAGE_END();
-
-			m_izSBarState[i] = newSBarState[i];
 		}
 	}
 }

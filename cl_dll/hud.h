@@ -611,7 +611,7 @@ public:
 	int m_iFontHeight;
 	int DrawHudNumber( int x, int y, int iFlags, int iNumber, int r, int g, int b );
 	int DrawHudString( int x, int y, int iMaxX, char *szString, int r, int g, int b );
-	int DrawHudStringCTFint x, int y, int iMaxX, char *szString, int r, int g, int b );
+	int DrawHudStringCTF( int x, int y, int iMaxX, char *szString, int r, int g, int b );
 	int ReturnStringPixelLength( char *Hihi );
 	int DrawHudStringReverse( int xpos, int ypos, int iMinX, char *szString, int r, int g, int b );
 	int DrawHudNumberString( int xpos, int ypos, int iMinX, int iNumber, int r, int g, int b );

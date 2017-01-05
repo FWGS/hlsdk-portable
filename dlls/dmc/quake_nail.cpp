@@ -65,10 +65,10 @@ void CQuakeNail::Spawn( void )
 	
 	// Safety removal
 	pev->nextthink = gpGlobals->time + 6;
-	SetThink( SUB_Remove );
+	SetThink( &CBaseEntity::SUB_Remove );
 	
 	// Touch
-	SetTouch( NailTouch );
+	SetTouch( &CQuakeNail::NailTouch );
 
 	// Model
 	SET_MODEL( ENT(pev), "models/spike.mdl" );

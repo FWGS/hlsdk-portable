@@ -90,11 +90,6 @@ int __MsgFunc_QItems( const char *pszName, int iSize, void *pbuf )
 	return gHUD.MsgFunc_QItems( pszName, iSize, pbuf );
 }
 
-int __MsgFunc_ScoreInfo( const char *pszName, int iSize, void *pbuf )
-{
-	return 0;
-}
-
 // This is called every time the DLL is loaded
 void CHud::Init( void )
 {
@@ -111,9 +106,6 @@ void CHud::Init( void )
 
 	// QUAKECLASSIC
 	HOOK_MESSAGE( QItems );
-	HOOK_MESSAGE( ScoreInfo );
-	//HOOK_MESSAGE( TeamScore );
-	HOOK_MESSAGE( TeamInfo );
 	hud_textmode = CVAR_CREATE ( "hud_textmode", "0", FCVAR_ARCHIVE );
 
 	m_iLogo = 0;
@@ -324,7 +316,7 @@ void CHud::VidInit( void )
 	m_Geiger.VidInit();
 	m_Train.VidInit();
 	m_Battery.VidInit();
-	m_Flash.VidInit();
+	//m_Flash.VidInit();
 	m_Message.VidInit();
 	m_StatusBar.VidInit();
 	m_DeathNotice.VidInit();

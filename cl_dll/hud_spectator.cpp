@@ -76,6 +76,7 @@ void SpectatorSpray( void )
 		gEngfuncs.pfnServerCmd( string );
 	}
 }
+
 void SpectatorHelp( void )
 {
 	{
@@ -1400,13 +1401,6 @@ void CHudSpectator::CheckSettings()
 			gEngfuncs.pfnServerCmd( chatcmd );
 		}
 	}
-
-	// if we are a real player on server don't allow inset window
-	// in First Person mode since this is our resticted forcecamera mode 2
-	// team number 3 = SPECTATOR see player.h
-
-	if( ( ( g_iTeamNumber == 1 ) || ( g_iTeamNumber == 2 ) ) && ( g_iUser1 == OBS_IN_EYE ) )
-		m_pip->value = INSET_OFF;
 
 	// draw small border around inset view, adjust upper black bar
 }

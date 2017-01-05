@@ -32,7 +32,7 @@
 #include "../demo.h"
 
 #include "quake_gun.h"
-#include "../DMC_Teleporters.h"
+#include "DMC_Teleporters.h"
 
 extern globalvars_t *gpGlobals;
 
