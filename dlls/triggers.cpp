@@ -2170,7 +2170,7 @@ void CTriggerTeleportDest::Spawn( void )
 	UTIL_SetOrigin( pev, pev->origin );
 }
 
-LINK_ENTITY_TO_CLASS( info_teleport_destination, CPointEntity )
+LINK_ENTITY_TO_CLASS( info_teleport_destination, CTriggerTeleportDest )
 
 class CTriggerSave : public CBaseTrigger
 {
