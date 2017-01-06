@@ -809,7 +809,7 @@ void CTriggerEnvHurt::Spawn( void )
 // When touched, a hurt trigger does DMG points of damage each half-second
 void CBaseTrigger::EnvTouch( CBaseEntity *pOther )
 {
-	float fldmg;
+	float fldmg = 0.0f;
 
 	if( !pOther->pev->takedamage )
 		return;

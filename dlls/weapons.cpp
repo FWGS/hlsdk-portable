@@ -744,6 +744,9 @@ int CBasePlayerWeapon::UpdateClientData( CBasePlayer *pPlayer )
 		case IT_LIGHTNING:
 			iId = IT_LIGHTNING;
 			break;
+		default:
+			iId = 0; //Player is dead
+			break;
 	}
 
 	if( bSend )
@@ -765,7 +768,7 @@ int CBasePlayerWeapon::UpdateClientData( CBasePlayer *pPlayer )
 	return 1;
 }
 
-void CBasePlayerWeapon::SendWeaponAnim( int iAnim, int skiplocal)
+void CBasePlayerWeapon::SendWeaponAnim( int iAnim, int skiplocal )
 {
 	if( UseDecrement() )
 		skiplocal = 1;

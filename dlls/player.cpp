@@ -3704,7 +3704,7 @@ void CBasePlayer::UpdateClientData( void )
 		for( int i = 1; i < 10; i++ )
 		{
 			const char *pszName;
-			int iAmmoIndex;
+			int iAmmoIndex = 0;
 			int iMaxAmmo = 0;
 			int iCurrentAmmo = 0;
 			int iBit = 0;

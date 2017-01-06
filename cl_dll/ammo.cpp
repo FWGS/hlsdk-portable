@@ -791,7 +791,7 @@ void CHudAmmo::UserCmd_PrevWeapon( void )
 //-------------------------------------------------------------------------
 int CHudAmmo::Draw( float flTime )
 {
-	int a, x, y, r, g, b;
+	int a, x = 0, y, r, g, b;
 	int AmmoWidth;
 
 	int iCrossX;
