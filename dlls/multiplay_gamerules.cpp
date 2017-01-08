@@ -30,7 +30,7 @@
 #include	"voice_gamemgr.h"
 #endif
 #include	"hltv.h"
-
+#include	"bot_exports.h"
 extern DLL_GLOBAL CGameRules *g_pGameRules;
 extern DLL_GLOBAL BOOL	g_fGameOver;
 extern int gmsgDeathMsg;	// client dll messages
@@ -215,6 +215,7 @@ CHalfLifeMultiplay::CHalfLifeMultiplay()
 			SERVER_COMMAND( szCommand );
 		}
 	}
+	InstallBotControl();
 }
 
 void CoopProcessMenu( CBasePlayer *pPlayer, int imenu );

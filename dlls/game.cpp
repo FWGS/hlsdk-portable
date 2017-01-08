@@ -16,6 +16,7 @@
 #include "eiface.h"
 #include "util.h"
 #include "game.h"
+#include "bot_exports.h"
 
 cvar_t displaysoundlist = {"displaysoundlist","0"};
 
@@ -890,5 +891,6 @@ void GameDLLInit( void )
 // END REGISTER CVARS FOR SKILL LEVEL STUFF
 
 	SERVER_COMMAND( "exec skill.cfg\n" );
+	Bot_RegisterCvars();
 }
 

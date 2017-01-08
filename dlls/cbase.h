@@ -125,6 +125,7 @@ public:
 	operator int ();
 
 	operator CBaseEntity *();
+        operator CBasePlayer *();
 
 	CBaseEntity *operator = ( CBaseEntity *pEntity );
 	CBaseEntity *operator ->();

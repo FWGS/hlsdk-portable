@@ -4794,4 +4794,21 @@ void CInfoIntermission::Think( void )
 	}
 }
 
+#define NormalizeAngle UTIL_AngleMod
+
+bool CBasePlayer::IsLookingAtPosition(Vector *pos, float angleTolerance)
+{
+	Vector to = *pos - EyePosition();
+	Vector idealAngle = UTIL_VecToAngles(to);
+
+	idealAngle.x = 360.0 - idealAngle.x;
+
+	float deltaYaw = NormalizeAngle(idealAngle.y - pev->v_angle.y);
+	float deltaPitch = NormalizeAngle(idealAngle.x - pev->v_angle.x);
+
+	return (abs(deltaYaw) < angleTolerance
+		&& abs(deltaPitch) < angleTolerance);
+}
+
+
 LINK_ENTITY_TO_CLASS( info_intermission, CInfoIntermission )

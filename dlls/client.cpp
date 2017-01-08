@@ -38,6 +38,7 @@
 #include "weaponinfo.h"
 #include "usercmd.h"
 #include "netadr.h"
+#include "bot_exports.h"
 
 extern DLL_GLOBAL ULONG		g_ulModelIndexPlayer;
 extern DLL_GLOBAL BOOL		g_fGameOver;
@@ -142,6 +143,8 @@ void ClientDisconnect( edict_t *pEntity )
 		if( pPlayer )
 			pPlayer->m_state = STATE_UNINITIALIZED;
 	}
+	TheBots->ClientDisconnect((CBasePlayer*)CBaseEntity::Instance( pEntity ));
+
 
 }
 
@@ -426,6 +429,9 @@ void ClientCommand( edict_t *pEntity )
 
 	entvars_t *pev = &pEntity->v;
 
+	if (TheBots->ClientCommand(GetClassPtr((CBasePlayer *)pev), pcmd))
+		return;
+
 	if ( FStrEq(pcmd, "say" ) )
 	{
 		Host_Say( pEntity, 0 );
@@ -658,6 +664,7 @@ void ServerDeactivate( void )
 
 	// Peform any shutdown operations here...
 	//
+	TheBots->ServerDeactivate();
 }
 
 void CoopClearData( void );
@@ -715,6 +722,7 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 			}
 		}
 	}
+	TheBots->ServerActivate();
 }
 
 
@@ -812,6 +820,7 @@ void StartFrame( void )
 
 	gpGlobals->teamplay = teamplay.value;
 	g_ulFrameCount++;
+	TheBots->StartFrame();
 }
 
 

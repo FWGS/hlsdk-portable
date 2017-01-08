@@ -324,6 +324,9 @@ public:
 	PlayerState m_state;
 	bool m_fTouchMenu;
 	virtual void Touch( CBaseEntity *pOther );
+	bool IsBot(){ return pev->flags & FL_FAKECLIENT; }
+	bool IsLookingAtPosition(Vector *pos, float angleTolerance = 20.0f);
+
 };
 
 #define AUTOAIM_2DEGREES  0.0348994967025

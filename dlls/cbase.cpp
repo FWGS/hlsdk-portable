@@ -474,6 +474,12 @@ EHANDLE::operator CBaseEntity *()
 	return (CBaseEntity *)GET_PRIVATE( Get() ); 
 }
 
+
+EHANDLE::operator CBasePlayer *() 
+{ 
+	return (CBasePlayer *)GET_PRIVATE( Get() ); 
+}
+
 CBaseEntity *EHANDLE::operator = ( CBaseEntity *pEntity )
 {
 	if( pEntity )
