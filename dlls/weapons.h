@@ -21,6 +21,8 @@ class CBasePlayer;
 extern int gmsgWeapPickup;
 
 void DeactivateSatchels( CBasePlayer *pOwner );
+void DeactivateTrips( CBasePlayer *pOwner );
+void DeactivateSnarkTrips( CBasePlayer *pOwner );
 
 // Contact Grenade / Timed grenade / Satchel Charge
 class CGrenade : public CBaseMonster
@@ -38,6 +40,7 @@ public:
 	void Explode( Vector vecSrc, Vector vecAim );
 	void Explode( TraceResult *pTrace, int bitsDamageType );
 	void EXPORT Smoke( void );
+	void EXPORT MegaSmoke( void );
 
 	void EXPORT BounceTouch( CBaseEntity *pOther );
 	void EXPORT SlideTouch( CBaseEntity *pOther );
@@ -53,6 +56,7 @@ public:
 	virtual void Killed( entvars_t *pevAttacker, int iGib );
 
 	BOOL m_fRegisteredSound;// whether or not this grenade has issued its DANGER sound to the world sound list yet.
+	int m_iMegaSmokeFrame;
 };
 
 // constant items
@@ -274,6 +278,11 @@ public:
 
 	// int		m_iIdPrimary;										// Unique Id for primary ammo
 	// int		m_iIdSecondary;										// Unique Id for secondary ammo
+
+	// BMOD Begin - Weapon Box Models
+	int m_WeaponModelIndex;
+	string_t m_WeaponModel;
+	// BMOD End - Weapon Box Models
 };
 
 // inventory items that 
@@ -368,6 +377,11 @@ extern DLL_GLOBAL	short	g_sModelIndexWExplosion;// holds the index for the under
 extern DLL_GLOBAL	short	g_sModelIndexBubbles;// holds the index for the bubbles model
 extern DLL_GLOBAL	short	g_sModelIndexBloodDrop;// holds the sprite index for blood drops
 extern DLL_GLOBAL	short	g_sModelIndexBloodSpray;// holds the sprite index for blood spray (bigger)
+extern DLL_GLOBAL	short	g_sModelIndexSpit;// holds the sprite index for blood spray (bigger)
+extern DLL_GLOBAL	short	g_sModelIndexLightning;// holds the sprite index for blood spray (bigger)
+extern DLL_GLOBAL	short	g_sModelIndexSmokeTrail;// holds the sprite index for blood spray (bigger)
+extern DLL_GLOBAL	short	g_sModelIndexFire;
+extern DLL_GLOBAL	short	g_sModelIndexFlare;
 
 extern void ClearMultiDamage(void);
 extern void ApplyMultiDamage(entvars_t* pevInflictor, entvars_t* pevAttacker );
@@ -493,6 +507,10 @@ public:
 	int GetItemInfo(ItemInfo *p);
 
 	void PrimaryAttack( void );
+
+	// BMOD Edit - Flying Crowbar
+	void SecondaryAttack( void );
+
 	int Swing( int fFirst );
 	BOOL Deploy( void );
 	void Holster( int skiplocal = 0 );
@@ -766,7 +784,7 @@ private:
 	unsigned short m_usGaussFire;
 	unsigned short m_usGaussSpin;
 };
-
+/*
 class CEgon : public CBasePlayerWeapon
 {
 public:
@@ -864,7 +882,7 @@ public:
 private:
 	unsigned short m_usHornetFire;
 };
-
+*/
 class CHandGrenade : public CBasePlayerWeapon
 {
 public:
@@ -938,6 +956,8 @@ public:
 	}
 
 	void PrimaryAttack( void );
+	void SecondaryAttack( void );
+	void BModAttack( BOOL flashbang );
 	BOOL Deploy( void );
 	void Holster( int skiplocal = 0 );
 	void WeaponIdle( void );

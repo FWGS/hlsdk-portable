@@ -24,6 +24,7 @@
 #include "effects.h"
 #include "customentity.h"
 #include "gamerules.h"
+#include "egon.h"
 
 #define	EGON_PRIMARY_VOLUME		450
 #define EGON_BEAM_SPRITE		"sprites/xbeam1.spr"
@@ -74,6 +75,10 @@ void CEgon::Precache( void )
 	PRECACHE_SOUND( EGON_SOUND_OFF );
 	PRECACHE_SOUND( EGON_SOUND_RUN );
 	PRECACHE_SOUND( EGON_SOUND_STARTUP );
+
+	PRECACHE_SOUND( BUBBLE_SOUND_OFF );
+	PRECACHE_SOUND( BUBBLE_SOUND_RUN );
+	PRECACHE_SOUND( BUBBLE_SOUND_STARTUP );
 
 	PRECACHE_MODEL( EGON_BEAM_SPRITE );
 	PRECACHE_MODEL( EGON_FLARE_SPRITE );
@@ -232,8 +237,18 @@ void CEgon::Attack( void )
 
 void CEgon::PrimaryAttack( void )
 {
-	m_fireMode = FIRE_WIDE;
-	Attack();
+	// BMOD Begin - bubblegun
+	if( bm_gluon_mod.value )
+	{
+		FireBubbles();
+		m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + .05;
+	}
+	else
+	{
+		m_fireMode = FIRE_WIDE;
+		Attack();
+	}
+	// BMOD End - bubblegun
 }
 
 void CEgon::Fire( const Vector &vecOrigSrc, const Vector &vecDir )

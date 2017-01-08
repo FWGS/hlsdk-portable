@@ -34,6 +34,7 @@
 #include "decals.h"
 #include "gamerules.h"
 #include "game.h"
+#include "BMOD_rune.h"
 #include "hltv.h"
 
 // #define DUCKFIX
@@ -43,7 +44,9 @@ extern DLL_GLOBAL BOOL g_fGameOver;
 extern DLL_GLOBAL BOOL g_fDrawLines;
 int gEvilImpulse101;
 extern DLL_GLOBAL int g_iSkillLevel, gDisplayTitle;
+extern DLL_GLOBAL BOOL g_runes_exist;
 
+extern cvar_t bm_dmg_messages;
 BOOL gInitHUD = TRUE;
 
 extern void CopyToBodyQue( entvars_t *pev);
@@ -183,6 +186,7 @@ int gmsgTeamNames = 0;
 
 int gmsgStatusText = 0;
 int gmsgStatusValue = 0;
+int gmsgSpectator = 0;
 
 void LinkUserMessages( void )
 {
@@ -225,6 +229,7 @@ void LinkUserMessages( void )
 	gmsgFade = REG_USER_MSG( "ScreenFade", sizeof(ScreenFade) );
 	gmsgAmmoX = REG_USER_MSG( "AmmoX", 2 );
 	gmsgTeamNames = REG_USER_MSG( "TeamNames", -1 );
+	gmsgSpectator = REG_USER_MSG( "Spectator", 2 );
 
 	gmsgStatusText = REG_USER_MSG( "StatusText", -1 );
 	gmsgStatusValue = REG_USER_MSG( "StatusValue", 3 );
@@ -456,6 +461,9 @@ int CBasePlayer::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 		return 0;
 	}
 
+	float flArmor = 0;
+	float flArmorDone = 0;
+
 	// keep track of amount of damage last sustained
 	m_lastDamageAmount = flDamage;
 
@@ -463,8 +471,6 @@ int CBasePlayer::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 	if( pev->armorvalue && !( bitsDamageType & ( DMG_FALL | DMG_DROWN ) ) )// armor doesn't protect against fall or drown damage!
 	{
 		float flNew = flDamage * flRatio;
-
-		float flArmor;
 
 		flArmor = ( flDamage - flNew ) * flBonus;
 
@@ -474,12 +480,43 @@ int CBasePlayer::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 			flArmor = pev->armorvalue;
 			flArmor *= ( 1 / flBonus );
 			flNew = flDamage - flArmor;
+			flArmorDone = pev->armorvalue;
 			pev->armorvalue = 0;
 		}
 		else
+		{
 			pev->armorvalue -= flArmor;
-
+			flArmorDone = pev->armorvalue;
+		}
 		flDamage = flNew;
+	}
+
+	char AttackerText[128];
+	char DefenderText[128];
+	char HitGroup[128] = "";
+
+	if( m_LastHitGroup == HITGROUP_HEAD )
+		strcpy( HitGroup, "HEADSHOT!" );
+
+	if( bm_dmg_messages.value > 0 )
+	{
+		if( pAttacker == this )
+		{
+			sprintf( DefenderText, "Did %i/%i damage to yourself. %s\n", (int)flDamage, (int)flArmorDone, HitGroup );
+			ClientPrint( pev, HUD_PRINTNOTIFY, DefenderText );
+		}
+		else if( pAttacker->IsPlayer() )
+		{
+			sprintf( DefenderText, "Took %i/%i damage from %s. %s\n", (int)flDamage, (int)flArmorDone, STRING( pAttacker->pev->netname ), HitGroup );
+			sprintf( AttackerText, "Did %i/%i damage to %s. %s\n", (int)flDamage, (int)flArmorDone, STRING( pev->netname ), HitGroup );
+			ClientPrint( pev, HUD_PRINTNOTIFY, DefenderText );
+			ClientPrint( pAttacker->pev, HUD_PRINTNOTIFY, AttackerText );
+		}
+		else
+		{
+			sprintf( DefenderText, "Took %i/%i damage.\n", (int)flDamage, (int)flArmorDone );
+			ClientPrint( pev, HUD_PRINTNOTIFY, DefenderText );
+		}
 	}
 
 	// this cast to INT is critical!!! If a player ends up with 0.5 health, the engine will get that
@@ -671,7 +708,7 @@ void CBasePlayer::PackDeadPlayerItems( void )
 	iWeaponRules = g_pGameRules->DeadPlayerWeapons( this );
  	iAmmoRules = g_pGameRules->DeadPlayerAmmo( this );
 
-	if( iWeaponRules == GR_PLR_DROP_GUN_NO && iAmmoRules == GR_PLR_DROP_AMMO_NO )
+	if( ( iWeaponRules == GR_PLR_DROP_GUN_NO && iAmmoRules == GR_PLR_DROP_AMMO_NO ) || BMOD_WasTypeKilled() )
 	{
 		// nothing to pack. Remove the weapons and return. Don't call create on the box!
 		RemoveAllItems( TRUE );
@@ -897,6 +934,34 @@ void CBasePlayer::Killed( entvars_t *pevAttacker, int iGib )
 		pev->solid = SOLID_NOT;
 		GibMonster();	// This clears pev->model
 		pev->effects |= EF_NODRAW;
+
+		if( ( RANDOM_LONG( 0, 100 ) < 15 ) || ( m_LastHitGroup == HITGROUP_HEAD ) )
+		{
+			switch( RANDOM_LONG( 0, 6 ) )
+			{
+			case 0:
+				UTIL_SpeakAll( "buzwarn buzwarn, cleanup in sector alpha" );
+				break;
+			case 1:
+				UTIL_SpeakAll( "buzwarn buzwarn, cleanup in sector zulu" );
+				break;
+			case 2:
+				UTIL_SpeakAll( "buzwarn buzwarn, cleanup in sector delta" );
+				break;
+			case 3:
+				UTIL_SpeakAll( "buzwarn buzwarn, cleanup in sector thirteen" );
+				break;
+			case 4:
+				UTIL_SpeakAll( "buzwarn buzwarn, cleanup in sector b" );
+				break;
+			case 5:
+				UTIL_SpeakAll( "buzwarn buzwarn, cleanup in sector c" );
+				break;
+			case 6:
+				UTIL_SpeakAll( "buzwarn buzwarn, cleanup in sector d" );
+				break;
+			}
+		}
 		return;
 	}
 
@@ -1231,6 +1296,18 @@ void CBasePlayer::PlayerDeathThink( void )
 {
 	float flForward;
 
+	// BMOD Begin - Freeze Ray
+	if( m_flFreezeTime > 0 )
+	{
+		EnableControl( TRUE );
+		pev->rendermode = kRenderNormal;
+		pev->renderfx = kRenderFxNone;
+		pev->renderamt = 0;
+
+		m_flFreezeTime = 0;
+	}
+	// BMOD End - Freeze Ray
+
 	if( FBitSet( pev->flags, FL_ONGROUND ) )
 	{
 		flForward = pev->velocity.Length() - 20;
@@ -1264,8 +1341,16 @@ void CBasePlayer::PlayerDeathThink( void )
 		pev->movetype = MOVETYPE_NONE;
 
 	if( pev->deadflag == DEAD_DYING )
+	{
 		pev->deadflag = DEAD_DEAD;
 
+		// Fix for spinning corpses.
+		StopAnimation();
+		pev->effects |= EF_NOINTERP;
+		pev->framerate = 0.0;
+		CopyToBodyQue( pev );
+		pev->effects |= EF_NODRAW;
+	}
 	StopAnimation();
 
 	pev->effects |= EF_NOINTERP;
@@ -1344,20 +1429,22 @@ void CBasePlayer::StartDeathCam( void )
 			iRand--;
 		}
 
-		CopyToBodyQue( pev );
+		//CopyToBodyQue( pev );
 		StartObserver( pSpot->v.origin, pSpot->v.v_angle );
 	}
 	else
 	{
 		// no intermission spot. Push them up in the air, looking down at their corpse
 		TraceResult tr;
-		CopyToBodyQue( pev );
+		//CopyToBodyQue( pev );
 		UTIL_TraceLine( pev->origin, pev->origin + Vector( 0, 0, 128 ), ignore_monsters, edict(), &tr );
 		StartObserver( tr.vecEndPos, UTIL_VecToAngles( tr.vecEndPos - pev->origin ) );
 		return;
 	}
 }
 
+// Replaced by BMOD Observer code
+/*
 void CBasePlayer::StartObserver( Vector vecPosition, Vector vecViewAngle )
 {
 	m_afPhysicsFlags |= PFLAG_OBSERVER;
@@ -1371,7 +1458,7 @@ void CBasePlayer::StartObserver( Vector vecPosition, Vector vecViewAngle )
 	pev->modelindex = 0;
 	UTIL_SetOrigin( pev, vecPosition );
 }
-
+*/
 //
 // PlayerUse - handles USE keypress
 //
@@ -1744,6 +1831,19 @@ void CBasePlayer::PreThink( void )
 	UpdateClientData();
 
 	CheckTimeBasedDamage();
+
+	m_iMessageFire = FALSE;
+	BMOD_Think();
+
+	// BMOD Begin - Extra Player Prethink
+	BMOD_Identify();
+	if( IsObserver() )
+	{
+		Observer_HandleButtons();
+		return;
+	}
+	BMOD_PreThink();
+	// BMOD End - Extra Player Prethink
 
 	CheckSuitUpdate();
 
@@ -2563,6 +2663,8 @@ pt_end:
 #else
 	return;
 #endif
+	// BMOD
+	BMOD_PostThink();
 }
 
 // checks if the spot is clear of players
@@ -2774,6 +2876,60 @@ void CBasePlayer::Spawn( void )
 	m_lastx = m_lasty = 0;
 
 	m_flNextChatTime = gpGlobals->time;
+
+	// BMOD Begin - Extra Player Spawn  
+	m_hObserverTarget = NULL;
+	m_flFreezeTime = 0;
+	m_RuneFlags = RUNE_NONE;
+	pev->rendermode = kRenderNormal;
+	pev->renderfx = kRenderFxNone;
+	pev->renderamt = 0;	
+	//m_LocateMode = FALSE;
+	//m_LeetSpeak = FALSE;
+
+	// Spawn Runes
+	if (!g_runes_exist)
+	{
+		g_runes_exist = true;
+
+		CBaseEntity *pSpot = NULL;
+		do 
+			pSpot = UTIL_FindEntityByClassname( pSpot, "info_player_deathmatch" );
+		while( !pSpot );
+
+		// Spawn random runes
+		for( int i = 0; i < CVAR_GET_FLOAT( "bm_rune_rand" ); i++ )
+		{
+			CRune *rune = (CRune *)CBaseEntity::Create( "item_CrowbarRune", pSpot->pev->origin, Vector( 0, 0, 0 ), edict() );
+			rune->m_randomize = TRUE;
+			rune->Respawn();
+		}
+
+		// Spawn crowbar runes
+		for( i = 0; i < CVAR_GET_FLOAT( "bm_rune_cbar" ); i++ )
+			CBaseEntity::Create( "item_CrowbarRune", pSpot->pev->origin, Vector( 0, 0, 0 ), edict() );
+
+		// Spawn grenade runes
+		for( i = 0; i < CVAR_GET_FLOAT( "bm_rune_gren" ); i++ )
+			CBaseEntity::Create( "item_GrenadeRune", pSpot->pev->origin, Vector( 0, 0, 0 ), edict() );
+		
+		// Spawn 357 runes
+		for( i = 0; i < CVAR_GET_FLOAT( "bm_rune_357" ); i++ )
+			CBaseEntity::Create( "item_357Rune", pSpot->pev->origin, Vector( 0, 0, 0 ), edict() );
+
+		// Spawn health runes
+		for( i = 0; i < CVAR_GET_FLOAT( "bm_rune_health" ); i++ )
+			CBaseEntity::Create( "item_HealthRune", pSpot->pev->origin, Vector( 0, 0, 0 ), edict() );
+
+		// Spawn armor runes
+		for( i = 0; i < CVAR_GET_FLOAT( "bm_rune_armor" ); i++ )
+			CBaseEntity::Create( "item_BatteryRune", pSpot->pev->origin, Vector( 0, 0, 0 ), edict() );
+
+		// Spawn shotgun runes
+		for( i = 0; i < CVAR_GET_FLOAT( "bm_rune_shotty" ); i++ )
+			CBaseEntity::Create( "item_ShotgunRune", pSpot->pev->origin, Vector( 0, 0, 0 ), edict() );		
+	}
+	// BMOD End - Extra Player Spawn
 
 	g_pGameRules->PlayerSpawn( this );
 }

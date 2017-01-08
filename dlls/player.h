@@ -15,6 +15,8 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
+#include "BMOD_player.h"
+
 #include "pm_materials.h"
 
 #define PLAYER_FATAL_FALL_SPEED		1024// approx 60 feet
@@ -308,6 +310,56 @@ public:
 	char m_SbarString1[ SBAR_STRING_SIZE ];
 
 	float m_flNextChatTime;
+
+	// BMOD Begin - extra player functions
+	void    StopObserver( void );
+	void	Observer_FindNextPlayer( bool bReverse );
+	void	Observer_HandleButtons();
+	void	Observer_SetMode( int iMode );
+	int     IsObserver() { return pev->iuser1; };
+	void	BMOD_PreThink(void);
+	void	BMOD_Think(void);
+	void	BMOD_PostThink(void);
+	void    BMOD_Identify( void );
+	int		BMOD_WasSpawnKilled( void );
+	int		BMOD_IsASpawn( void );
+	void	BMOD_ResetSpawnKill( void );
+	int		m_iSpawnKills;
+
+	float	m_fMessageTimer;
+	BOOL	m_iMessageFire;
+	int		m_iMessageCounter;
+
+	EHANDLE	m_hObserverTarget;
+	BOOL	m_iFirstSpawn;
+	BOOL	m_bIsConnected;
+	float	m_fMsgTimer;
+	BOOL	m_bSentMsg;
+	float	m_fSpawnTimeStamp;
+	Vector	m_vFreezeAngle;
+	float	m_flFreezeTime;
+
+	float	m_flTypeKillStamp;
+	BOOL	m_bTypeMode;
+	void	BMOD_ResetTypeKill( void );
+	int		BMOD_WasTypeKilled( void );
+	int		BMOD_IsTyping( void );
+	int		m_iTypeKills;
+	BOOL	m_bBanMe;
+
+	int		m_iKillsThisFrame;
+	int		m_iSpamSay;
+
+	BOOL	m_LocateMode;
+	BOOL	m_LeetSpeak;
+	BOOL	m_IsLlama;
+
+	char	m_sMapVote[81];
+
+	int	m_RuneFlags;			// Holds which runes this player owns. 
+	float m_RuneTime;			// Time at which this rune wears off. 
+
+	// BMOD End - extra player functions
 };
 
 #define AUTOAIM_2DEGREES  0.0348994967025

@@ -13,63 +13,10 @@
 *
 ****/
 #if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
-
-#include "extdll.h"
-#include "util.h"
-#include "cbase.h"
-#include "monsters.h"
-#include "weapons.h"
-#include "nodes.h"
-#include "player.h"
-#include "soundent.h"
-#include "gamerules.h"
-
-enum w_squeak_e
-{
-	WSQUEAK_IDLE1 = 0,
-	WSQUEAK_FIDGET,
-	WSQUEAK_JUMP,
-	WSQUEAK_RUN
-};
-
-enum squeak_e
-{
-	SQUEAK_IDLE1 = 0,
-	SQUEAK_FIDGETFIT,
-	SQUEAK_FIDGETNIP,
-	SQUEAK_DOWN,
-	SQUEAK_UP,
-	SQUEAK_THROW
-};
-
 #ifndef CLIENT_DLL
-class CSqueakGrenade : public CGrenade
-{
-	void Spawn( void );
-	void Precache( void );
-	int Classify( void );
-	void EXPORT SuperBounceTouch( CBaseEntity *pOther );
-	void EXPORT HuntThink( void );
-	int BloodColor( void ) { return BLOOD_COLOR_YELLOW; }
-	void Killed( entvars_t *pevAttacker, int iGib );
-	void GibMonster( void );
 
-	virtual int Save( CSave &save ); 
-	virtual int Restore( CRestore &restore );
-
-	static TYPEDESCRIPTION m_SaveData[];
-
-	static float m_flNextBounceSoundTime;
-
-	// CBaseEntity *m_pTarget;
-	float m_flDie;
-	Vector m_vecTarget;
-	float m_flNextHunt;
-	float m_flNextHit;
-	Vector m_posPrev;
-	EHANDLE m_hOwner;
-	int m_iMyClass;
-};
+// BMOD Edit
+#include "squeakgrenade.h"
 
 float CSqueakGrenade::m_flNextBounceSoundTime = 0;
 
@@ -134,6 +81,8 @@ void CSqueakGrenade::Spawn( void )
 	pev->gravity = 0.5;
 	pev->friction = 0.5;
 
+	m_bWasLaunched = FALSE;
+
 	pev->dmg = gSkillData.snarkDmgPop;
 
 	m_flDie = gpGlobals->time + SQUEEK_DETONATE_DELAY;
@@ -147,6 +96,29 @@ void CSqueakGrenade::Spawn( void )
 
 	pev->sequence = WSQUEAK_RUN;
 	ResetSequenceInfo();
+
+	// +BubbleMod
+	char color[3];
+	int alp = UTIL_axtoi(strncpy( color, bm_snarktrails.string + 6, 2 ));
+	if( alp )
+	{
+		int red = UTIL_axtoi( strncpy( color, bm_snarktrails.string, 2 ) );
+		int grn = UTIL_axtoi( strncpy( color, bm_snarktrails.string + 2, 2 ) );
+		int blu = UTIL_axtoi( strncpy( color, bm_snarktrails.string + 4, 2 ) );
+
+		MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
+			WRITE_BYTE( TE_BEAMFOLLOW );
+			WRITE_SHORT( entindex() ); // entity
+			WRITE_SHORT( g_sModelIndexSmokeTrail ); // model
+			WRITE_BYTE( 40 ); // life
+			WRITE_BYTE( 5 ); // width
+			WRITE_BYTE( red ); // r, g, b
+			WRITE_BYTE( grn ); // r, g, b
+			WRITE_BYTE( blu ); // r, g, b
+			WRITE_BYTE( alp ); // brightness
+		MESSAGE_END(); // move PHS/PVS data sending into here (SEND_ALL, SEND_PVS, SEND_PHS)
+	}
+	// -BubbleMod
 }
 
 void CSqueakGrenade::Precache( void )
@@ -201,7 +173,7 @@ void CSqueakGrenade::HuntThink( void )
 {
 	// ALERT( at_console, "think\n" );
 
-	if( !IsInWorld() )
+	if( !IsInWorld() && !m_bWasLaunched )
 	{
 		SetTouch( NULL );
 		UTIL_Remove( this );
@@ -221,7 +193,7 @@ void CSqueakGrenade::HuntThink( void )
 	}
 
 	// float
-	if( pev->waterlevel != 0 )
+	if( pev->waterlevel != 0 && !m_bWasLaunched )
 	{
 		if( pev->movetype == MOVETYPE_BOUNCE )
 		{
@@ -255,7 +227,18 @@ void CSqueakGrenade::HuntThink( void )
 	{
 		// find target, bounce a bit towards it.
 		Look( 512 );
-		m_hEnemy = BestVisibleEnemy();
+		m_hEnemy = BMOD_BestVisibleEnemy();
+	}
+
+	if( m_hEnemy!= NULL && m_hEnemy->IsPlayer() )
+	{
+		CBasePlayer* pPlayer = (CBasePlayer*)( (CBaseEntity *)m_hEnemy );
+		if( pPlayer->BMOD_IsTyping() )
+		{
+			// find target, bounce a bit towards it.
+			Look( 512 );
+			m_hEnemy = BMOD_BestVisibleEnemy();
+		}
 	}
 
 	// squeek if it's about time blow up
@@ -319,6 +302,14 @@ void CSqueakGrenade::HuntThink( void )
 void CSqueakGrenade::SuperBounceTouch( CBaseEntity *pOther )
 {
 	float flpitch;
+
+	// BMOD - Snark Launcher
+	if( m_bWasLaunched )
+	{
+		pev->velocity = pev->velocity.Normalize() * 200;
+		m_bWasLaunched = FALSE;
+	}
+	// BMOD - Snark Launcher
 
 	TraceResult tr = UTIL_GetGlobalTrace();
 
@@ -433,6 +424,9 @@ void CSqueak::Precache( void )
 	PRECACHE_SOUND( "squeek/sqk_hunt3.wav" );
 	UTIL_PrecacheOther( "monster_snark" );
 
+	// BMOD Edit - snark mod
+	UTIL_PrecacheOther( "monster_tripsnark" );
+
 	m_usSnarkFire = PRECACHE_EVENT( 1, "events/snarkfire.sc" );
 }
 
@@ -464,6 +458,10 @@ BOOL CSqueak::Deploy()
 		EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, "squeek/sqk_hunt3.wav", 1, ATTN_NORM, 0, 100 );
 
 	m_pPlayer->m_iWeaponVolume = QUIET_GUN_VOLUME;
+
+	// BMOD Edit - snark mod
+	if( bm_snarks_mod.value )
+		PrintMessage( m_pPlayer, BMOD_CHAN_WEAPON, Vector( 20, 250, 20 ), Vector( 1, 4, 2 ), "\nSNARKS\nSECONDAY FIRE: Place a snark mine." );
 
 	return DefaultDeploy( "models/v_squeak.mdl", "models/p_squeak.mdl", SQUEAK_UP, "squeak" );
 }
@@ -538,12 +536,12 @@ void CSqueak::PrimaryAttack()
 		}
 	}
 }
-
+/*
 void CSqueak::SecondaryAttack( void )
 {
 
 }
-
+*/
 void CSqueak::WeaponIdle( void )
 {
 	if( m_flTimeWeaponIdle > UTIL_WeaponTimeBase() )

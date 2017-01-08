@@ -227,7 +227,7 @@ static void InitBodyQue( void )
 //
 void CopyToBodyQue( entvars_t *pev ) 
 {
-	if( pev->effects & EF_NODRAW )
+/*	if( pev->effects & EF_NODRAW )
 		return;
 
 	entvars_t *pevHead = VARS( g_pBodyQueueHead );
@@ -255,6 +255,50 @@ void CopyToBodyQue( entvars_t *pev )
 	UTIL_SetOrigin( pevHead, pev->origin );
 	UTIL_SetSize( pevHead, pev->mins, pev->maxs );
 	g_pBodyQueueHead = pevHead->owner;
+*/
+
+	TraceResult tr;
+
+	if( pev->effects & EF_NODRAW )
+		return;
+
+	entvars_t *pevHead	= VARS( g_pBodyQueueHead );
+
+	pevHead->angles		= pev->angles;
+	pevHead->model		= pev->model;
+	pevHead->modelindex	= pev->modelindex;
+	pevHead->frame		= pev->frame;
+	pevHead->colormap	= pev->colormap;
+	pevHead->movetype	= MOVETYPE_TOSS;
+	pevHead->velocity	= pev->velocity;
+	pevHead->flags		= 0;
+	pevHead->deadflag	= pev->deadflag;
+	pevHead->renderfx	= kRenderFxDeadPlayer;
+	pevHead->renderamt	= ENTINDEX( ENT( pev ) );
+
+	pevHead->effects = pev->effects | EF_NOINTERP;
+	//pevHead->goalstarttime = pev->goalstarttime;
+	//pevHead->goalframe = pev->goalframe;
+	//pevHead->goalendtime = pev->goalendtime ;
+	
+	pevHead->sequence = pev->sequence;
+	pevHead->animtime = pev->animtime;
+
+	if( pev->flags & FL_DUCKING )
+		UTIL_SetOrigin( pevHead, pev->origin + Vector( 0, 0, 20 ) );
+	else
+		UTIL_SetOrigin( pevHead, pev->origin );
+
+	UTIL_SetSize( pevHead, VEC_HULL_MIN, VEC_HULL_MAX );
+	g_pBodyQueueHead = pevHead->owner;
+
+	UTIL_TraceLine( pev->origin + Vector( 0, 0, 5 ), pev->origin - Vector( 0, 0, 500 ), ignore_monsters, ENT( pevHead ), &tr );
+
+	pevHead->angles.x = 0;
+	pevHead->angles.z = 0;
+
+	//pevHead->angles.x = UTIL_VecToAngles( tr.vecPlaneNormal ).x;
+	//pevHead->angles.z = UTIL_VecToAngles( tr.vecPlaneNormal ).z;
 }
 
 CGlobalState::CGlobalState( void )
@@ -450,12 +494,25 @@ LINK_ENTITY_TO_CLASS( worldspawn, CWorld )
 #define SF_WORLD_FORCETEAM	0x0004		// Force teams
 
 extern DLL_GLOBAL BOOL		g_fGameOver;
+extern DLL_GLOBAL int		g_VoteStatus;
+extern DLL_GLOBAL BOOL		g_runes_exist;
+extern DLL_GLOBAL BOOL		g_runes_learn;
+
 float g_flWeaponCheat; 
 
 void CWorld::Spawn( void )
 {
 	g_fGameOver = FALSE;
 	Precache();
+
+	// BMOD Begin - Init World
+	// no runes yet
+	g_runes_exist = false;
+	g_runes_learn = false;
+	//strcpy(g_NextMap, "");
+	g_VoteStatus = 0;
+	//g_bReplaceWeapons = TRUE;
+	//BMOD End - Init World
 }
 
 void CWorld::Precache( void )

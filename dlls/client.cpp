@@ -50,6 +50,15 @@ extern int gmsgSayText;
 
 extern int g_teamplay;
 
+// BMOD Begin - Extra funtions and vars
+extern DLL_GLOBAL int g_VoteStatus;
+extern DLL_GLOBAL float g_VoteTimer;
+extern cvar_t bm_voting;
+extern cvar_t bm_votetime;
+extern cvar_t timeleft, fragsleft;
+extern int CountPlayers( void );
+// BMOD End - Extra funtions and vars
+
 void LinkUserMessages( void );
 
 /*
@@ -287,6 +296,31 @@ void Host_Say( edict_t *pEntity, int teamonly )
 	if( (int)strlen( p ) > j )
 		p[j] = 0;
 
+	/ BMOD Start - Llamas!!
+	if( ( (CBasePlayer*)CBasePlayer::Instance( pEntity ) )->m_IsLlama )
+	{
+		switch( RANDOM_LONG( 0, 3 ) )
+		{
+		case 0:
+			strcpy( p, "Bleeeet!" );
+			break;
+		case 1:
+			strcpy( p, "Blaaaaa!!" );
+			break;
+		case 2:
+			strcpy( p, "Snort!" );
+			break;
+		case 3:
+			strcpy( p, "Blleehhaa!" );
+			break;
+		}
+	}
+	// BMOD End - Llamas!!
+
+	// BMOD Edit - L33t Sp33k!!
+	if( ( (CBasePlayer*)CBasePlayer::Instance( pEntity ) )->m_LeetSpeak )
+		UTIL_Speak_2_l33t( text, p );
+	else
 	strcat( text, p );
 	strcat( text, "\n" );
 
@@ -358,6 +392,198 @@ void Host_Say( edict_t *pEntity, int teamonly )
 			temp,
 			p );
 	}
+	// BMOD Begin - client say commands
+	CBasePlayer *talker = (CBasePlayer*)CBasePlayer::Instance( pEntity );
+
+	// BMOD Begin - Anti Spam
+	talker->m_iSpamSay++;
+	// BMOD End - Anti Spam
+	if( !strcmp( p, "timeleft" ) )
+	{
+		if( timeleft.value )
+			UTIL_ClientPrintAll( HUD_PRINTTALK, UTIL_VarArgs( "<SERVER> %i:%0.2i left on this map.\n",
+				 (int)timeleft.value / 60, (int)timeleft.value % 60 ) );
+		else
+			UTIL_ClientPrintAll( HUD_PRINTTALK, "<SERVER> No time limit on this map.\n" );
+	}
+	else if( !strcmp( p, "gagform" ) )
+	{
+		UTIL_ClientPrintAll( HUD_PRINTTALK, "<SERVER> I was just kidding Form. :)\n" );
+	}
+	else if( !strcmp( p, "fragsleft" ) )
+	{
+		if( fragsleft.value )
+			UTIL_ClientPrintAll( HUD_PRINTTALK, UTIL_VarArgs( "<SERVER> %i frags left on this map.\n",
+				 (int)fragsleft.value ) );
+		else
+			UTIL_ClientPrintAll( HUD_PRINTTALK, "<SERVER> No frag limit on this map.\n" );
+	}
+	else if( !strcmp( p, "map" ) )
+	{
+		// g_pGameRules->BMOD_PreChangeLevel();
+		UTIL_ClientPrintAll( HUD_PRINTTALK, UTIL_VarArgs( "<SERVER> Current map is: \"%s\", next is: \"%s\"\n",
+			 STRING( gpGlobals->mapname ),
+			 CVAR_GET_STRING( "bm_nextmap" ) ) );
+	}
+	else if( !strcmp( p, "status" ) )
+	{
+		// g_pGameRules->BMOD_PreChangeLevel();
+		UTIL_ClientPrintAll( HUD_PRINTTALK, UTIL_VarArgs( "<SERVER> Timeleft: %i:%0.2i   Fragsleft: %i   Map: \"%s\"   Next: \"%s\"\n",
+			 (int)timeleft.value / 60, 
+			 (int)timeleft.value % 60,
+			 (int)fragsleft.value,
+			 STRING( gpGlobals->mapname ), 
+			 CVAR_GET_STRING( "bm_nextmap" ) ) );
+	}
+	else if( !strcmp( p, "time" ) )
+	{
+		UTIL_SayTime();
+	}
+	// map voting
+	else if( !strcmp( p, "rockthevote" ) && ( g_VoteStatus == 1 ) )
+	{
+		int players = CountPlayers();
+		int votesNeeded = ( players * 3 / 4 ) + ( ( players < 3 ) ? 1 : 0 );
+
+		char winner[81];
+		strcpy( winner, UTIL_CountVotes() );
+		int winvotes = winner[0];
+
+		if( winvotes )
+			UTIL_ClientPrintAll( HUD_PRINTTALK, UTIL_VarArgs( "<SERVER> %i:%0.2i remaining in current vote. \"%s\" is leading with %i vote(s). (needs %i to win with %i players)\n",
+				(int)( g_VoteTimer - gpGlobals->time ) / 60,
+				(int)( g_VoteTimer - gpGlobals->time ) % 60,		
+				&(winner[1]),
+				winvotes,
+				votesNeeded,
+				players ) );
+		else
+			UTIL_ClientPrintAll( HUD_PRINTTALK, UTIL_VarArgs( "<SERVER> %i:%0.2i remaining in current vote. No votes have been cast. (winner needs %i to win with %i players)\n",
+				(int)( g_VoteTimer - gpGlobals->time ) / 60,
+				(int)( g_VoteTimer - gpGlobals->time ) % 60,		
+				votesNeeded,
+				players ) );
+	}
+	else if( !strcmp( p, "rockthevote" ) && ( g_VoteStatus == 0 ) )
+	{
+		if( !bm_voting.value )
+		{
+			UTIL_ClientPrintAll( HUD_PRINTTALK, "<SERVER> Voting is disabled on this server.\n" );
+		}
+		else if( timeleft.value > 0 && timeleft.value < bm_votetime.value )
+		{
+			UTIL_ClientPrintAll( HUD_PRINTTALK, "<SERVER> Not enough time left for a vote!\n" );
+		
+		}
+		else 
+		{
+			g_VoteStatus = 1;
+			int players = CountPlayers();
+			int votesNeeded = ( players * 3 / 4 ) + ( ( players < 3 ) ? 1 : 0 );
+
+			UTIL_SpeakAll( "dadeda" );
+			UTIL_ClientPrintAll( HUD_PRINTTALK, "<SERVER> *** Vote mode enabled! ***\n" );
+			UTIL_ClientPrintAll( HUD_PRINTTALK, "<SERVER> Say \"vote <mapname>\" to vote for a map.\n" );
+			UTIL_ClientPrintAll( HUD_PRINTTALK, "<SERVER> Say \"vote extend\" to extend the current map.\n" );
+			UTIL_ClientPrintAll( HUD_PRINTTALK, UTIL_VarArgs( "<SERVER> Maps need %i votes with %i players to win.\n",
+				votesNeeded, players ) );
+			UTIL_LogPrintf( "// \"%s<%i><%s><%s>\" started a new map vote.\n",
+				STRING( talker->pev->netname ),
+				GETPLAYERUSERID( pEntity ),
+				GETPLAYERAUTHID( pEntity ),
+				g_engfuncs.pfnInfoKeyValue( g_engfuncs.pfnGetInfoKeyBuffer( pEntity ), "model" )
+				);
+
+			client = NULL;
+			while( ( ( client = (CBasePlayer*)UTIL_FindEntityByClassname( client, "player" ) ) != NULL )
+				&& ( !FNullEnt( client->edict() ) ) ) 
+			{
+				strcpy( client->m_sMapVote, "" );
+			}
+			g_VoteTimer = gpGlobals->time + bm_votetime.value;
+		}
+	}
+	else if( ( g_VoteStatus == 1 ) && ( strlen( p ) > 5 ) && ( !strncmp( p, "vote ", 5 ) ) )
+	{
+		BOOL isVote = TRUE;
+		int index = 5;
+		while( p[index] )
+		{
+			if( p[index++] == ' ' )
+				isVote = FALSE;
+		}
+		if( isVote )
+		{
+			char *map = p + 5;
+			/*if( !strcmp( map, "extend" ) )
+			{
+				strcpy( talker->m_sMapVote, "extend" );
+
+				char winner[81];
+				strcpy( winner, UTIL_CountVotes() );
+				int players = CountPlayers();
+				int votesNeeded = ( players * 3 / 4 ) + ( ( players < 3 ) ? 1 : 0 );
+
+				UTIL_ClientPrintAll( HUD_PRINTTALK, UTIL_VarArgs( "<SERVER> %s voted to extend this map. (%s has %i votes, needs %i to win.)\n",
+					STRING( talker->pev->netname ),
+					&( winner[1] ),
+					winner[0],
+					votesNeeded) );
+				UTIL_LogPrintf( "// \"%s<%i><%s><%s>\" voted to extend the current map.\n",  
+					STRING( talker->pev->netname ),
+					GETPLAYERUSERID( pEntity ),
+					GETPLAYERAUTHID( pEntity ),
+					g_engfuncs.pfnInfoKeyValue( g_engfuncs.pfnGetInfoKeyBuffer( pEntity ), "model" )
+					);
+				
+				if( winner[0] >= votesNeeded )
+				{
+					g_VoteTimer = gpGlobals->time;
+				}
+			}*/
+			if( IS_MAP_VALID( map ) || !strcmp( map, "extend" ) )
+			{
+				strcpy( talker->m_sMapVote, map );
+
+				char winner[81];
+				strcpy( winner, UTIL_CountVotes() );
+				int players = CountPlayers();
+				int votesNeeded = ( players * 3 / 4 ) + ( ( players < 3 ) ? 1 : 0 );
+
+				UTIL_ClientPrintAll( HUD_PRINTTALK, UTIL_VarArgs( "<SERVER> %s voted for \"%s\". (%s has %i votes, needs %i to win.)\n",
+					STRING( talker->pev->netname ),
+					map,
+					&( winner[1] ),
+					winner[0],
+					votesNeeded) );
+				UTIL_LogPrintf( "// \"%s<%i><%s><%s>\" voted for map \"%s\".\n",  
+					STRING( talker->pev->netname ),
+					GETPLAYERUSERID( pEntity ),
+					GETPLAYERAUTHID( pEntity ),
+					g_engfuncs.pfnInfoKeyValue( g_engfuncs.pfnGetInfoKeyBuffer( pEntity ), "model" ),
+					map);
+
+				if( winner[0] >= votesNeeded )
+				{
+					g_VoteTimer = gpGlobals->time;
+				}
+			}
+			else
+			{
+				UTIL_ClientPrintAll( HUD_PRINTTALK, UTIL_VarArgs( "<SERVER> Sorry %s, \"%s\" is not on this server.\n",
+					STRING( talker->pev->netname ),
+					map ) );
+				UTIL_LogPrintf( "// \"%s<%i><%s><%s>\" voted for non-existant map \"%s\".\n",  
+					STRING( talker->pev->netname ),
+					GETPLAYERUSERID( pEntity ),
+					GETPLAYERAUTHID( pEntity ),
+					g_engfuncs.pfnInfoKeyValue( g_engfuncs.pfnGetInfoKeyBuffer( pEntity ), "model" ),
+					map);
+			}	
+		}
+	}
+
+	// BMOD End - client say commands
 }
 
 /*
@@ -474,6 +700,25 @@ void ClientCommand( edict_t *pEntity )
 	{
 		// clear 'Unknown command: VModEnable' in singleplayer
 		return;
+	}
+	else if( FStrEq( pcmd, "locate" ) )
+	{
+		if( CMD_ARGC() > 1 )
+		{
+			GetClassPtr( (CBasePlayer *)pev )->m_LocateMode = strcmp( CMD_ARGV( 1 ), "0" );
+		}
+	}
+	else if( FStrEq( pcmd, "leetspeak" ) )
+	{
+		if( CMD_ARGC() > 1 )
+		{
+			GetClassPtr( (CBasePlayer *)pev )->m_LeetSpeak = strcmp( CMD_ARGV( 1 ), "0" );
+
+			if( GetClassPtr( (CBasePlayer *)pev )->m_LeetSpeak )
+				ClientPrint( &pEntity->v, HUD_PRINTCONSOLE, "Leet-Speak enabled!\n" );
+			else
+				ClientPrint( &pEntity->v, HUD_PRINTCONSOLE, "Leet-Speak disabled. (lamer!)\n" );
+		}
 	}
 	else
 	{
@@ -668,6 +913,30 @@ void StartFrame( void )
 
 	if( g_pGameRules )
 		g_pGameRules->Think();
+
+	// BMOD Begin - Multikills
+	CBasePlayer *client = NULL;
+	while( ( (client = (CBasePlayer*)UTIL_FindEntityByClassname( client, "player" ) ) != NULL ) 
+		&& ( client->IsPlayer() ) )
+	{
+		if( client->m_iKillsThisFrame > 1 && ( client->m_bIsConnected ) )
+		{
+			UTIL_LogPrintf( "// \"%s<%i><%s><%s>\" multi-killed %d players.\n",
+				STRING( client->pev->netname ),
+				GETPLAYERUSERID( client->edict() ),
+				GETPLAYERAUTHID( client->edict() ),
+				g_engfuncs.pfnInfoKeyValue( g_engfuncs.pfnGetInfoKeyBuffer( client->edict() ), "model" ),
+				client->m_iKillsThisFrame
+				);
+
+			UTIL_ClientPrintAll( HUD_PRINTTALK, UTIL_VarArgs( "<SERVER> %s got a %d-fer!!\n",
+				STRING( client->pev->netname ),
+				client->m_iKillsThisFrame
+				) );
+		}
+		client->m_iKillsThisFrame = 0;
+	}
+	// BMOD End - Multikills
 
 	if( g_fGameOver )
 		return;
@@ -1582,6 +1851,10 @@ void UpdateClientData( const struct edict_s *ent, int sendweapons, struct client
 
 	cd->pushmsec		= ent->v.pushmsec;
 
+	// BMOD Begin - Spectator Mode
+	cd->iuser1		= ent->v.iuser1;
+	cd->iuser2		= ent->v.iuser2;
+	// BMOD End - Spectator Mode
 #if defined( CLIENT_WEAPONS )
 	if( sendweapons )
 	{

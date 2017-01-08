@@ -21,6 +21,9 @@
 #include "nodes.h"
 #include "player.h"
 #include "gamerules.h"
+#include "BMOD_messaging.h"
+
+extern cvar_t bm_shotty_mod;
 
 // special deathmatch shotgun spreads
 #define VECTOR_CONE_DM_SHOTGUN	Vector( 0.08716, 0.04362, 0.00 )// 10 degrees by 5 degrees
@@ -110,6 +113,9 @@ int CShotgun::GetItemInfo( ItemInfo *p )
 
 BOOL CShotgun::Deploy()
 {
+	if( bm_shotty_mod.value == 1 )
+		PrintMessage( m_pPlayer, BMOD_CHAN_WEAPON, Vector( 20, 250, 20), Vector( 1, 4, 2 ), "\nSHOTGUN\nFast fire rate / fast reload." );
+
 	return DefaultDeploy( "models/v_shotgun.mdl", "models/p_shotgun.mdl", SHOTGUN_DRAW, "shotgun" );
 }
 
@@ -155,12 +161,12 @@ void CShotgun::PrimaryAttack()
 	if( g_pGameRules->IsMultiplayer() )
 #endif
 	{
-		vecDir = m_pPlayer->FireBulletsPlayer( 4, vecSrc, vecAiming, VECTOR_CONE_DM_SHOTGUN, 2048, BULLET_PLAYER_BUCKSHOT, 0, 0, m_pPlayer->pev, m_pPlayer->random_seed );
+		vecDir = m_pPlayer->FireBulletsPlayer( 4, vecSrc, vecAiming, VECTOR_CONE_DM_SHOTGUN, 2048, BULLET_PLAYER_BUCKSHOT, 1, 0, m_pPlayer->pev, m_pPlayer->random_seed );
 	}
 	else
 	{
 		// regular old, untouched spread. 
-		vecDir = m_pPlayer->FireBulletsPlayer( 6, vecSrc, vecAiming, VECTOR_CONE_10DEGREES, 2048, BULLET_PLAYER_BUCKSHOT, 0, 0, m_pPlayer->pev, m_pPlayer->random_seed );
+		vecDir = m_pPlayer->FireBulletsPlayer( 6, vecSrc, vecAiming, VECTOR_CONE_10DEGREES, 2048, BULLET_PLAYER_BUCKSHOT, 1, 0, m_pPlayer->pev, m_pPlayer->random_seed );
 	}
 
 	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usSingleFire, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, vecDir.x, vecDir.y, 0, 0, 0, 0 );
@@ -174,6 +180,19 @@ void CShotgun::PrimaryAttack()
 
 	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.75;
 	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.75;
+
+	if( bm_shotty_mod.value )
+	{
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.6;
+		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.6;
+	}
+
+	if( m_pPlayer->m_RuneFlags == RUNE_SHOTGUN )
+	{
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.25;
+		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.25;
+	}
+
 	if( m_iClip != 0 )
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 5.0;
 	else
@@ -226,12 +245,12 @@ void CShotgun::SecondaryAttack( void )
 #endif
 	{
 		// tuned for deathmatch
-		vecDir = m_pPlayer->FireBulletsPlayer( 8, vecSrc, vecAiming, VECTOR_CONE_DM_DOUBLESHOTGUN, 2048, BULLET_PLAYER_BUCKSHOT, 0, 0, m_pPlayer->pev, m_pPlayer->random_seed );
+		vecDir = m_pPlayer->FireBulletsPlayer( 8, vecSrc, vecAiming, VECTOR_CONE_DM_DOUBLESHOTGUN, 2048, BULLET_PLAYER_BUCKSHOT, 1, 0, m_pPlayer->pev, m_pPlayer->random_seed );
 	}
 	else
 	{
 		// untouched default single player
-		vecDir = m_pPlayer->FireBulletsPlayer( 12, vecSrc, vecAiming, VECTOR_CONE_10DEGREES, 2048, BULLET_PLAYER_BUCKSHOT, 0, 0, m_pPlayer->pev, m_pPlayer->random_seed );
+		vecDir = m_pPlayer->FireBulletsPlayer( 12, vecSrc, vecAiming, VECTOR_CONE_10DEGREES, 2048, BULLET_PLAYER_BUCKSHOT, 1, 0, m_pPlayer->pev, m_pPlayer->random_seed );
 	}
 
 	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usDoubleFire, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, vecDir.x, vecDir.y, 0, 0, 0, 0 );
@@ -245,6 +264,19 @@ void CShotgun::SecondaryAttack( void )
 
 	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 1.5;
 	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1.5;
+
+	if( bm_shotty_mod.value )
+	{
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + .9;
+		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + .9;
+	}
+
+	if( m_pPlayer->m_RuneFlags == RUNE_SHOTGUN )
+	{
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5;
+		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5;
+	}
+
 	if( m_iClip != 0 )
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 6.0;
 	else
@@ -293,8 +325,17 @@ void CShotgun::Reload( void )
 	else
 	{
 		// Add them to the clip
-		m_iClip += 1;
-		m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] -= 1;
+		if( m_pPlayer->m_RuneFlags == RUNE_SHOTGUN || bm_shotty_mod.value )
+		{
+			int ammo = min( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType], SHOTGUN_MAX_CLIP -  m_iClip );
+			m_iClip += ammo;
+			m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] -= ammo;
+		}
+		else
+		{
+			m_iClip += 1;
+			m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] -= 1;
+		}
 		m_fInSpecialReload = 1;
 	}
 }

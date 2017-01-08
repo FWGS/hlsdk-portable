@@ -26,6 +26,10 @@
 #include "nodes.h"
 #include "soundent.h"
 #include "decals.h"
+#include "player.h"
+
+// BMOD Edit - mp5 mod
+extern cvar_t bm_mp5_mod;
 
 //===================grenade
 
@@ -50,6 +54,23 @@ void CGrenade::Explode( Vector vecSrc, Vector vecAim )
 void CGrenade::Explode( TraceResult *pTrace, int bitsDamageType )
 {
 	float flRndSound;// sound randomizer
+
+	// BMOD Begin - Grenade Rune
+	CBasePlayer *pPlayer = UTIL_CastPlayer( pev->owner );
+
+	if( !strcmp( STRING( pev->classname ), "hand_grenade" ) && pPlayer && ( pPlayer->m_RuneFlags == RUNE_GRENADE ) )
+	{
+		pev->nextthink = gpGlobals->time + 0.1;
+		pev->dmg = 150;
+		m_iMegaSmokeFrame = 0;
+		SetThink( MegaSmoke );
+	}
+	else
+	{
+		pev->nextthink = gpGlobals->time + 0.3;
+		SetThink( Smoke );
+	}
+	// BMOD End - Grenade Rune
 
 	pev->model = iStringNull;//invisible
 	pev->solid = SOLID_NOT;// intangible
@@ -118,9 +139,7 @@ void CGrenade::Explode( TraceResult *pTrace, int bitsDamageType )
 	}
 
 	pev->effects |= EF_NODRAW;
-	SetThink( &CGrenade::Smoke );
 	pev->velocity = g_vecZero;
-	pev->nextthink = gpGlobals->time + 0.3;
 
 	if( iContents != CONTENTS_WATER )
 	{
@@ -128,6 +147,115 @@ void CGrenade::Explode( TraceResult *pTrace, int bitsDamageType )
 		for( int i = 0; i < sparkCount; i++ )
 			Create( "spark_shower", pev->origin, pTrace->vecPlaneNormal, NULL );
 	}
+}
+
+void CGrenade::MegaSmoke( void )
+{
+	m_iMegaSmokeFrame++;
+
+	if( m_iMegaSmokeFrame == 1 )
+	{
+		MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
+			WRITE_BYTE( TE_BEAMTORUS );
+			WRITE_COORD( pev->origin.x );
+			WRITE_COORD( pev->origin.y );
+			WRITE_COORD( pev->origin.z - 50 );
+			WRITE_COORD( pev->origin.x );
+			WRITE_COORD( pev->origin.y );
+			WRITE_COORD( pev->origin.z - 50 + ( pev->dmg * 2.5 ) );
+			WRITE_SHORT( g_sModelIndexLaser );
+			WRITE_BYTE( 0 );	// start frame?	
+			WRITE_BYTE( 10 );	// rame rate?
+			WRITE_BYTE( 5 );	// life
+			WRITE_BYTE( 40 );	// width
+			WRITE_BYTE( 0 );	// noise
+			WRITE_BYTE( 250 ); //Color
+			WRITE_BYTE( 120 );
+			WRITE_BYTE( 20 );
+			WRITE_BYTE( 255 );	// brightness
+			WRITE_BYTE( 0 );	// scroll speed
+		MESSAGE_END();
+	}
+// coord coord coord (center position) 
+// coord coord coord (axis and radius) 
+// short (sprite index) 
+// byte (starting frame) 
+// byte (frame rate in 0.1's) 
+// byte (life in 0.1's) 
+// byte (line width in 0.1's) 
+// byte (noise amplitude in 0.01's) 
+// byte,byte,byte (color)
+// byte (brightness)
+// byte (scroll speed in 0.1's)
+	if( UTIL_PointContents( pev->origin ) == CONTENTS_WATER )
+	{
+		UTIL_Bubbles( pev->origin - Vector( 64, 64, 64 ), pev->origin + Vector( 64, 64, 64 ), 100 );
+	}
+	else
+	{
+		MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, pev->origin );
+			WRITE_BYTE( TE_SMOKE );
+			WRITE_COORD( pev->origin.x );
+			WRITE_COORD( pev->origin.y );
+			WRITE_COORD( pev->origin.z );
+			WRITE_SHORT( g_sModelIndexSmoke );
+			WRITE_BYTE( ( pev->dmg - 50 ) * 0.80 ); // scale * 10
+			WRITE_BYTE( 12 ); // framerate
+		MESSAGE_END();
+	}
+
+	pev->dmg *= .80;
+	pev->origin.z += pev->dmg / 2;
+
+	if( m_iMegaSmokeFrame < 4 )
+	{
+
+		int iContents = UTIL_PointContents( pev->origin );
+		
+		MESSAGE_BEGIN( MSG_PAS, SVC_TEMPENTITY, pev->origin );
+			WRITE_BYTE( TE_EXPLOSION );		// This makes a dynamic light and the explosion sprites/sound
+			WRITE_COORD( pev->origin.x );	// Send to PAS because of the sound
+			WRITE_COORD( pev->origin.y );
+			WRITE_COORD( pev->origin.z );
+			if( iContents != CONTENTS_WATER )
+			{
+				WRITE_SHORT( g_sModelIndexFireball );
+			}
+			else
+			{
+				WRITE_SHORT( g_sModelIndexWExplosion );
+			}
+			WRITE_BYTE( ( pev->dmg - 50 ) * .60 ); // scale * 10
+			WRITE_BYTE( 15 ); // framerate
+			WRITE_BYTE( TE_EXPLFLAG_NONE );
+		MESSAGE_END();
+
+		CSoundEnt::InsertSound ( bits_SOUND_COMBAT, pev->origin, NORMAL_EXPLOSION_VOLUME, 3.0 );
+
+		switch( RANDOM_LONG( 0, 2 ) )
+		{
+			case 0:
+				EMIT_SOUND( ENT( pev ), CHAN_VOICE, "weapons/debris1.wav", 0.55, ATTN_NORM );
+				break;
+			case 1:
+				EMIT_SOUND( ENT( pev ), CHAN_VOICE, "weapons/debris2.wav", 0.55, ATTN_NORM );
+				break;
+			case 2:
+				EMIT_SOUND( ENT( pev ), CHAN_VOICE, "weapons/debris3.wav", 0.55, ATTN_NORM );
+				break;
+		}
+
+		if( iContents != CONTENTS_WATER )
+		{
+			int sparkCount = RANDOM_LONG( 1, 4 );
+			for( int i = 0; i < sparkCount; i++ )
+				Create( "spark_shower", pev->origin, Vector( 0, 0, 1 ), NULL );
+		}
+	}
+	pev->nextthink = gpGlobals->time + 0.1;
+
+	if( m_iMegaSmokeFrame == 4 )
+		UTIL_Remove( this );
 }
 
 void CGrenade::Smoke( void )
@@ -377,7 +505,13 @@ CGrenade *CGrenade::ShootContact( entvars_t *pevOwner, Vector vecStart, Vector v
 	// Explode on contact
 	pGrenade->SetTouch( &CGrenade::ExplodeTouch );
 
-	pGrenade->pev->dmg = gSkillData.plrDmgM203Grenade;
+	// BMOD Begin - mp5 mod
+	// pGrenade->pev->dmg = gSkillData.plrDmgM203Grenade;
+	if( bm_mp5_mod.value )
+		pGrenade->pev->dmg = 80;
+	else
+		pGrenade->pev->dmg = gSkillData.plrDmgM203Grenade;
+	// BMOD End - mp5 mod
 
 	return pGrenade;
 }

@@ -85,6 +85,9 @@ void CHalfLifeTeamplay::Think( void )
 #ifndef NO_VOICEGAMEMGR
 	g_VoiceGameMgr.Update(gpGlobals->frametime);
 #endif
+	// BMOD Edit - Extra Game Think stuff
+	BMOD_Think();
+
 	if( g_fGameOver )   // someone else quit the game already
 	{
 		CHalfLifeMultiplay::Think();
@@ -211,19 +214,19 @@ const char *CHalfLifeTeamplay::SetDefaultPlayerTeam( CBasePlayer *pPlayer )
 //=========================================================
 void CHalfLifeTeamplay::InitHUD( CBasePlayer *pPlayer )
 {
-	int i;
+	//int i;
 
 	SetDefaultPlayerTeam( pPlayer );
 	CHalfLifeMultiplay::InitHUD( pPlayer );
 
 	// Send down the team names
-	MESSAGE_BEGIN( MSG_ONE, gmsgTeamNames, NULL, pPlayer->edict() );  
+	/*MESSAGE_BEGIN( MSG_ONE, gmsgTeamNames, NULL, pPlayer->edict() );  
 		WRITE_BYTE( num_teams );
 		for( i = 0; i < num_teams; i++ )
 		{
 			WRITE_STRING( team_names[i] );
 		}
-	MESSAGE_END();
+	MESSAGE_END();*/
 
 	RecountTeams();
 
@@ -245,7 +248,7 @@ void CHalfLifeTeamplay::InitHUD( CBasePlayer *pPlayer )
 	RecountTeams();
 	// update this player with all the other players team info
 	// loop through all active players and send their team info to the new client
-	for( i = 1; i <= gpGlobals->maxClients; i++ )
+	/*for( i = 1; i <= gpGlobals->maxClients; i++ )
 	{
 		CBaseEntity *plr = UTIL_PlayerByIndex( i );
 		if( plr && IsValidTeam( plr->TeamID() ) )
@@ -255,7 +258,7 @@ void CHalfLifeTeamplay::InitHUD( CBasePlayer *pPlayer )
 				WRITE_STRING( plr->TeamID() );
 			MESSAGE_END();
 		}
-	}
+	}*/
 }
 
 void CHalfLifeTeamplay::ChangePlayerTeam( CBasePlayer *pPlayer, const char *pTeamName, BOOL bKill, BOOL bGib )
@@ -293,7 +296,7 @@ void CHalfLifeTeamplay::ChangePlayerTeam( CBasePlayer *pPlayer, const char *pTea
 	g_engfuncs.pfnSetClientKeyValue( clientIndex, g_engfuncs.pfnGetInfoKeyBuffer( pPlayer->edict() ), "team", pPlayer->m_szTeamName );
 
 	// notify everyone's HUD of the team change
-	MESSAGE_BEGIN( MSG_ALL, gmsgTeamInfo );
+	/*MESSAGE_BEGIN( MSG_ALL, gmsgTeamInfo );
 		WRITE_BYTE( clientIndex );
 		WRITE_STRING( pPlayer->m_szTeamName );
 	MESSAGE_END();
@@ -304,7 +307,7 @@ void CHalfLifeTeamplay::ChangePlayerTeam( CBasePlayer *pPlayer, const char *pTea
 		WRITE_SHORT( pPlayer->m_iDeaths );
 		WRITE_SHORT( 0 );
 		WRITE_SHORT( g_pGameRules->GetTeamIndex( pPlayer->m_szTeamName ) + 1 );
-	MESSAGE_END();
+	MESSAGE_END();*/
 }
 
 //=========================================================
@@ -609,17 +612,39 @@ void CHalfLifeTeamplay::RecountTeams( bool bResendInfo )
 			{
 				team_scores[tm] += plr->pev->frags;
 			}
-
-			if( bResendInfo ) //Someone's info changed, let's send the team info again.
-			{
-				if( plr && IsValidTeam( plr->TeamID() ) )
-				{
-					MESSAGE_BEGIN( MSG_ALL, gmsgTeamInfo, NULL );
-						WRITE_BYTE( plr->entindex() );
-						WRITE_STRING( plr->TeamID() );
-					MESSAGE_END();
-				}
-			}
 		}
+	}
+
+	if( bResendInfo ) //Someone's info changed, let's send the team info again.
+	{
+		MESSAGE_BEGIN( MSG_ALL, gmsgTeamNames );
+			WRITE_BYTE( num_teams );
+			for( i = 0; i < num_teams; i++ )
+			{
+				WRITE_STRING( team_names[i] );
+			}
+		MESSAGE_END();
+
+		for( i = 1; i <= gpGlobals->maxClients; i++ )
+		{
+			CBaseEntity *plr = UTIL_PlayerByIndex( i );
+			CBasePlayer *pPlayer = (CBasePlayer*)plr;
+
+			if ( plr && IsValidTeam( plr->TeamID() ) )
+			{
+				MESSAGE_BEGIN( MSG_ALL, gmsgTeamInfo);
+					WRITE_BYTE( plr->entindex() );
+					WRITE_STRING( plr->TeamID() );
+				MESSAGE_END();
+
+				MESSAGE_BEGIN( MSG_ALL, gmsgScoreInfo );
+					WRITE_BYTE( plr->entindex() );
+					WRITE_SHORT( pPlayer->pev->frags );
+					WRITE_SHORT( pPlayer->m_iDeaths );
+					WRITE_SHORT( 0 );
+					WRITE_SHORT( g_pGameRules->GetTeamIndex( pPlayer->m_szTeamName ) + 1 );
+				MESSAGE_END();
+                        }
+                }
 	}
 }

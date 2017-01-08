@@ -567,3 +567,21 @@ int UTIL_SharedRandomLong( unsigned int seed, int low, int high );
 float UTIL_SharedRandomFloat( unsigned int seed, float low, float high );
 
 float UTIL_WeaponTimeBase( void );
+
+// BMOD Begin - Custom UTIL functions
+CBasePlayer* UTIL_CastPlayer( CBaseEntity *pEnt );
+CBasePlayer* UTIL_CastPlayer( entvars_t *pev );
+CBasePlayer* UTIL_CastPlayer( edict_t *pEdict );
+CBasePlayer* UTIL_CastPlayer( int index );
+
+BOOL UTIL_OBB_LineTest( Vector vecSrc, Vector vecDst, Vector boxP, Vector boxE );
+BOOL UTIL_OBB_PointTest( Vector vecSrc, Vector boxP, Vector boxE );
+void UTIL_SpeakAll( char *message );
+char *UTIL_CountVotes( void );
+void UTIL_SpeakBadWeapon( void );
+char *UTIL_CountVotes( void );
+void UTIL_SaveRestorePlayer( CBasePlayer *pPlayer, BOOL save, BOOL resetall );
+void UTIL_Speak_2_l33t( char *szTarget, char *szString );
+void UTIL_SayTime( void );
+int UTIL_axtoi( char *hexStg );
+// BMOD End - Custom UTIL functions

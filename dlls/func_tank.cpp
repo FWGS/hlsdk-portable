@@ -427,6 +427,10 @@ void CFuncTank::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE use
 		else if( !m_pController && useType != USE_OFF )
 		{
 			( (CBasePlayer*)pActivator )->m_pTank = this;
+
+			// BMOD
+			( (CBasePlayer*)pActivator )->BMOD_ResetSpawnKill();
+
 			StartControl( (CBasePlayer*)pActivator );
 		}
 		else

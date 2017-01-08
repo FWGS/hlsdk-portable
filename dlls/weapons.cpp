@@ -30,6 +30,7 @@
 #include "soundent.h"
 #include "decals.h"
 #include "gamerules.h"
+#include "egon.h"
 
 extern CGraph WorldGraph;
 extern int gEvilImpulse101;
@@ -45,6 +46,11 @@ DLL_GLOBAL	short g_sModelIndexWExplosion;// holds the index for the underwater e
 DLL_GLOBAL	short g_sModelIndexBubbles;// holds the index for the bubbles model
 DLL_GLOBAL	short g_sModelIndexBloodDrop;// holds the sprite index for the initial blood
 DLL_GLOBAL	short g_sModelIndexBloodSpray;// holds the sprite index for splattered blood
+DLL_GLOBAL	short g_sModelIndexSpit;// holds the sprite index for blood spray (bigger)
+DLL_GLOBAL	short g_sModelIndexLightning;// holds the sprite index for blood spray (bigger)
+DLL_GLOBAL	short g_sModelIndexSmokeTrail;// holds the sprite index for blood spray (bigger)
+DLL_GLOBAL	short g_sModelIndexFire;// holds the index for the smoke cloud
+DLL_GLOBAL	short g_sModelIndexFlare;
 
 ItemInfo CBasePlayerItem::ItemInfoArray[MAX_WEAPONS];
 AmmoInfo CBasePlayerItem::AmmoInfoArray[MAX_AMMO_SLOTS];
@@ -299,6 +305,13 @@ void W_Precache( void )
 	UTIL_PrecacheOther( "item_antidote" );
 	UTIL_PrecacheOther( "item_security" );
 	UTIL_PrecacheOther( "item_longjump" );
+	UTIL_PrecacheOther( "item_rune" );
+	UTIL_PrecacheOther( "item_CrowbarRune" );
+	UTIL_PrecacheOther( "item_HealthRune" );
+	UTIL_PrecacheOther( "item_BatteryRune" );
+	UTIL_PrecacheOther( "item_ShotgunRune" );
+	UTIL_PrecacheOther( "item_357Rune" );
+	UTIL_PrecacheOther( "item_GrenadeRune" );
 
 	// shotgun
 	UTIL_PrecacheOtherWeapon( "weapon_shotgun" );
@@ -315,6 +328,7 @@ void W_Precache( void )
 	UTIL_PrecacheOtherWeapon( "weapon_9mmAR" );
 	UTIL_PrecacheOther( "ammo_9mmAR" );
 	UTIL_PrecacheOther( "ammo_ARgrenades" );
+	UTIL_PrecacheOther( "ammo_9mmbox" );
 
 #if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
 	// python
@@ -362,6 +376,11 @@ void W_Precache( void )
 	g_sModelIndexBubbles = PRECACHE_MODEL( "sprites/bubble.spr" );//bubbles
 	g_sModelIndexBloodSpray = PRECACHE_MODEL( "sprites/bloodspray.spr" ); // initial blood
 	g_sModelIndexBloodDrop = PRECACHE_MODEL( "sprites/blood.spr" ); // splattered blood 
+	g_sModelIndexSpit = PRECACHE_MODEL( "sprites/tinyspit.spr" );
+	g_sModelIndexLightning = PRECACHE_MODEL( "sprites/lgtning.spr" );
+	g_sModelIndexSmokeTrail= PRECACHE_MODEL( "sprites/smoke.spr" );
+	g_sModelIndexFire = PRECACHE_MODEL( "sprites/fire.spr" );
+	g_sModelIndexFlare = PRECACHE_MODEL( "sprites/flare6.spr" );
 
 	g_sModelIndexLaser = PRECACHE_MODEL( (char *)g_pModelNameLaser );
 	g_sModelIndexLaserDot = PRECACHE_MODEL( "sprites/laserdot.spr" );
@@ -382,6 +401,9 @@ void W_Precache( void )
 	PRECACHE_SOUND( "weapons/bullet_hit2.wav" );	// hit by bullet
 
 	PRECACHE_SOUND( "items/weapondrop1.wav" );// weapon falls to the ground
+
+	PRECACHE_SOUND( "debris/beamstart8.wav" );
+	PRECACHE_SOUND( "fvox/alert.wav" );
 }
 
 TYPEDESCRIPTION	CBasePlayerItem::m_SaveData[] =
@@ -438,6 +460,11 @@ void CBasePlayerItem::FallInit( void )
 	SetThink( &CBasePlayerItem::FallThink );
 
 	pev->nextthink = gpGlobals->time + 0.1;
+
+	// BMOD Begin - Weapon Box Models
+	m_WeaponModelIndex = pev->modelindex;
+	m_WeaponModel = pev->model;
+	// BMOD End - Weapon Box Models
 }
 
 //=========================================================
@@ -620,6 +647,10 @@ void CBasePlayerWeapon::ItemPostFrame( void )
 		}
 
 		m_pPlayer->TabulateAmmo();
+
+		// BMOD Edit - Spawn killing
+		m_pPlayer->BMOD_ResetSpawnKill();
+
 		SecondaryAttack();
 		m_pPlayer->pev->button &= ~IN_ATTACK2;
 	}
@@ -631,6 +662,10 @@ void CBasePlayerWeapon::ItemPostFrame( void )
 		}
 
 		m_pPlayer->TabulateAmmo();
+
+		// BMOD Edit - Spawn killing
+		m_pPlayer->BMOD_ResetSpawnKill();
+
 		PrimaryAttack();
 	}
 	else if( m_pPlayer->pev->button & IN_RELOAD && iMaxClip() != WEAPON_NOCLIP && !m_fInReload ) 
@@ -687,6 +722,9 @@ void CBasePlayerItem::DestroyItem( void )
 int CBasePlayerItem::AddToPlayer( CBasePlayer *pPlayer )
 {
 	m_pPlayer = pPlayer;
+
+	// BMOD Edit - Pikcing up stuff cancels typing.
+	pPlayer->BMOD_ResetTypeKill();
 
 	return TRUE;
 }
@@ -934,6 +972,9 @@ BOOL CBasePlayerWeapon::DefaultDeploy( char *szViewModel, char *szWeaponModel, i
 {
 	if( !CanDeploy() )
 		return FALSE;
+
+	// BMOD Edit - Spawn killing
+	m_pPlayer->BMOD_ResetSpawnKill();
 
 	m_pPlayer->TabulateAmmo();
 	m_pPlayer->pev->viewmodel = MAKE_STRING( szViewModel );
@@ -1269,6 +1310,27 @@ void CWeaponBox::Touch( CBaseEntity *pOther )
 				//ALERT( at_console, "trying to give %s\n", STRING( m_rgpPlayerItems[i]->pev->classname ) );
 
 				pItem = m_rgpPlayerItems[i];
+
+				// BMOD Begin - Flying Crowbar
+				// Hack for flying_crowbar. Dont pickup if player already
+				// has crowbar.
+				if( pItem->m_iId == WEAPON_CROWBAR )
+				{
+					// check if the player already has this weapon
+					for( int i = 0; i < MAX_ITEM_TYPES; i++ )
+					{
+						CBasePlayerItem *it = pPlayer->m_rgpPlayerItems[i];
+						while( it != NULL )
+						{
+							if( it->m_iId == WEAPON_CROWBAR )
+								return;
+
+							it = it->m_pNext;
+						}
+					}
+				}
+				// BMOD End - Flying Crowbar
+
 				m_rgpPlayerItems[i] = m_rgpPlayerItems[i]->m_pNext;// unlink this weapon from the box
 
 				if( pPlayer->AddPlayerItem( pItem ) )
@@ -1317,6 +1379,24 @@ BOOL CWeaponBox::PackWeapon( CBasePlayerItem *pWeapon )
 		// first weapon we have for this slot
 		m_rgpPlayerItems[iWeaponSlot] = pWeapon;
 		pWeapon->m_pNext = NULL;	
+	}
+
+	// BMOD Edit - Weapon Box Models
+	SET_MODEL( ENT( pev ), STRING( pWeapon->m_WeaponModel ) );
+
+	if( !strcmp( STRING( pWeapon->pev->classname ), "weapon_tripmine" ) )
+	{
+		// SET_MODEL( ENT( pev ), "models/v_tripmine.mdl" );
+		pev->frame = 0;
+		pev->body = 3;
+		pev->sequence = 7;
+		pev->framerate = 0;
+		UTIL_SetSize( pev, Vector( -8, -8, -4 ), Vector( 8, 8, 4 ) );
+		UTIL_SetOrigin( pev, pev->origin );
+	}
+	else if( !strcmp( STRING( pWeapon->pev->classname ), "weapon_crowbar" ) )
+	{
+		pev->nextthink = gpGlobals->time + 240;
 	}
 
 	pWeapon->pev->spawnflags |= SF_NORESPAWN;// never respawn
@@ -1506,7 +1586,7 @@ TYPEDESCRIPTION	CGauss::m_SaveData[] =
 };
 
 IMPLEMENT_SAVERESTORE( CGauss, CBasePlayerWeapon )
-
+/*
 TYPEDESCRIPTION	CEgon::m_SaveData[] =
 {
 	//DEFINE_FIELD( CEgon, m_pBeam, FIELD_CLASSPTR ),
@@ -1520,7 +1600,7 @@ TYPEDESCRIPTION	CEgon::m_SaveData[] =
 };
 
 IMPLEMENT_SAVERESTORE( CEgon, CBasePlayerWeapon )
-
+*/
 TYPEDESCRIPTION	CSatchel::m_SaveData[] = 
 {
 	DEFINE_FIELD( CSatchel, m_chargeReady, FIELD_INTEGER ),

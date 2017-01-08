@@ -35,6 +35,10 @@ enum mp5_e
 	MP5_FIRE3
 };
 
+// BMOD Edit - mp5 mod
+extern cvar_t bm_mp5_mod;
+#include "BMOD_messaging.h"
+
 LINK_ENTITY_TO_CLASS( weapon_mp5, CMP5 )
 LINK_ENTITY_TO_CLASS( weapon_9mmAR, CMP5 )
 
@@ -92,7 +96,15 @@ int CMP5::GetItemInfo( ItemInfo *p )
 	p->pszAmmo1 = "9mm";
 	p->iMaxAmmo1 = _9MM_MAX_CARRY;
 	p->pszAmmo2 = "ARgrenades";
-	p->iMaxAmmo2 = M203_GRENADE_MAX_CARRY;
+
+	// BMOD Begin - mp5 mod
+	// p->iMaxAmmo2 = M203_GRENADE_MAX_CARRY;
+	if( bm_mp5_mod.value )
+		p->iMaxAmmo2 = 5;
+	else
+		p->iMaxAmmo2 = 10;
+	// BMOD End - mp5 mod
+
 	p->iMaxClip = MP5_MAX_CLIP;
 	p->iSlot = 2;
 	p->iPosition = 0;
@@ -117,6 +129,12 @@ int CMP5::AddToPlayer( CBasePlayer *pPlayer )
 
 BOOL CMP5::Deploy()
 {
+	// BMOD Begin - mp5 mod
+	if( bm_mp5_mod.value )
+		PrintMessage( m_pPlayer, BMOD_CHAN_WEAPON, Vector( 20, 250, 20 ), Vector( 1, 4, 2 ), "MP5\nContact grenade damage is lowered.\nGrenade carry capacity is 5." );
+
+	// BMOD End - mp5 mod
+
 	return DefaultDeploy( "models/v_9mmAR.mdl", "models/p_9mmAR.mdl", MP5_DEPLOY, "mp5" );
 }
 
@@ -228,7 +246,14 @@ void CMP5::SecondaryAttack( void )
 	PLAYBACK_EVENT( flags, m_pPlayer->edict(), m_usMP52 );
 
 	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 1;
-	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1;
+
+	// BMOD Begin - mp5 mod
+	if( bm_mp5_mod.value )
+		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1.5;
+	else
+		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1;
+	// BMOD End - mp5 mod
+
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 5;// idle pretty soon after shooting.
 
 	if( !m_pPlayer->m_rgAmmo[m_iSecondaryAmmoType] )
@@ -338,7 +363,16 @@ class CMP5AmmoGrenade : public CBasePlayerAmmo
 	}
 	BOOL AddAmmo( CBaseEntity *pOther ) 
 	{ 
-		int bResult = ( pOther->GiveAmmo( AMMO_M203BOX_GIVE, "ARgrenades", M203_GRENADE_MAX_CARRY ) != -1 );
+		//int bResult = ( pOther->GiveAmmo( AMMO_M203BOX_GIVE, "ARgrenades", M203_GRENADE_MAX_CARRY ) != -1 );
+
+		// BMOD Begin - mp5 mod
+		int bResult;
+
+		if( bm_mp5_mod.value )
+			bResult = ( pOther->GiveAmmo( 1, "ARgrenades", 5 ) != -1 );
+		else
+			bResult = ( pOther->GiveAmmo( 2, "ARgrenades", 10 ) != -1 );
+		// BMOD End - mp5 mod
 
 		if( bResult )
 		{

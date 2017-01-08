@@ -29,6 +29,7 @@
 #include "animation.h"
 #include "weapons.h"
 #include "func_break.h"
+#include "player.h"
 
 extern DLL_GLOBAL Vector		g_vecAttackDir;
 extern DLL_GLOBAL int			g_iSkillLevel;
@@ -1484,9 +1485,14 @@ Vector CBaseEntity::FireBulletsPlayer( ULONG cShots, Vector vecSrc, Vector vecDi
 	Vector vecRight = gpGlobals->v_right;
 	Vector vecUp = gpGlobals->v_up;
 	float x, y, z;
+	int tracer;
 
 	if( pevAttacker == NULL )
 		pevAttacker = pev;  // the default attacker is ourselves
+
+	CBasePlayer *pThisPlayer = NULL;
+	if( IsPlayer() )
+		pThisPlayer = (CBasePlayer *)this;
 
 	ClearMultiDamage();
 	gMultiDamage.type = DMG_BULLET | DMG_NEVERGIB;
@@ -1506,6 +1512,42 @@ Vector CBaseEntity::FireBulletsPlayer( ULONG cShots, Vector vecSrc, Vector vecDi
 
 		vecEnd = vecSrc + vecDir * flDistance;
 		UTIL_TraceLine( vecSrc, vecEnd, dont_ignore_monsters, ENT( pev )/*pentIgnore*/, &tr );
+
+		tracer = 0;
+		if( iTracerFreq != 0 && ( tracerCount++ % iTracerFreq ) == 0 )
+		{
+			Vector vecTracerSrc;
+
+			if( IsPlayer() )
+			{
+				// adjust tracer position for player
+				vecTracerSrc = vecSrc + Vector( 0, 0, -4 ) + gpGlobals->v_right * 2 + gpGlobals->v_forward * 16;
+			}
+			else
+			{
+				vecTracerSrc = vecSrc;
+			}
+
+			if( iTracerFreq != 1 )	// guns that always trace also always decal
+				tracer = 1;
+			switch( iBulletType )
+			{
+			case BULLET_MONSTER_MP5:
+			case BULLET_MONSTER_9MM:
+			case BULLET_MONSTER_12MM:
+			default:
+					MESSAGE_BEGIN( MSG_PAS, SVC_TEMPENTITY, vecTracerSrc );
+					WRITE_BYTE( TE_TRACER );
+					WRITE_COORD( vecTracerSrc.x );
+					WRITE_COORD( vecTracerSrc.y );
+					WRITE_COORD( vecTracerSrc.z );
+					WRITE_COORD( tr.vecEndPos.x );
+					WRITE_COORD( tr.vecEndPos.y );
+					WRITE_COORD( tr.vecEndPos.z );
+				MESSAGE_END();
+				break;
+			}
+		}
 
 		// do damage, paint decals
 		if( tr.flFraction != 1.0 )
@@ -1533,7 +1575,10 @@ Vector CBaseEntity::FireBulletsPlayer( ULONG cShots, Vector vecSrc, Vector vecDi
 				pEntity->TraceAttack( pevAttacker, gSkillData.plrDmgBuckshot, vecDir, &tr, DMG_BULLET );
 				break;
 			case BULLET_PLAYER_357:
-				pEntity->TraceAttack( pevAttacker, gSkillData.plrDmg357, vecDir, &tr, DMG_BULLET );
+				if( pThisPlayer->m_RuneFlags == RUNE_357 )
+					pEntity->TraceAttack( pevAttacker, gSkillData.plrDmg357 * 2.5, vecDir, &tr, DMG_BULLET );
+				else
+					pEntity->TraceAttack( pevAttacker, gSkillData.plrDmg357, vecDir, &tr, DMG_BULLET );
 				break;
 			case BULLET_NONE: // FIX
 				pEntity->TraceAttack( pevAttacker, 50, vecDir, &tr, DMG_CLUB );

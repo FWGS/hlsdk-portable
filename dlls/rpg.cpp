@@ -23,6 +23,10 @@
 #include "player.h"
 #include "gamerules.h"
 
+// BMOD Edit - RPG mod
+extern cvar_t bm_rpg_mod;
+#include "BMOD_messaging.h"
+
 enum rpg_e
 {
 	RPG_IDLE = 0,
@@ -143,7 +147,12 @@ void CRpgRocket::Spawn( void )
 
 	pev->nextthink = gpGlobals->time + 0.4;
 
-	pev->dmg = gSkillData.plrDmgRPG;
+	// BMOD Begin - RPG mod
+	if( bm_rpg_mod.value )
+		pev->dmg = 100;
+	else
+		pev->dmg = gSkillData.plrDmgRPG;;
+	// BMOD End - RPG mod
 }
 
 //=========================================================
@@ -394,6 +403,10 @@ int CRpg::AddToPlayer( CBasePlayer *pPlayer )
 
 BOOL CRpg::Deploy()
 {
+	// BMOD Edit - RPG mod
+	if( bm_rpg_mod.value )
+		PrintMessage( m_pPlayer, BMOD_CHAN_WEAPON, Vector( 20, 250, 20 ), Vector( 1, 4, 2 ), "\nRPG\nDamage is lowered." );
+
 	if( m_iClip == 0 )
 	{
 		return DefaultDeploy( "models/v_rpg.mdl", "models/p_rpg.mdl", RPG_DRAW_UL, "rpg" );

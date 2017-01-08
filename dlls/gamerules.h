@@ -99,6 +99,8 @@ public:
 	virtual void ClientUserInfoChanged( CBasePlayer *pPlayer, char *infobuffer ) {}		// the player has changed userinfo;  can change it now
 
 	// Client kills/scoring
+	// BMOD
+	//virtual int BMOD_IPointsForKill( CBasePlayer *pAttacker, CBasePlayer *pKilled, entvars_t *pInflictor);// how many points do I award whoever kills this player?
 	virtual int IPointsForKill( CBasePlayer *pAttacker, CBasePlayer *pKilled ) = 0;// how many points do I award whoever kills this player?
 	virtual void PlayerKilled( CBasePlayer *pVictim, entvars_t *pKiller, entvars_t *pInflictor ) = 0;// Called each time a player dies
 	virtual void DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, entvars_t *pInflictor )=  0;// Call this from within a GameRules class to report an obituary.
@@ -160,6 +162,10 @@ public:
 
 	// Immediately end a multiplayer game
 	virtual void EndMultiplayerGame( void ) {}
+
+	// BMOD Begin - Extra gamerules
+	virtual void BMOD_PreChangeLevel( void );
+	// BMOD End - Extra gamerules
 };
 
 extern CGameRules *InstallGameRules( void );
@@ -351,6 +357,17 @@ public:
 
 	// Immediately end a multiplayer game
 	virtual void EndMultiplayerGame( void ) { GoToIntermission(); }
+
+	// BMOD Begin - Extra gamerules
+	virtual void BMOD_ClientDisconnected( edict_t *pClient, CBasePlayer *pPlayer );
+	virtual void BMOD_PlayerSpawn( CBasePlayer *pPlayer );
+	virtual void BMOD_InitHUD( CBasePlayer *pl );
+	virtual void BMOD_PreChangeLevel( void );
+	virtual void BMOD_Think( void );
+	virtual void BMOD_GiveGunsAndAmmo( CBasePlayer *pPlayer );
+	virtual void BMOD_UpdateGuns( void );
+	virtual void BMOD_UpdateMods( void );
+	// BMOD End - Extra gamerules
 
 protected:
 	virtual void ChangeLevel( void );

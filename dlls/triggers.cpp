@@ -27,6 +27,7 @@
 #include "saverestore.h"
 #include "trains.h"			// trigger_camera has train functionality
 #include "gamerules.h"
+#include "BMOD_rune.h"
 
 #define	SF_TRIGGER_PUSH_START_OFF	2//spawnflag that makes trigger_push spawn turned OFF
 #define SF_TRIGGER_HURT_TARGETONCE	1// Only fire hurt target once
@@ -883,6 +884,11 @@ void CBaseTrigger::ToggleUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE
 void CBaseTrigger::HurtTouch( CBaseEntity *pOther )
 {
 	float fldmg;
+
+	if( !strcmp( STRING( pOther->pev->classname ), "rune" ) )
+	{
+		(CRune*)pOther->Respawn();
+	}
 
 	if( !pOther->pev->takedamage )
 		return;

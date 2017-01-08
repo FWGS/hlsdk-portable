@@ -22,8 +22,12 @@
 #include "player.h"
 #include "effects.h"
 #include "gamerules.h"
+#include "tripmine.h"
+#include "BMOD_messaging.h"
 
 #define	TRIPMINE_PRIMARY_VOLUME		450
+
+extern cvar_t bm_trip_mod;
 
 enum tripmine_e
 {
@@ -39,39 +43,6 @@ enum tripmine_e
 };
 
 #ifndef CLIENT_DLL
-class CTripmineGrenade : public CGrenade
-{
-	void Spawn( void );
-	void Precache( void );
-
-	virtual int Save( CSave &save );
-	virtual int Restore( CRestore &restore );
-
-	static TYPEDESCRIPTION m_SaveData[];
-
-	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
-
-	void EXPORT WarningThink( void );
-	void EXPORT PowerupThink( void );
-	void EXPORT BeamBreakThink( void );
-	void EXPORT DelayDeathThink( void );
-	void Killed( entvars_t *pevAttacker, int iGib );
-
-	void MakeBeam( void );
-	void KillBeam( void );
-
-	float m_flPowerUp;
-	Vector m_vecDir;
-	Vector m_vecEnd;
-	float m_flBeamLength;
-
-	EHANDLE m_hOwner;
-	CBeam *m_pBeam;
-	Vector m_posOwner;
-	Vector m_angleOwner;
-	edict_t *m_pRealOwner;// tracelines don't hit PEV->OWNER, which means a player couldn't detonate his own trip mine, so we store the owner here.
-};
-
 LINK_ENTITY_TO_CLASS( monster_tripmine, CTripmineGrenade )
 
 TYPEDESCRIPTION	CTripmineGrenade::m_SaveData[] =
@@ -252,6 +223,28 @@ void CTripmineGrenade::MakeBeam( void )
 	m_pBeam->SetColor( 0, 214, 198 );
 	m_pBeam->SetScrollRate( 255 );
 	m_pBeam->SetBrightness( 64 );
+
+	// BMOD Begin - no trip spawn mines and flashbang
+	if( m_bIsFlashbang )
+	{
+		m_pBeam->SetColor( 120, 180, 180 );
+		m_pBeam->SetBrightness( 25 );
+	}
+
+	if( BMOD_IsSpawnMine() )
+	{
+		pev->owner = m_pRealOwner;
+		pev->health = 0;
+		Killed( VARS( pev->owner ), GIB_NORMAL );
+
+		UTIL_SpeakBadWeapon();
+
+		if( m_bIsFlashbang )
+			UTIL_ClientPrintAll( HUD_PRINTTALK, UTIL_VarArgs( "%s tried to place a spawn flash mine!\n", STRING( VARS( pev->owner )->netname ) ) );
+		else
+			UTIL_ClientPrintAll( HUD_PRINTTALK, UTIL_VarArgs( "%s tried to place a spawn mine!\n", STRING( VARS( pev->owner )->netname ) ) );
+	}
+	// BMOD Begin - no trip spawn mines no trip spawn mines and flashbang
 }
 
 void CTripmineGrenade::BeamBreakThink( void )
@@ -339,7 +332,12 @@ void CTripmineGrenade::DelayDeathThink( void )
 	TraceResult tr;
 	UTIL_TraceLine( pev->origin + m_vecDir * 8, pev->origin - m_vecDir * 64,  dont_ignore_monsters, ENT( pev ), &tr );
 
-	Explode( &tr, DMG_BLAST );
+	// BMod Begin - flashbang
+	if( m_bIsFlashbang )
+		FlashBang();
+	else
+		Explode( &tr, DMG_BLAST );
+	// BMod Begin - flashbang
 }
 #endif
 
@@ -398,6 +396,10 @@ int CTripmine::GetItemInfo( ItemInfo *p )
 
 BOOL CTripmine::Deploy()
 {
+	// BMOD Edit - tripmine mod
+	if( bm_trip_mod.value )
+		PrintMessage( m_pPlayer, BMOD_CHAN_WEAPON, Vector( 20, 250, 20 ), Vector( 1, 4, 2 ), "\nTRIPMINES\nSECONDAY FIRE: Place a flash mine." );
+
 	pev->body = 0;
 	return DefaultDeploy( "models/v_tripmine.mdl", "models/p_tripmine.mdl", TRIPMINE_DRAW, "trip" );
 }
@@ -419,6 +421,17 @@ void CTripmine::Holster( int skiplocal /* = 0 */ )
 }
 
 void CTripmine::PrimaryAttack( void )
+{
+	BModAttack( FALSE );
+}
+
+void CTripmine::SecondaryAttack( void )
+{
+	if( bm_trip_mod.value )
+		BModAttack( TRUE );
+}
+
+void CTripmine::BModAttack( BOOL flashbang )
 {
 	if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0 )
 		return;
@@ -448,6 +461,11 @@ void CTripmine::PrimaryAttack( void )
 
 			CBaseEntity *pEnt = CBaseEntity::Create( "monster_tripmine", tr.vecEndPos + tr.vecPlaneNormal * 8, angles, m_pPlayer->edict() );
 
+			// BMOD Begin - flshbang
+			CTripmineGrenade *pMine = (CTripmineGrenade *)pEnt;
+			pMine->m_bIsFlashbang = flashbang;
+			// BMOD End - flshbang
+
 			m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]--;
 
 			// player "shoot" animation
@@ -470,7 +488,7 @@ void CTripmine::PrimaryAttack( void )
 
 	}*/
 
-	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.3;
+	m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.3;
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
 }
 

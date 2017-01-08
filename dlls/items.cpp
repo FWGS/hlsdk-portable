@@ -121,6 +121,8 @@ void CItem::ItemTouch( CBaseEntity *pOther )
 		return;
 	}
 
+	pPlayer->BMOD_ResetTypeKill();
+
 	if( MyTouch( pPlayer ) )
 	{
 		SUB_UseTargets( pOther, USE_TOGGLE, 0 );
@@ -226,6 +228,10 @@ class CItemBattery : public CItem
 			char szcharge[64];
 
 			pPlayer->pev->armorvalue += gSkillData.batteryCapacity;
+
+			if( pPlayer->m_RuneFlags == RUNE_BATTERY )
+				pPlayer->pev->armorvalue += gSkillData.batteryCapacity;
+
 			pPlayer->pev->armorvalue = min( pPlayer->pev->armorvalue, MAX_NORMAL_BATTERY );
 
 			EMIT_SOUND( pPlayer->edict(), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM );

@@ -26,6 +26,7 @@
 #include "saverestore.h"
 #include "skill.h"
 #include "gamerules.h"
+#include "player.h"
 
 class CRecharge : public CBaseToggle
 {
@@ -143,6 +144,8 @@ void CRecharge::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE use
 	if( !m_hActivator->IsPlayer() )
 		return;
 	
+	CBasePlayer *pPlayer = (CBasePlayer *)pActivator;
+
 	// Play the on sound or the looping charging sound
 	if( !m_iOn )
 	{
@@ -161,6 +164,9 @@ void CRecharge::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE use
 	{
 		m_iJuice--;
 		m_hActivator->pev->armorvalue += 1;
+
+		if( pPlayer->m_RuneFlags == RUNE_BATTERY )
+			pPlayer->pev->armorvalue += 1;
 
 		if( m_hActivator->pev->armorvalue > 100 )
 			m_hActivator->pev->armorvalue = 100;

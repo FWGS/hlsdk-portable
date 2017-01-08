@@ -71,6 +71,9 @@ BOOL CHealthKit::MyTouch( CBasePlayer *pPlayer )
 
 	if( pPlayer->TakeHealth( gSkillData.healthkitCapacity, DMG_GENERIC ) )
 	{
+		if( pPlayer->m_RuneFlags == RUNE_HEALTH )
+			pPlayer->TakeHealth( gSkillData.healthkitCapacity, DMG_GENERIC );
+
 		MESSAGE_BEGIN( MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev );
 			WRITE_STRING( STRING( pev->classname ) );
 		MESSAGE_END();
@@ -179,6 +182,8 @@ void CWallHealth::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE u
 	if( !pActivator->IsPlayer() )
 		return;
 
+	CBasePlayer *pPlayer = (CBasePlayer *)pActivator;
+
 	// if there is no juice left, turn it off
 	if( m_iJuice <= 0 )
 	{
@@ -220,6 +225,9 @@ void CWallHealth::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE u
 	// charge the player
 	if( pActivator->TakeHealth( 1, DMG_GENERIC ) )
 	{
+		if( pPlayer->m_RuneFlags == RUNE_HEALTH )
+			pPlayer->TakeHealth( 1, DMG_GENERIC );
+
 		m_iJuice--;
 	}
 

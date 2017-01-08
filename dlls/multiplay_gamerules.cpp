@@ -22,10 +22,11 @@
 #include	"player.h"
 #include	"weapons.h"
 #include	"gamerules.h"
- 
+#include	"monsters.h" 
 #include	"skill.h"
 #include	"game.h"
 #include	"items.h"
+#include	"BMOD_hornetgun.h"
 #ifndef NO_VOICEGAMEMGR
 #include	"voice_gamemgr.h"
 #endif
@@ -38,7 +39,12 @@ extern int gmsgScoreInfo;
 extern int gmsgMOTD;
 extern int gmsgServerName;
 
+extern cvar_t	bm_bantime;
+extern cvar_t	bm_matchkills;
+
 extern int g_teamplay;
+
+extern edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer );
 
 #define ITEM_RESPAWN_TIME	30
 #define WEAPON_RESPAWN_TIME	20
@@ -79,6 +85,9 @@ CHalfLifeMultiplay::CHalfLifeMultiplay()
 	RefreshSkillData();
 	m_flIntermissionEndTime = 0;
 	g_flIntermissionStartTime = 0;
+
+	// BMOD Edit - Precalculate the bm_map and bm_nextmap vars
+	BMOD_PreChangeLevel();
 	
 	// 11/8/98
 	// Modified by YWB:  Server .cfg file is now a cvar, so that 
@@ -117,6 +126,23 @@ CHalfLifeMultiplay::CHalfLifeMultiplay()
 			SERVER_COMMAND( szCommand );
 		}
 	}
+
+	// BMOD Config files
+	char bmodcfgfile[81];
+	strcpy( bmodcfgfile, CVAR_GET_STRING( "bm_map" ) );
+	strcat( bmodcfgfile, ".cfg" );
+
+	if( bmodcfgfile && bmodcfgfile[0] )
+	{
+		char szCommand[256];
+
+		ALERT( at_console, "Executing map config file\n" );
+		sprintf( szCommand, "exec maps/%s\n", bmodcfgfile );
+		SERVER_COMMAND( szCommand );
+	}
+
+	// BMOD Init save slots.
+	UTIL_SaveRestorePlayer( NULL, 0, 1 );
 }
 
 BOOL CHalfLifeMultiplay::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
@@ -202,6 +228,9 @@ void CHalfLifeMultiplay::Think( void )
 
 	int frags_remaining = 0;
 	int time_remaining = 0;
+
+	// BMOD Edit - Extra Game Think stuff
+	BMOD_Think();
 
 	if( g_fGameOver )   // someone else quit the game already
 	{
@@ -310,6 +339,13 @@ BOOL CHalfLifeMultiplay::FShouldSwitchWeapon( CBasePlayer *pPlayer, CBasePlayerI
 		// that weapon can't deploy anyway.
 		return FALSE;
 	}
+
+	// BMOD - if this player is typing, dont switch weapons
+	if( pPlayer->BMOD_IsTyping() )
+	{
+		return FALSE;
+	}
+	// BMOD
 
 	if( !pPlayer->m_pActiveItem )
 	{
@@ -478,6 +514,10 @@ void CHalfLifeMultiplay::InitHUD( CBasePlayer *pl )
 		MESSAGE_BEGIN( MSG_ONE, SVC_INTERMISSION, NULL, pl->edict() );
 		MESSAGE_END();
 	}
+
+	// BMOD Begin - extra gamerules InitHUD
+	BMOD_InitHUD( pl );
+	// BMOD End - extra gamerules InitHUD
 }
 
 //=========================================================
@@ -511,6 +551,10 @@ void CHalfLifeMultiplay::ClientDisconnected( edict_t *pClient )
 			}
 
 			pPlayer->RemoveAllItems( TRUE );// destroy all of the players weapons and items
+
+			// BMOD Begin - extra client disconnect
+			BMOD_ClientDisconnected( pClient, pPlayer );
+			// BMOD End - extra client disconnect
 		}
 	}
 }
@@ -540,6 +584,10 @@ float CHalfLifeMultiplay::FlPlayerFallDamage( CBasePlayer *pPlayer )
 //=========================================================
 BOOL CHalfLifeMultiplay::FPlayerCanTakeDamage( CBasePlayer *pPlayer, CBaseEntity *pAttacker )
 {
+	// BMOD Edit - Freeze ray
+	if( pPlayer->m_flFreezeTime > 0 )
+		return FALSE;
+
 	return TRUE;
 }
 
@@ -569,9 +617,13 @@ void CHalfLifeMultiplay::PlayerSpawn( CBasePlayer *pPlayer )
 
 	pPlayer->pev->weapons |= ( 1 << WEAPON_SUIT );
 
-	addDefault = TRUE;
+	// BMOD Begin - extra Playerspawn stuff
+	BMOD_PlayerSpawn( pPlayer );
+	// BMOD End - extra Playerspawn stuff
 
-	while( ( pWeaponEntity = UTIL_FindEntityByClassname( pWeaponEntity, "game_player_equip" ) ) )
+	addDefault = pPlayer->IsObserver() ? FALSE : TRUE;
+
+	while( !addDefault && ( pWeaponEntity = UTIL_FindEntityByClassname( pWeaponEntity, "game_player_equip" ) ) )
 	{
 		pWeaponEntity->Touch( pPlayer );
 		addDefault = FALSE;
@@ -579,10 +631,27 @@ void CHalfLifeMultiplay::PlayerSpawn( CBasePlayer *pPlayer )
 
 	if( addDefault )
 	{
-		pPlayer->GiveNamedItem( "weapon_crowbar" );
+		/*pPlayer->GiveNamedItem( "weapon_crowbar" );
 		pPlayer->GiveNamedItem( "weapon_9mmhandgun" );
 		pPlayer->GiveAmmo( 68, "9mm", _9MM_MAX_CARRY );// 4 full reloads
+		*/
+		// BMOD Begin - Starting weapons
+		//pPlayer->GiveNamedItem( "weapon_crowbar" );
+		//pPlayer->GiveNamedItem( "weapon_9mmhandgun" );
+		//pPlayer->GiveAmmo( GLOCK_MAX_CLIP * 2, "9mm", _9MM_MAX_CARRY );// 2 full reloads
+		//pPlayer->GiveNamedItem( "weapon_357" );
+		// pPlayer->GiveNamedItem( "weapon_rpg" );
+		//pPlayer->GiveAmmo( PYTHON_MAX_CLIP * 2, "357", _357_MAX_CARRY );// 2 full reloads
+		// BMOD End - Starting weapons
+		BMOD_GiveGunsAndAmmo( pPlayer );
+		//pPlayer->SelectItem( "weapon_9mmhandgun" );
 	}
+
+	// BMOD Edit - spawn kills
+	pPlayer->m_fSpawnTimeStamp = gpGlobals->time + .1;
+	pPlayer->pev->rendermode = kRenderTransAdd;
+	pPlayer->pev->renderfx = kRenderFxHologram;
+	pPlayer->pev->renderamt = 255;
 }
 
 //=========================================================
@@ -646,6 +715,30 @@ void CHalfLifeMultiplay::PlayerKilled( CBasePlayer *pVictim, entvars_t *pKiller,
 		pKiller->frags -= 1;
 	}
 
+	// BMOD Begin - Llamas do not count! 
+	if( peKiller && peKiller != pVictim && pVictim->m_IsLlama )
+	{
+		pVictim->m_iDeaths -= 1;
+		pKiller->frags -= IPointsForKill( peKiller, pVictim );
+	}
+	// BMOD End - Llamas do not count!
+
+	// BMOD Begin - spawn kills do not count! 
+	if( peKiller && peKiller != pVictim && pVictim->BMOD_WasSpawnKilled() )
+	{
+		pVictim->m_iDeaths -= 1;
+		pKiller->frags -= IPointsForKill( peKiller, pVictim );
+	}
+	// BMOD End - spawn kills do not count!
+
+	// BMOD Begin - type kills do not count! 
+	if( peKiller && peKiller != pVictim && pVictim->BMOD_WasTypeKilled() )
+	{
+		pVictim->m_iDeaths -= 1;
+		pKiller->frags -= IPointsForKill( peKiller, pVictim );
+	}
+	// BMOD End - type kills do not count!
+
 	// update the scores
 	// killed scores
 	MESSAGE_BEGIN( MSG_ALL, gmsgScoreInfo );
@@ -690,11 +783,48 @@ void CHalfLifeMultiplay::DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, 
 	CBaseEntity *Killer = CBaseEntity::Instance( pKiller );
 
 	const char *killer_weapon_name = "world";		// by default, the player is killed by the world
+	const char *killer_weapon_name_client = "world";	// by default, the player is killed by the world
 	int killer_index = 0;
 
 	// Hack to fix name change
 	char *tau = "tau_cannon";
 	char *gluon = "gluon gun";
+	char *grenade = "grenade";
+	char *zapgun = "zapgun";
+	char *multizapper = "multizapper";
+	char *squidspit = "squidspit";
+	char *freezeray = "freezeray";
+	char *snarklauncher = "snarklauncher";
+
+	char keyvalues[81] = "";
+
+	switch( pVictim->m_LastHitGroup )
+	{
+	case HITGROUP_HEAD:
+		strcat( keyvalues, " (location \"head\")" );
+		break;
+	case HITGROUP_CHEST:
+		strcat( keyvalues, " (location \"chest\")" );
+		break;
+	case HITGROUP_STOMACH:
+		strcat( keyvalues, " (location \"stomach\")" );
+		break;
+	case HITGROUP_LEFTARM:
+		strcat( keyvalues, " (location \"left arm\")" );
+		break;
+	case HITGROUP_RIGHTARM:
+		strcat( keyvalues, " (location \"right arm\")" );
+		break;
+	case HITGROUP_LEFTLEG:
+		strcat( keyvalues, " (location \"left leg\")" );
+		break;
+	case HITGROUP_RIGHTLEG:
+		strcat( keyvalues, " (location \"right leg\")" );
+		break;
+	default:
+		strcat( keyvalues, " (location \"generic\")" );
+		break;
+	};
 
 	if( pKiller->flags & FL_CLIENT )
 	{
@@ -731,10 +861,43 @@ void CHalfLifeMultiplay::DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, 
 	else if( strncmp( killer_weapon_name, "func_", 5 ) == 0 )
 		killer_weapon_name += 5;
 
+	if( !strcmp( killer_weapon_name, "hornetgun" ) && bm_hornet_mod.value )
+	{
+		//CHgun* gun = (CHgun*)CBaseEntity::Instance( pKiller );
+		//UTIL_ClientPrintAll( HUD_PRINTTALK, UTIL_VarArgs( "<SERVER> Firemode: %i.\n",
+		//	gun->m_iFireMode
+		//	) );
+		switch( ( ( (CHgun*)( (CBasePlayerWeapon*)( (CBasePlayer*)CBaseEntity::Instance( pKiller ) )->m_pActiveItem ) )->m_iFireMode ) ) 
+		{
+		case 0: 
+			killer_weapon_name = squidspit;
+			break;
+		case 1:
+			killer_weapon_name = zapgun;
+			break;
+		case 2:
+			killer_weapon_name = multizapper;
+			break;
+		case 3: 
+			killer_weapon_name = freezeray;
+			break;
+		case 4: 
+			killer_weapon_name = snarklauncher;
+			break;
+		default:
+			break;
+		}
+	}
+
+	killer_weapon_name_client = killer_weapon_name;
+
+	if( !strcmp( killer_weapon_name_client, "hand_grenade" ) )
+		killer_weapon_name_client = grenade;
+
 	MESSAGE_BEGIN( MSG_ALL, gmsgDeathMsg );
 		WRITE_BYTE( killer_index );						// the killer
 		WRITE_BYTE( ENTINDEX( pVictim->edict() ) );		// the victim
-		WRITE_STRING( killer_weapon_name );		// what they were killed by (should this be a string?)
+		WRITE_STRING( killer_weapon_name_client );		// what they were killed by (should this be a string?)
 	MESSAGE_END();
 
 	// replace the code names with the 'real' names
@@ -769,10 +932,212 @@ void CHalfLifeMultiplay::DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, 
 	}
 	else if( pKiller->flags & FL_CLIENT )
 	{
+		( (CBasePlayer *)Killer )->m_iKillsThisFrame++;
+
+		// BMOD Begin - Spawn kills
+		if( pVictim->BMOD_WasSpawnKilled() && strcmp( killer_weapon_name, "tripmine" ) )
+		{
+			strcat( keyvalues, " (spawn)" );
+			( (CBasePlayer *)Killer )->m_iKillsThisFrame--;
+			( (CBasePlayer *)Killer )->m_iSpawnKills++;
+			char szKills[81] = "";
+			int iLeft = (int)bm_maxspawnkills.value - (int)( (CBasePlayer *)Killer )->m_iSpawnKills;
+
+			if( bm_maxspawnkills.value )
+			{
+				if( iLeft > 0 )
+				{
+					sprintf( szKills, "(%d more and you're banned)", iLeft );
+				}
+
+			}
+			UTIL_ClientPrintAll( HUD_PRINTTALK, UTIL_VarArgs( "%s is a spawn-killing ninny! No points! %s\n", STRING( pKiller->netname ), szKills ) );
+	
+			if( bm_maxspawnkills.value && iLeft < 1 )
+			{
+				UTIL_ClientPrintAll( HUD_PRINTTALK, UTIL_VarArgs( "<SERVER> %s was banned %d minutes for spawn-killing.\n",
+					STRING( pKiller->netname ), (int)bm_bantime.value ) );
+				UTIL_LogPrintf( "\"SERVER<-1><-1><>\" say \"%s was banned %d minutes for spawn-killing.\"\n",  
+					STRING( pKiller->netname ), (int)bm_bantime.value);
+				UTIL_LogPrintf( "// \"%s<%i><%s><%s>\" was banned %d mins for spawn-killing.\n",  
+					STRING( pKiller->netname ),
+					GETPLAYERUSERID( ENT( pKiller ) ),
+					GETPLAYERAUTHID( ENT( pKiller ) ),
+					g_engfuncs.pfnInfoKeyValue( g_engfuncs.pfnGetInfoKeyBuffer( ENT( pKiller ) ), "model" ),
+					(int)bm_bantime.value );
+				( (CBasePlayer *)Killer )->m_bBanMe = TRUE;
+				( (CBasePlayer *)Killer )->m_fMessageTimer = gpGlobals->time + .1;
+			}	
+		}
+		// BMOD End - Spawn kills
+
+		// BMOD Begin - Type kills
+		if( pVictim->BMOD_WasTypeKilled() )
+		{
+			strcat( keyvalues, " (typekill)" );
+			( (CBasePlayer *)Killer )->m_iKillsThisFrame--;
+			( (CBasePlayer *)Killer )->m_iTypeKills++;
+			char szKills[81] = "";
+			int iLeft = (int)bm_maxtypekills.value - (int)( (CBasePlayer *)Killer )->m_iTypeKills;
+
+			if( bm_maxtypekills.value )
+			{
+				if( iLeft > 0 ) 
+				{
+					sprintf( szKills, "(%d more and you're banned)", iLeft );
+				}
+			}
+
+			UTIL_ClientPrintAll( HUD_PRINTTALK, UTIL_VarArgs( "%s is a type-killing lamer! No points! %s\n",
+				STRING( pKiller->netname ), szKills ) );
+
+			if( bm_maxtypekills.value && iLeft < 1 )
+			{
+				UTIL_ClientPrintAll( HUD_PRINTTALK, UTIL_VarArgs( "<SERVER> %s was banned %d minutes for type-killing.\n",
+					STRING( pKiller->netname ), (int)bm_bantime.value ) );
+				UTIL_LogPrintf( "\"SERVER<-1><-1><>\" say \"%s was banned %d minutes for type-killing.\"\n",  
+					STRING( pKiller->netname ), (int)bm_bantime.value );
+				UTIL_LogPrintf( "// \"%s<%i><%s><%s>\" was banned %d mins for type-killing.\n",  
+					STRING( pKiller->netname ),
+					GETPLAYERUSERID( ENT( pKiller ) ),
+					GETPLAYERAUTHID( ENT( pKiller ) ),
+					g_engfuncs.pfnInfoKeyValue( g_engfuncs.pfnGetInfoKeyBuffer( ENT( pKiller ) ), "model" ),
+					(int)bm_bantime.value );
+				( (CBasePlayer *)Killer )->m_bBanMe = TRUE;
+				( (CBasePlayer *)Killer )->m_fMessageTimer = gpGlobals->time + .1;
+			}
+		}
+		// BMOD End - Type kills
+
+		// BMOD Start - match kills.
+		// tag kills where killer matched weapons with victim.
+		if( bm_matchkills.value && strcmp( killer_weapon_name, "tripmine" ) && strcmp( killer_weapon_name, "snark" ) &&
+				( pVictim->m_pActiveItem &&
+				( (CBasePlayer *)Killer )->m_pActiveItem &&
+				!strcmp( STRING( ( (CBasePlayer *)Killer )->m_pActiveItem->pev->classname ), 
+			        STRING( pVictim->m_pActiveItem->pev->classname ) ) &&
+				( (CBasePlayer *)Killer )->m_RuneFlags == RUNE_NONE )
+				|| // OR...
+				( !strcmp( killer_weapon_name, "flying_crowbar" ) &&
+				( !pVictim->m_pActiveItem ||
+					!strcmp( STRING( pVictim->m_pActiveItem->pev->classname ), 
+						"weapon_crowbar" ) ) )
+				|| // OR...
+				( !pVictim->m_pActiveItem &&
+				( (CBasePlayer *)Killer )->m_pActiveItem &&
+				!strcmp( STRING( ( (CBasePlayer *)Killer )->m_pActiveItem->pev->classname ), 
+			        "weapon_crowbar" ) ) )
+		{
+			strcat(keyvalues, " (match)" );
+			ClientPrint( ( (CBasePlayer *)Killer )->pev, HUD_PRINTNOTIFY, "Match kill!\n" ); 
+		}
+		// BMOD End - match kills.
+
+		// BMOD Start - log opponent gun
+		// tag kills where killer matched weapons with victim.
+		if( !pVictim->m_pActiveItem )
+		{
+			strcat( keyvalues, " (defgun \"flying_crowbar\")" );
+		}
+		else
+		{
+			const char *weapon_name;
+			weapon_name = STRING( pVictim->m_pActiveItem->pev->classname );
+
+			// Hack to fix name change
+			char *tau = "tau_cannon";
+			char *gluon = "gluon gun";
+			char *zapgun = "zapgun";
+			char *multizapper = "multizapper";
+			char *squidspit = "squidspit";
+			char *freezeray = "freezeray";
+			char *snarklauncher = "snarklauncher";
+			char *rpg = "rpg_rocket";
+			char *hand_grenade = "hand_grenade";
+
+			// strip the monster_* or weapon_* from the classname
+			if( strncmp( weapon_name, "weapon_", 7 ) == 0 )
+				weapon_name += 7;
+			else if( strncmp( weapon_name, "monster_", 8 ) == 0 )
+				weapon_name += 8;
+			else if( strncmp( weapon_name, "func_", 5 ) == 0 )
+				weapon_name += 5;
+
+			// fix some names for better matches.
+			if( !strcmp( weapon_name, "egon" ) )
+				weapon_name = gluon;
+			else if( !strcmp( weapon_name, "gauss" ) )
+				weapon_name = tau;
+			else if( !strcmp( weapon_name, "rpg" ) )
+				weapon_name = rpg;
+			else if( !strcmp( weapon_name, "handgrenade" ) )
+				weapon_name = hand_grenade;
+			else if( !strcmp( weapon_name, "hornetgun" ) && bm_hornet_mod.value )
+			{
+				//weapon_name = zapgun;
+				switch( ( ( (CHgun*)( (CBasePlayerWeapon*)pVictim->m_pActiveItem ) )->m_iFireMode ) )
+				{
+					case 0:
+						weapon_name = squidspit;
+						break;
+					case 1:
+						weapon_name = zapgun;
+						break;
+					case 2:
+						weapon_name = multizapper;
+						break;
+					case 3:
+						weapon_name = freezeray;
+						break;
+					case 4:
+						weapon_name = snarklauncher;
+						break;
+					default:
+						break;
+				}
+			}
+
+			strcat( keyvalues, UTIL_VarArgs( " (defgun \"%s\")", weapon_name ) );
+		}
+		// BMOD End - log opponent gun
+
+		// BMOD Start - Log runes
+		if( ( (CBasePlayer *)Killer )->m_RuneFlags ) 
+		{
+			strcat( keyvalues, " (rune \"" );
+			switch( ( (CBasePlayer *)Killer )->m_RuneFlags )
+			{
+			case RUNE_CROWBAR:
+				strcat( keyvalues, "crowbar" );
+				break;
+			case RUNE_HEALTH:
+				strcat( keyvalues, "health" );
+				break;
+			case RUNE_BATTERY:
+				strcat( keyvalues, "armor" );
+				break;
+			case RUNE_357:
+				strcat( keyvalues, "357" );
+				break;
+			case RUNE_SHOTGUN:
+				strcat( keyvalues, "shotgun" );
+				break;
+			case RUNE_GRENADE:
+				strcat( keyvalues, "grenade" );
+				break;
+			}
+			strcat( keyvalues, "\")" );
+		}
+		// BMOD End - Log runes
+
+		// BMOD Llamas don't count. 
+		if( pVictim->m_IsLlama )
+			return;
+
 		// team match?
 		if( g_teamplay )
 		{
-			UTIL_LogPrintf( "\"%s<%i><%s><%s>\" killed \"%s<%i><%s><%s>\" with \"%s\"\n",  
+			UTIL_LogPrintf( "\"%s<%i><%s><%s>\" killed \"%s<%i><%s><%s>\" with \"%s\"%s\n",  
 				STRING( pKiller->netname ),
 				GETPLAYERUSERID( ENT(pKiller) ),
 				GETPLAYERAUTHID( ENT(pKiller) ),
@@ -781,11 +1146,11 @@ void CHalfLifeMultiplay::DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, 
 				GETPLAYERUSERID( pVictim->edict() ),
 				GETPLAYERAUTHID( pVictim->edict() ),
 				g_engfuncs.pfnInfoKeyValue( g_engfuncs.pfnGetInfoKeyBuffer( pVictim->edict() ), "model" ),
-				killer_weapon_name );
+				killer_weapon_name, keyvalues );
 		}
 		else
 		{
-			UTIL_LogPrintf( "\"%s<%i><%s><%i>\" killed \"%s<%i><%s><%i>\" with \"%s\"\n",  
+			UTIL_LogPrintf( "\"%s<%i><%s><%i>\" killed \"%s<%i><%s><%i>\" with \"%s\"%s\n",  
 				STRING( pKiller->netname ),
 				GETPLAYERUSERID( ENT(pKiller) ),
 				GETPLAYERAUTHID( ENT(pKiller) ),
@@ -794,13 +1159,12 @@ void CHalfLifeMultiplay::DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, 
 				GETPLAYERUSERID( pVictim->edict() ),
 				GETPLAYERAUTHID( pVictim->edict() ),
 				GETPLAYERUSERID( pVictim->edict() ),
-				killer_weapon_name );
+				killer_weapon_name, keyvalues );
 		}
 	}
 	else
 	{ 
 		// killed by the world
-
 		// team match?
 		if( g_teamplay )
 		{
@@ -1449,7 +1813,9 @@ int CountPlayers( void )
 	{
 		CBaseEntity *pEnt = UTIL_PlayerByIndex( i );
 
-		if( pEnt )
+		// BMOD Edit - Only count connected players.
+		//if( pEnt )
+		if( pEnt && ( !FNullEnt( pEnt->edict() ) ) && pEnt->m_bIsConnected )
 		{
 			num = num + 1;
 		}
@@ -1520,6 +1886,7 @@ ChangeLevel
 Server is changing to a new level, check mapcycle.txt for map name and setup info
 ==============
 */
+/*
 void CHalfLifeMultiplay::ChangeLevel( void )
 {
 	static char szPreviousMapCycleFile[256];
@@ -1646,7 +2013,7 @@ void CHalfLifeMultiplay::ChangeLevel( void )
 		SERVER_COMMAND( szCommands );
 	}
 }
-
+*/
 #define MAX_MOTD_CHUNK	  60
 #define MAX_MOTD_LENGTH   1536 // (MAX_MOTD_CHUNK * 4)
 

@@ -103,6 +103,19 @@ void CHandGrenade::Holster( int skiplocal /* = 0 */ )
 		pev->nextthink = gpGlobals->time + 0.1;
 	}
 
+	//BMOD Begin - fix for short fuse hand grenades.
+	if( m_flStartThrow )
+	{
+		Vector vecSrc = m_pPlayer->pev->origin + m_pPlayer->pev->view_ofs + gpGlobals->v_forward * 16;
+		float time = m_flStartThrow - gpGlobals->time + 3.0;
+		if( time < 0 )
+			time = 0;
+		CGrenade::ShootTimed( m_pPlayer->pev, vecSrc, Vector( 0, 0, 0 ), time );
+		m_flStartThrow = 0;
+		m_flReleaseThrow = 0;
+	}
+	//BMOD End - fix for short fuse hand grenades.
+
 	EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_WEAPON, "common/null.wav", 1.0, ATTN_NORM );
 }
 

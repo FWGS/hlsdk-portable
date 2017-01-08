@@ -37,3 +37,11 @@ DLL_GLOBAL int			gDisplayTitle;
 DLL_GLOBAL BOOL			g_fGameOver;
 DLL_GLOBAL const Vector		g_vecZero = Vector( 0, 0, 0 );
 DLL_GLOBAL int			g_Language;
+
+// BMOD Begin - Map Voting
+DLL_GLOBAL int			g_VoteStatus = 0;	// 0 = ready to start votes
+							// 1 = voting is session
+							// 2 = map won vote
+DLL_GLOBAL float		g_VoteTimer = 0;
+DLL_GLOBAL BOOL			g_runes_exist = 0;
+DLL_GLOBAL BOOL			g_runes_learn = 0;

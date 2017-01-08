@@ -25,6 +25,10 @@
 #include "shake.h"
 #include "gamerules.h"
 
+// BMOD Edit - tau mod
+extern cvar_t bm_tau_mod;
+#include "BMOD_messaging.h"
+
 #define	GAUSS_PRIMARY_CHARGE_VOLUME	256// how loud gauss is while charging
 #define GAUSS_PRIMARY_FIRE_VOLUME	450// how loud gauss is when discharged
 
@@ -125,6 +129,10 @@ int CGauss::GetItemInfo( ItemInfo *p )
 
 BOOL CGauss::Deploy()
 {
+	// BMOD Edit - tau mod
+	if( bm_tau_mod.value )
+		PrintMessage( m_pPlayer, BMOD_CHAN_WEAPON, Vector( 20, 250, 20 ), Vector( 1, 4, 2 ), "\nTAU\nOnly does direct fire damage through walls." );
+
 	m_pPlayer->m_flPlayAftershock = 0.0;
 	return DefaultDeploy( "models/v_gauss.mdl", "models/p_gauss.mdl", GAUSS_DRAW, "gauss" );
 }
@@ -493,7 +501,11 @@ void CGauss::Fire( Vector vecOrigSrc, Vector vecDir, float flDamage )
 								damage_radius = flDamage * 2.5;
 							}
 
-							::RadiusDamage( beam_tr.vecEndPos + vecDir * 8, pev, m_pPlayer->pev, flDamage, damage_radius, CLASS_NONE, DMG_BLAST );
+							// BMOD Edit - tau mod
+							if( bm_tau_mod.value )
+								::RadiusDamage( beam_tr.vecEndPos + vecDir * 8, pev, m_pPlayer->pev, 2, damage_radius, CLASS_NONE, DMG_BLAST );
+							else
+								::RadiusDamage( beam_tr.vecEndPos + vecDir * 8, pev, m_pPlayer->pev, flDamage, damage_radius, CLASS_NONE, DMG_BLAST );
 
 							CSoundEnt::InsertSound( bits_SOUND_COMBAT, pev->origin, NORMAL_EXPLOSION_VOLUME, 3.0 );
 

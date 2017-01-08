@@ -40,6 +40,9 @@ enum satchel_radio_e
 	SATCHEL_RADIO_HOLSTER
 };
 
+// BMOD Edit - spawn satchels
+extern cvar_t bm_spawnsatchels;
+
 class CSatchelCharge : public CGrenade
 {
 	void Spawn( void );
@@ -48,6 +51,10 @@ class CSatchelCharge : public CGrenade
 
 	void EXPORT SatchelSlide( CBaseEntity *pOther );
 	void EXPORT SatchelThink( void );
+
+	// BMOD Begin - extra satchel charge stuff
+	BOOL IsSpawnSatchel( void );
+	// BMOD End - extra satchel charge stuff
 
 public:
 	void Deactivate( void );
@@ -145,6 +152,21 @@ void CSatchelCharge::SatchelThink( void )
 	{
 		pev->velocity.z -= 8;
 	}	
+
+	// BMOD Begin - spawn satchels
+	if( !( bm_spawnsatchels.value ) && ( pev->flags & FL_ONGROUND ) && !( pev->velocity.Length() ) )
+	{
+		SetThink( NULL );
+		if( IsSpawnSatchel() )
+		{
+			Use( UTIL_CastPlayer(pev->owner), UTIL_CastPlayer( pev->owner ), USE_ON, 0 );
+
+			UTIL_SpeakBadWeapon();
+
+			UTIL_ClientPrintAll( HUD_PRINTTALK, UTIL_VarArgs( "%s tried to place a spawn satchel!\n", STRING( VARS( pev->owner )->netname ) ) );
+		}
+	}
+	// BMOD End - spawn satchels
 }
 
 void CSatchelCharge::Precache( void )
@@ -477,5 +499,33 @@ void DeactivateSatchels( CBasePlayer *pOwner )
 
 		pFind = FIND_ENTITY_BY_CLASSNAME( pFind, "monster_satchel" );
 	}
+}
+
+BOOL CSatchelCharge::IsSpawnSatchel()
+{
+	if( bm_spawnsatchels.value )
+		return FALSE;
+
+	BOOL result = FALSE;
+	CBaseEntity *pEntity = NULL;
+	TraceResult tr;
+	Vector vecTop;
+	Vector vecSrc = pev->origin;
+
+	int bInWater = ( UTIL_PointContents( vecSrc ) == CONTENTS_WATER );
+
+	vecSrc.z += 1;// in case grenade is lying on the ground
+
+	// iterate on all entities in the vicinity.
+	while( ( pEntity = UTIL_FindEntityByClassname( pEntity, "info_player_deathmatch" ) ) != NULL )
+	{
+		UTIL_TraceLine( pEntity->pev->origin, pEntity->pev->origin - Vector( 0, 0, 1024 ), ignore_monsters, ENT( pev ), &tr );
+		Vector vecTop = pEntity->pev->origin + Vector( 0, 0, 36 );
+		float height = fabs( vecTop.z - tr.vecEndPos.z ) / 2;
+
+		if( UTIL_OBB_PointTest( vecSrc, Vector( vecTop.x, vecTop.y, ( vecTop.z + tr.vecEndPos.z ) / 2 ), Vector( 16, 16, height ) ) )
+			result = TRUE;
+	}
+	return result;
 }
 #endif

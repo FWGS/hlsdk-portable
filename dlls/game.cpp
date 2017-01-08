@@ -16,6 +16,10 @@
 #include "eiface.h"
 #include "util.h"
 #include "game.h"
+#include "cbase.h"
+#include "player.h"
+#include "weapons.h"
+#include "BMOD_boxmarker.h"
 
 cvar_t displaysoundlist = {"displaysoundlist","0"};
 
@@ -441,6 +445,102 @@ cvar_t	sk_player_leg3	= { "sk_player_leg3","1" };
 
 // END Cvars for Skill Level settings
 
+// BMOD Begin - CVARs
+cvar_t  bm_ver = { "bm_ver", "", FCVAR_SERVER | FCVAR_UNLOGGED };
+cvar_t  bm_url = { "bm_url", "", FCVAR_SERVER | FCVAR_UNLOGGED };
+
+cvar_t  bm_bver = { "bm_bver", "", FCVAR_SERVER | FCVAR_UNLOGGED };
+cvar_t  bm_bname = { "bm_bname", "", FCVAR_SERVER | FCVAR_UNLOGGED };
+cvar_t  bm_burl = { "bm_burl", "", FCVAR_SERVER | FCVAR_UNLOGGED };
+
+cvar_t  bm_guns = { "bm_guns", "crowbar;357;9mmhandgun" };
+cvar_t  bm_ammo = { "bm_ammo", "9mmclip;9mmclip;357;357" };		
+cvar_t  bm_g = { "bm_g", "7", FCVAR_SERVER | FCVAR_UNLOGGED };
+cvar_t  bm_dmg_messages = { "bm_dmg_messages", "1" };
+cvar_t  bm_matchkills = { "bm_matchkills", "1" };
+
+cvar_t  bm_freezetime = { "bm_freezetime", "4.5", FCVAR_SERVER };
+cvar_t  bm_thrust = { "bm_thrust", "0" };
+cvar_t  bm_spawneffects = { "bm_spawneffects", "1" };
+//cvar_t  bm_snarktrails = { "bm_snarktrails", "1" };
+cvar_t  bm_snarktrails = { "bm_snarktrails", "0AE00AC8" };
+cvar_t  bm_xbowtracers = { "bm_xbowtracers", "1" };
+
+cvar_t  bm_spawnkilltime = { "bm_spawnkilltime", "10", FCVAR_SERVER };
+cvar_t  bm_maxspawnkills = { "bm_maxspawnkills", "3" };
+cvar_t  bm_typekills = { "bm_typekills", "0", FCVAR_SERVER };
+cvar_t  bm_maxtypekills = { "bm_maxtypekills", "3" };
+cvar_t  bm_typecam = { "bm_typecam", "1" };
+
+cvar_t  bm_bantime = { "bm_bantime", "30" };
+
+cvar_t  bm_spamlimit = { "bm_spamlimit", "4" };
+cvar_t  bm_antispam = { "bm_antispam", "1" };
+
+cvar_t  bm_spawnmines = { "bm_spawnmines", "0", FCVAR_SERVER };
+cvar_t  bm_spawnsatchels = { "bm_spawnsatchels", "0", FCVAR_SERVER };
+cvar_t  bm_voting = { "bm_voting", "1", FCVAR_SERVER };
+cvar_t  bm_votetime = { "bm_votetime", "180", FCVAR_SERVER };
+cvar_t  bm_maxtime = { "bm_maxtime", "120" };
+cvar_t  bm_maxfrags = { "bm_maxfrags", "100" };
+
+cvar_t  bm_mods = { "bm_mods", "", FCVAR_SERVER };
+cvar_t  bm_rpg_mod = { "bm_rpg_mod", "1" };
+cvar_t  bm_shotty_mod = { "bm_shotty_mod", "0" };
+cvar_t  bm_xbow_mod = { "bm_xbow_mod", "1" };
+cvar_t  bm_mp5_mod = { "bm_mp5_mod", "1" };
+cvar_t  bm_cbar_mod = { "bm_cbar_mod", "1" };
+cvar_t  bm_tau_mod = { "bm_tau_mod", "1" };
+cvar_t  bm_snarks_mod = { "bm_snarks_mod", "1" };
+cvar_t  bm_gluon_mod = { "bm_gluon_mod", "1" };
+cvar_t  bm_hornet_mod = { "bm_hornet_mod", "1" };
+cvar_t  bm_trip_mod = { "bm_trip_mod", "1" };
+/*
+cvar_t	bm_score_crowbar = { "bm_score_crowbar", "1" };
+cvar_t	bm_score_throwncbar = { "bm_score_throwncbar", "1" };
+cvar_t	bm_score_9mm = { "bm_score_9mm", "1" };
+cvar_t	bm_score_357 = { "bm_score_357", "1" };
+cvar_t	bm_score_mp5 = { "bm_score_mp5", "1" };
+cvar_t	bm_score_shotgun = { "bm_score_shotgun", "1" };
+cvar_t	bm_score_squidspit = { "bm_score_squidspit", "1" };
+cvar_t	bm_score_zapgun = { "bm_score_zapgun", "1" };
+cvar_t	bm_score_mp5grenade = { "bm_score_mp5grenade", "1" };
+cvar_t	bm_score_gluon = { "bm_score_gluon", "1" };
+cvar_t	bm_score_tau = { "bm_score_tau", "1" };
+cvar_t	bm_score_bolt = { "bm_score_bolt", "1" };
+cvar_t	bm_score_crossbow = { "bm_score_crossbow", "1" };
+cvar_t	bm_score_satchel = { "bm_score_satchel", "1" };
+cvar_t	bm_score_handgrenade = { "bm_score_handgrenade", "1" };
+cvar_t	bm_score_rpg = { "bm_score_rpg", "1" };
+cvar_t	bm_score_snarks = { "bm_score_snarks", "1" };
+cvar_t	bm_score_tripmine = { "bm_score_tripmine", "1" };
+*/
+cvar_t  bm_map = { "bm_map", "" };
+cvar_t  bm_nextmap = { "bm_nextmap", "", FCVAR_SERVER | FCVAR_UNLOGGED };
+
+cvar_t  bm_rune_rand = { "bm_rune_rand", "0", FCVAR_SERVER };
+cvar_t  bm_runemask = { "bm_runemask", "63", FCVAR_SERVER };
+
+cvar_t  bm_rune_cbar = { "bm_rune_cbar", "1", FCVAR_SERVER };
+cvar_t  bm_rune_cbar_t = { "bm_rune_cbar_t", "30" };
+cvar_t  bm_rune_cbar_r = { "bm_rune_cbar_r", "60" };
+cvar_t  bm_rune_gren = { "bm_rune_gren", "1", FCVAR_SERVER };
+cvar_t  bm_rune_gren_t = { "bm_rune_gren_t", "30" };
+cvar_t  bm_rune_gren_r = { "bm_rune_gren_r", "120" };
+cvar_t  bm_rune_357 = { "bm_rune_357", "1", FCVAR_SERVER };
+cvar_t  bm_rune_357_t = { "bm_rune_357_t", "30" };
+cvar_t  bm_rune_357_r = { "bm_rune_357_r", "60" };
+cvar_t  bm_rune_health = { "bm_rune_health", "1", FCVAR_SERVER };
+cvar_t  bm_rune_health_t = { "bm_rune_health_t", "30" };
+cvar_t  bm_rune_health_r = { "bm_rune_health_r", "60" };
+cvar_t  bm_rune_armor = { "bm_rune_armor", "1", FCVAR_SERVER };
+cvar_t  bm_rune_armor_t = { "bm_rune_armor_t", "30" };
+cvar_t  bm_rune_armor_r = { "bm_rune_armor_r", "60" };
+cvar_t  bm_rune_shotty = { "bm_rune_shotty", "1", FCVAR_SERVER };
+cvar_t  bm_rune_shotty_t = { "bm_rune_shotty_t", "30" };
+cvar_t  bm_rune_shotty_r = { "bm_rune_shotty_r", "180" };
+// BMOD End - CVARs
+
 // Register your console variables here
 // This gets called one time when the game is initialied
 void GameDLLInit( void )
@@ -849,6 +949,689 @@ void GameDLLInit( void )
 	CVAR_REGISTER( &sk_player_leg3 );
 // END REGISTER CVARS FOR SKILL LEVEL STUFF
 
+	// BMOD Begin - CVARs
+	CVAR_REGISTER( &bm_bver );
+	CVAR_REGISTER( &bm_bname );
+	CVAR_REGISTER( &bm_burl );
+	CVAR_REGISTER( &bm_ver );
+	CVAR_REGISTER( &bm_url );
+	//CVAR_REGISTER( &bm_plat );
+	CVAR_REGISTER( &bm_guns );
+	CVAR_REGISTER( &bm_ammo );
+	CVAR_REGISTER( &bm_g );
+	CVAR_REGISTER( &bm_dmg_messages );
+	CVAR_REGISTER( &bm_matchkills );
+	//CVAR_REGISTER( &bm_trips );
+	CVAR_REGISTER( &bm_freezetime );
+	CVAR_REGISTER( &bm_thrust );
+	CVAR_REGISTER( &bm_spawneffects );
+	CVAR_REGISTER( &bm_snarktrails );
+	CVAR_REGISTER( &bm_xbowtracers );
+
+	CVAR_REGISTER( &bm_spawnkilltime );
+	CVAR_REGISTER( &bm_maxspawnkills );
+	CVAR_REGISTER( &bm_typekills );
+	CVAR_REGISTER( &bm_maxtypekills );
+	CVAR_REGISTER( &bm_typecam );
+	
+	CVAR_REGISTER( &bm_bantime );
+
+	CVAR_REGISTER( &bm_spamlimit );
+	CVAR_REGISTER( &bm_antispam );
+
+	CVAR_REGISTER( &bm_spawnmines );
+	CVAR_REGISTER( &bm_spawnsatchels );
+	CVAR_REGISTER( &bm_voting );
+	CVAR_REGISTER( &bm_votetime );
+	CVAR_REGISTER( &bm_maxtime );
+	CVAR_REGISTER( &bm_maxfrags );
+ 	//CVAR_REGISTER( &bm_cbmad );
+ 	//CVAR_REGISTER( &bm_cheatdetect );
+
+/*	CVAR_REGISTER( &bm_score_crowbar );
+	CVAR_REGISTER( &bm_score_throwncbar );
+	CVAR_REGISTER( &bm_score_9mm );
+	CVAR_REGISTER( &bm_score_357 );
+	CVAR_REGISTER( &bm_score_mp5 );
+	CVAR_REGISTER( &bm_score_shotgun );
+	CVAR_REGISTER( &bm_score_squidspit );
+	CVAR_REGISTER( &bm_score_zapgun );
+	CVAR_REGISTER( &bm_score_mp5grenade );
+	CVAR_REGISTER( &bm_score_gluon );
+	CVAR_REGISTER( &bm_score_tau );
+	CVAR_REGISTER( &bm_score_bolt );
+	CVAR_REGISTER( &bm_score_crossbow );
+	CVAR_REGISTER( &bm_score_satchel );
+	CVAR_REGISTER( &bm_score_handgrenade );
+	CVAR_REGISTER( &bm_score_rpg );
+	CVAR_REGISTER( &bm_score_snarks );
+	CVAR_REGISTER( &bm_score_tripmine );
+*/
+	CVAR_REGISTER( &bm_mods );
+	CVAR_REGISTER( &bm_rpg_mod );
+	CVAR_REGISTER( &bm_shotty_mod );
+	CVAR_REGISTER( &bm_xbow_mod );
+	CVAR_REGISTER( &bm_mp5_mod );
+	CVAR_REGISTER( &bm_cbar_mod );
+	CVAR_REGISTER( &bm_tau_mod );
+	CVAR_REGISTER( &bm_snarks_mod );
+	CVAR_REGISTER( &bm_gluon_mod );
+	CVAR_REGISTER( &bm_hornet_mod );
+	CVAR_REGISTER( &bm_trip_mod );
+	CVAR_REGISTER( &bm_map );
+	CVAR_REGISTER( &bm_nextmap );
+	CVAR_REGISTER( &bm_rune_rand );
+	CVAR_REGISTER( &bm_runemask );
+	CVAR_REGISTER( &bm_rune_cbar );
+	CVAR_REGISTER( &bm_rune_cbar_t );
+	CVAR_REGISTER( &bm_rune_cbar_r );
+	CVAR_REGISTER( &bm_rune_gren );
+	CVAR_REGISTER( &bm_rune_gren_t );
+	CVAR_REGISTER( &bm_rune_gren_r );
+	CVAR_REGISTER( &bm_rune_357 );
+	CVAR_REGISTER( &bm_rune_357_t );
+	CVAR_REGISTER( &bm_rune_357_r );
+	CVAR_REGISTER( &bm_rune_health );
+	CVAR_REGISTER( &bm_rune_health_t );
+	CVAR_REGISTER( &bm_rune_health_r );
+	CVAR_REGISTER( &bm_rune_armor );
+	CVAR_REGISTER( &bm_rune_armor_t );
+	CVAR_REGISTER( &bm_rune_armor_r );
+	CVAR_REGISTER( &bm_rune_shotty );
+	CVAR_REGISTER( &bm_rune_shotty_t );
+	CVAR_REGISTER( &bm_rune_shotty_r );
+	// BMOD End - CVARs
+
+	// BMOD Begin - Server commands
+	ADD_SERVER_COMMAND( "s", BModCmd_AdminSay );
+	ADD_SERVER_COMMAND( "w", BModCmd_AdminWhisper );
+	ADD_SERVER_COMMAND( "markspawnpoints", BModCmd_ShowSpawns );
+	ADD_SERVER_COMMAND( "sspeak", BModCmd_SpeakAll );
+	ADD_SERVER_COMMAND( "create", BModCmd_Create );
+	ADD_SERVER_COMMAND( "remove", BModCmd_Remove );
+	ADD_SERVER_COMMAND( "delete", BModCmd_Delete );
+	ADD_SERVER_COMMAND( "replace", BModCmd_Replace );
+	ADD_SERVER_COMMAND( "info", BModCmd_Info );
+	ADD_SERVER_COMMAND( "llama", BModCmd_Llama );
+	ADD_SERVER_COMMAND( "unllama", BModCmd_Unllama );
+	// BMOD End - Server commands
+
 	SERVER_COMMAND( "exec skill.cfg\n" );
 }
 
+// ++BMod
+// New bubble mod commands
+//
+// CMD_ARGC () - number of arguments
+// CMD_ARGV(n) - nth argument. 0=actual command. 
+// CMD_ARGS () -
+
+// Helper function for finding a player pointer by UID. 
+CBasePlayer* GetPlayerByUID( int userId )
+{
+	CBasePlayer *client = NULL;
+
+	while( ( ( client = (CBasePlayer*)UTIL_FindEntityByClassname( client, "player" ) ) != NULL )
+		&& ( client->IsPlayer() ) ) 
+	{
+		if( userId == GETPLAYERUSERID( client->edict() ) )
+			return client;
+	}
+
+	return 0;
+}
+
+// Admin Say 
+void BModCmd_AdminSay( void )
+{
+	int	j;
+	char	*p;
+	char	text[128];
+	const char *cpSay = "say";
+	const char *cpSayTeam = "say_team";
+	const char *pcmd = CMD_ARGV(0);
+
+	// We can get a raw string now, without the "say " prepended
+	if( CMD_ARGC() < 2 )
+	{
+		g_engfuncs.pfnServerPrint( "Not enough arguments.\nUSAGE: s \"<string>\"\n" );
+		return;
+	}
+
+	p = (char *)CMD_ARGS();
+
+	// make sure the text has content
+	for( char *pc = p; pc != NULL && *pc != 0; pc++ )
+	{
+		if( isprint( *pc ) && !isspace( *pc ) )
+		{
+			pc = NULL;	// we've found an alphanumeric character,  so text is valid
+			break;
+		}
+	}
+	if( pc != NULL )
+		return;  // no character found, so say nothing
+
+	sprintf( text, "%c%s ", 2, "<ADMIN>" );
+
+	j = sizeof(text) - 2 - strlen( text );  // -2 for /n and null terminator
+	if( (int)strlen( p ) > j )
+		p[j] = 0;
+
+	strcat( text, p );
+	strcat( text, "\n" );
+
+	UTIL_ClientPrintAll( HUD_PRINTTALK, text ); 
+
+	// echo to server console
+	g_engfuncs.pfnServerPrint( text );
+
+	UTIL_LogPrintf( "\"ADMIN<-1><-1><>\" say \"%s\"\n", p );
+}
+
+// Admin Whisper 
+void BModCmd_AdminWhisper( void )
+{	
+	int	j;
+	char	*p;
+	char	text[128];
+	const char *cpSay = "say";
+	const char *cpSayTeam = "say_team";
+	const char *pcmd = CMD_ARGV( 0 );
+
+	// We can get a raw string now, without the "say " prepended
+	if( CMD_ARGC() < 3 )
+	{
+		g_engfuncs.pfnServerPrint( "Not enough arguments.\nUSAGE: w <PlayerUID> \"<string>\"\n" );
+		return;
+	}
+
+	int UID = atoi( CMD_ARGV( 1 ) );
+	
+	CBasePlayer *Player = GetPlayerByUID( UID );
+	if( Player == NULL )
+	{
+		g_engfuncs.pfnServerPrint( "Invalid Player UID.\n" );
+		return;
+	}
+
+	p = (char *)CMD_ARGS();
+
+	// Skip over the UID
+	while( *p != ' ')
+		p++;
+	while( *p == ' ')
+		p++;
+
+	// make sure the text has content
+	for( char *pc = p; pc != NULL && *pc != 0; pc++ )
+	{
+		if( isprint( *pc ) && !isspace( *pc ) )
+		{
+			pc = NULL;	// we've found an alphanumeric character,  so text is valid
+			break;
+		}
+	}
+
+	if( pc != NULL )
+		return;  // no character found, so say nothing
+
+	sprintf( text, "%c%s ", 2, "<ADMIN>(whispers)" );
+
+	j = sizeof(text) - 2 - strlen( text );  // -2 for /n and null terminator
+	if( (int)strlen( p ) > j )
+		p[j] = 0;
+
+	strcat( text, p );
+	strcat( text, "\n" );
+
+	ClientPrint( Player->pev, HUD_PRINTTALK, text ); 
+
+	// echo to server console
+	g_engfuncs.pfnServerPrint( text );
+
+	UTIL_LogPrintf( "\"ADMIN<-1><-1><>\" say \"(to %s) %s\"\n", STRING( Player->pev->netname ), p );
+}
+
+// Show Spawn Points 
+void BModCmd_ShowSpawns( void )
+{
+	BOOL marked = UTIL_FindEntityByClassname( NULL, "boxmarker" ) ? TRUE : FALSE;
+
+	if( marked )
+	{
+		g_engfuncs.pfnServerPrint( "Spawn points already marked!\n" );
+		return;
+	}
+
+	marked = TRUE;
+
+	CBaseEntity *pSpot = NULL;
+	CBaseEntity *pEnt = NULL;
+	CBoxMarker *pBox = NULL;
+
+	TraceResult tr;
+
+	while( ( ( pSpot = UTIL_FindEntityByClassname( pSpot, "info_player_deathmatch" ) ) != NULL ) )
+	{
+		UTIL_TraceLine( pSpot->pev->origin, pSpot->pev->origin - Vector( 0, 0, 1024 ), ignore_monsters, pSpot->edict(), &tr );
+		Vector vecTop = pSpot->pev->origin + Vector( 0, 0, 36 );
+		float height = fabs( vecTop.z - tr.vecEndPos.z ) / 2;
+
+		pEnt = CBaseEntity::Create( "boxmarker", Vector( vecTop.x, vecTop.y, ( vecTop.z + tr.vecEndPos.z ) / 2), g_vecZero, NULL );
+		// CBaseEntity *pEnt2 = CBaseEntity::Create( "zaprift", Vector( vecTop.x, vecTop.y, ( vecTop.z + tr.vecEndPos.z ) / 2 ), g_vecZero, NULL );
+		pBox = (CBoxMarker *)pEnt;
+		pBox->m_vecExtents = Vector(16,16,height);
+	}
+}
+
+// Speak to all players using vox. 
+void BModCmd_SpeakAll( void )
+{
+	int	j;
+	char	*p;
+	char	text[128];
+
+	if( CMD_ARGC() < 2 )
+	{
+		g_engfuncs.pfnServerPrint( "Not enough arguments.\nUSAGE: sspeak \"<vox string>\"\n" );
+		return;
+	}
+
+	p = (char *)CMD_ARGS();
+
+	// remove quotes if present
+	if( *p == '"' )
+	{
+		p++;
+		p[strlen( p ) - 1] = 0;
+	}
+
+	// make sure the text has content
+	for( char *pc = p; pc != NULL && *pc != 0; pc++ )
+	{
+		if( isprint( *pc ) && !isspace( *pc ) )
+		{
+			pc = NULL;	// we've found an alphanumeric character,  so text is valid
+			break;
+		}
+	}
+	if( pc != NULL )
+		return;  // no character found, so say nothing
+
+	strcpy( text, "");
+
+	j = sizeof( text ) - 2 - strlen( text );  // -2 for /n and null terminator
+	if( (int)strlen( p ) > j )
+		p[j] = 0;
+
+	strcat( text, p );
+	//strcat( text, "\n" );
+
+	UTIL_SpeakAll( text ); 
+}
+
+// create entity x y z ay
+void BModCmd_Create( void )
+{
+	if( ( CMD_ARGC() < 6 ) )
+	{
+		g_engfuncs.pfnServerPrint( "Not enough arguments.\nUSAGE: create <entity> <xpos> <ypos> <zpos> <y angle>\n" );
+		return;
+	}
+
+	char *entity = (char *)CMD_ARGV( 1 );
+	Vector position = Vector( atoi( CMD_ARGV( 2 ) ), atoi( CMD_ARGV( 3 ) ), atoi( CMD_ARGV( 4 ) ) );
+	Vector angle = Vector( 0, atoi( CMD_ARGV( 5 ) ), 0 );
+
+	if( angle.y < 0 )
+	{
+		angle.y = RANDOM_LONG( 0, 360 );
+	}
+
+	// Fix weapon names
+	if( !strcmp( entity, "weapon_9mmhandgun" ) )
+	{
+		strcpy( entity, "weapon_glock" );
+	}
+	else if( !strcmp( entity, "weapon_9mmAR" ) )
+	{
+		strcpy( entity, "weapon_mp5" );
+	}
+	else if( !strcmp( entity, "weapon_python" ) )
+	{
+		strcpy( entity, "weapon_357" );
+	}
+
+	// Fix ammo names
+	if( !strcmp( entity, "ammo_9mmclip" ) )
+	{
+		strcpy( entity, "ammo_glockclip" );
+	}
+	else if( !strcmp( entity, "ammo_9mmAR" ) )
+	{
+		strcpy( entity, "ammo_mp5clip" );
+	}
+	else if( !strcmp( entity, "ammo_ARgrenades" ) )
+	{
+		strcpy( entity, "ammo_mp5grenades" );
+	}
+	
+	if( !strncmp( entity, "weapon_", 7 ) ||
+		!strcmp( entity, "item_healthkit" ) ||
+		!strcmp( entity, "item_battery" ) ||
+		!strcmp( entity, "item_longjump" ) ||
+		!strncmp( entity, "ammo_", 5 ) ||
+		!strcmp( entity, "info_player_deathmatch" ) )
+	{
+		CBaseEntity *ent = CBaseEntity::Create(entity, position, angle, NULL );
+
+		if( !strcmp( entity, "info_player_deathmatch" ) )
+			ent->pev->classname = MAKE_STRING( "info_player_deathmatch" );
+	}
+	else
+	{
+		g_engfuncs.pfnServerPrint( "You only add items, ammo, weapons, or spawn points with this command.\n" );
+	}
+}
+
+// remove entity 
+void BModCmd_Remove( void )
+{
+	if( ( CMD_ARGC() < 2 ) )
+	{
+		g_engfuncs.pfnServerPrint( "Not enough arguments.\nUSAGE: remove <entity name>\n" );
+		return;
+	}
+
+	char *entity = (char *)CMD_ARGV( 1 );
+	CBaseEntity *target = NULL;
+
+	// Fix weapon names
+	if( !strcmp(entity, "weapon_glock" ) )
+	{
+		strcpy(entity, "weapon_9mmhandgun" );
+	}
+	else if( !strcmp( entity, "weapon_mp5" ) )
+	{
+		strcpy( entity, "weapon_9mmAR" );
+	}
+	else if( !strcmp( entity, "weapon_python" ) )
+	{
+		strcpy( entity, "weapon_357" );
+	}
+
+	// Fix ammo names
+	if( !strcmp( entity, "ammo_9mmclip" ) )
+	{
+		strcpy( entity, "ammo_glockclip" );
+	}
+	else if( !strcmp( entity, "ammo_9mmAR") )
+	{
+		strcpy( entity, "ammo_mp5clip");
+	}
+	else if( !strcmp( entity, "ammo_ARgrenades") )
+	{
+		strcpy( entity, "ammo_mp5grenades");
+	}
+
+	if( !strncmp( entity, "weapon_", 7 ) ||
+		!strcmp( entity, "item_healthkit" ) ||
+		!strcmp( entity, "item_battery" ) ||
+		!strcmp( entity, "item_longjump" ) ||
+		!strncmp( entity, "ammo_", 5 ) )
+	{
+		while( ( target = UTIL_FindEntityInSphere( target, Vector( 0, 0, 0 ), 4096 ) ) != NULL )
+		{
+			if( !strcmp( STRING( target->pev->classname ), entity ) && ( target->pev->owner == NULL ) )
+			{
+				target->Killed( NULL, 0 );
+			}
+		}
+	}
+	else
+	{
+		g_engfuncs.pfnServerPrint( "You only remove items, ammo, or weapons with this command.\n" );
+	}
+}
+
+// delete a single entity 
+void BModCmd_Delete( void )
+{
+	if( ( CMD_ARGC() < 5 ) )
+	{
+		g_engfuncs.pfnServerPrint( "Not enough arguments.\nUSAGE: delete <entity name> <xpos> <ypos> <zpos>\n" );
+		return;
+	}
+
+	char *entity = (char *)CMD_ARGV( 1 );
+	Vector position = Vector( atoi( CMD_ARGV( 2 ) ), atoi( CMD_ARGV( 3 ) ), atoi( CMD_ARGV( 4 ) ) );
+	CBaseEntity *target = NULL;
+
+	// Fix weapon names
+	if( !strcmp( entity, "weapon_glock" ) )
+	{
+		strcpy( entity, "weapon_9mmhandgun" );
+	}
+	else if( !strcmp( entity, "weapon_mp5" ) )
+	{
+		strcpy( entity, "weapon_9mmAR" );
+	}
+	else if( !strcmp( entity, "weapon_python" ) )
+	{
+		strcpy( entity, "weapon_357" );
+	}
+
+	// Fix ammo names
+	if( !strcmp( entity, "ammo_9mmclip" ) )
+	{
+		strcpy( entity, "ammo_glockclip" );
+	}
+	else if( !strcmp( entity, "ammo_9mmAR" ) )
+	{
+		strcpy( entity, "ammo_mp5clip" );
+	}
+	else if( !strcmp( entity, "ammo_ARgrenades" ) )
+	{
+		strcpy( entity, "ammo_mp5grenades" );
+	}
+
+	if( !strncmp( entity, "weapon_", 7 ) ||
+		!strcmp( entity, "item_healthkit" ) ||
+		!strcmp( entity, "item_battery" ) ||
+		!strcmp( entity, "item_longjump" ) ||
+		!strncmp( entity, "ammo_", 5 ) ||
+		!strcmp( entity, "info_player_deathmatch" ) )
+	{
+		bool deleted = FALSE;
+		while( !deleted && ( target = UTIL_FindEntityInSphere( target, position, 64 ) ) != NULL )
+		{
+			if( !strcmp( STRING( target->pev->classname ), entity ) && ( target->pev->owner == NULL ) )
+			{
+				target->Killed( NULL, 0 );
+				deleted = TRUE;
+				g_engfuncs.pfnServerPrint( "Entity deleted.\n" );
+			}  
+		}
+		
+		if( !deleted )
+		{
+			g_engfuncs.pfnServerPrint( "Entity not found.\n" );
+		}
+	}
+	else
+	{
+		g_engfuncs.pfnServerPrint( "You only delete items, ammo, weapons, or spawn points with this command.\n" );
+	}
+}
+
+// replace entity 
+void BModCmd_Replace( void )
+{
+	if( ( CMD_ARGC() < 3 ) )
+	{
+		g_engfuncs.pfnServerPrint( "Not enough arguments.\nUSAGE: replace <entity> <with entity>\n" );
+		return;
+	}
+
+	char *entity = (char *)CMD_ARGV( 1 );
+	char *entity2 = (char *)CMD_ARGV( 2 );
+	CBaseEntity *target = NULL;
+
+	// Fix weapon names
+	if( !strcmp( entity, "weapon_glock" ) )
+	{
+		strcpy( entity, "weapon_9mmhandgun" );
+	}
+	else if( !strcmp( entity, "weapon_mp5" ) )
+	{
+		strcpy( entity, "weapon_9mmAR" );
+	}
+	else if( !strcmp( entity, "weapon_python" ) )
+	{
+		strcpy( entity, "weapon_357" );
+	}
+
+	if( !strcmp( entity2, "weapon_9mmhandgun" ) )
+	{
+		strcpy( entity2, "weapon_glock" );
+	}
+	else if( !strcmp( entity2, "weapon_9mmAR" ) )
+	{
+		strcpy( entity2, "weapon_mp5" );
+	}
+	else if( !strcmp( entity2, "weapon_python" ) )
+	{
+		strcpy( entity2, "weapon_357" );
+	}
+
+	// Fix ammo names
+	if( !strcmp( entity, "ammo_9mmclip" ) )
+	{
+		strcpy( entity, "ammo_glockclip" );
+	}
+	else if( !strcmp( entity, "ammo_9mmAR") )
+	{
+		strcpy( entity, "ammo_mp5clip");
+	}
+	else if( !strcmp( entity, "ammo_ARgrenades") )
+	{
+		strcpy( entity, "ammo_mp5grenades" );
+	}
+
+	if( !strcmp( entity2, "ammo_9mmclip") )
+	{
+		strcpy( entity2, "ammo_glockclip" );
+	}
+	else if( !strcmp( entity2, "ammo_9mmAR" ) )
+	{
+		strcpy( entity2, "ammo_mp5clip" );
+	}
+	else if( !strcmp( entity2, "ammo_ARgrenades" ) )
+	{
+		strcpy( entity2, "ammo_mp5grenades" );
+	}
+
+	if( ( !strncmp( entity, "weapon_", 7 ) ||
+		!strcmp( entity, "item_healthkit" ) ||
+		!strcmp( entity, "item_battery" ) ||
+		!strcmp( entity, "item_longjump" ) ||
+		!strncmp( entity, "ammo_", 5 ) ) &&
+	   ( !strncmp( entity2, "weapon_", 7 ) ||
+		!strcmp( entity2, "item_healthkit" ) ||
+		!strcmp( entity2, "item_battery" ) ||
+		!strcmp( entity2, "item_longjump" ) ||
+		!strncmp( entity2, "ammo_", 5 ) ) )
+	{
+		
+		while( ( target = UTIL_FindEntityInSphere( target, Vector( 0, 0, 0 ), 4096 ) ) != NULL )
+		{
+			if( !strcmp( STRING( target->pev->classname ), entity ) && ( target->pev->owner == NULL ) )
+			{
+				CBaseEntity::Create(entity2, target->pev->origin, target->pev->angles, NULL );
+				target->Killed(NULL, 0);
+			}
+		}
+	}
+	else
+	{
+		g_engfuncs.pfnServerPrint( "You only replace items, ammo, or weapons with this command.\n" );
+	}
+}
+
+// info on a player
+void BModCmd_Info( void )
+{
+	if( CMD_ARGC() < 2 )
+	{
+		g_engfuncs.pfnServerPrint( "Not enough arguments.\nUSAGE: info <PlayerUID>\n" );
+		return;
+	}
+
+	int UID = atoi( CMD_ARGV( 1 ) );
+
+	CBasePlayer *Player = GetPlayerByUID( UID );
+	if( Player == NULL )
+	{
+		g_engfuncs.pfnServerPrint( "Invalid Player UID.\n" );
+		return;
+	}
+
+	g_engfuncs.pfnServerPrint( UTIL_VarArgs( "Player: %s\n",STRING( Player->pev->netname ) ) );
+	g_engfuncs.pfnServerPrint( UTIL_VarArgs( "Health/Armor: %d/%d\n",(int)Player->pev->health, (int)Player->pev->armorvalue ) );
+
+	g_engfuncs.pfnServerPrint( UTIL_VarArgs( "Spawn Kills: %d\n",Player->m_iSpawnKills ) );
+	g_engfuncs.pfnServerPrint( UTIL_VarArgs( "Type Kills: %d\n",Player->m_iTypeKills ) );
+	g_engfuncs.pfnServerPrint( UTIL_VarArgs( "Leet: %d\n",Player->m_LeetSpeak ) );
+	g_engfuncs.pfnServerPrint( UTIL_VarArgs( "Locate: %d\n",Player->m_LocateMode ) );
+	g_engfuncs.pfnServerPrint( UTIL_VarArgs( "Llama: %d\n",Player->m_IsLlama ) );
+	g_engfuncs.pfnServerPrint( "\n" );
+}
+
+// Llamafy a player
+void BModCmd_Llama( void )
+{
+	if( CMD_ARGC() < 2 )
+	{
+		g_engfuncs.pfnServerPrint( "Not enough arguments.\nUSAGE: llama <PlayerUID>\n" );
+		return;
+	}
+
+	int UID = atoi( CMD_ARGV( 1 ) );
+	
+	CBasePlayer *Player = GetPlayerByUID( UID );
+	if( Player == NULL )
+	{
+		g_engfuncs.pfnServerPrint( "Invalid Player UID.\n" );
+		return;
+	}
+
+	Player->m_IsLlama = TRUE;
+
+	UTIL_ClientPrintAll( HUD_PRINTTALK, UTIL_VarArgs( "<SERVER> %s is now a llama! Bleeet!\n", STRING( Player->pev->netname ) ) ); 
+	g_engfuncs.pfnServerPrint( UTIL_VarArgs( "%s is now a llama! Bleeet!\n", STRING( Player->pev->netname ) ) );
+}
+
+// Unllamafy a player
+void BModCmd_Unllama( void )
+{
+	if( CMD_ARGC() < 2 )
+	{
+		g_engfuncs.pfnServerPrint( "Not enough arguments.\nUSAGE: unllama <PlayerUID>\n" );
+		return;
+	}
+
+	int UID = atoi( CMD_ARGV( 1 ) );
+	
+	CBasePlayer *Player = GetPlayerByUID( UID );
+	if( Player == NULL )
+	{
+		g_engfuncs.pfnServerPrint( "Invalid Player UID.\n" );
+		return;
+	}
+
+	Player->m_IsLlama = FALSE;
+
+	UTIL_ClientPrintAll( HUD_PRINTTALK, UTIL_VarArgs( "<SERVER> %s is unllamafied.\n", STRING( Player->pev->netname ) ) ); 
+	g_engfuncs.pfnServerPrint( UTIL_VarArgs( "%s is unllamafied.\n", STRING( Player->pev->netname ) ) );
+}

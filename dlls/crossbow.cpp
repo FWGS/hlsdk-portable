@@ -22,10 +22,14 @@
 #include "nodes.h"
 #include "player.h"
 #include "gamerules.h"
+#include "BMOD_messaging.h"
 
 #ifndef CLIENT_DLL
 #define BOLT_AIR_VELOCITY	2000
 #define BOLT_WATER_VELOCITY	1000
+
+extern cvar_t  bm_xbow_mod;
+extern cvar_t  bm_xbowtracers;
 
 // UNDONE: Save/restore this?  Don't forget to set classname and LINK_ENTITY_TO_CLASS()
 // 
@@ -75,6 +79,21 @@ void CCrossbowBolt::Spawn()
 	SetTouch( &CCrossbowBolt::BoltTouch );
 	SetThink( &CCrossbowBolt::BubbleThink );
 	pev->nextthink = gpGlobals->time + 0.2;
+
+	if( bm_xbowtracers.value )
+	{
+		MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
+			WRITE_BYTE( TE_BEAMFOLLOW );
+			WRITE_SHORT( entindex() ); // entity
+			WRITE_SHORT( g_sModelIndexSmoke ); // model
+			WRITE_BYTE( 5 ); // life
+			WRITE_BYTE( 1 ); // width
+			WRITE_BYTE( 100 ); // r, g, b
+			WRITE_BYTE( 100 ); // r, g, b
+			WRITE_BYTE( 200 ); // r, g, b
+			WRITE_BYTE( 255 ); // brightness
+		MESSAGE_END(); // move PHS/PVS data sending into here (SEND_ALL, SEND_PVS, SEND_PHS)
+	}
 }
 
 void CCrossbowBolt::Precache()
@@ -310,6 +329,9 @@ int CCrossbow::GetItemInfo( ItemInfo *p )
 
 BOOL CCrossbow::Deploy()
 {
+	if( bm_xbow_mod.value )
+		PrintMessage( m_pPlayer, BMOD_CHAN_WEAPON, Vector( 20, 250, 20 ), Vector( 1, 4, 2 ), "\nCROSSBOW\nSniper bolt damage lowered." );
+
 	if( m_iClip )
 		return DefaultDeploy( "models/v_crossbow.mdl", "models/p_crossbow.mdl", CROSSBOW_DRAW1, "bow" );
 	return DefaultDeploy( "models/v_crossbow.mdl", "models/p_crossbow.mdl", CROSSBOW_DRAW2, "bow" );
@@ -384,9 +406,49 @@ void CCrossbow::FireSniperBolt()
 #ifndef CLIENT_DLL
 	if( tr.pHit->v.takedamage )
 	{
+		// BMOD - fix crossbow hit sounds.
+		switch( RANDOM_LONG( 0, 1 ) )
+		{
+		case 0:
+			EMIT_SOUND( tr.pHit, CHAN_BODY, "weapons/xbow_hitbod1.wav", 1, ATTN_NORM );
+			break;
+		case 1:
+			EMIT_SOUND( tr.pHit, CHAN_BODY, "weapons/xbow_hitbod2.wav", 1, ATTN_NORM );
+			break;
+		}
+
 		ClearMultiDamage();
-		CBaseEntity::Instance( tr.pHit )->TraceAttack( m_pPlayer->pev, 120, vecDir, &tr, DMG_BULLET | DMG_NEVERGIB ); 
+		if( bm_xbow_mod.value )
+			CBaseEntity::Instance( tr.pHit )->TraceAttack( m_pPlayer->pev, 90, vecDir, &tr, DMG_BULLET | DMG_NEVERGIB );
+		else
+			CBaseEntity::Instance( tr.pHit )->TraceAttack( m_pPlayer->pev, 120, vecDir, &tr, DMG_BULLET | DMG_NEVERGIB ); 
 		ApplyMultiDamage( pev, m_pPlayer->pev );
+	}
+
+	if( bm_xbowtracers.value )
+	{
+		// BMOD Begin - sniper bolt tracer
+		MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
+			WRITE_BYTE( TE_BEAMPOINTS );
+			WRITE_COORD( vecSrc.x );
+			WRITE_COORD( vecSrc.y );
+			WRITE_COORD( vecSrc.z );
+			WRITE_COORD( tr.vecEndPos.x );
+			WRITE_COORD( tr.vecEndPos.y );
+			WRITE_COORD( tr.vecEndPos.z );
+			WRITE_SHORT( g_sModelIndexLaser ); // model
+			WRITE_BYTE( 0 ); // framestart?
+			WRITE_BYTE( 0 ); // framerate?
+			WRITE_BYTE( 1 ); // life
+			WRITE_BYTE( 2 ); // width
+			WRITE_BYTE( 0 ); // noise
+			WRITE_BYTE( 100 ); // r, g, b
+			WRITE_BYTE( 100 ); // r, g, b
+			WRITE_BYTE( 200 ); // r, g, b
+			WRITE_BYTE( 200 ); // brightness
+			WRITE_BYTE( 0 ); // speed?
+		MESSAGE_END();
+		// BMOD End - sniper bolt tracer
 	}
 #endif
 }
