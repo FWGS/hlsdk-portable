@@ -687,33 +687,7 @@ CBasePlayer *CCSBot::FindMostDangerousThreat()
 			// is it an enemy?
 			//if (player->m_iTeam == m_iTeam)
 			{
-				TraceResult result;
-				UTIL_TraceLine(GetEyePosition(), player->pev->origin, ignore_monsters, ignore_glass, edict(), &result);
-				if (result.flFraction == 1.0f)
-				{
-					// update watch timestamp
-					int idx = player->entindex() - 1;
-					m_watchInfo[idx].timestamp = gpGlobals->time;
-					m_watchInfo[idx].isEnemy = false;
-
-					// keep track of our closest friend
-					Vector to = pev->origin - player->pev->origin;
-					float rangeSq = to.LengthSquared();
-					if (rangeSq < closeFriendRange)
-					{
-						m_closestVisibleFriend = player;
-						closeFriendRange = rangeSq;
-					}
-
-					// keep track of our closest human friend
-					if (!player->IsBot() && rangeSq < closeHumanFriendRange)
-					{
-						m_closestVisibleHumanFriend = player;
-						closeHumanFriendRange = rangeSq;
-					}
-				}
-
-				continue;
+				
 			}
 
 			// check if this enemy is fully
