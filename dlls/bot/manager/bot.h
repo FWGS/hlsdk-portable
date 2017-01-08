@@ -274,10 +274,10 @@ inline void CBot::SetModel(const char *modelName)
 
 inline float CBot::GetMoveSpeed()
 {
-	if (m_isRunning || m_isCrouching)
-		return pev->maxspeed;
+//	if (m_isRunning || m_isCrouching)
+//		return pev->maxspeed;
 
-	return 0.4f * pev->maxspeed;
+	return 400;//0.4f * pev->maxspeed;
 }
 
 inline void CBot::Run()
