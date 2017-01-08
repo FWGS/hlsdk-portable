@@ -782,6 +782,8 @@ void CHalfLifeMultiplay::PlayerSpawn( CBasePlayer *pPlayer )
 {
 	BOOL		addDefault;
 	CBaseEntity	*pWeaponEntity = NULL;
+	if( pPlayer->IsBot() )
+	pPlayer->m_state = STATE_SPAWNED;
 
 	if( pPlayer->m_state == STATE_UNINITIALIZED )
 	{

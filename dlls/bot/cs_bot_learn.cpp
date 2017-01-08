@@ -156,9 +156,15 @@ void CCSBot::StartLearnProcess()
 
 	if (!GetGroundHeight(&pos, &pos.z, &normal))
 	{
+		g_pGameRules->GetPlayerSpawnSpot( this );
+		//pev->origin.z += 30;
+		pos = pev->origin;
+		SnapToGrid(&pos.x);
+		SnapToGrid(&pos.y);
+		GetGroundHeight(&pos, &pos.z, &normal);
 		CONSOLE_ECHO("ERROR: Start position invalid\n\n");
-		m_processMode = PROCESS_NORMAL;
-		return;
+		//m_processMode = PROCESS_NORMAL;
+		//return;
 	}
 
 	m_currentNode = new CNavNode(&pos, &normal);

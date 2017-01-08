@@ -1618,12 +1618,12 @@ bool BotChatterInterface::ShouldSpeak() const
 
 float BotChatterInterface::GetRadioSilenceDuration()
 {
-	return m_radioSilenceInterval[ m_me->m_iTeam - 1 ].GetElapsedTime();
+	return 0;// m_radioSilenceInterval[ m_me->m_iTeam - 1 ].GetElapsedTime();
 }
 
 void BotChatterInterface::ResetRadioSilenceDuration()
 {
-	m_radioSilenceInterval[m_me->m_iTeam - 1].Reset();
+//	m_radioSilenceInterval[0].Reset();
 }
 
 inline void SayWhere(BotStatement *say, Place place)
