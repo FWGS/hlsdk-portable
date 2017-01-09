@@ -324,7 +324,7 @@ public:
 	PlayerState m_state;
 	bool m_fTouchMenu;
 	virtual void Touch( CBaseEntity *pOther );
-	bool IsBot(){ return pev->flags & FL_FAKECLIENT; }
+	virtual BOOL IsBot(){ return false; }
 	bool IsLookingAtPosition(Vector *pos, float angleTolerance = 20.0f);
 
 };
