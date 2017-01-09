@@ -5,14 +5,14 @@
 */
 CBotManager *TheBots = NULL;
 
-float CCSBotManager::m_flNextCVarCheck = 0.0f;
-bool CCSBotManager::m_isMapDataLoaded = false;
-bool CCSBotManager::m_isLearningMap = false;
-bool CCSBotManager::m_isAnalysisRequested = false;
-NavEditCmdType CCSBotManager::m_editCmd = EDIT_NONE;
+float CHLBotManager::m_flNextCVarCheck = 0.0f;
+bool CHLBotManager::m_isMapDataLoaded = false;
+bool CHLBotManager::m_isLearningMap = false;
+bool CHLBotManager::m_isAnalysisRequested = false;
+NavEditCmdType CHLBotManager::m_editCmd = EDIT_NONE;
 
 
-CCSBotManager::CCSBotManager()
+CHLBotManager::CHLBotManager()
 {
 	m_flNextCVarCheck = 0.0f;
 
@@ -80,7 +80,7 @@ CCSBotManager::CCSBotManager()
 
 // Invoked when a new round begins
 
-void CCSBotManager::RestartRound()
+void CHLBotManager::RestartRound()
 {
 	// extend
 	CBotManager::RestartRound();
@@ -162,7 +162,7 @@ void UTIL_DrawBox(Extent *extent, int lifetime, int red, int green, int blue)
 
 // Called each frame
 
-void CCSBotManager::StartFrame()
+void CHLBotManager::StartFrame()
 {
 	// EXTEND
 	CBotManager::StartFrame();
@@ -181,28 +181,28 @@ void CCSBotManager::StartFrame()
 
 // Return true if the bot can use this weapon
 
-bool CCSBotManager::IsWeaponUseable(CBasePlayerItem *item) const
+bool CHLBotManager::IsWeaponUseable(CBasePlayerItem *item) const
 {
 	return true;
 }
 
 // Return true if this player is on "defense"
 
-bool CCSBotManager::IsOnDefense(CBasePlayer *player) const
+bool CHLBotManager::IsOnDefense(CBasePlayer *player) const
 {
 	return false;
 }
 
 // Return true if this player is on "offense"
 
-bool CCSBotManager::IsOnOffense(CBasePlayer *player) const
+bool CHLBotManager::IsOnOffense(CBasePlayer *player) const
 {
 	return !IsOnDefense(player);
 }
 
 // Invoked when a map has just been loaded
 
-void CCSBotManager::ServerActivate()
+void CHLBotManager::ServerActivate()
 {
 	DestroyNavigationMap();
 	m_isMapDataLoaded = false;
@@ -222,12 +222,12 @@ void CCSBotManager::ServerActivate()
 	TheBotPhrases->OnMapChange();
 }
 
-void CCSBotManager::AddServerCommand(const char *cmd)
+void CHLBotManager::AddServerCommand(const char *cmd)
 {
 	ADD_SERVER_COMMAND((char *)cmd, Bot_ServerCommand);
 }
 
-void CCSBotManager::AddServerCommands()
+void CHLBotManager::AddServerCommands()
 {
 	static bool fFirstTime = true;
 
@@ -282,17 +282,17 @@ void CCSBotManager::AddServerCommands()
 	}
 }
 
-void CCSBotManager::ServerDeactivate()
+void CHLBotManager::ServerDeactivate()
 {
 	m_bServerActive = false;
 }
 
-void CCSBotManager::ClientDisconnect(CBasePlayer *pPlayer)
+void CHLBotManager::ClientDisconnect(CBasePlayer *pPlayer)
 {
 	if (pPlayer != NULL && pPlayer->IsBot())
 	{
 		entvars_t *temp = VARS(pPlayer->edict());
-		CCSBot *pBot = static_cast<CCSBot *>(pPlayer);
+		CHLBot *pBot = static_cast<CHLBot *>(pPlayer);
 
 		if (pBot != NULL)
 		{
@@ -325,7 +325,7 @@ void PrintAllEntities()
 	}
 }
 
-void CCSBotManager::ServerCommand(const char *pcmd)
+void CHLBotManager::ServerCommand(const char *pcmd)
 {
 	if (!m_bServerActive)
 		return;
@@ -646,7 +646,7 @@ void CCSBotManager::ServerCommand(const char *pcmd)
 
 				if (playerOrBot->IsBot())
 				{
-					CCSBot *bot = static_cast<CCSBot *>(playerOrBot);
+					CHLBot *bot = static_cast<CHLBot *>(playerOrBot);
 					if (bot != NULL)
 					{
 						bot->MoveTo(&area->m_center, FASTEST_ROUTE);
@@ -660,7 +660,7 @@ void CCSBotManager::ServerCommand(const char *pcmd)
 	else if (FStrEq(pcmd, "bot_memory_usage"))
 	{
 		CONSOLE_ECHO("Memory usage:\n");
-		CONSOLE_ECHO("  %d bytes per bot\b", sizeof(CCSBot));
+		CONSOLE_ECHO("  %d bytes per bot\b", sizeof(CHLBot));
 		CONSOLE_ECHO("  %d Navigation Areas @ %d bytes each = %d bytes\n",
 			TheNavAreaGrid.GetNavAreaCount(),
 			sizeof(CNavArea),
@@ -718,14 +718,14 @@ void CCSBotManager::ServerCommand(const char *pcmd)
 	}
 }
 
-BOOL CCSBotManager::ClientCommand(CBasePlayer *pPlayer, const char *pcmd)
+BOOL CHLBotManager::ClientCommand(CBasePlayer *pPlayer, const char *pcmd)
 {
 	return FALSE;
 }
 
 // Process the "bot_add" console command
 
-bool CCSBotManager::BotAddCommand(BotProfileTeamType team, bool isFromConsole)
+bool CHLBotManager::BotAddCommand(BotProfileTeamType team, bool isFromConsole)
 {
 	// dont allow bots to join if the Navigation Area is being generated
 	if (m_isLearningMap)
@@ -797,7 +797,7 @@ bool CCSBotManager::BotAddCommand(BotProfileTeamType team, bool isFromConsole)
 
 // Keep a minimum quota of bots in the game
 
-void CCSBotManager::MaintainBotQuota()
+void CHLBotManager::MaintainBotQuota()
 {
 	if (m_isLearningMap)
 		return;
@@ -847,7 +847,7 @@ void CCSBotManager::MaintainBotQuota()
 	}
 }
 
-void CCSBotManager::MonitorBotCVars()
+void CHLBotManager::MonitorBotCVars()
 {
 	if (cv_bot_nav_edit.value != 0.0f)
 	{
@@ -869,7 +869,7 @@ void CCSBotManager::MonitorBotCVars()
 class CollectOverlappingAreas
 {
 public:
-	CollectOverlappingAreas(CCSBotManager::Zone *zone)
+	CollectOverlappingAreas(CHLBotManager::Zone *zone)
 	{
 		m_zone = zone;
 		zone->m_areaCount = 0;
@@ -884,7 +884,7 @@ public:
 		{
 			// area overlaps m_zone
 			m_zone->m_area[ m_zone->m_areaCount++ ] = area;
-			if (m_zone->m_areaCount == CCSBotManager::MAX_ZONE_NAV_AREAS)
+			if (m_zone->m_areaCount == CHLBotManager::MAX_ZONE_NAV_AREAS)
 			{
 				return false;
 			}
@@ -894,12 +894,12 @@ public:
 	}
 
 private:
-	CCSBotManager::Zone *m_zone;
+	CHLBotManager::Zone *m_zone;
 };
 
 // Search the map entities to determine the game scenario and define important zones.
 
-void CCSBotManager::ValidateMapData()
+void CHLBotManager::ValidateMapData()
 {
 	if (m_isMapDataLoaded )
 		return;
@@ -1039,9 +1039,9 @@ void CCSBotManager::ValidateMapData()
 	}
 }
 
-bool CCSBotManager::AddBot(const BotProfile *profile, BotProfileTeamType team)
+bool CHLBotManager::AddBot(const BotProfile *profile, BotProfileTeamType team)
 {
-	CCSBot *pBot = CreateBot<CCSBot>(profile);
+	CHLBot *pBot = CreateBot<CHLBot>(profile);
 	if (pBot == NULL)
 	{
 		return false;
@@ -1058,7 +1058,7 @@ bool CCSBotManager::AddBot(const BotProfile *profile, BotProfileTeamType team)
 
 // Return the zone that contains the given position
 
-const CCSBotManager::Zone *CCSBotManager::GetZone(const Vector *pos) const
+const CHLBotManager::Zone *CHLBotManager::GetZone(const Vector *pos) const
 {
 	for (int z = 0; z < m_zoneCount; ++z)
 	{
@@ -1073,7 +1073,7 @@ const CCSBotManager::Zone *CCSBotManager::GetZone(const Vector *pos) const
 
 // Return the closest zone to the given position
 
-const CCSBotManager::Zone *CCSBotManager::GetClosestZone(const Vector *pos) const
+const CHLBotManager::Zone *CHLBotManager::GetClosestZone(const Vector *pos) const
 {
 	const Zone *close = NULL;
 	float closeRangeSq = 1e9f;
@@ -1094,7 +1094,7 @@ const CCSBotManager::Zone *CCSBotManager::GetClosestZone(const Vector *pos) cons
 
 // Return a random position inside the given zone
 
-const Vector *CCSBotManager::GetRandomPositionInZone(const Zone *zone) const
+const Vector *CHLBotManager::GetRandomPositionInZone(const Zone *zone) const
 {
 	static Vector pos;
 
@@ -1133,7 +1133,7 @@ const Vector *CCSBotManager::GetRandomPositionInZone(const Zone *zone) const
 
 // Return a random area inside the given zone
 
-CNavArea *CCSBotManager::GetRandomAreaInZone(const Zone *zone) const
+CNavArea *CHLBotManager::GetRandomAreaInZone(const Zone *zone) const
 {
 	// TODO: improvement is needed
 	if (!zone->m_areaCount)
@@ -1142,7 +1142,7 @@ CNavArea *CCSBotManager::GetRandomAreaInZone(const Zone *zone) const
 	return zone->m_area[ RANDOM_LONG(0, zone->m_areaCount - 1) ];
 }
 
-void CCSBotManager::OnEvent(GameEventType event, CBaseEntity *entity, CBaseEntity *other)
+void CHLBotManager::OnEvent(GameEventType event, CBaseEntity *entity, CBaseEntity *other)
 {
 	switch (event)
 	{
@@ -1184,12 +1184,12 @@ void CCSBotManager::OnEvent(GameEventType event, CBaseEntity *entity, CBaseEntit
 
 // Get the time remaining before the planted bomb explodes
 
-float CCSBotManager::GetBombTimeLeft() const
+float CHLBotManager::GetBombTimeLeft() const
 {
 	return 10;//(g_pGameRules->m_iC4Timer - (gpGlobals->time - m_bombPlantTimestamp));
 }
 
-void CCSBotManager::SetLooseBomb(CBaseEntity *bomb)
+void CHLBotManager::SetLooseBomb(CBaseEntity *bomb)
 {
 	m_looseBomb = bomb;
 
@@ -1205,7 +1205,7 @@ void CCSBotManager::SetLooseBomb(CBaseEntity *bomb)
 
 // Return true if player is important to scenario (VIP, bomb carrier, etc)
 
-bool CCSBotManager::IsImportantPlayer(CBasePlayer *player) const
+bool CHLBotManager::IsImportantPlayer(CBasePlayer *player) const
 {
 	// everyone is equally important in a deathmatch
 	return false;
@@ -1213,7 +1213,7 @@ bool CCSBotManager::IsImportantPlayer(CBasePlayer *player) const
 
 // Return priority of player (0 = max pri)
 
-unsigned int CCSBotManager::GetPlayerPriority(CBasePlayer *player) const
+unsigned int CHLBotManager::GetPlayerPriority(CBasePlayer *player) const
 {
 	const unsigned int lowestPriority = 0xFFFFFFFF;
 
@@ -1224,7 +1224,7 @@ unsigned int CCSBotManager::GetPlayerPriority(CBasePlayer *player) const
 	if (!player->IsBot())
 		return 0;
 
-	CCSBot *bot = dynamic_cast<CCSBot *>(player);
+	CHLBot *bot = dynamic_cast<CHLBot *>(player);
 
 	if (!bot)
 		return 0;
@@ -1235,14 +1235,14 @@ unsigned int CCSBotManager::GetPlayerPriority(CBasePlayer *player) const
 // Return the last time the given radio message was sent for given team
 // 'teamID' can be CT or TERRORIST
 
-float CCSBotManager::GetRadioMessageTimestamp(GameEventType event, int teamID) const
+float CHLBotManager::GetRadioMessageTimestamp(GameEventType event, int teamID) const
 {
 	return 0;
 }
 
 // Return the interval since the last time this message was sent
 
-float CCSBotManager::GetRadioMessageInterval(GameEventType event, int teamID) const
+float CHLBotManager::GetRadioMessageInterval(GameEventType event, int teamID) const
 {
 	return 1;
 }
@@ -1250,12 +1250,12 @@ float CCSBotManager::GetRadioMessageInterval(GameEventType event, int teamID) co
 // Set the given radio message timestamp.
 // 'teamID' can be CT or TERRORIST
 
-void CCSBotManager::SetRadioMessageTimestamp(GameEventType event, int teamID)
+void CHLBotManager::SetRadioMessageTimestamp(GameEventType event, int teamID)
 {
 }
 
 // Reset all radio message timestamps
 
-void CCSBotManager::ResetRadioMessageTimestamps()
+void CHLBotManager::ResetRadioMessageTimestamps()
 {
 }

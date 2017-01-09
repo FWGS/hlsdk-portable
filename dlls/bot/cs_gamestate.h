@@ -32,24 +32,22 @@
 #pragma once
 #endif
 
-class CCSBot;
+class CHLBot;
 
 // This class represents the game state as known by a particular bot
-class CSGameState
+class CHLGameState
 {
 public:
-	CSGameState() {};
-	CSGameState(CCSBot *owner);
+	CHLGameState() {};
+	CHLGameState(CHLBot *owner);
 
 	void Reset();
 	void OnEvent(GameEventType event, CBaseEntity *entity, CBaseEntity *other);		// Event handling
 	bool IsRoundOver() const;								// true if round has been won or lost (but not yet reset)
 
-	// hostage rescue scenario
-	//enum ValidateStatusType:unsigned char //C++11 feature
 
 private:
-	CCSBot *m_owner;			// who owns this gamestate
+	CHLBot *m_owner;			// who owns this gamestate
 	bool m_isRoundOver;			// true if round is over, but no yet reset
 
 	CountdownTimer m_validateInterval;

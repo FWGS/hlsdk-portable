@@ -1,6 +1,6 @@
 #include "bot_common.h"
 
-CSGameState::CSGameState(CCSBot *owner)
+CHLGameState::CHLGameState(CHLBot *owner)
 {
 	m_owner = owner;
 	m_isRoundOver = false;
@@ -9,10 +9,10 @@ CSGameState::CSGameState(CCSBot *owner)
 
 // Reset at round start
 
-void CSGameState::Reset()
+void CHLGameState::Reset()
 {
 	int i;
-	CCSBotManager *ctrl = TheCSBots();
+	CHLBotManager *ctrl = TheCSBots();
 
 	m_isRoundOver = false;
 
@@ -20,14 +20,14 @@ void CSGameState::Reset()
 
 // Update game state based on events we have received
 
-void CSGameState::OnEvent(GameEventType event, CBaseEntity *entity, CBaseEntity *other)
+void CHLGameState::OnEvent(GameEventType event, CBaseEntity *entity, CBaseEntity *other)
 {
 
 }
 
 // True if round has been won or lost (but not yet reset)
 
-bool CSGameState::IsRoundOver() const
+bool CHLGameState::IsRoundOver() const
 {
 	return m_isRoundOver;
 }

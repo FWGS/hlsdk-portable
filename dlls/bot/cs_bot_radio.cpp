@@ -2,7 +2,7 @@
 
 // Returns true if the radio message is an order to do something
 // NOTE: "Report in" is not considered a "command" because it doesnt ask the bot to go somewhere, or change its mind
-bool CCSBot::IsRadioCommand(GameEventType event) const
+bool CHLBot::IsRadioCommand(GameEventType event) const
 {
 	if (event == EVENT_RADIO_AFFIRMATIVE
 		|| event == EVENT_RADIO_NEGATIVE
@@ -18,7 +18,7 @@ bool CCSBot::IsRadioCommand(GameEventType event) const
 
 // Respond to radio commands from HUMAN players
 
-void CCSBot::RespondToRadioCommands()
+void CHLBot::RespondToRadioCommands()
 {
 	// bots use the chatter system to respond to each other
 	if (m_radioSubject != NULL && m_radioSubject->IsPlayer())
@@ -72,7 +72,7 @@ void CCSBot::RespondToRadioCommands()
 		return;
 	}
 
-	CCSBotManager *ctrl = TheCSBots();
+	CHLBotManager *ctrl = TheCSBots();
 	CBasePlayer *player = m_radioSubject;
 	if (player == NULL)
 		return;
@@ -152,11 +152,11 @@ void CCSBot::RespondToRadioCommands()
 		{
 			// if this is a defusal scenario, and the bomb is planted,
 			// and a human player cleared a bombsite, check it off our list too
-			if (ctrl->GetScenario() == CCSBotManager::SCENARIO_DEFUSE_BOMB)
+			if (ctrl->GetScenario() == CHLBotManager::SCENARIO_DEFUSE_BOMB)
 			{
 				if (m_iTeam == CT && ctrl->IsBombPlanted())
 				{
-					const CCSBotManager::Zone *zone = ctrl->GetClosestZone(player);
+					const CHLBotManager::Zone *zone = ctrl->GetClosestZone(player);
 
 					if (zone != NULL)
 					{
@@ -195,7 +195,7 @@ void CCSBot::RespondToRadioCommands()
 
 // Send voice chatter.  Also sends the entindex.
 
-void CCSBot::StartVoiceFeedback(float duration)
+void CHLBot::StartVoiceFeedback(float duration)
 {
 	m_voiceFeedbackStartTimestamp = gpGlobals->time;
 	m_voiceFeedbackEndTimestamp = duration + gpGlobals->time;
@@ -210,7 +210,7 @@ void CCSBot::StartVoiceFeedback(float duration)
 	}
 }
 
-void CCSBot::EndVoiceFeedback(bool force)
+void CHLBot::EndVoiceFeedback(bool force)
 {
 	if (!force && !m_voiceFeedbackEndTimestamp)
 		return;
@@ -225,7 +225,7 @@ void CCSBot::EndVoiceFeedback(bool force)
 
 // Decide if we should move to help the player, return true if we will
 
-bool CCSBot::RespondToHelpRequest(CBasePlayer *them, Place place, float maxRange)
+bool CHLBot::RespondToHelpRequest(CBasePlayer *them, Place place, float maxRange)
 {
 	if (IsRogue())
 		return false;
@@ -286,7 +286,7 @@ bool CCSBot::RespondToHelpRequest(CBasePlayer *them, Place place, float maxRange
 
 // Send a radio message
 
-void CCSBot::SendRadioMessage(GameEventType event)
+void CHLBot::SendRadioMessage(GameEventType event)
 {
 	// make sure this is a radio event
 	if (event <= EVENT_START_RADIO_1 || event >= EVENT_END_RADIO)
@@ -294,7 +294,7 @@ void CCSBot::SendRadioMessage(GameEventType event)
 		return;
 	}
 
-	CCSBotManager *ctrl = TheCSBots();
+	CHLBotManager *ctrl = TheCSBots();
 	PrintIfWatched("%3.1f: SendRadioMessage( %s )\n", gpGlobals->time, GameEventName[ event ]);
 
 	// note the time the message was sent

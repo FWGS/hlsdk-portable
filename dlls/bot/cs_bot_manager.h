@@ -35,10 +35,10 @@
 extern CBotManager *TheBots;
 
 // The manager for Counter-Strike specific bots
-class CCSBotManager: public CBotManager
+class CHLBotManager: public CBotManager
 {
 public:
-	CCSBotManager();
+	CHLBotManager();
 
 	virtual void ClientDisconnect(CBasePlayer *pPlayer);
 	virtual BOOL ClientCommand(CBasePlayer *pPlayer, const char *pcmd);
@@ -246,9 +246,9 @@ NOXREF inline int OtherTeam(int team)
 	return 0;
 }
 
-inline CCSBotManager *TheCSBots()
+inline CHLBotManager *TheCSBots()
 {
-	return reinterpret_cast<CCSBotManager *>(TheBots);
+	return reinterpret_cast<CHLBotManager *>(TheBots);
 }
 
 void PrintAllEntities();

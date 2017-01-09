@@ -48,7 +48,7 @@ inline CNavNode *LadderEndSearch(CBaseEntity *entity, const Vector *pos, NavDirT
 	return NULL;
 }
 
-CNavNode *CCSBot::AddNode(const Vector *destPos, const Vector *normal, NavDirType dir, CNavNode *source)
+CNavNode *CHLBot::AddNode(const Vector *destPos, const Vector *normal, NavDirType dir, CNavNode *source)
 {
 	// check if a node exists at this location
 	CNavNode *node = const_cast<CNavNode *>(CNavNode::GetNode(destPos));
@@ -142,7 +142,7 @@ void hideProgressMeter()
 #endif
 }
 
-void CCSBot::StartLearnProcess()
+void CHLBot::StartLearnProcess()
 {
 	startProgressMeter("Analyzing map geometry...");
 	drawProgressMeter(0, "Analyzing map geometry...");
@@ -178,7 +178,7 @@ void CCSBot::StartLearnProcess()
 // Sample the map one "step" in a cardinal direction to learn the map.
 // Returns true if sampling needs to continue, or false if done.
 
-bool CCSBot::LearnStep()
+bool CHLBot::LearnStep()
 {
 	// take a step
 	while (true)
@@ -353,7 +353,7 @@ bool CCSBot::LearnStep()
 	}
 }
 
-void CCSBot::UpdateLearnProcess()
+void CHLBot::UpdateLearnProcess()
 {
 	float startTime = g_engfuncs.pfnTime();
 	while (g_engfuncs.pfnTime() - startTime < updateTimesliceDuration)
@@ -366,7 +366,7 @@ void CCSBot::UpdateLearnProcess()
 	}
 }
 
-void CCSBot::StartAnalyzeAlphaProcess()
+void CHLBot::StartAnalyzeAlphaProcess()
 {
 	m_processMode = PROCESS_ANALYZE_ALPHA;
 	m_analyzeIter = TheNavAreaList.Head ();
@@ -380,7 +380,7 @@ void CCSBot::StartAnalyzeAlphaProcess()
 	drawProgressMeter(0, "Analyzing hiding spots...");
 }
 
-bool CCSBot::AnalyzeAlphaStep()
+bool CHLBot::AnalyzeAlphaStep()
 {
 	++_currentIndex;
 	if (m_analyzeIter == TheNavAreaList.InvalidIndex ())
@@ -394,7 +394,7 @@ bool CCSBot::AnalyzeAlphaStep()
 	return true;
 }
 
-void CCSBot::UpdateAnalyzeAlphaProcess()
+void CHLBot::UpdateAnalyzeAlphaProcess()
 {
 	float startTime = g_engfuncs.pfnTime();
 	while (g_engfuncs.pfnTime() - startTime < updateTimesliceDuration)
@@ -411,7 +411,7 @@ void CCSBot::UpdateAnalyzeAlphaProcess()
 	drawProgressMeter(progress, "Analyzing hiding spots...");
 }
 
-void CCSBot::StartAnalyzeBetaProcess()
+void CHLBot::StartAnalyzeBetaProcess()
 {
 	m_processMode = PROCESS_ANALYZE_BETA;
 	m_analyzeIter = TheNavAreaList.Head ();
@@ -420,7 +420,7 @@ void CCSBot::StartAnalyzeBetaProcess()
 	_currentIndex = 0;
 }
 
-bool CCSBot::AnalyzeBetaStep()
+bool CHLBot::AnalyzeBetaStep()
 {
 	++_currentIndex;
 	if (m_analyzeIter == TheNavAreaList.InvalidIndex ())
@@ -434,7 +434,7 @@ bool CCSBot::AnalyzeBetaStep()
 	return true;
 }
 
-void CCSBot::UpdateAnalyzeBetaProcess()
+void CHLBot::UpdateAnalyzeBetaProcess()
 {
 	float startTime = g_engfuncs.pfnTime();
 	while (g_engfuncs.pfnTime() - startTime < updateTimesliceDuration)
@@ -451,12 +451,12 @@ void CCSBot::UpdateAnalyzeBetaProcess()
 	drawProgressMeter(progress, "Analyzing approach points...");
 }
 
-void CCSBot::StartSaveProcess()
+void CHLBot::StartSaveProcess()
 {
 	m_processMode = PROCESS_SAVE;
 }
 
-void CCSBot::UpdateSaveProcess()
+void CHLBot::UpdateSaveProcess()
 {
 	char filename[256];
 	char msg[256];
@@ -480,7 +480,7 @@ void CCSBot::UpdateSaveProcess()
 	SERVER_COMMAND(cmd);
 }
 
-void CCSBot::StartNormalProcess()
+void CHLBot::StartNormalProcess()
 {
 	m_processMode = PROCESS_NORMAL;
 }

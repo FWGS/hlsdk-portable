@@ -27,7 +27,7 @@ int GetBotFollowCount(CBasePlayer *leader)
  		if (!player->IsAlive())
  			continue;
 
-		CCSBot *bot = dynamic_cast<CCSBot *>(player);
+		CHLBot *bot = dynamic_cast<CHLBot *>(player);
 		if (bot != NULL && bot->GetFollowLeader() == leader)
 			++count;
 	}
@@ -37,7 +37,7 @@ int GetBotFollowCount(CBasePlayer *leader)
 
 // Change movement speed to walking
 
-void CCSBot::Walk()
+void CHLBot::Walk()
 {
 	if (m_mustRunTimer.IsElapsed())
 	{
@@ -52,7 +52,7 @@ void CCSBot::Walk()
 // Return true if jump was started.
 // This is extended from the base jump to disallow jumping when in a crouch area.
 
-bool CCSBot::Jump(bool mustJump)
+bool CHLBot::Jump(bool mustJump)
 {
 	// prevent jumping if we're crouched, unless we're in a crouchjump area - jump wins
 	bool inCrouchJumpArea = (m_lastKnownArea &&
@@ -70,7 +70,7 @@ bool CCSBot::Jump(bool mustJump)
 // Invoked when injured by something
 // NOTE: We dont want to directly call Attack() here, or the bots will have super-human reaction times when injured
 
-int CCSBot::TakeDamage(entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType)
+int CHLBot::TakeDamage(entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType)
 {
 	CBaseEntity *attacker = GetClassPtr((CBaseEntity *)pevInflictor);
 
@@ -148,7 +148,7 @@ int CCSBot::TakeDamage(entvars_t *pevInflictor, entvars_t *pevAttacker, float fl
 
 // Invoked when killed
 
-void CCSBot::Killed(entvars_t *pevAttacker, int iGib)
+void CHLBot::Killed(entvars_t *pevAttacker, int iGib)
 {
 	PrintIfWatched("Killed( attacker = %s )\n", STRING(pevAttacker->netname));
 
@@ -215,7 +215,7 @@ bool IsIntersectingBox(const Vector *start, const Vector *end, const Vector *box
 
 // When bot is touched by another entity.
 
-void CCSBot::BotTouch(CBaseEntity *other)
+void CHLBot::BotTouch(CBaseEntity *other)
 {
 	// if we have touched a higher-priority player, make way
 	// TODO: Need to account for reaction time, etc.
@@ -285,7 +285,7 @@ void CCSBot::BotTouch(CBaseEntity *other)
 	}
 }
 
-bool CCSBot::IsBusy() const
+bool CHLBot::IsBusy() const
 {
 	if (IsAttacking() || IsSniping())
 	{
@@ -295,12 +295,12 @@ bool CCSBot::IsBusy() const
 	return false;
 }
 
-void CCSBot::BotDeathThink()
+void CHLBot::BotDeathThink()
 {
 	;
 }
 
-CBasePlayer *CCSBot::FindNearbyPlayer()
+CBasePlayer *CHLBot::FindNearbyPlayer()
 {
 	CBaseEntity *pEntity = NULL;
 	Vector vecSrc = pev->origin;
@@ -322,7 +322,7 @@ CBasePlayer *CCSBot::FindNearbyPlayer()
 
 // Assign given player as our current enemy to attack
 
-void CCSBot::SetEnemy(CBasePlayer *enemy)
+void CHLBot::SetEnemy(CBasePlayer *enemy)
 {
 	if (m_enemy != enemy)
 	{
@@ -335,7 +335,7 @@ void CCSBot::SetEnemy(CBasePlayer *enemy)
 // move towards last known area.
 // Return false if off mesh.
 
-bool CCSBot::StayOnNavMesh()
+bool CHLBot::StayOnNavMesh()
 {
 	if (m_currentArea != NULL)
 		return true;
@@ -382,7 +382,7 @@ bool CCSBot::StayOnNavMesh()
 	return false;
 }
 
-void CCSBot::Panic(CBasePlayer *enemy)
+void CHLBot::Panic(CBasePlayer *enemy)
 {
 	if (IsSurprised())
 		return;
@@ -443,7 +443,7 @@ void CCSBot::Panic(CBasePlayer *enemy)
 	PrintIfWatched("Aaaah!\n");
 }
 
-bool CCSBot::IsDoingScenario() const
+bool CHLBot::IsDoingScenario() const
 {
 	if (cv_bot_defer_to_human.value <= 0.0f)
 		return true;
@@ -452,7 +452,7 @@ bool CCSBot::IsDoingScenario() const
 }
 // Return last enemy that hurt us
 
-CBasePlayer *CCSBot::GetAttacker() const
+CBasePlayer *CHLBot::GetAttacker() const
 {
 	if (m_attacker != NULL && m_attacker->IsAlive())
 		return m_attacker;
@@ -462,7 +462,7 @@ CBasePlayer *CCSBot::GetAttacker() const
 
 // Immediately jump off of our ladder, if we're on one
 
-void CCSBot::GetOffLadder()
+void CHLBot::GetOffLadder()
 {
 	if (IsUsingLadder())
 	{
@@ -473,7 +473,7 @@ void CCSBot::GetOffLadder()
 
 // Return time when given spot was last checked
 
-float CCSBot::GetHidingSpotCheckTimestamp(HidingSpot *spot) const
+float CHLBot::GetHidingSpotCheckTimestamp(HidingSpot *spot) const
 {
 	for (int i = 0; i < m_checkedHidingSpotCount; ++i)
 	{
@@ -487,7 +487,7 @@ float CCSBot::GetHidingSpotCheckTimestamp(HidingSpot *spot) const
 // Set the timestamp of the given spot to now.
 // If the spot is not in the set, overwrite the least recently checked spot.
 
-void CCSBot::SetHidingSpotCheckTimestamp(HidingSpot *spot)
+void CHLBot::SetHidingSpotCheckTimestamp(HidingSpot *spot)
 {
 	int leastRecent = 0;
 	float leastRecentTime = gpGlobals->time + 1.0f;
@@ -525,14 +525,14 @@ void CCSBot::SetHidingSpotCheckTimestamp(HidingSpot *spot)
 }
 // Return true if we are outnumbered by enemies
 
-bool CCSBot::IsOutnumbered() const
+bool CHLBot::IsOutnumbered() const
 {
 	return (GetNearbyFriendCount() < GetNearbyEnemyCount() - 1) ? true : false;
 }
 
 // Return number of enemies we are outnumbered by
 
-int CCSBot::OutnumberedCount() const
+int CHLBot::OutnumberedCount() const
 {
 	if (IsOutnumbered())
 	{
@@ -544,9 +544,9 @@ int CCSBot::OutnumberedCount() const
 
 // Return the closest "important" enemy for the given scenario (bomb carrier, VIP, hostage escorter)
 
-CBasePlayer *CCSBot::GetImportantEnemy(bool checkVisibility) const
+CBasePlayer *CHLBot::GetImportantEnemy(bool checkVisibility) const
 {
-	CCSBotManager *ctrl = TheCSBots();
+	CHLBotManager *ctrl = TheCSBots();
 	CBasePlayer *nearEnemy = NULL;
 	float nearDist = 999999999.9f;
 
@@ -594,7 +594,7 @@ CBasePlayer *CCSBot::GetImportantEnemy(bool checkVisibility) const
 
 // Sets our current disposition
 
-void CCSBot::SetDisposition(DispositionType disposition)
+void CHLBot::SetDisposition(DispositionType disposition)
 {
 	m_disposition = disposition;
 
@@ -606,7 +606,7 @@ void CCSBot::SetDisposition(DispositionType disposition)
 
 // Return our current disposition
 
-CCSBot::DispositionType CCSBot::GetDisposition() const
+CHLBot::DispositionType CHLBot::GetDisposition() const
 {
 	if (!m_ignoreEnemiesTimer.IsElapsed())
 		return IGNORE_ENEMIES;
@@ -616,14 +616,14 @@ CCSBot::DispositionType CCSBot::GetDisposition() const
 
 // Ignore enemies for a short durationy
 
-void CCSBot::IgnoreEnemies(float duration)
+void CHLBot::IgnoreEnemies(float duration)
 {
 	m_ignoreEnemiesTimer.Start(duration);
 }
 
 // Increase morale one step
 
-void CCSBot::IncreaseMorale()
+void CHLBot::IncreaseMorale()
 {
 	if (m_morale < EXCELLENT)
 	{
@@ -633,7 +633,7 @@ void CCSBot::IncreaseMorale()
 
 // Decrease morale one step
 
-void CCSBot::DecreaseMorale()
+void CHLBot::DecreaseMorale()
 {
 	if (m_morale > TERRIBLE)
 	{
@@ -644,9 +644,9 @@ void CCSBot::DecreaseMorale()
 // Return true if we are acting like a rogue (not listening to teammates, not doing scenario goals)
 // TODO: Account for morale
 
-bool CCSBot::IsRogue() const
+bool CHLBot::IsRogue() const
 {
-	CCSBotManager *ctrl = TheCSBots();
+	CHLBotManager *ctrl = TheCSBots();
 
 	if (!ctrl->AllowRogues())
 		return false;
@@ -667,12 +667,12 @@ bool CCSBot::IsRogue() const
 
 // Return true if we are in a hurry
 
-bool CCSBot::IsHurrying() const
+bool CHLBot::IsHurrying() const
 {
 	if (!m_hurryTimer.IsElapsed())
 		return true;
 
-	CCSBotManager *ctrl = TheCSBots();
+	CHLBotManager *ctrl = TheCSBots();
 
 
 	return false;
@@ -680,9 +680,9 @@ bool CCSBot::IsHurrying() const
 
 // Return true if it is the early, "safe", part of the round
 
-bool CCSBot::IsSafe() const
+bool CHLBot::IsSafe() const
 {
-	CCSBotManager *ctrl = TheCSBots();
+	CHLBotManager *ctrl = TheCSBots();
 
 	if (ctrl->GetElapsedRoundTime() < m_safeTime)
 		return true;
@@ -692,9 +692,9 @@ bool CCSBot::IsSafe() const
 
 // Return true if it is well past the early, "safe", part of the round
 
-bool CCSBot::IsWellPastSafe() const
+bool CHLBot::IsWellPastSafe() const
 {
-	CCSBotManager *ctrl = TheCSBots();
+	CHLBotManager *ctrl = TheCSBots();
 
 	if (ctrl->GetElapsedRoundTime() > 1.25f * m_safeTime)
 		return true;
@@ -704,25 +704,25 @@ bool CCSBot::IsWellPastSafe() const
 
 // Return true if we were in the safe time last update, but not now
 
-bool CCSBot::IsEndOfSafeTime() const
+bool CHLBot::IsEndOfSafeTime() const
 {
 	return m_wasSafe && !IsSafe();
 }
 
 // Return the amount of "safe time" we have left
 
-float CCSBot::GetSafeTimeRemaining() const
+float CHLBot::GetSafeTimeRemaining() const
 {
-	CCSBotManager *ctrl = TheCSBots();
+	CHLBotManager *ctrl = TheCSBots();
 
 	return m_safeTime - ctrl->GetElapsedRoundTime();
 }
 
 // Called when enemy seen to adjust safe time for this round
 
-void CCSBot::AdjustSafeTime()
+void CHLBot::AdjustSafeTime()
 {
-	CCSBotManager *ctrl = TheCSBots();
+	CHLBotManager *ctrl = TheCSBots();
 
 	// if we spotted an enemy sooner than we thought possible, adjust our notion of "safe" time
 	if (m_safeTime > ctrl->GetElapsedRoundTime())
@@ -734,7 +734,7 @@ void CCSBot::AdjustSafeTime()
 
 // Return true if we haven't seen an enemy for "a long time"
 
-bool CCSBot::HasNotSeenEnemyForLongTime() const
+bool CHLBot::HasNotSeenEnemyForLongTime() const
 {
 	const float longTime = 30.0f;
 	return (GetTimeSinceLastSawEnemy() > longTime);
@@ -742,10 +742,10 @@ bool CCSBot::HasNotSeenEnemyForLongTime() const
 
 // Pick a random zone and hide near it
 
-bool CCSBot::GuardRandomZone(float range)
+bool CHLBot::GuardRandomZone(float range)
 {
-	CCSBotManager *ctrl = TheCSBots();
-	const CCSBotManager::Zone *zone = ctrl->GetRandomZone();
+	CHLBotManager *ctrl = TheCSBots();
+	const CHLBotManager::Zone *zone = ctrl->GetRandomZone();
 
 	if (zone != NULL)
 	{
@@ -763,7 +763,7 @@ bool CCSBot::GuardRandomZone(float range)
 // Do a breadth-first search to find a good retreat spot.
 // Don't pick a spot that a Player is currently occupying.
 
-const Vector *FindNearbyRetreatSpot(CCSBot *me, float maxRange)
+const Vector *FindNearbyRetreatSpot(CHLBot *me, float maxRange)
 {
 	CNavArea *area = me->GetLastKnownArea();
 	if (area == NULL)

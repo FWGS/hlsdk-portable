@@ -7,7 +7,7 @@ const float sniperHideRange = 2000.0f;
 // We never stay in the Idle state - it is a "home base" for the state machine that
 // does various checks to determine what we should do next.
 
-void IdleState::OnEnter(CCSBot *me)
+void IdleState::OnEnter(CHLBot *me)
 {
 	me->DestroyPath();
 	me->SetEnemy(NULL);
@@ -17,11 +17,11 @@ void IdleState::OnEnter(CCSBot *me)
 		me->Walk();
 
 	// Since Idle assigns tasks, we assume that coming back to Idle means our task is complete
-	me->SetTask(CCSBot::SEEK_AND_DESTROY);
-	me->SetDisposition(CCSBot::ENGAGE_AND_INVESTIGATE);
+	me->SetTask(CHLBot::SEEK_AND_DESTROY);
+	me->SetDisposition(CHLBot::ENGAGE_AND_INVESTIGATE);
 }
 
-void IdleState::OnUpdate(CCSBot *me)
+void IdleState::OnUpdate(CHLBot *me)
 {
 	// all other states assume GetLastKnownArea() is valid, ensure that it is
 	if (me->GetLastKnownArea() == NULL && me->StayOnNavMesh() == false)
@@ -48,7 +48,7 @@ void IdleState::OnUpdate(CCSBot *me)
 		}
 	}
 
-	CCSBotManager *ctrl = TheCSBots();
+	CHLBotManager *ctrl = TheCSBots();
 
 	// if round is over, hunt
 	if (me->GetGameState()->IsRoundOver())
@@ -70,9 +70,9 @@ void IdleState::OnUpdate(CCSBot *me)
 	// sniping check
 	if (me->GetFriendsRemaining() && me->IsSniper() && RANDOM_FLOAT(0, 100.0f) < offenseSniperCampChance)
 	{
-		me->SetTask(CCSBot::MOVE_TO_SNIPER_SPOT);
+		me->SetTask(CHLBot::MOVE_TO_SNIPER_SPOT);
 		me->Hide(me->GetLastKnownArea(), RANDOM_FLOAT(10.0f, 30.0f), sniperHideRange);
-		me->SetDisposition(CCSBot::OPPORTUNITY_FIRE);
+		me->SetDisposition(CHLBot::OPPORTUNITY_FIRE);
 		me->PrintIfWatched("Sniping!\n");
 		return;
 	}

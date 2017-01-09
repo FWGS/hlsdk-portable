@@ -3,7 +3,7 @@
 // Fire our active weapon towards our current enemy
 // NOTE: Aiming our weapon is handled in RunBotUpkeep()
 
-void CCSBot::FireWeaponAtEnemy()
+void CHLBot::FireWeaponAtEnemy()
 {
 	CBasePlayer *enemy = GetEnemy();
 	if (enemy == NULL)
@@ -150,7 +150,7 @@ void CCSBot::FireWeaponAtEnemy()
 
 // Set the current aim offset using given accuracy (1.0 = perfect aim, 0.0f = terrible aim)
 
-void CCSBot::SetAimOffset(float accuracy)
+void CHLBot::SetAimOffset(float accuracy)
 {
 	// if our accuracy is less than perfect, it will improve as we "focus in" while not rotating our view
 	if (accuracy < 1.0f)
@@ -192,7 +192,7 @@ void CCSBot::SetAimOffset(float accuracy)
 
 // Wiggle aim error based on GetProfile()->GetSkill()
 
-void CCSBot::UpdateAimOffset()
+void CHLBot::UpdateAimOffset()
 {
 	if (gpGlobals->time >= m_aimOffsetTimestamp)
 	{
@@ -211,7 +211,7 @@ void CCSBot::UpdateAimOffset()
 // Change our zoom level to be appropriate for the given range.
 // Return true if the zoom level changed.
 
-bool CCSBot::AdjustZoom(float range)
+bool CHLBot::AdjustZoom(float range)
 {
 	bool adjustZoom = false;
 
@@ -278,7 +278,7 @@ bool isSniperRifle(CBasePlayerItem *item)
 	}
 }
 
-bool CCSBot::IsUsingAWP() const
+bool CHLBot::IsUsingAWP() const
 {
 	CBasePlayerWeapon *weapon = GetActiveWeapon();
 
@@ -290,7 +290,7 @@ bool CCSBot::IsUsingAWP() const
 
 // Returns true if we are using a weapon with a removable silencer
 
-bool CCSBot::DoesActiveWeaponHaveSilencer() const
+bool CHLBot::DoesActiveWeaponHaveSilencer() const
 {
 	CBasePlayerWeapon *weapon = GetActiveWeapon();
 
@@ -305,7 +305,7 @@ bool CCSBot::DoesActiveWeaponHaveSilencer() const
 
 // Return true if we are using a sniper rifle
 
-bool CCSBot::IsUsingSniperRifle() const
+bool CHLBot::IsUsingSniperRifle() const
 {
 	CBasePlayerWeapon *weapon = GetActiveWeapon();
 
@@ -317,7 +317,7 @@ bool CCSBot::IsUsingSniperRifle() const
 
 // Return true if we have a sniper rifle in our inventory
 
-bool CCSBot::IsSniper() const
+bool CHLBot::IsSniper() const
 {
 	for (int i = 0; i < MAX_ITEM_TYPES; ++i)
 	{
@@ -337,7 +337,7 @@ bool CCSBot::IsSniper() const
 
 // Return true if we are actively sniping (moving to sniper spot or settled in)
 
-bool CCSBot::IsSniping() const
+bool CHLBot::IsSniping() const
 {
 	if (GetTask() == MOVE_TO_SNIPER_SPOT || GetTask() == SNIPING)
 		return true;
@@ -347,7 +347,7 @@ bool CCSBot::IsSniping() const
 
 // Return true if we are using a shotgun
 
-bool CCSBot::IsUsingShotgun() const
+bool CHLBot::IsUsingShotgun() const
 {
 	CBasePlayerWeapon *weapon = GetActiveWeapon();
 
@@ -362,7 +362,7 @@ bool CCSBot::IsUsingShotgun() const
 
 // Returns true if using the big 'ol machinegun
 
-bool CCSBot::IsUsingMachinegun() const
+bool CHLBot::IsUsingMachinegun() const
 {
 	CBasePlayerWeapon *weapon = GetActiveWeapon();
 
@@ -374,7 +374,7 @@ bool CCSBot::IsUsingMachinegun() const
 
 // Return true if primary weapon doesn't exist or is totally out of ammo
 
-bool CCSBot::IsPrimaryWeaponEmpty() const
+bool CHLBot::IsPrimaryWeaponEmpty() const
 {
 	CBasePlayerWeapon *weapon = static_cast<CBasePlayerWeapon *>(m_rgpPlayerItems[ 2 ]);
 
@@ -390,7 +390,7 @@ bool CCSBot::IsPrimaryWeaponEmpty() const
 
 // Return true if pistol doesn't exist or is totally out of ammo
 
-bool CCSBot::IsPistolEmpty() const
+bool CHLBot::IsPistolEmpty() const
 {
 	CBasePlayerWeapon *weapon = static_cast<CBasePlayerWeapon *>(m_rgpPlayerItems[ 1 ]);
 
@@ -408,7 +408,7 @@ bool CCSBot::IsPistolEmpty() const
 
 // Equip the given item
 
-bool CCSBot::DoEquip(CBasePlayerWeapon *gun)
+bool CHLBot::DoEquip(CBasePlayerWeapon *gun)
 {
 	if (gun == NULL)
 		return false;
@@ -429,13 +429,13 @@ const float minEquipInterval = 5.0f;
 
 // Equip the best weapon we are carrying that has ammo
 
-void CCSBot::EquipBestWeapon(bool mustEquip)
+void CHLBot::EquipBestWeapon(bool mustEquip)
 {
 	// throttle how often equipping is allowed
 	if (!mustEquip && m_equipTimer.GetElapsedTime() < minEquipInterval)
 		return;
 
-	CCSBotManager *ctrl = TheCSBots();
+	CHLBotManager *ctrl = TheCSBots();
 	CBasePlayerWeapon *primary = static_cast<CBasePlayerWeapon *>(m_rgpPlayerItems[ 2 ]);
 	/// TODO: hl
 	// always have a knife
@@ -444,7 +444,7 @@ void CCSBot::EquipBestWeapon(bool mustEquip)
 
 // Equip our pistol
 
-void CCSBot::EquipPistol()
+void CHLBot::EquipPistol()
 {
 	// throttle how often equipping is allowed
 	if (m_equipTimer.GetElapsedTime() < minEquipInterval)
@@ -459,7 +459,7 @@ void CCSBot::EquipPistol()
 
 // Equip the knife
 
-void CCSBot::EquipKnife()
+void CHLBot::EquipKnife()
 {
 	if (!IsUsingKnife())
 	{
@@ -473,7 +473,7 @@ void CCSBot::EquipKnife()
 
 // Return true if we have a grenade in our inventory
 
-bool CCSBot::HasGrenade() const
+bool CHLBot::HasGrenade() const
 {
 	CBasePlayerWeapon *grenade = static_cast<CBasePlayerWeapon *>(m_rgpPlayerItems[ 4 ]);
 	return grenade != NULL;
@@ -481,7 +481,7 @@ bool CCSBot::HasGrenade() const
 
 // Equip a grenade, return false if we cant
 
-bool CCSBot::EquipGrenade(bool noSmoke)
+bool CHLBot::EquipGrenade(bool noSmoke)
 {
 	// snipers don't use grenades
 	if (IsSniper())
@@ -509,7 +509,7 @@ bool CCSBot::EquipGrenade(bool noSmoke)
 
 // Returns true if we have knife equipped
 
-bool CCSBot::IsUsingKnife() const
+bool CHLBot::IsUsingKnife() const
 {
 	CBasePlayerWeapon *weapon = GetActiveWeapon();
 
@@ -521,7 +521,7 @@ bool CCSBot::IsUsingKnife() const
 
 // Returns true if we have pistol equipped
 
-bool CCSBot::IsUsingPistol() const
+bool CHLBot::IsUsingPistol() const
 {
 	CBasePlayerWeapon *weapon = GetActiveWeapon();
 
@@ -533,7 +533,7 @@ bool CCSBot::IsUsingPistol() const
 
 // Returns true if we have a grenade equipped
 
-bool CCSBot::IsUsingGrenade() const
+bool CHLBot::IsUsingGrenade() const
 {
 	CBasePlayerWeapon *weapon = GetActiveWeapon();
 
@@ -546,7 +546,7 @@ bool CCSBot::IsUsingGrenade() const
 	return false;
 }
 
-bool CCSBot::IsUsingHEGrenade() const
+bool CHLBot::IsUsingHEGrenade() const
 {
 	CBasePlayerWeapon *weapon = GetActiveWeapon();
 
@@ -558,7 +558,7 @@ bool CCSBot::IsUsingHEGrenade() const
 
 // Begin the process of throwing the grenade
 
-void CCSBot::ThrowGrenade(const Vector *target)
+void CHLBot::ThrowGrenade(const Vector *target)
 {
 	if (IsUsingGrenade() && !m_isWaitingToTossGrenade)
 	{
@@ -573,7 +573,7 @@ void CCSBot::ThrowGrenade(const Vector *target)
 
 // Find spot to throw grenade ahead of us and "around the corner" along our path
 
-bool CCSBot::FindGrenadeTossPathTarget(Vector *pos)
+bool CHLBot::FindGrenadeTossPathTarget(Vector *pos)
 {
 	if (!HasPath())
 		return false;
@@ -672,7 +672,7 @@ bool CCSBot::FindGrenadeTossPathTarget(Vector *pos)
 
 // Reload our weapon if we must
 
-void CCSBot::ReloadCheck()
+void CHLBot::ReloadCheck()
 {
 	const float safeReloadWaitTime = 3.0f;
 	const float reloadAmmoRatio = 0.6f;
@@ -747,7 +747,7 @@ void CCSBot::ReloadCheck()
 
 // Silence/unsilence our weapon if we must
 
-void CCSBot::SilencerCheck()
+void CHLBot::SilencerCheck()
 {
 	// longer than reload check because reloading should take precedence
 	const float safeSilencerWaitTime = 3.5f;
@@ -785,7 +785,7 @@ void CCSBot::SilencerCheck()
 
 // Invoked when in contact with a CWeaponBox
 
-void CCSBot::OnTouchingWeapon(CWeaponBox *box)
+void CHLBot::OnTouchingWeapon(CWeaponBox *box)
 {
 	CBasePlayerItem *droppedGun = dynamic_cast<CBasePlayerItem *>(box->m_rgpPlayerItems[ 2 ]);
 
@@ -832,7 +832,7 @@ void CCSBot::OnTouchingWeapon(CWeaponBox *box)
 // Return true if a friend is in our weapon's way
 // TODO: Check more rays for safety.
 
-bool CCSBot::IsFriendInLineOfFire()
+bool CHLBot::IsFriendInLineOfFire()
 {
 	UTIL_MakeVectors(pev->punchangle + pev->v_angle);
 
@@ -863,7 +863,7 @@ bool CCSBot::IsFriendInLineOfFire()
 // Return line-of-sight distance to obstacle along weapon fire ray
 // TODO: Re-use this computation with IsFriendInLineOfFire()
 
-float CCSBot::ComputeWeaponSightRange()
+float CHLBot::ComputeWeaponSightRange()
 {
 	UTIL_MakeVectors(pev->punchangle + pev->v_angle);
 

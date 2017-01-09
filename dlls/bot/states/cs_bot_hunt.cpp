@@ -2,7 +2,7 @@
 
 // Begin the hunt
 
-void HuntState::OnEnter(CCSBot *me)
+void HuntState::OnEnter(CHLBot *me)
 {
 	// lurking death
 	if (me->IsUsingKnife() && me->IsWellPastSafe() && !me->IsHurrying())
@@ -11,14 +11,14 @@ void HuntState::OnEnter(CCSBot *me)
 		me->Run();
 
 	me->StandUp();
-	me->SetDisposition(CCSBot::ENGAGE_AND_INVESTIGATE);
-	me->SetTask(CCSBot::SEEK_AND_DESTROY);
+	me->SetDisposition(CHLBot::ENGAGE_AND_INVESTIGATE);
+	me->SetTask(CHLBot::SEEK_AND_DESTROY);
 	me->DestroyPath();
 }
 
 // Hunt down our enemies
 
-void HuntState::OnUpdate(CCSBot *me)
+void HuntState::OnUpdate(CHLBot *me)
 {
 	// listen for enemy noises
 	if (me->ShouldInvestigateNoise())
@@ -32,7 +32,7 @@ void HuntState::OnUpdate(CCSBot *me)
 
 	// if we have reached our destination area, pick a new one
 	// if our path fails, pick a new one
-	if (me->GetLastKnownArea() == m_huntArea || me->UpdatePathMovement() != CCSBot::PROGRESSING)
+	if (me->GetLastKnownArea() == m_huntArea || me->UpdatePathMovement() != CHLBot::PROGRESSING)
 	{
 		m_huntArea = NULL;
 		float oldest = 0.0f;
@@ -84,7 +84,7 @@ void HuntState::OnUpdate(CCSBot *me)
 
 // Done hunting
 
-void HuntState::OnExit(CCSBot *me)
+void HuntState::OnExit(CHLBot *me)
 {
 	;
 }

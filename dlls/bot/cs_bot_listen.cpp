@@ -3,7 +3,7 @@
 // Listen for enemy noises, and determine if we should react to them.
 // Returns true if heard a noise and should move to investigate.
 
-bool CCSBot::ShouldInvestigateNoise(float *retNoiseDist)
+bool CHLBot::ShouldInvestigateNoise(float *retNoiseDist)
 {
 	if (m_isNoiseTravelRangeChecked)
 		return false;
@@ -72,7 +72,7 @@ bool CCSBot::ShouldInvestigateNoise(float *retNoiseDist)
 // Return true if we hear nearby threatening enemy gunfire within given range
 // -1 == infinite range
 
-bool CCSBot::CanHearNearbyEnemyGunfire(float range) const
+bool CHLBot::CanHearNearbyEnemyGunfire(float range) const
 {
 	// only attend to noise if it just happened
 	if (gpGlobals->time - m_noiseTimestamp > 0.5f)
@@ -107,7 +107,7 @@ bool CCSBot::CanHearNearbyEnemyGunfire(float range) const
 // NOTE: Dont check FOV, since this is used to determine if we should turn our head to look at the noise
 // NOTE: Dont use IsVisible(), because smoke shouldnt cause us to not look toward noises
 
-bool CCSBot::CanSeeNoisePosition() const
+bool CHLBot::CanSeeNoisePosition() const
 {
 	TraceResult result;
 	UTIL_TraceLine(GetEyePosition(), m_noisePosition + Vector(0, 0, HalfHumanHeight), ignore_monsters, ignore_glass, ENT(pev), &result);
@@ -124,7 +124,7 @@ bool CCSBot::CanSeeNoisePosition() const
 // Return true if we decided to look towards the most recent noise source
 // Assumes m_noisePosition is valid.
 
-bool CCSBot::UpdateLookAtNoise()
+bool CHLBot::UpdateLookAtNoise()
 {
 	// make sure a noise exists
 	if (!IsNoiseHeard() || gpGlobals->time - m_noiseTimestamp > 0.5f)

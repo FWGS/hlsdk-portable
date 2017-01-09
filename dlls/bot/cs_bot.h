@@ -62,32 +62,32 @@ extern struct BuyInfo secondaryWeaponBuyInfoCT[ SECONDARY_WEAPON_BUY_COUNT ];
 extern struct BuyInfo primaryWeaponBuyInfoT[ PRIMARY_WEAPON_BUY_COUNT ];
 extern struct BuyInfo secondaryWeaponBuyInfoT[ SECONDARY_WEAPON_BUY_COUNT ];
 */
-class CCSBot;
+class CHLBot;
 class BotChatterInterface;
 
 class BotState
 {
 public:
-	virtual void OnEnter(CCSBot *me) {}
-	virtual void OnUpdate(CCSBot *me) {}
-	virtual void OnExit(CCSBot *me) {}
+	virtual void OnEnter(CHLBot *me) {}
+	virtual void OnUpdate(CHLBot *me) {}
+	virtual void OnExit(CHLBot *me) {}
 	virtual const char *GetName() const = 0;
 };
 
 class IdleState: public BotState
 {
 public:
-	virtual void OnEnter(CCSBot *me);
-	virtual void OnUpdate(CCSBot *me);
+	virtual void OnEnter(CHLBot *me);
+	virtual void OnUpdate(CHLBot *me);
 	virtual const char *GetName() const { return "Idle"; }
 };
 
 class HuntState: public BotState
 {
 public:
-	virtual void OnEnter(CCSBot *me);
-	virtual void OnUpdate(CCSBot *me);
-	virtual void OnExit(CCSBot *me);
+	virtual void OnEnter(CHLBot *me);
+	virtual void OnUpdate(CHLBot *me);
+	virtual void OnExit(CHLBot *me);
 	virtual const char *GetName() const { return "Hunt"; }
 
 	void ClearHuntArea() { m_huntArea = NULL; }
@@ -98,13 +98,13 @@ private:
 class AttackState: public BotState
 {
 public:
-	virtual void OnEnter(CCSBot *me);
-	virtual void OnUpdate(CCSBot *me);
-	virtual void OnExit(CCSBot *me);
+	virtual void OnEnter(CHLBot *me);
+	virtual void OnUpdate(CHLBot *me);
+	virtual void OnExit(CHLBot *me);
 	virtual const char *GetName() const { return "Attack"; }
 
 	void SetCrouchAndHold(bool crouch) { m_crouchAndHold = crouch; }
-	void StopAttacking(CCSBot *me);
+	void StopAttacking(CHLBot *me);
 
 protected:
 	enum DodgeStateType
@@ -136,13 +136,13 @@ protected:
 class InvestigateNoiseState: public BotState
 {
 public:
-	virtual void OnEnter(CCSBot *me);
-	virtual void OnUpdate(CCSBot *me);
-	virtual void OnExit(CCSBot *me);
+	virtual void OnEnter(CHLBot *me);
+	virtual void OnUpdate(CHLBot *me);
+	virtual void OnExit(CHLBot *me);
 	virtual const char *GetName() const { return "InvestigateNoise"; }
 
 private:
-	void AttendCurrentNoise(CCSBot *me);
+	void AttendCurrentNoise(CHLBot *me);
 	Vector m_checkNoisePosition;
 };
 #if 0
@@ -169,9 +169,9 @@ private:
 class MoveToState: public BotState
 {
 public:
-	virtual void OnEnter(CCSBot *me);
-	virtual void OnUpdate(CCSBot *me);
-	virtual void OnExit(CCSBot *me);
+	virtual void OnEnter(CHLBot *me);
+	virtual void OnUpdate(CHLBot *me);
+	virtual void OnExit(CHLBot *me);
 	virtual const char *GetName() const { return "MoveTo"; }
 
 	void SetGoalPosition(const Vector &pos) { m_goalPosition = pos; }
@@ -213,9 +213,9 @@ public:
 class HideState: public BotState
 {
 public:
-	virtual void OnEnter(CCSBot *me);
-	virtual void OnUpdate(CCSBot *me);
-	virtual void OnExit(CCSBot *me);
+	virtual void OnEnter(CHLBot *me);
+	virtual void OnUpdate(CHLBot *me);
+	virtual void OnExit(CHLBot *me);
 	virtual const char *GetName() const { return "Hide"; }
    
 public:
@@ -258,9 +258,9 @@ public:
 class FollowState: public BotState
 {
 public:
-	virtual void OnEnter(CCSBot *me);
-	virtual void OnUpdate(CCSBot *me);
-	virtual void OnExit(CCSBot *me);
+	virtual void OnEnter(CHLBot *me);
+	virtual void OnUpdate(CHLBot *me);
+	virtual void OnExit(CHLBot *me);
 	virtual const char *GetName() const { return "Follow"; }
    
 	void SetLeader(CBaseEntity *leader) { m_leader = leader; }
@@ -298,9 +298,9 @@ private:
 class UseEntityState: public BotState
 {
 public:
-	virtual void OnEnter(CCSBot *me);
-	virtual void OnUpdate(CCSBot *me);
-	virtual void OnExit(CCSBot *me);
+	virtual void OnEnter(CHLBot *me);
+	virtual void OnUpdate(CHLBot *me);
+	virtual void OnExit(CHLBot *me);
 	virtual const char *GetName() const { return "UseEntity"; }
    
 	void SetEntity(CBaseEntity *entity) { m_entity = entity; }
@@ -311,10 +311,10 @@ private:
 
 // The Counter-strike Bot
 
-class CCSBot: public CBot
+class CHLBot: public CBot
 {
 public:
-	CCSBot();														// constructor initializes all values to zero
+	CHLBot();														// constructor initializes all values to zero
 
 public:
 	virtual int ObjectCaps( void ) { return CBaseMonster :: ObjectCaps() | FCAP_DONT_SAVE; }
@@ -423,8 +423,8 @@ public:
 	bool IsDoingScenario() const;								// return true if we will do scenario-related tasks
 
 	// scenario / gamestate
-	CSGameState *GetGameState();								// return an interface to this bot's gamestate
-	const CSGameState *GetGameState() const;						// return an interface to this bot's gamestate
+	CHLGameState *GetGameState();								// return an interface to this bot's gamestate
+	const CHLGameState *GetGameState() const;						// return an interface to this bot's gamestate
 
 	bool IsAtBombsite();									// return true if we are in a bomb planting zone
 	bool GuardRandomZone(float range = 500.0f);						// pick a random zone and hide near it
@@ -677,7 +677,7 @@ public:
 	bool HasAnyAmmo(CBasePlayerWeapon *weapon) const;
 
 private:
-	friend class CCSBotManager;
+	friend class CHLBotManager;
 
 	// TODO: Get rid of these
 	friend class AttackState;
@@ -809,7 +809,7 @@ private:
 	CountdownTimer m_mustRunTimer;			// if nonzero, bot cannot walk
 
 	// game scenario mechanisms
-	CSGameState m_gameState;
+	CHLGameState m_gameState;
 #if 0
 	// hostages mechanism
 	byte m_hostageEscortCount;
@@ -1018,22 +1018,22 @@ public:
 
 // Inlines
 
-inline float CCSBot::GetCombatRange() const
+inline float CHLBot::GetCombatRange() const
 {
 	return m_combatRange;
 }
 
-inline void CCSBot::SetRogue(bool rogue)
+inline void CHLBot::SetRogue(bool rogue)
 {
 	m_isRogue = rogue;
 }
 
-inline void CCSBot::Hurry(float duration)
+inline void CHLBot::Hurry(float duration)
 {
 	m_hurryTimer.Start(duration);
 }
 
-inline float CCSBot::GetSafeTime() const
+inline float CHLBot::GetSafeTime() const
 {
 	return m_safeTime;
 }
@@ -1044,83 +1044,83 @@ inline bool CCSBot::IsCarryingBomb() const
 }
 #endif
 
-inline bool CCSBot::IsFollowing() const
+inline bool CHLBot::IsFollowing() const
 {
 	return m_isFollowing;
 }
 
-inline CBasePlayer *CCSBot::GetFollowLeader()
+inline CBasePlayer *CHLBot::GetFollowLeader()
 {
 	return (CBasePlayer*)(CBaseEntity*)m_leader;
 }
 
-inline float CCSBot::GetFollowDuration() const
+inline float CHLBot::GetFollowDuration() const
 {
 	return gpGlobals->time - m_followTimestamp;
 }
 
-inline bool CCSBot::CanAutoFollow() const
+inline bool CHLBot::CanAutoFollow() const
 {
 	return (gpGlobals->time > m_allowAutoFollowTime);
 }
 
-inline void CCSBot::AimAtEnemy()
+inline void CHLBot::AimAtEnemy()
 {
 	m_isAimingAtEnemy = true;
 }
 
-inline void CCSBot::StopAiming()
+inline void CHLBot::StopAiming()
 {
 	m_isAimingAtEnemy = false;
 }
 
-inline bool CCSBot::IsAimingAtEnemy() const
+inline bool CHLBot::IsAimingAtEnemy() const
 {
 	return m_isAimingAtEnemy;
 }
 
-inline bool CCSBot::IsSurprised() const
+inline bool CHLBot::IsSurprised() const
 {
 	return gpGlobals->time - m_surpriseTimestamp < 5.0f;
 }
 
-inline float CCSBot::GetSurpriseDelay() const
+inline float CHLBot::GetSurpriseDelay() const
 {
 	return ( gpGlobals->time -  IsSurprised() )? m_surpriseDelay : 0.0f;
 }
 
-inline void CCSBot::ClearSurpriseDelay()
+inline void CHLBot::ClearSurpriseDelay()
 {
 	m_surpriseDelay = 0.0f;
 	m_surpriseTimestamp = 0.0f;
 }
 
-inline float CCSBot::GetStateTimestamp() const
+inline float CHLBot::GetStateTimestamp() const
 {
 	return m_stateTimestamp;
 }
 
-inline CSGameState *CCSBot::GetGameState()
+inline CHLGameState *CHLBot::GetGameState()
 {
 	return &m_gameState;
 }
 
-inline const CSGameState *CCSBot::GetGameState() const
+inline const CHLGameState *CHLBot::GetGameState() const
 {
 	return &m_gameState;
 }
 
-inline bool CCSBot::IsAtBombsite()
+inline bool CHLBot::IsAtBombsite()
 {
 	return false;
 }
 
-inline CCSBot::MoraleType CCSBot::GetMorale() const
+inline CHLBot::MoraleType CHLBot::GetMorale() const
 {
 	return m_morale;
 }
 
-inline bool CCSBot::IsNoiseHeard() const
+inline bool CHLBot::IsNoiseHeard() const
 {
 	if (m_noiseTimestamp <= 0.0f)
 		return false;
@@ -1132,203 +1132,203 @@ inline bool CCSBot::IsNoiseHeard() const
 	return false;
 }
 
-inline void CCSBot::SetTask(TaskType task, CBaseEntity *entity)
+inline void CHLBot::SetTask(TaskType task, CBaseEntity *entity)
 {
 	m_task = task;
 	m_taskEntity = entity;
 }
 
-inline CCSBot::TaskType CCSBot::GetTask() const
+inline CHLBot::TaskType CHLBot::GetTask() const
 {
 	return m_task;
 }
 
-inline CBaseEntity *CCSBot::GetTaskEntity()
+inline CBaseEntity *CHLBot::GetTaskEntity()
 {
 	return m_taskEntity;
 }
 
-inline CNavArea *CCSBot::GetNoiseArea() const
+inline CNavArea *CHLBot::GetNoiseArea() const
 {
 	return m_noiseArea;
 }
 
-inline void CCSBot::ForgetNoise()
+inline void CHLBot::ForgetNoise()
 {
 	m_noiseTimestamp = 0.0f;
 }
 
-inline PriorityType CCSBot::GetNoisePriority() const
+inline PriorityType CHLBot::GetNoisePriority() const
 {
 	return m_noisePriority;
 }
 
-inline BotChatterInterface *CCSBot::GetChatter()
+inline BotChatterInterface *CHLBot::GetChatter()
 {
 	return &m_chatter;
 }
 
-inline bool CCSBot::IsUsingVoice() const
+inline bool CHLBot::IsUsingVoice() const
 {
 	return (m_voiceFeedbackEndTimestamp != 0.0f);
 }
 
-inline CBasePlayer *CCSBot::GetEnemy()
+inline CBasePlayer *CHLBot::GetEnemy()
 {
 	return (CBasePlayer*)(CBaseEntity*)m_enemy;
 }
 
-inline int CCSBot::GetNearbyEnemyCount() const
+inline int CHLBot::GetNearbyEnemyCount() const
 {
 	return Q_min(GetEnemiesRemaining(), m_nearbyEnemyCount);
 }
 
-inline unsigned int CCSBot::GetEnemyPlace() const
+inline unsigned int CHLBot::GetEnemyPlace() const
 {
 	return m_enemyPlace;
 }
 
-inline bool CCSBot::CanSeeBomber() const
+inline bool CHLBot::CanSeeBomber() const
 {
 	return (m_bomber == NULL) ? false : true;
 }
 
-inline CBasePlayer *CCSBot::GetBomber() const
+inline CBasePlayer *CHLBot::GetBomber() const
 {
 	return m_bomber;
 }
 
-inline int CCSBot::GetNearbyFriendCount() const
+inline int CHLBot::GetNearbyFriendCount() const
 {
 	return Q_min(GetFriendsRemaining(), m_nearbyFriendCount);
 }
 
-inline CBasePlayer *CCSBot::GetClosestVisibleFriend() const
+inline CBasePlayer *CHLBot::GetClosestVisibleFriend() const
 {
 	return m_closestVisibleFriend;
 }
 
-inline CBasePlayer *CCSBot::GetClosestVisibleHumanFriend() const
+inline CBasePlayer *CHLBot::GetClosestVisibleHumanFriend() const
 {
 	return m_closestVisibleHumanFriend;
 }
 
-inline float CCSBot::GetTimeSinceAttacked() const
+inline float CHLBot::GetTimeSinceAttacked() const
 {
 	return gpGlobals->time - m_attackedTimestamp;
 }
 
-inline float CCSBot::GetFirstSawEnemyTimestamp() const
+inline float CHLBot::GetFirstSawEnemyTimestamp() const
 {
 	return m_firstSawEnemyTimestamp;
 }
 
-inline float CCSBot::GetLastSawEnemyTimestamp() const
+inline float CHLBot::GetLastSawEnemyTimestamp() const
 {
 	return m_lastSawEnemyTimestamp;
 }
 
-inline float CCSBot::GetTimeSinceLastSawEnemy() const
+inline float CHLBot::GetTimeSinceLastSawEnemy() const
 {
 	return gpGlobals->time - m_lastSawEnemyTimestamp;
 }
 
-inline float CCSBot::GetTimeSinceAcquiredCurrentEnemy() const
+inline float CHLBot::GetTimeSinceAcquiredCurrentEnemy() const
 {
 	return gpGlobals->time - m_currentEnemyAcquireTimestamp;
 }
 
-inline const Vector &CCSBot::GetLastKnownEnemyPosition() const
+inline const Vector &CHLBot::GetLastKnownEnemyPosition() const
 {
 	return m_lastEnemyPosition;
 }
 
-inline bool CCSBot::IsEnemyVisible() const
+inline bool CHLBot::IsEnemyVisible() const
 {
 	return m_isEnemyVisible;
 }
 
-inline float CCSBot::GetEnemyDeathTimestamp() const
+inline float CHLBot::GetEnemyDeathTimestamp() const
 {
 	return m_enemyDeathTimestamp;
 }
 
-inline int CCSBot::GetLastVictimID() const
+inline int CHLBot::GetLastVictimID() const
 {
 	return m_lastVictimID;
 }
 
-inline bool CCSBot::HasPath() const
+inline bool CHLBot::HasPath() const
 {
 	return m_pathLength != 0;
 }
 
-inline void CCSBot::DestroyPath()
+inline void CHLBot::DestroyPath()
 {
 	m_pathLength = 0;
 	m_pathLadder = NULL;
 }
 
-inline CNavArea *CCSBot::GetLastKnownArea() const
+inline CNavArea *CHLBot::GetLastKnownArea() const
 {
 	return m_lastKnownArea;
 }
 
-inline const Vector &CCSBot::GetPathEndpoint() const
+inline const Vector &CHLBot::GetPathEndpoint() const
 {
 	return m_path[ m_pathLength - 1 ].pos;
 }
 
-inline const Vector &CCSBot::GetPathPosition(int numpath) const
+inline const Vector &CHLBot::GetPathPosition(int numpath) const
 {
 	return m_path[ numpath ].pos;
 }
 
-inline bool CCSBot::IsUsingLadder() const
+inline bool CHLBot::IsUsingLadder() const
 {
 	return m_pathLadder != NULL;
 }
 
-inline void CCSBot::SetGoalEntity(CBaseEntity *entity)
+inline void CHLBot::SetGoalEntity(CBaseEntity *entity)
 {
 	m_goalEntity = entity;
 }
 
-inline CBaseEntity *CCSBot::GetGoalEntity()
+inline CBaseEntity *CHLBot::GetGoalEntity()
 {
 	return m_goalEntity;
 }
 
-inline void CCSBot::ForceRun(float duration)
+inline void CHLBot::ForceRun(float duration)
 {
 	Run();
 	m_mustRunTimer.Start(duration);
 }
 
-inline void CCSBot::SetLookAngles(float yaw, float pitch)
+inline void CHLBot::SetLookAngles(float yaw, float pitch)
 {
 	m_lookYaw = yaw;
 	m_lookPitch = pitch;
 }
 
-inline void CCSBot::SetForwardAngle(float angle)
+inline void CHLBot::SetForwardAngle(float angle)
 {
 	m_forwardAngle = angle;
 }
 
-inline void CCSBot::SetLookAheadAngle(float angle)
+inline void CHLBot::SetLookAheadAngle(float angle)
 {
 	m_lookAheadAngle = angle;
 }
 
-inline void CCSBot::ClearLookAt()
+inline void CHLBot::ClearLookAt()
 {
 	//PrintIfWatched("ClearLookAt()\n");
 	m_lookAtSpotState = NOT_LOOKING_AT_SPOT;
 	m_lookAtDesc = NULL;
 }
 
-inline bool CCSBot::IsLookingAtSpot(PriorityType pri) const
+inline bool CHLBot::IsLookingAtSpot(PriorityType pri) const
 {
 	if (m_lookAtSpotState != NOT_LOOKING_AT_SPOT && m_lookAtSpotPriority >= pri)
 		return true;
@@ -1336,7 +1336,7 @@ inline bool CCSBot::IsLookingAtSpot(PriorityType pri) const
 	return false;
 }
 
-inline bool CCSBot::IsViewMoving(float angleVelThreshold) const
+inline bool CHLBot::IsViewMoving(float angleVelThreshold) const
 {
 	if (m_lookYawVel < angleVelThreshold && m_lookYawVel > -angleVelThreshold &&
 		m_lookPitchVel < angleVelThreshold && m_lookPitchVel > -angleVelThreshold)
@@ -1346,27 +1346,27 @@ inline bool CCSBot::IsViewMoving(float angleVelThreshold) const
 	return true;
 }
 
-inline void CCSBot::ClearApproachPoints()
+inline void CHLBot::ClearApproachPoints()
 {
 	m_approachPointCount = 0;
 }
 
-inline bool CCSBot::IsThrowingGrenade() const
+inline bool CHLBot::IsThrowingGrenade() const
 {
 	return m_isWaitingToTossGrenade;
 }
 
-inline void CCSBot::StartRapidFire()
+inline void CHLBot::StartRapidFire()
 {
 	m_isRapidFiring = true;
 }
 
-inline void CCSBot::StopRapidFire()
+inline void CHLBot::StopRapidFire()
 {
 	m_isRapidFiring = false;
 }
 
-inline CCSBot::ZoomType CCSBot::GetZoomLevel() const
+inline CHLBot::ZoomType CHLBot::GetZoomLevel() const
 {
 	if (m_iFOV > 60.0f)
 		return NO_ZOOM;
@@ -1393,7 +1393,7 @@ inline void CCSBot::ResetWaitForHostagePatience()
 	m_inhibitWaitingForHostageTimer.Invalidate();
 }
 #endif
-inline float CCSBot::GetFeetZ() const
+inline float CHLBot::GetFeetZ() const
 {
 	if (IsCrouching())
 	{
@@ -1407,7 +1407,7 @@ inline float CCSBot::GetFeetZ() const
 	}
 }
 
-inline const Vector *CCSBot::GetNoisePosition() const
+inline const Vector *CHLBot::GetNoisePosition() const
 {
 	if (m_noiseTimestamp > 0.0f)
 		return &m_noisePosition;
@@ -1415,7 +1415,7 @@ inline const Vector *CCSBot::GetNoisePosition() const
 	return NULL;
 }
 
-inline bool CCSBot::IsAwareOfEnemyDeath() const
+inline bool CHLBot::IsAwareOfEnemyDeath() const
 {
 	if (GetEnemyDeathTimestamp() == 0.0f)
 		return false;
@@ -1429,13 +1429,13 @@ inline bool CCSBot::IsAwareOfEnemyDeath() const
 	return false;
 }
 
-inline bool CCSBot::IsNotMoving() const
+inline bool CHLBot::IsNotMoving() const
 {
 	const float stillSpeed = 10.0f;
 	return pev->velocity.IsLengthLessThan(stillSpeed);
 }
 
-inline bool CCSBot::HasAnyAmmo(CBasePlayerWeapon *weapon) const
+inline bool CHLBot::HasAnyAmmo(CBasePlayerWeapon *weapon) const
 {
 	return (weapon->m_iClip != 0 || m_rgAmmo[weapon->m_iPrimaryAmmoType] > 0);
 }
@@ -1443,7 +1443,7 @@ inline bool CCSBot::HasAnyAmmo(CBasePlayerWeapon *weapon) const
 class CollectRetreatSpotsFunctor
 {
 public:
-	CollectRetreatSpotsFunctor(CCSBot *me, float range)
+	CollectRetreatSpotsFunctor(CHLBot *me, float range)
 	{
 		m_me = me;
 		m_count = 0;
@@ -1498,7 +1498,7 @@ public:
 		return true;
 	}
 
-	CCSBot *m_me;
+	CHLBot *m_me;
 	float m_range;
 
 	const Vector *m_spot[ MAX_SPOTS ];
@@ -1508,7 +1508,7 @@ public:
 class FarthestHostage
 {
 public:
-	FarthestHostage(const CCSBot *me)
+	FarthestHostage(const CHLBot *me)
 	{
 		m_me = me;
 		m_farRange = -1.0f;
@@ -1548,7 +1548,7 @@ public:
 		return true;*/
 	//}*/
 
-	const CCSBot *m_me;
+	const CHLBot *m_me;
 	float m_farRange;
 };
 
@@ -1557,7 +1557,7 @@ public:
 class PathCost
 {
 public:
-	PathCost(CCSBot *bot, RouteType route = SAFEST_ROUTE)
+	PathCost(CHLBot *bot, RouteType route = SAFEST_ROUTE)
 	{
 		m_bot = bot;
 		m_route = route;
@@ -1692,7 +1692,7 @@ public:
 	}
 
 private:
-	CCSBot *m_bot;
+	CHLBot *m_bot;
 	RouteType m_route;
 };
 
@@ -1769,13 +1769,13 @@ void InstallBotControl();
 void Bot_ServerCommand();
 void Bot_RegisterCvars();
 int GetBotFollowCount(CBasePlayer *leader);
-const Vector *FindNearbyRetreatSpot(CCSBot *me, float maxRange);
+const Vector *FindNearbyRetreatSpot(CHLBot *me, float maxRange);
 
 void drawProgressMeter(float progress, char *title);
 void startProgressMeter(const char *title);
 void hideProgressMeter();
 
 bool isSniperRifle(CBasePlayerItem *item);
-float StayOnLadderLine(CCSBot *me, const CNavLadder *ladder);
+float StayOnLadderLine(CHLBot *me, const CNavLadder *ladder);
 
 #endif // CS_BOT_H

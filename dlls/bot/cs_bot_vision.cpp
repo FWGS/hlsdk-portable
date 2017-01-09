@@ -2,7 +2,7 @@
 
 // Used to update view angles to stay on a ladder
 
-float StayOnLadderLine(CCSBot *me, const CNavLadder *ladder)
+float StayOnLadderLine(CHLBot *me, const CNavLadder *ladder)
 {
 	// determine our facing
 	NavDirType faceDir = AngleToDirection(me->pev->v_angle.y);
@@ -27,7 +27,7 @@ float StayOnLadderLine(CCSBot *me, const CNavLadder *ladder)
 // Move actual view angles towards desired ones.
 // This is the only place v_angle is altered.
 // TODO: Make stiffness and turn rate constants timestep invariant.
-void CCSBot::UpdateLookAngles()
+void CHLBot::UpdateLookAngles()
 {
 	const float deltaT = g_flBotCommandInterval;
 	float maxAccel;
@@ -193,14 +193,14 @@ void CCSBot::UpdateLookAngles()
 }
 
 // Return true if we can see the point
-bool CCSBot::IsVisible(Vector *pos, bool testFOV) const
+bool CHLBot::IsVisible(Vector *pos, bool testFOV) const
 {
 	// we can't see anything if we're blind
 //	if (IsBlind())
 //		return false;
 
 	// is it in my general viewcone?
-	if (testFOV && !(const_cast<CCSBot *>(this)->FInViewCone(pos)))
+	if (testFOV && !(const_cast<CHLBot *>(this)->FInViewCone(pos)))
 		return false;
 
 	// check line of sight against smoke
@@ -221,7 +221,7 @@ bool CCSBot::IsVisible(Vector *pos, bool testFOV) const
 // Return true if we can see any part of the player
 // Check parts in order of importance. Return the first part seen in "visParts" if it is non-NULL.
 
-bool CCSBot::IsVisible(CBasePlayer *player, bool testFOV, unsigned char *visParts) const
+bool CHLBot::IsVisible(CBasePlayer *player, bool testFOV, unsigned char *visParts) const
 {
 	Vector spot = player->pev->origin;
 	int testVisParts = NONE;
@@ -275,7 +275,7 @@ bool CCSBot::IsVisible(CBasePlayer *player, bool testFOV, unsigned char *visPart
 	return false;
 }
 
-bool CCSBot::IsEnemyPartVisible(VisiblePartType part) const
+bool CHLBot::IsEnemyPartVisible(VisiblePartType part) const
 {
 	if (!IsEnemyVisible())
 		return false;
@@ -283,7 +283,7 @@ bool CCSBot::IsEnemyPartVisible(VisiblePartType part) const
 	return (m_visibleEnemyParts & part) != 0;
 }
 
-void CCSBot::UpdateLookAt()
+void CHLBot::UpdateLookAt()
 {
 	Vector to = m_lookAtSpot - EyePosition();
 	Vector idealAngle = UTIL_VecToAngles(to);
@@ -294,7 +294,7 @@ void CCSBot::UpdateLookAt()
 
 // Look at the given point in space for the given duration (-1 means forever)
 
-void CCSBot::SetLookAt(const char *desc, const Vector *pos, PriorityType pri, float duration, bool clearIfClose, float angleTolerance)
+void CHLBot::SetLookAt(const char *desc, const Vector *pos, PriorityType pri, float duration, bool clearIfClose, float angleTolerance)
 {
 	if (pos == NULL)
 		return;
@@ -328,14 +328,14 @@ void CCSBot::SetLookAt(const char *desc, const Vector *pos, PriorityType pri, fl
 
 // Block all "look at" and "look around" behavior for given duration - just look ahead
 
-void CCSBot::InhibitLookAround(float duration)
+void CHLBot::InhibitLookAround(float duration)
 {
 	m_inhibitLookAroundTimestamp = gpGlobals->time + duration;
 }
 
 // Update enounter spot timestamps, etc
 
-void CCSBot::UpdatePeripheralVision()
+void CHLBot::UpdatePeripheralVision()
 {
 	// if we update at 10Hz, this ensures we test once every three
 	const float peripheralUpdateInterval = 0.29f;
@@ -371,7 +371,7 @@ void CCSBot::UpdatePeripheralVision()
 
 // Update the "looking around" behavior.
 
-void CCSBot::UpdateLookAround(bool updateNow)
+void CHLBot::UpdateLookAround(bool updateNow)
 {
 	// check if looking around has been inhibited
 	// Moved inhibit to allow high priority enemy lookats to still occur
@@ -558,7 +558,7 @@ void CCSBot::UpdateLookAround(bool updateNow)
 
 // "Bend" our line of sight around corners until we can "see" the point.
 
-bool CCSBot::BendLineOfSight(const Vector *eye, const Vector *point, Vector *bend) const
+bool CHLBot::BendLineOfSight(const Vector *eye, const Vector *point, Vector *bend) const
 {
 	// if we can directly see the point, use it
 	TraceResult result;
@@ -637,7 +637,7 @@ bool CCSBot::BendLineOfSight(const Vector *eye, const Vector *point, Vector *ben
 	return false;
 }
 
-CBasePlayer *CCSBot::FindMostDangerousThreat()
+CBasePlayer *CHLBot::FindMostDangerousThreat()
 {
 	// maximum number of simulataneously attendable threats
 	enum { MAX_THREATS = 16 };
@@ -791,7 +791,7 @@ CBasePlayer *CCSBot::FindMostDangerousThreat()
 		{
 			// find the area the player/bot is standing on
 			CNavArea *area;
-			CCSBot *bot = dynamic_cast<CCSBot *>(threat[i].enemy);
+			CHLBot *bot = dynamic_cast<CHLBot *>(threat[i].enemy);
 			if (bot != NULL && bot->IsBot())
 			{
 				area = bot->GetLastKnownArea();
@@ -866,7 +866,7 @@ CBasePlayer *CCSBot::FindMostDangerousThreat()
 
 // Update our reaction time queue
 
-void CCSBot::UpdateReactionQueue()
+void CHLBot::UpdateReactionQueue()
 {
 	// zombies dont see any threats
 	if (cv_bot_zombie.value > 0.0f)
@@ -917,7 +917,7 @@ void CCSBot::UpdateReactionQueue()
 
 // Return the most dangerous threat we are "conscious" of
 
-CBasePlayer *CCSBot::GetRecognizedEnemy()
+CBasePlayer *CHLBot::GetRecognizedEnemy()
 {
 	if (m_enemyQueueAttendIndex >= m_enemyQueueCount)
 		return NULL;
@@ -927,7 +927,7 @@ CBasePlayer *CCSBot::GetRecognizedEnemy()
 
 // Return true if the enemy we are "conscious" of is reloading
 
-bool CCSBot::IsRecognizedEnemyReloading()
+bool CHLBot::IsRecognizedEnemyReloading()
 {
 	if (m_enemyQueueAttendIndex >= m_enemyQueueCount)
 		return false;
@@ -937,7 +937,7 @@ bool CCSBot::IsRecognizedEnemyReloading()
 
 // Return true if the enemy we are "conscious" of is hiding behind a shield
 
-bool CCSBot::IsRecognizedEnemyProtectedByShield()
+bool CHLBot::IsRecognizedEnemyProtectedByShield()
 {
 	if (m_enemyQueueAttendIndex >= m_enemyQueueCount)
 		return false;
@@ -947,7 +947,7 @@ bool CCSBot::IsRecognizedEnemyProtectedByShield()
 
 // Return distance to closest enemy we are "conscious" of
 
-float CCSBot::GetRangeToNearestRecognizedEnemy()
+float CHLBot::GetRangeToNearestRecognizedEnemy()
 {
 	const CBasePlayer *enemy = GetRecognizedEnemy();
 
@@ -961,7 +961,7 @@ float CCSBot::GetRangeToNearestRecognizedEnemy()
 
 // Blind the bot for the given duration
 
-void CCSBot::Blind(float duration, float holdTime, float fadeTime, int alpha)
+void CHLBot::Blind(float duration, float holdTime, float fadeTime, int alpha)
 {
 	// extend
 	//CBasePlayer::Blind(duration, holdTime, fadeTime, alpha);

@@ -1,6 +1,6 @@
 #include "bot_common.h"
 
-void CCSBot::OnEvent(GameEventType event, CBaseEntity *entity, CBaseEntity *other)
+void CHLBot::OnEvent(GameEventType event, CBaseEntity *entity, CBaseEntity *other)
 {
 
 	GetGameState()->OnEvent(event, entity, other);

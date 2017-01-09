@@ -2,7 +2,7 @@
 
 // This method is the ONLY legal way to change a bot's current state
 
-void CCSBot::SetState(BotState *state)
+void CHLBot::SetState(BotState *state)
 {
 	PrintIfWatched("SetState: %s -> %s\n", (m_state != NULL) ? m_state->GetName() : "NULL", state->GetName());
 
@@ -19,13 +19,13 @@ void CCSBot::SetState(BotState *state)
 	m_stateTimestamp = gpGlobals->time;
 }
 
-void CCSBot::Idle()
+void CHLBot::Idle()
 {
 	SetTask(SEEK_AND_DESTROY);
 	SetState(&m_idleState);
 }
 
-void CCSBot::Follow(CBasePlayer *player)
+void CHLBot::Follow(CBasePlayer *player)
 {
 	if (player == NULL)
 		return;
@@ -44,7 +44,7 @@ void CCSBot::Follow(CBasePlayer *player)
 
 // Continue following our leader after finishing what we were doing
 
-void CCSBot::ContinueFollowing()
+void CHLBot::ContinueFollowing()
 {
 	SetTask(FOLLOW);
 	m_followState.SetLeader(m_leader);
@@ -53,7 +53,7 @@ void CCSBot::ContinueFollowing()
 
 // Stop following
 
-void CCSBot::StopFollowing()
+void CHLBot::StopFollowing()
 {
 	m_isFollowing = false;
 	m_leader = NULL;
@@ -62,7 +62,7 @@ void CCSBot::StopFollowing()
 
 // Use the entity
 
-void CCSBot::UseEntity(CBaseEntity *entity)
+void CHLBot::UseEntity(CBaseEntity *entity)
 {
 	m_useEntityState.SetEntity(entity);
 	SetState(&m_useEntityState);
@@ -72,7 +72,7 @@ void CCSBot::UseEntity(CBaseEntity *entity)
 // Move to a hiding place.
 // If 'searchFromArea' is non-NULL, hiding spots are looked for from that area first.
 
-void CCSBot::Hide(CNavArea *searchFromArea, float duration, float hideRange, bool holdPosition)
+void CHLBot::Hide(CNavArea *searchFromArea, float duration, float hideRange, bool holdPosition)
 {
 	DestroyPath();
 
@@ -131,7 +131,7 @@ void CCSBot::Hide(CNavArea *searchFromArea, float duration, float hideRange, boo
 
 // Move to the given hiding place
 
-void CCSBot::Hide(const Vector *hidingSpot, float duration, bool holdPosition)
+void CHLBot::Hide(const Vector *hidingSpot, float duration, bool holdPosition)
 {
 	CNavArea *hideArea = TheNavAreaGrid.GetNearestNavArea(hidingSpot);
 	if (hideArea == NULL)
@@ -163,7 +163,7 @@ void CCSBot::Hide(const Vector *hidingSpot, float duration, bool holdPosition)
 // Try to hide nearby. Return true if hiding, false if can't hide here.
 // If 'searchFromArea' is non-NULL, hiding spots are looked for from that area first.
 
-bool CCSBot::TryToHide(CNavArea *searchFromArea, float duration, float hideRange, bool holdPosition, bool useNearest)
+bool CHLBot::TryToHide(CNavArea *searchFromArea, float duration, float hideRange, bool holdPosition, bool useNearest)
 {
 	CNavArea *source;
 	Vector sourcePos;
@@ -212,7 +212,7 @@ bool CCSBot::TryToHide(CNavArea *searchFromArea, float duration, float hideRange
 
 // Retreat to a nearby hiding spot, away from enemies
 
-bool CCSBot::TryToRetreat()
+bool CHLBot::TryToRetreat()
 {
 	const float maxRange = 1000.0f;
 	const Vector *spot = FindNearbyRetreatSpot(this, maxRange);
@@ -236,7 +236,7 @@ bool CCSBot::TryToRetreat()
 	return false;
 }
 
-void CCSBot::Hunt()
+void CHLBot::Hunt()
 {
 	SetState(&m_huntState);
 }
@@ -244,7 +244,7 @@ void CCSBot::Hunt()
 // Attack our the given victim
 // NOTE: Attacking does not change our task.
 
-void CCSBot::Attack(CBasePlayer *victim)
+void CHLBot::Attack(CBasePlayer *victim)
 {
 	if (victim == NULL)
 		return;
@@ -304,7 +304,7 @@ void CCSBot::Attack(CBasePlayer *victim)
 
 // Exit the Attack state
 
-void CCSBot::StopAttacking()
+void CHLBot::StopAttacking()
 {
 	PrintIfWatched("ATTACK END\n");
 	m_attackState.OnExit(this);
@@ -317,14 +317,14 @@ void CCSBot::StopAttacking()
 	}
 }
 
-bool CCSBot::IsAttacking() const
+bool CHLBot::IsAttacking() const
 {
 	return m_isAttacking;
 }
 
 // Return true if we are hiding
 
-bool CCSBot::IsHiding() const
+bool CHLBot::IsHiding() const
 {
 	if (m_state == static_cast<const BotState *>(&m_hideState))
 		return true;
@@ -334,7 +334,7 @@ bool CCSBot::IsHiding() const
 
 // Return true if we are hiding and at our hiding spot
 
-bool CCSBot::IsAtHidingSpot() const
+bool CHLBot::IsAtHidingSpot() const
 {
 	if (!IsHiding())
 		return false;
@@ -344,7 +344,7 @@ bool CCSBot::IsAtHidingSpot() const
 
 // Return true if we are huting
 
-bool CCSBot::IsHunting() const
+bool CHLBot::IsHunting() const
 {
 	if (m_state == static_cast<const BotState *>(&m_huntState))
 		return true;
@@ -354,7 +354,7 @@ bool CCSBot::IsHunting() const
 
 // Return true if we are in the MoveTo state
 
-bool CCSBot::IsMovingTo() const
+bool CHLBot::IsMovingTo() const
 {
 	if (m_state == static_cast<const BotState *>(&m_moveToState))
 		return true;
@@ -365,7 +365,7 @@ bool CCSBot::IsMovingTo() const
 
 // Move to potentially distant position
 
-void CCSBot::MoveTo(const Vector *pos, RouteType route)
+void CHLBot::MoveTo(const Vector *pos, RouteType route)
 {
 	m_moveToState.SetGoalPosition(*pos);
 	m_moveToState.SetRouteType(route);
@@ -375,7 +375,7 @@ void CCSBot::MoveTo(const Vector *pos, RouteType route)
 
 // Investigate recent enemy noise
 
-void CCSBot::InvestigateNoise()
+void CHLBot::InvestigateNoise()
 {
 	SetState(&m_investigateNoiseState);
 }

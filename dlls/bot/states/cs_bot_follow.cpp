@@ -2,7 +2,7 @@
 
 // Follow our leader
 
-void FollowState::OnEnter(CCSBot *me)
+void FollowState::OnEnter(CHLBot *me)
 {
 	me->StandUp();
 	me->Run();
@@ -75,7 +75,7 @@ void FollowState::ComputeLeaderMotionState(float leaderSpeed)
 // Follow our leader
 // TODO: Clean up this nasty mess
 
-void FollowState::OnUpdate(CCSBot *me)
+void FollowState::OnUpdate(CHLBot *me)
 {
 	// if we lost our leader, give up
 	if (m_leader == NULL || !m_leader->IsAlive())
@@ -174,7 +174,7 @@ void FollowState::OnUpdate(CCSBot *me)
 	}
 
 	// move along our path
-	if (me->UpdatePathMovement(NO_SPEED_CHANGE) != CCSBot::PROGRESSING)
+	if (me->UpdatePathMovement(NO_SPEED_CHANGE) != CHLBot::PROGRESSING)
 	{
 		me->DestroyPath();
 	}
@@ -245,7 +245,7 @@ void FollowState::OnUpdate(CCSBot *me)
 	}
 }
 
-void FollowState::OnExit(CCSBot *me)
+void FollowState::OnExit(CHLBot *me)
 {
 	;
 }

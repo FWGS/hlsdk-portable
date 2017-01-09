@@ -358,7 +358,7 @@ private:
 	friend void DestroyHidingSpots();
 	friend void StripNavigationAreas();
 	friend class CNavAreaGrid;
-	friend class CCSBotManager;
+	friend class CHLBotManager;
 
 	void Initialize();				// to keep constructors consistent
 	static bool m_isReset;			// if true, don't bother cleaning up in destructor since everything is going away

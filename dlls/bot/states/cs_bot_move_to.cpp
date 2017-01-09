@@ -2,7 +2,7 @@
 
 // Move to a potentially far away position.
 
-void MoveToState::OnEnter(CCSBot *me)
+void MoveToState::OnEnter(CHLBot *me)
 {
 	if (me->IsUsingKnife() && me->IsWellPastSafe() && !me->IsHurrying())
 	{
@@ -18,7 +18,7 @@ void MoveToState::OnEnter(CCSBot *me)
 	switch (me->GetTask())
 	{
 	// maybe also fastest way to healthkits??
-	case CCSBot::MOVE_TO_LAST_KNOWN_ENEMY_POSITION:
+	case CHLBot::MOVE_TO_LAST_KNOWN_ENEMY_POSITION:
 			route = FASTEST_ROUTE;
 			break;
 
@@ -36,12 +36,12 @@ void MoveToState::OnEnter(CCSBot *me)
 
 // Move to a potentially far away position.
 
-void MoveToState::OnUpdate(CCSBot *me)
+void MoveToState::OnUpdate(CHLBot *me)
 {
-	CCSBotManager *ctrl = TheCSBots();
+	CHLBotManager *ctrl = TheCSBots();
 
 	// assume that we are paying attention and close enough to know our enemy died
-	if (me->GetTask() == CCSBot::MOVE_TO_LAST_KNOWN_ENEMY_POSITION)
+	if (me->GetTask() == CHLBot::MOVE_TO_LAST_KNOWN_ENEMY_POSITION)
 	{
 		// TODO: Account for reaction time so we take some time to realized the enemy is dead
 		CBasePlayer *victim = static_cast<CBasePlayer *>(me->GetTaskEntity());
@@ -56,12 +56,12 @@ void MoveToState::OnUpdate(CCSBot *me)
 	// look around
 	me->UpdateLookAround();
 
-	if (me->UpdatePathMovement() != CCSBot::PROGRESSING)
+	if (me->UpdatePathMovement() != CHLBot::PROGRESSING)
 	{
 		// reached destination
 		switch (me->GetTask())
 		{
-			case CCSBot::MOVE_TO_LAST_KNOWN_ENEMY_POSITION:
+			case CHLBot::MOVE_TO_LAST_KNOWN_ENEMY_POSITION:
 			{
 				CBasePlayer *victim = static_cast<CBasePlayer *>(me->GetTaskEntity());
 				if (victim != NULL && victim->IsAlive())
@@ -79,10 +79,10 @@ void MoveToState::OnUpdate(CCSBot *me)
 	}
 }
 
-void MoveToState::OnExit(CCSBot *me)
+void MoveToState::OnExit(CHLBot *me)
 {
 	// reset to run in case we were walking near our goal position
 	me->Run();
-	me->SetDisposition(CCSBot::ENGAGE_AND_INVESTIGATE);
+	me->SetDisposition(CHLBot::ENGAGE_AND_INVESTIGATE);
 	//me->StopAiming();
 }

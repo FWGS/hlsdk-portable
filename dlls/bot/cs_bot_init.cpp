@@ -41,7 +41,7 @@ void InstallBotControl()
 		TheBots = NULL;
 	}
 
-	TheBots = new CCSBotManager;
+	TheBots = new CHLBotManager;
 }
 
 // Engine callback for custom server commands
@@ -93,14 +93,14 @@ void Bot_RegisterCvars()
 
 // Constructor
 
-CCSBot::CCSBot() : m_chatter(this), m_gameState(this)
+CHLBot::CHLBot() : m_chatter(this), m_gameState(this)
 {
 	;
 }
 
 // Prepare bot for action
 
-bool CCSBot::Initialize(const BotProfile *profile)
+bool CHLBot::Initialize(const BotProfile *profile)
 {
 	// extend
 	CBot::Initialize(profile);
@@ -127,7 +127,7 @@ bool CCSBot::Initialize(const BotProfile *profile)
 
 // Reset internal data to initial state
 
-void CCSBot::ResetValues()
+void CHLBot::ResetValues()
 {
 	m_chatter.Reset();
 	m_gameState.Reset();
@@ -277,9 +277,9 @@ void CCSBot::ResetValues()
 // Called when bot is placed in map, and when bots are reset after a round ends.
 // NOTE: For some reason, this can be called twice when a bot is added.
 
-void CCSBot::SpawnBot()
+void CHLBot::SpawnBot()
 {
-	CCSBotManager *ctrl = TheCSBots();
+	CHLBotManager *ctrl = TheCSBots();
 
 	ctrl->ValidateMapData();
 	ResetValues();
@@ -287,7 +287,7 @@ void CCSBot::SpawnBot()
 	Q_strcpy(m_name, STRING(pev->netname));
 
 	SetState(&m_followState);
-	SetTouch(&CCSBot::BotTouch);
+	SetTouch(&CHLBot::BotTouch);
 
 	if (!TheNavAreaList.Count () && !ctrl->IsLearningMap())
 	{
@@ -296,14 +296,14 @@ void CCSBot::SpawnBot()
 	}
 }
 
-void CCSBot::RoundRespawn()
+void CHLBot::RoundRespawn()
 {
 	// do the normal player spawn process
 	//CBasePlayer::RoundRespawn();
 //	EndVoiceFeedback();
 }
 
-void CCSBot::Disconnect()
+void CHLBot::Disconnect()
 {
 //	EndVoiceFeedback();
 

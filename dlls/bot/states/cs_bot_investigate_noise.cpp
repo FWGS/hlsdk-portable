@@ -2,7 +2,7 @@
 
 // Move towards currently heard noise
 
-void InvestigateNoiseState::AttendCurrentNoise(CCSBot *me)
+void InvestigateNoiseState::AttendCurrentNoise(CHLBot *me)
 {
 	if (!me->IsNoiseHeard() && me->GetNoisePosition())
 		return;
@@ -22,14 +22,14 @@ void InvestigateNoiseState::AttendCurrentNoise(CCSBot *me)
 	me->ForgetNoise();
 }
 
-void InvestigateNoiseState::OnEnter(CCSBot *me)
+void InvestigateNoiseState::OnEnter(CHLBot *me)
 {
 	AttendCurrentNoise(me);
 }
 
 // Use TravelDistance instead of distance...
 
-void InvestigateNoiseState::OnUpdate(CCSBot *me)
+void InvestigateNoiseState::OnUpdate(CHLBot *me)
 {
 	float newNoiseDist;
 	if (me->ShouldInvestigateNoise(&newNoiseDist))
@@ -100,13 +100,13 @@ void InvestigateNoiseState::OnUpdate(CCSBot *me)
 	}
 
 	// move towards noise
-	if (me->UpdatePathMovement() != CCSBot::PROGRESSING)
+	if (me->UpdatePathMovement() != CHLBot::PROGRESSING)
 	{
 		me->Idle();
 	}
 }
 
-void InvestigateNoiseState::OnExit(CCSBot *me)
+void InvestigateNoiseState::OnExit(CHLBot *me)
 {
 	// reset to run mode in case we were sneaking about
 	me->Run();

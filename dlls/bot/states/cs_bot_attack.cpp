@@ -2,7 +2,7 @@
 
 // Begin attacking
 
-void AttackState::OnEnter(CCSBot *me)
+void AttackState::OnEnter(CHLBot *me)
 {
 	CBasePlayer *enemy = me->GetEnemy();
 
@@ -108,9 +108,9 @@ void AttackState::OnEnter(CCSBot *me)
 	m_isCoward = (RANDOM_FLOAT(0.0f, 100.0f) > 100.0f * me->GetProfile()->GetAggression());
 }
 
-void AttackState::StopAttacking(CCSBot *me)
+void AttackState::StopAttacking(CHLBot *me)
 {
-	if (me->m_task == CCSBot::SNIPING)
+	if (me->m_task == CHLBot::SNIPING)
 	{
 		// stay in our hiding spot
 		me->Hide(me->GetLastKnownArea(), -1.0f, 50.0f);
@@ -123,7 +123,7 @@ void AttackState::StopAttacking(CCSBot *me)
 
 // Perform attack behavior
 
-void AttackState::OnUpdate(CCSBot *me)
+void AttackState::OnUpdate(CHLBot *me)
 {
 	// can't be stuck while attacking
 	me->ResetStuckMonitor();
@@ -223,7 +223,7 @@ void AttackState::OnUpdate(CCSBot *me)
 		}
 
 		// move towards victim
-		if (me->UpdatePathMovement(NO_SPEED_CHANGE) != CCSBot::PROGRESSING)
+		if (me->UpdatePathMovement(NO_SPEED_CHANGE) != CHLBot::PROGRESSING)
 		{
 			me->DestroyPath();
 		}
@@ -262,7 +262,7 @@ void AttackState::OnUpdate(CCSBot *me)
 		float targetRange = toAimSpot3D.Length();
 
 		// dont adjust zoom level if we're already zoomed in - just fire
-		if (me->GetZoomLevel() == CCSBot::NO_ZOOM && me->AdjustZoom(targetRange))
+		if (me->GetZoomLevel() == CHLBot::NO_ZOOM && me->AdjustZoom(targetRange))
 			m_scopeTimestamp = gpGlobals->time;
 
 		const float waitScopeTime = 0.2f + me->GetProfile()->GetReactionTime();
@@ -310,7 +310,7 @@ void AttackState::OnUpdate(CCSBot *me)
 
 		if (notSeenEnemyTime > 0.1f)
 		{
-			if (me->GetDisposition() == CCSBot::ENGAGE_AND_INVESTIGATE)
+			if (me->GetDisposition() == CHLBot::ENGAGE_AND_INVESTIGATE)
 			{
 				// decide whether we should hide and "ambush" our enemy
 				if (m_haveSeenEnemy && !m_didAmbushCheck)
@@ -374,7 +374,7 @@ void AttackState::OnUpdate(CCSBot *me)
 	if (!me->IsEnemyVisible() && (notSeenEnemyTime > chaseTime || !m_haveSeenEnemy))
 	{
 		// snipers don't chase their prey - they wait for their prey to come to them
-		if (me->GetTask() == CCSBot::SNIPING)
+		if (me->GetTask() == CHLBot::SNIPING)
 		{
 			StopAttacking(me);
 			return;
@@ -382,7 +382,7 @@ void AttackState::OnUpdate(CCSBot *me)
 		else
 		{
 			// move to last known position of enemy
-			me->SetTask(CCSBot::MOVE_TO_LAST_KNOWN_ENEMY_POSITION, enemy);
+			me->SetTask(CHLBot::MOVE_TO_LAST_KNOWN_ENEMY_POSITION, enemy);
 			me->MoveTo(&me->GetLastKnownEnemyPosition());
 			return;
 		}
@@ -488,7 +488,7 @@ void AttackState::OnUpdate(CCSBot *me)
 
 // Finish attack
 
-void AttackState::OnExit(CCSBot *me)
+void AttackState::OnExit(CHLBot *me)
 {
 	me->PrintIfWatched("AttackState:OnExit()\n");
 

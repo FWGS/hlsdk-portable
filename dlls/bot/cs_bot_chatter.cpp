@@ -38,7 +38,7 @@ const Vector *GetRandomSpotAtPlace(Place place)
 
 // Transmit meme to other bots
 
-void BotMeme::Transmit(CCSBot *sender) const
+void BotMeme::Transmit(CHLBot *sender) const
 {
 	for (int i = 1; i <= gpGlobals->maxClients; ++i)
 	{
@@ -65,7 +65,7 @@ void BotMeme::Transmit(CCSBot *sender) const
 		if (!player->IsBot())
 			continue;
 
-		CCSBot *bot = dynamic_cast<CCSBot *>(player);
+		CHLBot *bot = dynamic_cast<CHLBot *>(player);
 
 		if (!bot)
 			continue;
@@ -77,7 +77,7 @@ void BotMeme::Transmit(CCSBot *sender) const
 
 // A teammate called for help - respond
 
-void BotHelpMeme::Interpret(CCSBot *sender, CCSBot *receiver) const
+void BotHelpMeme::Interpret(CHLBot *sender, CHLBot *receiver) const
 {
 	const float maxHelpRange = 3000.0f; // 2000
 //	receiver->RespondToHelpRequest(sender, m_place, maxHelpRange);
@@ -85,7 +85,7 @@ void BotHelpMeme::Interpret(CCSBot *sender, CCSBot *receiver) const
 
 // A teammate has asked that we follow him
 
-void BotFollowMeme::Interpret(CCSBot *sender, CCSBot *receiver) const
+void BotFollowMeme::Interpret(CHLBot *sender, CHLBot *receiver) const
 {
 	if (receiver->IsRogue())
 		return;
@@ -112,7 +112,7 @@ void BotFollowMeme::Interpret(CCSBot *sender, CCSBot *receiver) const
 
 // A teammate has asked us to defend a place
 
-void BotDefendHereMeme::Interpret(CCSBot *sender, CCSBot *receiver) const
+void BotDefendHereMeme::Interpret(CHLBot *sender, CHLBot *receiver) const
 {
 	if (receiver->IsRogue())
 		return;
@@ -128,14 +128,14 @@ void BotDefendHereMeme::Interpret(CCSBot *sender, CCSBot *receiver) const
 		const Vector *spot = FindRandomHidingSpot(receiver, place, receiver->IsSniper());
 		if (spot != NULL)
 		{
-			receiver->SetTask(CCSBot::HOLD_POSITION);
+			receiver->SetTask(CHLBot::HOLD_POSITION);
 			receiver->Hide(spot);
 			return;
 		}
 	}
 
 	// hide nearby
-	receiver->SetTask(CCSBot::HOLD_POSITION);
+	receiver->SetTask(CHLBot::HOLD_POSITION);
 	receiver->Hide(TheNavAreaGrid.GetNearestNavArea(&m_pos));
 
 	// acknowledge
@@ -144,7 +144,7 @@ void BotDefendHereMeme::Interpret(CCSBot *sender, CCSBot *receiver) const
 
 // A teammate has asked us to report in
 
-void BotRequestReportMeme::Interpret(CCSBot *sender, CCSBot *receiver) const
+void BotRequestReportMeme::Interpret(CHLBot *sender, CHLBot *receiver) const
 {
 	receiver->GetChatter()->ReportingIn();
 }
@@ -729,7 +729,7 @@ BotStatement::~BotStatement()
 	}
 }
 
-CCSBot *BotStatement::GetOwner() const
+CHLBot *BotStatement::GetOwner() const
 {
 	return m_chatter->GetOwner();
 }
@@ -910,7 +910,7 @@ extern int gmsgSayText;
 
 bool BotStatement::Update()
 {
-	CCSBot *me = GetOwner();
+	CHLBot *me = GetOwner();
 
 	// if all of our teammates are dead, the only non-redundant statements are emotes
 	if (me->GetFriendsRemaining() == 0 && GetType() != REPORT_EMOTE)
@@ -1148,7 +1148,7 @@ enum PitchHack { P_HI, P_NORMAL, P_LOW };
 
 static int nextPitch = P_HI;
 
-BotChatterInterface::BotChatterInterface(CCSBot *me)
+BotChatterInterface::BotChatterInterface(CHLBot *me)
 {
 	m_me = me;
 	m_statementList = NULL;
@@ -1487,7 +1487,7 @@ BotStatement *BotChatterInterface::GetActiveStatement()
 //		if (m_me->m_iTeam != player->m_iTeam)
 //			continue;
 
-		CCSBot *bot = dynamic_cast<CCSBot *>(player);
+		CHLBot *bot = dynamic_cast<CHLBot *>(player);
 
 		// if not a bot, fail the test
 		// TODO: Check if human is currently talking
@@ -1585,7 +1585,7 @@ void BotChatterInterface::ReportIn()
 
 void BotChatterInterface::ReportingIn()
 {
-	CCSBotManager *ctrl = TheCSBots();
+	CHLBotManager *ctrl = TheCSBots();
 	BotStatement *say = new BotStatement(this, REPORT_INFORMATION, 10.0f);
 
 	// where are we
@@ -1769,7 +1769,7 @@ void BotChatterInterface::CelebrateWin()
 	say->SetStartTime(gpGlobals->time + RANDOM_FLOAT(2.0f, 5.0f));
 
 	const float quickRound = 45.0f;
-	CCSBotManager *ctrl = TheCSBots();
+	CHLBotManager *ctrl = TheCSBots();
 
 	if (m_me->GetFriendsRemaining() == 0)
 	{
@@ -1797,7 +1797,7 @@ void BotChatterInterface::CelebrateWin()
 
 void BotChatterInterface::AnnouncePlan(const char *phraseName, Place place)
 {
-	CCSBotManager *ctrl = TheCSBots();
+	CHLBotManager *ctrl = TheCSBots();
 	if (ctrl->IsRoundOver())
 		return;
 

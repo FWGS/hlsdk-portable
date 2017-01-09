@@ -2,9 +2,9 @@
 
 // Lightweight maintenance, invoked frequently
 
-void CCSBot::Upkeep()
+void CHLBot::Upkeep()
 {
-	CCSBotManager *ctrl = TheCSBots();
+	CHLBotManager *ctrl = TheCSBots();
 
 	if (ctrl->IsLearningMap() || !IsAlive())
 		return;
@@ -151,9 +151,9 @@ void CCSBot::Upkeep()
 
 // Heavyweight processing, invoked less often
 
-void CCSBot::Update()
+void CHLBot::Update()
 {
-	CCSBotManager *ctrl = TheCSBots();
+	CHLBotManager *ctrl = TheCSBots();
 
 	if (ctrl->IsAnalysisRequested() && m_processMode == PROCESS_NORMAL)
 	{

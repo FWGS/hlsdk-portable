@@ -2,7 +2,7 @@
 
 // Determine actual path positions bot will move between along the path
 
-bool CCSBot::ComputePathPositions()
+bool CHLBot::ComputePathPositions()
 {
 	if (m_pathLength == 0)
 		return false;
@@ -124,7 +124,7 @@ bool CCSBot::ComputePathPositions()
 
 // If next step of path uses a ladder, prepare to traverse it
 
-void CCSBot::SetupLadderMovement()
+void CHLBot::SetupLadderMovement()
 {
 	if (m_pathIndex < 1 || m_pathLength == 0)
 		return;
@@ -185,7 +185,7 @@ void CCSBot::SetupLadderMovement()
 
 // TODO: What about ladders whose top AND bottom are messed up?
 
-void CCSBot::ComputeLadderEndpoint(bool isAscending)
+void CHLBot::ComputeLadderEndpoint(bool isAscending)
 {
 	TraceResult result;
 	Vector from, to;
@@ -218,7 +218,7 @@ void CCSBot::ComputeLadderEndpoint(bool isAscending)
 // Navigate our current ladder. Return true if we are doing ladder navigation.
 // TODO: Need Push() and Pop() for run/walk context to keep ladder speed contained.
 
-bool CCSBot::UpdateLadderMovement()
+bool CHLBot::UpdateLadderMovement()
 {
 	if (m_pathLadder == NULL)
 		return false;
@@ -578,7 +578,7 @@ bool CCSBot::UpdateLadderMovement()
 // Compute closest point on path to given point
 // NOTE: This does not do line-of-sight tests, so closest point may be thru the floor, etc
 
-bool CCSBot::FindClosestPointOnPath(const Vector *worldPos, int startIndex, int endIndex, Vector *close) const
+bool CHLBot::FindClosestPointOnPath(const Vector *worldPos, int startIndex, int endIndex, Vector *close) const
 {
 	if (!HasPath() || close == NULL)
 		return false;
@@ -632,7 +632,7 @@ bool CCSBot::FindClosestPointOnPath(const Vector *worldPos, int startIndex, int 
 // Return the closest point to our current position on our current path
 // If "local" is true, only check the portion of the path surrounding m_pathIndex.
 
-int CCSBot::FindOurPositionOnPath(Vector *close, bool local) const
+int CHLBot::FindOurPositionOnPath(Vector *close, bool local) const
 {
 	if (!HasPath())
 		return -1;
@@ -718,7 +718,7 @@ int CCSBot::FindOurPositionOnPath(Vector *close, bool local) const
 
 // Test for un-jumpable height change, or unrecoverable fall
 
-bool CCSBot::IsStraightLinePathWalkable(const Vector *goal) const
+bool CHLBot::IsStraightLinePathWalkable(const Vector *goal) const
 {
 // this is causing hang-up problems when crawling thru ducts/windows that drop off into rooms (they fail the "falling" check)
 return true;
@@ -775,7 +775,7 @@ return true;
 // Compute a point a fixed distance ahead along our path.
 // Returns path index just after point.
 
-int CCSBot::FindPathPoint(float aheadRange, Vector *point, int *prevIndex)
+int CHLBot::FindPathPoint(float aheadRange, Vector *point, int *prevIndex)
 {
 	// find path index just past aheadRange
 	int afterIndex;
@@ -1013,7 +1013,7 @@ int CCSBot::FindPathPoint(float aheadRange, Vector *point, int *prevIndex)
 
 // Set the current index along the path
 
-void CCSBot::SetPathIndex(int newIndex)
+void CHLBot::SetPathIndex(int newIndex)
 {
 	m_pathIndex = Q_min(newIndex, m_pathLength - 1);
 	m_areaEnteredTimestamp = gpGlobals->time;
@@ -1036,7 +1036,7 @@ void CCSBot::SetPathIndex(int newIndex)
 
 // Return true if nearing a jump in the path
 
-bool CCSBot::IsNearJump() const
+bool CHLBot::IsNearJump() const
 {
 	if (m_pathIndex == 0 || m_pathIndex >= m_pathLength)
 		return false;
@@ -1057,7 +1057,7 @@ bool CCSBot::IsNearJump() const
 
 // Return approximately how much damage will will take from the given fall height
 
-float CCSBot::GetApproximateFallDamage(float height) const
+float CHLBot::GetApproximateFallDamage(float height) const
 {
 	// empirically discovered height values
 	const float slope = 0.2178f;
@@ -1073,7 +1073,7 @@ float CCSBot::GetApproximateFallDamage(float height) const
 
 // Return true if a friend is between us and the given position
 
-bool CCSBot::IsFriendInTheWay(const Vector *goalPos) const
+bool CHLBot::IsFriendInTheWay(const Vector *goalPos) const
 {
 	// do this check less often to ease CPU burden
 	if (!m_avoidFriendTimer.IsElapsed())
@@ -1149,7 +1149,7 @@ bool CCSBot::IsFriendInTheWay(const Vector *goalPos) const
 
 // Do reflex avoidance movements if our "feelers" are touched
 
-void CCSBot::FeelerReflexAdjustment(Vector *goalPosition)
+void CHLBot::FeelerReflexAdjustment(Vector *goalPosition)
 {
 	// if we are in a "precise" area, do not do feeler adjustments
 	if (m_lastKnownArea != NULL && (m_lastKnownArea->GetAttributes() & NAV_PRECISE))
@@ -1254,7 +1254,7 @@ void CCSBot::FeelerReflexAdjustment(Vector *goalPosition)
 
 // Move along the path. Return false if end of path reached.
 
-CCSBot::PathResult CCSBot::UpdatePathMovement(bool allowSpeedChange)
+CHLBot::PathResult CHLBot::UpdatePathMovement(bool allowSpeedChange)
 {
 	if (m_pathLength == 0)
 		return PATH_FAILURE;
@@ -1560,7 +1560,7 @@ CCSBot::PathResult CCSBot::UpdatePathMovement(bool allowSpeedChange)
 
 // Build trivial path to goal, assuming we are already in the same area
 
-void CCSBot::BuildTrivialPath(const Vector *goal)
+void CHLBot::BuildTrivialPath(const Vector *goal)
 {
 	m_pathIndex = 1;
 	m_pathLength = 2;
@@ -1587,7 +1587,7 @@ void CCSBot::BuildTrivialPath(const Vector *goal)
 // Compute shortest path to goal position via A* algorithm
 // If 'goalArea' is NULL, path will get as close as it can.
 
-bool CCSBot::ComputePath(CNavArea *goalArea, const Vector *goal, RouteType route)
+bool CHLBot::ComputePath(CNavArea *goalArea, const Vector *goal, RouteType route)
 {
 	// Throttle re-pathing
 	if (!m_repathTimer.IsElapsed())
@@ -1715,7 +1715,7 @@ bool CCSBot::ComputePath(CNavArea *goalArea, const Vector *goal, RouteType route
 
 // Return estimated distance left to travel along path
 
-float CCSBot::GetPathDistanceRemaining() const
+float CHLBot::GetPathDistanceRemaining() const
 {
 	if (!HasPath())
 		return -1.0f;
@@ -1736,7 +1736,7 @@ float CCSBot::GetPathDistanceRemaining() const
 
 // Draw a portion of our current path for debugging.
 
-void CCSBot::DrawPath()
+void CHLBot::DrawPath()
 {
 	if (!HasPath())
 		return;

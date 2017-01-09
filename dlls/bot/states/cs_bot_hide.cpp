@@ -3,7 +3,7 @@
 // Begin moving to a nearby hidey-hole.
 // NOTE: Do not forget this state may include a very long "move-to" time to get to our hidey spot!
 
-void HideState::OnEnter(CCSBot *me)
+void HideState::OnEnter(CHLBot *me)
 {
 	m_isAtSpot = false;
 
@@ -42,7 +42,7 @@ void HideState::OnEnter(CCSBot *me)
 // Move to a nearby hidey-hole.
 // NOTE: Do not forget this state may include a very long "move-to" time to get to our hidey spot!
 
-void HideState::OnUpdate(CCSBot *me)
+void HideState::OnUpdate(CHLBot *me)
 {
 	// wait until finished reloading to leave hide state
 	if (!me->IsActiveWeaponReloading())
@@ -83,7 +83,7 @@ void HideState::OnUpdate(CCSBot *me)
 		// dont investigate noises if we are reloading
 		if (!me->IsActiveWeaponReloading() &&
 			!isSettledInSniper &&
-			me->GetDisposition() == CCSBot::ENGAGE_AND_INVESTIGATE)
+			me->GetDisposition() == CHLBot::ENGAGE_AND_INVESTIGATE)
 		{
 			// if we are holding position, and have heard the enemy nearby, investigate after our hold time is up
 			if (m_isHoldingPosition && m_heardEnemy && (gpGlobals->time - m_firstHeardEnemyTime > m_holdPositionTime))
@@ -182,12 +182,12 @@ void HideState::OnUpdate(CCSBot *me)
 
 			// ready our weapon and prepare to attack
 			me->EquipBestWeapon(MUST_EQUIP);
-			me->SetDisposition(CCSBot::OPPORTUNITY_FIRE);
+			me->SetDisposition(CHLBot::OPPORTUNITY_FIRE);
 
 			// if we are a sniper, update our task
-			if (me->GetTask() == CCSBot::MOVE_TO_SNIPER_SPOT)
+			if (me->GetTask() == CHLBot::MOVE_TO_SNIPER_SPOT)
 			{
-				me->SetTask(CCSBot::SNIPING);
+				me->SetTask(CHLBot::SNIPING);
 			}
 
 			// determine which way to look
@@ -209,7 +209,7 @@ void HideState::OnUpdate(CCSBot *me)
 		}
 
 		// move to hiding spot
-		if (me->UpdatePathMovement() != CCSBot::PROGRESSING && !m_isAtSpot)
+		if (me->UpdatePathMovement() != CHLBot::PROGRESSING && !m_isAtSpot)
 		{
 			// we couldn't get to our hiding spot - pick another
 			me->PrintIfWatched("Can't get to my hiding spot - finding another...\n");
@@ -242,7 +242,7 @@ void HideState::OnUpdate(CCSBot *me)
 	}
 }
 
-void HideState::OnExit(CCSBot *me)
+void HideState::OnExit(CHLBot *me)
 {
 	m_isHoldingPosition = false;
 

@@ -37,7 +37,7 @@
 #define UNDEFINED_SUBJECT	(-1)
 #define COUNT_MANY		4		// equal to or greater than this is "many"
 
-class CCSBot;
+class CHLBot;
 class BotChatterInterface;
 
 typedef unsigned int PlaceCriteria;
@@ -51,8 +51,8 @@ class BotMeme
 public:
 	virtual ~BotMeme(){}
 
-	void Transmit(CCSBot *sender) const;						// transmit meme to other bots
-	virtual void Interpret(CCSBot *sender, CCSBot *receiver) const = 0;		// cause the given bot to act on this meme
+	void Transmit(CHLBot *sender) const;						// transmit meme to other bots
+	virtual void Interpret(CHLBot *sender, CHLBot *receiver) const = 0;		// cause the given bot to act on this meme
 };
 class BotHelpMeme: public BotMeme
 {
@@ -61,7 +61,7 @@ public:
 	{
 		m_place = place;
 	}
-	virtual void Interpret(CCSBot *sender, CCSBot *receiver) const;			// cause the given bot to act on this meme
+	virtual void Interpret(CHLBot *sender, CHLBot *receiver) const;			// cause the given bot to act on this meme
    
 private:
 	Place m_place;
@@ -69,7 +69,7 @@ private:
 class BotFollowMeme: public BotMeme
 {
 public:
-	virtual void Interpret(CCSBot *sender, CCSBot *receiver) const;			// cause the given bot to act on this meme
+	virtual void Interpret(CHLBot *sender, CHLBot *receiver) const;			// cause the given bot to act on this meme
 };
 
 class BotDefendHereMeme: public BotMeme
@@ -79,7 +79,7 @@ public:
 	{
 		m_pos = pos;
 	}
-	virtual void Interpret(CCSBot *sender, CCSBot *receiver) const;				// cause the given bot to act on this meme
+	virtual void Interpret(CHLBot *sender, CHLBot *receiver) const;				// cause the given bot to act on this meme
 
 private:
 	Vector m_pos;
@@ -89,7 +89,7 @@ private:
 class BotRequestReportMeme: public BotMeme
 {
 public:
-	virtual void Interpret(CCSBot *sender, CCSBot *receiver) const;			// cause the given bot to act on this meme
+	virtual void Interpret(CHLBot *sender, CHLBot *receiver) const;			// cause the given bot to act on this meme
 };
 
 enum BotStatementType
@@ -296,7 +296,7 @@ public:
 
 public:
 	BotChatterInterface *GetChatter() const		{ return m_chatter; }
-	CCSBot *GetOwner() const;
+	CHLBot *GetOwner() const;
 
 	BotStatementType GetType() const			{ return m_type; }				// return the type of statement this is
 	bool IsImportant() const;										// return true if this statement is "important" and not personality chatter
@@ -394,7 +394,7 @@ class BotChatterInterface
 public:
 	BotChatterInterface() {};
 
-	BotChatterInterface(CCSBot *me);
+	BotChatterInterface(CHLBot *me);
 	~BotChatterInterface();
 
 	void Reset();										// reset to initial state
@@ -412,7 +412,7 @@ public:
 	};
 	VerbosityType GetVerbosity() const;						// return our current level of verbosity
 
-	CCSBot *GetOwner() const { return m_me; }
+	CHLBot *GetOwner() const { return m_me; }
 	bool IsTalking() const;								// return true if we are currently talking
 	float GetRadioSilenceDuration();						// return time since any teammate said anything
 	void ResetRadioSilenceDuration();
@@ -460,7 +460,7 @@ private:
 	void ReportEnemies();					// track nearby enemy count and generate enemy activity statements
 	bool ShouldSpeak() const;				// return true if we speaking makes sense now
 
-	CCSBot *m_me;						// the bot this chatter is for
+	CHLBot *m_me;						// the bot this chatter is for
 
 	bool m_seeAtLeastOneEnemy;
 	float m_timeWhenSawFirstEnemy;

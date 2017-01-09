@@ -2,7 +2,7 @@
 
 // Reset the stuck-checker.
 
-void CCSBot::ResetStuckMonitor()
+void CHLBot::ResetStuckMonitor()
 {
 	if (m_isStuck)
 	{
@@ -24,7 +24,7 @@ void CCSBot::ResetStuckMonitor()
 
 // Test if we have become stuck
 
-void CCSBot::StuckCheck()
+void CHLBot::StuckCheck()
 {
 //	m_isStuck = false;
 //	return;
@@ -100,7 +100,7 @@ void CCSBot::StuckCheck()
 
 // Check if we need to jump due to height change
 
-bool CCSBot::DiscontinuityJump(float ground, bool onlyJumpDown, bool mustJump)
+bool CHLBot::DiscontinuityJump(float ground, bool onlyJumpDown, bool mustJump)
 {
 	// don't try to jump again.
 	if (m_isJumpCrouching)
@@ -141,7 +141,7 @@ bool CCSBot::DiscontinuityJump(float ground, bool onlyJumpDown, bool mustJump)
 
 // Find "simple" ground height, treating current nav area as part of the floor
 
-bool CCSBot::GetSimpleGroundHeightWithFloor(const Vector *pos, float *height, Vector *normal)
+bool CHLBot::GetSimpleGroundHeightWithFloor(const Vector *pos, float *height, Vector *normal)
 {
 	if (GetSimpleGroundHeight(pos, height, normal))
 	{
@@ -157,7 +157,7 @@ bool CCSBot::GetSimpleGroundHeightWithFloor(const Vector *pos, float *height, Ve
 	return false;
 }
 
-Place CCSBot::GetPlace() const
+Place CHLBot::GetPlace() const
 {
 	if (m_lastKnownArea != NULL)
 		return m_lastKnownArea->GetPlace();
@@ -165,7 +165,7 @@ Place CCSBot::GetPlace() const
 	return UNDEFINED_PLACE;
 }
 
-void CCSBot::MoveTowardsPosition(const Vector *pos)
+void CHLBot::MoveTowardsPosition(const Vector *pos)
 {
 	// Jump up on ledges
 	// Because we may not be able to get to our goal position and enter the next
@@ -260,7 +260,7 @@ void CCSBot::MoveTowardsPosition(const Vector *pos)
 
 // Move away from position, independant of view angle
 
-NOXREF void CCSBot::MoveAwayFromPosition(const Vector *pos)
+NOXREF void CHLBot::MoveAwayFromPosition(const Vector *pos)
 {
 	// compute our current forward and lateral vectors
 	float angle = pev->v_angle[ YAW ];
@@ -290,7 +290,7 @@ NOXREF void CCSBot::MoveAwayFromPosition(const Vector *pos)
 
 // Strafe (sidestep) away from position, independant of view angle
 
-void CCSBot::StrafeAwayFromPosition(const Vector *pos)
+void CHLBot::StrafeAwayFromPosition(const Vector *pos)
 {
 	// compute our current forward and lateral vectors
 	float angle = pev->v_angle[ YAW ];
@@ -312,7 +312,7 @@ void CCSBot::StrafeAwayFromPosition(const Vector *pos)
 
 // For getting un-stuck
 
-void CCSBot::Wiggle()
+void CHLBot::Wiggle()
 {
 	if (IsCrouching())
 	{
@@ -355,7 +355,7 @@ void CCSBot::Wiggle()
 
 // Determine approach points from eye position and approach areas of current area
 
-void CCSBot::ComputeApproachPoints()
+void CHLBot::ComputeApproachPoints()
 {
 	m_approachPointCount = 0;
 
@@ -399,7 +399,7 @@ void CCSBot::ComputeApproachPoints()
 	}
 }
 
-void CCSBot::DrawApproachPoints()
+void CHLBot::DrawApproachPoints()
 {
 	for (int i = 0; i < m_approachPointCount; ++i)
 	{
@@ -409,7 +409,7 @@ void CCSBot::DrawApproachPoints()
 
 // Find the approach point that is nearest to our current path, ahead of us
 
-NOXREF bool CCSBot::FindApproachPointNearestPath(Vector *pos)
+NOXREF bool CHLBot::FindApproachPointNearestPath(Vector *pos)
 {
 	if (!HasPath())
 		return false;
