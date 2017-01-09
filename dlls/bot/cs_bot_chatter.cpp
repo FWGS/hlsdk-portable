@@ -1131,6 +1131,7 @@ bool BotStatement::Update()
 					// use the standard radio
 					me->GetChatter()->ResetRadioSilenceDuration();
 //					me->SendRadioMessage(radioEvent);
+					TheBots->OnEvent( radioEvent, me );
 					duration = 2.0f;
 				}
 			}
@@ -1164,6 +1165,7 @@ bool BotStatement::Update()
 					if (filename == NULL)
 					{
 						GameEventType radioEvent = phrase->GetRadioEquivalent();
+
 						if (radioEvent == EVENT_INVALID)
 						{
 							// skip directly to the next phrase
@@ -1172,6 +1174,7 @@ bool BotStatement::Update()
 						else
 						{
 //							me->SendRadioMessage(radioEvent);
+							TheBots->OnEvent( radioEvent, me );
 
 							//me->GetChatter()->ResetRadioSilenceDuration();
 							duration = 2.0f;
