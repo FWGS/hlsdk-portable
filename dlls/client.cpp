@@ -140,10 +140,11 @@ void ClientDisconnect( edict_t *pEntity )
 	if( mp_coop.value )
 	{
 		CBasePlayer *pPlayer = (CBasePlayer*)CBaseEntity::Instance( pEntity );
-		if( pPlayer )
+		if( pPlayer && !pPlayer->IsBot() )
 			pPlayer->m_state = STATE_UNINITIALIZED;
 	}
-	TheBots->ClientDisconnect((CBasePlayer*)CBaseEntity::Instance( pEntity ));
+	if( TheBots )
+		TheBots->ClientDisconnect((CBasePlayer*)CBaseEntity::Instance( pEntity ));
 
 
 }
@@ -230,8 +231,11 @@ void ClientPutInServer( edict_t *pEntity )
 	// AGHL-like spectator
 	if( mp_spectator.value )
 	{
-		pPlayer->RemoveAllItems( TRUE );
-		BecomeSpectator( pPlayer );
+		if( !pPlayer->IsBot() )
+		{
+			pPlayer->RemoveAllItems( TRUE );
+			BecomeSpectator( pPlayer );
+		}
 	}
 
 	// Reset interpolation during first frame
@@ -429,9 +433,6 @@ void ClientCommand( edict_t *pEntity )
 
 	entvars_t *pev = &pEntity->v;
 
-	if (TheBots->ClientCommand(GetClassPtr((CBasePlayer *)pev), pcmd))
-		return;
-
 	if ( FStrEq(pcmd, "say" ) )
 	{
 		Host_Say( pEntity, 0 );
@@ -571,6 +572,10 @@ void ClientCommand( edict_t *pEntity )
 		// tell the user they entered an unknown command
 		char command[128];
 
+		if ( TheBots && TheBots->ClientCommand(GetClassPtr((CBasePlayer *)pev), pcmd) )
+			return;
+
+
 		// check the length of the command (prevents crash)
 		// max total length is 192 ...and we're adding a string below ("Unknown command: %s\n")
 		strncpy( command, pcmd, 127 );
@@ -664,7 +669,8 @@ void ServerDeactivate( void )
 
 	// Peform any shutdown operations here...
 	//
-	TheBots->ServerDeactivate();
+	if( TheBots )
+		TheBots->ServerDeactivate();
 }
 
 void CoopClearData( void );
@@ -722,7 +728,8 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 			}
 		}
 	}
-	TheBots->ServerActivate();
+	if( TheBots )
+		TheBots->ServerActivate();
 }
 
 
@@ -820,7 +827,8 @@ void StartFrame( void )
 
 	gpGlobals->teamplay = teamplay.value;
 	g_ulFrameCount++;
-	TheBots->StartFrame();
+	if( TheBots )
+		TheBots->StartFrame();
 }
 
 
