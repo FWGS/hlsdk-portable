@@ -604,8 +604,7 @@ void CCSBot::Update()
 		&& GetProfile()->GetTeamwork() > minAutoFollowTeamwork
 		&& CanAutoFollow()
 		&& !IsBusy()
-		&& !IsFollowing()
-		&& !GetGameState()->IsAtPlantedBombsite())
+		&& !IsFollowing())
 	{
 		// chance of following is proportional to teamwork attribute
 		if (GetProfile()->GetTeamwork() > RANDOM_FLOAT(0.0f, 1.0f))

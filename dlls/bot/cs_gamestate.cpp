@@ -5,9 +5,10 @@ CSGameState::CSGameState(CCSBot *owner)
 	m_owner = owner;
 	m_isRoundOver = false;
 //	m_bombState = MOVING;
-
+#if 0
 	m_lastSawBomber.Invalidate();
 	m_lastSawLooseBomb.Invalidate();
+#endif
 	m_validateInterval.Invalidate();
 //	m_isPlantedBombPosKnown = false;
 //	m_plantedBombsite = UNKNOWN;
@@ -36,12 +37,11 @@ void CSGameState::Reset()
 	CCSBotManager *ctrl = TheCSBots();
 
 	m_isRoundOver = false;
-
+#if 0
 	// bomb
 	m_bombState = MOVING;
 	m_lastSawBomber.Invalidate();
 	m_lastSawLooseBomb.Invalidate();
-#if 0
 	m_bombsiteCount = ctrl->GetZoneCount();
 
 	m_isPlantedBombPosKnown = false;
@@ -110,7 +110,7 @@ bool CSGameState::IsRoundOver() const
 {
 	return m_isRoundOver;
 }
-
+#if 0
 void CSGameState::SetBombState(BombState state)
 {
 	// if state changed, reset "last seen" timestamps
@@ -309,6 +309,7 @@ bool CSGameState::IsBombsiteClear(int zoneIndex) const
 #endif
 	return false;
 }
+#endif
 #if 0
 void CSGameState::InitializeHostageInfo()
 {

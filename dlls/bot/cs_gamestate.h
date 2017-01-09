@@ -44,7 +44,7 @@ public:
 	void Reset();
 	void OnEvent(GameEventType event, CBaseEntity *entity, CBaseEntity *other);		// Event handling
 	bool IsRoundOver() const;								// true if round has been won or lost (but not yet reset)
-
+#if 0
 	// bomb defuse scenario
 	enum BombState
 	{
@@ -81,14 +81,14 @@ public:
 	void ClearBombsite(int zoneIndex);			// mark bombsite as clear
 
 	const Vector *GetBombPosition() const;			// return where we think the bomb is, or NULL if we don't know
-
+#endif
 	// hostage rescue scenario
 	//enum ValidateStatusType:unsigned char //C++11 feature
 
 private:
 	CCSBot *m_owner;			// who owns this gamestate
 	bool m_isRoundOver;			// true if round is over, but no yet reset
-
+#if 0
 	// bomb defuse scenario
 	void SetBombState(BombState state);
 	BombState GetBombState() { return m_bombState; }
@@ -100,7 +100,7 @@ private:
 
 	IntervalTimer m_lastSawLooseBomb;
 	Vector m_looseBombPos;
-
+#endif
 	CountdownTimer m_validateInterval;
 };
 
