@@ -49,8 +49,10 @@ void HideState::OnUpdate(CCSBot *me)
 	// wait until finished reloading to leave hide state
 	if (!me->IsActiveWeaponReloading())
 	{
+
 		if (gpGlobals->time - me->GetStateTimestamp() > m_duration)
 		{
+#if 0
 			if (me->GetTask() == CCSBot::GUARD_LOOSE_BOMB)
 			{
 				// if we're guarding the loose bomb, continue to guard it but pick a new spot
@@ -83,7 +85,7 @@ void HideState::OnUpdate(CCSBot *me)
 					return;
 				}
 			}
-
+#endif
 			me->Idle();
 			return;
 		}
@@ -219,6 +221,7 @@ void HideState::OnUpdate(CCSBot *me)
 			}
 		}
 #endif
+
 
 		bool isSettledInSniper = (me->IsSniper() && m_isAtSpot) ? true : false;
 

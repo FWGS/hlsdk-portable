@@ -702,10 +702,13 @@ void CCSBot::ReloadCheck()
 	// don't bother to reload if there are no enemies left
 	if (GetEnemiesRemaining() == 0)
 		return;
-
+#if 0
 	if (IsDefusingBomb() || IsActiveWeaponReloading())
 		return;
-
+#else
+	if (IsActiveWeaponReloading())
+		return;
+#endif
 	if (IsActiveWeaponClipEmpty())
 	{
 #if 0
@@ -774,7 +777,7 @@ void CCSBot::SilencerCheck()
 	// longer than reload check because reloading should take precedence
 	const float safeSilencerWaitTime = 3.5f;
 
-	if (IsDefusingBomb() || IsActiveWeaponReloading() || IsAttacking())
+	if (IsActiveWeaponReloading() || IsAttacking())
 		return;
 
 	// M4A1 and USP are the only weapons with removable silencers

@@ -54,7 +54,7 @@ public:
 	void Transmit(CCSBot *sender) const;						// transmit meme to other bots
 	virtual void Interpret(CCSBot *sender, CCSBot *receiver) const = 0;		// cause the given bot to act on this meme
 };
-
+#if 0
 class BotAllHostagesGoneMeme: public BotMeme
 {
 public:
@@ -66,7 +66,7 @@ class BotHostageBeingTakenMeme: public BotMeme
 public:
 	virtual void Interpret(CCSBot *sender, CCSBot *receiver) const;			// cause the given bot to act on this meme
 };
-
+#endif
 class BotHelpMeme: public BotMeme
 {
 public:
@@ -79,7 +79,7 @@ public:
 private:
 	Place m_place;
 };
-
+#if 0
 class BotBombsiteStatusMeme: public BotMeme
 {
 public:
@@ -113,7 +113,7 @@ private:
 	CSGameState::BombState m_state;
 	Vector m_pos;
 };
-
+#endif
 class BotFollowMeme: public BotMeme
 {
 public:
@@ -133,11 +133,13 @@ private:
 	Vector m_pos;
 };
 
+#if 0
 class BotWhereBombMeme: public BotMeme
 {
 public:
 	virtual void Interpret(CCSBot *sender, CCSBot *receiver) const;			// cause the given bot to act on this meme
 };
+#endif
 
 class BotRequestReportMeme: public BotMeme
 {
@@ -499,7 +501,7 @@ public:
 	void PinnedDown();
 	void Scared();
 	void HeardNoise(const Vector *pos);
-
+#if 0
 	void TheyPickedUpTheBomb();
 	void GoingToPlantTheBomb(Place place);
 	void BombsiteClear(int zoneIndex);
@@ -518,7 +520,7 @@ public:
 	void TalkingToHostages();
 	void EscortingHostages();
 	NOXREF void HostageDown();
-
+#endif
 	void CelebrateWin();
 
 	void Encourage(const char *phraseName, float repeatInterval = 10.0f, float lifetime = 3.0f);		// "encourage" the player to do the scenario

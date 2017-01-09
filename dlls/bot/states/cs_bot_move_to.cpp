@@ -17,9 +17,12 @@ void MoveToState::OnEnter(CCSBot *me)
 	RouteType route;
 	switch (me->GetTask())
 	{
+	// maybe also fastest way to healthkits??
+#if 0
 		case CCSBot::FIND_TICKING_BOMB:
 		case CCSBot::DEFUSE_BOMB:
-		case CCSBot::MOVE_TO_LAST_KNOWN_ENEMY_POSITION:
+#endif
+	case CCSBot::MOVE_TO_LAST_KNOWN_ENEMY_POSITION:
 			route = FASTEST_ROUTE;
 			break;
 
@@ -243,6 +246,7 @@ void MoveToState::OnUpdate(CCSBot *me)
 		// reached destination
 		switch (me->GetTask())
 		{
+#if 0
 			case CCSBot::PLANT_BOMB:
 			{
 				// if we are at bombsite with the bomb, plant it
@@ -273,6 +277,7 @@ void MoveToState::OnUpdate(CCSBot *me)
 				}
 				break;
 			}
+#endif
 			case CCSBot::MOVE_TO_LAST_KNOWN_ENEMY_POSITION:
 			{
 				CBasePlayer *victim = static_cast<CBasePlayer *>(me->GetTaskEntity());

@@ -83,7 +83,7 @@ void FollowState::OnUpdate(CCSBot *me)
 		me->Idle();
 		return;
 	}
-
+#if 0
 	// if we are carrying the bomb and at a bombsite, plant
 	if (me->IsCarryingBomb() && me->IsAtBombsite())
 	{
@@ -95,7 +95,7 @@ void FollowState::OnUpdate(CCSBot *me)
 		me->GetChatter()->PlantingTheBomb(me->GetPlace());
 		return;
 	}
-
+#endif
 	// look around
 	me->UpdateLookAround();
 

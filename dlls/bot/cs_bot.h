@@ -378,7 +378,7 @@ public:
 
 	void MoveTo(const Vector *pos, RouteType route = SAFEST_ROUTE);				// move to potentially distant position
 	bool IsMovingTo() const;								// return true if we are in the MoveTo state
-
+#if 0
 	void PlantBomb();
 
 	void FetchBomb();									// bomb has been dropped - go get it
@@ -394,10 +394,11 @@ public:
 	bool IsEscapingFromBomb() const;							// return true if we are escaping from the bomb
 
 	void RescueHostages();
-	void UseEntity(CBaseEntity *entity);							// use the entity
+								// use the entity
 
 	bool IsBuying() const;
-
+#endif
+	void UseEntity(CBaseEntity *entity);
 	void Panic(CBasePlayer *enemy);								// look around in panic
 	void Follow(CBasePlayer *player);							// begin following given Player
 	void ContinueFollowing();								// continue following our leader after finishing what we were doing
@@ -434,22 +435,22 @@ public:
 	enum TaskType
 	{
 		SEEK_AND_DESTROY,
-		PLANT_BOMB,
-		FIND_TICKING_BOMB,
-		DEFUSE_BOMB,
-		GUARD_TICKING_BOMB,
-		GUARD_BOMB_DEFUSER,
-		GUARD_LOOSE_BOMB,
-		GUARD_BOMB_ZONE,
-		ESCAPE_FROM_BOMB,
+		//PLANT_BOMB,
+		//FIND_TICKING_BOMB,
+		//DEFUSE_BOMB,
+		//GUARD_TICKING_BOMB,
+		//GUARD_BOMB_DEFUSER,
+		//GUARD_LOOSE_BOMB,
+		//GUARD_BOMB_ZONE,
+		//ESCAPE_FROM_BOMB,
 		HOLD_POSITION,
 		FOLLOW,
-		VIP_ESCAPE,
-		GUARD_VIP_ESCAPE_ZONE,
-		COLLECT_HOSTAGES,
-		RESCUE_HOSTAGES,
-		GUARD_HOSTAGES,
-		GUARD_HOSTAGE_RESCUE_ZONE,
+		//VIP_ESCAPE,
+		//GUARD_VIP_ESCAPE_ZONE,
+		//COLLECT_HOSTAGES,
+		//RESCUE_HOSTAGES,
+		//GUARD_HOSTAGES,
+		//GUARD_HOSTAGE_RESCUE_ZONE,
 		MOVE_TO_LAST_KNOWN_ENEMY_POSITION,
 		MOVE_TO_SNIPER_SPOT,
 		SNIPING,
@@ -662,10 +663,11 @@ public:
 
 	bool IsPrimaryWeaponEmpty() const;					// return true if primary weapon doesn't exist or is totally out of ammo
 	bool IsPistolEmpty() const;						// return true if secondary weapon doesn't exist or is totally out of ammo
-
+#if 0
 	int GetHostageEscortCount() const;
 	void IncreaseHostageEscortCount();
 	float GetRangeToFarthestEscortedHostage() const;
+#endif
 	void ResetWaitForHostagePatience();
 	void ResetValues();							// reset internal data to initial state
 	void BotDeathThink();
@@ -808,7 +810,7 @@ private:
 
 	// game scenario mechanisms
 	CSGameState m_gameState;
-
+#if 0
 	// hostages mechanism
 	byte m_hostageEscortCount;
 	void UpdateHostageEscortCount();
@@ -816,7 +818,7 @@ private:
 	bool m_isWaitingForHostage;
 	CountdownTimer m_inhibitWaitingForHostageTimer;
 	CountdownTimer m_waitForHostageTimer;
-
+#endif
 	// listening mechanism
 	Vector m_noisePosition;				// position we last heard non-friendly noise
 	float m_noiseTimestamp;				// when we heard it (can get zeroed)
@@ -1035,11 +1037,12 @@ inline float CCSBot::GetSafeTime() const
 {
 	return m_safeTime;
 }
-
+#if 0
 inline bool CCSBot::IsCarryingBomb() const
 {
 	return false;
 }
+#endif
 
 inline bool CCSBot::IsFollowing() const
 {
@@ -1373,7 +1376,7 @@ inline CCSBot::ZoomType CCSBot::GetZoomLevel() const
 
 	return HIGH_ZOOM;
 }
-
+#if 0
 inline int CCSBot::GetHostageEscortCount() const
 {
 	return m_hostageEscortCount;
@@ -1389,7 +1392,7 @@ inline void CCSBot::ResetWaitForHostagePatience()
 	m_isWaitingForHostage = false;
 	m_inhibitWaitingForHostageTimer.Invalidate();
 }
-
+#endif
 inline float CCSBot::GetFeetZ() const
 {
 	if (IsCrouching())
@@ -1642,13 +1645,13 @@ public:
 			{
 				// these areas are very slow to move through
 				float crouchPenalty = (m_route == FASTEST_ROUTE) ? 20.0f : 5.0f;
-
+#if 0 /// TODO: useful in coop modes
 				// avoid crouch areas if we are rescuing hostages
 				if (m_bot->GetHostageEscortCount())
 				{
 					crouchPenalty *= 3.0f;
 				}
-
+#endif
 				cost += crouchPenalty * dist;
 			}
 

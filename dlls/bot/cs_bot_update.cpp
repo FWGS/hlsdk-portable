@@ -476,7 +476,7 @@ void CCSBot::Update()
 	}
 
 	// TODO: This doesn't work if we are restricted to just knives and sniper rifles because we cant use the rifle at close range
-	if (!IsSafe() && !IsUsingGrenade() && IsUsingKnife() && !IsEscapingFromBomb())
+	if (!IsSafe() && !IsUsingGrenade() && IsUsingKnife())
 	{
 		EquipBestWeapon();
 	}
@@ -534,7 +534,7 @@ void CCSBot::Update()
 
 	// check encounter spots
 	UpdatePeripheralVision();
-
+#if 0
 	// Update gamestate
 	if (m_bomber != NULL)
 		GetChatter()->SpottedBomber(GetBomber());
@@ -594,7 +594,7 @@ void CCSBot::Update()
 #endif
 		}
 	}
-
+#endif
 	// Follow nearby humans if our co-op is high and we have nothing else to do
 	// If we were just following someone, don't auto-follow again for a short while to
 	// give us a chance to do something else.
@@ -715,7 +715,7 @@ void CCSBot::Update()
 		ClearMovement();
 	}
 #endif
-
+#if 0
 	// if we get too far ahead of the hostages we are escorting, wait for them
 	if (!IsAttacking() && m_inhibitWaitingForHostageTimer.IsElapsed())
 	{
@@ -746,7 +746,7 @@ void CCSBot::Update()
 			}
 		}
 	}
-
+#endif
 	// remember our prior safe time status
 	m_wasSafe = IsSafe();
 }

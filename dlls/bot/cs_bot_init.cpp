@@ -221,10 +221,10 @@ void CCSBot::ResetValues()
 	m_lastRadioSentTimestamp = 0.0f;
 	m_radioSubject = NULL;
 	m_voiceFeedbackEndTimestamp = 0.0f;
-
+#if 0
 	m_hostageEscortCount = 0;
 	m_hostageEscortCountTimestamp = 0.0f;
-
+#endif
 	m_noisePosition = Vector(0, 0, 0);
 	m_noiseTimestamp = 0.0f;
 	m_noiseCheckTimestamp = 0.0f;

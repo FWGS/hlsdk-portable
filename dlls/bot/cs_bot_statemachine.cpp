@@ -24,13 +24,13 @@ void CCSBot::Idle()
 	SetTask(SEEK_AND_DESTROY);
 	SetState(&m_idleState);
 }
-
+#if 0
 void CCSBot::EscapeFromBomb()
 {
 //	SetTask(ESCAPE_FROM_BOMB);
 //	SetState(&m_escapeFromBombState);
 }
-
+#endif
 void CCSBot::Follow(CBasePlayer *player)
 {
 	if (player == NULL)
@@ -67,12 +67,12 @@ void CCSBot::StopFollowing()
 }
 
 // Begin process of rescuing hostages
-
+#if 0
 void CCSBot::RescueHostages()
 {
 	SetTask(RESCUE_HOSTAGES);
 }
-
+#endif
 // Use the entity
 
 void CCSBot::UseEntity(CBaseEntity *entity)
@@ -336,7 +336,7 @@ bool CCSBot::IsAttacking() const
 }
 
 // Return true if we are escaping from the bomb
-
+#if 0
 bool CCSBot::IsEscapingFromBomb() const
 {
 //	if (m_state == static_cast<const BotState *>(&m_escapeFromBombState))
@@ -354,7 +354,7 @@ bool CCSBot::IsDefusingBomb() const
 
 	return false;
 }
-
+#endif
 // Return true if we are hiding
 
 bool CCSBot::IsHiding() const
@@ -396,7 +396,7 @@ bool CCSBot::IsMovingTo() const
 }
 
 // Return true if we are buying
-
+#if 0
 bool CCSBot::IsBuying() const
 {
 //	if (m_state == static_cast<const BotState *>(&m_buyState))
@@ -404,6 +404,7 @@ bool CCSBot::IsBuying() const
 
 	return false;
 }
+#endif
 
 // Move to potentially distant position
 
@@ -414,6 +415,7 @@ void CCSBot::MoveTo(const Vector *pos, RouteType route)
 	SetState(&m_moveToState);
 }
 
+#if 0
 void CCSBot::PlantBomb()
 {
 //	SetState(&m_plantBombState);
@@ -430,6 +432,7 @@ void CCSBot::DefuseBomb()
 {
 //	SetState(&m_defuseBombState);
 }
+#endif
 
 // Investigate recent enemy noise
 

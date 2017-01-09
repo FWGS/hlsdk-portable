@@ -30,10 +30,11 @@ void AttackState::OnEnter(CCSBot *me)
 	m_shieldToggleTimestamp = gpGlobals->time + RANDOM_FLOAT(2.0f, 10.0f);
 	m_shieldForceOpen = false;
 
+#if 0
 	// if we encountered someone while escaping, grab our weapon and fight!
 	if (me->IsEscapingFromBomb())
 		me->EquipBestWeapon();
-
+#endif
 	if (me->IsUsingKnife())
 	{
 		// can't crouch and hold with a knife

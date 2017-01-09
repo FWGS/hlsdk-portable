@@ -84,7 +84,7 @@ void BotHelpMeme::Interpret(CCSBot *sender, CCSBot *receiver) const
 }
 
 // A teammate reported information about a bombsite
-
+#if 0
 void BotBombsiteStatusMeme::Interpret(CCSBot *sender, CCSBot *receiver) const
 {
 	// remember this bombsite's status
@@ -134,7 +134,7 @@ void BotBombStatusMeme::Interpret(CCSBot *sender, CCSBot *receiver) const
 		}
 	}
 }
-
+#endif
 // A teammate has asked that we follow him
 
 void BotFollowMeme::Interpret(CCSBot *sender, CCSBot *receiver) const
@@ -195,7 +195,7 @@ void BotDefendHereMeme::Interpret(CCSBot *sender, CCSBot *receiver) const
 }
 
 // A teammate has asked where the bomb is planted
-
+#if 0
 void BotWhereBombMeme::Interpret(CCSBot *sender, CCSBot *receiver) const
 {
 	int zone = receiver->GetGameState()->GetPlantedBombsite();
@@ -203,14 +203,14 @@ void BotWhereBombMeme::Interpret(CCSBot *sender, CCSBot *receiver) const
 	if (zone != CSGameState::UNKNOWN)
 		receiver->GetChatter()->FoundPlantedBomb(zone);
 }
-
+#endif
 // A teammate has asked us to report in
 
 void BotRequestReportMeme::Interpret(CCSBot *sender, CCSBot *receiver) const
 {
 	receiver->GetChatter()->ReportingIn();
 }
-
+#if 0
 // A teammate told us all the hostages are gone
 
 void BotAllHostagesGoneMeme::Interpret(CCSBot *sender, CCSBot *receiver) const
@@ -236,6 +236,7 @@ void BotHostageBeingTakenMeme::Interpret(CCSBot *sender, CCSBot *receiver) const
 	// acknowledge
 	receiver->GetChatter()->Say("Affirmative");
 }
+#endif
 
 BotSpeakable::BotSpeakable()
 {
@@ -1694,7 +1695,7 @@ void BotChatterInterface::ReportingIn()
 	// where are we
 	Place place = m_me->GetPlace();
 	SayWhere(say, place);
-
+#if 0
 	// what are we doing
 	switch (m_me->GetTask())
 	{
@@ -1741,7 +1742,7 @@ void BotChatterInterface::ReportingIn()
 			break;
 		}
 	}
-
+#endif
 	// what do we see
 	if (m_me->IsAttacking())
 	{
@@ -1896,7 +1897,7 @@ void BotChatterInterface::Negative()
 	say->AppendPhrase(TheBotPhrases->GetPhrase("Negative"));
 	AddStatement(say);
 }
-
+#if 0
 void BotChatterInterface::GoingToPlantTheBomb(Place place)
 {
 	if (TheCSBots()->IsRoundOver())
@@ -2078,7 +2079,7 @@ void BotChatterInterface::FoundPlantedBomb(int zoneIndex)
 	say->AttachMeme(new BotBombsiteStatusMeme(zoneIndex, BotBombsiteStatusMeme::PLANTED));
 	AddStatement(say);
 }
-
+#endif
 void BotChatterInterface::Scared()
 {
 	const float minInterval = 10.0f;
@@ -2141,7 +2142,7 @@ void BotChatterInterface::AnnouncePlan(const char *phraseName, Place place)
 	say->SetStartTime(ctrl->GetRoundStartTime() + RANDOM_FLOAT(2.0, 3.0f));
 	AddStatement(say);
 }
-
+#if 0
 void BotChatterInterface::GuardingHostages(Place place, bool isPlan)
 {
 	if (TheCSBots()->IsRoundOver())
@@ -2256,3 +2257,4 @@ void BotChatterInterface::FriendlyFire()
 	say->SetStartTime(gpGlobals->time + RANDOM_FLOAT(0.3f, 0.5f));
 	AddStatement(say);
 }
+#endif

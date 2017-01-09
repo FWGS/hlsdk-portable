@@ -53,6 +53,7 @@ void IdleState::OnUpdate(CCSBot *me)
 	// if round is over, hunt
 	if (me->GetGameState()->IsRoundOver())
 	{
+#if 0
 		// if we are escorting hostages, try to get to the rescue zone
 		if (me->GetHostageEscortCount())
 		{
@@ -64,7 +65,7 @@ void IdleState::OnUpdate(CCSBot *me)
 			me->PrintIfWatched("Trying to rescue hostages at the end of the round\n");
 			return;
 		}
-
+#endif
 		me->Hunt();
 		return;
 	}
