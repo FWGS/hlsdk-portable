@@ -14,7 +14,8 @@
 #pragma once
 #endif
 
-#include "osconfig.h"
+//#include "osconfig.h"
+#include <assert.h>
 #include <new>
 #include <string.h>
 
