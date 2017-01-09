@@ -134,11 +134,11 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
 		   ../pm_shared/pm_math.c \
 		   ../pm_shared/pm_shared.c
 
-BOT_FILES := bot/cs_bot_event.cpp \
-bot/cs_bot_listen.cpp \
-bot/cs_bot.cpp \
-bot/cs_bot_chatter.cpp \
-bot/cs_bot_vision.cpp \
+BOT_FILES := bot/hl_bot_event.cpp \
+bot/hl_bot_listen.cpp \
+bot/hl_bot.cpp \
+bot/hl_bot_chatter.cpp \
+bot/hl_bot_vision.cpp \
 bot/manager/bot_profile.cpp \
 bot/manager/nav_node.cpp \
 bot/manager/nav_file.cpp \
@@ -147,24 +147,24 @@ bot/manager/bot_util.cpp \
 bot/manager/bot_manager.cpp \
 bot/manager/nav_area.cpp \
 bot/manager/bot.cpp \
-bot/cs_bot_learn.cpp \
-bot/cs_bot_weapon.cpp \
-bot/cs_bot_pathfind.cpp \
-bot/cs_bot_nav.cpp \
-bot/cs_bot_init.cpp \
-bot/cs_bot_manager.cpp \
-bot/cs_bot_update.cpp \
-bot/cs_bot_statemachine.cpp \
+bot/hl_bot_learn.cpp \
+bot/hl_bot_weapon.cpp \
+bot/hl_bot_pathfind.cpp \
+bot/hl_bot_nav.cpp \
+bot/hl_bot_init.cpp \
+bot/hl_bot_manager.cpp \
+bot/hl_bot_update.cpp \
+bot/hl_bot_statemachine.cpp \
 bot/shared_util.cpp \
-bot/states/cs_bot_investigate_noise.cpp \
-bot/states/cs_bot_use_entity.cpp \
-bot/states/cs_bot_hunt.cpp \
-bot/states/cs_bot_move_to.cpp \
-bot/states/cs_bot_idle.cpp \
-bot/states/cs_bot_hide.cpp \
-bot/states/cs_bot_attack.cpp \
-bot/states/cs_bot_follow.cpp \
-bot/cs_gamestate.cpp \
+bot/states/hl_bot_investigate_noise.cpp \
+bot/states/hl_bot_use_entity.cpp \
+bot/states/hl_bot_hunt.cpp \
+bot/states/hl_bot_move_to.cpp \
+bot/states/hl_bot_idle.cpp \
+bot/states/hl_bot_hide.cpp \
+bot/states/hl_bot_attack.cpp \
+bot/states/hl_bot_follow.cpp \
+bot/hl_gamestate.cpp \
 bot/mp_parse.cpp
 
 LOCAL_SRC_FILES += $(BOT_FILES)

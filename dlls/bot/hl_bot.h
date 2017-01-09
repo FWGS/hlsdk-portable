@@ -32,9 +32,9 @@
 #pragma once
 #endif
 
-#include "bot/cs_gamestate.h"
-#include "bot/cs_bot_manager.h"
-#include "bot/cs_bot_chatter.h"
+#include "bot/hl_gamestate.h"
+#include "bot/hl_bot_manager.h"
+#include "bot/hl_bot_chatter.h"
 
 #define CSBOT_VERSION_MAJOR		1
 #define CSBOT_VERSION_MINOR		50

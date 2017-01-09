@@ -44,6 +44,6 @@ class CNavNode;
 #include "bot/manager/bot_profile.h"
 
 // zbot
-#include "bot/cs_bot.h"
+#include "bot/hl_bot.h"
 
 #endif
