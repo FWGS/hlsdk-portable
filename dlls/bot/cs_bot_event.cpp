@@ -2,34 +2,9 @@
 
 void CCSBot::OnEvent(GameEventType event, CBaseEntity *entity, CBaseEntity *other)
 {
-#if 0
+
 	GetGameState()->OnEvent(event, entity, other);
 	GetChatter()->OnEvent(event, entity, other);
-
-	// Morale adjustments happen even for dead players
-/*	switch (event)
-	{
-	case EVENT_TERRORISTS_WIN:
-		if (m_iTeam == CT)
-		{
-			DecreaseMorale();
-		}
-		else
-		{
-			IncreaseMorale();
-		}
-		break;
-	case EVENT_CTS_WIN:
-		if (m_iTeam == CT)
-		{
-			IncreaseMorale();
-		}
-		else
-		{
-			DecreaseMorale();
-		}
-		break;
-	}*/
 
 	if (!IsAlive())
 		return;
@@ -42,6 +17,7 @@ void CCSBot::OnEvent(GameEventType event, CBaseEntity *entity, CBaseEntity *othe
 	{
 		if (event == EVENT_PLAYER_DIED)
 		{
+#if 0
 			if (player->m_iTeam == m_iTeam)
 			{
 				CBasePlayer *killer = static_cast<CBasePlayer *>(other);
@@ -67,11 +43,13 @@ void CCSBot::OnEvent(GameEventType event, CBaseEntity *entity, CBaseEntity *othe
 					}
 				}
 			}
+#endif
 		}
 	}
 
 	switch (event)
 	{
+#if 0
 		case EVENT_PLAYER_DIED:
 		{
 			CBasePlayer *victim = player;
@@ -159,75 +137,7 @@ void CCSBot::OnEvent(GameEventType event, CBaseEntity *entity, CBaseEntity *othe
 			}
 			return;
 		}
-		case EVENT_TERRORISTS_WIN:
-			if (m_iTeam == TERRORIST)
-				GetChatter()->CelebrateWin();
-			return;
-		case EVENT_CTS_WIN:
-			if (m_iTeam == CT)
-				GetChatter()->CelebrateWin();
-			return;
-		case EVENT_BOMB_DEFUSED:
-			if (m_iTeam == CT && TheCSBots()->GetBombTimeLeft() < 2.0)
-				GetChatter()->Say("BarelyDefused");
-			return;
-		case EVENT_BOMB_PICKED_UP:
-		{
-			if (m_iTeam == CT && player != NULL)
-			{
-				// check if we're close enough to hear it
-				const float bombPickupHearRangeSq = 1000.0f * 1000.0f;
-				if ((pev->origin - player->pev->origin).LengthSquared() < bombPickupHearRangeSq)
-				{
-					GetChatter()->TheyPickedUpTheBomb();
-				}
-			}
-			return;
-		}
-		case EVENT_BOMB_BEEP:
-		{
-			// if we don't know where the bomb is, but heard it beep, we've discovered it
-			if (GetGameState()->IsPlantedBombLocationKnown() == false)
-			{
-				// check if we're close enough to hear it
-				const float bombBeepHearRangeSq = 1000.0f * 1000.0f;
-				if ((pev->origin - entity->pev->origin).LengthSquared() < bombBeepHearRangeSq)
-				{
-					// radio the news to our team
-					if (m_iTeam == CT && GetGameState()->GetPlantedBombsite() == CSGameState::UNKNOWN)
-					{
-						const CCSBotManager::Zone *zone = TheCSBots()->GetZone(&entity->pev->origin);
-						if (zone != NULL)
-							GetChatter()->FoundPlantedBomb(zone->m_index);
-					}
-
-					// remember where the bomb is
-					GetGameState()->UpdatePlantedBomb(&entity->pev->origin);
-				}
-			}
-			return;
-		}
-		case EVENT_BOMB_PLANTED:
-		{
-			// if we're a CT, forget what we're doing and go after the bomb
-			if (m_iTeam == CT)
-			{
-				Idle();
-			}
-
-			// if we are following someone, stop following
-			if (IsFollowing())
-			{
-				StopFollowing();
-				Idle();
-			}
-
-			OnEvent(EVENT_BOMB_BEEP, other);
-			return;
-		}
-		case EVENT_BOMB_DEFUSE_ABORTED:
-			PrintIfWatched("BOMB DEFUSE ABORTED\n");
-			return;
+#endif
 		case EVENT_WEAPON_FIRED:
 		case EVENT_WEAPON_FIRED_ON_EMPTY:
 		case EVENT_WEAPON_RELOADED:
@@ -241,7 +151,7 @@ void CCSBot::OnEvent(GameEventType event, CBaseEntity *entity, CBaseEntity *othe
 	}
 
 	// Process radio events from our team
-	if (player != NULL && player->m_iTeam == m_iTeam && event > EVENT_START_RADIO_1 && event < EVENT_END_RADIO)
+	if (player != NULL && event > EVENT_START_RADIO_1 && event < EVENT_END_RADIO)
 	{
 		// TODO: Distinguish between radio commands and responses
 		if (event != EVENT_RADIO_AFFIRMATIVE && event != EVENT_RADIO_NEGATIVE && event != EVENT_RADIO_REPORTING_IN)
@@ -257,28 +167,6 @@ void CCSBot::OnEvent(GameEventType event, CBaseEntity *entity, CBaseEntity *othe
 	if (player == NULL)
 		return;
 
-	if (!IsRogue() && event == EVENT_HOSTAGE_CALLED_FOR_HELP && m_iTeam == CT && IsHunting())
-	{
-		if ((entity->pev->origin - pev->origin).IsLengthGreaterThan(1000.0f))
-			return;
-
-		Vector v = entity->Center();
-
-		if (IsVisible(&v))
-		{
-			m_task = COLLECT_HOSTAGES;
-			m_taskEntity = NULL;
-
-			Run();
-			m_goalEntity = entity;
-
-			MoveTo(&entity->pev->origin, (RouteType)(m_hostageEscortCount == 0));
-			PrintIfWatched("I'm fetching a hostage that called out to me\n");
-
-			return;
-		}
-	}
-
 	// don't pay attention to noise that friends make
 	if (!IsEnemy(player))
 		return;
@@ -289,26 +177,6 @@ void CCSBot::OnEvent(GameEventType event, CBaseEntity *entity, CBaseEntity *othe
 
 	if (IsGameEventAudible(event, entity, other, &range, &priority, &isHostile) == false)
 		return;
-
-	if (event == EVENT_HOSTAGE_USED)
-	{
-		if (m_iTeam == CT)
-			return;
-
-		if ((entity->pev->origin - pev->origin).IsLengthGreaterThan(range))
-			return;
-
-		GetChatter()->HostagesBeingTaken();
-
-		if (!GetGameState()->GetNearestVisibleFreeHostage() && m_task != GUARD_HOSTAGE_RESCUE_ZONE && GuardRandomZone())
-		{
-			m_task = GUARD_HOSTAGE_RESCUE_ZONE;
-			m_taskEntity = NULL;
-
-			SetDisposition(OPPORTUNITY_FIRE);
-			PrintIfWatched("Trying to beat them to an escape zone!\n");
-		}
-	}
 
 	// check if noise is close enough for us to hear
 	const Vector *newNoisePosition = &player->pev->origin;
@@ -384,5 +252,4 @@ void CCSBot::OnEvent(GameEventType event, CBaseEntity *entity, CBaseEntity *othe
 		m_noiseTimestamp = gpGlobals->time;
 		
 	}
-#endif
 }

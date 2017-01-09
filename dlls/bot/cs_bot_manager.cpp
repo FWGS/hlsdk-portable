@@ -40,13 +40,6 @@ CCSBotManager::CCSBotManager()
 	TheBotProfiles->FindVoiceBankIndex("BotChatter.db");
 
 	const char *filename;
-#if 0
-	if (IS_CAREER_MATCH())
-	{
-		filename = "MissionPacks/BotPackList.db";
-	}
-	else
-#endif
 	{
 		filename = "BotPackList.db";
 	}
@@ -190,28 +183,6 @@ void CCSBotManager::StartFrame()
 
 bool CCSBotManager::IsWeaponUseable(CBasePlayerItem *item) const
 {
-	if (item == NULL)
-	{
-		return false;
-	}
-
-//	if (item->m_iId == WEAPON_C4)
-//		return true;
-
-//	int weaponClass = WeaponIDToWeaponClass(item->m_iId);
-#if 0
-	if ((!AllowShotguns() && weaponClass == WEAPONCLASS_SHOTGUN)
-		|| (!AllowMachineGuns() && weaponClass == WEAPONCLASS_MACHINEGUN)
-		|| (!AllowRifles() && weaponClass == WEAPONCLASS_RIFLE)
-		|| (!AllowSnipers() && weaponClass == WEAPONCLASS_SNIPERRIFLE)
-		|| (!AllowSubMachineGuns() && weaponClass == WEAPONCLASS_SUBMACHINEGUN)
-		|| (!AllowTacticalShield() && item->m_iId == WEAPON_SHIELDGUN)
-		|| (!AllowPistols() && weaponClass == WEAPONCLASS_PISTOL)
-		|| (!AllowGrenades() && weaponClass == WEAPONCLASS_GRENADE))
-	{
-		return false;
-	}
-#endif
 	return true;
 }
 
@@ -219,19 +190,6 @@ bool CCSBotManager::IsWeaponUseable(CBasePlayerItem *item) const
 
 bool CCSBotManager::IsOnDefense(CBasePlayer *player) const
 {
-#if 0
-	switch (GetScenario())
-	{
-		case SCENARIO_DEFUSE_BOMB:
-			return (player->m_iTeam == CT);
-
-		case SCENARIO_RESCUE_HOSTAGES:
-			return (player->m_iTeam == TERRORIST);
-
-		case SCENARIO_ESCORT_VIP:
-			return (player->m_iTeam == TERRORIST);
-	}
-#endif
 	return false;
 }
 
@@ -804,7 +762,7 @@ bool CCSBotManager::BotAddCommand(BotProfileTeamType team, bool isFromConsole)
 	{
 		// in career, ignore humans
 		bool ignoreHumans = false;
-#warning "Will crash in non-deathmatch"
+
 		CHalfLifeMultiplay *mp = (CHalfLifeMultiplay*)g_pGameRules;
 
 		//if (mp != NULL && mp->IsCareer())
@@ -843,7 +801,7 @@ void CCSBotManager::MaintainBotQuota()
 {
 	if (m_isLearningMap)
 		return;
-#warning "will crash in non-deathmatch"
+
 	CHalfLifeMultiplay *mp = (CHalfLifeMultiplay *) g_pGameRules;
 	int totalHumansInGame = UTIL_HumansInGame();
 	int humanPlayersInGame = UTIL_HumansInGame(IGNORE_SPECTATORS);
@@ -882,74 +840,10 @@ void CCSBotManager::MaintainBotQuota()
 	}
 	else if (desiredBotCount < botsInGame)
 	{
-		// kick a bot to maintain quota
-
-		// first remove any unassigned bots
-		//if (UTIL_KickBotFromTeam(0))
-		//	return;
-#if 0
-		//TeamName kickTeam;
-
-		// remove from the team that has more players
-		if (mp->m_iNumTerrorist > mp->m_iNumCT)
-		{
-			kickTeam = TERRORIST;
-		}
-		else if (mp->m_iNumTerrorist < mp->m_iNumCT)
-		{
-			kickTeam = CT;
-		}
-		// remove from the team that's winning
-		else if (mp->m_iNumTerroristWins > mp->m_iNumCTWins)
-		{
-			kickTeam = TERRORIST;
-		}
-		else if (mp->m_iNumCTWins > mp->m_iNumTerroristWins)
-		{
-			kickTeam = CT;
-		}
-		else
-		{
-			// teams and scores are equal, pick a team at random
-			kickTeam = (RANDOM_LONG(0, 1) == 0) ? CT : TERRORIST;
-		}
-
-		// attempt to kick a bot from the given team
-		if (UTIL_KickBotFromTeam(kickTeam))
-			return;
-
-		// if there were no bots on the team, kick a bot from the other team
-		if (kickTeam == TERRORIST)
-			UTIL_KickBotFromTeam(CT);
-		else
-			UTIL_KickBotFromTeam(TERRORIST);
-#endif
+		UTIL_KickBot();
 	}
 	else
 	{
-#if 0
-		if (mp != NULL && !mp->IsCareer())
-			return;
-
-		bool humansAreCTs = (Q_strcmp(humans_join_team.string, "CT") == 0);
-
-		if (humansAreCTs)
-		{
-			if (mp->m_iNumCT <= 6)
-				return;
-
-			UTIL_KickBotFromTeam(CT);
-		}
-		else
-		{
-			if (mp->m_iNumTerrorist <= 6)
-				return;
-
-			UTIL_KickBotFromTeam(TERRORIST);
-		}
-
-		CVAR_SET_FLOAT("bot_quota", cv_bot_quota.value - 1.0f);
-#endif
 	}
 }
 
@@ -1147,45 +1041,6 @@ void CCSBotManager::ValidateMapData()
 
 bool CCSBotManager::AddBot(const BotProfile *profile, BotProfileTeamType team)
 {
-//	if (!g_bEnableCSBot)
-//		return false;
-#if 0
-	CHalfLifeMultiplay *mp = (CHalfLifeMultiplay *)g_pGameRules;
-
-	int nTeamSlot = UNASSIGNED;
-
-	if (team == BOT_TEAM_ANY)
-	{
-		// if team not specified, check cv_bot_join_team cvar for preference
-		if (!Q_stricmp(cv_bot_join_team.string, "T"))
-			nTeamSlot = TERRORIST;
-
-		else if (!Q_stricmp(cv_bot_join_team.string, "CT"))
-			nTeamSlot = CT;
-	}
-	else if (team == BOT_TEAM_CT)
-		nTeamSlot = CT;
-
-	else if (team == BOT_TEAM_T)
-		nTeamSlot = TERRORIST;
-
-	if (nTeamSlot == UNASSIGNED)
-	{
-		nTeamSlot = SelectDefaultTeam();
-	}
-
-	if (nTeamSlot == UNASSIGNED || mp->TeamFull(nTeamSlot))
-	{
-		CONSOLE_ECHO("Could not add bot to the game: Team is full\n");
-		return false;
-	}
-
-	if (mp->TeamStacked(nTeamSlot, UNASSIGNED))
-	{
-		CONSOLE_ECHO("Could not add bot to the game: Team is stacked (to disable this check, set mp_limitteams and mp_autoteambalance to zero and restart the round).\n");
-		return false;
-	}
-#endif
 	CCSBot *pBot = CreateBot<CCSBot>(profile);
 	if (pBot == NULL)
 	{
@@ -1196,32 +1051,9 @@ bool CCSBotManager::AddBot(const BotProfile *profile, BotProfileTeamType team)
 	//int nJoinedTeam;
 	ClientPutInServer(pBot->edict());
 	SET_CLIENT_KEY_VALUE(pBot->entindex(), GET_INFO_BUFFER(pBot->edict()), "*bot", "1");
-#if 0
-	pBot->m_iMenu = Menu_ChooseTeam;
-	pBot->m_iJoiningState = PICKINGTEAM;
 
-	if (HandleMenu_ChooseTeam(pBot, nTeamSlot))
-	{
-		int skin = profile->GetSkin();
-
-		if (!skin)
-			skin = 6;// MODEL_GIGN?
-
-		HandleMenu_ChooseAppearance(pBot, skin);
-
-		if (IS_DEDICATED_SERVER())
-		{
-			UTIL_DPrintf("Added bot %s to server\n", STRING(pBot->pev->netname));
-		}
-
-		return true;
-	}
-
-	SERVER_COMMAND(UTIL_VarArgs("kick \"%s\"\n", STRING(pBot->pev->netname)));
-	CONSOLE_ECHO("Could not add bot to the game.\n");
-#endif
-
-	return false;
+	ALERT( at_console, "Added bot %s to server\n", STRING(pBot->pev->netname));
+	return true;
 }
 
 // Return the zone that contains the given position
@@ -1375,31 +1207,6 @@ void CCSBotManager::SetLooseBomb(CBaseEntity *bomb)
 
 bool CCSBotManager::IsImportantPlayer(CBasePlayer *player) const
 {
-#if 0
-	switch (GetScenario())
-	{
-		case SCENARIO_DEFUSE_BOMB:
-		{
-			if (player->m_iTeam == TERRORIST && player->IsBombGuy())
-				return true;
-
-			// TODO: CT's defusing the bomb are important
-			return false;
-		}
-		case SCENARIO_ESCORT_VIP:
-		{
-			if (player->m_iTeam == CT && player->m_bIsVIP)
-				return true;
-
-			return false;
-		}
-		case SCENARIO_RESCUE_HOSTAGES:
-		{
-			// TODO: CT's escorting hostages are important
-			return false;
-		}
-	}
-#endif
 	// everyone is equally important in a deathmatch
 	return false;
 }
@@ -1421,36 +1228,6 @@ unsigned int CCSBotManager::GetPlayerPriority(CBasePlayer *player) const
 
 	if (!bot)
 		return 0;
-#if 0
-	// bots doing something important for the current scenario have high priority
-	switch (GetScenario())
-	{
-		case SCENARIO_DEFUSE_BOMB:
-		{
-			// the bomb carrier has high priority
-			if (bot->m_iTeam == TERRORIST && bot->m_bHasC4)
-				return 1;
-
-			break;
-		}
-		case SCENARIO_ESCORT_VIP:
-		{
-			// the VIP has high priority
-			if (bot->m_iTeam == CT && bot->m_bIsVIP)
-				return 1;
-
-			break;
-		}
-		case SCENARIO_RESCUE_HOSTAGES:
-		{
-			// CT's rescuing hostages have high priority
-			if (bot->m_iTeam == CT && bot->GetHostageEscortCount())
-				return 1;
-
-			break;
-		}
-	}
-#endif
 	// everyone else is ranked by their unique ID (which cannot be zero)
 	return 1 + bot->GetID();
 }
@@ -1460,22 +1237,14 @@ unsigned int CCSBotManager::GetPlayerPriority(CBasePlayer *player) const
 
 float CCSBotManager::GetRadioMessageTimestamp(GameEventType event, int teamID) const
 {
-//	if (event <= EVENT_START_RADIO_1 || event >= EVENT_END_RADIO)
-//		return 0.0f;
-
-	//int i = (teamID == TERRORIST) ? 0 : 1;
-	return 0;//m_radioMsgTimestamp[ event - EVENT_START_RADIO_1 ][ i ];
+	return 0;
 }
 
 // Return the interval since the last time this message was sent
 
 float CCSBotManager::GetRadioMessageInterval(GameEventType event, int teamID) const
 {
-//	if (event <= EVENT_START_RADIO_1 || event >= EVENT_END_RADIO)
-		return 99999999.9f;
-
-//	int i = (teamID == TERRORIST) ? 0 : 1;
-//	return gpGlobals->time - m_radioMsgTimestamp[ event - EVENT_START_RADIO_1 ][ i ];
+	return 1;
 }
 
 // Set the given radio message timestamp.
@@ -1483,24 +1252,10 @@ float CCSBotManager::GetRadioMessageInterval(GameEventType event, int teamID) co
 
 void CCSBotManager::SetRadioMessageTimestamp(GameEventType event, int teamID)
 {
-//	if (event <= EVENT_START_RADIO_1 || event >= EVENT_END_RADIO)
-		return;
-
-//	int i = (teamID == TERRORIST) ? 0 : 1;
-//	m_radioMsgTimestamp[ event - 1 ][ i ] = gpGlobals->time;
 }
 
 // Reset all radio message timestamps
 
 void CCSBotManager::ResetRadioMessageTimestamps()
 {
-#if 0
-	for (int t = 0; t < ARRAYSIZE(m_radioMsgTimestamp[0]); ++t)
-	{
-		for (int m = 0; m < ARRAYSIZE(m_radioMsgTimestamp); ++m)
-		{
-			m_radioMsgTimestamp[m][t] = 0.0f;
-		}
-	}
-#endif
 }

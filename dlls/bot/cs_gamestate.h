@@ -44,63 +44,14 @@ public:
 	void Reset();
 	void OnEvent(GameEventType event, CBaseEntity *entity, CBaseEntity *other);		// Event handling
 	bool IsRoundOver() const;								// true if round has been won or lost (but not yet reset)
-#if 0
-	// bomb defuse scenario
-	enum BombState
-	{
-		MOVING,		// being carried by a Terrorist
-		LOOSE,		// loose on the ground somewhere
-		PLANTED,	// planted and ticking
-		DEFUSED,	// the bomb has been defused
-		EXPLODED,	// the bomb has exploded
-	};
 
-	bool IsBombMoving() const	{ return (m_bombState == MOVING); }
-	bool IsBombLoose() const	{ return (m_bombState == LOOSE); }
-	bool IsBombPlanted() const	{ return (m_bombState == PLANTED); }
-	bool IsBombDefused() const	{ return (m_bombState == DEFUSED); }
-	bool IsBombExploded() const	{ return (m_bombState == EXPLODED); }
-	
-	void UpdateLooseBomb(const Vector *pos);		// we see the loose bomb	
-	float TimeSinceLastSawLooseBomb() const;		// how long has is been since we saw the loose bomb
-	bool IsLooseBombLocationKnown() const;			// do we know where the loose bomb is
-
-	void UpdateBomber(const Vector *pos);			// we see the bomber
-	float TimeSinceLastSawBomber() const;			// how long has is been since we saw the bomber
-
-	void UpdatePlantedBomb(const Vector *pos);		// we see the planted bomb
-	bool IsPlantedBombLocationKnown() const;		// do we know where the bomb was planted
-	void MarkBombsiteAsPlanted(int zoneIndex);		// mark bombsite as the location of the planted bomb
-
-	enum { UNKNOWN = -1 };	
-	int GetPlantedBombsite() const;				// return the zone index of the planted bombsite, or UNKNOWN
-	bool IsAtPlantedBombsite() const;			// return true if we are currently in the bombsite where the bomb is planted
-
-	int GetNextBombsiteToSearch();				// return the zone index of the next bombsite to search
-	bool IsBombsiteClear(int zoneIndex) const;		// return true if given bombsite has been cleared
-	void ClearBombsite(int zoneIndex);			// mark bombsite as clear
-
-	const Vector *GetBombPosition() const;			// return where we think the bomb is, or NULL if we don't know
-#endif
 	// hostage rescue scenario
 	//enum ValidateStatusType:unsigned char //C++11 feature
 
 private:
 	CCSBot *m_owner;			// who owns this gamestate
 	bool m_isRoundOver;			// true if round is over, but no yet reset
-#if 0
-	// bomb defuse scenario
-	void SetBombState(BombState state);
-	BombState GetBombState() { return m_bombState; }
 
-	BombState m_bombState;			// what we think the bomb is doing
-
-	IntervalTimer m_lastSawBomber;
-	Vector m_bomberPos;
-
-	IntervalTimer m_lastSawLooseBomb;
-	Vector m_looseBombPos;
-#endif
 	CountdownTimer m_validateInterval;
 };
 

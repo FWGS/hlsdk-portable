@@ -437,29 +437,7 @@ void CCSBot::EquipBestWeapon(bool mustEquip)
 
 	CCSBotManager *ctrl = TheCSBots();
 	CBasePlayerWeapon *primary = static_cast<CBasePlayerWeapon *>(m_rgpPlayerItems[ 2 ]);
-#if 0
-	if (primary != NULL)
-	{
-		WeaponClassType weaponClass = WeaponIDToWeaponClass(primary->m_iId);
-
-		if ((ctrl->AllowShotguns() && weaponClass == WEAPONCLASS_SHOTGUN)
-			|| (ctrl->AllowMachineGuns() && weaponClass == WEAPONCLASS_MACHINEGUN)
-			|| (ctrl->AllowRifles() && weaponClass == WEAPONCLASS_RIFLE)
-			|| (ctrl->AllowSnipers() && weaponClass == WEAPONCLASS_SNIPERRIFLE)
-			|| (ctrl->AllowSubMachineGuns() && weaponClass == WEAPONCLASS_SUBMACHINEGUN)
-			|| (ctrl->AllowTacticalShield() && primary->m_iId == WEAPON_SHIELDGUN))
-		{
-			if (DoEquip(primary))
-				return;
-		}
-	}
-
-	if (ctrl->AllowPistols())
-	{
-		if (DoEquip(static_cast<CBasePlayerWeapon *>(m_rgpPlayerItems[ 1 ])))
-			return;
-	}
-#endif
+	/// TODO: hl
 	// always have a knife
 	EquipKnife();
 }
@@ -702,13 +680,10 @@ void CCSBot::ReloadCheck()
 	// don't bother to reload if there are no enemies left
 	if (GetEnemiesRemaining() == 0)
 		return;
-#if 0
-	if (IsDefusingBomb() || IsActiveWeaponReloading())
-		return;
-#else
+
 	if (IsActiveWeaponReloading())
 		return;
-#endif
+
 	if (IsActiveWeaponClipEmpty())
 	{
 #if 0

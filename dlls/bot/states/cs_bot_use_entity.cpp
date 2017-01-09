@@ -24,17 +24,9 @@ void UseEntityState::OnUpdate(CCSBot *me)
 	me->SetLookAt("Use entity", &pos, PRIORITY_HIGH);
 
 	// if we are looking at the entity, "use" it and exit
+/// todo
 //	if (me->IsLookingAtPosition(&pos))
 	{
-#if 0
-		if (TheCSBots()->GetScenario() == CCSBotManager::SCENARIO_RESCUE_HOSTAGES
-			&& me->m_iTeam == CT
-			&& me->GetTask() == CCSBot::COLLECT_HOSTAGES)
-		{
-			// we are collecting a hostage, assume we were successful - the update check will correct us if we weren't
-			me->IncreaseHostageEscortCount();
-		}
-#endif
 		me->UseEnvironment();
 		me->Idle();
 	}

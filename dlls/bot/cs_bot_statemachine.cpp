@@ -24,13 +24,7 @@ void CCSBot::Idle()
 	SetTask(SEEK_AND_DESTROY);
 	SetState(&m_idleState);
 }
-#if 0
-void CCSBot::EscapeFromBomb()
-{
-//	SetTask(ESCAPE_FROM_BOMB);
-//	SetState(&m_escapeFromBombState);
-}
-#endif
+
 void CCSBot::Follow(CBasePlayer *player)
 {
 	if (player == NULL)
@@ -66,13 +60,6 @@ void CCSBot::StopFollowing()
 	m_allowAutoFollowTime = gpGlobals->time + 10.0f;
 }
 
-// Begin process of rescuing hostages
-#if 0
-void CCSBot::RescueHostages()
-{
-	SetTask(RESCUE_HOSTAGES);
-}
-#endif
 // Use the entity
 
 void CCSBot::UseEntity(CBaseEntity *entity)
@@ -335,26 +322,6 @@ bool CCSBot::IsAttacking() const
 	return m_isAttacking;
 }
 
-// Return true if we are escaping from the bomb
-#if 0
-bool CCSBot::IsEscapingFromBomb() const
-{
-//	if (m_state == static_cast<const BotState *>(&m_escapeFromBombState))
-//		return true;
-
-	return false;
-}
-
-// Return true if we are defusing the bomb
-
-bool CCSBot::IsDefusingBomb() const
-{
-//	if (m_state == static_cast<const BotState *>(&m_defuseBombState))
-//		return true;
-
-	return false;
-}
-#endif
 // Return true if we are hiding
 
 bool CCSBot::IsHiding() const
@@ -395,16 +362,6 @@ bool CCSBot::IsMovingTo() const
 	return false;
 }
 
-// Return true if we are buying
-#if 0
-bool CCSBot::IsBuying() const
-{
-//	if (m_state == static_cast<const BotState *>(&m_buyState))
-//		return true;
-
-	return false;
-}
-#endif
 
 // Move to potentially distant position
 
@@ -415,24 +372,6 @@ void CCSBot::MoveTo(const Vector *pos, RouteType route)
 	SetState(&m_moveToState);
 }
 
-#if 0
-void CCSBot::PlantBomb()
-{
-//	SetState(&m_plantBombState);
-}
-
-// Bomb has been dropped - go get it
-
-void CCSBot::FetchBomb()
-{
-//	SetState(&m_fetchBombState);
-}
-
-void CCSBot::DefuseBomb()
-{
-//	SetState(&m_defuseBombState);
-}
-#endif
 
 // Investigate recent enemy noise
 

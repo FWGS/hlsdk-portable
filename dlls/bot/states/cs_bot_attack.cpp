@@ -30,11 +30,6 @@ void AttackState::OnEnter(CCSBot *me)
 	m_shieldToggleTimestamp = gpGlobals->time + RANDOM_FLOAT(2.0f, 10.0f);
 	m_shieldForceOpen = false;
 
-#if 0
-	// if we encountered someone while escaping, grab our weapon and fight!
-	if (me->IsEscapingFromBomb())
-		me->EquipBestWeapon();
-#endif
 	if (me->IsUsingKnife())
 	{
 		// can't crouch and hold with a knife
@@ -133,20 +128,6 @@ void AttackState::OnUpdate(CCSBot *me)
 	// can't be stuck while attacking
 	me->ResetStuckMonitor();
 	me->StopRapidFire();
-
-	CBasePlayerWeapon *weapon = me->GetActiveWeapon();
-#if 0
-	if (weapon != NULL)
-	{
-		if (weapon->m_iId == WEAPON_C4 ||
-			weapon->m_iId == WEAPON_HEGRENADE ||
-			weapon->m_iId == WEAPON_FLASHBANG ||
-			weapon->m_iId == WEAPON_SMOKEGRENADE)
-		{
-			me->EquipBestWeapon();
-		}
-	}
-#endif
 
 	CBasePlayer *enemy = me->GetEnemy();
 	if (enemy == NULL)
@@ -249,41 +230,6 @@ void AttackState::OnUpdate(CCSBot *me)
 
 		return;
 	}
-#if 0
-	// Simple shield usage
-	if (me->HasShield())
-	{
-		if (me->IsEnemyVisible() && !m_shieldForceOpen)
-		{
-			if (!me->IsRecognizedEnemyReloading() && !me->IsReloading() && me->IsPlayerLookingAtMe(enemy))
-			{
-				// close up - enemy is pointing his gun at us
-				if (!me->IsProtectedByShield())
-					me->SecondaryAttack();
-			}
-			else
-			{
-				// enemy looking away or reloading his weapon - open up and shoot him
-				if (me->IsProtectedByShield())
-					me->SecondaryAttack();
-			}
-		}
-		else
-		{
-			// can't see enemy, open up
-			if (me->IsProtectedByShield())
-				me->SecondaryAttack();
-		}
-
-		if (gpGlobals->time > m_shieldToggleTimestamp)
-		{
-			m_shieldToggleTimestamp = gpGlobals->time + RANDOM_FLOAT(0.5, 2.0f);
-
-			// toggle shield force open
-			m_shieldForceOpen = !m_shieldForceOpen;
-		}
-	}
-#endif
 
 	// check if our weapon range is bad and we should switch to pistol
 	if (me->IsUsingSniperRifle())

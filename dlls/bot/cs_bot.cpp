@@ -221,11 +221,6 @@ void CCSBot::BotTouch(CBaseEntity *other)
 	// TODO: Need to account for reaction time, etc.
 	if (other->IsPlayer())
 	{
-#if 0
-		// if we are defusing a bomb, don't move
-		if (IsDefusingBomb())
-			return;
-#endif
 		CBasePlayer *player = static_cast<CBasePlayer *>(other);
 
 		// get priority of other player
@@ -292,14 +287,7 @@ void CCSBot::BotTouch(CBaseEntity *other)
 
 bool CCSBot::IsBusy() const
 {
-	if (IsAttacking() || 
-#if 0
-		IsBuying() ||
-		IsDefusingBomb() || 
-		GetTask() == PLANT_BOMB ||
-		GetTask() == RESCUE_HOSTAGES ||
-#endif
-		IsSniping())
+	if (IsAttacking() || IsSniping())
 	{
 		return true;
 	}
@@ -462,68 +450,6 @@ bool CCSBot::IsDoingScenario() const
 
 	return !UTIL_HumansOnTeam(m_iTeam, true);
 }
-
-// Return true if we noticed the bomb on the ground or on the radar (for T's only)
-
-#if 0
-bool CCSBot::NoticeLooseBomb() const
-{
-	CCSBotManager *ctrl = TheCSBots();
-
-	if (ctrl->GetScenario() != CCSBotManager::SCENARIO_DEFUSE_BOMB)
-		return false;
-
-	CBaseEntity *bomb = ctrl->GetLooseBomb();
-
-	if (bomb != NULL)
-	{
-		// T's can always see bomb on their radar
-		return true;
-	}
-
-	return false;
-}
-
-// Return true if can see the bomb lying on the ground
-
-bool CCSBot::CanSeeLooseBomb() const
-{
-	CCSBotManager *ctrl = TheCSBots();
-
-	if (ctrl->GetScenario() != CCSBotManager::SCENARIO_DEFUSE_BOMB)
-		return false;
-
-	CBaseEntity *bomb = ctrl->GetLooseBomb();
-
-	if (bomb != NULL)
-	{
-		if (IsVisible(&bomb->pev->origin, CHECK_FOV))
-			return true;
-	}
-
-	return false;
-}
-
-// Return true if can see the planted bomb
-
-bool CCSBot::CanSeePlantedBomb() const
-{
-	CCSBotManager *ctrl = TheCSBots();
-
-	if (ctrl->GetScenario() != CCSBotManager::SCENARIO_DEFUSE_BOMB)
-		return false;
-
-	if (!GetGameState()->IsBombPlanted())
-		return false;
-
-	const Vector *bombPos = GetGameState()->GetBombPosition();
-
-	if (bombPos != NULL && IsVisible((Vector*)bombPos, CHECK_FOV))
-		return true;
-
-	return false;
-}
-#endif
 // Return last enemy that hurt us
 
 CBasePlayer *CCSBot::GetAttacker() const
@@ -597,13 +523,6 @@ void CCSBot::SetHidingSpotCheckTimestamp(HidingSpot *spot)
 		m_checkedHidingSpot[ leastRecent ].timestamp = gpGlobals->time;
 	}
 }
-#if 0
-// Periodic check of hostage count in case we lost some
-
-void CCSBot::UpdateHostageEscortCount()
-{
-}
-#endif
 // Return true if we are outnumbered by enemies
 
 bool CCSBot::IsOutnumbered() const
@@ -861,12 +780,3 @@ const Vector *FindNearbyRetreatSpot(CCSBot *me, float maxRange)
 	int which = RANDOM_LONG(0, collector.m_count - 1);
 	return collector.m_spot[ which ];
 }
-
-// Return euclidean distance to farthest escorted hostage.
-// Return -1 if no hostage is following us.
-#if 0
-float CCSBot::GetRangeToFarthestEscortedHostage() const
-{
-	return 0;
-}
-#endif

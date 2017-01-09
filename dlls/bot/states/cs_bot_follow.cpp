@@ -83,19 +83,7 @@ void FollowState::OnUpdate(CCSBot *me)
 		me->Idle();
 		return;
 	}
-#if 0
-	// if we are carrying the bomb and at a bombsite, plant
-	if (me->IsCarryingBomb() && me->IsAtBombsite())
-	{
-		// plant it
-		me->SetTask(CCSBot::PLANT_BOMB);
-		me->PlantBomb();
 
-		// radio to the team
-		me->GetChatter()->PlantingTheBomb(me->GetPlace());
-		return;
-	}
-#endif
 	// look around
 	me->UpdateLookAround();
 
@@ -247,7 +235,7 @@ void FollowState::OnUpdate(CCSBot *me)
 				}
 			}
 
-			if (me->ComputePath(target, NULL, FASTEST_ROUTE) == NULL)
+			if (me->ComputePath(target, NULL, FASTEST_ROUTE) ==  0 )
 				me->PrintIfWatched("Pathfind to leader failed.\n");
 
 			// throttle how often we repath

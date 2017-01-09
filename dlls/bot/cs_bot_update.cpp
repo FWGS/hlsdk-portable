@@ -534,67 +534,7 @@ void CCSBot::Update()
 
 	// check encounter spots
 	UpdatePeripheralVision();
-#if 0
-	// Update gamestate
-	if (m_bomber != NULL)
-		GetChatter()->SpottedBomber(GetBomber());
 
-	if (CanSeeLooseBomb())
-		GetChatter()->SpottedLooseBomb(ctrl->GetLooseBomb());
-
-	// Scenario interrupts
-	switch (ctrl->GetScenario())
-	{
-		case CCSBotManager::SCENARIO_DEFUSE_BOMB:
-		{
-			// flee if the bomb is ready to blow and we aren't defusing it or attacking and we know where the bomb is
-			// (aggressive players wait until its almost too late)
-			float gonnaBlowTime = 8.0f - (2.0f * GetProfile()->GetAggression());
-
-			// if we have a defuse kit, can wait longer
-//			if (m_bHasDefuser)
-//				gonnaBlowTime *= 0.66f;
-
-			if (!IsEscapingFromBomb()					// we aren't already escaping the bomb
-				&& ctrl->IsBombPlanted()				// is the bomb planted
-				&& GetGameState()->IsPlantedBombLocationKnown()		// we know where the bomb is
-				&& ctrl->GetBombTimeLeft() < gonnaBlowTime	// is the bomb about to explode
-				&& !IsDefusingBomb()					// we aren't defusing the bomb
-				&& !IsAttacking())					// we aren't in the midst of a firefight
-			{
-				EscapeFromBomb();
-				break;
-			}
-			break;
-		}
-		case CCSBotManager::SCENARIO_RESCUE_HOSTAGES:
-		{
-#if 0
-			if (m_iTeam == CT)
-			{
-				UpdateHostageEscortCount();
-			}
-			else
-			{
-				// Terrorists have imperfect information on status of hostages
-				CSGameState::ValidateStatusType status = GetGameState()->ValidateHostagePositions();
-
-				if (status & CSGameState::HOSTAGES_ALL_GONE)
-				{
-					GetChatter()->HostagesTaken();
-					Idle();
-				}
-				else if (status & CSGameState::HOSTAGE_GONE)
-				{
-					GetGameState()->HostageWasTaken();
-					Idle();
-				}
-			}
-			break;
-#endif
-		}
-	}
-#endif
 	// Follow nearby humans if our co-op is high and we have nothing else to do
 	// If we were just following someone, don't auto-follow again for a short while to
 	// give us a chance to do something else.
@@ -712,38 +652,6 @@ void CCSBot::Update()
 	{
 		ResetStuckMonitor();
 		ClearMovement();
-	}
-#endif
-#if 0
-	// if we get too far ahead of the hostages we are escorting, wait for them
-	if (!IsAttacking() && m_inhibitWaitingForHostageTimer.IsElapsed())
-	{
-		const float waitForHostageRange = 500.0f;
-		if (GetTask() == RESCUE_HOSTAGES && GetRangeToFarthestEscortedHostage() > waitForHostageRange)
-		{
-			if (!m_isWaitingForHostage)
-			{
-				// just started waiting
-				m_isWaitingForHostage = true;
-				m_waitForHostageTimer.Start(10.0f);
-			}
-			else
-			{
-				// we've been waiting
-				if (m_waitForHostageTimer.IsElapsed())
-				{
-					// give up waiting for awhile
-					m_isWaitingForHostage = false;
-					m_inhibitWaitingForHostageTimer.Start(3.0f);
-				}
-				else
-				{
-					// keep waiting
-					ResetStuckMonitor();
-					ClearMovement();
-				}
-			}
-		}
 	}
 #endif
 	// remember our prior safe time status

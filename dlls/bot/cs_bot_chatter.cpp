@@ -83,58 +83,6 @@ void BotHelpMeme::Interpret(CCSBot *sender, CCSBot *receiver) const
 //	receiver->RespondToHelpRequest(sender, m_place, maxHelpRange);
 }
 
-// A teammate reported information about a bombsite
-#if 0
-void BotBombsiteStatusMeme::Interpret(CCSBot *sender, CCSBot *receiver) const
-{
-	// remember this bombsite's status
-	if (m_status == CLEAR)
-		receiver->GetGameState()->ClearBombsite(m_zoneIndex);
-	else
-		receiver->GetGameState()->MarkBombsiteAsPlanted(m_zoneIndex);
-
-	// if we were heading to the just-cleared bombsite, pick another one to search
-	// if our target bombsite wasn't cleared, will will continue going to it,
-	// because GetNextBombsiteToSearch() will return the same zone (since its not cleared)
-	// if the bomb was planted, we will head to that bombsite
-	if (receiver->GetTask() == CCSBot::FIND_TICKING_BOMB)
-	{
-		receiver->Idle();
-		receiver->GetChatter()->Affirmative();
-	}
-}
-
-// A teammate reported information about the bomb
-
-void BotBombStatusMeme::Interpret(CCSBot *sender, CCSBot *receiver) const
-{
-	// update our gamestate based on teammate's report
-	switch (m_state)
-	{
-		case CSGameState::MOVING:
-		{
-			receiver->GetGameState()->UpdateBomber(&m_pos);
-
-			// if we are hunting and see no enemies, respond
-			if (!receiver->IsRogue() && receiver->IsHunting() && receiver->GetNearbyEnemyCount() == 0)
-//				receiver->RespondToHelpRequest(sender, TheNavAreaGrid.GetPlace(&m_pos));
-
-			break;
-		}
-		case CSGameState::LOOSE:
-		{
-			receiver->GetGameState()->UpdateLooseBomb(&m_pos);
-
-			if (receiver->GetTask() == CCSBot::GUARD_BOMB_ZONE)
-			{
-				receiver->Idle();
-				receiver->GetChatter()->Affirmative();
-			}
-			break;
-		}
-	}
-}
-#endif
 // A teammate has asked that we follow him
 
 void BotFollowMeme::Interpret(CCSBot *sender, CCSBot *receiver) const
@@ -194,49 +142,12 @@ void BotDefendHereMeme::Interpret(CCSBot *sender, CCSBot *receiver) const
 	receiver->GetChatter()->Say("Affirmative");
 }
 
-// A teammate has asked where the bomb is planted
-#if 0
-void BotWhereBombMeme::Interpret(CCSBot *sender, CCSBot *receiver) const
-{
-	int zone = receiver->GetGameState()->GetPlantedBombsite();
-
-	if (zone != CSGameState::UNKNOWN)
-		receiver->GetChatter()->FoundPlantedBomb(zone);
-}
-#endif
 // A teammate has asked us to report in
 
 void BotRequestReportMeme::Interpret(CCSBot *sender, CCSBot *receiver) const
 {
 	receiver->GetChatter()->ReportingIn();
 }
-#if 0
-// A teammate told us all the hostages are gone
-
-void BotAllHostagesGoneMeme::Interpret(CCSBot *sender, CCSBot *receiver) const
-{
-//	receiver->GetGameState()->AllHostagesGone();
-
-	// acknowledge
-	receiver->GetChatter()->Say("Affirmative");
-}
-
-// A teammate told us a CT is talking to a hostage
-
-void BotHostageBeingTakenMeme::Interpret(CCSBot *sender, CCSBot *receiver) const
-{
-//	receiver->GetGameState()->HostageWasTaken();
-
-	// if we're busy, ignore
-	if (receiver->IsBusy())
-		return;
-
-	receiver->Idle();
-
-	// acknowledge
-	receiver->GetChatter()->Say("Affirmative");
-}
-#endif
 
 BotSpeakable::BotSpeakable()
 {
@@ -936,15 +847,6 @@ bool BotStatement::IsObsolete() const
 			return true;
 	}
 
-#if 0
-	// If we're wanting to say "I lost him" but we've spotted another enemy,
-	// we no longer need to report losing someone.
-	if (GetOwner()->GetChatter()->SeesAtLeastOneEnemy() && m_type == REPORT_ENEMY_LOST)
-	{
-		return true;
-	}
-#endif
-
 	// check if statement lifetime has expired
 	return (gpGlobals->time > m_expireTime);
 }
@@ -1618,13 +1520,7 @@ BotStatement *BotChatterInterface::GetActiveStatement()
 
 bool BotChatterInterface::ShouldSpeak() const
 {
-	// don't talk to non-existent friends
-	//if (m_me->GetFriendsRemaining() == 0)
-		//return false;
-
-	// if everyone is together, no need to tell them what's going on
-	//if (m_me->GetNearbyFriendCount() == m_me->GetFriendsRemaining())
-		//return false;
+	/// speak?
 
 	return true;
 }
@@ -1695,54 +1591,7 @@ void BotChatterInterface::ReportingIn()
 	// where are we
 	Place place = m_me->GetPlace();
 	SayWhere(say, place);
-#if 0
-	// what are we doing
-	switch (m_me->GetTask())
-	{
-		case CCSBot::PLANT_BOMB:
-		{
-			m_me->GetChatter()->GoingToPlantTheBomb(UNDEFINED_PLACE);
-			break;
-		}
-		case CCSBot::DEFUSE_BOMB:
-		{
-			m_me->GetChatter()->Say("DefusingBomb");
-			break;
-		}
-		case CCSBot::GUARD_LOOSE_BOMB:
-		{
-			if (ctrl->GetLooseBomb())
-			{
-				say->AppendPhrase(TheBotPhrases->GetPhrase("GuardingLooseBomb"));
-				say->AttachMeme(new BotBombStatusMeme(CSGameState::LOOSE, ctrl->GetLooseBomb()->pev->origin));
-			}
-			break;
-		}
-		case CCSBot::GUARD_HOSTAGES:
-		{
-			m_me->GetChatter()->GuardingHostages(UNDEFINED_PLACE, !m_me->IsAtHidingSpot());
-			break;
-		}
-		case CCSBot::GUARD_HOSTAGE_RESCUE_ZONE:
-		{
-			m_me->GetChatter()->GuardingHostageEscapeZone(!m_me->IsAtHidingSpot());
-			break;
-		}
-		case CCSBot::COLLECT_HOSTAGES:
-		{
-			break;
-		}
-		case CCSBot::RESCUE_HOSTAGES:
-		{
-			m_me->GetChatter()->EscortingHostages();
-			break;
-		}
-		case CCSBot::GUARD_VIP_ESCAPE_ZONE:
-		{
-			break;
-		}
-	}
-#endif
+
 	// what do we see
 	if (m_me->IsAttacking())
 	{
@@ -1897,189 +1746,7 @@ void BotChatterInterface::Negative()
 	say->AppendPhrase(TheBotPhrases->GetPhrase("Negative"));
 	AddStatement(say);
 }
-#if 0
-void BotChatterInterface::GoingToPlantTheBomb(Place place)
-{
-	if (TheCSBots()->IsRoundOver())
-		return;
 
-	const float minInterval = 10.0f; // 20.0f
-	if (m_planInterval.IsLessThen(minInterval))
-		return;
-
-	m_planInterval.Reset();
-
-	BotStatement *say = new BotStatement(this, REPORT_CRITICAL_EVENT, 10.0f);
-	say->AppendPhrase(TheBotPhrases->GetPhrase("GoingToPlantBomb"));
-	say->SetPlace(place);
-	say->AttachMeme(new BotFollowMeme());
-	AddStatement(say);
-}
-
-void BotChatterInterface::PlantingTheBomb(Place place)
-{
-	if (TheCSBots()->IsRoundOver())
-		return;
-
-	BotStatement *say = new BotStatement(this, REPORT_CRITICAL_EVENT, 10.0f);
-	say->AppendPhrase(TheBotPhrases->GetPhrase("PlantingBomb"));
-	say->SetPlace(place);
-	say->AttachMeme(new BotDefendHereMeme(m_me->pev->origin));
-	AddStatement(say);
-}
-
-void BotChatterInterface::TheyPickedUpTheBomb()
-{
-	if (TheCSBots()->IsRoundOver())
-		return;
-
-	// if we already know the bomb is not loose, this is old news
-	if (!m_me->GetGameState()->IsBombLoose())
-		return;
-
-	// update our gamestate - use our own position for now
-	m_me->GetGameState()->UpdateBomber(&m_me->pev->origin);
-
-	// tell our teammates
-	BotStatement *say = new BotStatement(this, REPORT_INFORMATION, 10.0f);
-	say->AppendPhrase(TheBotPhrases->GetPhrase("TheyPickedUpTheBomb"));
-	say->AttachMeme(new BotBombStatusMeme(CSGameState::MOVING, m_me->pev->origin));
-	AddStatement(say);
-}
-
-void BotChatterInterface::SpottedBomber(CBasePlayer *bomber)
-{
-	if (m_me->GetGameState()->IsBombMoving())
-	{
-		// if we knew where the bomber was, this is old news
-		const Vector *bomberPos = m_me->GetGameState()->GetBombPosition();
-		const float closeRangeSq = 1000.0f * 1000.0f;
-		if (bomberPos != NULL && (bomber->pev->origin - *bomberPos).LengthSquared() < closeRangeSq)
-			return;
-	}
-
-	// update our gamestate
-	m_me->GetGameState()->UpdateBomber(&bomber->pev->origin);
-
-	// tell our teammates
-	BotStatement *say = new BotStatement(this, REPORT_INFORMATION, 10.0f);
-
-	// where is the bomber
-	Place place = TheNavAreaGrid.GetPlace(&bomber->pev->origin);
-	SayWhere(say, place);
-
-	say->AppendPhrase(TheBotPhrases->GetPhrase("SpottedBomber"));
-	say->SetSubject(bomber->entindex());
-
-	//say->AttachMeme(new BotHelpMeme(place));
-	say->AttachMeme(new BotBombStatusMeme(CSGameState::MOVING, bomber->pev->origin));
-	AddStatement(say);
-}
-
-void BotChatterInterface::SpottedLooseBomb(CBaseEntity *bomb)
-{
-	if (TheCSBots()->IsRoundOver())
-		return;
-
-	// if we already know the bomb is loose, this is old news
-	if (m_me->GetGameState()->IsBombLoose())
-		return;
-
-	// update our gamestate
-	m_me->GetGameState()->UpdateLooseBomb(&bomb->pev->origin);
-
-	if (m_spottedLooseBombTimer.IsElapsed())
-	{
-		// throttle frequency
-		m_spottedLooseBombTimer.Start(10.0f);
-
-		// tell our teammates
-		BotStatement *say = new BotStatement(this, REPORT_INFORMATION, 10.0f);
-
-		// where is the bomb
-		Place place = TheNavAreaGrid.GetPlace(&bomb->pev->origin);
-		SayWhere(say, place);
-
-		say->AppendPhrase(TheBotPhrases->GetPhrase("SpottedLooseBomb"));
-
-		if (TheCSBots()->GetLooseBomb())
-			say->AttachMeme(new BotBombStatusMeme(CSGameState::LOOSE, bomb->pev->origin));
-
-		AddStatement(say);
-	}
-}
-
-NOXREF void BotChatterInterface::GuardingLooseBomb(CBaseEntity *bomb)
-{
-	if (TheCSBots()->IsRoundOver() || !bomb)
-		return;
-
-	const float minInterval = 20.0f;
-	if (m_planInterval.IsLessThen(minInterval))
-		return;
-
-	m_planInterval.Reset();
-
-	// update our gamestate
-	m_me->GetGameState()->UpdateLooseBomb(&bomb->pev->origin);
-
-	// tell our teammates
-	BotStatement *say = new BotStatement(this, REPORT_INFORMATION, 10.0f);
-
-	// where is the bomb
-	Place place = TheNavAreaGrid.GetPlace(&bomb->pev->origin);
-	SayWhere(say, place);
-
-	say->AppendPhrase(TheBotPhrases->GetPhrase("GuardingLooseBomb"));
-
-	if (TheCSBots()->GetLooseBomb())
-		say->AttachMeme(new BotBombStatusMeme(CSGameState::LOOSE, bomb->pev->origin));
-
-	AddStatement(say);
-}
-
-void BotChatterInterface::RequestBombLocation()
-{
-	// only ask once per round
-	if (m_requestedBombLocation)
-		return;
-
-	m_requestedBombLocation = true;
-
-	// tell our teammates
-	BotStatement *say = new BotStatement(this, REPORT_REQUEST_INFORMATION, 10.0f);
-	say->AppendPhrase(TheBotPhrases->GetPhrase("WhereIsTheBomb"));
-	say->AttachMeme(new BotWhereBombMeme());
-	AddStatement(say);
-}
-
-void BotChatterInterface::BombsiteClear(int zoneIndex)
-{
-	const CCSBotManager::Zone *zone = TheCSBots()->GetZone(zoneIndex);
-	if (zone == NULL)
-		return;
-
-	BotStatement *say = new BotStatement(this, REPORT_INFORMATION, 10.0f);
-
-	SayWhere(say, TheNavAreaGrid.GetPlace(&zone->m_center));
-	say->AppendPhrase(TheBotPhrases->GetPhrase("BombsiteClear"));
-	say->AttachMeme(new BotBombsiteStatusMeme(zoneIndex, BotBombsiteStatusMeme::CLEAR));
-	AddStatement(say);
-}
-
-void BotChatterInterface::FoundPlantedBomb(int zoneIndex)
-{
-	const CCSBotManager::Zone *zone = TheCSBots()->GetZone(zoneIndex);
-	if (zone == NULL)
-		return;
-
-	BotStatement *say = new BotStatement(this, REPORT_INFORMATION, 3.0f);
-	say->AppendPhrase(TheBotPhrases->GetPhrase("PlantedBombPlace"));
-	say->SetPlace(TheNavAreaGrid.GetPlace(&zone->m_center));
-	say->AttachMeme(new BotBombsiteStatusMeme(zoneIndex, BotBombsiteStatusMeme::PLANTED));
-	AddStatement(say);
-}
-#endif
 void BotChatterInterface::Scared()
 {
 	const float minInterval = 10.0f;
@@ -2142,119 +1809,3 @@ void BotChatterInterface::AnnouncePlan(const char *phraseName, Place place)
 	say->SetStartTime(ctrl->GetRoundStartTime() + RANDOM_FLOAT(2.0, 3.0f));
 	AddStatement(say);
 }
-#if 0
-void BotChatterInterface::GuardingHostages(Place place, bool isPlan)
-{
-	if (TheCSBots()->IsRoundOver())
-		return;
-
-	const float minInterval = 20.0f;
-	if (m_planInterval.IsLessThen(minInterval))
-		return;
-
-	m_planInterval.Reset();
-
-	if (isPlan)
-		AnnouncePlan("GoingToGuardHostages", place);
-	else
-		Say("GuardingHostages");
-}
-
-void BotChatterInterface::GuardingHostageEscapeZone(bool isPlan)
-{
-	if (TheCSBots()->IsRoundOver())
-		return;
-
-	const float minInterval = 20.0f;
-	if (m_planInterval.IsLessThen(minInterval))
-		return;
-
-	m_planInterval.Reset();
-
-	if (isPlan)
-		AnnouncePlan("GoingToGuardHostageEscapeZone", UNDEFINED_PLACE);
-	else
-		Say("GuardingHostageEscapeZone");
-}
-
-void BotChatterInterface::HostagesBeingTaken()
-{
-	if (TheCSBots()->IsRoundOver())
-		return;
-
-	BotStatement *say = new BotStatement(this, REPORT_INFORMATION, 3.0f);
-	say->AppendPhrase(TheBotPhrases->GetPhrase("HostagesBeingTaken"));
-	say->AttachMeme(new BotHostageBeingTakenMeme());
-	AddStatement(say);
-}
-
-void BotChatterInterface::HostagesTaken()
-{
-	if (TheCSBots()->IsRoundOver())
-		return;
-
-	BotStatement *say = new BotStatement(this, REPORT_INFORMATION, 3.0f);
-	say->AppendPhrase(TheBotPhrases->GetPhrase("HostagesTaken"));
-	AddStatement(say);
-}
-
-void BotChatterInterface::TalkingToHostages()
-{
-	;
-}
-
-void BotChatterInterface::EscortingHostages()
-{
-	if (TheCSBots()->IsRoundOver())
-		return;
-
-	if (m_escortingHostageTimer.IsElapsed())
-	{
-		// throttle frequency
-		m_escortingHostageTimer.Start(10.0f);
-
-		BotStatement *say = new BotStatement(this, REPORT_MY_PLAN, 5.0f);
-		say->AppendPhrase(TheBotPhrases->GetPhrase("EscortingHostages"));
-		AddStatement(say);
-	}
-}
-
-NOXREF void BotChatterInterface::HostageDown()
-{
-	if (TheCSBots()->IsRoundOver())
-		return;
-
-	BotStatement *say = new BotStatement(this, REPORT_INFORMATION, 3.0f);
-	say->AppendPhrase(TheBotPhrases->GetPhrase("HostageDown"));
-	AddStatement(say);
-}
-
-void BotChatterInterface::Encourage(const char *phraseName, float repeatInterval, float lifetime)
-{
-	if (m_encourageTimer.IsElapsed())
-	{
-		Say(phraseName, lifetime);
-		m_encourageTimer.Start(repeatInterval);
-	}
-}
-
-void BotChatterInterface::KilledFriend()
-{
-	BotStatement *say = new BotStatement(this, REPORT_KILLED_FRIEND, 2.0f);
-	say->AppendPhrase(TheBotPhrases->GetPhrase("KilledFriend"));
-
-	// give them time to react
-	say->SetStartTime(gpGlobals->time + RANDOM_FLOAT(0.5f, 1.0f));
-	AddStatement(say);
-}
-
-void BotChatterInterface::FriendlyFire()
-{
-	BotStatement *say = new BotStatement(this, REPORT_FRIENDLY_FIRE, 1.0f);
-	say->AppendPhrase(TheBotPhrases->GetPhrase("FriendlyFire"));
-
-	// give them time to react
-	say->SetStartTime(gpGlobals->time + RANDOM_FLOAT(0.3f, 0.5f));
-	AddStatement(say);
-}
-#endif

@@ -242,6 +242,37 @@ bool UTIL_KickBotFromTeam(TeamName kickTeam)
 	return false;
 }
 */
+
+
+bool UTIL_KickBot()
+{
+	int i;
+
+	// try to kick a dead bot first
+	for (i = 1; i <= gpGlobals->maxClients; ++i)
+	{
+		CBasePlayer *player = static_cast<CBasePlayer *>(UTIL_PlayerByIndex(i));
+
+		if (player == NULL)
+			continue;
+
+		if (FNullEnt(player->pev))
+			continue;
+
+		const char *name = STRING(player->pev->netname);
+		if (FStrEq(name, ""))
+			continue;
+
+		if (!player->IsBot())
+			continue;
+
+		// its a bot on the right team - kick it
+		SERVER_COMMAND(UTIL_VarArgs("kick \"%s\"\n", STRING(player->pev->netname)));
+		return true;
+	}
+	return false;
+}
+
 bool UTIL_IsTeamAllBots(int team)
 {
 	int botCount = 0;
