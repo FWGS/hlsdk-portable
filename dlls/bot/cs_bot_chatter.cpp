@@ -1003,6 +1003,7 @@ void BotStatement::AppendPhrase(ContextType contextPhrase)
 
 // Say our statement
 // m_index refers to the phrase currently being spoken, or -1 if we havent started yet
+extern int gmsgSayText;
 
 bool BotStatement::Update()
 {
@@ -1171,7 +1172,8 @@ bool BotStatement::Update()
 						else
 						{
 //							me->SendRadioMessage(radioEvent);
-							me->GetChatter()->ResetRadioSilenceDuration();
+
+							//me->GetChatter()->ResetRadioSilenceDuration();
 							duration = 2.0f;
 						}
 					}
@@ -1181,6 +1183,13 @@ bool BotStatement::Update()
 						me->GetChatter()->ResetRadioSilenceDuration();
 //						me->StartVoiceFeedback(duration + 1.0f);
 					}
+					// print to the sending client
+					char message[256];
+					Q_snprintf( message, 256, "[bot] %s (radio): %s", STRING( me->pev->netname), phrase->GetName() );
+					MESSAGE_BEGIN( MSG_ALL, gmsgSayText, NULL );
+						WRITE_BYTE( ENTINDEX(me->edict()) );
+						WRITE_STRING( message );
+					MESSAGE_END();
 				}
 			}
 
@@ -1606,12 +1615,12 @@ BotStatement *BotChatterInterface::GetActiveStatement()
 bool BotChatterInterface::ShouldSpeak() const
 {
 	// don't talk to non-existent friends
-	if (m_me->GetFriendsRemaining() == 0)
-		return false;
+	//if (m_me->GetFriendsRemaining() == 0)
+		//return false;
 
 	// if everyone is together, no need to tell them what's going on
-	if (m_me->GetNearbyFriendCount() == m_me->GetFriendsRemaining())
-		return false;
+	//if (m_me->GetNearbyFriendCount() == m_me->GetFriendsRemaining())
+		//return false;
 
 	return true;
 }
