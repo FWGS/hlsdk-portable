@@ -1,6 +1,11 @@
+#ifndef BOT_EXPORTS_H
+#define BOT_EXPORTS_H
+#ifndef SKIP_BOT_EXPORTS
 void InstallBotControl();
 void Bot_ServerCommand();
 void Bot_RegisterCvars();
+
+#include "bot_gameevents.h"
 
 class CBotManager
 {
@@ -22,14 +27,14 @@ public:
 	virtual void StartFrame();
 
 	// Events are propogated to all bots.
-//	virtual void OnEvent(GameEventType event, CBaseEntity *entity = NULL, CBaseEntity *other = NULL);		// Invoked when event occurs in the game (some events have NULL entity).
+	virtual void OnEvent(GameEventType event, CBaseEntity *entity = NULL, CBaseEntity *other = NULL);		// Invoked when event occurs in the game (some events have NULL entity).
 	virtual unsigned int GetPlayerPriority(CBasePlayer *player) const = 0;						// return priority of player (0 = max pri)
 
 public:
 	const char *GetNavMapFilename() const;										// return the filename for this map's "nav" file
 
-//	void AddGrenade(int type, CGrenade *grenade);									// add an active grenade to the bot's awareness
-	//void RemoveGrenade(CGrenade *grenade);										// the grenade entity in the world is going away
+	void AddGrenade(int type, CBaseEntity *grenade);									// add an active grenade to the bot's awareness
+	void RemoveGrenade(CBaseEntity *grenade);										// the grenade entity in the world is going away
 	void ValidateActiveGrenades();										// destroy any invalid active grenades
 	void DestroyAllGrenades();
 
@@ -42,3 +47,5 @@ private:
 };
 
 extern CBotManager *TheBots;
+#endif
+#endif

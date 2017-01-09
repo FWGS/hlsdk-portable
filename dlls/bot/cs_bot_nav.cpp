@@ -26,6 +26,8 @@ void CCSBot::ResetStuckMonitor()
 
 void CCSBot::StuckCheck()
 {
+//	m_isStuck = false;
+//	return;
 	if (m_isStuck)
 	{
 		// we are stuck - see if we have moved far enough to be considered unstuck

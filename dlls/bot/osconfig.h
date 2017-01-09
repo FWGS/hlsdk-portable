@@ -175,7 +175,7 @@ typedef long long __int64_t;
 	#define ARRAYSIZE(p) (sizeof(p)/sizeof(p[0]))
 
 	#define _MAX_FNAME NAME_MAX
-	#define MAX_PATH 260
+	//#define MAX_PATH 260
 	
 	typedef void *HWND;
 

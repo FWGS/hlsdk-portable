@@ -16,6 +16,7 @@
 #define ENGINE_SET_PVS			(*g_engfuncs.pfnSetFatPVS)
 #define ENGINE_SET_PAS			(*g_engfuncs.pfnSetFatPAS)
 #define ENGINE_CHECK_VISIBILITY		(*g_engfuncs.pfnCheckVisibility)
+#if 0
 #define DELTA_SET			(*g_engfuncs.pfnDeltaSetField)
 #define DELTA_UNSET			(*g_engfuncs.pfnDeltaUnsetField)
 #define DELTA_ADDENCODER		(*g_engfuncs.pfnDeltaAddEncoder)
@@ -31,6 +32,7 @@
 #define ENGINE_INSTANCE_BASELINE	(*g_engfuncs.pfnCreateInstancedBaseline)
 #define ENGINE_FORCE_UNMODIFIED		(*g_engfuncs.pfnForceUnmodified)
 #define PLAYER_CNX_STATS		(*g_engfuncs.pfnGetPlayerStats)
+#endif
 #define ADD_SERVER_COMMAND		(*g_engfuncs.pfnAddServerCommand)
 #define SET_CLIENT_LISTENING		(*g_engfuncs.pfnVoice_SetClientListening)
 #define GETPLAYERAUTHID			(*g_engfuncs.pfnGetPlayerAuthId)

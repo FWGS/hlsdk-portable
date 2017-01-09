@@ -290,7 +290,7 @@ void CCSBot::SpawnBot()
 
 	Q_strcpy(m_name, STRING(pev->netname));
 
-	SetState(&m_huntState);
+	SetState(&m_followState);
 	SetTouch(&CCSBot::BotTouch);
 
 	if (!TheNavAreaList.Count () && !ctrl->IsLearningMap())

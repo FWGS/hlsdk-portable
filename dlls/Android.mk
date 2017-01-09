@@ -130,7 +130,11 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
            gravgun.cpp \
            ar2.cpp \
            big_cock.cpp \
-bot/cs_bot_event.cpp \
+		   ../pm_shared/pm_debug.c \
+		   ../pm_shared/pm_math.c \
+		   ../pm_shared/pm_shared.c
+
+BOT_FILES := bot/cs_bot_event.cpp \
 bot/cs_bot_listen.cpp \
 bot/cs_bot.cpp \
 bot/cs_bot_chatter.cpp \
@@ -152,9 +156,6 @@ bot/cs_bot_manager.cpp \
 bot/cs_bot_update.cpp \
 bot/cs_bot_statemachine.cpp \
 bot/shared_util.cpp \
-	   ../pm_shared/pm_debug.c \
-	   ../pm_shared/pm_math.c \
-	   ../pm_shared/pm_shared.c \
 bot/states/cs_bot_investigate_noise.cpp \
 bot/states/cs_bot_use_entity.cpp \
 bot/states/cs_bot_hunt.cpp \
@@ -163,7 +164,10 @@ bot/states/cs_bot_idle.cpp \
 bot/states/cs_bot_hide.cpp \
 bot/states/cs_bot_attack.cpp \
 bot/states/cs_bot_follow.cpp \
-bot/cs_gamestate.cpp 
+bot/cs_gamestate.cpp \
+bot/mp_parse.cpp
+
+LOCAL_SRC_FILES += $(BOT_FILES)
 
 LOCAL_LDLIBS := -llog
 

@@ -23,6 +23,7 @@ void HuntState::OnUpdate(CCSBot *me)
 	// if we've been hunting for a long time, drop into Idle for a moment to
 	// select something else to do
 	const float huntingTooLongTime = 30.0f;
+#if 0
 	if (gpGlobals->time - me->GetStateTimestamp() > huntingTooLongTime)
 	{
 		// stop being a rogue and do the scenario, since there must not be many enemies left to hunt
@@ -31,7 +32,7 @@ void HuntState::OnUpdate(CCSBot *me)
 		me->Idle();
 		return;
 	}
-
+#endif
 	CCSBotManager *ctrl = TheCSBots();
 #if 0
 	// scenario logic
