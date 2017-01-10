@@ -1045,13 +1045,6 @@ void CHalfLifeMultiplay::DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, 
 			weapon_name = STRING( pVictim->m_pActiveItem->pev->classname );
 
 			// Hack to fix name change
-			tau = "tau_cannon";
-			gluon = "gluon gun";
-			zapgun = "zapgun";
-			multizapper = "multizapper";
-			squidspit = "squidspit";
-			freezeray = "freezeray";
-			snarklauncher = "snarklauncher";
 			char *rpg = "rpg_rocket";
 			char *hand_grenade = "hand_grenade";
 
