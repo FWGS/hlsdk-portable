@@ -42,6 +42,20 @@ set (SVDLL_SOURCES
 	bmodels.cpp
 	bullsquid.cpp
 	buttons.cpp
+	bubblemod/BMOD_boxmarker.cpp
+	bubblemod/BMOD_CameraPoint.cpp
+	bubblemod/BMOD_egon.cpp
+	bubblemod/BMOD_flyingcrowbar.cpp
+	bubblemod/BMOD_gamerules.cpp
+#	bubblemod/BMOD_hornetgun.cpp
+	bubblemod/BMOD_messaging.cpp
+	bubblemod/BMOD_player.cpp
+	bubblemod/BMOD_rune.cpp
+	bubblemod/BMOD_snarkmine.cpp
+	bubblemod/BMOD_squeakgrenade.cpp
+	bubblemod/BMOD_tripmines.cpp
+	bubblemod/BMOD_util.cpp
+	bubblemod/BMOD_zapgunrift.cpp
 	cbase.cpp
 	client.cpp
 	combat.cpp
@@ -51,7 +65,7 @@ set (SVDLL_SOURCES
 	defaultai.cpp
 	doors.cpp
 	effects.cpp
-	egon.cpp
+#	egon.cpp
 	explode.cpp
 	flyingmonster.cpp
 	func_break.cpp
@@ -131,7 +145,7 @@ set (SVDLL_SOURCES
 	../pm_shared/pm_shared.c
 )
 	
-include_directories (. wpn_shared ../common ../engine ../pm_shared ../game_shared ../public)
+include_directories (. wpn_shared ../common ../engine ../pm_shared ../game_shared ../public bubblemod )
 
 if(USE_VOICEMGR)
 	set(SVDLL_SOURCES
