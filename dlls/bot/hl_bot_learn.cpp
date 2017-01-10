@@ -112,8 +112,47 @@ CNavNode *CHLBot::AddNode(const Vector *destPos, const Vector *normal, NavDirTyp
 	return node;
 }
 
+void TextProgressToAllPlayers(const char *message)
+{
+	hudtextparms_t textParms;
+
+	textParms.x = -1.0f;
+	textParms.y = -1.0f;
+	textParms.effect = 0;
+
+	textParms.r1 = 255;
+	textParms.g1 = 255;
+	textParms.b1 = 100;
+
+	textParms.r2 = 255;
+	textParms.g2 = 255;
+	textParms.b2 = 255;
+
+	textParms.fadeinTime = 0.1f;
+	textParms.fadeoutTime = 0.1f;
+	textParms.holdTime = 10.0f;
+	textParms.fxTime = 0.0f;
+
+	textParms.channel = 1;
+
+	UTIL_HudMessageAll(textParms, message);
+}
+
+
 void drawProgressMeter(float progress, char *title)
 {
+	char text[256];
+	Q_sprintf( text, "%s\n", title );
+	char *pProgress = text + Q_strlen( text );
+	pProgress[0] = '[';
+	for( int i=1; i<71; i++ )
+		if( i < progress * 0.7 )
+			pProgress[i] = '#';
+		else
+			pProgress[i] = '_';
+	pProgress[71] = ']';
+	pProgress[72] = 0;
+	TextProgressToAllPlayers(text);
 #if 0
 	MESSAGE_BEGIN(MSG_ALL, gmsgBotProgress);
 		WRITE_BYTE(FLAG_PROGRESS_DRAW);
@@ -125,6 +164,7 @@ void drawProgressMeter(float progress, char *title)
 
 void startProgressMeter(const char *title)
 {
+	drawProgressMeter( 0, (char*)title );
 #if 0
 	MESSAGE_BEGIN(MSG_ALL, gmsgBotProgress);
 		WRITE_BYTE(FLAG_PROGRESS_START);
@@ -135,6 +175,7 @@ void startProgressMeter(const char *title)
 
 void hideProgressMeter()
 {
+	HintMessageToAllPlayers("");
 #if 0
 	MESSAGE_BEGIN(MSG_ALL, gmsgBotProgress);
 		WRITE_BYTE(FLAG_PROGRESS_HIDE);
