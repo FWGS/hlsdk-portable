@@ -35,7 +35,7 @@
 #include "gamerules.h"
 #include "game.h"
 #include "hltv.h"
-
+#include "bot_exports.h"
 // #define DUCKFIX
 
 extern DLL_GLOBAL ULONG g_ulModelIndexPlayer;
@@ -486,6 +486,10 @@ int CBasePlayer::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 	// as an int (zero) and think the player is dead! (this will incite a clientside screentilt, etc)
 	fTookDamage = CBaseMonster::TakeDamage( pevInflictor, pevAttacker, (int)flDamage, bitsDamageType );
 
+	if( TheBots && fTookDamage > 0 )
+		TheBots->OnEvent( EVENT_PLAYER_TOOK_DAMAGE, this, pAttacker );
+
+
 	// reset damage time countdown for each type of time based damage player just sustained
 	{
 		for( int i = 0; i < CDMG_TIMEBASED; i++ )
@@ -894,6 +898,9 @@ void CBasePlayer::Killed( entvars_t *pevAttacker, int iGib )
 
 	// UNDONE: Put this in, but add FFADE_PERMANENT and make fade time 8.8 instead of 4.12
 	// UTIL_ScreenFade( edict(), Vector( 128, 0, 0 ), 6, 15, 255, FFADE_OUT | FFADE_MODULATE );
+
+	if( TheBots )
+		TheBots->OnEvent( EVENT_DEATH_CAMERA_START, this );
 
 	if( ( pev->health < -40 && iGib != GIB_NEVER ) || iGib == GIB_ALWAYS )
 	{
@@ -1532,6 +1539,9 @@ void CBasePlayer::Jump()
 	{
 		pev->velocity = pev->velocity + pev->basevelocity;
 	}
+
+	if( TheBots )
+		TheBots->OnEvent( EVENT_PLAYER_JUMPED, this );
 }
 
 // This is a glorious hack to find free space when you've crouched into some solid space
@@ -2532,6 +2542,8 @@ void CBasePlayer::PostThink()
 			{
 				TakeDamage( VARS( eoNullEntity ), VARS( eoNullEntity ), flFallDamage, DMG_FALL ); 
 				pev->punchangle.x = 0;
+				if( TheBots )
+					TheBots->OnEvent( EVENT_PLAYER_LANDED_FROM_HEIGHT, this);
 			}
 		}
 
@@ -2557,7 +2569,12 @@ void CBasePlayer::PostThink()
 		if( !pev->velocity.x && !pev->velocity.y )
 			SetAnimation( PLAYER_IDLE );
 		else if( ( pev->velocity.x || pev->velocity.y ) && ( FBitSet( pev->flags, FL_ONGROUND ) ) )
+		{
 			SetAnimation( PLAYER_WALK );
+			if( TheBots )
+				if( pev->velocity.Length2D() > 220 )
+					TheBots->OnEvent( EVENT_PLAYER_FOOTSTEP, this );
+		}
 		else if( pev->waterlevel > 1 )
 			SetAnimation( PLAYER_WALK );
 	}

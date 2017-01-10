@@ -30,6 +30,7 @@
 #include "soundent.h"
 #include "decals.h"
 #include "gamerules.h"
+#include "bot_exports.h"
 
 extern CGraph WorldGraph;
 extern int gEvilImpulse101;
@@ -708,6 +709,13 @@ void CBasePlayerWeapon::ItemPostFrame( void )
 
 		m_pPlayer->TabulateAmmo();
 		SecondaryAttack();
+		if( TheBots )
+		{
+			if( m_fFireOnEmpty )
+				TheBots->OnEvent( EVENT_WEAPON_FIRED_ON_EMPTY, m_pPlayer );
+			else
+				TheBots->OnEvent( EVENT_WEAPON_FIRED, m_pPlayer );
+		}
 		m_pPlayer->pev->button &= ~IN_ATTACK2;
 	}
 	else if( ( m_pPlayer->pev->button & IN_ATTACK ) && CanAttack( m_flNextPrimaryAttack, gpGlobals->time, UseDecrement() ) )
@@ -719,11 +727,20 @@ void CBasePlayerWeapon::ItemPostFrame( void )
 
 		m_pPlayer->TabulateAmmo();
 		PrimaryAttack();
+		if( TheBots )
+		{
+			if( m_fFireOnEmpty )
+				TheBots->OnEvent( EVENT_WEAPON_FIRED_ON_EMPTY, m_pPlayer );
+			else
+				TheBots->OnEvent( EVENT_WEAPON_FIRED, m_pPlayer );
+		}
 	}
 	else if( m_pPlayer->pev->button & IN_RELOAD && iMaxClip() != WEAPON_NOCLIP && !m_fInReload ) 
 	{
 		// reload when reload is pressed, or if no buttons are down and weapon is empty.
 		Reload();
+		if( TheBots )
+			TheBots->OnEvent( EVENT_WEAPON_RELOADED, m_pPlayer );
 	}
 	else if( !( m_pPlayer->pev->button & ( IN_ATTACK | IN_ATTACK2 ) ) )
 	{
@@ -745,6 +762,8 @@ void CBasePlayerWeapon::ItemPostFrame( void )
 			if( m_iClip == 0 && !(iFlags() & ITEM_FLAG_NOAUTORELOAD ) && m_flNextPrimaryAttack < ( UseDecrement() ? 0.0 : gpGlobals->time ) )
 			{
 				Reload();
+				if( TheBots )
+					TheBots->OnEvent( EVENT_WEAPON_RELOADED, m_pPlayer );
 				return;
 			}
 		}

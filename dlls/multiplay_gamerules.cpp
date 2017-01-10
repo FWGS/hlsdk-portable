@@ -806,6 +806,8 @@ void CHalfLifeMultiplay::PlayerSpawn( CBasePlayer *pPlayer )
 		return;
 	}
 
+	if( TheBots )
+		TheBots->OnEvent( EVENT_PLAYER_SPAWNED, pPlayer );
 	g_fPause = false;
 
 	pPlayer->pev->weapons |= ( 1 << WEAPON_SUIT );
@@ -879,6 +881,9 @@ void CHalfLifeMultiplay::PlayerKilled( CBasePlayer *pVictim, entvars_t *pKiller,
 	CBaseEntity *ktmp = CBaseEntity::Instance( pKiller );
 	if( ktmp && (ktmp->Classify() == CLASS_PLAYER ) )
 		peKiller = (CBasePlayer*)ktmp;
+
+	if( TheBots )
+		TheBots->OnEvent( EVENT_PLAYER_DIED, pVictim, peKiller );
 
 	if( pVictim->pev == pKiller )
 	{

@@ -26,6 +26,7 @@
 #include "nodes.h"
 #include "soundent.h"
 #include "decals.h"
+#include "bot_exports.h"
 
 //===================grenade
 
@@ -180,6 +181,8 @@ void CGrenade::Detonate( void )
 	UTIL_TraceLine( vecSpot, vecSpot + Vector( 0, 0, -40 ), ignore_monsters, ENT(pev), &tr );
 
 	Explode( &tr, DMG_BLAST );
+	if( TheBots )
+		TheBots->OnEvent( EVENT_HE_GRENADE_EXPLODED, CBaseEntity::Instance( pev->owner ) );
 }
 
 

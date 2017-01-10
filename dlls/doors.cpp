@@ -23,6 +23,7 @@
 #include "cbase.h"
 #include "doors.h"
 #include "game.h"
+#include "bot_exports.h"
 extern void SetMovedir( entvars_t *ev );
 
 #define noiseMoving noise1
@@ -651,8 +652,12 @@ void CBaseDoor::DoorGoUp( void )
 	// emit door moving and stop sounds on CHAN_STATIC so that the multicast doesn't
 	// filter them out and leave a client stuck with looping door sounds!
 	if( !FBitSet( pev->spawnflags, SF_DOOR_SILENT ) )
+	{
 		if( m_toggle_state != TS_GOING_UP && m_toggle_state != TS_GOING_DOWN )
 			EMIT_SOUND( ENT( pev ), CHAN_STATIC, (char*)STRING( pev->noiseMoving ), 1, ATTN_NORM );
+		if( TheBots )
+			TheBots->OnEvent( EVENT_DOOR, m_hActivator );
+	}
 
 	m_toggle_state = TS_GOING_UP;
 
@@ -735,8 +740,12 @@ void CBaseDoor::DoorHitTop( void )
 void CBaseDoor::DoorGoDown( void )
 {
 	if( !FBitSet( pev->spawnflags, SF_DOOR_SILENT ) )
+	{
 		if( m_toggle_state != TS_GOING_UP && m_toggle_state != TS_GOING_DOWN )
-			EMIT_SOUND( ENT( pev ), CHAN_STATIC, (char*)STRING( pev->noiseMoving ), 1, ATTN_NORM );	
+			EMIT_SOUND( ENT( pev ), CHAN_STATIC, (char*)STRING( pev->noiseMoving ), 1, ATTN_NORM );
+		if( TheBots )
+			TheBots->OnEvent( EVENT_DOOR, m_hActivator );
+	}
 #ifdef DOOR_ASSERT
 	ASSERT( m_toggle_state == TS_AT_TOP );
 #endif // DOOR_ASSERT
