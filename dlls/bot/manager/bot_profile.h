@@ -52,13 +52,6 @@ enum
 	LastCustomSkin = FirstCustomSkin + NumCustomSkins - 1,
 };
 
-enum BotProfileTeamType
-{
-	BOT_TEAM_T,
-	BOT_TEAM_CT,
-	BOT_TEAM_ANY
-};
-
 class BotProfile
 {
 public:
@@ -75,7 +68,7 @@ public:
 		m_voicePitch = 100;
 		m_reactionTime = 0.3f;
 		m_attackDelay = 0.0f;
-		m_teams = BOT_TEAM_ANY;
+		//m_teams = BOT_TEAM_ANY;
 		m_voiceBank = 0;
 		m_prefersSilencer = false;
 	}
@@ -95,7 +88,7 @@ public:
 	float GetReactionTime() const { return m_reactionTime; }
 	float GetAttackDelay() const { return m_attackDelay; }
 	int GetVoiceBank() const { return m_voiceBank; }
-	bool IsValidForTeam(BotProfileTeamType team) const;
+	//bool IsValidForTeam(BotProfileTeamType team) const;
 	bool PrefersSilencer() const { return m_prefersSilencer; }
 
 private:
@@ -119,7 +112,7 @@ private:
 	int m_voicePitch;
 	float m_reactionTime;
 	float m_attackDelay;
-	enum BotProfileTeamType m_teams;
+	//enum BotProfileTeamType m_teams;
 	bool m_prefersSilencer;
 	int m_voiceBank;
 };
@@ -165,8 +158,8 @@ inline void BotProfile::Inherit(const BotProfile *parent, const BotProfile *base
 	if (parent->m_attackDelay != baseline->m_attackDelay)
 		m_attackDelay = parent->m_attackDelay;
 
-	if (parent->m_teams != baseline->m_teams)
-		m_teams = parent->m_teams;
+//	if (parent->m_teams != baseline->m_teams)
+//		m_teams = parent->m_teams;
 
 	if (parent->m_voiceBank != baseline->m_voiceBank)
 		m_voiceBank = parent->m_voiceBank;
@@ -183,20 +176,20 @@ public:
 	void Init(const char *filename, unsigned int *checksum = NULL);
 	void Reset();
 
-	const BotProfile *GetProfile (const char *name, BotProfileTeamType team) const
+	const BotProfile *GetProfile (const char *name) const
 	{
 		FOR_EACH_LL (m_profileList, it)
 		{
 			BotProfile *profile = m_profileList[it];
 
-			if (!Q_stricmp (name, profile->GetName ()) && profile->IsValidForTeam (team))
+			//if (!Q_stricmp (name, profile->GetName ()) && profile->IsValidForTeam (team))
 				return profile;
 		}
 		return NULL;
 	}
 
 	const BotProfileList *GetProfileList() const { return &m_profileList; }
-	const BotProfile *GetRandomProfile(BotDifficultyType difficulty, BotProfileTeamType team) const;
+	const BotProfile *GetRandomProfile(BotDifficultyType difficulty) const;
 
 	const char *GetCustomSkin(int index);
 	const char *GetCustomSkinModelname(int index);

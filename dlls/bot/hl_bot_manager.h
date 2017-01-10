@@ -55,8 +55,9 @@ public:
 
 	virtual void OnEvent(GameEventType event, CBaseEntity *entity = NULL, CBaseEntity *other = NULL);
 	virtual unsigned int GetPlayerPriority(CBasePlayer *player) const;					// return priority of player (0 = max pri)
+#if 0
 	virtual bool IsImportantPlayer(CBasePlayer *player) const;						// return true if player is important to scenario (VIP, bomb carrier, etc)
-
+#endif
 public:
 	void ValidateMapData();
 	bool IsLearningMap() const		{ return m_isLearningMap; }
@@ -79,7 +80,7 @@ public:
 
 		return BOT_EXPERT;
 	}
-
+#if 0
 	// the supported game scenarios
 	enum GameScenarioType
 	{
@@ -89,7 +90,7 @@ public:
 		SCENARIO_ESCORT_VIP
 	};
 	GameScenarioType GetScenario() const			{ return m_gameScenario; }
-
+#endif
 	// "zones"
 	// depending on the game mode, these are bomb zones, rescue zones, etc.
 	enum { MAX_ZONES = 4 };						// max # of zones in a map
@@ -153,7 +154,7 @@ public:
 
 		return &m_zone[ RANDOM_LONG(0, m_zoneCount - 1) ];
 	}
-
+#if 0
 	bool IsBombPlanted() const			{ return m_isBombPlanted; }						// returns true if bomb has been planted
 	float GetBombPlantTimestamp() const		{ return m_bombPlantTimestamp; }					// return time bomb was planted
 	bool IsTimeToPlantBomb() const			{ return (gpGlobals->time >= m_earliestBombPlantTimestamp); }		// return true if it's ok to try to plant bomb
@@ -162,7 +163,7 @@ public:
 	CBaseEntity *GetLooseBomb()			{ return m_looseBomb; }							// return the bomb if it is loose on the ground
 	CNavArea *GetLooseBombArea() const		{ return m_looseBombArea; }						// return area that bomb is in/near
 	void SetLooseBomb(CBaseEntity *bomb);
-
+#endif
 	float GetRadioMessageTimestamp(GameEventType event, int teamID) const;			// return the last time the given radio message was sent for given team
 	float GetRadioMessageInterval(GameEventType event, int teamID) const;			// return the interval since the last time this message was sent
 	void SetRadioMessageTimestamp(GameEventType event, int teamID);
@@ -201,10 +202,10 @@ public:
 
 	static void MonitorBotCVars();
 	static void MaintainBotQuota();
-	static bool AddBot(const BotProfile *profile, BotProfileTeamType team);
+	static bool AddBot(const BotProfile *profile);
 
 	#define FROM_CONSOLE true
-	static bool BotAddCommand(BotProfileTeamType team, bool isFromConsole = false);			// process the "bot_add" console command
+	static bool BotAddCommand(bool isFromConsole = false);			// process the "bot_add" console command
 
 private:
 	static float m_flNextCVarCheck;
@@ -212,18 +213,18 @@ private:
 	static bool m_isLearningMap;
 	static bool m_isAnalysisRequested;
 
-	GameScenarioType m_gameScenario;				// what kind of game are we playing
+	//GameScenarioType m_gameScenario;				// what kind of game are we playing
 
 	Zone m_zone[ MAX_ZONES ];
 	int m_zoneCount;
-
+#if 0
 	bool m_isBombPlanted;						// true if bomb has been planted
 	float m_bombPlantTimestamp;					// time bomb was planted
 	float m_earliestBombPlantTimestamp;				// don't allow planting until after this time has elapsed
 	CBasePlayer *m_bombDefuser;					// the player currently defusing a bomb
 	EHANDLE m_looseBomb;						// will be non-NULL if bomb is loose on the ground
 	CNavArea *m_looseBombArea;					// area that bomb is is/near
-
+#endif
 	bool m_isRoundOver;						// true if the round has ended
 
 	float m_radioMsgTimestamp[24][2];

@@ -63,11 +63,6 @@ bool BotProfile::HasPistolPreference() const
 
 // Return true if this profile is valid for the specified team
 
-bool BotProfile::IsValidForTeam(BotProfileTeamType team) const
-{
-	return (team == BOT_TEAM_ANY || m_teams == BOT_TEAM_ANY || team == m_teams);
-}
-
 BotProfileManager::BotProfileManager()
 {
 	m_nextSkin = 0;
@@ -441,20 +436,10 @@ void BotProfileManager::Init(const char *filename, unsigned int *checksum)
 					token = c + 1;
 				}
 			}
+
 			else if (!Q_stricmp("Team", attributeName))
 			{
-				if (!Q_stricmp(token, "T"))
-				{
-					profile->m_teams = BOT_TEAM_T;
-				}
-				else if (!Q_stricmp(token, "CT"))
-				{
-					profile->m_teams = BOT_TEAM_CT;
-				}
-				else
-				{
-					profile->m_teams = BOT_TEAM_ANY;
-				}
+
 			}
 			else
 			{
@@ -595,7 +580,7 @@ int BotProfileManager::FindVoiceBankIndex(const char *filename)
 
 // Return random unused profile that matches the given difficulty level
 
-const BotProfile *BotProfileManager::GetRandomProfile(BotDifficultyType difficulty, BotProfileTeamType team) const
+const BotProfile *BotProfileManager::GetRandomProfile(BotDifficultyType difficulty) const
 {
 #ifdef RANDOM_LONG
 
@@ -614,8 +599,8 @@ const BotProfile *BotProfileManager::GetRandomProfile(BotDifficultyType difficul
 			continue;
 
 		// Match team choice
-		if ( !profile->IsValidForTeam( team ) )
-			continue;
+//		if ( !profile->IsValidForTeam( team ) )
+//			continue;
 
 		profiles.AddToTail( profile );
 	}

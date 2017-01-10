@@ -112,7 +112,7 @@ CNavNode *CHLBot::AddNode(const Vector *destPos, const Vector *normal, NavDirTyp
 	return node;
 }
 
-void TextProgressToAllPlayers(const char *message)
+static void TextProgressToAllPlayers(const char *message)
 {
 	hudtextparms_t textParms;
 

@@ -17,11 +17,12 @@ CHLBotManager::CHLBotManager()
 	m_flNextCVarCheck = 0.0f;
 
 	m_zoneCount = 0;
+#if 0
 	SetLooseBomb(NULL);
 
 	m_isBombPlanted = false;
 	m_bombDefuser = NULL;
-
+#endif
 	m_isLearningMap = false;
 	m_isAnalysisRequested = false;
 	m_editCmd = EDIT_NONE;
@@ -84,12 +85,12 @@ void CHLBotManager::RestartRound()
 {
 	// extend
 	CBotManager::RestartRound();
-
+#if 0
 	SetLooseBomb(NULL);
 	m_isBombPlanted = false;
 	m_earliestBombPlantTimestamp = gpGlobals->time + RANDOM_FLOAT(10.0f, 30.0f);
 	m_bombDefuser = NULL;
-
+#endif
 	m_editCmd = EDIT_NONE;
 
 	ResetRadioMessageTimestamps();
@@ -208,7 +209,7 @@ void CHLBotManager::ServerActivate()
 	m_isMapDataLoaded = false;
 
 	m_zoneCount = 0;
-	m_gameScenario = SCENARIO_DEATHMATCH;
+	//m_gameScenario = SCENARIO_DEATHMATCH;
 
 	ValidateMapData();
 	RestartRound();
@@ -344,15 +345,15 @@ void CHLBotManager::ServerCommand(const char *pcmd)
 #endif
    if (FStrEq(pcmd, "bot_add"))
 	{
-		BotAddCommand(BOT_TEAM_ANY, FROM_CONSOLE);
+		BotAddCommand(FROM_CONSOLE);
 	}
 	else if (FStrEq(pcmd, "bot_add_t"))
 	{
-		BotAddCommand(BOT_TEAM_T, FROM_CONSOLE);
+		BotAddCommand(FROM_CONSOLE);
 	}
 	else if (FStrEq(pcmd, "bot_add_ct"))
 	{
-		BotAddCommand(BOT_TEAM_CT, FROM_CONSOLE);
+		BotAddCommand(FROM_CONSOLE);
 	}
 	else if (FStrEq(pcmd, "bot_kill"))
 	{
@@ -725,7 +726,7 @@ BOOL CHLBotManager::ClientCommand(CBasePlayer *pPlayer, const char *pcmd)
 
 // Process the "bot_add" console command
 
-bool CHLBotManager::BotAddCommand(BotProfileTeamType team, bool isFromConsole)
+bool CHLBotManager::BotAddCommand(bool isFromConsole)
 {
 	// dont allow bots to join if the Navigation Area is being generated
 	if (m_isLearningMap)
@@ -735,22 +736,8 @@ bool CHLBotManager::BotAddCommand(BotProfileTeamType team, bool isFromConsole)
 
 	if (!isFromConsole || CMD_ARGC() < 2)
 	{
-		// if team not specified, check cv_bot_join_team cvar for preference
-		if (team == BOT_TEAM_ANY)
-		{
-			if (!Q_stricmp(cv_bot_join_team.string, "T"))
-				team = BOT_TEAM_T;
-
-			else if (!Q_stricmp(cv_bot_join_team.string, "CT"))
-				team = BOT_TEAM_CT;
-			else
-			{
-					team = BOT_TEAM_T;
-			}
-		}
-
 		// try to add a bot by name
-		profile = TheBotProfiles->GetRandomProfile(GetDifficultyLevel(), team);
+		profile = TheBotProfiles->GetRandomProfile(GetDifficultyLevel());
 
 		if (profile == NULL)
 		{
@@ -774,7 +761,7 @@ bool CHLBotManager::BotAddCommand(BotProfileTeamType team, bool isFromConsole)
 			return true;
 		}
 
-		profile = TheBotProfiles->GetProfile(CMD_ARGV(1), team);
+		profile = TheBotProfiles->GetProfile(CMD_ARGV(1));
 		if (profile == NULL)
 		{
 			CONSOLE_ECHO("Error - no profile for '%s' exists.\n", CMD_ARGV(1));
@@ -783,7 +770,7 @@ bool CHLBotManager::BotAddCommand(BotProfileTeamType team, bool isFromConsole)
 	}
 
 	// create the bot
-	if (AddBot(profile, team))
+	if (AddBot(profile))
 	{
 		if (isFromConsole)
 		{
@@ -836,7 +823,7 @@ void CHLBotManager::MaintainBotQuota()
 	{
 		// don't try to add a bot if all teams are full
 		//if (!mp->TeamFull(TERRORIST) || !mp->TeamFull(CT))
-			BotAddCommand(BOT_TEAM_ANY);
+			BotAddCommand();
 	}
 	else if (desiredBotCount < botsInGame)
 	{
@@ -915,11 +902,11 @@ void CHLBotManager::ValidateMapData()
 	CONSOLE_ECHO("Navigation map loaded.\n");
 
 	m_zoneCount = 0;
-	m_gameScenario = SCENARIO_DEATHMATCH;
+//	m_gameScenario = SCENARIO_DEATHMATCH;
 
 	// Search all entities in the map and set the game type and
 	// store all zones (bomb target, etc).
-
+#if 0
 	CBaseEntity *entity = NULL;
 	int i;
 	for (i = 1; i < gpGlobals->maxEntities; ++i)
@@ -1006,9 +993,9 @@ void CHLBotManager::ValidateMapData()
 				CONSOLE_ECHO("Warning: Too many zones, some will be ignored.\n");
 		}
 	}
-
+#endif
 	// Collect nav areas that overlap each zone
-	for (i = 0; i < m_zoneCount; ++i)
+	for (int i = 0; i < m_zoneCount; ++i)
 	{
 		Zone *zone = &m_zone[i];
 
@@ -1039,7 +1026,7 @@ void CHLBotManager::ValidateMapData()
 	}
 }
 
-bool CHLBotManager::AddBot(const BotProfile *profile, BotProfileTeamType team)
+bool CHLBotManager::AddBot(const BotProfile *profile)
 {
 	CHLBot *pBot = CreateBot<CHLBot>(profile);
 	if (pBot == NULL)
@@ -1146,6 +1133,7 @@ void CHLBotManager::OnEvent(GameEventType event, CBaseEntity *entity, CBaseEntit
 {
 	switch (event)
 	{
+#if 0
 	case EVENT_BOMB_PLANTED:
 		m_isBombPlanted = true;
 		m_bombPlantTimestamp = gpGlobals->time;
@@ -1166,6 +1154,7 @@ void CHLBotManager::OnEvent(GameEventType event, CBaseEntity *entity, CBaseEntit
 
 	case EVENT_TERRORISTS_WIN:
 	case EVENT_CTS_WIN:
+#endif
 	case EVENT_ROUND_DRAW:
 		m_isRoundOver = true;
 		break;
@@ -1183,7 +1172,7 @@ void CHLBotManager::OnEvent(GameEventType event, CBaseEntity *entity, CBaseEntit
 }
 
 // Get the time remaining before the planted bomb explodes
-
+#if 0
 float CHLBotManager::GetBombTimeLeft() const
 {
 	return 10;//(g_pGameRules->m_iC4Timer - (gpGlobals->time - m_bombPlantTimestamp));
@@ -1210,7 +1199,7 @@ bool CHLBotManager::IsImportantPlayer(CBasePlayer *player) const
 	// everyone is equally important in a deathmatch
 	return false;
 }
-
+#endif
 // Return priority of player (0 = max pri)
 
 unsigned int CHLBotManager::GetPlayerPriority(CBasePlayer *player) const
