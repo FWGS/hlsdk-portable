@@ -4,7 +4,7 @@
 
 void CHLBot::Upkeep()
 {
-	CHLBotManager *ctrl = TheCSBots();
+	CHLBotManager *ctrl = TheHLBots();
 
 	if (ctrl->IsLearningMap() || !IsAlive())
 		return;
@@ -153,7 +153,7 @@ void CHLBot::Upkeep()
 
 void CHLBot::Update()
 {
-	CHLBotManager *ctrl = TheCSBots();
+	CHLBotManager *ctrl = TheHLBots();
 
 	if (ctrl->IsAnalysisRequested() && m_processMode == PROCESS_NORMAL)
 	{

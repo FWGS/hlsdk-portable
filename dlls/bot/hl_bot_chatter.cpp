@@ -1585,7 +1585,7 @@ void BotChatterInterface::ReportIn()
 
 void BotChatterInterface::ReportingIn()
 {
-	CHLBotManager *ctrl = TheCSBots();
+	CHLBotManager *ctrl = TheHLBots();
 	BotStatement *say = new BotStatement(this, REPORT_INFORMATION, 10.0f);
 
 	// where are we
@@ -1688,7 +1688,7 @@ void BotChatterInterface::PinnedDown()
 
 void BotChatterInterface::HeardNoise(const Vector *pos)
 {
-	if (TheCSBots()->IsRoundOver())
+	if (TheHLBots()->IsRoundOver())
 		return;
 
 	if (m_heardNoiseTimer.IsElapsed())
@@ -1769,7 +1769,7 @@ void BotChatterInterface::CelebrateWin()
 	say->SetStartTime(gpGlobals->time + RANDOM_FLOAT(2.0f, 5.0f));
 
 	const float quickRound = 45.0f;
-	CHLBotManager *ctrl = TheCSBots();
+	CHLBotManager *ctrl = TheHLBots();
 
 	if (m_me->GetFriendsRemaining() == 0)
 	{
@@ -1797,7 +1797,7 @@ void BotChatterInterface::CelebrateWin()
 
 void BotChatterInterface::AnnouncePlan(const char *phraseName, Place place)
 {
-	CHLBotManager *ctrl = TheCSBots();
+	CHLBotManager *ctrl = TheHLBots();
 	if (ctrl->IsRoundOver())
 		return;
 

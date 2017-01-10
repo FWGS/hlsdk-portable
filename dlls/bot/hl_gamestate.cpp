@@ -12,7 +12,7 @@ CHLGameState::CHLGameState(CHLBot *owner)
 void CHLGameState::Reset()
 {
 	int i;
-	CHLBotManager *ctrl = TheCSBots();
+	CHLBotManager *ctrl = TheHLBots();
 
 	m_isRoundOver = false;
 

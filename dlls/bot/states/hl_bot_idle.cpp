@@ -48,7 +48,7 @@ void IdleState::OnUpdate(CHLBot *me)
 		}
 	}
 
-	CHLBotManager *ctrl = TheCSBots();
+	CHLBotManager *ctrl = TheHLBots();
 
 	// if round is over, hunt
 	if (me->GetGameState()->IsRoundOver())

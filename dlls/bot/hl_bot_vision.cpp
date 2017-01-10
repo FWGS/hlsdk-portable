@@ -204,7 +204,7 @@ bool CHLBot::IsVisible(Vector *pos, bool testFOV) const
 		return false;
 
 	// check line of sight against smoke
-	if (TheCSBots()->IsLineBlockedBySmoke(&GetEyePosition(), pos))
+	if (TheHLBots()->IsLineBlockedBySmoke(&GetEyePosition(), pos))
 		return false;
 
 	// check line of sight

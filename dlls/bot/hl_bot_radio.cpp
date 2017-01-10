@@ -72,7 +72,7 @@ void CHLBot::RespondToRadioCommands()
 		return;
 	}
 
-	CHLBotManager *ctrl = TheCSBots();
+	CHLBotManager *ctrl = TheHLBots();
 	CBasePlayer *player = m_radioSubject;
 	if (player == NULL)
 		return;
@@ -294,7 +294,7 @@ void CHLBot::SendRadioMessage(GameEventType event)
 		return;
 	}
 
-	CHLBotManager *ctrl = TheCSBots();
+	CHLBotManager *ctrl = TheHLBots();
 	PrintIfWatched("%3.1f: SendRadioMessage( %s )\n", gpGlobals->time, GameEventName[ event ]);
 
 	// note the time the message was sent

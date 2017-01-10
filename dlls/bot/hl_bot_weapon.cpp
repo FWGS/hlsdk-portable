@@ -52,7 +52,7 @@ void CHLBot::FireWeaponAtEnemy()
 				bool doAttack;
 
 				// if friendly fire is on, don't fire if a teammate is blocking our line of fire
-				if (TheCSBots()->AllowFriendlyFireDamage())
+				if (TheHLBots()->AllowFriendlyFireDamage())
 				{
 					if (IsFriendInLineOfFire())
 						doAttack = false;
@@ -435,7 +435,7 @@ void CHLBot::EquipBestWeapon(bool mustEquip)
 	if (!mustEquip && m_equipTimer.GetElapsedTime() < minEquipInterval)
 		return;
 
-	CHLBotManager *ctrl = TheCSBots();
+	CHLBotManager *ctrl = TheHLBots();
 	CBasePlayerWeapon *primary = static_cast<CBasePlayerWeapon *>(m_rgpPlayerItems[ 2 ]);
 	/// TODO: hl
 	// always have a knife
@@ -450,7 +450,7 @@ void CHLBot::EquipPistol()
 	if (m_equipTimer.GetElapsedTime() < minEquipInterval)
 		return;
 
-	if (TheCSBots()->AllowPistols() && !IsUsingPistol())
+	if (TheHLBots()->AllowPistols() && !IsUsingPistol())
 	{
 		CBasePlayerWeapon *pistol = static_cast<CBasePlayerWeapon *>(m_rgpPlayerItems[ 1 ]);
 		DoEquip(pistol);

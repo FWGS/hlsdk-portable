@@ -227,10 +227,10 @@ void CHLBot::BotTouch(CBaseEntity *other)
 		CBasePlayer *player = static_cast<CBasePlayer *>(other);
 
 		// get priority of other player
-		unsigned int otherPri = TheCSBots()->GetPlayerPriority(player);
+		unsigned int otherPri = TheHLBots()->GetPlayerPriority(player);
 
 		// get our priority
-		unsigned int myPri = TheCSBots()->GetPlayerPriority(this);
+		unsigned int myPri = TheHLBots()->GetPlayerPriority(this);
 
 		// if our priority is better, don't budge
 		if (myPri < otherPri)
@@ -239,7 +239,7 @@ void CHLBot::BotTouch(CBaseEntity *other)
 		// they are higher priority - make way, unless we're already making way for someone more important
 		if (m_avoid != NULL)
 		{
-			unsigned int avoidPri = TheCSBots()->GetPlayerPriority(static_cast<CBasePlayer *>(static_cast<CBaseEntity *>(m_avoid)));
+			unsigned int avoidPri = TheHLBots()->GetPlayerPriority(static_cast<CBasePlayer *>(static_cast<CBaseEntity *>(m_avoid)));
 			if (avoidPri < otherPri)
 			{
 				// ignore 'other' because we're already avoiding someone better
@@ -549,7 +549,7 @@ int CHLBot::OutnumberedCount() const
 
 CBasePlayer *CHLBot::GetImportantEnemy(bool checkVisibility) const
 {
-	CHLBotManager *ctrl = TheCSBots();
+	CHLBotManager *ctrl = TheHLBots();
 	CBasePlayer *nearEnemy = NULL;
 	float nearDist = 999999999.9f;
 
@@ -649,7 +649,7 @@ void CHLBot::DecreaseMorale()
 
 bool CHLBot::IsRogue() const
 {
-	CHLBotManager *ctrl = TheCSBots();
+	CHLBotManager *ctrl = TheHLBots();
 
 	if (!ctrl->AllowRogues())
 		return false;
@@ -675,7 +675,7 @@ bool CHLBot::IsHurrying() const
 	if (!m_hurryTimer.IsElapsed())
 		return true;
 
-	CHLBotManager *ctrl = TheCSBots();
+	CHLBotManager *ctrl = TheHLBots();
 
 
 	return false;
@@ -685,7 +685,7 @@ bool CHLBot::IsHurrying() const
 
 bool CHLBot::IsSafe() const
 {
-	CHLBotManager *ctrl = TheCSBots();
+	CHLBotManager *ctrl = TheHLBots();
 
 	if (ctrl->GetElapsedRoundTime() < m_safeTime)
 		return true;
@@ -697,7 +697,7 @@ bool CHLBot::IsSafe() const
 
 bool CHLBot::IsWellPastSafe() const
 {
-	CHLBotManager *ctrl = TheCSBots();
+	CHLBotManager *ctrl = TheHLBots();
 
 	if (ctrl->GetElapsedRoundTime() > 1.25f * m_safeTime)
 		return true;
@@ -716,7 +716,7 @@ bool CHLBot::IsEndOfSafeTime() const
 
 float CHLBot::GetSafeTimeRemaining() const
 {
-	CHLBotManager *ctrl = TheCSBots();
+	CHLBotManager *ctrl = TheHLBots();
 
 	return m_safeTime - ctrl->GetElapsedRoundTime();
 }
@@ -725,7 +725,7 @@ float CHLBot::GetSafeTimeRemaining() const
 
 void CHLBot::AdjustSafeTime()
 {
-	CHLBotManager *ctrl = TheCSBots();
+	CHLBotManager *ctrl = TheHLBots();
 
 	// if we spotted an enemy sooner than we thought possible, adjust our notion of "safe" time
 	if (m_safeTime > ctrl->GetElapsedRoundTime())
@@ -747,7 +747,7 @@ bool CHLBot::HasNotSeenEnemyForLongTime() const
 
 bool CHLBot::GuardRandomZone(float range)
 {
-	CHLBotManager *ctrl = TheCSBots();
+	CHLBotManager *ctrl = TheHLBots();
 	const CHLBotManager::Zone *zone = ctrl->GetRandomZone();
 
 	if (zone != NULL)

@@ -247,7 +247,7 @@ NOXREF inline int OtherTeam(int team)
 	return 0;
 }
 
-inline CHLBotManager *TheCSBots()
+inline CHLBotManager *TheHLBots()
 {
 	return reinterpret_cast<CHLBotManager *>(TheBots);
 }

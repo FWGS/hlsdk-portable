@@ -279,7 +279,7 @@ void CHLBot::ResetValues()
 
 void CHLBot::SpawnBot()
 {
-	CHLBotManager *ctrl = TheCSBots();
+	CHLBotManager *ctrl = TheHLBots();
 
 	ctrl->ValidateMapData();
 	ResetValues();

@@ -38,7 +38,7 @@ void MoveToState::OnEnter(CHLBot *me)
 
 void MoveToState::OnUpdate(CHLBot *me)
 {
-	CHLBotManager *ctrl = TheCSBots();
+	CHLBotManager *ctrl = TheHLBots();
 
 	// assume that we are paying attention and close enough to know our enemy died
 	if (me->GetTask() == CHLBot::MOVE_TO_LAST_KNOWN_ENEMY_POSITION)

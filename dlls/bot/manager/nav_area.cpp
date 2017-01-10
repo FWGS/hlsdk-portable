@@ -3516,7 +3516,7 @@ void CNavArea::DrawConnectedAreas()
 	if (player == NULL)
 		return;
 
-	CHLBotManager *ctrl = TheCSBots();
+	CHLBotManager *ctrl = TheHLBots();
 	const float maxRange = 500.0f;
 
 	// draw self
@@ -3686,7 +3686,7 @@ public:
 	}
 	bool operator()(CNavArea *area)
 	{
-		CHLBotManager *ctrl = TheCSBots();
+		CHLBotManager *ctrl = TheHLBots();
 
 		if (area->GetPlace() != m_initialPlace)
 			return false;
@@ -3704,7 +3704,7 @@ private:
 
 void EditNavAreas(NavEditCmdType cmd)
 {
-	CHLBotManager *ctrl = TheCSBots();
+	CHLBotManager *ctrl = TheHLBots();
 	CBasePlayer *player = UTIL_GetLocalPlayer();
 	if (player == NULL)
 		return;
