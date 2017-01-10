@@ -164,6 +164,9 @@ void CHLBot::Killed(entvars_t *pevAttacker, int iGib)
 
 	// extend
 	CBasePlayer::Killed(pevAttacker, iGib);
+
+	ClearMovement();
+	//respawn( pev, !( m_afPhysicsFlags & PFLAG_OBSERVER ) );
 }
 
 // Return true if line segment intersects rectagular volume

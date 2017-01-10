@@ -1279,7 +1279,7 @@ void CBasePlayer::PlayerDeathThink( void )
 	// wait for all buttons released
 	if( pev->deadflag == DEAD_DEAD )
 	{
-		if( fAnyButtonDown )
+		if( !IsBot() && fAnyButtonDown )
 			return;
 
 		if( g_pGameRules->FPlayerCanRespawn( this ) )
@@ -1301,7 +1301,7 @@ void CBasePlayer::PlayerDeathThink( void )
 	}
 
 	// wait for any button down,  or mp_forcerespawn is set and the respawn time is up
-	if( !fAnyButtonDown && !( g_pGameRules->IsMultiplayer() && forcerespawn.value > 0 && ( gpGlobals->time > ( m_fDeadTime + 5 ) ) ) )
+	if( !fAnyButtonDown && !( g_pGameRules->IsMultiplayer() && ( IsBot() || forcerespawn.value ) && ( gpGlobals->time > ( m_fDeadTime + 5 ) ) ) )
 		return;
 
 	pev->button = 0;
