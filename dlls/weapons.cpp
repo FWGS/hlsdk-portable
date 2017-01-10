@@ -1317,9 +1317,9 @@ void CWeaponBox::Touch( CBaseEntity *pOther )
 				if( pItem->m_iId == WEAPON_CROWBAR )
 				{
 					// check if the player already has this weapon
-					for( int i = 0; i < MAX_ITEM_TYPES; i++ )
+					for( int j = 0; j < MAX_ITEM_TYPES; j++ )
 					{
-						CBasePlayerItem *it = pPlayer->m_rgpPlayerItems[i];
+						CBasePlayerItem *it = pPlayer->m_rgpPlayerItems[j];
 						while( it != NULL )
 						{
 							if( it->m_iId == WEAPON_CROWBAR )

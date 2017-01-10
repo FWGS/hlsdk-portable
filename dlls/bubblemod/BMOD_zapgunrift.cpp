@@ -363,7 +363,7 @@ void CZapBounce::BounceThink( void )
 			pRift->m_fDamage = m_fDamage;
 			pRift->m_iBounce = m_iBounce;
 			pRift->m_bFirstZap = FALSE;
-			pRift->pev->nextthink = gpGlobals->time + RANDOM_LONG(.2,.3);
+			pRift->pev->nextthink = gpGlobals->time + RANDOM_FLOAT( 0.2, 0.3 );
 		}
 }
 

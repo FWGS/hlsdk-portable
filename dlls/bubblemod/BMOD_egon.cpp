@@ -482,14 +482,18 @@ void CEgon::FireHeal( void ) {
 			while ((pEntity = UTIL_FindEntityInSphere( pEntity, vecOrigSrc, BUBBLE_HEAL_RADIUS )) != NULL)
        		 	{
 				if (pEntity->IsPlayer())
-					if (m_pPlayer->m_RuneFlags == RUNE_BATTERY) {
+				{
+					if (m_pPlayer->m_RuneFlags == RUNE_BATTERY)
+					{
 						pEntity->pev->armorvalue += BUBBLE_HEAL_AMT;
 						if (pEntity->pev->armorvalue > 100)
 							pEntity->pev->armorvalue = 100;
 					}
-					else {
+					else
+					{
 						pEntity->TakeHealth(BUBBLE_HEAL_AMT, DMG_GENERIC);
 					}
+				}
 					UTIL_ScreenFade( pEntity, Vector(0,128,255), 2, 0.5, 200, FFADE_IN );
 			}
 

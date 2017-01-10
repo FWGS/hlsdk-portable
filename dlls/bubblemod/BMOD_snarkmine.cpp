@@ -451,7 +451,7 @@ BOOL CTripSnarkGrenade::IsSpawnMine()
 
 	CBaseEntity *pEntity = NULL;
 	TraceResult	tr;
-	Vector vecSpot, vecTop;
+	Vector vecSpot;
 	Vector vecSrc = pev->origin;
 	float flRadius = 375;
 

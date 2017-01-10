@@ -42,7 +42,7 @@ BOOL CTripmineGrenade::BMOD_IsSpawnMine()
 	BOOL result = FALSE;
 	CBaseEntity *pEntity = NULL;
 	TraceResult	tr;
-	Vector vecSpot, vecTop;
+	Vector vecSpot;
 	Vector vecSrc = pev->origin;
 	float flRadius = pev->dmg * 2.5;
 

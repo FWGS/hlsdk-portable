@@ -45,7 +45,7 @@ extern cvar_t fraglimit;
 void PrintMessage( CBaseEntity *pEnt, int iChannel, Vector vecColor, Vector vecTime, char *msg)
 {
 	char szText[256];
-	hudtextparms_t hText;
+	hudtextparms_t hText = {0};
 
 	if (!strcmp("SPEC", msg))
 	{
@@ -70,11 +70,10 @@ void PrintMessage( CBaseEntity *pEnt, int iChannel, Vector vecColor, Vector vecT
 		(int)fraglimit.value
 		);
 	}
-	else {
-		sprintf(szText, msg);
+	else
+	{
+		sprintf(szText, "%s",msg);
 	}
-
-	memset(&hText, 0, sizeof(hText));
 
 	switch (iChannel)
 	{

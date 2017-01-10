@@ -887,7 +887,7 @@ void CBaseTrigger::HurtTouch( CBaseEntity *pOther )
 
 	if( !strcmp( STRING( pOther->pev->classname ), "rune" ) )
 	{
-		(CRune*)pOther->Respawn();
+		pOther->Respawn();
 	}
 
 	if( !pOther->pev->takedamage )

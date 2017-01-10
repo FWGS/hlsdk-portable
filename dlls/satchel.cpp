@@ -509,7 +509,6 @@ BOOL CSatchelCharge::IsSpawnSatchel()
 	BOOL result = FALSE;
 	CBaseEntity *pEntity = NULL;
 	TraceResult tr;
-	Vector vecTop;
 	Vector vecSrc = pev->origin;
 
 	int bInWater = ( UTIL_PointContents( vecSrc ) == CONTENTS_WATER );
