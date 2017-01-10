@@ -554,6 +554,7 @@ const char *CHalfLifeTeamplay::TeamWithFewestPlayers( void )
 //=========================================================
 void CHalfLifeTeamplay::RecountTeams( bool bResendInfo )
 {
+	int i;
 	char *pName;
 	char teamlist[TEAMPLAY_TEAMLISTLENGTH];
 
@@ -585,7 +586,7 @@ void CHalfLifeTeamplay::RecountTeams( bool bResendInfo )
 	memset( team_scores, 0, sizeof(team_scores) );
 
 	// loop through all clients
-	for( int i = 1; i <= gpGlobals->maxClients; i++ )
+	for( i = 1; i <= gpGlobals->maxClients; i++ )
 	{
 		CBaseEntity *plr = UTIL_PlayerByIndex( i );
 

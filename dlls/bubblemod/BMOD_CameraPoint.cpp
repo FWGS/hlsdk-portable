@@ -50,7 +50,7 @@ void CCamPoint::Spawn( void )
 											// is set to 0 and blending is on
 	pev->rendermode = kRenderTransTexture;
 
-	SetThink ( Think );
+	SetThink( &CCamPoint::Think );
 	pev->nextthink = gpGlobals->time + 0.1;
 }
 

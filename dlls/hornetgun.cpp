@@ -134,7 +134,7 @@ void BMODSquidSpit::Shoot( entvars_t *Owner, Vector vecStart, Vector vecVelocity
 	pSpit->pev->owner = ENT( Owner );
 	pSpit->pevOwner = Owner;
 
-	pSpit->SetThink( Animate );
+	pSpit->SetThink( &BMODSquidSpit::Animate );
 	pSpit->pev->nextthink = gpGlobals->time + 0.1;
 }
 
@@ -184,7 +184,7 @@ void BMODSquidSpit::Touch( CBaseEntity *pOther )
 		ApplyMultiDamage( pev, pevOwner );
 	}
 
-	SetThink( SUB_Remove );
+	SetThink( &CBaseEntity::SUB_Remove );
 	pev->nextthink = gpGlobals->time;
 }
 
@@ -1061,7 +1061,7 @@ void CHgun::OldSecondaryAttack( void )
 
 void CHgun::Reload( void )
 {
-	m_iMaxammo = (bm_hornet_mod.value) ? 12 : 8
+	m_iMaxammo = (bm_hornet_mod.value) ? 12 : 8;
 	if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] >= m_iMaxammo )
 		return;
 

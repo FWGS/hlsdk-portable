@@ -255,10 +255,10 @@ char* UTIL_CountVotes()
 	static char string[128];
 	char maps[32][81];
 	int votes[32];
-	int p = 0;
+	int i, p = 0;
 	int q = 0;
 
-	for (int i = 0; i < 32; i++)
+	for( i = 0; i < 32; i++ )
 	{
 		strcpy(maps[i], "");
 		votes[i] = 0;

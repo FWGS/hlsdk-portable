@@ -2888,8 +2888,9 @@ void CBasePlayer::Spawn( void )
 	//m_LeetSpeak = FALSE;
 
 	// Spawn Runes
-	if (!g_runes_exist)
+	if( !g_runes_exist )
 	{
+		int i;
 		g_runes_exist = true;
 
 		CBaseEntity *pSpot = NULL;
@@ -2898,7 +2899,7 @@ void CBasePlayer::Spawn( void )
 		while( !pSpot );
 
 		// Spawn random runes
-		for( int i = 0; i < CVAR_GET_FLOAT( "bm_rune_rand" ); i++ )
+		for( i = 0; i < CVAR_GET_FLOAT( "bm_rune_rand" ); i++ )
 		{
 			CRune *rune = (CRune *)CBaseEntity::Create( "item_CrowbarRune", pSpot->pev->origin, Vector( 0, 0, 0 ), edict() );
 			rune->m_randomize = TRUE;

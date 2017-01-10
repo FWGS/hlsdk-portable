@@ -61,11 +61,11 @@ void CFlyingCrowbar::Spawn( )
       m_hOwner = Instance( pev->owner );
 
    // Set the think funtion. 
-   SetThink( BubbleThink );
+   SetThink( &CFlyingCrowbar::BubbleThink );
    pev->nextthink = gpGlobals->time + 0.25;
 
    // Set the touch function.
-   SetTouch( SpinTouch );
+   SetTouch( &CFlyingCrowbar::SpinTouch );
 }
 
 
@@ -133,7 +133,7 @@ void CFlyingCrowbar::SpinTouch( CBaseEntity *pOther )
 
    // remove the weapon box after 4 mins.
    pWeaponBox->pev->nextthink = gpGlobals->time + 240; 
-   pWeaponBox->SetThink( CWeaponBox::Kill );
+   pWeaponBox->SetThink( &CWeaponBox::Kill );
 
    // Pack the crowbar in the weapon box
    pWeaponBox->PackWeapon( pItem );
@@ -163,7 +163,7 @@ void CFlyingCrowbar::SpinTouch( CBaseEntity *pOther )
    pWeaponBox->pev->velocity = tr.vecPlaneNormal * 300;
 
    // Remove this flying_crowbar from the world.
-   SetThink ( SUB_Remove );
+   SetThink( &CBaseEntity::SUB_Remove );
    pev->nextthink = gpGlobals->time + .1;
 }
 

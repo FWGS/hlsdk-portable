@@ -12,6 +12,8 @@
 *   without written permission from Valve LLC.
 *
 ****/
+#ifndef UTIL_H
+#define UTIL_H
 //
 // Misc utility code
 //
@@ -585,3 +587,4 @@ void UTIL_Speak_2_l33t( char *szTarget, char *szString );
 void UTIL_SayTime( void );
 int UTIL_axtoi( char *hexStg );
 // BMOD End - Custom UTIL functions
+#endif

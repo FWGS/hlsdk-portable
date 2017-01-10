@@ -107,7 +107,7 @@ void BMODSquidSpit::Shoot( entvars_t *Owner, Vector vecStart, Vector vecVelocity
 	pSpit->pev->owner = ENT(Owner);
         pSpit->pevOwner = Owner;
 
-        pSpit->SetThink ( Animate );
+        pSpit->SetThink( &BMODSquidSpit::Animate );
         pSpit->pev->nextthink = gpGlobals->time + 0.1;
 }
 
@@ -157,7 +157,7 @@ void BMODSquidSpit::Touch ( CBaseEntity *pOther )
 		ApplyMultiDamage( pev, pevOwner );
 	}
 
-        SetThink ( SUB_Remove );
+        SetThink( &CBaseEntity::SUB_Remove );
         pev->nextthink = gpGlobals->time;
 }
 

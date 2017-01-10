@@ -43,7 +43,7 @@ class CSqueakGrenade : public CGrenade
 	void Killed( entvars_t *pevAttacker, int iGib );
 	void GibMonster( void );
 
-	CBaseEntity *CSqueakGrenade :: BMOD_BestVisibleEnemy ( void );
+	CBaseEntity *BMOD_BestVisibleEnemy( void );
 
 	virtual int		Save( CSave &save ); 
 	virtual int		Restore( CRestore &restore );

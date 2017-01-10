@@ -296,7 +296,7 @@ void Host_Say( edict_t *pEntity, int teamonly )
 	if( (int)strlen( p ) > j )
 		p[j] = 0;
 
-	/ BMOD Start - Llamas!!
+	// BMOD Start - Llamas!!
 	if( ( (CBasePlayer*)CBasePlayer::Instance( pEntity ) )->m_IsLlama )
 	{
 		switch( RANDOM_LONG( 0, 3 ) )

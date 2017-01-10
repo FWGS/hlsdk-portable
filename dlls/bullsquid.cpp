@@ -71,7 +71,7 @@ public:
 	int m_maxFrame;
 };
 
-LINK_ENTITY_TO_CLASS( squidspit, CSquidSpit )
+LINK_ENTITY_TO_CLASS( csquidspit, CSquidSpit )
 
 TYPEDESCRIPTION	CSquidSpit::m_SaveData[] =
 {
@@ -83,7 +83,7 @@ IMPLEMENT_SAVERESTORE( CSquidSpit, CBaseEntity )
 void CSquidSpit::Spawn( void )
 {
 	pev->movetype = MOVETYPE_FLY;
-	pev->classname = MAKE_STRING( "squidspit" );
+	pev->classname = MAKE_STRING( "csquidspit" );
 
 	pev->solid = SOLID_BBOX;
 	pev->rendermode = kRenderTransAlpha;

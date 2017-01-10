@@ -12,6 +12,8 @@
 *   without written permission from Valve LLC.
 *
 ****/
+#ifndef CHORNET_H
+#define CHORNET_H
 //=========================================================
 // Hornets
 //=========================================================
@@ -55,3 +57,4 @@ public:
 	int m_iHornetType;
 	float m_flFlySpeed;
 };
+#endif

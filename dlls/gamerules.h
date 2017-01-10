@@ -12,6 +12,8 @@
 *   without written permission from Valve LLC.
 *
 ****/
+#ifndef GAMERULES_H
+#define GAMERULES_H
 //=========================================================
 // GameRules
 //=========================================================
@@ -378,3 +380,4 @@ protected:
 };
 
 extern DLL_GLOBAL CGameRules *g_pGameRules;
+#endif

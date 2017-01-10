@@ -45,7 +45,7 @@ void CBoxMarker :: Spawn( void )
 	pev->movetype = MOVETYPE_FLY;
 	pev->solid = SOLID_NOT;
 
-	SetThink( PowerupThink );
+	SetThink( &CBoxMarker::PowerupThink );
 	pev->nextthink = gpGlobals->time + RANDOM_FLOAT(.1, 1);
 
 	m_vecExtents = Vector (16, 16, 16);

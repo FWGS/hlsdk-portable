@@ -22,6 +22,7 @@
 extern enginefuncs_t g_engfuncs;
 
 // The actual engine callbacks
+#define ADD_SERVER_COMMAND	(*g_engfuncs.pfnAddServerCommand)
 #define GETPLAYERUSERID (*g_engfuncs.pfnGetPlayerUserId)
 #define PRECACHE_MODEL	(*g_engfuncs.pfnPrecacheModel)
 #define PRECACHE_SOUND	(*g_engfuncs.pfnPrecacheSound)

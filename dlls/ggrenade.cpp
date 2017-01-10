@@ -63,12 +63,12 @@ void CGrenade::Explode( TraceResult *pTrace, int bitsDamageType )
 		pev->nextthink = gpGlobals->time + 0.1;
 		pev->dmg = 150;
 		m_iMegaSmokeFrame = 0;
-		SetThink( MegaSmoke );
+		SetThink( &CGrenade::MegaSmoke );
 	}
 	else
 	{
 		pev->nextthink = gpGlobals->time + 0.3;
-		SetThink( Smoke );
+		SetThink( &CGrenade::Smoke );
 	}
 	// BMOD End - Grenade Rune
 

@@ -76,7 +76,7 @@ void CZapRift::Spawn( void )
         m_pSprite->SetTransparency( kRenderGlow, 255, 255, 255, 180, kRenderFxNoDissipation );
         m_pSprite->pev->spawnflags |= SF_SPRITE_TEMPORARY;
 
-        SetThink ( Animate );
+        SetThink( &CZapRift::Animate );
         pev->nextthink = gpGlobals->time + 0.1;
         m_fLifeSpan = gpGlobals->time + 3;
         m_fNextElectrify = gpGlobals->time + 0.1;
@@ -104,7 +104,7 @@ void CZapRift::Animate( void )
         {
 			pev->effects |= EF_NODRAW;
             m_pSprite->Expand( 10, 100 );        
-            SetThink(SUB_Remove);
+            SetThink( &CBaseEntity::SUB_Remove );
 			pev->nextthink = gpGlobals->time + 5;
         }
 
@@ -255,7 +255,7 @@ void CZapBounce::Spawn( void )
 		m_iBounce = 5;
 		m_bFirstZap = TRUE;
 
-        SetThink ( BounceThink );
+        SetThink( &CZapBounce::BounceThink );
         pev->nextthink = gpGlobals->time + 0.2;       
 
         EMIT_SOUND_DYN( ENT(pev), CHAN_WEAPON, "debris/zap4.wav", 1, ATTN_NORM, 0,100 );
@@ -346,7 +346,7 @@ void CZapBounce::BounceThink( void )
 		if (m_iBounce < 1)
 		{
 			// UTIL_ClientPrintAll( HUD_PRINTTALK, "<SERVER> Zap bounce point destroyed.\n");
-            SetThink(SUB_Remove);
+			SetThink( &CBaseEntity::SUB_Remove );
 			pev->nextthink = gpGlobals->time + .1;
 			return;
 		}

@@ -57,10 +57,10 @@ void CRune::Spawn( void )
 	
 	UTIL_SetOrigin( pev, pev->origin );
 	UTIL_SetSize(pev, Vector(-16, -16, 0), Vector(16, 16, 16));
-	SetTouch(RuneTouch);
+	SetTouch( &CRune::RuneTouch );
 
 	pev->effects |= EF_NODRAW;
-	SetThink ( Materialize );
+	SetThink( &CRune::Materialize );
 	pev->nextthink = gpGlobals->time + RANDOM_FLOAT(.5, 2); 	
 
 	if (DROP_TO_FLOOR(ENT(pev)) == 0)
@@ -112,9 +112,9 @@ CBaseEntity* CRune::Respawn( void )
 	pev->effects |= EF_NODRAW;
 
 	if (m_randomize)
-		SetThink ( MaterializeRandom );
+		SetThink( &CRune::MaterializeRandom );
 	else
-		SetThink ( Materialize );
+		SetThink( &CRune::Materialize );
 
 	return this;
 }
@@ -203,7 +203,7 @@ void CRune::Materialize( void )
 		pev->effects &= ~EF_NODRAW;
 		pev->effects |= EF_MUZZLEFLASH;
 
-		SetTouch( RuneTouch );
+		SetTouch( &CRune::RuneTouch );
 	}
 	// EMIT_SOUND_DYN( ENT(pev), CHAN_WEAPON, "buttons/blip2.wav", 1, ATTN_NORM, 0, 150 );
 	pev->nextthink = gpGlobals->time + 2;

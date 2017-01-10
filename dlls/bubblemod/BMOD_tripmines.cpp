@@ -82,7 +82,7 @@ void CTripmineGrenade::FlashBang( void )
 {
 #define FLASH_RANGE 600
 	pev->nextthink = gpGlobals->time + 0.3;
-	SetThink( Smoke );
+	SetThink( &CTripmineGrenade::Smoke );
 
 	// Find all players in range
 	CBaseEntity *pEntity = NULL;

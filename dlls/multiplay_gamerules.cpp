@@ -1811,7 +1811,8 @@ int CountPlayers( void )
 
 	for( int i = 1; i <= gpGlobals->maxClients; i++ )
 	{
-		CBaseEntity *pEnt = UTIL_PlayerByIndex( i );
+		//CBaseEntity *pEnt = UTIL_PlayerByIndex( i );
+		CBasePlayer *pEnt = (CBasePlayer*)UTIL_PlayerByIndex( i );
 
 		// BMOD Edit - Only count connected players.
 		//if( pEnt )

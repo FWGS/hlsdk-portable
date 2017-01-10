@@ -12,6 +12,8 @@
 *   use or distribution of this code by or to any unlicensed person is illegal.
 *
 ****/
+#ifndef NODES_H
+#define NODES_H
 //=========================================================
 // nodes.h
 //=========================================================
@@ -370,3 +372,4 @@ enum
 };
 
 extern CGraph WorldGraph;
+#endif

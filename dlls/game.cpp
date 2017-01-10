@@ -1089,7 +1089,7 @@ void BModCmd_AdminSay( void )
 	char	text[128];
 	const char *cpSay = "say";
 	const char *cpSayTeam = "say_team";
-	const char *pcmd = CMD_ARGV(0);
+	const char *pc, *pcmd = CMD_ARGV(0);
 
 	// We can get a raw string now, without the "say " prepended
 	if( CMD_ARGC() < 2 )
@@ -1101,7 +1101,7 @@ void BModCmd_AdminSay( void )
 	p = (char *)CMD_ARGS();
 
 	// make sure the text has content
-	for( char *pc = p; pc != NULL && *pc != 0; pc++ )
+	for( pc = p; pc != NULL && *pc != 0; pc++ )
 	{
 		if( isprint( *pc ) && !isspace( *pc ) )
 		{
@@ -1137,7 +1137,7 @@ void BModCmd_AdminWhisper( void )
 	char	text[128];
 	const char *cpSay = "say";
 	const char *cpSayTeam = "say_team";
-	const char *pcmd = CMD_ARGV( 0 );
+	const char *pc, *pcmd = CMD_ARGV( 0 );
 
 	// We can get a raw string now, without the "say " prepended
 	if( CMD_ARGC() < 3 )
@@ -1164,7 +1164,7 @@ void BModCmd_AdminWhisper( void )
 		p++;
 
 	// make sure the text has content
-	for( char *pc = p; pc != NULL && *pc != 0; pc++ )
+	for( pc = p; pc != NULL && *pc != 0; pc++ )
 	{
 		if( isprint( *pc ) && !isspace( *pc ) )
 		{
@@ -1229,7 +1229,7 @@ void BModCmd_ShowSpawns( void )
 void BModCmd_SpeakAll( void )
 {
 	int	j;
-	char	*p;
+	char	*p, *pc;
 	char	text[128];
 
 	if( CMD_ARGC() < 2 )
@@ -1248,7 +1248,7 @@ void BModCmd_SpeakAll( void )
 	}
 
 	// make sure the text has content
-	for( char *pc = p; pc != NULL && *pc != 0; pc++ )
+	for( pc = p; pc != NULL && *pc != 0; pc++ )
 	{
 		if( isprint( *pc ) && !isspace( *pc ) )
 		{
