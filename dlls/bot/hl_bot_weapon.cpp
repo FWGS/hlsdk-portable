@@ -432,14 +432,22 @@ const float minEquipInterval = 5.0f;
 void CHLBot::EquipBestWeapon(bool mustEquip)
 {
 	// throttle how often equipping is allowed
-	if (!mustEquip && m_equipTimer.GetElapsedTime() < minEquipInterval)
-		return;
+//	if (!mustEquip && m_equipTimer.GetElapsedTime() < minEquipInterval)
+	//	return;
 
-	CHLBotManager *ctrl = TheHLBots();
-	CBasePlayerWeapon *primary = static_cast<CBasePlayerWeapon *>(m_rgpPlayerItems[ 2 ]);
+	//CHLBotManager *ctrl = TheHLBots();
+	//BasePlayerWeapon *primary = static_cast<CBasePlayerWeapon *>(m_rgpPlayerItems[ 4 ]);
+	EquipKnife();
+	SelectItem( "weapon_mp5" );
+	SelectItem( "weapon_gauss" );
+	SelectItem( "weapon_crossbow");
+	SelectItem( "weapon_rpg" );
+	SelectItem( "weapon_egon" );
+
 	/// TODO: hl
 	// always have a knife
-	EquipKnife();
+	//EquipKnife();
+	//PrintIfWatched( "Selected crowbar!\n");
 }
 
 // Equip our pistol
@@ -448,11 +456,12 @@ void CHLBot::EquipPistol()
 {
 	// throttle how often equipping is allowed
 	if (m_equipTimer.GetElapsedTime() < minEquipInterval)
+	//EquipBestWeapon(true);
 		return;
 
 	if (TheHLBots()->AllowPistols() && !IsUsingPistol())
 	{
-		CBasePlayerWeapon *pistol = static_cast<CBasePlayerWeapon *>(m_rgpPlayerItems[ 1 ]);
+		CBasePlayerWeapon *pistol = static_cast<CBasePlayerWeapon *>(m_rgpPlayerItems[ 2 ]);
 		DoEquip(pistol);
 	}
 }
@@ -463,7 +472,7 @@ void CHLBot::EquipKnife()
 {
 	if (!IsUsingKnife())
 	{
-		CBasePlayerWeapon *knife = static_cast<CBasePlayerWeapon *>(m_rgpPlayerItems[ 0 ]);
+		CBasePlayerWeapon *knife = static_cast<CBasePlayerWeapon *>(m_rgpPlayerItems[ 1 ]);
 		if (knife != NULL)
 		{
 			SelectItem(STRING(knife->pev->classname));
@@ -475,7 +484,7 @@ void CHLBot::EquipKnife()
 
 bool CHLBot::HasGrenade() const
 {
-	CBasePlayerWeapon *grenade = static_cast<CBasePlayerWeapon *>(m_rgpPlayerItems[ 4 ]);
+	CBasePlayerWeapon *grenade = static_cast<CBasePlayerWeapon *>(m_rgpPlayerItems[ 5 ]);
 	return grenade != NULL;
 }
 
@@ -490,18 +499,10 @@ bool CHLBot::EquipGrenade(bool noSmoke)
 	if (IsUsingGrenade())
 		return true;
 
-	if (HasGrenade())
+	//if (HasGrenade())
 	{
-		CBasePlayerWeapon *grenade = static_cast<CBasePlayerWeapon *>(m_rgpPlayerItems[ 4 ]);
-
-		if (grenade != NULL)
-		{
-			//if (noSmoke && grenade->m_iId == WEAPON_SMOKEGRENADE)
-				//return false;
-
-			SelectItem(STRING(grenade->pev->classname));
+			SelectItem( "weapon_handgrenade" );
 			return true;
-		}
 	}
 
 	return false;
@@ -525,8 +526,8 @@ bool CHLBot::IsUsingPistol() const
 {
 	CBasePlayerWeapon *weapon = GetActiveWeapon();
 
-	//if (weapon != NULL && weapon->IsPistol())
-	//	return true;
+	if (weapon != NULL && ( weapon->m_iId == WEAPON_GLOCK || weapon->m_iId == WEAPON_PYTHON ) )
+		return true;
 
 	return false;
 }
@@ -787,6 +788,7 @@ void CHLBot::SilencerCheck()
 
 void CHLBot::OnTouchingWeapon(CWeaponBox *box)
 {
+#if 0
 	CBasePlayerItem *droppedGun = dynamic_cast<CBasePlayerItem *>(box->m_rgpPlayerItems[ 2 ]);
 
 	// right now we only care about primary weapons on the ground
@@ -827,6 +829,8 @@ void CHLBot::OnTouchingWeapon(CWeaponBox *box)
 			}
 		}
 	}
+#endif
+	EquipBestWeapon(true);
 }
 
 // Return true if a friend is in our weapon's way

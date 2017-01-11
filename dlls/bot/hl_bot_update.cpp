@@ -150,6 +150,7 @@ void CHLBot::Upkeep()
 }
 
 // Heavyweight processing, invoked less often
+CBaseEntity *FindNearestWeapon( CBaseEntity *start, Vector &origin, float radius );
 
 void CHLBot::Update()
 {
@@ -348,14 +349,16 @@ void CHLBot::Update()
 		{
 			if (GetEnemy() == NULL || !IsAttacking() || threat != GetEnemy())
 			{
-				if (IsUsingKnife() && IsHiding())
+				if (IsUsingKnife() )
 				{
 					// if hiding with a knife, wait until threat is close
-					const float knifeAttackRange = 250.0f;
-					if ((pev->origin - threat->pev->origin).IsLengthLessThan(knifeAttackRange))
-					{
+					const float knifeAttackRange = 150.0f;
+					m_repathTimer.Invalidate();
+					if ((pev->origin - threat->pev->origin).IsLengthLessThan(knifeAttackRange) || (pev->origin - threat->pev->origin).IsLengthLessThan(220) && ComputePath(TheNavAreaGrid.GetNearestNavArea(&threat->pev->origin), &threat->pev->origin, FASTEST_ROUTE) )
 						Attack(threat);
-					}
+					else
+						Hide();
+
 				}
 				else
 				{
@@ -413,6 +416,26 @@ void CHLBot::Update()
 	}
 	else
 	{
+		if( IsHunting() && ( IsUsingKnife() || IsUsingPistol() ) )
+		{
+			m_repathTimer.Invalidate();
+			EquipGrenade();
+			CBaseEntity *weapon = NULL;
+			while( weapon = FindNearestWeapon( weapon, pev->origin, 1000 ) )
+			{
+				if( ComputePath(TheNavAreaGrid.GetNearestNavArea(&weapon->pev->origin), &weapon->pev->origin, SAFEST_ROUTE) )
+				{
+					MoveTo( &weapon->pev->origin );
+					//return;
+					PrintIfWatched("^2Trying to catch %s\n", STRING( weapon->pev->classname) );
+					break;
+				}
+				PrintIfWatched("^2Can't find path to %s\n", STRING( weapon->pev->classname) );
+
+			}
+			if( weapon )
+				return;
+		}
 		m_isEnemyVisible = false;
 	}
 
@@ -466,6 +489,7 @@ void CHLBot::Update()
 	if (IsHunting() && IsWellPastSafe() && IsUsingGrenade())
 	{
 		EquipBestWeapon(MUST_EQUIP);
+
 	}
 
 	// check if our weapon is totally out of ammo

@@ -121,6 +121,18 @@ void AttackState::StopAttacking(CHLBot *me)
 	}
 }
 
+CBaseEntity *FindNearestWeapon( CBaseEntity *start, Vector &origin, float radius )
+{
+	while( start = UTIL_FindEntityInSphere( start, origin, radius ) )
+	{
+		if( !strncmp( STRING( start->pev->classname ), "weapon_", 6 ) )
+			if( !(start->pev->effects & EF_NODRAW) )
+				return start;
+	}
+	ALERT( at_console, "^1Failed to find weapon in range %f\n", radius );
+	return NULL;
+}
+
 // Perform attack behavior
 
 void AttackState::OnUpdate(CHLBot *me)
@@ -182,8 +194,8 @@ void AttackState::OnUpdate(CHLBot *me)
 	if (me->IsUsingKnife())
 	{
 		// can't crouch and hold with a knife
-		m_crouchAndHold = false;
-		me->StandUp();
+		//m_crouchAndHold = false;
+		//me->StandUp();
 
 		// if we are using a knife and our prey is looking towards us, run at him
 		if (me->IsPlayerFacingMe(enemy))
@@ -216,7 +228,27 @@ void AttackState::OnUpdate(CHLBot *me)
 
 		if (repath && m_repathTimer.IsElapsed())
 		{
-			me->ComputePath(TheNavAreaGrid.GetNearestNavArea(&enemy->pev->origin), &enemy->pev->origin, FASTEST_ROUTE);
+			if( !me->ComputePath(TheNavAreaGrid.GetNearestNavArea(&enemy->pev->origin), &enemy->pev->origin, FASTEST_ROUTE) );
+			{
+				//me->EquipPistol();
+				me->m_repathTimer.Invalidate();
+				me->EquipGrenade();
+				CBaseEntity *weapon = NULL;
+				while( weapon = FindNearestWeapon( weapon, me->pev->origin, 500 ) )
+				{
+					if( me->ComputePath(TheNavAreaGrid.GetNearestNavArea(&weapon->pev->origin), &weapon->pev->origin, SAFEST_ROUTE) )
+					{
+						me->MoveTo( &weapon->pev->origin );
+						//return;
+						me->PrintIfWatched("^2Trying to catch %s\n", STRING( weapon->pev->classname) );
+						break;
+					}
+					me->PrintIfWatched("^2Can't find path to %s\n", STRING( weapon->pev->classname) );
+
+				}
+				if( !weapon)
+					me->Hide();
+			}
 
 			const float repathInterval = 0.5f;
 			m_repathTimer.Start(repathInterval);
@@ -236,7 +268,7 @@ void AttackState::OnUpdate(CHLBot *me)
 	{
 		// if we have a sniper rifle and our enemy is too close, switch to pistol
 		// NOTE: Must be larger than NO_ZOOM range in AdjustZoom()
-		const float sniperMinRange = 310.0f;
+		const float sniperMinRange = 110.0f;
 		if ((enemy->pev->origin - me->pev->origin).IsLengthLessThan(sniperMinRange))
 			me->EquipPistol();
 	}
@@ -253,10 +285,10 @@ void AttackState::OnUpdate(CHLBot *me)
 	{
 		// for Scouts and AWPs, we need to wait for zoom to resume
 //		if (me->m_bResumeZoom)
-		{
+		/*{
 			m_scopeTimestamp = gpGlobals->time;
 			return;
-		}
+		}*/
 
 		Vector toAimSpot3D = me->m_aimSpot - me->pev->origin;
 		float targetRange = toAimSpot3D.Length();

@@ -67,6 +67,7 @@ void CHLBot::UseEntity(CBaseEntity *entity)
 	m_useEntityState.SetEntity(entity);
 	SetState(&m_useEntityState);
 }
+CBaseEntity *FindNearestWeapon( CBaseEntity *start, Vector &origin, float radius );
 
 // DEPRECATED: Use TryToHide() instead.
 // Move to a hiding place.
@@ -108,6 +109,24 @@ void CHLBot::Hide(CNavArea *searchFromArea, float duration, float hideRange, boo
 	if (pos == NULL)
 	{
 		PrintIfWatched("No available hiding spots.\n");
+		//me->EquipPistol();
+		m_repathTimer.Invalidate();
+		EquipGrenade();
+		CBaseEntity *weapon = NULL;
+		while( weapon = FindNearestWeapon( weapon, pev->origin, 1000 ) )
+		{
+			if( ComputePath(TheNavAreaGrid.GetNearestNavArea(&weapon->pev->origin), &weapon->pev->origin, SAFEST_ROUTE) )
+			{
+				MoveTo( &weapon->pev->origin );
+				//return;
+				PrintIfWatched("^2Trying to catch %s\n", STRING( weapon->pev->classname) );
+				break;
+			}
+			PrintIfWatched("^2Can't find path to %s\n", STRING( weapon->pev->classname) );
+
+		}
+	if( weapon )
+		return;
 		// hide at our current position
 		useSpot = pev->origin;
 	}
@@ -122,8 +141,30 @@ void CHLBot::Hide(CNavArea *searchFromArea, float duration, float hideRange, boo
 	if (ComputePath(TheNavAreaGrid.GetNavArea(&useSpot), &useSpot, FASTEST_ROUTE) == false)
 	{
 		PrintIfWatched("Can't pathfind to hiding spot\n");
-		Idle();
-		return;
+
+			//me->EquipPistol();
+			m_repathTimer.Invalidate();
+			EquipGrenade();
+			CBaseEntity *weapon = NULL;
+			while( weapon = FindNearestWeapon( weapon, pev->origin, 1000 ) )
+			{
+				if( ComputePath(TheNavAreaGrid.GetNearestNavArea(&weapon->pev->origin), &weapon->pev->origin, SAFEST_ROUTE) )
+				{
+					MoveTo( &weapon->pev->origin );
+					//return;
+					PrintIfWatched("^2Trying to catch %s\n", STRING( weapon->pev->classname) );
+					break;
+				}
+				PrintIfWatched("^2Can't find path to %s\n", STRING( weapon->pev->classname) );
+
+			}
+		if( !weapon )
+		{
+			Hunt();
+			//EquipPistol();
+			EquipGrenade();
+			return;
+		}
 	}
 
 	SetState(&m_hideState);
@@ -153,8 +194,29 @@ void CHLBot::Hide(const Vector *hidingSpot, float duration, bool holdPosition)
 	if (ComputePath(hideArea, hidingSpot, FASTEST_ROUTE) == false)
 	{
 		PrintIfWatched("Can't pathfind to hiding spot\n");
+		//me->EquipPistol();
+		m_repathTimer.Invalidate();
+		EquipGrenade();
+		CBaseEntity *weapon = NULL;
+		while( weapon = FindNearestWeapon( weapon, pev->origin, 1000 ) )
+		{
+			if( ComputePath(TheNavAreaGrid.GetNearestNavArea(&weapon->pev->origin), &weapon->pev->origin, SAFEST_ROUTE) )
+			{
+				MoveTo( &weapon->pev->origin );
+				//return;
+				PrintIfWatched("^2Trying to catch %s\n", STRING( weapon->pev->classname) );
+				break;
+			}
+			PrintIfWatched("^2Can't find path to %s\n", STRING( weapon->pev->classname) );
+
+		}
+	if( !weapon )
+	{
 		Idle();
+		EquipPistol();
+		EquipGrenade();
 		return;
+	}
 	}
 
 	SetState(&m_hideState);
@@ -194,6 +256,23 @@ bool CHLBot::TryToHide(CNavArea *searchFromArea, float duration, float hideRange
 	if (pos == NULL)
 	{
 		PrintIfWatched("No available hiding spots.\n");
+		//me->EquipPistol();
+		m_repathTimer.Invalidate();
+		EquipGrenade();
+		CBaseEntity *weapon = NULL;
+		while( weapon = FindNearestWeapon( weapon, pev->origin, 1000 ) )
+		{
+			if( ComputePath(TheNavAreaGrid.GetNearestNavArea(&weapon->pev->origin), &weapon->pev->origin, SAFEST_ROUTE) )
+			{
+				MoveTo( &weapon->pev->origin );
+				//return;
+				PrintIfWatched("^2Trying to catch %s\n", STRING( weapon->pev->classname) );
+				break;
+			}
+			PrintIfWatched("^2Can't find path to %s\n", STRING( weapon->pev->classname) );
+
+		}
+	if( !weapon )
 		return false;
 	}
 
@@ -203,6 +282,23 @@ bool CHLBot::TryToHide(CNavArea *searchFromArea, float duration, float hideRange
 	if (ComputePath(TheNavAreaGrid.GetNavArea(pos), pos, FASTEST_ROUTE) == false)
 	{
 		PrintIfWatched("Can't pathfind to hiding spot\n");
+		//me->EquipPistol();
+		m_repathTimer.Invalidate();
+		EquipGrenade();
+		CBaseEntity *weapon = NULL;
+		while( weapon = FindNearestWeapon( weapon, pev->origin, 1000 ) )
+		{
+			if( ComputePath(TheNavAreaGrid.GetNearestNavArea(&weapon->pev->origin), &weapon->pev->origin, SAFEST_ROUTE) )
+			{
+				MoveTo( &weapon->pev->origin );
+				//return;
+				PrintIfWatched("^2Trying to catch %s\n", STRING( weapon->pev->classname) );
+				break;
+			}
+			PrintIfWatched("^2Can't find path to %s\n", STRING( weapon->pev->classname) );
+
+		}
+	if( !weapon )
 		return false;
 	}
 
