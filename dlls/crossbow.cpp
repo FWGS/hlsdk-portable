@@ -22,6 +22,7 @@
 #include "nodes.h"
 #include "player.h"
 #include "gamerules.h"
+#include "bot_exports.h"
 
 #ifndef CLIENT_DLL
 #define BOLT_AIR_VELOCITY	2000
@@ -494,6 +495,8 @@ void CCrossbow::SecondaryAttack()
 
 	pev->nextthink = UTIL_WeaponTimeBase() + 0.1;
 	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1.0;
+	if( TheBots )
+		TheBots->OnEvent( EVENT_WEAPON_ZOOMED, m_pPlayer );
 }
 
 void CCrossbow::Reload( void )
