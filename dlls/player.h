@@ -93,6 +93,8 @@ enum PlayerState
 	STATE_POINT_SELECT
 };
 
+#include "whandle.h"
+ 
 class CBasePlayer : public CBaseMonster
 {
 public:
@@ -173,10 +175,10 @@ public:
 	int			m_iClientFOV;	// client's known FOV
 
 	// usable player items 
-	CBasePlayerItem	*m_rgpPlayerItems[MAX_ITEM_TYPES];
-	CBasePlayerItem *m_pActiveItem;
-	CBasePlayerItem *m_pClientActiveItem;  // client version of the active item
-	CBasePlayerItem *m_pLastItem;
+	EHBasePlayerItem	m_rgpPlayerItems[MAX_ITEM_TYPES];
+	EHBasePlayerItem m_pActiveItem;
+	EHBasePlayerItem m_pClientActiveItem;  // client version of the active item
+	EHBasePlayerItem m_pLastItem;
 
 	// shared ammo slots
 	int	m_rgAmmo[MAX_AMMO_SLOTS];
