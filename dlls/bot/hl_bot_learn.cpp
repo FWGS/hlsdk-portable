@@ -1,6 +1,6 @@
 #include "bot_common.h"
 
-const float updateTimesliceDuration = 0.5f;
+const float updateTimesliceDuration = 0.1f;
 
 int _navAreaCount = 0;
 int _currentIndex = 0;
@@ -142,11 +142,12 @@ static void TextProgressToAllPlayers(const char *message)
 void drawProgressMeter(float progress, char *title)
 {
 	char text[256];
+	progress *= 70;
 	Q_sprintf( text, "%s\n", title );
 	char *pProgress = text + Q_strlen( text );
 	pProgress[0] = '[';
 	for( int i=1; i<71; i++ )
-		if( i < progress * 0.7 )
+		if( i < progress )
 			pProgress[i] = '#';
 		else
 			pProgress[i] = '_';
@@ -442,7 +443,7 @@ void CHLBot::UpdateAnalyzeAlphaProcess()
 	{
 		if (AnalyzeAlphaStep() == false)
 		{
-			drawProgressMeter(50, "Analyzing hiding spots...");
+			drawProgressMeter(0.5, "Analyzing hiding spots...");
 			StartAnalyzeBetaProcess();
 			return;
 		}
@@ -482,7 +483,7 @@ void CHLBot::UpdateAnalyzeBetaProcess()
 	{
 		if (AnalyzeBetaStep() == false)
 		{
-			drawProgressMeter(100, "Analyzing approach points...");
+			drawProgressMeter(0.5, "Analyzing approach points...");
 			StartSaveProcess();
 			return;
 		}
