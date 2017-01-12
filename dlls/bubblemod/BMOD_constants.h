@@ -42,7 +42,7 @@
 #define BMOD_BRANCH_NAME	"Custom Bubblemod"
 
 // The version of your branch
-#define BMOD_BRANCH_VERSION	"1.0.0"
+#define BMOD_BRANCH_VERSION	"2.2.3"
 
 // The URL of the website describing your branch
 #define BMOD_BRANCH_URL		"http://www.bubblemod.org"
@@ -52,10 +52,30 @@
 
 #define BMOD_VERSION			"2.2.3a"
 
-#ifdef _WIN32
+#if defined(_WIN32) && defined(_MSC_VER)
 #define BMOD_PLATFORM			"WIN32"
+#elif defined(_WIN32) && defined(__MINGW32_)
+#define BMOD_PLATFORM			"WIN32-MinGW"
+#elif defined(__ANDROID__)
+#define BMOD_PLATFORM			"Android"
+#elif defined(__APPLE__)
+#define BMOD_PLATFORM			"Apple"
+#elif defined(__FreeBSD__)
+#define BMOD_PLATFORM			"FreeBSD"
+#elif defined(__NetBSD__)
+#define BMOD_PLATFORM			"NetBSD"
+#elif defined(__OpenBSD__)
+#define BMOD_PLATFORM			"OpenBSD"
 #else
 #define BMOD_PLATFORM			"Linux"
+#endif
+
+#if defined(__amd64__) || defined(_M_X64)
+#define BMOD_ARCH			"amd64"
+#elif defined(__i386__) || defined(_X86_) || defined(_M_IX86)
+#define BMOD_ARCH			"i386"
+#elif defined(__arm__) || defined(_M_ARM)
+#define BMOD_ARCH			"arm"
 #endif
 
 #endif
