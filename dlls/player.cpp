@@ -486,7 +486,7 @@ int CBasePlayer::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 		else
 		{
 			pev->armorvalue -= flArmor;
-			flArmorDone = pev->armorvalue;
+			flArmorDone = flArmor;
 		}
 		flDamage = flNew;
 	}
