@@ -58,6 +58,9 @@ extern cvar_t mp_coop_reconnect_hack;
 extern cvar_t mp_coop_noangry;
 extern cvar_t mp_spectator;
 
+extern cvar_t sentences_txt;
+extern cvar_t materials_txt;
+
 extern bool g_fSavedDuck;
 extern bool g_fPause;
 
