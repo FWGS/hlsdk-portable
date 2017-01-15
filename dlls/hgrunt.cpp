@@ -40,6 +40,7 @@
 #include	"soundent.h"
 #include	"effects.h"
 #include	"customentity.h"
+#include	"hgrunt.h"
 
 int g_fGruntQuestion;				// true if an idle grunt asked a question. Cleared when someone answers.
 
@@ -118,73 +119,6 @@ enum
 // monster-specific conditions
 //=========================================================
 #define bits_COND_GRUNT_NOFIRE	( bits_COND_SPECIAL1 )
-
-class CHGrunt : public CSquadMonster
-{
-public:
-	void Spawn( void );
-	void Precache( void );
-	void SetYawSpeed( void );
-	int Classify( void );
-	int ISoundMask( void );
-	void HandleAnimEvent( MonsterEvent_t *pEvent );
-	BOOL FCanCheckAttacks( void );
-	BOOL CheckMeleeAttack1( float flDot, float flDist );
-	BOOL CheckRangeAttack1( float flDot, float flDist );
-	BOOL CheckRangeAttack2( float flDot, float flDist );
-	void CheckAmmo( void );
-	void SetActivity( Activity NewActivity );
-	void StartTask( Task_t *pTask );
-	void RunTask( Task_t *pTask );
-	void DeathSound( void );
-	void PainSound( void );
-	void IdleSound( void );
-	Vector GetGunPosition( void );
-	void Shoot( void );
-	void Shotgun( void );
-	void PrescheduleThink( void );
-	void GibMonster( void );
-	void SpeakSentence( void );
-
-	int Save( CSave &save ); 
-	int Restore( CRestore &restore );
-
-	CBaseEntity *Kick( void );
-	Schedule_t *GetSchedule( void );
-	Schedule_t *GetScheduleOfType( int Type );
-	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType);
-	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
-
-	int IRelationship( CBaseEntity *pTarget );
-
-	BOOL FOkToSpeak( void );
-	void JustSpoke( void );
-
-	CUSTOM_SCHEDULES
-	static TYPEDESCRIPTION m_SaveData[];
-
-	// checking the feasibility of a grenade toss is kind of costly, so we do it every couple of seconds,
-	// not every server frame.
-	float m_flNextGrenadeCheck;
-	float m_flNextPainTime;
-	float m_flLastEnemySightTime;
-
-	Vector m_vecTossVelocity;
-
-	BOOL m_fThrowGrenade;
-	BOOL m_fStanding;
-	BOOL m_fFirstEncounter;// only put on the handsign show in the squad's first encounter.
-	int m_cClipSize;
-
-	int m_voicePitch;
-
-	int m_iBrassShell;
-	int m_iShotgunShell;
-
-	int m_iSentence;
-
-	static const char *pGruntSentences[];
-};
 
 LINK_ENTITY_TO_CLASS( monster_human_grunt, CHGrunt )
 
@@ -2343,15 +2277,6 @@ Schedule_t *CHGrunt::GetScheduleOfType( int Type )
 // CHGruntRepel - when triggered, spawns a monster_human_grunt
 // repelling down a line.
 //=========================================================
-
-class CHGruntRepel : public CBaseMonster
-{
-public:
-	void Spawn( void );
-	void Precache( void );
-	void EXPORT RepelUse ( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
-	int m_iSpriteTexture;	// Don't save, precache
-};
 
 LINK_ENTITY_TO_CLASS( monster_grunt_repel, CHGruntRepel )
 

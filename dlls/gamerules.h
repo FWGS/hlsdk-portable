@@ -360,4 +360,28 @@ protected:
 	void SendMOTDToClient( edict_t *client );
 };
 
+//=========================================================
+// CGearboxRules - rules for the single player 
+// Half-Life : Opposing Force game.
+//=========================================================
+class CGearboxRules : public CHalfLifeRules
+{
+public:
+	CGearboxRules( void );
+
+	virtual void RefreshSkillData( void );
+};
+
+//=========================================================
+// CGearboxMultiplay - rules for the basic DM/TDM
+// Half-Life : Opposing Force game.
+//=========================================================
+class CGearboxMultiplay : public CHalfLifeMultiplay
+{
+public:
+	CGearboxMultiplay();
+
+	virtual void RefreshSkillData( void );
+};
+
 extern DLL_GLOBAL CGameRules *g_pGameRules;

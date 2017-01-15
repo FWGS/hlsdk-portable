@@ -1503,7 +1503,14 @@ void UTIL_Remove( CBaseEntity *pEntity )
 	if( !pEntity )
 		return;
 
+	// Call pre removal method.
+	pEntity->PreRemoval();
+
 	pEntity->UpdateOnRemove();
+
+	// Call post removal method.
+	pEntity->PostRemoval();
+
 	pEntity->pev->flags |= FL_KILLME;
 	pEntity->pev->targetname = 0;
 }

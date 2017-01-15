@@ -30,6 +30,7 @@
 #include "soundent.h"
 #include "decals.h"
 #include "gamerules.h"
+#include "gearbox_weapons.h"
 
 extern CGraph WorldGraph;
 extern int gEvilImpulse101;
@@ -45,6 +46,13 @@ DLL_GLOBAL	short g_sModelIndexWExplosion;// holds the index for the underwater e
 DLL_GLOBAL	short g_sModelIndexBubbles;// holds the index for the bubbles model
 DLL_GLOBAL	short g_sModelIndexBloodDrop;// holds the sprite index for the initial blood
 DLL_GLOBAL	short g_sModelIndexBloodSpray;// holds the sprite index for splattered blood
+
+DLL_GLOBAL	short g_sModelIndexSpore1; // holds the index for the spore explosion 1
+DLL_GLOBAL	short g_sModelIndexSpore2; // holds the index for the spore explosion 2
+DLL_GLOBAL	short g_sModelIndexSpore3; // holds the index for the spore explosion 3
+
+DLL_GLOBAL	short g_sModelIndexBigSpit; // holds the index for the bullsquid big spit.
+DLL_GLOBAL	short g_sModelIndexTinySpit; // holds the index for the bullsquid tiny spit.
 
 ItemInfo CBasePlayerItem::ItemInfoArray[MAX_WEAPONS];
 AmmoInfo CBasePlayerItem::AmmoInfoArray[MAX_AMMO_SLOTS];
@@ -169,6 +177,11 @@ void DecalGunshot( TraceResult *pTrace, int iBulletType )
 		case BULLET_MONSTER_MP5:
 		case BULLET_PLAYER_BUCKSHOT:
 		case BULLET_PLAYER_357:
+		case BULLET_MONSTER_357:
+		case BULLET_PLAYER_556:
+		case BULLET_MONSTER_556:
+		case BULLET_PLAYER_762:
+		case BULLET_MONSTER_762:
 		default:
 			// smoke and decal
 			UTIL_GunshotDecalTrace( pTrace, DamageDecal( pEntity, DMG_BULLET ) );
@@ -351,6 +364,21 @@ void W_Precache( void )
 	// hornetgun
 	UTIL_PrecacheOtherWeapon( "weapon_hornetgun" );
 
+	UTIL_PrecacheOtherWeapon( "weapon_displacer" );
+	UTIL_PrecacheOtherWeapon( "weapon_eagle" );
+	UTIL_PrecacheOtherWeapon( "weapon_grapple" );
+	UTIL_PrecacheOther( "grapple_tonguetip" );
+	UTIL_PrecacheOtherWeapon( "weapon_knife" );
+	UTIL_PrecacheOtherWeapon( "weapon_m249" );
+	UTIL_PrecacheOther( "ammo_556" );
+	UTIL_PrecacheOtherWeapon( "weapon_penguin" );
+	UTIL_PrecacheOtherWeapon( "weapon_pipewrench" );
+	UTIL_PrecacheOtherWeapon( "weapon_shockrifle" );
+	UTIL_PrecacheOtherWeapon( "weapon_sniperrifle" );
+	UTIL_PrecacheOther( "ammo_762" );
+	UTIL_PrecacheOtherWeapon( "weapon_sporelauncher" );
+	UTIL_PrecacheOther( "ammo_spore" );
+
 	if( g_pGameRules->IsDeathmatch() )
 	{
 		UTIL_PrecacheOther( "weaponbox" );// container for dropped deathmatch weapons
@@ -382,6 +410,21 @@ void W_Precache( void )
 	PRECACHE_SOUND( "weapons/bullet_hit2.wav" );	// hit by bullet
 
 	PRECACHE_SOUND( "items/weapondrop1.wav" );// weapon falls to the ground
+
+	// Used by spore grenades.
+	PRECACHE_MODEL( "models/spore.mdl" );
+	g_sModelIndexSpore1 = PRECACHE_MODEL( "sprites/spore_exp_01.spr" );
+	g_sModelIndexSpore2 = PRECACHE_MODEL( "sprites/spore_exp_b_01.spr" );
+	g_sModelIndexSpore3 = PRECACHE_MODEL( "sprites/spore_exp_c_01.spr" );
+
+	g_sModelIndexBigSpit = PRECACHE_MODEL( "sprites/bigspit.spr" );
+	g_sModelIndexTinySpit = PRECACHE_MODEL( "sprites/tinyspit.spr" );
+
+	PRECACHE_SOUND( "weapons/splauncher_impact.wav" );//explosion aftermaths
+
+	PRECACHE_SOUND( "weapons/spore_hit1.wav" );//sporegrenade
+	PRECACHE_SOUND( "weapons/spore_hit2.wav" );//sporegrenade
+	PRECACHE_SOUND( "weapons/spore_hit3.wav" );//sporegrenade
 }
 
 TYPEDESCRIPTION	CBasePlayerItem::m_SaveData[] =
@@ -1527,3 +1570,64 @@ TYPEDESCRIPTION	CSatchel::m_SaveData[] =
 };
 
 IMPLEMENT_SAVERESTORE( CSatchel, CBasePlayerWeapon )
+
+TYPEDESCRIPTION	CDisplacer::m_SaveData[] =
+{
+	DEFINE_FIELD( CDisplacer, m_iFireState, FIELD_INTEGER ),
+	DEFINE_FIELD( CDisplacer, m_iFireMode, FIELD_INTEGER ),
+	DEFINE_FIELD( CDisplacer, m_hTargetEarth, FIELD_CLASSPTR ),
+	DEFINE_FIELD( CDisplacer, m_hTargetXen, FIELD_CLASSPTR ),
+};
+IMPLEMENT_SAVERESTORE( CDisplacer, CBasePlayerWeapon )
+
+TYPEDESCRIPTION	CEagle::m_SaveData[] =
+{
+	DEFINE_FIELD( CEagle, m_fSpotActive, FIELD_INTEGER ),
+};
+IMPLEMENT_SAVERESTORE( CEagle, CBasePlayerWeapon )
+
+TYPEDESCRIPTION CGrapple::m_SaveData[] =
+{
+	DEFINE_FIELD( CGrapple, m_iFirestate, FIELD_INTEGER ),
+	DEFINE_FIELD( CGrapple, m_iHitFlags, FIELD_INTEGER ),
+	DEFINE_FIELD( CGrapple, m_fTipHit, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CGrapple, m_pTongueTip, FIELD_CLASSPTR ),
+	DEFINE_FIELD( CGrapple, m_pBeam, FIELD_CLASSPTR ),
+	DEFINE_FIELD( CGrapple, m_flNextPullSoundTime, FIELD_TIME ),
+	DEFINE_FIELD( CGrapple, m_fPlayPullSound, FIELD_BOOLEAN ),
+};
+IMPLEMENT_SAVERESTORE( CGrapple, CBasePlayerWeapon )
+
+TYPEDESCRIPTION	CM249::m_SaveData[] =
+{
+	DEFINE_FIELD( CM249, m_iReloadState, FIELD_INTEGER ),
+};
+IMPLEMENT_SAVERESTORE( CM249, CBasePlayerWeapon )
+
+
+TYPEDESCRIPTION	CPipeWrench::m_SaveData[] =
+{
+	DEFINE_FIELD( CPipeWrench, m_iFirestate, FIELD_INTEGER ),
+	DEFINE_FIELD( CPipeWrench, m_flHoldStartTime, FIELD_TIME ),
+};
+IMPLEMENT_SAVERESTORE( CPipeWrench, CBasePlayerWeapon )
+
+TYPEDESCRIPTION	CShockrifle::m_SaveData[] =
+{
+	DEFINE_FIELD( CShockrifle, m_fShouldUpdateEffects, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CShockrifle, m_flBeamLifeTime, FIELD_TIME ),
+};
+IMPLEMENT_SAVERESTORE( CShockrifle, CHgun )
+
+TYPEDESCRIPTION	CSniperrifle::m_SaveData[] =
+{
+	DEFINE_FIELD( CSniperrifle, m_fNeedAjustBolt, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CSniperrifle, m_iBoltState, FIELD_INTEGER ),
+};
+IMPLEMENT_SAVERESTORE( CSniperrifle, CBasePlayerWeapon )
+
+TYPEDESCRIPTION	CSporelauncher::m_SaveData[] =
+{
+	DEFINE_FIELD( CSporelauncher, m_iSquidSpitSprite, FIELD_INTEGER ),
+};
+IMPLEMENT_SAVERESTORE( CSporelauncher, CShotgun )

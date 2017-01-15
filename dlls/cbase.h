@@ -230,6 +230,27 @@ public:
 #endif
 
 	void UpdateOnRemove( void );
+	//=====================================================
+	// Use these functions to perform additional cleaning.
+	//=====================================================
+
+	// Called before entity removal.
+	virtual void PreRemoval( void )
+	{
+		return;
+	}
+
+	// Called during removal.
+	virtual void OnRemove( void )
+	{
+		return;
+	}
+
+	// Called after entity removal.
+	virtual void PostRemoval( void )
+	{
+		return;
+	}
 
 	// common member functions
 	void EXPORT SUB_Remove( void );
@@ -340,6 +361,10 @@ public:
 	int ammo_uranium;
 	int ammo_hornets;
 	int ammo_argrens;
+	int ammo_556;
+	int ammo_762;
+	int ammo_shocks;
+	int ammo_spores;
 	//Special stuff for grenades and satchels.
 	float m_flStartThrow;
 	float m_flReleaseThrow;
@@ -669,7 +694,7 @@ public:
 	void RotSpawn( void );
 	virtual void KeyValue( KeyValueData* pkvd);
 
-	void ButtonActivate();
+	virtual void ButtonActivate();
 	void SparkSoundCache( void );
 
 	void EXPORT ButtonShot( void );

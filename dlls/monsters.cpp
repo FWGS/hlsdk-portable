@@ -105,6 +105,17 @@ TYPEDESCRIPTION	CBaseMonster::m_SaveData[] =
 
 	DEFINE_FIELD( CBaseMonster, m_scriptState, FIELD_INTEGER ),
 	DEFINE_FIELD( CBaseMonster, m_pCine, FIELD_CLASSPTR ),
+
+	DEFINE_FIELD( CBaseMonster, m_glowShellStartTime, FIELD_TIME ),
+	DEFINE_FIELD( CBaseMonster, m_glowShellDuration, FIELD_FLOAT ),
+
+	DEFINE_FIELD( CBaseMonster, m_glowShellColor, FIELD_VECTOR ),
+	DEFINE_FIELD( CBaseMonster, m_glowShellUpdate, FIELD_BOOLEAN ),
+
+	DEFINE_FIELD( CBaseMonster, m_prevRenderAmt, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_prevRenderColor, FIELD_VECTOR ),
+	DEFINE_FIELD( CBaseMonster, m_prevRenderFx, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_prevRenderMode, FIELD_INTEGER ),
 };
 
 //IMPLEMENT_SAVERESTORE( CBaseMonster, CBaseToggle )
@@ -516,6 +527,8 @@ CSound *CBaseMonster::PBestScent( void )
 void CBaseMonster::MonsterThink( void )
 {
 	pev->nextthink = gpGlobals->time + 0.1;// keep monster thinking.
+
+	GlowShellUpdate();
 
 	RunAI();
 
@@ -3375,4 +3388,45 @@ BOOL CBaseMonster::ShouldFadeOnDeath( void )
 		return TRUE;
 
 	return FALSE;
+}
+
+void CBaseMonster::GlowShellOn( Vector color, float flDuration )
+{
+	m_prevRenderMode = pev->rendermode;
+	m_prevRenderColor = pev->rendercolor;
+	m_prevRenderAmt = pev->renderamt;
+	m_prevRenderFx = pev->renderfx;
+
+	pev->renderamt = 5;
+	pev->rendercolor = color;
+	pev->renderfx = kRenderFxGlowShell;
+	//pev->rendermode = kRenderGlow;
+
+	m_glowShellColor = color;
+
+	m_glowShellDuration = flDuration;
+	m_glowShellStartTime = gpGlobals->time;
+
+	m_glowShellUpdate = TRUE;
+}
+
+void CBaseMonster::GlowShellOff( void )
+{
+	pev->renderamt = m_prevRenderAmt;
+	pev->rendercolor = m_prevRenderColor;
+	pev->renderfx = m_prevRenderFx;
+	pev->rendermode = m_prevRenderMode;
+
+	m_glowShellDuration = 0.0f;
+	m_glowShellStartTime = 0.0f;
+
+	m_glowShellUpdate = FALSE;
+}
+void CBaseMonster::GlowShellUpdate( void )
+{
+	if( m_glowShellUpdate )
+	{
+		if( ( gpGlobals->time - m_glowShellStartTime ) > m_glowShellDuration )
+			GlowShellOff();
+	}
 }

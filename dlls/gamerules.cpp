@@ -26,6 +26,8 @@
 #include	"skill.h"
 #include	"game.h"
 
+#include	"ctf_gamerules.h"
+
 extern edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer );
 
 DLL_GLOBAL CGameRules *g_pGameRules = NULL;
@@ -222,6 +224,91 @@ void CGameRules::RefreshSkillData ( void )
 	// Sentry Turret
 	gSkillData.sentryHealth = GetSkillCvar( "sk_sentry_health" );
 
+	//
+	// Op4 Monsters
+	//
+	// Otis
+	gSkillData.otisHealth = GetSkillCvar( "sk_otis_health" );
+
+	// Pitdrone
+	gSkillData.pitdroneHealth = GetSkillCvar( "sk_pitdrone_health" );
+	gSkillData.pitdroneDmgBite = GetSkillCvar( "sk_pitdrone_dmg_bite" );
+	gSkillData.pitdroneDmgWhip = GetSkillCvar( "sk_pitdrone_dmg_whip" );
+	gSkillData.pitdroneDmgSpit = GetSkillCvar( "sk_pitdrone_dmg_spit" );
+
+	// Hgrunt Ally
+	gSkillData.hgruntAllyHealth = GetSkillCvar( "sk_hgrunt_ally_health" );
+	gSkillData.hgruntAllyDmgKick = GetSkillCvar( "sk_hgrunt_ally_kick" );
+	gSkillData.hgruntAllyShotgunPellets = GetSkillCvar( "sk_hgrunt_ally_pellets" );
+	gSkillData.hgruntAllyGrenadeSpeed = GetSkillCvar( "sk_hgrunt_ally_gspeed" );
+
+	// Medic Ally 
+	gSkillData.medicAllyHealth = GetSkillCvar( "sk_medic_ally_health" );
+	gSkillData.medicAllyDmgKick = GetSkillCvar( "sk_medic_ally_kick" );
+	gSkillData.medicAllyGrenadeSpeed = GetSkillCvar( "sk_medic_ally_gspeed" );
+	gSkillData.medicAllyHeal = GetSkillCvar( "sk_medic_ally_heal" );
+
+	// Torch Ally 
+	gSkillData.torchAllyHealth = GetSkillCvar( "sk_torch_ally_health" );
+	gSkillData.torchAllyDmgKick = GetSkillCvar( "sk_torch_ally_kick" );
+	gSkillData.torchAllyGrenadeSpeed = GetSkillCvar( "sk_torch_ally_gspeed" );
+
+	// Male Assassin
+	gSkillData.massnHealth = GetSkillCvar( "sk_massassin_health" );
+	gSkillData.massnDmgKick = GetSkillCvar( "sk_massassin_kick" );
+	gSkillData.massnGrenadeSpeed = GetSkillCvar( "sk_massassin_gspeed" );
+
+	// ShockTrooper 
+	gSkillData.strooperHealth = GetSkillCvar( "sk_shocktrooper_health" );
+	gSkillData.strooperDmgKick = GetSkillCvar( "sk_shocktrooper_kick" );
+	gSkillData.strooperGrenadeSpeed = GetSkillCvar( "sk_shocktrooper_gspeed" );
+	gSkillData.strooperMaxCharge = GetSkillCvar( "sk_shocktrooper_maxcharge" );
+	gSkillData.strooperRchgSpeed = GetSkillCvar( "sk_shocktrooper_rchgspeed" );
+
+	// Scientist
+	gSkillData.cleansuitScientistHealth = GetSkillCvar( "sk_cleansuit_scientist_health" );
+	gSkillData.cleansuitScientistHeal = GetSkillCvar( "sk_cleansuit_scientist_heal" );
+
+	// Voltigore
+	gSkillData.voltigoreHealth = GetSkillCvar( "sk_voltigore_health" );
+	gSkillData.voltigoreDmgPunch = GetSkillCvar( "sk_voltigore_dmg_punch" );
+	gSkillData.voltigoreDmgBeam = GetSkillCvar( "sk_voltigore_dmg_beam" );
+
+	// Baby Voltigore
+	gSkillData.babyVoltigoreHealth = GetSkillCvar( "sk_babyvoltigore_health" );
+	gSkillData.babyVoltigoreDmgPunch = GetSkillCvar( "sk_babyvoltigore_dmg_punch" );
+
+	// Pitworm
+	gSkillData.pwormHealth = GetSkillCvar( "sk_pitworm_health" );
+	gSkillData.pwormDmgSwipe = GetSkillCvar( "sk_pitworm_dmg_swipe" );
+	gSkillData.pwormDmgBeam = GetSkillCvar( "sk_pitworm_dmg_beam" );
+
+	// Geneworm
+	gSkillData.gwormHealth = GetSkillCvar( "sk_geneworm_health" );
+	gSkillData.gwormDmgSpit = GetSkillCvar( "sk_geneworm_dmg_spit" );
+	gSkillData.gwormDmgHit = GetSkillCvar( "sk_geneworm_dmg_hit" );
+
+	// Zombie Barney
+	gSkillData.zbarneyHealth = GetSkillCvar( "sk_zombie_barney_health" );
+	gSkillData.zbarneyDmgOneSlash = GetSkillCvar( "sk_zombie_barney_dmg_one_slash" );
+	gSkillData.zbarneyDmgBothSlash = GetSkillCvar( "sk_zombie_barney_dmg_both_slash" );
+
+	// Zombie Soldier
+	gSkillData.zgruntHealth = GetSkillCvar( "sk_zombie_soldier_health" );
+	gSkillData.zgruntDmgOneSlash = GetSkillCvar( "sk_zombie_soldier_dmg_one_slash" );
+	gSkillData.zgruntDmgBothSlash = GetSkillCvar( "sk_zombie_soldier_dmg_both_slash" );
+
+	// Gonome
+	gSkillData.gonomeHealth = GetSkillCvar( "sk_gonome_health" );
+	gSkillData.gonomeDmgOneSlash = GetSkillCvar( "sk_gonome_dmg_one_slash" );
+	gSkillData.gonomeDmgGuts = GetSkillCvar( "sk_gonome_dmg_guts" );
+	gSkillData.gonomeDmgOneBite = GetSkillCvar( "sk_gonome_dmg_one_bite" );
+
+	// Shock Roach
+	gSkillData.sroachHealth = GetSkillCvar( "sk_shockroach_health" );
+	gSkillData.sroachDmgBite = GetSkillCvar( "sk_shockroach_dmg_bite" );
+	gSkillData.sroachLifespan = GetSkillCvar( "sk_shockroach_lifespan" );
+
 	// PLAYER WEAPONS
 
 	// Crowbar whack
@@ -281,6 +368,24 @@ void CGameRules::RefreshSkillData ( void )
 // via SKILLS.CFG. Any player hivehand tuning must take place in the code. (sjb)
 	gSkillData.plrDmgHornet = 7;
 
+	//
+	// Op4 Player weapons
+	//
+	gSkillData.plrDmgPWrench = GetSkillCvar( "sk_plr_pipewrench" );
+	gSkillData.plrDmgKnife = GetSkillCvar( "sk_plr_knife" );
+	gSkillData.plrDmgGrapple = GetSkillCvar( "sk_plr_grapple" );
+	gSkillData.plrDmgEagle = GetSkillCvar( "sk_plr_eagle" );
+	gSkillData.plrDmgDisplacer = GetSkillCvar( "sk_plr_displacer_self" );
+	gSkillData.plrDmgShockroach = GetSkillCvar( "sk_plr_shockroachs" );
+	gSkillData.plrDmgSpore = GetSkillCvar( "sk_plr_spore" );
+	gSkillData.plrDmg762 = GetSkillCvar( "sk_plr_762_bullet" );
+	gSkillData.plrDmg556 = GetSkillCvar( "sk_plr_556_bullet" );
+
+	gSkillData.monDmg762 = GetSkillCvar( "sk_plr_762_bullet" );
+	gSkillData.monDmg556 = GetSkillCvar( "sk_plr_556_bullet" );
+	gSkillData.monDmgDisplacer = GetSkillCvar( "sk_plr_displacer_other" );
+	gSkillData.monDmgShockroach = GetSkillCvar( "sk_plr_shockroachm" );
+
 	// HEALTH/CHARGE
 	gSkillData.suitchargerCapacity = GetSkillCvar( "sk_suitcharger" );
 	gSkillData.batteryCapacity = GetSkillCvar( "sk_battery" );
@@ -301,6 +406,11 @@ void CGameRules::RefreshSkillData ( void )
 	gSkillData.plrStomach = GetSkillCvar( "sk_player_stomach" );
 	gSkillData.plrLeg = GetSkillCvar( "sk_player_leg" );
 	gSkillData.plrArm = GetSkillCvar( "sk_player_arm" );
+
+	//
+	// Op4 additional cvars
+	//
+	gSkillData.displacerDmgRadius = GetSkillCvar( "sk_plr_displacer_radius" );
 }
 
 //=========================================================
@@ -320,17 +430,21 @@ CGameRules *InstallGameRules( void )
 	}
 	else
 	{
+		// HACK HACK!! Put here to tell whether the current map supports
+		// CTF gamerules since there is no explicit way to specify
+		// the CTF gamerule in server creation page.
+		if( !strnicmp( STRING( gpGlobals->mapname ), "op4ctf", 6 ) )
+		{
+			// capture the flag
+			g_teamplay = 1;
+			return new CCTFMultiplay;
+		}
+
 		if( teamplay.value > 0 )
 		{
 			// teamplay
 			g_teamplay = 1;
 			return new CHalfLifeTeamplay;
-		}
-		if( (int)gpGlobals->deathmatch == 1 )
-		{
-			// vanilla deathmatch
-			g_teamplay = 0;
-			return new CHalfLifeMultiplay;
 		}
 		else
 		{

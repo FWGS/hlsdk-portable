@@ -179,6 +179,48 @@ void CHalfLifeMultiplay::RefreshSkillData( void )
 
 	// hornet
 	gSkillData.plrDmgHornet = 10;
+
+	// Pipe wrench
+	gSkillData.plrDmgPWrench = 20;
+
+	// Knife
+	gSkillData.plrDmgKnife = 10;
+
+	// Grapple
+	gSkillData.plrDmgGrapple = 25;
+
+	// Eagle
+	gSkillData.plrDmgEagle = 34;
+
+	// Displacer player damage
+	gSkillData.plrDmgDisplacer = 5;
+
+	// Shockroach
+	gSkillData.plrDmgShockroach = 10;
+
+	// Spore
+	gSkillData.plrDmgSpore = 50;
+
+	// 762
+	gSkillData.plrDmg762 = 100;
+
+	// 556
+	gSkillData.plrDmg556 = 15;
+
+	// 762
+	gSkillData.monDmg762 = 100;
+
+	// 556
+	gSkillData.monDmg556 = 15;
+
+	// Displacer monster damage
+	gSkillData.monDmgDisplacer = 250;
+
+	// Shockroach
+	gSkillData.monDmgShockroach = 15;
+
+	// Displacer radius
+	gSkillData.displacerDmgRadius = 300;
 }
 
 // longest the intermission can last, in seconds

@@ -91,6 +91,7 @@ void CBaseEntity::UpdateOnRemove( void )
 {
 	int i;
 
+	OnRemove();
 	if( FBitSet( pev->flags, FL_GRAPHED ) )
 	{
 		// this entity was a LinkEnt in the world node graph, so we must remove it from
@@ -112,6 +113,9 @@ void CBaseEntity::UpdateOnRemove( void )
 // Convenient way to delay removing oneself
 void CBaseEntity::SUB_Remove( void )
 {
+	// Call pre removal method.
+	PreRemoval();
+
 	UpdateOnRemove();
 	if( pev->health > 0 )
 	{
@@ -119,6 +123,9 @@ void CBaseEntity::SUB_Remove( void )
 		pev->health = 0;
 		ALERT( at_aiconsole, "SUB_Remove called on entity with health > 0\n" );
 	}
+
+	// Call post removal method.
+	PostRemoval();
 
 	REMOVE_ENTITY( ENT( pev ) );
 }

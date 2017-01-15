@@ -1324,6 +1324,16 @@ int V_FindViewModelByWeaponModel( int weaponindex )
 		{ "models/p_tripmine.mdl",	"models/v_tripmine.mdl" },
 		{ "models/p_satchel_radio.mdl",	"models/v_satchel_radio.mdl" },
 		{ "models/p_satchel.mdl",	"models/v_satchel.mdl" },
+		{ "models/p_bgrap.mdl",		"models/v_bgrap.mdl" },
+		{ "models/p_desert_eagle.mdl",	"models/v_desert_eagle.mdl" },
+		{ "models/p_displacer.mdl",	"models/v_displacer.mdl" },
+		{ "models/p_knife.mdl",		"models/v_knife.mdl" },
+		{ "models/p_m40a1.mdl",		"models/v_m40a1.mdl" },
+		{ "models/p_penguin.mdl",	"models/v_penguin.mdl" },
+		{ "models/p_pipe_wrench.mdl",	"models/v_pipe_wrench.mdl" },
+		{ "models/p_saw.mdl",		"models/v_saw.mdl" },
+		{ "models/p_shock.mdl",		"models/v_shock.mdl" },
+		{ "models/p_spore_launcher.mdl","models/v_spore_launcher.mdl" },
 		{ NULL, NULL }
 	};
 

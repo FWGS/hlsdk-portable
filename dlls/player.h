@@ -33,6 +33,8 @@
 #define PFLAG_DUCKING		( 1<<3 )		// In the process of ducking, but totally squatted yet
 #define PFLAG_USING		( 1<<4 )		// Using a continuous entity
 #define PFLAG_OBSERVER		( 1<<5 )		// player is locked in stationary cam mode. Spectators can move, observers can't.
+#define	PFLAG_LATCHING		( 1<<6 )	// Player is latching to a target
+#define	PFLAG_ATTACHED		( 1<<7 )	// Player is attached by a barnacle tongue tip
 
 //
 // generic player
@@ -56,7 +58,13 @@
 #define CSUITNOREPEAT		32
 
 #define	SOUND_FLASHLIGHT_ON		"items/flashlight1.wav"
-#define	SOUND_FLASHLIGHT_OFF	"items/flashlight1.wav"
+#define	SOUND_FLASHLIGHT_OFF	"items/flashlight2.wav"
+
+enum Player_Menu
+{
+	Team_Menu,
+	Team_Menu_IG
+};
 
 #define TEAM_NAME_LENGTH	16
 
@@ -308,6 +316,48 @@ public:
 	char m_SbarString1[ SBAR_STRING_SIZE ];
 
 	float m_flNextChatTime;
+
+	//
+	// Op4 player attributes.
+	//
+	BOOL	m_fInXen;
+	BOOL	m_fIsFrozen;
+
+	friend class CDisplacer;
+	friend class CTriggerXenReturn;
+	friend class CPlayerFreeze;
+
+	//
+	// Op4 CTF player attributes.
+	//
+	int m_bHasFlag;
+	void ShowMenu( int bitsValidSlots, int nDisplayTime, BOOL fNeedMore, char *pszText );
+	int     m_iMenu;
+
+	float	m_flNextTeamChange;
+
+	CBasePlayer *pFlagCarrierKiller;
+	CBasePlayer *pFlagReturner;
+	CBasePlayer *pCarrierHurter;
+
+	float	m_flCarrierHurtTime;
+	float	m_flCarrierPickupTime;
+	float	m_flFlagCarrierKillTime;
+	float	m_flFlagReturnTime;
+	float	m_flFlagStatusTime;
+
+	float	m_flRegenTime;
+
+	int		m_iRuneStatus;
+
+	void	W_FireHook(void);
+	void	Throw_Grapple(void);
+
+	bool	m_bHook_Out;
+	bool    m_bOn_Hook;
+	CBaseEntity *m_ppHook;
+
+	void Service_Grapple( void );
 };
 
 #define AUTOAIM_2DEGREES  0.0348994967025
