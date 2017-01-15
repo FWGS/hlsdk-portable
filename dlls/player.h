@@ -93,6 +93,15 @@ enum PlayerState
 	STATE_POINT_SELECT
 };
 
+enum PlayerMenuState
+{
+	MENUSTATE_NONE = 0,
+	MENUSTATE_COOPMENU,
+	MENUSTATE_COOPMENU_SPEC,
+	MENUSTATE_CHECKPOINT,
+	MENUSTATE_GLOBAL
+};
+
 #include "whandle.h"
  
 class CBasePlayer : public CBaseMonster
@@ -325,6 +334,7 @@ public:
 	float m_flSpawnTime;
 	PlayerState m_state;
 	bool m_fTouchMenu;
+	int m_iMenuState;
 	virtual void Touch( CBaseEntity *pOther );
 };
 

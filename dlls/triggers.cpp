@@ -1508,13 +1508,20 @@ struct SavedCoords
 	bool fDuck;
 } g_SavedCoords, s_SavedCoords;
 
+struct checkpoint_s
+{
+	char str[32];
+	float time;
+	Vector origin;
+} g_checkpoints[4];
 
 
 void CoopClearData( void )
 {
 	// nullify
-	SavedCoords l_SavedCoords = {};
+	SavedCoords l_SavedCoords = {0};
 	g_SavedCoords = l_SavedCoords;
+	memset( &g_checkpoints, 0, sizeof( g_checkpoints ) );
 }
 
 bool g_fPause;
@@ -1522,12 +1529,14 @@ void CoopApplyData( void )
 {
 	if( s_SavedCoords.valid )
 	{
+		struct SavedCoords null1 = {0};
 		g_SavedCoords = s_SavedCoords;
-		s_SavedCoords = {};
+		s_SavedCoords = null1;
 		g_fSavedDuck = g_SavedCoords.fDuck;
 	}
 	g_fPause = false;
 	ALERT( at_console, "^2CoopApplyData()\n" );
+	memset( &g_checkpoints, 0, sizeof( g_checkpoints ) );
 }
 
 int g_iMenu;
@@ -1648,7 +1657,9 @@ public:
 			if( plr && plr->IsPlayer() )
 			{
 				count2++;
-				ShowMenu( (CBasePlayer *)plr, title, count, menu, 30 );
+				CBasePlayer *player = (CBasePlayer *) plr;
+				ShowMenu( player, title, count, menu, 30 );
+				player->m_iMenuState = MENUSTATE_GLOBAL;
 
 			}
 		}
@@ -1732,6 +1743,39 @@ void CChangeLevel::UpdateColor( void )
 
 }
 
+void CoopCheckpointMenu( CBasePlayer *pPlayer )
+{
+	if( pPlayer->m_state == STATE_SPAWNED )
+	{
+
+		if( mp_coop_checkpoints.value )
+		{
+			const char *menu[5] = {
+				"New checkpoint"
+			};
+			int i;
+			for( i = 1; g_checkpoints[i-1].time; i++ )
+				menu[i] = g_checkpoints[i-1].str;
+			ShowMenu( pPlayer, "Coop menu", i, menu );
+			pPlayer->m_iMenuState = MENUSTATE_CHECKPOINT;
+		}
+	}
+}
+
+
+void CoopNewCheckpoint( entvars_t *pevPlayer )
+{
+	memmove( &g_checkpoints[1], &g_checkpoints[0], sizeof ( g_checkpoints[0] ) * 3 );
+	g_checkpoints[0].time = gpGlobals->time;
+	snprintf( g_checkpoints[0].str, 31,  "%5s %d", STRING( pevPlayer->netname ), (int)( gpGlobals->time / 60 ) );
+	g_checkpoints[0].origin = pevPlayer->origin;
+			MESSAGE_BEGIN( MSG_ALL, 8, NULL ); // svc_print
+				WRITE_BYTE( 3 ); // PRINT_CHAT
+				WRITE_STRING( "New checkpoint availiable\n" );
+			MESSAGE_END();
+
+}
+
 void CoopVoteMenu( CBasePlayer *pPlayer )
 {
 	int count = 0;
@@ -1751,26 +1795,30 @@ void CoopVoteMenu( CBasePlayer *pPlayer )
 	}
 	g_GlobalMenu.VoteMenu(pPlayer);
 }
+
 void CoopMenu( CBasePlayer *pPlayer )
 {
-	if( g_iMenu && gpGlobals->time - g_GlobalMenu.m_flTime < 30 )
-		return; // global menu active
 	if( pPlayer->m_state == STATE_SPAWNED )
 	{
-
+		pPlayer->m_iMenuState = MENUSTATE_COOPMENU;
 		if( mp_coop.value )
 		{
 			const char *menu[] = {
 				"Force respawn",
 				"Unblock",
 				"Become spectator",
-				"Vote changelevel"
+				"Vote changelevel",
+				"Checkpoint/restore"
 			};
-			ShowMenu( pPlayer, "Coop menu", ARRAYSIZE( menu ), menu );
+			int count1 = ARRAYSIZE( menu ) - 1;
+			if( mp_coop_checkpoints.value )
+				count1++;
+			ShowMenu( pPlayer, "Coop menu", count1, menu );
 		}
 	}
 	else if ( pPlayer->m_state == STATE_SPECTATOR )
 	{
+		pPlayer->m_iMenuState = MENUSTATE_COOPMENU_SPEC;
 		if( mp_coop.value )
 		{
 			const char *menu[] = {
@@ -1782,9 +1830,71 @@ void CoopMenu( CBasePlayer *pPlayer )
 	}
 }
 
+void SpawnPlayer( CBasePlayer *pPlayer );
+void BecomeSpectator( CBasePlayer *pPlayer );
+
 void CoopProcessMenu( CBasePlayer *pPlayer, int imenu )
 {
-	return g_GlobalMenu.Process( pPlayer, imenu );
+			switch( pPlayer->m_iMenuState )
+			{
+				case MENUSTATE_COOPMENU_SPEC:
+					if( imenu == 1 )
+					{
+						SpawnPlayer( pPlayer );
+						pPlayer->m_state = STATE_SPAWNED;
+					}
+					if( imenu == 2 )
+					{
+						pPlayer->m_state = STATE_SPECTATOR;
+						CLIENT_COMMAND( pPlayer->edict(), "touch_show _coopm*\n" );
+					}
+				break;
+				case MENUSTATE_COOPMENU:
+					if( pPlayer->m_state != STATE_SPAWNED )
+						break;
+					if( imenu == 1 )
+					{
+						pPlayer->RemoveAllItems( TRUE );
+						SpawnPlayer( pPlayer );
+					}
+					if( imenu == 2 )
+					{
+						UTIL_CleanSpawnPoint( pPlayer->pev->origin, 150 );
+					}
+					if( imenu == 3 )
+					{
+						pPlayer->RemoveAllItems( TRUE );
+						BecomeSpectator( pPlayer );
+						pPlayer->m_state = STATE_SPECTATOR;
+					}
+					if( imenu == 4 )
+					{
+						CoopVoteMenu( pPlayer );
+					}
+					if( imenu == 5 )
+					{
+						CoopCheckpointMenu( pPlayer );
+					}
+				break;
+				case MENUSTATE_GLOBAL:
+					g_GlobalMenu.Process( pPlayer, imenu );
+				break;
+				case MENUSTATE_CHECKPOINT:
+					if( imenu == 1 )
+					{
+						CoopNewCheckpoint( pPlayer->pev );
+					}
+					else if( imenu > 1 && imenu < 5 )
+					{
+						pPlayer->RemoveAllItems( TRUE );
+						SpawnPlayer( pPlayer );
+						pPlayer->pev->origin = g_checkpoints[imenu-2].origin;
+					}
+				break;
+				default:
+				break;
+			}
+	//pPlayer->m_iMenuState = MENUSTATE_NONE;
 }
 
 static void validateoffset( void )
@@ -2051,7 +2161,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 			{
 			if( !count2 )
 			{
-				UTIL_HudMessageAll( params, "Cannot change level: Not enough players! Wait 30 sec before you may changelevel!" );
+				UTIL_HudMessageAll( params, "Cannot change level: Not enough players!\nWait 30 sec before you may changelevel!" );
 				return;
 			}
 
@@ -2061,7 +2171,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 				i = 1;
 
 			if( i )
-				UTIL_HudMessageAll( params, UTIL_VarArgs( "%s touched end of map, next is %s %s, %d to go",
+				UTIL_HudMessageAll( params, UTIL_VarArgs( "%s touched end of map\nnext is %s %s, %d to go",
 					( pActivator->pev->netname && STRING( pActivator->pev->netname )[0] != 0 ) ? STRING( pActivator->pev->netname ) : "unconnected",
 					st_szNextMap, st_szNextSpot, i ) );
 			if( count2 )
@@ -2148,7 +2258,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 			{
 				CBaseEntity *plr = UTIL_PlayerByIndex( i );
 
-				if( plr && plr->IsPlayer() && ( !FindTriggerTransition( m_szLandmarkName ) || (gpGlobals->time -((CBasePlayer*)plr)->m_flSpawnTime ) > 30 ) || m_fSkipSpawnCheck )
+				if( plr && plr->IsPlayer() && ( !FindTriggerTransition( m_szLandmarkName ) || (gpGlobals->time -((CBasePlayer*)plr)->m_flSpawnTime ) > 30  || m_fSkipSpawnCheck ) )
 				{
 						if( InTransitionVolume( plr, m_szLandmarkName ))
 						{

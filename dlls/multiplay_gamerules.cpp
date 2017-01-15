@@ -240,57 +240,13 @@ BOOL CHalfLifeMultiplay::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 		{
 			int imenu = atoi( CMD_ARGV( 1 ) );
 
-			switch( pPlayer->m_state )
-			{
-				case STATE_SPECTATOR_BEGIN:
-				case STATE_SPECTATOR:
-					if( imenu == 1 )
-					{
-						SpawnPlayer( pPlayer );
-						pPlayer->m_state = STATE_SPAWNED;
-					}
-					if( imenu == 2 )
-					{
-						pPlayer->m_state = STATE_SPECTATOR;
-						CLIENT_COMMAND( pPlayer->edict(), "touch_show _coopm*\n" );
-					}
-				break;
-				case STATE_SPAWNED:
-					if( g_iMenu )
-					{
-						CoopProcessMenu( pPlayer, imenu );
-						return TRUE;
-					}
-					if( imenu == 1 )
-					{
-						pPlayer->RemoveAllItems( TRUE );
-						SpawnPlayer( pPlayer );
-					}
-					if( imenu == 2 )
-					{
-						UTIL_CleanSpawnPoint( pPlayer->pev->origin, 150 );
-					}
-					if( imenu == 3 )
-					{
-						pPlayer->RemoveAllItems( TRUE );
-						BecomeSpectator( pPlayer );
-						pPlayer->m_state = STATE_SPECTATOR;
-					}
-					if( imenu == 4 )
-					{
-						CoopVoteMenu( pPlayer );
-					}
-				default:
-				break;
-			}
+			CoopProcessMenu( pPlayer, imenu );
+
 			return TRUE;
 		}
 		if( FStrEq( pcmd, "coopmenu" ) )
 		{
-			if( !g_iMenu )
 				CoopMenu( pPlayer );
-			else
-				ClientPrint( pPlayer->pev, HUD_PRINTCONSOLE, "You cannot use coopmenu now!\n\n" );
 
 			return TRUE;
 		}
@@ -660,6 +616,7 @@ void CHalfLifeMultiplay::InitHUD( CBasePlayer *pl )
 
 		if( pl->m_state == STATE_SPECTATOR_BEGIN )
 		{
+			pl->m_iMenuState = MENUSTATE_COOPMENU_SPEC;
 
 			if( mp_coop.value )
 			{
