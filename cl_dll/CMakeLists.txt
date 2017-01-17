@@ -29,6 +29,17 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-write-strings -DLINUX -D_LINUX -Dstricm
 set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS}")
 
 set (CLDLL_SOURCES 
+	gearbox/hud_nightvision.cpp
+	../dlls/gearbox/displacer.cpp
+	../dlls/gearbox/knife.cpp
+	../dlls/gearbox/eagle.cpp
+	../dlls/gearbox/grapple.cpp
+	../dlls/gearbox/m249.cpp
+	../dlls/gearbox/penguin.cpp
+	../dlls/gearbox/pipewrench.cpp
+	../dlls/gearbox/shockrifle.cpp
+	../dlls/gearbox/sniperrifle.cpp
+	../dlls/gearbox/sporelauncher.cpp
 	../dlls/crossbow.cpp 
 	../dlls/crowbar.cpp 
 	../dlls/egon.cpp 
@@ -91,7 +102,7 @@ set (CLDLL_SOURCES
 	input_xash3d.cpp
 	scoreboard.cpp
 	MOTD.cpp)
-include_directories (. hl/ ../dlls ../dlls/wpn_shared ../common ../engine ../pm_shared ../game_shared ../public)
+include_directories (. hl/ ../dlls ../dlls/wpn_shared ../common ../engine ../pm_shared ../game_shared ../public ../dlls/gearbox )
 
 if(USE_VOICEMGR)
 	#set(CLDLL_SOURCES
