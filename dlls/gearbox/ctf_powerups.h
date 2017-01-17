@@ -12,9 +12,6 @@
 *   without written permission from Valve LLC.
 *
 ****/
-
-#if defined ( GEARBOX_CTF )
-
 #ifndef CTF_POWERUPS_H
 #define CTF_POWERUPS_H
 
@@ -121,7 +118,4 @@ public:
 		m_iszPrintName = MAKE_STRING("Portable HEV");
 	}
 };
-
 #endif // CTF_POWERUPS_H
-
-#endif // GEARBOX_CTF

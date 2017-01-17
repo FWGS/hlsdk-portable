@@ -12,9 +12,6 @@
 *   without written permission from Valve LLC.
 *
 ****/
-
-#if defined ( GEARBOX_CTF )
-
 #ifndef CTF_ITEMS_H
 #define CTF_ITEMS_H
 
@@ -124,8 +121,4 @@ class CCarriedFlagTeam2 : public CCarriedFlag
 {
 	void Spawn(void);
 };
-
-
 #endif // CTF_ITEMS_H
-
-#endif // GEARBOX_CTF

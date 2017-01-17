@@ -20,10 +20,6 @@ This contains the Flag entity information for the Half-Life : Opposing force CTF
 
 */
 
-
-
-#if defined ( GEARBOX_CTF )
-
 #include	"extdll.h"
 #include	"util.h"
 #include	"cbase.h"
@@ -723,6 +719,3 @@ void CCarriedFlagTeam2::Spawn(void)
 
 LINK_ENTITY_TO_CLASS(carried_flag_team1, CCarriedFlagTeam1);
 LINK_ENTITY_TO_CLASS(carried_flag_team2, CCarriedFlagTeam2);
-
-
-#endif // GEARBOX_CTF

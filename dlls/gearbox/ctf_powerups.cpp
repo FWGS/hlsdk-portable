@@ -19,11 +19,6 @@
 This contains the Flag entity information for the Half-Life : Opposing force CTF Gamemode.
 
 */
-
-
-#ifdef GEARBOX_CTF
-
-
 #include	"extdll.h"
 #include	"util.h"
 #include	"cbase.h"
@@ -231,18 +226,18 @@ void CPowerupCTFBase::RuneTouch(CBaseEntity *pOther)
 		if (pOther->pev->team != m_teamNo - 1)
 			return;
 	}
-
+/*
 	//Only one per customer
 	if (pPlayer->m_iRuneStatus)
 	{
 		ClientPrint(pOther->pev, HUD_PRINTCENTER, "You already have a rune!\n");
 		return;
 	}
-
+*/
 	if (!m_bTouchable)
 		return;
 
-	pPlayer->m_iRuneStatus = m_iRuneFlag; //Add me the rune flag
+	//pPlayer->m_iRuneStatus = m_iRuneFlag; //Add me the rune flag
 
 	ClientPrint(pOther->pev, HUD_PRINTCENTER, "You got the rune of %s!\n", STRING(m_iszPrintName));
 
@@ -260,10 +255,10 @@ void CPowerupCTFBase::RuneTouch(CBaseEntity *pOther)
 		EMIT_SOUND(ENT(pev), CHAN_ITEM, "weapons/ammopickup2.wav", 1, ATTN_NORM);
 
 	//Update my client side rune hud thingy.
-	MESSAGE_BEGIN(MSG_ONE, gmsgRuneStatus, NULL, pOther->pev);
+/*	MESSAGE_BEGIN(MSG_ONE, gmsgRuneStatus, NULL, pOther->pev);
 	WRITE_BYTE(pPlayer->m_iRuneStatus);
 	MESSAGE_END();
-
+*/
 	//And Remove this entity
 	UTIL_Remove(this);
 }
@@ -478,5 +473,3 @@ void SpawnRunes(void)
 
 	g_bSpawnedRunes = TRUE;
 }
-
-#endif // GEARBOX_CTF

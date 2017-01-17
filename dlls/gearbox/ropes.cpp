@@ -244,7 +244,8 @@ void CRope::RopeThink(void)
 
 		ApplyFunctor(Functor_SetSegmentFxNormal);
 
-		int index = FindClosestSegment(((CBasePlayer*)pEntity)->GetGunPosition(), 16, 0, m_nSegments - 1);
+		Vector v = ((CBasePlayer*)pEntity)->GetGunPosition();
+		int index = FindClosestSegment(v, 16, 0, m_nSegments - 1);
 		if (index >= 0 && index < m_nSegments)
 		{
 			CRopeSegment* pClosestSegment = m_pSegments[index];

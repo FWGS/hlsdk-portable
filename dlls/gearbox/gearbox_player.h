@@ -15,12 +15,10 @@
 #ifndef GEARBOX_PLAYER_H
 #define GEARBOX_PLAYER_H
 
-#ifdef GEARBOX_CTF
 enum Player_Menu {
 	Team_Menu,
 	Team_Menu_IG,
 };
-#endif
 
 #define		PFLAG_ONROPE		( 1 << 6 )
 
@@ -42,7 +40,6 @@ private:
 	BOOL	m_fInXen;
 	BOOL	m_fIsFrozen;
 
-#if defined ( GEARBOX_CTF )
 public:
 	int		m_bHasFlag;
 	void ShowMenu(int bitsValidSlots, int nDisplayTime, BOOL fNeedMore, char *pszText);
@@ -73,7 +70,6 @@ public:
 
 	void Service_Grapple(void);
 private:
-#endif
 
 	friend class CDisplacer;
 	friend class CTriggerXenReturn;

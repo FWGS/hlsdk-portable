@@ -216,7 +216,7 @@ const char *CGeneWorm::pEyePainSounds[] =
 	"geneworm/geneworm_shot_in_eye.wav",
 };
 
-const char* CGeneWorm::pHitVolumes[]
+const char* CGeneWorm::pHitVolumes[] =
 {
 	"GeneWormRightSlash",
 	"GeneWormCenterSlash",

@@ -20,8 +20,6 @@ This contains all the gamerules for the Half-Life: Opposing force CTF Gamemode.
 
 */
 
-#ifdef GEARBOX_CTF
-
 #define NUM_TEAMS 2
 
 char *sTeamNames[] =
@@ -76,6 +74,7 @@ edict_t *EntSelectSpawnPoint(CBaseEntity *pPlayer, bool bCheckDM)
 #endif
 extern edict_t *RuneSelectSpawnPoint(void);
 
+#ifndef NO_VOICEGAMEMGR
 class CCTFGameMgrHelper : public IVoiceGameMgrHelper
 {
 public:
@@ -85,6 +84,7 @@ public:
 	}
 };
 static CCTFGameMgrHelper g_GameMgrHelper;
+#endif
 
 extern DLL_GLOBAL BOOL		g_fGameOver;
 
@@ -98,9 +98,10 @@ char* GetTeamName(int team)
 
 CCTFMultiplay::CCTFMultiplay()
 {
+#ifndef NO_VOICEGAMEMGR
 	// CHalfLifeMultiplay already initialized it - just override its helper callback.
 	m_VoiceGameMgr.SetHelper(&g_GameMgrHelper);
-
+#endif
 	m_DisableDeathMessages = FALSE;
 	m_DisableDeathPenalty = FALSE;
 
@@ -149,8 +150,9 @@ extern cvar_t timeleft, fragsleft;
 
 void CCTFMultiplay::Think(void)
 {
+#ifndef NO_VOICEGAMEMGR
 	m_VoiceGameMgr.Update(gpGlobals->frametime);
-
+#endif
 	///// Check game rules /////
 	static int last_frags;
 	static int last_time;
@@ -310,9 +312,10 @@ void DropRune(CBasePlayer *pPlayer);
 //=========================================================
 BOOL CCTFMultiplay::ClientCommand(CBasePlayer *pPlayer, const char *pcmd)
 {
+#ifndef NO_VOICEGAMEMGR
 	if (m_VoiceGameMgr.ClientCommand(pPlayer, pcmd))
 		return TRUE;
-
+#endif
 	if (FStrEq(pcmd, "menuselect"))
 	{
 		if (CMD_ARGC() < 2)
@@ -1686,5 +1689,3 @@ void CCTFMultiplay::RecountTeams(void)
 		}
 	}
 }
-
-#endif // GEARBOX_CTF

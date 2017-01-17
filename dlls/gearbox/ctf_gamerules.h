@@ -3,12 +3,11 @@
 #ifndef CTF_GAMERULES_H
 #define CTF_GAMERULES_H
 
-#if defined ( GEARBOX_CTF )
-
 #define BLUE 2
 #define RED 1
-
+#ifndef NO_VOICEGAMEMGR
 #include "voice_gamemgr.h"
+#endif
 
 // Standard Scoring
 #define TEAM_CAPTURE_CAPTURE_BONUS 5 // what you get for capture
@@ -75,7 +74,7 @@
 #define PLAYER_MAX_HEALTH_VALUE	100
 #define PLAYER_MAX_ARMOR_VALUE	100
 
-class CCTFMultiplay : public CGearboxMultiplay
+class CCTFMultiplay : public CHalfLifeMultiplay
 {
 public:
 	CCTFMultiplay();
@@ -118,9 +117,9 @@ public:
 	int iRedTeamScore;
 
 	float m_flFlagStatusTime;
-
+#ifndef NO_VOICEGAMEMGR
 	CVoiceGameMgr	m_VoiceGameMgr;
-
+#endif
 private:
 	void RecountTeams(void);
 
@@ -129,7 +128,4 @@ private:
 	BOOL m_teamLimit;				// This means the server set only some teams as valid
 	char m_szTeamList[TEAMPLAY_TEAMLISTLENGTH];
 };
-
-#endif // GEARBOX_CTF
-
 #endif // CTF_GAMERULES_H
