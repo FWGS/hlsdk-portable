@@ -1548,7 +1548,7 @@ void ShowMenu( CBasePlayer *pPlayer, const char *title, int count, const char **
 bool g_fSavedDuck;
 
 #define CoopPlayerName( pPlayer ) ( ( pPlayer->pev->netname && STRING( pPlayer->pev->netname )[0] != 0 ) ? STRING( pPlayer->pev->netname ) : "unconnected" )
-char *badlist[100] = {
+char *badlist[256] = {
 "player", // does not even can set own name
 "talat",
 "hmse",
@@ -1557,7 +1557,9 @@ char *badlist[100] = {
 "famas",
 "danek",
 "ame syia",
-"melih"
+"melih",
+"aliance",
+"vladick"
 };
 
 void CoopKickPlayer(CBaseEntity *pPlayer)
@@ -1565,8 +1567,8 @@ void CoopKickPlayer(CBaseEntity *pPlayer)
 	int i;
 	if( !pPlayer )
 		return;
-	SERVER_COMMAND( UTIL_VarArgs( "kick %d\n", ENTINDEX(pPlayer->pev->pContainingEntity) - 1 ) );
 	char *name = (char*) CoopPlayerName( pPlayer );
+	SERVER_COMMAND( UTIL_VarArgs( "kick %d\n", ENTINDEX(pPlayer->pev->pContainingEntity) - 1 ) );
 	if( strlen( name ) < 5 )
 		return;
 	for( i = 0; badlist[i]; i++ );
@@ -1575,7 +1577,7 @@ void CoopKickPlayer(CBaseEntity *pPlayer)
 
 bool IsBadPlayer( CBaseEntity *plr )
 {
-	if( !plr || !plr->IsPlayer() )
+	if( !plr )
 		return false;
 	for( int i = 0; badlist[i];i++ )
 		if( strcasestr( (char*)CoopPlayerName( plr ), badlist[i] ) )
