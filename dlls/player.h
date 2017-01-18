@@ -99,7 +99,8 @@ enum PlayerMenuState
 	MENUSTATE_COOPMENU,
 	MENUSTATE_COOPMENU_SPEC,
 	MENUSTATE_CHECKPOINT,
-	MENUSTATE_GLOBAL
+	MENUSTATE_GLOBAL,
+	MENUSTATE_LOCAL_CONFIRM
 };
 
 #include "whandle.h"
@@ -335,6 +336,8 @@ public:
 	PlayerState m_state;
 	bool m_fTouchMenu;
 	int m_iMenuState;
+	int m_iLocalConfirm;
+	int m_iConfirmKey;
 	virtual void Touch( CBaseEntity *pOther );
 };
 

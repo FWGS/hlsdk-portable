@@ -913,7 +913,7 @@ void CBaseTrigger::HurtTouch( CBaseEntity *pOther )
 	// HACKHACK -- In multiplayer, players touch this based on packet receipt.
 	// So the players who send packets later aren't always hurt.  Keep track of
 	// how much time has passed and whether or not you've touched that player
-	if( g_pGameRules->IsMultiplayer() )
+	if( !mp_coop.value && g_pGameRules->IsMultiplayer() )
 	{
 		if( pev->dmgtime > gpGlobals->time )
 		{
@@ -1350,6 +1350,7 @@ public:
 	bool m_fSpawnSaved;
 	bool m_fIsBack;
 	bool m_fSkipSpawnCheck; // skip 30 seconds check when called by multimanager or trigger_once
+	float m_flRepeatTimer;
 };
 
 LINK_ENTITY_TO_CLASS( trigger_changelevel, CChangeLevel )
@@ -1513,6 +1514,7 @@ struct checkpoint_s
 	char str[32];
 	float time;
 	Vector origin;
+	Vector angles;
 } g_checkpoints[4];
 
 
@@ -1546,12 +1548,54 @@ void ShowMenu( CBasePlayer *pPlayer, const char *title, int count, const char **
 bool g_fSavedDuck;
 
 #define CoopPlayerName( pPlayer ) ( ( pPlayer->pev->netname && STRING( pPlayer->pev->netname )[0] != 0 ) ? STRING( pPlayer->pev->netname ) : "unconnected" )
+char *badlist[100] = {
+"player", // does not even can set own name
+"talat",
+"hmse",
+"mhmd",
+"aeman",
+"famas",
+"danek",
+"ame syia",
+"melih"
+};
 
 void CoopKickPlayer(CBaseEntity *pPlayer)
 {
+	int i;
 	if( !pPlayer )
 		return;
 	SERVER_COMMAND( UTIL_VarArgs( "kick %d\n", ENTINDEX(pPlayer->pev->pContainingEntity) - 1 ) );
+	char *name = (char*) CoopPlayerName( pPlayer );
+	if( strlen( name ) < 5 )
+		return;
+	for( i = 0; badlist[i]; i++ );
+	badlist[i] = strdup( name );
+}
+
+bool IsBadPlayer( CBaseEntity *plr )
+{
+	if( !plr || !plr->IsPlayer() )
+		return false;
+	for( int i = 0; badlist[i];i++ )
+		if( strcasestr( (char*)CoopPlayerName( plr ), badlist[i] ) )
+			return true;
+	return false;
+}
+
+void CoopLocalConfirmMenu(CBasePlayer *pPlayer)
+{
+		const char *menu[] = {
+			"No",
+			"Cancel",
+			"Do not confirm",
+			"Don't confirm",
+			"Единая Россия"
+		};
+
+		menu[pPlayer->m_iConfirmKey = RANDOM_LONG(2,4)] = "Confirm";
+		ShowMenu(pPlayer, "Confirm changing map BACK (NOT RECOMMENDED)?", ARRAYSIZE(menu), menu);
+		pPlayer->m_iMenuState = MENUSTATE_LOCAL_CONFIRM;
 }
 
 // Show to all spawned players: voting, etc..
@@ -1654,7 +1698,7 @@ public:
 		{
 			CBaseEntity *plr = UTIL_PlayerByIndex( i );
 
-			if( plr && plr->IsPlayer() )
+			if( plr && plr->IsPlayer() && !IsBadPlayer( plr ) )
 			{
 				count2++;
 				CBasePlayer *player = (CBasePlayer *) plr;
@@ -1671,6 +1715,13 @@ public:
 	{
 		if( g_iMenu && gpGlobals->time - m_flTime < 30 )
 			return; // wait 30s befor new confirm vote
+		if( pPlayer->m_iMenuState == MENUSTATE_LOCAL_CONFIRM )
+			return;
+		if( pPlayer->m_iLocalConfirm < 3 )
+		{
+			CoopLocalConfirmMenu( pPlayer );
+			return;
+		}
 		g_iMenu = 1;
 		m_flTime = gpGlobals->time;
 		m_pTrigger = trigger;
@@ -1680,7 +1731,11 @@ public:
 			"Cancel",
 			"BAN"
 		};
-		ShowGlobalMenu(UTIL_VarArgs("Confirm changing map to %s?", mapname), ARRAYSIZE(menu), menu);
+			MESSAGE_BEGIN( MSG_ALL, 8, NULL ); // svc_print
+				WRITE_BYTE( 3 ); // PRINT_CHAT
+				WRITE_STRING( UTIL_VarArgs( "%s^7 wants to change map ^1BACKWARDS\n", ( pPlayer->pev->netname && STRING( pPlayer->pev->netname )[0] != 0 ) ? STRING( pPlayer->pev->netname ) : "unconnected"));
+			MESSAGE_END();
+		ShowGlobalMenu(UTIL_VarArgs("Confirm changing map BACK TO %s?", mapname), ARRAYSIZE(menu), menu);
 
 	}
 	void VoteMenu( CBasePlayer *pPlayer )
@@ -1707,6 +1762,10 @@ public:
 		m_iConfirm = i;
 		m_iVoteCount = 0;
 		m_pPlayer = pPlayer;
+			MESSAGE_BEGIN( MSG_ALL, 8, NULL ); // svc_print
+				WRITE_BYTE( 3 ); // PRINT_CHAT
+				WRITE_STRING( UTIL_VarArgs( "%s^7 opened vote menu\n", ( pPlayer->pev->netname && STRING( pPlayer->pev->netname )[0] != 0 ) ? STRING( pPlayer->pev->netname ) : "unconnected"));
+			MESSAGE_END();
 		ShowGlobalMenu(UTIL_VarArgs("%s requested to force change map", CoopPlayerName( pPlayer ) ), i, maps);
 
 	}
@@ -1714,8 +1773,6 @@ public:
 
 };
 GlobalMenu g_GlobalMenu;
-
-
 
 void CChangeLevel::UpdateColor( void )
 {
@@ -1745,7 +1802,7 @@ void CChangeLevel::UpdateColor( void )
 
 void CoopCheckpointMenu( CBasePlayer *pPlayer )
 {
-	if( pPlayer->m_state == STATE_SPAWNED )
+	//if( pPlayer->m_state == STATE_SPAWNED )
 	{
 
 		if( mp_coop_checkpoints.value )
@@ -1754,9 +1811,11 @@ void CoopCheckpointMenu( CBasePlayer *pPlayer )
 				"New checkpoint"
 			};
 			int i;
+			if( pPlayer->m_state == STATE_SPECTATOR || pPlayer->m_state == STATE_SPECTATOR_BEGIN )
+				menu[0] = "Just spawn";
 			for( i = 1; g_checkpoints[i-1].time; i++ )
 				menu[i] = g_checkpoints[i-1].str;
-			ShowMenu( pPlayer, "Coop menu", i, menu );
+			ShowMenu( pPlayer, "Select checkpoint", i, menu );
 			pPlayer->m_iMenuState = MENUSTATE_CHECKPOINT;
 		}
 	}
@@ -1769,6 +1828,7 @@ void CoopNewCheckpoint( entvars_t *pevPlayer )
 	g_checkpoints[0].time = gpGlobals->time;
 	snprintf( g_checkpoints[0].str, 31,  "%5s %d", STRING( pevPlayer->netname ), (int)( gpGlobals->time / 60 ) );
 	g_checkpoints[0].origin = pevPlayer->origin;
+	g_checkpoints[0].angles = pevPlayer->angles;
 			MESSAGE_BEGIN( MSG_ALL, 8, NULL ); // svc_print
 				WRITE_BYTE( 3 ); // PRINT_CHAT
 				WRITE_STRING( "New checkpoint availiable\n" );
@@ -1840,8 +1900,13 @@ void CoopProcessMenu( CBasePlayer *pPlayer, int imenu )
 				case MENUSTATE_COOPMENU_SPEC:
 					if( imenu == 1 )
 					{
-						SpawnPlayer( pPlayer );
-						pPlayer->m_state = STATE_SPAWNED;
+						if( g_checkpoints[0].time )
+							CoopCheckpointMenu( pPlayer );
+						else
+						{
+							SpawnPlayer( pPlayer );
+							pPlayer->m_state = STATE_SPAWNED;
+						}
 					}
 					if( imenu == 2 )
 					{
@@ -1877,12 +1942,16 @@ void CoopProcessMenu( CBasePlayer *pPlayer, int imenu )
 					}
 				break;
 				case MENUSTATE_GLOBAL:
-					g_GlobalMenu.Process( pPlayer, imenu );
+					if( !IsBadPlayer( pPlayer ) )
+						g_GlobalMenu.Process( pPlayer, imenu );
 				break;
 				case MENUSTATE_CHECKPOINT:
 					if( imenu == 1 )
 					{
-						CoopNewCheckpoint( pPlayer->pev );
+						if( pPlayer->m_state == STATE_SPECTATOR_BEGIN )
+							SpawnPlayer( pPlayer );
+						else if( !IsBadPlayer( pPlayer ) )
+							CoopNewCheckpoint( pPlayer->pev );
 					}
 					else if( imenu > 1 && imenu < 5 )
 					{
@@ -1890,6 +1959,13 @@ void CoopProcessMenu( CBasePlayer *pPlayer, int imenu )
 						SpawnPlayer( pPlayer );
 						pPlayer->pev->origin = g_checkpoints[imenu-2].origin;
 					}
+				break;
+				case MENUSTATE_LOCAL_CONFIRM:
+					if( imenu - 1 == pPlayer->m_iConfirmKey )
+						pPlayer->m_iLocalConfirm++;
+					else
+						pPlayer->m_iLocalConfirm = 0;
+					pPlayer->m_iMenuState = MENUSTATE_NONE;
 				break;
 				default:
 				break;
@@ -2131,9 +2207,13 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 			for( i = 1; i <= gpGlobals->maxClients; i++ )
 			{
 				CBaseEntity *plr = UTIL_PlayerByIndex( i );
+				CBaseEntity *pTrain = CoopGetPlayerTrain( plr );
+
+				if( !pTrain && IsBadPlayer( plr ) )
+					continue;
 
 				// count only players spawned more 30 seconds ago
-				if( plr && plr->IsPlayer() && (CoopGetPlayerTrain(plr) || (gpGlobals->time -((CBasePlayer*)plr)->m_flSpawnTime ) > 30 ) )
+				if( plr && plr->IsPlayer() && (pTrain || (gpGlobals->time -((CBasePlayer*)plr)->m_flSpawnTime ) > 30 ) )
 				{
 					count2++;
 
@@ -2161,6 +2241,17 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 			{
 			if( !count2 )
 			{
+			if( pActivator && pActivator->IsPlayer() && m_flRepeatTimer - gpGlobals->time < -1 ){
+				CBasePlayer *pPlayer = (CBasePlayer*)pActivator;
+			MESSAGE_BEGIN( MSG_ALL, 8, NULL ); // svc_print
+				WRITE_BYTE( 3 ); // PRINT_CHAT
+				WRITE_STRING( UTIL_VarArgs( "%s^7 trying activate changelevel too soon\n", ( pPlayer->pev->netname && STRING( pPlayer->pev->netname )[0] != 0 ) ? STRING( pPlayer->pev->netname ) : "unconnected"));
+			MESSAGE_END();
+				UTIL_CleanSpawnPoint( pPlayer->pev->origin, 50 );
+				m_flRepeatTimer = gpGlobals->time;
+				pPlayer->m_iLocalConfirm = -2;
+}
+
 				UTIL_HudMessageAll( params, "Cannot change level: Not enough players!\nWait 30 sec before you may changelevel!" );
 				return;
 			}
@@ -2171,7 +2262,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 				i = 1;
 
 			if( i )
-				UTIL_HudMessageAll( params, UTIL_VarArgs( "%s touched end of map\nnext is %s %s, %d to go",
+				UTIL_HudMessageAll( params, UTIL_VarArgs( "%s touched end of map\nnext is %s %s, %d to go\n",
 					( pActivator->pev->netname && STRING( pActivator->pev->netname )[0] != 0 ) ? STRING( pActivator->pev->netname ) : "unconnected",
 					st_szNextMap, st_szNextSpot, i ) );
 			if( count2 )
@@ -2200,11 +2291,20 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 				}
 				if( g_iMenu != 1 )
 				{
-					g_GlobalMenu.ConfirmMenu( (CBasePlayer*)pActivator, this, m_szMapName );
+					if( !IsBadPlayer( pActivator ) )
+						g_GlobalMenu.ConfirmMenu( (CBasePlayer*)pActivator, this, m_szMapName );
 					return;
 				}
 				if( g_GlobalMenu.m_iConfirm < count2 )
 					return;
+				//if( mp_coop_strongpolicy.value )
+				/*{
+					// do not allow go back if there are checkpoints, but not near changelevel
+					if( g_checkpoints[0].time && (g_checkpoints[0].origin - VecBModelOrigin(pev)).Length() > 150 )
+						return;
+					if( count2 < 2 )
+						return;
+				}*/
 			}
 			}
 
@@ -2288,6 +2388,10 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 
 	}*/
 
+			MESSAGE_BEGIN( MSG_ALL, 8, NULL ); // svc_print
+				WRITE_BYTE( 3 ); // PRINT_CHAT
+				WRITE_STRING( UTIL_VarArgs( "%s^7 activated changelevel\n", ( pPlayer->pev->netname && STRING( pPlayer->pev->netname )[0] != 0 ) ? STRING( pPlayer->pev->netname ) : "unconnected"));
+			MESSAGE_END();
 
 	// shedule remove ke^w on first info_player_start
 	/*edict_t *playerstart = FIND_ENTITY_BY_CLASSNAME( NULL, "info_player_start" );
