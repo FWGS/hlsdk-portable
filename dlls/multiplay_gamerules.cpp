@@ -265,7 +265,8 @@ void CHalfLifeMultiplay::RefreshSkillData( void )
 	// override some values for multiplay.
 
 	// suitcharger
-	gSkillData.suitchargerCapacity = 30;
+	if( !mp_coop.value )
+		gSkillData.suitchargerCapacity = 30;
 
 	// Crowbar whack
 	gSkillData.plrDmgCrowbar = 25;
@@ -1296,12 +1297,12 @@ Vector CHalfLifeMultiplay::VecAmmoRespawnSpot( CBasePlayerAmmo *pAmmo )
 //=========================================================
 float CHalfLifeMultiplay::FlHealthChargerRechargeTime( void )
 {
-	return 60;
+	return cvar_iresptime.value * 2;
 }
 
 float CHalfLifeMultiplay::FlHEVChargerRechargeTime( void )
 {
-	return 30;
+	return cvar_iresptime.value;
 }
 
 //=========================================================
