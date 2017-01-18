@@ -610,6 +610,10 @@ void ClientUserInfoChanged( edict_t *pEntity, char *infobuffer )
 		// Set the name
 		g_engfuncs.pfnSetClientKeyValue( ENTINDEX(pEntity), infobuffer, "name", sName );
 
+		// prevent phantom nickname changed messages
+		if( mp_coop.value && ((CBasePlayer *)pEntity->pvPrivateData)->m_state == STATE_UNINITIALIZED )
+			return;
+
 		char text[256];
 		snprintf( text, 256, "* %s changed name to %s\n", STRING(pEntity->v.netname), g_engfuncs.pfnInfoKeyValue( infobuffer, "name" ) );
 		MESSAGE_BEGIN( MSG_ALL, gmsgSayText, NULL );
