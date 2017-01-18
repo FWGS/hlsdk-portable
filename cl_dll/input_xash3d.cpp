@@ -54,7 +54,7 @@ float rel_pitch;
 #define IMPULSE_DOWN	2
 #define IMPULSE_UP		4
 
-bool CL_IsDead();
+int CL_IsDead( void );
 Vector dead_viewangles(0, 0, 0);
 
 void IN_ToggleButtons( float forwardmove, float sidemove )

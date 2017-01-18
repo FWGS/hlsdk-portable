@@ -825,6 +825,8 @@ static physics_interface_t gPhysicsInterface =
 	DispatchPhysicsEntity,
 };
 
+BOOL gPhysicsInterfaceInitialized = FALSE;
+
 int Server_GetPhysicsInterface( int iVersion, server_physics_api_t *pfuncsFromEngine, physics_interface_t *pFunctionTable )
 {
 	if( !pFunctionTable || !pfuncsFromEngine || iVersion != SV_PHYSICS_INTERFACE_VERSION )
@@ -837,6 +839,6 @@ int Server_GetPhysicsInterface( int iVersion, server_physics_api_t *pfuncsFromEn
 
 	// fill engine callbacks
 	memcpy( pFunctionTable, &gPhysicsInterface, sizeof(physics_interface_t) );
-
+	gPhysicsInterfaceInitialized = TRUE;
 	return TRUE;
 }
