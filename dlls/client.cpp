@@ -51,7 +51,7 @@ extern int gmsgSayText;
 extern int g_teamplay;
 
 void LinkUserMessages( void );
-void BecomeSpectator( CBasePlayer *pPlayer );
+void UTIL_BecomeSpectator( CBasePlayer *pPlayer );
 /*
  * used by kill command and disconnect command
  * ROBIN: Moved here from player.cpp, to allow multiple player models
@@ -85,7 +85,7 @@ BOOL ClientConnect( edict_t *pEntity, const char *pszName, const char *pszAddres
 		{
 			pl->m_state = STATE_UNINITIALIZED;
 			pl->RemoveAllItems( TRUE );
-			BecomeSpectator( pl );
+			UTIL_BecomeSpectator( pl );
 		}
 	}
 
@@ -228,7 +228,7 @@ void ClientPutInServer( edict_t *pEntity )
 	if( mp_spectator.value )
 	{
 		pPlayer->RemoveAllItems( TRUE );
-		BecomeSpectator( pPlayer );
+		UTIL_BecomeSpectator( pPlayer );
 	}
 
 	// Reset interpolation during first frame
@@ -710,7 +710,7 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 			{
 				plr->m_state = STATE_UNINITIALIZED;
 				plr->RemoveAllItems( TRUE );
-				BecomeSpectator( plr );
+				UTIL_BecomeSpectator( plr );
 				//plr->Spawn();
 			}
 		}
