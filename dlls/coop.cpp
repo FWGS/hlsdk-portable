@@ -4,6 +4,13 @@
 #include "player.h"
 #include "coop_util.h"
 
+
+GlobalMenu g_GlobalMenu;
+
+
+struct SavedCoords g_SavedCoords, s_SavedCoords;
+
+
 void UTIL_CleanSpawnPoint( Vector origin, float dist )
 {
 	CBaseEntity *ent = NULL;
@@ -129,13 +136,19 @@ char *badlist[256] = {
 void UTIL_CoopKickPlayer(CBaseEntity *pPlayer)
 {
 	int i;
+
 	if( !pPlayer )
 		return;
+
 	char *name = UTIL_CoopPlayerName( pPlayer );
 	SERVER_COMMAND( UTIL_VarArgs( "kick %d\n", ENTINDEX(pPlayer->pev->pContainingEntity) - 1 ) );
+
 	if( strlen( name ) < 5 )
 		return;
+
+	// find last slot
 	for( i = 0; badlist[i]; i++ );
+
 	badlist[i] = strdup( name );
 }
 
@@ -143,9 +156,11 @@ bool UTIL_CoopIsBadPlayer( CBaseEntity *plr )
 {
 	if( !plr )
 		return false;
+
 	for( int i = 0; badlist[i];i++ )
 		if( strcasestr( (char*)UTIL_CoopPlayerName( plr ), badlist[i] ) )
 			return true;
+
 	return false;
 }
 
@@ -218,16 +233,17 @@ void GlobalMenu::Process( CBasePlayer *pPlayer, int imenu )
 
 		if( imenu == 1 ) // confirm
 		{
-		if( m_iBanCount >= 2 )
-		{
-			UTIL_CoopKickPlayer( pPlayer );
-			m_iConfirm-= 5;
-			return;
-		}				m_iConfirm++;
-		MESSAGE_BEGIN( MSG_ALL, 8, NULL ); // svc_print
-			WRITE_BYTE( 3 ); // PRINT_CHAT
-			WRITE_STRING( UTIL_VarArgs( "%s^7 confirmed map change\n", ( pPlayer->pev->netname && STRING( pPlayer->pev->netname )[0] != 0 ) ? STRING( pPlayer->pev->netname ) : "unconnected"));
-		MESSAGE_END();
+			if( m_iBanCount >= 2 )
+			{
+				UTIL_CoopKickPlayer( pPlayer );
+				m_iConfirm-= 5;
+				return;
+			}
+			m_iConfirm++;
+			MESSAGE_BEGIN( MSG_ALL, 8, NULL ); // svc_print
+				WRITE_BYTE( 3 ); // PRINT_CHAT
+				WRITE_STRING( UTIL_VarArgs( "%s^7 confirmed map change\n", ( pPlayer->pev->netname && STRING( pPlayer->pev->netname )[0] != 0 ) ? STRING( pPlayer->pev->netname ) : "unconnected"));
+			MESSAGE_END();
 
 		}
 		if( imenu == 2 ) // cancel
@@ -481,6 +497,7 @@ void UTIL_CoopProcessMenu( CBasePlayer *pPlayer, int imenu )
 						pPlayer->RemoveAllItems( TRUE );
 						UTIL_SpawnPlayer( pPlayer );
 						pPlayer->pev->origin = g_checkpoints[imenu-2].origin;
+						pPlayer->pev->angles = g_checkpoints[imenu-2].angles;
 					}
 				break;
 				case MENUSTATE_LOCAL_CONFIRM:
@@ -610,8 +627,3 @@ CBaseEntity *UTIL_CoopGetPlayerTrain( CBaseEntity *pPlayer)
 		return NULL;
 	return train;
 }
-
-GlobalMenu g_GlobalMenu;
-
-
-struct SavedCoords g_SavedCoords, s_SavedCoords;

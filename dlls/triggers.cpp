@@ -1529,6 +1529,8 @@ void GlobalMenu::VoteMenu( CBasePlayer *pPlayer )
 	ShowGlobalMenu(UTIL_VarArgs("%s requested to force change map", UTIL_CoopPlayerName( pPlayer ) ), i, maps);
 
 }
+
+
 void UTIL_CoopValidateOffset( void )
 {
 	if( !g_SavedCoords.validoffset)
@@ -1674,73 +1676,74 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 			i = 0;
 			if( !l_SavedCoords.trainsaved )
 			{
-			if( !count2 )
-			{
-			if( pActivator && pActivator->IsPlayer() && m_flRepeatTimer - gpGlobals->time < -1 ){
-				CBasePlayer *pPlayer = (CBasePlayer*)pActivator;
-			MESSAGE_BEGIN( MSG_ALL, 8, NULL ); // svc_print
-				WRITE_BYTE( 3 ); // PRINT_CHAT
-				WRITE_STRING( UTIL_VarArgs( "%s^7 trying activate changelevel too soon\n", ( pPlayer->pev->netname && STRING( pPlayer->pev->netname )[0] != 0 ) ? STRING( pPlayer->pev->netname ) : "unconnected"));
-			MESSAGE_END();
-				UTIL_CleanSpawnPoint( pPlayer->pev->origin, 50 );
-				m_flRepeatTimer = gpGlobals->time;
-				pPlayer->m_iLocalConfirm = -2;
-}
+				if( !count2 )
+				{
+					if( pActivator && pActivator->IsPlayer() && m_flRepeatTimer - gpGlobals->time < -1 )
+					{
+						CBasePlayer *pPlayer = (CBasePlayer*)pActivator;
+					MESSAGE_BEGIN( MSG_ALL, 8, NULL ); // svc_print
+						WRITE_BYTE( 3 ); // PRINT_CHAT
+						WRITE_STRING( UTIL_VarArgs( "%s^7 trying activate changelevel too soon\n", ( pPlayer->pev->netname && STRING( pPlayer->pev->netname )[0] != 0 ) ? STRING( pPlayer->pev->netname ) : "unconnected"));
+					MESSAGE_END();
+						UTIL_CleanSpawnPoint( pPlayer->pev->origin, 50 );
+						m_flRepeatTimer = gpGlobals->time;
+						pPlayer->m_iLocalConfirm = -2;
+					}
 
-				UTIL_HudMessageAll( params, "Cannot change level: Not enough players!\nWait 30 sec before you may changelevel!" );
-				return;
-			}
+					UTIL_HudMessageAll( params, "Cannot change level: Not enough players!\nWait 30 sec before you may changelevel!" );
+					return;
+				}
 
-			if( count1 > 1 && count1 < count2 / 3 )
-				i = count1 - count1 < count2 / 3;
-			if( count1 > 1 && count1 < count2 / 3 )
-				i = 1;
+				if( count1 > 1 && count1 < count2 / 3 )
+					i = count1 - count1 < count2 / 3;
+				if( count1 > 1 && count1 < count2 / 3 )
+					i = 1;
 
-			if( i )
-				UTIL_HudMessageAll( params, UTIL_VarArgs( "%s touched end of map\nnext is %s %s, %d to go\n",
-					( pActivator->pev->netname && STRING( pActivator->pev->netname )[0] != 0 ) ? STRING( pActivator->pev->netname ) : "unconnected",
-					st_szNextMap, st_szNextSpot, i ) );
-			if( count2 )
-			{
-				pev->rendercolor.x = count1 * 255 / count2;
+				if( i )
+					UTIL_HudMessageAll( params, UTIL_VarArgs( "%s touched end of map\nnext is %s %s, %d to go\n",
+						( pActivator->pev->netname && STRING( pActivator->pev->netname )[0] != 0 ) ? STRING( pActivator->pev->netname ) : "unconnected",
+						st_szNextMap, st_szNextSpot, i ) );
+				if( count2 )
+				{
+					pev->rendercolor.x = count1 * 255 / count2;
+					if( m_fIsBack )
+						pev->rendercolor.z = 255 - pev->rendercolor.x;
+					else
+						pev->rendercolor.y = 255 - pev->rendercolor.x;
+				}
+
+				ALERT( at_console, "^3CHANGELEVEL:^7 %d %d\n", count2, count1 );
+
+				if( count1 > 1 && count1 < count2 / 3 )
+					return;
+
+				//if( count1 <= 1 && count2 == 2 )
+				//	return;
+
 				if( m_fIsBack )
-					pev->rendercolor.z = 255 - pev->rendercolor.x;
-				else
-					pev->rendercolor.y = 255 - pev->rendercolor.x;
-			}
-
-			ALERT( at_console, "^3CHANGELEVEL:^7 %d %d\n", count2, count1 );
-
-			if( count1 > 1 && count1 < count2 / 3 )
-				return;
-
-			//if( count1 <= 1 && count2 == 2 )
-			//	return;
-
-			if( m_fIsBack )
-			{
-				if( gpGlobals->time - g_GlobalMenu.m_flTime > 30 )
 				{
-					g_iMenu = 0;
-					g_GlobalMenu.m_iConfirm = 0;
-				}
-				if( g_iMenu != 1 )
-				{
-					if( !UTIL_CoopIsBadPlayer( pActivator ) )
-						g_GlobalMenu.ConfirmMenu( (CBasePlayer*)pActivator, this, m_szMapName );
-					return;
-				}
-				if( g_GlobalMenu.m_iConfirm < count2 )
-					return;
-				//if( mp_coop_strongpolicy.value )
-				/*{
-					// do not allow go back if there are checkpoints, but not near changelevel
-					if( g_checkpoints[0].time && (g_checkpoints[0].origin - VecBModelOrigin(pev)).Length() > 150 )
+					if( gpGlobals->time - g_GlobalMenu.m_flTime > 30 )
+					{
+						g_iMenu = 0;
+						g_GlobalMenu.m_iConfirm = 0;
+					}
+					if( g_iMenu != 1 )
+					{
+						if( !UTIL_CoopIsBadPlayer( pActivator ) )
+							g_GlobalMenu.ConfirmMenu( (CBasePlayer*)pActivator, this, m_szMapName );
 						return;
-					if( count2 < 2 )
+					}
+					if( g_GlobalMenu.m_iConfirm < count2 )
 						return;
-				}*/
-			}
+					//if( mp_coop_strongpolicy.value )
+					/*{
+						// do not allow go back if there are checkpoints, but not near changelevel
+						if( g_checkpoints[0].time && (g_checkpoints[0].origin - VecBModelOrigin(pev)).Length() > 150 )
+							return;
+						if( count2 < 2 )
+							return;
+					}*/
+				}
 			}
 
 			if( m_fSpawnSaved )
@@ -1790,18 +1793,18 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 	{
 		int count = 0;
 		for( int i = 1; i <= gpGlobals->maxClients; i++ )
+		{
+			CBaseEntity *plr = UTIL_PlayerByIndex( i );
+
+			if( plr && plr->IsPlayer() && ( !FindTriggerTransition( m_szLandmarkName ) || (gpGlobals->time -((CBasePlayer*)plr)->m_flSpawnTime ) > 30  || m_fSkipSpawnCheck ) )
 			{
-				CBaseEntity *plr = UTIL_PlayerByIndex( i );
+					if( InTransitionVolume( plr, m_szLandmarkName ))
+					{
+						count++;
+					}
 
-				if( plr && plr->IsPlayer() && ( !FindTriggerTransition( m_szLandmarkName ) || (gpGlobals->time -((CBasePlayer*)plr)->m_flSpawnTime ) > 30  || m_fSkipSpawnCheck ) )
-				{
-						if( InTransitionVolume( plr, m_szLandmarkName ))
-						{
-							count++;
-						}
-
-				}
 			}
+		}
 		if( !count )
 		{
 			ALERT( at_console, "There are no players in transition volume %s, aborting\n", m_szLandmarkName );
@@ -1815,23 +1818,11 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 		ALERT( at_console, "Player isn't in the transition volume %s, aborting\n", m_szLandmarkName );
 		return;
 	}
-	//else
-/* if !pPlayer
-	{
-		ALERT( at_console, ", aborting\n" );
-		return;
 
-	}*/
-
-			MESSAGE_BEGIN( MSG_ALL, 8, NULL ); // svc_print
-				WRITE_BYTE( 3 ); // PRINT_CHAT
-				WRITE_STRING( UTIL_VarArgs( "%s^7 activated changelevel\n", ( pPlayer->pev->netname && STRING( pPlayer->pev->netname )[0] != 0 ) ? STRING( pPlayer->pev->netname ) : "unconnected"));
-			MESSAGE_END();
-
-	// shedule remove ke^w on first info_player_start
-	/*edict_t *playerstart = FIND_ENTITY_BY_CLASSNAME( NULL, "info_player_start" );
-	if( !FNullEnt(playerstart) )
-		playerstart->v.flags |= FL_KILLME;*/
+	MESSAGE_BEGIN( MSG_ALL, 8, NULL ); // svc_print
+		WRITE_BYTE( 3 ); // PRINT_CHAT
+		WRITE_STRING( UTIL_VarArgs( "%s^7 activated changelevel\n", ( pPlayer->pev->netname && STRING( pPlayer->pev->netname )[0] != 0 ) ? STRING( pPlayer->pev->netname ) : "unconnected"));
+	MESSAGE_END();
 
 	// This object will get removed in the call to CHANGE_LEVEL, copy the params into "safe" memory
 	strcpy( st_szNextMap, m_szMapName );
@@ -1875,33 +1866,27 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 	// loop through all clients, reset state
 	if( mp_coop_changelevel.value )
 	{
-	for( int i = 1; i <= gpGlobals->maxClients; i++ )
-	{
-		CBasePlayer *plr = (CBasePlayer*)UTIL_PlayerByIndex( i );
-
-		// reset all players state
-		if( plr )
+		for( int i = 1; i <= gpGlobals->maxClients; i++ )
 		{
-			plr->m_state = STATE_UNINITIALIZED;
-			plr->RemoveAllItems( TRUE );
-			UTIL_BecomeSpectator( plr );
-			//plr->SetThink( &CBasePlayer::Spawn );
-			//plr->pev->nextthink = gpGlobals->time + 1;
-			// HACK: force perform reconnection
-			if( mp_coop_reconnect_hack.value )
-				CLIENT_COMMAND( plr->edict(), "reconnect\n" );
-			
-			//CLIENT_COMMAND( plr->edict(), "alias cmd \"reconnect;unalias cmd\"\n" );
-			//MESSAGE_BEGIN( MSG_ONE, 2, NULL, plr->pev ); // svc_disconnect after stufftext
-			//MESSAGE_END();
-			//SERVER_COMMAND( UTIL_VarArgs( "kick %d\n", i-1 ) );
-			//SERVER_EXECUTE();
+			CBasePlayer *plr = (CBasePlayer*)UTIL_PlayerByIndex( i );
+
+			// reset all players state to make it spawn again after restart
+			if( plr )
+			{
+				plr->m_state = STATE_UNINITIALIZED;
+				plr->RemoveAllItems( TRUE );
+				UTIL_BecomeSpectator( plr );
+				// HACK: force perform reconnection
+				if( mp_coop_reconnect_hack.value )
+					CLIENT_COMMAND( plr->edict(), "reconnect\n" );
+			}
 		}
-	}
-	g_fPause = true;
+		g_fPause = true;
 	}
 	s_SavedCoords.fUsed = m_bUsed;
 	s_SavedCoords.valid = valid;
+
+	// wait 5 frames to make sure all players are in reconnected state
 	if( mp_coop_reconnect_hack.value )
 		SERVER_COMMAND( UTIL_VarArgs( "wait;wait;wait;wait;wait;changelevel %s %s\n", st_szNextMap, st_szNextSpot ) );
 	else
