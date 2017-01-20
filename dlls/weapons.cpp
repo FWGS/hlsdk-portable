@@ -354,6 +354,7 @@ void W_Precache( void )
 	UTIL_PrecacheOtherWeapon( "weapon_gravgun" );
 	UTIL_PrecacheOtherWeapon( "weapon_ar2" );
 	UTIL_PrecacheOtherWeapon( "weapon_big_cock" );
+	UTIL_PrecacheOtherWeapon( "weapon_gateofbabylon" );
 
 
 #if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )

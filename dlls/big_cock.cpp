@@ -13,7 +13,6 @@
 #include "nodes.h"
 #include "player.h"
 
-#define WEAPON_BIG_COCK 18
 #define BIG_COCK_WEIGHT 21
 
 

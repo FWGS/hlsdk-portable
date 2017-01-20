@@ -1268,7 +1268,7 @@ void CSprite::TurnOn( void )
 	pev->effects = 0;
 	if( ( pev->framerate && m_maxFrame > 1.0 ) || ( pev->spawnflags & SF_SPRITE_ONCE ) )
 	{
-		SetThink( &CSprite::CSprite::AnimateThink );
+		SetThink( &CSprite::AnimateThink );
 		pev->nextthink = gpGlobals->time;
 		m_lastTime = gpGlobals->time;
 	}

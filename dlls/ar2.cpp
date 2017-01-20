@@ -17,7 +17,6 @@
 #include "game.h"
 
 #define AR2_BEAM_SPRITE		"sprites/xbeam1.spr"
-#define WEAPON_AR2			19
 enum AR2_e
 {
 	AR2_LONGIDLE = 0,
@@ -524,21 +523,7 @@ void CAR2::PrimaryAttack()
 
 	vecDir = m_pPlayer->FireBulletsPlayer(5, vecSrc, vecAiming, VECTOR_CONE_3DEGREES, 8192, BULLET_PLAYER_MP5, 0, 3, m_pPlayer->pev, m_pPlayer->random_seed);
 
-	int iAnim;
-	switch (RANDOM_LONG(0, 2))
-	{
-	case 0:
-		iAnim = AR2_FIRE1;
-		break;
-
-	default:
-	case 1:
-		iAnim = AR2_FIRE2;
-		break;
-	case 2:
-		iAnim = AR2_FIRE3;
-		break;
-	}
+	int iAnim = RANDOM_LONG( AR2_FIRE1, AR2_FIRE3 );
 
 	MyAnim(iAnim);
 	if( !m_pBeam1 )

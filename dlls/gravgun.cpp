@@ -24,7 +24,6 @@ Created by Solexid
 #define GRAV_SOUND_RUN			"weapons/mine_activate.wav"
 #define GRAV_SOUND_FAILRUN		"houndeye/he_die3.wav"
 #define GRAV_SOUND_STARTUP		"weapons/gauss2.wav"
-#define WEAPON_GRAVGUN 17
 #define EGON_SWITCH_NARROW_TIME			0.75			// Time it takes to switch fire modes
 
 enum gauss_e {
