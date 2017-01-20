@@ -25,121 +25,24 @@ project (SVDLL)
 
 set (SVDLL_LIBRARY server)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_LINUX -DCLIENT_WEAPONS -Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf -D_vsnprintf=vsnprintf -fno-exceptions -w")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-exceptions -w")
 set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS}")
 
-set (SVDLL_SOURCES 
-	agrunt.cpp
-	airtank.cpp
-	aflock.cpp
-	animating.cpp
-	animation.cpp
-	apache.cpp
-	barnacle.cpp
-	barney.cpp
-	bigmomma.cpp
-	bloater.cpp
-	bmodels.cpp
-	bullsquid.cpp
-	buttons.cpp
-	cbase.cpp
-	client.cpp
-	combat.cpp
-	controller.cpp
-	crossbow.cpp
-	crowbar.cpp
-	defaultai.cpp
-	doors.cpp
-	effects.cpp
-	egon.cpp
-	explode.cpp
-	flyingmonster.cpp
-	func_break.cpp
-	func_tank.cpp
-	game.cpp
-	gamerules.cpp
-	gargantua.cpp
-	gauss.cpp
-	genericmonster.cpp
-	ggrenade.cpp
-	globals.cpp
-	glock.cpp
-	gman.cpp
-	h_ai.cpp
-	h_battery.cpp
-	h_cine.cpp
-	h_cycler.cpp
-	h_export.cpp
-	handgrenade.cpp
-	hassassin.cpp
-	headcrab.cpp
-	healthkit.cpp
-	hgrunt.cpp
-	hornet.cpp
-	hornetgun.cpp
-	houndeye.cpp
-	ichthyosaur.cpp
-	islave.cpp
-	items.cpp
-	leech.cpp
-	lights.cpp
-	maprules.cpp
-	monstermaker.cpp
-	monsters.cpp
-	monsterstate.cpp
-	mortar.cpp
-	mp5.cpp
-	multiplay_gamerules.cpp
-	nihilanth.cpp
-	nodes.cpp
-	osprey.cpp
-	pathcorner.cpp
-	plane.cpp
-	plats.cpp
-	player.cpp
-	python.cpp
-	rat.cpp
-	roach.cpp
-	rpg.cpp
-	satchel.cpp
-	schedule.cpp
-	scientist.cpp
-	scripted.cpp
-	shotgun.cpp
-	singleplay_gamerules.cpp
-	skill.cpp
-	sound.cpp
-	soundent.cpp
-	spectator.cpp
-	squadmonster.cpp
-	squeakgrenade.cpp
-	subs.cpp
-	talkmonster.cpp
-	teamplay_gamerules.cpp
-	tempmonster.cpp
-	tentacle.cpp
-	triggers.cpp
-	tripmine.cpp
-	turret.cpp
-	util.cpp
-	weapons.cpp
-	world.cpp
-	xen.cpp
-	zombie.cpp
-	prop.cpp
-	ar2.cpp
-	gravgun.cpp
-	../pm_shared/pm_debug.c
-	../pm_shared/pm_math.c
-	../pm_shared/pm_shared.c
-)
+file( GLOB_RECURSE SVDLL_SOURCES *.cpp ) 
+file( GLOB_RECURSE PM_SOURCES ../pm_shared/*.c )
+list( APPEND SVDLL_SOURCES ${PM_SOURCES} )
+
+set( REMOVE_UNNEEDED_SOURCES
+	${CMAKE_CURRENT_LIST_DIR}/AI_BaseNPC_Schedule.cpp
+	${CMAKE_CURRENT_LIST_DIR}/mpstubb.cpp )
+list( REMOVE_ITEM SVDLL_SOURCES ${REMOVE_UNNEEDED_SOURCES} )
 	
 include_directories (. wpn_shared ../common ../engine ../pm_shared ../game_shared ../public)
 
+add_definitions( -D_LINUX -DCLIENT_WEAPONS -Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf -D_vsnprintf=vsnprintf  )
+
 if(USE_VOICEMGR)
-	set(SVDLL_SOURCES
-		${SVDLL_SOURCES}
-		../game_shared/voice_gamemgr.cpp)
+	list( APPEND SVDLL_SOURCES ../game_shared/voice_gamemgr.cpp)
 else()
 	add_definitions(-DNO_VOICEGAMEMGR)
 endif()
