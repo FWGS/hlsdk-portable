@@ -57,27 +57,8 @@ BOOL CGameRules::CanHaveAmmo( CBasePlayer *pPlayer, const char *pszAmmoName, int
 
 	return FALSE;
 }
-bool CoopGetSpawnPoint( Vector *point, Vector *angles);
 
-bool CoopRestorePlayerCoords(CBaseEntity *player, Vector *origin, Vector *angles );
 
-Vector FixupSpawnPoint(Vector spawn)
-{
-	int i = 0;
-	// predict that spawn point is almost correct
-	while( i < 2 ) // 2 player heights
-	{
-		Vector point = spawn + Vector( 0, 0, 36 * i );
-		TraceResult tr;
-		UTIL_TraceHull( point, point, ignore_monsters, (mp_unduck.value&&g_fSavedDuck)?head_hull:human_hull, NULL, &tr );
-		if( !tr.fStartSolid && !tr.fAllSolid )
-			return point;
-		i = -i;
-		if( i >= 0 )
-			i++;
-	}
-	return spawn;
-}
 extern EHANDLE				g_pLastSpawn;
 //=========================================================
 //=========================================================
@@ -107,8 +88,8 @@ edict_t *CGameRules::GetPlayerSpawnSpot( CBasePlayer *pPlayer )
 	pPlayer->pev->angles = VARS( pentSpawnSpot )->angles;
 	pPlayer->pev->punchangle = g_vecZero;
 	if( !(pPlayer->pev->flags & FL_SPECTATOR ) )
-	if( mp_coop_changelevel.value && !CoopRestorePlayerCoords( pPlayer, &pPlayer->pev->origin, &pPlayer->pev->angles ))
-		if( !CoopGetSpawnPoint( &pPlayer->pev->origin, &pPlayer->pev->angles ) )
+	if( mp_coop_changelevel.value && !UTIL_CoopRestorePlayerCoords( pPlayer, &pPlayer->pev->origin, &pPlayer->pev->angles ))
+		if( !UTIL_CoopGetSpawnPoint( &pPlayer->pev->origin, &pPlayer->pev->angles ) )
 		{
 			if( !g_pLastSpawn )
 			{
@@ -117,11 +98,11 @@ edict_t *CGameRules::GetPlayerSpawnSpot( CBasePlayer *pPlayer )
 				params.fadeoutTime = .5;
 				params.holdTime = 10;
 				params.channel = 0;
-				params.y = 0;
+				params.x = params.y = -1;
 				params.r2 = params.g2 = params.b2 = params.a2 = params.r1 = params.g1 = params.b1 = params.a1 = 255;
 
 
-				UTIL_HudMessage( pPlayer, params, "Server cannot select a spawnpoint, please fly to it manually and press attack button" );
+				UTIL_HudMessage( pPlayer, params, "Server cannot select a spawnpoint\nplease fly to it manually\nand press attack button" );
 				// select spawn point
 				pPlayer->m_state = STATE_POINT_SELECT;
 				pPlayer->m_afButtonPressed = 0;
@@ -133,7 +114,7 @@ edict_t *CGameRules::GetPlayerSpawnSpot( CBasePlayer *pPlayer )
 			}
 		}
 	pPlayer->pev->fixangle = TRUE;
-	pPlayer->pev->origin = FixupSpawnPoint( pPlayer->pev->origin );
+	pPlayer->pev->origin = UTIL_FixupSpawnPoint( pPlayer->pev->origin );
 	if( g_fSavedDuck )
 		pPlayer->pev->flags |= FL_DUCKING;
 

@@ -51,7 +51,7 @@ extern int gmsgSayText;
 extern int g_teamplay;
 
 void LinkUserMessages( void );
-void BecomeSpectator( CBasePlayer *pPlayer );
+void UTIL_BecomeSpectator( CBasePlayer *pPlayer );
 /*
  * used by kill command and disconnect command
  * ROBIN: Moved here from player.cpp, to allow multiple player models
@@ -85,7 +85,7 @@ BOOL ClientConnect( edict_t *pEntity, const char *pszName, const char *pszAddres
 		{
 			pl->m_state = STATE_UNINITIALIZED;
 			pl->RemoveAllItems( TRUE );
-			BecomeSpectator( pl );
+			UTIL_BecomeSpectator( pl );
 		}
 	}
 
@@ -228,7 +228,7 @@ void ClientPutInServer( edict_t *pEntity )
 	if( mp_spectator.value )
 	{
 		pPlayer->RemoveAllItems( TRUE );
-		BecomeSpectator( pPlayer );
+		UTIL_BecomeSpectator( pPlayer );
 	}
 
 	// Reset interpolation during first frame
@@ -610,6 +610,10 @@ void ClientUserInfoChanged( edict_t *pEntity, char *infobuffer )
 		// Set the name
 		g_engfuncs.pfnSetClientKeyValue( ENTINDEX(pEntity), infobuffer, "name", sName );
 
+		// prevent phantom nickname changed messages
+		if( mp_coop.value && ((CBasePlayer *)pEntity->pvPrivateData)->m_state == STATE_UNINITIALIZED )
+			return;
+
 		char text[256];
 		snprintf( text, 256, "* %s changed name to %s\n", STRING(pEntity->v.netname), g_engfuncs.pfnInfoKeyValue( infobuffer, "name" ) );
 		MESSAGE_BEGIN( MSG_ALL, gmsgSayText, NULL );
@@ -710,7 +714,7 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 			{
 				plr->m_state = STATE_UNINITIALIZED;
 				plr->RemoveAllItems( TRUE );
-				BecomeSpectator( plr );
+				UTIL_BecomeSpectator( plr );
 				//plr->Spawn();
 			}
 		}

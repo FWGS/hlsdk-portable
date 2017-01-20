@@ -23,6 +23,7 @@
 #include "player.h"
 #include "talkmonster.h"
 #include "gamerules.h"
+#include "game.h"
 
 static char *memfgets( byte *pMemFile, int fileSize, int &filePos, char *pBuffer, int bufferSize );
 
@@ -1264,7 +1265,7 @@ void SENTENCEG_Init()
 	isentencegs = -1;
 
 	int filePos = 0, fileSize;
-	byte *pMemFile = g_engfuncs.pfnLoadFileForMe( "sound/sentences.txt", &fileSize );
+	byte *pMemFile = g_engfuncs.pfnLoadFileForMe( sentences_txt.string, &fileSize );
 	if( !pMemFile )
 		return;
 
@@ -1528,7 +1529,7 @@ void TEXTURETYPE_Init()
 
 	gcTextures = 0;
 
-	pMemFile = g_engfuncs.pfnLoadFileForMe( "sound/materials.txt", &fileSize );
+	pMemFile = g_engfuncs.pfnLoadFileForMe( materials_txt.string, &fileSize );
 	if( !pMemFile )
 		return;
 

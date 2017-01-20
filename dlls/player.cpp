@@ -92,9 +92,9 @@ TYPEDESCRIPTION	CBasePlayer::m_playerSaveData[] =
 	DEFINE_ARRAY( CBasePlayer, m_rgflSuitNoRepeatTime, FIELD_TIME, CSUITNOREPEAT ),
 	DEFINE_FIELD( CBasePlayer, m_lastDamageAmount, FIELD_INTEGER ),
 
-	DEFINE_ARRAY( CBasePlayer, m_rgpPlayerItems, FIELD_CLASSPTR, MAX_ITEM_TYPES ),
-	DEFINE_FIELD( CBasePlayer, m_pActiveItem, FIELD_CLASSPTR ),
-	DEFINE_FIELD( CBasePlayer, m_pLastItem, FIELD_CLASSPTR ),
+	DEFINE_ARRAY( CBasePlayer, m_rgpPlayerItems, FIELD_EHANDLE, MAX_ITEM_TYPES ),
+	DEFINE_FIELD( CBasePlayer, m_pActiveItem, FIELD_EHANDLE ),
+	DEFINE_FIELD( CBasePlayer, m_pLastItem, FIELD_EHANDLE ),
 
 	DEFINE_ARRAY( CBasePlayer, m_rgAmmo, FIELD_INTEGER, MAX_AMMO_SLOTS ),
 	DEFINE_FIELD( CBasePlayer, m_idrowndmg, FIELD_INTEGER ),

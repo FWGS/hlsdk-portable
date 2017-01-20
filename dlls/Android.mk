@@ -131,7 +131,8 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
            big_cock.cpp \
 	   ../pm_shared/pm_debug.c \
 	   ../pm_shared/pm_math.c \
-	   ../pm_shared/pm_shared.c
+	   ../pm_shared/pm_shared.c \
+	   coop.cpp
 #	   ../game_shared/voice_gamemgr.cpp
 
 LOCAL_LDLIBS := -llog

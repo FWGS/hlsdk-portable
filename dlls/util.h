@@ -568,4 +568,3 @@ int UTIL_SharedRandomLong( unsigned int seed, int low, int high );
 float UTIL_SharedRandomFloat( unsigned int seed, float low, float high );
 
 float UTIL_WeaponTimeBase( void );
-void UTIL_CleanSpawnPoint( Vector origin, float radius );

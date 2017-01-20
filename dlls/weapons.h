@@ -217,6 +217,9 @@ typedef struct
 	int iId;
 } AmmoInfo;
 
+#include "whandle.h"
+
+
 // Items that the player has in their inventory that they can use
 class CBasePlayerItem : public CBaseAnimating
 {
@@ -265,7 +268,7 @@ public:
 	static AmmoInfo AmmoInfoArray[ MAX_AMMO_SLOTS ];
 
 	CBasePlayer	*m_pPlayer;
-	CBasePlayerItem *m_pNext;
+	EHBasePlayerItem m_pNext;
 	int		m_iId;												// WEAPON_???
 
 	virtual int iItemSlot( void ) { return 0; }			// return 0 to MAX_ITEMS_SLOTS, used in hud
@@ -456,7 +459,7 @@ public:
 	BOOL PackWeapon( CBasePlayerItem *pWeapon );
 	BOOL PackAmmo( int iszName, int iCount );
 
-	CBasePlayerItem	*m_rgpPlayerItems[MAX_ITEM_TYPES];// one slot for each 
+	EHBasePlayerItem m_rgpPlayerItems[MAX_ITEM_TYPES];// one slot for each 
 
 	int m_rgiszAmmo[MAX_AMMO_SLOTS];// ammo names
 	int	m_rgAmmo[MAX_AMMO_SLOTS];// ammo quantities

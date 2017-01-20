@@ -33,8 +33,8 @@
 #ifdef CLIENT_DLL
 	// Spectator Mode
 	int	iJumpSpectator;
-	float	vJumpOrigin[3];
-	float	vJumpAngles[3];
+extern	float	vJumpOrigin[3];
+extern	float	vJumpAngles[3];
 #endif
 
 static int pm_shared_initialized = 0;
@@ -122,6 +122,14 @@ static char grgchTextureType[CTEXTURESMAX];
 
 int g_onladder = 0;
 
+#ifdef CLIENT_DLL
+#define materials_path "sound/materials.txt"
+#else
+#include "cvardef.h"
+extern cvar_t materials_txt;
+#define materials_path materials_txt.string
+#endif
+
 void PM_SwapTextures( int i, int j )
 {
 	char chTemp;
@@ -173,8 +181,8 @@ void PM_InitTextureTypes()
 
 	gcTextures = 0;
 
-	fileSize = pmove->COM_FileSize( "sound/materials.txt" );
-	pMemFile = pmove->COM_LoadFile( "sound/materials.txt", 5, NULL );
+	fileSize = pmove->COM_FileSize( materials_path );
+	pMemFile = pmove->COM_LoadFile( materials_path, 5, NULL );
 	if( !pMemFile )
 		return;
 

@@ -230,6 +230,9 @@ void CopyToBodyQue( entvars_t *pev )
 	if( pev->effects & EF_NODRAW )
 		return;
 
+	if( !g_pBodyQueueHead )
+		InitBodyQue();
+
 	entvars_t *pevHead = VARS( g_pBodyQueueHead );
 
 	pevHead->angles		= pev->angles;

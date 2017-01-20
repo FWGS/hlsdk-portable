@@ -394,7 +394,7 @@ void W_Precache( void )
 TYPEDESCRIPTION	CBasePlayerItem::m_SaveData[] =
 {
 	DEFINE_FIELD( CBasePlayerItem, m_pPlayer, FIELD_CLASSPTR ),
-	DEFINE_FIELD( CBasePlayerItem, m_pNext, FIELD_CLASSPTR ),
+	DEFINE_FIELD( CBasePlayerItem, m_pNext, FIELD_EHANDLE ),
 	//DEFINE_FIELD( CBasePlayerItem, m_fKnown, FIELD_INTEGER ),Reset to zero on load
 	DEFINE_FIELD( CBasePlayerItem, m_iId, FIELD_INTEGER ),
 	// DEFINE_FIELD( CBasePlayerItem, m_iIdPrimary, FIELD_INTEGER ),
@@ -1244,7 +1244,7 @@ void CBasePlayerAmmo::DefaultTouch( CBaseEntity *pOther )
 //=========================================================
 int CBasePlayerWeapon::ExtractAmmo( CBasePlayerWeapon *pWeapon )
 {
-	int iReturn;
+	int iReturn = 0;
 
 	if( pszAmmo1() != NULL )
 	{
@@ -1304,7 +1304,7 @@ TYPEDESCRIPTION	CWeaponBox::m_SaveData[] =
 {
 	DEFINE_ARRAY( CWeaponBox, m_rgAmmo, FIELD_INTEGER, MAX_AMMO_SLOTS ),
 	DEFINE_ARRAY( CWeaponBox, m_rgiszAmmo, FIELD_STRING, MAX_AMMO_SLOTS ),
-	DEFINE_ARRAY( CWeaponBox, m_rgpPlayerItems, FIELD_CLASSPTR, MAX_ITEM_TYPES ),
+	DEFINE_ARRAY( CWeaponBox, m_rgpPlayerItems, FIELD_EHANDLE, MAX_ITEM_TYPES ),
 	DEFINE_FIELD( CWeaponBox, m_cAmmoTypes, FIELD_INTEGER ),
 };
 

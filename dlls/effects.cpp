@@ -411,7 +411,7 @@ LINK_ENTITY_TO_CLASS( trip_beam, CTripBeam )
 void CTripBeam::Spawn( void )
 {
 	CLightning::Spawn();
-	SetTouch( &TriggerTouch );
+	SetTouch( &CLightning::TriggerTouch );
 	pev->solid = SOLID_TRIGGER;
 	RelinkBeam();
 }

@@ -35,31 +35,8 @@ extern cvar_t teamlist;
 extern cvar_t teamoverride;
 extern cvar_t defaultteam;
 extern cvar_t allowmonsters;
-extern cvar_t cvar_allow_gravgun;
-extern cvar_t cvar_allow_ar2;
-extern cvar_t cvar_ar2_mp5;
-extern cvar_t cvar_ar2_bullets;
-extern cvar_t cvar_ar2_balls;
-extern cvar_t cvar_wresptime;
-extern cvar_t cvar_iresptime;
 
-extern cvar_t cvar_gibtime;
-extern cvar_t cvar_hgibcount;
-extern cvar_t cvar_agibcount;
-
-extern cvar_t mp_gravgun_players;
-extern cvar_t mp_coop;
-extern cvar_t mp_coop_changelevel;
-extern cvar_t mp_coop_nofriendlyfire;
-extern cvar_t mp_coop_disabledmap;
-extern cvar_t mp_unduck;
-extern cvar_t mp_semclip;
-extern cvar_t mp_coop_reconnect_hack;
-extern cvar_t mp_coop_noangry;
-extern cvar_t mp_spectator;
-
-extern bool g_fSavedDuck;
-extern bool g_fPause;
+#include "coop_util.h"
 
 // Engine Cvars
 extern cvar_t *g_psv_gravity;
