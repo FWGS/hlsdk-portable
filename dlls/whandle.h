@@ -1,7 +1,7 @@
 #ifndef WHANDLE_H
 #define WHANDLE_H
 
-
+#ifndef CLIENT_DLL
 
 class CBasePlayerItem;
 
@@ -43,4 +43,8 @@ public:
 		return Get() != other.Get();
 	}
 };
+#else
+#define EHBasePlayerItem CBasePlayerItem*
+#endif
+
 #endif
