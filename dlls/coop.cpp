@@ -706,7 +706,10 @@ bool UTIL_CoopConfirmMenu(CBaseEntity *pTrigger, CBaseEntity *pActivator, int co
 	{
 		// do not allow go back if there are checkpoints, but not near changelevel
 		if( g_checkpoints[0].time && (g_checkpoints[0].origin - VecBModelOrigin(pTrigger->pev)).Length() > 150 )
+		{
+			g_GlobalMenu.m_iConfirm = 0;
 			return false;
+		}
 		//if( count2 < 2 )
 			//return;
 	}
