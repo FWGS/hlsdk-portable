@@ -686,3 +686,29 @@ void UTIL_CoopShowMenu( CBasePlayer *pPlayer, const char *title, int count, cons
 	}
 	//CLIENT_COMMAND( pPlayer->edict(), "exec touch_default/numbers.cfg\n");
 }
+
+bool UTIL_CoopConfirmMenu(CBaseEntity *pTrigger, CBaseEntity *pActivator, int count2, char *mapname )
+{
+	if( gpGlobals->time - g_GlobalMenu.m_flTime > 30 )
+	{
+		g_iMenu = 0;
+		g_GlobalMenu.m_iConfirm = 0;
+	}
+	if( g_iMenu != 1 )
+	{
+		if( !UTIL_CoopIsBadPlayer( pActivator ) )
+			g_GlobalMenu.ConfirmMenu( (CBasePlayer*)pActivator, pTrigger, mapname );
+		return false;
+	}
+	if( g_GlobalMenu.m_iConfirm < count2 )
+		return false;
+	//if( mp_coop_strongpolicy.value )
+	{
+		// do not allow go back if there are checkpoints, but not near changelevel
+		if( g_checkpoints[0].time && (g_checkpoints[0].origin - VecBModelOrigin(pTrigger->pev)).Length() > 150 )
+			return false;
+		//if( count2 < 2 )
+			//return;
+	}
+	return true;
+}

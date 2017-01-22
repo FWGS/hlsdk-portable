@@ -78,6 +78,7 @@ void UTIL_BecomeSpectator( CBasePlayer *pPlayer );
 void UTIL_CoopCheckpointMenu( CBasePlayer *pPlayer );
 void UTIL_CoopVoteMenu( CBasePlayer *pPlayer );
 void UTIL_CoopShowMenu( CBasePlayer *pPlayer, const char *title, int count, const char **slot, signed char time = -1 );
+bool UTIL_CoopConfirmMenu( CBaseEntity *pTrigger, CBaseEntity *pActivator, int count2, char *mapname );
 extern int g_iMenu;
 
 // Show to all spawned players: voting, etc..

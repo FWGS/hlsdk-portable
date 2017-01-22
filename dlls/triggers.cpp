@@ -1398,7 +1398,7 @@ void CChangeLevel::KeyValue( KeyValueData *pkvd )
 	else
 		CBaseTrigger::KeyValue( pkvd );
 }
-bool CoopGetSpawnPoint( Vector *origin, Vector *angles);
+
 /*QUAKED trigger_changelevel (0.5 0.5 0.5) ? NO_INTERMISSION
 When the player touches this, he gets sent to the map listed in the "map" variable.  Unless the NO_INTERMISSION flag is set, the view will go to the info_intermission spot and display stats.
 */
@@ -1721,29 +1721,8 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 				//	return;
 
 				if( m_fIsBack )
-				{
-					if( gpGlobals->time - g_GlobalMenu.m_flTime > 30 )
-					{
-						g_iMenu = 0;
-						g_GlobalMenu.m_iConfirm = 0;
-					}
-					if( g_iMenu != 1 )
-					{
-						if( !UTIL_CoopIsBadPlayer( pActivator ) )
-							g_GlobalMenu.ConfirmMenu( (CBasePlayer*)pActivator, this, m_szMapName );
+					if( !UTIL_CoopConfirmMenu( this, pActivator, count2, m_szMapName ) )
 						return;
-					}
-					if( g_GlobalMenu.m_iConfirm < count2 )
-						return;
-					//if( mp_coop_strongpolicy.value )
-					/*{
-						// do not allow go back if there are checkpoints, but not near changelevel
-						if( g_checkpoints[0].time && (g_checkpoints[0].origin - VecBModelOrigin(pev)).Length() > 150 )
-							return;
-						if( count2 < 2 )
-							return;
-					}*/
-				}
 			}
 
 			if( m_fSpawnSaved )
