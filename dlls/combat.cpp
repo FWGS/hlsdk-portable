@@ -1535,6 +1535,12 @@ Vector CBaseEntity::FireBulletsPlayer( ULONG cShots, Vector vecSrc, Vector vecDi
 			case BULLET_PLAYER_357:
 				pEntity->TraceAttack( pevAttacker, gSkillData.plrDmg357, vecDir, &tr, DMG_BULLET );
 				break;
+			case BULLET_PLAYER_SNIPARS:
+				pEntity->TraceAttack( pevAttacker, 200, vecDir, &tr, DMG_BULLET );
+				break;
+			case BULLET_PLAYER_PEPSI:
+				pEntity->TraceAttack( pevAttacker, 200, vecDir, &tr, DMG_BULLET );
+				break;
 			case BULLET_NONE: // FIX
 				pEntity->TraceAttack( pevAttacker, 50, vecDir, &tr, DMG_CLUB );
 				TEXTURETYPE_PlaySound( &tr, vecSrc, vecEnd, iBulletType );

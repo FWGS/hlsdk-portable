@@ -50,6 +50,7 @@ extern void CopyToBodyQue( entvars_t *pev);
 extern void respawn( entvars_t *pev, BOOL fCopyCorpse );
 extern Vector VecBModelOrigin( entvars_t *pevBModel );
 extern edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer );
+extern int gmsgZoom;
 
 // the world node graph
 extern CGraph WorldGraph;
@@ -180,6 +181,7 @@ int gmsgSetFOV = 0;
 int gmsgShowMenu = 0;
 int gmsgGeigerRange = 0;
 int gmsgTeamNames = 0;
+int gmsgZoom = 0;
 
 int gmsgStatusText = 0;
 int gmsgStatusValue = 0;
@@ -225,6 +227,7 @@ void LinkUserMessages( void )
 	gmsgFade = REG_USER_MSG( "ScreenFade", sizeof(ScreenFade) );
 	gmsgAmmoX = REG_USER_MSG( "AmmoX", 2 );
 	gmsgTeamNames = REG_USER_MSG( "TeamNames", -1 );
+gmsgZoom = REG_USER_MSG( "ZoomHud", 1);
 
 	gmsgStatusText = REG_USER_MSG( "StatusText", -1 );
 	gmsgStatusValue = REG_USER_MSG( "StatusValue", 3 );
@@ -1092,6 +1095,7 @@ void CBasePlayer::TabulateAmmo()
 	ammo_rockets = AmmoInventory( GetAmmoIndex( "rockets" ) );
 	ammo_uranium = AmmoInventory( GetAmmoIndex( "uranium" ) );
 	ammo_hornets = AmmoInventory( GetAmmoIndex( "Hornets" ) );
+	ammo_snipars = AmmoInventory( GetAmmoIndex( "snipars" ) );
 }
 
 /*
@@ -3355,6 +3359,9 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		GiveNamedItem( "ammo_buckshot" );
 		GiveNamedItem( "weapon_9mmAR" );
 		GiveNamedItem( "ammo_9mmAR" );
+		GiveNamedItem( "weapon_rock" );
+		GiveNamedItem( "weapon_katana" );
+		GiveNamedItem( "weapon_pepsigun" );
 		GiveNamedItem( "ammo_ARgrenades" );
 		GiveNamedItem( "weapon_handgrenade" );
 		GiveNamedItem( "weapon_tripmine" );
@@ -3364,9 +3371,13 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		GiveNamedItem( "weapon_crossbow" );
 		GiveNamedItem( "ammo_crossbow" );
 		GiveNamedItem( "weapon_egon" );
+		GiveNamedItem( "weapon_needle" );
 		GiveNamedItem( "weapon_gauss" );
-		GiveNamedItem( "ammo_gaussclip" );
+		GiveNamedItem( "weapon_sawnoff" );
 		GiveNamedItem( "weapon_rpg" );
+		GiveNamedItem( "weapon_snipars" );
+		GiveNamedItem( "ammo_gaussclip" );
+		GiveNamedItem( "ammo_snipars" );
 		GiveNamedItem( "ammo_rpgclip" );
 		GiveNamedItem( "weapon_satchel" );
 		GiveNamedItem( "weapon_snark" );
@@ -3751,6 +3762,12 @@ reflecting all of the HUD state info.
 */
 void CBasePlayer::UpdateClientData( void )
 {
+if ( m_iFOV != 0 && m_iFOV != 20 && m_iFOV != 40 ) 
+{ 
+MESSAGE_BEGIN( MSG_ONE, gmsgZoom, NULL, pev ); 
+WRITE_BYTE(1); 
+MESSAGE_END();
+}
 	if( m_fInitHUD )
 	{
 		m_fInitHUD = FALSE;

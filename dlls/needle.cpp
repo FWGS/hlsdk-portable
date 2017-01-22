@@ -22,57 +22,40 @@
 #include "player.h"
 #include "gamerules.h"
 
-#define	CROWBAR_BODYHIT_VOLUME 128
-#define	CROWBAR_WALLHIT_VOLUME 512
+#define	NEEDLE_BODYHIT_VOLUME 128
+#define	NEEDLE_WALLHIT_VOLUME 512
 
-LINK_ENTITY_TO_CLASS( weapon_crowbar, CCrowbar )
+LINK_ENTITY_TO_CLASS( weapon_needle, CNeedle )
 
 enum gauss_e
 {
-	CROWBAR_IDLE = 0,
-	CROWBAR_DRAW,
-	CROWBAR_HOLSTER,
-	CROWBAR_ATTACK1HIT,
-	CROWBAR_ATTACK1MISS,
-	CROWBAR_ATTACK2MISS,
-	CROWBAR_ATTACK2HIT,
-	CROWBAR_ATTACK3MISS,
-	CROWBAR_ATTACK3HIT,
-	CROWBAR_TAUNT
+	NEEDLE_IDLE1,
+	NEEDLE_GIVESHOT,
+	NEEDLE_DRAW
 };
 
 
-void CCrowbar::Spawn( )
+void CNeedle::Spawn( )
 {
 	Precache();
-	m_iId = WEAPON_CROWBAR;
-	SET_MODEL( ENT( pev ), "models/w_crowbar.mdl" );
+	m_iId = WEAPON_NEEDLE;
+	SET_MODEL( ENT( pev ), "models/w_needle.mdl" );
 	m_iClip = -1;
 
 	FallInit();// get ready to fall down.
 }
 
-void CCrowbar::Precache( void )
+void CNeedle::Precache( void )
 {
-	PRECACHE_MODEL( "models/v_crowbar.mdl" );
-	PRECACHE_MODEL( "models/w_crowbar.mdl" );
-	PRECACHE_MODEL( "models/p_crowbar.mdl" );
-	PRECACHE_SOUND( "weapons/cbar_hit1.wav" );
-	PRECACHE_SOUND( "weapons/cbar_hit2.wav" );
-	PRECACHE_SOUND( "weapons/cbar_hitbod1.wav" );
-	PRECACHE_SOUND( "weapons/cbar_hitbod2.wav" );
-	PRECACHE_SOUND( "weapons/cbar_hitbod3.wav" );
-	PRECACHE_SOUND( "weapons/cbar_miss1.wav" );
-	PRECACHE_SOUND( "taunts/taunt1.wav" );
-	PRECACHE_SOUND( "taunts/taunt2.wav" );
-	PRECACHE_SOUND( "taunts/taunt3.wav" );
-	PRECACHE_SOUND( "taunts/taunt4.wav" );
+	PRECACHE_MODEL( "models/v_needle.mdl" );
+	PRECACHE_MODEL( "models/w_needle.mdl" );
+	PRECACHE_MODEL( "models/p_needle.mdl" );
+	PRECACHE_SOUND( "weapons/needleshot.wav" );
 
-
-	m_usCrowbar = PRECACHE_EVENT( 1, "events/crowbar.sc" );
+	m_usNeedle = PRECACHE_EVENT( 1, "events/crowbar.sc" );
 }
 
-int CCrowbar::GetItemInfo( ItemInfo *p )
+int CNeedle::GetItemInfo( ItemInfo *p )
 {
 	p->pszName = STRING( pev->classname );
 	p->pszAmmo1 = NULL;
@@ -81,24 +64,46 @@ int CCrowbar::GetItemInfo( ItemInfo *p )
 	p->iMaxAmmo2 = -1;
 	p->iMaxClip = WEAPON_NOCLIP;
 	p->iSlot = 0;
-	p->iPosition = 0;
-	p->iId = WEAPON_CROWBAR;
+	p->iPosition = 2;
+	p->iId = WEAPON_NEEDLE;
 	p->iWeight = CROWBAR_WEIGHT;
 	return 1;
 }
 
-BOOL CCrowbar::Deploy()
+BOOL CNeedle::Deploy()
 {
-	return DefaultDeploy( "models/v_crowbar.mdl", "models/p_crowbar.mdl", CROWBAR_DRAW, "crowbar" );
+	return DefaultDeploy( "models/v_needle.mdl", "models/p_needle.mdl", NEEDLE_DRAW, "needle" );
 }
 
-void CCrowbar::Holster( int skiplocal /* = 0 */ )
+void CNeedle::Holster( int skiplocal /* = 0 */ )
 {
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
-	SendWeaponAnim( CROWBAR_HOLSTER );
+	SendWeaponAnim( NEEDLE_IDLE1 );
 }
 
-void FindHullIntersection( const Vector &vecSrc, TraceResult &tr, float *mins, float *maxs, edict_t *pEntity )
+void CNeedle::PrimaryAttack()
+{
+	SendWeaponAnim( NEEDLE_GIVESHOT );
+	switch( RANDOM_LONG( 0, 0 ) )
+{
+case 0:
+			EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/needleshot.wav", 1, ATTN_NORM );
+				break;
+}
+}
+
+
+void CNeedle::Smack()
+{
+	DecalGunshot( &m_trHit, BULLET_PLAYER_CROWBAR );
+}
+
+void CNeedle::SwingAgain( void )
+{
+	Swing( 0 );
+}
+
+void FindHullIntersection2( const Vector &vecSrc, TraceResult &tr, float *mins, float *maxs, edict_t *pEntity )
 {
 	int		i, j, k;
 	float		distance;
@@ -142,46 +147,8 @@ void FindHullIntersection( const Vector &vecSrc, TraceResult &tr, float *mins, f
 	}
 }
 
-void CCrowbar::PrimaryAttack()
-{
-	if( !Swing( 1 ) )
-	{
-		SetThink( &CCrowbar::SwingAgain );
-		pev->nextthink = gpGlobals->time + 0.1;
-	}
-}
-void CCrowbar::SecondaryAttack( void )
-{
-	SendWeaponAnim( CROWBAR_TAUNT );
-	switch( RANDOM_LONG( 0, 3 ) )
-			{
-			case 0:
-				EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_ITEM, "taunts/taunt1.wav", 1, ATTN_NORM );
-				break;
-			case 1:
-				EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_ITEM, "taunts/taunt2.wav", 1, ATTN_NORM );
-				break;
-			case 2:
-				EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_ITEM, "taunts/taunt3.wav", 1, ATTN_NORM );
-				break;
-			case 3:
-				EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_ITEM, "taunts/taunt4.wav", 1, ATTN_NORM );
-				break;
-			};
-		pev->nextthink = gpGlobals->time + 2;
-}
 
-void CCrowbar::Smack()
-{
-	DecalGunshot( &m_trHit, BULLET_PLAYER_CROWBAR );
-}
-
-void CCrowbar::SwingAgain( void )
-{
-	Swing( 0 );
-}
-
-int CCrowbar::Swing( int fFirst )
+int CNeedle::Swing( int fFirst )
 {
 	int fDidHit = FALSE;
 
@@ -203,12 +170,12 @@ int CCrowbar::Swing( int fFirst )
 			// This is and approximation of the "best" intersection
 			CBaseEntity *pHit = CBaseEntity::Instance( tr.pHit );
 			if( !pHit || pHit->IsBSPModel() )
-				FindHullIntersection( vecSrc, tr, VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX, m_pPlayer->edict() );
-			vecEnd = tr.vecEndPos;	// This is the point on the actual surface (the hull could have hit space)
+FindHullIntersection2( vecSrc, tr, VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX, m_pPlayer->edict() );
+				vecEnd = tr.vecEndPos;	// This is the point on the actual surface (the hull could have hit space)
 		}
 	}
 #endif
-	PLAYBACK_EVENT_FULL( FEV_NOTHOST, m_pPlayer->edict(), m_usCrowbar, 
+	PLAYBACK_EVENT_FULL( FEV_NOTHOST, m_pPlayer->edict(), m_usNeedle, 
 	0.0, (float *)&g_vecZero, (float *)&g_vecZero, 0, 0, 0,
 	0.0, 0, 0.0 );
 
@@ -228,13 +195,13 @@ int CCrowbar::Swing( int fFirst )
 		switch( ( ( m_iSwing++ ) % 2 ) + 1 )
 		{
 		case 0:
-			SendWeaponAnim( CROWBAR_ATTACK1HIT );
+			SendWeaponAnim( NEEDLE_IDLE1 );
 			break;
 		case 1:
-			SendWeaponAnim( CROWBAR_ATTACK2HIT );
+			SendWeaponAnim( NEEDLE_IDLE1 );
 			break;
 		case 2:
-			SendWeaponAnim( CROWBAR_ATTACK3HIT );
+			SendWeaponAnim( NEEDLE_IDLE1 );
 			break;
 		}
 
@@ -281,7 +248,7 @@ int CCrowbar::Swing( int fFirst )
 					EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/cbar_hitbod3.wav", 1, ATTN_NORM );
 					break;
 				}
-				m_pPlayer->m_iWeaponVolume = CROWBAR_BODYHIT_VOLUME;
+				m_pPlayer->m_iWeaponVolume = NEEDLE_BODYHIT_VOLUME;
 				if( !pEntity->IsAlive() )
 					return TRUE;
 				else
@@ -321,11 +288,11 @@ int CCrowbar::Swing( int fFirst )
 			m_trHit = tr;
 		}
 
-		m_pPlayer->m_iWeaponVolume = flVol * CROWBAR_WALLHIT_VOLUME;
+		m_pPlayer->m_iWeaponVolume = flVol * NEEDLE_WALLHIT_VOLUME;
 #endif
 		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.25;
 
-		SetThink( &CCrowbar::Smack );
+		SetThink( &CNeedle::Smack );
 		pev->nextthink = UTIL_WeaponTimeBase() + 0.2;
 	}
 	return fDidHit;

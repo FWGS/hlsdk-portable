@@ -1601,6 +1601,8 @@ void UpdateClientData( const struct edict_s *ent, int sendweapons, struct client
 			cd->ammo_rockets = pl->ammo_rockets;
 			cd->ammo_cells = pl->ammo_uranium;
 			cd->vuser2.x = pl->ammo_hornets;
+			cd->vuser2.y = pl->ammo_snipars;
+			cd->vuser2.z = pl->ammo_pepsi;
 
 			if( pl->m_pActiveItem )
 			{
@@ -1717,7 +1719,7 @@ int GetHullBounds( int hullnumber, float *mins, float *maxs )
 	case 1:				// Crouched player
 		mins = VEC_DUCK_HULL_MIN;
 		maxs = VEC_DUCK_HULL_MAX;
-		iret = 1;
+		iret = 1;			
 		break;
 	case 2:				// Point based hull
 		mins = Vector( 0, 0, 0 );

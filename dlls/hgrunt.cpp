@@ -1,32 +1,3 @@
-/***
-*
-*	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
-*	All Rights Reserved.
-*
-*   This source code contains proprietary and confidential information of
-*   Valve LLC and its suppliers.  Access to this code is restricted to
-*   persons who have executed a written SDK license with Valve.  Any access,
-*   use or distribution of this code by or to any unlicensed person is illegal.
-*
-****/
-//=========================================================
-// hgrunt
-//=========================================================
-
-//=========================================================
-// Hit groups!	
-//=========================================================
-/*
-
-  1 - Head
-  2 - Stomach
-  3 - Gun
-
-*/
-
 #include	"extdll.h"
 #include	"plane.h"
 #include	"util.h"
@@ -41,13 +12,10 @@
 #include	"effects.h"
 #include	"customentity.h"
 
-int g_fGruntQuestion;				// true if an idle grunt asked a question. Cleared when someone answers.
+int g_fGruntQuestion;			
 
 extern DLL_GLOBAL int		g_iSkillLevel;
 
-//=========================================================
-// monster-specific DEFINE's
-//=========================================================
 #define	GRUNT_CLIP_SIZE					36 // how many bullets in a clip? - NOTE: 3 round burst sound, so keep as 3 * x!
 #define GRUNT_VOL						0.35		// volume of grunt sounds
 #define GRUNT_ATTN						ATTN_NORM	// attenutation of grunt sentences

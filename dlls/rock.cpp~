@@ -15,74 +15,71 @@
 enum handgrenade_e
 {
 	HANDGRENADE_IDLE = 0,
-	HANDGRENADE_FIDGET,
-	HANDGRENADE_PINPULL,
-	HANDGRENADE_THROW1,	// toss
-	HANDGRENADE_THROW2,	// medium
-	HANDGRENADE_THROW3,	// hard
-	HANDGRENADE_HOLSTER,
-	HANDGRENADE_DRAW
+	HANDGRENADE_THROW2,
+	HANDGRENADE_DRAW,
+	HANDGRENADE_FIDGET
+
+
 };
 
-LINK_ENTITY_TO_CLASS( weapon_handgrenade, CHandGrenade )
+LINK_ENTITY_TO_CLASS( weapon_rock, CRock )
 
-void CHandGrenade::Spawn()
+void CRock::Spawn()
 {
 	Precache();
-	m_iId = WEAPON_HANDGRENADE;
-	SET_MODEL( ENT( pev ), "models/w_grenade.mdl" );
+	m_iId = WEAPON_ROCK;
+	SET_MODEL( ENT( pev ), "models/w_rock.mdl" );
 
 #ifndef CLIENT_DLL
-	pev->dmg = gSkillData.plrDmgHandGrenade;
+	pev->dmg = 40;
 #endif
-	m_iDefaultAmmo = HANDGRENADE_DEFAULT_GIVE;
+	m_iDefaultAmmo = 10000000;
 
 	FallInit();// get ready to fall down.
 }
 
-void CHandGrenade::Precache( void )
+void CRock::Precache( void )
 {
-	PRECACHE_MODEL( "models/w_grenade.mdl" );
-	PRECACHE_MODEL( "models/v_grenade.mdl" );
-	PRECACHE_MODEL( "models/p_grenade.mdl" );
+	PRECACHE_MODEL( "models/w_rock.mdl" );
+	PRECACHE_MODEL( "models/v_rock.mdl" );
+	PRECACHE_MODEL( "models/p_rock.mdl" );
 }
 
-int CHandGrenade::GetItemInfo( ItemInfo *p )
+int CRock::GetItemInfo( ItemInfo *p )
 {
 	p->pszName = STRING( pev->classname );
 	p->pszAmmo1 = "Hand Grenade";
-	p->iMaxAmmo1 = HANDGRENADE_MAX_CARRY;
+	p->iMaxAmmo1 = 10000000000000;
 	p->pszAmmo2 = NULL;
 	p->iMaxAmmo2 = -1;
 	p->iMaxClip = WEAPON_NOCLIP;
 	p->iSlot = 4;
-	p->iPosition = 0;
-	p->iId = m_iId = WEAPON_HANDGRENADE;
+	p->iPosition = 4;
+	p->iId = m_iId = WEAPON_ROCK;
 	p->iWeight = HANDGRENADE_WEIGHT;
 	p->iFlags = ITEM_FLAG_LIMITINWORLD | ITEM_FLAG_EXHAUSTIBLE;
 
 	return 1;
 }
 
-BOOL CHandGrenade::Deploy()
+BOOL CRock::Deploy()
 {
 	m_flReleaseThrow = -1;
-	return DefaultDeploy( "models/v_grenade.mdl", "models/p_grenade.mdl", HANDGRENADE_DRAW, "crowbar" );
+	return DefaultDeploy( "models/v_rock.mdl", "models/p_rock.mdl", HANDGRENADE_DRAW, "crowbar" );
 }
 
-BOOL CHandGrenade::CanHolster( void )
+BOOL CRock::CanHolster( void )
 {
 	// can only holster hand grenades when not primed!
 	return ( m_flStartThrow == 0 );
 }
 
-void CHandGrenade::Holster( int skiplocal /* = 0 */ )
+void CRock::Holster( int skiplocal /* = 0 */ )
 {
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
 
 	if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] )
 	{
-		SendWeaponAnim( HANDGRENADE_HOLSTER );
 	}
 	else
 	{
@@ -95,19 +92,18 @@ void CHandGrenade::Holster( int skiplocal /* = 0 */ )
 	EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_WEAPON, "common/null.wav", 1.0, ATTN_NORM );
 }
 
-void CHandGrenade::PrimaryAttack()
+void CRock::PrimaryAttack()
 {
 	if( !m_flStartThrow && m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] > 0 )
 	{
 		m_flStartThrow = gpGlobals->time;
 		m_flReleaseThrow = 0;
 
-		SendWeaponAnim( HANDGRENADE_PINPULL );
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.5;
 	}
 }
 
-void CHandGrenade::WeaponIdle( void )
+void CRock::WeaponIdle( void )
 {
 	if( m_flReleaseThrow == 0 && m_flStartThrow )
 		 m_flReleaseThrow = gpGlobals->time;
@@ -126,7 +122,7 @@ void CHandGrenade::WeaponIdle( void )
 
 		float flVel = ( 90 - angThrow.x ) * 4;
 		if( flVel > 500 )
-			flVel = 500;
+			flVel = 1300;
 
 		UTIL_MakeVectors( angThrow );
 
@@ -135,15 +131,17 @@ void CHandGrenade::WeaponIdle( void )
 		Vector vecThrow = gpGlobals->v_forward * flVel + m_pPlayer->pev->velocity;
 
 		// alway explode 3 seconds after the pin was pulled
-		float time = m_flStartThrow - gpGlobals->time + 3.0;
+		float time = m_flStartThrow - gpGlobals->time + 3000000000;
 		if( time < 0 )
 			time = 0;
 
-		CGrenade::ShootTimed( m_pPlayer->pev, vecSrc, vecThrow, time );
+		
+		CGrenadeRock::ShootTimed( m_pPlayer->pev, vecSrc, vecThrow, time );
+
 
 		if( flVel < 500 )
 		{
-			SendWeaponAnim( HANDGRENADE_THROW1 );
+			SendWeaponAnim( HANDGRENADE_THROW2 );
 		}
 		else if( flVel < 1000 )
 		{
@@ -151,7 +149,7 @@ void CHandGrenade::WeaponIdle( void )
 		}
 		else
 		{
-			SendWeaponAnim( HANDGRENADE_THROW3 );
+			SendWeaponAnim( HANDGRENADE_THROW2 );
 		}
 
 		// player "shoot" animation
@@ -196,7 +194,7 @@ void CHandGrenade::WeaponIdle( void )
 	if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] )
 	{
 		int iAnim;
-		float flRand = UTIL_SharedRandomFloat( m_pPlayer->random_seed, 0, 1 );
+		float flRand = UTIL_SharedRandomFloat( m_pPlayer->random_seed, 0, 20 );
 		if( flRand <= 0.75 )
 		{
 			iAnim = HANDGRENADE_IDLE;

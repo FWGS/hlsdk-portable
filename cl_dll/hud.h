@@ -519,6 +519,22 @@ private:
 	int m_HUD_title_half;
 };
 
+class CHudZoom: public CHudBase 
+{ 
+public: 
+int Init( void ); 
+int VidInit( void ); 
+int Draw(float flTime); 
+int MsgFunc_ZoomHUD(const char *pszName, int iSize, void *pbuf ); 
+int m_iHudMode; 
+private: 
+HSPRITE m_hBottom_Left; 
+HSPRITE m_hBottom_Right; 
+HSPRITE m_hTop_Left; 
+HSPRITE m_hTop_Right; 
+HSPRITE m_hBlack; 
+};
+
 //
 //-----------------------------------------------------
 //
@@ -633,6 +649,7 @@ public:
 	CHudStatusIcons m_StatusIcons;
 	CHudScoreboard	m_Scoreboard;
 	CHudMOTD	m_MOTD;
+CHudZoom m_Zoom;
 
 	void Init( void );
 	void VidInit( void );

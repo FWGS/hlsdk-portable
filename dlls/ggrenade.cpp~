@@ -503,7 +503,7 @@ void CGrenadeRock::BounceTouch( CBaseEntity *pOther )
 		{
 			TraceResult tr = UTIL_GetGlobalTrace();
 			ClearMultiDamage();
-			pOther->TraceAttack( pevOwner, 10, gpGlobals->v_forward, &tr, DMG_CLUB); 
+			pOther->TraceAttack( pevOwner, 10, gpGlobals->v_forward, &tr, DMG_GIBALWAYS ); 
 			ApplyMultiDamage( pev, pevOwner );
 		}
 		m_flNextAttack = gpGlobals->time + 1.0; // debounce

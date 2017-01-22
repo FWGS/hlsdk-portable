@@ -1,17 +1,3 @@
-/***
-*
-*	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
-*	All Rights Reserved.
-*
-*   Use, distribution, and modification of this source code and/or resulting
-*   object code is restricted to non-commercial enhancements to products from
-*   Valve LLC.  All other use, distribution, or modification is prohibited
-*   without written permission from Valve LLC.
-*
-****/
 #if !defined( OEM_BUILD )
 
 #include "extdll.h"
@@ -463,8 +449,8 @@ void CRpg::PrimaryAttack()
 
 		m_iClip--; 
 
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 1.5;
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.5;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.25;
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.25;
 	}
 	else
 	{
