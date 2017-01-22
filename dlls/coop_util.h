@@ -65,7 +65,8 @@ bool UTIL_CoopRestorePlayerCoords(CBaseEntity *player, Vector *origin, Vector *a
 void UTIL_CoopSaveTrain( CBaseEntity *pPlayer, SavedCoords *coords);
 Vector UTIL_FixupSpawnPoint(Vector spawn);
 void UTIL_CoopActivateChangeLevel( CBaseEntity *pTrigger );
-
+void UTIL_CoopClearData( void );
+void UTIL_CoopApplyData( void );
 #ifdef PLAYER_H
 void UTIL_CoopKickPlayer(CBaseEntity *pPlayer);
 bool UTIL_CoopIsBadPlayer( CBaseEntity *plr );
@@ -101,6 +102,19 @@ public:
 };
 
 extern GlobalMenu g_GlobalMenu;
+
+class CWeaponList
+{
+	char weapons[64][256];
+	int m_iWeapons;
+public:
+	void AddWeapon( const char *classname );
+	void GiveToPlayer(CBasePlayer *pPlayer);
+	void Clear();
+};
+
+extern CWeaponList g_WeaponList;
+
 #endif
 extern struct SavedCoords g_SavedCoords, s_SavedCoords;
 

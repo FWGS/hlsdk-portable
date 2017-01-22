@@ -664,10 +664,6 @@ void ServerDeactivate( void )
 	//
 }
 
-void CoopClearData( void );
-void CoopApplyData( void );
-void CoopClearWeaponList( void );
-
 void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 {
 	int				i;
@@ -704,7 +700,7 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 	LinkUserMessages();
 	if( mp_coop.value )
 	{
-		CoopApplyData();
+		UTIL_CoopApplyData();
 		for( int i = 1; i <= gpGlobals->maxClients; i++ )
 		{
 			CBasePlayer *plr = (CBasePlayer*)UTIL_PlayerByIndex( i );
@@ -769,13 +765,12 @@ void ParmsNewLevel( void )
 	if ( pSaveData )
 	{
 		pSaveData->connectionCount = BuildChangeList( pSaveData->levelList, MAX_LEVEL_CONNECTIONS );
-		//CoopApplyData();
 	}
 	else
 		if( mp_coop_changelevel.value )
 		{
-			CoopClearData();
-			CoopClearWeaponList();
+			UTIL_CoopClearData();
+			g_WeaponList.Clear();
 		}
 }
 
@@ -789,13 +784,12 @@ void ParmsChangeLevel( void )
 	if ( pSaveData )
 	{
 		pSaveData->connectionCount = BuildChangeList( pSaveData->levelList, MAX_LEVEL_CONNECTIONS );
-		//CoopApplyData();
 	}
 	else
 		if( mp_coop_changelevel.value )
 		{
-			CoopClearData();
-			CoopClearWeaponList();
+			UTIL_CoopClearData();
+			g_WeaponList.Clear();
 		}
 
 }
