@@ -45,18 +45,6 @@ public:
 
 	float m_flNextFlinch;
 
-	void PainSound( void );
-	void AlertSound( void );
-	void IdleSound( void );
-	void AttackSound( void );
-
-	static const char *pAttackSounds[];
-	static const char *pIdleSounds[];
-	static const char *pAlertSounds[];
-	static const char *pPainSounds[];
-	static const char *pAttackHitSounds[];
-	static const char *pAttackMissSounds[];
-
 	// No range attacks
 	BOOL CheckRangeAttack1( float flDot, float flDist ) { return FALSE; }
 	BOOL CheckRangeAttack2( float flDot, float flDist ) { return FALSE; }
@@ -64,37 +52,6 @@ public:
 };
 
 LINK_ENTITY_TO_CLASS( monster_bonewheel, CBonewheel )
-
-const char *CBonewheel::pAttackHitSounds[] =
-{
-		"turret/tu_alert.wav",
-};
-
-const char *CBonewheel::pAttackMissSounds[] =
-{
-		"turret/tu_alert.wav",
-};
-
-const char *CBonewheel::pAttackSounds[] =
-{
-		"turret/tu_alert.wav",
-};
-
-const char *CBonewheel::pIdleSounds[] =
-{
-		"turret/tu_alert.wav",
-};
-
-const char *CBonewheel::pAlertSounds[] =
-{
-		"turret/tu_alert.wav",
-};
-
-const char *CBonewheel::pPainSounds[] =
-{
-	"zombie/s_pain1.wav",
-	"zombie/s_pain2.wav",
-};
 
 //=========================================================
 // Classify - indicates this monster's place in the 
@@ -136,38 +93,9 @@ int CBonewheel::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, flo
 
 	// HACK HACK -- until we fix this.
 	if( IsAlive() )
-		PainSound();
 	return CBaseMonster::TakeDamage( pevInflictor, pevAttacker, flDamage, bitsDamageType );
 }
 
-void CBonewheel::PainSound( void )
-{
-	int pitch = 95 + RANDOM_LONG( 0, 9 );
-
-	if( RANDOM_LONG( 0, 5 ) < 2 )
-		EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pPainSounds[RANDOM_LONG( 0, ARRAYSIZE( pPainSounds ) - 1 )], 1.0, ATTN_NORM, 0, pitch );
-}
-
-void CBonewheel::AlertSound( void )
-{
-	int pitch = 95 + RANDOM_LONG( 0, 9 );
-
-	EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pAlertSounds[ RANDOM_LONG( 0, ARRAYSIZE( pAlertSounds ) - 1 )], 1.0, ATTN_NORM, 0, pitch );
-}
-
-void CBonewheel::IdleSound( void )
-{
-	int pitch = 95 + RANDOM_LONG( 0, 9 );
-
-	// Play a random idle sound
-	EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pIdleSounds[RANDOM_LONG( 0, ARRAYSIZE( pIdleSounds ) -1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
-}
-
-void CBonewheel::AttackSound( void )
-{
-	// Play a random attack sound
-	EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pAttackSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackSounds ) - 1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
-}
 
 //=========================================================
 // HandleAnimEvent - catches the monster-specific messages
@@ -190,14 +118,7 @@ void CBonewheel::HandleAnimEvent( MonsterEvent_t *pEvent )
 					pHurt->pev->punchangle.x = 5;
 					pHurt->pev->velocity = pHurt->pev->velocity - gpGlobals->v_right * 100;
 				}
-				// Play a random attack hit sound
-				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, pAttackHitSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackHitSounds ) - 1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5 , 5 ) );
 			}
-			else // Play a random attack miss sound
-				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, pAttackMissSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackMissSounds ) - 1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
-
-			if( RANDOM_LONG( 0, 1 ) )
-				AttackSound();
 		}
 		break;
 		case ZOMBIE_AE_ATTACK_LEFT:
@@ -213,13 +134,7 @@ void CBonewheel::HandleAnimEvent( MonsterEvent_t *pEvent )
 					pHurt->pev->punchangle.x = 5;
 					pHurt->pev->velocity = pHurt->pev->velocity + gpGlobals->v_right * 100;
 				}
-				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, pAttackHitSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackHitSounds ) - 1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
 			}
-			else
-				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, pAttackMissSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackMissSounds ) - 1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
-
-			if( RANDOM_LONG( 0, 1 ) )
-				AttackSound();
 		}
 		break;
 		case ZOMBIE_AE_ATTACK_BOTH:
@@ -233,13 +148,7 @@ void CBonewheel::HandleAnimEvent( MonsterEvent_t *pEvent )
 					pHurt->pev->punchangle.x = 5;
 					pHurt->pev->velocity = pHurt->pev->velocity + gpGlobals->v_forward * -100;
 				}
-				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, pAttackHitSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackHitSounds ) - 1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
 			}
-			else
-				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, pAttackMissSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackMissSounds ) - 1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
-
-			if( RANDOM_LONG( 0, 1 ) )
-				AttackSound();
 		}
 		break;
 		default:
@@ -278,24 +187,6 @@ void CBonewheel::Precache()
 	int i;
 
 	PRECACHE_MODEL( "models/bonewheel.mdl" );
-
-	for( i = 0; i < ARRAYSIZE( pAttackHitSounds ); i++ )
-		PRECACHE_SOUND( (char *)pAttackHitSounds[i] );
-
-	for( i = 0; i < ARRAYSIZE( pAttackMissSounds ); i++ )
-		PRECACHE_SOUND( (char *)pAttackMissSounds[i] );
-
-	for( i = 0; i < ARRAYSIZE( pAttackSounds ); i++ )
-		PRECACHE_SOUND( (char *)pAttackSounds[i] );
-
-	for( i = 0; i < ARRAYSIZE( pIdleSounds ); i++ )
-		PRECACHE_SOUND( (char *)pIdleSounds[i] );
-
-	for( i = 0; i < ARRAYSIZE( pAlertSounds ); i++ )
-		PRECACHE_SOUND( (char *)pAlertSounds[i] );
-
-	for( i = 0; i < ARRAYSIZE( pPainSounds ); i++ )
-		PRECACHE_SOUND( (char *)pPainSounds[i] );
 }
 
 //=========================================================

@@ -173,9 +173,7 @@ void Czombozo::HandleAnimEvent( MonsterEvent_t *pEvent )
 					pHurt->pev->punchangle.x = 5;
 					pHurt->pev->velocity = pHurt->pev->velocity - gpGlobals->v_right * 100;
 				}
-				}
-			else // Play a random attack miss sound
-			if( RANDOM_LONG( 0, 1 ) )
+			}
 		}
 		break;
 		case ZOMBIE_AE_ATTACK_LEFT:
@@ -191,9 +189,7 @@ void Czombozo::HandleAnimEvent( MonsterEvent_t *pEvent )
 					pHurt->pev->punchangle.x = 5;
 					pHurt->pev->velocity = pHurt->pev->velocity + gpGlobals->v_right * 100;
 				}
-l			}
-			else
-			if( RANDOM_LONG( 0, 1 ) )
+			}
 		}
 		break;
 		case ZOMBIE_AE_ATTACK_BOTH:
@@ -207,10 +203,7 @@ l			}
 					pHurt->pev->punchangle.x = 5;
 					pHurt->pev->velocity = pHurt->pev->velocity + gpGlobals->v_forward * -100;
 				}
-			}
-			else
-			if( RANDOM_LONG( 0, 1 ) )
-			
+			}			
 		}
 		break;
 		default:

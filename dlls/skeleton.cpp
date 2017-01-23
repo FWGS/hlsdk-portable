@@ -1,5 +1,4 @@
 //fixed
-//No added (Die sounds)
 /***
 *
 *	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
@@ -37,6 +36,7 @@ public:
 	void Spawn( void );
 	void Precache( void );
 	void SetYawSpeed( void );
+	void DeathSound( void );
 	int Classify( void );
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
 	int IgnoreConditions( void );
@@ -114,6 +114,22 @@ void CSkeleton::PainSound( void )
 	if( RANDOM_LONG( 0, 5 ) < 2 )
 		EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pPainSounds[RANDOM_LONG( 0, ARRAYSIZE( pPainSounds ) - 1 )], 1.0, ATTN_NORM, 0, pitch );
 }
+void CSkeleton::DeathSound( void )
+{
+	switch( RANDOM_LONG( 0, 2 ) )
+	{
+	case 0:
+		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "spooky/s_die.wav", 1, ATTN_NORM );
+		break;
+	case 1:
+		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "spooky/s_die2.wav", 1, ATTN_NORM );
+		break;
+	case 2:
+		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "spooky/s_die3.wav", 1, ATTN_NORM );
+		break;
+	}
+}
+
 
 
 
@@ -139,9 +155,6 @@ void CSkeleton::HandleAnimEvent( MonsterEvent_t *pEvent )
 					pHurt->pev->velocity = pHurt->pev->velocity - gpGlobals->v_right * 100;
 				}
 			}
-			else // Play a random attack miss sound
-	
-			if( RANDOM_LONG( 0, 1 ) )
 		}
 		break;
 		case ZOMBIE_AE_ATTACK_LEFT:
@@ -158,8 +171,6 @@ void CSkeleton::HandleAnimEvent( MonsterEvent_t *pEvent )
 					pHurt->pev->velocity = pHurt->pev->velocity + gpGlobals->v_right * 100;
 				}
 			}
-			else
-			if( RANDOM_LONG( 0, 1 ) )
 		}
 		break;
 		case ZOMBIE_AE_ATTACK_BOTH:
@@ -174,9 +185,6 @@ void CSkeleton::HandleAnimEvent( MonsterEvent_t *pEvent )
 					pHurt->pev->velocity = pHurt->pev->velocity + gpGlobals->v_forward * -100;
 				}
 			}
-			else
-\
-			if( RANDOM_LONG( 0, 1 ) )
 		}
 		break;
 		default:
@@ -215,6 +223,9 @@ void CSkeleton::Precache()
 	int i;
 
 	PRECACHE_MODEL( "models/skellington.mdl" );
+	PRECACHE_SOUND( "spooky/s_die.wav" );
+	PRECACHE_SOUND( "spooky/s_die2.wav" );
+	PRECACHE_SOUND( "spooky/s_die3.wav" );
 
 	for( i = 0; i < ARRAYSIZE( pPainSounds ); i++ )
 		PRECACHE_SOUND( (char *)pPainSounds[i] );

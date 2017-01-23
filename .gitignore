@@ -4,6 +4,7 @@
 */*.o
 */*/*.o
 *.a
+*~
 *.framework
 *.exe
 build/
