@@ -1,3 +1,4 @@
+//Already Fixed
 /***
 *
 *	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
@@ -48,14 +49,11 @@ public:
 	void PainSound( void );
 	void AlertSound( void );
 	void IdleSound( void );
-	void AttackSound( void );
 
-	static const char *pAttackSounds[];
+
 	static const char *pIdleSounds[];
 	static const char *pAlertSounds[];
 	static const char *pPainSounds[];
-	static const char *pAttackHitSounds[];
-	static const char *pAttackMissSounds[];
 
 	// No range attacks
 	BOOL CheckRangeAttack1( float flDot, float flDist ) { return FALSE; }
@@ -65,20 +63,7 @@ public:
 
 LINK_ENTITY_TO_CLASS( monster_zombozo,Czombozo )
 
-const char *Czombozo::pAttackHitSounds[] =
-{
-		"turret/tu_alert.wav",
-};
 
-const char *Czombozo::pAttackMissSounds[] =
-{
-		"turret/tu_alert.wav",
-};
-
-const char *Czombozo::pAttackSounds[] =
-{
-		"turret/tu_alert.wav",
-};
 
 const char *Czombozo::pIdleSounds[] =
 {
@@ -165,11 +150,7 @@ void Czombozo::IdleSound( void )
 	EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pIdleSounds[RANDOM_LONG( 0, ARRAYSIZE( pIdleSounds ) -1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
 }
 
-void Czombozo::AttackSound( void )
-{
-	// Play a random attack sound
-	EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pAttackSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackSounds ) - 1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
-}
+
 
 //=========================================================
 // HandleAnimEvent - catches the monster-specific messages
@@ -192,14 +173,9 @@ void Czombozo::HandleAnimEvent( MonsterEvent_t *pEvent )
 					pHurt->pev->punchangle.x = 5;
 					pHurt->pev->velocity = pHurt->pev->velocity - gpGlobals->v_right * 100;
 				}
-				// Play a random attack hit sound
-				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, pAttackHitSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackHitSounds ) - 1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5 , 5 ) );
-			}
+				}
 			else // Play a random attack miss sound
-				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, pAttackMissSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackMissSounds ) - 1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
-
 			if( RANDOM_LONG( 0, 1 ) )
-				AttackSound();
 		}
 		break;
 		case ZOMBIE_AE_ATTACK_LEFT:
@@ -215,13 +191,9 @@ void Czombozo::HandleAnimEvent( MonsterEvent_t *pEvent )
 					pHurt->pev->punchangle.x = 5;
 					pHurt->pev->velocity = pHurt->pev->velocity + gpGlobals->v_right * 100;
 				}
-				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, pAttackHitSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackHitSounds ) - 1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
-			}
+l			}
 			else
-				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, pAttackMissSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackMissSounds ) - 1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
-
 			if( RANDOM_LONG( 0, 1 ) )
-				AttackSound();
 		}
 		break;
 		case ZOMBIE_AE_ATTACK_BOTH:
@@ -235,13 +207,10 @@ void Czombozo::HandleAnimEvent( MonsterEvent_t *pEvent )
 					pHurt->pev->punchangle.x = 5;
 					pHurt->pev->velocity = pHurt->pev->velocity + gpGlobals->v_forward * -100;
 				}
-				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, pAttackHitSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackHitSounds ) - 1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
 			}
 			else
-				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, pAttackMissSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackMissSounds ) - 1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
-
 			if( RANDOM_LONG( 0, 1 ) )
-				AttackSound();
+			
 		}
 		break;
 		default:
@@ -263,7 +232,7 @@ void Czombozo::Spawn()
 	pev->solid		= SOLID_SLIDEBOX;
 	pev->movetype		= MOVETYPE_STEP;
 	m_bloodColor		= BLOOD_COLOR_GREEN;
-	pev->health		= 1500;
+	pev->health		= 500;
 	pev->view_ofs		= VEC_VIEW;// position of the eyes relative to monster's origin.
 	m_flFieldOfView		= 0.5;// indicates the width of this monster's forward view cone ( as a dotproduct result )
 	m_MonsterState		= MONSTERSTATE_NONE;
@@ -280,15 +249,6 @@ void Czombozo::Precache()
 	int i;
 
 	PRECACHE_MODEL( "models/zombozo.mdl" );
-
-	for( i = 0; i < ARRAYSIZE( pAttackHitSounds ); i++ )
-		PRECACHE_SOUND( (char *)pAttackHitSounds[i] );
-
-	for( i = 0; i < ARRAYSIZE( pAttackMissSounds ); i++ )
-		PRECACHE_SOUND( (char *)pAttackMissSounds[i] );
-
-	for( i = 0; i < ARRAYSIZE( pAttackSounds ); i++ )
-		PRECACHE_SOUND( (char *)pAttackSounds[i] );
 
 	for( i = 0; i < ARRAYSIZE( pIdleSounds ); i++ )
 		PRECACHE_SOUND( (char *)pIdleSounds[i] );

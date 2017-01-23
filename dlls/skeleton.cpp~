@@ -1,4 +1,4 @@
-//This will be remake
+//No added (Die sounds)
 /***
 *
 *	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
@@ -13,10 +13,6 @@
 *   use or distribution of this code by or to any unlicensed person is illegal.
 *
 ****/
-//=========================================================
-// Zombie
-//=========================================================
-
 // UNDONE: Don't flinch every time you get hit
 
 #include	"extdll.h"
@@ -34,7 +30,7 @@
 
 #define ZOMBIE_FLINCH_DELAY		2		// at most one flinch every n secs
 
-class CSkrillex : public CBaseMonster
+class CSkeleton : public CBaseMonster
 {
 public:
 	void Spawn( void );
@@ -47,16 +43,9 @@ public:
 	float m_flNextFlinch;
 
 	void PainSound( void );
-	void AlertSound( void );
-	void IdleSound( void );
-	void AttackSound( void );
 
-	static const char *pAttackSounds[];
-	static const char *pIdleSounds[];
-	static const char *pAlertSounds[];
+
 	static const char *pPainSounds[];
-	static const char *pAttackHitSounds[];
-	static const char *pAttackMissSounds[];
 
 	// No range attacks
 	BOOL CheckRangeAttack1( float flDot, float flDist ) { return FALSE; }
@@ -64,43 +53,21 @@ public:
 	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
 };
 
-LINK_ENTITY_TO_CLASS( monster_skrillex, CSkrillex )
+LINK_ENTITY_TO_CLASS( monster_skeleton, CSkeleton )
 
-const char *CSkrillex::pAttackHitSounds[] =
-{
-	"skrillex/fire.wav",
-};
 
-const char *CSkrillex::pAttackMissSounds[] =
+const char *CSkeleton::pPainSounds[] =
 {
-	"skrillex/fire.wav",
-};
-
-const char *CSkrillex::pAttackSounds[] =
-{
-	"skrillex/fire.wav",
-};
-
-const char *CSkrillex::pIdleSounds[] =
-{
-	"turret/tu_alert.wav",
-};
-
-const char *CSkrillex::pAlertSounds[] =
-{
-	"turret/tu_alert.wav",
-};
-
-const char *CSkrillex::pPainSounds[] =
-{
-	"turret/tu_alert.wav",
+	"skeleton/s_pain1.wav",
+	"skeleton/s_pain2.wav",
+	"sleletons/s_pain3.wav"
 };
 
 //=========================================================
 // Classify - indicates this monster's place in the 
 // relationship table.
 //=========================================================
-int CSkrillex::Classify( void )
+int CSkeleton::Classify( void )
 {
 	return	CLASS_ALIEN_MONSTER;
 }
@@ -109,7 +76,7 @@ int CSkrillex::Classify( void )
 // SetYawSpeed - allows each sequence to have a different
 // turn rate associated with it.
 //=========================================================
-void CSkrillex::SetYawSpeed( void )
+void CSkeleton::SetYawSpeed( void )
 {
 	int ys;
 
@@ -122,25 +89,24 @@ void CSkrillex::SetYawSpeed( void )
 	pev->yaw_speed = ys;
 }
 
-int CSkrillex::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )
+int CSkeleton::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker,float flDamage, int bitsDamageType )
 {
 	// Take 30% damage from bullets
 	if( bitsDamageType == DMG_BULLET )
 	{
 		Vector vecDir = pev->origin - (pevInflictor->absmin + pevInflictor->absmax) * 0.5;
 		vecDir = vecDir.Normalize();
-		float flForce = DamageForce( flDamage );
+		float flForce = DamageForce( 0 );
 		pev->velocity = pev->velocity + vecDir * flForce;
-		flDamage *= 0.3;
 	}
 
 	// HACK HACK -- until we fix this.
 	if( IsAlive() )
 		PainSound();
-	return CBaseMonster::TakeDamage( pevInflictor, pevAttacker, flDamage, bitsDamageType );
+	return CBaseMonster::TakeDamage( pevInflictor, pevAttacker,flDamage, bitsDamageType);
 }
 
-void CSkrillex::PainSound( void )
+void CSkeleton::PainSound( void )
 {
 	int pitch = 95 + RANDOM_LONG( 0, 9 );
 
@@ -148,32 +114,13 @@ void CSkrillex::PainSound( void )
 		EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pPainSounds[RANDOM_LONG( 0, ARRAYSIZE( pPainSounds ) - 1 )], 1.0, ATTN_NORM, 0, pitch );
 }
 
-void CSkrillex::AlertSound( void )
-{
-	int pitch = 95 + RANDOM_LONG( 0, 9 );
 
-	EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pAlertSounds[ RANDOM_LONG( 0, ARRAYSIZE( pAlertSounds ) - 1 )], 1.0, ATTN_NORM, 0, pitch );
-}
-
-void CSkrillex::IdleSound( void )
-{
-	int pitch = 95 + RANDOM_LONG( 0, 9 );
-
-	// Play a random idle sound
-	EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pIdleSounds[RANDOM_LONG( 0, ARRAYSIZE( pIdleSounds ) -1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
-}
-
-void CSkrillex::AttackSound( void )
-{
-	// Play a random attack sound
-	EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pAttackSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackSounds ) - 1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
-}
 
 //=========================================================
 // HandleAnimEvent - catches the monster-specific messages
 // that occur when tagged animation frames are played.
 //=========================================================
-void CSkrillex::HandleAnimEvent( MonsterEvent_t *pEvent )
+void CSkeleton::HandleAnimEvent( MonsterEvent_t *pEvent )
 {
 	switch( pEvent->event )
 	{
@@ -190,14 +137,10 @@ void CSkrillex::HandleAnimEvent( MonsterEvent_t *pEvent )
 					pHurt->pev->punchangle.x = 5;
 					pHurt->pev->velocity = pHurt->pev->velocity - gpGlobals->v_right * 100;
 				}
-				// Play a random attack hit sound
-				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, pAttackHitSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackHitSounds ) - 1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5 , 5 ) );
 			}
 			else // Play a random attack miss sound
-				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, pAttackMissSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackMissSounds ) - 1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
-
+	
 			if( RANDOM_LONG( 0, 1 ) )
-				AttackSound();
 		}
 		break;
 		case ZOMBIE_AE_ATTACK_LEFT:
@@ -213,13 +156,9 @@ void CSkrillex::HandleAnimEvent( MonsterEvent_t *pEvent )
 					pHurt->pev->punchangle.x = 5;
 					pHurt->pev->velocity = pHurt->pev->velocity + gpGlobals->v_right * 100;
 				}
-				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, pAttackHitSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackHitSounds ) - 1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
 			}
 			else
-				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, pAttackMissSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackMissSounds ) - 1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
-
 			if( RANDOM_LONG( 0, 1 ) )
-				AttackSound();
 		}
 		break;
 		case ZOMBIE_AE_ATTACK_BOTH:
@@ -233,13 +172,10 @@ void CSkrillex::HandleAnimEvent( MonsterEvent_t *pEvent )
 					pHurt->pev->punchangle.x = 5;
 					pHurt->pev->velocity = pHurt->pev->velocity + gpGlobals->v_forward * -100;
 				}
-				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, pAttackHitSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackHitSounds ) - 1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
 			}
 			else
-				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, pAttackMissSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackMissSounds ) - 1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
-
+\
 			if( RANDOM_LONG( 0, 1 ) )
-				AttackSound();
 		}
 		break;
 		default:
@@ -251,21 +187,21 @@ void CSkrillex::HandleAnimEvent( MonsterEvent_t *pEvent )
 //=========================================================
 // Spawn
 //=========================================================
-void CSkrillex::Spawn()
+void CSkeleton::Spawn()
 {
 	Precache();
 
-	SET_MODEL( ENT(pev), "models/skrillex.mdl" );
+	SET_MODEL( ENT(pev), "models/skellington.mdl" );
 	UTIL_SetSize( pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX );
 
 	pev->solid		= SOLID_SLIDEBOX;
 	pev->movetype		= MOVETYPE_STEP;
-	m_bloodColor		= BLOOD_COLOR_RED;
-	pev->health		= 6000;
+	pev->health		= 80;
 	pev->view_ofs		= VEC_VIEW;// position of the eyes relative to monster's origin.
-	m_flFieldOfView		= 0.5;// indicates the width of this monster's forward view cone ( as a dotproduct result )
+	m_bloodColor		= DONT_BLEED;
+	m_flFieldOfView		= 0;// indicates the width of this monster's forward view cone ( as a dotproduct result )
 	m_MonsterState		= MONSTERSTATE_NONE;
-	m_afCapability		= bits_CAP_DOORS_GROUP;
+	m_afCapability		= bits_CAP_DOORS_GROUP;	
 
 	MonsterInit();
 }
@@ -273,26 +209,11 @@ void CSkrillex::Spawn()
 //=========================================================
 // Precache - precaches all resources this monster needs
 //=========================================================
-void CSkrillex::Precache()
+void CSkeleton::Precache()
 {
 	int i;
 
-	PRECACHE_MODEL( "models/skrillex.mdl" );
-
-	for( i = 0; i < ARRAYSIZE( pAttackHitSounds ); i++ )
-		PRECACHE_SOUND( (char *)pAttackHitSounds[i] );
-
-	for( i = 0; i < ARRAYSIZE( pAttackMissSounds ); i++ )
-		PRECACHE_SOUND( (char *)pAttackMissSounds[i] );
-
-	for( i = 0; i < ARRAYSIZE( pAttackSounds ); i++ )
-		PRECACHE_SOUND( (char *)pAttackSounds[i] );
-
-	for( i = 0; i < ARRAYSIZE( pIdleSounds ); i++ )
-		PRECACHE_SOUND( (char *)pIdleSounds[i] );
-
-	for( i = 0; i < ARRAYSIZE( pAlertSounds ); i++ )
-		PRECACHE_SOUND( (char *)pAlertSounds[i] );
+	PRECACHE_MODEL( "models/skellington.mdl" );
 
 	for( i = 0; i < ARRAYSIZE( pPainSounds ); i++ )
 		PRECACHE_SOUND( (char *)pPainSounds[i] );
@@ -302,7 +223,7 @@ void CSkrillex::Precache()
 // AI Schedules Specific to this monster
 //=========================================================
 
-int CSkrillex::IgnoreConditions( void )
+int CSkeleton::IgnoreConditions( void )
 {
 	int iIgnore = CBaseMonster::IgnoreConditions();
 

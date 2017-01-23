@@ -1,3 +1,4 @@
+//fixed (maybe)
 #if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
 
 #include "extdll.h" 
@@ -69,13 +70,14 @@ PRECACHE_MODEL("models/v_sniper.mdl");
 PRECACHE_MODEL("models/w_sniper.mdl"); 
 PRECACHE_MODEL("models/p_sniper.mdl");
 
-PRECACHE_MODEL("models/w_sniper_clip.mdl"); 
+PRECACHE_MODEL("models/w_357ammo.mdl"); 
 PRECACHE_SOUND("items/9mmclip1.wav");
 
-PRECACHE_SOUND ("weapons/sniper_cock1.wav"); 
-PRECACHE_SOUND ("weapons/sniper_fire1.wav"); 
-PRECACHE_SOUND ("weapons/sniper_zoomout.wav"); 
-PRECACHE_SOUND ("weapons/sniper_zoomin.wav");
+PRECACHE_SOUND ("weapons/sniper_shoot1.wav");
+PRECACHE_SOUND ("weapons/sniper_shoot2.wav");  
+PRECACHE_SOUND ("weapons/sniper_shoot3.wav"); 
+PRECACHE_SOUND ("weapons/sniper_shoot4.wav"); 
+PRECACHE_SOUND ("weapons/sniper_shoot5.wav"); 
 
 m_usFireSniper = PRECACHE_EVENT( 1, "events/glock2.sc" ); 
 }
@@ -104,22 +106,43 @@ if ( m_pPlayer->pev->fov != 0 )
 m_pPlayer->pev->fov = m_pPlayer->m_iFOV = 0; 
 m_fInZoom = 0; 
 #ifndef CLIENT_DLL UTIL_ScreenFade( m_pPlayer, Vector(0,0,0), 0.5, 0.25, 255, FFADE_IN ); 
-#endif EMIT_SOUND_DYN(ENT(m_pPlayer->pev), CHAN_ITEM, "weapons/sniper_zoomout.wav", RANDOM_FLOAT(0.95, 1.0), ATTN_NORM, 0, 93 + RANDOM_LONG(0,0xF)); 
+#endif 
 } 
 else if ( m_pPlayer->pev->fov != 15 ) 
 { 
 m_pPlayer->pev->fov = m_pPlayer->m_iFOV = 15; 
 m_fInZoom = 1; 
 #ifndef CLIENT_DLL UTIL_ScreenFade( m_pPlayer, Vector(0,0,0), 0.5, 0.25, 255, FFADE_IN ); 
-#endif EMIT_SOUND_DYN(ENT(m_pPlayer->pev), CHAN_ITEM, "weapons/sniper_zoomin.wav", RANDOM_FLOAT(0.95, 1.0), ATTN_NORM, 0, 93 + RANDOM_LONG(0,0xF)); 
+#endif 
 } 
 pev->nextthink = UTIL_WeaponTimeBase() + 0.1; 
 m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1.0; 
 }
 
 void CSnipars::PrimaryAttack( void ) 
-{ 
-Shoot( 0.0001, 1.5, TRUE ); 
+{
+if(m_iClip > 0)
+{
+Shoot( 0.0001, 1.5, TRUE );
+	switch( RANDOM_LONG( 0, 3 ) )
+			{
+			case 0:
+				EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/sniper_shoot1.wav", 1, ATTN_NORM );
+				break;
+			case 1:
+				EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/sniper_shoot2.wav", 1, ATTN_NORM );
+				break;
+			case 2:
+				EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/sniper_shoot3.wav", 1, ATTN_NORM );
+				break;
+			case 3:
+				EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/sniper_shoot4.wav", 1, ATTN_NORM );
+				break;
+			case 4:
+				EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/sniper_shoot5.wav", 1, ATTN_NORM );
+				break;
+			};
+}
 }
 
 void CSnipars::Shoot( float flSpread , float flCycleTime, BOOL fUseAutoAim ) 
@@ -133,7 +156,6 @@ if (m_iClip <= 0)
 { 
 if (m_fFireOnEmpty) 
 { 
-EMIT_SOUND(ENT(m_pPlayer->pev), CHAN_WEAPON, "weapons/sniper_cock1.wav", 0.8, ATTN_NORM); 
 m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.2; 
 } 
 return; 
@@ -175,7 +197,6 @@ PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), fUseAutoAim ? m_usFireSniper : m
 m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + flCycleTime;
 
 if (!m_iClip && m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0) 
-m_pPlayer->SetSuitUpdate("!HEV_AMO0", FALSE, 0);
 
 m_flTimeWeaponIdle = UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 ); 
 }
@@ -233,7 +254,7 @@ CBasePlayerAmmo::Spawn( );
 } 
 void Precache( void ) 
 { 
-PRECACHE_MODEL ("models/w_sniper.mdl"); 
+PRECACHE_MODEL ("models/w_357ammo.mdl"); 
 PRECACHE_SOUND("items/9mmclip1.wav"); 
 } 
 BOOL AddAmmo( CBaseEntity *pOther ) 

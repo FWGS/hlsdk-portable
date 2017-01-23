@@ -1,3 +1,4 @@
+//Allready fixed
 /***
 *
 *	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
@@ -12,12 +13,6 @@
 *   use or distribution of this code by or to any unlicensed person is illegal.
 *
 ****/
-//=========================================================
-// Zombie
-//=========================================================
-
-// UNDONE: Don't flinch every time you get hit
-
 #include	"extdll.h"
 #include	"util.h"
 #include	"cbase.h"
@@ -46,17 +41,9 @@ public:
 
 	float m_flNextFlinch;
 
-	void PainSound( void );
-	void AlertSound( void );
 	void IdleSound( void );
-	void AttackSound( void );
 
-	static const char *pAttackSounds[];
 	static const char *pIdleSounds[];
-	static const char *pAlertSounds[];
-	static const char *pPainSounds[];
-	static const char *pAttackHitSounds[];
-	static const char *pAttackMissSounds[];
 
 	// No range attacks
 	BOOL CheckRangeAttack1( float flDot, float flDist ) { return FALSE; }
@@ -66,35 +53,12 @@ public:
 
 LINK_ENTITY_TO_CLASS( monster_terror, CTerror )
 
-const char *CTerror::pAttackHitSounds[] =
-{
-		"turret/tu_alert.wav",
-};
-
-const char *CTerror::pAttackMissSounds[] =
-{
-		"turret/tu_alert.wav",
-};
-
-const char *CTerror::pAttackSounds[] =
+const char *CTerror::pIdleSounds[] =
 {
 	"terror/allahuakbar.wav",
 };
 
-const char *CTerror::pIdleSounds[] =
-{
-		"turret/tu_alert.wav",
-};
 
-const char *CTerror::pAlertSounds[] =
-{
-		"turret/tu_alert.wav",
-};
-
-const char *CTerror::pPainSounds[] =
-{
-		"turret/tu_alert.wav",
-};
 
 //=========================================================
 // Classify - indicates this monster's place in the 
@@ -136,24 +100,9 @@ int CTerror::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float 
 
 	// HACK HACK -- until we fix this.
 	if( IsAlive() )
-		PainSound();
 	return CBaseMonster::TakeDamage( pevInflictor, pevAttacker, flDamage, bitsDamageType );
 }
 
-void CTerror::PainSound( void )
-{
-	int pitch = 95 + RANDOM_LONG( 0, 9 );
-
-	if( RANDOM_LONG( 0, 5 ) < 2 )
-		EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pPainSounds[RANDOM_LONG( 0, ARRAYSIZE( pPainSounds ) - 1 )], 1.0, ATTN_NORM, 0, pitch );
-}
-
-void CTerror::AlertSound( void )
-{
-	int pitch = 95 + RANDOM_LONG( 0, 9 );
-
-	EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pAlertSounds[ RANDOM_LONG( 0, ARRAYSIZE( pAlertSounds ) - 1 )], 1.0, ATTN_NORM, 0, pitch );
-}
 
 void CTerror::IdleSound( void )
 {
@@ -163,11 +112,6 @@ void CTerror::IdleSound( void )
 	EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pIdleSounds[RANDOM_LONG( 0, ARRAYSIZE( pIdleSounds ) -1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
 }
 
-void CTerror::AttackSound( void )
-{
-	// Play a random attack sound
-	EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pAttackSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackSounds ) - 1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
-}
 
 void CTerror::HandleAnimEvent( MonsterEvent_t *pEvent )
 {
@@ -175,21 +119,17 @@ void CTerror::HandleAnimEvent( MonsterEvent_t *pEvent )
 	{
 		case ZOMBIE_AE_ATTACK_RIGHT:
 		{
-			ExplosionCreate(pev->origin ,pev->origin ,edict() ,50 , true ); 
-			EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, pAttackSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackSounds ) - 1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
+			ExplosionCreate(pev->origin ,pev->origin ,edict() ,60 , true ); 
 		}
 		break;
 		case ZOMBIE_AE_ATTACK_LEFT:
 {
-			ExplosionCreate(pev->origin ,pev->origin,edict() ,50 , true ); 
-			EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, pAttackSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackSounds ) - 1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
+			ExplosionCreate(pev->origin ,pev->origin,edict() ,60 , true ); 
 		}
 		break;
 		case ZOMBIE_AE_ATTACK_BOTH:
 		{
-			ExplosionCreate(pev->origin ,pev->origin,edict() ,50, true);
-			EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, pAttackSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackSounds ) - 1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
-
+			ExplosionCreate(pev->origin ,pev->origin,edict() ,60, true);
 		}
 		break;
 		default:
@@ -227,23 +167,8 @@ void CTerror::Precache()
 
 	PRECACHE_MODEL( "models/terror.mdl" );
 
-	for( i = 0; i < ARRAYSIZE( pAttackHitSounds ); i++ )
-		PRECACHE_SOUND( (char *)pAttackHitSounds[i] );
-
-	for( i = 0; i < ARRAYSIZE( pAttackMissSounds ); i++ )
-		PRECACHE_SOUND( (char *)pAttackMissSounds[i] );
-
-	for( i = 0; i < ARRAYSIZE( pAttackSounds ); i++ )
-		PRECACHE_SOUND( (char *)pAttackSounds[i] );
-
 	for( i = 0; i < ARRAYSIZE( pIdleSounds ); i++ )
 		PRECACHE_SOUND( (char *)pIdleSounds[i] );
-
-	for( i = 0; i < ARRAYSIZE( pAlertSounds ); i++ )
-		PRECACHE_SOUND( (char *)pAlertSounds[i] );
-
-	for( i = 0; i < ARRAYSIZE( pPainSounds ); i++ )
-		PRECACHE_SOUND( (char *)pPainSounds[i] );
 }
 
 //=========================================================
