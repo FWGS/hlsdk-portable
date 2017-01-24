@@ -99,7 +99,6 @@ public:
 #define WEAPON_GLOCK2 19
 #define WEAPON_KATANA 20
 #define WEAPON_ROCK 21
-#define WEAPON_PEPSIGUN 22
 #define WEAPON_HAMMER 	23
 
 
@@ -1166,29 +1165,7 @@ public:
 #endif
 	}
 };
-class CPepsigun : public CBasePlayerWeapon
-{
-public:
-	void Spawn( void );
-	void Precache( void );
-	int iItemSlot( void ) { return 4; }
-	int GetItemInfo(ItemInfo *p);
 
-	void PrimaryAttack( void );
-	BOOL Deploy( void );
-	BOOL CanHolster( void );
-	void Holster( int skiplocal = 0 );
-	void WeaponIdle( void );
-
-	virtual BOOL UseDecrement( void )
-	{ 
-#if defined( CLIENT_WEAPONS )
-		return TRUE;
-#else
-		return FALSE;
-#endif
-	}
-};
 class CCrowbar2 : public CBasePlayerWeapon
 {
 public:

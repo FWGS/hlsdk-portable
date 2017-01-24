@@ -212,9 +212,9 @@ m_fInZoom = FALSE;
 m_pPlayer->pev->fov = m_pPlayer->m_iFOV = 0; // 0 means reset to default fov 
 }
 if (m_iClip == 0) 
-DefaultReload( 5, SNIPARS_FIRE, 1.5 ); 
+DefaultReload( 5, SNIPARS_RELOAD, 1.5 ); 
 else 
-DefaultReload( 5, SNIPARS_FIRE, 1.5 );
+DefaultReload( 5, SNIPARS_RELOAD, 1.5 );
 }
 
 void CSnipars::WeaponIdle( void ) 
