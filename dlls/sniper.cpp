@@ -121,8 +121,6 @@ m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1.0;
 
 void CSnipars::PrimaryAttack( void ) 
 {
-if(m_iClip > 0)
-{
 Shoot( 0.0001, 1.5, TRUE );
 	switch( RANDOM_LONG( 0, 3 ) )
 			{
@@ -143,7 +141,6 @@ Shoot( 0.0001, 1.5, TRUE );
 				break;
 			};
 }
-}
 
 void CSnipars::Shoot( float flSpread , float flCycleTime, BOOL fUseAutoAim ) 
 { 
@@ -160,8 +157,7 @@ m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.2;
 } 
 return; 
 }
-SendWeaponAnim( SNIPARS_FIRE );
-m_iClip--;
+m_iClip -= 1;
 
 m_pPlayer->pev->effects = (int)(m_pPlayer->pev->effects) | EF_MUZZLEFLASH;
 
@@ -216,9 +212,9 @@ m_fInZoom = FALSE;
 m_pPlayer->pev->fov = m_pPlayer->m_iFOV = 0; // 0 means reset to default fov 
 }
 if (m_iClip == 0) 
-DefaultReload( 5, SNIPARS_RELOAD, 1.5 ); 
+DefaultReload( 5, SNIPARS_FIRE, 1.5 ); 
 else 
-DefaultReload( 5, SNIPARS_RELOAD, 1.5 );
+DefaultReload( 5, SNIPARS_FIRE, 1.5 );
 }
 
 void CSnipars::WeaponIdle( void ) 
