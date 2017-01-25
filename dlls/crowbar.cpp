@@ -27,7 +27,7 @@
 
 LINK_ENTITY_TO_CLASS( weapon_crowbar, CCrowbar )
 
-enum gauss_e
+enum crowbar_e
 {
 	CROWBAR_IDLE = 0,
 	CROWBAR_DRAW,

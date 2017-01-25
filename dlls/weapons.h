@@ -1022,139 +1022,23 @@ public:
 private:
 	unsigned short m_usSnarkFire;
 };
-class CSawnoff : public CBasePlayerWeapon
+class CPepsigun : public CBasePlayerWeapon
 {
 public:
-#ifndef CLIENT_DLL
-#endif
 	void Spawn( void );
 	void Precache( void );
-	int iItemSlot( ) { return 3; }
+	int iItemSlot( void ) { return 4; }
 	int GetItemInfo(ItemInfo *p);
-	int AddToPlayer( CBasePlayer *pPlayer );
+
 
 	void PrimaryAttack( void );
-	void SecondaryAttack( void );
-	BOOL Deploy( );
 	void Reload( void );
-	void WeaponIdle( void );
-	int m_fInReload;
-	float m_flNextReload;
-	int m_iShell;
-
-	virtual BOOL UseDecrement( void )
-	{
-#if defined( CLIENT_WEAPONS )
-		return TRUE;
-#else
-		return FALSE;
-#endif
-	}
-
-private:
-	unsigned short m_usDoubleFire;
-	unsigned short m_usSingleFire;
-};
-class CNeedle : public CBasePlayerWeapon
-{
-public:
-	void Spawn( void );
-	void Precache( void );
-	int iItemSlot( void ) { return 1; }
-	void EXPORT SwingAgain( void );
-	void EXPORT Smack( void );
-	int GetItemInfo(ItemInfo *p);
-
-	void PrimaryAttack( void );
-	int Swing( int fFirst );
-	BOOL Deploy( void );
-	void Holster( int skiplocal = 0 );
-	int m_iSwing;
-	TraceResult m_trHit;
-
-	virtual BOOL UseDecrement( void )
-	{ 
-#if defined( CLIENT_WEAPONS )
-		return TRUE;
-#else
-		return FALSE;
-#endif
-	}
-private:
-	unsigned short m_usNeedle;
-};
-
-class CGlock2 : public CBasePlayerWeapon
-{
-public:
-	void Spawn( void );
-	void Precache( void );
-	int iItemSlot( void ) { return 2; }
-	int GetItemInfo(ItemInfo *p);
-
-	void PrimaryAttack( void );
-	void SecondaryAttack( void );
-	void GlockFire( float flSpread, float flCycleTime, BOOL fUseAutoAim );
-	BOOL Deploy( void );
-	void Reload( void );
-	void WeaponIdle( void );
-
-	virtual BOOL UseDecrement( void )
-	{ 
-#if defined( CLIENT_WEAPONS )
-		return TRUE;
-#else
-		return FALSE;
-#endif
-	}
-
-private:
-	int m_iShell;
-
-	unsigned short m_usFireGlock1;
-	unsigned short m_usFireGlock2;
-};
-class CKatana : public CBasePlayerWeapon
-{
-public:
-	void Spawn( void );
-	void Precache( void );
-	int iItemSlot( void ) { return 1; }
-	void EXPORT SwingAgain( void );
-	void EXPORT Smack( void );
-	int GetItemInfo(ItemInfo *p);
-
-	void PrimaryAttack( void );
-	int Swing( int fFirst );
-	BOOL Deploy( void );
-	void Holster( int skiplocal = 0 );
-	int m_iSwing;
-	TraceResult m_trHit;
-
-	virtual BOOL UseDecrement( void )
-	{ 
-#if defined( CLIENT_WEAPONS )
-		return TRUE;
-#else
-		return FALSE;
-#endif
-	}
-private:
-	unsigned short m_usKatana;
-};
-class CRock : public CBasePlayerWeapon
-{
-public:
-	void Spawn( void );
-	void Precache( void );
-	int iItemSlot( void ) { return 5; }
-	int GetItemInfo(ItemInfo *p);
-
-	void PrimaryAttack( void );
 	BOOL Deploy( void );
 	BOOL CanHolster( void );
 	void Holster( int skiplocal = 0 );
 	void WeaponIdle( void );
+	int m_fInReload;
+	float m_flNextReload;
 
 	virtual BOOL UseDecrement( void )
 	{ 
@@ -1165,65 +1049,6 @@ public:
 #endif
 	}
 };
-
-class CCrowbar2 : public CBasePlayerWeapon
-{
-public:
-	void Spawn( void );
-	void Precache( void );
-	int iItemSlot( ) { return 3; }
-	int GetItemInfo(ItemInfo *p);
-
-	void FireBolt( void );
-	void FireSniperBolt( void );
-	void PrimaryAttack( void );
-	int AddToPlayer( CBasePlayer *pPlayer );
-	BOOL Deploy( );
-	void Holster( int skiplocal = 0 );
-	void WeaponIdle( void );
-
-	int m_fInZoom; // don't save this
-
-	virtual BOOL UseDecrement( void )
-	{ 
-#if defined( CLIENT_WEAPONS )
-		return TRUE;
-#else
-		return FALSE;
-#endif
-	}
-
-private:
-	unsigned short m_usCrossbow12;
-	unsigned short m_usCrossbow22;
-};
-class CSnipars : public CBasePlayerWeapon 
-{
-public: 
-void Spawn( void ); 
-void Precache( void ); 
-int iItemSlot( void ) { return 2; } 
-int GetItemInfo(ItemInfo *p); 
-int AddToPlayer( CBasePlayer *pPlayer ); 
-void PrimaryAttack( void ); 
-void SecondaryAttack( void ); 
-BOOL Deploy( void ); 
-void Holster( int skiplocal = 0 ); 
-void Reload( void ); 
-void WeaponIdle( void ); 
-void Shoot( float flSpread, float flCycleTime, BOOL fUseAutoAim ); 
-float m_flSoundDelay;
-
-BOOL m_fInZoom;// don't save this.
-
-virtual BOOL UseDecrement( void ) 
-{
-return false;
-}
-private: 
-unsigned short m_usFireSniper; 
-};
-
 
 #endif // WEAPONS_H
 	

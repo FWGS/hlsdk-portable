@@ -40,6 +40,35 @@ enum sawnoff_e
 	SAWNOFF_IDLE_DEEP
 };
 
+class CSawnoff : public CBasePlayerWeapon
+{
+public:
+	void Spawn( void );
+	void Precache( void );
+	int iItemSlot( ) { return 3; }
+	int GetItemInfo(ItemInfo *p);
+	int AddToPlayer( CBasePlayer *pPlayer );
+
+	void PrimaryAttack( void );
+	void SecondaryAttack( void );
+	BOOL Deploy( );
+	void Reload( void );
+	void WeaponIdle( void );
+	int m_fInReload;
+	float m_flNextReload;
+	int m_iShell;
+
+	virtual BOOL UseDecrement( void )
+	{
+		return FALSE;
+	}
+
+private:
+	unsigned short m_usDoubleFire;
+	unsigned short m_usSingleFire;
+};
+
+
 LINK_ENTITY_TO_CLASS( weapon_sawnoff, CSawnoff )
 
 void CSawnoff::Spawn()
@@ -119,7 +148,7 @@ void CSawnoff::PrimaryAttack()
 	if( m_pPlayer->pev->waterlevel == 3 )
 	{
 		PlayEmptySound();
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.15;
+		m_flNextPrimaryAttack = gpGlobals->time + 0.15;
 		return;
 	}
 
@@ -172,12 +201,12 @@ void CSawnoff::PrimaryAttack()
 	if( m_iClip != 0 )
 		m_flPumpTime = gpGlobals->time + 0.5;
 
-	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.75;
-	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.75;
+	m_flNextPrimaryAttack = gpGlobals->time + 0.75;
+	m_flNextSecondaryAttack = gpGlobals->time + 0.75;
 	if( m_iClip != 0 )
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 5.0;
+		m_flTimeWeaponIdle = gpGlobals->time + 5.0;
 	else
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.75;
+		m_flTimeWeaponIdle = gpGlobals->time + 0.75;
 	m_fInSpecialReload = 0;
 }
 
@@ -187,7 +216,7 @@ void CSawnoff::SecondaryAttack( void )
 	if( m_pPlayer->pev->waterlevel == 3 )
 	{
 		PlayEmptySound();
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.15;
+		m_flNextPrimaryAttack = gpGlobals->time + 0.15;
 		return;
 	}
 
@@ -243,10 +272,10 @@ void CSawnoff::SecondaryAttack( void )
 	if( m_iClip != 0 )
 		m_flPumpTime = gpGlobals->time + 0.95;
 
-	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 1.5;
-	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1.5;
+	m_flNextPrimaryAttack = gpGlobals->time + 1.5;
+	m_flNextSecondaryAttack = gpGlobals->time + 1.5;
 	if( m_iClip != 0 )
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 6.0;
+		m_flTimeWeaponIdle = gpGlobals->time + 6.0;
 	else
 		m_flTimeWeaponIdle = 1.5;
 
@@ -276,7 +305,7 @@ void CSawnoff::WeaponIdle( void )
 		m_flPumpTime = 0;
 	}
 
-	if( m_flTimeWeaponIdle <  UTIL_WeaponTimeBase() )
+	if( m_flTimeWeaponIdle <  gpGlobals->time )
 	{
 		if( m_iClip == 0 && m_fInSpecialReload == 0 && m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] )
 		{
@@ -296,7 +325,7 @@ void CSawnoff::WeaponIdle( void )
 				// play cocking sound
 				EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/scock1.wav", 1, ATTN_NORM, 0, 95 + RANDOM_LONG( 0, 0x1f ) );
 				m_fInSpecialReload = 0;
-				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.5;
+				m_flTimeWeaponIdle = gpGlobals->time + 1.5;
 			}
 		}
 		else
@@ -306,17 +335,17 @@ void CSawnoff::WeaponIdle( void )
 			if( flRand <= 0.8 )
 			{
 				iAnim = SAWNOFF_IDLE_DEEP;
-				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + ( 60.0 / 12.0 );// * RANDOM_LONG( 2, 5 );
+				m_flTimeWeaponIdle = gpGlobals->time + ( 60.0 / 12.0 );// * RANDOM_LONG( 2, 5 );
 			}
 			else if( flRand <= 0.95 )
 			{
 				iAnim = SAWNOFF_IDLE;
-				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + ( 20.0 / 9.0 );
+				m_flTimeWeaponIdle = gpGlobals->time + ( 20.0 / 9.0 );
 			}
 			else
 			{
 				iAnim = SAWNOFF_IDLE4;
-				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + ( 20.0 / 9.0 );
+				m_flTimeWeaponIdle = gpGlobals->time + ( 20.0 / 9.0 );
 			}
 			SendWeaponAnim( iAnim );
 		}

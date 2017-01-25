@@ -25,9 +25,7 @@
 #define	CROWBAR_BODYHIT_VOLUME 128
 #define	CROWBAR_WALLHIT_VOLUME 512
 
-LINK_ENTITY_TO_CLASS( weapon_katana, CKatana )
-
-enum gauss_e
+enum katana_e
 {
 	CROWBAR_IDLE = 0,
 	CROWBAR_DRAW,
@@ -40,6 +38,32 @@ enum gauss_e
 	CROWBAR_ATTACK3HIT
 };
 
+class CKatana : public CBasePlayerWeapon
+{
+public:
+	void Spawn( void );
+	void Precache( void );
+	int iItemSlot( void ) { return 1; }
+	void EXPORT SwingAgain( void );
+	void EXPORT Smack( void );
+	int GetItemInfo(ItemInfo *p);
+
+	void PrimaryAttack( void );
+	int Swing( int fFirst );
+	BOOL Deploy( void );
+	void Holster( int skiplocal = 0 );
+	int m_iSwing;
+	TraceResult m_trHit;
+
+	virtual BOOL UseDecrement( void )
+	{
+		return FALSE;
+	}
+private:
+	unsigned short m_usKatana;
+};
+
+LINK_ENTITY_TO_CLASS( weapon_katana, CKatana )
 
 void CKatana::Spawn( )
 {
@@ -89,7 +113,7 @@ BOOL CKatana::Deploy()
 
 void CKatana::Holster( int skiplocal /* = 0 */ )
 {
-	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
+	m_pPlayer->m_flNextAttack = gpGlobals->time + 0.5;
 	SendWeaponAnim( CROWBAR_HOLSTER );
 }
 
@@ -192,7 +216,7 @@ int CKatana::Swing( int fFirst )
 		if( fFirst )
 		{
 			// miss
-			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5;
+			m_flNextPrimaryAttack = gpGlobals->time + 0.5;
 
 			// player "shoot" animation
 			m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
@@ -223,7 +247,7 @@ int CKatana::Swing( int fFirst )
 
 		ClearMultiDamage();
 
-		if( ( m_flNextPrimaryAttack + 1 < UTIL_WeaponTimeBase() ) || g_pGameRules->IsMultiplayer() )
+		if( ( m_flNextPrimaryAttack + 1 < gpGlobals->time ) || g_pGameRules->IsMultiplayer() )
 		{
 			// first swing does full damage
 			pEntity->TraceAttack( m_pPlayer->pev, gSkillData.plrDmgCrowbar, gpGlobals->v_forward, &tr, DMG_CLUB ); 
@@ -298,10 +322,10 @@ int CKatana::Swing( int fFirst )
 
 		m_pPlayer->m_iWeaponVolume = flVol * CROWBAR_WALLHIT_VOLUME;
 #endif
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.25;
+		m_flNextPrimaryAttack = gpGlobals->time + 0.25;
 
 		SetThink( &CKatana::Smack );
-		pev->nextthink = UTIL_WeaponTimeBase() + 0.2;
+		pev->nextthink = gpGlobals->time + 0.2;
 	}
 	return fDidHit;
 }

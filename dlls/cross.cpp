@@ -14,6 +14,36 @@
 #define BOLT_WATER_VELOCITY	1300
 
 
+class CCrowbar2 : public CBasePlayerWeapon
+{
+public:
+	void Spawn( void );
+	void Precache( void );
+	int iItemSlot( ) { return 3; }
+	int GetItemInfo(ItemInfo *p);
+
+	void FireBolt( void );
+	void FireSniperBolt( void );
+	void PrimaryAttack( void );
+	int AddToPlayer( CBasePlayer *pPlayer );
+	BOOL Deploy( );
+	void Holster( int skiplocal = 0 );
+	void WeaponIdle( void );
+
+	int m_fInZoom; // don't save this
+
+	virtual BOOL UseDecrement( void )
+	{
+		return FALSE;
+	}
+
+private:
+	unsigned short m_usCrossbow12;
+	unsigned short m_usCrossbow22;
+};
+
+
+
 // UNDONE: Save/restore this?  Don't forget to set classname and LINK_ENTITY_TO_CLASS()
 // 
 // OVERLOADS SOME ENTVARS:
@@ -294,7 +324,7 @@ void CCrowbar2::Holster( int skiplocal /* = 0 */ )
 		SecondaryAttack();
 	}
 
-	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
+	m_pPlayer->m_flNextAttack = gpGlobals->time + 0.5;
 	if( m_iClip )
 {
 		SendWeaponAnim( CROSSBOW_HOLSTER );
@@ -320,7 +350,7 @@ void CCrowbar2::PrimaryAttack( void )
 // this function only gets called in multiplayer
 void CCrowbar2::FireSniperBolt()
 {
-	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.35;
+	m_flNextPrimaryAttack = gpGlobals->time + 0.35;
 
 
 	TraceResult tr;
@@ -405,14 +435,14 @@ void CCrowbar2::FireBolt()
 		// HEV suit - indicate out of ammo condition
 		m_pPlayer->SetSuitUpdate( "!HEV_AMO0", FALSE, 0 );
 
-	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.35;
+	m_flNextPrimaryAttack = gpGlobals->time + 0.35;
 
-	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.35;
+	m_flNextSecondaryAttack = gpGlobals->time + 0.35;
 
 	if( m_iClip != 0 )
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 5.0;
+		m_flTimeWeaponIdle = gpGlobals->time + 5.0;
 	else
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.75;
+		m_flTimeWeaponIdle = gpGlobals->time + 0.75;
 }
 
 
@@ -422,7 +452,7 @@ void CCrowbar2::WeaponIdle( void )
 
 	ResetEmptySound();
 	
-	if( m_flTimeWeaponIdle < UTIL_WeaponTimeBase() )
+	if( m_flTimeWeaponIdle < gpGlobals->time )
 	{
 		float flRand = UTIL_SharedRandomFloat( m_pPlayer->random_seed, 0, 1 );
 		if( flRand <= 0.75 )
@@ -435,19 +465,19 @@ void CCrowbar2::WeaponIdle( void )
 			{
 				SendWeaponAnim( CROSSBOW_IDLE );
 			}
-			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
+			m_flTimeWeaponIdle = gpGlobals->time + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
 		}
 		else
 		{
 			if( m_iClip )
 			{
-				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 90.0 / 30.0;
+				m_flTimeWeaponIdle = gpGlobals->time + 90.0 / 30.0;
 			}
 			else
 			{
-				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 80.0 / 30.0;
+				m_flTimeWeaponIdle = gpGlobals->time + 80.0 / 30.0;
 			}
-			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
+			m_flTimeWeaponIdle = gpGlobals->time + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
 		}
 	}
 }

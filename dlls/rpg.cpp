@@ -15,6 +15,7 @@ enum rpg_e
 	RPG_FIDGET,
 	RPG_RELOAD,		// to reload
 	RPG_FIRE2,		// to empty
+	RPG_FIRE1,		// crack-life second fire
 	RPG_HOLSTER1,	// loaded
 	RPG_DRAW1,		// loaded
 	RPG_HOLSTER2,	// unloaded
@@ -420,6 +421,7 @@ void CRpg::PrimaryAttack()
 {
 	if( m_iClip )
 	{
+		static int gun = 0;
 		m_pPlayer->m_iWeaponVolume = LOUD_GUN_VOLUME;
 		m_pPlayer->m_iWeaponFlash = BRIGHT_GUN_FLASH;
 
@@ -428,7 +430,13 @@ void CRpg::PrimaryAttack()
 		m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
 
 		UTIL_MakeVectors( m_pPlayer->pev->v_angle );
-		Vector vecSrc = m_pPlayer->GetGunPosition() + gpGlobals->v_forward * 16 + gpGlobals->v_right * 8 + gpGlobals->v_up * -8;
+		Vector vecSrc;
+		if( gun )
+			vecSrc = m_pPlayer->GetGunPosition() + gpGlobals->v_forward * 16 + gpGlobals->v_right * 8 + gpGlobals->v_up * -8;
+		else
+			vecSrc = m_pPlayer->GetGunPosition() + gpGlobals->v_forward * 16 + gpGlobals->v_right * -8 + gpGlobals->v_up * -8;
+
+
 
 		CRpgRocket *pRocket = CRpgRocket::CreateRpgRocket( vecSrc, m_pPlayer->pev->v_angle, m_pPlayer, this );
 
@@ -445,12 +453,15 @@ void CRpg::PrimaryAttack()
 #else
 	flags = 0;
 #endif
-		PLAYBACK_EVENT( flags, m_pPlayer->edict(), m_usRpg );
-
+		//PLAYBACK_EVENT( flags, m_pPlayer->edict(), m_usRpg );
+		EMIT_SOUND_DYN( edict(), CHAN_WEAPON, "weapons/rocketfire1.wav", 0.9, ATTN_NORM, 0, PITCH_NORM );
+		EMIT_SOUND_DYN( edict(), CHAN_ITEM, "weapons/glauncher.wav", 0.7, ATTN_NORM, 0, PITCH_NORM );
+		SendWeaponAnim( RPG_FIRE2 + 1 - gun );
 		m_iClip--; 
 
 		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.25;
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.25;
+		gun = !gun;
 	}
 	else
 	{

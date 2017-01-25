@@ -25,9 +25,35 @@
 #define	NEEDLE_BODYHIT_VOLUME 128
 #define	NEEDLE_WALLHIT_VOLUME 512
 
+class CNeedle : public CBasePlayerWeapon
+{
+public:
+	void Spawn( void );
+	void Precache( void );
+	int iItemSlot( void ) { return 1; }
+	void EXPORT SwingAgain( void );
+	void EXPORT Smack( void );
+	int GetItemInfo(ItemInfo *p);
+
+	void PrimaryAttack( void );
+	int Swing( int fFirst );
+	BOOL Deploy( void );
+	void Holster( int skiplocal = 0 );
+	int m_iSwing;
+	TraceResult m_trHit;
+
+	virtual BOOL UseDecrement( void )
+	{
+		return FALSE;
+	}
+private:
+	unsigned short m_usNeedle;
+};
+
+
 LINK_ENTITY_TO_CLASS( weapon_needle, CNeedle )
 
-enum gauss_e
+enum needle_e
 {
 	NEEDLE_IDLE1,
 	NEEDLE_GIVESHOT,
@@ -77,7 +103,7 @@ BOOL CNeedle::Deploy()
 
 void CNeedle::Holster( int skiplocal /* = 0 */ )
 {
-	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
+	m_pPlayer->m_flNextAttack = gpGlobals->time + 0.5;
 	SendWeaponAnim( NEEDLE_IDLE1 );
 }
 
@@ -184,7 +210,7 @@ FindHullIntersection2( vecSrc, tr, VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX, m_pPlay
 		if( fFirst )
 		{
 			// miss
-			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5;
+			m_flNextPrimaryAttack = gpGlobals->time + 0.5;
 
 			// player "shoot" animation
 			m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
@@ -215,7 +241,7 @@ FindHullIntersection2( vecSrc, tr, VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX, m_pPlay
 
 		ClearMultiDamage();
 
-		if( ( m_flNextPrimaryAttack + 1 < UTIL_WeaponTimeBase() ) || g_pGameRules->IsMultiplayer() )
+		if( ( m_flNextPrimaryAttack + 1 < gpGlobals->time ) || g_pGameRules->IsMultiplayer() )
 		{
 			// first swing does full damage
 			pEntity->TraceAttack( m_pPlayer->pev, gSkillData.plrDmgCrowbar, gpGlobals->v_forward, &tr, DMG_CLUB ); 
@@ -290,10 +316,10 @@ FindHullIntersection2( vecSrc, tr, VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX, m_pPlay
 
 		m_pPlayer->m_iWeaponVolume = flVol * NEEDLE_WALLHIT_VOLUME;
 #endif
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.25;
+		m_flNextPrimaryAttack = gpGlobals->time + 0.25;
 
 		SetThink( &CNeedle::Smack );
-		pev->nextthink = UTIL_WeaponTimeBase() + 0.2;
+		pev->nextthink = gpGlobals->time + 0.2;
 	}
 	return fDidHit;
 }
