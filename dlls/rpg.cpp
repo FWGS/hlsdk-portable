@@ -459,14 +459,14 @@ void CRpg::PrimaryAttack()
 		SendWeaponAnim( RPG_FIRE2 + 1 - gun );
 		m_iClip--; 
 
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.25;
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.25;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.35;
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.35;
 		gun = !gun;
 	}
 	else
 	{
 		PlayEmptySound();
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.2;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.3;
 	}
 	UpdateSpot();
 }
