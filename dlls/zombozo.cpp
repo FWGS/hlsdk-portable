@@ -24,13 +24,14 @@
 #include	"cbase.h"
 #include	"monsters.h"
 #include	"schedule.h"
+#include	"weapons.h"
 
 //=========================================================
 // Monster's Anim Events Go Here
 //=========================================================
+#define	ZOMBIE_AE_ATTACK_BOTH		0x03
 #define	ZOMBIE_AE_ATTACK_RIGHT		0x01
 #define	ZOMBIE_AE_ATTACK_LEFT		0x02
-#define	ZOMBIE_AE_ATTACK_BOTH		0x03
 
 #define ZOMBIE_FLINCH_DELAY		2		// at most one flinch every n secs
 
@@ -158,57 +159,32 @@ void Czombozo::IdleSound( void )
 //=========================================================
 void Czombozo::HandleAnimEvent( MonsterEvent_t *pEvent )
 {
+	
 	switch( pEvent->event )
 	{
 		case ZOMBIE_AE_ATTACK_RIGHT:
 		{
-			// do stuff for this event.
-			//ALERT( at_console, "Slash right!\n" );
-			CBaseEntity *pHurt = CheckTraceHullAttack( 70, gSkillData.zombieDmgOneSlash, DMG_SLASH );
-			if( pHurt )
-			{
-				if( pHurt->pev->flags & ( FL_MONSTER | FL_CLIENT ) )
-				{
-					pHurt->pev->punchangle.z = -18;
-					pHurt->pev->punchangle.x = 5;
-					pHurt->pev->velocity = pHurt->pev->velocity - gpGlobals->v_right * 100;
-				}
-			}
+			UTIL_MakeVectors( pev->angles );
+			CGrenade::ShootTimed( pev, pev->origin + gpGlobals->v_forward * 17 - gpGlobals->v_right * 27 + gpGlobals->v_up * 6, g_vecZero, 3 );
+			//n a group, only try to throw grenade if ordered.
 		}
 		break;
 		case ZOMBIE_AE_ATTACK_LEFT:
 		{
-			// do stuff for this event.
-			//ALERT( at_console, "Slash left!\n" );
-			CBaseEntity *pHurt = CheckTraceHullAttack( 70, gSkillData.zombieDmgOneSlash, DMG_SLASH );
-			if( pHurt )
-			{
-				if( pHurt->pev->flags & ( FL_MONSTER | FL_CLIENT ) )
-				{
-					pHurt->pev->punchangle.z = 18;
-					pHurt->pev->punchangle.x = 5;
-					pHurt->pev->velocity = pHurt->pev->velocity + gpGlobals->v_right * 100;
-				}
-			}
+			UTIL_MakeVectors( pev->angles );
+			CGrenade::ShootTimed( pev, pev->origin + gpGlobals->v_forward * 17 - gpGlobals->v_right * 27 + gpGlobals->v_up * 6, g_vecZero, 3 );
 		}
 		break;
 		case ZOMBIE_AE_ATTACK_BOTH:
 		{
-			// do stuff for this event.
-			CBaseEntity *pHurt = CheckTraceHullAttack( 70, gSkillData.zombieDmgBothSlash, DMG_SLASH );
-			if( pHurt )
-			{
-				if( pHurt->pev->flags & ( FL_MONSTER | FL_CLIENT ) )
-				{
-					pHurt->pev->punchangle.x = 5;
-					pHurt->pev->velocity = pHurt->pev->velocity + gpGlobals->v_forward * -100;
-				}
-			}			
+			//ALERT( at_console, "Slash right!\n" );
+			UTIL_MakeVectors( pev->angles );
+			CGrenade::ShootTimed( pev, pev->origin + gpGlobals->v_forward * 17 - gpGlobals->v_right * 27 + gpGlobals->v_up * 6, g_vecZero, 3 );
 		}
 		break;
 		default:
 			CBaseMonster::HandleAnimEvent( pEvent );
-			break;
+	break;
 	}
 }
 

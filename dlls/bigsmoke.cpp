@@ -13,33 +13,31 @@
 *
 ****/
 //=========================================================
-// monster template
+// Alien slave monster
 //=========================================================
-// UNDONE: Holster weapon?
 
 #include	"extdll.h"
 #include	"util.h"
 #include	"cbase.h"
 #include	"monsters.h"
-#include	"talkmonster.h"
+#include	"squadmonster.h"
 #include	"schedule.h"
-#include	"defaultai.h"
-#include	"scripted.h"
+#include	"effects.h"
 #include	"weapons.h"
 #include	"soundent.h"
-#include	"squadmonster.h"
+
+extern DLL_GLOBAL int		g_iSkillLevel;
 
 //=========================================================
 // Monster's Anim Events Go Here
 //=========================================================
-// first flag is barney dying for scripted sequences?
-#define		BIGSMOKE_AE_DRAW		( 2 )
-#define		BIGSMOKE_AE_SHOOT		( 3 )
-#define		BIGSMOKE_AE_HOLSTER	( 4 )
+#define		ISLAVE_AE_CLAW			( 1 )
+#define		ISLAVE_AE_CLAWRAKE		( 2 )
+#define		ISLAVE_AE_ZAP_POWERUP		( 3 )
+#define		ISLAVE_AE_ZAP_SHOOT		( 4 )
+#define		ISLAVE_AE_ZAP_DONE		( 5 )
 
-#define	BIGSMOKE_BODY_GUNHOLSTERED	0
-#define	BIGSMOKE_BODY_GUNDRAWN		1
-#define BIGSMOKE_BODY_GUNGONE		2
+#define		ISLAVE_MAX_BEAMS		8
 
 class CBigSmoke : public CSquadMonster
 {
@@ -48,206 +46,88 @@ public:
 	void Precache( void );
 	void SetYawSpeed( void );
 	int ISoundMask( void );
-	void BigSmokeFirePistol( void );
-	void AlertSound( void );
 	int Classify( void );
+	int IRelationship( CBaseEntity *pTarget );
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
-
-	void RunTask( Task_t *pTask );
-	void StartTask( Task_t *pTask );
-	int TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
 	BOOL CheckRangeAttack1( float flDot, float flDist );
+	BOOL CheckRangeAttack2( float flDot, float flDist );
+	void CallForHelp( char *szClassname, float flDist, EHANDLE hEnemy, Vector &vecLocation );
+	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType );
+	int TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType );
 
-	void DeclineFollowing( void );
+	void IdleSound( void );
 
-	// Override these to set behavior
-	Schedule_t *GetScheduleOfType( int Type );
-	Schedule_t *GetSchedule( void );
-	MONSTERSTATE GetIdealState( void );
-
-	void DeathSound( void );
-	void PainSound( void );
-
-	void TalkInit( void );
-
-	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType);
 	void Killed( entvars_t *pevAttacker, int iGib );
 
-	static TYPEDESCRIPTION m_SaveData[];
-	virtual int Save( CSave &save );
-	virtual int Restore( CRestore &restore );
-
-	BOOL m_fGunDrawn;
-	float m_painTime;
-	float m_checkAttackTime;
-	BOOL m_lastAttackCheck;
-
-	// UNDONE: What is this for?  It isn't used?
-	float m_flPlayerDamage;// how much pain has the player inflicted on me?
-
+	void StartTask( Task_t *pTask );
+	Schedule_t *GetSchedule( void );
+	Schedule_t *GetScheduleOfType( int Type );
 	CUSTOM_SCHEDULES
+
+	int Save( CSave &save ); 
+	int Restore( CRestore &restore );
+	static TYPEDESCRIPTION m_SaveData[];
+
+	void ClearBeams();
+	void ArmBeam( int side );
+	void WackBeam( int side, CBaseEntity *pEntity );
+	void ZapBeam( int side );
+	void BeamGlow( void );
+
+	int m_iBravery;
+
+	CBeam *m_pBeam[ISLAVE_MAX_BEAMS];
+
+	int m_iBeams;
+	float m_flNextAttack;
+
+	int m_voicePitch;
+
+	EHANDLE m_hDead;
+
+	static const char *pAttackHitSounds[];
+	static const char *pAttackMissSounds[];
+	static const char *pPainSounds[];
+	static const char *pDeathSounds[];
 };
 
 LINK_ENTITY_TO_CLASS( monster_big_smoke, CBigSmoke )
 
 TYPEDESCRIPTION	CBigSmoke::m_SaveData[] =
 {
-	DEFINE_FIELD( CBigSmoke, m_fGunDrawn, FIELD_BOOLEAN ),
-	DEFINE_FIELD( CBigSmoke, m_painTime, FIELD_TIME ),
-	DEFINE_FIELD( CBigSmoke, m_checkAttackTime, FIELD_TIME ),
-	DEFINE_FIELD( CBigSmoke, m_lastAttackCheck, FIELD_BOOLEAN ),
-	DEFINE_FIELD( CBigSmoke, m_flPlayerDamage, FIELD_FLOAT ),
+	DEFINE_FIELD( CBigSmoke, m_iBravery, FIELD_INTEGER ),
+
+	DEFINE_ARRAY( CBigSmoke, m_pBeam, FIELD_CLASSPTR, ISLAVE_MAX_BEAMS ),
+	DEFINE_FIELD( CBigSmoke, m_iBeams, FIELD_INTEGER ),
+	DEFINE_FIELD( CBigSmoke, m_flNextAttack, FIELD_TIME ),
+
+	DEFINE_FIELD( CBigSmoke, m_voicePitch, FIELD_INTEGER ),
+
+	DEFINE_FIELD( CBigSmoke, m_hDead, FIELD_EHANDLE ),
+
 };
 
 IMPLEMENT_SAVERESTORE( CBigSmoke, CSquadMonster )
 
-//=========================================================
-// AI Schedules Specific to this monster
-//=====
-
-Task_t tlBsFollow[] =
+const char *CBigSmoke::pAttackHitSounds[] =
 {
-	{ TASK_MOVE_TO_TARGET_RANGE, (float)128 },	// Move within 128 of target ent (client)
-	{ TASK_SET_SCHEDULE, (float)SCHED_TARGET_FACE },
+	"bigsmoke/fire1.wav"
 };
 
-Schedule_t slBsFollow[] =
+const char *CBigSmoke::pAttackMissSounds[] =
 {
-	{
-		tlBsFollow,
-		ARRAYSIZE( tlBsFollow ),
-		bits_COND_NEW_ENEMY |
-		bits_COND_LIGHT_DAMAGE |
-		bits_COND_HEAVY_DAMAGE |
-		bits_COND_HEAR_SOUND |
-		bits_COND_PROVOKED,
-		bits_SOUND_DANGER,
-		"Follow"
-	},
+	"bigsmoke/fire1.wav",
+};
+const char *CBigSmoke::pPainSounds[] =
+{
+	"aslave/slv_null.wav",
 };
 
-//=========================================================
-// BarneyDraw - much better looking draw schedule for when
-// barney knows who he's gonna attack.
-//=========================================================
-Task_t tlBigSmokeEnemyDraw[] =
+const char *CBigSmoke::pDeathSounds[] =
 {
-	{ TASK_STOP_MOVING, 0 },
-	{ TASK_FACE_ENEMY, 0 },
-	{ TASK_PLAY_SEQUENCE_FACE_ENEMY, (float) ACT_ARM },
+	"aslave/slv_null.wav",
+	"aslave/slv_null.wav",
 };
-
-Schedule_t slBigSmokeEnemyDraw[] =
-{
-	{
-		tlBigSmokeEnemyDraw,
-		ARRAYSIZE( tlBigSmokeEnemyDraw ),
-		0,
-		0,
-		"BigSmoke Enemy Draw"
-	}
-};
-
-Task_t tlBsFaceTarget[] =
-{
-	{ TASK_SET_ACTIVITY, (float)ACT_IDLE },
-	{ TASK_FACE_TARGET, (float)0 },
-	{ TASK_SET_ACTIVITY, (float)ACT_IDLE },
-	{ TASK_SET_SCHEDULE, (float)SCHED_TARGET_CHASE },
-};
-
-Schedule_t slBsFaceTarget[] =
-{
-	{
-		tlBsFaceTarget,
-		ARRAYSIZE( tlBsFaceTarget ),
-		bits_COND_CLIENT_PUSH |
-		bits_COND_NEW_ENEMY |
-		bits_COND_LIGHT_DAMAGE |
-		bits_COND_HEAVY_DAMAGE |
-		bits_COND_HEAR_SOUND |
-		bits_COND_PROVOKED,
-		bits_SOUND_DANGER,
-		"FaceTarget"
-	},
-};
-
-Task_t tlIdleBsStand[] =
-{
-	{ TASK_STOP_MOVING, 0 },
-	{ TASK_SET_ACTIVITY, (float)ACT_IDLE },
-	{ TASK_WAIT, (float)2 }, // repick IDLESTAND every two seconds.
-	{ TASK_TLK_HEADRESET, (float)0 }, // reset head position
-};
-
-Schedule_t slIdleBsStand[] =
-{
-	{
-		tlIdleBsStand,
-		ARRAYSIZE( tlIdleBsStand ),
-		bits_COND_NEW_ENEMY |
-		bits_COND_LIGHT_DAMAGE |
-		bits_COND_HEAVY_DAMAGE |
-		bits_COND_HEAR_SOUND |
-		bits_COND_SMELL |
-		bits_COND_PROVOKED,
-		bits_SOUND_COMBAT |// sound flags - change these, and you'll break the talking code.
-		//bits_SOUND_PLAYER |
-		//bits_SOUND_WORLD |
-		bits_SOUND_DANGER |
-		bits_SOUND_MEAT |// scents
-		bits_SOUND_CARCASS |
-		bits_SOUND_GARBAGE,
-		"IdleStand"
-	},
-};
-
-DEFINE_CUSTOM_SCHEDULES( CBigSmoke )
-{
-	slBsFollow,
-	slBigSmokeEnemyDraw,
-	slBsFaceTarget,
-	slIdleBsStand,
-};
-
-IMPLEMENT_CUSTOM_SCHEDULES( CBigSmoke, CSquadMonster )
-
-void CBigSmoke::StartTask( Task_t *pTask )
-{
-	CSquadMonster::StartTask( pTask );	
-}
-
-void CBigSmoke::RunTask( Task_t *pTask )
-{
-	switch( pTask->iTask )
-	{
-	case TASK_RANGE_ATTACK1:
-		if( m_hEnemy != NULL && ( m_hEnemy->IsPlayer() ) )
-		{
-			pev->framerate = 1.5;
-		}
-		CSquadMonster::RunTask( pTask );
-		break;
-	default:
-		CSquadMonster::RunTask( pTask );
-		break;
-	}
-}
-
-//=========================================================
-// ISoundMask - returns a bit mask indicating which types
-// of sounds this monster regards. 
-//=========================================================
-int CBigSmoke::ISoundMask( void) 
-{
-	return bits_SOUND_WORLD |
-			bits_SOUND_COMBAT |
-			bits_SOUND_CARCASS |
-			bits_SOUND_MEAT |
-			bits_SOUND_GARBAGE |
-			bits_SOUND_DANGER |
-			bits_SOUND_PLAYER;
-}
 
 //=========================================================
 // Classify - indicates this monster's place in the 
@@ -255,14 +135,91 @@ int CBigSmoke::ISoundMask( void)
 //=========================================================
 int CBigSmoke::Classify( void )
 {
-	return CLASS_PLAYER_ALLY;
+	return CLASS_ALIEN_MILITARY;
 }
 
-//=========================================================
-// ALertSound - barney says "Freeze!"
-//=========================================================
-void CBigSmoke::AlertSound( void )
+int CBigSmoke::IRelationship( CBaseEntity *pTarget )
 {
+	if( ( pTarget->IsPlayer() ) )
+		if( ( pev->spawnflags & SF_MONSTER_WAIT_UNTIL_PROVOKED ) && ! ( m_afMemory & bits_MEMORY_PROVOKED ) )
+			return R_NO;
+	return CBaseMonster::IRelationship( pTarget );
+}
+
+void CBigSmoke::CallForHelp( char *szClassname, float flDist, EHANDLE hEnemy, Vector &vecLocation )
+{
+	// ALERT( at_aiconsole, "help " );
+
+	// skip ones not on my netname
+	if( FStringNull( pev->netname ) )
+		return;
+
+	CBaseEntity *pEntity = NULL;
+
+	while( ( pEntity = UTIL_FindEntityByString( pEntity, "netname", STRING( pev->netname ) ) ) != NULL)
+	{
+		float d = ( pev->origin - pEntity->pev->origin ).Length();
+		if( d < flDist )
+		{
+			CBaseMonster *pMonster = pEntity->MyMonsterPointer();
+			if( pMonster )
+			{
+				pMonster->m_afMemory |= bits_MEMORY_PROVOKED;
+				pMonster->PushEnemy( hEnemy, vecLocation );
+			}
+		}
+	}
+}
+
+
+void CBigSmoke::IdleSound( void )
+{
+	if( RANDOM_LONG( 0, 2 ) == 0 )
+	{
+		SENTENCEG_PlayRndSz( ENT( pev ), "SLV_IDLE", 0.85, ATTN_NORM, 0, m_voicePitch );
+	}
+#if 0
+	int side = RANDOM_LONG( 0, 1 ) * 2 - 1;
+
+	ClearBeams();
+	ArmBeam( side );
+
+	UTIL_MakeAimVectors( pev->angles );
+	Vector vecSrc = pev->origin + gpGlobals->v_right * 2 * side;
+	MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, vecSrc );
+		WRITE_BYTE( TE_DLIGHT );
+		WRITE_COORD( vecSrc.x );	// X
+		WRITE_COORD( vecSrc.y );	// Y
+		WRITE_COORD( vecSrc.z );	// Z
+		WRITE_BYTE( 8 );		// radius * 0.1
+		WRITE_BYTE( 255 );		// r
+		WRITE_BYTE( 180 );		// g
+		WRITE_BYTE( 96 );		// b
+		WRITE_BYTE( 10 );		// time * 10
+		WRITE_BYTE( 0 );		// decay * 0.1
+	MESSAGE_END();
+
+	EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, "debris/flesh1.wav", 1, ATTN_NORM, 0, 100 );
+#endif
+}
+
+
+//=========================================================
+// ISoundMask - returns a bit mask indicating which types
+// of sounds this monster regards. 
+//=========================================================
+int CBigSmoke::ISoundMask( void )
+{
+	return bits_SOUND_WORLD |
+		bits_SOUND_COMBAT |
+		bits_SOUND_DANGER |
+		bits_SOUND_PLAYER;
+}
+
+void CBigSmoke::Killed( entvars_t *pevAttacker, int iGib )
+{
+	ClearBeams();
+	CSquadMonster::Killed( pevAttacker, iGib );
 }
 
 //=========================================================
@@ -273,85 +230,23 @@ void CBigSmoke::SetYawSpeed( void )
 {
 	int ys;
 
-	ys = 0;
-
-	switch ( m_Activity )
+	switch( m_Activity )
 	{
+	case ACT_WALK:		
+		ys = 50;	
+		break;
+	case ACT_RUN:		
+		ys = 70;
+		break;
 	case ACT_IDLE:		
-		ys = 70;
-		break;
-	case ACT_WALK:
-		ys = 70;
-		break;
-	case ACT_RUN:
-		ys = 90;
+		ys = 50;
 		break;
 	default:
-		ys = 70;
+		ys = 90;
 		break;
 	}
 
 	pev->yaw_speed = ys;
-}
-
-//=========================================================
-// CheckRangeAttack1
-//=========================================================
-BOOL CBigSmoke::CheckRangeAttack1( float flDot, float flDist )
-{
-	if( flDist <= 1024 && flDot >= 0.5 )
-	{
-		if( gpGlobals->time > m_checkAttackTime )
-		{
-			TraceResult tr;
-
-			Vector shootOrigin = pev->origin + Vector( 0, 0, 55 );
-			CBaseEntity *pEnemy = m_hEnemy;
-			Vector shootTarget = ( ( pEnemy->BodyTarget( shootOrigin ) - pEnemy->pev->origin ) + m_vecEnemyLKP );
-			UTIL_TraceLine( shootOrigin, shootTarget, dont_ignore_monsters, ENT( pev ), &tr );
-			m_checkAttackTime = gpGlobals->time + 1;
-			if( tr.flFraction == 1.0 || ( tr.pHit != NULL && CBaseEntity::Instance( tr.pHit ) == pEnemy ) )
-				m_lastAttackCheck = TRUE;
-			else
-				m_lastAttackCheck = FALSE;
-			m_checkAttackTime = gpGlobals->time + 1.5;
-		}
-		return m_lastAttackCheck;
-	}
-	return FALSE;
-}
-
-//=========================================================
-// BarneyFirePistol - shoots one round from the pistol at
-// the enemy barney is facing.
-//=========================================================
-void CBigSmoke::BigSmokeFirePistol( void )
-{
-	Vector vecShootOrigin;
-
-	UTIL_MakeVectors( pev->angles );
-	vecShootOrigin = pev->origin + Vector( 0, 0, 55 );
-	Vector vecShootDir = ShootAtEnemy( vecShootOrigin );
-
-	Vector angDir = UTIL_VecToAngles( vecShootDir );
-	SetBlending( 0, angDir.x );
-	pev->effects = EF_MUZZLEFLASH;
-
-	FireBullets( 1, vecShootOrigin, vecShootDir, VECTOR_CONE_2DEGREES, 1024, BULLET_MONSTER_9MM );
-
-	int pitchShift = RANDOM_LONG( 0, 20 );
-	
-	// Only shift about half the time
-	if( pitchShift > 10 )
-		pitchShift = 0;
-	else
-		pitchShift -= 5;
-	EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, "BigSmoke/fire1.wav", 1, ATTN_NORM, 0, 100 + pitchShift );
-
-	CSoundEnt::InsertSound( bits_SOUND_COMBAT, pev->origin, 384, 0.3 );
-
-	// UNDONE: Reload?
-	m_cAmmoLoaded--;// take away a bullet!
 }
 
 //=========================================================
@@ -362,24 +257,203 @@ void CBigSmoke::BigSmokeFirePistol( void )
 //=========================================================
 void CBigSmoke::HandleAnimEvent( MonsterEvent_t *pEvent )
 {
+	// ALERT( at_console, "event %d : %f\n", pEvent->event, pev->frame );
 	switch( pEvent->event )
 	{
-	case BIGSMOKE_AE_SHOOT:
-		BigSmokeFirePistol();
-		break;
-	case BIGSMOKE_AE_DRAW:
-		// barney's bodygroup switches here so he can pull gun from holster
-		pev->body = BIGSMOKE_BODY_GUNDRAWN;
-		m_fGunDrawn = TRUE;
-		break;
-	case BIGSMOKE_AE_HOLSTER:
-		// change bodygroup to replace gun in holster
-		pev->body = BIGSMOKE_BODY_GUNHOLSTERED;
-		m_fGunDrawn = FALSE;
-		break;
-	default:
-		CSquadMonster::HandleAnimEvent( pEvent );
+		case ISLAVE_AE_CLAW:
+		{
+			// SOUND HERE!
+			CBaseEntity *pHurt = CheckTraceHullAttack( 70, gSkillData.slaveDmgClaw, DMG_SLASH );
+			if( pHurt )
+			{
+				if( pHurt->pev->flags & ( FL_MONSTER | FL_CLIENT ) )
+				{
+					pHurt->pev->punchangle.z = -18;
+					pHurt->pev->punchangle.x = 5;
+				}
+				// Play a random attack hit sound
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, pAttackHitSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackHitSounds ) - 1 )], 1.0, ATTN_NORM, 0, m_voicePitch );
+			}
+			else
+			{
+				// Play a random attack miss sound
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, pAttackMissSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackMissSounds ) - 1 )], 1.0, ATTN_NORM, 0, m_voicePitch );
+			}
+		}
+			break;
+		case ISLAVE_AE_CLAWRAKE:
+		{
+			CBaseEntity *pHurt = CheckTraceHullAttack( 70, gSkillData.slaveDmgClawrake, DMG_SLASH );
+			if( pHurt )
+			{
+				if( pHurt->pev->flags & ( FL_MONSTER | FL_CLIENT ) )
+				{
+					pHurt->pev->punchangle.z = -18;
+					pHurt->pev->punchangle.x = 5;
+				}
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, pAttackHitSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackHitSounds ) - 1 )], 1.0, ATTN_NORM, 0, m_voicePitch );
+			}
+			else
+			{
+				EMIT_SOUND_DYN( ENT(pev), CHAN_WEAPON, pAttackMissSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackMissSounds ) - 1 )], 1.0, ATTN_NORM, 0, m_voicePitch );
+			}
+		}
+			break;
+		case ISLAVE_AE_ZAP_POWERUP:
+		{
+			// speed up attack when on hard
+			if( g_iSkillLevel == SKILL_HARD )
+				pev->framerate = 1.5;
+
+			UTIL_MakeAimVectors( pev->angles );
+
+			if( m_iBeams == 0 )
+			{
+				Vector vecSrc = pev->origin + gpGlobals->v_forward * 2;
+				MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, vecSrc );
+					WRITE_BYTE( TE_DLIGHT );
+					WRITE_COORD( vecSrc.x );	// X
+					WRITE_COORD( vecSrc.y );	// Y
+					WRITE_COORD( vecSrc.z );	// Z
+					WRITE_BYTE( 12 );		// radius * 0.1
+					WRITE_BYTE( 255 );		// r
+					WRITE_BYTE( 180 );		// g
+					WRITE_BYTE( 96 );		// b
+					WRITE_BYTE( 20 / pev->framerate );		// time * 10
+					WRITE_BYTE( 0 );		// decay * 0.1
+				MESSAGE_END();
+			}
+			if( m_hDead != NULL )
+			{
+				WackBeam( -1, m_hDead );
+				WackBeam( 1, m_hDead );
+			}
+			else
+			{
+				ArmBeam( -1 );
+				ArmBeam( 1 );
+				BeamGlow();
+			}
+
+			EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, "bigsmoke/fire1.wav", 1, ATTN_NORM, 0, 100 + m_iBeams * 10 );
+			pev->skin = m_iBeams / 2;
+		}
+			break;
+		case ISLAVE_AE_ZAP_SHOOT:
+		{
+			ClearBeams();
+
+			if( m_hDead != NULL )
+			{
+				Vector vecDest = m_hDead->pev->origin + Vector( 0, 0, 38 );
+				TraceResult trace;
+				UTIL_TraceHull( vecDest, vecDest, dont_ignore_monsters, human_hull, m_hDead->edict(), &trace );
+
+				if( !trace.fStartSolid )
+				{
+					CBaseEntity *pNew = Create( "monster_big_smoke", m_hDead->pev->origin, m_hDead->pev->angles );
+					CBaseMonster *pNewMonster = pNew->MyMonsterPointer( );
+					pNew->pev->spawnflags |= 1;
+					WackBeam( -1, pNew );
+					WackBeam( 1, pNew );
+					UTIL_Remove( m_hDead );
+					/*
+					CBaseEntity *pEffect = Create( "test_effect", pNew->Center(), pev->angles );
+					pEffect->Use( this, this, USE_ON, 1 );
+					*/
+					break;
+				}
+			}
+			ClearMultiDamage();
+
+			UTIL_MakeAimVectors( pev->angles );
+
+			ZapBeam( -1 );
+			ZapBeam( 1 );
+
+			// STOP_SOUND( ENT( pev ), CHAN_WEAPON, "debris/zap4.wav" );
+			ApplyMultiDamage( pev, pev );
+
+			m_flNextAttack = gpGlobals->time + RANDOM_FLOAT( 0.5, 4.0 );
+		}
+			break;
+		case ISLAVE_AE_ZAP_DONE:
+		{
+			ClearBeams();
+		}
+			break;
+		default:
+			CSquadMonster::HandleAnimEvent( pEvent );
+			break;
 	}
+}
+
+//=========================================================
+// CheckRangeAttack1 - normal beam attack 
+//=========================================================
+BOOL CBigSmoke::CheckRangeAttack1( float flDot, float flDist )
+{
+	if( m_flNextAttack > gpGlobals->time )
+	{
+		return FALSE;
+	}
+
+	return CSquadMonster::CheckRangeAttack1( flDot, flDist );
+}
+
+//=========================================================
+// CheckRangeAttack2 - check bravery and try to resurect dead comrades
+//=========================================================
+BOOL CBigSmoke::CheckRangeAttack2( float flDot, float flDist )
+{
+	return FALSE;
+
+	if( m_flNextAttack > gpGlobals->time )
+	{
+		return FALSE;
+	}
+
+	m_hDead = NULL;
+	m_iBravery = 0;
+
+	CBaseEntity *pEntity = NULL;
+	while( ( pEntity = UTIL_FindEntityByClassname( pEntity, "monster_big_smoke" ) ) != NULL )
+	{
+		TraceResult tr;
+
+		UTIL_TraceLine( EyePosition(), pEntity->EyePosition(), ignore_monsters, ENT( pev ), &tr );
+		if( tr.flFraction == 1.0 || tr.pHit == pEntity->edict() )
+		{
+			if( pEntity->pev->deadflag == DEAD_DEAD )
+			{
+				float d = ( pev->origin - pEntity->pev->origin ).Length();
+				if( d < flDist )
+				{
+					m_hDead = pEntity;
+					flDist = d;
+				}
+				m_iBravery--;
+			}
+			else
+			{
+				m_iBravery++;
+			}
+		}
+	}
+	if( m_hDead != NULL )
+		return TRUE;
+	else
+		return FALSE;
+}
+
+//=========================================================
+// StartTask
+//=========================================================
+void CBigSmoke::StartTask( Task_t *pTask )
+{
+	ClearBeams();
+
+	CSquadMonster::StartTask( pTask );
 }
 
 //=========================================================
@@ -392,18 +466,17 @@ void CBigSmoke::Spawn()
 	SET_MODEL( ENT( pev ), "models/bigsmoke.mdl" );
 	UTIL_SetSize( pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX );
 
-	pev->solid = SOLID_SLIDEBOX;
-	pev->movetype = MOVETYPE_STEP;
-	m_bloodColor = BLOOD_COLOR_RED;
-	pev->health = 350;
-	pev->view_ofs = Vector ( 0, 0, 50 );// position of the eyes relative to monster's origin.
-	m_flFieldOfView = VIEW_FIELD_WIDE; // NOTE: we need a wide field of view so npc will notice player and say hello
-	m_MonsterState = MONSTERSTATE_NONE;
+	pev->solid		= SOLID_SLIDEBOX;
+	pev->movetype		= MOVETYPE_STEP;
+	m_bloodColor		= BLOOD_COLOR_RED;
+	pev->effects		= 0;
+	pev->health		= 200;
+	pev->view_ofs		= Vector( 0, 0, 64 );// position of the eyes relative to monster's origin.
+	m_flFieldOfView		= VIEW_FIELD_WIDE; // NOTE: we need a wide field of view so npc will notice player and say hello
+	m_MonsterState		= MONSTERSTATE_NONE;
+	m_afCapability		= bits_CAP_HEAR | bits_CAP_TURN_HEAD | bits_CAP_RANGE_ATTACK2 | bits_CAP_DOORS_GROUP;
 
-	pev->body = 0; // gun in holster
-	m_fGunDrawn = FALSE;
-
-	m_afCapability = bits_CAP_HEAR | bits_CAP_TURN_HEAD | bits_CAP_DOORS_GROUP;
+	m_voicePitch		= RANDOM_LONG( 85, 110 );
 
 	MonsterInit();
 }
@@ -413,246 +486,296 @@ void CBigSmoke::Spawn()
 //=========================================================
 void CBigSmoke::Precache()
 {
-	PRECACHE_MODEL( "models/bigsmoke.mdl" );
+	int i;
 
+	PRECACHE_MODEL( "models/bigsmoke.mdl" );
+	PRECACHE_MODEL( "sprites/xsmoke3down.spr" );
 	PRECACHE_SOUND( "bigsmoke/fire1.wav" );
 
+	for( i = 0; i < ARRAYSIZE( pAttackHitSounds ); i++ )
+		PRECACHE_SOUND( (char *)pAttackHitSounds[i] );
 
-	CSquadMonster::Precache();
-}	
+	for( i = 0; i < ARRAYSIZE( pAttackMissSounds ); i++ )
+		PRECACHE_SOUND( (char *)pAttackMissSounds[i] );
 
+	for( i = 0; i < ARRAYSIZE( pPainSounds ); i++ )
+		PRECACHE_SOUND((char *)pPainSounds[i] );
 
-static BOOL IsFacing( entvars_t *pevTest, const Vector &reference )
-{
-	Vector vecDir = reference - pevTest->origin;
-	vecDir.z = 0;
-	vecDir = vecDir.Normalize();
-	Vector forward, angle;
-	angle = pevTest->v_angle;
-	angle.x = 0;
-	UTIL_MakeVectorsPrivate( angle, forward, NULL, NULL );
+	for( i = 0; i < ARRAYSIZE( pDeathSounds ); i++ )
+		PRECACHE_SOUND( (char *)pDeathSounds[i] );
 
-	// He's facing me, he meant it
-	if( DotProduct( forward, vecDir ) > 0.96 )	// +/- 15 degrees or so
-	{
-		return TRUE;
-	}
-	return FALSE;
+	UTIL_PrecacheOther( "test_effect" );
 }
+
+//=========================================================
+// TakeDamage - get provoked when injured
+//=========================================================
 
 int CBigSmoke::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )
 {
-	// make sure friends talk about it if player hurts talkmonsters...
-	int ret = CSquadMonster::TakeDamage( pevInflictor, pevAttacker, flDamage, bitsDamageType );
-	if( !IsAlive() || pev->deadflag == DEAD_DYING )
-		return ret;
+	// don't slash one of your own
+	if( ( bitsDamageType & DMG_SLASH ) && pevAttacker && IRelationship( Instance( pevAttacker ) ) < R_DL )
+		return 0;
 
-	if( m_MonsterState != MONSTERSTATE_PRONE && ( pevAttacker->flags & FL_CLIENT ) )
-	{
-		m_flPlayerDamage += flDamage;
-
-		// This is a heurstic to determine if the player intended to harm me
-		// If I have an enemy, we can't establish intent (may just be crossfire)
-		if( m_hEnemy == NULL )
-		{
-			// If the player was facing directly at me, or I'm already suspicious, get mad
-			if( ( m_afMemory & bits_MEMORY_SUSPICIOUS ) || IsFacing( pevAttacker, pev->origin ) )
-			{
-			}
-			else
-			{
-			}
-		}
-		else if( !( m_hEnemy->IsPlayer()) && pev->deadflag == DEAD_NO )
-		{
-		}
-	}
-
-	return ret;
+	m_afMemory |= bits_MEMORY_PROVOKED;
+	return CSquadMonster::TakeDamage( pevInflictor, pevAttacker, flDamage, bitsDamageType );
 }
 
-//=========================================================
-// PainSound
-//=========================================================
-void CBigSmoke::PainSound( void )
+void CBigSmoke::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType)
 {
-	if( gpGlobals->time < m_painTime )
+	if( bitsDamageType & DMG_SHOCK )
 		return;
 
-	m_painTime = gpGlobals->time + RANDOM_FLOAT( 0.5, 0.75 );
-
-}
-
-//=========================================================
-// DeathSound 
-//=========================================================
-void CBigSmoke::DeathSound( void )
-{
-}
-
-void CBigSmoke::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType )
-{
-	switch( ptr->iHitgroup )
-	{
-	case HITGROUP_CHEST:
-	case HITGROUP_STOMACH:
-		if (bitsDamageType & ( DMG_BULLET | DMG_SLASH | DMG_BLAST ) )
-		{
-			flDamage = flDamage / 2;
-		}
-		break;
-	case 10:
-		if( bitsDamageType & ( DMG_BULLET | DMG_SLASH | DMG_CLUB ) )
-		{
-			flDamage -= 20;
-			if( flDamage <= 0 )
-			{
-				UTIL_Ricochet( ptr->vecEndPos, 1.0 );
-				flDamage = 0.01;
-			}
-		}
-
-		// always a head shot
-		ptr->iHitgroup = HITGROUP_HEAD;
-		break;
-	}
-
 	CSquadMonster::TraceAttack( pevAttacker, flDamage, vecDir, ptr, bitsDamageType );
-}
-
-void CBigSmoke::Killed( entvars_t *pevAttacker, int iGib )
-{
-	if( pev->body < BIGSMOKE_BODY_GUNGONE )
-	{
-		// drop the gun!
-		Vector vecGunPos;
-		Vector vecGunAngles;
-
-		pev->body = BIGSMOKE_BODY_GUNGONE;
-
-		GetAttachment( 0, vecGunPos, vecGunAngles );
-
-		CBaseEntity *pGun = DropItem( "weapon_9mmhandgun", vecGunPos, vecGunAngles );
-	}
-
-	SetUse( NULL );	
-	CSquadMonster::Killed( pevAttacker, iGib );
 }
 
 //=========================================================
 // AI Schedules Specific to this monster
 //=========================================================
-Schedule_t *CBigSmoke::GetScheduleOfType( int Type )
+
+// primary range attack
+Task_t	tlBigSmokeAttack1[] =
 {
-	Schedule_t *psched;
+	{ TASK_STOP_MOVING,			0				},
+	{ TASK_FACE_IDEAL,			(float)0		},
+	{ TASK_RANGE_ATTACK1,		(float)0		},
+};
 
-	switch( Type )
-	{
-	case SCHED_ARM_WEAPON:
-		if( m_hEnemy != NULL )
-		{
-			// face enemy, then draw.
-			return slBigSmokeEnemyDraw;
-		}
-		break;
-	// Hook these to make a looping schedule
-	case SCHED_TARGET_FACE:
-		// call base class default so that barney will talk
-		// when 'used' 
-		psched = CSquadMonster::GetScheduleOfType( Type );
+Schedule_t	slBigSmokeAttack1[] =
+{
+	{ 
+		tlBigSmokeAttack1,
+		ARRAYSIZE ( tlBigSmokeAttack1 ), 
+		bits_COND_CAN_MELEE_ATTACK1 |
+		bits_COND_HEAR_SOUND |
+		bits_COND_HEAVY_DAMAGE, 
 
-		if( psched == slIdleStand )
-			return slBsFaceTarget;	// override this for different target face behavior
-		else
-			return psched;
-	case SCHED_TARGET_CHASE:
-		return slBsFollow;
-	case SCHED_IDLE_STAND:
-		// call base class default so that scientist will talk
-		// when standing during idle
-		psched = CSquadMonster::GetScheduleOfType( Type );
+		bits_SOUND_DANGER,
+		"Slave Range Attack1"
+	},
+};
 
-		if( psched == slIdleStand )
-		{
-			// just look straight ahead.
-			return slIdleBsStand;
-		}
-		else
-			return psched;	
-	}
+DEFINE_CUSTOM_SCHEDULES( CBigSmoke )
+{
+	slBigSmokeAttack1,
+};
 
-	return CSquadMonster::GetScheduleOfType( Type );
-}
+IMPLEMENT_CUSTOM_SCHEDULES( CBigSmoke, CSquadMonster )
 
 //=========================================================
-// GetSchedule - Decides which type of schedule best suits
-// the monster's current state and conditions. Then calls
-// monster's member function to get a pointer to a schedule
-// of the proper type.
 //=========================================================
 Schedule_t *CBigSmoke::GetSchedule( void )
 {
+	ClearBeams();
+/*
+	if( pev->spawnflags )
+	{
+		pev->spawnflags = 0;
+		return GetScheduleOfType( SCHED_RELOAD );
+	}
+*/
 	if( HasConditions( bits_COND_HEAR_SOUND ) )
 	{
 		CSound *pSound;
 		pSound = PBestSound();
 
 		ASSERT( pSound != NULL );
-		if( pSound && (pSound->m_iType & bits_SOUND_DANGER) )
+
+		if( pSound && ( pSound->m_iType & bits_SOUND_DANGER ) )
 			return GetScheduleOfType( SCHED_TAKE_COVER_FROM_BEST_SOUND );
+		if( pSound->m_iType & bits_SOUND_COMBAT )
+			m_afMemory |= bits_MEMORY_PROVOKED;
 	}
 
 	switch( m_MonsterState )
 	{
 	case MONSTERSTATE_COMBAT:
+		// dead enemy
+		if( HasConditions( bits_COND_ENEMY_DEAD ) )
 		{
-			// dead enemy
-			if( HasConditions( bits_COND_ENEMY_DEAD ) )
+			// call base class, all code to handle dead enemies is centralized there.
+			return CBaseMonster::GetSchedule();
+		}
+
+		if( pev->health < 20 || m_iBravery < 0 )
+		{
+			if( !HasConditions( bits_COND_CAN_MELEE_ATTACK1 ) )
 			{
-				// call base class, all code to handle dead enemies is centralized there.
-				return CBaseMonster::GetSchedule();
+				m_failSchedule = SCHED_CHASE_ENEMY;
+				if( HasConditions( bits_COND_LIGHT_DAMAGE | bits_COND_HEAVY_DAMAGE ) )
+				{
+					return GetScheduleOfType( SCHED_TAKE_COVER_FROM_ENEMY );
+				}
+				if( HasConditions( bits_COND_SEE_ENEMY ) && HasConditions( bits_COND_ENEMY_FACING_ME ) )
+				{
+					// ALERT( at_console, "exposed\n");
+					return GetScheduleOfType( SCHED_TAKE_COVER_FROM_ENEMY );
+				}
 			}
-
-			// always act surprized with a new enemy
-			if( HasConditions( bits_COND_NEW_ENEMY ) && HasConditions( bits_COND_LIGHT_DAMAGE ) )
-				return GetScheduleOfType( SCHED_SMALL_FLINCH );
-
-			// wait for one schedule to draw gun
-			if( !m_fGunDrawn )
-				return GetScheduleOfType( SCHED_ARM_WEAPON );
-
-			if( HasConditions( bits_COND_HEAVY_DAMAGE ) )
-				return GetScheduleOfType( SCHED_TAKE_COVER_FROM_ENEMY );
 		}
-		break;
-	case MONSTERSTATE_ALERT:	
-	case MONSTERSTATE_IDLE:
-		if( HasConditions( bits_COND_LIGHT_DAMAGE | bits_COND_HEAVY_DAMAGE ) )
-		{
-			// flinch if hurt
-			return GetScheduleOfType( SCHED_SMALL_FLINCH );
-		}
-
-
-		if( HasConditions( bits_COND_CLIENT_PUSH ) )
-		{
-			return GetScheduleOfType( SCHED_MOVE_AWAY );
-		}
-
 		break;
 	default:
 		break;
 	}
-
 	return CSquadMonster::GetSchedule();
 }
 
-MONSTERSTATE CBigSmoke::GetIdealState( void )
+Schedule_t *CBigSmoke::GetScheduleOfType( int Type ) 
 {
-	return CSquadMonster::GetIdealState();
+	switch( Type )
+	{
+	case SCHED_FAIL:
+		if( HasConditions( bits_COND_CAN_MELEE_ATTACK1 ) )
+		{
+			return CSquadMonster::GetScheduleOfType( SCHED_MELEE_ATTACK1 );
+		}
+		break;
+	case SCHED_RANGE_ATTACK1:
+		return slBigSmokeAttack1;
+	case SCHED_RANGE_ATTACK2:
+		return slBigSmokeAttack1;
+	}
+	return CSquadMonster::GetScheduleOfType( Type );
 }
 
-void CBigSmoke::DeclineFollowing( void )
+//=========================================================
+// ArmBeam - small beam from arm to nearby geometry
+//=========================================================
+void CBigSmoke::ArmBeam( int side )
 {
-	PlaySentence( "BA_POK", 2, VOL_NORM, ATTN_NORM );
+	TraceResult tr;
+	float flDist = 1.0;
+
+	if( m_iBeams >= ISLAVE_MAX_BEAMS )
+		return;
+
+	UTIL_MakeAimVectors( pev->angles );
+	Vector vecSrc = pev->origin + gpGlobals->v_up * 36 + gpGlobals->v_right * side * 16 + gpGlobals->v_forward * 32;
+
+	for( int i = 0; i < 3; i++ )
+	{
+		Vector vecAim = gpGlobals->v_right * side * RANDOM_FLOAT( 0, 1 ) + gpGlobals->v_up * RANDOM_FLOAT( -1, 1 );
+		TraceResult tr1;
+		UTIL_TraceLine( vecSrc, vecSrc + vecAim * 512, dont_ignore_monsters, ENT( pev ), &tr1 );
+		if( flDist > tr1.flFraction )
+		{
+			tr = tr1;
+			flDist = tr.flFraction;
+		}
+	}
+
+	// Couldn't find anything close enough
+	if( flDist == 1.0 )
+		return;
+
+	DecalGunshot( &tr, BULLET_PLAYER_CROWBAR );
+
+	m_pBeam[m_iBeams] = CBeam::BeamCreate( "sprites/xsmoke3down.spr", 30 );
+	if( !m_pBeam[m_iBeams] )
+		return;
+
+	m_pBeam[m_iBeams]->PointEntInit( tr.vecEndPos, entindex() );
+	m_pBeam[m_iBeams]->SetEndAttachment( side < 0 ? 2 : 1 );
+	// m_pBeam[m_iBeams]->SetColor( 180, 255, 96 );
+	m_pBeam[m_iBeams]->SetColor( 6, 0, 106 );
+	m_pBeam[m_iBeams]->SetBrightness( 0 );
+	m_pBeam[m_iBeams]->SetNoise( 80 );
+	m_iBeams++;
+}
+
+//=========================================================
+// BeamGlow - brighten all beams
+//=========================================================
+void CBigSmoke::BeamGlow()
+{
+	int b = m_iBeams * 32;
+	if( b > 255 )
+		b = 255;
+
+	for( int i = 0; i < m_iBeams; i++ )
+	{
+		if( m_pBeam[i]->GetBrightness() != 255 )
+		{
+			m_pBeam[i]->SetBrightness( b );
+		}
+	}
+}
+
+//=========================================================
+// WackBeam - regenerate dead colleagues
+//=========================================================
+void CBigSmoke::WackBeam( int side, CBaseEntity *pEntity )
+{
+	Vector vecDest;
+	float flDist = 1.0;
+
+	if( m_iBeams >= ISLAVE_MAX_BEAMS )
+		return;
+
+	if( pEntity == NULL )
+		return;
+
+	m_pBeam[m_iBeams] = CBeam::BeamCreate( "sprites/xsmoke3down.spr", 30 );
+	if( !m_pBeam[m_iBeams] )
+		return;
+
+	m_pBeam[m_iBeams]->PointEntInit( pEntity->Center(), entindex() );
+	m_pBeam[m_iBeams]->SetEndAttachment( side < 0 ? 2 : 1 );
+	m_pBeam[m_iBeams]->SetColor( 0, 5, 196 );
+	m_pBeam[m_iBeams]->SetBrightness( 0 );
+	m_pBeam[m_iBeams]->SetNoise( 80 );
+	m_iBeams++;
+}
+
+//=========================================================
+// ZapBeam - heavy damage directly forward
+//=========================================================
+void CBigSmoke::ZapBeam( int side )
+{
+	Vector vecSrc, vecAim;
+	TraceResult tr;
+	CBaseEntity *pEntity;
+
+	if( m_iBeams >= ISLAVE_MAX_BEAMS )
+		return;
+
+	vecSrc = pev->origin + gpGlobals->v_up * 36;
+	vecAim = ShootAtEnemy( vecSrc );
+	float deflection = 0.01;
+	vecAim = vecAim + side * gpGlobals->v_right * RANDOM_FLOAT( 0, deflection ) + gpGlobals->v_up * RANDOM_FLOAT( -deflection, deflection );
+	UTIL_TraceLine( vecSrc, vecSrc + vecAim * 1024, dont_ignore_monsters, ENT( pev ), &tr );
+
+	m_pBeam[m_iBeams] = CBeam::BeamCreate( "sprites/xsmoke3down.spr", 50 );
+	if( !m_pBeam[m_iBeams] )
+		return;
+
+	m_pBeam[m_iBeams]->PointEntInit( tr.vecEndPos, entindex() );
+	m_pBeam[m_iBeams]->SetEndAttachment( side < 0 ? 2 : 1 );
+	m_pBeam[m_iBeams]->SetColor( 0, 0, 206 );
+	m_pBeam[m_iBeams]->SetBrightness( 0 );
+	m_pBeam[m_iBeams]->SetNoise( 20 );
+	m_iBeams++;
+
+	pEntity = CBaseEntity::Instance( tr.pHit );
+	if( pEntity != NULL && pEntity->pev->takedamage )
+	{
+		pEntity->TraceAttack( pev, 3, vecAim, &tr, DMG_SHOCK );
+	}
+}
+
+//=========================================================
+// ClearBeams - remove all beams
+//=========================================================
+void CBigSmoke::ClearBeams()
+{
+	for( int i = 0; i < ISLAVE_MAX_BEAMS; i++ )
+	{
+		if( m_pBeam[i] )
+		{
+			UTIL_Remove( m_pBeam[i] );
+			m_pBeam[i] = NULL;
+		}
+	}
+	m_iBeams = 0;
+	pev->skin = 0;
 }
