@@ -487,7 +487,7 @@ void UTIL_CoopProcessMenu( CBasePlayer *pPlayer, int imenu )
 				case MENUSTATE_CHECKPOINT:
 					if( imenu == 1 )
 					{
-						if( pPlayer->m_state == STATE_SPECTATOR_BEGIN )
+						if( pPlayer->m_state != STATE_SPAWNED )
 							UTIL_SpawnPlayer( pPlayer );
 						else if( !UTIL_CoopIsBadPlayer( pPlayer ) )
 							UTIL_CoopNewCheckpoint( pPlayer->pev );
