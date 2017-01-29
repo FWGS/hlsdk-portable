@@ -194,8 +194,12 @@ public:
 	Explosions	m_Explosion;
 	int m_iaCustomAnglesX[10];
 	int m_iaCustomAnglesZ[10];
+	float m_flTouchTimer;
+	int m_iTouchCounter;
 };
 LINK_ENTITY_TO_CLASS(prop, CProp);
+
+static int propTouchSelector;
 
 const char *CProp::pSoundsWood[] =
 {
@@ -737,6 +741,41 @@ void CProp::Force(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useTyp
 	SetThink( &CProp::RespawnThink);
 }
 
+static int moveupcounter;
+// Arrange entities that stucks prop
+void UTIL_PropMoveUp( entvars_t *pev, float amount = 11 )
+{
+	if( moveupcounter > 512 )
+		return;
+	if( pev->solid != SOLID_BBOX && pev->solid != SOLID_SLIDEBOX )
+		return;
+	if( pev->movetype != MOVETYPE_BOUNCE && pev->movetype != MOVETYPE_TOSS )
+		return;
+
+	if( amount <= 0 )
+		return;
+	if( pev->size.z > 100 )
+		return;
+
+	moveupcounter++;
+	Vector mins = pev->absmin;
+	Vector maxs = pev->absmax;
+
+	mins.z = pev->absmax.z;
+	maxs.z += 10;
+
+	if( !CBaseEntity::Instance( pev )->IsPlayer() )
+	{
+	CBaseEntity *pList[32];
+	int count = UTIL_EntitiesInBox( pList, 32, mins, maxs, FL_ONGROUND );
+	for( int i = 0; i < count; i++ )
+		if( pList[i]->pev != pev && pList[i]->pev->absmin.z > pev->absmin.z )
+			UTIL_PropMoveUp( pList[i]->pev,pev->absmax.z - pList[i]->pev->absmin.z + 1 );
+	}
+	pev->origin.z += amount;
+	UTIL_SetOrigin( pev, pev->origin );
+}
+
 void CProp::CheckRotate()
 {
 	if( m_shape != SHAPE_CYL_H && m_shape != SHAPE_CYL_V )
@@ -763,25 +802,11 @@ void CProp::CheckRotate()
 		}
 		else if (m_shape == SHAPE_CYL_V)
 		{
-			Vector mins = pev->absmin;
-			Vector maxs = pev->absmax;
 
-			mins.z = pev->absmax.z;
-			maxs.z += 10;
 			ALERT(at_console, "setV: %f %f %f\n", pev->angles.x, pev->angles.y, pev->angles.z);
 
-			// BUGBUG -- can only find 256 entities on a prop -- should be enough
-			CBaseEntity *pList[256];
-			int count = UTIL_EntitiesInBox( pList, 256, mins, maxs, FL_ONGROUND );
-			if ( count )
-			{
-				for ( int i = 0; i < count; i++ )
-				{
-					pList[i]->pev->origin.z += 10;
-				}
-			}
-			pev->origin.z += 10;
-			//pev->angles.y -= 90;
+			moveupcounter = 0;
+			UTIL_PropMoveUp(pev);
 			UTIL_SetSize(pev, minsV, maxsV);
 		}
 		//DROP_TO_FLOOR(edict());
@@ -823,11 +848,30 @@ void CProp::BounceTouch(CBaseEntity *pOther)
 		return;
 	}
 	pev->movetype = MOVETYPE_BOUNCE;
+	if( gpGlobals->time - m_flTouchTimer < 1 && m_iTouchCounter > 100 )
+		{
+			if( pOther->pev->solid == SOLID_BBOX || pOther->pev->solid == SOLID_SLIDEBOX )
+			{
+				moveupcounter = 0;
+				UTIL_PropMoveUp( pOther->pev, 1.5 );
+				//if( Intersects( pOther ) )
+					//pOther->pev->origin.z += pOther->pev->size.z;
+				pev->velocity = pev->avelocity = g_vecZero;
+				UTIL_SetOrigin( pOther->pev, pOther->pev->origin );
+
+				m_iTouchCounter = 0;
+				return;
+			}
+			m_iTouchCounter = 0;
+		}
+	m_flTouchTimer = gpGlobals->time;
+	if( !pOther->IsPlayer() )
+		m_iTouchCounter++;
 	//ALERT( at_console, "BounceTouch: %f %f %f\n", pev->angles.x, pev->angles.y, pev->angles.z );
 	// only do damage if we're moving fairly fast
 	DeployThink();
 
-	if ( m_flNextAttack < gpGlobals->time && pev->velocity.Length() > 300)
+	if ( m_flNextAttack < gpGlobals->time && pev->velocity.Length() > 300 && pev->absmin.z - pOther->pev->absmin.z > 1 )
 	{
 		if( !m_attacker )
 			m_attacker = this;
