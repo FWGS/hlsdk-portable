@@ -1,0 +1,4 @@
+#define WEAPON_GRAVGUN			17
+#define WEAPON_BIG_COCK			18
+#define WEAPON_AR2				19
+#define WEAPON_GATEOFBABYLON	20

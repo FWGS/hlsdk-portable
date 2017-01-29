@@ -82,10 +82,6 @@ public:
 #define WEAPON_TRIPMINE			13
 #define	WEAPON_SATCHEL			14
 #define	WEAPON_SNARK			15
-#define WEAPON_GRAVGUN			17
-#define WEAPON_BIG_COCK			18
-#define WEAPON_AR2				19
-#define WEAPON_GATEOFBABYLON	20
 #define WEAPON_ALLWEAPONS		(~(1<<WEAPON_SUIT))
 
 #define WEAPON_SUIT				31	// ?????
@@ -646,46 +642,6 @@ private:
 	unsigned short m_usCrossbow2;
 };
 
-class CGateOfBabylonSpawner;
-#define MAX_SPAWNERS 7
-class CGateOfBabylon : public CBasePlayerWeapon
-{
-public:
-	void Spawn( void );
-	void Precache( void );
-	int iItemSlot( ) { return 0; }
-	int GetItemInfo(ItemInfo *p);
-	int ObjectCaps();
-#ifndef CLIENT_DLL
-	int Save( CSave &save );
-	int Restore( CRestore &restore );
-	static TYPEDESCRIPTION m_SaveData[];
-#endif
-	void PrimaryAttack( void );
-	void SecondaryAttack( void );
-	int AddToPlayer( CBasePlayer *pPlayer );
-	BOOL Deploy( );
-	void Holster( int skiplocal = 0 );
-	void Reload( void );
-	void WeaponIdle( void );
-
-	virtual BOOL UseDecrement( void )
-	{
-//#if defined( CLIENT_WEAPONS )
-//		return ;
-//#else
-		return false;
-//#endif
-	}
-
-	CGateOfBabylonSpawner *m_pSpawners[MAX_SPAWNERS];
-	bool IntersectOtherSpawner( CGateOfBabylonSpawner *spawner );
-
-private:
-
-	void AddSpawners( void );
-	int m_iSpawnerCount;
-};
 
 class CShotgun : public CBasePlayerWeapon
 {

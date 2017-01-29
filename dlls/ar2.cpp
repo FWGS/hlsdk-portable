@@ -15,6 +15,7 @@
 #include "soundent.h"
 #include "gamerules.h"
 #include "game.h"
+#include "customweapons.h"
 
 #define AR2_BEAM_SPRITE		"sprites/xbeam1.spr"
 enum AR2_e

@@ -12,6 +12,7 @@
 #include "weapons.h"
 #include "nodes.h"
 #include "player.h"
+#include "customweapons.h"
 
 #define BIG_COCK_WEIGHT 21
 

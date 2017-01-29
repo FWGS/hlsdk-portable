@@ -24,10 +24,53 @@
 #include "gamerules.h"
 #include "sprite.h"
 #include "com_model.h"
+#include "customweapons.h"
 
 #ifndef CLIENT_DLL
 #define BOLT_AIR_VELOCITY	2700
 #define BOLT_WATER_VELOCITY	2000
+
+class CGateOfBabylonSpawner;
+#define MAX_SPAWNERS 7
+class CGateOfBabylon : public CBasePlayerWeapon
+{
+public:
+	void Spawn( void );
+	void Precache( void );
+	int iItemSlot( ) { return 0; }
+	int GetItemInfo(ItemInfo *p);
+	int ObjectCaps();
+#ifndef CLIENT_DLL
+	int Save( CSave &save );
+	int Restore( CRestore &restore );
+	static TYPEDESCRIPTION m_SaveData[];
+#endif
+	void PrimaryAttack( void );
+	void SecondaryAttack( void );
+	int AddToPlayer( CBasePlayer *pPlayer );
+	BOOL Deploy( );
+	void Holster( int skiplocal = 0 );
+	void Reload( void );
+	void WeaponIdle( void );
+
+	virtual BOOL UseDecrement( void )
+	{
+//#if defined( CLIENT_WEAPONS )
+//		return ;
+//#else
+		return false;
+//#endif
+	}
+
+	CGateOfBabylonSpawner *m_pSpawners[MAX_SPAWNERS];
+	bool IntersectOtherSpawner( CGateOfBabylonSpawner *spawner );
+
+private:
+
+	void AddSpawners( void );
+	int m_iSpawnerCount;
+};
+
 
 class CGateOfBabylonBolt : public CBaseEntity
 {

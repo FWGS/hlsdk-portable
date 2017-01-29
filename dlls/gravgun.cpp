@@ -16,6 +16,7 @@ Created by Solexid
 #include "effects.h"
 #include "customentity.h"
 #include "gamerules.h"
+#include "customweapons.h"
 
 #define	GRAV_BEAM_SPRITE_PRIMARY_VOLUME		30
 #define GRAV_BEAM_SPRITE		"sprites/xbeam3.spr"
