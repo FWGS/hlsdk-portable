@@ -1480,10 +1480,14 @@ void CChangeLevel::UseChangeLevel( CBaseEntity *pActivator, CBaseEntity *pCaller
 {
 	// if not activated by touch, do not count players
 	m_bUsed = true;
-	if( pCaller && FClassnameIs( pCaller->edict(), "multimanager" ) || FClassnameIs( pCaller->edict(), "trigger_once" ) )
+	if( pCaller && FClassnameIs( pCaller->edict(), "multi_manager" ) || FClassnameIs( pCaller->edict(), "trigger_once" ) )
 		m_fSkipSpawnCheck = true;
 	else
 		m_fSkipSpawnCheck = false;
+	const char *classname = NULL;
+	if( pCaller && pCaller->pev->classname )
+		classname = STRING( pCaller->pev->classname );
+	ALERT( at_console, "UseChangelevel: %p %p %d %s\n", pActivator, pCaller, useType, classname );
 	ChangeLevelNow( pActivator );
 }
 
@@ -1584,10 +1588,12 @@ CBaseEntity *FindTriggerTransition( char *pVolumeName )
 
 		if( pVolume && FClassnameIs( pVolume->pev, "trigger_transition" ) )
 		{
+			ALERT( at_console, "Found trigger_transition %s\n", pVolumeName );
 			return pVolume;
 		}
 		pentVolume = FIND_ENTITY_BY_TARGETNAME( pentVolume, pVolumeName );
 	}
+	ALERT( at_console, "No trigger_transition found: %s\n", pVolumeName );
 	return NULL;
 }
 
@@ -1793,15 +1799,17 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 		ALERT( at_console, "There are %d players in transition volume %s\n", count, m_szLandmarkName );
 			
 	}
-	else if( !m_fSkipSpawnCheck && ( (gpGlobals->time -((CBasePlayer*)pPlayer)->m_flSpawnTime ) < 30 ) && FindTriggerTransition( m_szLandmarkName ) && !InTransitionVolume( pPlayer, m_szLandmarkName ) )
+	else if( ( (gpGlobals->time -((CBasePlayer*)pPlayer)->m_flSpawnTime ) < 30 )  && FindTriggerTransition( m_szLandmarkName ) || !InTransitionVolume( pPlayer, m_szLandmarkName ) )
 	{
 		ALERT( at_console, "Player isn't in the transition volume %s, aborting\n", m_szLandmarkName );
-		return;
+		if( !m_fSkipSpawnCheck )
+			return;
 	}
+	else ALERT( at_console, "Player is in the transition volume %s, changing level now\n", m_szLandmarkName );
 
 	MESSAGE_BEGIN( MSG_ALL, 8, NULL ); // svc_print
 		WRITE_BYTE( 3 ); // PRINT_CHAT
-		WRITE_STRING( UTIL_VarArgs( "%s^7 activated changelevel\n", UTIL_CoopPlayerName( pPlayer ) ) );
+		WRITE_STRING( UTIL_VarArgs( "%s^7 activated changelevel, spawncheck is %d\n", UTIL_CoopPlayerName( pPlayer ), (int)!m_fSkipSpawnCheck ) );
 	MESSAGE_END();
 
 	// This object will get removed in the call to CHANGE_LEVEL, copy the params into "safe" memory
