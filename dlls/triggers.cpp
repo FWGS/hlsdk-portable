@@ -1780,6 +1780,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 					if( InTransitionVolume( plr, m_szLandmarkName ))
 					{
 						count++;
+						pPlayer = plr;
 					}
 
 			}
@@ -1800,7 +1801,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 
 	MESSAGE_BEGIN( MSG_ALL, 8, NULL ); // svc_print
 		WRITE_BYTE( 3 ); // PRINT_CHAT
-		WRITE_STRING( UTIL_VarArgs( "%s^7 activated changelevel\n", ( pPlayer->pev->netname && STRING( pPlayer->pev->netname )[0] != 0 ) ? STRING( pPlayer->pev->netname ) : "unconnected"));
+		WRITE_STRING( UTIL_VarArgs( "%s^7 activated changelevel\n", UTIL_CoopPlayerName( pPlayer ) ) );
 	MESSAGE_END();
 
 	// This object will get removed in the call to CHANGE_LEVEL, copy the params into "safe" memory
