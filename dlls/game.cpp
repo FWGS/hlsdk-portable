@@ -57,6 +57,8 @@ cvar_t mp_coop_disabledmap = { "mp_coop_disabledmap", "", FCVAR_SERVER };
 cvar_t mp_coop_reconnect_hack = { "mp_coop_reconnect_hack", "0", FCVAR_SERVER };
 cvar_t mp_coop_noangry = { "mp_coop_noangry", "0", FCVAR_SERVER };
 cvar_t mp_coop_checkpoints = { "mp_coop_checkpoints", "1", FCVAR_SERVER };
+cvar_t mp_skipdefaults = { "mp_skipdefaults", "0", FCVAR_SERVER };
+cvar_t mp_coop_strongcheckpoints = { "mp_coop_strongcheckpoints", "0", FCVAR_SERVER };
 
 cvar_t mp_unduck = { "mp_unduck", "0", FCVAR_SERVER };
 cvar_t mp_semclip = { "mp_semclip", "0", FCVAR_SERVER };
@@ -516,6 +518,9 @@ void GameDLLInit( void )
 	CVAR_REGISTER( &mp_coop_noangry );
 	CVAR_REGISTER( &mp_spectator );
 	CVAR_REGISTER( &mp_coop_checkpoints );
+	CVAR_REGISTER( &mp_skipdefaults );
+	CVAR_REGISTER( &mp_coop_strongcheckpoints );
+	
 
 	CVAR_REGISTER( &sentences_txt );
 	CVAR_REGISTER( &materials_txt );

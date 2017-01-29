@@ -18,6 +18,9 @@ extern cvar_t mp_coop_changelevel;
 extern cvar_t mp_coop_nofriendlyfire;
 extern cvar_t mp_coop_disabledmap;
 extern cvar_t mp_coop_checkpoints;
+extern cvar_t mp_skipdefaults;
+extern cvar_t mp_coop_strongcheckpoints;
+
 
 extern cvar_t mp_unduck;
 extern cvar_t mp_semclip;
