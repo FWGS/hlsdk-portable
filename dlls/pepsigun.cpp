@@ -25,8 +25,31 @@ enum handgrenade_e
 
 };
 
+class CPepsigun : public CBasePlayerWeapon
+{
+public:
+	void Spawn( void );
+	void Precache( void );
+	int iItemSlot( void ) { return 4; }
+	int GetItemInfo(ItemInfo *p);
+
+
+	void PrimaryAttack( void );
+	void Reload( void );
+	BOOL Deploy( void );
+	BOOL CanHolster( void );
+	void Holster( int skiplocal = 0 );
+	void WeaponIdle( void );
+	int m_fInReload;
+	float m_flNextReload;
+
+	virtual BOOL UseDecrement( void )
+	{ 
+		return FALSE;
+	}
+};
+
 LINK_ENTITY_TO_CLASS( weapon_pepsigun, CPepsigun )
-LINK_ENTITY_TO_CLASS( ammo_pepsi, CPepsigun )
 
 void CPepsigun::Spawn()
 {
@@ -37,7 +60,7 @@ void CPepsigun::Spawn()
 #ifndef CLIENT_DLL
 	pev->dmg = 80;
 #endif
-	m_iDefaultAmmo = 100;
+	m_iDefaultAmmo = HANDGRENADE_DEFAULT_GIVE;
 
 	FallInit();// get ready to fall down.
 }
@@ -53,8 +76,8 @@ void CPepsigun::Precache( void )
 int CPepsigun::GetItemInfo( ItemInfo *p )
 {
 	p->pszName = STRING( pev->classname );
-	p->pszAmmo1 = "pepsi";
-	p->iMaxAmmo1 = 20000;
+	p->pszAmmo1 = "Hand Grenade";
+	p->iMaxAmmo1 = HANDGRENADE_MAX_CARRY;
 	p->pszAmmo2 = NULL;
 	p->iMaxAmmo2 = -1;
 	p->iMaxClip = 8;
@@ -100,17 +123,20 @@ void CPepsigun::Holster( int skiplocal /* = 0 */ )
 
 void CPepsigun::PrimaryAttack()
 {
-
-		m_flStartThrow = gpGlobals->time;
-		m_flReleaseThrow = 0;
-		m_flTimeWeaponIdle = gpGlobals->time + 0.25;
-
+	m_flStartThrow = gpGlobals->time;
+	m_flReleaseThrow = 0;
+	m_flTimeWeaponIdle = gpGlobals->time + 0.25;
 	if(m_iClip > 0)
 	{
 	m_flStartThrow = gpGlobals->time;
 	m_flReleaseThrow = 0;
 	m_flTimeWeaponIdle = gpGlobals->time + 0.25;
 	}
+	else
+	{
+	Reload();
+	}
+
 }
 void CPepsigun::Reload( void )
 {

@@ -1022,33 +1022,7 @@ public:
 private:
 	unsigned short m_usSnarkFire;
 };
-class CPepsigun : public CBasePlayerWeapon
-{
-public:
-	void Spawn( void );
-	void Precache( void );
-	int iItemSlot( void ) { return 4; }
-	int GetItemInfo(ItemInfo *p);
 
-
-	void PrimaryAttack( void );
-	void Reload( void );
-	BOOL Deploy( void );
-	BOOL CanHolster( void );
-	void Holster( int skiplocal = 0 );
-	void WeaponIdle( void );
-	int m_fInReload;
-	float m_flNextReload;
-
-	virtual BOOL UseDecrement( void )
-	{ 
-#if defined( CLIENT_WEAPONS )
-		return TRUE;
-#else
-		return FALSE;
-#endif
-	}
-};
 
 #endif // WEAPONS_H
 	

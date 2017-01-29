@@ -55,15 +55,15 @@ int CSnipars::GetItemInfo(ItemInfo *p)
 { 
 	p->pszName = STRING(pev->classname);
 	p->pszAmmo1 = "snipars";
-	p->iMaxAmmo1 = _SNIPARS_MAX_CARRY;
+	p->iMaxAmmo1 = 50;
 	p->pszAmmo2 = NULL;
 	p->iMaxAmmo2 = -1;
-	p->iMaxClip = SNIPARS_MAX_CLIP;
+	p->iMaxClip = 10;
 	p->iFlags = 0;
 	p->iSlot = 3;
 	p->iPosition = 4;
 	p->iId = m_iId = WEAPON_SNIPARS;
-	p->iWeight = SNIPARS_WEIGHT;
+	p->iWeight = 10;
 
 	return 1;
 	}
@@ -87,7 +87,7 @@ void CSnipars::Spawn( )
 	m_iId = WEAPON_SNIPARS;
 	SET_MODEL(ENT(pev), "models/w_sniper.mdl");
 
-	m_iDefaultAmmo = SNIPARS_DEFAULT_GIVE;
+	m_iDefaultAmmo = 10;
 
 	FallInit();
 }
@@ -213,7 +213,7 @@ void CSnipars::Shoot( float flSpread , float flCycleTime, BOOL fUseAutoAim )
 		vecAiming = gpGlobals->v_forward;
 	}
 
-	Vector vecDir = m_pPlayer->FireBulletsPlayer( 50, vecSrc, vecAiming, Vector( flSpread, flSpread, flSpread ), 8192, BULLET_PLAYER_SNIPARS, 0, 3, m_pPlayer->pev, m_pPlayer->random_seed );
+	Vector vecDir = m_pPlayer->FireBulletsPlayer( 3, vecSrc, vecAiming, Vector( flSpread, flSpread, flSpread ), 8192, BULLET_PLAYER_SNIPARS, 0, 3, m_pPlayer->pev, m_pPlayer->random_seed );
 
 	//PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usFireSniper, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, vecDir.x, vecDir.y, 0, 0, ( m_iClip == 0 ) ? 1 : 0, 0 );
 	pev->effects |= EF_MUZZLEFLASH;
@@ -281,7 +281,7 @@ class CSniparsAmmo : public CBasePlayerAmmo
 	}
 	BOOL AddAmmo( CBaseEntity *pOther )
 	{
-		if (pOther->GiveAmmo( AMMO_SNIPARSBOX_GIVE, "snipars", _SNIPARS_MAX_CARRY ) != -1)
+		if (pOther->GiveAmmo( 10, "snipars", 50 ) != -1)
 		{
 			EMIT_SOUND(ENT(pev), CHAN_ITEM, "items/9mmclip1.wav", 1, ATTN_NORM);
 			return TRUE;
