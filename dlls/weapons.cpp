@@ -304,7 +304,6 @@ void W_Precache( void )
 	UTIL_PrecacheOtherWeapon( "weapon_shotgun" );
 	UTIL_PrecacheOtherWeapon( "weapon_hammer");
 	UTIL_PrecacheOtherWeapon( "weapon_pepsigun" );
-	UTIL_PrecacheOther( "ammo_pepsi" );
 	UTIL_PrecacheOther( "ammo_buckshot" );
 
 	//needle

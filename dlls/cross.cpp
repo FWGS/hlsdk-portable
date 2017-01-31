@@ -286,7 +286,7 @@ void CCrowbar2::Precache( void )
 
 	PRECACHE_SOUND( "g_bounce2.wav" );
 
-	UTIL_PrecacheOther( "crossbow2_bolt" );
+	UTIL_PrecacheOther( "crowbar2_bolt" );
 
 	m_usCrossbow12 = PRECACHE_EVENT( 1, "events/crowbar.sc" );
 	m_usCrossbow22 = PRECACHE_EVENT( 1, "events/crowbar.sc" );

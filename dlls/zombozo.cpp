@@ -164,22 +164,66 @@ void Czombozo::HandleAnimEvent( MonsterEvent_t *pEvent )
 	{
 		case ZOMBIE_AE_ATTACK_RIGHT:
 		{
-			UTIL_MakeVectors( pev->angles );
-			CGrenade::ShootTimed( pev, pev->origin + gpGlobals->v_forward * 17 - gpGlobals->v_right * 27 + gpGlobals->v_up * 6, g_vecZero, 3 );
-			//n a group, only try to throw grenade if ordered.
+		Vector angThrow = gpGlobals->v_forward + gpGlobals->v_up * 0.5;
+		if( angThrow.x < 0 )
+			angThrow.x = -10 + angThrow.x * ( ( 90 - 10 ) / 90.0 );
+		else
+			angThrow.x = -10 + angThrow.x * ( ( 90 + 10 ) / 90.0 );
+
+		float flVel = ( 90 - angThrow.x ) * 4;
+		if( flVel > 500 )
+			flVel = 500;
+
+		Vector vecSrc = pev->origin + pev->view_ofs + gpGlobals->v_forward * 16;
+
+		Vector vecThrow = gpGlobals->v_forward * flVel + pev->velocity;
+		UTIL_MakeVectors( pev->angles );
+
+		CGrenade::ShootTimed( pev, vecSrc, vecThrow, 3 );
+
 		}
 		break;
 		case ZOMBIE_AE_ATTACK_LEFT:
 		{
-			UTIL_MakeVectors( pev->angles );
-			CGrenade::ShootTimed( pev, pev->origin + gpGlobals->v_forward * 17 - gpGlobals->v_right * 27 + gpGlobals->v_up * 6, g_vecZero, 3 );
+		
+		Vector angThrow = gpGlobals->v_forward + gpGlobals->v_up * 0.5;
+		if( angThrow.x < 0 )
+			angThrow.x = -10 + angThrow.x * ( ( 90 - 10 ) / 90.0 );
+		else
+			angThrow.x = -10 + angThrow.x * ( ( 90 + 10 ) / 90.0 );
+
+		float flVel = ( 90 - angThrow.x ) * 4;
+		if( flVel > 500 )
+			flVel = 500;
+
+		Vector vecSrc = pev->origin + pev->view_ofs + gpGlobals->v_forward * 16;
+
+		Vector vecThrow = gpGlobals->v_forward * flVel + pev->velocity;
+		UTIL_MakeVectors( pev->angles );
+		CGrenade::ShootTimed( pev, vecSrc, vecThrow, 3 );
+
 		}
 		break;
 		case ZOMBIE_AE_ATTACK_BOTH:
 		{
-			//ALERT( at_console, "Slash right!\n" );
-			UTIL_MakeVectors( pev->angles );
-			CGrenade::ShootTimed( pev, pev->origin + gpGlobals->v_forward * 17 - gpGlobals->v_right * 27 + gpGlobals->v_up * 6, g_vecZero, 3 );
+
+		Vector angThrow = gpGlobals->v_forward + gpGlobals->v_up * 0.5;
+		if( angThrow.x < 0 )
+			angThrow.x = -10 + angThrow.x * ( ( 90 - 10 ) / 90.0 );
+		else
+			angThrow.x = -10 + angThrow.x * ( ( 90 + 10 ) / 90.0 );
+
+		float flVel = ( 90 - angThrow.x ) * 4;
+		if( flVel > 500 )
+			flVel = 500;
+
+		Vector vecSrc = pev->origin + pev->view_ofs + gpGlobals->v_forward * 16;
+
+		Vector vecThrow = gpGlobals->v_forward * flVel + pev->velocity;
+		UTIL_MakeVectors( pev->angles );
+		CGrenade::ShootTimed( pev, vecSrc, vecThrow, 3 );
+
+
 		}
 		break;
 		default:

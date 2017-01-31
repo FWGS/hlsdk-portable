@@ -168,7 +168,7 @@ void CCrowbar::SecondaryAttack( void )
 				EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_ITEM, "taunts/taunt4.wav", 1, ATTN_NORM );
 				break;
 			};
-		pev->nextthink = gpGlobals->time + 2;
+	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1;
 }
 
 void CCrowbar::Smack()

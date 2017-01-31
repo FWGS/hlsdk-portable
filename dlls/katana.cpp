@@ -86,6 +86,7 @@ void CKatana::Precache( void )
 	PRECACHE_SOUND( "weapons/katana_hitbod2.wav" );
 	PRECACHE_SOUND( "weapons/katana_hitbod3.wav" );
 	PRECACHE_SOUND( "weapons/katana_miss1.wav" );
+	PRECACHE_SOUND( "weapons/katana_draw.wav" );
 
 
 	m_usKatana = PRECACHE_EVENT( 1, "events/crowbar.sc" );
@@ -109,6 +110,7 @@ int CKatana::GetItemInfo( ItemInfo *p )
 BOOL CKatana::Deploy()
 {
 	return DefaultDeploy( "models/v_katana.mdl", "models/p_katana.mdl", CROWBAR_DRAW, "katana" );
+	EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/katana_draw.wav", 1, ATTN_NORM );
 }
 
 void CKatana::Holster( int skiplocal /* = 0 */ )
