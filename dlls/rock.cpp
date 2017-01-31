@@ -86,7 +86,7 @@ int CRock::GetItemInfo( ItemInfo *p )
 	p->pszAmmo2 = NULL;
 	p->iMaxAmmo2 = -1;
 	p->iMaxClip = 8;
-	p->iSlot = 2;
+	p->iSlot = 4;
 	p->iPosition = 4;
 	p->iFlags = 0;
 	p->iId = m_iId = WEAPON_ROCK;
