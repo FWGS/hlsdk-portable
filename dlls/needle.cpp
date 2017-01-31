@@ -110,8 +110,8 @@ void CNeedle::Holster( int skiplocal /* = 0 */ )
 void CNeedle::PrimaryAttack()
 {
 	SendWeaponAnim( NEEDLE_GIVESHOT );
-	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 1.5;
-	EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/needleshot.wav", 1, ATTN_NORM );
+ 	EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/needleshot.wav", 1, ATTN_NORM, 0, 85 + RANDOM_LONG( 0, 0x1f ) ); 
+	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 3;
 }
 
 

@@ -156,19 +156,19 @@ void CCrowbar::SecondaryAttack( void )
 	switch( RANDOM_LONG( 0, 3 ) )
 			{
 			case 0:
-				EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_ITEM, "taunts/taunt1.wav", 1, ATTN_NORM );
-				break;
+ 				EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_ITEM, "taunts/taunt1.wav", 1, ATTN_NORM, 0, 85 + RANDOM_LONG( 0, 0x1f ) );
+ 				break;
 			case 1:
-				EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_ITEM, "taunts/taunt2.wav", 1, ATTN_NORM );
-				break;
+			 	EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_ITEM, "taunts/taunt2.wav", 1, ATTN_NORM, 0, 85 + RANDOM_LONG( 0, 0x1f ) );
+ 				break;
 			case 2:
-				EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_ITEM, "taunts/taunt3.wav", 1, ATTN_NORM );
-				break;
+			 	EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_ITEM, "taunts/taunt3.wav", 1, ATTN_NORM, 0, 85 + RANDOM_LONG( 0, 0x1f ) );
+ 				break;
 			case 3:
-				EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_ITEM, "taunts/taunt4.wav", 1, ATTN_NORM );
-				break;
+ 				EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/pepsigun_shoot.wav", 1, ATTN_NORM, 0, 85 + RANDOM_LONG( 0, 0x1f ) );
+ 				break;
 			};
-	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1;
+	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 2;
 }
 
 void CCrowbar::Smack()
