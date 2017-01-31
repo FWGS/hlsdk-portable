@@ -229,7 +229,6 @@ void CHud::Init( void )
 	m_StatusIcons.Init();
 	m_MOTD.Init();
 	m_Scoreboard.Init();
-	m_Zoom.Init();
 
 	m_Menu.Init();
 	
@@ -399,7 +398,6 @@ void CHud::VidInit( void )
 	m_StatusIcons.VidInit();
 	m_Scoreboard.VidInit();
 	m_MOTD.VidInit();
-m_Zoom.VidInit();
 }
 
 int CHud::MsgFunc_Logo( const char *pszName,  int iSize, void *pbuf )

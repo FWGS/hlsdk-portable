@@ -67,8 +67,6 @@ CHandGrenade g_HandGren;
 CSatchel g_Satchel;
 CTripmine g_Tripmine;
 CSqueak g_Snark;
-CSawnoff g_Sawnoff;
-CSnipars g_Snipars;
 
 /*
 ======================
@@ -639,8 +637,6 @@ void HUD_InitClientWeapons( void )
 	HUD_PrepEntity( &g_Satchel, &player );
 	HUD_PrepEntity( &g_Tripmine, &player );
 	HUD_PrepEntity( &g_Snark, &player );
-	HUD_PrepEntity( &g_Sawnoff , &player );
-HUD_PrepEntity( &g_Snipars , &player );
 }
 
 /*
@@ -746,12 +742,6 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 		case WEAPON_SNARK:
 			pWeapon = &g_Snark;
 			break;
-		case WEAPON_SAWNOFF:
-			pWeapon = &g_Sawnoff; 
-			break;
-case WEAPON_SNIPARS: 
-pWeapon = &g_Snipars; 
-break;
 	}
 
 	// Store pointer to our destination entity_state_t so we can get our origin, etc. from it

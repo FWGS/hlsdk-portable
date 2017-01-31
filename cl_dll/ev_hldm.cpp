@@ -68,8 +68,6 @@ void EV_EgonStop( struct event_args_s *args );
 void EV_HornetGunFire( struct event_args_s *args );
 void EV_TripmineFire( struct event_args_s *args );
 void EV_SnarkFire( struct event_args_s *args );
-void EV_SawnoffFire( struct event_args_s *args );
-void EV_FireSnipars( struct event_args_s *args );//Новая строчка
 
 void EV_TrainPitchAdjust( struct event_args_s *args );
 }
@@ -1180,61 +1178,6 @@ void EV_Crowbar( event_args_t *args )
 //======================
 //	   CROWBAR END 
 //======================
-
-//====================== 
-// RIFLE START 
-//====================== 
-enum sniperrifle_e 
-{ 
-SNIPERRIFLE_DRAW = 0, 
-SNIPERRIFLE_SLOWIDLE, 
-SNIPERRIFLE_FIRE1, 
-SNIPERRIFLE_FIRELASTROUND, 
-SNIPERRIFLE_RELOAD, 
-SNIPERRIFLE_RELOAD2, 
-SNIPERRIFLE_SLOWIDLEEMPTY, 
-SNIPERRIFLE_HOLSTER, 
-};
-
-void EV_FireSnipars( event_args_t *args ) 
-{ 
-int idx;
-int empty; 
-vec3_t origin; 
-vec3_t angles; 
-vec3_t velocity;
-
-vec3_t vecSrc, vecAiming; 
-vec3_t up, right, forward; 
-float flSpread = 0.01;
-
-idx = args->entindex; 
-VectorCopy( args->origin, origin ); 
-VectorCopy( args->angles, angles ); 
-VectorCopy( args->velocity, velocity ); 
-empty = args->bparam1;
-
-AngleVectors( angles, forward, right, up );
-
-if ( EV_IsLocal( idx ) ) 
-{
-EV_MuzzleFlash(); 
-gEngfuncs.pEventAPI->EV_WeaponAnimation( empty ? SNIPERRIFLE_FIRELASTROUND : SNIPERRIFLE_FIRE1, 2 );
-
-V_PunchAxis( 0, -20.0 ); 
-}
-
-gEngfuncs.pEventAPI->EV_PlaySound( idx, origin, CHAN_WEAPON, "weapons/sniper_fire1.wav", gEngfuncs.pfnRandomFloat(0.8, 0.9), ATTN_NORM, 0, PITCH_NORM );
-
-EV_GetGunPosition( args, vecSrc, origin );
-
-VectorCopy( forward, vecAiming );
-
-EV_HLDM_FireBullets( idx, forward, right, up, 3, vecSrc, vecAiming, 8192, BULLET_PLAYER_SNIPARS, 0, 0, args->fparam1, args->fparam2 ); 
-} 
-//====================== 
-// RIFLE END 
-//=====================
 
 //======================
 //	  CROSSBOW START
