@@ -299,7 +299,6 @@ void CHud::VidInit( void )
 
 		if( m_pSpriteList )
 		{
-			int j;
 			// count the number of sprites of the appropriate res
 			m_iSpriteCount = 0;
 			client_sprite_t *p = m_pSpriteList;
@@ -336,7 +335,6 @@ void CHud::VidInit( void )
 	}
 	else
 	{
-		int j;
 		// we have already have loaded the sprite reference from hud.txt, but
 		// we need to make sure all the sprites have been loaded (we've gone through a transition, or loaded a save game)
 		client_sprite_t *p = m_pSpriteList;

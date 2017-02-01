@@ -1578,7 +1578,6 @@ void UTIL_StripToken( const char *pKey, char *pDest )
 	pDest[i] = 0;
 }
 
-
 // --------------------------------------------------------------
 //
 // CSave

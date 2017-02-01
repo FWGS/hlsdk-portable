@@ -22,8 +22,6 @@
 // the module specific types and m_dwLevel is set to the greater of the global
 // and the module specific settings.
 
-#if defined(_DEBUG) && defined(_WIN32)
-
 #include <stdarg.h>
 #include <stdio.h>
 
@@ -33,6 +31,7 @@
 
 #include <tchar.h>
 
+#ifdef _DEBUG
 
 void WINAPI DbgInitModuleName(void);
 void WINAPI DbgInitModuleSettings(void);

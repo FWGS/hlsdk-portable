@@ -93,12 +93,6 @@ typedef struct client_textmessage_s
 	const char	*pMessage;
 } client_textmessage_t;
 
-#if __MSC_VER == 1200
-#define longlong_t __int64
-#else
-#define longlong_t long long
-#endif
-
 typedef struct hud_player_info_s
 {
 	char		*name;
@@ -112,7 +106,7 @@ typedef struct hud_player_info_s
 	short		topcolor;
 	short		bottomcolor;
 
-	unsigned  longlong_t m_nSteamID_1;
+	unsigned long long	m_nSteamID;
 } hud_player_info_t;
 
 typedef struct cl_enginefuncs_s
