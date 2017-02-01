@@ -10,6 +10,96 @@ GlobalMenu g_GlobalMenu;
 
 struct SavedCoords g_SavedCoords, s_SavedCoords;
 
+static float msglimittime1, msglimittime2;
+
+
+void UTIL_CoopPlayerMessage( CBaseEntity *pPlayer, int channel, float time, unsigned int color1, unsigned int color2, float x, float y,  const char *format, ... )
+{
+	if( !pPlayer )
+		return;
+
+	hudtextparms_t params;
+	params.x = x, params.y = y;
+	params.fadeinTime = params.fadeoutTime = .5f;
+	params.holdTime = time;
+	params.r1 = (color1 >> 24) & 0xFF, params.g1 = (color1 >> 16) & 0xFF, params.b1 = (color1 >> 8) & 0xFF, params.a1 = color1 & 0xFF;
+	params.r2 = (color2 >> 24) & 0xFF, params.g2 = (color2 >> 16) & 0xFF, params.b2 = (color2 >> 8) & 0xFF, params.a2 = color2 & 0xFF;
+	params.channel = channel;
+	va_list	argptr;
+	char string[256];
+
+	va_start( argptr, format );
+	int len = vsnprintf( string, 256, format, argptr );
+	va_end( argptr );
+	string[len] = 0;
+	char *pstr = string;
+
+	// set line breaks
+	for( int i = 0; *pstr; pstr++,i++ )
+	{
+		if( *pstr == '\n' )
+			i = 0;
+		if( i >= 79 )
+			*pstr = '\n', i = 0;
+	}
+
+	UTIL_HudMessage( pPlayer, params, string );
+}
+
+void UTIL_CoopHudMessage( int channel, float time, unsigned int color1, unsigned int color2, float x, float y,  const char *format, ... )
+{
+	if( gpGlobals->time < msglimittime1 )
+		return;
+	msglimittime1 = gpGlobals->time + 0.4;
+
+	hudtextparms_t params;
+	params.x = x, params.y = y;
+	params.fadeinTime = params.fadeoutTime = .5f;
+	params.holdTime = time;
+	params.r1 = (color1 >> 24) & 0xFF, params.g1 = (color1 >> 16) & 0xFF, params.b1 = (color1 >> 8) & 0xFF, params.a1 = color1 & 0xFF;
+	params.r2 = (color2 >> 24) & 0xFF, params.g2 = (color2 >> 16) & 0xFF, params.b2 = (color2 >> 8) & 0xFF, params.a2 = color2 & 0xFF;
+	params.channel = channel;
+	va_list	argptr;
+	char string[256];
+
+	va_start( argptr, format );
+	int len = vsnprintf( string, 256, format, argptr );
+	va_end( argptr );
+	string[len] = 0;
+	char *pstr = string;
+
+	// set line breaks
+	for( int i = 0; *pstr; pstr++,i++ )
+	{
+		if( *pstr == '\n' )
+			i = 0;
+		if( i >= 79 )
+			*pstr = '\n', i = 0;
+	}
+
+	UTIL_HudMessageAll( params, string );
+}
+
+void UTIL_CoopPrintMessage( const char *format, ... )
+{
+	if( gpGlobals->time < msglimittime2 )
+		return;
+	msglimittime2 = gpGlobals->time + 0.4;
+
+	va_list	argptr;
+	char string[256];
+
+	va_start( argptr, format );
+	int len = vsnprintf( string, 256, format, argptr );
+	va_end( argptr );
+	string[len] = 0;
+
+	MESSAGE_BEGIN( MSG_ALL, 8, NULL ); // svc_print
+		WRITE_BYTE( 3 ); // PRINT_CHAT
+		WRITE_STRING( string );
+	MESSAGE_END();
+}
+
 
 void UTIL_CleanSpawnPoint( Vector origin, float dist )
 {
@@ -196,6 +286,7 @@ void UTIL_CoopClearData( void )
 	SavedCoords l_SavedCoords = {0};
 	g_SavedCoords = l_SavedCoords;
 	memset( &g_checkpoints, 0, sizeof( g_checkpoints ) );
+	msglimittime1 = msglimittime2 = 0;
 }
 
 bool g_fPause;
@@ -257,10 +348,7 @@ void GlobalMenu::Process( CBasePlayer *pPlayer, int imenu )
 				return;
 			}
 			m_iConfirm++;
-			MESSAGE_BEGIN( MSG_ALL, 8, NULL ); // svc_print
-				WRITE_BYTE( 3 ); // PRINT_CHAT
-				WRITE_STRING( UTIL_VarArgs( "%s^7 confirmed map change\n", ( pPlayer->pev->netname && STRING( pPlayer->pev->netname )[0] != 0 ) ? STRING( pPlayer->pev->netname ) : "unconnected"));
-			MESSAGE_END();
+			UTIL_CoopPrintMessage( "%s^7 confirmed map change\n", UTIL_CoopPlayerName( pPlayer ));
 
 		}
 		if( imenu == 2 ) // cancel
@@ -277,10 +365,7 @@ void GlobalMenu::Process( CBasePlayer *pPlayer, int imenu )
 		}
 		break;
 	case 2: // vote by request
-		MESSAGE_BEGIN( MSG_ALL, 8, NULL ); // svc_print
-			WRITE_BYTE( 3 ); // PRINT_CHAT
-			WRITE_STRING( UTIL_VarArgs( "%s^7 selected ^3%s\n", ( pPlayer->pev->netname && STRING( pPlayer->pev->netname )[0] != 0 ) ? STRING( pPlayer->pev->netname ) : "unconnected", maps[imenu - 1] ));
-		MESSAGE_END();
+		UTIL_CoopPrintMessage( "%s^7 selected ^3%s\n", UTIL_CoopPlayerName( pPlayer ), maps[imenu - 1] );
 
 		if( imenu < m_iConfirm )
 		{
@@ -347,10 +432,8 @@ void GlobalMenu::ConfirmMenu( CBasePlayer *pPlayer, CBaseEntity *trigger, const 
 		"Cancel",
 		"BAN"
 	};
-		MESSAGE_BEGIN( MSG_ALL, 8, NULL ); // svc_print
-			WRITE_BYTE( 3 ); // PRINT_CHAT
-			WRITE_STRING( UTIL_VarArgs( "%s^7 wants to change map ^1BACKWARDS\n", ( pPlayer->pev->netname && STRING( pPlayer->pev->netname )[0] != 0 ) ? STRING( pPlayer->pev->netname ) : "unconnected"));
-		MESSAGE_END();
+
+	UTIL_CoopPrintMessage( "%s^7 wants to change map ^1BACK to %s\n", UTIL_CoopPlayerName( pPlayer ), mapname );
 	ShowGlobalMenu(UTIL_VarArgs("Confirm changing map BACK TO %s?", mapname), ARRAYSIZE(menu), menu);
 
 }
@@ -381,15 +464,14 @@ void UTIL_CoopCheckpointMenu( CBasePlayer *pPlayer )
 
 void UTIL_CoopNewCheckpoint( entvars_t *pevPlayer )
 {
+	if( !pevPlayer->netname )
+		return;
 	memmove( &g_checkpoints[1], &g_checkpoints[0], sizeof ( g_checkpoints[0] ) * 3 );
 	g_checkpoints[0].time = gpGlobals->time;
 	snprintf( g_checkpoints[0].str, 31,  "%5s %d", STRING( pevPlayer->netname ), (int)( gpGlobals->time / 60 ) );
 	g_checkpoints[0].origin = pevPlayer->origin;
 	g_checkpoints[0].angles = pevPlayer->angles;
-			MESSAGE_BEGIN( MSG_ALL, 8, NULL ); // svc_print
-				WRITE_BYTE( 3 ); // PRINT_CHAT
-				WRITE_STRING( "New checkpoint availiable\n" );
-			MESSAGE_END();
+	UTIL_CoopPrintMessage( "New checkpoint by %s!\n", STRING( pevPlayer->netname ) );
 
 }
 
@@ -408,7 +490,7 @@ void UTIL_CoopVoteMenu( CBasePlayer *pPlayer )
 	}
 	if( count < 4 )
 	{
-		ClientPrint( pPlayer->pev, HUD_PRINTCENTER, "Need at least 4 players to vote changelevel!\n" );
+		UTIL_CoopPlayerMessage( pPlayer, 0, 5, 0xFFFFFFFF, 0xFFFFFFFF, -1, -1, "Need at least 4 players to vote changelevel!\n");
 		return;
 	}
 	g_GlobalMenu.VoteMenu(pPlayer);

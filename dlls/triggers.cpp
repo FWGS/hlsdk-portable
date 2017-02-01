@@ -1526,10 +1526,7 @@ void GlobalMenu::VoteMenu( CBasePlayer *pPlayer )
 	m_iConfirm = i;
 	m_iVoteCount = 0;
 	m_pPlayer = pPlayer;
-		MESSAGE_BEGIN( MSG_ALL, 8, NULL ); // svc_print
-			WRITE_BYTE( 3 ); // PRINT_CHAT
-			WRITE_STRING( UTIL_VarArgs( "%s^7 opened vote menu\n", ( pPlayer->pev->netname && STRING( pPlayer->pev->netname )[0] != 0 ) ? STRING( pPlayer->pev->netname ) : "unconnected"));
-		MESSAGE_END();
+	UTIL_CoopPrintMessage( "%s^7 opened vote menu\n", UTIL_CoopPlayerName( pPlayer ) );
 	ShowGlobalMenu(UTIL_VarArgs("%s requested to force change map", UTIL_CoopPlayerName( pPlayer ) ), i, maps);
 
 }
@@ -1616,7 +1613,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 
 	if( !strcmp( m_szMapName, mp_coop_disabledmap.string ) )
 	{
-		UTIL_HudMessageAll( params, UTIL_VarArgs( "MAP %S IS DISABLED", m_szMapName ) );
+		UTIL_CoopPlayerMessage( pActivator, 0, 5, 0xFF000FF, 0xFFFF00FF, -1, -1, "MAP %S IS DISABLED", m_szMapName );
 		return;
 	}
 	// forget touch by some fool
@@ -1687,16 +1684,13 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 					if( pActivator && pActivator->IsPlayer() && m_flRepeatTimer - gpGlobals->time < -1 )
 					{
 						CBasePlayer *pPlayer = (CBasePlayer*)pActivator;
-					MESSAGE_BEGIN( MSG_ALL, 8, NULL ); // svc_print
-						WRITE_BYTE( 3 ); // PRINT_CHAT
-						WRITE_STRING( UTIL_VarArgs( "%s^7 trying activate changelevel too soon\n", ( pPlayer->pev->netname && STRING( pPlayer->pev->netname )[0] != 0 ) ? STRING( pPlayer->pev->netname ) : "unconnected"));
-					MESSAGE_END();
+						UTIL_CoopPrintMessage("%s^7 trying activate changelevel too soon\n", UTIL_CoopPlayerName( pPlayer ));
 						UTIL_CleanSpawnPoint( pPlayer->pev->origin, 50 );
 						m_flRepeatTimer = gpGlobals->time;
 						pPlayer->m_iLocalConfirm = -2;
 					}
 
-					UTIL_HudMessageAll( params, "Cannot change level: Not enough players!\nWait 30 sec before you may changelevel!" );
+					UTIL_CoopHudMessage( 1, 5, 0xFF0000FF, 0xFF0000FF, 0, 0.7, "Cannot change level: Not enough players!\nWait 30 sec before you may changelevel!" );
 					return;
 				}
 
@@ -1706,9 +1700,10 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 					i = 1;
 
 				if( i )
-					UTIL_HudMessageAll( params, UTIL_VarArgs( "%s touched end of map\nnext is %s %s, %d to go\n",
-						( pActivator->pev->netname && STRING( pActivator->pev->netname )[0] != 0 ) ? STRING( pActivator->pev->netname ) : "unconnected",
-						st_szNextMap, st_szNextSpot, i ) );
+					UTIL_CoopHudMessage( 1, 7, 0x00FFFFFF, 0xFF00FFFF, 0, 0,
+						"%s touched end of map\nnext is %s %s, %d to go\n",
+						UTIL_CoopPlayerName( pActivator ),
+						st_szNextMap, st_szNextSpot, i );
 				if( count2 )
 				{
 					pev->rendercolor.x = count1 * 255 / count2;
@@ -1807,10 +1802,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 	}
 	else ALERT( at_console, "Player is in the transition volume %s, changing level now\n", m_szLandmarkName );
 
-	MESSAGE_BEGIN( MSG_ALL, 8, NULL ); // svc_print
-		WRITE_BYTE( 3 ); // PRINT_CHAT
-		WRITE_STRING( UTIL_VarArgs( "%s^7 activated changelevel, spawncheck is %d\n", UTIL_CoopPlayerName( pPlayer ), (int)!m_fSkipSpawnCheck ) );
-	MESSAGE_END();
+	UTIL_CoopPrintMessage( "%s^7 activated changelevel, spawncheck is %d\n", UTIL_CoopPlayerName( pPlayer ), (int)!m_fSkipSpawnCheck );
 
 	// This object will get removed in the call to CHANGE_LEVEL, copy the params into "safe" memory
 	strcpy( st_szNextMap, m_szMapName );
