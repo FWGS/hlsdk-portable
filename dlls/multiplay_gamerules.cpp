@@ -654,12 +654,15 @@ void CHalfLifeMultiplay::PlayerSpawn( CBasePlayer *pPlayer )
 		return;
 	}
 
-	if( mp_coop.value && pPlayer->m_state == STATE_POINT_SELECT && !(pPlayer->pev->flags & FL_SPECTATOR) )
+	if( mp_coop_changelevel.value && pPlayer->m_state == STATE_POINT_SELECT && !(pPlayer->pev->flags & FL_SPECTATOR) )
 	{
 		pPlayer->RemoveAllItems( TRUE );
 		UTIL_BecomeSpectator( pPlayer );
 		return;
 	}
+
+	if( !mp_coop_changelevel.value )
+		pPlayer->m_state = STATE_SPAWNED;
 
 	g_fPause = false;
 
@@ -687,9 +690,10 @@ void CHalfLifeMultiplay::PlayerSpawn( CBasePlayer *pPlayer )
 			pPlayer->GiveAmmo( cvar_ar2_balls.value, "AR2grenades", 3 );
 		}
 		pPlayer->GiveAmmo( 68, "9mm", _9MM_MAX_CARRY );// 4 full reloads
-		if(mp_coop.value)
-			g_WeaponList.GiveToPlayer(pPlayer);
+
 	}
+	if(mp_coop.value)
+		g_WeaponList.GiveToPlayer(pPlayer);
 }
 
 //=========================================================
