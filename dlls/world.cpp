@@ -818,11 +818,40 @@ int DispatchPhysicsEntity( edict_t *pEdict )
 	return 0;
 }
 
+// list of engine features that can be enabled through callback SV_CheckFeatures
+#define ENGINE_WRITE_LARGE_COORD	(1<<0)	// replace standard message WRITE_COORD with big message for support more than 8192 units in world
+#define ENGINE_BUILD_SURFMESHES	(1<<1)	// bulid surface meshes that goes into mextrasurf->mesh. For mod makers and custom renderers
+#define ENGINE_LOAD_DELUXEDATA	(1<<2)	// loading deluxemap for map (if present)
+#define ENGINE_TRANSFORM_TRACE_AABB	(1<<3)	// transform trace bbox into local space of rotating bmodels
+#define ENGINE_LARGE_LIGHTMAPS	(1<<4)	// change lightmap sizes from 128x128 to 256x256
+#define ENGINE_COMPENSATE_QUAKE_BUG	(1<<5)	// compensate stupid quake bug (inverse pitch) for mods where this bug is fixed
+#define ENGINE_DISABLE_HDTEXTURES	(1<<6)	// disable support of HD-textures in case custom renderer have separate way to load them
+#define ENGINE_COMPUTE_STUDIO_LERP	(1<<7)	// enable MOVETYPE_STEP lerping back in engine
+#define ENGINE_FIXED_FRAMERATE	(1<<8)	// keep constant rate for client and server (but don't clamp renderer calls)
+
+static cvar_t sv_largecoords = {"sv_largecoords", "0", FCVAR_SERVER };
+
+unsigned int EngineSetFeatures( void )
+{
+	unsigned int flags = 0;
+	CVAR_REGISTER( &sv_largecoords );
+	if( sv_largecoords.value )
+		flags |= ENGINE_WRITE_LARGE_COORD;
+	//if( CVAR_GET_FLOAT( "build" ) >= 3598 )
+		//flags |= ENGINE_FIXED_FRAMERATE;
+	return flags;
+}
+
 static physics_interface_t gPhysicsInterface =
 {
 	SV_PHYSICS_INTERFACE_VERSION,
 	DispatchCreateEntity,
 	DispatchPhysicsEntity,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	EngineSetFeatures
 };
 
 BOOL gPhysicsInterfaceInitialized = FALSE;
