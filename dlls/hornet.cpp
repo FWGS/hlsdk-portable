@@ -24,6 +24,7 @@
 #include	"soundent.h"
 #include	"hornet.h"
 #include	"gamerules.h"
+#include	"game.h"
 
 int iHornetTrail;
 int iHornetPuff;
@@ -407,7 +408,7 @@ void CHornet::DartTouch( CBaseEntity *pOther )
 
 void CHornet::DieTouch( CBaseEntity *pOther )
 {
-	if( pOther && pOther->pev->takedamage )
+	if( pOther && pOther->pev->takedamage && gpGlobals->time > pev->dmgtime )
 	{
 		// do the damage
 		switch( RANDOM_LONG( 0, 2 ) )
@@ -426,7 +427,15 @@ void CHornet::DieTouch( CBaseEntity *pOther )
 
 		if( !pev->owner )
 			pev->owner = edict();
+		if( mp_fixhornetbug.value )
+		{
+			pev->dmgtime = gpGlobals->time + 0.1;
+			// !finitef( pev->dmf )
+			if( ((*(int *)&( pev->dmg ) & 0x7f800000L) == 0x7f800000L) )
+				pev->dmg = 0;
+		}
 		pOther->TakeDamage( pev, VARS( pev->owner ), pev->dmg, DMG_BULLET );
+
 	}
 
 	pev->modelindex = 0;// so will disappear for the 0.1 secs we wait until NEXTTHINK gets rid

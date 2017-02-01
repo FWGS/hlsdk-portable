@@ -63,6 +63,7 @@ cvar_t mp_coop_strongcheckpoints = { "mp_coop_strongcheckpoints", "0", FCVAR_SER
 cvar_t mp_unduck = { "mp_unduck", "0", FCVAR_SERVER };
 cvar_t mp_semclip = { "mp_semclip", "0", FCVAR_SERVER };
 cvar_t mp_spectator = { "mp_spectator", "0", FCVAR_SERVER };
+cvar_t mp_fixhornetbug = { "mp_fixhornetbug", "0", FCVAR_SERVER };
 
 cvar_t materials_txt = { "materials_txt", "sound/materials.txt", FCVAR_SERVER };
 cvar_t sentences_txt = { "sentences_txt", "sound/sentences.txt", FCVAR_SERVER };
@@ -520,6 +521,7 @@ void GameDLLInit( void )
 	CVAR_REGISTER( &mp_coop_checkpoints );
 	CVAR_REGISTER( &mp_skipdefaults );
 	CVAR_REGISTER( &mp_coop_strongcheckpoints );
+	CVAR_REGISTER( &mp_fixhornetbug );
 	
 
 	CVAR_REGISTER( &sentences_txt );
