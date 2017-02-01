@@ -151,6 +151,23 @@ void UTIL_CoopKickPlayer(CBaseEntity *pPlayer)
 
 	badlist[i] = strdup( name );
 }
+#ifdef __WIN32 // no strcasestr
+#include <windows.h>
+#include <string.h>
+const char *strcasestr( const char *s1, const char *s2 )
+{
+	if( s1 == 0 || s2 == 0 )
+		return 0;
+
+	size_t n = strlen(s2);
+
+	while(*s1)
+		if(!strnicmp(s1++,s2,n))
+			return (s1-1);
+
+	return 0;
+}
+#endif
 
 bool UTIL_CoopIsBadPlayer( CBaseEntity *plr )
 {
