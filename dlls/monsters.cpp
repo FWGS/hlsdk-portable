@@ -260,6 +260,13 @@ void CBaseMonster::Listen( void )
 
 			m_iAudibleList = iSound;
 		}
+		else if( iSound == pCurrentSound->m_iNext )
+		{
+			m_iAudibleList = SOUNDLIST_EMPTY;
+			ALERT( at_error, "Sound list is broken, preventing infinite loop!\n" );
+			return;
+		}
+
 
 		//iSound = g_pSoundEnt->m_SoundPool[iSound].m_iNext;
 		iSound = pCurrentSound->m_iNext;
