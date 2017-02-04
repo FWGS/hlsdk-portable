@@ -37,6 +37,7 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
            needle.cpp \
            katana.cpp \
            evilsci.cpp \
+           sniper.cpp \
            mariozombie.cpp \
            megachav.cpp \
            pink_panthera.cpp \

@@ -13,6 +13,7 @@
 #include "nodes.h" 
 #include "soundent.h"
 #define WEAPON_SNIPARS 18
+
 class CSnipars : public CBasePlayerWeapon
 {
 public:
@@ -80,7 +81,6 @@ int CSnipars::GetItemInfo(ItemInfo *p)
 
 	return 1;
 	}
-DEFINE_FIELD( CSnipars, m_fInZoom, FIELD_INTEGER ), 
 
 int CSnipars::AddToPlayer( CBasePlayer *pPlayer )
 { 
@@ -285,7 +285,7 @@ class CSniparsAmmo : public CBasePlayerAmmo
 	void Spawn( void )
 	{
 		Precache( );
-		SET_MODEL(ENT(pev), "models/w_sniper.mdl");
+		SET_MODEL(ENT(pev), "models/w_357ammo.mdl");
 		CBasePlayerAmmo::Spawn( );
 	}
 	void Precache( void )
@@ -303,6 +303,6 @@ class CSniparsAmmo : public CBasePlayerAmmo
 		return FALSE;
 	}
 }; 
-LINK_ENTITY_TO_CLASS( ammo_snipars2, CSniparsAmmo );
+LINK_ENTITY_TO_CLASS( ammo_snipars, CSniparsAmmo );
 
 #endif
