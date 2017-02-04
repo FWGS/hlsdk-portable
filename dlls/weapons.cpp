@@ -308,7 +308,6 @@ void W_Precache( void )
 
 	//needle
 	UTIL_PrecacheOtherWeapon( "weapon_needle"); 
-	UTIL_PrecacheOtherWeapon( "weapon_glock2"); 
 	// crowbar
 	UTIL_PrecacheOtherWeapon( "weapon_crowbar" );
 

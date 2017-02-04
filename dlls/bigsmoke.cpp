@@ -263,7 +263,7 @@ void CBigSmoke::HandleAnimEvent( MonsterEvent_t *pEvent )
 		case ISLAVE_AE_CLAW:
 		{
 			// SOUND HERE!
-			CBaseEntity *pHurt = CheckTraceHullAttack( 70, gSkillData.slaveDmgClaw, DMG_SLASH );
+			CBaseEntity *pHurt = CheckTraceHullAttack( 71, 1, DMG_BULLET );
 			if( pHurt )
 			{
 				if( pHurt->pev->flags & ( FL_MONSTER | FL_CLIENT ) )
@@ -283,7 +283,7 @@ void CBigSmoke::HandleAnimEvent( MonsterEvent_t *pEvent )
 			break;
 		case ISLAVE_AE_CLAWRAKE:
 		{
-			CBaseEntity *pHurt = CheckTraceHullAttack( 70, gSkillData.slaveDmgClawrake, DMG_SLASH );
+			CBaseEntity *pHurt = CheckTraceHullAttack( 70, 1, DMG_BULLET );
 			if( pHurt )
 			{
 				if( pHurt->pev->flags & ( FL_MONSTER | FL_CLIENT ) )
@@ -514,7 +514,7 @@ void CBigSmoke::Precache()
 int CBigSmoke::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )
 {
 	// don't slash one of your own
-	if( ( bitsDamageType & DMG_SLASH ) && pevAttacker && IRelationship( Instance( pevAttacker ) ) < R_DL )
+	if( ( bitsDamageType & DMG_BULLET ) && pevAttacker && IRelationship( Instance( pevAttacker ) ) < R_DL )
 		return 0;
 
 	m_afMemory |= bits_MEMORY_PROVOKED;
@@ -523,7 +523,7 @@ int CBigSmoke::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, floa
 
 void CBigSmoke::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType)
 {
-	if( bitsDamageType & DMG_SHOCK )
+	if( bitsDamageType & DMG_BULLET )
 		return;
 
 	CSquadMonster::TraceAttack( pevAttacker, flDamage, vecDir, ptr, bitsDamageType );
@@ -759,7 +759,7 @@ void CBigSmoke::ZapBeam( int side )
 	pEntity = CBaseEntity::Instance( tr.pHit );
 	if( pEntity != NULL && pEntity->pev->takedamage )
 	{
-		pEntity->TraceAttack( pev, 3, vecAim, &tr, DMG_SHOCK );
+		pEntity->TraceAttack( pev, 1, vecAim, &tr, DMG_BULLET );
 	}
 }
 

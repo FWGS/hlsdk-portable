@@ -1,3 +1,4 @@
+
 /***
 *
 *	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
@@ -1602,7 +1603,6 @@ void UpdateClientData( const struct edict_s *ent, int sendweapons, struct client
 			cd->ammo_cells = pl->ammo_uranium;
 			cd->vuser2.x = pl->ammo_hornets;
 			cd->vuser2.y = pl->ammo_snipars;
-			cd->vuser2.z = pl->ammo_pepsi;
 
 			if( pl->m_pActiveItem )
 			{

@@ -7,7 +7,7 @@
 #include "player.h"
 #include "gamerules.h"
 
-#define WEAPON_PEPSIGUN 22
+#define WEAPON_PEPSIGUN 21
 
 class CPepsigun : public CBasePlayerWeapon
 {

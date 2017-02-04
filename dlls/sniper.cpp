@@ -12,10 +12,15 @@
 
 #include "nodes.h" 
 #include "soundent.h"
-
+#define WEAPON_SNIPARS 18
 class CSnipars : public CBasePlayerWeapon
 {
 public:
+#ifndef CLIENT_DLL
+	int		Save( CSave &save );
+	int		Restore( CRestore &restore );
+	static	TYPEDESCRIPTION m_SaveData[];
+#endif
 	void Spawn( void );
 	void Precache( void );
 	int iItemSlot( void ) { return 2; }
@@ -40,6 +45,14 @@ public:
 private:
 	//unsigned short m_usFireSniper;
 };
+
+TYPEDESCRIPTION CSnipars::m_SaveData[] = 
+{ 
+DEFINE_FIELD( CSnipars, m_flSoundDelay, FIELD_FLOAT ), 
+DEFINE_FIELD( CSnipars, m_fInZoom, FIELD_INTEGER ), 
+};
+
+IMPLEMENT_SAVERESTORE( CSnipars, CBasePlayerWeapon )
 
 enum sniper_e
 {
@@ -67,6 +80,7 @@ int CSnipars::GetItemInfo(ItemInfo *p)
 
 	return 1;
 	}
+DEFINE_FIELD( CSnipars, m_fInZoom, FIELD_INTEGER ), 
 
 int CSnipars::AddToPlayer( CBasePlayer *pPlayer )
 { 
@@ -213,7 +227,7 @@ void CSnipars::Shoot( float flSpread , float flCycleTime, BOOL fUseAutoAim )
 		vecAiming = gpGlobals->v_forward;
 	}
 
-	Vector vecDir = m_pPlayer->FireBulletsPlayer( 3, vecSrc, vecAiming, Vector( flSpread, flSpread, flSpread ), 8192, BULLET_PLAYER_SNIPARS, 0, 3, m_pPlayer->pev, m_pPlayer->random_seed );
+	Vector vecDir = m_pPlayer->FireBulletsPlayer( 3, vecSrc, vecAiming, Vector( flSpread, flSpread, flSpread ), 8192, BULLET_PLAYER_9MM, 0, 50, m_pPlayer->pev, m_pPlayer->random_seed );
 
 	//PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usFireSniper, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, vecDir.x, vecDir.y, 0, 0, ( m_iClip == 0 ) ? 1 : 0, 0 );
 	pev->effects |= EF_MUZZLEFLASH;

@@ -31,14 +31,12 @@ LOCAL_C_INCLUDES := $(SDL_PATH)/include \
 LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
            bonewheel.cpp \
            sawnoff.cpp \
-           cross.cpp \
+           hammer.cpp \
            bigsmoke.cpp \
            pepsigun.cpp \
            needle.cpp \
            katana.cpp \
            evilsci.cpp \
-           sniper.cpp \
-           glock2.cpp \
            mariozombie.cpp \
            megachav.cpp \
            pink_panthera.cpp \

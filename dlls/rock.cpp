@@ -25,7 +25,7 @@
 // special deathmatch shotgun spreads
 #define VECTOR_CONE_DM_SHOTGUN	Vector( 0.08716, 0.04362, 0.00 )// 10 degrees by 5 degrees
 #define VECTOR_CONE_DM_DOUBLESHOTGUN Vector( 0.17365, 0.04362, 0.00 ) // 20 degrees by 5 degrees
-#define WEAPON_ROCK 21
+#define WEAPON_ROCK 20
 
 enum shotgun_e
 {
@@ -118,11 +118,11 @@ void CRock::PrimaryAttack()
 		Vector vecSrc = m_pPlayer->pev->origin + m_pPlayer->pev->view_ofs + gpGlobals->v_forward * 16;
 
 		Vector vecThrow = gpGlobals->v_forward * flVel + m_pPlayer->pev->velocity;	
-		CGrenadeRock::ShootTimed( m_pPlayer->pev, vecSrc, vecThrow, 300000000000 );
+		CGrenadeRock::ShootTimed( m_pPlayer->pev, vecSrc, vecThrow * 1.5, 300000000000 );
 		SendWeaponAnim( PEPSIGUN_THROW );
 		m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
 
-	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.75;
+	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5;
 	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.75;
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.75;
 	m_fInSpecialReload = 0;

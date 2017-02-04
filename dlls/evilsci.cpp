@@ -190,7 +190,6 @@ void CEvisci::Precache()
 	int i;
 
 	PRECACHE_MODEL( "models/evilsci.mdl" );
-
 }
 
 //=========================================================

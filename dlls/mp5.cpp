@@ -228,7 +228,7 @@ void CMP5::SecondaryAttack( void )
 	PLAYBACK_EVENT( flags, m_pPlayer->edict(), m_usMP52 );
 
 	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.1;
-	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.1;
+	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.15;
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 5;// idle pretty soon after shooting.
 
 	if( !m_pPlayer->m_rgAmmo[m_iSecondaryAmmoType] )
