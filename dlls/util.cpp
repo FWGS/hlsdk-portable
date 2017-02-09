@@ -2241,7 +2241,7 @@ int CRestore::ReadField( void *pBaseData, TYPEDESCRIPTION *pFields, int fieldCou
 						{
 							Vector tmp;
 							memcpy( &tmp, pInputData, sizeof( Vector ) );
-							tmp += position;
+							tmp = tmp + position;
 							memcpy( pOutputData, &tmp, sizeof( Vector ) );
 						}
 						#else
