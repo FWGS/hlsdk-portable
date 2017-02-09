@@ -492,7 +492,7 @@ void CXenSquasher::WeaponIdle(void)
 			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + (93.0f / 30.0f);
 		}
 
-		return;
+		//return;
 		SendWeaponAnim(iAnim);
 
 	}
