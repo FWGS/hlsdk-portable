@@ -2228,22 +2228,22 @@ int CRestore::ReadField( void *pBaseData, TYPEDESCRIPTION *pFields, int fieldCou
 							*( (EOFFSET *)pOutputData ) = 0;
 						break;
 					case FIELD_VECTOR:
+						#ifdef __VFP_FP__
+						memcpy( pOutputData, pInputData, sizeof( Vector ) );
+						#else
 						( (float *)pOutputData )[0] = ( (float *)pInputData )[0];
 						( (float *)pOutputData )[1] = ( (float *)pInputData )[1];
 						( (float *)pOutputData )[2] = ( (float *)pInputData )[2];
+						#endif
 						break;
 					case FIELD_POSITION_VECTOR:
 						#ifdef  __VFP_FP__
-						float tmp;
-						memcpy( &tmp, (char *)pInputData + 0, 4 );
-						tmp += position.x;
-						memcpy( (char *)pOutputData + 0, &tmp, 4 );
-						memcpy( &tmp, (char *)pInputData + 4, 4 );
-						tmp += position.y;
-						memcpy( (char *)pOutputData + 4, &tmp, 4 );
-						memcpy( &tmp, (char *)pInputData + 8, 4 );
-						tmp += position.z;
-						memcpy( (char *)pOutputData + 8, &tmp, 4 );
+						{
+							Vector tmp;
+							memcpy( &tmp, pInputData, sizeof( Vector ) );
+							tmp += position;
+							memcpy( pOutputData, &tmp, sizeof( Vector ) );
+						}
 						#else
 						( (float *)pOutputData )[0] = ( (float *)pInputData )[0] + position.x;
 						( (float *)pOutputData )[1] = ( (float *)pInputData )[1] + position.y;
