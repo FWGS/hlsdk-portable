@@ -102,7 +102,7 @@ void CBradnailer::Holster(int skiplocal /*= 0*/)
 {
 	m_fInReload = FALSE;// cancel any reload in progress.
 
-	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
+	m_pPlayer->m_flNextAttack = gpGlobals->time + 0.5;
 	SendWeaponAnim(BRADNAILER_HOLSTER);
 
 	m_fInAttack = 0;
@@ -117,7 +117,7 @@ void CBradnailer::SecondaryAttack(void)
 		return;
 	}
 
-	if (m_flNextSecondaryAttack > UTIL_WeaponTimeBase())
+	if (m_flNextSecondaryAttack > gpGlobals->time)
 		return;
 
 	if (m_fInAttack == 0)
@@ -130,14 +130,14 @@ void CBradnailer::SecondaryAttack(void)
 
 		m_fInAttack = 1;
 
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.7;
-		m_flNextSecondaryAttack = GetNextAttackDelay(0.7);
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 2.0;
+		m_flTimeWeaponIdle = gpGlobals->time + 0.7;
+		m_flNextSecondaryAttack = gpGlobals->time + 0.7;
+		m_flNextPrimaryAttack = gpGlobals->time + 2.0;
 		return;
 	}
 	else if (m_fInAttack == 1)
 	{
-		if (m_flTimeWeaponIdle < UTIL_WeaponTimeBase())
+		if (m_flTimeWeaponIdle < gpGlobals->time)
 		{
 #ifndef CLIENT_DLL
 			//ALERT(at_console, "Fire\n");
@@ -146,8 +146,8 @@ void CBradnailer::SecondaryAttack(void)
 
 			m_fInAttack = 1;
 
-			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.2f;
-			m_flNextPrimaryAttack = GetNextAttackDelay(0.5);
+			m_flTimeWeaponIdle = gpGlobals->time + 0.2f;
+			m_flNextPrimaryAttack = gpGlobals->time + 0.5;
 		}
 	}
 }
@@ -156,7 +156,7 @@ void CBradnailer::PrimaryAttack(void)
 {
 	if (m_fInAttack != 0)
 	{
-		m_flNextPrimaryAttack = GetNextAttackDelay(0.5);
+		m_flNextPrimaryAttack = gpGlobals->time + 0.5;
 		return;
 	}
 
@@ -169,9 +169,9 @@ void CBradnailer::PrimaryAttack(void)
 
 	Fire(0.01f, 0.3f, TRUE, FALSE);
 
-	m_flNextPrimaryAttack = m_flNextSecondaryAttack = GetNextAttackDelay(0.3f);
+	m_flNextPrimaryAttack = m_flNextSecondaryAttack = gpGlobals->time + 0.3f;
 
-	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat(m_pPlayer->random_seed, 10, 15);
+	m_flTimeWeaponIdle = gpGlobals->time + UTIL_SharedRandomFloat(m_pPlayer->random_seed, 10, 15);
 }
 
 void CBradnailer::Fire(float flSpread, float flCycleTime, BOOL fUseAutoAim, BOOL fFastShoot)
@@ -182,11 +182,11 @@ void CBradnailer::Fire(float flSpread, float flCycleTime, BOOL fUseAutoAim, BOOL
 
 	int flags;
 
-#if defined( CLIENT_WEAPONS )
-	flags = FEV_NOTHOST;
-#else
+//#if defined( CLIENT_WEAPONS )
+//	flags = FEV_NOTHOST;
+//#else
 	flags = 0;
-#endif
+//#endif
 
 	// player "shoot" animation
 	m_pPlayer->SetAnimation(PLAYER_ATTACK1);
@@ -253,7 +253,7 @@ void CBradnailer::Reload(void)
 	if (m_fInAttack != 0)
 		return;
 
-	if (m_flNextPrimaryAttack > UTIL_WeaponTimeBase())
+	if (m_flNextPrimaryAttack > gpGlobals->time)
 		return;
 
 	if (m_pPlayer->ammo_nails <= 0)
@@ -282,7 +282,7 @@ void CBradnailer::WeaponIdle(void)
 
 	m_pPlayer->GetAutoaimVector(AUTOAIM_10DEGREES);
 
-	if (m_flTimeWeaponIdle > UTIL_WeaponTimeBase())
+	if (m_flTimeWeaponIdle > gpGlobals->time)
 		return;
 
 	if (m_fInAttack != 0)
@@ -294,8 +294,8 @@ void CBradnailer::WeaponIdle(void)
 		SendWeaponAnim(BRADNAILER_TILT_TO_UPRIGHT, UseDecrement());
 
 		m_fInAttack = 0;
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.5f;
-		m_flNextPrimaryAttack = m_flNextSecondaryAttack = GetNextAttackDelay(0.5f);
+		m_flTimeWeaponIdle = gpGlobals->time + 0.5f;
+		m_flNextPrimaryAttack = m_flNextSecondaryAttack = gpGlobals->time + 0.5f;
 	}
 	else
 	{
@@ -308,17 +308,17 @@ void CBradnailer::WeaponIdle(void)
 			if (flRand <= 0.3 + 0 * 0.75)
 			{
 				iAnim = BRADNAILER_IDLE3;
-				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 49.0 / 16;
+				m_flTimeWeaponIdle = gpGlobals->time + 49.0 / 16;
 			}
 			else if (flRand <= 0.6 + 0 * 0.875)
 			{
 				iAnim = BRADNAILER_IDLE1;
-				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 60.0 / 16.0;
+				m_flTimeWeaponIdle = gpGlobals->time + 60.0 / 16.0;
 			}
 			else
 			{
 				iAnim = BRADNAILER_IDLE2;
-				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 40.0 / 16.0;
+				m_flTimeWeaponIdle = gpGlobals->time + 40.0 / 16.0;
 			}
 			SendWeaponAnim(iAnim, 1);
 		}

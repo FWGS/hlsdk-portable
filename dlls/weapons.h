@@ -1000,11 +1000,11 @@ public:
 
 	virtual BOOL UseDecrement( void )
 	{
-#if defined( CLIENT_WEAPONS )
-		return TRUE;
-#else
+//#if defined( CLIENT_WEAPONS )
+//		return TRUE;
+//#else
 		return FALSE;
-#endif
+//#endif
 	}
 
 	void Fire( float flSpread, float flCycleTime, BOOL fUseAutoAim, BOOL fFastShoot );
@@ -1135,11 +1135,11 @@ public:
 
 	virtual BOOL UseDecrement( void )
 	{
-#if defined( CLIENT_WEAPONS )
-		return TRUE;
-#else
+//#if defined( CLIENT_WEAPONS )
+//		return TRUE;
+//#else
 		return FALSE;
-#endif
+//#endif
 	}
 
 private:

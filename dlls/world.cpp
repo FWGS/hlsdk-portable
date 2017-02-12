@@ -654,8 +654,6 @@ void CWorld::Precache( void )
 		CVAR_SET_FLOAT( "mp_defaultteam", 0 );
 	}
 
-	CVAR_SET_FLOAT( "cl_lw", 0 ); //Temporary solution for weapon animation.
-
 	// g-cont. moved here so cheats will working on restore level
 	g_flWeaponCheat = CVAR_GET_FLOAT( "sv_cheats" );  // Is the impulse 101 command allowed?
 }

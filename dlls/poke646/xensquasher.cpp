@@ -168,7 +168,7 @@ void CXenSquasher::PrimaryAttack()
 
 	StartFire();
 	m_fInAttack = 0;
-	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.0;
+	m_flTimeWeaponIdle = gpGlobals->time + 1.0;
 	// m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.2;
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.45;
 }
@@ -205,24 +205,24 @@ void CXenSquasher::SecondaryAttack()
 		m_fPrimaryFire = FALSE;
 
 		m_iClip--;// take one ammo just to start the spin
-		m_pPlayer->m_flNextAmmoBurn = UTIL_WeaponTimeBase();
+		m_pPlayer->m_flNextAmmoBurn = gpGlobals->time;
 
 		// spin up
 		m_pPlayer->m_iWeaponVolume = XS_PRIMARY_CHARGE_VOLUME;
 
 		SendWeaponAnim(XS_SPINUP);
 		m_fInAttack = 1;
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.5;
+		m_flTimeWeaponIdle = gpGlobals->time + 0.5;
 		m_pPlayer->m_flStartCharge = gpGlobals->time;
-		m_pPlayer->m_flAmmoStartCharge = UTIL_WeaponTimeBase() + GetFullChargeTime();
+		m_pPlayer->m_flAmmoStartCharge = gpGlobals->time + GetFullChargeTime();
 
-		PLAYBACK_EVENT_FULL(FEV_NOTHOST, m_pPlayer->edict(), m_usXSSpin, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, 110, 0, 0, 0);
+		PLAYBACK_EVENT_FULL(0, m_pPlayer->edict(), m_usXSSpin, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, 110, 0, 0, 0);
 
 		m_iSoundState = SND_CHANGE_PITCH;
 	}
 	else if (m_fInAttack == 1)
 	{
-		if (m_flTimeWeaponIdle < UTIL_WeaponTimeBase())
+		if (m_flTimeWeaponIdle < gpGlobals->time)
 		{
 			SendWeaponAnim(XS_SPIN);
 			m_fInAttack = 2;
@@ -231,10 +231,10 @@ void CXenSquasher::SecondaryAttack()
 	else
 	{
 		// during the charging process, eat one bit of ammo every once in a while
-		if (UTIL_WeaponTimeBase() >= m_pPlayer->m_flNextAmmoBurn && m_pPlayer->m_flNextAmmoBurn != 1000)
+		if (gpGlobals->time >= m_pPlayer->m_flNextAmmoBurn && m_pPlayer->m_flNextAmmoBurn != 1000)
 		{
 			m_iClip--;
-			m_pPlayer->m_flNextAmmoBurn = UTIL_WeaponTimeBase() + 0.3;
+			m_pPlayer->m_flNextAmmoBurn = gpGlobals->time + 0.3;
 		}
 
 		if (m_iClip <= 0)
@@ -242,12 +242,12 @@ void CXenSquasher::SecondaryAttack()
 			// out of ammo! force the gun to fire
 			StartFire();
 			m_fInAttack = 0;
-			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.0;
+			m_flTimeWeaponIdle = gpGlobals->time + 1.0;
 			m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 1;
 			return;
 		}
 
-		if (UTIL_WeaponTimeBase() >= m_pPlayer->m_flAmmoStartCharge)
+		if (gpGlobals->time >= m_pPlayer->m_flAmmoStartCharge)
 		{
 			// don't eat any more ammo after gun is fully charged.
 			m_pPlayer->m_flNextAmmoBurn = 1000;
@@ -262,7 +262,7 @@ void CXenSquasher::SecondaryAttack()
 		if (m_iSoundState == 0)
 			ALERT(at_console, "sound state %d\n", m_iSoundState);
 
-		PLAYBACK_EVENT_FULL(FEV_NOTHOST, m_pPlayer->edict(), m_usXSSpin, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, pitch, 0, (m_iSoundState == SND_CHANGE_PITCH) ? 1 : 0, 0);
+		PLAYBACK_EVENT_FULL(0, m_pPlayer->edict(), m_usXSSpin, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, pitch, 0, (m_iSoundState == SND_CHANGE_PITCH) ? 1 : 0, 0);
 
 		m_iSoundState = SND_CHANGE_PITCH; // hack for going through level transitions
 
@@ -276,7 +276,7 @@ void CXenSquasher::SecondaryAttack()
 			EMIT_SOUND_DYN(ENT(m_pPlayer->pev), CHAN_ITEM, "weapons/xs_moan3.wav", 1.0, ATTN_NORM, 0, 75 + RANDOM_LONG(0, 0x3f));
 
 			m_fInAttack = 0;
-			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.0;
+			m_flTimeWeaponIdle = gpGlobals->time + 1.0;
 			m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 1.0;
 
 #ifndef CLIENT_DLL
@@ -376,13 +376,13 @@ void CXenSquasher::Fire(Vector vecOrigSrc, Vector vecDir, float flDamage)
 
 
 	// The main firing event is sent unreliably so it won't be delayed.
-	PLAYBACK_EVENT_FULL(FEV_NOTHOST, m_pPlayer->edict(), m_usXSFire, 0.0, (float *)&m_pPlayer->pev->origin, (float *)&m_pPlayer->pev->angles, flDamage, 0.0, 0, 0, m_fPrimaryFire ? 1 : 0, 0);
+	PLAYBACK_EVENT_FULL(0, m_pPlayer->edict(), m_usXSFire, 0.0, (float *)&m_pPlayer->pev->origin, (float *)&m_pPlayer->pev->angles, flDamage, 0.0, 0, 0, m_fPrimaryFire ? 1 : 0, 0);
 
 	// This reliable event is used to stop the spinning sound
 	// It's delayed by a fraction of second to make sure it is delayed by 1 frame on the client
 	// It's sent reliably anyway, which could lead to other delays
 
-	PLAYBACK_EVENT_FULL(FEV_NOTHOST | FEV_RELIABLE, m_pPlayer->edict(), m_usXSFire, 0.01, (float *)&m_pPlayer->pev->origin, (float *)&m_pPlayer->pev->angles, 0.0, 0.0, 0, 0, 0, 1);
+	PLAYBACK_EVENT_FULL(0 | FEV_RELIABLE, m_pPlayer->edict(), m_usXSFire, 0.01, (float *)&m_pPlayer->pev->origin, (float *)&m_pPlayer->pev->angles, 0.0, 0.0, 0, 0, 0, 1);
 
 
 	/*ALERT( at_console, "%f %f %f\n%f %f %f\n",
@@ -463,14 +463,14 @@ void CXenSquasher::WeaponIdle(void)
 		m_pPlayer->m_flPlayAftershock = 0.0;
 	}
 
-	if (m_flTimeWeaponIdle > UTIL_WeaponTimeBase())
+	if (m_flTimeWeaponIdle > gpGlobals->time)
 		return;
 
 	if (m_fInAttack != 0)
 	{
 		StartFire();
 		m_fInAttack = 0;
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 2.0;
+		m_flTimeWeaponIdle = gpGlobals->time + 2.0;
 	}
 	else
 	{
@@ -479,17 +479,17 @@ void CXenSquasher::WeaponIdle(void)
 		if (flRand <= 0.5)
 		{
 			iAnim = XS_IDLE;
-			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + (63.0f / 15.0f);
+			m_flTimeWeaponIdle = gpGlobals->time + (63.0f / 15.0f);
 		}
 		else if (flRand <= 0.75)
 		{
 			iAnim = XS_IDLE2;
-			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + (63.0f / 15.0f);
+			m_flTimeWeaponIdle = gpGlobals->time + (63.0f / 15.0f);
 		}
 		else
 		{
 			iAnim = XS_FIDGET;
-			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + (93.0f / 30.0f);
+			m_flTimeWeaponIdle = gpGlobals->time + (93.0f / 30.0f);
 		}
 
 		//return;
