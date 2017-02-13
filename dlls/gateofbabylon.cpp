@@ -104,7 +104,7 @@ private:
 	void EXPORT FollowPlayerThink( void );
 	bool FireBolts( void );
 
-	CGateOfBabylon *m_pGates;
+	EHBasePlayerItem m_pGates;
 	Vector m_vecOffset;
 	float m_flNextNPThrow;
 	float m_flLastTimeAnim;
@@ -347,6 +347,8 @@ float CGateOfBabylonBolt::TouchGravGun(CBaseEntity *attacker, int stage)
 		SetTouch( &CGateOfBabylonBolt::BoltTouch );
 		UTIL_MakeVectors( attacker->pev->v_angle + attacker->pev->punchangle);
 		pev->angles = UTIL_VecToAngles(-gpGlobals->v_forward);
+		UTIL_SetOrigin( pev, pev->origin );
+		SetThink( &CGateOfBabylonBolt::BubbleThink );
 	}
 	return 2000;
 }
@@ -413,7 +415,7 @@ void CGateOfBabylonSpawner::FollowPlayerThink( void )
 	if( !m_pGates )
 		return; // wait for gates
 
-	if( m_pGates->m_pPlayer->pev->deadflag > DEAD_NO )
+	if( !m_pGates->m_pPlayer || m_pGates->m_pPlayer->pev->deadflag > DEAD_NO )
 	{
 		SetThink( &CBaseEntity::SUB_Remove );
 		return;

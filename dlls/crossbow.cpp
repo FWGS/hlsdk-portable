@@ -53,6 +53,7 @@ class CCrossbowBolt : public CBaseEntity
 			SetTouch( &CCrossbowBolt::BoltTouch );
 			UTIL_MakeVectors( attacker->pev->v_angle + attacker->pev->punchangle);
 			pev->angles = UTIL_VecToAngles(gpGlobals->v_forward);
+			SetThink( &CCrossbowBolt::BubbleThink );
 		}
 		return 2000;
 	}
