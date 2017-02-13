@@ -1556,6 +1556,15 @@ TYPEDESCRIPTION	CSatchel::m_SaveData[] =
 
 IMPLEMENT_SAVERESTORE( CSatchel, CBasePlayerWeapon )
 
+TYPEDESCRIPTION CBradnailer::m_SaveData[] =
+{
+	DEFINE_FIELD( CBradnailer, m_flNextPrimaryAttack, FIELD_TIME ),
+	DEFINE_FIELD( CBradnailer, m_flNextSecondaryAttack, FIELD_TIME ),
+	DEFINE_FIELD( CBradnailer, m_flTimeWeaponIdle, FIELD_TIME ),
+};
+
+IMPLEMENT_SAVERESTORE( CBradnailer, CBasePlayerWeapon )
+
 TYPEDESCRIPTION	CCmlwbr::m_SaveData[] =
 {
 	DEFINE_FIELD( CCmlwbr, m_fInAttack, FIELD_INTEGER ),
@@ -1567,6 +1576,9 @@ IMPLEMENT_SAVERESTORE( CCmlwbr, CBasePlayerWeapon )
 TYPEDESCRIPTION	CXenSquasher::m_SaveData[] =
 {
 	DEFINE_FIELD( CXenSquasher, m_fInAttack, FIELD_INTEGER ),
+	DEFINE_FIELD( CXenSquasher, m_flNextPrimaryAttack, FIELD_TIME ),
+	DEFINE_FIELD( CXenSquasher, m_flNextSecondaryAttack, FIELD_TIME ),
+	DEFINE_FIELD( CXenSquasher, m_flTimeWeaponIdle, FIELD_TIME ),
 	//DEFINE_FIELD( CGauss, m_flStartCharge, FIELD_TIME ),
 	//DEFINE_FIELD( CGauss, m_flPlayAftershock, FIELD_TIME ),
 	//DEFINE_FIELD( CGauss, m_flNextAmmoBurn, FIELD_TIME ),
