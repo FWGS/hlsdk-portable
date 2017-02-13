@@ -338,6 +338,8 @@ public:
 	int m_iMenuState;
 	int m_iLocalConfirm;
 	int m_iConfirmKey;
+	int m_iEnttoolsMonsters;
+	float m_fEnttoolsMonsterTime;
 	virtual void Touch( CBaseEntity *pOther );
 };
 

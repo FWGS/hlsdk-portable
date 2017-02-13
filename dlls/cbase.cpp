@@ -129,9 +129,15 @@ int GetEntityAPI2( DLL_FUNCTIONS *pFunctionTable, int *interfaceVersion )
 }
 #endif
 
+int UTIL_CoopCheckSpawn( edict_t *pent );
+
 int DispatchSpawn( edict_t *pent )
 {
 	CBaseEntity *pEntity = (CBaseEntity *)GET_PRIVATE( pent );
+
+	int ret = UTIL_CoopCheckSpawn( pent );
+	if( ret )
+		return ret;
 
 	if( pEntity )
 	{

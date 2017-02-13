@@ -814,3 +814,99 @@ bool UTIL_CoopConfirmMenu(CBaseEntity *pTrigger, CBaseEntity *pActivator, int co
 	}
 	return true;
 }
+#ifdef _WIN32
+// Shitty windows does not even have this!!!!!!!
+
+#include <string.h>
+/* @NOPEDANTRY: ignore use of reserved identifier */
+char *strrstr(const char *x, const char *y) {
+char *prev = NULL;
+char *next;
+if (*y == '\0')
+return strchr(x, '\0');
+while ((next = strstr(x, y)) != NULL) {
+prev = next;
+x = next + 1;
+}
+return prev;
+}
+#endif
+
+int UTIL_CheckForEntTools( edict_t *pent )
+{
+	if( pent->v.targetname )
+	{
+		char *s = (char*)STRING( pent->v.targetname );
+		char str[256];
+		strcpy( str, s );
+		s = strrstr( str, "_e" );
+		if( s )
+		{
+			*s = 0;
+			s = s + 2;
+			if( atoi(s) == ENTINDEX( pent ) )
+			{
+				s = strrstr( str, "_");
+				if( s )
+				{
+					int userid = atoi( s + 1 );
+					for( int i = 1; i < gpGlobals->maxClients; i++ )
+						if(  userid == g_engfuncs.pfnGetPlayerUserId( INDEXENT( i ) ) )
+							 return i;
+				}
+			}
+		}
+	}
+	return 0;
+}
+
+int UTIL_CoopCheckSpawn( edict_t *pent )
+{
+	if( mp_checkentities.value )
+	{
+		const char *szClassName = NULL;
+
+		if( !pent->v.classname )
+			return 0;
+
+		szClassName = STRING( pent->v.classname );
+
+		if( !szClassName || !szClassName[0] )
+			return 0;
+
+		if( strstr( szClassName, "monster_") )
+		{
+			CBasePlayer *pPlayer = (CBasePlayer*)UTIL_PlayerByIndex( UTIL_CheckForEntTools( pent ) );
+
+			if( pPlayer )
+			{
+				if( UTIL_CoopIsBadPlayer( pPlayer ) )
+				{
+					pent->v.flags = FL_KILLME;
+					return -1;
+				}
+
+				if( gpGlobals->time - pPlayer->m_fEnttoolsMonsterTime < 5 )
+				{
+					UTIL_CoopKickPlayer( pPlayer );
+					pent->v.flags = FL_KILLME;
+					return -1;
+				}
+
+				if( gpGlobals->time - pPlayer->m_fEnttoolsMonsterTime > 120 )
+					pPlayer->m_iEnttoolsMonsters = 0;
+
+				if( pPlayer->m_iEnttoolsMonsters > 5 )
+				{
+					UTIL_CoopKickPlayer( pPlayer );
+					pent->v.flags = FL_KILLME;
+					return -1;
+				}
+				pPlayer->m_iEnttoolsMonsters++;
+				pPlayer->m_fEnttoolsMonsterTime = gpGlobals->time;
+			}
+
+		}
+	}
+	return 0;
+}
