@@ -2,8 +2,7 @@
 #include "util.h"
 #include "cbase.h"
 #include "player.h"
-#include "coop_util.h"
-
+#include "coop_util.h""
 
 GlobalMenu g_GlobalMenu;
 
@@ -814,12 +813,11 @@ bool UTIL_CoopConfirmMenu(CBaseEntity *pTrigger, CBaseEntity *pActivator, int co
 	}
 	return true;
 }
-#ifdef _WIN32
-// Shitty windows does not even have this!!!!!!!
+
 
 #include <string.h>
 /* @NOPEDANTRY: ignore use of reserved identifier */
-char *strrstr(const char *x, const char *y) {
+static char *strrstr(const char *x, const char *y) {
 char *prev = NULL;
 char *next;
 if (*y == '\0')
@@ -830,7 +828,7 @@ x = next + 1;
 }
 return prev;
 }
-#endif
+
 
 int UTIL_CheckForEntTools( edict_t *pent )
 {
