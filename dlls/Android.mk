@@ -26,7 +26,8 @@ LOCAL_C_INCLUDES := $(SDL_PATH)/include \
 		    $(LOCAL_PATH)/../engine \
 		    $(LOCAL_PATH)/../public \
 		    $(LOCAL_PATH)/../pm_shared \
-		    $(LOCAL_PATH)/../game_shared
+		    $(LOCAL_PATH)/../game_shared \
+		    $(LOCAL_PATH)/bubblemod
 
 LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
            aflock.cpp \
@@ -40,6 +41,19 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
            bmodels.cpp \
            bullsquid.cpp \
            buttons.cpp \
+	   bubblemod/BMOD_boxmarker.cpp \
+	   bubblemod/BMOD_CameraPoint.cpp \
+	   bubblemod/BMOD_egon.cpp \
+	   bubblemod/BMOD_flyingcrowbar.cpp \
+	   bubblemod/BMOD_gamerules.cpp \
+	   bubblemod/BMOD_messaging.cpp \
+	   bubblemod/BMOD_player.cpp \
+	   bubblemod/BMOD_rune.cpp \
+	   bubblemod/BMOD_snarkmine.cpp \
+	   bubblemod/BMOD_squeakgrenade.cpp \
+	   bubblemod/BMOD_tripmines.cpp \
+	   bubblemod/BMOD_util.cpp \
+	   bubblemod/BMOD_zapgunrift.cpp \
            cbase.cpp \
            client.cpp \
            combat.cpp \
@@ -49,7 +63,6 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
            defaultai.cpp \
            doors.cpp \
            effects.cpp \
-           egon.cpp \
            explode.cpp \
            flyingmonster.cpp \
            func_break.cpp \
