@@ -133,6 +133,11 @@ TYPEDESCRIPTION	CBasePlayer::m_playerSaveData[] =
 	DEFINE_FIELD( CBasePlayer, m_fHudVisible, FIELD_BOOLEAN ),
 	DEFINE_FIELD( CBasePlayer, m_fUpdateHudVisibility, FIELD_BOOLEAN ),
 
+	// Xensquasher
+        DEFINE_FIELD( CBasePlayer, m_flStartCharge, FIELD_TIME ),
+	DEFINE_FIELD( CBasePlayer, m_flPlayAftershock, FIELD_TIME ),
+	DEFINE_FIELD( CBasePlayer, m_flNextAmmoBurn, FIELD_TIME ),
+
 	//DEFINE_FIELD( CBasePlayer, m_fDeadTime, FIELD_FLOAT ), // only used in multiplayer games
 	//DEFINE_FIELD( CBasePlayer, m_fGameHUDInitialized, FIELD_INTEGER ), // only used in multiplayer games
 	//DEFINE_FIELD( CBasePlayer, m_flStopExtraSoundTime, FIELD_TIME ),
