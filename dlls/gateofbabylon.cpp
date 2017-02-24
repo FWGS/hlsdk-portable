@@ -415,7 +415,7 @@ void CGateOfBabylonSpawner::FollowPlayerThink( void )
 	if( !m_pGates )
 		return; // wait for gates
 
-	if( !m_pGates->m_pPlayer || m_pGates->m_pPlayer->pev->deadflag > DEAD_NO )
+	if( !m_pGates->m_pPlayer || !m_pGates->m_pPlayer->m_pActiveItem || m_pGates->m_pPlayer->pev->deadflag > DEAD_NO )
 	{
 		SetThink( &CBaseEntity::SUB_Remove );
 		return;
