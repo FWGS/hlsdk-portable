@@ -27,6 +27,8 @@
 #define BOLT_AIR_VELOCITY	2000
 #define BOLT_WATER_VELOCITY	1000
 
+extern BOOL gPhysicsInterfaceInitialized;
+
 // UNDONE: Save/restore this?  Don't forget to set classname and LINK_ENTITY_TO_CLASS()
 // 
 // OVERLOADS SOME ENTVARS:
@@ -167,9 +169,11 @@ void CCrossbowBolt::BoltTouch( CBaseEntity *pOther )
 			pev->angles.z = RANDOM_LONG( 0, 360 );
 			pev->nextthink = gpGlobals->time + 10.0;			
 
-			// g-cont. Setup movewith feature
-			pev->movetype = MOVETYPE_COMPOUND;	// set movewith type
-			pev->aiment = ENT( pOther->pev );	// set parent
+			if (gPhysicsInterfaceInitialized) {
+				// g-cont. Setup movewith feature
+				pev->movetype = MOVETYPE_COMPOUND;	// set movewith type
+				pev->aiment = ENT( pOther->pev );	// set parent
+			}
 		}
 
 		if( UTIL_PointContents( pev->origin ) != CONTENTS_WATER )
