@@ -280,7 +280,7 @@ Only produces random numbers to match the server ones.
 */
 Vector CBaseEntity::FireBulletsPlayer ( ULONG cShots, Vector vecSrc, Vector vecDirShooting, Vector vecSpread, float flDistance, int iBulletType, int iTracerFreq, int iDamage, entvars_t *pevAttacker, int shared_rand )
 {
-	float x, y, z;
+	float x = 0, y = 0, z;
 
 	for( ULONG iShot = 1; iShot <= cShots; iShot++ )
 	{
