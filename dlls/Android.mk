@@ -26,7 +26,8 @@ LOCAL_C_INCLUDES := $(SDL_PATH)/include \
 		    $(LOCAL_PATH)/../engine \
 		    $(LOCAL_PATH)/../public \
 		    $(LOCAL_PATH)/../pm_shared \
-		    $(LOCAL_PATH)/../game_shared
+		    $(LOCAL_PATH)/../game_shared \
+		    $(LOCAL_PATH)/gearbox
 
 LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
            aflock.cpp \
@@ -124,6 +125,54 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
            world.cpp \
            xen.cpp \
            zombie.cpp \
+	   gearbox/blkop_apache.cpp \
+	   gearbox/blkop_osprey.cpp \
+	   gearbox/cleansuit_scientist.cpp \
+	   gearbox/ctf_gamerules.cpp \
+	   gearbox/ctf_items.cpp \
+	   gearbox/ctf_powerups.cpp \
+	   gearbox/displacer.cpp \
+	   gearbox/drillsergeant.cpp \
+	   gearbox/eagle.cpp \
+	   gearbox/fgrunt_medic.cpp \
+	   gearbox/fgrunt_torch.cpp \
+	   gearbox/fgrunt.cpp \
+	   gearbox/func_tank_of.cpp \
+	   gearbox/gearbox_effects.cpp \
+	   gearbox/gearbox_subs.cpp \
+	   gearbox/gearbox_triggers.cpp \
+	   gearbox/gearbox_utils.cpp \
+	   gearbox/generic_items.cpp \
+	   gearbox/geneworm.cpp \
+	   gearbox/gonome.cpp \
+	   gearbox/grapple_tonguetip.cpp \
+	   gearbox/grapple.cpp \
+	   gearbox/houndeye_dead.cpp \
+	   gearbox/islave_dead.cpp \
+	   gearbox/knife.cpp \
+	   gearbox/loader.cpp \
+	   gearbox/m249.cpp \
+	   gearbox/massn.cpp \
+	   gearbox/nuclearbomb.cpp \
+	   gearbox/otis.cpp \
+	   gearbox/penguin.cpp \
+	   gearbox/pipewrench.cpp \
+	   gearbox/pitdrone.cpp \
+	   gearbox/pitworm.cpp \
+	   gearbox/recruit.cpp \
+	   gearbox/ropes.cpp \
+	   gearbox/shock.cpp \
+	   gearbox/shockrifle.cpp \
+	   gearbox/shockroach.cpp \
+	   gearbox/skeleton.cpp \
+	   gearbox/sniperrifle.cpp \
+	   gearbox/spore_ammo.cpp \
+	   gearbox/sporegrenade.cpp \
+	   gearbox/sporelauncher.cpp \
+	   gearbox/strooper.cpp \
+	   gearbox/voltigore.cpp \
+	   gearbox/zombie_barney.cpp \
+	   gearbox/zombie_soldier.cpp \
 	   ../pm_shared/pm_debug.c \
 	   ../pm_shared/pm_math.c \
 	   ../pm_shared/pm_shared.c

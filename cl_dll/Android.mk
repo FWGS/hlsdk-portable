@@ -25,6 +25,17 @@ LOCAL_CFLAGS += -DCLIENT_DLL=1
 
 SRCS=
 SRCS_C=
+SRCS+=gearbox/hud_nightvision.cpp
+SRCS+=../dlls/gearbox/displacer.cpp
+SRCS+=../dlls/gearbox/knife.cpp
+SRCS+=../dlls/gearbox/eagle.cpp
+SRCS+=../dlls/gearbox/grapple.cpp
+SRCS+=../dlls/gearbox/m249.cpp
+SRCS+=../dlls/gearbox/penguin.cpp
+SRCS+=../dlls/gearbox/pipewrench.cpp
+SRCS+=../dlls/gearbox/shockrifle.cpp
+SRCS+=../dlls/gearbox/sniperrifle.cpp
+SRCS+=../dlls/gearbox/sporelauncher.cpp
 SRCS+=../dlls/crossbow.cpp
 SRCS+=../dlls/crowbar.cpp
 SRCS+=../dlls/egon.cpp
@@ -90,7 +101,7 @@ SRCS+=./view.cpp
 SRCS+=./input_xash3d.cpp
 SRCS+=./scoreboard.cpp
 SRCS+=./MOTD.cpp
-INCLUDES =  -I../common -I. -I../game_shared -I../pm_shared -I../engine -I../dlls
+INCLUDES =  -I../common -I. -I../game_shared -I../pm_shared -I../engine -I../dlls -I../dlls/gearbox
 DEFINES = -Wno-write-strings -DLINUX -D_LINUX -Dstricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp -DCLIENT_WEAPONS -DCLIENT_DLL -w
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/. \
