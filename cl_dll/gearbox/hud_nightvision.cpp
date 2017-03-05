@@ -25,7 +25,8 @@
 #include <string.h>
 #include <stdio.h>
 
-DECLARE_MESSAGE(m_Nightvision, Nightvision)
+DECLARE_MESSAGE( m_Nightvision, Nightvision )
+DECLARE_MESSAGE( m_Nightvision, Flashlight )
 
 #define NIGHTVISION_SPRITE1_NAME "sprites/of_nv.spr"
 #define NIGHTVISION_SPRITE2_NAME "sprites/of_nv_a.spr"
@@ -37,6 +38,7 @@ int CHudNightvision::Init(void)
 	m_fOn = 0;
 
 	HOOK_MESSAGE(Nightvision);
+	HOOK_MESSAGE(Flashlight);
 
 	m_iFlags |= HUD_ACTIVE;
 
@@ -72,6 +74,14 @@ int CHudNightvision::VidInit(void)
 int CHudNightvision::MsgFunc_Nightvision(const char *pszName, int iSize, void *pbuf)
 {
 	BEGIN_READ(pbuf, iSize);
+	m_fOn = READ_BYTE();
+
+	return 1;
+}
+
+int CHudNightvision::MsgFunc_Flashlight( const char *pszName, int iSize, void *pbuf )
+{
+	BEGIN_READ( pbuf, iSize );
 	m_fOn = READ_BYTE();
 
 	return 1;

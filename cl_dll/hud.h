@@ -433,6 +433,7 @@ public:
 	int Draw( float flTime );
 	void Reset( void );
 	int MsgFunc_Nightvision( const char *pszName, int iSize, void *pbuf );
+	int MsgFunc_Flashlight( const char *pszName, int iSize, void *pbuf );
 
 private:
 	HSPRITE m_hSprite1, m_hSprite2, m_hSprite3, m_hSprite4;
