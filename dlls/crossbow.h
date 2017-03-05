@@ -22,6 +22,8 @@
 #define BOLT_AIR_VELOCITY	2000
 #define BOLT_WATER_VELOCITY	1000
 
+extern BOOL gPhysicsInterfaceInitialized;
+
 // UNDONE: Save/restore this?  Don't forget to set classname and LINK_ENTITY_TO_CLASS()
 // 
 // OVERLOADS SOME ENTVARS:
