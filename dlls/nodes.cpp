@@ -23,6 +23,9 @@
 #include	"nodes.h"
 #include	"animation.h"
 #include	"doors.h"
+//++ BulliT
+#include "agglobal.h"
+//-- Martin Webrant
 
 #define	HULL_STEP_SIZE 16// how far the test hull moves on each step
 #define	NODE_HEIGHT	8	// how high to lift nodes off the ground after we drop them all (make stair/ramp mapping easier)
@@ -1699,7 +1702,9 @@ void CTestHull::BuildNodeGraph( void )
 	}
 
 	// make sure directories have been made
-	GET_GAME_DIR( szNrpFilename );
+//++ BulliT
+	strcpy( szNrpFilename, AgGetDirectoryValve() );
+//-- Martin Webrant
 	strcat( szNrpFilename, "/maps" );
 	CreateDirectory( szNrpFilename, NULL );
 	strcat( szNrpFilename, "/graphs" );
@@ -2368,7 +2373,9 @@ int CGraph::FLoadGraph( char *szMapName )
 
 	// make sure the directories have been made
 	char szDirName[MAX_PATH];
-	GET_GAME_DIR( szDirName );
+//++ BulliT
+	strcpy( szDirName, AgGetDirectoryValve() );
+//-- Martin Webrant
 	strcat( szDirName, "/maps" );
 	CreateDirectory( szDirName, NULL );
 	strcat( szDirName, "/graphs" );
@@ -2551,7 +2558,9 @@ int CGraph::FSaveGraph( char *szMapName )
 	}
 
 	// make sure directories have been made
-	GET_GAME_DIR( szFilename );
+//++ BulliT
+	strcpy( szFilename, AgGetDirectoryValve() );
+//-- Martin Webrant
 	strcat( szFilename, "/maps" );
 	CreateDirectory( szFilename, NULL );
 	strcat( szFilename, "/graphs" );

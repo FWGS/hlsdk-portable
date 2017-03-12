@@ -153,7 +153,8 @@ void DLLEXPORT CAM_Think( void )
 #endif
 	vec3_t viewangles;
 
-	switch( (int)cam_command->value )
+//++ BulliT
+/*	switch( (int)cam_command->value )
 	{
 		case CAM_COMMAND_TOTHIRDPERSON:
 			CAM_ToThirdPerson();
@@ -165,6 +166,8 @@ void DLLEXPORT CAM_Think( void )
 		default:
 			break;
 	}
+*/
+//-- Martin Webrant
 
 	if( !cam_thirdperson )
 		return;
@@ -642,7 +645,7 @@ void CAM_EndDistance( void )
 
 int DLLEXPORT CL_IsThirdPerson( void )
 {
-	return ( cam_thirdperson ? 1 : 0 ) || ( g_iUser1 && ( g_iUser2 == gEngfuncs.GetLocalPlayer()->index ) );
+	return cam_thirdperson ? 1 : 0;
 }
 
 void DLLEXPORT CL_CameraOffset( float *ofs )

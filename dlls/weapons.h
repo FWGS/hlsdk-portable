@@ -657,6 +657,7 @@ public:
 	void EXPORT Revive( void );
 
 	static CLaserSpot *CreateSpot( void );
+	inline void LiveForTime( float time ) { SetThink( &CLaserSpot::SUB_Remove ); pev->nextthink = gpGlobals->time + time; }
 };
 
 class CRpg : public CBasePlayerWeapon

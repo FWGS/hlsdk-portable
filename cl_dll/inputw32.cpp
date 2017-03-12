@@ -19,8 +19,12 @@
 #include "in_defs.h"
 #include "../engine/keydefs.h"
 //#include "view.h"
-#include "windows.h"
+//#include "windows.h"
 
+//++ BulliT
+extern int g_iPure;
+#include "AgVariableChecker.h"
+//-- Martin Webrant
 #define MOUSE_BUTTON_COUNT 5
 
 // Set this to 1 to show mouse cursor.  Experimental
@@ -151,6 +155,10 @@ Force_CenterView_f
 */
 void Force_CenterView_f( void )
 {
+//++ BulliT
+	if( 0 < g_iPure )
+		return;
+//-- Martin Webrant
 	vec3_t viewangles;
 
 	if( !iMouseInUse )
@@ -349,10 +357,18 @@ void IN_MouseMove( float frametime, usercmd_t *cmd )
 		if( ( in_mlook.state & 1 ) && !( in_strafe.state & 1 ) )
 		{
 			viewangles[PITCH] += m_pitch->value * mouse_y;
+//++ BulliT
+			if( viewangles[PITCH] > ag_cl_pitchdown() )
+				viewangles[PITCH] = ag_cl_pitchdown();
+			if( viewangles[PITCH] < -ag_cl_pitchup() )
+				viewangles[PITCH] = -ag_cl_pitchup();
+/*
 			if( viewangles[PITCH] > cl_pitchdown->value )
 				viewangles[PITCH] = cl_pitchdown->value;
 			if( viewangles[PITCH] < -cl_pitchup->value )
 				viewangles[PITCH] = -cl_pitchup->value;
+*/
+//-- Martin Webrant
 		}
 		else
 		{
@@ -769,11 +785,17 @@ void IN_JoyMove( float frametime, usercmd_t *cmd )
 					// only absolute control support here (joy_advanced is 0)
 					if( m_pitch->value < 0.0 )
 					{
-						viewangles[PITCH] -= ( fAxisValue * joy_pitchsensitivity->value ) * aspeed * cl_pitchspeed->value;
+//++ BulliT
+						//viewangles[PITCH] -= ( fAxisValue * joy_pitchsensitivity->value ) * aspeed * cl_pitchspeed->value;
+						viewangles[PITCH] -= ( fAxisValue * joy_pitchsensitivity->value ) * aspeed * ag_cl_pitchspeed();
+//-- Martin Webrant
 					}
 					else
 					{
-						viewangles[PITCH] += ( fAxisValue * joy_pitchsensitivity->value ) * aspeed * cl_pitchspeed->value;
+//++ BulliT
+						//viewangles[PITCH] += ( fAxisValue * joy_pitchsensitivity->value ) * aspeed * cl_pitchspeed->value;
+						viewangles[PITCH] += ( fAxisValue * joy_pitchsensitivity->value ) * aspeed * ag_cl_pitchspeed();
+//-- Martin Webrant
 					}
 				}
 			}
@@ -808,7 +830,8 @@ void IN_JoyMove( float frametime, usercmd_t *cmd )
 				{
 					if( dwControlMap[i] == JOY_ABSOLUTE_AXIS )
 					{
-						viewangles[YAW] += ( fAxisValue * joy_yawsensitivity->value ) * aspeed * cl_yawspeed->value;
+						viewangles[YAW] += ( fAxisValue * joy_yawsensitivity->value ) * aspeed * ag_cl_yawspeed();
+						//viewangles[YAW] += ( fAxisValue * joy_yawsensitivity->value ) * aspeed * cl_yawspeed->value;
 					}
 					else
 					{
@@ -825,7 +848,10 @@ void IN_JoyMove( float frametime, usercmd_t *cmd )
 					// pitch movement detected and pitch movement desired by user
 					if( dwControlMap[i] == JOY_ABSOLUTE_AXIS )
 					{
-						viewangles[PITCH] += ( fAxisValue * joy_pitchsensitivity->value ) * aspeed * cl_pitchspeed->value;
+//++ BulliT
+						//viewangles[PITCH] += ( fAxisValue * joy_pitchsensitivity->value ) * aspeed * cl_pitchspeed->value;
+						viewangles[PITCH] += ( fAxisValue * joy_pitchsensitivity->value ) * aspeed * ag_cl_pitchspeed();
+//-- Martin Webrant
 					}
 					else
 					{
@@ -840,11 +866,18 @@ void IN_JoyMove( float frametime, usercmd_t *cmd )
 	}
 
 	// bounds check pitch
+//++ BulliT
+	if( viewangles[PITCH] > ag_cl_pitchdown() )
+		viewangles[PITCH] = ag_cl_pitchdown();
+	if( viewangles[PITCH] < -ag_cl_pitchup() )
+		viewangles[PITCH] = -ag_cl_pitchup();
+/*
 	if( viewangles[PITCH] > cl_pitchdown->value )
 		viewangles[PITCH] = cl_pitchdown->value;
 	if( viewangles[PITCH] < -cl_pitchup->value )
 		viewangles[PITCH] = -cl_pitchup->value;
-
+*/
+//-- Martin Webrant
 	gEngfuncs.SetViewAngles( (float *)viewangles );
 }
 

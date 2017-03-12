@@ -17,6 +17,10 @@
 #include "util.h"
 #include "game.h"
 
+//++ BulliT
+#include "agglobal.h"
+//-- Martin Webrant
+
 cvar_t displaysoundlist = {"displaysoundlist","0"};
 
 // multiplayer server rules
@@ -849,6 +853,9 @@ void GameDLLInit( void )
 	CVAR_REGISTER( &sk_player_leg3 );
 // END REGISTER CVARS FOR SKILL LEVEL STUFF
 
+//++ BulliT
+	AgInitGame();
+//-- Martin Webrant
 	SERVER_COMMAND( "exec skill.cfg\n" );
 }
 

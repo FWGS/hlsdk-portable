@@ -28,7 +28,9 @@
 
 extern edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer );
 
-DLL_GLOBAL CGameRules *g_pGameRules = NULL;
+//++ BulliT
+DLL_GLOBAL AgGameRules *g_pGameRules = NULL;
+//-- Martin Webrant
 extern DLL_GLOBAL BOOL g_fGameOver;
 extern int gmsgDeathMsg;	// client dll messages
 extern int gmsgMOTD;
@@ -307,11 +309,51 @@ void CGameRules::RefreshSkillData ( void )
 // instantiate the proper game rules object
 //=========================================================
 
-CGameRules *InstallGameRules( void )
+//++ BulliT
+AgGameRules *InstallGameRules( void )
+//-- Martin Webrant
 {
 	SERVER_COMMAND( "exec game.cfg\n" );
 	SERVER_EXECUTE();
 
+//++ BulliT
+	char *servercfgfile = (char *)CVAR_GET_STRING( "servercfgfile" );
+	if( servercfgfile && servercfgfile[0] )
+	{
+		char szCommand[256];
+
+		ALERT( at_console, "Executing dedicated server config file\n" );
+		sprintf( szCommand, "exec %s\n", servercfgfile );
+		SERVER_COMMAND( szCommand );
+	}
+
+#ifndef AG_NO_CLIENT_DLL
+	//Detect CTF maps.
+	if( AgIsCTFMap( STRING( gpGlobals->mapname ) ) )
+	{
+		AgString sGametype = CVAR_GET_STRING( "sv_ag_gametype" );
+		if( sGametype != "ctf" && NULL == strstr( CVAR_GET_STRING( "sv_ag_gamemode" ), "ctf" ) )
+		CVAR_SET_STRING( "sv_ag_gamemode","ctf" );
+	}
+
+	//Detect DOM maps.
+	if( AgIsDOMMap( STRING( gpGlobals->mapname ) ) )
+	{
+		AgString sGametype = CVAR_GET_STRING( "sv_ag_gametype" );
+		if( sGametype != "dom" )
+			CVAR_SET_STRING( "sv_ag_gamemode", "dom" );
+	}
+#endif
+
+	//Execute my rules just before allocating what class to use.
+	//This ensures that all is set correctly. Server.cfg can override my vars with no trouble.
+	GameMode.ExecConfig();
+
+	//Execute per map basis settings.
+	SERVER_COMMAND( UTIL_VarArgs( "exec %s.cfg\n", STRING( gpGlobals->mapname ) ) );
+	SERVER_EXECUTE();
+
+/*
 	if( !gpGlobals->deathmatch )
 	{
 		// generic half-life
@@ -319,6 +361,8 @@ CGameRules *InstallGameRules( void )
 		return new CHalfLifeRules;
 	}
 	else
+*/
+//-- Martin Webrant
 	{
 		if( teamplay.value > 0 )
 		{

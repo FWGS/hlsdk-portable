@@ -22,6 +22,12 @@
 #include "player.h"
 #include "gamerules.h"
 
+//++ BulliT
+#ifdef AGSTATS
+#include "agstats.h"
+#endif
+//-- Martin Webrant
+
 #define	CROWBAR_BODYHIT_VOLUME 128
 #define	CROWBAR_WALLHIT_VOLUME 512
 
@@ -157,6 +163,12 @@ void CCrowbar::SwingAgain( void )
 
 int CCrowbar::Swing( int fFirst )
 {
+//++ BulliT
+#ifdef AGSTATS
+	Stats.FireShot( m_pPlayer, STRING( pev->classname ) );
+#endif
+//-- Martin Webrant
+
 	int fDidHit = FALSE;
 
 	TraceResult tr;
@@ -257,7 +269,13 @@ int CCrowbar::Swing( int fFirst )
 				}
 				m_pPlayer->m_iWeaponVolume = CROWBAR_BODYHIT_VOLUME;
 				if( !pEntity->IsAlive() )
+//++ BulliT
+				//return TRUE;
+				{
+					m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.25;
 					return TRUE;
+				}
+//-- Martin Webrant
 				else
 					flVol = 0.1;
 

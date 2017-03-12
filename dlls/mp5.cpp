@@ -23,6 +23,12 @@
 #include "soundent.h"
 #include "gamerules.h"
 
+//++ BulliT
+#ifdef AGSTATS
+#include "agstats.h"
+#endif
+//-- Martin Webrant
+
 enum mp5_e
 {
 	MP5_LONGIDLE = 0,
@@ -47,13 +53,28 @@ int CMP5::SecondaryAmmoIndex( void )
 
 void CMP5::Spawn()
 {
+//++ BulliT
+#ifndef CLIENT_DLL
+	if( SGBOW == AgGametype() )
+	{
+		//Spawn shotgun instead.
+		CBaseEntity *pNewWeapon = CBaseEntity::Create( "weapon_shotgun", g_pGameRules->VecWeaponRespawnSpot( this ), pev->angles, pev->owner );
+		return;
+	}
+#endif
+//-- Martin Webrant
 	pev->classname = MAKE_STRING( "weapon_9mmAR" ); // hack to allow for old names
 	Precache();
 	SET_MODEL( ENT( pev ), "models/w_9mmAR.mdl" );
 	m_iId = WEAPON_MP5;
 
 	m_iDefaultAmmo = MP5_DEFAULT_GIVE;
-
+//++ BulliT
+#ifndef CLIENT_DLL
+	if( ARENA == AgGametype() || ARCADE == AgGametype() || LMS == AgGametype() )
+		m_iDefaultAmmo = MP5_MAX_CLIP;
+#endif
+//-- Martin Webrant
 	FallInit();// get ready to fall down.
 }
 
@@ -142,6 +163,9 @@ void CMP5::PrimaryAttack()
 
 	m_iClip--;
 
+#ifdef AGSTATS
+	Stats.FireShot( m_pPlayer,STRING( pev->classname ) );
+#endif
 	m_pPlayer->pev->effects = (int)( m_pPlayer->pev->effects ) | EF_MUZZLEFLASH;
 
 	// player "shoot" animation

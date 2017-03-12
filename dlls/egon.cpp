@@ -25,6 +25,12 @@
 #include "customentity.h"
 #include "gamerules.h"
 
+//++ BulliT
+#ifdef AGSTATS
+#include "agstats.h"
+#endif
+//-- Martin Webrant
+
 #define	EGON_PRIMARY_VOLUME		450
 #define EGON_BEAM_SPRITE		"sprites/xbeam1.spr"
 #define EGON_FLARE_SPRITE		"sprites/XSpark1.spr"
@@ -53,6 +59,16 @@ LINK_ENTITY_TO_CLASS( weapon_egon, CEgon )
 
 void CEgon::Spawn()
 {
+//++ BulliT
+#ifndef CLIENT_DLL
+	if( SGBOW == AgGametype() )
+	{
+		//Spawn shotgun instead.
+		CBaseEntity *pNewWeapon = CBaseEntity::Create( "weapon_gauss", g_pGameRules->VecWeaponRespawnSpot( this ), pev->angles, pev->owner );
+		return;
+	}
+#endif
+//-- Martin Webrant
 	Precache();
 	m_iId = WEAPON_EGON;
 	SET_MODEL( ENT( pev ), "models/w_egon.mdl" );
@@ -510,6 +526,12 @@ void CEgon::EndAttack( void )
 	m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5;
 
 	m_fireState = FIRE_OFF;
+
+//++ BulliT
+#ifdef AGSTATS
+	Stats.FireShot( m_pPlayer, STRING( pev->classname ) );
+#endif
+//-- Martin Webrant
 
 	DestroyEffect();
 }

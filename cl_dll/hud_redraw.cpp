@@ -20,6 +20,11 @@
 #include "cl_util.h"
 //#include "triangleapi.h"
 
+//++ BulliT
+#include <demo_api.h>
+#include "AgMatchReport.h"
+//-- Martin Webrant
+
 #define MAX_LOGO_FRAMES 56
 
 int grgLogoFrame[MAX_LOGO_FRAMES] =
@@ -92,6 +97,22 @@ int CHud::Redraw( float flTime, int intermission )
 	// Clock was reset, reset delta
 	if( m_flTimeDelta < 0 )
 		m_flTimeDelta = 0;
+
+	if( m_iIntermission && !intermission )
+	{
+//++ BulliT
+		//Stop recording the demo.
+		if( gEngfuncs.pDemoAPI->IsRecording() )
+			gEngfuncs.pfnClientCmd( "stop\n" );
+//-- Martin Webrant
+	}
+	else if( !m_iIntermission && intermission )
+	{
+//++ BulliT
+		AgMatchReport Report;
+		Report.Save();
+//-- Martin Webrant
+	}
 
 	if( m_flShotTime && m_flShotTime < flTime )
 	{
@@ -194,6 +215,9 @@ const unsigned char colors[8][3] =
 
 int CHud::DrawHudString( int xpos, int ypos, int iMaxX, char *szIt, int r, int g, int b )
 {
+//++ BulliT
+	return AgDrawHudString( xpos, ypos, iMaxX, szIt, r, g, b );
+/*
 	if( hud_textmode->value == 2 )
 	{
 		gEngfuncs.pfnDrawSetTextColor( r / 255.0, g / 255.0, b / 255.0 );
@@ -224,6 +248,8 @@ int CHud::DrawHudString( int xpos, int ypos, int iMaxX, char *szIt, int r, int g
 	}
 
 	return xpos;
+*/
+//-- Martin Webrant
 }
 
 int CHud::DrawHudStringLen( char *szIt )

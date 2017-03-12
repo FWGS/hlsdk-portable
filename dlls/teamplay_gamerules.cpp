@@ -22,6 +22,11 @@
 #include	"player.h"
 #include	"weapons.h"
 #include	"gamerules.h"
+//++ BulliT
+#include "multi_gamerules.h"
+#include "aggamerules.h"
+extern int g_teamplay;
+//-- Martin Webrant
 #include	"teamplay_gamerules.h"
 #include	"game.h"
 
@@ -49,7 +54,13 @@ CHalfLifeTeamplay::CHalfLifeTeamplay()
 	edict_t *pWorld = INDEXENT( 0 );
 	if( pWorld && pWorld->v.team )
 	{
-		if( teamoverride.value )
+		//++ BulliT
+		if( CTF == AgGametype() )
+		{
+			sprintf( m_szTeamList, "%s;%s", CTF_TEAM1_NAME, CTF_TEAM2_NAME );
+		}
+		//-- Martin Webrant
+		else if( teamoverride.value )
 		{
 			const char *pTeamList = STRING( pWorld->v.team );
 			if( pTeamList && strlen( pTeamList ) )
@@ -85,12 +96,18 @@ void CHalfLifeTeamplay::Think( void )
 #ifndef NO_VOICEGAMEMGR
 	g_VoiceGameMgr.Update(gpGlobals->frametime);
 #endif
+//++ BulliT
+	if( !AgGameRules::AgThink() )
+		return;
+//-- Martin Webrant
 	if( g_fGameOver )   // someone else quit the game already
 	{
 		CHalfLifeMultiplay::Think();
 		return;
 	}
 
+//++ BulliT
+/*
 	float flTimeLimit = CVAR_GET_FLOAT( "mp_timelimit" ) * 60;
 	
 	time_remaining = (int)( flTimeLimit ? ( flTimeLimit - gpGlobals->time ) : 0 );
@@ -100,7 +117,41 @@ void CHalfLifeTeamplay::Think( void )
 		GoToIntermission();
 		return;
 	}
+*/
 
+	if( !m_Timer.TimeRemaining( time_remaining ) )
+	{
+		if( !m_SuddenDeath.IsSuddenDeath() )
+		{
+			//Go intermission.
+			GoToIntermission();
+			return;
+		}
+		else
+		{
+			//Sudden death!
+			time_remaining = 0;
+		}
+	}
+
+	if( CTF == AgGametype() )
+	{
+		if( m_CTF.CaptureLimit() )
+		{
+			GoToIntermission();
+			return;
+		}
+	} //++ muphicks
+	else if( DOM == AgGametype() )
+	{
+		if( m_DOM.ScoreLimit() )
+		{
+			GoToIntermission();
+			return;
+		}
+	}
+	//-- muphicks
+//-- Martin Webrant
 	float flFragLimit = fraglimit.value;
 	if( flFragLimit )
 	{
@@ -148,6 +199,10 @@ void CHalfLifeTeamplay::Think( void )
 //=========================================================
 BOOL CHalfLifeTeamplay::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 {
+//++ BulliT
+	if( CHalfLifeMultiplay::ClientCommand( pPlayer, pcmd ) )
+		return TRUE;
+//-- Martin Webrant
 #ifndef NO_VOICEGAMEMGR
 	if( g_VoiceGameMgr.ClientCommand( pPlayer, pcmd ) )
 		return TRUE;
@@ -185,6 +240,24 @@ const char *CHalfLifeTeamplay::SetDefaultPlayerTeam( CBasePlayer *pPlayer )
 	char *mdls = g_engfuncs.pfnInfoKeyValue( g_engfuncs.pfnGetInfoKeyBuffer( pPlayer->edict() ), "model" );
 	strncpy( pPlayer->m_szTeamName, mdls, TEAM_NAME_LENGTH );
 
+//++ BulliT
+	if( TEAM_NAME_LENGTH <= strlen( pPlayer->m_szTeamName ) )
+		pPlayer->m_szTeamName[TEAM_NAME_LENGTH - 1] = '\0';
+	AgStringToLower( pPlayer->m_szTeamName );
+
+	if( pPlayer->pev->flags & FL_PROXY )
+	{
+		strcpy( pPlayer->m_szTeamName,"" );
+		g_engfuncs.pfnSetClientKeyValue( pPlayer->entindex(), g_engfuncs.pfnGetInfoKeyBuffer( pPlayer->edict() ), "model", pPlayer->m_szTeamName );
+		g_engfuncs.pfnSetClientKeyValue( pPlayer->entindex(), g_engfuncs.pfnGetInfoKeyBuffer( pPlayer->edict() ), "team", pPlayer->m_szTeamName );
+	}
+	else if( 0 == strlen(pPlayer->m_szTeamName ) )
+	{
+		strcpy( pPlayer->m_szTeamName,"gordon" );
+		g_engfuncs.pfnSetClientKeyValue( pPlayer->entindex(), g_engfuncs.pfnGetInfoKeyBuffer( pPlayer->edict() ), "model", pPlayer->m_szTeamName );
+		g_engfuncs.pfnSetClientKeyValue( pPlayer->entindex(), g_engfuncs.pfnGetInfoKeyBuffer( pPlayer->edict() ), "team", pPlayer->m_szTeamName );
+	}
+//-- Martin Webrant
 	RecountTeams();
 
 	// update the current player of the team he is joining
@@ -225,6 +298,9 @@ void CHalfLifeTeamplay::InitHUD( CBasePlayer *pPlayer )
 		}
 	MESSAGE_END();
 
+//++ BulliT
+	pPlayer->m_iNumTeams = num_teams;
+//-- Martin Webrant
 	RecountTeams();
 
 	char *mdls = g_engfuncs.pfnInfoKeyValue( g_engfuncs.pfnGetInfoKeyBuffer( pPlayer->edict() ), "model" );
@@ -256,6 +332,18 @@ void CHalfLifeTeamplay::InitHUD( CBasePlayer *pPlayer )
 			MESSAGE_END();
 		}
 	}
+//++ BulliT
+	if( CTF == AgGametype() )
+		m_CTF.PlayerInitHud( pPlayer );
+	//++ muphicks
+	else if( DOM == AgGametype() )
+		m_DOM.PlayerInitHud( pPlayer );
+//-- muphicks
+
+#define MENU_TEAM                                      2
+	if( strlen( m_szTeamList ) )
+		pPlayer->ShowVGUI( MENU_TEAM );
+//-- Martin Webrant
 }
 
 void CHalfLifeTeamplay::ChangePlayerTeam( CBasePlayer *pPlayer, const char *pTeamName, BOOL bKill, BOOL bGib )
@@ -292,18 +380,31 @@ void CHalfLifeTeamplay::ChangePlayerTeam( CBasePlayer *pPlayer, const char *pTea
 	g_engfuncs.pfnSetClientKeyValue( clientIndex, g_engfuncs.pfnGetInfoKeyBuffer( pPlayer->edict() ), "model", pPlayer->m_szTeamName );
 	g_engfuncs.pfnSetClientKeyValue( clientIndex, g_engfuncs.pfnGetInfoKeyBuffer( pPlayer->edict() ), "team", pPlayer->m_szTeamName );
 
+//++ BulliT
+	RecountTeams();
+//-- Martin Webrant
 	// notify everyone's HUD of the team change
 	MESSAGE_BEGIN( MSG_ALL, gmsgTeamInfo );
 		WRITE_BYTE( clientIndex );
-		WRITE_STRING( pPlayer->m_szTeamName );
+//++ BulliT
+		WRITE_STRING( pPlayer->TeamID() );
+		//WRITE_STRING( pPlayer->m_szTeamName );
+//-- Martin Webrant
 	MESSAGE_END();
 
 	MESSAGE_BEGIN( MSG_ALL, gmsgScoreInfo );
 		WRITE_BYTE( clientIndex );
 		WRITE_SHORT( pPlayer->pev->frags );
 		WRITE_SHORT( pPlayer->m_iDeaths );
-		WRITE_SHORT( 0 );
+//++ BulliT
+		WRITE_SHORT( g_teamplay );
 		WRITE_SHORT( g_pGameRules->GetTeamIndex( pPlayer->m_szTeamName ) + 1 );
+//-- Martin Webrant
+	MESSAGE_END();
+//Spectator
+	MESSAGE_BEGIN( MSG_ALL, gmsgSpectator );
+		WRITE_BYTE( ENTINDEX( pPlayer->edict() ) );
+		WRITE_BYTE( pPlayer->IsSpectator() ? 1 : 0 );
 	MESSAGE_END();
 }
 
@@ -355,8 +456,12 @@ void CHalfLifeTeamplay::ClientUserInfoChanged( CBasePlayer *pPlayer, char *infob
 
 	ChangePlayerTeam( pPlayer, mdls, TRUE, TRUE );
 
-	// recound stuff
-	RecountTeams( TRUE );
+	// recount stuff
+//++ BulliT
+	//RecountTeams( TRUE );
+	//RecountTeams();
+	//MSGTEST ResendScoreBoard();
+//-- Martin Webrant
 }
 
 extern int gmsgDeathMsg;
@@ -394,6 +499,13 @@ void CHalfLifeTeamplay::DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, e
 //=========================================================
 void CHalfLifeTeamplay::PlayerKilled( CBasePlayer *pVictim, entvars_t *pKiller, entvars_t *pInflictor )
 {
+//++ BulliT
+	if( pVictim && CTF == AgGametype() )
+		m_CTF.PlayerKilled( pVictim, pKiller );
+
+	if( pVictim && LMS == AgGametype() )
+		pVictim->SetIngame( false ); //Cant respawn
+//-- Martin Webrant
 	if( !m_DisableDeathPenalty )
 	{
 		CHalfLifeMultiplay::PlayerKilled( pVictim, pKiller, pInflictor );
@@ -428,6 +540,10 @@ BOOL CHalfLifeTeamplay::FPlayerCanTakeDamage( CBasePlayer *pPlayer, CBaseEntity 
 //=========================================================
 int CHalfLifeTeamplay::PlayerRelationship( CBaseEntity *pPlayer, CBaseEntity *pTarget )
 {
+//++ BulliT
+	if( ARENA == AgGametype() )
+		return GR_NOTTEAMMATE;
+//-- Martin Webrant
 	// half life multiplay has a simple concept of Player Relationships.
 	// you are either on another player's team, or you are not.
 	if( !pPlayer || !pTarget || !pTarget->IsPlayer() )
@@ -460,6 +576,9 @@ BOOL CHalfLifeTeamplay::ShouldAutoAim( CBasePlayer *pPlayer, edict_t *target )
 //=========================================================
 int CHalfLifeTeamplay::IPointsForKill( CBasePlayer *pAttacker, CBasePlayer *pKilled )
 {
+//++ BulliT
+	AgGameRules::IPointsForKill( pAttacker, pKilled );
+//-- Martin Webrant
 	if( !pKilled )
 		return 0;
 
@@ -516,6 +635,10 @@ BOOL CHalfLifeTeamplay::IsValidTeam( const char *pTeamName )
 
 const char *CHalfLifeTeamplay::TeamWithFewestPlayers( void )
 {
+//++ BulliT
+	if( strlen( s_szLeastPlayers ) )
+		return s_szLeastPlayers;
+//-- Martin Webrant
 	int i;
 	int minPlayers = MAX_TEAMS;
 	int teamCount[MAX_TEAMS] = {0};
@@ -549,10 +672,14 @@ const char *CHalfLifeTeamplay::TeamWithFewestPlayers( void )
 
 //=========================================================
 //=========================================================
-void CHalfLifeTeamplay::RecountTeams( bool bResendInfo )
+//++ BulliT
+//void CHalfLifeTeamplay::RecountTeams( bool bResendInfo )
+void CHalfLifeTeamplay::RecountTeams()
+//-- Martin Webrant
 {
 	char *pName;
 	char teamlist[TEAMPLAY_TEAMLISTLENGTH];
+	int i;
 
 	// loop through all teams, recounting everything
 	num_teams = 0;
@@ -578,11 +705,46 @@ void CHalfLifeTeamplay::RecountTeams( bool bResendInfo )
 		m_teamLimit = FALSE;
 	}
 
+//++ BulliT
+	s_szLeastPlayers[0] = '\0';
+	if( m_teamLimit )
+	{
+		int teamCount[MAX_TEAMS] = {0};
+		int minPlayers = MAX_TEAMS;
+
+		// loop through all clients, count number of players on each team
+		for( i = 1; i <= gpGlobals->maxClients; i++ )
+		{
+			CBasePlayer *pPlayerLoop = AgPlayerByIndex( i );
+			if( pPlayerLoop )
+			{
+				int team = GetTeamIndex( pPlayerLoop->m_szTeamName );
+				if( team >= 0 )
+					teamCount[team]++;
+			}
+		}
+
+		// Find team with least players
+		for( i = 0; i < num_teams; i++ )
+		{
+			if( teamCount[i] < minPlayers )
+			{
+				minPlayers = teamCount[i];
+				strcpy( s_szLeastPlayers, team_names[i] );
+			}
+		}
+	}
+	else
+	{
+		strcpy( team_names[num_teams++], CTF_TEAM1_NAME );
+		strcpy( team_names[num_teams++], CTF_TEAM2_NAME );
+	}
+//-- Martin Webrant
 	// Sanity check
 	memset( team_scores, 0, sizeof(team_scores) );
 
 	// loop through all clients
-	for( int i = 1; i <= gpGlobals->maxClients; i++ )
+	for( i = 1; i <= gpGlobals->maxClients; i++ )
 	{
 		CBaseEntity *plr = UTIL_PlayerByIndex( i );
 
@@ -611,15 +773,30 @@ void CHalfLifeTeamplay::RecountTeams( bool bResendInfo )
 			}
 
 			if( bResendInfo ) //Someone's info changed, let's send the team info again.
+//++ BulliT
+				plr->edict()->v.team = tm + 1;
+//-- Martin Webrant
+		}
+	}
+//++ BulliT
+	// loop through all clients and send team names
+	for( i = 1; i <= gpGlobals->maxClients; i++ )
+	{
+		CBasePlayer *pPlayerLoop = AgPlayerByIndex( i );
+		if( pPlayerLoop )
+		{
+			if( pPlayerLoop->m_iNumTeams != num_teams )
 			{
-				if( plr && IsValidTeam( plr->TeamID() ) )
-				{
-					MESSAGE_BEGIN( MSG_ALL, gmsgTeamInfo, NULL );
-						WRITE_BYTE( plr->entindex() );
-						WRITE_STRING( plr->TeamID() );
-					MESSAGE_END();
-				}
+				MESSAGE_BEGIN( MSG_ONE, gmsgTeamNames, NULL, pPlayerLoop->edict() );
+					WRITE_BYTE( num_teams );
+					for( i = 0; i < num_teams; i++ )
+					{
+						WRITE_STRING( team_names[i] );
+					}
+				MESSAGE_END();
+				pPlayerLoop->m_iNumTeams = num_teams;
 			}
 		}
 	}
+//-- Martin Webrant
 }

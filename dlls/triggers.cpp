@@ -885,7 +885,17 @@ void CBaseTrigger::HurtTouch( CBaseEntity *pOther )
 	float fldmg;
 
 	if( !pOther->pev->takedamage )
-		return;
+//++ BulliT
+		//return;
+	{
+		if( 0 == strncmp( STRING( pOther->pev->classname ), "item_flag_team", 14 ) )
+		{
+			AgCTFFlag *pFlag = (AgCTFFlag*)pOther;
+			pFlag->ResetFlag();
+		}
+                return;
+	}
+//-- Martin Webrant
 
 	if( ( pev->spawnflags & SF_TRIGGER_HURT_CLIENTONLYTOUCH ) && !pOther->IsPlayer() )
 	{
@@ -1838,7 +1848,8 @@ void CBaseTrigger::TeleportTouch( CBaseEntity *pOther )
 	edict_t	*pentTarget = NULL;
 
 	// Only teleport monsters or clients
-	if( !FBitSet( pevToucher->flags, FL_CLIENT | FL_MONSTER ) )
+	//if( !FBitSet( pevToucher->flags, FL_CLIENT | FL_MONSTER ) )
+	if( !FBitSet( pevToucher->flags, FL_CLIENT | FL_MONSTER ) && !FClassnameIs( pevToucher, "monster_satchel" ) )
 		return;
 
 	if( !UTIL_IsMasterTriggered( m_sMaster, pOther ) )
@@ -1884,6 +1895,10 @@ void CBaseTrigger::TeleportTouch( CBaseEntity *pOther )
 	if( pOther->IsPlayer() )
 	{
 		pevToucher->v_angle = pentTarget->v.angles;
+
+//++ BulliT
+		( (CBasePlayer*)pOther )->Spectate_UpdatePosition();
+//-- Martin Webrant
 	}
 
 	pevToucher->fixangle = TRUE;

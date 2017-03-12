@@ -39,6 +39,10 @@
 #include "usercmd.h"
 #include "netadr.h"
 
+//++ BulliT
+#include "agglobal.h"
+//-- Martin Webrant
+
 extern DLL_GLOBAL ULONG		g_ulModelIndexPlayer;
 extern DLL_GLOBAL BOOL		g_fGameOver;
 extern DLL_GLOBAL int		g_iSkillLevel;
@@ -130,7 +134,10 @@ void respawn( entvars_t *pev, BOOL fCopyCorpse )
 {
 	if( gpGlobals->coop || gpGlobals->deathmatch )
 	{
-		if( fCopyCorpse )
+//++ BulliT
+		if( fCopyCorpse && pev->movetype != MOVETYPE_NOCLIP && 0 < ag_show_gibs.value )
+		//if( fCopyCorpse )
+//-- Martin Webrant
 		{
 			// make a copy of the dead body for appearances sake
 			CopyToBodyQue( pev );
@@ -160,10 +167,16 @@ void ClientKill( edict_t *pEntity )
 
 	CBasePlayer *pl = (CBasePlayer*)CBasePlayer::Instance( pev );
 
-	if( pl->m_fNextSuicideTime > gpGlobals->time )
+//++ BulliT
+	if( pl->m_fNextSuicideTime > gpGlobals->time && !pl->IsSpectator() || ARENA == AgGametype() || ag_match_running.value > 0 )
+	//if( pl->m_fNextSuicideTime > gpGlobals->time )
+//-- Martin Webrant
 		return;  // prevent suiciding too ofter
 
-	pl->m_fNextSuicideTime = gpGlobals->time + 1;  // don't let them suicide for 5 seconds after suiciding
+//++ BulliT
+	//pl->m_fNextSuicideTime = gpGlobals->time + 1; // don't let them suicide for 5 seconds after suiciding
+	pl->m_fNextSuicideTime = gpGlobals->time + 5; // don't let them suicide for 5 seconds after suiciding
+//-- Martin Webrant
 
 	// have the player kill themself
 	pev->health = 0;
@@ -189,6 +202,10 @@ void ClientPutInServer( edict_t *pEntity )
 
 	pPlayer = GetClassPtr( (CBasePlayer *)pev );
 	pPlayer->SetCustomDecalFrames( -1 ); // Assume none;
+
+//++ BulliT
+	pPlayer->Init();
+//-- Martin Webrant
 
 	// Allocate a CBasePlayer for pev, and call spawn
 	pPlayer->Spawn();
@@ -380,6 +397,8 @@ void ClientCommand( edict_t *pEntity )
 
 	entvars_t *pev = &pEntity->v;
 
+//++ BulliT
+/*
 	if( FStrEq( pcmd, "say" ) )
 	{
 		Host_Say( pEntity, 0 );
@@ -431,11 +450,20 @@ void ClientCommand( edict_t *pEntity )
 			}
 		}
 	}
-	else if( FStrEq( pcmd, "drop" ) )
+	else
+*/
+//-- Martin Webrant
+
+	if( FStrEq( pcmd, "drop" ) )
 	{
-		// player is dropping an item. 
-		GetClassPtr( (CBasePlayer *)pev )->DropPlayerItem( (char *)CMD_ARGV( 1 ) );
+//++ BulliT
+		if( ARENA != AgGametype() && ARCADE != AgGametype() &&  INSTAGIB != AgGametype() )
+//-- Martin Webrant
+			// player is dropping an item. 
+			GetClassPtr( (CBasePlayer *)pev )->DropPlayerItem( (char *)CMD_ARGV( 1 ) );
 	}
+//++ BulliT
+/*
 	else if( FStrEq( pcmd, "fov" ) )
 	{
 		if( g_flWeaponCheat && CMD_ARGC() > 1 )
@@ -447,6 +475,8 @@ void ClientCommand( edict_t *pEntity )
 			CLIENT_PRINTF( pEntity, print_console, UTIL_VarArgs( "\"fov\" is \"%d\"\n", (int)GetClassPtr( (CBasePlayer *)pev )->m_iFOV ) );
 		}
 	}
+*/
+//-- Martin Webrant
 	else if( FStrEq( pcmd, "use" ) )
 	{
 		GetClassPtr( (CBasePlayer *)pev )->SelectItem( (char *)CMD_ARGV( 1 ) );
@@ -520,7 +550,11 @@ void ClientUserInfoChanged( edict_t *pEntity, char *infobuffer )
 			if( *pApersand == '%' )
 				*pApersand = ' ';
 		}
-
+//++ BulliT
+#ifdef AG_NO_CLIENT_DLL
+		AgStripColors( sName );
+#endif
+//-- Martin Webrant
 		// Set the name
 		g_engfuncs.pfnSetClientKeyValue( ENTINDEX( pEntity ), infobuffer, "name", sName );
 
@@ -814,6 +848,12 @@ Engine is going to shut down, allows setting a breakpoint in game .dll to catch 
 void Sys_Error( const char *error_string )
 {
 	// Default case, do nothing.  MOD AUTHORS:  Add code ( e.g., _asm { int 3 }; here to cause a breakpoint for debugging your game .dlls
+//++ BulliT
+	AgLog( error_string );
+#ifdef _DEBUG
+	_asm { int 3 };
+#endif
+//-- Martin Webrant
 }
 
 /*
@@ -1162,6 +1202,10 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 		state->gravity		= ent->v.gravity;
 		//state->team		= ent->v.team;
 
+//++ BulliT
+#define PC_CIVILIAN            11              // from client dll
+		state->playerclass  = PC_CIVILIAN;  //Fool client dll to think we are TFC. This is for enabling of commandmenu.txt.
+//-- Martin Webrant
 		state->usehull		= ( ent->v.flags & FL_DUCKING ) ? 1 : 0;
 		state->health		= ent->v.health;
 	}
@@ -1582,6 +1626,11 @@ void UpdateClientData( const struct edict_s *ent, int sendweapons, struct client
 
 	cd->pushmsec		= ent->v.pushmsec;
 
+//++ BulliT
+	//Added for spectators
+	cd->iuser1		= ent->v.iuser1;
+	cd->iuser2		= ent->v.iuser2;
+//-- Martin Webrant
 #if defined( CLIENT_WEAPONS )
 	if( sendweapons )
 	{
@@ -1674,6 +1723,92 @@ void CmdEnd( const edict_t *player )
 	}
 }
 
+//++ BulliT
+//UTIL_SplitTextMessage comes from statsme plugin made by OLO - www.olo.counter-strike.pl
+char* UTIL_SplitTextMessage( const char *pMessage )
+{
+	static char bMessage[256];
+	int current = 0;		//Source position
+	int len = 0;			//Over all length
+	int line_len = 0;		//Line length
+	int new_len = 0;		//Length from last space
+	int last_space = -1;		//Place of last space
+
+	//Go throw text and move to new line if needed
+	while( pMessage[len] && len < 254 )
+	{
+		if( pMessage[len] == ' ' && len < 70 )
+		{
+                       last_space = len;
+                       new_len = 0;
+		}
+		if( pMessage[len] == '\n' )
+		{
+			line_len = 1;
+			last_space = -1;
+		}
+
+		bMessage[len++] = pMessage[current++];
+		line_len++;
+		new_len++;
+
+		if( line_len > 69 )
+		{
+			if( last_space == -1 )
+			{
+				bMessage[len++] = '\n';
+				line_len = 0;
+			}
+			else
+			{
+				bMessage[last_space] = '\n';
+				line_len = new_len;
+			}
+			last_space = -1;
+		}
+	}
+
+	bMessage[len] = 0;
+	return bMessage;
+}
+
+void AgHudMessage( const char* pszText, float fHoldTime = 4, float x = -1, float y = -1, int iChannel = 3 )
+{
+	hudtextparms_t hText = {0};
+	hText.channel = iChannel;
+
+	// These X and Y coordinates are just above
+	// the health meter.
+	hText.x = x;
+	hText.y = y;
+
+	//Colors added by Tom
+	hText.r1 = 027;
+	hText.g1 = 226;
+	hText.b1 = 017;
+	hText.a1 = 0;
+
+	hText.r2 = 255;
+	hText.g2 = 255;
+	hText.b2 = 250;
+	hText.a2 = 0;
+
+	hText.holdTime = 4;
+
+	hText.effect = 2; // Fade in/out
+	hText.fadeinTime = 0.01;
+	hText.fadeoutTime = fHoldTime / 5;
+	hText.fxTime = 0.25;
+
+	for( int i = 1; i <= gpGlobals->maxClients; i++ )
+	{
+		CBaseEntity *pPlayerLoop = UTIL_PlayerByIndex( i );
+		if( pPlayerLoop )
+			UTIL_HudMessage( pPlayerLoop, hText, pszText );
+	}
+}
+//-- Martin Webrant
+
 /*
 ================================
 ConnectionlessPacket
@@ -1691,6 +1826,32 @@ int ConnectionlessPacket( const struct netadr_s *net_from, const char *args, cha
 	// If we wanted to response, we'd write data into response_buffer
 	*response_buffer_size = 0;
 
+//++ BulliT
+	if( g_pGameRules )
+	{
+		if( 0 == strcmp( "agdetails", args ) )
+		{
+			AgGetDetails( response_buffer, max_buffer_size, response_buffer_size );
+			return 1;
+		}
+		else if( 0 == strcmp( "agplr", args ) )
+		{
+			AgGetPlayerInfo( response_buffer, max_buffer_size, response_buffer_size );
+			return 1;
+		}
+		else if( 0 == strncmp( "agsay", args, 5 ) )
+		{
+			if( CVAR_GET_FLOAT( "mm_agsay" ) )
+			{
+				float fHoldTime = 4;
+				const char* pszMessage = UTIL_SplitTextMessage( &args[5] );
+				AgHudMessage( pszMessage, fHoldTime, -1, 0.15 );
+			}
+			*response_buffer_size += sprintf( response_buffer, "OK" );
+			return 1;
+		}
+	}
+//-- Martin Webrant
 	// Since we don't listen for anything here, just respond that it's a bogus message
 	// If we didn't reject the message, we'd return 1 for success instead.
 	return 0;
@@ -1785,5 +1946,15 @@ AllowLagCompensation
 */
 int AllowLagCompensation( void )
 {
+//++ BulliT
+	//Since this is called when server is pause I use this one to handle timeout... ugly aint it? :P
+	if( g_pGameRules )
+	{
+#ifndef AG_NO_CLIENT_DLL
+		g_pGameRules->m_Timeout.Think();
+#endif
+		g_pGameRules->m_Vote.Think();
+	}
+//-- Martin Webrant
 	return 1;
 }

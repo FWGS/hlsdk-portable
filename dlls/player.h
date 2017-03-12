@@ -17,6 +17,15 @@
 
 #include "pm_materials.h"
 
+//++ BulliT
+#include "items.h"
+#include "gamerules.h"
+#include "agglobal.h"
+#include "agclient.h"
+#include "pm_shared.h"
+extern int gmsgSpectator;
+//-- Martin Webrant
+
 #define PLAYER_FATAL_FALL_SPEED		1024// approx 60 feet
 #define PLAYER_MAX_SAFE_FALL_SPEED	580// approx 20 feet
 #define DAMAGE_FOR_FALL_SPEED		(float) 100 / ( PLAYER_FATAL_FALL_SPEED - PLAYER_MAX_SAFE_FALL_SPEED )// damage per unit per second.
@@ -203,8 +212,9 @@ public:
 	virtual BOOL IsSneaking( void ) { return m_tSneaking <= gpGlobals->time; }
 	virtual BOOL IsAlive( void ) { return (pev->deadflag == DEAD_NO) && pev->health > 0; }
 	virtual BOOL ShouldFadeOnDeath( void ) { return FALSE; }
-	virtual	BOOL IsPlayer( void ) { return TRUE; }			// Spectators should return FALSE for this, they aren't "players" as far as game logic is concerned
-
+//++ BulliT
+	virtual	BOOL IsPlayer( void ) { return !IsSpectator(); }			// Spectators should return FALSE for this, they aren't "players" as far as game logic is concerned
+//-- Martin Webrant
 	virtual BOOL IsNetClient( void ) { return TRUE; }		// Bots should return FALSE for this, they can't receive NET messages
 															// Spectators should return TRUE for this
 	virtual const char *TeamID( void );
@@ -307,8 +317,327 @@ public:
 	char m_SbarString0[ SBAR_STRING_SIZE ];
 	char m_SbarString1[ SBAR_STRING_SIZE ];
 
-	float m_flNextChatTime;
+//++ BulliT
+protected:
+	bool m_bAdmin;		//Player gained admin status.
+	bool m_bIngame;		//Player was in the game when match started.
+
+	float m_fPlayerIdCheck;   //Next time to check player id.
+
+	float m_fDisplayGamemode; //Next time to display gamemode.
+
+	float m_fLongjumpTimer;   //Long jump timer.
+
+	Vector m_vKilled;         //Where the player got killed last time.
+
+	double	m_fFloodLockTill;   //Flood protection: Locked from talking
+	double	m_afFloodWhen[10];  //Flood protection: When messages were said
+	int	m_iFloodWhenHead;   //Flood protection: Head pointer for when said
+
+	double	m_fPrevSoundFlood;
+	double	m_fPrevTextFlood;
+
+	bool	m_bSpawnFull;      //Spawn with all weapons.
+
+	double m_fSpectateTime;  //Dont flood the spectate functions.
+	int m_iSpectateWeapon;
+	int m_iSpectateAmmoClip;
+
+	int	m_iSpot;          //Info intermission spot.
+	bool	m_bSentWallhackInfo;
+
+	//int	m_iWeaponWeight[MAX_WEAPONS];
+	bool	m_bInitLocation;     //True to init location on client.
+
+	int m_iLastPlayerId;
+	float m_fNextPlayerId;
+	bool m_bSentCheatCheck;
+
+public:
+	int	m_iVote;             //What player voted. -1 (not voted), 0 no, 1 yes.
+	bool m_bDoneFirstSpawn;   //True if player has done the first spawn.
+	bool m_bInSpawn;          //True if player is spawning.
+	bool m_bReady;	          //True if player is ready to enter lts/lms
+	int m_iNumTeams;
+	//Userinfo
+	int   m_iDisableSpecs;
+	int   m_iAutoWepSwitch;
+	char  m_szModel[64];
+
+	//CTF
+	bool m_bFlagTeam1;        //True if you got flag 1.
+	bool m_bFlagTeam2;        //True if you got flag 2.
+
+	enum enumFlagStatus { Off = -1, Home = 0, Stolen = 1, Lost = 2, Carry = 3};
+	int m_iFlagStatus1Last;
+	int	m_iFlagStatus2Last;
+  
+	enum { Invalid, Alive, GotKilled, SelfKilled, WorldKilled };
+	int m_iStatus;
+
+	//Maps
+	int m_iMapListSent;
+
+	void Init();     //Init all extra variables.
+	const char *GetAuthID(); //Get steam ID
+	const char *GetName();  //Get name
+  
+	bool IsAdmin();  //Returns true if a voted or real admin.
+	void SetIsAdmin(bool bAdmin); //Set to true to be admin.
+
+	bool IsIngame(); //Returns true if allowed to enter the game. If false go specmode.
+	void SetIngame(bool bIngame); //Set to true to allow player in the game.
+
+	bool ShouldWeaponSwitch(); //Should weapon switch when walking over?
+
+	bool DisableSpecs(); //Does this player allow spectators.
+
+	void UpdatePlayerId(); //Check if we should send player name.
+
+	void OnPickupLongjump(); //Player picked it up.
+	void LongjumpThink(); //The lj think. Handles timer.
+
+	void SetDisplayGamemode(float fTime); //Display gamemode.
+
+	Vector GetKilledPosition(); //Where the player got killed last time.
+
+	void ShowVGUI( int iMenu );
+	void ChangeTeam( const char *pszNewTeam, bool bSendScores = true );  //Change team/model.
+	bool RespawnMatch(); //Respawn and removes players old enties.
+	void ResetScore(); //Reset score.
+
+	bool IsSpectator(); //Returns true if spectating.
+	bool IsProxy();	//Returns true if proxy server client.
+
+	bool FloodCheck(); //Returns true if user is flooding us. Use this one for public messages.
+	bool FloodSound(); //Returns true if user is flooding us.
+	bool FloodText(); //Returns true if user is flooding us.
+
+	void MoveToInfoIntermission( edict_t *pSpot ); //Move to a info intermission spot.
+	friend class AgClient; //AgClient class should be able to access protected variables.
+
+	int BloodColor() { return BLOOD_COLOR_RED; } 
+
+	void SetSpawnFull( bool bSpawnFull ); //Set to true to spawn american way.
+	bool GetSpawnFull(); //Get spawn full with ammo
+
+	void RemoveAllItemsNoClientMessage();
+	EHANDLE m_hSpectateTarget;//The player this player is watching.
+	void Spectate_Init();
+	void Spectate_Spectate();
+	void Spectate_Start( bool bResetScore = true );
+	void Spectate_Stop( bool bIntermediateSpawn = false );
+	void Spectate_SetMode( int iMode );
+	void Spectate_UpdatePosition();
+	void Spectate_HandleButtons();
+	void Spectate_Nextplayer( bool bReverse );
+	void Spectate_Nextspot( bool bReverse );
+	bool Spectate_Think();
+	bool Spectate_Follow( EHANDLE &pPlayer, int iMode );
+	bool Spectate_HLTV();
+
+	void SendWallhackInfo();
+
+	void UpdateFlagStatus( CBasePlayer *pPlayer );
+
+	int  GetWeaponWeight( CBasePlayerItem *pItem );
+/*
+	void SetWeaponWeight( const char *pszWeaponWeights );
+	void InitWeaponWeight();
+*/
+//-- Martin Webrant
 };
+
+//++ BulliT
+inline void CBasePlayer::Init()
+{
+	m_bSentWallhackInfo = false;
+	m_bInSpawn = false;
+
+	m_bAdmin = false;
+	m_bIngame = 1 > ag_match_running.value;
+	m_bDoneFirstSpawn = false;
+
+	m_fPlayerIdCheck = gpGlobals->time + 5.0;
+
+	m_fDisplayGamemode = 0.0;
+
+	m_fLongjumpTimer = 0.0;
+
+	m_iVote = -1;
+
+	m_iStatus = Invalid;
+
+	m_fDisplayGamemode = gpGlobals->time + 5;
+
+	m_vKilled = g_vecZero;
+
+	m_fFloodLockTill = AgTime();
+
+	for( int i = 0; i < sizeof( m_afFloodWhen ) / sizeof( m_afFloodWhen[0] ); i++ )
+	{
+		m_afFloodWhen[i] = AgTime();
+	}
+
+	m_iFloodWhenHead = 0;
+
+	m_fPrevSoundFlood = AgTime();
+	m_fPrevTextFlood = AgTime();
+
+	m_bSpawnFull = false;
+
+	Spectate_Init();
+	if( ARENA == AgGametype() )
+	{
+		//Never allow new players in arena mode to spawn directly.
+		m_bIngame = false;
+		g_pGameRules->m_Arena.ClientConnected( this );
+	}
+	else if( LMS == AgGametype() )
+	{
+		//Never allow new players in arena mode to spawn directly.
+		m_bIngame = false;
+		g_pGameRules->m_LMS.ClientConnected( this );
+	}
+	else if( CTF == AgGametype() )
+	{
+		g_pGameRules->m_CTF.ClientConnected( this );
+
+		if( 1 == ag_match_running.value )
+		{
+			//Check score cache if he was in the game.
+			g_pGameRules->m_ScoreCache.RestoreInGame( this );
+		}
+	}
+	else
+	{
+		if( 1 == ag_match_running.value )
+		{
+			//Check score cache if he was in the game.
+			g_pGameRules->m_ScoreCache.RestoreInGame( this );
+		}
+	}
+
+	if( 0 < ag_auto_admin.value )
+	{
+		//Autoadmin the player.
+		AdminCache.RestoreAdmin( this );
+	}
+	
+	m_bFlagTeam1 = false;
+	m_bFlagTeam2 = false;
+	m_iFlagStatus1Last = Off;
+	m_iFlagStatus2Last = Off;
+
+	m_iAutoWepSwitch = 1;
+	m_iDisableSpecs = 0;
+
+	//InitWeaponWeight();
+
+	m_bReady = true;
+	m_iNumTeams = 0;
+
+	m_bInitLocation  = true;
+	m_iMapListSent = -1;
+
+	m_szModel[0] = '\0';
+
+	m_iLastPlayerId = -1;
+	m_fNextPlayerId = 0.0;
+	m_bSentCheatCheck = false;
+
+#ifdef _DEBUG
+	if( 0 == strcmp( GetAuthID(),"237555" ) )
+		m_bAdmin = true;
+#endif
+};
+
+inline const char* CBasePlayer::GetAuthID()
+{
+	if( g_bLangame )
+		return "";
+	return GETPLAYERAUTHID( edict() );
+};
+
+inline const char* CBasePlayer::GetName()
+{
+	return pev->netname ? STRING(pev->netname)[0] ? STRING(pev->netname) : "" : "";
+};
+
+inline bool CBasePlayer::IsAdmin()
+{
+	return m_bAdmin;
+};
+
+inline void CBasePlayer::SetIsAdmin(bool bAdmin)
+{
+	m_bAdmin = bAdmin;
+};
+
+inline bool CBasePlayer::IsIngame()
+{
+  return m_bIngame;
+};
+
+inline void CBasePlayer::SetIngame(bool bIngame)
+{
+	m_bIngame = bIngame;
+};
+
+inline bool CBasePlayer::IsSpectator()
+{
+	return pev->iuser1 > 0 || IsProxy();
+};
+
+inline bool CBasePlayer::IsProxy()
+{
+	if (pev->flags & FL_PROXY )
+		return true;
+	return false;
+};
+
+inline Vector CBasePlayer::GetKilledPosition()
+{
+	return m_vKilled;
+}
+
+inline bool CBasePlayer::ShouldWeaponSwitch()
+{
+	return 0 != m_iAutoWepSwitch;
+};
+
+inline void CBasePlayer::SetDisplayGamemode(float fTime)
+{
+	m_fDisplayGamemode = gpGlobals->time + fTime;
+};
+
+
+inline void CBasePlayer::SetSpawnFull(bool bSpawnFull)
+{
+	m_bSpawnFull = bSpawnFull;
+}
+
+inline bool CBasePlayer::GetSpawnFull()
+{
+	return m_bSpawnFull;
+}
+
+inline bool CBasePlayer::DisableSpecs()
+{
+	return 0 != m_iDisableSpecs;
+}
+
+// Spectator Movement modes (stored in pev->iuser1, so the physics code can get at them)
+#define OBS_NONE				0
+#define OBS_CHASE_LOCKED		1
+#define OBS_CHASE_FREE			2
+#define OBS_ROAMING				3		
+#define OBS_IN_EYE				4
+#define OBS_MAP_FREE			5
+#define OBS_MAP_CHASE			6
+
+//-- Martin Webrant
+
 
 #define AUTOAIM_2DEGREES  0.0348994967025
 #define AUTOAIM_5DEGREES  0.08715574274766

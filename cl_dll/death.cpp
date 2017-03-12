@@ -50,6 +50,10 @@ float g_ColorGreen[3]	= { 0.6, 1.0, 0.6 };
 float g_ColorYellow[3]	= { 1.0, 0.7, 0.0 };
 float g_ColorGrey[3]	= { 0.8, 0.8, 0.8 };
 
+//++ BulliT
+float g_ColorConsole[3] = { 1.0, 0.7, 0.0 };
+//-- Martin Webrant
+
 float *GetClientColor( int clientIndex )
 {
 	switch( g_PlayerExtraInfo[clientIndex].teamnumber )
@@ -58,7 +62,10 @@ float *GetClientColor( int clientIndex )
 	case 2: return g_ColorRed;
 	case 3: return g_ColorYellow;
 	case 4: return g_ColorGreen;
-	case 0: return g_ColorYellow;
+	//case 0: return g_ColorYellow;
+//++ BulliT
+	case 0: return g_ColorConsole;
+//-- Martin Webrant
 	default: return g_ColorGrey;
 	}
 
@@ -124,8 +131,12 @@ int CHudDeathNotice::Draw( float flTime )
 
 				// Draw killers name
 				if( rgDeathNoticeList[i].KillerColor )
-					DrawSetTextColor( rgDeathNoticeList[i].KillerColor[0], rgDeathNoticeList[i].KillerColor[1], rgDeathNoticeList[i].KillerColor[2] );
-				x = 5 + DrawConsoleString( x, y, rgDeathNoticeList[i].szKiller );
+//++ BulliT
+					//gEngfuncs.pfnDrawSetTextColor( rgDeathNoticeList[i].KillerColor[0], rgDeathNoticeList[i].KillerColor[1], rgDeathNoticeList[i].KillerColor[2] );
+					x = 5 + DrawConsoleString( x, y, rgDeathNoticeList[i].szKiller, rgDeathNoticeList[i].KillerColor[0], rgDeathNoticeList[i].KillerColor[1], rgDeathNoticeList[i].KillerColor[2]  );
+				else
+//-- Martin Webrant
+					x = 5 + DrawConsoleString( x, y, rgDeathNoticeList[i].szKiller );
 			}
 
 			r = 255; g = 80; b = 0;
@@ -144,8 +155,12 @@ int CHudDeathNotice::Draw( float flTime )
 			if( rgDeathNoticeList[i].iNonPlayerKill == FALSE )
 			{
 				if( rgDeathNoticeList[i].VictimColor )
-					DrawSetTextColor( rgDeathNoticeList[i].VictimColor[0], rgDeathNoticeList[i].VictimColor[1], rgDeathNoticeList[i].VictimColor[2] );
-				x = DrawConsoleString( x, y, rgDeathNoticeList[i].szVictim );
+//++ BulliT
+					//gEngfuncs.pfnDrawSetTextColor( rgDeathNoticeList[i].VictimColor[0], rgDeathNoticeList[i].VictimColor[1], rgDeathNoticeList[i].VictimColor[2] );
+					x = DrawConsoleString( x, y, rgDeathNoticeList[i].szVictim, rgDeathNoticeList[i].VictimColor[0], rgDeathNoticeList[i].VictimColor[1], rgDeathNoticeList[i].VictimColor[2] );
+				else
+//-- Martin Webrant
+					x = DrawConsoleString( x, y, rgDeathNoticeList[i].szVictim );
 			}
 		}
 	}

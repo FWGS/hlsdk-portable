@@ -113,6 +113,16 @@ int CSqueakGrenade::Classify( void )
 
 void CSqueakGrenade::Spawn( void )
 {
+//++ BulliT
+#ifndef CLIENT_DLL
+	if( SGBOW == AgGametype() )
+	{
+		//Spawn crossbow instead.
+		CBaseEntity *pNewWeapon = CBaseEntity::Create( "weapon_crossbow", g_pGameRules->VecWeaponRespawnSpot( this ), pev->angles, pev->owner );
+		return;
+	}
+#endif
+//-- Martin Webrant
 	Precache();
 
 	// motor

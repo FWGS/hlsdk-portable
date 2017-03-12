@@ -23,6 +23,9 @@ extern "C"
 #include "usercmd.h"
 #include "const.h"
 #include "camera.h"
+//++ BulliT
+#include "AgVariableChecker.h"
+//-- Martin Webrant
 #include "in_defs.h"
 //#include "view.h"
 #include <string.h>
@@ -549,7 +552,9 @@ extern void __CmdFunc_InputPlayerSpecial( void );
 void IN_Attack2Down( void )
 {
 	KeyDown( &in_attack2 );
-
+//++ BulliT
+	//Removed unused function that sends extra command to server. __CmdFunc_InputPlayerSpecial();
+//-- Martin Webrant
 	gHUD.m_Spectator.HandleButtonsDown( IN_ATTACK2 );
 }
 
@@ -736,28 +741,49 @@ void CL_AdjustAngles( float frametime, float *viewangles )
 
 	if( !( in_strafe.state & 1 ) )
 	{
-		viewangles[YAW] -= speed * cl_yawspeed->value * CL_KeyState( &in_right );
-		viewangles[YAW] += speed * cl_yawspeed->value * CL_KeyState( &in_left );
+//++ BulliT
+		viewangles[YAW] -= speed * ag_cl_yawspeed() * CL_KeyState( &in_right );
+		viewangles[YAW] += speed * ag_cl_yawspeed() * CL_KeyState( &in_left );
+		//viewangles[YAW] -= speed * cl_yawspeed->value * CL_KeyState( &in_right );
+		//viewangles[YAW] += speed * cl_yawspeed->value * CL_KeyState( &in_left );
+//-- Martin Webrant
 		viewangles[YAW] = anglemod( viewangles[YAW] );
 	}
 
 	if( in_klook.state & 1 )
 	{
+//++ BulliT
+		viewangles[PITCH] -= speed * ag_cl_pitchspeed() * CL_KeyState( &in_forward );
+		viewangles[PITCH] += speed * ag_cl_pitchspeed() * CL_KeyState( &in_back );
+/*
 		viewangles[PITCH] -= speed * cl_pitchspeed->value * CL_KeyState( &in_forward );
 		viewangles[PITCH] += speed * cl_pitchspeed->value * CL_KeyState( &in_back );
+*/
+//-- Martin Webrant
 	}
 
 	up = CL_KeyState( &in_lookup );
 	down = CL_KeyState( &in_lookdown );
 
-	viewangles[PITCH] -= speed * cl_pitchspeed->value * up;
-	viewangles[PITCH] += speed * cl_pitchspeed->value * down;
+//++ BulliT
+	viewangles[PITCH] -= speed * ag_cl_pitchspeed() * up;
+	viewangles[PITCH] += speed * ag_cl_pitchspeed() * down;
+	//viewangles[PITCH] -= speed * cl_pitchspeed->value * up;
+	//viewangles[PITCH] += speed * cl_pitchspeed->value * down;
+//-- Martin Webran
 
+//++ BulliT
+	if( viewangles[PITCH] > ag_cl_pitchdown() )
+		viewangles[PITCH] = ag_cl_pitchdown();
+	if( viewangles[PITCH] < -ag_cl_pitchup() )
+		viewangles[PITCH] = -ag_cl_pitchup();
+/*
 	if( viewangles[PITCH] > cl_pitchdown->value )
 		viewangles[PITCH] = cl_pitchdown->value;
 	if( viewangles[PITCH] < -cl_pitchup->value )
 		viewangles[PITCH] = -cl_pitchup->value;
-
+*/
+//-- Martin Webrant
 	if( viewangles[ROLL] > 50 )
 		viewangles[ROLL] = 50;
 	if( viewangles[ROLL] < -50 )

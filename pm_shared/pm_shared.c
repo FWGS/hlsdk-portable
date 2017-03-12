@@ -2455,8 +2455,9 @@ PM_Jump
 void PM_Jump( void )
 {
 	int i;
-	qboolean tfc = false;
-
+//++ BulliT
+	//qboolean tfc = false;
+//-- BulliT
 	qboolean cansuperjump = false;
 
 	if( pmove->dead )
@@ -2464,15 +2465,15 @@ void PM_Jump( void )
 		pmove->oldbuttons |= IN_JUMP;	// don't jump again until released
 		return;
 	}
-
-	tfc = atoi( pmove->PM_Info_ValueForKey( pmove->physinfo, "tfc" ) ) == 1 ? true : false;
+//++ BulliT
+	//tfc = atoi( pmove->PM_Info_ValueForKey( pmove->physinfo, "tfc" ) ) == 1 ? true : false;
 
 	// Spy that's feigning death cannot jump
-	if( tfc && ( pmove->deadflag == ( DEAD_DISCARDBODY + 1 ) ) )
+	/*if( tfc && ( pmove->deadflag == ( DEAD_DISCARDBODY + 1 ) ) )
 	{
 		return;
-	}
-
+	}*/
+//-- BulliT
 	// See if we are waterjumping.  If so, decrement count and return.
 	if( pmove->waterjumptime )
 	{
@@ -2538,13 +2539,17 @@ void PM_Jump( void )
 	// In the air now.
 	pmove->onground = -1;
 
-	PM_PreventMegaBunnyJumping();
+//++ BulliT
+	bBunnyJump = atoi( pmove->PM_Info_ValueForKey( pmove->physinfo, "bj" ) ) == 1 ? true : false;
+	if( !bBunnyJump )
+		PM_PreventMegaBunnyJumping();
 
-	if( tfc )
+	/*if( tfc )
 	{
 		pmove->PM_PlaySound( CHAN_BODY, "player/plyrjmp8.wav", 0.5, ATTN_NORM, 0, PITCH_NORM );
 	}
-	else
+	else*/
+//-- BulliT
 	{
 		PM_PlayStepSound( PM_MapTextureTypeStepType( pmove->chtexturetype ), 1.0 );
 	}
@@ -2683,14 +2688,15 @@ void PM_CheckFalling( void )
 		}
 		else if( pmove->flFallVelocity > PLAYER_MAX_SAFE_FALL_SPEED / 2 )
 		{
-			qboolean tfc = false;
+//++ BulliT
+			/*qboolean tfc = false;
 			tfc = atoi( pmove->PM_Info_ValueForKey( pmove->physinfo, "tfc" ) ) == 1 ? true : false;
 
 			if( tfc )
 			{
 				pmove->PM_PlaySound( CHAN_VOICE, "player/pl_fallpain3.wav", 1, ATTN_NORM, 0, PITCH_NORM );
-			}
-
+			}*/
+//-- BulliT
 			fvol = 0.85;
 		}
 		else if( pmove->flFallVelocity < PLAYER_MIN_BOUNCE_SPEED )

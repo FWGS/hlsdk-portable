@@ -16,6 +16,11 @@
 // teamplay_gamerules.h
 //
 
+//++ BulliT
+#if !defined(_TEAMPLAY_H_)
+#include "multi_gamerules.h"
+#define _TEAMPLAY_H_
+//-- Martin Webrant
 #define MAX_TEAMNAME_LENGTH		16
 #define MAX_TEAMS			32
 
@@ -36,7 +41,9 @@ public:
 	virtual int IPointsForKill( CBasePlayer *pAttacker, CBasePlayer *pKilled );
 	virtual void InitHUD( CBasePlayer *pl );
 	virtual void DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, entvars_t *pevInflictor );
-	virtual const char *GetGameDescription( void ) { return "HL Teamplay"; }  // this is the game name that gets seen in the server browser
+//++ BulliT
+	//virtual const char *GetGameDescription( void ) { return "HL Teamplay"; }  // this is the game name that gets seen in the server browser
+//-- Martin Webrant
 	virtual void UpdateGameMode( CBasePlayer *pPlayer );  // the client needs to be informed of the current game mode
 	virtual void PlayerKilled( CBasePlayer *pVictim, entvars_t *pKiller, entvars_t *pInflictor );
 	virtual void Think( void );
@@ -46,10 +53,10 @@ public:
 	const char *SetDefaultPlayerTeam( CBasePlayer *pPlayer );
 	virtual void ChangePlayerTeam( CBasePlayer *pPlayer, const char *pTeamName, BOOL bKill, BOOL bGib );
 
-private:
-	void RecountTeams( bool bResendInfo = FALSE );
+	void RecountTeams( void );
 	const char *TeamWithFewestPlayers( void );
 
+private:
 	BOOL m_DisableDeathMessages;
 	BOOL m_DisableDeathPenalty;
 	BOOL m_teamLimit;				// This means the server set only some teams as valid

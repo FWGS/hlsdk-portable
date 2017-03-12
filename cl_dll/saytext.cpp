@@ -25,6 +25,10 @@
 #include <string.h>
 #include <stdio.h>
 
+//++ BulliT
+extern cvar_t *g_pcl_playtalk;
+//-- Martin Webrant
+
 extern float *GetClientColor( int clientIndex );
 
 #define MAX_LINES	5
@@ -128,9 +132,11 @@ int CHudSayText::Draw( float flTime )
 				// draw the first x characters in the player color
 				strncpy( buf, g_szLineBuffer[i], min(g_iNameLengths[i], MAX_PLAYER_NAME_LENGTH + 32 ) );
 				buf[min( g_iNameLengths[i], MAX_PLAYER_NAME_LENGTH + 31 )] = 0;
-				DrawSetTextColor( g_pflNameColors[i][0], g_pflNameColors[i][1], g_pflNameColors[i][2] );
-				int x = DrawConsoleString( LINE_START, y, buf );
-
+//++ BulliT
+				int x = DrawConsoleString( LINE_START, y, buf, g_pflNameColors[i][0], g_pflNameColors[i][1], g_pflNameColors[i][2] );
+				//DrawSetTextColor( g_pflNameColors[i][0], g_pflNameColors[i][1], g_pflNameColors[i][2] );
+				//int x = DrawConsoleString( LINE_START, y, buf );
+//-- Martin Webrant
 				// color is reset after each string draw
 				DrawConsoleString( x, y, g_szLineBuffer[i] + g_iNameLengths[i] );
 			}
@@ -162,6 +168,16 @@ void CHudSayText::SayTextPrint( const char *pszBuf, int iBufSize, int clientInde
 	int i;
 	ConsolePrint( pszBuf );
 
+//++ BulliT
+	if( CVAR_GET_FLOAT( "cl_only_team_talk" ) == 1 )
+	{
+		if( 0 != strncmp( pszBuf + 1,"(T)", 3 ) && 0 != strncmp( pszBuf + 1, "(C)", 3 ) )
+		{
+			ConsolePrint( pszBuf );
+			return;
+		}
+	}
+//-- Martin Webrant
 	// find an empty string slot
 	for( i = 0; i < MAX_LINES; i++ )
 	{
@@ -198,6 +214,9 @@ void CHudSayText::SayTextPrint( const char *pszBuf, int iBufSize, int clientInde
 
 	strncpy( g_szLineBuffer[i], pszBuf, max( iBufSize - 1, MAX_CHARS_PER_LINE - 1 ) );
 
+//++ BulliT
+	gHUD.m_Location.ParseAndEditSayString( g_szLineBuffer[i],clientIndex );
+//-- Martin Webrant
 	// make sure the text fits in one line
 	EnsureTextFitsInOneLineAndWrapIfHaveTo( i );
 
@@ -208,8 +227,10 @@ void CHudSayText::SayTextPrint( const char *pszBuf, int iBufSize, int clientInde
 	}
 
 	m_iFlags |= HUD_ACTIVE;
-	PlaySound( "misc/talk.wav", 1 );
-
+//++ BulliT
+	if( 0 < g_pcl_playtalk->value )
+		PlaySound( "misc/talk.wav", 1 );
+//-- Martin Webrant
 	if( ScreenHeight >= 480 )
 		Y_START = ScreenHeight - 60;
 	else

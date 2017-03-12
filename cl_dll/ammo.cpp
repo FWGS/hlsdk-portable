@@ -28,6 +28,10 @@
 
 #include "ammohistory.h"
 
+//++ BulliT
+extern cvar_t* g_phud_weapon;
+//-- Martin Webrant
+
 WEAPON *gpActiveSel;	// NULL means off, 1 means just the menu bar, otherwise
 						// this points to the active weapon menu item
 WEAPON *gpLastSel;		// Last weapon menu selection 
@@ -52,6 +56,11 @@ int WeaponsResource::CountAmmo( int iId )
 	if( iId < 0 )
 		return 0;
 
+//++ BulliT
+	//Fixes some crashes.
+	if( iId > MAX_AMMO_TYPES )
+		return 0;
+//-- Martin Webrant
 	return riAmmo[iId];
 }
 
@@ -910,6 +919,27 @@ int CHudAmmo::Draw( float flTime )
 		SPR_Set( m_pWeapon->hAmmo, r, g, b );
 		SPR_DrawAdditive( 0, x, y - iOffset, &m_pWeapon->rcAmmo );
 	}
+
+//++ BulliT
+	//Draw the weaponsprite in spectator mode.
+	if( g_iUser1 == OBS_IN_EYE || 0 != g_phud_weapon->value )
+	{
+		if( gWR.HasAmmo( m_pWeapon ) )
+		{
+			ScaleColors( r, g, b, 192 );
+		}
+		else
+		{
+			UnpackRGB( r,g,b, RGB_REDISH );
+			ScaleColors( r, g, b, 128 );
+		}
+
+		SPR_Set( m_pWeapon->hInactive, r, g, b );
+		x = (ScreenWidth / 1.73); //- ( ( m_pWeapon->rcInactive.right - m_pWeapon->rcInactive.left ) / 2 );
+		int iOffset = ( m_pWeapon->rcInactive.bottom - m_pWeapon->rcInactive.top ) / 8;
+		SPR_DrawAdditive( 0, x, y - iOffset , &m_pWeapon->rcInactive );
+	}
+//-- Martin Webrant
 
 	// Does weapon have seconday ammo?
 	if( pw->iAmmo2Type > 0 )

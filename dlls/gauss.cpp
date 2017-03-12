@@ -25,6 +25,11 @@
 #include "shake.h"
 #include "gamerules.h"
 
+//++ BulliT
+#ifdef AGSTATS
+#include "agstats.h"
+#endif
+//-- Martin Webrant
 #define	GAUSS_PRIMARY_CHARGE_VOLUME	256// how loud gauss is while charging
 #define GAUSS_PRIMARY_FIRE_VOLUME	450// how loud gauss is when discharged
 
@@ -141,6 +146,35 @@ void CGauss::Holster( int skiplocal /* = 0 */ )
 
 void CGauss::PrimaryAttack()
 {
+//++ BulliT
+	if( SGBOW == AgGametype() )
+	{
+		PlayEmptySound();
+		m_flNextSecondaryAttack = m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.15;
+		return;
+	}
+	else if( INSTAGIB == AgGametype() )
+	{
+		if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] < 10 )
+		{
+			PlayEmptySound();
+			m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 1;
+			return;
+		}
+
+		m_pPlayer->m_iWeaponVolume = GAUSS_PRIMARY_FIRE_VOLUME;
+
+		m_fPrimaryFire = TRUE;
+
+		m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] -= 10;
+
+		StartFire();
+		m_fInAttack = 0;
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 2.0;
+		m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 1;
+		return;
+	}
+//-- Martin Webrant
 	// don't fire underwater
 	if( m_pPlayer->pev->waterlevel == 3 )
 	{
@@ -392,6 +426,16 @@ void CGauss::Fire( Vector vecOrigSrc, Vector vecDir, float flDamage )
 	//ALERT( at_console, "%f %f\n", tr.flFraction, flMaxFrac );
 
 #ifndef CLIENT_DLL
+//++ BulliT
+	if( INSTAGIB == AgGametype() )
+		nMaxHits = 1;
+	if( SGBOW == AgGametype() )
+		return;
+
+#ifdef AGSTATS
+	Stats.FireShot( m_pPlayer, STRING( pev->classname ) );
+#endif
+//-- Martin Webrant
 	while( flDamage > 10 && nMaxHits > 0 )
 	{
 		nMaxHits--;
@@ -418,11 +462,25 @@ void CGauss::Fire( Vector vecOrigSrc, Vector vecDir, float flDamage )
 		if( pEntity->pev->takedamage )
 		{
 			ClearMultiDamage();
-			pEntity->TraceAttack( m_pPlayer->pev, flDamage, vecDir, &tr, DMG_BULLET );
+//++ BulliT
+			//pEntity->TraceAttack( m_pPlayer->pev, flDamage, vecDir, &tr, DMG_ENERGYBEAM );
+			if( pEntity == m_pPlayer && 0 < ag_gauss_fix.value )
+			{
+				//Skip reflective gauss on the player that holds the gun. Americans that wanna fiddle around :P
+			}
+			else
+			{
+				pEntity->TraceAttack( m_pPlayer->pev, flDamage, vecDir, &tr, DMG_ENERGYBEAM );
+				//pEntity->TraceAttack( m_pPlayer->pev, flDamage, vecDir, &tr, DMG_BULLET );
+			}
+//-- Martin Webrant
 			ApplyMultiDamage( m_pPlayer->pev, m_pPlayer->pev );
 		}
 
-		if( pEntity->ReflectGauss() )
+//++ BulliT
+		if( pEntity->ReflectGauss() && INSTAGIB != AgGametype() )
+		//if( pEntity->ReflectGauss() )
+//-- Martin Webrant
 		{
 			float n;
 
@@ -461,7 +519,10 @@ void CGauss::Fire( Vector vecOrigSrc, Vector vecDir, float flDamage )
 				fHasPunched = 1;
 
 				// try punching through wall if secondary attack (primary is incapable of breaking through)
-				if( !m_fPrimaryFire )
+//++ BulliT
+				if( !m_fPrimaryFire && 0 < ag_wallgauss.value )
+				//if( !m_fPrimaryFire )
+//-- Martin Webrant
 				{
 					UTIL_TraceLine( tr.vecEndPos + vecDir * 8, vecDest, dont_ignore_monsters, pentIgnore, &beam_tr );
 					if( !beam_tr.fAllSolid )
@@ -486,7 +547,10 @@ void CGauss::Fire( Vector vecOrigSrc, Vector vecDir, float flDamage )
 
 							if( g_pGameRules->IsMultiplayer() )
 							{
-								damage_radius = flDamage * 1.75;  // Old code == 2.5
+//++ BulliT
+								//damage_radius = flDamage * 1.75;  // Old code == 2.5
+								damage_radius = flDamage * 1.75 * ag_wallgauss.value; // Old code == 2.5
+//-- Martin Webrant
 							}
 							else
 							{

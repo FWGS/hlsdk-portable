@@ -22,6 +22,12 @@
 #include "player.h"
 #include "gamerules.h"
 
+//++ BulliT
+#ifdef AGSTATS
+#include "agstats.h"
+#endif
+//-- Martin Webrant
+
 // special deathmatch shotgun spreads
 #define VECTOR_CONE_DM_SHOTGUN	Vector( 0.08716, 0.04362, 0.00 )// 10 degrees by 5 degrees
 #define VECTOR_CONE_DM_DOUBLESHOTGUN Vector( 0.17365, 0.04362, 0.00 ) // 20 degrees by 5 degrees
@@ -136,6 +142,9 @@ void CShotgun::PrimaryAttack()
 
 	m_iClip--;
 
+#ifdef AGSTATS
+	Stats.FireShot( m_pPlayer, STRING( pev->classname ) );
+#endif
 	int flags;
 #if defined( CLIENT_WEAPONS )
 	flags = FEV_NOTHOST;
@@ -202,7 +211,10 @@ void CShotgun::SecondaryAttack( void )
 	m_pPlayer->m_iWeaponFlash = NORMAL_GUN_FLASH;
 
 	m_iClip -= 2;
-
+#ifdef AGSTATS
+	Stats.FireShot( m_pPlayer, STRING( pev->classname ) );
+	Stats.FireShot( m_pPlayer, STRING( pev->classname ) );
+#endif
 	int flags;
 #if defined( CLIENT_WEAPONS )
 	flags = FEV_NOTHOST;

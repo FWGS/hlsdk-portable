@@ -133,8 +133,8 @@ int CHudSpectator::Init()
 	m_drawnames = gEngfuncs.pfnRegisterVariable( "spec_drawnames", "1", 0 );
 	m_drawcone = gEngfuncs.pfnRegisterVariable( "spec_drawcone", "1", 0 );
 	m_drawstatus = gEngfuncs.pfnRegisterVariable( "spec_drawstatus", "1", 0 );
-	m_autoDirector = gEngfuncs.pfnRegisterVariable( "spec_autodirector", "1", 0 );
-	m_pip = gEngfuncs.pfnRegisterVariable( "spec_pip", "1", 0 );
+	m_autoDirector = gEngfuncs.pfnRegisterVariable( "spec_autodirector", "0", 0 );
+	m_pip = gEngfuncs.pfnRegisterVariable( "spec_pip", "0", 0 );
 	
 	if( !m_drawnames || !m_drawcone || !m_drawstatus || !m_autoDirector || !m_pip )
 	{
@@ -315,6 +315,16 @@ void CHudSpectator::SetSpectatorStartPosition()
 
 	else if( UTIL_FindEntityInMap( "info_player_coop",  m_cameraOrigin, m_cameraAngles ) )
 		iJumpSpectator = 1;
+//++ BulliT
+	else if( UTIL_FindEntityInMap( "info_player_team1", m_cameraOrigin, m_cameraAngles ) )
+		iJumpSpectator = 1;
+	else if( UTIL_FindEntityInMap( "info_player_team2", m_cameraOrigin, m_cameraAngles ) )
+		iJumpSpectator = 1;
+	else if( UTIL_FindEntityInMap( "ctf_redspawn", m_cameraOrigin, m_cameraAngles ) )
+		iJumpSpectator = 1;
+	else if( UTIL_FindEntityInMap( "ctf_bluespawn", m_cameraOrigin, m_cameraAngles ) )
+		iJumpSpectator = 1;
+//-- Martin Webrant
 	else
 	{
 		// jump to 0,0,0 if no better position was found
@@ -417,9 +427,11 @@ int CHudSpectator::Draw( float flTime )
 		sprintf( string, "%s", g_PlayerInfoList[i + 1].name );
 
 		lx = strlen( string ) * 3; // 3 is avg. character length :)
-
-		DrawSetTextColor( color[0], color[1], color[2] );
-		DrawConsoleString( m_vPlayerPos[i][0] - lx,m_vPlayerPos[i][1], string );		
+//++ BulliT
+		//gEngfuncs.pfnDrawSetTextColor( color[0], color[1], color[2] );
+		//DrawConsoleString( m_vPlayerPos[i][0] - lx, m_vPlayerPos[i][1], string );
+		DrawConsoleString( m_vPlayerPos[i][0] - lx, m_vPlayerPos[i][1], string, color[0], color[1], color[2] );
+//-- Martin Webrant
 	}
 
 	return 1;
@@ -736,6 +748,11 @@ void CHudSpectator::SetModes( int iNewMainMode, int iNewInsetMode )
 		// if we are NOT in HLTV mode, main spectator mode is set on server
 		if( !gEngfuncs.IsSpectateOnly() )
 		{
+			char cmdstring[32];
+
+			// forward command to server
+			sprintf( cmdstring, "spec_mode %i", iNewMainMode );
+			gEngfuncs.pfnServerCmd( cmdstring );
 			return;
 		}
 
@@ -1430,12 +1447,14 @@ void CHudSpectator::CheckSettings()
 	// HL/TFC has no oberserver corsshair, so set it client side
 	if( ( g_iUser1 == OBS_IN_EYE ) || ( g_iUser1 == OBS_ROAMING ) ) 
 	{
+/*
 		m_crosshairRect.left = 24;
 		m_crosshairRect.top = 0;
 		m_crosshairRect.right = 48;
 		m_crosshairRect.bottom = 24;
 					
 		SetCrosshair( m_hCrosshair, m_crosshairRect, 255, 255, 255 );
+*/
 	}
 	else
 	{

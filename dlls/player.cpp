@@ -183,6 +183,40 @@ int gmsgTeamNames = 0;
 
 int gmsgStatusText = 0;
 int gmsgStatusValue = 0;
+//++ BulliT
+int gmsgAllowSpec = 0;
+int gmsgSpectator = 0;
+int gmsgVGUIMenu = 0;
+int gmsgCheatCheck = 0;
+int gmsgSplash = 0;
+int gmsgCountdown = 0;
+int gmsgTimer = 0;
+int gmsgPlayerId = 0;
+int gmsgSettings = 0;
+int gmsgSuddenDeath = 0;
+int gmsgLongjump = 0;
+int gmsgTimeout = 0;
+int gmsgPlaySound = 0;
+int gmsgVote = 0;
+int gmsgNextmap = 0;
+int gmsgInitLoc = 0;
+int gmsgLocation = 0;
+int gmsgWallhack = 0;
+int gmsgSpikeCheck = 0;
+int gmsgGametype = 0;
+int gmsgStatusIcon = 0;
+int gmsgCTF = 0;
+int gmsgAuthID = 0;
+int gmsgCTFSound = 0;
+int gmsgMapList = 0;
+int gmsgCTFFlag = 0;
+int gmsgCRC32 = 0;
+
+extern int g_teamplay;
+#ifdef AGSTATS
+#include "agstats.h"
+#endif
+//-- Martin Webrant
 
 void LinkUserMessages( void )
 {
@@ -209,7 +243,9 @@ void LinkUserMessages( void )
 	gmsgInitHUD = REG_USER_MSG( "InitHUD", 0 );		// called every time a new player joins the server
 	gmsgShowGameTitle = REG_USER_MSG( "GameTitle", 1 );
 	gmsgDeathMsg = REG_USER_MSG( "DeathMsg", -1 );
-	gmsgScoreInfo = REG_USER_MSG( "ScoreInfo", 9 );
+//++ BulliT
+	//gmsgScoreInfo = REG_USER_MSG( "ScoreInfo", 9 );
+//-- Martin Webrant
 	gmsgTeamInfo = REG_USER_MSG( "TeamInfo", -1 );  // sets the name of a player's team
 	gmsgTeamScore = REG_USER_MSG( "TeamScore", -1 );  // sets the score of a team on the scoreboard
 	gmsgGameMode = REG_USER_MSG( "GameMode", 1 );
@@ -228,6 +264,40 @@ void LinkUserMessages( void )
 
 	gmsgStatusText = REG_USER_MSG( "StatusText", -1 );
 	gmsgStatusValue = REG_USER_MSG( "StatusValue", 3 );
+//++ BulliT
+	gmsgScoreInfo = REG_USER_MSG( "ScoreInfo", 9 );
+	gmsgAllowSpec = REG_USER_MSG( "AllowSpec", 1 );	//Allow spectator button message.
+	gmsgSpectator = REG_USER_MSG( "Spectator", 2 );	//Spectator message.
+	gmsgVGUIMenu = REG_USER_MSG( "VGUIMenu", 1 );	//VGUI menu.
+	gmsgCheatCheck = REG_USER_MSG( "CheatCheck", 1 );	//Spike check.
+	gmsgSplash = REG_USER_MSG( "Splash", 1 );	//Splash screen.
+	gmsgCountdown = REG_USER_MSG( "Countdown", -1 );	//Show countdown timer and play sound.
+	gmsgTimer = REG_USER_MSG( "Timer", 8 );	//Timer. Sends timelimit, effective time.
+	gmsgPlayerId = REG_USER_MSG( "PlayerId", 6 );	//Sends playerid,team,health,armour.
+	gmsgSettings = REG_USER_MSG( "Settings", -1 );	//Sends settings.
+	gmsgSuddenDeath = REG_USER_MSG( "SuddenDeath", 1 );	//Display sudden death if 1.
+	gmsgLongjump = REG_USER_MSG( "Longjump", 1 );	//Longjump timer.
+	gmsgTimeout = REG_USER_MSG( "Timeout", 2 );	//Timeout is called.
+	gmsgPlaySound = REG_USER_MSG( "PlaySound", -1 );	//Play a sound.
+	gmsgNextmap = REG_USER_MSG( "Nextmap", -1 );	//Send next map.
+	gmsgVote = REG_USER_MSG( "Vote", -1 );	//Vote is running.
+	gmsgInitLoc = REG_USER_MSG( "InitLoc", -1 );	//Init location files for this map.
+	gmsgLocation = REG_USER_MSG( "Location", 7 );	//Send a players position.
+	gmsgWallhack = REG_USER_MSG( "WhString", -1 );	//Init wallhack data.
+	gmsgSpikeCheck = REG_USER_MSG( "SpikeCheck", -1 );	//Check a model for spikes.
+	gmsgGametype = REG_USER_MSG( "Gametype", 1 );	//The gametype.
+	gmsgStatusIcon = REG_USER_MSG( "StatusIcon", -1 );	//Generic status icon
+	gmsgCTF = REG_USER_MSG( "CTF", 2);	//CTF status
+	gmsgAuthID = REG_USER_MSG( "AuthID", -1 );	//Auth ID
+	gmsgCTFSound = REG_USER_MSG( "CTFSound", 1 );	//CTF Sound
+	gmsgMapList = REG_USER_MSG( "MapList", -1 );	//MapList
+	gmsgCTFFlag = REG_USER_MSG( "CTFFlag", 2 );	//Who is carrying the flags.
+	gmsgCRC32 = REG_USER_MSG( "CRC32", -1 );	//Checksum, file
+//-- Martin Webrant
+#ifdef AG_NO_CLIENT_DLL
+	gmsgStatusText = REG_USER_MSG( "StatusText", -1 );
+	gmsgStatusValue = REG_USER_MSG( "StatusValue", 3 );
+#endif
 }
 
 LINK_ENTITY_TO_CLASS( player, CBasePlayer )
@@ -408,6 +478,10 @@ void CBasePlayer::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector ve
 		SpawnBlood( ptr->vecEndPos, BloodColor(), flDamage );// a little surface blood.
 		TraceBleed( flDamage, vecDir, ptr, bitsDamageType );
 		AddMultiDamage( pevAttacker, this, flDamage, bitsDamageType );
+
+#ifdef AGSTATS
+	Stats.FireHit( this, flDamage, pevAttacker );
+#endif
 	}
 }
 
@@ -493,6 +567,9 @@ int CBasePlayer::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 				m_rgbTimeBasedDamage[i] = 0;
 	}
 
+//++ BulliT
+	UTIL_SendDirectorMessage( this->edict(), ENT( pevInflictor ), 5 | DRC_FLAG_DRAMATIC );
+/*
 	// tell director about it
 	MESSAGE_BEGIN( MSG_SPEC, SVC_DIRECTOR );
 		WRITE_BYTE( 9 );	// command length in bytes
@@ -501,7 +578,8 @@ int CBasePlayer::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 		WRITE_SHORT( ENTINDEX( ENT( pevInflictor ) ) );	// index number of secondary entity
 		WRITE_LONG( 5 );   // eventflags (priority and flags)
 	MESSAGE_END();
-
+*/
+//-- Martin Webrant
 	// how bad is it, doc?
 	ftrivial = ( pev->health > 75 || m_lastDamageAmount < 5 );
 	fmajor = ( m_lastDamageAmount > 25 );
@@ -831,6 +909,10 @@ entvars_t *g_pevLastInflictor;  // Set in combat.cpp.  Used to pass the damage i
 
 void CBasePlayer::Killed( entvars_t *pevAttacker, int iGib )
 {
+//++ BulliT
+	if( pev )
+		m_vKilled = pev->origin;
+//-- Martin Webrant
 	CSound *pSound;
 
 	// Holster weapon immediately, to allow it to cleanup
@@ -895,7 +977,10 @@ void CBasePlayer::Killed( entvars_t *pevAttacker, int iGib )
 	if( ( pev->health < -40 && iGib != GIB_NEVER ) || iGib == GIB_ALWAYS )
 	{
 		pev->solid = SOLID_NOT;
-		GibMonster();	// This clears pev->model
+//++ BulliT
+		if( 0 < ag_show_gibs.value )
+			GibMonster();	// This clears pev->model
+//-- Martin Webrant
 		pev->effects |= EF_NODRAW;
 		return;
 	}
@@ -1271,6 +1356,13 @@ void CBasePlayer::PlayerDeathThink( void )
 	pev->effects |= EF_NOINTERP;
 	pev->framerate = 0.0;
 
+	//++ BulliT
+	//Remove sticky dead models.
+	pev->solid = SOLID_NOT;
+	if( Spectate_Think() )
+		return;
+	//-- Martin Webrant
+
 	BOOL fAnyButtonDown = ( pev->button & ~IN_SCORE );
 
 	// wait for all buttons released
@@ -1293,13 +1385,18 @@ void CBasePlayer::PlayerDeathThink( void )
 	// choose to respawn.
 	if( g_pGameRules->IsMultiplayer() && ( gpGlobals->time > ( m_fDeadTime + 6 ) ) && !( m_afPhysicsFlags & PFLAG_OBSERVER ) )
 	{
-		// go to dead camera. 
-		StartDeathCam();
+//++ BulliT
+		m_fDisplayGamemode = gpGlobals->time + 1;
+                // go to dead camera.
+		//StartDeathCam();
+//-- Martin Webrant
 	}
-
 	// wait for any button down,  or mp_forcerespawn is set and the respawn time is up
-	if( !fAnyButtonDown && !( g_pGameRules->IsMultiplayer() && forcerespawn.value > 0 && ( gpGlobals->time > ( m_fDeadTime + 5 ) ) ) )
-		return;
+//++ BulliT
+	//Don't trigg on any button - just attack button.
+	if( !( pev->button & IN_ATTACK || pev->button & IN_USE ) && !( g_pGameRules->IsMultiplayer() && CVAR_GET_FLOAT( "mp_forcerespawn" ) > 0 && ( gpGlobals->time > ( m_fDeadTime + 5 ) ) ) )
+			return;
+//-- Martin Webrant
 
 	pev->button = 0;
 	m_iRespawnFrames = 0;
@@ -1591,8 +1688,10 @@ void CBasePlayer::AddPoints( int score, BOOL bAllowNegativeScore )
 		WRITE_BYTE( ENTINDEX( edict() ) );
 		WRITE_SHORT( pev->frags );
 		WRITE_SHORT( m_iDeaths );
-		WRITE_SHORT( 0 );
+//++ BulliT
+		WRITE_SHORT( g_teamplay );
 		WRITE_SHORT( g_pGameRules->GetTeamIndex( m_szTeamName ) + 1 );
+//-- Martin Webrant
 	MESSAGE_END();
 }
 
@@ -1643,7 +1742,8 @@ void CBasePlayer::UpdateStatusBar()
 		{
 			CBaseEntity *pEntity = CBaseEntity::Instance( tr.pHit );
 
-			if( pEntity->Classify() == CLASS_PLAYER )
+			//if( pEntity->Classify() == CLASS_PLAYER )
+			if( pEntity->Classify() == CLASS_PLAYER && !( m_hSpectateTarget != NULL && ENTINDEX( m_hSpectateTarget->edict() ) == pEntity->entindex() ) )
 			{
 				newSBarState[SBAR_ID_TARGETNAME] = ENTINDEX( pEntity->edict() );
 				strcpy( sbuf1, "1 %p1\n2 Health: %i2%%\n3 Armor: %i3%%" );
@@ -1730,6 +1830,50 @@ void CBasePlayer::PreThink( void )
 	if( g_fGameOver )
 		return;         // intermission or finale
 
+//++ BulliT
+	if( IsSpectator() || ARENA == AgGametype() || LMS == AgGametype() )
+		EnableControl( TRUE );
+	else
+		EnableControl( !g_bPaused );
+
+	if( m_fDisplayGamemode > 0 && m_fDisplayGamemode < gpGlobals->time )
+	{
+#ifdef AG_NO_CLIENT_DLL
+		//Print gameinfo text.
+		AgSay( this, "www.planethalflife.com/agmod", NULL, 10, 0.03, 0.10, 2 );
+		if( 0 < ag_match_running.value )
+			AgSay( this, "Match is on!", NULL, 8, 0.03, 0.15, 5 );
+
+		//Print gamemode text.
+		AgSay( this, AgGamename().c_str(), NULL, 6, 0.75, 0.10, 3 );
+
+		//Print settings.
+		char szSetting[256];
+		sprintf( szSetting, "TL = %d\nFL = %d\nFF = %d\nWS = %d\nWG = %s\n",
+		(int)CVAR_GET_FLOAT( "mp_timelimit" ),
+		(int)CVAR_GET_FLOAT( "mp_fraglimit" ),
+		(int)CVAR_GET_FLOAT( "mp_friendlyfire" ),
+		(int)CVAR_GET_FLOAT( "mp_weaponstay" ),
+		CVAR_GET_STRING( "sv_ag_wallgauss" ) );
+
+		AgSay( this, szSetting, NULL, 6, 0.75, 0.15, 4 );
+#else
+		MESSAGE_BEGIN( MSG_ONE_UNRELIABLE, gmsgSettings, NULL, pev );
+			WRITE_BYTE( (int)ag_match_running.value );
+			WRITE_STRING( AgGamename().c_str() );
+			WRITE_BYTE( (int)CVAR_GET_FLOAT( "mp_timelimit" ) );
+			WRITE_BYTE( (int)CVAR_GET_FLOAT( "mp_fraglimit" ) );
+			WRITE_BYTE( (int)CVAR_GET_FLOAT( "mp_friendlyfire" ) );
+			WRITE_BYTE( (int)CVAR_GET_FLOAT( "mp_weaponstay" ) );
+			WRITE_STRING( CVAR_GET_STRING( "sv_ag_version" ) );
+			WRITE_STRING( CVAR_GET_STRING( "sv_ag_wallgauss" ) );
+			WRITE_STRING( CVAR_GET_STRING( "sv_ag_headshot" ) );
+			WRITE_STRING( CVAR_GET_STRING( "sv_ag_blastradius" ) );
+		MESSAGE_END();
+#endif
+		m_fDisplayGamemode = 0;
+	}
+//-- Martin Webrant
 	UTIL_MakeVectors( pev->v_angle );             // is this still used?
 
 	ItemPreFrame();
@@ -2494,11 +2638,36 @@ void CBasePlayer::PostThink()
 	CheckPowerups( pev );
 
 	UpdatePlayerSound();
+//++ BulliT
+	// Track button info so we can detect 'pressed' and 'released' buttons next frame
+	//m_afButtonLast = pev->button;
+	//Remove observe mode if using attack or use.
+	if( ( pev->button & IN_ATTACK ) && ( pev->effects == EF_NODRAW ) || ( pev->button & IN_USE ) && ( pev->effects == EF_NODRAW ) )
+	{
+		if( DEAD_NO == pev->deadflag || DEAD_RESPAWNABLE == pev->deadflag)
+		{
+			pev->button = 0;
+			m_iRespawnFrames = 0;
+			pev->effects &= ~EF_NODRAW;
 
+			pev->takedamage = DAMAGE_YES;
+			pev->flags &= ~FL_SPECTATOR;
+			pev->movetype = MOVETYPE_WALK;
+
+			Spawn();
+		}
+	}
+	else
+	{
+		if( 0 < ag_lj_timer.value )
+			LongjumpThink();
+	}
+//-- Martin Webrant
+pt_end:
+//++ BulliT
 	// Track button info so we can detect 'pressed' and 'released' buttons next frame
 	m_afButtonLast = pev->button;
-
-pt_end:
+//-- Martin Webrant
 #if defined( CLIENT_WEAPONS )
 	// Decay timers on weapons
 	// go through all of the weapons and make a list of the ones to pack
@@ -2597,8 +2766,17 @@ Returns the entity to spawn at
 USES AND SETS GLOBAL g_pLastSpawn
 ============
 */
+//++ BulliT
+edict_t *EntSelectCTFSpawnPoint( CBaseEntity *pPlayer );
+//-- Martin Webrant
 edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer )
 {
+//++ BulliT
+	if( CTF == AgGametype() )
+	{
+		return EntSelectCTFSpawnPoint( pPlayer );
+	}
+//-- Martin Webrant
 	CBaseEntity *pSpot;
 	edict_t *player;
 
@@ -2694,7 +2872,10 @@ void CBasePlayer::Spawn( void )
 	pev->solid = SOLID_SLIDEBOX;
 	pev->movetype = MOVETYPE_WALK;
 	pev->max_health = pev->health;
-	pev->flags &= FL_PROXY;	// keep proxy flag sey by engine
+//++ BulliT
+	//pev->flags &= FL_PROXY; // keep proxy flag sey by engine
+	pev->flags &= FL_PROXY | FL_FAKECLIENT; // keep proxy flag sey by engine
+//-- Martin Webrant
 	pev->flags |= FL_CLIENT;
 	pev->air_finished = gpGlobals->time + 12;
 	pev->dmg = 2;				// initial water damage
@@ -2711,7 +2892,11 @@ void CBasePlayer::Spawn( void )
 
 	g_engfuncs.pfnSetPhysicsKeyValue( edict(), "slj", "0" );
 	g_engfuncs.pfnSetPhysicsKeyValue( edict(), "hl", "1" );
-
+//++ BulliT
+	g_engfuncs.pfnSetPhysicsKeyValue( edict(), "bj", CVAR_GET_STRING( "sv_ag_oldphysics" ) );
+	m_fPlayerIdCheck = gpGlobals->time + 2;
+	m_fLongjumpTimer = gpGlobals->time;
+//-- Martin Webrant
 	pev->fov = m_iFOV = 0;// init field of view.
 	m_iClientFOV = -1; // make sure fov reset is sent
 
@@ -2773,9 +2958,25 @@ void CBasePlayer::Spawn( void )
 
 	m_lastx = m_lasty = 0;
 
-	m_flNextChatTime = gpGlobals->time;
+//++ BulliT
+	if( IsProxy() )
+	{
+		pev->effects |= EF_NODRAW;
+		pev->solid = SOLID_NOT;
+		pev->deadflag = DEAD_DEAD;
 
-	g_pGameRules->PlayerSpawn( this );
+		//Move proxy to info intermission spot
+		edict_t *pSpot = g_pGameRules->m_InfoInterMission.GetRandomSpot();
+		ASSERT( NULL != pSpot );
+		if( pSpot )
+			MoveToInfoIntermission( pSpot );
+	}
+	else
+	{
+		g_pGameRules->PlayerSpawn( this );
+		Spectate_UpdatePosition();
+	}
+//-- Martin Webrant
 }
 
 void CBasePlayer::Precache( void )
@@ -3046,6 +3247,11 @@ const char *CBasePlayer::TeamID( void )
 	if( pev == NULL )		// Not fully connected yet
 		return "";
 
+//++ BulliT
+	if( IsSpectator() && ( LMS != AgGametype() || LMS == AgGametype() && !m_bReady ) )
+		return "";
+//-- Martin Webrant
+
 	// return their team name
 	return m_szTeamName;
 }
@@ -3233,6 +3439,74 @@ void CBasePlayer::ForceClientDllUpdate( void )
 	m_fKnownItem = FALSE;    // Force weaponinit messages.
 	m_fInitHUD = TRUE;		// Force HUD gmsgResetHUD message
 
+//++ BulliT
+	m_bInitLocation = true;
+	m_iFlagStatus1Last = -1;
+	m_iFlagStatus2Last = -1;
+
+#ifndef AG_NO_CLIENT_DLL
+	MESSAGE_BEGIN( MSG_ONE, gmsgGametype, NULL, edict() );
+		WRITE_BYTE( AgGametype());
+	MESSAGE_END();
+	if( CTF == AgGametype() )
+		g_pGameRules->m_CTF.SendCaptures( this );
+#endif
+
+	//Gamemode
+	g_pGameRules->UpdateGameMode(this);
+
+	//Teams
+	if( g_pGameRules->IsTeamplay() )
+	{
+		for( int i = 1; i <= gpGlobals->maxClients; i++ )
+		{
+			CBasePlayer *plr = AgPlayerByIndex( i );
+			if( plr )
+			{
+				//Team
+				if( plr && g_pGameRules->IsValidTeam( plr->TeamID() ) )
+				{
+					MESSAGE_BEGIN( MSG_ONE, gmsgTeamInfo, NULL, edict() );
+						WRITE_BYTE( plr->entindex() );
+						WRITE_STRING( plr->TeamID() );
+					MESSAGE_END();
+				}
+			}
+		}
+	}
+
+	for( int i = 1; i <= gpGlobals->maxClients; i++ )
+	{
+		CBasePlayer* plr = AgPlayerByIndex( i );
+		if( plr )
+		{
+			/* skip scoreboard, it will update itself.
+			//Score
+			MESSAGE_BEGIN( MSG_ONE, gmsgScoreInfo, NULL, edict() );
+				WRITE_BYTE(ENTINDEX(plr->edict()));
+				WRITE_SHORT( plr->pev->frags );
+				WRITE_SHORT( m_iDeaths );
+//++ BulliT
+				WRITE_SHORT( g_teamplay );
+				WRITE_SHORT( g_pGameRules->GetTeamIndex( plr->m_szTeamName ) + 1 );
+//-- Martin Webrant
+			MESSAGE_END();
+			*/
+
+			MESSAGE_BEGIN( MSG_ONE, gmsgSpectator, NULL, edict() );
+				WRITE_BYTE( ENTINDEX(plr->edict() ) );
+				WRITE_BYTE( plr->IsSpectator() ? 1 : 0 );
+			MESSAGE_END();
+
+#ifndef AG_NO_CLIENT_DLL
+			MESSAGE_BEGIN( MSG_ONE, gmsgAuthID, NULL, edict() );
+				WRITE_BYTE( plr->entindex() );
+				WRITE_STRING( plr->GetAuthID() );
+			MESSAGE_END();
+#endif
+		}
+	}
+//-- Martin Webrant
 	// Now force all the necessary messages
 	//  to be sent.
 	UpdateClientData();
@@ -3310,7 +3584,7 @@ void CBasePlayer::ImpulseCommands()
 		break;
 	default:
 		// check all of the cheat impulse commands now
-		CheatImpulseCommands( iImpulse );
+		//CheatImpulseCommands( iImpulse );
 		break;
 	}
 
@@ -3321,6 +3595,9 @@ void CBasePlayer::ImpulseCommands()
 //=========================================================
 void CBasePlayer::CheatImpulseCommands( int iImpulse )
 {
+//++ BulliT
+	return;
+/*
 #if !defined( HLDEMO_BUILD )
 	if( g_flWeaponCheat == 0.0 )
 	{
@@ -3489,6 +3766,8 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		break;
 	}
 #endif	// HLDEMO_BUILD
+*/
+//-- Martin Webrant
 }
 
 //
@@ -3764,7 +4043,22 @@ void CBasePlayer::UpdateClientData( void )
 		{
 			MESSAGE_BEGIN( MSG_ONE, gmsgInitHUD, NULL, pev );
 			MESSAGE_END();
+//++ BulliT
+			SendWallhackInfo();
 
+			if( 0 < ag_match_running.value )
+				g_pGameRules->m_ScoreCache.RestoreScore( this );
+			g_pGameRules->m_ScoreCache.UpdateScore( this );
+
+			MESSAGE_BEGIN( MSG_ALL, gmsgSpectator );
+				WRITE_BYTE( ENTINDEX( edict() ) );
+				WRITE_BYTE( 0 );
+			MESSAGE_END();
+
+			MESSAGE_BEGIN( MSG_ONE, gmsgAllowSpec, NULL, pev );
+				WRITE_BYTE( 1 );
+			MESSAGE_END();
+//-- Martin Webrant
 			g_pGameRules->InitHUD( this );
 			m_fGameHUDInitialized = TRUE;
 			if( g_pGameRules->IsMultiplayer() )
@@ -3774,8 +4068,9 @@ void CBasePlayer::UpdateClientData( void )
 		}
 
 		FireTargets( "game_playerspawn", this, this, USE_TOGGLE, 0 );
-
+#ifdef AG_NO_CLIENT_DLL
 		InitStatusBar();
+#endif
 	}
 
 	if( m_iHideHUD != m_iClientHideHUD )
@@ -3787,15 +4082,50 @@ void CBasePlayer::UpdateClientData( void )
 		m_iClientHideHUD = m_iHideHUD;
 	}
 
-	if( m_iFOV != m_iClientFOV )
+//++ BulliT
+	CBasePlayer* pPlayerTarget = NULL;
+	if( m_hSpectateTarget != NULL && m_hSpectateTarget->pev != NULL )
+		pPlayerTarget = (CBasePlayer*)CBasePlayer::Instance( m_hSpectateTarget->pev );
+
+#ifndef AG_NO_CLIENT_DLL
+	UpdateFlagStatus( pPlayerTarget ? pPlayerTarget : this );
+
+	if( m_bInitLocation )
 	{
-		MESSAGE_BEGIN( MSG_ONE, gmsgSetFOV, NULL, pev );
-			WRITE_BYTE( m_iFOV );
+		m_bInitLocation = false;
+
+		MESSAGE_BEGIN( MSG_ONE, gmsgInitLoc, NULL, pev );
+			WRITE_STRING( STRING( gpGlobals->mapname ) );
 		MESSAGE_END();
-
-		// cache FOV change at end of function, so weapon updates can see that FOV has changed
 	}
+#endif
 
+	if( pev->iuser1 != OBS_IN_EYE )
+	{
+//-- Martin Webrant
+		if( m_iFOV != m_iClientFOV )
+		{
+			MESSAGE_BEGIN( MSG_ONE, gmsgSetFOV, NULL, pev );
+				WRITE_BYTE( m_iFOV );
+			MESSAGE_END();
+			// cache FOV change at end of function, so weapon updates can see that FOV has changed
+		}
+//++ BulliT
+	}
+	else
+	{
+		if( pPlayerTarget && pPlayerTarget->m_iFOV != m_iClientFOV )
+		{
+			MESSAGE_BEGIN( MSG_ONE, gmsgSetFOV, NULL, pev );
+				WRITE_BYTE( pPlayerTarget->m_iFOV );
+			MESSAGE_END();
+		}
+
+		if( pPlayerTarget && pPlayerTarget->pev->fov != pev->fov )
+			pev->fov = pPlayerTarget->pev->fov;
+
+	}
+//-- Martin Webrant
 	// HACKHACK -- send the message to display the game title
 	if( gDisplayTitle )
 	{
@@ -3805,30 +4135,64 @@ void CBasePlayer::UpdateClientData( void )
 		gDisplayTitle = 0;
 	}
 
-	if( pev->health != m_iClientHealth )
+//++ BulliT
+	if( !pPlayerTarget )
 	{
-		int iHealth = max( pev->health, 0 );  // make sure that no negative health values are sent
+		//if( pev->health != m_iClientHealth )
+		if( (int)pev->health != m_iClientHealth )
+//-- Martin Webrant
+		{
+			int iHealth = max( (int)pev->health, 0 );  // make sure that no negative health values are sent
 
-		// send "health" update message
-		MESSAGE_BEGIN( MSG_ONE, gmsgHealth, NULL, pev );
-			WRITE_BYTE( iHealth );
-		MESSAGE_END();
+			// send "health" update message
+			MESSAGE_BEGIN( MSG_ONE, gmsgHealth, NULL, pev );
+				WRITE_BYTE( iHealth );
+			MESSAGE_END();
 
-		m_iClientHealth = pev->health;
+			m_iClientHealth = pev->health;
+		}
+//++ BulliT
+		//if( pev->armorvalue != m_iClientBattery )
+		if( (int)pev->armorvalue != m_iClientBattery )
+//-- Martin Webrant
+		{
+			m_iClientBattery = pev->armorvalue;
+
+			ASSERT( gmsgBattery > 0 );
+
+			// send "health" update message
+			MESSAGE_BEGIN( MSG_ONE, gmsgBattery, NULL, pev );
+				WRITE_SHORT( (int)pev->armorvalue );
+			MESSAGE_END();
+		}
+//++ BulliT
 	}
-
-	if( pev->armorvalue != m_iClientBattery )
+	else
 	{
-		m_iClientBattery = pev->armorvalue;
+		if( (int)m_hSpectateTarget->pev->health != m_iClientHealth )
+		{
+			int iHealth = max( (int)m_hSpectateTarget->pev->health, 0 );  // make sure that no negative health values are sent
 
-		ASSERT( gmsgBattery > 0 );
+			// send "health" update message
+			MESSAGE_BEGIN( MSG_ONE, gmsgHealth, NULL, pev );
+				WRITE_BYTE( iHealth );
+			MESSAGE_END();
 
-		// send "health" update message
-		MESSAGE_BEGIN( MSG_ONE, gmsgBattery, NULL, pev );
-			WRITE_SHORT( (int)pev->armorvalue );
-		MESSAGE_END();
+			m_iClientHealth = m_hSpectateTarget->pev->health;
+		}
+
+		if( (int)m_hSpectateTarget->pev->armorvalue != m_iClientBattery )
+		{
+			m_iClientBattery = m_hSpectateTarget->pev->armorvalue;
+
+			ASSERT( gmsgBattery > 0 );
+			// send "health" update message
+			MESSAGE_BEGIN( MSG_ONE, gmsgBattery, NULL, pev );
+				WRITE_SHORT( (int)m_hSpectateTarget->pev->armorvalue );
+			MESSAGE_END();
+		}
 	}
-
+//-- Martin Webrant
 	if( pev->dmg_take || pev->dmg_save || m_bitsHUDDamage != m_bitsDamageType )
 	{
 		// Comes from inside me if not set
@@ -3955,25 +4319,121 @@ void CBasePlayer::UpdateClientData( void )
 		}
 	}
 
-	SendAmmoUpdate();
-
-	// Update all the items
-	for( int i = 0; i < MAX_ITEM_TYPES; i++ )
+//++ BulliT
+	if( pev->iuser1 != OBS_IN_EYE )
 	{
-		if( m_rgpPlayerItems[i] )  // each item updates it's successors
-			m_rgpPlayerItems[i]->UpdateClientData( this );
-	}
+//-- Martin Webrant
+		SendAmmoUpdate();
 
+		// Update all the items
+		for( int i = 0; i < MAX_ITEM_TYPES; i++ )
+		{
+			if( m_rgpPlayerItems[i] )  // each item updates it's successors
+				m_rgpPlayerItems[i]->UpdateClientData( this );
+		}
+
+//++ BulliT
+	}
+	else
+	{
+		if( pPlayerTarget )
+		{
+			if( pPlayerTarget->m_pClientActiveItem )
+			{
+				CBasePlayerWeapon* pWeapon = (CBasePlayerWeapon*)pPlayerTarget->m_pClientActiveItem->GetWeaponPtr();
+				if( pWeapon )
+				{
+					if( m_iSpectateAmmoClip != pWeapon->m_iClip || m_pClientActiveItem != pPlayerTarget->m_pClientActiveItem )
+					{
+						m_pClientActiveItem = pPlayerTarget->m_pClientActiveItem;
+						m_iSpectateAmmoClip = pWeapon->m_iClip;
+
+						MESSAGE_BEGIN( MSG_ONE, gmsgCurWeapon, NULL, pev );
+							WRITE_BYTE( 1 );
+							WRITE_BYTE( pWeapon->m_iId );
+							WRITE_BYTE( pWeapon->m_iClip );
+						MESSAGE_END();
+					}
+
+					for( int i=0; i < MAX_AMMO_SLOTS; i++ )
+					{
+						if( m_pClientActiveItem && i == m_pClientActiveItem->PrimaryAmmoIndex()
+							|| m_pClientActiveItem && i == m_pClientActiveItem->SecondaryAmmoIndex() )
+						{
+							// this is the primary or secondary ammo type for the active weapon so lets update the client with the info if needed.
+							if( pPlayerTarget->m_rgAmmo[i] != m_rgAmmoLast[i] )
+							{
+								m_rgAmmoLast[i] = pPlayerTarget->m_rgAmmo[i];
+								ASSERT( pPlayerTarget->m_rgAmmo[i] >= 0 );
+								ASSERT( pPlayerTarget->m_rgAmmo[i] < 255 );
+
+								// send "Ammo" update message
+								MESSAGE_BEGIN( MSG_ONE, gmsgAmmoX, NULL, pev );
+									WRITE_BYTE( i );
+									WRITE_BYTE( max( min( pPlayerTarget->m_rgAmmo[i], 254 ), 0 ) );  // clamp the value to one byte
+								MESSAGE_END();
+							}
+						}
+					}
+				}
+				else
+				{
+					m_pClientActiveItem = NULL;
+				}
+			}
+			else
+			{
+				m_pClientActiveItem = NULL;
+			}
+		}
+	}
 	// Cache and client weapon change
+//++ BulliT
+/*
 	m_pClientActiveItem = m_pActiveItem;
 	m_iClientFOV = m_iFOV;
+*/
+	if (pev->iuser1 != OBS_IN_EYE || !pPlayerTarget)
+	{
+		m_pClientActiveItem = m_pActiveItem;
+		m_iClientFOV = m_iFOV;
+	}
+	else
+	{
+		m_iFOV = pPlayerTarget->m_iFOV;
+		m_iClientFOV = m_iFOV;
+	}
 
+#ifndef AG_NO_CLIENT_DLL
+	if( -1 != m_iMapListSent )
+		g_pGameRules->SendMapListToClient( this, false );
+
+	if( !m_bSentCheatCheck )
+	{
+		m_bSentCheatCheck = true;
+#ifndef _DEBUG
+#ifndef AG_TESTCHEAT
+		if( !AgIsLocalServer() )
+#endif
+#endif
+		{
+			MESSAGE_BEGIN( MSG_ONE, gmsgCheatCheck, NULL, pev );
+				WRITE_BYTE( (int)ag_pure.value );
+			MESSAGE_END();
+		}
+	}
+
+	if( pev->iuser1 == 0 )
+		UpdatePlayerId();
+#else
 	// Update Status Bar
 	if( m_flNextSBarUpdateTime < gpGlobals->time )
 	{
 		UpdateStatusBar();
 		m_flNextSBarUpdateTime = gpGlobals->time + 0.2;
 	}
+#endif
+//-- Martin Webrant
 }
 
 //=========================================================
@@ -4287,6 +4747,10 @@ int CBasePlayer::GetCustomDecalFrames( void )
 //=========================================================
 void CBasePlayer::DropPlayerItem( char *pszItemName )
 {
+//++ BulliT
+	if( FStrEq( pszItemName, "flag" ) && CTF == AgGametype() )
+		g_pGameRules->m_CTF.PlayerDropFlag( this, true );
+//-- Martin Webrant
 	if( !g_pGameRules->IsMultiplayer() || ( weaponstay.value > 0 ) )
 	{
 		// no dropping in single player.
@@ -4662,3 +5126,424 @@ void CInfoIntermission::Think( void )
 }
 
 LINK_ENTITY_TO_CLASS( info_intermission, CInfoIntermission )
+
+//++ BulliT
+CBasePlayer* FindPlayerForward( CBasePlayer* pMe )
+{
+	TraceResult tr;
+
+	UTIL_MakeVectors( pMe->pev->v_angle );
+	UTIL_TraceLine( pMe->pev->origin + pMe->pev->view_ofs,pMe->pev->origin + pMe->pev->view_ofs + gpGlobals->v_forward * 2048,dont_ignore_monsters, pMe->edict(), &tr );
+	if( tr.flFraction != 1.0 && !FNullEnt( tr.pHit ) )
+	{
+		CBaseEntity *pHit = CBaseEntity::Instance( tr.pHit );
+		if( pHit->IsPlayer() )
+			return (CBasePlayer*)pHit;
+		else
+			return NULL;
+	}
+	return NULL;
+}
+
+void CBasePlayer::UpdatePlayerId()
+{
+	// Player id
+	if( ag_player_id.value > 0 && NULL != pev )
+	{
+		// If we should test
+		if( m_fPlayerIdCheck < gpGlobals->time )
+		{
+			m_fPlayerIdCheck = gpGlobals->time + 0.5;
+
+			CBasePlayer *pPlayer = FindPlayerForward( this );
+			if( !pPlayer )
+				return;
+			if( '\0' == pPlayer->GetName()[0] )
+				return;
+
+			if( m_iLastPlayerId != pPlayer->entindex() || m_fNextPlayerId < gpGlobals->time )
+			{
+				m_iLastPlayerId = pPlayer->entindex();
+				m_fNextPlayerId = gpGlobals->time + 2;
+
+				if( IsSpectator() || GR_TEAMMATE == g_pGameRules->PlayerRelationship( this, pPlayer ) )
+				{
+					MESSAGE_BEGIN( MSG_ONE_UNRELIABLE, gmsgPlayerId, NULL, pev );
+						WRITE_BYTE( pPlayer->entindex() );
+						WRITE_BYTE( 1 );
+						WRITE_SHORT( (long)max((int)pPlayer->pev->health, 0 ) );
+						WRITE_SHORT( (long)pPlayer->pev->armorvalue );
+					MESSAGE_END();
+				}
+				else
+				{
+					MESSAGE_BEGIN( MSG_ONE_UNRELIABLE, gmsgPlayerId, NULL, pev );
+						WRITE_BYTE( pPlayer->entindex() );
+						WRITE_BYTE( 0 );
+						WRITE_SHORT( 0 );
+						WRITE_SHORT( 0 );
+					MESSAGE_END();
+				}
+			}
+		}
+	}
+}
+
+void CBasePlayer::RemoveAllItemsNoClientMessage()
+{
+	if( m_pActiveItem )
+	{
+		ResetAutoaim();
+		m_pActiveItem->Holster();
+		m_pActiveItem = NULL;
+	}
+
+	m_pLastItem = NULL;
+  
+	int i;
+	CBasePlayerItem *pPendingItem;
+	for( i = 0; i < MAX_ITEM_TYPES; i++ )
+	{
+		m_pActiveItem = m_rgpPlayerItems[i];
+		while( m_pActiveItem )
+		{
+			pPendingItem = m_pActiveItem->m_pNext; 
+			m_pActiveItem->Drop();
+			m_pActiveItem = pPendingItem;
+		}
+		m_rgpPlayerItems[i] = NULL;
+	}
+	m_pActiveItem = NULL;
+
+	pev->viewmodel = 0;
+	pev->weaponmodel = 0;
+	pev->weapons &= ~WEAPON_ALLWEAPONS;
+
+	for( i = 0; i < MAX_AMMO_SLOTS; i++ )
+		m_rgAmmo[i] = 0;
+
+	// send Selected Weapon Message to our client
+	MESSAGE_BEGIN( MSG_ONE, gmsgCurWeapon, NULL, pev );
+		WRITE_BYTE(0);
+		WRITE_BYTE(0);
+		WRITE_BYTE(0);
+	MESSAGE_END();
+}
+
+//Special spawn - removes all entites attached to the player.
+bool CBasePlayer::RespawnMatch()
+{
+/*
+	// clear any clientside entities attached to this player
+	MESSAGE_BEGIN( MSG_PAS, SVC_TEMPENTITY, pev->origin );
+		WRITE_BYTE( TE_KILLPLAYERATTACHMENTS );
+		WRITE_BYTE( (BYTE)entindex() );
+	MESSAGE_END();
+*/
+
+	//Remove all weapons/items
+	RemoveAllItemsNoClientMessage();
+
+	if( m_pTank != NULL )
+	{
+		m_pTank->Use( this, this, USE_OFF, 0 );
+		m_pTank = NULL;
+	}
+
+	//Make sure hud is shown correctly
+	m_iHideHUD &= ~HIDEHUD_WEAPONS;
+	m_iHideHUD &= ~HIDEHUD_FLASHLIGHT;
+	m_iHideHUD &= ~HIDEHUD_HEALTH;
+
+	// clear out the suit message cache so we don't keep chattering
+	SetSuitUpdate(NULL, FALSE, 0);
+
+	m_iTrain |= TRAIN_NEW;  // Force new train message.
+	m_fKnownItem = FALSE;    // Force weaponinit messages.
+
+	//Respawn player
+	m_bDoneFirstSpawn = true;
+
+	UpdateClientData();
+
+	Spawn();
+
+	return TRUE;
+}
+
+void CBasePlayer::ResetScore()
+{
+	//Reset score
+	pev->frags = 0.0;
+	m_iDeaths = 0;
+
+	//Send new score to all clients.
+	MESSAGE_BEGIN( MSG_ALL, gmsgScoreInfo );
+		WRITE_BYTE( ENTINDEX( edict() ) );
+		WRITE_SHORT( pev->frags );
+		WRITE_SHORT( m_iDeaths );
+//++ BulliT
+		WRITE_SHORT( g_teamplay );
+		WRITE_SHORT( g_pGameRules->GetTeamIndex( m_szTeamName ) + 1 );
+//-- Martin Webrant
+	MESSAGE_END();
+}
+
+void CBasePlayer::ChangeTeam( const char *pszNewTeam, bool bSendScores )
+{
+	//Save the teamname
+	if( TEAM_NAME_LENGTH > strlen( pszNewTeam ) )
+	{
+		strcpy( m_szTeamName, pszNewTeam );
+		AgStringToLower( m_szTeamName );
+	}
+	else
+	{
+		strncpy( m_szTeamName, pszNewTeam, TEAM_NAME_LENGTH - 1 );
+		m_szTeamName[TEAM_NAME_LENGTH - 1] = '\0';
+		AgStringToLower( m_szTeamName );
+	}
+
+	//Change teamname
+	g_engfuncs.pfnSetClientKeyValue( entindex(), g_engfuncs.pfnGetInfoKeyBuffer( edict() ), "model", m_szTeamName );
+	g_engfuncs.pfnSetClientKeyValue( entindex(), g_engfuncs.pfnGetInfoKeyBuffer( edict() ), "team", m_szTeamName );
+
+	if( bSendScores )
+	{
+		g_pGameRules->RecountTeams();
+		g_pGameRules->ResendScoreBoard();
+	}
+}
+
+//Long jump
+void CBasePlayer::OnPickupLongjump()
+{
+	m_fLongjumpTimer = gpGlobals->time + ag_lj_timer.value;
+	if( 0 < ag_lj_timer.value )
+	{
+#ifdef AG_NO_CLIENT_DLL
+		char szLongJump[128];
+		sprintf( szLongJump, "Longjump will turnoff in %d seconds", (int)ag_lj_timer.value );
+		AgSay( this, szLongJump, NULL, 5, 0.5, 0.3 );
+#else
+		MESSAGE_BEGIN( MSG_ONE, gmsgLongjump, NULL, pev );
+			WRITE_BYTE( (int)ag_lj_timer.value );
+		MESSAGE_END();
+#endif
+	}
+}
+
+void CBasePlayer::LongjumpThink()
+{
+	if( gpGlobals->time >= m_fLongjumpTimer && m_fLongJump )
+	{
+		//Remove lj
+		m_fLongJump = FALSE; 
+		//Set physics back to normal
+		g_engfuncs.pfnSetPhysicsKeyValue( edict(), "slj", "0" );
+	}
+}
+
+//++ JAIL BREAK OPEN SOURCE RIP
+bool CBasePlayer::FloodCheck()
+{
+	//Dont check for admins, or when a match is on.
+	if( ag_match_running.value || IsAdmin() )
+		return false;
+
+	if( ag_floodmsgs.value )
+	{
+		if( AgTime() < m_fFloodLockTill ) 
+		{
+			char szText[256];
+			sprintf( szText, "You can't talk for %d more seconds\n", (int)( m_fFloodLockTill - AgTime() ) );
+			UTIL_SayText( szText, this );
+			return true;
+		}
+		int nMax = ( sizeof(m_afFloodWhen) / sizeof(m_afFloodWhen[0]) );
+		int i = m_iFloodWhenHead - ag_floodmsgs.value + 1;
+
+		if( i < 0 ) 
+			i = nMax + i;
+
+		if( m_afFloodWhen[i] && AgTime() - m_afFloodWhen [i] < ag_floodpersecond.value )
+		{
+			char szText[256];
+			m_fFloodLockTill = AgTime() + ag_floodwaitdelay.value;
+			sprintf( szText, "Flood protection: You can't talk for %d seconds\n", (int)( ag_floodwaitdelay.value ) );
+			UTIL_SayText( szText, this );
+			return true;
+		}
+		m_iFloodWhenHead = ( m_iFloodWhenHead + 1 ) % nMax;
+		m_afFloodWhen [m_iFloodWhenHead] = AgTime();
+	}
+
+	return false;
+}
+//-- JAIL BREAK OPEN SOURCE RIP
+
+void CBasePlayer::MoveToInfoIntermission( edict_t *pSpot )
+{
+	if( !FNullEnt( pSpot ) )
+	{
+		edict_t *pTarget = FIND_ENTITY_BY_TARGETNAME( NULL, STRING( VARS( pSpot )->target ) );
+		if( !FNullEnt( pTarget ) )
+		{
+			//Intermission point.
+			UTIL_SetOrigin( pev, VARS( pSpot )->origin - VEC_DUCK_VIEW );
+			pev->v_angle = UTIL_VecToAngles( ( VARS( pTarget )->origin - VARS( pSpot )->origin ).Normalize() );
+			pev->v_angle.x = -pev->v_angle.x;
+			pev->v_angle.z = 0;
+			pev->angles = pev->v_angle;
+			pev->fixangle = TRUE;
+		}
+		else
+		{
+			//Spawn point.
+			pev->v_angle = VARS( pSpot )->angles;
+			pev->angles = pev->v_angle;
+			pev->fixangle = TRUE;
+			UTIL_SetOrigin( pev, VARS( pSpot )->origin - VEC_DUCK_VIEW );
+		}
+	}
+}
+
+bool CBasePlayer::FloodSound()
+{
+	if( IsAdmin() )
+		return false;
+
+	if( m_fPrevSoundFlood > AgTime() )
+	{
+		m_fPrevSoundFlood = AgTime() + 1; //Max one sound per second.
+		return true;
+	}
+	m_fPrevSoundFlood = AgTime() + 1; //Max one sound per second.
+	return false;
+}
+
+bool CBasePlayer::FloodText()
+{
+	if( ag_match_running.value || IsAdmin() )
+		return false;
+
+	if( m_fPrevTextFlood > AgTime() )
+	{
+		m_fPrevTextFlood = AgTime() + 0.20; //Max five per second.
+		return true;
+	}
+	m_fPrevTextFlood = AgTime() + 0.20; //Max five per second.
+	return false;
+}
+
+#include "agwallhack.h"
+void CBasePlayer::SendWallhackInfo()
+{
+	if( m_bSentWallhackInfo )
+		return;
+	Wallhack.SendToPlayer( this );
+	m_bSentWallhackInfo = true;
+}
+
+extern bool g_bTeam1FlagStolen;
+extern bool g_bTeam2FlagStolen;
+extern bool g_bTeam1FlagLost;
+extern bool g_bTeam2FlagLost;
+
+void CBasePlayer::UpdateFlagStatus( CBasePlayer *pPlayer )
+{
+	int iFlagStatus1;
+	if( CTF != AgGametype() )
+		iFlagStatus1 = Off;
+	else if( pPlayer->m_bFlagTeam1 )
+		iFlagStatus1 = Carry;
+	else if( g_bTeam1FlagLost )
+		iFlagStatus1 = Lost;
+	else if( g_bTeam1FlagStolen )
+		iFlagStatus1 = Stolen;
+	else
+		iFlagStatus1 = Home;
+
+	int iFlagStatus2;
+	if( CTF != AgGametype() )
+		iFlagStatus2 = Off;
+	else if( pPlayer->m_bFlagTeam2 )
+		iFlagStatus2 = Carry;
+	else if( g_bTeam2FlagLost )
+		iFlagStatus2 = Lost;
+	else if( g_bTeam2FlagStolen )
+		iFlagStatus2 = Stolen;
+	else
+		iFlagStatus2 = Home;
+
+	if( m_iFlagStatus1Last == Carry && ( iFlagStatus1 != Carry )
+		||m_iFlagStatus2Last == Carry && ( iFlagStatus2 != Carry ) )
+	{
+		//Turn off rendering since we cont carry it anymore.
+		pev->renderfx = kRenderFxNone;
+	}
+
+	if( m_iFlagStatus1Last != iFlagStatus1 || m_iFlagStatus2Last != iFlagStatus2 )
+	{
+		MESSAGE_BEGIN( MSG_ONE, gmsgCTF, NULL, pev );
+			WRITE_BYTE( iFlagStatus1 );
+			WRITE_BYTE( iFlagStatus2 );
+		MESSAGE_END();
+	}
+	m_iFlagStatus1Last = iFlagStatus1;
+	m_iFlagStatus2Last = iFlagStatus2;
+}
+
+/*
+void CBasePlayer::InitWeaponWeight()
+{
+	//Save off the default values.
+	for( i = 0; i < MAX_WEAPONS; i++ )
+		m_iWeaponWeight[i] = CBasePlayerItem::ItemInfoArray[i].iWeight;
+}
+*/
+
+int CBasePlayer::GetWeaponWeight( CBasePlayerItem *pItem )
+{
+	if( 2 == m_iAutoWepSwitch && pItem->m_iId == WEAPON_CROSSBOW )
+		return 20;
+
+	return CBasePlayerItem::ItemInfoArray[pItem->m_iId].iWeight;
+/*
+	if( pItem->m_ID >= WEAPON_NONE && < pItem->WEAPON_SNARK )
+		return m_iWeaponWeight[pItem->m_ID];
+	return 0;
+*/
+}
+
+/*
+void CBasePlayer::SetWeaponWeight( const char *pszWeaponWeights )
+{
+	sscanf( pszWeaponWeights,
+		&m_iWeaponWeight[WEAPON_NONE],
+		&m_iWeaponWeight[WEAPON_CROWBAR],
+		&m_iWeaponWeight[WEAPON_GLOCK],
+		&m_iWeaponWeight[WEAPON_PYTHON],
+		&m_iWeaponWeight[WEAPON_MP5],
+		&m_iWeaponWeight[WEAPON_CHAINGUN],
+		&m_iWeaponWeight[WEAPON_CROSSBOW],
+		&m_iWeaponWeight[WEAPON_SHOTGUN],
+		&m_iWeaponWeight[WEAPON_RPG],
+		&m_iWeaponWeight[WEAPON_GAUSS],
+		&m_iWeaponWeight[WEAPON_EGON],
+		&m_iWeaponWeight[WEAPON_HORNETGUN],
+		&m_iWeaponWeight[WEAPON_HANDGRENADE],
+		&m_iWeaponWeight[WEAPON_TRIPMINE],
+		&m_iWeaponWeight[WEAPON_SATCHEL],
+		&m_iWeaponWeight[WEAPON_SNARK] );
+}
+*/
+//-- Martin Webrant
+
+void CBasePlayer::ShowVGUI( int iMenu )
+{
+	MESSAGE_BEGIN( MSG_ONE, gmsgVGUIMenu, NULL, pev );
+		WRITE_BYTE( iMenu );
+	MESSAGE_END();
+}
+

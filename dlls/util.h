@@ -143,9 +143,15 @@ inline entvars_t *VARS(edict_t *pent)
 inline entvars_t* VARS(EOFFSET eoffset)				{ return VARS(ENT(eoffset)); }
 inline int	  ENTINDEX(edict_t *pEdict)			{ return (*g_engfuncs.pfnIndexOfEdict)(pEdict); }
 inline edict_t* INDEXENT( int iEdictNum )		{ return (*g_engfuncs.pfnPEntityOfEntIndex)(iEdictNum); }
+//++ BulliT
+#ifndef AGMSGSTAT
+//-- Martin Webrant
 inline void MESSAGE_BEGIN( int msg_dest, int msg_type, const float *pOrigin, entvars_t *ent ) {
 	(*g_engfuncs.pfnMessageBegin)(msg_dest, msg_type, pOrigin, ENT(ent));
 }
+//++ BulliT
+#endif
+//-- Martin Webrant
 
 // Testing the three types of "entity" for nullity
 #define eoNullEntity 0
@@ -456,6 +462,10 @@ extern DLL_GLOBAL int			g_Language;
 #define SVC_ROOMTYPE		37
 #define	SVC_DIRECTOR		51
 
+//++ BulliT
+void UTIL_SendDirectorMessage( edict_t *ent1, edict_t *ent2, int priority_and_flags );
+//-- Martin Webrant
+
 // triggers
 #define	SF_TRIGGER_ALLOWMONSTERS	1// monsters allowed to fire this trigger
 #define	SF_TRIGGER_NOCLIENTS		2// players not allowed to fire this trigger
@@ -567,3 +577,7 @@ int UTIL_SharedRandomLong( unsigned int seed, int low, int high );
 float UTIL_SharedRandomFloat( unsigned int seed, float low, float high );
 
 float UTIL_WeaponTimeBase( void );
+
+//++ BulliT
+#include <agmsgstat.h>
+//-- Martin Webrant

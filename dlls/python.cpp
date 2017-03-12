@@ -22,6 +22,10 @@
 #include "player.h"
 #include "gamerules.h"
 
+#ifdef AGSTATS
+#include "agstats.h"
+#endif
+
 enum python_e
 {
 	PYTHON_IDLE1 = 0,
@@ -180,7 +184,9 @@ void CPython::PrimaryAttack()
 	m_pPlayer->m_iWeaponFlash = BRIGHT_GUN_FLASH;
 
 	m_iClip--;
-
+#ifdef AGSTATS
+	Stats.FireShot( m_pPlayer, STRING( pev->classname ) );
+#endif
 	m_pPlayer->pev->effects = (int)( m_pPlayer->pev->effects ) | EF_MUZZLEFLASH;
 
 	// player "shoot" animation

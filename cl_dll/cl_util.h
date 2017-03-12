@@ -100,7 +100,31 @@ inline 	int						TextMessageDrawChar( int x, int y, int number, int r, int g, in
 	return gEngfuncs.pfnDrawCharacter( x, y, number, r, g, b ); 
 }
 
-inline int DrawConsoleString( int x, int y, const char *string )
+//++ BulliT
+#include "agglobal.h"
+inline int DrawConsoleString( int x, int y, const char *string, float r = 0, float g = 0, float b = 0 )
+//inline int DrawConsoleString( int x, int y, const char *string, float r = 0 )
+{
+//++ BulliT
+	if( !( r == 0 && g == 0 && b == 0 ) )
+		gEngfuncs.pfnDrawSetTextColor( r, g, b );
+	return AgDrawConsoleString( x, y, string, r ,g, b );
+	//return gEngfuncs.pfnDrawConsoleString( x, y, (char*)string );
+}
+//-- Martin Webrant
+
+inline void GetConsoleStringSize( const char *string, int *width, int *height )
+{
+//++ BulliT
+	char *pszString = strdup( string );
+	AgStripColors( (char*)pszString );
+	gEngfuncs.pfnDrawConsoleStringLen( pszString, width, height );
+	free( pszString );
+	//gEngfuncs.pfnDrawConsoleStringLen( string, width, height );
+//-- Martin Webrant
+}
+
+/*inline int DrawConsoleString( int x, int y, const char *string )
 {
 	if( hud_textmode->value == 1 )
 		return gHUD.DrawHudString( x, y, 9999, (char*)string, 255 * g_hud_text_color[0], 255 * g_hud_text_color[1], 255 * g_hud_text_color[2] );
@@ -114,6 +138,7 @@ inline void GetConsoleStringSize( const char *string, int *width, int *height )
 	else
 		gEngfuncs.pfnDrawConsoleStringLen( (char*)string, width, height );
 }
+*/
 
 inline int ConsoleStringLen( const char *string )
 {
@@ -126,12 +151,24 @@ inline int ConsoleStringLen( const char *string )
 
 inline void ConsolePrint( const char *string )
 {
-	gEngfuncs.pfnConsolePrint( string );
+//++ BulliT
+	char *pszString = strdup( string );
+	AgStripColors( (char*)pszString );
+	gEngfuncs.pfnConsolePrint( pszString );
+	free( pszString );
+	//gEngfuncs.pfnConsolePrint( string );
+//-- Martin Webrant
 }
 
 inline void CenterPrint( const char *string )
 {
-	gEngfuncs.pfnCenterPrint( string );
+//++ BulliT
+	char *pszString = strdup( string );
+	AgStripColors( (char*)pszString );
+	gEngfuncs.pfnCenterPrint( pszString );
+	free( pszString );
+	//gEngfuncs.pfnCenterPrint( string );
+//-- Martin Webrant
 }
 
 // returns the players name of entity no.
@@ -167,6 +204,13 @@ extern vec3_t vec3_origin;
 
 inline void UnpackRGB( int &r, int &g, int &b, unsigned long ulRGB )\
 {\
+//++ BulliT
+	if( ulRGB == RGB_YELLOWISH )
+	{
+		AgGetHudColor( r, g, b );
+		return;
+	}
+//-- Martin Webrant
 	r = ( ulRGB & 0xFF0000 ) >> 16;\
 	g = ( ulRGB & 0xFF00 ) >> 8;\
 	b = ulRGB & 0xFF;\

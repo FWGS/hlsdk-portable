@@ -382,6 +382,36 @@ void W_Precache( void )
 	PRECACHE_SOUND( "weapons/bullet_hit2.wav" );	// hit by bullet
 
 	PRECACHE_SOUND( "items/weapondrop1.wav" );// weapon falls to the ground
+
+//++ BulliT
+#ifndef AG_NO_CLIENT_DLL
+	UTIL_PrecacheOther( "item_flag_team1" );
+	UTIL_PrecacheOther( "item_flag_team2" );
+
+#ifdef AG_USE_CHEATPROTECTION
+//Just the visable models forced.
+/*
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/flag.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/p_crowbar.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/p_9mmhandgun.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/p_9mmAR.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/p_357.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/p_gauss.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/p_rpg.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/p_crossbow.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/p_egon.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/p_tripmine.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/p_satchel.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/p_satchel_radio.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/p_shotgun.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/p_grenade.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/p_squeak.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/p_hgun.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/flag.mdl" );
+*/
+#endif
+#endif
+//-- Martin Webrant
 }
 
 TYPEDESCRIPTION	CBasePlayerItem::m_SaveData[] =
@@ -574,7 +604,12 @@ void CBasePlayerItem::DefaultTouch( CBaseEntity *pOther )
 	if( pOther->AddPlayerItem( this ) )
 	{
 		AttachToPlayer( pPlayer );
-		EMIT_SOUND( ENT( pPlayer->pev ), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM );
+//++ BulliT
+		if( pPlayer->m_bInSpawn )
+			EMIT_SOUND( ENT( pPlayer->pev ), CHAN_ITEM, "items/gunpickup2.wav", ag_spawn_volume.value, ATTN_NORM );
+		else
+//-- Martin Webrant
+			EMIT_SOUND( ENT( pPlayer->pev ), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM );
 	}
 
 	SUB_UseTargets( pOther, USE_TOGGLE, 0 ); // UNDONE: when should this happen?
@@ -791,11 +826,13 @@ int CBasePlayerWeapon::UpdateClientData( CBasePlayer *pPlayer )
 
 	if( bSend )
 	{
+//++ BulliT TESTWEP
 		MESSAGE_BEGIN( MSG_ONE, gmsgCurWeapon, NULL, pPlayer->pev );
 			WRITE_BYTE( state );
 			WRITE_BYTE( m_iId );
 			WRITE_BYTE( m_iClip );
 		MESSAGE_END();
+//-- Martin Webrant TESTWEP
 
 		m_iClientClip = m_iClip;
 		m_iClientWeaponState = state;

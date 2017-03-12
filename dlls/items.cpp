@@ -327,6 +327,9 @@ class CItemLongJump : public CItem
 			MESSAGE_END();
 
 			EMIT_SOUND_SUIT( pPlayer->edict(), "!HEV_A1" );	// Play the longjump sound UNDONE: Kelly? correct sound?
+//++ BulliT
+			pPlayer->OnPickupLongjump();
+//-- Martin Webrant
 			return TRUE;		
 		}
 		return FALSE;

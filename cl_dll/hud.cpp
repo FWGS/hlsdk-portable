@@ -170,10 +170,13 @@ void CHud::Init( void )
 
 	HOOK_MESSAGE( ValClass );
 	HOOK_MESSAGE( TeamNames );
-	HOOK_MESSAGE( Feign );
-	HOOK_MESSAGE( Detpack );
-	HOOK_MESSAGE( BuildSt );
-	HOOK_MESSAGE( RandomPC );
+//++ BulliT
+	//TFC JUNK
+	//HOOK_MESSAGE( Feign );
+	//HOOK_MESSAGE( Detpack );
+	//HOOK_MESSAGE( BuildSt );
+	//HOOK_MESSAGE( RandomPC );
+//-- Martin Webrant
 	HOOK_MESSAGE( ServerName );
 
 	HOOK_MESSAGE( Spectator );
@@ -228,8 +231,24 @@ void CHud::Init( void )
 	m_TextMessage.Init();
 	m_StatusIcons.Init();
 	m_MOTD.Init();
+//++ BulliT
+	m_Splash.Init();
+	m_Countdown.Init();
+	m_Timer.Init();
+	m_PlayerId.Init();
+	m_Settings.Init();
+	m_SuddenDeath.Init();
+	m_Longjump.Init();
+	m_CustomTimer.Init();
+	m_Timeout.Init();
+	m_Global.Init();
+	m_Vote.Init();
+	m_Nextmap.Init();
+	m_Location.Init();
+	//m_IRC.Init();
+	m_CTF.Init();
 	m_Scoreboard.Init();
-
+//-- Martin Webrant
 	m_Menu.Init();
 	
 	MsgFunc_ResetHUD( 0, 0, NULL );
@@ -254,6 +273,9 @@ CHud::~CHud()
 		}
 		m_pHudList = NULL;
 	}
+//++ BulliT
+	//m_IRC.UserCmd_IRCDisconnect();
+//-- Martin Webrant
 }
 
 // GetSpriteIndex()
@@ -396,7 +418,24 @@ void CHud::VidInit( void )
 	m_AmmoSecondary.VidInit();
 	m_TextMessage.VidInit();
 	m_StatusIcons.VidInit();
+//++ BulliT
+	m_Splash.VidInit();
+	m_Countdown.VidInit();
+	m_Timer.VidInit();
+	m_PlayerId.VidInit();
+	m_Settings.VidInit();
+	m_SuddenDeath.VidInit();
+	m_Longjump.VidInit();
+	m_CustomTimer.VidInit();
+	m_Timeout.VidInit();
+	m_Global.VidInit();
+	m_Vote.VidInit();
+	m_Nextmap.VidInit();
+	m_Location.VidInit();
+	m_IRC.VidInit();
+	m_CTF.VidInit();
 	m_Scoreboard.VidInit();
+//-- Martin Webrant
 	m_MOTD.VidInit();
 }
 
@@ -511,9 +550,11 @@ int CHud::MsgFunc_SetFOV( const char *pszName,  int iSize, void *pbuf )
 	int newfov = READ_BYTE();
 	int def_fov = CVAR_GET_FLOAT( "default_fov" );
 
+#ifdef CLIENT_WEAPONS
 	//Weapon prediction already takes care of changing the fog. ( g_lastFOV ).
 	if( cl_lw && cl_lw->value )
 		return 1;
+#endif
 
 	g_lastFOV = newfov;
 

@@ -323,6 +323,9 @@ struct extra_player_info_t
 	short playerclass;
 	short teamnumber;
 	char teamname[MAX_TEAM_NAME];
+//++ BulliT
+	short flag;
+//-- Martin Webrant
 };
 
 struct team_info_t
@@ -556,6 +559,25 @@ private:
 	icon_sprite_t m_IconList[MAX_ICONSPRITES];
 };
 
+//++ BulliT
+#include "AgGlobal.h"
+#include "AgHudSplash.h"
+#include "AgHudCountdown.h"
+#include "AgHudTimer.h"
+#include "AgHudPlayerId.h"
+#include "AgHudSettings.h"
+#include "AgHudSuddenDeath.h"
+#include "AgHudLongjump.h"
+#include "AgHudCustomTimer.h"
+#include "AgHudTimeout.h"
+#include "AgHudGlobal.h"
+#include "AgHudVote.h"
+#include "AgHudNextmap.h"
+#include "AgHudLocation.h"
+//#include "AgHudIRC.h"
+#include "AgHudCTF.h"
+#include "AgHudScoreboard.h"
+//-- Martin Webrant
 //
 //-----------------------------------------------------
 //
@@ -633,7 +655,24 @@ public:
 	CHudStatusIcons m_StatusIcons;
 	CHudScoreboard	m_Scoreboard;
 	CHudMOTD	m_MOTD;
-
+//++ BulliT
+	AgHudSplash		m_Splash;
+	AgHudCountdown		m_Countdown;
+	AgHudTimer		m_Timer;
+	AgHudPlayerId		m_PlayerId;
+	AgHudSettings		m_Settings;
+	AgHudSuddenDeath	m_SuddenDeath;
+	AgHudLongjump		m_Longjump;
+	AgHudCustomTimer	m_CustomTimer;
+	AgHudTimeout		m_Timeout;
+	AgHudGlobal		m_Global;
+	AgHudVote		m_Vote;
+	AgHudNextmap		m_Nextmap;
+	AgHudLocation		m_Location;
+	//AgHudIRC		m_IRC;
+	AgHudCTF		m_CTF;
+	//AgHudScoreboard	m_Scoreboard;
+//-- Martin Webrant
 	void Init( void );
 	void VidInit( void );
 	void Think(void);

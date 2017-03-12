@@ -21,6 +21,12 @@
 #include "hud.h"
 #include "cl_util.h"
 #include "netadr.h"
+//++ BulliT
+#include "AgVariableChecker.h"
+#include "AgGlobal.h"
+//#include "irc.h"
+#include "agwallhack.h"
+//-- Martin Webrant
 
 extern "C"
 {
@@ -30,6 +36,9 @@ extern "C"
 #include <string.h>
 
 cl_enginefunc_t gEngfuncs;
+//++ BulliT
+//irc::CIrcSession g_ircSession;
+//-- Martin Webrant
 CHud gHUD;
 mobile_engfuncs_t *gMobileEngfuncs = NULL;
 void InitInput( void );
@@ -132,7 +141,12 @@ void DLLEXPORT HUD_PlayerMove( struct playermove_s *ppmove, int server )
 	PM_Move( ppmove, server );
 }
 
+#ifdef AG_USE_CHEATPROTECTION
+void* pFromModuleAddress = 0;
+int DLLEXPORT Initialize_Body( cl_enginefunc_t *pEnginefuncs, int iVersion )
+#else
 int DLLEXPORT Initialize( cl_enginefunc_t *pEnginefuncs, int iVersion )
+#endif
 {
 	gEngfuncs = *pEnginefuncs;
 
@@ -143,8 +157,25 @@ int DLLEXPORT Initialize( cl_enginefunc_t *pEnginefuncs, int iVersion )
 
 	EV_HookEvents();
 
+//++ BulliT
+	AgInitClientDll();
+
+#ifdef AG_USE_CHEATPROTECTION
+	g_Wallhack.SetHLAddressToValidate( (DWORD)pFromModuleAddress );
+#endif
+//-- Martin Webrant
+
 	return 1;
 }
+
+#ifdef AG_USE_CHEATPROTECTION
+__declspec(naked) int Initialize( cl_enginefunc_t *pEnginefuncs, int Version )
+{
+	__asm pop pFromModuleAddress;
+	__asm push pFromModuleAddress;
+	__asm jmp[Initialize_Body];
+}
+#endif
 
 /*
 =================
@@ -196,6 +227,9 @@ void DLLEXPORT HUD_Init( void )
 {
 	InitInput();
 	gHUD.Init();
+#ifdef AG_USE_CHEATPROTECTION
+	g_VariableChecker.Activate();
+#endif //AG_USE_CHEATPROTECTION
 }
 
 /*
@@ -256,7 +290,11 @@ Called by engine every frame that client .dll is loaded
 */
 
 void DLLEXPORT HUD_Frame( double time )
-{	gEngfuncs.VGui_ViewportPaintBackground(HUD_GetRect());
+{
+	gEngfuncs.VGui_ViewportPaintBackground(HUD_GetRect());
+#ifdef AG_USE_CHEATPROTECTION
+	g_VariableChecker.Check();
+#endif //AG_USE_CHEATPROTECTION
 }
 
 /*

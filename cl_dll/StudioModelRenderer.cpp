@@ -1587,11 +1587,19 @@ void CStudioModelRenderer::StudioRenderFinal_Software( void )
 
 	if( m_pCvarDrawEntities->value == 2 )
 	{
+//++ BulliT
+#ifdef _DEBUG
 		IEngineStudio.StudioDrawBones();
+#endif
+//-- Martin Webrant
 	}
 	else if( m_pCvarDrawEntities->value == 3 )
 	{
+//++ BulliT
+#ifdef _DEBUG
 		IEngineStudio.StudioDrawHulls();
+#endif
+//-- Martin Webrant
 	}
 	else
 	{
@@ -1604,14 +1612,22 @@ void CStudioModelRenderer::StudioRenderFinal_Software( void )
 
 	if( m_pCvarDrawEntities->value == 4 )
 	{
+//++ BulliT
+#ifdef _DEBUG
 		gEngfuncs.pTriAPI->RenderMode( kRenderTransAdd );
 		IEngineStudio.StudioDrawHulls();
 		gEngfuncs.pTriAPI->RenderMode( kRenderNormal );
+#endif
+//-- Martin Webrant
 	}
 
 	if( m_pCvarDrawEntities->value == 5 )
 	{
+//++ BulliT
+#ifdef _DEBUG
 		IEngineStudio.StudioDrawAbsBBox();
+#endif
+//-- Martin Webrant
 	}
 
 	IEngineStudio.RestoreRenderer();
@@ -1633,11 +1649,19 @@ void CStudioModelRenderer::StudioRenderFinal_Hardware( void )
 
 	if( m_pCvarDrawEntities->value == 2 )
 	{
+//++ BulliT
+#ifdef _DEBUG
 		IEngineStudio.StudioDrawBones();
+#endif   
+//-- Martin Webrant
 	}
 	else if( m_pCvarDrawEntities->value == 3 )
 	{
+//++ BulliT
+#ifdef _DEBUG
 		IEngineStudio.StudioDrawHulls();
+#endif
+//-- Martin Webrant
 	}
 	else
 	{
@@ -1659,14 +1683,22 @@ void CStudioModelRenderer::StudioRenderFinal_Hardware( void )
 
 	if( m_pCvarDrawEntities->value == 4 )
 	{
+//++ BulliT
+#ifdef _DEBUG
 		gEngfuncs.pTriAPI->RenderMode( kRenderTransAdd );
 		IEngineStudio.StudioDrawHulls();
 		gEngfuncs.pTriAPI->RenderMode( kRenderNormal );
+#endif
+//-- Martin Webrant
 	}
 
 	if( m_pCvarDrawEntities->value == 5 )
 	{
+//++ BulliT
+#ifdef _DEBUG
 		IEngineStudio.StudioDrawAbsBBox();
+#endif   
+//-- Martin Webrant
 	}
 
 	IEngineStudio.RestoreRenderer();

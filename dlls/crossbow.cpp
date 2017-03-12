@@ -23,6 +23,12 @@
 #include "player.h"
 #include "gamerules.h"
 
+//++ BulliT
+#ifdef AGSTATS
+#include "agstats.h"
+#endif
+//-- Martin Webrant
+
 #ifndef CLIENT_DLL
 #define BOLT_AIR_VELOCITY	2000
 #define BOLT_WATER_VELOCITY	1000
@@ -366,6 +372,12 @@ void CCrossbow::FireSniperBolt()
 	m_pPlayer->m_iWeaponVolume = QUIET_GUN_VOLUME;
 	m_iClip--;
 
+//++ BulliT
+#ifdef AGSTATS
+	Stats.FireShot( m_pPlayer, STRING( pev->classname ) );
+#endif
+//-- Martin Webrant
+
 	int flags;
 #if defined( CLIENT_WEAPONS )
 	flags = FEV_NOTHOST;
@@ -408,6 +420,12 @@ void CCrossbow::FireBolt()
 	m_pPlayer->m_iWeaponVolume = QUIET_GUN_VOLUME;
 
 	m_iClip--;
+
+//++ BulliT
+#ifdef AGSTATS
+	Stats.FireShot( m_pPlayer, STRING( pev->classname ) );
+#endif
+//-- Martin Webrant
 
 	int flags;
 #if defined( CLIENT_WEAPONS )

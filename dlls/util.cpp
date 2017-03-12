@@ -2450,3 +2450,22 @@ int CRestore::BufferCheckZString( const char *string )
 	}
 	return 0;
 }
+
+//++ BulliT
+void UTIL_SendDirectorMessage( edict_t *ent1, edict_t *ent2, int priority_and_flags )
+{
+	MESSAGE_BEGIN( MSG_SPEC, SVC_DIRECTOR );
+		WRITE_BYTE( 9 ); //command length in bytes
+		WRITE_BYTE( DRC_CMD_EVENT );
+	if( ent1 )
+		WRITE_SHORT( ENTINDEX( ent1 ) );
+	else
+		WRITE_SHORT( 0 );
+	if( ent2 )
+		WRITE_SHORT( ENTINDEX( ent2 ) );
+	else
+		WRITE_SHORT( 0 );
+		WRITE_LONG( priority_and_flags );
+	MESSAGE_END();
+}
+//-- Martin Webrant

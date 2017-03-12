@@ -25,7 +25,10 @@
 #include	"skill.h"
 #include	"items.h"
 
-extern DLL_GLOBAL CGameRules	*g_pGameRules;
+//++ BulliT
+extern DLL_GLOBAL AgGameRules *g_pGameRules;
+//-- Martin Webrant
+
 extern DLL_GLOBAL BOOL	g_fGameOver;
 extern int gmsgDeathMsg;	// client dll messages
 extern int gmsgScoreInfo;

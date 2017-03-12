@@ -23,6 +23,12 @@
 #include "player.h"
 #include "gamerules.h"
 
+//++ BulliT
+#ifdef AGSTATS
+#include "agstats.h"
+#endif
+//-- Martin Webrant
+
 enum rpg_e
 {
 	RPG_IDLE = 0,
@@ -266,6 +272,14 @@ void CRpgRocket::FollowThink( void )
 		if( pev->waterlevel == 0 && pev->velocity.Length() < 1500 )
 		{
 			Detonate();
+//++ BulliT
+			//Fixes the bug where it won't auto reload when it explodes coming out of the water
+			if( m_pLauncher )
+			{
+				// my launcher is still around, tell it I'm dead.
+				m_pLauncher->m_cActiveRockets--;
+			}
+//-- Martin Webrant
 		}
 	}
 	// ALERT( at_console, "%.0f\n", flSpeed );
@@ -323,6 +337,16 @@ void CRpg::Reload( void )
 
 void CRpg::Spawn()
 {
+//++ BulliT
+#ifndef CLIENT_DLL
+	if( SGBOW == AgGametype() )
+	{
+		//Spawn crossbow instead.
+		CBaseEntity *pNewWeapon = CBaseEntity::Create( "weapon_crossbow", g_pGameRules->VecWeaponRespawnSpot( this ), pev->angles, pev->owner );
+		return;
+	}
+#endif
+//-- Martin Webrant
 	Precache();
 	m_iId = WEAPON_RPG;
 
@@ -447,6 +471,17 @@ void CRpg::PrimaryAttack()
 		CRpgRocket *pRocket = CRpgRocket::CreateRpgRocket( vecSrc, m_pPlayer->pev->v_angle, m_pPlayer, this );
 
 		UTIL_MakeVectors( m_pPlayer->pev->v_angle );// RpgRocket::Create stomps on globals, so remake.
+//++ BulliT
+	if( ag_rpg_fix.value > 0 )
+	{
+		//Fixes the RPG wall bugg just a little bit - I dont want to remove it all. (You jump back and get the RPG in back of your head)
+		if( ( pRocket->pev->velocity.x >= 0 && m_pPlayer->pev->velocity.x < 0 ) || ( pRocket->pev->velocity.x < 0 && m_pPlayer->pev->velocity.x > 0 ) )
+			pRocket->pev->velocity = pRocket->pev->velocity + 0.5 * gpGlobals->v_forward * DotProduct( m_pPlayer->pev->velocity, gpGlobals->v_forward ); //Only use 50% of the velocit
+		else
+			pRocket->pev->velocity = pRocket->pev->velocity + gpGlobals->v_forward * DotProduct( m_pPlayer->pev->velocity, gpGlobals->v_forward );
+	}
+	else
+//-- Martin Webrant
 		pRocket->pev->velocity = pRocket->pev->velocity + gpGlobals->v_forward * DotProduct( m_pPlayer->pev->velocity, gpGlobals->v_forward );
 #endif
 
@@ -462,7 +497,11 @@ void CRpg::PrimaryAttack()
 		PLAYBACK_EVENT( flags, m_pPlayer->edict(), m_usRpg );
 
 		m_iClip--; 
-
+//++ BulliT
+#ifdef AGSTATS
+	Stats.FireShot( m_pPlayer,STRING( pev->classname ) );
+#endif
+//-- Martin Webrant
 		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 1.5;
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.5;
 	}
