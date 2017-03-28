@@ -159,7 +159,7 @@ set (SVDLL_SOURCES
 	../pm_shared/pm_shared.c
 )
 	
-include_directories (. wpn_shared ../common ../engine ../pm_shared ../game_shared ../public)
+include_directories (. wpn_shared ../common ../engine ../pm_shared ../game_shared ../public aghl .. )
 
 if(USE_VOICEMGR)
 	set(SVDLL_SOURCES
