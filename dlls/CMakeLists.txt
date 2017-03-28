@@ -126,6 +126,34 @@ set (SVDLL_SOURCES
 	world.cpp
 	xen.cpp
 	zombie.cpp
+	aghl/agadmin.cpp
+	aghl/agadmincache.cpp
+	aghl/agarena.cpp
+	aghl/agclient.cpp
+	aghl/agcommand.cpp
+	aghl/agctf.cpp
+	aghl/agdom.cpp
+	aghl/aggame.cpp
+	aghl/aggamemode.cpp
+	aghl/aggamerules.cpp
+	aghl/agglobal.cpp
+	aghl/aginfointermission.cpp
+	aghl/aglms.cpp
+	aghl/aglocation.cpp
+	aghl/aglocationcache.cpp
+	aghl/agmatch.cpp
+	aghl/agmsgstat.cpp
+	aghl/agscore.cpp
+	aghl/agscorecache.cpp
+	aghl/agscorelog.cpp
+	aghl/agsettings.cpp
+	aghl/agspectator.cpp
+	aghl/agstats.cpp
+	aghl/agsuddendeath.cpp
+	aghl/agtimeout.cpp
+	aghl/agtimer.cpp
+	aghl/agvote.cpp
+	aghl/agwallhack.cpp
 	../pm_shared/pm_debug.c
 	../pm_shared/pm_math.c
 	../pm_shared/pm_shared.c

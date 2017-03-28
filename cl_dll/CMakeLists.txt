@@ -75,6 +75,46 @@ set (CLDLL_SOURCES
 	message.cpp
 	overview.cpp
 	parsemsg.cpp
+#	aghl/agbase64.cpp
+#	aghl/agcrc32.cpp
+#	aghl/agcrc32enforcer.cpp
+#	aghl/agdownload.cpp
+	aghl/Agglobal.cpp
+	aghl/aghudcountdown.cpp
+	aghl/aghudctf.cpp
+	aghl/aghudcustomtimer.cpp
+	aghl/aghudglobal.cpp
+#	aghl/aghudirc.cpp
+	aghl/aghudlocation.cpp
+	aghl/aghudlongjump.cpp
+	aghl/aghudnextmap.cpp
+	aghl/aghudplayerid.cpp
+#	aghl/aghudscoreboard.cpp
+	aghl/aghudsettings.cpp
+	aghl/aghudsplash.cpp
+	aghl/aghudsuddendeath.cpp
+	aghl/aghudtimeout.cpp
+	aghl/aghudtimer.cpp
+	aghl/aghudvote.cpp
+#	aghl/agicq.cpp
+#	aghl/agirc.cpp
+	aghl/aglocation.cpp
+#	aghl/agmapi.cpp
+	aghl/agmatchreport.cpp
+	aghl/agminidump.cpp
+#	aghl/agmodel.cpp
+#	aghl/agmodelcheck.cpp
+#	aghl/agpak.cpp
+#	aghl/agvariablechecker.cpp
+	aghl/agversioninfo.cpp
+#	aghl/agvguiirc.cpp
+#	aghl/AgVGuiMapBrowser.cpp
+#	aghl/AgVGUIPassword.cpp
+#	aghl/agvguiwinamp.cpp
+#	aghl/agwallhack.cpp
+#	aghl/crossthreadsmessagingdevice.cpp
+#	aghl/irc.cpp
+#	aghl/socket.cpp
 	../pm_shared/pm_debug.c
 	../pm_shared/pm_math.c
 	../pm_shared/pm_shared.c
@@ -91,7 +131,7 @@ set (CLDLL_SOURCES
 	input_xash3d.cpp
 	scoreboard.cpp
 	MOTD.cpp)
-include_directories (. hl/ ../dlls ../dlls/wpn_shared ../common ../engine ../pm_shared ../game_shared ../public)
+include_directories (. hl/ ../dlls ../dlls/wpn_shared ../common ../engine ../pm_shared ../game_shared ../public aghl ../dlls/aghl .. )
 
 if(USE_VOICEMGR)
 	#set(CLDLL_SOURCES
