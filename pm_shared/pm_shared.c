@@ -2459,6 +2459,9 @@ void PM_Jump( void )
 	//qboolean tfc = false;
 //-- BulliT
 	qboolean cansuperjump = false;
+//++ BulliT
+	qboolean bBunnyJump = false;
+//-- BulliT
 
 	if( pmove->dead )
 	{

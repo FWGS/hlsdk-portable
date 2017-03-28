@@ -22,7 +22,7 @@
 
 //++ BulliT
 #include <demo_api.h>
-#include "AgMatchReport.h"
+#include "agmatchreport.h"
 //-- Martin Webrant
 
 #define MAX_LOGO_FRAMES 56

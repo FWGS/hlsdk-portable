@@ -7,6 +7,7 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
+#include "cbase.h"
 #include "agscorecache.h"
 #include "agadmincache.h"
 #include "agglobal.h"

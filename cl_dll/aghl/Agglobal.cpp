@@ -5,6 +5,10 @@
 #include "agglobal.h"
 #include <time.h>
 #include "agmodelcheck.h"
+#ifndef _WIN32
+#include "unistd.h"
+#define GetCurrentDirectory(size,buffer) getcwd(buffer,size)
+#endif
 
 cvar_t* g_phud_spectatebar = NULL;
 cvar_t* g_phud_timer = NULL;
@@ -423,6 +427,7 @@ void AgLog(const char* pszLog)
 
 void AgDirList(const AgString& sDir, AgStringSet& setFiles)
 {
+/*
 #ifdef _WIN32 
   WIN32_FIND_DATA FindData;
   char szSearchDirectory[_MAX_PATH];
@@ -458,6 +463,7 @@ struct dirent* pFile = NULL;
     closedir(pDirectory);
   }
 #endif
+*/
 }
 
 void AgToLower(AgString& strLower)

@@ -7,7 +7,7 @@
 #include <time.h>
 #include "parsemsg.h"
 #include "agglobal.h"
-#include "aghudSuddenDeath.h"
+#include "aghudsuddendeath.h"
 
 DECLARE_MESSAGE(m_SuddenDeath, SuddenDeath )
 

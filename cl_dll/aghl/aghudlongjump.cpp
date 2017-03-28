@@ -7,7 +7,7 @@
 #include <time.h>
 #include "parsemsg.h"
 #include "agglobal.h"
-#include "aghudLongjump.h"
+#include "aghudlongjump.h"
 
 DECLARE_MESSAGE(m_Longjump, Longjump )
 

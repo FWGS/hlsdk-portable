@@ -317,6 +317,7 @@ public:
 	char m_SbarString0[ SBAR_STRING_SIZE ];
 	char m_SbarString1[ SBAR_STRING_SIZE ];
 
+	float m_flNextChatTime;
 //++ BulliT
 protected:
 	bool m_bAdmin;		//Player gained admin status.

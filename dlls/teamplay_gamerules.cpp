@@ -33,6 +33,9 @@ extern int g_teamplay;
 static char team_names[MAX_TEAMS][MAX_TEAMNAME_LENGTH];
 static int team_scores[MAX_TEAMS];
 static int num_teams = 0;
+//++ BulliT
+static char s_szLeastPlayers[MAX_TEAMNAME_LENGTH];
+//-- Martin Webrant
 
 extern DLL_GLOBAL BOOL		g_fGameOver;
 
@@ -772,7 +775,6 @@ void CHalfLifeTeamplay::RecountTeams()
 				team_scores[tm] += plr->pev->frags;
 			}
 
-			if( bResendInfo ) //Someone's info changed, let's send the team info again.
 //++ BulliT
 				plr->edict()->v.team = tm + 1;
 //-- Martin Webrant

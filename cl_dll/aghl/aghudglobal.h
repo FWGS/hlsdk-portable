@@ -29,8 +29,8 @@ protected:
 };
 
 enum enumGameType { STANDARD = 0, ARENA = 1, LMS = 2, CTF = 3, ARCADE = 4, SGBOW = 5, INSTAGIB = 6};
-extern BYTE g_GameType;
-inline BYTE AgGametype()
+extern unsigned char g_GameType;
+inline unsigned char AgGametype()
 {
   return g_GameType;
 };

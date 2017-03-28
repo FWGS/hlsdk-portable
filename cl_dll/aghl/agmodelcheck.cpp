@@ -12,8 +12,8 @@
 #include "studio_util.h"
 #include "r_studioint.h"
 #include "parsemsg.h"
-#include "AgModel.h"
-#include "AgModelCheck.h"
+#include "agmodel.h"
+#include "agmodelcheck.h"
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction

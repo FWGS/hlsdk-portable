@@ -22,11 +22,11 @@
 #include "agcrc32enforcer.h"
 #endif
 
-#include "AgVariableChecker.h"
-#include "vgui_TeamFortressViewport.h"
-#include "vgui_ScorePanel.h"
-#include "AgVGuiMapBrowser.h"
-#include "AgDownload.h"
+#include "agvariablechecker.h"
+//#include "vgui_TeamFortressViewport.h"
+//#include "vgui_ScorePanel.h"
+//#include "AgVGuiMapBrowser.h"
+//#include "AgDownload.h"
 
 DECLARE_MESSAGE(m_Global, PlaySound )
 DECLARE_MESSAGE(m_Global, CheatCheck )
@@ -44,7 +44,7 @@ DECLARE_COMMAND(m_Global, UnloadAuthID);
 DECLARE_COMMAND(m_Global, AgRecord);
 
 int       g_iPure = 1;
-BYTE g_GameType = STANDARD;
+unsigned char g_GameType = STANDARD;
 
 typedef map<int, AgString, less<int> > AgPlayerToAuthID;
 typedef map<AgString, AgString, less<AgString> > AgAuthIDToRealName;
@@ -94,7 +94,7 @@ int iOverLay = 0;
 
 int AgHudGlobal::Draw(float fTime)
 {
-	if (m_fCheckColor < gHUD.m_flTime)
+/*	if (m_fCheckColor < gHUD.m_flTime)
 	{
 		AgUpdateHudColor();
 		m_fCheckColor = gHUD.m_flTime + 1; //every second
@@ -153,7 +153,7 @@ int AgHudGlobal::Draw(float fTime)
         iLines++;
       }
     }
-  }
+  }*/
   return 1;
 }
 
@@ -274,8 +274,8 @@ int AgHudGlobal::MsgFunc_AuthID(const char *pszName, int iSize, void *pbuf)
 
 int AgHudGlobal::MsgFunc_MapList( const char *pszName, int iSize, void *pbuf )
 {
-	if (gViewPort && gViewPort->m_pMapBrowser)
-		return gViewPort->m_pMapBrowser->MsgFunc_MapList( pszName, iSize, pbuf );
+	//if (gViewPort && gViewPort->m_pMapBrowser)
+		//return gViewPort->m_pMapBrowser->MsgFunc_MapList( pszName, iSize, pbuf );
 	return 1;
 }
 
@@ -293,17 +293,17 @@ int AgHudGlobal::MsgFunc_CRC32( const char *pszName, int iSize, void *pbuf )
 
 void AgHudGlobal::UserCmd_Winamp()
 {
-  gViewPort->UserCmd_Winamp();
+  //gViewPort->UserCmd_Winamp();
 }
 
 void AgHudGlobal::UserCmd_ToggleWinamp()
 {
-	gViewPort->ToggleWinamp();
+	//gViewPort->ToggleWinamp();
 }
 
 void AgHudGlobal::UserCmd_ToggleMapBrowser()
 {
-	gViewPort->ToggleMapBrowser();
+	//gViewPort->ToggleMapBrowser();
 }
 
 void AgHudGlobal::UserCmd_LoadAuthID()
@@ -315,8 +315,8 @@ void AgHudGlobal::UserCmd_LoadAuthID()
     AgString sUrl = gEngfuncs.Cmd_Argv(1);
 		sprintf(szSaveAs,"%s/%s",AgGetDirectory(),pszFileName);
     sUrl = "http://" + sUrl;
-    AgDownload download;
-    download.DownloadFile(sUrl.c_str(), szSaveAs);
+    //AgDownload download;
+    //download.DownloadFile(sUrl.c_str(), szSaveAs);
 	}
 
 	int iFilePos = 0, iFileSize = 0;

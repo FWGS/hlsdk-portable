@@ -432,7 +432,7 @@ void CHud::VidInit( void )
 	m_Vote.VidInit();
 	m_Nextmap.VidInit();
 	m_Location.VidInit();
-	m_IRC.VidInit();
+	//m_IRC.VidInit();
 	m_CTF.VidInit();
 	m_Scoreboard.VidInit();
 //-- Martin Webrant

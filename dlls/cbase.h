@@ -12,6 +12,8 @@
 *   without written permission from Valve LLC.
 *
 ****/
+#ifndef CBASE_H
+#define CBASE_H
 /*
 
 Class Hierachy
@@ -793,3 +795,4 @@ public:
 	void Precache( void );
 	void KeyValue( KeyValueData *pkvd );
 };
+#endif //CBASE_H

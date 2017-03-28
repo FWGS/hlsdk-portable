@@ -22,8 +22,8 @@
 #include "cl_util.h"
 #include "netadr.h"
 //++ BulliT
-#include "AgVariableChecker.h"
-#include "AgGlobal.h"
+#include "agvariableChecker.h"
+#include "agglobal.h"
 //#include "irc.h"
 #include "agwallhack.h"
 //-- Martin Webrant

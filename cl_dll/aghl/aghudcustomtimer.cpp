@@ -7,7 +7,7 @@
 #include <time.h>
 #include "parsemsg.h"
 #include "agglobal.h"
-#include "aghudCustomTimer.h"
+#include "aghudcustomtimer.h"
 
 DECLARE_COMMAND(m_CustomTimer, CustomTimer);
 

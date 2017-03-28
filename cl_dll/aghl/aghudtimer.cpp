@@ -55,7 +55,13 @@ int AgHudTimer::Draw(float fTime)
   long lTime = 0;
   if (3 == g_phud_timer->value)
   {
-    _strtime(m_szTime);
+#ifdef _WIN32
+	_strtime( m_szTime );
+#else
+	struct tm time;
+        mktime( &time );
+        strftime( m_szTime, 64, "%H:%M:%S", &time );
+#endif
   }
   else
   {

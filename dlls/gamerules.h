@@ -171,7 +171,7 @@ public:
 };
 
 //++ BulliT
-extern CGameRules *InstallGameRules( void );
+//extern CGameRules *InstallGameRules( void );
 //-- Martin Webrant
 
 //=========================================================

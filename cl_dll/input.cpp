@@ -24,7 +24,7 @@ extern "C"
 #include "const.h"
 #include "camera.h"
 //++ BulliT
-#include "AgVariableChecker.h"
+#include "agvariablechecker.h"
 //-- Martin Webrant
 #include "in_defs.h"
 //#include "view.h"
