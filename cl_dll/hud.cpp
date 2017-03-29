@@ -35,6 +35,7 @@ extern client_sprite_t *GetSpriteList( client_sprite_t *pList, const char *psz, 
 
 extern cvar_t *sensitivity;
 cvar_t *cl_lw = NULL;
+int g_IsSpectator[MAX_PLAYERS + 1];
 
 void ShutdownInput( void );
 
@@ -142,7 +143,15 @@ int __MsgFunc_ServerName( const char *pszName, int iSize, void *pbuf )
 
 int __MsgFunc_Spectator( const char *pszName, int iSize, void *pbuf )
 {
-	return 0;
+	BEGIN_READ( pbuf, iSize );
+
+	short cl = READ_BYTE();
+	if( cl > 0 && cl <= MAX_PLAYERS )
+	{
+		g_IsSpectator[cl] = READ_BYTE();
+	}
+
+	return 1;
 }
 
 int __MsgFunc_AllowSpec( const char *pszName, int iSize, void *pbuf )

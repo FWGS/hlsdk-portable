@@ -246,6 +246,14 @@ public:
 	int m_iShowscoresHeld;
 
 	void GetAllPlayersInfo( void );
+private:
+	typedef struct
+	{
+		HSPRITE spr;
+		wrect_t rc;
+	}icon_flagstatus_t;
+
+	icon_flagstatus_t m_IconFlagScore;
 };
 
 //

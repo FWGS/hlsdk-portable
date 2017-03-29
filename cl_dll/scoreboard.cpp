@@ -36,6 +36,9 @@ int g_iUser3;
 int g_iTeamNumber;
 int g_iPlayerClass;
 
+extern int g_iPlayerFlag1;
+extern int g_iPlayerFlag2;
+
 //#include "vgui_TeamFortressViewport.h"
 
 DECLARE_COMMAND( m_Scoreboard, ShowScores )
@@ -67,6 +70,11 @@ int CHudScoreboard::Init( void )
 int CHudScoreboard::VidInit( void )
 {
 	// Load sprites here
+	int iSprite = 0;
+	iSprite = gHUD.GetSpriteIndex( "icon_ctf_score" );
+	m_IconFlagScore.spr = gHUD.GetSprite( iSprite );
+	m_IconFlagScore.rc = gHUD.GetSpriteRect( iSprite );
+
 	return 1;
 }
 
@@ -108,6 +116,7 @@ int SCOREBOARD_WIDTH = 320;
 #define ROW_GAP  13
 #define ROW_RANGE_MIN 15
 #define ROW_RANGE_MAX ( ScreenHeight - 50 )
+#define ROW_TOP 40
 
 int CHudScoreboard::Draw( float fTime )
 {
@@ -139,12 +148,12 @@ int CHudScoreboard::Draw( float fTime )
 	int xpos_rel = ( ScreenWidth - SCOREBOARD_WIDTH ) / 2;
 
 	// print the heading line
-	int ypos = ROW_RANGE_MIN + ( list_slot * ROW_GAP );
+	int ypos = ROW_TOP + ROW_RANGE_MIN + ( list_slot * ROW_GAP );
 	int xpos = NAME_RANGE_MIN + xpos_rel;
 
 	FAR_RIGHT = can_show_packetloss ? PL_RANGE_MAX : PING_RANGE_MAX;
 	FAR_RIGHT += 5;
-	gHUD.DrawDarkRectangle( xpos - 5, ypos - 5, FAR_RIGHT, ROW_RANGE_MAX );
+	//gHUD.DrawDarkRectangle( xpos - 5, ypos - 5, FAR_RIGHT, ROW_RANGE_MAX );
 	if( !gHUD.m_Teamplay )
 		gHUD.DrawHudString( xpos, ypos, NAME_RANGE_MAX + xpos_rel, "Player", 255, 140, 0 );
 	else
@@ -161,7 +170,7 @@ int CHudScoreboard::Draw( float fTime )
 	}
 
 	list_slot += 1.2;
-	ypos = ROW_RANGE_MIN + ( list_slot * ROW_GAP );
+	ypos = ROW_TOP + ROW_RANGE_MIN + ( list_slot * ROW_GAP );
 	xpos = NAME_RANGE_MIN + xpos_rel;
 	FillRGBA( xpos - 4, ypos, FAR_RIGHT -2, 1, 255, 140, 0, 255 );  // draw the seperator line
 
@@ -256,7 +265,7 @@ int CHudScoreboard::Draw( float fTime )
 		// draw out the best team
 		team_info_t *team_info = &g_TeamInfo[best_team];
 
-		ypos = ROW_RANGE_MIN + ( list_slot * ROW_GAP );
+		ypos = ROW_TOP + ROW_RANGE_MIN + ( list_slot * ROW_GAP );
 
 		// check we haven't drawn too far down
 		if( ypos > ROW_RANGE_MAX )  // don't draw to close to the lower border
@@ -370,7 +379,7 @@ int CHudScoreboard::DrawPlayers( int xpos_rel, float list_slot, int nameoffset, 
 		// draw out the best player
 		hud_player_info_t *pl_info = &g_PlayerInfoList[best_player];
 
-		int ypos = ROW_RANGE_MIN + ( list_slot * ROW_GAP );
+		int ypos = ROW_TOP + ROW_RANGE_MIN + ( list_slot * ROW_GAP );
 
 		// check we haven't drawn too far down
 		if( ypos > ROW_RANGE_MAX )  // don't draw to close to the lower border
@@ -378,8 +387,8 @@ int CHudScoreboard::DrawPlayers( int xpos_rel, float list_slot, int nameoffset, 
 
 		int xpos = NAME_RANGE_MIN + xpos_rel;
 		int r = 255, g = 255, b = 255;
-		float *colors = GetClientColor( best_player );
-		r *= colors[0], g *= colors[1], b *= colors[2];
+		//float *colors = GetClientColor( best_player );
+		//r *= colors[0], g *= colors[1], b *= colors[2];
 		if( best_player == m_iLastKilledBy && m_fLastKillTime && m_fLastKillTime > gHUD.m_flTime )
 		{
 			if( pl_info->thisplayer )
@@ -399,8 +408,19 @@ int CHudScoreboard::DrawPlayers( int xpos_rel, float list_slot, int nameoffset, 
 			FillRGBA( NAME_RANGE_MIN + xpos_rel - 5, ypos, FAR_RIGHT, ROW_GAP, 0, 0, 255, 70 );
 		}
 
+		if( g_iPlayerFlag1 == best_player || g_iPlayerFlag2 == best_player )
+		{
+			SPR_Set(m_IconFlagScore.spr, 200, 200, 200 );
+			SPR_DrawAdditive( 0, xpos - 26, ypos, &m_IconFlagScore.rc );
+		}
+
+		static char szName[128];
+		if( g_IsSpectator[best_player] )
+			sprintf( szName, "%s  (S)", AgGetRealName( best_player ).c_str() );
+		else
+			sprintf( szName, "%s", AgGetRealName( best_player ).c_str() );
 		// draw their name (left to right)
-		gHUD.DrawHudString( xpos + nameoffset, ypos, NAME_RANGE_MAX + xpos_rel, pl_info->name, r, g, b );
+		gHUD.DrawHudString( xpos + nameoffset, ypos, NAME_RANGE_MAX + xpos_rel, szName, r, g, b );
 
 		// draw kills (right to left)
 		xpos = KILLS_RANGE_MAX + xpos_rel;
@@ -560,6 +580,7 @@ int CHudScoreboard::MsgFunc_TeamInfo( const char *pszName, int iSize, void *pbuf
 // if this message is never received, then scores will simply be the combined totals of the players.
 int CHudScoreboard::MsgFunc_TeamScore( const char *pszName, int iSize, void *pbuf )
 {
+/*
 	BEGIN_READ( pbuf, iSize );
 	char *TeamName = READ_STRING();
 	int i;
@@ -577,7 +598,7 @@ int CHudScoreboard::MsgFunc_TeamScore( const char *pszName, int iSize, void *pbu
 	g_TeamInfo[i].scores_overriden = TRUE;
 	g_TeamInfo[i].frags = READ_SHORT();
 	g_TeamInfo[i].deaths = READ_SHORT();
-
+*/
 	return 1;
 }
 
