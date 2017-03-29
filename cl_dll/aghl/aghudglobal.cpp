@@ -172,7 +172,7 @@ int AgHudGlobal::Draw( float fTime )
 			int lowest_deaths = 99999;
 			int best_player = 0;
 
-			for( int i = 1; i < MAX_PLAYERS; i++ )
+			for( i = 1; i < MAX_PLAYERS; i++ )
 			{
 				if( g_PlayerInfoList[i].name && g_PlayerExtraInfo[i].frags >= highest_frags )
 				{

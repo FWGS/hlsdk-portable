@@ -805,8 +805,6 @@ BOOL AgCTFFlag::MyTouch( CBasePlayer *pPlayer )
 		MESSAGE_END();
 
 		//Let all players hear and read that the flag is gone
-		char szText[201];
-
 		if (FStrEq(CTF_TEAM1_NAME, m_szTeamName))
     {
       if (!g_bTeam1FlagLost)
