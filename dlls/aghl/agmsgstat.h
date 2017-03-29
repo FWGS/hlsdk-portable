@@ -75,6 +75,6 @@ inline void MESSAGE_BEGIN( int msg_dest, int msg_type, const float *pOrigin, ent
 #define WRITE_ENTITY	(g_MsgStat.WriteEntity)
 
 
-#endif AGMSGSTAT
+#endif //AGMSGSTAT
 
 #endif // !defined(AFX_AGMSGSTAT_H__B7E22ED8_5544_445A_9AE5_24DCD9413FF2__INCLUDED_)

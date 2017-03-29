@@ -55,5 +55,5 @@ const char* AgGetGame();
 const char* AgGetDirectory();
 const char* AgGetDirectoryValve();
 
-#endif _AG_GLOBAL_
+#endif //_AG_GLOBAL_
 //-- Martin Webrant

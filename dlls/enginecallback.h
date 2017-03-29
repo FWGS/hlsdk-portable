@@ -86,7 +86,7 @@ inline void MESSAGE_BEGIN( int msg_dest, int msg_type, const float *pOrigin = NU
 #define WRITE_STRING	(*g_engfuncs.pfnWriteString)
 #define WRITE_ENTITY	(*g_engfuncs.pfnWriteEntity)
 //++ BulliT
-#endif AGMSGSTAT
+#endif //AGMSGSTAT
 //-- Martin Webrant
 #define CVAR_REGISTER	(*g_engfuncs.pfnCVarRegister)
 #define CVAR_GET_FLOAT	(*g_engfuncs.pfnCVarGetFloat)
