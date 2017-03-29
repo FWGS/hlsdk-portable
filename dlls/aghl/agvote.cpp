@@ -250,9 +250,9 @@ bool AgVote::HandleCommand(CBasePlayer* pPlayer)
                FStrEq(m_sVote.c_str(),"agkick") ||
                FStrEq(m_sVote.c_str(),"agadmin") )
       {
-        if (FStrEq(m_sVote.c_str(),"agkick") && 1 > ag_vote_kick.value
-          ||FStrEq(m_sVote.c_str(),"agadmin") && 1 > ag_vote_admin.value
-          ||FStrEq(m_sVote.c_str(),"agallow") && 1 > ag_vote_allow.value
+        if( ( FStrEq(m_sVote.c_str(),"agkick") && 1 > ag_vote_kick.value )
+          || ( FStrEq(m_sVote.c_str(),"agadmin") && 1 > ag_vote_admin.value )
+          || ( FStrEq(m_sVote.c_str(),"agallow") && 1 > ag_vote_allow.value )
           )
         {
           AgConsole("Vote is not allowed by server admin.",pPlayer);

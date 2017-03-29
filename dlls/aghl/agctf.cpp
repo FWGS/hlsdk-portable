@@ -401,8 +401,8 @@ void AgCTF::AddPointsForKill(CBasePlayer *pAttacker, CBasePlayer *pKilled)
 	if ( pAttacker != pKilled && g_pGameRules->PlayerRelationship( pAttacker, pKilled ) == GR_TEAMMATE )
 		return; //Killed his team m8.
 
-	if (FStrEq(CTF_TEAM1_NAME, pKilled->m_szTeamName) && pKilled->m_bFlagTeam2
-    ||FStrEq(CTF_TEAM2_NAME, pKilled->m_szTeamName) && pKilled->m_bFlagTeam1)
+	if( ( FStrEq(CTF_TEAM1_NAME, pKilled->m_szTeamName) && pKilled->m_bFlagTeam2 )
+    || ( FStrEq(CTF_TEAM2_NAME, pKilled->m_szTeamName) && pKilled->m_bFlagTeam1 ) )
   {
     //He killed the flag carrier.
 	  pAttacker->AddPoints(ag_ctf_carrierkillpoints.value, TRUE);

@@ -108,7 +108,7 @@ bool AgGameMode::HandleCommand(CBasePlayer* pPlayer)
         return true;
       }
 
-      if (!IsAllowedGamemode(CMD_ARGV(0)),pPlayer)
+      if (!IsAllowedGamemode(CMD_ARGV(0)))
         return false;
 
       Gamemode(CMD_ARGV(0),pPlayer);
@@ -118,7 +118,7 @@ bool AgGameMode::HandleCommand(CBasePlayer* pPlayer)
     {
       if (FStrEq(CMD_ARGV(0), "agnextmode"))
       {
-        if (!IsAllowedGamemode(CMD_ARGV(1)),pPlayer)
+        if (!IsAllowedGamemode(CMD_ARGV(1)))
           return false;
 
         NextGamemode(CMD_ARGV(1),pPlayer);

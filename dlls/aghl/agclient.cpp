@@ -108,7 +108,7 @@ bool AgClient::HandleCommand(CBasePlayer* pPlayer)
 
     //Dont spectate if player is in game in arena.
     //Use sound and text flood checks, We dont want lamers to change to often.
-    if (pPlayer->IsIngame() && ARENA == AgGametype() || pPlayer->FloodCheck() || pPlayer->FloodSound())
+    if( ( pPlayer->IsIngame() && ARENA == AgGametype() ) || pPlayer->FloodCheck() || pPlayer->FloodSound())
       return true;
 
     if (2 == CMD_ARGC() && 1 == atoi(CMD_ARGV(1)))
@@ -430,7 +430,7 @@ void AgClient::Say(CBasePlayer* pPlayer, say_type Type )
     return;
   
   //Check if the user is flooding us with nonsens.
-  if ((All == Type || pPlayer->IsSpectator()) && pPlayer->FloodCheck() || pPlayer->FloodText())
+  if( ( ( All == Type || pPlayer->IsSpectator() ) && pPlayer->FloodCheck() ) || pPlayer->FloodText())
     return;
   
   bool bSendLocation = false;
@@ -564,10 +564,12 @@ void AgClient::Say(CBasePlayer* pPlayer, say_type Type )
       {
         //Flag info
         if (pPlayer && pPlayer->IsAlive() && !pPlayer->IsSpectator())
+	{
           if (pPlayer->m_bFlagTeam1)
             pText = pText + sprintf(pText,CTF_TEAM1_NAME);
           else if (pPlayer->m_bFlagTeam2)
             pText = pText + sprintf(pText,CTF_TEAM2_NAME);
+	}
         pSayText++;
         continue;
       }
@@ -761,7 +763,7 @@ void AgClient::Say(CBasePlayer* pPlayer, say_type Type )
 void AgClient::Play(CBasePlayer* pPlayer, say_type Type, const char* pszWave)
 {
 	//Check for flooding if spectator
-	if (pPlayer->IsSpectator() && pPlayer->FloodCheck() || !g_pGameRules->IsTeamplay() || pPlayer->FloodSound())
+	if( ( pPlayer->IsSpectator() && pPlayer->FloodCheck() ) || !g_pGameRules->IsTeamplay() || pPlayer->FloodSound())
 		return;
 	
 	//Play sound to teammates.

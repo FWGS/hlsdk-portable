@@ -74,9 +74,9 @@ bool AgSettings::Think()
   m_fNextCheck = gpGlobals->time + 5.0; //Every 5 seconds.
 
   //Check if to display next map.
-  if (m_bCheckNextMap && timelimit.value || m_bCheckNextMap && fraglimit.value)
+  if( ( m_bCheckNextMap && timelimit.value ) || ( m_bCheckNextMap && fraglimit.value ) )
   {
-    if (timeleft.value && 60 > timeleft.value || fraglimit.value && 2 > fragsleft.value)
+    if( ( timeleft.value && 60 > timeleft.value ) || ( fraglimit.value && 2 > fragsleft.value ) )
     {
 #ifdef AG_NO_CLIENT_DLL
       AgSay(NULL,UTIL_VarArgs("Next map is %s\n",GetNextLevel().c_str()),NULL,30,0.03,0.05,2);

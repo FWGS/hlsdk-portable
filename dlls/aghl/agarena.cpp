@@ -43,7 +43,7 @@ void AgArena::Think()
     CBasePlayer* pPlayer1 = GetPlayer1();
     CBasePlayer* pPlayer2 = GetPlayer2();
 
-    if (!pPlayer1 || pPlayer1 && !pPlayer1->IsAlive() || !pPlayer2 || pPlayer2 && !pPlayer2->IsAlive())
+    if( !pPlayer1 || ( pPlayer1 && !pPlayer1->IsAlive() ) || !pPlayer2 || ( pPlayer2 && !pPlayer2->IsAlive() ) )
     {
       m_Status = PlayerDied;
       m_fNextCountdown = gpGlobals->time + 3.0;  //Let the effect of him dying play for 3 seconds

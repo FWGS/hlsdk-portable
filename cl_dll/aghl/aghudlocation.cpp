@@ -27,7 +27,7 @@ int AgHudLocation::Init(void)
 	m_iFlags = 0;
   m_szMap[0] = '\0';
 
-  for (int i = 1; i <= MAX_PLAYERS; i++)
+  for (int i = 1; i < MAX_PLAYERS + 1; i++)
     vPlayerLocations[i] = Vector(0,0,0);
 
 	gHUD.AddHudElem(this);
@@ -366,7 +366,7 @@ void AgHudLocation::ParseAndEditSayString(char* pszSay, int iPlayer)
       if ('l' == *pszSayTemp || 'L' == *pszSayTemp || 'd' == *pszSayTemp || 'D' == *pszSayTemp )
       {
         //Location files.
-        pszSay = pszSay + sprintf(pszSay,Location(vPlayerLocations[iPlayer]).c_str());
+        pszSay = pszSay + sprintf(pszSay, "%s", Location(vPlayerLocations[iPlayer]).c_str());
         pszSayTemp++;
         continue;
       }

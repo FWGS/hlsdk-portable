@@ -92,7 +92,7 @@ void AgMatch::Think()
 
 void AgMatch::Start(const AgString& sSpawn)
 {
-  if (m_fMatchStart > 0 || 0 == timelimit.value && 0 == fraglimit.value) 
+  if( m_fMatchStart > 0 || ( 0 == timelimit.value && 0 == fraglimit.value ) ) 
     return;
 
   //Count players

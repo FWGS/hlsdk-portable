@@ -452,8 +452,8 @@ CBasePlayer* AgPlayerByName(const AgString& sNameOrPlayerNumber)
     CBasePlayer* pPlayerLoop = AgPlayerByIndex(i);
     if (pPlayerLoop)
       if ( 0 == stricmp(pPlayerLoop->GetName(),sNameOrPlayerNumber.c_str()) || 
-        "#" == sNameOrPlayerNumber.substr(0,1) &&
-        GETPLAYERUSERID(pPlayerLoop->edict()) == atoi(sNameOrPlayerNumber.substr(1).c_str())
+        ( "#" == sNameOrPlayerNumber.substr(0,1) &&
+        GETPLAYERUSERID(pPlayerLoop->edict()) == atoi(sNameOrPlayerNumber.substr(1).c_str() ) )
         )
         return pPlayerLoop;
   }

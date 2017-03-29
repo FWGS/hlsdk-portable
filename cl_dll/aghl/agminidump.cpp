@@ -145,7 +145,7 @@ public:
 
 AgMiniDump g_MiniDump; //The dumper.
 
-#endif CLIENT_DLL
+#endif //CLIENT_DLL
 
-#endif AG_USE_MINIDUMP
+#endif //AG_USE_MINIDUMP
 //-- Martin Webrant

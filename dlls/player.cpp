@@ -2642,7 +2642,7 @@ void CBasePlayer::PostThink()
 	// Track button info so we can detect 'pressed' and 'released' buttons next frame
 	//m_afButtonLast = pev->button;
 	//Remove observe mode if using attack or use.
-	if( ( pev->button & IN_ATTACK ) && ( pev->effects == EF_NODRAW ) || ( pev->button & IN_USE ) && ( pev->effects == EF_NODRAW ) )
+	if( ( ( pev->button & IN_ATTACK ) && ( pev->effects == EF_NODRAW ) ) || ( ( pev->button & IN_USE ) && ( pev->effects == EF_NODRAW ) ) )
 	{
 		if( DEAD_NO == pev->deadflag || DEAD_RESPAWNABLE == pev->deadflag)
 		{
@@ -3248,7 +3248,7 @@ const char *CBasePlayer::TeamID( void )
 		return "";
 
 //++ BulliT
-	if( IsSpectator() && ( LMS != AgGametype() || LMS == AgGametype() && !m_bReady ) )
+	if( IsSpectator() && ( LMS != AgGametype() || ( LMS == AgGametype() && !m_bReady ) ) )
 		return "";
 //-- Martin Webrant
 
@@ -4357,8 +4357,8 @@ void CBasePlayer::UpdateClientData( void )
 
 					for( int i=0; i < MAX_AMMO_SLOTS; i++ )
 					{
-						if( m_pClientActiveItem && i == m_pClientActiveItem->PrimaryAmmoIndex()
-							|| m_pClientActiveItem && i == m_pClientActiveItem->SecondaryAmmoIndex() )
+						if( ( m_pClientActiveItem && i == m_pClientActiveItem->PrimaryAmmoIndex() )
+							|| ( m_pClientActiveItem && i == m_pClientActiveItem->SecondaryAmmoIndex() ) )
 						{
 							// this is the primary or secondary ammo type for the active weapon so lets update the client with the info if needed.
 							if( pPlayerTarget->m_rgAmmo[i] != m_rgAmmoLast[i] )
@@ -5476,8 +5476,8 @@ void CBasePlayer::UpdateFlagStatus( CBasePlayer *pPlayer )
 	else
 		iFlagStatus2 = Home;
 
-	if( m_iFlagStatus1Last == Carry && ( iFlagStatus1 != Carry )
-		||m_iFlagStatus2Last == Carry && ( iFlagStatus2 != Carry ) )
+	if( ( m_iFlagStatus1Last == Carry && ( iFlagStatus1 != Carry ) )
+		|| ( m_iFlagStatus2Last == Carry && ( iFlagStatus2 != Carry ) ) )
 	{
 		//Turn off rendering since we cont carry it anymore.
 		pev->renderfx = kRenderFxNone;

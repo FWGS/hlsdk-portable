@@ -54,7 +54,7 @@ void AgMatchReport::Save()
         //Print the players for that one.
         for (int iPlayer = 1; iPlayer <= gEngfuncs.GetMaxClients(); iPlayer++)
         {
-          if (g_PlayerExtraInfo[iPlayer].teamname && g_PlayerInfoList[iPlayer].name && 0 == stricmp(g_PlayerExtraInfo[iPlayer].teamname,g_TeamInfo[i].name))
+          if( ( ( g_PlayerExtraInfo[iPlayer].teamname && g_PlayerInfoList[iPlayer].name && 0 == stricmp( g_PlayerExtraInfo[iPlayer].teamname,g_TeamInfo[i].name ) ) ) )
           {
             fprintf(pFile,"%-20s\t%d\t%d\t%d\t%d\t%s\r\n",(const char*)g_PlayerInfoList[iPlayer].name,g_PlayerExtraInfo[iPlayer].frags,g_PlayerExtraInfo[iPlayer].deaths,g_PlayerInfoList[iPlayer].ping,g_PlayerInfoList[iPlayer].packetloss,AgGetAuthID(iPlayer).c_str());
           }
