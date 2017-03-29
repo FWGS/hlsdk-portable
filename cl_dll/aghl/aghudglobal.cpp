@@ -45,6 +45,8 @@ DECLARE_COMMAND(m_Global, AgRecord);
 
 int       g_iPure = 1;
 unsigned char g_GameType = STANDARD;
+int iNumberOfTeamColors = 5;
+extern int iTeamColors[5][3];
 
 typedef map<int, AgString, less<int> > AgPlayerToAuthID;
 typedef map<AgString, AgString, less<AgString> > AgAuthIDToRealName;
@@ -92,69 +94,121 @@ void AgHudGlobal::Reset(void)
 
 int iOverLay = 0;
 
-int AgHudGlobal::Draw(float fTime)
+int AgHudGlobal::Draw( float fTime )
 {
-/*	if (m_fCheckColor < gHUD.m_flTime)
+	if( m_fCheckColor < gHUD.m_flTime )
 	{
 		AgUpdateHudColor();
 		m_fCheckColor = gHUD.m_flTime + 1; //every second
 	}
-  if (g_pcl_scores->value < 1)
-    return 1;
+	if( g_pcl_scores->value < 1 )
+		return 1;
+        
+	int i, xpos, ypos;
+	xpos = 30;
+	ypos = 50;
+	sscanf( CVAR_GET_STRING( "cl_scores_pos" ), "%i %i", &xpos, &ypos );
 
-  int xpos, ypos;
-  xpos = 30;
-  ypos = 50;
-	sscanf(CVAR_GET_STRING("cl_scores_pos"), "%i %i", &xpos, &ypos);
+	int r, g, b;
 
-  int r,g,b;
+	if( gHUD.m_Teamplay )
+	{
+		for( i = 1; i <= gHUD.m_Scoreboard.m_iNumTeams; i++ )
+		{
+			g_TeamInfo[i].already_drawn = FALSE;
+		}
+	}
+	else
+		gHUD.m_Scoreboard.GetAllPlayersInfo();
 
-  if (gViewPort && gViewPort->m_pScoreBoard)
-  {
-    for (int iRow = 0, iLines = 0; iRow < gViewPort->m_pScoreBoard->m_iRows && iLines < g_pcl_scores->value; iRow++)
-    {
-      if (gViewPort->m_pScoreBoard->m_iIsATeam[iRow] == 1 && gHUD.m_Teamplay)
-      {
-        char szScore[64];
-        team_info_t* team_info = &g_TeamInfo[gViewPort->m_pScoreBoard->m_iSortedRows[iRow]];
-        sprintf(szScore,"%-5i %s",team_info->frags,team_info->name);
+	for( int iRow = 0, iLines = 0; iLines < g_pcl_scores->value; iRow++ )
+	{
+		if( gHUD.m_Teamplay )
+		{
+			int highest_frags = -99999; int lowest_deaths = 99999;
+			int best_team = 0;
 
-        r = iTeamColors[team_info->teamnumber % iNumberOfTeamColors][0];
-        g = iTeamColors[team_info->teamnumber % iNumberOfTeamColors][1];
-        b = iTeamColors[team_info->teamnumber % iNumberOfTeamColors][2];
+			for( i = 1; i <= gHUD.m_Scoreboard.m_iNumTeams; i++ )
+			{
+				if( g_TeamInfo[i].players < 0 )
+					continue;
 
-        FillRGBA( xpos - 10, ypos + 2 , iOverLay, gHUD.m_scrinfo.iCharHeight * 0.9, r, g, b, 20 );
+				if( !g_TeamInfo[i].already_drawn && g_TeamInfo[i].frags >= highest_frags )
+				{
+					if( g_TeamInfo[i].frags > highest_frags || g_TeamInfo[i].deaths < lowest_deaths )
+					{
+						best_team = i;
+						lowest_deaths = g_TeamInfo[i].deaths;
+						 highest_frags = g_TeamInfo[i].frags;
+					}
+				}
+			}
 
-        ScaleColors(r,g,b,135);
+			// draw the best team on the scoreboard
+			if( !best_team )
+				break;
 
-        int ixposnew = gHUD.DrawHudString( xpos, ypos, ScreenWidth, szScore, r, g, b );
-        iOverLay = max(ixposnew - xpos + 20,iOverLay);
-        ypos += gHUD.m_scrinfo.iCharHeight * 0.9;
-        iLines++;
-      }
-      else if (gViewPort->m_pScoreBoard->m_iIsATeam[iRow] == 0 && !gHUD.m_Teamplay)
-      {
-        char szScore[64];
-				hud_player_info_t* pl_info = &g_PlayerInfoList[gViewPort->m_pScoreBoard->m_iSortedRows[iRow]];
-				extra_player_info_t* pl_info_extra = &g_PlayerExtraInfo[gViewPort->m_pScoreBoard->m_iSortedRows[iRow]];
-        sprintf(szScore,"%-5i %s",pl_info_extra->frags,pl_info->name);
+			char szScore[64];
+			team_info_t *team_info = &g_TeamInfo[best_team];
+			sprintf( szScore, "%-5i %s", team_info->frags, team_info->name );
 
-        r = iTeamColors[pl_info_extra->teamnumber % iNumberOfTeamColors][0];
-        g = iTeamColors[pl_info_extra->teamnumber % iNumberOfTeamColors][1];
-        b = iTeamColors[pl_info_extra->teamnumber % iNumberOfTeamColors][2];
+			r = iTeamColors[best_team % iNumberOfTeamColors][0];
+			g = iTeamColors[best_team % iNumberOfTeamColors][1];
+			b = iTeamColors[best_team % iNumberOfTeamColors][2];
 
-			  FillRGBA( xpos - 10, ypos + 2, iOverLay, gHUD.m_scrinfo.iCharHeight * 0.9, r, g, b, 10 );
+			FillRGBA( xpos - 10, ypos + 2 , iOverLay, gHUD.m_scrinfo.iCharHeight * 0.9, r, g, b, 20 );
 
-        ScaleColors(r,g,b,135);
+			ScaleColors( r, g, b, 135 );
 
-        int ixposnew = gHUD.DrawHudString( xpos, ypos, ScreenWidth, szScore, r, g, b );
-        iOverLay = max(ixposnew - xpos + 20,iOverLay);
-        ypos += gHUD.m_scrinfo.iCharHeight * 0.9;
-        iLines++;
-      }
-    }
-  }*/
-  return 1;
+			int ixposnew = gHUD.DrawHudString( xpos, ypos, ScreenWidth, szScore, r, g, b );
+			iOverLay = max( ixposnew - xpos + 20, iOverLay );
+			ypos += gHUD.m_scrinfo.iCharHeight * 0.9;
+			g_TeamInfo[best_team].already_drawn = TRUE;
+			iLines++;
+		}
+		else
+		{
+			int highest_frags = -99999;
+			int lowest_deaths = 99999;
+			int best_player = 0;
+
+			for( int i = 1; i < MAX_PLAYERS; i++ )
+			{
+				if( g_PlayerInfoList[i].name && g_PlayerExtraInfo[i].frags >= highest_frags )
+				{
+					extra_player_info_t *pl_info = &g_PlayerExtraInfo[i];
+					if( pl_info->frags > highest_frags || pl_info->deaths < lowest_deaths )
+					{
+						best_player = i;
+						lowest_deaths = pl_info->deaths;
+						highest_frags = pl_info->frags;
+					}
+				}
+			}
+
+			if( !best_player )
+				break;
+			char szScore[64];
+			hud_player_info_t *pl_info = &g_PlayerInfoList[best_player];
+			extra_player_info_t *pl_info_extra = &g_PlayerExtraInfo[best_player];
+			sprintf( szScore, "%-5i %s",pl_info_extra->frags,pl_info->name );
+
+			r = iTeamColors[pl_info_extra->teamnumber % iNumberOfTeamColors][0];
+			g = iTeamColors[pl_info_extra->teamnumber % iNumberOfTeamColors][1];
+			b = iTeamColors[pl_info_extra->teamnumber % iNumberOfTeamColors][2];
+
+			FillRGBA( xpos - 10, ypos + 2, iOverLay, gHUD.m_scrinfo.iCharHeight * 0.9, r, g, b, 10 );
+
+			ScaleColors( r, g, b, 135 );
+
+			int ixposnew = gHUD.DrawHudString( xpos, ypos, ScreenWidth, szScore, r, g, b );
+			iOverLay = max( ixposnew - xpos + 20,iOverLay );
+			ypos += gHUD.m_scrinfo.iCharHeight * 0.9;
+			pl_info->name = NULL;	// set the name to be NULL, so this client won't get drawn again
+			iLines++;
+		}
+	}
+	return 1;
 }
 
 
