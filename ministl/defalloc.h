@@ -72,12 +72,12 @@ static inline void destroy(long**, long**) {}
 static inline void destroy(unsigned long**, unsigned long**) {}
 static inline void destroy(float**, float**) {}
 static inline void destroy(double**, double**) {}
-
+/*
 #if defined (__GNUG__)
 static inline void *operator new(size_t, void *place) { return place; }
 static inline void *operator new[](size_t, void *place) { return place; }
-#else
-#include <new.h>
-#endif
+#else*/
+#include <new>
+//#endif
 
 #endif

@@ -118,7 +118,7 @@ void CSqueakGrenade::Spawn( void )
 	if( SGBOW == AgGametype() )
 	{
 		//Spawn crossbow instead.
-		CBaseEntity *pNewWeapon = CBaseEntity::Create( "weapon_crossbow", g_pGameRules->VecWeaponRespawnSpot( this ), pev->angles, pev->owner );
+		//CBaseEntity *pNewWeapon = CBaseEntity::Create( "weapon_crossbow", g_pGameRules->VecWeaponRespawnSpot( this ), pev->angles, pev->owner );
 		return;
 	}
 #endif

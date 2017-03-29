@@ -22,7 +22,7 @@
 #include "cl_util.h"
 #include "netadr.h"
 //++ BulliT
-#include "agvariableChecker.h"
+#include "agvariablechecker.h"
 #include "agglobal.h"
 //#include "irc.h"
 #include "agwallhack.h"

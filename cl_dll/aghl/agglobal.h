@@ -18,8 +18,12 @@
 #define NOWINRES
 #define NOIME
 #define _WIN32_WINNT  0x0400
+#ifdef _WIN32
 #include <windows.h>
-
+#else
+#include <limits.h>
+#define MAX_PATH PATH_MAX
+#endif
 #define _bool_h 1
 #include <ministl/string>
 #include <ministl/list>

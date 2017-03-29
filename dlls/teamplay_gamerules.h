@@ -62,3 +62,4 @@ private:
 	BOOL m_teamLimit;				// This means the server set only some teams as valid
 	char m_szTeamList[TEAMPLAY_TEAMLISTLENGTH];
 };
+#endif
