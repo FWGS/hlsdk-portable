@@ -25,7 +25,7 @@ project (CLDLL)
 
 set (CLDLL_LIBRARY client)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-write-strings -DLINUX -D_LINUX -Dstricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp -DCLIENT_WEAPONS -DCLIENT_DLL -w")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-write-strings -DLINUX -D_LINUX -Dstricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp -DCLIENT_WEAPONS -DCLIENT_DLL -DAG_USE_CHEATPROTECTION -w")
 set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS}")
 
 set (CLDLL_SOURCES 
@@ -76,8 +76,8 @@ set (CLDLL_SOURCES
 	overview.cpp
 	parsemsg.cpp
 #	aghl/agbase64.cpp
-#	aghl/agcrc32.cpp
-#	aghl/agcrc32enforcer.cpp
+	aghl/agcrc32.cpp
+	aghl/agcrc32enforcer.cpp
 #	aghl/agdownload.cpp
 	aghl/Agglobal.cpp
 	aghl/aghudcountdown.cpp
@@ -102,16 +102,16 @@ set (CLDLL_SOURCES
 #	aghl/agmapi.cpp
 	aghl/agmatchreport.cpp
 	aghl/agminidump.cpp
-#	aghl/agmodel.cpp
-#	aghl/agmodelcheck.cpp
+	aghl/agmodel.cpp
+	aghl/agmodelcheck.cpp
 #	aghl/agpak.cpp
-#	aghl/agvariablechecker.cpp
+	aghl/agvariablechecker.cpp
 	aghl/agversioninfo.cpp
 #	aghl/agvguiirc.cpp
 #	aghl/AgVGuiMapBrowser.cpp
 #	aghl/AgVGUIPassword.cpp
 #	aghl/agvguiwinamp.cpp
-#	aghl/agwallhack.cpp
+	aghl/agwallhack.cpp
 #	aghl/crossthreadsmessagingdevice.cpp
 #	aghl/irc.cpp
 #	aghl/socket.cpp
