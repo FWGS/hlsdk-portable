@@ -11,8 +11,8 @@
 #include "triangleapi.h"
 #include "studio_util.h"
 #include "r_studioint.h"
-#include "AgVariableChecker.h"
-#include "AgModelCheck.h"
+#include "agvariablechecker.h"
+#include "agmodelcheck.h"
 
 
 //////////////////////////////////////////////////////////////////////

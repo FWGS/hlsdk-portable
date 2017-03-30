@@ -2,7 +2,7 @@
 #include "hud.h"
 #include "cl_util.h"
 
-#ifdef AG_USE_CHEATPROTECTION
+#if defined(AG_USE_CHEATPROTECTION) && defined(_WIN32)
 
 #include "AgWallhack.h"
 #include "AgVersionInfo.h"

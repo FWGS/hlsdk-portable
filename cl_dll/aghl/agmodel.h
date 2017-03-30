@@ -9,7 +9,7 @@
 
 #ifdef AG_USE_CHEATPROTECTION
 
-#include "AgGlobal.h"
+#include "agglobal.h"
 
 class AgModel  
 {

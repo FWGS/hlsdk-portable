@@ -9,7 +9,7 @@
 #include "com_model.h"
 #include "studio.h"
 #include "com_weapons.h"
-#include "AgModel.h"
+#include "agmodel.h"
 
 #ifdef AG_USE_CHEATPROTECTION
 

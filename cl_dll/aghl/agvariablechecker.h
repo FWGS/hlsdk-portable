@@ -8,6 +8,17 @@
 
 #ifdef AG_USE_CHEATPROTECTION
 
+#ifndef _WIN32
+#include <sys/times.h>
+typedef unsigned long DWORD;
+
+static inline DWORD GetTickCount( void )
+{
+	tms tm;
+	return times( &tm );
+}
+#endif
+
 class AgVariableChecker  
 {
   bool m_bActive;

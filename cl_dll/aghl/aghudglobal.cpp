@@ -244,10 +244,9 @@ int AgHudGlobal::MsgFunc_CheatCheck(const char *pszName, int iSize, void *pbuf)
 	  AgCRC32EnforceFiles();
 
   g_VariableChecker.Activate();
-
+#ifdef _DEBUG
   DWORD dwTime = GetTickCount();
   
-#ifdef _DEBUG
 	AgLog( "Checking for spikes\n" );
 #endif //_DEBUG
   if (!g_ModelCheck.Check())
@@ -255,7 +254,7 @@ int AgHudGlobal::MsgFunc_CheatCheck(const char *pszName, int iSize, void *pbuf)
 
   if (s_iCheckWallhack)
   {
-#ifdef AG_USE_CHEATPROTECTION
+#if defined(AG_USE_CHEATPROTECTION) && defined(_WIN32)
 #ifdef _DEBUG
 	AgLog( "Checking for wallhack\n" );
 #endif //_DEBUG
@@ -280,7 +279,7 @@ int AgHudGlobal::MsgFunc_CheatCheck(const char *pszName, int iSize, void *pbuf)
 int AgHudGlobal::MsgFunc_WhString(const char *pszName, int iSize, void *pbuf)
 {
 	BEGIN_READ( pbuf, iSize );
-#ifdef AG_USE_CHEATPROTECTION
+#if defined(AG_USE_CHEATPROTECTION) && defined(_WIN32)
   g_Wallhack.AddBadStrings(READ_STRING());
 #else
   READ_STRING();

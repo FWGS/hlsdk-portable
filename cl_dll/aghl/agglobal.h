@@ -23,6 +23,7 @@
 #else
 #include <limits.h>
 #define MAX_PATH PATH_MAX
+#define _MAX_PATH MAX_PATH
 #endif
 #define _bool_h 1
 #include <ministl/string>
