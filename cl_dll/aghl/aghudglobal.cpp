@@ -104,18 +104,37 @@ int AgHudGlobal::Draw( float fTime )
 	if( g_pcl_scores->value < 1 )
 		return 1;
         
-	int i, xpos, ypos;
+	int i, j, xpos, ypos, r, g, b;
 	xpos = 30;
 	ypos = 50;
 	sscanf( CVAR_GET_STRING( "cl_scores_pos" ), "%i %i", &xpos, &ypos );
 
-	int r, g, b;
-
 	if( gHUD.m_Teamplay )
 	{
+		// clear out team scores
 		for( i = 1; i <= gHUD.m_Scoreboard.m_iNumTeams; i++ )
 		{
+			g_TeamInfo[i].frags = g_TeamInfo[i].deaths = 0;
 			g_TeamInfo[i].already_drawn = FALSE;
+		}
+
+		// recalc the team scores, then draw them
+		for( i = 1; i < MAX_PLAYERS; i++ )
+		{
+			if( g_PlayerExtraInfo[i].teamname[0] == 0 )
+				continue; // skip over players who are not in a team
+
+			// find what team this player is in
+			for( j = 1; j <= gHUD.m_Scoreboard.m_iNumTeams; j++ )
+			{
+				if( !stricmp( g_PlayerExtraInfo[i].teamname, g_TeamInfo[j].name ) )
+					break;
+			}
+			if( j > gHUD.m_Scoreboard.m_iNumTeams )  // player is not in a team, skip to the next guy
+				continue;
+
+			g_TeamInfo[j].frags += g_PlayerExtraInfo[i].frags;
+			g_TeamInfo[j].deaths += g_PlayerExtraInfo[i].deaths;
 		}
 	}
 	else
@@ -139,7 +158,7 @@ int AgHudGlobal::Draw( float fTime )
 					{
 						best_team = i;
 						lowest_deaths = g_TeamInfo[i].deaths;
-						 highest_frags = g_TeamInfo[i].frags;
+						highest_frags = g_TeamInfo[i].frags;
 					}
 				}
 			}
