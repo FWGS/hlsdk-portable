@@ -14,7 +14,7 @@ LOCAL_MODULE_FILENAME = libserver_hardfp
 endif
 
 LOCAL_CFLAGS += -D_LINUX -DCLIENT_WEAPONS -Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf \
-	-fno-exceptions -DNO_VOICEGAMEMGR -w
+	-fno-exceptions -DNO_VOICEGAMEMGR -DAG_USE_CHEATPROTECTION -w
 
 LOCAL_CPPFLAGS := $(LOCAL_CFLAGS) -frtti
 
@@ -26,7 +26,9 @@ LOCAL_C_INCLUDES := $(SDL_PATH)/include \
 		    $(LOCAL_PATH)/../engine \
 		    $(LOCAL_PATH)/../public \
 		    $(LOCAL_PATH)/../pm_shared \
-		    $(LOCAL_PATH)/../game_shared
+		    $(LOCAL_PATH)/../game_shared \
+		    $(LOCAL_PATH)/aghl\
+		    $(LOCAL_PATH)/..
 
 LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
            aflock.cpp \
@@ -124,6 +126,34 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
            world.cpp \
            xen.cpp \
            zombie.cpp \
+	   aghl/agadmin.cpp \
+	   aghl/agadmincache.cpp \
+	   aghl/agarena.cpp \
+	   aghl/agclient.cpp \
+	   aghl/agcommand.cpp \
+	   aghl/agctf.cpp \
+	   aghl/agdom.cpp \
+	   aghl/aggame.cpp \
+	   aghl/aggamemode.cpp \
+	   aghl/aggamerules.cpp \
+	   aghl/agglobal.cpp \
+	   aghl/aginfointermission.cpp \
+	   aghl/aglms.cpp \
+	   aghl/aglocation.cpp \
+	   aghl/aglocationcache.cpp \
+	   aghl/agmatch.cpp \
+	   aghl/agmsgstat.cpp \
+	   aghl/agscore.cpp \
+	   aghl/agscorecache.cpp \
+	   aghl/agscorelog.cpp \
+	   aghl/agsettings.cpp \
+	   aghl/agspectator.cpp \
+	   aghl/agstats.cpp \
+	   aghl/agsuddendeath.cpp \
+	   aghl/agtimeout.cpp \
+	   aghl/agtimer.cpp \
+	   aghl/agvote.cpp \
+	   aghl/agwallhack.cpp \
 	   ../pm_shared/pm_debug.c \
 	   ../pm_shared/pm_math.c \
 	   ../pm_shared/pm_shared.c
