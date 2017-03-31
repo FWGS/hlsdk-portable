@@ -130,7 +130,7 @@ SRCS+=./view.cpp
 SRCS+=./input_xash3d.cpp
 SRCS+=./scoreboard.cpp
 SRCS+=./MOTD.cpp
-INCLUDES =  -I../common -I. -I../game_shared -I../pm_shared -I../engine -I../dlls -Iaghl -I../dlls/aghl -I..
+INCLUDES =  -I../common -I. -I../game_shared -I../pm_shared -I../engine -I../dlls
 DEFINES = -Wno-write-strings -DLINUX -D_LINUX -Dstricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp -DCLIENT_WEAPONS -DCLIENT_DLL -DAG_USE_CHEATPROTECTION -w
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/. \
@@ -138,8 +138,12 @@ LOCAL_C_INCLUDES := $(LOCAL_PATH)/. \
 		 $(LOCAL_PATH)/../engine \
 		 $(LOCAL_PATH)/../game_shared \
 		 $(LOCAL_PATH)/../dlls \
-		 $(LOCAL_PATH)/../pm_shared
-LOCAL_CFLAGS += $(DEFINES) $(INCLUDES)
+		 $(LOCAL_PATH)/../pm_shared \
+		 $(LOCAL_PATH)/.. \
+		 $(LOCAL_PATH)/aghl \
+		 $(LOCAL_PATH)/../dlls/aghl
+
+LOCAL_CFLAGS += $(DEFINES) $(INCLUDES) -fexceptions
 
 LOCAL_SRC_FILES := $(SRCS) $(SRCS_C)
 
