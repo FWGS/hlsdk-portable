@@ -155,18 +155,18 @@ int CHudScoreboard::Draw( float fTime )
 	FAR_RIGHT += 5;
 	//gHUD.DrawDarkRectangle( xpos - 5, ypos - 5, FAR_RIGHT, ROW_RANGE_MAX );
 	if( !gHUD.m_Teamplay )
-		gHUD.DrawHudString( xpos, ypos, NAME_RANGE_MAX + xpos_rel, "Player", 255, 140, 0 );
+		DrawUtfString( xpos, ypos, NAME_RANGE_MAX + xpos_rel, "Player", 255, 140, 0 );
 	else
-		gHUD.DrawHudString( xpos, ypos, NAME_RANGE_MAX + xpos_rel, "Teams", 255, 140, 0 );
+		DrawUtfString( xpos, ypos, NAME_RANGE_MAX + xpos_rel, "Teams", 255, 140, 0 );
 
 	gHUD.DrawHudStringReverse( KILLS_RANGE_MAX + xpos_rel, ypos, 0, "kills", 255, 140, 0 );
-	gHUD.DrawHudString( DIVIDER_POS + xpos_rel, ypos, ScreenWidth, "/", 255, 140, 0 );
-	gHUD.DrawHudString( DEATHS_RANGE_MIN + xpos_rel + 5, ypos, ScreenWidth, "deaths", 255, 140, 0 );
-	gHUD.DrawHudString( PING_RANGE_MAX + xpos_rel - 35, ypos, ScreenWidth, "latency", 255, 140, 0 );
+	DrawUtfString( DIVIDER_POS + xpos_rel, ypos, ScreenWidth, "/", 255, 140, 0 );
+	DrawUtfString( DEATHS_RANGE_MIN + xpos_rel + 5, ypos, ScreenWidth, "deaths", 255, 140, 0 );
+	DrawUtfString( PING_RANGE_MAX + xpos_rel - 35, ypos, ScreenWidth, "latency", 255, 140, 0 );
 
 	if( can_show_packetloss )
 	{
-		gHUD.DrawHudString( PL_RANGE_MAX + xpos_rel - 35, ypos, ScreenWidth, "pkt loss", 255, 140, 0 );
+		DrawUtfString( PL_RANGE_MAX + xpos_rel - 35, ypos, ScreenWidth, "pkt loss", 255, 140, 0 );
 	}
 
 	list_slot += 1.2;
@@ -281,7 +281,7 @@ int CHudScoreboard::Draw( float fTime )
 		}
 
 		// draw their name (left to right)
-		gHUD.DrawHudString( xpos, ypos, NAME_RANGE_MAX + xpos_rel, team_info->name, r, g, b );
+		DrawUtfString( xpos, ypos, NAME_RANGE_MAX + xpos_rel, team_info->name, r, g, b );
 
 		// draw kills (right to left)
 		xpos = KILLS_RANGE_MAX + xpos_rel;
@@ -289,7 +289,7 @@ int CHudScoreboard::Draw( float fTime )
 
 		// draw divider
 		xpos = DIVIDER_POS + xpos_rel;
-		gHUD.DrawHudString( xpos, ypos, xpos + 20, "/", r, g, b );
+		DrawUtfString( xpos, ypos, xpos + 20, "/", r, g, b );
 
 		// draw deaths
 		xpos = DEATHS_RANGE_MAX + xpos_rel;
@@ -309,7 +309,7 @@ int CHudScoreboard::Draw( float fTime )
 			xpos = ( ( PL_RANGE_MAX - PL_RANGE_MIN ) / 2) + PL_RANGE_MIN + xpos_rel + 25;
 
 			sprintf( buf, "  %d", team_info->packetloss );
-			gHUD.DrawHudString( xpos, ypos, xpos+50, buf, r, g, b );
+			DrawUtfString( xpos, ypos, xpos+50, buf, r, g, b );
 		}
 
 		team_info->already_drawn = TRUE;  // set the already_drawn to be TRUE, so this team won't get drawn again
@@ -420,7 +420,7 @@ int CHudScoreboard::DrawPlayers( int xpos_rel, float list_slot, int nameoffset, 
 		else
 			sprintf( szName, "%s", AgGetRealName( best_player ).c_str() );
 		// draw their name (left to right)
-		gHUD.DrawHudString( xpos + nameoffset, ypos, NAME_RANGE_MAX + xpos_rel, szName, r, g, b );
+		DrawUtfString( xpos + nameoffset, ypos, NAME_RANGE_MAX + xpos_rel, szName, r, g, b );
 
 		// draw kills (right to left)
 		xpos = KILLS_RANGE_MAX + xpos_rel;
@@ -428,7 +428,7 @@ int CHudScoreboard::DrawPlayers( int xpos_rel, float list_slot, int nameoffset, 
 
 		// draw divider
 		xpos = DIVIDER_POS + xpos_rel;
-		gHUD.DrawHudString( xpos, ypos, xpos + 20, "/", r, g, b );
+		DrawUtfString( xpos, ypos, xpos + 20, "/", r, g, b );
 
 		// draw deaths
 		xpos = DEATHS_RANGE_MAX + xpos_rel;
@@ -455,7 +455,7 @@ int CHudScoreboard::DrawPlayers( int xpos_rel, float list_slot, int nameoffset, 
 
 			xpos = ( ( PL_RANGE_MAX - PL_RANGE_MIN ) / 2 ) + PL_RANGE_MIN + xpos_rel + 25;
 
-			gHUD.DrawHudString( xpos, ypos, xpos+50, buf, r, g, b );
+			DrawUtfString( xpos, ypos, xpos+50, buf, r, g, b );
 		}
 
 		pl_info->name = NULL;  // set the name to be NULL, so this client won't get drawn again
