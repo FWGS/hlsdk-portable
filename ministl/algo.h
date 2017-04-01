@@ -77,6 +77,13 @@ void count_if(InputIterator first, InputIterator last, Predicate pred,
     while (first != last)
 	if (pred(*first++)) ++n;
 }
+
+#ifndef min
+#define min(a,b)  (((a) < (b)) ? (a) : (b))
+#endif
+#ifndef max
+#define max(a,b)  (((a) > (b)) ? (a) : (b))
+#endif
 /*
 template<class _II, class	_OI, class _Uop> inline
 	_OI	transform(_II _F, _II _L, _OI _X, _Uop _U)
