@@ -516,7 +516,7 @@ void AgClient::Say(CBasePlayer* pPlayer, say_type Type )
         //Weapon
         if (pPlayer && pPlayer->IsAlive() && !pPlayer->IsSpectator() && pPlayer->m_pActiveItem && pPlayer->m_pActiveItem->m_iId < MAX_WEAPONS)
         {
-          char* pWeapon = strstr(pPlayer->m_pActiveItem->pszName(),"weapon_");
+          char* pWeapon = (char*)strstr(pPlayer->m_pActiveItem->pszName(),"weapon_");
           if (pWeapon)
           {
             pText = pText + sprintf(pText,"%s",&pWeapon[7]);
