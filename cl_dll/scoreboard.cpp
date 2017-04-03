@@ -26,6 +26,7 @@
 #include <string.h>
 #include <stdio.h>
 
+cvar_t *cl_scoreboard_bg;
 cvar_t *cl_showpacketloss;
 hud_player_info_t	g_PlayerInfoList[MAX_PLAYERS + 1];	// player info from the engine
 extra_player_info_t	g_PlayerExtraInfo[MAX_PLAYERS + 1];	// additional player info sent directly to the client dll
@@ -62,6 +63,7 @@ int CHudScoreboard::Init( void )
 
 	InitHUDData();
 
+	cl_scoreboard_bg = CVAR_CREATE( "cl_scoreboard_bg", "1", 0 );
 	cl_showpacketloss = CVAR_CREATE( "cl_showpacketloss", "0", FCVAR_ARCHIVE );
 
 	return 1;
@@ -153,7 +155,8 @@ int CHudScoreboard::Draw( float fTime )
 
 	FAR_RIGHT = can_show_packetloss ? PL_RANGE_MAX : PING_RANGE_MAX;
 	FAR_RIGHT += 5;
-	//gHUD.DrawDarkRectangle( xpos - 5, ypos - 5, FAR_RIGHT, ROW_RANGE_MAX );
+	if( cl_scoreboard_bg && cl_scoreboard_bg->value )
+		gHUD.DrawDarkRectangle( xpos - 5, ypos - 5, FAR_RIGHT, ROW_RANGE_MAX );
 	if( !gHUD.m_Teamplay )
 		DrawUtfString( xpos, ypos, NAME_RANGE_MAX + xpos_rel, "Player", 255, 140, 0 );
 	else
