@@ -156,7 +156,7 @@ int CHudScoreboard::Draw( float fTime )
 	FAR_RIGHT = can_show_packetloss ? PL_RANGE_MAX : PING_RANGE_MAX;
 	FAR_RIGHT += 5;
 	if( cl_scoreboard_bg && cl_scoreboard_bg->value )
-		gHUD.DrawDarkRectangle( xpos - 5, ypos - 5, FAR_RIGHT, ROW_RANGE_MAX );
+		gHUD.DrawDarkRectangle( xpos - 31, ypos - 5, FAR_RIGHT + 26, ROW_RANGE_MAX );
 	if( !gHUD.m_Teamplay )
 		DrawUtfString( xpos, ypos, NAME_RANGE_MAX + xpos_rel, "Player", 255, 140, 0 );
 	else
@@ -175,7 +175,11 @@ int CHudScoreboard::Draw( float fTime )
 	list_slot += 1.2;
 	ypos = ROW_TOP + ROW_RANGE_MIN + ( list_slot * ROW_GAP );
 	xpos = NAME_RANGE_MIN + xpos_rel;
-	FillRGBA( xpos - 4, ypos, FAR_RIGHT -2, 1, 255, 140, 0, 255 );  // draw the seperator line
+
+	if( cl_scoreboard_bg && cl_scoreboard_bg->value )
+		FillRGBA( xpos - 30, ypos, FAR_RIGHT + 24, 1, 255, 140, 0, 255 );
+	else
+		FillRGBA( xpos - 4, ypos, FAR_RIGHT - 2, 1, 255, 140, 0, 255 );  // draw the seperator line
 
 	list_slot += 0.8;
 
