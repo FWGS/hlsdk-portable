@@ -25,7 +25,7 @@ project (SVDLL)
 
 set (SVDLL_LIBRARY server)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_LINUX -DCLIENT_WEAPONS -Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf -D_vsnprintf=vsnprintf -fno-exceptions -w")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_LINUX -Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf -D_vsnprintf=vsnprintf -fno-exceptions -w")
 set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS}")
 
 set (SVDLL_SOURCES 
@@ -132,14 +132,6 @@ set (SVDLL_SOURCES
 )
 	
 include_directories (. wpn_shared ../common ../engine ../pm_shared ../game_shared ../public)
-
-if(USE_VOICEMGR)
-	set(SVDLL_SOURCES
-		${SVDLL_SOURCES}
-		../game_shared/voice_gamemgr.cpp)
-else()
-	add_definitions(-DNO_VOICEGAMEMGR)
-endif()
 
 add_library (${SVDLL_LIBRARY} SHARED ${SVDLL_SOURCES})
 
