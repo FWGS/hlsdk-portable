@@ -32,6 +32,10 @@
 
 extern vec3_t vec3_origin;
 
+#ifdef _MSC_VER
+vec3_t vec3_origin;
+#endif
+
 double sqrt( double x );
 
 float Length( const float *v )
