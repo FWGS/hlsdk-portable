@@ -195,6 +195,11 @@ int gmsgQItems = 0;
 int gmsgStatusText = 0;
 int gmsgStatusValue = 0;
 
+//++ BulliT
+int gmsgAllowSpec = 0;
+int gmsgSpectator = 0;
+//-- Martin Webrant
+
 void LinkUserMessages( void )
 {
 	// Already taken care of?
@@ -241,6 +246,11 @@ void LinkUserMessages( void )
 
 	gmsgStatusText = REG_USER_MSG( "StatusText", -1 );
 	gmsgStatusValue = REG_USER_MSG( "StatusValue", 3 );
+
+//++ BulliT
+	gmsgAllowSpec = REG_USER_MSG( "AllowSpec", 1 );   //Allow spectator button message.
+	gmsgSpectator = REG_USER_MSG( "Spectator", 2 );   //Spectator message.
+//-- Martin Webrant
 }
 
 LINK_ENTITY_TO_CLASS( player, CBasePlayer )
@@ -605,6 +615,10 @@ void CBasePlayer::Killed( entvars_t *pevAttacker, int iGib )
 	pev->angles.x = 0;
 	pev->angles.z = 0;
 
+//++ BulliT
+	if( g_pGameRules->m_iGameMode >= ARENA )
+		m_iQuakeWeapon = 0;
+//-- Martin Webrant
 	SetThink( &CBasePlayer::PlayerDeathThink );
 	pev->nextthink = gpGlobals->time + 0.1;
 }
@@ -981,6 +995,11 @@ void CBasePlayer::PlayerDeathThink( void )
 
 	pev->effects |= EF_NOINTERP;
 	pev->framerate = 0.0;
+
+//++ BulliT
+	//Remove sticky dead models.
+	pev->solid = SOLID_NOT;
+//-- Martin Webrant
 
 	BOOL fAnyButtonDown = ( pev->button & ~IN_SCORE );
 
@@ -2502,7 +2521,9 @@ void CBasePlayer::Spawn( void )
 		pev->solid = SOLID_NOT;
 		pev->takedamage = DAMAGE_NO;
 		pev->movetype = MOVETYPE_NONE;
-
+//++ BulliT
+		pev->deadflag = DEAD_RESPAWNABLE;
+//-- Martin Webrant
 		g_engfuncs.pfnSetClientMaxspeed( ENT( pev ), 1 );
 		m_iHideHUD |= HIDEHUD_WEAPONS | HIDEHUD_FLASHLIGHT | HIDEHUD_HEALTH;
 	}
@@ -2513,6 +2534,9 @@ void CBasePlayer::Spawn( void )
 
 		pev->effects &= ~EF_NODRAW;
 		g_pGameRules->PlayerSpawn( this );
+//++ BulliT
+		Spectate_UpdatePosition();
+//-- Martin Webrant
 		PLAYBACK_EVENT_FULL( FEV_GLOBAL, edict(), g_sTeleport, 0.0, (float *)&pev->origin, (float *)&g_vecZero, 0.0, 0.0, 0, 0, 0, 0 );
 
 		m_fKnownItem = false;
@@ -4545,3 +4569,112 @@ void CInfoIntermission::Think( void )
 }
 
 LINK_ENTITY_TO_CLASS( info_intermission, CInfoIntermission )
+
+//++ BulliT
+void CBasePlayer::Init()
+{
+	m_bReady = true;
+	m_bIngame = g_pGameRules->m_iGameMode < ARENA;
+	if( g_pGameRules->m_iGameMode >= LMS )
+		g_pGameRules->m_LMS.ClientConnected( this );
+	else if( g_pGameRules->m_iGameMode == ARENA )
+		g_pGameRules->m_Arena.ClientConnected( this );
+}
+
+void CBasePlayer::RemoveAllItemsNoClientMessage()
+{
+	if( m_pActiveItem )
+	{
+		ResetAutoaim();
+		m_pActiveItem->Holster();
+		m_pActiveItem = NULL;
+	}
+
+	m_pLastItem = NULL;
+
+	int i;
+	CBasePlayerItem *pPendingItem;
+	for( i = 0; i < MAX_ITEM_TYPES; i++ )
+	{
+		m_pActiveItem = m_rgpPlayerItems[i];
+		while( m_pActiveItem )
+		{
+			pPendingItem = m_pActiveItem->m_pNext; 
+			m_pActiveItem->Drop();
+			m_pActiveItem = pPendingItem;
+		}
+		m_rgpPlayerItems[i] = NULL;
+	}
+	m_pActiveItem = NULL;
+
+	pev->viewmodel = 0;
+	pev->weaponmodel = 0;
+	pev->weapons &= ~WEAPON_ALLWEAPONS;
+
+	for( i = 0; i < MAX_AMMO_SLOTS;i++ )
+		m_rgAmmo[i] = 0;
+
+	// send Selected Weapon Message to our client
+	MESSAGE_BEGIN( MSG_ONE, gmsgCurWeapon, NULL, pev );
+		WRITE_BYTE(0);
+		WRITE_BYTE(0);
+		WRITE_BYTE(0);
+	MESSAGE_END();
+}
+
+
+//Special spawn - removes all entites attached to the player.
+bool CBasePlayer::RespawnMatch()
+{
+/*
+	// clear any clientside entities attached to this player
+	MESSAGE_BEGIN( MSG_PAS, SVC_TEMPENTITY, pev->origin );
+		WRITE_BYTE( TE_KILLPLAYERATTACHMENTS );
+		WRITE_BYTE( (BYTE)entindex() );
+	MESSAGE_END();
+*/
+
+	//Remove all weapons/items
+	RemoveAllItemsNoClientMessage();
+
+	if( m_pTank != NULL )
+	{
+		m_pTank->Use( this, this, USE_OFF, 0 );
+		m_pTank = NULL;
+	}
+
+	//Make sure hud is shown correctly
+	m_iHideHUD &= ~HIDEHUD_WEAPONS;
+	m_iHideHUD &= ~HIDEHUD_FLASHLIGHT;
+	m_iHideHUD &= ~HIDEHUD_HEALTH;
+
+	// clear out the suit message cache so we don't keep chattering
+	SetSuitUpdate( NULL, FALSE, 0 );
+
+	m_iTrain |= TRAIN_NEW;	// Force new train message.
+	m_fKnownItem = FALSE;	// Force weaponinit messages.
+
+	//Respawn player
+	m_bHadFirstSpawn = true;
+
+	UpdateClientData();
+
+	Spawn();
+
+	return true;
+}
+
+void CBasePlayer::ResetScore()
+{
+	//Reset score
+	pev->frags = 0.0;
+	m_iDeaths = 0;
+
+ 	MESSAGE_BEGIN( MSG_ALL, gmsgScoreInfo );
+		WRITE_BYTE( ENTINDEX( edict() ) );
+		WRITE_SHORT( pev->frags );
+		WRITE_SHORT( m_iDeaths );
+		WRITE_SHORT( pev->team );
+	MESSAGE_END();
+}
+//-- Martin Webrant

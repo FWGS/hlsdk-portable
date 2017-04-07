@@ -45,9 +45,13 @@ public:
 	virtual BOOL IsValidTeam( const char *pTeamName );
 	const char *SetDefaultPlayerTeam( CBasePlayer *pPlayer );
 	virtual void ChangePlayerTeam( CBasePlayer *pPlayer, const char *pTeamName, BOOL bKill, BOOL bGib );
-
-private:
+//++ BulliT
 	void RecountTeams( bool bResendInfo = FALSE );
+//-- Martin Webrant
+private:
+//++ BulliT
+	//void RecountTeams( bool bResendInfo = FALSE );
+//-- Martin Webrant
 	const char *TeamWithFewestPlayers( void );
 
 	BOOL m_DisableDeathMessages;

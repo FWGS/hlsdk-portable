@@ -12,6 +12,10 @@
 *   without written permission from Valve LLC.
 *
 ****/
+//++ BulliT
+#if !defined(_CBASE_H_)
+#define _CBASE_H_
+//-- Martin Webrant
 /*
 
 Class Hierachy
@@ -800,3 +804,7 @@ public:
 
 // QUAKECLASSIC
 extern char *g_szDeathType;
+
+//++ BulliT
+#endif //_CBASE_H_
+//-- Martin Webrant

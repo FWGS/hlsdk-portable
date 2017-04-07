@@ -39,6 +39,11 @@
 #include "usercmd.h"
 #include "netadr.h"
 
+//++ BulliT
+extern int gmsgTeamInfo;
+extern cvar_t timeleft, timelimit;
+//-- Martin Webrant
+
 extern DLL_GLOBAL ULONG		g_ulModelIndexPlayer;
 extern DLL_GLOBAL BOOL		g_fGameOver;
 extern DLL_GLOBAL int		g_iSkillLevel;
@@ -189,6 +194,10 @@ void ClientPutInServer( edict_t *pEntity )
 	pPlayer->SetCustomDecalFrames( -1 ); // Assume none;
 
 	pPlayer->m_bHadFirstSpawn = false;
+
+//++ BulliT
+	pPlayer->Init();
+//-- Martin Webrant
 
 	// Allocate a CBasePlayer for pev, and call spawn
 	pPlayer->Spawn();
@@ -436,6 +445,11 @@ void ClientCommand( edict_t *pEntity )
 		CBasePlayer *pPlayer = GetClassPtr( (CBasePlayer *)pev );
 		if( pPlayer->m_bHadFirstSpawn == false && g_bHaveMOTD )
 		{
+//++ BulliT
+			if( !g_pGameRules->FPlayerCanRespawn( pPlayer ) )
+				return;
+//-- Martin Webrant
+
                         pPlayer->m_bHadFirstSpawn = true;
                         pPlayer->Spawn();
 		}
@@ -444,12 +458,43 @@ void ClientCommand( edict_t *pEntity )
 	{
 		GetClassPtr( (CBasePlayer *)pev )->SelectLastItem();
 	}
-	else if( FStrEq( pcmd, "spectate" ) && ( pev->flags & FL_PROXY ) )	// added for proxy support
+	else if( FStrEq( pcmd, "spectate" ) )	// added for proxy support
 	{
 		CBasePlayer * pPlayer = GetClassPtr( (CBasePlayer *)pev );
 
-		edict_t *pentSpawnSpot = g_pGameRules->GetPlayerSpawnSpot( pPlayer );
-		pPlayer->StartObserver( pev->origin, VARS( pentSpawnSpot )->angles );
+//++ BulliT
+		/*if( pPlayer->pev->flags & FL_PROXY )
+                {
+			edict_t *pentSpawnSpot = g_pGameRules->GetPlayerSpawnSpot( pPlayer );
+			pPlayer->StartObserver( pev->origin, VARS( pentSpawnSpot )->angles );
+		}*/
+
+		if (pPlayer->IsProxy())
+		{
+			pPlayer->Spectate_HLTV();
+			return;
+		}
+
+		//Dont spectate if player is in game in arena.
+		if( pPlayer->IsIngame() && g_pGameRules->m_iGameMode >= ARENA )
+			return;
+
+		if( 2 == CMD_ARGC() && 1 == atoi( CMD_ARGV( 1 ) ) )
+		{
+			pPlayer->Spectate_Start();
+			pPlayer->ResetScore();
+		}
+		else if( 2 == CMD_ARGC() && 0 == atoi( CMD_ARGV( 1 ) ) )
+		{
+			pPlayer->Spectate_Stop();
+		}
+		else
+		{
+			pPlayer->Spectate_Spectate();
+			pPlayer->ResetScore();
+		}
+		return;
+//-- Martin Webrant
 	}
 	else if( g_pGameRules->ClientCommand( GetClassPtr( (CBasePlayer *)pev ), pcmd ) )
 	{
@@ -472,6 +517,106 @@ void ClientCommand( edict_t *pEntity )
 		// clear 'Unknown command: VModEnable' in singleplayer
 		return;
 	}
+//++ BulliT
+	else if( FStrEq( CMD_ARGV( 0 ), "ready" ) )
+	{	
+		CBasePlayer *pPlayer = GetClassPtr( (CBasePlayer *)pev );
+		if( g_pGameRules->m_iGameMode >= LMS )
+		{
+			ClientPrint( pPlayer->pev, HUD_PRINTCONSOLE, "Changed mode to READY.\n" );
+			if( !pPlayer->m_bReady )
+			{
+				pPlayer->m_bReady = true;
+				//Send new team name
+				if( g_pGameRules->IsTeamplay() )
+				{
+					MESSAGE_BEGIN( MSG_ALL, gmsgTeamInfo );
+						WRITE_BYTE( pPlayer->entindex() );
+						WRITE_STRING( pPlayer->TeamID() );
+					MESSAGE_END();
+				}
+			}
+			return;
+		}
+		else if( g_pGameRules->m_iGameMode == ARENA )
+		{
+			g_pGameRules->m_Arena.Ready( pPlayer );
+			return;
+		}
+	}
+	else if( FStrEq( CMD_ARGV( 0 ), "notready" ) )
+	{
+		CBasePlayer *pPlayer = GetClassPtr( (CBasePlayer *)pev );
+		if( g_pGameRules->m_iGameMode >= LMS )
+		{
+			ClientPrint( pPlayer->pev, HUD_PRINTCONSOLE, "Changed mode to NOT READY.\n" );
+			if( pPlayer->m_bReady )
+			{
+				pPlayer->m_bReady = false;
+				pPlayer->SetIngame( false ); //Cant respawn
+				if( !pPlayer->IsSpectator() )
+				{
+					pPlayer->Spectate_Start();
+					pPlayer->Observer_SetMode( OBS_IN_EYE );
+				}
+				else
+				{
+					//Send new team name (blank for specs)
+					if( g_pGameRules->IsTeamplay() )
+					{
+						MESSAGE_BEGIN( MSG_ALL, gmsgTeamInfo );
+							WRITE_BYTE( pPlayer->entindex() );
+							WRITE_STRING( pPlayer->TeamID() );
+						MESSAGE_END();
+					}
+				}
+			}
+			return;
+		}
+		else if( g_pGameRules->m_iGameMode == ARENA )
+		{
+			g_pGameRules->m_Arena.NotReady( pPlayer );
+			return;
+		}
+	}
+	else if( FStrEq( CMD_ARGV( 0 ), "timeleft" ) )
+	{
+		if( timelimit.value && timeleft.value )
+		{
+			long lTime = timeleft.value;
+			char szTime[128];
+			if( 86400 < lTime )
+			{
+				//More than one day. Print days, hour, minutes and seconds
+				ldiv_t d1 = ldiv( lTime, 86400 );
+				ldiv_t d2 = ldiv( d1.rem, 3600 );
+				ldiv_t d3 = ldiv( d2.rem, 60 );
+				sprintf( szTime, "timeleft = %ldd %ldh %02ldm %02lds", d1.quot, d2.quot,d3.quot,d3.rem );
+			}
+			else if( 3600 < lTime )
+			{
+				//More than one hour. Print hour, minutes and seconds
+				ldiv_t d1 = ldiv( lTime, 3600 );
+				ldiv_t d2 = ldiv( d1.rem, 60 );
+				sprintf( szTime,"timeleft = %ldh %02ldm %02lds", d1.quot, d2.quot, d2.rem );
+			}
+			else if( 60 < lTime )
+			{
+				//More than one minute. Print minutes and seconds.
+				ldiv_t d = ldiv( lTime, 60 );
+				sprintf( szTime, "timeleft = %ld:%02ld", d.quot,d.rem );
+			}
+			else
+			{
+				//Less than a minute left. Print seconds.
+				sprintf( szTime, "timeleft = %ld", lTime );
+			}
+			CBasePlayer *pPlayer = GetClassPtr( (CBasePlayer *)pev );
+			AgConsole( szTime, pPlayer );
+		}
+		return;
+	}
+//-- Martin Webrant
 	else
 	{
 		// tell the user they entered an unknown command

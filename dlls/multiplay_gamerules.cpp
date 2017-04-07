@@ -77,6 +77,11 @@ static CMultiplayGameMgrHelper g_GameMgrHelper;
 //*********************************************************
 CHalfLifeMultiplay::CHalfLifeMultiplay()
 {
+//++ BulliT
+	m_iGameMode = CVAR_GET_FLOAT( "mp_teamplay" );
+	m_fGameStart = gpGlobals->time;
+//-- Martin Webrant
+
 #ifndef NO_VOICEGAMEMGR
 	g_VoiceGameMgr.Init( &g_GameMgrHelper, gpGlobals->maxClients );
 #endif
@@ -239,6 +244,12 @@ void CHalfLifeMultiplay::Think( void )
 		return;
 	}
 
+//++ BulliT
+	if( g_pGameRules->m_iGameMode == LMS )
+		m_LMS.Think();
+	else if( g_pGameRules->m_iGameMode == ARENA )
+		m_Arena.Think();
+//-- Martin Webrant
 	if( m_flGameEndTime != 0.0 && m_flGameEndTime <= gpGlobals->time )
 	{
 		GoToIntermission();
@@ -246,11 +257,20 @@ void CHalfLifeMultiplay::Think( void )
 		return;
 	}
 
+//++ BulliT
+	if( m_iGameMode != CVAR_GET_FLOAT( "mp_teamplay" ) )
+	{
+		GoToIntermission();
+		return;
+	}
+//-- Martin Webrant
 	float flTimeLimit = timelimit.value * 60;
 	float flFragLimit = fraglimit.value;
 
-	time_remaining = (int)( flTimeLimit ? ( flTimeLimit - gpGlobals->time ) : 0);
-
+//++ BulliT
+	//time_remaining = (int)( flTimeLimit ? ( flTimeLimit - gpGlobals->time ) : 0 );
+	time_remaining = (int)( flTimeLimit ? ( flTimeLimit - gpGlobals->time + m_fGameStart ) : 0 );
+//-- Martin Webrant
 	if( flTimeLimit != 0 && gpGlobals->time >= flTimeLimit && m_flGameEndTime == 0.0 )
 	{
 		GoToIntermission();
@@ -511,6 +531,13 @@ void CHalfLifeMultiplay::ClientDisconnected( edict_t *pClient )
 
 		if( pPlayer )
 		{
+//++ BulliT
+			if( g_pGameRules->m_iGameMode >= LMS )
+				m_LMS.ClientDisconnected( pPlayer );
+			else if( g_pGameRules->m_iGameMode == ARENA )
+				m_Arena.ClientDisconnected( pPlayer );
+//-- Martin Webrant
+
 			FireTargets( "game_playerleave", pPlayer, pPlayer, USE_TOGGLE, 0 );
 
 			// team match?
@@ -605,7 +632,23 @@ void CHalfLifeMultiplay::PlayerSpawn( CBasePlayer *pPlayer )
 
 		// Start with shotgun and axe
 		pPlayer->GiveNamedItem( "weapon_quakegun" );
-		pPlayer->m_iQuakeItems |= ( IT_SHOTGUN | IT_AXE );
+
+		//++ BulliT
+		if( g_pGameRules->m_iGameMode >= ARENA )
+		{
+			pPlayer->m_iQuakeItems |= ( IT_AXE | IT_SHOTGUN | IT_SUPER_SHOTGUN | IT_NAILGUN | IT_SUPER_NAILGUN | IT_GRENADE_LAUNCHER  | IT_ROCKET_LAUNCHER | IT_LIGHTNING );
+			pPlayer->m_iAmmoRockets = 100;
+			pPlayer->m_iAmmoCells = 100;
+			pPlayer->m_iAmmoShells = 100;
+			pPlayer->m_iAmmoNails = 200;
+			pPlayer->pev->health = 200;
+			pPlayer->pev->armortype = 0.8;
+			pPlayer->pev->armorvalue = 200;
+			pPlayer->m_iQuakeItems &= ~( IT_ARMOR1 | IT_ARMOR2 | IT_ARMOR3 );
+			pPlayer->m_iQuakeItems |= IT_ARMOR3;
+		}
+		else
+			pPlayer->m_iQuakeItems |= ( IT_SHOTGUN | IT_AXE );
 		pPlayer->m_iQuakeWeapon = pPlayer->W_BestWeapon();
 		pPlayer->W_SetCurrentAmmo();
 	}
@@ -615,7 +658,10 @@ void CHalfLifeMultiplay::PlayerSpawn( CBasePlayer *pPlayer )
 //=========================================================
 BOOL CHalfLifeMultiplay::FPlayerCanRespawn( CBasePlayer *pPlayer )
 {
-	return TRUE;
+//++ BulliT
+	return pPlayer->IsIngame();
+	//return TRUE;
+//-- Martin Webrant
 }
 
 //=========================================================

@@ -203,7 +203,10 @@ public:
 	virtual void StartSneaking( void ) { m_tSneaking = gpGlobals->time - 1; }
 	virtual void StopSneaking( void ) { m_tSneaking = gpGlobals->time + 30; }
 	virtual BOOL IsSneaking( void ) { return m_tSneaking <= gpGlobals->time; }
-	virtual BOOL IsAlive( void ) { return (pev->deadflag == DEAD_NO) && pev->health > 0; }
+//++ BulliT
+	//virtual BOOL IsAlive( void ) { return (pev->deadflag == DEAD_NO) && pev->health > 0; }
+	virtual BOOL IsAlive( void ) { return (pev->deadflag == DEAD_NO) && pev->health > 0 && !IsSpectator(); }
+//++ BulliT
 	virtual BOOL ShouldFadeOnDeath( void ) { return FALSE; }
 	virtual	BOOL IsPlayer( void ) { return TRUE; }			// Spectators should return FALSE for this, they aren't "players" as far as game logic is concerned
 
@@ -403,7 +406,70 @@ public:
 	unsigned short m_usLightning;
 	unsigned short m_usSpike;
 	unsigned short m_usSuperSpike;
+//++ BulliT
+protected:
+	bool m_bIngame; //Player was in the game when match started.
+public:
+	bool		m_bReady; //True if player is ready to enter lts/lms
+	void		Init();	//Init the player
+	const char	*GetName(); //Get name
+	bool		IsIngame(); //Returns true if allowed to enter the game. If false go specmode.
+	void		SetIngame(bool bIngame); //Set to true to allow player in the game.
+	bool		RespawnMatch(); //Respawn and removes players old enties.
+	void		ResetScore();
+	bool		IsSpectator(); //Returns true if spectating.
+	bool		IsProxy(); //Returns true if proxy server client.
+
+	void		RemoveAllItemsNoClientMessage();
+
+	void Spectate_Init();
+	void Spectate_Spectate();
+	void Spectate_Start();
+	void Spectate_Stop( bool bIntermediateSpawn = false );
+	void Spectate_UpdatePosition();
+	bool Spectate_Think();
+	bool Spectate_Follow( EHANDLE &pPlayer,int iMode );
+	bool Spectate_HLTV();
+//-- Martin Webrant
 };
+
+//++ BulliT
+inline const char *CBasePlayer::GetName()
+{
+	return pev->netname ? STRING( pev->netname )[0] ? STRING( pev->netname ) : "" : "";
+};
+
+inline bool CBasePlayer::IsIngame()
+{
+	return m_bIngame;
+};
+
+inline void CBasePlayer::SetIngame( bool bIngame )
+{
+	m_bIngame = bIngame;
+};
+
+inline bool CBasePlayer::IsSpectator()
+{
+	return pev->iuser1 > 0 || IsProxy();
+};
+
+inline bool CBasePlayer::IsProxy()
+{
+	if( pev->flags & FL_PROXY )
+		return true;
+	return false;
+};
+
+// Spectator Movement modes (stored in pev->iuser1, so the physics code can get at them)
+#define OBS_NONE			0
+#define OBS_CHASE_LOCKED		1
+#define OBS_CHASE_FREE			2
+#define OBS_ROAMING			3		
+#define OBS_IN_EYE			4
+#define OBS_MAP_FREE			5
+#define OBS_MAP_CHASE			6
+//-- Martin Webrant
 
 // QUAKECLASSIC
 #define Q_SMALL_PUNCHANGLE_KICK		-2

@@ -17,6 +17,9 @@
 #include "util.h"
 #include "game.h"
 
+//++ BulliT
+#include "agglobal.h"
+//-- Martin Webrant
 // QUAKECLASSIC
 cvar_t rj		= { "rj", "0" };
 
@@ -856,5 +859,9 @@ void GameDLLInit( void )
 // END REGISTER CVARS FOR SKILL LEVEL STUFF
 
 	SERVER_COMMAND( "exec skill.cfg\n" );
+
+//++ BulliT
+	AgInitGame();
+//-- Martin Webrant
 }
 

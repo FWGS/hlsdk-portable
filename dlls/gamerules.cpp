@@ -164,13 +164,28 @@ CGameRules *InstallGameRules( void )
 	}
 	else
 	{
-		if( teamplay.value > 0 )
+		if( CVAR_GET_FLOAT( "mp_teamplay" ) >= LTS )
+		{
+			// lts
+			return new CHalfLifeTeamplay;
+		}
+		else if( CVAR_GET_FLOAT( "mp_teamplay" ) == LMS )
+		{
+			// lms
+			return new CHalfLifeMultiplay;
+		}
+		else if( CVAR_GET_FLOAT( "mp_teamplay" ) == ARENA )
+		{
+			// arena
+			return new CHalfLifeMultiplay;
+		}
+		else if( teamplay.value > 0 )
 		{
 			// teamplay
 			g_teamplay = 1;
 			return new CHalfLifeTeamplay;
 		}
-		if( (int)gpGlobals->deathmatch == 1 )
+		else if( (int)gpGlobals->deathmatch == 1 )
 		{
 			// vanilla deathmatch
 			g_teamplay = 0;

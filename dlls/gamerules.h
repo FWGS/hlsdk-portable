@@ -16,6 +16,16 @@
 // GameRules
 //=========================================================
 
+//++ BulliT
+#if !defined(_GAMERULES_H_)
+#define _GAMERULES_H_
+
+#define NORMAL	3
+#define ARENA	4
+#define LMS	5
+#define LTS	6
+//-- Martin Webrant
+
 //#include "weapons.h"
 //#include "items.h"
 class CBasePlayerItem;
@@ -55,6 +65,10 @@ enum
 	GR_ALLY,
 	GR_NEUTRAL
 };
+
+#include "agglobal.h"
+#include "agarena.h"
+#include "aglms.h"
 
 class CGameRules
 {
@@ -160,6 +174,13 @@ public:
 
 	// Immediately end a multiplayer game
 	virtual void EndMultiplayerGame( void ) {}
+
+//++ BulliT
+	AgArena	m_Arena;
+	AgLMS	m_LMS;
+	int	m_iGameMode;
+	float	m_fGameStart;
+//-- Martin Webrant
 };
 
 extern CGameRules *InstallGameRules( void );
@@ -365,3 +386,7 @@ protected:
 };
 
 extern DLL_GLOBAL CGameRules *g_pGameRules;
+
+//++ BulliT
+#endif //_GAMERULES_H_
+//-- Martin Webrant
