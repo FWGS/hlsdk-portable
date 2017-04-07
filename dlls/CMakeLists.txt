@@ -29,109 +29,120 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_LINUX -DCLIENT_WEAPONS -Dstricmp=strcasec
 set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS}")
 
 set (SVDLL_SOURCES 
-	agrunt.cpp
-	airtank.cpp
-	aflock.cpp
+	aghl/agarena.cpp
+	aghl/agglobal.cpp
+	aghl/aglms.cpp
+	aghl/agspectator.cpp
+	dmc/quake_gun.cpp
+	dmc/quake_items.cpp
+	dmc/quake_nail.cpp
+	dmc/quake_player.cpp
+	dmc/quake_rocket.cpp
+	dmc/quake_weapons_all.cpp
+	dmc/observer.cpp
+#	agrunt.cpp
+#	airtank.cpp
+#	aflock.cpp
 	animating.cpp
 	animation.cpp
-	apache.cpp
-	barnacle.cpp
-	barney.cpp
-	bigmomma.cpp
-	bloater.cpp
+#	apache.cpp
+#	barnacle.cpp
+#	barney.cpp
+#	bigmomma.cpp
+#	bloater.cpp
 	bmodels.cpp
-	bullsquid.cpp
+#	bullsquid.cpp
 	buttons.cpp
 	cbase.cpp
 	client.cpp
 	combat.cpp
-	controller.cpp
-	crossbow.cpp
-	crowbar.cpp
-	defaultai.cpp
+#	controller.cpp
+#	crossbow.cpp
+#	crowbar.cpp
+#	defaultai.cpp
 	doors.cpp
 	effects.cpp
-	egon.cpp
+#	egon.cpp
 	explode.cpp
-	flyingmonster.cpp
+#	flyingmonster.cpp
 	func_break.cpp
-	func_tank.cpp
+#	func_tank.cpp
 	game.cpp
 	gamerules.cpp
-	gargantua.cpp
-	gauss.cpp
-	genericmonster.cpp
-	ggrenade.cpp
+#	gargantua.cpp
+#	gauss.cpp
+#	genericmonster.cpp
+#	ggrenade.cpp
 	globals.cpp
-	glock.cpp
-	gman.cpp
+#	glock.cpp
+#	gman.cpp
 	h_ai.cpp
-	h_battery.cpp
-	h_cine.cpp
-	h_cycler.cpp
+#	h_battery.cpp
+#	h_cine.cpp
+#	h_cycler.cpp
 	h_export.cpp
-	handgrenade.cpp
-	hassassin.cpp
-	headcrab.cpp
-	healthkit.cpp
-	hgrunt.cpp
-	hornet.cpp
-	hornetgun.cpp
-	houndeye.cpp
-	ichthyosaur.cpp
-	islave.cpp
-	items.cpp
-	leech.cpp
+#	handgrenade.cpp
+#	hassassin.cpp
+#	headcrab.cpp
+#	healthkit.cpp
+#	hgrunt.cpp
+#	hornet.cpp
+#	hornetgun.cpp
+#	houndeye.cpp
+#	ichthyosaur.cpp
+#	islave.cpp
+#	items.cpp
+#	leech.cpp
 	lights.cpp
 	maprules.cpp
-	monstermaker.cpp
-	monsters.cpp
-	monsterstate.cpp
-	mortar.cpp
-	mp5.cpp
+#	monstermaker.cpp
+#	monsters.cpp
+#	monsterstate.cpp
+#	mortar.cpp
+#	mp5.cpp
 	multiplay_gamerules.cpp
-	nihilanth.cpp
+#	nihilanth.cpp
 	nodes.cpp
-	osprey.cpp
+#	osprey.cpp
 	pathcorner.cpp
 	plane.cpp
 	plats.cpp
 	player.cpp
-	python.cpp
-	rat.cpp
-	roach.cpp
-	rpg.cpp
-	satchel.cpp
+#	python.cpp
+#	rat.cpp
+#	roach.cpp
+#	rpg.cpp
+#	satchel.cpp
 	schedule.cpp
-	scientist.cpp
-	scripted.cpp
-	shotgun.cpp
+#	scientist.cpp
+#	scripted.cpp
+#	shotgun.cpp
 	singleplay_gamerules.cpp
 	skill.cpp
 	sound.cpp
-	soundent.cpp
+#	soundent.cpp
 	spectator.cpp
-	squadmonster.cpp
-	squeakgrenade.cpp
+#	squadmonster.cpp
+#	squeakgrenade.cpp
 	subs.cpp
-	talkmonster.cpp
+#	talkmonster.cpp
 	teamplay_gamerules.cpp
-	tempmonster.cpp
-	tentacle.cpp
+#	tempmonster.cpp
+#	tentacle.cpp
 	triggers.cpp
-	tripmine.cpp
-	turret.cpp
+#	tripmine.cpp
+#	turret.cpp
 	util.cpp
 	weapons.cpp
 	world.cpp
-	xen.cpp
-	zombie.cpp
+#	xen.cpp
+#	zombie.cpp
 	../pm_shared/pm_debug.c
 	../pm_shared/pm_math.c
 	../pm_shared/pm_shared.c
 )
 	
-include_directories (. wpn_shared ../common ../engine ../pm_shared ../game_shared ../public)
+include_directories (. wpn_shared ../common ../engine ../pm_shared ../game_shared ../public dmc aghl .. )
 
 if(USE_VOICEMGR)
 	set(SVDLL_SOURCES

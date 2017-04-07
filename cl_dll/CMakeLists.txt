@@ -29,25 +29,14 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-write-strings -DLINUX -D_LINUX -Dstricm
 set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS}")
 
 set (CLDLL_SOURCES 
-	../dlls/crossbow.cpp 
-	../dlls/crowbar.cpp 
-	../dlls/egon.cpp 
-	../dlls/gauss.cpp 
-	../dlls/handgrenade.cpp 
-	../dlls/hornetgun.cpp 
-	../dlls/mp5.cpp 
-	../dlls/python.cpp 
-	../dlls/rpg.cpp 
-	../dlls/satchel.cpp 
-	../dlls/shotgun.cpp 
-	../dlls/squeakgrenade.cpp 
-	../dlls/tripmine.cpp 
-	../dlls/glock.cpp
-	ev_hldm.cpp 
-	hl/hl_baseentity.cpp
-	hl/hl_events.cpp
-	hl/hl_objects.cpp
-	hl/hl_weapons.cpp
+	dmc/DMC_Teleporters.cpp
+	ev_hldm.cpp
+	../dlls/dmc/quake_gun.cpp
+	../dlls/dmc/quake_weapons_all.cpp
+	quake/quake_baseentity.cpp
+	quake/quake_events.cpp
+	quake/quake_objects.cpp
+	quake/quake_weapons.cpp
 	ammo.cpp
 	ammo_secondary.cpp
 	ammohistory.cpp
@@ -59,7 +48,7 @@ set (CLDLL_SOURCES
 	entity.cpp
 	ev_common.cpp
 	events.cpp
-	flashlight.cpp
+#	flashlight.cpp
 	GameStudioModelRenderer.cpp
 	geiger.cpp
 	health.cpp
@@ -91,7 +80,7 @@ set (CLDLL_SOURCES
 	input_xash3d.cpp
 	scoreboard.cpp
 	MOTD.cpp)
-include_directories (. hl/ ../dlls ../dlls/wpn_shared ../common ../engine ../pm_shared ../game_shared ../public)
+include_directories (. hl/ ../dlls ../dlls/wpn_shared ../common ../engine ../pm_shared ../game_shared ../public dmc ../dlls/dmc )
 
 if(USE_VOICEMGR)
 	#set(CLDLL_SOURCES
