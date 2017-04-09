@@ -339,24 +339,6 @@ public:
 	BOOL m_bAxHitMe;
 	void Spawn_Telefog( Vector vecOrg, CBaseEntity *pOther );
 	Vector m_vecTeleAngles;
-
-	//We use this variables to store each ammo count.
-	int ammo_9mm;
-	int ammo_357;
-	int ammo_bolts;
-	int ammo_buckshot;
-	int ammo_rockets;
-	int ammo_uranium;
-	int ammo_hornets;
-	int ammo_argrens;
-	//Special stuff for grenades and satchels.
-	float m_flStartThrow;
-	float m_flReleaseThrow;
-	int m_chargeReady;
-	int m_fInAttack;
-
-	enum EGON_FIRESTATE { FIRE_OFF, FIRE_CHARGE };
-	int m_fireState;
 };
 
 // Ugly technique to override base member functions

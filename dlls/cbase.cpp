@@ -511,7 +511,7 @@ int CBaseEntity::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 	// (that is, no actual entity projectile was involved in the attack so use the shooter's origin). 
 	if( pevAttacker == pevInflictor )	
 	{
-		vecTemp = pevInflictor->origin - VecBModelOrigin( pev );
+		vecTemp = pevAttacker->origin - VecBModelOrigin( pev );
 	}
 	else
 	// an actual missile was involved.

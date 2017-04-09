@@ -1739,15 +1739,6 @@ int GetWeaponData( struct edict_s *player, struct weapon_data_s *info )
 						item->m_flNextPrimaryAttack	= max( gun->m_flNextPrimaryAttack, -0.001 );
 						item->m_flNextSecondaryAttack	= max( gun->m_flNextSecondaryAttack, -0.001 );
 						item->m_fInReload		= gun->m_fInReload;
-						item->m_fInSpecialReload	= gun->m_fInSpecialReload;
-						item->fuser1			= max( gun->pev->fuser1, -0.001 );
-						item->fuser2			= gun->m_flStartThrow;
-						item->fuser3			= gun->m_flReleaseThrow;
-						item->iuser1			= gun->m_chargeReady;
-						item->iuser2			= gun->m_fInAttack;
-						item->iuser3			= gun->m_fireState;
-
-						//item->m_flPumpTime		= max( gun->m_flPumpTime, -0.001 );
 					}
 				}
 				pPlayerItem = pPlayerItem->m_pNext;
@@ -1813,16 +1804,6 @@ void UpdateClientData( const struct edict_s *ent, int sendweapons, struct client
 		if( pl )
 		{
 			cd->m_flNextAttack = pl->m_flNextAttack;
-			cd->fuser2 = pl->m_flNextAmmoBurn;
-			cd->fuser3 = pl->m_flAmmoStartCharge;
-			cd->vuser1.x = pl->ammo_9mm;
-			cd->vuser1.y = pl->ammo_357;
-			cd->vuser1.z = pl->ammo_argrens;
-			cd->ammo_nails = pl->ammo_bolts;
-			cd->ammo_shells = pl->ammo_buckshot;
-			cd->ammo_rockets = pl->ammo_rockets;
-			cd->ammo_cells = pl->ammo_uranium;
-			cd->vuser2.x = pl->ammo_hornets;
 			cd->weapons = pl->m_iQuakeItems;
 
 			if( pl->m_pActiveItem )
@@ -1835,11 +1816,6 @@ void UpdateClientData( const struct edict_s *ent, int sendweapons, struct client
 					gun->GetItemInfo( &II );
 
 					cd->m_iId = II.iId;
-
-					cd->vuser3.z = gun->m_iSecondaryAmmoType;
-					cd->vuser4.x = gun->m_iPrimaryAmmoType;
-					cd->vuser4.y = pl->m_rgAmmo[gun->m_iPrimaryAmmoType];
-					cd->vuser4.z = pl->m_rgAmmo[gun->m_iSecondaryAmmoType];
 				}
 			}
 			cd->fuser1 = (float)pl->m_iQuakeWeapon;
@@ -1944,13 +1920,13 @@ int GetHullBounds( int hullnumber, float *mins, float *maxs )
 	switch( hullnumber )
 	{
 	case 0:				// Normal player
-		mins = VEC_HULL_MIN;
-		maxs = VEC_HULL_MAX;
+		mins = Vector( -16, -16, -32 );
+		maxs = Vector( 16, 16, 32 );
 		iret = 1;
 		break;
 	case 1:				// Crouched player
-		mins = VEC_DUCK_HULL_MIN;
-		maxs = VEC_DUCK_HULL_MAX;
+		mins = Vector( -16, -16, -32 );
+		maxs = Vector( 16, 16, 32 );
 		iret = 1;
 		break;
 	case 2:				// Point based hull

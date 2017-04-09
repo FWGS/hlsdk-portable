@@ -791,25 +791,6 @@ void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim )
 
 /*
 ===========
-TabulateAmmo
-This function is used to find and store 
-all the ammo we have into the ammo vars.
-============
-*/
-void CBasePlayer::TabulateAmmo()
-{
-	ammo_9mm = AmmoInventory( GetAmmoIndex( "9mm" ) );
-	ammo_357 = AmmoInventory( GetAmmoIndex( "357" ) );
-	ammo_argrens = AmmoInventory( GetAmmoIndex( "ARgrenades" ) );
-	ammo_bolts = AmmoInventory( GetAmmoIndex( "bolts" ) );
-	ammo_buckshot = AmmoInventory( GetAmmoIndex( "buckshot" ) );
-	ammo_rockets = AmmoInventory( GetAmmoIndex( "rockets" ) );
-	ammo_uranium = AmmoInventory( GetAmmoIndex( "uranium" ) );
-	ammo_hornets = AmmoInventory( GetAmmoIndex( "Hornets" ) );
-}
-
-/*
-===========
 WaterMove
 ============
 */
@@ -2269,17 +2250,6 @@ pt_end:
 					{
 						gun->m_flTimeWeaponIdle = max( gun->m_flTimeWeaponIdle - gpGlobals->frametime, -0.001 );
 					}
-
-					if( gun->pev->fuser1 != 1000 )
-					{
-						gun->pev->fuser1 = max( gun->pev->fuser1 - gpGlobals->frametime, -0.001 );
-					}
-
-					// Only decrement if not flagged as NO_DECREMENT
-					/*if( gun->m_flPumpTime != 1000 )
-					{
-						gun->m_flPumpTime = max( gun->m_flPumpTime - gpGlobals->frametime, -0.001 );
-					}*/
 				}
 
 				pPlayerItem = pPlayerItem->m_pNext;
@@ -2290,22 +2260,6 @@ pt_end:
 	m_flNextAttack -= gpGlobals->frametime;
 	if( m_flNextAttack < -0.001 )
 		m_flNextAttack = -0.001;
-	
-	if( m_flNextAmmoBurn != 1000 )
-	{
-		m_flNextAmmoBurn -= gpGlobals->frametime;
-
-		if( m_flNextAmmoBurn < -0.001 )
-			m_flNextAmmoBurn = -0.001;
-	}
-
-	if( m_flAmmoStartCharge != 1000 )
-	{
-		m_flAmmoStartCharge -= gpGlobals->frametime;
-
-		if( m_flAmmoStartCharge < -0.001 )
-			m_flAmmoStartCharge = -0.001;
-	}
 #else
 	return;
 #endif
@@ -2652,17 +2606,6 @@ int CBasePlayer::Restore( CRestore &restore )
 	{
 		UTIL_SetSize( pev, VEC_HULL_MIN, VEC_HULL_MAX );
 	}*/
-
-	g_engfuncs.pfnSetPhysicsKeyValue( edict(), "hl", "1" );
-
-	if( m_fLongJump )
-	{
-		g_engfuncs.pfnSetPhysicsKeyValue( edict(), "slj", "1" );
-	}
-	else
-	{
-		g_engfuncs.pfnSetPhysicsKeyValue( edict(), "slj", "0" );
-	}
 
 	RenewItems();
 
@@ -3398,8 +3341,6 @@ int CBasePlayer::GiveAmmo( int iCount, char *szName, int iMax )
 			WRITE_BYTE( iAdd );		// amount
 		MESSAGE_END();
 	}
-
-	TabulateAmmo();
 
 	return i;
 }

@@ -228,7 +228,7 @@ void CHalfLifeMultiplay::Think( void )
 		int time = (int)CVAR_GET_FLOAT( "mp_chattime" );
 		if( time < 1 )
 			CVAR_SET_STRING( "mp_chattime", "1" );
-		else if( time > MAX_INTERMISSION_TIME )
+		else if( time > INTERMISSION_TIME )
 			CVAR_SET_STRING( "mp_chattime", UTIL_dtos1( INTERMISSION_TIME ) );
 
 		m_flIntermissionEndTime = g_flIntermissionStartTime + mp_chattime.value;

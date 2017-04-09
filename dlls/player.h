@@ -15,7 +15,7 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-#include "pm_materials.h"
+//#include "pm_materials.h"
 
 #define PLAYER_FATAL_FALL_SPEED		1024// approx 60 feet
 #define PLAYER_MAX_SAFE_FALL_SPEED	580// approx 20 feet
@@ -293,13 +293,6 @@ public:
 
 	void SetCustomDecalFrames( int nFrames );
 	int GetCustomDecalFrames( void );
-
-	void TabulateAmmo( void );
-
-	float m_flStartCharge;
-	float m_flAmmoStartCharge;
-	float m_flPlayAftershock;
-	float m_flNextAmmoBurn;// while charging, when to absorb another unit of player's ammo?
 
 	//Player ID
 	void InitStatusBar( void );

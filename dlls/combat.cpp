@@ -24,7 +24,6 @@
 #include "util.h"
 #include "cbase.h"
 #include "monsters.h"
-#include "soundent.h"
 #include "decals.h"
 #include "animation.h"
 #include "weapons.h"
@@ -548,13 +547,6 @@ void CGib::WaitTillLand( void )
 	{
 		SetThink( &CBaseEntity::SUB_StartFadeOut );
 		pev->nextthink = gpGlobals->time + m_lifeTime;
-
-		// If you bleed, you stink!
-		if( m_bloodColor != DONT_BLEED )
-		{
-			// ok, start stinkin!
-			CSoundEnt::InsertSound( bits_SOUND_MEAT, pev->origin, 384, 25 );
-		}
 	}
 	else
 	{
