@@ -80,7 +80,7 @@ set (CLDLL_SOURCES
 	input_xash3d.cpp
 	scoreboard.cpp
 	MOTD.cpp)
-include_directories (. hl/ ../dlls ../dlls/wpn_shared ../common ../engine ../pm_shared ../game_shared ../public dmc ../dlls/dmc )
+include_directories (. hl/ ../dlls ../dlls/wpn_shared ../common ../engine ../pm_shared ../game_shared ../public dmc ../dlls/dmc ../dlls/dmc .. ../dlls/aghl )
 
 if(USE_VOICEMGR)
 	#set(CLDLL_SOURCES

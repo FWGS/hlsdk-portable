@@ -77,7 +77,7 @@ void count_if(InputIterator first, InputIterator last, Predicate pred,
     while (first != last)
 	if (pred(*first++)) ++n;
 }
-
+/*
 template<class _II, class	_OI, class _Uop> inline
 	_OI	transform(_II _F, _II _L, _OI _X, _Uop _U)
 {for (;	_F != _L; ++_F,	++_X)
@@ -90,6 +90,6 @@ template<class _II1, class _II2, class _OI,	class _Bop>	inline
 *_X	= _B(*_F1, *_F2);
 return (_X); }
 // TEMPLATE	FUNCTION replace
-
+*/
 #endif
 

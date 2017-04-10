@@ -13,7 +13,7 @@
 #include "agglobal.h"
 #include "gamerules.h"
 
-extern DLL_GLOBAL g_fGameOver;
+extern DLL_GLOBAL BOOL g_fGameOver;
 
 //TITLES FOR HALF-LIFE
 // Position command $position x y 
