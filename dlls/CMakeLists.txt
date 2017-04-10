@@ -96,13 +96,13 @@ set (SVDLL_SOURCES
 	lights.cpp
 	maprules.cpp
 #	monstermaker.cpp
-#	monsters.cpp
+	monsters.cpp
 #	monsterstate.cpp
 #	mortar.cpp
 #	mp5.cpp
 	multiplay_gamerules.cpp
 #	nihilanth.cpp
-	nodes.cpp
+#	nodes.cpp
 #	osprey.cpp
 	pathcorner.cpp
 	plane.cpp
