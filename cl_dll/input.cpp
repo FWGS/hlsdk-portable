@@ -897,7 +897,10 @@ int CL_ButtonBits( int bResetState )
 	if( in_attack.state & 3 )
 	{
 		if( gHUD.m_MOTD.m_bShow )
+		{
 			gHUD.m_MOTD.Reset();
+			gEngfuncs.pfnClientCmd( "_firstspawn\n" );
+		}
 		else
 			bits |= IN_ATTACK;
 	}
