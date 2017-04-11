@@ -93,6 +93,13 @@ int CHud::Redraw( float flTime, int intermission )
 	if( m_flTimeDelta < 0 )
 		m_flTimeDelta = 0;
 
+	if( !m_iIntermission && intermission )
+	{
+		// Take a screenshot if the client's got the cvar set
+		if( CVAR_GET_FLOAT( "hud_takesshots" ) != 0 )
+			m_flShotTime = flTime + 1.0;	// Take a screenshot in a second
+	}
+
 	if( m_flShotTime && m_flShotTime < flTime )
 	{
 		gEngfuncs.pfnClientCmd( "snapshot\n" );
