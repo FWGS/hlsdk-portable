@@ -90,6 +90,18 @@ int __MsgFunc_QItems( const char *pszName, int iSize, void *pbuf )
 	return gHUD.MsgFunc_QItems( pszName, iSize, pbuf );
 }
 
+void __CmdFunc_OpenCommandMenu(void)
+{
+}
+                
+void __CmdFunc_CloseCommandMenu(void)
+{
+}
+        
+void __CmdFunc_ForceCloseCommandMenu( void )
+{
+}
+
 // This is called every time the DLL is loaded
 void CHud::Init( void )
 {
@@ -103,6 +115,12 @@ void CHud::Init( void )
 	HOOK_COMMAND( "togglebrowser", ToggleServerBrowser );
 
 	HOOK_MESSAGE( ServerName );
+
+	HOOK_COMMAND( "+commandmenu", OpenCommandMenu );
+	HOOK_COMMAND( "-commandmenu", CloseCommandMenu );
+	HOOK_COMMAND( "ForceCloseCommandMenu", ForceCloseCommandMenu );
+
+	CVAR_CREATE( "hud_takesshots", "0", FCVAR_ARCHIVE );		// controls whether or not to automatically take screenshots at the end of a round
 
 	// QUAKECLASSIC
 	HOOK_MESSAGE( QItems );
