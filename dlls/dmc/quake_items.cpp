@@ -499,7 +499,7 @@ void CBasePlayer::Deathmatch_Weapon(int iOldWeapon, int iNewWeapon)
 			W_ChangeWeapon( iPickedWep ); break;
 		case 2:
 
-			if ( iPickedWep == 8 && !FBitSet(pev->flags , FL_INWATER) || iPickedWep > iOldWep )
+			if ( ( iPickedWep == 8 && !FBitSet(pev->flags, FL_INWATER) ) || iPickedWep > iOldWep )
 				W_ChangeWeapon( iPickedWep );
 			break;
 	}

@@ -32,8 +32,8 @@ extern int gmsgStatusText;
 extern int gmsgStatusValue; 
 extern DLL_GLOBAL Vector		g_vecAttackDir;
 
-/*************************************
-			  STATUS BAR 
+/*************************************/
+/*			  STATUS BAR */
 /*************************************/
 
 // Initialise the player's status bar
