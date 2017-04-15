@@ -100,6 +100,7 @@ set (SVDLL_SOURCES
 #	monsterstate.cpp
 #	mortar.cpp
 #	mp5.cpp
+	mpstubb.cpp
 	multiplay_gamerules.cpp
 #	nihilanth.cpp
 #	nodes.cpp
