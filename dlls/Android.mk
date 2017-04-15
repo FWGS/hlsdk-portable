@@ -26,104 +26,57 @@ LOCAL_C_INCLUDES := $(SDL_PATH)/include \
 		    $(LOCAL_PATH)/../engine \
 		    $(LOCAL_PATH)/../public \
 		    $(LOCAL_PATH)/../pm_shared \
-		    $(LOCAL_PATH)/../game_shared
+		    $(LOCAL_PATH)/../game_shared \
+		    $(LOCAL_PATH)/.. \
+		    $(LOCAL_PATH)/aghl \
+		    $(LOCAL_PATH)/dmc
 
-LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
-           aflock.cpp \
-           animating.cpp \
+LOCAL_SRC_FILES := animating.cpp \
            animation.cpp \
-           apache.cpp \
-           barnacle.cpp \
-           barney.cpp \
-           bigmomma.cpp \
-           bloater.cpp \
            bmodels.cpp \
-           bullsquid.cpp \
            buttons.cpp \
            cbase.cpp \
            client.cpp \
            combat.cpp \
-           controller.cpp \
-           crossbow.cpp \
-           crowbar.cpp \
-           defaultai.cpp \
            doors.cpp \
            effects.cpp \
-           egon.cpp \
            explode.cpp \
-           flyingmonster.cpp \
            func_break.cpp \
-           func_tank.cpp \
            game.cpp \
            gamerules.cpp \
-           gargantua.cpp \
-           gauss.cpp \
-           genericmonster.cpp \
-           ggrenade.cpp \
            globals.cpp \
-           glock.cpp \
-           gman.cpp \
            h_ai.cpp \
-           h_battery.cpp \
-           h_cycler.cpp \
-           h_cine.cpp \
            h_export.cpp \
-           handgrenade.cpp \
-           hassassin.cpp \
-           headcrab.cpp \
-           healthkit.cpp \
-           hgrunt.cpp \
-           hornet.cpp \
-           hornetgun.cpp \
-           houndeye.cpp \
-           ichthyosaur.cpp \
-           islave.cpp \
-           items.cpp \
-           leech.cpp \
            lights.cpp \
            maprules.cpp \
-           monstermaker.cpp \
            monsters.cpp \
-           monsterstate.cpp \
-           mortar.cpp \
-           mp5.cpp \
+	   mpstabb.cpp \
            multiplay_gamerules.cpp \
-           nihilanth.cpp \
-           nodes.cpp \
-           osprey.cpp \
            pathcorner.cpp \
            plane.cpp \
            plats.cpp \
            player.cpp \
-           python.cpp \
-           rat.cpp \
-           roach.cpp \
-           rpg.cpp \
-           satchel.cpp \
            schedule.cpp \
-           scientist.cpp \
-           scripted.cpp \
-           shotgun.cpp \
            singleplay_gamerules.cpp \
            skill.cpp \
            sound.cpp \
-           soundent.cpp \
            spectator.cpp \
-           squadmonster.cpp \
-           squeakgrenade.cpp \
            subs.cpp \
-           talkmonster.cpp \
            teamplay_gamerules.cpp \
-           tentacle.cpp \
-           tempmonster.cpp \
            triggers.cpp \
-           tripmine.cpp \
-           turret.cpp \
            util.cpp \
            weapons.cpp \
-           world.cpp \
-           xen.cpp \
-           zombie.cpp \
+	   aghl/agarena.cpp \
+	   aghl/agglobal.cpp \
+	   aghl/aglms.cpp \
+	   aghl/agspectator.cpp \
+	   dmc/quake_gun.cpp \
+	   dmc/quake_items.cpp \
+	   dmc/quake_nail.cpp \
+	   dmc/quake_player.cpp \
+	   dmc/quake_rocket.cpp \
+	   dmc/quake_weapons_all.cpp \
+	   dmc/observer.cpp \
 	   ../pm_shared/pm_debug.c \
 	   ../pm_shared/pm_math.c \
 	   ../pm_shared/pm_shared.c

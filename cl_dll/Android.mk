@@ -25,6 +25,13 @@ LOCAL_CFLAGS += -DCLIENT_DLL=1
 
 SRCS=
 SRCS_C=
+SRCS+=./dmc/DMC_Teleporters.cpp
+SRCS+=../dlls/dmc/quake_gun.cpp
+SRCS+=../dlls/dmc/quake_weapons_all.cpp
+SRCS+=./quake/quake_baseentity.cpp
+SRCS+=./quake/quake_events.cpp
+SRCS+=./quake/quake_objects.cpp
+SRCS+=./quake/quake_weapons.cpp
 SRCS+=../dlls/crossbow.cpp
 SRCS+=../dlls/crowbar.cpp
 SRCS+=../dlls/egon.cpp
@@ -57,7 +64,7 @@ SRCS+=./demo.cpp
 SRCS+=./entity.cpp
 SRCS+=./ev_common.cpp
 SRCS+=./events.cpp
-SRCS+=./flashlight.cpp
+#SRCS+=./flashlight.cpp
 SRCS+=./GameStudioModelRenderer.cpp
 SRCS+=./geiger.cpp
 SRCS+=./health.cpp
@@ -98,7 +105,12 @@ LOCAL_C_INCLUDES := $(LOCAL_PATH)/. \
 		 $(LOCAL_PATH)/../engine \
 		 $(LOCAL_PATH)/../game_shared \
 		 $(LOCAL_PATH)/../dlls \
-		 $(LOCAL_PATH)/../pm_shared
+		 $(LOCAL_PATH)/../pm_shared \
+		 $(LOCAL_PATH)/../dlls/aghl \
+		 $(LOCAL_PATH)/../dlls/dmc \
+		 $(LOCAL_PATH)/.. \
+		 $(LOCAL_PATH)/dmc
+
 LOCAL_CFLAGS += $(DEFINES) $(INCLUDES)
 
 LOCAL_SRC_FILES := $(SRCS) $(SRCS_C)
