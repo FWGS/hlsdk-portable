@@ -50,7 +50,7 @@ LOCAL_SRC_FILES := animating.cpp \
            lights.cpp \
            maprules.cpp \
            monsters.cpp \
-	   mpstabb.cpp \
+	   mpstubb.cpp \
            multiplay_gamerules.cpp \
            pathcorner.cpp \
            plane.cpp \
@@ -66,6 +66,7 @@ LOCAL_SRC_FILES := animating.cpp \
            triggers.cpp \
            util.cpp \
            weapons.cpp \
+	   world.cpp \
 	   aghl/agarena.cpp \
 	   aghl/agglobal.cpp \
 	   aghl/aglms.cpp \
