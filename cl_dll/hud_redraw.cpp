@@ -77,6 +77,8 @@ int CHud::Redraw( float flTime, int intermission )
 		m_flShotTime = 0;
 	}
 
+	m_iIntermission = intermission;
+
 	// if no redrawing is necessary
 	// return 0;
 
