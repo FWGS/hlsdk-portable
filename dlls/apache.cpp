@@ -88,7 +88,7 @@ void CApache::Spawn( void )
 		pev->nextthink = gpGlobals->time + 1.0;
 	}
 
-	m_iRockets = 10;
+	m_iRockets = 0;
 }
 
 void CApache::Precache( void )

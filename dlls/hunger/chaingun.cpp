@@ -22,6 +22,8 @@
 #include "player.h"
 #include "gamerules.h"
 
+#define CHAINGUN_BULLETS_PER_SHOT 2
+
 enum chaingun_e {
 	CHAINGUN_IDLE = 0,
 	CHAINGUN_IDLE2,
@@ -357,7 +359,7 @@ void CChaingun::Fire(float flSpread, float flCycleTime, BOOL fUseAutoAim)
 	m_pPlayer->m_iWeaponVolume = NORMAL_GUN_VOLUME;
 	m_pPlayer->m_iWeaponFlash = NORMAL_GUN_FLASH;
 
-	m_iClip--;
+	m_iClip -= CHAINGUN_BULLETS_PER_SHOT;
 
 	m_pPlayer->pev->effects = (int)(m_pPlayer->pev->effects) | EF_MUZZLEFLASH;
 
@@ -368,7 +370,7 @@ void CChaingun::Fire(float flSpread, float flCycleTime, BOOL fUseAutoAim)
 	Vector vecAiming = m_pPlayer->GetAutoaimVector(AUTOAIM_5DEGREES);
 	Vector vecDir;
 
-	vecDir = m_pPlayer->FireBulletsPlayer(1, vecSrc, vecAiming, Vector(flSpread, flSpread, flSpread), 8192, BULLET_PLAYER_CHAINGUN, 2, 0, m_pPlayer->pev, m_pPlayer->random_seed);
+	vecDir = m_pPlayer->FireBulletsPlayer(CHAINGUN_BULLETS_PER_SHOT, vecSrc, vecAiming, Vector(flSpread, flSpread, flSpread), 8192, BULLET_PLAYER_CHAINGUN, 2, 0, m_pPlayer->pev, m_pPlayer->random_seed);
 
 	int flags;
 #if defined( CLIENT_WEAPONS )

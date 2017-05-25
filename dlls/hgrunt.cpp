@@ -186,6 +186,10 @@ enum
 //=========================================================
 void CHGrunt::SpeakSentence( void )
 {
+	// Prevent Cyberfranklin from emitting Grunt taunt sounds. 
+	if( FClassnameIs( pev, "monster_th_cyberfranklin" ) )
+		return;
+
 	if( m_iSentence == HGRUNT_SENT_NONE )
 	{
 		// no sentence cued up.
