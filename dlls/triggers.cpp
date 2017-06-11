@@ -628,6 +628,65 @@ void CTriggerMonsterJump::Touch( CBaseEntity *pOther )
 	pev->nextthink = gpGlobals->time;
 }
 
+// mp3 player, killar
+#define SF_REMOVE_ON_FIRE 1
+     
+class CTargetFMODAudio : public CPointEntity
+{
+public:
+	void Spawn( void );
+
+	void Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+	BOOL m_bPlaying;
+	virtual int Save( CSave &save );
+	virtual int Restore( CRestore &restore );
+	static TYPEDESCRIPTION m_SaveData[];
+};
+     
+LINK_ENTITY_TO_CLASS( ambient_fmodstream, CTargetFMODAudio );
+LINK_ENTITY_TO_CLASS( trigger_mp3audio, CTargetFMODAudio );
+
+TYPEDESCRIPTION CTargetFMODAudio::m_SaveData[] =
+{
+	DEFINE_FIELD( CTargetFMODAudio, m_bPlaying, FIELD_BOOLEAN ),
+};
+
+IMPLEMENT_SAVERESTORE( CTargetFMODAudio, CPointEntity )
+
+void CTargetFMODAudio::Spawn( void )
+{
+	pev->solid = SOLID_NOT;
+	pev->movetype = MOVETYPE_NONE;
+
+	m_bPlaying = FALSE; // start out not playing
+}
+
+void CTargetFMODAudio::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
+{
+	char command[64];
+
+	if( !pActivator->IsPlayer() ) // activator should be a player
+		return;
+
+	if( !m_bPlaying ) // if we're not playing, start playing!
+		m_bPlaying = TRUE;
+	else
+	{	// if we're already playing, stop the mp3
+		m_bPlaying = FALSE;
+		CLIENT_COMMAND( pActivator->edict(), "stopaudio\n" );
+			return;
+	}
+
+	// issue the play/loop command
+	sprintf( command, "playaudio %s\n", STRING( pev->message ) );
+
+	CLIENT_COMMAND( pActivator->edict(), command );
+
+	// remove if set
+	if( FBitSet( pev->spawnflags, SF_REMOVE_ON_FIRE ) )
+		UTIL_Remove( this );
+}
+
 //=====================================
 //
 // trigger_cdaudio - starts/stops cd audio tracks
@@ -1491,7 +1550,10 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 	}
 	//ALERT( at_console, "Level touches %d levels\n", ChangeList( levels, 16 ) );
 	ALERT( at_console, "CHANGE LEVEL: %s %s\n", st_szNextMap, st_szNextSpot );
-	CHANGE_LEVEL( st_szNextMap, st_szNextSpot );
+	if( g_pGameRules->IsCoOp() )
+		CHANGE_LEVEL( st_szNextMap, NULL );
+	else
+		CHANGE_LEVEL( st_szNextMap, st_szNextSpot );
 }
 
 //
@@ -1918,7 +1980,7 @@ LINK_ENTITY_TO_CLASS( trigger_autosave, CTriggerSave )
 
 void CTriggerSave::Spawn( void )
 {
-	if( g_pGameRules->IsDeathmatch() )
+	if( g_pGameRules->IsDeathmatch() || g_pGameRules->IsCoOp() )
 	{
 		REMOVE_ENTITY( ENT( pev ) );
 		return;
@@ -1972,7 +2034,7 @@ void CTriggerEndSection::EndSectionUse( CBaseEntity *pActivator, CBaseEntity *pC
 
 void CTriggerEndSection::Spawn( void )
 {
-	if( g_pGameRules->IsDeathmatch() )
+	if( g_pGameRules->IsDeathmatch() || g_pGameRules->IsCoOp() )
 	{
 		REMOVE_ENTITY( ENT( pev ) );
 		return;

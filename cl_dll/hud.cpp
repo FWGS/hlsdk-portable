@@ -27,6 +27,7 @@
 
 #include "demo.h"
 #include "demo_api.h"
+//#include "mp3.h"
 
 cvar_t *hud_textmode;
 float g_hud_text_color[3];
@@ -77,6 +78,26 @@ int __MsgFunc_GameMode( const char *pszName, int iSize, void *pbuf )
 	return gHUD.MsgFunc_GameMode( pszName, iSize, pbuf );
 }
 
+int __MsgFunc_PlayMP3(const char *pszName, int iSize, void *pbuf )
+{
+	return gHUD.MsgFunc_PlayMP3( pszName, iSize, pbuf );
+}
+
+int __MsgFunc_PlayBGM(const char *pszName, int iSize, void *pbuf )
+{
+	return gHUD.MsgFunc_PlayBGM( pszName, iSize, pbuf );
+}
+
+int __MsgFunc_StopMP3(const char *pszName, int iSize, void *pbuf )
+{
+	return gHUD.MsgFunc_StopMP3( pszName, iSize, pbuf );
+}
+
+int __MsgFunc_AddELight(const char *pszName, int iSize, void *pbuf )
+{
+	return gHUD.MsgFunc_AddELight( pszName, iSize, pbuf );
+}
+
 // TFFree Command Menu
 void __CmdFunc_OpenCommandMenu( void )
 {
@@ -97,6 +118,11 @@ void __CmdFunc_ForceCloseCommandMenu( void )
 
 void __CmdFunc_ToggleServerBrowser( void )
 {
+}
+
+void __CmdFunc_StopMP3( void )
+{
+	//gMP3.StopMP3();
 }
 
 // TFFree Command Menu Message Handlers
@@ -160,6 +186,19 @@ void CHud::Init( void )
 	HOOK_MESSAGE( ViewMode );
 	HOOK_MESSAGE( SetFOV );
 	HOOK_MESSAGE( Concuss );
+	HOOK_MESSAGE( AddELight );
+
+	//HOOK_MESSAGE( PlayMP3 );
+	//gMP3.Initialize();
+
+	//KILLAR: MP3
+	if( gMP3.Initialize() )
+	{
+		HOOK_MESSAGE( PlayMP3 );
+		HOOK_MESSAGE( PlayBGM );
+		HOOK_MESSAGE( StopMP3 );
+		HOOK_COMMAND( "stopaudio", StopMP3 );
+	}
 
 	// TFFree CommandMenu
 	HOOK_COMMAND( "+commandmenu", OpenCommandMenu );
@@ -185,6 +224,13 @@ void CHud::Init( void )
 	CVAR_CREATE( "hud_classautokill", "1", FCVAR_ARCHIVE | FCVAR_USERINFO );		// controls whether or not to suicide immediately on TF class switch
 	CVAR_CREATE( "hud_takesshots", "0", FCVAR_ARCHIVE );		// controls whether or not to automatically take screenshots at the end of a round
 	hud_textmode = CVAR_CREATE ( "hud_textmode", "0", FCVAR_ARCHIVE );
+
+	CVAR_CREATE( "hud_red","0", FCVAR_ARCHIVE );                            // Hud Color RED!
+	CVAR_CREATE( "hud_green", "200", FCVAR_ARCHIVE );                       // Hud Color GREEN!
+	CVAR_CREATE( "hud_blue", "20", FCVAR_ARCHIVE );                         // Hud Color BLUE!
+	//CVAR_CREATE( "hud_purple", "999", FCVAR_ARCHIVE );                 // Hud Color PURPLE, wait..
+
+	CVAR_CREATE( "hud_bgm", "1", FCVAR_ARCHIVE );                           // Play Map BGM
 
 	m_iLogo = 0;
 	m_iFOV = 0;
@@ -213,6 +259,7 @@ void CHud::Init( void )
 	// In case we get messages before the first update -- time will be valid
 	m_flTime = 1.0;
 
+	m_Timer.Init();
 	m_Ammo.Init();
 	m_Health.Init();
 	m_SayText.Init();
@@ -227,6 +274,7 @@ void CHud::Init( void )
 	m_AmmoSecondary.Init();
 	m_TextMessage.Init();
 	m_StatusIcons.Init();
+	m_COD.Init();
 	m_MOTD.Init();
 	m_Scoreboard.Init();
 
@@ -378,9 +426,11 @@ void CHud::VidInit( void )
 
 	// assumption: number_1, number_2, etc, are all listed and loaded sequentially
 	m_HUD_number_0 = GetSpriteIndex( "number_0" );
+	m_HUD_number_0_NES = GetSpriteIndex( "number_0_nes" );
 
 	m_iFontHeight = m_rgrcRects[m_HUD_number_0].bottom - m_rgrcRects[m_HUD_number_0].top;
 
+	m_Timer.VidInit();
 	m_Ammo.VidInit();
 	m_Health.VidInit();
 	m_Spectator.VidInit();
@@ -396,6 +446,7 @@ void CHud::VidInit( void )
 	m_AmmoSecondary.VidInit();
 	m_TextMessage.VidInit();
 	m_StatusIcons.VidInit();
+	m_COD.VidInit();
 	m_Scoreboard.VidInit();
 	m_MOTD.VidInit();
 }

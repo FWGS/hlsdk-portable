@@ -147,6 +147,19 @@ inline void MESSAGE_BEGIN( int msg_dest, int msg_type, const float *pOrigin, ent
 	(*g_engfuncs.pfnMessageBegin)(msg_dest, msg_type, pOrigin, ENT(ent));
 }
 
+//LRC- the values used for the new "global states" mechanism.
+typedef enum
+{
+	STATE_OFF = 0,	// disabled, inactive, invisible, closed, or stateless. Or non-alert monster.
+	STATE_TURN_ON,	// door opening, env_fade fading in, etc.
+	STATE_ON,	// enabled, active, visisble, or open. Or alert monster.
+	STATE_TURN_OFF,	// door closing, monster dying (?).
+	STATE_IN_USE	// player is in control (train/tank/barney/scientist).
+			// In_Use isn't very useful, I'll probably remove it.
+} STATE;
+
+extern char* GetStringForState( STATE state );
+
 // Testing the three types of "entity" for nullity
 #define eoNullEntity 0
 inline BOOL FNullEnt(EOFFSET eoffset)			{ return eoffset == 0; }
@@ -170,6 +183,8 @@ inline BOOL FStringNull(int iString)			{ return iString == iStringNull; }
 #define		BLOOD_COLOR_RED		(BYTE)247
 #define		BLOOD_COLOR_YELLOW	(BYTE)195
 #define		BLOOD_COLOR_GREEN	BLOOD_COLOR_YELLOW
+#define		BLOOD_COLOR_BLUE	(BYTE)210
+#define		BLOOD_COLOR_LAVENDER	(BYTE)300 //sick purple color
 
 typedef enum 
 {
@@ -338,6 +353,7 @@ extern void ClientPrint( entvars_t *client, int msg_dest, const char *msg_name, 
 // prints a message to the HUD say (chat)
 extern void			UTIL_SayText( const char *pText, CBaseEntity *pEntity );
 extern void			UTIL_SayTextAll( const char *pText, CBaseEntity *pEntity );
+extern void			UTIL_SayTextAllHS( const char *pText );
 
 typedef struct hudtextparms_s
 {
@@ -456,6 +472,15 @@ extern DLL_GLOBAL int			g_Language;
 #define SVC_ROOMTYPE		37
 #define	SVC_DIRECTOR		51
 
+#define HL_DEATHMATCH		0
+#define HL_TEAMPLAY		1
+#define HS_SHYTPLAY		2
+#define HS_HEAVYRAIN		3
+#define HS_COD			4
+#define HS_COOP			5
+#define HS_MONSTER		6
+#define HS_TESTMODE		9
+
 // triggers
 #define	SF_TRIGGER_ALLOWMONSTERS	1// monsters allowed to fire this trigger
 #define	SF_TRIGGER_NOCLIENTS		2// players not allowed to fire this trigger
@@ -466,6 +491,7 @@ extern DLL_GLOBAL int			g_Language;
 #define	SF_BREAK_TOUCH			2// can be 'crashed through' by running player (plate glass)
 #define SF_BREAK_PRESSURE		4// can be broken by a player standing on it
 #define SF_BREAK_CROWBAR		256// instant break if hit with crowbar
+#define SF_BREAK_RESPAWNABLE		5// Respawnable?
 
 // func_pushable (it's also func_breakable, so don't collide with those flags)
 #define SF_PUSH_BREAKABLE		128

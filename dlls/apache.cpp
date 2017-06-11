@@ -128,7 +128,7 @@ void CApache::Spawn( void )
 
 	pev->flags |= FL_MONSTER;
 	pev->takedamage = DAMAGE_AIM;
-	pev->health = gSkillData.apacheHealth;
+	pev->health = CBaseMonster::GetHealth( gSkillData.apacheHealth, 3 );
 
 	m_flFieldOfView = -0.707; // 270 degrees
 

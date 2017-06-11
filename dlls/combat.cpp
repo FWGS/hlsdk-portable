@@ -29,6 +29,10 @@
 #include "animation.h"
 #include "weapons.h"
 #include "func_break.h"
+#include "gamerules.h"
+#include "player.h"
+#include "monhunt_gamerules.h"
+#include "time.h"
 
 extern DLL_GLOBAL Vector		g_vecAttackDir;
 extern DLL_GLOBAL int			g_iSkillLevel;
@@ -36,8 +40,12 @@ extern DLL_GLOBAL int			g_iSkillLevel;
 extern Vector VecBModelOrigin( entvars_t *pevBModel );
 extern entvars_t *g_pevLastInflictor;
 
+extern int gmsgScoreInfo;
+extern int gmsgDeathMsg;
+
 #define GERMAN_GIB_COUNT		4
 #define	HUMAN_GIB_COUNT			6
+#define PRESENT_GIB_COUNT		4
 #define ALIEN_GIB_COUNT			4
 
 
@@ -182,28 +190,62 @@ void CGib::SpawnRandomGibs( entvars_t *pevVictim, int cGibs, int human )
 {
 	int cSplat;
 
+	LPSYSTEMTIME sysDate;
+
+	sysDate = (LPSYSTEMTIME)malloc( sizeof(SYSTEMTIME) );
+	GetLocalTime( sysDate );
+
 	for( cSplat = 0; cSplat < cGibs; cSplat++ )
 	{
 		CGib *pGib = GetClassPtr( (CGib *)NULL );
 
 		if( g_Language == LANGUAGE_GERMAN )
 		{
-			pGib->Spawn( "models/germangibs.mdl" );
-			pGib->pev->body = RANDOM_LONG( 0, GERMAN_GIB_COUNT - 1 );
+			if( ( sysDate->wMonth == 12 && sysDate->wDay == 25 ) || ( sysDate->wMonth == 3 && sysDate->wDay == 31 ) || ( CVAR_GET_FLOAT( "mp_christmas" ) == 1 ))
+			{
+				pGib->Spawn( "models/pgibs.mdl" );
+				pGib->pev->body = RANDOM_LONG( 0, PRESENT_GIB_COUNT - 1 );
+			}
+			else
+			{
+				pGib->Spawn( "models/germangibs.mdl" );
+				pGib->pev->body = RANDOM_LONG( 0, GERMAN_GIB_COUNT - 1 );
+			}
 		}
 		else
 		{
 			if( human )
 			{
-				// human pieces
-				pGib->Spawn( "models/hgibs.mdl" );
-				pGib->pev->body = RANDOM_LONG( 1, HUMAN_GIB_COUNT - 1 );// start at one to avoid throwing random amounts of skulls (0th gib)
+				if( ( sysDate->wMonth == 12 && ( ( sysDate->wDay == 23 ) || ( sysDate->wDay == 24 ) || ( sysDate->wDay == 25 ) ) ) || ( sysDate->wMonth == 3 && sysDate->wDay == 31 ) || ( CVAR_GET_FLOAT( "mp_christmas" ) == 1 ) )
+				{
+					pGib->Spawn( "models/pgibs.mdl" );
+					pGib->pev->body = RANDOM_LONG( 0, PRESENT_GIB_COUNT - 1 );
+				}
+				else if( CVAR_GET_FLOAT( "mp_christmas" ) == 1 )
+				{
+					pGib->Spawn( "models/pgibs.mdl" );
+					pGib->pev->body = RANDOM_LONG( 0, PRESENT_GIB_COUNT - 1 );
+				}
+				else
+				{
+					// human pieces
+					pGib->Spawn( "models/hgibs.mdl" );
+					pGib->pev->body = RANDOM_LONG( 1, HUMAN_GIB_COUNT - 1 ); // start at one to avoid throwing random amounts of skulls (0th gib)
+				}
 			}
 			else
 			{
-				// aliens
-				pGib->Spawn( "models/agibs.mdl" );
-				pGib->pev->body = RANDOM_LONG( 0, ALIEN_GIB_COUNT - 1 );
+				if( ( sysDate->wMonth == 12 && ( ( sysDate->wDay == 23 ) || ( sysDate->wDay == 24 ) || ( sysDate->wDay == 25 ) ) ) || ( sysDate->wMonth == 3 && sysDate->wDay == 31 ) || ( CVAR_GET_FLOAT( "mp_christmas" ) == 1 ) )
+				{
+					pGib->Spawn( "models/pgibs.mdl" );
+					pGib->pev->body = RANDOM_LONG( 0, PRESENT_GIB_COUNT - 1 );
+				}
+				else
+				{
+					// aliens
+					pGib->Spawn( "models/agibs.mdl" );
+					pGib->pev->body = RANDOM_LONG( 0, ALIEN_GIB_COUNT - 1 );
+				}
 			}
 		}
 
@@ -257,7 +299,9 @@ BOOL CBaseMonster::HasHumanGibs( void )
 	if( myClass == CLASS_HUMAN_MILITARY ||
 		myClass == CLASS_PLAYER_ALLY ||
 		myClass == CLASS_HUMAN_PASSIVE ||
-		myClass == CLASS_PLAYER )
+		myClass == CLASS_PLAYER ||
+		myClass == CLASS_GAYGLENN ||
+		myClass == CLASS_CWC )
 
 		 return TRUE;
 
@@ -300,12 +344,29 @@ void CBaseMonster::GibMonster( void )
 	TraceResult	tr;
 	BOOL		gibbed = FALSE;
 
-	EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "common/bodysplat.wav", 1, ATTN_NORM );
+	LPSYSTEMTIME sysDate;
+	sysDate = (LPSYSTEMTIME)malloc( sizeof(SYSTEMTIME) );
+	GetLocalTime( sysDate );
+
+	if( ( sysDate->wMonth == 12 && ( ( sysDate->wDay == 23 ) || ( sysDate->wDay == 24 ) || ( sysDate->wDay == 25 ) ) ) || ( sysDate->wMonth == 3 && sysDate->wDay == 31 ) || ( CVAR_GET_FLOAT( "mp_christmas" ) == 1  ))
+	{
+		EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "misc/party2.wav", 1, ATTN_NORM );
+	}
+	else
+	{
+		EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "common/bodysplat.wav", 1, ATTN_NORM );
+	}
 
 	// only humans throw skulls !!!UNDONE - eventually monsters will have their own sets of gibs
 	if( HasHumanGibs() )
 	{
-		if( CVAR_GET_FLOAT( "violence_hgibs" ) != 0 )	// Only the player will ever get here
+		if( CVAR_GET_FLOAT( "violence_hgibs" ) != 0 && CVAR_GET_FLOAT( "ultraviolence" ) != 0 ) // Only the player will ever get here
+		{
+			CGib::SpawnHeadGib( pev );
+			CGib::SpawnHeadGib( pev );
+			CGib::SpawnRandomGibs( pev, 40, 1 );    // throw some human gibs.
+		}
+		else if( CVAR_GET_FLOAT( "violence_hgibs" ) != 0 && CVAR_GET_FLOAT( "ultraviolence" ) == 0 ) // Only the player will ever get here
 		{
 			CGib::SpawnHeadGib( pev );
 			CGib::SpawnRandomGibs( pev, 4, 1 );	// throw some human gibs.
@@ -599,6 +660,24 @@ void CBaseMonster::Killed( entvars_t *pevAttacker, int iGib )
 	if( pOwner )
 	{
 		pOwner->DeathNotice( pev );
+	}
+
+	//Monster Hunt stuff
+	if( g_pGameRules->IsMonster() ) // Monster Hunt Mode
+	{
+		if( pev->flags & FL_MONSTER )
+		{
+			const char *monster_name = CMonsterplay::PrepareMonsterName( STRING( pev->classname ) );
+
+			CBaseEntity *ep = CBaseEntity::Instance( pevAttacker );
+			ep->AddPoints( CMonsterplay::iKillforMonster( monster_name ), true );
+
+			MESSAGE_BEGIN( MSG_ALL, gmsgDeathMsg );
+				WRITE_BYTE( ENTINDEX( ep->edict() ) );	// the killer
+				WRITE_BYTE( -1 );			// the victim
+				WRITE_STRING( monster_name );		// what they were killed by (should this be a string?)
+			MESSAGE_END();
+		}
 	}
 
 	if( ShouldGibMonster( iGib ) )
@@ -1436,6 +1515,36 @@ void CBaseEntity::FireBullets( ULONG cShots, Vector vecSrc, Vector vecDirShootin
 				TEXTURETYPE_PlaySound( &tr, vecSrc, vecEnd, iBulletType );
 				DecalGunshot( &tr, iBulletType );
 				break;
+			case BULLET_PLAYER_GOLDENGUN:
+			{
+				pEntity->TraceAttack( pevAttacker, gSkillData.plrDmgGOLDENGUN, vecDir, &tr, DMG_BULLET );
+				break;
+			}
+			case BULLET_PLAYER_JACKAL:
+			{
+				pEntity->TraceAttack( pevAttacker, gSkillData.plrDmgJackal, vecDir, &tr, DMG_BULLET );
+				break;
+			}
+			case BULLET_PLAYER_AK47:
+			{
+				pEntity->TraceAttack( pevAttacker, gSkillData.plrDmgAK47, vecDir, &tr, DMG_BULLET );
+				break;
+			}
+			case BULLET_PLAYER_BOW:
+			{
+				pEntity->TraceAttack( pevAttacker, gSkillData.plrDmgBow, vecDir, &tr, DMG_BULLET );
+				break;
+			}
+			case BULLET_PLAYER_ZAPPER:
+			{
+				pEntity->TraceAttack( pevAttacker, gSkillData.plrDmgZAPPER, vecDir, &tr, DMG_BULLET );
+				break;
+			}
+			case BULLET_PLAYER_NSTAR:
+			{
+				pEntity->TraceAttack( pevAttacker, gSkillData.plrDmgStar, vecDir, &tr, DMG_BULLET );
+				break;
+			}	
 			case BULLET_MONSTER_MP5:
 				pEntity->TraceAttack( pevAttacker, gSkillData.monDmgMP5, vecDir, &tr, DMG_BULLET );
 

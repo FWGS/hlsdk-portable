@@ -167,11 +167,20 @@ extern vec3_t vec3_origin;
 // disable 'truncation from 'const double' to 'float' warning message
 #pragma warning( disable: 4305 )
 
-inline void UnpackRGB( int &r, int &g, int &b, unsigned long ulRGB )\
-{\
-	r = ( ulRGB & 0xFF0000 ) >> 16;\
-	g = ( ulRGB & 0xFF00 ) >> 8;\
-	b = ulRGB & 0xFF;\
+inline void UnpackRGB( int &r, int &g, int &b, unsigned long ulRGB )
+{
+	if( ulRGB == RGB_YELLOWISH )
+	{
+		r = CVAR_GET_FLOAT( "hud_red" );
+		g = CVAR_GET_FLOAT( "hud_green" );
+		b = CVAR_GET_FLOAT( "hud_blue" );
+	}
+	else
+	{
+		r = ( ulRGB & 0xFF0000 ) >> 16;
+		g = ( ulRGB & 0xFF00 ) >> 8;
+		b = ulRGB & 0xFF;
+	}
 }
 
 HSPRITE LoadSprite( const char *pszName );

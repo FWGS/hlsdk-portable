@@ -31,6 +31,7 @@
 #define DHN_DRAWZERO 1
 #define DHN_2DIGITS  2
 #define DHN_3DIGITS  4
+#define DHN_PREZERO  8
 #define MIN_ALPHA	 100	
 
 #define		HUDELEM_ACTIVE	1
@@ -123,6 +124,7 @@ public:
 	void _cdecl UserCmd_Close( void );
 	void _cdecl UserCmd_NextWeapon( void );
 	void _cdecl UserCmd_PrevWeapon( void );
+	int ammo;
 
 private:
 	float m_fFade;
@@ -130,6 +132,11 @@ private:
 	WEAPON *m_pWeapon;
 	int m_HUD_bucket0;
 	int m_HUD_selection;
+
+	int m_HUD_duckhunt2;
+	int m_HUD_ammo1; // duck hunt
+	int m_HUD_ammo2; // duck hunt
+	int m_HUD_ammo3; // duck hunt
 };
 
 //
@@ -322,6 +329,7 @@ struct extra_player_info_t
 	short deaths;
 	short playerclass;
 	short teamnumber;
+	short hsdev;
 	char teamname[MAX_TEAM_NAME];
 };
 
@@ -358,6 +366,23 @@ public:
 
 private:
 	int m_HUD_d_skull;  // sprite index of skull icon
+};
+
+
+class CHudTimer: public CHudBase
+{
+public:
+	int Init( void );
+	int VidInit( void );
+	int Draw( float flTime );
+	int MsgFunc_Timer( const char *pszName, int iSize, void *pbuf );
+
+	int g_hud_timerbg;
+	int g_hud_timercolon;
+/*
+private:
+	int m_iRoundTime;
+*/
 };
 
 //
@@ -415,9 +440,14 @@ public:
 private:
 	HSPRITE m_hSprite1;
 	HSPRITE m_hSprite2;
+	int m_HUD_mgs3suitbar; // MGS3-styled suit sta.
+	int m_HUD_mgs3suitdiv; // MGS3-styled suit sta divider.
 	wrect_t *m_prc1;
 	wrect_t *m_prc2;
+	wrect_t *m_prc3;
 	int m_iBat;
+	int m_iWidth;
+	float m_flBat;
 	float m_fFade;
 	int m_iHeight;		// width of the battery innards
 };
@@ -581,6 +611,7 @@ public:
 	int		m_iKeyBits;
 	int		m_iHideHUDDisplay;
 	int		m_iFOV;
+	int		m_iRoundtime;
 	int		m_Teamplay;
 	int		m_iRes;
 	cvar_t  *m_pCvarStealMouse;
@@ -588,6 +619,7 @@ public:
 
 	int m_iFontHeight;
 	int DrawHudNumber( int x, int y, int iFlags, int iNumber, int r, int g, int b );
+	int DrawHudNumberNES( int x, int y, int iFlags, int iNumber, int r, int g, int b );
 	int DrawHudString( int x, int y, int iMaxX, char *szString, int r, int g, int b );
 	int DrawHudStringReverse( int xpos, int ypos, int iMinX, char *szString, int r, int g, int b );
 	int DrawHudNumberString( int xpos, int ypos, int iMinX, int iNumber, int r, int g, int b );
@@ -616,6 +648,7 @@ public:
 	
 	int GetSpriteIndex( const char *SpriteName );	// gets a sprite index, for use in the m_rghSprites[] array
 
+	CHudTimer		m_Timer;
 	CHudAmmo		m_Ammo;
 	CHudHealth		m_Health;
 	CHudSpectator		m_Spectator;
@@ -629,6 +662,7 @@ public:
 	CHudSayText		m_SayText;
 	CHudMenu		m_Menu;
 	CHudAmmoSecondary	m_AmmoSecondary;
+	CHudCOD			m_COD;
 	CHudTextMessage m_TextMessage;
 	CHudStatusIcons m_StatusIcons;
 	CHudScoreboard	m_Scoreboard;
@@ -651,7 +685,11 @@ public:
 	void _cdecl MsgFunc_InitHUD( const char *pszName, int iSize, void *pbuf );
 	void _cdecl MsgFunc_ViewMode( const char *pszName, int iSize, void *pbuf );
 	int _cdecl MsgFunc_SetFOV( const char *pszName,  int iSize, void *pbuf );
-	int  _cdecl MsgFunc_Concuss( const char *pszName, int iSize, void *pbuf );
+	int _cdecl MsgFunc_Concuss( const char *pszName, int iSize, void *pbuf );
+	int _cdecl MsgFunc_PlayMP3( const char *pszName, int iSize, void *pbuf );		// KILLAR
+	int _cdecl MsgFunc_PlayBGM( const char *pszName, int iSize, void *pbuf );		// KILLAR
+	int _cdecl MsgFunc_StopMP3( const char *pszName, int iSize, void *pbuf );		// KILLAR
+	int _cdecl MsgFunc_AddELight( const char *pszName, int iSize, void *pbuf );
 
 	// Screen information
 	SCREENINFO	m_scrinfo;
@@ -660,8 +698,11 @@ public:
 	int	m_fPlayerDead;
 	int m_iIntermission;
 
+	int m_iRoundTime;
+
 	// sprite indexes
 	int m_HUD_number_0;
+	int m_HUD_number_0_NES;
 
 	int m_iNoConsolePrint;
 

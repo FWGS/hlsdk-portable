@@ -1386,6 +1386,15 @@ void CTalkMonster::FollowerUse( CBaseEntity *pActivator, CBaseEntity *pCaller, U
 	}
 }
 
+void CTalkMonster::FollowerUseDead( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
+{
+	// Don't allow use during a scripted_sentence
+	if( m_useTime > gpGlobals->time )
+		return;
+
+	TalkDead(); // Why don't you just FUCK OFF?
+}
+
 void CTalkMonster::KeyValue( KeyValueData *pkvd )
 {
 	if( FStrEq( pkvd->szKeyName, "UseSentence" ) )

@@ -91,6 +91,9 @@ DLL_DECALLIST gDecals[] = {
 	{ "{smscorch3", 0 },		// DECAL_SMALLSCORCH3,	// Small scorch mark
 	{ "{mommablob", 0 },		// DECAL_MOMMABIRTH		// BM Birth spray
 	{ "{mommablob", 0 },		// DECAL_MOMMASPLAT		// BM Mortar spray?? need decal
+	{ "{paintball1", 0 },		// DECAL_PAINTBALL1
+	{ "{paintball2", 0 },		// DECAL_PAINTBALL2
+	{ "{paintball3", 0 },		// DECAL_PAINTBALL3
 };
 
 /*
@@ -519,11 +522,13 @@ void CWorld::Precache( void )
 	if( g_Language == LANGUAGE_GERMAN )
 	{
 		PRECACHE_MODEL( "models/germangibs.mdl" );
+		PRECACHE_MODEL( "models/pgibs.mdl" ); //Present Gibs
 	}
 	else
 	{
 		PRECACHE_MODEL( "models/hgibs.mdl" );
 		PRECACHE_MODEL( "models/agibs.mdl" );
+		PRECACHE_MODEL( "models/pgibs.mdl" ); //Present Gibs
 	}
 
 	PRECACHE_SOUND( "weapons/ric1.wav" );
@@ -656,6 +661,7 @@ void CWorld::Precache( void )
 
 	// g-cont. moved here so cheats will working on restore level
 	g_flWeaponCheat = CVAR_GET_FLOAT( "sv_cheats" );  // Is the impulse 101 command allowed?
+	//g_flHSWeapon = CVAR_GET_FLOAT( "sv_wepcheaton" ); // Can any users override the weapon cheat? Server set.
 }
 
 //

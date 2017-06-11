@@ -23,6 +23,8 @@
 #include "player.h"
 #include "gamerules.h"
 
+int rocketMode;
+
 enum rpg_e
 {
 	RPG_IDLE = 0,
@@ -101,9 +103,11 @@ LINK_ENTITY_TO_CLASS( rpg_rocket, CRpgRocket )
 
 //=========================================================
 //=========================================================
-CRpgRocket *CRpgRocket::CreateRpgRocket( Vector vecOrigin, Vector vecAngles, CBaseEntity *pOwner, CRpg *pLauncher )
+CRpgRocket *CRpgRocket::CreateRpgRocket( Vector vecOrigin, Vector vecAngles, int mode, CBaseEntity *pOwner, CRpg *pLauncher )
 {
 	CRpgRocket *pRocket = GetClassPtr( (CRpgRocket *)NULL );
+
+	rocketMode = mode;
 
 	UTIL_SetOrigin( pRocket->pev, vecOrigin );
 	pRocket->pev->angles = vecAngles;
@@ -125,14 +129,21 @@ void CRpgRocket::Spawn( void )
 	pev->movetype = MOVETYPE_BOUNCE;
 	pev->solid = SOLID_BBOX;
 
-	SET_MODEL( ENT( pev ), "models/rpgrocket.mdl" );
+	if( !rocketMode )
+	{
+		SET_MODEL( ENT( pev ), "models/bulletbill.mdl" );
+	}
+	else if( rocketMode )
+	{
+		SET_MODEL( ENT( pev ), "models/rpgrockethy.mdl" );
+	}
 	UTIL_SetSize( pev, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ) );
 	UTIL_SetOrigin( pev, pev->origin );
 
 	pev->classname = MAKE_STRING( "rpg_rocket" );
 
 	SetThink( &CRpgRocket::IgniteThink );
-	SetTouch( &CGrenade::ExplodeTouch );
+	SetTouch( &CGrenade::ExplodeTouch3 );
 
 	pev->angles.x -= 30;
 	UTIL_MakeVectors( pev->angles );
@@ -156,17 +167,19 @@ void CRpgRocket::RocketTouch( CBaseEntity *pOther )
 		m_pLauncher->m_cActiveRockets--;
 	}
 
-	STOP_SOUND( edict(), CHAN_VOICE, "weapons/rocket1.wav" );
-	ExplodeTouch( pOther );
+	//STOP_SOUND( edict(), CHAN_VOICE, "weapons/rocket1.wav" );
+	ExplodeTouch3( pOther );
 }
 
 //=========================================================
 //=========================================================
 void CRpgRocket::Precache( void )
 {
-	PRECACHE_MODEL( "models/rpgrocket.mdl" );
+	PRECACHE_MODEL( "models/bulletbill.mdl" );
+	PRECACHE_MODEL( "models/rpgrockethy.mdl" );
 	m_iTrail = PRECACHE_MODEL( "sprites/smoke.spr" );
-	PRECACHE_SOUND( "weapons/rocket1.wav" );
+	PRECACHE_SOUND( "weapons/smbexplode.wav" );
+	PRECACHE_SOUND( "weapons/wheredahoodat.wav" );
 }
 
 void CRpgRocket::IgniteThink( void )
@@ -176,16 +189,19 @@ void CRpgRocket::IgniteThink( void )
 	pev->movetype = MOVETYPE_FLY;
 	pev->effects |= EF_LIGHT;
 
-	// make rocket sound
-	EMIT_SOUND( ENT( pev ), CHAN_VOICE, "weapons/rocket1.wav", 1, 0.5 );
+	if( rocketMode )
+	{
+		// make rocket sound
+		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "weapons/wheredahoodat.wav", 1, 0.5 );
+	}
 
 	// rocket trail
 	MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
 		WRITE_BYTE( TE_BEAMFOLLOW );
 		WRITE_SHORT( entindex() );	// entity
 		WRITE_SHORT( m_iTrail );	// model
-		WRITE_BYTE( 40 ); // life
-		WRITE_BYTE( 5 );  // width
+		WRITE_BYTE( 60 ); // life
+		WRITE_BYTE( 15 );  // width
 		WRITE_BYTE( 224 );   // r, g, b
 		WRITE_BYTE( 224 );   // r, g, b
 		WRITE_BYTE( 255 );   // r, g, b
@@ -260,12 +276,12 @@ void CRpgRocket::FollowThink( void )
 		if( pev->effects & EF_LIGHT )
 		{
 			pev->effects = 0;
-			STOP_SOUND( ENT( pev ), CHAN_VOICE, "weapons/rocket1.wav" );
+			STOP_SOUND( ENT( pev ), CHAN_VOICE, "weapons/wheredahoodat.wav" );
 		}
 		pev->velocity = pev->velocity * 0.2 + vecTarget * flSpeed * 0.798;
 		if( pev->waterlevel == 0 && pev->velocity.Length() < 1500 )
 		{
-			Detonate();
+			Detonate3();
 		}
 	}
 	// ALERT( at_console, "%.0f\n", flSpeed );
@@ -327,6 +343,7 @@ void CRpg::Spawn()
 	m_iId = WEAPON_RPG;
 
 	SET_MODEL( ENT( pev ), "models/w_rpg.mdl" );
+	modo = 0;
 	m_fSpotActive = 1;
 
 #ifdef CLIENT_DLL
@@ -357,8 +374,8 @@ void CRpg::Precache( void )
 	UTIL_PrecacheOther( "laser_spot" );
 	UTIL_PrecacheOther( "rpg_rocket" );
 
-	PRECACHE_SOUND( "weapons/rocketfire1.wav" );
-	PRECACHE_SOUND( "weapons/glauncher.wav" ); // alternative fire sound
+	PRECACHE_SOUND( "weapons/bbill.wav" );
+	//PRECACHE_SOUND( "weapons/glauncher.wav" ); // alternative fire sound
 
 	m_usRpg = PRECACHE_EVENT( 1, "events/rpg.sc" );
 }
@@ -398,6 +415,8 @@ BOOL CRpg::Deploy()
 	{
 		return DefaultDeploy( "models/v_rpg.mdl", "models/p_rpg.mdl", RPG_DRAW_UL, "rpg" );
 	}
+
+	ClientPrint( m_pPlayer->pev, HUD_PRINTCENTER, "RIGHT CLICK to change Rockets!" ); //digamos al cliente
 
 	return DefaultDeploy( "models/v_rpg.mdl", "models/p_rpg.mdl", RPG_DRAW1, "rpg" );
 }
@@ -444,7 +463,7 @@ void CRpg::PrimaryAttack()
 		UTIL_MakeVectors( m_pPlayer->pev->v_angle );
 		Vector vecSrc = m_pPlayer->GetGunPosition() + gpGlobals->v_forward * 16 + gpGlobals->v_right * 8 + gpGlobals->v_up * -8;
 
-		CRpgRocket *pRocket = CRpgRocket::CreateRpgRocket( vecSrc, m_pPlayer->pev->v_angle, m_pPlayer, this );
+		CRpgRocket *pRocket = CRpgRocket::CreateRpgRocket( vecSrc, m_pPlayer->pev->v_angle, modo, m_pPlayer, this );
 
 		UTIL_MakeVectors( m_pPlayer->pev->v_angle );// RpgRocket::Create stomps on globals, so remake.
 		pRocket->pev->velocity = pRocket->pev->velocity + gpGlobals->v_forward * DotProduct( m_pPlayer->pev->velocity, gpGlobals->v_forward );
@@ -476,15 +495,17 @@ void CRpg::PrimaryAttack()
 
 void CRpg::SecondaryAttack()
 {
-	m_fSpotActive = !m_fSpotActive;
-
-#ifndef CLIENT_DLL
-	if( !m_fSpotActive && m_pSpot )
+	if( !modo )
 	{
-		m_pSpot->Killed( NULL, GIB_NORMAL );
-		m_pSpot = NULL;
+		ClientPrint( m_pPlayer->pev, HUD_PRINTCENTER, "Rocket Type: Hell Yeah Rockets" ); //digamos al cliente
+		modo = 1;
 	}
-#endif
+	else if( modo )
+	{
+		ClientPrint( m_pPlayer->pev, HUD_PRINTCENTER, "Rocket Type: Bullet Bills" ); //digamos al cliente
+		modo = 0;
+	}
+	
 	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.2;
 }
 

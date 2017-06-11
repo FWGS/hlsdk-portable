@@ -19,6 +19,11 @@
 #include "monsters.h"
 #include "weapons.h"
 #include "nodes.h"
+#include "event_args.h"
+#include "r_efx.h"
+#include "event_api.h"
+//#include "event_args.h"
+//#include "../in_defs.h"
 #include "player.h"
 
 #include "usercmd.h"
@@ -55,18 +60,28 @@ vec3_t previousorigin;
 // HLDM Weapon placeholder entities.
 CGlock g_Glock;
 CCrowbar g_Crowbar;
-CPython g_Python;
+CBoombox g_Boombox;
 CMP5 g_Mp5;
-CCrossbow g_Crossbow;
 CShotgun g_Shotgun;
 CRpg g_Rpg;
-CGauss g_Gauss;
-CEgon g_Egon;
-CHgun g_HGun;
+CSodaCan g_Soda;
 CHandGrenade g_HandGren;
 CSatchel g_Satchel;
 CTripmine g_Tripmine;
 CSqueak g_Snark;
+CDosh g_Dosh;
+CBeamKatana g_BeamKatana;
+CSciPG g_SciPG;
+CFOTN g_FOTN;
+CAK47 g_AK47;
+CBow g_Bow;
+CModman g_Modman;
+CJihad g_Jihad;
+CNStar g_NStar;
+CMW2 g_MW2;
+CGOLDENGUN g_GOLDENGUN;
+CJackal g_Jackal;
+CZAPPER g_ZAPPER;
 
 /*
 ======================
@@ -625,18 +640,28 @@ void HUD_InitClientWeapons( void )
 	// Allocate slot(s) for each weapon that we are going to be predicting
 	HUD_PrepEntity( &g_Glock, &player );
 	HUD_PrepEntity( &g_Crowbar, &player );
-	HUD_PrepEntity( &g_Python, &player );
+	HUD_PrepEntity( &g_Boombox, &player );
 	HUD_PrepEntity( &g_Mp5, &player );
-	HUD_PrepEntity( &g_Crossbow, &player );
 	HUD_PrepEntity( &g_Shotgun, &player );
 	HUD_PrepEntity( &g_Rpg, &player );
-	HUD_PrepEntity( &g_Gauss, &player );
-	HUD_PrepEntity( &g_Egon, &player );
-	HUD_PrepEntity( &g_HGun, &player );
+	HUD_PrepEntity( &g_Soda, &player );
 	HUD_PrepEntity( &g_HandGren, &player );
 	HUD_PrepEntity( &g_Satchel, &player );
 	HUD_PrepEntity( &g_Tripmine, &player );
 	HUD_PrepEntity( &g_Snark, &player );
+	HUD_PrepEntity( &g_Dosh, &player );
+	HUD_PrepEntity( &g_BeamKatana, &player );
+	HUD_PrepEntity( &g_SciPG, &player );
+	HUD_PrepEntity( &g_FOTN, &player );
+	HUD_PrepEntity( &g_AK47, &player );
+	HUD_PrepEntity( &g_Bow, &player );
+	HUD_PrepEntity( &g_Modman, &player );
+	HUD_PrepEntity( &g_Jihad, &player );
+	HUD_PrepEntity( &g_NStar, &player );
+	HUD_PrepEntity( &g_MW2, &player );
+	HUD_PrepEntity( &g_Jackal, &player );
+	HUD_PrepEntity( &g_GOLDENGUN, &player );
+	HUD_PrepEntity( &g_ZAPPER, &player );
 }
 
 /*
@@ -703,17 +728,14 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 		case WEAPON_CROWBAR:
 			pWeapon = &g_Crowbar;
 			break;
+		case WEAPON_BOOMBOX:
+			pWeapon = &g_Boombox;
+			break;
 		case WEAPON_GLOCK:
 			pWeapon = &g_Glock;
 			break;
-		case WEAPON_PYTHON:
-			pWeapon = &g_Python;
-			break;
 		case WEAPON_MP5:
 			pWeapon = &g_Mp5;
-			break;
-		case WEAPON_CROSSBOW:
-			pWeapon = &g_Crossbow;
 			break;
 		case WEAPON_SHOTGUN:
 			pWeapon = &g_Shotgun;
@@ -721,14 +743,8 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 		case WEAPON_RPG:
 			pWeapon = &g_Rpg;
 			break;
-		case WEAPON_GAUSS:
-			pWeapon = &g_Gauss;
-			break;
-		case WEAPON_EGON:
-			pWeapon = &g_Egon;
-			break;
-		case WEAPON_HORNETGUN:
-			pWeapon = &g_HGun;
+		case WEAPON_SODA:
+			pWeapon = &g_Soda;
 			break;
 		case WEAPON_HANDGRENADE:
 			pWeapon = &g_HandGren;
@@ -741,6 +757,45 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 			break;
 		case WEAPON_SNARK:
 			pWeapon = &g_Snark;
+			break;
+		case WEAPON_DOSH:
+			pWeapon = &g_Dosh;
+			break;
+		case WEAPON_BEAMKATANA:
+			pWeapon = &g_BeamKatana;
+			break;
+		case WEAPON_SCIENTIST:
+			pWeapon = &g_SciPG;
+			break;
+		case WEAPON_FOTN:
+			pWeapon = &g_FOTN;
+			break;
+		case WEAPON_JIHAD:
+			pWeapon = &g_Jihad;
+			break;
+		case WEAPON_AK47:
+			pWeapon = &g_AK47;
+			break;
+		case WEAPON_BOW:
+			pWeapon = &g_Bow;
+			break;
+		case WEAPON_MODMAN:
+			pWeapon = &g_Modman;
+			break;
+		case WEAPON_NSTAR:
+			pWeapon = &g_NStar;
+			break;
+		case WEAPON_MW2:
+			pWeapon = &g_MW2;
+			break;
+		case WEAPON_GOLDENGUN:
+			pWeapon = &g_GOLDENGUN;
+			break;
+		case WEAPON_JACKAL:
+			pWeapon = &g_Jackal;
+			break;
+		case WEAPON_ZAPPER:
+			pWeapon = &g_ZAPPER;
 			break;
 	}
 
@@ -930,10 +985,6 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 		if( pWeapon == &g_Tripmine )
 			 body = 0;
 
-		//Show laser sight/scope combo
-		if( pWeapon == &g_Python && bIsMultiplayer() )
-			 body = 1;
-
 		// Force a fixed anim down to viewmodel
 		HUD_SendWeaponAnim( to->client.weaponanim, body, 1 );
 	}
@@ -1055,6 +1106,16 @@ be ignored
 void _DLLEXPORT HUD_PostRunCmd( struct local_state_s *from, struct local_state_s *to, struct usercmd_s *cmd, int runfuncs, double time, unsigned int random_seed )
 {
 	g_runfuncs = runfuncs;
+
+	if( cl_lw && cl_lw->value && from->client.m_iId == WEAPON_GOLDENGUN )
+	{
+		HUD_WeaponsPostThink( from, to, cmd, time, random_seed );
+	}
+
+	if( cl_lw && cl_lw->value && from->client.m_iId == WEAPON_ZAPPER )
+	{
+		HUD_WeaponsPostThink( from, to, cmd, time, random_seed );
+	}
 
 #if defined( CLIENT_WEAPONS )
 	if( cl_lw && cl_lw->value )

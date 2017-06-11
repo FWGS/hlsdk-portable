@@ -190,6 +190,18 @@ void WeaponsResource::LoadWeaponSprites( WEAPON *pWeapon )
 	}
 	else
 		pWeapon->hAmmo2 = 0;
+
+	p = GetSpriteList( pList, "duckhunt", iRes, i );
+	if( p )
+	{
+		sprintf( sz, "sprites/%s.spr", p->szSprite );
+		pWeapon->hDuckHunt = SPR_Load( sz );
+		pWeapon->rcDuckHunt = p->rc;
+
+		gHR.iHistoryGap = max( gHR.iHistoryGap, pWeapon->rcActive.bottom - pWeapon->rcActive.top );
+	}
+	else
+		pWeapon->hDuckHunt = 0;
 }
 
 // Returns the first weapon for a given slot.
@@ -316,6 +328,8 @@ int CHudAmmo::VidInit( void )
 	ghsprBuckets = gHUD.GetSprite( m_HUD_bucket0 );
 	giBucketWidth = gHUD.GetSpriteRect( m_HUD_bucket0 ).right - gHUD.GetSpriteRect( m_HUD_bucket0 ).left;
 	giBucketHeight = gHUD.GetSpriteRect( m_HUD_bucket0 ).bottom - gHUD.GetSpriteRect( m_HUD_bucket0 ).top;
+
+	m_HUD_duckhunt2 = gHUD.GetSpriteIndex( "duckhunt2" );
 
 	gHR.iHistoryGap = max( gHR.iHistoryGap, gHUD.GetSpriteRect( m_HUD_bucket0 ).bottom - gHUD.GetSpriteRect( m_HUD_bucket0 ).top );
 
@@ -927,6 +941,27 @@ int CHudAmmo::Draw( float flTime )
 			SPR_Set( m_pWeapon->hAmmo2, r, g, b );
 			int iOffset = ( m_pWeapon->rcAmmo2.bottom - m_pWeapon->rcAmmo2.top) / 8;
 			SPR_DrawAdditive(0, x, y - iOffset, &m_pWeapon->rcAmmo2 );
+		}
+	}
+
+	//Does this weapon need the duckhunt UI?
+	if( pw->hDuckHunt != 0 )
+	{
+		int dhx = ScreenWidth - 80;//the name looks like dicks, doesn't it?
+		int dhy = ScreenHeight - 60; //Why not?
+		int i;
+
+		//Draw the BG first
+		SPR_Set( m_pWeapon->hDuckHunt, 255, 255, 255 );
+		SPR_DrawHoles( 0, dhx, dhy, &m_pWeapon->rcDuckHunt );
+
+		ammo = pw->iClip;
+		if( ammo > 3 )
+			ammo = 3;
+		SPR_Set( gHUD.GetSprite( m_HUD_duckhunt2 ), 255, 255, 255 );
+		for( i = 0; i < ammo; i++ )
+		{
+			SPR_Draw( 0, dhx + 10 + ( i * 15 ), dhy + 5, &gHUD.GetSpriteRect( m_HUD_duckhunt2 ) );
 		}
 	}
 	return 1;

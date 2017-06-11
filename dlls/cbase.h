@@ -102,6 +102,9 @@ typedef void(CBaseEntity::*USEPTR)( CBaseEntity *pActivator, CBaseEntity *pCalle
 #define CLASS_PLAYER_BIOWEAPON		12 // hornets and snarks.launched by players
 #define CLASS_ALIEN_BIOWEAPON		13 // hornets and snarks.launched by the alien menace
 #define	CLASS_BARNACLE			99 // special because no one pays attention to it, and it eats a wide cross-section of creatures.
+#define CLASS_GAYGLENN			14 // I'm gay
+#define CLASS_CWC			15 // trolls
+#define CLASS_MONSTERHUNT		16
 
 class CBaseEntity;
 class CBaseMonster;
@@ -365,6 +368,7 @@ public:
 
 #define SetThink( a ) m_pfnThink = static_cast <void (CBaseEntity::*)(void)> (a)
 #define SetTouch( a ) m_pfnTouch = static_cast <void (CBaseEntity::*)(CBaseEntity *)> (a)
+//#define SetTouch2( a ) m_pfnTouch = static_cast <BOOL (CGrenade::*)(CBasePlayer *)> (a)
 #define SetUse( a ) m_pfnUse = static_cast <void (CBaseEntity::*)( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )> (a)
 #define SetBlocked( a ) m_pfnBlocked = static_cast <void (CBaseEntity::*)(CBaseEntity *)> (a)
 #define ResetThink( ) m_pfnThink = static_cast <void (CBaseEntity::*)(void)> (NULL)
@@ -545,7 +549,7 @@ public:
 
 
 // people gib if their health is <= this at the time of death
-#define	GIB_HEALTH_VALUE	-30
+#define	GIB_HEALTH_VALUE	-1
 
 #define	ROUTE_SIZE			8 // how many waypoints a monster can store at one time
 #define MAX_OLD_ENEMIES		4 // how many old enemies to remember
@@ -602,12 +606,15 @@ public:
 #define DMG_SLOWBURN		(1 << 21)	// in an oven
 #define DMG_SLOWFREEZE		(1 << 22)	// in a subzero freezer
 #define DMG_MORTAR			(1 << 23)	// Hit by air raid (done to distinguish grenade from mortar)
+#define DMG_BILLNYE			(1 << 24) // Hit by BILL NYE THE SCIENCE GUY
+#define DMG_AK47			(1 << 25)
+#define DMG_BOW				(1 << 26)
 
 // these are the damage types that are allowed to gib corpses
 #define DMG_GIB_CORPSE		( DMG_CRUSH | DMG_FALL | DMG_BLAST | DMG_SONIC | DMG_CLUB )
 
 // these are the damage types that have client hud art
-#define DMG_SHOWNHUD		(DMG_POISON | DMG_ACID | DMG_FREEZE | DMG_SLOWFREEZE | DMG_DROWN | DMG_BURN | DMG_SLOWBURN | DMG_NERVEGAS | DMG_RADIATION | DMG_SHOCK)
+#define DMG_SHOWNHUD		(DMG_POISON | DMG_ACID | DMG_FREEZE | DMG_SLOWFREEZE | DMG_DROWN | DMG_BURN | DMG_SLOWBURN | DMG_NERVEGAS | DMG_RADIATION | DMG_SHOCK | DMG_BILLNYE)
 
 // NOTE: tweak these values based on gameplay feedback:
 

@@ -70,11 +70,16 @@ public:
 	virtual BOOL GetNextBestWeapon( CBasePlayer *pPlayer, CBasePlayerItem *pCurrentWeapon ) = 0;// I can't use this weapon anymore, get me the next best one.
 
 	// Functions to verify the single/multiplayer status of a game
+	virtual BOOL IsSinglePlayer( void ) { return FALSE; }; //is this Single Player?
 	virtual BOOL IsMultiplayer( void ) = 0;// is this a multiplayer game? (either coop or deathmatch)
 	virtual BOOL IsDeathmatch( void ) = 0;//is this a deathmatch game?
 	virtual BOOL IsTeamplay( void ) { return FALSE; };// is this deathmatch game being played with team rules?
+	virtual BOOL IsHeavyRain( void ) { return FALSE; }; //is this Heavy Rain?
+	virtual BOOL IsCOD( void ) { return FALSE; }; // is this COD?
+	virtual BOOL IsTest( void ) { return FALSE; }; // are we in test mode?
+	virtual BOOL IsMonster( void ) { return FALSE; }; // are we in monster hunt mode?
 	virtual BOOL IsCoOp( void ) = 0;// is this a coop game?
-	virtual const char *GetGameDescription( void ) { return "Half-Life"; }  // this is the game name that gets seen in the server browser
+	virtual const char *GetGameDescription( void ) { return "Half-Screwed"; }  // this is the game name that gets seen in the server browser
 	
 	// Client connection/disconnection
 	virtual BOOL ClientConnected( edict_t *pEntity, const char *pszName, const char *pszAddress, char szRejectReason[128] ) = 0;// a client just connected to the server (player hasn't spawned yet)
@@ -183,6 +188,7 @@ public:
 	virtual BOOL GetNextBestWeapon( CBasePlayer *pPlayer, CBasePlayerItem *pCurrentWeapon );
 
 	// Functions to verify the single/multiplayer status of a game
+	virtual BOOL IsSinglePlayer( void );
 	virtual BOOL IsMultiplayer( void );
 	virtual BOOL IsDeathmatch( void );
 	virtual BOOL IsCoOp( void );
@@ -282,6 +288,9 @@ public:
 	virtual void InitHUD( CBasePlayer *pl );		// the client dll is ready for updating
 	virtual void ClientDisconnected( edict_t *pClient );
 	virtual void UpdateGameMode( CBasePlayer *pPlayer );  // the client needs to be informed of the current game mode
+
+	// Client Steam ID
+	virtual int ClientDevCheck( CBasePlayer *pPlayer );
 
 	// Client damage rules
 	virtual float FlPlayerFallDamage( CBasePlayer *pPlayer );

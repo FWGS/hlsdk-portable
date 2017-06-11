@@ -249,7 +249,7 @@ void CTripmineGrenade::MakeBeam( void )
 
 	m_pBeam = CBeam::BeamCreate( g_pModelNameLaser, 10 );
 	m_pBeam->PointEntInit( vecTmpEnd, entindex() );
-	m_pBeam->SetColor( 0, 214, 198 );
+	m_pBeam->SetColor( 255, 0, 0 );	// I made this red for the hell of it, make it go cycle rainbow -- GOAHEAD
 	m_pBeam->SetScrollRate( 255 );
 	m_pBeam->SetBrightness( 64 );
 }
@@ -299,6 +299,8 @@ void CTripmineGrenade::BeamBreakThink( void )
 		Killed( VARS( pev->owner ), GIB_NORMAL );
 		return;
 	}
+
+	m_pBeam->SetColor( RANDOM_FLOAT( 0, 255 ), RANDOM_FLOAT( 0, 255 ), RANDOM_FLOAT( 0, 255 ) );
 
 	pev->nextthink = gpGlobals->time + 0.1;
 }

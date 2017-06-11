@@ -150,6 +150,8 @@ public:
 	virtual BOOL FInViewCone( Vector *pOrigin );// see if given location is in monster's view cone
 	virtual void HandleAnimEvent( MonsterEvent_t *pEvent );
 
+	virtual float GetHealth( float health, float multi ); // Monster Hunt only
+
 	virtual int CheckLocalMove ( const Vector &vecStart, const Vector &vecEnd, CBaseEntity *pTarget, float *pflDist );// check validity of a straight move through space
 	virtual void Move( float flInterval = 0.1 );
 	virtual void MoveExecute( CBaseEntity *pTargetEnt, const Vector &vecDir, float flInterval );

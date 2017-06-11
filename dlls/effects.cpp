@@ -2232,3 +2232,193 @@ void CItemSoda::CanTouch( CBaseEntity *pOther )
 	SetThink( &CBaseEntity::SUB_Remove );
 	pev->nextthink = gpGlobals->time;
 }
+
+//===============================================
+// Entity light 
+// Code by Andrew "Lucas" Highlander
+// Additional help by Andrew "Confused" Hamilton
+//===============================================
+extern int gmsgAddELight;
+
+#define SF_LIGHT_STARTON 1
+#define SF_LIGHT_NO_PVS_CHECK 2
+class CEnvELight : public CPointEntity
+{
+public:
+	void Spawn( void );
+	void SendData( void );
+	void Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+
+	void EXPORT LightFrame( void );
+
+	virtual int Save( CSave &save );
+	virtual int Restore( CRestore &restore );
+	static TYPEDESCRIPTION m_SaveData[];
+
+	BOOL m_fNotReloaded; // magic boolean
+	BOOL m_fLightActive;
+	BOOL m_fDeactivatedByPVS;
+
+	BOOL m_fParentedElight;
+	int m_iParentEntindex;
+};
+
+LINK_ENTITY_TO_CLASS( env_elight, CEnvELight )
+
+TYPEDESCRIPTION	CEnvELight::m_SaveData[] =
+{
+	DEFINE_FIELD( CEnvELight, m_fLightActive, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CEnvELight, m_fParentedElight, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CEnvELight, m_fDeactivatedByPVS, FIELD_BOOLEAN ),
+};
+
+IMPLEMENT_SAVERESTORE( CEnvELight, CPointEntity )
+
+void CEnvELight::Spawn( void )
+{
+	pev->solid = SOLID_NOT;
+	pev->effects |= EF_NODRAW;
+	pev->flags |= FL_ALWAYSTHINK;
+
+	if( FStringNull( pev->targetname ) || pev->spawnflags & SF_LIGHT_STARTON )
+		m_fLightActive = TRUE;
+	else
+		m_fLightActive = FALSE;
+
+	if( m_fLightActive )
+	{
+		SetThink( &CEnvELight::LightFrame );
+		pev->nextthink = gpGlobals->time + 0.1;
+	}
+}
+
+void CEnvELight::SendData( void )
+{
+	edict_t *pTarget = NULL;
+
+	if( pev->target != NULL )
+	{
+		pTarget = FIND_ENTITY_BY_TARGETNAME( NULL, STRING( pev->target ) );
+		m_fParentedElight = TRUE;
+	}
+
+	if( FNullEnt( pTarget ) && m_fParentedElight )
+	{
+		UTIL_Remove( this );
+		return;
+	}
+
+	MESSAGE_BEGIN( MSG_ALL, gmsgAddELight, NULL );
+
+		if( FNullEnt( pTarget ) )
+			WRITE_SHORT( entindex() );
+		else
+			WRITE_SHORT( ENTINDEX( pTarget ) + 0x1000 * pev->impulse );
+
+		if( !m_fDeactivatedByPVS )
+			WRITE_BYTE( m_fLightActive );
+		else
+			WRITE_BYTE( FALSE );
+
+		if( m_fLightActive && !m_fDeactivatedByPVS )
+		{
+			WRITE_COORD( pev->origin.x );	// X
+			WRITE_COORD( pev->origin.y );	// Y
+			WRITE_COORD( pev->origin.z );	// Z
+			WRITE_COORD( pev->renderamt );
+			WRITE_BYTE ( pev->rendercolor.x );
+			WRITE_BYTE ( pev->rendercolor.y );
+			WRITE_BYTE ( pev->rendercolor.z );
+		}
+	MESSAGE_END();
+
+	if( m_iParentEntindex == NULL && m_fParentedElight )
+		m_iParentEntindex = ( ENTINDEX( pTarget ) + 0x1000 * pev->impulse );
+
+	m_fNotReloaded = TRUE;
+
+	if( m_fLightActive )
+	{
+		pev->nextthink = pev->ltime + 0.1;
+		SetThink( &CEnvELight::LightFrame );
+	}
+	else
+	{
+		SetThink(NULL);
+	}
+}
+
+void CEnvELight::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
+{
+	if( useType == USE_ON )
+	{
+		if( m_fLightActive )
+			return;
+		else
+			m_fLightActive = TRUE;
+	}
+	else if( useType == USE_OFF )
+	{
+		if( !m_fLightActive )
+			return;
+		else
+			m_fLightActive = FALSE;
+	}
+	else if( useType == USE_TOGGLE )
+	{
+		if ( !m_fLightActive )
+			m_fLightActive = TRUE; 
+		else
+			m_fLightActive = FALSE; 
+	}
+		
+	SendData();
+};
+
+void CEnvELight::LightFrame( void )
+{	
+	if( !m_fLightActive )
+		return;
+
+	if( !m_fNotReloaded && !m_fDeactivatedByPVS )
+		SendData();
+
+	edict_t *pTarget = edict();
+	pev->nextthink = gpGlobals->time + 0.1;
+
+	if( m_fParentedElight )
+	{
+		pTarget = FIND_ENTITY_BY_TARGETNAME( NULL, STRING( pev->target ) );
+
+		if( FNullEnt( pTarget ) )
+		{
+			MESSAGE_BEGIN( MSG_ALL, gmsgAddELight, NULL );
+				WRITE_SHORT( m_iParentEntindex );
+				WRITE_BYTE( FALSE );
+			MESSAGE_END();
+
+			UTIL_Remove( this );
+			return;
+		}
+	}
+
+	if( !( pev->spawnflags & SF_LIGHT_NO_PVS_CHECK ) )
+	{
+		if( FNullEnt( FIND_CLIENT_IN_PVS( pTarget ) ) )
+		{
+			if( !m_fDeactivatedByPVS )
+			{
+				m_fDeactivatedByPVS = TRUE;
+				SendData();
+			}
+		}
+		else
+		{
+			if( m_fDeactivatedByPVS )
+			{
+				m_fDeactivatedByPVS = FALSE;
+				SendData();
+			}
+		}
+	}
+}

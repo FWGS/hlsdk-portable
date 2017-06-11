@@ -35,6 +35,7 @@
 #include "gamerules.h"
 #include "game.h"
 #include "hltv.h"
+#include "time.h"
 
 // #define DUCKFIX
 
@@ -53,6 +54,8 @@ extern edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer );
 
 // the world node graph
 extern CGraph WorldGraph;
+
+extern cvar_t shtugn;
 
 #define TRAIN_ACTIVE		0x80
 #define TRAIN_NEW		0xc0
@@ -144,7 +147,6 @@ TYPEDESCRIPTION	CBasePlayer::m_playerSaveData[] =
 	//DEFINE_FIELD( CBasePlayer, m_nCustomSprayFrames, FIELD_INTEGER ), // Don't need to restore
 };	
 
-int giPrecacheGrunt = 0;
 int gmsgShake = 0;
 int gmsgFade = 0;
 int gmsgSelAmmo = 0;
@@ -153,16 +155,22 @@ int gmsgFlashBattery = 0;
 int gmsgResetHUD = 0;
 int gmsgInitHUD = 0;
 int gmsgShowGameTitle = 0;
+int gmsgPlayMP3 = 0; //Killar
+int gmsgPlayBGM = 0;
+int gmsgStopMP3 = 0;
 int gmsgCurWeapon = 0;
 int gmsgHealth = 0;
+//int gmsgHalloween = 0; //Secret ;)
 int gmsgDamage = 0;
 int gmsgBattery = 0;
 int gmsgTrain = 0;
 int gmsgLogo = 0;
+int gmsgTimer = 0;
 int gmsgWeaponList = 0;
 int gmsgAmmoX = 0;
 int gmsgHudText = 0;
 int gmsgDeathMsg = 0;
+int gmsgDeathMsg2 = 0; //Monster
 int gmsgScoreInfo = 0;
 int gmsgTeamInfo = 0;
 int gmsgTeamScore = 0;
@@ -179,10 +187,15 @@ int gmsgTextMsg = 0;
 int gmsgSetFOV = 0;
 int gmsgShowMenu = 0;
 int gmsgGeigerRange = 0;
+int gmsgRoundTime = 0;
 int gmsgTeamNames = 0;
+int gmsgRainData = 0;
+int gmsgItems = 0;
+int gmsgCOD = 0;
 
 int gmsgStatusText = 0;
 int gmsgStatusValue = 0;
+int gmsgAddELight = 0;
 
 void LinkUserMessages( void )
 {
@@ -198,9 +211,14 @@ void LinkUserMessages( void )
 	gmsgFlashlight = REG_USER_MSG( "Flashlight", 2 );
 	gmsgFlashBattery = REG_USER_MSG( "FlashBat", 1 );
 	gmsgHealth = REG_USER_MSG( "Health", 1 );
+	//gmsgHalloween = REG_USER_MSG( "Halloween", -1 );
 	gmsgDamage = REG_USER_MSG( "Damage", 12 );
 	gmsgBattery = REG_USER_MSG( "Battery", 2);
 	gmsgTrain = REG_USER_MSG( "Train", 1 );
+	gmsgTimer = REG_USER_MSG( "Timer", -1);
+	gmsgPlayMP3 = REG_USER_MSG( "PlayMP3", -1 );
+	gmsgPlayBGM = REG_USER_MSG( "PlayBGM", -1 );
+	gmsgStopMP3 = REG_USER_MSG( "StopMP3", -1 );
 	gmsgHudText = REG_USER_MSG( "HudText", -1 );
 	gmsgSayText = REG_USER_MSG( "SayText", -1 );
 	gmsgTextMsg = REG_USER_MSG( "TextMsg", -1 );
@@ -209,7 +227,7 @@ void LinkUserMessages( void )
 	gmsgInitHUD = REG_USER_MSG( "InitHUD", 0 );		// called every time a new player joins the server
 	gmsgShowGameTitle = REG_USER_MSG( "GameTitle", 1 );
 	gmsgDeathMsg = REG_USER_MSG( "DeathMsg", -1 );
-	gmsgScoreInfo = REG_USER_MSG( "ScoreInfo", 9 );
+	gmsgScoreInfo = REG_USER_MSG( "ScoreInfo", 11 );
 	gmsgTeamInfo = REG_USER_MSG( "TeamInfo", -1 );  // sets the name of a player's team
 	gmsgTeamScore = REG_USER_MSG( "TeamScore", -1 );  // sets the score of a team on the scoreboard
 	gmsgGameMode = REG_USER_MSG( "GameMode", 1 );
@@ -220,14 +238,18 @@ void LinkUserMessages( void )
 	gmsgItemPickup = REG_USER_MSG( "ItemPickup", -1 );
 	gmsgHideWeapon = REG_USER_MSG( "HideWeapon", 1 );
 	gmsgSetFOV = REG_USER_MSG( "SetFOV", 1 );
+	gmsgItems = REG_USER_MSG( "Items", 4 );
 	gmsgShowMenu = REG_USER_MSG( "ShowMenu", -1 );
 	gmsgShake = REG_USER_MSG( "ScreenShake", sizeof(ScreenShake) );
 	gmsgFade = REG_USER_MSG( "ScreenFade", sizeof(ScreenFade) );
 	gmsgAmmoX = REG_USER_MSG( "AmmoX", 2 );
 	gmsgTeamNames = REG_USER_MSG( "TeamNames", -1 );
+	gmsgRoundTime = REG_USER_MSG( "RoundTime", 4 );
+	gmsgCOD = REG_USER_MSG( "COD", 1 );
 
 	gmsgStatusText = REG_USER_MSG( "StatusText", -1 );
 	gmsgStatusValue = REG_USER_MSG( "StatusValue", 3 );
+	gmsgAddELight = REG_USER_MSG( "AddELight", -1 );
 }
 
 LINK_ENTITY_TO_CLASS( player, CBasePlayer )
@@ -335,22 +357,33 @@ void CBasePlayer::DeathSound( void )
 	}
 	*/
 
-	// temporarily using pain sounds for death sounds
-	switch( RANDOM_LONG( 1, 5 ) )
+	switch( RANDOM_LONG( 1, 7 ) )
 	{
 	case 1: 
-		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/pl_pain5.wav", 1, ATTN_NORM );
+		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/death1.wav", 1, ATTN_NORM );
 		break;
 	case 2: 
-		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/pl_pain6.wav", 1, ATTN_NORM );
+		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/death2.wav", 1, ATTN_NORM );
 		break;
 	case 3: 
-		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/pl_pain7.wav", 1, ATTN_NORM );
+		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/death3.wav", 1, ATTN_NORM );
 		break;
+	case 4:
+		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/death4.wav", 1, ATTN_NORM );
+		break;
+	case 5:
+		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/death5.wav", 1, ATTN_NORM );
+		break;
+	case 6:
+		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/death6.wav", 1, ATTN_NORM );
+		break;
+	case 7:
+		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/death7.wav", 1, ATTN_NORM );
+                break;
 	}
 
 	// play one of the suit death alarms
-	EMIT_GROUPNAME_SUIT( ENT( pev ), "HEV_DEAD" );
+	//EMIT_GROUPNAME_SUIT( ENT( pev ), "HEV_DEAD" );
 }
 
 // override takehealth
@@ -403,6 +436,18 @@ void CBasePlayer::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector ve
 			break;
 		default:
 			break;
+		}
+
+		/*if(bitsDamageType == DMG_BUTTER_FINGERS)
+		{
+			RemoveAllItems( FALSE );
+			//Play sound
+			EMIT_SOUND(ENT(pev), CHAN_BODY, "ambience/warn1.wav", 1, ATTN_NORM);
+		}*/
+
+		if( CVAR_GET_FLOAT( "ultraviolence" ) != 0 )
+		{
+			UTIL_BloodStream( ptr->vecEndPos, UTIL_RandomBloodVector(), 330, RANDOM_LONG( 50, 150 ) );
 		}
 
 		SpawnBlood( ptr->vecEndPos, BloodColor(), flDamage );// a little surface blood.
@@ -604,6 +649,12 @@ int CBasePlayer::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 		if( bitsDamage & DMG_SHOCK )
 		{
 			bitsDamage &= ~DMG_SHOCK;
+			ffound = TRUE;
+		}
+
+		if( bitsDamage & DMG_BILLNYE )
+		{
+			bitsDamage &= ~DMG_BILLNYE;
 			ffound = TRUE;
 		}
 	}
@@ -863,6 +914,19 @@ void CBasePlayer::Killed( entvars_t *pevAttacker, int iGib )
 	pev->deadflag = DEAD_DYING;
 	pev->movetype = MOVETYPE_TOSS;
 	ClearBits( pev->flags, FL_ONGROUND );
+
+	/*if( !g_pGameRules->IsSinglePlayer() )
+	{
+		CBasePlayer *pHaro = (CBasePlayer*)CBaseEntity::Instance( pevAttacker ); //Dedicated to haro and his pk fest
+
+		if( pHaro->m_pActiveItem->pszName() == "weapon_fotn" )
+		{
+			pev->velocity.z += 999;
+			pev->velocity.y += 999;
+			pev->velocity.x += 999;
+		}
+	}*/
+
 	if( pev->velocity.z < 10 )
 		pev->velocity.z += RANDOM_FLOAT( 0, 300 );
 
@@ -1482,6 +1546,35 @@ void CBasePlayer::PlayerUse( void )
 	}
 }
 
+int CBasePlayer::UseMarioStar( void )
+{
+	if( mstars <= 0 )
+		return 0;
+
+	mstars--;
+
+	MESSAGE_BEGIN( MSG_ONE, gmsgItems, NULL, ENT( pev ) );
+		WRITE_LONG( 0 );
+	MESSAGE_END();
+
+	m_fEndMarioTime = gpGlobals->time + 10;
+
+	EMIT_SOUND( ENT( pev ), CHAN_VOICE, "starman.wav", 1, ATTN_NORM );
+
+	pev->renderfx = kRenderFxGlowShell;
+	pev->rendercolor.x = 255;
+	pev->rendercolor.y = 255;
+	pev->flags |= FL_GODMODE;
+
+	return 1;
+}
+
+int CBasePlayer::WhatAShame( void )
+{
+	EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "player/shame.wav", 1, ATTN_NORM );
+	return 1;
+}
+
 void CBasePlayer::Jump()
 {
 	Vector vecWallCheckDir;// direction we're tracing a line to find a wall when walljumping
@@ -1593,6 +1686,7 @@ void CBasePlayer::AddPoints( int score, BOOL bAllowNegativeScore )
 		WRITE_SHORT( m_iDeaths );
 		WRITE_SHORT( 0 );
 		WRITE_SHORT( g_pGameRules->GetTeamIndex( m_szTeamName ) + 1 );
+		WRITE_SHORT( 0 );
 	MESSAGE_END();
 }
 
@@ -1653,6 +1747,20 @@ void CBasePlayer::UpdateStatusBar()
 				{
 					newSBarState[SBAR_ID_TARGETHEALTH] = 100 * ( pEntity->pev->health / pEntity->pev->max_health );
 					newSBarState[SBAR_ID_TARGETARMOR] = pEntity->pev->armorvalue; //No need to get it % based since 100 it's the max.
+				}
+
+				m_flStatusBarDisappearDelay = gpGlobals->time + 1.0;
+			}
+			else if( pEntity->pev->flags & FL_MONSTER )
+			{
+				//newSBarState[SBAR_ID_TARGETNAME] = ENTINDEX( pEntity->edict() );
+				strcpy( sbuf1, "1 %p1\n2 Health: %i2%%\n3 Armor: %i3%%" );
+
+				// allies and medics get to see the targets health
+				if( g_pGameRules->IsMonster() )
+				{
+					newSBarState[SBAR_ID_TARGETHEALTH] = 100 * ( pEntity->pev->health / pEntity->pev->max_health );
+					// newSBarState[SBAR_ID_TARGETARMOR] = pEntity->pev->armorvalue; // No need to get it % based since 100 it's the max.
 				}
 
 				m_flStatusBarDisappearDelay = gpGlobals->time + 1.0;
@@ -2408,6 +2516,22 @@ void CBasePlayer::PostThink()
 	if( !IsAlive() )
 		goto pt_end;
 
+	/*if( m_fEndMarioTime > gpGlobals->time )
+	{
+		RadiusDamage( pev->origin, pev, pev, 999, CLASS_NONE, DMG_BURN | DMG_ALWAYSGIB );
+	}*/
+	if( m_fEndMarioTime < gpGlobals->time )
+	{
+		pev->renderfx = kRenderFxNone;
+		pev->rendercolor.x = 0;
+		pev->rendercolor.y = 0;
+		pev->flags &= ~FL_GODMODE;
+
+		STOP_SOUND( ENT( pev ), CHAN_VOICE, "starman.wav" );
+	}
+
+	m_iHelo = CVAR_GET_FLOAT( "shotgun_enable" );
+
 	// Handle Tank controlling
 	if( m_pTank != NULL )
 	{
@@ -2677,8 +2801,32 @@ edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer )
 ReturnSpot:
 	if( FNullEnt( pSpot ) )
 	{
-		ALERT( at_error, "PutClientInServer: no info_player_start on level" );
-		return INDEXENT( 0 );
+		switch( RANDOM_LONG( 0, 1 ) ) // DoD compability
+		{
+			case 1:
+				pSpot = UTIL_FindEntityByClassname( NULL, "info_player_allies" );
+				break;
+			case 2:
+				pSpot = UTIL_FindEntityByClassname( NULL, "info_player_axis" );
+				break;
+		}
+		if( FNullEnt( pSpot ) ) // if failed...
+		{
+			switch( RANDOM_LONG( 0, 1 ) ) // CS compability
+			{
+				case 1:
+					pSpot = UTIL_FindEntityByClassname( NULL, "info_player_terrorist" );
+					break;
+				case 2:
+					pSpot = UTIL_FindEntityByClassname( NULL, "info_player_counterterrorist" );
+					break;
+			}
+			if( FNullEnt( pSpot ) ) // if failed..
+			{
+				ALERT( at_error, "PutClientInServer: no info_player_start on level" );
+				return INDEXENT( 0 ); // Foreign or unknown spawns.
+			}
+		}
 	}
 
 	g_pLastSpawn = pSpot;
@@ -3164,6 +3312,27 @@ void CBasePlayer::GiveNamedItem( const char *pszName )
 	DispatchTouch( pent, ENT( pev ) );
 }
 
+void CBasePlayer::SpawnNamedItem( const char *pszName )
+{
+	edict_t *pent;
+
+	int istr = MAKE_STRING( pszName );
+
+	pent = CREATE_NAMED_ENTITY( istr );
+	if( FNullEnt( pent ) )
+	{
+		ALERT( at_console, "Entity not found!\n" );
+		return;
+	}
+	VARS( pent )->origin = pev->origin + gpGlobals->v_forward * 128 + gpGlobals->v_up * 32;
+	pent->v.angles = pev->angles;
+	pent->v.angles.x = 0; // Normalize the X Axis so when it spawns, it isn't lopsided. (Change to 90 to have funny effect)
+	pent->v.spawnflags |= SF_NORESPAWN;
+
+	DispatchSpawn( pent );
+	DispatchTouch( pent, ENT( pev ) );
+}
+
 CBaseEntity *FindEntityForward( CBaseEntity *pMe )
 {
 	TraceResult tr;
@@ -3322,10 +3491,10 @@ void CBasePlayer::ImpulseCommands()
 void CBasePlayer::CheatImpulseCommands( int iImpulse )
 {
 #if !defined( HLDEMO_BUILD )
-	if( g_flWeaponCheat == 0.0 )
+	/*if( g_flWeaponCheat == 0.0 )
 	{
 		return;
-	}
+	}*/
 
 	CBaseEntity *pEntity;
 	TraceResult tr;
@@ -3333,22 +3502,59 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 	switch( iImpulse )
 	{
 	case 76:
-		if( !giPrecacheGrunt )
-		{
-			giPrecacheGrunt = 1;
-			ALERT( at_console, "You must now restart to use Grunt-o-matic.\n" );
-		}
-		else
 		{
 			UTIL_MakeVectors( Vector( 0, pev->v_angle.y, 0 ) );
 			Create( "monster_human_grunt", pev->origin + gpGlobals->v_forward * 128, pev->angles );
+			break;
 		}
-		break;
+	case 77:
+		{
+			UTIL_MakeVectors( Vector( 0, pev->v_angle.y, 0 ) );
+			Create( "monster_scientist", pev->origin + gpGlobals->v_forward * 128, pev->angles );
+			break;
+		}
+	case 78:
+		{
+			UTIL_MakeVectors( Vector( 0, pev->v_angle.y, 0 ) );
+			Create( "monster_xmastree", pev->origin + gpGlobals->v_forward * 128, pev->angles );
+			break;
+		}
+	case 79:
+		{
+			UTIL_MakeVectors( Vector( 0, pev->v_angle.y, 0 ) );
+			Create( "monster_barney", pev->origin + gpGlobals->v_forward * 128, pev->angles );
+			break;
+		}
+	case 80:
+		{
+			UTIL_MakeVectors( Vector( 0, pev->v_angle.y, 0 ) );
+			Create( "monster_gayglenn", pev->origin + gpGlobals->v_forward * 128, pev->angles );
+			break;
+                }
+	case 81:
+		{
+			UTIL_MakeVectors( Vector( 0, pev->v_angle.y, 0 ) );
+			Create( "monster_creeper", pev->origin + gpGlobals->v_forward * 128, pev->angles );
+			break;
+		}
+	case 82:
+		{
+			UTIL_MakeVectors( Vector( 0, pev->v_angle.y, 0 ) );
+			Create( "monster_sinistar", pev->origin + gpGlobals->v_forward * 128, pev->angles );
+			break;
+		}
 	case 101:
+		if( g_pGameRules->IsHeavyRain() )
+			return; //Genuflect
+
+		if( g_pGameRules->IsCOD() )
+			return;
+
 		gEvilImpulse101 = TRUE;
 		GiveNamedItem( "item_suit" );
 		GiveNamedItem( "item_battery" );
 		GiveNamedItem( "weapon_crowbar" );
+		GiveNamedItem( "weapon_fotn" );
 		GiveNamedItem( "weapon_9mmhandgun" );
 		GiveNamedItem( "ammo_9mmclip" );
 		GiveNamedItem( "weapon_shotgun" );
@@ -3359,25 +3565,32 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		GiveNamedItem( "weapon_handgrenade" );
 		GiveNamedItem( "weapon_tripmine" );
 #ifndef OEM_BUILD
-		GiveNamedItem( "weapon_357" );
-		GiveNamedItem( "ammo_357" );
-		GiveNamedItem( "weapon_crossbow" );
-		GiveNamedItem( "ammo_crossbow" );
-		GiveNamedItem( "weapon_egon" );
-		GiveNamedItem( "weapon_gauss" );
-		GiveNamedItem( "ammo_gaussclip" );
 		GiveNamedItem( "weapon_rpg" );
 		GiveNamedItem( "ammo_rpgclip" );
 		GiveNamedItem( "weapon_satchel" );
 		GiveNamedItem( "weapon_snark" );
-		GiveNamedItem( "weapon_hornetgun" );
+		GiveNamedItem( "weapon_soda" );
+		GiveNamedItem( "weapon_dosh" );
+		GiveNamedItem( "weapon_beamkatana" );
+		GiveNamedItem( "weapon_ak47" );
+		GiveNamedItem( "weapon_bow" );
+		GiveNamedItem( "weapon_jason" );
+		GiveNamedItem( "weapon_jihad" );
+		GiveNamedItem( "weapon_nstar" );
+		GiveNamedItem( "weapon_mw2" );
+		GiveNamedItem( "weapon_zapper" );
+		GiveNamedItem( "weapon_goldengun" );
+		GiveNamedItem( "weapon_boombox" );
+		GiveNamedItem( "weapon_scientist" );
+		GiveNamedItem( "weapon_jackal" );
+		GiveNamedItem( "weapon_modman" );
 #endif
 		gEvilImpulse101 = FALSE;
 		break;
-	case 102:
+	/*case 102:
 		// Gibbage!!!
-		CGib::SpawnRandomGibs( pev, 1, 1 );
-		break;
+		CGib::SpawnRandomGibs( pev, 100, 1 );
+		break;*/ // Potentially laggy and funny troll-players could abuse.
 	case 103:
 		// What the hell are you doing?
 		pEntity = FindEntityForward( this );
@@ -3388,10 +3601,10 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 				pMonster->ReportAIState();
 		}
 		break;
-	case 104:
+	/*case 104:
 		// Dump all of the global state varaibles (and global entity names)
 		gGlobalState.DumpGlobals();
-		break;
+		break;*/
 	case 105:// player makes no sound for monsters to hear.
 		if( m_fNoPlayerSound )
 		{
@@ -3487,6 +3700,9 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 				pEntity->SetThink( &CBaseEntity::SUB_Remove );
 		}
 		break;
+	case 2046:
+		ALERT( at_console, "Oh no! SNATCHERS!\n" );
+		break;
 	}
 #endif	// HLDEMO_BUILD
 }
@@ -3499,6 +3715,9 @@ int CBasePlayer::AddPlayerItem( CBasePlayerItem *pItem )
 	CBasePlayerItem *pInsert;
 
 	pInsert = m_rgpPlayerItems[pItem->iItemSlot()];
+
+	//if( g_pGameRules->IsHeavyRain() && ( pItem->pszName() != "weapon_jason" || "weapon_goldengun" ) )
+	//return FALSE;
 
 	while( pInsert )
 	{

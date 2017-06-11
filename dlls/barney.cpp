@@ -27,6 +27,8 @@
 #include	"scripted.h"
 #include	"weapons.h"
 #include	"soundent.h"
+#include	"time.h"
+#include	"gamerules.h"
 
 //=========================================================
 // Monster's Anim Events Go Here
@@ -254,7 +256,18 @@ int CBarney::ISoundMask( void)
 //=========================================================
 int CBarney::Classify( void )
 {
-	return CLASS_PLAYER_ALLY;
+	if( g_pGameRules->IsTest() && testmonsters.value <= 0 )
+	{
+		return CLASS_NONE;
+	}
+	else if( g_pGameRules->IsMonster() )
+	{
+		return CLASS_MONSTERHUNT;
+	}
+	else
+	{
+		return CLASS_PLAYER_ALLY;
+	}
 }
 
 //=========================================================
@@ -395,13 +408,27 @@ void CBarney::Spawn()
 {
 	Precache();
 
-	SET_MODEL( ENT( pev ), "models/barney.mdl" );
+	LPSYSTEMTIME sysDate;
+
+	sysDate = (LPSYSTEMTIME)malloc( sizeof(SYSTEMTIME) );
+	GetLocalTime( sysDate );
+
+	// This looks ugly - GOAHEAD
+	if( ( sysDate->wMonth == 12 && sysDate->wDay == 25 ) || (sysDate->wMonth == 12 && sysDate->wDay == 24 ) || (sysDate->wMonth == 12 && sysDate->wDay == 23 ) || ( CVAR_GET_FLOAT( "mp_christmas" ) == 1 ))
+	{
+		SET_MODEL( ENT( pev ), "models/barneyxmas.mdl" );
+	}
+	else
+	{
+		SET_MODEL( ENT( pev ), "models/barney.mdl" );
+	}
+
 	UTIL_SetSize( pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX );
 
 	pev->solid = SOLID_SLIDEBOX;
 	pev->movetype = MOVETYPE_STEP;
 	m_bloodColor = BLOOD_COLOR_RED;
-	pev->health = gSkillData.barneyHealth;
+	pev->health = CBaseMonster::GetHealth( gSkillData.barneyHealth, 3 );;
 	pev->view_ofs = Vector ( 0, 0, 50 );// position of the eyes relative to monster's origin.
 	m_flFieldOfView = VIEW_FIELD_WIDE; // NOTE: we need a wide field of view so npc will notice player and say hello
 	m_MonsterState = MONSTERSTATE_NONE;
@@ -421,6 +448,7 @@ void CBarney::Spawn()
 void CBarney::Precache()
 {
 	PRECACHE_MODEL( "models/barney.mdl" );
+	PRECACHE_MODEL( "models/barneyxmas.mdl" );
 
 	PRECACHE_SOUND( "barney/ba_attack1.wav" );
 	PRECACHE_SOUND( "barney/ba_attack2.wav" );
@@ -616,8 +644,9 @@ void CBarney::Killed( entvars_t *pevAttacker, int iGib )
 
 		GetAttachment( 0, vecGunPos, vecGunAngles );
 
-		CBaseEntity *pGun = DropItem( "weapon_9mmhandgun", vecGunPos, vecGunAngles );
-	}
+		if( g_pGameRules->IsSinglePlayer() )
+			CBaseEntity *pGun = DropItem( "weapon_9mmhandgun", vecGunPos, vecGunAngles );
+	} // Ends the if there not anything else
 
 	SetUse( NULL );	
 	CTalkMonster::Killed( pevAttacker, iGib );
@@ -782,6 +811,7 @@ public:
 
 	void KeyValue( KeyValueData *pkvd );
 
+	void TalkDead( void );
 	int m_iPose;// which sequence to display	-- temporary, don't need to save
 	static char *m_szPoses[3];
 };
@@ -817,10 +847,15 @@ void CDeadBarney::Spawn()
 	pev->sequence = LookupSequence( m_szPoses[m_iPose] );
 	if( pev->sequence == -1 )
 	{
-		ALERT( at_console, "Dead barney with bad pose\n" );
+		ALERT( at_console, "Dead barney with bad pose\nFIX IT NOW\n" );
 	}
 	// Corpses have less health
 	pev->health = 8;//gSkillData.barneyHealth;
 
 	MonsterInitDead();
+}
+
+void CDeadBarney::TalkDead( void )
+{
+	PlaySentence( "BA_POK", 2, VOL_NORM, ATTN_NORM );
 }

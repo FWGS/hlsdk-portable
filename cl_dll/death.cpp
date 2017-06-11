@@ -186,8 +186,12 @@ int CHudDeathNotice::MsgFunc_DeathMsg( const char *pszName, int iSize, void *pbu
 	//	gViewPort->GetAllPlayersInfo();
 	gHUD.m_Scoreboard.GetAllPlayersInfo();
 
+	 char *killer_name = NULL;
+
 	// Get the Killer's name
-	char *killer_name = g_PlayerInfoList[killer].name;
+	if( (char)killer != -1 )
+		killer_name = g_PlayerInfoList[killer].name;
+	//Borrowing from victim == -1 below. If the killer is -1, it's an NPC.
 	if( !killer_name )
 	{
 		killer_name = "";
@@ -198,6 +202,15 @@ int CHudDeathNotice::MsgFunc_DeathMsg( const char *pszName, int iSize, void *pbu
 		rgDeathNoticeList[i].KillerColor = GetClientColor( killer );
 		strncpy( rgDeathNoticeList[i].szKiller, killer_name, MAX_PLAYER_NAME_LENGTH );
 		rgDeathNoticeList[i].szKiller[MAX_PLAYER_NAME_LENGTH - 1] = 0;
+	}
+
+	// Is it a non-player object kill?
+	if( ( (char)killer ) == -1 )
+	{
+		//rgDeathNoticeList[i].iNonPlayerKill = TRUE;
+
+		// Store the object's name in the Victim slot (skip the d_ bit)
+		strcpy( rgDeathNoticeList[i].szKiller, killedwith + 2 );
 	}
 
 	// Get the Victim's name
@@ -220,7 +233,7 @@ int CHudDeathNotice::MsgFunc_DeathMsg( const char *pszName, int iSize, void *pbu
 	// Is it a non-player object kill?
 	if ( ( (char)victim ) == -1 )
 	{
-		rgDeathNoticeList[i].iNonPlayerKill = TRUE;
+		//rgDeathNoticeList[i].iNonPlayerKill = TRUE;
 
 		// Store the object's name in the Victim slot (skip the d_ bit)
 		strcpy( rgDeathNoticeList[i].szVictim, killedwith + 2 );
@@ -258,34 +271,37 @@ int CHudDeathNotice::MsgFunc_DeathMsg( const char *pszName, int iSize, void *pbu
 
 			if( !strcmp( killedwith, "d_world" ) )
 			{
-				ConsolePrint( " died" );
+				ConsolePrint( " was killed by Za World" );
 			}
 			else
 			{
-				ConsolePrint( " killed self" );
+				ConsolePrint( " said 'Fuck it' and done himself in" );
 			}
 		}
 		else if( rgDeathNoticeList[i].iTeamKill )
 		{
 			ConsolePrint( rgDeathNoticeList[i].szKiller );
-			ConsolePrint( " killed his teammate " );
+			ConsolePrint( " fucking took out his mate " );
 			ConsolePrint( rgDeathNoticeList[i].szVictim );
 		}
+		else if( (char)victim == -1 ) //Don't display kills done by the player on NPCs. Show only deaths on the player caused by NPCs.
+			return 1;
 		else
 		{
-			ConsolePrint( rgDeathNoticeList[i].szKiller );
-			ConsolePrint( " killed " );
+			ConsolePrint( "One man. " );
 			ConsolePrint( rgDeathNoticeList[i].szVictim );
+			ConsolePrint( " FUCKING DESTROYED " );
+			ConsolePrint( rgDeathNoticeList[i].szKiller );
 		}
 
 		if( *killedwith && (*killedwith > 13 ) && strcmp( killedwith, "d_world" ) && !rgDeathNoticeList[i].iTeamKill )
 		{
-			ConsolePrint( " with " );
+			ConsolePrint( " he was shot with a " );
 
 			// replace the code names with the 'real' names
 			if( !strcmp( killedwith + 2, "egon" ) )
 				strcpy( killedwith, "d_gluon gun" );
-			if ( !strcmp( killedwith + 2, "gauss" ) )
+			if ( !strcmp( killedwith + 2, "psycho hands" ) )
 				strcpy( killedwith, "d_tau cannon" );
 
 			ConsolePrint( killedwith + 2 ); // skip over the "d_" part

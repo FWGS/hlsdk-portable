@@ -861,6 +861,14 @@ void UTIL_SayTextAll( const char *pText, CBaseEntity *pEntity )
 	MESSAGE_END();
 }
 
+void UTIL_SayTextAllHS( const char *pText )            //TODO: Probably Avoid this?
+{
+	MESSAGE_BEGIN( MSG_ALL, gmsgSayText, NULL );
+		WRITE_BYTE( 1 );
+		WRITE_STRING( pText );
+	MESSAGE_END();
+}
+
 char *UTIL_dtos1( int d )
 {
 	static char buf[8];
@@ -1268,6 +1276,28 @@ void UTIL_PlayerDecalTrace( TraceResult *pTrace, int playernum, int decalNumber,
 }
 
 void UTIL_GunshotDecalTrace( TraceResult *pTrace, int decalNumber )
+{
+	if( decalNumber < 0 )
+		return;
+
+	int index = gDecals[decalNumber].index;
+	if( index < 0 )
+		return;
+
+	if( pTrace->flFraction == 1.0 )
+		return;
+
+	MESSAGE_BEGIN( MSG_PAS, SVC_TEMPENTITY, pTrace->vecEndPos );
+		WRITE_BYTE( TE_GUNSHOTDECAL );
+		WRITE_COORD( pTrace->vecEndPos.x );
+		WRITE_COORD( pTrace->vecEndPos.y );
+		WRITE_COORD( pTrace->vecEndPos.z );
+		WRITE_SHORT( (short)ENTINDEX( pTrace->pHit ) );
+		WRITE_BYTE( index );
+	MESSAGE_END();
+}
+
+void UTIL_PaintballDecalTrace( TraceResult *pTrace, int decalNumber )
 {
 	if( decalNumber < 0 )
 		return;

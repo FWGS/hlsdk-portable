@@ -22,6 +22,7 @@
 #include	"player.h"
 #include	"weapons.h"
 #include	"gamerules.h"
+#include	"player.h"
  
 #include	"skill.h"
 #include	"game.h"
@@ -30,6 +31,13 @@
 #include	"voice_gamemgr.h"
 #endif
 #include	"hltv.h"
+#include       "string.h"
+
+// START BOT
+#include "bot.h"
+#include "botcam.h"
+extern respawn_t bot_respawn[32];
+// END BOT
 
 extern DLL_GLOBAL CGameRules *g_pGameRules;
 extern DLL_GLOBAL BOOL	g_fGameOver;
@@ -37,8 +45,13 @@ extern int gmsgDeathMsg;	// client dll messages
 extern int gmsgScoreInfo;
 extern int gmsgMOTD;
 extern int gmsgServerName;
+extern int gmsgItemPickup;
+extern int gmsgTimer;
+extern int gmsgPlayBGM;
+extern int gmsgStopMP3;
 
-extern int g_teamplay;
+extern int g_gameplay;
+int check = 0;
 
 #define ITEM_RESPAWN_TIME	30
 #define WEAPON_RESPAWN_TIME	20
@@ -54,7 +67,7 @@ class CMultiplayGameMgrHelper : public IVoiceGameMgrHelper
 public:
 	virtual bool CanPlayerHearPlayer(CBasePlayer *pListener, CBasePlayer *pTalker)
 	{
-		if( g_teamplay )
+		if( g_gameplay == HL_TEAMPLAY || HS_SHYTPLAY )
 		{
 			if( g_pGameRules->PlayerRelationship( pListener, pTalker ) != GR_TEAMMATE )
 			{
@@ -152,14 +165,20 @@ void CHalfLifeMultiplay::RefreshSkillData( void )
 	// MP5 Round
 	gSkillData.plrDmgMP5 = 12;
 
+	gSkillData.plrDmgZAPPER = 25;
+
 	// M203 grenade
 	gSkillData.plrDmgM203Grenade = 100;
 
 	// Shotgun buckshot
 	gSkillData.plrDmgBuckshot = 20;// fewer pellets in deathmatch
 
+	gSkillData.plrDmgJackal = 50;
+
 	// Crossbow
-	gSkillData.plrDmgCrossbowClient = 20;
+	//gSkillData.plrDmgCrossbowClient = 20;
+
+	gSkillData.plrDmgModmanClient = 25;
 
 	// RPG
 	gSkillData.plrDmgRPG = 120;
@@ -177,8 +196,33 @@ void CHalfLifeMultiplay::RefreshSkillData( void )
 	// Tripmine
 	gSkillData.plrDmgTripmine = 150;
 
+	gSkillData.plrDmgGOLDENGUN = 400;
+
+	// Tripmine
+	//gSkillData.plrDmgBow = 999;
+
+	// Tripmine
+	//gSkillData.plrDmgStar = 35;
+
 	// hornet
 	gSkillData.plrDmgHornet = 10;
+
+	// beam katana
+	gSkillData.plrDmgBeamKatana = 35;
+
+	// beam katana
+	gSkillData.plrDmgFOTN = 15;
+
+	// Bow
+	gSkillData.plrDmgBow = 999;
+	//gSkillData.plrDmgBowMonster = 999;
+
+	// Jihad
+	gSkillData.plrDmgJihad = 9999;
+
+	// Ninja Star
+	gSkillData.plrDmgStar = 35;
+	//gSkillData.plrDmgStarMonster = 35;
 }
 
 // longest the intermission can last, in seconds
@@ -202,6 +246,8 @@ void CHalfLifeMultiplay::Think( void )
 
 	int frags_remaining = 0;
 	int time_remaining = 0;
+
+	int ltime = 0; // Check to see if the times have changed
 
 	if( g_fGameOver )   // someone else quit the game already
 	{
@@ -274,6 +320,9 @@ void CHalfLifeMultiplay::Think( void )
 	if( timeleft.value != last_time )
 	{
 		g_engfuncs.pfnCvar_DirectSet( &timeleft, UTIL_VarArgs( "%i", time_remaining ) );
+		//MESSAGE_BEGIN( MSG_ALL, gmsgTimer, NULL );
+		//WRITE_LONG( time_remaining );
+		//MESSAGE_END();
 	}
 
 	last_frags = frags_remaining;
@@ -420,13 +469,13 @@ void CHalfLifeMultiplay::UpdateGameMode( CBasePlayer *pPlayer )
 void CHalfLifeMultiplay::InitHUD( CBasePlayer *pl )
 {
 	// notify other clients of player joining the game
-	UTIL_ClientPrintAll( HUD_PRINTNOTIFY, UTIL_VarArgs( "%s has joined the game\n", 
+	UTIL_ClientPrintAll( HUD_PRINTNOTIFY, UTIL_VarArgs( "%s is gonna ruin your shit\n", 
 		( pl->pev->netname && STRING( pl->pev->netname )[0] != 0 ) ? STRING( pl->pev->netname ) : "unconnected" ) );
 
 	// team match?
-	if( g_teamplay )
+	if( g_gameplay )
 	{
-		UTIL_LogPrintf( "\"%s<%i><%s><%s>\" entered the game\n",  
+		UTIL_LogPrintf( "\"%s<%i><%s><%s>\" coming at ya\n",  
 			STRING( pl->pev->netname ), 
 			GETPLAYERUSERID( pl->edict() ),
 			GETPLAYERAUTHID( pl->edict() ),
@@ -434,7 +483,7 @@ void CHalfLifeMultiplay::InitHUD( CBasePlayer *pl )
 	}
 	else
 	{
-		UTIL_LogPrintf( "\"%s<%i><%s><%i>\" entered the game\n",  
+		UTIL_LogPrintf( "\"%s<%i><%s><%i>\" is here; run!\n",  
 			STRING( pl->pev->netname ), 
 			GETPLAYERUSERID( pl->edict() ),
 			GETPLAYERAUTHID( pl->edict() ),
@@ -442,6 +491,8 @@ void CHalfLifeMultiplay::InitHUD( CBasePlayer *pl )
 	}
 
 	UpdateGameMode( pl );
+
+	pl->m_fHSDev = CHalfLifeMultiplay::ClientDevCheck( pl );
 
 	// sending just one score makes the hud scoreboard active;  otherwise
 	// it is just disabled for single play
@@ -451,7 +502,16 @@ void CHalfLifeMultiplay::InitHUD( CBasePlayer *pl )
 		WRITE_SHORT( 0 );
 		WRITE_SHORT( 0 );
 		WRITE_SHORT( 0 );
+		WRITE_SHORT( pl->m_fHSDev );
 	MESSAGE_END();
+
+	char buf[256];
+
+	sprintf( buf, "media/maps/%s.mp3", STRING( gpGlobals->mapname ) );
+	//ALERT( at_console, buf );
+	MESSAGE_BEGIN( MSG_ONE, gmsgPlayBGM, NULL, pl->edict() );
+		WRITE_STRING( buf );
+        MESSAGE_END();
 
 	SendMOTDToClient( pl->edict() );
 
@@ -469,6 +529,7 @@ void CHalfLifeMultiplay::InitHUD( CBasePlayer *pl )
 				WRITE_SHORT( plr->m_iDeaths );
 				WRITE_SHORT( 0 );
 				WRITE_SHORT( GetTeamIndex( plr->m_szTeamName ) + 1 );
+				WRITE_SHORT( plr->m_fHSDev );
 			MESSAGE_END();
 		}
 	}
@@ -480,6 +541,41 @@ void CHalfLifeMultiplay::InitHUD( CBasePlayer *pl )
 	}
 }
 
+//Dev Label Check
+int CHalfLifeMultiplay::ClientDevCheck( CBasePlayer *pPlayer )
+{
+	char buffer[64];
+
+	sprintf( buffer, "%s", GETPLAYERAUTHID( pPlayer->edict() ) );
+
+	if( ( strcmp( buffer, "STEAM_0:1:3793395" ) == 0 ) )
+		return 1; //Buff Drinklots
+
+	if( ( strcmp( buffer, "STEAM_0:0:19779589" ) == 0 ) )
+		return 2;
+
+	if( ( strcmp( buffer, "STEAM_0:0:4058273" ) == 0 ) )
+		return 1; //Patrick Bateman
+
+	if( ( strcmp( buffer, "STEAM_0:1:13188531" ) == 0 ) )
+		return 2;
+
+	if( ( strcmp( buffer, "STEAM_0:1:35013002" ) == 0 ) )
+		return 2;
+
+	if( ( strcmp( buffer, "STEAM_0:0:2515846" ) == 0 ) )
+		return 2;
+
+	if( ( strcmp( buffer, "STEAM_0:1:16401600" ) == 0 ) )
+		return 3; //JONNY ROCK - Voice of Barney
+
+	if( ( strcmp( buffer, "STEAM_0:1:7505685" ) == 0 ) )
+		return 2; //Peter Barton
+
+	//if( ( strcmp( buffer, "BOT" ) <= 0 ) )
+		//return 1;
+	return 0;
+}
 //=========================================================
 //=========================================================
 void CHalfLifeMultiplay::ClientDisconnected( edict_t *pClient )
@@ -495,7 +591,7 @@ void CHalfLifeMultiplay::ClientDisconnected( edict_t *pClient )
 			// team match?
 			if( g_teamplay )
 			{
-				UTIL_LogPrintf( "\"%s<%i><%s><%s>\" disconnected\n",  
+				UTIL_LogPrintf( "\"%s<%i><%s><%s>\" just fucking ran\n",
 					STRING( pPlayer->pev->netname ), 
 					GETPLAYERUSERID( pPlayer->edict() ),
 					GETPLAYERAUTHID( pPlayer->edict() ),
@@ -503,7 +599,7 @@ void CHalfLifeMultiplay::ClientDisconnected( edict_t *pClient )
 			}
 			else
 			{
-				UTIL_LogPrintf( "\"%s<%i><%s><%i>\" disconnected\n",  
+				UTIL_LogPrintf( "\"%s<%i><%s><%i>\" ran the fuck out!\n",  
 					STRING( pPlayer->pev->netname ), 
 					GETPLAYERUSERID( pPlayer->edict() ),
 					GETPLAYERAUTHID( pPlayer->edict() ),
@@ -571,17 +667,46 @@ void CHalfLifeMultiplay::PlayerSpawn( CBasePlayer *pPlayer )
 
 	addDefault = TRUE;
 
+	LPSYSTEMTIME sysDate;
+	sysDate = (LPSYSTEMTIME) malloc(sizeof(SYSTEMTIME));
+	GetLocalTime(sysDate);
+
+	CBasePlayer *m_pPlayer;
+
 	while( ( pWeaponEntity = UTIL_FindEntityByClassname( pWeaponEntity, "game_player_equip" ) ) )
 	{
 		pWeaponEntity->Touch( pPlayer );
 		addDefault = FALSE;
 	}
 
+	if( sysDate->wMonth == 12 && sysDate->wDay == 25 )
+	{	// This will never use mp_christmas, cant cheat presents ;)
+		EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_VOICE, "misc/b2.wav", 0.8, ATTN_NORM );
+		ClientPrint( pPlayer->pev, HUD_PRINTCENTER, "MERRY CHRISTMAS!\nHave a shotgun and a bow!" ); //digamos al cliente
+		pPlayer->GiveNamedItem( "weapon_shotgun" );
+		pPlayer->GiveNamedItem( "weapon_bow" );
+		//CLIENT_COMMAND( ENT( pPlayer->pev ), "spk \"have some presence\"\n" );
+	}
+
+	if( sysDate->wMonth == 10 && sysDate->wDay == 31 )
+	{
+		ClientPrint( pPlayer->pev, HUD_PRINTCENTER, "Happy Halloween!\nHave a good one!" ); //digamos al cliente
+	}
+
 	if( addDefault )
 	{
 		pPlayer->GiveNamedItem( "weapon_crowbar" );
 		pPlayer->GiveNamedItem( "weapon_9mmhandgun" );
-		pPlayer->GiveAmmo( 68, "9mm", _9MM_MAX_CARRY );// 4 full reloads
+		pPlayer->GiveNamedItem( "ammo_9mmclip" );
+		pPlayer->GiveNamedItem( "weapon_dosh" );
+		pPlayer->GiveNamedItem( "weapon_beamkatana" );
+		pPlayer->GiveNamedItem( "weapon_fotn" );
+		pPlayer->GiveNamedItem( "weapon_ak47" );
+		pPlayer->GiveNamedItem( "weapon_jason" );
+		pPlayer->GiveNamedItem( "weapon_jihad" );
+		pPlayer->GiveNamedItem( "weapon_nstar" );
+		pPlayer->GiveNamedItem( "weapon_zapper" );
+		pPlayer->GiveNamedItem( "weapon_boombox" );
 	}
 }
 
@@ -654,6 +779,7 @@ void CHalfLifeMultiplay::PlayerKilled( CBasePlayer *pVictim, entvars_t *pKiller,
 		WRITE_SHORT( pVictim->m_iDeaths );
 		WRITE_SHORT( 0 );
 		WRITE_SHORT( GetTeamIndex( pVictim->m_szTeamName ) + 1 );
+		WRITE_SHORT( pVictim->m_fHSDev );
 	MESSAGE_END();
 
 	// killers score, if it's a player
@@ -668,10 +794,12 @@ void CHalfLifeMultiplay::PlayerKilled( CBasePlayer *pVictim, entvars_t *pKiller,
 			WRITE_SHORT( PK->m_iDeaths );
 			WRITE_SHORT( 0 );
 			WRITE_SHORT( GetTeamIndex( PK->m_szTeamName ) + 1 );
+			WRITE_SHORT( PK->m_fHSDev );
 		MESSAGE_END();
 
 		// let the killer paint another decal as soon as he'd like.
 		PK->m_flNextDecalTime = gpGlobals->time;
+		PK->m_flNextShame = gpGlobals->time;
 	}
 #ifndef HLDEMO_BUILD
 	if( pVictim->HasNamedPlayerItem( "weapon_satchel" ) )
@@ -695,6 +823,7 @@ void CHalfLifeMultiplay::DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, 
 	// Hack to fix name change
 	char *tau = "tau_cannon";
 	char *gluon = "gluon gun";
+	char *xmast = "a Christmas Tree";
 
 	if( pKiller->flags & FL_CLIENT )
 	{
@@ -742,13 +871,15 @@ void CHalfLifeMultiplay::DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, 
 		killer_weapon_name = gluon;
 	else if( !strcmp( killer_weapon_name, "gauss" ) )
 		killer_weapon_name = tau;
+	else if( !strcmp( killer_weapon_name, "xmast" ) )
+		killer_weapon_name = xmast;
 
 	if( pVictim->pev == pKiller )  
 	{
 		// killed self
 
 		// team match?
-		if( g_teamplay )
+		if( g_gameplay == HL_TEAMPLAY || HS_SHYTPLAY )
 		{
 			UTIL_LogPrintf( "\"%s<%i><%s><%s>\" committed suicide with \"%s\"\n",  
 				STRING( pVictim->pev->netname ), 
@@ -770,7 +901,7 @@ void CHalfLifeMultiplay::DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, 
 	else if( pKiller->flags & FL_CLIENT )
 	{
 		// team match?
-		if( g_teamplay )
+		if( g_gameplay == 1 || 2 )
 		{
 			UTIL_LogPrintf( "\"%s<%i><%s><%s>\" killed \"%s<%i><%s><%s>\" with \"%s\"\n",  
 				STRING( pKiller->netname ),
@@ -797,12 +928,21 @@ void CHalfLifeMultiplay::DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, 
 				killer_weapon_name );
 		}
 	}
+	else if( pKiller->flags & FL_MONSTER )
+	{
+		UTIL_LogPrintf( "\"%s<%i><%s><%i>\" died from a monster",
+				STRING( pVictim->pev->netname ),
+				GETPLAYERUSERID( pVictim->edict() ),
+				GETPLAYERAUTHID( pVictim->edict() ),
+				GETPLAYERUSERID( pVictim->edict() ),
+				killer_weapon_name );
+	}
 	else
 	{ 
 		// killed by the world
 
 		// team match?
-		if( g_teamplay )
+		if( g_gameplay == HL_TEAMPLAY || HS_SHYTPLAY )
 		{
 			UTIL_LogPrintf( "\"%s<%i><%s><%s>\" committed suicide with \"%s\" (world)\n",
 				STRING( pVictim->pev->netname ), 
@@ -889,6 +1029,7 @@ void CHalfLifeMultiplay::DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, 
 //=========================================================
 void CHalfLifeMultiplay::PlayerGotWeapon( CBasePlayer *pPlayer, CBasePlayerItem *pWeapon )
 {
+	EMIT_SOUND( ENT( pPlayer->pev ), CHAN_ITEM, "item/cv2_get.wav", 1, ATTN_NORM );
 }
 
 //=========================================================
@@ -1147,6 +1288,10 @@ void CHalfLifeMultiplay::GoToIntermission( void )
 	if( g_fGameOver )
 		return;  // intermission has already been triggered, so ignore.
 
+	//Turn off any Map BGM.
+	MESSAGE_BEGIN( MSG_ALL, gmsgStopMP3 );
+	MESSAGE_END();
+
 	MESSAGE_BEGIN( MSG_ALL, SVC_INTERMISSION );
 	MESSAGE_END();
 
@@ -1156,6 +1301,8 @@ void CHalfLifeMultiplay::GoToIntermission( void )
 		CVAR_SET_STRING( "mp_chattime", "1" );
 	else if( time > MAX_INTERMISSION_TIME )
 		CVAR_SET_STRING( "mp_chattime", UTIL_dtos1( MAX_INTERMISSION_TIME ) );
+	//edict_t *pClient;
+	//pClient = g_engfuncs.pfnPEntityOfEntIndex( 1 );
 
 	m_flIntermissionEndTime = gpGlobals->time + ( (int)mp_chattime.value );
 	g_flIntermissionStartTime = gpGlobals->time;
@@ -1630,6 +1777,43 @@ void CHalfLifeMultiplay::ChangeLevel( void )
 
 	g_fGameOver = TRUE;
 
+	edict_t *pClient;
+	pClient = g_engfuncs.pfnPEntityOfEntIndex( 1 );
+	CLIENT_COMMAND( pClient, "stopaudio\n" );
+
+// START BOT
+	// loop through all the players...
+	for( int i = 1; i <= gpGlobals->maxClients; i++ )
+	{
+		CBaseEntity *pEntity;
+
+		pEntity = UTIL_PlayerByIndex( i );
+
+		if( !pEntity )  // if invalid then continue with next index...
+			continue;
+
+		CBasePlayer *pPlayer = (CBasePlayer *)pEntity;
+
+		// if botcam is in use, disconnect so buttons will work...
+		if( pPlayer->pBotCam )
+			pPlayer->pBotCam->Disconnect();
+	}
+
+	// kick any bot off of the server after time/frag limit...
+	for( int index = 0; index < 32; index++ )
+	{
+		if( bot_respawn[index].is_used )  // is this slot used?
+		{
+			char cmd[40];
+
+			sprintf( cmd, "kick \"%s\"\n", bot_respawn[index].name );
+
+			bot_respawn[index].state = BOT_NEED_TO_RESPAWN;
+
+			SERVER_COMMAND( cmd );  // kick the bot using (kick "name")
+		}
+	}
+// END BOT
 	ALERT( at_console, "CHANGE LEVEL: %s\n", szNextMap );
 	if( minplayers || maxplayers )
 	{

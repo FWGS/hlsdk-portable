@@ -17,6 +17,10 @@
 
 #include "pm_materials.h"
 
+// START BOT
+class CBotCam;
+// END BOT
+
 #define PLAYER_FATAL_FALL_SPEED		1024// approx 60 feet
 #define PLAYER_MAX_SAFE_FALL_SPEED	580// approx 20 feet
 #define DAMAGE_FOR_FALL_SPEED		(float) 100 / ( PLAYER_FATAL_FALL_SPEED - PLAYER_MAX_SAFE_FALL_SPEED )// damage per unit per second.
@@ -60,6 +64,8 @@
 
 #define TEAM_NAME_LENGTH	16
 
+#define STARMANTIME 10 // secs
+
 typedef enum
 {
 	PLAYER_IDLE,
@@ -93,6 +99,7 @@ public:
 	int					m_iWeaponVolume;// how loud the player's weapon is right now.
 	int					m_iExtraSoundTypes;// additional classification for this weapon's sound
 	int					m_iWeaponFlash;// brightness of the weapon flash
+	float					m_iHelo; //Shotgun fix
 	float				m_flStopExtraSoundTime;
 
 	float				m_flFlashLightTime;	// Time until next battery draw/Recharge
@@ -152,6 +159,8 @@ public:
 
 	BOOL			m_fNoPlayerSound;	// a debugging feature. Player makes no sound if this is true. 
 	BOOL			m_fLongJump; // does this player have the longjump module?
+	int			mstars; // mario Stars
+	float			m_fEndMarioTime;
 
 	float       m_tSneaking;
 	int			m_iUpdateTime;		// stores the number of frame ticks before sending HUD update messages
@@ -177,16 +186,24 @@ public:
 	int					m_iDeaths;
 	float				m_iRespawnFrames;	// used in PlayerDeathThink() to make sure players can always respawn
 
+	int				m_fHSDev;
+
 	int m_lastx, m_lasty;  // These are the previous update's crosshair angles, DON"T SAVE/RESTORE
 
 	int m_nCustomSprayFrames;// Custom clan logo frames for this player
 	float	m_flNextDecalTime;// next time this player can spray a decal
+	float	m_flNextShame; // Next time to say what a shame - Dethklan
 
 	char m_szTeamName[TEAM_NAME_LENGTH];
 
+//START BOT
+	CBotCam *pBotCam;
+//END BOT
 	virtual void Spawn( void );
 	void Pain( void );
 
+	int UseMarioStar( void );
+	int WhatAShame( void );
 	//virtual void Think( void );
 	virtual void Jump( void );
 	virtual void Duck( void );
@@ -259,6 +276,7 @@ public:
 	void ItemPreFrame( void );
 	void ItemPostFrame( void );
 	void GiveNamedItem( const char *szName );
+	void SpawnNamedItem( const char *szName );
 	void EnableControl(BOOL fControl);
 
 	int  GiveAmmo( int iAmount, char *szName, int iMax );
@@ -267,6 +285,7 @@ public:
 	void WaterMove( void );
 	void EXPORT PlayerDeathThink( void );
 	void PlayerUse( void );
+	//void Jason( void );
 
 	void CheckSuitUpdate();
 	void SetSuitUpdate(char *name, int fgroup, int iNoRepeat);

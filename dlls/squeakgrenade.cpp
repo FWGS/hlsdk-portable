@@ -131,8 +131,8 @@ void CSqueakGrenade::Spawn( void )
 	pev->flags |= FL_MONSTER;
 	pev->takedamage = DAMAGE_AIM;
 	pev->health = gSkillData.snarkHealth;
-	pev->gravity = 0.5;
-	pev->friction = 0.5;
+	pev->gravity = 0.05;
+	pev->friction = 0.25;
 
 	pev->dmg = gSkillData.snarkDmgPop;
 
@@ -444,8 +444,8 @@ int CSqueak::GetItemInfo( ItemInfo *p )
 	p->pszAmmo2 = NULL;
 	p->iMaxAmmo2 = -1;
 	p->iMaxClip = WEAPON_NOCLIP;
-	p->iSlot = 4;
-	p->iPosition = 3;
+	p->iSlot = 3;
+	p->iPosition = 1;
 	p->iId = m_iId = WEAPON_SNARK;
 	p->iWeight = SNARK_WEIGHT;
 	p->iFlags = ITEM_FLAG_LIMITINWORLD | ITEM_FLAG_EXHAUSTIBLE;
@@ -501,7 +501,7 @@ void CSqueak::PrimaryAttack()
 		}
 
 		// find place to toss monster
-		UTIL_TraceLine( trace_origin + gpGlobals->v_forward * 20, trace_origin + gpGlobals->v_forward * 64, dont_ignore_monsters, NULL, &tr );
+		UTIL_TraceLine( trace_origin + gpGlobals->v_forward * 200, trace_origin + gpGlobals->v_forward * 64, dont_ignore_monsters, NULL, &tr );
 
 		int flags;
 #ifdef CLIENT_WEAPONS
@@ -533,7 +533,7 @@ void CSqueak::PrimaryAttack()
 
 			m_fJustThrown = 1;
 
-			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.3;
+			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5;
 			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.0;
 		}
 	}

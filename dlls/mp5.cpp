@@ -191,7 +191,7 @@ void CMP5::SecondaryAttack( void )
 	if( m_pPlayer->pev->waterlevel == 3 )
 	{
 		PlayEmptySound( );
-		m_flNextPrimaryAttack = 0.15;
+		m_flNextPrimaryAttack = 0.2;
 		return;
 	}
 
@@ -205,7 +205,7 @@ void CMP5::SecondaryAttack( void )
 	m_pPlayer->m_iWeaponFlash = BRIGHT_GUN_FLASH;
 
 	m_pPlayer->m_iExtraSoundTypes = bits_SOUND_DANGER;
-	m_pPlayer->m_flStopExtraSoundTime = UTIL_WeaponTimeBase() + 0.2;
+	m_pPlayer->m_flStopExtraSoundTime = UTIL_WeaponTimeBase() + 0.1;
 
 	m_pPlayer->m_rgAmmo[m_iSecondaryAmmoType]--;
 
@@ -216,8 +216,8 @@ void CMP5::SecondaryAttack( void )
 
 	// we don't add in player velocity anymore.
 	CGrenade::ShootContact( m_pPlayer->pev,
-					m_pPlayer->pev->origin + m_pPlayer->pev->view_ofs + gpGlobals->v_forward * 16, 
-					gpGlobals->v_forward * 800 );
+					m_pPlayer->pev->origin + m_pPlayer->pev->view_ofs + gpGlobals->v_forward * 60, 
+					gpGlobals->v_forward * 2001 );
 
 	int flags;
 #if defined( CLIENT_WEAPONS )
@@ -227,9 +227,9 @@ void CMP5::SecondaryAttack( void )
 #endif
 	PLAYBACK_EVENT( flags, m_pPlayer->edict(), m_usMP52 );
 
-	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 1;
-	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1;
-	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 5;// idle pretty soon after shooting.
+	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.01;
+	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.2;
+	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.05;// idle pretty soon after shooting.
 
 	if( !m_pPlayer->m_rgAmmo[m_iSecondaryAmmoType] )
 		// HEV suit - indicate out of ammo condition

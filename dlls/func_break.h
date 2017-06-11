@@ -53,6 +53,9 @@ public:
 	// To spark when hit
 	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType );
 
+	void RespawnThink();
+
+	BOOL IsRespawnable( void ) { return ( pev->spawnflags & SF_BREAK_RESPAWNABLE ); }
 	BOOL IsBreakable( void );
 	BOOL SparkWhenHit( void );
 
@@ -86,5 +89,6 @@ public:
 	float m_angle;
 	int m_iszGibModel;
 	int m_iszSpawnObject;
+	int m_iRespawnTime;
 };
 #endif	// FUNC_BREAK_H

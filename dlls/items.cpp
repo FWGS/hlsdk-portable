@@ -30,6 +30,7 @@
 #include "gamerules.h"
 
 extern int gmsgItemPickup;
+extern int gmsgItems;
 
 class CWorldItem : public CBaseEntity
 {
@@ -187,10 +188,13 @@ class CItemSuit : public CItem
 		if( pPlayer->pev->weapons & ( 1<<WEAPON_SUIT ) )
 			return FALSE;
 
-		if( pev->spawnflags & SF_SUIT_SHORTLOGON )
-			EMIT_SOUND_SUIT( pPlayer->edict(), "!HEV_A0" );		// short version of suit logon,
-		else
-			EMIT_SOUND_SUIT( pPlayer->edict(), "!HEV_AAx" );	// long version of suit logon
+		if( g_pGameRules->IsSinglePlayer() )
+		{
+			if( pev->spawnflags & SF_SUIT_SHORTLOGON )
+				EMIT_SOUND_SUIT( pPlayer->edict(), "!HEV_A0" );		// short version of suit logon,
+			else
+				EMIT_SOUND_SUIT( pPlayer->edict(), "!HEV_AAx" );	// long version of suit logon
+		}		
 
 		pPlayer->pev->weapons |= ( 1 << WEAPON_SUIT );
 		return TRUE;
@@ -243,7 +247,9 @@ class CItemBattery : public CItem
 
 			sprintf( szcharge,"!HEV_%1dP", pct );
 
-			//EMIT_SOUND_SUIT( ENT( pev ), szcharge );
+			if( g_pGameRules->IsSinglePlayer() )
+				EMIT_SOUND_SUIT( ENT( pev ), szcharge );
+
 			pPlayer->SetSuitUpdate( szcharge, FALSE, SUIT_NEXT_IN_30SEC);
 			return TRUE;
 		}
@@ -275,6 +281,38 @@ class CItemAntidote : public CItem
 };
 
 LINK_ENTITY_TO_CLASS( item_antidote, CItemAntidote )
+
+class CItemMarioStar : public CItem
+{
+	void Spawn( void )
+	{
+		Precache();
+		SET_MODEL( ENT( pev ), "models/w_starman.mdl" );
+		pev->renderfx = kRenderFxGlowShell;
+		pev->rendercolor.x = 255;
+		pev->rendercolor.y = 255;
+		CItem::Spawn();
+	}
+	void Precache( void )
+	{
+		PRECACHE_MODEL( "models/w_starman.mdl" );
+	}
+	BOOL MyTouch( CBasePlayer *pPlayer )
+	{
+		if( pPlayer->mstars > 0 )
+			return FALSE;
+
+		pPlayer->mstars = 1;
+
+		MESSAGE_BEGIN( MSG_ONE, gmsgItems, NULL, pPlayer->pev );
+			WRITE_LONG( 1 );
+		MESSAGE_END();
+
+		return TRUE;
+	}
+};
+
+LINK_ENTITY_TO_CLASS( item_mariostar, CItemMarioStar );
 
 class CItemSecurity : public CItem
 {

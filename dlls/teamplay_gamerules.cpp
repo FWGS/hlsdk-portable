@@ -23,11 +23,14 @@
 #include	"weapons.h"
 #include	"gamerules.h"
 #include	"teamplay_gamerules.h"
+//#include	"ctf_gameplay.h"
 #include	"game.h"
 
 static char team_names[MAX_TEAMS][MAX_TEAMNAME_LENGTH];
 static int team_scores[MAX_TEAMS];
 static int num_teams = 0;
+
+extern int gmsgTimer;
 
 extern DLL_GLOBAL BOOL		g_fGameOver;
 
@@ -129,6 +132,9 @@ void CHalfLifeTeamplay::Think( void )
 	if( frags_remaining != last_frags )
 	{
 		g_engfuncs.pfnCvar_DirectSet( &fragsleft, UTIL_VarArgs( "%i", frags_remaining ) );
+		//MESSAGE_BEGIN( MSG_ALL, gmsgTimer, NULL );
+		//WRITE_LONG( time_remaining );
+		//MESSAGE_END();
 	}
 
 	// Updates once per second
@@ -304,6 +310,7 @@ void CHalfLifeTeamplay::ChangePlayerTeam( CBasePlayer *pPlayer, const char *pTea
 		WRITE_SHORT( pPlayer->m_iDeaths );
 		WRITE_SHORT( 0 );
 		WRITE_SHORT( g_pGameRules->GetTeamIndex( pPlayer->m_szTeamName ) + 1 );
+		WRITE_SHORT( pPlayer->m_fHSDev );
 	MESSAGE_END();
 }
 

@@ -21,6 +21,7 @@
 #include "weapons.h"
 #include "nodes.h"
 #include "effects.h"
+#include "gamerules.h"
 
 #define N_SCALE		15
 #define N_SPHERES	20
@@ -34,7 +35,17 @@ public:
 
 	void Spawn( void );
 	void Precache( void );
-	int Classify( void ) { return CLASS_ALIEN_MILITARY; };
+	int  Classify( void )
+	{
+		if( g_pGameRules->IsTest() && testmonsters.value <= 0 )
+		{
+			return  CLASS_NONE;
+		}
+		else
+		{
+			return  CLASS_ALIEN_MILITARY;
+		}
+	};
 	int BloodColor( void ) { return BLOOD_COLOR_YELLOW; }
 	void Killed( entvars_t *pevAttacker, int iGib );
 	void GibMonster( void );

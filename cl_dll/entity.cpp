@@ -20,7 +20,7 @@
 #include "pmtrace.h"	
 #include "pm_shared.h"
 
-void Game_AddObjects( void );
+//void Game_AddObjects( void );
 
 extern vec3_t v_origin;
 
@@ -527,7 +527,7 @@ void DLLEXPORT HUD_CreateEntities( void )
 	Beams();
 #endif
 	// Add in any game specific objects
-	Game_AddObjects();
+	//Game_AddObjects();
 }
 
 /*

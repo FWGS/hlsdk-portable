@@ -16,6 +16,7 @@
 //  hud_msg.cpp
 //
 
+//#include "mp3.h" // AJH - Killar MP3
 #include "hud.h"
 #include "cl_util.h"
 #include "parsemsg.h"
@@ -23,8 +24,8 @@
 
 #define MAX_CLIENTS 32
 
-extern BEAM *pBeam;
-extern BEAM *pBeam2;
+//extern BEAM *pBeam;
+//extern BEAM *pBeam2;
 
 /// USER-DEFINED SERVER MESSAGE HANDLERS
 
@@ -71,7 +72,7 @@ void CHud::MsgFunc_InitHUD( const char *pszName, int iSize, void *pbuf )
 	}
 
 	//Probably not a good place to put this.
-	pBeam = pBeam2 = NULL;
+	//pBeam = pBeam2 = NULL;
 }
 
 int CHud::MsgFunc_GameMode( const char *pszName, int iSize, void *pbuf )
@@ -113,5 +114,57 @@ int CHud::MsgFunc_Concuss( const char *pszName, int iSize, void *pbuf )
 		this->m_StatusIcons.EnableIcon( "dmg_concuss", 255, 160, 0 );
 	else
 		this->m_StatusIcons.DisableIcon( "dmg_concuss" );
+	return 1;
+}
+/*
+int CHud::MsgFunc_PlayMP3( const char *pszName, int iSize, void *pbuf ) //AJH -Killar MP3
+{
+	BEGIN_READ( pbuf, iSize );
+
+	gMP3.PlayMP3( READ_STRING() );
+
+	return 1;
+}
+
+int CHud::MsgFunc_PlayBGM( const char *pszName, int iSize, void *pbuf ) //AJH -Killar MP3
+{
+	BEGIN_READ( pbuf, iSize );
+
+	if( CVAR_GET_FLOAT( "hud_bgm" ) > 0 )
+		gMP3.PlayMP3( READ_STRING() );
+
+	return 1;
+}
+
+int CHud::MsgFunc_StopMP3( const char *pszName, int iSize, void *pbuf ) //AJH -Killar MP3
+{
+	gMP3.StopMP3();
+
+	return 1;
+}
+*/
+int CHud::MsgFunc_AddELight( const char *pszName, int iSize, void *pbuf )
+{
+	BEGIN_READ( pbuf, iSize );
+
+	dlight_t *dl = gEngfuncs.pEfxAPI->CL_AllocElight( READ_SHORT() );
+
+	int bELightActive = READ_BYTE();
+	if( !bELightActive )
+	{
+		dl->die = gEngfuncs.GetClientTime();
+	}
+	else
+	{
+		dl->die = gEngfuncs.GetClientTime() + 1E6;
+
+		dl->origin[0] = READ_COORD();
+		dl->origin[1] = READ_COORD();
+		dl->origin[2] = READ_COORD();
+		dl->radius = READ_COORD();
+		dl->color.r = READ_BYTE();
+		dl->color.g = READ_BYTE();
+		dl->color.b = READ_BYTE();
+	}
 	return 1;
 }

@@ -145,6 +145,11 @@ void CCrowbar::PrimaryAttack()
 	}
 }
 
+void CCrowbar::SecondaryAttack()
+{
+	ClientPrint( m_pPlayer->pev, HUD_PRINTCENTER, "well, i got bast game, HL(all mod)" ); // digamos al cliente
+}
+
 void CCrowbar::Smack()
 {
 	DecalGunshot( &m_trHit, BULLET_PLAYER_CROWBAR );

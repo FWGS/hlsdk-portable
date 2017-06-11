@@ -81,9 +81,23 @@ struct skilldata_t
 	float snarkDmgBite;
 	float snarkDmgPop;
 
+	float xmastHealth;
+	float xmastDmgOneSlash;
+	float xmastDmgBothSlash;
+
+	float glennHealth;
+	float glennDmgOneSlash;
+	float glennDmgBothSlash;
+
 	float zombieHealth;
 	float zombieDmgOneSlash;
 	float zombieDmgBothSlash;
+
+	float sinistarHealth;
+	float sinistarDmgOneSlash;
+	float sinistarDmgBothSlash;
+
+	float creeperHealth;
 
 	float turretHealth;
 	float miniturretHealth;
@@ -91,13 +105,14 @@ struct skilldata_t
 
 	// Player Weapons
 	float plrDmgCrowbar;
+	//float plrDmgBoomb... wait why am I doing this.
 	float plrDmg9MM;
 	float plrDmg357;
 	float plrDmgMP5;
 	float plrDmgM203Grenade;
 	float plrDmgBuckshot;
-	float plrDmgCrossbowClient;
-	float plrDmgCrossbowMonster;
+	//float plrDmgCrossbowClient;
+	//float plrDmgCrossbowMonster;
 	float plrDmgRPG;
 	float plrDmgGauss;
 	float plrDmgEgonNarrow;
@@ -106,7 +121,19 @@ struct skilldata_t
 	float plrDmgHandGrenade;
 	float plrDmgSatchel;
 	float plrDmgTripmine;
-	
+	float plrDmgDosh;
+	float plrDmgBeamKatana;
+	float plrDmgFOTN;
+	float plrDmgAK47;
+	float plrDmgBow;
+	float plrDmgJihad;
+	float plrDmgStar;
+	float plrDmgGOLDENGUN;
+	float plrDmgModmanClient;
+	float plrDmgModmanMonster;
+	float plrDmgJackal;
+	float plrDmgZAPPER;
+
 	// weapons shared by monsters
 	float monDmg9MM;
 	float monDmgMP5;

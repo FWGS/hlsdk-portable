@@ -65,6 +65,11 @@ BOOL CHalfLifeRules::IsCoOp( void )
 	return FALSE;
 }
 
+BOOL CHalfLifeRules::IsSinglePlayer( void )
+{
+	return TRUE;
+}
+
 //=========================================================
 //=========================================================
 BOOL CHalfLifeRules::FShouldSwitchWeapon( CBasePlayer *pPlayer, CBasePlayerItem *pWeapon )

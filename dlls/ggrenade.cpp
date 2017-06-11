@@ -26,9 +26,13 @@
 #include "nodes.h"
 #include "soundent.h"
 #include "decals.h"
+#include "player.h"
+#include "items.h"
+#include "gamerules.h"
 
 //===================grenade
 
+extern int gmsgItemPickup;
 
 LINK_ENTITY_TO_CLASS( grenade, CGrenade )
 
@@ -130,6 +134,76 @@ void CGrenade::Explode( TraceResult *pTrace, int bitsDamageType )
 	}
 }
 
+// UNDONE: temporary scorching for PreAlpha - find a less sleazy permenant solution.
+void CGrenade::Explode2( TraceResult *pTrace, int bitsDamageType )
+{
+	float           flRndSound;// sound randomizer
+
+	pev->model = iStringNull;//invisible
+	pev->solid = SOLID_NOT;// intangible
+
+	pev->takedamage = DAMAGE_NO;
+
+	// Pull out of the wall a bit
+	if( pTrace->flFraction != 1.0 )
+	{
+		pev->origin = pTrace->vecEndPos + (pTrace->vecPlaneNormal * (pev->dmg - 24) * 0.6);
+	}
+
+	int iContents = UTIL_PointContents ( pev->origin );
+
+	MESSAGE_BEGIN( MSG_PAS, SVC_TEMPENTITY, pev->origin );
+		WRITE_BYTE( TE_EXPLOSION );             // This makes a dynamic light and the explosion sprites/sound
+		WRITE_COORD( pev->origin.x );   // Send to PAS because of the sound
+		WRITE_COORD( pev->origin.y );
+		WRITE_COORD( pev->origin.z );
+		WRITE_SHORT( g_sModelIndexSMB );
+		WRITE_BYTE( ( pev->dmg - 50 ) * .60  ); // scale * 10
+		WRITE_BYTE( 4 ); // framerate
+		WRITE_BYTE( TE_EXPLFLAG_NONE );
+	MESSAGE_END();
+
+	CSoundEnt::InsertSound( bits_SOUND_COMBAT, pev->origin, NORMAL_EXPLOSION_VOLUME, 3.0 );
+	entvars_t *pevOwner;
+	if( pev->owner )
+		pevOwner = VARS( pev->owner );
+	else
+		pevOwner = NULL;
+
+	pev->owner = NULL; // can't traceline attack owner if this is set
+
+	RadiusDamage( pev, pevOwner, pev->dmg, CLASS_NONE, bitsDamageType );
+
+	if( RANDOM_FLOAT( 0, 1 ) < 0.5 )
+	{
+		UTIL_DecalTrace( pTrace, DECAL_SCORCH1 );
+	}
+	else
+	{
+		UTIL_DecalTrace( pTrace, DECAL_SCORCH2 );
+	}
+
+	flRndSound = RANDOM_FLOAT( 0, 1 );
+
+	switch( RANDOM_LONG( 0, 2 ) )
+	{
+		case 0:
+			EMIT_SOUND( ENT( pev ), CHAN_VOICE, "weapons/debris1.wav", 0.55, ATTN_NORM );
+			break;
+		case 1:
+			EMIT_SOUND( ENT( pev ), CHAN_VOICE, "weapons/debris2.wav", 0.55, ATTN_NORM );
+			break;
+		case 2:
+			EMIT_SOUND( ENT( pev ), CHAN_VOICE, "weapons/debris3.wav", 0.55, ATTN_NORM );
+			break;
+	}
+
+	pev->effects |= EF_NODRAW;
+	SetThink( &CGrenade::Smoke );
+	pev->velocity = g_vecZero;
+	pev->nextthink = gpGlobals->time + 0.3;
+}
+
 void CGrenade::Smoke( void )
 {
 	if( UTIL_PointContents( pev->origin ) == CONTENTS_WATER )
@@ -182,6 +256,27 @@ void CGrenade::Detonate( void )
 	Explode( &tr, DMG_BLAST );
 }
 
+void CGrenade::Detonate2( void )
+{
+	TraceResult tr;
+	Vector vecSpot;// trace starts here!
+
+	vecSpot = pev->origin + Vector( 30, 30, 30 );
+	UTIL_TraceLine( vecSpot, vecSpot + Vector( 30, 30, 30 ), ignore_monsters, ENT( pev ), &tr );
+
+	Explode( &tr, DMG_BLAST );
+}
+       
+void CGrenade::Detonate3( void )
+{
+	TraceResult tr;
+	Vector vecSpot; // trace starts here!
+
+	vecSpot = pev->origin + Vector( 30, 30, 30 );
+	UTIL_TraceLine( vecSpot, vecSpot + Vector( 30, 30, 30 ), ignore_monsters, ENT( pev ), &tr );
+
+	Explode2( &tr, DMG_BLAST );
+}
 
 //
 // Contact grenade, explode when it touches something
@@ -197,6 +292,35 @@ void CGrenade::ExplodeTouch( CBaseEntity *pOther )
 	UTIL_TraceLine( vecSpot, vecSpot + pev->velocity.Normalize() * 64, ignore_monsters, ENT( pev ), &tr );
 
 	Explode( &tr, DMG_BLAST );
+}
+
+void CGrenade::ExplodeTouch2( CBaseEntity *pPlayer )
+{
+	TraceResult tr;
+	Vector vecSpot;// trace starts here!
+
+	//pev->enemy = pOther->edict();
+
+	vecSpot = pev->origin - pev->velocity.Normalize() * 32;
+	UTIL_TraceLine( vecSpot, vecSpot + pev->velocity.Normalize() * 64, ignore_monsters, ENT( pev ), &tr );
+
+	// Explode( &tr, DMG_BLAST );
+	EMIT_SOUND( ENT( pev ), CHAN_VOICE, "weapons/doshget.wav", 0.55, ATTN_NORM );
+	UTIL_Remove( this );
+}
+
+void CGrenade::ExplodeTouch3( CBaseEntity *pOther )
+{
+	TraceResult tr;
+	Vector vecSpot;// trace starts here!
+
+	pev->enemy = pOther->edict();
+
+	vecSpot = pev->origin - pev->velocity.Normalize() * 32;
+	UTIL_TraceLine( vecSpot, vecSpot + pev->velocity.Normalize() * 64, ignore_monsters, ENT( pev ), &tr );
+
+	Explode2( &tr, DMG_BLAST );
+	EMIT_SOUND( ENT( pev ), CHAN_VOICE, "weapons/smbexplode.wav", 1, ATTN_NORM );
 }
 
 void CGrenade::DangerSoundThink( void )
@@ -342,6 +466,34 @@ void CGrenade::TumbleThink( void )
 	}
 }
 
+void CGrenade::TumbleThink2( void )
+{
+	if( !IsInWorld() )
+	{
+		UTIL_Remove( this );
+		return;
+	}
+
+	StudioFrameAdvance();
+	pev->nextthink = gpGlobals->time + 0.1;
+
+	if( pev->dmgtime - 1 < gpGlobals->time )
+	{
+		CSoundEnt::InsertSound( bits_SOUND_DANGER, pev->origin + pev->velocity * ( pev->dmgtime - gpGlobals->time ), 400, 0.1 );
+	}
+
+	if( pev->dmgtime <= gpGlobals->time )
+	{
+		SetThink( &CGrenade::Detonate2 );
+	}
+
+	if( pev->waterlevel != 0 )
+	{
+		pev->velocity = pev->velocity * 0.5;
+		pev->framerate = 0.2;
+	}
+}
+
 void CGrenade::Spawn( void )
 {
 	pev->movetype = MOVETYPE_BOUNCE;
@@ -350,6 +502,20 @@ void CGrenade::Spawn( void )
 	pev->solid = SOLID_BBOX;
 
 	SET_MODEL( ENT( pev ), "models/grenade.mdl" );
+	UTIL_SetSize( pev, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ) );
+
+	pev->dmg = 100;
+	m_fRegisteredSound = FALSE;
+}
+
+void CGrenade::DoshSpawn( void )
+{
+	pev->movetype = MOVETYPE_TOSS;
+	pev->classname = MAKE_STRING( "grenade" );
+
+	pev->solid = SOLID_BBOX;
+
+	SET_MODEL( ENT( pev ), "models/dosh.mdl" );
 	UTIL_SetSize( pev, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ) );
 
 	pev->dmg = 100;
@@ -378,6 +544,33 @@ CGrenade *CGrenade::ShootContact( entvars_t *pevOwner, Vector vecStart, Vector v
 	pGrenade->SetTouch( &CGrenade::ExplodeTouch );
 
 	pGrenade->pev->dmg = gSkillData.plrDmgM203Grenade;
+
+	return pGrenade;
+}
+
+CGrenade *CGrenade::ShootContact2( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity ) //No tumble, for dosh ONLY
+{
+	CGrenade *pGrenade = GetClassPtr( (CGrenade *)NULL );
+	pGrenade->DoshSpawn();
+
+	// contact grenades arc lower
+	pGrenade->pev->gravity = 0.4;// lower gravity since grenade is aerodynamic and engine doesn't know it.
+	UTIL_SetOrigin( pGrenade->pev, vecStart );
+	pGrenade->pev->velocity = vecVelocity;
+	pGrenade->pev->angles = UTIL_VecToAngles( pGrenade->pev->velocity );
+	pGrenade->pev->owner = ENT(pevOwner);
+
+	// make monsters afaid of it while in the air
+	pGrenade->SetThink( &CGrenade::DangerSoundThink );
+	pGrenade->pev->nextthink = gpGlobals->time;
+
+	// Tumble in air
+	// pGrenade->pev->avelocity.x = RANDOM_FLOAT( -100, -500 );
+
+	// Explode on contact
+	pGrenade->SetTouch( &CDoshRocket::DoshTouch );
+
+	// pGrenade->pev->dmg = gSkillData.plrDmgM203Grenade;
 
 	return pGrenade;
 }
@@ -417,6 +610,46 @@ CGrenade *CGrenade::ShootTimed( entvars_t *pevOwner, Vector vecStart, Vector vec
 
 	SET_MODEL( ENT( pGrenade->pev ), "models/w_grenade.mdl" );
 	pGrenade->pev->dmg = 100;
+
+	return pGrenade;
+}
+
+CGrenade *CGrenade::ShootJihad( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity, float time )
+{
+	CGrenade *pGrenade = GetClassPtr( (CGrenade *)NULL );
+	pGrenade->Spawn();
+	UTIL_SetOrigin( pGrenade->pev, vecStart );
+	pGrenade->pev->velocity = vecVelocity;
+	pGrenade->pev->angles = UTIL_VecToAngles( pGrenade->pev->velocity );
+	pGrenade->pev->owner = ENT( pevOwner );
+
+	pGrenade->SetTouch( &CGrenade::BounceTouch );   // Bounce if touched
+
+	// Take one second off of the desired detonation time and set the think to PreDetonate. PreDetonate
+	// will insert a DANGER sound into the world sound list and delay detonation for one second so that
+	// the grenade explodes after the exact amount of time specified in the call to ShootTimed().
+
+	pGrenade->pev->dmgtime = gpGlobals->time + time;
+	pGrenade->SetThink( &CGrenade::TumbleThink2 );
+	pGrenade->pev->nextthink = gpGlobals->time + 0.1;
+
+	if( time < 0.1 )
+	{
+		pGrenade->pev->nextthink = gpGlobals->time;
+		pGrenade->pev->velocity = Vector( 0, 0, 0 );
+	}
+
+	pGrenade->pev->sequence = 0.01;
+	pGrenade->pev->framerate = 1.0;
+
+	// Tumble through the air
+	// pGrenade->pev->avelocity.x = -400;
+
+	pGrenade->pev->gravity = 0;
+	pGrenade->pev->friction = 1;
+
+	SET_MODEL( ENT( pGrenade->pev ), "models/w_grenade.mdl" );
+	pGrenade->pev->dmg = 1000;
 
 	return pGrenade;
 }

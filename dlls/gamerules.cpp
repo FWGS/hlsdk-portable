@@ -23,6 +23,12 @@
 #include	"weapons.h"
 #include	"gamerules.h"
 #include	"teamplay_gamerules.h"
+#include	"shytplay_gamerules.h"
+#include	"heavyrain_gamerules.h"
+#include	"monhunt_gamerules.h"
+#include	"coop_gamerules.h"
+#include	"cod_gamerules.h"
+#include	"test_gamerules.h"
 #include	"skill.h"
 #include	"game.h"
 
@@ -33,7 +39,7 @@ extern DLL_GLOBAL BOOL g_fGameOver;
 extern int gmsgDeathMsg;	// client dll messages
 extern int gmsgMOTD;
 
-int g_teamplay = 0;
+int g_gameplay = 0; // Team, Shyt, Jason Modes
 
 //=========================================================
 //=========================================================
@@ -208,10 +214,28 @@ void CGameRules::RefreshSkillData ( void )
 	gSkillData.snarkDmgBite = GetSkillCvar( "sk_snark_dmg_bite" );
 	gSkillData.snarkDmgPop = GetSkillCvar( "sk_snark_dmg_pop" );
 
+	// xmast
+	gSkillData.xmastHealth = GetSkillCvar( "sk_xmast_health");
+	gSkillData.xmastDmgOneSlash = GetSkillCvar( "sk_xmast_dmg_one_slash");
+	gSkillData.xmastDmgBothSlash = GetSkillCvar( "sk_xmast_dmg_both_slash");
+
 	// Zombie
 	gSkillData.zombieHealth = GetSkillCvar( "sk_zombie_health" );
 	gSkillData.zombieDmgOneSlash = GetSkillCvar( "sk_zombie_dmg_one_slash" );
 	gSkillData.zombieDmgBothSlash = GetSkillCvar( "sk_zombie_dmg_both_slash" );
+
+	// sinistar
+	gSkillData.sinistarHealth = GetSkillCvar( "sk_sinistar_health");
+	gSkillData.sinistarDmgOneSlash = GetSkillCvar( "sk_sinistar_dmg_one_slash");
+	gSkillData.sinistarDmgBothSlash = GetSkillCvar( "sk_sinistar_dmg_both_slash");
+
+	// creeper
+	gSkillData.creeperHealth = GetSkillCvar( "sk_creeper_health");
+
+	// Gay Glenn
+	gSkillData.glennHealth = GetSkillCvar( "sk_glenn_health");
+	gSkillData.glennDmgOneSlash = GetSkillCvar( "sk_glenn_dmg_one_slash");
+	gSkillData.glennDmgBothSlash = GetSkillCvar( "sk_glenn_dmg_both_slash");
 
 	//Turret
 	gSkillData.turretHealth = GetSkillCvar( "sk_turret_health" );
@@ -239,22 +263,17 @@ void CGameRules::RefreshSkillData ( void )
 	// M203 grenade
 	gSkillData.plrDmgM203Grenade = GetSkillCvar( "sk_plr_9mmAR_grenade" );
 
+	gSkillData.plrDmgGOLDENGUN = 400;
+
+	gSkillData.plrDmgJackal = GetSkillCvar( "sk_plr_jackal" );
+
+	gSkillData.plrDmgZAPPER = 25;
+
 	// Shotgun buckshot
 	gSkillData.plrDmgBuckshot = GetSkillCvar( "sk_plr_buckshot" );
 
-	// Crossbow
-	gSkillData.plrDmgCrossbowClient = GetSkillCvar( "sk_plr_xbow_bolt_client" );
-	gSkillData.plrDmgCrossbowMonster = GetSkillCvar( "sk_plr_xbow_bolt_monster" );
-
 	// RPG
 	gSkillData.plrDmgRPG = GetSkillCvar( "sk_plr_rpg" );
-
-	// Gauss gun
-	gSkillData.plrDmgGauss = GetSkillCvar( "sk_plr_gauss" );
-
-	// Egon Gun
-	gSkillData.plrDmgEgonNarrow = GetSkillCvar( "sk_plr_egon_narrow" );
-	gSkillData.plrDmgEgonWide = GetSkillCvar( "sk_plr_egon_wide" );
 
 	// Hand Grendade
 	gSkillData.plrDmgHandGrenade = GetSkillCvar( "sk_plr_hand_grenade" );
@@ -265,6 +284,16 @@ void CGameRules::RefreshSkillData ( void )
 	// Tripmine
 	gSkillData.plrDmgTripmine = GetSkillCvar( "sk_plr_tripmine" );
 
+	// nstar
+	gSkillData.plrDmgStar = GetSkillCvar( "sk_plr_nstar" );
+
+	// bow
+	gSkillData.plrDmgBow = GetSkillCvar( "sk_plr_bow" );
+
+	// modman
+	gSkillData.plrDmgModmanClient = GetSkillCvar( "sk_plr_horn_client" );
+	gSkillData.plrDmgModmanMonster = GetSkillCvar( "sk_plr_horn_monster" );
+
 	// MONSTER WEAPONS
 	gSkillData.monDmg12MM = GetSkillCvar( "sk_12mm_bullet" );
 	gSkillData.monDmgMP5 = GetSkillCvar ("sk_9mmAR_bullet" );
@@ -272,6 +301,8 @@ void CGameRules::RefreshSkillData ( void )
 
 	// MONSTER HORNET
 	gSkillData.monDmgHornet = GetSkillCvar( "sk_hornet_dmg" );
+
+	gSkillData.plrDmgAK47 = GetSkillCvar( "sk_plr_ak47_bullet" );
 
 	// PLAYER HORNET
 // Up to this point, player hornet damage and monster hornet damage were both using
@@ -301,6 +332,12 @@ void CGameRules::RefreshSkillData ( void )
 	gSkillData.plrStomach = GetSkillCvar( "sk_player_stomach" );
 	gSkillData.plrLeg = GetSkillCvar( "sk_player_leg" );
 	gSkillData.plrArm = GetSkillCvar( "sk_player_arm" );
+
+	// Crowbar whack
+	gSkillData.plrDmgBeamKatana = GetSkillCvar( "sk_plr_beamkatana" );
+
+	// Crowbar whack
+	gSkillData.plrDmgFOTN = GetSkillCvar( "sk_plr_fotn" );
 }
 
 //=========================================================
@@ -315,27 +352,51 @@ CGameRules *InstallGameRules( void )
 	if( !gpGlobals->deathmatch )
 	{
 		// generic half-life
-		g_teamplay = 0;
+		g_gameplay = HL_DEATHMATCH;
 		return new CHalfLifeRules;
 	}
 	else
 	{
-		if( teamplay.value > 0 )
+		if( gameplay.value == HL_TEAMPLAY )
 		{
 			// teamplay
-			g_teamplay = 1;
+			g_gameplay = HL_TEAMPLAY;
 			return new CHalfLifeTeamplay;
 		}
-		if( (int)gpGlobals->deathmatch == 1 )
+		if( gameplay.value == HS_SHYTPLAY )
+                {
+			g_gameplay = HS_SHYTPLAY;
+			return new CHalfLifeShytplay;
+		}
+		if ( gameplay.value == HS_HEAVYRAIN )
 		{
-			// vanilla deathmatch
-			g_teamplay = 0;
-			return new CHalfLifeMultiplay;
+			g_gameplay = HS_HEAVYRAIN;
+			return new CHeavyRainplay;
+		}
+		if( gameplay.value == HS_COD )
+		{
+			g_gameplay = HS_COD;
+			return new CCodplay;
+		}
+		if( gameplay.value == HS_COOP )
+		{
+			g_gameplay = HS_COOP;
+			return new CCoopplay;
+		}
+		if( gameplay.value == HS_MONSTER )
+		{
+			g_gameplay = HS_MONSTER;
+			return new CMonsterplay;
+		}
+		if( gameplay.value == HS_TESTMODE )
+		{
+			g_gameplay = HS_TESTMODE;
+			return new CTestplay;
 		}
 		else
 		{
 			// vanilla deathmatch??
-			g_teamplay = 0;
+			g_gameplay = 0;
 			return new CHalfLifeMultiplay;
 		}
 	}

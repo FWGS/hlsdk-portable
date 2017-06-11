@@ -979,7 +979,7 @@ void CHGrunt::Spawn()
 	pev->movetype		= MOVETYPE_STEP;
 	m_bloodColor		= BLOOD_COLOR_RED;
 	pev->effects		= 0;
-	pev->health		= gSkillData.hgruntHealth;
+	pev->health		= CBaseMonster::GetHealth( gSkillData.hgruntHealth, 2 );
 	m_flFieldOfView		= 0.2;// indicates the width of this monster's forward view cone ( as a dotproduct result )
 	m_MonsterState		= MONSTERSTATE_NONE;
 	m_flNextGrenadeCheck	= gpGlobals->time + 1;

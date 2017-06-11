@@ -472,7 +472,7 @@ void CIchthyosaur::Spawn()
 	pev->solid		= SOLID_BBOX;
 	pev->movetype		= MOVETYPE_FLY;
 	m_bloodColor		= BLOOD_COLOR_GREEN;
-	pev->health		= gSkillData.ichthyosaurHealth;
+	pev->health		= CBaseMonster::GetHealth( gSkillData.ichthyosaurHealth, 3 );
 	pev->view_ofs		= Vector( 0, 0, 16 );
 	m_flFieldOfView		= VIEW_FIELD_WIDE;
 	m_MonsterState		= MONSTERSTATE_NONE;

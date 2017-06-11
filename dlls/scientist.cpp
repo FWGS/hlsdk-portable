@@ -27,6 +27,9 @@
 #include	"animation.h"
 #include	"soundent.h"
 
+#include	"gamerules.h"
+#include	"explode.h"
+
 #define NUM_SCIENTIST_HEADS		4 // four heads available for scientist model
 
 enum
@@ -466,6 +469,8 @@ void CScientist::StartTask( Task_t *pTask )
 			m_hTalkTarget = m_hEnemy;
 			if( m_hEnemy->IsPlayer() )
 				PlaySentence( "SC_PLFEAR", 5, VOL_NORM, ATTN_NORM );
+			else if( m_hEnemy->IsPlayer() && g_pGameRules->IsMonster() )
+				ExplosionCreate( Center(), pev->angles, edict(), 128, TRUE ); // BOOM!
 			else
 				PlaySentence( "SC_FEAR", 5, VOL_NORM, ATTN_NORM );
 		}
@@ -566,7 +571,12 @@ void CScientist::RunTask( Task_t *pTask )
 //=========================================================
 int CScientist::Classify( void )
 {
-	return CLASS_HUMAN_PASSIVE;
+	if( g_pGameRules->IsTest() && testmonsters.value <= 0 )
+		return CLASS_NONE;
+	else if( g_pGameRules->IsMonster() )
+		return CLASS_MONSTERHUNT;
+	else
+		return CLASS_HUMAN_PASSIVE;
 }
 
 //=========================================================
@@ -642,7 +652,7 @@ void CScientist::Spawn( void )
 	pev->solid = SOLID_SLIDEBOX;
 	pev->movetype = MOVETYPE_STEP;
 	m_bloodColor = BLOOD_COLOR_RED;
-	pev->health = gSkillData.scientistHealth;
+	pev->health = CBaseMonster::GetHealth( gSkillData.scientistHealth, 30 );
 	pev->view_ofs = Vector( 0, 0, 50 );// position of the eyes relative to monster's origin.
 	m_flFieldOfView = VIEW_FIELD_WIDE; // NOTE: we need a wide field of view so scientists will notice player and say hello
 	m_MonsterState = MONSTERSTATE_NONE;
@@ -1065,7 +1075,10 @@ void CScientist::Heal( void )
 	if( target.Length() > 100 )
 		return;
 
-	m_hTargetEnt->TakeHealth( gSkillData.scientistHeal, DMG_GENERIC );
+	if( g_pGameRules->IsMonster() )
+		m_hTargetEnt->TakeHealth( -gSkillData.scientistHeal, DMG_POISON );
+	else
+		m_hTargetEnt->TakeHealth( gSkillData.scientistHeal, DMG_GENERIC );
 	// Don't heal again for 1 minute
 	m_healTime = gpGlobals->time + 60;
 }

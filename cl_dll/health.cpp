@@ -31,6 +31,7 @@
 
 DECLARE_MESSAGE( m_Health, Health )
 DECLARE_MESSAGE( m_Health, Damage )
+DECLARE_MESSAGE( m_Health, Items )
 
 #define PAIN_NAME "sprites/%d_pain.spr"
 #define DAMAGE_NAME "sprites/%d_dmg.spr"
@@ -47,7 +48,7 @@ int giDmgFlags[NUM_DMG_TYPES] =
 	DMG_NERVEGAS, 
 	DMG_RADIATION,
 	DMG_SHOCK,
-	DMG_CALTROP,
+	DMG_BILLNYE,
 	DMG_TRANQ,
 	DMG_CONCUSS,
 	DMG_HALLUC
@@ -57,13 +58,15 @@ int CHudHealth::Init( void )
 {
 	HOOK_MESSAGE( Health );
 	HOOK_MESSAGE( Damage );
-	m_iHealth = 100;
+	HOOK_MESSAGE(Items);
+	m_iHealth = 101;
 	m_fFade = 0;
 	m_iFlags = 0;
 	m_bitsDamage = 0;
 	m_fAttackFront = m_fAttackRear = m_fAttackRight = m_fAttackLeft = 0;
 	giDmgHeight = 0;
 	giDmgWidth = 0;
+	item_mstar = 0;
 
 	memset( m_dmg, 0, sizeof(DAMAGE_IMAGE) * NUM_DMG_TYPES );
 
@@ -75,6 +78,8 @@ void CHudHealth::Reset( void )
 {
 	// make sure the pain compass is cleared when the player respawns
 	m_fAttackFront = m_fAttackRear = m_fAttackRight = m_fAttackLeft = 0;
+
+	item_mstar = 0;
 
 	// force all the flashing damage icons to expire
 	m_bitsDamage = 0;
@@ -89,11 +94,37 @@ int CHudHealth::VidInit( void )
 	m_hSprite = 0;
 
 	m_HUD_dmg_bio = gHUD.GetSpriteIndex( "dmg_bio" ) + 1;
-	m_HUD_cross = gHUD.GetSpriteIndex( "cross" );
+	m_HUD_mgs3life = gHUD.GetSpriteIndex( "mgs3life" );
+	m_HUD_mgs3name = gHUD.GetSpriteIndex( "mgs3name" );
+
+	m_HUD_mstar = gHUD.GetSpriteIndex( "mstar" );
+
+	m_prc2 = &gHUD.GetSpriteRect( m_HUD_mgs3life );		// Full
+
+	m_iWidth = m_prc2->right - m_prc2->left;		// 32 - 160 = -128
 
 	giDmgHeight = gHUD.GetSpriteRect( m_HUD_dmg_bio ).right - gHUD.GetSpriteRect( m_HUD_dmg_bio ).left;
 	giDmgWidth = gHUD.GetSpriteRect( m_HUD_dmg_bio ).bottom - gHUD.GetSpriteRect( m_HUD_dmg_bio ).top;
 
+	return 1;
+}
+
+int CHudHealth::MsgFunc_Items( const char *pszName, int iSize, void *pbuf )
+{
+	BEGIN_READ( pbuf, iSize );
+	int x = READ_LONG();
+
+	if( x == 0 )
+	{
+		item_mstar = 0;
+	}
+
+	if( x == 1 )
+	{
+		item_mstar = 1;
+	}
+
+	m_iFlags |= HUD_ACTIVE;
 	return 1;
 }
 
@@ -110,6 +141,7 @@ int CHudHealth::MsgFunc_Health( const char *pszName, int iSize, void *pbuf )
 	{
 		m_fFade = FADE_TIME;
 		m_iHealth = x;
+		m_flHealth = ( (float)x ) / 100.0;		// 100.0 divided by 100.0 = 1
 	}
 
 	return 1;
@@ -165,7 +197,7 @@ void CHudHealth::GetPainColor( int &r, int &g, int &b )
 #else
 	if( m_iHealth > 25 )
 	{
-		UnpackRGB( r, g, b, RGB_YELLOWISH );
+		UnpackRGB( r, g, b, RGB_GREENISH );
 	}
 	else
 	{
@@ -188,50 +220,37 @@ int CHudHealth::Draw( float flTime )
 	if( !m_hSprite )
 		m_hSprite = LoadSprite( PAIN_NAME );
 
-	// Has health changed? Flash the health #
-	if( m_fFade )
-	{
-		m_fFade -= ( gHUD.m_flTimeDelta * 20 );
-		if( m_fFade <= 0 )
-		{
-			a = MIN_ALPHA;
-			m_fFade = 0;
-		}
-
-		// Fade the health number back to dim
-		a = MIN_ALPHA + ( m_fFade / FADE_TIME ) * 128;
-	}
-	else
-		a = MIN_ALPHA;
-
-	// If health is getting low, make it bright red
-	if( m_iHealth <= 15 )
-		a = 255;
-
-	GetPainColor( r, g, b );
-	ScaleColors( r, g, b, a );
-
 	// Only draw health if we have the suit.
 	if( gHUD.m_iWeaponBits & ( 1 << ( WEAPON_SUIT ) ) )
 	{
-		HealthWidth = gHUD.GetSpriteRect( gHUD.m_HUD_number_0 ).right - gHUD.GetSpriteRect( gHUD.m_HUD_number_0 ).left;
-		int CrossWidth = gHUD.GetSpriteRect( m_HUD_cross ).right - gHUD.GetSpriteRect( m_HUD_cross ).left;
+		int MGSX = ( gHUD.GetSpriteRect( m_HUD_mgs3life ).right - gHUD.GetSpriteRect( m_HUD_mgs3life ).left ) / 5; // Needs 20. It's 104
+		int MGSY = ScreenHeight - ( ( gHUD.GetSpriteRect( m_HUD_mgs3name ).bottom - gHUD.GetSpriteRect( m_HUD_mgs3name ).top ) * 2.5 ); // needs ScreenHeight-40. It's
 
-		y = ScreenHeight - gHUD.m_iFontHeight - gHUD.m_iFontHeight / 2;
-		x = CrossWidth / 2;
+		//Kojima would be proud
+		SPR_Set( gHUD.GetSprite( m_HUD_mgs3name ), 255, 255, 255 );
+		SPR_DrawHoles( 0, MGSX, MGSY, &gHUD.GetSpriteRect( m_HUD_mgs3name ) ); // Draw the name
 
-		SPR_Set( gHUD.GetSprite( m_HUD_cross ), r, g, b );
-		SPR_DrawAdditive( 0, x, y, &gHUD.GetSpriteRect( m_HUD_cross ) );
+		int iOffset = m_iWidth * ( 1.0 - m_flHealth ); // 32 * ( 1 - 1 ) = 0
+		if( iOffset < m_iWidth )
+		{
+			rc = *m_prc2;
+			rc.left += iOffset;
+			SPR_Set( gHUD.GetSprite( m_HUD_mgs3life ), 255, 255, 255 );
+			SPR_Draw( 0, MGSX + 2, MGSY + 18, &rc );
+		}
+	}
 
-		x = CrossWidth + HealthWidth / 2;
+	int x, y;
+	int cardheight = gHUD.GetSpriteRect( m_HUD_mstar ).bottom - gHUD.GetSpriteRect( m_HUD_mstar ).top;
+	int cardwidth = ( gHUD.GetSpriteRect( m_HUD_mstar ).right - gHUD.GetSpriteRect( m_HUD_mstar ).left ) + 5;
 
-		x = gHUD.DrawHudNumber( x, y, DHN_3DIGITS | DHN_DRAWZERO, m_iHealth, r, g, b );
+	if( item_mstar )
+	{
+		x = ScreenWidth - cardwidth;
+		y = ScreenHeight - ( cardheight * 4 + 5 );
 
-		x += HealthWidth / 2;
-
-		int iHeight = gHUD.m_iFontHeight;
-		int iWidth = HealthWidth / 10;
-		FillRGBA( x, y, iWidth, iHeight, 255, 160, 0, a );
+		SPR_Set( gHUD.GetSprite( m_HUD_mstar ), 255, 255, 255 );
+		SPR_DrawHoles( 0, x, y, &gHUD.GetSpriteRect( m_HUD_mstar ) );
 	}
 
 	DrawDamage( flTime );

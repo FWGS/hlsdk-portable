@@ -97,3 +97,27 @@ void CRat::Precache()
 //=========================================================
 // AI Schedules Specific to this monster
 //=========================================================
+
+class CBigRat : public CRat
+{
+	int Classify(){ return CLASS_INSECT; }
+	void Spawn();
+	void Precache();
+};
+
+LINK_ENTITY_TO_CLASS( monster_zclock, CBigRat );
+
+void CBigRat::Spawn()
+{
+	Precache();
+	CRat::Spawn();
+	if( pev->model )
+		SET_MODEL( ENT( pev ), "models/zclock.mdl" );
+	UTIL_SetSize( pev, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ) );
+}
+
+void CBigRat::Precache()
+{
+	CRat::Precache();
+	PRECACHE_MODEL( "models/zclock.mdl" );
+}

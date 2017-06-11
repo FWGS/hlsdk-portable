@@ -238,7 +238,7 @@ void CEgon::PrimaryAttack( void )
 
 void CEgon::Fire( const Vector &vecOrigSrc, const Vector &vecDir )
 {
-	Vector vecDest = vecOrigSrc + vecDir * 2048;
+	Vector vecDest = vecOrigSrc + vecDir * 512;
 	edict_t *pentIgnore;
 	TraceResult tr;
 
@@ -428,10 +428,10 @@ void CEgon::CreateEffect( void )
 
 	if( m_fireMode == FIRE_WIDE )
 	{
-		m_pBeam->SetScrollRate( 50 );
-		m_pBeam->SetNoise( 20 );
-		m_pNoise->SetColor( 50, 50, 255 );
-		m_pNoise->SetNoise( 8 );
+		m_pBeam->SetScrollRate( 520 );
+		m_pBeam->SetNoise( 203 );
+		m_pNoise->SetColor( 255, 50, 2 );
+		m_pNoise->SetNoise( 2 );
 	}
 	else
 	{

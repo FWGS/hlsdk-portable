@@ -95,6 +95,47 @@ int CHud::Redraw( float flTime, int intermission )
 
 	if( !m_iIntermission && intermission )
 	{
+		int ranmus;
+/*
+		ranmus = gEngfuncs.pfnRandomLong( 0, 9 );
+		char *songchoice;
+
+		switch( ranmus )
+		{
+			case 0:
+				songchoice = "media/intermission1.mp3";
+				break;
+			case 1:
+				songchoice = "media/intermission2.mp3";
+				break;
+			case 2:
+				songchoice = "media/intermission3.mp3";
+				break;
+			case 3:
+				songchoice = "media/intermission4.mp3";
+				break;
+			case 4:
+				songchoice = "media/intermission5.mp3";
+				break;
+			case 5:
+				songchoice = "media/intermission6.mp3";
+				break;
+			case 6:
+				songchoice = "media/intermission7.mp3";
+				break;
+			case 7:
+				songchoice = "media/intermission8.mp3";
+				break;
+			case 8:
+				songchoice = "media/intermission9.mp3";
+				break;
+			case 9:
+				songchoice = "media/intermission10.mp3";
+				break;
+		}
+
+		gMP3.PlayMP3NL( songchoice );
+*/
 		// Take a screenshot if the client's got the cvar set
 		if( CVAR_GET_FLOAT( "hud_takesshots" ) != 0 )
 			m_flShotTime = flTime + 1.0;	// Take a screenshot in a second
@@ -296,10 +337,10 @@ int CHud::DrawHudNumber( int x, int y, int iFlags, int iNumber, int r, int g, in
 	int iWidth = GetSpriteRect( m_HUD_number_0 ).right - GetSpriteRect( m_HUD_number_0 ).left;
 	int k;
 	
-	if( iNumber > 0 )
+	if( iNumber > 0 || ( ( iFlags & ( DHN_3DIGITS | DHN_2DIGITS ) ) && ( iFlags &DHN_PREZERO ) ) )
 	{
 		// SPR_Draw 100's
-		if( iNumber >= 100 )
+		if( iNumber >= 100 || ( ( iFlags & DHN_3DIGITS ) && ( iFlags & DHN_PREZERO ) ) )
 		{
 			k = iNumber / 100;
 			SPR_Set( GetSprite( m_HUD_number_0 + k ), r, g, b );
@@ -313,7 +354,7 @@ int CHud::DrawHudNumber( int x, int y, int iFlags, int iNumber, int r, int g, in
 		}
 
 		// SPR_Draw 10's
-		if( iNumber >= 10 )
+		if( iNumber >= 10 || ( ( iFlags & ( DHN_3DIGITS | DHN_2DIGITS ) ) && ( iFlags & DHN_PREZERO ) ) )
 		{
 			k = ( iNumber % 100 ) / 10;
 			SPR_Set( GetSprite( m_HUD_number_0 + k ), r, g, b );
@@ -351,6 +392,72 @@ int CHud::DrawHudNumber( int x, int y, int iFlags, int iNumber, int r, int g, in
 
 		// SPR_Draw ones
 		SPR_DrawAdditive( 0,  x, y, &GetSpriteRect( m_HUD_number_0 ) );
+		x += iWidth;
+	}
+
+	return x;
+}
+
+int CHud::DrawHudNumberNES( int x, int y, int iFlags, int iNumber, int r, int g, int b )
+{
+	int iWidth = GetSpriteRect( m_HUD_number_0_NES ).right - GetSpriteRect( m_HUD_number_0_NES ).left;
+	int k;
+	
+	if( iNumber> 0 || ( ( iFlags & ( DHN_3DIGITS | DHN_2DIGITS ) ) && ( iFlags &DHN_PREZERO ) ) )
+	{
+		// SPR_Draw 100's
+		if( iNumber >= 100 || ( ( iFlags & DHN_3DIGITS ) && ( iFlags & DHN_PREZERO ) ) )
+		{
+			 k = iNumber/100;
+			SPR_Set(GetSprite( m_HUD_number_0_NES + k ), r, g, b );
+			SPR_DrawAdditive( 0, x, y, &GetSpriteRect( m_HUD_number_0_NES + k ) );
+			x += iWidth;
+		}
+		else if( iFlags & ( DHN_3DIGITS ) )
+		{
+			//SPR_DrawAdditive( 0, x, y, &rc );
+			x += iWidth;
+		}
+
+		// SPR_Draw 10's
+		if( iNumber >= 10 || ( ( iFlags & ( DHN_3DIGITS | DHN_2DIGITS ) ) && ( iFlags & DHN_PREZERO ) ) )
+		{
+			k = ( iNumber % 100 ) / 10;
+			SPR_Set( GetSprite( m_HUD_number_0_NES + k ), r, g, b );
+			SPR_Draw( 0, x, y, &GetSpriteRect( m_HUD_number_0_NES + k ) );
+			x += iWidth;
+		}
+		else if( iFlags & ( DHN_3DIGITS | DHN_2DIGITS ) )
+		{
+			//SPR_DrawAdditive( 0, x, y, &rc );
+			x += iWidth;
+		}
+
+		// SPR_Draw ones
+		k = iNumber % 10;
+		SPR_Set( GetSprite( m_HUD_number_0_NES + k ), r, g, b );
+		SPR_Draw( 0, x, y, &GetSpriteRect( m_HUD_number_0_NES + k ) );
+		x += iWidth;
+	} 
+	else if( iFlags & DHN_DRAWZERO )
+	{
+		SPR_Set( GetSprite( m_HUD_number_0_NES ), r, g, b );
+
+		// SPR_Draw 100's
+		if( iFlags & ( DHN_3DIGITS ) )
+		{
+			//SPR_DrawAdditive( 0, x, y, &rc );
+			x += iWidth;
+		}
+
+		if( iFlags & (DHN_3DIGITS | DHN_2DIGITS ) )
+		{
+			//SPR_DrawAdditive( 0, x, y, &rc );
+			x += iWidth;
+		}
+
+		// SPR_Draw ones
+		SPR_Draw( 0, x, y, &GetSpriteRect( m_HUD_number_0_NES ) );
 		x += iWidth;
 	}
 

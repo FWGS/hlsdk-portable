@@ -142,10 +142,12 @@ public:
 	void			StopFollowing( BOOL clearSchedule );
 	void			StartFollowing( CBaseEntity *pLeader );
 	virtual void	DeclineFollowing( void ) {}
+	virtual void	TalkDead( void ) {}
 	void			LimitFollowers( CBaseEntity *pPlayer, int maxFollowers );
 
 	void EXPORT		FollowerUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
-	
+	void EXPORT		FollowerUseDead( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+
 	virtual void	SetAnswerQuestion( CTalkMonster *pSpeaker );
 	virtual int		FriendNumber( int arrayNumber )	{ return arrayNumber; }
 
