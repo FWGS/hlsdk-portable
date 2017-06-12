@@ -46,12 +46,12 @@ set (SVDLL_SOURCES
 	client.cpp
 	combat.cpp
 	controller.cpp
-	crossbow.cpp
+#	crossbow.cpp
 	crowbar.cpp
 	defaultai.cpp
 	doors.cpp
 	effects.cpp
-	egon.cpp
+#	egon.cpp
 	explode.cpp
 	flyingmonster.cpp
 	func_break.cpp
@@ -59,7 +59,7 @@ set (SVDLL_SOURCES
 	game.cpp
 	gamerules.cpp
 	gargantua.cpp
-	gauss.cpp
+#	gauss.cpp
 	genericmonster.cpp
 	ggrenade.cpp
 	globals.cpp
@@ -76,7 +76,7 @@ set (SVDLL_SOURCES
 	healthkit.cpp
 	hgrunt.cpp
 	hornet.cpp
-	hornetgun.cpp
+#	hornetgun.cpp
 	houndeye.cpp
 	ichthyosaur.cpp
 	islave.cpp
@@ -97,7 +97,7 @@ set (SVDLL_SOURCES
 	plane.cpp
 	plats.cpp
 	player.cpp
-	python.cpp
+#	python.cpp
 	rat.cpp
 	roach.cpp
 	rpg.cpp
@@ -126,12 +126,47 @@ set (SVDLL_SOURCES
 	world.cpp
 	xen.cpp
 	zombie.cpp
+	hs/ak47.cpp
+	hs/beamkatana.cpp
+	hs/boombox.cpp
+	hs/bot_combat.cpp
+	hs/bot.cpp
+	hs/botcam.cpp
+	hs/bow.cpp
+	hs/chrischan.cpp
+	hs/cod_gamerules.cpp
+	hs/coop_gamerules.cpp
+	hs/creeper.cpp
+#	hs/ctf_gameplay.cpp
+	hs/dosh.cpp
+#	hs/fotn.cpp
+	hs/fotns.cpp
+	hs/gayglenn.cpp
+	hs/goldengun.cpp
+	hs/grinman.cpp
+	hs/heavyrain_gamerules.cpp
+	hs/homestuck.cpp
+	hs/hs_model.cpp
+	hs/jackal.cpp
+	hs/jason.cpp
+	hs/jihad.cpp
+	hs/modman.cpp
+	hs/monhunt_gamerules.cpp
+	hs/mw2.cpp
+	hs/nstar.cpp
+	hs/scipg.cpp
+	hs/shytplay_gamerules.cpp
+	hs/sinistar.cpp
+	hs/soda_can.cpp
+	hs/test_gamerules.cpp
+	hs/xmast.cpp
+	hs/zapper.cpp
 	../pm_shared/pm_debug.c
 	../pm_shared/pm_math.c
 	../pm_shared/pm_shared.c
 )
 	
-include_directories (. wpn_shared ../common ../engine ../pm_shared ../game_shared ../public)
+include_directories (. wpn_shared ../common ../engine ../pm_shared ../game_shared ../public hs )
 
 if(USE_VOICEMGR)
 	set(SVDLL_SOURCES
