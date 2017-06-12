@@ -40,7 +40,7 @@ void CTestplay::PlayerSpawn( CBasePlayer *pPlayer )
 
 	edict_t *pClient = g_engfuncs.pfnPEntityOfEntIndex( 1 );
 
-	while ( pWeaponEntity = UTIL_FindEntityByClassname( pWeaponEntity, "game_player_equip" ))
+	while( ( pWeaponEntity = UTIL_FindEntityByClassname( pWeaponEntity, "game_player_equip" ) ) )
 	{
 		pWeaponEntity->Touch( pPlayer );
 		addDefault = FALSE;

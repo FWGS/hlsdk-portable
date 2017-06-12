@@ -262,7 +262,7 @@ CBaseEntity * CBot::BotFindEnemy( void )
    else
    {
 		  CBaseEntity *pMonster = NULL;
-		while(pMonster = UTIL_FindEntityByClassname(pMonster, CVAR_GET_STRING("bot_target_ent"))) //For now, bots only hunt for Gay Glenn.
+		while((pMonster = UTIL_FindEntityByClassname(pMonster, CVAR_GET_STRING("bot_target_ent")))) //For now, bots only hunt for Gay Glenn.
 		{
 		  vecEnd = pMonster->EyePosition();
 

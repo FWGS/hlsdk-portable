@@ -145,7 +145,7 @@ public:
 	float m_fFade;
 
 private:
-	int Ranks[1000];
+	int Ranks[1001];
 	int m_HUD_codrank;
 	int m_HUD_codrank2;
 	wrect_t *m_prc2;

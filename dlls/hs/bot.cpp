@@ -225,7 +225,7 @@ void BotCreate(const char *skin, const char *name, const char *skill)
             sprintf( err_msg, "model \"%s\" is unknown.\n", c_skin );
             UTIL_ClientPrintAll( HUD_PRINTNOTIFY, err_msg );
             if (IS_DEDICATED_SERVER())
-               printf(err_msg);
+               printf( "%s", err_msg );
 
             UTIL_ClientPrintAll( HUD_PRINTNOTIFY,
                "use barney, gina, gman, gordon, helmet, hgrunt,\n");
