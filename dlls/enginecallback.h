@@ -17,6 +17,69 @@
 #pragma once
 
 #include "event_flags.h"
+#include <ctime>
+
+//Thanks to shepard62fr!!
+inline bool IsChristmas( bool xmasonly )
+{
+	// Get the time now
+	time_t tTime = time( 0 );
+	struct tm *stTimeNow = localtime( &tTime );
+	bool temp;
+
+	// [DEBUG] Tell the date
+	//ALERT( at_console, "%i-%i-%i\n", ( stTimeNow->tm_year + 1900 ), ( stTimeNow->tm_mon + 1 ), stTimeNow->tm_mday );
+
+	// It's Christmas ?
+		if( xmasonly )
+		{
+			if( ( ( stTimeNow->tm_mon + 1 ) == 12 ) && ( stTimeNow->tm_mday == 25 ) )
+				temp = true;
+			else
+				temp = false;
+		}
+		else if( !xmasonly )
+		{
+			if( ( ( stTimeNow->tm_mon + 1 ) == 12 ) && ( ( stTimeNow->tm_mday == 25 ) || ( stTimeNow->tm_mday == 24 ) || (stTimeNow->tm_mday == 23 ) || (stTimeNow->tm_mday == 22 ) ) )
+				temp = true;
+			else
+				temp = false;
+		}
+
+		return temp;
+}
+
+inline bool IsHalloween()
+{
+	// Get the time now
+	time_t tTime = time( 0 );
+	struct tm *stTimeNow = localtime( &tTime );
+
+	// [DEBUG] Tell the date
+	//ALERT( at_console, "%i-%i-%i\n", ( stTimeNow->tm_year + 1900 ), ( stTimeNow->tm_mon + 1 ), stTimeNow->tm_mday );
+
+	// It's Christmas ?
+	if( ( ( stTimeNow->tm_mon + 1 ) == 10 ) && ( stTimeNow->tm_mday == 31 ) )
+		return true;
+	else
+		return false;
+}
+
+inline bool IsMarch31st()
+{
+	// Get the time now
+	time_t tTime = time( 0 );
+	struct tm *stTimeNow = localtime( &tTime );
+
+	// [DEBUG] Tell the date
+	//ALERT( at_console, "%i-%i-%i\n", ( stTimeNow->tm_year + 1900 ), ( stTimeNow->tm_mon + 1 ), stTimeNow->tm_mday );
+
+	// It's Christmas ?
+	if( ( ( stTimeNow->tm_mon + 1 ) == 3 ) && ( stTimeNow->tm_mday == 31 ) )
+		return true;
+	else
+		return false;
+}
 
 // Must be provided by user of this code
 extern enginefuncs_t g_engfuncs;

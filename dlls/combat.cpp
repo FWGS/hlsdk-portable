@@ -32,7 +32,7 @@
 #include "gamerules.h"
 #include "player.h"
 #include "monhunt_gamerules.h"
-#include "time.h"
+//#include "time.h"
 
 extern DLL_GLOBAL Vector		g_vecAttackDir;
 extern DLL_GLOBAL int			g_iSkillLevel;
@@ -190,18 +190,13 @@ void CGib::SpawnRandomGibs( entvars_t *pevVictim, int cGibs, int human )
 {
 	int cSplat;
 
-	LPSYSTEMTIME sysDate;
-
-	sysDate = (LPSYSTEMTIME)malloc( sizeof(SYSTEMTIME) );
-	GetLocalTime( sysDate );
-
 	for( cSplat = 0; cSplat < cGibs; cSplat++ )
 	{
 		CGib *pGib = GetClassPtr( (CGib *)NULL );
 
 		if( g_Language == LANGUAGE_GERMAN )
 		{
-			if( ( sysDate->wMonth == 12 && sysDate->wDay == 25 ) || ( sysDate->wMonth == 3 && sysDate->wDay == 31 ) || ( CVAR_GET_FLOAT( "mp_christmas" ) == 1 ))
+			if( IsChristmas( false ) || ( IsMarch31st() ) || (CVAR_GET_FLOAT( "mp_christmas" ) == 1 ) )
 			{
 				pGib->Spawn( "models/pgibs.mdl" );
 				pGib->pev->body = RANDOM_LONG( 0, PRESENT_GIB_COUNT - 1 );
@@ -216,7 +211,7 @@ void CGib::SpawnRandomGibs( entvars_t *pevVictim, int cGibs, int human )
 		{
 			if( human )
 			{
-				if( ( sysDate->wMonth == 12 && ( ( sysDate->wDay == 23 ) || ( sysDate->wDay == 24 ) || ( sysDate->wDay == 25 ) ) ) || ( sysDate->wMonth == 3 && sysDate->wDay == 31 ) || ( CVAR_GET_FLOAT( "mp_christmas" ) == 1 ) )
+				if( IsChristmas( false ) || ( IsMarch31st() ) || ( CVAR_GET_FLOAT( "mp_christmas" ) == 1 ) )
 				{
 					pGib->Spawn( "models/pgibs.mdl" );
 					pGib->pev->body = RANDOM_LONG( 0, PRESENT_GIB_COUNT - 1 );
@@ -235,7 +230,7 @@ void CGib::SpawnRandomGibs( entvars_t *pevVictim, int cGibs, int human )
 			}
 			else
 			{
-				if( ( sysDate->wMonth == 12 && ( ( sysDate->wDay == 23 ) || ( sysDate->wDay == 24 ) || ( sysDate->wDay == 25 ) ) ) || ( sysDate->wMonth == 3 && sysDate->wDay == 31 ) || ( CVAR_GET_FLOAT( "mp_christmas" ) == 1 ) )
+				if( IsChristmas( false ) || ( IsMarch31st() ) || ( CVAR_GET_FLOAT( "mp_christmas" ) == 1 ) )
 				{
 					pGib->Spawn( "models/pgibs.mdl" );
 					pGib->pev->body = RANDOM_LONG( 0, PRESENT_GIB_COUNT - 1 );
@@ -344,11 +339,7 @@ void CBaseMonster::GibMonster( void )
 	TraceResult	tr;
 	BOOL		gibbed = FALSE;
 
-	LPSYSTEMTIME sysDate;
-	sysDate = (LPSYSTEMTIME)malloc( sizeof(SYSTEMTIME) );
-	GetLocalTime( sysDate );
-
-	if( ( sysDate->wMonth == 12 && ( ( sysDate->wDay == 23 ) || ( sysDate->wDay == 24 ) || ( sysDate->wDay == 25 ) ) ) || ( sysDate->wMonth == 3 && sysDate->wDay == 31 ) || ( CVAR_GET_FLOAT( "mp_christmas" ) == 1  ))
+	if( IsChristmas( false ) || ( IsMarch31st() ) || ( CVAR_GET_FLOAT( "mp_christmas" ) == 1 ) )
 	{
 		EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "misc/party2.wav", 1, ATTN_NORM );
 	}

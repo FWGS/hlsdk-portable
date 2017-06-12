@@ -33,8 +33,6 @@
 #define	XMAST_AE_ATTACK_LEFT			0x02
 #define	XMAST_AE_ATTACK_BOTH			0x03
 
-LPSYSTEMTIME sysDate;
-
 //#define XMAST_FLINCH_DELAY			1		// at most one flinch every n secs
 
 class CXmast : public CBaseMonster
@@ -272,16 +270,13 @@ else
 	SET_MODEL(ENT(pev), "models/xmastreem.mdl");
 	UTIL_SetSize( pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX );
 
-	sysDate = (LPSYSTEMTIME) malloc(sizeof(SYSTEMTIME));
-	GetLocalTime(sysDate);
-
 	pev->solid			= SOLID_SLIDEBOX;
 	pev->movetype		= MOVETYPE_STEP;
 	m_bloodColor		= BLOOD_COLOR_RED;
 	pev->view_ofs		= VEC_VIEW;// position of the eyes relative to monster's origin.
-	if (sysDate->wMonth == 12 && sysDate->wDay == 25 )
-		pev->health			= gSkillData.xmastHealth*5;
-	else
+	//if( IsChristmas( true ) )
+	//	pev->health			= gSkillData.xmastHealth*5;
+	//else
 		pev->health			= CBaseMonster::GetHealth( gSkillData.xmastHealth, 5 );
 	m_flFieldOfView		= VIEW_FIELD_WIDE;// indicates the width of this monster's forward view cone ( as a dotproduct result )
 	m_MonsterState		= MONSTERSTATE_NONE;

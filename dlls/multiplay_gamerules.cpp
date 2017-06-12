@@ -667,10 +667,6 @@ void CHalfLifeMultiplay::PlayerSpawn( CBasePlayer *pPlayer )
 
 	addDefault = TRUE;
 
-	LPSYSTEMTIME sysDate;
-	sysDate = (LPSYSTEMTIME) malloc(sizeof(SYSTEMTIME));
-	GetLocalTime(sysDate);
-
 	CBasePlayer *m_pPlayer;
 
 	while( ( pWeaponEntity = UTIL_FindEntityByClassname( pWeaponEntity, "game_player_equip" ) ) )
@@ -679,7 +675,7 @@ void CHalfLifeMultiplay::PlayerSpawn( CBasePlayer *pPlayer )
 		addDefault = FALSE;
 	}
 
-	if( sysDate->wMonth == 12 && sysDate->wDay == 25 )
+	if( IsChristmas( true ) )
 	{	// This will never use mp_christmas, cant cheat presents ;)
 		EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_VOICE, "misc/b2.wav", 0.8, ATTN_NORM );
 		ClientPrint( pPlayer->pev, HUD_PRINTCENTER, "MERRY CHRISTMAS!\nHave a shotgun and a bow!" ); //digamos al cliente
@@ -688,7 +684,7 @@ void CHalfLifeMultiplay::PlayerSpawn( CBasePlayer *pPlayer )
 		//CLIENT_COMMAND( ENT( pPlayer->pev ), "spk \"have some presence\"\n" );
 	}
 
-	if( sysDate->wMonth == 10 && sysDate->wDay == 31 )
+	if( IsHalloween() )
 	{
 		ClientPrint( pPlayer->pev, HUD_PRINTCENTER, "Happy Halloween!\nHave a good one!" ); //digamos al cliente
 	}

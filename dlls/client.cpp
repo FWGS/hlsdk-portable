@@ -38,7 +38,7 @@
 #include "weaponinfo.h"
 #include "usercmd.h"
 #include "netadr.h"
-#include "time.h"
+#include <ctime>
 
 // START BOT
 #include "bot.h"
@@ -354,27 +354,24 @@ void Host_Say( edict_t *pEntity, int teamonly )
 	if( pc != NULL )
 		return;  // no character found, so say nothing
 
-	LPSYSTEMTIME sysDate;
-	sysDate = (LPSYSTEMTIME)malloc( sizeof(SYSTEMTIME) );
-	GetLocalTime( sysDate );
+	time_t tTime = time( 0 );
+	struct tm *stTimeNow = localtime( &tTime );
 
 	char *dd = "AM";
 
-	WORD hour = sysDate->wHour;
-
-	if( hour > 11 )
+	if( stTimeNow->tm_hour > 11 )
 	{
 		dd = "PM";
-		hour = hour - 12;
+		stTimeNow->tm_hour -= 12;
 	}
-	if( hour == 0 )
-		hour = 12;
+	if( stTimeNow->tm_hour == 0 )
+		stTimeNow->tm_hour = 12;
 
 	// turn on color set 2  (color on,  no sound)
 	if( teamonly )
-		sprintf( text, "[%d:%d %s] %c(TEAM) %s: ", hour, sysDate->wMinute, dd, 2, STRING( pEntity->v.netname ) );
+		sprintf( text, "[%d:%d %s] %c(TEAM) %s: ", stTimeNow->tm_hour, stTimeNow->tm_min, dd, 2, STRING( pEntity->v.netname ) );
 	else
-		sprintf( text, "[%d:%d %s] %c%s: ", hour, sysDate->wMinute, dd, 2, STRING( pEntity->v.netname ) );
+		sprintf( text, "[%d:%d %s] %c%s: ", stTimeNow->tm_hour, stTimeNow->tm_min, dd, 2, STRING( pEntity->v.netname ) );
 
 	j = sizeof( text ) - 2 - strlen( text );  // -2 for /n and null terminator
 	if( (int)strlen( p ) > j )
