@@ -252,7 +252,7 @@ int CChrisChan :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, f
 {
 	if (bravery == 0)
 	{
-	int bravery = RANDOM_LONG(0,1); //Roll the Dice, for Bravery, simulating fight or flight.
+		bravery = RANDOM_LONG(0,1); //Roll the Dice, for Bravery, simulating fight or flight.
 	}
 
 	if ( pevInflictor && pevInflictor->flags & FL_CLIENT )
