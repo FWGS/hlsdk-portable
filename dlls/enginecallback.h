@@ -38,7 +38,7 @@ inline bool IsChristmas( bool xmasonly )
 			else
 				temp = false;
 		}
-		else if( !xmasonly )
+		else
 		{
 			if( ( ( stTimeNow->tm_mon + 1 ) == 12 ) && ( ( stTimeNow->tm_mday == 25 ) || ( stTimeNow->tm_mday == 24 ) || (stTimeNow->tm_mday == 23 ) || (stTimeNow->tm_mday == 22 ) ) )
 				temp = true;
