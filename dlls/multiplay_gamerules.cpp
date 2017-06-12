@@ -589,7 +589,7 @@ void CHalfLifeMultiplay::ClientDisconnected( edict_t *pClient )
 			FireTargets( "game_playerleave", pPlayer, pPlayer, USE_TOGGLE, 0 );
 
 			// team match?
-			if( g_teamplay )
+			if( g_gameplay )
 			{
 				UTIL_LogPrintf( "\"%s<%i><%s><%s>\" just fucking ran\n",
 					STRING( pPlayer->pev->netname ), 

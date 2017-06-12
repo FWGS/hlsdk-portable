@@ -12,7 +12,7 @@
 #include "parsemsg.h"
 #include <string.h>
 #include <stdio.h>
-#include "mp3.h"
+//#include "mp3.h"
 
 int g_iRoundtime;
 int smbSoundCounter = 0; //This will count up, where when it hits 5 it'll play a sound.
@@ -61,7 +61,7 @@ int CHudTimer::Draw( float flTime )
 		if (smbSoundCounter == 5) //Note: the counter will still continue until 120 seconds turns into 119.
 		{
 			char * songchoice = "media/hurryup.mp3";
-			gMP3.PlayMP3NL( songchoice );
+			//gMP3.PlayMP3NL( songchoice );
 		}
 		//Draw BG
 		SPR_Set(gHUD.GetSprite(g_hud_timerbg), 255, 255, 255 );

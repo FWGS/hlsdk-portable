@@ -25,7 +25,7 @@ typedef struct
 	string_t		startspot;
 	float		deathmatch;
 	float		coop;
-	float		teamplay;
+	float		gameplay;
 	float		serverflags;
 	float		found_secrets;
 	vec3_t		v_forward;

@@ -77,7 +77,7 @@ int __MsgFunc_GameMode( const char *pszName, int iSize, void *pbuf )
 {
 	return gHUD.MsgFunc_GameMode( pszName, iSize, pbuf );
 }
-
+/*
 int __MsgFunc_PlayMP3(const char *pszName, int iSize, void *pbuf )
 {
 	return gHUD.MsgFunc_PlayMP3( pszName, iSize, pbuf );
@@ -92,7 +92,7 @@ int __MsgFunc_StopMP3(const char *pszName, int iSize, void *pbuf )
 {
 	return gHUD.MsgFunc_StopMP3( pszName, iSize, pbuf );
 }
-
+*/
 int __MsgFunc_AddELight(const char *pszName, int iSize, void *pbuf )
 {
 	return gHUD.MsgFunc_AddELight( pszName, iSize, pbuf );
@@ -191,14 +191,14 @@ void CHud::Init( void )
 	//HOOK_MESSAGE( PlayMP3 );
 	//gMP3.Initialize();
 
-	//KILLAR: MP3
+/*	//KILLAR: MP3
 	if( gMP3.Initialize() )
 	{
 		HOOK_MESSAGE( PlayMP3 );
 		HOOK_MESSAGE( PlayBGM );
 		HOOK_MESSAGE( StopMP3 );
 		HOOK_COMMAND( "stopaudio", StopMP3 );
-	}
+	}*/
 
 	// TFFree CommandMenu
 	HOOK_COMMAND( "+commandmenu", OpenCommandMenu );

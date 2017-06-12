@@ -21,7 +21,7 @@
 #include "hud.h"
 #include "cl_util.h"
 #include "netadr.h"
-#include "mp3.h"
+//#include "mp3.h"
 
 extern "C"
 {
@@ -32,7 +32,7 @@ extern "C"
 
 cl_enginefunc_t gEngfuncs;
 CHud gHUD;
-CMP3 gMP3;
+//CMP3 gMP3;
 mobile_engfuncs_t *gMobileEngfuncs = NULL;
 void InitInput( void );
 void EV_HookEvents( void );

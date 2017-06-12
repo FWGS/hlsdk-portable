@@ -51,7 +51,6 @@ set (CLDLL_SOURCES
 	../dlls/hs/fotns.cpp
 	../dlls/hs/goldengun.cpp
 	../dlls/hs/jackal.cpp
-	../dlls/hs/jason.cpp
 	../dlls/hs/jihad.cpp
 	../dlls/hs/modman.cpp
 	../dlls/hs/mw2.cpp

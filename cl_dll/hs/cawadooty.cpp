@@ -18,9 +18,9 @@
 // implementation of CHudCOD class
 //
 
-#include "STDIO.H"
-#include "STDLIB.H"
-#include "MATH.H"
+#include "stdio.h"
+#include "stdlib.h"
+#include "math.h"
 
 #include "hud.h"
 #include "cl_util.h"
@@ -65,11 +65,8 @@ int CHudCOD::VidInit(void)
 		{
 			if (dev)
 			{
-				char cod[12] = "FOUND: ";
-				char lvl[3] = "";
-				itoa(i, lvl, 10);
-				strcat(cod, lvl);
-				strcat(cod, "\n");
+				char cod[12];
+				sprintf( cod, "FOUND: %d\n", i );
 				ConsolePrint( cod );
 			}
 			Ranks[i] = TRUE;
@@ -119,18 +116,15 @@ int CHudCOD:: MsgFunc_COD(const char *pszName,  int iSize, void *pbuf )
 		m_fFade = gHUD.m_flTime + RANK_DELAY;
 		m_iRank = x;
 
-		char lvl[3] = "";
-		sprintf(lvl, "%i", m_iRank);
-
 		if (Ranks[m_iRank])
 		{
 			char temp[256];
-			sprintf(temp, "cod/cod%s.wav", lvl);
+			sprintf(temp, "cod/cod%d.wav", m_iRank);
 			PlaySound( temp, 1 );
 		}
 
 		char temp2[256];
-		sprintf(temp2, "cod%s", lvl);
+		sprintf(temp2, "cod%d", m_iRank);
 		charSpriteName = temp2;
 		m_HUD_codrank = gHUD.GetSpriteIndex(charSpriteName);
 	}
@@ -140,10 +134,8 @@ int CHudCOD:: MsgFunc_COD(const char *pszName,  int iSize, void *pbuf )
 
 int CHudCOD::RankExists(int rank)
 {
-	char cod[6] = "cod";
-	char lvl[3] = "";
-	itoa(rank, lvl, 10);
-	strcat(cod, lvl);
+	char cod[6];
+	sprintf( cod, "cod%d", rank );
 
 	if (gHUD.GetSpriteIndex( cod ) > -1)
 		return 1;

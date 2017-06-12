@@ -773,7 +773,7 @@ void ClientUserInfoChanged( edict_t *pEntity, char *infobuffer )
 		MESSAGE_END();
 
 		// team match?
-		if( g_teamplay )
+		if( g_gameplay )
 		{
 			UTIL_LogPrintf( "\"%s<%i><%s><%s>\" DEFECTED, just kidding, he wants to be called \"%s\"\n", 
 				STRING( pEntity->v.netname ), 
