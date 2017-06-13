@@ -10,6 +10,11 @@
 *   object code is restricted to non-commercial enhancements to products from
 *   Valve LLC.  All other use, distribution, or modification is prohibited
 *   without written permission from Valve LLC.
+
+Resident Evil 4 Handgun
+
+Hey it's that dog!
+
 *
 ****/
 
@@ -43,18 +48,20 @@ void CGlock::Spawn()
 	pev->classname = MAKE_STRING( "weapon_9mmhandgun" ); // hack to allow for old names
 	Precache();
 	m_iId = WEAPON_GLOCK;
-	SET_MODEL( ENT( pev ), "models/w_9mmhandgun.mdl" );
+	SET_MODEL( ENT( pev ), "models/w_re4handgun.mdl" );
 
 	m_iDefaultAmmo = GLOCK_DEFAULT_GIVE;
 
 	FallInit();// get ready to fall down.
+
+	//m_fSpotActive = 1;
 }
 
 void CGlock::Precache( void )
 {
-	PRECACHE_MODEL( "models/v_9mmhandgun.mdl" );
-	PRECACHE_MODEL( "models/w_9mmhandgun.mdl" );
-	PRECACHE_MODEL( "models/p_9mmhandgun.mdl" );
+	PRECACHE_MODEL( "models/v_re4handgun.mdl" );
+	PRECACHE_MODEL( "models/w_re4handgun.mdl" );
+	PRECACHE_MODEL( "models/p_re4handgun.mdl" );
 
 	m_iShell = PRECACHE_MODEL( "models/shell.mdl" );// brass shell
 
@@ -64,6 +71,7 @@ void CGlock::Precache( void )
 	PRECACHE_SOUND( "weapons/pl_gun1.wav" );//silenced handgun
 	PRECACHE_SOUND( "weapons/pl_gun2.wav" );//silenced handgun
 	PRECACHE_SOUND( "weapons/pl_gun3.wav" );//handgun
+	PRECACHE_SOUND( "weapons/re4_fire.wav" );
 
 	m_usFireGlock1 = PRECACHE_EVENT( 1, "events/glock1.sc" );
 	m_usFireGlock2 = PRECACHE_EVENT( 1, "events/glock2.sc" );
@@ -78,7 +86,7 @@ int CGlock::GetItemInfo( ItemInfo *p )
 	p->iMaxAmmo2 = -1;
 	p->iMaxClip = GLOCK_MAX_CLIP;
 	p->iSlot = 1;
-	p->iPosition = 0;
+	p->iPosition = 2;
 	p->iFlags = 0;
 	p->iId = m_iId = WEAPON_GLOCK;
 	p->iWeight = GLOCK_WEIGHT;
@@ -89,17 +97,17 @@ int CGlock::GetItemInfo( ItemInfo *p )
 BOOL CGlock::Deploy()
 {
 	// pev->body = 1;
-	return DefaultDeploy( "models/v_9mmhandgun.mdl", "models/p_9mmhandgun.mdl", GLOCK_DRAW, "onehanded", /*UseDecrement() ? 1 : 0*/ 0 );
+	return DefaultDeploy( "models/v_re4handgun.mdl", "models/p_re4handgun.mdl", GLOCK_DRAW, "onehanded", /*UseDecrement() ? 1 : 0*/ 0 );
 }
 
 void CGlock::SecondaryAttack( void )
 {
-	GlockFire( 0.1, 0.2, FALSE );
+	//GlockFire( 0.1, 0.2, FALSE );
 }
 
 void CGlock::PrimaryAttack( void )
 {
-	GlockFire( 0.01, 0.3, TRUE );
+	GlockFire( 0.02, 0.425, FALSE );
 }
 
 void CGlock::GlockFire( float flSpread, float flCycleTime, BOOL fUseAutoAim )
@@ -175,9 +183,9 @@ void CGlock::Reload( void )
 	int iResult;
 
 	if( m_iClip == 0 )
-		iResult = DefaultReload( 17, GLOCK_RELOAD, 1.5 );
+		iResult = DefaultReload( 13, GLOCK_RELOAD, 1.5 );
 	else
-		iResult = DefaultReload( 17, GLOCK_RELOAD_NOT_EMPTY, 1.5 );
+		iResult = DefaultReload( 13, GLOCK_RELOAD_NOT_EMPTY, 1.5 );
 
 	if( iResult )
 	{
