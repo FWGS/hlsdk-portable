@@ -116,13 +116,13 @@ int CHud::MsgFunc_Concuss( const char *pszName, int iSize, void *pbuf )
 		this->m_StatusIcons.DisableIcon( "dmg_concuss" );
 	return 1;
 }
-/*
+
 int CHud::MsgFunc_PlayMP3( const char *pszName, int iSize, void *pbuf ) //AJH -Killar MP3
 {
 	BEGIN_READ( pbuf, iSize );
 
-	gMP3.PlayMP3( READ_STRING() );
-
+	//gMP3.PlayMP3( READ_STRING() );
+	gEngfuncs.pfnPrimeMusicStream( READ_STRING(), 1 );
 	return 1;
 }
 
@@ -131,18 +131,19 @@ int CHud::MsgFunc_PlayBGM( const char *pszName, int iSize, void *pbuf ) //AJH -K
 	BEGIN_READ( pbuf, iSize );
 
 	if( CVAR_GET_FLOAT( "hud_bgm" ) > 0 )
-		gMP3.PlayMP3( READ_STRING() );
+		//gMP3.PlayMP3( READ_STRING() );
+		gEngfuncs.pfnPrimeMusicStream( READ_STRING(), 1 );
 
 	return 1;
 }
 
 int CHud::MsgFunc_StopMP3( const char *pszName, int iSize, void *pbuf ) //AJH -Killar MP3
 {
-	gMP3.StopMP3();
-
+	//gMP3.StopMP3();
+	gEngfuncs.pfnPrimeMusicStream( 0, 0 );
 	return 1;
 }
-*/
+
 int CHud::MsgFunc_AddELight( const char *pszName, int iSize, void *pbuf )
 {
 	BEGIN_READ( pbuf, iSize );

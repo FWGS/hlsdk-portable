@@ -61,6 +61,7 @@ int CHudTimer::Draw( float flTime )
 		if (smbSoundCounter == 5) //Note: the counter will still continue until 120 seconds turns into 119.
 		{
 			char * songchoice = "media/hurryup.mp3";
+			gEngfuncs.pfnPrimeMusicStream( songchoice, 0 );
 			//gMP3.PlayMP3NL( songchoice );
 		}
 		//Draw BG

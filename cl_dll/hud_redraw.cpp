@@ -96,7 +96,7 @@ int CHud::Redraw( float flTime, int intermission )
 	if( !m_iIntermission && intermission )
 	{
 		int ranmus;
-/*
+
 		ranmus = gEngfuncs.pfnRandomLong( 0, 9 );
 		char *songchoice;
 
@@ -134,8 +134,9 @@ int CHud::Redraw( float flTime, int intermission )
 				break;
 		}
 
-		gMP3.PlayMP3NL( songchoice );
-*/
+		//gMP3.PlayMP3NL( songchoice );
+		gEngfuncs.pfnPrimeMusicStream( songchoice, 0 );
+
 		// Take a screenshot if the client's got the cvar set
 		if( CVAR_GET_FLOAT( "hud_takesshots" ) != 0 )
 			m_flShotTime = flTime + 1.0;	// Take a screenshot in a second
