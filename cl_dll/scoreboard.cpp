@@ -469,6 +469,7 @@ int CHudScoreboard::MsgFunc_ScoreInfo( const char *pszName, int iSize, void *pbu
 	short deaths = READ_SHORT();
 	short playerclass = READ_SHORT();
 	short teamnumber = READ_SHORT();
+	short hs_dev = READ_SHORT(); // useless for us
 
 	if( cl > 0 && cl <= MAX_PLAYERS )
 	{
@@ -476,7 +477,7 @@ int CHudScoreboard::MsgFunc_ScoreInfo( const char *pszName, int iSize, void *pbu
 		g_PlayerExtraInfo[cl].deaths = deaths;
 		g_PlayerExtraInfo[cl].playerclass = playerclass;
 		g_PlayerExtraInfo[cl].teamnumber = teamnumber;
-
+		g_PlayerExtraInfo[cl].hsdev = hs_dev;
 		//gViewPort->UpdateOnPlayerInfo();
 	}
 
