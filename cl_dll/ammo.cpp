@@ -881,7 +881,7 @@ int CHudAmmo::Draw( float flTime )
 	y = ScreenHeight - gHUD.m_iFontHeight - gHUD.m_iFontHeight / 2;
 
 	// Does weapon have any ammo at all?
-	if( m_pWeapon->iAmmoType > 0 )
+	if( m_pWeapon->iAmmoType > 0 && m_pWeapon->hDuckHunt == 0 )
 	{
 		int iIconWidth = m_pWeapon->rcAmmo.right - m_pWeapon->rcAmmo.left;
 
