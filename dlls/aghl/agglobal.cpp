@@ -735,6 +735,9 @@ char* AgOSVersion()
 #ifdef _WIN32
     static char verbuf[256];
 #else
+#ifndef SYS_NMLN
+#define SYS_NMLN	256
+#endif
     static char verbuf[4*SYS_NMLN + 4];
 #endif
 
