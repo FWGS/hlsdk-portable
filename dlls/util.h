@@ -29,6 +29,13 @@
 
 #include <string.h>
 #include <ctype.h>
+
+#ifndef min
+#define min(a,b)  (((a) < (b)) ? (a) : (b))
+#endif
+#ifndef max
+#define max(a,b)  (((a) > (b)) ? (a) : (b))
+#endif
 inline void MESSAGE_BEGIN( int msg_dest, int msg_type, const float *pOrigin, entvars_t *ent );  // implementation later in this file
 
 extern globalvars_t				*gpGlobals;
