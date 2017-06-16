@@ -26,9 +26,6 @@
 #include "cl_util.h"
 #include "parsemsg.h"
 #include <string.h>
-#include <fstream>
-#include <string>
-using namespace std;
 
 DECLARE_MESSAGE(m_COD, COD )
 
