@@ -105,7 +105,7 @@ CNukeRocket *CNukeRocket::CreateNukeRocket( Vector vecOrigin, Vector vecAngles, 
 	UTIL_SetOrigin( pNuke->pev, vecOrigin );
 	pNuke->pev->angles = vecAngles;
 	pNuke->Spawn();
-	pNuke->SetTouch( CNukeRocket::RocketTouch );
+	pNuke->SetTouch( &CNukeRocket::RocketTouch );
 	pNuke->m_pLauncher = pLauncher; 
 	pNuke->pev->owner = pOwner->edict();
 
@@ -127,8 +127,8 @@ void CNukeRocket :: Spawn( void )
 
 	pev->classname = MAKE_STRING("nuke");
 
-	SetThink( IgniteThink );
-	SetTouch( ExplodeTouch );
+	SetThink( &CNukeRocket::IgniteThink );
+	SetTouch( &CNukeRocket::ExplodeTouch );
 
 	pev->angles.x -= 30;
 	UTIL_MakeVectors( pev->angles );
@@ -262,7 +262,7 @@ void CNukeRocket :: IgniteThink( void  )
 
 	m_flIgniteTime = gpGlobals->time;
 
-	SetThink( FollowThink );
+	SetThink( &CNukeRocket::FollowThink );
 	pev->nextthink = gpGlobals->time + 0.1;
 }
 

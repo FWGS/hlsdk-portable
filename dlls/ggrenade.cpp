@@ -492,10 +492,10 @@ CGrenade *CGrenade::ShootCluster( entvars_t *pevOwner, Vector vecStart, Vector v
 	pGrenade->pev->angles = UTIL_VecToAngles( pGrenade->pev->velocity );
 	pGrenade->pev->owner = ENT( pevOwner );
 
-	pGrenade->SetTouch( BounceTouch );
+	pGrenade->SetTouch( &CGrenade::BounceTouch );
 
 	pGrenade->pev->dmgtime = gpGlobals->time + time;
-	pGrenade->SetThink( TumbleThink );
+	pGrenade->SetThink( &CGrenade::TumbleThink );
 	pGrenade->pev->nextthink = gpGlobals->time + 0.1;
 
 	if( time < 0.1 )
@@ -527,10 +527,10 @@ CGrenade *CGrenade::ShootClusterGrenade( entvars_t *pevOwner, Vector vecStart, V
 
 	pGrenade->clusterOwner = pevOwner;
 
-	pGrenade->SetTouch( BounceTouch );
+	pGrenade->SetTouch( &CGrenade::BounceTouch );
 
 	pGrenade->pev->dmgtime = gpGlobals->time + time;
-	pGrenade->SetThink( ClusterTumbleThink );
+	pGrenade->SetThink( &CGrenade::ClusterTumbleThink );
 	pGrenade->pev->nextthink = gpGlobals->time + 0.1;
 
 	if( time < 0.1 )
@@ -566,11 +566,12 @@ void CGrenade::ClusterTumbleThink( void )
 		CSoundEnt::InsertSound( bits_SOUND_DANGER, pev->origin + pev->velocity * ( pev->dmgtime - gpGlobals->time ), 400, 0.1 );
 	}
 
-	if (pev->dmgtime <= gpGlobals->time)
+	if( pev->dmgtime <= gpGlobals->time )
 	{
-		SetThink( ClusterLaunch);
+		SetThink( &CGrenade::ClusterLaunch );
 	}
-	if (pev->waterlevel != 0)
+
+	if( pev->waterlevel != 0 )
 	{
 		pev->velocity = pev->velocity * 0.5;
 		pev->framerate = 0.2;
@@ -622,7 +623,7 @@ void CGrenade::ClusterLaunch( void )
 
 	pev->dmg = 60;
 
-	SetThink( ClusterDetonate );
+	SetThink( &CGrenade::ClusterDetonate );
 
 	pev->nextthink = gpGlobals->time + 1.2;
 }

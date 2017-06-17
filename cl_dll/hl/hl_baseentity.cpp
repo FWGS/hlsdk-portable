@@ -301,6 +301,11 @@ const char *CBasePlayer::TeamID( void ) { return ""; }
 int CBasePlayer::GiveAmmo( int iCount, char *szName, int iMax ) { return 0; }
 void CBasePlayer::AddPoints( int score, BOOL bAllowNegativeScore ) { } 
 void CBasePlayer::AddPointsToTeam( int score, BOOL bAllowNegativeScore ) { } 
+void CBasePlayer::StartSpectator( void ) { }
+void CBasePlayer::SpectatorMove( void ) { }
+void CBasePlayer::StopSpectator( void ) { }
+void CBasePlayer::StartMenu( void ) { }
+void CBasePlayer::FireHook( void ) { }
 
 void ClearMultiDamage( void ) { }
 void ApplyMultiDamage( entvars_t *pevInflictor, entvars_t *pevAttacker ) { }

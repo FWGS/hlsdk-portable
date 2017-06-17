@@ -304,7 +304,6 @@ public:
 	virtual edict_t *GetPlayerSpawnSpot( CBasePlayer *pPlayer );
 
 	virtual BOOL AllowAutoTargetCrosshair( void );
-	virtual BOOL ClientCommand( CBasePlayer *pPlayer, const char *pcmd );
 
 	// Client kills/scoring
 	virtual int IPointsForKill( CBasePlayer *pAttacker, CBasePlayer *pKilled );

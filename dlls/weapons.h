@@ -492,7 +492,7 @@ public:
 bool bIsMultiplayer ( void );
 void LoadVModel ( char *szViewModel, CBasePlayer *m_pPlayer );
 #endif
-
+/*
 class CGlock : public CBasePlayerWeapon
 {
 public:
@@ -523,7 +523,7 @@ private:
 	unsigned short m_usFireGlock1;
 	unsigned short m_usFireGlock2;
 };
-
+*/
 class CCrowbar : public CBasePlayerWeapon
 {
 public:
@@ -534,6 +534,7 @@ public:
 	void EXPORT Smack( void );
 	int GetItemInfo(ItemInfo *p);
 
+	int AddToPlayer( CBasePlayer *pPlayer );
 	void PrimaryAttack( void );
 	int Swing( int fFirst );
 	BOOL Deploy( void );
@@ -552,7 +553,7 @@ public:
 private:
 	unsigned short m_usCrowbar;
 };
-
+/*
 class CPython : public CBasePlayerWeapon
 {
 public:
@@ -964,7 +965,7 @@ public:
 #endif
 	}
 };
-
+*/
 class CTripmine : public CBasePlayerWeapon
 {
 public:
@@ -996,7 +997,7 @@ public:
 private:
 	unsigned short m_usTripFire;
 };
-
+/*
 class CSqueak : public CBasePlayerWeapon
 {
 public:
@@ -1023,5 +1024,5 @@ public:
 
 private:
 	unsigned short m_usSnarkFire;
-};
+};*/
 #endif // WEAPONS_H

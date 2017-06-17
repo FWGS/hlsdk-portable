@@ -51,8 +51,8 @@ void CBlasterBeam::Spawn( )
 	UTIL_SetOrigin( pev, pev->origin );
 	UTIL_SetSize( pev, Vector( -4, -4, -4 ), Vector( 4, 4, 4 ) );
 
-	SetTouch( PulseTouch );
-	SetThink( BubbleThink );
+	SetTouch( &CBlasterBeam::PulseTouch );
+	SetThink( &CBlasterBeam::BubbleThink );
 	pev->nextthink = gpGlobals->time + 0.1;
 }
 
@@ -113,7 +113,7 @@ void CBlasterBeam::PulseTouch( CBaseEntity *pOther )
 	{
 		//EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "weapons/hblaster_hit.wav", RANDOM_FLOAT(0.95, 1.0), ATTN_NORM, 0, 98 + RANDOM_LONG(0,7));
 
-		SetThink( SUB_Remove );
+		SetThink( &CBlasterBeam::SUB_Remove );
 		pev->nextthink = gpGlobals->time;
 
 		if ( FClassnameIs( pOther->pev, "worldspawn" ) )	

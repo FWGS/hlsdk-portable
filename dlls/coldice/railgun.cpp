@@ -216,11 +216,11 @@ void CRailgun::UpdateTrail()
 	
 	if(current_phase == 8) 
 	{
-		SetThink(DestroyTrail);
+		SetThink(&CRailgun::DestroyTrail);
 	}
 	else 
 	{
-		SetThink(UpdateTrail);
+		SetThink(&CRailgun::UpdateTrail);
 	}
 
 	pev->nextthink=gpGlobals->time + 0.1;

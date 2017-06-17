@@ -53,8 +53,9 @@ int g_irunninggausspred = 0;
 vec3_t previousorigin;
 
 // HLDM Weapon placeholder entities.
-CGlock g_Glock;
+//CGlock g_Glock;
 CCrowbar g_Crowbar;
+/*
 CPython g_Python;
 CMP5 g_Mp5;
 CCrossbow g_Crossbow;
@@ -65,8 +66,9 @@ CEgon g_Egon;
 CHgun g_HGun;
 CHandGrenade g_HandGren;
 CSatchel g_Satchel;
+*/
 CTripmine g_Tripmine;
-CSqueak g_Snark;
+//CSqueak g_Snark;
 
 /*
 ======================
@@ -623,9 +625,9 @@ void HUD_InitClientWeapons( void )
 	HUD_PrepEntity( &player, NULL );
 
 	// Allocate slot(s) for each weapon that we are going to be predicting
-	HUD_PrepEntity( &g_Glock, &player );
+	//HUD_PrepEntity( &g_Glock, &player );
 	HUD_PrepEntity( &g_Crowbar, &player );
-	HUD_PrepEntity( &g_Python, &player );
+	/*HUD_PrepEntity( &g_Python, &player );
 	HUD_PrepEntity( &g_Mp5, &player );
 	HUD_PrepEntity( &g_Crossbow, &player );
 	HUD_PrepEntity( &g_Shotgun, &player );
@@ -634,9 +636,9 @@ void HUD_InitClientWeapons( void )
 	HUD_PrepEntity( &g_Egon, &player );
 	HUD_PrepEntity( &g_HGun, &player );
 	HUD_PrepEntity( &g_HandGren, &player );
-	HUD_PrepEntity( &g_Satchel, &player );
+	HUD_PrepEntity( &g_Satchel, &player );*/
 	HUD_PrepEntity( &g_Tripmine, &player );
-	HUD_PrepEntity( &g_Snark, &player );
+	//HUD_PrepEntity( &g_Snark, &player );
 }
 
 /*
@@ -703,7 +705,7 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 		case WEAPON_CROWBAR:
 			pWeapon = &g_Crowbar;
 			break;
-		case WEAPON_GLOCK:
+		/*case WEAPON_GLOCK:
 			pWeapon = &g_Glock;
 			break;
 		case WEAPON_PYTHON:
@@ -735,13 +737,13 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 			break;
 		case WEAPON_SATCHEL:
 			pWeapon = &g_Satchel;
-			break;
+			break;*/
 		case WEAPON_TRIPMINE:
 			pWeapon = &g_Tripmine;
 			break;
-		case WEAPON_SNARK:
+		/*case WEAPON_SNARK:
 			pWeapon = &g_Snark;
-			break;
+			break;*/
 	}
 
 	// Store pointer to our destination entity_state_t so we can get our origin, etc. from it
@@ -846,11 +848,11 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 		player.m_pActiveItem = g_pWpns[from->client.m_iId];
 	}
 
-	if( player.m_pActiveItem->m_iId == WEAPON_RPG )
+	/*if( player.m_pActiveItem->m_iId == WEAPON_RPG )
 	{
 		( (CRpg *)player.m_pActiveItem )->m_fSpotActive = (int)from->client.vuser2[1];
 		( (CRpg *)player.m_pActiveItem )->m_cActiveRockets = (int)from->client.vuser2[2];
-	}
+	}*/
 
 	// Don't go firing anything if we have died.
 	// Or if we don't have a weapon model deployed
@@ -914,11 +916,11 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 	to->client.vuser2[0] = player.ammo_hornets;
 	to->client.ammo_rockets = player.ammo_rockets;
 
-	if( player.m_pActiveItem->m_iId == WEAPON_RPG )
+	/*if( player.m_pActiveItem->m_iId == WEAPON_RPG )
 	{
 		from->client.vuser2[1] = ( (CRpg *)player.m_pActiveItem)->m_fSpotActive;
 		from->client.vuser2[2] = ( (CRpg *)player.m_pActiveItem)->m_cActiveRockets;
-	}
+	}*/
 
 	// Make sure that weapon animation matches what the game .dll is telling us
 	//  over the wire ( fixes some animation glitches )
@@ -931,8 +933,8 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 			 body = 0;
 
 		//Show laser sight/scope combo
-		if( pWeapon == &g_Python && bIsMultiplayer() )
-			 body = 1;
+		/*if( pWeapon == &g_Python && bIsMultiplayer() )
+			 body = 1;*/
 
 		// Force a fixed anim down to viewmodel
 		HUD_SendWeaponAnim( to->client.weaponanim, body, 1 );

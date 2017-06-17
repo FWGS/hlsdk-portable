@@ -1280,7 +1280,7 @@ int CHudAmmo::DrawWList( float flTime )
 				// Draw Ammo Bar
 				//DrawAmmoBar( p, x + giABWidth / 2, y, giABWidth, giABHeight );
 				
-				y += 14
+				y += 14;
 			}
 
 			x += iWidth + 5;

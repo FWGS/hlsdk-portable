@@ -225,7 +225,7 @@ void CChaingun::Reload( void )
 			return;
 
 		DefaultReload( CHAINGUN_MAX_CLIP, CHAINGUN_HOLSTER, 1.5 );
-		SetThink( BringUp );
+		SetThink( &CChaingun::BringUp );
 		pev->nextthink = gpGlobals->time + 1.5;
 	}
 }

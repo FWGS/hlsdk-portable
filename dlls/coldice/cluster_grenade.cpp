@@ -122,7 +122,7 @@ void CClusterGrenade::Holster( )
 	else
 	{
 		m_pPlayer->pev->weapons &= ~(1<<WEAPON_CLUSTERGRENADE);
-		SetThink( DestroyItem );
+		SetThink( &CClusterGrenade::DestroyItem );
 		pev->nextthink = gpGlobals->time + 0.1;
 	}
 

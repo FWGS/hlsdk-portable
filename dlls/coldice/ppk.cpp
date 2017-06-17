@@ -188,7 +188,7 @@ void CWalterppk::SecondaryAttack( void )
 	{
 		m_flNextPrimaryAttack = m_flNextSecondaryAttack = gpGlobals->time + 2.4;
 	    m_flTimeWeaponIdle = gpGlobals->time + 2.4;
-		SetThink( AddSilencer );
+		SetThink( &CWalterppk::AddSilencer );
 		pev->nextthink = gpGlobals->time + 1.5;
 		SendWeaponAnim( PPK_HOLSTER );
 	}
@@ -196,7 +196,7 @@ void CWalterppk::SecondaryAttack( void )
 	{
 		m_flNextPrimaryAttack = m_flNextSecondaryAttack = gpGlobals->time + 2.4;
 		m_flTimeWeaponIdle = gpGlobals->time + 2.4;
-		SetThink( AddSilencer );
+		SetThink( &CWalterppk::AddSilencer );
 		EMIT_SOUND(ENT(m_pPlayer->pev), CHAN_VOICE, "weapons/ppkbond.wav", RANDOM_FLOAT(0.9, 1.0), ATTN_NORM);
 		pev->nextthink = gpGlobals->time + 1.5;
 		SendWeaponAnim( PPK_HOLSTER );

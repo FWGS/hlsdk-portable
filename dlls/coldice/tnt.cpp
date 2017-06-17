@@ -104,7 +104,7 @@ void CKamikaze::Holster( )
 	if (!m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType])
 	{
 		m_pPlayer->pev->weapons &= ~(1<<WEAPON_TNT);
-		SetThink( DestroyItem );
+		SetThink( &CKamikaze::DestroyItem );
 		
 		pev->nextthink = gpGlobals->time + 0.1;
 	}

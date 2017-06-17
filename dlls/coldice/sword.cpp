@@ -167,7 +167,7 @@ void CSword::PrimaryAttack()
 {
 	if (! Swing( 1 ))
 	{
-		SetThink( SwingAgain );
+		SetThink( &CSword::SwingAgain );
 		pev->nextthink = gpGlobals->time + 0.1;
 	}
 }
@@ -327,7 +327,7 @@ int CSword::Swing( int fFirst )
 
 		// delay the decal a bit
 		m_trHit = tr;
-		SetThink( Smack );
+		SetThink( &CSword::Smack );
 		pev->nextthink = gpGlobals->time + 0.2;
 
 		m_pPlayer->m_iWeaponVolume = flVol * SWORD_WALLHIT_VOLUME;

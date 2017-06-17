@@ -4598,9 +4598,8 @@ void CHook::Spawn()
 	UTIL_SetOrigin( pev, pev->origin );
 	UTIL_SetSize( pev, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ) );
 
-	SetTouch( CHook::HookTouch );
+	SetTouch( &CHook::HookTouch );
 }
-
 
 void CHook::Precache()
 {
@@ -4669,7 +4668,7 @@ void CHook::HookTouch( CBaseEntity *pOther )
 			pev->velocity = Vector( 0, 0, 0 );
 			pev->avelocity.z = 0;
 			pev->angles.z = RANDOM_LONG( 0, 360 );
-			SetThink( CHook::Think );
+			SetThink( &CHook::Think );
 			pev->nextthink = gpGlobals->time + 0.01;
 
 			pevOwner->m_fHookInWall = TRUE; 

@@ -77,8 +77,8 @@ void CBaseRune::Spawn( )
 	UTIL_SetOrigin( pev, pev->origin ); 
 	pev->classname = MAKE_STRING( m_szClassName );
 	
-	SetThink( RuneThink ); 
-	SetTouch( RuneTouch );
+	SetThink( &CBaseRune::RuneThink ); 
+	SetTouch( &CBaseRune::RuneTouch );
 
 	pev->velocity.z = RANDOM_LONG( 100,500 ); 
 	pev->velocity.x = RANDOM_LONG( 100,500 ); 
@@ -263,7 +263,7 @@ void CWorldRunes::Spawn( )
 	m_pSpot = NULL;
 	Precache( );
 
-	SetThink( SpawnRunes );
+	SetThink( &CWorldRunes::SpawnRunes );
 
 	pev->nextthink = gpGlobals->time + 5.0; 
 
@@ -331,7 +331,7 @@ void CWorldRunes::SpawnRunes( )
 	}
 
 	m_iNextRespawn++;
-	SetThink( SpawnRunes );
+	SetThink( &CWorldRunes::SpawnRunes );
 
 	if ( m_iNextRespawn < 2 )
 		pev->nextthink = gpGlobals->time + 75.0;

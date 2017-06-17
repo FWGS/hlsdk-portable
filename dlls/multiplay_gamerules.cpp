@@ -125,6 +125,81 @@ BOOL CHalfLifeMultiplay::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 	if( g_VoiceGameMgr.ClientCommand( pPlayer, pcmd ) )
 		return TRUE;
 #endif
+	if( FStrEq( pcmd, "menuselect" ) )
+	{
+		int slot = atoi( CMD_ARGV( 1 ) );
+
+		//=============================================================
+		//=============================================================
+		switch( pPlayer->m_nMenu )
+		{
+			case Menu_Spec:
+				if( slot == 1 )
+					pPlayer->StopSpectator();
+				else if( slot == 2 ) 
+				{
+					pPlayer->StartSpectator();
+					ShowMenu( pPlayer, 0x1, 0, 0, "Currently In Spectator Mode:\n\nHit Key 1 to exit and join the game.  " );
+				}
+				break;
+			//=============================================================
+			//=============================================================
+			case Menu_Wep:
+				if( slot == 1 )
+					pPlayer->m_cWeapon1 = "weapon_knife";
+				else if( slot == 2 )
+					pPlayer->m_cWeapon1 = "weapon_crowbar";
+				else if( slot == 3 )
+					pPlayer->m_cWeapon1 = "weapon_sword";
+
+				pPlayer->m_nMenu = Menu_Spec;
+				ShowMenu( pPlayer, 0x3, 0, 0,"Choose a play option:\n\n1. Join Game\n2. Observe Game" );
+				break;
+			//=============================================================
+			//=============================================================
+			case Menu_Change:
+				if( slot == 1 )
+					pPlayer->m_cWeapon1 = "weapon_knife";
+				else if( slot == 2 )
+					pPlayer->m_cWeapon1 = "weapon_crowbar";
+				else if( slot == 3 )
+					pPlayer->m_cWeapon1 = "weapon_sword";
+
+				ShowMenu( pPlayer, 0x7, 3, 0,"Your manual weapon choice will be changed on\nthe next respawn" );
+				break;
+			//=============================================================
+			//=============================================================
+		}
+		return TRUE;
+	}
+	//=============================================================
+	//=============================================================
+	if( FStrEq( pcmd, "rune_status" ) )
+	{
+		if( pPlayer->m_iPlayerRune == RUNE_SPEED )
+			ShowMenu( pPlayer, 0x1, 5, 0, "You Have Rune: Speed" );
+		else if( pPlayer->m_iPlayerRune == RUNE_RESIST )
+			ShowMenu( pPlayer, 0x1, 5, 0, "You Have Rune: Resist" );
+		else if( pPlayer->m_iPlayerRune == RUNE_STRENGTH )
+			ShowMenu( pPlayer, 0x1, 5, 0, "You Have Rune: Strength" );
+		else if( pPlayer->m_iPlayerRune == RUNE_HEALTH )
+			ShowMenu( pPlayer, 0x1, 5, 0, "You Have Rune: Regeneration" );
+		else if( pPlayer->m_iPlayerRune == RUNE_ROCKETARENA )
+			ShowMenu( pPlayer, 0x1, 5, 0, "You Have Rune: Rocket Arena Special" );
+		else
+			ShowMenu( pPlayer, 0x1, 5, 0, "You Have No Runes." );
+
+		return TRUE;
+	}
+	//=============================================================
+	//=============================================================
+	if( FStrEq( pcmd, "changeweapons" ) )
+	{
+		pPlayer->m_nMenu = Menu_Change;
+		ShowMenu( pPlayer, 0x7, 0, 0,"Weapons Change:\n\nPlease choose a weapon.\n1. Knife\n2. Crowbar\n3. Sword" );
+
+		return TRUE;
+	}
 	return CGameRules::ClientCommand( pPlayer, pcmd );
 }
 
@@ -566,90 +641,6 @@ void CHalfLifeMultiplay::PlayerThink( CBasePlayer *pPlayer )
 		pPlayer->pev->button = 0;
 		pPlayer->m_afButtonReleased = 0;
 	}
-}
-
-//=========================================================
-//=========================================================
-BOOL CHalfLifeMultiplay::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
-{
-	if( FStrEq( pcmd, "menuselect" ) )
-	{
-		int slot = atoi( CMD_ARGV( 1 ) );
-
-		//=============================================================
-		//=============================================================
-		switch( pPlayer->m_nMenu )
-		{
-			case Menu_Spec:
-				if( slot == 1 )
-					pPlayer->StopSpectator();
-				else if( slot == 2 ) 
-				{
-					pPlayer->StartSpectator();
-					ShowMenu( pPlayer, 0x1, 0, 0, "Currently In Spectator Mode:\n\nHit Key 1 to exit and join the game.  " );
-				}
-				break;
-			//=============================================================
-			//=============================================================
-			case Menu_Wep:
-				if( slot == 1 )
-					pPlayer->m_cWeapon1 = "weapon_knife";
-				else if( slot == 2 )
-					pPlayer->m_cWeapon1 = "weapon_crowbar";
-				else if( slot == 3 )
-					pPlayer->m_cWeapon1 = "weapon_sword";
-
-				pPlayer->m_nMenu = Menu_Spec;
-				ShowMenu( pPlayer, 0x3, 0, 0,"Choose a play option:\n\n1. Join Game\n2. Observe Game" );
-				break;
-			//=============================================================
-			//=============================================================
-			case Menu_Change:
-				if( slot == 1 )
-					pPlayer->m_cWeapon1 = "weapon_knife";
-				else if( slot == 2 )
-					pPlayer->m_cWeapon1 = "weapon_crowbar";
-				else if( slot == 3 )
-					pPlayer->m_cWeapon1 = "weapon_sword";
-
-				ShowMenu( pPlayer, 0x7, 3, 0,"Your manual weapon choice will be changed on\nthe next respawn" );
-				break;
-			//=============================================================
-			//=============================================================
-		}
-		return TRUE;
-	}
-		//=============================================================
-		//=============================================================
-		if( FStrEq( pcmd, "rune_status" ) )
-		{
-
-			if( pPlayer->m_iPlayerRune == RUNE_SPEED )
-				ShowMenu( pPlayer, 0x1, 5, 0, "You Have Rune: Speed" );
-			else if( pPlayer->m_iPlayerRune == RUNE_RESIST )
-				ShowMenu( pPlayer, 0x1, 5, 0, "You Have Rune: Resist" );
-			else if( pPlayer->m_iPlayerRune == RUNE_STRENGTH )
-				ShowMenu( pPlayer, 0x1, 5, 0, "You Have Rune: Strength" );
-			else if( pPlayer->m_iPlayerRune == RUNE_HEALTH )
-				ShowMenu( pPlayer, 0x1, 5, 0, "You Have Rune: Regeneration" );
-			else if( pPlayer->m_iPlayerRune == RUNE_ROCKETARENA )
-				ShowMenu( pPlayer, 0x1, 5, 0, "You Have Rune: Rocket Arena Special" );
-			else
-				ShowMenu( pPlayer, 0x1, 5, 0, "You Have No Runes." );
-
-			return TRUE;
-		}
-		//=============================================================
-		//=============================================================
-		if( FStrEq( pcmd, "changeweapons" ) )
-		{
-			pPlayer->m_nMenu = Menu_Change;
-			ShowMenu( pPlayer, 0x7, 0, 0,"Weapons Change:\n\nPlease choose a weapon.\n1. Knife\n2. Crowbar\n3. Sword" );
-
-			return TRUE;
-		}
-
-	return FALSE;
 }
 
 //=========================================================

@@ -126,8 +126,8 @@ void CChumtoadGrenade :: Spawn( void )
 	UTIL_SetSize(pev, Vector( -4, -4, 0), Vector(4, 4, 8));
 	UTIL_SetOrigin( pev, pev->origin );
 
-	SetTouch( SuperBounceTouch );
-	SetThink( HuntThink );
+	SetTouch( &CChumtoadGrenade::SuperBounceTouch );
+	SetThink( &CChumtoadGrenade::HuntThink );
 	pev->nextthink = gpGlobals->time + 0.1;
 	m_flNextHunt = gpGlobals->time + 1E6;
 
@@ -168,7 +168,7 @@ void CChumtoadGrenade::Precache( void )
 void CChumtoadGrenade :: Killed( entvars_t *pevAttacker, int iGib )
 {
 	pev->model = iStringNull;// make invisible
-	SetThink( SUB_Remove );
+	SetThink( &CChumtoadGrenade::SUB_Remove );
 	SetTouch( NULL );
 	pev->nextthink = gpGlobals->time + 0.1;
 
@@ -505,7 +505,7 @@ void CChumtoad::Holster( )
 	if (!m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType])
 	{
 		m_pPlayer->pev->weapons &= ~(1<<WEAPON_CHUMTOAD);
-		SetThink( DestroyItem );
+		SetThink( &CChumtoad::DestroyItem );
 		pev->nextthink = gpGlobals->time + 0.1;
 		return;
 	}
