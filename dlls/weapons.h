@@ -92,6 +92,12 @@ public:
 #define WEAPON_TNT		21
 #define WEAPON_TRIPMINE		22
 #define WEAPON_NUKE		23
+//TODO: maybe incorrect. Needs redefine later.
+#define WEAPON_FASTRPG		24
+#define WEAPON_DOUBLEMAC	25
+#define WEAPON_NAILGUN		26
+#define WEAPON_SATCHEL		27
+#define WEAPON_UNKNOWN		28
 
 #define WEAPON_ALLWEAPONS		(~(1<<WEAPON_SUIT))
 
