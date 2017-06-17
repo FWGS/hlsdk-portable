@@ -29,7 +29,7 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_LINUX -DCLIENT_WEAPONS -Dstricmp=strcasec
 set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS}")
 
 set (SVDLL_SOURCES 
-	agrunt.cpp
+#	agrunt.cpp
 	airtank.cpp
 	aflock.cpp
 	animating.cpp
@@ -46,12 +46,12 @@ set (SVDLL_SOURCES
 	client.cpp
 	combat.cpp
 	controller.cpp
-	crossbow.cpp
+#	crossbow.cpp
 	crowbar.cpp
 	defaultai.cpp
 	doors.cpp
 	effects.cpp
-	egon.cpp
+#	egon.cpp
 	explode.cpp
 	flyingmonster.cpp
 	func_break.cpp
@@ -59,24 +59,24 @@ set (SVDLL_SOURCES
 	game.cpp
 	gamerules.cpp
 	gargantua.cpp
-	gauss.cpp
+#	gauss.cpp
 	genericmonster.cpp
 	ggrenade.cpp
 	globals.cpp
-	glock.cpp
+#	glock.cpp
 	gman.cpp
 	h_ai.cpp
 	h_battery.cpp
 	h_cine.cpp
 	h_cycler.cpp
 	h_export.cpp
-	handgrenade.cpp
+#	handgrenade.cpp
 	hassassin.cpp
 	headcrab.cpp
 	healthkit.cpp
 	hgrunt.cpp
-	hornet.cpp
-	hornetgun.cpp
+#	hornet.cpp
+#	hornetgun.cpp
 	houndeye.cpp
 	ichthyosaur.cpp
 	islave.cpp
@@ -88,7 +88,7 @@ set (SVDLL_SOURCES
 	monsters.cpp
 	monsterstate.cpp
 	mortar.cpp
-	mp5.cpp
+#	mp5.cpp
 	multiplay_gamerules.cpp
 	nihilanth.cpp
 	nodes.cpp
@@ -97,15 +97,15 @@ set (SVDLL_SOURCES
 	plane.cpp
 	plats.cpp
 	player.cpp
-	python.cpp
+#	python.cpp
 	rat.cpp
 	roach.cpp
-	rpg.cpp
-	satchel.cpp
+#	rpg.cpp
+#	satchel.cpp
 	schedule.cpp
 	scientist.cpp
 	scripted.cpp
-	shotgun.cpp
+#	shotgun.cpp
 	singleplay_gamerules.cpp
 	skill.cpp
 	sound.cpp
@@ -126,12 +126,38 @@ set (SVDLL_SOURCES
 	world.cpp
 	xen.cpp
 	zombie.cpp
+        coldice/chaingun.cpp
+	coldice/knife.cpp
+	coldice/pulse_rifle.cpp
+	coldice/runes.cpp
+	coldice/chumtoad.cpp
+	coldice/m16.cpp
+	coldice/railgun_arena.cpp
+	coldice/sshotgun.cpp
+	coldice/ashotgun.cpp
+	coldice/cluster_grenade.cpp
+	coldice/mac_10.cpp
+	coldice/railgun.cpp
+	coldice/sword.cpp
+	coldice/boltgun.cpp
+	coldice/double_uzi.cpp
+	coldice/mag60.cpp
+	coldice/rifle.cpp
+	coldice/tnt.cpp
+#	coldice/bot.cpp
+	coldice/fragsforweapons_arena.cpp
+	coldice/nukelauncher.cpp
+	coldice/rocket_arena.cpp
+	coldice/uzi.cpp
+	coldice/grenadel.cpp
+	coldice/ppk.cpp
+	coldice/rocketl.cpp
 	../pm_shared/pm_debug.c
 	../pm_shared/pm_math.c
 	../pm_shared/pm_shared.c
 )
 	
-include_directories (. wpn_shared ../common ../engine ../pm_shared ../game_shared ../public)
+include_directories (. wpn_shared ../common ../engine ../pm_shared ../game_shared ../public )
 
 if(USE_VOICEMGR)
 	set(SVDLL_SOURCES
