@@ -26,6 +26,7 @@
 #include <string.h>
 #include <stdio.h>
 
+cvar_t *cl_scoreboard_bg;
 cvar_t *cl_showpacketloss;
 hud_player_info_t	g_PlayerInfoList[MAX_PLAYERS + 1];	// player info from the engine
 extra_player_info_t	g_PlayerExtraInfo[MAX_PLAYERS + 1];	// additional player info sent directly to the client dll
@@ -59,6 +60,7 @@ int CHudScoreboard::Init( void )
 
 	InitHUDData();
 
+	cl_scoreboard_bg = CVAR_CREATE( "cl_scoreboard_bg", "1", FCVAR_ARCHIVE );
 	cl_showpacketloss = CVAR_CREATE( "cl_showpacketloss", "0", FCVAR_ARCHIVE );
 
 	return 1;
@@ -145,23 +147,24 @@ int CHudScoreboard::Draw( float fTime )
 
 	FAR_RIGHT = can_show_packetloss ? PL_RANGE_MAX : PING_RANGE_MAX;
 	FAR_RIGHT += 5;
-	gHUD.DrawDarkRectangle( xpos - 5, ypos - 5, FAR_RIGHT, ROW_RANGE_MAX );
+	if( cl_scoreboard_bg && cl_scoreboard_bg->value )
+		gHUD.DrawDarkRectangle( xpos - 5, ypos - 5, FAR_RIGHT, ROW_RANGE_MAX );
 	//if( !gHUD.m_Teamplay )
 	if(  m_iShowscoresHeld )
 	{
-		 gHUD.DrawHudString( xpos, ypos, ScreenWidth, "Connected Cold Ice Players", 0, 113, 230 );
+		 DrawUtfString( xpos, ypos, ScreenWidth, "Connected Cold Ice Players", 0, 113, 230 );
 	}
 	//else
-	//gHUD.DrawHudString( xpos, ypos, NAME_RANGE_MAX + xpos_rel, "Teams", 0, 113, 230 );
+	//DrawUtfString( xpos, ypos, NAME_RANGE_MAX + xpos_rel, "Teams", 0, 113, 230 );
 
 	//gHUD.DrawHudStringReverse( KILLS_RANGE_MAX + xpos_rel, ypos, 0, "kills", 0, 113, 230 );
-	//gHUD.DrawHudString( DIVIDER_POS + xpos_rel, ypos, ScreenWidth, "/", 0, 113, 230 );
-	//gHUD.DrawHudString( DEATHS_RANGE_MIN + xpos_rel + 5, ypos, ScreenWidth, "deaths", 0, 113, 230 );
-	//gHUD.DrawHudString( PING_RANGE_MAX + xpos_rel - 35, ypos, ScreenWidth, "latency", 0, 113, 230 );
+	//DrawUtfString( DIVIDER_POS + xpos_rel, ypos, ScreenWidth, "/", 0, 113, 230 );
+	//DrawUtfString( DEATHS_RANGE_MIN + xpos_rel + 5, ypos, ScreenWidth, "deaths", 0, 113, 230 );
+	//DrawUtfString( PING_RANGE_MAX + xpos_rel - 35, ypos, ScreenWidth, "latency", 0, 113, 230 );
 
 	if( can_show_packetloss )
 	{
-		gHUD.DrawHudString( PL_RANGE_MAX + xpos_rel - 35, ypos, ScreenWidth, "pkt loss", 255, 140, 0 );
+		DrawUtfString( PL_RANGE_MAX + xpos_rel - 35, ypos, ScreenWidth, "pkt loss", 255, 140, 0 );
 	}
 
 	list_slot += 1.2;
@@ -276,7 +279,7 @@ int CHudScoreboard::Draw( float fTime )
 		}
 
 		// draw their name (left to right)
-		//gHUD.DrawHudString( xpos, ypos, NAME_RANGE_MAX + xpos_rel, team_info->name, r, g, b );
+		//DrawUtfString( xpos, ypos, NAME_RANGE_MAX + xpos_rel, team_info->name, r, g, b );
 
 		// draw kills (right to left)
 		xpos = KILLS_RANGE_MAX + xpos_rel;
@@ -284,7 +287,7 @@ int CHudScoreboard::Draw( float fTime )
 
 		// draw divider
 		xpos = DIVIDER_POS + xpos_rel;
-		//gHUD.DrawHudString( xpos, ypos, xpos + 20, "/", r, g, b );
+		//DrawUtfString( xpos, ypos, xpos + 20, "/", r, g, b );
 
 		// draw deaths
 		xpos = DEATHS_RANGE_MAX + xpos_rel;
@@ -304,7 +307,7 @@ int CHudScoreboard::Draw( float fTime )
 			xpos = ( ( PL_RANGE_MAX - PL_RANGE_MIN ) / 2) + PL_RANGE_MIN + xpos_rel + 25;
 
 			sprintf( buf, "  %d", team_info->packetloss );
-			gHUD.DrawHudString( xpos, ypos, xpos+50, buf, r, g, b );
+			DrawUtfString( xpos, ypos, xpos+50, buf, r, g, b );
 		}
 
 		team_info->already_drawn = TRUE;  // set the already_drawn to be TRUE, so this team won't get drawn again
@@ -387,9 +390,9 @@ int CHudScoreboard::DrawPlayers( int xpos_rel, float list_slot, int nameoffset, 
 		if( m_iShowscoresHeld )
 		{
 			if( pl_info->thisplayer )
-				gHUD.DrawHudString( xpos + nameoffset, ypos, NAME_RANGE_MAX + xpos_rel, pl_info->name, 0, 113, 230 );
+				DrawUtfString( xpos + nameoffset, ypos, NAME_RANGE_MAX + xpos_rel, pl_info->name, 0, 113, 230 );
 			else
-				gHUD.DrawHudString( xpos + nameoffset, ypos, NAME_RANGE_MAX + xpos_rel, pl_info->name, r, g, b );
+				DrawUtfString( xpos + nameoffset, ypos, NAME_RANGE_MAX + xpos_rel, pl_info->name, r, g, b );
                 }
 
 		ypos = 12;
@@ -397,27 +400,27 @@ int CHudScoreboard::DrawPlayers( int xpos_rel, float list_slot, int nameoffset, 
 
 		// draw place value
 		if( pl_info->thisplayer && list_slot == 2 )
-			gHUD.DrawHudString( xpos, ypos, ScreenWidth, "1st", 0, 255, 0 );
+			DrawUtfString( xpos, ypos, ScreenWidth, "1st", 0, 255, 0 );
 		else if( pl_info->thisplayer && list_slot == 3 )
-			gHUD.DrawHudString( xpos, ypos, ScreenWidth, "2nd", 0, 255, 0 );
+			DrawUtfString( xpos, ypos, ScreenWidth, "2nd", 0, 255, 0 );
 		else if( pl_info->thisplayer && list_slot == 4 )
-			gHUD.DrawHudString( xpos, ypos, ScreenWidth, "3rd", 0, 255, 0 );
+			DrawUtfString( xpos, ypos, ScreenWidth, "3rd", 0, 255, 0 );
 		else if( pl_info->thisplayer && list_slot == 5 )
-			gHUD.DrawHudString( xpos, ypos, ScreenWidth, "4th", 255, 128, 0 );
+			DrawUtfString( xpos, ypos, ScreenWidth, "4th", 255, 128, 0 );
 		else if( pl_info->thisplayer && list_slot == 6 )
-			gHUD.DrawHudString( xpos, ypos, ScreenWidth, "5th", 255, 128, 0 );
+			DrawUtfString( xpos, ypos, ScreenWidth, "5th", 255, 128, 0 );
 		else if( pl_info->thisplayer && list_slot == 7 )
-			gHUD.DrawHudString( xpos, ypos, ScreenWidth, "6th", 255, 128, 0 );
+			DrawUtfString( xpos, ypos, ScreenWidth, "6th", 255, 128, 0 );
 		else if( pl_info->thisplayer && list_slot == 8 )
-			gHUD.DrawHudString( xpos, ypos, ScreenWidth, "7th", 255, 128, 0 );
+			DrawUtfString( xpos, ypos, ScreenWidth, "7th", 255, 128, 0 );
 		else if( pl_info->thisplayer && list_slot == 9 )
-			gHUD.DrawHudString( xpos, ypos, ScreenWidth, "8th", 255, 128, 0 );
+			DrawUtfString( xpos, ypos, ScreenWidth, "8th", 255, 128, 0 );
 		else if( pl_info->thisplayer && list_slot == 10 )
-			gHUD.DrawHudString( xpos, ypos, ScreenWidth, "9th", 255, 128, 0 );
+			DrawUtfString( xpos, ypos, ScreenWidth, "9th", 255, 128, 0 );
 		else if( pl_info->thisplayer && list_slot == 11 )
-			gHUD.DrawHudString( xpos, ypos, ScreenWidth, "10th", 255, 128, 0 );
+			DrawUtfString( xpos, ypos, ScreenWidth, "10th", 255, 128, 0 );
 		else if( pl_info->thisplayer && list_slot >= 11 )
-			gHUD.DrawHudString( xpos, ypos, ScreenWidth, ">10th", 255, 0, 0 );
+			DrawUtfString( xpos, ypos, ScreenWidth, ">10th", 255, 0, 0 );
 		// draw ping & packetloss
 		static char buf[64];
 		sprintf( buf, "%d", g_PlayerInfoList[best_player].ping );
@@ -436,11 +439,11 @@ int CHudScoreboard::DrawPlayers( int xpos_rel, float list_slot, int nameoffset, 
 
 			ypos = 60;
 			xpos = ( ScreenWidth - 30 - 100 / 2 ) - 40;
-			gHUD.DrawHudString( xpos, ypos, ScreenWidth, "--Cold Ice--", 0, 113, 230 );
-			gHUD.DrawHudString( xpos, ypos + 12, ScreenWidth, " Build 1.99a", 255, 255, 255 );
-			gHUD.DrawHudString( xpos, ypos + 24, ScreenWidth, " *11/12/99*", 255, 255, 255 );
-			gHUD.DrawHudString( xpos, ypos + 48, ScreenWidth, "-Smart Hud-", 0, 113, 230 );
-			gHUD.DrawHudString( xpos, ypos + 60, ScreenWidth, " Build .99a", 255, 255, 255 );
+			DrawUtfString( xpos, ypos, ScreenWidth, "--Cold Ice--", 0, 113, 230 );
+			DrawUtfString( xpos, ypos + 12, ScreenWidth, " Build 1.99a", 255, 255, 255 );
+			DrawUtfString( xpos, ypos + 24, ScreenWidth, " *11/12/99*", 255, 255, 255 );
+			DrawUtfString( xpos, ypos + 48, ScreenWidth, "-Smart Hud-", 0, 113, 230 );
+			DrawUtfString( xpos, ypos + 60, ScreenWidth, " Build .99a", 255, 255, 255 );
                 }
 
 		int x, y;
@@ -449,7 +452,7 @@ int CHudScoreboard::DrawPlayers( int xpos_rel, float list_slot, int nameoffset, 
                 {
 			y = 12;
 			x = ScreenWidth - 30 - 100/2 ;
-			gHUD.DrawHudString( x - 40, 0, ScreenWidth, pl_info->name, 0, 113, 230 );
+			DrawUtfString( x - 40, 0, ScreenWidth, pl_info->name, 0, 113, 230 );
 			gHUD.DrawHudNumberString( x + 40, y, DEATHS_RANGE_MIN + xpos_rel, m_PlayerExtraInfo[best_player].deaths, r, g, b );
 			gHUD.DrawHudNumberString( x + 10, y, DEATHS_RANGE_MIN + xpos_rel, m_PlayerExtraInfo[best_player].frags, r, g, b );
 			gHUD.DrawHudStringReverse( x + 80, y, DEATHS_RANGE_MIN + xpos_rel, buf, 255, 255, 255 );

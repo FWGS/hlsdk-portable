@@ -494,10 +494,10 @@ void ClientCommand( edict_t *pEntity )
 	{
 		ALERT( at_console, "\nBot Play has been taken out.\n" );
 	}*/
-	/*else if( g_pGameRules->ClientCommand( GetClassPtr( (CBasePlayer *)pev ), pcmd ) )
+	else if( g_pGameRules->ClientCommand( GetClassPtr( (CBasePlayer *)pev ), pcmd ) )
 	{
 		// MenuSelect returns true only if the command is properly handled,  so don't print a warning
-	}*/
+	}
 	else if( FStrEq( pcmd, "VModEnable" ) )
 	{
 		// clear 'Unknown command: VModEnable' in singleplayer

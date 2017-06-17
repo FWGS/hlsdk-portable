@@ -93,6 +93,13 @@ int CHud::Redraw( float flTime, int intermission )
 	if( m_flTimeDelta < 0 )
 		m_flTimeDelta = 0;
 
+	if( !m_iIntermission && intermission )
+	{
+		// Take a screenshot if the client's got the cvar set
+		if( CVAR_GET_FLOAT( "hud_takesshots" ) != 0 )
+			m_flShotTime = flTime + 1.0;	// Take a screenshot in a second
+	}
+
 	if( m_flShotTime && m_flShotTime < flTime )
 	{
 		gEngfuncs.pfnClientCmd( "snapshot\n" );
@@ -221,6 +228,35 @@ int CHud::DrawHudString( int xpos, int ypos, int iMaxX, char *szIt, int r, int g
 		int c = (unsigned int)(unsigned char)*szIt;
 
 		xpos += TextMessageDrawChar( xpos, ypos, c, r, g, b );
+	}
+
+	return xpos;
+}
+
+
+
+int DrawUtfString( int xpos, int ypos, int iMaxX, char *szIt, int r, int g, int b )
+{
+	// xash3d: reset unicode state
+	gEngfuncs.pfnVGUI2DrawCharacterAdditive( 0, 0, 0, 0, 0, 0, 0 );
+
+	// draw the string until we hit the null character or a newline character
+	for( ; *szIt != 0 && *szIt != '\n'; szIt++ )
+	{
+		int w = gHUD.m_scrinfo.charWidths['M'];
+		if( xpos + w  > iMaxX )
+			return xpos;
+		if( ( *szIt == '^' ) && ( *( szIt + 1 ) >= '0') && ( *( szIt + 1 ) <= '7') )
+		{
+			szIt++;
+			r = colors[*szIt - '0'][0];
+			g = colors[*szIt - '0'][1];
+			b = colors[*szIt - '0'][2];
+			if( !*(++szIt) )
+				return xpos;
+		}
+		int c = (unsigned int)(unsigned char)*szIt;
+		xpos += gEngfuncs.pfnVGUI2DrawCharacterAdditive( xpos, ypos, c, r, g, b, 0 );
 	}
 
 	return xpos;
