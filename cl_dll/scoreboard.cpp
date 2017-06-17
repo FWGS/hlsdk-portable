@@ -435,7 +435,7 @@ int CHudScoreboard::DrawPlayers( int xpos_rel, float list_slot, int nameoffset, 
 
 			// draw kills (right to left)
 			xpos = KILLS_RANGE_MAX + xpos_rel;
-			gHUD.DrawHudNumberString( xpos, ypos, KILLS_RANGE_MIN + xpos_rel, m_PlayerExtraInfo[best_player].frags, r, g, b );
+			gHUD.DrawHudNumberString( xpos, ypos, KILLS_RANGE_MIN + xpos_rel, g_PlayerExtraInfo[best_player].frags, r, g, b );
 
 			ypos = 60;
 			xpos = ( ScreenWidth - 30 - 100 / 2 ) - 40;
@@ -453,8 +453,8 @@ int CHudScoreboard::DrawPlayers( int xpos_rel, float list_slot, int nameoffset, 
 			y = 12;
 			x = ScreenWidth - 30 - 100/2 ;
 			DrawUtfString( x - 40, 0, ScreenWidth, pl_info->name, 0, 113, 230 );
-			gHUD.DrawHudNumberString( x + 40, y, DEATHS_RANGE_MIN + xpos_rel, m_PlayerExtraInfo[best_player].deaths, r, g, b );
-			gHUD.DrawHudNumberString( x + 10, y, DEATHS_RANGE_MIN + xpos_rel, m_PlayerExtraInfo[best_player].frags, r, g, b );
+			gHUD.DrawHudNumberString( x + 40, y, DEATHS_RANGE_MIN + xpos_rel, g_PlayerExtraInfo[best_player].deaths, r, g, b );
+			gHUD.DrawHudNumberString( x + 10, y, DEATHS_RANGE_MIN + xpos_rel, g_PlayerExtraInfo[best_player].frags, r, g, b );
 			gHUD.DrawHudStringReverse( x + 80, y, DEATHS_RANGE_MIN + xpos_rel, buf, 255, 255, 255 );
                 }
 
