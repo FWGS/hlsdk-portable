@@ -373,7 +373,7 @@ protected:
 
 extern DLL_GLOBAL CGameRules *g_pGameRules;
 
-/=========================================================
+//=========================================================
 // CRocketArena
 //=========================================================
 class CRocketArena : public CGameRules
