@@ -338,9 +338,6 @@ void W_Precache( void )
 	// tripmine
 	UTIL_PrecacheOtherWeapon( "weapon_tripmine" );
 
-	// satchel charge
-	UTIL_PrecacheOtherWeapon( "weapon_satchel" );
-
 	// hand grenade
 	UTIL_PrecacheOtherWeapon("weapon_handgrenade");
 
@@ -389,6 +386,9 @@ void W_Precache( void )
 	// double uzi
 	UTIL_PrecacheOtherWeapon( "weapon_doubleuzi" );
 
+	// double mac - 10
+	UTIL_PrecacheOtherWeapon( "weapon_mac" );
+
 	// assault shotgun
 	UTIL_PrecacheOtherWeapon( "weapon_ashotgun" );
 	UTIL_PrecacheOther( "ammo_buckshotbox" );
@@ -404,7 +404,7 @@ void W_Precache( void )
 	UTIL_PrecacheOtherWeapon( "weapon_rifle" );
 	UTIL_PrecacheOther( "ammo_rifleclip" );
 
-	// railgun
+	// railgun/hallucegon
 	UTIL_PrecacheOtherWeapon( "weapon_railgun" );
 	UTIL_PrecacheOther( "ammo_railslug" );
 
@@ -438,6 +438,19 @@ void W_Precache( void )
 	// nuke launcher
 	UTIL_PrecacheOtherWeapon( "weapon_nuke" );
 	UTIL_PrecacheOther( "ammo_nukeclip" );
+
+	// cluster grenade
+	UTIL_PrecacheOtherWeapon( weapon_clustergrenade )
+
+	// satchel charge
+	UTIL_PrecacheOtherWeapon( "weapon_satchel" );
+
+	// nailgun
+	UTIL_PrecacheOtherWeapon( "weapon_nailgun" );
+	UTIL_PrecacheOther( "ammo_nails" );
+
+	// fast rocket launcher
+	UTIL_PrecacheOtherWeapon( "weapon_fastrpg" );
 
 	//============================================
 	//============================================
