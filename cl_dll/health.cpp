@@ -180,6 +180,7 @@ int CHudHealth::Draw( float flTime )
 {
 	int r, g, b;
 	int a = 0, x, y;
+	int HealthWidth;
 
 	if( ( gHUD.m_iHideHUDDisplay & HIDEHUD_HEALTH ) || gEngfuncs.IsSpectateOnly() )
 		return 1;
@@ -213,17 +214,24 @@ int CHudHealth::Draw( float flTime )
 	// Only draw health if we have the suit.
 	if( gHUD.m_iWeaponBits & ( 1 << ( WEAPON_SUIT ) ) )
 	{
+		HealthWidth = gHUD.GetSpriteRect( gHUD.m_HUD_number_0 ).right - gHUD.GetSpriteRect( gHUD.m_HUD_number_0 ).left;
 		int CrossWidth = gHUD.GetSpriteRect( m_HUD_cross ).right - gHUD.GetSpriteRect( m_HUD_cross ).left;
 
-		y = ScreenHeight - 50;
+		y = ScreenHeight - gHUD.m_iFontHeight - gHUD.m_iFontHeight / 2;
 		x = CrossWidth / 2;
 
-		SPR_Set( gHUD.GetSprite( m_HUD_cross ), 255, 255, 255 );
-		SPR_DrawHoles( 0, x, y, &gHUD.GetSpriteRect( m_HUD_cross ) );
+		SPR_Set( gHUD.GetSprite( m_HUD_cross ), r, g, b );
+		SPR_DrawAdditive( 0, x, y, &gHUD.GetSpriteRect( m_HUD_cross ) );
 
-		x = CrossWidth + 35;
-		y = ScreenHeight - 48;
-		gHUD.DrawHudNumberString( x, y, 0, m_iHealth, 255, 255, 255 );
+		x = CrossWidth + HealthWidth / 2;
+
+		x = gHUD.DrawHudNumber( x, y, DHN_3DIGITS | DHN_DRAWZERO, m_iHealth, r, g, b );
+
+		x += HealthWidth / 2;
+
+		int iHeight = gHUD.m_iFontHeight;
+		int iWidth = HealthWidth / 10;
+		FillRGBA( x, y, iWidth, iHeight, 255, 160, 0, a );
 	}
 
 	DrawDamage( flTime );
@@ -304,32 +312,28 @@ int CHudHealth::DrawPain( float flTime )
 	if( m_fAttackFront > 0.4 )
 	{
 		GetPainColor( r, g, b );
-		shade = a * max( m_fAttackFront, 3.0 );
+		shade = a * max( m_fAttackFront, 0.5 );
 		ScaleColors( r, g, b, shade );
 		SPR_Set( m_hSprite, r, g, b );
 
-		x = 60;
-		y = ScreenHeight - 16;
-
-		gHUD.DrawHudString(  x, y, ScreenWidth, "Front Side Damage", 255, 0, 0 );
-
-		m_fAttackFront = max( 0, m_fAttackFront - fFade * .05 );
+		x = ScreenWidth / 2 - SPR_Width( m_hSprite, 0 ) / 2;
+		y = ScreenHeight / 2 - SPR_Height( m_hSprite, 0 ) * 3;
+		SPR_DrawAdditive( 0, x, y, NULL );
+		m_fAttackFront = max( 0, m_fAttackFront - fFade );
 	} else
 		m_fAttackFront = 0;
 
 	if( m_fAttackRight > 0.4 )
 	{
 		GetPainColor( r, g, b );
-		shade = a * max( m_fAttackRight, 3.0 );
+		shade = a * max( m_fAttackRight, 0.5 );
 		ScaleColors( r, g, b, shade );
 		SPR_Set( m_hSprite, r, g, b );
 
-		x = 60;
-		y = ScreenHeight - 40;
-
-		gHUD.DrawHudString(  x, y, ScreenWidth, "Right Side Damage", 255, 0, 0 );
-
-		m_fAttackRight = max( 0, m_fAttackRight - fFade * .05 );
+		x = ScreenWidth / 2 + SPR_Width( m_hSprite, 1 ) * 2;
+		y = ScreenHeight / 2 - SPR_Height( m_hSprite,1 ) / 2;
+		SPR_DrawAdditive( 1, x, y, NULL );
+		m_fAttackRight = max( 0, m_fAttackRight - fFade );
 	}
 	else
 		m_fAttackRight = 0;
@@ -337,16 +341,14 @@ int CHudHealth::DrawPain( float flTime )
 	if( m_fAttackRear > 0.4 )
 	{
 		GetPainColor( r, g, b );
-		shade = a * max( m_fAttackRear, 3.0 );
+		shade = a * max( m_fAttackRear, 0.5 );
 		ScaleColors( r, g, b, shade );
 		SPR_Set( m_hSprite, r, g, b );
 
-		x = 60;
-		y = ScreenHeight - 28;
-
-		gHUD.DrawHudString(  x, y, ScreenWidth, "Rear Side Damage", 255, 0, 0 );
-
-		m_fAttackRear = max( 0, m_fAttackRear - fFade * .05 );
+		x = ScreenWidth / 2 - SPR_Width( m_hSprite, 2 ) / 2;
+		y = ScreenHeight / 2 + SPR_Height( m_hSprite, 2 ) * 2;
+		SPR_DrawAdditive( 2, x, y, NULL );
+		m_fAttackRear = max( 0, m_fAttackRear - fFade );
 	}
 	else
 		m_fAttackRear = 0;
@@ -354,16 +356,15 @@ int CHudHealth::DrawPain( float flTime )
 	if( m_fAttackLeft > 0.4 )
 	{
 		GetPainColor( r, g, b );
-		shade = a * max( m_fAttackLeft, 3.0 );
+		shade = a * max( m_fAttackLeft, 0.5 );
 		ScaleColors( r, g, b, shade );
 		SPR_Set( m_hSprite, r, g, b );
 
-		x = 60;
-		y = ScreenHeight - 52;
+		x = ScreenWidth / 2 - SPR_Width( m_hSprite, 3 ) * 3;
+		y = ScreenHeight / 2 - SPR_Height( m_hSprite,3 ) / 2;
+		SPR_DrawAdditive( 3, x, y, NULL );
 
-		gHUD.DrawHudString(  x, y, ScreenWidth, "Left Side Damage", 255, 0, 0 );
-
-		m_fAttackLeft = max( 0, m_fAttackLeft - fFade * .05 );
+		m_fAttackLeft = max( 0, m_fAttackLeft - fFade );
 	} else
 		m_fAttackLeft = 0;
 

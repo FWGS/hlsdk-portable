@@ -28,12 +28,12 @@
 
 HistoryResource gHR;
 
-#define AMMO_PICKUP_GAP ( gHR.iHistoryGap + 30 )
+#define AMMO_PICKUP_GAP ( gHR.iHistoryGap + 5 )
 #define AMMO_PICKUP_PICK_HEIGHT		( 32 + ( gHR.iHistoryGap * 2 ) )
 #define AMMO_PICKUP_HEIGHT_MAX		( ScreenHeight - 100 )
 
 #define MAX_ITEM_NAME	32
-int HISTORY_DRAW_TIME = 10;
+int HISTORY_DRAW_TIME = 5;
 
 // keep a list of items
 struct ITEM_INFO
@@ -107,7 +107,7 @@ void HistoryResource::CheckClearHistory( void )
 //
 int HistoryResource::DrawAmmoHistory( float flTime )
 {
-/*	for( int i = 0; i < MAX_HISTORY; i++ )
+	for( int i = 0; i < MAX_HISTORY; i++ )
 	{
 		if( rgAmmoHistory[i].type )
 		{
@@ -186,6 +186,6 @@ int HistoryResource::DrawAmmoHistory( float flTime )
 			}
 		}
 	}
-*/
+
 	return 1;
 }

@@ -440,7 +440,7 @@ void W_Precache( void )
 	UTIL_PrecacheOther( "ammo_nukeclip" );
 
 	// cluster grenade
-	UTIL_PrecacheOtherWeapon( weapon_clustergrenade )
+	UTIL_PrecacheOtherWeapon( "weapon_clustergrenade" );
 
 	// satchel charge
 	UTIL_PrecacheOtherWeapon( "weapon_satchel" );
