@@ -338,9 +338,6 @@ void W_Precache( void )
 	// tripmine
 	UTIL_PrecacheOtherWeapon( "weapon_tripmine" );
 
-	// hand grenade
-	UTIL_PrecacheOtherWeapon("weapon_handgrenade");
-
 	// squeak grenade
 	UTIL_PrecacheOtherWeapon( "weapon_snark" );
 
@@ -404,6 +401,9 @@ void W_Precache( void )
 	UTIL_PrecacheOtherWeapon( "weapon_rifle" );
 	UTIL_PrecacheOther( "ammo_rifleclip" );
 
+	// H&K G36
+	UTIL_PrecacheOtherWeapon( "weapon_g36" );
+
 	// railgun/hallucegon
 	UTIL_PrecacheOtherWeapon( "weapon_railgun" );
 	UTIL_PrecacheOther( "ammo_railslug" );
@@ -438,6 +438,9 @@ void W_Precache( void )
 	// nuke launcher
 	UTIL_PrecacheOtherWeapon( "weapon_nuke" );
 	UTIL_PrecacheOther( "ammo_nukeclip" );
+
+	// hand grenade
+        UTIL_PrecacheOtherWeapon( "weapon_handgrenade" );
 
 	// cluster grenade
 	UTIL_PrecacheOtherWeapon( "weapon_clustergrenade" );
