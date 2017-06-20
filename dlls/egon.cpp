@@ -532,7 +532,7 @@ class CEgonAmmo : public CBasePlayerAmmo
 
 	BOOL AddAmmo( CBaseEntity *pOther )
 	{
-		if( pOther->GiveAmmo( AMMO_URANIUMBOX_GIVE, "uranium", URANIUM_MAX_CARRY ) != -1 )
+		if( pOther->GiveAmmo( AMMO_RAILSLUG_GIVE, "slug", RAILGUN_MAX_CARRY ) != -1 )
 		{
 			EMIT_SOUND( ENT( pev ), CHAN_ITEM, "items/9mmclip1.wav", 1, ATTN_NORM );
 			return TRUE;
@@ -541,5 +541,5 @@ class CEgonAmmo : public CBasePlayerAmmo
 	}
 };
 
-LINK_ENTITY_TO_CLASS( ammo_egonclip, CEgonAmmo )
+LINK_ENTITY_TO_CLASS( ammo_railslug, CEgonAmmo )
 #endif
