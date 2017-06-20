@@ -29,7 +29,7 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-write-strings -DLINUX -D_LINUX -Dstricm
 set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS}")
 
 set (CLDLL_SOURCES 
-#	../dlls/crossbow.cpp 
+	../dlls/crossbow.cpp 
 	../dlls/crowbar.cpp 
 	../dlls/egon.cpp 
 #	../dlls/gauss.cpp 

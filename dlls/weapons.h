@@ -631,7 +631,7 @@ private:
 	unsigned short m_usMP5;
 	unsigned short m_usMP52;
 };
-
+*/
 class CCrossbow : public CBasePlayerWeapon
 {
 public:
@@ -641,9 +641,7 @@ public:
 	int GetItemInfo(ItemInfo *p);
 
 	void FireBolt( void );
-	void FireSniperBolt( void );
 	void PrimaryAttack( void );
-	void SecondaryAttack( void );
 	int AddToPlayer( CBasePlayer *pPlayer );
 	BOOL Deploy( );
 	void Holster( int skiplocal = 0 );
@@ -665,7 +663,7 @@ private:
 	unsigned short m_usCrossbow;
 	unsigned short m_usCrossbow2;
 };
-
+/*
 class CShotgun : public CBasePlayerWeapon
 {
 public:

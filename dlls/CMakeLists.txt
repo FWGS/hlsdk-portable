@@ -46,7 +46,7 @@ set (SVDLL_SOURCES
 	client.cpp
 	combat.cpp
 	controller.cpp
-#	crossbow.cpp
+	crossbow.cpp
 	crowbar.cpp
 	defaultai.cpp
 	doors.cpp
@@ -139,7 +139,7 @@ set (SVDLL_SOURCES
 	coldice/mac_10.cpp
 #	coldice/railgun.cpp
 	coldice/sword.cpp
-	coldice/boltgun.cpp
+#	coldice/boltgun.cpp
 	coldice/double_uzi.cpp
 	coldice/mag60.cpp
 	coldice/rifle.cpp

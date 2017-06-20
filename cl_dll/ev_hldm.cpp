@@ -1232,7 +1232,7 @@ void EV_FireCrossbow2( event_args_t *args )
 
 	VectorMA( vecSrc, 8192, forward, vecEnd );
 
-	gEngfuncs.pEventAPI->EV_PlaySound( idx, origin, CHAN_WEAPON, "weapons/xbow_fire1.wav", 1, ATTN_NORM, 0, 93 + gEngfuncs.pfnRandomLong( 0, 0xF ) );
+	gEngfuncs.pEventAPI->EV_PlaySound( idx, origin, CHAN_WEAPON, "weapons/boltgun1.wav", 1, ATTN_NORM, 0, 93 + gEngfuncs.pfnRandomLong( 0, 0xF ) );
 	gEngfuncs.pEventAPI->EV_PlaySound( idx, origin, CHAN_ITEM, "weapons/xbow_reload1.wav", gEngfuncs.pfnRandomFloat( 0.95, 1.0 ), ATTN_NORM, 0, 93 + gEngfuncs.pfnRandomLong( 0, 0xF ) );
 
 	if( EV_IsLocal( idx ) )
@@ -1279,7 +1279,7 @@ void EV_FireCrossbow2( event_args_t *args )
 				 gEngfuncs.pEfxAPI->R_SparkShower( tr.endpos );
 
 			vec3_t vBoltAngles;
-			int iModelIndex = gEngfuncs.pEventAPI->EV_FindModelIndex( "models/crossbow_bolt.mdl" );
+			int iModelIndex = gEngfuncs.pEventAPI->EV_FindModelIndex( "models/bolt.mdl" );
 
 			VectorAngles( forward, vBoltAngles );
 
@@ -1307,7 +1307,7 @@ void EV_FireCrossbow( event_args_t *args )
 	idx = args->entindex;
 	VectorCopy( args->origin, origin );
 
-	gEngfuncs.pEventAPI->EV_PlaySound( idx, origin, CHAN_WEAPON, "weapons/xbow_fire1.wav", 1, ATTN_NORM, 0, 93 + gEngfuncs.pfnRandomLong( 0, 0xF ) );
+	gEngfuncs.pEventAPI->EV_PlaySound( idx, origin, CHAN_WEAPON, "weapons/boltgun1.wav", 1, ATTN_NORM, 0, 93 + gEngfuncs.pfnRandomLong( 0, 0xF ) );
 	gEngfuncs.pEventAPI->EV_PlaySound( idx, origin, CHAN_ITEM, "weapons/xbow_reload1.wav", gEngfuncs.pfnRandomFloat( 0.95, 1.0 ), ATTN_NORM, 0, 93 + gEngfuncs.pfnRandomLong( 0, 0xF ) );
 
 	//Only play the weapon anims if I shot it. 
