@@ -824,7 +824,7 @@ private:
 	unsigned short m_usGaussFire;
 	unsigned short m_usGaussSpin;
 };
-
+*/
 class CEgon : public CBasePlayerWeapon
 {
 public:
@@ -888,7 +888,7 @@ private:
 
 	unsigned short m_usEgonFire;
 };
-
+/*
 class CHgun : public CBasePlayerWeapon
 {
 public:

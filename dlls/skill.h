@@ -102,7 +102,8 @@ struct skilldata_t
 	float plrDmgClusterGrenade;
 	float plrDmgRocket;
 	float plrDmgRailgun;
-	float plrDmgPulse;
+	float plrDmgEgonNarrow;
+	float plrDmgEgonWide;
 	float plrDmgHandGrenade;
 	float plrDmgSatchel;
 	float plrDmgTripmine;

@@ -1665,7 +1665,7 @@ TYPEDESCRIPTION	CGauss::m_SaveData[] =
 };
 
 IMPLEMENT_SAVERESTORE( CGauss, CBasePlayerWeapon )
-
+*/
 TYPEDESCRIPTION	CEgon::m_SaveData[] =
 {
 	//DEFINE_FIELD( CEgon, m_pBeam, FIELD_CLASSPTR ),
@@ -1679,7 +1679,7 @@ TYPEDESCRIPTION	CEgon::m_SaveData[] =
 };
 
 IMPLEMENT_SAVERESTORE( CEgon, CBasePlayerWeapon )
-*/
+
 TYPEDESCRIPTION	CSatchel::m_SaveData[] = 
 {
 	DEFINE_FIELD( CSatchel, m_chargeReady, FIELD_INTEGER ),

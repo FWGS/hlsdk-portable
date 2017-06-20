@@ -51,7 +51,7 @@ set (SVDLL_SOURCES
 	defaultai.cpp
 	doors.cpp
 	effects.cpp
-#	egon.cpp
+	egon.cpp
 	explode.cpp
 	flyingmonster.cpp
 	func_break.cpp
@@ -137,7 +137,7 @@ set (SVDLL_SOURCES
 	coldice/ashotgun.cpp
 	coldice/cluster_grenade.cpp
 	coldice/mac_10.cpp
-	coldice/railgun.cpp
+#	coldice/railgun.cpp
 	coldice/sword.cpp
 	coldice/boltgun.cpp
 	coldice/double_uzi.cpp

@@ -49,7 +49,8 @@ enum egon_e {
 	EGON_HOLSTER
 };
 
-LINK_ENTITY_TO_CLASS( weapon_egon, CEgon )
+LINK_ENTITY_TO_CLASS( weapon_railgun, CEgon )
+LINK_ENTITY_TO_CLASS( weapon_gauss, CEgon )
 
 void CEgon::Spawn()
 {
@@ -57,7 +58,7 @@ void CEgon::Spawn()
 	m_iId = WEAPON_EGON;
 	SET_MODEL( ENT( pev ), "models/w_egon.mdl" );
 
-	m_iDefaultAmmo = EGON_DEFAULT_GIVE;
+	m_iDefaultAmmo = RAILGUN_DEFAULT_GIVE;
 
 	FallInit();// get ready to fall down.
 }
@@ -114,16 +115,16 @@ void CEgon::Holster( int skiplocal /* = 0 */ )
 int CEgon::GetItemInfo( ItemInfo *p )
 {
 	p->pszName = STRING( pev->classname );
-	p->pszAmmo1 = "uranium";
-	p->iMaxAmmo1 = URANIUM_MAX_CARRY;
+	p->pszAmmo1 = "slug";
+	p->iMaxAmmo1 = RAILGUN_MAX_CARRY;
 	p->pszAmmo2 = NULL;
 	p->iMaxAmmo2 = -1;
 	p->iMaxClip = WEAPON_NOCLIP;
 	p->iSlot = 3;
 	p->iPosition = 2;
-	p->iId = m_iId = WEAPON_EGON;
+	p->iId = m_iId = WEAPON_RAILGUN;
 	p->iFlags = 0;
-	p->iWeight = EGON_WEIGHT;
+	p->iWeight = RAILGUN_WEIGHT;
 
 	return 1;
 }
