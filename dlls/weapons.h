@@ -132,6 +132,8 @@ public:
 #define CLUSTERGRENADE_WEIGHT	24
 #define TNT_WEIGHT		30
 #define NUKE_WEIGHT		40
+#define HANDGRENADE_WEIGHT	5
+#define SATCHEL_WEIGHT		-10
 
 // weapon clip/carry ammo capacities
 #define PPK_MAX_CARRY		64
@@ -155,6 +157,8 @@ public:
 #define TRIPMINE_MAX_CARRY	2
 #define TNT_MAX_CARRY		1
 #define NUKE_MAX_CARRY		2
+#define HANDGRENADE_MAX_CARRY	10
+#define SATCHEL_MAX_CARRY	5
 
 // the maximum amount of ammo each weapon's clip can hold
 #define WEAPON_NOCLIP			-1
@@ -174,6 +178,8 @@ public:
 #define GRENADEL_MAX_CLIP	6
 #define ROCKETL_MAX_CLIP	1
 #define NUKE_MAX_CLIP		1
+#define HANDGRENADE_MAX_CLIP	WEAPON_NOCLIP
+#define SATCHEL_MAX_CLIP	WEAPON_NOCLIP
 
 // the default amount of ammo that comes with each gun when it spawns
 #define PPK_DEFAULT_GIVE		72
@@ -196,6 +202,8 @@ public:
 #define TRIPMINE_DEFAULT_GIVE		2
 #define TNT_DEFAULT_GIVE		1
 #define NUKE_DEFAULT_GIVE		3
+#define HANDGRENADE_DEFAULT_GIVE	5
+#define SATCHEL_DEFAULT_GIVE		1
 
 // The amount of ammo given to a player by an ammo item.
 #define AMMO_PPKCLIP_GIVE		24
@@ -914,7 +922,7 @@ public:
 private:
 	unsigned short m_usHornetFire;
 };
-
+*/
 class CHandGrenade : public CBasePlayerWeapon
 {
 public:
@@ -972,7 +980,7 @@ public:
 #endif
 	}
 };
-*/
+
 class CTripmine : public CBasePlayerWeapon
 {
 public:

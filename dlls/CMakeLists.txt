@@ -70,7 +70,7 @@ set (SVDLL_SOURCES
 	h_cine.cpp
 	h_cycler.cpp
 	h_export.cpp
-#	handgrenade.cpp
+	handgrenade.cpp
 	hassassin.cpp
 	headcrab.cpp
 	healthkit.cpp
@@ -101,7 +101,7 @@ set (SVDLL_SOURCES
 	rat.cpp
 	roach.cpp
 #	rpg.cpp
-#	satchel.cpp
+	satchel.cpp
 	schedule.cpp
 	scientist.cpp
 	scripted.cpp

@@ -1679,10 +1679,10 @@ TYPEDESCRIPTION	CEgon::m_SaveData[] =
 };
 
 IMPLEMENT_SAVERESTORE( CEgon, CBasePlayerWeapon )
-
+*/
 TYPEDESCRIPTION	CSatchel::m_SaveData[] = 
 {
 	DEFINE_FIELD( CSatchel, m_chargeReady, FIELD_INTEGER ),
 };
 
-IMPLEMENT_SAVERESTORE( CSatchel, CBasePlayerWeapon )*/
+IMPLEMENT_SAVERESTORE( CSatchel, CBasePlayerWeapon )

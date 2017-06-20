@@ -54,7 +54,6 @@ public:
 	float m_flReleaseThrow;
 };
 LINK_ENTITY_TO_CLASS( weapon_clustergrenade, CClusterGrenade );
-LINK_ENTITY_TO_CLASS( weapon_handgrenade, CClusterGrenade );
 
 void CClusterGrenade::Spawn( )
 {

@@ -44,8 +44,6 @@ public:
     int m_iExplode;
 };
 LINK_ENTITY_TO_CLASS( weapon_tnt, CKamikaze );
-LINK_ENTITY_TO_CLASS( weapon_satchel, CKamikaze );
-
 
 void CKamikaze::Spawn( )
 {

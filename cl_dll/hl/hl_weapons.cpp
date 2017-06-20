@@ -63,10 +63,9 @@ CShotgun g_Shotgun;
 CRpg g_Rpg;
 CGauss g_Gauss;
 CEgon g_Egon;
-CHgun g_HGun;
+CHgun g_HGun;*/
 CHandGrenade g_HandGren;
 CSatchel g_Satchel;
-*/
 CTripmine g_Tripmine;
 //CSqueak g_Snark;
 
@@ -634,9 +633,9 @@ void HUD_InitClientWeapons( void )
 	HUD_PrepEntity( &g_Rpg, &player );
 	HUD_PrepEntity( &g_Gauss, &player );
 	HUD_PrepEntity( &g_Egon, &player );
-	HUD_PrepEntity( &g_HGun, &player );
+	HUD_PrepEntity( &g_HGun, &player );*/
 	HUD_PrepEntity( &g_HandGren, &player );
-	HUD_PrepEntity( &g_Satchel, &player );*/
+	HUD_PrepEntity( &g_Satchel, &player );
 	HUD_PrepEntity( &g_Tripmine, &player );
 	//HUD_PrepEntity( &g_Snark, &player );
 }
@@ -731,13 +730,13 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 			break;
 		case WEAPON_HORNETGUN:
 			pWeapon = &g_HGun;
-			break;
+			break;*/
 		case WEAPON_HANDGRENADE:
 			pWeapon = &g_HandGren;
 			break;
 		case WEAPON_SATCHEL:
 			pWeapon = &g_Satchel;
-			break;*/
+			break;
 		case WEAPON_TRIPMINE:
 			pWeapon = &g_Tripmine;
 			break;
