@@ -663,7 +663,7 @@ private:
 	unsigned short m_usCrossbow;
 	unsigned short m_usCrossbow2;
 };
-/*
+
 class CShotgun : public CBasePlayerWeapon
 {
 public:
@@ -700,7 +700,7 @@ private:
 	unsigned short m_usDoubleFire;
 	unsigned short m_usSingleFire;
 };
-*/
+
 class CLaserSpot : public CBaseEntity
 {
 	void Spawn( void );

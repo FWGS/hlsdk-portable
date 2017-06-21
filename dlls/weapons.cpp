@@ -1643,7 +1643,7 @@ TYPEDESCRIPTION	CRpgRocket::m_SaveData[] =
 };
 
 IMPLEMENT_SAVERESTORE( CRpgRocket, CGrenade )
-/*
+
 TYPEDESCRIPTION	CShotgun::m_SaveData[] =
 {
 	DEFINE_FIELD( CShotgun, m_flNextReload, FIELD_TIME ),
@@ -1654,7 +1654,7 @@ TYPEDESCRIPTION	CShotgun::m_SaveData[] =
 };
 
 IMPLEMENT_SAVERESTORE( CShotgun, CBasePlayerWeapon )
-
+/*
 TYPEDESCRIPTION	CGauss::m_SaveData[] =
 {
 	DEFINE_FIELD( CGauss, m_fInAttack, FIELD_INTEGER ),

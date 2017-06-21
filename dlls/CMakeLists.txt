@@ -105,7 +105,7 @@ set (SVDLL_SOURCES
 	schedule.cpp
 	scientist.cpp
 	scripted.cpp
-#	shotgun.cpp
+	shotgun.cpp
 	singleplay_gamerules.cpp
 	skill.cpp
 	sound.cpp
@@ -134,7 +134,7 @@ set (SVDLL_SOURCES
 	coldice/m16.cpp
 	coldice/railgun_arena.cpp
 	coldice/sshotgun.cpp
-	coldice/ashotgun.cpp
+#	coldice/ashotgun.cpp
 	coldice/cluster_grenade.cpp
 	coldice/mac_10.cpp
 #	coldice/railgun.cpp

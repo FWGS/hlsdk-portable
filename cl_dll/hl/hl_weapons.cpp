@@ -60,7 +60,7 @@ CPython g_Python;
 CMP5 g_Mp5*/;
 CCrossbow g_Crossbow;
 
-//CShotgun g_Shotgun;
+CShotgun g_Shotgun;
 CRpg g_Rpg;
 //CGauss g_Gauss;
 CEgon g_Egon;
@@ -630,7 +630,7 @@ void HUD_InitClientWeapons( void )
 	/*HUD_PrepEntity( &g_Python, &player );
 	HUD_PrepEntity( &g_Mp5, &player );*/
 	HUD_PrepEntity( &g_Crossbow, &player );
-	//HUD_PrepEntity( &g_Shotgun, &player );
+	HUD_PrepEntity( &g_Shotgun, &player );
 	HUD_PrepEntity( &g_Rpg, &player );
 	//HUD_PrepEntity( &g_Gauss, &player );
 	HUD_PrepEntity( &g_Egon, &player );
@@ -716,10 +716,10 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 			break;*/
 		case WEAPON_BOLTGUN:
 			pWeapon = &g_Crossbow;
-			break;/*
-		case WEAPON_SHOTGUN:
+			break;
+		case WEAPON_ASHOTGUN:
 			pWeapon = &g_Shotgun;
-			break;*/
+			break;
 		case WEAPON_ROCKETL:
 			pWeapon = &g_Rpg;
 			break;/*
