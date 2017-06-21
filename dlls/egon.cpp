@@ -55,7 +55,7 @@ LINK_ENTITY_TO_CLASS( weapon_gauss, CEgon )
 void CEgon::Spawn()
 {
 	Precache();
-	m_iId = WEAPON_EGON;
+	m_iId = WEAPON_RAILGUN;
 	SET_MODEL( ENT( pev ), "models/w_egon.mdl" );
 
 	m_iDefaultAmmo = RAILGUN_DEFAULT_GIVE;

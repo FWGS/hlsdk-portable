@@ -59,10 +59,10 @@ CCrowbar g_Crowbar;
 CPython g_Python;
 CMP5 g_Mp5*/;
 CCrossbow g_Crossbow;
-/*
-CShotgun g_Shotgun;
+
+//CShotgun g_Shotgun;
 CRpg g_Rpg;
-CGauss g_Gauss;*/
+//CGauss g_Gauss;
 CEgon g_Egon;
 //CHgun g_HGun;
 CHandGrenade g_HandGren;
@@ -630,9 +630,9 @@ void HUD_InitClientWeapons( void )
 	/*HUD_PrepEntity( &g_Python, &player );
 	HUD_PrepEntity( &g_Mp5, &player );*/
 	HUD_PrepEntity( &g_Crossbow, &player );
-	/*HUD_PrepEntity( &g_Shotgun, &player );
+	//HUD_PrepEntity( &g_Shotgun, &player );
 	HUD_PrepEntity( &g_Rpg, &player );
-	HUD_PrepEntity( &g_Gauss, &player );*/
+	//HUD_PrepEntity( &g_Gauss, &player );
 	HUD_PrepEntity( &g_Egon, &player );
 	//HUD_PrepEntity( &g_HGun, &player );
 	HUD_PrepEntity( &g_HandGren, &player );
@@ -714,19 +714,19 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 		case WEAPON_MP5:
 			pWeapon = &g_Mp5;
 			break;*/
-		case WEAPON_CROSSBOW:
+		case WEAPON_BOLTGUN:
 			pWeapon = &g_Crossbow;
 			break;/*
 		case WEAPON_SHOTGUN:
 			pWeapon = &g_Shotgun;
-			break;
-		case WEAPON_RPG:
+			break;*/
+		case WEAPON_ROCKETL:
 			pWeapon = &g_Rpg;
-			break;
+			break;/*
 		case WEAPON_GAUSS:
 			pWeapon = &g_Gauss;
 			break;*/
-		case WEAPON_EGON:
+		case WEAPON_RAILGUN:
 			pWeapon = &g_Egon;
 			break;
 		/*case WEAPON_HORNETGUN:
@@ -848,11 +848,11 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 		player.m_pActiveItem = g_pWpns[from->client.m_iId];
 	}
 
-	/*if( player.m_pActiveItem->m_iId == WEAPON_RPG )
+	if( player.m_pActiveItem->m_iId == WEAPON_ROCKETL )
 	{
 		( (CRpg *)player.m_pActiveItem )->m_fSpotActive = (int)from->client.vuser2[1];
 		( (CRpg *)player.m_pActiveItem )->m_cActiveRockets = (int)from->client.vuser2[2];
-	}*/
+	}
 
 	// Don't go firing anything if we have died.
 	// Or if we don't have a weapon model deployed
@@ -916,11 +916,11 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 	to->client.vuser2[0] = player.ammo_hornets;
 	to->client.ammo_rockets = player.ammo_rockets;
 
-	/*if( player.m_pActiveItem->m_iId == WEAPON_RPG )
+	if( player.m_pActiveItem->m_iId == WEAPON_ROCKETL )
 	{
 		from->client.vuser2[1] = ( (CRpg *)player.m_pActiveItem)->m_fSpotActive;
 		from->client.vuser2[2] = ( (CRpg *)player.m_pActiveItem)->m_cActiveRockets;
-	}*/
+	}
 
 	// Make sure that weapon animation matches what the game .dll is telling us
 	//  over the wire ( fixes some animation glitches )

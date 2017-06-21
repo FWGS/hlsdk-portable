@@ -100,7 +100,7 @@ set (SVDLL_SOURCES
 #	python.cpp
 	rat.cpp
 	roach.cpp
-#	rpg.cpp
+	rpg.cpp
 	satchel.cpp
 	schedule.cpp
 	scientist.cpp
@@ -151,7 +151,7 @@ set (SVDLL_SOURCES
 	coldice/uzi.cpp
 	coldice/grenadel.cpp
 	coldice/ppk.cpp
-	coldice/rocketl.cpp
+#	coldice/rocketl.cpp
 	../pm_shared/pm_debug.c
 	../pm_shared/pm_math.c
 	../pm_shared/pm_shared.c

@@ -37,7 +37,7 @@ set (CLDLL_SOURCES
 #	../dlls/hornetgun.cpp 
 #	../dlls/mp5.cpp 
 #	../dlls/python.cpp 
-#	../dlls/rpg.cpp 
+	../dlls/rpg.cpp 
 	../dlls/satchel.cpp 
 #	../dlls/shotgun.cpp 
 #	../dlls/squeakgrenade.cpp 

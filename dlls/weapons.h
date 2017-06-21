@@ -700,7 +700,7 @@ private:
 	unsigned short m_usDoubleFire;
 	unsigned short m_usSingleFire;
 };
-
+*/
 class CLaserSpot : public CBaseEntity
 {
 	void Spawn( void );
@@ -775,7 +775,7 @@ public:
 	float m_flIgniteTime;
 	CRpg *m_pLauncher;// pointer back to the launcher that fired me. 
 };
-
+/*
 class CGauss : public CBasePlayerWeapon
 {
 public:
