@@ -1010,7 +1010,7 @@ public:
 private:
 	unsigned short m_usTripFire;
 };
-/*
+
 class CSqueak : public CBasePlayerWeapon
 {
 public:
@@ -1037,5 +1037,5 @@ public:
 
 private:
 	unsigned short m_usSnarkFire;
-};*/
+};
 #endif // WEAPONS_H

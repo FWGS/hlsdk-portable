@@ -40,7 +40,7 @@ set (CLDLL_SOURCES
 	../dlls/rpg.cpp 
 	../dlls/satchel.cpp 
 	../dlls/shotgun.cpp 
-#	../dlls/squeakgrenade.cpp 
+	../dlls/squeakgrenade.cpp 
 	../dlls/tripmine.cpp 
 #	../dlls/glock.cpp
 	ev_hldm.cpp 
