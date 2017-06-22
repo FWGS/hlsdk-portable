@@ -246,7 +246,7 @@ class CItemBattery : public CItem
 };
 
 LINK_ENTITY_TO_CLASS( item_battery, CItemBattery )
-
+/*
 class CItemPrecache : public CItem
 {
 	void Spawn( void )
@@ -270,7 +270,7 @@ LINK_ENTITY_TO_CLASS( weapon_9mmhandgun, CItemPrecache );
 LINK_ENTITY_TO_CLASS( ammo_9mmAR, CItemPrecache );
 LINK_ENTITY_TO_CLASS( ammo_crossbow, CItemPrecache );
 LINK_ENTITY_TO_CLASS( ammo_buckshot, CItemPrecache );
-
+*/
 class CItemLongJump : public CItem
 {
 	void Spawn( void )
