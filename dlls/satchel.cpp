@@ -72,7 +72,7 @@ void CSatchelCharge::Spawn( void )
 	pev->movetype = MOVETYPE_BOUNCE;
 	pev->solid = SOLID_BBOX;
 
-	SET_MODEL( ENT( pev ), "models/w_satchel.mdl" );
+	SET_MODEL( ENT( pev ), "models/bitch/hassassin.mdl" );
 	//UTIL_SetSize( pev, Vector( -16, -16, -4 ), Vector( 16, 16, 32 ) );	// Old box -- size of headcrab monsters/players get blocked by this
 	UTIL_SetSize( pev, Vector( -4, -4, -4 ), Vector( 4, 4, 4 ) );	// Uses point-sized, and can be stepped over
 	UTIL_SetOrigin( pev, pev->origin );
@@ -149,7 +149,8 @@ void CSatchelCharge::SatchelThink( void )
 
 void CSatchelCharge::Precache( void )
 {
-	PRECACHE_MODEL( "models/grenade.mdl" );
+	//PRECACHE_MODEL( "models/grenade.mdl" );
+	PRECACHE_SOUND( "weapons/packdeploy.wav" );
 	PRECACHE_SOUND( "weapons/g_bounce1.wav" );
 	PRECACHE_SOUND( "weapons/g_bounce2.wav" );
 	PRECACHE_SOUND( "weapons/g_bounce3.wav" );
@@ -218,7 +219,7 @@ void CSatchel::Spawn()
 {
 	Precache();
 	m_iId = WEAPON_SATCHEL;
-	SET_MODEL( ENT( pev ), "models/w_satchel.mdl" );
+	SET_MODEL( ENT( pev ), "models/bitch/hassassin.mdl" );
 
 	m_iDefaultAmmo = SATCHEL_DEFAULT_GIVE;
 		
@@ -229,7 +230,7 @@ void CSatchel::Precache( void )
 {
 	PRECACHE_MODEL( "models/v_satchel.mdl" );
 	PRECACHE_MODEL( "models/v_satchel_radio.mdl" );
-	PRECACHE_MODEL( "models/w_satchel.mdl" );
+	PRECACHE_MODEL( "models/bitch/hassassin.mdl" );
 	PRECACHE_MODEL( "models/p_satchel.mdl" );
 	PRECACHE_MODEL( "models/p_satchel_radio.mdl" );
 
@@ -396,6 +397,8 @@ void CSatchel::Throw( void )
 
 		// player "shoot" animation
 		m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
+
+		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "weapons/packdeploy.wav", 1, ATTN_NORM );
 
 		m_chargeReady = 1;
 		
