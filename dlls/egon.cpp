@@ -120,7 +120,7 @@ int CEgon::GetItemInfo( ItemInfo *p )
 	p->pszAmmo2 = NULL;
 	p->iMaxAmmo2 = -1;
 	p->iMaxClip = WEAPON_NOCLIP;
-	p->iSlot = 3;
+	p->iSlot = 4;
 	p->iPosition = 2;
 	p->iId = m_iId = WEAPON_RAILGUN;
 	p->iFlags = 0;

@@ -361,7 +361,7 @@ int CRpg::GetItemInfo( ItemInfo *p )
 	p->pszAmmo2 = "heli-rockets";
 	p->iMaxAmmo2 = HELIROCKET_MAX_CARRY;
 	p->iMaxClip = ROCKETL_MAX_CLIP;
-	p->iSlot = 3;
+	p->iSlot = 6;
 	p->iPosition = 1;
 	p->iId = m_iId = WEAPON_ROCKETL;
 	p->iFlags = 0;

@@ -386,8 +386,8 @@ int CNuke::GetItemInfo(ItemInfo *p)
 	p->pszAmmo2 = NULL;
 	p->iMaxAmmo2 = -1;
 	p->iMaxClip = NUKE_MAX_CLIP;
-	p->iSlot = 3;
-	p->iPosition = 4;
+	p->iSlot = 6;
+	p->iPosition = 2;
 	p->iId = m_iId = WEAPON_NUKE;
 	p->iFlags = 0;
 	p->iWeight = NUKE_WEIGHT;

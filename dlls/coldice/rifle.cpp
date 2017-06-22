@@ -106,8 +106,8 @@ int CRifle::GetItemInfo(ItemInfo *p)
 	p->pszAmmo2 = NULL;
 	p->iMaxAmmo2 = -1;
 	p->iMaxClip = RIFLE_MAX_CLIP;
-	p->iSlot = 2;
-	p->iPosition = 7;
+	p->iSlot = 5;
+	p->iPosition = 0;
 	p->iId = WEAPON_RIFLE;
 	p->iFlags = 0;
 	p->iWeight = RIFLE_WEIGHT;       

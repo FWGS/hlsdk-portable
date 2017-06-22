@@ -252,8 +252,8 @@ int CCrossbow::GetItemInfo( ItemInfo *p )
 	p->pszAmmo2 = NULL;
 	p->iMaxAmmo2 = -1;
 	p->iMaxClip = BOLTGUN_MAX_CLIP;
-	p->iSlot = 2;
-	p->iPosition = 2;
+	p->iSlot = 4;
+	p->iPosition = 1;
 	p->iId = WEAPON_BOLTGUN;
 	p->iFlags = 0;
 	p->iWeight = BOLTGUN_WEIGHT;

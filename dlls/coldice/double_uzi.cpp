@@ -93,7 +93,7 @@ int CDoubleUzi::GetItemInfo(ItemInfo *p)
 	p->iMaxAmmo2 = -1;
 	p->iMaxClip = DOUBLEUZI_MAX_CLIP;
 	p->iSlot = 2;
-	p->iPosition = 4;
+	p->iPosition = 1;
 	p->iFlags = 0;
 	p->iId = m_iId = WEAPON_DOUBLEUZI;
 	p->iWeight = DOUBLEUZI_WEIGHT;

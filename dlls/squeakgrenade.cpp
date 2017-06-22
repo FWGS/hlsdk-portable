@@ -457,8 +457,8 @@ int CSqueak::GetItemInfo( ItemInfo *p )
 	p->pszAmmo2 = NULL;
 	p->iMaxAmmo2 = -1;
 	p->iMaxClip = WEAPON_NOCLIP;
-	p->iSlot = 4;
-	p->iPosition = 1;
+	p->iSlot = 8;
+	p->iPosition = 0;
 	p->iId = m_iId = WEAPON_CHUMTOAD;
 	p->iWeight = CHUMTOAD_WEIGHT;
 	p->iFlags = ITEM_FLAG_LIMITINWORLD | ITEM_FLAG_EXHAUSTIBLE;

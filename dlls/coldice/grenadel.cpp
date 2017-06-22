@@ -127,7 +127,7 @@ int CGrenadelauncher::GetItemInfo(ItemInfo *p)
 	p->pszAmmo2 = "timed";
 	p->iMaxAmmo2 = TIMED_MAX_CARRY;
 	p->iMaxClip = GRENADEL_MAX_CLIP;
-	p->iSlot = 3;
+	p->iSlot = 6;
 	p->iPosition = 0;
 	p->iId = m_iId = WEAPON_GRENADEL;
 	p->iFlags = 0;

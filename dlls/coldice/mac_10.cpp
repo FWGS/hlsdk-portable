@@ -93,7 +93,7 @@ int CMac::GetItemInfo(ItemInfo *p)
 	p->iMaxAmmo2 = -1;
 	p->iMaxClip = MAC10_MAX_CLIP;
 	p->iSlot = 2;
-	p->iPosition = 3;
+	p->iPosition = 2;
 	p->iFlags = 0;
 	p->iId = m_iId = WEAPON_MAC10;
 	p->iWeight = MAC10_WEIGHT;
