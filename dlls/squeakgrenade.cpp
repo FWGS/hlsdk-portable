@@ -96,7 +96,7 @@ TYPEDESCRIPTION	CSqueakGrenade::m_SaveData[] =
 
 IMPLEMENT_SAVERESTORE( CSqueakGrenade, CGrenade )
 
-#define SQUEEK_DETONATE_DELAY	15.0
+#define CHUMTOAD_DETONATE_DELAY	15.0
 
 int CSqueakGrenade::Classify( void )
 {

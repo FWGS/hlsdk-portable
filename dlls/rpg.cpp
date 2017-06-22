@@ -331,7 +331,7 @@ void CRpg::Spawn()
 	SET_MODEL( ENT( pev ), "models/wmodels/w_rocketl.mdl" );
 	m_fSpotActive = 1;
 
-	m_iDefaultAmmo = RPG_DEFAULT_GIVE;
+	m_iDefaultAmmo = ROCKETL_DEFAULT_GIVE;
 
 	FallInit();// get ready to fall down.
 }
@@ -468,7 +468,7 @@ void CRpg::PrimaryAttack()
 
 void CRpg::SecondaryAttack()
 {
-	if( g_pGameRules->IsRocketArena() == 0 )
+	//if( g_pGameRules->IsRocketArena() == 0 )
 	{
 		m_fSpotActive = !m_fSpotActive;
 
@@ -481,7 +481,7 @@ void CRpg::SecondaryAttack()
 #endif
 		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.2;
 	}
-	else
+	/*else
 	{
 		if( m_pPlayer->m_rgAmmo[m_iSecondaryAmmoType] )
 		{
@@ -528,7 +528,7 @@ void CRpg::SecondaryAttack()
 				m_pPlayer->pev->punchangle.x -= 5;
 			}
 		}
-	}
+	}*/
 }
 
 void CRpg::WeaponIdle( void )
