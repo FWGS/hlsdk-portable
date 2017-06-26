@@ -562,27 +562,6 @@ void UTIL_ParticleLine( CBasePlayer *player, float *start, float *end, float lif
 
 /*
 =====================
-CBasePlayerWeapon::PrintState
-
-For debugging, print out state variables to log file
-=====================
-*/
-void CBasePlayerWeapon::PrintState( void )
-{
-	COM_Log( "c:\\hl.log", "%.4f ", gpGlobals->time );
-	COM_Log( "c:\\hl.log", "%.4f ", m_pPlayer->m_flNextAttack );
-	COM_Log( "c:\\hl.log", "%.4f ", m_flNextPrimaryAttack );
-	COM_Log( "c:\\hl.log", "%.4f ", m_flTimeWeaponIdle - gpGlobals->time );
-	COM_Log( "c:\\hl.log", "%i ", m_iClip );
-}
-
-int RandomLong( int a, int b )
-{
-	return gEngfuncs.pfnRandomLong( a, b );
-}
-
-/*
-=====================
 HUD_InitClientWeapons
 
 Set up weapons, player and functions needed to run weapons code client-side.

@@ -129,6 +129,7 @@ OBJ = \
 	$(DLL_OBJDIR)/multiplay_gamerules.o \
 	$(DLL_OBJDIR)/nihilanth.o \
 	$(DLL_OBJDIR)/nodes.o \
+	$(DLL_OBJDIR)/observer.cpp \^M
 	$(DLL_OBJDIR)/osprey.o \
 	$(DLL_OBJDIR)/pathcorner.o \
 	$(DLL_OBJDIR)/plane.o \
