@@ -1100,19 +1100,22 @@ void CMomentaryDoor::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYP
 	Vector move = m_vecPosition1 + ( value * ( m_vecPosition2 - m_vecPosition1 ) );
 	
 	Vector delta = move - pev->origin;
-	float speed = delta.Length() * 10;
+	//float speed = delta.Length() * 10;
+	float speed = delta.Length() / 0.1; // move there in 0.1 sec
 
 	if( speed != 0 )
 	{
 		// This entity only thinks when it moves, so if it's thinking, it's in the process of moving
-		// play the sound when it starts moving
+		// play the sound when it starts moving(not yet thinking)
 		if( pev->nextthink < pev->ltime || pev->nextthink == 0 )
 			EMIT_SOUND( ENT( pev ), CHAN_STATIC, (char*)STRING( pev->noiseMoving ), 1, ATTN_NORM );
+		// If we already moving to designated point, return
+		else if( move == m_vecFinalDest )
+			return;
 
 		LinearMove( move, speed );
 		SetMoveDone( &CMomentaryDoor::MomentaryMoveDone );
 	}
-
 }
 
 void CMomentaryDoor::MomentaryMoveDone( void )

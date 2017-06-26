@@ -92,7 +92,7 @@ CHalfLifeMultiplay::CHalfLifeMultiplay()
 	if( IS_DEDICATED_SERVER() )
 	{
 		// dedicated server
-		char *servercfgfile = (char *)CVAR_GET_STRING( "servercfgfile" );
+		/*char *servercfgfile = (char *)CVAR_GET_STRING( "servercfgfile" );
 
 		if( servercfgfile && servercfgfile[0] )
 		{
@@ -102,6 +102,8 @@ CHalfLifeMultiplay::CHalfLifeMultiplay()
 			sprintf( szCommand, "exec %s\n", servercfgfile );
 			SERVER_COMMAND( szCommand );
 		}
+		*/
+		// this code has been moved into engine, to only run server.cfg once
 	}
 	else
 	{

@@ -57,7 +57,8 @@ typedef enum
 {
 	force_exactfile,			// File on client must exactly match server's file
 	force_model_samebounds,		// For model files only, the geometry must fit in the same bbox
-	force_model_specifybounds		// For model files only, the geometry must fit in the specified bbox
+	force_model_specifybounds,		// For model files only, the geometry must fit in the specified bbox
+	force_model_specifybounds_if_avail	// For Steam model files only, the geometry must fit in the specified bbox (if the file is available)
 } FORCE_TYPE;
 
 // Returned by TraceLine
@@ -88,7 +89,7 @@ typedef struct
 	int	fPlayTrack;
 } CDStatus;
 		
-typedef unsigned long	CRC32_t;
+typedef unsigned int	CRC32_t;
 
 // Engine hands this to DLLs for functionality callbacks
 typedef struct enginefuncs_s
@@ -156,7 +157,7 @@ typedef struct enginefuncs_s
 	void	(*pfnCVarSetString)( const char *szVarName, const char *szValue );
 	void	(*pfnAlertMessage)( ALERT_TYPE atype, char *szFmt, ... );
 	void	(*pfnEngineFprintf)( FILE *pfile, char *szFmt, ... );
-	void*	(*pfnPvAllocEntPrivateData)( edict_t *pEdict, long cb );
+	void*	(*pfnPvAllocEntPrivateData)( edict_t *pEdict, int cb );
 	void*	(*pfnPvEntPrivateData)( edict_t *pEdict );
 	void	(*pfnFreeEntPrivateData)( edict_t *pEdict );
 	const char *(*pfnSzFromIndex)( int iString );
@@ -171,8 +172,8 @@ typedef struct enginefuncs_s
 	int	(*pfnRegUserMsg)( const char *pszName, int iSize );
 	void	(*pfnAnimationAutomove)( const edict_t* pEdict, float flTime );
 	void	(*pfnGetBonePosition)( const edict_t* pEdict, int iBone, float *rgflOrigin, float *rgflAngles );
-	unsigned long (*pfnFunctionFromName)( const char *pName );
-	const char *(*pfnNameForFunction)( unsigned long function );
+	unsigned int (*pfnFunctionFromName)( const char *pName );
+	const char *(*pfnNameForFunction)( unsigned int function );
 	void	(*pfnClientPrintf)( edict_t* pEdict, PRINT_TYPE ptype, const char *szMsg ); // JOHN: engine callbacks so game DLL can print messages to individual clients
 	void	(*pfnServerPrint)( const char *szMsg );
 	const char *(*pfnCmd_Args)( void );		// these 3 added 
@@ -183,7 +184,7 @@ typedef struct enginefuncs_s
 	void	(*pfnCRC32_ProcessBuffer)( CRC32_t *pulCRC, void *p, int len );
 	void	(*pfnCRC32_ProcessByte)( CRC32_t *pulCRC, unsigned char ch );
 	CRC32_t	(*pfnCRC32_Final)( CRC32_t pulCRC );
-	long	(*pfnRandomLong)( long lLow, long lHigh );
+	int	(*pfnRandomLong)( int lLow, int lHigh );
 	float	(*pfnRandomFloat)( float flLow, float flHigh );
 	void	(*pfnSetView)( const edict_t *pClient, const edict_t *pViewent );
 	float	(*pfnTime)( void );
@@ -276,7 +277,7 @@ typedef struct KeyValueData_s
 	char	*szClassName;	// in: entity classname
 	char	*szKeyName;	// in: name of key
 	char	*szValue;		// in: value of key
-	long	fHandled;		// out: DLL sets to true if key-value pair was understood
+	int	fHandled;		// out: DLL sets to true if key-value pair was understood
 } KeyValueData;
 
 
@@ -354,7 +355,7 @@ typedef enum _fieldtypes
 	FIELD_TYPECOUNT		// MUST BE LAST
 } FIELDTYPE;
 
-#ifndef offsetof
+#if !defined(offsetof) && !defined(GNUC)
 #define offsetof(s,m)	(size_t)&(((s *)0)->m)
 #endif
 

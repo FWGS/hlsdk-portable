@@ -27,7 +27,7 @@
 
 LINK_ENTITY_TO_CLASS( weapon_crowbar, CCrowbar )
 
-enum gauss_e
+enum crowbar_e
 {
 	CROWBAR_IDLE = 0,
 	CROWBAR_DRAW,
@@ -40,8 +40,7 @@ enum gauss_e
 	CROWBAR_ATTACK3HIT
 };
 
-
-void CCrowbar::Spawn( )
+void CCrowbar::Spawn()
 {
 	Precache();
 	m_iId = WEAPON_CROWBAR;
@@ -191,7 +190,7 @@ int CCrowbar::Swing( int fFirst )
 		if( fFirst )
 		{
 			// miss
-			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5;
+			m_flNextPrimaryAttack = GetNextAttackDelay( 0.5 );
 
 			// player "shoot" animation
 			m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
@@ -297,7 +296,7 @@ int CCrowbar::Swing( int fFirst )
 
 		m_pPlayer->m_iWeaponVolume = flVol * CROWBAR_WALLHIT_VOLUME;
 #endif
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.25;
+		m_flNextPrimaryAttack = GetNextAttackDelay( 0.25 );
 
 		SetThink( &CCrowbar::Smack );
 		pev->nextthink = UTIL_WeaponTimeBase() + 0.2;

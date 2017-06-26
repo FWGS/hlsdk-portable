@@ -201,7 +201,7 @@ typedef struct playermove_s
 	pmtrace_t		(*PM_PlayerTrace)( float *start, float *end, int traceFlags, int ignore_pe );
 #endif
 	struct pmtrace_s	*(*PM_TraceLine)( float *start, float *end, int flags, int usehulll, int ignore_pe );
-	long		(*RandomLong)( long lLow, long lHigh );
+	int		(*RandomLong)( int lLow, int lHigh );
 	float		(*RandomFloat)( float flLow, float flHigh );
 	int		(*PM_GetModelType)( struct model_s *mod );
 	void		(*PM_GetModelBounds)( struct model_s *mod, float *mins, float *maxs );

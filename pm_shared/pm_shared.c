@@ -87,6 +87,8 @@ playermove_t *pmove = NULL;
 
 #define PLAYER_LONGJUMP_SPEED		350 // how fast we longjump
 
+#define PLAYER_DUCKING_MULTIPLIER	0.333
+
 // double to float warning
 #pragma warning(disable : 4244)
 #define max(a, b)  (((a) > (b)) ? (a) : (b))
@@ -2017,9 +2019,9 @@ void PM_Duck( void )
 
 	if( pmove->flags & FL_DUCKING )
 	{
-		pmove->cmd.forwardmove *= 0.333;
-		pmove->cmd.sidemove *= 0.333;
-		pmove->cmd.upmove *= 0.333;
+		pmove->cmd.forwardmove *= PLAYER_DUCKING_MULTIPLIER;
+		pmove->cmd.sidemove *= PLAYER_DUCKING_MULTIPLIER;
+		pmove->cmd.upmove *= PLAYER_DUCKING_MULTIPLIER;
 	}
 
 	if( ( pmove->cmd.buttons & IN_DUCK ) || ( pmove->bInDuck ) || ( pmove->flags & FL_DUCKING ) )
@@ -2110,16 +2112,24 @@ void PM_LadderMove( physent_t *pLadder )
 	{
 		float forward = 0, right = 0;
 		vec3_t vpn, v_right;
+		float flSpeed = MAX_CLIMB_SPEED;
+
+		// they shouldn't be able to move faster than their maxspeed
+		if( flSpeed > pmove->maxspeed )
+			flSpeed = pmove->maxspeed;
 
 		AngleVectors( pmove->angles, vpn, v_right, NULL );
+
+		if( pmove->flags & FL_DUCKING )
+			flSpeed *= PLAYER_DUCKING_MULTIPLIER;
 		if( pmove->cmd.buttons & IN_BACK )
-			forward -= MAX_CLIMB_SPEED;
+			forward -= flSpeed;
 		if( pmove->cmd.buttons & IN_FORWARD )
-			forward += MAX_CLIMB_SPEED;
+			forward += flSpeed;
 		if( pmove->cmd.buttons & IN_MOVELEFT )
-			right -= MAX_CLIMB_SPEED;
+			right -= flSpeed;
 		if( pmove->cmd.buttons & IN_MOVERIGHT )
-			right += MAX_CLIMB_SPEED;
+			right += flSpeed;
 
 		if( pmove->cmd.buttons & IN_JUMP )
 		{
