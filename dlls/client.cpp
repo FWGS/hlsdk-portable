@@ -38,6 +38,7 @@
 #include "weaponinfo.h"
 #include "usercmd.h"
 #include "netadr.h"
+#include "pm_shared.h"
 
 extern DLL_GLOBAL ULONG		g_ulModelIndexPlayer;
 extern DLL_GLOBAL BOOL		g_fGameOver;
@@ -550,7 +551,7 @@ void ClientCommand( edict_t *pEntity )
 	{
 		GetClassPtr( (CBasePlayer *)pev )->SelectLastItem();
 	}
-	else if( FStrEq( pcmd, "spectate" ) // clients wants to become a spectator
+	else if( FStrEq( pcmd, "spectate" ) ) // clients wants to become a spectator
 	{
 		// always allow proxies to become a spectator
 		if( ( pev->flags & FL_PROXY ) || allow_spectators.value )
