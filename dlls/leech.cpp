@@ -271,7 +271,7 @@ void CLeech::AlertSound( void )
 
 void CLeech::Precache( void )
 {
-	int i;
+	size_t i;
 
 	//PRECACHE_MODEL( "models/icky.mdl" );
 	PRECACHE_MODEL( "models/leech.mdl" );

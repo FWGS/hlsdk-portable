@@ -189,42 +189,42 @@ void CBaseDoor::KeyValue( KeyValueData *pkvd )
 {
 	if( FStrEq( pkvd->szKeyName, "skin" ) )//skin is used for content type
 	{
-		pev->skin = atof( pkvd->szValue );
+		pev->skin = atoi( pkvd->szValue );
 		pkvd->fHandled = TRUE;
 	}
 	else if( FStrEq( pkvd->szKeyName, "movesnd" ) )
 	{
-		m_bMoveSnd = atof( pkvd->szValue );
+		m_bMoveSnd = atoi( pkvd->szValue );
 		pkvd->fHandled = TRUE;
 	}
 	else if( FStrEq( pkvd->szKeyName, "stopsnd" ) )
 	{
-		m_bStopSnd = atof( pkvd->szValue );
+		m_bStopSnd = atoi( pkvd->szValue );
 		pkvd->fHandled = TRUE;
 	}
 	else if( FStrEq( pkvd->szKeyName, "healthvalue" ) )
 	{
-		m_bHealthValue = atof( pkvd->szValue );
+		m_bHealthValue = atoi( pkvd->szValue );
 		pkvd->fHandled = TRUE;
 	}
 	else if( FStrEq( pkvd->szKeyName, "locked_sound" ) )
 	{
-		m_bLockedSound = atof( pkvd->szValue );
+		m_bLockedSound = atoi( pkvd->szValue );
 		pkvd->fHandled = TRUE;
 	}
 	else if( FStrEq( pkvd->szKeyName, "locked_sentence" ) )
 	{
-		m_bLockedSentence = atof( pkvd->szValue );
+		m_bLockedSentence = atoi( pkvd->szValue );
 		pkvd->fHandled = TRUE;
 	}
 	else if( FStrEq( pkvd->szKeyName, "unlocked_sound" ) )
 	{
-		m_bUnlockedSound = atof( pkvd->szValue );
+		m_bUnlockedSound = atoi( pkvd->szValue );
 		pkvd->fHandled = TRUE;
 	}
 	else if( FStrEq( pkvd->szKeyName, "unlocked_sentence" ) )
 	{
-		m_bUnlockedSentence = atof( pkvd->szValue );
+		m_bUnlockedSentence = atoi( pkvd->szValue );
 		pkvd->fHandled = TRUE;
 	}
 	else if( FStrEq( pkvd->szKeyName, "WaveHeight" ) )
@@ -328,7 +328,7 @@ void CBaseDoor::SetToggleState( int state )
 
 void CBaseDoor::Precache( void )
 {
-	char *pszSound;
+	const char *pszSound;
 
 	// set the door's "in-motion" sound
 	switch( m_bMoveSnd )
@@ -581,7 +581,7 @@ int CBaseDoor::DoorActivate()
 	else
 	{
 		// door should open
-		if( m_hActivator != NULL && m_hActivator->IsPlayer() )
+		if( m_hActivator != 0 && m_hActivator->IsPlayer() )
 		{
 			// give health if player opened the door (medikit)
 			//VARS( m_eoActivator )->health += m_bHealthValue;
@@ -623,7 +623,7 @@ void CBaseDoor::DoorGoUp( void )
 	{
 		float sign = 1.0;
 
-		if( m_hActivator != NULL )
+		if( m_hActivator != 0 )
 		{
 			pevActivator = m_hActivator->pev;
 
@@ -1070,7 +1070,7 @@ void CMomentaryDoor::KeyValue( KeyValueData *pkvd )
 
 	if( FStrEq( pkvd->szKeyName, "movesnd" ) )
 	{
-		m_bMoveSnd = atof( pkvd->szValue );
+		m_bMoveSnd = atoi( pkvd->szValue );
 		pkvd->fHandled = TRUE;
 	}
 	else if( FStrEq( pkvd->szKeyName, "stopsnd" ) )

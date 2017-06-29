@@ -82,12 +82,12 @@ void CBasePlatTrain::KeyValue( KeyValueData *pkvd )
 	}
 	else if( FStrEq( pkvd->szKeyName, "movesnd" ) )
 	{
-		m_bMoveSnd = atof( pkvd->szValue );
+		m_bMoveSnd = atoi( pkvd->szValue );
 		pkvd->fHandled = TRUE;
 	}
 	else if( FStrEq( pkvd->szKeyName, "stopsnd" ) )
 	{
-		m_bStopSnd = atof( pkvd->szValue );
+		m_bStopSnd = atoi( pkvd->szValue );
 		pkvd->fHandled = TRUE;
 	}
 	else if( FStrEq( pkvd->szKeyName, "volume" ) )
@@ -1437,7 +1437,7 @@ void CFuncTrackTrain::Spawn( void )
 	pev->speed = 0;
 	pev->velocity = g_vecZero;
 	pev->avelocity = g_vecZero;
-	pev->impulse = m_speed;
+	pev->impulse = (int)m_speed;
 
 	m_dir = 1;
 
@@ -2212,7 +2212,7 @@ void CGunTarget::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE us
 	{
 		pev->takedamage = DAMAGE_AIM;
 		m_hTargetEnt = GetNextTarget();
-		if( m_hTargetEnt == NULL )
+		if( m_hTargetEnt == 0 )
 			return;
 		pev->health = pev->max_health;
 		Next();

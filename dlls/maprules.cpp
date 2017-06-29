@@ -64,9 +64,9 @@ void CRuleEntity::Spawn( void )
 
 void CRuleEntity::KeyValue( KeyValueData *pkvd )
 {
-	if (FStrEq(pkvd->szKeyName, "master"))
+	if( FStrEq(pkvd->szKeyName, "master" ) )
 	{
-		SetMaster( ALLOC_STRING(pkvd->szValue) );
+		SetMaster( ALLOC_STRING( pkvd->szValue ) );
 		pkvd->fHandled = TRUE;
 	}
 	else
@@ -75,9 +75,9 @@ void CRuleEntity::KeyValue( KeyValueData *pkvd )
 
 BOOL CRuleEntity::CanFireForActivator( CBaseEntity *pActivator )
 {
-	if ( m_iszMaster )
+	if( m_iszMaster )
 	{
-		if ( UTIL_IsMasterTriggered( m_iszMaster, pActivator ) )
+		if( UTIL_IsMasterTriggered( m_iszMaster, pActivator ) )
 			return TRUE;
 		else
 			return FALSE;
@@ -135,7 +135,7 @@ public:
 	void	Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
 	void	KeyValue( KeyValueData *pkvd );
 
-	inline	int		Points( void ) { return pev->frags; }
+	inline	int		Points( void ) { return (int)pev->frags; }
 	inline	BOOL	AllowNegativeScore( void ) { return pev->spawnflags & SF_SCORE_NEGATIVE; }
 	inline	BOOL	AwardToTeam( void ) { return pev->spawnflags & SF_SCORE_TEAM; }
 
@@ -643,8 +643,8 @@ public:
 	inline void CountUp( void ) { pev->frags++; }
 	inline void CountDown( void ) { pev->frags--; }
 	inline void ResetCount( void ) { pev->frags = pev->dmg; }
-	inline int  CountValue( void ) { return pev->frags; }
-	inline int	LimitValue( void ) { return pev->health; }
+	inline int CountValue( void ) { return (int)pev->frags; }
+	inline int LimitValue( void ) { return (int)pev->health; }
 
 	inline BOOL HitLimit( void ) { return CountValue() == LimitValue(); }
 

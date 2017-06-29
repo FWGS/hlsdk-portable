@@ -214,7 +214,7 @@ entvars_t *CGraph::LinkEntForLink( CLink *pLink, CNode *pNode )
 //=========================================================
 int CGraph::HandleLinkEnt( int iNode, entvars_t *pevLinkEnt, int afCapMask, NODEQUERY queryType )
 {
-	edict_t *pentWorld;
+	//edict_t *pentWorld;
 	CBaseEntity *pDoor;
 	TraceResult tr;
 
@@ -230,7 +230,7 @@ int CGraph::HandleLinkEnt( int iNode, entvars_t *pevLinkEnt, int afCapMask, NODE
 		ALERT( at_aiconsole, "dead path ent!\n" );
 		return TRUE;
 	}
-	pentWorld = NULL;
+	//pentWorld = NULL;
 
 	// func_door
 	if( FClassnameIs( pevLinkEnt, "func_door" ) || FClassnameIs( pevLinkEnt, "func_door_rotating" ) )
@@ -586,7 +586,7 @@ int CGraph::FindShortestPath( int *piPath, int iStart, int iDest, int iHull, int
 	int iVisitNode;
 	int iCurrentNode;
 	int iNumPathNodes;
-	int iHullMask;
+	int iHullMask = 0;
 
 	if( !m_fGraphPresent || !m_fGraphPointersSet )
 	{
@@ -1665,10 +1665,10 @@ void CTestHull::BuildNodeGraph( void )
 
 	int iBadNode;// this is the node that caused graph generation to fail
 
-	int cMaxInitialLinks = 0;
-	int cMaxValidLinks = 0;
+	//int cMaxInitialLinks = 0;
+	//int cMaxValidLinks = 0;
 
-	int iPoolIndex = 0;
+	//int iPoolIndex = 0;
 	int cPoolLinks;// number of links in the pool.
 
 	Vector vecDirToCheckNode;
@@ -2058,11 +2058,16 @@ void CTestHull::BuildNodeGraph( void )
 		fprintf( file, "\nAll Connections are Paired!\n" );
 	}
 
+#ifdef _MSC_VER
+#define SIZET_FMT "%Iu"
+#else
+#define SIZET_FMT "%zu"
+#endif
 	fprintf( file, "-------------------------------------------------------------------------------\n" );
 	fprintf( file, "\n\n-------------------------------------------------------------------------------\n" );
 	fprintf( file, "Total Number of Connections in Pool: %d\n", cPoolLinks );
 	fprintf( file, "-------------------------------------------------------------------------------\n" );
-	fprintf( file, "Connection Pool: %d bytes\n", sizeof(CLink) * cPoolLinks );
+	fprintf( file, "Connection Pool: " SIZET_FMT " bytes\n", sizeof(CLink) * cPoolLinks );
 	fprintf( file, "-------------------------------------------------------------------------------\n" );
 
 	ALERT( at_aiconsole, "%d Nodes, %d Connections\n", WorldGraph.m_cNodes, cPoolLinks );

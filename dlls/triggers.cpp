@@ -1265,7 +1265,7 @@ void CTriggerVolume::Spawn( void )
 	pev->solid = SOLID_NOT;
 	pev->movetype = MOVETYPE_NONE;
 	SET_MODEL( ENT(pev), STRING( pev->model ) );    // set size and link into world
-	pev->model = NULL;
+	pev->model = 0;
 	pev->modelindex = 0;
 }
 
@@ -1438,7 +1438,7 @@ void CChangeLevel::UseChangeLevel( CBaseEntity *pActivator, CBaseEntity *pCaller
 void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 {
 	edict_t	*pentLandmark;
-	LEVELLIST levels[16];
+	//LEVELLIST levels[16];
 
 	ASSERT( !FStrEq( m_szMapName, "" ) );
 
@@ -2224,7 +2224,7 @@ void CTriggerCamera::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYP
 	}
 
 	// Nothing to look at!
-	if( m_hTarget == NULL )
+	if( m_hTarget == 0 )
 	{
 		return;
 	}
@@ -2280,10 +2280,10 @@ void CTriggerCamera::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYP
 
 void CTriggerCamera::FollowTarget()
 {
-	if( m_hPlayer == NULL )
+	if( m_hPlayer == 0 )
 		return;
 
-	if( m_hTarget == NULL || m_flReturnTime < gpGlobals->time )
+	if( m_hTarget == 0 || m_flReturnTime < gpGlobals->time )
 	{
 		if( m_hPlayer->IsAlive() )
 		{

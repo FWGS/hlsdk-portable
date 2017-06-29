@@ -88,7 +88,7 @@ void CGenericMonster::HandleAnimEvent( MonsterEvent_t *pEvent )
 //=========================================================
 int CGenericMonster::ISoundMask( void )
 {
-	return NULL;
+	return 0;
 }
 
 //=========================================================

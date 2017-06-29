@@ -351,11 +351,11 @@ V_CalcIntermissionRefdef
 */
 void V_CalcIntermissionRefdef( struct ref_params_s *pparams )
 {
-	cl_entity_t *ent, *view;
+	cl_entity_t /**ent,*/ *view;
 	float old;
 
 	// ent is the player model ( visible when out of body )
-	ent = gEngfuncs.GetLocalPlayer();
+	//ent = gEngfuncs.GetLocalPlayer();
 
 	// view is the weapon model (only visible from inside body )
 	view = gEngfuncs.GetViewModel();
@@ -1307,7 +1307,7 @@ void V_GetMapChasePosition( int target, float *cl_angles, float *origin, float *
 
 int V_FindViewModelByWeaponModel( int weaponindex )
 {
-	static char *modelmap[][2] =
+	static const char *modelmap[][2] =
 	{
 		{ "models/p_crossbow.mdl",	"models/v_crossbow.mdl" },
 		{ "models/p_crowbar.mdl",	"models/v_crowbar.mdl" },
@@ -1327,7 +1327,7 @@ int V_FindViewModelByWeaponModel( int weaponindex )
 		{ NULL, NULL }
 	};
 
-	struct model_s * weaponModel = IEngineStudio.GetModelByIndex( weaponindex );
+	struct model_s *weaponModel = IEngineStudio.GetModelByIndex( weaponindex );
 
 	if( weaponModel )
 	{

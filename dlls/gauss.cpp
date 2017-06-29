@@ -259,7 +259,7 @@ void CGauss::SecondaryAttack()
 			m_pPlayer->m_flNextAmmoBurn = 1000;
 		}
 
-		int pitch = ( gpGlobals->time - m_pPlayer->m_flStartCharge ) * ( 150 / GetFullChargeTime() ) + 100;
+		int pitch = (int)( ( gpGlobals->time - m_pPlayer->m_flStartCharge ) * ( 150 / GetFullChargeTime() ) + 100 );
 		if( pitch > 250 ) 
 			 pitch = 250;
 		
@@ -359,11 +359,11 @@ void CGauss::StartFire( void )
 void CGauss::Fire( Vector vecOrigSrc, Vector vecDir, float flDamage )
 {
 	m_pPlayer->m_iWeaponVolume = GAUSS_PRIMARY_FIRE_VOLUME;
-
+	TraceResult tr, beam_tr;
+#ifndef CLIENT_DLL
 	Vector vecSrc = vecOrigSrc;
 	Vector vecDest = vecSrc + vecDir * 8192;
 	edict_t	*pentIgnore;
-	TraceResult tr, beam_tr;
 	float flMaxFrac = 1.0;
 	int nTotal = 0;
 	int fHasPunched = 0;
@@ -371,8 +371,7 @@ void CGauss::Fire( Vector vecOrigSrc, Vector vecDir, float flDamage )
 	int nMaxHits = 10;
 
 	pentIgnore = ENT( m_pPlayer->pev );
-
-#ifdef CLIENT_DLL
+#else
 	if( m_fPrimaryFire == false )
 		 g_irunninggausspred = true;
 #endif	

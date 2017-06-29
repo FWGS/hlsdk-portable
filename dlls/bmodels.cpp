@@ -210,7 +210,7 @@ void CFuncIllusionary::KeyValue( KeyValueData *pkvd )
 {
 	if( FStrEq( pkvd->szKeyName, "skin" ) )//skin is used for content type
 	{
-		pev->skin = atof( pkvd->szValue );
+		pev->skin = atoi( pkvd->szValue );
 		pkvd->fHandled = TRUE;
 	}
 	else
@@ -614,7 +614,7 @@ void CFuncRotating::SpinDown( void )
 
 		// stop sound, we're done
 		EMIT_SOUND_DYN( ENT( pev ), CHAN_STATIC, (char *)STRING( pev->noiseRunning /* Stop */ ),
-				0, 0, SND_STOP, m_pitch );
+				0, 0, SND_STOP, (int)m_pitch );
 
 		SetThink( &CFuncRotating::Rotate );
 		Rotate();

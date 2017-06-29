@@ -35,7 +35,7 @@ void CBasePlayer::Observer_FindNextPlayer( bool bReverse )
 	else
 		iStart = ENTINDEX( edict() );
 	int iCurrent = iStart;
-	m_hObserverTarget = NULL;
+	m_hObserverTarget = 0;
 	int iDir = bReverse ? -1 : 1; 
 
 	do
@@ -125,11 +125,11 @@ void CBasePlayer::Observer_CheckTarget()
 		return;
 
 	// try to find a traget if we have no current one
-	if( m_hObserverTarget == NULL )
+	if( m_hObserverTarget == 0 )
 	{
 		Observer_FindNextPlayer( false );
 
-		if( m_hObserverTarget == NULL )
+		if( m_hObserverTarget == 0 )
 		{
 			// no target found at all 
 
@@ -166,7 +166,7 @@ void CBasePlayer::Observer_CheckTarget()
 void CBasePlayer::Observer_CheckProperties()
 {
 	// try to find a traget if we have no current one
-	if( pev->iuser1 == OBS_IN_EYE && m_hObserverTarget != NULL )
+	if( pev->iuser1 == OBS_IN_EYE && m_hObserverTarget != 0 )
 	{
 		CBasePlayer* target = (CBasePlayer*)( UTIL_PlayerByIndex( ENTINDEX( m_hObserverTarget->edict() ) ) );
 
@@ -222,26 +222,26 @@ void CBasePlayer::Observer_SetMode( int iMode )
 	if( iMode < OBS_CHASE_LOCKED || iMode > OBS_MAP_CHASE )
 		iMode = OBS_IN_EYE; // now it is
 	// verify observer target again
-	if( m_hObserverTarget != NULL )
+	if( m_hObserverTarget != 0 )
 	{
 		CBaseEntity *pEnt = m_hObserverTarget;
 
 		if( ( pEnt == this ) || ( pEnt == NULL ) )
-			m_hObserverTarget = NULL;
+			m_hObserverTarget = 0;
 		else if( ( (CBasePlayer*)pEnt )->IsObserver() || ( pEnt->pev->effects & EF_NODRAW ) )
-			m_hObserverTarget = NULL;
+			m_hObserverTarget = 0;
 	}
 
 	// set spectator mode
 	pev->iuser1 = iMode;
 
 	// if we are not roaming, we need a valid target to track
-	if( ( iMode != OBS_ROAMING ) && ( m_hObserverTarget == NULL ) )
+	if( ( iMode != OBS_ROAMING ) && ( m_hObserverTarget == 0 ) )
 	{
 		Observer_FindNextPlayer( false );
 
 		// if we didn't find a valid target switch to roaming
-		if( m_hObserverTarget == NULL )
+		if( m_hObserverTarget == 0 )
 		{
 			ClientPrint( pev, HUD_PRINTCENTER, "#Spec_NoTarget" );
 			pev->iuser1 = OBS_ROAMING;

@@ -292,7 +292,7 @@ globalentity_t *CGlobalState::Find( string_t globalname )
 //#ifdef _DEBUG
 void CGlobalState::DumpGlobals( void )
 {
-	static char *estates[] = { "Off", "On", "Dead" };
+	static const char *estates[] = { "Off", "On", "Dead" };
 	globalentity_t *pTest;
 
 	ALERT( at_console, "-- Globals --\n" );
@@ -582,7 +582,7 @@ void CWorld::Precache( void )
 	// 63 testing
 	LIGHT_STYLE( 63, "a" );
 
-	for( int i = 0; i < ARRAYSIZE( gDecals ); i++ )
+	for( int i = 0; i < (int)ARRAYSIZE( gDecals ); i++ )
 		gDecals[i].index = DECAL_INDEX( gDecals[i].name );
 
 	// init the WorldGraph.

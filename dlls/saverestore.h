@@ -23,7 +23,7 @@ class CSaveRestoreBuffer
 public:
 	CSaveRestoreBuffer( void );
 	CSaveRestoreBuffer( SAVERESTOREDATA *pdata );
-	~CSaveRestoreBuffer( void );
+	virtual ~CSaveRestoreBuffer( void );
 
 	int			EntityIndex( entvars_t *pevLookup );
 	int			EntityIndex( edict_t *pentLookup );
@@ -41,6 +41,10 @@ protected:
 	SAVERESTOREDATA		*m_pdata;
 	void		BufferRewind( int size );
 	unsigned int	HashString( const char *pszToken );
+private:
+	// effc++ rule 11
+	void operator = ( CSaveRestoreBuffer& );
+	CSaveRestoreBuffer( const CSaveRestoreBuffer& );
 };
 
 class CSave : public CSaveRestoreBuffer
@@ -81,7 +85,7 @@ typedef struct
 class CRestore : public CSaveRestoreBuffer
 {
 public:
-	CRestore( SAVERESTOREDATA *pdata ) : CSaveRestoreBuffer( pdata ) { m_global = 0; m_precache = TRUE; }
+	CRestore( SAVERESTOREDATA *pdata ) : CSaveRestoreBuffer( pdata ), m_global(0), m_precache( TRUE ) { }
 	int		ReadEntVars( const char *pname, entvars_t *pev );		// entvars_t
 	int		ReadFields( const char *pname, void *pBaseData, TYPEDESCRIPTION *pFields, int fieldCount );
 	int		ReadField( void *pBaseData, TYPEDESCRIPTION *pFields, int fieldCount, int startField, int size, char *pName, void *pData );
@@ -160,6 +164,9 @@ private:
 	globalentity_t	*Find( string_t globalname );
 	globalentity_t	*m_pList;
 	int				m_listCount;
+	// effc++ rule 11
+	void operator = ( CGlobalState& );
+	CGlobalState( const CGlobalState& );
 };
 
 extern CGlobalState gGlobalState;

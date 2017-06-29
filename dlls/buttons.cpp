@@ -275,7 +275,7 @@ IMPLEMENT_SAVERESTORE( CBaseButton, CBaseToggle )
 
 void CBaseButton::Precache( void )
 {
-	char *pszSound;
+	const char *pszSound;
 
 	if( FBitSet( pev->spawnflags, SF_BUTTON_SPARK_IF_OFF ) )// this button should spark in OFF state
 	{
@@ -381,22 +381,22 @@ void CBaseButton::KeyValue( KeyValueData *pkvd )
 	}	
 	else if( FStrEq( pkvd->szKeyName, "locked_sound" ) )
 	{
-		m_bLockedSound = atof( pkvd->szValue );
+		m_bLockedSound = atoi( pkvd->szValue );
 		pkvd->fHandled = TRUE;
 	}
 	else if( FStrEq( pkvd->szKeyName, "locked_sentence" ) )
 	{
-		m_bLockedSentence = atof( pkvd->szValue );
+		m_bLockedSentence = atoi( pkvd->szValue );
 		pkvd->fHandled = TRUE;
 	}
 	else if( FStrEq( pkvd->szKeyName, "unlocked_sound" ) )
 	{
-		m_bUnlockedSound = atof( pkvd->szValue );
+		m_bUnlockedSound = atoi( pkvd->szValue );
 		pkvd->fHandled = TRUE;
 	}
 	else if( FStrEq( pkvd->szKeyName, "unlocked_sentence" ) )
 	{
-		m_bUnlockedSentence = atof( pkvd->szValue );
+		m_bUnlockedSentence = atoi( pkvd->szValue );
 		pkvd->fHandled = TRUE;
 	}
 	else if( FStrEq( pkvd->szKeyName, "sounds" ) )
@@ -421,7 +421,7 @@ int CBaseButton::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 	SetTouch( NULL );
 
 	m_hActivator = CBaseEntity::Instance( pevAttacker );
-	if( m_hActivator == NULL )
+	if( m_hActivator == 0 )
 		return 0;
 
 	if( code == BUTTON_RETURN )
@@ -461,7 +461,7 @@ LINK_ENTITY_TO_CLASS( func_button, CBaseButton )
 
 void CBaseButton::Spawn()
 { 
-	char  *pszSound;
+	const char *pszSound;
 
 	//----------------------------------------------------
 	//determine sounds for buttons
@@ -527,7 +527,7 @@ void CBaseButton::Spawn()
 
 char *ButtonSound( int sound )
 { 
-	char *pszSound;
+	const char *pszSound;
 
 	switch( sound )
 	{
@@ -869,7 +869,7 @@ LINK_ENTITY_TO_CLASS( func_rot_button, CRotButton )
 
 void CRotButton::Spawn( void )
 {
-	char *pszSound;
+	const char *pszSound;
 	//----------------------------------------------------
 	//determine sounds for buttons
 	//a sound of 0 should not make a sound
@@ -1010,7 +1010,7 @@ void CMomentaryRotButton::Spawn( void )
 	UTIL_SetOrigin( pev, pev->origin );
 	SET_MODEL( ENT( pev ), STRING( pev->model ) );
 
-	char *pszSound = ButtonSound( m_sounds );
+	const char *pszSound = ButtonSound( m_sounds );
 	PRECACHE_SOUND( pszSound );
 	pev->noise = ALLOC_STRING( pszSound );
 	m_lastUsed = 0;

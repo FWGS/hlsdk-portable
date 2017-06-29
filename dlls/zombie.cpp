@@ -286,7 +286,7 @@ void CZombie::Spawn()
 //=========================================================
 void CZombie::Precache()
 {
-	int i;
+	size_t i;
 
 	PRECACHE_MODEL( "models/zombie.mdl" );
 

@@ -136,7 +136,7 @@ struct skilldata_t
 };
 
 extern	DLL_GLOBAL	skilldata_t	gSkillData;
-float GetSkillCvar( char *pName );
+float GetSkillCvar( const char *pName );
 
 extern DLL_GLOBAL int		g_iSkillLevel;
 

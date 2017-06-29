@@ -1068,7 +1068,7 @@ BOOL CScriptedSentence::AcceptableSpeaker( CBaseMonster *pMonster )
 	{
 		if( pev->spawnflags & SF_SENTENCE_FOLLOWERS )
 		{
-			if( pMonster->m_hTargetEnt == NULL || !FClassnameIs( pMonster->m_hTargetEnt->pev, "player" ) )
+			if( pMonster->m_hTargetEnt == 0 || !FClassnameIs( pMonster->m_hTargetEnt->pev, "player" ) )
 				return FALSE;
 		}
 		BOOL override;
@@ -1124,7 +1124,7 @@ BOOL CScriptedSentence::StartSentence( CBaseMonster *pTarget )
 	if( !pTarget )
 	{
 		ALERT( at_aiconsole, "Not Playing sentence %s\n", STRING( m_iszSentence ) );
-		return NULL;
+		return FALSE;
 	}
 
 	BOOL bConcurrent = FALSE;

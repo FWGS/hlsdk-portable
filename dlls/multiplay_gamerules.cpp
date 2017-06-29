@@ -256,7 +256,7 @@ void CHalfLifeMultiplay::Think( void )
 
 			if( pPlayer )
 			{
-				remain = flFragLimit - pPlayer->pev->frags;
+				remain = (int)( flFragLimit - pPlayer->pev->frags );
 				if( remain < bestfrags )
 				{
 					bestfrags = remain;
@@ -300,7 +300,7 @@ BOOL CHalfLifeMultiplay::IsDeathmatch( void )
 //=========================================================
 BOOL CHalfLifeMultiplay::IsCoOp( void )
 {
-	return gpGlobals->coop;
+	return gpGlobals->coop ? TRUE : FALSE;
 }
 
 //=========================================================
@@ -467,7 +467,7 @@ void CHalfLifeMultiplay::InitHUD( CBasePlayer *pl )
 		{
 			MESSAGE_BEGIN( MSG_ONE, gmsgScoreInfo, NULL, pl->edict() );
 				WRITE_BYTE( i );	// client number
-				WRITE_SHORT( plr->pev->frags );
+				WRITE_SHORT( (int)plr->pev->frags );
 				WRITE_SHORT( plr->m_iDeaths );
 				WRITE_SHORT( 0 );
 				WRITE_SHORT( GetTeamIndex( plr->m_szTeamName ) + 1 );
@@ -652,7 +652,7 @@ void CHalfLifeMultiplay::PlayerKilled( CBasePlayer *pVictim, entvars_t *pKiller,
 	// killed scores
 	MESSAGE_BEGIN( MSG_ALL, gmsgScoreInfo );
 		WRITE_BYTE( ENTINDEX(pVictim->edict()) );
-		WRITE_SHORT( pVictim->pev->frags );
+		WRITE_SHORT( (int)pVictim->pev->frags );
 		WRITE_SHORT( pVictim->m_iDeaths );
 		WRITE_SHORT( 0 );
 		WRITE_SHORT( GetTeamIndex( pVictim->m_szTeamName ) + 1 );
@@ -666,7 +666,7 @@ void CHalfLifeMultiplay::PlayerKilled( CBasePlayer *pVictim, entvars_t *pKiller,
 
 		MESSAGE_BEGIN( MSG_ALL, gmsgScoreInfo );
 			WRITE_BYTE( ENTINDEX( PK->edict() ) );
-			WRITE_SHORT( PK->pev->frags );
+			WRITE_SHORT( (int)PK->pev->frags );
 			WRITE_SHORT( PK->m_iDeaths );
 			WRITE_SHORT( 0 );
 			WRITE_SHORT( GetTeamIndex( PK->m_szTeamName ) + 1 );
@@ -689,14 +689,14 @@ void CHalfLifeMultiplay::PlayerKilled( CBasePlayer *pVictim, entvars_t *pKiller,
 void CHalfLifeMultiplay::DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, entvars_t *pevInflictor )
 {
 	// Work out what killed the player, and send a message to all clients about it
-	CBaseEntity *Killer = CBaseEntity::Instance( pKiller );
+	CBaseEntity::Instance( pKiller );
 
 	const char *killer_weapon_name = "world";		// by default, the player is killed by the world
 	int killer_index = 0;
 
 	// Hack to fix name change
-	char *tau = "tau_cannon";
-	char *gluon = "gluon gun";
+	const char *tau = "tau_cannon";
+	const char *gluon = "gluon gun";
 
 	if( pKiller->flags & FL_CLIENT )
 	{

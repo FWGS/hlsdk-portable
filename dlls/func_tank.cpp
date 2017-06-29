@@ -190,7 +190,7 @@ void CFuncTank::Spawn( void )
 
 	if( m_fireRate <= 0 )
 		m_fireRate = 1;
-	if( m_spread > MAX_FIRING_SPREADS )
+	if( m_spread > (int)MAX_FIRING_SPREADS )
 		m_spread = 0;
 
 	pev->oldorigin = pev->origin;
@@ -328,7 +328,7 @@ BOOL CFuncTank::OnControls( entvars_t *pevTest )
 	if( !( pev->spawnflags & SF_TANK_CANCONTROL ) )
 		return FALSE;
 
-	Vector offset = pevTest->origin - pev->origin;
+	//Vector offset = pevTest->origin - pev->origin;
 
 	if( ( m_vecControllerUsePos - pevTest->origin ).Length() < 30 )
 		return TRUE;
@@ -476,9 +476,9 @@ void CFuncTank::TrackTarget( void )
 {
 	TraceResult tr;
 	edict_t *pPlayer = FIND_CLIENT_IN_PVS( edict() );
-	BOOL updateTime = FALSE, lineOfSight;
+	BOOL updateTime = FALSE;
 	Vector angles, direction, targetPosition, barrelEnd;
-	edict_t *pTarget;
+	edict_t *pTarget = NULL;
 
 	// Get a position to aim for
 	if( m_pController )
@@ -515,12 +515,8 @@ void CFuncTank::TrackTarget( void )
 
 		UTIL_TraceLine( barrelEnd, targetPosition, dont_ignore_monsters, edict(), &tr );
 
-		lineOfSight = FALSE;
-		// No line of sight, don't track
 		if( tr.flFraction == 1.0 || tr.pHit == pTarget )
 		{
-			lineOfSight = TRUE;
-
 			CBaseEntity *pInstance = CBaseEntity::Instance(pTarget);
 			if( InRange( range ) && pInstance && pInstance->IsAlive() )
 			{
@@ -644,7 +640,7 @@ void CFuncTank::Fire( const Vector &barrelEnd, const Vector &forward, entvars_t 
 		{
 			CSprite *pSprite = CSprite::SpriteCreate( STRING( m_iszSpriteSmoke ), barrelEnd, TRUE );
 			pSprite->AnimateAndDie( RANDOM_FLOAT( 15.0, 20.0 ) );
-			pSprite->SetTransparency( kRenderTransAlpha, pev->rendercolor.x, pev->rendercolor.y, pev->rendercolor.z, 255, kRenderFxNone );
+			pSprite->SetTransparency( kRenderTransAlpha, (int)pev->rendercolor.x, (int)pev->rendercolor.y, (int)pev->rendercolor.z, 255, kRenderFxNone );
 			pSprite->pev->velocity.z = RANDOM_FLOAT( 40, 80 );
 			pSprite->SetScale( m_spriteScale );
 		}
@@ -714,7 +710,7 @@ void CFuncTankGun::Fire( const Vector &barrelEnd, const Vector &forward, entvars
 		// FireBullets needs gpGlobals->v_up, etc.
 		UTIL_MakeAimVectors( pev->angles );
 
-		int bulletCount = ( gpGlobals->time - m_fireLast ) * m_fireRate;
+		int bulletCount = (int)( ( gpGlobals->time - m_fireLast ) * m_fireRate );
 		if( bulletCount > 0 )
 		{
 			for( i = 0; i < bulletCount; i++ )
@@ -835,7 +831,7 @@ void CFuncTankLaser::Fire( const Vector &barrelEnd, const Vector &forward, entva
 		// TankTrace needs gpGlobals->v_up, etc.
 		UTIL_MakeAimVectors( pev->angles );
 
-		int bulletCount = ( gpGlobals->time - m_fireLast ) * m_fireRate;
+		int bulletCount = (int)( ( gpGlobals->time - m_fireLast ) * m_fireRate );
 		if( bulletCount )
 		{
 			for( i = 0; i < bulletCount; i++ )
@@ -879,12 +875,12 @@ void CFuncTankRocket::Fire( const Vector &barrelEnd, const Vector &forward, entv
 
 	if( m_fireLast != 0 )
 	{
-		int bulletCount = ( gpGlobals->time - m_fireLast ) * m_fireRate;
+		int bulletCount = (int)( ( gpGlobals->time - m_fireLast ) * m_fireRate );
 		if( bulletCount > 0 )
 		{
 			for( i = 0; i < bulletCount; i++ )
 			{
-				CBaseEntity *pRocket = CBaseEntity::Create( "rpg_rocket", barrelEnd, pev->angles, edict() );
+				CBaseEntity::Create( "rpg_rocket", barrelEnd, pev->angles, edict() );
 			}
 			CFuncTank::Fire( barrelEnd, forward, pev );
 		}
@@ -917,7 +913,7 @@ void CFuncTankMortar::Fire( const Vector &barrelEnd, const Vector &forward, entv
 {
 	if( m_fireLast != 0 )
 	{
-		int bulletCount = ( gpGlobals->time - m_fireLast ) * m_fireRate;
+		int bulletCount = (int)( ( gpGlobals->time - m_fireLast ) * m_fireRate );
 		// Only create 1 explosion
 		if( bulletCount > 0 )
 		{

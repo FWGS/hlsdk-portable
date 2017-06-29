@@ -199,7 +199,7 @@ const unsigned char colors[8][3] =
 {240, 180,  24}
 };
 
-int CHud::DrawHudString( int xpos, int ypos, int iMaxX, char *szIt, int r, int g, int b )
+int CHud::DrawHudString( int xpos, int ypos, int iMaxX, const char *szIt, int r, int g, int b )
 {
 	if( hud_textmode->value == 2 )
 	{
@@ -233,9 +233,7 @@ int CHud::DrawHudString( int xpos, int ypos, int iMaxX, char *szIt, int r, int g
 	return xpos;
 }
 
-
-
-int DrawUtfString( int xpos, int ypos, int iMaxX, char *szIt, int r, int g, int b )
+int DrawUtfString( int xpos, int ypos, int iMaxX, const char *szIt, int r, int g, int b )
 {
 	// xash3d: reset unicode state
 	gEngfuncs.pfnVGUI2DrawCharacterAdditive( 0, 0, 0, 0, 0, 0, 0 );
@@ -262,7 +260,7 @@ int DrawUtfString( int xpos, int ypos, int iMaxX, char *szIt, int r, int g, int 
 	return xpos;
 }
 
-int CHud::DrawHudStringLen( char *szIt )
+int CHud::DrawHudStringLen( const char *szIt )
 {
 	int l = 0;
 	for( ; *szIt != 0 && *szIt != '\n'; szIt++ )
@@ -280,7 +278,7 @@ int CHud::DrawHudNumberString( int xpos, int ypos, int iMinX, int iNumber, int r
 }
 
 // draws a string from right to left (right-aligned)
-int CHud::DrawHudStringReverse( int xpos, int ypos, int iMinX, char *szString, int r, int g, int b )
+int CHud::DrawHudStringReverse( int xpos, int ypos, int iMinX, const char *szString, int r, int g, int b )
 {
 	// find the end of the string
 	for( char *szIt = szString; *szIt != 0; szIt++ )

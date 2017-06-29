@@ -215,7 +215,7 @@ bool Q_IsValidUChar32( unsigned int uVal )
 {
 	// Values > 0x10FFFF are explicitly invalid; ditto for UTF-16 surrogate halves,
 	// values ending in FFFE or FFFF, or values in the 0x00FDD0-0x00FDEF reserved range
-	return ( uVal < 0x110000u ) && ( ( uVal - 0x00D800u ) > 0x7FFu ) && ( ( uVal & 0xFFFFu ) < 0xFFFEu ) && ( ( uVal - 0x00FDD0u ) > 0x1Fu );
+	return ( ( uVal - 0x0u ) < 0x110000u ) && ( (uVal - 0x00D800u) > 0x7FFu ) && ( (uVal & 0xFFFFu) < 0xFFFEu ) && ( ( uVal - 0x00FDD0u ) > 0x1Fu );
 }
 
 // Decode one character from a UTF-8 encoded string. Treats 6-byte CESU-8 sequences
@@ -423,7 +423,7 @@ void Host_Say( edict_t *pEntity, int teamonly )
 	// echo to server console
 	g_engfuncs.pfnServerPrint( text );
 
-	char *temp;
+	const char *temp;
 	if( teamonly )
 		temp = "say_team";
 	else
@@ -744,7 +744,6 @@ void PlayerPreThink( edict_t *pEntity )
 {
 	//ALERT( at_console, "PreThink( %g, frametime %g )\n", gpGlobals->time, gpGlobals->frametime );
 
-	entvars_t *pev = &pEntity->v;
 	CBasePlayer *pPlayer = (CBasePlayer *)GET_PRIVATE( pEntity );
 
 	if( pPlayer )
@@ -762,7 +761,6 @@ void PlayerPostThink( edict_t *pEntity )
 {
 	//ALERT( at_console, "PostThink( %g, frametime %g )\n", gpGlobals->time, gpGlobals->frametime );
 
-	entvars_t *pev = &pEntity->v;
 	CBasePlayer *pPlayer = (CBasePlayer *)GET_PRIVATE( pEntity );
 
 	if( pPlayer )
@@ -950,7 +948,6 @@ animation right now.
 */
 void PlayerCustomization( edict_t *pEntity, customization_t *pCust )
 {
-	entvars_t *pev = &pEntity->v;
 	CBasePlayer *pPlayer = (CBasePlayer *)GET_PRIVATE( pEntity );
 
 	if( !pPlayer )
@@ -990,7 +987,6 @@ A spectator has joined the game
 */
 void SpectatorConnect( edict_t *pEntity )
 {
-	entvars_t *pev = &pEntity->v;
 	CBaseSpectator *pPlayer = (CBaseSpectator *)GET_PRIVATE( pEntity );
 
 	if( pPlayer )
@@ -1006,7 +1002,6 @@ A spectator has left the game
 */
 void SpectatorDisconnect( edict_t *pEntity )
 {
-	entvars_t *pev = &pEntity->v;
 	CBaseSpectator *pPlayer = (CBaseSpectator *)GET_PRIVATE( pEntity );
 
 	if( pPlayer )
@@ -1022,7 +1017,6 @@ A spectator has sent a usercmd
 */
 void SpectatorThink( edict_t *pEntity )
 {
-	entvars_t *pev = &pEntity->v;
 	CBaseSpectator *pPlayer = (CBaseSpectator *)GET_PRIVATE( pEntity );
 
 	if( pPlayer )
@@ -1235,11 +1229,11 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 	}
 
 	state->rendermode	= ent->v.rendermode;
-	state->renderamt	= ent->v.renderamt; 
+	state->renderamt	= (int)ent->v.renderamt; 
 	state->renderfx		= ent->v.renderfx;
-	state->rendercolor.r	= ent->v.rendercolor.x;
-	state->rendercolor.g	= ent->v.rendercolor.y;
-	state->rendercolor.b	= ent->v.rendercolor.z;
+	state->rendercolor.r	= (byte)ent->v.rendercolor.x;
+	state->rendercolor.g	= (byte)ent->v.rendercolor.y;
+	state->rendercolor.b	= (byte)ent->v.rendercolor.z;
 
 	state->aiment = 0;
 	if( ent->v.aiment )
@@ -1286,7 +1280,7 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 		//state->team		= ent->v.team;
 
 		state->usehull		= ( ent->v.flags & FL_DUCKING ) ? 1 : 0;
-		state->health		= ent->v.health;
+		state->health		= (int)ent->v.health;
 	}
 
 	return 1;
@@ -1834,7 +1828,7 @@ ConnectionlessPacket
 int ConnectionlessPacket( const struct netadr_s *net_from, const char *args, char *response_buffer, int *response_buffer_size )
 {
 	// Parse stuff from args
-	int max_buffer_size = *response_buffer_size;
+	//int max_buffer_size = *response_buffer_size;
 
 	// Zero it out since we aren't going to respond.
 	// If we wanted to response, we'd write data into response_buffer
@@ -1888,10 +1882,10 @@ to be created during play ( e.g., grenades, ammo packs, projectiles, corpses, et
 */
 void CreateInstancedBaselines( void )
 {
-	int iret = 0;
+	/*int iret = 0;
 	entity_state_t state;
 
-	memset( &state, 0, sizeof(state) );
+	memset( &state, 0, sizeof(state) );*/
 
 	// Create any additional baselines here for things like grendates, etc.
 	// iret = ENGINE_INSTANCE_BASELINE( pc->pev->classname, &state );

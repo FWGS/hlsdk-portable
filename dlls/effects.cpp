@@ -75,7 +75,7 @@ void CBubbling::Spawn( void )
 	pev->solid = SOLID_NOT;							// Remove model & collisions
 	pev->renderamt = 0;								// The engine won't draw this model if this is set to 0 and blending is on
 	pev->rendermode = kRenderTransTexture;
-	int speed = pev->speed > 0 ? pev->speed : -pev->speed;
+	int speed = fabs( pev->speed );
 
 	// HACKHACK!!! - Speed in rendercolor
 	pev->rendercolor.x = speed >> 8;
@@ -701,7 +701,7 @@ void CLightning::StrikeThink( void )
 			WRITE_BYTE( (int)pev->rendercolor.x );   // r, g, b
 			WRITE_BYTE( (int)pev->rendercolor.y );   // r, g, b
 			WRITE_BYTE( (int)pev->rendercolor.z );   // r, g, b
-			WRITE_BYTE( pev->renderamt );	// brightness
+			WRITE_BYTE( (int)pev->renderamt );	// brightness
 			WRITE_BYTE( m_speed );		// speed
 		MESSAGE_END();
 		DoSparks( pStart->pev->origin, pEnd->pev->origin );
@@ -763,7 +763,7 @@ void CLightning::Zap( const Vector &vecSrc, const Vector &vecDest )
 		WRITE_BYTE( (int)pev->rendercolor.x );   // r, g, b
 		WRITE_BYTE( (int)pev->rendercolor.y );   // r, g, b
 		WRITE_BYTE( (int)pev->rendercolor.z );   // r, g, b
-		WRITE_BYTE( pev->renderamt );	// brightness
+		WRITE_BYTE( (int)pev->renderamt );	// brightness
 		WRITE_BYTE( m_speed );		// speed
 	MESSAGE_END();
 #else
@@ -944,7 +944,7 @@ void CLaser::Spawn( void )
 		m_pSprite = NULL;
 
 	if( m_pSprite )
-		m_pSprite->SetTransparency( kRenderGlow, pev->rendercolor.x, pev->rendercolor.y, pev->rendercolor.z, pev->renderamt, pev->renderfx );
+		m_pSprite->SetTransparency( kRenderGlow, (int)pev->rendercolor.x, (int)pev->rendercolor.y, (int)pev->rendercolor.z, (int)pev->renderamt, (int)pev->renderfx );
 
 	if( pev->targetname && !( pev->spawnflags & SF_BEAM_STARTON ) )
 		TurnOff();
@@ -1619,7 +1619,7 @@ void CTestEffect::TestThink( void )
 		for( i = 0; i < m_iBeam; i++ )
 		{
 			t = ( gpGlobals->time - m_flBeamTime[i] ) / ( 3 + m_flStartTime - m_flBeamTime[i] );
-			m_pBeam[i]->SetBrightness( 255 * t );
+			m_pBeam[i]->SetBrightness( (int)( 255 * t ) );
 			// m_pBeam[i]->SetScrollRate( 20 * t );
 		}
 		pev->nextthink = gpGlobals->time + 0.1;
@@ -1749,9 +1749,9 @@ Vector CBlood::BloodPosition( CBaseEntity *pActivator )
 void CBlood::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
 	if( pev->spawnflags & SF_BLOOD_STREAM )
-		UTIL_BloodStream( BloodPosition( pActivator ), Direction(), ( Color() == BLOOD_COLOR_RED ) ? 70 : Color(), BloodAmount() );
+		UTIL_BloodStream( BloodPosition( pActivator ), Direction(), ( Color() == BLOOD_COLOR_RED ) ? 70 : Color(), (int)BloodAmount() );
 	else
-		UTIL_BloodDrips( BloodPosition( pActivator ), Direction(), Color(), BloodAmount() );
+		UTIL_BloodDrips( BloodPosition( pActivator ), Direction(), Color(), (int)BloodAmount() );
 
 	if( pev->spawnflags & SF_BLOOD_DECAL )
 	{
@@ -1947,12 +1947,12 @@ void CFade::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType
 	{
 		if( pActivator->IsNetClient() )
 		{
-			UTIL_ScreenFade( pActivator, pev->rendercolor, Duration(), HoldTime(), pev->renderamt, fadeFlags );
+			UTIL_ScreenFade( pActivator, pev->rendercolor, Duration(), HoldTime(), (int)pev->renderamt, fadeFlags );
 		}
 	}
 	else
 	{
-		UTIL_ScreenFadeAll( pev->rendercolor, Duration(), HoldTime(), pev->renderamt, fadeFlags );
+		UTIL_ScreenFadeAll( pev->rendercolor, Duration(), HoldTime(), (int)pev->renderamt, fadeFlags );
 	}
 	SUB_UseTargets( this, USE_TOGGLE, 0 );
 }

@@ -538,7 +538,6 @@ void CGargantua::FlameControls( float angleX, float angleY )
 void CGargantua::FlameUpdate( void )
 {
 	int		i;
-	static float	offset[2] = { 60, -60 };
 	TraceResult	trace;
 	Vector		vecStart, angleGun;
 	BOOL		streaks = FALSE;
@@ -759,7 +758,7 @@ void CGargantua::Spawn()
 //=========================================================
 void CGargantua::Precache()
 {
-	int i;
+	size_t i;
 
 	PRECACHE_MODEL( "models/garg.mdl" );
 	PRECACHE_MODEL( GARG_EYE_SPRITE_NAME );

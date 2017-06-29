@@ -268,8 +268,6 @@ int GetAnimationEvent( void *pmodel, entvars_t *pev, MonsterEvent_t *pMonsterEve
 	if( !pstudiohdr || pev->sequence >= pstudiohdr->numseq || !pMonsterEvent )
 		return 0;
 
-	int events = 0;
-
 	mstudioseqdesc_t *pseqdesc;
 	mstudioevent_t *pevent;
 
@@ -351,7 +349,7 @@ float SetController( void *pmodel, entvars_t *pev, int iController, float flValu
 		}
 	}
 
-	int setting = 255 * ( flValue - pbonecontroller->start ) / ( pbonecontroller->end - pbonecontroller->start );
+	int setting = (int)( 255 * ( flValue - pbonecontroller->start ) / ( pbonecontroller->end - pbonecontroller->start ) );
 
 	if( setting < 0 )
 		setting = 0;
@@ -393,7 +391,7 @@ float SetBlending( void *pmodel, entvars_t *pev, int iBlender, float flValue )
 		}
 	}
 
-	int setting = 255 * ( flValue - pseqdesc->blendstart[iBlender] ) / ( pseqdesc->blendend[iBlender] - pseqdesc->blendstart[iBlender] );
+	int setting = (int)( 255 * ( flValue - pseqdesc->blendstart[iBlender] ) / ( pseqdesc->blendend[iBlender] - pseqdesc->blendstart[iBlender] ) );
 
 	if( setting < 0 )
 		setting = 0;

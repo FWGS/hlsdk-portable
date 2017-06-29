@@ -458,7 +458,7 @@ void CApache::HuntThink( void )
 	if( m_flGoalSpeed < 800 )
 		m_flGoalSpeed += 5;
 
-	if( m_hEnemy != NULL )
+	if( m_hEnemy != 0 )
 	{
 		// ALERT( at_console, "%s\n", STRING( m_hEnemy->pev->classname ) );
 		if( FVisible( m_hEnemy ) )
@@ -552,7 +552,7 @@ void CApache::HuntThink( void )
 	{
 		if( m_flLastSeen + 60 > gpGlobals->time )
 		{
-			if( m_hEnemy != NULL )
+			if( m_hEnemy != 0 )
 			{
 				// make sure it's a good shot
 				if( DotProduct( m_vecTarget, vecEst ) > .965 )
@@ -732,7 +732,6 @@ void CApache::Flight( void )
 void CApache::FireRocket( void )
 {
 	static float side = 1.0;
-	static int count;
 
 	if( m_iRockets <= 0 )
 		return;

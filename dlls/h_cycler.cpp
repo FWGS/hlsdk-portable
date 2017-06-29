@@ -34,7 +34,7 @@
 class CCycler : public CBaseMonster
 {
 public:
-	void GenericCyclerSpawn(char *szModel, Vector vecMin, Vector vecMax);
+	void GenericCyclerSpawn( const char *szModel, Vector vecMin, Vector vecMax );
 	virtual int ObjectCaps( void ) { return ( CBaseEntity::ObjectCaps() | FCAP_IMPULSE_USE ); }
 	int TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType );
 	void Spawn( void );
@@ -92,7 +92,7 @@ void CCyclerProbe::Spawn( void )
 }
 
 // Cycler member functions
-void CCycler::GenericCyclerSpawn( char *szModel, Vector vecMin, Vector vecMax )
+void CCycler::GenericCyclerSpawn( const char *szModel, Vector vecMin, Vector vecMax )
 {
 	if( !szModel || !*szModel )
 	{
@@ -406,7 +406,7 @@ void CWreckage::Spawn( void )
 	}
 	// pev->scale = 5.0;
 
-	m_flStartTime = gpGlobals->time;
+	m_flStartTime = (int)gpGlobals->time;
 }
 
 void CWreckage::Precache()

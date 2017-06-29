@@ -935,7 +935,7 @@ BOOL CBasePlayerWeapon::CanDeploy( void )
 	return TRUE;
 }
 
-BOOL CBasePlayerWeapon::DefaultDeploy( char *szViewModel, char *szWeaponModel, int iAnim, char *szAnimExt, int skiplocal /* = 0 */, int body )
+BOOL CBasePlayerWeapon::DefaultDeploy( const char *szViewModel, char *szWeaponModel, int iAnim, char *szAnimExt, int skiplocal /* = 0 */, int body )
 {
 	if( !CanDeploy() )
 		return FALSE;
@@ -1400,7 +1400,7 @@ BOOL CWeaponBox::PackAmmo( int iszName, int iCount )
 //=========================================================
 // CWeaponBox - GiveAmmo
 //=========================================================
-int CWeaponBox::GiveAmmo( int iCount, char *szName, int iMax, int *pIndex/* = NULL*/ )
+int CWeaponBox::GiveAmmo( int iCount, const char *szName, int iMax, int *pIndex/* = NULL*/ )
 {
 	int i;
 

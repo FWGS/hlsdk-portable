@@ -14,9 +14,17 @@
 ****/
 #ifndef ENGINECALLBACK_H
 #define ENGINECALLBACK_H
+
+#ifdef _WIN32
+#ifndef __MINGW32__
 #pragma once
+#endif /* not __MINGW32__ */
+#endif
 
 #include "event_flags.h"
+
+// Fix warning in MSVC8
+#undef SERVER_EXECUTE
 
 // Must be provided by user of this code
 extern enginefuncs_t g_engfuncs;

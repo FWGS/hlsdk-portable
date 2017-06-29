@@ -118,7 +118,7 @@ float UTIL_SharedRandomFloat( unsigned int seed, float low, float high )
 	U_Random();
 	U_Random();
 
-	range = high - low;
+	range = (int)( high - low );
 	if( !range )
 	{
 		return low;
@@ -625,7 +625,7 @@ static unsigned short FixedUnsigned16( float value, float scale )
 {
 	int output;
 
-	output = value * scale;
+	output = (int)( value * scale );
 	if( output < 0 )
 		output = 0;
 	if( output > 0xFFFF )
@@ -638,7 +638,7 @@ static short FixedSigned16( float value, float scale )
 {
 	int output;
 
-	output = value * scale;
+	output = (int)( value * scale );
 
 	if( output > 32767 )
 		output = 32767;
@@ -937,10 +937,10 @@ TraceResult UTIL_GetGlobalTrace( )
 {
 	TraceResult tr;
 
-	tr.fAllSolid		= gpGlobals->trace_allsolid;
-	tr.fStartSolid		= gpGlobals->trace_startsolid;
-	tr.fInOpen		= gpGlobals->trace_inopen;
-	tr.fInWater		= gpGlobals->trace_inwater;
+	tr.fAllSolid		= (int)gpGlobals->trace_allsolid;
+	tr.fStartSolid		= (int)gpGlobals->trace_startsolid;
+	tr.fInOpen		= (int)gpGlobals->trace_inopen;
+	tr.fInWater		= (int)gpGlobals->trace_inwater;
 	tr.flFraction		= gpGlobals->trace_fraction;
 	tr.flPlaneDist		= gpGlobals->trace_plane_dist;
 	tr.pHit			= gpGlobals->trace_ent;
@@ -1033,7 +1033,7 @@ float UTIL_SplineFraction( float value, float scale )
 	return 3 * valueSquared - 2 * valueSquared * value;
 }
 
-char *UTIL_VarArgs( char *format, ... )
+char *UTIL_VarArgs( const char *format, ... )
 {
 	va_list	argptr;
 	static char string[1024];
@@ -1536,7 +1536,7 @@ void UTIL_PrecacheOther( const char *szClassname )
 // UTIL_LogPrintf - Prints a logged message to console.
 // Preceded by LOG: ( timestamp ) < message >
 //=========================================================
-void UTIL_LogPrintf( char *fmt, ... )
+void UTIL_LogPrintf( const char *fmt, ... )
 {
 	va_list		argptr;
 	static char	string[1024];
@@ -1902,7 +1902,7 @@ void EntvarsKeyvalue( entvars_t *pev, KeyValueData *pkvd )
 	int i;
 	TYPEDESCRIPTION *pField;
 
-	for( i = 0; i < ENTVARS_COUNT; i++ )
+	for( i = 0; i < (int)ENTVARS_COUNT; i++ )
 	{
 		pField = &gEntvarsDescription[i];
 

@@ -448,7 +448,7 @@ void CAmbientGeneric::InitModulationParms( void )
 {
 	int pitchinc;
 
-	m_dpv.volrun = pev->health * 10;	// 0 - 100
+	m_dpv.volrun = (int)( pev->health * 10 );	// 0 - 100
 	if( m_dpv.volrun > 100 )
 		m_dpv.volrun = 100;
 	if( m_dpv.volrun < 0 )
@@ -553,7 +553,7 @@ void CAmbientGeneric::ToggleUse( CBaseEntity *pActivator, CBaseEntity *pCaller, 
 		if( fraction < 0.0 )
 			fraction = 0.01;
 
-		m_dpv.pitch = fraction * 255;
+		m_dpv.pitch = (int)( fraction * 255 );
 
 		UTIL_EmitAmbientSound( ENT( pev ), pev->origin, szSoundFile, 0, 0, SND_CHANGE_PITCH, m_dpv.pitch );
 		return;
@@ -1610,7 +1610,7 @@ float TEXTURETYPE_PlaySound( TraceResult *ptr,  Vector vecSrc, Vector vecEnd, in
 	const char *pTextureName;
 	float rgfl1[3];
 	float rgfl2[3];
-	char *rgsz[4];
+	const char *rgsz[4];
 	int cnt;
 	float fattn = ATTN_NORM;
 
@@ -1822,7 +1822,7 @@ IMPLEMENT_SAVERESTORE( CSpeaker, CBaseEntity )
 //
 void CSpeaker::Spawn( void )
 {
-	char *szSoundFile = (char*) STRING( pev->message );
+	const char *szSoundFile = STRING( pev->message );
 
 	if( !m_preset && ( FStringNull( pev->message ) || strlen( szSoundFile ) < 1 ) )
 	{
@@ -1854,7 +1854,7 @@ void CSpeaker::Precache( void )
 }
 void CSpeaker::SpeakerThink( void )
 {
-	char* szSoundFile;
+	const char* szSoundFile = NULL;
 	float flvolume = pev->health * 0.1;
 	float flattenuation = 0.3;
 	int flags = 0;
@@ -1911,7 +1911,7 @@ void CSpeaker::SpeakerThink( void )
 		}
 	}
 	else
-		szSoundFile = (char*)STRING( pev->message );
+		szSoundFile = STRING( pev->message );
 
 	if( szSoundFile[0] == '!' )
 	{

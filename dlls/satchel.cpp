@@ -92,7 +92,7 @@ void CSatchelCharge::Spawn( void )
 
 void CSatchelCharge::SatchelSlide( CBaseEntity *pOther )
 {
-	entvars_t *pevOther = pOther->pev;
+	//entvars_t *pevOther = pOther->pev;
 
 	// don't hit the guy that launched this grenade
 	if( pOther->edict() == pev->owner )
@@ -377,11 +377,11 @@ void CSatchel::Throw( void )
 {
 	if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] )
 	{
+#ifndef CLIENT_DLL
 		Vector vecSrc = m_pPlayer->pev->origin;
 
 		Vector vecThrow = gpGlobals->v_forward * 274 + m_pPlayer->pev->velocity;
 
-#ifndef CLIENT_DLL
 		CBaseEntity *pSatchel = Create( "monster_satchel", vecSrc, Vector( 0, 0, 0 ), m_pPlayer->edict() );
 		pSatchel->pev->velocity = vecThrow;
 		pSatchel->pev->avelocity.y = 400;

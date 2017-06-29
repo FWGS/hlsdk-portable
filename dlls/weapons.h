@@ -310,7 +310,7 @@ public:
 
 	virtual BOOL CanDeploy( void );
 	virtual BOOL IsUseable( void );
-	BOOL DefaultDeploy( char *szViewModel, char *szWeaponModel, int iAnim, char *szAnimExt, int skiplocal = 0, int body = 0 );
+	BOOL DefaultDeploy( const char *szViewModel, char *szWeaponModel, int iAnim, char *szAnimExt, int skiplocal = 0, int body = 0 );
 	int DefaultReload( int iClipSize, int iAnim, float fDelay, int body = 0 );
 
 	virtual void ItemPostFrame( void );	// called each frame by the player PostThink
@@ -430,7 +430,7 @@ class CWeaponBox : public CBaseEntity
 	void Touch( CBaseEntity *pOther );
 	void KeyValue( KeyValueData *pkvd );
 	BOOL IsEmpty( void );
-	int  GiveAmmo( int iCount, char *szName, int iMax, int *pIndex = NULL );
+	int  GiveAmmo( int iCount, const char *szName, int iMax, int *pIndex = NULL );
 	void SetObjectCollisionBox( void );
 
 public:
@@ -453,7 +453,7 @@ public:
 
 #ifdef CLIENT_DLL
 bool bIsMultiplayer ( void );
-void LoadVModel ( char *szViewModel, CBasePlayer *m_pPlayer );
+void LoadVModel ( const char *szViewModel, CBasePlayer *m_pPlayer );
 #endif
 
 class CGlock : public CBasePlayerWeapon
@@ -828,7 +828,9 @@ public:
 	unsigned short m_usEgonStop;
 
 private:
+#ifndef CLIENT_DLL
 	float				m_shootTime;
+#endif
 	EGON_FIREMODE		m_fireMode;
 	float				m_shakeTime;
 	BOOL				m_deployed;
