@@ -45,7 +45,7 @@ int CHudTextMessage::Init( void )
 char *CHudTextMessage::LocaliseTextString( const char *msg, char *dst_buffer, int buffer_size )
 {
 	char *dst = dst_buffer;
-	for( char *src = msg; *src != 0 && buffer_size > 0; buffer_size-- )
+	for( char *src = (char*)msg; *src != 0 && buffer_size > 0; buffer_size-- )
 	{
 		if( *src == '#' )
 		{
@@ -163,22 +163,22 @@ int CHudTextMessage::MsgFunc_TextMsg( const char *pszName, int iSize, void *pbuf
 	int msg_dest = READ_BYTE();
 
 	static char szBuf[6][128];
-	char *msg_text = LookupString( READ_STRING(), &msg_dest );
+	const char *msg_text = LookupString( READ_STRING(), &msg_dest );
 	msg_text = strcpy( szBuf[0], msg_text );
 
 	// keep reading strings and using C format strings for subsituting the strings into the localised text string
 	const char *sstr1 = LookupString( READ_STRING() );
 	sstr1 = strcpy( szBuf[1], sstr1 );
-	StripEndNewlineFromString( sstr1 );  // these strings are meant for subsitution into the main strings, so cull the automatic end newlines
+	StripEndNewlineFromString( (char*)sstr1 );  // these strings are meant for subsitution into the main strings, so cull the automatic end newlines
 	const char *sstr2 = LookupString( READ_STRING() );
 	sstr2 = strcpy( szBuf[2], sstr2 );
-	StripEndNewlineFromString( sstr2 );
+	StripEndNewlineFromString( (char*)sstr2 );
 	const char *sstr3 = LookupString( READ_STRING() );
 	sstr3 = strcpy( szBuf[3], sstr3 );
-	StripEndNewlineFromString( sstr3 );
+	StripEndNewlineFromString( (char*)sstr3 );
 	const char *sstr4 = LookupString( READ_STRING() );
 	sstr4 = strcpy( szBuf[4], sstr4 );
-	StripEndNewlineFromString( sstr4 );
+	StripEndNewlineFromString( (char*)sstr4 );
 	char *psz = szBuf[5];
 
 	switch( msg_dest )

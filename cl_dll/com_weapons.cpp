@@ -46,7 +46,7 @@ void COM_Log( const char *pszFile, const char *fmt, ... )
 	va_list		argptr;
 	char		string[1024];
 	FILE *fp;
-	char *pfilename;
+	const char *pfilename;
 
 	if( !pszFile )
 	{

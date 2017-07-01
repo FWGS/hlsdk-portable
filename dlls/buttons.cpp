@@ -525,7 +525,7 @@ void CBaseButton::Spawn()
 // Button sound table. 
 // Also used by CBaseDoor to get 'touched' door lock/unlock sounds
 
-char *ButtonSound( int sound )
+const char *ButtonSound( int sound )
 { 
 	const char *pszSound;
 

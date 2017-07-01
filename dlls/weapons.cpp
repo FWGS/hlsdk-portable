@@ -935,7 +935,7 @@ BOOL CBasePlayerWeapon::CanDeploy( void )
 	return TRUE;
 }
 
-BOOL CBasePlayerWeapon::DefaultDeploy( const char *szViewModel, char *szWeaponModel, int iAnim, char *szAnimExt, int skiplocal /* = 0 */, int body )
+BOOL CBasePlayerWeapon::DefaultDeploy( const char *szViewModel, const char *szWeaponModel, int iAnim, const char *szAnimExt, int skiplocal /* = 0 */, int body )
 {
 	if( !CanDeploy() )
 		return FALSE;
