@@ -411,7 +411,7 @@ void CBigMomma::SetYawSpeed( void )
 {
 	int ys;
 
-	switch ( m_Activity )
+	switch( m_Activity )
 	{
 	case ACT_IDLE:
 		ys = 100;
