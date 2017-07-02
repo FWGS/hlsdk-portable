@@ -353,7 +353,7 @@ void Host_Say( edict_t *pEntity, int teamonly )
 	}
 
 	// remove quotes if present
-	if( *p == '"' )
+	if( p && *p == '"' )
 	{
 		p++;
 		p[strlen( p ) - 1] = 0;

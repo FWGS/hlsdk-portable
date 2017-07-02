@@ -743,21 +743,21 @@ void CFuncTrain::Next( void )
 	pev->target = pTarg->pev->target;
 	m_flWait = pTarg->GetDelay();
 
-	if ( m_pevCurrentTarget && m_pevCurrentTarget->speed != 0 )
+	if( m_pevCurrentTarget && m_pevCurrentTarget->speed != 0 )
 	{
 		// don't copy speed from target if it is 0 (uninitialized)
 		pev->speed = m_pevCurrentTarget->speed;
-		ALERT( at_aiconsole, "Train %s speed to %4.2f\n", STRING(pev->targetname), pev->speed );
+		ALERT( at_aiconsole, "Train %s speed to %4.2f\n", STRING( pev->targetname ), pev->speed );
 	}
 	m_pevCurrentTarget = pTarg->pev;// keep track of this since path corners change our target for us.
 
 	pev->enemy = pTarg->edict();//hack
 
-	if(FBitSet(m_pevCurrentTarget->spawnflags, SF_CORNER_TELEPORT))
+	if( FBitSet( m_pevCurrentTarget->spawnflags, SF_CORNER_TELEPORT ) )
 	{
 		// Path corner has indicated a teleport to the next corner.
-		SetBits(pev->effects, EF_NOINTERP);
-		UTIL_SetOrigin(pev, pTarg->pev->origin - (pev->mins + pev->maxs)* 0.5);
+		SetBits( pev->effects, EF_NOINTERP );
+		UTIL_SetOrigin( pev, pTarg->pev->origin - ( pev->mins + pev->maxs ) * 0.5 );
 		Wait(); // Get on with doing the next path corner.
 	}
 	else
@@ -767,13 +767,15 @@ void CFuncTrain::Next( void )
 		// CHANGED this from CHAN_VOICE to CHAN_STATIC around OEM beta time because trains should
 		// use CHAN_STATIC for their movement sounds to prevent sound field problems.
 		// this is not a hack or temporary fix, this is how things should be. (sjb).
-		if ( pev->noiseMovement )
-			STOP_SOUND( edict(), CHAN_STATIC, (char*)STRING(pev->noiseMovement) );
-		if ( pev->noiseMovement )
-			EMIT_SOUND (ENT(pev), CHAN_STATIC, (char*)STRING(pev->noiseMovement), m_volume, ATTN_NORM);
-		ClearBits(pev->effects, EF_NOINTERP);
+		if( pev->noiseMovement )
+		{
+			STOP_SOUND( edict(), CHAN_STATIC, (char*)STRING( pev->noiseMovement ) );
+			EMIT_SOUND( ENT( pev ), CHAN_STATIC, (char*)STRING( pev->noiseMovement ), m_volume, ATTN_NORM );
+		}
+
+		ClearBits( pev->effects, EF_NOINTERP );
 		SetMoveDone( &CFuncTrain::Wait );
-		LinearMove (pTarg->pev->origin - (pev->mins + pev->maxs)* 0.5, pev->speed);
+		LinearMove( pTarg->pev->origin - ( pev->mins + pev->maxs )* 0.5, pev->speed );
 	}
 }
 
