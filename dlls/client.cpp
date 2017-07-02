@@ -1853,18 +1853,18 @@ int GetHullBounds( int hullnumber, float *mins, float *maxs )
 	switch( hullnumber )
 	{
 	case 0:				// Normal player
-		mins = VEC_HULL_MIN;
-		maxs = VEC_HULL_MAX;
+		VEC_HULL_MIN.CopyToArray(mins);
+		VEC_HULL_MAX.CopyToArray(maxs);
 		iret = 1;
 		break;
 	case 1:				// Crouched player
-		mins = VEC_DUCK_HULL_MIN;
-		maxs = VEC_DUCK_HULL_MAX;
+		VEC_DUCK_HULL_MIN.CopyToArray(mins);
+		VEC_DUCK_HULL_MAX.CopyToArray(maxs);
 		iret = 1;
 		break;
 	case 2:				// Point based hull
-		mins = Vector( 0, 0, 0 );
-		maxs = Vector( 0, 0, 0 );
+		Vector( 0, 0, 0 ).CopyToArray(mins);
+		Vector( 0, 0, 0 ).CopyToArray(maxs);
 		iret = 1;
 		break;
 	}
