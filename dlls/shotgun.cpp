@@ -320,7 +320,7 @@ void CShotgun::WeaponIdle( void )
 		}
 		else if( m_fInSpecialReload != 0 )
 		{
-			if( m_iClip != 8 && m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] )
+			if( m_iClip != SHOTGUN_MAX_CLIP && m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] )
 			{
 				Reload();
 			}

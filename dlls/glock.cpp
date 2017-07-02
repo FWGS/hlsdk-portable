@@ -169,15 +169,15 @@ void CGlock::GlockFire( float flSpread, float flCycleTime, BOOL fUseAutoAim )
 
 void CGlock::Reload( void )
 {
-	if( m_pPlayer->ammo_9mm <= 0 )
-		 return;
+	if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0 || m_iClip == GLOCK_MAX_CLIP )
+		return;
 
 	int iResult;
 
 	if( m_iClip == 0 )
-		iResult = DefaultReload( 17, GLOCK_RELOAD, 1.5 );
+		iResult = DefaultReload( GLOCK_MAX_CLIP, GLOCK_RELOAD, 1.5 );
 	else
-		iResult = DefaultReload( 17, GLOCK_RELOAD_NOT_EMPTY, 1.5 );
+		iResult = DefaultReload( GLOCK_MAX_CLIP, GLOCK_RELOAD_NOT_EMPTY, 1.5 );
 
 	if( iResult )
 	{

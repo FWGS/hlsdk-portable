@@ -278,13 +278,8 @@ void CRpg::Reload( void )
 {
 	int iResult = 0;
 
-	if( m_iClip == 1 )
-	{
-		// don't bother with any of this if don't need to reload.
-		return;
-	}
-
-	if( m_pPlayer->ammo_rockets <= 0 )
+	// don't bother with any of this if don't need to reload.
+	if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0 || m_iClip == RPG_MAX_CLIP )
 		return;
 
 	// because the RPG waits to autoreload when no missiles are active while  the LTD is on, the
