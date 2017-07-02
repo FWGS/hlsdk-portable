@@ -110,20 +110,24 @@ void ClientDisconnect( edict_t *pEntity )
 		WRITE_STRING( text );
 	MESSAGE_END();
 
-	CSound *pSound;
-	pSound = CSoundEnt::SoundPointerForIndex( CSoundEnt::ClientSoundIndex( pEntity ) );
+	CSound *pSound = CSoundEnt::SoundPointerForIndex( CSoundEnt::ClientSoundIndex( pEntity ) );
+
+	// since this client isn't around to think anymore, reset their sound. 
+	if( pSound )
 	{
-		// since this client isn't around to think anymore, reset their sound. 
-		if( pSound )
-		{
-			pSound->Reset();
-		}
+		pSound->Reset();
 	}
 
 	// since the edict doesn't get deleted, fix it so it doesn't interfere.
 	pEntity->v.takedamage = DAMAGE_NO;// don't attract autoaim
 	pEntity->v.solid = SOLID_NOT;// nonsolid
 	UTIL_SetOrigin( &pEntity->v, pEntity->v.origin );
+
+	CBasePlayer *pl = (CBasePlayer *)CBaseEntity::Instance( pEntity );
+	if( pl->HasNamedPlayerItem( "weapon_satchel" ) )
+        {
+                DeactivateSatchels( pl );
+        }
 
 	g_pGameRules->ClientDisconnected( pEntity );
 }
