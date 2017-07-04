@@ -47,6 +47,7 @@ public:
 
 	void Spawn( void );
 	void Precache( void );
+	void UpdateOnRemove();
 	void SetYawSpeed( void );
 	int Classify( void );
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
@@ -383,6 +384,23 @@ void CController::Precache()
 	UTIL_PrecacheOther( "controller_energy_ball" );
 	UTIL_PrecacheOther( "controller_head_ball" );
 }	
+
+void CController::UpdateOnRemove()
+{
+	CBaseEntity::UpdateOnRemove();
+
+	if( m_pBall[0] )
+	{
+		UTIL_Remove( m_pBall[0] );
+		m_pBall[0] = nullptr;
+	}
+
+	if( m_pBall[1] )
+	{
+		UTIL_Remove( m_pBall[1] );
+		m_pBall[1] = nullptr;
+	}
+}
 
 //=========================================================
 // AI Schedules Specific to this monster
