@@ -392,13 +392,13 @@ void CController::UpdateOnRemove()
 	if( m_pBall[0] )
 	{
 		UTIL_Remove( m_pBall[0] );
-		m_pBall[0] = nullptr;
+		m_pBall[0] = 0;
 	}
 
 	if( m_pBall[1] )
 	{
 		UTIL_Remove( m_pBall[1] );
-		m_pBall[1] = nullptr;
+		m_pBall[1] = 0;
 	}
 }
 
