@@ -34,6 +34,7 @@ public:
 
 	void Spawn( void );
 	void Precache( void );
+	void UpdateOnRemove();
 	int Classify( void ) { return CLASS_ALIEN_MILITARY; };
 	int BloodColor( void ) { return BLOOD_COLOR_YELLOW; }
 	void Killed( entvars_t *pevAttacker, int iGib );
@@ -343,6 +344,26 @@ void CNihilanth::Precache( void )
 	PRECACHE_SOUND_ARRAY( pPainSounds );
 	PRECACHE_SOUND_ARRAY( pDeathSounds );
 	PRECACHE_SOUND( "debris/beamstart7.wav" );
+}
+
+void CNihilanth::UpdateOnRemove()
+{
+	CBaseEntity::UpdateOnRemove();
+ 
+	if( m_pBall )
+	{
+		UTIL_Remove( m_pBall );
+		m_pBall = 0;
+	}
+
+	for( int i = 0; i < N_SPHERES, i++ )
+	{
+		if( CBaseEntity* pSphere = (CBaseEntity *)m_hSphere[i] )
+		{
+			UTIL_Remove( pSphere );
+			m_hSphere[i] = 0;
+		}
+	}
 }
 
 void CNihilanth::PainSound( void )
