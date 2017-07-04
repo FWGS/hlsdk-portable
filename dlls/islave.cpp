@@ -44,6 +44,7 @@ class CISlave : public CSquadMonster
 public:
 	void Spawn( void );
 	void Precache( void );
+	void UpdateOnRemove();
 	void SetYawSpeed( void );
 	int ISoundMask( void );
 	int Classify( void );
@@ -555,6 +556,13 @@ void CISlave::Precache()
 		PRECACHE_SOUND( (char *)pDeathSounds[i] );
 
 	UTIL_PrecacheOther( "test_effect" );
+}
+
+void CISlave::UpdateOnRemove()
+{
+	CBaseEntity::UpdateOnRemove();
+
+	ClearBeams();
 }
 
 //=========================================================
