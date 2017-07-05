@@ -126,7 +126,7 @@ int CGauss::GetItemInfo( ItemInfo *p )
 BOOL CGauss::IsUseable()
 {
 	// Currently charging, allow the player to fire it first. - Solokiller
-	return CBasePlayerWeapon::IsUseable() || m_InAttack != 0;
+	return CBasePlayerWeapon::IsUseable() || m_fInAttack != 0;
 }
 
 BOOL CGauss::Deploy()

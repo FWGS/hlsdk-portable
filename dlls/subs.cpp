@@ -112,7 +112,7 @@ void CBaseEntity::UpdateOnRemove( void )
 	//Killtarget didn't do this before, so the counter broke. - Solokiller
 	if( CBaseEntity* pOwner = pev->owner ? Instance( pev->owner ) : 0 )
 	{
-		pOwner->DeathNotice( this );
+		pOwner->DeathNotice( pev );
 	}
 }
 

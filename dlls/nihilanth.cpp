@@ -356,7 +356,7 @@ void CNihilanth::UpdateOnRemove()
 		m_pBall = 0;
 	}
 
-	for( int i = 0; i < N_SPHERES, i++ )
+	for( int i = 0; i < N_SPHERES; i++ )
 	{
 		if( CBaseEntity* pSphere = (CBaseEntity *)m_hSphere[i] )
 		{
