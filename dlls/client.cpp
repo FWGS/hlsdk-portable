@@ -48,10 +48,14 @@ extern DLL_GLOBAL ULONG		g_ulFrameCount;
 extern void CopyToBodyQue( entvars_t* pev );
 extern int giPrecacheGrunt;
 extern int gmsgSayText;
+extern int gmsgBhopcap;
 
 extern cvar_t allow_spectators;
 
 extern int g_teamplay;
+
+extern cvar_t bhopcap;
+extern "C" int g_bhopcap;
 
 void LinkUserMessages( void );
 
@@ -799,8 +803,16 @@ void StartFrame( void )
 
 	gpGlobals->teamplay = teamplay.value;
 	g_ulFrameCount++;
-}
 
+	int oldBhopcap = g_bhopcap;
+	g_bhopcap = ( g_pGameRules->IsMultiplayer() && bhopcap.value != 0.0f ) ? 1 : 0;
+	if( g_bhopcap != oldBhopcap )
+	{
+		MESSAGE_BEGIN( MSG_ALL, gmsgBhopcap, NULL );
+			WRITE_BYTE( g_bhopcap );
+		MESSAGE_END();
+	}
+}
 
 void ClientPrecache( void )
 {

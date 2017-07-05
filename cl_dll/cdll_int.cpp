@@ -21,6 +21,7 @@
 #include "hud.h"
 #include "cl_util.h"
 #include "netadr.h"
+#include "parsemsg.h"
 
 extern "C"
 {
@@ -32,9 +33,20 @@ extern "C"
 cl_enginefunc_t gEngfuncs;
 CHud gHUD;
 mobile_engfuncs_t *gMobileEngfuncs = NULL;
+
+extern "C" int g_bhopcap;
 void InitInput( void );
 void EV_HookEvents( void );
 void IN_Commands( void );
+
+int __MsgFunc_Bhopcap( const char *pszName, int iSize, void *pbuf )
+{
+	BEGIN_READ( pbuf, iSize );
+
+	g_bhopcap = READ_BYTE();
+
+	return 1;
+}
 
 /*
 ========================== 
@@ -196,6 +208,8 @@ void DLLEXPORT HUD_Init( void )
 {
 	InitInput();
 	gHUD.Init();
+
+	gEngfuncs.pfnHookUserMsg( "Bhopcap", __MsgFunc_Bhopcap );
 }
 
 /*

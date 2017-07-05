@@ -27,11 +27,13 @@
 #include <stdlib.h> // atoi
 #include <ctype.h>  // isspace
 
+int g_bhopcap = 1;
+
 #ifdef CLIENT_DLL
-	// Spectator Mode
-	int	iJumpSpectator;
-extern	float	vJumpOrigin[3];
-extern	float	vJumpAngles[3];
+// Spectator Mode
+int iJumpSpectator;
+extern float vJumpOrigin[3];
+extern float vJumpAngles[3];
 #endif
 
 static int pm_shared_initialized = 0;
@@ -2556,7 +2558,8 @@ void PM_Jump( void )
 	// In the air now.
 	pmove->onground = -1;
 
-	PM_PreventMegaBunnyJumping();
+	if( g_bhopcap )
+		PM_PreventMegaBunnyJumping();
 
 	if( tfc )
 	{

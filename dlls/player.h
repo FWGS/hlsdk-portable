@@ -313,13 +313,15 @@ public:
 	//Player ID
 	void InitStatusBar( void );
 	void UpdateStatusBar( void );
-	int m_izSBarState[ SBAR_END ];
+	int m_izSBarState[SBAR_END];
 	float m_flNextSBarUpdateTime;
 	float m_flStatusBarDisappearDelay;
-	char m_SbarString0[ SBAR_STRING_SIZE ];
-	char m_SbarString1[ SBAR_STRING_SIZE ];
+	char m_SbarString0[SBAR_STRING_SIZE];
+	char m_SbarString1[SBAR_STRING_SIZE];
 
 	float m_flNextChatTime;
+
+	bool m_bSentBhopcap; // If false, the player just joined and needs a bhopcap message.
 };
 
 #define AUTOAIM_2DEGREES  0.0348994967025
@@ -327,7 +329,7 @@ public:
 #define AUTOAIM_8DEGREES  0.1391731009601
 #define AUTOAIM_10DEGREES 0.1736481776669
 
-extern int	gmsgHudText;
+extern int gmsgHudText;
 extern BOOL gInitHUD;
 
 #endif // PLAYER_H

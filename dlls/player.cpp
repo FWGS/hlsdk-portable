@@ -45,6 +45,8 @@ extern DLL_GLOBAL BOOL g_fDrawLines;
 int gEvilImpulse101;
 extern DLL_GLOBAL int g_iSkillLevel, gDisplayTitle;
 
+extern "C" int g_bhopcap;
+
 BOOL gInitHUD = TRUE;
 
 extern void CopyToBodyQue( entvars_t *pev);
@@ -181,6 +183,7 @@ int gmsgSetFOV = 0;
 int gmsgShowMenu = 0;
 int gmsgGeigerRange = 0;
 int gmsgTeamNames = 0;
+int gmsgBhopcap = 0;
 
 int gmsgStatusText = 0;
 int gmsgStatusValue = 0;
@@ -227,6 +230,7 @@ void LinkUserMessages( void )
 	gmsgFade = REG_USER_MSG( "ScreenFade", sizeof(ScreenFade) );
 	gmsgAmmoX = REG_USER_MSG( "AmmoX", 2 );
 	gmsgTeamNames = REG_USER_MSG( "TeamNames", -1 );
+	gmsgBhopcap = REG_USER_MSG( "Bhopcap", 1 );
 
 	gmsgStatusText = REG_USER_MSG( "StatusText", -1 );
 	gmsgStatusValue = REG_USER_MSG( "StatusValue", 3 );
@@ -4071,6 +4075,15 @@ void CBasePlayer::UpdateClientData( void )
 	{
 		UpdateStatusBar();
 		m_flNextSBarUpdateTime = gpGlobals->time + 0.2;
+	}
+
+	// Send the current bhopcap state.
+	if( !m_bSentBhopcap )
+	{
+		m_bSentBhopcap = true;
+		MESSAGE_BEGIN( MSG_ONE, gmsgBhopcap, NULL, pev );
+			WRITE_BYTE( g_bhopcap );
+		MESSAGE_END();
 	}
 }
 
