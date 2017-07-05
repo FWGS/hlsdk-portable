@@ -109,8 +109,8 @@ CRpgRocket *CRpgRocket::CreateRpgRocket( Vector vecOrigin, Vector vecAngles, CBa
 	pRocket->pev->angles = vecAngles;
 	pRocket->Spawn();
 	pRocket->SetTouch( &CRpgRocket::RocketTouch );
-	pRocket->m_pLauncher = pLauncher;// remember what RPG fired me. 
-	pRocket->m_pLauncher->m_cActiveRockets++;// register this missile as active for the launcher
+	pRocket->m_hLauncher = pLauncher;// remember what RPG fired me. 
+	pLauncher->m_cActiveRockets++;// register this missile as active for the launcher
 	pRocket->pev->owner = pOwner->edict();
 
 	return pRocket;
@@ -150,10 +150,10 @@ void CRpgRocket::Spawn( void )
 //=========================================================
 void CRpgRocket::RocketTouch( CBaseEntity *pOther )
 {
-	if( m_pLauncher )
+	if( CRpg* pLauncher = (CRpg*)( (CBaseEntity*)( m_hLauncher ) ) )
 	{
 		// my launcher is still around, tell it I'm dead.
-		m_pLauncher->m_cActiveRockets--;
+		pLauncher->m_cActiveRockets--;
 	}
 
 	STOP_SOUND( edict(), CHAN_VOICE, "weapons/rocket1.wav" );
