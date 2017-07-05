@@ -455,6 +455,7 @@ void GameDLLInit( void )
 	g_footsteps = CVAR_GET_POINTER( "mp_footsteps" );
 
 	CVAR_REGISTER( &displaysoundlist );
+	CVAR_REGISTER( &allow_spectators );
 
 	CVAR_REGISTER( &teamplay );
 	CVAR_REGISTER( &fraglimit );
