@@ -103,6 +103,12 @@ void CHandGrenade::Holster( int skiplocal /* = 0 */ )
 		pev->nextthink = gpGlobals->time + 0.1;
 	}
 
+	if( m_flStartThrow )
+	{
+		m_flStartThrow = 0;
+		m_flReleaseThrow = 0;
+	}
+
 	EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_WEAPON, "common/null.wav", 1.0, ATTN_NORM );
 }
 
