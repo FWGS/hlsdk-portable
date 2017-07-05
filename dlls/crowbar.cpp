@@ -183,9 +183,12 @@ int CCrowbar::Swing( int fFirst )
 		}
 	}
 #endif
-	PLAYBACK_EVENT_FULL( FEV_NOTHOST, m_pPlayer->edict(), m_usCrowbar, 
-	0.0, (float *)&g_vecZero, (float *)&g_vecZero, 0, 0, 0,
-	0, 0, 0 );
+	if( fFirst )
+	{
+		PLAYBACK_EVENT_FULL( FEV_NOTHOST, m_pPlayer->edict(), m_usCrowbar, 
+		0.0, (float *)&g_vecZero, (float *)&g_vecZero, 0, 0, 0,
+		0, 0, 0 );
+	}
 
 	if( tr.flFraction >= 1.0 )
 	{
