@@ -632,6 +632,7 @@ public:
 	void SecondaryAttack( void );
 	BOOL Deploy( );
 	void Reload( void );
+	void WeaponTick();
 	void WeaponIdle( void );
 	int m_fInReload;
 	float m_flNextReload;
