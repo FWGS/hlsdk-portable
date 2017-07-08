@@ -1886,7 +1886,7 @@ void CSave::WritePositionVector( const char *pname, const float *value, int coun
 	}
 }
 
-void CSave::WriteFunction( const char *pname, const int *data, int count )
+void CSave::WriteFunction( const char *pname, void **data, int count )
 {
 	const char *functionName;
 
@@ -1894,7 +1894,7 @@ void CSave::WriteFunction( const char *pname, const int *data, int count )
 	if( functionName )
 		BufferField( pname, strlen( functionName ) + 1, functionName );
 	else
-		ALERT( at_error, "Invalid function pointer in entity!" );
+		ALERT( at_error, "Invalid function pointer in entity!\n" );
 }
 
 void EntvarsKeyvalue( entvars_t *pev, KeyValueData *pkvd )
@@ -2042,7 +2042,7 @@ int CSave::WriteFields( const char *pname, void *pBaseData, TYPEDESCRIPTION *pFi
 			WriteInt( pTest->fieldName, (int *)(char *)pOutputData, pTest->fieldSize );
 			break;
 		case FIELD_FUNCTION:
-			WriteFunction( pTest->fieldName, (int *)pOutputData, pTest->fieldSize );
+			WriteFunction( pTest->fieldName, (void **)pOutputData, pTest->fieldSize );
 			break;
 		default:
 			ALERT( at_error, "Bad field type\n" );
