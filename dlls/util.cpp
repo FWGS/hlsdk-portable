@@ -1890,7 +1890,7 @@ void CSave::WriteFunction( const char *pname, void **data, int count )
 {
 	const char *functionName;
 
-	functionName = NAME_FOR_FUNCTION( (unsigned int)(size_t)*data );
+	functionName = NAME_FOR_FUNCTION( (size_t)*data );
 	if( functionName )
 		BufferField( pname, strlen( functionName ) + 1, functionName );
 	else
