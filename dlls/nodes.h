@@ -104,7 +104,11 @@ typedef struct
 //=========================================================
 // CGraph 
 //=========================================================
+#if defined(__amd64__) || defined(__aarch64__)
+#define GRAPH_VERSION   (int)17// Was incremented for 64bit arches, because .nod-files have incombatibilities on different arches.
+#else
 #define	GRAPH_VERSION	(int)16// !!!increment this whever graph/node/link classes change, to obsolesce older disk files.
+#endif
 
 class CGraph
 {
