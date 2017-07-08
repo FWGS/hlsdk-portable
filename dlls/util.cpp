@@ -1587,6 +1587,33 @@ static int gSizes[FIELD_TYPECOUNT] =
 {
 	sizeof(float),		// FIELD_FLOAT
 	sizeof(int),		// FIELD_STRING
+	sizeof(void*),		// FIELD_ENTITY
+	sizeof(void*),		// FIELD_CLASSPTR
+	sizeof(void*),		// FIELD_EHANDLE
+	sizeof(void*),		// FIELD_entvars_t
+	sizeof(void*),		// FIELD_EDICT
+	sizeof(float) * 3,	// FIELD_VECTOR
+	sizeof(float) * 3,	// FIELD_POSITION_VECTOR
+	sizeof(void *),		// FIELD_POINTER
+	sizeof(int),		// FIELD_INTEGER
+#ifdef GNUC
+	sizeof(void *) * 2,	// FIELD_FUNCTION
+#else
+	sizeof(void *),		// FIELD_FUNCTION	
+#endif
+	sizeof(int),		// FIELD_BOOLEAN
+	sizeof(short),		// FIELD_SHORT
+	sizeof(char),		// FIELD_CHARACTER
+	sizeof(float),		// FIELD_TIME
+	sizeof(int),		// FIELD_MODELNAME
+	sizeof(int),		// FIELD_SOUNDNAME
+};
+
+// entities has different store size
+static int gInputSizes[FIELD_TYPECOUNT] =
+{
+	sizeof(float),		// FIELD_FLOAT
+	sizeof(int),		// FIELD_STRING
 	sizeof(int),		// FIELD_ENTITY
 	sizeof(int),		// FIELD_CLASSPTR
 	sizeof(int),		// FIELD_EHANDLE
@@ -1594,12 +1621,12 @@ static int gSizes[FIELD_TYPECOUNT] =
 	sizeof(int),		// FIELD_EDICT
 	sizeof(float) * 3,	// FIELD_VECTOR
 	sizeof(float) * 3,	// FIELD_POSITION_VECTOR
-	sizeof(int *),		// FIELD_POINTER
+	sizeof(void *),		// FIELD_POINTER
 	sizeof(int),		// FIELD_INTEGER
 #ifdef GNUC
-	sizeof(int *) * 2,	// FIELD_FUNCTION
+	sizeof(void *) * 2,	// FIELD_FUNCTION
 #else
-	sizeof(int *),		// FIELD_FUNCTION	
+	sizeof(void *),		// FIELD_FUNCTION
 #endif
 	sizeof(int),		// FIELD_BOOLEAN
 	sizeof(short),		// FIELD_SHORT
@@ -2137,7 +2164,7 @@ int CRestore::ReadField( void *pBaseData, TYPEDESCRIPTION *pFields, int fieldCou
 				for( j = 0; j < pTest->fieldSize; j++ )
 				{
 					void *pOutputData = ( (char *)pBaseData + pTest->fieldOffset + ( j * gSizes[pTest->fieldType] ) );
-					void *pInputData = (char *)pData + j * gSizes[pTest->fieldType];
+					void *pInputData = (char *)pData + j * gInputSizes[pTest->fieldType];
 
 					switch( pTest->fieldType )
 					{
