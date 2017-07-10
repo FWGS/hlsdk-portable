@@ -36,7 +36,7 @@ extern globalvars_t				*gpGlobals;
 // Use this instead of ALLOC_STRING on constant strings
 #define STRING(offset)		(const char *)(gpGlobals->pStringBase + (int)offset)
 
-#if !defined __amd64__ || defined(CLIENT_DLL)
+#if !defined(__amd64__) && !defined(__aarch64__) || defined(CLIENT_DLL)
 #define MAKE_STRING(str)	((size_t)str - (size_t)STRING(0))
 #else
 #define MAKE_STRING ALLOC_STRING
