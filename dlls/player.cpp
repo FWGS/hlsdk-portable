@@ -3661,7 +3661,9 @@ int CBasePlayer::RemovePlayerItem( CBasePlayerItem *pItem )
 		pev->viewmodel = 0;
 		pev->weaponmodel = 0;
 	}
-	else if( m_pLastItem == pItem )
+
+	// In some cases an item can be both the active and last item, like for instance dropping all weapons and only having an exhaustible weapon left. - Solokiller
+	if( m_pLastItem == pItem )
 		m_pLastItem = NULL;
 
 	CBasePlayerItem *pPrev = m_rgpPlayerItems[pItem->iItemSlot()];
