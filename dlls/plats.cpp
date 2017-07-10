@@ -248,7 +248,7 @@ public:
 	virtual int ObjectCaps( void ) { return (CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION) | FCAP_DONT_SAVE; }
 	void SpawnInsideTrigger( CFuncPlat *pPlatform );
 	void Touch( CBaseEntity *pOther );
-	EHANDLE m_pPlatform;
+	EHANDLE m_hPlatform;
 };
 
 /*QUAKED func_plat (0 .5 .8) ? PLAT_LOW_TRIGGER
@@ -375,7 +375,7 @@ void CPlatTrigger::Touch( CBaseEntity *pOther )
 
 	CFuncPlat *pPlatform = (CFuncPlat*)(CBaseEntity*)m_hPlatform;
 
-	if( FNullEnt( pPlatform ) )
+	if( !pPlatform )
 	{
 		// The target platform has been removed, remove myself as well. - Solokiller
 		UTIL_Remove( this );
