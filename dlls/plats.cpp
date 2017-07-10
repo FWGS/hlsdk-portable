@@ -248,7 +248,7 @@ public:
 	virtual int ObjectCaps( void ) { return (CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION) | FCAP_DONT_SAVE; }
 	void SpawnInsideTrigger( CFuncPlat *pPlatform );
 	void Touch( CBaseEntity *pOther );
-	CFuncPlat *m_pPlatform;
+	EHANDLE m_pPlatform;
 };
 
 /*QUAKED func_plat (0 .5 .8) ? PLAT_LOW_TRIGGER
@@ -340,24 +340,24 @@ static void PlatSpawnInsideTrigger( entvars_t *pevPlatform )
 //
 void CPlatTrigger::SpawnInsideTrigger( CFuncPlat *pPlatform )
 {
-	m_pPlatform = pPlatform;
+	m_hPlatform = pPlatform;
 	// Create trigger entity, "point" it at the owning platform, give it a touch method
 	pev->solid = SOLID_TRIGGER;
 	pev->movetype = MOVETYPE_NONE;
 	pev->origin = pPlatform->pev->origin;
 
 	// Establish the trigger field's size
-	Vector vecTMin = m_pPlatform->pev->mins + Vector( 25, 25, 0 );
-	Vector vecTMax = m_pPlatform->pev->maxs + Vector( 25, 25, 8 );
-	vecTMin.z = vecTMax.z - ( m_pPlatform->m_vecPosition1.z - m_pPlatform->m_vecPosition2.z + 8 );
-	if( m_pPlatform->pev->size.x <= 50 )
+	Vector vecTMin = pPlatform->pev->mins + Vector( 25, 25, 0 );
+	Vector vecTMax = pPlatform->pev->maxs + Vector( 25, 25, 8 );
+	vecTMin.z = vecTMax.z - ( pPlatform->m_vecPosition1.z - pPlatform->m_vecPosition2.z + 8 );
+	if( pPlatform->pev->size.x <= 50 )
 	{
-		vecTMin.x = ( m_pPlatform->pev->mins.x + m_pPlatform->pev->maxs.x ) / 2;
+		vecTMin.x = ( pPlatform->pev->mins.x + pPlatform->pev->maxs.x ) / 2;
 		vecTMax.x = vecTMin.x + 1;
 	}
-	if( m_pPlatform->pev->size.y <= 50 )
+	if( pPlatform->pev->size.y <= 50 )
 	{
-		vecTMin.y = ( m_pPlatform->pev->mins.y + m_pPlatform->pev->maxs.y ) / 2;
+		vecTMin.y = ( pPlatform->pev->mins.y + pPlatform->pev->maxs.y ) / 2;
 		vecTMax.y = vecTMin.y + 1;
 	}
 	UTIL_SetSize( pev, vecTMin, vecTMax );
@@ -373,15 +373,17 @@ void CPlatTrigger::Touch( CBaseEntity *pOther )
 	if( !FClassnameIs( pevToucher, "player" ) )
 		return;
 
+	CFuncPlat *pPlatform = (CFuncPlat*)(CBaseEntity*)m_hPlatform;
+
 	// Ignore touches by corpses
 	if( !pOther->IsAlive() )
 		return;
 
 	// Make linked platform go up/down.
-	if( m_pPlatform->m_toggle_state == TS_AT_BOTTOM )
-		m_pPlatform->GoUp();
-	else if( m_pPlatform->m_toggle_state == TS_AT_TOP )
-		m_pPlatform->pev->nextthink = m_pPlatform->pev->ltime + 1;// delay going down
+	if( pPlatform->m_toggle_state == TS_AT_BOTTOM )
+		pPlatform->GoUp();
+	else if( pPlatform->m_toggle_state == TS_AT_TOP )
+		pPlatform->pev->nextthink = pPlatform->pev->ltime + 1;// delay going down
 }
 
 //
