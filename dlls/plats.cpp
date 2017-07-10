@@ -375,6 +375,13 @@ void CPlatTrigger::Touch( CBaseEntity *pOther )
 
 	CFuncPlat *pPlatform = (CFuncPlat*)(CBaseEntity*)m_hPlatform;
 
+	if( FNullEnt( pPlatform ) )
+	{
+		// The target platform has been removed, remove myself as well. - Solokiller
+		UTIL_Remove( this );
+		return;
+	}
+
 	// Ignore touches by corpses
 	if( !pOther->IsAlive() )
 		return;
@@ -429,7 +436,7 @@ void CFuncPlat::GoDown( void )
 }
 
 //
-// Platform has hit bottom.  Stops and waits forever.
+// Platform has hit bottom. Stops and waits forever.
 //
 void CFuncPlat::HitBottom( void )
 {
@@ -458,7 +465,7 @@ void CFuncPlat::GoUp( void )
 }
 
 //
-// Platform has hit top.  Pauses, then starts back down again.
+// Platform has hit top. Pauses, then starts back down again.
 //
 void CFuncPlat::HitTop( void )
 {
@@ -556,7 +563,7 @@ void CFuncPlatRot::GoDown( void )
 }
 
 //
-// Platform has hit bottom.  Stops and waits forever.
+// Platform has hit bottom. Stops and waits forever.
 //
 void CFuncPlatRot::HitBottom( void )
 {
@@ -575,7 +582,7 @@ void CFuncPlatRot::GoUp( void )
 }
 
 //
-// Platform has hit top.  Pauses, then starts back down again.
+// Platform has hit top. Pauses, then starts back down again.
 //
 void CFuncPlatRot::HitTop( void )
 {
@@ -857,8 +864,8 @@ void CFuncTrain::Precache( void )
 	case 1:
 		PRECACHE_SOUND( "plats/train2.wav" );
 		PRECACHE_SOUND( "plats/train1.wav" );
-		pev->noise = MAKE_STRING("plats/train2.wav" );
-		pev->noise1 = MAKE_STRING("plats/train1.wav" );
+		pev->noise = MAKE_STRING( "plats/train2.wav" );
+		pev->noise1 = MAKE_STRING( "plats/train1.wav" );
 		break;
 	case 2:
 		PRECACHE_SOUND( "plats/platmove1.wav" );
