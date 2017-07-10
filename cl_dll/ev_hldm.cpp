@@ -1695,7 +1695,7 @@ void EV_TrainPitchAdjust( event_args_t *args )
 	int pitch;
 	int stop;
 
-	char sz[256];
+	const char *pszSound;
 
 	idx = args->entindex;
 
@@ -1711,36 +1711,35 @@ void EV_TrainPitchAdjust( event_args_t *args )
 	switch( noise )
 	{
 	case 1:
-		strcpy( sz, "plats/ttrain1.wav" );
+		pszSound = "plats/ttrain1.wav";
 		break;
 	case 2:
-		strcpy( sz, "plats/ttrain2.wav" );
+		pszSound = "plats/ttrain2.wav";
 		break;
 	case 3:
-		strcpy( sz, "plats/ttrain3.wav" );
+		pszSound = "plats/ttrain3.wav";
 		break; 
 	case 4:
-		strcpy( sz, "plats/ttrain4.wav");
+		pszSound = "plats/ttrain4.wav";
 		break;
 	case 5:
-		strcpy( sz, "plats/ttrain6.wav");
+		pszSound = "plats/ttrain6.wav";
 		break;
 	case 6:
-		strcpy( sz, "plats/ttrain7.wav");
+		pszSound = "plats/ttrain7.wav";
 		break;
 	default:
 		// no sound
-		strcpy( sz, "" );
 		return;
 	}
 
 	if( stop )
 	{
-		gEngfuncs.pEventAPI->EV_StopSound( idx, CHAN_STATIC, sz );
+		gEngfuncs.pEventAPI->EV_StopSound( idx, CHAN_STATIC, pszSound );
 	}
 	else
 	{
-		gEngfuncs.pEventAPI->EV_PlaySound( idx, origin, CHAN_STATIC, sz, m_flVolume, ATTN_NORM, SND_CHANGE_PITCH, pitch );
+		gEngfuncs.pEventAPI->EV_PlaySound( idx, origin, CHAN_STATIC, pszSound, m_flVolume, ATTN_NORM, SND_CHANGE_PITCH, pitch );
 	}
 }
 
