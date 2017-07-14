@@ -283,7 +283,7 @@ unsigned short stub_PrecacheEvent( int type, const char *s )
 	return 0;
 }
 
-const char *stub_NameForFunction( unsigned long function )
+const char *stub_NameForFunction( void *function )
 {
 	return "func";
 }
