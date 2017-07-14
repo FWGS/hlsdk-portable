@@ -103,7 +103,11 @@ typedef struct
 //=========================================================
 // CGraph 
 //=========================================================
+#ifdef __amd64
+#define	GRAPH_VERSION	(int)16 * 10
+#else
 #define	GRAPH_VERSION	(int)16// !!!increment this whever graph/node/link classes change, to obsolesce older disk files.
+#endif
 
 class CGraph
 {
