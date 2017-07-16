@@ -215,7 +215,7 @@ typedef struct
 	char		label[32];	// textual name
 	char		name[64];		// file name
 	cache_user_t	cache;		// cache index pointer
-#ifndef __amd64
+#ifndef XASH_64BIT
 	int		data;		// hack for group 0
 #endif
 } mstudioseqgroup_t;

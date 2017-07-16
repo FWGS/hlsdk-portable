@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2002, Valve LLC, All rights reserved. ============
+//========= Copyright (c) 1996-2002, Valve LLC, All rights reserved. ============
 //
 // Purpose: 
 //
@@ -34,7 +34,7 @@ void			HUD_SetMaxSpeed( const struct edict_s *ed, float speed );
 int				stub_PrecacheModel( char* s );
 int				stub_PrecacheSound( char* s );
 unsigned short	stub_PrecacheEvent( int type, const char *s );
-const char		*stub_NameForFunction( unsigned long function );
+const char		*stub_NameForFunction( void *function );
 void			stub_SetModel( struct edict_s *e, const char *m );
 
 extern cvar_t *cl_lw;

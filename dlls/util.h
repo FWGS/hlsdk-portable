@@ -35,10 +35,17 @@ extern globalvars_t				*gpGlobals;
 
 // Use this instead of ALLOC_STRING on constant strings
 #define STRING(offset)		(const char *)(gpGlobals->pStringBase + (int)offset)
-#if !defined __amd64__ || defined(CLIENT_DLL)
+#if !defined XASH_64BIT || defined(CLIENT_DLL)
 #define MAKE_STRING(str)	((int)(size_t)str - (int)(size_t)STRING(0))
 #else
-#define MAKE_STRING ALLOC_STRING
+static inline int MAKE_STRING(const char *szValue)
+{
+	long long ptrdiff = szValue - STRING(0);
+	if( ptrdiff > INT_MAX || ptrdiff < INT_MIN )
+		return ALLOC_STRING(szValue);
+	else
+		return (int)ptrdiff;
+}
 #endif
 
 inline edict_t *FIND_ENTITY_BY_CLASSNAME(edict_t *entStart, const char *pszName) 

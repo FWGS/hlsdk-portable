@@ -115,6 +115,8 @@ inline void GetConsoleStringSize( const char *string, int *width, int *height )
 		gEngfuncs.pfnDrawConsoleStringLen( (char*)string, width, height );
 }
 
+int DrawUtfString( int xpos, int ypos, int iMaxX, char *szIt, int r, int g, int b );
+
 inline int ConsoleStringLen( const char *string )
 {
 	int _width = 0, _height = 0;
