@@ -799,13 +799,13 @@ void CBasePlayer::RemoveAllItems( BOOL removeSuit )
 	for( i = 0; i < MAX_ITEM_TYPES; i++ )
 	{
 		m_pActiveItem = m_rgpPlayerItems[i];
+		m_rgpPlayerItems[i] = NULL;
 		while( m_pActiveItem )
 		{
 			pPendingItem = m_pActiveItem->m_pNext; 
 			m_pActiveItem->Drop();
 			m_pActiveItem = pPendingItem;
 		}
-		m_rgpPlayerItems[i] = NULL;
 	}
 	m_pActiveItem = NULL;
 
