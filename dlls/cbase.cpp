@@ -441,9 +441,16 @@ edict_t *EHANDLE::Get( void )
 
 edict_t *EHANDLE::Set( edict_t *pent )
 {
-	m_pent = pent;  
-	if( pent ) 
-		m_serialnumber = m_pent->serialnumber; 
+	if( pent )
+	{
+		m_pent = pent;
+		m_serialnumber = m_pent->serialnumber;
+	}
+	else
+	{
+		m_pent = NULL;
+		m_serialnumber = 0;
+	}
 	return pent; 
 }
 
