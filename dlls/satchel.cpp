@@ -43,8 +43,6 @@ enum satchel_radio_e
 class CSatchelCharge : public CGrenade
 {
 	Vector m_lastBounceOrigin;	// Used to fix a bug in engine: when object isn't moving, but its speed isn't 0 and on ground isn't set
- 	void Spawn( void );
- 	void Precache( void );
 	void Spawn( void );
 	void Precache( void );
 	void BounceSound( void );

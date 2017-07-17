@@ -4060,7 +4060,7 @@ void CBasePlayer::UpdateClientData( void )
 			m_rgpPlayerItems[i]->UpdateClientData( this );
 	}
 
-	if( m_pClientActiveItem != pPlayer->m_pActiveItem )
+	/*if( m_pClientActiveItem != pPlayer->m_pActiveItem )
 	{
 		if( pPlayer->m_pActiveItem == NULL )
 		{
@@ -4104,7 +4104,7 @@ void CBasePlayer::UpdateClientData( void )
 				MESSAGE_END();
 			}
 		}
-	}
+	}*/
 
 	// Cache and client weapon change
 	m_pClientActiveItem = m_pActiveItem;

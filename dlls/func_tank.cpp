@@ -369,8 +369,8 @@ BOOL CFuncTank::StartControl( CBasePlayer *pController )
 
 void CFuncTank::StopControl()
 {
-	if( m_pLaser )
-		m_pLaser->TurnOff();
+	//if( m_pLaser )
+		//m_pLaser->TurnOff();
 
 	// TODO: bring back the controllers current weapon
 	if( !m_pController )
