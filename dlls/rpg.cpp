@@ -265,6 +265,11 @@ void CRpgRocket::FollowThink( void )
 		pev->velocity = pev->velocity * 0.2 + vecTarget * flSpeed * 0.798;
 		if( pev->waterlevel == 0 && pev->velocity.Length() < 1500 )
 		{
+			if( m_pLauncher )
+			{
+				// my launcher is still around, tell it I'm dead.
+				m_pLauncher->m_cActiveRockets--;
+			}
 			Detonate();
 		}
 	}
