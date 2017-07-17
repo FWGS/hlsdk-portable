@@ -42,6 +42,9 @@ enum satchel_radio_e
 
 class CSatchelCharge : public CGrenade
 {
+	Vector m_lastBounceOrigin;	// Used to fix a bug in engine: when object isn't moving, but its speed isn't 0 and on ground isn't set
+ 	void Spawn( void );
+ 	void Precache( void );
 	void Spawn( void );
 	void Precache( void );
 	void BounceSound( void );
@@ -114,14 +117,19 @@ void CSatchelCharge::SatchelSlide( CBaseEntity *pOther )
 	}
 	if( !( pev->flags & FL_ONGROUND ) && pev->velocity.Length2D() > 10 )
 	{
+		// Fix for a bug in engine: when object isn't moving, but its speed isn't 0 and on ground isn't set
+		if( pev->origin != m_lastBounceOrigin )
 		BounceSound();
 	}
-	StudioFrameAdvance();
+	m_lastBounceOrigin = pev->origin;
+	// There is no model animation so commented this out to prevent net traffic
+	// StudioFrameAdvance();
 }
 
 void CSatchelCharge::SatchelThink( void )
 {
-	StudioFrameAdvance();
+	// There is no model animation so commented this out to prevent net traffic
+	// StudioFrameAdvance();
 	pev->nextthink = gpGlobals->time + 0.1;
 
 	if( !IsInWorld() )
@@ -149,7 +157,7 @@ void CSatchelCharge::SatchelThink( void )
 
 void CSatchelCharge::Precache( void )
 {
-	PRECACHE_MODEL( "models/grenade.mdl" );
+	PRECACHE_MODEL( "models/w_satchel.mdl" );
 	PRECACHE_SOUND( "weapons/g_bounce1.wav" );
 	PRECACHE_SOUND( "weapons/g_bounce2.wav" );
 	PRECACHE_SOUND( "weapons/g_bounce3.wav" );
