@@ -127,12 +127,6 @@ void ClientDisconnect( edict_t *pEntity )
 	pEntity->v.solid = SOLID_NOT;// nonsolid
 	UTIL_SetOrigin( &pEntity->v, pEntity->v.origin );
 
-	CBasePlayer *pl = (CBasePlayer *)CBaseEntity::Instance( pEntity );
-	if( pl->HasNamedPlayerItem( "weapon_satchel" ) )
-        {
-                DeactivateSatchels( pl );
-        }
-
 	g_pGameRules->ClientDisconnected( pEntity );
 }
 
