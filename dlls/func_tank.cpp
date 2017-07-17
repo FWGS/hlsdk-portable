@@ -351,6 +351,7 @@ BOOL CFuncTank::StartControl( CBasePlayer *pController )
 	ALERT( at_console, "using TANK!\n");
 
 	m_pController = pController;
+	m_pController->m_pTank = this;
 	if( m_pController->m_pActiveItem )
 	{
 		m_pController->m_pActiveItem->Holster();
@@ -380,6 +381,8 @@ void CFuncTank::StopControl()
 	m_pController->m_iHideHUD &= ~HIDEHUD_WEAPONS;
 
 	pev->nextthink = 0;
+
+	m_pController->m_pTank = NULL;
 	m_pController = NULL;
 
 	if( IsActive() )
@@ -426,7 +429,6 @@ void CFuncTank::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE use
 		}
 		else if( !m_pController && useType != USE_OFF )
 		{
-			( (CBasePlayer*)pActivator )->m_pTank = this;
 			StartControl( (CBasePlayer*)pActivator );
 		}
 		else

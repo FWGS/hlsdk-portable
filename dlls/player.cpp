@@ -792,10 +792,7 @@ void CBasePlayer::RemoveAllItems( BOOL removeSuit )
 	m_pLastItem = NULL;
 
 	if( m_pTank != 0 )
-	{
 		m_pTank->Use( this, this, USE_OFF, 0 );
-		m_pTank = NULL;
-	}
 
 	int i;
 	CBasePlayerItem *pPendingItem;
@@ -856,10 +853,7 @@ void CBasePlayer::Killed( entvars_t *pevAttacker, int iGib )
 	g_pGameRules->PlayerKilled( this, pevAttacker, g_pevLastInflictor );
 
 	if( m_pTank != 0 )
-	{
 		m_pTank->Use( this, this, USE_OFF, 0 );
-		m_pTank = NULL;
-	}
 
 	// this client isn't going to be thinking for a while, so reset the sound until they respawn
 	pSound = CSoundEnt::SoundPointerForIndex( CSoundEnt::ClientSoundIndex( edict() ) );
@@ -1402,10 +1396,7 @@ void CBasePlayer::StartObserver( Vector vecPosition, Vector vecViewAngle )
 		m_pActiveItem->Holster();
 
 	if( m_pTank != 0 )
-	{
 		m_pTank->Use( this, this, USE_OFF, 0 );
-		m_pTank = NULL;
-	}
 
 	// clear out the suit message cache so we don't keep chattering
 	SetSuitUpdate( NULL, FALSE, 0 );
@@ -1481,7 +1472,6 @@ void CBasePlayer::PlayerUse( void )
 			// Stop controlling the tank
 			// TODO: Send HUD Update
 			m_pTank->Use( this, this, USE_OFF, 0 );
-			m_pTank = NULL;
 			return;
 		}
 		else
@@ -2520,7 +2510,6 @@ void CBasePlayer::PostThink()
 		{
 			// they've moved off the platform
 			m_pTank->Use( this, this, USE_OFF, 0 );
-			m_pTank = NULL;
 		}
 	}
 
