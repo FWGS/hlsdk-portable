@@ -485,7 +485,7 @@ void CBasePlayerItem::Materialize( void )
 	pev->solid = SOLID_TRIGGER;
 
 	UTIL_SetOrigin( pev, pev->origin );// link into world.
-	SetTouch( &CBasePlayerItem::DefaultTouch);
+	SetTouch( &CBasePlayerItem::DefaultTouch );
 	SetThink( NULL );
 }
 
@@ -578,13 +578,6 @@ void CBasePlayerItem::DefaultTouch( CBaseEntity *pOther )
 	}
 
 	SUB_UseTargets( pOther, USE_TOGGLE, 0 ); // UNDONE: when should this happen?
-
-	// If the item is falling and its Think remains FallItem after the player picks it up,
-	// then after the item touches the ground its Touch will be set back to DefaultTouch,
-	// so the player will pick it up again, this time Kill-ing the item (since we already have it in the inventory),
-	// which will make the pointer bad and crash the game.
-	if( m_pfnThink == &CBasePlayerItem::FallThink )
-		SetThink( NULL );
 }
 
 BOOL CanAttack( float attack_time, float curtime, BOOL isPredicted )
@@ -734,7 +727,7 @@ void CBasePlayerItem::AttachToPlayer( CBasePlayer *pPlayer )
 	pev->modelindex = 0;// server won't send down to clients if modelindex == 0
 	pev->model = iStringNull;
 	pev->owner = pPlayer->edict();
-	pev->nextthink = gpGlobals->time + .1;
+	pev->nextthink = 0;// Remove think - prevents futher attempts to materialize
 	SetTouch( NULL );
 	SetThink( NULL );
 }
@@ -1054,6 +1047,7 @@ void CBasePlayerAmmo::Materialize( void )
 	}
 
 	SetTouch( &CBasePlayerAmmo::DefaultTouch );
+	SetThink( NULL );
 }
 
 void CBasePlayerAmmo::DefaultTouch( CBaseEntity *pOther )
