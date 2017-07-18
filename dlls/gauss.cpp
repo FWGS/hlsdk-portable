@@ -24,6 +24,7 @@
 #include "soundent.h"
 #include "shake.h"
 #include "gamerules.h"
+#include "game.h"
 
 #define	GAUSS_PRIMARY_CHARGE_VOLUME	256// how loud gauss is while charging
 #define GAUSS_PRIMARY_FIRE_VOLUME	450// how loud gauss is when discharged
@@ -511,6 +512,10 @@ void CGauss::Fire( Vector vecOrigSrc, Vector vecDir, float flDamage )
 							nTotal += 53;
 
 							vecSrc = beam_tr.vecEndPos + vecDir;
+						}
+						else if( !selfgauss.value )
+						{
+							flDamage = 0;
 						}
 					}
 					else
