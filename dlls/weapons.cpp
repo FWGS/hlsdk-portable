@@ -295,6 +295,7 @@ void W_Precache( void )
 
 	// common world objects
 	UTIL_PrecacheOther( "item_suit" );
+	UTIL_PrecacheOther( "item_healthkit" );
 	UTIL_PrecacheOther( "item_battery" );
 	UTIL_PrecacheOther( "item_antidote" );
 	UTIL_PrecacheOther( "item_security" );
@@ -315,6 +316,9 @@ void W_Precache( void )
 	UTIL_PrecacheOtherWeapon( "weapon_9mmAR" );
 	UTIL_PrecacheOther( "ammo_9mmAR" );
 	UTIL_PrecacheOther( "ammo_ARgrenades" );
+
+	// 9mm ammo box
+	UTIL_PrecacheOther( "ammo_9mmbox" );
 
 #if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
 	// python
