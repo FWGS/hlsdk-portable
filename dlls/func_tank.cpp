@@ -93,6 +93,7 @@ public:
 	BOOL StartControl( CBasePlayer* pController );
 	void StopControl( void );
 	void ControllerPostFrame( void );
+	virtual void StopFire( void ){}
 
 protected:
 	CBasePlayer* m_pController;
@@ -369,8 +370,7 @@ BOOL CFuncTank::StartControl( CBasePlayer *pController )
 
 void CFuncTank::StopControl()
 {
-	//if( m_pLaser )
-		//m_pLaser->TurnOff();
+	StopFire();
 
 	// TODO: bring back the controllers current weapon
 	if( !m_pController )
@@ -755,6 +755,7 @@ public:
 	virtual int Save( CSave &save );
 	virtual int Restore( CRestore &restore );
 	static TYPEDESCRIPTION m_SaveData[];
+	virtual void StopFire( void );
 
 private:
 	CLaser *m_pLaser;
@@ -857,6 +858,12 @@ void CFuncTankLaser::Fire( const Vector &barrelEnd, const Vector &forward, entva
 	{
 		CFuncTank::Fire( barrelEnd, forward, pev );
 	}
+}
+
+void CFuncTankLaser::StopFire( void )
+{
+	if( m_pLaser )
+		m_pLaser->TurnOff();
 }
 
 class CFuncTankRocket : public CFuncTank
