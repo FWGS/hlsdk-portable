@@ -91,7 +91,7 @@ SRCS+=./input_xash3d.cpp
 SRCS+=./scoreboard.cpp
 SRCS+=./MOTD.cpp
 INCLUDES =  -I../common -I. -I../game_shared -I../pm_shared -I../engine -I../dlls
-DEFINES = -Wno-write-strings -DLINUX -D_LINUX -Dstricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp -DCLIENT_WEAPONS -DCLIENT_DLL -w
+DEFINES = -Wno-write-strings -DLINUX -D_LINUX -Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -DCLIENT_WEAPONS -DCLIENT_DLL -w
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/. \
 		 $(LOCAL_PATH)/../common \
