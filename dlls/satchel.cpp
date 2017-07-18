@@ -117,15 +117,17 @@ void CSatchelCharge::SatchelSlide( CBaseEntity *pOther )
 	{
 		// Fix for a bug in engine: when object isn't moving, but its speed isn't 0 and on ground isn't set
 		if( pev->origin != m_lastBounceOrigin )
-			BounceSound();
+		BounceSound();
 	}
 	m_lastBounceOrigin = pev->origin;
-	StudioFrameAdvance();
+	// There is no model animation so commented this out to prevent net traffic
+	// StudioFrameAdvance();
 }
 
 void CSatchelCharge::SatchelThink( void )
 {
-	StudioFrameAdvance();
+	// There is no model animation so commented this out to prevent net traffic
+	// StudioFrameAdvance();
 	pev->nextthink = gpGlobals->time + 0.1;
 
 	if( !IsInWorld() )
