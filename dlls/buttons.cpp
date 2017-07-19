@@ -292,14 +292,14 @@ void CBaseButton::Precache( void )
 	{
 		pszSound = ButtonSound( (int)m_bLockedSound );
 		PRECACHE_SOUND( pszSound );
-		m_ls.sLockedSound = ALLOC_STRING( pszSound );
+		m_ls.sLockedSound = MAKE_STRING( pszSound );
 	}
 
 	if( m_bUnlockedSound )
 	{
 		pszSound = ButtonSound( (int)m_bUnlockedSound );
 		PRECACHE_SOUND( pszSound );
-		m_ls.sUnlockedSound = ALLOC_STRING( pszSound );
+		m_ls.sUnlockedSound = MAKE_STRING( pszSound );
 	}
 
 	// get sentence group names, for doors which are directly 'touched' to open
@@ -469,7 +469,7 @@ void CBaseButton::Spawn()
 	//----------------------------------------------------
 	pszSound = ButtonSound( m_sounds );
 	PRECACHE_SOUND( pszSound );
-	pev->noise = ALLOC_STRING( pszSound );
+	pev->noise = MAKE_STRING( pszSound );
 
 	Precache();
 
@@ -876,7 +876,7 @@ void CRotButton::Spawn( void )
 	//----------------------------------------------------
 	pszSound = ButtonSound( m_sounds );
 	PRECACHE_SOUND( pszSound );
-	pev->noise = ALLOC_STRING( pszSound );
+	pev->noise = MAKE_STRING( pszSound );
 
 	// set the axis of rotation
 	CBaseToggle::AxisDir( pev );
@@ -1012,7 +1012,7 @@ void CMomentaryRotButton::Spawn( void )
 
 	const char *pszSound = ButtonSound( m_sounds );
 	PRECACHE_SOUND( pszSound );
-	pev->noise = ALLOC_STRING( pszSound );
+	pev->noise = MAKE_STRING( pszSound );
 	m_lastUsed = 0;
 }
 

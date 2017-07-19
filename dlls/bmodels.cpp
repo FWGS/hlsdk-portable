@@ -430,15 +430,13 @@ void CFuncRotating::Spawn()
 
 void CFuncRotating::Precache( void )
 {
-	char* szSoundFile = (char*)STRING( pev->message );
+	const char* szSoundFile = STRING( pev->message );
+	BOOL NullSound = FALSE;
 
 	// set up fan sounds
 	if( !FStringNull( pev->message ) && strlen( szSoundFile ) > 0 )
 	{
 		// if a path is set for a wave, use it
-		PRECACHE_SOUND( szSoundFile );
-
-		pev->noiseRunning = ALLOC_STRING( szSoundFile );
 	}
 	else
 	{
@@ -446,41 +444,31 @@ void CFuncRotating::Precache( void )
 		switch( m_sounds )
 		{
 		case 1:
-			PRECACHE_SOUND( "fans/fan1.wav" );
-			pev->noiseRunning = ALLOC_STRING( "fans/fan1.wav" );
+			szSoundFile = "fans/fan1.wav";
 			break;
 		case 2:
-			PRECACHE_SOUND( "fans/fan2.wav" );
-			pev->noiseRunning = ALLOC_STRING( "fans/fan2.wav" );
+			szSoundFile = "fans/fan2.wav";
 			break;
 		case 3:
-			PRECACHE_SOUND( "fans/fan3.wav" );
-			pev->noiseRunning = ALLOC_STRING( "fans/fan3.wav" );
+			szSoundFile = "fans/fan3.wav";
 			break;
 		case 4:
-			PRECACHE_SOUND( "fans/fan4.wav" );
-			pev->noiseRunning = ALLOC_STRING( "fans/fan4.wav" );
+			szSoundFile = "fans/fan4.wav";
 			break;
 		case 5:
-			PRECACHE_SOUND( "fans/fan5.wav" );
-			pev->noiseRunning = ALLOC_STRING( "fans/fan5.wav" );
+			szSoundFile = "fans/fan5.wav";
 			break;
 		case 0:
 		default:
-			if( !FStringNull( pev->message ) && strlen( szSoundFile ) > 0 )
-			{
-				PRECACHE_SOUND( szSoundFile );
-
-				pev->noiseRunning = ALLOC_STRING( szSoundFile );
-				break;
-			}
-			else
-			{
-				pev->noiseRunning = ALLOC_STRING( "common/null.wav" );
-				break;
-			}
+			szSoundFile = "common/null.wav";
+			NullSound = TRUE;
+			break;
 		}
 	}
+
+	if( !NullSound )
+		PRECACHE_SOUND( szSoundFile );
+	pev->noiseRunning = MAKE_STRING( szSoundFile );
 
 	if( pev->avelocity != g_vecZero )
 	{

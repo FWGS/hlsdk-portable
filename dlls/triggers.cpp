@@ -1689,7 +1689,7 @@ void NextLevel( void )
 	// go back to start if no trigger_changelevel
 	if( FNullEnt( pent ) )
 	{
-		gpGlobals->mapname = ALLOC_STRING( "start" );
+		gpGlobals->mapname = MAKE_STRING( "start" );
 		pChange = GetClassPtr( (CChangeLevel *)NULL );
 		strcpy( pChange->m_szMapName, "start" );
 	}

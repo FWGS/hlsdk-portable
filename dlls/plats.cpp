@@ -104,111 +104,100 @@ void CBasePlatTrain::KeyValue( KeyValueData *pkvd )
 
 void CBasePlatTrain::Precache( void )
 {
+	const char *pszSound;
+	BOOL NullSound = FALSE;
+
 	// set the plat's "in-motion" sound
 	switch( m_bMoveSnd )
 	{
-	case 0:
-		pev->noiseMoving = MAKE_STRING( "common/null.wav" );
-		break;
 	case 1:
-		PRECACHE_SOUND( "plats/bigmove1.wav" );
-		pev->noiseMoving = MAKE_STRING( "plats/bigmove1.wav" );
+		pszSound = "plats/bigmove1.wav";
 		break;
 	case 2:
-		PRECACHE_SOUND( "plats/bigmove2.wav" );
-		pev->noiseMoving = MAKE_STRING( "plats/bigmove2.wav" );
+		pszSound = "plats/bigmove2.wav";
 		break;
 	case 3:
-		PRECACHE_SOUND( "plats/elevmove1.wav" );
-		pev->noiseMoving = MAKE_STRING( "plats/elevmove1.wav" );
+		pszSound = "plats/elevmove1.wav";
 		break;
 	case 4:
-		PRECACHE_SOUND( "plats/elevmove2.wav" );
-		pev->noiseMoving = MAKE_STRING( "plats/elevmove2.wav" );
+		pszSound = "plats/elevmove2.wav";
 		break;
 	case 5:
-		PRECACHE_SOUND( "plats/elevmove3.wav" );
-		pev->noiseMoving = MAKE_STRING( "plats/elevmove3.wav" );
+		pszSound = "plats/elevmove3.wav";
 		break;
 	case 6:
-		PRECACHE_SOUND( "plats/freightmove1.wav" );
-		pev->noiseMoving = MAKE_STRING( "plats/freightmove1.wav" );
+		pszSound = "plats/freightmove1.wav";
 		break;
 	case 7:
-		PRECACHE_SOUND( "plats/freightmove2.wav" );
-		pev->noiseMoving = MAKE_STRING( "plats/freightmove2.wav" );
+		pszSound = "plats/freightmove2.wav";
 		break;
 	case 8:
-		PRECACHE_SOUND( "plats/heavymove1.wav" );
-		pev->noiseMoving = MAKE_STRING( "plats/heavymove1.wav" );
+		pszSound = "plats/heavymove1.wav";
 		break;
 	case 9:
-		PRECACHE_SOUND( "plats/rackmove1.wav" );
-		pev->noiseMoving = MAKE_STRING( "plats/rackmove1.wav" );
+		pszSound = "plats/rackmove1.wav";
 		break;
 	case 10:
-		PRECACHE_SOUND( "plats/railmove1.wav" );
-		pev->noiseMoving = MAKE_STRING( "plats/railmove1.wav" );
+		pszSound = "plats/railmove1.wav";
 		break;
 	case 11:
-		PRECACHE_SOUND( "plats/squeekmove1.wav" );
-		pev->noiseMoving = MAKE_STRING( "plats/squeekmove1.wav" );
+		pszSound = "plats/squeekmove1.wav";
 		break;
 	case 12:
-		PRECACHE_SOUND( "plats/talkmove1.wav" );
-		pev->noiseMoving = MAKE_STRING( "plats/talkmove1.wav" );
+		pszSound = "plats/talkmove1.wav";
 		break;
 	case 13:
-		PRECACHE_SOUND( "plats/talkmove2.wav" );
-		pev->noiseMoving = MAKE_STRING( "plats/talkmove2.wav" );
+		pszSound = "plats/talkmove2.wav";
 		break;
+	case 0:
 	default:
-		pev->noiseMoving = MAKE_STRING( "common/null.wav" );
+		pszSound = "common/null.wav";
+		NullSound = TRUE;
 		break;
 	}
+
+	if( !NullSound )
+                PRECACHE_SOUND( pszSound );
+        pev->noiseMoving = MAKE_STRING( pszSound );
+	NullSound = FALSE;
 
 	// set the plat's 'reached destination' stop sound
 	switch( m_bStopSnd )
 	{
-	case 0:
-		pev->noiseArrived = MAKE_STRING( "common/null.wav" );
-		break;
 	case 1:
-		PRECACHE_SOUND( "plats/bigstop1.wav" );
-		pev->noiseArrived = MAKE_STRING( "plats/bigstop1.wav" );
+		pszSound = "plats/bigstop1.wav";
 		break;
 	case 2:
-		PRECACHE_SOUND( "plats/bigstop2.wav" );
-		pev->noiseArrived = MAKE_STRING( "plats/bigstop2.wav" );
+		pszSound = "plats/bigstop2.wav";
 		break;
 	case 3:
-		PRECACHE_SOUND( "plats/freightstop1.wav" );
-		pev->noiseArrived = MAKE_STRING( "plats/freightstop1.wav" );
+		pszSound = "plats/freightstop1.wav";
 		break;
 	case 4:
-		PRECACHE_SOUND( "plats/heavystop2.wav" );
-		pev->noiseArrived = MAKE_STRING( "plats/heavystop2.wav" );
+		pszSound = "plats/heavystop2.wav";
 		break;
 	case 5:
-		PRECACHE_SOUND( "plats/rackstop1.wav" );
-		pev->noiseArrived = MAKE_STRING( "plats/rackstop1.wav" );
+		pszSound = "plats/rackstop1.wav";
 		break;
 	case 6:
-		PRECACHE_SOUND( "plats/railstop1.wav" );
-		pev->noiseArrived = MAKE_STRING( "plats/railstop1.wav" );
+		pszSound = "plats/railstop1.wav";
 		break;
 	case 7:
-		PRECACHE_SOUND( "plats/squeekstop1.wav" );
-		pev->noiseArrived = MAKE_STRING( "plats/squeekstop1.wav" );
+		pszSound = "plats/squeekstop1.wav";
 		break;
 	case 8:
-		PRECACHE_SOUND( "plats/talkstop1.wav" );
-		pev->noiseArrived = MAKE_STRING( "plats/talkstop1.wav" );
+		pszSound = "plats/talkstop1.wav";
 		break;
+	case 0:
 	default:
-		pev->noiseArrived = MAKE_STRING( "common/null.wav" );
+		pszSound = "common/null.wav";
+		NullSound = TRUE;
 		break;
 	}
+
+	if( !NullSound )
+		PRECACHE_SOUND( pszSound );
+	pev->noiseArrived = MAKE_STRING( pszSound );
 }
 
 //
@@ -1482,6 +1471,8 @@ void CFuncTrackTrain::Spawn( void )
 
 void CFuncTrackTrain::Precache( void )
 {
+	const char *pszSound;
+
 	if( m_flVolume == 0.0 )
 		m_flVolume = 1.0;
 
@@ -1489,33 +1480,35 @@ void CFuncTrackTrain::Precache( void )
 	{
 	default:
 		// no sound
-		pev->noise = 0;
+		pszSound = NULL;
 		break;
 	case 1:
-		PRECACHE_SOUND( "plats/ttrain1.wav" );
-		pev->noise = MAKE_STRING("plats/ttrain1.wav" );
+		pszSound = "plats/ttrain1.wav";
 		break;
 	case 2:
-		PRECACHE_SOUND( "plats/ttrain2.wav" );
-		pev->noise = MAKE_STRING( "plats/ttrain2.wav" );
+		pszSound = "plats/ttrain2.wav";
 		break;
 	case 3:
-		PRECACHE_SOUND( "plats/ttrain3.wav" );
-		pev->noise = MAKE_STRING( "plats/ttrain3.wav" );
+		pszSound = "plats/ttrain3.wav";
 		break; 
 	case 4:
-		PRECACHE_SOUND( "plats/ttrain4.wav" );
-		pev->noise = MAKE_STRING( "plats/ttrain4.wav" );
+		pszSound = "plats/ttrain4.wav";
 		break;
 	case 5:
-		PRECACHE_SOUND( "plats/ttrain6.wav" );
-		pev->noise = MAKE_STRING( "plats/ttrain6.wav" );
+		pszSound = "plats/ttrain6.wav";
 		break;
 	case 6:
-		PRECACHE_SOUND( "plats/ttrain7.wav" );
-		pev->noise = MAKE_STRING( "plats/ttrain7.wav" );
+		pszSound = "plats/ttrain7.wav";
 		break;
 	}
+
+	if( !pszSound )
+	{
+		PRECACHE_SOUND( pszSound );
+		pev->noise = MAKE_STRING( pszSound );
+	}
+	else
+		pev->noise = 0;
 
 	PRECACHE_SOUND( "plats/ttrain_brake1.wav" );
 	PRECACHE_SOUND( "plats/ttrain_start1.wav" );

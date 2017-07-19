@@ -330,114 +330,104 @@ void CBaseDoor::SetToggleState( int state )
 void CBaseDoor::Precache( void )
 {
 	const char *pszSound;
+	BOOL NullSound = FALSE;
 
 	// set the door's "in-motion" sound
 	switch( m_bMoveSnd )
 	{
-		case 0:
-			pev->noiseMoving = ALLOC_STRING( "common/null.wav" );
-			break;
 		case 1:
-			PRECACHE_SOUND( "doors/doormove1.wav" );
-			pev->noiseMoving = ALLOC_STRING( "doors/doormove1.wav" );
+			pszSound = "doors/doormove1.wav";
 			break;
 		case 2:
-			PRECACHE_SOUND( "doors/doormove2.wav" );
-			pev->noiseMoving = ALLOC_STRING( "doors/doormove2.wav" );
+			pszSound = "doors/doormove2.wav";
 			break;
 		case 3:
-			PRECACHE_SOUND( "doors/doormove3.wav" );
-			pev->noiseMoving = ALLOC_STRING( "doors/doormove3.wav" );
+			pszSound = "doors/doormove3.wav";
 			break;
 		case 4:
-			PRECACHE_SOUND( "doors/doormove4.wav" );
-			pev->noiseMoving = ALLOC_STRING( "doors/doormove4.wav" );
+			pszSound = "doors/doormove4.wav";
 			break;
 		case 5:
-			PRECACHE_SOUND( "doors/doormove5.wav" );
-			pev->noiseMoving = ALLOC_STRING( "doors/doormove5.wav" );
+			pszSound = "doors/doormove5.wav";
 			break;
 		case 6:
-			PRECACHE_SOUND( "doors/doormove6.wav" );
-			pev->noiseMoving = ALLOC_STRING( "doors/doormove6.wav" );
+			pszSound = "doors/doormove6.wav";
 			break;
 		case 7:
-			PRECACHE_SOUND( "doors/doormove7.wav" );
-			pev->noiseMoving = ALLOC_STRING( "doors/doormove7.wav" );
+			pszSound = "doors/doormove7.wav";
 			break;
 		case 8:
-			PRECACHE_SOUND( "doors/doormove8.wav" );
-			pev->noiseMoving = ALLOC_STRING( "doors/doormove8.wav" );
+			pszSound = "doors/doormove8.wav";
 			break;
 		case 9:
-			PRECACHE_SOUND( "doors/doormove9.wav" );
-			pev->noiseMoving = ALLOC_STRING( "doors/doormove9.wav" );
+			pszSound = "doors/doormove9.wav";
 			break;
 		case 10:
-			PRECACHE_SOUND( "doors/doormove10.wav" );
-			pev->noiseMoving = ALLOC_STRING( "doors/doormove10.wav" );
+			pszSound = "doors/doormove10.wav";
 			break;
+		case 0:
 		default:
-			pev->noiseMoving = ALLOC_STRING( "common/null.wav" );
+			pszSound = "common/null.wav";
+			NullSound = TRUE;
 			break;
 	}
+
+	if( !NullSound )
+		PRECACHE_SOUND( pszSound );
+	pev->noiseMoving = MAKE_STRING( pszSound );
+	NullSound = FALSE;
 
 	// set the door's 'reached destination' stop sound
 	switch( m_bStopSnd )
 	{
-		case 0:
-			pev->noiseArrived = ALLOC_STRING( "common/null.wav" );
-			break;
 		case 1:
-			PRECACHE_SOUND( "doors/doorstop1.wav" );
-			pev->noiseArrived = ALLOC_STRING( "doors/doorstop1.wav" );
+			pszSound = "doors/doorstop1.wav";
 			break;
 		case 2:
-			PRECACHE_SOUND( "doors/doorstop2.wav" );
-			pev->noiseArrived = ALLOC_STRING( "doors/doorstop2.wav" );
+			pszSound = "doors/doorstop2.wav";
 			break;
 		case 3:
-			PRECACHE_SOUND( "doors/doorstop3.wav" );
-			pev->noiseArrived = ALLOC_STRING( "doors/doorstop3.wav" );
+			pszSound = "doors/doorstop3.wav";
 			break;
 		case 4:
-			PRECACHE_SOUND( "doors/doorstop4.wav" );
-			pev->noiseArrived = ALLOC_STRING( "doors/doorstop4.wav" );
+			pszSound = "doors/doorstop4.wav";
 			break;
 		case 5:
-			PRECACHE_SOUND( "doors/doorstop5.wav" );
-			pev->noiseArrived = ALLOC_STRING( "doors/doorstop5.wav" );
+			pszSound = "doors/doorstop5.wav";
 			break;
 		case 6:
-			PRECACHE_SOUND( "doors/doorstop6.wav" );
-			pev->noiseArrived = ALLOC_STRING( "doors/doorstop6.wav");
+			pszSound = "doors/doorstop6.wav"
 			break;
 		case 7:
-			PRECACHE_SOUND( "doors/doorstop7.wav" );
-			pev->noiseArrived = ALLOC_STRING( "doors/doorstop7.wav" );
+			pszSound = "doors/doorstop7.wav";
 			break;
 		case 8:
-			PRECACHE_SOUND( "doors/doorstop8.wav" );
-			pev->noiseArrived = ALLOC_STRING( "doors/doorstop8.wav" );
+			pszSound = "doors/doorstop8.wav";
 			break;
+		case 0:
 		default:
-			pev->noiseArrived = ALLOC_STRING( "common/null.wav" );
+			pszSound = "common/null.wav";
+			NullSound = TRUE;
 			break;
 	}
+
+	if( !NullSound )
+		PRECACHE_SOUND( pszSound );
+	pev->noiseArrived = MAKE_STRING( pszSound );
 
 	// get door button sounds, for doors which are directly 'touched' to open
 	if( m_bLockedSound )
 	{
 		pszSound = ButtonSound( (int)m_bLockedSound );
 		PRECACHE_SOUND( pszSound );
-		m_ls.sLockedSound = ALLOC_STRING( pszSound );
+		m_ls.sLockedSound = MAKE_STRING( pszSound );
 	}
 
 	if( m_bUnlockedSound )
 	{
 		pszSound = ButtonSound( (int)m_bUnlockedSound );
 		PRECACHE_SOUND( pszSound );
-		m_ls.sUnlockedSound = ALLOC_STRING( pszSound );
+		m_ls.sUnlockedSound = MAKE_STRING( pszSound );
 	}
 
 	// get sentence group names, for doors which are directly 'touched' to open
@@ -445,39 +435,39 @@ void CBaseDoor::Precache( void )
 	{
 		case 1:
 			// access denied
-			m_ls.sLockedSentence = ALLOC_STRING( "NA" );
+			m_ls.sLockedSentence = MAKE_STRING( "NA" );
 			break;
 		case 2:
 			// security lockout
-			m_ls.sLockedSentence = ALLOC_STRING( "ND" );
+			m_ls.sLockedSentence = MAKE_STRING( "ND" );
 			break;
 		case 3:
 			// blast door
-			m_ls.sLockedSentence = ALLOC_STRING( "NF" );
+			m_ls.sLockedSentence = MAKE_STRING( "NF" );
 			break;
 		case 4:
 			// fire door
-			m_ls.sLockedSentence = ALLOC_STRING( "NFIRE" );
+			m_ls.sLockedSentence = MAKE_STRING( "NFIRE" );
 			break;
 		case 5:
 			// chemical door
-			m_ls.sLockedSentence = ALLOC_STRING( "NCHEM" );
+			m_ls.sLockedSentence = MAKE_STRING( "NCHEM" );
 			break;
 		case 6:
 			// radiation door
-			m_ls.sLockedSentence = ALLOC_STRING( "NRAD" );
+			m_ls.sLockedSentence = MAKE_STRING( "NRAD" );
 			break;
 		case 7:
 			// gen containment
-			m_ls.sLockedSentence = ALLOC_STRING( "NCON" );
+			m_ls.sLockedSentence = MAKE_STRING( "NCON" );
 			break;
 		case 8:
 			// maintenance door
-			m_ls.sLockedSentence = ALLOC_STRING( "NH" );
+			m_ls.sLockedSentence = MAKE_STRING( "NH" );
 			break;
 		case 9:
 			// broken door
-			m_ls.sLockedSentence = ALLOC_STRING( "NG" );
+			m_ls.sLockedSentence = MAKE_STRING( "NG" );
 			break;
 		default:
 			m_ls.sLockedSentence = 0;
@@ -488,35 +478,35 @@ void CBaseDoor::Precache( void )
 	{
 		case 1:
 			// access granted
-			m_ls.sUnlockedSentence = ALLOC_STRING( "EA" );
+			m_ls.sUnlockedSentence = MAKE_STRING( "EA" );
 			break;
 		case 2:
 			// security door
-			m_ls.sUnlockedSentence = ALLOC_STRING( "ED" );
+			m_ls.sUnlockedSentence = MAKE_STRING( "ED" );
 			break;
 		case 3:
 			// blast door
-			m_ls.sUnlockedSentence = ALLOC_STRING( "EF" );
+			m_ls.sUnlockedSentence = MAKE_STRING( "EF" );
 			break;
 		case 4:
 			// fire door
-			m_ls.sUnlockedSentence = ALLOC_STRING( "EFIRE" );
+			m_ls.sUnlockedSentence = MAKE_STRING( "EFIRE" );
 			break;
 		case 5:
 			// chemical door
-			m_ls.sUnlockedSentence = ALLOC_STRING( "ECHEM" );
+			m_ls.sUnlockedSentence = MAKE_STRING( "ECHEM" );
 			break;
 		case 6:
 			// radiation door
-			m_ls.sUnlockedSentence = ALLOC_STRING( "ERAD" );
+			m_ls.sUnlockedSentence = MAKE_STRING( "ERAD" );
 			break;
 		case 7:
 			// gen containment
-			m_ls.sUnlockedSentence = ALLOC_STRING( "ECON" );
+			m_ls.sUnlockedSentence = MAKE_STRING( "ECON" );
 			break;
 		case 8:
 			// maintenance door
-			m_ls.sUnlockedSentence = ALLOC_STRING( "EH" );
+			m_ls.sUnlockedSentence = MAKE_STRING( "EH" );
 			break;
 		default:
 			m_ls.sUnlockedSentence = 0;
@@ -985,94 +975,88 @@ void CMomentaryDoor::Spawn( void )
 
 	Precache();
 }
-	
+
 void CMomentaryDoor::Precache( void )
 {
+	const char *pszSound;
+	BOOL NullSound = FALSE;
+
 	// set the door's "in-motion" sound
 	switch( m_bMoveSnd )
 	{
-	case 0:
-		pev->noiseMoving = ALLOC_STRING( "common/null.wav" );
-		break;
 	case 1:
-		PRECACHE_SOUND( "doors/doormove1.wav" );
-		pev->noiseMoving = ALLOC_STRING( "doors/doormove1.wav" );
+		pszSound = "doors/doormove1.wav";
 		break;
 	case 2:
-		PRECACHE_SOUND( "doors/doormove2.wav" );
-		pev->noiseMoving = ALLOC_STRING( "doors/doormove2.wav" );
+		pszSound = "doors/doormove2.wav";
 		break;
 	case 3:
-		PRECACHE_SOUND( "doors/doormove3.wav" );
-		pev->noiseMoving = ALLOC_STRING( "doors/doormove3.wav" );
+		pszSound = "doors/doormove3.wav";
 		break;
 	case 4:
-		PRECACHE_SOUND( "doors/doormove4.wav" );
-		pev->noiseMoving = ALLOC_STRING( "doors/doormove4.wav" );
+		pszSound = "doors/doormove4.wav";
 		break;
 	case 5:
-		PRECACHE_SOUND( "doors/doormove5.wav" );
-		pev->noiseMoving = ALLOC_STRING( "doors/doormove5.wav" );
+		pszSound = "doors/doormove5.wav";
 		break;
 	case 6:
-		PRECACHE_SOUND( "doors/doormove6.wav" );
-		pev->noiseMoving = ALLOC_STRING( "doors/doormove6.wav" );
+		pszSound = "doors/doormove6.wav";
 		break;
 	case 7:
-		PRECACHE_SOUND( "doors/doormove7.wav" );
-		pev->noiseMoving = ALLOC_STRING( "doors/doormove7.wav" );
+		pszSound = "doors/doormove7.wav";
 		break;
 	case 8:
-		PRECACHE_SOUND( "doors/doormove8.wav" );
-		pev->noiseMoving = ALLOC_STRING( "doors/doormove8.wav" );
+		pszSound = "doors/doormove8.wav";
 		break;
+	case 0:
 	default:
-		pev->noiseMoving = ALLOC_STRING( "common/null.wav" );
+		pszSound = "common/null.wav";
+		NullSound = TRUE;
 		break;
 	}
+
+	if( !NullSound )
+		PRECACHE_SOUND( pszSound );
+	pev->noiseMoving = MAKE_STRING( pszSound );
+	NullSound = FALSE;
 
 	// set the door's 'reached destination' stop sound
 	switch( m_bStopSnd )
 	{
-	case 0:
-		pev->noiseArrived = ALLOC_STRING( "common/null.wav" );
-		break;
 	case 1:
-		PRECACHE_SOUND( "doors/doorstop1.wav" );
-		pev->noiseArrived = ALLOC_STRING( "doors/doorstop1.wav" );
+		pszSound = "doors/doorstop1.wav";
 		break;
 	case 2:
-		PRECACHE_SOUND( "doors/doorstop2.wav" );
-		pev->noiseArrived = ALLOC_STRING( "doors/doorstop2.wav" );
+		pszSound = "doors/doorstop2.wav";
 		break;
 	case 3:
-		PRECACHE_SOUND( "doors/doorstop3.wav" );
-		pev->noiseArrived = ALLOC_STRING("doors/doorstop3.wav");
+		pszSound = "doors/doorstop3.wav";
 		break;
 	case 4:
-		PRECACHE_SOUND( "doors/doorstop4.wav" );
-		pev->noiseArrived = ALLOC_STRING( "doors/doorstop4.wav" );
+		pszSound = "doors/doorstop4.wav";
 		break;
 	case 5:
-		PRECACHE_SOUND( "doors/doorstop5.wav" );
-		pev->noiseArrived = ALLOC_STRING( "doors/doorstop5.wav" );
+		pszSound = "doors/doorstop5.wav";
 		break;
 	case 6:
-		PRECACHE_SOUND( "doors/doorstop6.wav" );
-		pev->noiseArrived = ALLOC_STRING( "doors/doorstop6.wav" );
+		pszSound = "doors/doorstop6.wav";
 		break;
 	case 7:
-		PRECACHE_SOUND( "doors/doorstop7.wav" );
-		pev->noiseArrived = ALLOC_STRING( "doors/doorstop7.wav" );
+		pszSound = "doors/doorstop7.wav";
 		break;
 	case 8:
-		PRECACHE_SOUND( "doors/doorstop8.wav" );
-		pev->noiseArrived = ALLOC_STRING( "doors/doorstop8.wav" );
+		pszSound = "doors/doorstop8.wav";
 		break;
+	case 0:
 	default:
-		pev->noiseArrived = ALLOC_STRING( "common/null.wav" );
+		pszSound = "common/null.wav";
+		NullSound = TRUE;
 		break;
 	}
+
+	if( !NullSound )
+		PRECACHE_SOUND( pszSound );
+	pev->noiseArrived = MAKE_STRING( pszSound );
 }
 
 void CMomentaryDoor::KeyValue( KeyValueData *pkvd )
