@@ -823,7 +823,9 @@ void CBasePlayer::RemoveAllItems( BOOL removeSuit )
 	for( i = 0; i < MAX_AMMO_SLOTS; i++ )
 		m_rgAmmo[i] = 0;
 
-	DeactivateSatchels( this );
+	if( satchelfix.value )
+		DeactivateSatchels( this );
+
 	UpdateClientData();
 
 	// send Selected Weapon Message to our client
