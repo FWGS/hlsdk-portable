@@ -55,6 +55,7 @@ BOOL CBaseEntity::IsInWorld( void ) { return TRUE; }
 int CBaseEntity::ShouldToggle( USE_TYPE useType, BOOL currentState ) { return 0; }
 int CBaseEntity::DamageDecal( int bitsDamageType ) { return -1; }
 CBaseEntity *CBaseEntity::Create( const char *szName, const Vector &vecOrigin, const Vector &vecAngles, edict_t *pentOwner ) { return NULL; }
+void CBaseEntity::UpdateOnRemove( void ) { }
 void CBaseEntity::SUB_Remove( void ) { }
 
 // CBaseDelay Stubs

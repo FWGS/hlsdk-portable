@@ -12,6 +12,8 @@
 *   without written permission from Valve LLC.
 *
 ****/
+#ifndef CBASE_H
+#define CBASE_H
 /*
 
 Class Hierachy
@@ -229,7 +231,7 @@ public:
 	};
 #endif
 
-	void UpdateOnRemove( void );
+	virtual void UpdateOnRemove( void );
 
 	// common member functions
 	void EXPORT SUB_Remove( void );
@@ -780,3 +782,4 @@ public:
 	void Precache( void );
 	void KeyValue( KeyValueData *pkvd );
 };
+#endif
