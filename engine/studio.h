@@ -213,9 +213,9 @@ typedef struct cache_user_s
 typedef struct
 {
 	char		label[32];	// textual name
-	char		name[64];		// file name
-	int	unused1;		// // was "cache"  - index pointer
-	int		unused2;		//  was "data" -  hack for group 0
+	char		name[64];	// file name
+	int		unused1;	// was "cache"  - index pointer
+	int		unused2;	// was "data" -  hack for group 0
 } mstudioseqgroup_t;
 
 // sequence descriptions
