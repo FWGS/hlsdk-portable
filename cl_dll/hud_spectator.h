@@ -64,11 +64,11 @@ public:
 	void CheckOverviewEntities();
 	void DrawOverview();
 	void DrawOverviewEntities();
-	void GetMapPosition( float * returnvec );
+	void GetMapPosition( float *returnvec );
 	void DrawOverviewLayer();
 	void LoadMapSprites();
 	bool ParseOverviewFile();
-	bool IsActivePlayer( cl_entity_t * ent );
+	bool IsActivePlayer( cl_entity_t *ent );
 	void SetModes( int iMainMode, int iInsetMode );
 	void HandleButtonsDown( int ButtonPressed );
 	void HandleButtonsUp( int ButtonPressed );

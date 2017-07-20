@@ -397,7 +397,7 @@ void CBaseDoor::Precache( void )
 			pszSound = "doors/doorstop5.wav";
 			break;
 		case 6:
-			pszSound = "doors/doorstop6.wav"
+			pszSound = "doors/doorstop6.wav";
 			break;
 		case 7:
 			pszSound = "doors/doorstop7.wav";

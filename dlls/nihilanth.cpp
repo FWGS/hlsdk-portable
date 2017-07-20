@@ -642,14 +642,14 @@ void CNihilanth::MakeFriend( Vector vecStart )
 
 	for( i = 0; i < 3; i++ )
 	{
-		if( m_hFriend[i] != NULL && !m_hFriend[i]->IsAlive() )
+		if( m_hFriend[i] != 0 && !m_hFriend[i]->IsAlive() )
 		{
 			if( pev->rendermode == kRenderNormal ) // don't do it if they are already fading
 				m_hFriend[i]->MyMonsterPointer()->FadeMonster();
 			m_hFriend[i] = NULL;
 		}
 
-		if( m_hFriend[i] == NULL )
+		if( m_hFriend[i] == 0 )
 		{
 			if( RANDOM_LONG( 0, 1 ) == 0 )
 			{
@@ -675,7 +675,7 @@ void CNihilanth::MakeFriend( Vector vecStart )
 						m_hFriend[i] = Create( "monster_alien_slave", node.m_vecOrigin, pev->angles );
 				}
 			}
-			if( m_hFriend[i] != NULL )
+			if( m_hFriend[i] != 0 )
 			{
 				EMIT_SOUND( m_hFriend[i]->edict(), CHAN_WEAPON, "debris/beamstart7.wav", 1.0, ATTN_NORM );
 			}
@@ -722,7 +722,7 @@ void CNihilanth::NextActivity()
 		}
 	}
 
-	if( ( pev->health < gSkillData.nihilanthHealth / 2 || m_iActiveSpheres < N_SPHERES / 2 ) && m_hRecharger == NULL && m_iLevel <= 9 )
+	if( ( pev->health < gSkillData.nihilanthHealth / 2 || m_iActiveSpheres < N_SPHERES / 2 ) && m_hRecharger == 0 && m_iLevel <= 9 )
 	{
 		char szName[64];
 
@@ -881,7 +881,7 @@ void CNihilanth::HuntThink( void )
 	}
 
 	// look for current enemy	
-	if( m_hEnemy != 0 && m_hRecharger == NULL )
+	if( m_hEnemy != 0 && m_hRecharger == 0 )
 	{
 		if( FVisible( m_hEnemy ) )
 		{
@@ -1057,7 +1057,7 @@ void CNihilanth::HandleAnimEvent( MonsterEvent_t *pEvent )
 		break;
 	case 2:
 		// zen
-		if( m_hEnemy != NULL )
+		if( m_hEnemy != 0 )
 		{
 			if( RANDOM_LONG( 0, 4 ) == 0 )
 				EMIT_SOUND( edict(), CHAN_VOICE, RANDOM_SOUND_ARRAY( pAttackSounds ), 1.0, 0.2 ); 
@@ -1098,7 +1098,7 @@ void CNihilanth::HandleAnimEvent( MonsterEvent_t *pEvent )
 		break;
 	case 3:
 		// prayer
-		if (m_hEnemy != NULL)
+		if( m_hEnemy != 0 )
 		{
 			char szText[32];
 
@@ -1178,7 +1178,7 @@ void CNihilanth::HandleAnimEvent( MonsterEvent_t *pEvent )
 		}
 		break;
 	case 6:
-		if( m_hEnemy != NULL )
+		if( m_hEnemy != 0 )
 		{
 			Vector vecSrc, vecAngles;
 			GetAttachment( 2, vecSrc, vecAngles ); 
@@ -1208,7 +1208,7 @@ void CNihilanth::CommandUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_
 			CBaseEntity *pTouch = UTIL_FindEntityByTargetname( NULL, m_szDeadTouch );
 			if( pTouch )
 			{
-				if( m_hEnemy != NULL )
+				if( m_hEnemy != 0 )
 				{
 					pTouch->Touch( m_hEnemy );
 				}
@@ -1597,7 +1597,7 @@ void CNihilanthHVR::TeleportThink( void )
 		if( m_hTargetEnt != 0 )
 			m_hTargetEnt->Use( m_hEnemy, m_hEnemy, USE_ON, 1.0 );
 
-		if( m_hTouch != 0 && m_hEnemy != NULL )
+		if( m_hTouch != 0 && m_hEnemy != 0 )
 			m_hTouch->Touch( m_hEnemy );
 	}
 	else 

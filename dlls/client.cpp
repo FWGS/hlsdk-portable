@@ -566,7 +566,7 @@ void ClientCommand( edict_t *pEntity )
 
 			// notify other clients of player switching to spectator mode
 			UTIL_ClientPrintAll( HUD_PRINTNOTIFY, UTIL_VarArgs( "%s switched to spectator mode\n",
-						( pev->netname && STRING(pev->netname)[0] != 0 ) ? STRING(pev->netname) : "unconnected" ) );
+						( pev->netname && ( STRING( pev->netname ) )[0] != 0 ) ? STRING( pev->netname ) : "unconnected" ) );
 		}
 		else
 			ClientPrint( pev, HUD_PRINTCONSOLE, "Spectator mode is disabled.\n" );
@@ -629,7 +629,7 @@ void ClientUserInfoChanged( edict_t *pEntity, char *infobuffer )
 		return;
 
 	// msg everyone if someone changes their name,  and it isn't the first time (changing no name to current name)
-	if( pEntity->v.netname && STRING( pEntity->v.netname )[0] != 0 && !FStrEq( STRING( pEntity->v.netname ), g_engfuncs.pfnInfoKeyValue( infobuffer, "name" ) ) )
+	if( pEntity->v.netname && ( STRING( pEntity->v.netname ) )[0] != 0 && !FStrEq( STRING( pEntity->v.netname ), g_engfuncs.pfnInfoKeyValue( infobuffer, "name" ) ) )
 	{
 		char sName[256];
 		char *pName = g_engfuncs.pfnInfoKeyValue( infobuffer, "name" );
