@@ -99,8 +99,7 @@ void CHandGrenade::Holster( int skiplocal /* = 0 */ )
 	{
 		// no more grenades!
 		m_pPlayer->pev->weapons &= ~( 1 << WEAPON_HANDGRENADE );
-		SetThink( &CBasePlayerItem::DestroyItem );
-		pev->nextthink = gpGlobals->time + 0.1;
+		DestroyItem();
 	}
 
 	if( m_flStartThrow )

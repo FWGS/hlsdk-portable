@@ -23,6 +23,13 @@
 #include "player.h"
 #include "gamerules.h"
 
+enum satchel_state
+{
+	SATCHEL_IDLE = 0,
+	SATCHEL_READY,
+	SATCHEL_RELOAD
+};
+
 enum satchel_e
 {
 	SATCHEL_IDLE1 = 0,
@@ -194,7 +201,7 @@ int CSatchel::AddDuplicate( CBasePlayerItem *pOriginal )
 	{
 		pSatchel = (CSatchel *)pOriginal;
 
-		if( pSatchel->m_chargeReady != 0 )
+		if( pSatchel->m_chargeReady != SATCHEL_IDLE )
 		{
 			// player has some satchels deployed. Refuse to add more.
 			return FALSE;
@@ -211,7 +218,7 @@ int CSatchel::AddToPlayer( CBasePlayer *pPlayer )
 	int bResult = CBasePlayerItem::AddToPlayer( pPlayer );
 
 	pPlayer->pev->weapons |= ( 1 << m_iId );
-	m_chargeReady = 0;// this satchel charge weapon now forgets that any satchels are deployed by it.
+	m_chargeReady = SATCHEL_IDLE;// this satchel charge weapon now forgets that any satchels are deployed by it.
 
 	if( bResult )
 	{
@@ -263,19 +270,7 @@ int CSatchel::GetItemInfo( ItemInfo *p )
 //=========================================================
 BOOL CSatchel::IsUseable( void )
 {
-	if( m_pPlayer->m_rgAmmo[PrimaryAmmoIndex()] > 0 ) 
-	{
-		// player is carrying some satchels
-		return TRUE;
-	}
-
-	if( m_chargeReady != 0 )
-	{
-		// player isn't carrying any satchels, but has some out
-		return TRUE;
-	}
-
-	return FALSE;
+	return CanDeploy();
 }
 
 BOOL CSatchel::CanDeploy( void )
@@ -286,7 +281,7 @@ BOOL CSatchel::CanDeploy( void )
 		return TRUE;
 	}
 
-	if( m_chargeReady != 0 )
+	if( m_chargeReady )
 	{
 		// player isn't carrying any satchels, but has some out
 		return TRUE;
@@ -322,11 +317,10 @@ void CSatchel::Holster( int skiplocal /* = 0 */ )
 	}
 	EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_WEAPON, "common/null.wav", 1.0, ATTN_NORM );
 
-	if( !m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] && !m_chargeReady )
+	if( !m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] && m_chargeReady != SATCHEL_READY )
 	{
 		m_pPlayer->pev->weapons &= ~( 1 << WEAPON_SATCHEL );
-		SetThink( &CBasePlayerItem::DestroyItem );
-		pev->nextthink = gpGlobals->time + 0.1;
+		DestroyItem();
 	}
 }
 
@@ -334,38 +328,37 @@ void CSatchel::PrimaryAttack()
 {
 	switch( m_chargeReady )
 	{
-	case 0:
+	case SATCHEL_IDLE:
 		{
-		Throw();
+			Throw();
 		}
 		break;
-	case 1:
+	case SATCHEL_READY:
 		{
-		SendWeaponAnim( SATCHEL_RADIO_FIRE );
+			SendWeaponAnim( SATCHEL_RADIO_FIRE );
 
-		edict_t *pPlayer = m_pPlayer->edict();
+			edict_t *pPlayer = m_pPlayer->edict();
 
-		CBaseEntity *pSatchel = NULL;
+			CBaseEntity *pSatchel = NULL;
 
-		while( ( pSatchel = UTIL_FindEntityInSphere( pSatchel, m_pPlayer->pev->origin, 4096 ) ) != NULL )
-		{
-			if( FClassnameIs( pSatchel->pev, "monster_satchel" ) )
+			while( ( pSatchel = UTIL_FindEntityInSphere( pSatchel, m_pPlayer->pev->origin, 4096 ) ) != NULL )
 			{
-				if( pSatchel->pev->owner == pPlayer )
+				if( FClassnameIs( pSatchel->pev, "monster_satchel" ) )
 				{
-					pSatchel->Use( m_pPlayer, m_pPlayer, USE_ON, 0 );
-					m_chargeReady = 2;
+					if( pSatchel->pev->owner == pPlayer )
+					{
+						pSatchel->Use( m_pPlayer, m_pPlayer, USE_ON, 0 );
+					}
 				}
 			}
-		}
 
-		m_chargeReady = 2;
-		m_flNextPrimaryAttack = GetNextAttackDelay( 0.5 );
-		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5;
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.5;
-		break;
+			m_chargeReady = SATCHEL_RELOAD;
+			m_flNextPrimaryAttack = GetNextAttackDelay( 0.5 );
+			m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5;
+			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.5;
+			break;
 		}
-	case 2:
+	case SATCHEL_RELOAD:
 		// we're reloading, don't allow fire
 		break;
 	}
@@ -373,7 +366,7 @@ void CSatchel::PrimaryAttack()
 
 void CSatchel::SecondaryAttack( void )
 {
-	if( m_chargeReady != 2 )
+	if( m_chargeReady != SATCHEL_RELOAD )
 	{
 		Throw();
 	}
@@ -403,8 +396,8 @@ void CSatchel::Throw( void )
 		// player "shoot" animation
 		m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
 
-		m_chargeReady = 1;
-		
+		m_chargeReady = SATCHEL_READY;
+
 		m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]--;
 
 		m_flNextPrimaryAttack = GetNextAttackDelay( 1.0 );
@@ -419,17 +412,17 @@ void CSatchel::WeaponIdle( void )
 
 	switch( m_chargeReady )
 	{
-	case 0:
+	case SATCHEL_IDLE:
 		SendWeaponAnim( SATCHEL_FIDGET1 );
 		// use tripmine animations
 		strcpy( m_pPlayer->m_szAnimExtention, "trip" );
 		break;
-	case 1:
+	case SATCHEL_READY:
 		SendWeaponAnim( SATCHEL_RADIO_FIDGET1 );
 		// use hivehand animations
 		strcpy( m_pPlayer->m_szAnimExtention, "hive" );
 		break;
-	case 2:
+	case SATCHEL_RELOAD:
 		if( !m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] )
 		{
 			m_chargeReady = 0;
@@ -450,7 +443,7 @@ void CSatchel::WeaponIdle( void )
 
 		m_flNextPrimaryAttack = GetNextAttackDelay( 0.5 );
 		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5;
-		m_chargeReady = 0;
+		m_chargeReady = SATCHEL_IDLE;
 		break;
 	}
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );// how long till we do this again.
