@@ -182,7 +182,7 @@ void CAmbientGeneric::Spawn( void )
 		m_flAttenuation = ATTN_STATIC;
 	}
 
-	char* szSoundFile = (char*)STRING( pev->message );
+	const char *szSoundFile = STRING( pev->message );
 
 	if( FStringNull( pev->message ) || strlen( szSoundFile ) < 1 )
 	{
@@ -216,7 +216,7 @@ void CAmbientGeneric::Spawn( void )
 
 void CAmbientGeneric::Precache( void )
 {
-	char* szSoundFile = (char*)STRING( pev->message );
+	const char *szSoundFile = STRING( pev->message );
 
 	if( !FStringNull( pev->message ) && strlen( szSoundFile ) > 1 )
 	{
@@ -248,7 +248,7 @@ void CAmbientGeneric::Precache( void )
 // with lfo if active.
 void CAmbientGeneric::RampThink( void )
 {
-	char* szSoundFile = (char*) STRING(pev->message);
+	const char *szSoundFile = STRING( pev->message );
 	int pitch = m_dpv.pitch; 
 	int vol = m_dpv.vol;
 	int flags = 0;
@@ -533,7 +533,7 @@ void CAmbientGeneric::InitModulationParms( void )
 //
 void CAmbientGeneric::ToggleUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
-	char* szSoundFile = (char*)STRING( pev->message );
+	const char *szSoundFile = STRING( pev->message );
 	float fraction;
 
 	if( useType != USE_TOGGLE )

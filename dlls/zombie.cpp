@@ -266,7 +266,7 @@ void CZombie::Spawn()
 {
 	Precache();
 
-	SET_MODEL( ENT(pev), "models/zombie.mdl" );
+	SET_MODEL( ENT( pev ), "models/zombie.mdl" );
 	UTIL_SetSize( pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX );
 
 	pev->solid		= SOLID_SLIDEBOX;
@@ -291,22 +291,22 @@ void CZombie::Precache()
 	PRECACHE_MODEL( "models/zombie.mdl" );
 
 	for( i = 0; i < ARRAYSIZE( pAttackHitSounds ); i++ )
-		PRECACHE_SOUND( (char *)pAttackHitSounds[i] );
+		PRECACHE_SOUND( pAttackHitSounds[i] );
 
 	for( i = 0; i < ARRAYSIZE( pAttackMissSounds ); i++ )
-		PRECACHE_SOUND( (char *)pAttackMissSounds[i] );
+		PRECACHE_SOUND( pAttackMissSounds[i] );
 
 	for( i = 0; i < ARRAYSIZE( pAttackSounds ); i++ )
-		PRECACHE_SOUND( (char *)pAttackSounds[i] );
+		PRECACHE_SOUND( pAttackSounds[i] );
 
 	for( i = 0; i < ARRAYSIZE( pIdleSounds ); i++ )
-		PRECACHE_SOUND( (char *)pIdleSounds[i] );
+		PRECACHE_SOUND( pIdleSounds[i] );
 
 	for( i = 0; i < ARRAYSIZE( pAlertSounds ); i++ )
-		PRECACHE_SOUND( (char *)pAlertSounds[i] );
+		PRECACHE_SOUND( pAlertSounds[i] );
 
 	for( i = 0; i < ARRAYSIZE( pPainSounds ); i++ )
-		PRECACHE_SOUND( (char *)pPainSounds[i] );
+		PRECACHE_SOUND( pPainSounds[i] );
 }
 
 //=========================================================

@@ -127,7 +127,7 @@ void PlayLockSounds( entvars_t *pev, locksound_t *pls, int flocked, int fbutton 
 		if( fplaysound )
 		{
 			// play 'door locked' sound
-			EMIT_SOUND( ENT( pev ), CHAN_ITEM, (char*)STRING( pls->sLockedSound ), fvol, ATTN_NORM );
+			EMIT_SOUND( ENT( pev ), CHAN_ITEM, STRING( pls->sLockedSound ), fvol, ATTN_NORM );
 			pls->flwaitSound = gpGlobals->time + flsoundwait;
 		}
 
@@ -164,7 +164,7 @@ void PlayLockSounds( entvars_t *pev, locksound_t *pls, int flocked, int fbutton 
 		// play 'door unlocked' sound if set
 		if( fplaysound )
 		{
-			EMIT_SOUND( ENT( pev ), CHAN_ITEM, (char*)STRING( pls->sUnlockedSound ), fvol, ATTN_NORM );
+			EMIT_SOUND( ENT( pev ), CHAN_ITEM, STRING( pls->sUnlockedSound ), fvol, ATTN_NORM );
 			pls->flwaitSound = gpGlobals->time + flsoundwait;
 		}
 
@@ -606,7 +606,7 @@ void CBaseDoor::DoorGoUp( void )
 	// filter them out and leave a client stuck with looping door sounds!
 	if( !FBitSet( pev->spawnflags, SF_DOOR_SILENT ) )
 		if( m_toggle_state != TS_GOING_UP && m_toggle_state != TS_GOING_DOWN )
-			EMIT_SOUND( ENT( pev ), CHAN_STATIC, (char*)STRING( pev->noiseMoving ), 1, ATTN_NORM );
+			EMIT_SOUND( ENT( pev ), CHAN_STATIC, STRING( pev->noiseMoving ), 1, ATTN_NORM );
 
 	m_toggle_state = TS_GOING_UP;
 
@@ -646,8 +646,8 @@ void CBaseDoor::DoorHitTop( void )
 {
 	if( !FBitSet( pev->spawnflags, SF_DOOR_SILENT ) )
 	{
-		STOP_SOUND( ENT( pev ), CHAN_STATIC, (char*)STRING( pev->noiseMoving ) );
-		EMIT_SOUND( ENT( pev ), CHAN_STATIC, (char*)STRING( pev->noiseArrived ), 1, ATTN_NORM );
+		STOP_SOUND( ENT( pev ), CHAN_STATIC, STRING( pev->noiseMoving ) );
+		EMIT_SOUND( ENT( pev ), CHAN_STATIC, STRING( pev->noiseArrived ), 1, ATTN_NORM );
 	}
 
 	ASSERT( m_toggle_state == TS_GOING_UP );
@@ -686,7 +686,7 @@ void CBaseDoor::DoorGoDown( void )
 {
 	if( !FBitSet( pev->spawnflags, SF_DOOR_SILENT ) )
 		if( m_toggle_state != TS_GOING_UP && m_toggle_state != TS_GOING_DOWN )
-			EMIT_SOUND( ENT( pev ), CHAN_STATIC, (char*)STRING( pev->noiseMoving ), 1, ATTN_NORM );	
+			EMIT_SOUND( ENT( pev ), CHAN_STATIC, STRING( pev->noiseMoving ), 1, ATTN_NORM );	
 #ifdef DOOR_ASSERT
 	ASSERT( m_toggle_state == TS_AT_TOP );
 #endif // DOOR_ASSERT
@@ -706,8 +706,8 @@ void CBaseDoor::DoorHitBottom( void )
 {
 	if( !FBitSet( pev->spawnflags, SF_DOOR_SILENT ) )
 	{
-		STOP_SOUND( ENT( pev ), CHAN_STATIC, (char*)STRING( pev->noiseMoving ) );
-		EMIT_SOUND( ENT( pev ), CHAN_STATIC, (char*)STRING( pev->noiseArrived ), 1, ATTN_NORM );
+		STOP_SOUND( ENT( pev ), CHAN_STATIC, STRING( pev->noiseMoving ) );
+		EMIT_SOUND( ENT( pev ), CHAN_STATIC, STRING( pev->noiseArrived ), 1, ATTN_NORM );
 	}
 
 	ASSERT( m_toggle_state == TS_GOING_DOWN );
@@ -751,7 +751,7 @@ void CBaseDoor::Blocked( CBaseEntity *pOther )
 	{
 		// BMod Start - Door sound fix.
 		if( !FBitSet( pev->spawnflags, SF_DOOR_SILENT ) )
-			STOP_SOUND( ENT( pev ), CHAN_STATIC, (char*)STRING( pev->noiseMoving ) );
+			STOP_SOUND( ENT( pev ), CHAN_STATIC, STRING( pev->noiseMoving ) );
 		// BMod End
 
 		if( m_toggle_state == TS_GOING_DOWN )
@@ -767,7 +767,7 @@ void CBaseDoor::Blocked( CBaseEntity *pOther )
 	// Block all door pieces with the same targetname here.
 	if( !FStringNull( pev->targetname ) )
 	{
-		for(;;)
+		for( ; ; )
 		{
 			pentTarget = FIND_ENTITY_BY_TARGETNAME( pentTarget, STRING( pev->targetname ) );
 
@@ -799,7 +799,7 @@ void CBaseDoor::Blocked( CBaseEntity *pOther )
 							}
 						}
 						if( !FBitSet( pev->spawnflags, SF_DOOR_SILENT ) )
-							STOP_SOUND( ENT( pev ), CHAN_STATIC, (char*)STRING( pev->noiseMoving ) );
+							STOP_SOUND( ENT( pev ), CHAN_STATIC, STRING( pev->noiseMoving ) );
 
 						if( pDoor->m_toggle_state == TS_GOING_DOWN )
 							pDoor->DoorGoUp();
@@ -1106,7 +1106,7 @@ void CMomentaryDoor::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYP
 		// This entity only thinks when it moves, so if it's thinking, it's in the process of moving
 		// play the sound when it starts moving(not yet thinking)
 		if( pev->nextthink < pev->ltime || pev->nextthink == 0 )
-			EMIT_SOUND( ENT( pev ), CHAN_STATIC, (char*)STRING( pev->noiseMoving ), 1, ATTN_NORM );
+			EMIT_SOUND( ENT( pev ), CHAN_STATIC, STRING( pev->noiseMoving ), 1, ATTN_NORM );
 		// If we already moving to designated point, return
 		else if( move == m_vecFinalDest )
 			return;
@@ -1118,6 +1118,6 @@ void CMomentaryDoor::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYP
 
 void CMomentaryDoor::MomentaryMoveDone( void )
 {
-	STOP_SOUND( ENT( pev ), CHAN_STATIC, (char*)STRING( pev->noiseMoving ) );
-	EMIT_SOUND( ENT( pev ), CHAN_STATIC, (char*)STRING( pev->noiseArrived ), 1, ATTN_NORM );
+	STOP_SOUND( ENT( pev ), CHAN_STATIC, STRING( pev->noiseMoving ) );
+	EMIT_SOUND( ENT( pev ), CHAN_STATIC, STRING( pev->noiseArrived ), 1, ATTN_NORM );
 }

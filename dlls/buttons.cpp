@@ -343,25 +343,25 @@ void CBaseButton::Precache( void )
 			m_ls.sUnlockedSentence = MAKE_STRING( "EA" );
 			break;
 		case 2: // security door
-			m_ls.sUnlockedSentence = MAKE_STRING("ED");
+			m_ls.sUnlockedSentence = MAKE_STRING( "ED" );
 			break;
 		case 3: // blast door
-			m_ls.sUnlockedSentence = MAKE_STRING("EF");
+			m_ls.sUnlockedSentence = MAKE_STRING( "EF" );
 			break;
 		case 4: // fire door
-			m_ls.sUnlockedSentence = MAKE_STRING("EFIRE");
+			m_ls.sUnlockedSentence = MAKE_STRING( "EFIRE" );
 			break;
 		case 5: // chemical door
-			m_ls.sUnlockedSentence = MAKE_STRING("ECHEM");
+			m_ls.sUnlockedSentence = MAKE_STRING( "ECHEM" );
 			break;
 		case 6: // radiation door
-			m_ls.sUnlockedSentence = MAKE_STRING("ERAD");
+			m_ls.sUnlockedSentence = MAKE_STRING( "ERAD" );
 			break;
 		case 7: // gen containment
-			m_ls.sUnlockedSentence = MAKE_STRING("ECON");
+			m_ls.sUnlockedSentence = MAKE_STRING( "ECON" );
 			break;
 		case 8: // maintenance door
-			m_ls.sUnlockedSentence = MAKE_STRING("EH");
+			m_ls.sUnlockedSentence = MAKE_STRING( "EH" );
 			break;
 		default:
 			m_ls.sUnlockedSentence = 0;
@@ -426,7 +426,7 @@ int CBaseButton::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 
 	if( code == BUTTON_RETURN )
 	{
-		EMIT_SOUND( ENT( pev ), CHAN_VOICE, (char*)STRING( pev->noise ), 1, ATTN_NORM );
+		EMIT_SOUND( ENT( pev ), CHAN_VOICE, STRING( pev->noise ), 1, ATTN_NORM );
 
 		// Toggle buttons fire when they get back to their "home" position
 		if( !( pev->spawnflags & SF_BUTTON_TOGGLE ) )
@@ -657,7 +657,7 @@ void CBaseButton::ButtonUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_
 	{
 		if( !m_fStayPushed && FBitSet( pev->spawnflags, SF_BUTTON_TOGGLE ) )
 		{
-			EMIT_SOUND( ENT( pev ), CHAN_VOICE, (char*)STRING( pev->noise ), 1, ATTN_NORM );
+			EMIT_SOUND( ENT( pev ), CHAN_VOICE, STRING( pev->noise ), 1, ATTN_NORM );
 
 			//SUB_UseTargets( m_eoActivator );
 			ButtonReturn();
@@ -716,7 +716,7 @@ void CBaseButton::ButtonTouch( CBaseEntity *pOther )
 
 	if( code == BUTTON_RETURN )
 	{
-		EMIT_SOUND( ENT( pev ), CHAN_VOICE, (char*)STRING( pev->noise ), 1, ATTN_NORM );
+		EMIT_SOUND( ENT( pev ), CHAN_VOICE, STRING( pev->noise ), 1, ATTN_NORM );
 		SUB_UseTargets( m_hActivator, USE_TOGGLE, 0 );
 		ButtonReturn();
 	}
@@ -729,7 +729,7 @@ void CBaseButton::ButtonTouch( CBaseEntity *pOther )
 //
 void CBaseButton::ButtonActivate()
 {
-	EMIT_SOUND( ENT( pev ), CHAN_VOICE, (char*)STRING( pev->noise ), 1, ATTN_NORM );
+	EMIT_SOUND( ENT( pev ), CHAN_VOICE, STRING( pev->noise ), 1, ATTN_NORM );
 
 	if( !UTIL_IsMasterTriggered( m_sMaster, m_hActivator ) )
 	{
@@ -815,7 +815,7 @@ void CBaseButton::ButtonBackHome( void )
 
 	if( FBitSet( pev->spawnflags, SF_BUTTON_TOGGLE ) )
 	{
-		//EMIT_SOUND( ENT( pev ), CHAN_VOICE, (char*)STRING( pev->noise ), 1, ATTN_NORM );
+		//EMIT_SOUND( ENT( pev ), CHAN_VOICE, STRING( pev->noise ), 1, ATTN_NORM );
 		
 		SUB_UseTargets( m_hActivator, USE_TOGGLE, 0 );
 	}
@@ -1034,7 +1034,7 @@ void CMomentaryRotButton::KeyValue( KeyValueData *pkvd )
 
 void CMomentaryRotButton::PlaySound( void )
 {
-	EMIT_SOUND( ENT( pev ), CHAN_VOICE, (char*)STRING( pev->noise ), 1, ATTN_NORM );
+	EMIT_SOUND( ENT( pev ), CHAN_VOICE, STRING( pev->noise ), 1, ATTN_NORM );
 }
 
 // BUGBUG: This design causes a latentcy.  When the button is retriggered, the first impulse

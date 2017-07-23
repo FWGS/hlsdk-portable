@@ -527,7 +527,7 @@ void CBaseTrigger::InitTrigger()
 		SetMovedir( pev );
 	pev->solid = SOLID_TRIGGER;
 	pev->movetype = MOVETYPE_NONE;
-	SET_MODEL(ENT(pev), STRING( pev->model ) );    // set size and link into world
+	SET_MODEL( ENT( pev ), STRING( pev->model ) );    // set size and link into world
 	if( CVAR_GET_FLOAT( "showtriggers" ) == 0 )
 		SetBits( pev->effects, EF_NODRAW );
 }
@@ -1135,7 +1135,7 @@ void CBaseTrigger::ActivateMultiTrigger( CBaseEntity *pActivator )
 	}
 
 	if( !FStringNull( pev->noise ) )
-		EMIT_SOUND( ENT( pev ), CHAN_VOICE, (char*)STRING( pev->noise ), 1, ATTN_NORM );
+		EMIT_SOUND( ENT( pev ), CHAN_VOICE, STRING( pev->noise ), 1, ATTN_NORM );
 
 	// don't trigger again until reset
 	// pev->takedamage = DAMAGE_NO;
@@ -1264,7 +1264,7 @@ void CTriggerVolume::Spawn( void )
 {
 	pev->solid = SOLID_NOT;
 	pev->movetype = MOVETYPE_NONE;
-	SET_MODEL( ENT(pev), STRING( pev->model ) );    // set size and link into world
+	SET_MODEL( ENT( pev ), STRING( pev->model ) );    // set size and link into world
 	pev->model = 0;
 	pev->modelindex = 0;
 }
@@ -1338,7 +1338,7 @@ TYPEDESCRIPTION	CChangeLevel::m_SaveData[] =
 	DEFINE_FIELD( CChangeLevel, m_changeTargetDelay, FIELD_FLOAT ),
 };
 
-IMPLEMENT_SAVERESTORE(CChangeLevel,CBaseTrigger)
+IMPLEMENT_SAVERESTORE( CChangeLevel, CBaseTrigger )
 
 //
 // Cache user-entity-field values until spawn is called.

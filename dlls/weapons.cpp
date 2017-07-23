@@ -367,7 +367,7 @@ void W_Precache( void )
 	g_sModelIndexBloodSpray = PRECACHE_MODEL( "sprites/bloodspray.spr" ); // initial blood
 	g_sModelIndexBloodDrop = PRECACHE_MODEL( "sprites/blood.spr" ); // splattered blood 
 
-	g_sModelIndexLaser = PRECACHE_MODEL( (char *)g_pModelNameLaser );
+	g_sModelIndexLaser = PRECACHE_MODEL( g_pModelNameLaser );
 	g_sModelIndexLaserDot = PRECACHE_MODEL( "sprites/laserdot.spr" );
 
 	// used by explosions
@@ -535,7 +535,7 @@ CBaseEntity* CBasePlayerItem::Respawn( void )
 {
 	// make a copy of this weapon that is invisible and inaccessible to players (no touch function). The weapon spawn/respawn code
 	// will decide when to make the weapon visible and touchable.
-	CBaseEntity *pNewWeapon = CBaseEntity::Create( (char *)STRING( pev->classname ), g_pGameRules->VecWeaponRespawnSpot( this ), pev->angles, pev->owner );
+	CBaseEntity *pNewWeapon = CBaseEntity::Create( STRING( pev->classname ), g_pGameRules->VecWeaponRespawnSpot( this ), pev->angles, pev->owner );
 
 	if( pNewWeapon )
 	{
@@ -1297,7 +1297,7 @@ void CWeaponBox::Touch( CBaseEntity *pOther )
 		if( !FStringNull( m_rgiszAmmo[i] ) )
 		{
 			// there's some ammo of this type. 
-			pPlayer->GiveAmmo( m_rgAmmo[i], (char *)STRING( m_rgiszAmmo[i] ), MaxAmmoCarry( m_rgiszAmmo[i] ) );
+			pPlayer->GiveAmmo( m_rgAmmo[i], STRING( m_rgiszAmmo[i] ), MaxAmmoCarry( m_rgiszAmmo[i] ) );
 
 			//ALERT( at_console, "Gave %d rounds of %s\n", m_rgAmmo[i], STRING( m_rgiszAmmo[i] ) );
 
@@ -1407,7 +1407,7 @@ BOOL CWeaponBox::PackAmmo( int iszName, int iCount )
 	if( iMaxCarry != -1 && iCount > 0 )
 	{
 		//ALERT( at_console, "Packed %d rounds of %s\n", iCount, STRING( iszName ) );
-		GiveAmmo( iCount, (char *)STRING( iszName ), iMaxCarry );
+		GiveAmmo( iCount, STRING( iszName ), iMaxCarry );
 		return TRUE;
 	}
 

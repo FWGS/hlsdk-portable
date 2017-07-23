@@ -444,9 +444,9 @@ CXenHull *CXenHull::CreateHull( CBaseEntity *source, const Vector &mins, const V
 	CXenHull *pHull = GetClassPtr( (CXenHull *)NULL );
 
 	UTIL_SetOrigin( pHull->pev, source->pev->origin + offset );
-	SET_MODEL( pHull->edict(), STRING(source->pev->model) );
+	SET_MODEL( pHull->edict(), STRING( source->pev->model ) );
 	pHull->pev->solid = SOLID_BBOX;
-	pHull->pev->classname = MAKE_STRING("xen_hull");
+	pHull->pev->classname = MAKE_STRING( "xen_hull" );
 	pHull->pev->movetype = MOVETYPE_NONE;
 	pHull->pev->owner = source->edict();
 	UTIL_SetSize( pHull->pev, mins, maxs );
@@ -527,7 +527,7 @@ const char *CXenSpore::pModelNames[] =
 
 void CXenSpore::Precache( void )
 {
-	PRECACHE_MODEL( (char *)pModelNames[pev->skin] );
+	PRECACHE_MODEL( pModelNames[pev->skin] );
 }
 
 void CXenSpore::Touch( CBaseEntity *pOther )

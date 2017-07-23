@@ -200,13 +200,13 @@ void CFuncTank::Spawn( void )
 void CFuncTank::Precache( void )
 {
 	if( m_iszSpriteSmoke )
-		PRECACHE_MODEL( (char *)STRING( m_iszSpriteSmoke ) );
+		PRECACHE_MODEL( STRING( m_iszSpriteSmoke ) );
 
 	if( m_iszSpriteFlash )
-		PRECACHE_MODEL( (char *)STRING( m_iszSpriteFlash ) );
+		PRECACHE_MODEL( STRING( m_iszSpriteFlash ) );
 
 	if( pev->noise )
-		PRECACHE_SOUND( (char *)STRING( pev->noise ) );
+		PRECACHE_SOUND( STRING( pev->noise ) );
 }
 
 void CFuncTank::KeyValue( KeyValueData *pkvd )
@@ -688,13 +688,13 @@ void CFuncTank::StartRotSound( void )
 	if( !pev->noise || ( pev->spawnflags & SF_TANK_SOUNDON ) )
 		return;
 	pev->spawnflags |= SF_TANK_SOUNDON;
-	EMIT_SOUND( edict(), CHAN_STATIC, (char*)STRING( pev->noise ), 0.85, ATTN_NORM );
+	EMIT_SOUND( edict(), CHAN_STATIC, STRING( pev->noise ), 0.85, ATTN_NORM );
 }
 
 void CFuncTank::StopRotSound( void )
 {
 	if( pev->spawnflags & SF_TANK_SOUNDON )
-		STOP_SOUND( edict(), CHAN_STATIC, (char*)STRING( pev->noise ) );
+		STOP_SOUND( edict(), CHAN_STATIC, STRING( pev->noise ) );
 	pev->spawnflags &= ~SF_TANK_SOUNDON;
 }
 

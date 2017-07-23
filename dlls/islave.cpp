@@ -544,16 +544,16 @@ void CISlave::Precache()
 	PRECACHE_SOUND( "weapons/cbar_miss1.wav" );
 
 	for( i = 0; i < ARRAYSIZE( pAttackHitSounds ); i++ )
-		PRECACHE_SOUND( (char *)pAttackHitSounds[i] );
+		PRECACHE_SOUND( pAttackHitSounds[i] );
 
 	for( i = 0; i < ARRAYSIZE( pAttackMissSounds ); i++ )
-		PRECACHE_SOUND( (char *)pAttackMissSounds[i] );
+		PRECACHE_SOUND( pAttackMissSounds[i] );
 
 	for( i = 0; i < ARRAYSIZE( pPainSounds ); i++ )
-		PRECACHE_SOUND((char *)pPainSounds[i] );
+		PRECACHE_SOUND( pPainSounds[i] );
 
 	for( i = 0; i < ARRAYSIZE( pDeathSounds ); i++ )
-		PRECACHE_SOUND( (char *)pDeathSounds[i] );
+		PRECACHE_SOUND( pDeathSounds[i] );
 
 	UTIL_PrecacheOther( "test_effect" );
 }

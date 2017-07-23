@@ -92,7 +92,7 @@ CHalfLifeMultiplay::CHalfLifeMultiplay()
 	if( IS_DEDICATED_SERVER() )
 	{
 		// dedicated server
-		/*char *servercfgfile = (char *)CVAR_GET_STRING( "servercfgfile" );
+		/*const char *servercfgfile = CVAR_GET_STRING( "servercfgfile" );
 
 		if( servercfgfile && servercfgfile[0] )
 		{
@@ -108,7 +108,7 @@ CHalfLifeMultiplay::CHalfLifeMultiplay()
 	else
 	{
 		// listen server
-		char *lservercfgfile = (char *)CVAR_GET_STRING( "lservercfgfile" );
+		const char *lservercfgfile = CVAR_GET_STRING( "lservercfgfile" );
 
 		if( lservercfgfile && lservercfgfile[0] )
 		{
@@ -1214,7 +1214,7 @@ COM_Parse
 Parse a token out of a string
 ==============
 */
-char *COM_Parse( char *data )
+const char *COM_Parse( const char *data )
 {
 	int c;
 	int len;
@@ -1290,9 +1290,9 @@ COM_TokenWaiting
 Returns 1 if additional data is waiting to be processed on this line
 ==============
 */
-int COM_TokenWaiting( char *buffer )
+int COM_TokenWaiting( const char *buffer )
 {
-	char *p;
+	const char *p;
 
 	p = buffer;
 	while( *p && *p!='\n')
@@ -1313,12 +1313,12 @@ ReloadMapCycleFile
 Parses mapcycle.txt file into mapcycle_t structure
 ==============
 */
-int ReloadMapCycleFile( char *filename, mapcycle_t *cycle )
+int ReloadMapCycleFile( const char *filename, mapcycle_t *cycle )
 {
 	char szMap[32];
 	int length;
-	char *pFileList;
-	char *aFileList = pFileList = (char*)LOAD_FILE_FOR_ME( filename, &length );
+	const char *pFileList;
+	const char *aFileList = pFileList = (const char *)LOAD_FILE_FOR_ME( filename, &length );
 	int hasbuffer;
 	mapcycle_item_s *item, *newlist = NULL, *next;
 
@@ -1396,7 +1396,7 @@ int ReloadMapCycleFile( char *filename, mapcycle_t *cycle )
 			}
 		}
 
-		FREE_FILE( aFileList );
+		FREE_FILE( (void*)aFileList );
 	}
 
 	// Fixup circular list pointer
@@ -1532,7 +1532,7 @@ void CHalfLifeMultiplay::ChangeLevel( void )
 	BOOL do_cycle = TRUE;
 
 	// find the map to change to
-	char *mapcfile = (char*)CVAR_GET_STRING( "mapcyclefile" );
+	const char *mapcfile = CVAR_GET_STRING( "mapcyclefile" );
 	ASSERT( mapcfile != NULL );
 
 	szCommands[0] = '\0';
@@ -1650,8 +1650,8 @@ void CHalfLifeMultiplay::SendMOTDToClient( edict_t *client )
 {
 	// read from the MOTD.txt file
 	int length, char_count = 0;
-	char *pFileList;
-	char *aFileList = pFileList = (char*)LOAD_FILE_FOR_ME( (char *)CVAR_GET_STRING( "motdfile" ), &length );
+	const char *pFileList;
+	const char *aFileList = pFileList = (const char*)LOAD_FILE_FOR_ME( CVAR_GET_STRING( "motdfile" ), &length );
 
 	// send the server name
 	MESSAGE_BEGIN( MSG_ONE, gmsgServerName, NULL, client );
@@ -1679,7 +1679,7 @@ void CHalfLifeMultiplay::SendMOTDToClient( edict_t *client )
 		if( char_count < MAX_MOTD_LENGTH )
 			pFileList = aFileList + char_count; 
 		else
-			*pFileList = 0;
+			pFileList = 0;
 
 		MESSAGE_BEGIN( MSG_ONE, gmsgMOTD, NULL, client );
 			WRITE_BYTE( *pFileList ? FALSE : TRUE );	// FALSE means there is still more message to come
@@ -1687,5 +1687,5 @@ void CHalfLifeMultiplay::SendMOTDToClient( edict_t *client )
 		MESSAGE_END();
 	}
 
-	FREE_FILE( aFileList );
+	FREE_FILE( (void*)aFileList );
 }

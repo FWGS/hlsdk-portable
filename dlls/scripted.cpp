@@ -712,7 +712,7 @@ void CCineMonster::DelayStart( int state )
 			else
 			{
 				pTarget->m_iDelay--;
-				if (pTarget->m_iDelay <= 0)
+				if( pTarget->m_iDelay <= 0 )
 					pTarget->m_startTime = gpGlobals->time + 0.05;
 			}
 		}
@@ -1177,7 +1177,7 @@ void CFurniture::Die( void )
 //=========================================================
 void CFurniture::Spawn()
 {
-	PRECACHE_MODEL( (char *)STRING( pev->model ) );
+	PRECACHE_MODEL( STRING( pev->model ) );
 	SET_MODEL( ENT( pev ), STRING( pev->model ) );
 
 	pev->movetype = MOVETYPE_NONE;

@@ -1052,7 +1052,7 @@ Vector UTIL_GetAimVector( edict_t *pent, float flSpeed )
 	return tmp;
 }
 
-int UTIL_IsMasterTriggered(string_t sMaster, CBaseEntity *pActivator)
+int UTIL_IsMasterTriggered( string_t sMaster, CBaseEntity *pActivator )
 {
 	if( sMaster )
 	{
@@ -1340,7 +1340,7 @@ void UTIL_StringToVector( float *pVector, const char *pString )
 
 		while( *pstr && *pstr != ' ' )
 			pstr++;
-		if( !(*pstr) )
+		if( !( *pstr ) )
 			break;
 		pstr++;
 		pfront = pstr;
@@ -1858,7 +1858,7 @@ void CSave::WriteString( const char *pname, const int *stringId, int count )
 #if 0
 	if( count != 1 )
 		ALERT( at_error, "No string arrays!\n" );
-	WriteString( pname, (char *)STRING( *stringId ) );
+	WriteString( pname, STRING( *stringId ) );
 #endif
 	size = 0;
 	for( i = 0; i < count; i++ )
@@ -2209,9 +2209,9 @@ int CRestore::ReadField( void *pBaseData, TYPEDESCRIPTION *pFields, int fieldCou
 							if( !FStringNull( string ) && m_precache )
 							{
 								if( pTest->fieldType == FIELD_MODELNAME )
-									PRECACHE_MODEL( (char *)STRING( string ) );
+									PRECACHE_MODEL( STRING( string ) );
 								else if( pTest->fieldType == FIELD_SOUNDNAME )
-									PRECACHE_SOUND( (char *)STRING( string ) );
+									PRECACHE_SOUND( STRING( string ) );
 							}
 						}
 						break;

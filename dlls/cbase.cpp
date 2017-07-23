@@ -605,7 +605,7 @@ int CBaseEntity::Restore( CRestore &restore )
 		mins = pev->mins;	// Set model is about to destroy these
 		maxs = pev->maxs;
 
-		PRECACHE_MODEL( (char *)STRING( pev->model ) );
+		PRECACHE_MODEL( STRING( pev->model ) );
 		SET_MODEL( ENT( pev ), STRING( pev->model ) );
 		UTIL_SetSize( pev, mins, maxs );	// Reset them
 	}
