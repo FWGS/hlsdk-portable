@@ -35,10 +35,11 @@
 
 #include "r_studioint.h"
 #include "com_model.h"
+#include "eiface.h"
 
 extern engine_studio_api_t IEngineStudio;
 
-static int tracerCount[32];
+static int tracerCount[4096];
 
 extern "C" char PM_FindTextureType( char *name );
 
@@ -329,13 +330,12 @@ int EV_HLDM_CheckTracer( int idx, float *vecSrc, float *end, float *forward, flo
 {
 	int tracer = 0;
 	int i;
-	qboolean player = idx >= 1 && idx <= gEngfuncs.GetMaxClients() ? true : false;
 
 	if( iTracerFreq != 0 && ( (*tracerCount)++ % iTracerFreq ) == 0 )
 	{
 		vec3_t vecTracerSrc;
 
-		if( player )
+		if( EV_IsPlayer( idx ) )
 		{
 			vec3_t offset( 0, 0, -4 );
 
@@ -538,7 +538,7 @@ void EV_FireGlock2( event_args_t *args )
 
 	EV_GetDefaultShellInfo( args, origin, velocity, ShellVelocity, ShellOrigin, forward, right, up, 20, -12, 4 );
 
-	EV_EjectBrass ( ShellOrigin, ShellVelocity, angles[YAW], shell, TE_BOUNCE_SHELL ); 
+	EV_EjectBrass( ShellOrigin, ShellVelocity, angles[YAW], shell, TE_BOUNCE_SHELL );
 
 	gEngfuncs.pEventAPI->EV_PlaySound( idx, origin, CHAN_WEAPON, "weapons/pl_gun3.wav", gEngfuncs.pfnRandomFloat( 0.92, 1.0 ), ATTN_NORM, 0, 98 + gEngfuncs.pfnRandomLong( 0, 3 ) );
 
@@ -546,7 +546,7 @@ void EV_FireGlock2( event_args_t *args )
 
 	VectorCopy( forward, vecAiming );
 
-	EV_HLDM_FireBullets( idx, forward, right, up, 1, vecSrc, vecAiming, 8192, BULLET_PLAYER_9MM, 0, &tracerCount[idx - 1], args->fparam1, args->fparam2 );
+	EV_HLDM_FireBullets( idx, forward, right, up, 1, vecSrc, vecAiming, 8192, BULLET_PLAYER_9MM, 0, 0, args->fparam1, args->fparam2 );
 }
 //======================
 //	   GLOCK END
@@ -578,7 +578,7 @@ void EV_FireShotGunDouble( event_args_t *args )
 
 	AngleVectors( angles, forward, right, up );
 
-	shell = gEngfuncs.pEventAPI->EV_FindModelIndex("models/shotgunshell.mdl");// brass shell
+	shell = gEngfuncs.pEventAPI->EV_FindModelIndex( "models/shotgunshell.mdl" );// brass shell
 
 	if( EV_IsLocal( idx ) )
 	{
@@ -602,11 +602,11 @@ void EV_FireShotGunDouble( event_args_t *args )
 
 	if( gEngfuncs.GetMaxClients() > 1 )
 	{
-		EV_HLDM_FireBullets( idx, forward, right, up, 8, vecSrc, vecAiming, 2048, BULLET_PLAYER_BUCKSHOT, 0, &tracerCount[idx - 1], 0.17365, 0.04362 );
+		EV_HLDM_FireBullets( idx, forward, right, up, 8, vecSrc, vecAiming, 2048, BULLET_PLAYER_BUCKSHOT, 0, 0, 0.17365, 0.04362 );
 	}
 	else
 	{
-		EV_HLDM_FireBullets( idx, forward, right, up, 12, vecSrc, vecAiming, 2048, BULLET_PLAYER_BUCKSHOT, 0, &tracerCount[idx - 1], 0.08716, 0.08716 );
+		EV_HLDM_FireBullets( idx, forward, right, up, 12, vecSrc, vecAiming, 2048, BULLET_PLAYER_BUCKSHOT, 0, 0, 0.08716, 0.08716 );
 	}
 }
 
@@ -645,7 +645,7 @@ void EV_FireShotGunSingle( event_args_t *args )
 
 	EV_GetDefaultShellInfo( args, origin, velocity, ShellVelocity, ShellOrigin, forward, right, up, 32, -12, 6 );
 
-	EV_EjectBrass ( ShellOrigin, ShellVelocity, angles[YAW], shell, TE_BOUNCE_SHOTSHELL ); 
+	EV_EjectBrass( ShellOrigin, ShellVelocity, angles[YAW], shell, TE_BOUNCE_SHOTSHELL ); 
 
 	gEngfuncs.pEventAPI->EV_PlaySound( idx, origin, CHAN_WEAPON, "weapons/sbarrel1.wav", gEngfuncs.pfnRandomFloat( 0.95, 1.0 ), ATTN_NORM, 0, 93 + gEngfuncs.pfnRandomLong( 0, 0x1f ) );
 
@@ -654,11 +654,11 @@ void EV_FireShotGunSingle( event_args_t *args )
 
 	if( gEngfuncs.GetMaxClients() > 1 )
 	{
-		EV_HLDM_FireBullets( idx, forward, right, up, 4, vecSrc, vecAiming, 2048, BULLET_PLAYER_BUCKSHOT, 0, &tracerCount[idx - 1], 0.08716, 0.04362 );
+		EV_HLDM_FireBullets( idx, forward, right, up, 4, vecSrc, vecAiming, 2048, BULLET_PLAYER_BUCKSHOT, 0, 0, 0.08716, 0.04362 );
 	}
 	else
 	{
-		EV_HLDM_FireBullets( idx, forward, right, up, 6, vecSrc, vecAiming, 2048, BULLET_PLAYER_BUCKSHOT, 0, &tracerCount[idx - 1], 0.08716, 0.08716 );
+		EV_HLDM_FireBullets( idx, forward, right, up, 6, vecSrc, vecAiming, 2048, BULLET_PLAYER_BUCKSHOT, 0, 0, 0.08716, 0.08716 );
 	}
 }
 //======================
@@ -717,14 +717,7 @@ void EV_FireMP5( event_args_t *args )
 	EV_GetGunPosition( args, vecSrc, origin );
 	VectorCopy( forward, vecAiming );
 
-	if( gEngfuncs.GetMaxClients() > 1 )
-	{
-		EV_HLDM_FireBullets( idx, forward, right, up, 1, vecSrc, vecAiming, 8192, BULLET_PLAYER_MP5, 2, &tracerCount[idx - 1], args->fparam1, args->fparam2 );
-	}
-	else
-	{
-		EV_HLDM_FireBullets( idx, forward, right, up, 1, vecSrc, vecAiming, 8192, BULLET_PLAYER_MP5, 2, &tracerCount[idx - 1], args->fparam1, args->fparam2 );
-	}
+	EV_HLDM_FireBullets( idx, forward, right, up, 1, vecSrc, vecAiming, 8192, BULLET_PLAYER_MP5, 2, &tracerCount[idx % ARRAYSIZE( tracerCount )- 1], args->fparam1, args->fparam2 );
 }
 
 // We only predict the animation and sound
