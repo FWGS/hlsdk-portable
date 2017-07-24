@@ -24,6 +24,10 @@
 
 extern int gmsgCurWeapon;
 extern int gmsgSetFOV;
+extern int gmsgTeamInfo;
+         
+extern int g_teamplay;
+
 // Find the next client in the game for this player to spectate
 void CBasePlayer::Observer_FindNextPlayer( bool bReverse )
 {
@@ -265,4 +269,23 @@ void CBasePlayer::Observer_SetMode( int iMode )
 	ClientPrint( pev, HUD_PRINTCENTER, modemsg );
 
 	m_iObserverLastMode = iMode;
+}
+
+void CBasePlayer::StopObserver()
+{
+	// Turn off spectator
+	pev->iuser1 = pev->iuser2 = 0;
+	m_iHideHUD = 0;
+
+	GetClassPtr( (CBasePlayer *)pev )->Spawn();
+	pev->nextthink = -1;
+
+	// Update Team Status
+	MESSAGE_BEGIN( MSG_ALL, gmsgTeamInfo );
+		WRITE_BYTE( ENTINDEX( edict() ) ); // index number of primary entity
+	if( g_teamplay )
+		WRITE_STRING( TeamID() );
+	else
+		WRITE_STRING( "Players" );
+	MESSAGE_END();
 }

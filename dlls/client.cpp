@@ -556,20 +556,30 @@ void ClientCommand( edict_t *pEntity )
 	}
 	else if( FStrEq( pcmd, "spectate" ) ) // clients wants to become a spectator
 	{
-		// always allow proxies to become a spectator
-		if( ( pev->flags & FL_PROXY ) || allow_spectators.value )
+		CBasePlayer *pPlayer = GetClassPtr( (CBasePlayer *)pev );
+		if( !pPlayer->IsObserver() )
 		{
-			CBasePlayer *pPlayer = GetClassPtr( (CBasePlayer *)pev );
+			// always allow proxies to become a spectator
+			if( ( pev->flags & FL_PROXY ) || allow_spectators.value )
+			{
+				edict_t *pentSpawnSpot = g_pGameRules->GetPlayerSpawnSpot( pPlayer );
+				pPlayer->StartObserver( pev->origin, VARS( pentSpawnSpot )->angles );
 
-			edict_t *pentSpawnSpot = g_pGameRules->GetPlayerSpawnSpot( pPlayer );
-			pPlayer->StartObserver( pev->origin, VARS( pentSpawnSpot )->angles );
-
-			// notify other clients of player switching to spectator mode
-			UTIL_ClientPrintAll( HUD_PRINTNOTIFY, UTIL_VarArgs( "%s switched to spectator mode\n",
+				// notify other clients of player switching to spectator mode
+				UTIL_ClientPrintAll( HUD_PRINTNOTIFY, UTIL_VarArgs( "%s switched to spectator mode\n",
 						( pev->netname && ( STRING( pev->netname ) )[0] != 0 ) ? STRING( pev->netname ) : "unconnected" ) );
+			}
+			else
+				ClientPrint( pev, HUD_PRINTCONSOLE, "Spectator mode is disabled.\n" );
 		}
 		else
-			ClientPrint( pev, HUD_PRINTCONSOLE, "Spectator mode is disabled.\n" );
+		{
+			pPlayer->StopObserver();
+
+			// notify other clients of player left spectators
+			UTIL_ClientPrintAll( HUD_PRINTNOTIFY, UTIL_VarArgs( "%s has left spectator mode\n",
+					( pev->netname && ( STRING( pev->netname ) )[0] != 0 ) ? STRING( pev->netname ) : "unconnected" ) );
+		}
 	}
 	else if( FStrEq( pcmd, "specmode" ) ) // new spectator mode
 	{
