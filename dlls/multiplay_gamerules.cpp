@@ -1682,7 +1682,7 @@ void CHalfLifeMultiplay::SendMOTDToClient( edict_t *client )
 			pFileList = 0;
 
 		MESSAGE_BEGIN( MSG_ONE, gmsgMOTD, NULL, client );
-			WRITE_BYTE( *pFileList ? FALSE : TRUE );	// FALSE means there is still more message to come
+			WRITE_BYTE( pFileList ? FALSE : TRUE );	// FALSE means there is still more message to come
 			WRITE_STRING( chunk );
 		MESSAGE_END();
 	}
