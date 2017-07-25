@@ -1502,7 +1502,7 @@ void CFuncTrackTrain::Precache( void )
 		break;
 	}
 
-	if( !pszSound )
+	if( pszSound )
 	{
 		PRECACHE_SOUND( pszSound );
 		pev->noise = MAKE_STRING( pszSound );
