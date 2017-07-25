@@ -16,11 +16,7 @@
 #ifndef PM_SHARED_H
 #define PM_SHARED_H
 
-#ifdef _WIN32
-#ifndef __MINGW32__
 #pragma once
-#endif /* not __MINGW32__ */
-#endif
 
 void PM_Init( struct playermove_s *ppmove );
 void PM_Move( struct playermove_s *ppmove, int server );
