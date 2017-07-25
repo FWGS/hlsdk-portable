@@ -12,15 +12,10 @@
 *   without written permission from Valve LLC.
 *
 ****/
-
 #ifndef PM_DEFS_H
 #define PM_DEFS_H
 
-#ifdef _WIN32
-#ifndef __MINGW32__
 #pragma once
-#endif /* not __MINGW32__ */
-#endif
 
 #define MAX_PHYSENTS	600		// Must have room for all entities in the world.
 #define MAX_MOVEENTS	64
