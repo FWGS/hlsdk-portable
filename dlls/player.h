@@ -196,6 +196,8 @@ public:
 
 	char m_szTeamName[TEAM_NAME_LENGTH];
 
+	BOOL m_bWasTouchingTriggerPushBeforeFinalBattle;
+
 	virtual void Spawn( void );
 	void Pain( void );
 

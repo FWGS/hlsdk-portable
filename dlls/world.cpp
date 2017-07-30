@@ -33,6 +33,7 @@
 #include "weapons.h"
 #include "gamerules.h"
 #include "teamplay_gamerules.h"
+#include "shall_map_fixes.h"
 #include "physcallback.h"
 
 extern CGraph WorldGraph;
@@ -456,6 +457,7 @@ void CWorld::Spawn( void )
 {
 	g_fGameOver = FALSE;
 	Precache();
+	MapFixes_ApplyAllPossibleFixes();
 }
 
 void CWorld::Precache( void )
@@ -685,7 +687,10 @@ void CWorld::KeyValue( KeyValueData *pkvd )
 	}
 	else if( FStrEq( pkvd->szKeyName, "MaxRange" ) )
 	{
-		pev->speed = atof( pkvd->szValue );
+		// Since this mod features large levels,
+		// therefore adjust the view distance to
+		// render a farer distance.
+		pev->speed = GetIdealRenderDistance( atof( pkvd->szValue ) );
 		pkvd->fHandled = TRUE;
 	}
 	else if( FStrEq( pkvd->szKeyName, "chaptertitle" ) )

@@ -536,18 +536,8 @@ void CBigMomma::HandleAnimEvent( MonsterEvent_t *pEvent )
 
 void CBigMomma::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType )
 {
-	if( ptr->iHitgroup != 1 )
-	{
-		// didn't hit the sack?
-		if( pev->dmgtime != gpGlobals->time || ( RANDOM_LONG( 0, 10 ) < 1 ) )
-		{
-			UTIL_Ricochet( ptr->vecEndPos, RANDOM_FLOAT( 1, 2) );
-			pev->dmgtime = gpGlobals->time;
-		}
-
-		flDamage = 0.1;// don't hurt the monster much, but allow bits_COND_LIGHT_DAMAGE to be generated
-	}
-	else if( gpGlobals->time > m_painSoundTime )
+	// Bigmomma does not wear armor.
+	if( gpGlobals->time > m_painSoundTime )
 	{
 		m_painSoundTime = gpGlobals->time + RANDOM_LONG( 1, 3 );
 		EMIT_SOUND_ARRAY_DYN( CHAN_VOICE, pPainSounds );
@@ -637,7 +627,8 @@ void CBigMomma::Spawn()
 
 	pev->solid = SOLID_SLIDEBOX;
 	pev->movetype = MOVETYPE_STEP;
-	m_bloodColor = BLOOD_COLOR_GREEN;
+	// Bigmomma's blood color should be red.
+	m_bloodColor = BLOOD_COLOR_RED;
 	pev->health = 150 * gSkillData.bigmommaHealthFactor;
 	pev->view_ofs = Vector( 0, 0, 128 );// position of the eyes relative to monster's origin.
 	m_flFieldOfView = 0.3;// indicates the width of this monster's forward view cone ( as a dotproduct result )

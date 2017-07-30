@@ -36,6 +36,7 @@
 #include "game.h"
 #include "pm_shared.h"
 #include "hltv.h"
+#include "shall_map_fixes.h"
 
 // #define DUCKFIX
 
@@ -118,6 +119,8 @@ TYPEDESCRIPTION	CBasePlayer::m_playerSaveData[] =
 	DEFINE_FIELD( CBasePlayer, m_pTank, FIELD_EHANDLE ),
 	DEFINE_FIELD( CBasePlayer, m_iHideHUD, FIELD_INTEGER ),
 	DEFINE_FIELD( CBasePlayer, m_iFOV, FIELD_INTEGER ),
+
+	DEFINE_FIELD( CBasePlayer, m_bWasTouchingTriggerPushBeforeFinalBattle, FIELD_BOOLEAN ),
 
 	//DEFINE_FIELD( CBasePlayer, m_fDeadTime, FIELD_FLOAT ), // only used in multiplayer games
 	//DEFINE_FIELD( CBasePlayer, m_fGameHUDInitialized, FIELD_INTEGER ), // only used in multiplayer games
@@ -429,6 +432,14 @@ void CBasePlayer::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector ve
 
 int CBasePlayer::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )
 {
+	// If players are descending to the final battle,
+	// prevent them from taking damage.
+	if( m_bWasTouchingTriggerPushBeforeFinalBattle )
+	{
+		m_bWasTouchingTriggerPushBeforeFinalBattle = FALSE;
+		return 0;
+	}
+
 	// have suit diagnose the problem - ie: report damage type
 	int bitsDamage = bitsDamageType;
 	int ffound = TRUE;
@@ -2864,6 +2875,12 @@ void CBasePlayer::Spawn( void )
 	m_lastx = m_lasty = 0;
 
 	m_flNextChatTime = gpGlobals->time;
+
+	// On 2001 version level, give the the suit to player.
+	if( IsCurrentMap( "trick" ) )
+		pev->weapons |= ( 1 << WEAPON_SUIT );
+
+	m_bWasTouchingTriggerPushBeforeFinalBattle = FALSE;
 
 	g_pGameRules->PlayerSpawn( this );
 }

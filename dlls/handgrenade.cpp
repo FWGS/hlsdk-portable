@@ -61,8 +61,21 @@ void CHandGrenade::Precache( void )
 int CHandGrenade::GetItemInfo( ItemInfo *p )
 {
 	p->pszName = STRING( pev->classname );
+#if defined( CLIENT_DLL )
 	p->pszAmmo1 = "Hand Grenade";
 	p->iMaxAmmo1 = HANDGRENADE_MAX_CARRY;
+#else
+	if( HasInfiniteAmmo() )
+	{
+		p->pszAmmo1 = NULL;
+		p->iMaxAmmo1 = -1;
+	}
+	else
+	{
+		p->pszAmmo1 = "Hand Grenade";
+		p->iMaxAmmo1 = HANDGRENADE_MAX_CARRY;
+	}
+#endif// defined(CLIENT_DLL)
 	p->pszAmmo2 = NULL;
 	p->iMaxAmmo2 = -1;
 	p->iMaxClip = WEAPON_NOCLIP;
@@ -71,7 +84,10 @@ int CHandGrenade::GetItemInfo( ItemInfo *p )
 	p->iId = m_iId = WEAPON_HANDGRENADE;
 	p->iWeight = HANDGRENADE_WEIGHT;
 	p->iFlags = ITEM_FLAG_LIMITINWORLD | ITEM_FLAG_EXHAUSTIBLE;
-
+#if !defined(CLIENT_DLL)
+	if( HasInfiniteAmmo() )
+		p->iFlags |= ITEM_FLAG_NOAUTORELOAD;
+#endif
 	return 1;
 }
 
@@ -91,7 +107,11 @@ void CHandGrenade::Holster( int skiplocal /* = 0 */ )
 {
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
 
+#if defined(CLIENT_DLL)
 	if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] )
+#else
+	if( IsUseable() )
+#endif // defined( CLIENT_DLL )
 	{
 		SendWeaponAnim( HANDGRENADE_HOLSTER );
 	}
@@ -113,7 +133,11 @@ void CHandGrenade::Holster( int skiplocal /* = 0 */ )
 
 void CHandGrenade::PrimaryAttack()
 {
+#if defined(CLIENT_DLL)
 	if( !m_flStartThrow && m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] > 0 )
+#else
+	if( !m_flStartThrow && IsUseable() )
+#endif // defined(CLIENT_DLL)
 	{
 		m_flStartThrow = gpGlobals->time;
 		m_flReleaseThrow = 0;
@@ -177,10 +201,16 @@ void CHandGrenade::WeaponIdle( void )
 		m_flStartThrow = 0;
 		m_flNextPrimaryAttack = GetNextAttackDelay( 0.5 );
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.5;
-
+#if defined(CLIENT_DLL)
 		m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]--;
 
 		if( !m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] )
+#else
+		if( !HasInfiniteAmmo() )
+			m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]--;
+
+		if( !IsUseable() )
+#endif // defined(CLIENT_DLL)
 		{
 			// just threw last grenade
 			// set attack times in the future, and weapon idle in the future so we can see the whole throw
@@ -194,7 +224,11 @@ void CHandGrenade::WeaponIdle( void )
 		// we've finished the throw, restart.
 		m_flStartThrow = 0;
 
+#if defined(CLIENT_DLL)
 		if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] )
+#else
+		if( IsUseable() )
+#endif // defined(CLIENT_DLL)
 		{
 			SendWeaponAnim( HANDGRENADE_DRAW );
 		}
@@ -209,7 +243,11 @@ void CHandGrenade::WeaponIdle( void )
 		return;
 	}
 
+#if defined(CLIENT_DLL)
 	if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] )
+#else
+	if( IsUseable() )
+#endif // defined(CLIENT_DLL)
 	{
 		int iAnim;
 		float flRand = UTIL_SharedRandomFloat( m_pPlayer->random_seed, 0, 1 );
@@ -226,4 +264,14 @@ void CHandGrenade::WeaponIdle( void )
 
 		SendWeaponAnim( iAnim );
 	}
+}
+
+BOOL CHandGrenade::HasInfiniteAmmo()
+{
+	return IsCurrentMap( "witch" );
+}
+
+BOOL CHandGrenade::IsUseable()
+{
+	return HasInfiniteAmmo() || m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] > 0;
 }

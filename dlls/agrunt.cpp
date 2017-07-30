@@ -214,46 +214,9 @@ int CAGrunt::ISoundMask( void )
 //=========================================================
 void CAGrunt::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType )
 {
-	if( ptr->iHitgroup == 10 && ( bitsDamageType & ( DMG_BULLET | DMG_SLASH | DMG_CLUB ) ) )
-	{
-		// hit armor
-		if( pev->dmgtime != gpGlobals->time || ( RANDOM_LONG( 0, 10 ) < 1 ) )
-		{
-			UTIL_Ricochet( ptr->vecEndPos, RANDOM_FLOAT( 1, 2 ) );
-			pev->dmgtime = gpGlobals->time;
-		}
-
-		if( RANDOM_LONG( 0, 1 ) == 0 )
-		{
-			Vector vecTracerDir = vecDir;
-
-			vecTracerDir.x += RANDOM_FLOAT( -0.3, 0.3 );
-			vecTracerDir.y += RANDOM_FLOAT( -0.3, 0.3 );
-			vecTracerDir.z += RANDOM_FLOAT( -0.3, 0.3 );
-
-			vecTracerDir = vecTracerDir * -512;
-
-			MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, ptr->vecEndPos );
-			WRITE_BYTE( TE_TRACER );
-				WRITE_COORD( ptr->vecEndPos.x );
-				WRITE_COORD( ptr->vecEndPos.y );
-				WRITE_COORD( ptr->vecEndPos.z );
-
-				WRITE_COORD( vecTracerDir.x );
-				WRITE_COORD( vecTracerDir.y );
-				WRITE_COORD( vecTracerDir.z );
-			MESSAGE_END();
-		}
-
-		flDamage -= 20;
-		if( flDamage <= 0 )
-			flDamage = 0.1;// don't hurt the monster much, but allow bits_COND_LIGHT_DAMAGE to be generated
-	}
-	else
-	{
-		SpawnBlood( ptr->vecEndPos, BloodColor(), flDamage );// a little surface blood.
-		TraceBleed( flDamage, vecDir, ptr, bitsDamageType );
-	}
+	// Pumpkin beasts do not wear armors.
+	SpawnBlood( ptr->vecEndPos, BloodColor(), flDamage );// a little surface blood.
+	TraceBleed( flDamage, vecDir, ptr, bitsDamageType );
 
 	AddMultiDamage( pevAttacker, this, flDamage, bitsDamageType );
 }
@@ -588,7 +551,8 @@ void CAGrunt::Spawn()
 
 	pev->solid = SOLID_SLIDEBOX;
 	pev->movetype = MOVETYPE_STEP;
-	m_bloodColor = BLOOD_COLOR_GREEN;
+	// Pumpkin beasts (jack o lantern) use red blood.
+	m_bloodColor = BLOOD_COLOR_RED;
 	pev->effects = 0;
 	pev->health = gSkillData.agruntHealth;
 	m_flFieldOfView = 0.2;// indicates the width of this monster's forward view cone ( as a dotproduct result )

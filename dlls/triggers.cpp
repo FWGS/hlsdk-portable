@@ -1824,6 +1824,14 @@ void CTriggerPush::Touch( CBaseEntity *pOther )
 
 			pevToucher->flags |= FL_BASEVELOCITY;
 			//ALERT( at_console, "Vel %f, base %f\n", pevToucher->velocity.z, pevToucher->basevelocity.z );
+
+			// Use this variable to prevent players from
+			// taking damage once they hit the floor on
+			// final battle.
+			if( FStrEq( STRING( gpGlobals->mapname ), "hell" ) && pOther->IsPlayer() )
+			{
+				( (CBasePlayer*)pOther )->m_bWasTouchingTriggerPushBeforeFinalBattle = TRUE;
+			}
 		}
 	}
 }

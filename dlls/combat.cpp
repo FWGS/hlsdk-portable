@@ -254,9 +254,20 @@ BOOL CBaseMonster::HasHumanGibs( void )
 {
 	int myClass = Classify();
 
+	// Only reapers.
+	if( myClass == CLASS_ALIEN_MONSTER && !FClassnameIs( pev, "monster_bigmomma" ) && !FClassnameIs( pev, "monster_houndeye" ) )
+		return TRUE;
+
+	// Witches are humans and should use human gibs.
+	if( myClass == CLASS_ALIEN_MILITARY && FClassnameIs( pev, "monster_alien_slave" ) )
+		return TRUE;
+
 	if( myClass == CLASS_HUMAN_MILITARY ||
 		myClass == CLASS_PLAYER_ALLY ||
 		myClass == CLASS_HUMAN_PASSIVE ||
+
+		// Vampire should have human gibs.
+		myClass == CLASS_ALIEN_PREY ||
 		myClass == CLASS_PLAYER )
 
 		 return TRUE;
@@ -268,12 +279,17 @@ BOOL CBaseMonster::HasAlienGibs( void )
 {
 	int myClass = Classify();
 
-	if( myClass == CLASS_ALIEN_MILITARY ||
-		myClass == CLASS_ALIEN_MONSTER ||
-		myClass == CLASS_ALIEN_PASSIVE ||
+	// Big momma pumpkin and martians should use alien gibs.
+	if( myClass == CLASS_ALIEN_MONSTER && ( FClassnameIs( pev, "monster_bigmomma" ) || FClassnameIs( pev, "monster_houndeye" ) ) )
+		return TRUE;
+
+	// Witches are humans and should not use alien gibs.
+	if( myClass == CLASS_ALIEN_MILITARY && !FClassnameIs( pev, "monster_alien_slave" ) )
+		return TRUE;
+
+	if( myClass == CLASS_ALIEN_PASSIVE ||
 		myClass == CLASS_INSECT ||
-		myClass == CLASS_ALIEN_PREDATOR ||
-		myClass == CLASS_ALIEN_PREY )
+		myClass == CLASS_ALIEN_PREDATOR )
 
 		return TRUE;
 
