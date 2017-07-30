@@ -13,7 +13,6 @@ LOCAL_MODULE := client
 #else
 APP_PLATFORM := android-8
 #endif
-LOCAL_CONLYFLAGS += -std=c99
 
 include $(XASH3D_CONFIG)
 
