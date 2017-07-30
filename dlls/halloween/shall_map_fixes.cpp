@@ -25,8 +25,6 @@
 #include "gamerules.h"
 #include "shall_map_fixes.h"
 
-#if defined ( SHALL_MAPFIXES )
-
 #define RANDOM_ANGLE() Vector( 0, RANDOM_LONG(1, 6) * RANDOM_LONG(1, 6) * RANDOM_LONG(1, 10), 0 )
 
 static CBaseEntity* CreateItemAtPosition(char* classname, const Vector& position, const Vector& angles)
@@ -791,5 +789,3 @@ void MapFixes_ApplyAllPossibleFixes()
 		GetMapFixesSingleton()->ApplyMapFixWoods();
 	}
 }
-
-#endif // defined ( SHALL_MAPFIXES )
