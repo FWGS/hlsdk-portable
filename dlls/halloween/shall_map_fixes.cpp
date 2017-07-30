@@ -107,10 +107,10 @@ static CBaseEntity* Create9mmAmmoBoxAtPosition(const Vector& position, const Vec
 enum CrossbowPlacement
 {
 	Normal = 0,
-	Realistic = 1,
+	Realistic = 1
 };
 
-static CBaseEntity* CreateWeaponCrossbowAtPosition(const Vector& position, const Vector& angles, CrossbowPlacement placement = CrossbowPlacement::Normal)
+static CBaseEntity* CreateWeaponCrossbowAtPosition(const Vector& position, const Vector& angles, CrossbowPlacement placement = Normal)
 {
 	CBaseEntity* crossbow = CreateItemAtPosition("weapon_crossbow", position, angles);
 
@@ -309,7 +309,7 @@ void MapFixPatchAddWeaponsAndAmmo::SpawnWeaponsAndAmmoAtBeginningOfSecondSection
 
 void MapFixPatchAddWeaponsAndAmmo::SpawnWeaponsAndAmmoAtBeginningOfThirdSection(float floorZ)
 {
-	CreateWeaponCrossbowAtPosition(Vector(917, -719, floorZ), RANDOM_ANGLE(), CrossbowPlacement::Realistic);
+	CreateWeaponCrossbowAtPosition(Vector(917, -719, floorZ), RANDOM_ANGLE(), Realistic);
 	Create9mmBoxAmmoAtPosition(Vector(946, -786, floorZ), RANDOM_ANGLE());
 	CreateCrossbowAmmoAtPosition(Vector(888, -762, floorZ), RANDOM_ANGLE());
 	CreateCrossbowAmmoAtPosition(Vector(915, -766, floorZ), RANDOM_ANGLE());
@@ -627,7 +627,7 @@ void MapFixHellAddWeaponsAndAmmo::SpawnHealthAmmoWeaponsAtLightNearSpawn(float f
 {
 	CreateWeaponMP5AtPosition(Vector(1397, 1263, floorZ), RANDOM_ANGLE());
 	CreateWeaponShotgunAtPosition(Vector(1405, 1209, floorZ), RANDOM_ANGLE());
-	CreateWeaponCrossbowAtPosition(Vector(1323, 1271, floorZ), RANDOM_ANGLE(), CrossbowPlacement::Realistic);
+	CreateWeaponCrossbowAtPosition(Vector(1323, 1271, floorZ), RANDOM_ANGLE(), Realistic);
 	CreateWeaponCrowbarAtPosition(Vector(1345, 1237, floorZ), RANDOM_ANGLE());
 	CreateMP5AmmoAtPosition(Vector(1418, 1260, floorZ), RANDOM_ANGLE());
 	CreateShotgunAmmoAtPosition(Vector(1412, 1301, floorZ), RANDOM_ANGLE());
