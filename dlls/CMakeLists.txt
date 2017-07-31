@@ -25,7 +25,7 @@ project (SVDLL)
 
 set (SVDLL_LIBRARY server)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_LINUX -DCLIENT_WEAPONS -Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf -D_vsnprintf=vsnprintf -fno-exceptions -w")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_LINUX -DCLIENT_WEAPONS -DCLIENT_FOG -Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf -D_vsnprintf=vsnprintf -fno-exceptions -w")
 set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS}")
 
 set (SVDLL_SOURCES 
@@ -127,13 +127,14 @@ set (SVDLL_SOURCES
 	world.cpp
 	xen.cpp
 	zombie.cpp
-	halloween/shall_map_fixes.cpp
+	shall/fog.cpp
+	shall/shall_map_fixes.cpp
 	../pm_shared/pm_debug.c
 	../pm_shared/pm_math.c
 	../pm_shared/pm_shared.c
 )
 	
-include_directories (. wpn_shared ../common ../engine ../pm_shared ../game_shared ../public halloween)
+include_directories (. wpn_shared ../common ../engine ../pm_shared ../game_shared ../public shall)
 
 if(USE_VOICEMGR)
 	set(SVDLL_SOURCES

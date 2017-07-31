@@ -25,7 +25,7 @@ project (CLDLL)
 
 set (CLDLL_LIBRARY client)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-write-strings -DLINUX -D_LINUX -Dstricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp -DCLIENT_WEAPONS -DCLIENT_DLL -w")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-write-strings -DLINUX -D_LINUX -Dstricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp -DCLIENT_WEAPONS -DCLIENT_DLL -DCLIENT_FOG -w")
 set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS}")
 
 set (CLDLL_SOURCES 
@@ -48,6 +48,7 @@ set (CLDLL_SOURCES
 	hl/hl_events.cpp
 	hl/hl_objects.cpp
 	hl/hl_weapons.cpp
+	shall/clientfog.cpp
 	ammo.cpp
 	ammo_secondary.cpp
 	ammohistory.cpp
@@ -91,7 +92,7 @@ set (CLDLL_SOURCES
 	input_xash3d.cpp
 	scoreboard.cpp
 	MOTD.cpp)
-include_directories (. hl/ ../dlls ../dlls/wpn_shared ../common ../engine ../pm_shared ../game_shared ../public)
+include_directories (. hl/ ../dlls ../dlls/wpn_shared ../common ../engine ../pm_shared ../game_shared ../public shall ../dlls/shall)
 
 if(USE_VOICEMGR)
 	#set(CLDLL_SOURCES
