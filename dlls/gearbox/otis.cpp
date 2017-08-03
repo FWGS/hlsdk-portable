@@ -49,9 +49,9 @@
 #define		OTIS_AE_SHOOT		( 3 )
 #define		OTIS_AE_HOLSTER		( 4 )
 
-#define	OTIS_BODY_GUNHOLSTERED	0
-#define	OTIS_BODY_GUNDRAWN		1
-#define OTIS_BODY_GUNGONE		2
+#define OTIS_BODY_GUNHOLSTERED	0
+#define OTIS_BODY_GUNDRAWN		1
+#define OTIS_BODY_DONUT			2
 
 class COtis : public CBarney
 {
@@ -77,23 +77,11 @@ public:
 	void TraceAttack(entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType);
 	void Killed(entvars_t *pevAttacker, int iGib);
 
-	virtual int		Save(CSave &save);
-	virtual int		Restore(CRestore &restore);
-	static	TYPEDESCRIPTION m_SaveData[];
-
-	BOOL	m_fSuspicious;
 	int		head;
+	int		bodystate;
 };
 
 LINK_ENTITY_TO_CLASS(monster_otis, COtis);
-
-TYPEDESCRIPTION	COtis::m_SaveData[] =
-{
-	DEFINE_FIELD(COtis, m_fSuspicious, FIELD_INTEGER),
-	DEFINE_FIELD(COtis, head, FIELD_INTEGER),
-};
-
-IMPLEMENT_SAVERESTORE(COtis, CTalkMonster);
 
 //=========================================================
 // ALertSound - otis says "Freeze!"
@@ -207,6 +195,15 @@ void COtis::Spawn()
 	else
 	{
 		SetBodygroup(HEAD_GROUP, head);
+	}
+
+	if (bodystate == -1)
+	{
+		SetBodygroup(GUN_GROUP, RANDOM_LONG(OTIS_BODY_GUNHOLSTERED, OTIS_BODY_GUNDRAWN)); // don't random donut
+	}
+	else
+	{
+		SetBodygroup(GUN_GROUP, bodystate);
 	}
 
 	MonsterInit();
@@ -346,20 +343,20 @@ void COtis::TraceAttack(entvars_t *pevAttacker, float flDamage, Vector vecDir, T
 		ptr->iHitgroup = HITGROUP_HEAD;
 		break;
 	default:
-		CBarney::TraceAttack(pevAttacker, flDamage, vecDir, ptr, bitsDamageType);
 		break;
 	}
+	CTalkMonster::TraceAttack(pevAttacker, flDamage, vecDir, ptr, bitsDamageType);
 }
 
 
 void COtis::Killed(entvars_t *pevAttacker, int iGib)
 {
-	if (pev->body < OTIS_BODY_GUNGONE)
+	if (GetBodygroup(GUN_GROUP) != OTIS_BODY_GUNHOLSTERED)
 	{// drop the gun!
 		Vector vecGunPos;
 		Vector vecGunAngles;
 
-		pev->body = OTIS_BODY_GUNGONE;
+		SetBodygroup(GUN_GROUP, OTIS_BODY_GUNHOLSTERED);
 
 		GetAttachment(0, vecGunPos, vecGunAngles);
 
@@ -367,7 +364,7 @@ void COtis::Killed(entvars_t *pevAttacker, int iGib)
 	}
 
 	SetUse(NULL);
-	CBarney::Killed(pevAttacker, iGib);
+	CTalkMonster::Killed(pevAttacker, iGib);
 }
 
 //=========================================================
@@ -439,10 +436,10 @@ public:
 	void KeyValue(KeyValueData *pkvd);
 
 	int	m_iPose;// which sequence to display	-- temporary, don't need to save
-	static char *m_szPoses[3];
+	static char *m_szPoses[5];
 };
 
-char *CDeadOtis::m_szPoses[] = { "lying_on_back", "lying_on_side", "lying_on_stomach" };
+char *CDeadOtis::m_szPoses[] = { "lying_on_back", "lying_on_side", "lying_on_stomach", "stuffed_in_vent", "dead_sitting" };
 
 void CDeadOtis::KeyValue(KeyValueData *pkvd)
 {
