@@ -180,6 +180,15 @@ void CGib::SpawnHeadGib( entvars_t *pevVictim )
 
 void CGib::SpawnRandomGibs( entvars_t *pevVictim, int cGibs, int human )
 {
+	if (human) {
+		SpawnRandomGibs( pevVictim, cGibs, "models/hgibs.mdl", HUMAN_GIB_COUNT, 1 ); // start at one to avoid throwing random amounts of skulls (0th gib)
+	} else {
+		SpawnRandomGibs( pevVictim, cGibs, "models/agibs.mdl", ALIEN_GIB_COUNT );
+	}
+}
+
+void CGib::SpawnRandomGibs(entvars_t *pevVictim, int cGibs, const char* gibModel, int gibBodiesNum , int startGibNum)
+{
 	int cSplat;
 
 	for( cSplat = 0; cSplat < cGibs; cSplat++ )
@@ -189,22 +198,12 @@ void CGib::SpawnRandomGibs( entvars_t *pevVictim, int cGibs, int human )
 		if( g_Language == LANGUAGE_GERMAN )
 		{
 			pGib->Spawn( "models/germangibs.mdl" );
-			pGib->pev->body = RANDOM_LONG( 0, GERMAN_GIB_COUNT - 1 );
+			pGib->pev->body = RANDOM_LONG( startGibNum, GERMAN_GIB_COUNT - 1 );
 		}
 		else
 		{
-			if( human )
-			{
-				// human pieces
-				pGib->Spawn( "models/hgibs.mdl" );
-				pGib->pev->body = RANDOM_LONG( 1, HUMAN_GIB_COUNT - 1 );// start at one to avoid throwing random amounts of skulls (0th gib)
-			}
-			else
-			{
-				// aliens
-				pGib->Spawn( "models/agibs.mdl" );
-				pGib->pev->body = RANDOM_LONG( 0, ALIEN_GIB_COUNT - 1 );
-			}
+			pGib->Spawn( gibModel );
+			pGib->pev->body = RANDOM_LONG( startGibNum, gibBodiesNum - 1 );
 		}
 
 		if( pevVictim )
