@@ -29,7 +29,7 @@
 #include	"game.h"
 #include	"weapons.h"
 
-#define SHOCK_BEAM_LENGTH		48
+#define SHOCK_BEAM_LENGTH		64
 #define SHOCK_BEAM_LENGTH_HALF	SHOCK_BEAM_LENGTH * 0.5f
 
 #define SHOCK_BEAM_WIDTH		50
@@ -53,7 +53,7 @@ public:
 	void CreateBeam(const Vector& start, const Vector& end, int width);
 	void ClearBeam();
 	void UpdateBeam(const Vector& start, const Vector& end);
-	void ComputeBeamPositions(const Vector& vel, Vector* pos1, Vector* pos2);
+	void ComputeBeamPositions(Vector* pos1, Vector* pos2);
 
 	CBeam *m_pBeam;
 	Vector m_vecBeamStart, m_vecBeamEnd;
@@ -76,20 +76,20 @@ void CShock::Spawn(void)
 	pev->classname = MAKE_STRING("shock");
 
 	pev->solid = SOLID_BBOX;
-	pev->rendermode = kRenderTransAlpha;
-	pev->renderamt = 0;
+	pev->rendermode = kRenderTransAdd;
+	pev->renderamt = 170;
+	pev->renderfx = kRenderFxNoDissipation;
 
-	SET_MODEL(ENT(pev), "sprites/bigspit.spr");
+	SET_MODEL(ENT(pev), "sprites/flare3.spr");
 	pev->frame = 0;
-	pev->scale = 0.5;
+	pev->scale = 0.4;
 
-	UTIL_SetSize(pev, Vector(0, 0, 0), Vector(0, 0, 0));
+	UTIL_SetSize(pev, Vector(-4, -4, -4), Vector(4, 4, 4));
 
 	// Make beam NULL to avoid assertions.
 	m_pBeam = 0;
 
-	Vector vDir = pev->velocity.Normalize();
-	ComputeBeamPositions(vDir, &m_vecBeamStart, &m_vecBeamEnd);
+	ComputeBeamPositions(&m_vecBeamStart, &m_vecBeamEnd);
 
 	// Create the beam.
 	//CreateBeam(m_vecBeamStart, m_vecBeamEnd, SHOCK_BEAM_WIDTH);
@@ -102,8 +102,7 @@ void CShock::ShockThink(void)
 {
 	pev->nextthink  = gpGlobals->time + 0.01f;
 
-	Vector vDir		= pev->velocity.Normalize();
-	ComputeBeamPositions(vDir, &m_vecBeamStart, &m_vecBeamEnd);
+	ComputeBeamPositions(&m_vecBeamStart, &m_vecBeamEnd);
 
 	// Update the beam.
 	UpdateBeam(m_vecBeamStart, m_vecBeamEnd);
@@ -128,7 +127,7 @@ void CShock::Touch(CBaseEntity *pOther)
 	if (ENT(pOther->pev) == pev->owner)
 		return;
 
-	TraceResult tr;
+	TraceResult tr = UTIL_GetGlobalTrace( );
 	int		iPitch, iVolume;
 
 	// Lower the volume if touched entity is not a player.
@@ -140,13 +139,24 @@ void CShock::Touch(CBaseEntity *pOther)
 
 	// splat sound
 	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "weapons/shock_impact.wav", iVolume, ATTN_NORM, 0, iPitch);
+	MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, pev->origin );
+		WRITE_BYTE(TE_DLIGHT);
+		WRITE_COORD(pev->origin.x);	// X
+		WRITE_COORD(pev->origin.y);	// Y
+		WRITE_COORD(pev->origin.z);	// Z
+		WRITE_BYTE( 8 );		// radius * 0.1
+		WRITE_BYTE( 0 );		// r
+		WRITE_BYTE( 255 );		// g
+		WRITE_BYTE( 255 );		// b
+		WRITE_BYTE( 10 );		// time * 10
+		WRITE_BYTE( 10 );		// decay * 0.1
+	MESSAGE_END( );
 
+	ClearBeam();
 	if (!pOther->pev->takedamage)
 	{
-
 		// make a splat on the wall
-		UTIL_TraceLine(pev->origin, pev->origin + pev->velocity * 10, dont_ignore_monsters, ENT(pev), &tr);
-		UTIL_DecalTrace(&tr, DECAL_BIGSHOT1 + RANDOM_LONG(0, 2));
+		UTIL_DecalTrace(&tr, DECAL_SMALLSCORCH1 + RANDOM_LONG(0, 2));
 
 		int iContents = UTIL_PointContents(pev->origin);
 
@@ -155,18 +165,29 @@ void CShock::Touch(CBaseEntity *pOther)
 		{
 			UTIL_Sparks(tr.vecEndPos);
 		}
+		UTIL_Remove(this);
 	}
 	else
 	{
-		pOther->TakeDamage(pev, pev, gSkillData.monDmgShockroach, DMG_ENERGYBEAM | DMG_ALWAYSGIB);
+		ClearMultiDamage();
+		entvars_t *pevOwner = VARS(pev->owner);
+		float damage = gSkillData.monDmgShockroach;
+		if (pevOwner && (pevOwner->flags | FL_CLIENT))
+			damage = gSkillData.plrDmgShockroach;
+		pOther->TraceAttack(pev, damage, pev->velocity.Normalize(), &tr, DMG_ENERGYBEAM );
+		ApplyMultiDamage(pev, pev);
+		if (pOther->IsPlayer() && (UTIL_PointContents(pev->origin) != CONTENTS_WATER))
+		{
+			const Vector position = tr.vecEndPos;
+			MESSAGE_BEGIN( MSG_ONE, SVC_TEMPENTITY, NULL, pOther->pev );
+				WRITE_BYTE( TE_SPARKS );
+				WRITE_COORD( position.x );
+				WRITE_COORD( position.y );
+				WRITE_COORD( position.z );
+			MESSAGE_END();
+		}
 	}
-
-
-	// Clear the beam.
-	ClearBeam();
-
-	SetThink(&CShock::SUB_Remove);
-	pev->nextthink = gpGlobals->time;
+	UTIL_Remove(this);
 }
 
 //=========================================================
@@ -184,11 +205,11 @@ void CShock::CreateBeam(const Vector& start, const Vector& end, int width)
 		return;
 
 	m_pBeam->PointsInit(start, end);
-	m_pBeam->SetColor(180, 255, 250);
+	m_pBeam->SetColor(140, 255, 220);
 	m_pBeam->SetBrightness(RANDOM_LONG(24, 25) * 10);
 	m_pBeam->SetFrame(0);
 	m_pBeam->SetScrollRate(10);
-	m_pBeam->SetNoise(20);
+	m_pBeam->SetNoise(40);
 	m_pBeam->SetFlags(SF_BEAM_SHADEIN | SF_BEAM_SHADEOUT);
 }
 
@@ -220,9 +241,15 @@ void CShock::UpdateBeam(const Vector& start, const Vector& end)
 	}
 }
 
-void CShock::ComputeBeamPositions(const Vector& vel, Vector* pos1, Vector* pos2)
+void CShock::ComputeBeamPositions(Vector* pos1, Vector* pos2)
 {
-	Vector vNormVelocity = pev->velocity.Normalize();
-	*pos1 = pev->origin + (vNormVelocity *  SHOCK_BEAM_LENGTH_HALF);
-	*pos2 = pev->origin + (vNormVelocity * -SHOCK_BEAM_LENGTH_HALF);
+	const Vector vel = pev->velocity.Normalize();
+	UTIL_MakeVectors( pev->angles );
+
+	/* Little aside so beam and sprite won't blend into white ball when looking right into shock beam direction.
+	 * This should replicate the Opposing Force behavior
+	 */
+	const Vector origin = pev->origin - gpGlobals->v_right * 6;
+	*pos1 = origin + (vel *  SHOCK_BEAM_LENGTH_HALF);
+	*pos2 = origin + (vel * -SHOCK_BEAM_LENGTH_HALF/2);
 }

@@ -37,9 +37,13 @@ TYPEDESCRIPTION	CSporeGrenade::m_SaveData[] =
 
 IMPLEMENT_SAVERESTORE(CSporeGrenade, CGrenade);
 
+int gSporeExplode, gSporeExplodeC;
+
 void CSporeGrenade::Precache(void)
 {
-	PRECACHE_MODEL("sprites/glow01.spr");
+	PRECACHE_MODEL("sprites/glow02.spr");
+	gSporeExplode = PRECACHE_MODEL ("sprites/spore_exp_01.spr");
+	gSporeExplodeC = PRECACHE_MODEL ("sprites/spore_exp_c_01.spr");
 }
 
 // UNDONE: temporary scorching for PreAlpha - find a less sleazy permenant solution.
@@ -75,9 +79,19 @@ void CSporeGrenade::Explode(TraceResult *pTrace, int bitsDamageType)
 		vecSpraySpot,				// position
 		pTrace->vecPlaneNormal,			// direction
 		g_sModelIndexTinySpit,			// modelindex
-		RANDOM_LONG(8, 10),				// count
+		RANDOM_LONG(40, 50),				// count
 		flSpraySpeed,					// speed
-		RANDOM_FLOAT(10, 20) * 10);		// noise
+		RANDOM_FLOAT(600, 640));		// noise
+
+	MESSAGE_BEGIN( MSG_PAS, SVC_TEMPENTITY, pev->origin );
+		WRITE_BYTE( TE_SPRITE );
+		WRITE_COORD( pev->origin.x );
+		WRITE_COORD( pev->origin.y );
+		WRITE_COORD( pev->origin.z );
+		WRITE_SHORT( RANDOM_LONG( 0, 1 ) ? gSporeExplode : gSporeExplodeC );
+		WRITE_BYTE( 25  ); // scale * 10
+		WRITE_BYTE( 155  ); // framerate
+	MESSAGE_END();
 
 	// Play explode sound.
 	EMIT_SOUND(ENT(pev), CHAN_VOICE, "weapons/splauncher_impact.wav", 1, ATTN_NORM);
@@ -343,13 +357,13 @@ void CSporeGrenade::Spawn(void)
 
 	m_flNextSpriteTrailSpawn = gpGlobals->time;
 
-	m_pSporeGlow = CSprite::SpriteCreate("sprites/glow01.spr", pev->origin, FALSE);
+	m_pSporeGlow = CSprite::SpriteCreate("sprites/glow02.spr", pev->origin, FALSE);
 
 	if (m_pSporeGlow)
 	{
-		m_pSporeGlow->SetTransparency(kRenderGlow, 217, 241, 152, 200, kRenderFxNoDissipation);
-		m_pSporeGlow->SetAttachment(edict(), 1);
-		m_pSporeGlow->SetScale(.5f);
+		m_pSporeGlow->SetTransparency(kRenderGlow, 150, 158, 19, 155, kRenderFxNoDissipation);
+		m_pSporeGlow->SetAttachment(edict(), 0);
+		m_pSporeGlow->SetScale(.75f);
 	}
 }
 

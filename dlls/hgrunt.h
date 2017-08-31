@@ -44,7 +44,7 @@ public:
 	void Shotgun(void);
 	void PrescheduleThink(void);
 	virtual void GibMonster(void);
-	void SpeakSentence(void);
+	virtual void SpeakSentence(void);
 
 	int	Save(CSave &save);
 	int Restore(CRestore &restore);

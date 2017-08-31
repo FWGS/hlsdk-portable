@@ -99,7 +99,8 @@ void CBaseMonster::RunAI( void )
 
 		CheckAmmo();
 	}
-
+	if (m_glowShellUpdate && pev->deadflag == DEAD_DEAD)
+		GlowShellOff();
 	FCheckAITrigger();
 
 	PrescheduleThink();

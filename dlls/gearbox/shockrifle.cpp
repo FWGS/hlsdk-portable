@@ -63,7 +63,7 @@ void CShockrifle::Precache(void)
 	PRECACHE_SOUND("weapons/shock_recharge.wav");
 
 	PRECACHE_MODEL("sprites/lgtning.spr");
-	PRECACHE_MODEL("sprites/bigspit.spr");// spit projectile.
+	PRECACHE_MODEL("sprites/flare3.spr");
 
 	m_usShockFire = PRECACHE_EVENT(1, "events/shock.sc");
 

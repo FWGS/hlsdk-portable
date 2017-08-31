@@ -337,7 +337,7 @@ public:
 	void GlowShellOff( void );
 	void GlowShellUpdate( void );
 
-	float m_glowShellStartTime;
+	float m_glowShellTime;
 	float m_glowShellDuration;
 	Vector m_glowShellColor;
 	BOOL m_glowShellUpdate;

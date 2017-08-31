@@ -51,6 +51,7 @@ extern Schedule_t	slGruntTossGrenadeCover[];
 #define STROOPER_NUM_HEADS					2 // how many grunt heads are there? 
 #define STROOPER_MINIMUM_HEADSHOT_DAMAGE	15 // must do at least this much damage in one shot to head to score a headshot kill
 #define	STROOPER_SENTENCE_VOLUME			(float)0.35 // volume of grunt sentences
+#define STROOPER_MUZZLEFLASH	"sprites/muzzle_shock.spr"
 
 #define STROOPER_SHOCKRIFLE			(1 << 0)
 #define STROOPER_HANDGRENADE		(1 << 1)
@@ -102,6 +103,7 @@ enum
 	TASK_STROOPER_CHECK_FIRE,
 };
 
+int iStrooperMuzzleFlash;
 
 //=========================================================
 // shocktrooper
@@ -126,6 +128,8 @@ public:
 
 	Schedule_t	*GetSchedule(void);
 	Schedule_t  *GetScheduleOfType(int Type);
+
+	void SpeakSentence();
 
 	static TYPEDESCRIPTION m_SaveData[];
 
@@ -166,7 +170,22 @@ enum
 	STROOPER_SENT_TAUNT,
 } STROOPER_SENTENCE_TYPES;
 
+void CStrooper::SpeakSentence( void )
+{
+	if( m_iSentence == STROOPER_SENT_NONE )
+	{
+		// no sentence cued up.
+		return;
+	}
 
+	if( FOkToSpeak() )
+	{
+		SENTENCEG_PlayRndSz( ENT( pev ), pGruntSentences[m_iSentence], STROOPER_SENTENCE_VOLUME, STROOPER_ATTN, 0, m_voicePitch );
+		JustSpoke();
+	}
+}
+
+#define STROOPER_GIB_COUNT 8
 //=========================================================
 // GibMonster - make gun fly through the air.
 //=========================================================
@@ -193,7 +212,14 @@ void CStrooper::GibMonster(void)
 		}
 	}
 
-	CBaseMonster::GibMonster();
+	EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "common/bodysplat.wav", 1, ATTN_NORM );
+
+	if( CVAR_GET_FLOAT( "violence_agibs" ) != 0 )	// Should never get here, but someone might call it directly
+	{
+		CGib::SpawnRandomGibs( pev, 6, "models/strooper_gibs.mdl", STROOPER_GIB_COUNT );	// Throw alien gibs
+	}
+	SetThink( &CBaseEntity::SUB_Remove );
+	pev->nextthink = gpGlobals->time;
 }
 
 void CStrooper::IdleSound(void)
@@ -251,9 +277,6 @@ int	CStrooper::Classify(void)
 //=========================================================
 void CStrooper::HandleAnimEvent(MonsterEvent_t *pEvent)
 {
-	Vector	vecShootDir;
-	Vector	vecShootOrigin;
-
 	switch (pEvent->event)
 	{
 	case STROOPER_AE_DROP_GUN:
@@ -320,12 +343,27 @@ void CStrooper::HandleAnimEvent(MonsterEvent_t *pEvent)
 
 		GetAttachment(0, vecGunPos, vecGunAngles);
 
+		MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, vecGunPos );
+			WRITE_BYTE( TE_SPRITE );
+			WRITE_COORD( vecGunPos.x );	// pos
+			WRITE_COORD( vecGunPos.y );
+			WRITE_COORD( vecGunPos.z );
+			WRITE_SHORT( iStrooperMuzzleFlash );		// model
+			WRITE_BYTE( 4 );				// size * 10
+			WRITE_BYTE( 196 );			// brightness
+		MESSAGE_END();
+
 		if (m_hEnemy)
 		{
-			vecGunAngles = (m_hEnemy->EyePosition() - pev->origin).Normalize();
+			vecGunAngles = (m_hEnemy->EyePosition() - vecGunPos).Normalize();
+		}
+		else
+		{
+			vecGunAngles = (m_vecEnemyLKP - vecGunPos).Normalize();
 		}
 
-		CBaseEntity *pShock = CBaseEntity::Create("shock", vecGunPos, vecGunAngles, edict());
+		CBaseEntity *pShock = CBaseEntity::Create("shock", vecGunPos, pev->angles, edict());
+		vecGunAngles.z += RANDOM_FLOAT( -0.05, 0 );
 		pShock->pev->velocity = vecGunAngles * 900;
 
 		// Play fire sound.
@@ -337,6 +375,7 @@ void CStrooper::HandleAnimEvent(MonsterEvent_t *pEvent)
 
 	case STROOPER_AE_KICK:
 	{
+		EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, "zombie/claw_miss2.wav", 1.0, ATTN_NORM, 0, PITCH_NORM + RANDOM_LONG( -5, 5 ) );
 		CBaseEntity *pHurt = Kick();
 
 		if (pHurt)
@@ -383,7 +422,7 @@ void CStrooper::Spawn()
 
 	pev->solid = SOLID_SLIDEBOX;
 	pev->movetype = MOVETYPE_STEP;
-	m_bloodColor = BLOOD_COLOR_RED;
+	m_bloodColor = BLOOD_COLOR_GREEN;
 	pev->effects = 0;
 	pev->health = gSkillData.strooperHealth;
 	m_flFieldOfView = 0.2;// indicates the width of this monster's forward view cone ( as a dotproduct result )
@@ -422,6 +461,9 @@ void CStrooper::Spawn()
 void CStrooper::Precache()
 {
 	PRECACHE_MODEL("models/strooper.mdl");
+	PRECACHE_MODEL("models/strooper_gibs.mdl");
+	iStrooperMuzzleFlash = PRECACHE_MODEL(STROOPER_MUZZLEFLASH);
+	PRECACHE_SOUND("shocktrooper/shock_trooper_attack.wav");
 
 	PRECACHE_SOUND("shocktrooper/shock_trooper_die1.wav");
 	PRECACHE_SOUND("shocktrooper/shock_trooper_die2.wav");
@@ -435,6 +477,7 @@ void CStrooper::Precache()
 	PRECACHE_SOUND("shocktrooper/shock_trooper_pain5.wav");
 
 	PRECACHE_SOUND("weapons/shock_fire.wav");
+	PRECACHE_SOUND("weapons/shock_impact.wav");
 
 	PRECACHE_SOUND("zombie/claw_miss2.wav");// because we use the basemonster SWIPE animation event
 

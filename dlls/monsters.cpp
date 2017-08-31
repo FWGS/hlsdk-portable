@@ -106,8 +106,7 @@ TYPEDESCRIPTION	CBaseMonster::m_SaveData[] =
 	DEFINE_FIELD( CBaseMonster, m_scriptState, FIELD_INTEGER ),
 	DEFINE_FIELD( CBaseMonster, m_pCine, FIELD_CLASSPTR ),
 
-	DEFINE_FIELD( CBaseMonster, m_glowShellStartTime, FIELD_TIME ),
-	DEFINE_FIELD( CBaseMonster, m_glowShellDuration, FIELD_FLOAT ),
+	DEFINE_FIELD( CBaseMonster, m_glowShellTime, FIELD_TIME ),
 
 	DEFINE_FIELD( CBaseMonster, m_glowShellColor, FIELD_VECTOR ),
 	DEFINE_FIELD( CBaseMonster, m_glowShellUpdate, FIELD_BOOLEAN ),
@@ -3393,41 +3392,44 @@ BOOL CBaseMonster::ShouldFadeOnDeath( void )
 
 void CBaseMonster::GlowShellOn( Vector color, float flDuration )
 {
-	m_prevRenderMode = pev->rendermode;
-	m_prevRenderColor = pev->rendercolor;
-	m_prevRenderAmt = pev->renderamt;
-	m_prevRenderFx = pev->renderfx;
+	if (!m_glowShellUpdate)
+	{
+		m_prevRenderMode = pev->rendermode;
+		m_prevRenderColor = pev->rendercolor;
+		m_prevRenderAmt = pev->renderamt;
+		m_prevRenderFx = pev->renderfx;
 
-	pev->renderamt = 5;
-	pev->rendercolor = color;
-	pev->renderfx = kRenderFxGlowShell;
-	//pev->rendermode = kRenderGlow;
+		pev->renderamt = 5;
+		pev->rendercolor = color;
+		pev->renderfx = kRenderFxGlowShell;
+		//pev->rendermode = kRenderGlow;
 
-	m_glowShellColor = color;
+		m_glowShellColor = color;
 
-	m_glowShellDuration = flDuration;
-	m_glowShellStartTime = gpGlobals->time;
-
-	m_glowShellUpdate = TRUE;
+		m_glowShellUpdate = TRUE;
+	}
+	m_glowShellTime = gpGlobals->time + flDuration;
 }
 
 void CBaseMonster::GlowShellOff( void )
 {
-	pev->renderamt = m_prevRenderAmt;
-	pev->rendercolor = m_prevRenderColor;
-	pev->renderfx = m_prevRenderFx;
-	pev->rendermode = m_prevRenderMode;
+	if (m_glowShellUpdate)
+	{
+		pev->renderamt = m_prevRenderAmt;
+		pev->rendercolor = m_prevRenderColor;
+		pev->renderfx = m_prevRenderFx;
+		pev->rendermode = m_prevRenderMode;
 
-	m_glowShellDuration = 0.0f;
-	m_glowShellStartTime = 0.0f;
+		m_glowShellTime = 0.0f;
 
-	m_glowShellUpdate = FALSE;
+		m_glowShellUpdate = FALSE;
+	}
 }
 void CBaseMonster::GlowShellUpdate( void )
 {
 	if( m_glowShellUpdate )
 	{
-		if( ( gpGlobals->time - m_glowShellStartTime ) > m_glowShellDuration )
+		if( gpGlobals->time > m_glowShellTime )
 			GlowShellOff();
 	}
 }
