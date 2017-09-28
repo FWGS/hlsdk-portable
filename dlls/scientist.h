@@ -67,7 +67,7 @@ public:
 	float	CoverRadius(void) { return 1200; }		// Need more room for cover because scientists want to get far away!
 	BOOL	DisregardEnemy(CBaseEntity *pEnemy) { return !pEnemy->IsAlive() || (gpGlobals->time - m_fearTime) > 15; }
 
-	BOOL	CanHeal(void);
+	virtual BOOL	CanHeal(void);
 	void	Heal(void);
 	virtual void	Scream(void);
 

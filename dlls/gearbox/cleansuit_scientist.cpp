@@ -33,6 +33,7 @@ class CCleansuitScientist : public CScientist
 public:
 	void Spawn( void );
 	void Precache( void );
+	virtual BOOL	CanHeal(void);
 };
 
 LINK_ENTITY_TO_CLASS(monster_cleansuit_scientist, CCleansuitScientist);
@@ -92,6 +93,11 @@ void CCleansuitScientist::Precache(void)
 	TalkInit();
 
 	CTalkMonster::Precache();
+}
+
+BOOL CCleansuitScientist::CanHeal()
+{
+	return FALSE;
 }
 
 //=========================================================
