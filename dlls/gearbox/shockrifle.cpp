@@ -67,7 +67,7 @@ void CShockrifle::Precache(void)
 
 	m_usShockFire = PRECACHE_EVENT(1, "events/shock.sc");
 
-	UTIL_PrecacheOther("shock");
+	UTIL_PrecacheOther("shock_beam");
 }
 
 int CShockrifle::AddToPlayer(CBasePlayer *pPlayer)
@@ -136,7 +136,17 @@ void CShockrifle::PrimaryAttack()
 		return;
 	}
 
+	if (m_pPlayer->pev->waterlevel == 3)
+	{
 #ifndef CLIENT_DLL
+		RadiusDamage(m_pPlayer->pev->origin, m_pPlayer->pev, m_pPlayer->pev, 300, 144, CLASS_NONE, DMG_SHOCK | DMG_ALWAYSGIB );
+#endif
+		return;
+	}
+
+#ifndef CLIENT_DLL
+	Vector anglesAim = m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle;
+	anglesAim.x		= -anglesAim.x;
 	UTIL_MakeVectors(m_pPlayer->pev->v_angle);
 
 	Vector vecSrc;
@@ -146,8 +156,8 @@ void CShockrifle::PrimaryAttack()
 	vecSrc = vecSrc + gpGlobals->v_right * 8;
 	vecSrc = vecSrc + gpGlobals->v_up * -12;
 
-	CBaseEntity *pShock = CBaseEntity::Create("shock", vecSrc, m_pPlayer->pev->v_angle, m_pPlayer->edict());
-	pShock->pev->velocity = gpGlobals->v_forward * 900;
+	CBaseEntity *pShock = CBaseEntity::Create("shock_beam", vecSrc, anglesAim, m_pPlayer->edict());
+	pShock->pev->velocity = gpGlobals->v_forward * 2000;
 
 	m_flRechargeTime = gpGlobals->time + 0.5;
 #endif

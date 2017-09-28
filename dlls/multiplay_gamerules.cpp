@@ -196,7 +196,7 @@ void CHalfLifeMultiplay::RefreshSkillData( void )
 	gSkillData.plrDmgDisplacer = 5;
 
 	// Shockroach
-	gSkillData.plrDmgShockroach = 10;
+	gSkillData.plrDmgShockroachSingleplayer = 10;
 
 	// Spore
 	gSkillData.plrDmgSpore = 50;
@@ -217,7 +217,7 @@ void CHalfLifeMultiplay::RefreshSkillData( void )
 	gSkillData.monDmgDisplacer = 250;
 
 	// Shockroach
-	gSkillData.monDmgShockroach = 15;
+	gSkillData.plrDmgShockroachMultiplayer = 15;
 
 	// Displacer radius
 	gSkillData.displacerDmgRadius = 300;

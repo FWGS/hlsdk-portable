@@ -376,7 +376,7 @@ void CGameRules::RefreshSkillData ( void )
 	gSkillData.plrDmgGrapple = GetSkillCvar( "sk_plr_grapple" );
 	gSkillData.plrDmgEagle = GetSkillCvar( "sk_plr_eagle" );
 	gSkillData.plrDmgDisplacer = GetSkillCvar( "sk_plr_displacer_self" );
-	gSkillData.plrDmgShockroach = GetSkillCvar( "sk_plr_shockroachs" );
+	gSkillData.plrDmgShockroachSingleplayer = GetSkillCvar( "sk_plr_shockroachs" );
 	gSkillData.plrDmgSpore = GetSkillCvar( "sk_plr_spore" );
 	gSkillData.plrDmg762 = GetSkillCvar( "sk_plr_762_bullet" );
 	gSkillData.plrDmg556 = GetSkillCvar( "sk_plr_556_bullet" );
@@ -384,7 +384,7 @@ void CGameRules::RefreshSkillData ( void )
 	gSkillData.monDmg762 = GetSkillCvar( "sk_plr_762_bullet" );
 	gSkillData.monDmg556 = GetSkillCvar( "sk_plr_556_bullet" );
 	gSkillData.monDmgDisplacer = GetSkillCvar( "sk_plr_displacer_other" );
-	gSkillData.monDmgShockroach = GetSkillCvar( "sk_plr_shockroachm" );
+	gSkillData.plrDmgShockroachMultiplayer = GetSkillCvar( "sk_plr_shockroachm" );
 
 	// HEALTH/CHARGE
 	gSkillData.suitchargerCapacity = GetSkillCvar( "sk_suitcharger" );
