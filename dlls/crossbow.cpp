@@ -75,8 +75,8 @@ void CCrossbowBolt::Spawn()
 	UTIL_SetSize( pev, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ) );
 
 	SetTouch( &CCrossbowBolt::BoltTouch );
-	SetThink( &CCrossbowBolt::BubbleThink );
-	pev->nextthink = gpGlobals->time + 0.2;
+	//SetThink( &CCrossbowBolt::BubbleThink );
+	pev->nextthink = gpGlobals->time;
 }
 
 void CCrossbowBolt::Precache()
@@ -176,16 +176,10 @@ void CCrossbowBolt::BoltTouch( CBaseEntity *pOther )
 			}
 		}
 
-		if( UTIL_PointContents( pev->origin ) != CONTENTS_WATER )
+		/*if( UTIL_PointContents( pev->origin ) != CONTENTS_WATER )
 		{
 			UTIL_Sparks( pev->origin );
-		}
-	}
-
-	if( g_pGameRules->IsMultiplayer() )
-	{
-		SetThink( &CCrossbowBolt::ExplodeThink );
-		pev->nextthink = gpGlobals->time + 0.1;
+		}*/
 	}
 }
 
@@ -290,10 +284,12 @@ void CCrossbow::Precache( void )
 	PRECACHE_SOUND( "weapons/xbow_fire1.wav" );
 	PRECACHE_SOUND( "weapons/xbow_reload1.wav" );
 
+	PRECACHE_SOUND( "doberman/sniper_zoom.wav" );
+	PRECACHE_SOUND( "doberman/hev_xbow.wav" );
+
 	UTIL_PrecacheOther( "crossbow_bolt" );
 
 	m_usCrossbow = PRECACHE_EVENT( 1, "events/crossbow1.sc" );
-	m_usCrossbow2 = PRECACHE_EVENT( 1, "events/crossbow2.sc" );
 }
 
 int CCrossbow::GetItemInfo( ItemInfo *p )
@@ -314,6 +310,13 @@ int CCrossbow::GetItemInfo( ItemInfo *p )
 
 BOOL CCrossbow::Deploy()
 {
+#ifdef CLIENT_DLL
+	if( !bIsMultiplayer() )
+#else
+	if( !g_pGameRules->IsMultiplayer() )
+#endif
+		EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_ITEM, "doberman/hev_xbow.wav", 1.0, ATTN_NORM, 0, 100 );
+
 	if( m_iClip )
 		return DefaultDeploy( "models/v_crossbow.mdl", "models/p_crossbow.mdl", CROSSBOW_DRAW1, "bow" );
 	return DefaultDeploy( "models/v_crossbow.mdl", "models/p_crossbow.mdl", CROSSBOW_DRAW2, "bow" );
@@ -323,7 +326,12 @@ void CCrossbow::Holster( int skiplocal /* = 0 */ )
 {
 	m_fInReload = FALSE;// cancel any reload in progress.
 
-	if( m_fInZoom )
+	if( m_fInZoom == 2 )
+        {
+		m_fInZoom = 1;
+	}
+
+	if( m_fInZoom == 1 )
 	{
 		SecondaryAttack();
 	}
@@ -337,77 +345,28 @@ void CCrossbow::Holster( int skiplocal /* = 0 */ )
 
 void CCrossbow::PrimaryAttack( void )
 {
-#ifdef CLIENT_DLL
-	if( m_fInZoom && bIsMultiplayer() )
-#else
-	if( m_fInZoom && g_pGameRules->IsMultiplayer() )
-#endif
-	{
-		FireSniperBolt();
-		return;
-	}
+	TraceResult tr;
 
-	FireBolt();
-}
-
-// this function only gets called in multiplayer
-void CCrossbow::FireSniperBolt()
-{
-	m_flNextPrimaryAttack = GetNextAttackDelay( 0.75 );
-
-	if( m_iClip == 0 )
+	// don't fire underwater
+	if( m_pPlayer->pev->waterlevel == 3 )
 	{
 		PlayEmptySound();
+		m_flNextPrimaryAttack = 0.15;
 		return;
 	}
 
-	TraceResult tr;
-
-	m_pPlayer->m_iWeaponVolume = QUIET_GUN_VOLUME;
-	m_iClip--;
-
-	int flags;
-#if defined( CLIENT_WEAPONS )
-	flags = FEV_NOTHOST;
-#else
-	flags = 0;
-#endif
-
-	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usCrossbow2, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, 0, 0, m_iClip, m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType], 0, 0 );
-
-	// player "shoot" animation
-	m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
-
-	Vector anglesAim = m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle;
-	UTIL_MakeVectors( anglesAim );
-	Vector vecSrc = m_pPlayer->GetGunPosition() - gpGlobals->v_up * 2;
-	Vector vecDir = gpGlobals->v_forward;
-
-	UTIL_TraceLine( vecSrc, vecSrc + vecDir * 8192, dont_ignore_monsters, m_pPlayer->edict(), &tr );
-
-#ifndef CLIENT_DLL
-	if( tr.pHit->v.takedamage )
-	{
-		ClearMultiDamage();
-		CBaseEntity::Instance( tr.pHit )->TraceAttack( m_pPlayer->pev, 120, vecDir, &tr, DMG_BULLET | DMG_NEVERGIB ); 
-		ApplyMultiDamage( pev, m_pPlayer->pev );
-	}
-#endif
-}
-
-void CCrossbow::FireBolt()
-{
-	TraceResult tr;
-
-	if( m_iClip == 0 )
+	if( m_iClip <= 0 )
 	{
 		PlayEmptySound();
 		return;
 	}
 
 	m_pPlayer->m_iWeaponVolume = QUIET_GUN_VOLUME;
+	m_pPlayer->m_iWeaponFlash = DIM_GUN_FLASH;
 
 	m_iClip--;
+
+	m_pPlayer->pev->effects = (int)( m_pPlayer->pev->effects ) | EF_MUZZLEFLASH;
 
 	int flags;
 #if defined( CLIENT_WEAPONS )
@@ -435,16 +394,9 @@ void CCrossbow::FireBolt()
 	pBolt->pev->angles = anglesAim;
 	pBolt->pev->owner = m_pPlayer->edict();
 
-	if( m_pPlayer->pev->waterlevel == 3 )
-	{
-		pBolt->pev->velocity = vecDir * BOLT_WATER_VELOCITY;
-		pBolt->pev->speed = BOLT_WATER_VELOCITY;
-	}
-	else
-	{
-		pBolt->pev->velocity = vecDir * BOLT_AIR_VELOCITY;
-		pBolt->pev->speed = BOLT_AIR_VELOCITY;
-	}
+	pBolt->pev->velocity = vecDir * BOLT_AIR_VELOCITY;
+	pBolt->pev->speed = BOLT_AIR_VELOCITY;
+
 	pBolt->pev->avelocity.z = 10;
 #endif
 
@@ -452,31 +404,35 @@ void CCrossbow::FireBolt()
 		// HEV suit - indicate out of ammo condition
 		m_pPlayer->SetSuitUpdate( "!HEV_AMO0", FALSE, 0 );
 
-	m_flNextPrimaryAttack = GetNextAttackDelay( 0.75 );
+	m_flNextPrimaryAttack = GetNextAttackDelay( 3.0 );
 
-	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.75;
-
-	if( m_iClip != 0 )
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 5.0;
-	else
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.75;
+	//m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 3.0;
 }
 
 void CCrossbow::SecondaryAttack()
 {
-	if( m_pPlayer->pev->fov != 0 )
+	EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_ITEM, "doberman/doberman/sniper_zoom.wav", 1.0, ATTN_NORM, 0, 93 + RANDOM_LONG( 0, 0xF ) );
+	if( m_fInZoom == 1 )
 	{
+		DefaultDeploy( "models/v_crossbow.mdl", "models/p_crossbow.mdl", CROSSBOW_DRAW1, "bow" );
 		m_pPlayer->pev->fov = m_pPlayer->m_iFOV = 0; // 0 means reset to default fov
 		m_fInZoom = 0;
 	}
-	else if( m_pPlayer->pev->fov != 20 )
+	else if( m_fInZoom == 2 )
 	{
-		m_pPlayer->pev->fov = m_pPlayer->m_iFOV = 20;
+		DefaultDeploy( "models/w_crossbow.mdl", "models/p_crossbow.mdl", CROSSBOW_DRAW1, "bow" );
+		m_pPlayer->pev->fov = m_pPlayer->m_iFOV = 5;
 		m_fInZoom = 1;
+	}
+	else if( m_fInZoom == 0 )
+	{
+		DefaultDeploy( "models/w_crossbow.mdl", "models/p_crossbow.mdl", CROSSBOW_DRAW1, "bow" );
+		m_pPlayer->pev->fov = m_pPlayer->m_iFOV = 40;
+		m_fInZoom = 2;
 	}
 
 	pev->nextthink = UTIL_WeaponTimeBase() + 0.1;
-	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1.0;
+	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.3;
 }
 
 void CCrossbow::Reload( void )
@@ -484,12 +440,17 @@ void CCrossbow::Reload( void )
 	if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0 || m_iClip == CROSSBOW_MAX_CLIP )
 		return;
 
-	if( m_pPlayer->pev->fov != 0 )
+	if( m_fInZoom == 2 )
+	{
+		m_fInZoom = 1;
+	}
+
+	if( m_fInZoom == 1 )
 	{
 		SecondaryAttack();
 	}
 
-	if( DefaultReload( CROSSBOW_MAX_CLIP, CROSSBOW_RELOAD, 4.5 ) )
+	if( DefaultReload( CROSSBOW_MAX_CLIP, CROSSBOW_RELOAD, 2.5 ) )
 	{
 		EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/xbow_reload1.wav", RANDOM_FLOAT( 0.95, 1.0 ), ATTN_NORM, 0, 93 + RANDOM_LONG( 0, 0xF ) );
 	}
@@ -504,7 +465,7 @@ void CCrossbow::WeaponIdle( void )
 	if( m_flTimeWeaponIdle < UTIL_WeaponTimeBase() )
 	{
 		float flRand = UTIL_SharedRandomFloat( m_pPlayer->random_seed, 0, 1 );
-		if( flRand <= 0.75 )
+		if( flRand <= 0.5 )
 		{
 			if( m_iClip )
 			{

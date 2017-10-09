@@ -97,20 +97,8 @@ void CPython::Precache( void )
 
 BOOL CPython::Deploy()
 {
-#ifdef CLIENT_DLL
-	if( bIsMultiplayer() )
-#else
-	if( g_pGameRules->IsMultiplayer() )
-#endif
-	{
-		// enable laser sight geometry.
-		pev->body = 1;
-	}
-	else
-	{
-		pev->body = 0;
-	}
-
+	// enable laser sight geometry.
+	pev->body = 1;
 	return DefaultDeploy( "models/v_357.mdl", "models/p_357.mdl", PYTHON_DRAW, "python", UseDecrement(), pev->body );
 }
 
@@ -130,24 +118,15 @@ void CPython::Holster( int skiplocal /* = 0 */ )
 
 void CPython::SecondaryAttack( void )
 {
-#ifdef CLIENT_DLL
-	if( !bIsMultiplayer() )
-#else
-	if( !g_pGameRules->IsMultiplayer() )
-#endif
-	{
-		return;
-	}
-
-	if( m_pPlayer->pev->fov != 0 )
+	if( m_fInZoom )
 	{
 		m_fInZoom = FALSE;
 		m_pPlayer->pev->fov = m_pPlayer->m_iFOV = 0;  // 0 means reset to default fov
 	}
-	else if( m_pPlayer->pev->fov != 40 )
+	else
 	{
 		m_fInZoom = TRUE;
-		m_pPlayer->pev->fov = m_pPlayer->m_iFOV = 40;
+		m_pPlayer->pev->fov = m_pPlayer->m_iFOV = 30;
 	}
 
 	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5;
@@ -215,19 +194,13 @@ void CPython::Reload( void )
 	if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0 || m_iClip == PYTHON_MAX_CLIP )
 		return;
 
-	if( m_pPlayer->pev->fov != 0 )
+	if( m_fInZoom )
 	{
 		m_fInZoom = FALSE;
 		m_pPlayer->pev->fov = m_pPlayer->m_iFOV = 0;  // 0 means reset to default fov
 	}
 
-	int bUseScope = FALSE;
-#ifdef CLIENT_DLL
-	bUseScope = bIsMultiplayer();
-#else
-	bUseScope = g_pGameRules->IsMultiplayer();
-#endif
-	if( DefaultReload( PYTHON_MAX_CLIP, PYTHON_RELOAD, 2.0, bUseScope ) )
+	if( DefaultReload( PYTHON_MAX_CLIP, PYTHON_RELOAD, 2.0, 1 ) )
 	{
 		m_flSoundDelay = 1.5;
 	}
@@ -272,13 +245,7 @@ void CPython::WeaponIdle( void )
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + ( 170.0 / 30.0 );
 	}
 	
-	int bUseScope = FALSE;
-#ifdef CLIENT_DLL
-	bUseScope = bIsMultiplayer();
-#else
-	bUseScope = g_pGameRules->IsMultiplayer();
-#endif
-	SendWeaponAnim( iAnim, UseDecrement() ? 1 : 0, bUseScope );
+	SendWeaponAnim( iAnim, UseDecrement(), 1 );
 }
 
 class CPythonAmmo : public CBasePlayerAmmo

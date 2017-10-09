@@ -44,6 +44,7 @@ SRCS+=../dlls/shotgun.cpp
 SRCS+=../dlls/squeakgrenade.cpp
 SRCS+=../dlls/tripmine.cpp
 SRCS+=../dlls/glock.cpp
+SRCS+=../dlls/rebellion/minimp5.cpp
 #SRCS+=../game_shared/voice_banmgr.cpp
 #SRCS+=../game_shared/voice_status.cpp
 SRCS+=./ammo.cpp

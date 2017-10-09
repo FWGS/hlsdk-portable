@@ -32,7 +32,8 @@ enum glock_e
 	GLOCK_RELOAD_NOT_EMPTY,
 	GLOCK_DRAW,
 	GLOCK_HOLSTER,
-	GLOCK_ADD_SILENCER
+	GLOCK_ADD_SILENCER,
+	GLOCK_SHOOT2
 };
 
 LINK_ENTITY_TO_CLASS( weapon_glock, CGlock )
@@ -64,6 +65,8 @@ void CGlock::Precache( void )
 	PRECACHE_SOUND( "weapons/pl_gun1.wav" );//silenced handgun
 	PRECACHE_SOUND( "weapons/pl_gun2.wav" );//silenced handgun
 	PRECACHE_SOUND( "weapons/pl_gun3.wav" );//handgun
+
+	PRECACHE_SOUND( "weapons/arrown.wav" );
 
 	m_usFireGlock1 = PRECACHE_EVENT( 1, "events/glock1.sc" );
 	m_usFireGlock2 = PRECACHE_EVENT( 1, "events/glock2.sc" );
@@ -100,6 +103,7 @@ int CGlock::AddToPlayer( CBasePlayer *pPlayer )
 
 BOOL CGlock::Deploy()
 {
+	EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/arrown.wav", 1.0, ATTN_NORM, 0, 100 );
 	// pev->body = 1;
 	return DefaultDeploy( "models/v_9mmhandgun.mdl", "models/p_9mmhandgun.mdl", GLOCK_DRAW, "onehanded", /*UseDecrement() ? 1 : 0*/ 0 );
 }

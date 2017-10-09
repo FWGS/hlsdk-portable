@@ -317,6 +317,11 @@ void W_Precache( void )
 	UTIL_PrecacheOther( "ammo_9mmAR" );
 	UTIL_PrecacheOther( "ammo_ARgrenades" );
 
+	// minimp5
+	UTIL_PrecacheOtherWeapon( "weapon_minimp5" );
+	UTIL_PrecacheOtherWeapon( "weapon_minimp55" );
+	UTIL_PrecacheOther( "ammo_minimp5clip" );
+
 	// 9mm ammo box
 	UTIL_PrecacheOther( "ammo_9mmbox" );
 
@@ -1573,13 +1578,6 @@ TYPEDESCRIPTION	CEgon::m_SaveData[] =
 };
 
 IMPLEMENT_SAVERESTORE( CEgon, CBasePlayerWeapon )
-
-TYPEDESCRIPTION CHgun::m_SaveData[] =
-{
-	DEFINE_FIELD( CHgun, m_flRechargeTime, FIELD_FLOAT ),
-};
-
-IMPLEMENT_SAVERESTORE( CHgun, CBasePlayerWeapon )
 
 TYPEDESCRIPTION	CSatchel::m_SaveData[] = 
 {

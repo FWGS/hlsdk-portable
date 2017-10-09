@@ -57,6 +57,7 @@ CGlock g_Glock;
 CCrowbar g_Crowbar;
 CPython g_Python;
 CMP5 g_Mp5;
+CMiniMP5 g_MiniMp5;
 CCrossbow g_Crossbow;
 CShotgun g_Shotgun;
 CRpg g_Rpg;
@@ -606,6 +607,7 @@ void HUD_InitClientWeapons( void )
 	HUD_PrepEntity( &g_Crowbar, &player );
 	HUD_PrepEntity( &g_Python, &player );
 	HUD_PrepEntity( &g_Mp5, &player );
+	HUD_PrepEntity( &g_MiniMp5, &player );
 	HUD_PrepEntity( &g_Crossbow, &player );
 	HUD_PrepEntity( &g_Shotgun, &player );
 	HUD_PrepEntity( &g_Rpg, &player );
@@ -690,6 +692,9 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 			break;
 		case WEAPON_MP5:
 			pWeapon = &g_Mp5;
+			break;
+		case WEAPON_MINIMP5:
+			pWeapon = &g_MiniMp5;
 			break;
 		case WEAPON_CROSSBOW:
 			pWeapon = &g_Crossbow;
@@ -910,7 +915,7 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 			 body = 0;
 
 		//Show laser sight/scope combo
-		if( pWeapon == &g_Python && bIsMultiplayer() )
+		if( pWeapon == &g_Python )
 			 body = 1;
 
 		// Force a fixed anim down to viewmodel
