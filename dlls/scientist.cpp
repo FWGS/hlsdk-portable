@@ -467,7 +467,7 @@ void CScientist::StartTask( Task_t *pTask )
 
 			//The enemy can be null here. - Solokiller
 			//Discovered while testing the barnacle grapple on headcrabs with scientists in view.
-			if( m_hEnemy && m_hEnemy->IsPlayer() )
+			if( m_hEnemy != 0 && m_hEnemy->IsPlayer() )
 				PlaySentence( "SC_PLFEAR", 5, VOL_NORM, ATTN_NORM );
 			else
 				PlaySentence( "SC_FEAR", 5, VOL_NORM, ATTN_NORM );
