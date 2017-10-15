@@ -1368,15 +1368,15 @@ int ReloadMapCycleFile( const char *filename, mapcycle_t *cycle )
 					if( s && s[0] )
 					{
 						item->minplayers = atoi( s );
-						item->minplayers = max( item->minplayers, 0 );
-						item->minplayers = min( item->minplayers, gpGlobals->maxClients );
+						item->minplayers = Q_max( item->minplayers, 0 );
+						item->minplayers = Q_min( item->minplayers, gpGlobals->maxClients );
 					}
 					s = g_engfuncs.pfnInfoKeyValue( szBuffer, "maxplayers" );
 					if( s && s[0] )
 					{
 						item->maxplayers = atoi( s );
-						item->maxplayers = max( item->maxplayers, 0 );
-						item->maxplayers = min( item->maxplayers, gpGlobals->maxClients );
+						item->maxplayers = Q_max( item->maxplayers, 0 );
+						item->maxplayers = Q_min( item->maxplayers, gpGlobals->maxClients );
 					}
 
 					// Remove keys

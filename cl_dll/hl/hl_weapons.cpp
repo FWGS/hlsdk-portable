@@ -152,7 +152,7 @@ BOOL CBasePlayerWeapon::DefaultReload( int iClipSize, int iAnim, float fDelay, i
 	if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0 )
 		return FALSE;
 
-	int j = min( iClipSize - m_iClip, m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] );
+	int j = Q_min( iClipSize - m_iClip, m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] );
 
 	if( j == 0 )
 		return FALSE;

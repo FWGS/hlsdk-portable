@@ -666,7 +666,7 @@ void CBasePlayer::PackDeadPlayerItems( void )
 	int iWeaponRules;
 	int iAmmoRules;
 	int i;
-	CBasePlayerWeapon *rgpPackWeapons[MAX_WEAPONS] = {};
+	CBasePlayerWeapon *rgpPackWeapons[MAX_WEAPONS] = {0,};
 	int iPackAmmo[MAX_AMMO_SLOTS];
 	int iPW = 0;// index into packweapons array
 	int iPA = 0;// index into packammo array
@@ -2049,7 +2049,7 @@ void CBasePlayer::CheckTimeBasedDamage()
 				// after the player has been drowning and finally takes a breath
 				if( m_idrowndmg > m_idrownrestored )
 				{
-					int idif = min( m_idrowndmg - m_idrownrestored, 10 );
+					int idif = Q_min( m_idrowndmg - m_idrownrestored, 10 );
 
 					TakeHealth( idif, DMG_GENERIC );
 					m_idrownrestored += idif;
@@ -2586,6 +2586,11 @@ void CBasePlayer::PostThink()
 
 	UpdatePlayerSound();
 pt_end:
+	if( pev->deadflag == DEAD_NO )
+		m_vecLastViewAngles = pev->angles;
+	else
+		pev->angles = m_vecLastViewAngles;
+
 	// Track button info so we can detect 'pressed' and 'released' buttons next frame
 	m_afButtonLast = pev->button;
 
@@ -2606,23 +2611,23 @@ pt_end:
 
 				if( gun && gun->UseDecrement() )
 				{
-					gun->m_flNextPrimaryAttack = max( gun->m_flNextPrimaryAttack - gpGlobals->frametime, -1.0 );
-					gun->m_flNextSecondaryAttack = max( gun->m_flNextSecondaryAttack - gpGlobals->frametime, -0.001 );
+					gun->m_flNextPrimaryAttack = Q_max( gun->m_flNextPrimaryAttack - gpGlobals->frametime, -1.0 );
+					gun->m_flNextSecondaryAttack = Q_max( gun->m_flNextSecondaryAttack - gpGlobals->frametime, -0.001 );
 
 					if( gun->m_flTimeWeaponIdle != 1000 )
 					{
-						gun->m_flTimeWeaponIdle = max( gun->m_flTimeWeaponIdle - gpGlobals->frametime, -0.001 );
+						gun->m_flTimeWeaponIdle = Q_max( gun->m_flTimeWeaponIdle - gpGlobals->frametime, -0.001 );
 					}
 
 					if( gun->pev->fuser1 != 1000 )
 					{
-						gun->pev->fuser1 = max( gun->pev->fuser1 - gpGlobals->frametime, -0.001 );
+						gun->pev->fuser1 = Q_max( gun->pev->fuser1 - gpGlobals->frametime, -0.001 );
 					}
 
 					// Only decrement if not flagged as NO_DECREMENT
 					/*if( gun->m_flPumpTime != 1000 )
 					{
-						gun->m_flPumpTime = max( gun->m_flPumpTime - gpGlobals->frametime, -0.001 );
+						gun->m_flPumpTime = Q_max( gun->m_flPumpTime - gpGlobals->frametime, -0.001 );
 					}*/
 				}
 
@@ -3707,7 +3712,7 @@ int CBasePlayer::GiveAmmo( int iCount, const char *szName, int iMax )
 	if( i < 0 || i >= MAX_AMMO_SLOTS )
 		return -1;
 
-	int iAdd = min( iCount, iMax - m_rgAmmo[i] );
+	int iAdd = Q_min( iCount, iMax - m_rgAmmo[i] );
 	if( iAdd < 1 )
 		return i;
 
@@ -3828,7 +3833,7 @@ void CBasePlayer::SendAmmoUpdate( void )
 			// send "Ammo" update message
 			MESSAGE_BEGIN( MSG_ONE, gmsgAmmoX, NULL, pev );
 				WRITE_BYTE( i );
-				WRITE_BYTE( max( min( m_rgAmmo[i], 254 ), 0 ) );  // clamp the value to one byte
+				WRITE_BYTE( Q_max( Q_min( m_rgAmmo[i], 254 ), 0 ) );  // clamp the value to one byte
 			MESSAGE_END();
 		}
 	}

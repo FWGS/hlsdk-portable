@@ -306,6 +306,8 @@ public:
 
 	void TabulateAmmo( void );
 
+	Vector m_vecLastViewAngles;
+
 	float m_flStartCharge;
 	float m_flAmmoStartCharge;
 	float m_flPlayAftershock;
