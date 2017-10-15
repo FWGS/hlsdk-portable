@@ -2586,6 +2586,11 @@ void CBasePlayer::PostThink()
 
 	UpdatePlayerSound();
 pt_end:
+	if( pev->deadflag == DEAD_NO )
+		m_vecLastViewAngles = pev->angles;
+	else
+		pev->angles = m_vecLastViewAngles;
+
 	// Track button info so we can detect 'pressed' and 'released' buttons next frame
 	m_afButtonLast = pev->button;
 
