@@ -35,6 +35,9 @@
 #define ZOMBIE_FLINCH_DELAY		2		// at most one flinch every n secs
 
 LINK_ENTITY_TO_CLASS( monster_zombie, CZombie )
+LINK_ENTITY_TO_CLASS( monster_zombie_barney, CZombie )
+LINK_ENTITY_TO_CLASS( monster_zombie_soldier, CZombie )
+LINK_ENTITY_TO_CLASS( monster_zombie_grunt, CZombie )
 
 const char *CZombie::pAttackHitSounds[] =
 {
@@ -237,7 +240,14 @@ void CZombie::Spawn()
 {
 	Precache();
 
-	SET_MODEL( ENT( pev ), "models/zombie.mdl" );
+	if( FClassnameIs( pev, "monster_zombie_barney" ) )
+		SET_MODEL( ENT( pev ), "models/zombie_barney.mdl" );
+	else if( FClassnameIs( pev, "monster_zombie_soldier" ) )
+		SET_MODEL( ENT( pev ), "models/zombie_soldier.mdl" );
+	else if( FClassnameIs( pev, "monster_zombie_grunt" ) )
+		SET_MODEL( ENT( pev ), "models/zgrunt.mdl" );
+	else
+		SET_MODEL( ENT( pev ), "models/zombie.mdl" );
 	UTIL_SetSize( pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX );
 
 	pev->solid		= SOLID_SLIDEBOX;
@@ -259,7 +269,14 @@ void CZombie::Precache()
 {
 	size_t i;
 
-	PRECACHE_MODEL( "models/zombie.mdl" );
+	if( FClassnameIs( pev, "monster_zombie_barney" ) )
+		PRECACHE_MODEL( "models/zombie_barney.mdl" );
+	else if( FClassnameIs( pev, "monster_zombie_soldier" ) )
+		PRECACHE_MODEL( "models/zombie_soldier.mdl" );
+	else if( FClassnameIs( pev, "monster_zombie_grunt" ) )
+		PRECACHE_MODEL( "models/zgrunt.mdl" );
+	else
+		PRECACHE_MODEL( "models/zombie.mdl" );
 
 	for( i = 0; i < ARRAYSIZE( pAttackHitSounds ); i++ )
 		PRECACHE_SOUND( pAttackHitSounds[i] );
