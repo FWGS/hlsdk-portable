@@ -108,6 +108,7 @@ public:
 };
 
 LINK_ENTITY_TO_CLASS( monster_headcrab, CHeadCrab )
+LINK_ENTITY_TO_CLASS( monster_xenocrab, CHeadCrab )
 
 DEFINE_CUSTOM_SCHEDULES( CHeadCrab )
 {
@@ -186,25 +187,32 @@ void CHeadCrab::SetYawSpeed( void )
 {
 	int ys;
 
-	switch( m_Activity )
+	if( FClassnameIs( pev, "monster_xenocrab" ) )
 	{
-	case ACT_IDLE:	
-		ys = 30;
-		break;
-	case ACT_RUN:
-	case ACT_WALK:
-		ys = 20;
-		break;
-	case ACT_TURN_LEFT:
-	case ACT_TURN_RIGHT:
-		ys = 60;
-		break;
-	case ACT_RANGE_ATTACK1:
-		ys = 30;
-		break;
-	default:
-		ys = 30;
-		break;
+		pev->yaw_speed = RANDOM_LONG( 80, 90 );
+	}
+	else
+	{
+		switch( m_Activity )
+		{
+		case ACT_IDLE:	
+			ys = 30;
+			break;
+		case ACT_RUN:
+		case ACT_WALK:
+			ys = 20;
+			break;
+		case ACT_TURN_LEFT:
+		case ACT_TURN_RIGHT:
+			ys = 60;
+			break;
+		case ACT_RANGE_ATTACK1:
+			ys = 30;
+			break;
+		default:
+			ys = 30;
+			break;
+		}
 	}
 
 	pev->yaw_speed = ys;
@@ -281,7 +289,10 @@ void CHeadCrab::Spawn()
 {
 	Precache();
 
-	SET_MODEL( ENT( pev ), "models/headcrab.mdl" );
+	if( FClassnameIs( pev, "monster_xenocrab" ) )
+		SET_MODEL( ENT( pev ), "models/xenocrab.mdl" );
+	else
+		SET_MODEL( ENT( pev ), "models/headcrab.mdl" );
 	UTIL_SetSize( pev, Vector( -12, -12, 0 ), Vector( 12, 12, 24 ) );
 
 	pev->solid		= SOLID_SLIDEBOX;
@@ -309,7 +320,10 @@ void CHeadCrab::Precache()
 	PRECACHE_SOUND_ARRAY( pDeathSounds );
 	PRECACHE_SOUND_ARRAY( pBiteSounds );
 
-	PRECACHE_MODEL( "models/headcrab.mdl" );
+	if( FClassnameIs( pev, "monster_xenocrab" ) )
+		PRECACHE_MODEL( "models/xenocrab.mdl" );
+	else
+		PRECACHE_MODEL( "models/headcrab.mdl" );
 }
 
 //=========================================================
