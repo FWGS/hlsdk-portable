@@ -486,12 +486,12 @@ void CTentacle::Cycle( void )
 			m_flSoundYaw += 360;
 		if( m_flSoundYaw > 180 )
 			m_flSoundYaw -= 360;
-
+#if 0
 		// ALERT( at_console, "sound %d %.0f\n", m_iSoundLevel, m_flSoundYaw );
 		if( m_flSoundTime < gpGlobals->time )
 		{
 			// play "I hear new something" sound
-			char *sound;
+			const char *sound;
 
 			switch( RANDOM_LONG( 0, 1 ) )
 			{
@@ -505,6 +505,7 @@ void CTentacle::Cycle( void )
 
 			// UTIL_EmitAmbientSound( ENT( pev ), pev->origin + Vector( 0, 0, MyHeight() ), sound, 1.0, ATTN_NORM, 0, 100 );
 		}
+#endif
 		m_flSoundTime = gpGlobals->time + RANDOM_FLOAT( 5.0, 10.0 );
 	}
 
@@ -591,7 +592,7 @@ void CTentacle::Cycle( void )
 				if( m_flNextSong < gpGlobals->time )
 				{
 					// play "I hear new something" sound
-					char *sound;	
+					const char *sound;	
 
 					switch( RANDOM_LONG( 0, 1 ) )
 					{
@@ -791,7 +792,7 @@ void CTentacle::DieThink( void )
 
 void CTentacle::HandleAnimEvent( MonsterEvent_t *pEvent )
 {
-	char *sound;
+	const char *sound;
 
 	switch( pEvent->event )
 	{

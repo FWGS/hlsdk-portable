@@ -195,7 +195,7 @@ public:
 	Task_t *GetTask( void );
 	virtual MONSTERSTATE GetIdealState( void );
 	virtual void SetActivity( Activity NewActivity );
-	void SetSequenceByName( char *szSequence );
+	void SetSequenceByName( const char *szSequence );
 	void SetState( MONSTERSTATE State );
 	virtual void ReportAIState( void );
 
@@ -327,6 +327,6 @@ public:
 	BOOL ExitScriptedSequence();
 	BOOL CineCleanup();
 
-	CBaseEntity* DropItem ( char *pszItemName, const Vector &vecPos, const Vector &vecAng );// drop an item.
+	CBaseEntity* DropItem( const char *pszItemName, const Vector &vecPos, const Vector &vecAng );// drop an item.
 };
 #endif // BASEMONSTER_H

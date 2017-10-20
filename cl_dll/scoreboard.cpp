@@ -26,6 +26,7 @@
 #include <string.h>
 #include <stdio.h>
 
+cvar_t *cl_scoreboard_bg;
 cvar_t *cl_showpacketloss;
 hud_player_info_t	g_PlayerInfoList[MAX_PLAYERS + 1];	// player info from the engine
 extra_player_info_t	g_PlayerExtraInfo[MAX_PLAYERS + 1];	// additional player info sent directly to the client dll
@@ -59,6 +60,7 @@ int CHudScoreboard::Init( void )
 
 	InitHUDData();
 
+	cl_scoreboard_bg = CVAR_CREATE( "cl_scoreboard_bg", "1", FCVAR_ARCHIVE );
 	cl_showpacketloss = CVAR_CREATE( "cl_showpacketloss", "0", FCVAR_ARCHIVE );
 
 	return 1;
@@ -90,7 +92,7 @@ We have a minimum width of 1-320 - we could have the field widths scale with it?
 
 // X positions
 // relative to the side of the scoreboard
-#define NAME_RANGE_MIN  20
+#define NAME_RANGE_MIN  -100
 #define NAME_RANGE_MAX  145
 #define KILLS_RANGE_MIN 130
 #define KILLS_RANGE_MAX 170
@@ -143,8 +145,9 @@ int CHudScoreboard::Draw( float fTime )
 	int xpos = NAME_RANGE_MIN + xpos_rel;
 
 	FAR_RIGHT = can_show_packetloss ? PL_RANGE_MAX : PING_RANGE_MAX;
-	FAR_RIGHT += 5;
-	gHUD.DrawDarkRectangle( xpos - 5, ypos - 5, FAR_RIGHT, ROW_RANGE_MAX );
+	FAR_RIGHT += 125;
+	if( cl_scoreboard_bg && cl_scoreboard_bg->value )
+		gHUD.DrawDarkRectangle( xpos - 5, ypos - 5, FAR_RIGHT, ROW_RANGE_MAX );
 	if( !gHUD.m_Teamplay )
 		DrawUtfString( xpos, ypos, NAME_RANGE_MAX + xpos_rel, "Player", 255, 140, 0 );
 	else
@@ -337,7 +340,7 @@ int CHudScoreboard::DrawPlayers( int xpos_rel, float list_slot, int nameoffset, 
 	}
 
 	FAR_RIGHT = can_show_packetloss ? PL_RANGE_MAX : PING_RANGE_MAX;
-	FAR_RIGHT += 5;
+	FAR_RIGHT += 125;
 
 	// draw the players, in order,  and restricted to team if set
 	while( 1 )

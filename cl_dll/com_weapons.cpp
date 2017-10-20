@@ -41,12 +41,12 @@ COM_Log
 Log debug messages to file ( appends )
 ====================
 */
-void COM_Log( char *pszFile, char *fmt, ... )
+void COM_Log( const char *pszFile, const char *fmt, ... )
 {
 	va_list		argptr;
 	char		string[1024];
 	FILE *fp;
-	char *pfilename;
+	const char *pfilename;
 
 	if( !pszFile )
 	{
@@ -111,7 +111,7 @@ HUD_PlaySound
 Play a sound, if we are seeing this command for the first time
 =====================
 */
-void HUD_PlaySound( char *sound, float volume )
+void HUD_PlaySound( const char *sound, float volume )
 {
 	if( !g_runfuncs || !g_finalstate )
 		return;
@@ -268,12 +268,12 @@ stub functions for such things as precaching.  So we don't have to modify weapon
  is compiled into both game and client .dlls.
 ======================
 */
-int stub_PrecacheModel( char* s )
+int stub_PrecacheModel( const char* s )
 {
 	return 0;
 }
 
-int stub_PrecacheSound( char* s )
+int stub_PrecacheSound( const char* s )
 {
 	return 0;
 }

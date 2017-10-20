@@ -37,7 +37,7 @@ extern globalvars_t				*gpGlobals;
 #define STRING(offset)		(const char *)(gpGlobals->pStringBase + (int)offset)
 
 #if !defined XASH_64BIT || defined(CLIENT_DLL)
-#define MAKE_STRING(str)	((int)(size_t)str - (int)(size_t)STRING(0))
+#define MAKE_STRING(str)	((size_t)str - (size_t)STRING(0))
 #else
 static inline int MAKE_STRING(const char *szValue)
 {
@@ -94,8 +94,9 @@ typedef int EOFFSET;
 typedef int BOOL;
 
 // In case this ever changes
+#ifndef M_PI
 #define M_PI			3.14159265358979323846
-
+#endif
 // Keeps clutter down a bit, when declaring external entity/global method prototypes
 #define DECLARE_GLOBAL_METHOD(MethodName)  extern void DLLEXPORT MethodName( void )
 #define GLOBAL_METHOD(funcname)					void DLLEXPORT funcname(void)
@@ -311,7 +312,7 @@ extern float		UTIL_Approach( float target, float value, float speed );
 extern float		UTIL_ApproachAngle( float target, float value, float speed );
 extern float		UTIL_AngleDistance( float next, float cur );
 
-extern char			*UTIL_VarArgs( char *format, ... );
+extern char			*UTIL_VarArgs( const char *format, ... );
 extern void			UTIL_Remove( CBaseEntity *pEntity );
 extern BOOL			UTIL_IsValidEntity( edict_t *pent );
 extern BOOL			UTIL_TeamsMatch( const char *pTeamName1, const char *pTeamName2 );
@@ -371,7 +372,7 @@ extern char *UTIL_dtos3( int d );
 extern char *UTIL_dtos4( int d );
 
 // Writes message to console with timestamp and FragLog header.
-extern void			UTIL_LogPrintf( char *fmt, ... );
+extern void			UTIL_LogPrintf( const char *fmt, ... );
 
 // Sorta like FInViewCone, but for nonmonsters. 
 extern float UTIL_DotPoints ( const Vector &vecSrc, const Vector &vecCheck, const Vector &vecDir );
@@ -541,7 +542,7 @@ void EMIT_GROUPID_SUIT(edict_t *entity, int isentenceg);
 void EMIT_GROUPNAME_SUIT(edict_t *entity, const char *groupname);
 
 #define PRECACHE_SOUND_ARRAY( a ) \
-	{ for (int i = 0; i < ARRAYSIZE( a ); i++ ) PRECACHE_SOUND((char *) a [i]); }
+	{ for (int i = 0; i < (int)ARRAYSIZE( a ); i++ ) PRECACHE_SOUND( a[i] ); }
 
 #define EMIT_SOUND_ARRAY_DYN( chan, array ) \
 	EMIT_SOUND_DYN ( ENT(pev), chan , array [ RANDOM_LONG(0,ARRAYSIZE( array )-1) ], 1.0, ATTN_NORM, 0, RANDOM_LONG(95,105) ); 

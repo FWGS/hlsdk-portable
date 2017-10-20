@@ -15,7 +15,8 @@
 //=========================================================
 // nodes.h
 //=========================================================
-
+#ifndef		NODES_H
+#define		NODES_H
 //=========================================================
 // DEFINE
 //=========================================================
@@ -181,9 +182,9 @@ public:
 	void	InitGraph( void );
 	int		AllocNodes ( void );
 	
-	int		CheckNODFile(char *szMapName);
-	int		FLoadGraph(char *szMapName);
-	int		FSaveGraph(char *szMapName);
+	int		CheckNODFile(const char *szMapName);
+	int		FLoadGraph(const char *szMapName);
+	int		FSaveGraph(const char *szMapName);
 	int		FSetGraphPointers(void);
 	void	CheckNode(Vector vecOrigin, int iNode);
 
@@ -374,3 +375,4 @@ enum
 };
 
 extern CGraph WorldGraph;
+#endif // NODES_H

@@ -94,8 +94,12 @@ inline void DrawSetTextColor( float r, float g, float b )
 inline int SPR_Height( HSPRITE x, int f )	{ return gEngfuncs.pfnSPR_Height(x, f); }
 inline int SPR_Width( HSPRITE x, int f )	{ return gEngfuncs.pfnSPR_Width(x, f); }
 
-inline 	client_textmessage_t	*TextMessageGet( const char *pName ) { return gEngfuncs.pfnTextMessageGet( pName ); }
-inline 	int						TextMessageDrawChar( int x, int y, int number, int r, int g, int b ) 
+inline client_textmessage_t *TextMessageGet( const char *pName )
+{
+	return gEngfuncs.pfnTextMessageGet( pName );
+}
+
+inline int TextMessageDrawChar( int x, int y, int number, int r, int g, int b ) 
 {
 	return gEngfuncs.pfnDrawCharacter( x, y, number, r, g, b ); 
 }
@@ -115,7 +119,7 @@ inline void GetConsoleStringSize( const char *string, int *width, int *height )
 		gEngfuncs.pfnDrawConsoleStringLen( (char*)string, width, height );
 }
 
-int DrawUtfString( int xpos, int ypos, int iMaxX, char *szIt, int r, int g, int b );
+int DrawUtfString( int xpos, int ypos, int iMaxX, const char *szIt, int r, int g, int b );
 
 inline int ConsoleStringLen( const char *string )
 {
@@ -140,7 +144,7 @@ inline void CenterPrint( const char *string )
 #define GetPlayerInfo ( *gEngfuncs.pfnGetPlayerInfo )
 
 // sound functions
-inline void PlaySound( char *szSound, float vol ) { gEngfuncs.pfnPlaySoundByName( szSound, vol ); }
+inline void PlaySound( const char *szSound, float vol ) { gEngfuncs.pfnPlaySoundByName( szSound, vol ); }
 inline void PlaySound( int iSound, float vol ) { gEngfuncs.pfnPlaySoundByIndex( iSound, vol ); }
 
 #define max(a, b)  (((a) > (b)) ? (a) : (b))

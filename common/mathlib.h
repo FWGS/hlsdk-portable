@@ -18,7 +18,12 @@
 
 typedef float vec_t;
 typedef vec_t vec2_t[2];
+
+#ifndef DID_VEC3_T_DEFINE
+#define DID_VEC3_T_DEFINE
 typedef vec_t vec3_t[3];
+#endif
+
 typedef vec_t vec4_t[4];	// x,y,z,w
 
 #ifndef M_PI

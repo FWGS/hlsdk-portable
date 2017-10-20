@@ -16,6 +16,8 @@
 #ifndef EDICT_H
 #define EDICT_H
 
+#pragma once
+
 #define MAX_ENT_LEAFS	48
 
 #include "progdefs.h"

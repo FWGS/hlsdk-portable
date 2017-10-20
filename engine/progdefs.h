@@ -12,9 +12,10 @@
 *   without written permission from Valve LLC.
 *
 ****/
-
 #ifndef PROGDEFS_H
 #define PROGDEFS_H
+
+#pragma once
 
 typedef struct
 {	

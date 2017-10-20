@@ -138,7 +138,7 @@ public:
 
 	// For following
 	BOOL			CanFollow( void );
-	BOOL			IsFollowing( void ) { return m_hTargetEnt != NULL && m_hTargetEnt->IsPlayer(); }
+	BOOL			IsFollowing( void ) { return m_hTargetEnt != 0 && m_hTargetEnt->IsPlayer(); }
 	void			StopFollowing( BOOL clearSchedule );
 	void			StartFollowing( CBaseEntity *pLeader );
 	virtual void	DeclineFollowing( void ) {}
@@ -154,7 +154,7 @@ public:
 	static	TYPEDESCRIPTION m_SaveData[];
 
 	
-	static char *m_szFriends[TLK_CFRIENDS];		// array of friend names
+	static const char *m_szFriends[TLK_CFRIENDS];		// array of friend names
 	static float g_talkWaitTime;
 	
 	int			m_bitsSaid;						// set bits for sentences we don't want repeated

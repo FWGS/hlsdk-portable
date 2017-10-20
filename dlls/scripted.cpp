@@ -712,7 +712,7 @@ void CCineMonster::DelayStart( int state )
 			else
 			{
 				pTarget->m_iDelay--;
-				if (pTarget->m_iDelay <= 0)
+				if( pTarget->m_iDelay <= 0 )
 					pTarget->m_startTime = gpGlobals->time + 0.05;
 			}
 		}
@@ -1068,7 +1068,7 @@ BOOL CScriptedSentence::AcceptableSpeaker( CBaseMonster *pMonster )
 	{
 		if( pev->spawnflags & SF_SENTENCE_FOLLOWERS )
 		{
-			if( pMonster->m_hTargetEnt == NULL || !FClassnameIs( pMonster->m_hTargetEnt->pev, "player" ) )
+			if( pMonster->m_hTargetEnt == 0 || !FClassnameIs( pMonster->m_hTargetEnt->pev, "player" ) )
 				return FALSE;
 		}
 		BOOL override;
@@ -1124,7 +1124,7 @@ BOOL CScriptedSentence::StartSentence( CBaseMonster *pTarget )
 	if( !pTarget )
 	{
 		ALERT( at_aiconsole, "Not Playing sentence %s\n", STRING( m_iszSentence ) );
-		return NULL;
+		return FALSE;
 	}
 
 	BOOL bConcurrent = FALSE;
@@ -1177,7 +1177,7 @@ void CFurniture::Die( void )
 //=========================================================
 void CFurniture::Spawn()
 {
-	PRECACHE_MODEL( (char *)STRING( pev->model ) );
+	PRECACHE_MODEL( STRING( pev->model ) );
 	SET_MODEL( ENT( pev ), STRING( pev->model ) );
 
 	pev->movetype = MOVETYPE_NONE;
