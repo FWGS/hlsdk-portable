@@ -96,6 +96,7 @@ public:
 };
 
 LINK_ENTITY_TO_CLASS( monster_alien_slave, CISlave )
+LINK_ENTITY_TO_CLASS( monster_alien_worker, CISlave )
 LINK_ENTITY_TO_CLASS( monster_vortigaunt, CISlave )
 
 TYPEDESCRIPTION	CISlave::m_SaveData[] =
@@ -189,8 +190,13 @@ void CISlave::AlertSound( void )
 	if( m_hEnemy != 0 )
 	{
 		SENTENCEG_PlayRndSz( ENT( pev ), "SLV_ALERT", 0.85, ATTN_NORM, 0, m_voicePitch );
-
-		CallForHelp( "monster_alien_slave", 512, m_hEnemy, m_vecEnemyLKP );
+		if( !FClassnameIs( pev, "monster_alien_worker" ) )
+		{
+			CallForHelp( "monster_alien_slave", 512, m_hEnemy, m_vecEnemyLKP );
+			CallForHelp( "monster_alien_grunt", 512, m_hEnemy, m_vecEnemyLKP );
+			CallForHelp( "monster_zombie_grunt", 512, m_hEnemy, m_vecEnemyLKP );
+			CallForHelp( "monster_alien_worker", 512, m_hEnemy, m_vecEnemyLKP );
+		}
 	}
 }
 
@@ -275,14 +281,18 @@ void CISlave::SetYawSpeed( void )
 
 	switch( m_Activity )
 	{
-	case ACT_WALK:		
-		ys = 50;	
-		break;
 	case ACT_RUN:		
-		ys = 70;
+		if( FClassnameIs( pev, "monster_alien_worker" ) )
+			ys = 75;
+		else
+			ys = 70;
 		break;
-	case ACT_IDLE:		
-		ys = 50;
+	case ACT_WALK:
+	case ACT_IDLE:
+		if( FClassnameIs( pev, "monster_alien_worker" ) )
+			ys = 75;
+		else		
+			ys = 50;
 		break;
 	default:
 		ys = 90;
@@ -508,7 +518,17 @@ void CISlave::Spawn()
 {
 	Precache();
 
-	SET_MODEL( ENT( pev ), "models/islave.mdl" );
+	if( FClassnameIs( pev, "monster_alien_worker" ) )
+	{
+		SET_MODEL( ENT( pev ), "models/aworker.mdl" );
+		m_voicePitch	= RANDOM_LONG( 80, 90 );
+	}
+	else
+	{
+		SET_MODEL( ENT( pev ), "models/islave.mdl" );
+		m_voicePitch	= RANDOM_LONG( 85, 110 );
+	}
+
 	UTIL_SetSize( pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX );
 
 	pev->solid		= SOLID_SLIDEBOX;
@@ -521,8 +541,6 @@ void CISlave::Spawn()
 	m_MonsterState		= MONSTERSTATE_NONE;
 	m_afCapability		= bits_CAP_HEAR | bits_CAP_TURN_HEAD | bits_CAP_RANGE_ATTACK2 | bits_CAP_DOORS_GROUP;
 
-	m_voicePitch		= RANDOM_LONG( 85, 110 );
-
 	MonsterInit();
 }
 
@@ -533,7 +551,11 @@ void CISlave::Precache()
 {
 	size_t i;
 
-	PRECACHE_MODEL( "models/islave.mdl" );
+	if( FClassnameIs( pev, "monster_alien_worker" ) )
+		PRECACHE_MODEL( "models/aworker.mdl" );
+	else
+		PRECACHE_MODEL( "models/islave.mdl" );
+
 	PRECACHE_MODEL( "sprites/lgtning.spr" );
 	PRECACHE_SOUND( "debris/zap1.wav" );
 	PRECACHE_SOUND( "debris/zap4.wav" );
@@ -779,9 +801,18 @@ void CISlave::WackBeam( int side, CBaseEntity *pEntity )
 
 	m_pBeam[m_iBeams]->PointEntInit( pEntity->Center(), entindex() );
 	m_pBeam[m_iBeams]->SetEndAttachment( side < 0 ? 2 : 1 );
-	m_pBeam[m_iBeams]->SetColor( 180, 255, 96 );
-	m_pBeam[m_iBeams]->SetBrightness( 255 );
-	m_pBeam[m_iBeams]->SetNoise( 80 );
+	if( FClassnameIs( pev, "monster_alien_worker" ) )
+	{
+		m_pBeam[m_iBeams]->SetColor( 180, 250, 90 );
+		m_pBeam[m_iBeams]->SetBrightness( 240 );
+		m_pBeam[m_iBeams]->SetNoise( 90 );
+	}
+	else
+	{
+		m_pBeam[m_iBeams]->SetColor( 180, 255, 96 );
+		m_pBeam[m_iBeams]->SetBrightness( 255 );
+		m_pBeam[m_iBeams]->SetNoise( 80 );
+	}
 	m_iBeams++;
 }
 
@@ -793,6 +824,7 @@ void CISlave::ZapBeam( int side )
 	Vector vecSrc, vecAim;
 	TraceResult tr;
 	CBaseEntity *pEntity;
+	int pitch;
 
 	if( m_iBeams >= ISLAVE_MAX_BEAMS )
 		return;
@@ -819,7 +851,12 @@ void CISlave::ZapBeam( int side )
 	{
 		pEntity->TraceAttack( pev, gSkillData.slaveDmgZap, vecAim, &tr, DMG_SHOCK );
 	}
-	UTIL_EmitAmbientSound( ENT( pev ), tr.vecEndPos, "weapons/electro4.wav", 0.5, ATTN_NORM, 0, RANDOM_LONG( 140, 160 ) );
+
+	if( FClassnameIs( pev, "monster_alien_worker" ) )
+		pitch = RANDOM_LONG( 150, 180 );
+	else
+		pitch = RANDOM_LONG( 140, 160 );
+	UTIL_EmitAmbientSound( ENT( pev ), tr.vecEndPos, "weapons/electro4.wav", 0.5, ATTN_NORM, 0, pitch );
 }
 
 //=========================================================
