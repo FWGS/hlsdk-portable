@@ -2425,14 +2425,23 @@ void CDeadHGrunt::KeyValue( KeyValueData *pkvd )
 }
 
 LINK_ENTITY_TO_CLASS( monster_hgrunt_dead, CDeadHGrunt )
+LINK_ENTITY_TO_CLASS( monster_human_grunt_ally_dead, CDeadHGrunt )
 
 //=========================================================
 // ********** DeadHGrunt SPAWN **********
 //=========================================================
 void CDeadHGrunt::Spawn( void )
 {
-	PRECACHE_MODEL( "models/hgrunt.mdl" );
-	SET_MODEL( ENT( pev ), "models/hgrunt.mdl" );
+	if( FClassnameIs( pev, "monster_human_grunt_ally_dead" ) )
+	{	
+		PRECACHE_MODEL( "models/hgrunt_opfor.mdl" );
+		SET_MODEL( ENT( pev ), "models/hgrunt_opfor.mdl" );
+	}
+	else
+	{
+		PRECACHE_MODEL( "models/hgrunt.mdl" );
+		SET_MODEL( ENT( pev ), "models/hgrunt.mdl" );
+	}
 
 	pev->effects		= 0;
 	pev->yaw_speed		= 8;

@@ -800,14 +800,23 @@ void CDeadBarney::KeyValue( KeyValueData *pkvd )
 }
 
 LINK_ENTITY_TO_CLASS( monster_barney_dead, CDeadBarney )
+LINK_ENTITY_TO_CLASS( monster_civ_barney_dead, CDeadBarney )
 
 //=========================================================
 // ********** DeadBarney SPAWN **********
 //=========================================================
 void CDeadBarney::Spawn()
 {
-	PRECACHE_MODEL( "models/barney.mdl" );
-	SET_MODEL( ENT( pev ), "models/barney.mdl" );
+	if( FClassnameIs( pev, "monster_civ_barney_dead" ) )
+	{
+		PRECACHE_MODEL( "models/dead_barney.mdl" );
+		SET_MODEL( ENT( pev ), "models/dead_barney.mdl" );
+	}
+	else
+	{
+		PRECACHE_MODEL( "models/barney.mdl" );
+		SET_MODEL( ENT( pev ), "models/barney.mdl" );
+	}
 
 	pev->effects = 0;
 	pev->yaw_speed = 8;

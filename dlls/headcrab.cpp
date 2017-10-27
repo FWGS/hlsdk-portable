@@ -189,7 +189,7 @@ void CHeadCrab::SetYawSpeed( void )
 
 	if( FClassnameIs( pev, "monster_xenocrab" ) )
 	{
-		pev->yaw_speed = RANDOM_LONG( 80, 90 );
+		ys = RANDOM_LONG( 80, 90 );
 	}
 	else
 	{

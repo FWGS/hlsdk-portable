@@ -324,3 +324,75 @@ int CZombie::IgnoreConditions( void )
 
 	return iIgnore;
 }
+
+//=========================================================
+// DEAD ZGRUNT PROP
+//=========================================================
+class CDeadZGrunt : public CBaseMonster
+{
+public:
+	void Spawn();
+	int Classify() { return	CLASS_ALIEN_MONSTER; }
+
+	void KeyValue( KeyValueData *pkvd );
+
+	int	m_iPose;// which sequence to display	-- temporary, don't need to save
+	static char *m_szPoses[2];
+};
+
+char *CDeadZGrunt::m_szPoses[] =
+{
+	"dead_on_back",
+	"dead_on_stomach"
+};
+
+void CDeadZGrunt::KeyValue( KeyValueData *pkvd )
+{
+	if( FStrEq( pkvd->szKeyName, "pose" ) )
+	{
+		m_iPose = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else
+		CBaseMonster::KeyValue( pkvd );
+}
+
+LINK_ENTITY_TO_CLASS( monster_zombie_soldier_dead, CDeadZGrunt )
+LINK_ENTITY_TO_CLASS( monster_zgrunt_dead, CDeadZGrunt )
+
+//=========================================================
+// ********** DeadZGrunt SPAWN **********
+//=========================================================
+void CDeadZGrunt::Spawn()
+{
+	if( FClassnameIs( pev, "monster_zgrunt_dead" ) )
+	{
+		PRECACHE_MODEL( "models/zgrunt.mdl" );
+		SET_MODEL( ENT( pev ), "models/zgrunt.mdl" );
+	}
+	else
+	{
+		PRECACHE_MODEL( "models/zombie_soldier.mdl" );
+		SET_MODEL( ENT( pev ), "models/zombie_soldier.mdl" );
+	}
+
+	pev->effects = 0;
+	pev->yaw_speed = 8;
+	pev->sequence = 0;
+	pev->body = 1;
+	m_bloodColor = BLOOD_COLOR_GREEN;
+
+	pev->sequence = LookupSequence( m_szPoses[m_iPose] );
+
+	if( pev->sequence == -1 )
+	{
+		ALERT( at_console, "Dead zombie soldier with bad pose\n" );
+		pev->sequence = 0;
+		pev->effects = EF_BRIGHTFIELD;
+	}
+
+	// Corpses have less health
+	pev->health = 8;
+
+	MonsterInitDead();
+}
