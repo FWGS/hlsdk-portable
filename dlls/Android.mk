@@ -125,6 +125,12 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
            world.cpp \
            xen.cpp \
            zombie.cpp \
+	   rp/blkop_apache.cpp \
+           rp/blkop_osprey.cpp \
+           rp/gonome.cpp \
+           rp/massn.cpp \
+           rp/otis.cpp \
+           rp/pitdrone.cpp \
 	   ../pm_shared/pm_debug.c \
 	   ../pm_shared/pm_math.c \
 	   ../pm_shared/pm_shared.c

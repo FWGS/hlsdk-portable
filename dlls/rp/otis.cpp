@@ -118,7 +118,7 @@ void COtis::BarneyFirePistol(void)
 	SetBlending(0, angDir.x);
 	pev->effects = EF_MUZZLEFLASH;
 
-	FireBullets(1, vecShootOrigin, vecShootDir, VECTOR_CONE_2DEGREES, 1024, BULLET_MONSTER_357);
+	FireBullets(1, vecShootOrigin, vecShootDir, VECTOR_CONE_2DEGREES, 1024, BULLET_MONSTER_9MM);
 
 	int pitchShift = RANDOM_LONG(0, 20);
 

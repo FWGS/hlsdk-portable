@@ -26,6 +26,11 @@ struct skilldata_t
 
 	float apacheHealth;
 
+	float aworkerHealth;
+	float aworkerDmgClaw;
+	float aworkerDmgClawrake;
+	float aworkerDmgZap;
+
 	float barneyHealth;
 
 	float bigmommaHealthFactor;		// Multiply each node's health by this
@@ -42,6 +47,10 @@ struct skilldata_t
 	float gargantuaDmgSlash;
 	float gargantuaDmgFire;
 	float gargantuaDmgStomp;
+
+	float gonomeHealth;
+	float gonomeDmgOneBite;
+	float gonomeDmgOneSlash;
 
 	float hassassinHealth;
 
@@ -67,6 +76,9 @@ struct skilldata_t
 	float leechHealth;
 	float leechDmgBite;
 
+	float massnHealth;
+	float massnDmgKick;
+
 	float controllerHealth;
 	float controllerDmgZap;
 	float controllerSpeedBall;
@@ -74,6 +86,13 @@ struct skilldata_t
 
 	float nihilanthHealth;
 	float nihilanthZap;
+
+	float otisHealth;
+
+	float pitdroneHealth;
+	float pitdroneDmgBite;
+	float pitdroneDmgWhip;
+	float pitdroneDmgSpit;
 
 	float scientistHealth;
 
@@ -84,6 +103,12 @@ struct skilldata_t
 	float zombieHealth;
 	float zombieDmgOneSlash;
 	float zombieDmgBothSlash;
+
+	float zgruntHealth;
+	float zgruntDmgKick;
+	float zgruntShotgunPellets;
+
+	float zsoldierHealth;
 
 	float turretHealth;
 	float miniturretHealth;
@@ -106,7 +131,7 @@ struct skilldata_t
 	float plrDmgHandGrenade;
 	float plrDmgSatchel;
 	float plrDmgTripmine;
-	
+
 	// weapons shared by monsters
 	float monDmg9MM;
 	float monDmgMP5;

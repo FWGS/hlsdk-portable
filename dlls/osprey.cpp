@@ -22,6 +22,7 @@
 #include "soundent.h"
 #include "effects.h"
 #include "customentity.h"
+#include "osprey.h"
 
 typedef struct 
 {
@@ -32,76 +33,6 @@ typedef struct
 } t_ospreygrunt;
 
 #define SF_WAITFORTRIGGER	0x40
-
-#define MAX_CARRY	24
-
-class COsprey : public CBaseMonster
-{
-public:
-	int Save( CSave &save );
-	int Restore( CRestore &restore );
-	static TYPEDESCRIPTION m_SaveData[];
-	int ObjectCaps( void ) { return CBaseMonster::ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
-
-	void Spawn( void );
-	void Precache( void );
-	int Classify( void ) { return CLASS_MACHINE; };
-	int BloodColor( void ) { return DONT_BLEED; }
-	void Killed( entvars_t *pevAttacker, int iGib );
-
-	void UpdateGoal( void );
-	BOOL HasDead( void );
-	void EXPORT FlyThink( void );
-	void EXPORT DeployThink( void );
-	void Flight( void );
-	void EXPORT HitTouch( CBaseEntity *pOther );
-	void EXPORT FindAllThink( void );
-	void EXPORT HoverThink( void );
-	CBaseMonster *MakeGrunt( Vector vecSrc );
-	void EXPORT CrashTouch( CBaseEntity *pOther );
-	void EXPORT DyingThink( void );
-	void EXPORT CommandUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
-
-	// int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
-	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType );
-	void ShowDamage( void );
-
-	CBaseEntity *m_pGoalEnt;
-	Vector m_vel1;
-	Vector m_vel2;
-	Vector m_pos1;
-	Vector m_pos2;
-	Vector m_ang1;
-	Vector m_ang2;
-	float m_startTime;
-	float m_dTime;
-
-	Vector m_velocity;
-
-	float m_flIdealtilt;
-	float m_flRotortilt;
-
-	float m_flRightHealth;
-	float m_flLeftHealth;
-
-	int m_iUnits;
-	EHANDLE m_hGrunt[MAX_CARRY];
-	Vector m_vecOrigin[MAX_CARRY];
-	EHANDLE m_hRepel[4];
-
-	int m_iSoundState;
-	int m_iSpriteTexture;
-
-	int m_iPitch;
-
-	int m_iExplode;
-	int m_iTailGibs;
-	int m_iBodyGibs;
-	int m_iEngineGibs;
-
-	int m_iDoLeftSmokePuff;
-	int m_iDoRightSmokePuff;
-};
 
 LINK_ENTITY_TO_CLASS( monster_osprey, COsprey )
 
@@ -126,8 +57,8 @@ TYPEDESCRIPTION	COsprey::m_SaveData[] =
 	DEFINE_FIELD( COsprey, m_flLeftHealth, FIELD_FLOAT ),
 
 	DEFINE_FIELD( COsprey, m_iUnits, FIELD_INTEGER ),
-	DEFINE_ARRAY( COsprey, m_hGrunt, FIELD_EHANDLE, MAX_CARRY ),
-	DEFINE_ARRAY( COsprey, m_vecOrigin, FIELD_POSITION_VECTOR, MAX_CARRY ),
+	DEFINE_ARRAY( COsprey, m_hGrunt, FIELD_EHANDLE, OSPREY_MAX_CARRY ),
+	DEFINE_ARRAY( COsprey, m_vecOrigin, FIELD_POSITION_VECTOR, OSPREY_MAX_CARRY ),
 	DEFINE_ARRAY( COsprey, m_hRepel, FIELD_EHANDLE, 4 ),
 
 	// DEFINE_FIELD( COsprey, m_iSoundState, FIELD_INTEGER ),
@@ -206,7 +137,7 @@ void COsprey::FindAllThink( void )
 	CBaseEntity *pEntity = NULL;
 
 	m_iUnits = 0;
-	while( m_iUnits < MAX_CARRY && ( pEntity = UTIL_FindEntityByClassname( pEntity, "monster_human_grunt" ) ) != NULL )
+	while( m_iUnits < OSPREY_MAX_CARRY && ( pEntity = UTIL_FindEntityByClassname( pEntity, "monster_human_grunt" ) ) != NULL )
 	{
 		if( pEntity->IsAlive() )
 		{
