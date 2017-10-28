@@ -257,12 +257,12 @@ void CHGrunt::SpeakSentence( void )
 }
 
 //=========================================================
-// IRelationship - overridden because Alien Grunts are 
+// IRelationship - overridden because Black Ops are 
 // Human Grunt's nemesis.
 //=========================================================
 int CHGrunt::IRelationship( CBaseEntity *pTarget )
 {
-	if( FClassnameIs( pTarget->pev, "monster_alien_grunt" ) || ( FClassnameIs( pTarget->pev,  "monster_gargantua" ) ) )
+	if( FClassnameIs( pTarget->pev, "monster_male_assassin" ) || FClassnameIs( pTarget->pev,  "monster_blkop_apache" ) || FClassnameIs( pTarget->pev,  "monster_human_assassin" ) )
 	{
 		return R_NM;
 	}

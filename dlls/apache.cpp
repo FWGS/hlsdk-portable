@@ -35,6 +35,7 @@ class CApache : public CBaseMonster
 
 	void Spawn( void );
 	void Precache( void );
+	int IRelationship( CBaseEntity *pTarget );
 	int Classify( void ) { return CLASS_HUMAN_MILITARY; };
 	int BloodColor( void ) { return DONT_BLEED; }
 	void Killed( entvars_t *pevAttacker, int iGib );
@@ -173,6 +174,20 @@ void CApache::Precache( void )
 	m_iBodyGibs = PRECACHE_MODEL( "models/metalplategibs_green.mdl" );
 
 	UTIL_PrecacheOther( "hvr_rocket" );
+}
+
+//=========================================================
+// IRelationship - overridden because Black Ops are
+// Human Grunt's nemesis.
+//=========================================================
+int CApache::IRelationship( CBaseEntity *pTarget )
+{
+	if( FClassnameIs( pTarget->pev, "monster_male_assassin" ) || FClassnameIs( pTarget->pev,  "monster_blkop_apache" ) || FClassnameIs( pTarget->pev,  "monster_human_assassin" ) )
+	{
+		return R_NM;
+	}
+
+	return CBaseMonster::IRelationship( pTarget );
 }
 
 void CApache::NullThink( void )

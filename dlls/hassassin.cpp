@@ -68,6 +68,7 @@ public:
 	int Classify( void );
 	int ISoundMask( void);
 	void Shoot( void );
+	int IRelationship( CBaseEntity *pTarget );
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
 	Schedule_t *GetSchedule( void );
 	Schedule_t *GetScheduleOfType( int Type );
@@ -227,6 +228,20 @@ void CHAssassin::Shoot( void )
 	SetBlending( 0, angDir.x );
 
 	m_cAmmoLoaded--;
+}
+
+//=========================================================
+// IRelationship - overridden because Human Grunts are
+// BlackOps's nemesis.
+//=========================================================
+int CHAssassin::IRelationship( CBaseEntity *pTarget )
+{
+	if( FClassnameIs( pTarget->pev, "monster_human_grunt" ) || ( FClassnameIs( pTarget->pev,  "monster_apache" ) ) )
+	{
+		return R_NM;
+	}
+
+	return CBaseMonster::IRelationship( pTarget );
 }
 
 //=========================================================
