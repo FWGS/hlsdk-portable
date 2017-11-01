@@ -1268,6 +1268,18 @@ void CWeaponBox::Kill( void )
 	UTIL_Remove( this );
 }
 
+static const char* IsAmmoForExhaustibleWeapon(const char* ammoName, int& weaponId)
+{
+	for (int i=0; i<MAX_WEAPONS; ++i) {
+		ItemInfo& II = CBasePlayerItem::ItemInfoArray[i];
+		if ((II.iFlags & ITEM_FLAG_EXHAUSTIBLE) && II.pszAmmo1 && FStrEq(ammoName, II.pszAmmo1)) {
+			weaponId = II.iId;
+			return II.pszName;
+		}
+	}
+	return 0;
+}
+
 //=========================================================
 // CWeaponBox - Touch: try to add my contents to the toucher
 // if the toucher is a player.
@@ -1299,6 +1311,35 @@ void CWeaponBox::Touch( CBaseEntity *pOther )
 	{
 		if( !FStringNull( m_rgiszAmmo[i] ) )
 		{
+			// horrific HACK to give player an exhaustible weapon as a real weapon, not just ammo
+			int exhaustibleWeaponId;
+			const char* weaponName = IsAmmoForExhaustibleWeapon(STRING(m_rgiszAmmo[i]), exhaustibleWeaponId);
+			if (weaponName) {
+				bool foundWeapon = false;
+				for( int j = 0; j < MAX_ITEM_TYPES && !foundWeapon; j++ )
+				{
+					CBasePlayerItem *pPlayerItem = pPlayer->m_rgpPlayerItems[j];
+					while( pPlayerItem )
+					{
+						if (pPlayerItem->m_iId == exhaustibleWeaponId) {
+							foundWeapon = true;
+							break;
+						}
+						pPlayerItem = pPlayerItem->m_pNext;
+					}
+				}
+				if (!foundWeapon) {
+					CBasePlayerWeapon* weapon = (CBasePlayerWeapon*)Create(weaponName, pev->origin, pev->angles);
+					if (weapon) {
+						weapon->pev->spawnflags |= SF_NORESPAWN;
+						weapon->m_iDefaultAmmo = 0;
+						if (pPlayer->AddPlayerItem(weapon)) {
+							weapon->AttachToPlayer(pPlayer);
+						}
+					}
+				}
+			}
+
 			// there's some ammo of this type. 
 			pPlayer->GiveAmmo( m_rgAmmo[i], STRING( m_rgiszAmmo[i] ), MaxAmmoCarry( m_rgiszAmmo[i] ) );
 
