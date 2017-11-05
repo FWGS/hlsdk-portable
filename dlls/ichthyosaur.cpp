@@ -122,6 +122,7 @@ public:
 };
 
 LINK_ENTITY_TO_CLASS( monster_ichthyosaur, CIchthyosaur )
+LINK_ENTITY_TO_CLASS( monster_baby_ichthyosaur, CIchthyosaur )
 
 TYPEDESCRIPTION	CIchthyosaur::m_SaveData[] =
 {
@@ -466,7 +467,11 @@ void CIchthyosaur::Spawn()
 {
 	Precache();
 
-	SET_MODEL( ENT( pev ), "models/icky.mdl" );
+	if( FClassnameIs( pev, "monster_baby_ichthyosaur" ) )
+		SET_MODEL( ENT( pev ), "models/baby_icky.mdl" );
+	else
+		SET_MODEL( ENT( pev ), "models/icky.mdl" );
+
 	UTIL_SetSize( pev, Vector( -32, -32, -32 ), Vector( 32, 32, 32 ) );
 
 	pev->solid		= SOLID_BBOX;
@@ -503,7 +508,10 @@ void CIchthyosaur::Spawn()
 //=========================================================
 void CIchthyosaur::Precache()
 {
-	PRECACHE_MODEL( "models/icky.mdl" );
+	if( FClassnameIs( pev, "monster_baby_ichthyosaur" ) )
+		PRECACHE_MODEL( "models/baby_icky.mdl" );
+	else
+		PRECACHE_MODEL( "models/icky.mdl" );
 
 	PRECACHE_SOUND_ARRAY( pIdleSounds );
 	PRECACHE_SOUND_ARRAY( pAlertSounds );
