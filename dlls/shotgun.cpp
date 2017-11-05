@@ -370,12 +370,18 @@ class CShotgunAmmo : public CBasePlayerAmmo
 	void Spawn( void )
 	{ 
 		Precache();
-		SET_MODEL( ENT( pev ), "models/w_shotbox.mdl" );
+		if( FClassnameIs( pev, "weapon_bloodly_9mmAR" ) )
+			SET_MODEL( ENT( pev ), "models/w_bloodly_shotgun.mdl" );
+		else
+			SET_MODEL( ENT( pev ), "models/w_shotbox.mdl" );
 		CBasePlayerAmmo::Spawn();
 	}
 	void Precache( void )
 	{
-		PRECACHE_MODEL( "models/w_shotbox.mdl" );
+		if( FClassnameIs( pev, "weapon_bloodly_9mmAR" ) )
+			PRECACHE_MODEL( "models/w_bloodly_shotgun.mdl" );
+		else
+			PRECACHE_MODEL( "models/w_shotbox.mdl" );
 		PRECACHE_SOUND( "items/9mmclip1.wav" );
 	}
 	BOOL AddAmmo( CBaseEntity *pOther ) 
@@ -389,4 +395,5 @@ class CShotgunAmmo : public CBasePlayerAmmo
 	}
 };
 
+LINK_ENTITY_TO_CLASS( weapon_bloodly_shotgun, CShotgunAmmo )
 LINK_ENTITY_TO_CLASS( ammo_buckshot, CShotgunAmmo )

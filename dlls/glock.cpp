@@ -236,13 +236,19 @@ class CGlockAmmo : public CBasePlayerAmmo
 	void Spawn( void )
 	{ 
 		Precache();
-		SET_MODEL( ENT( pev ), "models/w_9mmclip.mdl" );
+		if( FClassnameIs( pev, "weapon_silencer" ) )
+			SET_MODEL( ENT( pev ), "models/w_silencer.mdl" );
+		else
+			SET_MODEL( ENT( pev ), "models/w_9mmclip.mdl" );
 		CBasePlayerAmmo::Spawn();
 	}
 
 	void Precache( void )
 	{
-		PRECACHE_MODEL( "models/w_9mmclip.mdl" );
+		if( FClassnameIs( pev, "weapon_silencer" ) )
+			PRECACHE_MODEL( "models/w_silencer.mdl" );
+		else
+			PRECACHE_MODEL( "models/w_9mmclip.mdl" );
 		PRECACHE_SOUND( "items/9mmclip1.wav" );
 	}
 
@@ -257,5 +263,6 @@ class CGlockAmmo : public CBasePlayerAmmo
 	}
 };
 
+LINK_ENTITY_TO_CLASS( weapon_silencer, CGlockAmmo )
 LINK_ENTITY_TO_CLASS( ammo_glockclip, CGlockAmmo )
 LINK_ENTITY_TO_CLASS( ammo_9mmclip, CGlockAmmo )

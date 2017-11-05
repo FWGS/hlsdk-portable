@@ -304,6 +304,7 @@ void W_Precache( void )
 	// shotgun
 	UTIL_PrecacheOtherWeapon( "weapon_shotgun" );
 	UTIL_PrecacheOther( "ammo_buckshot" );
+	UTIL_PrecacheOther( "weapon_bloodly_shotgun" );
 
 	// crowbar
 	UTIL_PrecacheOtherWeapon( "weapon_crowbar" );
@@ -311,11 +312,13 @@ void W_Precache( void )
 	// glock
 	UTIL_PrecacheOtherWeapon( "weapon_9mmhandgun" );
 	UTIL_PrecacheOther( "ammo_9mmclip" );
+	UTIL_PrecacheOther( "weapon_silencer" );
 
 	// mp5
 	UTIL_PrecacheOtherWeapon( "weapon_9mmAR" );
 	UTIL_PrecacheOther( "ammo_9mmAR" );
 	UTIL_PrecacheOther( "ammo_ARgrenades" );
+	UTIL_PrecacheOther( "weapon_bloodly_9mmAR" );
 
 	// 9mm ammo box
 	UTIL_PrecacheOther( "ammo_9mmbox" );

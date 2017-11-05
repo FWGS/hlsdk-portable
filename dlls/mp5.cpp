@@ -281,12 +281,18 @@ class CMP5AmmoClip : public CBasePlayerAmmo
 	void Spawn( void )
 	{
 		Precache();
-		SET_MODEL( ENT( pev ), "models/w_9mmARclip.mdl" );
+		if( FClassnameIs( pev, "weapon_bloodly_9mmAR" ) )
+			SET_MODEL( ENT( pev ), "models/w_bloodly_9mmAR.mdl" );
+		else
+			SET_MODEL( ENT( pev ), "models/w_9mmARclip.mdl" );
 		CBasePlayerAmmo::Spawn();
 	}
 	void Precache( void )
 	{
-		PRECACHE_MODEL( "models/w_9mmARclip.mdl" );
+		if( FClassnameIs( pev, "weapon_bloodly_9mmAR" ) )
+			PRECACHE_MODEL( "models/w_bloodly_9mmAR.mdl" );
+		else
+			PRECACHE_MODEL( "models/w_9mmARclip.mdl" );
 		PRECACHE_SOUND( "items/9mmclip1.wav" );
 	}
 	BOOL AddAmmo( CBaseEntity *pOther ) 
@@ -300,6 +306,7 @@ class CMP5AmmoClip : public CBasePlayerAmmo
 	}
 };
 
+LINK_ENTITY_TO_CLASS( weapon_bloodly_9mmAR, CMP5AmmoClip )
 LINK_ENTITY_TO_CLASS( ammo_mp5clip, CMP5AmmoClip )
 LINK_ENTITY_TO_CLASS( ammo_9mmAR, CMP5AmmoClip )
 
