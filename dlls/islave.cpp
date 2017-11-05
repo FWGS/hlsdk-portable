@@ -310,13 +310,19 @@ void CISlave::SetYawSpeed( void )
 //=========================================================
 void CISlave::HandleAnimEvent( MonsterEvent_t *pEvent )
 {
+	float flDmg;
+
 	// ALERT( at_console, "event %d : %f\n", pEvent->event, pev->frame );
 	switch( pEvent->event )
 	{
 		case ISLAVE_AE_CLAW:
 		{
 			// SOUND HERE!
-			CBaseEntity *pHurt = CheckTraceHullAttack( 70, gSkillData.slaveDmgClaw, DMG_SLASH );
+			if( FClassnameIs( pev, "monster_alien_worker" ) )
+				flDmg = gSkillData.aworkerDmgClaw;
+			else
+				flDmg = gSkillData.slaveDmgClaw;
+			CBaseEntity *pHurt = CheckTraceHullAttack( 70, flDmg, DMG_SLASH );
 			if( pHurt )
 			{
 				if( pHurt->pev->flags & ( FL_MONSTER | FL_CLIENT ) )
@@ -336,7 +342,11 @@ void CISlave::HandleAnimEvent( MonsterEvent_t *pEvent )
 			break;
 		case ISLAVE_AE_CLAWRAKE:
 		{
-			CBaseEntity *pHurt = CheckTraceHullAttack( 70, gSkillData.slaveDmgClawrake, DMG_SLASH );
+			if( FClassnameIs( pev, "monster_alien_worker" ) )
+				flDmg = gSkillData.aworkerDmgClawrake;
+			else
+				flDmg = gSkillData.slaveDmgClawrake;
+			CBaseEntity *pHurt = CheckTraceHullAttack( 70, flDmg, DMG_SLASH );
 			if( pHurt )
 			{
 				if( pHurt->pev->flags & ( FL_MONSTER | FL_CLIENT ) )
@@ -522,11 +532,13 @@ void CISlave::Spawn()
 	{
 		SET_MODEL( ENT( pev ), "models/aworker.mdl" );
 		m_voicePitch	= RANDOM_LONG( 80, 90 );
+		pev->health	= gSkillData.aworkerHealth;
 	}
 	else
 	{
 		SET_MODEL( ENT( pev ), "models/islave.mdl" );
 		m_voicePitch	= RANDOM_LONG( 85, 110 );
+		pev->health	= gSkillData.slaveHealth;
 	}
 
 	UTIL_SetSize( pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX );
@@ -535,7 +547,6 @@ void CISlave::Spawn()
 	pev->movetype		= MOVETYPE_STEP;
 	m_bloodColor		= BLOOD_COLOR_GREEN;
 	pev->effects		= 0;
-	pev->health		= gSkillData.slaveHealth;
 	pev->view_ofs		= Vector( 0, 0, 64 );// position of the eyes relative to monster's origin.
 	m_flFieldOfView		= VIEW_FIELD_WIDE; // NOTE: we need a wide field of view so npc will notice player and say hello
 	m_MonsterState		= MONSTERSTATE_NONE;
@@ -825,6 +836,7 @@ void CISlave::ZapBeam( int side )
 	TraceResult tr;
 	CBaseEntity *pEntity;
 	int pitch;
+	float flDmg;
 
 	if( m_iBeams >= ISLAVE_MAX_BEAMS )
 		return;
@@ -849,7 +861,11 @@ void CISlave::ZapBeam( int side )
 	pEntity = CBaseEntity::Instance( tr.pHit );
 	if( pEntity != NULL && pEntity->pev->takedamage )
 	{
-		pEntity->TraceAttack( pev, gSkillData.slaveDmgZap, vecAim, &tr, DMG_SHOCK );
+		if( FClassnameIs( pev, "monster_alien_worker" ) )
+			flDmg = gSkillData.aworkerDmgClaw;
+		else
+			flDmg = gSkillData.slaveDmgClaw;
+		pEntity->TraceAttack( pev, flDmg, vecAim, &tr, DMG_SHOCK );
 	}
 
 	if( FClassnameIs( pev, "monster_alien_worker" ) )
