@@ -37,7 +37,6 @@
 LINK_ENTITY_TO_CLASS( monster_zombie, CZombie )
 LINK_ENTITY_TO_CLASS( monster_zombie_barney, CZombie )
 LINK_ENTITY_TO_CLASS( monster_zombie_soldier, CZombie )
-LINK_ENTITY_TO_CLASS( monster_zombie_grunt, CZombie )
 
 const char *CZombie::pAttackHitSounds[] =
 {
@@ -244,8 +243,6 @@ void CZombie::Spawn()
 		SET_MODEL( ENT( pev ), "models/zombie_barney.mdl" );
 	else if( FClassnameIs( pev, "monster_zombie_soldier" ) )
 		SET_MODEL( ENT( pev ), "models/zombie_soldier.mdl" );
-	else if( FClassnameIs( pev, "monster_zombie_grunt" ) )
-		SET_MODEL( ENT( pev ), "models/zgrunt.mdl" );
 	else
 		SET_MODEL( ENT( pev ), "models/zombie.mdl" );
 	UTIL_SetSize( pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX );
@@ -273,8 +270,6 @@ void CZombie::Precache()
 		PRECACHE_MODEL( "models/zombie_barney.mdl" );
 	else if( FClassnameIs( pev, "monster_zombie_soldier" ) )
 		PRECACHE_MODEL( "models/zombie_soldier.mdl" );
-	else if( FClassnameIs( pev, "monster_zombie_grunt" ) )
-		PRECACHE_MODEL( "models/zgrunt.mdl" );
 	else
 		PRECACHE_MODEL( "models/zombie.mdl" );
 
@@ -326,9 +321,9 @@ int CZombie::IgnoreConditions( void )
 }
 
 //=========================================================
-// DEAD ZGRUNT PROP
+// DEAD ZSOLDIER PROP
 //=========================================================
-class CDeadZGrunt : public CBaseMonster
+class CDeadZSoldier : public CBaseMonster
 {
 public:
 	void Spawn();
@@ -340,13 +335,13 @@ public:
 	static char *m_szPoses[2];
 };
 
-char *CDeadZGrunt::m_szPoses[] =
+char *CDeadZSoldier::m_szPoses[] =
 {
 	"dead_on_back",
 	"dead_on_stomach"
 };
 
-void CDeadZGrunt::KeyValue( KeyValueData *pkvd )
+void CDeadZSoldier::KeyValue( KeyValueData *pkvd )
 {
 	if( FStrEq( pkvd->szKeyName, "pose" ) )
 	{
@@ -357,24 +352,15 @@ void CDeadZGrunt::KeyValue( KeyValueData *pkvd )
 		CBaseMonster::KeyValue( pkvd );
 }
 
-LINK_ENTITY_TO_CLASS( monster_zombie_soldier_dead, CDeadZGrunt )
-LINK_ENTITY_TO_CLASS( monster_zgrunt_dead, CDeadZGrunt )
+LINK_ENTITY_TO_CLASS( monster_zombie_soldier_dead, CDeadZSoldier )
 
 //=========================================================
 // ********** DeadZGrunt SPAWN **********
 //=========================================================
-void CDeadZGrunt::Spawn()
+void CDeadZSoldier::Spawn()
 {
-	if( FClassnameIs( pev, "monster_zgrunt_dead" ) )
-	{
-		PRECACHE_MODEL( "models/zgrunt.mdl" );
-		SET_MODEL( ENT( pev ), "models/zgrunt.mdl" );
-	}
-	else
-	{
-		PRECACHE_MODEL( "models/zombie_soldier.mdl" );
-		SET_MODEL( ENT( pev ), "models/zombie_soldier.mdl" );
-	}
+	PRECACHE_MODEL( "models/zombie_soldier.mdl" );
+	SET_MODEL( ENT( pev ), "models/zombie_soldier.mdl" );
 
 	pev->effects = 0;
 	pev->yaw_speed = 8;

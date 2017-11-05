@@ -129,10 +129,13 @@ set (SVDLL_SOURCES
 	zombie.cpp
 	rp/blkop_apache.cpp
 	rp/blkop_osprey.cpp
+	rp/fgrunt.cpp
 	rp/gonome.cpp
 	rp/massn.cpp
+	rp/ngrunt.cpp
 	rp/otis.cpp
 	rp/pitdrone.cpp
+	rp/zgrunt.cpp
 	../pm_shared/pm_debug.c
 	../pm_shared/pm_math.c
 	../pm_shared/pm_shared.c
