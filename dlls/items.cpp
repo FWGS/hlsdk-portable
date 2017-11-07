@@ -205,12 +205,22 @@ class CItemBattery : public CItem
 	void Spawn( void )
 	{ 
 		Precache();
-		SET_MODEL( ENT( pev ), "models/w_battery.mdl" );
+		if( FClassnameIs( pev, "item_helmet" ) )
+			SET_MODEL( ENT( pev ), "models/w_helmet.mdl" );
+		else if( FClassnameIs( pev, "item_armor" ) )
+			SET_MODEL( ENT( pev ), "models/w_armor.mdl" );
+		else
+			SET_MODEL( ENT( pev ), "models/w_battery.mdl" );
 		CItem::Spawn();
 	}
 	void Precache( void )
 	{
-		PRECACHE_MODEL( "models/w_battery.mdl" );
+		if( FClassnameIs( pev, "item_helmet" ) )
+			PRECACHE_MODEL( "models/w_helmet.mdl" );
+		else if( FClassnameIs( pev, "item_armor" ) )
+			PRECACHE_MODEL( "models/w_armor.mdl" );
+		else
+			PRECACHE_MODEL( "models/w_battery.mdl" );
 		PRECACHE_SOUND( "items/gunpickup2.wav" );
 	}
 	BOOL MyTouch( CBasePlayer *pPlayer )
@@ -226,7 +236,10 @@ class CItemBattery : public CItem
 			int pct;
 			char szcharge[64];
 
-			pPlayer->pev->armorvalue += gSkillData.batteryCapacity;
+			if( FClassnameIs( pev, "item_armor" ) )
+				pPlayer->pev->armorvalue += gSkillData.batteryCapacity * 1.5;
+			else
+				pPlayer->pev->armorvalue += gSkillData.batteryCapacity;
 			pPlayer->pev->armorvalue = Q_min( pPlayer->pev->armorvalue, MAX_NORMAL_BATTERY );
 
 			EMIT_SOUND( pPlayer->edict(), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM );
@@ -252,7 +265,9 @@ class CItemBattery : public CItem
 	}
 };
 
+LINK_ENTITY_TO_CLASS( item_armor, CItemBattery )
 LINK_ENTITY_TO_CLASS( item_battery, CItemBattery )
+LINK_ENTITY_TO_CLASS( item_helmet, CItemBattery )
 
 class CItemAntidote : public CItem
 {
