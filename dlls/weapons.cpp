@@ -339,6 +339,12 @@ void W_Precache( void )
 
 	// egon
 	UTIL_PrecacheOtherWeapon( "weapon_egon" );
+
+	// desert eagle
+	UTIL_PrecacheOtherWeapon( "weapon_eagle" );
+
+	// displacer
+	UTIL_PrecacheOtherWeapon( "weapon_displacer" );
 #endif
 	// tripmine
 	UTIL_PrecacheOtherWeapon( "weapon_tripmine" );
@@ -1628,3 +1634,18 @@ TYPEDESCRIPTION	CSatchel::m_SaveData[] =
 };
 
 IMPLEMENT_SAVERESTORE( CSatchel, CBasePlayerWeapon )
+
+TYPEDESCRIPTION CDisplacer::m_SaveData[] =
+{
+	DEFINE_FIELD( CDisplacer, m_iFireMode, FIELD_INTEGER ),
+	DEFINE_ARRAY( CDisplacer, m_pBeam, FIELD_CLASSPTR, 3 ),
+};
+
+IMPLEMENT_SAVERESTORE( CDisplacer, CBasePlayerWeapon )
+
+TYPEDESCRIPTION CEagle::m_SaveData[] =
+{
+	DEFINE_FIELD( CEagle, m_fEagleLaserActive, FIELD_INTEGER ),
+};
+
+IMPLEMENT_SAVERESTORE( CEagle, CBasePlayerWeapon )

@@ -31,6 +31,22 @@
 #include "weapons.h"
 #include "gamerules.h"
 
+void UTIL_MuzzleLight( Vector vecSrc, float flRadius, byte r, byte g, byte b, float flTime, float flDecay )
+{
+	MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, vecSrc );
+		WRITE_BYTE( TE_DLIGHT );
+		WRITE_COORD( vecSrc.x );	// X
+		WRITE_COORD( vecSrc.y );	// Y
+		WRITE_COORD( vecSrc.z );	// Z
+		WRITE_BYTE( flRadius * 0.1f );		// radius * 0.1
+		WRITE_BYTE( r );		// r
+		WRITE_BYTE( g );		// g
+		WRITE_BYTE( b );		// b
+		WRITE_BYTE( flTime * 10.0f );		// time * 10
+		WRITE_BYTE( flDecay * 0.1f );		// decay * 0.1
+	MESSAGE_END( );
+}
+
 float UTIL_WeaponTimeBase( void )
 {
 #if defined( CLIENT_WEAPONS )
@@ -2476,4 +2492,20 @@ int CRestore::BufferCheckZString( const char *string )
 			return 1;
 	}
 	return 0;
+}
+
+void UTIL_CleanSpawnPoint( Vector origin, float dist )
+{
+	CBaseEntity *ent = NULL;
+	while( ( ent = UTIL_FindEntityInSphere( ent, origin, dist ) ) != NULL )
+	{
+		if( ent->IsPlayer() )
+		{
+			TraceResult tr;
+			UTIL_TraceHull( ent->pev->origin + Vector( 0, 0, 36), ent->pev->origin + Vector( RANDOM_FLOAT( -150, 150 ), RANDOM_FLOAT( -150, 150 ), 0 ), dont_ignore_monsters, human_hull, ent->edict(), &tr);
+			//UTIL_TraceModel( ent->pev->origin + Vector( 0, 0, 36), ent->pev->origin + Vector( RANDOM_FLOAT( -150, 150 ), RANDOM_FLOAT( -150, 150 ), 0 ), 0, ent->edict(), &tr);
+			if( !tr.fAllSolid )
+				UTIL_SetOrigin(ent->pev, tr.vecEndPos);
+		}
+	}
 }

@@ -43,6 +43,8 @@ set (CLDLL_SOURCES
 	../dlls/squeakgrenade.cpp 
 	../dlls/tripmine.cpp 
 	../dlls/glock.cpp
+	../dlls/CAd/displacer.cpp
+	../dlls/CAd/eagle.cpp
 	ev_hldm.cpp 
 	hl/hl_baseentity.cpp
 	hl/hl_events.cpp
