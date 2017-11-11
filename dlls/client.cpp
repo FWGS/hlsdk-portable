@@ -563,7 +563,7 @@ void ClientCommand( edict_t *pEntity )
 				MENU_STR(touch_addbutton "_coops5" "#" "menuselect 5;touch_hide _coops*" 0.16 0.61 0.39 0.7 255 255 255 255 335 1.5;wait;slot10\n)
 				);
 	}
-	else
+	else if( !Ent_ProcessClientCommand( pEntity ) )
 	{
 		// tell the user they entered an unknown command
 		char command[128];
@@ -595,7 +595,7 @@ void ClientUserInfoChanged( edict_t *pEntity, char *infobuffer )
 		return;
 
 	// msg everyone if someone changes their name,  and it isn't the first time (changing no name to current name)
-	if ( pEntity->v.netname && STRING(pEntity->v.netname)[0] != 0 && !FStrEq( STRING(pEntity->v.netname), g_engfuncs.pfnInfoKeyValue( infobuffer, "name" )) )
+	if ( pEntity->v.netname && (STRING(pEntity->v.netname))[0] != 0 && !FStrEq( STRING(pEntity->v.netname), g_engfuncs.pfnInfoKeyValue( infobuffer, "name" )) )
 	{
 		char sName[256];
 		char *pName = g_engfuncs.pfnInfoKeyValue( infobuffer, "name" );

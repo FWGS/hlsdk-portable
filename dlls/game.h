@@ -37,6 +37,8 @@ extern cvar_t defaultteam;
 extern cvar_t allowmonsters;
 
 #include "coop_util.h"
+#include "enttools.h"
+#include "gravgunmod.h"
 
 // Engine Cvars
 extern cvar_t *g_psv_gravity;

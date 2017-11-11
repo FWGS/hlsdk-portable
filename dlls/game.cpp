@@ -38,36 +38,8 @@ cvar_t teamlist		= { "mp_teamlist","hgrunt;scientist", FCVAR_SERVER };
 cvar_t teamoverride	= { "mp_teamoverride","1" };
 cvar_t defaultteam	= { "mp_defaultteam","0" };
 cvar_t allowmonsters	= { "mp_allowmonsters","0", FCVAR_SERVER };
-cvar_t cvar_allow_gravgun = { "mp_allow_gravgun","1", FCVAR_SERVER };
-cvar_t cvar_allow_ar2 = { "mp_allow_ar2","0", FCVAR_SERVER };
-cvar_t cvar_ar2_mp5 = { "mp_ar2_mp5","0", FCVAR_SERVER };
-cvar_t cvar_ar2_balls = { "mp_ar2_balls","0", FCVAR_SERVER };
-cvar_t cvar_ar2_bullets = { "mp_ar2_bullets","0", FCVAR_SERVER };
-cvar_t cvar_wresptime = { "mp_wresptime","20", FCVAR_SERVER };
-cvar_t cvar_iresptime = { "mp_iresptime","30", FCVAR_SERVER };
-cvar_t cvar_gibtime = { "mp_gibtime","250", FCVAR_SERVER };
-cvar_t cvar_hgibcount = { "mp_hgibcount","12", FCVAR_SERVER };
-cvar_t cvar_agibcount = { "mp_agibcount","8", FCVAR_SERVER };
+
 cvar_t mp_chattime	= { "mp_chattime","10", FCVAR_SERVER };
-cvar_t mp_gravgun_players = { "mp_gravgun_players", "0", FCVAR_SERVER };
-cvar_t mp_coop = { "mp_coop", "0", FCVAR_SERVER };
-cvar_t mp_coop_changelevel = { "mp_coop_changelevel", "0", FCVAR_SERVER };
-cvar_t mp_coop_nofriendlyfire = { "mp_coop_nofriendlyfire", "0", FCVAR_SERVER };
-cvar_t mp_coop_disabledmap = { "mp_coop_disabledmap", "", FCVAR_SERVER };
-cvar_t mp_coop_reconnect_hack = { "mp_coop_reconnect_hack", "0", FCVAR_SERVER };
-cvar_t mp_coop_noangry = { "mp_coop_noangry", "0", FCVAR_SERVER };
-cvar_t mp_coop_checkpoints = { "mp_coop_checkpoints", "1", FCVAR_SERVER };
-cvar_t mp_skipdefaults = { "mp_skipdefaults", "0", FCVAR_SERVER };
-cvar_t mp_coop_strongcheckpoints = { "mp_coop_strongcheckpoints", "0", FCVAR_SERVER };
-
-cvar_t mp_unduck = { "mp_unduck", "0", FCVAR_SERVER };
-cvar_t mp_semclip = { "mp_semclip", "0", FCVAR_SERVER };
-cvar_t mp_spectator = { "mp_spectator", "0", FCVAR_SERVER };
-cvar_t mp_fixhornetbug = { "mp_fixhornetbug", "0", FCVAR_SERVER };
-cvar_t mp_checkentities = { "mp_checkentities", "0", FCVAR_SERVER };
-
-cvar_t materials_txt = { "materials_txt", "sound/materials.txt", FCVAR_SERVER };
-cvar_t sentences_txt = { "sentences_txt", "sound/sentences.txt", FCVAR_SERVER };
 
 // Engine Cvars
 cvar_t *g_psv_gravity = NULL;
@@ -480,6 +452,9 @@ void GameDLLInit( void )
 	g_footsteps = CVAR_GET_POINTER( "mp_footsteps" );
 
 	CVAR_REGISTER( &displaysoundlist );
+	GGM_RegisterCVars();
+	COOP_RegisterCVars();
+	ENT_RegisterCVars();
 
 	CVAR_REGISTER( &teamplay );
 	CVAR_REGISTER( &fraglimit );
@@ -499,37 +474,6 @@ void GameDLLInit( void )
 	CVAR_REGISTER( &teamoverride );
 	CVAR_REGISTER( &defaultteam );
 	CVAR_REGISTER( &allowmonsters );
-	CVAR_REGISTER( &cvar_allow_ar2 );
-	CVAR_REGISTER( &cvar_allow_gravgun );
-	CVAR_REGISTER( &cvar_ar2_mp5 );
-	CVAR_REGISTER( &cvar_ar2_bullets );
-	CVAR_REGISTER( &cvar_ar2_balls );
-	CVAR_REGISTER( &cvar_wresptime );
-	CVAR_REGISTER( &cvar_iresptime );
-	CVAR_REGISTER( &cvar_gibtime );
-	CVAR_REGISTER( &cvar_hgibcount );
-	CVAR_REGISTER( &cvar_agibcount );
-	CVAR_REGISTER( &mp_gravgun_players );
-	CVAR_REGISTER( &mp_coop );
-	CVAR_REGISTER( &mp_coop_changelevel );
-	CVAR_REGISTER( &mp_coop_nofriendlyfire );
-	CVAR_REGISTER( &mp_coop_disabledmap );
-	CVAR_REGISTER( &mp_unduck );
-	CVAR_REGISTER( &mp_semclip );
-	CVAR_REGISTER( &mp_coop_reconnect_hack );
-	CVAR_REGISTER( &mp_coop_noangry );
-	CVAR_REGISTER( &mp_spectator );
-	CVAR_REGISTER( &mp_coop_checkpoints );
-	CVAR_REGISTER( &mp_skipdefaults );
-	CVAR_REGISTER( &mp_coop_strongcheckpoints );
-	CVAR_REGISTER( &mp_fixhornetbug );
-	CVAR_REGISTER( &mp_checkentities );
-
-	
-
-	CVAR_REGISTER( &sentences_txt );
-	CVAR_REGISTER( &materials_txt );
-
 
 	CVAR_REGISTER( &mp_chattime );
 

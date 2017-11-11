@@ -2,7 +2,8 @@
 #include "util.h"
 #include "cbase.h"
 #include "player.h"
-#include "coop_util.h""
+#include "coop_util.h"
+#include "gravgunmod.h"
 
 GlobalMenu g_GlobalMenu;
 
@@ -10,6 +11,24 @@ GlobalMenu g_GlobalMenu;
 struct SavedCoords g_SavedCoords, s_SavedCoords;
 
 static float msglimittime1, msglimittime2;
+
+cvar_t mp_coop = { "mp_coop", "0", FCVAR_SERVER };
+cvar_t mp_coop_changelevel = { "mp_coop_changelevel", "0", FCVAR_SERVER };
+cvar_t mp_coop_nofriendlyfire = { "mp_coop_nofriendlyfire", "0", FCVAR_SERVER };
+cvar_t mp_coop_disabledmap = { "mp_coop_disabledmap", "", FCVAR_SERVER };
+cvar_t mp_coop_reconnect_hack = { "mp_coop_reconnect_hack", "0", FCVAR_SERVER };
+cvar_t mp_coop_noangry = { "mp_coop_noangry", "0", FCVAR_SERVER };
+cvar_t mp_coop_checkpoints = { "mp_coop_checkpoints", "1", FCVAR_SERVER };
+cvar_t mp_skipdefaults = { "mp_skipdefaults", "0", FCVAR_SERVER };
+cvar_t mp_coop_strongcheckpoints = { "mp_coop_strongcheckpoints", "0", FCVAR_SERVER };
+
+cvar_t mp_unduck = { "mp_unduck", "0", FCVAR_SERVER };
+cvar_t mp_semclip = { "mp_semclip", "0", FCVAR_SERVER };
+cvar_t mp_spectator = { "mp_spectator", "0", FCVAR_SERVER };
+
+cvar_t materials_txt = { "materials_txt", "sound/materials.txt", FCVAR_SERVER };
+cvar_t sentences_txt = { "sentences_txt", "sound/sentences.txt", FCVAR_SERVER };
+
 
 
 void UTIL_CoopPlayerMessage( CBaseEntity *pPlayer, int channel, float time, unsigned int color1, unsigned int color2, float x, float y,  const char *format, ... )
@@ -858,6 +877,8 @@ int UTIL_CheckForEntTools( edict_t *pent )
 	return 0;
 }
 
+
+
 int UTIL_CoopCheckSpawn( edict_t *pent )
 {
 	if( mp_checkentities.value )
@@ -907,4 +928,23 @@ int UTIL_CoopCheckSpawn( edict_t *pent )
 		}
 	}
 	return 0;
+}
+
+void COOP_RegisterCVars()
+{
+	CVAR_REGISTER( &mp_coop );
+	CVAR_REGISTER( &mp_coop_changelevel );
+	CVAR_REGISTER( &mp_coop_nofriendlyfire );
+	CVAR_REGISTER( &mp_coop_disabledmap );
+	CVAR_REGISTER( &mp_unduck );
+	CVAR_REGISTER( &mp_semclip );
+	CVAR_REGISTER( &mp_coop_reconnect_hack );
+	CVAR_REGISTER( &mp_coop_noangry );
+	CVAR_REGISTER( &mp_spectator );
+	CVAR_REGISTER( &mp_coop_checkpoints );
+	CVAR_REGISTER( &mp_skipdefaults );
+	CVAR_REGISTER( &mp_coop_strongcheckpoints );
+
+	CVAR_REGISTER( &sentences_txt );
+	CVAR_REGISTER( &materials_txt );
 }

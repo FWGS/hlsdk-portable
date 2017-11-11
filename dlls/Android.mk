@@ -52,6 +52,7 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
            effects.cpp \
            egon.cpp \
            explode.cpp \
+		   enttools.cpp \
            flyingmonster.cpp \
            func_break.cpp \
            func_tank.cpp \
@@ -134,7 +135,8 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
 	   ../pm_shared/pm_math.c \
 	   ../pm_shared/pm_shared.c \
 	   coop.cpp \
-	   gateofbabylon.cpp
+	   gateofbabylon.cpp \
+	   gravgunmod.cpp \
 #	   ../game_shared/voice_gamemgr.cpp
 
 LOCAL_LDLIBS := -llog
