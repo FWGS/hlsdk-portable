@@ -43,33 +43,33 @@ public:
 class CBullsquid : public CBaseMonster
 {
 public:
-	void Spawn( void );
-	void Precache( void );
-	void SetYawSpeed( void );
+	virtual void Spawn( void );
+	virtual void Precache( void );
+	virtual void SetYawSpeed( void );
 	int ISoundMask( void );
-	int Classify( void );
-	void HandleAnimEvent( MonsterEvent_t *pEvent );
-	void IdleSound( void );
-	void PainSound( void );
-	void DeathSound( void );
-	void AlertSound( void );
+	virtual int Classify( void );
+	virtual void HandleAnimEvent( MonsterEvent_t *pEvent );
+	virtual void IdleSound( void );
+	virtual void PainSound( void );
+	virtual void DeathSound( void );
+	virtual void AlertSound( void );
 	void AttackSound( void );
-	void StartTask( Task_t *pTask );
+	virtual void StartTask( Task_t *pTask );
 	void RunTask( Task_t *pTask );
-	BOOL CheckMeleeAttack1( float flDot, float flDist );
-	BOOL CheckMeleeAttack2( float flDot, float flDist );
-	BOOL CheckRangeAttack1( float flDot, float flDist );
-	void RunAI( void );
+	virtual BOOL CheckMeleeAttack1( float flDot, float flDist );
+	virtual BOOL CheckMeleeAttack2( float flDot, float flDist );
+	virtual BOOL CheckRangeAttack1( float flDot, float flDist );
+	virtual void RunAI( void );
 	BOOL FValidateHintType( short sHint );
-	Schedule_t *GetSchedule( void );
-	Schedule_t *GetScheduleOfType( int Type );
-	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
+	virtual Schedule_t *GetSchedule( void );
+	virtual Schedule_t *GetScheduleOfType( int Type );
+	virtual int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
 	int IRelationship( CBaseEntity *pTarget );
 	int IgnoreConditions( void );
 	MONSTERSTATE GetIdealState( void );
 
-	int Save( CSave &save ); 
-	int Restore( CRestore &restore );
+	virtual int Save( CSave &save ); 
+	virtual int Restore( CRestore &restore );
 
 	CUSTOM_SCHEDULES
 	static TYPEDESCRIPTION m_SaveData[];

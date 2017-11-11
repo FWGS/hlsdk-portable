@@ -73,6 +73,9 @@ public:
 	// Override these to set behavior
 	Schedule_t *GetSchedule(void);
 
+	void DeathSound( void );
+	void PainSound( void );
+
 	void TalkInit(void);
 	void TraceAttack(entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType);
 	void Killed(entvars_t *pevAttacker, int iGib);
@@ -217,15 +220,15 @@ void COtis::Precache()
 {
 	PRECACHE_MODEL("models/otis.mdl");
 
-	PRECACHE_SOUND("barney/desert_eagle_fire.wav");
+	PRECACHE_SOUND("weapons/desert_eagle_fire.wav");
 
-	PRECACHE_SOUND("barney/ba_pain1.wav");
-	PRECACHE_SOUND("barney/ba_pain2.wav");
-	PRECACHE_SOUND("barney/ba_pain3.wav");
+	PRECACHE_SOUND("otis/ba_pain1.wav");
+	PRECACHE_SOUND("otis/ba_pain2.wav");
+	PRECACHE_SOUND("otis/ba_pain3.wav");
 
-	PRECACHE_SOUND("barney/ba_die1.wav");
-	PRECACHE_SOUND("barney/ba_die2.wav");
-	PRECACHE_SOUND("barney/ba_die3.wav");
+	PRECACHE_SOUND("otis/ba_die1.wav");
+	PRECACHE_SOUND("otis/ba_die2.wav");
+	PRECACHE_SOUND("otis/ba_die3.wav");
 
 	// every new otis must call this, otherwise
 	// when a level is loaded, nobody will talk (time is reset to 0)
@@ -348,6 +351,48 @@ void COtis::TraceAttack(entvars_t *pevAttacker, float flDamage, Vector vecDir, T
 	CTalkMonster::TraceAttack(pevAttacker, flDamage, vecDir, ptr, bitsDamageType);
 }
 
+//=========================================================
+// PainSound
+//=========================================================
+void COtis::PainSound( void )
+{
+	if( gpGlobals->time < m_painTime )
+		return;
+
+	m_painTime = gpGlobals->time + RANDOM_FLOAT( 0.5, 0.75 );
+
+	switch( RANDOM_LONG( 0, 2 ) )
+	{
+	case 0:
+		EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, "otis/ba_pain1.wav", 1, ATTN_NORM, 0, GetVoicePitch() );
+		break;
+	case 1:
+		EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, "otis/ba_pain2.wav", 1, ATTN_NORM, 0, GetVoicePitch() );
+		break;
+	case 2:
+		EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, "otis/ba_pain3.wav", 1, ATTN_NORM, 0, GetVoicePitch() );
+		break;
+	}
+}
+
+//=========================================================
+// DeathSound 
+//=========================================================
+void COtis::DeathSound( void )
+{
+	switch( RANDOM_LONG( 0, 2 ) )
+	{
+	case 0:
+		EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, "otis/ba_die1.wav", 1, ATTN_NORM, 0, GetVoicePitch() );
+		break;
+	case 1:
+		EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, "otis/ba_die2.wav", 1, ATTN_NORM, 0, GetVoicePitch() );
+		break;
+	case 2:
+		EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, "otis/ba_die3.wav", 1, ATTN_NORM, 0, GetVoicePitch() );
+		break;
+	}
+}
 
 void COtis::Killed(entvars_t *pevAttacker, int iGib)
 {

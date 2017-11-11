@@ -129,7 +129,8 @@ set (SVDLL_SOURCES
 	zombie.cpp
 	CAd/displacer.cpp
 	CAd/eagle.cpp
-	CAd/gonome
+	CAd/helmet.cpp
+	CAd/gonome.cpp
 	CAd/otis.cpp
 	../pm_shared/pm_debug.c
 	../pm_shared/pm_math.c

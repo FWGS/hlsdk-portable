@@ -24,14 +24,14 @@
 class CBarney : public CTalkMonster
 {
 public:
-	void Spawn( void );
-	void Precache( void );
+	virtual void Spawn( void );
+	virtual void Precache( void );
 	void SetYawSpeed( void );
 	int ISoundMask( void );
-	void BarneyFirePistol( void );
-	void AlertSound( void );
+	virtual void BarneyFirePistol( void );
+	virtual void AlertSound( void );
 	int Classify( void );
-	void HandleAnimEvent( MonsterEvent_t *pEvent );
+	virtual void HandleAnimEvent( MonsterEvent_t *pEvent );
 
 	void RunTask( Task_t *pTask );
 	void StartTask( Task_t *pTask );
@@ -39,20 +39,20 @@ public:
 	int TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
 	BOOL CheckRangeAttack1( float flDot, float flDist );
 
-	void DeclineFollowing( void );
+	virtual void DeclineFollowing( void );
 
 	// Override these to set behavior
 	Schedule_t *GetScheduleOfType( int Type );
-	Schedule_t *GetSchedule( void );
+	virtual Schedule_t *GetSchedule( void );
 	MONSTERSTATE GetIdealState( void );
 
-	void DeathSound( void );
-	void PainSound( void );
+	virtual void DeathSound( void );
+	virtual void PainSound( void );
 
-	void TalkInit( void );
+	virtual void TalkInit( void );
 
-	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType);
-	void Killed( entvars_t *pevAttacker, int iGib );
+	virtual void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType);
+	virtual void Killed( entvars_t *pevAttacker, int iGib );
 
 	virtual int Save( CSave &save );
 	virtual int Restore( CRestore &restore );
