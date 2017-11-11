@@ -135,7 +135,7 @@ int Ent_CheckEntitySpawn( edict_t *pent )
 	if( mp_checkentities.value )
 	{
 		int index = ENTINDEX( pent );
-		static uint counter, lastgc;
+		static unsigned int counter, lastgc;
 		counter++;
 
 
