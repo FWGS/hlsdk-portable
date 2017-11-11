@@ -83,7 +83,7 @@ BOOL ClientConnect( edict_t *pEntity, const char *pszName, const char *pszAddres
 		CBasePlayer *pl = (CBasePlayer *)CBaseEntity::Instance( pEntity ) ;
 		if( pl )
 		{
-			pl->m_state = STATE_UNINITIALIZED;
+			pl->gravgunmod_data.m_state = STATE_UNINITIALIZED;
 			pl->RemoveAllItems( TRUE );
 			UTIL_BecomeSpectator( pl );
 		}
@@ -140,7 +140,7 @@ void ClientDisconnect( edict_t *pEntity )
 	{
 		CBasePlayer *pPlayer = (CBasePlayer*)CBaseEntity::Instance( pEntity );
 		if( pPlayer )
-			pPlayer->m_state = STATE_UNINITIALIZED;
+			pPlayer->gravgunmod_data.m_state = STATE_UNINITIALIZED;
 	}
 
 }
@@ -219,20 +219,13 @@ void ClientPutInServer( edict_t *pEntity )
 
 	pPlayer = GetClassPtr((CBasePlayer *)pev);
 	pPlayer->SetCustomDecalFrames(-1); // Assume none;
-	if( mp_coop.value && pPlayer->m_state == STATE_UNINITIALIZED )
-		g_engfuncs.pfnQueryClientCvarValue2( pEntity, "touch_enable", 111 );
 
-	pPlayer->m_state = STATE_CONNECTED;
+	GGM_ClientPutinServer( pEntity, pPlayer );
 
 	// Allocate a CBasePlayer for pev, and call spawn
 	pPlayer->Spawn();
 
-	// AGHL-like spectator
-	if( mp_spectator.value )
-	{
-		pPlayer->RemoveAllItems( TRUE );
-		UTIL_BecomeSpectator( pPlayer );
-	}
+	GGM_ClientFirstSpawn( pPlayer );
 
 	// Reset interpolation during first frame
 	pPlayer->pev->effects |= EF_NOINTERP;
@@ -614,7 +607,7 @@ void ClientUserInfoChanged( edict_t *pEntity, char *infobuffer )
 		g_engfuncs.pfnSetClientKeyValue( ENTINDEX(pEntity), infobuffer, "name", sName );
 
 		// prevent phantom nickname changed messages
-		if( mp_coop.value && ((CBasePlayer *)pEntity->pvPrivateData)->m_state == STATE_UNINITIALIZED )
+		if( mp_coop.value && ((CBasePlayer *)pEntity->pvPrivateData)->gravgunmod_data.m_state == STATE_UNINITIALIZED )
 			return;
 
 		char text[256];
@@ -711,7 +704,7 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 			// reset all players state
 			if( plr )
 			{
-				plr->m_state = STATE_UNINITIALIZED;
+				plr->gravgunmod_data.m_state = STATE_UNINITIALIZED;
 				plr->RemoveAllItems( TRUE );
 				UTIL_BecomeSpectator( plr );
 				//plr->Spawn();
@@ -1917,7 +1910,7 @@ void CvarValue2( const edict_t *pEnt, int requestID, const char *cvarName, const
 	if( mp_coop.value && pEnt && requestID == 111  && FStrEq( cvarName , "touch_enable" ) && atoi( value) )
 	{
 		CBasePlayer *player = (CBasePlayer * ) CBaseEntity::Instance( (edict_t*)pEnt );
-		player->m_fTouchMenu = !!atof( value );
+		player->gravgunmod_data.m_fTouchMenu = !!atof( value );
 		CLIENT_COMMAND((edict_t*)pEnt, "touch_addbutton \"_coopm\" \"*black\" \"coopmenu\" 0 0.05 0.15 0.11 0 0 0 128 335\ntouch_addbutton \"_coopmt\" \"#COOP MENU\" \"\" 0 0.05 0.16 0.11 255 255 127 255 79 2\nm1\n");
 	}
 

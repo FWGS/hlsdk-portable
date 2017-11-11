@@ -83,26 +83,7 @@ enum sbar_data
 
 #define CHAT_INTERVAL 1.0f
 
-enum PlayerState
-{
-	STATE_UNINITIALIZED = 0,
-	STATE_CONNECTED,
-	STATE_SPECTATOR_BEGIN,
-	STATE_SPAWNED,
-	STATE_SPECTATOR,
-	STATE_POINT_SELECT
-};
-
-enum PlayerMenuState
-{
-	MENUSTATE_NONE = 0,
-	MENUSTATE_COOPMENU,
-	MENUSTATE_COOPMENU_SPEC,
-	MENUSTATE_CHECKPOINT,
-	MENUSTATE_GLOBAL,
-	MENUSTATE_LOCAL_CONFIRM
-};
-
+#include "gravgunmod.h"
 #include "whandle.h"
  
 class CBasePlayer : public CBaseMonster
@@ -332,14 +313,8 @@ public:
 	float m_flNextChatTime;
 
 	virtual float TouchGravGun( CBaseEntity *attacker, int stage );
-	float m_flSpawnTime;
-	PlayerState m_state;
-	bool m_fTouchMenu;
-	int m_iMenuState;
-	int m_iLocalConfirm;
-	int m_iConfirmKey;
-	int m_iEnttoolsMonsters;
-	float m_fEnttoolsMonsterTime;
+
+	struct GGMData gravgunmod_data;
 	virtual void Touch( CBaseEntity *pOther );
 };
 

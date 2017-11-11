@@ -49,6 +49,8 @@ CBaseEntity
 #include "monsterevent.h"
 #endif
 
+#include "enttools.h"
+
 // C functions for external declarations that call the appropriate C++ methods
 
 #include "exportdef.h"
@@ -350,6 +352,8 @@ public:
 
 	enum EGON_FIRESTATE { FIRE_OFF, FIRE_CHARGE };
 	int m_fireState;
+
+	EntoolsEntData enttools_data;
 };
 
 // Ugly technique to override base member functions

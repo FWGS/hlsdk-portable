@@ -206,7 +206,7 @@ void UTIL_BecomeSpectator( CBasePlayer *pPlayer )
 
 void UTIL_SpawnPlayer( CBasePlayer *pPlayer )
 {
-	pPlayer->m_state = STATE_SPAWNED;
+	pPlayer->gravgunmod_data.m_state = STATE_SPAWNED;
 	pPlayer->m_iRespawnFrames = 0;
 	pPlayer->pev->effects &= ~EF_NODRAW;
 
@@ -336,9 +336,9 @@ void UTIL_CoopLocalConfirmMenu(CBasePlayer *pPlayer)
 			"Единая Россия"
 		};
 
-		menu[pPlayer->m_iConfirmKey = RANDOM_LONG(2,4)] = "Confirm";
+		menu[pPlayer->gravgunmod_data.m_iConfirmKey = RANDOM_LONG(2,4)] = "Confirm";
 		UTIL_CoopShowMenu(pPlayer, "Confirm changing map BACK (NOT RECOMMENDED)?", ARRAYSIZE(menu), menu);
-		pPlayer->m_iMenuState = MENUSTATE_LOCAL_CONFIRM;
+		pPlayer->gravgunmod_data.m_iMenuState = MENUSTATE_LOCAL_CONFIRM;
 }
 
 
@@ -422,7 +422,7 @@ void GlobalMenu::ShowGlobalMenu( const char *title, int count, const char **menu
 			count2++;
 			CBasePlayer *player = (CBasePlayer *) plr;
 			UTIL_CoopShowMenu( player, title, count, menu, 30 );
-			player->m_iMenuState = MENUSTATE_GLOBAL;
+			player->gravgunmod_data.m_iMenuState = MENUSTATE_GLOBAL;
 
 		}
 	}
@@ -434,9 +434,9 @@ void GlobalMenu::ConfirmMenu( CBasePlayer *pPlayer, CBaseEntity *trigger, const 
 {
 	if( g_iMenu && gpGlobals->time - m_flTime < 30 )
 		return; // wait 30s befor new confirm vote
-	if( pPlayer->m_iMenuState == MENUSTATE_LOCAL_CONFIRM )
+	if( pPlayer->gravgunmod_data.m_iMenuState == MENUSTATE_LOCAL_CONFIRM )
 		return;
-	if( pPlayer->m_iLocalConfirm < 3 )
+	if( pPlayer->gravgunmod_data.m_iLocalConfirm < 3 )
 	{
 		UTIL_CoopLocalConfirmMenu( pPlayer );
 		return;
@@ -460,7 +460,7 @@ void GlobalMenu::ConfirmMenu( CBasePlayer *pPlayer, CBaseEntity *trigger, const 
 
 void UTIL_CoopCheckpointMenu( CBasePlayer *pPlayer )
 {
-	//if( pPlayer->m_state == STATE_SPAWNED )
+	//if( pPlayer->gravgunmod_data.m_state == STATE_SPAWNED )
 	{
 
 		if( mp_coop_checkpoints.value )
@@ -469,12 +469,12 @@ void UTIL_CoopCheckpointMenu( CBasePlayer *pPlayer )
 				"New checkpoint"
 			};
 			int i;
-			if( pPlayer->m_state == STATE_SPECTATOR || pPlayer->m_state == STATE_SPECTATOR_BEGIN )
+			if( pPlayer->gravgunmod_data.m_state == STATE_SPECTATOR || pPlayer->gravgunmod_data.m_state == STATE_SPECTATOR_BEGIN )
 				menu[0] = "Just spawn";
 			for( i = 1; g_checkpoints[i-1].time; i++ )
 				menu[i] = g_checkpoints[i-1].str;
 			UTIL_CoopShowMenu( pPlayer, "Select checkpoint", i, menu );
-			pPlayer->m_iMenuState = MENUSTATE_CHECKPOINT;
+			pPlayer->gravgunmod_data.m_iMenuState = MENUSTATE_CHECKPOINT;
 		}
 	}
 }
@@ -516,9 +516,9 @@ void UTIL_CoopVoteMenu( CBasePlayer *pPlayer )
 
 void UTIL_CoopMenu( CBasePlayer *pPlayer )
 {
-	if( pPlayer->m_state == STATE_SPAWNED )
+	if( pPlayer->gravgunmod_data.m_state == STATE_SPAWNED )
 	{
-		pPlayer->m_iMenuState = MENUSTATE_COOPMENU;
+		pPlayer->gravgunmod_data.m_iMenuState = MENUSTATE_COOPMENU;
 		if( mp_coop.value )
 		{
 			const char *menu[] = {
@@ -534,9 +534,9 @@ void UTIL_CoopMenu( CBasePlayer *pPlayer )
 			UTIL_CoopShowMenu( pPlayer, "Coop menu", count1, menu );
 		}
 	}
-	else if ( pPlayer->m_state == STATE_SPECTATOR )
+	else if ( pPlayer->gravgunmod_data.m_state == STATE_SPECTATOR )
 	{
-		pPlayer->m_iMenuState = MENUSTATE_COOPMENU_SPEC;
+		pPlayer->gravgunmod_data.m_iMenuState = MENUSTATE_COOPMENU_SPEC;
 		if( mp_coop.value )
 		{
 			const char *menu[] = {
@@ -551,7 +551,7 @@ void UTIL_CoopMenu( CBasePlayer *pPlayer )
 
 void UTIL_CoopProcessMenu( CBasePlayer *pPlayer, int imenu )
 {
-			switch( pPlayer->m_iMenuState )
+			switch( pPlayer->gravgunmod_data.m_iMenuState )
 			{
 				case MENUSTATE_COOPMENU_SPEC:
 					if( imenu == 1 )
@@ -561,17 +561,17 @@ void UTIL_CoopProcessMenu( CBasePlayer *pPlayer, int imenu )
 						else
 						{
 							UTIL_SpawnPlayer( pPlayer );
-							pPlayer->m_state = STATE_SPAWNED;
+							pPlayer->gravgunmod_data.m_state = STATE_SPAWNED;
 						}
 					}
 					if( imenu == 2 )
 					{
-						pPlayer->m_state = STATE_SPECTATOR;
+						pPlayer->gravgunmod_data.m_state = STATE_SPECTATOR;
 						CLIENT_COMMAND( pPlayer->edict(), "touch_show _coopm*\n" );
 					}
 				break;
 				case MENUSTATE_COOPMENU:
-					if( pPlayer->m_state != STATE_SPAWNED )
+					if( pPlayer->gravgunmod_data.m_state != STATE_SPAWNED )
 						break;
 					if( imenu == 1 )
 					{
@@ -586,7 +586,7 @@ void UTIL_CoopProcessMenu( CBasePlayer *pPlayer, int imenu )
 					{
 						pPlayer->RemoveAllItems( TRUE );
 						UTIL_BecomeSpectator( pPlayer );
-						pPlayer->m_state = STATE_SPECTATOR;
+						pPlayer->gravgunmod_data.m_state = STATE_SPECTATOR;
 					}
 					if( imenu == 4 )
 					{
@@ -604,7 +604,7 @@ void UTIL_CoopProcessMenu( CBasePlayer *pPlayer, int imenu )
 				case MENUSTATE_CHECKPOINT:
 					if( imenu == 1 )
 					{
-						if( pPlayer->m_state != STATE_SPAWNED )
+						if( pPlayer->gravgunmod_data.m_state != STATE_SPAWNED )
 							UTIL_SpawnPlayer( pPlayer );
 						else if( !UTIL_CoopIsBadPlayer( pPlayer ) )
 							UTIL_CoopNewCheckpoint( pPlayer->pev );
@@ -618,16 +618,16 @@ void UTIL_CoopProcessMenu( CBasePlayer *pPlayer, int imenu )
 					}
 				break;
 				case MENUSTATE_LOCAL_CONFIRM:
-					if( imenu - 1 == pPlayer->m_iConfirmKey )
-						pPlayer->m_iLocalConfirm++;
+					if( imenu - 1 == pPlayer->gravgunmod_data.m_iConfirmKey )
+						pPlayer->gravgunmod_data.m_iLocalConfirm++;
 					else
-						pPlayer->m_iLocalConfirm = 0;
-					pPlayer->m_iMenuState = MENUSTATE_NONE;
+						pPlayer->gravgunmod_data.m_iLocalConfirm = 0;
+					pPlayer->gravgunmod_data.m_iMenuState = MENUSTATE_NONE;
 				break;
 				default:
 				break;
 			}
-	//pPlayer->m_iMenuState = MENUSTATE_NONE;
+	//pPlayer->gravgunmod_data.m_iMenuState = MENUSTATE_NONE;
 }
 
 bool UTIL_CoopRestorePlayerCoords(CBaseEntity *player, Vector *origin, Vector *angles )
@@ -772,7 +772,7 @@ extern int gmsgShowMenu;
 
 void UTIL_CoopShowMenu( CBasePlayer *pPlayer, const char *title, int count, const char **slot, signed char time )
 {
-	if( pPlayer->m_fTouchMenu)
+	if( pPlayer->gravgunmod_data.m_fTouchMenu)
 	{
 		char buf[256];
 		#define MENU_STR(VAR) (#VAR)
@@ -831,103 +831,6 @@ bool UTIL_CoopConfirmMenu(CBaseEntity *pTrigger, CBaseEntity *pActivator, int co
 			//return;
 	}
 	return true;
-}
-
-
-#include <string.h>
-/* @NOPEDANTRY: ignore use of reserved identifier */
-static char *strrstr(const char *x, const char *y) {
-char *prev = NULL;
-char *next;
-if (*y == '\0')
-return (char*)strchr(x, '\0');
-while ((next = (char*)strstr(x, y)) != NULL) {
-prev = next;
-x = next + 1;
-}
-return prev;
-}
-
-
-int UTIL_CheckForEntTools( edict_t *pent )
-{
-	if( pent->v.targetname )
-	{
-		char *s = (char*)STRING( pent->v.targetname );
-		char str[256];
-		strcpy( str, s );
-		s = strrstr( str, "_e" );
-		if( s )
-		{
-			*s = 0;
-			s = s + 2;
-			if( atoi(s) == ENTINDEX( pent ) )
-			{
-				s = strrstr( str, "_");
-				if( s )
-				{
-					int userid = atoi( s + 1 );
-					for( int i = 1; i < gpGlobals->maxClients; i++ )
-						if(  userid == g_engfuncs.pfnGetPlayerUserId( INDEXENT( i ) ) )
-							 return i;
-				}
-			}
-		}
-	}
-	return 0;
-}
-
-
-
-int UTIL_CoopCheckSpawn( edict_t *pent )
-{
-	if( mp_checkentities.value )
-	{
-		const char *szClassName = NULL;
-
-		if( !pent->v.classname )
-			return 0;
-
-		szClassName = STRING( pent->v.classname );
-
-		if( !szClassName || !szClassName[0] )
-			return 0;
-
-		if( strstr( szClassName, "monster_") )
-		{
-			CBasePlayer *pPlayer = (CBasePlayer*)UTIL_PlayerByIndex( UTIL_CheckForEntTools( pent ) );
-
-			if( pPlayer )
-			{
-				if( UTIL_CoopIsBadPlayer( pPlayer ) )
-				{
-					pent->v.flags = FL_KILLME;
-					return -1;
-				}
-
-				if( gpGlobals->time - pPlayer->m_fEnttoolsMonsterTime < 5 )
-				{
-					UTIL_CoopKickPlayer( pPlayer );
-					pent->v.flags = FL_KILLME;
-					return -1;
-				}
-
-				if( gpGlobals->time - pPlayer->m_fEnttoolsMonsterTime > 120 )
-					pPlayer->m_iEnttoolsMonsters = 0;
-
-				if( pPlayer->m_iEnttoolsMonsters > 5 )
-				{
-					UTIL_CoopKickPlayer( pPlayer );
-					pent->v.flags = FL_KILLME;
-					return -1;
-				}
-				pPlayer->m_iEnttoolsMonsters++;
-				pPlayer->m_fEnttoolsMonsterTime = gpGlobals->time;
-			}
-
-		}
-	}
-	return 0;
 }
 
 void COOP_RegisterCVars()

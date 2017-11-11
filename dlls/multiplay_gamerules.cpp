@@ -129,7 +129,7 @@ BOOL CHalfLifeMultiplay::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 	{
 		if( FStrEq( pcmd, "joincoop" ) )
 		{
-			if( pPlayer->m_state == STATE_SPECTATOR_BEGIN )
+			if( pPlayer->gravgunmod_data.m_state == STATE_SPECTATOR_BEGIN )
 				UTIL_SpawnPlayer( pPlayer );
 			else
 				ClientPrint( pPlayer->pev, HUD_PRINTCONSOLE, "You cannot use joincoop now!\n\n" );
@@ -509,15 +509,15 @@ void CHalfLifeMultiplay::InitHUD( CBasePlayer *pl )
 		MESSAGE_END();
 	}
 
-	if( pl->m_state <= STATE_CONNECTED )
+	if( pl->gravgunmod_data.m_state <= STATE_CONNECTED )
 		ClientPutInServer( pl->edict() );
 
 	if( mp_coop.value )
 	{
 
-		if( pl->m_state == STATE_SPECTATOR_BEGIN )
+		if( pl->gravgunmod_data.m_state == STATE_SPECTATOR_BEGIN )
 		{
-			pl->m_iMenuState = MENUSTATE_COOPMENU_SPEC;
+			pl->gravgunmod_data.m_iMenuState = MENUSTATE_COOPMENU_SPEC;
 
 			if( mp_coop.value )
 			{
@@ -601,10 +601,10 @@ BOOL CHalfLifeMultiplay::FPlayerCanTakeDamage( CBasePlayer *pPlayer, CBaseEntity
 //=========================================================
 void CHalfLifeMultiplay::PlayerThink( CBasePlayer *pPlayer )
 {
-	if( !mp_coop.value && pPlayer->m_state == STATE_SPECTATOR_BEGIN )
+	if( !mp_coop.value && pPlayer->gravgunmod_data.m_state == STATE_SPECTATOR_BEGIN )
 		if( pPlayer->m_afButtonPressed & ( IN_DUCK | IN_ATTACK | IN_ATTACK2 | IN_USE | IN_JUMP ) )
 			UTIL_SpawnPlayer( pPlayer );
-	if( pPlayer->m_state == STATE_UNINITIALIZED )
+	if( pPlayer->gravgunmod_data.m_state == STATE_UNINITIALIZED )
 		if( pPlayer->m_afButtonPressed || pPlayer->pev->button )
 		{
 			ClientPutInServer( pPlayer->edict() );
@@ -614,7 +614,7 @@ void CHalfLifeMultiplay::PlayerThink( CBasePlayer *pPlayer )
 			return;
 		}
 
-	if( pPlayer->m_state == STATE_POINT_SELECT )
+	if( pPlayer->gravgunmod_data.m_state == STATE_POINT_SELECT )
 	{
 		if( pPlayer->m_afButtonPressed & ( IN_DUCK | IN_ATTACK | IN_ATTACK2 | IN_USE | IN_JUMP ) )
 			pPlayer->Spawn();
@@ -640,21 +640,21 @@ void CHalfLifeMultiplay::PlayerSpawn( CBasePlayer *pPlayer )
 	BOOL		addDefault;
 	CBaseEntity	*pWeaponEntity = NULL;
 
-	if( pPlayer->m_state == STATE_UNINITIALIZED )
+	if( pPlayer->gravgunmod_data.m_state == STATE_UNINITIALIZED )
 	{
 		ClientPutInServer( pPlayer->edict() );
 		return;
 	}
 
-	if( mp_spectator.value && pPlayer->m_state == STATE_CONNECTED )
+	if( mp_spectator.value && pPlayer->gravgunmod_data.m_state == STATE_CONNECTED )
 	{
-		pPlayer->m_state = STATE_SPECTATOR_BEGIN;
+		pPlayer->gravgunmod_data.m_state = STATE_SPECTATOR_BEGIN;
 		pPlayer->RemoveAllItems( TRUE );
 		UTIL_BecomeSpectator( pPlayer );
 		return;
 	}
 
-	if( mp_coop_changelevel.value && pPlayer->m_state == STATE_POINT_SELECT && !(pPlayer->pev->flags & FL_SPECTATOR) )
+	if( mp_coop_changelevel.value && pPlayer->gravgunmod_data.m_state == STATE_POINT_SELECT && !(pPlayer->pev->flags & FL_SPECTATOR) )
 	{
 		pPlayer->RemoveAllItems( TRUE );
 		UTIL_BecomeSpectator( pPlayer );
@@ -662,7 +662,7 @@ void CHalfLifeMultiplay::PlayerSpawn( CBasePlayer *pPlayer )
 	}
 
 	if( !mp_coop_changelevel.value )
-		pPlayer->m_state = STATE_SPAWNED;
+		pPlayer->gravgunmod_data.m_state = STATE_SPAWNED;
 
 	g_fPause = false;
 

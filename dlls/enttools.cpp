@@ -2,19 +2,15 @@
 #include "util.h"
 #include "cbase.h"
 #include "game.h"
+#include "player.h"
 
 #define Ent_IsValidEdict( e )	( e && !e->free )
 
-bool Q_isdigit( const char *str )
-{
-	if( str && *str )
-	{
-		while( isdigit( *str )) str++;
-		if( !*str ) return true;
-	}
-	return false;
-}
-
+// stop any actions with players
+static cvar_t mp_enttools_players = { "mp_enttools_players", "0", FCVAR_SERVER };
+// prevent ent_fire with entities not created with enttools
+static cvar_t mp_enttools_lockmapentities = { "mp_enttools_lockmapentities", "0", FCVAR_SERVER };
+static cvar_t mp_enttools_checkowner = { "mp_enttools_checkowner", "0", FCVAR_SERVER };
 bool Q_stricmpext( const char *pattern, const char *text );
 
 static bool Q_starcmp( const char *pattern, const char *text )
@@ -61,6 +57,114 @@ bool Q_stricmpext( const char *pattern, const char *text )
 				return false;
 		}
 	}
+	return true;
+}
+
+bool Q_isdigit( const char *str )
+{
+	if( str && *str )
+	{
+		while( isdigit( *str )) str++;
+		if( !*str ) return true;
+	}
+	return false;
+}
+
+typedef struct entblacklist_s
+{
+	struct entblacklist_s *next;
+	char pattern[32];
+	int limit;
+	int behaviour;
+} entblacklist_t;
+
+entblacklist_t *entblacklist;
+
+void Ent_AddToBlacklist_f( void )
+{
+	if( CMD_ARGC() != 4 )
+	{
+		ALERT( at_console, "Usage: mp_enttools_blacklist <pattern> <per minute limit> <behaviour (0 - block, 1 - kick, 2 - ban)>\n"  );
+	}
+
+	entblacklist_t *node = (entblacklist_t *)malloc( sizeof( entblacklist_t ) );
+
+	node->next = entblacklist;
+	strncpy( node->pattern, CMD_ARGV(1), 31 );
+	node->pattern[32] = 0;
+	node->limit = atoi( CMD_ARGV(2) );
+	node->behaviour = atoi( CMD_ARGV( 3 ) );
+	entblacklist = node;
+}
+
+bool Ent_CheckFire( edict_t *player, edict_t *ent, const char *command )
+{
+	if( !mp_enttools_players.value && ENTINDEX( ent ) < gpGlobals->maxClients + 1 )
+		return false;
+
+	CBaseEntity *pEntity = CBaseEntity::Instance( ent );
+
+	if( pEntity )
+	{
+		if( mp_enttools_lockmapentities.value && !pEntity->enttools_data.enttools )
+			return false;
+
+		// only if player online
+		if( mp_enttools_checkowner.value == 1 )
+		{
+			if( GGM_PlayerByID( pEntity->enttools_data.ownerid ) )
+				return !strcmp( pEntity->enttools_data.ownerid, GGM_GetPlayerID( player ) );
+		}
+
+		if( mp_enttools_checkowner.value == 2 )
+		{
+				return !strcmp( pEntity->enttools_data.ownerid, GGM_GetPlayerID( player ) );
+		}
+	}
+
+	return true;
+}
+
+bool Ent_CheckCreate( edict_t *player, const char *classname )
+{
+	CBasePlayer *p = (CBasePlayer*)CBaseEntity::Instance(player);
+	entblacklist_t *node;
+
+	if( !p )
+		return false;
+
+	if( p->gravgunmod_data.m_flEntScope > 1 )
+		return false;
+
+	if( gpGlobals->time - p->gravgunmod_data.m_flEntTime > 60 )
+	{
+		p->gravgunmod_data.m_flEntTime = gpGlobals->time;
+		p->gravgunmod_data.m_flEntScope = 0;
+	}
+
+	for( node = entblacklist; node; node = node->next )
+	{
+		if( Q_stricmpext(node->pattern, classname ) )
+		{
+			if( !node->limit || ( p->gravgunmod_data.m_flEntScope + 1.0f / (float)node->limit > 1 ) )
+			{
+				// remove all created entities
+				Ent_RunGC( false, true, GGM_GetPlayerID( player ) );
+
+				if( node->behaviour == 2 )
+				{
+					SERVER_COMMAND( UTIL_VarArgs("banid 0 #%d kick\nwriteid\n", GETPLAYERUSERID( player ) ) );
+				}
+				else if( node->behaviour == 1 )
+				{
+					SERVER_COMMAND( UTIL_VarArgs("kick #%d\nwriteid\n", GETPLAYERUSERID( player ) ) );
+				}
+				return false;
+			}
+			p->gravgunmod_data.m_flEntScope += 1.0f / (float)node->limit;
+		}
+	}
+
 	return true;
 }
 
@@ -427,6 +531,9 @@ void Ent_Fire_f( edict_t *player )
 				continue;
 		}
 
+		if( !Ent_CheckFire( player, ent, CMD_ARGV( 2 ) ) )
+			return;
+
 		Ent_ClientPrintf( player, "entity %i\n", i );
 
 		count++;
@@ -649,6 +756,9 @@ void Ent_Create_f( edict_t *player )
 		return;
 	}
 
+	if( !Ent_CheckCreate( player, CMD_ARGV(1) ) )
+		return;
+
 	classname = ALLOC_STRING( CMD_ARGV( 1 ) );
 	ent = CREATE_NAMED_ENTITY( classname );
 
@@ -689,18 +799,19 @@ void Ent_Create_f( edict_t *player )
 	if( !ent->v.targetname )
 	{
 		char newname[256], clientname[256];
+		int j;
 
-		for( i = 0; i < 32; i++ )
+		for( j = 0; j < 32; j++ )
 		{
-			char c = tolower( (STRING( player->v.netname ))[i] );
+			char c = tolower( (STRING( player->v.netname ))[j] );
 			if( c < 'a' || c > 'z' )
 				c = '_';
-			if( !(STRING( player->v.netname ))[i] )
+			if( !(STRING( player->v.netname ))[j] )
 			{
-				clientname[i] = 0;
+				clientname[j] = 0;
 				break;
 			}
-			clientname[i] = c;
+			clientname[j] = c;
 		}
 
 		// generate name based on nick name and index
@@ -739,6 +850,13 @@ void Ent_Create_f( edict_t *player )
 		DispatchKeyValue( ent, &pkvd );
 		if( pkvd.fHandled )
 			Ent_ClientPrintf( player, "value \"%s\" set to \"%s\"!\n", pkvd.szKeyName, pkvd.szValue );
+	}
+
+	CBaseEntity *entity = CBaseEntity::Instance( ent );
+	if( entity )
+	{
+		entity->enttools_data.enttools = true;
+		strcpy( entity->enttools_data.ownerid, GGM_GetPlayerID( player ) );
 	}
 }
 typedef struct ucmd_s
@@ -789,4 +907,8 @@ void ENT_RegisterCVars( void )
 {
 	CVAR_REGISTER( &mp_enttools_enable );
 	CVAR_REGISTER( &mp_enttools_maxfire );
+	CVAR_REGISTER( &mp_enttools_lockmapentities );
+	CVAR_REGISTER( &mp_enttools_checkowner );
+	CVAR_REGISTER( &mp_enttools_players );
+	g_engfuncs.pfnAddServerCommand( "mp_enttools_addblacklist", Ent_AddToBlacklist_f );
 }

@@ -1653,7 +1653,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 					continue;
 
 				// count only players spawned more 30 seconds ago
-				if( plr && plr->IsPlayer() && (pTrain || (gpGlobals->time -((CBasePlayer*)plr)->m_flSpawnTime ) > 30 ) )
+				if( plr && plr->IsPlayer() && (pTrain || (gpGlobals->time -((CBasePlayer*)plr)->gravgunmod_data.m_flSpawnTime ) > 30 ) )
 				{
 					count2++;
 
@@ -1687,7 +1687,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 						UTIL_CoopPrintMessage("%s^7 trying activate changelevel too soon\n", UTIL_CoopPlayerName( pPlayer ));
 						UTIL_CleanSpawnPoint( pPlayer->pev->origin, 50 );
 						m_flRepeatTimer = gpGlobals->time;
-						pPlayer->m_iLocalConfirm = -2;
+						pPlayer->gravgunmod_data.m_iLocalConfirm = -2;
 					}
 
 					UTIL_CoopHudMessage( 1, 5, 0xFF0000FF, 0xFF0000FF, 0, 0.7, "Cannot change level: Not enough players!\nWait 30 sec before you may changelevel!" );
@@ -1776,7 +1776,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 		{
 			CBaseEntity *plr = UTIL_PlayerByIndex( i );
 
-			if( plr && plr->IsPlayer() && ( !FindTriggerTransition( m_szLandmarkName ) || (gpGlobals->time -((CBasePlayer*)plr)->m_flSpawnTime ) > 30  || m_fSkipSpawnCheck ) )
+			if( plr && plr->IsPlayer() && ( !FindTriggerTransition( m_szLandmarkName ) || (gpGlobals->time -((CBasePlayer*)plr)->gravgunmod_data.m_flSpawnTime ) > 30  || m_fSkipSpawnCheck ) )
 			{
 					if( InTransitionVolume( plr, m_szLandmarkName ))
 					{
@@ -1794,7 +1794,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 		ALERT( at_console, "There are %d players in transition volume %s\n", count, m_szLandmarkName );
 			
 	}
-	else if( ( (gpGlobals->time -((CBasePlayer*)pPlayer)->m_flSpawnTime ) < 30 )  && FindTriggerTransition( m_szLandmarkName ) || !InTransitionVolume( pPlayer, m_szLandmarkName ) )
+	else if( ( (gpGlobals->time -((CBasePlayer*)pPlayer)->gravgunmod_data.m_flSpawnTime ) < 30 )  && FindTriggerTransition( m_szLandmarkName ) || !InTransitionVolume( pPlayer, m_szLandmarkName ) )
 	{
 		ALERT( at_console, "Player isn't in the transition volume %s, aborting\n", m_szLandmarkName );
 		if( !m_fSkipSpawnCheck )
@@ -1853,7 +1853,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 			// reset all players state to make it spawn again after restart
 			if( plr )
 			{
-				plr->m_state = STATE_UNINITIALIZED;
+				plr->gravgunmod_data.m_state = STATE_UNINITIALIZED;
 				plr->RemoveAllItems( TRUE );
 				UTIL_BecomeSpectator( plr );
 				// HACK: force perform reconnection

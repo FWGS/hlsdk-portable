@@ -65,9 +65,9 @@ extern EHANDLE				g_pLastSpawn;
 edict_t *CGameRules::GetPlayerSpawnSpot( CBasePlayer *pPlayer )
 {
 	edict_t *pentSpawnSpot = EntSelectSpawnPoint( pPlayer );
-	if( pPlayer->m_state == STATE_POINT_SELECT )
+	if( pPlayer->gravgunmod_data.m_state == STATE_POINT_SELECT )
 	{
-		pPlayer->m_state = STATE_SPAWNED;
+		pPlayer->gravgunmod_data.m_state = STATE_SPAWNED;
 		pPlayer->pev->effects &= ~EF_NODRAW;
 
 		pPlayer->pev->takedamage = DAMAGE_YES;
@@ -104,7 +104,7 @@ edict_t *CGameRules::GetPlayerSpawnSpot( CBasePlayer *pPlayer )
 
 				UTIL_HudMessage( pPlayer, params, "Server cannot select a spawnpoint\nplease fly to it manually\nand press attack button" );
 				// select spawn point
-				pPlayer->m_state = STATE_POINT_SELECT;
+				pPlayer->gravgunmod_data.m_state = STATE_POINT_SELECT;
 				pPlayer->m_afButtonPressed = 0;
 				
 				if(pPlayer->pev->origin.Length() > 8192)

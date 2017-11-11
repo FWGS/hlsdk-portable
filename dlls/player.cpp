@@ -2481,7 +2481,7 @@ void CBasePlayer::PostThink()
 	}
 
 	// Handle Tank controlling
-	if( m_pTank && m_state == STATE_SPAWNED )
+	if( m_pTank && gravgunmod_data.m_state == STATE_SPAWNED )
 	{
 		// if they've moved too far from the gun,  or selected a weapon, unuse the gun
 		if( m_pTank->OnControls( pev ) && !pev->weaponmodel )
@@ -2878,7 +2878,7 @@ void CBasePlayer::Spawn( void )
 	m_lastx = m_lasty = 0;
 
 	m_flNextChatTime = gpGlobals->time;
-	m_flSpawnTime = gpGlobals->time;
+	gravgunmod_data.m_flSpawnTime = gpGlobals->time;
 
 	g_pGameRules->PlayerSpawn( this );
 	g_flSemclipTime = 0;
@@ -3011,7 +3011,7 @@ int CBasePlayer::Restore( CRestore &restore )
 	// restored player has some bugs untill respawned
 	if( mp_coop_changelevel.value )
 	{
-		m_state = STATE_CONNECTED;
+		gravgunmod_data.m_state = STATE_CONNECTED;
 		SetThink( &CBasePlayer::Spawn );
 		pev->nextthink = gpGlobals->time + 0.5;
 	}
