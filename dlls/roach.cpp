@@ -59,6 +59,7 @@ public:
 };
 
 LINK_ENTITY_TO_CLASS( monster_cockroach, CRoach )
+LINK_ENTITY_TO_CLASS( monster_cokroach, CRoach )
 
 //=========================================================
 // ISoundMask - returns a bit mask indicating which types
