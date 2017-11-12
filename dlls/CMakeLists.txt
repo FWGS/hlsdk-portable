@@ -131,6 +131,7 @@ set (SVDLL_SOURCES
 	CAd/eagle.cpp
 	CAd/helmet.cpp
 	CAd/gonome.cpp
+	CAd/massn.cpp
 	CAd/otis.cpp
 	../pm_shared/pm_debug.c
 	../pm_shared/pm_math.c
