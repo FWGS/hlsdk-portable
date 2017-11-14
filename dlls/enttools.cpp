@@ -532,7 +532,7 @@ void Ent_Fire_f( edict_t *player )
 		}
 
 		if( !Ent_CheckFire( player, ent, CMD_ARGV( 2 ) ) )
-			return;
+			continue;
 
 		Ent_ClientPrintf( player, "entity %i\n", i );
 
