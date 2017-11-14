@@ -55,7 +55,7 @@ struct GGMData
 	int m_iConfirmKey;
 	float m_flEntScope;
 	float m_flEntTime;
-	char uid[32];
+	char uid[33];
 };
 
 #endif // GRAVGUNMOD_H

@@ -8,7 +8,7 @@ void ENT_RegisterCVars( void );
 
 struct EntoolsEntData {
 	bool enttools; // created by enttools
-	char ownerid[32];
+	char ownerid[33];
 };
 
 #endif // ENTTOOLS_H

@@ -180,10 +180,10 @@ void GGM_ClientPutinServer(edict_t *pEntity, CBasePlayer *pPlayer)
 	pPlayer->gravgunmod_data.m_state = STATE_CONNECTED;
 
 	const char *uid = GETPLAYERAUTHID( pPlayer->edict() );
-	if( strstr(uid, "PENDING") )
+	if( !uid || strstr(uid, "PENDING") )
 		uid = g_engfuncs.pfnInfoKeyValue( g_engfuncs.pfnGetInfoKeyBuffer( pPlayer->edict() ), "ip" );
 
-	strncpy( pPlayer->gravgunmod_data.uid, uid, 31 );
+	strncpy( pPlayer->gravgunmod_data.uid, uid, 32 );
 	pPlayer->gravgunmod_data.uid[32] = 0;
 	pPlayer->gravgunmod_data.m_flEntTime = 0;
 	pPlayer->gravgunmod_data.m_flEntScope = 0;
