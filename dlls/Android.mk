@@ -126,6 +126,12 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
            world.cpp \
            xen.cpp \
            zombie.cpp \
+	   CAd/displacer.cpp \
+           CAd/eagle.cpp \
+           CAd/helmet.cpp \
+           CAd/gonome.cpp \
+           CAd/massn.cpp \
+           CAd/otis.cpp \
 	   ../pm_shared/pm_debug.c \
 	   ../pm_shared/pm_math.c \
 	   ../pm_shared/pm_shared.c
