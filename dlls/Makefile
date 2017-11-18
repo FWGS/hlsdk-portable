@@ -135,6 +135,7 @@ OBJ = \
 	$(DLL_OBJDIR)/plane.o \
 	$(DLL_OBJDIR)/plats.o \
 	$(DLL_OBJDIR)/player.o \
+	$(DLL_OBJDIR)/playermonster.o \^M
 	$(DLL_OBJDIR)/python.o \
 	$(DLL_OBJDIR)/rat.o \
 	$(DLL_OBJDIR)/roach.o \
