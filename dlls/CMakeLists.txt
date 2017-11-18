@@ -25,7 +25,7 @@ project (SVDLL)
 
 set (SVDLL_LIBRARY server)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_LINUX -DCLIENT_WEAPONS -Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf -D_vsnprintf=vsnprintf -fno-exceptions -w")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_LINUX -DCLIENT_WEAPONS -Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf -D_vsnprintf=vsnprintf -DCROWBAR_IDLE_ANIM -fno-exceptions -w")
 set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS}")
 
 set (SVDLL_SOURCES 
