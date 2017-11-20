@@ -1205,7 +1205,7 @@ void StartFrame( void )
 				if( IS_DEDICATED_SERVER() )
 				{
 					sprintf( msg, "min_bots set to %d\n", min_bots );
-					printf( msg );
+					printf( "%s\n", msg );
 				}
 			}
 			else if( strcmp( cmd, "max_bots" ) == 0 )
@@ -1218,7 +1218,7 @@ void StartFrame( void )
 				if( IS_DEDICATED_SERVER() )
 				{
 					sprintf( msg, "max_bots set to %d\n", max_bots );
-					printf( msg );
+					printf( "%s\n", msg );
 				}
 			}
 			else if( strcmp( cmd, "pause" ) == 0 )
@@ -1232,7 +1232,7 @@ void StartFrame( void )
 				ALERT( at_console, msg );
 
 				if( IS_DEDICATED_SERVER() )
-					printf( msg );
+					printf( "%s\n", msg );
 
 				SERVER_COMMAND( server_cmd );
 			}
@@ -1250,7 +1250,7 @@ void StartFrame( void )
 		{
 			check_server_cmd = gpGlobals->time + 1.0;
 
-			char *cvar_bot = (char *)CVAR_GET_STRING( "bot" );
+			const char *cvar_bot = CVAR_GET_STRING( "bot" );
 
 			if( cvar_bot && cvar_bot[0] )
 			{

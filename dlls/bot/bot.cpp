@@ -64,12 +64,12 @@ BOOL skin_used[MAX_SKINS] = {
    FALSE, FALSE, FALSE, FALSE, FALSE};
 
 // store the names of the models...
-char *bot_skins[MAX_SKINS] = {
+const char *bot_skins[MAX_SKINS] = {
    "barney", "gina", "gman", "gordon", "helmet",
    "hgrunt", "recon", "robo", "scientist", "zombie"};
 
 // store the player names for each of the models...
-char *bot_names[MAX_SKINS] = {
+const char *bot_names[MAX_SKINS] = {
    "Barney", "Gina", "G-Man", "Gordon", "Helmet",
    "H-Grunt", "Recon", "Robo", "Scientist", "Zombie"};
 
@@ -101,13 +101,13 @@ inline char *GET_INFOBUFFER( edict_t *e )
    return (*g_engfuncs.pfnGetInfoKeyBuffer)( e );
 }
 
-inline char *GET_INFO_KEY_VALUE( char *infobuffer, char *key )
+inline char *GET_INFO_KEY_VALUE( const char *infobuffer, const char *key )
 {
    return (g_engfuncs.pfnInfoKeyValue( infobuffer, key ));
 }
 
-inline void SET_CLIENT_KEY_VALUE( int clientIndex, char *infobuffer,
-                                  char *key, char *value )
+inline void SET_CLIENT_KEY_VALUE( int clientIndex, const char *infobuffer,
+                                  const char *key, const char *value )
 {
    (*g_engfuncs.pfnSetClientKeyValue)( clientIndex, infobuffer, key, value );
 }
@@ -221,7 +221,7 @@ void BotCreate(const char *skin, const char *name, const char *skill)
             sprintf( err_msg, "model \"%s\" is unknown.\n", c_skin );
             UTIL_ClientPrintAll( HUD_PRINTNOTIFY, err_msg );
             if (IS_DEDICATED_SERVER())
-               printf(err_msg);
+               printf( "%s\n", err_msg );
 
             UTIL_ClientPrintAll( HUD_PRINTNOTIFY,
                "use barney, gina, gman, gordon, helmet, hgrunt,\n");
