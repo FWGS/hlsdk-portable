@@ -31,6 +31,12 @@
 #endif
 #include	"hltv.h"
 
+// START BOT
+#include "bot.h"
+#include "botcam.h"
+extern respawn_t bot_respawn[32];
+// END BOT
+
 extern DLL_GLOBAL CGameRules *g_pGameRules;
 extern DLL_GLOBAL BOOL	g_fGameOver;
 extern int gmsgDeathMsg;	// client dll messages
@@ -1625,6 +1631,38 @@ void CHalfLifeMultiplay::ChangeLevel( void )
 	}
 
 	g_fGameOver = TRUE;
+
+	// START BOT
+	// loop through all the players...
+	for( int i = 1; i <= gpGlobals->maxClients; i++ )
+	{
+		CBaseEntity *pEntity = UTIL_PlayerByIndex( i );
+
+		if( !pEntity )  // if invalid then continue with next index...
+			continue;
+
+		CBasePlayer *pPlayer = (CBasePlayer *)pEntity;
+
+		// if botcam is in use, disconnect so buttons will work...
+		if( pPlayer->pBotCam )
+			pPlayer->pBotCam->Disconnect();
+	}
+
+	// kick any bot off of the server after time/frag limit...
+	for( int index = 0; index < 32; index++ )
+	{
+		if( bot_respawn[index].is_used )  // is this slot used?
+		{
+			char cmd[40];
+
+			sprintf( cmd, "kick \"%s\"\n", bot_respawn[index].name );
+
+			bot_respawn[index].state = BOT_NEED_TO_RESPAWN;
+
+			SERVER_COMMAND( cmd );  // kick the bot using (kick "name")
+		}
+	}
+	// END BOT
 
 	ALERT( at_console, "CHANGE LEVEL: %s\n", szNextMap );
 	if( minplayers || maxplayers )

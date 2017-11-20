@@ -446,6 +446,10 @@ cvar_t	sk_player_leg3	= { "sk_player_leg3","1" };
 
 // END Cvars for Skill Level settings
 
+//START BOT
+cvar_t	cvar_bot = { "bot", "" };
+//END BOT
+
 // Register your console variables here
 // This gets called one time when the game is initialied
 void GameDLLInit( void )
@@ -857,6 +861,10 @@ void GameDLLInit( void )
 	CVAR_REGISTER( &sk_player_leg2 );
 	CVAR_REGISTER( &sk_player_leg3 );
 // END REGISTER CVARS FOR SKILL LEVEL STUFF
+
+//START BOT
+	CVAR_REGISTER( &cvar_bot );
+//END BOT
 
 	SERVER_COMMAND( "exec skill.cfg\n" );
 }
