@@ -27,14 +27,18 @@
 #include	"animation.h"
 #include	"soundent.h"
 
-#define NUM_SCIENTIST_HEADS		4 // four heads available for scientist model
+#define NUM_SCIENTIST_HEADS		7 // seven heads available for scientist model
+#define NUM_CLEANSUIT_SCIENTIST_HEADS	4 // seven heads available for cleansuit scientist model
 
 enum
 {
 	HEAD_GLASSES = 0,
 	HEAD_EINSTEIN = 1,
 	HEAD_LUTHER = 2,
-	HEAD_SLICK = 3
+	HEAD_SLICK = 3,
+	HEAD_4,
+	HEAD_5,
+	HEAD_6
 };
 
 enum
@@ -112,7 +116,7 @@ public:
 
 	CUSTOM_SCHEDULES
 
-private:	
+private:
 	float m_painTime;
 	float m_healTime;
 	float m_fearTime;
@@ -619,13 +623,15 @@ void CScientist::HandleAnimEvent( MonsterEvent_t *pEvent )
 	case SCIENTIST_AE_NEEDLEON:
 		{
 			int oldBody = pev->body;
-			pev->body = ( oldBody % NUM_SCIENTIST_HEADS ) + NUM_SCIENTIST_HEADS * 1;
+			int numHeads = FClassnameIs( pev, "monster_cleansuit_scientist" ) ? NUM_CLEANSUIT_SCIENTIST_HEADS : NUM_SCIENTIST_HEADS;
+			pev->body = ( oldBody % numHeads ) + numHeads * 1;
 		}
 		break;
 	case SCIENTIST_AE_NEEDLEOFF:
 		{
 			int oldBody = pev->body;
-			pev->body = ( oldBody % NUM_SCIENTIST_HEADS ) + NUM_SCIENTIST_HEADS * 0;
+			int numHeads = FClassnameIs( pev, "monster_cleansuit_scientist" ) ? NUM_CLEANSUIT_SCIENTIST_HEADS : NUM_SCIENTIST_HEADS;
+			pev->body = ( oldBody % numHeads ) + numHeads * 0;
 		}
 		break;
 	default:
@@ -638,12 +644,19 @@ void CScientist::HandleAnimEvent( MonsterEvent_t *pEvent )
 //=========================================================
 void CScientist::Spawn( void )
 {
+	int numHeads;
 	Precache();
 
 	if( FClassnameIs( pev, "monster_cleansuit_scientist" ) )
+	{
 		SET_MODEL( ENT( pev ), "models/cleansuit_scientist.mdl" );
+		numHeads = NUM_CLEANSUIT_SCIENTIST_HEADS;
+	}
 	else
+	{
 		SET_MODEL( ENT( pev ), "models/scientist.mdl" );
+		numHeads = NUM_SCIENTIST_HEADS;
+	}
 
 	UTIL_SetSize( pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX );
 
@@ -665,7 +678,7 @@ void CScientist::Spawn( void )
 	if( pev->body == -1 )
 	{
 		// -1 chooses a random head
-		pev->body = RANDOM_LONG( 0, NUM_SCIENTIST_HEADS - 1 );// pick a head, any head
+		pev->body = RANDOM_LONG( 0, numHeads - 1 );// pick a head, any head
 	}
 
 	// Luther is black, make his hands black
@@ -702,6 +715,7 @@ void CScientist::Precache( void )
 // Init talk data
 void CScientist::TalkInit()
 {
+	int numHeads = FClassnameIs( pev, "monster_cleansuit_scientist" ) ? NUM_CLEANSUIT_SCIENTIST_HEADS : NUM_SCIENTIST_HEADS;
 	CTalkMonster::TalkInit();
 
 	// scientist will try to talk to friends in this order:
@@ -735,7 +749,7 @@ void CScientist::TalkInit()
 	m_szGrp[TLK_MORTAL] = "SC_MORTAL";
 
 	// get voice for head
-	switch( pev->body % 3 )
+	switch( pev->body % ( numHeads - 1 ) )
 	{
 	default:
 	case HEAD_GLASSES:
@@ -748,6 +762,9 @@ void CScientist::TalkInit()
 		m_voicePitch = 95;
 		break;	//luther
 	case HEAD_SLICK:
+	case HEAD_4:
+	case HEAD_5:
+	case HEAD_6:
 		m_voicePitch = 100;
 		break;	//slick
 	}
@@ -1142,20 +1159,25 @@ LINK_ENTITY_TO_CLASS( monster_civ_scientist_dead, CDeadScientist )
 //
 void CDeadScientist::Spawn()
 {
+	int numHeads;
+
 	if( FClassnameIs( pev, "monster_cleansuit_scientist_dead" ) )
 	{
 		PRECACHE_MODEL( "models/cleansuit_scientist.mdl" );
 		SET_MODEL( ENT( pev ), "models/cleansuit_scientist.mdl" );
+		numHeads = NUM_CLEANSUIT_SCIENTIST_HEADS;
 	}
 	else if( FClassnameIs( pev, "monster_civ_scientist_dead" ) )
 	{
 		PRECACHE_MODEL( "models/civ_scientist.mdl" );
                 SET_MODEL( ENT( pev ), "models/civ_scientist.mdl" );
+		numHeads = NUM_SCIENTIST_HEADS;
 	}
 	else
 	{
 		PRECACHE_MODEL( "models/scientist.mdl" );
                 SET_MODEL( ENT( pev ), "models/scientist.mdl" );
+		numHeads = NUM_SCIENTIST_HEADS;
 	}
 
 	pev->effects = 0;
@@ -1169,7 +1191,7 @@ void CDeadScientist::Spawn()
 	if( pev->body == -1 )
 	{
 		// -1 chooses a random head
-		pev->body = RANDOM_LONG( 0, NUM_SCIENTIST_HEADS - 1 );// pick a head, any head
+		pev->body = RANDOM_LONG( 0, numHeads - 1 );// pick a head, any head
 	}
 
 	// Luther is black, make his hands black
