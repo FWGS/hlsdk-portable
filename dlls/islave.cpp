@@ -97,6 +97,7 @@ public:
 
 LINK_ENTITY_TO_CLASS( monster_alien_slave, CISlave )
 LINK_ENTITY_TO_CLASS( monster_alien_worker, CISlave )
+LINK_ENTITY_TO_CLASS( monster_xboss, CISlave )
 LINK_ENTITY_TO_CLASS( monster_vortigaunt, CISlave )
 
 TYPEDESCRIPTION	CISlave::m_SaveData[] =
@@ -536,7 +537,10 @@ void CISlave::Spawn()
 	}
 	else
 	{
-		SET_MODEL( ENT( pev ), "models/islave.mdl" );
+		if( FClassnameIs( pev, "monster_xboss" ) )
+			SET_MODEL( ENT( pev ), "models/xboss.mdl" );
+		else
+			SET_MODEL( ENT( pev ), "models/islave.mdl" );
 		m_voicePitch	= RANDOM_LONG( 85, 110 );
 		pev->health	= gSkillData.slaveHealth;
 	}
@@ -562,7 +566,9 @@ void CISlave::Precache()
 {
 	size_t i;
 
-	if( FClassnameIs( pev, "monster_alien_worker" ) )
+	if( FClassnameIs( pev, "monster_xboss" ) )
+		PRECACHE_MODEL( "models/xboss.mdl" );
+	else if( FClassnameIs( pev, "monster_alien_worker" ) )
 		PRECACHE_MODEL( "models/aworker.mdl" );
 	else
 		PRECACHE_MODEL( "models/islave.mdl" );
