@@ -408,9 +408,11 @@ void CSqueakGrenade::SuperBounceTouch( CBaseEntity *pOther )
 #endif
 
 LINK_ENTITY_TO_CLASS( weapon_snark, CSqueak )
+LINK_ENTITY_TO_CLASS( weapon_znark, CSqueak )
 
 void CSqueak::Spawn()
 {
+	pev->classname = MAKE_STRING( "weapon_snark" ); // hack to allow for old names
 	Precache();
 	m_iId = WEAPON_SNARK;
 	SET_MODEL( ENT( pev ), "models/w_sqknest.mdl" );

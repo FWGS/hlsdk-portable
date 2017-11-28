@@ -134,6 +134,7 @@ private:
 };
 
 LINK_ENTITY_TO_CLASS( monster_leech, CLeech )
+LINK_ENTITY_TO_CLASS( monster_piranha, CLeech )
 
 TYPEDESCRIPTION	CLeech::m_SaveData[] =
 {

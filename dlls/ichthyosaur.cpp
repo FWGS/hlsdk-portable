@@ -122,6 +122,7 @@ public:
 };
 
 LINK_ENTITY_TO_CLASS( monster_ichthyosaur, CIchthyosaur )
+LINK_ENTITY_TO_CLASS( monster_hchthyosaur, CIchthyosaur )
 LINK_ENTITY_TO_CLASS( monster_baby_ichthyosaur, CIchthyosaur )
 
 TYPEDESCRIPTION	CIchthyosaur::m_SaveData[] =

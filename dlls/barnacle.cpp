@@ -67,6 +67,7 @@ public:
 };
 
 LINK_ENTITY_TO_CLASS( monster_barnacle, CBarnacle )
+LINK_ENTITY_TO_CLASS( monster_xarnacle, CBarnacle )
 
 TYPEDESCRIPTION	CBarnacle::m_SaveData[] =
 {

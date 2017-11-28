@@ -111,6 +111,7 @@ int CTentacle::g_fFlySound;
 int CTentacle::g_fSquirmSound;
 
 LINK_ENTITY_TO_CLASS( monster_tentacle, CTentacle )
+LINK_ENTITY_TO_CLASS( monster_hentacle, CTentacle )
 
 // stike sounds
 #define TE_NONE -1
