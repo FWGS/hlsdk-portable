@@ -335,10 +335,10 @@ public:
 	void KeyValue( KeyValueData *pkvd );
 
 	int	m_iPose;// which sequence to display	-- temporary, don't need to save
-	static char *m_szPoses[2];
+	static const char *m_szPoses[2];
 };
 
-char *CDeadZSoldier::m_szPoses[] =
+const char *CDeadZSoldier::m_szPoses[] =
 {
 	"dead_on_back",
 	"dead_on_stomach"

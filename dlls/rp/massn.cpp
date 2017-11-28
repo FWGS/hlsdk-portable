@@ -131,7 +131,7 @@ int CMassn::IRelationship( CBaseEntity *pTarget )
 //=========================================================
 void CMassn::Sniperrifle(void)
 {
-	if (m_hEnemy == NULL)
+	if (m_hEnemy == 0)
 	{
 		return;
 	}
