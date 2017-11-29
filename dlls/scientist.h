@@ -16,9 +16,10 @@
 #ifndef SCIENTIST_H
 #define SCIENTIST_H
 
-#define		NUM_SCIENTIST_HEADS		4 // four heads available for scientist model
+#define		NUM_SCIENTIST_HEADS		4 // four heads available for scientist model, used when randoming a scientist head
+#define		NUM_SCIENTIST_HEADS_OPFOR		6 // used for body change when scientist uses the needle
 
-enum { HEAD_GLASSES = 0, HEAD_EINSTEIN = 1, HEAD_LUTHER = 2, HEAD_SLICK = 3 };
+enum { HEAD_GLASSES = 0, HEAD_EINSTEIN = 1, HEAD_LUTHER = 2, HEAD_SLICK = 3, HEAD_EINSTEIN_WITH_BOOK = 4, HEAD_SLICK_WITH_STICK = 5 };
 
 enum
 {

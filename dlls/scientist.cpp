@@ -535,13 +535,13 @@ void CScientist::HandleAnimEvent( MonsterEvent_t *pEvent )
 	case SCIENTIST_AE_NEEDLEON:
 		{
 			int oldBody = pev->body;
-			pev->body = ( oldBody % NUM_SCIENTIST_HEADS ) + NUM_SCIENTIST_HEADS * 1;
+			pev->body = ( oldBody % NUM_SCIENTIST_HEADS_OPFOR ) + NUM_SCIENTIST_HEADS_OPFOR * 1;
 		}
 		break;
 	case SCIENTIST_AE_NEEDLEOFF:
 		{
 			int oldBody = pev->body;
-			pev->body = ( oldBody % NUM_SCIENTIST_HEADS ) + NUM_SCIENTIST_HEADS * 0;
+			pev->body = ( oldBody % NUM_SCIENTIST_HEADS_OPFOR ) + NUM_SCIENTIST_HEADS_OPFOR * 0;
 		}
 		break;
 	default:
@@ -650,12 +650,14 @@ void CScientist::TalkInit()
 		m_voicePitch = 105;
 		break;	//glasses
 	case HEAD_EINSTEIN:
+	case HEAD_EINSTEIN_WITH_BOOK:
 		m_voicePitch = 100;
 		break;	//einstein
 	case HEAD_LUTHER:
 		m_voicePitch = 95;
 		break;	//luther
 	case HEAD_SLICK:
+	case HEAD_SLICK_WITH_STICK:
 		m_voicePitch = 100;
 		break;	//slick
 	}
