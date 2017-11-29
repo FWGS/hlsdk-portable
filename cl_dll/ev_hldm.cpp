@@ -1951,7 +1951,7 @@ void EV_FireEagle( event_args_t *args )
 		EV_MuzzleFlash();
 		gEngfuncs.pEventAPI->EV_WeaponAnimation( EAGLE_SHOOT, 1 );
 
-		V_PunchAxis( 0, -10.0 );
+		V_PunchAxis( 0, -4.0 );
 	}
 
 	// Play fire sound.

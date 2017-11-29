@@ -1617,10 +1617,11 @@ TYPEDESCRIPTION	CDisplacer::m_SaveData[] =
 };
 IMPLEMENT_SAVERESTORE( CDisplacer, CBasePlayerWeapon )
 
-TYPEDESCRIPTION	CEagle::m_SaveData[] =
+TYPEDESCRIPTION CEagle::m_SaveData[] =
 {
-	DEFINE_FIELD( CEagle, m_fSpotActive, FIELD_INTEGER ),
+	DEFINE_FIELD( CEagle, m_fEagleLaserActive, FIELD_INTEGER ),
 };
+
 IMPLEMENT_SAVERESTORE( CEagle, CBasePlayerWeapon )
 
 TYPEDESCRIPTION CGrapple::m_SaveData[] =
@@ -1640,7 +1641,6 @@ TYPEDESCRIPTION	CM249::m_SaveData[] =
 	DEFINE_FIELD( CM249, m_iReloadState, FIELD_INTEGER ),
 };
 IMPLEMENT_SAVERESTORE( CM249, CBasePlayerWeapon )
-
 
 TYPEDESCRIPTION	CPipeWrench::m_SaveData[] =
 {
