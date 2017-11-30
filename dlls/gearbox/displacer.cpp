@@ -20,58 +20,61 @@
 #include "monsters.h"
 #include "player.h"
 #include "gamerules.h"
+#include "shake.h"
 
 #ifndef CLIENT_DLL
+
+extern edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer );
+
 LINK_ENTITY_TO_CLASS(info_displacer_xen_target, CPointEntity);
 LINK_ENTITY_TO_CLASS(info_displacer_earth_target, CPointEntity);
-#endif
-
-#ifndef CLIENT_DLL
-
-#define MAX_PORTAL_BEAMS 4
 
 int iPortalSprite = 0;
 int iRingSprite = 0;
-
 //=========================================================
 // Displacement field
 //=========================================================
-
-class CPortal : public CBaseEntity
+class CDisplacerBall : public CBaseEntity
 {
 public:
-	void Spawn(void);
+	void Spawn( void );
 
-	static void Shoot(entvars_t *pevOwner, Vector vecStart, Vector vecVelocity);
+	static void Shoot(entvars_t *pevOwner, Vector vecStart, Vector vecVelocity, Vector vecAngles);
+	static void SelfCreate(entvars_t *pevOwner, Vector vecStart);
+
 	void Touch(CBaseEntity *pOther);
-	void EXPORT Animate(void);
+	void EXPORT ExplodeThink( void );
+	void EXPORT KillThink( void );
+	void Circle( void );
 
 	virtual int		Save(CSave &save);
 	virtual int		Restore(CRestore &restore);
 	static	TYPEDESCRIPTION m_SaveData[];
 
-	int  m_maxFrame;
-	CBeam* m_pBeam[MAX_PORTAL_BEAMS];
+	CBeam* m_pBeam[8];
 
-	void CreateBeams();
-	void ClearBeams();
-	void UpdateBeams();
+	void EXPORT FlyThink( void );
+	void ClearBeams( void );
+	void ArmBeam( int iSide );
+
+	int m_iBeams;
+
+	CBaseEntity *pRemoveEnt;
 };
 
-LINK_ENTITY_TO_CLASS(portal, CPortal);
+LINK_ENTITY_TO_CLASS(displacer_ball, CDisplacerBall)
 
-TYPEDESCRIPTION	CPortal::m_SaveData[] =
+TYPEDESCRIPTION	CDisplacerBall::m_SaveData[] =
 {
-	DEFINE_FIELD(CPortal, m_maxFrame, FIELD_INTEGER),
-	DEFINE_ARRAY(CPortal, m_pBeam, FIELD_CLASSPTR, MAX_PORTAL_BEAMS),
+	DEFINE_FIELD(CDisplacerBall, m_iBeams, FIELD_INTEGER),
+	DEFINE_ARRAY(CDisplacerBall, m_pBeam, FIELD_CLASSPTR, 8),
 };
 
-IMPLEMENT_SAVERESTORE(CPortal, CBaseEntity);
+IMPLEMENT_SAVERESTORE(CDisplacerBall, CBaseEntity);
 
-void CPortal::Spawn(void)
+void CDisplacerBall::Spawn(void)
 {
 	pev->movetype = MOVETYPE_FLY;
-	pev->classname = MAKE_STRING("portal");
 
 	pev->solid = SOLID_BBOX;
 	pev->rendermode = kRenderTransAdd;
@@ -79,84 +82,177 @@ void CPortal::Spawn(void)
 
 	SET_MODEL(ENT(pev), "sprites/exit1.spr");
 	pev->frame = 0;
-	pev->scale = 0.6;
+	pev->scale = 0.75;
 
+	SetTouch( &CDisplacerBall::Touch );
+	SetThink( &CDisplacerBall::FlyThink );
+	pev->nextthink = gpGlobals->time + 0.2;
 	UTIL_SetSize(pev, Vector(0, 0, 0), Vector(0, 0, 0));
 
-	m_maxFrame = (float)MODEL_FRAMES(pev->modelindex) - 1;
-
-	// Create beams.
-	CreateBeams();
+	m_iBeams = 0;
 }
 
-void CPortal::Animate(void)
+void CDisplacerBall::FlyThink()
 {
-	pev->nextthink = gpGlobals->time + 0.1;
+	ArmBeam( -1 );
+	ArmBeam( 1 );
+	pev->nextthink = gpGlobals->time + 0.05;
+}
 
-	if (pev->frame++)
+void CDisplacerBall::ArmBeam( int iSide )
+{
+	//This method is identical to the Alien Slave's ArmBeam, except it treats m_pBeam as a circular buffer.
+	if( m_iBeams > 7 )
+		m_iBeams = 0;
+
+	TraceResult tr;
+	float flDist = 1.0;
+
+	UTIL_MakeAimVectors( pev->angles );
+	Vector vecSrc = gpGlobals->v_forward * 32.0 + iSide * gpGlobals->v_right * 16.0 + gpGlobals->v_up * 36.0 + pev->origin;
+	Vector vecAim = gpGlobals->v_up * RANDOM_FLOAT( -1.0, 1.0 );
+	Vector vecEnd = (iSide * gpGlobals->v_right * RANDOM_FLOAT( 0.0, 1.0 ) + vecAim) * 512.0 + vecSrc;
+	UTIL_TraceLine( &vecSrc.x, &vecEnd.x, dont_ignore_monsters, ENT( pev ), &tr );
+
+	if( flDist > tr.flFraction )
+		flDist = tr.flFraction;
+
+	// Couldn't find anything close enough
+	if( flDist == 1.0 )
+		return;
+
+	// The beam might already exist if we've created all beams before.
+	if( !m_pBeam[ m_iBeams ] )
+		m_pBeam[ m_iBeams ] = CBeam::BeamCreate( "sprites/lgtning.spr", 30 );
+
+	if( !m_pBeam[ m_iBeams ] )
+		return;
+
+	CBaseEntity* pHit = Instance( tr.pHit );
+
+	entvars_t *pevOwner;
+	if ( pev->owner )
+		pevOwner = VARS( pev->owner );
+	else
+		pevOwner = NULL;
+
+	if( pHit && pHit->pev->takedamage != DAMAGE_NO )
 	{
-		if (pev->frame > m_maxFrame)
-		{
-			pev->frame = 0;
-		}
-	}
+		//Beam hit something, deal radius damage to it
+		m_pBeam[ m_iBeams ]->EntsInit( pHit->entindex(), entindex() );
+		m_pBeam[ m_iBeams ]->SetColor( 255, 255, 255 );
+		m_pBeam[ m_iBeams ]->SetBrightness( 255 );
+		m_pBeam[ m_iBeams ]->SetNoise( 10 );
 
-	// Update beams.
-	UpdateBeams();
-}
-
-void CPortal::Shoot(entvars_t *pevOwner, Vector vecStart, Vector vecVelocity)
-{
-	CPortal *pSpit = GetClassPtr((CPortal *)NULL);
-	pSpit->Spawn();
-
-	UTIL_SetOrigin(pSpit->pev, vecStart);
-	pSpit->pev->velocity = vecVelocity;
-	pSpit->pev->owner = ENT(pevOwner);
-
-	pSpit->SetThink(&CPortal::Animate);
-	pSpit->pev->nextthink = gpGlobals->time + 0.1;
-}
-
-void CPortal::Touch(CBaseEntity *pOther)
-{
-	if (!pOther->pev->takedamage)
-	{
-		EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "weapons/displacer_impact.wav", 1, ATTN_NORM, 0, 100);
+		RadiusDamage( tr.vecEndPos, pev, pevOwner, 25, 15, CLASS_NONE, DMG_ENERGYBEAM );
 	}
 	else
 	{
-		//pOther->TakeDamage(pev, pev, gSkillData.plrDmgDisplacer, DMG_GENERIC | DMG_ALWAYSGIB);
+		m_pBeam[ m_iBeams ]->PointEntInit( tr.vecEndPos, entindex() );
+		m_pBeam[ m_iBeams ]->SetColor( 96, 128, 16 );
+		m_pBeam[ m_iBeams ]->SetBrightness( 255 );
+		m_pBeam[ m_iBeams ]->SetNoise( 80 );
+	}
+	m_iBeams++;
+}
 
-		if (pOther->IsPlayer())
-		{
-			EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "weapons/displacer_teleport.wav", 1, ATTN_NORM, 0, 100);
-			pOther->Killed(VARS(pev->owner), GIB_ALWAYS);
-		}
-		else
-		{
-			pOther->TakeDamage(pev, pev, pOther->pev->max_health * 2, DMG_GENERIC | DMG_ALWAYSGIB);
+void CDisplacerBall::Shoot(entvars_t *pevOwner, Vector vecStart, Vector vecVelocity, Vector vecAngles )
+{
+	CDisplacerBall *pSpit = GetClassPtr((CDisplacerBall *)NULL);
+	pSpit->Spawn();
+	UTIL_SetOrigin(pSpit->pev, vecStart);
+	pSpit->pev->velocity = vecVelocity;
+	pSpit->pev->angles = vecAngles;
+	pSpit->pev->owner = ENT(pevOwner);
+}
 
-			EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "weapons/displacer_teleport_player.wav", 1, ATTN_NORM, 0, 100);
-			UTIL_Remove(pOther);
+void CDisplacerBall::SelfCreate(entvars_t *pevOwner,Vector vecStart)
+{
+	CDisplacerBall *pSelf = GetClassPtr((CDisplacerBall *)NULL);
+	pSelf->Spawn();
+	pSelf->ClearBeams();
+	UTIL_SetOrigin(pSelf->pev, vecStart);
+
+	pSelf->pev->owner = ENT(pevOwner);
+	pSelf->Circle();
+	pSelf->SetTouch( NULL );
+	pSelf->SetThink(&CDisplacerBall::KillThink);
+	pSelf->pev->nextthink = gpGlobals->time + ( g_pGameRules->IsMultiplayer() ? 0.2f : 0.5f );
+}
+
+void CDisplacerBall::Touch(CBaseEntity *pOther)
+{
+	// Do not collide with the owner.
+	if (ENT(pOther->pev) == pev->owner || (ENT(pOther->pev) == VARS(pev->owner)->owner))
+		return;
+
+	TraceResult tr;
+	Vector vecSpot;
+	Vector vecSrc;
+	pev->enemy = pOther->edict();
+	CBaseEntity *pTarget = NULL;
+
+	if (!pOther->pev->takedamage)
+	{
+		EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "weapons/displacer_impact.wav", 1, ATTN_NORM, 0, 100);
+		UTIL_MuzzleLight( pOther->pev->origin, 160.0f, 255, 180, 96, 1.0f, 100.0f );
+	}
+
+	if( ( g_pGameRules->IsMultiplayer() && !g_pGameRules->IsCoOp() ) && pOther->IsPlayer() )
+	{
+		CBasePlayer *pPlayer = (CBasePlayer *)pOther;
+		pTarget = GetClassPtr( (CBaseEntity *)VARS( EntSelectSpawnPoint( pPlayer ) ) );
+
+		if( pTarget )
+		{
+			// UTIL_ScreenFade( pPlayer, Vector( 0, 200, 0 ), 0.5, 0.5, 255, FFADE_IN );
+			Vector tmp = pTarget->pev->origin;
+			UTIL_CleanSpawnPoint( tmp, 100 );
+
+			EMIT_SOUND( pPlayer->edict(), CHAN_BODY, "weapons/displacer_self.wav", 1, ATTN_NORM );
+
+			// make origin adjustments (origin in center, not at feet)
+			tmp.z -= pPlayer->pev->mins.z + 36;
+			tmp.z++;
+
+			pPlayer->pev->flags &= ~FL_ONGROUND;
+
+			UTIL_SetOrigin( pPlayer->pev, tmp );
+
+			pPlayer->pev->angles = pTarget->pev->angles;
+
+			pPlayer->pev->v_angle = pTarget->pev->angles;
+
+			pPlayer->pev->fixangle = TRUE;
+
+			pPlayer->pev->velocity = pOther->pev->basevelocity = g_vecZero;
 		}
 	}
 
+	pev->movetype = MOVETYPE_NONE;
 
+	Circle();
+
+	SetThink(&CDisplacerBall::KillThink);
+	pev->nextthink = gpGlobals->time + ( g_pGameRules->IsMultiplayer() ? 0.2f : 0.5f );
+}
+
+void CDisplacerBall::Circle( void )
+{
 	// portal circle
-	MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pev->origin);
+	MESSAGE_BEGIN(MSG_PAS, SVC_TEMPENTITY, pev->origin);
 		WRITE_BYTE(TE_BEAMCYLINDER);
 		WRITE_COORD(pev->origin.x);
 		WRITE_COORD(pev->origin.y);
 		WRITE_COORD(pev->origin.z);
 		WRITE_COORD(pev->origin.x);
 		WRITE_COORD(pev->origin.y);
-		WRITE_COORD(pev->origin.z + 2000); // reach damage radius over .2 seconds
+		WRITE_COORD(pev->origin.z + 800); // reach damage radius over .2 seconds
 		WRITE_SHORT(iRingSprite);
 		WRITE_BYTE(0); // startframe
 		WRITE_BYTE(0); // framerate
-		WRITE_BYTE(4); // life
-		WRITE_BYTE(32);  // width
+		WRITE_BYTE(3); // life
+		WRITE_BYTE(16);  // width
 		WRITE_BYTE(0);   // noise
 		WRITE_BYTE(255);   // r, g, b
 		WRITE_BYTE(255);   // r, g, b
@@ -164,71 +260,49 @@ void CPortal::Touch(CBaseEntity *pOther)
 		WRITE_BYTE(255); // brightness
 		WRITE_BYTE(0);		// speed
 	MESSAGE_END();
+	UTIL_MuzzleLight( pev->origin, 160.0f, 255, 180, 96, 1.0f, 100.0f );
+}
 
-	// Clear beams.
+void CDisplacerBall::KillThink( void )
+{
+	if( pRemoveEnt )
+		UTIL_Remove( pRemoveEnt );
+	SetThink( &CDisplacerBall::ExplodeThink );
+	pev->nextthink = gpGlobals->time + 0.2f;
+}
+
+void CDisplacerBall::ExplodeThink( void )
+{
 	ClearBeams();
 
-	SetThink(&CPortal::SUB_Remove);
-	pev->nextthink = gpGlobals->time;
+	pev->effects |= EF_NODRAW;
+
+	EMIT_SOUND(ENT(pev), CHAN_VOICE, "weapons/displacer_teleport.wav", VOL_NORM, ATTN_NORM);
+
+	entvars_t *pevOwner;
+	if ( pev->owner )
+		pevOwner = VARS( pev->owner );
+	else
+		pevOwner = NULL;
+	pev->owner = NULL;
+
+	UTIL_Remove( this );
+
+	::RadiusDamage( pev->origin, pev, pevOwner, 300, 300, CLASS_NONE, DMG_ENERGYBEAM );
 }
 
-void CPortal::CreateBeams()
+void CDisplacerBall::ClearBeams( void )
 {
-	for (int i = 0; i < MAX_PORTAL_BEAMS; i++)
+	for( int i = 0;i < 8; i++ )
 	{
-		m_pBeam[i] = CBeam::BeamCreate("sprites/lgtning.spr", RANDOM_LONG(2, 3) * 10);
-		m_pBeam[i]->PointEntInit( pev->origin, entindex() );
-		m_pBeam[i]->SetColor(96, 128, 16);
-		m_pBeam[i]->SetBrightness(RANDOM_LONG(24, 25) * 10);
-		m_pBeam[i]->SetNoise(80);
-	}
-}
-
-void CPortal::ClearBeams()
-{
-	for (int i = 0; i < MAX_PORTAL_BEAMS; i++)
-	{
-		if (m_pBeam[i])
+		if( m_pBeam[i] )
 		{
-			UTIL_Remove(m_pBeam[i]);
+			UTIL_Remove( m_pBeam[i] );
 			m_pBeam[i] = NULL;
 		}
 	}
 }
 
-void CPortal::UpdateBeams()
-{
-	TraceResult tr, tr1;
-	int i, j;
-	float flDist = 1.0;
-
-	Vector vecSrc, vecTarget;
-	vecSrc = pev->origin;
-
-	for (i = 0; i < MAX_PORTAL_BEAMS; i++)
-	{
-		for (j = 0; j < 3; ++j)
-		{
-			vecTarget = gpGlobals->v_forward * RANDOM_FLOAT(-1, 1) + gpGlobals->v_right * RANDOM_FLOAT(-1, 1) + gpGlobals->v_up * RANDOM_FLOAT(-1, 1);
-
-			UTIL_TraceLine(vecSrc, vecSrc + (vecTarget * 512), dont_ignore_monsters, ENT(pev), &tr1);
-			if (flDist > tr1.flFraction)
-			{
-				tr = tr1;
-				flDist = tr.flFraction;
-			}
-		}
-
-		// Couldn't find anything close enough
-		if (flDist == 1.0)
-			continue;
-
-		// Update the beams.
-		m_pBeam[i]->SetStartPos(tr.vecEndPos);
-		m_pBeam[i]->SetEndEntity( entindex() );
-		m_pBeam[i]->RelinkBeam();
-	}
-}
 
 #endif // !defined ( CLIENT_DLL )
 
@@ -242,6 +316,8 @@ enum displacer_e {
 	DISPLACER_HOLSTER,
 };
 
+#define DISPLACER_SECONDARY_USAGE 60
+#define DISPLACER_PRIMARY_USAGE 20
 
 LINK_ENTITY_TO_CLASS(weapon_displacer, CDisplacer);
 
@@ -303,42 +379,7 @@ void CDisplacer::Spawn()
 	m_iId = WEAPON_DISPLACER;
 	SET_MODEL(ENT(pev), "models/w_displacer.mdl");
 
-	m_iDefaultAmmo = EGON_DEFAULT_GIVE;
-
-	m_iFireState = FIRESTATE_NONE;
-	m_iFireMode = FIREMODE_NONE;
-
-#ifndef CLIENT_DLL
-	edict_t* pEnt = NULL;
-	pEnt = FIND_ENTITY_BY_CLASSNAME(pEnt, "info_displacer_earth_target");
-
-	if (pEnt)
-	{
-		m_hTargetEarth = GetClassPtr((CBaseEntity *)VARS(pEnt));
-	}
-	else
-	{
-		ALERT(
-			at_console,
-			"ERROR: Couldn't find entity with classname %s\n",
-			"info_displacer_earth_target");
-	}
-
-	pEnt = NULL;
-	pEnt = FIND_ENTITY_BY_CLASSNAME(pEnt, "info_displacer_xen_target");
-
-	if (pEnt)
-	{
-		m_hTargetXen = GetClassPtr((CBaseEntity *)VARS(pEnt));
-	}
-	else
-	{
-		ALERT(
-			at_console,
-			"ERROR: Couldn't find entity with classname %s\n",
-			"info_displacer_xen_target");
-	}
-#endif
+	m_iDefaultAmmo = DISPLACER_DEFAULT_GIVE;
 
 	FallInit();// get ready to fall down.
 }
@@ -372,7 +413,7 @@ void CDisplacer::Precache(void)
 	iRingSprite = PRECACHE_MODEL("sprites/disp_ring.spr");
 #endif
 
-	UTIL_PrecacheOther("portal");
+	UTIL_PrecacheOther("displacer_ball");
 	
 	m_usDisplacer = PRECACHE_EVENT(1, "events/displacer.sc");
 }
@@ -392,6 +433,7 @@ void CDisplacer::Holster(int skiplocal /* = 0 */)
 {
 	m_fInReload = FALSE;// cancel any reload in progress.
 
+	ClearBeams();
 	ClearSpin();
 
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 1.0f;
@@ -404,15 +446,7 @@ void CDisplacer::Holster(int skiplocal /* = 0 */)
 //=========================================================
 void CDisplacer::SecondaryAttack(void)
 {
-	// don't fire underwater
-	if (m_pPlayer->pev->waterlevel == 3)
-	{
-		PlayEmptySound();
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.3f;
-		return;
-	}
-
-	if (m_fFireOnEmpty || (!HasAmmo() || !CanFireDisplacer()))
+	if (m_fFireOnEmpty || !CanFireDisplacer(DISPLACER_SECONDARY_USAGE))
 	{
 		PlayEmptySound();
 		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.3f;
@@ -421,11 +455,12 @@ void CDisplacer::SecondaryAttack(void)
 
 	m_pPlayer->SetAnimation(PLAYER_ATTACK1);
 
-	m_iFireState = FIRESTATE_SPINUP;
 	m_iFireMode = FIREMODE_BACKWARD;
 
-	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat(m_pPlayer->random_seed, 10, 15);
-	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.1f;
+	SetThink (&CDisplacer::SpinUp);
+
+	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 4.0;
+	pev->nextthink = gpGlobals->time;
 }
 
 //=========================================================
@@ -433,26 +468,17 @@ void CDisplacer::SecondaryAttack(void)
 //=========================================================
 void CDisplacer::PrimaryAttack()
 {
-	// don't fire underwater
-	if (m_pPlayer->pev->waterlevel == 3)
-	{
-		PlayEmptySound();
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.3f;
-		return;
-	}
-
-	if ( m_fFireOnEmpty || (!HasAmmo() || !CanFireDisplacer()))
+	if ( m_fFireOnEmpty || !CanFireDisplacer(DISPLACER_PRIMARY_USAGE))
 	{
 		PlayEmptySound();
 		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.3f;
 		return;
 	}
-
-	m_iFireState = FIRESTATE_SPINUP;
 	m_iFireMode = FIREMODE_FORWARD;
 
-	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat(m_pPlayer->random_seed, 10, 15);
-	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.1f;
+	SetThink (&CDisplacer::SpinUp);
+	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 1.6;
+	pev->nextthink = gpGlobals->time;
 }
 
 //=========================================================
@@ -466,38 +492,6 @@ void CDisplacer::WeaponIdle(void)
 
 	if (m_flTimeWeaponIdle > UTIL_WeaponTimeBase())
 		return;
-
-	if (m_iFireState != FIRESTATE_NONE)
-	{
-		switch (m_iFireState)
-		{
-		case FIRESTATE_SPINUP:
-		{
-			// Launch spinup sequence.
-			SpinUp( m_iFireMode );
-		}
-		break;
-
-		case FIRESTATE_SPIN:
-		{
-			//   Launch spin sequence 
-			//
-			// * Not used but left here for reference. *
-			Spin( );
-		}
-		break;
-
-		case FIRESTATE_FIRE:
-		{
-			// Fire using the selected mode.
-			Fire(m_iFireMode == FIREMODE_FORWARD ? TRUE : FALSE);
-		}
-		break;
-		}
-
-		// Do not play other idle sequences while performing spin sequence.
-		return;
-	}
 
 	int iAnim;
 	float flRand = UTIL_SharedRandomFloat(m_pPlayer->random_seed, 0, 1);
@@ -518,30 +512,6 @@ void CDisplacer::WeaponIdle(void)
 //=========================================================
 // Purpose:
 //=========================================================
-void CDisplacer::ItemPreFrame(void)
-{
-	CBasePlayerWeapon::ItemPreFrame();
-
-	// Update the displacer beam if required.
-	if ( ShouldUpdateEffects() )
-		UpdateEffects();
-}
-
-//=========================================================
-// Purpose:
-//=========================================================
-void CDisplacer::ItemPostFrame(void)
-{
-	CBasePlayerWeapon::ItemPostFrame();
-
-	// Update the displacer beam if required.
-	if ( ShouldUpdateEffects() )
-		UpdateEffects();
-}
-
-//=========================================================
-// Purpose:
-//=========================================================
 void CDisplacer::ClearSpin( void )
 {
 
@@ -554,104 +524,29 @@ void CDisplacer::ClearSpin( void )
 		STOP_SOUND(ENT(pev), CHAN_WEAPON, "weapons/displacer_spin2.wav");
 		break;
 	}
-
-	m_iFireState = FIRESTATE_NONE;
-	m_iFireMode = FIREMODE_NONE;
 }
 
 //=========================================================
 // Purpose:
 //=========================================================
-void CDisplacer::SpinUp(int iFireMode)
+void CDisplacer::SpinUp( void )
 {
-	int flags;
-#if defined( CLIENT_WEAPONS )
-	flags = FEV_NOTHOST;
-#else
-	flags = 0;
-#endif
+	SendWeaponAnim( DISPLACER_SPINUP, UseDecrement());
 
-	PLAYBACK_EVENT_FULL(
-		flags,
-		m_pPlayer->edict(),
-		m_usDisplacer,
-		0.0,
-		(float *)&g_vecZero,
-		(float *)&g_vecZero,
-		0.0,
-		0.0,
-		DISPLACER_SPINUP,
-		iFireMode,
-		0,
-		0);
+	LightningEffect();
 
-	m_iFireState = FIRESTATE_FIRE;
-
-	m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.7f;
-	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.7f;
-	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 1.0f;
-}
-
-//=========================================================
-// Purpose:
-//=========================================================
-void CDisplacer::Spin(void)
-{
-	int flags;
-#if defined( CLIENT_WEAPONS )
-	flags = FEV_NOTHOST;
-#else
-	flags = 0;
-#endif
-
-	PLAYBACK_EVENT_FULL(
-		flags,
-		m_pPlayer->edict(),
-		m_usDisplacer,
-		0.0,
-		(float *)&g_vecZero,
-		(float *)&g_vecZero,
-		0.0,
-		0.0,
-		DISPLACER_SPIN,
-		0,
-		0,
-		0);
-
-	//SendWeaponAnim(DISPLACER_SPIN, UseDecrement());
-	m_iFireState = FIRESTATE_FIRE;
-
-	m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.7f;
-	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.7f;
-	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 1.0f;
-}
-
-//=========================================================
-// Purpose:
-//=========================================================
-void CDisplacer::Fire(BOOL fIsPrimary)
-{
-	if (fIsPrimary)
+	if( m_iFireMode == FIREMODE_FORWARD ) 
 	{
-		// Use the firemode 1, which launches a portal forward.
-	
-		Displace(  );
+		EMIT_SOUND( edict(), CHAN_WEAPON, "weapons/displacer_spin.wav", 1, ATTN_NORM );
+		SetThink (&CDisplacer::Displace);
 	}
 	else
 	{
-		// Use firemode 2, which teleports the current owner.
-
-		Teleport(  );
+		EMIT_SOUND( edict(), CHAN_WEAPON, "weapons/displacer_spin2.wav", 1, ATTN_NORM );
+		SetThink (&CDisplacer::Teleport);
 	}
-
-	ClearSpin();
-
-	m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.7f;
-	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.7f;
-	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.7f;
-
-	// Decrement weapon ammunition.
-	UseAmmo(EGON_DEFAULT_GIVE);
+	pev->nextthink = gpGlobals->time + 0.9;
+	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.3;
 }
 
 //=========================================================
@@ -659,37 +554,30 @@ void CDisplacer::Fire(BOOL fIsPrimary)
 //=========================================================
 void CDisplacer::Displace( void )
 {
-	int flags;
-#if defined( CLIENT_WEAPONS )
-	flags = FEV_NOTHOST;
-#else
-	flags = 0;
-#endif
-	PLAYBACK_EVENT_FULL(
-		flags,
-		m_pPlayer->edict(),
-		m_usDisplacer,
-		0.0,
-		(float *)&g_vecZero,
-		(float *)&g_vecZero,
-		0.0,
-		0.0,
-		DISPLACER_FIRE,
-		FIREMODE_FORWARD,
-		0,
-		0);
+	ClearBeams();
+	ClearSpin();
 
+	SendWeaponAnim( DISPLACER_FIRE, UseDecrement());
+	EMIT_SOUND( edict(), CHAN_WEAPON, "weapons/displacer_fire.wav", 1, ATTN_NORM );
+
+	// player "shoot" animation
+        m_pPlayer->SetAnimation( PLAYER_ATTACK1 );	
+
+	m_pPlayer->pev->punchangle.x -= 2;
 #ifndef CLIENT_DLL
 	Vector vecSrc;
+	UseAmmo(DISPLACER_PRIMARY_USAGE);
 
 	UTIL_MakeVectors(m_pPlayer->pev->v_angle);
 
 	vecSrc = m_pPlayer->GetGunPosition();
-	vecSrc = vecSrc + gpGlobals->v_forward	* 16;
+	vecSrc = vecSrc + gpGlobals->v_forward	* 22;
 	vecSrc = vecSrc + gpGlobals->v_right	* 8;
 	vecSrc = vecSrc + gpGlobals->v_up		* -12;
 
-	CPortal::Shoot(pev, vecSrc, gpGlobals->v_forward * 400);
+	CDisplacerBall::Shoot( m_pPlayer->pev, vecSrc, gpGlobals->v_forward * 500, m_pPlayer->pev->v_angle );
+
+	SetThink( NULL );
 #endif
 }
 
@@ -698,111 +586,116 @@ void CDisplacer::Displace( void )
 //=========================================================
 void CDisplacer::Teleport( void )
 {
-	ASSERT(m_hTargetEarth != NULL && m_hTargetXen);
+	const char *pszName;
+	ClearBeams();
+	ClearSpin();
+#ifndef CLIENT_DLL
+	CBaseEntity *pTarget = NULL;
+	Vector tmp( 0, 0, 0 );
 
-	CBaseEntity* pTarget = (!m_pPlayer->m_fInXen)
-		? m_hTargetXen
-		: m_hTargetEarth;
-
-	Vector tmp = pTarget->pev->origin;
-
-	// make origin adjustments (origin in center, not at feet)
-	tmp.z -= m_pPlayer->pev->mins.z;
-	tmp.z++;
-
-	m_pPlayer->pev->flags &= ~FL_ONGROUND;
-
-	UTIL_SetOrigin(m_pPlayer->pev, tmp);
-
-	m_pPlayer->pev->angles = pTarget->pev->angles;
-
-	m_pPlayer->pev->v_angle = pTarget->pev->angles;
-
-	m_pPlayer->pev->fixangle = TRUE;
-	m_pPlayer->pev->velocity = m_pPlayer->pev->basevelocity = g_vecZero;
-
-	m_pPlayer->m_fInXen = !m_pPlayer->m_fInXen;
-
-	if (m_pPlayer->m_fInXen)
+	if( g_pGameRules->IsMultiplayer() && !g_pGameRules->IsCoOp() )
 	{
-		m_pPlayer->pev->gravity = 0.5;
+		pTarget = GetClassPtr( (CBaseEntity *)VARS( EntSelectSpawnPoint( m_pPlayer ) ) );
 	}
 	else
 	{
-		m_pPlayer->pev->gravity = 1.0;
+		if( !m_pPlayer->m_fInXen )
+			pszName = "info_displacer_xen_target";
+		else
+			pszName = "info_displacer_earth_target"; // TODO: Implement trigger_xen_return
+		pTarget = UTIL_FindEntityByClassname( 0, pszName );
 	}
 
-	int flags;
-#if defined( CLIENT_WEAPONS )
-	flags = FEV_NOTHOST;
-#else
-	flags = 0;
-#endif
+	if( pTarget )
+		tmp = pTarget->pev->origin;
 
-	// Used to play teleport sound.
-	PLAYBACK_EVENT_FULL(
-		flags,
-		m_pPlayer->edict(),
-		m_usDisplacer,
-		0.0,
-		(float *)&g_vecZero,
-		(float *)&g_vecZero,
-		0.0,
-		0.0,
-		DISPLACER_FIRE,
-		FIREMODE_BACKWARD,
-		0,
-		0);
-}
+	if( pTarget && /*HACK*/( tmp != Vector( 0, 0, 0 )/*HACK*/ ) )
+	{
+		// UTIL_ScreenFade( m_pPlayer, Vector( 0, 200, 0 ), 0.5, 0.5, 255, FFADE_IN );
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase();
 
-//=========================================================
-// Purpose:
-//=========================================================
-void CDisplacer::UpdateEffects(void)
-{
-	int flags;
-#if defined( CLIENT_WEAPONS )
-	flags = FEV_NOTHOST;
-#else
-	flags = 0;
-#endif
+		UseAmmo(DISPLACER_SECONDARY_USAGE);
 
-	// TODO: Fix effects later.
-#if 0
-	// Used to display beam effects.
-	PLAYBACK_EVENT_FULL(
-		flags,
-		m_pPlayer->edict(),
-		m_usDisplacer,
-		0.0,
-		(float *)&g_vecZero,
-		(float *)&g_vecZero,
-		0.0,
-		0.0,
-		0,
-		0,
-		EFFECT_CORE,
-		0);
+		UTIL_CleanSpawnPoint( tmp, 50 );
+
+		EMIT_SOUND( edict(), CHAN_BODY, "weapons/displacer_self.wav", 1, ATTN_NORM );
+	 	CDisplacerBall::SelfCreate(m_pPlayer->pev, m_pPlayer->pev->origin);
+
+		// make origin adjustments (origin in center, not at feet)
+		tmp.z -= m_pPlayer->pev->mins.z + 36;
+		tmp.z++;
+
+		m_pPlayer->pev->flags &= ~FL_ONGROUND;
+
+		UTIL_SetOrigin(m_pPlayer->pev, tmp);
+
+		m_pPlayer->pev->angles = pTarget->pev->angles;
+
+		m_pPlayer->pev->v_angle = pTarget->pev->angles;
+
+		m_pPlayer->pev->fixangle = TRUE;
+		m_pPlayer->pev->velocity = m_pPlayer->pev->basevelocity = g_vecZero;
+
+		if( !g_pGameRules->IsMultiplayer())
+		{
+			m_pPlayer->m_fInXen = !m_pPlayer->m_fInXen;
+			/*if (m_pPlayer->m_fInXen)
+				m_pPlayer->pev->gravity = 0.5;
+			else
+				m_pPlayer->pev->gravity = 1.0;*/
+		}
+	}
+	else
+	{
+		EMIT_SOUND( edict(), CHAN_BODY, "buttons/button11.wav", 1, ATTN_NORM );
+		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 3.0;
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.9;
+	}
+
+	SetThink( NULL );
 #endif
 }
 
-//=========================================================
-// Purpose:
-//=========================================================
-BOOL CDisplacer::ShouldUpdateEffects(void) const
+void CDisplacer::LightningEffect( void )
 {
-	return (m_iFireState != FIRESTATE_NONE);
+#ifndef CLIENT_DLL
+	int m_iBeams = 0;
+
+	if( g_pGameRules->IsMultiplayer())
+		return;
+
+	for( int i = 2; i < 5; ++i )
+	{
+		if( !m_pBeam[m_iBeams] )
+			m_pBeam[m_iBeams] = CBeam::BeamCreate( "sprites/lgtning.spr", 16 ); 
+		m_pBeam[m_iBeams]->EntsInit( m_pPlayer->entindex(), m_pPlayer->entindex() );
+ 		m_pBeam[m_iBeams]->SetStartAttachment( i );
+		m_pBeam[m_iBeams]->SetEndAttachment( i == 4 ? i - 2 : i + 1 );
+		m_pBeam[m_iBeams]->SetColor( 96, 128, 16 );
+		m_pBeam[m_iBeams]->SetBrightness( 240 );
+		m_pBeam[m_iBeams]->SetNoise( 60 );
+		m_pBeam[m_iBeams]->SetScrollRate( 30 );
+		m_pBeam[m_iBeams]->pev->scale = 10;
+		m_iBeams++;
+	}
+#endif
 }
 
-//=========================================================
-// Purpose:
-//=========================================================
-BOOL CDisplacer::HasAmmo(void)
+void CDisplacer::ClearBeams( void )
 {
-	if (m_pPlayer->ammo_uranium <= 0)
-		return FALSE;
+#ifndef CLIENT_DLL
+	if( g_pGameRules->IsMultiplayer())
+		return;
 
-	return TRUE;
+	for( int i = 0; i < 3; i++ )
+	{
+		if( m_pBeam[i] )
+		{
+			UTIL_Remove( m_pBeam[i] );
+			m_pBeam[i] = NULL;
+		}
+	}
+#endif
 }
 
 //=========================================================
@@ -810,16 +703,13 @@ BOOL CDisplacer::HasAmmo(void)
 //=========================================================
 void CDisplacer::UseAmmo(int count)
 {
-	if (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] >= count)
-		m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] -= count;
-	else
-		m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] = 0;
+	m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] -= count;
 }
 
 //=========================================================
 // Purpose:
 //=========================================================
-BOOL CDisplacer::CanFireDisplacer() const
+BOOL CDisplacer::CanFireDisplacer( int count ) const
 {
-	return m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] > EGON_DEFAULT_GIVE;
+	return m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] >= count;
 }

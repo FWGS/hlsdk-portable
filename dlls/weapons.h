@@ -182,6 +182,7 @@ public:
 #define TRIPMINE_DEFAULT_GIVE		1
 #define SNARK_DEFAULT_GIVE			5
 #define HIVEHAND_DEFAULT_GIVE		8
+#define DISPLACER_DEFAULT_GIVE		40
 #define EAGLE_DEFAULT_GIVE			7
 #define M249_DEFAULT_GIVE			50
 #define PENGUIN_DEFAULT_GIVE			3
@@ -1046,29 +1047,25 @@ private:
 class CDisplacer : public CBasePlayerWeapon
 {
 public:
-
 #ifndef CLIENT_DLL
-	int		Save(CSave &save);
-	int		Restore(CRestore &restore);
-	static	TYPEDESCRIPTION m_SaveData[];
+	int Save( CSave &save );
+	int Restore( CRestore &restore );
+	static TYPEDESCRIPTION m_SaveData[];
 #endif
-	void Spawn(void);
-	void Precache(void);
-	int iItemSlot(void) { return 5; }
-	int GetItemInfo(ItemInfo *p);
-	int AddToPlayer(CBasePlayer *pPlayer);
-	void PrimaryAttack(void);
-	void SecondaryAttack(void);
-	BOOL Deploy(void);
-	void Holster(int skiplocal = 0);
-	void WeaponIdle(void); 
+	void Spawn( void );
+	void Precache( void );
+	int iItemSlot( void ) { return 6; }
+	int GetItemInfo( ItemInfo *p );
+	int AddToPlayer( CBasePlayer *pPlayer );
+	void PrimaryAttack( void );
+	void SecondaryAttack( void );
+	BOOL Deploy( void );
+	void Holster( int skiplocal = 0 );
+	void WeaponIdle( void );
 
-	void ItemPreFrame(void);
-	void ItemPostFrame( void );
+	BOOL PlayEmptySound( void );
 
-	BOOL PlayEmptySound(void);
-
-	virtual BOOL UseDecrement(void)
+	virtual BOOL UseDecrement( void )
 	{
 #if defined( CLIENT_WEAPONS )
 		return TRUE;
@@ -1077,30 +1074,20 @@ public:
 #endif
 	}
 
-	int		m_iFireState;
-	int		m_iFireMode;
-	CBaseEntity* m_hTargetEarth;
-	CBaseEntity* m_hTargetXen;
-
-	BOOL HasAmmo(void);
 	void UseAmmo(int count);
-	BOOL CanFireDisplacer() const;
+	BOOL CanFireDisplacer( int count ) const;
 
-	enum DISPLACER_FIRESTATE { FIRESTATE_NONE = 0, FIRESTATE_SPINUP, FIRESTATE_SPIN, FIRESTATE_FIRE };
-	enum DISPLACER_FIREMODE { FIREMODE_NONE = 0, FIREMODE_FORWARD, FIREMODE_BACKWARD };
-	enum DISPLACER_EFFECT { EFFECT_NONE = 0, EFFECT_CORE };
+	enum DISPLACER_FIREMODE { FIREMODE_FORWARD = 1, FIREMODE_BACKWARD };
 
-private:
 	void ClearSpin( void );
-	void SpinUp(int iFireMode);
-	void Spin( void );
-	void Fire( BOOL fIsPrimary );
-	void Teleport( void );
-	void Displace( void );
-	void UpdateEffects( void );
-	BOOL ShouldUpdateEffects( void ) const;
-
+	void EXPORT SpinUp( void );
+	void EXPORT Teleport( void );
+	void EXPORT Displace( void );
+	void LightningEffect( void );
+	void ClearBeams( void );
 private:
+	CBeam *m_pBeam[3];
+	int m_iFireMode;
 	unsigned short m_usDisplacer;
 };
 
