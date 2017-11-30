@@ -1,9 +1,9 @@
 /***
 *
-*	Copyright (c) 1996-2001, Valve LLC. All rights reserved.
-*
-*	This product contains software technology licensed from Id
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
+*	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
+*	
+*	This product contains software technology licensed from Id 
+*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
 *	All Rights Reserved.
 *
 *   This source code contains proprietary and confidential information of
@@ -12,29 +12,26 @@
 *   use or distribution of this code by or to any unlicensed person is illegal.
 *
 ****/
-
-#ifndef ZOMBIE_H
-#define ZOMBIE_H
-
 //=========================================================
 // Zombie
 //=========================================================
+
 class CZombie : public CBaseMonster
 {
 public:
-	virtual void Spawn(void);
-	virtual void Precache(void);
-	void SetYawSpeed(void);
-	int  Classify(void);
-	virtual void HandleAnimEvent(MonsterEvent_t *pEvent);
-	int IgnoreConditions(void);
+	virtual void Spawn( void );
+	virtual void Precache( void );
+	void SetYawSpeed( void );
+	int Classify( void );
+	virtual void HandleAnimEvent( MonsterEvent_t *pEvent );
+	int IgnoreConditions( void );
 
 	float m_flNextFlinch;
 
-	void PainSound(void);
-	void AlertSound(void);
-	void IdleSound(void);
-	void AttackSound(void);
+	virtual void PainSound( void );
+	void AlertSound( void );
+	virtual void IdleSound( void );
+	void AttackSound( void );
 
 	static const char *pAttackSounds[];
 	static const char *pIdleSounds[];
@@ -44,10 +41,7 @@ public:
 	static const char *pAttackMissSounds[];
 
 	// No range attacks
-	BOOL CheckRangeAttack1(float flDot, float flDist) { return FALSE; }
-	BOOL CheckRangeAttack2(float flDot, float flDist) { return FALSE; }
-	int TakeDamage(entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType);
+	virtual BOOL CheckRangeAttack1( float flDot, float flDist ) { return FALSE; }
+	virtual BOOL CheckRangeAttack2( float flDot, float flDist ) { return FALSE; }
+	virtual int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
 };
-
-
-#endif // ZOMBIE_H
