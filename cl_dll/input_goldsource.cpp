@@ -8,20 +8,20 @@
 // in_win.c -- windows 95 mouse and joystick code
 // 02/21/97 JCB Added extended DirectInput code to support external controllers.
 
-//#include "port.h"
+#include "input_mouse.h"
+
+#ifdef SUPPORT_GOLDSOURCE_INPUT
 
 #include "hud.h"
 #include "cl_util.h"
 #include "camera.h"
 #include "kbutton.h"
 #include "cvardef.h"
-#include "usercmd.h"
 #include "const.h"
 #include "camera.h"
 #include "in_defs.h"
 #include "keydefs.h"
 #include "view.h"
-//#include "Exports.h"
 
 #ifndef _WIN32
 #define USE_SDL2
@@ -79,7 +79,7 @@ bool isMouseRelative = false;
 extern globalvars_t *gpGlobals;
 #endif
 
-Vector dead_viewangles(0, 0, 0);
+extern Vector dead_viewangles;
 
 void V_StopPitchDrift( void )
 {
@@ -88,7 +88,7 @@ void V_StopPitchDrift( void )
 
 // mouse variables
 cvar_t      *m_filter;
-cvar_t      *sensitivity;
+extern cvar_t      *sensitivity;
 
 // Custom mouse acceleration (0 disable, 1 to enable, 2 enable with separate yaw/pitch rescale)
 static cvar_t *m_customaccel;
@@ -106,16 +106,11 @@ static cvar_t *m_customaccel_exponent;
 static cvar_t *m_mousethread_sleep;
 #endif
 
-int         mouse_buttons;
-int         mouse_oldbuttonstate;
-POINT       current_pos;
-int         old_mouse_x, old_mouse_y, mx_accum, my_accum;
 float       mouse_x, mouse_y;
 
 static int  restore_spi;
 static int  originalmouseparms[3], newmouseparms[3] = {0, 0, 1};
 static int  mouseactive = 0;
-int         mouseinitialized;
 static int  mouseparmsvalid;
 static int  mouseshowtoggle = 1;
 
@@ -158,7 +153,7 @@ SDL_GameController *s_pJoystick = NULL;
 // each time.  this avoids any problems with getting back to a default usage
 // or when changing from one controller to another.  this way at least something
 // works.
-cvar_t  *in_joystick;
+extern cvar_t  *in_joystick;
 cvar_t  *joy_name;
 cvar_t  *joy_advanced;
 cvar_t  *joy_advaxisx;
@@ -348,7 +343,7 @@ void IN_ResetMouse( void );
 IN_ActivateMouse
 ===========
 */
-extern "C" void DLLEXPORT IN_ActivateMouse (void)
+void GoldSourceInput::IN_ActivateMouse (void)
 {
     if (mouseinitialized)
     {
@@ -376,7 +371,7 @@ extern "C" void DLLEXPORT IN_ActivateMouse (void)
 IN_DeactivateMouse
 ===========
 */
-extern "C" void DLLEXPORT IN_DeactivateMouse (void)
+void GoldSourceInput::IN_DeactivateMouse (void)
 {
     if (mouseinitialized)
     {
@@ -400,7 +395,7 @@ extern "C" void DLLEXPORT IN_DeactivateMouse (void)
 IN_StartupMouse
 ===========
 */
-void IN_StartupMouse (void)
+void GoldSourceInput::IN_StartupMouse (void)
 {
     if ( gEngfuncs.CheckParm ("-nomouse", NULL ) )
         return;
@@ -437,7 +432,7 @@ void IN_StartupMouse (void)
 IN_Shutdown
 ===========
 */
-void IN_Shutdown (void)
+void GoldSourceInput::IN_Shutdown (void)
 {
     IN_DeactivateMouse ();
 
@@ -521,7 +516,7 @@ void IN_ResetMouse( void )
 IN_MouseEvent
 ===========
 */
-extern "C" void DLLEXPORT IN_MouseEvent (int mstate)
+void GoldSourceInput::IN_MouseEvent (int mstate)
 {
     int     i;
 
@@ -596,7 +591,7 @@ void IN_ScaleMouse( float *x, float *y )
     }
 }
 
-void IN_GetMouseDelta( int *pOutX, int *pOutY)
+void GoldSourceInput::IN_GetMouseDelta( int *pOutX, int *pOutY)
 {
     bool active = mouseactive && !iVisibleMouse;
     int mx, my;
@@ -715,7 +710,7 @@ void IN_GetMouseDelta( int *pOutX, int *pOutY)
 IN_MouseMove
 ===========
 */
-void IN_MouseMove ( float frametime, usercmd_t *cmd)
+void GoldSourceInput::IN_MouseMove ( float frametime, usercmd_t *cmd)
 {
     int     mx, my;
     vec3_t viewangles;
@@ -797,7 +792,7 @@ void IN_MouseMove ( float frametime, usercmd_t *cmd)
 IN_Accumulate
 ===========
 */
-extern "C" void DLLEXPORT IN_Accumulate (void)
+void GoldSourceInput::IN_Accumulate (void)
 {
     //only accumulate mouse if we are not moving the camera with the mouse
     if ( !iMouseInUse && !iVisibleMouse)
@@ -850,7 +845,7 @@ extern "C" void DLLEXPORT IN_Accumulate (void)
 IN_ClearStates
 ===================
 */
-extern "C" void DLLEXPORT IN_ClearStates (void)
+void GoldSourceInput::IN_ClearStates (void)
 {
     if ( !mouseactive )
         return;
@@ -999,7 +994,7 @@ void Joy_AdvancedUpdate_f (void)
 IN_Commands
 ===========
 */
-void IN_Commands (void)
+void GoldSourceInput::IN_Commands (void)
 {
     int     i, key_index;
 
@@ -1274,7 +1269,7 @@ void IN_JoyMove ( float frametime, usercmd_t *cmd )
 IN_Move
 ===========
 */
-void IN_Move ( float frametime, usercmd_t *cmd)
+void GoldSourceInput::IN_Move ( float frametime, usercmd_t *cmd)
 {
     if ( !iMouseInUse && mouseactive )
     {
@@ -1289,7 +1284,7 @@ void IN_Move ( float frametime, usercmd_t *cmd)
 IN_Init
 ===========
 */
-void IN_Init (void)
+void GoldSourceInput::IN_Init (void)
 {
     m_filter                = gEngfuncs.pfnRegisterVariable ( "m_filter","0", FCVAR_ARCHIVE );
     sensitivity             = gEngfuncs.pfnRegisterVariable ( "sensitivity","3", FCVAR_ARCHIVE ); // user mouse sensitivity setting.
@@ -1355,3 +1350,5 @@ void IN_Init (void)
     IN_StartupMouse ();
     IN_StartupJoystick ();
 }
+
+#endif

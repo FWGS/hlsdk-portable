@@ -25,6 +25,8 @@
 //		- Drawing the HUD graphics every frame
 //		- Handling the custum HUD-update packets
 //
+#ifndef CL_DLL_H
+#define CL_DLL_H
 typedef unsigned char byte;
 typedef unsigned short word;
 typedef float vec_t;
@@ -48,3 +50,4 @@ typedef int ( *pfnUserMsgHook )( const char *pszName, int iSize, void *pbuf );
 extern cl_enginefunc_t gEngfuncs;
 #include "../engine/mobility_int.h"
 extern mobile_engfuncs_t *gMobileEngfuncs;
+#endif
