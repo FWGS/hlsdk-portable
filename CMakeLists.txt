@@ -31,6 +31,7 @@ option(USE_VGUI2 "Enable VGUI2. UNDONE" OFF)
 option(USE_VOICEMGR "Enable VOICE MANAGER." OFF)
 option(BUILD_CLIENT "Build client dll" ON)
 option(BUILD_SERVER "Build server dll" ON)
+option(GOLDSOURCE_SUPPORT "Build goldsource compatible client library" OFF)
 
 #-----------------
 # MAIN BUILD CODE \
