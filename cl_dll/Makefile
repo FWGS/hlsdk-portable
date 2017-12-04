@@ -45,7 +45,8 @@ SRCS+=./hud_spectator.cpp
 SRCS+=./hud_update.cpp
 SRCS+=./in_camera.cpp
 SRCS+=./input.cpp
-#SRCS+=./inputw32.cpp
+SRCS+=./input_mouse.cpp
+SRCS+=./input_goldsource.cpp
 SRCS+=./menu.cpp
 SRCS+=./message.cpp
 SRCS+=./overview.cpp
@@ -72,9 +73,13 @@ CFLAGS = -m32
 OBJS = $(SRCS:.cpp=.o) $(SRCS_C:.c=.o)
 
 LIBS=-lm
+ifeq ($(GOLDSOURCE_SUPPORT),1)
+	DEFINES += -DGOLDSOURCE_SUPPORT
+	LIBS += -lSDL2
+endif
 
 ifeq ($(shell uname -s),Linux)
-	LIBS=$(LIBS) -ldl
+	LIBS += -ldl
 endif
 
 %.o : %.c
@@ -83,7 +88,7 @@ endif
 %.o : %.cpp
 	$(CXX) $(CFLAGS) $(INCLUDES) $(DEFINES) -fPIC -c $< -o $@
 client.so : $(OBJS)
-	$(CXX) $(OBJS) -o client.so -shared -Wl,--no-undefined -fPIC $(LIBS)
+	$(CXX) $(CFLAGS) $(OBJS) -o client.so -shared -Wl,--no-undefined -fPIC $(LIBS)
 
 clean:
 	$(RM) $(OBJS)

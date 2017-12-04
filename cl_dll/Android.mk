@@ -68,6 +68,8 @@ SRCS+=./hud_spectator.cpp
 SRCS+=./hud_update.cpp
 SRCS+=./in_camera.cpp
 SRCS+=./input.cpp
+SRCS+=./input_goldsource.cpp
+SRCS+=./input_mouse.cpp
 #SRCS+=./inputw32.cpp
 SRCS+=./menu.cpp
 SRCS+=./message.cpp
@@ -99,6 +101,11 @@ LOCAL_C_INCLUDES := $(LOCAL_PATH)/. \
 		 $(LOCAL_PATH)/../dlls \
 		 $(LOCAL_PATH)/../pm_shared
 LOCAL_CFLAGS += $(DEFINES) $(INCLUDES)
+
+ifeq ($(GOLDSOURCE_SUPPORT),1)
+	DEFINES += -DGOLDSOURCE_SUPPORT
+	LOCAL_LDLIBS += -lSDL2
+endif
 
 LOCAL_SRC_FILES := $(SRCS) $(SRCS_C)
 
