@@ -300,7 +300,15 @@ SOURCE=.\input.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\inputw32.cpp
+SOURCE=.\input_goldsource.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\input_mouse.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\input_xash3d.cpp
 # End Source File
 # Begin Source File
 
@@ -510,6 +518,10 @@ SOURCE=.\hud_spectator.h
 # Begin Source File
 
 SOURCE=.\in_defs.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\input_mouse.h
 # End Source File
 # Begin Source File
 
