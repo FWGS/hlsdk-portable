@@ -71,6 +71,7 @@ protected:
 	POINT       current_pos;
 	int         old_mouse_x, old_mouse_y, mx_accum, my_accum;
 	int         mouseinitialized;
+	void* sdl2Lib;
 };
 #endif
 

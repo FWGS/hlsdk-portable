@@ -28,8 +28,18 @@
 #endif
 
 #ifdef USE_SDL2
+#include <dlfcn.h>
 #include <SDL2/SDL_mouse.h>
 #include <SDL2/SDL_gamecontroller.h>
+int (*pfnSDL_SetRelativeMouseMode)(SDL_bool);
+Uint32 (*pfnSDL_GetRelativeMouseState)(int* x, int* y);
+int (*pfnSDL_NumJoysticks)(void);
+SDL_bool (*pfnSDL_IsGameController)(int);
+SDL_GameController* (*pfnSDL_GameControllerOpen)(int);
+Sint16 (*pfnSDL_GameControllerGetAxis)(SDL_GameController*, SDL_GameControllerAxis);
+Uint8 (*pfnSDL_GameControllerGetButton)(SDL_GameController*, SDL_GameControllerButton);
+void (*pfnSDL_JoystickUpdate)(void);
+const char* (*pfnSDL_GameControllerName)(SDL_GameController*);
 #endif
 
 #ifdef _WIN32
@@ -289,12 +299,12 @@ void IN_SetMouseMode(bool enable)
         if(m_bRawInput)
         {
 #ifdef USE_SDL2
-            SDL_SetRelativeMouseMode(SDL_TRUE);
+            pfnSDL_SetRelativeMouseMode(SDL_TRUE);
 #endif
             isMouseRelative = true;
         }
 #else
-        SDL_SetRelativeMouseMode(SDL_TRUE);
+        pfnSDL_SetRelativeMouseMode(SDL_TRUE);
 #endif
 
         currentMouseMode = true;
@@ -305,7 +315,7 @@ void IN_SetMouseMode(bool enable)
         if(isMouseRelative)
         {
 #ifdef USE_SDL2
-            SDL_SetRelativeMouseMode(SDL_FALSE);
+            pfnSDL_SetRelativeMouseMode(SDL_FALSE);
 #endif
             isMouseRelative = false;
         }
@@ -313,7 +323,7 @@ void IN_SetMouseMode(bool enable)
         if (restore_spi)
             SystemParametersInfo (SPI_SETMOUSE, 0, originalmouseparms, 0);
 #else
-        SDL_SetRelativeMouseMode(SDL_FALSE);
+        pfnSDL_SetRelativeMouseMode(SDL_FALSE);
 #endif
 
         currentMouseMode = false;
@@ -463,6 +473,11 @@ void GoldSourceInput::IN_Shutdown (void)
         CloseHandle( s_hMouseThreadActiveLock );
         s_hMouseThreadActiveLock = (HANDLE)0;
     }
+#endif
+
+#ifdef USE_SDL2
+    dlclose(sdl2Lib);
+    sdl2Lib = NULL;
 #endif
 }
 
@@ -623,7 +638,7 @@ void GoldSourceInput::IN_GetMouseDelta( int *pOutX, int *pOutY)
 #endif
         {
 #ifdef USE_SDL2
-            SDL_GetRelativeMouseState( &deltaX, &deltaY );
+            pfnSDL_GetRelativeMouseState( &deltaX, &deltaY );
             current_pos.x = deltaX;
             current_pos.y = deltaY;
 #else
@@ -679,14 +694,14 @@ void GoldSourceInput::IN_GetMouseDelta( int *pOutX, int *pOutY)
             if(m_bRawInput && !isMouseRelative)
             {
 #ifdef USE_SDL2
-                SDL_SetRelativeMouseMode(SDL_TRUE);
+                pfnSDL_SetRelativeMouseMode(SDL_TRUE);
 #endif
                 isMouseRelative = true;
             }
             else if(!m_bRawInput && isMouseRelative)
             {
 #ifdef USE_SDL2
-                SDL_SetRelativeMouseMode(SDL_FALSE);
+                pfnSDL_SetRelativeMouseMode(SDL_FALSE);
 #endif
                 isMouseRelative = false;
             }
@@ -815,7 +830,7 @@ void GoldSourceInput::IN_Accumulate (void)
             {
 #ifdef USE_SDL2
                 int deltaX, deltaY;
-                SDL_GetRelativeMouseState( &deltaX, &deltaY );
+                pfnSDL_GetRelativeMouseState( &deltaX, &deltaY );
                 mx_accum += deltaX;
                 my_accum += deltaY;
 #else
@@ -869,14 +884,14 @@ void IN_StartupJoystick (void)
     // assume no joystick
     joy_avail = 0;
 #ifdef USE_SDL2
-    int nJoysticks = SDL_NumJoysticks();
+    int nJoysticks = pfnSDL_NumJoysticks();
     if ( nJoysticks > 0 )
     {
         for ( int i = 0; i < nJoysticks; i++ )
         {
-            if ( SDL_IsGameController( i ) )
+            if ( pfnSDL_IsGameController( i ) )
             {
-                s_pJoystick = SDL_GameControllerOpen( i );
+                s_pJoystick = pfnSDL_GameControllerOpen( i );
                 if ( s_pJoystick )
                 {
                     //save the joystick's number of buttons and POV status
@@ -888,7 +903,7 @@ void IN_StartupJoystick (void)
 
                     // mark the joystick as available and advanced initialization not completed
                     // this is needed as cvars are not available during initialization
-                    gEngfuncs.Con_Printf ("joystick found\n\n", SDL_GameControllerName(s_pJoystick));
+                    gEngfuncs.Con_Printf ("joystick found\n\n", pfnSDL_GameControllerName(s_pJoystick));
                     joy_avail = 1;
                     joy_advancedinit = 0;
                     break;
@@ -912,13 +927,13 @@ int RawValuePointer (int axis)
     {
     default:
     case JOY_AXIS_X:
-        return SDL_GameControllerGetAxis( s_pJoystick, SDL_CONTROLLER_AXIS_LEFTX );
+        return pfnSDL_GameControllerGetAxis( s_pJoystick, SDL_CONTROLLER_AXIS_LEFTX );
     case JOY_AXIS_Y:
-        return SDL_GameControllerGetAxis( s_pJoystick, SDL_CONTROLLER_AXIS_LEFTY );
+        return pfnSDL_GameControllerGetAxis( s_pJoystick, SDL_CONTROLLER_AXIS_LEFTY );
     case JOY_AXIS_Z:
-        return SDL_GameControllerGetAxis( s_pJoystick, SDL_CONTROLLER_AXIS_RIGHTX );
+        return pfnSDL_GameControllerGetAxis( s_pJoystick, SDL_CONTROLLER_AXIS_RIGHTX );
     case JOY_AXIS_R:
-        return SDL_GameControllerGetAxis( s_pJoystick, SDL_CONTROLLER_AXIS_RIGHTY );
+        return pfnSDL_GameControllerGetAxis( s_pJoystick, SDL_CONTROLLER_AXIS_RIGHTY );
 
     }
 #else
@@ -1011,7 +1026,7 @@ void GoldSourceInput::IN_Commands (void)
 #ifdef USE_SDL2
     for ( i = 0; i < SDL_CONTROLLER_BUTTON_MAX; i++ )
     {
-        if ( SDL_GameControllerGetButton( s_pJoystick, (SDL_GameControllerButton)i ) )
+        if ( pfnSDL_GameControllerGetButton( s_pJoystick, (SDL_GameControllerButton)i ) )
         {
             buttonstate |= 1<<i;
         }
@@ -1071,7 +1086,7 @@ IN_ReadJoystick
 int IN_ReadJoystick (void)
 {
 #ifdef USE_SDL2
-    SDL_JoystickUpdate();
+    pfnSDL_JoystickUpdate();
 #endif
     return 1;
 }
@@ -1344,6 +1359,28 @@ void GoldSourceInput::IN_Init (void)
     }
 #endif
 
+#ifdef USE_SDL2
+	sdl2Lib = dlopen("libSDL2.so", RTLD_NOW|RTLD_LOCAL);
+	if (!sdl2Lib)
+		sdl2Lib = dlopen("libSDL2-2.0.so.0", RTLD_NOW|RTLD_LOCAL);
+	if (sdl2Lib) {
+		void** sdlFunctions[] = {(void**)&pfnSDL_SetRelativeMouseMode, (void**)&pfnSDL_GetRelativeMouseState, (void**)&pfnSDL_NumJoysticks,
+								(void**)&pfnSDL_IsGameController, (void**)&pfnSDL_GameControllerOpen, (void**)&pfnSDL_GameControllerGetAxis,
+								(void**)&pfnSDL_GameControllerGetButton, (void**)&pfnSDL_JoystickUpdate, (void**)&pfnSDL_GameControllerName};
+		const char* const sdlFuncNames[] = {"SDL_SetRelativeMouseMode", "SDL_GetRelativeMouseState", "SDL_NumJoysticks",
+								"SDL_IsGameController", "SDL_GameControllerOpen", "SDL_GameControllerGetAxis",
+								"SDL_GameControllerGetButton", "SDL_JoystickUpdate", "SDL_GameControllerName"};
+		for (int j=0; j<sizeof(sdlFunctions)/sizeof(sdlFunctions[0]); ++j) {
+			*(sdlFunctions[j]) = dlsym(sdl2Lib, sdlFuncNames[j]);
+			if (*sdlFunctions[j] == NULL) {
+				gEngfuncs.Con_Printf("Could not load SDL2 function %s: %s\n", sdlFuncNames[j], dlerror());
+				break;
+			}
+		}
+	} else {
+		gEngfuncs.Con_Printf("Could not load SDL2: %s\n", dlerror());
+	}
+#endif
     gEngfuncs.pfnAddCommand ("force_centerview", Force_CenterView_f);
     gEngfuncs.pfnAddCommand ("joyadvancedupdate", Joy_AdvancedUpdate_f);
 
