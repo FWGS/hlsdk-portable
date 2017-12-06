@@ -91,18 +91,5 @@ typedef unsigned short ushort;
 typedef unsigned int   uint;
 typedef unsigned long  ulong;
 
-namespace vgui
-{
-
-VGUIAPI void  vgui_setMalloc(void *(*malloc)(size_t size) );
-VGUIAPI void  vgui_setFree(void (*free)(void* memblock));
-VGUIAPI void  vgui_strcpy(char* dst,int dstLen,const char* src);
-VGUIAPI char* vgui_strdup(const char* src);
-VGUIAPI int   vgui_printf(const char* format,...);
-VGUIAPI int   vgui_dprintf(const char* format,...);
-VGUIAPI int   vgui_dprintf2(const char* format,...);
-
-}
-
 #endif
 

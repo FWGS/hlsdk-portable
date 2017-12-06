@@ -239,6 +239,7 @@ int DLLEXPORT HUD_VidInit( void )
 #ifdef USE_VGUI_FOR_GOLDSOURCE_SUPPORT
 	vgui::Panel* root=(vgui::Panel*)gEngfuncs.VGui_GetPanel();
 	if (root) {
+		gEngfuncs.Con_Printf( "Root VGUI panel exists\n" );
 		root->setBgColor(128,128,0,0);
 
 		if (gViewPort != NULL)
@@ -250,6 +251,8 @@ int DLLEXPORT HUD_VidInit( void )
 			gViewPort = new TeamFortressViewport(0,0,root->getWide(),root->getTall());
 			gViewPort->setParent(root);
 		}
+	} else {
+		gEngfuncs.Con_Printf( "Root VGUI panel does not exist\n" );
 	}
 #endif
 	return 1;
