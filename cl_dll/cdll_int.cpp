@@ -26,7 +26,6 @@
 #if defined(GOLDSOURCE_SUPPORT) && (defined(_WIN32) || defined(__linux__) || defined(__APPLE__)) && (defined(__i386) || defined(_M_IX86))
 #define USE_VGUI_FOR_GOLDSOURCE_SUPPORT
 #include "VGUI_Panel.h"
-#include "VGUI_BorderLayout.h"
 #include "VGUI_App.h"
 #endif
 
@@ -197,7 +196,7 @@ public:
 
 static TeamFortressViewport* gViewPort = NULL;
 
-TeamFortressViewport::TeamFortressViewport(int x, int y, int wide, int tall)
+TeamFortressViewport::TeamFortressViewport(int x, int y, int wide, int tall) : Panel(x, y, wide, tall)
 {
 	gViewPort = this;
 	Initialize();
@@ -205,14 +204,14 @@ TeamFortressViewport::TeamFortressViewport(int x, int y, int wide, int tall)
 
 void TeamFortressViewport::Initialize()
 {
-	vgui::App::getInstance()->setCursorOveride( vgui::App::getInstance()->getScheme()->getCursor(vgui::Scheme::scu_none) );
+	//vgui::App::getInstance()->setCursorOveride( vgui::App::getInstance()->getScheme()->getCursor(vgui::Scheme::scu_none) );
 }
 
 void TeamFortressViewport::paintBackground()
 {
-	int wide, tall;
-	getParent()->getSize( wide, tall );
-	setSize( wide, tall );
+//	int wide, tall;
+//	getParent()->getSize( wide, tall );
+//	setSize( wide, tall );
 	gEngfuncs.VGui_ViewportPaintBackground(HUD_GetRect());
 }
 
@@ -239,17 +238,18 @@ int DLLEXPORT HUD_VidInit( void )
 	gHUD.VidInit();
 #ifdef USE_VGUI_FOR_GOLDSOURCE_SUPPORT
 	vgui::Panel* root=(vgui::Panel*)gEngfuncs.VGui_GetPanel();
-	root->setBgColor(128,128,0,0);
-	root->setLayout(new vgui::BorderLayout(0));
+	if (root) {
+		root->setBgColor(128,128,0,0);
 
-	if (gViewPort != NULL)
-	{
-		gViewPort->Initialize();
-	}
-	else
-	{
-		gViewPort = new TeamFortressViewport(0,0,root->getWide(),root->getTall());
-		gViewPort->setParent(root);
+		if (gViewPort != NULL)
+		{
+			gViewPort->Initialize();
+		}
+		else
+		{
+			gViewPort = new TeamFortressViewport(0,0,root->getWide(),root->getTall());
+			gViewPort->setParent(root);
+		}
 	}
 #endif
 	return 1;
@@ -332,7 +332,10 @@ Called by engine every frame that client .dll is loaded
 
 void DLLEXPORT HUD_Frame( double time )
 {
-#ifndef USE_VGUI_FOR_GOLDSOURCE_SUPPORT
+#ifdef USE_VGUI_FOR_GOLDSOURCE_SUPPORT
+	if (!gViewPort)
+		gEngfuncs.VGui_ViewportPaintBackground(HUD_GetRect());
+#else
 	gEngfuncs.VGui_ViewportPaintBackground(HUD_GetRect());
 #endif
 }
