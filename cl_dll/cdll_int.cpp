@@ -305,3 +305,8 @@ void DLLEXPORT HUD_MobilityInterface( mobile_engfuncs_t *gpMobileEngfuncs )
 		return;
 	gMobileEngfuncs = gpMobileEngfuncs;
 }
+
+bool isXashFWGS()
+{
+	return gMobileEngfuncs != NULL;
+}

@@ -1,6 +1,7 @@
 #include "input_mouse.h"
 #include "exportdef.h"
 #include "hud.h"
+#include "cl_util.h"
 
 // shared between backends
 Vector dead_viewangles(0, 0, 0);
@@ -68,7 +69,7 @@ void IN_Shutdown( void )
 void IN_Init( void )
 {
 #ifdef SUPPORT_GOLDSOURCE_INPUT
-	if (gMobileEngfuncs) {
+	if (isXashFWGS()) {
 		gEngfuncs.Con_Printf( "FWGS Xash3D input is in use\n" );
 		currentInput = &fwgsInput;
 	} else {
