@@ -27,7 +27,12 @@ set (CLDLL_LIBRARY client)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-write-strings -DLINUX -D_LINUX -Dstricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp -DCLIENT_WEAPONS -DCLIENT_DLL -w")
 if (GOLDSOURCE_SUPPORT)
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DGOLDSOURCE_SUPPORT -lSDL2 -Wl,--no-undefined")
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DGOLDSOURCE_SUPPORT -L${CMAKE_CURRENT_SOURCE_DIR}/.. -lSDL2 -Wl,--no-undefined")
+	if (APPLE)
+		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -l:vgui.dylib")
+	else()
+		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -l:vgui.so")
+	endif()
 endif()
 set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS}")
 
@@ -96,7 +101,7 @@ set (CLDLL_SOURCES
 	scoreboard.cpp
 	MOTD.cpp)
 
-include_directories (. hl/ ../dlls ../dlls/wpn_shared ../common ../engine ../pm_shared ../game_shared ../public)
+include_directories (. hl/ ../dlls ../dlls/wpn_shared ../common ../engine ../pm_shared ../game_shared ../public ../utils/vgui/include)
 
 if(USE_VOICEMGR)
 	#set(CLDLL_SOURCES
