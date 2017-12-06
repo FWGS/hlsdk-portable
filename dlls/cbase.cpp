@@ -602,6 +602,8 @@ TYPEDESCRIPTION	CBaseEntity::m_SaveData[] =
 	DEFINE_FIELD( CBaseEntity, m_pfnTouch, FIELD_FUNCTION ),
 	DEFINE_FIELD( CBaseEntity, m_pfnUse, FIELD_FUNCTION ),
 	DEFINE_FIELD( CBaseEntity, m_pfnBlocked, FIELD_FUNCTION ),
+	DEFINE_FIELD( CBaseEntity, enttools_data.enttools, FIELD_CHARACTER ),
+	DEFINE_ARRAY( CBaseEntity, enttools_data.ownerid, FIELD_CHARACTER, 33 ),
 };
 
 int CBaseEntity::Save( CSave &save )

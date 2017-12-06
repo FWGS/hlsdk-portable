@@ -76,15 +76,16 @@ typedef struct entblacklist_s
 	char pattern[32];
 	int limit;
 	int behaviour;
+	bool clear;
 } entblacklist_t;
 
 entblacklist_t *entblacklist;
 
 void Ent_AddToBlacklist_f( void )
 {
-	if( CMD_ARGC() != 4 )
+	if( CMD_ARGC() < 4 )
 	{
-		ALERT( at_console, "Usage: mp_enttools_blacklist <pattern> <per minute limit> <behaviour (0 - block, 1 - kick, 2 - ban)>\n"  );
+		ALERT( at_console, "Usage: mp_enttools_blacklist <pattern> <per minute limit> <behaviour (0 - block, 1 - kick, 2 - ban)> <clear>\n"  );
 	}
 
 	entblacklist_t *node = (entblacklist_t *)malloc( sizeof( entblacklist_t ) );
@@ -94,6 +95,7 @@ void Ent_AddToBlacklist_f( void )
 	node->pattern[32] = 0;
 	node->limit = atoi( CMD_ARGV(2) );
 	node->behaviour = atoi( CMD_ARGV( 3 ) );
+	node->clear = !!atoi( CMD_ARGV( 4 ) );
 	entblacklist = node;
 }
 
@@ -149,7 +151,8 @@ bool Ent_CheckCreate( edict_t *player, const char *classname )
 			if( !node->limit || ( p->gravgunmod_data.m_flEntScope + 1.0f / (float)node->limit > 1 ) )
 			{
 				// remove all created entities
-				Ent_RunGC( false, true, GGM_GetPlayerID( player ) );
+				if( node->clear )
+				    Ent_RunGC( false, true, GGM_GetPlayerID( player ) );
 
 				if( node->behaviour == 2 )
 				{
@@ -518,7 +521,7 @@ void Ent_Fire_f( edict_t *player )
 		ent = g_engfuncs.pfnPEntityOfEntIndex( i );
 		if( !Ent_IsValidEdict( ent ))
 		{
-			// Ent_ClientPrintf( player, "Got invalid entity\n" );
+			 Ent_ClientPrintf( player, "Got invalid entity\n" );
 			if( single )
 				break;
 			continue;
@@ -530,168 +533,9 @@ void Ent_Fire_f( edict_t *player )
 			if( !Q_stricmpext( CMD_ARGV( 1 ), STRING( ent->v.targetname ) ) && !Q_stricmpext( CMD_ARGV( 1 ), STRING( ent->v.classname ) ))
 				continue;
 		}
+		const char *cmd = CMD_ARGV( 2 );
 
-		if( !Ent_CheckFire( player, ent, CMD_ARGV( 2 ) ) )
-			continue;
-
-		Ent_ClientPrintf( player, "entity %i\n", i );
-
-		count++;
-
-		if( !stricmp( CMD_ARGV( 2 ), "health" ) )
-			ent->v.health = atoi( CMD_ARGV ( 3 ) );
-		else if( !stricmp( CMD_ARGV( 2 ), "gravity" ) )
-			ent->v.gravity = atof( CMD_ARGV ( 3 ) );
-		else if( !stricmp( CMD_ARGV( 2 ), "movetype" ) )
-			ent->v.movetype = atoi( CMD_ARGV ( 3 ) );
-		else if( !stricmp( CMD_ARGV( 2 ), "solid" ) )
-			ent->v.solid = atoi( CMD_ARGV ( 3 ) );
-		else if( !stricmp( CMD_ARGV( 2 ), "rename" ) )
-			ent->v.targetname = ALLOC_STRING( CMD_ARGV ( 3 ) );
-		else if( !stricmp( CMD_ARGV( 2 ), "settarget" ) )
-			ent->v.target = ALLOC_STRING( CMD_ARGV ( 3 ) );
-		else if( !stricmp( CMD_ARGV( 2 ), "setmodel" ) )
-			SET_MODEL( ent, CMD_ARGV( 3 ) );
-		else if( !stricmp( CMD_ARGV( 2 ), "set" ) )
-		{
-			char keyname[256];
-			char value[256];
-			KeyValueData	pkvd;
-			if( CMD_ARGC() != 5 )
-				return;
-			pkvd.szClassName = (char*)STRING( ent->v.classname );
-			strncpy( keyname, CMD_ARGV( 3 ), 256 );
-			strncpy( value, CMD_ARGV( 4 ), 256 );
-			keyname[255] = value[255] = 0;
-			pkvd.szKeyName = keyname;
-			pkvd.szValue = value;
-			pkvd.fHandled = false;
-			DispatchKeyValue( ent, &pkvd );
-			if( pkvd.fHandled )
-				Ent_ClientPrintf( player, "value set successfully!\n" );
-		}
-		else if( !stricmp( CMD_ARGV( 2 ), "touch" ) )
-		{
-			if( CMD_ARGC() == 4 )
-			{
-				edict_t *other = Ent_FindSingle( player,  CMD_ARGV( 3 ) );
-				if( other && other->pvPrivateData )
-					DispatchTouch( ent, other  );
-			}
-			else
-				DispatchTouch( ent, player );
-		}
-		else if( !stricmp( CMD_ARGV( 2 ), "use" ) )
-		{
-			if( CMD_ARGC() == 4 )
-			{
-				edict_t *other = Ent_FindSingle( player,  CMD_ARGV( 3 ) );
-				if( other && other->pvPrivateData )
-					DispatchUse( ent, other );
-			}
-			else
-				DispatchUse( ent, player );
-		}
-		else if( !stricmp( CMD_ARGV( 2 ), "movehere" ) )
-			UTIL_SetOrigin( &ent->v, player->v.origin + Vector( 100 * cos( player->v.angles[1]/180*M_PI ), 100 * sin( player->v.angles[1]/180*M_PI), 25 ) );
-		else if( !stricmp( CMD_ARGV( 2 ), "drop2floor" ) )
-				DROP_TO_FLOOR( ent );
-		else if( !stricmp( CMD_ARGV( 2 ), "moveup" ) )
-		{
-			float dist = 25;
-
-			if( CMD_ARGC() >= 4 )
-				dist = atof( CMD_ARGV( 3 ) );
-
-			ent->v.origin[2] +=  dist;
-
-			if( CMD_ARGC() >= 5 )
-				ent->v.origin = ent->v.origin + Vector( cos( player->v.angles[1]/180*M_PI ), sin( player->v.angles[1]/180*M_PI), 0 ) * atof( CMD_ARGV( 4 ) );
-		}
-		else if( !stricmp( CMD_ARGV( 2 ), "becomeowner" ) )
-		{
-			if( CMD_ARGC() == 4 )
-				ent->v.owner = Ent_FindSingle( player,  CMD_ARGV( 3 ) );
-			else
-				ent->v.owner = player;
-		}
-		else if( !stricmp( CMD_ARGV( 2 ), "becomeenemy" ) )
-		{
-			if( CMD_ARGC() == 4 )
-				ent->v.enemy = Ent_FindSingle( player,  CMD_ARGV( 3 ) );
-			else
-				ent->v.enemy = player;
-		}
-		else if( !stricmp( CMD_ARGV( 2 ), "becomeaiment" ) )
-		{
-			if( CMD_ARGC() == 4 )
-				ent->v.aiment= Ent_FindSingle( player,  CMD_ARGV( 3 ) );
-			else
-				ent->v.aiment = player;
-		}
-		else if( !stricmp( CMD_ARGV( 2 ), "hullmin" ) )
-		{
-			if( CMD_ARGC() != 6 )
-				return;
-			ent->v.mins[0] = atof( CMD_ARGV( 3 ) );
-			ent->v.mins[1] = atof( CMD_ARGV( 4 ) );
-			ent->v.mins[2] = atof( CMD_ARGV( 5 ) );
-		}
-		else if( !stricmp( CMD_ARGV( 2 ), "hullmax" ) )
-		{
-			if( CMD_ARGC() != 6 )
-				return;
-			ent->v.maxs[0] = atof( CMD_ARGV( 3 ) );
-			ent->v.maxs[1] = atof( CMD_ARGV( 4 ) );
-			ent->v.maxs[2] = atof( CMD_ARGV( 5 ) );
-		}
-		else if( !stricmp( CMD_ARGV( 2 ), "rendercolor" ) )
-		{
-			if( CMD_ARGC() != 6 )
-				return;
-			ent->v.rendercolor[0] = atof( CMD_ARGV( 3 ) );
-			ent->v.rendercolor[1] = atof( CMD_ARGV( 4 ) );
-			ent->v.rendercolor[2] = atof( CMD_ARGV( 5 ) );
-		}
-		else if( !stricmp( CMD_ARGV( 2 ), "renderamt" ) )
-		{
-			ent->v.renderamt = atof( CMD_ARGV( 3 ) );
-		}
-		else if( !stricmp( CMD_ARGV( 2 ), "renderfx" ) )
-		{
-			ent->v.renderfx = atoi( CMD_ARGV( 3 ) );
-		}
-		else if( !stricmp( CMD_ARGV( 2 ), "rendermode" ) )
-		{
-			ent->v.rendermode = atoi( CMD_ARGV( 3 ) );
-		}
-		else if( !stricmp( CMD_ARGV( 2 ), "angles" ) )
-		{
-			ent->v.angles[0] = atof( CMD_ARGV( 3 ) );
-			ent->v.angles[1] = atof( CMD_ARGV( 4 ) );
-			ent->v.angles[2] = atof( CMD_ARGV( 5 ) );
-		}
-		else if( !stricmp( CMD_ARGV( 2 ), "setflag" ) )
-		{
-			ent->v.flags |= 1U << atoi( CMD_ARGV ( 3 ) );
-			Ent_ClientPrintf( player, "flags set to 0x%x\n", ent->v.flags );
-		}
-		else if( !stricmp( CMD_ARGV( 2 ), "clearflag" ) )
-		{
-			ent->v.flags &= ~( 1U << atoi( CMD_ARGV ( 3 ) ) );
-			Ent_ClientPrintf( player, "flags set to 0x%x\n", ent->v.flags );
-		}
-		else if( !stricmp( CMD_ARGV( 2 ), "setspawnflag" ) )
-		{
-			ent->v.spawnflags |= 1U << atoi( CMD_ARGV ( 3 ) );
-			Ent_ClientPrintf( player, "spawnflags set to 0x%x\n", ent->v.spawnflags );
-		}
-		else if( !stricmp( CMD_ARGV( 2 ), "clearspawnflag" ) )
-		{
-			ent->v.spawnflags &= ~( 1U << atoi( CMD_ARGV ( 3 ) ) );
-			Ent_ClientPrintf( player, "spawnflags set to 0x%x\n", ent->v.flags );
-		}
-		else if( !stricmp( CMD_ARGV( 2 ), "help" ) )
+		if( !stricmp( cmd, "help" ) )
 		{
 			Ent_ClientPrintf( player, "Availiavle commands:\n"
 				"Set fields:\n"
@@ -705,19 +549,22 @@ void Ent_Fire_f( edict_t *player )
 				"    renderfx\n"
 				"    renderamt\n"
 				"    hullmin (vector)\n"
-				"    hullmax (vector)\n"
+				"    hullmax (vector)\n" );
+			Ent_ClientPrintf( player,
 				"Actions\n"
 				"    rename: set entity targetname\n"
 				"    settarget: set entity target (only targetnames)\n"
 				"    setmodel: set entity model\n"
 				"    set: set <key> <value> by server library\n"
 				"        See game FGD to get list.\n"
-				"        command takes two arguments\n"
+				"        command takes two arguments\n");
+			Ent_ClientPrintf( player,
 				"    touch: touch entity by current player.\n"
 				"    use: use entity by current player.\n"
 				"    movehere: place entity in player fov.\n"
 				"    drop2floor: place entity to nearest floor surface\n"
-				"    moveup: move entity to 25 units up\n"
+				"    moveup: move entity to 25 units up\n");
+			Ent_ClientPrintf( player,
 				"Flags:\n"
 				"        (Set/clear specified flag bit, arg is bit number)\n"
 				"    setflag\n"
@@ -727,16 +574,214 @@ void Ent_Fire_f( edict_t *player )
 			);
 			return;
 		}
+
+		if( !Ent_CheckFire( player, ent, CMD_ARGV( 2 ) ) )
+			continue;
+
+		Ent_ClientPrintf( player, "entity %i\n", i );
+
+		if( single && count > 0 )
+		    break;
+
+
+		count++;
+
+		if( !stricmp( cmd, "health" ) )
+		{
+			ent->v.health = atoi( CMD_ARGV ( 3 ) );
+			continue;
+		}
+		if( !stricmp( cmd, "gravity" ) )
+		{
+			ent->v.gravity = atof( CMD_ARGV ( 3 ) );
+			continue;
+		}
+		if( !stricmp( cmd, "movetype" ) )
+		{
+			ent->v.movetype = atoi( CMD_ARGV ( 3 ) );
+			continue;
+		}
+		if( !stricmp( cmd, "solid" ) )
+		{
+			ent->v.solid = atoi( CMD_ARGV ( 3 ) );
+			continue;
+		}
+		if( !stricmp( cmd, "rename" ) )
+		{
+			ent->v.targetname = ALLOC_STRING( CMD_ARGV ( 3 ) );
+			continue;
+		}
+		if( !stricmp( cmd, "settarget" ) )
+		{
+			ent->v.target = ALLOC_STRING( CMD_ARGV ( 3 ) );
+			continue;
+		}
+		if( !stricmp( cmd, "setmodel" ) )
+		{
+			SET_MODEL( ent, CMD_ARGV( 3 ) );
+			continue;
+		}
+		if( !stricmp( cmd, "set" ) )
+		{
+			char keyname[256];
+			char value[256];
+			KeyValueData	pkvd;
+			if( CMD_ARGC() != 5 )
+				continue;
+			pkvd.szClassName = (char*)STRING( ent->v.classname );
+			strncpy( keyname, CMD_ARGV( 3 ), 256 );
+			strncpy( value, CMD_ARGV( 4 ), 256 );
+			keyname[255] = value[255] = 0;
+			pkvd.szKeyName = keyname;
+			pkvd.szValue = value;
+			pkvd.fHandled = false;
+			DispatchKeyValue( ent, &pkvd );
+			if( pkvd.fHandled )
+				Ent_ClientPrintf( player, "value set successfully!\n" );
+			continue;
+		}
+		if( !stricmp( cmd, "touch" ) )
+		{
+			if( CMD_ARGC() == 4 )
+			{
+				edict_t *other = Ent_FindSingle( player,  CMD_ARGV( 3 ) );
+				if( other && other->pvPrivateData )
+					DispatchTouch( ent, other  );
+			}
+			else
+				DispatchTouch( ent, player );
+			continue;
+		}
+		if( !stricmp( cmd, "use" ) )
+		{
+			if( CMD_ARGC() == 4 )
+			{
+				edict_t *other = Ent_FindSingle( player,  CMD_ARGV( 3 ) );
+				if( other && other->pvPrivateData )
+					DispatchUse( ent, other );
+			}
+			else
+				DispatchUse( ent, player );
+			continue;
+		}
+		if( !stricmp( cmd, "movehere" ) )
+		{
+			UTIL_SetOrigin( &ent->v, player->v.origin + Vector( 100 * cos( player->v.angles[1]/180*M_PI ), 100 * sin( player->v.angles[1]/180*M_PI), 25 ) );
+			continue;
+		}
+		if( !stricmp( cmd, "drop2floor" ) )
+		{
+			DROP_TO_FLOOR( ent );
+			continue;
+		}
+		if( !stricmp( cmd, "moveup" ) )
+		{
+			float dist = 25;
+
+			if( CMD_ARGC() >= 4 )
+				dist = atof( CMD_ARGV( 3 ) );
+
+			ent->v.origin[2] +=  dist;
+
+			if( CMD_ARGC() >= 5 )
+				ent->v.origin = ent->v.origin + Vector( cos( player->v.angles[1]/180*M_PI ), sin( player->v.angles[1]/180*M_PI), 0 ) * atof( CMD_ARGV( 4 ) );
+			continue;
+		}
+		if( !stricmp( cmd, "becomeowner" ) )
+		{
+			if( CMD_ARGC() == 4 )
+				ent->v.owner = Ent_FindSingle( player,  CMD_ARGV( 3 ) );
+			else
+				ent->v.owner = player;
+			continue;
+		}
+		if( !stricmp( cmd, "becomeenemy" ) )
+		{
+			if( CMD_ARGC() == 4 )
+				ent->v.enemy = Ent_FindSingle( player,  CMD_ARGV( 3 ) );
+			else
+				ent->v.enemy = player;
+			continue;
+		}
+		else if( !stricmp( cmd, "becomeaiment" ) )
+		{
+			if( CMD_ARGC() == 4 )
+				ent->v.aiment= Ent_FindSingle( player,  CMD_ARGV( 3 ) );
+			else
+				ent->v.aiment = player;
+		}
+		else if( !stricmp( cmd, "hullmin" ) )
+		{
+			if( CMD_ARGC() != 6 )
+				return;
+			ent->v.mins[0] = atof( CMD_ARGV( 3 ) );
+			ent->v.mins[1] = atof( CMD_ARGV( 4 ) );
+			ent->v.mins[2] = atof( CMD_ARGV( 5 ) );
+		}
+		else if( !stricmp( cmd, "hullmax" ) )
+		{
+			if( CMD_ARGC() != 6 )
+				return;
+			ent->v.maxs[0] = atof( CMD_ARGV( 3 ) );
+			ent->v.maxs[1] = atof( CMD_ARGV( 4 ) );
+			ent->v.maxs[2] = atof( CMD_ARGV( 5 ) );
+		}
+		else if( !stricmp( cmd, "rendercolor" ) )
+		{
+			if( CMD_ARGC() != 6 )
+				return;
+			ent->v.rendercolor[0] = atof( CMD_ARGV( 3 ) );
+			ent->v.rendercolor[1] = atof( CMD_ARGV( 4 ) );
+			ent->v.rendercolor[2] = atof( CMD_ARGV( 5 ) );
+		}
+		else if( !stricmp( cmd, "renderamt" ) )
+		{
+			ent->v.renderamt = atof( CMD_ARGV( 3 ) );
+		}
+		else if( !stricmp( cmd, "renderfx" ) )
+		{
+			ent->v.renderfx = atoi( CMD_ARGV( 3 ) );
+		}
+		else if( !stricmp( cmd, "rendermode" ) )
+		{
+			ent->v.rendermode = atoi( CMD_ARGV( 3 ) );
+		}
+		else if( !stricmp( cmd, "angles" ) )
+		{
+			ent->v.angles[0] = atof( CMD_ARGV( 3 ) );
+			ent->v.angles[1] = atof( CMD_ARGV( 4 ) );
+			ent->v.angles[2] = atof( CMD_ARGV( 5 ) );
+		}
+		else if( !stricmp( cmd, "setflag" ) )
+		{
+			ent->v.flags |= 1U << atoi( CMD_ARGV ( 3 ) );
+			Ent_ClientPrintf( player, "flags set to 0x%x\n", ent->v.flags );
+		}
+		else if( !stricmp( cmd, "clearflag" ) )
+		{
+			ent->v.flags &= ~( 1U << atoi( CMD_ARGV ( 3 ) ) );
+			Ent_ClientPrintf( player, "flags set to 0x%x\n", ent->v.flags );
+		}
+		else if( !stricmp( cmd, "setspawnflag" ) )
+		{
+			ent->v.spawnflags |= 1U << atoi( CMD_ARGV ( 3 ) );
+			Ent_ClientPrintf( player, "spawnflags set to 0x%x\n", ent->v.spawnflags );
+		}
+		else if( !stricmp( cmd, "clearspawnflag" ) )
+		{
+			ent->v.spawnflags &= ~( 1U << atoi( CMD_ARGV ( 3 ) ) );
+			Ent_ClientPrintf( player, "spawnflags set to 0x%x\n", ent->v.flags );
+		}
+
 		else
 		{
-			Ent_ClientPrintf( player, "Unknown command %s!\nUse \"ent_fire 0 help\" to list commands.\n", CMD_ARGV( 2 ) );
+			Ent_ClientPrintf( player, "Unknown command %s!\nUse \"ent_fire 0 help\" to list commands.\n", cmd );
 			return;
 		}
 		if( single )
 			break;
 	}
 }
-
 /*
 ===============
 Ent_Create_f
@@ -855,8 +900,10 @@ void Ent_Create_f( edict_t *player )
 	CBaseEntity *entity = CBaseEntity::Instance( ent );
 	if( entity )
 	{
+		const char *plid = GGM_GetPlayerID( player );
 		entity->enttools_data.enttools = true;
-		strcpy( entity->enttools_data.ownerid, GGM_GetPlayerID( player ) );
+		if( plid );
+			strcpy( entity->enttools_data.ownerid, plid );
 	}
 }
 typedef struct ucmd_s
@@ -879,8 +926,12 @@ bool Ent_ProcessClientCommand( edict_t *player )
 {
 	ucmd_t	*u;
 
-
 	if( !mp_enttools_enable.value )
+		return false;
+
+	CBaseEntity *pl = CBaseEntity::Instance( player );
+
+	if( !pl || !pl->IsPlayer() )
 		return false;
 
 	for( u = enttoolscmds; u->name; u++ )
@@ -889,7 +940,7 @@ bool Ent_ProcessClientCommand( edict_t *player )
 		{
 			ALERT( at_console, "enttools->%s(): %s\n", u->name, CMD_ARGS() );
 
-			ALERT( at_logged, "\"%s<%i><%s><>\" performed: %s\n", STRING(player->v.netname),
+			ALERT( at_logged, "\"%s<%i><%s><%s>\" performed: %s\n", STRING(player->v.netname),
 						GETPLAYERUSERID(player), GETPLAYERAUTHID(player), g_engfuncs.pfnInfoKeyValue( g_engfuncs.pfnGetInfoKeyBuffer( player ), "ip" ), CMD_ARGS() );
 
 			if( u->func ) u->func( player );
