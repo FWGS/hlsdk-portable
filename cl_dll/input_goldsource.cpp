@@ -28,6 +28,7 @@
 #endif
 
 #ifdef USE_SDL2
+#define ARRAYSIZE(p)		( sizeof(p) /sizeof(p[0]) )
 #include <dlfcn.h>
 #include <SDL2/SDL_mouse.h>
 #include <SDL2/SDL_gamecontroller.h>
@@ -94,9 +95,23 @@ const char* safe_pfnSDL_GameControllerName(SDL_GameController* gamecontroller)
         return pfnSDL_GameControllerName(gamecontroller);
     return NULL;
 }
-static void** const sdlFunctionPointers[] = {(void**)&pfnSDL_SetRelativeMouseMode, (void**)&pfnSDL_GetRelativeMouseState, (void**)&pfnSDL_NumJoysticks,
-						(void**)&pfnSDL_IsGameController, (void**)&pfnSDL_GameControllerOpen, (void**)&pfnSDL_GameControllerGetAxis,
-						(void**)&pfnSDL_GameControllerGetButton, (void**)&pfnSDL_JoystickUpdate, (void**)&pfnSDL_GameControllerName};
+
+struct SDLFunction
+{
+    void** ppfnFunc;
+    const char* name;
+};
+static SDLFunction sdlFunctions[] = {
+	{(void**)&pfnSDL_SetRelativeMouseMode, "SDL_SetRelativeMouseMode"},
+	{(void**)&pfnSDL_GetRelativeMouseState, "SDL_GetRelativeMouseState"},
+	{(void**)&pfnSDL_NumJoysticks, "SDL_NumJoysticks"},
+	{(void**)&pfnSDL_IsGameController, "SDL_IsGameController"},
+	{(void**)&pfnSDL_GameControllerOpen, "SDL_GameControllerOpen"},
+	{(void**)&pfnSDL_GameControllerGetAxis, "SDL_GameControllerGetAxis"},
+	{(void**)&pfnSDL_GameControllerGetButton, "SDL_GameControllerGetButton"},
+	{(void**)&pfnSDL_JoystickUpdate, "SDL_JoystickUpdate"},
+	{(void**)&pfnSDL_GameControllerName, "SDL_GameControllerName"}
+};
 #endif
 
 #ifdef _WIN32
@@ -533,8 +548,8 @@ void GoldSourceInput::IN_Shutdown (void)
 #endif
 
 #ifdef USE_SDL2
-    for (int j=0; j<sizeof(sdlFunctionPointers)/sizeof(sdlFunctionPointers[0]); ++j) {
-        *(sdlFunctionPointers[j]) = NULL;
+    for (int j=0; j<ARRAYSIZE(sdlFunctions); ++j) {
+        *(sdlFunctions[j].ppfnFunc) = NULL;
     }
     dlclose(sdl2Lib);
     sdl2Lib = NULL;
@@ -1421,39 +1436,16 @@ void GoldSourceInput::IN_Init (void)
 
 #ifdef USE_SDL2
 #ifdef __APPLE__
-#define SDL2_LIBNAME "libSDL2.dylib"
 #define SDL2_FULL_LIBNAME "libsdl2-2.0.0.dylib"
 #else
-#define SDL2_LIBNAME "libSDL2.so"
 #define SDL2_FULL_LIBNAME "libSDL2-2.0.so.0"
 #endif
-	sdl2Lib = dlopen(SDL2_LIBNAME, RTLD_NOW|RTLD_LOCAL);
-	if (!sdl2Lib) {
-		// libSDL2.so in goldsource is not really a symlink, but a regular file with symlink-like contents
-		FILE* libSDLfile = fopen(SDL2_LIBNAME, "r");
-		char buf[64];
-		if (libSDLfile) {
-			char* str = fgets(buf, sizeof(buf), libSDLfile);
-			if (str && *str) {
-				if (str[strlen(str)-1] == '\n') {
-					str[strlen(str)-1] = '\0';
-				}
-				sdl2Lib = dlopen(str, RTLD_NOW|RTLD_LOCAL);
-			}
-			fclose(libSDLfile);
-		}
-	}
-	if (!sdl2Lib) // try hardcoded name
-		sdl2Lib = dlopen(SDL2_FULL_LIBNAME, RTLD_NOW|RTLD_LOCAL);
+	sdl2Lib = dlopen(SDL2_FULL_LIBNAME, RTLD_NOW|RTLD_LOCAL);
 	if (sdl2Lib) {
-		const char* const sdlFuncNames[sizeof(sdlFunctionPointers)/sizeof(sdlFunctionPointers[0])] =
-								{"SDL_SetRelativeMouseMode", "SDL_GetRelativeMouseState", "SDL_NumJoysticks",
-								"SDL_IsGameController", "SDL_GameControllerOpen", "SDL_GameControllerGetAxis",
-								"SDL_GameControllerGetButton", "SDL_JoystickUpdate", "SDL_GameControllerName"};
-		for (int j=0; j<sizeof(sdlFunctionPointers)/sizeof(sdlFunctionPointers[0]); ++j) {
-			*(sdlFunctionPointers[j]) = dlsym(sdl2Lib, sdlFuncNames[j]);
-			if (*sdlFunctionPointers[j] == NULL) {
-				gEngfuncs.Con_Printf("Could not load SDL2 function %s: %s\n", sdlFuncNames[j], dlerror());
+		for (int j=0; j<ARRAYSIZE(sdlFunctions); ++j) {
+			*(sdlFunctions[j].ppfnFunc) = dlsym(sdl2Lib, sdlFunctions[j].name);
+			if (*sdlFunctions[j].ppfnFunc == NULL) {
+				gEngfuncs.Con_Printf("Could not load SDL2 function %s: %s\n", sdlFunctions[j].name, dlerror());
 			}
 		}
 	} else {
