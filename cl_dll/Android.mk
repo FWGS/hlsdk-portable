@@ -105,7 +105,9 @@ LOCAL_CFLAGS += $(DEFINES) $(INCLUDES)
 
 ifeq ($(GOLDSOURCE_SUPPORT),1)
 	DEFINES += -DGOLDSOURCE_SUPPORT
-	LOCAL_LDLIBS += -lSDL2
+	ifeq ($(shell uname -s),Linux)
+		LOCAL_LDLIBS += -ldl
+	endif
 endif
 
 LOCAL_SRC_FILES := $(SRCS) $(SRCS_C)

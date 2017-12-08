@@ -75,7 +75,6 @@ OBJS = $(SRCS:.cpp=.o) $(SRCS_C:.c=.o)
 LIBS=-lm
 ifeq ($(GOLDSOURCE_SUPPORT),1)
 	DEFINES += -DGOLDSOURCE_SUPPORT
-	LIBS += -lSDL2
 endif
 
 ifeq ($(shell uname -s),Linux)
