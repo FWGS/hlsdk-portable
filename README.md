@@ -79,7 +79,21 @@ This one is the most simple but has a drawback.
 
 The drawback is that the compiled libraries will be larger in size.
 
-#### Method 2: Create and use chroot with older distro that includes g++ 4.
+#### Method 2: Build in Steam Runtime chroot
+
+This is the official way to build Steam compatible games for Linux.
+
+Clone https://github.com/ValveSoftware/steam-runtime and follow instructions https://github.com/ValveSoftware/steam-runtime#building-in-the-runtime
+
+    sudo ./setup_chroot.sh --i386
+
+Then use cmake and make as usual, but prepend the commands with `schroot --chroot steamrt_scout_i386 --`:
+
+    mkdir build-in-steamrt && cd build-in-steamrt
+    schroot --chroot steamrt_scout_i386 -- cmake ../ -DGOLDSOURCE_SUPPORT=ON
+    schroot --chroot steamrt_scout_i386 -- make
+
+#### Method 3: Create your own chroot with older distro that includes g++ 4.
 
 Use the most suitable way for you to create an old distro 32-bit chroot. E.g. on Debian (and similar) you can use debootstrap.
 
@@ -104,9 +118,10 @@ personality=linux32
 
 Insert your actual user name in place of `yourusername`. Then prepend any make or cmake call with `schroot -c jessie --`:
 
-    schroot -c jessie -- cmake ../ -DGOLDSOURCE_SUPPORT=ON
-    schroot -c jessie -- make
+    mkdir build-in-chroot && cd build-in-chroot
+    schroot --chroot jessie -- cmake ../ -DGOLDSOURCE_SUPPORT=ON
+    schroot --chroot jessie -- make
 
-#### Method 3:  Install the needed g++ version yourself
+#### Method 4:  Install the needed g++ version yourself
 
 TODO: describe steps.
