@@ -125,3 +125,17 @@ Insert your actual user name in place of `yourusername`. Then prepend any make o
 #### Method 4:  Install the needed g++ version yourself
 
 TODO: describe steps.
+
+#### Configuring Qt Creator to use toolchain from chroot
+
+Create a file with the following contents anywhere:
+
+```sh
+#!/bin/sh
+schroot --chroot steamrt_scout_i386 -- cmake "$@"
+```
+
+Make it executable.
+In Qt Creator go to `Tools` -> `Options` -> `Build & Run` -> `CMake`. Add a new cmake tool and specify the path of previously created file.
+Go to `Kits` tab, clone your default configuration and choose your CMake tool there.
+Choose the new kit when opening CMakeLists.txt.
