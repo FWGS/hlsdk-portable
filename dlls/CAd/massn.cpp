@@ -234,11 +234,11 @@ void CMassn::HandleAnimEvent( MonsterEvent_t *pEvent )
 			// now spawn a gun.
 			if( FBitSet( pev->weapons, HGRUNT_SHOTGUN ) )
 			{
-				//DropItem( "weapon_shotgun", vecGunPos, vecGunAngles );
+				DropItem( "weapon_handgrenade", vecGunPos, vecGunAngles );
 			}
 			else
 			{
-				 DropItem( "weapon_9mmAR", vecGunPos, vecGunAngles );
+				DropItem( "weapon_9mmAR", vecGunPos, vecGunAngles );
 			}
 
 			if( FBitSet( pev->weapons, HGRUNT_GRENADELAUNCHER ) )
