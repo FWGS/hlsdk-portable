@@ -681,10 +681,12 @@ void CScientist::Spawn( void )
 		pev->body = RANDOM_LONG( 0, numHeads - 1 );// pick a head, any head
 	}
 
-	// Luther is black, make his hands black
-	if( pev->body == HEAD_LUTHER )
-		pev->skin = 1;
-
+	if( !FClassnameIs( pev, "monster_cleansuit_scientist" ) )
+	{
+		// Luther is black, but scientist model in RP does not have black hands skin, use another head instead.
+		if( pev->body == HEAD_LUTHER )
+			pev->body = HEAD_4;
+	}
 	MonsterInit();
 	SetUse( &CTalkMonster::FollowerUse );
 }
@@ -1194,11 +1196,12 @@ void CDeadScientist::Spawn()
 		pev->body = RANDOM_LONG( 0, numHeads - 1 );// pick a head, any head
 	}
 
-	// Luther is black, make his hands black
-	if( pev->body == HEAD_LUTHER )
-		pev->skin = 1;
-	else
-		pev->skin = 0;
+	if( !FClassnameIs( pev, "monster_cleansuit_scientist_dead" ) )
+	{
+		// Luther is black, but scientist model in RP does not have black hands skin, use another head instead.
+		if( pev->body == HEAD_LUTHER )
+		pev->body = HEAD_4;
+	}
 
 	pev->sequence = LookupSequence( m_szPoses[m_iPose] );
 	if( pev->sequence == -1 )
@@ -1285,9 +1288,9 @@ void CSittingScientist::Spawn()
 		pev->body = RANDOM_LONG( 0, NUM_SCIENTIST_HEADS - 1 );// pick a head, any head
 	}
 
-	// Luther is black, make his hands black
+	// Luther is black, but scientist model in RP does not have black hands skin, use another head instead.
 	if( pev->body == HEAD_LUTHER )
-		pev->skin = 1;
+		pev->body = HEAD_4;
 
 	m_baseSequence = LookupSequence( "sitlookleft" );
 	pev->sequence = m_baseSequence + RANDOM_LONG( 0, 4 );
