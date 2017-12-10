@@ -178,7 +178,7 @@ void CMassn::HandleAnimEvent(MonsterEvent_t *pEvent)
 		// now spawn a gun.
 		if (FBitSet(pev->weapons, MASSN_SNIPERRIFLE))
 		{
-			//DropItem("weapon_sniperrifle", vecGunPos, vecGunAngles);
+			DropItem("ammo_m40a1", vecGunPos, vecGunAngles);
 		}
 		else
 		{

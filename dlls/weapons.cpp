@@ -327,6 +327,7 @@ void W_Precache( void )
 	// python
 	UTIL_PrecacheOtherWeapon( "weapon_357" );
 	UTIL_PrecacheOther( "ammo_357" );
+	UTIL_PrecacheOther( "weapon_eagle" );
 
 	// gauss
 	UTIL_PrecacheOtherWeapon( "weapon_gauss" );
@@ -339,6 +340,7 @@ void W_Precache( void )
 	// crossbow
 	UTIL_PrecacheOtherWeapon( "weapon_crossbow" );
 	UTIL_PrecacheOther( "ammo_crossbow" );
+	UTIL_PrecacheOther( "ammo_m40a1" );
 
 	// egon
 	UTIL_PrecacheOtherWeapon( "weapon_egon" );

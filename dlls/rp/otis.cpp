@@ -100,8 +100,6 @@ void COtis::AlertSound(void)
 	}
 }
 
-
-
 //=========================================================
 // BarneyFirePistol - shoots one round from the pistol at
 // the enemy otis is facing.
@@ -127,7 +125,7 @@ void COtis::BarneyFirePistol(void)
 		pitchShift = 0;
 	else
 		pitchShift -= 5;
-	EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "weapons/desert_eagle_fire.wav", 1, ATTN_NORM, 0, 100 + pitchShift);
+	EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "weapons/de_shot1.wav", 1, ATTN_NORM, 0, 100 + pitchShift);
 
 	CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, 384, 0.3);
 
@@ -220,7 +218,7 @@ void COtis::Precache()
 {
 	PRECACHE_MODEL("models/otis.mdl");
 
-	PRECACHE_SOUND("weapons/desert_eagle_fire.wav");
+	PRECACHE_SOUND("weapons/de_shot1.wav");
 
 	PRECACHE_SOUND("otis/ot_pain1.wav");
 	PRECACHE_SOUND("otis/ot_pain2.wav");
@@ -401,7 +399,7 @@ void COtis::Killed(entvars_t *pevAttacker, int iGib)
 
 		GetAttachment(0, vecGunPos, vecGunAngles);
 
-		CBaseEntity *pGun = DropItem("weapon_glock", vecGunPos, vecGunAngles);
+		CBaseEntity *pGun = DropItem("weapon_eagle", vecGunPos, vecGunAngles);
 	}
 
 	SetUse(NULL);

@@ -538,12 +538,18 @@ class CCrossbowAmmo : public CBasePlayerAmmo
 	void Spawn( void )
 	{ 
 		Precache();
-		SET_MODEL( ENT( pev ), "models/w_crossbow_clip.mdl" );
+		if( FClassnameIs( pev, "ammo_m40a1" ) )
+			SET_MODEL( ENT( pev ), "models/w_m40a1.mdl" );
+		else
+			SET_MODEL( ENT( pev ), "models/w_crossbow_clip.mdl" );
 		CBasePlayerAmmo::Spawn();
 	}
 	void Precache( void )
 	{
-		PRECACHE_MODEL( "models/w_crossbow_clip.mdl" );
+		if( FClassnameIs( pev, "ammo_m40a1" ) )
+			PRECACHE_MODEL( "models/w_m40a1.mdl" );
+		else
+			PRECACHE_MODEL( "models/w_crossbow_clip.mdl" );
 		PRECACHE_SOUND( "items/9mmclip1.wav" );
 	}
 	BOOL AddAmmo( CBaseEntity *pOther )
@@ -558,4 +564,5 @@ class CCrossbowAmmo : public CBasePlayerAmmo
 };
 
 LINK_ENTITY_TO_CLASS( ammo_crossbow, CCrossbowAmmo )
+LINK_ENTITY_TO_CLASS( ammo_m40a1, CCrossbowAmmo )
 #endif
