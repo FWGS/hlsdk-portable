@@ -12,6 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
+#pragma once
 #ifndef PM_MATERIALS_H
 #define PM_MATERIALS_H
 

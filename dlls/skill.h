@@ -15,6 +15,7 @@
 //=========================================================
 // skill.h - skill level concerns
 //=========================================================
+#pragma once
 #ifndef SKILL_H
 #define SKILL_H
 
@@ -23,7 +24,7 @@ struct skilldata_t
 	int iSkillLevel; // game skill level
 
 	// Monster Health & Damage
-	float	agruntHealth;
+	float agruntHealth;
 	float agruntDmgPunch;
 
 	float apacheHealth;

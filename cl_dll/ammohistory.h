@@ -15,6 +15,7 @@
 //
 // ammohistory.h
 //
+#pragma once
 #ifndef AMMOHISTORY_H
 #define AMMOHISTORY_H
 

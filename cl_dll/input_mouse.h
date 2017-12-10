@@ -1,3 +1,4 @@
+#pragma once
 #ifndef INPUT_MOUSE_H
 #define INPUT_MOUSE_H
 #include "cl_dll.h"

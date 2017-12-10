@@ -5,9 +5,9 @@
 // $NoKeywords: $
 //=============================================================================
 
+#pragma once
 #ifndef HUD_SPECTATOR_H
 #define HUD_SPECTATOR_H
-#pragma once
 
 #include "cl_entity.h"
 

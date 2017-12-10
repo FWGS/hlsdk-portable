@@ -18,7 +18,7 @@
 // 4-23-98  
 // JOHN:  client dll interface declarations
 //
-
+#pragma once
 #ifndef CDLL_INT_H
 #define CDLL_INT_H
 

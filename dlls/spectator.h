@@ -13,6 +13,7 @@
 *
 ****/
 // Spectator.h
+#pragma once
 #ifndef SPECTATOR_H
 #define SPECTATOR_H
 

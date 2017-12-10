@@ -6,6 +6,7 @@
 //=============================================================================
 
 // eventscripts.h
+#pragma once
 #if !defined ( EVENTSCRIPTSH )
 #define EVENTSCRIPTSH
 

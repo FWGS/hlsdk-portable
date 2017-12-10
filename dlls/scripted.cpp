@@ -909,13 +909,13 @@ public:
 private:
 	string_t m_iszSentence;		// string index for idle animation
 	string_t m_iszEntity;	// entity that is wanted for this sentence
-	string_t m_iszListener; // name of entity to look at while talking
 	float m_flRadius;		// range to search
 	float m_flDuration;	// How long the sentence lasts
 	float m_flRepeat;	// repeat rate
 	float m_flAttenuation;
 	float m_flVolume;
 	BOOL m_active;
+	string_t m_iszListener; // name of entity to look at while talking
 };
 
 #define SF_SENTENCE_ONCE	0x0001

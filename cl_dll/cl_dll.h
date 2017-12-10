@@ -25,6 +25,7 @@
 //		- Drawing the HUD graphics every frame
 //		- Handling the custum HUD-update packets
 //
+#pragma once
 #ifndef CL_DLL_H
 #define CL_DLL_H
 typedef unsigned char byte;

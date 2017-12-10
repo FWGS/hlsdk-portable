@@ -16,6 +16,7 @@
 // CSquadMonster - all the extra data for monsters that
 // form squads.
 //=========================================================
+#pragma once
 #ifndef SQUADMONSTER_H
 #define SQUADMONSTER_H
 

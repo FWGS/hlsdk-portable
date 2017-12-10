@@ -267,11 +267,11 @@ public:
 
 	static TYPEDESCRIPTION m_SaveData[];
 
-	string_t m_iTargetName[MAX_MULTI_TARGETS];// list if indexes into global string array
-	float m_flTargetDelay[MAX_MULTI_TARGETS];// delay (in seconds) from time of manager fire to target fire
 	int m_cTargets; // the total number of targets in this manager's fire list.
 	int m_index;	// Current target
 	float m_startTime;// Time we started firing
+	string_t m_iTargetName[MAX_MULTI_TARGETS];// list if indexes into global string array
+	float m_flTargetDelay[MAX_MULTI_TARGETS];// delay (in seconds) from time of manager fire to target fire
 private:
 	inline BOOL IsClone( void ) { return ( pev->spawnflags & SF_MULTIMAN_CLONE ) ? TRUE : FALSE; }
 	inline BOOL ShouldClone( void )
@@ -1321,9 +1321,9 @@ public:
 
 	static TYPEDESCRIPTION m_SaveData[];
 
-	string_t m_changeTarget;
 	char m_szMapName[cchMapNameMost];		// trigger_changelevel only:  next map
 	char m_szLandmarkName[cchMapNameMost];		// trigger_changelevel only:  landmark on next map
+	string_t m_changeTarget;
 	float m_changeTargetDelay;
 };
 

@@ -15,6 +15,7 @@
 //
 //  parsemsg.h
 //
+#pragma once
 #ifndef PARSEMSG_H
 #define PARSEMSG_H
 
