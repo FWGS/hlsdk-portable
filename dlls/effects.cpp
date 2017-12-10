@@ -2181,6 +2181,8 @@ public:
 
 void CItemSoda::Precache( void )
 {
+	PRECACHE_MODEL( "models/can.mdl" );
+	PRECACHE_SOUND( "weapons/g_bounce.wav" );
 }
 
 LINK_ENTITY_TO_CLASS( item_sodacan, CItemSoda )
