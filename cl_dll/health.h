@@ -12,6 +12,8 @@
 *   without written permission from Valve LLC.
 *
 ****/
+#ifndef HEALTH_H
+#define HEALTH_H
 
 #define DMG_IMAGE_LIFE		2	// seconds that image is up
 
@@ -122,3 +124,4 @@ private:
 	void CalcDamageDirection( vec3_t vecFrom );
 	void UpdateTiles( float fTime, long bits );
 };
+#endif // HEALTH_H

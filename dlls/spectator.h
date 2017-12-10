@@ -13,6 +13,8 @@
 *
 ****/
 // Spectator.h
+#ifndef SPECTATOR_H
+#define SPECTATOR_H
 
 class CBaseSpectator : public CBaseEntity 
 {
@@ -25,3 +27,4 @@ public:
 private:
 	void SpectatorImpulseCommand( void );
 };
+#endif // SPECTATOR_H

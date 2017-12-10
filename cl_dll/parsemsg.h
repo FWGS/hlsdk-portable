@@ -15,6 +15,8 @@
 //
 //  parsemsg.h
 //
+#ifndef PARSEMSG_H
+#define PARSEMSG_H
 
 #define ASSERT( x )
 
@@ -30,6 +32,7 @@ float READ_COORD( void );
 float READ_ANGLE( void );
 float READ_HIRESANGLE( void );
 
+#endif // PARSEMSG_H
 
 
 
