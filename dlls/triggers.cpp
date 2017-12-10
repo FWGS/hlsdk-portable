@@ -114,7 +114,7 @@ public:
 	static TYPEDESCRIPTION m_SaveData[];
 
 private:
-	int m_globalstate;
+	string_t m_globalstate;
 	USE_TYPE triggerType;
 };
 
@@ -267,11 +267,11 @@ public:
 
 	static TYPEDESCRIPTION m_SaveData[];
 
-	int m_cTargets;	// the total number of targets in this manager's fire list.
+	string_t m_iTargetName[MAX_MULTI_TARGETS];// list if indexes into global string array
+	float m_flTargetDelay[MAX_MULTI_TARGETS];// delay (in seconds) from time of manager fire to target fire
+	int m_cTargets; // the total number of targets in this manager's fire list.
 	int m_index;	// Current target
 	float m_startTime;// Time we started firing
-	int m_iTargetName[MAX_MULTI_TARGETS];// list if indexes into global string array
-	float m_flTargetDelay[MAX_MULTI_TARGETS];// delay (in seconds) from time of manager fire to target fire
 private:
 	inline BOOL IsClone( void ) { return ( pev->spawnflags & SF_MULTIMAN_CLONE ) ? TRUE : FALSE; }
 	inline BOOL ShouldClone( void )
@@ -1321,9 +1321,9 @@ public:
 
 	static TYPEDESCRIPTION m_SaveData[];
 
+	string_t m_changeTarget;
 	char m_szMapName[cchMapNameMost];		// trigger_changelevel only:  next map
 	char m_szLandmarkName[cchMapNameMost];		// trigger_changelevel only:  landmark on next map
-	int m_changeTarget;
 	float m_changeTargetDelay;
 };
 
@@ -2054,7 +2054,7 @@ public:
 	static TYPEDESCRIPTION m_SaveData[];
 
 private:
-	int m_iszNewTarget;
+	string_t m_iszNewTarget;
 };
 
 LINK_ENTITY_TO_CLASS( trigger_changetarget, CTriggerChangeTarget )
@@ -2117,7 +2117,7 @@ public:
 	EHANDLE m_hPlayer;
 	EHANDLE m_hTarget;
 	CBaseEntity *m_pentPath;
-	int m_sPath;
+	string_t m_sPath;
 	float m_flWait;
 	float m_flReturnTime;
 	float m_flStopTime;

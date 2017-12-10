@@ -438,7 +438,7 @@ class CBaseDelay : public CBaseEntity
 {
 public:
 	float m_flDelay;
-	int m_iszKillTarget;
+	string_t m_iszKillTarget;
 
 	virtual void KeyValue( KeyValueData *pkvd );
 	virtual int Save( CSave &save );

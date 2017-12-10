@@ -379,9 +379,10 @@ public:
 
 	void BeamUpdateVars( void );
 
+	string_t	m_iszStartEntity;
+	string_t	m_iszEndEntity;
+	string_t	m_iszSpriteName;
 	int	m_active;
-	int	m_iszStartEntity;
-	int	m_iszEndEntity;
 	float	m_life;
 	int	m_boltWidth;
 	int	m_noiseAmplitude;
@@ -389,7 +390,6 @@ public:
 	int	m_speed;
 	float	m_restrike;
 	int	m_spriteTexture;
-	int	m_iszSpriteName;
 	int	m_frameStart;
 
 	float	m_radius;

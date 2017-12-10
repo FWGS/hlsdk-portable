@@ -82,9 +82,9 @@ public:
 
 	Materials m_Material;
 	Explosions m_Explosion;
+	string_t m_iszGibModel;
+	string_t m_iszSpawnObject;
 	int m_idShard;
 	float m_angle;
-	int m_iszGibModel;
-	int m_iszSpawnObject;
 };
 #endif	// FUNC_BREAK_H
