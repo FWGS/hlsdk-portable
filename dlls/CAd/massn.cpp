@@ -80,40 +80,17 @@ public:
 	void IdleSound(void);
 	void SpeakSentence(void);
 
-	int	Save(CSave &save);
-	int Restore(CRestore &restore);
-
-	//CBaseEntity	*Kick(void);
 	Schedule_t	*GetSchedule(void);
 	Schedule_t  *GetScheduleOfType(int Type);
 
 	int IRelationship(CBaseEntity *pTarget);
 
 	CUSTOM_SCHEDULES;
-	static TYPEDESCRIPTION m_SaveData[];
 
 	static const char *pGruntSentences[];
 };
 
 LINK_ENTITY_TO_CLASS( monster_massn, CMassn )
-
-TYPEDESCRIPTION	CMassn::m_SaveData[] =
-{
-	DEFINE_FIELD( CMassn, m_flNextGrenadeCheck, FIELD_TIME ),
-	DEFINE_FIELD( CMassn, m_flNextPainTime, FIELD_TIME ),
-	//DEFINE_FIELD( CMassn, m_flLastEnemySightTime, FIELD_TIME ), // don't save, go to zero
-	DEFINE_FIELD( CMassn, m_vecTossVelocity, FIELD_VECTOR ),
-	DEFINE_FIELD( CMassn, m_fThrowGrenade, FIELD_BOOLEAN ),
-	DEFINE_FIELD( CMassn, m_fStanding, FIELD_BOOLEAN ),
-	DEFINE_FIELD( CMassn, m_fFirstEncounter, FIELD_BOOLEAN ),
-	DEFINE_FIELD( CMassn, m_cClipSize, FIELD_INTEGER ),
-	DEFINE_FIELD( CMassn, m_voicePitch, FIELD_INTEGER ),
-	//DEFINE_FIELD( CShotgun, m_iBrassShell, FIELD_INTEGER ),
-	//DEFINE_FIELD( CShotgun, m_iShotgunShell, FIELD_INTEGER ),
-	DEFINE_FIELD( CMassn, m_iSentence, FIELD_INTEGER ),
-};
-
-IMPLEMENT_SAVERESTORE( CMassn, CSquadMonster )
 
 const char *CMassn::pGruntSentences[] =
 {
