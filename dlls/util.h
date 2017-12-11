@@ -12,6 +12,9 @@
 *   without written permission from Valve LLC.
 *
 ****/
+#pragma once
+#ifndef UTIL_H
+#define UTIL_H
 //
 // Misc utility code
 //
@@ -37,13 +40,13 @@ extern globalvars_t				*gpGlobals;
 #define STRING(offset)		(const char *)(gpGlobals->pStringBase + (int)offset)
 
 #if !defined XASH_64BIT || defined(CLIENT_DLL)
-#define MAKE_STRING(str)	((size_t)str - (size_t)STRING(0))
+#define MAKE_STRING(str)	((int)str - (int)STRING(0))
 #else
 static inline int MAKE_STRING(const char *szValue)
 {
 	long long ptrdiff = szValue - STRING(0);
 	if( ptrdiff > INT_MAX || ptrdiff < INT_MIN )
-		return ALLOC_STRING(szValue);
+		return ALLOC_STRING( szValue );
 	else
 		return (int)ptrdiff;
 }
@@ -575,3 +578,4 @@ int UTIL_SharedRandomLong( unsigned int seed, int low, int high );
 float UTIL_SharedRandomFloat( unsigned int seed, float low, float high );
 
 float UTIL_WeaponTimeBase( void );
+#endif // UTIL_H
