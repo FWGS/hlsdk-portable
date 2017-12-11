@@ -81,10 +81,6 @@ public:
 	void IdleSound(void);
 	void SpeakSentence(void);
 
-	int	Save(CSave &save);
-	int Restore(CRestore &restore);
-
-	//CBaseEntity	*Kick(void);
 	Schedule_t	*GetSchedule(void);
 	Schedule_t  *GetScheduleOfType(int Type);
 
@@ -97,24 +93,6 @@ public:
 };
 
 LINK_ENTITY_TO_CLASS( monster_human_grunt_ally, CFGrunt )
-
-TYPEDESCRIPTION	CFGrunt::m_SaveData[] =
-{
-	DEFINE_FIELD( CFGrunt, m_flNextGrenadeCheck, FIELD_TIME ),
-	DEFINE_FIELD( CFGrunt, m_flNextPainTime, FIELD_TIME ),
-	//DEFINE_FIELD( CFGrunt, m_flLastEnemySightTime, FIELD_TIME ), // don't save, go to zero
-	DEFINE_FIELD( CFGrunt, m_vecTossVelocity, FIELD_VECTOR ),
-	DEFINE_FIELD( CFGrunt, m_fThrowGrenade, FIELD_BOOLEAN ),
-	DEFINE_FIELD( CFGrunt, m_fStanding, FIELD_BOOLEAN ),
-	DEFINE_FIELD( CFGrunt, m_fFirstEncounter, FIELD_BOOLEAN ),
-	DEFINE_FIELD( CFGrunt, m_cClipSize, FIELD_INTEGER ),
-	DEFINE_FIELD( CFGrunt, m_voicePitch, FIELD_INTEGER ),
-	//DEFINE_FIELD( CShotgun, m_iBrassShell, FIELD_INTEGER ),
-	//DEFINE_FIELD( CShotgun, m_iShotgunShell, FIELD_INTEGER ),
-	DEFINE_FIELD( CFGrunt, m_iSentence, FIELD_INTEGER ),
-};
-
-IMPLEMENT_SAVERESTORE( CFGrunt, CSquadMonster )
 
 const char *CFGrunt::pGruntSentences[] =
 {

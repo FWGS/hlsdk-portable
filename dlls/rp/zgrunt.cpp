@@ -82,39 +82,17 @@ public:
 	void IdleSound(void);
 	void SpeakSentence(void);
 
-	int	Save(CSave &save);
-	int Restore(CRestore &restore);
-
 	Schedule_t	*GetSchedule(void);
 	Schedule_t  *GetScheduleOfType(int Type);
 
 	int IRelationship(CBaseEntity *pTarget);
 
 	CUSTOM_SCHEDULES;
-	static TYPEDESCRIPTION m_SaveData[];
 
 	static const char *pGruntSentences[];
 };
 
 LINK_ENTITY_TO_CLASS( monster_zombie_grunt, CZGrunt )
-
-TYPEDESCRIPTION	CZGrunt::m_SaveData[] =
-{
-	DEFINE_FIELD( CZGrunt, m_flNextGrenadeCheck, FIELD_TIME ),
-	DEFINE_FIELD( CZGrunt, m_flNextPainTime, FIELD_TIME ),
-	//DEFINE_FIELD( CZGrunt, m_flLastEnemySightTime, FIELD_TIME ), // don't save, go to zero
-	DEFINE_FIELD( CZGrunt, m_vecTossVelocity, FIELD_VECTOR ),
-	DEFINE_FIELD( CZGrunt, m_fThrowGrenade, FIELD_BOOLEAN ),
-	DEFINE_FIELD( CZGrunt, m_fStanding, FIELD_BOOLEAN ),
-	DEFINE_FIELD( CZGrunt, m_fFirstEncounter, FIELD_BOOLEAN ),
-	DEFINE_FIELD( CZGrunt, m_cClipSize, FIELD_INTEGER ),
-	DEFINE_FIELD( CZGrunt, m_voicePitch, FIELD_INTEGER ),
-	//DEFINE_FIELD( CShotgun, m_iBrassShell, FIELD_INTEGER ),
-	//DEFINE_FIELD( CShotgun, m_iShotgunShell, FIELD_INTEGER ),
-	DEFINE_FIELD( CZGrunt, m_iSentence, FIELD_INTEGER ),
-};
-
-IMPLEMENT_SAVERESTORE( CZGrunt, CSquadMonster )
 
 const char *CZGrunt::pGruntSentences[] =
 {
