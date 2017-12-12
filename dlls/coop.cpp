@@ -214,7 +214,9 @@ void UTIL_SpawnPlayer( CBasePlayer *pPlayer )
 	pPlayer->pev->flags &= ~FL_SPECTATOR;
 	pPlayer->pev->movetype = MOVETYPE_WALK;
 	pPlayer->Spawn();
-	CLIENT_COMMAND( pPlayer->edict(), "touch_show _coopm*\n" );
+
+	if( mp_coop.value )
+		CLIENT_COMMAND( pPlayer->edict(), "touch_show _coopm*\n" );
 
 }
 
@@ -256,6 +258,8 @@ void UTIL_CoopKickPlayer(CBaseEntity *pPlayer)
 
 	// find last slot
 	for( i = 0; badlist[i]; i++ );
+	if( i > 254 )
+		return;
 
 	badlist[i] = strdup( name );
 }
