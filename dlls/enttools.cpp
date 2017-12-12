@@ -99,6 +99,17 @@ void Ent_AddToBlacklist_f( void )
 	entblacklist = node;
 }
 
+void Ent_ClearBlacklist_f( void )
+{
+	while( entblacklist )
+	{
+		entblacklist_t *node = entblacklist;
+		entblacklist = node->next;
+		free( node );
+	}
+}
+
+
 bool Ent_CheckFire( edict_t *player, edict_t *ent, const char *command )
 {
 	if( !mp_enttools_players.value && ENTINDEX( ent ) < gpGlobals->maxClients + 1 )
@@ -962,4 +973,6 @@ void ENT_RegisterCVars( void )
 	CVAR_REGISTER( &mp_enttools_checkowner );
 	CVAR_REGISTER( &mp_enttools_players );
 	g_engfuncs.pfnAddServerCommand( "mp_enttools_addblacklist", Ent_AddToBlacklist_f );
+	g_engfuncs.pfnAddServerCommand( "mp_enttools_clearblacklist", Ent_ClearBlacklist_f );
+
 }
