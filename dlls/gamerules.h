@@ -15,7 +15,9 @@
 //=========================================================
 // GameRules
 //=========================================================
-
+#pragma once
+#ifndef GAMERULES_H
+#define GAMERULES_H
 //#include "weapons.h"
 //#include "items.h"
 class CBasePlayerItem;
@@ -361,3 +363,4 @@ protected:
 };
 
 extern DLL_GLOBAL CGameRules *g_pGameRules;
+#endif // GAMERULES_H

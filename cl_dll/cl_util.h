@@ -15,7 +15,8 @@
 //
 // cl_util.h
 //
-
+#ifndef CL_UTIL_H
+#define CL_UTIL_H
 #include "exportdef.h"
 #include "cvardef.h"
 
@@ -179,3 +180,6 @@ inline void UnpackRGB( int &r, int &g, int &b, unsigned long ulRGB )\
 }
 
 HSPRITE LoadSprite( const char *pszName );
+
+bool isXashFWGS();
+#endif

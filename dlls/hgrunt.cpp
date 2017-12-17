@@ -807,6 +807,7 @@ void CHGrunt::HandleAnimEvent( MonsterEvent_t *pEvent )
 			}
 
 		}
+			break;
 		default:
 			CSquadMonster::HandleAnimEvent( pEvent );
 			break;
