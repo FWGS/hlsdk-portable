@@ -302,8 +302,8 @@ void CNGrunt::HandleAnimEvent( MonsterEvent_t *pEvent )
 				SENTENCEG_PlayRndSz( ENT( pev ), "NG_ALERT", HGRUNT_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch );
 				JustSpoke();
 			}
-
 		}
+			break;
 		default:
 			CSquadMonster::HandleAnimEvent( pEvent );
 			break;
