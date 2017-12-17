@@ -12,7 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
-
+#pragma once
 #ifndef	ACTIVITY_H
 #define	ACTIVITY_H
 

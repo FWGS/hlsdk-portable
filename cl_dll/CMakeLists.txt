@@ -26,24 +26,30 @@ project (CLDLL)
 set (CLDLL_LIBRARY client)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-write-strings -DLINUX -D_LINUX -Dstricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp -DCLIENT_WEAPONS -DCLIENT_DLL -DCROWBAR_IDLE_ANIM -w")
+if (GOLDSOURCE_SUPPORT)
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DGOLDSOURCE_SUPPORT")
+	if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ldl")
+	endif()
+endif()
 set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS}")
 
-set (CLDLL_SOURCES 
-	../dlls/crossbow.cpp 
-	../dlls/crowbar.cpp 
-	../dlls/egon.cpp 
-	../dlls/gauss.cpp 
-	../dlls/handgrenade.cpp 
-	../dlls/hornetgun.cpp 
-	../dlls/mp5.cpp 
-	../dlls/python.cpp 
-	../dlls/rpg.cpp 
-	../dlls/satchel.cpp 
-	../dlls/shotgun.cpp 
-	../dlls/squeakgrenade.cpp 
-	../dlls/tripmine.cpp 
+set (CLDLL_SOURCES
+	../dlls/crossbow.cpp
+	../dlls/crowbar.cpp
+	../dlls/egon.cpp
+	../dlls/gauss.cpp
+	../dlls/handgrenade.cpp
+	../dlls/hornetgun.cpp
+	../dlls/mp5.cpp
+	../dlls/python.cpp
+	../dlls/rpg.cpp
+	../dlls/satchel.cpp
+	../dlls/shotgun.cpp
+	../dlls/squeakgrenade.cpp
+	../dlls/tripmine.cpp
 	../dlls/glock.cpp
-	ev_hldm.cpp 
+	ev_hldm.cpp
 	hl/hl_baseentity.cpp
 	hl/hl_events.cpp
 	hl/hl_objects.cpp
@@ -70,7 +76,9 @@ set (CLDLL_SOURCES
 	hud_update.cpp
 	in_camera.cpp
 	input.cpp
-#SRCS+=./inputw32.cpp
+	input_goldsource.cpp
+	input_mouse.cpp
+	input_xash3d.cpp
 	menu.cpp
 	message.cpp
 	overview.cpp
@@ -88,10 +96,10 @@ set (CLDLL_SOURCES
 	tri.cpp
 	util.cpp
 	view.cpp
-	input_xash3d.cpp
 	scoreboard.cpp
 	MOTD.cpp)
-include_directories (. hl/ ../dlls ../dlls/wpn_shared ../common ../engine ../pm_shared ../game_shared ../public)
+
+include_directories (. hl/ ../dlls ../dlls/wpn_shared ../common ../engine ../pm_shared ../game_shared ../public ../utils/false_vgui/include)
 
 if(USE_VOICEMGR)
 	#set(CLDLL_SOURCES

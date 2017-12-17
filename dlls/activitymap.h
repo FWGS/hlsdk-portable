@@ -12,7 +12,9 @@
 *   without written permission from Valve LLC.
 *
 ****/
-
+#pragma once
+#ifndef ACTIVITYMAP_H
+#define ACTIVITYMAP_H
 #define _A( a ) { a, #a }
 
 activity_map_t activity_map[] =
@@ -95,3 +97,4 @@ _A(	ACT_FLINCH_LEFTLEG ),
 _A(	ACT_FLINCH_RIGHTLEG ),
 { 0, NULL }
 };
+#endif // ACTIVITYMAP_H

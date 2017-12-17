@@ -38,7 +38,7 @@ public:
 
 private:
 	int m_iStyle;
-	int m_iszPattern;
+	string_t m_iszPattern;
 };
 
 LINK_ENTITY_TO_CLASS( light, CLight )

@@ -5,9 +5,9 @@
 // $NoKeywords: $
 //=============================================================================
 
+#pragma once
 #if !defined( IN_DEFSH )
 #define IN_DEFSH
-#pragma once
 
 // up / down
 #define	PITCH	0
