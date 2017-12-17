@@ -28,9 +28,6 @@ set (CLDLL_LIBRARY client)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-write-strings -DLINUX -D_LINUX -Dstricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp -DCLIENT_WEAPONS -DCLIENT_DLL -w")
 if (GOLDSOURCE_SUPPORT)
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DGOLDSOURCE_SUPPORT")
-	if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ldl")
-	endif()
 endif()
 set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS}")
 
@@ -109,6 +106,9 @@ if(USE_VOICEMGR)
 endif()
 
 add_library (${CLDLL_LIBRARY} SHARED ${CLDLL_SOURCES})
+if (GOLDSOURCE_SUPPORT)
+	target_link_libraries( ${CLDLL_LIBRARY} ${CMAKE_DL_LIBS} )
+endif()
 
 set_target_properties (${CLDLL_SHARED} PROPERTIES
 	POSITION_INDEPENDENT_CODE 1)
