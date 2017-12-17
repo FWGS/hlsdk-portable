@@ -16,9 +16,9 @@ before_script:
 script:
   - mkdir -p build && cd build
   - cmake ../ -DCMAKE_C_FLAGS="-O2 -pipe -DNDEBUG -march=nocona -fvisibility=hidden -fomit-frame-pointer" -DCMAKE_CXX_FLAGS="-fno-exceptions -fno-rtti" -DCMAKE_EXE_LINKER_FLAGS="-Wl,--no-undefined -Wl,--strip-all" -DGOLDSOURCE_SUPPORT=1 -DUSE_VOICEMGR=0 && make -j3
-  - mkdir -p gamelibs/cl_dlls
-  - mkdir -p gamelibs/dlls
-  - cp cl_dll/libclient.* gamelibs/cl_dlls
-  - cp dlls/libserver.* gamelibs/dlls
-  - tar -J -cf gamelibs.txz gamelibs
-  - curl --upload-file gamelibs.txz https://transfer.sh/gamelibs.txz
+  - mkdir -p $TRAVIS_BRANCH-$TRAVIS_OS_NAME-$CC/cl_dlls
+  - mkdir -p $TRAVIS_BRANCH-$TRAVIS_OS_NAME-$CC/dlls
+  - cp cl_dll/libclient.* $TRAVIS_BRANCH-$TRAVIS_OS_NAME-$CC/cl_dlls
+  - cp dlls/libserver.* $TRAVIS_BRANCH-$TRAVIS_OS_NAME-$CC/dlls
+  - tar -J -cf $TRAVIS_BRANCH-$TRAVIS_OS_NAME-$CC.txz $TRAVIS_BRANCH-$TRAVIS_OS_NAME-$CC
+  - curl --upload-file $TRAVIS_BRANCH-$TRAVIS_OS_NAME-$CC.txz https://transfer.sh/$TRAVIS_BRANCH-$TRAVIS_OS_NAME-$CC.txz
