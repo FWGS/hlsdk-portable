@@ -556,7 +556,7 @@ void CISlave :: Precache()
 	int i;
 
 	if (pev->model)
-		PRECACHE_MODEL((char*)STRING(pev->model)); //LRC
+	        PRECACHE_MODEL(STRING(pev->model)); //LRC
 	else
 		PRECACHE_MODEL("models/islave.mdl");
 	PRECACHE_MODEL("sprites/lgtning.spr");

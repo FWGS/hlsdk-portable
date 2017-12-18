@@ -15,7 +15,7 @@
 //=========================================================
 // Scheduling 
 //=========================================================
-
+#pragma once
 #ifndef	SCHEDULE_H
 #define	SCHEDULE_H
 
@@ -24,7 +24,6 @@
 #define TASKSTATUS_RUNNING_MOVEMENT	2			// Just running movement
 #define TASKSTATUS_RUNNING_TASK		3			// Just running task
 #define TASKSTATUS_COMPLETE			4			// Completed, get next task
-
 
 //=========================================================
 // These are the schedule types
@@ -174,7 +173,7 @@ typedef enum
 		TASK_REMEMBER,
 		TASK_FORGET,
 		TASK_WAIT_FOR_MOVEMENT,			// wait until MovementIsComplete()
-		LAST_COMMON_TASK, // LEAVE THIS AT THE BOTTOM!! (sjb)
+		LAST_COMMON_TASK // LEAVE THIS AT THE BOTTOM!! (sjb)
 } SHARED_TASKS;
 
 
@@ -182,7 +181,7 @@ typedef enum
 enum 
 {
 	TARGET_MOVE_NORMAL = 0,
-	TARGET_MOVE_SCRIPTED = 1,
+	TARGET_MOVE_SCRIPTED = 1
 };
 
 
@@ -196,7 +195,7 @@ enum
 	GOAL_MOVE,
 	GOAL_TAKE_COVER,
 	GOAL_MOVE_TARGET,
-	GOAL_EAT,
+	GOAL_EAT
 };
 
 // an array of tasks is a task list
@@ -210,11 +209,10 @@ struct Task_t
 
 struct Schedule_t
 {
-
 	Task_t	*pTasklist;
 	int		cTasks;	 
 	int		iInterruptMask;// a bit mask of conditions that can interrupt this schedule 
-	
+
 	// a more specific mask that indicates which TYPES of sounds will interrupt the schedule in the 
 	// event that the schedule is broken by COND_HEAR_SOUND
 	int		iSoundMask;
@@ -283,7 +281,6 @@ struct WayPoint_t
 
 #define bits_COND_TASK_FAILED			( 1 << 30)
 #define bits_COND_SCHEDULE_DONE			( 1 << 31)
-
 
 #define bits_COND_ALL_SPECIAL			(bits_COND_SPECIAL1 | bits_COND_SPECIAL2)
 

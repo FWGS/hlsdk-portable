@@ -103,7 +103,7 @@ int CHudMOTD::Draw( float fTime )
 
 		// find where to start drawing the line
 		if( ( ypos > ROW_RANGE_MIN ) && ( ypos + LINE_HEIGHT <= ypos_r + height ) )
-			gHUD.DrawHudString( xpos, ypos, xmax, ch, 255, 180, 0 );
+			DrawUtfString( xpos, ypos, xmax, ch, 255, 180, 0 );
 
 		ypos += LINE_HEIGHT;
 
@@ -130,7 +130,7 @@ int CHudMOTD::MsgFunc_MOTD( const char *pszName, int iSize, void *pbuf )
 	BEGIN_READ( pbuf, iSize );
 
 	int is_finished = READ_BYTE();
-	strncat( m_szMOTD, READ_STRING(), sizeof(m_szMOTD) );
+	strncat( m_szMOTD, READ_STRING(), sizeof(m_szMOTD) - 1 );
 
 	if( is_finished )
 	{

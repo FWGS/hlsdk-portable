@@ -26,26 +26,29 @@
 #include <string.h>
 #include <stdio.h>
 #include "parsemsg.h"
+#include "hud_servers.h"
 
 #include "demo.h"
 #include "demo_api.h"
 
 cvar_t *hud_textmode;
 float g_hud_text_color[3];
-extern client_sprite_t *GetSpriteList(client_sprite_t *pList, const char *psz, int iRes, int iCount);
+
+extern client_sprite_t *GetSpriteList( client_sprite_t *pList, const char *psz, int iRes, int iCount );
 
 extern cvar_t *sensitivity;
 cvar_t *cl_lw = NULL;
+cvar_t *cl_viewbob = NULL;
 
-void ShutdownInput (void);
+void ShutdownInput( void );
 
-//DECLARE_MESSAGE(m_Logo, Logo)
-int __MsgFunc_Logo(const char *pszName, int iSize, void *pbuf)
+//DECLARE_MESSAGE( m_Logo, Logo )
+int __MsgFunc_Logo( const char *pszName, int iSize, void *pbuf )
 {
-	return gHUD.MsgFunc_Logo(pszName, iSize, pbuf );
+	return gHUD.MsgFunc_Logo( pszName, iSize, pbuf );
 }
 
-//DECLARE_MESSAGE(m_Logo, Logo)
+//DECLARE_MESSAGE( m_Logo, Logo )
 //LRC
 int __MsgFunc_HUDColor(const char *pszName, int iSize, void *pbuf)
 {
@@ -80,15 +83,15 @@ int __MsgFunc_SetSky(const char *pszName, int iSize, void *pbuf)
 	return 1;
 }
 
-int __MsgFunc_ResetHUD(const char *pszName, int iSize, void *pbuf)
+int __MsgFunc_ResetHUD( const char *pszName, int iSize, void *pbuf )
 {
 #ifdef ENGINE_DEBUG
 	CONPRINT("## ResetHUD\n");
 #endif
-	return gHUD.MsgFunc_ResetHUD(pszName, iSize, pbuf );
+	return gHUD.MsgFunc_ResetHUD( pszName, iSize, pbuf );
 }
 
-int __MsgFunc_InitHUD(const char *pszName, int iSize, void *pbuf)
+int __MsgFunc_InitHUD( const char *pszName, int iSize, void *pbuf )
 {
 #ifdef ENGINE_DEBUG
 	CONPRINT("## InitHUD\n");
@@ -97,38 +100,38 @@ int __MsgFunc_InitHUD(const char *pszName, int iSize, void *pbuf)
 	return 1;
 }
 
-int __MsgFunc_ViewMode(const char *pszName, int iSize, void *pbuf)
+int __MsgFunc_ViewMode( const char *pszName, int iSize, void *pbuf )
 {
 	gHUD.MsgFunc_ViewMode( pszName, iSize, pbuf );
 	return 1;
 }
 
-int __MsgFunc_SetFOV(const char *pszName, int iSize, void *pbuf)
+int __MsgFunc_SetFOV( const char *pszName, int iSize, void *pbuf )
 {
 	return gHUD.MsgFunc_SetFOV( pszName, iSize, pbuf );
 }
 
-int __MsgFunc_Concuss(const char *pszName, int iSize, void *pbuf)
+int __MsgFunc_Concuss( const char *pszName, int iSize, void *pbuf )
 {
 	return gHUD.MsgFunc_Concuss( pszName, iSize, pbuf );
 }
 
-int __MsgFunc_GameMode(const char *pszName, int iSize, void *pbuf )
+int __MsgFunc_GameMode( const char *pszName, int iSize, void *pbuf )
 {
 	return gHUD.MsgFunc_GameMode( pszName, iSize, pbuf );
 }
 
 // TFFree Command Menu
-void __CmdFunc_OpenCommandMenu(void)
+void __CmdFunc_OpenCommandMenu( void )
 {
 }
 
 // TFC "special" command
-void __CmdFunc_InputPlayerSpecial(void)
+void __CmdFunc_InputPlayerSpecial( void )
 {
 }
 
-void __CmdFunc_CloseCommandMenu(void)
+void __CmdFunc_CloseCommandMenu( void )
 {
 }
 
@@ -141,27 +144,27 @@ void __CmdFunc_ToggleServerBrowser( void )
 }
 
 // TFFree Command Menu Message Handlers
-int __MsgFunc_ValClass(const char *pszName, int iSize, void *pbuf)
+int __MsgFunc_ValClass( const char *pszName, int iSize, void *pbuf )
 {
 	return 0;
 }
 
-int __MsgFunc_TeamNames(const char *pszName, int iSize, void *pbuf)
+int __MsgFunc_TeamNames( const char *pszName, int iSize, void *pbuf )
 {
 	return 0;
 }
 
-int __MsgFunc_Feign(const char *pszName, int iSize, void *pbuf)
+int __MsgFunc_Feign( const char *pszName, int iSize, void *pbuf )
 {
 	return 0;
 }
 
-int __MsgFunc_Detpack(const char *pszName, int iSize, void *pbuf)
+int __MsgFunc_Detpack( const char *pszName, int iSize, void *pbuf )
 {
 	return 0;
 }
 
-int __MsgFunc_VGUIMenu(const char *pszName, int iSize, void *pbuf)
+int __MsgFunc_VGUIMenu( const char *pszName, int iSize, void *pbuf )
 {
 	return 0;
 }
@@ -171,17 +174,17 @@ int __MsgFunc_MOTD(const char *pszName, int iSize, void *pbuf)
 	return 0;
 }
 */
-int __MsgFunc_BuildSt(const char *pszName, int iSize, void *pbuf)
+int __MsgFunc_BuildSt( const char *pszName, int iSize, void *pbuf )
 {
 	return 0;
 }
 
-int __MsgFunc_RandomPC(const char *pszName, int iSize, void *pbuf)
+int __MsgFunc_RandomPC( const char *pszName, int iSize, void *pbuf )
 {
 	return 0;
 }
  
-int __MsgFunc_ServerName(const char *pszName, int iSize, void *pbuf)
+int __MsgFunc_ServerName( const char *pszName, int iSize, void *pbuf )
 {
 	return 0;
 }
@@ -201,18 +204,18 @@ int __MsgFunc_TeamInfo(const char *pszName, int iSize, void *pbuf)
 	return 0;
 }
 */
-int __MsgFunc_Spectator(const char *pszName, int iSize, void *pbuf)
+int __MsgFunc_Spectator( const char *pszName, int iSize, void *pbuf )
 {
 	return 0;
 }
 
-int __MsgFunc_AllowSpec(const char *pszName, int iSize, void *pbuf)
+int __MsgFunc_AllowSpec( const char *pszName, int iSize, void *pbuf )
 {
 	return 0;
 }
  
 // This is called every time the DLL is loaded
-void CHud :: Init( void )
+void CHud::Init( void )
 {
 #ifdef ENGINE_DEBUG
 	CONPRINT("## CHud::Init\n");
@@ -257,7 +260,7 @@ void CHud :: Init( void )
 
 	CVAR_CREATE( "hud_classautokill", "1", FCVAR_ARCHIVE | FCVAR_USERINFO );		// controls whether or not to suicide immediately on TF class switch
 	CVAR_CREATE( "hud_takesshots", "0", FCVAR_ARCHIVE );		// controls whether or not to automatically take screenshots at the end of a round
-	hud_textmode = CVAR_CREATE( "hud_textmode", "0", FCVAR_ARCHIVE );
+	hud_textmode = CVAR_CREATE ( "hud_textmode", "0", FCVAR_ARCHIVE );
 
 	m_iLogo = 0;
 	m_iFOV = 0;
@@ -268,12 +271,13 @@ void CHud :: Init( void )
 	m_pCvarStealMouse = CVAR_CREATE( "hud_capturemouse", "1", FCVAR_ARCHIVE );
 	m_pCvarDraw = CVAR_CREATE( "hud_draw", "1", FCVAR_ARCHIVE );
 	cl_lw = gEngfuncs.pfnGetCvarPointer( "cl_lw" );
+	cl_viewbob = CVAR_CREATE( "cl_viewbob", "0", FCVAR_ARCHIVE );
 
 	m_pSpriteList = NULL;
 	m_pShinySurface = NULL; //LRC
 
 	// Clear any old HUD list
-	if ( m_pHudList )
+	if( m_pHudList )
 	{
 		HUDLIST *pList;
 		while ( m_pHudList )
@@ -309,26 +313,24 @@ void CHud :: Init( void )
 
 	m_Menu.Init();
 	
-
-
-	MsgFunc_ResetHUD(0, 0, NULL );
+	MsgFunc_ResetHUD( 0, 0, NULL );
 }
 
 // CHud destructor
 // cleans up memory allocated for m_rg* arrays
-CHud :: ~CHud()
+CHud::~CHud()
 {
 #ifdef ENGINE_DEBUG
 	CONPRINT("## CHud::destructor\n");
 #endif
-	delete [] m_rghSprites;
-	delete [] m_rgrcRects;
-	delete [] m_rgszSpriteNames;
+	delete[] m_rghSprites;
+	delete[] m_rgrcRects;
+	delete[] m_rgszSpriteNames;
 
-	if ( m_pHudList )
+	if( m_pHudList )
 	{
 		HUDLIST *pList;
-		while ( m_pHudList )
+		while( m_pHudList )
 		{
 			pList = m_pHudList;
 			m_pHudList = m_pHudList->pNext;
@@ -336,62 +338,60 @@ CHud :: ~CHud()
 		}
 		m_pHudList = NULL;
 	}
-
-
 }
 
 // GetSpriteIndex()
 // searches through the sprite list loaded from hud.txt for a name matching SpriteName
 // returns an index into the gHUD.m_rghSprites[] array
 // returns 0 if sprite not found
-int CHud :: GetSpriteIndex( const char *SpriteName )
+int CHud::GetSpriteIndex( const char *SpriteName )
 {
 	// look through the loaded sprite name list for SpriteName
-	for ( int i = 0; i < m_iSpriteCount; i++ )
+	for( int i = 0; i < m_iSpriteCount; i++ )
 	{
-		if ( strncmp( SpriteName, m_rgszSpriteNames + (i * MAX_SPRITE_NAME_LENGTH), MAX_SPRITE_NAME_LENGTH ) == 0 )
+		if( strncmp( SpriteName, m_rgszSpriteNames + ( i * MAX_SPRITE_NAME_LENGTH), MAX_SPRITE_NAME_LENGTH ) == 0 )
 			return i;
 	}
 
 	return -1; // invalid sprite
 }
 
-void CHud :: VidInit( void )
+void CHud::VidInit( void )
 {
 #ifdef ENGINE_DEBUG
 	CONPRINT("## CHud::VidInit\n");
 #endif
+	int j;
 	m_scrinfo.iSize = sizeof(m_scrinfo);
-	GetScreenInfo(&m_scrinfo);
+	GetScreenInfo( &m_scrinfo );
 
 	// ----------
 	// Load Sprites
 	// ---------
-//	m_hsprFont = LoadSprite("sprites/%d_font.spr");
-	
+	//m_hsprFont = LoadSprite("sprites/%d_font.spr");
+
 	m_hsprLogo = 0;	
 	m_hsprCursor = 0;
 
-	if (ScreenWidth < 640)
+	if( ScreenWidth < 640 )
 		m_iRes = 320;
 	else
 		m_iRes = 640;
 
 	// Only load this once
-	if ( !m_pSpriteList )
+	if( !m_pSpriteList )
 	{
 		// we need to load the hud.txt, and all sprites within
-		m_pSpriteList = SPR_GetList("sprites/hud.txt", &m_iSpriteCountAllRes);
+		m_pSpriteList = SPR_GetList( "sprites/hud.txt", &m_iSpriteCountAllRes );
 
-		if (m_pSpriteList)
+		if( m_pSpriteList )
 		{
-			int j;
 			// count the number of sprites of the appropriate res
 			m_iSpriteCount = 0;
 			client_sprite_t *p = m_pSpriteList;
-			for ( j = 0; j < m_iSpriteCountAllRes; j++ )
+			for( j = 0; j < m_iSpriteCountAllRes; j++ )
 			{
-				if ( p->iRes == m_iRes )
+				if( p->iRes == m_iRes )
 					m_iSpriteCount++;
 				p++;
 			}
@@ -403,13 +403,13 @@ void CHud :: VidInit( void )
 
 			p = m_pSpriteList;
 			int index = 0;
-			for ( j = 0; j < m_iSpriteCountAllRes; j++ )
+			for( j = 0; j < m_iSpriteCountAllRes; j++ )
 			{
-				if ( p->iRes == m_iRes )
+				if( p->iRes == m_iRes )
 				{
 					char sz[256];
-					sprintf(sz, "sprites/%s.spr", p->szSprite);
-					m_rghSprites[index] = SPR_Load(sz);
+					sprintf( sz, "sprites/%s.spr", p->szSprite );
+					m_rghSprites[index] = SPR_Load( sz );
 					m_rgrcRects[index] = p->rc;
 					strncpy( &m_rgszSpriteNames[index * MAX_SPRITE_NAME_LENGTH], p->szName, MAX_SPRITE_NAME_LENGTH );
 
@@ -425,14 +425,37 @@ void CHud :: VidInit( void )
 		// we have already have loaded the sprite reference from hud.txt, but
 		// we need to make sure all the sprites have been loaded (we've gone through a transition, or loaded a save game)
 		client_sprite_t *p = m_pSpriteList;
-		int index = 0;
-		for ( int j = 0; j < m_iSpriteCountAllRes; j++ )
+
+		// count the number of sprites of the appropriate res
+		m_iSpriteCount = 0;
+		for( j = 0; j < m_iSpriteCountAllRes; j++ )
 		{
-			if ( p->iRes == m_iRes )
+			if( p->iRes == m_iRes )
+				m_iSpriteCount++;
+			p++;
+		}
+
+		delete[] m_rghSprites;
+		delete[] m_rgrcRects;
+		delete[] m_rgszSpriteNames;
+
+		// allocated memory for sprite handle arrays
+ 		m_rghSprites = new HSPRITE[m_iSpriteCount];
+		m_rgrcRects = new wrect_t[m_iSpriteCount];
+		m_rgszSpriteNames = new char[m_iSpriteCount * MAX_SPRITE_NAME_LENGTH];
+
+		p = m_pSpriteList;
+		int index = 0;
+		for( j = 0; j < m_iSpriteCountAllRes; j++ )
+		{
+			if( p->iRes == m_iRes )
 			{
 				char sz[256];
 				sprintf( sz, "sprites/%s.spr", p->szSprite );
-				m_rghSprites[index] = SPR_Load(sz);
+				m_rghSprites[index] = SPR_Load( sz );
+				m_rgrcRects[index] = p->rc;
+				strncpy( &m_rgszSpriteNames[index * MAX_SPRITE_NAME_LENGTH], p->szName, MAX_SPRITE_NAME_LENGTH );
+
 				index++;
 			}
 
@@ -465,7 +488,7 @@ void CHud :: VidInit( void )
 	m_Particle.VidInit(); // (LRC) -- 30/08/02 November235: Particles to Order
 }
 
-int CHud::MsgFunc_Logo(const char *pszName,  int iSize, void *pbuf)
+int CHud::MsgFunc_Logo( const char *pszName,  int iSize, void *pbuf )
 {
 	BEGIN_READ( pbuf, iSize );
 
@@ -493,29 +516,28 @@ COM_FileBase
 ============
 */
 // Extracts the base name of a file (no path, no extension, assumes '/' as path separator)
-void COM_FileBase ( const char *in, char *out)
+void COM_FileBase ( const char *in, char *out )
 {
 	int len, start, end;
 
 	len = strlen( in );
-	
+
 	// scan backward for '.'
 	end = len - 1;
-	while ( end && in[end] != '.' && in[end] != '/' && in[end] != '\\' )
+	while( end && in[end] != '.' && in[end] != '/' && in[end] != '\\' )
 		end--;
-	
-	if ( in[end] != '.' )		// no '.', copy to end
-		end = len-1;
+
+	if( in[end] != '.' )		// no '.', copy to end
+		end = len - 1;
 	else 
 		end--;					// Found ',', copy to left of '.'
 
-
 	// Scan backward for '/'
-	start = len-1;
-	while ( start >= 0 && in[start] != '/' && in[start] != '\\' )
+	start = len - 1;
+	while( start >= 0 && in[start] != '/' && in[start] != '\\' )
 		start--;
 
-	if ( in[start] != '/' && in[start] != '\\' )
+	if( in[start] != '/' && in[start] != '\\' )
 		start = 0;
 	else 
 		start++;
@@ -525,6 +547,7 @@ void COM_FileBase ( const char *in, char *out)
 
 	// Copy partial string
 	strncpy( out, &in[start], len );
+
 	// Terminate it
 	out[len] = 0;
 }
@@ -538,13 +561,13 @@ HUD_IsGame
 int HUD_IsGame( const char *game )
 {
 	const char *gamedir;
-	char gd[ 1024 ];
+	char gd[1024];
 
 	gamedir = gEngfuncs.pfnGetGameDirectory();
-	if ( gamedir && gamedir[0] )
+	if( gamedir && gamedir[0] )
 	{
 		COM_FileBase( gamedir, gd );
-		if ( !stricmp( gd, game ) )
+		if( !stricmp( gd, game ) )
 			return 1;
 	}
 	return 0;
@@ -559,27 +582,27 @@ Returns last FOV
 */
 float HUD_GetFOV( void )
 {
-	if ( gEngfuncs.pDemoAPI->IsRecording() )
+	if( gEngfuncs.pDemoAPI->IsRecording() )
 	{
 		// Write it
 		int i = 0;
-		unsigned char buf[ 100 ];
+		unsigned char buf[100];
 
 		// Active
-		*( float * )&buf[ i ] = g_lastFOV;
-		i += sizeof( float );
+		*(float *)&buf[i] = g_lastFOV;
+		i += sizeof(float);
 
 		Demo_WriteBuffer( TYPE_ZOOM, i, buf );
 	}
 
-	if ( gEngfuncs.pDemoAPI->IsPlayingback() )
+	if( gEngfuncs.pDemoAPI->IsPlayingback() )
 	{
 		g_lastFOV = g_demozoom;
 	}
 	return g_lastFOV;
 }
 
-int CHud::MsgFunc_SetFOV(const char *pszName,  int iSize, void *pbuf)
+int CHud::MsgFunc_SetFOV( const char *pszName,  int iSize, void *pbuf )
 {
 	BEGIN_READ( pbuf, iSize );
 
@@ -587,12 +610,12 @@ int CHud::MsgFunc_SetFOV(const char *pszName,  int iSize, void *pbuf)
 	int def_fov = CVAR_GET_FLOAT( "default_fov" );
 
 	//Weapon prediction already takes care of changing the fog. ( g_lastFOV ).
-	if ( cl_lw && cl_lw->value )
+	if( cl_lw && cl_lw->value )
 		return 1;
 
 	g_lastFOV = newfov;
 
-	if ( newfov == 0 )
+	if( newfov == 0 )
 	{
 		m_iFOV = def_fov;
 	}
@@ -604,7 +627,7 @@ int CHud::MsgFunc_SetFOV(const char *pszName,  int iSize, void *pbuf)
 	// the clients fov is actually set in the client data update section of the hud
 
 	// Set a new sensitivity
-	if ( m_iFOV == def_fov )
+	if( m_iFOV == def_fov )
 	{  
 		// reset to saved sensitivity
 		m_flMouseSensitivity = 0;
@@ -618,24 +641,23 @@ int CHud::MsgFunc_SetFOV(const char *pszName,  int iSize, void *pbuf)
 	return 1;
 }
 
-
-void CHud::AddHudElem(CHudBase *phudelem)
+void CHud::AddHudElem( CHudBase *phudelem )
 {
 	HUDLIST *pdl, *ptemp;
 
-//phudelem->Think();
+	//phudelem->Think();
 
-	if (!phudelem)
+	if( !phudelem )
 		return;
 
-	pdl = (HUDLIST *)malloc(sizeof(HUDLIST));
-	if (!pdl)
+	pdl = (HUDLIST *)malloc( sizeof(HUDLIST) );
+	if( !pdl )
 		return;
 
-	memset(pdl, 0, sizeof(HUDLIST));
+	memset( pdl, 0, sizeof(HUDLIST) );
 	pdl->p = phudelem;
 
-	if (!m_pHudList)
+	if( !m_pHudList )
 	{
 		m_pHudList = pdl;
 		return;
@@ -643,7 +665,7 @@ void CHud::AddHudElem(CHudBase *phudelem)
 
 	ptemp = m_pHudList;
 
-	while (ptemp->pNext)
+	while( ptemp->pNext )
 		ptemp = ptemp->pNext;
 
 	ptemp->pNext = pdl;
@@ -653,5 +675,3 @@ float CHud::GetSensitivity( void )
 {
 	return m_flMouseSensitivity;
 }
-
-

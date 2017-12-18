@@ -22,7 +22,7 @@ void UTIL_AddToAssistList( CBaseEntity *pEnt )
 
 	if ( !g_pWorld )
 	{
-		ALERT(at_debug, "AddToAssistList %s \"%s\" has no AssistList!\n", STRING(pEnt->pev->classname), STRING(pEnt->pev->targetname));
+		ALERT(at_console, "AddToAssistList %s \"%s\" has no AssistList!\n", STRING(pEnt->pev->classname), STRING(pEnt->pev->targetname));
 		return;
 	}
 
@@ -102,7 +102,7 @@ int ApplyDesiredSettings( CBaseEntity *pListMember )
 	if (pListMember->m_iLFlags & LF_DESIRED_INFO)
 	{
 		pListMember->m_iLFlags &= ~LF_DESIRED_INFO;
-		ALERT(at_debug, "DesiredInfo: pos %f %f %f, vel %f %f %f. Child pos %f %f %f, vel %f %f %f\n\n", pListMember->pev->origin.x, pListMember->pev->origin.y, pListMember->pev->origin.z, pListMember->pev->velocity.x, pListMember->pev->velocity.y, pListMember->pev->velocity.z, pListMember->m_pChildMoveWith->pev->origin.x, pListMember->m_pChildMoveWith->pev->origin.y, pListMember->m_pChildMoveWith->pev->origin.z, pListMember->m_pChildMoveWith->pev->velocity.x, pListMember->m_pChildMoveWith->pev->velocity.y, pListMember->m_pChildMoveWith->pev->velocity.z);
+		ALERT(at_console, "DesiredInfo: pos %f %f %f, vel %f %f %f. Child pos %f %f %f, vel %f %f %f\n\n", pListMember->pev->origin.x, pListMember->pev->origin.y, pListMember->pev->origin.z, pListMember->pev->velocity.x, pListMember->pev->velocity.y, pListMember->pev->velocity.z, pListMember->m_pChildMoveWith->pev->origin.x, pListMember->m_pChildMoveWith->pev->origin.y, pListMember->m_pChildMoveWith->pev->origin.z, pListMember->m_pChildMoveWith->pev->velocity.x, pListMember->m_pChildMoveWith->pev->velocity.y, pListMember->m_pChildMoveWith->pev->velocity.z);
 	}
 
 	if (pListMember->m_iLFlags & LF_DESIRED_POSTASSIST)
@@ -312,7 +312,7 @@ void CheckDesiredList( void )
 	int loopbreaker = 1000; //assume this is the max. number of entities which will use DesiredList in any one frame
 //	BOOL liststart = FALSE;
 	if (g_doingDesired)
-		ALERT(at_debug, "CheckDesiredList: doingDesired is already set!?\n");
+		ALERT(at_console, "CheckDesiredList: doingDesired is already set!?\n");
 	g_doingDesired = TRUE;
 
 	if (!g_pWorld)
@@ -424,7 +424,7 @@ void UTIL_AssignOrigin( CBaseEntity *pEntity, const Vector vecOrigin, BOOL bInit
 //	ALERT(at_console, "AssignOrigin before %f, after %f\n", pEntity->pev->origin.x, vecOrigin.x);
 	Vector vecDiff = vecOrigin - pEntity->pev->origin;
 	if (vecDiff.Length() > 0.01 && CVAR_GET_FLOAT("sohl_mwdebug"))
-		ALERT(at_debug,"AssignOrigin %s %s: (%f %f %f) goes to (%f %f %f)\n",STRING(pEntity->pev->classname), STRING(pEntity->pev->targetname), pEntity->pev->origin.x, pEntity->pev->origin.y, pEntity->pev->origin.z, vecOrigin.x, vecOrigin.y, vecOrigin.z);
+		ALERT(at_console,"AssignOrigin %s %s: (%f %f %f) goes to (%f %f %f)\n",STRING(pEntity->pev->classname), STRING(pEntity->pev->targetname), pEntity->pev->origin.x, pEntity->pev->origin.y, pEntity->pev->origin.z, vecOrigin.x, vecOrigin.y, vecOrigin.z);
 
 //	UTIL_SetDesiredPos(pEntity, vecOrigin);
 //	pEntity->pev->origin = vecOrigin;
@@ -481,7 +481,7 @@ void UTIL_SetAngles( CBaseEntity *pEntity, const Vector vecAngles, BOOL bInitiat
 {
 	Vector vecDiff = vecAngles - pEntity->pev->angles;
 	if (vecDiff.Length() > 0.01 && CVAR_GET_FLOAT("sohl_mwdebug"))
-		ALERT(at_debug,"SetAngles %s %s: (%f %f %f) goes to (%f %f %f)\n",STRING(pEntity->pev->classname), STRING(pEntity->pev->targetname), pEntity->pev->angles.x, pEntity->pev->angles.y, pEntity->pev->angles.z, vecAngles.x, vecAngles.y, vecAngles.z);
+		ALERT(at_console,"SetAngles %s %s: (%f %f %f) goes to (%f %f %f)\n",STRING(pEntity->pev->classname), STRING(pEntity->pev->targetname), pEntity->pev->angles.x, pEntity->pev->angles.y, pEntity->pev->angles.z, vecAngles.x, vecAngles.y, vecAngles.z);
 
 //	UTIL_SetDesiredAngles(pEntity, vecAngles);
 	pEntity->pev->angles = vecAngles;

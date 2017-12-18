@@ -250,7 +250,7 @@ void CLocusBeam :: KeyValue( KeyValueData *pkvd )
 
 void CLocusBeam :: Precache ( void )
 {
-	PRECACHE_MODEL ( (char*)STRING(m_iszSprite) );
+	PRECACHE_MODEL ( STRING(m_iszSprite) );
 }
 
 void CLocusBeam::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )

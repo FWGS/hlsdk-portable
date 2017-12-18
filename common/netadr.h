@@ -12,12 +12,9 @@
 *   without written permission from Valve LLC.
 *
 ****/
-// netadr.h
+#pragma once
 #ifndef NETADR_H
 #define NETADR_H
-#ifdef _WIN32
-#pragma once
-#endif
 
 typedef enum
 {
@@ -26,7 +23,7 @@ typedef enum
 	NA_BROADCAST,
 	NA_IP,
 	NA_IPX,
-	NA_BROADCAST_IPX,
+	NA_BROADCAST_IPX
 } netadrtype_t;
 
 typedef struct netadr_s
@@ -37,4 +34,4 @@ typedef struct netadr_s
 	unsigned short	port;
 } netadr_t;
 
-#endif // NETADR_H
+#endif//NETADR_H

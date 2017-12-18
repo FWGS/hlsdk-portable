@@ -18,6 +18,7 @@
 
 // Spectator functions
 // 
+
 #include	"extdll.h"
 #include	"util.h"
 #include	"cbase.h"
@@ -31,12 +32,12 @@ SpectatorConnect
 called when a spectator connects to a server
 ============
 */
-void CBaseSpectator::SpectatorConnect(void)
+void CBaseSpectator::SpectatorConnect( void )
 {
 	pev->flags = FL_SPECTATOR;
 	pev->solid = SOLID_NOT;
 	pev->movetype = MOVETYPE_NOCLIP;
-	
+
 	m_pGoalEnt = NULL;
 }
 
@@ -47,7 +48,7 @@ SpectatorDisconnect
 called when a spectator disconnects from a server
 ============
 */
-void CBaseSpectator::SpectatorDisconnect(void)
+void CBaseSpectator::SpectatorDisconnect( void )
 {
 }
 
@@ -58,14 +59,14 @@ SpectatorImpulseCommand
 Called by SpectatorThink if the spectator entered an impulse
 ================
 */
-void CBaseSpectator::SpectatorImpulseCommand(void)
+void CBaseSpectator::SpectatorImpulseCommand( void )
 {
-	static edict_t	*pGoal		= NULL;
+	static edict_t *pGoal = NULL;
 	CBaseEntity		*pPreviousGoal;
 	CBaseEntity		*pCurrentGoal;
-	BOOL			bFound;
-	
-	switch (pev->impulse)
+	BOOL bFound;
+
+	switch( pev->impulse )
 	{
 	case 1:
 		// teleport the spectator to the next spawn point; note that if the spectator is
@@ -75,13 +76,13 @@ void CBaseSpectator::SpectatorImpulseCommand(void)
 		// Start at the current goal, skip the world, and stop if we looped back around
 
 		bFound = FALSE;
-		while (1)
+		while( 1 )
 		{
 			pCurrentGoal = UTIL_FindEntityByClassname(pCurrentGoal, "info_player_deathmatch");
 			// Looped around, failure
-			if (pCurrentGoal == pPreviousGoal)
+			if( pCurrentGoal == pPreviousGoal )
 			{
-				ALERT(at_debug, "Could not find a spawn spot.\n");
+				ALERT( at_console, "Could not find a spawn spot.\n" );
 				break;
 			}
 			// Found a non-world entity, set success, otherwise, look for the next one.
@@ -92,16 +93,16 @@ void CBaseSpectator::SpectatorImpulseCommand(void)
 			}
 		}
 
-		if (!bFound)  // Didn't find a good spot.
+		if( !bFound )  // Didn't find a good spot.
 			break;
-		
+
 		pGoal = ENT(pCurrentGoal->pev);
 		UTIL_SetOrigin( this, pGoal->v.origin );
 		pev->angles = pGoal->v.angles;
 		pev->fixangle = FALSE;
 		break;
 	default:
-		ALERT(at_debug, "Unknown spectator impulse\n");
+		ALERT( at_console, "Unknown spectator impulse\n" );
 		break;
 	}
 
@@ -115,17 +116,17 @@ SpectatorThink
 Called every frame after physics are run
 ================
 */
-void  CBaseSpectator::SpectatorThink(void)
+void CBaseSpectator::SpectatorThink( void )
 {
-	if (!(pev->flags & FL_SPECTATOR))
+	if( !( pev->flags & FL_SPECTATOR ) )
 	{
 		pev->flags = FL_SPECTATOR;
 	}
 
-	pev->solid	   = SOLID_NOT;
-	pev->movetype  = MOVETYPE_NOCLIP;
+	pev->solid = SOLID_NOT;
+	pev->movetype = MOVETYPE_NOCLIP;
 
-	if (pev->impulse)
+	if( pev->impulse )
 		SpectatorImpulseCommand();
 }
 
@@ -142,6 +143,6 @@ void CBaseSpectator::Spawn()
 	pev->flags = FL_SPECTATOR;
 	pev->solid = SOLID_NOT;
 	pev->movetype = MOVETYPE_NOCLIP;
-	
+
 	m_pGoalEnt = NULL;
 }

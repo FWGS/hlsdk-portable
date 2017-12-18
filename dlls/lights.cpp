@@ -99,16 +99,16 @@ int GetStdLightStyle (int iStyle)
 class CLight : public CPointEntity
 {
 public:
-	virtual void	KeyValue( KeyValueData* pkvd ); 
-	virtual void	Spawn( void );
-	void	Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+	virtual void KeyValue( KeyValueData* pkvd ); 
+	virtual void Spawn( void );
+	void Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
 	void	Think( void );
 
-	virtual int		Save( CSave &save );
-	virtual int		Restore( CRestore &restore );
+	virtual int Save( CSave &save );
+	virtual int Restore( CRestore &restore );
 	virtual STATE	GetState(void) { return m_iState; }; //LRC
-	
-	static	TYPEDESCRIPTION m_SaveData[];
+
+	static TYPEDESCRIPTION m_SaveData[];
 
 	int		GetStyle( void ) { return m_iszCurrentStyle; }; //LRC
 	void	SetStyle( int iszPattern ); //LRC
@@ -126,9 +126,10 @@ private:
 	int		m_iszPattern; // custom style to use while on
 	int		m_iszCurrentStyle; // current style string
 };
-LINK_ENTITY_TO_CLASS( light, CLight );
 
-TYPEDESCRIPTION	CLight::m_SaveData[] = 
+LINK_ENTITY_TO_CLASS( light, CLight )
+
+TYPEDESCRIPTION	CLight::m_SaveData[] =
 {
 	DEFINE_FIELD( CLight, m_iState, FIELD_INTEGER ),
 	DEFINE_FIELD( CLight, m_iszPattern, FIELD_STRING ),
@@ -141,13 +142,12 @@ TYPEDESCRIPTION	CLight::m_SaveData[] =
 	DEFINE_FIELD( CLight, m_iTurnOffTime, FIELD_INTEGER ),
 };
 
-IMPLEMENT_SAVERESTORE( CLight, CPointEntity );
-
+IMPLEMENT_SAVERESTORE( CLight, CPointEntity )
 
 //
 // Cache user-entity-field values until spawn is called.
 //
-void CLight :: KeyValue( KeyValueData* pkvd)
+void CLight::KeyValue( KeyValueData* pkvd )
 {
 	if (FStrEq(pkvd->szKeyName, "m_iOnStyle"))
 	{
@@ -179,12 +179,12 @@ void CLight :: KeyValue( KeyValueData* pkvd)
 		m_iTurnOffTime = atoi(pkvd->szValue);
 		pkvd->fHandled = TRUE;
 	}
-	else if (FStrEq(pkvd->szKeyName, "pitch"))
+	else if( FStrEq(pkvd->szKeyName, "pitch" ) )
 	{
-		pev->angles.x = atof(pkvd->szValue);
+		pev->angles.x = atof( pkvd->szValue );
 		pkvd->fHandled = TRUE;
 	}
-	else if (FStrEq(pkvd->szKeyName, "pattern"))
+	else if( FStrEq(pkvd->szKeyName, "pattern" ) )
 	{
 		m_iszPattern = ALLOC_STRING( pkvd->szValue );
 		pkvd->fHandled = TRUE;
@@ -283,25 +283,25 @@ Default style is 0
 If targeted, it will toggle between on or off.
 */
 
-void CLight :: Spawn( void )
+void CLight::Spawn( void )
 {
-	if (FStringNull(pev->targetname))
-	{       // inert light
-		REMOVE_ENTITY(ENT(pev));
+	if( FStringNull( pev->targetname ) )
+	{
+		// inert light
+		REMOVE_ENTITY(ENT( pev ) );
 		return;
 	}
-	
-	if (FBitSet(pev->spawnflags,SF_LIGHT_START_OFF))
+
+		if( FBitSet( pev->spawnflags, SF_LIGHT_START_OFF ) )
 		m_iState = STATE_OFF;
-	else
+		else
 		m_iState = STATE_ON;
 	SetCorrectStyle();
 }
 
-
-void CLight :: Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
+void CLight::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
-	if (m_iStyle >= 32)
+	if( m_iStyle >= 32 )
 	{
 		if ( !ShouldToggle( useType ) )
 			return;
@@ -311,7 +311,7 @@ void CLight :: Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useT
 		case STATE_ON:
 		case STATE_TURN_ON:
 			if (m_iTurnOffTime)
-			{
+		{
 				m_iState = STATE_TURN_OFF;
 				SetNextThink( m_iTurnOffTime );
 			}
@@ -324,8 +324,8 @@ void CLight :: Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useT
 			{
 				m_iState = STATE_TURN_ON;
 				SetNextThink( m_iTurnOnTime );
-			}
-			else
+		}
+		else
 				m_iState = STATE_ON;
 			break;
 		STATE_IN_USE:
@@ -340,40 +340,40 @@ void CLight :: Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useT
 //
 // shut up spawn functions for new spotlights
 //
-LINK_ENTITY_TO_CLASS( light_spot, CLight );
-
+LINK_ENTITY_TO_CLASS( light_spot, CLight )
 
 class CEnvLight : public CLight
 {
 public:
-	void	KeyValue( KeyValueData* pkvd ); 
-	void	Spawn( void );
+	void KeyValue( KeyValueData* pkvd ); 
+	void Spawn( void );
 };
 
-LINK_ENTITY_TO_CLASS( light_environment, CEnvLight );
+LINK_ENTITY_TO_CLASS( light_environment, CEnvLight )
 
 void CEnvLight::KeyValue( KeyValueData* pkvd )
 {
-	if (FStrEq(pkvd->szKeyName, "_light"))
+	if( FStrEq(pkvd->szKeyName, "_light" ) )
 	{
 		int r, g, b, v, j;
 		char szColor[64];
 		j = sscanf( pkvd->szValue, "%d %d %d %d\n", &r, &g, &b, &v );
-		if (j == 1)
+		if( j == 1 )
 		{
 			g = b = r;
 		}
-		else if (j == 4)
+		else if( j == 4 )
 		{
-			r = r * (v / 255.0);
-			g = g * (v / 255.0);
-			b = b * (v / 255.0);
+			v /= 255;
+			r *= v;
+			g *= v;
+			b *= v;
 		}
 
 		// simulate qrad direct, ambient,and gamma adjustments, as well as engine scaling
-		r = pow( r / 114.0, 0.6 ) * 264;
-		g = pow( g / 114.0, 0.6 ) * 264;
-		b = pow( b / 114.0, 0.6 ) * 264;
+		r = (int)( pow( r / 114.0, 0.6 ) * 264.0 );
+		g = (int)( pow( g / 114.0, 0.6 ) * 264.0 );
+		b = (int)( pow( b / 114.0, 0.6 ) * 264.0 );
 
 		pkvd->fHandled = TRUE;
 		sprintf( szColor, "%d", r );
@@ -389,8 +389,7 @@ void CEnvLight::KeyValue( KeyValueData* pkvd )
 	}
 }
 
-
-void CEnvLight :: Spawn( void )
+void CEnvLight::Spawn( void )
 {
 	char szVector[64];
 	UTIL_MakeAimVectors( pev->angles );
@@ -402,7 +401,7 @@ void CEnvLight :: Spawn( void )
 	sprintf( szVector, "%f", gpGlobals->v_forward.z );
 	CVAR_SET_STRING( "sv_skyvec_z", szVector );
 
-	CLight::Spawn( );
+	CLight::Spawn();
 }
 
 //**********************************************************

@@ -12,6 +12,9 @@
 *   without written permission from Valve LLC.
 *
 ****/
+#pragma once
+#ifndef UTIL_H
+#define UTIL_H
 //
 // Misc utility code
 //
@@ -25,29 +28,47 @@
 #include "enginecallback.h"
 #endif
 
+#ifndef PHYSCALLBACK_H
+#include "physcallback.h"
+#endif
+
+#include <string.h>
+#include <ctype.h>
 inline void MESSAGE_BEGIN( int msg_dest, int msg_type, const float *pOrigin, entvars_t *ent );  // implementation later in this file
 
 extern globalvars_t				*gpGlobals;
 
 // Use this instead of ALLOC_STRING on constant strings
 #define STRING(offset)		(const char *)(gpGlobals->pStringBase + (int)offset)
+
+#if !defined XASH_64BIT || defined(CLIENT_DLL)
 #define MAKE_STRING(str)	((int)str - (int)STRING(0))
+#else
+static inline int MAKE_STRING(const char *szValue)
+{
+	long long ptrdiff = szValue - STRING(0);
+	if( ptrdiff > INT_MAX || ptrdiff < INT_MIN )
+		return ALLOC_STRING( szValue );
+	else
+		return (int)ptrdiff;
+}
+#endif
 
 inline edict_t *FIND_ENTITY_BY_CLASSNAME(edict_t *entStart, const char *pszName) 
 {
 	return FIND_ENTITY_BY_STRING(entStart, "classname", pszName);
-}	
+}
 
 inline edict_t *FIND_ENTITY_BY_TARGETNAME(edict_t *entStart, const char *pszName) 
 {
 	return FIND_ENTITY_BY_STRING(entStart, "targetname", pszName);
-}	
+}
 
 // for doing a reverse lookup. Say you have a door, and want to find its button.
 inline edict_t *FIND_ENTITY_BY_TARGET(edict_t *entStart, const char *pszName) 
 {
 	return FIND_ENTITY_BY_STRING(entStart, "target", pszName);
-}	
+}
 
 // Keeps clutter down a bit, when writing key-value pairs
 #define WRITEKEY_INT(pf, szKeyName, iKeyValue) ENGINE_FPRINTF(pf, "\"%s\" \"%d\"\n", szKeyName, iKeyValue)
@@ -76,10 +97,11 @@ typedef int EOFFSET;
 
 // In case it's not alread defined
 typedef int BOOL;
-#include "exportdef.h"
-// In case this ever changes
-#define M_PI			3.14159265358979323846
 
+// In case this ever changes
+#ifndef M_PI
+#define M_PI			3.14159265358979323846
+#endif
 // Keeps clutter down a bit, when declaring external entity/global method prototypes
 #define DECLARE_GLOBAL_METHOD(MethodName)  extern void DLLEXPORT MethodName( void )
 #define GLOBAL_METHOD(funcname)					void DLLEXPORT funcname(void)
@@ -87,14 +109,8 @@ typedef int BOOL;
 // This is the glue that hooks .MAP entity class names to our CPP classes
 // The _declspec forces them to be exported by name so we can do a lookup with GetProcAddress()
 // The function is used to intialize / allocate the object for the entity
-#ifdef _WIN32
-#define LINK_ENTITY_TO_CLASS(mapClassName,DLLClassName) \
-	extern "C" DLLEXPORT void mapClassName( entvars_t *pev ); \
-	void mapClassName( entvars_t *pev ) { GetClassPtr( (DLLClassName *)pev ); }
-#else
-#define LINK_ENTITY_TO_CLASS(mapClassName,DLLClassName) extern "C" void mapClassName( entvars_t *pev ); void mapClassName( entvars_t *pev ) { GetClassPtr( (DLLClassName *)pev ); }
-#endif
 
+#define LINK_ENTITY_TO_CLASS(mapClassName,DLLClassName) extern "C" EXPORT void mapClassName( entvars_t *pev ); void mapClassName( entvars_t *pev ) { GetClassPtr( (DLLClassName *)pev ); }
 
 //
 // Conversion among the three types of "entity", including identity-conversions.
@@ -124,7 +140,10 @@ inline EOFFSET OFFSET(entvars_t *pev)
 #endif
 	return OFFSET(ENT(pev)); 
 }
-inline entvars_t *VARS(entvars_t *pev)					{ return pev; }
+inline entvars_t *VARS(entvars_t *pev)
+{
+	return pev;
+}
 
 inline entvars_t *VARS(edict_t *pent)			
 { 
@@ -177,7 +196,6 @@ typedef enum
 	MONSTERSTATE_SCRIPT,
 	MONSTERSTATE_PLAYDEAD,
 	MONSTERSTATE_DEAD
-
 } MONSTERSTATE;
 
 //LRC- the values used for the new "global states" mechanism.
@@ -190,25 +208,33 @@ typedef enum
 	STATE_IN_USE,	// player is in control (train/tank/barney/scientist).
 					// In_Use isn't very useful, I'll probably remove it.
 } STATE;
- 
+
 extern char* GetStringForState( STATE state );
 
 // Things that toggle (buttons/triggers/doors) need this
 typedef enum
-	{
+{
 	TS_AT_TOP,
 	TS_AT_BOTTOM,
 	TS_GOING_UP,
 	TS_GOING_DOWN
-	} TOGGLE_STATE;
+} TOGGLE_STATE;
 
 // Misc useful
 inline BOOL FStrEq(const char*sz1, const char*sz2)
-	{ return (strcmp(sz1, sz2) == 0); }
+{
+	return (strcmp(sz1, sz2) == 0);
+}
+
 inline BOOL FClassnameIs(edict_t* pent, const char* szClassname)
-	{ return FStrEq(STRING(VARS(pent)->classname), szClassname); }
+{
+	return FStrEq(STRING(VARS(pent)->classname), szClassname);
+}
+
 inline BOOL FClassnameIs(entvars_t* pev, const char* szClassname)
-	{ return FStrEq(STRING(pev->classname), szClassname); }
+{
+	return FStrEq(STRING(pev->classname), szClassname);
+}
 
 class CBaseEntity;
 
@@ -266,11 +292,30 @@ extern void			UTIL_ShowMessageAll		( const char *pString );
 extern void			UTIL_ScreenFadeAll		( const Vector &color, float fadeTime, float holdTime, int alpha, int flags );
 extern void			UTIL_ScreenFade			( CBaseEntity *pEntity, const Vector &color, float fadeTime, float fadeHold, int alpha, int flags );
 
-typedef enum { ignore_monsters=1, dont_ignore_monsters=0, missile=2 } IGNORE_MONSTERS;
-typedef enum { ignore_glass=1, dont_ignore_glass=0 } IGNORE_GLASS;
+typedef enum
+{
+	ignore_monsters = 1,
+	dont_ignore_monsters = 0,
+	missile=2
+} IGNORE_MONSTERS;
+
+typedef enum
+{
+	ignore_glass = 1,
+	dont_ignore_glass = 0
+} IGNORE_GLASS;
+
 extern void			UTIL_TraceLine			(const Vector &vecStart, const Vector &vecEnd, IGNORE_MONSTERS igmon, edict_t *pentIgnore, TraceResult *ptr);
 extern void			UTIL_TraceLine			(const Vector &vecStart, const Vector &vecEnd, IGNORE_MONSTERS igmon, IGNORE_GLASS ignoreGlass, edict_t *pentIgnore, TraceResult *ptr);
-enum { point_hull=0, human_hull=1, large_hull=2, head_hull=3 };
+
+enum
+{
+	point_hull = 0,
+	human_hull = 1,
+	large_hull = 2,
+	head_hull = 3
+};
+
 extern void			UTIL_TraceHull			(const Vector &vecStart, const Vector &vecEnd, IGNORE_MONSTERS igmon, int hullNumber, edict_t *pentIgnore, TraceResult *ptr);
 extern TraceResult	UTIL_GetGlobalTrace		(void);
 extern void			UTIL_TraceModel			(const Vector &vecStart, const Vector &vecEnd, int hullNumber, edict_t *pentModel, TraceResult *ptr);
@@ -296,7 +341,7 @@ extern float		UTIL_Approach( float target, float value, float speed );
 extern float		UTIL_ApproachAngle( float target, float value, float speed );
 extern float		UTIL_AngleDistance( float next, float cur );
 
-extern char			*UTIL_VarArgs( char *format, ... );
+extern char			*UTIL_VarArgs( const char *format, ... );
 extern void			UTIL_Remove( CBaseEntity *pEntity );
 extern BOOL			UTIL_IsValidEntity( edict_t *pent );
 extern BOOL			UTIL_TeamsMatch( const char *pTeamName1, const char *pTeamName2 );
@@ -315,6 +360,7 @@ extern void			UTIL_PrecacheOther( const char *szClassname );
 
 // prints a message to each client
 extern void			UTIL_ClientPrintAll( int msg_dest, const char *msg_name, const char *param1 = NULL, const char *param2 = NULL, const char *param3 = NULL, const char *param4 = NULL );
+
 inline void			UTIL_CenterPrintAll( const char *msg_name, const char *param1 = NULL, const char *param2 = NULL, const char *param3 = NULL, const char *param4 = NULL ) 
 {
 	UTIL_ClientPrintAll( HUD_PRINTCENTER, msg_name, param1, param2, param3, param4 );
@@ -330,7 +376,6 @@ extern void ClientPrint( entvars_t *client, int msg_dest, const char *msg_name, 
 // prints a message to the HUD say (chat)
 extern void			UTIL_SayText( const char *pText, CBaseEntity *pEntity );
 extern void			UTIL_SayTextAll( const char *pText, CBaseEntity *pEntity );
-
 
 typedef struct hudtextparms_s
 {
@@ -357,7 +402,7 @@ extern char *UTIL_dtos3( int d );
 extern char *UTIL_dtos4( int d );
 
 // Writes message to console with timestamp and FragLog header.
-extern void			UTIL_LogPrintf( char *fmt, ... );
+extern void			UTIL_LogPrintf( const char *fmt, ... );
 
 // Sorta like FInViewCone, but for nonmonsters. 
 extern float UTIL_DotPoints ( const Vector &vecSrc, const Vector &vecCheck, const Vector &vecDir );
@@ -381,7 +426,6 @@ void DBG_AssertFunction(BOOL fExpr, const char* szExpr, const char* szFile, int 
 #define ASSERT(f)
 #define ASSERTSZ(f, sz)
 #endif	// !DEBUG
-
 
 extern DLL_GLOBAL const Vector g_vecZero;
 
@@ -451,8 +495,6 @@ extern DLL_GLOBAL int			g_Language;
 #define SVC_ROOMTYPE		37
 #define	SVC_DIRECTOR		51
 
-
-
 // triggers
 #define	SF_TRIGGER_ALLOWMONSTERS	1// monsters allowed to fire this trigger
 #define	SF_TRIGGER_NOCLIENTS		2// players not allowed to fire this trigger
@@ -484,13 +526,12 @@ extern DLL_GLOBAL int			g_Language;
 
 #define SF_TRIG_PUSH_ONCE		1
 
-
 // Sound Utilities
 
 // sentence groups
 #define CBSENTENCENAME_MAX 16
 #define CVOXFILESENTENCEMAX		1536		// max number of sentences in game. NOTE: this must match
-											// CVOXFILESENTENCEMAX in engine\sound.h!!!
+							// CVOXFILESENTENCEMAX in engine\sound.h!!!
 
 extern char gszallsentencenames[CVOXFILESENTENCEMAX][CBSENTENCENAME_MAX];
 extern int gcallsentences;
@@ -536,7 +577,7 @@ void EMIT_GROUPID_SUIT(edict_t *entity, int isentenceg);
 void EMIT_GROUPNAME_SUIT(edict_t *entity, const char *groupname);
 
 #define PRECACHE_SOUND_ARRAY( a ) \
-	{ for (int i = 0; i < ARRAYSIZE( a ); i++ ) PRECACHE_SOUND((char *) a [i]); }
+	{ for (int i = 0; i < (int)ARRAYSIZE( a ); i++ ) PRECACHE_SOUND( a[i] ); }
 
 #define EMIT_SOUND_ARRAY_DYN( chan, array ) \
 	EMIT_SOUND_DYN ( ENT(pev), chan , array [ RANDOM_LONG(0,ARRAYSIZE( array )-1) ], 1.0, ATTN_NORM, 0, RANDOM_LONG(95,105) ); 
@@ -573,3 +614,4 @@ int GetStdLightStyle (int iStyle); //LRC- declared here so it can be used by eve
 									// needs to deal with the standard lightstyles.
 // LRC- for aliases and groups
 CBaseEntity* UTIL_FollowReference( CBaseEntity* pStartEntity, const char* szName );
+#endif // UTIL_H

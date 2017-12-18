@@ -1,6 +1,6 @@
 /***
 *
-*	Copyright (c) 1999, 2000 Valve LLC. All rights reserved.
+*	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
 *	
 *	This product contains software technology licensed from Id 
 *	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
@@ -12,6 +12,7 @@
 *   use or distribution of this code by or to any unlicensed person is illegal.
 *
 ****/
+#pragma once
 #ifndef SCRIPTED_H
 #define SCRIPTED_H
 
@@ -96,9 +97,9 @@ public:
 	void	AllowInterrupt( BOOL fAllow );
 	int		IgnoreConditions( void );
 
-	int	m_iszIdle;		// string index for idle animation
-	int	m_iszPlay;		// string index for scripted animation
-	int m_iszEntity;	// entity that is wanted for this script
+	string_t m_iszIdle;		// string index for idle animation
+	string_t m_iszPlay;		// string index for scripted animation
+	string_t m_iszEntity;	// entity that is wanted for this script
 	int m_iszAttack;	// entity to attack
 	int m_iszMoveTarget; // entity to move to
 	int m_iszFireOnBegin; // entity to fire when the sequence _starts_.
@@ -119,10 +120,10 @@ public:
 	int	m_saved_movetype;
 	int	m_saved_solid;
 	int m_saved_effects;
-//	Vector m_vecOrigOrigin;
+	//Vector m_vecOrigOrigin;
 	BOOL m_interruptable;
 };
 
 //LRC - removed CCineAI, obsolete
 
-#endif		//SCRIPTED_H
+#endif //SCRIPTED_H

@@ -36,7 +36,8 @@ public:
 	int  Classify ( void );
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
 };
-LINK_ENTITY_TO_CLASS( my_monster, CMyMonster );
+
+LINK_ENTITY_TO_CLASS( my_monster, CMyMonster )
 
 //=========================================================
 // Classify - indicates this monster's place in the 
@@ -97,7 +98,7 @@ void CMyMonster :: Spawn()
 	pev->movetype		= MOVETYPE_STEP;
 	m_bloodColor		= BLOOD_COLOR_GREEN;
 	if (pev->health == 0)
-		pev->health			= 8;
+	pev->health			= 8;
 	pev->view_ofs		= Vector ( 0, 0, 0 );// position of the eyes relative to monster's origin.
 	m_flFieldOfView		= 0.5;// indicates the width of this monster's forward view cone ( as a dotproduct result )
 	m_MonsterState		= MONSTERSTATE_NONE;
@@ -113,9 +114,9 @@ void CMyMonster :: Precache()
 	PRECACHE_SOUND("mysound.wav");
 
 	PRECACHE_MODEL("models/mymodel.mdl");
-}	
+}
 
 //=========================================================
 // AI Schedules Specific to this monster
 //=========================================================
-#endif // 0
+#endif //0

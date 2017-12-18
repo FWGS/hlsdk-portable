@@ -1,7 +1,7 @@
 /***
 *
 *	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
-*	
+*
 *	This product contains software technology licensed from Id 
 *	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
 *	All Rights Reserved.
@@ -12,16 +12,16 @@
 *   without written permission from Valve LLC.
 *
 ****/
-#ifndef PLANE_H
-#define PLANE_H
-
 //=========================================================
 // Plane
 //=========================================================
-class CPlane 
+#ifndef PLANE_H
+#define PLANE_H
+
+class CPlane
 {
 public:
-	CPlane ( void );
+	CPlane( void );
 
 	//=========================================================
 	// InitializePlane - Takes a normal for the plane and a
@@ -33,11 +33,10 @@ public:
 	// PointInFront - determines whether the given vector is 
 	// in front of the plane. 
 	//=========================================================
-	BOOL PointInFront ( const Vector &vecPoint );
+	BOOL PointInFront( const Vector &vecPoint );
 
-	Vector	m_vecNormal;
-	float	m_flDist;
-	BOOL	m_fInitialized;
+	Vector m_vecNormal;
+	float m_flDist;
+	BOOL m_fInitialized;
 };
-
 #endif // PLANE_H

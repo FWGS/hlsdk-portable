@@ -21,7 +21,7 @@ TYPEDESCRIPTION	CBaseAlias::m_SaveData[] =
 {
 	DEFINE_FIELD( CBaseAlias, m_pNextAlias, FIELD_CLASSPTR ),
 };
-IMPLEMENT_SAVERESTORE( CBaseAlias, CPointEntity );
+IMPLEMENT_SAVERESTORE( CBaseAlias, CPointEntity )
 
 /*********************
 * Worldcraft entity: info_alias
@@ -46,7 +46,7 @@ public:
 	void FlushChanges( void );
 };
 
-LINK_ENTITY_TO_CLASS( info_alias, CInfoAlias );
+LINK_ENTITY_TO_CLASS( info_alias, CInfoAlias )
 
 void CInfoAlias::Spawn( void )
 {
@@ -61,14 +61,14 @@ void CInfoAlias::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE us
 	if (pev->spawnflags & SF_ALIAS_OFF)
 	{
 		if (pev->spawnflags & SF_ALIAS_DEBUG)
-			ALERT(at_debug,"DEBUG: info_alias %s turns on\n",STRING(pev->targetname));
+			ALERT(at_console,"DEBUG: info_alias %s turns on\n",STRING(pev->targetname));
 		pev->spawnflags &= ~SF_ALIAS_OFF;
 		pev->noise = pev->target;
 	}
 	else
 	{
 		if (pev->spawnflags & SF_ALIAS_DEBUG)
-			ALERT(at_debug,"DEBUG: info_alias %s turns off\n",STRING(pev->targetname));
+			ALERT(at_console,"DEBUG: info_alias %s turns off\n",STRING(pev->targetname));
 		pev->spawnflags |= SF_ALIAS_OFF;
 		pev->noise = pev->netname;
 	}
@@ -90,7 +90,7 @@ void CInfoAlias::FlushChanges( void )
 {
 	pev->message = pev->noise;
 	if (pev->spawnflags & SF_ALIAS_DEBUG)
-		ALERT(at_debug,"DEBUG: info_alias %s now refers to \"%s\"\n", STRING(pev->targetname), STRING(pev->message));
+		ALERT(at_console,"DEBUG: info_alias %s now refers to \"%s\"\n", STRING(pev->targetname), STRING(pev->message));
 }
 
 /*********************
@@ -146,12 +146,12 @@ void CInfoGroup::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE us
 	if (pTarget && pTarget->IsAlias())
 	{
 		if (pev->spawnflags & SF_GROUP_DEBUG)
-			ALERT(at_debug, "DEBUG: info_group %s changes the contents of %s \"%s\"\n",STRING(pev->targetname), STRING(pTarget->pev->classname), STRING(pTarget->pev->targetname));
+			ALERT(at_console, "DEBUG: info_group %s changes the contents of %s \"%s\"\n",STRING(pev->targetname), STRING(pTarget->pev->classname), STRING(pTarget->pev->targetname));
 		((CBaseAlias*)pTarget)->ChangeValue(this);
 	}
 	else if (pev->target)
 	{
-		ALERT(at_debug, "info_group \"%s\": alias \"%s\" was not found or not an alias!", STRING(pev->targetname), STRING(pev->target));
+		ALERT(at_console, "info_group \"%s\": alias \"%s\" was not found or not an alias!", STRING(pev->targetname), STRING(pev->target));
 	}
 }
 
@@ -159,7 +159,7 @@ int CInfoGroup::GetMember( const char* szMemberName )
 {
 	if (!szMemberName)
 	{
-		ALERT(at_debug,"info_group: GetMember called with null szMemberName!?\n");
+		ALERT(at_console,"info_group: GetMember called with null szMemberName!?\n");
 		return NULL;
 	}
 	for (int i = 0; i < m_cMembers; i++)
@@ -181,7 +181,7 @@ int CInfoGroup::GetMember( const char* szMemberName )
 		// GetMember gets performed at a time, so it works.
 	}
 
-	ALERT(at_debug,"info_group \"%s\" has no member called \"%s\".\n",STRING(pev->targetname),szMemberName);
+	ALERT(at_console,"info_group \"%s\" has no member called \"%s\".\n",STRING(pev->targetname),szMemberName);
 //	ALERT(at_console,"getMember: fail\n");
 	return NULL;
 }
@@ -320,7 +320,7 @@ public:
 
 	int ObjectCaps( void ) { return CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
 };
-LINK_ENTITY_TO_CLASS( trigger_changealias, CTriggerChangeAlias );
+LINK_ENTITY_TO_CLASS( trigger_changealias, CTriggerChangeAlias )
 
 void CTriggerChangeAlias::Spawn( void )
 {

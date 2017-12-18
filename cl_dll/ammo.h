@@ -12,12 +12,11 @@
 *   without written permission from Valve LLC.
 *
 ****/
-
+#pragma once
 #ifndef __AMMO_H__
 #define __AMMO_H__
 
 #define MAX_WEAPON_NAME 128
-
 
 #define WEAPON_FLAGS_SELECTONEMPTY	1
 
@@ -57,6 +56,4 @@ struct WEAPON
 };
 
 typedef int AMMO;
-
-
 #endif

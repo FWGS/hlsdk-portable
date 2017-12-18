@@ -12,13 +12,12 @@
 *   without written permission from Valve LLC.
 *
 ****/
-#if !defined( PARTICLEDEFH )
-#define PARTICLEDEFH
-#ifdef _WIN32
 #pragma once
-#endif
+#ifndef PARTICLEDEF_H
+#define PARTICLEDEF_H
 
-typedef enum {
+typedef enum
+{
 	pt_static, 
 	pt_grav,
 	pt_slowgrav,
@@ -29,17 +28,15 @@ typedef enum {
 	pt_blob2,
 	pt_vox_slowgrav,
 	pt_vox_grav,
-	pt_clientcustom   // Must have callback function specified
+	pt_clientcustom,	// Must have callback function specified
+	pt_tracer		// Always have callback
 } ptype_t;
 
-// !!! if this is changed, it must be changed in d_ifacea.h too !!!
 typedef struct particle_s
 {
-// driver-usable fields
 	vec3_t		org;
 	short		color;
 	short		packedColor;
-// drivers never touch the following fields
 	struct particle_s	*next;
 	vec3_t		vel;
 	float		ramp;
@@ -51,7 +48,7 @@ typedef struct particle_s
 	void		(*callback)( struct particle_s *particle, float frametime );
 	
 	// For deathfunc, etc.
-	unsigned char context;
+	unsigned char	context;
 } particle_t;
 
-#endif
+#endif//PARTICLEDEF_H

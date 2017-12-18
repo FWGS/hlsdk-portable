@@ -15,7 +15,9 @@
 //=========================================================
 // nodes.h
 //=========================================================
-
+#pragma once
+#ifndef		NODES_H
+#define		NODES_H
 //=========================================================
 // DEFINE
 //=========================================================
@@ -82,12 +84,11 @@ public:
 	entvars_t	*m_pLinkEnt;// the entity that blocks this connection (doors, etc)
 
 	// m_szLinkEntModelname is not necessarily NULL terminated (so we can store it in a more alignment-friendly 4 bytes)
-	unsigned char	m_szLinkEntModelname[ 4 ];// the unique name of the brush model that blocks the connection (this is kept for save/restore)
+	char	m_szLinkEntModelname[ 4 ];// the unique name of the brush model that blocks the connection (this is kept for save/restore)
 
 	int		m_afLinkInfo;// information about this link
 	float	m_flWeight;// length of the link line segment
 };
-
 
 typedef struct
 {
@@ -104,7 +105,12 @@ typedef struct
 //=========================================================
 // CGraph 
 //=========================================================
+#ifdef XASH_64BIT
+#define	GRAPH_VERSION	(int)16 * 10
+#else
 #define	GRAPH_VERSION	(int)16// !!!increment this whever graph/node/link classes change, to obsolesce older disk files.
+#endif
+
 class CGraph
 {
 public:
@@ -177,9 +183,9 @@ public:
 	void	InitGraph( void );
 	int		AllocNodes ( void );
 	
-	int		CheckNODFile(char *szMapName);
-	int		FLoadGraph(char *szMapName);
-	int		FSaveGraph(char *szMapName);
+	int		CheckNODFile(const char *szMapName);
+	int		FLoadGraph(const char *szMapName);
+	int		FSaveGraph(const char *szMapName);
 	int		FSetGraphPointers(void);
 	void	CheckNode(Vector vecOrigin, int iNode);
 
@@ -269,7 +275,6 @@ class CNodeEnt : public CBaseEntity
 	short m_sHintActivity;
 };
 
-
 //=========================================================
 // CStack - last in, first out.
 //=========================================================
@@ -288,7 +293,6 @@ private:
 	int		m_stack[ MAX_STACK_NODES ];
 	int		m_level;
 };
-
 
 //=========================================================
 // CQueue - first in, first out.
@@ -368,7 +372,8 @@ enum
 	HINT_TACTICAL_AMBUSH,
 
 	HINT_STUKA_PERCH = 300,
-	HINT_STUKA_LANDING,
+	HINT_STUKA_LANDING
 };
 
 extern CGraph WorldGraph;
+#endif // NODES_H
