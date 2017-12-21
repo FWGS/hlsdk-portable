@@ -851,12 +851,9 @@ void EV_FirePython( event_args_t *args )
 
 	if( EV_IsLocal( idx ) )
 	{
-		// Python uses different body in multiplayer versus single player
-		int multiplayer = gEngfuncs.GetMaxClients() == 1 ? 0 : 1;
-
 		// Add muzzle flash to current weapon model
 		EV_MuzzleFlash();
-		gEngfuncs.pEventAPI->EV_WeaponAnimation( PYTHON_FIRE1, multiplayer ? 1 : 0 );
+		gEngfuncs.pEventAPI->EV_WeaponAnimation( PYTHON_FIRE1, 1 );
 
 		V_PunchAxis( 0, -10.0 );
 	}
