@@ -5,9 +5,9 @@
 // $NoKeywords: $
 //=============================================================================
 
+#pragma once
 #if !defined( HUD_IFACEH )
 #define HUD_IFACEH
-#pragma once
 
 #include "exportdef.h"
 

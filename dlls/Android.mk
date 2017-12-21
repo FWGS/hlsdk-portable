@@ -96,6 +96,7 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
            plane.cpp \
            plats.cpp \
            player.cpp \
+	   playermonster.cpp \
            python.cpp \
            rat.cpp \
            roach.cpp \

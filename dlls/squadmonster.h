@@ -16,6 +16,9 @@
 // CSquadMonster - all the extra data for monsters that
 // form squads.
 //=========================================================
+#pragma once
+#ifndef SQUADMONSTER_H
+#define SQUADMONSTER_H
 
 #define	SF_SQUADMONSTER_LEADER	32
 
@@ -116,3 +119,4 @@ public:
 	MONSTERSTATE GetIdealState( void );
 	Schedule_t *GetScheduleOfType( int iType );
 };
+#endif // SQUADMONSTER_H

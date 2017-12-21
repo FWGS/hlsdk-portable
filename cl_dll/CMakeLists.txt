@@ -26,22 +26,25 @@ project (CLDLL)
 set (CLDLL_LIBRARY client)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-write-strings -DLINUX -D_LINUX -Dstricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp -DCLIENT_WEAPONS -DCLIENT_DLL -w")
+if (GOLDSOURCE_SUPPORT)
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DGOLDSOURCE_SUPPORT")
+endif()
 set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS}")
 
-set (CLDLL_SOURCES 
-	../dlls/crossbow.cpp 
-	../dlls/crowbar.cpp 
-	../dlls/egon.cpp 
-	../dlls/gauss.cpp 
-	../dlls/handgrenade.cpp 
-	../dlls/hornetgun.cpp 
-	../dlls/mp5.cpp 
-	../dlls/python.cpp 
-	../dlls/rpg.cpp 
-	../dlls/satchel.cpp 
-	../dlls/shotgun.cpp 
-	../dlls/squeakgrenade.cpp 
-	../dlls/tripmine.cpp 
+set (CLDLL_SOURCES
+	../dlls/crossbow.cpp
+	../dlls/crowbar.cpp
+	../dlls/egon.cpp
+	../dlls/gauss.cpp
+	../dlls/handgrenade.cpp
+	../dlls/hornetgun.cpp
+	../dlls/mp5.cpp
+	../dlls/python.cpp
+	../dlls/rpg.cpp
+	../dlls/satchel.cpp
+	../dlls/shotgun.cpp
+	../dlls/squeakgrenade.cpp
+	../dlls/tripmine.cpp
 	../dlls/glock.cpp
 	../dlls/rebellion/minimp5.cpp
 	ev_hldm.cpp 
@@ -71,7 +74,9 @@ set (CLDLL_SOURCES
 	hud_update.cpp
 	in_camera.cpp
 	input.cpp
-#SRCS+=./inputw32.cpp
+	input_goldsource.cpp
+	input_mouse.cpp
+	input_xash3d.cpp
 	menu.cpp
 	message.cpp
 	overview.cpp
@@ -89,10 +94,10 @@ set (CLDLL_SOURCES
 	tri.cpp
 	util.cpp
 	view.cpp
-	input_xash3d.cpp
 	scoreboard.cpp
 	MOTD.cpp)
-include_directories (. hl/ ../dlls ../dlls/wpn_shared ../common ../engine ../pm_shared ../game_shared ../public)
+
+include_directories (. hl/ ../dlls ../dlls/wpn_shared ../common ../engine ../pm_shared ../game_shared ../public ../utils/false_vgui/include)
 
 if(USE_VOICEMGR)
 	#set(CLDLL_SOURCES
@@ -102,7 +107,21 @@ if(USE_VOICEMGR)
 endif()
 
 add_library (${CLDLL_LIBRARY} SHARED ${CLDLL_SOURCES})
+if (GOLDSOURCE_SUPPORT)
+	target_link_libraries( ${CLDLL_LIBRARY} ${CMAKE_DL_LIBS} )
+endif()
 
-set_target_properties (${CLDLL_SHARED} PROPERTIES
+set_target_properties (${CLDLL_LIBRARY} PROPERTIES
 	POSITION_INDEPENDENT_CODE 1)
 
+if(APPLE OR WIN32 OR ${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+	set_target_properties(${CLDLL_LIBRARY} PROPERTIES
+		OUTPUT_NAME "client"
+		PREFIX "")
+endif()
+
+install( TARGETS ${CLDLL_LIBRARY}
+	DESTINATION "${GAMEDIR}/${CLIENT_INSTALL_DIR}/"
+	PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+	    GROUP_READ GROUP_EXECUTE
+		WORLD_READ WORLD_EXECUTE )

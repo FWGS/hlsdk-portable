@@ -13,6 +13,7 @@
 *
 ****/
 // Implementation in UTIL.CPP
+#pragma once
 #ifndef SAVERESTORE_H
 #define SAVERESTORE_H
 

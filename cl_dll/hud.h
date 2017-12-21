@@ -19,7 +19,9 @@
 //
 // CHud handles the message, calculation, and drawing the HUD
 //
-
+#pragma once
+#ifndef HUD_H
+#define HUD_H
 #define RGB_YELLOWISH 0x00FFA000 //255,160,0
 #define RGB_REDISH 0x00FF1010 //255,160,0
 #define RGB_GREENISH 0x0000A000 //0,160,0
@@ -677,3 +679,4 @@ extern int g_iTeamNumber;
 extern int g_iUser1;
 extern int g_iUser2;
 extern int g_iUser3;
+#endif

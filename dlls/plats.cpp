@@ -1619,9 +1619,9 @@ public:
 
 	CFuncTrackTrain	*m_train;
 
-	int m_trackTopName;
-	int m_trackBottomName;
-	int m_trainName;
+	string_t m_trackTopName;
+	string_t m_trackBottomName;
+	string_t m_trainName;
 	TRAIN_CODE m_code;
 	int m_targetState;
 	int m_use;

@@ -18,7 +18,7 @@
 // 4-23-98  
 // JOHN:  client dll interface declarations
 //
-
+#pragma once
 #ifndef CDLL_INT_H
 #define CDLL_INT_H
 
@@ -93,7 +93,7 @@ typedef struct client_textmessage_s
 	const char	*pMessage;
 } client_textmessage_t;
 
-#if __MSC_VER == 1200
+#if _MSC_VER == 1200
 #define ulonglong_t __int64
 #else
 #define ulonglong_t unsigned long long

@@ -12,10 +12,9 @@
 *   without written permission from Valve LLC.
 *
 ****/
+#pragma once
 #ifndef PM_DEFS_H
 #define PM_DEFS_H
-
-#pragma once
 
 #define MAX_PHYSENTS	600		// Must have room for all entities in the world.
 #define MAX_MOVEENTS	64
