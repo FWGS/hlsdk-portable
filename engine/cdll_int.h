@@ -18,7 +18,7 @@
 // 4-23-98  
 // JOHN:  client dll interface declarations
 //
-
+#pragma once
 #ifndef CDLL_INT_H
 #define CDLL_INT_H
 
@@ -93,7 +93,7 @@ typedef struct client_textmessage_s
 	const char	*pMessage;
 } client_textmessage_t;
 
-#if __MSC_VER == 1200
+#if _MSC_VER == 1200
 #define ulonglong_t __int64
 #else
 #define ulonglong_t unsigned long long
@@ -128,7 +128,7 @@ typedef struct cl_enginefuncs_s
 	void	(*pfnSPR_DrawAdditive)( int frame, int x, int y, const wrect_t *prc );
 	void	(*pfnSPR_EnableScissor)( int x, int y, int width, int height );
 	void	(*pfnSPR_DisableScissor)( void );
-	client_sprite_t *(*pfnSPR_GetList)( char *psz, int *piCount );
+	client_sprite_t *(*pfnSPR_GetList)( const char *psz, int *piCount );
 
 	// screen handlers
 	void	(*pfnFillRGBA)( int x, int y, int width, int height, int r, int g, int b, int a );
@@ -136,20 +136,20 @@ typedef struct cl_enginefuncs_s
 	void	(*pfnSetCrosshair)( HSPRITE hspr, wrect_t rc, int r, int g, int b );
 
 	// cvar handlers
-	struct cvar_s *(*pfnRegisterVariable)( char *szName, char *szValue, int flags );
-	float	(*pfnGetCvarFloat)( char *szName );
-	char*	(*pfnGetCvarString)( char *szName );
+	struct cvar_s *(*pfnRegisterVariable)( const char *szName, const char *szValue, int flags );
+	float	(*pfnGetCvarFloat)( const char *szName );
+	char*	(*pfnGetCvarString)( const char *szName );
 
 	// command handlers
-	int	(*pfnAddCommand)( char *cmd_name, void (*function)(void) );
-	int	(*pfnHookUserMsg)( char *szMsgName, pfnUserMsgHook pfn );
-	int	(*pfnServerCmd)( char *szCmdString );
-	int	(*pfnClientCmd)( char *szCmdString );
+	int	(*pfnAddCommand)( const char *cmd_name, void (*function)(void) );
+	int	(*pfnHookUserMsg)( const char *szMsgName, pfnUserMsgHook pfn );
+	int	(*pfnServerCmd)( const char *szCmdString );
+	int	(*pfnClientCmd)( const char *szCmdString );
 
 	void	(*pfnGetPlayerInfo)( int ent_num, hud_player_info_t *pinfo );
 
 	// sound handlers
-	void	(*pfnPlaySoundByName)( char *szSound, float volume );
+	void	(*pfnPlaySoundByName)( const char *szSound, float volume );
 	void	(*pfnPlaySoundByIndex)( int iSound, float volume );
 
 	// vector helpers
@@ -158,7 +158,7 @@ typedef struct cl_enginefuncs_s
 	// text message system
 	client_textmessage_t *(*pfnTextMessageGet)( const char *pName );
 	int	(*pfnDrawCharacter)( int x, int y, int number, int r, int g, int b );
-	int	(*pfnDrawConsoleString)( int x, int y, char *string );
+	int	(*pfnDrawConsoleString)( int x, int y, const char *string );
 	void	(*pfnDrawSetTextColor)( float r, float g, float b );
 	void	(*pfnDrawConsoleStringLen)(  const char *string, int *length, int *height );
 
@@ -171,19 +171,19 @@ typedef struct cl_enginefuncs_s
 	void	(*GetViewAngles)( float * );
 	void	(*SetViewAngles)( float * );
 	int	(*GetMaxClients)( void );
-	void	(*Cvar_SetValue)( char *cvar, float value );
+	void	(*Cvar_SetValue)( const char *cvar, float value );
 
 	int       (*Cmd_Argc)( void );	
 	char	*(*Cmd_Argv)( int arg );
-	void	(*Con_Printf)( char *fmt, ... );
-	void	(*Con_DPrintf)( char *fmt, ... );
-	void	(*Con_NPrintf)( int pos, char *fmt, ... );
-	void	(*Con_NXPrintf)( struct con_nprint_s *info, char *fmt, ... );
+	void	(*Con_Printf)( const char *fmt, ... );
+	void	(*Con_DPrintf)( const char *fmt, ... );
+	void	(*Con_NPrintf)( int pos, const char *fmt, ... );
+	void	(*Con_NXPrintf)( struct con_nprint_s *info, const char *fmt, ... );
 
 	const char* (*PhysInfo_ValueForKey)( const char *key );
 	const char* (*ServerInfo_ValueForKey)( const char *key );
 	float	(*GetClientMaxspeed)( void );
-	int	(*CheckParm)( char *parm, char **ppnext );
+	int	(*CheckParm)( const char *parm, const char **ppnext );
 
 	void	(*Key_Event)( int key, int down );
 	void	(*GetMousePosition)( int *mx, int *my );
@@ -205,14 +205,14 @@ typedef struct cl_enginefuncs_s
 	int	(*CL_CreateVisibleEntity)( int type, struct cl_entity_s *ent );
 
 	const struct model_s* (*GetSpritePointer)( HSPRITE hSprite );
-	void	(*pfnPlaySoundByNameAtLocation)( char *szSound, float volume, float *origin );
+	void	(*pfnPlaySoundByNameAtLocation)( const char *szSound, float volume, float *origin );
 	
 	unsigned short (*pfnPrecacheEvent)( int type, const char* psz );
 	void	(*pfnPlaybackEvent)( int flags, const struct edict_s *pInvoker, unsigned short eventindex, float delay, float *origin, float *angles, float fparam1, float fparam2, int iparam1, int iparam2, int bparam1, int bparam2 );
 	void	(*pfnWeaponAnim)( int iAnim, int body );
 	float	(*pfnRandomFloat)( float flLow, float flHigh );	
-	long	(*pfnRandomLong)( long lLow, long lHigh );
-	void	(*pfnHookEvent)( char *name, void ( *pfnEvent )( struct event_args_s *args ));
+	int	(*pfnRandomLong)( int lLow, int lHigh );
+	void	(*pfnHookEvent)( const char *name, void ( *pfnEvent )( struct event_args_s *args ));
 	int	(*Con_IsVisible) ();
 	const char *(*pfnGetGameDirectory)( void );
 	struct cvar_s *(*pfnGetCvarPointer)( const char *szName );
@@ -223,8 +223,8 @@ typedef struct cl_enginefuncs_s
 	void*	(*VGui_GetPanel)( );
 	void	(*VGui_ViewportPaintBackground)( int extents[4] );
 
-	byte*	(*COM_LoadFile)( char *path, int usehunk, int *pLength );
-	char*	(*COM_ParseFile)( char *data, char *token );
+	byte*	(*COM_LoadFile)( const char *path, int usehunk, int *pLength );
+	char*	(*COM_ParseFile)( const char *data, const char *token );
 	void	(*COM_FreeFile)( void *buffer );
 
 	struct triangleapi_s	*pTriAPI;
@@ -252,7 +252,7 @@ typedef struct cl_enginefuncs_s
 	// Gets a unique ID for the specified player. This is the same even if you see the player on a different server.
 	// iPlayer is an entity index, so client 0 would use iPlayer=1.
 	// Returns false if there is no player on the server in the specified slot.
-	qboolean	(*GetPlayerUniqueID)(int iPlayer, char playerID[16]);
+	qboolean	(*GetPlayerUniqueID)(int iPlayer, const char playerID[16]);
 
 	// TrackerID access
 	int	(*GetTrackerIDForPlayer)(int playerSlot);
@@ -260,7 +260,7 @@ typedef struct cl_enginefuncs_s
 
 	// Same as pfnServerCmd, but the message goes in the unreliable stream so it can't clog the net stream
 	// (but it might not get there).
-	int	( *pfnServerCmdUnreliable )( char *szCmdString );
+	int	( *pfnServerCmdUnreliable )( const char *szCmdString );
 
 	void	(*pfnGetMousePos)( struct tagPOINT *ppt );
 	void	(*pfnSetMousePos)( int x, int y );
@@ -285,12 +285,12 @@ typedef struct cl_enginefuncs_s
 	const char	*(*LocalPlayerInfo_ValueForKey)( const char* key );
 	int		(*pfnVGUI2DrawCharacter)( int x, int y, int ch, unsigned int font );
 	int		(*pfnVGUI2DrawCharacterAdditive)( int x, int y, int ch, int r, int g, int b, unsigned int font );
-	unsigned int	(*pfnGetApproxWavePlayLen)( char *filename );
+	unsigned int	(*pfnGetApproxWavePlayLen)( const char *filename );
 	void*		(*GetCareerGameUI)( void );	// g-cont. !!!! potential crash-point!
-	void		(*Cvar_Set)( char *name, char *value );
+	void		(*Cvar_Set)( const char *name, const char *value );
 	int		(*pfnIsPlayingCareerMatch)( void );
-	void		(*pfnPlaySoundVoiceByName)( char *szSound, float volume, int pitch );
-	void		(*pfnPrimeMusicStream)( char *filename, int looping );
+	void		(*pfnPlaySoundVoiceByName)( const char *szSound, float volume, int pitch );
+	void		(*pfnPrimeMusicStream)( const char *filename, int looping );
 	double		(*pfnSys_FloatTime)( void );
 
 	// decay funcs
@@ -298,7 +298,7 @@ typedef struct cl_enginefuncs_s
 	void		(*pfnConstructTutorMessageDecayBuffer)( int *buffer, int buflen );
 	void		(*pfnResetTutorMessageDecayData)( void );
 
-	void		(*pfnPlaySoundByNameAtPitch)( char *szSound, float volume, int pitch );
+	void		(*pfnPlaySoundByNameAtPitch)( const char *szSound, float volume, int pitch );
 	void		(*pfnFillRGBABlend)( int x, int y, int width, int height, int r, int g, int b, int a );
 	int		(*pfnGetAppID)( void );
 	cmdalias_t	*(*pfnGetAliases)( void );

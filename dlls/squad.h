@@ -4,10 +4,12 @@
 //
 // $NoKeywords: $
 //=============================================================================
-
 //=========================================================
 // squad.h
 //=========================================================
+#pragma once
+#ifndef SQUAD_H
+#define SQUAD_H
 
 // these are special group roles that are assigned to members when the group is formed.
 // the reason these are explicitly assigned and tasks like throwing grenades to flush out 
@@ -19,3 +21,4 @@
 #define		bits_SQUAD_FLANK_RIGHT		( 1 << 1 )
 #define		bits_SQUAD_ADVANCE		( 1 << 2 )
 #define		bits_SQUAD_FLUSH_ATTACK		( 1 << 3 )
+#endif // SQUAD_H

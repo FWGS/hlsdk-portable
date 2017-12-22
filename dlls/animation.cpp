@@ -208,7 +208,7 @@ void SequencePrecache( void *pmodel, const char *pSequenceName )
 					ALERT( at_error, "Bad sound event %d in sequence %s :: %s (sound is \"%s\")\n", pevent[i].event, pstudiohdr->name, pSequenceName, pevent[i].options );
 				}
 
-				PRECACHE_SOUND( (char *)( gpGlobals->pStringBase + ALLOC_STRING( pevent[i].options ) ) );
+				PRECACHE_SOUND( gpGlobals->pStringBase + ALLOC_STRING( pevent[i].options ) );
 			}
 		}
 	}
@@ -267,8 +267,6 @@ int GetAnimationEvent( void *pmodel, entvars_t *pev, MonsterEvent_t *pMonsterEve
 	pstudiohdr = (studiohdr_t *)pmodel;
 	if( !pstudiohdr || pev->sequence >= pstudiohdr->numseq || !pMonsterEvent )
 		return 0;
-
-	int events = 0;
 
 	mstudioseqdesc_t *pseqdesc;
 	mstudioevent_t *pevent;
@@ -351,7 +349,7 @@ float SetController( void *pmodel, entvars_t *pev, int iController, float flValu
 		}
 	}
 
-	int setting = 255 * ( flValue - pbonecontroller->start ) / ( pbonecontroller->end - pbonecontroller->start );
+	int setting = (int)( 255 * ( flValue - pbonecontroller->start ) / ( pbonecontroller->end - pbonecontroller->start ) );
 
 	if( setting < 0 )
 		setting = 0;
@@ -393,7 +391,7 @@ float SetBlending( void *pmodel, entvars_t *pev, int iBlender, float flValue )
 		}
 	}
 
-	int setting = 255 * ( flValue - pseqdesc->blendstart[iBlender] ) / ( pseqdesc->blendend[iBlender] - pseqdesc->blendstart[iBlender] );
+	int setting = (int)( 255 * ( flValue - pseqdesc->blendstart[iBlender] ) / ( pseqdesc->blendend[iBlender] - pseqdesc->blendstart[iBlender] ) );
 
 	if( setting < 0 )
 		setting = 0;
