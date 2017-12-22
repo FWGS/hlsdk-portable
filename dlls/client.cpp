@@ -49,6 +49,7 @@ extern void CopyToBodyQue( entvars_t* pev );
 extern int giPrecacheGrunt;
 extern int gmsgSayText;
 extern int gmsgBhopcap;
+extern int gmsgPlayMP3;
 
 extern cvar_t allow_spectators;
 
@@ -486,6 +487,12 @@ void ClientCommand( edict_t *pEntity )
 	else if( FStrEq( pcmd, "fullupdate" ) )
 	{
 		GetClassPtr( (CBasePlayer *)pev )->ForceClientDllUpdate(); 
+	}
+	else if( FStrEq(pcmd, "playaudio" ) )
+	{
+		MESSAGE_BEGIN( MSG_ONE, gmsgPlayMP3, NULL, ENT( pev ) );
+			WRITE_STRING( (char *)CMD_ARGV( 1 ) );
+		MESSAGE_END();
 	}
 	else if( FStrEq(pcmd, "give" ) )
 	{

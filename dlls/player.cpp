@@ -189,6 +189,7 @@ int gmsgStatusText = 0;
 int gmsgStatusValue = 0;
 
 int gmsgNightvision = 0;
+int gmsgPlayMP3 = 0;
 
 void LinkUserMessages( void )
 {
@@ -238,6 +239,7 @@ void LinkUserMessages( void )
 	gmsgStatusValue = REG_USER_MSG( "StatusValue", 3 );
 
 	gmsgNightvision = REG_USER_MSG( "Nightvision", 1 );
+	gmsgPlayMP3 = REG_USER_MSG( "PlayMP3", -1 );
 }
 
 LINK_ENTITY_TO_CLASS( player, CBasePlayer )

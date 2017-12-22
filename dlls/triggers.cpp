@@ -2385,11 +2385,12 @@ void CTriggerCamera::Move()
 //
 // Adapted from TWHL - Using mp3s in Steam
 //
+#define SF_REMOVE_ON_FIRE		1
 class CTargetMP3Audio : public CBaseTrigger
 {
 public:
-	virtual int Save( CSave &save );
-	virtual int Restore( CRestore &restore );
+	int Save( CSave &save );
+	int Restore( CRestore &restore );
 	static TYPEDESCRIPTION m_SaveData[];
 
 	void Spawn( void );
@@ -2397,15 +2398,16 @@ public:
 
 	void Touch( CBaseEntity *pOther );
 
-	int m_iszTrack;
-	BOOL m_bTriggered;
+	string_t m_iszTrack;
+	BOOL m_bPlaying;
 };
 
 LINK_ENTITY_TO_CLASS( trigger_mp3audio, CTargetMP3Audio );
 
 TYPEDESCRIPTION	CTargetMP3Audio::m_SaveData[] =
 {
-	DEFINE_FIELD( CTargetMP3Audio, m_bTriggered, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CTargetMP3Audio, m_iszTrack, FIELD_STRING ),
+	DEFINE_FIELD( CTargetMP3Audio, m_bPlaying, FIELD_BOOLEAN ),
 };
 
 IMPLEMENT_SAVERESTORE( CTargetMP3Audio, CBaseTrigger );
@@ -2414,7 +2416,10 @@ void CTargetMP3Audio::KeyValue( KeyValueData *pkvd )
 {
 	if( FStrEq( pkvd->szKeyName, "track" ) )
 	{
-		m_iszTrack = ALLOC_STRING( pkvd->szValue );
+		if( FStrEq( pkvd->szValue, "hl28.mp3" ) )
+			m_iszTrack = MAKE_STRING( "Suspense07.mp3" );
+		else
+			m_iszTrack = ALLOC_STRING( pkvd->szValue );
 		pkvd->fHandled = TRUE;
 	}
 	else
@@ -2424,22 +2429,31 @@ void CTargetMP3Audio::KeyValue( KeyValueData *pkvd )
 void CTargetMP3Audio::Spawn( void )
 {
 	InitTrigger();
-
-	m_bTriggered = FALSE;
+	m_bPlaying = FALSE; // start out not playing
 }
 
 void CTargetMP3Audio::Touch( CBaseEntity *pOther )
 {
-	if( m_bTriggered )
-		return;
+	char command[64];
 
 	if( !pOther || !pOther->IsPlayer() )
 		return;
 
-	m_bTriggered = TRUE;
-
-	if( FStrEq( STRING( gpGlobals->mapname ), "ops_17th" ) )
+	if( !m_bPlaying ) // if we're not playing, start playing!
 	{
-		CLIENT_COMMAND( pOther->edict(), "play media/Suspense07.mp3\n" );
+		m_bPlaying = TRUE;
+		// issue the play/loop command
+		sprintf( command, "playaudio %s\n", STRING( m_iszTrack ) );
+		CLIENT_COMMAND( pOther->edict(), command );
 	}
+	/*else
+	{
+		// if we're already playing, stop the mp3
+		m_bPlaying = FALSE;
+		CLIENT_COMMAND( pOther->edict(), "stopaudio\n" );
+		return;
+	}*/
+
+	if( pev->spawnflags & SF_REMOVE_ON_FIRE )
+                UTIL_Remove( this );
 }
