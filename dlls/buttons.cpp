@@ -275,7 +275,7 @@ IMPLEMENT_SAVERESTORE( CBaseButton, CBaseToggle )
 
 void CBaseButton::Precache( void )
 {
-	char *pszSound;
+	const char *pszSound;
 
 	if( FBitSet( pev->spawnflags, SF_BUTTON_SPARK_IF_OFF ) )// this button should spark in OFF state
 	{
@@ -292,14 +292,14 @@ void CBaseButton::Precache( void )
 	{
 		pszSound = ButtonSound( (int)m_bLockedSound );
 		PRECACHE_SOUND( pszSound );
-		m_ls.sLockedSound = ALLOC_STRING( pszSound );
+		m_ls.sLockedSound = MAKE_STRING( pszSound );
 	}
 
 	if( m_bUnlockedSound )
 	{
 		pszSound = ButtonSound( (int)m_bUnlockedSound );
 		PRECACHE_SOUND( pszSound );
-		m_ls.sUnlockedSound = ALLOC_STRING( pszSound );
+		m_ls.sUnlockedSound = MAKE_STRING( pszSound );
 	}
 
 	// get sentence group names, for doors which are directly 'touched' to open
@@ -343,25 +343,25 @@ void CBaseButton::Precache( void )
 			m_ls.sUnlockedSentence = MAKE_STRING( "EA" );
 			break;
 		case 2: // security door
-			m_ls.sUnlockedSentence = MAKE_STRING("ED");
+			m_ls.sUnlockedSentence = MAKE_STRING( "ED" );
 			break;
 		case 3: // blast door
-			m_ls.sUnlockedSentence = MAKE_STRING("EF");
+			m_ls.sUnlockedSentence = MAKE_STRING( "EF" );
 			break;
 		case 4: // fire door
-			m_ls.sUnlockedSentence = MAKE_STRING("EFIRE");
+			m_ls.sUnlockedSentence = MAKE_STRING( "EFIRE" );
 			break;
 		case 5: // chemical door
-			m_ls.sUnlockedSentence = MAKE_STRING("ECHEM");
+			m_ls.sUnlockedSentence = MAKE_STRING( "ECHEM" );
 			break;
 		case 6: // radiation door
-			m_ls.sUnlockedSentence = MAKE_STRING("ERAD");
+			m_ls.sUnlockedSentence = MAKE_STRING( "ERAD" );
 			break;
 		case 7: // gen containment
-			m_ls.sUnlockedSentence = MAKE_STRING("ECON");
+			m_ls.sUnlockedSentence = MAKE_STRING( "ECON" );
 			break;
 		case 8: // maintenance door
-			m_ls.sUnlockedSentence = MAKE_STRING("EH");
+			m_ls.sUnlockedSentence = MAKE_STRING( "EH" );
 			break;
 		default:
 			m_ls.sUnlockedSentence = 0;
@@ -381,22 +381,22 @@ void CBaseButton::KeyValue( KeyValueData *pkvd )
 	}	
 	else if( FStrEq( pkvd->szKeyName, "locked_sound" ) )
 	{
-		m_bLockedSound = atof( pkvd->szValue );
+		m_bLockedSound = atoi( pkvd->szValue );
 		pkvd->fHandled = TRUE;
 	}
 	else if( FStrEq( pkvd->szKeyName, "locked_sentence" ) )
 	{
-		m_bLockedSentence = atof( pkvd->szValue );
+		m_bLockedSentence = atoi( pkvd->szValue );
 		pkvd->fHandled = TRUE;
 	}
 	else if( FStrEq( pkvd->szKeyName, "unlocked_sound" ) )
 	{
-		m_bUnlockedSound = atof( pkvd->szValue );
+		m_bUnlockedSound = atoi( pkvd->szValue );
 		pkvd->fHandled = TRUE;
 	}
 	else if( FStrEq( pkvd->szKeyName, "unlocked_sentence" ) )
 	{
-		m_bUnlockedSentence = atof( pkvd->szValue );
+		m_bUnlockedSentence = atoi( pkvd->szValue );
 		pkvd->fHandled = TRUE;
 	}
 	else if( FStrEq( pkvd->szKeyName, "sounds" ) )
@@ -421,12 +421,12 @@ int CBaseButton::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 	SetTouch( NULL );
 
 	m_hActivator = CBaseEntity::Instance( pevAttacker );
-	if( m_hActivator == NULL )
+	if( m_hActivator == 0 )
 		return 0;
 
 	if( code == BUTTON_RETURN )
 	{
-		EMIT_SOUND( ENT( pev ), CHAN_VOICE, (char*)STRING( pev->noise ), 1, ATTN_NORM );
+		EMIT_SOUND( ENT( pev ), CHAN_VOICE, STRING( pev->noise ), 1, ATTN_NORM );
 
 		// Toggle buttons fire when they get back to their "home" position
 		if( !( pev->spawnflags & SF_BUTTON_TOGGLE ) )
@@ -461,7 +461,7 @@ LINK_ENTITY_TO_CLASS( func_button, CBaseButton )
 
 void CBaseButton::Spawn()
 { 
-	char  *pszSound;
+	const char *pszSound;
 
 	//----------------------------------------------------
 	//determine sounds for buttons
@@ -469,7 +469,7 @@ void CBaseButton::Spawn()
 	//----------------------------------------------------
 	pszSound = ButtonSound( m_sounds );
 	PRECACHE_SOUND( pszSound );
-	pev->noise = ALLOC_STRING( pszSound );
+	pev->noise = MAKE_STRING( pszSound );
 
 	Precache();
 
@@ -525,9 +525,9 @@ void CBaseButton::Spawn()
 // Button sound table. 
 // Also used by CBaseDoor to get 'touched' door lock/unlock sounds
 
-char *ButtonSound( int sound )
+const char *ButtonSound( int sound )
 { 
-	char *pszSound;
+	const char *pszSound;
 
 	switch( sound )
 	{
@@ -657,7 +657,7 @@ void CBaseButton::ButtonUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_
 	{
 		if( !m_fStayPushed && FBitSet( pev->spawnflags, SF_BUTTON_TOGGLE ) )
 		{
-			EMIT_SOUND( ENT( pev ), CHAN_VOICE, (char*)STRING( pev->noise ), 1, ATTN_NORM );
+			EMIT_SOUND( ENT( pev ), CHAN_VOICE, STRING( pev->noise ), 1, ATTN_NORM );
 
 			//SUB_UseTargets( m_eoActivator );
 			ButtonReturn();
@@ -716,7 +716,7 @@ void CBaseButton::ButtonTouch( CBaseEntity *pOther )
 
 	if( code == BUTTON_RETURN )
 	{
-		EMIT_SOUND( ENT( pev ), CHAN_VOICE, (char*)STRING( pev->noise ), 1, ATTN_NORM );
+		EMIT_SOUND( ENT( pev ), CHAN_VOICE, STRING( pev->noise ), 1, ATTN_NORM );
 		SUB_UseTargets( m_hActivator, USE_TOGGLE, 0 );
 		ButtonReturn();
 	}
@@ -729,7 +729,7 @@ void CBaseButton::ButtonTouch( CBaseEntity *pOther )
 //
 void CBaseButton::ButtonActivate()
 {
-	EMIT_SOUND( ENT( pev ), CHAN_VOICE, (char*)STRING( pev->noise ), 1, ATTN_NORM );
+	EMIT_SOUND( ENT( pev ), CHAN_VOICE, STRING( pev->noise ), 1, ATTN_NORM );
 
 	if( !UTIL_IsMasterTriggered( m_sMaster, m_hActivator ) )
 	{
@@ -815,7 +815,7 @@ void CBaseButton::ButtonBackHome( void )
 
 	if( FBitSet( pev->spawnflags, SF_BUTTON_TOGGLE ) )
 	{
-		//EMIT_SOUND( ENT( pev ), CHAN_VOICE, (char*)STRING( pev->noise ), 1, ATTN_NORM );
+		//EMIT_SOUND( ENT( pev ), CHAN_VOICE, STRING( pev->noise ), 1, ATTN_NORM );
 		
 		SUB_UseTargets( m_hActivator, USE_TOGGLE, 0 );
 	}
@@ -869,14 +869,14 @@ LINK_ENTITY_TO_CLASS( func_rot_button, CRotButton )
 
 void CRotButton::Spawn( void )
 {
-	char *pszSound;
+	const char *pszSound;
 	//----------------------------------------------------
 	//determine sounds for buttons
 	//a sound of 0 should not make a sound
 	//----------------------------------------------------
 	pszSound = ButtonSound( m_sounds );
 	PRECACHE_SOUND( pszSound );
-	pev->noise = ALLOC_STRING( pszSound );
+	pev->noise = MAKE_STRING( pszSound );
 
 	// set the axis of rotation
 	CBaseToggle::AxisDir( pev );
@@ -1010,9 +1010,9 @@ void CMomentaryRotButton::Spawn( void )
 	UTIL_SetOrigin( pev, pev->origin );
 	SET_MODEL( ENT( pev ), STRING( pev->model ) );
 
-	char *pszSound = ButtonSound( m_sounds );
+	const char *pszSound = ButtonSound( m_sounds );
 	PRECACHE_SOUND( pszSound );
-	pev->noise = ALLOC_STRING( pszSound );
+	pev->noise = MAKE_STRING( pszSound );
 	m_lastUsed = 0;
 }
 
@@ -1034,7 +1034,7 @@ void CMomentaryRotButton::KeyValue( KeyValueData *pkvd )
 
 void CMomentaryRotButton::PlaySound( void )
 {
-	EMIT_SOUND( ENT( pev ), CHAN_VOICE, (char*)STRING( pev->noise ), 1, ATTN_NORM );
+	EMIT_SOUND( ENT( pev ), CHAN_VOICE, STRING( pev->noise ), 1, ATTN_NORM );
 }
 
 // BUGBUG: This design causes a latentcy.  When the button is retriggered, the first impulse
@@ -1045,7 +1045,11 @@ void CMomentaryRotButton::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, US
 	pev->ideal_yaw = CBaseToggle::AxisDelta( pev->spawnflags, pev->angles, m_start ) / m_flMoveDistance;
 
 	UpdateAllButtons( pev->ideal_yaw, 1 );
-	UpdateTarget( pev->ideal_yaw );
+
+	// Calculate destination angle and use it to predict value, this prevents sending target in wrong direction on retriggering
+	Vector dest = pev->angles + pev->avelocity * ( pev->nextthink - pev->ltime );
+	float value1 = CBaseToggle::AxisDelta( pev->spawnflags, dest, m_start ) / m_flMoveDistance;
+	UpdateTarget( value1 );
 }
 
 void CMomentaryRotButton::UpdateAllButtons( float value, int start )

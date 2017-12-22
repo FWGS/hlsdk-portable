@@ -738,7 +738,7 @@ void CCineMonster::DelayStart( int state )
 			else
 			{
 				pTarget->m_iDelay--;
-				if (pTarget->m_iDelay <= 0)
+				if( pTarget->m_iDelay <= 0 )
 					pTarget->m_startTime = gpGlobals->time + 0.05;
 			}
 		}
@@ -933,15 +933,15 @@ public:
 	BOOL StartSentence( CBaseMonster *pTarget );
 
 private:
-	int m_iszSentence;		// string index for idle animation
-	int m_iszEntity;	// entity that is wanted for this sentence
+	string_t m_iszSentence;		// string index for idle animation
+	string_t m_iszEntity;	// entity that is wanted for this sentence
 	float m_flRadius;		// range to search
 	float m_flDuration;	// How long the sentence lasts
 	float m_flRepeat;	// repeat rate
 	float m_flAttenuation;
 	float m_flVolume;
 	BOOL m_active;
-	int m_iszListener;	// name of entity to look at while talking
+	string_t m_iszListener; // name of entity to look at while talking
 };
 
 #define SF_SENTENCE_ONCE	0x0001
@@ -1094,7 +1094,7 @@ BOOL CScriptedSentence::AcceptableSpeaker( CBaseMonster *pMonster )
 	{
 		if( pev->spawnflags & SF_SENTENCE_FOLLOWERS )
 		{
-			if( pMonster->m_hTargetEnt == NULL || !FClassnameIs( pMonster->m_hTargetEnt->pev, "player" ) )
+			if( pMonster->m_hTargetEnt == 0 || !FClassnameIs( pMonster->m_hTargetEnt->pev, "player" ) )
 				return FALSE;
 		}
 		BOOL override;
@@ -1150,7 +1150,7 @@ BOOL CScriptedSentence::StartSentence( CBaseMonster *pTarget )
 	if( !pTarget )
 	{
 		ALERT( at_aiconsole, "Not Playing sentence %s\n", STRING( m_iszSentence ) );
-		return NULL;
+		return FALSE;
 	}
 
 	BOOL bConcurrent = FALSE;
@@ -1203,7 +1203,7 @@ void CFurniture::Die( void )
 //=========================================================
 void CFurniture::Spawn()
 {
-	PRECACHE_MODEL( (char *)STRING( pev->model ) );
+	PRECACHE_MODEL( STRING( pev->model ) );
 	SET_MODEL( ENT( pev ), STRING( pev->model ) );
 
 	pev->movetype = MOVETYPE_NONE;

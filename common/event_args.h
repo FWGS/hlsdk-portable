@@ -12,6 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
+#pragma once
 #ifndef EVENT_ARGS_H
 #define EVENT_ARGS_H
 
