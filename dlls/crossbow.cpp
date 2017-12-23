@@ -411,7 +411,7 @@ void CCrossbow::PrimaryAttack( void )
 
 void CCrossbow::SecondaryAttack()
 {
-	EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_ITEM, "doberman/doberman/sniper_zoom.wav", 1.0, ATTN_NORM, 0, 93 + RANDOM_LONG( 0, 0xF ) );
+	EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_ITEM, "doberman/sniper_zoom.wav", 1.0, ATTN_NORM, 0, 93 + RANDOM_LONG( 0, 0xF ) );
 	if( m_fInZoom == 1 )
 	{
 		DefaultDeploy( "models/v_crossbow.mdl", "models/p_crossbow.mdl", CROSSBOW_DRAW1, "bow" );
