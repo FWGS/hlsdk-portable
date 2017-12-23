@@ -12,6 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
+#pragma once
 #ifndef ENTITY_STATE_H
 #define ENTITY_STATE_H
 

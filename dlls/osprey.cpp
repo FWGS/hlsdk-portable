@@ -261,7 +261,7 @@ BOOL COsprey::HasDead()
 {
 	for( int i = 0; i < m_iUnits; i++ )
 	{
-		if( m_hGrunt[i] == NULL || !m_hGrunt[i]->IsAlive() )
+		if( m_hGrunt[i] == 0 || !m_hGrunt[i]->IsAlive() )
 		{
 			return TRUE;
 		}
@@ -285,9 +285,9 @@ CBaseMonster *COsprey::MakeGrunt( Vector vecSrc )
 
 	for( int i = 0; i < m_iUnits; i++ )
 	{
-		if( m_hGrunt[i] == NULL || !m_hGrunt[i]->IsAlive() )
+		if( m_hGrunt[i] == 0 || !m_hGrunt[i]->IsAlive() )
 		{
-			if( m_hGrunt[i] != NULL && m_hGrunt[i]->pev->rendermode == kRenderNormal )
+			if( m_hGrunt[i] != 0 && m_hGrunt[i]->pev->rendermode == kRenderNormal )
 			{
 				m_hGrunt[i]->SUB_StartFadeOut();
 			}
@@ -319,7 +319,7 @@ void COsprey::HoverThink( void )
 	int i;
 	for( i = 0; i < 4; i++ )
 	{
-		if( m_hRepel[i] != NULL && m_hRepel[i]->pev->health > 0 && !( m_hRepel[i]->pev->flags & FL_ONGROUND ) )
+		if( m_hRepel[i] != 0 && m_hRepel[i]->pev->health > 0 && !( m_hRepel[i]->pev->flags & FL_ONGROUND ) )
 		{
 			break;
 		}

@@ -12,7 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
-
+#pragma once
 #ifndef PARTICLEDEF_H
 #define PARTICLEDEF_H
 

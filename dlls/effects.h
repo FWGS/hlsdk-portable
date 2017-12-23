@@ -12,6 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
+#pragma once
 #ifndef EFFECTS_H
 #define EFFECTS_H
 
@@ -238,7 +239,7 @@ public:
 
 	inline int GetWidth( void )
 	{
-		return pev->scale;
+		return (int)pev->scale;
 	}
 
 	inline int GetNoise( void )
@@ -255,17 +256,17 @@ public:
 
 	inline int GetBrightness( void )
 	{
-		return pev->renderamt;
+		return (int)pev->renderamt;
 	}
 
 	inline int GetFrame( void )
 	{
-		return pev->frame;
+		return (int)pev->frame;
 	}
 
 	inline int GetScrollRate( void )
 	{
-		return pev->animtime;
+		return (int)pev->animtime;
 	}
 
 	// Call after you change start/end positions
@@ -321,7 +322,7 @@ public:
 	static	TYPEDESCRIPTION m_SaveData[];
 
 	CSprite	*m_pSprite;
-	int	m_iszSpriteName;
+	string_t	m_iszSpriteName;
 	Vector	m_firePosition;
 };
 

@@ -1,3 +1,4 @@
+#pragma once
 #ifndef EXPORTDEF_H
 #define EXPORTDEF_H
 #if defined _WIN32 || defined __CYGWIN__

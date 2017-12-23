@@ -35,6 +35,7 @@ extern client_sprite_t *GetSpriteList( client_sprite_t *pList, const char *psz, 
 
 extern cvar_t *sensitivity;
 cvar_t *cl_lw = NULL;
+cvar_t *cl_viewbob = NULL;
 
 void ShutdownInput( void );
 
@@ -196,6 +197,7 @@ void CHud::Init( void )
 	m_pCvarNewHud = CVAR_CREATE( "hud_newhud", "1", FCVAR_ARCHIVE );
 	m_pCvarShowCrosshair = CVAR_CREATE( "hud_showcrosshair", "0", FCVAR_ARCHIVE );
 	cl_lw = gEngfuncs.pfnGetCvarPointer( "cl_lw" );
+	cl_viewbob = CVAR_CREATE( "cl_viewbob", "0", FCVAR_ARCHIVE );
 
 	m_pSpriteList = NULL;
 

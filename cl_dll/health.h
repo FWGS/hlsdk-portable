@@ -12,6 +12,9 @@
 *   without written permission from Valve LLC.
 *
 ****/
+#pragma once
+#ifndef HEALTH_H
+#define HEALTH_H
 
 #define DMG_IMAGE_LIFE		2	// seconds that image is up
 
@@ -134,3 +137,4 @@ private:
 	HSPRITE m_hPainRight;
 	HSPRITE m_hPainRear;
 };
+#endif // HEALTH_H

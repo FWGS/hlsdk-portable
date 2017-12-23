@@ -132,7 +132,7 @@ void CShotgun::PrimaryAttack()
 	if( m_pPlayer->pev->waterlevel == 3 )
 	{
 		PlayEmptySound();
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.15;
+		m_flNextPrimaryAttack = GetNextAttackDelay( 0.15 );
 		return;
 	}
 
@@ -156,6 +156,9 @@ void CShotgun::PrimaryAttack()
 	flags = 0;
 #endif
 	m_pPlayer->pev->effects = (int)( m_pPlayer->pev->effects ) | EF_MUZZLEFLASH;
+
+	// player "shoot" animation
+	m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
 
 	Vector vecSrc = m_pPlayer->GetGunPosition();
 	Vector vecAiming = m_pPlayer->GetAutoaimVector( AUTOAIM_5DEGREES );
@@ -184,7 +187,7 @@ void CShotgun::PrimaryAttack()
 
 	m_flPumpTime = gpGlobals->time + 0.5;
 
-	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.75;
+	m_flNextPrimaryAttack = GetNextAttackDelay( 0.75 );
 	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.75;
 	if( m_iClip != 0 )
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 5.0;
@@ -213,7 +216,7 @@ void CShotgun::Reload( void )
 		m_fInSpecialReload = 1;
 		m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.6;
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.6;
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 1.0;
+		m_flNextPrimaryAttack = GetNextAttackDelay( 1.0 );
 		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1.0;
 		return;
 	}
@@ -243,12 +246,8 @@ void CShotgun::Reload( void )
 	}
 }
 
-void CShotgun::WeaponIdle( void )
+void CShotgun::WeaponTick()
 {
-	ResetEmptySound();
-
-	m_pPlayer->GetAutoaimVector( AUTOAIM_5DEGREES );
-
 	if( m_flPumpTime && m_flPumpTime < gpGlobals->time )
 	{
 		// ==========================================
@@ -273,6 +272,13 @@ void CShotgun::WeaponIdle( void )
 		EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/scock1.wav", 1, ATTN_NORM, 0, 95 + RANDOM_LONG( 0, 0x1f ) );
 		m_flPumpTime = 0;
 	}
+}
+
+void CShotgun::WeaponIdle( void )
+{
+	ResetEmptySound();
+
+	m_pPlayer->GetAutoaimVector( AUTOAIM_5DEGREES );
 
 	if( m_flTimeWeaponIdle <  UTIL_WeaponTimeBase() )
 	{

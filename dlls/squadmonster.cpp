@@ -192,7 +192,7 @@ BOOL CSquadMonster::SquadAdd( CSquadMonster *pAdd )
 
 	for( int i = 0; i < MAX_SQUAD_MEMBERS - 1; i++ )
 	{
-		if( m_hSquadMember[i] == NULL )
+		if( m_hSquadMember[i] == 0 )
 		{
 			m_hSquadMember[i] = pAdd;
 			pAdd->m_hSquadLeader = this;
@@ -258,7 +258,7 @@ void CSquadMonster::SquadMakeEnemy( CBaseEntity *pEnemy )
 			// reset members who aren't activly engaged in fighting
 			if( pMember->m_hEnemy != pEnemy && !pMember->HasConditions( bits_COND_SEE_ENEMY ) )
 			{
-				if( pMember->m_hEnemy != NULL )
+				if( pMember->m_hEnemy != 0 )
 				{
 					// remember their current enemy
 					pMember->PushEnemy( pMember->m_hEnemy, pMember->m_vecEnemyLKP );
@@ -453,7 +453,7 @@ BOOL CSquadMonster::NoFriendlyFire( void )
 	Vector v_left;
 
 	//!!!BUGBUG - to fix this, the planes must be aligned to where the monster will be firing its gun, not the direction it is facing!!!
-	if( m_hEnemy != NULL )
+	if( m_hEnemy != 0 )
 	{
 		UTIL_MakeVectors( UTIL_VecToAngles( m_hEnemy->Center() - pev->origin ) );
 	}
@@ -502,9 +502,7 @@ BOOL CSquadMonster::NoFriendlyFire( void )
 //=========================================================
 MONSTERSTATE CSquadMonster::GetIdealState ( void )
 {
-	int iConditions;
-
-	iConditions = IScheduleFlags();
+	IScheduleFlags();
 
 	// If no schedule conditions, the new ideal state is probably the reason we're in here.
 	switch( m_MonsterState )
@@ -559,7 +557,7 @@ BOOL CSquadMonster::SquadEnemySplit( void )
 	for( int i = 0; i < MAX_SQUAD_MEMBERS; i++ )
 	{
 		CSquadMonster *pMember = pSquadLeader->MySquadMember( i );
-		if( pMember != NULL && pMember->m_hEnemy != NULL && pMember->m_hEnemy != pEnemy )
+		if( pMember != NULL && pMember->m_hEnemy != 0 && pMember->m_hEnemy != pEnemy )
 		{
 			return TRUE;
 		}

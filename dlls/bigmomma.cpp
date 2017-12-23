@@ -49,7 +49,7 @@ public:
 	virtual int Restore( CRestore &restore );
 	static TYPEDESCRIPTION m_SaveData[];
 
-	int m_preSequence;
+	string_t m_preSequence;
 };
 
 LINK_ENTITY_TO_CLASS( info_bigmomma, CInfoBM )
@@ -411,7 +411,7 @@ void CBigMomma::SetYawSpeed( void )
 {
 	int ys;
 
-	switch ( m_Activity )
+	switch( m_Activity )
 	{
 	case ACT_IDLE:
 		ys = 100;
@@ -677,7 +677,7 @@ void CBigMomma::Precache()
 
 void CBigMomma::Activate( void )
 {
-	if( m_hTargetEnt == NULL )
+	if( m_hTargetEnt == 0 )
 		Remember( bits_MEMORY_ADVANCE_NODE );	// Start 'er up
 }
 
@@ -985,7 +985,7 @@ void CBigMomma::RunTask( Task_t *pTask )
 		{
 			float distance;
 
-			if( m_hTargetEnt == NULL )
+			if( m_hTargetEnt == 0 )
 				TaskFail();
 			else
 			{
@@ -1002,7 +1002,7 @@ void CBigMomma::RunTask( Task_t *pTask )
 		}
 		break;
 	case TASK_WAIT_NODE:
-		if( m_hTargetEnt != NULL && ( m_hTargetEnt->pev->spawnflags & SF_INFOBM_WAIT ) )
+		if( m_hTargetEnt != 0 && ( m_hTargetEnt->pev->spawnflags & SF_INFOBM_WAIT ) )
 			return;
 
 		if( gpGlobals->time > m_flWaitFinished )
@@ -1056,7 +1056,6 @@ Vector VecCheckSplatToss( entvars_t *pev, const Vector &vecSpot1, Vector vecSpot
 	float time = speed / flGravity;
 	vecGrenadeVel = vecSpot2 - vecSpot1;
 	vecGrenadeVel.z = 0;
-	float distance = vecGrenadeVel.Length();
 	
 	// Travel half the distance to the target in that time (apex is at the midpoint)
 	vecGrenadeVel = vecGrenadeVel * ( 0.5 / time );

@@ -105,12 +105,14 @@ set (SVDLL_SOURCES
 	multiplay_gamerules.cpp
 	nihilanth.cpp
 	nodes.cpp
+	observer.cpp
 	osprey.cpp
 	pathcorner.cpp
 	plane.cpp
 	plats.cpp
 	player.cpp
 #	python.cpp
+	playermonster.cpp
 	rat.cpp
 	roach.cpp
 	rpg.cpp
@@ -156,6 +158,17 @@ endif()
 
 add_library (${SVDLL_LIBRARY} SHARED ${SVDLL_SOURCES})
 
-set_target_properties (${SVDLL_SHARED} PROPERTIES
+set_target_properties (${SVDLL_LIBRARY} PROPERTIES
 	POSITION_INDEPENDENT_CODE 1)
 
+if(APPLE OR WIN32 OR ${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+	set_target_properties(${SVDLL_LIBRARY} PROPERTIES
+		OUTPUT_NAME ${SERVER_LIBRARY_NAME}
+		PREFIX "")
+endif()
+
+install( TARGETS ${SVDLL_LIBRARY}
+	DESTINATION "${GAMEDIR}/${SERVER_INSTALL_DIR}/"
+	PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+	    GROUP_READ GROUP_EXECUTE
+		WORLD_READ WORLD_EXECUTE)

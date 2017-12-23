@@ -21,6 +21,13 @@
 #include "hud.h"
 #include "cl_util.h"
 #include "netadr.h"
+#include "parsemsg.h"
+
+#if defined(GOLDSOURCE_SUPPORT) && (defined(_WIN32) || defined(__linux__) || defined(__APPLE__)) && (defined(__i386) || defined(_M_IX86))
+#define USE_VGUI_FOR_GOLDSOURCE_SUPPORT
+#include "VGUI_Panel.h"
+#include "VGUI_App.h"
+#endif
 
 extern "C"
 {
@@ -32,9 +39,20 @@ extern "C"
 cl_enginefunc_t gEngfuncs;
 CHud gHUD;
 mobile_engfuncs_t *gMobileEngfuncs = NULL;
+
+extern "C" int g_bhopcap;
 void InitInput( void );
 void EV_HookEvents( void );
 void IN_Commands( void );
+
+int __MsgFunc_Bhopcap( const char *pszName, int iSize, void *pbuf )
+{
+	BEGIN_READ( pbuf, iSize );
+
+	g_bhopcap = READ_BYTE();
+
+	return 1;
+}
 
 /*
 ========================== 
@@ -76,18 +94,18 @@ int DLLEXPORT HUD_GetHullBounds( int hullnumber, float *mins, float *maxs )
 	switch( hullnumber )
 	{
 	case 0:				// Normal player
-		mins = Vector( -16, -16, -36 );
-		maxs = Vector( 16, 16, 36 );
+		Vector( -16, -16, -36 ).CopyToArray(mins);
+		Vector( 16, 16, 36 ).CopyToArray(maxs);
 		iret = 1;
 		break;
 	case 1:				// Crouched player
-		mins = Vector( -16, -16, -18 );
-		maxs = Vector( 16, 16, 18 );
+		Vector( -16, -16, -18 ).CopyToArray(mins);
+		Vector( 16, 16, 18 ).CopyToArray(maxs);
 		iret = 1;
 		break;
 	case 2:				// Point based hull
-		mins = Vector( 0, 0, 0 );
-		maxs = Vector( 0, 0, 0 );
+		Vector( 0, 0, 0 ).CopyToArray(mins);
+		Vector( 0, 0, 0 ).CopyToArray(maxs);
 		iret = 1;
 		break;
 	}
@@ -165,6 +183,46 @@ int *HUD_GetRect( void )
 	return extent;
 }
 
+#ifdef USE_VGUI_FOR_GOLDSOURCE_SUPPORT
+class TeamFortressViewport : public vgui::Panel
+{
+public:
+	TeamFortressViewport(int x,int y,int wide,int tall);
+	void Initialize( void );
+
+	virtual void paintBackground();
+	void *operator new( size_t stAllocateBlock );
+};
+
+static TeamFortressViewport* gViewPort = NULL;
+
+TeamFortressViewport::TeamFortressViewport(int x, int y, int wide, int tall) : Panel(x, y, wide, tall)
+{
+	gViewPort = this;
+	Initialize();
+}
+
+void TeamFortressViewport::Initialize()
+{
+	//vgui::App::getInstance()->setCursorOveride( vgui::App::getInstance()->getScheme()->getCursor(vgui::Scheme::scu_none) );
+}
+
+void TeamFortressViewport::paintBackground()
+{
+//	int wide, tall;
+//	getParent()->getSize( wide, tall );
+//	setSize( wide, tall );
+	gEngfuncs.VGui_ViewportPaintBackground(HUD_GetRect());
+}
+
+void *TeamFortressViewport::operator new( size_t stAllocateBlock )
+{
+	void *mem = ::operator new( stAllocateBlock );
+	memset( mem, 0, stAllocateBlock );
+	return mem;
+}
+#endif
+
 /*
 ==========================
 	HUD_VidInit
@@ -178,7 +236,25 @@ so the HUD can reinitialize itself.
 int DLLEXPORT HUD_VidInit( void )
 {
 	gHUD.VidInit();
+#ifdef USE_VGUI_FOR_GOLDSOURCE_SUPPORT
+	vgui::Panel* root=(vgui::Panel*)gEngfuncs.VGui_GetPanel();
+	if (root) {
+		gEngfuncs.Con_Printf( "Root VGUI panel exists\n" );
+		root->setBgColor(128,128,0,0);
 
+		if (gViewPort != NULL)
+		{
+			gViewPort->Initialize();
+		}
+		else
+		{
+			gViewPort = new TeamFortressViewport(0,0,root->getWide(),root->getTall());
+			gViewPort->setParent(root);
+		}
+	} else {
+		gEngfuncs.Con_Printf( "Root VGUI panel does not exist\n" );
+	}
+#endif
 	return 1;
 }
 
@@ -196,6 +272,8 @@ void DLLEXPORT HUD_Init( void )
 {
 	InitInput();
 	gHUD.Init();
+
+	gEngfuncs.pfnHookUserMsg( "Bhopcap", __MsgFunc_Bhopcap );
 }
 
 /*
@@ -256,7 +334,13 @@ Called by engine every frame that client .dll is loaded
 */
 
 void DLLEXPORT HUD_Frame( double time )
-{	gEngfuncs.VGui_ViewportPaintBackground(HUD_GetRect());
+{
+#ifdef USE_VGUI_FOR_GOLDSOURCE_SUPPORT
+	if (!gViewPort)
+		gEngfuncs.VGui_ViewportPaintBackground(HUD_GetRect());
+#else
+	gEngfuncs.VGui_ViewportPaintBackground(HUD_GetRect());
+#endif
 }
 
 /*
@@ -290,4 +374,9 @@ void DLLEXPORT HUD_MobilityInterface( mobile_engfuncs_t *gpMobileEngfuncs )
 	if( gpMobileEngfuncs->version != MOBILITY_API_VERSION )
 		return;
 	gMobileEngfuncs = gpMobileEngfuncs;
+}
+
+bool isXashFWGS()
+{
+	return gMobileEngfuncs != NULL;
 }
