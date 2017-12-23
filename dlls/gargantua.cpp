@@ -200,6 +200,7 @@ class CGargantua : public CBaseMonster
 public:
 	void Spawn( void );
 	void Precache( void );
+	void UpdateOnRemove();
 	void SetYawSpeed( void );
 	int Classify( void );
 	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
@@ -538,7 +539,6 @@ void CGargantua::FlameControls( float angleX, float angleY )
 void CGargantua::FlameUpdate( void )
 {
 	int		i;
-	static float	offset[2] = { 60, -60 };
 	TraceResult	trace;
 	Vector		vecStart, angleGun;
 	BOOL		streaks = FALSE;
@@ -759,7 +759,7 @@ void CGargantua::Spawn()
 //=========================================================
 void CGargantua::Precache()
 {
-	int i;
+	size_t i;
 
 	PRECACHE_MODEL( "models/garg.mdl" );
 	PRECACHE_MODEL( GARG_EYE_SPRITE_NAME );
@@ -770,38 +770,51 @@ void CGargantua::Precache()
 	PRECACHE_SOUND( GARG_STOMP_BUZZ_SOUND );
 
 	for( i = 0; i < ARRAYSIZE( pAttackHitSounds ); i++ )
-		PRECACHE_SOUND( (char *)pAttackHitSounds[i] );
+		PRECACHE_SOUND( pAttackHitSounds[i] );
 
 	for( i = 0; i < ARRAYSIZE( pBeamAttackSounds ); i++ )
-		PRECACHE_SOUND( (char *)pBeamAttackSounds[i] );
+		PRECACHE_SOUND( pBeamAttackSounds[i] );
 
 	for( i = 0; i < ARRAYSIZE( pAttackMissSounds ); i++ )
-		PRECACHE_SOUND( (char *)pAttackMissSounds[i] );
+		PRECACHE_SOUND( pAttackMissSounds[i] );
 
 	for( i = 0; i < ARRAYSIZE( pRicSounds ); i++ )
-		PRECACHE_SOUND( (char *)pRicSounds[i] );
+		PRECACHE_SOUND( pRicSounds[i] );
 
 	for( i = 0; i < ARRAYSIZE( pFootSounds ); i++ )
-		PRECACHE_SOUND( (char *)pFootSounds[i] );
+		PRECACHE_SOUND( pFootSounds[i] );
 
 	for( i = 0; i < ARRAYSIZE( pIdleSounds ); i++ )
-		PRECACHE_SOUND( (char *)pIdleSounds[i] );
+		PRECACHE_SOUND( pIdleSounds[i] );
 
 	for( i = 0; i < ARRAYSIZE( pAlertSounds ); i++ )
-		PRECACHE_SOUND((char *)pAlertSounds[i]);
+		PRECACHE_SOUND( pAlertSounds[i] );
 
 	for( i = 0; i < ARRAYSIZE( pPainSounds ); i++ )
-		PRECACHE_SOUND( (char *)pPainSounds[i] );
+		PRECACHE_SOUND( pPainSounds[i] );
 
 	for( i = 0; i < ARRAYSIZE( pAttackSounds ); i++ )
-		PRECACHE_SOUND( (char *)pAttackSounds[i] );
+		PRECACHE_SOUND( pAttackSounds[i] );
 
 	for( i = 0; i < ARRAYSIZE( pStompSounds ); i++ )
-		PRECACHE_SOUND( (char *)pStompSounds[i] );
+		PRECACHE_SOUND( pStompSounds[i] );
 
 	for( i = 0; i < ARRAYSIZE( pBreatheSounds ); i++ )
-		PRECACHE_SOUND( (char *)pBreatheSounds[i] );
+		PRECACHE_SOUND( pBreatheSounds[i] );
 }	
+
+void CGargantua::UpdateOnRemove()
+{
+	CBaseEntity::UpdateOnRemove();
+
+	if( m_pEyeGlow )
+	{
+		UTIL_Remove( m_pEyeGlow );
+		m_pEyeGlow = 0;
+	}
+
+	FlameDestroy();
+}
 
 void CGargantua::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType )
 {

@@ -51,7 +51,7 @@ TYPEDESCRIPTION	CTalkMonster::m_SaveData[] =
 IMPLEMENT_SAVERESTORE( CTalkMonster, CBaseMonster )
 
 // array of friend names
-char *CTalkMonster::m_szFriends[TLK_CFRIENDS] =
+const char *CTalkMonster::m_szFriends[TLK_CFRIENDS] =
 {
 	"monster_barney",
 	"monster_scientist",
@@ -391,7 +391,7 @@ void CTalkMonster::StartTask( Task_t *pTask )
 	case TASK_TLK_EYECONTACT:
 		break;
 	case TASK_TLK_IDEALYAW:
-		if( m_hTalkTarget != NULL )
+		if( m_hTalkTarget != 0 )
 		{
 			pev->yaw_speed = 60;
 			float yaw = VecToYaw( m_hTalkTarget->pev->origin - pev->origin ) - pev->angles.y;
@@ -403,11 +403,11 @@ void CTalkMonster::StartTask( Task_t *pTask )
 
 			if( yaw < 0 )
 			{
-				pev->ideal_yaw = min( yaw + 45, 0 ) + pev->angles.y;
+				pev->ideal_yaw = Q_min( yaw + 45, 0 ) + pev->angles.y;
 			}
 			else
 			{
-				pev->ideal_yaw = max( yaw - 45, 0 ) + pev->angles.y;
+				pev->ideal_yaw = Q_max( yaw - 45, 0 ) + pev->angles.y;
 			}
 		}
 		TaskComplete();
@@ -536,7 +536,7 @@ void CTalkMonster::RunTask( Task_t *pTask )
 		}
 		break;
 	case TASK_TLK_EYECONTACT:
-		if( !IsMoving() && IsTalking() && m_hTalkTarget != NULL )
+		if( !IsMoving() && IsTalking() && m_hTalkTarget != 0 )
 		{
 			// ALERT( at_console, "waiting %f\n", m_flStopTalkTime - gpGlobals->time );
 			IdleHeadTurn( m_hTalkTarget->pev->origin );
@@ -561,7 +561,7 @@ void CTalkMonster::RunTask( Task_t *pTask )
 		}
 		break;
 	case TASK_WAIT_FOR_MOVEMENT:
-		if( IsTalking() && m_hTalkTarget != NULL )
+		if( IsTalking() && m_hTalkTarget != 0 )
 		{
 			// ALERT( at_console, "walking, talking\n" );
 			IdleHeadTurn( m_hTalkTarget->pev->origin );
@@ -582,7 +582,7 @@ void CTalkMonster::RunTask( Task_t *pTask )
 			IdleHeadTurn( pev->origin );
 		break;
 	default:
-		if( IsTalking() && m_hTalkTarget != NULL )
+		if( IsTalking() && m_hTalkTarget != 0 )
 		{
 			IdleHeadTurn( m_hTalkTarget->pev->origin );
 		}
@@ -603,7 +603,7 @@ void CTalkMonster::Killed( entvars_t *pevAttacker, int iGib )
 		LimitFollowers( CBaseEntity::Instance( pevAttacker ), 0 );
 	}
 
-	m_hTargetEnt = NULL;
+	m_hTargetEnt = 0;
 	// Don't finish that sentence
 	StopTalking();
 	SetUse( NULL );
@@ -613,7 +613,7 @@ void CTalkMonster::Killed( entvars_t *pevAttacker, int iGib )
 CBaseEntity *CTalkMonster::EnumFriends( CBaseEntity *pPrevious, int listNumber, BOOL bTrace )
 {
 	CBaseEntity *pFriend = pPrevious;
-	char *pszFriend;
+	const char *pszFriend;
 	TraceResult tr;
 	Vector vecCheck;
 
@@ -712,7 +712,7 @@ void CTalkMonster::LimitFollowers( CBaseEntity *pPlayer, int maxFollowers )
 float CTalkMonster::TargetDistance( void )
 {
 	// If we lose the player, or he dies, return a really large distance
-	if( m_hTargetEnt == NULL || !m_hTargetEnt->IsAlive() )
+	if( m_hTargetEnt == 0 || !m_hTargetEnt->IsAlive() )
 		return 1e6;
 
 	return ( m_hTargetEnt->pev->origin - pev->origin ).Length();
@@ -764,7 +764,7 @@ CBaseEntity *CTalkMonster::FindNearestFriend( BOOL fPlayer )
 	Vector vecStart = pev->origin;
 	Vector vecCheck;
 	int i;
-	char *pszFriend;
+	const char *pszFriend;
 	int cfriends;
 
 	vecStart.z = pev->absmax.z;
@@ -855,7 +855,7 @@ void CTalkMonster::Touch( CBaseEntity *pOther )
 //=========================================================
 void CTalkMonster::IdleRespond( void )
 {
-	int pitch = GetVoicePitch();
+	//int pitch = GetVoicePitch();
 
 	// play response
 	PlaySentence( m_szGrp[TLK_ANSWER], RANDOM_FLOAT( 2.8, 3.2 ), VOL_NORM, ATTN_IDLE );
@@ -891,7 +891,7 @@ int CTalkMonster::FOkToSpeak( void )
 		return FALSE;
 
 	// don't talk if you're in combat
-	if( m_hEnemy != NULL && FVisible( m_hEnemy ) )
+	if( m_hEnemy != 0 && FVisible( m_hEnemy ) )
 		return FALSE;
 
 	return TRUE;
@@ -978,7 +978,7 @@ void CTalkMonster::IdleHeadTurn( Vector &vecFriend )
 int CTalkMonster::FIdleSpeak( void )
 { 
 	// try to start a conversation, or make statement
-	int pitch;
+	//int pitch;
 	const char *szIdleGroup;
 	const char *szQuestionGroup;
 	float duration;
@@ -1002,7 +1002,7 @@ int CTalkMonster::FIdleSpeak( void )
 		duration = RANDOM_FLOAT( 2.8, 3.2 );
 	}
 
-	pitch = GetVoicePitch();
+	//pitch = GetVoicePitch();
 
 	// player using this entity is alive and wounded?
 	CBaseEntity *pTarget = m_hTargetEnt;
@@ -1316,10 +1316,10 @@ void CTalkMonster::StopFollowing( BOOL clearSchedule )
 
 		if( m_movementGoal == MOVEGOAL_TARGETENT )
 			RouteClear(); // Stop him from walking toward the player
-		m_hTargetEnt = NULL;
+		m_hTargetEnt = 0;
 		if( clearSchedule )
 			ClearSchedule();
-		if( m_hEnemy != NULL )
+		if( m_hEnemy != 0 )
 			m_IdealMonsterState = MONSTERSTATE_COMBAT;
 	}
 }
@@ -1329,7 +1329,7 @@ void CTalkMonster::StartFollowing( CBaseEntity *pLeader )
 	if( m_pCine )
 		m_pCine->CancelScript();
 
-	if( m_hEnemy != NULL )
+	if( m_hEnemy != 0 )
 		m_IdealMonsterState = MONSTERSTATE_ALERT;
 
 	m_hTargetEnt = pLeader;

@@ -15,7 +15,9 @@
 //=========================================================
 // nodes.h
 //=========================================================
-
+#pragma once
+#ifndef		NODES_H
+#define		NODES_H
 //=========================================================
 // DEFINE
 //=========================================================
@@ -103,7 +105,11 @@ typedef struct
 //=========================================================
 // CGraph 
 //=========================================================
+#ifdef XASH_64BIT
+#define	GRAPH_VERSION	(int)16 * 10
+#else
 #define	GRAPH_VERSION	(int)16// !!!increment this whever graph/node/link classes change, to obsolesce older disk files.
+#endif
 
 class CGraph
 {
@@ -177,9 +183,9 @@ public:
 	void	InitGraph( void );
 	int		AllocNodes ( void );
 	
-	int		CheckNODFile(char *szMapName);
-	int		FLoadGraph(char *szMapName);
-	int		FSaveGraph(char *szMapName);
+	int		CheckNODFile(const char *szMapName);
+	int		FLoadGraph(const char *szMapName);
+	int		FSaveGraph(const char *szMapName);
 	int		FSetGraphPointers(void);
 	void	CheckNode(Vector vecOrigin, int iNode);
 
@@ -370,3 +376,4 @@ enum
 };
 
 extern CGraph WorldGraph;
+#endif // NODES_H

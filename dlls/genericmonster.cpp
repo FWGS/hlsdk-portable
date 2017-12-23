@@ -90,7 +90,7 @@ void CGenericMonster::HandleAnimEvent( MonsterEvent_t *pEvent )
 //=========================================================
 int CGenericMonster::ISoundMask( void )
 {
-	return NULL;
+	return 0;
 }
 
 //=========================================================
@@ -140,7 +140,7 @@ void CGenericMonster::Precache()
 {
 	CTalkMonster::Precache();
 	TalkInit();
-	PRECACHE_MODEL( (char *)STRING( pev->model ) );
+	PRECACHE_MODEL( STRING( pev->model ) );
 }
 
 //=========================================================

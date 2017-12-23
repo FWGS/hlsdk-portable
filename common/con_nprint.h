@@ -12,6 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
+#pragma once
 #ifndef CON_NPRINT_H
 #define CON_NPRINT_H
 

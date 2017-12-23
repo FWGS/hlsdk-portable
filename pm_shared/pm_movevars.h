@@ -6,6 +6,7 @@
 //=============================================================================
 
 // pm_movevars.h
+#pragma once
 #if !defined( PM_MOVEVARSH )
 #define PM_MOVEVARSH
 
