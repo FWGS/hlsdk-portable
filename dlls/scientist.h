@@ -80,7 +80,7 @@ public:
 
 	void KeyValue(KeyValueData *pkvd);
 	int	m_iPose;// which sequence to display
-	static char *m_szPoses[7];
+	static const char *m_szPoses[7];
 };
 
 //=========================================================

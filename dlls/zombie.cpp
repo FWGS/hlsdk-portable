@@ -448,7 +448,7 @@ void CZombie::AttackSound( void )
 				EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pAttackSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackSounds ) - 1 )], 1.0, ATTN_NORM, 0, pitch );
 			}
 		}
-}
+	}
 }
 
 //=========================================================
@@ -537,11 +537,9 @@ void CZombie::Spawn()
 {
 	Precache();
 
-	char* szModel = (char*)STRING( pev->model );
-	if( !szModel || !*szModel )
+	if( !pev->model )
 	{
-		szModel = "models/zombie.mdl";
-		pev->model = ALLOC_STRING( szModel );
+		pev->model = MAKE_STRING( "models/zombie.mdl" );
 	}
 
 	SET_MODEL( ENT( pev ), STRING( pev->model ) );
@@ -634,7 +632,7 @@ void CZombie::Spawn()
 //=========================================================
 void CZombie::Precache()
 {
-	int i;
+	size_t i;
 
 	PRECACHE_MODEL( "models/zombie.mdl" );
 	PRECACHE_MODEL( "models/zombie2.mdl" );
@@ -643,22 +641,22 @@ void CZombie::Precache()
 	PRECACHE_MODEL( "models/lpzombie.mdl" );
 
 	for( i = 0; i < ARRAYSIZE( pAttackHitSounds ); i++ )
-		PRECACHE_SOUND( (char *)pAttackHitSounds[i] );
+		PRECACHE_SOUND( pAttackHitSounds[i] );
 
 	for( i = 0; i < ARRAYSIZE( pAttackMissSounds ); i++ )
-		PRECACHE_SOUND( (char *)pAttackMissSounds[i] );
+		PRECACHE_SOUND( pAttackMissSounds[i] );
 
 	for( i = 0; i < ARRAYSIZE( pAttackSounds ); i++ )
-		PRECACHE_SOUND( (char *)pAttackSounds[i] );
+		PRECACHE_SOUND( pAttackSounds[i] );
 
 	for( i = 0; i < ARRAYSIZE( pIdleSounds ); i++ )
-		PRECACHE_SOUND( (char *)pIdleSounds[i] );
+		PRECACHE_SOUND( pIdleSounds[i] );
 
 	for( i = 0; i < ARRAYSIZE( pAlertSounds ); i++ )
-		PRECACHE_SOUND( (char *)pAlertSounds[i] );
+		PRECACHE_SOUND( pAlertSounds[i] );
 
 	for( i = 0; i < ARRAYSIZE( pPainSounds ); i++ )
-		PRECACHE_SOUND( (char *)pPainSounds[i] );
+		PRECACHE_SOUND( pPainSounds[i] );
 
 	PRECACHE_SOUND_ARRAY( pCopAttackSounds );
 	PRECACHE_SOUND_ARRAY( pCopIdleSounds );

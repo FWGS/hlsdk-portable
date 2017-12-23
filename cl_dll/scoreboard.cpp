@@ -92,17 +92,17 @@ We have a minimum width of 1-320 - we could have the field widths scale with it?
 
 // X positions
 // relative to the side of the scoreboard
-#define NAME_RANGE_MIN  20
-#define NAME_RANGE_MAX  145
-#define KILLS_RANGE_MIN 130
-#define KILLS_RANGE_MAX 170
-#define DIVIDER_POS		180
-#define DEATHS_RANGE_MIN  185
-#define DEATHS_RANGE_MAX  210
-#define PING_RANGE_MIN	245
-#define PING_RANGE_MAX	295
-#define PL_RANGE_MIN 315
-#define PL_RANGE_MAX 375
+#define NAME_RANGE_MIN  -65
+#define NAME_RANGE_MAX  180
+#define KILLS_RANGE_MIN 165
+#define KILLS_RANGE_MAX 205
+#define DIVIDER_POS		215
+#define DEATHS_RANGE_MIN  220
+#define DEATHS_RANGE_MAX  245
+#define PING_RANGE_MIN	280
+#define PING_RANGE_MAX	330
+#define PL_RANGE_MIN 350
+#define PL_RANGE_MAX 410
 
 int SCOREBOARD_WIDTH = 320;
 
@@ -145,7 +145,7 @@ int CHudScoreboard::Draw( float fTime )
 	int xpos = NAME_RANGE_MIN + xpos_rel;
 
 	FAR_RIGHT = can_show_packetloss ? PL_RANGE_MAX : PING_RANGE_MAX;
-	FAR_RIGHT += 5;
+	FAR_RIGHT += 125;
 	if( cl_scoreboard_bg && cl_scoreboard_bg->value )
 		gHUD.DrawDarkRectangle( xpos - 5, ypos - 5, FAR_RIGHT, ROW_RANGE_MAX );
 	if( !gHUD.m_Teamplay )
@@ -340,7 +340,7 @@ int CHudScoreboard::DrawPlayers( int xpos_rel, float list_slot, int nameoffset, 
 	}
 
 	FAR_RIGHT = can_show_packetloss ? PL_RANGE_MAX : PING_RANGE_MAX;
-	FAR_RIGHT += 5;
+	FAR_RIGHT += 125;
 
 	// draw the players, in order,  and restricted to team if set
 	while( 1 )

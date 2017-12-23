@@ -12,7 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
-
+#pragma once
 #ifndef IVOICETWEAK_H
 #define IVOICETWEAK_H
 

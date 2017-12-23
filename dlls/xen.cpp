@@ -98,7 +98,7 @@ void CXenPLight::Spawn( void )
 	pev->frame = RANDOM_FLOAT( 0, 255 );
 
 	m_pGlow = CSprite::SpriteCreate( XEN_PLANT_GLOW_SPRITE, pev->origin + Vector(0,0,(pev->mins.z+pev->maxs.z)*0.5), FALSE );
-	m_pGlow->SetTransparency( kRenderGlow, pev->rendercolor.x, pev->rendercolor.y, pev->rendercolor.z, pev->renderamt, pev->renderfx );
+	m_pGlow->SetTransparency( kRenderGlow, (int)pev->rendercolor.x, (int)pev->rendercolor.y, (int)pev->rendercolor.z, (int)pev->renderamt, (int)pev->renderfx );
 	m_pGlow->SetAttachment( edict(), 1 );
 }
 
@@ -444,9 +444,9 @@ CXenHull *CXenHull::CreateHull( CBaseEntity *source, const Vector &mins, const V
 	CXenHull *pHull = GetClassPtr( (CXenHull *)NULL );
 
 	UTIL_SetOrigin( pHull->pev, source->pev->origin + offset );
-	SET_MODEL( pHull->edict(), STRING(source->pev->model) );
+	SET_MODEL( pHull->edict(), STRING( source->pev->model ) );
 	pHull->pev->solid = SOLID_BBOX;
-	pHull->pev->classname = MAKE_STRING("xen_hull");
+	pHull->pev->classname = MAKE_STRING( "xen_hull" );
 	pHull->pev->movetype = MOVETYPE_NONE;
 	pHull->pev->owner = source->edict();
 	UTIL_SetSize( pHull->pev, mins, maxs );
@@ -497,7 +497,7 @@ void CXenSporeLarge::Spawn( void )
 	UTIL_MakeVectorsPrivate( pev->angles, forward, right, NULL );
 
 	// Rotate the leg hulls into position
-	for( int i = 0; i < ARRAYSIZE( m_hullSizes ); i++ )
+	for( int i = 0; i < (int)ARRAYSIZE( m_hullSizes ); i++ )
 		CXenHull::CreateHull( this, Vector( -12, -12, 0 ), Vector( 12, 12, 120 ), ( m_hullSizes[i].x * forward ) + ( m_hullSizes[i].y * right ) );
 }
 
@@ -527,7 +527,7 @@ const char *CXenSpore::pModelNames[] =
 
 void CXenSpore::Precache( void )
 {
-	PRECACHE_MODEL( (char *)pModelNames[pev->skin] );
+	PRECACHE_MODEL( pModelNames[pev->skin] );
 }
 
 void CXenSpore::Touch( CBaseEntity *pOther )
@@ -536,7 +536,7 @@ void CXenSpore::Touch( CBaseEntity *pOther )
 
 void CXenSpore::Think( void )
 {
-	float flInterval = StudioFrameAdvance();
+	StudioFrameAdvance();
 	pev->nextthink = gpGlobals->time + 0.1;
 #if 0
 	DispatchAnimEvents( flInterval );

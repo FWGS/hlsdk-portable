@@ -12,7 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
-
+#pragma once
 #ifndef PM_SHARED_H
 #define PM_SHARED_H
 

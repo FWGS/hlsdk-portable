@@ -137,7 +137,7 @@ int CHoundeye::Classify( void )
 //=========================================================
 BOOL CHoundeye::FValidateHintType( short sHint )
 {
-	int i;
+	size_t i;
 
 	static short sHoundHints[] =
 	{

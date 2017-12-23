@@ -16,6 +16,9 @@
 // CSquadMonster - all the extra data for monsters that
 // form squads.
 //=========================================================
+#pragma once
+#ifndef SQUADMONSTER_H
+#define SQUADMONSTER_H
 
 #define	SF_SQUADMONSTER_LEADER	32
 
@@ -90,7 +93,7 @@ public:
 		else
 			return (CSquadMonster *)( (CBaseEntity *)m_hSquadMember[i] );
 	}
-	int InSquad( void ) { return m_hSquadLeader != NULL; }
+	int InSquad( void ) { return m_hSquadLeader != 0; }
 	int IsLeader( void ) { return m_hSquadLeader == this; }
 	int SquadJoin( int searchRadius );
 	int SquadRecruit( int searchRadius, int maxMembers );
@@ -118,3 +121,4 @@ public:
 	MONSTERSTATE GetIdealState( void );
 	Schedule_t *GetScheduleOfType( int iType );
 };
+#endif // SQUADMONSTER_H
