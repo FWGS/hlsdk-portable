@@ -217,7 +217,7 @@ const char *CHGrunt::pGruntSentences[] =
 	"HG_TAUNT", // say rude things
 };
 
-enum
+typedef enum
 {
 	HGRUNT_SENT_NONE = -1,
 	HGRUNT_SENT_GREN = 0,
@@ -370,7 +370,7 @@ void CHGrunt::JustSpoke( void )
 //=========================================================
 void CHGrunt::PrescheduleThink( void )
 {
-	if( InSquad() && m_hEnemy != NULL )
+	if( InSquad() && m_hEnemy != 0 )
 	{
 		if( HasConditions( bits_COND_SEE_ENEMY ) )
 		{
@@ -417,9 +417,9 @@ BOOL CHGrunt::FCanCheckAttacks( void )
 //=========================================================
 BOOL CHGrunt::CheckMeleeAttack1( float flDot, float flDist )
 {
-	CBaseMonster *pEnemy;
+	CBaseMonster *pEnemy = 0;
 
-	if( m_hEnemy != NULL )
+	if( m_hEnemy != 0 )
 	{
 		pEnemy = m_hEnemy->MyMonsterPointer();
 
@@ -791,7 +791,7 @@ Vector CHGrunt::GetGunPosition()
 //=========================================================
 void CHGrunt::Shoot( void )
 {
-	if( m_hEnemy == NULL )
+	if( m_hEnemy == 0 )
 	{
 		return;
 	}
@@ -818,7 +818,7 @@ void CHGrunt::Shoot( void )
 //=========================================================
 void CHGrunt::Shotgun( void )
 {
-	if( m_hEnemy == NULL )
+	if( m_hEnemy == 0 )
 	{
 		return;
 	}
@@ -963,6 +963,7 @@ void CHGrunt::HandleAnimEvent( MonsterEvent_t *pEvent )
 			}
 
 		}
+			break;
 		default:
 			CSquadMonster::HandleAnimEvent( pEvent );
 			break;
@@ -1838,7 +1839,7 @@ IMPLEMENT_CUSTOM_SCHEDULES( CHGrunt, CSquadMonster )
 void CHGrunt::SetActivity( Activity NewActivity )
 {
 	int iSequence = ACTIVITY_NOT_AVAILABLE;
-	void *pmodel = GET_MODEL_PTR( ENT( pev ) );
+	//void *pmodel = GET_MODEL_PTR( ENT( pev ) );
 
 	switch( NewActivity )
 	{
@@ -2036,10 +2037,10 @@ Schedule_t *CHGrunt::GetSchedule( void )
 						// before he starts pluggin away.
 						if( FOkToSpeak() )// && RANDOM_LONG( 0, 1 ) )
 						{
-							if( ( m_hEnemy != NULL ) && m_hEnemy->IsPlayer() )
+							if( ( m_hEnemy != 0 ) && m_hEnemy->IsPlayer() )
 								// player
 								SENTENCEG_PlayRndSz( ENT( pev ), "HG_ALERT", HGRUNT_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch );
-							else if( ( m_hEnemy != NULL ) &&
+							else if( ( m_hEnemy != 0 ) &&
 									( m_hEnemy->Classify() != CLASS_PLAYER_ALLY ) && 
 									( m_hEnemy->Classify() != CLASS_HUMAN_PASSIVE ) && 
 									( m_hEnemy->Classify() != CLASS_MACHINE ) )
@@ -2076,7 +2077,7 @@ Schedule_t *CHGrunt::GetSchedule( void )
 				// 10% chance of flinch.
 				int iPercent = RANDOM_LONG( 0, 99 );
 
-				if( iPercent <= 90 && m_hEnemy != NULL )
+				if( iPercent <= 90 && m_hEnemy != 0 )
 				{
 					// only try to take cover if we actually have an enemy!
 
@@ -2312,7 +2313,7 @@ Schedule_t *CHGrunt::GetScheduleOfType( int Type )
 		}
 	case SCHED_FAIL:
 		{
-			if( m_hEnemy != NULL )
+			if( m_hEnemy != 0 )
 			{
 				// grunt has an enemy, so pick a different default fail schedule most likely to help recover.
 				return &slGruntCombatFail[0];
@@ -2412,10 +2413,10 @@ public:
 	void KeyValue( KeyValueData *pkvd );
 
 	int m_iPose;// which sequence to display	-- temporary, don't need to save
-	static char *m_szPoses[3];
+	static const char *m_szPoses[3];
 };
 
-char *CDeadHGrunt::m_szPoses[] = { "deadstomach", "deadside", "deadsitting" };
+const char *CDeadHGrunt::m_szPoses[] = { "deadstomach", "deadside", "deadsitting" };
 
 void CDeadHGrunt::KeyValue( KeyValueData *pkvd )
 {

@@ -25,7 +25,9 @@
 // fall over
 #define	ROLL	2 
 
+#ifdef _MSC_VER
 #pragma warning(disable : 4244)
+#endif
 
 vec3_t vec3_origin = { 0,0,0 };
 int nanmask = 255 << 23;
@@ -237,7 +239,7 @@ float AngleBetweenVectors( const vec3_t v1, const vec3_t v2 )
 	if( !l1 || !l2 )
 		return 0.0f;
 
-	angle = acos( DotProduct( v1, v2 ) ) / ( l1 * l2 );
+	angle = acos( DotProduct( v1, v2 ) / ( l1 * l2 ) );
 	angle = ( angle  * 180.0f ) / M_PI;
 
 	return angle;

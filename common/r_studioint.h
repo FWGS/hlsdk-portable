@@ -12,8 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
-
-
+#pragma once
 #ifndef R_STUDIOINT_H
 #define R_STUDIOINT_H
 

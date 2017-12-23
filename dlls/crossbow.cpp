@@ -355,7 +355,7 @@ void CCrossbow::PrimaryAttack( void )
 // this function only gets called in multiplayer
 void CCrossbow::FireSniperBolt()
 {
-	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.75;
+	m_flNextPrimaryAttack = GetNextAttackDelay( 0.75 );
 
 	if( m_iClip == 0 )
 	{
@@ -470,7 +470,7 @@ void CCrossbow::SecondaryAttack()
 
 void CCrossbow::Reload( void )
 {
-	if( m_pPlayer->ammo_bolts <= 0 )
+	if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0 || m_iClip == CROSSBOW_MAX_CLIP )
 		return;
 
 	if( m_pPlayer->pev->fov != 0 )
@@ -478,7 +478,7 @@ void CCrossbow::Reload( void )
 		SecondaryAttack();
 	}
 
-	if( DefaultReload( 5, CROSSBOW_RELOAD, 3.2 ) )
+	if( DefaultReload( CROSSBOW_MAX_CLIP, CROSSBOW_RELOAD, 3.2 ) )
 	{
 		EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/xbow_reload1.wav", RANDOM_FLOAT( 0.95, 1.0 ), ATTN_NORM, 0, 93 + RANDOM_LONG( 0, 0xF ) );
 	}

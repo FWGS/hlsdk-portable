@@ -12,7 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
-
+#pragma once
 #ifndef TRIANGLEAPI_H
 #define TRIANGLEAPI_H
 
