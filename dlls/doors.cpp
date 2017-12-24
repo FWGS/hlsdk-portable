@@ -23,7 +23,6 @@
 #include "cbase.h"
 #include "doors.h"
 #include "game.h"
-#include "weapons.h"
 
 extern void SetMovedir( entvars_t *ev );
 
@@ -751,12 +750,12 @@ void CBaseDoor::Blocked( CBaseEntity *pOther )
 	if( pev->dmg )
 		pOther->TakeDamage( pev, pev, pev->dmg, DMG_CRUSH );
 
-	if( satchelfix.value )
+	/*if( satchelfix.value )
 	{
 		// Detonate satchels
 		if( !strcmp( "monster_satchel", STRING( pOther->pev->classname ) ) )
 			( (CSatchel*)pOther )->Use( this, this, USE_ON, 0 );
-	}
+	}*/
 
 	// if a door has a negative wait, it would never come back if blocked,
 	// so let it just squash the object to death real fast
