@@ -219,7 +219,7 @@ class CItemArmorVest : public CItem
 			( pPlayer->pev->weapons & ( 1 << WEAPON_SUIT ) ) )
 		{
 			pPlayer->pev->armorvalue += 60;
-			pPlayer->pev->armorvalue = min( pPlayer->pev->armorvalue, MAX_NORMAL_BATTERY );
+			pPlayer->pev->armorvalue = Q_min( pPlayer->pev->armorvalue, MAX_NORMAL_BATTERY );
 
 			EMIT_SOUND( pPlayer->edict(), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM );
 
@@ -253,7 +253,7 @@ class CItemHelmet : public CItem
 			( pPlayer->pev->weapons & ( 1 << WEAPON_SUIT ) ) )
 		{
 			pPlayer->pev->armorvalue += 40;
-			pPlayer->pev->armorvalue = min( pPlayer->pev->armorvalue, MAX_NORMAL_BATTERY );
+			pPlayer->pev->armorvalue = Q_min( pPlayer->pev->armorvalue, MAX_NORMAL_BATTERY );
 
 			EMIT_SOUND( pPlayer->edict(), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM );
 

@@ -2053,9 +2053,9 @@ void CTriggerPlayerFreeze::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, U
 		pActivator = CBaseEntity::Instance( g_engfuncs.pfnPEntityOfEntIndex( 1 ) );
 
 	if( pActivator->pev->flags & FL_FROZEN )
-		( (CBasePlayer *)( pActivator )->EnableControl( TRUE );
+		( (CBasePlayer*)( pActivator ) )->EnableControl( TRUE );
 	else
-		( (CBasePlayer *)( pActivator )->EnableControl( FALSE );
+		( (CBasePlayer*)( pActivator ) )->EnableControl( FALSE );
 };
 
 // this is a really bad idea.
