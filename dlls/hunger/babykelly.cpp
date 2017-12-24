@@ -76,7 +76,7 @@ const char *CBabyKelly::pDeathSounds[] =
 //=========================================================
 void CBabyKelly::AlertSound(void)
 {
-	if (m_hEnemy != NULL)
+	if (m_hEnemy != 0)
 	{
 		SENTENCEG_PlayRndSz(ENT(pev), "BKL_ALERT", 0.85, ATTN_NORM, 0, m_voicePitch);
 

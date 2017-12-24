@@ -167,7 +167,7 @@ BOOL CCyberFranklin::CheckMeleeAttack1(float flDot, float flDist)
 {
 	CBaseMonster *pEnemy;
 
-	if (m_hEnemy != NULL)
+	if (m_hEnemy != 0)
 	{
 		pEnemy = m_hEnemy->MyMonsterPointer();
 

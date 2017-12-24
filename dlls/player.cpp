@@ -1500,7 +1500,7 @@ void CBasePlayer::PlayerUse( void )
 					m_afPhysicsFlags |= PFLAG_ONTRAIN;
 					m_iTrain = TrainSpeed( (int)pTrain->pev->speed, pTrain->pev->impulse );
 					m_iTrain |= TRAIN_NEW;
-					char* usesound = "plats/train_use1.wav";
+					const char* usesound = "plats/train_use1.wav";
 
 					CFuncTrackTrain* pTrackTrain = (CFuncTrackTrain*)pTrain;
 

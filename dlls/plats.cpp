@@ -1063,7 +1063,7 @@ void CFuncTrackTrain::StopSound( void )
 		/*
 		STOP_SOUND( ENT( pev ), CHAN_STATIC, STRING( pev->noise ) );
 		*/
-		char *brake = "plats/ttrain_brake1.wav";
+		const char *brake = "plats/ttrain_brake1.wav";
 
 		if( UseCustomSounds() )
 		{

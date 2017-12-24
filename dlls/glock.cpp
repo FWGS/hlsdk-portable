@@ -50,7 +50,7 @@ void CGlock::Spawn()
 	pev->classname = MAKE_STRING( "weapon_9mmhandgun" ); // hack to allow for old names
 	Precache();
 	m_iId = WEAPON_GLOCK;
-	char* szModel = NULL;
+	const char* szModel = NULL;
 
 	if( pev->body == SILENCER_ON )
 		szModel = GLOCK_MODEL_SILENCER;

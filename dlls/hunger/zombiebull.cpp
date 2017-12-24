@@ -362,6 +362,8 @@ Schedule_t *CZombieBull::GetSchedule(void)
 
 		break;
 	}
+	default:
+		break;
 	}
 
 	return CBaseMonster::GetSchedule();

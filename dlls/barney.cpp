@@ -320,7 +320,7 @@ void CBarney::BarneyFirePistol( void )
 
 	Vector vecSpread;
 
-	if( m_hEnemy == NULL || !m_hEnemy->IsPlayer() )
+	if( m_hEnemy == 0 || !m_hEnemy->IsPlayer() )
 	{
 		// Higher chance to hit target.
 		vecSpread = VECTOR_CONE_2DEGREES;
@@ -384,12 +384,11 @@ void CBarney::Spawn()
 {
 	Precache();
 
-	char* szModel = (char*)STRING( pev->model );
-	if( !szModel || !*szModel )
+	if( !pev->model )
 	{
-		szModel = "models/barney.mdl";
+		pev->model = MAKE_STRING( "models/barney.mdl" );
 	}
-	SET_MODEL( ENT( pev ), szModel );
+	SET_MODEL( ENT( pev ), STRING( pev->model ) );
 	UTIL_SetSize( pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX );
 
 	pev->solid = SOLID_SLIDEBOX;
