@@ -406,7 +406,7 @@ void CXenSquasher::Fire(Vector vecOrigSrc, Vector vecDir, float flDamage)
 		pLargeSpit->pev->velocity = gpGlobals->v_forward * 800;
 		pLargeSpit->pev->scale = 0.2f;
 
-		int iNumProjectiles = max(1, flDamage * XENSPIT_MAX_PROJECTILES / 200);
+		int iNumProjectiles = Q_max(1, flDamage * XENSPIT_MAX_PROJECTILES / 200);
 
 		float cycle = 0;
 		float cycleGap = 1.0f / (float)iNumProjectiles;

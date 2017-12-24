@@ -4637,12 +4637,12 @@ BOOL CBasePlayer::SwitchWeapon( CBasePlayerItem *pWeapon )
 
 void CBasePlayer::IncrementExertLevel( int amount )
 {
-	m_iExertLevel += min( amount, PLAYER_EXERT_LEVEL_MAX - m_iExertLevel );
+	m_iExertLevel += Q_min( amount, PLAYER_EXERT_LEVEL_MAX - m_iExertLevel );
 }
 
 void CBasePlayer::DecrementExertLevel( int amount )
 {
-	m_iExertLevel -= min( amount, m_iExertLevel );
+	m_iExertLevel -= Q_min( amount, m_iExertLevel );
 }
 
 void CBasePlayer::SetExertLevel( int level )
@@ -4667,7 +4667,7 @@ void CBasePlayer::UpdateExertLevel( void )
 			if( temp < 1 )
 				temp = 1;
 
-			m_iExertLevel -= min( m_iExertLevel, temp );
+			m_iExertLevel -= Q_min( m_iExertLevel, temp );
 
 			m_flExertRate = PLAYER_EXERT_RATE;
 			m_flExertUpdateStart = gpGlobals->time;

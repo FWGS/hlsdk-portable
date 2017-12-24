@@ -262,7 +262,7 @@ void CXenLargeSpit::Touch(CBaseEntity *pOther)
 {
 	// ALERT(at_console, " CXenLargeSpit::Touch START\n");
 
-	float damage = max(pev->dmg, pev->dmg * m_iChildCount);
+	float damage = Q_max(pev->dmg, pev->dmg * m_iChildCount);
 
 	RadiusDamage(pev->origin, pev, pev, damage, 110, CLASS_NONE, DMG_POISON | DMG_ALWAYSGIB);
 
@@ -335,7 +335,7 @@ void CXenLargeSpit::CycleThink(void)
 			float cs, sn, dist;
 			cs = cos(pSpit->m_flCycle * 2 * M_PI);
 			sn = sin(pSpit->m_flCycle * 2 * M_PI);
-			dist = max(2, 2 * m_iChildCount);
+			dist = Q_max(2, 2 * m_iChildCount);
 
 			// ALERT(at_console, "cs: %.2f. sn: %.2f\n", cs, sn);
 

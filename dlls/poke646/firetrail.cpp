@@ -60,7 +60,7 @@ void CFireTrail::Think(void)
 	pSprite->AnimateAndDie(RANDOM_FLOAT(15.0f, 20.0f));
 	pSprite->SetTransparency( kRenderTransAdd, 255, 255, 255, 192, kRenderFxNoDissipation );
 	pSprite->SetScale(pev->speed);
-	pSprite->pev->frame = pSprite->Frames() - ((max(0, pev->speed - (0.1 * pSprite->pev->framerate)) * pSprite->Frames()) / pev->maxspeed);
+	pSprite->pev->frame = pSprite->Frames() - ((Q_max(0, pev->speed - (0.1 * pSprite->pev->framerate)) * pSprite->Frames()) / pev->maxspeed);
 
 	pev->speed -= 0.1;
 	if (pev->speed > 0)

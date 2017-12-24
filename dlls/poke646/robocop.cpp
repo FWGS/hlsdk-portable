@@ -1366,7 +1366,7 @@ void CRoboCop::BeamUpdate(void)
 
 	if (m_pBeamSpot)
 	{
-		m_pBeamSpot->pev->renderamt = UTIL_Approach(min(m_beamBrightness + 25, 255), m_pBeamSpot->pev->renderamt, 60);
+		m_pBeamSpot->pev->renderamt = UTIL_Approach(Q_min(m_beamBrightness + 25, 255), m_pBeamSpot->pev->renderamt, 60);
 		if (m_pBeamSpot->pev->renderamt == 0)
 			m_pBeamSpot->pev->effects |= EF_NODRAW;
 		else

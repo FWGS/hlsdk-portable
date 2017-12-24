@@ -1879,7 +1879,7 @@ void EV_FireBradnailer( event_args_t *args )
 
 	VectorCopy( forward, vecAiming );
 
-	EV_HLDM_FireBullets( idx, forward, right, up, 1, vecSrc, vecAiming, 8192, BULLET_PLAYER_NAIL, 2, &tracerCount[idx - 1], args->fparam1, args->fparam2 );
+	EV_HLDM_FireBullets( idx, forward, right, up, 1, vecSrc, vecAiming, 8192, BULLET_PLAYER_NAIL, 2, &g_tracerCount[idx - 1], args->fparam1, args->fparam2 );
 }
 
 //======================
@@ -1937,7 +1937,7 @@ void EV_FireNailgun( event_args_t *args )
 
 	VectorCopy( forward, vecAiming );
 
-	EV_HLDM_FireBullets( idx, forward, right, up, 1, vecSrc, vecAiming, 8192, BULLET_PLAYER_NAIL, 1, &tracerCount[idx - 1], args->fparam1, args->fparam2 );
+	EV_HLDM_FireBullets( idx, forward, right, up, 1, vecSrc, vecAiming, 8192, BULLET_PLAYER_NAIL, 1, &g_tracerCount[idx - 1], args->fparam1, args->fparam2 );
 }
 
 //======================
