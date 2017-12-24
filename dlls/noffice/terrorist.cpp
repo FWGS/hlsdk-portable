@@ -187,7 +187,7 @@ const char *CTerrorist::pBurstSounds[] =
 //=========================================================
 void CTerrorist::Shoot(Vector vecSpread, int iBulletType)
 {
-	if (m_hEnemy == NULL)
+	if( m_hEnemy == 0 )
 	{
 		return;
 	}
