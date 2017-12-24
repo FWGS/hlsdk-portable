@@ -1103,19 +1103,16 @@ void CHGrunt::Spawn()
 {
 	Precache();
 
-	char* szModel = (char*)STRING( pev->model );
-	if( !szModel || !*szModel )
+	if( !pev->model )
 	{
-		szModel = "models/hgrunt.mdl";
-		pev->model = ALLOC_STRING( szModel );
+		pev->model = MAKE_STRING( "models/hgrunt.mdl" );
 	}
-	else if( !FStrEq( szModel, "models/hgrunt.mdl" ) )
+	else if( !FStrEq( STRING( pev->model ), "models/hgrunt.mdl" ) )
 	{
-		szModel = "models/hgruntsnow.mdl";
-		pev->model = ALLOC_STRING( szModel );
+		pev->model = MAKE_STRING( "models/hgruntsnow.mdl" );
 	}
 
-	SET_MODEL( ENT( pev ), szModel );
+	SET_MODEL( ENT( pev ), STRING( pev->model ) );
 	UTIL_SetSize( pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX );
 
 	pev->solid		= SOLID_SLIDEBOX;

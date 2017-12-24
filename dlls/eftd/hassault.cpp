@@ -219,7 +219,7 @@ int CHassault::Classify(void)
 //=========================================================
 void CHassault::Shoot(void)
 {
-	if (m_hEnemy == NULL)
+	if( m_hEnemy == 0 )
 	{
 		return;
 	}
