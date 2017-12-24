@@ -1832,11 +1832,11 @@ void EV_FireAP9( event_args_t *args )
 
 	if( gEngfuncs.GetMaxClients() > 1 )
 	{
-		EV_HLDM_FireBullets( idx, forward, right, up, 1, vecSrc, vecAiming, 8192, BULLET_PLAYER_AP9, 2, &tracerCount[idx-1], args->fparam1, args->fparam2 );
+		EV_HLDM_FireBullets( idx, forward, right, up, 1, vecSrc, vecAiming, 8192, BULLET_PLAYER_AP9, 2, &g_tracerCount[idx-1], args->fparam1, args->fparam2 );
 	}
 	else
 	{
-		EV_HLDM_FireBullets( idx, forward, right, up, 1, vecSrc, vecAiming, 8192, BULLET_PLAYER_AP9, 2, &tracerCount[idx-1], args->fparam1, args->fparam2 );
+		EV_HLDM_FireBullets( idx, forward, right, up, 1, vecSrc, vecAiming, 8192, BULLET_PLAYER_AP9, 2, &g_tracerCount[idx-1], args->fparam1, args->fparam2 );
 	}
 }
 //======================
@@ -1901,7 +1901,7 @@ void EV_FireTaurus( event_args_t *args )
 //======================
 //	   SNIPER START 
 //======================
-extern vec3_t ev_punchangle;
+extern vec3_t g_ev_punchangle;
 
 void EV_FireSniper( event_args_t *args )
 {
@@ -1930,7 +1930,7 @@ void EV_FireSniper( event_args_t *args )
 		gEngfuncs.pEventAPI->EV_WeaponAnimation( activity, 1 );
 
 		// Substract additional pitch from already exisiting one.
-		float pitch = ev_punchangle[PITCH];
+		float pitch = g_ev_punchangle[PITCH];
 
 		pitch -= 4;
 
@@ -2017,11 +2017,11 @@ void EV_FireChaingun1( event_args_t *args )
 
 	if( gEngfuncs.GetMaxClients() > 1 )
 	{
-		EV_HLDM_FireBullets( idx, forward, right, up, 1, vecSrc, vecAiming, 8192, BULLET_PLAYER_CHAINGUN, 2, &tracerCount[idx - 1], args->fparam1, args->fparam2 );
+		EV_HLDM_FireBullets( idx, forward, right, up, 1, vecSrc, vecAiming, 8192, BULLET_PLAYER_CHAINGUN, 2, &g_tracerCount[idx - 1], args->fparam1, args->fparam2 );
 	}
 	else
 	{
-		EV_HLDM_FireBullets( idx, forward, right, up, 1, vecSrc, vecAiming, 8192, BULLET_PLAYER_CHAINGUN, 2, &tracerCount[idx - 1], args->fparam1, args->fparam2 );
+		EV_HLDM_FireBullets( idx, forward, right, up, 1, vecSrc, vecAiming, 8192, BULLET_PLAYER_CHAINGUN, 2, &g_tracerCount[idx - 1], args->fparam1, args->fparam2 );
 	}
 }
 
