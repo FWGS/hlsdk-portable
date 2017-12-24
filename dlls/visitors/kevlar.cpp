@@ -48,7 +48,7 @@ class CItemKevlar : public CItem
 			(pPlayer->pev->weapons & (1 << WEAPON_SUIT)))
 		{
 			pPlayer->pev->armorvalue += MAX_NORMAL_BATTERY;
-			pPlayer->pev->armorvalue = min(pPlayer->pev->armorvalue, MAX_NORMAL_BATTERY);
+			pPlayer->pev->armorvalue = Q_min(pPlayer->pev->armorvalue, MAX_NORMAL_BATTERY);
 
 			EMIT_SOUND(pPlayer->edict(), CHAN_ITEM, "player/kevlar_zipper.wav", 1, ATTN_NORM);
 

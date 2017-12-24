@@ -1423,7 +1423,7 @@ BEAM *pBeam2;
 /*
 void EV_EgonFire( event_args_t *args )
 {
-	int idx, /*iFireState,*/ iFireMode;
+	int idx, iFireState, iFireMode;
 	vec3_t origin;
 
 	idx = args->entindex;

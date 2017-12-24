@@ -227,14 +227,9 @@ void CPython::Reload( void )
 #else
 	bUseScope = g_pGameRules->IsMultiplayer();
 #endif
-<<<<<<< HEAD
-	int iResult = DefaultReload( PYTHON_MAX_CLIP, PYTHON_RELOAD, 2.0, bUseScope );
-	if( iResult )
-=======
 	if( DefaultReload( PYTHON_MAX_CLIP, PYTHON_RELOAD, 2.0, bUseScope ) )
->>>>>>> travis
 	{
-		m_flSoundDelay = gpGlobals->time + 1.5;
+		m_flSoundDelay = 1.5;
 	}
 }
 
