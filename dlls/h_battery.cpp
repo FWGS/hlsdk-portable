@@ -91,7 +91,7 @@ void CRecharge::Spawn()
 	UTIL_SetOrigin( pev, pev->origin );		// set size and link into world
 	UTIL_SetSize( pev, pev->mins, pev->maxs );
 	SET_MODEL( ENT( pev ), STRING( pev->model ) );
-	m_iJuice = gSkillData.suitchargerCapacity;
+	m_iJuice = (int)gSkillData.suitchargerCapacity;
 	pev->frame = 0;			
 }
 
@@ -182,7 +182,7 @@ void CRecharge::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE use
 
 void CRecharge::Recharge( void )
 {
-	m_iJuice = gSkillData.suitchargerCapacity;
+	m_iJuice = (int)gSkillData.suitchargerCapacity;
 	pev->frame = 0;	
 	SetThink( &CBaseEntity::SUB_DoNothing );
 }
@@ -195,7 +195,7 @@ void CRecharge::Off( void )
 
 	m_iOn = 0;
 
-	if( ( !m_iJuice ) &&  ( ( m_iReactivate = g_pGameRules->FlHEVChargerRechargeTime() ) > 0 ) )
+	if( ( !m_iJuice ) &&  ( ( m_iReactivate = (int)g_pGameRules->FlHEVChargerRechargeTime() ) > 0 ) )
 	{
 		pev->nextthink = pev->ltime + m_iReactivate;
 		SetThink( &CRecharge::Recharge );

@@ -248,7 +248,7 @@ void CProp::MaterialSoundPrecache( Materials precacheMaterial )
 
 	for( i = 0; i < soundCount; i++ )
 	{
-		PRECACHE_SOUND( (char *)pSoundList[i] );
+		PRECACHE_SOUND( pSoundList[i] );
 	}
 }
 
@@ -327,8 +327,8 @@ void CProp::Precache( void )
 	if( m_iszGibModel )
 		pGibName = STRING( m_iszGibModel );
 
-	m_idShard = PRECACHE_MODEL( (char *)pGibName );
-	PRECACHE_MODEL( (char *)STRING( pev->model ) );
+	m_idShard = PRECACHE_MODEL( pGibName );
+	PRECACHE_MODEL( STRING( pev->model ) );
 }
 
 void CProp::DamageSound( void )
