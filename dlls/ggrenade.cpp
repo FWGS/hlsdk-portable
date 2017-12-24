@@ -49,7 +49,7 @@ void CGrenade::Explode( Vector vecSrc, Vector vecAim )
 // UNDONE: temporary scorching for PreAlpha - find a less sleazy permenant solution.
 void CGrenade::Explode( TraceResult *pTrace, int bitsDamageType )
 {
-	float flRndSound;// sound randomizer
+	// float flRndSound;// sound randomizer
 
 	pev->model = iStringNull;//invisible
 	pev->solid = SOLID_NOT;// intangible
@@ -102,7 +102,7 @@ void CGrenade::Explode( TraceResult *pTrace, int bitsDamageType )
 		UTIL_DecalTrace( pTrace, DECAL_SCORCH2 );
 	}
 
-	flRndSound = RANDOM_FLOAT( 0, 1 );
+	//flRndSound = RANDOM_FLOAT( 0, 1 );
 
 	switch( RANDOM_LONG( 0, 2 ) )
 	{
@@ -144,8 +144,8 @@ void CGrenade::Smoke( void )
 			WRITE_COORD( pev->origin.y );
 			WRITE_COORD( pev->origin.z );
 			WRITE_SHORT( g_sModelIndexSmoke );
-			WRITE_BYTE( ( pev->dmg - 50 ) * 0.80 ); // scale * 10
-			WRITE_BYTE( 12  ); // framerate
+			WRITE_BYTE( (int)( ( pev->dmg - 50 ) * 0.80 ) ); // scale * 10
+			WRITE_BYTE( 12 ); // framerate
 		MESSAGE_END();
 	}
 	UTIL_Remove( this );
@@ -165,7 +165,7 @@ void CGrenade::DetonateUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_T
 
 void CGrenade::PreDetonate( void )
 {
-	CSoundEnt::InsertSound ( bits_SOUND_DANGER, pev->origin, 400, 0.3 );
+	CSoundEnt::InsertSound( bits_SOUND_DANGER, pev->origin, 400, 0.3 );
 
 	SetThink( &CGrenade::Detonate );
 	pev->nextthink = gpGlobals->time + 1;
@@ -207,7 +207,7 @@ void CGrenade::DangerSoundThink( void )
 		return;
 	}
 
-	CSoundEnt::InsertSound ( bits_SOUND_DANGER, pev->origin + pev->velocity * 0.5, pev->velocity.Length(), 0.2 );
+	CSoundEnt::InsertSound( bits_SOUND_DANGER, pev->origin + pev->velocity * 0.5, (int)pev->velocity.Length(), 0.2 );
 	pev->nextthink = gpGlobals->time + 0.2;
 
 	if( pev->waterlevel != 0 )
@@ -253,7 +253,7 @@ void CGrenade::BounceTouch( CBaseEntity *pOther )
 		// go ahead and emit the danger sound.
 
 		// register a radius louder than the explosion, so we make sure everyone gets out of the way
-		CSoundEnt::InsertSound( bits_SOUND_DANGER, pev->origin, pev->dmg / 0.4, 0.3 );
+		CSoundEnt::InsertSound( bits_SOUND_DANGER, pev->origin, (int)( pev->dmg / 0.4 ), 0.3 );
 		m_fRegisteredSound = TRUE;
 	}
 

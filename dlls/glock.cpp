@@ -86,6 +86,18 @@ int CGlock::GetItemInfo( ItemInfo *p )
 	return 1;
 }
 
+int CGlock::AddToPlayer( CBasePlayer *pPlayer )
+{
+	if( CBasePlayerWeapon::AddToPlayer( pPlayer ) )
+	{
+		MESSAGE_BEGIN( MSG_ONE, gmsgWeapPickup, NULL, pPlayer->pev );
+			WRITE_BYTE( m_iId );
+		MESSAGE_END();
+		return TRUE;
+	}
+	return FALSE;
+}
+
 BOOL CGlock::Deploy()
 {
 	BOOL bResult = DefaultDeploy( "models/v_9mmhandgun.mdl", "models/p_9mmhandgun.mdl", GLOCK_DRAW, "onehanded", /*UseDecrement() ? 1 : 0*/ 0 );
@@ -142,7 +154,7 @@ void CGlock::GlockFire( float flSpread, float flCycleTime, BOOL fUseAutoAim )
 			Reload();
 		else
 		{
-			EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_WEAPON, "weapons/357_cock1.wav", 0.8, ATTN_NORM );
+			PlayEmptySound();
 			m_flNextPrimaryAttack = GetNextAttackDelay( 0.2 );
 		}
 
@@ -195,7 +207,7 @@ void CGlock::GlockFire( float flSpread, float flCycleTime, BOOL fUseAutoAim )
 
 	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), fUseAutoAim ? m_usFireGlock1 : m_usFireGlock2, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, vecDir.x, vecDir.y, 0, 0, ( m_iClip == 0 ) ? 1 : 0, 0 );
 
-	m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + flCycleTime;
+	m_flNextPrimaryAttack = m_flNextSecondaryAttack = GetNextAttackDelay( flCycleTime );
 
 	if( !m_iClip && m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0 )
 		// HEV suit - indicate out of ammo condition
@@ -206,8 +218,8 @@ void CGlock::GlockFire( float flSpread, float flCycleTime, BOOL fUseAutoAim )
 
 void CGlock::Reload( void )
 {
-	if( m_pPlayer->ammo_9mm <= 0 )
-		 return;
+	if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0 || m_iClip == GLOCK_MAX_CLIP )
+		return;
 
 	int iResult;
 

@@ -19,7 +19,9 @@
 //
 // CHud handles the message, calculation, and drawing the HUD
 //
-
+#pragma once
+#ifndef HUD_H
+#define HUD_H
 #define RGB_YELLOWISH 0x000080FF //0,128,255
 #define RGB_REDISH 0x00FF1010 //255,160,0
 #define RGB_GREENISH 0x0000A000 //0,160,0
@@ -480,7 +482,7 @@ public:
 	int Init( void );
 	static char *LocaliseTextString( const char *msg, char *dst_buffer, int buffer_size );
 	static char *BufferedLocaliseTextString( const char *msg );
-	char *LookupString( const char *msg_name, int *msg_dest = NULL );
+	const char *LookupString( const char *msg_name, int *msg_dest = NULL );
 	int MsgFunc_TextMsg( const char *pszName, int iSize, void *pbuf );
 };
 
@@ -541,8 +543,8 @@ public:
 	
 	//had to make these public so CHud could access them (to enable concussion icon)
 	//could use a friend declaration instead...
-	void EnableIcon( char *pszIconName, unsigned char red, unsigned char green, unsigned char blue );
-	void DisableIcon( char *pszIconName );
+	void EnableIcon( const char *pszIconName, unsigned char red, unsigned char green, unsigned char blue );
+	void DisableIcon( const char *pszIconName );
 
 private:
 	typedef struct
@@ -588,11 +590,11 @@ public:
 
 	int m_iFontHeight;
 	int DrawHudNumber( int x, int y, int iFlags, int iNumber, int r, int g, int b );
-	int DrawHudString( int x, int y, int iMaxX, char *szString, int r, int g, int b );
-	int DrawHudStringReverse( int xpos, int ypos, int iMinX, char *szString, int r, int g, int b );
+	int DrawHudString( int x, int y, int iMaxX, const char *szString, int r, int g, int b );
+	int DrawHudStringReverse( int xpos, int ypos, int iMinX, const char *szString, int r, int g, int b );
 	int DrawHudNumberString( int xpos, int ypos, int iMinX, int iNumber, int r, int g, int b );
 	int GetNumWidth( int iNumber, int iFlags );
-	int DrawHudStringLen( char *szIt );
+	int DrawHudStringLen( const char *szIt );
 	void DrawDarkRectangle( int x, int y, int wide, int tall );
 
 private:
@@ -677,3 +679,4 @@ extern int g_iTeamNumber;
 extern int g_iUser1;
 extern int g_iUser2;
 extern int g_iUser3;
+#endif

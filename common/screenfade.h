@@ -12,7 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
-
+#pragma once
 #ifndef SCREENFADE_H
 #define SCREENFADE_H
 
