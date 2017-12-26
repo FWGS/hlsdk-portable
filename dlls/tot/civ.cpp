@@ -100,10 +100,10 @@ class CDeadCivScientist : public CDeadScientist
 public:
 	void Spawn(void);
 
-	static char *m_szPoses[7];
+	static const char *m_szPoses[7];
 };
 
-char *CDeadCivScientist::m_szPoses[] = { "lying_on_back", "lying_on_stomach", "dead_sitting", "dead_hang", "dead_table1", "dead_table2", "dead_table3" };
+const char *CDeadCivScientist::m_szPoses[] = { "lying_on_back", "lying_on_stomach", "dead_sitting", "dead_hang", "dead_table1", "dead_table2", "dead_table3" };
 
 LINK_ENTITY_TO_CLASS(monster_civ_dead, CDeadCivScientist);
 
