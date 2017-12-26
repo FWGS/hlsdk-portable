@@ -25,6 +25,7 @@ public:
 	int Classify( void );
 	virtual void HandleAnimEvent( MonsterEvent_t *pEvent );
 	int IgnoreConditions( void );
+	virtual void Killed( entvars_t *pevAttacker, int iGib );
 
 	float m_flNextFlinch;
 

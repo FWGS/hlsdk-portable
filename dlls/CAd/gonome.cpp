@@ -156,6 +156,7 @@ public:
 	Schedule_t *GetSchedule();
 	Schedule_t *GetScheduleOfType( int Type );
 	int TakeDamage(entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType);
+	void Killed( entvars_t *pevAttacker, int iGib );
 
 	void SetActivity( Activity NewActivity );
 
@@ -298,6 +299,11 @@ void CGonome::SetActivity( Activity NewActivity )
 		// In case someone calls this with something other than the ideal activity
 		m_IdealActivity = m_Activity;
 	}
+}
+
+void CGonome::Killed( entvars_t *pevAttacker, int iGib )
+{
+	CBaseMonster::Killed( pevAttacker, iGib );
 }
 
 //=========================================================

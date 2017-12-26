@@ -121,6 +121,49 @@ int CZombie::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float 
 	return CBaseMonster::TakeDamage( pevInflictor, pevAttacker, flDamage, bitsDamageType );
 }
 
+void CZombie::Killed( entvars_t *pevAttacker, int iGib )
+{
+	if( !ShouldGibMonster( iGib ) )
+	{
+		Vector vecSpawn = pev->origin;
+		vecSpawn.z = pev->origin.z + 72;
+
+		pev->body = 1;
+
+		CBaseEntity *pCrab = CBaseEntity::Create( "monster_headcrab", vecSpawn, pev->angles, edict() );
+		pCrab->pev->spawnflags |= SF_MONSTER_FALL_TO_GROUND;
+
+		Vector vecJumpDir;
+		UTIL_MakeVectors( pev->angles );
+
+		if( m_hEnemy != 0 )
+		{
+			float gravity = CVAR_GET_FLOAT( "sv_gravity" );
+
+			float height = ( m_hEnemy->pev->origin.z + m_hEnemy->pev->view_ofs.z - pCrab->pev->origin.z );
+			if( height < 4 )
+				height = 4;
+			float speed = sqrt( 1.5 * gravity * height );
+			float time = speed / gravity;
+
+			vecJumpDir = ( m_hEnemy->pev->origin + m_hEnemy->pev->view_ofs - pCrab->pev->origin );
+			vecJumpDir = vecJumpDir * ( 1.0 / time );
+
+			vecJumpDir.z = speed;
+
+			float distance = vecJumpDir.Length();
+				
+			if( distance > 100 )
+				vecJumpDir = vecJumpDir * ( 100.0 / distance );
+		}
+		else
+			vecJumpDir = Vector( gpGlobals->v_forward.x, gpGlobals->v_forward.y, gpGlobals->v_up.z ) * 20;
+
+		pCrab->pev->velocity = vecJumpDir;
+	}
+	CBaseMonster::Killed( pevAttacker, iGib );
+}
+
 void CZombie::PainSound( void )
 {
 	int pitch = 95 + RANDOM_LONG( 0, 9 );
@@ -286,6 +329,8 @@ void CZombie::Precache()
 
 	for( i = 0; i < ARRAYSIZE( pPainSounds ); i++ )
 		PRECACHE_SOUND( pPainSounds[i] );
+
+	UTIL_PrecacheOther( "monster_headcrab" );	
 }
 
 //=========================================================
