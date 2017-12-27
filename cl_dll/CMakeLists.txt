@@ -28,7 +28,7 @@ set (CLDLL_LIBRARY client)
 
 add_definitions(-DCLIENT_WEAPONS -DCLIENT_DLL)
 
-if(NOT WIN32)
+if(NOT MSVC)
 	add_compile_options(-fno-exceptions) # GCC/Clang flag
 	add_compile_options(-Wno-write-strings) # GCC/Clang flag
 	add_definitions(-D_LINUX -DLINUX) # It seems enough for all non-Win32 systems
