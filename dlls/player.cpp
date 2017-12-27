@@ -3870,6 +3870,7 @@ void CBasePlayer::UpdateClientData( void )
 {
 	if( m_fInitHUD )
 	{
+		BOOL bFlashLightStatus;
 		m_fInitHUD = FALSE;
 		gInitHUD = FALSE;
 
@@ -3896,9 +3897,15 @@ void CBasePlayer::UpdateClientData( void )
 		FireTargets( "game_playerspawn", this, this, USE_TOGGLE, 0 );
 
 		// Send flashlight status
+		bFlashLightStatus = FlashlightIsOn();
+
 		MESSAGE_BEGIN( MSG_ONE, gmsgFlashlight, NULL, pev );
-			WRITE_BYTE( FlashlightIsOn() ? 1 : 0 );
+			WRITE_BYTE( bFlashLightStatus );
 			WRITE_BYTE( m_iFlashBattery );
+		MESSAGE_END();
+
+		MESSAGE_BEGIN( MSG_ONE, gmsgNightvision, NULL, pev );
+			WRITE_BYTE( bFlashLightStatus );
 		MESSAGE_END();
 
 		InitStatusBar();
