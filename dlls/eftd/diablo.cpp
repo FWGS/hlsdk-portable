@@ -121,7 +121,7 @@ void CDiablo::SetYawSpeed(void)
 {
 	int ys;
 
-	ys = 140; // 120
+	ys = 240; // 120
 
 #if 0
 	switch (m_Activity)
@@ -194,7 +194,7 @@ void CDiablo::HandleAnimEvent(MonsterEvent_t *pEvent)
 	{
 		// do stuff for this event.
 		//		ALERT( at_console, "Slash right!\n" );
-		CBaseEntity *pHurt = CheckTraceHullAttack(70, gSkillData.diabloDmgOneSlash * 2, DMG_SLASH | DMG_NEVERGIB);
+		CBaseEntity *pHurt = CheckTraceHullAttack(70, gSkillData.diabloDmgOneSlash * 3 + RANDOM_LONG( 0, 9 ), DMG_SLASH );
 		if (pHurt)
 		{
 			if (pHurt->pev->flags & (FL_MONSTER | FL_CLIENT))
@@ -218,7 +218,7 @@ void CDiablo::HandleAnimEvent(MonsterEvent_t *pEvent)
 	{
 		// do stuff for this event.
 		//		ALERT( at_console, "Slash left!\n" );
-		CBaseEntity *pHurt = CheckTraceHullAttack(70, gSkillData.diabloDmgOneSlash * 2, DMG_SLASH | DMG_NEVERGIB);
+		CBaseEntity *pHurt = CheckTraceHullAttack(70, gSkillData.diabloDmgOneSlash * 3 + RANDOM_LONG( 0, 9 ), DMG_SLASH );
 		if (pHurt)
 		{
 			if (pHurt->pev->flags & (FL_MONSTER | FL_CLIENT))
@@ -240,7 +240,7 @@ void CDiablo::HandleAnimEvent(MonsterEvent_t *pEvent)
 	case DIABLO_AE_ATTACK_BOTH:
 	{
 		// do stuff for this event.
-		CBaseEntity *pHurt = CheckTraceHullAttack(70, gSkillData.diabloDmgBothSlash * 2, DMG_SLASH | DMG_NEVERGIB);
+		CBaseEntity *pHurt = CheckTraceHullAttack(70, gSkillData.diabloDmgBothSlash * 2.2 + RANDOM_LONG( 0, 9 ), DMG_SLASH );
 		if (pHurt)
 		{
 			if (pHurt->pev->flags & (FL_MONSTER | FL_CLIENT))
@@ -277,7 +277,7 @@ void CDiablo::Spawn()
 	pev->solid = SOLID_SLIDEBOX;
 	pev->movetype = MOVETYPE_STEP;
 	m_bloodColor = BLOOD_COLOR_RED;
-	pev->health = gSkillData.diabloHealth * 2.8;
+	pev->health = gSkillData.diabloHealth * 4.0f;
 	pev->view_ofs = VEC_VIEW;// position of the eyes relative to monster's origin.
 	m_flFieldOfView = 0.5;// indicates the width of this monster's forward view cone ( as a dotproduct result )
 	m_MonsterState = MONSTERSTATE_NONE;
