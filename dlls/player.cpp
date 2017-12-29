@@ -415,44 +415,33 @@ void CBasePlayer::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector ve
 		TraceBleed( flDamage, vecDir, ptr, bitsDamageType );
 		AddMultiDamage( pevAttacker, this, flDamage, bitsDamageType );
 
-		if( bitsDamageType & ( DMG_BLAST | DMG_SHOCK | DMG_SONIC | DMG_ENERGYBEAM ) )
+		if( flDamage >= pev->health * 0.333 )
 		{
-			float flRand = RANDOM_FLOAT( 0, 1 );
-
-			// Blast damage always trigger pain sounds.
-			if( bitsDamageType & DMG_BLAST )
-				flRand = 0;
-
-			//
-			// 25% chances playing damage location based pain sound.
-			//
-			if( flRand <= 0.25 )
+			switch( ptr->iHitgroup )
 			{
-				switch( ptr->iHitgroup )
-				{
-				case HITGROUP_HEAD:
-					EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/pain/pain_head.wav", 1, ATTN_NORM );
-					break;
-				case HITGROUP_CHEST:
-					EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/pain/pain_chest.wav", 1, ATTN_NORM );
-					break;
-				case HITGROUP_STOMACH:
-					EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/pain/pain_stomach.wav", 1, ATTN_NORM );
-					break;
-				case HITGROUP_LEFTARM:
-				case HITGROUP_RIGHTARM:
-					EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/pain/pain_arm.wav", 1, ATTN_NORM );
-					break;
-				case HITGROUP_LEFTLEG:
-				case HITGROUP_RIGHTLEG:
-					EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/pain/pain_leg.wav", 1, ATTN_NORM );
-					break;
-				default:
-					EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/pain/spout.wav", 1, ATTN_NORM );
-					break;
-				}
+			case HITGROUP_HEAD:
+				EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/pain/pain_head.wav", 1, ATTN_NORM );
+				break;
+			case HITGROUP_CHEST:
+				EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/pain/pain_chest.wav", 1, ATTN_NORM );
+				break;
+			case HITGROUP_STOMACH:
+				EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/pain/pain_stomach.wav", 1, ATTN_NORM );
+				break;
+			case HITGROUP_LEFTARM:
+			case HITGROUP_RIGHTARM:
+				EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/pain/pain_arm.wav", 1, ATTN_NORM );
+				break;
+			case HITGROUP_LEFTLEG:
+			case HITGROUP_RIGHTLEG:
+				EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/pain/pain_leg.wav", 1, ATTN_NORM );
+				break;
+			default:
+				break;
 			}
 		}
+		else
+			EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/pain/spout.wav", 1, ATTN_NORM );
 	}
 }
 
