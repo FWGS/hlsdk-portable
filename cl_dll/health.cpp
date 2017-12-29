@@ -187,6 +187,9 @@ int CHudHealth::Draw( float flTime )
 	if( ( gHUD.m_iHideHUDDisplay & HIDEHUD_HEALTH ) || gEngfuncs.IsSpectateOnly() )
 		return 1;
 
+	if( !m_hSprite  )
+		m_hSprite = LoadSprite( "sprites/%d_pain.spr" );
+
 	if( !( gHUD.m_iWeaponBits & ( 1 << ( WEAPON_SUIT ) ) ) )
 		return 1;
 
@@ -201,8 +204,8 @@ int CHudHealth::Draw( float flTime )
 	y = ScreenHeight - HEALTH_BAR_BOTTOM - iHeight;
 
 	// Draw empty transparent bar.
-	r = g = b = 255;
-	a = 16;
+	r = g = b = 200;
+	a = 40;
 
 	FillRGBA( x, y, iWidth, iHeight, r, g, b, a );
 
@@ -227,7 +230,7 @@ int CHudHealth::Draw( float flTime )
 		a = MIN_ALPHA + ( m_fFade / FADE_TIME ) * 128;
 	}
 	else*/
-		a = MIN_ALPHA;
+		a = MIN_ALPHA * 2 - 10;
 
 	iHeight = ( m_iHealth * HEALTH_BAR_HEIGHT ) / 100;
 
