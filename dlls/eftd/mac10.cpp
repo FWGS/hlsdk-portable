@@ -90,18 +90,22 @@ int CMac10::GetItemInfo(ItemInfo *p)
 	return 1;
 }
 
-BOOL CMac10::Deploy()
+BOOL CMac10::AddToPlayer( CBasePlayer *pPlayer )
 {
-	BOOL bResult = DefaultDeploy("models/v_mac10.mdl", "models/p_9mmAR.mdl", MAC10_DEPLOY, "mac10");
-
-	if ( bResult )
+	if( CBasePlayerWeapon::AddToPlayer( pPlayer ) )
 	{
-		m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.8;
+		MESSAGE_BEGIN( MSG_ONE, gmsgWeapPickup, NULL, pPlayer->pev );
+			WRITE_BYTE( m_iId );
+		MESSAGE_END();
+		return TRUE;
 	}
-
-	return bResult;
+	return FALSE;
 }
 
+BOOL CMac10::Deploy()
+{
+	return DefaultDeploy("models/v_mac10.mdl", "models/p_9mmAR.mdl", MAC10_DEPLOY, "mac10");
+}
 
 void CMac10::PrimaryAttack()
 {
@@ -158,10 +162,10 @@ void CMac10::PrimaryAttack()
 
 	PLAYBACK_EVENT_FULL(flags, m_pPlayer->edict(), m_usMac10, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, vecDir.x, vecDir.y, 0, 0, 0, 0);
 
-	m_flNextPrimaryAttack = GetNextAttackDelay(0.1);
+	m_flNextPrimaryAttack = GetNextAttackDelay(0.075);
 
 	if (m_flNextPrimaryAttack < UTIL_WeaponTimeBase())
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.1;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.075;
 
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat(m_pPlayer->random_seed, 10, 15);
 }
@@ -171,7 +175,7 @@ void CMac10::Reload(void)
 	if (m_pPlayer->ammo_mac10 <= 0)
 		return;
 
-	DefaultReload(MAC10_MAX_CLIP, MAC10_RELOAD, 2.7);
+	DefaultReload(MAC10_MAX_CLIP, MAC10_RELOAD, 3.2);
 }
 
 

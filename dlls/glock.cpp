@@ -100,15 +100,7 @@ int CGlock::AddToPlayer( CBasePlayer *pPlayer )
 
 BOOL CGlock::Deploy()
 {
-	BOOL bResult = DefaultDeploy( "models/v_9mmhandgun.mdl", "models/p_9mmhandgun.mdl", GLOCK_DRAW, "onehanded", /*UseDecrement() ? 1 : 0*/ 0 );
-
-	if( bResult )
-	{
-		m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.85f;
-		m_fInAttack = 0;
-	}
-
-	return bResult;
+	return DefaultDeploy( "models/v_9mmhandgun.mdl", "models/p_9mmhandgun.mdl", GLOCK_DRAW, "onehanded", /*UseDecrement() ? 1 : 0*/ 0 );
 }
 
 void CGlock::Holster(int skiplocal /*= 0*/)
@@ -139,7 +131,7 @@ void CGlock::PrimaryAttack( void )
 		flSpread = 0.03490;
 	}
 
-	GlockFire( flSpread, 0.2, TRUE );
+	GlockFire( flSpread, 0.18, TRUE );
 }
 
 void CGlock::GlockFire( float flSpread, float flCycleTime, BOOL fUseAutoAim )
@@ -224,9 +216,9 @@ void CGlock::Reload( void )
 	int iResult;
 
 	if( m_iClip == 0 )
-		iResult = DefaultReload( GLOCK_MAX_CLIP, GLOCK_RELOAD, 2.2 );
+		iResult = DefaultReload( GLOCK_MAX_CLIP, GLOCK_RELOAD, 2.0 );
 	else
-		iResult = DefaultReload( GLOCK_MAX_CLIP, GLOCK_RELOAD_NOT_EMPTY, 2.2 );
+		iResult = DefaultReload( GLOCK_MAX_CLIP, GLOCK_RELOAD_NOT_EMPTY, 2.0 );
 
 	if( iResult )
 	{

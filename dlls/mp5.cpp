@@ -123,14 +123,7 @@ int CMP5::AddToPlayer( CBasePlayer *pPlayer )
 
 BOOL CMP5::Deploy()
 {
-	BOOL bResult = DefaultDeploy( "models/v_9mmAR.mdl", "models/p_9mmAR.mdl", MP5_DEPLOY, "mp5" );
-
-	if( bResult )
-	{
-		m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 1;
-	}
-
-	return bResult;
+	return DefaultDeploy( "models/v_9mmAR.mdl", "models/p_9mmAR.mdl", MP5_DEPLOY, "mp5" );
 }
 
 void CMP5::Holster( int skiplocal /*= 0*/ )
@@ -319,6 +312,12 @@ void CMP5::WeaponIdle( void )
 	SendWeaponAnim( iAnim );
 
 	m_flTimeWeaponIdle = UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 ); // how long till we do this again.
+}
+
+BOOL CMP5::IsUseable()
+{
+	//Can be used if the player has AR grenades. - Solokiller
+	return CBasePlayerWeapon::IsUseable() || m_pPlayer->m_rgAmmo[m_iSecondaryAmmoType] > 0;
 }
 
 void CMP5::UpdateSpot( void )

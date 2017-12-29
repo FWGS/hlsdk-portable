@@ -90,18 +90,22 @@ int CAK47::GetItemInfo(ItemInfo *p)
 	return 1;
 }
 
-BOOL CAK47::Deploy()
+BOOL CAK47::AddToPlayer( CBasePlayer *pPlayer )
 {
-	BOOL bResult = DefaultDeploy("models/v_ak47.mdl", "models/p_9mmAR.mdl", AK47_DEPLOY, "ak47");
-
-	if (bResult)
+	if( CBasePlayerWeapon::AddToPlayer( pPlayer ) )
 	{
-		m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 1;
+		MESSAGE_BEGIN( MSG_ONE, gmsgWeapPickup, NULL, pPlayer->pev );
+			WRITE_BYTE( m_iId );
+		MESSAGE_END();
+		return TRUE;
 	}
-
-	return bResult;
+	return FALSE;
 }
 
+BOOL CAK47::Deploy()
+{
+	return DefaultDeploy("models/v_ak47.mdl", "models/p_9mmAR.mdl", AK47_DEPLOY, "ak47");
+}
 
 void CAK47::PrimaryAttack()
 {
@@ -171,7 +175,7 @@ void CAK47::Reload(void)
 	if (m_pPlayer->ammo_ak47 <= 0)
 		return;
 
-	DefaultReload(AK47_MAX_CLIP, AK47_RELOAD, 2.8);
+	DefaultReload(AK47_MAX_CLIP, AK47_RELOAD, 2.0);
 }
 
 

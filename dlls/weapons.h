@@ -65,16 +65,16 @@ public:
 #define WEAPON_NONE			0
 #define WEAPON_CROWBAR			1
 #define	WEAPON_GLOCK			2
-#define WEAPON_MP5			3
-#define WEAPON_CROSSBOW			4
-#define WEAPON_SHOTGUN			5
-#define WEAPON_RPG			6
-#define WEAPON_HANDGRENADE		7
-#define WEAPON_TRIPMINE			8
-#define WEAPON_SATCHEL			9
+#define WEAPON_AK47			3
+#define WEAPON_MP5			4
+#define WEAPON_HANDGRENADE		5
+#define WEAPON_CROSSBOW			6
+#define WEAPON_SHOTGUN			7
+#define WEAPON_RPG			8
+#define WEAPON_MAC10			9
 #define WEAPON_SNARK			10
-#define WEAPON_MAC10			11
-#define WEAPON_AK47			12
+#define WEAPON_TRIPMINE			11
+#define WEAPON_SATCHEL			12
 
 #define WEAPON_ALLWEAPONS		(~(1<<WEAPON_SUIT))
 
@@ -100,7 +100,7 @@ public:
 #define SATCHEL_WEIGHT		-10
 #define TRIPMINE_WEIGHT		-10
 #define MAC10_WEIGHT		10
-#define AK47_WEIGHT			15
+#define AK47_WEIGHT			17
 
 // weapon clip/carry ammo capacities
 #define	_9MM_MAX_CARRY			210
@@ -571,6 +571,7 @@ public:
 	BOOL Deploy( void );
 	void Reload( void );
 	void WeaponIdle( void );
+	BOOL IsUseable();
 	float m_flNextAnimTime;
 	int m_iShell;
 
@@ -1017,37 +1018,39 @@ private:
 	unsigned short m_usSnarkFire;
 };
 
-class CAK47 : public CMP5
+class CAK47 : public CBasePlayerWeapon
 {
 public:
 	void Spawn( void );
 	void Precache( void );
 	int GetItemInfo( ItemInfo *p );
+	BOOL AddToPlayer( CBasePlayer *pPlayer );
 
 	void PrimaryAttack( void );
-	void SecondaryAttack( void ) {}
 	BOOL Deploy( void );
 	void Reload( void );
 	void WeaponIdle( void );
 
 private:
+	int m_iShell;
 	unsigned short m_usAK47;
 };
 
-class CMac10 : public CMP5
+class CMac10 : public CBasePlayerWeapon
 {
 public:
 	void Spawn( void );
 	void Precache( void );
 	int GetItemInfo( ItemInfo *p );
+	BOOL AddToPlayer( CBasePlayer *pPlayer );
 
 	void PrimaryAttack( void );
-	void SecondaryAttack( void ) {}
 	BOOL Deploy( void );
 	void Reload( void );
 	void WeaponIdle( void );
 
 private:
+	int m_iShell;
 	unsigned short m_usMac10;
 };
 #endif // WEAPONS_H
