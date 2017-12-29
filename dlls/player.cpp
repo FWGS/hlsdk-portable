@@ -3464,45 +3464,6 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 
 	switch( iImpulse )
 	{
-	case 76:
-		if( !giPrecacheGrunt )
-		{
-			giPrecacheGrunt = 1;
-			ALERT( at_console, "You must now restart to use Grunt-o-matic.\n" );
-		}
-		else
-		{
-			UTIL_MakeVectors( Vector( 0, pev->v_angle.y, 0 ) );
-			Create( "monster_human_grunt", pev->origin + gpGlobals->v_forward * 128, pev->angles );
-		}
-		break;
-	case 101:
-		GiveNamedItem( "item_suit" );
-		GiveNamedItem( "item_battery" );
-		GiveNamedItem( "weapon_crowbar" );
-		GiveNamedItem( "weapon_9mmhandgun" );
-		GiveNamedItem( "ammo_9mmclip" );
-		GiveNamedItem( "weapon_shotgun" );
-		GiveNamedItem( "ammo_buckshot" );
-		GiveNamedItem( "weapon_9mmAR" );
-		GiveNamedItem( "ammo_9mmAR" );
-		GiveNamedItem( "ammo_ARgrenades" );
-		GiveNamedItem( "weapon_handgrenade" );
-		GiveNamedItem( "weapon_tripmine" );
-		GiveNamedItem( "weapon_crossbow" );
-		GiveNamedItem( "ammo_crossbow" );
-		GiveNamedItem( "weapon_rpg" );
-		GiveNamedItem( "ammo_rpgclip" );
-		GiveNamedItem( "weapon_satchel" );
-		GiveNamedItem( "weapon_snark" );
-
-		GiveNamedItem( "weapon_ak47" );
-		GiveNamedItem( "ammo_ak47" );
-		GiveNamedItem( "weapon_mac10" );
-		GiveNamedItem( "ammo_mac10" );
-
-		gEvilImpulse101 = FALSE;
-		break;
 	case 102:
 		// Gibbage!!!
 		CGib::SpawnRandomGibs( pev, 1, 1 );

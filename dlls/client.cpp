@@ -487,6 +487,7 @@ called each time a player uses a "cmd" command
 ============
 */
 extern float g_flWeaponCheat;
+extern int gEvilImpulse101;
 
 // Use CMD_ARGV,  CMD_ARGV, and CMD_ARGC to get pointers the character string command.
 void ClientCommand( edict_t *pEntity )
@@ -518,6 +519,33 @@ void ClientCommand( edict_t *pEntity )
 		{
 			int iszItem = ALLOC_STRING( CMD_ARGV( 1 ) );	// Make a copy of the classname
 			GetClassPtr( (CBasePlayer *)pev )->GiveNamedItem( STRING( iszItem ) );
+		}
+	}
+	else if( FStrEq( pcmd, "imacheater" ) )
+	{
+		if( g_flWeaponCheat != 0.0 )
+		{
+			CBasePlayer *pPlayer = GetClassPtr( (CBasePlayer *)pev );
+			gEvilImpulse101 = TRUE;
+			pPlayer->GiveNamedItem( "item_suit" );
+			pPlayer->GiveNamedItem( "item_battery" );
+			pPlayer->GiveNamedItem( "weapon_crowbar" );
+			pPlayer->GiveNamedItem( "weapon_9mmhandgun" );
+			pPlayer->GiveNamedItem( "ammo_9mmclip" );
+			pPlayer->GiveNamedItem( "weapon_shotgun" );
+			pPlayer->GiveNamedItem( "ammo_buckshot" );
+			pPlayer->GiveNamedItem( "weapon_9mmAR" );
+			pPlayer->GiveNamedItem( "ammo_9mmAR" );
+			pPlayer->GiveNamedItem( "ammo_ARgrenades" );
+			pPlayer->GiveNamedItem( "weapon_crossbow" );
+			pPlayer->GiveNamedItem( "ammo_crossbow" );
+			pPlayer->GiveNamedItem( "weapon_satchel" );
+			pPlayer->GiveNamedItem( "weapon_snark" );
+			pPlayer->GiveNamedItem( "weapon_ak47" );
+			pPlayer->GiveNamedItem( "ammo_ak47" );
+			pPlayer->GiveNamedItem( "weapon_mac10" );
+			pPlayer->GiveNamedItem( "ammo_mac10" );
+			gEvilImpulse101 = FALSE;
 		}
 	}
 	else if( FStrEq( pcmd, "fire" ) )
