@@ -455,18 +455,6 @@ void CBasePlayer::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector ve
 #define ARMOR_RATIO	0.2	// Armor Takes 80% of the damage
 #define ARMOR_BONUS	0.5	// Each Point of Armor is work 1/x points of health
 
-// Damage values for determine the amount of fade to apply.
-#define DAMAGE_FADE_MIN			0
-#define DAMAGE_FADE_MAX			100
-
-// Alpha value for damage hold.
-#define DAMAGE_ALPHA_MIN		20
-#define DAMAGE_ALPHA_MAX		255
-
-// Amount of time to hold fade effect.
-#define DAMAGE_HOLD_MIN			0.5
-#define DAMAGE_HOLD_MAX			0.8
-
 int CBasePlayer::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )
 {
 	// have suit diagnose the problem - ie: report damage type
@@ -529,54 +517,10 @@ int CBasePlayer::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 	}
 
 	// Fade the screen.
-	if( flDamage > DAMAGE_FADE_MIN && !( bitsDamageType & ( DMG_DROWN ) ) )
-	{
-		// ALERT( at_console, "Damage: %f\n", flDamage );
-
-		// if the damage amount is superior to our health,
-		// completely fade the screen.
-		if( flDamage >= pev->health )
-		{
-			UTIL_ScreenFade( this, Vector( 128, 0, 0 ), 0.8f, 0, 255, FFADE_IN );
-		}
-		else
-		{
-			float flDmg = flDamage;
-
-			// Clamp damage fade amount.
-			if( flDmg > DAMAGE_FADE_MAX )
-				flDmg = DAMAGE_FADE_MAX;
-
-			// ALERT( at_console, "Resulting Damage: %f\n", flDmg );
-
-			// Calculate fade hold based on damage amount.
-			float fadehold;
-			fadehold = DAMAGE_HOLD_MIN + ( ( flDmg * ( DAMAGE_HOLD_MAX - DAMAGE_HOLD_MIN ) ) / DAMAGE_FADE_MAX );
-
-			// Clamp final fade hold value.
-			if( fadehold < DAMAGE_HOLD_MIN )
-				fadehold = DAMAGE_HOLD_MIN;
-			else if( fadehold > DAMAGE_HOLD_MAX )
-				fadehold = DAMAGE_HOLD_MAX;
-
-			// ALERT( at_console, "Resulting fadehold: %f\n", fadehold );
-
-			// Calculate alpha based on damage amount.
-			int alpha;
-			alpha = DAMAGE_ALPHA_MIN + ( ( flDmg * ( DAMAGE_ALPHA_MAX - DAMAGE_ALPHA_MIN ) ) / DAMAGE_FADE_MAX );
-
-			// Clamp final alpha value.
-			if( alpha < DAMAGE_ALPHA_MIN )
-				alpha = DAMAGE_ALPHA_MIN;
-			else if( alpha > DAMAGE_ALPHA_MAX )
-				alpha = DAMAGE_ALPHA_MAX;
-
-			// ALERT( at_console, "Resulting alpha: %d\n", alpha );
-
-			// Send screen fade.
-			UTIL_ScreenFade( this, Vector( 128, 0, 0 ), 0.8f, fadehold, alpha, FFADE_IN );
-		}
-	}
+	if( flDamage >= pev->health && !g_pGameRules->IsMultiplayer() )
+		UTIL_ScreenFade( this, Vector( 128, 0, 0 ), 0.8f, 0, 255, FFADE_IN );
+	else
+		UTIL_ScreenFade( this, Vector( 128, 0, 0 ), 1.0f, 1.0f, Q_min( flDamage * 3, 255 ), FFADE_IN );
 
 	// this cast to INT is critical!!! If a player ends up with 0.5 health, the engine will get that
 	// as an int (zero) and think the player is dead! (this will incite a clientside screentilt, etc)
