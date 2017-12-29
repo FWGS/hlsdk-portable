@@ -881,13 +881,13 @@ void CHGrunt::ShootAK47( Vector vecSpread )
 	switch( RANDOM_LONG( 0, 2 ) )
 	{
 	case 0:
-		EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "weapons/Hks1.wav", 1, ATTN_NORM );
+		EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "weapons/ak1.wav", 1, ATTN_NORM );
 		break;
 	case 1:
-		EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "weapons/Hks2.wav", 1, ATTN_NORM );
+		EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "weapons/ak2.wav", 1, ATTN_NORM );
 		break;
 	case 2:
-		EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "weapons/Hks3.wav", 1, ATTN_NORM );
+		EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "weapons/ak3.wav", 1, ATTN_NORM );
 		break;
 	}
 }
@@ -1226,9 +1226,9 @@ void CHGrunt::Precache()
 
 	PRECACHE_SOUND( "zombie/claw_miss2.wav" );// because we use the basemonster SWIPE animation event
 
-	PRECACHE_SOUND( "weapons/Hks1.wav" );
-	PRECACHE_SOUND( "weapons/Hks2.wav" );
-	PRECACHE_SOUND( "weapons/Hks3.wav" );
+	PRECACHE_SOUND( "weapons/ak1.wav" );
+	PRECACHE_SOUND( "weapons/ak2.wav" );
+	PRECACHE_SOUND( "weapons/ak3.wav" );
 
 	PRECACHE_SOUND( "weapons/mac1.wav" );
 	PRECACHE_SOUND( "weapons/mac2.wav" );
