@@ -137,7 +137,10 @@ SpawnBlood
 */
 void SpawnBlood( Vector vecSpot, int bloodColor, float flDamage )
 {
-	UTIL_BloodDrips( vecSpot, g_vecAttackDir, bloodColor, (int)flDamage );
+	if( bloodColor == BLOOD_COLOR_RED )
+		bloodColor = 73;
+	UTIL_BloodDrips( vecSpot, g_vecAttackDir, bloodColor, (int)flDamage * 3 );
+	UTIL_BloodStream( vecSpot, gpGlobals->v_forward * 2 - gpGlobals->v_up * 35, bloodColor, (int)flDamage );
 }
 
 int DamageDecal( CBaseEntity *pEntity, int bitsDamageType )

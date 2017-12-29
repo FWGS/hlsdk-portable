@@ -243,6 +243,9 @@ void CGib::SpawnRandomGibs( entvars_t *pevVictim, int cGibs, int human )
 				pGib->pev->velocity = pGib->pev->velocity * 4;
 			}
 
+			UTIL_BloodStream( pGib->pev->origin, UTIL_RandomBloodVector(), pGib->m_bloodColor, 100 );
+			UTIL_BloodDrips( pGib->pev->origin, g_vecZero, pGib->m_bloodColor, RANDOM_LONG( 20, 60 ) );
+
 			pGib->pev->solid = SOLID_BBOX;
 			UTIL_SetSize( pGib->pev, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ) );
 		}
@@ -1336,9 +1339,6 @@ void CBaseMonster::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector v
 		SpawnBlood( ptr->vecEndPos, BloodColor(), flDamage );// a little surface blood.
 		TraceBleed( flDamage, vecDir, ptr, bitsDamageType );
 		AddMultiDamage( pevAttacker, this, flDamage, bitsDamageType );
-
-		// Spawn blood stream.
-		UTIL_BloodStream( ptr->vecEndPos, -vecDir, ( BloodColor() == BLOOD_COLOR_RED ) ? 70 : BloodColor(), RANDOM_LONG( 4, 5 ) * 10 );
 	}
 }
 
