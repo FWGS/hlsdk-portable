@@ -140,15 +140,13 @@ void CMac10::PrimaryAttack()
 	Vector vecDir;
 	Vector vecSpread;
 
-	// Allow for higher accuracy when the player is crouching.
-	if (m_pPlayer->pev->flags & FL_DUCKING)
-	{
-		vecSpread = VECTOR_CONE_1DEGREES;
-	}
-	else
-	{
-		vecSpread = VECTOR_CONE_4DEGREES;
-	}
+	vecSpread = Vector( m_pPlayer->m_flBulletSpreadCoefficient * 1.2 + 0.03, m_pPlayer->m_flBulletSpreadCoefficient * 0.9 + 0.02, 0 );
+
+	if( m_pPlayer->m_flBulletSpreadCoefficient < 0.06 )
+		m_pPlayer->m_flBulletSpreadCoefficient += 0.0027;
+
+	if( m_pPlayer->m_flBulletSpreadCoefficient < 0.1 )
+		m_pPlayer->m_flBulletSpreadCoefficient += 0.002;
 
 	// single player spread
 	vecDir = m_pPlayer->FireBulletsPlayer(1, vecSrc, vecAiming, vecSpread, 8192, BULLET_PLAYER_MAC10, 2, 0, m_pPlayer->pev, m_pPlayer->random_seed);

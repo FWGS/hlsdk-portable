@@ -325,6 +325,9 @@ public:
 
 	float m_flNextChatTime;
 
+	float m_flBulletSpreadCoefficient;
+	float m_flNextBulletSpreadRandTime;
+
 	bool m_bSentBhopcap; // If false, the player just joined and needs a bhopcap message.
 };
 

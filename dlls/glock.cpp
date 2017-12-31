@@ -109,8 +109,6 @@ void CGlock::Holster(int skiplocal /*= 0*/)
 
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
 	SendWeaponAnim( GLOCK_HOLSTER );
-
-	m_fInAttack = 0;
 }
 
 void CGlock::SecondaryAttack( void )
@@ -119,17 +117,7 @@ void CGlock::SecondaryAttack( void )
 
 void CGlock::PrimaryAttack( void )
 {
-	float flSpread;
-
-	// Allow for higher accuracy when the player is crouching.
-	if( m_pPlayer->pev->flags & FL_DUCKING )
-	{
-		flSpread = 0.00873;
-	}
-	else
-	{
-		flSpread = 0.03490;
-	}
+	float flSpread = 0;
 
 	GlockFire( flSpread, 0.18, TRUE );
 }
@@ -137,7 +125,7 @@ void CGlock::PrimaryAttack( void )
 void CGlock::GlockFire( float flSpread, float flCycleTime, BOOL fUseAutoAim )
 {
 	// Do not allow attack unless primary attack key was released.
-	if( m_fInAttack )
+	if( FBitSet ( m_pPlayer->m_afButtonLast, IN_ATTACK ) )
 		return;
 
 	if( m_iClip <= 0 )
@@ -152,9 +140,6 @@ void CGlock::GlockFire( float flSpread, float flCycleTime, BOOL fUseAutoAim )
 
 		return;
 	}
-
-	// Prevent from continuously refire.
-	m_fInAttack = 1;
 
 	m_iClip--;
 
@@ -184,6 +169,7 @@ void CGlock::GlockFire( float flSpread, float flCycleTime, BOOL fUseAutoAim )
 
 	Vector vecSrc = m_pPlayer->GetGunPosition();
 	Vector vecAiming;
+	Vector vecSpread;
 
 	if( fUseAutoAim )
 	{
@@ -194,8 +180,30 @@ void CGlock::GlockFire( float flSpread, float flCycleTime, BOOL fUseAutoAim )
 		vecAiming = gpGlobals->v_forward;
 	}
 
-	Vector vecDir;
-	vecDir = m_pPlayer->FireBulletsPlayer( 1, vecSrc, vecAiming, Vector( flSpread, flSpread, flSpread ), 8192, BULLET_PLAYER_9MM, 0, 0, m_pPlayer->pev, m_pPlayer->random_seed );
+	// Allow for higher accuracy when the player is crouching.
+	if( m_pPlayer->pev->flags & FL_DUCKING )
+	{
+		vecSpread = Vector( m_pPlayer->m_flBulletSpreadCoefficient * 2.3 + 0.012, m_pPlayer->m_flBulletSpreadCoefficient * 1.5 + 0.01, 0 );
+		if( m_pPlayer->m_flBulletSpreadCoefficient < 0.05 )
+		m_pPlayer->m_flBulletSpreadCoefficient += 0.003;
+	}
+	else
+	{
+		if( m_pPlayer->pev->button & IN_JUMP )
+		{
+			vecSpread = Vector( m_pPlayer->m_flBulletSpreadCoefficient * 3.0 + 0.065, m_pPlayer->m_flBulletSpreadCoefficient * 2.0 + 0.055, 0 );
+			if( m_pPlayer->m_flBulletSpreadCoefficient < 0.06 )
+				m_pPlayer->m_flBulletSpreadCoefficient += 0.0045;
+		}
+		else
+		{
+			vecSpread = Vector( m_pPlayer->m_flBulletSpreadCoefficient * 8.0 + 0.1, m_pPlayer->m_flBulletSpreadCoefficient * 5.0 + 0.1, 0 );
+			if( m_pPlayer->m_flBulletSpreadCoefficient < 0.8 )
+			m_pPlayer->m_flBulletSpreadCoefficient += 0.009;
+		}
+	}
+
+	Vector vecDir = m_pPlayer->FireBulletsPlayer( 1, vecSrc, vecAiming, vecSpread, 8192, BULLET_PLAYER_9MM, 0, 0, m_pPlayer->pev, m_pPlayer->random_seed );
 
 	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), fUseAutoAim ? m_usFireGlock1 : m_usFireGlock2, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, vecDir.x, vecDir.y, 0, 0, ( m_iClip == 0 ) ? 1 : 0, 0 );
 
@@ -223,9 +231,6 @@ void CGlock::Reload( void )
 	if( iResult )
 	{
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
-
-		// Unblock primary attack.
-		m_fInAttack = 0;
 	}
 }
 
@@ -234,12 +239,6 @@ void CGlock::WeaponIdle( void )
 	ResetEmptySound();
 
 	m_pPlayer->GetAutoaimVector( AUTOAIM_10DEGREES );
-
-	//
-	// Unblock primary attack.
-	// This will only occur if players released primary attack key.
-	//
-	m_fInAttack = 0;
 
 	if( m_flTimeWeaponIdle > UTIL_WeaponTimeBase() )
 		return;

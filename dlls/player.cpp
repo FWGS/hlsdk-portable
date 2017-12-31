@@ -2621,6 +2621,40 @@ pt_end:
 		if( m_flAmmoStartCharge < -0.001 )
 			m_flAmmoStartCharge = -0.001;
 	}
+
+	if( pev->flags & FL_DUCKING )
+	{
+		if( gpGlobals->frametime > m_flNextBulletSpreadRandTime + 0.44 )
+		{
+			m_flNextBulletSpreadRandTime = gpGlobals->frametime;
+			m_flBulletSpreadCoefficient -= 0.0025;
+			if( !( m_afButtonPressed | m_afButtonReleased ) )
+				m_flBulletSpreadCoefficient -= 0.015;
+		}
+	}
+	else
+	{                       
+		if( pev->button & IN_JUMP )
+		{
+			if( gpGlobals->frametime > m_flNextBulletSpreadRandTime + 0.6 )
+			{
+				m_flNextBulletSpreadRandTime = gpGlobals->frametime;
+				m_flBulletSpreadCoefficient -= 0.0015;
+				if( !( m_afButtonPressed | m_afButtonReleased ) )
+					m_flBulletSpreadCoefficient -= 0.004;
+			}
+		}
+		else if( gpGlobals->frametime > m_flNextBulletSpreadRandTime + 0.47 )
+		{
+			m_flNextBulletSpreadRandTime = gpGlobals->frametime;
+			m_flBulletSpreadCoefficient -= 0.001;
+			if( !( m_afButtonPressed | m_afButtonReleased ) )
+				m_flBulletSpreadCoefficient -= 0.012;
+		}
+	}
+
+	if( m_flBulletSpreadCoefficient < 0.001 )
+		m_flBulletSpreadCoefficient = 0.001;
 #else
 	return;
 #endif

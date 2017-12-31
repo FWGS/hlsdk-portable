@@ -141,13 +141,26 @@ void CAK47::PrimaryAttack()
 	Vector vecSpread;
 
 	// Allow for higher accuracy when the player is crouching.
-	if (m_pPlayer->pev->flags & FL_DUCKING)
+	if( m_pPlayer->pev->flags & FL_DUCKING )
 	{
-		vecSpread = VECTOR_CONE_2DEGREES;
+		vecSpread = Vector( m_pPlayer->m_flBulletSpreadCoefficient * 1.6 + 0.01, m_pPlayer->m_flBulletSpreadCoefficient * 1.4 + 0.01, 0 );
+		if( m_pPlayer->m_flBulletSpreadCoefficient < 0.045 )
+			m_pPlayer->m_flBulletSpreadCoefficient += 0.006;
 	}
 	else
 	{
-		vecSpread = VECTOR_CONE_5DEGREES;
+		if( m_pPlayer->pev->button & IN_JUMP )
+		{
+			vecSpread = Vector( m_pPlayer->m_flBulletSpreadCoefficient * 2.4 + 0.065, m_pPlayer->m_flBulletSpreadCoefficient * 2.1 + 0.05, 0 );
+			if( m_pPlayer->m_flBulletSpreadCoefficient < 0.08 )
+				m_pPlayer->m_flBulletSpreadCoefficient += 0.009;
+		}
+		else
+		{
+			vecSpread = Vector( m_pPlayer->m_flBulletSpreadCoefficient * 8.0 + 0.3, m_pPlayer->m_flBulletSpreadCoefficient * 6.0 + 0.2, 0 );
+			if( m_pPlayer->m_flBulletSpreadCoefficient < 0.1 )
+				m_pPlayer->m_flBulletSpreadCoefficient += 0.012;
+		}
 	}
 
 	// single player spread
