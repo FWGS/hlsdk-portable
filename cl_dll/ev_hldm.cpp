@@ -311,12 +311,12 @@ void EV_HLDM_GunshotDecalTrace( pmtrace_t *pTrace, char *decalName )
 			TEMPENTITY* pSmoke = gEngfuncs.pEfxAPI->R_TempSprite(
 				position, 				// position
 				velocity,				// velocity
-				gEngfuncs.pfnRandomFloat( 30, 35 ) / 100, // scale
+				0.4, // scale
 				modelindex, 				// model index
 				kRenderNormal, 				// rendermode
 				kRenderFxNoDissipation, 		// renderfx
-				gEngfuncs.pfnRandomFloat( 0.25, 0.5 ), 	// alpha
-				0.01, 					// life
+				1.0, 	// alpha
+				0.3, 					// life
 				FTENT_SPRCYCLE | FTENT_FADEOUT);	// flags
 
 			if( pSmoke )
