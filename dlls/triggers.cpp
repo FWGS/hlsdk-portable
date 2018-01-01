@@ -1613,7 +1613,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 
 	if( !strcmp( m_szMapName, mp_coop_disabledmap.string ) )
 	{
-		UTIL_CoopPlayerMessage( pActivator, 0, 5, 0xFF000FF, 0xFFFF00FF, -1, -1, "MAP %S IS DISABLED", m_szMapName );
+		UTIL_CoopPlayerMessage( pActivator, 1, 5, 0xFF000FF, 0xFFFF00FF, 0, 0.7, "MAP %S IS DISABLED", m_szMapName );
 		return;
 	}
 	// forget touch by some fool

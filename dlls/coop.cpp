@@ -473,7 +473,7 @@ void UTIL_CoopCheckpointMenu( CBasePlayer *pPlayer )
 				"New checkpoint"
 			};
 			int i;
-			if( pPlayer->gravgunmod_data.m_state == STATE_SPECTATOR || pPlayer->gravgunmod_data.m_state == STATE_SPECTATOR_BEGIN )
+			if( pPlayer->gravgunmod_data.m_state == STATE_SPECTATOR || pPlayer->gravgunmod_data.m_state == STATE_SPECTATOR_BEGIN || pPlayer->pev->health <= 0  )
 				menu[0] = "Just spawn";
 			for( i = 1; g_checkpoints[i-1].time; i++ )
 				menu[i] = g_checkpoints[i-1].str;
@@ -493,7 +493,7 @@ void UTIL_CoopNewCheckpoint( entvars_t *pevPlayer )
 	snprintf( g_checkpoints[0].str, 31,  "%5s %d", STRING( pevPlayer->netname ), (int)( gpGlobals->time / 60 ) );
 	g_checkpoints[0].origin = pevPlayer->origin;
 	g_checkpoints[0].angles = pevPlayer->angles;
-	UTIL_CoopPrintMessage( "New checkpoint by %s!\n", STRING( pevPlayer->netname ) );
+	UTIL_CoopHudMessage(  1, 5, 0xFF0000FF, 0xFF0000FF, 0, 0.7, "New checkpoint by %s!\n", STRING( pevPlayer->netname ) );
 
 }
 
@@ -512,7 +512,7 @@ void UTIL_CoopVoteMenu( CBasePlayer *pPlayer )
 	}
 	if( count < 4 )
 	{
-		UTIL_CoopPlayerMessage( pPlayer, 0, 5, 0xFFFFFFFF, 0xFFFFFFFF, -1, -1, "Need at least 4 players to vote changelevel!\n");
+		UTIL_CoopPlayerMessage( pPlayer, 1, 5, 0xFFFFFFFF, 0xFFFFFFFF, 0, 0.7, "Need at least 4 players to vote changelevel!\n");
 		return;
 	}
 	g_GlobalMenu.VoteMenu(pPlayer);
@@ -552,6 +552,21 @@ void UTIL_CoopMenu( CBasePlayer *pPlayer )
 	}
 }
 
+
+bool UTIL_CoopPlayerDeath( CBasePlayer *pPlayer )
+{
+
+	if( pPlayer->gravgunmod_data.m_iMenuState == MENUSTATE_CHECKPOINT )
+		return true;
+
+	if( g_checkpoints[0].time )
+	{
+		UTIL_CoopCheckpointMenu( pPlayer );
+		return true;
+	}
+
+	return false;
+}
 
 void UTIL_CoopProcessMenu( CBasePlayer *pPlayer, int imenu )
 {
@@ -608,7 +623,7 @@ void UTIL_CoopProcessMenu( CBasePlayer *pPlayer, int imenu )
 				case MENUSTATE_CHECKPOINT:
 					if( imenu == 1 )
 					{
-						if( pPlayer->gravgunmod_data.m_state != STATE_SPAWNED )
+						if( pPlayer->gravgunmod_data.m_state != STATE_SPAWNED || ( pPlayer->pev->health <= 0 ) )
 							UTIL_SpawnPlayer( pPlayer );
 						else if( !UTIL_CoopIsBadPlayer( pPlayer ) )
 							UTIL_CoopNewCheckpoint( pPlayer->pev );
@@ -620,6 +635,7 @@ void UTIL_CoopProcessMenu( CBasePlayer *pPlayer, int imenu )
 						pPlayer->pev->origin = g_checkpoints[imenu-2].origin;
 						pPlayer->pev->angles = g_checkpoints[imenu-2].angles;
 					}
+					pPlayer->gravgunmod_data.m_iMenuState = MENUSTATE_NONE;
 				break;
 				case MENUSTATE_LOCAL_CONFIRM:
 					if( imenu - 1 == pPlayer->gravgunmod_data.m_iConfirmKey )
@@ -767,6 +783,13 @@ void CWeaponList::GiveToPlayer(CBasePlayer *pPlayer)
 void CWeaponList::AddWeapon( const char *classname )
 {
 	int i;
+
+	if( !strcmp( classname, "item_suit") )
+		return;
+
+	if( !strcmp( classname, "item_healthkit") )
+		return;
+
 	for(i = 0; i < m_iWeapons;i++)
 		if(!strcmp(weapons[i], classname))
 			return;
@@ -829,6 +852,7 @@ bool UTIL_CoopConfirmMenu(CBaseEntity *pTrigger, CBaseEntity *pActivator, int co
 		if( g_checkpoints[0].time && (g_checkpoints[0].origin - VecBModelOrigin(pTrigger->pev)).Length() > 150 )
 		{
 			g_GlobalMenu.m_iConfirm = 0;
+			UTIL_CoopPlayerMessage( pActivator,  1, 5, 0xFF0000FF, 0xFF0000FF, 0, 0.7, "Changelevel back locked by checkpoint\nCheckpoint here to activate trigger!");
 			return false;
 		}
 		//if( count2 < 2 )

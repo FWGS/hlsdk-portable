@@ -1282,6 +1282,10 @@ void CBasePlayer::PlayerDeathThink( void )
 		if( fAnyButtonDown )
 			return;
 
+
+		if( UTIL_CoopPlayerDeath( this ) )
+			return;
+
 		if( g_pGameRules->FPlayerCanRespawn( this ) )
 		{
 			m_fDeadTime = gpGlobals->time;
@@ -1290,6 +1294,7 @@ void CBasePlayer::PlayerDeathThink( void )
 
 		return;
 	}
+
 
 	// if the player has been dead for one second longer than allowed by forcerespawn,
 	// forcerespawn isn't on. Send the player off to an intermission camera until they

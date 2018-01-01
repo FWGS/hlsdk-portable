@@ -61,7 +61,7 @@ void UTIL_CoopApplyData( void );
 void UTIL_CoopPrintMessage( const char *format, ... );
 void UTIL_CoopHudMessage( int channel, float time, unsigned int color1, unsigned int color2, float x, float y,  const char *format, ... );
 void UTIL_CoopPlayerMessage( CBaseEntity *pPlayer, int channel, float time, unsigned int color1, unsigned int color2, float x, float y,  const char *format, ... );
-
+bool UTIL_CoopPlayerDeath( CBasePlayer *pPlayer );
 void COOP_RegisterCVars( void );
 
 #ifdef PLAYER_H
