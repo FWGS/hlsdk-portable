@@ -170,7 +170,7 @@ void CMac10::PrimaryAttack()
 
 void CMac10::Reload(void)
 {
-	if (m_pPlayer->ammo_mac10 <= 0)
+	if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0 || m_iClip == MAC10_MAX_CLIP )
 		return;
 
 	DefaultReload(MAC10_MAX_CLIP, MAC10_RELOAD, 3.2);

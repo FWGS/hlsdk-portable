@@ -1023,6 +1023,7 @@ class CAK47 : public CBasePlayerWeapon
 public:
 	void Spawn( void );
 	void Precache( void );
+	int iItemSlot( void ) { return 3; }
 	int GetItemInfo( ItemInfo *p );
 	BOOL AddToPlayer( CBasePlayer *pPlayer );
 
@@ -1031,6 +1032,14 @@ public:
 	void Reload( void );
 	void WeaponIdle( void );
 
+	BOOL UseDecrement( void )
+	{
+#if defined( CLIENT_WEAPONS )
+		return TRUE;
+#else
+		return FALSE;
+#endif
+	}
 private:
 	int m_iShell;
 	unsigned short m_usAK47;
@@ -1041,6 +1050,7 @@ class CMac10 : public CBasePlayerWeapon
 public:
 	void Spawn( void );
 	void Precache( void );
+	int iItemSlot( void ) { return 2; }
 	int GetItemInfo( ItemInfo *p );
 	BOOL AddToPlayer( CBasePlayer *pPlayer );
 
@@ -1049,6 +1059,14 @@ public:
 	void Reload( void );
 	void WeaponIdle( void );
 
+	BOOL UseDecrement( void )
+	{
+#if defined( CLIENT_WEAPONS )
+		return TRUE;
+#else
+		return FALSE;
+#endif
+	}
 private:
 	int m_iShell;
 	unsigned short m_usMac10;

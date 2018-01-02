@@ -187,9 +187,6 @@ int CHudHealth::Draw( float flTime )
 	if( ( gHUD.m_iHideHUDDisplay & HIDEHUD_HEALTH ) || gEngfuncs.IsSpectateOnly() )
 		return 1;
 
-	if( !m_hSprite  )
-		m_hSprite = LoadSprite( "sprites/%d_pain.spr" );
-
 	if( !( gHUD.m_iWeaponBits & ( 1 << ( WEAPON_SUIT ) ) ) )
 		return 1;
 

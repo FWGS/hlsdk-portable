@@ -185,7 +185,7 @@ void CAK47::PrimaryAttack()
 
 void CAK47::Reload(void)
 {
-	if (m_pPlayer->ammo_ak47 <= 0)
+	if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0 || m_iClip == AK47_MAX_CLIP )
 		return;
 
 	DefaultReload(AK47_MAX_CLIP, AK47_RELOAD, 2.0);
