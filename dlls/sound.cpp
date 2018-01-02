@@ -980,6 +980,80 @@ void CEnvSound::Spawn()
 	pev->nextthink = gpGlobals->time + RANDOM_FLOAT( 0.0, 0.5 ); 
 }
 
+//=====================
+//LRC - trigger_sound
+//=====================
+class CTriggerSound : public CBaseDelay
+{
+public:
+	void KeyValue( KeyValueData* pkvd );
+	void Spawn( void );
+	void Touch( CBaseEntity *pOther );
+
+	virtual int		Save( CSave &save );
+	virtual int		Restore( CRestore &restore );
+	static	TYPEDESCRIPTION m_SaveData[];
+	virtual int	ObjectCaps( void ) { return CBaseDelay :: ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
+
+	float m_flRoomtype;
+	string_t m_iszMaster;
+};
+
+LINK_ENTITY_TO_CLASS( trigger_sound, CTriggerSound );
+TYPEDESCRIPTION	CTriggerSound::m_SaveData[] = 
+{
+	DEFINE_FIELD( CTriggerSound, m_flRoomtype, FIELD_FLOAT ),
+	DEFINE_FIELD( CTriggerSound, m_iszMaster, FIELD_FLOAT ),
+};
+
+IMPLEMENT_SAVERESTORE( CTriggerSound, CBaseDelay );
+
+void CTriggerSound::KeyValue( KeyValueData *pkvd )
+{
+	if( FStrEq( pkvd->szKeyName, "roomtype" ) )
+	{
+		m_flRoomtype = atof( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if ( FStrEq(pkvd->szKeyName, "master" ) )
+	{
+		m_iszMaster = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else
+		CBaseEntity::KeyValue( pkvd );
+}
+
+void CTriggerSound::Touch( CBaseEntity *pOther )
+{
+	if( !UTIL_IsMasterTriggered( m_iszMaster, pOther ) ) return;
+
+	if( pOther->IsPlayer() )
+	{
+		CBasePlayer *pPlayer = (CBasePlayer*)pOther;
+		if( pPlayer->m_pentSndLast != this->edict() )
+		{
+			pPlayer->m_pentSndLast = ENT( pev );
+			pPlayer->m_flSndRoomtype = m_flRoomtype;
+			pPlayer->m_flSndRange = 0;
+
+			MESSAGE_BEGIN( MSG_ONE, SVC_ROOMTYPE, NULL, pPlayer->edict() );		// use the magic #1 for "one client"
+				WRITE_SHORT( (short)m_flRoomtype );					// sequence number
+			MESSAGE_END();
+
+			SUB_UseTargets( pPlayer, USE_TOGGLE, 0 );
+		}
+	}
+}
+
+void CTriggerSound::Spawn()
+{
+	pev->solid = SOLID_TRIGGER;
+	pev->movetype = MOVETYPE_NONE;
+	SET_MODEL( ENT( pev ), STRING( pev->model ) );    // set size and link into world
+	SetBits( pev->effects, EF_NODRAW );
+}
+
 // ==================== SENTENCE GROUPS, UTILITY FUNCTIONS  ======================================
 
 #define CSENTENCE_LRU_MAX	32		// max number of elements per sentence group
@@ -993,7 +1067,7 @@ typedef struct sentenceg
 	unsigned char rgblru[CSENTENCE_LRU_MAX];
 } SENTENCEG;
 
-#define CSENTENCEG_MAX 200					// max number of sentence groups
+#define CSENTENCEG_MAX 500					// max number of sentence groups
 // globals
 
 SENTENCEG rgsentenceg[CSENTENCEG_MAX];

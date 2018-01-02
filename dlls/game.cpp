@@ -276,7 +276,29 @@ cvar_t	sk_sentry_health1 = {"sk_sentry_health1","0"};
 cvar_t	sk_sentry_health2 = {"sk_sentry_health2","0"};
 cvar_t	sk_sentry_health3 = {"sk_sentry_health3","0"};
 
-// PLAYER WEAPONS
+// Alex begin
+// Kate
+cvar_t	sk_kate_health1	= {"sk_kate_health1","0"};
+cvar_t	sk_kate_health2	= {"sk_kate_health2","0"};
+cvar_t	sk_kate_health3	= {"sk_kate_health3","0"};
+
+// Panther
+cvar_t	sk_panther_health1 = {"sk_panther_health1","0"};
+cvar_t	sk_panther_health2 = {"sk_panther_health2","0"};
+cvar_t	sk_panther_health3 = {"sk_panther_health3","0"};
+
+cvar_t	sk_panther_dmg_claw1 = {"sk_panther_dmg_claw1","0"};
+cvar_t	sk_panther_dmg_claw2 = {"sk_panther_dmg_claw2","0"};
+cvar_t	sk_panther_dmg_claw3 = {"sk_panther_dmg_claw3","0"};
+
+cvar_t	sk_panther_dmg_clawrake1 = {"sk_panther_dmg_clawrake1","0"};
+cvar_t	sk_panther_dmg_clawrake2 = {"sk_panther_dmg_clawrake2","0"};
+cvar_t	sk_panther_dmg_clawrake3 = {"sk_panther_dmg_clawrake3","0"};
+
+cvar_t	sk_panther_dmg_zap1 = {"sk_panther_dmg_zap1","0"};
+cvar_t	sk_panther_dmg_zap2 = {"sk_panther_dmg_zap2","0"};
+cvar_t	sk_panther_dmg_zap3 = {"sk_panther_dmg_zap3","0"};
+// end Alex
 
 // Crowbar whack
 cvar_t	sk_plr_crowbar1 = {"sk_plr_crowbar1","0"};
@@ -360,6 +382,44 @@ cvar_t	sk_plr_tripmine1 = {"sk_plr_tripmine1","0"};
 cvar_t	sk_plr_tripmine2 = {"sk_plr_tripmine2","0"};
 cvar_t	sk_plr_tripmine3 = {"sk_plr_tripmine3","0"};
 
+// Alex begin
+// Toad
+cvar_t	sk_toad_health1 = {"sk_toad_health1","0"};
+cvar_t	sk_toad_health2 = {"sk_toad_health2","0"};
+cvar_t	sk_toad_health3 = {"sk_toad_health3","0"};
+ 
+cvar_t	sk_toad_dmg_bite1 = {"sk_toad_dmg_bite1","0"};
+cvar_t	sk_toad_dmg_bite2 = {"sk_toad_dmg_bite2","0"};
+cvar_t	sk_toad_dmg_bite3 = {"sk_toad_dmg_bite3","0"};
+
+cvar_t	sk_toad_dmg_pop1 = {"sk_toad_dmg_pop1","0"};
+cvar_t	sk_toad_dmg_pop2 = {"sk_toad_dmg_pop2","0"};
+cvar_t	sk_toad_dmg_pop3 = {"sk_toad_dmg_pop3","0"};
+// Alex end
+
+//Alex begin
+// poolstick
+cvar_t	sk_plr_poolstick1 = {"sk_plr_poolstick1","0"};
+cvar_t	sk_plr_poolstick2 = {"sk_plr_poolstick2","0"};
+cvar_t	sk_plr_poolstick3 = {"sk_plr_poolstick3","0"};
+//Alex end
+
+//Alex
+// beretta Round
+cvar_t	sk_plr_beretta_bullet1 = {"sk_plr_beretta_bullet1","0"};
+cvar_t	sk_plr_beretta_bullet2 = {"sk_plr_beretta_bullet2","0"};
+cvar_t	sk_plr_beretta_bullet3 = {"sk_plr_beretta_bullet3","0"};
+
+// 9mmm41a Round
+cvar_t	sk_plr_9mmM41A_bullet1 = {"sk_plr_9mmM41A_bullet1","0"};
+cvar_t	sk_plr_9mmM41A_bullet2 = {"sk_plr_9mmM41A_bullet2","0"};
+cvar_t	sk_plr_9mmM41A_bullet3 = {"sk_plr_9mmM41A_bullet3","0"};
+
+// 9mmm41a Grenade
+cvar_t	sk_plr_9mmM41A_grenade1 = {"sk_plr_9mmM41A_grenade1","0"};
+cvar_t	sk_plr_9mmM41A_grenade2 = {"sk_plr_9mmM41A_grenade2","0"};
+cvar_t	sk_plr_9mmM41A_grenade3 = {"sk_plr_9mmM41A_grenade3","0"};
+// Alex
 
 // WORLD WEAPONS
 cvar_t	sk_12mm_bullet1 = {"sk_12mm_bullet1","0"};
@@ -700,6 +760,27 @@ void GameDLLInit( void )
 	CVAR_REGISTER( &sk_sentry_health2 );// {"sk_sentry_health2","0"};
 	CVAR_REGISTER( &sk_sentry_health3 );// {"sk_sentry_health3","0"};
 
+	// Kate
+	CVAR_REGISTER ( &sk_kate_health1 );// {"sk_barney_health1","0"};
+	CVAR_REGISTER ( &sk_kate_health2 );// {"sk_barney_health2","0"};
+	CVAR_REGISTER ( &sk_kate_health3 );// {"sk_barney_health3","0"};
+
+	// Panther
+	CVAR_REGISTER( &sk_panther_health1 );// {"sk_panther_health1","0"};
+	CVAR_REGISTER( &sk_panther_health2 );// {"sk_panther_health2","0"};
+	CVAR_REGISTER( &sk_panther_health3 );// {"sk_panther_health3","0"};
+
+	CVAR_REGISTER( &sk_panther_dmg_claw1 );// {"sk_panther_dmg_claw1","0"};
+	CVAR_REGISTER( &sk_panther_dmg_claw2 );// {"sk_panther_dmg_claw2","0"};
+	CVAR_REGISTER( &sk_panther_dmg_claw3 );// {"sk_panther_dmg_claw3","0"};
+
+	CVAR_REGISTER( &sk_panther_dmg_clawrake1 );// {"sk_panther_dmg_clawrake1","0"};
+	CVAR_REGISTER( &sk_panther_dmg_clawrake2 );// {"sk_panther_dmg_clawrake2","0"};
+	CVAR_REGISTER( &sk_panther_dmg_clawrake3 );// {"sk_panther_dmg_clawrake3","0"};
+		
+	CVAR_REGISTER( &sk_panther_dmg_zap1 );// {"sk_panther_dmg_zap1","0"};
+	CVAR_REGISTER( &sk_panther_dmg_zap2 );// {"sk_panther_dmg_zap2","0"};
+	CVAR_REGISTER( &sk_panther_dmg_zap3 );// {"sk_panther_dmg_zap3","0"};
 
 	// PLAYER WEAPONS
 
@@ -775,6 +856,41 @@ void GameDLLInit( void )
 	CVAR_REGISTER( &sk_plr_tripmine1 );// {"sk_plr_tripmine1","0"};
 	CVAR_REGISTER( &sk_plr_tripmine2 );// {"sk_plr_tripmine2","0"};
 	CVAR_REGISTER( &sk_plr_tripmine3 );// {"sk_plr_tripmine3","0"};
+
+// Alex begin
+	// Toad
+	CVAR_REGISTER( &sk_toad_health1 );// {"sk_toad_health1","0"};
+	CVAR_REGISTER( &sk_toad_health2 );// {"sk_toad_health2","0"};
+	CVAR_REGISTER( &sk_toad_health3 );// {"sk_toad_health3","0"};
+
+	CVAR_REGISTER( &sk_toad_dmg_bite1 );// {"sk_toad_dmg_bite1","0"};
+	CVAR_REGISTER( &sk_toad_dmg_bite2 );// {"sk_toad_dmg_bite2","0"};
+	CVAR_REGISTER( &sk_toad_dmg_bite3 );// {"sk_toad_dmg_bite3","0"};
+ 
+	CVAR_REGISTER( &sk_toad_dmg_pop1 );// {"sk_snark_dmg_pop1","0"};
+	CVAR_REGISTER( &sk_toad_dmg_pop2 );// {"sk_snark_dmg_pop2","0"};
+	CVAR_REGISTER( &sk_toad_dmg_pop3 );// {"sk_snark_dmg_pop3","0"};
+// Alex end
+
+	// Poolstick
+	CVAR_REGISTER( &sk_plr_poolstick1 );// {"sk_plr_crowbar1","0"};
+	CVAR_REGISTER( &sk_plr_poolstick2 );// {"sk_plr_crowbar2","0"};
+	CVAR_REGISTER( &sk_plr_poolstick3 );// {"sk_plr_crowbar3","0"};
+
+	// Beretta Round
+	CVAR_REGISTER( &sk_plr_beretta_bullet1 );// {"sk_plr_beretta_bullet1","0"};
+	CVAR_REGISTER( &sk_plr_beretta_bullet2 );// {"sk_plr_beretta_bullet2","0"};
+	CVAR_REGISTER( &sk_plr_beretta_bullet3 );// {"sk_plr_beretta_bullet3","0"};
+
+	// M41A Round
+	CVAR_REGISTER( &sk_plr_9mmM41A_bullet1 );// {"sk_plr_9mmm41a_bullet1","0"};
+	CVAR_REGISTER( &sk_plr_9mmM41A_bullet2 );// {"sk_plr_9mmm41a_bullet2","0"};
+	CVAR_REGISTER( &sk_plr_9mmM41A_bullet3 );// {"sk_plr_9mmm41a_bullet3","0"};
+
+	// M41A M203 grenade
+	CVAR_REGISTER( &sk_plr_9mmM41A_grenade1 );// {"sk_plr_9mmAR_grenade1","0"};
+	CVAR_REGISTER( &sk_plr_9mmM41A_grenade2 );// {"sk_plr_9mmAR_grenade2","0"};
+	CVAR_REGISTER( &sk_plr_9mmM41A_grenade3 );// {"sk_plr_9mmAR_grenade3","0"};
 
 	// WORLD WEAPONS
 	CVAR_REGISTER( &sk_12mm_bullet1 );// {"sk_12mm_bullet1","0"};

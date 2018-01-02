@@ -128,6 +128,19 @@ set (SVDLL_SOURCES
 	world.cpp
 	xen.cpp
 	zombie.cpp
+	asheep/adrian.cpp
+	asheep/alienpanther.cpp
+	asheep/archer.cpp
+	asheep/barniel.cpp
+	asheep/beretta.cpp
+	asheep/gordon.cpp
+	asheep/hevbarn.cpp
+	asheep/kate.cpp
+	asheep/m41a.cpp
+	asheep/poolstick.cpp
+	asheep/spforce.cpp
+	asheep/terror.cpp
+	asheep/toad.cpp
 	../pm_shared/pm_debug.c
 	../pm_shared/pm_math.c
 	../pm_shared/pm_shared.c

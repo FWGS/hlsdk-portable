@@ -199,6 +199,9 @@ class CItemSuit : public CItem
 };
 
 LINK_ENTITY_TO_CLASS( item_suit, CItemSuit )
+//begin Alex
+LINK_ENTITY_TO_CLASS( item_armor, CItemSuit ) // for Azure Sheep
+//end Alex
 
 class CItemBattery : public CItem
 {

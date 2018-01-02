@@ -145,14 +145,26 @@ void CHalfLifeMultiplay::RefreshSkillData( void )
 	// Crowbar whack
 	gSkillData.plrDmgCrowbar = 25;
 
+	// Poolstick
+	gSkillData.plrDmgPoolstick = 10;//Alex
+
 	// Glock Round
 	gSkillData.plrDmg9MM = 12;
+
+	// Beretta Round
+	gSkillData.plrDmgBeretta = 10;
 
 	// 357 Round
 	gSkillData.plrDmg357 = 40;
 
 	// MP5 Round
 	gSkillData.plrDmgMP5 = 12;
+
+	// M41A Round
+	gSkillData.plrDmgM41A = 8;
+	
+	// M41A M203 grenade
+	gSkillData.plrDmgM41AGrenade = 105;
 
 	// M203 grenade
 	gSkillData.plrDmgM203Grenade = 100;

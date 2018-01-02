@@ -3448,14 +3448,14 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		GiveNamedItem( "item_suit" );
 		GiveNamedItem( "item_battery" );
 		GiveNamedItem( "weapon_crowbar" );
-		GiveNamedItem( "weapon_9mmhandgun" );
+		GiveNamedItem( "weapon_barney9mmhg" ); // Alex for new 9mm handgun
 		GiveNamedItem( "ammo_9mmclip" );
-		GiveNamedItem( "weapon_shotgun" );
+		GiveNamedItem( "weapon_barneyshotgun" ); // Alex for new shotgun
 		GiveNamedItem( "ammo_buckshot" );
-		GiveNamedItem( "weapon_9mmAR" );
+		GiveNamedItem( "weapon_barney9mmar" ); // Alex for new 9mm ar
 		GiveNamedItem( "ammo_9mmAR" );
 		GiveNamedItem( "ammo_ARgrenades" );
-		GiveNamedItem( "weapon_handgrenade" );
+		GiveNamedItem( "weapon_barneyhandgrenade" ); // Alex for new handgrenade
 		GiveNamedItem( "weapon_tripmine" );
 #ifndef OEM_BUILD
 		GiveNamedItem( "weapon_357" );

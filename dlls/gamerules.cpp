@@ -140,6 +140,9 @@ void CGameRules::RefreshSkillData ( void )
 	// Barney
 	gSkillData.barneyHealth = GetSkillCvar( "sk_barney_health" );
 
+	// Kate
+	gSkillData.kateHealth = GetSkillCvar( "sk_kate_health" );
+
 	// Big Momma
 	gSkillData.bigmommaHealthFactor = GetSkillCvar( "sk_bigmomma_health_factor" );
 	gSkillData.bigmommaDmgSlash = GetSkillCvar( "sk_bigmomma_dmg_slash" );
@@ -199,6 +202,12 @@ void CGameRules::RefreshSkillData ( void )
 	// Nihilanth
 	gSkillData.nihilanthHealth = GetSkillCvar( "sk_nihilanth_health" );
 	gSkillData.nihilanthZap = GetSkillCvar( "sk_nihilanth_zap" );
+
+	// Panther
+	gSkillData.pantherHealth = GetSkillCvar( "sk_panther_health" );
+	gSkillData.pantherDmgClaw = GetSkillCvar( "sk_panther_dmg_claw" );
+	gSkillData.pantherDmgClawRake = GetSkillCvar( "sk_panther_dmg_clawrake" );
+	gSkillData.pantherDmgZap = GetSkillCvar( "sk_panther_dmg_zap" );
 
 	// Scientist
 	gSkillData.scientistHealth = GetSkillCvar( "sk_scientist_health" );
@@ -264,6 +273,21 @@ void CGameRules::RefreshSkillData ( void )
 
 	// Tripmine
 	gSkillData.plrDmgTripmine = GetSkillCvar( "sk_plr_tripmine" );
+
+// Alex begin
+	// Toad
+	gSkillData.toadHealth = GetSkillCvar( "sk_toad_health" );
+	gSkillData.toadDmgBite = GetSkillCvar( "sk_toad_dmg_bite" );
+	gSkillData.toadDmgPop = GetSkillCvar( "sk_toad_dmg_pop" );
+// Alex end
+
+	// M41A
+	gSkillData.plrDmgM41A = GetSkillCvar( "sk_plr_9mmM41A_bullet" );// Alex
+	gSkillData.plrDmgPoolstick = GetSkillCvar( "sk_plr_poolstick" );// Alex
+	gSkillData.plrDmgBeretta = GetSkillCvar( "sk_plr_beretta_bullet" );// Alex
+
+	// M203 grenade for M41A
+	gSkillData.plrDmgM41AGrenade = GetSkillCvar( "sk_plr_9mmM41A_grenade");
 
 	// MONSTER WEAPONS
 	gSkillData.monDmg12MM = GetSkillCvar( "sk_12mm_bullet" );

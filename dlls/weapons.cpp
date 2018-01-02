@@ -169,6 +169,8 @@ void DecalGunshot( TraceResult *pTrace, int iBulletType )
 		case BULLET_MONSTER_MP5:
 		case BULLET_PLAYER_BUCKSHOT:
 		case BULLET_PLAYER_357:
+		case BULLET_PLAYER_M41A: // Alex
+		case BULLET_MONSTER_M41A: // Alex
 		default:
 			// smoke and decal
 			UTIL_GunshotDecalTrace( pTrace, DamageDecal( pEntity, DMG_BULLET ) );
@@ -308,6 +310,9 @@ void W_Precache( void )
 	// crowbar
 	UTIL_PrecacheOtherWeapon( "weapon_crowbar" );
 
+	// poolstick
+	UTIL_PrecacheOtherWeapon( "weapon_poolstick" ); // alex
+
 	// glock
 	UTIL_PrecacheOtherWeapon( "weapon_9mmhandgun" );
 	UTIL_PrecacheOther( "ammo_9mmclip" );
@@ -316,6 +321,14 @@ void W_Precache( void )
 	UTIL_PrecacheOtherWeapon( "weapon_9mmAR" );
 	UTIL_PrecacheOther( "ammo_9mmAR" );
 	UTIL_PrecacheOther( "ammo_ARgrenades" );
+
+// begin Alex
+	// m41a	
+	UTIL_PrecacheOtherWeapon( "weapon_9mmm41a" );	
+
+	// beretta
+	UTIL_PrecacheOtherWeapon( "weapon_beretta" );
+// end Alex
 
 	// 9mm ammo box
 	UTIL_PrecacheOther( "ammo_9mmbox" );
@@ -351,6 +364,9 @@ void W_Precache( void )
 #if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
 	// squeak grenade
 	UTIL_PrecacheOtherWeapon( "weapon_snark" );
+
+	// toad
+	UTIL_PrecacheOtherWeapon( "weapon_toad" ); // Alex
 
 	// hornetgun
 	UTIL_PrecacheOtherWeapon( "weapon_hornetgun" );

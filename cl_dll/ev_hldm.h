@@ -18,10 +18,14 @@ typedef	enum
 	BULLET_PLAYER_357, // python
 	BULLET_PLAYER_BUCKSHOT, // shotgun
 	BULLET_PLAYER_CROWBAR, // crowbar swipe
-
+//begin Alex
+	BULLET_PLAYER_M41A,
+	BULLET_PLAYER_BERETTA,
+//end Alex
 	BULLET_MONSTER_9MM,
 	BULLET_MONSTER_MP5,
 	BULLET_MONSTER_12MM
+	BULLET_MONSTER_M41A, // Alex
 }Bullet;
 
 enum glock_e

@@ -119,6 +119,7 @@ private:
 };
 
 LINK_ENTITY_TO_CLASS( monster_scientist, CScientist )
+LINK_ENTITY_TO_CLASS( monster_worker, CScientist ) // Alex
 
 TYPEDESCRIPTION	CScientist::m_SaveData[] =
 {
@@ -638,8 +639,11 @@ void CScientist::HandleAnimEvent( MonsterEvent_t *pEvent )
 void CScientist::Spawn( void )
 {
 	Precache();
+	if( FClassnameIs( pev, "monster_worker" ) )
+		SET_MODEL( ENT( pev ), "models/gus.mdl" );
+	else
+		SET_MODEL( ENT( pev ), "models/scientist.mdl" );
 
-	SET_MODEL( ENT( pev ), "models/scientist.mdl" );
 	UTIL_SetSize( pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX );
 
 	pev->solid = SOLID_SLIDEBOX;
@@ -676,7 +680,11 @@ void CScientist::Spawn( void )
 //=========================================================
 void CScientist::Precache( void )
 {
-	PRECACHE_MODEL( "models/scientist.mdl" );
+	if( FClassnameIs( pev, "monster_worker" ) )
+		PRECACHE_MODEL( "models/gus.mdl" );
+	else
+		PRECACHE_MODEL( "models/scientist.mdl" );
+
 	PRECACHE_SOUND( "scientist/sci_pain1.wav" );
 	PRECACHE_SOUND( "scientist/sci_pain2.wav" );
 	PRECACHE_SOUND( "scientist/sci_pain3.wav" );
@@ -1052,7 +1060,10 @@ MONSTERSTATE CScientist::GetIdealState( void )
 }
 
 BOOL CScientist::CanHeal( void )
-{ 
+{
+	if( FClassnameIs( pev, "monster_worker" ) )
+		return FALSE;
+
 	if( ( m_healTime > gpGlobals->time ) || ( m_hTargetEnt == 0 ) || ( m_hTargetEnt->pev->health > ( m_hTargetEnt->pev->max_health * 0.5 ) ) )
 		return FALSE;
 
@@ -1127,9 +1138,16 @@ LINK_ENTITY_TO_CLASS( monster_scientist_dead, CDeadScientist )
 //
 void CDeadScientist::Spawn()
 {
-	PRECACHE_MODEL( "models/scientist.mdl" );
-	SET_MODEL( ENT( pev ), "models/scientist.mdl" );
-
+	if( FClassnameIs( pev, "monster_worker" ) )
+	{
+		PRECACHE_MODEL( "models/gus.mdl" );
+		SET_MODEL( ENT( pev ), "models/gus.mdl" );
+	}
+	else
+	{
+		PRECACHE_MODEL( "models/scientist.mdl" );
+		SET_MODEL( ENT( pev ), "models/scientist.mdl" );
+	}
 	pev->effects = 0;
 	pev->sequence = 0;
 

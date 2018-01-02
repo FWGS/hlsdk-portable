@@ -46,6 +46,10 @@ set (CLDLL_SOURCES
 	../dlls/squeakgrenade.cpp
 	../dlls/tripmine.cpp
 	../dlls/glock.cpp
+	../dlls/asheep/beretta.cpp
+	../dlls/asheep/m41a.cpp
+	../dlls/asheep/poolstick.cpp
+	../dlls/asheep/toad.cpp
 	ev_hldm.cpp
 	hl/hl_baseentity.cpp
 	hl/hl_events.cpp

@@ -36,6 +36,7 @@ enum handgrenade_e
 };
 
 LINK_ENTITY_TO_CLASS( weapon_handgrenade, CHandGrenade )
+LINK_ENTITY_TO_CLASS( weapon_barneyhandgrenade, CHandGrenade ) // edit for Azure Sheep
 
 void CHandGrenade::Spawn()
 {
@@ -54,7 +55,7 @@ void CHandGrenade::Spawn()
 void CHandGrenade::Precache( void )
 {
 	PRECACHE_MODEL( "models/w_grenade.mdl" );
-	PRECACHE_MODEL( "models/v_grenade.mdl" );
+	PRECACHE_MODEL( "models/v_barneygrenade.mdl" );
 	PRECACHE_MODEL( "models/p_grenade.mdl" );
 }
 
@@ -78,7 +79,7 @@ int CHandGrenade::GetItemInfo( ItemInfo *p )
 BOOL CHandGrenade::Deploy()
 {
 	m_flReleaseThrow = -1;
-	return DefaultDeploy( "models/v_grenade.mdl", "models/p_grenade.mdl", HANDGRENADE_DRAW, "crowbar" );
+	return DefaultDeploy( "models/v_barneygrenade.mdl", "models/p_grenade.mdl", HANDGRENADE_DRAW, "crowbar" );
 }
 
 BOOL CHandGrenade::CanHolster( void )

@@ -40,6 +40,12 @@ void EV_TripmineFire( struct event_args_s *args );
 void EV_SnarkFire( struct event_args_s *args );
 
 void EV_TrainPitchAdjust( struct event_args_s *args );
+
+//Begin Alex
+void EV_FireM41A( struct event_args_s *args );
+void EV_FireBeretta1( struct event_args_s *args );
+void EV_FireBeretta2( struct event_args_s *args );
+//end Alex
 }
 
 /*
@@ -76,4 +82,9 @@ void Game_HookEvents( void )
 	gEngfuncs.pfnHookEvent( "events/firehornet.sc", EV_HornetGunFire );
 	gEngfuncs.pfnHookEvent( "events/tripfire.sc", EV_TripmineFire );
 	gEngfuncs.pfnHookEvent( "events/snarkfire.sc", EV_SnarkFire );
+//begin Alex
+	gEngfuncs.pfnHookEvent( "events/m41a.sc", EV_FireM41A );
+	gEngfuncs.pfnHookEvent( "events/beretta1.sc", EV_FireBeretta1 );
+	gEngfuncs.pfnHookEvent( "events/beretta2.sc", EV_FireBeretta2 );
+//end Alex
 }

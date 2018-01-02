@@ -64,6 +64,7 @@ public:
 };
 
 LINK_ENTITY_TO_CLASS( monster_zombie, CZombie )
+LINK_ENTITY_TO_CLASS( monster_zbarney, CZombie )
 
 const char *CZombie::pAttackHitSounds[] =
 {
@@ -265,8 +266,11 @@ void CZombie::HandleAnimEvent( MonsterEvent_t *pEvent )
 void CZombie::Spawn()
 {
 	Precache();
+	if( FClassnameIs( pev, "monster_zombie" ) )
+		SET_MODEL( ENT( pev ), "models/zombie.mdl" );
+	else
+		SET_MODEL( ENT( pev ), "models/zbarnie.mdl" );
 
-	SET_MODEL( ENT( pev ), "models/zombie.mdl" );
 	UTIL_SetSize( pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX );
 
 	pev->solid		= SOLID_SLIDEBOX;
@@ -288,7 +292,10 @@ void CZombie::Precache()
 {
 	size_t i;
 
-	PRECACHE_MODEL( "models/zombie.mdl" );
+	if( FClassnameIs( pev, "monster_zombie" ) )
+		PRECACHE_MODEL( "models/zombie.mdl" );
+	else
+		PRECACHE_MODEL( "models/zbarnie.mdl" );
 
 	for( i = 0; i < ARRAYSIZE( pAttackHitSounds ); i++ )
 		PRECACHE_SOUND( pAttackHitSounds[i] );

@@ -30,6 +30,7 @@ struct skilldata_t
 	float apacheHealth;
 
 	float barneyHealth;
+	float kateHealth; // alex for Kate support
 
 	float bigmommaHealthFactor;		// Multiply each node's health by this
 	float bigmommaDmgSlash;			// melee attack damage
@@ -64,6 +65,13 @@ struct skilldata_t
 	float slaveDmgClawrake;
 	float slaveDmgZap;
 
+// Alex begin
+	float pantherHealth;
+	float pantherDmgClaw;
+	float pantherDmgClawRake;
+	float pantherDmgZap;
+// Alex end
+
 	float ichthyosaurHealth;
 	float ichthyosaurDmgShake;
 
@@ -83,6 +91,12 @@ struct skilldata_t
 	float snarkHealth;
 	float snarkDmgBite;
 	float snarkDmgPop;
+
+// Alex begin
+	float toadHealth;
+	float toadDmgBite;
+	float toadDmgPop;
+// Alex end
 
 	float zombieHealth;
 	float zombieDmgOneSlash;
@@ -110,6 +124,13 @@ struct skilldata_t
 	float plrDmgSatchel;
 	float plrDmgTripmine;
 	
+// Alex begin
+	float plrDmgM41A;
+	float plrDmgPoolstick;
+	float plrDmgBeretta;
+	float plrDmgM41AGrenade;
+// Alex end
+
 	// weapons shared by monsters
 	float monDmg9MM;
 	float monDmgMP5;
