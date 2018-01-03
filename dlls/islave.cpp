@@ -509,7 +509,7 @@ void CISlave::Spawn()
 {
 	Precache();
 
-	if( FClassNameIs( pev, "monster_exp_alien_slave" ) )
+	if( FClassnameIs( pev, "monster_exp_alien_slave" ) )
 		SET_MODEL( ENT( pev ), "models/sslave.mdl" );
 	else
 		SET_MODEL( ENT( pev ), "models/islave.mdl" );
