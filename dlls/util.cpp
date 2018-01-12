@@ -30,6 +30,209 @@
 #include "player.h"
 #include "weapons.h"
 #include "gamerules.h"
+#include "soundent.h"
+
+void UTIL_CreateWarpball( edict_t *ent, Vector vecSrc, float spawnVol, float spawnSoundRad, int beamCount, int spawnType, float spriteScale, int lightRad )
+{
+	Vector vecBeamColor, vecFlareColor, vecExpColor, vecDir, vecEnd;
+	TraceResult tr;
+
+	if( spawnType == 1 )
+	{
+		vecBeamColor = Vector( 255, 128, 255 );
+		vecFlareColor = vecBeamColor;
+		vecExpColor = Vector( 128, 0, 128 );
+	}
+	else
+	{
+		vecBeamColor = Vector( 197, 243, 169 );
+		vecFlareColor = Vector( 77, 210, 130 );
+		vecExpColor = Vector( 184, 250, 214 );
+	}
+
+	if( beamCount < 1 )
+		beamCount = 16;
+
+	if( spriteScale <= 0.0f )
+		spriteScale = 1.0f;
+
+	if( spawnSoundRad != ATTN_NONE
+		&& spawnSoundRad != ATTN_NORM
+		&& spawnSoundRad != ATTN_IDLE
+		&& spawnSoundRad != ATTN_STATIC )
+		spawnSoundRad = ATTN_NORM;
+
+	if( spawnVol <= 0.0f || spawnVol > 1.0f )
+		spawnVol = 1.0f;
+
+	if( lightRad <= 0 )
+		lightRad = 24;
+
+	UTIL_EmitAmbientSound( ent, vecSrc, "ambience/spawnsnd.wav", spawnVol, spawnSoundRad, 0, PITCH_NORM );
+	CSoundEnt::InsertSound( bits_SOUND_COMBAT, vecSrc, 384, 0.3 );
+
+	while( beamCount > 0 )
+	{
+		vecDir = Vector( RANDOM_LONG( -1.0f, 1.0f ), RANDOM_LONG( -1.0f, 1.0f ), RANDOM_LONG( -1.0f, 1.0f ) );
+		vecDir = vecDir.Normalize();
+		UTIL_TraceLine( vecSrc, vecSrc + vecDir * 1024, ignore_monsters, ent, &tr );
+
+		vecEnd = tr.vecEndPos;
+		if( ( vecEnd - vecSrc ).Length() >= ( 1024 * 0.1f ) && tr.flFraction != 1.0 )
+		{
+			MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
+				WRITE_BYTE( TE_BEAMPOINTS );
+				WRITE_COORD( vecSrc.x );
+				WRITE_COORD( vecSrc.y );
+				WRITE_COORD( vecSrc.z );
+				WRITE_COORD( vecEnd.x );
+				WRITE_COORD( vecEnd.y );
+				WRITE_COORD( vecEnd.z );
+				WRITE_SHORT( g_sModelIndexLightning );
+				WRITE_BYTE( RANDOM_LONG( 0, 3 ) );
+				WRITE_BYTE( 10 );
+				WRITE_BYTE( 8 );
+				WRITE_BYTE( 18 );
+				WRITE_BYTE( 65 );
+				WRITE_BYTE( vecBeamColor.x );
+				WRITE_BYTE( vecBeamColor.y );
+				WRITE_BYTE( vecBeamColor.z );
+				WRITE_BYTE( 150 );
+				WRITE_BYTE( 35 );
+			MESSAGE_END();
+		}
+		--beamCount;
+	}
+
+	MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, vecSrc );
+		WRITE_BYTE( TE_DLIGHT );
+                WRITE_COORD( vecSrc.x );	// X
+                WRITE_COORD( vecSrc.y );	// Y
+                WRITE_COORD( vecSrc.z );	// Z
+                WRITE_BYTE( lightRad );		// radius * 0.1
+                WRITE_BYTE( vecFlareColor.x );		// r
+                WRITE_BYTE( vecFlareColor.y );		// g
+                WRITE_BYTE( vecFlareColor.z );		// b
+                WRITE_BYTE( 16 );		// time * 10
+                WRITE_BYTE( 0 );		// decay * 0.1
+	MESSAGE_END();
+
+	UTIL_CreateSprite( "sprites/xflare1.spr", vecSrc, vecFlareColor, spriteScale );
+	UTIL_CreateSprite( "sprites/fexplo1.spr", vecSrc, vecExpColor, spriteScale );
+}
+
+void UTIL_CreateSprite( const char *spriteName, Vector origin, Vector color, float scale )
+{
+	CSprite *pSprite = CSprite::SpriteCreate( spriteName, origin, TRUE );
+	pSprite->AnimateAndDie( 10 );
+	pSprite->SetTransparency( kRenderTransAdd, color.x, color.y, color.z, 255, kRenderFxNoDissipation );
+	pSprite->SetScale( scale );
+}
+
+bool UTIL_HasSuit( CBaseEntity *pEntity )
+{
+	return ( (CBasePlayer*)pEntity )->m_bHaveSuit;
+}
+
+void UTIL_ShowKateHealth( int health )
+{
+	hudtextparms_t textParams;
+	char msg[32];
+
+	textParams.channel = 1;
+	textParams.x = 0.03f;
+	textParams.y = 0.9f;
+	textParams.effect = 0;
+	if( health > 40 )
+	{
+		textParams.a1 = 100;
+		textParams.r1 = 64;
+		textParams.g1 = 64;
+		textParams.b1 = 255;
+	}
+	else
+	{
+		textParams.a1 = 0;
+		textParams.r1 = 255;
+		textParams.g1 = 0;
+		textParams.b1 = 0;
+	}
+
+	textParams.fadeinTime = 0.0f;
+	textParams.fadeoutTime = 0.5f;
+	textParams.holdTime = 3.0f;
+	textParams.fxTime = 0.25f;
+
+	sprintf( msg, "Kate's health: %d", health );
+	UTIL_HudMessageAll( textParams, msg );
+}
+
+const char *UTIL_GetSoundRoomTypeName( int number )
+{
+	switch( number )
+	{
+		case 0:
+			return "Normal (off)";
+		case 1:
+			return "Generic";
+		case 2:
+			return "Metal Small";
+		case 3:
+			return "Metal Medium";
+		case 4:
+			return "Metal Large";
+		case 5:
+			return "Tunnel Small";
+		case 6:
+			return "Tunnel Medium";
+		case 7:
+			return "Tunnel Large";
+		case 8:
+			return "Chamber Small";
+		case 9:
+			return "Chamber Medium";
+		case 10:
+			return "Chamber Large";
+		case 11:
+			return "Bright Small";
+		case 12:
+			return "Bright Medium";
+		case 13:
+			return "Bright Large";
+		case 14:
+			return "Water 1";
+		case 15:
+			return "Water 2";
+		case 16:
+			return "Water 3";
+		case 17:
+			return "Concrete Small";
+		case 18:
+			return "Concrete Medium";
+		case 19:
+			return "Concrete Large";
+		case 20:
+			return "Big 1";
+		case 21:
+			return "Big 2";
+		case 22:
+			return "Big 3";
+		case 23:
+			return "Cavern Small";
+		case 24:
+			return "Cavern Medium";
+		case 25:
+			return "Cavern Large";
+		case 26:
+			return "Pipe Medium";
+		case 27:
+			return "Pipe Small";
+		case 28:
+			return "Pipe Big?";
+		default:
+			return "????";
+	}
+}
 
 float UTIL_WeaponTimeBase( void )
 {

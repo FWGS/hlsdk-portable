@@ -305,8 +305,6 @@ public:
 	void SetCustomDecalFrames( int nFrames );
 	int GetCustomDecalFrames( void );
 
-	void TabulateAmmo( void );
-
 	Vector m_vecLastViewAngles;
 
 	float m_flStartCharge;
@@ -325,6 +323,9 @@ public:
 
 	float m_flNextChatTime;
 
+	void Holster();
+	BOOL m_bHaveSuit;
+	BOOL m_bIsHolster;
 	bool m_bSentBhopcap; // If false, the player just joined and needs a bhopcap message.
 };
 

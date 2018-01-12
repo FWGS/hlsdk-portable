@@ -258,7 +258,7 @@ int CSatchel::GetItemInfo( ItemInfo *p )
 	p->iMaxAmmo2 = -1;
 	p->iMaxClip = WEAPON_NOCLIP;
 	p->iSlot = 4;
-	p->iPosition = 1;
+	p->iPosition = 2;
 	p->iFlags = ITEM_FLAG_SELECTONEMPTY | ITEM_FLAG_LIMITINWORLD | ITEM_FLAG_EXHAUSTIBLE;
 	p->iId = m_iId = WEAPON_SATCHEL;
 	p->iWeight = SATCHEL_WEIGHT;
@@ -305,15 +305,13 @@ BOOL CSatchel::Deploy()
 
 void CSatchel::Holster( int skiplocal /* = 0 */ )
 {
-	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
-
 	if( m_chargeReady )
 	{
-		SendWeaponAnim( SATCHEL_RADIO_HOLSTER );
+		DefaultHolster( SATCHEL_RADIO_HOLSTER, 0.7 );
 	}
 	else
 	{
-		SendWeaponAnim( SATCHEL_DROP );
+		DefaultHolster( SATCHEL_DROP, 0.7 );
 	}
 	EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_WEAPON, "common/null.wav", 1.0, ATTN_NORM );
 
@@ -326,6 +324,12 @@ void CSatchel::Holster( int skiplocal /* = 0 */ )
 
 void CSatchel::PrimaryAttack()
 {
+	if( m_pPlayer->m_bIsHolster )
+	{
+		WeaponIdle();
+		return;
+	}
+
 	switch( m_chargeReady )
 	{
 	case SATCHEL_IDLE:
@@ -353,7 +357,7 @@ void CSatchel::PrimaryAttack()
 			}
 
 			m_chargeReady = SATCHEL_RELOAD;
-			m_flNextPrimaryAttack = GetNextAttackDelay( 0.5 );
+			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5;
 			m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5;
 			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.5;
 			break;
@@ -366,6 +370,12 @@ void CSatchel::PrimaryAttack()
 
 void CSatchel::SecondaryAttack( void )
 {
+	if( m_pPlayer->m_bIsHolster )
+	{
+		WeaponIdle();
+		return;
+	}
+
 	if( m_chargeReady != SATCHEL_RELOAD )
 	{
 		Throw();
@@ -400,13 +410,23 @@ void CSatchel::Throw( void )
 
 		m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]--;
 
-		m_flNextPrimaryAttack = GetNextAttackDelay( 1.0 );
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 1.0;
 		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5;
 	}
 }
 
 void CSatchel::WeaponIdle( void )
 {
+	if( m_pPlayer->m_bIsHolster )
+	{
+		if( m_flTimeWeaponIdle <= UTIL_WeaponTimeBase() )
+		{
+			m_pPlayer->m_bIsHolster = FALSE;
+			Deploy();
+		}
+		return;
+	}
+
 	if( m_flTimeWeaponIdle > UTIL_WeaponTimeBase() )
 		return;
 
@@ -441,7 +461,7 @@ void CSatchel::WeaponIdle( void )
 		// use tripmine animations
 		strcpy( m_pPlayer->m_szAnimExtention, "trip" );
 
-		m_flNextPrimaryAttack = GetNextAttackDelay( 0.5 );
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5;
 		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5;
 		m_chargeReady = SATCHEL_IDLE;
 		break;

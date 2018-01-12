@@ -32,9 +32,9 @@ enum m41a_e
 	M41A_DEPLOY,
 	M41A_FIRE1,
 	M41A_FIRE2,
-	//M41A_FIRE3,
+	M41A_FIRE3,
+	M41A_HOLSTER
 };
-
 
 
 LINK_ENTITY_TO_CLASS( weapon_9mmm41a, CM41A );
@@ -76,15 +76,13 @@ void CM41A::Precache( void )
 	PRECACHE_SOUND("items/cliprelease1.wav");
 
 	PRECACHE_SOUND ("weapons/m41ahks1.wav");// H to the K
-	PRECACHE_SOUND ("weapons/m41ahks2.wav");// H to the K
 
 	PRECACHE_SOUND( "weapons/m41aglauncher.wav" );
 	PRECACHE_SOUND( "weapons/m41aglauncher2.wav" );
 
 	PRECACHE_SOUND ("weapons/357_cock1.wav");
 
-	m_usM41A = PRECACHE_EVENT( 1, "events/M41A.sc" );
-	m_usM41A2 = PRECACHE_EVENT( 1, "events/M41A.sc" );
+	m_usM41A = PRECACHE_EVENT( 1, "events/m41a.sc" );
 }
 
 int CM41A::GetItemInfo(ItemInfo *p)
@@ -96,10 +94,10 @@ int CM41A::GetItemInfo(ItemInfo *p)
 	p->iMaxAmmo2 = M203_GRENADE_MAX_CARRY;
 	p->iMaxClip = MP5_MAX_CLIP;
 	p->iSlot = 2;
-	p->iPosition = 3;
+	p->iPosition = 5;
 	p->iFlags = 0;
 	p->iId = m_iId = WEAPON_M41A;
-	p->iWeight = MP5_WEIGHT;
+	p->iWeight = M41A_WEIGHT;
 
 	return 1;
 }
@@ -121,21 +119,31 @@ BOOL CM41A::Deploy( )
 	return DefaultDeploy( "models/v_9mmm41a.mdl", "models/p_9mmm41a.mdl", M41A_DEPLOY, "M41A" );
 }
 
+void CM41A::Holster( int skiplocal /* = 0 */ )
+{
+        DefaultHolster( M41A_HOLSTER, 0.9 );
+}
 
 void CM41A::PrimaryAttack()
 {
+	if( m_pPlayer->m_bIsHolster )
+        {
+                WeaponIdle();
+                return;
+        }
+
 	// don't fire underwater
 	if (m_pPlayer->pev->waterlevel == 3)
 	{
 		PlayEmptySound( );
-		m_flNextPrimaryAttack = 0.15;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.15;
 		return;
 	}
 
 	if (m_iClip <= 0)
 	{
 		PlayEmptySound();
-		m_flNextPrimaryAttack = 0.15;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.15;
 		return;
 	}
 
@@ -161,12 +169,12 @@ void CM41A::PrimaryAttack()
 #endif
 	{
 		// optimized multiplayer. Widened to make it easier to hit a moving player
-		vecDir = m_pPlayer->FireBulletsPlayer( 4, vecSrc, vecAiming, VECTOR_CONE_2DEGREES, 8192, BULLET_PLAYER_M41A, 2, 0, m_pPlayer->pev, m_pPlayer->random_seed );
+		vecDir = m_pPlayer->FireBulletsPlayer( 1, vecSrc, vecAiming, VECTOR_CONE_6DEGREES, 8192, BULLET_PLAYER_M41A, 2, 0, m_pPlayer->pev, m_pPlayer->random_seed );
 	}
 	else
 	{
 		// single player spread
-		vecDir = m_pPlayer->FireBulletsPlayer( 4, vecSrc, vecAiming, VECTOR_CONE_1DEGREES, 8192, BULLET_PLAYER_M41A, 2, 0, m_pPlayer->pev, m_pPlayer->random_seed );
+		vecDir = m_pPlayer->FireBulletsPlayer( 1, vecSrc, vecAiming, VECTOR_CONE_3DEGREES, 8192, BULLET_PLAYER_M41A, 2, 0, m_pPlayer->pev, m_pPlayer->random_seed );
 	}
 
   int flags;
@@ -182,7 +190,7 @@ void CM41A::PrimaryAttack()
 		// HEV suit - indicate out of ammo condition
 		m_pPlayer->SetSuitUpdate("!HEV_AMO0", FALSE, 0);
 
-	m_flNextPrimaryAttack = GetNextAttackDelay(0.1);
+	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.1;
 
 	if ( m_flNextPrimaryAttack < UTIL_WeaponTimeBase() )
 		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.1;
@@ -194,11 +202,17 @@ void CM41A::PrimaryAttack()
 
 void CM41A::SecondaryAttack( void )
 {
+	if( m_pPlayer->m_bIsHolster )
+        {
+                WeaponIdle();
+                return;
+        }
+
 	// don't fire underwater
 	if (m_pPlayer->pev->waterlevel == 3)
 	{
 		PlayEmptySound( );
-		m_flNextPrimaryAttack = 0.15;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.15;
 		return;
 	}
 
@@ -216,45 +230,59 @@ void CM41A::SecondaryAttack( void )
 			
 	m_pPlayer->m_rgAmmo[m_iSecondaryAmmoType]--;
 
+	SendWeaponAnim( M41A_LAUNCH );
+
 	// player "shoot" animation
 	m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
+
+	// play this sound through BODY channel so we can hear it if player didn't stop firing MP3
+	EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_WEAPON, RANDOM_LONG( 0, 1 ) ? "weapons/m41aglauncher.wav" : "weapons/m41aglauncher2.wav", 0.8, ATTN_NORM );
 
  	UTIL_MakeVectors( m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle );
 
 	// we don't add in player velocity anymore.
 	CGrenade::ShootContact( m_pPlayer->pev, 
 							m_pPlayer->pev->origin + m_pPlayer->pev->view_ofs + gpGlobals->v_forward * 16, 
-							gpGlobals->v_forward * 800 );
+							gpGlobals->v_forward * 800, gSkillData.plrDmgM41AGrenade );
 
-	int flags;
-#if defined( CLIENT_WEAPONS )
-	flags = FEV_NOTHOST;
-#else
-	flags = 0;
-#endif
-
-	PLAYBACK_EVENT( flags, m_pPlayer->edict(), m_usM41A2 );
-	
-	m_flNextPrimaryAttack = GetNextAttackDelay(1);
+	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 1;
 	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1;
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 5;// idle pretty soon after shooting.
 
 	if (!m_pPlayer->m_rgAmmo[m_iSecondaryAmmoType])
 		// HEV suit - indicate out of ammo condition
 		m_pPlayer->SetSuitUpdate("!HEV_AMO0", FALSE, 0);
+
+	m_pPlayer->pev->punchangle.x -= 10;
 }
 
 void CM41A::Reload( void )
 {
-	if ( m_pPlayer->ammo_9mm <= 0 )
+	if( m_pPlayer->m_bIsHolster )
+        {
+                WeaponIdle();
+                return;
+        }
+
+	if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0 || m_iClip == MP5_MAX_CLIP )
 		return;
 
-	DefaultReload( MP5_MAX_CLIP, M41A_RELOAD, 1.5 );
+	DefaultReload( MP5_MAX_CLIP, M41A_RELOAD, 2.0 );
 }
 
 
 void CM41A::WeaponIdle( void )
 {
+	if( m_pPlayer->m_bIsHolster )
+        {
+                if( m_flTimeWeaponIdle <= UTIL_WeaponTimeBase() )
+                {
+                        m_pPlayer->m_bIsHolster = FALSE;
+                        Deploy();
+                }
+		return;
+        }
+
 	ResetEmptySound( );
 
 	m_pPlayer->GetAutoaimVector( AUTOAIM_5DEGREES );
@@ -280,3 +308,8 @@ void CM41A::WeaponIdle( void )
 	m_flTimeWeaponIdle = UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 ); // how long till we do this again.
 }
 
+BOOL CM41A::IsUseable()
+{
+	//Can be used if the player has AR grenades. - Solokiller
+	return CBasePlayerWeapon::IsUseable() || m_pPlayer->m_rgAmmo[m_iSecondaryAmmoType] > 0;
+}

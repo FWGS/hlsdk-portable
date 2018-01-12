@@ -27,68 +27,11 @@
 #include	"scripted.h"
 #include	"weapons.h"
 #include	"soundent.h"
-
-//=========================================================
-// Monster's Anim Events Go Here
-//=========================================================
-// first flag is barney dying for scripted sequences?
-#define		BARNEY_AE_DRAW		( 2 )
-#define		BARNEY_AE_SHOOT		( 3 )
-#define		BARNEY_AE_HOLSTER	( 4 )
-
-#define	BARNEY_BODY_GUNHOLSTERED	0
-#define	BARNEY_BODY_GUNDRAWN		1
-#define BARNEY_BODY_GUNGONE		2
-
-class CBarney : public CTalkMonster
-{
-public:
-	void Spawn( void );
-	void Precache( void );
-	void SetYawSpeed( void );
-	int ISoundMask( void );
-	void BarneyFirePistol( void );
-	void AlertSound( void );
-	int Classify( void );
-	void HandleAnimEvent( MonsterEvent_t *pEvent );
-
-	void RunTask( Task_t *pTask );
-	void StartTask( Task_t *pTask );
-	virtual int ObjectCaps( void ) { return CTalkMonster :: ObjectCaps() | FCAP_IMPULSE_USE; }
-	int TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
-	BOOL CheckRangeAttack1( float flDot, float flDist );
-
-	void DeclineFollowing( void );
-
-	// Override these to set behavior
-	Schedule_t *GetScheduleOfType( int Type );
-	Schedule_t *GetSchedule( void );
-	MONSTERSTATE GetIdealState( void );
-
-	void DeathSound( void );
-	void PainSound( void );
-
-	void TalkInit( void );
-
-	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType);
-	void Killed( entvars_t *pevAttacker, int iGib );
-
-	virtual int Save( CSave &save );
-	virtual int Restore( CRestore &restore );
-	static TYPEDESCRIPTION m_SaveData[];
-
-	BOOL m_fGunDrawn;
-	float m_painTime;
-	float m_checkAttackTime;
-	BOOL m_lastAttackCheck;
-
-	// UNDONE: What is this for?  It isn't used?
-	float m_flPlayerDamage;// how much pain has the player inflicted on me?
-
-	CUSTOM_SCHEDULES
-};
+#include	"barney.h"
 
 LINK_ENTITY_TO_CLASS( monster_barney, CBarney )
+LINK_ENTITY_TO_CLASS( monster_hevbarn, CBarney )
+LINK_ENTITY_TO_CLASS( monster_myself, CBarney )
 
 TYPEDESCRIPTION	CBarney::m_SaveData[] =
 {
@@ -174,6 +117,7 @@ Schedule_t slBaFaceTarget[] =
 Task_t tlIdleBaStand[] =
 {
 	{ TASK_STOP_MOVING, 0 },
+	{ TASK_SET_ACTIVITY, (float)ACT_DISARM },
 	{ TASK_SET_ACTIVITY, (float)ACT_IDLE },
 	{ TASK_WAIT, (float)2 }, // repick IDLESTAND every two seconds.
 	{ TASK_TLK_HEADRESET, (float)0 }, // reset head position
@@ -201,12 +145,15 @@ Schedule_t slIdleBaStand[] =
 	},
 };
 
+extern Schedule_t slGruntHideReload[];
+
 DEFINE_CUSTOM_SCHEDULES( CBarney )
 {
 	slBaFollow,
 	slBarneyEnemyDraw,
 	slBaFaceTarget,
 	slIdleBaStand,
+	slGruntHideReload
 };
 
 IMPLEMENT_CUSTOM_SCHEDULES( CBarney, CTalkMonster )
@@ -370,6 +317,11 @@ void CBarney::HandleAnimEvent( MonsterEvent_t *pEvent )
 {
 	switch( pEvent->event )
 	{
+	case BARNEY_AE_RELOAD:
+		EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, "weapons/reload3.wav", 1, ATTN_NORM, 0, 100 );
+		m_cAmmoLoaded = GLOCK_MAX_CLIP;
+		ClearConditions( bits_COND_NO_AMMO_LOADED );
+		break;
 	case BARNEY_AE_SHOOT:
 		BarneyFirePistol();
 		break;
@@ -395,21 +347,26 @@ void CBarney::Spawn()
 {
 	Precache();
 
-	SET_MODEL( ENT( pev ), "models/barney.mdl" );
+	SET_MODEL( ENT( pev ), STRING( pev->model ) );
 	UTIL_SetSize( pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX );
 
 	pev->solid = SOLID_SLIDEBOX;
 	pev->movetype = MOVETYPE_STEP;
 	m_bloodColor = BLOOD_COLOR_RED;
-	pev->health = gSkillData.barneyHealth;
+	if( FClassnameIs( pev, "monster_hevbarn" ) )
+		pev->health = gSkillData.barneyHealth * 1.5;
+	else
+		pev->health = gSkillData.barneyHealth;
 	pev->view_ofs = Vector ( 0, 0, 50 );// position of the eyes relative to monster's origin.
 	m_flFieldOfView = VIEW_FIELD_WIDE; // NOTE: we need a wide field of view so npc will notice player and say hello
 	m_MonsterState = MONSTERSTATE_NONE;
 
-	pev->body = 0; // gun in holster
+	pev->body = FBitSet( pev->spawnflags, SF_BARNEY_CARDS_BARNEY ) ? BARNEY_BODY_GUNDRAWN : BARNEY_BODY_GUNHOLSTERED;
 	m_fGunDrawn = FALSE;
 
 	m_afCapability = bits_CAP_HEAR | bits_CAP_TURN_HEAD | bits_CAP_DOORS_GROUP;
+
+	m_cAmmoLoaded = GLOCK_MAX_CLIP;
 
 	MonsterInit();
 	SetUse( &CTalkMonster::FollowerUse );
@@ -420,7 +377,18 @@ void CBarney::Spawn()
 //=========================================================
 void CBarney::Precache()
 {
-	PRECACHE_MODEL( "models/barney.mdl" );
+	if( FClassnameIs( pev, "monster_myself" ) )
+		pev->model = MAKE_STRING( "models/myself.mdl" );
+	else if( FClassnameIs( pev, "monster_hevbarn" ) )
+		pev->model = MAKE_STRING( "models/hev_barney.mdl" );
+	else if( pev->spawnflags & SF_BARNEY_LAZY_BARNEY )
+		pev->model = MAKE_STRING( "models/lazybarney.mdl" );
+	else if( pev->spawnflags & SF_BARNEY_CARDS_BARNEY )
+		pev->model = MAKE_STRING( "models/cardsbarney.mdl" );
+	else
+		pev->model = MAKE_STRING( "models/barney.mdl" );
+
+	PRECACHE_MODEL( STRING( pev->model ) );
 
 	PRECACHE_SOUND( "barney/ba_attack1.wav" );
 	PRECACHE_SOUND( "barney/ba_attack2.wav" );
@@ -432,6 +400,8 @@ void CBarney::Precache()
 	PRECACHE_SOUND( "barney/ba_die1.wav" );
 	PRECACHE_SOUND( "barney/ba_die2.wav" );
 	PRECACHE_SOUND( "barney/ba_die3.wav" );
+
+	PRECACHE_SOUND( "weapons/reload3.wav" );
 
 	// every new barney must call this, otherwise
 	// when a level is loaded, nobody will talk (time is reset to 0)
@@ -460,8 +430,8 @@ void CBarney::TalkInit()
 	m_szGrp[TLK_PLHURT2] = "!BA_CUREB"; 
 	m_szGrp[TLK_PLHURT3] = "!BA_CUREC";
 
-	m_szGrp[TLK_PHELLO] = NULL;	//"BA_PHELLO";		// UNDONE
-	m_szGrp[TLK_PIDLE] = NULL;	//"BA_PIDLE";			// UNDONE
+	m_szGrp[TLK_PHELLO] = "BA_PHELLO";		// UNDONE
+	m_szGrp[TLK_PIDLE] = "BA_PIDLE";			// UNDONE
 	m_szGrp[TLK_PQUESTION] = "BA_PQUEST";		// UNDONE
 
 	m_szGrp[TLK_SMELL] = "BA_SMELL";
@@ -471,6 +441,18 @@ void CBarney::TalkInit()
 
 	// get voice for head - just one barney voice for now
 	m_voicePitch = 100;
+}
+
+//=========================================================
+// CheckAmmo - overridden for the barney because he actually
+// uses ammo! (base class doesn't)
+//=========================================================
+void CBarney::CheckAmmo( void )
+{
+	if( m_cAmmoLoaded <= 0 )
+	{
+		SetConditions( bits_COND_NO_AMMO_LOADED );
+	}
 }
 
 static BOOL IsFacing( entvars_t *pevTest, const Vector &reference )
@@ -611,12 +593,17 @@ void CBarney::Killed( entvars_t *pevAttacker, int iGib )
 		// drop the gun!
 		Vector vecGunPos;
 		Vector vecGunAngles;
+		const char *pszName;
 
 		pev->body = BARNEY_BODY_GUNGONE;
 
 		GetAttachment( 0, vecGunPos, vecGunAngles );
 
-		DropItem( "weapon_barney9mmhg", vecGunPos, vecGunAngles ); // edit Alex, in Azure Sheep entity is named another way
+		if( FBitSet( pev->spawnflags, SF_BARNEY_HAVESUIT ) )
+			pszName = "weapon_9mmhandgun";
+		else
+			pszName = "weapon_barney9mmhg";
+		DropItem( pszName, vecGunPos, vecGunAngles );
 	}
 
 	SetUse( NULL );	
@@ -632,6 +619,8 @@ Schedule_t *CBarney::GetScheduleOfType( int Type )
 
 	switch( Type )
 	{
+	case SCHED_BARNEY_COVER_AND_RELOAD:
+		return slGruntHideReload;
 	case SCHED_ARM_WEAPON:
 		if( m_hEnemy != 0 )
 		{
@@ -711,6 +700,9 @@ Schedule_t *CBarney::GetSchedule( void )
 
 			if( HasConditions( bits_COND_HEAVY_DAMAGE ) )
 				return GetScheduleOfType( SCHED_TAKE_COVER_FROM_ENEMY );
+
+			if( HasConditions( bits_COND_NO_AMMO_LOADED ) )
+				return GetScheduleOfType( SCHED_BARNEY_COVER_AND_RELOAD );
 		}
 		break;
 	case MONSTERSTATE_ALERT:	
@@ -800,14 +792,35 @@ void CDeadBarney::KeyValue( KeyValueData *pkvd )
 }
 
 LINK_ENTITY_TO_CLASS( monster_barney_dead, CDeadBarney )
+LINK_ENTITY_TO_CLASS( monster_hevbarn_dead, CDeadBarney )
+LINK_ENTITY_TO_CLASS( monster_myself_dead, CDeadBarney )
+LINK_ENTITY_TO_CLASS( monster_barniel_dead, CDeadBarney )
+LINK_ENTITY_TO_CLASS( monster_adrian_dead, CDeadBarney )
+LINK_ENTITY_TO_CLASS( monster_gordon_dead, CDeadBarney )
+LINK_ENTITY_TO_CLASS( monster_kate_dead, CDeadBarney )
 
 //=========================================================
 // ********** DeadBarney SPAWN **********
 //=========================================================
 void CDeadBarney::Spawn()
 {
-	PRECACHE_MODEL( "models/barney.mdl" );
-	SET_MODEL( ENT( pev ), "models/barney.mdl" );
+	if( FClassnameIs( pev, "monster_adrian_dead" ) )
+		pev->model = MAKE_STRING( "models/adrian.mdl" );
+	else if( FClassnameIs( pev, "monster_gordon_dead" ) )
+		pev->model = MAKE_STRING( "models/gordon.mdl" );
+	else if( FClassnameIs( pev, "monster_barniel_dead" ) )
+		pev->model = MAKE_STRING( "models/barniel.mdl" );
+	else if( FClassnameIs( pev, "monster_kate_dead" ) )
+		pev->model = MAKE_STRING( "models/kate.mdl" );
+	else if( FClassnameIs( pev, "monster_myself_dead" ) )
+		pev->model = MAKE_STRING( "models/myself.mdl" );
+	else if( FClassnameIs( pev, "monster_hevbarn_dead" ) )
+		pev->model = MAKE_STRING( "models/hev_barney.mdl" );
+	else
+		pev->model = MAKE_STRING( "models/barney.mdl" );
+
+	PRECACHE_MODEL( STRING( pev->model ) );
+	SET_MODEL( ENT( pev ), STRING( pev->model ) );
 
 	pev->effects = 0;
 	pev->yaw_speed = 8;

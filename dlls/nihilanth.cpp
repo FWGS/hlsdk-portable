@@ -331,7 +331,7 @@ void CNihilanth::Spawn( void )
 void CNihilanth::Precache( void )
 {
 	PRECACHE_MODEL( "models/nihilanth.mdl" );
-	PRECACHE_MODEL( "sprites/lgtning.spr" );
+	// PRECACHE_MODEL( "sprites/lgtning.spr" );
 	UTIL_PrecacheOther( "nihilanth_energy_ball" );
 	UTIL_PrecacheOther( "monster_alien_controller" );
 	UTIL_PrecacheOther( "monster_alien_slave" );

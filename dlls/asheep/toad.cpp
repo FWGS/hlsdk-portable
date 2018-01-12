@@ -28,11 +28,12 @@ enum w_toad_e {
 	WTOAD_IDLE1 = 0,
 	WTOAD_FIDGET,
 	WTOAD_JUMP,
-	WTOAD_RUN,
+	WTOAD_RUN
 };
 
 enum toad_e {
 	TOAD_IDLE1 = 0,
+	TOAD_IDLE2,
 	TOAD_FIDGETFIT,
 	TOAD_FIDGETNIP,
 	TOAD_DOWN,
@@ -41,7 +42,6 @@ enum toad_e {
 };
 
 #ifndef CLIENT_DLL
-
 class CToadGrenade : public CGrenade
 {
 	void Spawn( void );
@@ -51,7 +51,7 @@ class CToadGrenade : public CGrenade
 	void EXPORT HuntThink( void );
 	int  BloodColor( void ) { return BLOOD_COLOR_YELLOW; }
 	void Killed( entvars_t *pevAttacker, int iGib );
-//	void GibMonster( void );
+	void GibMonster( void );
 
 	virtual int		Save( CSave &save ); 
 	virtual int		Restore( CRestore &restore );
@@ -70,6 +70,7 @@ class CToadGrenade : public CGrenade
 	int  m_iMyClass;
 };
 
+extern int gEvilImpulse101;
 float CToadGrenade::m_flNextBounceSoundTime = 0;
 
 LINK_ENTITY_TO_CLASS( monster_toad, CToadGrenade );
@@ -150,7 +151,7 @@ void CToadGrenade::Precache( void )
 {
 	PRECACHE_MODEL("models/w_toad.mdl");
 	PRECACHE_SOUND("toad/toad_blast1.wav");
-//	PRECACHE_SOUND("common/bodysplat.wav");
+	PRECACHE_SOUND("common/bodysplat.wav");
 	PRECACHE_SOUND("toad/toad_die1.wav");
 	PRECACHE_SOUND("toad/toad_hunt1.wav");
 	PRECACHE_SOUND("toad/toad_hunt2.wav");
@@ -173,7 +174,7 @@ void CToadGrenade :: Killed( entvars_t *pevAttacker, int iGib )
 	pev->takedamage = DAMAGE_NO;
 
 	// play squeek blast
-	EMIT_SOUND_DYN(ENT(pev), CHAN_ITEM, "squeek/toad_blast1.wav", 1, 0.5, 0, PITCH_NORM);	
+	EMIT_SOUND_DYN(ENT(pev), CHAN_ITEM, "toad/toad_blast1.wav", 1, 0.5, 0, PITCH_NORM);	
 
 	CSoundEnt::InsertSound ( bits_SOUND_COMBAT, pev->origin, SMALL_EXPLOSION_VOLUME, 3.0 );
 
@@ -191,10 +192,10 @@ void CToadGrenade :: Killed( entvars_t *pevAttacker, int iGib )
 	CBaseMonster :: Killed( pevAttacker, GIB_ALWAYS );
 }
 
-/* void CToadGrenade :: GibMonster( void )
+void CToadGrenade :: GibMonster( void )
 {
 	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "common/bodysplat.wav", 0.75, ATTN_NORM, 0, 200);		
-} */
+}
 
 
 
@@ -232,7 +233,7 @@ void CToadGrenade::HuntThink( void )
 		pev->velocity = pev->velocity * 0.9;
 		pev->velocity.z += 8.0;
 	}
-	else if (pev->movetype = MOVETYPE_FLY)
+	else if (pev->movetype == MOVETYPE_FLY)
 	{
 		pev->movetype = MOVETYPE_BOUNCE;
 	}
@@ -263,7 +264,7 @@ void CToadGrenade::HuntThink( void )
 	// squeek if it's about time blow up
 	if ((m_flDie - gpGlobals->time <= 0.5) && (m_flDie - gpGlobals->time >= 0.3))
 	{
-		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "squeek/toad_die1.wav", 1, ATTN_NORM, 0, 100 + RANDOM_LONG(0,0x3F));
+		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "toad/toad_die1.wav", 1, ATTN_NORM, 0, 100 + RANDOM_LONG(0,0x3F));
 		CSoundEnt::InsertSound ( bits_SOUND_COMBAT, pev->origin, 256, 0.25 );
 	}
 
@@ -364,7 +365,7 @@ void CToadGrenade::SuperBounceTouch( CBaseEntity *pOther )
 				// m_flDie += 2.0; // add more life
 
 				// make bite sound
-				EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "squeek/toad_deploy1.wav", 1.0, ATTN_NORM, 0, (int)flpitch);
+				EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "toad/toad_deploy1.wav", 1.0, ATTN_NORM, 0, (int)flpitch);
 				m_flNextAttack = gpGlobals->time + 0.5;
 			}
 		}
@@ -422,25 +423,28 @@ void CToad::Spawn( )
 
 	FallInit();//get ready to fall down.
 
-	m_iDefaultAmmo = SNARK_DEFAULT_GIVE;
+	m_iDefaultAmmo = TOAD_DEFAULT_GIVE;
 		
 	pev->sequence = 1;
 	pev->animtime = gpGlobals->time;
 	pev->framerate = 1.0;
+
+	SetThink( &CToad::ToadIdle );
+	pev->nextthink = gpGlobals->time + 0.2f;
+	m_flNextTrace = 0;
+	m_flNextHunt = 0;
+	m_flDie = 0;
 }
 
 
 void CToad::Precache( void )
 {
 	PRECACHE_MODEL("models/toad_nest.mdl");
-	PRECACHE_MODEL("models/toad_nestt.mdl");
 	PRECACHE_MODEL("models/v_toad.mdl");
 	PRECACHE_MODEL("models/p_toad.mdl");
 	PRECACHE_SOUND("toad/toad_hunt2.wav");
 	PRECACHE_SOUND("toad/toad_hunt3.wav");
 	UTIL_PrecacheOther("monster_toad");
-
-	m_usToadFire = PRECACHE_EVENT ( 1, "events/snarkfire.sc" );
 }
 
 
@@ -453,7 +457,7 @@ int CToad::GetItemInfo(ItemInfo *p)
 	p->iMaxAmmo2 = -1;
 	p->iMaxClip = WEAPON_NOCLIP;
 	p->iSlot = 4;
-	p->iPosition = 4;
+	p->iPosition = 5;
 	p->iId = m_iId = WEAPON_TOAD;
 	p->iWeight = SNARK_WEIGHT;
 	p->iFlags = ITEM_FLAG_LIMITINWORLD | ITEM_FLAG_EXHAUSTIBLE;
@@ -465,16 +469,20 @@ int CToad::GetItemInfo(ItemInfo *p)
 
 BOOL CToad::Deploy( )
 {
-	// play hunt sound
-	float flRndSound = RANDOM_FLOAT ( 0 , 1 );
+	if( !gEvilImpulse101 )
+	{
+		// play hunt sound
+		float flRndSound = RANDOM_FLOAT( 0, 1 );
 
-	if ( flRndSound <= 0.5 )
-		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "toad/toad_hunt2.wav", 1, ATTN_NORM, 0, 100);
-	else 
-		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "toad/toad_hunt3.wav", 1, ATTN_NORM, 0, 100);
+		if ( flRndSound <= 0.5 )
+			EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "toad/toad_hunt2.wav", 1, ATTN_NORM, 0, 100);
+		else 
+			EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "toad/toad_hunt3.wav", 1, ATTN_NORM, 0, 100);
 
-	m_pPlayer->m_iWeaponVolume = QUIET_GUN_VOLUME;
+		m_pPlayer->m_iWeaponVolume = QUIET_GUN_VOLUME;
+	}
 
+	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.1;
 	return DefaultDeploy( "models/v_toad.mdl", "models/p_toad.mdl", TOAD_UP, "toad" );
 }
 
@@ -491,13 +499,19 @@ void CToad::Holster( int skiplocal /* = 0 */ )
 		return;
 	}
 	
-	SendWeaponAnim( TOAD_DOWN );
+	DefaultHolster( TOAD_DOWN, 1.5 );
 	EMIT_SOUND(ENT(m_pPlayer->pev), CHAN_WEAPON, "common/null.wav", 1.0, ATTN_NORM);
 }
 
 
 void CToad::PrimaryAttack()
 {
+	if( m_pPlayer->m_bIsHolster )
+        {
+                WeaponIdle();
+                return;
+        }
+
 	if ( m_pPlayer->m_rgAmmo[ m_iPrimaryAmmoType ] )
 	{
 		UTIL_MakeVectors( m_pPlayer->pev->v_angle );
@@ -515,17 +529,10 @@ void CToad::PrimaryAttack()
 		// find place to toss monster
 		UTIL_TraceLine( trace_origin + gpGlobals->v_forward * 20, trace_origin + gpGlobals->v_forward * 64, dont_ignore_monsters, NULL, &tr );
 
-	int flags;
-#ifdef CLIENT_WEAPONS
-	flags = FEV_NOTHOST;
-#else
-	flags = 0;
-#endif
-
-	    PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usToadFire, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, 0, 0, 0, 0 );
-
 		if ( tr.fAllSolid == 0 && tr.fStartSolid == 0 && tr.flFraction > 0.25 )
 		{
+			SendWeaponAnim( TOAD_THROW );
+
 			// player "shoot" animation
 			m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
 
@@ -557,12 +564,26 @@ void CToad::PrimaryAttack()
 
 void CToad::SecondaryAttack( void )
 {
-
+	if( m_pPlayer->m_bIsHolster )
+        {
+                WeaponIdle();
+                return;
+        }
 }
 
 
 void CToad::WeaponIdle( void )
 {
+	if( m_pPlayer->m_bIsHolster )
+        {
+                if( m_flTimeWeaponIdle <= UTIL_WeaponTimeBase() )
+                {
+                        m_pPlayer->m_bIsHolster = FALSE;
+                        Deploy();
+                }
+		return;
+        }
+
 	if ( m_flTimeWeaponIdle > UTIL_WeaponTimeBase() )
 		return;
 
@@ -581,24 +602,130 @@ void CToad::WeaponIdle( void )
 		return;
 	}
 
-	int iAnim;
-	float flRand = UTIL_SharedRandomFloat( m_pPlayer->random_seed, 0, 1 );
-	if (flRand <= 0.75)
+	int iAnim, iRand = RANDOM_LONG( 0, 5 );
+	switch( iRand )
 	{
-		iAnim = TOAD_IDLE1;
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 30.0 / 16 * (2);
-	}
-	else if (flRand <= 0.875)
-	{
+	case 0:
+		iAnim = TOAD_IDLE2;
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 2.2f;
+		break;
+	case 1:
 		iAnim = TOAD_FIDGETFIT;
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 70.0 / 16.0;
-	}
-	else
-	{
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 2.18f;
+		break;
+	case 2:
 		iAnim = TOAD_FIDGETNIP;
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 80.0 / 16.0;
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 2.9f;
+		break;
+	default:
+		iAnim = TOAD_IDLE1;
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 2.2f;
+		break;
 	}
 	SendWeaponAnim( iAnim );
 }
 
+void CToad::ToadIdle()
+{
+	int i;
+	float flDist;
+	CBaseEntity *pPlayer = UTIL_PlayerByIndex( 1 );
+
+	if( !pPlayer )
+		return;
+
+	flDist = ( pPlayer->Center() - this->Center() ).Length();
+	if( !pPlayer->FVisible( this ) || flDist >= 256.0f )
+	{
+		if( pev->sequence != 1 )
+		{
+			pev->sequence = 1;
+			pev->framerate = 0.5;
+			ResetSequenceInfo();
+		}
+
+		if( !RANDOM_LONG( 0, 10 ) )
+			HuntSound( true );
+		pev->nextthink = gpGlobals->time + 0.2f;
+		return;
+	}
+
+	if( flDist >= 50.0f )
+	{
+		TraceResult tr;
+
+		m_flDie = 1;
+		pev->movetype = MOVETYPE_STEP;
+		StudioFrameAdvance( 0.0 );
+		if( pev->sequence != 1 )
+		{
+			if( m_flNextTrace <= gpGlobals->time )
+			{
+				Vector vecSrc, vecEnd;
+				Vector vecDist2D = ( Center() - pPlayer->Center() ).Normalize();
+				vecDist2D.z = 0;
+				m_posNext = pev->origin + vecDist2D * 128;
+				vecSrc = EyePosition();
+				vecEnd = vecSrc + vecDist2D * 68;
+				UTIL_TraceLine( vecSrc, vecEnd, ignore_monsters, 0, &tr );
+
+				if( tr.flFraction < 1.0f )
+				{
+					Vector vecDist, vecForward, vecAngle;
+					vecDist = ( EyePosition() - tr.vecEndPos ).Normalize();
+					vecAngle = Vector( 0, UTIL_AngleMod( UTIL_VecToAngles( vecDist ).y ) + 195.0f, 0 );
+					UTIL_MakeVectorsPrivate( vecAngle, vecForward, 0, 0 );
+					m_posNext = pev->origin - vecForward * 128;
+				}
+				m_flNextTrace = gpGlobals->time + 0.5f;
+			}
+			Vector newPos = m_posNext - Center();
+			newPos.z = 0;
+			pev->angles = UTIL_VecToAngles( newPos );
+			UTIL_MoveToOrigin( ENT( pev ), newPos * 256.0f, 200.0f / m_flGroundSpeed, MOVE_STRAFE );
+			HuntSound( false );
+			pev->nextthink = gpGlobals->time + 0.2f;
+			return;
+		}
+		pev->sequence = 0;
+		pev->frame = 0;
+		ResetSequenceInfo();
+		pev->framerate = 3.0;
+		HuntSound( true );
+		pev->nextthink = gpGlobals->time + 0.2f;
+		return;
+	}
+
+	if( m_flDie == 1 )
+	{
+		for( i = 0; i < m_iDefaultAmmo; i++ )
+			( (CBasePlayer*)pPlayer )->GiveNamedItem( "weapon_toad" );
+		SetThink( &CBaseEntity::SUB_Remove );
+		pev->nextthink = gpGlobals->time + 0.1f;
+	}
+}
+
+void CToad::HuntSound( bool force )
+{
+	const char *pszSound;
+
+	if( ( m_flNextHunt <= gpGlobals->time ) || force )
+	{
+		int iRand = RANDOM_LONG( 0, 2 );
+		if( iRand == 2 )
+		{
+			pszSound = "toad/toad_hunt3.wav";
+		}
+		else if( iRand == 1 )
+		{
+			pszSound = "toad/toad_hunt2.wav";
+		}
+		else
+		{
+			pszSound = "toad/toad_hunt1.wav";
+		}
+		EMIT_SOUND( ENT( pev ), CHAN_VOICE, pszSound, RANDOM_FLOAT( 0.5, 0.8 ), ATTN_NORM );
+		m_flNextHunt = gpGlobals->time + RANDOM_FLOAT( 3.0, 4.0 );
+	}
+}
 #endif

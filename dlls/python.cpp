@@ -47,7 +47,7 @@ int CPython::GetItemInfo( ItemInfo *p )
 	p->iMaxClip = PYTHON_MAX_CLIP;
 	p->iFlags = 0;
 	p->iSlot = 1;
-	p->iPosition = 1;
+	p->iPosition = 3;
 	p->iId = m_iId = WEAPON_PYTHON;
 	p->iWeight = PYTHON_WEIGHT;
 
@@ -116,20 +116,20 @@ BOOL CPython::Deploy()
 
 void CPython::Holster( int skiplocal /* = 0 */ )
 {
-	m_fInReload = FALSE;// cancel any reload in progress.
-
 	if( m_fInZoom )
-	{
 		SecondaryAttack();
-	}
 
-	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 1.0;
-	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
-	SendWeaponAnim( PYTHON_HOLSTER );
+	DefaultHolster( PYTHON_HOLSTER, 1.0 );
 }
 
 void CPython::SecondaryAttack( void )
 {
+	if( m_pPlayer->m_bIsHolster )
+	{
+		WeaponIdle();
+		return;
+	}
+
 #ifdef CLIENT_DLL
 	if( !bIsMultiplayer() )
 #else
@@ -155,11 +155,17 @@ void CPython::SecondaryAttack( void )
 
 void CPython::PrimaryAttack()
 {
+	if( m_pPlayer->m_bIsHolster )
+	{
+		WeaponIdle();
+		return;
+	}
+
 	// don't fire underwater
 	if( m_pPlayer->pev->waterlevel == 3 )
 	{
 		PlayEmptySound();
-		m_flNextPrimaryAttack = 0.15;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.15;
 		return;
 	}
 
@@ -170,7 +176,7 @@ void CPython::PrimaryAttack()
 		else
 		{
 			PlayEmptySound();
-			m_flNextPrimaryAttack = 0.15;
+			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.15;
 		}
 
 		return;
@@ -206,12 +212,18 @@ void CPython::PrimaryAttack()
 		// HEV suit - indicate out of ammo condition
 		m_pPlayer->SetSuitUpdate( "!HEV_AMO0", FALSE, 0 );
 
-	m_flNextPrimaryAttack = 0.75;
+	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.75;
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
 }
 
 void CPython::Reload( void )
 {
+	if( m_pPlayer->m_bIsHolster )
+	{
+		WeaponIdle();
+		return;
+	}
+
 	if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0 || m_iClip == PYTHON_MAX_CLIP )
 		return;
 
@@ -229,12 +241,22 @@ void CPython::Reload( void )
 #endif
 	if( DefaultReload( PYTHON_MAX_CLIP, PYTHON_RELOAD, 2.0, bUseScope ) )
 	{
-		m_flSoundDelay = 1.5;
+		m_flSoundDelay = UTIL_WeaponTimeBase() + 1.5;
 	}
 }
 
 void CPython::WeaponIdle( void )
 {
+	if( m_pPlayer->m_bIsHolster )
+	{
+		if( m_flTimeWeaponIdle <= UTIL_WeaponTimeBase() )
+		{
+			m_pPlayer->m_bIsHolster = FALSE;
+			Deploy();
+		}
+		return;
+	}
+
 	ResetEmptySound();
 
 	m_pPlayer->GetAutoaimVector( AUTOAIM_10DEGREES );

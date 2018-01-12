@@ -22,9 +22,9 @@
 #pragma once
 #ifndef HUD_H
 #define HUD_H
-#define RGB_YELLOWISH 0x00555EFF //85,94,255 Blue Azure Sheep hud
+#define RGB_YELLOWISH 0x004040FF //64,64,255 Blue Azure Sheep hud
 #define RGB_REDISH 0x00FF1010 //255,160,0
-#define RGB_GREENISH 0x0000A000 //0,160,0
+#define RGB_GREENISH 0x008080FF //128,128,255
 
 #include "wrect.h"
 #include "cl_dll.h"

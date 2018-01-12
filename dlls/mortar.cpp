@@ -111,7 +111,7 @@ void CFuncMortarField::Precache( void )
 {
 	PRECACHE_SOUND( "weapons/mortar.wav" );
 	PRECACHE_SOUND( "weapons/mortarhit.wav" );
-	PRECACHE_MODEL( "sprites/lgtning.spr" );
+	//PRECACHE_MODEL( "sprites/lgtning.spr" );
 }
 
 // If connected to a table, then use the table controllers, else hit where the trigger is.

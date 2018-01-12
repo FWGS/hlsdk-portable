@@ -32,7 +32,7 @@ public:
 	typedef enum { SATCHEL_DETONATE = 0, SATCHEL_RELEASE } SATCHELCODE;
 
 	static CGrenade *ShootTimed( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity, float time );
-	static CGrenade *ShootContact( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity );
+	static CGrenade *ShootContact( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity, float flDmg );
 	static CGrenade *ShootSatchelCharge( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity );
 	static void UseSatchelCharges( entvars_t *pevOwner, SATCHELCODE code );
 
@@ -80,11 +80,15 @@ public:
 #define	WEAPON_SNARK			15
 //begin Alex
 #define WEAPON_M41A			16
-#define WEAPON_BERETTA			17
-#define WEAPON_POOLSTICK		18
-#define	WEAPON_TOAD			19
-#define	WEAPON_KMEDKIT			20
+#define WEAPON_TOAD			17
+#define WEAPON_BERETTA			18
+#define WEAPON_POOLSTICK		19
 //end Alex
+#define WEAPON_BARNEYGLOCK		20
+#define WEAPON_BARNEYMP5		21
+#define WEAPON_BARNEYHANDGRENADE	22
+#define WEAPON_BARNEYSHOTGUN		23
+#define WEAPON_KMEDKIT			24
 
 #define WEAPON_ALLWEAPONS		(~(1<<WEAPON_SUIT))
 
@@ -109,8 +113,9 @@ public:
 #define SNARK_WEIGHT		5
 #define SATCHEL_WEIGHT		-10
 #define TRIPMINE_WEIGHT		-10
-#define TOAD_WEIGHT		10 // Alex
-#define KMEDKIT_WEIGHT		10 // Alex
+#define TOAD_WEIGHT		8 // Alex
+#define KMEDKIT_WEIGHT		0 // Alex
+#define M41A_WEIGHT		18
 
 // weapon clip/carry ammo capacities
 #define URANIUM_MAX_CARRY		100
@@ -125,8 +130,8 @@ public:
 #define SNARK_MAX_CARRY			15
 #define HORNET_MAX_CARRY		8
 #define M203_GRENADE_MAX_CARRY	10
-#define TOAD_MAX_CARRY			250 // Alex
-#define KMEDKIT_MAX_CARRY		250 // Alex
+#define TOAD_MAX_CARRY			12 // Alex
+#define KMEDKIT_MAX_CARRY		3 // Alex
 
 // the maximum amount of ammo each weapon's clip can hold
 #define WEAPON_NOCLIP			-1
@@ -147,7 +152,7 @@ public:
 #define TRIPMINE_MAX_CLIP		WEAPON_NOCLIP
 #define SNARK_MAX_CLIP			WEAPON_NOCLIP
 #define BERETTA_MAX_CLIP		15
-#define KMEDKIT_MAX_CLIP		1
+#define KMEDKIT_MAX_CLIP		WEAPON_NOCLIP
 
 // the default amount of ammo that comes with each gun when it spawns
 #define GLOCK_DEFAULT_GIVE			17
@@ -167,6 +172,7 @@ public:
 #define HIVEHAND_DEFAULT_GIVE		8
 #define BERETTA_DEFAULT_GIVE		15 // Alex
 #define KMEDKIT_DEFAULT_GIVE		1 // Alex
+#define TOAD_DEFAULT_GIVE		1
 
 // The amount of ammo given to a player by an ammo item.
 #define AMMO_URANIUMBOX_GIVE	20
@@ -197,7 +203,6 @@ typedef	enum
 	BULLET_MONSTER_9MM,
 	BULLET_MONSTER_MP5,
 	BULLET_MONSTER_12MM,
-	BULLET_MONSTER_M41A // M41A
 } Bullet;
 
 #define ITEM_FLAG_SELECTONEMPTY		1
@@ -331,6 +336,7 @@ public:
 	virtual BOOL CanDeploy( void );
 	virtual BOOL IsUseable( void );
 	BOOL DefaultDeploy( const char *szViewModel, const char *szWeaponModel, int iAnim, const char *szAnimExt, int skiplocal = 0, int body = 0 );
+	void DefaultHolster( int iAnim, float fDelay );
 	int DefaultReload( int iClipSize, int iAnim, float fDelay, int body = 0 );
 
 	virtual void ItemPostFrame( void );	// called each frame by the player PostThink
@@ -394,6 +400,7 @@ extern DLL_GLOBAL	short	g_sModelIndexWExplosion;// holds the index for the under
 extern DLL_GLOBAL	short	g_sModelIndexBubbles;// holds the index for the bubbles model
 extern DLL_GLOBAL	short	g_sModelIndexBloodDrop;// holds the sprite index for blood drops
 extern DLL_GLOBAL	short	g_sModelIndexBloodSpray;// holds the sprite index for blood spray (bigger)
+extern DLL_GLOBAL	short	g_sModelIndexLightning;// holds the sprite index for lightning
 
 extern void ClearMultiDamage(void);
 extern void ApplyMultiDamage(entvars_t* pevInflictor, entvars_t* pevAttacker );
@@ -490,6 +497,7 @@ public:
 	void SecondaryAttack( void );
 	void GlockFire( float flSpread, float flCycleTime, BOOL fUseAutoAim );
 	BOOL Deploy( void );
+	void Holster( int skiplocal = 0 );
 	void Reload( void );
 	void WeaponIdle( void );
 
@@ -502,7 +510,7 @@ public:
 #endif
 	}
 
-private:
+//private:
 	int m_iShell;
 
 	unsigned short m_usFireGlock1;
@@ -524,9 +532,8 @@ public:
 	int Swing( int fFirst );
 	BOOL Deploy( void );
 	void Holster( int skiplocal = 0 );
-#ifdef CROWBAR_IDLE_ANIM
 	void WeaponIdle();
-#endif
+
 	int m_iSwing;
 	TraceResult m_trHit;
 
@@ -539,7 +546,6 @@ public:
 #endif
 	}
 private:
-	unsigned short m_usCrowbar;
 };
 
 class CPython : public CBasePlayerWeapon
@@ -586,6 +592,7 @@ public:
 	void SecondaryAttack( void );
 	int SecondaryAmmoIndex( void );
 	BOOL Deploy( void );
+	void Holster( int skiplocal = 0 );
 	void Reload( void );
 	void WeaponIdle( void );
 	BOOL IsUseable();
@@ -603,7 +610,6 @@ public:
 
 private:
 	unsigned short m_usMP5;
-	unsigned short m_usMP52;
 };
 
 class CCrossbow : public CBasePlayerWeapon
@@ -636,8 +642,6 @@ public:
 	}
 
 private:
-	unsigned short m_usCrossbow;
-	unsigned short m_usCrossbow2;
 };
 
 class CShotgun : public CBasePlayerWeapon
@@ -657,6 +661,7 @@ public:
 	void PrimaryAttack( void );
 	void SecondaryAttack( void );
 	BOOL Deploy( );
+	void Holster( int skiplocal = 0 );
 	void Reload( void );
 	void WeaponTick();
 	void WeaponIdle( void );
@@ -732,7 +737,6 @@ public:
 	}
 
 private:
-	unsigned short m_usRpg;
 };
 
 class CRpgRocket : public CGrenade
@@ -777,6 +781,7 @@ public:
 	void StartFire( void );
 	void Fire( Vector vecOrigSrc, Vector vecDirShooting, float flDamage );
 	float GetFullChargeTime( void );
+	int m_fInAttack;
 	int m_iBalls;
 	int m_iGlow;
 	int m_iBeam;
@@ -838,6 +843,9 @@ public:
 
 	void UseAmmo( int count );
 
+	static int g_fireAnims1[];
+	static int g_fireAnims2[];
+	enum EGON_FIRESTATE { FIRE_OFF, FIRE_CHARGE };
 	enum EGON_FIREMODE { FIRE_NARROW, FIRE_WIDE};
 
 	CBeam				*m_pBeam;
@@ -859,11 +867,10 @@ private:
 #ifndef CLIENT_DLL
 	float				m_shootTime;
 #endif
+	EGON_FIRESTATE		m_fireState;
 	EGON_FIREMODE		m_fireMode;
 	float				m_shakeTime;
 	BOOL				m_deployed;
-
-	unsigned short m_usEgonFire;
 };
 
 class CHgun : public CBasePlayerWeapon
@@ -902,7 +909,6 @@ public:
 #endif
 	}
 private:
-	unsigned short m_usHornetFire;
 };
 
 class CHandGrenade : public CBasePlayerWeapon
@@ -927,6 +933,8 @@ public:
 		return FALSE;
 #endif
 	}
+	float m_flStartThrow;
+	float m_flReleaseThrow;
 };
 
 class CSatchel : public CBasePlayerWeapon
@@ -961,6 +969,8 @@ public:
 		return FALSE;
 #endif
 	}
+private:
+	int m_chargeReady;
 };
 
 class CTripmine : public CBasePlayerWeapon
@@ -992,7 +1002,6 @@ public:
 	}
 
 private:
-	unsigned short m_usTripFire;
 };
 
 class CSqueak : public CBasePlayerWeapon
@@ -1020,24 +1029,38 @@ public:
 	}
 
 private:
-	unsigned short m_usSnarkFire;
 };
 
 // Added by Alex
-class CKMedkit : public CBasePlayerWeapon
+class CKMedKit : public CBasePlayerWeapon
 {
 public:
+#ifndef CLIENT_DLL
+	int	Save( CSave &save );
+	int	Restore( CRestore &restore );
+	static	TYPEDESCRIPTION m_SaveData[];
+#endif
 	void Spawn( void );
 	void Precache( void );
-	int iItemSlot( void ) { return 2; }
+	int iItemSlot( void ) { return 1; }
 	int GetItemInfo(ItemInfo *p);
 
+	int AddToPlayer( CBasePlayer *pPlayer );
+	void Holster( int skiplocal /* = 0 */ );
 	void PrimaryAttack( void );
 	void SecondaryAttack( void );
-	void KMedkitFire( float flSpread, float flCycleTime, BOOL fUseAutoAim );
+	void UseMedkit( int fMode );
+	void EXPORT SayKateHealth();
 	BOOL Deploy( void );
-	void Reload( void );
 	void WeaponIdle( void );
+	BOOL IsUseable()
+	{
+		return TRUE;
+	}
+	BOOL CanDeploy()
+	{
+		return TRUE;
+	}
 
 	virtual BOOL UseDecrement( void )
 	{ 
@@ -1049,8 +1072,9 @@ public:
 	}
 
 private:
-
-	unsigned short m_usUseKMedkit;
+	BOOL m_bIsStateChanged;
+	int m_iState;
+	int m_iKateHealth;
 };
 // end
 
@@ -1069,6 +1093,7 @@ public:
 	BOOL Deploy( void );
 	void Reload( void );
 	void WeaponIdle( void );
+	void Holster( int skiplocal /* = 0 */ );
 
 	virtual BOOL UseDecrement( void )
 	{ 
@@ -1101,6 +1126,8 @@ public:
 	int Swing( int fFirst );
 	BOOL Deploy( void );
 	void Holster( int skiplocal = 0 );
+	void WeaponIdle();
+
 	int m_iSwing;
 	TraceResult m_trHit;
 
@@ -1113,7 +1140,6 @@ public:
 #endif
 	}
 private:
-	unsigned short m_usPoolstick;
 };
 // Alex end
 // Added by Alex
@@ -1125,6 +1151,7 @@ public:
 	int iItemSlot( void ) { return 3; }
 	int GetItemInfo(ItemInfo *p);
 	int AddToPlayer( CBasePlayer *pPlayer );
+	void Holster( int skiplocal /* = 0 */ );
 
 	void PrimaryAttack( void );
 	void SecondaryAttack( void );
@@ -1132,6 +1159,8 @@ public:
 	BOOL Deploy( void );
 	void Reload( void );
 	void WeaponIdle( void );
+	BOOL IsUseable();
+
 	float m_flNextAnimTime;
 	int m_iShell;
 
@@ -1146,7 +1175,6 @@ public:
 
 private:
 	unsigned short m_usM41A;
-	unsigned short m_usM41A2;
 };
 // end
 // alex
@@ -1157,6 +1185,8 @@ public:
 	void Precache( void );
 	int iItemSlot( void ) { return 5; }
 	int GetItemInfo(ItemInfo *p);
+	void EXPORT ToadIdle();
+	void HuntSound( bool force );
 
 	void PrimaryAttack( void );
 	void SecondaryAttack( void );
@@ -1173,9 +1203,47 @@ public:
 		return FALSE;
 #endif
 	}
-
 private:
-	unsigned short m_usToadFire;
+	Vector m_posNext;
+	float m_flNextTrace;
+	float m_flNextHunt;
+	float m_flDie;
 };
 // alex
+
+class CBarneyGlock : public CGlock
+{
+public:
+	void Spawn();
+	void Precache();
+	int GetItemInfo( ItemInfo *p );
+	BOOL Deploy();
+};
+
+class CBarneyShotgun : public CShotgun
+{
+public: 
+	void Spawn();
+	void Precache();
+	int GetItemInfo( ItemInfo *p );
+	BOOL Deploy();
+};
+
+class CBarneyMP5 : public CMP5
+{
+public:
+	void Spawn();
+	void Precache();
+	int GetItemInfo( ItemInfo *p );
+	BOOL Deploy();
+};
+
+class CBarneyHandGrenade : public CHandGrenade
+{
+public:
+	void Spawn();
+	void Precache();
+	int GetItemInfo( ItemInfo *p );  
+	BOOL Deploy();
+};
 #endif // WEAPONS_H

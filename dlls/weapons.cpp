@@ -45,6 +45,7 @@ DLL_GLOBAL	short g_sModelIndexWExplosion;// holds the index for the underwater e
 DLL_GLOBAL	short g_sModelIndexBubbles;// holds the index for the bubbles model
 DLL_GLOBAL	short g_sModelIndexBloodDrop;// holds the sprite index for the initial blood
 DLL_GLOBAL	short g_sModelIndexBloodSpray;// holds the sprite index for splattered blood
+DLL_GLOBAL	short g_sModelIndexLightning;// holds the sprite index for lightning
 
 ItemInfo CBasePlayerItem::ItemInfoArray[MAX_WEAPONS];
 AmmoInfo CBasePlayerItem::AmmoInfoArray[MAX_AMMO_SLOTS];
@@ -168,9 +169,9 @@ void DecalGunshot( TraceResult *pTrace, int iBulletType )
 		case BULLET_PLAYER_MP5:
 		case BULLET_MONSTER_MP5:
 		case BULLET_PLAYER_BUCKSHOT:
+		case BULLET_PLAYER_BERETTA:
 		case BULLET_PLAYER_357:
 		case BULLET_PLAYER_M41A: // Alex
-		case BULLET_MONSTER_M41A: // Alex
 		default:
 			// smoke and decal
 			UTIL_GunshotDecalTrace( pTrace, DamageDecal( pEntity, DMG_BULLET ) );
@@ -180,6 +181,7 @@ void DecalGunshot( TraceResult *pTrace, int iBulletType )
 			UTIL_GunshotDecalTrace( pTrace, DamageDecal( pEntity, DMG_BULLET ) );
 			break;
 		case BULLET_PLAYER_CROWBAR:
+		case BULLET_PLAYER_POOLSTICK:
 			// wall decal
 			UTIL_DecalTrace( pTrace, DamageDecal( pEntity, DMG_CLUB ) );
 			break;
@@ -296,6 +298,7 @@ void W_Precache( void )
 	// custom items...
 
 	// common world objects
+	UTIL_PrecacheOther( "item_armor" );
 	UTIL_PrecacheOther( "item_suit" );
 	UTIL_PrecacheOther( "item_healthkit" );
 	UTIL_PrecacheOther( "item_battery" );
@@ -321,6 +324,12 @@ void W_Precache( void )
 	UTIL_PrecacheOtherWeapon( "weapon_9mmAR" );
 	UTIL_PrecacheOther( "ammo_9mmAR" );
 	UTIL_PrecacheOther( "ammo_ARgrenades" );
+
+	// Weapons with Barney's hands.
+	UTIL_PrecacheOtherWeapon( "weapon_barney9mmhg" );
+	UTIL_PrecacheOtherWeapon( "weapon_barneyshotgun" );
+	UTIL_PrecacheOtherWeapon( "weapon_barneyhandgrenade" );
+	UTIL_PrecacheOtherWeapon( "weapon_barney9mmar" );
 
 // begin Alex
 	// m41a	
@@ -368,6 +377,9 @@ void W_Precache( void )
 	// toad
 	UTIL_PrecacheOtherWeapon( "weapon_toad" ); // Alex
 
+	// Kate's medickit
+	UTIL_PrecacheOtherWeapon( "weapon_kmedkit" );
+
 	// hornetgun
 	UTIL_PrecacheOtherWeapon( "weapon_hornetgun" );
 
@@ -385,6 +397,7 @@ void W_Precache( void )
 
 	g_sModelIndexLaser = PRECACHE_MODEL( g_pModelNameLaser );
 	g_sModelIndexLaserDot = PRECACHE_MODEL( "sprites/laserdot.spr" );
+	g_sModelIndexLightning = PRECACHE_MODEL( "sprites/lgtning.spr" );
 
 	// used by explosions
 	PRECACHE_MODEL( "models/grenade.mdl" );
@@ -629,16 +642,14 @@ void CBasePlayerWeapon::ItemPostFrame( void )
 		m_iClip += j;
 		m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] -= j;
 
-		m_pPlayer->TabulateAmmo();
-
 		m_fInReload = FALSE;
 	}
 
-	if( !(m_pPlayer->pev->button & IN_ATTACK ) )
+/*	if( !(m_pPlayer->pev->button & IN_ATTACK ) )
 	{
 		m_flLastFireTime = 0.0f;
 	}
-
+*/
 	if( ( m_pPlayer->pev->button & IN_ATTACK2 ) && CanAttack( m_flNextSecondaryAttack, gpGlobals->time, UseDecrement() ) )
 	{
 		if( pszAmmo2() && !m_pPlayer->m_rgAmmo[SecondaryAmmoIndex()] )
@@ -646,7 +657,6 @@ void CBasePlayerWeapon::ItemPostFrame( void )
 			m_fFireOnEmpty = TRUE;
 		}
 
-		m_pPlayer->TabulateAmmo();
 		SecondaryAttack();
 		m_pPlayer->pev->button &= ~IN_ATTACK2;
 	}
@@ -657,7 +667,6 @@ void CBasePlayerWeapon::ItemPostFrame( void )
 			m_fFireOnEmpty = TRUE;
 		}
 
-		m_pPlayer->TabulateAmmo();
 		PrimaryAttack();
 	}
 	else if( m_pPlayer->pev->button & IN_RELOAD && iMaxClip() != WEAPON_NOCLIP && !m_fInReload ) 
@@ -962,7 +971,6 @@ BOOL CBasePlayerWeapon::DefaultDeploy( const char *szViewModel, const char *szWe
 	if( !CanDeploy() )
 		return FALSE;
 
-	m_pPlayer->TabulateAmmo();
 	m_pPlayer->pev->viewmodel = MAKE_STRING( szViewModel );
 	m_pPlayer->pev->weaponmodel = MAKE_STRING( szWeaponModel );
 	strcpy( m_pPlayer->m_szAnimExtention, szAnimExt );
@@ -970,9 +978,17 @@ BOOL CBasePlayerWeapon::DefaultDeploy( const char *szViewModel, const char *szWe
 
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.0;
-	m_flLastFireTime = 0.0f;
+	// m_flLastFireTime = 0.0f;
 
 	return TRUE;
+}
+
+void CBasePlayerWeapon::DefaultHolster( int iAnim, float fDelay )
+{
+	m_fInReload = FALSE;
+	SendWeaponAnim( iAnim );
+	m_flNextPrimaryAttack = m_flNextSecondaryAttack = m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + fDelay;
+	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + fDelay;
 }
 
 BOOL CBasePlayerWeapon::DefaultReload( int iClipSize, int iAnim, float fDelay, int body )
@@ -1644,3 +1660,12 @@ TYPEDESCRIPTION	CSatchel::m_SaveData[] =
 };
 
 IMPLEMENT_SAVERESTORE( CSatchel, CBasePlayerWeapon )
+
+TYPEDESCRIPTION CKMedKit::m_SaveData[] =
+{
+	DEFINE_FIELD( CKMedKit, m_bIsStateChanged, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CKMedKit, m_iState, FIELD_INTEGER ),
+	DEFINE_FIELD( CKMedKit, m_iKateHealth, FIELD_INTEGER ),
+};
+
+IMPLEMENT_SAVERESTORE( CKMedKit, CBasePlayerWeapon )

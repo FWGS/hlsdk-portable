@@ -37,10 +37,10 @@ enum glock_e
 
 LINK_ENTITY_TO_CLASS( weapon_glock, CGlock )
 LINK_ENTITY_TO_CLASS( weapon_9mmhandgun, CGlock )
-LINK_ENTITY_TO_CLASS( weapon_barney9mmnh, CGlock )
+
 void CGlock::Spawn()
 {
-	pev->classname = MAKE_STRING( "weapon_barney9mmhg" ); // hack to allow for old names
+	pev->classname = MAKE_STRING( "weapon_9mmhandgun" ); // hack to allow for old names
 	Precache();
 	m_iId = WEAPON_GLOCK;
 	SET_MODEL( ENT( pev ), "models/w_9mmhandgun.mdl" );
@@ -52,7 +52,7 @@ void CGlock::Spawn()
 
 void CGlock::Precache( void )
 {
-	PRECACHE_MODEL( "models/v_barney9mmhg.mdl" );
+	PRECACHE_MODEL( "models/v_9mmhandgun.mdl" );
 	PRECACHE_MODEL( "models/w_9mmhandgun.mdl" );
 	PRECACHE_MODEL( "models/p_9mmhandgun.mdl" );
 
@@ -101,7 +101,12 @@ int CGlock::AddToPlayer( CBasePlayer *pPlayer )
 BOOL CGlock::Deploy()
 {
 	// pev->body = 1;
-	return DefaultDeploy( "models/v_barney9mmhg.mdl", "models/p_9mmhandgun.mdl", GLOCK_DRAW, "onehanded", /*UseDecrement() ? 1 : 0*/ 0 );
+	return DefaultDeploy( "models/v_9mmhandgun.mdl", "models/p_9mmhandgun.mdl", GLOCK_DRAW, "onehanded", /*UseDecrement() ? 1 : 0*/ 0 );
+}
+
+void CGlock::Holster( int skiplocal /* = 0 */ )
+{
+        DefaultHolster( GLOCK_HOLSTER, 1.2 );
 }
 
 void CGlock::SecondaryAttack( void )
@@ -116,12 +121,18 @@ void CGlock::PrimaryAttack( void )
 
 void CGlock::GlockFire( float flSpread, float flCycleTime, BOOL fUseAutoAim )
 {
+	if( m_pPlayer->m_bIsHolster )
+	{
+		WeaponIdle();
+		return;
+	}
+
 	if( m_iClip <= 0 )
 	{
 		if( m_fFireOnEmpty )
 		{
 			PlayEmptySound();
-			m_flNextPrimaryAttack = GetNextAttackDelay( 0.2 );
+			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.2;
 		}
 
 		return;
@@ -170,7 +181,7 @@ void CGlock::GlockFire( float flSpread, float flCycleTime, BOOL fUseAutoAim )
 
 	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), fUseAutoAim ? m_usFireGlock1 : m_usFireGlock2, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, vecDir.x, vecDir.y, 0, 0, ( m_iClip == 0 ) ? 1 : 0, 0 );
 
-	m_flNextPrimaryAttack = m_flNextSecondaryAttack = GetNextAttackDelay( flCycleTime );
+	m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + flCycleTime;
 
 	if( !m_iClip && m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0 )
 		// HEV suit - indicate out of ammo condition
@@ -181,6 +192,12 @@ void CGlock::GlockFire( float flSpread, float flCycleTime, BOOL fUseAutoAim )
 
 void CGlock::Reload( void )
 {
+	if( m_pPlayer->m_bIsHolster )
+	{
+		WeaponIdle();
+		return;
+	}
+
 	if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0 || m_iClip == GLOCK_MAX_CLIP )
 		return;
 
@@ -199,6 +216,16 @@ void CGlock::Reload( void )
 
 void CGlock::WeaponIdle( void )
 {
+	if( m_pPlayer->m_bIsHolster )
+	{
+		if( m_flTimeWeaponIdle <= UTIL_WeaponTimeBase() )
+		{
+			m_pPlayer->m_bIsHolster = FALSE;
+			Deploy();
+		}
+		return;
+	}
+
 	ResetEmptySound();
 
 	m_pPlayer->GetAutoaimVector( AUTOAIM_10DEGREES );

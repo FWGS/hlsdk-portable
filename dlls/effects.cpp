@@ -1569,7 +1569,7 @@ void CTestEffect::Spawn( void )
 
 void CTestEffect::Precache( void )
 {
-	PRECACHE_MODEL( "sprites/lgtning.spr" );
+	// PRECACHE_MODEL( "sprites/lgtning.spr" );
 }
 
 void CTestEffect::TestThink( void )
@@ -2230,6 +2230,112 @@ void CItemSoda::CanTouch( CBaseEntity *pOther )
 	pev->movetype = MOVETYPE_NONE;
 	pev->effects = EF_NODRAW;
 	SetTouch( NULL );
+	SetThink( &CBaseEntity::SUB_Remove );
+	pev->nextthink = gpGlobals->time;
+}
+
+class CEnvPawnEffect : public CPointEntity
+{
+public:
+	int Save( CSave &save );
+	int Restore( CRestore &restore );
+	static TYPEDESCRIPTION m_SaveData[];
+
+	void Spawn( void );
+	void Precache( void );
+	void Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+	void KeyValue( KeyValueData *pkvd );
+private:
+	int m_iLightRad;
+	//int m_iLightingModelIndex;
+	int m_iSpawnType;
+	int m_iBeamCount;
+	float m_flSpriteScale;
+	float m_flSpawnSoundRad;
+	float m_flSpawnVol;
+};
+
+LINK_ENTITY_TO_CLASS( env_spawnereffect, CEnvPawnEffect )
+
+TYPEDESCRIPTION CEnvPawnEffect::m_SaveData[] =
+{
+	DEFINE_FIELD( CEnvPawnEffect, m_iLightRad, FIELD_INTEGER ),
+	DEFINE_FIELD( CEnvPawnEffect, m_iSpawnType, FIELD_INTEGER ),
+	DEFINE_FIELD( CEnvPawnEffect, m_iBeamCount, FIELD_INTEGER ),
+	DEFINE_FIELD( CEnvPawnEffect, m_flSpriteScale, FIELD_FLOAT ),
+	DEFINE_FIELD( CEnvPawnEffect, m_flSpawnSoundRad, FIELD_FLOAT ),
+	DEFINE_FIELD( CEnvPawnEffect, m_flSpawnVol, FIELD_FLOAT ),
+};
+
+IMPLEMENT_SAVERESTORE( CEnvPawnEffect, CPointEntity )
+
+void CEnvPawnEffect::Spawn()
+{
+	Precache();
+	pev->solid = SOLID_NOT;
+	pev->movetype = MOVETYPE_NONE;
+}
+
+void CEnvPawnEffect::Precache()
+{
+	PRECACHE_SOUND( "ambience/spawnsnd.wav" );
+	PRECACHE_MODEL( "sprites/xflare1.spr" );
+	PRECACHE_MODEL( "sprites/fexplo1.spr" );
+}
+
+void CEnvPawnEffect::KeyValue( KeyValueData *pkvd )
+{
+	if( FStrEq( pkvd->szKeyName, "spawntype" ) )
+	{
+		m_iSpawnType = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "beamcount" ) )
+	{
+		m_iBeamCount = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "spritescale" ) )
+	{
+		m_flSpriteScale = atof( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "spawnsoundrad" ) )
+	{
+		switch( atoi( pkvd->szValue ) )
+		{
+			case 3:
+				m_flSpawnSoundRad = ATTN_NONE;
+				break;
+			case 2:
+				m_flSpawnSoundRad = ATTN_NORM;
+				break;
+			case 1:
+				m_flSpawnSoundRad = ATTN_IDLE;
+				break;
+			default:
+				m_flSpawnSoundRad = ATTN_STATIC;
+				break;
+		}
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "spawnvol" ) )
+	{
+		m_flSpawnVol = atof( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "lightrad" ) )
+	{
+		m_iLightRad = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else
+		pkvd->fHandled = FALSE;
+}
+
+void CEnvPawnEffect::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
+{
+	UTIL_CreateWarpball( ENT( pev ), pev->origin, m_flSpawnVol, m_flSpawnSoundRad, m_iBeamCount, m_iSpawnType, m_flSpriteScale, m_iLightRad );
 	SetThink( &CBaseEntity::SUB_Remove );
 	pev->nextthink = gpGlobals->time;
 }

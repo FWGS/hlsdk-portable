@@ -442,13 +442,19 @@ Activity CScientist::GetStoppedActivity( void )
 
 void CScientist::StartTask( Task_t *pTask )
 {
+	const char *pszSentence;
+
 	switch( pTask->iTask )
 	{
 	case TASK_SAY_HEAL:
 		//if( FOkToSpeak() )
 		Talk( 2 );
 		m_hTalkTarget = m_hTargetEnt;
-		PlaySentence( "SC_HEAL", 2, VOL_NORM, ATTN_IDLE );
+		if( FClassnameIs( pev, "monster_worker" ) )
+			pszSentence = "WK_HEAL";
+		else
+			pszSentence = "SC_HEAL";
+		PlaySentence( pszSentence, 2, VOL_NORM, ATTN_IDLE );
 		TaskComplete();
 		break;
 	case TASK_SCREAM:
@@ -469,9 +475,18 @@ void CScientist::StartTask( Task_t *pTask )
 			//The enemy can be null here. - Solokiller
 			//Discovered while testing the barnacle grapple on headcrabs with scientists in view.
 			if( m_hEnemy != 0 && m_hEnemy->IsPlayer() )
-				PlaySentence( "SC_PLFEAR", 5, VOL_NORM, ATTN_NORM );
+			{
+				if( FClassnameIs( pev, "monster_worker" ) )
+					pszSentence = "WK_PLFEAR";
+				else
+					pszSentence = "SC_PLFEAR";
+			}
+			else if( FClassnameIs( pev, "monster_worker" ) )
+				pszSentence = "WK_FEAR";
 			else
-				PlaySentence( "SC_FEAR", 5, VOL_NORM, ATTN_NORM );
+				pszSentence = "SC_FEAR";
+
+			PlaySentence( pszSentence, 5, VOL_NORM, ATTN_NORM );
 		}
 		TaskComplete();
 		break;
@@ -639,10 +654,7 @@ void CScientist::HandleAnimEvent( MonsterEvent_t *pEvent )
 void CScientist::Spawn( void )
 {
 	Precache();
-	if( FClassnameIs( pev, "monster_worker" ) )
-		SET_MODEL( ENT( pev ), "models/gus.mdl" );
-	else
-		SET_MODEL( ENT( pev ), "models/scientist.mdl" );
+	SET_MODEL( ENT( pev ), STRING( pev->model ) );
 
 	UTIL_SetSize( pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX );
 
@@ -661,15 +673,18 @@ void CScientist::Spawn( void )
 	// White hands
 	pev->skin = 0;
 
-	if( pev->body == -1 )
+	if( !FClassnameIs( pev, "monster_worker" ) )
 	{
-		// -1 chooses a random head
-		pev->body = RANDOM_LONG( 0, NUM_SCIENTIST_HEADS - 1 );// pick a head, any head
-	}
+		if( pev->body == -1 )
+		{
+			// -1 chooses a random head
+			pev->body = RANDOM_LONG( 0, NUM_SCIENTIST_HEADS - 1 );// pick a head, any head
+		}
 
-	// Luther is black, make his hands black
-	if( pev->body == HEAD_LUTHER )
-		pev->skin = 1;
+		// Luther is black, make his hands black
+		if( pev->body == HEAD_LUTHER )
+			pev->skin = 1;
+	}
 
 	MonsterInit();
 	SetUse( &CTalkMonster::FollowerUse );
@@ -681,10 +696,10 @@ void CScientist::Spawn( void )
 void CScientist::Precache( void )
 {
 	if( FClassnameIs( pev, "monster_worker" ) )
-		PRECACHE_MODEL( "models/gus.mdl" );
+		pev->model = MAKE_STRING( "models/gus.mdl" );
 	else
-		PRECACHE_MODEL( "models/scientist.mdl" );
-
+		pev->model = MAKE_STRING( "models/scientist.mdl" );
+	PRECACHE_MODEL( STRING( pev->model ) );
 	PRECACHE_SOUND( "scientist/sci_pain1.wav" );
 	PRECACHE_SOUND( "scientist/sci_pain2.wav" );
 	PRECACHE_SOUND( "scientist/sci_pain3.wav" );
@@ -711,45 +726,73 @@ void CScientist::TalkInit()
 
 	// scientists speach group names (group names are in sentences.txt)
 
-	m_szGrp[TLK_ANSWER] = "SC_ANSWER";
-	m_szGrp[TLK_QUESTION] = "SC_QUESTION";
-	m_szGrp[TLK_IDLE] = "SC_IDLE";
-	m_szGrp[TLK_STARE] = "SC_STARE";
-	m_szGrp[TLK_USE] = "SC_OK";
-	m_szGrp[TLK_UNUSE] = "SC_WAIT";
-	m_szGrp[TLK_STOP] = "SC_STOP";
-	m_szGrp[TLK_NOSHOOT] = "SC_SCARED";
-	m_szGrp[TLK_HELLO] = "SC_HELLO";
+	if( FClassnameIs( pev, "monster_worker" ) )
+	{
+		m_szGrp[TLK_ANSWER] = "WK_ANSWER";
+		m_szGrp[TLK_QUESTION] = "WK_QUESTION";
+		m_szGrp[TLK_IDLE] = "WK_IDLE";
+		m_szGrp[TLK_STARE] = "WK_STARE";
+		m_szGrp[TLK_USE] = "WK_OK";
+		m_szGrp[TLK_UNUSE] = "WK_WAIT";
+		m_szGrp[TLK_STOP] = "WK_STOP";
+		m_szGrp[TLK_NOSHOOT] = "WK_SCARED";
+		m_szGrp[TLK_HELLO] = "WK_HELLO";
 
-	m_szGrp[TLK_PLHURT1] = "!SC_CUREA";
-	m_szGrp[TLK_PLHURT2] = "!SC_CUREB"; 
-	m_szGrp[TLK_PLHURT3] = "!SC_CUREC";
+		m_szGrp[TLK_PLHURT1] = "!WK_CUREA";
+		m_szGrp[TLK_PLHURT2] = "!WK_CUREB";
+		m_szGrp[TLK_PLHURT3] = "!WK_CUREC";
+
+		m_szGrp[TLK_SMELL] = "WK_SMELL";
+
+		m_szGrp[TLK_WOUND] = "WK_WOUND";
+		m_szGrp[TLK_MORTAL] = "WK_MORTAL";
+
+		m_voicePitch = 90;
+	}
+	else
+	{
+		m_szGrp[TLK_ANSWER] = "SC_ANSWER";
+		m_szGrp[TLK_QUESTION] = "SC_QUESTION";
+		m_szGrp[TLK_IDLE] = "SC_IDLE";
+		m_szGrp[TLK_STARE] = "SC_STARE";
+		m_szGrp[TLK_USE] = "SC_OK";
+		m_szGrp[TLK_UNUSE] = "SC_WAIT";
+		m_szGrp[TLK_STOP] = "SC_STOP";
+		m_szGrp[TLK_NOSHOOT] = "SC_SCARED";
+		m_szGrp[TLK_HELLO] = "SC_HELLO";
+
+		m_szGrp[TLK_PLHURT1] = "!SC_CUREA";
+		m_szGrp[TLK_PLHURT2] = "!SC_CUREB"; 
+		m_szGrp[TLK_PLHURT3] = "!SC_CUREC";
+
+		m_szGrp[TLK_SMELL] = "SC_SMELL";
+
+		m_szGrp[TLK_WOUND] = "SC_WOUND";
+		m_szGrp[TLK_MORTAL] = "SC_MORTAL";
+
+		// get voice for head
+		switch( pev->body % 3 )
+		{
+		default:
+		case HEAD_GLASSES:
+			m_voicePitch = 105;
+			break;  //glasses
+		case HEAD_EINSTEIN:
+			m_voicePitch = 100;
+			break;  //einstein
+		case HEAD_LUTHER:
+			m_voicePitch = 95;
+			break;  //luther
+		case HEAD_SLICK:
+			m_voicePitch = 100;
+			break;  //slick
+		}
+	}
 
 	m_szGrp[TLK_PHELLO] = "SC_PHELLO";
 	m_szGrp[TLK_PIDLE] = "SC_PIDLE";
 	m_szGrp[TLK_PQUESTION] = "SC_PQUEST";
-	m_szGrp[TLK_SMELL] = "SC_SMELL";
 
-	m_szGrp[TLK_WOUND] = "SC_WOUND";
-	m_szGrp[TLK_MORTAL] = "SC_MORTAL";
-
-	// get voice for head
-	switch( pev->body % 3 )
-	{
-	default:
-	case HEAD_GLASSES:
-		m_voicePitch = 105;
-		break;	//glasses
-	case HEAD_EINSTEIN:
-		m_voicePitch = 100;
-		break;	//einstein
-	case HEAD_LUTHER:
-		m_voicePitch = 95;
-		break;	//luther
-	case HEAD_SLICK:
-		m_voicePitch = 100;
-		break;	//slick
-	}
 }
 
 int CScientist::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )
@@ -1139,15 +1182,13 @@ LINK_ENTITY_TO_CLASS( monster_scientist_dead, CDeadScientist )
 void CDeadScientist::Spawn()
 {
 	if( FClassnameIs( pev, "monster_worker" ) )
-	{
-		PRECACHE_MODEL( "models/gus.mdl" );
-		SET_MODEL( ENT( pev ), "models/gus.mdl" );
-	}
+		pev->model = MAKE_STRING( "models/construction.mdl" );
 	else
-	{
-		PRECACHE_MODEL( "models/scientist.mdl" );
-		SET_MODEL( ENT( pev ), "models/scientist.mdl" );
-	}
+		pev->model = MAKE_STRING( "models/scientist.mdl" );
+
+	PRECACHE_MODEL( STRING( pev->model ) );
+	SET_MODEL( ENT( pev ), STRING( pev->model ) );
+
 	pev->effects = 0;
 	pev->sequence = 0;
 
@@ -1156,17 +1197,20 @@ void CDeadScientist::Spawn()
 	
 	m_bloodColor = BLOOD_COLOR_RED;
 
-	if( pev->body == -1 )
-	{
-		// -1 chooses a random head
-		pev->body = RANDOM_LONG( 0, NUM_SCIENTIST_HEADS - 1 );// pick a head, any head
-	}
+	pev->skin = 0;
 
-	// Luther is black, make his hands black
-	if( pev->body == HEAD_LUTHER )
-		pev->skin = 1;
-	else
-		pev->skin = 0;
+	if( !FClassnameIs( pev, "monster_worker" ) )
+	{
+		if( pev->body == -1 )
+		{
+			// -1 chooses a random head
+			pev->body = RANDOM_LONG( 0, NUM_SCIENTIST_HEADS - 1 );// pick a head, any head
+		}
+
+		// Luther is black, make his hands black
+		if( pev->body == HEAD_LUTHER )
+			pev->skin = 1;
+	}
 
 	pev->sequence = LookupSequence( m_szPoses[m_iPose] );
 	if( pev->sequence == -1 )

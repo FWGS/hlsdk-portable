@@ -27,6 +27,7 @@
 #include "saverestore.h"
 #include "trains.h"			// trigger_camera has train functionality
 #include "gamerules.h"
+#include "skill.h"
 
 #define	SF_TRIGGER_PUSH_START_OFF	2//spawnflag that makes trigger_push spawn turned OFF
 #define SF_TRIGGER_HURT_TARGETONCE	1// Only fire hurt target once
@@ -1095,8 +1096,15 @@ void CBaseTrigger::MultiTouch( CBaseEntity *pOther )
 
 	pevToucher = pOther->pev;
 
+	if( FBitSet( pev->spawnflags, SF_TRIGGER_KATEONLY ) )
+	{
+		if( FClassnameIs( pevToucher, "monster_kate" ) )
+		{
+			ActivateMultiTrigger( pOther );
+		}
+	}
 	// Only touch clients, monsters, or pushables (depending on flags)
-	if( ( ( pevToucher->flags & FL_CLIENT ) && !( pev->spawnflags & SF_TRIGGER_NOCLIENTS ) ) ||
+	else if( ( ( pevToucher->flags & FL_CLIENT ) && !( pev->spawnflags & SF_TRIGGER_NOCLIENTS ) ) ||
 		 ( ( pevToucher->flags & FL_MONSTER ) && (pev->spawnflags & SF_TRIGGER_ALLOWMONSTERS ) ) ||
 		 ( ( pev->spawnflags & SF_TRIGGER_PUSHABLES ) && FClassnameIs( pevToucher,"func_pushable" ) ) )
 	{
@@ -2380,4 +2388,170 @@ void CTriggerCamera::Move()
 
 	float fraction = 2 * gpGlobals->frametime;
 	pev->velocity = ( ( pev->movedir * pev->speed ) * fraction ) + ( pev->velocity * ( 1 - fraction ) );
+}
+
+class CTriggerDie : public CBaseTrigger
+{
+public:
+	void KeyValue( KeyValueData *pkvd );
+	void Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+
+	int Save( CSave &save );
+	int Restore( CRestore &restore );
+
+	static TYPEDESCRIPTION m_SaveData[];
+
+private:
+	string_t m_szMonsterName;
+};
+
+LINK_ENTITY_TO_CLASS( trigger_die, CTriggerDie )
+
+TYPEDESCRIPTION	CTriggerDie::m_SaveData[] =
+{
+	DEFINE_FIELD( CTriggerDie, m_szMonsterName, FIELD_STRING ),
+};
+
+IMPLEMENT_SAVERESTORE( CTriggerDie, CBaseTrigger )
+
+void CTriggerDie::KeyValue( KeyValueData *pkvd )
+{
+	if( FStrEq( pkvd->szKeyName, "monstername" ) )
+	{
+		m_szMonsterName = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else
+		CBaseTrigger::KeyValue( pkvd );
+}
+
+void CTriggerDie::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
+{
+	CBaseEntity *pEntity = UTIL_FindEntityByTargetname( 0, STRING( m_szMonsterName ) );
+	if( pEntity )
+	{
+		float flDmg = pEntity->pev->health + 1.0f;
+		pEntity->TakeDamage( pev, pev, flDmg, 0 );
+	}
+	else
+	{
+		ALERT( at_console, "trigger_die: didn't find monster!\n" );
+	}
+}
+
+class CTriggerLoadHazard : public CBaseTrigger
+{
+public:
+	void Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+};
+
+LINK_ENTITY_TO_CLASS( trigger_loadhazard, CTriggerLoadHazard )
+
+void CTriggerLoadHazard::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
+{
+	if( pActivator && pActivator->IsPlayer() )
+	{
+		ALERT( at_console, "trigger_loadhazard: loading t0a0 - Hazard Course\n" );
+		CHANGE_LEVEL( "t0a0", 0 );
+	}
+	else
+	{
+		ALERT( at_console, "trigger_loadhazard: not player activate\n" );
+	}
+}
+
+class CTriggerKateHealth : public CBaseTrigger
+{
+public:
+	void KeyValue( KeyValueData *pkvd );
+	void Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+
+	int Save( CSave &save );
+	int Restore( CRestore &restore );
+
+	static TYPEDESCRIPTION m_SaveData[];
+
+private:
+	string_t m_szKateName;
+};
+
+LINK_ENTITY_TO_CLASS( trigger_katehealth, CTriggerKateHealth )
+
+TYPEDESCRIPTION	CTriggerKateHealth::m_SaveData[] =
+{
+	DEFINE_FIELD( CTriggerKateHealth, m_szKateName, FIELD_STRING ),
+};
+
+IMPLEMENT_SAVERESTORE( CTriggerKateHealth, CBaseTrigger )
+
+void CTriggerKateHealth::KeyValue( KeyValueData *pkvd )
+{
+	if( FStrEq( pkvd->szKeyName, "katename" ) )
+	{
+		m_szKateName = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else
+		CBaseTrigger::KeyValue( pkvd );
+}
+
+void CTriggerKateHealth::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
+{
+        CBaseEntity *pEntity = UTIL_FindEntityByTargetname( 0, STRING( m_szKateName ) );
+        if( pEntity )
+	{
+		ALERT( at_console, "trigger_katehealth: Kate health before: %f\n", pEntity->pev->health );
+		pEntity->pev->health = gSkillData.kateHealth;
+		ALERT( at_console, "trigger_katehealth: Kate health after: %f\n", pEntity->pev->health );
+	}
+	else
+	{
+		ALERT( at_console, "trigger_katehealth: didn't find kate!\n" );		
+	}
+}
+
+class CTriggerSound : public CBaseTrigger
+{
+public:
+	void Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+	void Touch( CBaseEntity *pOther );
+	void ChangeSoundRoom( float roomtype, float range );
+};
+
+LINK_ENTITY_TO_CLASS( trigger_sound, CTriggerSound )
+
+void CTriggerSound::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
+{
+	ChangeSoundRoom( pev->health, 64.0f );
+}
+
+void CTriggerSound::Touch( CBaseEntity *pOther )
+{
+	if( pOther->IsPlayer() )
+		ChangeSoundRoom( pev->health, 64.0f );
+}
+
+void CTriggerSound::ChangeSoundRoom( float roomtype, float range )
+{
+	CBasePlayer *pPlayer = (CBasePlayer *)UTIL_FindEntityByClassname( 0, "player" );
+	if( pPlayer->m_flSndRoomtype != roomtype )
+	{
+		if( pPlayer->pev->waterlevel == 3 )
+		{
+			ALERT( at_console, "trigger_sound: underwater not setting to %d - %s\n", (int)roomtype, UTIL_GetSoundRoomTypeName( roomtype ) );
+			pPlayer->m_flSndRoomtype = 0;
+		}
+		else
+		{
+			pPlayer->m_pentSndLast = ENT( pev );
+			pPlayer->m_flSndRoomtype = roomtype;
+			pPlayer->m_flSndRange = range;
+
+			ALERT( at_console, "trigger_sound: set to %d - %s \n", (int)roomtype, UTIL_GetSoundRoomTypeName( roomtype ) );
+
+			MESSAGE_BEGIN( MSG_ONE, SVC_ROOMTYPE, 0, pPlayer->edict() );		// use the magic #1 for "one client"
+				WRITE_SHORT( (short)roomtype );					// sequence number
+			MESSAGE_END();
+		}
+	}
 }

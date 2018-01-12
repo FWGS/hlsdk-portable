@@ -266,17 +266,17 @@ void CZombie::HandleAnimEvent( MonsterEvent_t *pEvent )
 void CZombie::Spawn()
 {
 	Precache();
-	if( FClassnameIs( pev, "monster_zombie" ) )
-		SET_MODEL( ENT( pev ), "models/zombie.mdl" );
-	else
-		SET_MODEL( ENT( pev ), "models/zbarnie.mdl" );
+	SET_MODEL( ENT( pev ), STRING( pev->model ) );
 
 	UTIL_SetSize( pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX );
 
 	pev->solid		= SOLID_SLIDEBOX;
 	pev->movetype		= MOVETYPE_STEP;
 	m_bloodColor		= BLOOD_COLOR_GREEN;
-	pev->health		= gSkillData.zombieHealth;
+	if( FClassnameIs( pev, "monster_zombie" ) )
+		pev->health	= gSkillData.zombieHealth;
+	else
+		pev->health	= gSkillData.zombieHealth * 1.25;
 	pev->view_ofs		= VEC_VIEW;// position of the eyes relative to monster's origin.
 	m_flFieldOfView		= 0.5;// indicates the width of this monster's forward view cone ( as a dotproduct result )
 	m_MonsterState		= MONSTERSTATE_NONE;
@@ -293,9 +293,11 @@ void CZombie::Precache()
 	size_t i;
 
 	if( FClassnameIs( pev, "monster_zombie" ) )
-		PRECACHE_MODEL( "models/zombie.mdl" );
+		pev->model = MAKE_STRING( "models/zombie.mdl" );
 	else
-		PRECACHE_MODEL( "models/zbarnie.mdl" );
+		pev->model = MAKE_STRING( "models/zbarney.mdl" );
+
+	PRECACHE_MODEL( STRING( pev->model ) );
 
 	for( i = 0; i < ARRAYSIZE( pAttackHitSounds ); i++ )
 		PRECACHE_SOUND( pAttackHitSounds[i] );

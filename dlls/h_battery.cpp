@@ -47,6 +47,7 @@ public:
 	int m_iJuice;
 	int m_iOn;			// 0 = off, 1 = startup, 2 = going
 	float m_flSoundTime;
+	float m_flMessageTime;
 };
 
 TYPEDESCRIPTION CRecharge::m_SaveData[] =
@@ -104,8 +105,14 @@ void CRecharge::Precache()
 
 void CRecharge::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 { 
+	// Make sure that we have a caller
+	if( !pActivator )
+		return;
+
+	m_hActivator = pActivator;
+
 	// if it's not a player, ignore
-	if( !FClassnameIs( pActivator->pev, "player" ) )
+	if( !m_hActivator->IsPlayer() )
 		return;
 
 	// if there is no juice left, turn it off
@@ -116,12 +123,18 @@ void CRecharge::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE use
 	}
 
 	// if the player doesn't have the suit, or there is no juice left, make the deny noise
-	if( ( m_iJuice <= 0 ) || ( !( pActivator->pev->weapons & ( 1 << WEAPON_SUIT ) ) ) )
+	if( ( m_iJuice <= 0 ) || ( !( m_hActivator->pev->weapons & ( 1 << WEAPON_SUIT ) ) || !UTIL_HasSuit( m_hActivator ) ) )
 	{
 		if( m_flSoundTime <= gpGlobals->time )
 		{
 			m_flSoundTime = gpGlobals->time + 0.62;
 			EMIT_SOUND( ENT( pev ), CHAN_ITEM, "items/suitchargeno1.wav", 0.85, ATTN_NORM );
+		}
+
+		if( !UTIL_HasSuit( m_hActivator ) && m_flMessageTime < gpGlobals->time )
+		{
+			m_flMessageTime = gpGlobals->time + 4.0f;
+			UTIL_ShowMessageAll( "NOHEVRECHARGE" );
 		}
 		return;
 	}
@@ -133,16 +146,6 @@ void CRecharge::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE use
 	if( m_flNextCharge >= gpGlobals->time )
 		return;
 
-	// Make sure that we have a caller
-	if( !pActivator )
-		return;
-
-	m_hActivator = pActivator;
-
-	//only recharge the player
-	if( !m_hActivator->IsPlayer() )
-		return;
-	
 	// Play the on sound or the looping charging sound
 	if( !m_iOn )
 	{

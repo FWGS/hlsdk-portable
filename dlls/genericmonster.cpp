@@ -20,10 +20,11 @@
 #include	"cbase.h"
 #include	"monsters.h"
 #include	"schedule.h"
+#include	"weapons.h"
 
 // For holograms, make them not solid so the player can walk through them
 #define	SF_GENERICMONSTER_NOTSOLID					4 
-
+#define SF_GENERICMONSTER_DONTBLEED					8
 //=========================================================
 // Monster's Anim Events Go Here
 //=========================================================
@@ -37,6 +38,8 @@ public:
 	int Classify( void );
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
 	int ISoundMask( void );
+	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType );
+	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
 };
 
 LINK_ENTITY_TO_CLASS( monster_generic, CGenericMonster )
@@ -112,8 +115,16 @@ void CGenericMonster::Spawn()
 
 	pev->solid = SOLID_SLIDEBOX;
 	pev->movetype = MOVETYPE_STEP;
-	m_bloodColor = BLOOD_COLOR_RED;
-	pev->health = 8;
+	if( pev->spawnflags & SF_GENERICMONSTER_DONTBLEED )
+	{
+		m_bloodColor = DONT_BLEED;
+		pev->health = 100;
+	}
+	else
+	{
+		m_bloodColor = BLOOD_COLOR_RED;
+		pev->health = 8;
+	}
 	m_flFieldOfView = 0.5;// indicates the width of this monster's forward view cone ( as a dotproduct result )
 	m_MonsterState = MONSTERSTATE_NONE;
 
@@ -134,6 +145,38 @@ void CGenericMonster::Precache()
 	PRECACHE_MODEL( STRING( pev->model ) );
 }
 
+void CGenericMonster::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType )
+{
+	if( pev->spawnflags & SF_GENERICMONSTER_DONTBLEED )
+	{
+		UTIL_Ricochet( ptr->vecEndPos, 1.0f );
+		AddMultiDamage( pevAttacker, this, flDamage, bitsDamageType );
+		return;
+	}
+
+	CBaseMonster::TraceAttack( pevAttacker, flDamage, vecDir, ptr, bitsDamageType );
+}
+
 //=========================================================
 // AI Schedules Specific to this monster
 //=========================================================
+int CGenericMonster::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )
+{
+	if( pev->spawnflags & SF_GENERICMONSTER_DONTBLEED )
+	{
+		pev->health = pev->max_health / 2; // always trigger the 50% damage aitrigger
+
+		if( flDamage > 0 )
+		{
+			SetConditions( bits_COND_LIGHT_DAMAGE );
+		}
+
+		if( flDamage >= 20 )
+		{
+			SetConditions( bits_COND_HEAVY_DAMAGE );
+		}
+		return TRUE;
+	}
+
+	return CBaseMonster::TakeDamage( pevInflictor, pevAttacker, flDamage, bitsDamageType );
+}

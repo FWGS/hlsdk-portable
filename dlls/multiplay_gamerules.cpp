@@ -146,13 +146,13 @@ void CHalfLifeMultiplay::RefreshSkillData( void )
 	gSkillData.plrDmgCrowbar = 25;
 
 	// Poolstick
-	gSkillData.plrDmgPoolstick = 10;//Alex
+	gSkillData.plrDmgPoolstick = 12;//Alex
 
 	// Glock Round
 	gSkillData.plrDmg9MM = 12;
 
 	// Beretta Round
-	gSkillData.plrDmgBeretta = 10;
+	gSkillData.plrDmgBeretta = 14;
 
 	// 357 Round
 	gSkillData.plrDmg357 = 40;
@@ -161,7 +161,7 @@ void CHalfLifeMultiplay::RefreshSkillData( void )
 	gSkillData.plrDmgMP5 = 12;
 
 	// M41A Round
-	gSkillData.plrDmgM41A = 8;
+	gSkillData.plrDmgM41A = 14;
 	
 	// M41A M203 grenade
 	gSkillData.plrDmgM41AGrenade = 105;

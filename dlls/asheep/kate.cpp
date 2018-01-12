@@ -1,6 +1,6 @@
 /***
 *
-*	Copyright (c) 1996-2001, Valve LLC. All rights reserved.
+*	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
 *	
 *	This product contains software technology licensed from Id 
 *	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
@@ -27,324 +27,125 @@
 #include	"scripted.h"
 #include	"weapons.h"
 #include	"soundent.h"
+#include	"barney.h"
+#include        "animation.h"
+
+#define	KATE_LIMP_HEALTH		40
 
 //=========================================================
 // Monster's Anim Events Go Here
 //=========================================================
-// first flag is kate dying for scripted sequences?
-#define		KATE_AE_DRAW		( 2 )
-#define		KATE_AE_SHOOT		( 3 )
-#define		KATE_AE_HOLSTER	( 4 )
+// first flag is barney dying for scripted sequences?
 
-#define	KATE_BODY_GUNHOLSTERED	0
-#define	KATE_BODY_GUNDRAWN		1
-#define KATE_BODY_GUNGONE			2
-
-class CKate : public CTalkMonster
+class CKate : public CBarney
 {
 public:
-	void Spawn( void );
-	void Precache( void );
-	void SetYawSpeed( void );
-	int  ISoundMask( void );
-	void KateFirePistol( void );
-	void AlertSound( void );
-	int  Classify ( void );
-	void HandleAnimEvent( MonsterEvent_t *pEvent );
-	
-	void RunTask( Task_t *pTask );
-	void StartTask( Task_t *pTask );
-	virtual int	ObjectCaps( void ) { return CTalkMonster :: ObjectCaps() | FCAP_IMPULSE_USE; }
-	int TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
-	BOOL CheckRangeAttack1 ( float flDot, float flDist );
-	
-	void DeclineFollowing( void );
+        void Spawn( void );
+        void Precache( void );
+        void BarneyFirePistol( void );
+        void AlertSound( void );
+	BOOL CheckMeleeAttack1( float flDot, float flDist );
+        void HandleAnimEvent( MonsterEvent_t *pEvent );
+	int IRelationship( CBaseEntity *pTarget );
+	CBaseEntity* CheckTraceHullAttack( float flDist, int iDamage, int iDmgType );
+        int TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
+	void SetActivity( Activity NewActivity );
 
-	// Override these to set behavior
-	Schedule_t *GetScheduleOfType ( int Type );
-	Schedule_t *GetSchedule ( void );
-	MONSTERSTATE GetIdealState ( void );
+        void DeclineFollowing( void );
 
-	void DeathSound( void );
-	void PainSound( void );
-	
-	void TalkInit( void );
+        // Override these to set behavior
+        Schedule_t *GetSchedule( void );
 
-	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType);
-	void Killed( entvars_t *pevAttacker, int iGib );
-	
-	virtual int		Save( CSave &save );
-	virtual int		Restore( CRestore &restore );
-	static	TYPEDESCRIPTION m_SaveData[];
+        void DeathSound( void );
+        void PainSound( void );
 
-	BOOL	m_fGunDrawn;
-	float	m_painTime;
-	float	m_checkAttackTime;
-	BOOL	m_lastAttackCheck;
+        void TalkInit( void );
 
-	// UNDONE: What is this for?  It isn't used?
-	float	m_flPlayerDamage;// how much pain has the player inflicted on me?
-
-	CUSTOM_SCHEDULES;
+	int m_iCombatState;
 };
 
-LINK_ENTITY_TO_CLASS( monster_kate, CKate );
+LINK_ENTITY_TO_CLASS( monster_kate, CKate )
 
-TYPEDESCRIPTION	CKate::m_SaveData[] = 
-{
-	DEFINE_FIELD( CKate, m_fGunDrawn, FIELD_BOOLEAN ),
-	DEFINE_FIELD( CKate, m_painTime, FIELD_TIME ),
-	DEFINE_FIELD( CKate, m_checkAttackTime, FIELD_TIME ),
-	DEFINE_FIELD( CKate, m_lastAttackCheck, FIELD_BOOLEAN ),
-	DEFINE_FIELD( CKate, m_flPlayerDamage, FIELD_FLOAT ),
-};
-
-IMPLEMENT_SAVERESTORE( CKate, CTalkMonster );
+extern Schedule_t	slBaFollow[];
+extern Schedule_t	slBarneyEnemyDraw[];
+extern Schedule_t	slBaFaceTarget[];
+extern Schedule_t	slIdleBaStand[];
+extern Schedule_t	slGruntHideReload[];
 
 //=========================================================
-// AI Schedules Specific to this monster
+// ALertSound - barney says "Freeze!"
 //=========================================================
-Task_t	tlKtFollow[] =
+void CKate::AlertSound( void )
 {
-	{ TASK_MOVE_TO_TARGET_RANGE,(float)128		},	// Move within 128 of target ent (client)
-	{ TASK_SET_SCHEDULE,		(float)SCHED_TARGET_FACE },
-};
-
-Schedule_t	slKtFollow[] =
-{
+	if( m_hEnemy != 0 )
 	{
-		tlKtFollow,
-		ARRAYSIZE ( tlKtFollow ),
-		bits_COND_NEW_ENEMY		|
-		bits_COND_LIGHT_DAMAGE	|
-		bits_COND_HEAVY_DAMAGE	|
-		bits_COND_HEAR_SOUND |
-		bits_COND_PROVOKED,
-		bits_SOUND_DANGER,
-		"Follow"
-	},
-};
-
-//=========================================================
-// KateDraw- much better looking draw schedule for when
-// kate knows who he's gonna attack.
-//=========================================================
-Task_t	tlKateEnemyDraw[] =
-{
-	{ TASK_STOP_MOVING,					0				},
-	{ TASK_FACE_ENEMY,					0				},
-	{ TASK_PLAY_SEQUENCE_FACE_ENEMY,	(float) ACT_ARM },
-};
-
-Schedule_t slKateEnemyDraw[] = 
-{
-	{
-		tlKateEnemyDraw,
-		ARRAYSIZE ( tlKateEnemyDraw ),
-		0,
-		0,
-		"Kate Enemy Draw"
-	}
-};
-
-Task_t	tlKtFaceTarget[] =
-{
-	{ TASK_SET_ACTIVITY,		(float)ACT_IDLE },
-	{ TASK_FACE_TARGET,			(float)0		},
-	{ TASK_SET_ACTIVITY,		(float)ACT_IDLE },
-	{ TASK_SET_SCHEDULE,		(float)SCHED_TARGET_CHASE },
-};
-
-Schedule_t	slKtFaceTarget[] =
-{
-	{
-		tlKtFaceTarget,
-		ARRAYSIZE ( tlKtFaceTarget ),
-		bits_COND_CLIENT_PUSH	|
-		bits_COND_NEW_ENEMY		|
-		bits_COND_LIGHT_DAMAGE	|
-		bits_COND_HEAVY_DAMAGE	|
-		bits_COND_HEAR_SOUND |
-		bits_COND_PROVOKED,
-		bits_SOUND_DANGER,
-		"FaceTarget"
-	},
-};
-
-
-Task_t	tlIdleKtStand[] =
-{
-	{ TASK_STOP_MOVING,			0				},
-	{ TASK_SET_ACTIVITY,		(float)ACT_IDLE },
-	{ TASK_WAIT,				(float)2		}, // repick IDLESTAND every two seconds.
-	{ TASK_TLK_HEADRESET,		(float)0		}, // reset head position
-};
-
-Schedule_t	slIdleKtStand[] =
-{
-	{ 
-		tlIdleKtStand,
-		ARRAYSIZE ( tlIdleKtStand ), 
-		bits_COND_NEW_ENEMY		|
-		bits_COND_LIGHT_DAMAGE	|
-		bits_COND_HEAVY_DAMAGE	|
-		bits_COND_HEAR_SOUND	|
-		bits_COND_SMELL			|
-		bits_COND_PROVOKED,
-
-		bits_SOUND_COMBAT		|// sound flags - change these, and you'll break the talking code.
-		//bits_SOUND_PLAYER		|
-		//bits_SOUND_WORLD		|
-		
-		bits_SOUND_DANGER		|
-		bits_SOUND_MEAT			|// scents
-		bits_SOUND_CARCASS		|
-		bits_SOUND_GARBAGE,
-		"IdleStand"
-	},
-};
-
-DEFINE_CUSTOM_SCHEDULES( CKate )
-{
-	slKtFollow,
-	slKateEnemyDraw,
-	slKtFaceTarget,
-	slIdleKtStand,
-};
-
-
-IMPLEMENT_CUSTOM_SCHEDULES( CKate, CTalkMonster );
-
-void CKate :: StartTask( Task_t *pTask )
-{
-	CTalkMonster::StartTask( pTask );	
-}
-
-void CKate :: RunTask( Task_t *pTask )
-{
-	switch ( pTask->iTask )
-	{
-	case TASK_RANGE_ATTACK1:
-		if (m_hEnemy != NULL && (m_hEnemy->IsPlayer()))
+		if( FOkToSpeak() )
 		{
-			pev->framerate = 1.5;
-		}
-		CTalkMonster::RunTask( pTask );
-		break;
-	default:
-		CTalkMonster::RunTask( pTask );
-		break;
-	}
-}
-
-
-
-
-//=========================================================
-// ISoundMask - returns a bit mask indicating which types
-// of sounds this monster regards. 
-//=========================================================
-int CKate :: ISoundMask ( void) 
-{
-	return	bits_SOUND_WORLD	|
-			bits_SOUND_COMBAT	|
-			bits_SOUND_CARCASS	|
-			bits_SOUND_MEAT		|
-			bits_SOUND_GARBAGE	|
-			bits_SOUND_DANGER	|
-			bits_SOUND_PLAYER;
-}
-
-//=========================================================
-// Classify - indicates this monster's place in the 
-// relationship table.
-//=========================================================
-int	CKate :: Classify ( void )
-{
-	return	CLASS_PLAYER_ALLY;
-}
-
-//=========================================================
-// ALertSound - kate says "Freeze!"
-//=========================================================
-void CKate :: AlertSound( void )
-{
-	if ( m_hEnemy != NULL )
-	{
-		if ( FOkToSpeak() )
-		{
-			PlaySentence( "KA_ATTACK", RANDOM_FLOAT(2.8, 3.2), VOL_NORM, ATTN_IDLE );
+			PlaySentence( "KA_ATTACK", RANDOM_FLOAT( 2.8, 3.2 ), VOL_NORM, ATTN_IDLE );
 		}
 	}
-
 }
-//=========================================================
-// SetYawSpeed - allows each sequence to have a different
-// turn rate associated with it.
-//=========================================================
-void CKate :: SetYawSpeed ( void )
+
+int CKate::IRelationship( CBaseEntity *pTarget )
 {
-	int ys;
-
-	ys = 0;
-
-	switch ( m_Activity )
-	{
-	case ACT_IDLE:		
-		ys = 70;
-		break;
-	case ACT_WALK:
-		ys = 70;
-		break;
-	case ACT_RUN:
-		ys = 90;
-		break;
-	default:
-		ys = 70;
-		break;
-	}
-
-	pev->yaw_speed = ys;
+        if( FClassnameIs( pTarget->pev, "monster_archer" ) || FClassnameIs( pTarget->pev, "monster_ichthyosaur" ) )
+        {
+                return R_NO;
+        }
+        
+        return CTalkMonster::IRelationship( pTarget );
 }
 
-
-//=========================================================
-// CheckRangeAttack1
-//=========================================================
-BOOL CKate :: CheckRangeAttack1 ( float flDot, float flDist )
+CBaseEntity* CKate::CheckTraceHullAttack( float flDist, int iDamage, int iDmgType )
 {
-	if ( flDist <= 1024 && flDot >= 0.5 )
-	{
-		if ( gpGlobals->time > m_checkAttackTime )
-		{
-			TraceResult tr;
-			
-			Vector shootOrigin = pev->origin + Vector( 0, 0, 55 );
-			CBaseEntity *pEnemy = m_hEnemy;
-			Vector shootTarget = ( (pEnemy->BodyTarget( shootOrigin ) - pEnemy->pev->origin) + m_vecEnemyLKP );
-			UTIL_TraceLine( shootOrigin, shootTarget, dont_ignore_monsters, ENT(pev), &tr );
-			m_checkAttackTime = gpGlobals->time + 1;
-			if ( tr.flFraction == 1.0 || (tr.pHit != NULL && CBaseEntity::Instance(tr.pHit) == pEnemy) )
-				m_lastAttackCheck = TRUE;
-			else
-				m_lastAttackCheck = FALSE;
-			m_checkAttackTime = gpGlobals->time + 1.5;
-		}
-		return m_lastAttackCheck;
-	}
-	return FALSE;
+        TraceResult tr;
+
+	UTIL_MakeVectors( pev->angles );
+
+        Vector vecStart = pev->origin;
+        vecStart.z += pev->size.z * 0.5;
+        Vector vecEnd = vecStart + ( gpGlobals->v_forward * flDist );
+
+        UTIL_TraceHull( vecStart, vecEnd, dont_ignore_monsters, head_hull, ENT( pev ), &tr );
+
+        if( tr.pHit )
+                return CBaseEntity::Instance( tr.pHit );
+
+        return NULL;
 }
 
+BOOL CKate::CheckMeleeAttack1( float flDot, float flDist )
+{
+	CBaseMonster *pEnemy = 0;
+
+        if( m_hEnemy != 0 )
+        {
+                pEnemy = m_hEnemy->MyMonsterPointer();
+                                
+                if( !pEnemy )
+                {
+                        return FALSE;
+                }
+        }
+
+        if( flDist <= 64 && flDot >= 0.7 &&
+                 pEnemy->Classify() != CLASS_ALIEN_BIOWEAPON &&
+                 pEnemy->Classify() != CLASS_PLAYER_BIOWEAPON )
+        {
+                return TRUE;
+        }
+        return FALSE;
+}
 
 //=========================================================
-// KateFirePistol - shoots one round from the pistol at
-// the enemy kate is facing.
+// BarneyFirePistol - shoots one round from the pistol at
+// the enemy barney is facing.
 //=========================================================
-void CKate :: KateFirePistol ( void )
+void CKate::BarneyFirePistol( void )
 {
 	Vector vecShootOrigin;
 
-	UTIL_MakeVectors(pev->angles);
+	UTIL_MakeVectors( pev->angles );
 	vecShootOrigin = pev->origin + Vector( 0, 0, 55 );
 	Vector vecShootDir = ShootAtEnemy( vecShootOrigin );
 
@@ -352,177 +153,196 @@ void CKate :: KateFirePistol ( void )
 	SetBlending( 0, angDir.x );
 	pev->effects = EF_MUZZLEFLASH;
 
-	FireBullets(1, vecShootOrigin, vecShootDir, VECTOR_CONE_2DEGREES, 1024, BULLET_MONSTER_9MM );
-	
+	FireBullets( 1, vecShootOrigin, vecShootDir, VECTOR_CONE_2DEGREES, 1024, BULLET_MONSTER_9MM );
+
 	int pitchShift = RANDOM_LONG( 0, 20 );
 	
 	// Only shift about half the time
-	if ( pitchShift > 10 )
+	if( pitchShift > 10 )
 		pitchShift = 0;
 	else
 		pitchShift -= 5;
-	EMIT_SOUND_DYN( ENT(pev), CHAN_WEAPON, "kate/ka_attack2.wav", 1, ATTN_NORM, 0, 100 + pitchShift );
+	EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, "kate/ka_attack2.wav", 1, ATTN_NORM, 0, 100 + pitchShift );
 
-	CSoundEnt::InsertSound ( bits_SOUND_COMBAT, pev->origin, 384, 0.3 );
+	CSoundEnt::InsertSound( bits_SOUND_COMBAT, pev->origin, 384, 0.3 );
 
 	// UNDONE: Reload?
 	m_cAmmoLoaded--;// take away a bullet!
 }
-		
+
 //=========================================================
 // HandleAnimEvent - catches the monster-specific messages
 // that occur when tagged animation frames are played.
 //
 // Returns number of events handled, 0 if none.
 //=========================================================
-void CKate :: HandleAnimEvent( MonsterEvent_t *pEvent )
+void CKate::HandleAnimEvent( MonsterEvent_t *pEvent )
 {
+	CBaseEntity *pHurt;
+
 	switch( pEvent->event )
 	{
-	case KATE_AE_SHOOT:
-		KateFirePistol();
-		break;
+	case BARNEY_AE_KICK:
+		pHurt = CheckTraceHullAttack( 70, 0, DMG_GENERIC );
+		if( pHurt )
+		{
+			const char *pszSound;
+			if( m_iCombatState == -1 )
+			{
+				pszSound = "common/kick.wav";
+			}
+			else
+			{
+				++m_iCombatState;
+				if( m_iCombatState == 3 )
+					pszSound = "common/kick.wav";
+				else
+					pszSound = "common/punch.wav";
+			}
+			EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pszSound, 1, ATTN_NORM, 0, PITCH_NORM );
+			UTIL_MakeVectors( pev->angles );
 
-	case KATE_AE_DRAW:
-		// kate's bodygroup switches here so he can pull gun from holster
-		pev->body = KATE_BODY_GUNDRAWN;
-		m_fGunDrawn = TRUE;
+			pHurt->pev->punchangle.x = 5;
+			pHurt->pev->velocity = pHurt->pev->velocity - gpGlobals->v_forward * 100 + gpGlobals->v_up * 50;
+			pHurt->TakeDamage( pev, pev, gSkillData.hgruntDmgKick, DMG_CLUB );
+		}
 		break;
-
-	case KATE_AE_HOLSTER:
-		// change bodygroup to replace gun in holster
-		pev->body = KATE_BODY_GUNHOLSTERED;
-		m_fGunDrawn = FALSE;
-		break;
-
 	default:
-		CTalkMonster::HandleAnimEvent( pEvent );
+		CBarney::HandleAnimEvent( pEvent );
+		break;
 	}
 }
 
 //=========================================================
 // Spawn
 //=========================================================
-void CKate :: Spawn()
+void CKate::Spawn()
 {
-	Precache( );
+	Precache();
+	SET_MODEL( ENT( pev ), "models/kate.mdl" );
+	UTIL_SetSize( pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX );
 
-	SET_MODEL(ENT(pev), "models/kate.mdl");
-	UTIL_SetSize(pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX);
+	pev->solid = SOLID_SLIDEBOX;
+	pev->movetype = MOVETYPE_STEP;
+	m_bloodColor = BLOOD_COLOR_RED;
+	pev->health = gSkillData.kateHealth;
+	pev->view_ofs = Vector ( 0, 0, 50 );// position of the eyes relative to monster's origin.
+	m_flFieldOfView = VIEW_FIELD_WIDE; // NOTE: we need a wide field of view so npc will notice player and say hello
+	m_MonsterState = MONSTERSTATE_NONE;
 
-	pev->solid			= SOLID_SLIDEBOX;
-	pev->movetype		= MOVETYPE_STEP;
-	m_bloodColor		= BLOOD_COLOR_RED;
-	pev->health			= gSkillData.kateHealth;
-	pev->view_ofs		= Vector ( 0, 0, 50 );// position of the eyes relative to monster's origin.
-	m_flFieldOfView		= VIEW_FIELD_WIDE; // NOTE: we need a wide field of view so npc will notice player and say hello
-	m_MonsterState		= MONSTERSTATE_NONE;
+	pev->body = 0; // gun in holster
+	m_fGunDrawn = FALSE;
 
-	pev->body			= 0; // gun in holster
-	m_fGunDrawn			= FALSE;
+	m_afCapability = bits_CAP_HEAR | bits_CAP_TURN_HEAD | bits_CAP_DOORS_GROUP;
 
-	m_afCapability		= bits_CAP_HEAR | bits_CAP_TURN_HEAD | bits_CAP_DOORS_GROUP;
+	m_cAmmoLoaded = GLOCK_MAX_CLIP;
+
+	m_iCombatState = -1;
 
 	MonsterInit();
-	SetUse( &CKate::FollowerUse );
+	SetUse( &CTalkMonster::FollowerUse );
 }
 
 //=========================================================
 // Precache - precaches all resources this monster needs
 //=========================================================
-void CKate :: Precache()
+void CKate::Precache()
 {
-	PRECACHE_MODEL("models/kate.mdl");
+	PRECACHE_MODEL( "models/kate.mdl" );
 
-	PRECACHE_SOUND("kate/ka_attack1.wav" );
-	PRECACHE_SOUND("kate/ka_attack2.wav" );
+	PRECACHE_SOUND( "kate/ka_attack1.wav" );
+	PRECACHE_SOUND( "kate/ka_attack2.wav" );
 
-	PRECACHE_SOUND("kate/ka_pain1.wav");
-	PRECACHE_SOUND("kate/ka_pain2.wav");
-//	PRECACHE_SOUND("kate/ka_pain3.wav");
+	PRECACHE_SOUND( "kate/ka_pain1.wav" );
+	PRECACHE_SOUND( "kate/ka_pain2.wav" );
+	//PRECACHE_SOUND( "kate/ka_pain3.wav" );
 
-	PRECACHE_SOUND("kate/ka_die1.wav");
-//	PRECACHE_SOUND("kate/ka_die2.wav");
-//	PRECACHE_SOUND("kate/ka_die3.wav");
-	
-	// every new kate must call this, otherwise
+	PRECACHE_SOUND( "kate/ka_die1.wav" );
+	//PRECACHE_SOUND( "kate/ka_die2.wav" );
+	//PRECACHE_SOUND( "kate/ka_die3.wav" );
+
+	PRECACHE_SOUND( "weapons/reload3.wav" );
+
+	PRECACHE_SOUND( "zombie/claw_miss1.wav" );
+	PRECACHE_SOUND( "zombie/claw_miss2.wav" );
+	PRECACHE_SOUND( "common/kick.wav" );
+	PRECACHE_SOUND( "common/punch.wav" );
+
+	// every new barney must call this, otherwise
 	// when a level is loaded, nobody will talk (time is reset to 0)
 	TalkInit();
 	CTalkMonster::Precache();
 }	
 
 // Init talk data
-void CKate :: TalkInit()
+void CKate::TalkInit()
 {
-	
 	CTalkMonster::TalkInit();
 
 	// scientists speach group names (group names are in sentences.txt)
-
-	m_szGrp[TLK_ANSWER]  =	"KA_ANSWER";
+	m_szGrp[TLK_ANSWER] = "KA_ANSWER";
 	m_szGrp[TLK_QUESTION] =	"KA_QUESTION";
-	m_szGrp[TLK_IDLE] =		"KA_IDLE";
-	m_szGrp[TLK_STARE] =	"KA_STARE";
-	m_szGrp[TLK_USE] =		"KA_OK";
-	m_szGrp[TLK_UNUSE] =	"KA_WAIT";
-	m_szGrp[TLK_STOP] =		"KA_STOP";
+	m_szGrp[TLK_IDLE] = "KA_IDLE";
+	m_szGrp[TLK_STARE] = "KA_STARE";
+	m_szGrp[TLK_USE] = "KA_OK";
+	m_szGrp[TLK_UNUSE] = "KA_WAIT";
+	m_szGrp[TLK_STOP] = "KA_STOP";
 
-	m_szGrp[TLK_NOSHOOT] =	"KA_SCARED";
-	m_szGrp[TLK_HELLO] =	"KA_HELLO";
+	m_szGrp[TLK_NOSHOOT] = "KA_SCARED";
+	m_szGrp[TLK_HELLO] = "KA_HELLO";
 
-	m_szGrp[TLK_PLHURT1] =	"!KA_CUREA";
-	m_szGrp[TLK_PLHURT2] =	"!KA_CUREB"; 
-	m_szGrp[TLK_PLHURT3] =	"!KA_CUREC";
+	m_szGrp[TLK_PLHURT1] = "!KA_CUREA";
+	m_szGrp[TLK_PLHURT2] = "!KA_CUREB"; 
+	m_szGrp[TLK_PLHURT3] = "!KA_CUREC";
 
-	m_szGrp[TLK_PHELLO] =	NULL;	//"KA_PHELLO";		// UNDONE
-	m_szGrp[TLK_PIDLE] =	NULL;	//"KA_PIDLE";			// UNDONE
+	m_szGrp[TLK_PHELLO] = NULL;	//"KA_PHELLO";		// UNDONE
+	m_szGrp[TLK_PIDLE] = NULL;	//"KA_PIDLE";			// UNDONE
 	m_szGrp[TLK_PQUESTION] = "KA_PQUEST";		// UNDONE
 
-	m_szGrp[TLK_SMELL] =	"KA_SMELL";
-	
-	m_szGrp[TLK_WOUND] =	"KA_WOUND";
-	m_szGrp[TLK_MORTAL] =	"KA_MORTAL";
+	m_szGrp[TLK_SMELL] = "KA_SMELL";
 
-	// get voice for head - just one kate voice for now
-	m_voicePitch = 100;
+	m_szGrp[TLK_WOUND] = "KA_WOUND";
+	m_szGrp[TLK_MORTAL] = "KA_MORTAL";
+
+	// get voice for head - just one barney voice for now
+	m_voicePitch = 98;
 }
-
 
 static BOOL IsFacing( entvars_t *pevTest, const Vector &reference )
 {
-	Vector vecDir = (reference - pevTest->origin);
+	Vector vecDir = reference - pevTest->origin;
 	vecDir.z = 0;
 	vecDir = vecDir.Normalize();
 	Vector forward, angle;
 	angle = pevTest->v_angle;
 	angle.x = 0;
 	UTIL_MakeVectorsPrivate( angle, forward, NULL, NULL );
+
 	// He's facing me, he meant it
-	if ( DotProduct( forward, vecDir ) > 0.96 )	// +/- 15 degrees or so
+	if( DotProduct( forward, vecDir ) > 0.96 )	// +/- 15 degrees or so
 	{
 		return TRUE;
 	}
 	return FALSE;
 }
 
-
-int CKate :: TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType)
+int CKate::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )
 {
 	// make sure friends talk about it if player hurts talkmonsters...
-	int ret = CTalkMonster::TakeDamage(pevInflictor, pevAttacker, flDamage, bitsDamageType);
-	if ( !IsAlive() || pev->deadflag == DEAD_DYING )
+	int ret = CTalkMonster::TakeDamage( pevInflictor, pevAttacker, flDamage, bitsDamageType );
+	if( !IsAlive() || pev->deadflag == DEAD_DYING )
 		return ret;
 
-	if ( m_MonsterState != MONSTERSTATE_PRONE && (pevAttacker->flags & FL_CLIENT) )
+	if( m_MonsterState != MONSTERSTATE_PRONE && ( pevAttacker->flags & FL_CLIENT ) )
 	{
 		m_flPlayerDamage += flDamage;
 
 		// This is a heurstic to determine if the player intended to harm me
 		// If I have an enemy, we can't establish intent (may just be crossfire)
-		if ( m_hEnemy == NULL )
+		if( m_hEnemy == 0 )
 		{
 			// If the player was facing directly at me, or I'm already suspicious, get mad
-			if ( (m_afMemory & bits_MEMORY_SUSPICIOUS) || IsFacing( pevAttacker, pev->origin ) )
+			if( ( m_afMemory & bits_MEMORY_SUSPICIOUS ) || IsFacing( pevAttacker, pev->origin ) )
 			{
 				// Alright, now I'm pissed!
 				PlaySentence( "KA_MAD", 4, VOL_NORM, ATTN_NORM );
@@ -537,7 +357,7 @@ int CKate :: TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float 
 				Remember( bits_MEMORY_SUSPICIOUS );
 			}
 		}
-		else if ( !(m_hEnemy->IsPlayer()) && pev->deadflag == DEAD_NO )
+		else if( !( m_hEnemy->IsPlayer()) && pev->deadflag == DEAD_NO )
 		{
 			PlaySentence( "KA_SHOT", 4, VOL_NORM, ATTN_NORM );
 		}
@@ -546,135 +366,96 @@ int CKate :: TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float 
 	return ret;
 }
 
-	
 //=========================================================
 // PainSound
 //=========================================================
-void CKate :: PainSound ( void )
+void CKate::PainSound( void )
 {
-	if (gpGlobals->time < m_painTime)
+	if( gpGlobals->time < m_painTime )
 		return;
-	
-	m_painTime = gpGlobals->time + RANDOM_FLOAT(0.5, 0.75);
 
-	//switch (RANDOM_LONG(0,2))
-//	{
-	EMIT_SOUND_DYN( ENT(pev), CHAN_VOICE, "kate/ka_pain1.wav", 1, ATTN_NORM, 0, GetVoicePitch()); 
-//	case 1: EMIT_SOUND_DYN( ENT(pev), CHAN_VOICE, "kate/ka_pain2.wav", 1, ATTN_NORM, 0, GetVoicePitch()); break;
-// case 2: EMIT_SOUND_DYN( ENT(pev), CHAN_VOICE, "kate/ka_pain3.wav", 1, ATTN_NORM, 0, GetVoicePitch()); break;
-//	}
+	m_painTime = gpGlobals->time + RANDOM_FLOAT( 0.5, 0.75 );
+
+	EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, RANDOM_LONG( 0, 1 ) ? "kate/ka_pain1.wav" : "kate/ka_pain2.wav", 1, ATTN_NORM, 0, GetVoicePitch() );
 }
 
 //=========================================================
 // DeathSound 
 //=========================================================
-void CKate :: DeathSound ( void )
+void CKate::DeathSound( void )
 {
-	//switch (RANDOM_LONG(0,2))
-	//{
-	//case 0: 
-	EMIT_SOUND_DYN( ENT(pev), CHAN_VOICE, "kate/ka_die1.wav", 1, ATTN_NORM, 0, GetVoicePitch()); //break;//edit Alex, only 1 sound
-	//case 1: EMIT_SOUND_DYN( ENT(pev), CHAN_VOICE, "kate/ka_die2.wav", 1, ATTN_NORM, 0, GetVoicePitch()); break;
-	//case 2: EMIT_SOUND_DYN( ENT(pev), CHAN_VOICE, "kate/ka_die3.wav", 1, ATTN_NORM, 0, GetVoicePitch()); break;
-	//}
-}
-
-
-void CKate::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType)
-{
-	switch( ptr->iHitgroup)
-	{
-	case HITGROUP_CHEST:
-	case HITGROUP_STOMACH:
-		if (bitsDamageType & (DMG_BULLET | DMG_SLASH | DMG_BLAST))
-		{
-			flDamage = flDamage / 2;
-		}
-		break;
-	case 10:
-		if (bitsDamageType & (DMG_BULLET | DMG_SLASH | DMG_CLUB))
-		{
-			flDamage -= 20;
-			if (flDamage <= 0)
-			{
-				UTIL_Ricochet( ptr->vecEndPos, 1.0 );
-				flDamage = 0.01;
-			}
-		}
-		// always a head shot
-		ptr->iHitgroup = HITGROUP_HEAD;
-		break;
-	}
-
-	CTalkMonster::TraceAttack( pevAttacker, flDamage, vecDir, ptr, bitsDamageType );
-}
-
-
-void CKate::Killed( entvars_t *pevAttacker, int iGib )
-{
-	if ( pev->body < KATE_BODY_GUNGONE )
-	{// drop the gun!
-		Vector vecGunPos;
-		Vector vecGunAngles;
-
-		pev->body = KATE_BODY_GUNGONE;
-
-		GetAttachment( 0, vecGunPos, vecGunAngles );
-		
-		CBaseEntity *pGun = DropItem( "weapon_barney9mmhg", vecGunPos, vecGunAngles );
-	}
-
-	SetUse( NULL );	
-	CTalkMonster::Killed( pevAttacker, iGib );
+	EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, "kate/ka_die1.wav", 1, ATTN_NORM, 0, GetVoicePitch() );
 }
 
 //=========================================================
-// AI Schedules Specific to this monster
+// SetActivity 
 //=========================================================
-
-Schedule_t* CKate :: GetScheduleOfType ( int Type )
+void CKate::SetActivity( Activity NewActivity )
 {
-	Schedule_t *psched;
+	int iSequence = ACTIVITY_NOT_AVAILABLE;
+	//void *pmodel = GET_MODEL_PTR( ENT( pev ) );
 
-	switch( Type )
+	switch( NewActivity )
 	{
-	case SCHED_ARM_WEAPON:
-		if ( m_hEnemy != NULL )
+	case ACT_RUN:
+		if( pev->health <= KATE_LIMP_HEALTH )
 		{
-			// face enemy, then draw.
-			return slKateEnemyDraw;
+			// limp!
+			iSequence = LookupActivity( ACT_RUN_HURT );
+		}
+		else
+		{
+			iSequence = LookupActivity( NewActivity );
 		}
 		break;
-
-	// Hook these to make a looping schedule
-	case SCHED_TARGET_FACE:
-		// call base class default so that kate will talk
-		// when 'used' 
-		psched = CTalkMonster::GetScheduleOfType(Type);
-
-		if (psched == slIdleStand)
-			return slKtFaceTarget;	// override this for different target face behavior
-		else
-			return psched;
-
-	case SCHED_TARGET_CHASE:
-		return slKtFollow;
-
-	case SCHED_IDLE_STAND:
-		// call base class default so that scientist will talk
-		// when standing during idle
-		psched = CTalkMonster::GetScheduleOfType(Type);
-
-		if (psched == slIdleStand)
+	case ACT_WALK:
+		if( pev->health <= KATE_LIMP_HEALTH )
 		{
-			// just look straight ahead.
-			return slIdleKtStand;
+			// limp!
+			iSequence = LookupActivity( ACT_WALK_HURT );
 		}
 		else
-			return psched;	
+		{
+			iSequence = LookupActivity( NewActivity );
+		}
+		break;
+	case ACT_MELEE_ATTACK1:
+		if( RANDOM_LONG( 0, 2 ) )
+		{
+			m_iCombatState = -1;
+			iSequence = LookupSequence( "karate_hit" );
+		}
+		else
+		{
+			m_iCombatState = 0;
+			iSequence = LookupSequence( "karate_bighit" );
+		}
+		break;
+	default:
+		iSequence = LookupActivity( NewActivity );
+		break;
 	}
 
-	return CTalkMonster::GetScheduleOfType( Type );
+	m_Activity = NewActivity; // Go ahead and set this so it doesn't keep trying when the anim is not present
+
+	// Set to the desired anim, or default anim if the desired is not present
+	if( iSequence > ACTIVITY_NOT_AVAILABLE )
+	{
+		if( pev->sequence != iSequence || !m_fSequenceLoops )
+		{
+			pev->frame = 0;
+		}
+
+		pev->sequence = iSequence;	// Set to the reset anim (if it's there)
+		ResetSequenceInfo();
+		SetYawSpeed();
+	}
+	else
+	{
+		// Not available try to get default anim
+		ALERT( at_console, "%s has no sequence for act:%d\n", STRING( pev->classname ), NewActivity );
+		pev->sequence = 0;	// Set to the reset anim (if it's there)
+	}
 }
 
 //=========================================================
@@ -683,18 +464,18 @@ Schedule_t* CKate :: GetScheduleOfType ( int Type )
 // monster's member function to get a pointer to a schedule
 // of the proper type.
 //=========================================================
-Schedule_t *CKate :: GetSchedule ( void )
+Schedule_t *CKate::GetSchedule( void )
 {
-	if ( HasConditions( bits_COND_HEAR_SOUND ) )
+	if( HasConditions( bits_COND_HEAR_SOUND ) )
 	{
 		CSound *pSound;
 		pSound = PBestSound();
 
 		ASSERT( pSound != NULL );
-		if ( pSound && (pSound->m_iType & bits_SOUND_DANGER) )
+		if( pSound && (pSound->m_iType & bits_SOUND_DANGER) )
 			return GetScheduleOfType( SCHED_TAKE_COVER_FROM_BEST_SOUND );
 	}
-	if ( HasConditions( bits_COND_ENEMY_DEAD ) && FOkToSpeak() )
+	if( HasConditions( bits_COND_ENEMY_DEAD ) && FOkToSpeak() )
 	{
 		PlaySentence( "KA_KILL", 4, VOL_NORM, ATTN_NORM );
 	}
@@ -703,37 +484,42 @@ Schedule_t *CKate :: GetSchedule ( void )
 	{
 	case MONSTERSTATE_COMBAT:
 		{
-// dead enemy
-			if ( HasConditions( bits_COND_ENEMY_DEAD ) )
+			// dead enemy
+			if( HasConditions( bits_COND_ENEMY_DEAD ) )
 			{
 				// call base class, all code to handle dead enemies is centralized there.
-				return CBaseMonster :: GetSchedule();
+				return CBaseMonster::GetSchedule();
 			}
 
 			// always act surprized with a new enemy
-			if ( HasConditions( bits_COND_NEW_ENEMY ) && HasConditions( bits_COND_LIGHT_DAMAGE) )
+			if( HasConditions( bits_COND_NEW_ENEMY ) && HasConditions( bits_COND_LIGHT_DAMAGE ) )
 				return GetScheduleOfType( SCHED_SMALL_FLINCH );
-				
+
 			// wait for one schedule to draw gun
-			if (!m_fGunDrawn )
+			if( !m_fGunDrawn )
 				return GetScheduleOfType( SCHED_ARM_WEAPON );
 
-			if ( HasConditions( bits_COND_HEAVY_DAMAGE ) )
+			if( HasConditions( bits_COND_HEAVY_DAMAGE ) )
 				return GetScheduleOfType( SCHED_TAKE_COVER_FROM_ENEMY );
+
+			if( HasConditions( bits_COND_CAN_MELEE_ATTACK1 ) )
+				return GetScheduleOfType( SCHED_MELEE_ATTACK1 );
+
+			if( HasConditions( bits_COND_NO_AMMO_LOADED ) )
+				return GetScheduleOfType( SCHED_BARNEY_COVER_AND_RELOAD );
 		}
 		break;
-
 	case MONSTERSTATE_ALERT:	
 	case MONSTERSTATE_IDLE:
-		if ( HasConditions(bits_COND_LIGHT_DAMAGE | bits_COND_HEAVY_DAMAGE))
+		if( HasConditions( bits_COND_LIGHT_DAMAGE | bits_COND_HEAVY_DAMAGE ) )
 		{
 			// flinch if hurt
 			return GetScheduleOfType( SCHED_SMALL_FLINCH );
 		}
 
-		if ( m_hEnemy == NULL && IsFollowing() )
+		if( m_hEnemy == 0 && IsFollowing() )
 		{
-			if ( !m_hTargetEnt->IsAlive() )
+			if( !m_hTargetEnt->IsAlive() )
 			{
 				// UNDONE: Comment about the recently dead player here?
 				StopFollowing( FALSE );
@@ -741,7 +527,7 @@ Schedule_t *CKate :: GetSchedule ( void )
 			}
 			else
 			{
-				if ( HasConditions( bits_COND_CLIENT_PUSH ) )
+				if( HasConditions( bits_COND_CLIENT_PUSH ) )
 				{
 					return GetScheduleOfType( SCHED_MOVE_AWAY_FOLLOW );
 				}
@@ -749,7 +535,7 @@ Schedule_t *CKate :: GetSchedule ( void )
 			}
 		}
 
-		if ( HasConditions( bits_COND_CLIENT_PUSH ) )
+		if( HasConditions( bits_COND_CLIENT_PUSH ) )
 		{
 			return GetScheduleOfType( SCHED_MOVE_AWAY );
 		}
@@ -757,86 +543,14 @@ Schedule_t *CKate :: GetSchedule ( void )
 		// try to say something about smells
 		TrySmellTalk();
 		break;
+	default:
+		break;
 	}
-	
+
 	return CTalkMonster::GetSchedule();
 }
-
-MONSTERSTATE CKate :: GetIdealState ( void )
-{
-	return CTalkMonster::GetIdealState();
-}
-
-
 
 void CKate::DeclineFollowing( void )
 {
 	PlaySentence( "KA_POK", 2, VOL_NORM, ATTN_NORM );
 }
-
-
-
-
-
-//=========================================================
-// DEAD KATE PROP
-//
-// Designer selects a pose in worldcraft, 0 through num_poses-1
-// this value is added to what is selected as the 'first dead pose'
-// among the monster's normal animations. All dead poses must
-// appear sequentially in the model file. Be sure and set
-// the m_iFirstPose properly!
-//
-//=========================================================
-class CDeadKate : public CBaseMonster
-{
-public:
-	void Spawn( void );
-	int	Classify ( void ) { return	CLASS_PLAYER_ALLY; }
-
-	void KeyValue( KeyValueData *pkvd );
-
-	int	m_iPose;// which sequence to display	-- temporary, don't need to save
-	static char *m_szPoses[3];
-};
-
-char *CDeadKate::m_szPoses[] = { "lying_on_back", "lying_on_side", "lying_on_stomach" };
-
-void CDeadKate::KeyValue( KeyValueData *pkvd )
-{
-	if (FStrEq(pkvd->szKeyName, "pose"))
-	{
-		m_iPose = atoi(pkvd->szValue);
-		pkvd->fHandled = TRUE;
-	}
-	else 
-		CBaseMonster::KeyValue( pkvd );
-}
-
-LINK_ENTITY_TO_CLASS( monster_kate_dead, CDeadKate );
-
-//=========================================================
-// ********** DeadKate SPAWN **********
-//=========================================================
-void CDeadKate :: Spawn( )
-{
-	PRECACHE_MODEL("models/kate.mdl");
-	SET_MODEL(ENT(pev), "models/kate.mdl");
-
-	pev->effects		= 0;
-	pev->yaw_speed		= 8;
-	pev->sequence		= 0;
-	m_bloodColor		= BLOOD_COLOR_RED;
-
-	pev->sequence = LookupSequence( m_szPoses[m_iPose] );
-	if (pev->sequence == -1)
-	{
-		ALERT ( at_console, "Dead kate with bad pose\n" );
-	}
-	// Corpses have less health
-	pev->health			= 8;//gSkillData.kateHealth;
-
-	MonsterInitDead();
-}
-
-

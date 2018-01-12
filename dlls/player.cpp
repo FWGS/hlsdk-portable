@@ -119,6 +119,8 @@ TYPEDESCRIPTION	CBasePlayer::m_playerSaveData[] =
 	DEFINE_FIELD( CBasePlayer, m_iHideHUD, FIELD_INTEGER ),
 	DEFINE_FIELD( CBasePlayer, m_iFOV, FIELD_INTEGER ),
 
+	DEFINE_FIELD( CBasePlayer, m_bHaveSuit, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CBasePlayer, m_bIsHolster, FIELD_BOOLEAN ),
 	//DEFINE_FIELD( CBasePlayer, m_fDeadTime, FIELD_FLOAT ), // only used in multiplayer games
 	//DEFINE_FIELD( CBasePlayer, m_fGameHUDInitialized, FIELD_INTEGER ), // only used in multiplayer games
 	//DEFINE_FIELD( CBasePlayer, m_flStopExtraSoundTime, FIELD_TIME ),
@@ -356,7 +358,10 @@ void CBasePlayer::DeathSound( void )
 	}
 
 	// play one of the suit death alarms
-	EMIT_GROUPNAME_SUIT( ENT( pev ), "HEV_DEAD" );
+	if( m_bHaveSuit )
+		EMIT_GROUPNAME_SUIT( ENT( pev ), "HEV_DEAD" );
+	else
+		EMIT_GROUPNAME_SUIT( ENT( pev ), "HEV_NHEVDEAD" );
 }
 
 // override takehealth
@@ -785,7 +790,8 @@ void CBasePlayer::RemoveAllItems( BOOL removeSuit )
 	if( m_pActiveItem )
 	{
 		ResetAutoaim();
-		m_pActiveItem->Holster();
+		Holster();
+		m_bIsHolster = FALSE;
 		m_pActiveItem = NULL;
 	}
 
@@ -849,8 +855,7 @@ void CBasePlayer::Killed( entvars_t *pevAttacker, int iGib )
 	CSound *pSound;
 
 	// Holster weapon immediately, to allow it to cleanup
-	if( m_pActiveItem )
-		m_pActiveItem->Holster();
+	Holster();
 
 	g_pGameRules->PlayerKilled( this, pevAttacker, g_pevLastInflictor );
 
@@ -1085,25 +1090,6 @@ void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim )
 	pev->sequence = animDesired;
 	pev->frame = 0;
 	ResetSequenceInfo();
-}
-
-/*
-===========
-TabulateAmmo
-This function is used to find and store 
-all the ammo we have into the ammo vars.
-============
-*/
-void CBasePlayer::TabulateAmmo()
-{
-	ammo_9mm = AmmoInventory( GetAmmoIndex( "9mm" ) );
-	ammo_357 = AmmoInventory( GetAmmoIndex( "357" ) );
-	ammo_argrens = AmmoInventory( GetAmmoIndex( "ARgrenades" ) );
-	ammo_bolts = AmmoInventory( GetAmmoIndex( "bolts" ) );
-	ammo_buckshot = AmmoInventory( GetAmmoIndex( "buckshot" ) );
-	ammo_rockets = AmmoInventory( GetAmmoIndex( "rockets" ) );
-	ammo_uranium = AmmoInventory( GetAmmoIndex( "uranium" ) );
-	ammo_hornets = AmmoInventory( GetAmmoIndex( "Hornets" ) );
 }
 
 /*
@@ -1394,8 +1380,7 @@ void CBasePlayer::StartObserver( Vector vecPosition, Vector vecViewAngle )
 	MESSAGE_END();
 
 	// Holster weapon immediately, to allow it to cleanup
-	if( m_pActiveItem )
-		m_pActiveItem->Holster();
+	Holster();
 
 	if( m_pTank != 0 )
 		m_pTank->Use( this, this, USE_OFF, 0 );
@@ -2815,6 +2800,8 @@ void CBasePlayer::Spawn( void )
 	m_flgeigerDelay = gpGlobals->time + 2.0;	// wait a few seconds until user-defined message registrations
 							// are recieved by all clients
 
+	m_bIsHolster = FALSE;
+	m_bHaveSuit = FALSE;
 	m_flTimeStepSound = 0;
 	m_iStepLeft = 0;
 	m_flFieldOfView = 0.5;// some monsters use this to determine whether or not the player is looking at them.
@@ -2996,6 +2983,15 @@ int CBasePlayer::Restore( CRestore &restore )
 	return status;
 }
 
+void CBasePlayer::Holster()
+{
+	if( m_pActiveItem )
+	{
+		m_pActiveItem->Holster();
+		m_bIsHolster = TRUE;
+	}
+}
+
 void CBasePlayer::SelectNextItem( int iItem )
 {
 	CBasePlayerItem *pItem;
@@ -3028,14 +3024,11 @@ void CBasePlayer::SelectNextItem( int iItem )
 	ResetAutoaim();
 
 	// FIX, this needs to queue them up and delay
-	if( m_pActiveItem )
-	{
-		m_pActiveItem->Holster();
-	}
+	Holster();
 
 	m_pActiveItem = pItem;
 
-	if( m_pActiveItem )
+	if( !m_bIsHolster )
 	{
 		m_pActiveItem->Deploy();
 		m_pActiveItem->UpdateItemInfo();
@@ -3076,13 +3069,12 @@ void CBasePlayer::SelectItem( const char *pstr )
 	ResetAutoaim();
 
 	// FIX, this needs to queue them up and delay
-	if( m_pActiveItem )
-		m_pActiveItem->Holster();
+	Holster();
 
 	m_pLastItem = m_pActiveItem;
 	m_pActiveItem = pItem;
 
-	if( m_pActiveItem )
+	if( !m_bIsHolster )
 	{
 		m_pActiveItem->Deploy();
 		m_pActiveItem->UpdateItemInfo();
@@ -3104,12 +3096,12 @@ void CBasePlayer::SelectLastItem( void )
 	ResetAutoaim();
 
 	// FIX, this needs to queue them up and delay
-	if( m_pActiveItem )
-		m_pActiveItem->Holster();
+	Holster();
 
 	CBasePlayerItem *pTemp = m_pActiveItem;
 	m_pActiveItem = m_pLastItem;
 	m_pLastItem = pTemp;
+
 	m_pActiveItem->Deploy();
 	m_pActiveItem->UpdateItemInfo();
 }
@@ -3443,20 +3435,47 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 			Create( "monster_human_grunt", pev->origin + gpGlobals->v_forward * 128, pev->angles );
 		}
 		break;
+	case 77:
+		pEntity = UTIL_FindEntityByTargetname( 0, "katemm" );
+		if( pEntity )
+		{
+			FireTargets( STRING( pEntity->pev->message ), this, this, USE_TOGGLE, 0 );
+			ALERT( at_console, "impulse 77: Kate spawned!\n" );
+		}
+		else
+			ALERT( at_console, "impulse 77: Didn't find Kate spawner!\n" );
+		break;
+	case 78:
+		pEntity = UTIL_FindEntityByTargetname( 0, "katemmspw" );
+		if( pEntity )
+			UTIL_ShowKateHealth( pEntity->pev->health );
+		else
+			ALERT( at_console, "impulse 78: Didn't find Kate (katemm)!\n" );
+		break;
 	case 101:
+		ALERT( at_console, "Cheater...\n" );
 		gEvilImpulse101 = TRUE;
 		GiveNamedItem( "item_suit" );
 		GiveNamedItem( "item_battery" );
 		GiveNamedItem( "weapon_crowbar" );
-		GiveNamedItem( "weapon_barney9mmhg" ); // Alex for new 9mm handgun
+		GiveNamedItem( "weapon_9mmhandgun" );
+		GiveNamedItem( "weapon_beretta" );
 		GiveNamedItem( "ammo_9mmclip" );
-		GiveNamedItem( "weapon_barneyshotgun" ); // Alex for new shotgun
+		GiveNamedItem( "weapon_shotgun" );
 		GiveNamedItem( "ammo_buckshot" );
-		GiveNamedItem( "weapon_barney9mmar" ); // Alex for new 9mm ar
+		GiveNamedItem( "weapon_9mmAR" );
+		GiveNamedItem( "weapon_9mmm41a" );
 		GiveNamedItem( "ammo_9mmAR" );
 		GiveNamedItem( "ammo_ARgrenades" );
-		GiveNamedItem( "weapon_barneyhandgrenade" ); // Alex for new handgrenade
+		GiveNamedItem( "weapon_handgrenade" );
 		GiveNamedItem( "weapon_tripmine" );
+		GiveNamedItem( "weapon_barney9mmhg" );
+		GiveNamedItem( "weapon_barneyshotgun" );
+		GiveNamedItem( "weapon_barney9mmar" );
+		GiveNamedItem( "weapon_barneyhandgrenade" );
+		GiveNamedItem( "weapon_poolstick" );
+		GiveNamedItem( "weapon_toad" );
+		GiveNamedItem( "weapon_kmedkit" );
 #ifndef OEM_BUILD
 		GiveNamedItem( "weapon_357" );
 		GiveNamedItem( "ammo_357" );
@@ -3610,7 +3629,7 @@ int CBasePlayer::AddPlayerItem( CBasePlayerItem *pItem )
 
 				// ugly hack to update clip w/o an update clip message
 				pInsert->UpdateItemInfo();
-				if( m_pActiveItem )
+				if( !m_bIsHolster )
 					m_pActiveItem->UpdateItemInfo();
 
 				pItem->Kill();
@@ -3660,6 +3679,7 @@ int CBasePlayer::RemovePlayerItem( CBasePlayerItem *pItem, bool bCallHolster )
 		if( bCallHolster )
 			pItem->Holster();
 		m_pActiveItem = NULL;
+		m_bIsHolster = FALSE;
 		pev->viewmodel = 0;
 		pev->weaponmodel = 0;
 	}
@@ -3728,8 +3748,6 @@ int CBasePlayer::GiveAmmo( int iCount, const char *szName, int iMax )
 			WRITE_BYTE( iAdd );		// amount
 		MESSAGE_END();
 	}
-
-	TabulateAmmo();
 
 	return i;
 }
@@ -4556,13 +4574,11 @@ BOOL CBasePlayer::SwitchWeapon( CBasePlayerItem *pWeapon )
 	
 	ResetAutoaim();
 
-	if( m_pActiveItem )
-	{
-		m_pActiveItem->Holster();
-	}
+	Holster();
 
 	m_pActiveItem = pWeapon;
-	pWeapon->Deploy();
+	if( !m_bIsHolster )
+		pWeapon->Deploy();
 
 	return TRUE;
 }

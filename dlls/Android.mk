@@ -13,7 +13,7 @@ ifeq ($(TARGET_ARCH_ABI),armeabi-v7a-hard)
 LOCAL_MODULE_FILENAME = libserver_hardfp
 endif
 
-LOCAL_CFLAGS += -D_LINUX -DCLIENT_WEAPONS -Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf \
+LOCAL_CFLAGS += -D_LINUX -Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf \
 	-fno-exceptions -DNO_VOICEGAMEMGR -w
 
 LOCAL_CPPFLAGS := $(LOCAL_CFLAGS)
@@ -126,6 +126,24 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
            world.cpp \
            xen.cpp \
            zombie.cpp \
+	   asheep/panther.cpp \
+	   asheep/archer.cpp \
+	   asheep/barneyglock.cpp \
+	   asheep/barneyhg.cpp \
+	   asheep/barneymp5.cpp \
+	   asheep/barneyshotgun.cpp \
+	   asheep/barniel.cpp \
+	   asheep/beretta.cpp \
+	   asheep/bodypart.cpp \
+	   asheep/garbage.cpp \
+	   asheep/gordonnadrian.cpp \
+	   asheep/kate.cpp \
+	   asheep/kmedkit.cpp \
+	   asheep/m41a.cpp \
+	   asheep/poolstick.cpp \
+	   asheep/spforce.cpp \
+	   asheep/terror.cpp \
+	   asheep/toad.cpp \
 	   ../pm_shared/pm_debug.c \
 	   ../pm_shared/pm_math.c \
 	   ../pm_shared/pm_shared.c

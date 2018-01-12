@@ -40,6 +40,7 @@
 #include	"soundent.h"
 #include	"effects.h"
 #include	"customentity.h"
+#include        "hgrunt.h"
 
 int g_fGruntQuestion;				// true if an idle grunt asked a question. Cleared when someone answers.
 
@@ -71,6 +72,9 @@ extern DLL_GLOBAL int		g_iSkillLevel;
 #define GUN_MP5						0
 #define GUN_SHOTGUN					1
 #define GUN_NONE					2
+
+#define SF_BARNEY_HAVESUIT			( 1 << 3 )
+#define SF_FRIENDLY_GRUNT			( 1 << 6 )
 
 //=========================================================
 // Monster's Anim Events Go Here
@@ -119,73 +123,6 @@ enum
 //=========================================================
 #define bits_COND_GRUNT_NOFIRE	( bits_COND_SPECIAL1 )
 
-class CHGrunt : public CSquadMonster
-{
-public:
-	void Spawn( void );
-	void Precache( void );
-	void SetYawSpeed( void );
-	int Classify( void );
-	int ISoundMask( void );
-	void HandleAnimEvent( MonsterEvent_t *pEvent );
-	BOOL FCanCheckAttacks( void );
-	BOOL CheckMeleeAttack1( float flDot, float flDist );
-	BOOL CheckRangeAttack1( float flDot, float flDist );
-	BOOL CheckRangeAttack2( float flDot, float flDist );
-	void CheckAmmo( void );
-	void SetActivity( Activity NewActivity );
-	void StartTask( Task_t *pTask );
-	void RunTask( Task_t *pTask );
-	void DeathSound( void );
-	void PainSound( void );
-	void IdleSound( void );
-	Vector GetGunPosition( void );
-	void Shoot( void );
-	void Shotgun( void );
-	void PrescheduleThink( void );
-	void GibMonster( void );
-	void SpeakSentence( void );
-
-	int Save( CSave &save ); 
-	int Restore( CRestore &restore );
-
-	CBaseEntity *Kick( void );
-	Schedule_t *GetSchedule( void );
-	Schedule_t *GetScheduleOfType( int Type );
-	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType);
-	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
-
-	int IRelationship( CBaseEntity *pTarget );
-
-	BOOL FOkToSpeak( void );
-	void JustSpoke( void );
-
-	CUSTOM_SCHEDULES
-	static TYPEDESCRIPTION m_SaveData[];
-
-	// checking the feasibility of a grenade toss is kind of costly, so we do it every couple of seconds,
-	// not every server frame.
-	float m_flNextGrenadeCheck;
-	float m_flNextPainTime;
-	float m_flLastEnemySightTime;
-
-	Vector m_vecTossVelocity;
-
-	BOOL m_fThrowGrenade;
-	BOOL m_fStanding;
-	BOOL m_fFirstEncounter;// only put on the handsign show in the squad's first encounter.
-	int m_cClipSize;
-
-	int m_voicePitch;
-
-	int m_iBrassShell;
-	int m_iShotgunShell;
-
-	int m_iSentence;
-
-	static const char *pGruntSentences[];
-};
-
 LINK_ENTITY_TO_CLASS( monster_human_grunt, CHGrunt )
 
 TYPEDESCRIPTION	CHGrunt::m_SaveData[] =
@@ -216,18 +153,6 @@ const char *CHGrunt::pGruntSentences[] =
 	"HG_CHARGE",  // running out to get the enemy
 	"HG_TAUNT", // say rude things
 };
-
-typedef enum
-{
-	HGRUNT_SENT_NONE = -1,
-	HGRUNT_SENT_GREN = 0,
-	HGRUNT_SENT_ALERT,
-	HGRUNT_SENT_MONSTER,
-	HGRUNT_SENT_COVER,
-	HGRUNT_SENT_THROW,
-	HGRUNT_SENT_CHARGE,
-	HGRUNT_SENT_TAUNT
-} HGRUNT_SENTENCE_TYPES;
 
 //=========================================================
 // Speak Sentence - say your cued up sentence.
@@ -266,8 +191,38 @@ int CHGrunt::IRelationship( CBaseEntity *pTarget )
 	{
 		return R_NM;
 	}
-
+	else if( FClassnameIs( pTarget->pev, "monster_human_spforce" ) )
+	{
+		return R_HT;
+	}
+	else if( FClassnameIs( pTarget->pev, "monster_adrian" ) )
+	{
+		return R_AL;
+	}
+	else if( FBitSet( pev->spawnflags, SF_FRIENDLY_GRUNT )
+		&& pTarget->IsPlayer()
+		&& IsNotProvoked() )
+	{
+		return R_AL;
+	}
+	
 	return CSquadMonster::IRelationship( pTarget );
+}
+
+BOOL CHGrunt::IsNotProvoked()
+{
+	CBaseEntity *pEntity = UTIL_FindEntityByTargetname( 0, "adrianmm" );
+	if( pEntity )
+		return !FBitSet( m_afMemory,bits_MEMORY_PROVOKED );
+	else
+		return FALSE;
+}
+
+void CHGrunt::Provoke()
+{
+	CBaseEntity *pEntity = UTIL_FindEntityByTargetname( 0, "adrianmm" );
+	if( pEntity )
+		SetBits( m_afMemory,bits_MEMORY_PROVOKED );
 }
 
 //=========================================================
@@ -284,15 +239,25 @@ void CHGrunt::GibMonster( void )
 		GetAttachment( 0, vecGunPos, vecGunAngles );
 
 		CBaseEntity *pGun;
+		const char *pszWeapon;
 
 		if( FBitSet( pev->weapons, HGRUNT_SHOTGUN ) )
 		{
-			pGun = DropItem( "weapon_shotgun", vecGunPos, vecGunAngles );
+			if( FBitSet( pev->spawnflags, SF_BARNEY_HAVESUIT ) )
+				pszWeapon = "weapon_shotgun";
+			else
+				pszWeapon = "weapon_barneyshotgun";
+		}
+		else if( FBitSet( pev->spawnflags, SF_BARNEY_HAVESUIT ) )
+		{
+			pszWeapon = "weapon_9mmAR";
 		}
 		else
 		{
-			pGun = DropItem( "weapon_9mmAR", vecGunPos, vecGunAngles );
+			pszWeapon = "weapon_barney9mmar";
 		}
+
+		pGun = DropItem( pszWeapon, vecGunPos, vecGunAngles );
 
 		if( pGun )
 		{
@@ -627,6 +592,15 @@ void CHGrunt::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir
 //=========================================================
 int CHGrunt::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )
 {
+	if( FBitSet( pev->spawnflags, SF_FRIENDLY_GRUNT )
+		&& pev->movetype != MOVETYPE_FLY
+		&& FBitSet( pevAttacker->flags, EF_DIMLIGHT )
+		&& m_hEnemy == 0 )
+	{
+		SENTENCEG_PlayRndSz( ENT( pev ), "HG_ALERT", HGRUNT_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch );
+		Provoke();
+	}
+
 	Forget( bits_MEMORY_INCOVER );
 
 	return CSquadMonster::TakeDamage( pevInflictor, pevAttacker, flDamage, bitsDamageType );
@@ -851,6 +825,7 @@ void CHGrunt::HandleAnimEvent( MonsterEvent_t *pEvent )
 		{
 			Vector vecGunPos;
 			Vector vecGunAngles;
+			const char *pszWeapon;
 
 			GetAttachment( 0, vecGunPos, vecGunAngles );
 
@@ -860,12 +835,21 @@ void CHGrunt::HandleAnimEvent( MonsterEvent_t *pEvent )
 			// now spawn a gun.
 			if( FBitSet( pev->weapons, HGRUNT_SHOTGUN ) )
 			{
-				 DropItem( "weapon_shotgun", vecGunPos, vecGunAngles );
+				if( FBitSet( pev->spawnflags, SF_BARNEY_HAVESUIT ) )
+					pszWeapon = "weapon_shotgun";
+				else
+					pszWeapon = "weapon_barneyshotgun";
+			}
+			else if( FBitSet( pev->spawnflags, SF_BARNEY_HAVESUIT ) )
+			{
+				pszWeapon = "weapon_9mmAR";
 			}
 			else
 			{
-				 DropItem( "weapon_9mmAR", vecGunPos, vecGunAngles );
+				pszWeapon = "weapon_barney9mmar";
 			}
+
+			DropItem( pszWeapon, vecGunPos, vecGunAngles );
 
 			if( FBitSet( pev->weapons, HGRUNT_GRENADELAUNCHER ) )
 			{
@@ -892,7 +876,7 @@ void CHGrunt::HandleAnimEvent( MonsterEvent_t *pEvent )
 		case HGRUNT_AE_GREN_LAUNCH:
 		{
 			EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "weapons/glauncher.wav", 0.8, ATTN_NORM );
-			CGrenade::ShootContact( pev, GetGunPosition(), m_vecTossVelocity );
+			CGrenade::ShootContact( pev, GetGunPosition(), m_vecTossVelocity, gSkillData.plrDmgM203Grenade );
 			m_fThrowGrenade = FALSE;
 			if( g_iSkillLevel == SKILL_HARD )
 				m_flNextGrenadeCheck = gpGlobals->time + RANDOM_FLOAT( 2, 5 );// wait a random amount of time before shooting again
@@ -943,6 +927,7 @@ void CHGrunt::HandleAnimEvent( MonsterEvent_t *pEvent )
 			if( pHurt )
 			{
 				// SOUND HERE!
+				EMIT_SOUND( ENT(pev), CHAN_WEAPON, "common/kick.wav", 1, ATTN_NORM );
 				UTIL_MakeVectors( pev->angles );
 				pHurt->pev->punchangle.x = 15;
 				pHurt->pev->velocity = pHurt->pev->velocity + gpGlobals->v_forward * 100 + gpGlobals->v_up * 50;
@@ -1060,6 +1045,8 @@ void CHGrunt::Precache()
 	PRECACHE_SOUND( "weapons/sbarrel1.wav" );
 
 	PRECACHE_SOUND( "zombie/claw_miss2.wav" );// because we use the basemonster SWIPE animation event
+
+	PRECACHE_SOUND( "common/kick.wav" );
 
 	// get voice pitch
 	if( RANDOM_LONG( 0, 1 ) )
@@ -1800,7 +1787,6 @@ Schedule_t slGruntRepelLand[] =
 		"Repel Land"
 	},
 };
-
 
 DEFINE_CUSTOM_SCHEDULES( CHGrunt )
 {

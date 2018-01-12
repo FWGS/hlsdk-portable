@@ -384,7 +384,7 @@ void CTripmine::Precache( void )
 	PRECACHE_MODEL( "models/p_tripmine.mdl" );
 	UTIL_PrecacheOther( "monster_tripmine" );
 
-	m_usTripFire = PRECACHE_EVENT( 1, "events/tripfire.sc" );
+	//m_usTripFire = PRECACHE_EVENT( 1, "events/tripfire.sc" );
 }
 
 int CTripmine::GetItemInfo( ItemInfo *p )
@@ -396,7 +396,7 @@ int CTripmine::GetItemInfo( ItemInfo *p )
 	p->iMaxAmmo2 = -1;
 	p->iMaxClip = WEAPON_NOCLIP;
 	p->iSlot = 4;
-	p->iPosition = 2;
+	p->iPosition = 3;
 	p->iId = m_iId = WEAPON_TRIPMINE;
 	p->iWeight = TRIPMINE_WEIGHT;
 	p->iFlags = ITEM_FLAG_LIMITINWORLD | ITEM_FLAG_EXHAUSTIBLE;
@@ -421,12 +421,18 @@ void CTripmine::Holster( int skiplocal /* = 0 */ )
 		DestroyItem();
 	}
 
-	SendWeaponAnim( TRIPMINE_HOLSTER );
+	DefaultHolster( TRIPMINE_HOLSTER, 0.7 );
 	EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_WEAPON, "common/null.wav", 1.0, ATTN_NORM );
 }
 
 void CTripmine::PrimaryAttack( void )
 {
+	if( m_pPlayer->m_bIsHolster )
+	{
+		WeaponIdle();
+		return;
+	}
+
 	if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0 )
 		return;
 
@@ -437,14 +443,6 @@ void CTripmine::PrimaryAttack( void )
 	TraceResult tr;
 
 	UTIL_TraceLine( vecSrc, vecSrc + vecAiming * 128, dont_ignore_monsters, ENT( m_pPlayer->pev ), &tr );
-
-	int flags;
-#ifdef CLIENT_WEAPONS
-	flags = FEV_NOTHOST;
-#else
-	flags = 0;
-#endif
-	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usTripFire, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, 0, 0, 0, 0 );
 
 	if( tr.flFraction < 1.0 )
 	{
@@ -477,12 +475,22 @@ void CTripmine::PrimaryAttack( void )
 
 	}*/
 
-	m_flNextPrimaryAttack = GetNextAttackDelay( 0.3 );
+	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.3;
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
 }
 
 void CTripmine::WeaponIdle( void )
 {
+	if( m_pPlayer->m_bIsHolster )
+	{
+		if( m_flTimeWeaponIdle <= UTIL_WeaponTimeBase() )
+		{
+			m_pPlayer->m_bIsHolster = FALSE;
+			Deploy();
+		}
+		return;
+	}
+
 	if( m_flTimeWeaponIdle > UTIL_WeaponTimeBase() )
 		return;
 

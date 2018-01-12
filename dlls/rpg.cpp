@@ -281,6 +281,12 @@ void CRpgRocket::FollowThink( void )
 
 void CRpg::Reload( void )
 {
+	if( m_pPlayer->m_bIsHolster )
+	{
+		WeaponIdle();
+		return;
+	}
+
 	int iResult = 0;
 
 	// don't bother with any of this if don't need to reload.
@@ -297,7 +303,7 @@ void CRpg::Reload( void )
 	// Set the next attack time into the future so that WeaponIdle will get called more often
 	// than reload, allowing the RPG LTD to be updated
 	
-	m_flNextPrimaryAttack = GetNextAttackDelay( 0.5 );
+	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5;
 
 	if( m_cActiveRockets && m_fSpotActive )
 	{
@@ -360,7 +366,7 @@ void CRpg::Precache( void )
 	PRECACHE_SOUND( "weapons/rocketfire1.wav" );
 	PRECACHE_SOUND( "weapons/glauncher.wav" ); // alternative fire sound
 
-	m_usRpg = PRECACHE_EVENT( 1, "events/rpg.sc" );
+	//m_usRpg = PRECACHE_EVENT( 1, "events/rpg.sc" );
 }
 
 int CRpg::GetItemInfo( ItemInfo *p )
@@ -415,12 +421,10 @@ BOOL CRpg::CanHolster( void )
 
 void CRpg::Holster( int skiplocal /* = 0 */ )
 {
-	m_fInReload = FALSE;// cancel any reload in progress.
-
-	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
-
-	SendWeaponAnim( RPG_HOLSTER1 );
-
+	if( m_iClip )
+		DefaultHolster( RPG_HOLSTER1, 0.8 );
+	else
+		DefaultHolster( RPG_HOLSTER2, 0.8 );
 #ifndef CLIENT_DLL
 	if( m_pSpot )
 	{
@@ -432,12 +436,20 @@ void CRpg::Holster( int skiplocal /* = 0 */ )
 
 void CRpg::PrimaryAttack()
 {
+	if( m_pPlayer->m_bIsHolster )
+	{
+		WeaponIdle();
+		return;
+	}
+
 	if( m_iClip )
 	{
 		m_pPlayer->m_iWeaponVolume = LOUD_GUN_VOLUME;
 		m_pPlayer->m_iWeaponFlash = BRIGHT_GUN_FLASH;
 
 #ifndef CLIENT_DLL
+		SendWeaponAnim( RPG_FIRE2 );
+
 		// player "shoot" animation
 		m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
 
@@ -459,12 +471,14 @@ void CRpg::PrimaryAttack()
 #else
 	flags = 0;
 #endif
-		PLAYBACK_EVENT( flags, m_pPlayer->edict(), m_usRpg );
+		EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_WEAPON, "weapons/rocketfire1.wav", 0.9, ATTN_NORM );
+		EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/glauncher.wav", 0.7, ATTN_NORM );
 
 		m_iClip--; 
 
-		m_flNextPrimaryAttack = GetNextAttackDelay( 1.5 );
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 1.5;
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.5;
+		m_pPlayer->pev->punchangle.x -= 5;
 
 		ResetEmptySound();
 	}
@@ -478,6 +492,12 @@ void CRpg::PrimaryAttack()
 
 void CRpg::SecondaryAttack()
 {
+	if( m_pPlayer->m_bIsHolster )
+	{
+		WeaponIdle();
+		return;
+	}
+
 	m_fSpotActive = !m_fSpotActive;
 
 #ifndef CLIENT_DLL
@@ -492,6 +512,16 @@ void CRpg::SecondaryAttack()
 
 void CRpg::WeaponIdle( void )
 {
+	if( m_pPlayer->m_bIsHolster )
+	{
+		if( m_flTimeWeaponIdle <= UTIL_WeaponTimeBase() )
+		{
+			m_pPlayer->m_bIsHolster = FALSE;
+			Deploy();
+		}
+		return;
+	}
+
 	UpdateSpot();
 
 	if( m_flTimeWeaponIdle > UTIL_WeaponTimeBase() )

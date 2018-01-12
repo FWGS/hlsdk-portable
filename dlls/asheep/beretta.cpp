@@ -94,6 +94,11 @@ BOOL CBeretta::Deploy( )
 	return DefaultDeploy( "models/v_9mmberetta.mdl", "models/p_9mmberetta.mdl", BERETTA_DRAW, "onehanded", /*UseDecrement() ? 1 : 0*/ 0 );
 }
 
+void CBeretta::Holster( int skiplocal /* = 0 */ )
+{
+	DefaultHolster( BERETTA_HOLSTER, 1.2 );
+}
+
 void CBeretta::SecondaryAttack( void )
 {
 	BerettaFire( 0.1, 0.2, FALSE );
@@ -106,12 +111,18 @@ void CBeretta::PrimaryAttack( void )
 
 void CBeretta::BerettaFire( float flSpread , float flCycleTime, BOOL fUseAutoAim )
 {
+	if( m_pPlayer->m_bIsHolster )
+        {
+                WeaponIdle();
+                return;
+        }
+
 	if (m_iClip <= 0)
 	{
 		if (m_fFireOnEmpty)
 		{
 			PlayEmptySound();
-			m_flNextPrimaryAttack = GetNextAttackDelay(0.2);
+			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.2f;
 		}
 
 		return;
@@ -162,7 +173,7 @@ void CBeretta::BerettaFire( float flSpread , float flCycleTime, BOOL fUseAutoAim
 
 	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), fUseAutoAim ? m_usFireBeretta1 : m_usFireBeretta2, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, vecDir.x, vecDir.y, 0, 0, ( m_iClip == 0 ) ? 1 : 0, 0 );
 
-	m_flNextPrimaryAttack = m_flNextSecondaryAttack = GetNextAttackDelay(flCycleTime);
+	m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + flCycleTime;
 
 	if (!m_iClip && m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0)
 		// HEV suit - indicate out of ammo condition
@@ -174,15 +185,21 @@ void CBeretta::BerettaFire( float flSpread , float flCycleTime, BOOL fUseAutoAim
 
 void CBeretta::Reload( void )
 {
-	if ( m_pPlayer->ammo_9mm <= 0 )
-		 return;
+	if( m_pPlayer->m_bIsHolster )
+        {
+                WeaponIdle();
+                return;
+        }
+
+	if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0 || m_iClip == BERETTA_MAX_CLIP )
+		return;
 
 	int iResult;
 
 	if (m_iClip == 0)
-		iResult = DefaultReload( 17, BERETTA_RELOAD, 1.5 );
+		iResult = DefaultReload( BERETTA_MAX_CLIP, BERETTA_RELOAD, 1.5 );
 	else
-		iResult = DefaultReload( 17, BERETTA_RELOAD_NOT_EMPTY, 1.5 );
+		iResult = DefaultReload( BERETTA_MAX_CLIP, BERETTA_RELOAD_NOT_EMPTY, 1.5 );
 
 	if (iResult)
 	{
@@ -190,11 +207,19 @@ void CBeretta::Reload( void )
 	}
 }
 
-
-
 void CBeretta::WeaponIdle( void )
 {
-	ResetEmptySound( );
+	if( m_pPlayer->m_bIsHolster )
+        {
+                if( m_flTimeWeaponIdle <= UTIL_WeaponTimeBase() )
+                {
+                        m_pPlayer->m_bIsHolster = FALSE;
+                        Deploy();
+                }
+		return;
+        }
+
+	ResetEmptySound();
 
 	m_pPlayer->GetAutoaimVector( AUTOAIM_10DEGREES );
 

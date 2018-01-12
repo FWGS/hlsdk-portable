@@ -59,7 +59,10 @@ const char *CTalkMonster::m_szFriends[TLK_CFRIENDS] =
 	"monster_barniel",
 	"monster_hevbarn",
 	"monster_kate",
-	"monster_worker"
+	"monster_worker",
+	"monster_myself",
+	"monster_gordon",
+	"monster_adrian"
 };
 
 //=========================================================

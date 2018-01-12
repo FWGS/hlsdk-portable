@@ -27,6 +27,7 @@
 #define	SF_MONSTERMAKER_START_ON	1 // start active ( if has targetname )
 #define	SF_MONSTERMAKER_CYCLIC		4 // drop one monster every time fired.
 #define SF_MONSTERMAKER_MONSTERCLIP	8 // Children are blocked by monsterclip
+#define SF_MONSTERMAKER_WARPBALL	16 // Children are made by warpball
 
 //=========================================================
 // MonsterMaker - this ent creates monsters during the game.
@@ -51,7 +52,7 @@ public:
 	string_t m_iszMonsterClassname;// classname of the monster(s) that will be created.
 	
 	int m_cNumMonsters;// max number of monsters this ent can create
-	
+
 	int m_cLiveChildren;// how many monsters made by this monster maker that are currently alive
 	int m_iMaxLiveChildren;// max number of monsters that this maker may have out at one time.
 
@@ -59,6 +60,12 @@ public:
 
 	BOOL m_fActive;
 	BOOL m_fFadeChildren;// should we make the children fadeout?
+
+	int m_iSpawnType;
+	int m_iBeamCount;
+	float m_flSpriteScale;
+	float m_flSpawnSoundRad;
+	float m_flSpawnVol;
 };
 
 LINK_ENTITY_TO_CLASS( monstermaker, CMonsterMaker )
@@ -72,6 +79,11 @@ TYPEDESCRIPTION	CMonsterMaker::m_SaveData[] =
 	DEFINE_FIELD( CMonsterMaker, m_iMaxLiveChildren, FIELD_INTEGER ),
 	DEFINE_FIELD( CMonsterMaker, m_fActive, FIELD_BOOLEAN ),
 	DEFINE_FIELD( CMonsterMaker, m_fFadeChildren, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CMonsterMaker, m_iSpawnType, FIELD_INTEGER ),
+	DEFINE_FIELD( CMonsterMaker, m_iBeamCount, FIELD_INTEGER ),
+	DEFINE_FIELD( CMonsterMaker, m_flSpriteScale, FIELD_FLOAT ),
+	DEFINE_FIELD( CMonsterMaker, m_flSpawnSoundRad, FIELD_FLOAT ),
+	DEFINE_FIELD( CMonsterMaker, m_flSpawnVol, FIELD_FLOAT ),
 };
 
 IMPLEMENT_SAVERESTORE( CMonsterMaker, CBaseMonster )
@@ -93,7 +105,45 @@ void CMonsterMaker::KeyValue( KeyValueData *pkvd )
 		m_iszMonsterClassname = ALLOC_STRING( pkvd->szValue );
 		pkvd->fHandled = TRUE;
 	}
-	else
+	else if( FStrEq( pkvd->szKeyName, "spawntype" ) )
+	{
+		m_iSpawnType = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "beamcount" ) )
+	{
+		m_iBeamCount = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "spritescale" ) )
+	{
+		m_flSpriteScale = atof( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "spawnsoundrad" ) )
+	{
+		switch( atoi( pkvd->szValue ) )
+		{
+			case 3:
+				m_flSpawnSoundRad = ATTN_NONE;
+				break;
+			case 2:
+				m_flSpawnSoundRad = ATTN_NORM;
+				break;
+			case 1:
+				m_flSpawnSoundRad = ATTN_IDLE;
+				break;
+			default:
+				m_flSpawnSoundRad = ATTN_STATIC;
+				break;
+		}
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "spawnvol" ) )
+	{
+		m_flSpawnVol = atof( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
 		CBaseMonster::KeyValue( pkvd );
 }
 
@@ -149,6 +199,9 @@ void CMonsterMaker::Spawn()
 
 void CMonsterMaker::Precache( void )
 {
+	if( FBitSet( pev->spawnflags, SF_MONSTERMAKER_WARPBALL ) )
+		UTIL_PrecacheOther( "env_spawnereffect" );
+
 	CBaseMonster::Precache();
 
 	UTIL_PrecacheOther( STRING( m_iszMonsterClassname ) );
@@ -208,6 +261,10 @@ void CMonsterMaker::MakeMonster( void )
 	pevCreate = VARS( pent );
 	pevCreate->origin = pev->origin;
 	pevCreate->angles = pev->angles;
+
+	if( FBitSet( pev->spawnflags, SF_MONSTERMAKER_WARPBALL ) )
+		pevCreate->origin.z -= 16;
+
 	SetBits( pevCreate->spawnflags, SF_MONSTER_FALL_TO_GROUND );
 
 	// Children hit monsterclip brushes
@@ -221,6 +278,22 @@ void CMonsterMaker::MakeMonster( void )
 	{
 		// if I have a netname (overloaded), give the child monster that name as a targetname
 		pevCreate->targetname = pev->netname;
+	}
+
+	if( FBitSet( pev->spawnflags, SF_MONSTERMAKER_WARPBALL ) )
+	{
+		int iLightRad;
+		float height = ( pevCreate->absmax.z - pevCreate->absmin.z ) * 0.5f;
+
+		if( FClassnameIs( pevCreate, "monster_alien_slave" )
+			|| FClassnameIs( pevCreate, "monster_exp_alien_slave" ) )
+			iLightRad = 24;
+		else if( FClassnameIs( pevCreate, "monster_alien_grunt" ))
+			iLightRad = 32;
+		else
+			iLightRad = pevCreate->size.z / 3;
+
+		UTIL_CreateWarpball( ENT( pevCreate ), pevCreate->origin + Vector( 0, 0, height ), m_flSpawnVol, m_flSpawnSoundRad, m_iBeamCount, m_iSpawnType, m_flSpriteScale, iLightRad );
 	}
 
 	m_cLiveChildren++;// count this monster

@@ -302,8 +302,14 @@ void CBaseMonster::GibMonster( void )
 
 	EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "common/bodysplat.wav", 1, ATTN_NORM );
 
+	if( FClassnameIs( pev, "monster_exp_alien_slave" ) )
+	{
+		if( CVAR_GET_FLOAT( "violence_hgibs" ) != 0 )
+			CGib::SpawnRandomGibs( pev, 4, 1 );
+		gibbed = TRUE;
+	}
 	// only humans throw skulls !!!UNDONE - eventually monsters will have their own sets of gibs
-	if( HasHumanGibs() )
+	else if( HasHumanGibs() )
 	{
 		if( CVAR_GET_FLOAT( "violence_hgibs" ) != 0 )	// Only the player will ever get here
 		{
@@ -1535,6 +1541,12 @@ Vector CBaseEntity::FireBulletsPlayer( ULONG cShots, Vector vecSrc, Vector vecDi
 				break;
 			case BULLET_PLAYER_357:
 				pEntity->TraceAttack( pevAttacker, gSkillData.plrDmg357, vecDir, &tr, DMG_BULLET );
+				break;
+			case BULLET_PLAYER_M41A:
+				pEntity->TraceAttack( pevAttacker, gSkillData.plrDmgM41A, vecDir, &tr, DMG_BULLET );
+				break;
+			case BULLET_PLAYER_BERETTA:
+				pEntity->TraceAttack( pevAttacker, gSkillData.plrDmgBeretta, vecDir, &tr, DMG_BULLET );
 				break;
 			case BULLET_NONE: // FIX
 				pEntity->TraceAttack( pevAttacker, 50, vecDir, &tr, DMG_CLUB );

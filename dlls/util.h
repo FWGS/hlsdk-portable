@@ -471,6 +471,7 @@ extern DLL_GLOBAL int			g_Language;
 #define	SF_TRIGGER_ALLOWMONSTERS	1// monsters allowed to fire this trigger
 #define	SF_TRIGGER_NOCLIENTS		2// players not allowed to fire this trigger
 #define SF_TRIGGER_PUSHABLES		4// only pushables can fire this trigger
+#define SF_TRIGGER_KATEONLY		8
 
 // func breakable
 #define SF_BREAK_TRIGGER_ONLY	1// may only be broken by trigger
@@ -578,4 +579,9 @@ int UTIL_SharedRandomLong( unsigned int seed, int low, int high );
 float UTIL_SharedRandomFloat( unsigned int seed, float low, float high );
 
 float UTIL_WeaponTimeBase( void );
+const char *UTIL_GetSoundRoomTypeName( int number );
+void UTIL_CreateWarpball( edict_t *ent, Vector vecSrc, float spawnVol, float spawnSoundRad, int beamCount, int spawnType, float spriteScale, int lightRad );
+bool UTIL_HasSuit( CBaseEntity *pEntity );
+void UTIL_ShowKateHealth( int health );
+void UTIL_CreateSprite( const char *spriteName, Vector origin, Vector color, float scale );
 #endif // UTIL_H

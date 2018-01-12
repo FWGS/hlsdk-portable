@@ -32,12 +32,12 @@ enum mp5_e
 	MP5_DEPLOY,
 	MP5_FIRE1,
 	MP5_FIRE2,
-	MP5_FIRE3
+	MP5_FIRE3,
+	MP5_HOLSTER
 };
 
 LINK_ENTITY_TO_CLASS( weapon_mp5, CMP5 )
 LINK_ENTITY_TO_CLASS( weapon_9mmAR, CMP5 )
-LINK_ENTITY_TO_CLASS( weapon_barney9mmar, CMP5 )
 
 //=========================================================
 //=========================================================
@@ -48,7 +48,7 @@ int CMP5::SecondaryAmmoIndex( void )
 
 void CMP5::Spawn()
 {
-	pev->classname = MAKE_STRING( "weapon_barney9mmar" ); // hack to allow for old names
+	pev->classname = MAKE_STRING( "weapon_9mmAR" ); // hack to allow for old names
 	Precache();
 	SET_MODEL( ENT( pev ), "models/w_9mmAR.mdl" );
 	m_iId = WEAPON_MP5;
@@ -60,7 +60,7 @@ void CMP5::Spawn()
 
 void CMP5::Precache( void )
 {
-	PRECACHE_MODEL( "models/v_barney9mmar.mdl" );
+	PRECACHE_MODEL( "models/v_9mmAR.mdl" );
 	PRECACHE_MODEL( "models/w_9mmAR.mdl" );
 	PRECACHE_MODEL( "models/p_9mmAR.mdl" );
 
@@ -84,7 +84,7 @@ void CMP5::Precache( void )
 	PRECACHE_SOUND( "weapons/357_cock1.wav" );
 
 	m_usMP5 = PRECACHE_EVENT( 1, "events/mp5.sc" );
-	m_usMP52 = PRECACHE_EVENT( 1, "events/mp52.sc" );
+	// m_usMP52 = PRECACHE_EVENT( 1, "events/mp52.sc" );
 }
 
 int CMP5::GetItemInfo( ItemInfo *p )
@@ -118,23 +118,34 @@ int CMP5::AddToPlayer( CBasePlayer *pPlayer )
 
 BOOL CMP5::Deploy()
 {
-	return DefaultDeploy( "models/v_barney9mmAR.mdl", "models/p_9mmAR.mdl", MP5_DEPLOY, "mp5" );
+	return DefaultDeploy( "models/v_9mmAR.mdl", "models/p_9mmAR.mdl", MP5_DEPLOY, "mp5" );
+}
+
+void CMP5::Holster( int skiplocal /* = 0 */ )
+{
+	DefaultHolster( MP5_HOLSTER, 0.9 );
 }
 
 void CMP5::PrimaryAttack()
 {
+	if( m_pPlayer->m_bIsHolster )
+	{
+		WeaponIdle();
+		return;
+	}
+
 	// don't fire underwater
 	if( m_pPlayer->pev->waterlevel == 3 )
 	{
 		PlayEmptySound();
-		m_flNextPrimaryAttack = 0.15;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.15;
 		return;
 	}
 
 	if( m_iClip <= 0 )
 	{
 		PlayEmptySound();
-		m_flNextPrimaryAttack = 0.15;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.15;
 		return;
 	}
 
@@ -178,7 +189,7 @@ void CMP5::PrimaryAttack()
 		// HEV suit - indicate out of ammo condition
 		m_pPlayer->SetSuitUpdate( "!HEV_AMO0", FALSE, 0 );
 
-	m_flNextPrimaryAttack = GetNextAttackDelay( 0.1 );
+	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.1;
 
 	if( m_flNextPrimaryAttack < UTIL_WeaponTimeBase() )
 		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.1;
@@ -188,11 +199,17 @@ void CMP5::PrimaryAttack()
 
 void CMP5::SecondaryAttack( void )
 {
+	if( m_pPlayer->m_bIsHolster )
+	{
+		WeaponIdle();
+		return;
+	}
+
 	// don't fire underwater
 	if( m_pPlayer->pev->waterlevel == 3 )
 	{
 		PlayEmptySound( );
-		m_flNextPrimaryAttack = 0.15;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.15;
 		return;
 	}
 
@@ -210,35 +227,40 @@ void CMP5::SecondaryAttack( void )
 
 	m_pPlayer->m_rgAmmo[m_iSecondaryAmmoType]--;
 
+	SendWeaponAnim( MP5_LAUNCH );
+
 	// player "shoot" animation
 	m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
+
+	// play this sound through BODY channel so we can hear it if player didn't stop firing MP3
+	EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_WEAPON, RANDOM_LONG( 0, 1 ) ? "weapons/glauncher.wav" : "weapons/glauncher2.wav", 0.8, ATTN_NORM );
 
  	UTIL_MakeVectors( m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle );
 
 	// we don't add in player velocity anymore.
 	CGrenade::ShootContact( m_pPlayer->pev,
 					m_pPlayer->pev->origin + m_pPlayer->pev->view_ofs + gpGlobals->v_forward * 16, 
-					gpGlobals->v_forward * 800 );
+					gpGlobals->v_forward * 800, gSkillData.plrDmgM203Grenade );
 
-	int flags;
-#if defined( CLIENT_WEAPONS )
-	flags = FEV_NOTHOST;
-#else
-	flags = 0;
-#endif
-	PLAYBACK_EVENT( flags, m_pPlayer->edict(), m_usMP52 );
-
-	m_flNextPrimaryAttack = GetNextAttackDelay( 1 );
+	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 1;
 	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1;
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 5;// idle pretty soon after shooting.
 
 	if( !m_pPlayer->m_rgAmmo[m_iSecondaryAmmoType] )
 		// HEV suit - indicate out of ammo condition
 		m_pPlayer->SetSuitUpdate( "!HEV_AMO0", FALSE, 0 );
+
+	m_pPlayer->pev->punchangle.x -= 10;
 }
 
 void CMP5::Reload( void )
 {
+	if( m_pPlayer->m_bIsHolster )
+	{
+		WeaponIdle();
+		return;
+	}
+
 	if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0 || m_iClip == MP5_MAX_CLIP )
 		return;
 
@@ -247,6 +269,16 @@ void CMP5::Reload( void )
 
 void CMP5::WeaponIdle( void )
 {
+	if( m_pPlayer->m_bIsHolster )
+	{
+		if( m_flTimeWeaponIdle <= UTIL_WeaponTimeBase() )
+		{
+			m_pPlayer->m_bIsHolster = FALSE;
+			Deploy();
+		}
+		return;
+	}
+
 	ResetEmptySound();
 
 	m_pPlayer->GetAutoaimVector( AUTOAIM_5DEGREES );

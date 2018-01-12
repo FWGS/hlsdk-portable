@@ -60,10 +60,13 @@ void CHealthKit::Precache( void )
 {
 	PRECACHE_MODEL( "models/w_medkit.mdl" );
 	PRECACHE_SOUND( "items/smallmedkit1.wav" );
+	PRECACHE_SOUND( "items/smallmedkit3.wav" );
 }
 
 BOOL CHealthKit::MyTouch( CBasePlayer *pPlayer )
 {
+	const char *pszSound;
+
 	if( pPlayer->pev->deadflag != DEAD_NO )
 	{
 		return FALSE;
@@ -75,7 +78,12 @@ BOOL CHealthKit::MyTouch( CBasePlayer *pPlayer )
 			WRITE_STRING( STRING( pev->classname ) );
 		MESSAGE_END();
 
-		EMIT_SOUND( ENT( pPlayer->pev ), CHAN_ITEM, "items/smallmedkit1.wav", 1, ATTN_NORM );
+		if( UTIL_HasSuit( pPlayer ) )
+			pszSound = "items/smallmedkit1.wav";
+		else
+			pszSound = "items/smallmedkit3.wav";
+
+		EMIT_SOUND( ENT( pPlayer->pev ), CHAN_ITEM, pszSound, 1, ATTN_NORM );
 
 		if( g_pGameRules->ItemShouldRespawn( this ) )
 		{
@@ -168,10 +176,13 @@ void CWallHealth::Precache()
 	PRECACHE_SOUND( "items/medshot4.wav" );
 	PRECACHE_SOUND( "items/medshotno1.wav" );
 	PRECACHE_SOUND( "items/medcharge4.wav" );
+	PRECACHE_SOUND( "items/medcharge5.wav" );
 }
 
 void CWallHealth::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 { 
+	const char *pszSound;
+
 	// Make sure that we have a caller
 	if( !pActivator )
 		return;
@@ -214,7 +225,11 @@ void CWallHealth::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE u
 	if( ( m_iOn == 1 ) && ( m_flSoundTime <= gpGlobals->time ) )
 	{
 		m_iOn++;
-		EMIT_SOUND( ENT( pev ), CHAN_STATIC, "items/medcharge4.wav", 1.0, ATTN_NORM );
+		if( UTIL_HasSuit( pActivator ) )
+			pszSound = "items/medcharge4.wav";
+		else
+			pszSound = "items/medcharge5.wav";
+		EMIT_SOUND( ENT( pev ), CHAN_STATIC, pszSound, 1.0, ATTN_NORM );
 	}
 
 	// charge the player
@@ -239,7 +254,10 @@ void CWallHealth::Off( void )
 {
 	// Stop looping sound.
 	if( m_iOn > 1 )
+	{
 		STOP_SOUND( ENT( pev ), CHAN_STATIC, "items/medcharge4.wav" );
+		STOP_SOUND( ENT( pev ), CHAN_STATIC, "items/medcharge5.wav" );
+	}
 
 	m_iOn = 0;
 

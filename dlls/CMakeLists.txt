@@ -25,7 +25,7 @@ project (SVDLL)
 
 set (SVDLL_LIBRARY server)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_LINUX -DCLIENT_WEAPONS -Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf -D_vsnprintf=vsnprintf -fno-exceptions -w")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_LINUX -Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf -D_vsnprintf=vsnprintf -fno-exceptions -w")
 set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS}")
 
 set (SVDLL_SOURCES 
@@ -128,14 +128,19 @@ set (SVDLL_SOURCES
 	world.cpp
 	xen.cpp
 	zombie.cpp
-	asheep/adrian.cpp
-	asheep/alienpanther.cpp
+	asheep/panther.cpp
 	asheep/archer.cpp
+	asheep/barneyglock.cpp
+	asheep/barneyhg.cpp
+	asheep/barneymp5.cpp
+	asheep/barneyshotgun.cpp
 	asheep/barniel.cpp
 	asheep/beretta.cpp
-	asheep/gordon.cpp
-	asheep/hevbarn.cpp
+	asheep/bodypart.cpp
+	asheep/garbage.cpp
+	asheep/gordonnadrian.cpp
 	asheep/kate.cpp
+	asheep/kmedkit.cpp
 	asheep/m41a.cpp
 	asheep/poolstick.cpp
 	asheep/spforce.cpp

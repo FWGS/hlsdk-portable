@@ -174,7 +174,40 @@ void CItem::Materialize( void )
 class CItemSuit : public CItem
 {
 	void Spawn( void )
-	{ 
+	{
+		Precache();
+		SET_MODEL( ENT( pev ), "models/w_blue_suit.mdl" );
+		CItem::Spawn();
+	}
+	void Precache( void )
+	{
+		PRECACHE_MODEL( "models/w_blue_suit.mdl" );
+	}
+	BOOL MyTouch( CBasePlayer *pPlayer )
+	{
+		if( !FBitSet( pPlayer->pev->weapons, 1 << WEAPON_SUIT ) )
+			pPlayer->pev->weapons |= ( 1 << WEAPON_SUIT );
+
+		pPlayer->m_bHaveSuit = TRUE;
+
+		if( gEvilImpulse101 )
+			return TRUE;
+
+		if( pev->spawnflags & SF_SUIT_SHORTLOGON )
+			EMIT_SOUND_SUIT( pPlayer->edict(), "!HEV_A0" );		// short version of suit logon,
+		else
+			EMIT_SOUND_SUIT( pPlayer->edict(), "!HEV_AAx" );	// long version of suit logon
+
+		return TRUE;
+	}
+};
+
+LINK_ENTITY_TO_CLASS( item_suit, CItemSuit )
+
+class CItemArmor : public CItem
+{
+	void Spawn( void )
+	{
 		Precache();
 		SET_MODEL( ENT( pev ), "models/w_suit.mdl" );
 		CItem::Spawn();
@@ -182,25 +215,24 @@ class CItemSuit : public CItem
 	void Precache( void )
 	{
 		PRECACHE_MODEL( "models/w_suit.mdl" );
+		PRECACHE_SOUND( "armor/pickup.wav" );
 	}
 	BOOL MyTouch( CBasePlayer *pPlayer )
 	{
-		if( pPlayer->pev->weapons & ( 1<<WEAPON_SUIT ) )
+		if( pPlayer->pev->weapons & ( 1 << WEAPON_SUIT ) )
 			return FALSE;
 
-		if( pev->spawnflags & SF_SUIT_SHORTLOGON )
-			EMIT_SOUND_SUIT( pPlayer->edict(), "!HEV_A0" );		// short version of suit logon,
-		else
-			EMIT_SOUND_SUIT( pPlayer->edict(), "!HEV_AAx" );	// long version of suit logon
+		EMIT_SOUND( pPlayer->edict(), CHAN_ITEM, "armor/pickup.wav", 1, ATTN_NORM );
+
+		pPlayer->pev->armorvalue += gSkillData.batteryCapacity;
+		pPlayer->pev->armorvalue = Q_min( pPlayer->pev->armorvalue, MAX_NORMAL_BATTERY );
 
 		pPlayer->pev->weapons |= ( 1 << WEAPON_SUIT );
 		return TRUE;
 	}
 };
-
-LINK_ENTITY_TO_CLASS( item_suit, CItemSuit )
 //begin Alex
-LINK_ENTITY_TO_CLASS( item_armor, CItemSuit ) // for Azure Sheep
+LINK_ENTITY_TO_CLASS( item_armor, CItemArmor ) // for Azure Sheep
 //end Alex
 
 class CItemBattery : public CItem
@@ -215,6 +247,7 @@ class CItemBattery : public CItem
 	{
 		PRECACHE_MODEL( "models/w_battery.mdl" );
 		PRECACHE_SOUND( "items/gunpickup2.wav" );
+		PRECACHE_SOUND( "barney/nope.wav" );
 	}
 	BOOL MyTouch( CBasePlayer *pPlayer )
 	{
@@ -224,7 +257,7 @@ class CItemBattery : public CItem
 		}
 
 		if( ( pPlayer->pev->armorvalue < MAX_NORMAL_BATTERY ) &&
-			( pPlayer->pev->weapons & ( 1 << WEAPON_SUIT ) ) )
+			( pPlayer->pev->weapons & ( 1 << WEAPON_SUIT ) ) && pPlayer->m_bHaveSuit )
 		{
 			int pct;
 			char szcharge[64];
@@ -237,6 +270,9 @@ class CItemBattery : public CItem
 			MESSAGE_BEGIN( MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev );
 				WRITE_STRING( STRING( pev->classname ) );
 			MESSAGE_END();
+
+			if( gEvilImpulse101 )
+				return TRUE;
 
 			// Suit reports new power level
 			// For some reason this wasn't working in release build -- round it.
@@ -251,8 +287,15 @@ class CItemBattery : public CItem
 			pPlayer->SetSuitUpdate( szcharge, FALSE, SUIT_NEXT_IN_30SEC);
 			return TRUE;
 		}
+		else if( NextMessageTime < gpGlobals->time && !pPlayer->m_bHaveSuit )
+		{
+			EMIT_SOUND( pPlayer->edict(), CHAN_ITEM, "barney/nope.wav", 1, ATTN_NORM );
+			UTIL_ShowMessageAll( "NOHEVBATTERY" );
+			NextMessageTime < gpGlobals->time + 4.0;
+		}
 		return FALSE;
 	}
+	float NextMessageTime;
 };
 
 LINK_ENTITY_TO_CLASS( item_battery, CItemBattery )

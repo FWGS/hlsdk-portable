@@ -36,7 +36,6 @@ enum handgrenade_e
 };
 
 LINK_ENTITY_TO_CLASS( weapon_handgrenade, CHandGrenade )
-LINK_ENTITY_TO_CLASS( weapon_barneyhandgrenade, CHandGrenade ) // edit for Azure Sheep
 
 void CHandGrenade::Spawn()
 {
@@ -54,8 +53,8 @@ void CHandGrenade::Spawn()
 
 void CHandGrenade::Precache( void )
 {
+	PRECACHE_MODEL( "models/v_grenade.mdl" );
 	PRECACHE_MODEL( "models/w_grenade.mdl" );
-	PRECACHE_MODEL( "models/v_barneygrenade.mdl" );
 	PRECACHE_MODEL( "models/p_grenade.mdl" );
 }
 
@@ -79,7 +78,7 @@ int CHandGrenade::GetItemInfo( ItemInfo *p )
 BOOL CHandGrenade::Deploy()
 {
 	m_flReleaseThrow = -1;
-	return DefaultDeploy( "models/v_barneygrenade.mdl", "models/p_grenade.mdl", HANDGRENADE_DRAW, "crowbar" );
+	return DefaultDeploy( "models/v_grenade.mdl", "models/p_grenade.mdl", HANDGRENADE_DRAW, "crowbar" );
 }
 
 BOOL CHandGrenade::CanHolster( void )
@@ -90,11 +89,9 @@ BOOL CHandGrenade::CanHolster( void )
 
 void CHandGrenade::Holster( int skiplocal /* = 0 */ )
 {
-	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
-
 	if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] )
 	{
-		SendWeaponAnim( HANDGRENADE_HOLSTER );
+		DefaultHolster( HANDGRENADE_HOLSTER, 0.7 );
 	}
 	else
 	{
@@ -114,6 +111,12 @@ void CHandGrenade::Holster( int skiplocal /* = 0 */ )
 
 void CHandGrenade::PrimaryAttack()
 {
+	if( m_pPlayer->m_bIsHolster )
+	{
+		WeaponIdle();
+		return;
+	}
+
 	if( !m_flStartThrow && m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] > 0 )
 	{
 		m_flStartThrow = gpGlobals->time;
@@ -126,6 +129,16 @@ void CHandGrenade::PrimaryAttack()
 
 void CHandGrenade::WeaponIdle( void )
 {
+	if( m_pPlayer->m_bIsHolster )
+	{
+		if( m_flTimeWeaponIdle <= UTIL_WeaponTimeBase() )
+		{
+			m_pPlayer->m_bIsHolster = FALSE;
+			Deploy();
+		}
+		return;
+	}
+
 	if( m_flReleaseThrow == 0 && m_flStartThrow )
 		 m_flReleaseThrow = gpGlobals->time;
 
@@ -176,7 +189,7 @@ void CHandGrenade::WeaponIdle( void )
 
 		m_flReleaseThrow = 0;
 		m_flStartThrow = 0;
-		m_flNextPrimaryAttack = GetNextAttackDelay( 0.5 );
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5;
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.5;
 
 		m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]--;
@@ -186,7 +199,7 @@ void CHandGrenade::WeaponIdle( void )
 			// just threw last grenade
 			// set attack times in the future, and weapon idle in the future so we can see the whole throw
 			// animation, weapon idle will automatically retire the weapon for us.
-			m_flTimeWeaponIdle = m_flNextSecondaryAttack = m_flNextPrimaryAttack = GetNextAttackDelay( 0.5 );// ensure that the animation can finish playing
+			m_flTimeWeaponIdle = m_flNextSecondaryAttack = m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5;// ensure that the animation can finish playing
 		}
 		return;
 	}

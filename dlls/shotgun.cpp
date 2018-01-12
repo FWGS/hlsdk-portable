@@ -41,7 +41,6 @@ enum shotgun_e
 };
 
 LINK_ENTITY_TO_CLASS( weapon_shotgun, CShotgun )
-LINK_ENTITY_TO_CLASS( weapon_barneyshotgun, CShotgun )
 
 void CShotgun::Spawn()
 {
@@ -56,7 +55,7 @@ void CShotgun::Spawn()
 
 void CShotgun::Precache( void )
 {
-	PRECACHE_MODEL( "models/v_barneyshotgun.mdl" );
+	PRECACHE_MODEL( "models/v_shotgun.mdl" );
 	PRECACHE_MODEL( "models/w_shotgun.mdl" );
 	PRECACHE_MODEL( "models/p_shotgun.mdl" );
 
@@ -101,7 +100,7 @@ int CShotgun::GetItemInfo( ItemInfo *p )
 	p->iMaxAmmo2 = -1;
 	p->iMaxClip = SHOTGUN_MAX_CLIP;
 	p->iSlot = 2;
-	p->iPosition = 1;
+	p->iPosition = 2;
 	p->iFlags = 0;
 	p->iId = m_iId = WEAPON_SHOTGUN;
 	p->iWeight = SHOTGUN_WEIGHT;
@@ -111,16 +110,27 @@ int CShotgun::GetItemInfo( ItemInfo *p )
 
 BOOL CShotgun::Deploy()
 {
-	return DefaultDeploy( "models/v_barneyshotgun.mdl", "models/p_shotgun.mdl", SHOTGUN_DRAW, "shotgun" );
+	return DefaultDeploy( "models/v_shotgun.mdl", "models/p_shotgun.mdl", SHOTGUN_DRAW, "shotgun" );
+}
+
+void CShotgun::Holster( int skiplocal /* = 0 */ )
+{
+        DefaultHolster( SHOTGUN_HOLSTER, 0.4 );
 }
 
 void CShotgun::PrimaryAttack()
 {
+	if( m_pPlayer->m_bIsHolster )
+	{
+		WeaponIdle();
+		return;
+	}
+
 	// don't fire underwater
 	if( m_pPlayer->pev->waterlevel == 3 )
 	{
 		PlayEmptySound();
-		m_flNextPrimaryAttack = GetNextAttackDelay( 0.15 );
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.15;
 		return;
 	}
 
@@ -176,7 +186,7 @@ void CShotgun::PrimaryAttack()
 	//if( m_iClip != 0 )
 		m_flPumpTime = gpGlobals->time + 0.5;
 
-	m_flNextPrimaryAttack = GetNextAttackDelay( 0.75 );
+	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.75;
 	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.75;
 	if( m_iClip != 0 )
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 5.0;
@@ -187,11 +197,17 @@ void CShotgun::PrimaryAttack()
 
 void CShotgun::SecondaryAttack( void )
 {
+	if( m_pPlayer->m_bIsHolster )
+	{
+		WeaponIdle();
+		return;
+	}
+
 	// don't fire underwater
 	if( m_pPlayer->pev->waterlevel == 3 )
 	{
 		PlayEmptySound();
-		m_flNextPrimaryAttack = GetNextAttackDelay( 0.15 );
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.15;
 		return;
 	}
 
@@ -247,18 +263,24 @@ void CShotgun::SecondaryAttack( void )
 	//if( m_iClip != 0 )
 		m_flPumpTime = gpGlobals->time + 0.95;
 
-	m_flNextPrimaryAttack = GetNextAttackDelay( 1.5 );
+	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 1.5;
 	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1.5;
 	if( m_iClip != 0 )
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 6.0;
 	else
-		m_flTimeWeaponIdle = 1.5;
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.5;
 
 	m_fInSpecialReload = 0;
 }
 
 void CShotgun::Reload( void )
 {
+	if( m_pPlayer->m_bIsHolster )
+	{
+		WeaponIdle();
+		return;
+	}
+
 	if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0 || m_iClip == SHOTGUN_MAX_CLIP )
 		return;
 
@@ -273,7 +295,7 @@ void CShotgun::Reload( void )
 		m_fInSpecialReload = 1;
 		m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.6;
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.6;
-		m_flNextPrimaryAttack = GetNextAttackDelay( 1.0 );
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 1.0;
 		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1.0;
 		return;
 	}
@@ -315,6 +337,16 @@ void CShotgun::WeaponTick()
 
 void CShotgun::WeaponIdle( void )
 {
+	if( m_pPlayer->m_bIsHolster )
+	{
+		if( m_flTimeWeaponIdle <= UTIL_WeaponTimeBase() )
+		{
+			m_pPlayer->m_bIsHolster = FALSE;
+			Deploy();
+		}
+		return;
+	}
+
 	ResetEmptySound();
 
 	m_pPlayer->GetAutoaimVector( AUTOAIM_5DEGREES );

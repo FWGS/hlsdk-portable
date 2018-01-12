@@ -167,7 +167,7 @@ void CApache::Precache( void )
 
 	PRECACHE_SOUND( "turret/tu_fire1.wav" );
 
-	PRECACHE_MODEL( "sprites/lgtning.spr" );
+	// PRECACHE_MODEL( "sprites/lgtning.spr" );
 
 	m_iExplode = PRECACHE_MODEL( "sprites/fexplo.spr" );
 	m_iBodyGibs = PRECACHE_MODEL( "models/metalplategibs_green.mdl" );

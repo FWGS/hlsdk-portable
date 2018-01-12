@@ -433,7 +433,7 @@ void CSqueak::Precache( void )
 	PRECACHE_SOUND( "squeek/sqk_hunt3.wav" );
 	UTIL_PrecacheOther( "monster_snark" );
 
-	m_usSnarkFire = PRECACHE_EVENT( 1, "events/snarkfire.sc" );
+	// m_usSnarkFire = PRECACHE_EVENT( 1, "events/snarkfire.sc" );
 }
 
 int CSqueak::GetItemInfo( ItemInfo *p )
@@ -445,7 +445,7 @@ int CSqueak::GetItemInfo( ItemInfo *p )
 	p->iMaxAmmo2 = -1;
 	p->iMaxClip = WEAPON_NOCLIP;
 	p->iSlot = 4;
-	p->iPosition = 3;
+	p->iPosition = 4;
 	p->iId = m_iId = WEAPON_SNARK;
 	p->iWeight = SNARK_WEIGHT;
 	p->iFlags = ITEM_FLAG_LIMITINWORLD | ITEM_FLAG_EXHAUSTIBLE;
@@ -470,8 +470,6 @@ BOOL CSqueak::Deploy()
 
 void CSqueak::Holster( int skiplocal /* = 0 */ )
 {
-	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
-
 	if( !m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] )
 	{
 		m_pPlayer->pev->weapons &= ~( 1 << WEAPON_SNARK );
@@ -479,12 +477,18 @@ void CSqueak::Holster( int skiplocal /* = 0 */ )
 		return;
 	}
 
-	SendWeaponAnim( SQUEAK_DOWN );
+	DefaultHolster( SQUEAK_DOWN, 1.5 );
 	EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_WEAPON, "common/null.wav", 1.0, ATTN_NORM );
 }
 
 void CSqueak::PrimaryAttack()
 {
+	if( m_pPlayer->m_bIsHolster )
+	{
+		WeaponIdle();
+		return;
+	}
+
 	if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] )
 	{
 		UTIL_MakeVectors( m_pPlayer->pev->v_angle );
@@ -502,16 +506,10 @@ void CSqueak::PrimaryAttack()
 		// find place to toss monster
 		UTIL_TraceLine( trace_origin + gpGlobals->v_forward * 20, trace_origin + gpGlobals->v_forward * 64, dont_ignore_monsters, NULL, &tr );
 
-		int flags;
-#ifdef CLIENT_WEAPONS
-		flags = FEV_NOTHOST;
-#else
-		flags = 0;
-#endif
-		PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usSnarkFire, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, 0, 0, 0, 0 );
-
 		if( tr.fAllSolid == 0 && tr.fStartSolid == 0 && tr.flFraction > 0.25 )
 		{
+			SendWeaponAnim( SQUEAK_THROW );
+
 			// player "shoot" animation
 			m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
 #ifndef CLIENT_DLL
@@ -532,7 +530,7 @@ void CSqueak::PrimaryAttack()
 
 			m_fJustThrown = 1;
 
-			m_flNextPrimaryAttack = GetNextAttackDelay( 0.3 );
+			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.3;
 			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.0;
 		}
 	}
@@ -540,11 +538,25 @@ void CSqueak::PrimaryAttack()
 
 void CSqueak::SecondaryAttack( void )
 {
-
+	if( m_pPlayer->m_bIsHolster )
+	{
+		WeaponIdle();
+		return;
+	}
 }
 
 void CSqueak::WeaponIdle( void )
 {
+	if( m_pPlayer->m_bIsHolster )
+	{
+		if( m_flTimeWeaponIdle <= UTIL_WeaponTimeBase() )
+		{
+			m_pPlayer->m_bIsHolster = FALSE;
+			Deploy();
+		}
+		return;
+	}
+
 	if( m_flTimeWeaponIdle > UTIL_WeaponTimeBase() )
 		return;
 

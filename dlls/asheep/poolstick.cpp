@@ -26,8 +26,7 @@
 #define	POOLSTICK_BODYHIT_VOLUME 128
 #define	POOLSTICK_WALLHIT_VOLUME 512
 
-LINK_ENTITY_TO_CLASS( weapon_poolstick, CPoolstick );
-
+LINK_ENTITY_TO_CLASS( weapon_poolstick, CPoolstick )
 
 
 enum poolstick_e {
@@ -39,7 +38,9 @@ enum poolstick_e {
 	POOLSTICK_ATTACK2MISS,
 	POOLSTICK_ATTACK2HIT,
 	POOLSTICK_ATTACK3MISS,
-	POOLSTICK_ATTACK3HIT
+	POOLSTICK_ATTACK3HIT,
+	POOLSTICK_IDLE2,
+	POOLSTICK_IDLE3
 };
 
 
@@ -65,8 +66,6 @@ void CPoolstick::Precache( void )
 	PRECACHE_SOUND("weapons/pstk_hitbod2.wav");
 	PRECACHE_SOUND("weapons/pstk_hitbod3.wav");
 	PRECACHE_SOUND("weapons/pstk_miss1.wav");
-
-	m_usPoolstick = PRECACHE_EVENT ( 1, "events/crowbar.sc" );
 }
 
 int CPoolstick::GetItemInfo(ItemInfo *p)
@@ -78,7 +77,7 @@ int CPoolstick::GetItemInfo(ItemInfo *p)
 	p->iMaxAmmo2 = -1;
 	p->iMaxClip = WEAPON_NOCLIP;
 	p->iSlot = 0;
-	p->iPosition = 2;
+	p->iPosition = 1;
 	p->iId = WEAPON_POOLSTICK;
 	p->iWeight = CROWBAR_WEIGHT;
 	return 1;
@@ -93,12 +92,11 @@ BOOL CPoolstick::Deploy( )
 
 void CPoolstick::Holster( int skiplocal /* = 0 */ )
 {
-	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
-	SendWeaponAnim( POOLSTICK_HOLSTER );
+	DefaultHolster( POOLSTICK_HOLSTER, 0.7 );
 }
 
-
-void FindHullIntersection2( const Vector &vecSrc, TraceResult &tr, float *mins, float *maxs, edict_t *pEntity )
+extern void FindHullIntersection( const Vector &vecSrc, TraceResult &tr, float *mins, float *maxs, edict_t *pEntity );
+/*void FindHullIntersection( const Vector &vecSrc, TraceResult &tr, float *mins, float *maxs, edict_t *pEntity )
 {
 	int			i, j, k;
 	float		distance;
@@ -141,10 +139,16 @@ void FindHullIntersection2( const Vector &vecSrc, TraceResult &tr, float *mins, 
 		}
 	}
 }
-
+*/
 
 void CPoolstick::PrimaryAttack()
 {
+	if( m_pPlayer->m_bIsHolster )
+	{
+		WeaponIdle();
+		return;
+	}
+
 	if (! Swing( 1 ))
 	{
 		SetThink( &CPoolstick::SwingAgain );
@@ -187,31 +191,40 @@ int CPoolstick::Swing( int fFirst )
 			// This is and approximation of the "best" intersection
 			CBaseEntity *pHit = CBaseEntity::Instance( tr.pHit );
 			if ( !pHit || pHit->IsBSPModel() )
-				FindHullIntersection2( vecSrc, tr, VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX, m_pPlayer->edict() );
+				FindHullIntersection( vecSrc, tr, VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX, m_pPlayer->edict() );
 			vecEnd = tr.vecEndPos;	// This is the point on the actual surface (the hull could have hit space)
 		}
 	}
 #endif
-
-	PLAYBACK_EVENT_FULL( FEV_NOTHOST, m_pPlayer->edict(), m_usPoolstick, 
-	0.0, (float *)&g_vecZero, (float *)&g_vecZero, 0, 0, 0,
-	0.0, 0, 0.0 );
-
 
 	if ( tr.flFraction >= 1.0 )
 	{
 		if (fFirst)
 		{
 			// miss
-			m_flNextPrimaryAttack = GetNextAttackDelay(0.5);
-			
+			switch( ( m_iSwing++ ) % 3 )
+			{
+			case 0:
+				SendWeaponAnim( POOLSTICK_ATTACK1MISS );
+				break;
+			case 1:
+				SendWeaponAnim( POOLSTICK_ATTACK2MISS );
+				break;
+			case 2:
+				SendWeaponAnim( POOLSTICK_ATTACK3MISS );
+				break;
+			}
+			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5;
+			EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_WEAPON, "weapons/pstk_miss1.wav", 1, ATTN_NORM, 0, 94 + RANDOM_LONG( 0, 0xF ) );
+			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
+
 			// player "shoot" animation
 			m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
 		}
 	}
 	else
 	{
-		switch( ((m_iSwing++) % 2) + 1 )
+		switch( (m_iSwing++) % 3) 
 		{
 		case 0:
 			SendWeaponAnim( POOLSTICK_ATTACK1HIT ); break;
@@ -224,7 +237,6 @@ int CPoolstick::Swing( int fFirst )
 		// player "shoot" animation
 		m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
 		
-#ifndef CLIENT_DLL
 
 		// hit
 		fDidHit = TRUE;
@@ -303,14 +315,49 @@ int CPoolstick::Swing( int fFirst )
 		}
 
 		m_pPlayer->m_iWeaponVolume = flVol * POOLSTICK_WALLHIT_VOLUME;
-#endif
-		m_flNextPrimaryAttack = GetNextAttackDelay(0.25);
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.25;
 		
 		SetThink( &CPoolstick::Smack );
 		pev->nextthink = UTIL_WeaponTimeBase() + 0.2;
-
-		
 	}
+	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
 	return fDidHit;
 }
 
+void CPoolstick::WeaponIdle()
+{
+	if( m_pPlayer->m_bIsHolster )
+	{
+		if( m_flTimeWeaponIdle <= UTIL_WeaponTimeBase() )
+		{
+			m_pPlayer->m_bIsHolster = FALSE;
+			Deploy();
+		}
+		return;
+	}
+
+	if( m_flTimeWeaponIdle < UTIL_WeaponTimeBase() )
+	{
+		int iAnim;
+		float flRand = UTIL_SharedRandomFloat( m_pPlayer->random_seed, 0, 1 );
+		if( flRand > 0.9 )
+		{
+			iAnim = POOLSTICK_IDLE2;
+			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 160.0 / 30.0;
+		}
+		else
+		{
+			if( flRand > 0.5 )
+			{
+				iAnim = POOLSTICK_IDLE;
+				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 70.0 / 30.0;
+			}
+			else
+			{
+				iAnim = POOLSTICK_IDLE3;
+				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 160.0 / 30.0;
+			}
+		}
+		SendWeaponAnim( iAnim );
+	}
+}
