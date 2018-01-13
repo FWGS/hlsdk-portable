@@ -880,7 +880,7 @@ int CTalkMonster::FOkToSpeak( void )
 		return FALSE;
 
 	// monster generic can speak always
-	if( pev->spawnflags & SF_MONSTER_GAG && !FClassnameIs( pev, "monster_generic" ) )
+	if( pev->spawnflags & SF_MONSTER_GAG )
 		return FALSE;
 
 	if( m_MonsterState == MONSTERSTATE_PRONE )
