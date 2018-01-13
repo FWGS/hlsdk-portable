@@ -1,4 +1,4 @@
-#
+﻿#
 # Copyright (c) 2015 Pavlo Lavrenenko
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -28,7 +28,7 @@ set (SVDLL_LIBRARY server)
 add_definitions(-DCLIENT_WEAPONS)
 
 if(NOT MSVC)
-	add_compile_options(-fno-exceptions) # GCC/Clang flag
+	add_compile_options(-fno-exceptions -Wno-invalid-offsetof) # GCC/Clang flag
 	add_definitions(-D_LINUX) # It seems enough for all non-Win32 systems
 	add_definitions(-Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf -D_vsnprintf=vsnprintf )
 else()
