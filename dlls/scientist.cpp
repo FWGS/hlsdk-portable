@@ -697,12 +697,26 @@ void CScientist::Spawn( void )
 void CScientist::Precache( void )
 {
 	PRECACHE_MODEL( "models/scientist.mdl" );
-	PRECACHE_SOUND( "scientist/sci_pain1.wav" );
-	PRECACHE_SOUND( "scientist/sci_pain2.wav" );
-	PRECACHE_SOUND( "scientist/sci_pain3.wav" );
-	PRECACHE_SOUND( "scientist/sci_pain4.wav" );
-	PRECACHE_SOUND( "scientist/sci_pain5.wav" );
-	PRECACHE_SOUND( "rosenberg/ro_pain1.wav" );
+	if( !FClassnameIs( pev, "monster_rosenberg" ) )
+	{
+		PRECACHE_SOUND( "scientist/sci_pain1.wav" );
+		PRECACHE_SOUND( "scientist/sci_pain2.wav" );
+		PRECACHE_SOUND( "scientist/sci_pain3.wav" );
+		PRECACHE_SOUND( "scientist/sci_pain4.wav" );
+		PRECACHE_SOUND( "scientist/sci_pain5.wav" );
+	}
+	else
+	{
+		PRECACHE_SOUND( "rosenberg/ro_pain0.wav" );
+		PRECACHE_SOUND( "rosenberg/ro_pain1.wav" );
+		PRECACHE_SOUND( "rosenberg/ro_pain2.wav" );
+		PRECACHE_SOUND( "rosenberg/ro_pain3.wav" );
+		PRECACHE_SOUND( "rosenberg/ro_pain4.wav" );
+		PRECACHE_SOUND( "rosenberg/ro_pain5.wav" );
+		PRECACHE_SOUND( "rosenberg/ro_pain6.wav" );
+		PRECACHE_SOUND( "rosenberg/ro_pain7.wav" );
+		PRECACHE_SOUND( "rosenberg/ro_pain8.wav" );
+	}
 
 	// every new scientist must call this, otherwise
 	// when a level is loaded, nobody will talk (time is reset to 0)
@@ -786,7 +800,7 @@ void CScientist::TalkInit()
 		m_voicePitch = 95;
 		break;	//luther
 	case HEAD_SLICK:
-		m_voicePitch = 85;
+		m_voicePitch = 100;
 		break;	//slick
 	}
 }
@@ -824,32 +838,64 @@ int CScientist::ISoundMask( void )
 //=========================================================
 void CScientist::PainSound( void )
 {
+	const char *pszSound;
 	if( gpGlobals->time < m_painTime )
 		return;
 
 	m_painTime = gpGlobals->time + RANDOM_FLOAT( 0.5, 0.75 );
 
 	if( FClassnameIs( pev, "monster_rosenberg" ) )
-		EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, "rosenberg/ro_pain1.wav", 1, ATTN_NORM, 0, GetVoicePitch() );
+		switch( RANDOM_LONG( 0, 8 ) )
+		{
+		case 0:
+			pszSound = "rosenberg/ro_pain0.wav";
+			break;
+		case 1:
+                        pszSound = "rosenberg/ro_pain1.wav";
+                        break;
+		case 2:
+                        pszSound = "rosenberg/ro_pain2.wav";
+                        break;
+		case 3:
+                        pszSound = "rosenberg/ro_pain3.wav";
+                        break;
+		case 4:
+                        pszSound = "rosenberg/ro_pain4.wav";
+                        break;
+		case 5:
+                        pszSound = "rosenberg/ro_pain5.wav";
+                        break;
+		case 6:
+                        pszSound = "rosenberg/ro_pain6.wav";
+                        break;
+		case 7:
+			pszSound = "rosenberg/ro_pain7.wav";
+			break;
+		case 8:
+			pszSound = "rosenberg/ro_pain8.wav";
+			break;
+		}
 	else
 		switch( RANDOM_LONG( 0, 4 ) )
 		{
 		case 0:
-			EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, "scientist/sci_pain1.wav", 1, ATTN_NORM, 0, GetVoicePitch() );
+			pszSound = "scientist/sci_pain1.wav";
 			break;
 		case 1:
-			EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, "scientist/sci_pain2.wav", 1, ATTN_NORM, 0, GetVoicePitch() );
+			pszSound = "scientist/sci_pain2.wav";
 			break;
 		case 2:
-			EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, "scientist/sci_pain3.wav", 1, ATTN_NORM, 0, GetVoicePitch() );
+			pszSound = "scientist/sci_pain3.wav";
 			break;
 		case 3:
-			EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, "scientist/sci_pain4.wav", 1, ATTN_NORM, 0, GetVoicePitch() );
+			pszSound = "scientist/sci_pain4.wav";
 			break;
 		case 4:
-			EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, "scientist/sci_pain5.wav", 1, ATTN_NORM, 0, GetVoicePitch() );
+			pszSound = "scientist/sci_pain5.wav";
 			break;
 		}
+
+	EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pszSound, 1, ATTN_NORM, 0, GetVoicePitch() );
 }
 
 //=========================================================
