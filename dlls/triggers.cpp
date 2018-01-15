@@ -1190,6 +1190,7 @@ void CBaseTrigger::CounterUse( CBaseEntity *pActivator, CBaseEntity *pCaller, US
 		return;
 
 	BOOL fTellActivator =
+		( m_hActivator != 0 ) &&
 		FClassnameIs( m_hActivator->pev, "player" ) &&
 		!FBitSet( pev->spawnflags, SPAWNFLAG_NOMESSAGE );
 	if( m_cTriggersLeft != 0 )

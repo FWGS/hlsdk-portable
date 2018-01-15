@@ -283,6 +283,11 @@ class CItemBattery : public CItem
 	}
 	BOOL MyTouch( CBasePlayer *pPlayer )
 	{
+		if( pPlayer->pev->deadflag != DEAD_NO )
+		{
+			return FALSE;
+		}
+
 		if( ( pPlayer->pev->armorvalue < MAX_NORMAL_BATTERY ) &&
 			( pPlayer->pev->weapons & ( 1 << WEAPON_SUIT ) ) )
 		{
