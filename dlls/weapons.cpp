@@ -296,6 +296,8 @@ void W_Precache( void )
 	// common world objects
 	UTIL_PrecacheOther( "item_suit" );
 	UTIL_PrecacheOther( "item_healthkit" );
+	UTIL_PrecacheOther( "item_armorvest" );
+	UTIL_PrecacheOther( "item_helmet" );
 	UTIL_PrecacheOther( "item_battery" );
 	UTIL_PrecacheOther( "item_antidote" );
 	UTIL_PrecacheOther( "item_security" );
