@@ -1773,9 +1773,13 @@ enum pipe_e
 	PIPE_ATTACK2MISS,
 	PIPE_ATTACK2HIT,
 	PIPE_ATTACK3MISS,
+#ifndef CROWBAR_IDLE_ANIM
+	PIPE_ATTACK3HIT
+#else
 	PIPE_ATTACK3HIT,
 	PIPE_IDLE2,
-	PIPE_IDLE3,
+	PIPE_IDLE3
+#endif
 };
 
 //Only predict the miss sounds, hit sounds are still played 
@@ -1795,8 +1799,6 @@ void EV_Pipe( event_args_t *args )
 
 	if( EV_IsLocal( idx ) )
 	{
-		gEngfuncs.pEventAPI->EV_WeaponAnimation( PIPE_ATTACK1MISS, 1 );
-
 		switch( ( g_iSwing++ ) % 3 )
 		{
 		case 0:

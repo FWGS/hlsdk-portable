@@ -64,22 +64,22 @@ public:
 
 #define WEAPON_NONE			0
 #define WEAPON_CROWBAR			1
-#define WEAPON_PIPE			2
-#define	WEAPON_GLOCK			3
-#define WEAPON_PYTHON			4
-#define WEAPON_MP5			5
-#define WEAPON_CHAINGUN			6
-#define WEAPON_CROSSBOW			7
-#define WEAPON_SNIPER			8
-#define WEAPON_SHOTGUN			9
-#define WEAPON_RPG			10
-#define WEAPON_GAUSS			11
-#define WEAPON_EGON			12
-#define WEAPON_HORNETGUN		13
-#define WEAPON_HANDGRENADE		14
-#define WEAPON_TRIPMINE			15
-#define WEAPON_SATCHEL			16
-#define WEAPON_SNARK			17
+#define WEAPON_GLOCK			2
+#define	WEAPON_PYTHON			3
+#define WEAPON_MP5			4
+#define WEAPON_CHAINGUN			5
+#define WEAPON_CROSSBOW			6
+#define WEAPON_SHOTGUN			7
+#define WEAPON_RPG			8
+#define WEAPON_GAUSS			9
+#define WEAPON_EGON			10
+#define WEAPON_HORNETGUN		11
+#define WEAPON_HANDGRENADE		12
+#define WEAPON_TRIPMINE			13
+#define WEAPON_SATCHEL			14
+#define WEAPON_SNARK			15
+#define WEAPON_SNIPER			16
+#define WEAPON_PIPE			17
 #define WEAPON_FLASHLIGHT		30
 
 #define WEAPON_ALLWEAPONS		(~(1<<WEAPON_SUIT))
@@ -105,6 +105,7 @@ public:
 #define SNARK_WEIGHT		5
 #define SATCHEL_WEIGHT		-10
 #define TRIPMINE_WEIGHT		-10
+#define SNIPER_WEIGHT		20
 
 // weapon clip/carry ammo capacities
 #define URANIUM_MAX_CARRY		100

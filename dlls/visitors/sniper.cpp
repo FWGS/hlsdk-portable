@@ -43,7 +43,7 @@ int CSniper::GetItemInfo(ItemInfo *p)
 	p->iSlot = 3;
 	p->iPosition = 1;
 	p->iId = m_iId = WEAPON_SNIPER;
-	p->iWeight = PYTHON_WEIGHT;
+	p->iWeight = SNIPER_WEIGHT;
 
 	return 1;
 }
@@ -120,7 +120,7 @@ void CSniper::SecondaryAttack(void)
 		m_pPlayer->pev->fov = m_pPlayer->m_iFOV = 40;
 	}
 
-	m_flNextSecondaryAttack = 0.5;
+	m_flNextSecondaryAttack = 0.75;
 }
 
 void CSniper::PrimaryAttack()
@@ -184,7 +184,7 @@ void CSniper::Reload(void)
 	if (m_pPlayer->ammo_357 <= 0)
 		return;
 
-	int iResult = DefaultReload(SNIPER_MAX_CLIP, SNIPER_RELOAD, 2.0);
+	int iResult = DefaultReload(SNIPER_MAX_CLIP, SNIPER_RELOAD, 2.25);
 
 	if (iResult)
 	{

@@ -38,9 +38,13 @@ enum pipe_e {
 	PIPE_ATTACK2MISS,
 	PIPE_ATTACK2HIT,
 	PIPE_ATTACK3MISS,
+#ifndef CROWBAR_IDLE_ANIM
+	PIPE_ATTACK3HIT
+#else
 	PIPE_ATTACK3HIT,
 	PIPE_IDLE2,
-	PIPE_IDLE3,
+	PIPE_IDLE3
+#endif
 };
 
 
@@ -98,8 +102,10 @@ void CPipe::PrimaryAttack()
 {
 	if (!Swing(1))
 	{
+#ifndef CLIENT_DLL
 		SetThink(&CPipe::SwingAgain);
-		pev->nextthink = gpGlobals->time + 0.1f;
+		pev->nextthink = gpGlobals->time + 0.5f;
+#endif
 	}
 }
 
@@ -143,6 +149,9 @@ int CPipe::Swing(int fFirst)
 			// miss
 			m_flNextPrimaryAttack = GetNextAttackDelay(0.5);
 
+#ifdef CROWBAR_IDLE_ANIM
+			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
+#endif
 			// player "shoot" animation
 			m_pPlayer->SetAnimation(PLAYER_ATTACK1);
 		}
@@ -170,7 +179,14 @@ int CPipe::Swing(int fFirst)
 
 		ClearMultiDamage();
 
-		if ((m_flNextPrimaryAttack + 1 < UTIL_WeaponTimeBase()) || g_pGameRules->IsMultiplayer())
+			// If building with the clientside weapon prediction system,
+			// UTIL_WeaponTimeBase() is always 0 and m_flNextPrimaryAttack is >= -1.0f, thus making
+			// m_flNextPrimaryAttack + 1 < UTIL_WeaponTimeBase() always evaluate to false.
+#ifdef CLIENT_WEAPONS
+			if( ( m_flNextPrimaryAttack + 1 == UTIL_WeaponTimeBase() ) || g_pGameRules->IsMultiplayer() )
+#else
+			if( ( m_flNextPrimaryAttack + 1 < UTIL_WeaponTimeBase() ) || g_pGameRules->IsMultiplayer() )
+#endif
 		{
 			// first swing does full damage
 			pEntity->TraceAttack(m_pPlayer->pev, gSkillData.plrDmgCrowbar * 2, gpGlobals->v_forward, &tr, DMG_CLUB);
@@ -194,11 +210,11 @@ int CPipe::Swing(int fFirst)
 				switch (RANDOM_LONG(0, 2))
 				{
 				case 0:
-					EMIT_SOUND_DYN(ENT(m_pPlayer->pev), CHAN_ITEM, "weapons/cbar_hitbod1.wav", 1, ATTN_NORM, 0, 75); break;
+					EMIT_SOUND_DYN(ENT(m_pPlayer->pev), CHAN_ITEM, "weapons/cbar_hitbod1.wav", 1, ATTN_NORM, 0, 100); break;
 				case 1:
-					EMIT_SOUND_DYN(ENT(m_pPlayer->pev), CHAN_ITEM, "weapons/cbar_hitbod2.wav", 1, ATTN_NORM, 0, 75); break;
+					EMIT_SOUND_DYN(ENT(m_pPlayer->pev), CHAN_ITEM, "weapons/cbar_hitbod2.wav", 1, ATTN_NORM, 0, 100); break;
 				case 2:
-					EMIT_SOUND_DYN(ENT(m_pPlayer->pev), CHAN_ITEM, "weapons/cbar_hitbod3.wav", 1, ATTN_NORM, 0, 75); break;
+					EMIT_SOUND_DYN(ENT(m_pPlayer->pev), CHAN_ITEM, "weapons/cbar_hitbod3.wav", 1, ATTN_NORM, 0, 100); break;
 				}
 				m_pPlayer->m_iWeaponVolume = PIPE_BODYHIT_VOLUME;
 				if (!pEntity->IsAlive())
@@ -241,13 +257,44 @@ int CPipe::Swing(int fFirst)
 		}
 
 		m_pPlayer->m_iWeaponVolume = flVol * PIPE_WALLHIT_VOLUME;
-#endif
-		m_flNextPrimaryAttack = GetNextAttackDelay(0.5f); // 0.25f
 
 		SetThink(&CPipe::Smack);
-		pev->nextthink = UTIL_WeaponTimeBase() + 0.2;
-
-
+		pev->nextthink = UTIL_WeaponTimeBase() + 0.48;
+#endif
+		m_flNextPrimaryAttack = GetNextAttackDelay(0.5f); // 0.25f
 	}
+#ifdef CROWBAR_IDLE_ANIM
+	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
+#endif
 	return fDidHit;
 }
+
+#ifdef CROWBAR_IDLE_ANIM
+void CCrowbar::WeaponIdle( void )
+{
+	if( m_flTimeWeaponIdle < UTIL_WeaponTimeBase() )
+	{
+		int iAnim;
+		float flRand = UTIL_SharedRandomFloat( m_pPlayer->random_seed, 0, 1 );
+		if( flRand > 0.9 )
+		{
+			iAnim = PIPE_IDLE2;
+			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 160.0 / 30.0;
+		}
+		else
+		{
+			if( flRand > 0.5 )
+			{
+				iAnim = PIPE_IDLE1;
+				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 70.0 / 30.0;
+			}
+			else
+			{
+				iAnim = PIPE_IDLE3;
+				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 160.0 / 30.0;
+			}
+		}
+		SendWeaponAnim( iAnim );
+	}
+}
+#endif
