@@ -27,7 +27,8 @@
 #include	"animation.h"
 #include	"soundent.h"
 
-#define NUM_SCIENTIST_HEADS		6 // four heads available for scientist model
+#define NUM_SCIENTIST_HEADS			6 // six heads available for scientist model
+#define NUM_CLEANSUIT_SCIENTIST_HEADS		4 // four heads available for cleansuit_scientist model
 
 enum
 {
@@ -639,9 +640,9 @@ void CScientist::HandleAnimEvent( MonsterEvent_t *pEvent )
 //=========================================================
 void CScientist::Spawn( void )
 {
+	const char *pszModel;
 	Precache();
 
-	SET_MODEL( ENT( pev ), "models/scientist.mdl" );
 	UTIL_SetSize( pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX );
 
 	pev->solid = SOLID_SLIDEBOX;
@@ -662,8 +663,21 @@ void CScientist::Spawn( void )
 	if( pev->body == -1 )
 	{
 		// -1 chooses a random head
-		pev->body = RANDOM_LONG( 0, NUM_SCIENTIST_HEADS - 1 );// pick a head, any head
+		pev->body = RANDOM_LONG( 0, NUM_SCIENTIST_HEADS );// pick a head, any head
 	}
+
+	if( pev->body == NUM_SCIENTIST_HEADS )
+	{
+		// 6 chooses a random cleansuit_scientist head
+		pev->body = RANDOM_LONG( 0, NUM_CLEANSUIT_SCIENTIST_HEADS - 1 );// pick a head, any head
+		pszModel = "models/cleansuit_scientist.mdl";
+	}
+	else
+	{
+		pszModel = "models/scientist.mdl";
+	}
+
+	SET_MODEL( ENT( pev ), pszModel );
 
 	// Luther is black, make his hands black
 	if( pev->body == HEAD_LUTHER || pev->body == HEAD_NEW_BLACK )
@@ -679,6 +693,7 @@ void CScientist::Spawn( void )
 void CScientist::Precache( void )
 {
 	PRECACHE_MODEL( "models/scientist.mdl" );
+	PRECACHE_MODEL( "models/cleansuit_scientist.mdl" );
 	PRECACHE_SOUND( "scientist/sci_pain1.wav" );
 	PRECACHE_SOUND( "scientist/sci_pain2.wav" );
 	PRECACHE_SOUND( "scientist/sci_pain3.wav" );
@@ -744,10 +759,10 @@ void CScientist::TalkInit()
 		m_voicePitch = 100;
 		break;	//slick
 	case HEAD_NEW_BLACK:
-		m_voicePitch = 90;
+		m_voicePitch = 87;
 		break;	// new black
 	case HEAD_NEW_WHITE:
-		m_voicePitch = 110;
+		m_voicePitch = 115;
 		break; // new white
 	}
 }
@@ -1061,6 +1076,9 @@ MONSTERSTATE CScientist::GetIdealState( void )
 
 BOOL CScientist::CanHeal( void )
 { 
+	if( FStrEq( STRING( pev->model ), "models/cleansuit_scientist.mdl" ) );
+		return FALSE;
+
 	if( ( m_healTime > gpGlobals->time ) || ( m_hTargetEnt == 0 ) || ( m_hTargetEnt->pev->health > ( m_hTargetEnt->pev->max_health * 0.5 ) ) )
 		return FALSE;
 
