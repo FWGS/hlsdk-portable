@@ -431,8 +431,8 @@ void CBasePlayer::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector ve
 	etc are implemented with subsequent calls to TakeDamage using DMG_GENERIC.
 */
 
-#define ARMOR_RATIO	0.2	// Armor Takes 80% of the damage
-#define ARMOR_BONUS	0.5	// Each Point of Armor is work 1/x points of health
+#define ARMOR_RATIO	0.35	// Armor Takes 65% of the damage
+#define ARMOR_BONUS	0.3	// Each Point of Armor is work 1/x points of health
 
 int CBasePlayer::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )
 {
@@ -450,10 +450,10 @@ int CBasePlayer::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 	flBonus = ARMOR_BONUS;
 	flRatio = ARMOR_RATIO;
 
-	if( ( bitsDamageType & DMG_BLAST ) && g_pGameRules->IsMultiplayer() )
+	if( ( bitsDamageType & DMG_BLAST ) )
 	{
 		// blasts damage armor more.
-		flBonus *= 2;
+		flBonus += 0.2;
 	}
 
 	// Already dead
