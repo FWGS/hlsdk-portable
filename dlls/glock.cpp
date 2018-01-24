@@ -106,11 +106,17 @@ BOOL CGlock::Deploy()
 
 void CGlock::SecondaryAttack( void )
 {
+	if( FBitSet( m_pPlayer->m_afButtonLast, IN_ATTACK2 ) )
+		return;
+
 	GlockFire( 0.1, 0.2, FALSE );
 }
 
 void CGlock::PrimaryAttack( void )
 {
+	if( FBitSet( m_pPlayer->m_afButtonLast, IN_ATTACK ) )
+		return;
+
 	GlockFire( 0.01, 0.3, TRUE );
 }
 

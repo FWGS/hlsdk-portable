@@ -159,6 +159,9 @@ void CPython::SecondaryAttack( void )
 
 void CPython::PrimaryAttack()
 {
+	if( FBitSet( m_pPlayer->m_afButtonLast, IN_ATTACK ) )
+ 		return;
+
 	// don't fire underwater
 	if( m_pPlayer->pev->waterlevel == 3 )
 	{
