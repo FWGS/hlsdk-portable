@@ -97,8 +97,17 @@ int CCrossbowBolt::Classify( void )
 
 void CCrossbowBolt::BoltTouch( CBaseEntity *pOther )
 {
+	CBasePlayer *pPlayer;
+
 	SetTouch( NULL );
 	SetThink( NULL );
+
+	pPlayer = (CBasePlayer *)CBaseEntity::Instance( pev->owner );
+	if( pPlayer && pPlayer->m_pCam )
+	{
+		pPlayer->m_pCam->SetTarget( pPlayer );
+		pPlayer->m_pCam->SetOrigin( g_vecZero );
+	}
 
 	if( pOther->pev->takedamage )
 	{
@@ -434,6 +443,12 @@ void CCrossbow::FireBolt()
 	pBolt->pev->origin = vecSrc;
 	pBolt->pev->angles = anglesAim;
 	pBolt->pev->owner = m_pPlayer->edict();
+
+	if( m_pPlayer->m_pCam )
+	{
+		m_pPlayer->m_pCam->SetTarget( pBolt );
+		m_pPlayer->m_pCam->SetOrigin( Vector( 0, 2, 8 ) );
+	}
 
 	if( m_pPlayer->pev->waterlevel == 3 )
 	{

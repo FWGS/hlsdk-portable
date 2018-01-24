@@ -65,12 +65,6 @@ cvar_t	*c_mindistance;
 // pitch, yaw, dist
 vec3_t cam_ofs;
 
-//
-// HL: Visitors - Death camera
-//
-int cam_deathcam_enabled;
-float cam_deathcam_yaw;
-
 // In third person
 int cam_thirdperson;
 int cam_mousemove; //true if we are moving the cam with the mouse, False if not
@@ -394,25 +388,6 @@ void DLLEXPORT CAM_Think( void )
 			return;
 	}
 #endif
-	//
-	// HL: Visitors - Death camera.
-	//
-	if( cam_deathcam_enabled )
-	{
-		// Store new values.
-		camAngles[PITCH] = 90;
-		camAngles[YAW] = cam_deathcam_yaw;
-		camAngles[ROLL] = 0;
-
-		// slowly rotate the camera by increasing the yaw.
-		cam_deathcam_yaw += 0.1f;
-
-		// Clamp camera yaw value.
-		if( cam_deathcam_yaw > 180 )
-			cam_deathcam_yaw -= 360;
-		else if( cam_deathcam_yaw < -180 )
-			cam_deathcam_yaw += 360;
-	}
 	cam_ofs[0] = camAngles[0];
 	cam_ofs[1] = camAngles[1];
 	cam_ofs[2] = dist;

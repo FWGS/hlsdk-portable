@@ -17,6 +17,7 @@
 #define PLAYER_H
 
 #include "pm_materials.h"
+#include "cinematic.h"
 
 #define PLAYER_FATAL_FALL_SPEED		1024// approx 60 feet
 #define PLAYER_MAX_SAFE_FALL_SPEED	580// approx 20 feet
@@ -325,6 +326,7 @@ public:
 
 	float m_flNextChatTime;
 
+	CCinematicCamera *m_pCam;
 	bool m_bSentBhopcap; // If false, the player just joined and needs a bhopcap message.
 };
 

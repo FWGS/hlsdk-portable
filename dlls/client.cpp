@@ -927,6 +927,9 @@ void ClientPrecache( void )
 	PRECACHE_SOUND( "player/geiger2.wav" );
 	PRECACHE_SOUND( "player/geiger1.wav" );
 
+	// ear ringing sound
+	PRECACHE_SOUND( "player/ear_ringing.wav" );
+
 	if( giPrecacheGrunt )
 		UTIL_PrecacheOther( "monster_human_grunt" );
 }

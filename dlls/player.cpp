@@ -119,6 +119,8 @@ TYPEDESCRIPTION	CBasePlayer::m_playerSaveData[] =
 	DEFINE_FIELD( CBasePlayer, m_iHideHUD, FIELD_INTEGER ),
 	DEFINE_FIELD( CBasePlayer, m_iFOV, FIELD_INTEGER ),
 
+	DEFINE_FIELD( CBasePlayer, m_pCam, FIELD_CLASSPTR ),
+
 	//DEFINE_FIELD( CBasePlayer, m_fDeadTime, FIELD_FLOAT ), // only used in multiplayer games
 	//DEFINE_FIELD( CBasePlayer, m_fGameHUDInitialized, FIELD_INTEGER ), // only used in multiplayer games
 	//DEFINE_FIELD( CBasePlayer, m_flStopExtraSoundTime, FIELD_TIME ),
@@ -188,11 +190,6 @@ int gmsgBhopcap = 0;
 int gmsgStatusText = 0;
 int gmsgStatusValue = 0;
 
-int gmsgFirstperson = 0;
-int gmsgThirdperson = 0;
-int gmsgPlayerModel = 0;
-int gmsgDeathCam = 0;
-
 void LinkUserMessages( void )
 {
 	// Already taken care of?
@@ -239,11 +236,6 @@ void LinkUserMessages( void )
 
 	gmsgStatusText = REG_USER_MSG( "StatusText", -1 );
 	gmsgStatusValue = REG_USER_MSG( "StatusValue", 3 );
-
-	gmsgFirstperson = REG_USER_MSG( "Firstperson", 0 );
-	gmsgThirdperson = REG_USER_MSG( "Thirdperson", 0 );
-	gmsgPlayerModel = REG_USER_MSG( "PlayerModel", -1 );
-	gmsgDeathCam = REG_USER_MSG( "DeathCam", 1 );
 }
 
 LINK_ENTITY_TO_CLASS( player, CBasePlayer )
@@ -472,27 +464,64 @@ int CBasePlayer::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 	// keep track of amount of damage last sustained
 	m_lastDamageAmount = (int)flDamage;
 
-	// Armor. 
-	if( !( pev->flags & FL_GODMODE ) && pev->armorvalue && !( bitsDamageType & ( DMG_FALL | DMG_DROWN ) ) )// armor doesn't protect against fall or drown damage!
+	if( !FBitSet( pev->flags, FL_GODMODE ) )
 	{
-		float flNew = flDamage * flRatio;
-
-		float flArmor;
-
-		flArmor = ( flDamage - flNew ) * flBonus;
-
-		// Does this use more armor than we have?
-		if( flArmor > pev->armorvalue )
+		// Armor. 
+		if( pev->armorvalue && !( bitsDamageType & ( DMG_FALL | DMG_DROWN ) ) )// armor doesn't protect against fall or drown damage!
 		{
-			flArmor = pev->armorvalue;
-			flArmor *= ( 1 / flBonus );
-			flNew = flDamage - flArmor;
-			pev->armorvalue = 0;
+			float flNew = flDamage * flRatio;
+
+			float flArmor;
+
+			flArmor = ( flDamage - flNew ) * flBonus;
+
+			// Does this use more armor than we have?
+			if( flArmor > pev->armorvalue )
+			{
+				flArmor = pev->armorvalue;
+				flArmor *= ( 1 / flBonus );
+				flNew = flDamage - flArmor;
+				pev->armorvalue = 0;
+			}
+			else
+				pev->armorvalue -= flArmor;
+
+			flDamage = flNew;
+		}
+
+		if( pev->health - flDamage > 0 )
+		{
+			if( ( bitsDamageType & DMG_BLAST ) && flDamage > 10 )
+			{
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_STATIC, "player/ear_ringing.wav", 1.0, ATTN_NORM, 0, PITCH_NORM );
+			}
 		}
 		else
-			pev->armorvalue -= flArmor;
+		{
+			TraceResult tr;
 
-		flDamage = flNew;
+			CBaseEntity* pDeathCam = GetClassPtr( (CBaseEntity*)NULL );
+			pev->velocity = g_vecZero;
+
+			pDeathCam->pev->origin = pev->origin;
+			pDeathCam->pev->movetype = MOVETYPE_FLY;
+			pDeathCam->pev->solid = SOLID_NOT;
+			pDeathCam->pev->renderamt = 0;
+			pDeathCam->pev->rendermode = kRenderTransAlpha;
+
+			UTIL_TraceLine( pev->origin, pev->origin + Vector( 0, 0, 100 ), dont_ignore_monsters, edict(), &tr );
+
+			if( tr.flFraction == 1.0 )
+				pDeathCam->pev->origin.z += 100;
+			else
+				pDeathCam->pev->origin.z += fabs( pev->origin.z - tr.vecEndPos.z );
+
+			pDeathCam->pev->angles = Vector( 90, 0, 0 );
+
+			UTIL_ScreenFade( this, g_vecZero, 15.0f, 0.0f, 255, 5 );
+			m_pCam->m_bIsDeathCamera = TRUE;
+			m_pCam->SetTarget( pDeathCam );
+		}
 	}
 
 	// this cast to INT is critical!!! If a player ends up with 0.5 health, the engine will get that
@@ -864,19 +893,6 @@ void CBasePlayer::Killed( entvars_t *pevAttacker, int iGib )
 
 	MESSAGE_BEGIN( MSG_ONE, gmsgSetFOV, NULL, pev );
 		WRITE_BYTE( 0 );
-	MESSAGE_END();
-
-	//
-	// HL: Visitors - Go to thirdperson.
-	//
-	MESSAGE_BEGIN( MSG_ONE, gmsgThirdperson, NULL, pev );
-	MESSAGE_END();
-
-	//
-	// HL: Visitors - Enable Death camera.
-	//
-	MESSAGE_BEGIN( MSG_ONE, gmsgDeathCam, NULL, pev );
-		WRITE_BYTE( 1 ); // Enable/Disable
 	MESSAGE_END();
 
 	// UNDONE: Put this in, but add FFADE_PERMANENT and make fade time 8.8 instead of 4.12
@@ -1291,7 +1307,7 @@ void CBasePlayer::PlayerDeathThink( void )
 		return;
 
 	// wait for any button down,  or mp_forcerespawn is set and the respawn time is up
-	if( !fAnyButtonDown && !( g_pGameRules->IsMultiplayer() && forcerespawn.value > 0 && ( gpGlobals->time > ( m_fDeadTime + 5 ) ) ) )
+	if( !fAnyButtonDown && !( gpGlobals->time > ( m_fDeadTime + 15 ) || ( g_pGameRules->IsMultiplayer() && forcerespawn.value > 0 && ( gpGlobals->time > ( m_fDeadTime + 5 ) ) ) ) )
 		return;
 
 	pev->button = 0;
@@ -2780,6 +2796,7 @@ void CBasePlayer::Spawn( void )
 	m_bitsDamageType = 0;
 	m_afPhysicsFlags = 0;
 	m_fLongJump = FALSE;// no longjump module. 
+	m_pCam = 0;
 
 	g_engfuncs.pfnSetPhysicsKeyValue( edict(), "slj", "0" );
 	g_engfuncs.pfnSetPhysicsKeyValue( edict(), "hl", "1" );
@@ -3835,6 +3852,19 @@ reflecting all of the HUD state info.
 */
 void CBasePlayer::UpdateClientData( void )
 {
+	if( m_pCam )
+	{
+		m_pCam->SetViewOnPlayer();
+	}
+	else
+	{
+		m_pCam = CCinematicCamera::CreateCinematicCamera();
+		m_pCam->SetTarget( this );
+		m_pCam->SetPlayer( this );
+		m_pCam->SetOrigin( g_vecZero );
+		m_pCam->SetViewOnTarget();
+	}
+
 	if( m_fInitHUD )
 	{
 		m_fInitHUD = FALSE;
@@ -3842,26 +3872,6 @@ void CBasePlayer::UpdateClientData( void )
 
 		MESSAGE_BEGIN( MSG_ONE, gmsgResetHUD, NULL, pev );
 			WRITE_BYTE( 0 );
-		MESSAGE_END();
-
-		//
-		// HL: Visitors - Go to firstperson.
-		//
-		MESSAGE_BEGIN( MSG_ONE, gmsgFirstperson, NULL, pev );
-		MESSAGE_END();
-
-		//
-		// HL: Visitors - Disable Death camera.
-		//
-		MESSAGE_BEGIN( MSG_ONE, gmsgDeathCam, NULL, pev );
-			WRITE_BYTE( 0 ),
-		MESSAGE_END();
-
-		//
-		// HL: Visitors - Fix up player model.
-		//
-		MESSAGE_BEGIN( MSG_ONE, gmsgPlayerModel, NULL, pev );
-			WRITE_STRING( "player" );
 		MESSAGE_END();
 
 		if( !m_fGameHUDInitialized )

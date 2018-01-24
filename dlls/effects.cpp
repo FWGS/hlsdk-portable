@@ -1943,6 +1943,9 @@ void CFade::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType
 	if( pev->spawnflags & SF_FADE_MODULATE )
 		fadeFlags |= FFADE_MODULATE;
 
+	if( HoldTime() == -1 )
+		fadeFlags |= FFADE_STAYOUT;
+
 	if( pev->spawnflags & SF_FADE_ONLYONE )
 	{
 		if( pActivator->IsNetClient() )

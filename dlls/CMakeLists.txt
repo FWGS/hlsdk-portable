@@ -131,6 +131,7 @@ set (SVDLL_SOURCES
 	../pm_shared/pm_debug.c
 	../pm_shared/pm_math.c
 	../pm_shared/pm_shared.c
+	visitors/cinematic.cpp
 	visitors/flashlight.cpp
 	visitors/kevlar.cpp
 	visitors/massn.cpp
@@ -138,7 +139,7 @@ set (SVDLL_SOURCES
 	visitors/sniper.cpp
 )
 	
-include_directories (. wpn_shared ../common ../engine ../pm_shared ../game_shared ../public)
+include_directories (. wpn_shared ../common ../engine ../pm_shared ../game_shared ../public visitors )
 
 if(USE_VOICEMGR)
 	set(SVDLL_SOURCES

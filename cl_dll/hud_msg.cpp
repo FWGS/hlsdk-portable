@@ -26,8 +26,6 @@
 extern BEAM *pBeam;
 extern BEAM *pBeam2;
 
-extern int cam_thirdperson;
-
 /// USER-DEFINED SERVER MESSAGE HANDLERS
 
 int CHud::MsgFunc_ResetHUD( const char *pszName, int iSize, void *pbuf )
@@ -116,45 +114,4 @@ int CHud::MsgFunc_Concuss( const char *pszName, int iSize, void *pbuf )
 	else
 		this->m_StatusIcons.DisableIcon( "dmg_concuss" );
 	return 1;
-}
-
-extern int cam_deathcam_enabled;
-extern float cam_deathcam_yaw;
-
-void CHud::MsgFunc_Firstperson( const char *pszName, int iSize, void *pbuf )
-{
-	cam_thirdperson = 0;
-}
-
-void CHud::MsgFunc_Thirdperson( const char *pszName, int iSize, void *pbuf )
-{
-	cam_thirdperson = 1;
-}
-
-void CHud::MsgFunc_PlayerModel( const char *pszName, int iSize, void *pbuf )
-{
-	BEGIN_READ( pbuf, iSize );
-	char* model = READ_STRING();
-
-	gEngfuncs.Cvar_Set( "model", model );
-}
-
-void CHud::MsgFunc_DeathCam( const char *pszName, int iSize, void *pbuf )
-{
-	int fDeathCamOn;
-	Vector vDeathCamPos;
-
-	BEGIN_READ( pbuf, iSize );
-	fDeathCamOn = READ_BYTE(); // Enable/Disable
-
-	if( fDeathCamOn )
-	{
-		cam_deathcam_enabled = 1;
-		cam_deathcam_yaw = 0;
-	}
-	else
-	{
-		cam_deathcam_enabled = 0;
-		cam_deathcam_yaw = 0;
-	}
 }

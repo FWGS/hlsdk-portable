@@ -2127,9 +2127,6 @@ public:
 	float m_acceleration;
 	float m_deceleration;
 	int m_state;
-
-	BOOL m_fIsMapCredits;
-	float m_flMapCreditsTime;
 };
 
 LINK_ENTITY_TO_CLASS( trigger_camera, CTriggerCamera )
@@ -2150,8 +2147,6 @@ TYPEDESCRIPTION	CTriggerCamera::m_SaveData[] =
 	DEFINE_FIELD( CTriggerCamera, m_acceleration, FIELD_FLOAT ),
 	DEFINE_FIELD( CTriggerCamera, m_deceleration, FIELD_FLOAT ),
 	DEFINE_FIELD( CTriggerCamera, m_state, FIELD_INTEGER ),
-	DEFINE_FIELD( CTriggerCamera, m_fIsMapCredits, FIELD_BOOLEAN ),
-	DEFINE_FIELD( CTriggerCamera, m_flMapCreditsTime, FIELD_TIME ),
 };
 
 IMPLEMENT_SAVERESTORE( CTriggerCamera, CBaseDelay )
@@ -2168,8 +2163,6 @@ void CTriggerCamera::Spawn( void )
 		m_acceleration = 500;
 	if( m_deceleration == 0 )
 		m_deceleration = 500;
-
-	m_fIsMapCredits = FALSE;
 }
 
 void CTriggerCamera::KeyValue( KeyValueData *pkvd )
@@ -2220,8 +2213,6 @@ void CTriggerCamera::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYP
 	m_flReturnTime = gpGlobals->time + m_flWait;
 	pev->speed = m_initialSpeed;
 	m_targetSpeed = m_initialSpeed;
-	m_fIsMapCredits = FStrEq( STRING( gpGlobals->mapname ), "vis_credits" ) ? TRUE : FALSE;
-	m_flMapCreditsTime = gpGlobals->time + 15.0f;
 
 	if( FBitSet( pev->spawnflags, SF_CAMERA_PLAYER_TARGET ) )
 	{
@@ -2275,7 +2266,13 @@ void CTriggerCamera::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYP
 		pev->velocity = Vector( 0, 0, 0 );
 	}
 
-	SET_VIEW( pActivator->edict(), edict() );
+	CBasePlayer *pPlayer = (CBasePlayer *)( pActivator );
+        if( !pPlayer->m_pCam )
+                pPlayer->m_pCam = CCinematicCamera::CreateCinematicCamera();
+        pPlayer->m_pCam->SetPlayer( pPlayer );
+        pPlayer->m_pCam->SetTarget( this );
+        pPlayer->m_pCam->SetOrigin( g_vecZero );
+        pPlayer->m_pCam->SetViewOnTarget();
 
 	SET_MODEL( ENT( pev ), STRING( pActivator->pev->model ) );
 
@@ -2292,12 +2289,13 @@ void CTriggerCamera::FollowTarget()
 	if( m_hPlayer == 0 )
 		return;
 
-	if( m_hTarget == 0 || m_flReturnTime < gpGlobals->time || ( m_fIsMapCredits && m_flMapCreditsTime < gpGlobals->time ) )
+	if( m_hTarget == 0 || m_flReturnTime < gpGlobals->time )
 	{
 		if( m_hPlayer->IsAlive() )
 		{
-			SET_VIEW( m_hPlayer->edict(), m_hPlayer->edict() );
-			( (CBasePlayer *)( (CBaseEntity *)m_hPlayer ) )->EnableControl( TRUE );
+			CBasePlayer *pPlayer = (CBasePlayer *)(CBaseEntity *)m_hPlayer;
+			pPlayer->m_pCam->SetTarget( pPlayer );
+			pPlayer->EnableControl( TRUE );
 		}
 		SUB_UseTargets( this, USE_TOGGLE, 0 );
 		pev->avelocity = Vector( 0, 0, 0 );
@@ -2344,6 +2342,8 @@ void CTriggerCamera::FollowTarget()
 
 void CTriggerCamera::Move()
 {
+	( (CBasePlayer *)( (CBaseEntity *)m_hPlayer ) )->m_pCam->SetViewOnPlayer();
+
 	// Not moving on a path, return
 	if( !m_pentPath )
 		return;

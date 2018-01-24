@@ -337,13 +337,10 @@ void V_CalcViewRoll( struct ref_params_s *pparams )
 
 	if( pparams->health <= 0 && ( pparams->viewheight[2] != 0 ) )
 	{
-		//
-		// HL: Visitors - No death view roll.
-		//
-		pparams->viewangles[ROLL] = 0;
-
-		// Look straight to the ground.
-		pparams->viewangles[PITCH] = 90;
+		// only roll the view if the player is dead and the viewheight[2] is nonzero 
+		// this is so deadcam in multiplayer will work.
+		pparams->viewangles[ROLL] = 80;	// dead view angle
+		return;
 	}
 }
 

@@ -102,7 +102,8 @@ LOCAL_C_INCLUDES := $(LOCAL_PATH)/. \
 		 $(LOCAL_PATH)/../game_shared \
 		 $(LOCAL_PATH)/../dlls \
 		 $(LOCAL_PATH)/../pm_shared \
-		 $(LOCAL_PATH)/../utils/false_vgui/include
+		 $(LOCAL_PATH)/../utils/false_vgui/include \
+		 $(LOCAL_PATH)/../dlls/visitors
 LOCAL_CFLAGS += $(DEFINES) $(INCLUDES)
 
 ifeq ($(GOLDSOURCE_SUPPORT),1)
