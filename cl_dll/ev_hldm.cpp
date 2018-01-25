@@ -1862,16 +1862,16 @@ void EV_FireSniper( event_args_t *args )
 			break;
 		}
 
-		V_PunchAxis( 0, -10.0 );
+		V_PunchAxis( 0, gEngfuncs.pfnRandomFloat( -12.0, 2.0 ) );
 	}
 
 	switch( gEngfuncs.pfnRandomLong( 0, 1 ) )
 	{
 	case 0:
-		gEngfuncs.pEventAPI->EV_PlaySound( idx, origin, CHAN_WEAPON, "weapons/sniper_fire1.wav", gEngfuncs.pfnRandomFloat( 0.8, 0.9 ), ATTN_NORM, 0, PITCH_NORM );
+		gEngfuncs.pEventAPI->EV_PlaySound( idx, origin, CHAN_WEAPON, "weapons/sniper_fire1.wav", 1.0, ATTN_NORM, 0, 94 + gEngfuncs.pfnRandomLong( 0, 15 ) );
 		break;
 	case 1:
-		gEngfuncs.pEventAPI->EV_PlaySound( idx, origin, CHAN_WEAPON, "weapons/sniper_fire2.wav", gEngfuncs.pfnRandomFloat( 0.8, 0.9 ), ATTN_NORM, 0, PITCH_NORM );
+		gEngfuncs.pEventAPI->EV_PlaySound( idx, origin, CHAN_WEAPON, "weapons/sniper_fire2.wav", 1.0, ATTN_NORM, 0, 94 + gEngfuncs.pfnRandomLong( 0, 15 ) );
 		break;
 	}
 

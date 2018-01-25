@@ -81,7 +81,11 @@ void CSniper::Precache(void)
 	PRECACHE_MODEL("models/w_sniperclip.mdl");
 	PRECACHE_SOUND("items/9mmclip1.wav");
 
+	PRECACHE_SOUND("weapons/sniper_fire1.wav");
+	PRECACHE_SOUND("weapons/sniper_fire2.wav");
 	PRECACHE_SOUND("weapons/sniper_reload1.wav");
+	PRECACHE_SOUND("weapons/zoom.wav");
+
 	PRECACHE_SOUND("weapons/scout_bolt.wav");
 	PRECACHE_SOUND("weapons/scout_clipin.wav");
 	PRECACHE_SOUND("weapons/scout_clipout.wav");
@@ -103,7 +107,7 @@ void CSniper::Holster(int skiplocal /* = 0 */)
 		SecondaryAttack();
 	}
 
-	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 1.0;
+	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
 	m_flTimeWeaponIdle = UTIL_SharedRandomFloat(m_pPlayer->random_seed, 10, 15);
 }
 
@@ -121,28 +125,26 @@ void CSniper::SecondaryAttack(void)
 	}
 
 	m_flNextSecondaryAttack = 0.75;
+	EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_STATIC, "weapons/zoom.wav", 1, ATTN_NORM, 0, RANDOM_LONG( 100, 150 ) );
 }
 
 void CSniper::PrimaryAttack()
 {
+	if( FBitSet( m_pPlayer->m_afButtonLast, IN_ATTACK ) )
+		return;
+
 	// don't fire underwater
 	if (m_pPlayer->pev->waterlevel == 3)
 	{
 		PlayEmptySound();
-		m_flNextPrimaryAttack = 0.15;
+		m_flNextPrimaryAttack = m_flNextSecondaryAttack = 0.15;
 		return;
 	}
 
 	if (m_iClip <= 0)
 	{
-		if (!m_fFireOnEmpty)
-			Reload();
-		else
-		{
-			EMIT_SOUND(ENT(m_pPlayer->pev), CHAN_WEAPON, "weapons/357_cock1.wav", 0.8, ATTN_NORM);
-			m_flNextPrimaryAttack = 0.15;
-		}
-
+		PlayEmptySound();
+		m_flNextPrimaryAttack = m_flNextSecondaryAttack = 0.2;
 		return;
 	}
 
@@ -174,25 +176,33 @@ void CSniper::PrimaryAttack()
 
 	PLAYBACK_EVENT_FULL(flags, m_pPlayer->edict(), m_usFireSniper, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, vecDir.x, vecDir.y, 0, 0, 0, 0);
 
-	m_flNextPrimaryAttack = (46.0 / 35.0);
-	m_flTimeWeaponIdle = UTIL_SharedRandomFloat(m_pPlayer->random_seed, 10, 15);
+	if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] > 0 || m_iClip > 0 )
+		m_flNextPrimaryAttack = 1.5;
+	else
+	{
+		m_flNextPrimaryAttack = 2.75;
+		m_flNextSecondaryAttack = 0.75;
+	}
+
+	if( m_iClip > 0 )
+		m_flTimeWeaponIdle = 2.5;
+	else
+		m_flTimeWeaponIdle = 1.75;
 }
 
 
 void CSniper::Reload(void)
 {
-	if (m_pPlayer->ammo_357 <= 0)
+	if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0 || m_iClip == SNIPER_MAX_CLIP )
 		return;
 
 	int iResult = DefaultReload(SNIPER_MAX_CLIP, SNIPER_RELOAD, 2.25);
 
 	if (iResult)
 	{
-		if (m_pPlayer->pev->fov != 0)
-		{
-			m_fInZoom = FALSE;
-			m_pPlayer->pev->fov = m_pPlayer->m_iFOV = 0;  // 0 means reset to default fov
-		}
+		if( m_fInZoom )
+			SecondaryAttack();
+		EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/sniper_reload1.wav", RANDOM_FLOAT( 0.9, 1.0 ), ATTN_NORM, 0, 93 + RANDOM_LONG( 0, 15 ) );
 	}
 }
 
@@ -206,7 +216,7 @@ void CSniper::WeaponIdle(void)
 	if (m_flTimeWeaponIdle > UTIL_WeaponTimeBase())
 		return;
 
-	m_flTimeWeaponIdle = (9.0 / 16.0);
+	m_flTimeWeaponIdle = UTIL_SharedRandomFloat(m_pPlayer->random_seed, 10, 15);
 
 	SendWeaponAnim(SNIPER_IDLE1, UseDecrement() ? 1 : 0);
 }
