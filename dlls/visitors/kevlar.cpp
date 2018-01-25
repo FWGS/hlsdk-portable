@@ -40,25 +40,20 @@ class CItemKevlar : public CItem
 	BOOL MyTouch(CBasePlayer *pPlayer)
 	{
 		if (pPlayer->pev->deadflag != DEAD_NO)
-		{
 			return FALSE;
-		}
 
-		if ((pPlayer->pev->armorvalue < MAX_NORMAL_BATTERY) &&
-			(pPlayer->pev->weapons & (1 << WEAPON_SUIT)))
-		{
-			pPlayer->pev->armorvalue += MAX_NORMAL_BATTERY;
-			pPlayer->pev->armorvalue = Q_min(pPlayer->pev->armorvalue, MAX_NORMAL_BATTERY);
+		if( !( pPlayer->pev->weapons & ( 1 << WEAPON_SUIT ) ) )
+			pPlayer->pev->weapons |= ( 1 << WEAPON_SUIT )
 
-			EMIT_SOUND(pPlayer->edict(), CHAN_ITEM, "player/kevlar_zipper.wav", 1, ATTN_NORM);
+		pPlayer->pev->armorvalue = MAX_NORMAL_BATTERY;
 
-			MESSAGE_BEGIN(MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev);
-			WRITE_STRING(STRING(pev->classname));
-			MESSAGE_END();
+		EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_ITEM, "player/kevlar_zipper.wav", 1, ATTN_NORM, 0, RANDOM_LONG( 100, 150 ) );
 
-			return TRUE;
-		}
-		return FALSE;
+		MESSAGE_BEGIN( MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev );
+			WRITE_STRING( STRING( pev->classname ) );
+		MESSAGE_END();
+
+		return TRUE;
 	}
 };
 

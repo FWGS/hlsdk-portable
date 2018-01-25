@@ -80,7 +80,7 @@ public:
 #define WEAPON_SNARK			15
 #define WEAPON_SNIPER			16
 #define WEAPON_PIPE			17
-#define WEAPON_FLASHLIGHT		30
+#define WEAPON_FLASHLIGHT		18
 
 #define WEAPON_ALLWEAPONS		(~(1<<WEAPON_SUIT))
 

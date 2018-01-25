@@ -1,4 +1,4 @@
-/***
+Y/***
 *
 *	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
 *	
@@ -3901,12 +3901,24 @@ void CBasePlayer::UpdateClientData( void )
 		InitStatusBar();
 	}
 
-	//
-	// HL: Visitors - Give suit to toggle hud on map vis07 (Security system failed)
-	//
-	if( !( pev->weapons & ( 1 << WEAPON_SUIT ) ) && FStrEq( STRING( gpGlobals->mapname ), "vis07" ) )
+	if( FStrEq( STRING( gpGlobals->mapname ), "vis01" )
+		|| FStrEq( STRING( gpGlobals->mapname ), "vis02" )
+		|| FStrEq( STRING( gpGlobals->mapname ), "vis03" )
+		|| FStrEq( STRING( gpGlobals->mapname ), "vis04" )
+		|| FStrEq( STRING( gpGlobals->mapname ), "vis05" )
+		|| FStrEq( STRING( gpGlobals->mapname ), "vis05a" )
+		|| FStrEq( STRING( gpGlobals->mapname ), "vis06" )
+		|| FStrEq( STRING( gpGlobals->mapname ), "vis_credits" ) )
 	{
-		pev->weapons |= ( 1 << WEAPON_SUIT );
+		SetBits( m_iHideHUD, HIDEHUD_WEAPONS | HIDEHUD_HEALTH | HIDEHUD_FLASHLIGHT | HIDEHUD_SUIT ) 
+	}
+	else
+	{
+		ClearBits( m_iHideHUD, HIDEHUD_WEAPONS | HIDEHUD_HEALTH | HIDEHUD_FLASHLIGHT | HIDEHUD_SUIT )
+		if( !( pev->weapons & ( 1 << WEAPON_SUIT ) ) || pev->armorvalue == 0 )
+		{
+			SetBits( m_iHideHUD, HIDEHUD_SUIT )
+		}
 	}
 
 	if( m_iHideHUD != m_iClientHideHUD )
