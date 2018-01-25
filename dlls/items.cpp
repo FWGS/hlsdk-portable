@@ -68,7 +68,7 @@ void CWorldItem::Spawn( void )
 		pEntity = CBaseEntity::Create( "item_security", pev->origin, pev->angles );
 		break;
 	case 45: // ITEM_SUIT:
-		pEntity = CBaseEntity::Create( "item_suit", pev->origin, pev->angles );
+		pEntity = CBaseEntity::Create( "item_bodyarmour", pev->origin, pev->angles );
 		break;
 	}
 
