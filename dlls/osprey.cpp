@@ -536,6 +536,18 @@ void COsprey::CrashTouch( CBaseEntity *pOther )
 		m_startTime = gpGlobals->time;
 		pev->nextthink = gpGlobals->time;
 		m_velocity = pev->velocity;
+		//
+		// HL: Visitors - Needed to trigger end game sequence.
+		//
+		if( FStrEq( STRING( gpGlobals->mapname ), "vis24" ) )
+		{
+			// If I have a target, fire!
+			if( !FStringNull( m_iszTriggerTarget ) )
+			{
+				// delay already overloaded for this entity, so can't call SUB_UseTargets()
+				FireTargets( STRING( m_iszTriggerTarget ), this, this, USE_TOGGLE, 0 );
+			}
+		}
 	}
 }
 
@@ -718,18 +730,6 @@ void COsprey::DyingThink( void )
 			WRITE_BYTE( BREAK_METAL );
 		MESSAGE_END();
 
-		//
-		// HL: Visitors - Needed to trigger end game sequence.
-		//
-		if( FStrEq( STRING( gpGlobals->mapname ), "vis24" ) )
-		{
-			// If I have a target, fire!
-			if( !FStringNull( m_iszTriggerTarget ) )
-			{
-				// delay already overloaded for this entity, so can't call SUB_UseTargets()
-				FireTargets( STRING( m_iszTriggerTarget ), this, this, USE_TOGGLE, 0 );
-			}
-		}
 		UTIL_Remove( this );
 	}
 }
