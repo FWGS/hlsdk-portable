@@ -61,13 +61,18 @@ void CPipe::Spawn()
 
 void CPipe::Precache(void)
 {
-	CCrowbar::Precache();
+	PRECACHE_MODEL( "models/v_pipe.mdl" );
+	PRECACHE_MODEL( "models/w_pipe.mdl" );
+	PRECACHE_MODEL( "models/p_pipe.mdl" );
 
-	PRECACHE_MODEL("models/v_pipe.mdl");
-	PRECACHE_MODEL("models/w_pipe.mdl");
-	PRECACHE_MODEL("models/p_pipe.mdl");
+	// PRECACHE_SOUND( "weapons/cbar_hit1.wav" );
+	// PRECACHE_SOUND( "weapons/cbar_hit2.wav" );
+	// PRECACHE_SOUND( "weapons/cbar_hitbod1.wav" );
+	// PRECACHE_SOUND( "weapons/cbar_hitbod2.wav" );
+	// PRECACHE_SOUND( "weapons/cbar_hitbod3.wav" );
+	// PRECACHE_SOUND( "weapons/cbar_miss1.wav" );
 
-	m_usPipe = PRECACHE_EVENT(1, "events/pipe.sc");
+	m_usPipe = PRECACHE_EVENT( 1, "events/pipe.sc" );
 }
 
 int CPipe::GetItemInfo(ItemInfo *p)
@@ -85,7 +90,17 @@ int CPipe::GetItemInfo(ItemInfo *p)
 	return 1;
 }
 
-
+int CPipe::AddToPlayer( CBasePlayer *pPlayer )
+{
+	if( CBasePlayerWeapon::AddToPlayer( pPlayer ) )
+	{
+		MESSAGE_BEGIN( MSG_ONE, gmsgWeapPickup, NULL, pPlayer->pev );
+			WRITE_BYTE( m_iId );
+		MESSAGE_END();
+		return TRUE;
+	}
+	return FALSE;
+}
 
 BOOL CPipe::Deploy()
 {
@@ -107,6 +122,16 @@ void CPipe::PrimaryAttack()
 		pev->nextthink = gpGlobals->time + 0.5f;
 #endif
 	}
+}
+
+void CPipe::Smack()
+{
+	DecalGunshot( &m_trHit, BULLET_PLAYER_CROWBAR );
+}
+
+void CPipe::SwingAgain( void )
+{
+	Swing( 0 );
 }
 
 int CPipe::Swing(int fFirst)
@@ -270,7 +295,7 @@ int CPipe::Swing(int fFirst)
 }
 
 #ifdef CROWBAR_IDLE_ANIM
-void CCrowbar::WeaponIdle( void )
+void CPipe::WeaponIdle()
 {
 	if( m_flTimeWeaponIdle < UTIL_WeaponTimeBase() )
 	{
