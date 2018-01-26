@@ -931,7 +931,10 @@ void ClientPrecache( void )
 	PRECACHE_SOUND( "player/ear_ringing.wav" );
 
 	if( giPrecacheGrunt )
+	{
 		UTIL_PrecacheOther( "monster_human_grunt" );
+		UTIL_PrecacheOther( "monster_scientist" );
+	}
 }
 
 /*

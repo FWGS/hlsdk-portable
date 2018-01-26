@@ -1,4 +1,4 @@
-Y/***
+/***
 *
 *	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
 *	
@@ -3437,6 +3437,20 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 			Create( "monster_human_grunt", pev->origin + gpGlobals->v_forward * 128, pev->angles );
 		}
 		break;
+	case 77:
+		if( !giPrecacheGrunt )
+		{
+			giPrecacheGrunt = 1;
+			ALERT( at_console, "You must now restart to use Scientist-o-matic.\n" );
+		}
+		else
+		{
+			UTIL_MakeVectors( Vector( 0, pev->v_angle.y, 0 ) );
+			CBaseEntity *pEntity = Create( "monster_scientist", pev->origin + gpGlobals->v_forward * 128, pev->angles );
+			pEntity->pev->body = -1;
+			pEntity->Spawn();
+		}
+		break;
 	case 101:
 		gEvilImpulse101 = TRUE;
 		// GiveNamedItem( "item_suit" );
@@ -3910,14 +3924,14 @@ void CBasePlayer::UpdateClientData( void )
 		|| FStrEq( STRING( gpGlobals->mapname ), "vis06" )
 		|| FStrEq( STRING( gpGlobals->mapname ), "vis_credits" ) )
 	{
-		SetBits( m_iHideHUD, HIDEHUD_WEAPONS | HIDEHUD_HEALTH | HIDEHUD_FLASHLIGHT | HIDEHUD_SUIT ) 
+		SetBits( m_iHideHUD, HIDEHUD_WEAPONS | HIDEHUD_HEALTH | HIDEHUD_FLASHLIGHT | HIDEHUD_SUIT );
 	}
 	else
 	{
-		ClearBits( m_iHideHUD, HIDEHUD_WEAPONS | HIDEHUD_HEALTH | HIDEHUD_FLASHLIGHT | HIDEHUD_SUIT )
+		ClearBits( m_iHideHUD, HIDEHUD_WEAPONS | HIDEHUD_HEALTH | HIDEHUD_FLASHLIGHT | HIDEHUD_SUIT );
 		if( !( pev->weapons & ( 1 << WEAPON_SUIT ) ) || pev->armorvalue == 0 )
 		{
-			SetBits( m_iHideHUD, HIDEHUD_SUIT )
+			SetBits( m_iHideHUD, HIDEHUD_SUIT );
 		}
 	}
 

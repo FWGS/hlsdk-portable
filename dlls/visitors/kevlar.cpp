@@ -43,11 +43,11 @@ class CItemKevlar : public CItem
 			return FALSE;
 
 		if( !( pPlayer->pev->weapons & ( 1 << WEAPON_SUIT ) ) )
-			pPlayer->pev->weapons |= ( 1 << WEAPON_SUIT )
+			pPlayer->pev->weapons |= ( 1 << WEAPON_SUIT );
 
 		pPlayer->pev->armorvalue = MAX_NORMAL_BATTERY;
 
-		EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_ITEM, "player/kevlar_zipper.wav", 1, ATTN_NORM, 0, RANDOM_LONG( 100, 150 ) );
+		EMIT_SOUND_DYN( ENT( pPlayer->pev ), CHAN_ITEM, "player/kevlar_zipper.wav", 1, ATTN_NORM, 0, RANDOM_LONG( 100, 150 ) );
 
 		MESSAGE_BEGIN( MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev );
 			WRITE_STRING( STRING( pev->classname ) );
