@@ -279,7 +279,7 @@ class CItemLongJump : public CItem
 			return FALSE;
 		}
 
-		if( ( pPlayer->pev->weapons & ( 1 << WEAPON_SUIT ) ) )
+		// if( ( pPlayer->pev->weapons & ( 1 << WEAPON_SUIT ) ) )
 		{
 			pPlayer->m_fLongJump = TRUE;// player now has longjump module
 
@@ -292,7 +292,7 @@ class CItemLongJump : public CItem
 			EMIT_SOUND_SUIT( pPlayer->edict(), "!HEV_A1" );	// Play the longjump sound UNDONE: Kelly? correct sound?
 			return TRUE;		
 		}
-		return FALSE;
+		// return FALSE;
 	}
 };
 
