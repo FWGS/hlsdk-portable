@@ -517,6 +517,8 @@ int CBasePlayer::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 				pDeathCam->pev->origin.z += fabs( pev->origin.z - tr.vecEndPos.z );
 
 			pDeathCam->pev->angles = Vector( 90, 0, 0 );
+			pDeathCam->pev->avelocity = Vector( 0, 15, 0 );
+			pDeathCam->pev->velocity = Vector( 0, 0, 5 );
 
 			UTIL_ScreenFade( this, g_vecZero, 15.0f, 0.0f, 255, 5 );
 			m_pCam->m_bIsDeathCamera = TRUE;
