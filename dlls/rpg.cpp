@@ -66,6 +66,7 @@ void CLaserSpot::Spawn( void )
 	pev->rendermode = kRenderGlow;
 	pev->renderfx = kRenderFxNoDissipation;
 	pev->renderamt = 255;
+	pev->scale = 0.25;
 
 	SET_MODEL( ENT( pev ), "sprites/laserdot.spr" );
 	UTIL_SetOrigin( pev, pev->origin );

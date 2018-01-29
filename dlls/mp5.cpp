@@ -143,6 +143,8 @@ void CMP5::Holster( int skiplocal /*= 0*/ )
 
 void CMP5::PrimaryAttack()
 {
+	UpdateSpot();
+
 	// don't fire underwater
 	if( m_pPlayer->pev->waterlevel == 3 )
 	{
@@ -281,7 +283,7 @@ void CMP5::Reload( void )
 #ifndef CLIENT_DLL
 		if( m_pSpot && m_fSpotActive )
 		{
-			m_pSpot->Suspend( 1.5 );
+			m_pSpot->Suspend( 1.6 );
 			m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1.5;
 		}
 #endif
