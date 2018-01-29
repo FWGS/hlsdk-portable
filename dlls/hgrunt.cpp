@@ -1191,6 +1191,7 @@ void CHGrunt::Spawn()
 		// Only one arctic head available.
 		SetBodygroup( HEAD_GROUP, HEAD_ARCTIC );
 	}
+	m_cAmmoLoaded = m_cClipSize;
 
 	CTalkMonster::g_talkWaitTime = 0;
 
