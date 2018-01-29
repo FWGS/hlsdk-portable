@@ -1437,7 +1437,7 @@ void CChangeLevel::UseChangeLevel( CBaseEntity *pActivator, CBaseEntity *pCaller
 
 void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 {
-	edict_t	*pentLandmark = 0;
+	edict_t	*pentLandmark;
 	//LEVELLIST levels[16];
 
 	ASSERT( !FStrEq( m_szMapName, "" ) );
@@ -1483,9 +1483,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 	st_szNextSpot[0] = 0;	// Init landmark to NULL
 
 	// look for a landmark entity
-	if( !FStrEq( st_szNextMap, "vis04" ) )
-		pentLandmark = FindLandmark( m_szLandmarkName );
-
+	pentLandmark = FindLandmark( m_szLandmarkName );
 	if( !FNullEnt( pentLandmark ) )
 	{
 		strcpy( st_szNextSpot, m_szLandmarkName );
