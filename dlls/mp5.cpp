@@ -269,18 +269,20 @@ void CMP5::SecondaryAttack( void )
 
 void CMP5::Reload( void )
 {
+	UpdateSpot();
+
 	if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0 || m_iClip == MP5_MAX_CLIP )
 		return;
 
-	int iResult = DefaultReload( MP5_MAX_CLIP, MP5_RELOAD, 3.0 );
+	int iResult = DefaultReload( MP5_MAX_CLIP, MP5_RELOAD, 1.5 );
 
 	if( iResult )
 	{
 #ifndef CLIENT_DLL
 		if( m_pSpot && m_fSpotActive )
 		{
-			m_pSpot->Suspend( 3.0 );
-			m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 3.0;
+			m_pSpot->Suspend( 1.5 );
+			m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1.5;
 		}
 #endif
 	}
@@ -328,7 +330,6 @@ void CMP5::UpdateSpot( void )
 		if( !m_pSpot )
 		{
 			m_pSpot = CLaserSpot::CreateSpot();
-			m_pSpot->pev->scale = 0.5;
 		}
 
 		UTIL_MakeVectors( m_pPlayer->pev->v_angle );
