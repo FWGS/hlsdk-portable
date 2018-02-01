@@ -448,7 +448,7 @@ BOOL CHGrunt::CheckMeleeAttack1( float flDot, float flDist )
 //=========================================================
 BOOL CHGrunt::CheckRangeAttack1( float flDot, float flDist )
 {
-	if( !HasConditions( bits_COND_ENEMY_OCCLUDED ) && flDist <= 2048 && flDot >= 0.5 && NoFriendlyFire() )
+	if( !HasConditions( bits_COND_ENEMY_OCCLUDED ) && flDist <= 8000 && flDot >= 0.5 && NoFriendlyFire() )
 	{
 		TraceResult tr;
 
@@ -647,36 +647,30 @@ void CHGrunt::SetYawSpeed( void )
 	switch( m_Activity )
 	{
 	case ACT_IDLE:	
-		ys = 150;
+		ys = 295;
 		break;
 	case ACT_RUN:	
-		ys = 150;	
+		ys = 175;	
 		break;
 	case ACT_WALK:	
-		ys = 180;		
+		ys = 275;		
 		break;
 	case ACT_RANGE_ATTACK1:	
-		ys = 120;	
-		break;
 	case ACT_RANGE_ATTACK2:	
-		ys = 120;	
-		break;
 	case ACT_MELEE_ATTACK1:	
-		ys = 120;	
-		break;
 	case ACT_MELEE_ATTACK2:	
-		ys = 120;	
+		ys = 145;	
 		break;
 	case ACT_TURN_LEFT:
 	case ACT_TURN_RIGHT:	
-		ys = 180;
+		ys = 295;
 		break;
 	case ACT_GLIDE:
 	case ACT_FLY:
-		ys = 30;
+		ys = 55;
 		break;
 	default:
-		ys = 90;
+		ys = 115;
 		break;
 	}
 
