@@ -102,16 +102,29 @@ void __CmdFunc_ToggleServerBrowser( void )
 
 int __MsgFunc_PlayMP3( const char *pszName, int iSize, void *pbuf )
 {
-	BEGIN_READ( pbuf, iSize );
+	const char *pszSound;
+	char cmd[64];
 
-	gEngfuncs.pfnPrimeMusicStream( READ_STRING(), 0 );
+	BEGIN_READ( pbuf, iSize );
+	pszSound = READ_STRING();
+
+	if( !isXashFWGS() && gEngfuncs.pfnGetCvarPointer( "gl_overbright" ) )
+	{
+		sprintf( cmd, "mp3 play media/%s\n", pszSound );
+		gEngfuncs.pfnClientCmd( cmd );
+	}
+	else
+                gEngfuncs.pfnPrimeMusicStream( pszSound, 0 );
 
 	return 1;
 }
 
 void __CmdFunc_StopMP3( void )
 {
-	gEngfuncs.pfnPrimeMusicStream( 0, 0 );
+	if( !isXashFWGS() && gEngfuncs.pfnGetCvarPointer( "gl_overbright" ) )
+		gEngfuncs.pfnClientCmd( "mp3 stop\n" );
+	else
+		gEngfuncs.pfnPrimeMusicStream( 0, 0 );
 }
 
 // TFFree Command Menu Message Handlers

@@ -2100,6 +2100,8 @@ void CTriggerChangeTarget::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, U
 #define SF_CAMERA_PLAYER_TARGET		2
 #define SF_CAMERA_PLAYER_TAKECONTROL 4
 
+extern BOOL gPhysicsInterfaceInitialized;
+
 class CTriggerCamera : public CBaseDelay
 {
 public:
@@ -2127,6 +2129,7 @@ public:
 	float m_acceleration;
 	float m_deceleration;
 	int m_state;
+	BOOL m_bPlaying;
 };
 
 LINK_ENTITY_TO_CLASS( trigger_camera, CTriggerCamera )
@@ -2147,6 +2150,7 @@ TYPEDESCRIPTION	CTriggerCamera::m_SaveData[] =
 	DEFINE_FIELD( CTriggerCamera, m_acceleration, FIELD_FLOAT ),
 	DEFINE_FIELD( CTriggerCamera, m_deceleration, FIELD_FLOAT ),
 	DEFINE_FIELD( CTriggerCamera, m_state, FIELD_INTEGER ),
+	DEFINE_FIELD( CTriggerCamera, m_bPlaying, FIELD_BOOLEAN ),
 };
 
 IMPLEMENT_SAVERESTORE( CTriggerCamera, CBaseDelay )
@@ -2163,6 +2167,8 @@ void CTriggerCamera::Spawn( void )
 		m_acceleration = 500;
 	if( m_deceleration == 0 )
 		m_deceleration = 500;
+
+	m_bPlaying = FALSE;
 }
 
 void CTriggerCamera::KeyValue( KeyValueData *pkvd )
@@ -2274,6 +2280,15 @@ void CTriggerCamera::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYP
 	SetThink( &CTriggerCamera::FollowTarget );
 	pev->nextthink = gpGlobals->time;
 
+	if( FStrEq( STRING( pev->targetname ), "cam1" )
+		&& FStrEq( STRING( gpGlobals->mapname ), "ops_intro" )
+		&& !gPhysicsInterfaceInitialized
+		&& CVAR_GET_POINTER( "gl_overbright" )
+		&& !m_bPlaying ) // if we're not playing, start playing!
+	{
+		m_bPlaying = TRUE;
+		CLIENT_COMMAND( ENT( pActivator->pev ), "playaudio Half-Life03.mp3\n" );
+        }
 	m_moveDistance = 0;
 	Move();
 }
