@@ -80,16 +80,29 @@ int __MsgFunc_GameMode( const char *pszName, int iSize, void *pbuf )
 
 int __MsgFunc_PlayMP3( const char *pszName, int iSize, void *pbuf )
 {
+	const char *pszSound;
+	char cmd[64];
+
 	BEGIN_READ( pbuf, iSize );
+	pszSound = READ_STRING();
 
-	gEngfuncs.pfnPrimeMusicStream( READ_STRING(), 1 );
+	if( !isXashFWGS() && gEngfuncs.pfnGetCvarPointer( "gl_overbright" ) )
+	{
+		sprintf( cmd, "mp3 play %s\n", pszSound );
+		gEngfuncs.pfnClientCmd( cmd );
+	}
+	else
+		gEngfuncs.pfnPrimeMusicStream( pszSound, 1 );
 
-	return 1;
+        return 1;
 }
 
 void __CmdFunc_StopMP3( void )
 {
-	gEngfuncs.pfnPrimeMusicStream( 0, 0 );
+	if( !isXashFWGS() && gEngfuncs.pfnGetCvarPointer( "gl_overbright" ) )
+		gEngfuncs.pfnClientCmd( "mp3 stop\n" );
+	else
+		gEngfuncs.pfnPrimeMusicStream( 0, 0 );
 }
 
 // TFFree Command Menu
