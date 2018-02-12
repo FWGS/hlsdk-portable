@@ -32,6 +32,10 @@ option(USE_VOICEMGR "Enable VOICE MANAGER." OFF)
 option(BUILD_CLIENT "Build client dll" ON)
 option(BUILD_SERVER "Build server dll" ON)
 option(GOLDSOURCE_SUPPORT "Build goldsource compatible client library" OFF)
+set(GAMEDIR "valve" CACHE STRING "Gamedir path")
+set(SERVER_INSTALL_DIR "dlls" CACHE STRING "Where put server dll")
+set(CLIENT_INSTALL_DIR "cl_dlls" CACHE STRING "Where put client dll")
+set(SERVER_LIBRARY_NAME "hl" CACHE STRING "Library name for Linux/MacOS/Windows")
 
 #-----------------
 # MAIN BUILD CODE \
@@ -48,6 +52,16 @@ if(CMAKE_SIZEOF_VOID_P EQUAL 8)
 	set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32")
 	set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -m32")
 	endif()
+endif()
+
+# add_compile_options for older cmake versions
+if(${CMAKE_VERSION} VERSION_LESS "3.0.2")
+macro(add_compile_options)
+	set(list_var "${ARGV}")
+	foreach(arg IN LISTS list_var)
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${arg}")
+	endforeach()
+endmacro()
 endif()
 
 if(BUILD_CLIENT)

@@ -3553,6 +3553,10 @@ void CBasePlayer::ForceClientDllUpdate( void )
 	m_fWeapon = FALSE;          // Force weapon send
 	m_fKnownItem = FALSE;    // Force weaponinit messages.
 	m_fInitHUD = TRUE;		// Force HUD gmsgResetHUD message
+	m_bSentBhopcap = true; // a1ba: Update bhopcap state
+	memset( m_rgAmmoLast, 0, sizeof( m_rgAmmoLast )); // a1ba: Force update AmmoX
+
+
 
 	// Now force all the necessary messages
 	//  to be sent.
