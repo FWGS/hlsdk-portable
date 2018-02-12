@@ -51,7 +51,7 @@ public:
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
 	BOOL CheckRangeAttack1 ( float flDot, float flDist );
 	BOOL CheckRangeAttack2 ( float flDot, float flDist );
-	void CallForHelp( char *szClassname, float flDist, EHANDLE hEnemy, Vector &vecLocation );
+	void CallForHelp( const char *szClassname, float flDist, EHANDLE hEnemy, Vector &vecLocation );
 	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType);
 	int TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
 
@@ -160,7 +160,7 @@ int CISlave::IRelationship( CBaseEntity *pTarget )
 }
 
 
-void CISlave :: CallForHelp( char *szClassname, float flDist, EHANDLE hEnemy, Vector &vecLocation )
+void CISlave :: CallForHelp( const char *szClassname, float flDist, EHANDLE hEnemy, Vector &vecLocation )
 {
 	// ALERT( at_aiconsole, "help " );
 
@@ -191,7 +191,7 @@ void CISlave :: CallForHelp( char *szClassname, float flDist, EHANDLE hEnemy, Ve
 //=========================================================
 void CISlave :: AlertSound( void )
 {
-	if ( m_hEnemy != NULL )
+	if ( m_hEnemy != 0 )
 	{
 		SENTENCEG_PlayRndSz(ENT(pev), "SLV_ALERT", 0.85, ATTN_NORM, 0, m_voicePitch);
 
@@ -378,7 +378,7 @@ void CISlave :: HandleAnimEvent( MonsterEvent_t *pEvent )
 				MESSAGE_END( );
 
 			}
-			if (m_hDead != NULL)
+			if (m_hDead != 0)
 			{
 				WackBeam( -1, m_hDead );
 				WackBeam( 1, m_hDead );
@@ -399,7 +399,7 @@ void CISlave :: HandleAnimEvent( MonsterEvent_t *pEvent )
 		{
 			ClearBeams( );
 
-			if (m_hDead != NULL)
+			if (m_hDead != 0)
 			{
 				Vector vecDest = m_hDead->pev->origin + Vector( 0, 0, 38 );
 				TraceResult trace;
@@ -501,7 +501,7 @@ BOOL CISlave :: CheckRangeAttack2 ( float flDot, float flDist )
 			}
 		}
 	}
-	if (m_hDead != NULL)
+	if (m_hDead != 0)
 		return TRUE;
 	else
 		return FALSE;

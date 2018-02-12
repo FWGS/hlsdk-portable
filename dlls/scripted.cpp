@@ -369,29 +369,29 @@ void CCineMonster::PossessEntity( void )
 		{
 			// anything with that name?
 			pTarget->m_hTargetEnt = UTIL_FindEntityByTargetname(NULL, STRING(m_iszAttack), m_hActivator);
-			if ( pTarget->m_hTargetEnt == NULL )
+			if( pTarget->m_hTargetEnt == 0 )
 			{	// nothing. Anything with that classname?
 				while ((pTarget->m_hTargetEnt = UTIL_FindEntityInSphere( pTarget->m_hTargetEnt, pev->origin, m_flRadius )) != NULL)
-		{
+				{
 					if (FClassnameIs( pTarget->m_hTargetEnt->pev, STRING(m_iszAttack))) break;
+				}
 			}
-		}
-			if (pTarget->m_hTargetEnt == NULL)
+			if (pTarget->m_hTargetEnt == 0)
 			{	// nothing. Oh well.
 				ALERT(at_console,"%s %s has a missing \"turn target\": %s\n",STRING(pev->classname),STRING(pev->targetname),STRING(m_iszAttack));
 				pTarget->m_hTargetEnt = this;
-	}
-}
+			}
+		}
 		else
-{
+		{
 			pTarget->m_hTargetEnt = this;
 		}
 
 		if (m_iszMoveTarget)
-	{
+		{
 			// anything with that name?
 			pTarget->m_pGoalEnt = UTIL_FindEntityByTargetname(NULL, STRING(m_iszMoveTarget), m_hActivator);
-			if (pTarget->m_pGoalEnt == NULL)
+			if( pTarget->m_pGoalEnt == 0 )
 			{	// nothing. Oh well.
 				ALERT(at_console,"%s %s has a missing \"move target\": %s\n",STRING(pev->classname),STRING(pev->targetname),STRING(m_iszMoveTarget));
 				pTarget->m_pGoalEnt = this;
@@ -445,7 +445,7 @@ void CCineMonster::PossessEntity( void )
 
 // at the beginning of the level, set up the idle animation. --LRC
 void CCineMonster :: InitIdleThink( void )
-		{
+{
 	if ((m_hTargetEnt = FindEntity(STRING(m_iszEntity), NULL)) != NULL)
 			{
 		PossessEntity( );

@@ -1580,7 +1580,7 @@ public:
 	void Use ( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
 
 	void Affect (CBaseEntity *pTarget, USE_TYPE useType);
-	int GetActionFor( int iField, int iActive, USE_TYPE useType, char *szDebug );
+	int GetActionFor( int iField, int iActive, USE_TYPE useType, const char *szDebug );
 	void SetBoneController (float fController, int cnum, CBaseEntity *pTarget);
 
 	virtual int	ObjectCaps( void ) { return CBaseEntity :: ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
@@ -2054,7 +2054,7 @@ void CEnvCustomize :: Affect (CBaseEntity *pTarget, USE_TYPE useType)
 		ALERT(at_console, " ]\n");
 }
 
-int CEnvCustomize::GetActionFor( int iField, int iActive, USE_TYPE useType, char* szDebug)
+int CEnvCustomize::GetActionFor( int iField, int iActive, USE_TYPE useType, const char* szDebug)
 {
 	int iAction = iField;
 
@@ -3529,7 +3529,7 @@ int CChangeLevel::ChangeList( LEVELLIST *pLevelList, int maxList )
 	CBaseEntity *pChangelevel = UTIL_FindEntityByClassname( NULL, "trigger_changelevel" );
 
 	if ( !pChangelevel )
-		return NULL;
+		return 0;
 
 	while ( pChangelevel )
 	{
@@ -4595,7 +4595,7 @@ IMPLEMENT_SAVERESTORE(CMotionThread,CPointEntity);
 
 void CMotionThread::Think( void )
 {
-	if (m_hLocus == NULL || m_hTarget == NULL)
+	if( m_hLocus == 0 || m_hTarget == 0 )
 	{
 		if (pev->spawnflags & SF_MOTION_DEBUG)
 			ALERT(at_console, "motion_thread expires\n");

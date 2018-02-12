@@ -5133,7 +5133,7 @@ class CPlayerFreeze:public CBaseDelay
 {
 	void Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
 	void Think( void );
-	STATE GetState( void ) { return m_hActivator == NULL? STATE_OFF: STATE_ON; }
+	STATE GetState( void ) { return m_hActivator == 0 ? STATE_OFF : STATE_ON; }
 };
 
 void CPlayerFreeze::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )

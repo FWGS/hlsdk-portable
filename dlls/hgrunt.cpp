@@ -789,7 +789,7 @@ Vector CHGrunt::GetGunPosition()
 //=========================================================
 void CHGrunt::Shoot( void )
 {
-	if (m_hEnemy == NULL && m_pCine == NULL) //LRC - scripts may fire when you have no enemy
+	if (m_hEnemy == 0 && m_pCine == 0) //LRC - scripts may fire when you have no enemy
 	{
 		return;
 	}
@@ -819,7 +819,7 @@ void CHGrunt::Shoot( void )
 //=========================================================
 void CHGrunt::Shotgun( void )
 {
-	if (m_hEnemy == NULL && m_pCine == NULL)
+	if (m_hEnemy == 0 && m_pCine == 0)
 	{
 		return;
 	}
@@ -893,7 +893,7 @@ void CHGrunt::HandleAnimEvent( MonsterEvent_t *pEvent )
 			if (m_pCine)
 			{
 				Vector vecToss = g_vecZero;
-				if (m_hTargetEnt != NULL && m_pCine->PreciseAttack())
+				if (m_hTargetEnt != 0 && m_pCine->PreciseAttack())
 				{
 					vecToss = VecCheckToss( pev, GetGunPosition(), m_hTargetEnt->pev->origin, 0.5 );
 				}
@@ -918,7 +918,7 @@ void CHGrunt::HandleAnimEvent( MonsterEvent_t *pEvent )
 			if (m_pCine)
 			{
 				Vector vecToss;
-				if (m_hTargetEnt != NULL && m_pCine->PreciseAttack())
+				if (m_hTargetEnt != 0 && m_pCine->PreciseAttack())
 					vecToss = VecCheckThrow( pev, GetGunPosition(), m_hTargetEnt->pev->origin, gSkillData.hgruntGrenadeSpeed, 0.5 );
 				else
 				{

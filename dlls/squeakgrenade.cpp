@@ -189,7 +189,7 @@ void CSqueakGrenade::Killed( entvars_t *pevAttacker, int iGib )
 		RadiusDamage( pev, pev, pev->dmg, CLASS_NONE, DMG_BLAST );
 
 	// reset owner so death message happens
-	if (m_hOwner != NULL)
+	if (m_hOwner != 0)
 		pev->owner = m_hOwner->edict();
 
 	CBaseMonster::Killed( pevAttacker, GIB_ALWAYS );

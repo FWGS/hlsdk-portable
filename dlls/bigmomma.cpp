@@ -626,7 +626,7 @@ void CBigMomma::LaunchMortar( void )
 
 	if (m_pCine) // is a scripted_action making me shoot?
 	{
-		if (m_hTargetEnt != NULL) // don't check m_fTurnType- bigmomma can fire in any direction.
+		if (m_hTargetEnt != 0) // don't check m_fTurnType- bigmomma can fire in any direction.
 		{
 			vecLaunch = VecCheckSplatToss( pev, startPos, m_hTargetEnt->pev->origin, RANDOM_FLOAT( 150, 500 ) );
 		}

@@ -209,7 +209,7 @@ typedef enum
 					// In_Use isn't very useful, I'll probably remove it.
 } STATE;
 
-extern char* GetStringForState( STATE state );
+extern const char *GetStringForState( STATE state );
 
 // Things that toggle (buttons/triggers/doors) need this
 typedef enum

@@ -647,11 +647,11 @@ void CController::RunTask( Task_t *pTask )
 			Vector vecSrc = vecHand + pev->velocity * ( m_flShootTime - gpGlobals->time );
 			Vector vecDir;
 
-			if (m_pCine != NULL || m_hEnemy != NULL)
+			if (m_pCine != 0 || m_hEnemy != 0 )
 			{
-				if (m_pCine != NULL) // LRC- is this a script that's telling it to fire?
+				if (m_pCine != 0) // LRC- is this a script that's telling it to fire?
 				{
-					if (m_hTargetEnt != NULL && m_pCine->PreciseAttack())
+					if (m_hTargetEnt != 0 && m_pCine->PreciseAttack())
 					{
 						vecDir = (m_hTargetEnt->pev->origin - pev->origin).Normalize() * gSkillData.controllerSpeedBall;
 					}
@@ -661,7 +661,7 @@ void CController::RunTask( Task_t *pTask )
 						vecDir = gpGlobals->v_forward * gSkillData.controllerSpeedBall;
 					}
 				}
-				else if (m_hEnemy != NULL)
+				else if (m_hEnemy != 0)
 			{
 				if( HasConditions( bits_COND_SEE_ENEMY ) )
 				{

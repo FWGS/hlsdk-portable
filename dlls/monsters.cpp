@@ -3180,7 +3180,7 @@ BOOL CBaseMonster::FindLateralCover( const Vector &vecThreat, const Vector &vecV
 
 Vector CBaseMonster::ShootAtEnemy( const Vector &shootOrigin )
 {
-	if (m_pCine != NULL && m_hTargetEnt != NULL && (m_pCine->m_fTurnType == 1))
+	if (m_pCine != 0 && m_hTargetEnt != 0 && (m_pCine->m_fTurnType == 1))
 	{
 		Vector vecDest = ( m_hTargetEnt->pev->absmin + m_hTargetEnt->pev->absmax ) / 2;
 		return ( vecDest - shootOrigin ).Normalize();

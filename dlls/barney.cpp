@@ -713,7 +713,6 @@ Schedule_t *CBarney::GetScheduleOfType( int Type )
 	switch( Type )
 	{
 	case SCHED_ARM_WEAPON:
-		if ( m_hEnemy != NULL )
 		if( m_hEnemy != 0 )
 		{
 			// face enemy, then draw.

@@ -1577,7 +1577,7 @@ void CFuncTankControls::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_
 			return;
 		// if I've already got a controller, or the player's already using
 		// another controls, then forget it.
-		if (m_active != FALSE || ((CBasePlayer*)pActivator)->m_pTank != NULL)
+		if (m_active != FALSE || ((CBasePlayer*)pActivator)->m_pTank != 0)
 			return;
 
 		//LRC- Now uses FindEntityByTargetname, so that aliases work.

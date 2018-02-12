@@ -1984,7 +1984,7 @@ void UTIL_StripToken( const char *pKey, char *pDest )
 }
 
 
-char* GetStringForUseType( USE_TYPE useType )
+const char* GetStringForUseType( USE_TYPE useType )
 {
 	switch(useType)
 	{
@@ -1998,7 +1998,7 @@ char* GetStringForUseType( USE_TYPE useType )
 	}
 }
 
-char* GetStringForState( STATE state )
+const char *GetStringForState( STATE state )
 {
 	switch(state)
 	{

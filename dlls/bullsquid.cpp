@@ -550,7 +550,7 @@ void CBullsquid::HandleAnimEvent( MonsterEvent_t *pEvent )
 				vecSpitOffset = ( pev->origin + vecSpitOffset );
 			if (m_pCine) // LRC- are we being told to do this by a scripted_action?
 			{
-				if (m_hTargetEnt != NULL && m_pCine->PreciseAttack())
+				if (m_hTargetEnt != 0 && m_pCine->PreciseAttack())
 					vecSpitDir = ( ( m_hTargetEnt->pev->origin ) - vecSpitOffset ).Normalize();
 				else
 					vecSpitDir = gpGlobals->v_forward;

@@ -3966,7 +3966,7 @@ void CEnvELight::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE us
 	if (pev->target)
 	{
 		m_hAttach = UTIL_FindEntityByTargetname( NULL, STRING(pev->target), pActivator);
-		if (m_hAttach == NULL)
+		if (m_hAttach == 0)
 		{
 			ALERT(at_console, "env_elight \"%s\" can't find target %s\n", STRING(pev->targetname), STRING(pev->target));
 			return; // error?
@@ -3982,7 +3982,7 @@ void CEnvELight::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE us
 
 void CEnvELight::MakeLight(int iTime)
 {
-	if (m_hAttach == NULL)
+	if (m_hAttach == 0)
 	{
 		DontThink();
 		pev->takedamage = 0;

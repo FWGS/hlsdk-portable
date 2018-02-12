@@ -117,7 +117,7 @@ void CLocusAlias::FlushChanges( void )
 
 CBaseEntity *CLocusAlias::FollowAlias( CBaseEntity *pFrom )
 {
-	if (m_hValue == NULL)
+	if (m_hValue == 0)
 		return NULL;
 	else if ( pFrom == NULL || (OFFSET(m_hValue->pev) > OFFSET(pFrom->pev)) )
 	{

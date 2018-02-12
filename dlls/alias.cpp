@@ -160,7 +160,7 @@ int CInfoGroup::GetMember( const char* szMemberName )
 	if (!szMemberName)
 	{
 		ALERT(at_console,"info_group: GetMember called with null szMemberName!?\n");
-		return NULL;
+		return 0;
 	}
 	for (int i = 0; i < m_cMembers; i++)
 	{
@@ -183,7 +183,7 @@ int CInfoGroup::GetMember( const char* szMemberName )
 
 	ALERT(at_console,"info_group \"%s\" has no member called \"%s\".\n",STRING(pev->targetname),szMemberName);
 //	ALERT(at_console,"getMember: fail\n");
-	return NULL;
+	return 0;
 }
 
 /*********************

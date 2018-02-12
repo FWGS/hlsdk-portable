@@ -100,7 +100,7 @@ typedef enum
 	USE_NOT = 6,
 } USE_TYPE;
 
-extern char* GetStringForUseType( USE_TYPE useType );
+extern const char *GetStringForUseType( USE_TYPE useType );
 
 extern void FireTargets( const char *targetName, CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
 

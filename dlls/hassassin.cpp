@@ -186,7 +186,7 @@ void CHAssassin::SetYawSpeed( void )
 //=========================================================
 void CHAssassin::Shoot( void )
 {
-	if (m_hEnemy == NULL && !m_pCine) //LRC
+	if (m_hEnemy == 0 && !m_pCine) //LRC
 	{
 		return;
 	}
@@ -251,7 +251,7 @@ void CHAssassin::HandleAnimEvent( MonsterEvent_t *pEvent )
 			if (m_pCine && m_pCine->IsAction())
 			{
 				Vector vecToss;
-				if (m_pCine->PreciseAttack() && m_hTargetEnt != NULL)
+				if (m_pCine->PreciseAttack() && m_hTargetEnt != 0)
 				{
 					vecToss = VecCheckToss( pev, vecGunPosition, m_hTargetEnt->pev->origin, 0.5 );
 					//if (vecToss != g_vecZero)
@@ -282,7 +282,7 @@ void CHAssassin::HandleAnimEvent( MonsterEvent_t *pEvent )
 			if (m_pCine) //LRC...
 			{
 				pev->velocity = g_vecZero;
-				if (m_pCine->PreciseAttack() && m_hTargetEnt != NULL)
+				if (m_pCine->PreciseAttack() && m_hTargetEnt != 0)
 				{
 					Vector vecTemp = m_hTargetEnt->pev->origin;
 					vecTemp.y = vecTemp.y + 50; // put her feet on the target.
