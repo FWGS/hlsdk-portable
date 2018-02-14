@@ -47,6 +47,7 @@ public:
 	int m_iJuice;
 	int m_iOn;			// 0 = off, 1 = startup, 2 = going
 	float m_flSoundTime;
+	BOOL m_bTriggerable;
 };
 
 TYPEDESCRIPTION CRecharge::m_SaveData[] =
@@ -56,6 +57,7 @@ TYPEDESCRIPTION CRecharge::m_SaveData[] =
 	DEFINE_FIELD( CRecharge, m_iJuice, FIELD_INTEGER ),
 	DEFINE_FIELD( CRecharge, m_iOn, FIELD_INTEGER ),
 	DEFINE_FIELD( CRecharge, m_flSoundTime, FIELD_TIME ),
+	DEFINE_FIELD( CRecharge, m_bTriggerable, FIELD_BOOLEAN )
 };
 
 IMPLEMENT_SAVERESTORE( CRecharge, CBaseEntity )
@@ -92,6 +94,7 @@ void CRecharge::Spawn()
 	UTIL_SetSize( pev, pev->mins, pev->maxs );
 	SET_MODEL( ENT( pev ), STRING( pev->model ) );
 	m_iJuice = (int)gSkillData.suitchargerCapacity;
+	m_bTriggerable = !FStringNull( pev->target );
 	pev->frame = 0;			
 }
 
@@ -112,6 +115,11 @@ void CRecharge::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE use
 	if( m_iJuice <= 0 )
 	{
 		pev->frame = 1;			
+		if( m_bTriggerable )
+		{
+			FireTargets( STRING( pev->target ), pActivator, this, USE_TOGGLE, 0 );
+			m_bTriggerable = FALSE;
+		}
 		Off();
 	}
 
@@ -173,6 +181,7 @@ void CRecharge::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE use
 void CRecharge::Recharge( void )
 {
 	m_iJuice = (int)gSkillData.suitchargerCapacity;
+	m_bTriggerable = !FStringNull( pev->target );
 	pev->frame = 0;	
 	SetThink( &CBaseEntity::SUB_DoNothing );
 }
