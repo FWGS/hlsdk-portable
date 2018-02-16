@@ -1627,7 +1627,10 @@ void CFuncTankControls::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_
 		//LRC- Now uses FindEntityByTargetname, so that aliases work.
 		while( ( tryTank = UTIL_FindEntityByTargetname( tryTank, STRING( pev->target ) ) ) )
 		{
-			if (FClassnameIs(tryTank->pev, "func_tank"))
+			if( FClassnameIs( tryTank->pev, "func_tank" ) ||
+			FClassnameIs( tryTank->pev, "func_tanklaser" ) ||
+			FClassnameIs( tryTank->pev, "func_tankmortar" ) ||
+			FClassnameIs( tryTank->pev, "func_tankrocket" ) )
 			{
 				// this is a tank we're controlling.
 				((CFuncTank*)tryTank)->StopControl(this);
