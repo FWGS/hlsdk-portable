@@ -44,6 +44,7 @@ class CISlave : public CSquadMonster
 public:
 	void Spawn( void );
 	void Precache( void );
+	void UpdateOnRemove();
 	void SetYawSpeed( void );
 	int	 ISoundMask( void );
 	int  Classify ( void );
@@ -62,7 +63,7 @@ public:
 
 	void Killed( entvars_t *pevAttacker, int iGib );
 
-    void StartTask ( Task_t *pTask );
+	void StartTask( Task_t *pTask );
 	Schedule_t *GetSchedule( void );
 	Schedule_t *GetScheduleOfType ( int Type );
 	CUSTOM_SCHEDULES;
@@ -583,6 +584,12 @@ void CISlave :: Precache()
 	UTIL_PrecacheOther( "test_effect" );
 }	
 
+void CISlave::UpdateOnRemove()
+{
+	CBaseEntity::UpdateOnRemove();
+
+	ClearBeams();
+}
 
 //=========================================================
 // TakeDamage - get provoked when injured
