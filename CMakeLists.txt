@@ -54,6 +54,16 @@ if(CMAKE_SIZEOF_VOID_P EQUAL 8)
 	endif()
 endif()
 
+# add_compile_options for older cmake versions
+if(${CMAKE_VERSION} VERSION_LESS "3.0.2")
+macro(add_compile_options)
+	set(list_var "${ARGV}")
+	foreach(arg IN LISTS list_var)
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${arg}")
+	endforeach()
+endmacro()
+endif()
+
 if(BUILD_CLIENT)
 	add_subdirectory(cl_dll)
 endif()
