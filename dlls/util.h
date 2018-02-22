@@ -40,7 +40,7 @@ extern globalvars_t				*gpGlobals;
 #define STRING(offset)		(const char *)(gpGlobals->pStringBase + (int)offset)
 
 #if !defined XASH_64BIT || defined(CLIENT_DLL)
-#define MAKE_STRING(str)	((int)str - (int)STRING(0))
+#define MAKE_STRING(str)	((int)(long int)str - (int)(long int)STRING(0))
 #else
 static inline int MAKE_STRING(const char *szValue)
 {
