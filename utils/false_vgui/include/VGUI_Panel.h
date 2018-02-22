@@ -219,7 +219,6 @@ private:
 	bool                _paintBorderEnabled;
 	bool                _paintBackgroundEnabled;
 	bool                _paintEnabled;
-friend class Panel;
 friend class App;
 friend class SurfaceBase;
 friend class Image;
