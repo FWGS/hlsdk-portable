@@ -66,7 +66,7 @@ public:
 	void PrimaryAttack(void);
 	void SecondaryAttack(void);
 	void WeaponIdle(void);
-	void Pull(CBaseEntity* ent, float force);
+	void Pull(CBaseEntity* ent);
 	void GravAnim(int iAnim, int skiplocal, int body);
 	Vector PredictTarget( float length );
 	CBaseEntity *GetCrossEnt( Vector gunpos, Vector aim, float radius );
@@ -74,7 +74,8 @@ public:
 	float m_flAmmoUseTime;// since we use < 1 point of ammo per update, we subtract ammo on a timer.
 
 
-	void GrabThink(void);
+	void EXPORT GrabThink( void );
+	void EXPORT PullThink( void );
 	float Fire(const Vector &vecOrigSrc, const Vector &vecDir);
 
 	BOOL HasAmmo(void);
@@ -118,7 +119,7 @@ Vector CGravGun::PredictTarget(float length)
 {
 	Vector predicted = m_pPlayer->pev->origin;
 	float cmdtime = gpGlobals->time - m_flLastCmd;
-	printf("PredictTarget %f\n", cmdtime);
+	ALERT( at_notice, "PredictTarget %f\n", cmdtime );
 
 	// button-based prediction
 	if( m_pPlayer->pev->button & IN_FORWARD )
@@ -165,6 +166,7 @@ BOOL CGravGun::Deploy(void)
 {
 	m_deployed = FALSE;
 	m_fireState = FIRE_OFF;
+	SetThink( NULL );
 	return DefaultDeploy("models/v_gravcannon.mdl", "models/p_gravcannon.mdl", GAUSS_DRAW, "gauss");
 }
 
@@ -382,8 +384,9 @@ void CGravGun::Attack2(void)
 				if(crossent->TouchGravGun(m_pPlayer, 0))
 				{
 					m_hAimentEntity = crossent;
-					Pull(crossent,5);
 					GravAnim(GAUSS_SPIN, 0, 0);
+					SetThink( &CGravGun::PullThink );
+					pev->nextthink = gpGlobals->time + 0.001;
 				}
 
 			}
@@ -469,7 +472,6 @@ CBaseEntity*  CGravGun::TraceForward(CBaseEntity *pMe,float radius)
 //Used for prop grab and 
 void CGravGun::GrabThink()
 {
-	printf("GrabThink\n");
 	if (( m_iGrabFailures < 50 )&& m_hAimentEntity )
 	{
 			Vector origin = m_hAimentEntity->pev->origin;
@@ -482,7 +484,7 @@ void CGravGun::GrabThink()
 
 			UpdateEffect(pev->origin, origin, 1);
 
-			Pull(m_hAimentEntity, 100);
+			Pull(m_hAimentEntity);
 			pev->nextthink = gpGlobals->time + 0.001;
 	}
 	else{
@@ -498,11 +500,19 @@ void CGravGun::GrabThink()
 		EndAttack();
 		m_iStage = 0;
 	}
-
-
-
 }
-void CGravGun::Pull(CBaseEntity* ent,float force)
+
+void CGravGun::PullThink()
+{
+	if( m_hAimentEntity )
+	{
+		Pull( m_hAimentEntity );
+		pev->nextthink = gpGlobals->time + 0.05;
+	}
+	else SetThink( NULL );
+}
+
+void CGravGun::Pull(CBaseEntity* ent)
 {
 	Vector origin = ent->pev->origin;
 	if( ent->IsBSPModel())
@@ -512,6 +522,7 @@ void CGravGun::Pull(CBaseEntity* ent,float force)
 	target.z += 32;
 	if ((target - origin).Length() > 60){
 		target = PredictTarget(110);
+		Vector diff = target - origin;
 
 		target.z += 60;
 		
@@ -521,9 +532,12 @@ void CGravGun::Pull(CBaseEntity* ent,float force)
 	
 		if( !m_iStage )
 		{
-			ent->pev->velocity = (target - origin).Normalize()*300;
+			ent->pev->velocity = diff.Normalize()*(55000.0* 1.0/diff.Length());
+			if(ent->pev->velocity.Length() > 500 )
+				ent->pev->velocity = diff.Normalize() * 500;
+
 			pev->velocity.z += 10;
-			if( (target - origin).Length() < 150 )
+			if( diff.Length() < 150 )
 			{
 				m_iStage = 1;
 
@@ -534,8 +548,11 @@ void CGravGun::Pull(CBaseEntity* ent,float force)
 		}
 		else
 		{
-			ent->pev->velocity = (target - origin).Normalize()*550;
+			ent->pev->velocity = diff.Normalize()*(55000.0* 1.0/diff.Length());
+			if(ent->pev->velocity.Length() > 900 )
+				ent->pev->velocity = diff.Normalize() * 900;
 			pev->velocity.z += 15;
+			ALERT( at_notice, "vel %f\n", ent->pev->velocity.Length() );
 		}
 		//ent->pev->velocity = ent->pev->velocity + m_pPlayer->pev->velocity;
 			/////
@@ -557,7 +574,7 @@ void CGravGun::Pull(CBaseEntity* ent,float force)
 	}
 	else if( ent->TouchGravGun(m_pPlayer, 2) )
 	{	
-		ent->pev->velocity = (target - origin)* 35;
+		ent->pev->velocity = (target - origin)* 80;
 		if(ent->pev->velocity.Length()>900)
 			ent->pev->velocity = (target - origin).Normalize() * 900;
 		ent->pev->velocity = ent->pev->velocity + m_pPlayer->pev->velocity;
@@ -789,6 +806,8 @@ void CGravGun::EndAttack(void)
 	m_fireState = FIRE_OFF;
 
 	DestroyEffect();
+	if( m_pfnThink == &CGravGun::PullThink )
+		SetThink( NULL );
 }
 
 
