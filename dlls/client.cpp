@@ -1287,6 +1287,27 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 		if( ent->v.movetype == MOVETYPE_WALK || ent->v.movetype == MOVETYPE_STEP )
 			//state->effects |= EF_NOINTERP;
 			state->movetype = MOVETYPE_TOSS;
+		// gravgun hacks
+		if( ent->pvPrivateData && CBaseEntity::Instance( ent)->m_fireState == ENTINDEX(host) )
+		{
+			static float times[32];
+			float tdiff = gpGlobals->time - times[ENTINDEX(host) - 1];
+			if( tdiff > 1 )
+				tdiff = 0;
+			int ping, loss;
+
+
+			state->solid = SOLID_NOT;
+			//state->effects |= EF_NOINTERP;
+			// update rate correction (will be interpolated on client)
+			PLAYER_CNX_STATS( host, &ping, &loss );
+			if( ping > 300 )
+				ping = 300;
+			state->origin = state->origin + host->v.velocity * tdiff + host->v.velocity *  0.001 *ping;
+
+			//state->movetype = MOVETYPE_WALK;
+			times[ENTINDEX(host) - 1] = gpGlobals->time;
+		}
 	}
 
 	// Special stuff for players only

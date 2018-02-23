@@ -264,6 +264,8 @@ void CGravGun::Attack(void)
 
 		//CBaseEntity* crosent = TraceForward(m_pPlayer, 1000);
 		CBaseEntity* crossent = m_hAimentEntity;
+		if( m_hAimentEntity )
+			m_hAimentEntity->m_fireState = 0;
 		m_hAimentEntity = NULL;
 		if( !crossent )
 			crossent = GetCrossEnt(vecSrc, gpGlobals->v_forward, dist + 30);
@@ -494,6 +496,7 @@ void CGravGun::GrabThink()
 
 		if(m_hAimentEntity)
 		{
+			m_hAimentEntity->m_fireState = 0;
 			m_hAimentEntity->pev->velocity = Vector(0,0,0);
 			m_hAimentEntity = NULL;
 		}
@@ -575,6 +578,7 @@ void CGravGun::Pull(CBaseEntity* ent)
 	else if( ent->TouchGravGun(m_pPlayer, 2) )
 	{	
 		ent->pev->velocity = (target - origin)* 80;
+		ent->m_fireState = ENTINDEX( m_pPlayer->edict() );
 		if(ent->pev->velocity.Length()>900)
 			ent->pev->velocity = (target - origin).Normalize() * 900;
 		ent->pev->velocity = ent->pev->velocity + m_pPlayer->pev->velocity;
@@ -585,7 +589,11 @@ void CGravGun::Pull(CBaseEntity* ent)
 	else
 	{
 		SetThink(NULL);
-		m_hAimentEntity = NULL;
+		if( m_hAimentEntity )
+		{
+			m_hAimentEntity->m_fireState = 0;
+			m_hAimentEntity = NULL;
+		}
 		EndAttack();
 		m_iStage = 0;
 	}
@@ -631,6 +639,7 @@ void CGravGun::SecondaryAttack(void)
 			if( m_hAimentEntity )
 			{
 				m_hAimentEntity->pev->velocity = Vector(0,0,0);
+				m_hAimentEntity->m_fireState = 0;
 				EMIT_SOUND( ENT( m_hAimentEntity->pev ), CHAN_VOICE, "weapons/357_cock1.wav", 0.8, ATTN_NORM );
 				m_hAimentEntity = NULL;
 			}
