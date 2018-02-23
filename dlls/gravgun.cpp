@@ -39,11 +39,13 @@ enum gauss_e {
 	GAUSS_DRAW
 };
 
-class CGrav : public CBasePlayerWeapon
+
+class CGravGun : public CBasePlayerWeapon
 {
 public:
 
 
+	float m_flLastCmd;
 	void Spawn(void);
 	void Precache(void);
 	int iItemSlot(void) { return 4; }
@@ -66,6 +68,7 @@ public:
 	void WeaponIdle(void);
 	void Pull(CBaseEntity* ent, float force);
 	void GravAnim(int iAnim, int skiplocal, int body);
+	Vector PredictTarget( float length );
 	CBaseEntity *GetCrossEnt( Vector gunpos, Vector aim, float radius );
 	float m_flNextGravgunAttack;
 	float m_flAmmoUseTime;// since we use < 1 point of ammo per update, we subtract ammo on a timer.
@@ -96,9 +99,9 @@ private:
 	float				m_fPushSpeed;
 };
 
-LINK_ENTITY_TO_CLASS(weapon_gravgun, CGrav);
+LINK_ENTITY_TO_CLASS(weapon_gravgun, CGravGun);
 
-void CGrav::Spawn()
+void CGravGun::Spawn()
 {
 	pev->classname = MAKE_STRING("weapon_gravgun"); // hack to allow for old names
 	Precache();
@@ -109,9 +112,34 @@ void CGrav::Spawn()
 
 	FallInit();// get ready to fall down.
 }
+#define CONST_MULT 10
+#define CMD_MULT 100
+Vector CGravGun::PredictTarget(float length)
+{
+	Vector predicted = m_pPlayer->pev->origin;
+	float cmdtime = gpGlobals->time - m_flLastCmd;
+	printf("PredictTarget %f\n", cmdtime);
 
+	// button-based prediction
+	if( m_pPlayer->pev->button & IN_FORWARD )
+		predicted = predicted + gpGlobals->v_forward * CONST_MULT + gpGlobals->v_forward * cmdtime * CMD_MULT;
+	// do not predict back? it may hurt player
+	//if( m_pPlayer->pev->button & IN_BACK )
+		//predicted = predicted + gpGlobals->v_forward * -CONST_MULT / 2 + gpGlobals->v_forward * cmdtime * -CMD_MULT / 2;
+	if( m_pPlayer->pev->button & IN_MOVELEFT )
+		predicted = predicted + gpGlobals->v_right * -CONST_MULT + gpGlobals->v_right * cmdtime * -CMD_MULT;
+	if( m_pPlayer->pev->button & IN_MOVERIGHT )
+		predicted = predicted + gpGlobals->v_right * CONST_MULT + gpGlobals->v_right * cmdtime * CMD_MULT;
 
-void CGrav::Precache(void)
+	// distance
+	predicted = predicted + gpGlobals->v_forward * length;
+
+	// velocity animation
+	predicted = predicted + m_pPlayer->pev->velocity * cmdtime;
+	return predicted;
+}
+
+void CGravGun::Precache(void)
 {
 	PRECACHE_MODEL("models/w_gravcannon.mdl");
 	PRECACHE_MODEL("models/v_gravcannon.mdl");
@@ -133,14 +161,14 @@ void CGrav::Precache(void)
 }
 
 
-BOOL CGrav::Deploy(void)
+BOOL CGravGun::Deploy(void)
 {
 	m_deployed = FALSE;
 	m_fireState = FIRE_OFF;
 	return DefaultDeploy("models/v_gravcannon.mdl", "models/p_gravcannon.mdl", GAUSS_DRAW, "gauss");
 }
 
-int CGrav::AddToPlayer(CBasePlayer *pPlayer)
+int CGravGun::AddToPlayer(CBasePlayer *pPlayer)
 {
 	if (CBasePlayerWeapon::AddToPlayer(pPlayer))
 	{
@@ -154,7 +182,7 @@ int CGrav::AddToPlayer(CBasePlayer *pPlayer)
 
 
 
-void CGrav::Holster(int skiplocal /* = 0 */)
+void CGravGun::Holster(int skiplocal /* = 0 */)
 {
 	
 	SetThink(NULL);
@@ -168,7 +196,7 @@ void CGrav::Holster(int skiplocal /* = 0 */)
 	SetThink(NULL);
 }
 
-int CGrav::GetItemInfo(ItemInfo *p)
+int CGravGun::GetItemInfo(ItemInfo *p)
 {
 	p->pszName = STRING(pev->classname);
 p->pszAmmo1 = NULL;
@@ -185,7 +213,7 @@ p->pszAmmo1 = NULL;
 	return 1;
 }
 
-BOOL CGrav::HasAmmo(void)
+BOOL CGravGun::HasAmmo(void)
 {
 	
 	return TRUE;
@@ -193,7 +221,7 @@ BOOL CGrav::HasAmmo(void)
 
 
 
-void CGrav::Attack(void)
+void CGravGun::Attack(void)
 {
 	pev->nextthink = gpGlobals->time + 1.1;
 	m_flNextGravgunAttack - gpGlobals->time + 0.5;
@@ -276,13 +304,13 @@ void CGrav::Attack(void)
 	
 	m_flNextGravgunAttack = gpGlobals->time + 0.5;
 	pev->nextthink = gpGlobals->time + 0.2;
-	SetThink( &CGrav::DestroyEffect );
+	SetThink( &CGravGun::DestroyEffect );
 	
 	break;
 	}
 
 }
-void CGrav::GravAnim(int iAnim, int skiplocal, int body)
+void CGravGun::GravAnim(int iAnim, int skiplocal, int body)
 {
 
 	m_pPlayer->pev->weaponanim = iAnim;
@@ -295,7 +323,7 @@ void CGrav::GravAnim(int iAnim, int skiplocal, int body)
 	MESSAGE_END();
 }
 
-void CGrav::Attack2(void)
+void CGravGun::Attack2(void)
 {
 	//if (temp) { temp = NULL; }
 	//if(temp) return;
@@ -371,7 +399,7 @@ void CGrav::Attack2(void)
 	}
 
 }
-CBaseEntity *CGrav::GetCrossEnt( Vector gunpos, Vector aim, float radius )
+CBaseEntity *CGravGun::GetCrossEnt( Vector gunpos, Vector aim, float radius )
 {
 	edict_t		*pEdict = g_engfuncs.pfnPEntityOfEntIndex( 1 );
 	edict_t		*pClosest = NULL;
@@ -428,7 +456,7 @@ CBaseEntity *CGrav::GetCrossEnt( Vector gunpos, Vector aim, float radius )
 
 }
 
-CBaseEntity*  CGrav::TraceForward(CBaseEntity *pMe,float radius)
+CBaseEntity*  CGravGun::TraceForward(CBaseEntity *pMe,float radius)
 {
 	TraceResult tr;
 	UTIL_MakeVectors(pMe->pev->v_angle);
@@ -439,8 +467,9 @@ CBaseEntity*  CGrav::TraceForward(CBaseEntity *pMe,float radius)
 }
 
 //Used for prop grab and 
-void CGrav::GrabThink()
+void CGravGun::GrabThink()
 {
+	printf("GrabThink\n");
 	if (( m_iGrabFailures < 50 )&& m_hAimentEntity )
 	{
 			Vector origin = m_hAimentEntity->pev->origin;
@@ -454,13 +483,13 @@ void CGrav::GrabThink()
 			UpdateEffect(pev->origin, origin, 1);
 
 			Pull(m_hAimentEntity, 100);
-
 			pev->nextthink = gpGlobals->time + 0.001;
 	}
 	else{
 		EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, GRAV_SOUND_OFF, 1, ATTN_NORM, 0, 70 + RANDOM_LONG(0, 34));
 		m_iGrabFailures = 0;
-		SetThink(NULL);
+		SetThink( NULL );
+
 		if(m_hAimentEntity)
 		{
 			m_hAimentEntity->pev->velocity = Vector(0,0,0);
@@ -473,16 +502,16 @@ void CGrav::GrabThink()
 
 
 }
-void CGrav::Pull(CBaseEntity* ent,float force)
+void CGravGun::Pull(CBaseEntity* ent,float force)
 {
 	Vector origin = ent->pev->origin;
 	if( ent->IsBSPModel())
 		origin = VecBModelOrigin(ent->pev);
 	UTIL_MakeVectors(m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle);
-	Vector target = m_pPlayer->pev->origin + gpGlobals->v_forward * 75;
+	Vector target = PredictTarget( 75 );
 	target.z += 32;
 	if ((target - origin).Length() > 60){
-		target = m_pPlayer->pev->origin + gpGlobals->v_forward * 110 ;
+		target = PredictTarget(110);
 
 		target.z += 60;
 		
@@ -497,7 +526,8 @@ void CGrav::Pull(CBaseEntity* ent,float force)
 			if( (target - origin).Length() < 150 )
 			{
 				m_iStage = 1;
-				SetThink( &CGrav::GrabThink );
+
+				SetThink( &CGravGun::GrabThink );
 				pev->nextthink = gpGlobals->time + 0.001;
 				ent->TouchGravGun(m_pPlayer, 1);
 			}
@@ -532,7 +562,7 @@ void CGrav::Pull(CBaseEntity* ent,float force)
 			ent->pev->velocity = (target - origin).Normalize() * 900;
 		ent->pev->velocity = ent->pev->velocity + m_pPlayer->pev->velocity;
 		m_iStage = 2;
-		SetThink( &CGrav::GrabThink );
+		SetThink( &CGravGun::GrabThink );
 		pev->nextthink = gpGlobals->time + 0.001;
 	}
 	else
@@ -548,8 +578,9 @@ void CGrav::Pull(CBaseEntity* ent,float force)
 
 
 
-void CGrav::PrimaryAttack(void)
+void CGravGun::PrimaryAttack(void)
 {
+	m_flLastCmd = gpGlobals->time;
 	if (m_flNextGravgunAttack < gpGlobals->time)
 	{
 	
@@ -562,8 +593,9 @@ void CGrav::PrimaryAttack(void)
 }
 
 
-void CGrav::SecondaryAttack(void)
+void CGravGun::SecondaryAttack(void)
 {
+	m_flLastCmd = gpGlobals->time;
 	if (m_flNextGravgunAttack < gpGlobals->time)
 	{
 		if (m_iStage)
@@ -592,7 +624,7 @@ void CGrav::SecondaryAttack(void)
 
 	}
 }
-float CGrav::Fire(const Vector &vecOrigSrc, const Vector &vecDir)
+float CGravGun::Fire(const Vector &vecOrigSrc, const Vector &vecDir)
 {
 	Vector vecDest = vecOrigSrc + vecDir * 2048;
 	edict_t		*pentIgnore;
@@ -610,7 +642,7 @@ float CGrav::Fire(const Vector &vecOrigSrc, const Vector &vecDir)
 }
 
 
-void CGrav::UpdateEffect(const Vector &startPoint, const Vector &endPoint, float timeBlend)
+void CGravGun::UpdateEffect(const Vector &startPoint, const Vector &endPoint, float timeBlend)
 {
 #ifndef CLIENT_DLL
 	if (!m_pBeam)
@@ -646,7 +678,7 @@ void CGrav::UpdateEffect(const Vector &startPoint, const Vector &endPoint, float
 
 }
 
-void CGrav::CreateEffect(void)
+void CGravGun::CreateEffect(void)
 {
 
 #ifndef CLIENT_DLL
@@ -697,7 +729,7 @@ void CGrav::CreateEffect(void)
 }
 
 
-void CGrav::DestroyEffect(void)
+void CGravGun::DestroyEffect(void)
 {
 
 #ifndef CLIENT_DLL
@@ -727,8 +759,9 @@ void CGrav::DestroyEffect(void)
 
 
 
-void CGrav::WeaponIdle(void)
+void CGravGun::WeaponIdle(void)
 {
+	m_flLastCmd = gpGlobals->time;
 	ResetEmptySound();
 
 	if (m_flTimeWeaponIdle > gpGlobals->time)
@@ -743,7 +776,7 @@ void CGrav::WeaponIdle(void)
 
 
 
-void CGrav::EndAttack(void)
+void CGravGun::EndAttack(void)
 {
 	bool bMakeNoise = false;
    // if (m_AimentEntity&&m_AimentEntity->pev->velocity.Length() > 100&& (m_AimentEntity->pev->origin-m_pPlayer->pev->origin).Length()<100) { m_AimentEntity->pev->velocity = m_AimentEntity->pev->velocity / 10; }
