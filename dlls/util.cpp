@@ -32,6 +32,32 @@
 #include "gamerules.h"
 #include "movewith.h"
 #include "locus.h"
+#include <sys/stat.h>
+
+void UTIL_MuzzleLight( Vector vecSrc, float flRadius, byte r, byte g, byte b, float flTime, float flDecay )
+{
+	MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, vecSrc );
+		WRITE_BYTE( TE_DLIGHT );
+		WRITE_COORD( vecSrc.x );	// X
+		WRITE_COORD( vecSrc.y );	// Y
+		WRITE_COORD( vecSrc.z );	// Z
+		WRITE_BYTE( flRadius * 0.1f );	// radius * 0.1
+		WRITE_BYTE( r );		// r
+		WRITE_BYTE( g );		// g
+		WRITE_BYTE( b );		// b
+		WRITE_BYTE( flTime * 10.0f );	// time * 10
+		WRITE_BYTE( flDecay * 0.1f );	// decay * 0.1
+	MESSAGE_END();
+}
+
+BOOL UTIL_FileExists( const char* filename )
+{
+	struct stat checkfile;
+	if( 0 > stat( filename, &checkfile ) )
+		return FALSE;
+
+	return TRUE;
+}
 
 float UTIL_WeaponTimeBase( void )
 {

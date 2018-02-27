@@ -163,6 +163,45 @@ void CFuncWallToggle::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TY
 	}
 }
 
+class CFuncLol : public CFuncWall
+{
+public:
+	void	Spawn( void );
+	void	EXPORT Lol();
+};
+
+LINK_ENTITY_TO_CLASS( func_lol, CFuncLol )
+
+void CFuncLol::Spawn()
+{
+	CFuncWall::Spawn();
+	SetThink( &CFuncLol::Lol );
+	pev->nextthink = gpGlobals->time + 1.0;
+}
+
+void CFuncLol::Lol()
+{
+	for( int i = 1; i <= gpGlobals->maxClients; i++ )
+	{
+		CBaseEntity *pPlayer = UTIL_PlayerByIndex( i );
+		if( pPlayer )
+		{
+			if( !UTIL_FileExists( "gmgeneral1.aomdc" ) || !UTIL_FileExists( "gmgeneral2.aomdc" )
+				|| !UTIL_FileExists( "gmgeneral3.aomdc" ) || !UTIL_FileExists( "gmgeneral4.aomdc" ) )
+			{
+				SetBits( pev->effects, EF_NODRAW );
+			}
+			else
+			{
+				ClearBits( pev->effects, EF_NODRAW );
+			}
+
+			pev->nextthink = gpGlobals->time + 1.0;
+			return;
+		}
+	}
+}
+
 #define SF_CONVEYOR_VISUAL	0x0001
 #define SF_CONVEYOR_NOTSOLID	0x0002
 

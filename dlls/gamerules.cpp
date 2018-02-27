@@ -214,10 +214,24 @@ void CGameRules::RefreshSkillData ( void )
 	gSkillData.snarkDmgBite = GetSkillCvar( "sk_snark_dmg_bite" );
 	gSkillData.snarkDmgPop = GetSkillCvar( "sk_snark_dmg_pop" );
 
+	// Wheelchair Monster
+	gSkillData.wheelchairHealth = GetSkillCvar( "sk_wheelchair_health" );
+	gSkillData.wheelchairDmgAttack = GetSkillCvar( "sk_wheelchair_dmg_attack" );
+
 	// Zombie
 	gSkillData.zombieHealth = GetSkillCvar( "sk_zombie_health" );
 	gSkillData.zombieDmgOneSlash = GetSkillCvar( "sk_zombie_dmg_one_slash" );
 	gSkillData.zombieDmgBothSlash = GetSkillCvar( "sk_zombie_dmg_both_slash" );
+
+	// Zombie2
+	gSkillData.zombie2Health = GetSkillCvar( "sk_zombie2_health" );
+	gSkillData.zombie2DmgOneSlash = GetSkillCvar( "sk_zombie2_dmg_one_slash" );
+	gSkillData.zombie2DmgBothSlash = GetSkillCvar( "sk_zombie2_dmg_both_slash" );
+
+	// Zombie3
+	gSkillData.zombie3Health = GetSkillCvar( "sk_zombie3_health" );
+	gSkillData.zombie3DmgOneSlash = GetSkillCvar( "sk_zombie3_dmg_one_slash" );
+	gSkillData.zombie3DmgBothSlash = GetSkillCvar( "sk_zombie3_dmg_both_slash" );
 
 	//Turret
 	gSkillData.turretHealth = GetSkillCvar( "sk_turret_health" );
@@ -230,46 +244,38 @@ void CGameRules::RefreshSkillData ( void )
 
 	// PLAYER WEAPONS
 
-	// Crowbar whack
-	gSkillData.plrDmgCrowbar = GetSkillCvar( "sk_plr_crowbar" );
+	// Knife slash
+	gSkillData.plrDmgKnife = GetSkillCvar( "sk_plr_knife" );
+
+	// Hammer whack
+	gSkillData.plrDmgHammer = GetSkillCvar( "sk_plr_hammer" );
+
+	// Axe slash
+	gSkillData.plrDmgAxe = GetSkillCvar( "sk_plr_axe" );
 
 	// Glock Round
-	gSkillData.plrDmg9MM = GetSkillCvar( "sk_plr_9mm_bullet" );
+	gSkillData.plrDmgGlock = GetSkillCvar( "sk_plr_glock" );
 
-	// 357 Round
-	gSkillData.plrDmg357 = GetSkillCvar( "sk_plr_357_bullet" );
+	// Beretta round
+	gSkillData.plrDmgBeretta = GetSkillCvar( "sk_plr_beretta" );
 
-	// MP5 Round
-	gSkillData.plrDmgMP5 = GetSkillCvar( "sk_plr_9mmAR_bullet" );
+	// P228 round
+	gSkillData.plrDmgP228 = GetSkillCvar( "sk_plr_p228" );
 
-	// M203 grenade
-	gSkillData.plrDmgM203Grenade = GetSkillCvar( "sk_plr_9mmAR_grenade" );
+	// Revolver round
+	gSkillData.plrDmgRevolver = GetSkillCvar( "sk_plr_revolver" );
+
+	// Uzi round
+	gSkillData.plrDmgUzi = GetSkillCvar( "sk_plr_uzi" );
+
+	// MP5K Round
+	gSkillData.plrDmgMP5K = GetSkillCvar( "sk_plr_9mmAR_bullet" );
+
+	// Deagle round
+	gSkillData.plrDmgDeagle = GetSkillCvar( "sk_plr_deagle" );
 
 	// Shotgun buckshot
 	gSkillData.plrDmgBuckshot = GetSkillCvar( "sk_plr_buckshot" );
-
-	// Crossbow
-	gSkillData.plrDmgCrossbowClient = GetSkillCvar( "sk_plr_xbow_bolt_client" );
-	gSkillData.plrDmgCrossbowMonster = GetSkillCvar( "sk_plr_xbow_bolt_monster" );
-
-	// RPG
-	gSkillData.plrDmgRPG = GetSkillCvar( "sk_plr_rpg" );
-
-	// Gauss gun
-	gSkillData.plrDmgGauss = GetSkillCvar( "sk_plr_gauss" );
-
-	// Egon Gun
-	gSkillData.plrDmgEgonNarrow = GetSkillCvar( "sk_plr_egon_narrow" );
-	gSkillData.plrDmgEgonWide = GetSkillCvar( "sk_plr_egon_wide" );
-
-	// Hand Grendade
-	gSkillData.plrDmgHandGrenade = GetSkillCvar( "sk_plr_hand_grenade" );
-
-	// Satchel Charge
-	gSkillData.plrDmgSatchel = GetSkillCvar( "sk_plr_satchel" );
-
-	// Tripmine
-	gSkillData.plrDmgTripmine = GetSkillCvar( "sk_plr_tripmine" );
 
 	// MONSTER WEAPONS
 	gSkillData.monDmg12MM = GetSkillCvar( "sk_12mm_bullet" );
@@ -278,14 +284,6 @@ void CGameRules::RefreshSkillData ( void )
 
 	// MONSTER HORNET
 	gSkillData.monDmgHornet = GetSkillCvar( "sk_hornet_dmg" );
-
-	// PLAYER HORNET
-// Up to this point, player hornet damage and monster hornet damage were both using
-// monDmgHornet to determine how much damage to do. In tuning the hivehand, we now need
-// to separate player damage and monster hivehand damage. Since it's so late in the project, we've
-// added plrDmgHornet to the SKILLDATA struct, but not to the engine CVar list, so it's inaccesible
-// via SKILLS.CFG. Any player hivehand tuning must take place in the code. (sjb)
-	gSkillData.plrDmgHornet = 7;
 
 	// HEALTH/CHARGE
 	gSkillData.suitchargerCapacity = GetSkillCvar( "sk_suitcharger" );

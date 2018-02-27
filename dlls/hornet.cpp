@@ -99,15 +99,8 @@ void CHornet::Spawn( void )
 	if( !pSoundEnt )
 		pSoundEnt = edict();
 
-	if( !FNullEnt( pev->owner ) && ( pev->owner->v.flags & FL_CLIENT ) )
-	{
-		pev->dmg = gSkillData.plrDmgHornet;
-	}
-	else
-	{
-		// no real owner, or owner isn't a client. 
-		pev->dmg = gSkillData.monDmgHornet;
-	}
+	// no real owner, or owner isn't a client. 
+	pev->dmg = gSkillData.monDmgHornet;
 
 	SetNextThink( 0.1 );
 	ResetSequenceInfo();

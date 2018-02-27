@@ -1647,6 +1647,7 @@ void CSprite::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useTy
 #define SF_ENVMODEL_OFF			1
 #define SF_ENVMODEL_DROPTOFLOOR	2
 #define SF_ENVMODEL_SOLID		4
+#define SF_ENVMODEL_REPEATABLE		16
 
 class CEnvModel : public CBaseAnimating
 {
@@ -1668,6 +1669,7 @@ class CEnvModel : public CBaseAnimating
 	string_t m_iszSequence_Off;
 	int m_iAction_On;
 	int m_iAction_Off;
+	int m_iAnim_Speed;
 };
 
 TYPEDESCRIPTION CEnvModel::m_SaveData[] =
@@ -1703,6 +1705,11 @@ void CEnvModel::KeyValue( KeyValueData *pkvd )
 		m_iAction_Off = atoi(pkvd->szValue);
 		pkvd->fHandled = TRUE;
 	}
+	else if (FStrEq(pkvd->szKeyName, "m_iAnim_Speed"))
+	{
+		m_iAnim_Speed = atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
 	else
 	{
 		CBaseAnimating::KeyValue( pkvd );
@@ -1727,6 +1734,16 @@ void CEnvModel :: Spawn( void )
 		DROP_TO_FLOOR ( ENT(pev) );
 	}
 
+	if( pev->spawnflags & SF_ENVMODEL_REPEATABLE )
+	{
+		pev->sequence = 1;
+		pev->animtime = gpGlobals->time;
+		if( m_iAnim_Speed > 0 )
+			pev->framerate = m_iAnim_Speed;
+		else
+			pev->framerate = 1.0;
+	}
+
 	SetBoneController( 0, 0 );
 	SetBoneController( 1, 0 );
 
@@ -1737,7 +1754,7 @@ void CEnvModel :: Spawn( void )
 
 void CEnvModel::Precache( void )
 {
-	PRECACHE_MODEL( (char *)STRING(pev->model) );
+	PRECACHE_MODEL( STRING(pev->model) );
 }
 
 STATE CEnvModel::GetState( void )
@@ -1767,6 +1784,9 @@ void CEnvModel::Think( void )
 	int iTemp;
 
 //	ALERT(at_console, "env_model Think fr=%f\n", pev->framerate);
+
+	if( pev->spawnflags & SF_ENVMODEL_REPEATABLE )
+		return;
 
 	StudioFrameAdvance ( ); // set m_fSequenceFinished if necessary
 
@@ -4571,5 +4591,107 @@ void CParticle::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE use
 	{
 		pev->body = !pev->body;
 		//ALERT(at_console, "Setting body %d\n", pev->body);
+	}
+}
+
+//=========================================================
+//  env_hidehud, Hide/Unhide the HUD
+//=========================================================
+class CEnvHideHUD : public CPointEntity
+{
+public:
+	void	Spawn( void );
+	void	Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+};
+
+LINK_ENTITY_TO_CLASS( env_drawbars, CEnvHideHUD )
+LINK_ENTITY_TO_CLASS( env_hidehud, CEnvHideHUD )
+LINK_ENTITY_TO_CLASS( env_drawstatic, CEnvHideHUD )
+
+void CEnvHideHUD::Spawn( void )
+{
+	pev->effects		= EF_NODRAW;
+	pev->solid		= SOLID_NOT;
+	pev->movetype		= MOVETYPE_NONE;
+}
+
+void CEnvHideHUD::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
+{
+	CBasePlayer *pPlayer = NULL;
+
+	if( pActivator && pActivator->IsPlayer() )
+		pPlayer = (CBasePlayer *)pActivator;
+	else
+		pPlayer = (CBasePlayer *)CBaseEntity::Instance( g_engfuncs.pfnPEntityOfEntIndex( 1 ) );
+
+	if( pPlayer )
+	{
+		if( FClassnameIs( pev, "env_drawbars" ) )
+		{
+			if( pPlayer->m_iHideHUD == HIDEHUD_BLACKBARS )
+				ClearBits( pPlayer->m_iHideHUD, HIDEHUD_BLACKBARS );
+			else
+				SetBits( pPlayer->m_iHideHUD, HIDEHUD_BLACKBARS );
+		}
+		else if( FClassnameIs( pev, "env_hidehud" ) )
+		{
+			if( pPlayer->m_iHideHUD == HIDEHUD_ALL_EXCLUDEMESSAGE )
+				ClearBits( pPlayer->m_iHideHUD, HIDEHUD_ALL_EXCLUDEMESSAGE );
+			else
+				SetBits( pPlayer->m_iHideHUD, HIDEHUD_ALL_EXCLUDEMESSAGE );
+		}
+		else if( FClassnameIs( pev, "env_drawstatic" ) )
+		{
+			if( pPlayer->m_iHideHUD == HIDEHUD_NOISEEFFECT )
+				ClearBits( pPlayer->m_iHideHUD, HIDEHUD_NOISEEFFECT );
+			else
+				SetBits( pPlayer->m_iHideHUD, HIDEHUD_NOISEEFFECT );
+		}
+	}
+}
+
+class CEnvGameBeaten : public CPointEntity
+{
+public:
+	void	Spawn( void );
+	void	Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+};
+
+LINK_ENTITY_TO_CLASS( env_gamebeaten1, CEnvGameBeaten );
+LINK_ENTITY_TO_CLASS( env_gamebeaten2, CEnvGameBeaten );
+LINK_ENTITY_TO_CLASS( env_gamebeaten3, CEnvGameBeaten );
+LINK_ENTITY_TO_CLASS( env_gamebeaten4, CEnvGameBeaten );
+
+void CEnvGameBeaten::Spawn( void )
+{
+	pev->effects		= EF_NODRAW;
+	pev->solid		= SOLID_NOT;
+	pev->movetype		= MOVETYPE_NONE;
+}
+
+void CEnvGameBeaten::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
+{
+	CBaseEntity *pPlayer = NULL;
+
+	if( pActivator && pActivator->IsPlayer() )
+		pPlayer = pActivator;
+	else
+		pPlayer = CBaseEntity::Instance( g_engfuncs.pfnPEntityOfEntIndex( 1 ) );
+
+	if( pPlayer )
+	{
+		FILE *fp;
+		char filename[32];
+		const char *pGameBeatenNum = STRING( pev->classname );
+
+		pGameBeatenNum += ( strlen( pGameBeatenNum ) - 1 );
+		sprintf( filename, "gmgeneral%c.aomdc", *pGameBeatenNum );
+
+		fp = fopen( filename, "wt" );
+
+		if( !fp ) return;
+
+		fprintf( fp, "Beaten Ending%c = 1", *pGameBeatenNum );
+		fclose( fp );
 	}
 }

@@ -857,6 +857,7 @@ void ClientPrecache( void )
 	// setup precaches always needed
 	PRECACHE_SOUND( "player/sprayer.wav" );			// spray paint sound for PreAlpha
 
+	PRECACHE_SOUND( "davidbad/thunder_hit.wav" );
 	// PRECACHE_SOUND( "player/pl_jumpland2.wav" );		// UNDONE: play 2x step sound
 
 	PRECACHE_SOUND( "player/pl_fallpain2.wav" );
@@ -1797,12 +1798,9 @@ void UpdateClientData( const struct edict_s *ent, int sendweapons, struct client
 			cd->fuser3 = pl->m_flAmmoStartCharge;
 			cd->vuser1.x = pl->ammo_9mm;
 			cd->vuser1.y = pl->ammo_357;
-			cd->vuser1.z = pl->ammo_argrens;
-			cd->ammo_nails = pl->ammo_bolts;
+			cd->vuser1.z = pl->ammo_9mmar;
+			cd->ammo_nails = pl->ammo_50ae;
 			cd->ammo_shells = pl->ammo_buckshot;
-			cd->ammo_rockets = pl->ammo_rockets;
-			cd->ammo_cells = pl->ammo_uranium;
-			cd->vuser2.x = pl->ammo_hornets;
 
 			if( pl->m_pActiveItem )
 			{
@@ -1819,12 +1817,6 @@ void UpdateClientData( const struct edict_s *ent, int sendweapons, struct client
 					cd->vuser4.x = gun->m_iPrimaryAmmoType;
 					cd->vuser4.y = pl->m_rgAmmo[gun->m_iPrimaryAmmoType];
 					cd->vuser4.z = pl->m_rgAmmo[gun->m_iSecondaryAmmoType];
-
-					if( pl->m_pActiveItem->m_iId == WEAPON_RPG )
-					{
-						cd->vuser2.y = ( (CRpg *)pl->m_pActiveItem )->m_fSpotActive;
-						cd->vuser2.z = ( (CRpg *)pl->m_pActiveItem )->m_cActiveRockets;
-					}
 				}
 			}
 		}

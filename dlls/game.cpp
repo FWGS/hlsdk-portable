@@ -31,7 +31,6 @@ cvar_t friendlyfire	= { "mp_friendlyfire","0", FCVAR_SERVER };
 cvar_t falldamage	= { "mp_falldamage","0", FCVAR_SERVER };
 cvar_t weaponstay	= { "mp_weaponstay","0", FCVAR_SERVER };
 cvar_t selfgauss	= { "mp_selfgauss", "1", FCVAR_SERVER };
-cvar_t satchelfix	= { "mp_satchelfix", "0", FCVAR_SERVER };
 cvar_t forcerespawn	= { "mp_forcerespawn","1", FCVAR_SERVER };
 cvar_t flashlight	= { "mp_flashlight","0", FCVAR_SERVER };
 cvar_t aimcrosshair	= { "mp_autocrosshair","1", FCVAR_SERVER };
@@ -40,6 +39,7 @@ cvar_t teamlist		= { "mp_teamlist","hgrunt;scientist", FCVAR_SERVER };
 cvar_t teamoverride	= { "mp_teamoverride","1" };
 cvar_t defaultteam	= { "mp_defaultteam","0" };
 cvar_t allowmonsters	= { "mp_allowmonsters","0", FCVAR_SERVER };
+cvar_t infiniteflashlight = { "sv_infiniteflashlight", "0", FCVAR_SERVER };
 cvar_t bhopcap		= { "mp_bhopcap", "1", FCVAR_SERVER };
 
 cvar_t	impulsetarget={"sohl_impulsetarget","0", FCVAR_SERVER }; //LRC - trigger ents manually
@@ -250,6 +250,15 @@ cvar_t	sk_snark_dmg_pop1 = {"sk_snark_dmg_pop1","0"};
 cvar_t	sk_snark_dmg_pop2 = {"sk_snark_dmg_pop2","0"};
 cvar_t	sk_snark_dmg_pop3 = {"sk_snark_dmg_pop3","0"};
 
+// Wheelchair Monster
+cvar_t	sk_wheelchair_health1 = {"sk_wheelchair_health1","0"};
+cvar_t	sk_wheelchair_health2 = {"sk_wheelchair_health2","0"};
+cvar_t	sk_wheelchair_health3 = {"sk_wheelchair_health3","0"};
+
+cvar_t	sk_wheelchair_dmg_attack1 = {"sk_wheelchair_dmg_attack1","0"};
+cvar_t	sk_wheelchair_dmg_attack2 = {"sk_wheelchair_dmg_attack2","0"};
+cvar_t	sk_wheelchair_dmg_attack3 = {"sk_wheelchair_dmg_attack3","0"};
+
 // Zombie
 cvar_t	sk_zombie_health1 = {"sk_zombie_health1","0"};
 cvar_t	sk_zombie_health2 = {"sk_zombie_health2","0"};
@@ -262,6 +271,32 @@ cvar_t	sk_zombie_dmg_one_slash3 = {"sk_zombie_dmg_one_slash3","0"};
 cvar_t	sk_zombie_dmg_both_slash1 = {"sk_zombie_dmg_both_slash1","0"};
 cvar_t	sk_zombie_dmg_both_slash2 = {"sk_zombie_dmg_both_slash2","0"};
 cvar_t	sk_zombie_dmg_both_slash3 = {"sk_zombie_dmg_both_slash3","0"};
+
+// Zombie2
+cvar_t	sk_zombie2_health1 = {"sk_zombie2_health1","0"};
+cvar_t	sk_zombie2_health2 = {"sk_zombie2_health2","0"};
+cvar_t	sk_zombie2_health3 = {"sk_zombie2_health3","0"};
+
+cvar_t	sk_zombie2_dmg_one_slash1 = {"sk_zombie2_dmg_one_slash1","0"};
+cvar_t	sk_zombie2_dmg_one_slash2 = {"sk_zombie2_dmg_one_slash2","0"};
+cvar_t	sk_zombie2_dmg_one_slash3 = {"sk_zombie2_dmg_one_slash3","0"};
+
+cvar_t	sk_zombie2_dmg_both_slash1 = {"sk_zombie2_dmg_both_slash1","0"};
+cvar_t	sk_zombie2_dmg_both_slash2 = {"sk_zombie2_dmg_both_slash2","0"};
+cvar_t	sk_zombie2_dmg_both_slash3 = {"sk_zombie2_dmg_both_slash3","0"};
+
+// Zombie3
+cvar_t	sk_zombie3_health1 = {"sk_zombie3_health1","0"};
+cvar_t	sk_zombie3_health2 = {"sk_zombie3_health2","0"};
+cvar_t	sk_zombie3_health3 = {"sk_zombie3_health3","0"};
+
+cvar_t	sk_zombie3_dmg_one_slash1 = {"sk_zombie3_dmg_one_slash1","0"};
+cvar_t	sk_zombie3_dmg_one_slash2 = {"sk_zombie3_dmg_one_slash2","0"};
+cvar_t	sk_zombie3_dmg_one_slash3 = {"sk_zombie3_dmg_one_slash3","0"};
+
+cvar_t	sk_zombie3_dmg_both_slash1 = {"sk_zombie3_dmg_both_slash1","0"};
+cvar_t	sk_zombie3_dmg_both_slash2 = {"sk_zombie3_dmg_both_slash2","0"};
+cvar_t	sk_zombie3_dmg_both_slash3 = {"sk_zombie3_dmg_both_slash3","0"};
 
 //Turret
 cvar_t	sk_turret_health1 = {"sk_turret_health1","0"};
@@ -280,88 +315,60 @@ cvar_t	sk_sentry_health3 = {"sk_sentry_health3","0"};
 
 // PLAYER WEAPONS
 
-// Crowbar whack
-cvar_t	sk_plr_crowbar1 = {"sk_plr_crowbar1","0"};
-cvar_t	sk_plr_crowbar2 = {"sk_plr_crowbar2","0"};
-cvar_t	sk_plr_crowbar3 = {"sk_plr_crowbar3","0"};
+// Knife slash
+cvar_t	sk_plr_knife1 = {"sk_plr_knife1","0"};
+cvar_t	sk_plr_knife2 = {"sk_plr_knife2","0"};
+cvar_t	sk_plr_knife3 = {"sk_plr_knife3","0"};
+
+// Hammer whack
+cvar_t	sk_plr_hammer1 = {"sk_plr_hammer1","0"};
+cvar_t	sk_plr_hammer2 = {"sk_plr_hammer2","0"};
+cvar_t	sk_plr_hammer3 = {"sk_plr_hammer3","0"};
+
+// Axe slash
+cvar_t	sk_plr_axe1 = {"sk_plr_axe1","0"};
+cvar_t	sk_plr_axe2 = {"sk_plr_axe2","0"};
+cvar_t	sk_plr_axe3 = {"sk_plr_axe3","0"};
 
 // Glock Round
-cvar_t	sk_plr_9mm_bullet1 = {"sk_plr_9mm_bullet1","0"};
-cvar_t	sk_plr_9mm_bullet2 = {"sk_plr_9mm_bullet2","0"};
-cvar_t	sk_plr_9mm_bullet3 = {"sk_plr_9mm_bullet3","0"};
+cvar_t	sk_plr_glock1 = {"sk_plr_glock1","0"};
+cvar_t	sk_plr_glock2 = {"sk_plr_glock2","0"};
+cvar_t	sk_plr_glock3 = {"sk_plr_glock3","0"};
 
-// 357 Round
-cvar_t	sk_plr_357_bullet1 = {"sk_plr_357_bullet1","0"};
-cvar_t	sk_plr_357_bullet2 = {"sk_plr_357_bullet2","0"};
-cvar_t	sk_plr_357_bullet3 = {"sk_plr_357_bullet3","0"};
+// Beretta round
+cvar_t	sk_plr_beretta1 = {"sk_plr_beretta1","0"};
+cvar_t	sk_plr_beretta2 = {"sk_plr_beretta2","0"};
+cvar_t	sk_plr_beretta3 = {"sk_plr_beretta3","0"};
 
-// MP5 Round
+// P228 round
+cvar_t	sk_plr_p2281 = {"sk_plr_p2281","0"};
+cvar_t	sk_plr_p2282 = {"sk_plr_p2282","0"};
+cvar_t	sk_plr_p2283 = {"sk_plr_p2283","0"};
+
+// Revolver round
+cvar_t	sk_plr_revolver1 = {"sk_plr_revolver1","0"};
+cvar_t	sk_plr_revolver2 = {"sk_plr_revolver2","0"};
+cvar_t	sk_plr_revolver3 = {"sk_plr_revolver3","0"};
+
+// Uzi round
+cvar_t	sk_plr_uzi1 = {"sk_plr_uzi1","0"};
+cvar_t	sk_plr_uzi2 = {"sk_plr_uzi2","0"};
+cvar_t	sk_plr_uzi3 = {"sk_plr_uzi3","0"};
+
+// MP5K Round
 cvar_t	sk_plr_9mmAR_bullet1 = {"sk_plr_9mmAR_bullet1","0"};
 cvar_t	sk_plr_9mmAR_bullet2 = {"sk_plr_9mmAR_bullet2","0"};
 cvar_t	sk_plr_9mmAR_bullet3 = {"sk_plr_9mmAR_bullet3","0"};
 
-
-// M203 grenade
-cvar_t	sk_plr_9mmAR_grenade1 = {"sk_plr_9mmAR_grenade1","0"};
-cvar_t	sk_plr_9mmAR_grenade2 = {"sk_plr_9mmAR_grenade2","0"};
-cvar_t	sk_plr_9mmAR_grenade3 = {"sk_plr_9mmAR_grenade3","0"};
-
+// Deagle round
+cvar_t sk_plr_deagle1 = {"sk_plr_deagle1","0"};
+cvar_t sk_plr_deagle2 = {"sk_plr_deagle2","0"};
+cvar_t sk_plr_deagle3 = {"sk_plr_deagle3","0"};
 
 // Shotgun buckshot
 cvar_t	sk_plr_buckshot1 = {"sk_plr_buckshot1","0"};
 cvar_t	sk_plr_buckshot2 = {"sk_plr_buckshot2","0"};
 cvar_t	sk_plr_buckshot3 = {"sk_plr_buckshot3","0"};
-
-
-// Crossbow
-cvar_t	sk_plr_xbow_bolt_client1 = {"sk_plr_xbow_bolt_client1","0"};
-cvar_t	sk_plr_xbow_bolt_client2 = {"sk_plr_xbow_bolt_client2","0"};
-cvar_t	sk_plr_xbow_bolt_client3 = {"sk_plr_xbow_bolt_client3","0"};
-
-cvar_t	sk_plr_xbow_bolt_monster1 = {"sk_plr_xbow_bolt_monster1","0"};
-cvar_t	sk_plr_xbow_bolt_monster2 = {"sk_plr_xbow_bolt_monster2","0"};
-cvar_t	sk_plr_xbow_bolt_monster3 = {"sk_plr_xbow_bolt_monster3","0"};
-
-
-// RPG
-cvar_t	sk_plr_rpg1 = {"sk_plr_rpg1","0"};
-cvar_t	sk_plr_rpg2 = {"sk_plr_rpg2","0"};
-cvar_t	sk_plr_rpg3 = {"sk_plr_rpg3","0"};
-
-
-// Zero Point Generator
-cvar_t	sk_plr_gauss1 = {"sk_plr_gauss1","0"};
-cvar_t	sk_plr_gauss2 = {"sk_plr_gauss2","0"};
-cvar_t	sk_plr_gauss3 = {"sk_plr_gauss3","0"};
-
-
-// Tau Cannon
-cvar_t	sk_plr_egon_narrow1 = {"sk_plr_egon_narrow1","0"};
-cvar_t	sk_plr_egon_narrow2 = {"sk_plr_egon_narrow2","0"};
-cvar_t	sk_plr_egon_narrow3 = {"sk_plr_egon_narrow3","0"};
-
-cvar_t	sk_plr_egon_wide1 = {"sk_plr_egon_wide1","0"};
-cvar_t	sk_plr_egon_wide2 = {"sk_plr_egon_wide2","0"};
-cvar_t	sk_plr_egon_wide3 = {"sk_plr_egon_wide3","0"};
-
-
-// Hand Grendade
-cvar_t	sk_plr_hand_grenade1 = {"sk_plr_hand_grenade1","0"};
-cvar_t	sk_plr_hand_grenade2 = {"sk_plr_hand_grenade2","0"};
-cvar_t	sk_plr_hand_grenade3 = {"sk_plr_hand_grenade3","0"};
-
-
-// Satchel Charge
-cvar_t	sk_plr_satchel1	= {"sk_plr_satchel1","0"};
-cvar_t	sk_plr_satchel2	= {"sk_plr_satchel2","0"};
-cvar_t	sk_plr_satchel3	= {"sk_plr_satchel3","0"};
-
-
-// Tripmine
-cvar_t	sk_plr_tripmine1 = {"sk_plr_tripmine1","0"};
-cvar_t	sk_plr_tripmine2 = {"sk_plr_tripmine2","0"};
-cvar_t	sk_plr_tripmine3 = {"sk_plr_tripmine3","0"};
-
 
 // WORLD WEAPONS
 cvar_t	sk_12mm_bullet1 = {"sk_12mm_bullet1","0"};
@@ -472,7 +479,6 @@ void GameDLLInit( void )
 	CVAR_REGISTER( &falldamage );
 	CVAR_REGISTER( &weaponstay );
 	CVAR_REGISTER( &selfgauss );
-	CVAR_REGISTER( &satchelfix );
 	CVAR_REGISTER( &forcerespawn );
 	CVAR_REGISTER( &flashlight );
 	CVAR_REGISTER( &aimcrosshair );
@@ -481,8 +487,9 @@ void GameDLLInit( void )
 	CVAR_REGISTER( &teamoverride );
 	CVAR_REGISTER( &defaultteam );
 	CVAR_REGISTER( &allowmonsters );
-	CVAR_REGISTER (&impulsetarget); //LRC
-	CVAR_REGISTER (&mw_debug); //LRC
+	CVAR_REGISTER( &infiniteflashlight );
+	CVAR_REGISTER( &impulsetarget ); //LRC
+	CVAR_REGISTER( &mw_debug ); //LRC
 	CVAR_REGISTER( &bhopcap );
 
 	CVAR_REGISTER( &mp_chattime );
@@ -676,6 +683,15 @@ void GameDLLInit( void )
 	CVAR_REGISTER( &sk_snark_dmg_pop2 );// {"sk_snark_dmg_pop2","0"};
 	CVAR_REGISTER( &sk_snark_dmg_pop3 );// {"sk_snark_dmg_pop3","0"};
 
+	// Wheelchair Monster
+	CVAR_REGISTER( &sk_wheelchair_health1 );// {"sk_wheelchair_health1","0"};
+	CVAR_REGISTER( &sk_wheelchair_health2 );// {"sk_wheelchair_health2","0"};
+	CVAR_REGISTER( &sk_wheelchair_health3 );// {"sk_wheelchair_health3","0"};
+
+	CVAR_REGISTER( &sk_wheelchair_dmg_attack1 );// {"sk_wheelchair_dmg_attack1","0"};
+	CVAR_REGISTER( &sk_wheelchair_dmg_attack2 );// {"sk_wheelchair_dmg_attack2","0"};
+	CVAR_REGISTER( &sk_wheelchair_dmg_attack3 );// {"sk_wheelchair_dmg_attack3","0"};
+
 	// Zombie
 	CVAR_REGISTER( &sk_zombie_health1 );// {"sk_zombie_health1","0"};
 	CVAR_REGISTER( &sk_zombie_health2 );// {"sk_zombie_health3","0"};
@@ -688,6 +704,32 @@ void GameDLLInit( void )
 	CVAR_REGISTER( &sk_zombie_dmg_both_slash1 );// {"sk_zombie_dmg_both_slash1","0"};
 	CVAR_REGISTER( &sk_zombie_dmg_both_slash2 );// {"sk_zombie_dmg_both_slash2","0"};
 	CVAR_REGISTER( &sk_zombie_dmg_both_slash3 );// {"sk_zombie_dmg_both_slash3","0"};
+
+	// Zombie2
+	CVAR_REGISTER( &sk_zombie2_health1 );// {"sk_zombie2_health1","0"};
+	CVAR_REGISTER( &sk_zombie2_health2 );// {"sk_zombie2_health2","0"};
+	CVAR_REGISTER( &sk_zombie2_health3 );// {"sk_zombie2_health3","0"};
+
+	CVAR_REGISTER( &sk_zombie2_dmg_one_slash1 );// {"sk_zombie2_dmg_one_slash1","0"};
+	CVAR_REGISTER( &sk_zombie2_dmg_one_slash2 );// {"sk_zombie2_dmg_one_slash2","0"};
+	CVAR_REGISTER( &sk_zombie2_dmg_one_slash3 );// {"sk_zombie2_dmg_one_slash3","0"};
+
+	CVAR_REGISTER( &sk_zombie2_dmg_both_slash1 );// {"sk_zombie2_dmg_both_slash1","0"};
+	CVAR_REGISTER( &sk_zombie2_dmg_both_slash2 );// {"sk_zombie2_dmg_both_slash2","0"};
+	CVAR_REGISTER( &sk_zombie2_dmg_both_slash3 );// {"sk_zombie2_dmg_both_slash3","0"};
+
+	// Zombie3
+	CVAR_REGISTER( &sk_zombie3_health1 );// {"sk_zombie3_health1","0"};
+	CVAR_REGISTER( &sk_zombie3_health2 );// {"sk_zombie3_health2","0"};
+	CVAR_REGISTER( &sk_zombie3_health3 );// {"sk_zombie3_health3","0"};
+
+	CVAR_REGISTER( &sk_zombie3_dmg_one_slash1 );// {"sk_zombie3_dmg_one_slash1","0"};
+	CVAR_REGISTER( &sk_zombie3_dmg_one_slash2 );// {"sk_zombie3_dmg_one_slash2","0"};
+	CVAR_REGISTER( &sk_zombie3_dmg_one_slash3 );// {"sk_zombie3_dmg_one_slash3","0"};
+
+	CVAR_REGISTER( &sk_zombie3_dmg_both_slash1 );// {"sk_zombie3_dmg_both_slash1","0"};
+	CVAR_REGISTER( &sk_zombie3_dmg_both_slash2 );// {"sk_zombie3_dmg_both_slash2","0"};
+	CVAR_REGISTER( &sk_zombie3_dmg_both_slash3 );// {"sk_zombie3_dmg_both_slash3","0"};
 
 	//Turret
 	CVAR_REGISTER( &sk_turret_health1 );// {"sk_turret_health1","0"};
@@ -707,78 +749,60 @@ void GameDLLInit( void )
 
 	// PLAYER WEAPONS
 
-	// Crowbar whack
-	CVAR_REGISTER( &sk_plr_crowbar1 );// {"sk_plr_crowbar1","0"};
-	CVAR_REGISTER( &sk_plr_crowbar2 );// {"sk_plr_crowbar2","0"};
-	CVAR_REGISTER( &sk_plr_crowbar3 );// {"sk_plr_crowbar3","0"};
+	// Knife slash
+	CVAR_REGISTER( &sk_plr_knife1 );// {"sk_plr_knife1","0"};
+	CVAR_REGISTER( &sk_plr_knife2 );// {"sk_plr_knife2","0"};
+	CVAR_REGISTER( &sk_plr_knife3 );// {"sk_plr_knife3","0"};
+
+	// Hammer whack
+	CVAR_REGISTER( &sk_plr_hammer1 );// {"sk_plr_hammer1","0"};
+	CVAR_REGISTER( &sk_plr_hammer2 );// {"sk_plr_hammer2","0"};
+	CVAR_REGISTER( &sk_plr_hammer3 );// {"sk_plr_hammer3","0"};
+
+	// Axe slash
+	CVAR_REGISTER( &sk_plr_axe1 );// {"sk_plr_axe1","0"};
+	CVAR_REGISTER( &sk_plr_axe2 );// {"sk_plr_axe2","0"};
+	CVAR_REGISTER( &sk_plr_axe3 );// {"sk_plr_axe3","0"};
 
 	// Glock Round
-	CVAR_REGISTER( &sk_plr_9mm_bullet1 );// {"sk_plr_9mm_bullet1","0"};
-	CVAR_REGISTER( &sk_plr_9mm_bullet2 );// {"sk_plr_9mm_bullet2","0"};
-	CVAR_REGISTER( &sk_plr_9mm_bullet3 );// {"sk_plr_9mm_bullet3","0"};
+	CVAR_REGISTER( &sk_plr_glock1 );// {"sk_plr_glock1","0"};
+	CVAR_REGISTER( &sk_plr_glock2 );// {"sk_plr_glock2","0"};
+	CVAR_REGISTER( &sk_plr_glock3 );// {"sk_plr_glock3","0"};
 
-	// 357 Round
-	CVAR_REGISTER( &sk_plr_357_bullet1 );// {"sk_plr_357_bullet1","0"};
-	CVAR_REGISTER( &sk_plr_357_bullet2 );// {"sk_plr_357_bullet2","0"};
-	CVAR_REGISTER( &sk_plr_357_bullet3 );// {"sk_plr_357_bullet3","0"};
+	// Beretta round
+	CVAR_REGISTER( &sk_plr_beretta1 );// {"sk_plr_beretta1","0"};
+	CVAR_REGISTER( &sk_plr_beretta2 );// {"sk_plr_beretta2","0"};
+	CVAR_REGISTER( &sk_plr_beretta3 );// {"sk_plr_beretta3","0"};
 
-	// MP5 Round
+	// P228 round
+	CVAR_REGISTER( &sk_plr_p2281 );// {"sk_plr_p2281","0"};
+	CVAR_REGISTER( &sk_plr_p2282 );// {"sk_plr_p2282","0"};
+	CVAR_REGISTER( &sk_plr_p2283 );// {"sk_plr_p2283","0"};
+
+	// Revolver round
+	CVAR_REGISTER( &sk_plr_revolver1 );// {"sk_plr_revolver1","0"};
+	CVAR_REGISTER( &sk_plr_revolver2 );// {"sk_plr_revolver2","0"};
+	CVAR_REGISTER( &sk_plr_revolver3 );// {"sk_plr_revolver3","0"};
+
+	// Uzi round
+	CVAR_REGISTER( &sk_plr_uzi1 );// {"sk_plr_uzi1","0"};
+	CVAR_REGISTER( &sk_plr_uzi2 );// {"sk_plr_uzi2","0"};
+	CVAR_REGISTER( &sk_plr_uzi3 );// {"sk_plr_uzi3","0"};
+
+	// MP5K Round
 	CVAR_REGISTER( &sk_plr_9mmAR_bullet1 );// {"sk_plr_9mmAR_bullet1","0"};
 	CVAR_REGISTER( &sk_plr_9mmAR_bullet2 );// {"sk_plr_9mmAR_bullet2","0"};
 	CVAR_REGISTER( &sk_plr_9mmAR_bullet3 );// {"sk_plr_9mmAR_bullet3","0"};
 
-	// M203 grenade
-	CVAR_REGISTER( &sk_plr_9mmAR_grenade1 );// {"sk_plr_9mmAR_grenade1","0"};
-	CVAR_REGISTER( &sk_plr_9mmAR_grenade2 );// {"sk_plr_9mmAR_grenade2","0"};
-	CVAR_REGISTER( &sk_plr_9mmAR_grenade3 );// {"sk_plr_9mmAR_grenade3","0"};
+	// Deagle round
+	CVAR_REGISTER( &sk_plr_deagle1 );// {"sk_plr_deagle1","0"};
+	CVAR_REGISTER( &sk_plr_deagle2 );// {"sk_plr_deagle2","0"};
+	CVAR_REGISTER( &sk_plr_deagle3 );// {"sk_plr_deagle3","0"};
 
 	// Shotgun buckshot
 	CVAR_REGISTER( &sk_plr_buckshot1 );// {"sk_plr_buckshot1","0"};
 	CVAR_REGISTER( &sk_plr_buckshot2 );// {"sk_plr_buckshot2","0"};
 	CVAR_REGISTER( &sk_plr_buckshot3 );// {"sk_plr_buckshot3","0"};
-
-	// Crossbow
-	CVAR_REGISTER( &sk_plr_xbow_bolt_monster1 );// {"sk_plr_xbow_bolt1","0"};
-	CVAR_REGISTER( &sk_plr_xbow_bolt_monster2 );// {"sk_plr_xbow_bolt2","0"};
-	CVAR_REGISTER( &sk_plr_xbow_bolt_monster3 );// {"sk_plr_xbow_bolt3","0"};
-
-	CVAR_REGISTER( &sk_plr_xbow_bolt_client1 );// {"sk_plr_xbow_bolt1","0"};
-	CVAR_REGISTER( &sk_plr_xbow_bolt_client2 );// {"sk_plr_xbow_bolt2","0"};
-	CVAR_REGISTER( &sk_plr_xbow_bolt_client3 );// {"sk_plr_xbow_bolt3","0"};
-
-	// RPG
-	CVAR_REGISTER( &sk_plr_rpg1 );// {"sk_plr_rpg1","0"};
-	CVAR_REGISTER( &sk_plr_rpg2 );// {"sk_plr_rpg2","0"};
-	CVAR_REGISTER( &sk_plr_rpg3 );// {"sk_plr_rpg3","0"};
-
-	// Gauss Gun
-	CVAR_REGISTER( &sk_plr_gauss1 );// {"sk_plr_gauss1","0"};
-	CVAR_REGISTER( &sk_plr_gauss2 );// {"sk_plr_gauss2","0"};
-	CVAR_REGISTER( &sk_plr_gauss3 );// {"sk_plr_gauss3","0"};
-
-	// Egon Gun
-	CVAR_REGISTER( &sk_plr_egon_narrow1 );// {"sk_plr_egon_narrow1","0"};
-	CVAR_REGISTER( &sk_plr_egon_narrow2 );// {"sk_plr_egon_narrow2","0"};
-	CVAR_REGISTER( &sk_plr_egon_narrow3 );// {"sk_plr_egon_narrow3","0"};
-
-	CVAR_REGISTER( &sk_plr_egon_wide1 );// {"sk_plr_egon_wide1","0"};
-	CVAR_REGISTER( &sk_plr_egon_wide2 );// {"sk_plr_egon_wide2","0"};
-	CVAR_REGISTER( &sk_plr_egon_wide3 );// {"sk_plr_egon_wide3","0"};
-
-	// Hand Grendade
-	CVAR_REGISTER( &sk_plr_hand_grenade1 );// {"sk_plr_hand_grenade1","0"};
-	CVAR_REGISTER( &sk_plr_hand_grenade2 );// {"sk_plr_hand_grenade2","0"};
-	CVAR_REGISTER( &sk_plr_hand_grenade3 );// {"sk_plr_hand_grenade3","0"};
-
-	// Satchel Charge
-	CVAR_REGISTER( &sk_plr_satchel1 );// {"sk_plr_satchel1","0"};
-	CVAR_REGISTER( &sk_plr_satchel2 );// {"sk_plr_satchel2","0"};
-	CVAR_REGISTER( &sk_plr_satchel3 );// {"sk_plr_satchel3","0"};
-
-	// Tripmine
-	CVAR_REGISTER( &sk_plr_tripmine1 );// {"sk_plr_tripmine1","0"};
-	CVAR_REGISTER( &sk_plr_tripmine2 );// {"sk_plr_tripmine2","0"};
-	CVAR_REGISTER( &sk_plr_tripmine3 );// {"sk_plr_tripmine3","0"};
 
 	// WORLD WEAPONS
 	CVAR_REGISTER( &sk_12mm_bullet1 );// {"sk_12mm_bullet1","0"};

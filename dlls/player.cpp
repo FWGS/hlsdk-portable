@@ -69,8 +69,8 @@ extern CGraph WorldGraph;
 #define TRAIN_FAST		0x04
 #define TRAIN_BACK		0x05
 
-#define	FLASH_DRAIN_TIME	 1.2 //100 units/3 minutes
-#define	FLASH_CHARGE_TIME	 0.2 // 100 units/20 seconds  (seconds per unit)
+#define	FLASH_DRAIN_TIME	 0.12 //100 units/12 seconds
+#define	FLASH_CHARGE_TIME	 0.3 // 100 units/3 seconds  (seconds per unit)
 
 #ifdef XENWARRIOR
   float g_fEnvFadeTime = 0;    // flashlight can't be used until this time expires.
@@ -496,29 +496,6 @@ int CBasePlayer::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 	// keep track of amount of damage last sustained
 	m_lastDamageAmount = (int)flDamage;
 
-	// Armor. 
-	if( !( pev->flags & FL_GODMODE ) && pev->armorvalue && !( bitsDamageType & ( DMG_FALL | DMG_DROWN ) ) )// armor doesn't protect against fall or drown damage!
-	{
-		float flNew = flDamage * flRatio;
-
-		float flArmor;
-
-		flArmor = ( flDamage - flNew ) * flBonus;
-
-		// Does this use more armor than we have?
-		if( flArmor > pev->armorvalue )
-		{
-			flArmor = pev->armorvalue;
-			flArmor *= ( 1 / flBonus );
-			flNew = flDamage - flArmor;
-			pev->armorvalue = 0;
-		}
-		else
-			pev->armorvalue -= flArmor;
-
-		flDamage = flNew;
-	}
-
 	// this cast to INT is critical!!! If a player ends up with 0.5 health, the engine will get that
 	// as an int (zero) and think the player is dead! (this will incite a clientside screentilt, etc)
 	fTookDamage = CBaseMonster::TakeDamage( pevInflictor, pevAttacker, (int)flDamage, bitsDamageType );
@@ -857,9 +834,6 @@ void CBasePlayer::RemoveAllItems( BOOL removeSuit )
 	for( i = 0; i < MAX_AMMO_SLOTS; i++ )
 		m_rgAmmo[i] = 0;
 
-	if( satchelfix.value )
-		DeactivateSatchels( this );
-
 	UpdateClientData();
 	// send Selected Weapon Message to our client
 	MESSAGE_BEGIN( MSG_ONE, gmsgCurWeapon, NULL, pev );
@@ -906,7 +880,7 @@ void CBasePlayer::RemoveItems( int iWeaponMask, int i9mm, int i357, int iBuck, i
 	CBasePlayerItem *pCurrentItem;
 
 	// hornetgun is outside the spawnflags Worldcraft can set - handle it seperately.
-	if (iHornet)
+	/*if (iHornet)
 		iWeaponMask |= 1<<WEAPON_HORNETGUN;
 
 	RemoveAmmo("9mm", i9mm);
@@ -920,7 +894,7 @@ void CBasePlayer::RemoveItems( int iWeaponMask, int i9mm, int i357, int iBuck, i
 	RemoveAmmo("Snarks", iSnark);
 	RemoveAmmo("Trip Mine", iTrip);
 	RemoveAmmo("Hand Grenade", iGren);
-	RemoveAmmo("Hornets", iHornet);
+	RemoveAmmo("Hornets", iHornet);*/
 
 	for (i = 0; i < MAX_ITEM_TYPES; i++)
 	{
@@ -1079,6 +1053,8 @@ void CBasePlayer::Killed( entvars_t *pevAttacker, int iGib )
 		pev->effects |= EF_NODRAW;
 		return;
 	}
+
+	EnableControl( TRUE );
 
 	DeathSound();
 
@@ -1266,12 +1242,9 @@ void CBasePlayer::TabulateAmmo()
 {
 	ammo_9mm = AmmoInventory( GetAmmoIndex( "9mm" ) );
 	ammo_357 = AmmoInventory( GetAmmoIndex( "357" ) );
-	ammo_argrens = AmmoInventory( GetAmmoIndex( "ARgrenades" ) );
-	ammo_bolts = AmmoInventory( GetAmmoIndex( "bolts" ) );
+	ammo_9mmar = AmmoInventory( GetAmmoIndex( "9mmar" ) );
+	ammo_50ae = AmmoInventory( GetAmmoIndex( "50AE" ) );
 	ammo_buckshot = AmmoInventory( GetAmmoIndex( "buckshot" ) );
-	ammo_rockets = AmmoInventory( GetAmmoIndex( "rockets" ) );
-	ammo_uranium = AmmoInventory( GetAmmoIndex( "uranium" ) );
-	ammo_hornets = AmmoInventory( GetAmmoIndex( "Hornets" ) );
 }
 
 /*
@@ -2690,10 +2663,19 @@ void CBasePlayer::PostThink()
 	if( !IsAlive() )
 		goto pt_end;
 
-	#ifdef XENWARRIOR
 	if (FlashlightIsOn())
+	#ifdef XENWARRIOR
 		UTIL_ScreenFade(this, Vector(150, 20, 150), 0, 0, 100, FFADE_STAYOUT );
 	#endif
+	{
+		TraceResult tr;
+		Vector start = pev->origin + pev->view_ofs;
+		Vector end = start + gpGlobals->v_forward * 8192;
+
+		UTIL_MakeVectors( pev->angles );
+		UTIL_TraceLine( start, end, dont_ignore_monsters, edict(), &tr );
+		UTIL_MuzzleLight( tr.vecEndPos, 110.0f, 48, 48, 48, 0.1f, 100.0f );
+	}
 
 	// Handle Tank controlling
 	if( m_pTank != 0 )
@@ -3020,8 +3002,8 @@ void CBasePlayer::Spawn( void )
 	m_flNextAttack = UTIL_WeaponTimeBase();
 	StartSneaking();
 
-	m_iFlashBattery = 99;
-	m_flFlashLightTime = 1; // force first message
+	m_iFlashBattery = 0;
+	m_flFlashLightTime = 0; // force first message
 
 	// dont let uninitialized value here hurt the player
 	m_flFallVelocity = 0;
@@ -3102,7 +3084,7 @@ void CBasePlayer::Precache( void )
 
 	m_iClientBattery = -1;
 
-	m_flFlashLightTime = 1;
+	m_flFlashLightTime = 0;
 
 	m_iTrain |= TRAIN_NEW;
 
@@ -3501,7 +3483,7 @@ void CBasePlayer::FlashlightTurnOn( void )
 	}
 #endif
 
-	if( (pev->weapons & ( 1 << WEAPON_SUIT ) ) )
+	if( (pev->weapons & ( 1 << WEAPON_FLASHLIGHT ) ) )
 	{
 		EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, SOUND_FLASHLIGHT_ON, 1.0, ATTN_NORM, 0, PITCH_NORM );
 
@@ -3706,32 +3688,15 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 
 	case 101:
 		gEvilImpulse101 = TRUE;
-		GiveNamedItem( "item_suit" );
+		if( !( pev->weapons & ( 1 << WEAPON_SUIT ) ) )
+			GiveNamedItem( "item_suit" );
 		GiveNamedItem( "item_battery" );
-		GiveNamedItem( "weapon_crowbar" );
-		GiveNamedItem( "weapon_9mmhandgun" );
-		GiveNamedItem( "ammo_9mmclip" );
-		GiveNamedItem( "weapon_shotgun" );
-		GiveNamedItem( "ammo_buckshot" );
-		GiveNamedItem( "weapon_9mmAR" );
-		GiveNamedItem( "ammo_9mmAR" );
-		GiveNamedItem( "ammo_ARgrenades" );
-		GiveNamedItem( "weapon_handgrenade" );
-		GiveNamedItem( "weapon_tripmine" );
-#ifndef OEM_BUILD
-		GiveNamedItem( "weapon_357" );
-		GiveNamedItem( "ammo_357" );
-		GiveNamedItem( "weapon_crossbow" );
-		GiveNamedItem( "ammo_crossbow" );
-		GiveNamedItem( "weapon_egon" );
-		GiveNamedItem( "weapon_gauss" );
-		GiveNamedItem( "ammo_gaussclip" );
-		GiveNamedItem( "weapon_rpg" );
-		GiveNamedItem( "ammo_rpgclip" );
-		GiveNamedItem( "weapon_satchel" );
-		GiveNamedItem( "weapon_snark" );
-		GiveNamedItem( "weapon_hornetgun" );
-#endif
+		GiveNamedItem( "weapon_glock" );
+		GiveNamedItem( "ammo_glock" );
+		GiveNamedItem( "weapon_beretta" );
+		GiveNamedItem( "ammo_beretta" );
+		GiveNamedItem( "weapon_P228" );
+		GiveNamedItem( "ammo_P228" );
 		gEvilImpulse101 = FALSE;
 		break;
 	case 102:
@@ -4154,6 +4119,16 @@ void CBasePlayer::UpdateClientData( void )
 		InitStatusBar();
 	}
 
+	edict_t *pEnt = FIND_ENTITY_BY_CLASSNAME( 0, "weapon_gmgeneral" );
+	if( !FNullEnt( ENT( pEnt ) ) )
+	{
+		if( !UTIL_FileExists( "gmgeneral1.aomdc" ) || !UTIL_FileExists( "gmgeneral2.aomdc" )
+			|| !UTIL_FileExists( "gmgeneral3.aomdc" ) || !UTIL_FileExists( "gmgeneral4.aomdc" ) )
+		{
+			REMOVE_ENTITY( ENT( pEnt ) );
+		}
+	}
+
 	if( m_iHideHUD != m_iClientHideHUD )
 	{
 		MESSAGE_BEGIN( MSG_ONE, gmsgHideWeapon, NULL, pev );
@@ -4245,23 +4220,39 @@ void CBasePlayer::UpdateClientData( void )
 	// Update Flashlight
 	if( ( m_flFlashLightTime ) && ( m_flFlashLightTime <= gpGlobals->time ) )
 	{
-		if( FlashlightIsOn() )
+		if( pev->armorvalue == 100 )
+			m_iFlashBattery = 0;
+
+		if( FlashlightIsOn() && !infiniteflashlight.value )
 		{
 			if( m_iFlashBattery )
 			{
 				m_flFlashLightTime = FLASH_DRAIN_TIME + gpGlobals->time;
 				m_iFlashBattery--;
-
-				if( !m_iFlashBattery )
-					FlashlightTurnOff();
 			}
+			else if( !m_iFlashBattery && pev->armorvalue )
+			{
+				m_flFlashLightTime = FLASH_DRAIN_TIME + gpGlobals->time;
+				m_iFlashBattery = 99;
+				pev->armorvalue--;
+			}
+			else
+				FlashlightTurnOff();
 		}
 		else
 		{
-			if( m_iFlashBattery < 100 )
+			if( pev->armorvalue < 5 )
 			{
-				m_flFlashLightTime = FLASH_CHARGE_TIME + gpGlobals->time;
-				m_iFlashBattery++;
+				if( m_iFlashBattery < 100 )
+				{
+					m_flFlashLightTime = FLASH_CHARGE_TIME + gpGlobals->time;
+					m_iFlashBattery++;
+				}
+				else
+				{
+					pev->armorvalue++;
+					m_iFlashBattery = 0;
+				}
 			}
 			else
 				m_flFlashLightTime = 0;
@@ -4362,6 +4353,56 @@ void CBasePlayer::UpdateClientData( void )
 			WRITE_BYTE( g_bhopcap );
 		MESSAGE_END();
 	}
+}
+
+void CBasePlayer::ThunderAttack()
+{
+	EMIT_SOUND( ENT( pev ), CHAN_NETWORKVOICE_BASE, "davidbad/thunder_hit.wav", 1.0, ATTN_NORM );
+	Vector VecSrc = pev->origin + Vector( RANDOM_FLOAT( -1.0, 1.0 ), RANDOM_FLOAT( -1.0, 1.0 ), RANDOM_FLOAT( -1.0, 1.0 ) ) * 128;
+
+	pev->velocity = Vector( 0.0, 0.0, 0.2 );
+	pev->origin = pev->origin + pev->velocity;
+
+	MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
+		WRITE_BYTE( TE_BEAMENTPOINT );
+		WRITE_SHORT( entindex() );
+		WRITE_COORD( VecSrc.x );
+		WRITE_COORD( VecSrc.y );
+		WRITE_COORD( VecSrc.z );
+		WRITE_SHORT( g_sModelIndexLightning );
+		WRITE_BYTE( 0 ); // framestart
+		WRITE_BYTE( 10 ); // framerate
+		WRITE_BYTE( 3 ); // life
+		WRITE_BYTE( 150 );      // width
+		WRITE_BYTE( 80 );       // noise
+		WRITE_BYTE( 64 );       // r, g, b
+		WRITE_BYTE( 128 );      // r, g, b
+		WRITE_BYTE( 255 );      // r, g, b
+		WRITE_BYTE( 150 );      // brightness
+		WRITE_BYTE( 5 );        // speed
+	MESSAGE_END();
+
+	// blast circle
+	MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, pev->origin );
+	WRITE_BYTE( TE_BEAMCYLINDER );
+		WRITE_COORD( pev->origin.x );// coord coord coord (center position)
+		WRITE_COORD( pev->origin.y );
+		WRITE_COORD( pev->origin.z - 32.0f );
+		WRITE_COORD( pev->origin.x );// coord coord coord (axis and radius)
+		WRITE_COORD( pev->origin.y );
+		WRITE_COORD( pev->origin.z + 166.0f );
+		WRITE_SHORT( g_sModelIndexSmoke ); // short (sprite index)
+		WRITE_BYTE( 0 ); // byte (starting frame)
+		WRITE_BYTE( 0 ); // byte (frame rate in 0.1's)
+		WRITE_BYTE( 2 ); // byte (life in 0.1's)
+		WRITE_BYTE( 16 );       // byte (line width in 0.1's)
+		WRITE_BYTE( 0 );        // byte (noise amplitude in 0.01's)
+		WRITE_BYTE( 64 );       // byte,byte,byte (color)
+		WRITE_BYTE( 128 );
+		WRITE_BYTE( 255 );
+		WRITE_BYTE( 100 );      // byte (brightness)
+		WRITE_BYTE( 0 );        // byte (scroll speed in 0.1's)
+	MESSAGE_END();
 }
 
 //=========================================================
@@ -4676,14 +4717,8 @@ int CBasePlayer::GetCustomDecalFrames( void )
 // DropPlayerItem - drop the named item, or if no name,
 // the active item. 
 //=========================================================
-void CBasePlayer::DropPlayerItem( char *pszItemName )
+void CBasePlayer::DropPlayerItem( const char *pszItemName )
 {
-	if( !g_pGameRules->IsMultiplayer() || ( weaponstay.value > 0 ) )
-	{
-		// no dropping in single player.
-		return;
-	}
-
 	if( !strlen( pszItemName ) )
 	{
 		// if this string has no length, the client didn't type a name!
@@ -4728,7 +4763,8 @@ void CBasePlayer::DropPlayerItem( char *pszItemName )
 		if( pWeapon )
 		{
 			if( !g_pGameRules->GetNextBestWeapon( this, pWeapon ) )
-				return; // can't drop the item they asked for, may be our last item or something we can't holster
+				;
+				// return; // can't drop the item they asked for, may be our last item or something we can't holster
 
 			UTIL_MakeVectors( pev->angles ); 
 
@@ -4740,27 +4776,7 @@ void CBasePlayer::DropPlayerItem( char *pszItemName )
 			pWeaponBox->PackWeapon( pWeapon );
 			pWeaponBox->pev->velocity = gpGlobals->v_forward * 300 + gpGlobals->v_forward * 100;
 			
-			// drop half of the ammo for this weapon.
-			int iAmmoIndex;
-
-			iAmmoIndex = GetAmmoIndex( pWeapon->pszAmmo1() ); // ???
-
-			if( iAmmoIndex != -1 )
-			{
-				// this weapon weapon uses ammo, so pack an appropriate amount.
-				if( pWeapon->iFlags() & ITEM_FLAG_EXHAUSTIBLE )
-				{
-					// pack up all the ammo, this weapon is its own ammo type
-					pWeaponBox->PackAmmo( MAKE_STRING( pWeapon->pszAmmo1() ), m_rgAmmo[iAmmoIndex] );
-					m_rgAmmo[iAmmoIndex] = 0; 
-				}
-				else
-				{
-					// pack half of the ammo
-					pWeaponBox->PackAmmo( MAKE_STRING( pWeapon->pszAmmo1() ), m_rgAmmo[iAmmoIndex] / 2 );
-					m_rgAmmo[iAmmoIndex] /= 2; 
-				}
-			}
+			SET_MODEL( ENT( pWeaponBox->pev ), WorldWeaponModels[pWeapon->m_iId] );
 
 			return;// we're done, so stop searching with the FOR loop.
 		}

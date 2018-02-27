@@ -593,7 +593,7 @@ void CAGrunt::Spawn()
 
 	pev->solid = SOLID_SLIDEBOX;
 	pev->movetype = MOVETYPE_STEP;
-	m_bloodColor = BLOOD_COLOR_GREEN;
+	m_bloodColor = DONT_BLEED;
 	pev->effects = 0;
 	if (pev->health == 0)
 		pev->health = gSkillData.agruntHealth;
@@ -918,10 +918,10 @@ BOOL CAGrunt::FCanCheckAttacks( void )
 //=========================================================
 BOOL CAGrunt::CheckMeleeAttack1( float flDot, float flDist )
 {
-	if( HasConditions( bits_COND_SEE_ENEMY ) && flDist <= AGRUNT_MELEE_DIST && flDot >= 0.6 && m_hEnemy != 0 )
+	/*if( HasConditions( bits_COND_SEE_ENEMY ) && flDist <= AGRUNT_MELEE_DIST && flDot >= 0.6 && m_hEnemy != 0 )
 	{
 		return TRUE;
-	}
+	}*/
 	return FALSE;
 }
 
@@ -1117,10 +1117,10 @@ Schedule_t *CAGrunt::GetSchedule( void )
 				return GetScheduleOfType( SCHED_RANGE_ATTACK1 );
 			}
 
-			if( OccupySlot ( bits_SLOT_AGRUNT_CHASE ) )
+			/*if( OccupySlot ( bits_SLOT_AGRUNT_CHASE ) )
 			{
 				return GetScheduleOfType( SCHED_CHASE_ENEMY );
-			}
+			}*/
 
 			return GetScheduleOfType( SCHED_STANDOFF );
 		}

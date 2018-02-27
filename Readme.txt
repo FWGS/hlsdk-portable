@@ -1,0 +1,41 @@
+Afraid of Monsters Director's Cut recreation
+
+List of new entities:
+ammo_beretta
+ammo_deagle
+ammo_glock
+ammo_gmgeneral
+ammo_mp5k
+ammo_P228
+ammo_revolver
+ammo_uzi
+env_drawbars
+env_drawstatic
+env_gamebeaten1
+env_gamebeaten2
+env_gamebeaten3
+env_gamebeaten4
+env_hidehud
+flashlight_manager(Not implemented. It's crap.)
+func_lol
+item_flashlight
+lightning_effect_boss
+monster_david
+monster_ghost
+monster_lakeboss(Not implemented. Excluded from AoMDC release.)
+monster_wheelchair
+monster_zombie2
+monster_zombie3
+monster_zombie4
+weapon_Spear
+weapon_axe
+weapon_beretta
+weapon_deagle
+weapon_glock
+weapon_hammer
+weapon_knife
+weapon_mp5k
+weapon_P228
+weapon_revolver
+weapon_uzi
+weapon_gmgeneral

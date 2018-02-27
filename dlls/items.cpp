@@ -70,6 +70,9 @@ void CWorldItem::Spawn( void )
 	case 45: // ITEM_SUIT:
 		pEntity = CBaseEntity::Create( "item_suit", pev->origin, pev->angles );
 		break;
+	case 46: // ITEM_FLASHLIGHT:
+		pEntity = CBaseEntity::Create( "item_flashlight", pev->origin, pev->angles );
+		break;
 	}
 
 	if( !pEntity )
@@ -213,7 +216,7 @@ class CItemBattery : public CItem
 		if (pev->model)
 			SET_MODEL(ENT(pev), STRING(pev->model)); //LRC
 		else
-			SET_MODEL( ENT( pev ), "models/w_battery.mdl" );
+			SET_MODEL( ENT( pev ), "models/battery.mdl" );
 		CItem::Spawn();
 	}
 	void Precache( void )
@@ -221,7 +224,7 @@ class CItemBattery : public CItem
 		if (pev->model)
 			PRECACHE_MODEL(STRING(pev->model)); //LRC
 		else
-			PRECACHE_MODEL( "models/w_battery.mdl" );
+			PRECACHE_MODEL( "models/battery.mdl" );
 
 		if (pev->noise)
 			PRECACHE_SOUND( STRING(pev->noise) ); //LRC
@@ -235,8 +238,11 @@ class CItemBattery : public CItem
 			return FALSE;
 		}
 
+		if( !( pPlayer->m_afButtonPressed & IN_USE ) )
+			return FALSE;
+
 		if( ( pPlayer->pev->armorvalue < MAX_NORMAL_BATTERY ) &&
-			( pPlayer->pev->weapons & ( 1 << WEAPON_SUIT ) ) )
+			( pPlayer->pev->weapons & ( 1 << WEAPON_FLASHLIGHT ) ) )
 		{
 			int pct;
 			char szcharge[64];
@@ -318,6 +324,37 @@ class CItemSecurity : public CItem
 };
 
 LINK_ENTITY_TO_CLASS( item_security, CItemSecurity )
+
+class CItemFlashlight : public CItem
+{
+	void Spawn( void )
+	{
+		Precache();
+		SET_MODEL( ENT( pev ), "models/w_flashlight.mdl" );
+		CItem::Spawn();
+	}
+	void Precache( void )
+	{
+		PRECACHE_MODEL( "models/w_flashlight.mdl" );
+		PRECACHE_SOUND( "items/gunpickup2.wav" );
+	}
+	BOOL MyTouch(CBasePlayer *pPlayer)
+	{
+		if( !( pPlayer->m_afButtonPressed & IN_USE ) )
+			return FALSE;
+
+		if( pPlayer->pev->weapons & ( 1 << WEAPON_FLASHLIGHT ) )
+			return FALSE;
+
+		EMIT_SOUND( pPlayer->edict(), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM );
+
+		pPlayer->pev->weapons |= ( 1 << WEAPON_FLASHLIGHT );
+		pPlayer->m_flFlashLightTime = gpGlobals->time + 0.3; // + FLASH_CHARGE_TIME;
+		return TRUE;
+	}
+};
+
+LINK_ENTITY_TO_CLASS( item_flashlight, CItemFlashlight );
 
 class CItemLongJump : public CItem
 {

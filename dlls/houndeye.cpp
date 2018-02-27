@@ -322,12 +322,12 @@ void CHoundeye::Spawn()
 	if (pev->model)
 		SET_MODEL(ENT(pev), STRING(pev->model)); //LRC
 	else
-	SET_MODEL( ENT( pev ), "models/houndeye.mdl" );
+	SET_MODEL( ENT( pev ), "models/black_dog.mdl" );
 	UTIL_SetSize( pev, Vector( -16, -16, 0 ), Vector( 16, 16, 36 ) );
 
 	pev->solid		= SOLID_SLIDEBOX;
 	pev->movetype		= MOVETYPE_STEP;
-	m_bloodColor		= BLOOD_COLOR_YELLOW;
+	m_bloodColor		= BLOOD_COLOR_RED;
 	pev->effects		= 0;
 	if (pev->health == 0)
 	pev->health		= gSkillData.houndeyeHealth;
@@ -349,7 +349,7 @@ void CHoundeye::Precache()
 	if (pev->model)
 		PRECACHE_MODEL(STRING(pev->model)); //LRC
 	else
-	PRECACHE_MODEL( "models/houndeye.mdl" );
+		PRECACHE_MODEL( "models/black_dog.mdl" );
 
 	PRECACHE_SOUND( "houndeye/he_alert1.wav" );
 	PRECACHE_SOUND( "houndeye/he_alert2.wav" );
@@ -504,8 +504,8 @@ void CHoundeye::PainSound( void )
 //=========================================================
 void CHoundeye::WriteBeamColor( void )
 {
-	BYTE bRed, bGreen, bBlue;
-
+	BYTE bRed = 255, bGreen = 0, bBlue = 0;
+/*
 	if( InSquad() )
 	{
 		switch( SquadCount() )
@@ -541,7 +541,7 @@ void CHoundeye::WriteBeamColor( void )
 		bGreen = 220;
 		bBlue = 255;
 	}
-
+*/
 	WRITE_BYTE( bRed );
 	WRITE_BYTE( bGreen );
 	WRITE_BYTE( bBlue );

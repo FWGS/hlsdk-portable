@@ -414,16 +414,30 @@ void CCineMonster::PossessEntity( void )
 		m_iState = STATE_ON; // LRC: assume we'll set it to 'on', unless proven otherwise...
 		switch( m_fMoveTo )
 		{
-		case 1: 
-		case 2: 
-			DelayStart( 1 );
-			m_iState = STATE_TURN_ON;
-			// fall through...
-		case 0: 
-		case 4: 
-		case 5: 
-		case 6: 
+		case 5:
+		case 0:
 			pTarget->m_scriptState = SCRIPT_WAIT;
+			break;
+		case 1:
+			pTarget->m_scriptState = SCRIPT_WALK_TO_MARK;
+			break;
+		case 2:
+			pTarget->m_scriptState = SCRIPT_RUN_TO_MARK;
+			break;
+		case 4:
+			UTIL_SetOrigin( pTarget, pev->origin );
+			pTarget->pev->ideal_yaw = pev->angles.y;
+			pTarget->pev->avelocity = g_vecZero;
+			pTarget->pev->velocity = g_vecZero;
+			pTarget->pev->effects |= EF_NOINTERP;
+			pTarget->pev->angles.y = pev->angles.y;
+			pTarget->m_scriptState = SCRIPT_WAIT;
+			m_startTime = gpGlobals->time + 1E6;
+			// UNDONE: Add a flag to do this so people can fixup physics after teleporting monsters
+			pTarget->pev->flags &= ~FL_ONGROUND;
+			break;
+		default:
+			ALERT(at_aiconsole, "aiscript:  invalid Move To Position value!");
 			break;
 		}
 //		ALERT( at_aiconsole, "\"%s\" found and used (INT: %s)\n", STRING( pTarget->pev->targetname ), FBitSet(pev->spawnflags, SF_SCRIPT_NOINTERRUPT)?"No":"Yes" );

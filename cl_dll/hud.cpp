@@ -264,7 +264,7 @@ void CHud::Init( void )
 
 	m_iLogo = 0;
 	m_iFOV = 0;
-	m_iHUDColor = 0x00FFA000; //255,160,0 -- LRC
+	m_iHUDColor = 0x00FFFFFF; //255,255,255 -- LRC
 
 	CVAR_CREATE( "zoom_sensitivity_ratio", "1.2", 0 );
 	default_fov = CVAR_CREATE( "default_fov", "90", 0 );
@@ -309,6 +309,8 @@ void CHud::Init( void )
 	m_StatusIcons.Init();
 	m_MOTD.Init();
 	m_Scoreboard.Init();
+	m_NoiseEffect.Init();
+	m_BlackBar.Init();
 	m_Particle.Init(); // (LRC) -- 30/08/02 November235: Particles to Order
 
 	m_Menu.Init();
@@ -484,7 +486,10 @@ void CHud::VidInit( void )
 	m_TextMessage.VidInit();
 	m_StatusIcons.VidInit();
 	m_Scoreboard.VidInit();
+	m_NoiseEffect.VidInit();
+	m_BlackBar.VidInit();
 	m_MOTD.VidInit();
+
 	m_Particle.VidInit(); // (LRC) -- 30/08/02 November235: Particles to Order
 }
 

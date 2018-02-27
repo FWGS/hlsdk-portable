@@ -19,7 +19,7 @@
 #ifndef GAMERULES_H
 #define GAMERULES_H
 //LRC
-#define GAME_NAME "Spirit of Half-Life"
+#define GAME_NAME "Afraid of Monsters: Director's Cut"
 //#include "weapons.h"
 //#include "items.h"
 class CBasePlayerItem;

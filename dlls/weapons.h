@@ -63,108 +63,93 @@ public:
 #define ITEM_BATTERY		4
 
 #define WEAPON_NONE				0
-#define WEAPON_CROWBAR			1
-#define	WEAPON_GLOCK			2
-#define WEAPON_PYTHON			3
-#define WEAPON_MP5				4
-#define WEAPON_CHAINGUN			5
-#define WEAPON_CROSSBOW			6
-#define WEAPON_SHOTGUN			7
-#define WEAPON_RPG				8
-#define WEAPON_GAUSS			9
-#define WEAPON_EGON				10
-#define WEAPON_HORNETGUN		11
-#define WEAPON_HANDGRENADE		12
-#define WEAPON_TRIPMINE			13
-#define	WEAPON_SATCHEL			14
-#define	WEAPON_SNARK			15
+#define WEAPON_SHOTGUN				7
+#define WEAPON_BERETTA				16
+#define WEAPON_GLOCK				17
+#define WEAPON_P228				18
+#define WEAPON_DEAGLE				19
+#define WEAPON_REVOLVER				20
+#define WEAPON_MP5K				21
+#define WEAPON_UZI				22
+#define WEAPON_KNIFE				23
+#define WEAPON_AXE				24
+#define WEAPON_HAMMER				25
+#define WEAPON_SPEAR				26
+#define WEAPON_GMGENERAL			27
 
 #define WEAPON_ALLWEAPONS		(~(1<<WEAPON_SUIT))
 
+#define WEAPON_FLASHLIGHT			30
 #define WEAPON_SUIT				31	// ?????
 
 #define MAX_WEAPONS			32
 
+
 #define MAX_NORMAL_BATTERY	100
 
+
 // weapon weight factors (for auto-switching)   (-1 = noswitch)
-#define CROWBAR_WEIGHT		0
-#define GLOCK_WEIGHT		10
-#define PYTHON_WEIGHT		15
-#define MP5_WEIGHT			15
+#define KNIFE_WEIGHT		4
+#define AXE_WEIGHT		4
+#define HAMMER_WEIGHT		4
+#define P228_WEIGHT		14
+#define BERETTA_WEIGHT		12
+#define GLOCK_WEIGHT		13
+#define REVOLVER_WEIGHT		12
+#define MP5K_WEIGHT		11
 #define SHOTGUN_WEIGHT		15
-#define CROSSBOW_WEIGHT		10
-#define RPG_WEIGHT			20
-#define GAUSS_WEIGHT		20
-#define EGON_WEIGHT			20
-#define HORNETGUN_WEIGHT	10
-#define HANDGRENADE_WEIGHT	5
-#define SNARK_WEIGHT		5
-#define SATCHEL_WEIGHT		-10
-#define TRIPMINE_WEIGHT		-10
+#define DEAGLE_WEIGHT		12
+#define UZI_WEIGHT		11
+#define GMGENERAL_WEIGHT	11
+#define SPEAR_WEIGHT		4
 
 // weapon clip/carry ammo capacities
-#define URANIUM_MAX_CARRY		100
-#define	_9MM_MAX_CARRY			250
-#define _357_MAX_CARRY			36
-#define BUCKSHOT_MAX_CARRY		125
-#define BOLT_MAX_CARRY			50
-#define ROCKET_MAX_CARRY		5
-#define HANDGRENADE_MAX_CARRY	10
-#define SATCHEL_MAX_CARRY		5
-#define TRIPMINE_MAX_CARRY		5
-#define SNARK_MAX_CARRY			15
-#define HORNET_MAX_CARRY		8
-#define M203_GRENADE_MAX_CARRY	10
+#define P228_MAX_CARRY		250
+#define	GLOCK_MAX_CARRY		250
+#define BERETTA_MAX_CARRY	250
+#define REVOLVER_MAX_CARRY	150
+#define BUCKSHOT_MAX_CARRY	125
+#define UZI_MAX_CARRY		200
+#define DEAGLE_MAX_CARRY	170
+#define MP5K_MAX_CARRY		200
+#define GMGENERAL_MAX_CARRY	210
 
 // the maximum amount of ammo each weapon's clip can hold
 #define WEAPON_NOCLIP			-1
 
-//#define CROWBAR_MAX_CLIP		WEAPON_NOCLIP
-#define GLOCK_MAX_CLIP			17
-#define PYTHON_MAX_CLIP			6
-#define MP5_MAX_CLIP			50
-#define MP5_DEFAULT_AMMO		25
+//#define KNIFE_MAX_CLIP		WEAPON_NOCLIP
+#define P228_MAX_CLIP			13
+#define GLOCK_MAX_CLIP			20
+#define BERETTA_MAX_CLIP		15
+#define REVOLVER_MAX_CLIP		6
+#define MP5K_MAX_CLIP			30
+#define MP5K_DEFAULT_AMMO		30
 #define SHOTGUN_MAX_CLIP		8
-#define CROSSBOW_MAX_CLIP		5
-#define RPG_MAX_CLIP			1
-#define GAUSS_MAX_CLIP			WEAPON_NOCLIP
-#define EGON_MAX_CLIP			WEAPON_NOCLIP
-#define HORNETGUN_MAX_CLIP		WEAPON_NOCLIP
-#define HANDGRENADE_MAX_CLIP	WEAPON_NOCLIP
-#define SATCHEL_MAX_CLIP		WEAPON_NOCLIP
-#define TRIPMINE_MAX_CLIP		WEAPON_NOCLIP
-#define SNARK_MAX_CLIP			WEAPON_NOCLIP
+#define UZI_MAX_CLIP			25
+#define DEAGLE_MAX_CLIP			7
+#define GMGENERAL_MAX_CLIP		30
 
 // the default amount of ammo that comes with each gun when it spawns
-#define GLOCK_DEFAULT_GIVE			17
-#define PYTHON_DEFAULT_GIVE			6
-#define MP5_DEFAULT_GIVE			25
-#define MP5_DEFAULT_AMMO			25
-#define MP5_M203_DEFAULT_GIVE		0
+#define P228_DEFAULT_GIVE		13
+#define GLOCK_DEFAULT_GIVE		20
+#define BERETTA_DEFAULT_GIVE		15
+#define REVOLVER_DEFAULT_GIVE		6
+#define MP5K_DEFAULT_GIVE		30
 #define SHOTGUN_DEFAULT_GIVE		12
-#define CROSSBOW_DEFAULT_GIVE		5
-#define RPG_DEFAULT_GIVE			1
-#define GAUSS_DEFAULT_GIVE			20
-#define EGON_DEFAULT_GIVE			20
-#define HANDGRENADE_DEFAULT_GIVE	5
-#define SATCHEL_DEFAULT_GIVE		1
-#define TRIPMINE_DEFAULT_GIVE		1
-#define SNARK_DEFAULT_GIVE			5
-#define HIVEHAND_DEFAULT_GIVE		8
+#define UZI_DEFAULT_GIVE		25
+#define DEAGLE_DEFAULT_GIVE		7
+#define GMGENERAL_DEFAULT_GIVE		30
 
 // The amount of ammo given to a player by an ammo item.
-#define AMMO_URANIUMBOX_GIVE	20
+#define AMMO_P228CLIP_GIVE		P228_MAX_CLIP
 #define AMMO_GLOCKCLIP_GIVE		GLOCK_MAX_CLIP
-#define AMMO_357BOX_GIVE		PYTHON_MAX_CLIP
-#define AMMO_MP5CLIP_GIVE		MP5_MAX_CLIP
-#define AMMO_CHAINBOX_GIVE		200
-#define AMMO_M203BOX_GIVE		2
-#define AMMO_BUCKSHOTBOX_GIVE	12
-#define AMMO_CROSSBOWCLIP_GIVE	CROSSBOW_MAX_CLIP
-#define AMMO_RPGCLIP_GIVE		RPG_MAX_CLIP
-#define AMMO_URANIUMBOX_GIVE	20
-#define AMMO_SNARKBOX_GIVE		5
+#define AMMO_BERETTACLIP_GIVE		BERETTA_MAX_CLIP
+#define AMMO_REVOLVERBOX_GIVE		REVOLVER_MAX_CLIP
+#define AMMO_MP5KCLIP_GIVE		MP5K_MAX_CLIP
+#define AMMO_BUCKSHOTBOX_GIVE		SHOTGUN_DEFAULT_GIVE
+#define AMMO_UZICLIP_GIVE		UZI_MAX_CLIP
+#define AMMO_DEAGLECLIP_GIVE		DEAGLE_MAX_CLIP
+#define AMMO_GMGENERALCLIP_GIVE		GMGENERAL_DEFAULT_GIVE
 
 // bullet types
 typedef	enum
@@ -209,6 +194,38 @@ typedef struct
 	const char *pszName;
 	int iId;
 } AmmoInfo;
+
+static const char *WorldWeaponModels[] =
+{
+	NULL,				// WEAPON_NONE
+	NULL, 				// WEAPON_CROWBAR
+	NULL,				// WEAPON_GLOCK1
+	NULL,				// WEAPON_PYTHON
+	NULL,				// WEAPON_MP5
+	NULL,				// WEAPON_CHAINGUN
+	NULL,				// WEAPON_CROSSBOW
+	"models/w_shotgun.mdl",		// WEAPON_SHOTGUN
+	NULL,				// WEAPON_RPG
+	NULL,				// WEAPON_GAUSS
+	NULL,				// WEAPON_EGON
+	NULL,				// WEAPON_HORNETGUN
+	NULL,				// WEAPON_HANDGRENADE
+	NULL,				// WEAPON_TRIPMINE
+	NULL,				// WEAPON_SATCHEL
+	NULL,				// WEAPON_SNARK
+	"models/w_beretta.mdl",		// WEAPON_BERETTA
+	"models/w_glock.mdl",		// WEAPON_GLOCK2
+	"models/w_p228.mdl",		// WEAPON_P228
+	"models/w_deagle.mdl",		// WEAPON_DEAGLE
+	"models/w_revolver.mdl",	// WEAPON_REVOLVER
+	"models/w_mp5k.mdl",		// WEAPON_MP5K
+	"models/w_uzi.mdl",		// WEAPON_UZI
+	"models/w_kitchenknife.mdl",	// WEAPON_KNIFE
+	"models/w_axe.mdl",		// WEAPON_AXE
+	"models/w_hammer.mdl",		// WEAPON_HAMMER
+	"models/w_spear.mdl",		// WEAPON_SPEAR
+	"models/gmgeneral_around.aomdc"	// WEAPON_GMGENERAL
+};
 
 // Items that the player has in their inventory that they can use
 class CBasePlayerItem : public CBaseAnimating
@@ -373,6 +390,7 @@ public:
 extern DLL_GLOBAL	short	g_sModelIndexLaser;// holds the index for the laser beam
 extern DLL_GLOBAL	const char *g_pModelNameLaser;
 
+extern DLL_GLOBAL	short	g_sModelIndexLightning;
 extern DLL_GLOBAL	short	g_sModelIndexLaserDot;// holds the index for the laser beam dot
 extern DLL_GLOBAL	short	g_sModelIndexFireball;// holds the index for the fireball
 extern DLL_GLOBAL	short	g_sModelIndexSmoke;// holds the index for the smoke cloud
@@ -463,207 +481,6 @@ bool bIsMultiplayer ( void );
 void LoadVModel ( const char *szViewModel, CBasePlayer *m_pPlayer );
 #endif
 
-class CGlock : public CBasePlayerWeapon
-{
-public:
-	void Spawn( void );
-	void Precache( void );
-	int iItemSlot( void ) { return 2; }
-	int GetItemInfo( ItemInfo *p );
-	int AddToPlayer( CBasePlayer *pPlayer );
-
-	void PrimaryAttack( void );
-	void SecondaryAttack( void );
-	void GlockFire( float flSpread, float flCycleTime, BOOL fUseAutoAim );
-	BOOL Deploy( void );
-	void Reload( void );
-	void WeaponIdle( void );
-
-	virtual BOOL UseDecrement( void )
-	{ 
-#if defined( CLIENT_WEAPONS )
-		return TRUE;
-#else
-		return FALSE;
-#endif
-	}
-
-private:
-	int m_iShell;
-
-	unsigned short m_usFireGlock1;
-	unsigned short m_usFireGlock2;
-};
-
-class CCrowbar : public CBasePlayerWeapon
-{
-public:
-	void Spawn( void );
-	void Precache( void );
-	int iItemSlot( void ) { return 1; }
-	void EXPORT SwingAgain( void );
-	void EXPORT Smack( void );
-	int GetItemInfo( ItemInfo *p );
-	int AddToPlayer( CBasePlayer *pPlayer );
-
-	void PrimaryAttack( void );
-	int Swing( int fFirst );
-	BOOL Deploy( void );
-	void Holster( int skiplocal = 0 );
-#ifdef CROWBAR_IDLE_ANIM
-	void WeaponIdle();
-#endif
-	int m_iSwing;
-	TraceResult m_trHit;
-
-	virtual BOOL UseDecrement( void )
-	{ 
-#if defined( CLIENT_WEAPONS )
-		return TRUE;
-#else
-		return FALSE;
-#endif
-	}
-private:
-	unsigned short m_usCrowbar;
-};
-
-class CPython : public CBasePlayerWeapon
-{
-public:
-	void Spawn( void );
-	void Precache( void );
-	int iItemSlot( void ) { return 2; }
-	int GetItemInfo(ItemInfo *p);
-	int AddToPlayer( CBasePlayer *pPlayer );
-	void PrimaryAttack( void );
-	void SecondaryAttack( void );
-	BOOL Deploy( void );
-	void Holster( int skiplocal = 0 );
-	void Reload( void );
-	void WeaponIdle( void );
-	float m_flSoundDelay;
-
-	BOOL m_fInZoom;// don't save this. 
-
-	virtual BOOL UseDecrement( void )
-	{
-#if defined( CLIENT_WEAPONS )
-		return TRUE;
-#else
-		return FALSE;
-#endif
-	}
-
-private:
-	unsigned short m_usFirePython;
-};
-
-class CMP5 : public CBasePlayerWeapon
-{
-public:
-	void Spawn( void );
-	void Precache( void );
-	int iItemSlot( void ) { return 3; }
-	int GetItemInfo(ItemInfo *p);
-	int AddToPlayer( CBasePlayer *pPlayer );
-
-	void PrimaryAttack( void );
-	void SecondaryAttack( void );
-	int SecondaryAmmoIndex( void );
-	BOOL Deploy( void );
-	void Reload( void );
-	void WeaponIdle( void );
-	BOOL IsUseable();
-	float m_flNextAnimTime;
-	int m_iShell;
-
-	virtual BOOL UseDecrement( void )
-	{ 
-#if defined( CLIENT_WEAPONS )
-		return TRUE;
-#else
-		return FALSE;
-#endif
-	}
-
-private:
-	unsigned short m_usMP5;
-	unsigned short m_usMP52;
-};
-
-class CCrossbow : public CBasePlayerWeapon
-{
-public:
-	void Spawn( void );
-	void Precache( void );
-	int iItemSlot( ) { return 3; }
-	int GetItemInfo(ItemInfo *p);
-
-	void FireBolt( void );
-	void FireSniperBolt( void );
-	void PrimaryAttack( void );
-	void SecondaryAttack( void );
-	int AddToPlayer( CBasePlayer *pPlayer );
-	BOOL Deploy( );
-	void Holster( int skiplocal = 0 );
-	void Reload( void );
-	void WeaponIdle( void );
-
-	int m_fInZoom; // don't save this
-
-	virtual BOOL UseDecrement( void )
-	{ 
-#if defined( CLIENT_WEAPONS )
-		return TRUE;
-#else
-		return FALSE;
-#endif
-	}
-
-private:
-	unsigned short m_usCrossbow;
-	unsigned short m_usCrossbow2;
-};
-
-class CShotgun : public CBasePlayerWeapon
-{
-public:
-#ifndef CLIENT_DLL
-	int		Save( CSave &save );
-	int		Restore( CRestore &restore );
-	static	TYPEDESCRIPTION m_SaveData[];
-#endif
-	void Spawn( void );
-	void Precache( void );
-	int iItemSlot( ) { return 3; }
-	int GetItemInfo(ItemInfo *p);
-	int AddToPlayer( CBasePlayer *pPlayer );
-
-	void PrimaryAttack( void );
-	void SecondaryAttack( void );
-	BOOL Deploy( );
-	void Reload( void );
-	void WeaponTick();
-	void WeaponIdle( void );
-	int m_fInReload;
-	float m_flNextReload;
-	int m_iShell;
-
-	virtual BOOL UseDecrement( void )
-	{
-#if defined( CLIENT_WEAPONS )
-		return TRUE;
-#else
-		return FALSE;
-#endif
-	}
-
-private:
-	unsigned short m_usDoubleFire;
-	unsigned short m_usSingleFire;
-};
-
 class CLaserSpot : public CBaseEntity
 {
 	void Spawn( void );
@@ -679,35 +496,135 @@ public:
 	static CLaserSpot *CreateSpot( const char* spritename );
 };
 
-class CRpg : public CBasePlayerWeapon
+class CKnife : public CBasePlayerWeapon
 {
 public:
-#ifndef CLIENT_DLL
-	int		Save( CSave &save );
-	int		Restore( CRestore &restore );
-	static	TYPEDESCRIPTION m_SaveData[];
+        void Spawn( void );
+        void Precache( void );
+        int iItemSlot( void ) { return 1; }
+        void EXPORT SwingAgain( void );
+        void EXPORT Smack( void );
+        int GetItemInfo(ItemInfo *p);
+	int AddToPlayer( CBasePlayer *pPlayer );
+
+        void PrimaryAttack( void );
+        int Swing( int fFirst );
+        BOOL Deploy( void );
+        void Holster( int skiplocal = 0 );
+        int m_iSwing;
+        TraceResult m_trHit;
+
+        virtual BOOL UseDecrement( void )
+        {
+#if defined( CLIENT_WEAPONS )
+                return TRUE;
+#else
+                return FALSE;
 #endif
+        }
+private:
+        unsigned short m_usKnife;
+};
+
+class CHammer : public CBasePlayerWeapon
+{
+public:
+        void Spawn( void );
+        void Precache( void );
+        int iItemSlot( void ) { return 1; }
+        void EXPORT BigWhackThink( void );
+        int GetItemInfo(ItemInfo *p);
+	int AddToPlayer( CBasePlayer *pPlayer );
+        
+        void PrimaryAttack( void );
+        BOOL Deploy( void );
+        int m_iSwing;
+        TraceResult m_trHit;
+        
+        virtual BOOL UseDecrement( void )
+        {
+#if defined( CLIENT_WEAPONS )
+                return TRUE;
+#else
+                return FALSE;
+#endif
+        }
+private:
+        unsigned short m_usHammer;
+};
+
+class CAxe : public CBasePlayerWeapon
+{
+public:
+        void Spawn( void );
+        void Precache( void );
+        int iItemSlot( void ) { return 1; }
+        void EXPORT SwingAgain( void );
+        void EXPORT Smack( void );
+        int GetItemInfo(ItemInfo *p);
+	int AddToPlayer( CBasePlayer *pPlayer );
+
+        void PrimaryAttack( void );
+        int Swing( int fFirst );
+        BOOL Deploy( void );
+        int m_iSwing;
+        TraceResult m_trHit;
+
+        virtual BOOL UseDecrement( void )
+        {
+#if defined( CLIENT_WEAPONS )
+                return TRUE;
+#else
+                return FALSE;
+#endif
+        }
+private:
+        unsigned short m_usAxe;
+};
+
+class CSpear : public CBasePlayerWeapon
+{
+public:
+        void Spawn( void );
+        void Precache( void );
+        int iItemSlot( void ) { return 1; }
+        void EXPORT UnStab( void );
+        void EXPORT BigSpearStab( void );
+        int GetItemInfo(ItemInfo *p);
+	int AddToPlayer( CBasePlayer *pPlayer );
+        
+        void PrimaryAttack( void );
+        BOOL Deploy( void );
+        int m_iSwing;
+        TraceResult m_trHit;
+        
+        virtual BOOL UseDecrement( void )
+        {
+#if defined( CLIENT_WEAPONS )
+                return TRUE;
+#else
+                return FALSE;
+#endif
+        }
+private:
+        unsigned short m_usSpear;
+};
+
+class CGlock : public CBasePlayerWeapon
+{
+public:
 	void Spawn( void );
 	void Precache( void );
+	int iItemSlot( void ) { return 2; }
+	int GetItemInfo(ItemInfo *p);
+	int AddToPlayer( CBasePlayer *pPlayer );
+
+	void PrimaryAttack( void );
+	void SecondaryAttack( void );
+	void GlockFire( float flSpread, float flCycleTime, BOOL fUseBurst );
+	BOOL Deploy( void );
 	void Reload( void );
-	int iItemSlot( void ) { return 4; }
-	int GetItemInfo(ItemInfo *p);
-	int AddToPlayer( CBasePlayer *pPlayer );
-
-	BOOL Deploy( void );
-	BOOL CanHolster( void );
-	void Holster( int skiplocal = 0 );
-
-	void PrimaryAttack( void );
-	void SecondaryAttack( void );
 	void WeaponIdle( void );
-
-	void UpdateSpot( void );
-	BOOL ShouldWeaponIdle( void ) { return TRUE; };
-
-	CLaserSpot *m_pSpot;
-	int m_fSpotActive;
-	int m_cActiveRockets;// how many missiles in flight from this launcher right now?
 
 	virtual BOOL UseDecrement( void )
 	{ 
@@ -719,59 +636,26 @@ public:
 	}
 
 private:
-	unsigned short m_usRpg;
+	int m_iShell;
+	
+
+	unsigned short m_usFireGlock1;
+	unsigned short m_usFireGlock2;
 };
 
-class CRpgRocket : public CGrenade
+class CBeretta : public CBasePlayerWeapon
 {
 public:
-	int		Save( CSave &save );
-	int		Restore( CRestore &restore );
-	static	TYPEDESCRIPTION m_SaveData[];
 	void Spawn( void );
 	void Precache( void );
-	void EXPORT FollowThink( void );
-	void EXPORT IgniteThink( void );
-	void EXPORT RocketTouch( CBaseEntity *pOther );
-	static CRpgRocket *CreateRpgRocket( Vector vecOrigin, Vector vecAngles, CBaseEntity *pOwner, CRpg *pLauncher );
-
-	int m_iTrail;
-	float m_flIgniteTime;
-	EHANDLE m_hLauncher; // handle back to the launcher that fired me. 
-};
-
-class CGauss : public CBasePlayerWeapon
-{
-public:
-#ifndef CLIENT_DLL
-	int		Save( CSave &save );
-	int		Restore( CRestore &restore );
-	static	TYPEDESCRIPTION m_SaveData[];
-#endif
-	void Spawn( void );
-	void Precache( void );
-	int iItemSlot( void ) { return 4; }
+	int iItemSlot( void ) { return 2; }
 	int GetItemInfo(ItemInfo *p);
 	int AddToPlayer( CBasePlayer *pPlayer );
-	BOOL IsUseable();
-	BOOL Deploy( void );
-	void Holster( int skiplocal = 0  );
 
 	void PrimaryAttack( void );
-	void SecondaryAttack( void );
+	BOOL Deploy( void );
+	void Reload( void );
 	void WeaponIdle( void );
-
-	void StartFire( void );
-	void Fire( Vector vecOrigSrc, Vector vecDirShooting, float flDamage );
-	float GetFullChargeTime( void );
-	int m_iBalls;
-	int m_iGlow;
-	int m_iBeam;
-	int m_iSoundState; // don't save this
-
-	// was this weapon just fired primary or secondary?
-	// we need to know so we can pick the right set of effects. 
-	BOOL m_fPrimaryFire;
 
 	virtual BOOL UseDecrement( void )
 	{ 
@@ -783,56 +667,27 @@ public:
 	}
 
 private:
-	unsigned short m_usGaussFire;
-	unsigned short m_usGaussSpin;
+	int m_iShell;
+
+	unsigned short m_usFireBeretta;
 };
 
-class CEgon : public CBasePlayerWeapon
+class CP228 : public CBasePlayerWeapon
 {
 public:
-#ifndef CLIENT_DLL
-	int		Save( CSave &save );
-	int		Restore( CRestore &restore );
-	static	TYPEDESCRIPTION m_SaveData[];
-#endif
 	void Spawn( void );
 	void Precache( void );
-	int iItemSlot( void ) { return 4; }
+	int iItemSlot( void ) { return 2; }
 	int GetItemInfo(ItemInfo *p);
 	int AddToPlayer( CBasePlayer *pPlayer );
 
-	BOOL Deploy( void );
-	void Holster( int skiplocal = 0 );
-
-	void UpdateEffect( const Vector &startPoint, const Vector &endPoint, float timeBlend );
-
-	void CreateEffect ( void );
-	void DestroyEffect ( void );
-
-	void EndAttack( void );
-	void Attack( void );
 	void PrimaryAttack( void );
+	BOOL Deploy( void );
+	void Reload( void );
 	void WeaponIdle( void );
 
-	float m_flAmmoUseTime;// since we use < 1 point of ammo per update, we subtract ammo on a timer.
-
-	float GetPulseInterval( void );
-	float GetDischargeInterval( void );
-
-	void Fire( const Vector &vecOrigSrc, const Vector &vecDir );
-
-	BOOL HasAmmo( void );
-
-	void UseAmmo( int count );
-
-	enum EGON_FIREMODE { FIRE_NARROW, FIRE_WIDE};
-
-	CBeam				*m_pBeam;
-	CBeam				*m_pNoise;
-	CSprite				*m_pSprite;
-
 	virtual BOOL UseDecrement( void )
-	{
+	{ 
 #if defined( CLIENT_WEAPONS )
 		return TRUE;
 #else
@@ -840,27 +695,15 @@ public:
 #endif
 	}
 
-	unsigned short m_usEgonStop;
-
 private:
-#ifndef CLIENT_DLL
-	float				m_shootTime;
-#endif
-	EGON_FIREMODE		m_fireMode;
-	float				m_shakeTime;
-	BOOL				m_deployed;
+	int m_iShell;
 
-	unsigned short m_usEgonFire;
+	unsigned short m_usFireP228;
 };
 
-class CHgun : public CBasePlayerWeapon
+class CDeagle : public CBasePlayerWeapon
 {
 public:
-#ifndef CLIENT_DLL
-	int		Save( CSave &save );
-	int		Restore( CRestore &restore );
-	static	TYPEDESCRIPTION m_SaveData[];
-#endif
 	void Spawn( void );
 	void Precache( void );
 	int iItemSlot( void ) { return 4; }
@@ -868,17 +711,105 @@ public:
 	int AddToPlayer( CBasePlayer *pPlayer );
 
 	void PrimaryAttack( void );
-	void SecondaryAttack( void );
 	BOOL Deploy( void );
-	BOOL IsUseable( void );
-	void Holster( int skiplocal = 0 );
+	void Reload( void );
+	void WeaponIdle( void );
+
+	virtual BOOL UseDecrement( void )
+	{ 
+#if defined( CLIENT_WEAPONS )
+		return TRUE;
+#else
+		return FALSE;
+#endif
+	}
+
+private:
+	int m_iShell;
+
+	unsigned short m_usFireDeagle;
+};
+
+class CRevolver : public CBasePlayerWeapon
+{
+public:
+	void Spawn( void );
+	void Precache( void );
+	int iItemSlot( void ) { return 4; }
+	int GetItemInfo(ItemInfo *p);
+	int AddToPlayer( CBasePlayer *pPlayer );
+	void PrimaryAttack( void );
+	BOOL Deploy( void );
+	void Reload( void );
+	void WeaponIdle( void );
+	float m_flSoundDelay;
+
+	virtual BOOL UseDecrement( void )
+	{ 
+#if defined( CLIENT_WEAPONS )
+		return TRUE;
+#else
+		return FALSE;
+#endif
+	}
+
+private:
+	unsigned short m_usFireRevolver;
+};
+
+class CShotgun : public CBasePlayerWeapon
+{
+public:
+
+#ifndef CLIENT_DLL
+	int		Save( CSave &save );
+	int		Restore( CRestore &restore );
+	static	TYPEDESCRIPTION m_SaveData[];
+#endif
+
+	void Spawn( void );
+	void Precache( void );
+	int iItemSlot( ) { return 3; }
+	int GetItemInfo(ItemInfo *p);
+	int AddToPlayer( CBasePlayer *pPlayer );
+
+	void PrimaryAttack( void );
+	void EXPORT LolShell();
+	BOOL Deploy( );
+	void Reload( void );
+	void WeaponIdle( void );
+	int m_fInReload;
+	float m_flNextReload;
+	int m_iShell;
+
+	virtual BOOL UseDecrement( void )
+	{ 
+#if defined( CLIENT_WEAPONS )
+		return TRUE;
+#else
+		return FALSE;
+#endif
+	}
+
+private:
+	unsigned short m_usSingleFire;
+};
+
+class CMP5K : public CBasePlayerWeapon
+{
+public:
+	void Spawn( void );
+	void Precache( void );
+	int iItemSlot( void ) { return 3; }
+	int GetItemInfo(ItemInfo *p);
+	int AddToPlayer( CBasePlayer *pPlayer );
+
+	void PrimaryAttack( void );
+	BOOL Deploy( void );
 	void Reload( void );
 	void WeaponIdle( void );
 	float m_flNextAnimTime;
-
-	float m_flRechargeTime;
-
-	int m_iFirePhase;// don't save me.
+	int m_iShell;
 
 	virtual BOOL UseDecrement( void )
 	{ 
@@ -888,86 +819,26 @@ public:
 		return FALSE;
 #endif
 	}
+
 private:
-	unsigned short m_usHornetFire;
+	unsigned short m_usMP5k;
 };
 
-class CHandGrenade : public CBasePlayerWeapon
+class CUzi : public CBasePlayerWeapon
 {
 public:
 	void Spawn( void );
 	void Precache( void );
-	int iItemSlot( void ) { return 5; }
-	int GetItemInfo(ItemInfo *p);
-
-	void PrimaryAttack( void );
-	BOOL Deploy( void );
-	BOOL CanHolster( void );
-	void Holster( int skiplocal = 0 );
-	void WeaponIdle( void );
-
-	virtual BOOL UseDecrement( void )
-	{ 
-#if defined( CLIENT_WEAPONS )
-		return TRUE;
-#else
-		return FALSE;
-#endif
-	}
-};
-
-class CSatchel : public CBasePlayerWeapon
-{
-public:
-#ifndef CLIENT_DLL
-	int		Save( CSave &save );
-	int		Restore( CRestore &restore );
-	static	TYPEDESCRIPTION m_SaveData[];
-#endif
-	void Spawn( void );
-	void Precache( void );
-	int iItemSlot( void ) { return 5; }
+	int iItemSlot( void ) { return 3; }
 	int GetItemInfo(ItemInfo *p);
 	int AddToPlayer( CBasePlayer *pPlayer );
-	void PrimaryAttack( void );
-	void SecondaryAttack( void );
-	int AddDuplicate( CBasePlayerItem *pOriginal );
-	BOOL CanDeploy( void );
-	BOOL Deploy( void );
-	BOOL IsUseable( void );
-
-	void Holster( int skiplocal = 0 );
-	void WeaponIdle( void );
-	void Throw( void );
-
-	virtual BOOL UseDecrement( void )
-	{ 
-#if defined( CLIENT_WEAPONS )
-		return TRUE;
-#else
-		return FALSE;
-#endif
-	}
-};
-
-class CTripmine : public CBasePlayerWeapon
-{
-public:
-	void Spawn( void );
-	void Precache( void );
-	int iItemSlot( void ) { return 5; }
-	int GetItemInfo(ItemInfo *p);
-	void SetObjectCollisionBox( void )
-	{
-		//!!!BUGBUG - fix the model!
-		pev->absmin = pev->origin + Vector(-16, -16, -5);
-		pev->absmax = pev->origin + Vector(16, 16, 28); 
-	}
 
 	void PrimaryAttack( void );
 	BOOL Deploy( void );
-	void Holster( int skiplocal = 0 );
+	void Reload( void );
 	void WeaponIdle( void );
+	float m_flNextAnimTime;
+	int m_iShell;
 
 	virtual BOOL UseDecrement( void )
 	{ 
@@ -979,26 +850,31 @@ public:
 	}
 
 private:
-	unsigned short m_usTripFire;
+	unsigned short m_usUzi;
 };
 
-class CSqueak : public CBasePlayerWeapon
+class CGMGeneral : public CBasePlayerWeapon
 {
 public:
 	void Spawn( void );
 	void Precache( void );
-	int iItemSlot( void ) { return 5; }
+	int iItemSlot( void ) { return 3; }
 	int GetItemInfo(ItemInfo *p);
+	int AddToPlayer( CBasePlayer *pPlayer );
 
+	void Holster( int skiplocal = 0 );
 	void PrimaryAttack( void );
 	void SecondaryAttack( void );
 	BOOL Deploy( void );
-	void Holster( int skiplocal = 0 );
+	void Reload( void );
 	void WeaponIdle( void );
-	int m_fJustThrown;
+	float m_flNextAnimTime;
+	int m_iShell;
+
+	BOOL m_fInZoom;
 
 	virtual BOOL UseDecrement( void )
-	{
+	{ 
 #if defined( CLIENT_WEAPONS )
 		return TRUE;
 #else
@@ -1007,6 +883,6 @@ public:
 	}
 
 private:
-	unsigned short m_usSnarkFire;
+	unsigned short m_usGMGeneral;
 };
 #endif // WEAPONS_H

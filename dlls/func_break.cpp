@@ -39,25 +39,26 @@ const char *CBreakable::pSpawnObjects[] =
 	NULL,			// 0
 	"item_battery",		// 1
 	"item_healthkit",	// 2
-	"weapon_9mmhandgun",	// 3
-	"ammo_9mmclip",		// 4
-	"weapon_9mmAR",		// 5
-	"ammo_9mmAR",		// 6
-	"ammo_ARgrenades",	// 7
-	"weapon_shotgun",	// 8
-	"ammo_buckshot",	// 9
-	"weapon_crossbow",	// 10
-	"ammo_crossbow",	// 11
-	"weapon_357",		// 12
-	"ammo_357",		// 13
-	"weapon_rpg",		// 14
-	"ammo_rpgclip",		// 15
-	"ammo_gaussclip",	// 16
-	"weapon_handgrenade",	// 17
-	"weapon_tripmine",	// 18
-	"weapon_satchel",	// 19
-	"weapon_snark",		// 20
-	"weapon_hornetgun",	// 21
+	"item_flashlight",	// 3
+	"weapon_axe",		// 4
+	"weapon_beretta",	// 5
+	"weapon_deagle",	// 6
+	"weapon_glock",		// 7
+	"weapon_hammer",	// 8
+	"weapon_knife",		// 9
+	"weapon_mp5k",		// 10
+	"weapon_P228",		// 11
+	"weapon_revolver",	// 12
+	"weapon_shotgun",	// 13
+	"weapon_uzi",		// 14
+	"ammo_beretta",		// 15
+	"ammo_deagle",		// 16
+	"ammo_glock",		// 17
+	"ammo_mp5k",		// 18
+	"ammo_P228",		// 19
+	"ammo_revolver",	// 20
+	"ammo_shotgun",		// 21
+	"ammo_uzi"		// 22
 };
 
 void CBreakable::KeyValue( KeyValueData* pkvd )

@@ -315,12 +315,15 @@ int CHudAmmo::VidInit( void )
 	// Load sprites for buckets (top row of weapon menu)
 	m_HUD_bucket0 = gHUD.GetSpriteIndex( "bucket1" );
 	m_HUD_selection = gHUD.GetSpriteIndex( "selection" );
+	m_HUD_infinite_ammo = gHUD.GetSpriteIndex( "gm_inf" );
 
 	ghsprBuckets = gHUD.GetSprite( m_HUD_bucket0 );
 	giBucketWidth = gHUD.GetSpriteRect( m_HUD_bucket0 ).right - gHUD.GetSpriteRect( m_HUD_bucket0 ).left;
 	giBucketHeight = gHUD.GetSpriteRect( m_HUD_bucket0 ).bottom - gHUD.GetSpriteRect( m_HUD_bucket0 ).top;
+	ghsprGMinf = gHUD.GetSprite( m_HUD_infinite_ammo );
 
 	gHR.iHistoryGap = max( gHR.iHistoryGap, gHUD.GetSpriteRect( m_HUD_bucket0 ).bottom - gHUD.GetSpriteRect( m_HUD_bucket0 ).top );
+	gGMinfrc = &gHUD.GetSpriteRect( m_HUD_infinite_ammo );
 
 	// If we've already loaded weapons, let's get new sprites
 	gWR.LoadAllWeaponSprites();
@@ -422,13 +425,7 @@ void WeaponsResource::SelectSlot( int iSlot, int fAdvance, int iDirection )
 	if( iSlot > MAX_WEAPON_SLOTS )
 		return;
 
-	if( gHUD.m_fPlayerDead || gHUD.m_iHideHUDDisplay & ( HIDEHUD_WEAPONS | HIDEHUD_ALL ) )
-		return;
-
-	if ( !( gHUD.m_iWeaponBits & ( 1 << ( WEAPON_SUIT ) ) ) )
-		return;
-
-	if( ! ( gHUD.m_iWeaponBits & ~( 1 << ( WEAPON_SUIT ) ) ) )
+	if( gHUD.m_fPlayerDead || gHUD.m_iHideHUDDisplay & ( HIDEHUD_WEAPONS | HIDEHUD_ALL | HIDEHUD_ALL_EXCLUDEMESSAGE ) )
 		return;
 
 	WEAPON *p = NULL;
@@ -543,7 +540,7 @@ int CHudAmmo::MsgFunc_HideWeapon( const char *pszName, int iSize, void *pbuf )
 			SetCrosshair( pWeapon->hCrosshair, pWeapon->rcCrosshair, 255, 255, 255 );
 //		CONPRINT("Selecting custom crosshair");
 	}
-	else if ( (m_pWeapon == NULL) || (gHUD.m_iHideHUDDisplay & ( HIDEHUD_WEAPONS | HIDEHUD_ALL )) )
+	else if ( (m_pWeapon == NULL) || (gHUD.m_iHideHUDDisplay & ( HIDEHUD_WEAPONS | HIDEHUD_ALL | HIDEHUD_ALL_EXCLUDEMESSAGE ) ) )
 	{
 		wrect_t nullrc = {0,};
 		gpActiveSel = NULL;
@@ -623,7 +620,7 @@ int CHudAmmo::MsgFunc_CurWeapon( const char *pszName, int iSize, void *pbuf )
 		WEAPON *ccWeapon = gWR.GetWeapon(7);
 		SetCrosshair(ccWeapon->hCrosshair, ccWeapon->rcCrosshair, 255, 255, 255);
 	}
-	else if ( !(gHUD.m_iHideHUDDisplay & ( HIDEHUD_WEAPONS | HIDEHUD_ALL )) )
+	else if ( !(gHUD.m_iHideHUDDisplay & ( HIDEHUD_WEAPONS | HIDEHUD_ALL | HIDEHUD_ALL_EXCLUDEMESSAGE ) ) )
 	{
 		if( gHUD.m_iFOV >= 90 )
 		{
@@ -760,7 +757,7 @@ void CHudAmmo::UserCmd_Close( void )
 // Selects the next item in the weapon menu
 void CHudAmmo::UserCmd_NextWeapon( void )
 {
-	if( gHUD.m_fPlayerDead || ( gHUD.m_iHideHUDDisplay & ( HIDEHUD_WEAPONS | HIDEHUD_ALL ) ) )
+	if( gHUD.m_fPlayerDead || ( gHUD.m_iHideHUDDisplay & ( HIDEHUD_WEAPONS | HIDEHUD_ALL | HIDEHUD_ALL_EXCLUDEMESSAGE ) ) )
 		return;
 
 	if( !gpActiveSel || gpActiveSel == (WEAPON*)1 )
@@ -801,7 +798,7 @@ void CHudAmmo::UserCmd_NextWeapon( void )
 // Selects the previous item in the menu
 void CHudAmmo::UserCmd_PrevWeapon( void )
 {
-	if( gHUD.m_fPlayerDead || ( gHUD.m_iHideHUDDisplay & ( HIDEHUD_WEAPONS | HIDEHUD_ALL ) ) )
+	if( gHUD.m_fPlayerDead || ( gHUD.m_iHideHUDDisplay & ( HIDEHUD_WEAPONS | HIDEHUD_ALL | HIDEHUD_ALL_EXCLUDEMESSAGE ) ) )
 		return;
 
 	if( !gpActiveSel || gpActiveSel == (WEAPON*) 1 )
@@ -846,11 +843,9 @@ int CHudAmmo::Draw( float flTime )
 {
 	int a, x, y, r, g, b;
 	int AmmoWidth;
+	bool IsGMGeneral;
 
-	if( !( gHUD.m_iWeaponBits & ( 1 << ( WEAPON_SUIT ) ) ) )
-		return 1;
-
-	if( ( gHUD.m_iHideHUDDisplay & ( HIDEHUD_WEAPONS | HIDEHUD_ALL ) ) )
+	if( ( gHUD.m_iHideHUDDisplay & ( HIDEHUD_WEAPONS | HIDEHUD_ALL | HIDEHUD_ALL_EXCLUDEMESSAGE ) ) )
 		return 1;
 
 	// Draw Weapon Menu
@@ -871,8 +866,9 @@ int CHudAmmo::Draw( float flTime )
 
 	WEAPON *pw = m_pWeapon; // shorthand
 
+	IsGMGeneral = strcmp( pw->szName,"weapon_gmgeneral" ) ? 0 : 1;
 	// SPR_Draw Ammo
-	if( ( pw->iAmmoType < 0 ) && ( pw->iAmmo2Type < 0 ) )
+	if( ( pw->iAmmoType < 0 ) && ( pw->iAmmo2Type < 0 ) && !IsGMGeneral )
 		return 0;
 
 	int iFlags = DHN_DRAWZERO; // draw 0 values
@@ -891,6 +887,17 @@ int CHudAmmo::Draw( float flTime )
 	// Does this weapon have a clip?
 	y = ScreenHeight - gHUD.m_iFontHeight - gHUD.m_iFontHeight / 2;
 
+	if( IsGMGeneral )
+	{
+		int gm_infHeight = gGMinfrc->bottom - gGMinfrc->top;
+		y = ScreenHeight - ( gm_infHeight + gm_infHeight / 3 );
+		x = ScreenWidth - 3 * gm_infHeight;
+
+		// Draw the ammo Icon
+		SPR_Set( ghsprGMinf, r, g, b );
+		SPR_DrawAdditive( 0, x, y, gGMinfrc );
+	}
+	else
 	// Does weapon have any ammo at all?
 	if( m_pWeapon->iAmmoType > 0 )
 	{

@@ -43,20 +43,21 @@ endif()
 
 
 set (CLDLL_SOURCES
-	../dlls/crossbow.cpp
-	../dlls/crowbar.cpp
-	../dlls/egon.cpp
-	../dlls/gauss.cpp
-	../dlls/handgrenade.cpp
-	../dlls/hornetgun.cpp
-	../dlls/mp5.cpp
-	../dlls/python.cpp
-	../dlls/rpg.cpp
-	../dlls/satchel.cpp
+	aomdc/blackbar.cpp
+	aomdc/neffect.cpp
+	../dlls/aomdc/axe.cpp
+	../dlls/aomdc/beretta.cpp
+	../dlls/aomdc/deagle.cpp
+	../dlls/aomdc/glock.cpp
+	../dlls/aomdc/gmgeneral.cpp
+	../dlls/aomdc/hammer.cpp
+	../dlls/aomdc/knife.cpp
+	../dlls/aomdc/mp5k.cpp
+	../dlls/aomdc/p228.cpp
+	../dlls/aomdc/revolver.cpp
+	../dlls/aomdc/spear.cpp
+	../dlls/aomdc/uzi.cpp
 	../dlls/shotgun.cpp
-	../dlls/squeakgrenade.cpp
-	../dlls/tripmine.cpp
-	../dlls/glock.cpp
 	ev_hldm.cpp
 	hl/hl_baseentity.cpp
 	hl/hl_events.cpp
@@ -110,7 +111,7 @@ set (CLDLL_SOURCES
 	scoreboard.cpp
 	MOTD.cpp)
 
-include_directories (. hl/ ../dlls ../dlls/wpn_shared ../common ../engine ../pm_shared ../game_shared ../public ../utils/false_vgui/include)
+include_directories (. hl/ ../dlls ../dlls/wpn_shared ../common ../engine ../pm_shared ../game_shared ../public ../utils/false_vgui/include ../dlls/aomdc)
 
 if(USE_VOICEMGR)
 	#set(CLDLL_SOURCES

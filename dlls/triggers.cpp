@@ -271,6 +271,7 @@ void CTriggerRelay::KeyValue( KeyValueData *pkvd )
 
 void CTriggerRelay::Spawn( void )
 {
+	pev->nextthink = gpGlobals->time + 0.1f;
 }
 
 void CTriggerRelay::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
@@ -5023,6 +5024,9 @@ void CTriggerChangeCVar::Think( void )
 #define SF_CAMERA_PLAYER_POSITION	1
 #define SF_CAMERA_PLAYER_TARGET		2
 #define SF_CAMERA_PLAYER_TAKECONTROL 4
+#define SF_CAMERA_PLAYER_HIDEHUD	8
+#define SF_CAMERA_PLAYER_BLACKBARS	16
+#define SF_CAMERA_PLAYER_NOISEEFFECT	32
 
 class CTriggerCamera : public CBaseDelay
 {
@@ -5161,10 +5165,18 @@ void CTriggerCamera::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYP
 		return;
 	}
 
+	CBasePlayer *pPlayer = (CBasePlayer *)pActivator;
 	if( FBitSet( pev->spawnflags, SF_CAMERA_PLAYER_TAKECONTROL ) )
-	{
-		( (CBasePlayer *)pActivator )->EnableControl( FALSE );
-	}
+		pPlayer->EnableControl( FALSE );
+
+	if( FBitSet( pev->spawnflags, SF_CAMERA_PLAYER_HIDEHUD ) )
+		SetBits( pPlayer->m_iHideHUD, HIDEHUD_ALL_EXCLUDEMESSAGE );
+
+	if( FBitSet( pev->spawnflags, SF_CAMERA_PLAYER_BLACKBARS ) )
+		SetBits( pPlayer->m_iHideHUD, HIDEHUD_BLACKBARS );
+
+	if( FBitSet( pev->spawnflags, SF_CAMERA_PLAYER_NOISEEFFECT ) )
+		SetBits( pPlayer->m_iHideHUD, HIDEHUD_NOISEEFFECT );
 
 	if( m_sPath )
 	{
@@ -5231,9 +5243,21 @@ void CTriggerCamera::FollowTarget()
 	{
 		if( m_hPlayer->IsAlive() )
 		{
+			CBasePlayer *pPlayer = (CBasePlayer *)((CBaseEntity *)m_hPlayer);
 			SET_VIEW( m_hPlayer->edict(), m_hPlayer->edict() );
-			( (CBasePlayer *)( (CBaseEntity *)m_hPlayer ) )->EnableControl( TRUE );
+
+			pPlayer->EnableControl( TRUE );
+
+			if( FBitSet( pev->spawnflags, SF_CAMERA_PLAYER_HIDEHUD ) )
+				ClearBits( pPlayer->m_iHideHUD, HIDEHUD_ALL_EXCLUDEMESSAGE );
+
+			if( FBitSet( pev->spawnflags, SF_CAMERA_PLAYER_BLACKBARS ) )
+				ClearBits( pPlayer->m_iHideHUD, HIDEHUD_BLACKBARS );
+
+			if( FBitSet( pev->spawnflags, SF_CAMERA_PLAYER_NOISEEFFECT ) )
+				ClearBits( pPlayer->m_iHideHUD, HIDEHUD_NOISEEFFECT );
 		}
+
 		SUB_UseTargets( this, USE_TOGGLE, 0 );
 		pev->avelocity = Vector( 0, 0, 0 );
 		m_state = 0;

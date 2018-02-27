@@ -84,31 +84,37 @@ struct skilldata_t
 	float snarkDmgBite;
 	float snarkDmgPop;
 
+	float wheelchairHealth;
+	float wheelchairDmgAttack;
+
 	float zombieHealth;
 	float zombieDmgOneSlash;
 	float zombieDmgBothSlash;
+
+	float zombie2Health;
+	float zombie2DmgOneSlash;
+	float zombie2DmgBothSlash;
+
+	float zombie3Health;
+	float zombie3DmgOneSlash;
+	float zombie3DmgBothSlash;
 
 	float turretHealth;
 	float miniturretHealth;
 	float sentryHealth;
 
 	// Player Weapons
-	float plrDmgCrowbar;
-	float plrDmg9MM;
-	float plrDmg357;
-	float plrDmgMP5;
-	float plrDmgM203Grenade;
+	float plrDmgKnife;
+	float plrDmgHammer;
+	float plrDmgAxe;
+	float plrDmgGlock;
+	float plrDmgBeretta;
+	float plrDmgP228;
+	float plrDmgRevolver;
+	float plrDmgUzi;
+	float plrDmgMP5K;
+	float plrDmgDeagle;
 	float plrDmgBuckshot;
-	float plrDmgCrossbowClient;
-	float plrDmgCrossbowMonster;
-	float plrDmgRPG;
-	float plrDmgGauss;
-	float plrDmgEgonNarrow;
-	float plrDmgEgonWide;
-	float plrDmgHornet;
-	float plrDmgHandGrenade;
-	float plrDmgSatchel;
-	float plrDmgTripmine;
 	
 	// weapons shared by monsters
 	float monDmg9MM;

@@ -37,6 +37,24 @@ else()
 endif()
 
 set (SVDLL_SOURCES 
+	aomdc/axe.cpp
+	aomdc/baddavid.cpp
+	aomdc/beretta.cpp
+	aomdc/deagle.cpp
+	aomdc/ghost.cpp
+	aomdc/glock.cpp
+	aomdc/gmgeneral.cpp
+	aomdc/hammer.cpp
+	aomdc/knife.cpp
+	aomdc/mp5k.cpp
+	aomdc/p228.cpp
+	aomdc/revolver.cpp
+	aomdc/spear.cpp
+	aomdc/uzi.cpp
+	aomdc/wheelchair.cpp
+	aomdc/zombie2.cpp
+	aomdc/zombie3.cpp
+	aomdc/zombie4.cpp
 	agrunt.cpp
 	airtank.cpp
 	aflock.cpp
@@ -55,12 +73,12 @@ set (SVDLL_SOURCES
 	client.cpp
 	combat.cpp
 	controller.cpp
-	crossbow.cpp
-	crowbar.cpp
+#	crossbow.cpp
+#	crowbar.cpp
 	defaultai.cpp
 	doors.cpp
 	effects.cpp
-	egon.cpp
+#	egon.cpp
 	explode.cpp
 	flyingmonster.cpp
 	func_break.cpp
@@ -68,24 +86,24 @@ set (SVDLL_SOURCES
 	game.cpp
 	gamerules.cpp
 	gargantua.cpp
-	gauss.cpp
+#	gauss.cpp
 	genericmonster.cpp
 	ggrenade.cpp
 	globals.cpp
-	glock.cpp
+#	glock.cpp
 	gman.cpp
 	h_ai.cpp
 	h_battery.cpp
 	h_cine.cpp
 	h_cycler.cpp
 	h_export.cpp
-	handgrenade.cpp
+#	handgrenade.cpp
 	hassassin.cpp
 	headcrab.cpp
 	healthkit.cpp
 	hgrunt.cpp
 	hornet.cpp
-	hornetgun.cpp
+#	hornetgun.cpp
 	houndeye.cpp
 	ichthyosaur.cpp
 	islave_deamon.cpp
@@ -99,7 +117,7 @@ set (SVDLL_SOURCES
 	monsterstate.cpp
 	mortar.cpp
 	movewith.cpp
-	mp5.cpp
+#	mp5.cpp
 	multiplay_gamerules.cpp
 	nihilanth.cpp
 	nodes.cpp
@@ -110,11 +128,11 @@ set (SVDLL_SOURCES
 	plats.cpp
 	player.cpp
 	playermonster.cpp
-	python.cpp
+#	python.cpp
 	rat.cpp
 	roach.cpp
 	rpg.cpp
-	satchel.cpp
+#	satchel.cpp
 	schedule.cpp
 	scientist.cpp
 	scripted.cpp
@@ -132,7 +150,7 @@ set (SVDLL_SOURCES
 	tempmonster.cpp
 	tentacle.cpp
 	triggers.cpp
-	tripmine.cpp
+#	tripmine.cpp
 	turret.cpp
 	util.cpp
 	weapons.cpp
@@ -144,7 +162,7 @@ set (SVDLL_SOURCES
 	../pm_shared/pm_shared.c
 )
 	
-include_directories (. wpn_shared ../common ../engine ../pm_shared ../game_shared ../public)
+include_directories (. wpn_shared ../common ../engine ../pm_shared ../game_shared ../public aomdc)
 
 if(USE_VOICEMGR)
 	set(SVDLL_SOURCES

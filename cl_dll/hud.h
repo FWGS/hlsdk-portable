@@ -134,6 +134,10 @@ private:
 	WEAPON *m_pWeapon;
 	int m_HUD_bucket0;
 	int m_HUD_selection;
+
+	int m_HUD_infinite_ammo;
+	HSPRITE ghsprGMinf;
+	wrect_t *gGMinfrc;
 };
 
 //
@@ -166,6 +170,39 @@ private:
 
 #define FADE_TIME 100
 
+
+//
+//-----------------------------------------------------
+//
+class CHudBlackBar: public CHudBase
+{
+public:
+	int Init( void );
+	int VidInit( void );
+	int Draw( float flTime );
+
+private:
+	HSPRITE m_hSprite;
+	wrect_t *m_prc;
+	int m_iHeight;
+	int m_iWidth;
+};
+
+//
+//-----------------------------------------------------
+//
+class CHudNoiseEffect: public CHudBase
+{
+public:
+	int Init( void );
+	int VidInit( void );
+	int Draw(float flTime);
+
+private:
+	HSPRITE m_hSprite;
+	wrect_t *m_prc;
+	int m_iWidth;
+};
 
 //
 //-----------------------------------------------------
@@ -692,6 +729,8 @@ public:
 	CHudStatusIcons m_StatusIcons;
 	CHudScoreboard	m_Scoreboard;
 	CHudMOTD	m_MOTD;
+	CHudBlackBar	m_BlackBar;
+	CHudNoiseEffect m_NoiseEffect;
 	CHudParticle	m_Particle; // (LRC) -- 30/08/02 November235: Particles to Order
 
 	void Init( void );

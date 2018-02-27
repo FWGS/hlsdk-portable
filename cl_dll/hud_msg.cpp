@@ -31,9 +31,6 @@ float g_fFadeDuration; //negative = fading out
 
 #define MAX_CLIENTS 32
 
-extern BEAM *pBeam;
-extern BEAM *pBeam2;
-
 /// USER-DEFINED SERVER MESSAGE HANDLERS
 
 int CHud::MsgFunc_ResetHUD( const char *pszName, int iSize, void *pbuf )
@@ -95,9 +92,6 @@ void CHud::MsgFunc_InitHUD( const char *pszName, int iSize, void *pbuf )
 			pList->p->InitHUDData();
 		pList = pList->pNext;
 	}
-
-	//Probably not a good place to put this.
-	pBeam = pBeam2 = NULL;
 }
 
 //LRC

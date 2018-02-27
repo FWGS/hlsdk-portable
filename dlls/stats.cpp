@@ -21,7 +21,7 @@
 
 float AmmoDamage( const char *pName )
 {
-	if( !pName )
+	/*if( !pName )
 		return 0;
 
 	if( !strcmp( pName, "9mm" ) )
@@ -43,7 +43,7 @@ float AmmoDamage( const char *pName )
 	if( !strcmp( pName, "Satchel Charge") )
 		return gSkillData.plrDmgSatchel;
 	if( !strcmp( pName, "Trip Mine") )
-		return gSkillData.plrDmgTripmine;
+		return gSkillData.plrDmgTripmine;*/
 
 	return 0;
 }
