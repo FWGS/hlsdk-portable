@@ -3935,7 +3935,7 @@ void CBasePlayer::UpdateClientData( void )
 		m_iClientHealth = (int)pev->health;
 	}
 
-	if( pev->armorvalue != m_iClientBattery )
+	if( (int)pev->armorvalue != m_iClientBattery )
 	{
 		m_iClientBattery = (int)pev->armorvalue;
 
