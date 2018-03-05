@@ -26,32 +26,41 @@
 #include	"scientist.h"
 
 #define		NUM_CIVILIAN_HEADS		5 // four heads available for civilian model
-enum { HEAD_GLASSES = 0, HEAD_FRANKLIN = 1, HEAD_ECHELON_OFFICER = 2, HEAD_SLICK = 3, HEAD_ORDELY = 4, };
 
-class CCivilian : public CScientist
+enum
 {
-public:
-	void Spawn(void);
-	void Precache(void);
+	HEAD_GLASSES = 0,
+	HEAD_FRANKLIN = 1,
+	HEAD_ECHELON_OFFICER = 2,
+	HEAD_SLICK = 3,
+	HEAD_ORDELY = 4,
 };
 
-LINK_ENTITY_TO_CLASS(einar_civ, CCivilian);
+class CEinarCivilian : public CScientist
+{
+public:
+	void Spawn();
+	void Precache();
+};
+
+LINK_ENTITY_TO_CLASS( einar_civ, CEinarCivilian )
 
 //=========================================================
 // Spawn
 //=========================================================
-void CCivilian::Spawn(void)
+void CEinarCivilian::Spawn()
 {
-	Precache( );
+	Precache();
 
-	SET_MODEL(ENT(pev), "models/civ.mdl");
-	UTIL_SetSize(pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX);
+	SET_MODEL( ENT( pev ), "models/civ.mdl" );
+	UTIL_SetSize( pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX );
 
-	pev->solid			= SOLID_SLIDEBOX;
+	pev->solid		= SOLID_SLIDEBOX;
 	pev->movetype		= MOVETYPE_STEP;
 	m_bloodColor		= BLOOD_COLOR_RED;
-	pev->health			= gSkillData.scientistHealth;
-	pev->view_ofs		= Vector ( 0, 0, 50 );// position of the eyes relative to monster's origin.
+	if( !pev->health )
+		pev->health	= gSkillData.scientistHealth;
+	pev->view_ofs		= Vector( 0, 0, 50 );// position of the eyes relative to monster's origin.
 	m_flFieldOfView		= VIEW_FIELD_WIDE; // NOTE: we need a wide field of view so scientists will notice player and say hello
 	m_MonsterState		= MONSTERSTATE_NONE;
 
@@ -59,69 +68,62 @@ void CCivilian::Spawn(void)
 
 	m_afCapability		= bits_CAP_HEAR | bits_CAP_TURN_HEAD | bits_CAP_OPEN_DOORS | bits_CAP_AUTO_DOORS | bits_CAP_USE;
 
-	if ( pev->body == -1 )
-	{// -1 chooses a random head
-		pev->body = RANDOM_LONG(0, NUM_CIVILIAN_HEADS-1);// pick a head, any head
+	if( pev->body == -1 )
+	{
+		// -1 chooses a random head
+		pev->body = RANDOM_LONG( 0, NUM_CIVILIAN_HEADS - 1 );// pick a head, any head
 	}
-	
+
 	MonsterInit();
-	SetUse( &CCivilian::FollowerUse );
+	SetUse( &CEinarCivilian::FollowerUse );
 }
 
 //=========================================================
 // Precache - precaches all resources this monster needs
 //=========================================================
-void CCivilian :: Precache( void )
+void CEinarCivilian::Precache()
 {
-	PRECACHE_MODEL("models/civ.mdl");
-	PRECACHE_SOUND("scientist/sci_pain1.wav");
-	PRECACHE_SOUND("scientist/sci_pain2.wav");
-	PRECACHE_SOUND("scientist/sci_pain3.wav");
-	PRECACHE_SOUND("scientist/sci_pain4.wav");
-	PRECACHE_SOUND("scientist/sci_pain5.wav");
+	PRECACHE_MODEL( "models/civ.mdl" );
 
-	// every new civilian must call this, otherwise
-	// when a level is loaded, nobody will talk (time is reset to 0)
-	TalkInit();
-
-	CTalkMonster::Precache();
+	CScientist::Precache();
 }	
 
 //=========================================================
 // Dead Civilian PROP
 //=========================================================
-class CDeadCivilian : public CDeadScientist
+class CEinarDeadCivilian : public CDeadScientist
 {
 public:
-	void Spawn(void);
+	void Spawn();
 };
 
-LINK_ENTITY_TO_CLASS(einar_civ_dead, CDeadCivilian);
+LINK_ENTITY_TO_CLASS( einar_civ_dead, CEinarDeadCivilian )
 
 //
 // ********** DeadCivilian SPAWN **********
 //
-void CDeadCivilian::Spawn()
+void CEinarDeadCivilian::Spawn()
 {
-	PRECACHE_MODEL("models/civ.mdl");
-	SET_MODEL(ENT(pev), "models/civ.mdl");
+	PRECACHE_MODEL( "models/civ.mdl" );
+	SET_MODEL( ENT( pev ), "models/civ.mdl" );
 
 	pev->effects = 0;
 	pev->sequence = 0;
 	// Corpses have less health
-	pev->health = 8;//gSkillData.scientistHealth;
+	pev->health = 8;
 
 	m_bloodColor = BLOOD_COLOR_RED;
 
-	if (pev->body == -1)
-	{// -1 chooses a random head
-		pev->body = RANDOM_LONG(0, NUM_CIVILIAN_HEADS - 1);// pick a head, any head
+	if( pev->body == -1 )
+	{
+		// -1 chooses a random head
+		pev->body = RANDOM_LONG( 0, NUM_CIVILIAN_HEADS - 1 );// pick a head, any head
 	}
 
-	pev->sequence = LookupSequence(m_szPoses[m_iPose]);
-	if (pev->sequence == -1)
+	pev->sequence = LookupSequence( m_szPoses[m_iPose] );
+	if( pev->sequence == -1 )
 	{
-		ALERT(at_console, "Dead civilian with bad pose\n");
+		ALERT( at_console, "Dead civilian with bad pose\n" );
 	}
 
 	//	pev->skin += 2; // use bloody skin -- UNDONE: Turn this back on when we have a bloody skin again!
@@ -132,26 +134,25 @@ void CDeadCivilian::Spawn()
 //=========================================================
 // Sitting Civilian PROP
 //=========================================================
-class CSittingCivilian : public CSittingScientist
+class CEinarSittingCivilian : public CSittingScientist
 {
 public:
-	void Spawn(void);
-	void  Precache(void);
+	void Spawn();
 };
 
-LINK_ENTITY_TO_CLASS(einar_civ_sit, CSittingCivilian);
+LINK_ENTITY_TO_CLASS( einar_civ_sit, CEinarSittingCivilian )
 
 //
 // ********** Civilian SPAWN **********
 //
-void CSittingCivilian::Spawn()
+void CEinarSittingCivilian::Spawn()
 {
-	PRECACHE_MODEL("models/civ.mdl");
-	SET_MODEL(ENT(pev), "models/civ.mdl");
+	PRECACHE_MODEL( "models/civ.mdl" );
+	SET_MODEL( ENT( pev ), "models/civ.mdl" );
 	Precache();
 	InitBoneControllers();
 
-	UTIL_SetSize(pev, Vector(-14, -14, 0), Vector(14, 14, 36));
+	UTIL_SetSize( pev, Vector( -14, -14, 0 ), Vector( 14, 14, 36 ) );
 
 	pev->solid = SOLID_SLIDEBOX;
 	pev->movetype = MOVETYPE_STEP;
@@ -163,25 +164,20 @@ void CSittingCivilian::Spawn()
 
 	m_afCapability = bits_CAP_HEAR | bits_CAP_TURN_HEAD;
 
-	SetBits(pev->spawnflags, SF_MONSTER_PREDISASTER); // predisaster only!
+	SetBits( pev->spawnflags, SF_MONSTER_PREDISASTER ); // predisaster only!
 
-	if (pev->body == -1)
-	{// -1 chooses a random head
-		pev->body = RANDOM_LONG(0, NUM_CIVILIAN_HEADS - 1);// pick a head, any head
+	if( pev->body == -1 )
+	{
+		// -1 chooses a random head
+		pev->body = RANDOM_LONG( 0, NUM_CIVILIAN_HEADS - 1 );// pick a head, any head
 	}
 
-	m_baseSequence = LookupSequence("sitlookleft");
-	pev->sequence = m_baseSequence + RANDOM_LONG(0, 4);
+	m_baseSequence = LookupSequence( "sitlookleft" );
+	pev->sequence = m_baseSequence + RANDOM_LONG( 0, 4 );
 	ResetSequenceInfo();
 
-	SetThink(&CSittingCivilian::SittingThink);
+	SetThink( &CEinarSittingCivilian::SittingThink );
 	pev->nextthink = gpGlobals->time + 0.1;
 
-	DROP_TO_FLOOR(ENT(pev));
-}
-
-void CSittingCivilian::Precache(void)
-{
-	m_baseSequence = LookupSequence("sitlookleft");
-	TalkInit();
+	DROP_TO_FLOOR( ENT( pev ) );
 }

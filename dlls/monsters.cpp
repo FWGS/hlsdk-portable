@@ -2013,9 +2013,6 @@ void CBaseMonster::MonsterInit( void )
 	// set eye position
 	SetEyePosition();
 
-	if( pev->spawnflags & SF_MONSTER_REDBLOOD )
-		m_bloodColor = BLOOD_COLOR_RED;
-
 	SetThink( &CBaseMonster::MonsterInitThink );
 	pev->nextthink = gpGlobals->time + 0.1;
 	SetUse( &CBaseMonster::MonsterUse );

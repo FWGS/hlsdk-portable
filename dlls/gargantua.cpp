@@ -738,7 +738,12 @@ void CGargantua::Spawn()
 
 	pev->solid		= SOLID_SLIDEBOX;
 	pev->movetype		= MOVETYPE_STEP;
-	m_bloodColor		= BLOOD_COLOR_GREEN;
+
+	if( FBitSet( pev->spawnflags, SF_MONSTER_REDBLOOD ) )
+		m_bloodColor	= BLOOD_COLOR_RED;
+	else
+		m_bloodColor	= BLOOD_COLOR_GREEN;
+
 	pev->health		= gSkillData.gargantuaHealth;
 	//pev->view_ofs		= Vector ( 0, 0, 96 );// taken from mdl file
 	m_flFieldOfView		= -0.2;// width of forward view cone ( as a dotproduct result )

@@ -229,7 +229,6 @@ void CHud::Init( void )
 	m_AmmoSecondary.Init();
 	m_TextMessage.Init();
 	m_StatusIcons.Init();
-	m_Zoom.Init();
 	m_MOTD.Init();
 	m_Scoreboard.Init();
 
@@ -399,7 +398,6 @@ void CHud::VidInit( void )
 	m_AmmoSecondary.VidInit();
 	m_TextMessage.VidInit();
 	m_StatusIcons.VidInit();
-	m_Zoom.VidInit();
 	m_Scoreboard.VidInit();
 	m_MOTD.VidInit();
 }
@@ -515,10 +513,11 @@ int CHud::MsgFunc_SetFOV( const char *pszName,  int iSize, void *pbuf )
 	int newfov = READ_BYTE();
 	int def_fov = CVAR_GET_FLOAT( "default_fov" );
 
+#ifdef CLIENT_WEAPONS
 	//Weapon prediction already takes care of changing the fog. ( g_lastFOV ).
 	if( cl_lw && cl_lw->value )
 		return 1;
-
+#endif
 	g_lastFOV = newfov;
 
 	if( newfov == 0 )

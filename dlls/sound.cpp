@@ -1739,8 +1739,17 @@ float TEXTURETYPE_PlaySound( TraceResult *ptr,  Vector vecSrc, Vector vecEnd, in
 			return 0.0; // crowbar already makes this sound
 		fvol = 1.0;
 		fvolbar = 0.2;
-		rgsz[0] = "weapons/bullet_hit1.wav";
-		rgsz[1] = "weapons/bullet_hit2.wav";
+		// Skeletons make different hit sounds.
+		if( pEntity->Classify() == CLASS_SKELETON )
+		{
+			rgsz[0] = "kelly/bullet_kelly1.wav";
+			rgsz[1] = "kelly/bullet_kelly2.wav";
+		}
+		else
+		{
+			rgsz[0] = "weapons/bullet_hit1.wav";
+			rgsz[1] = "weapons/bullet_hit2.wav";
+		}
 		fattn = 1.0;
 		cnt = 2;
 		break;

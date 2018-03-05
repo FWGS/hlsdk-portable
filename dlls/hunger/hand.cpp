@@ -21,52 +21,64 @@
 #include	"game.h"
 #include	"headcrab.h"
 
-class CHand : public CHeadCrab
+class CEinarHand : public CHeadCrab
 {
 public:
-	void Spawn(void);
-	void Precache(void);
-	void StartTask(Task_t *pTask);
-	void EXPORT LeapTouch(CBaseEntity *pOther);
+	void Spawn();
+	void Precache();
+	void SetYawSpeed();
+	int Classify();
+	float GetDamageAmount() { return gSkillData.headcrabDmgBite * 2; }
 
-	void PainSound(void) { }
-	void DeathSound(void) { }
-	void IdleSound(void) { }
-	void AlertSound(void) { }
-	void AttackSound(void) {  }
+	void PainSound() {}
+	void DeathSound() {}
+	void IdleSound() {}
+	void AlertSound() {}
+	void StartAttackSound() {}
+	void AttackSound();
+	void BiteSound();
 
 	static const char *pAttackSounds[];
 	static const char *pBiteSounds[];
 };
 
-LINK_ENTITY_TO_CLASS(einar_hand, CHand);
+LINK_ENTITY_TO_CLASS( einar_hand, CEinarHand );
 
-const char *CHand::pAttackSounds[] =
+const char *CEinarHand::pAttackSounds[] =
 {
 	"thehand/hnd_attack1.wav",
 };
 
-const char *CHand::pBiteSounds[] =
+const char *CEinarHand::pBiteSounds[] =
 {
 	"thehand/hnd_headbite.wav",
 };
 
 //=========================================================
+// Classify - indicates this monster's place in the
+// relationship table.
+//=========================================================
+int CEinarHand::Classify()
+{
+	return CLASS_ALIEN_MONSTER;
+}
+
+//=========================================================
 // Spawn
 //=========================================================
-void CHand::Spawn()
+void CEinarHand::Spawn()
 {
 	Precache();
 
-	SET_MODEL(ENT(pev), "models/thehand.mdl");
-	UTIL_SetSize(pev, Vector(-12, -12, 0), Vector(12, 12, 24));
+	SET_MODEL( ENT( pev ), "models/thehand.mdl" );
+	UTIL_SetSize( pev, Vector( -12, -12, 0 ), Vector( 12, 12, 24 ) );
 
 	pev->solid = SOLID_SLIDEBOX;
 	pev->movetype = MOVETYPE_STEP;
 	m_bloodColor = BLOOD_COLOR_RED;
 	pev->effects = 0;
-	pev->health = gSkillData.headcrabHealth;
-	pev->view_ofs = Vector(0, 0, 20);// position of the eyes relative to monster's origin.
+	pev->health = gSkillData.headcrabHealth * 2;
+	pev->view_ofs = Vector( 0, 0, 20 );// position of the eyes relative to monster's origin.
 	pev->yaw_speed = 5;//!!! should we put this in the monster's changeanim function since turn rates may vary with state/anim?
 	m_flFieldOfView = 0.5;// indicates the width of this monster's forward view cone ( as a dotproduct result )
 	m_MonsterState = MONSTERSTATE_NONE;
@@ -77,61 +89,60 @@ void CHand::Spawn()
 //=========================================================
 // Precache - precaches all resources this monster needs
 //=========================================================
-void CHand::Precache()
+void CEinarHand::Precache()
 {
-	PRECACHE_MODEL("models/thehand.mdl");
+	PRECACHE_MODEL( "models/thehand.mdl" );
 
-	PRECACHE_SOUND_ARRAY(pAttackSounds);
-	PRECACHE_SOUND_ARRAY(pBiteSounds);
-
-	PRECACHE_SOUND("headcrab/hc_attack1.wav");
-	PRECACHE_SOUND("headcrab/hc_attack2.wav");
-	PRECACHE_SOUND("headcrab/hc_attack3.wav");
+	PRECACHE_SOUND_ARRAY( pAttackSounds );
+	PRECACHE_SOUND_ARRAY( pBiteSounds );
 }
 
 //=========================================================
-// LeapTouch - this is the hand's touch function when it
-// is in the air
+// SetYawSpeed - allows each sequence to have a different
+// turn rate associated with it.
 //=========================================================
-void CHand::LeapTouch(CBaseEntity *pOther)
+void CEinarHand::SetYawSpeed()
 {
-	if (!pOther->pev->takedamage)
+	int ys;
+
+	switch( m_Activity )
 	{
-		return;
-	}
-
-	if (pOther->Classify() == Classify())
-	{
-		return;
-	}
-
-	// Don't hit if back on ground
-	if (!FBitSet(pev->flags, FL_ONGROUND))
-	{
-		EMIT_SOUND_DYN(edict(), CHAN_WEAPON, RANDOM_SOUND_ARRAY(pBiteSounds), GetSoundVolue(), ATTN_IDLE, 0, GetVoicePitch());
-
-		pOther->TakeDamage(pev, pev, GetDamageAmount(), DMG_SLASH);
-	}
-
-	SetTouch(NULL);
-}
-
-void CHand::StartTask(Task_t *pTask)
-{
-	m_iTaskStatus = TASKSTATUS_RUNNING;
-
-	switch (pTask->iTask)
-	{
-	case TASK_RANGE_ATTACK1:
-	{
-		EMIT_SOUND_DYN(edict(), CHAN_WEAPON, pAttackSounds[0], GetSoundVolue(), ATTN_IDLE, 0, GetVoicePitch());
-		m_IdealActivity = ACT_RANGE_ATTACK1;
-		SetTouch(&CHand::LeapTouch);
+	case ACT_IDLE:
+		ys = 60;
+		break;
+	case ACT_RUN:
+	case ACT_WALK:
+		ys = 30;
+		break;
+	case ACT_TURN_LEFT:
+	case ACT_TURN_RIGHT:
+		ys = 120;
+		break;
+	case ACT_RANGE_ATTACK1:
+		ys = 60;
+		break;
+	default:
+		ys = 60;
 		break;
 	}
-	default:
-	{
-		CHeadCrab::StartTask(pTask);
-	}
-	}
+
+	pev->yaw_speed = ys;
+}
+
+//=========================================================
+// AttackSound
+//=========================================================
+void CEinarHand::AttackSound()
+{
+	int iSound = RANDOM_LONG( 0, 2 );
+	if( iSound != 0 )
+		EMIT_SOUND_DYN( edict(), CHAN_VOICE, pAttackSounds[iSound], GetSoundVolue(), ATTN_IDLE, 0, GetVoicePitch() );
+}
+
+//=========================================================
+// AttackSound
+//=========================================================
+void CEinarHand::BiteSound()
+{
+	EMIT_SOUND_DYN( edict(), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pBiteSounds ), GetSoundVolue(), ATTN_IDLE, 0, GetVoicePitch() );
 }

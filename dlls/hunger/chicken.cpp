@@ -12,7 +12,6 @@
 *   use or distribution of this code by or to any unlicensed person is illegal.
 *
 ****/
-
 #include	"extdll.h"
 #include	"util.h"
 #include	"cbase.h"
@@ -21,18 +20,25 @@
 #include	"game.h"
 #include	"headcrab.h"
 
-class CChicken : public CHeadCrab
+//=========================================================
+// Monster's Anim Events Go Here
+//=========================================================
+
+class CEinarChicken : public CHeadCrab
 {
 public:
-	void Spawn(void);
-	void Precache(void);
-	void StartTask(Task_t *pTask);
+	void Spawn();
+	void Precache();
+	void SetYawSpeed();
+	int Classify();
 
-	void PainSound(void);
-	void DeathSound(void);
-	void IdleSound(void);
-	void AlertSound(void);
-	void AttackSound(void);
+	void PainSound();
+	void DeathSound();
+	void IdleSound();
+	void AlertSound();
+	void AttackSound();
+	void StartAttackSound();
+	void BiteSound();
 
 	static const char *pIdleSounds[];
 	static const char *pAlertSounds[];
@@ -41,52 +47,63 @@ public:
 	static const char *pDeathSounds[];
 };
 
-LINK_ENTITY_TO_CLASS(monster_th_chicken, CChicken);
+LINK_ENTITY_TO_CLASS( monster_th_chicken, CEinarChicken )
 
-const char *CChicken::pIdleSounds[] =
+const char *CEinarChicken::pIdleSounds[] =
 {
 	"chicken/ch_idle1.wav",
 	"chicken/ch_idle2.wav",
 };
-const char *CChicken::pAlertSounds[] =
+
+const char *CEinarChicken::pAlertSounds[] =
 {
 	"chicken/ch_alert1.wav",
-	"chicken/ch_alert1.wav",
+	"chicken/ch_alert2.wav"
 };
-const char *CChicken::pPainSounds[] =
+
+const char *CEinarChicken::pPainSounds[] =
 {
 	"chicken/ch_pain1.wav",
 	"chicken/ch_pain2.wav",
 };
-const char *CChicken::pAttackSounds[] =
+
+const char *CEinarChicken::pAttackSounds[] =
 {
 	"chicken/ch_attack1.wav",
 	"chicken/ch_attack2.wav",
 };
 
-const char *CChicken::pDeathSounds[] =
+const char *CEinarChicken::pDeathSounds[] =
 {
 	"chicken/ch_die1.wav",
 	"chicken/ch_die2.wav",
 };
 
+//=========================================================
+// Classify - indicates this monster's place in the
+// relationship table.
+//=========================================================
+int CEinarChicken::Classify()
+{
+	return CLASS_ALIEN_MONSTER;
+}
 
 //=========================================================
 // Spawn
 //=========================================================
-void CChicken::Spawn()
+void CEinarChicken::Spawn()
 {
 	Precache();
 
-	SET_MODEL(ENT(pev), "models/chicken.mdl");
-	UTIL_SetSize(pev, Vector(-12, -12, 0), Vector(12, 12, 24));
+	SET_MODEL( ENT( pev ), "models/chicken.mdl" );
+	UTIL_SetSize( pev, Vector( -12, -12, 0 ), Vector( 12, 12, 24 ) );
 
 	pev->solid = SOLID_SLIDEBOX;
 	pev->movetype = MOVETYPE_STEP;
 	m_bloodColor = BLOOD_COLOR_RED;
 	pev->effects = 0;
 	pev->health = gSkillData.headcrabHealth;
-	pev->view_ofs = Vector(0, 0, 20);// position of the eyes relative to monster's origin.
+	pev->view_ofs = Vector( 0, 0, 20 );// position of the eyes relative to monster's origin.
 	pev->yaw_speed = 5;//!!! should we put this in the monster's changeanim function since turn rates may vary with state/anim?
 	m_flFieldOfView = 0.5;// indicates the width of this monster's forward view cone ( as a dotproduct result )
 	m_MonsterState = MONSTERSTATE_NONE;
@@ -97,73 +114,110 @@ void CChicken::Spawn()
 //=========================================================
 // Precache - precaches all resources this monster needs
 //=========================================================
-void CChicken::Precache()
+void CEinarChicken::Precache()
 {
-	PRECACHE_SOUND_ARRAY(pIdleSounds);
-	PRECACHE_SOUND_ARRAY(pAlertSounds);
-	PRECACHE_SOUND_ARRAY(pPainSounds);
-	PRECACHE_SOUND_ARRAY(pAttackSounds);
-	PRECACHE_SOUND_ARRAY(pDeathSounds);
+	PRECACHE_SOUND( "thehand/hnd_attack1.wav" );
+        PRECACHE_SOUND( "thehand/hnd_headbite.wav" );
+	PRECACHE_SOUND_ARRAY( pIdleSounds );
+	PRECACHE_SOUND_ARRAY( pAlertSounds );
+	PRECACHE_SOUND_ARRAY( pPainSounds );
+	PRECACHE_SOUND_ARRAY( pAttackSounds );
+	PRECACHE_SOUND_ARRAY( pDeathSounds );
 
-	PRECACHE_MODEL("models/chicken.mdl");
+	PRECACHE_MODEL( "models/chicken.mdl" );
 }
 
-void CChicken::StartTask(Task_t *pTask)
+//=========================================================
+// SetYawSpeed - allows each sequence to have a different
+// turn rate associated with it.
+//=========================================================
+void CEinarChicken::SetYawSpeed( void )
 {
-	m_iTaskStatus = TASKSTATUS_RUNNING;
+	int ys;
 
-	switch (pTask->iTask)
+	switch( m_Activity )
 	{
-	case TASK_RANGE_ATTACK1:
-	{
-		EMIT_SOUND_DYN(edict(), CHAN_WEAPON, pAttackSounds[0], GetSoundVolue(), ATTN_IDLE, 0, GetVoicePitch());
-		m_IdealActivity = ACT_RANGE_ATTACK1;
-		SetTouch(&CHeadCrab::LeapTouch);
+	case ACT_IDLE:
+		ys = 60;
+		break;
+	case ACT_RUN:
+	case ACT_WALK:
+		ys = 30;
+		break;
+	case ACT_TURN_LEFT:
+	case ACT_TURN_RIGHT:
+		ys = 120;
+		break;
+	case ACT_RANGE_ATTACK1:
+		ys = 60;
+		break;
+	default:
+		ys = 60;
 		break;
 	}
-	default:
-	{
-		CHeadCrab::StartTask(pTask);
-	}
-	}
+
+	pev->yaw_speed = ys;
+}
+
+//=========================================================
+// AlertSound
+//=========================================================
+void CEinarChicken::AlertSound()
+{
+	EMIT_SOUND_DYN( edict(), CHAN_VOICE, RANDOM_SOUND_ARRAY( pAlertSounds ), GetSoundVolue(), ATTN_IDLE, 0, GetVoicePitch() );
 }
 
 //=========================================================
 // IdleSound
 //=========================================================
-void CChicken::IdleSound(void)
+void CEinarChicken::IdleSound()
 {
-	EMIT_SOUND_DYN(edict(), CHAN_VOICE, RANDOM_SOUND_ARRAY(pIdleSounds), GetSoundVolue(), ATTN_IDLE, 0, GetVoicePitch());
+	EMIT_SOUND_DYN( edict(), CHAN_VOICE, RANDOM_SOUND_ARRAY( pIdleSounds ), GetSoundVolue(), ATTN_IDLE, 0, GetVoicePitch() );
 }
 
 //=========================================================
-// AlertSound 
+// BiteSound
 //=========================================================
-void CChicken::AlertSound(void)
+void CEinarChicken::BiteSound()
 {
-	EMIT_SOUND_DYN(edict(), CHAN_VOICE, RANDOM_SOUND_ARRAY(pAlertSounds), GetSoundVolue(), ATTN_IDLE, 0, GetVoicePitch());
+	if( !RANDOM_LONG( 0, 9 ) )
+		EMIT_SOUND_DYN( edict(), CHAN_VOICE, "chicken/ch_alert1.wav", GetSoundVolue(), ATTN_IDLE, 0, GetVoicePitch() );
+
+	EMIT_SOUND_DYN( edict(), CHAN_WEAPON, "thehand/hnd_headbite.wav", GetSoundVolue(), ATTN_IDLE, 0, GetVoicePitch() );
 }
 
 //=========================================================
 // PainSound 
 //=========================================================
-void CChicken::PainSound(void)
+void CEinarChicken::PainSound()
 {
-	EMIT_SOUND_DYN(edict(), CHAN_VOICE, RANDOM_SOUND_ARRAY(pPainSounds), GetSoundVolue(), ATTN_IDLE, 0, GetVoicePitch());
+	EMIT_SOUND_DYN( edict(), CHAN_VOICE, RANDOM_SOUND_ARRAY( pPainSounds ), GetSoundVolue(), ATTN_IDLE, 0, GetVoicePitch() );
 }
 
 //=========================================================
 // DeathSound 
 //=========================================================
-void CChicken::DeathSound(void)
+void CEinarChicken::DeathSound()
 {
-	EMIT_SOUND_DYN(edict(), CHAN_VOICE, RANDOM_SOUND_ARRAY(pDeathSounds), GetSoundVolue(), ATTN_IDLE, 0, GetVoicePitch());
+	EMIT_SOUND_DYN( edict(), CHAN_VOICE, RANDOM_SOUND_ARRAY( pDeathSounds ), GetSoundVolue(), ATTN_IDLE, 0, GetVoicePitch() );
+}
+
+//=========================================================
+// AttackSound2
+//=========================================================
+void CEinarChicken::StartAttackSound()
+{
+	if( !RANDOM_LONG( 0, 9 ) )
+		EMIT_SOUND_DYN( edict(), CHAN_VOICE, RANDOM_SOUND_ARRAY( pIdleSounds ), GetSoundVolue(), ATTN_IDLE, 0, GetVoicePitch() );
 }
 
 //=========================================================
 // AttackSound 
 //=========================================================
-void CChicken::AttackSound(void)
+void CEinarChicken::AttackSound()
 {
-	EMIT_SOUND_DYN(edict(), CHAN_VOICE, RANDOM_SOUND_ARRAY(pAttackSounds), GetSoundVolue(), ATTN_IDLE, 0, GetVoicePitch());
+	if( !RANDOM_LONG( 0, 1 ) )
+		EMIT_SOUND_DYN( edict(), CHAN_VOICE, RANDOM_SOUND_ARRAY( pAttackSounds ), GetSoundVolue(), ATTN_IDLE, 0, GetVoicePitch() );
+
+	EMIT_SOUND_DYN( edict(), CHAN_WEAPON, "thehand/hnd_attack1.wav", GetSoundVolue(), ATTN_IDLE, 0, GetVoicePitch() );
 }

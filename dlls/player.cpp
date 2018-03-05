@@ -188,8 +188,6 @@ int gmsgBhopcap = 0;
 int gmsgStatusText = 0;
 int gmsgStatusValue = 0;
 
-int gmsgZoom = 0;
-
 void LinkUserMessages( void )
 {
 	// Already taken care of?
@@ -236,8 +234,6 @@ void LinkUserMessages( void )
 
 	gmsgStatusText = REG_USER_MSG( "StatusText", -1 );
 	gmsgStatusValue = REG_USER_MSG( "StatusValue", 3 );
-
-	gmsgZoom = REG_USER_MSG( "Zoom", 2 );
 }
 
 LINK_ENTITY_TO_CLASS( player, CBasePlayer )
@@ -1093,28 +1089,6 @@ void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim )
 
 /*
 ===========
-TabulateAmmo
-This function is used to find and store 
-all the ammo we have into the ammo vars.
-============
-*/
-void CBasePlayer::TabulateAmmo()
-{
-	ammo_9mm = AmmoInventory( GetAmmoIndex( "9mm" ) );
-	ammo_357 = AmmoInventory( GetAmmoIndex( "357" ) );
-	ammo_argrens = AmmoInventory( GetAmmoIndex( "ARgrenades" ) );
-	ammo_bolts = AmmoInventory( GetAmmoIndex( "bolts" ) );
-	ammo_buckshot = AmmoInventory( GetAmmoIndex( "buckshot" ) );
-	ammo_rockets = AmmoInventory( GetAmmoIndex( "rockets" ) );
-	ammo_uranium = AmmoInventory( GetAmmoIndex( "uranium" ) );
-	ammo_hornets = AmmoInventory( GetAmmoIndex( "Hornets" ) );
-	ammo_ap9 = AmmoInventory( GetAmmoIndex( "ap9" ) );
-	ammo_taurus = AmmoInventory( GetAmmoIndex( "taurus" ) );
-	ammo_sniper = AmmoInventory( GetAmmoIndex( "sniper" ) );
-}
-
-/*
-===========
 WaterMove
 ============
 */
@@ -1500,19 +1474,38 @@ void CBasePlayer::PlayerUse( void )
 					m_afPhysicsFlags |= PFLAG_ONTRAIN;
 					m_iTrain = TrainSpeed( (int)pTrain->pev->speed, pTrain->pev->impulse );
 					m_iTrain |= TRAIN_NEW;
-					const char* usesound = "plats/train_use1.wav";
+					const char* pszSound = 0;
 
-					CFuncTrackTrain* pTrackTrain = (CFuncTrackTrain*)pTrain;
-
-					if( pTrackTrain && pTrackTrain->UseCustomSounds() )
+					if( FBitSet( pTrain->pev->spawnflags, SF_TRACKTRAIN_TH_SOUNDS ) )
 					{
-						if( pTrackTrain->IsCar() )
-							usesound = "plats/train_use2.wav";
-						else if( pTrackTrain->IsTrain() )
-							usesound = "plats/train_use6.wav";
-					}
+						CFuncTrackTrain* pTrackTrain = (CFuncTrackTrain*)pTrain;
 
-					EMIT_SOUND( ENT( pev ), CHAN_ITEM, usesound, 0.8, ATTN_NORM );
+						switch( pTrackTrain->m_sounds )
+						{
+						default:
+							// no sound
+							break;
+						case 2:
+							pszSound = "plats/train_use2.wav";
+							break;
+						case 3:
+							pszSound = "plats/train_use3.wav";
+							break;
+						case 4:
+							pszSound = "plats/train_use4.wav";
+							break;
+						case 5:
+							pszSound = "plats/train_use6.wav";
+							break;
+						case 6:
+							pszSound = "plats/train_use7.wav";
+							break;
+						}
+					}
+					if( !pszSound )
+						pszSound = "plats/train_use1.wav";
+
+					EMIT_SOUND( ENT( pev ), CHAN_ITEM, pszSound, 0.8, ATTN_NORM );
 					return;
 				}
 			}
@@ -2239,6 +2232,10 @@ void CBasePlayer::CheckSuitUpdate()
 	if( !( pev->weapons & ( 1 << WEAPON_SUIT ) ) )
 		return;
 
+	if( FBitSet( m_iHideHUD, HIDEHUD_NOHEV )
+		&& !g_pGameRules->IsMultiplayer() )
+		return;
+
 	// if in range of radiation source, ping geiger counter
 	UpdateGeigerCounter();
 
@@ -2292,6 +2289,92 @@ void CBasePlayer::CheckSuitUpdate()
 
 void CBasePlayer::SetSuitUpdate( const char *name, int fgroup, int iNoRepeatTime )
 {
+	int i;
+	int isentence;
+	int iempty = -1;
+
+	// Ignore suit updates if no suit
+	if( !( pev->weapons & ( 1 << WEAPON_SUIT ) ) )
+		return;
+
+	if( FBitSet( m_iHideHUD, HIDEHUD_NOHEV ) )
+		return;
+
+	if( g_pGameRules->IsMultiplayer() )
+	{
+		// due to static channel design, etc. We don't play HEV sounds in multiplayer right now.
+		return;
+	}
+
+	// if name == NULL, then clear out the queue
+	if( !name )
+	{
+		for( i = 0; i < CSUITPLAYLIST; i++ )
+			m_rgSuitPlayList[i] = 0;
+		return;
+	}
+
+	// get sentence or group number
+	if( !fgroup )
+	{
+		isentence = SENTENCEG_Lookup( name, NULL );
+		if( isentence < 0 )
+			return;
+	}
+	else
+		// mark group number as negative
+		isentence = -SENTENCEG_GetIndex( name );
+
+	// check norepeat list - this list lets us cancel
+	// the playback of words or sentences that have already
+	// been played within a certain time.
+	for( i = 0; i < CSUITNOREPEAT; i++ )
+	{
+		if( isentence == m_rgiSuitNoRepeat[i] )
+		{
+			// this sentence or group is already in 
+			// the norepeat list
+			if( m_rgflSuitNoRepeatTime[i] < gpGlobals->time )
+			{
+				// norepeat time has expired, clear it out
+				m_rgiSuitNoRepeat[i] = 0;
+				m_rgflSuitNoRepeatTime[i] = 0.0;
+				iempty = i;
+				break;
+			}
+			else
+			{
+				// don't play, still marked as norepeat
+				return;
+			}
+		}
+		// keep track of empty slot
+		if( !m_rgiSuitNoRepeat[i] )
+			iempty = i;
+	}
+
+	// sentence is not in norepeat list, save if norepeat time was given
+	if( iNoRepeatTime )
+	{
+		if( iempty < 0 )
+			iempty = RANDOM_LONG( 0, CSUITNOREPEAT - 1 ); // pick random slot to take over
+		m_rgiSuitNoRepeat[iempty] = isentence;
+		m_rgflSuitNoRepeatTime[iempty] = iNoRepeatTime + gpGlobals->time;
+	}
+
+	// find empty spot in queue, or overwrite last spot
+	m_rgSuitPlayList[m_iSuitPlayNext++] = isentence;
+	if( m_iSuitPlayNext == CSUITPLAYLIST )
+		m_iSuitPlayNext = 0;
+
+	if( m_flSuitUpdate <= gpGlobals->time )
+	{
+		if( m_flSuitUpdate == 0 )
+			// play queue is empty, don't delay too long before playback
+			m_flSuitUpdate = gpGlobals->time + SUITFIRSTUPDATETIME;
+		else 
+			m_flSuitUpdate = gpGlobals->time + SUITUPDATETIME; 
+	}
 }
 
 /*
@@ -3175,6 +3258,8 @@ void CBloodSplat::Spray( void )
 	pev->nextthink = gpGlobals->time + 0.1;
 }
 
+#define SF_SUIT_TH_REDMODE		0x0020
+
 //==============================================
 void CBasePlayer::GiveNamedItem( const char *pszName )
 {
@@ -3188,6 +3273,18 @@ void CBasePlayer::GiveNamedItem( const char *pszName )
 		ALERT( at_console, "NULL Ent in GiveNamedItem!\n" );
 		return;
 	}
+
+	if( g_pGameRules->IsMultiplayer()
+	{
+		if( FClassnameIs( VARS( pent ), "weapon_9mmhandgun" ) )
+			VARS( pent )->body = 1;
+	}
+	else
+	{
+		if( FClassnameIs( VARS( pent ), "item_suit" ) )
+			SetBits( VARS( pent )->spawnflags, SF_SUIT_TH_REDMODE );
+	}
+
 	VARS( pent )->origin = pev->origin;
 	pent->v.spawnflags |= SF_NORESPAWN;
 
@@ -3382,6 +3479,7 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 	case 101:
 		gEvilImpulse101 = TRUE;
 		GiveNamedItem( "item_suit" );
+		GiveNamedItem( "item_battery" );
 		GiveNamedItem( "weapon_crowbar" );
 		GiveNamedItem( "weapon_9mmhandgun" );
 		GiveNamedItem( "ammo_9mmclip" );
@@ -3398,6 +3496,7 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		GiveNamedItem( "weapon_crossbow" );
 		GiveNamedItem( "ammo_crossbow" );
 		GiveNamedItem( "weapon_egon" );
+		GiveNamedItem( "ammo_egonclip" );
 		GiveNamedItem( "weapon_gauss" );
 		GiveNamedItem( "ammo_gaussclip" );
 		GiveNamedItem( "weapon_rpg" );
@@ -3410,7 +3509,6 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		GiveNamedItem( "weapon_th_chaingun" );
 		GiveNamedItem( "weapon_th_medkit" );
 		GiveNamedItem( "weapon_th_shovel" );
-		GiveNamedItem( "weapon_einar1" );
 		GiveNamedItem( "weapon_th_sniper" );
 		GiveNamedItem( "ammo_th_sniper" );
 		GiveNamedItem( "weapon_th_spanner" );
@@ -3674,8 +3772,6 @@ int CBasePlayer::GiveAmmo( int iCount, const char *szName, int iMax )
 			WRITE_BYTE( iAdd );		// amount
 		MESSAGE_END();
 	}
-
-	TabulateAmmo();
 
 	return i;
 }

@@ -27,13 +27,6 @@
 #include	"scripted.h"
 #include	"weapons.h"
 #include	"soundent.h"
-#include	"barney.h"
-
-//
-// Barney special flags
-//
-
-#define BF_ZOMBIECOP	1
 
 //
 // Barney skins
@@ -44,7 +37,7 @@ enum
 	SKIN_ZOMBIE_COP_YOUNG,
 	SKIN_ZOMBIE_COP_OLD,
 	SKIN_ASYLUM_GUARD,
-	SKIN_ZOMBIE_ASYLUM_GUARD
+	SKIN_ZOMBIE_ASYLUM_GUARD,
 };
 
 //=========================================================
@@ -59,6 +52,54 @@ enum
 #define	BARNEY_BODY_GUNDRAWN		1
 #define BARNEY_BODY_GUNGONE		2
 
+class CBarney : public CTalkMonster
+{
+public:
+	void Spawn(void);
+	void Precache(void);
+	void SetYawSpeed(void);
+	int  ISoundMask(void);
+	void BarneyFirePistol(void);
+	void AlertSound(void);
+	int  Classify(void);
+	void HandleAnimEvent(MonsterEvent_t *pEvent);
+
+	void RunTask(Task_t *pTask);
+	void StartTask(Task_t *pTask);
+	virtual int	ObjectCaps(void) { return CTalkMonster::ObjectCaps() | FCAP_IMPULSE_USE; }
+	int TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
+	BOOL CheckRangeAttack1(float flDot, float flDist);
+
+	void DeclineFollowing(void);
+
+	// Override these to set behavior
+	Schedule_t *GetScheduleOfType(int Type);
+	Schedule_t *GetSchedule(void);
+	MONSTERSTATE GetIdealState(void);
+
+	void DeathSound(void);
+	void PainSound(void);
+
+	void TalkInit(void);
+
+	void TraceAttack(entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType);
+	void Killed(entvars_t *pevAttacker, int iGib);
+
+	virtual int		Save(CSave &save);
+	virtual int		Restore(CRestore &restore);
+	static	TYPEDESCRIPTION m_SaveData[];
+
+	BOOL	m_fGunDrawn;
+	float	m_painTime;
+	float	m_checkAttackTime;
+	BOOL	m_lastAttackCheck;
+
+	// UNDONE: What is this for?  It isn't used?
+	float	m_flPlayerDamage;// how much pain has the player inflicted on me?
+
+	CUSTOM_SCHEDULES;
+};
+
 LINK_ENTITY_TO_CLASS( monster_barney, CBarney )
 
 TYPEDESCRIPTION	CBarney::m_SaveData[] =
@@ -68,7 +109,6 @@ TYPEDESCRIPTION	CBarney::m_SaveData[] =
 	DEFINE_FIELD( CBarney, m_checkAttackTime, FIELD_TIME ),
 	DEFINE_FIELD( CBarney, m_lastAttackCheck, FIELD_BOOLEAN ),
 	DEFINE_FIELD( CBarney, m_flPlayerDamage, FIELD_FLOAT ),
-	DEFINE_FIELD( CBarney, m_iBarneyFlags, FIELD_INTEGER ),
 };
 
 IMPLEMENT_SAVERESTORE( CBarney, CTalkMonster )
@@ -226,7 +266,7 @@ int CBarney::ISoundMask( void)
 //=========================================================
 int CBarney::Classify( void )
 {
-	if( IsZombieCop() )
+	if( FBitSet( pev->spawnflags, SF_MONSTER_ZOMBIECOP ) )
 		return CLASS_ALIEN_MONSTER;
 
 	return CLASS_PLAYER_ALLY;
@@ -320,22 +360,22 @@ void CBarney::BarneyFirePistol( void )
 
 	Vector vecSpread;
 
-	if( m_hEnemy == 0 || !m_hEnemy->IsPlayer() )
+	if( !FBitSet( pev->spawnflags, SF_MONSTER_ZOMBIECOP ) )
 	{
 		// Higher chance to hit target.
 		vecSpread = VECTOR_CONE_2DEGREES;
 	}
 	else
 	{
-		// Allow barney to miss player to avoid too much accuracy.
-		vecSpread = VECTOR_CONE_6DEGREES;
+		// Allow zombie barney have bad accuracy.
+		vecSpread = VECTOR_CONE_10DEGREES;
 	}
 
 	// Fire bullet.
 	FireBullets( 1, vecShootOrigin, vecShootDir, vecSpread, 1024, BULLET_MONSTER_9MM );
 
 	int pitchShift = RANDOM_LONG( 0, 20 );
-	
+
 	// Only shift about half the time
 	if( pitchShift > 10 )
 		pitchShift = 0;
@@ -385,16 +425,15 @@ void CBarney::Spawn()
 	Precache();
 
 	if( !pev->model )
-	{
 		pev->model = MAKE_STRING( "models/barney.mdl" );
-	}
 	SET_MODEL( ENT( pev ), STRING( pev->model ) );
 	UTIL_SetSize( pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX );
 
 	pev->solid = SOLID_SLIDEBOX;
 	pev->movetype = MOVETYPE_STEP;
 	m_bloodColor = BLOOD_COLOR_RED;
-	pev->health = gSkillData.barneyHealth;
+	if( !pev->health )
+		pev->health = gSkillData.barneyHealth;
 	pev->view_ofs = Vector ( 0, 0, 50 );// position of the eyes relative to monster's origin.
 	m_flFieldOfView = VIEW_FIELD_WIDE; // NOTE: we need a wide field of view so npc will notice player and say hello
 	m_MonsterState = MONSTERSTATE_NONE;
@@ -407,24 +446,19 @@ void CBarney::Spawn()
 	MonsterInit();
 	SetUse( &CTalkMonster::FollowerUse );
 
-	// Cops use a lower voice pitch.
-	m_voicePitch = RANDOM_LONG( 95, 96 );
-
-	m_iBarneyFlags = 0;
-
-	// If this is a zombie cop.
-	if( pev->spawnflags & SF_MONSTER_ZOMBIECOP )
+	if( FBitSet( pev->spawnflags, SF_MONSTER_ZOMBIECOP ) )
 	{
-		m_iBarneyFlags |= BF_ZOMBIECOP;
+		// Prevent zombie cops from being 'used'.
+		SetUse( NULL );
 
 		// Convert to zombie skin.
 		switch( pev->skin )
 		{
-		// Regular zombie skin.
+			// Regular zombie skin.
 		case SKIN_NORMAL_COP:
 			pev->skin = SKIN_ZOMBIE_COP_YOUNG + RANDOM_LONG( 0, 1 );
 			break;
-		// Zombie asylum guard.
+			// Zombie asylum guard.
 		case SKIN_ASYLUM_GUARD:
 			pev->skin = SKIN_ZOMBIE_ASYLUM_GUARD;
 			break;
@@ -437,24 +471,18 @@ void CBarney::Spawn()
 		// Convert to normal skin.
 		switch( pev->skin )
 		{
-		// Young/old skin.
+			// Young/old skin.
 		case SKIN_ZOMBIE_COP_YOUNG:
 		case SKIN_ZOMBIE_COP_OLD:
 			pev->skin = SKIN_NORMAL_COP;
 			break;
-		// Asylum guard.
+			// Asylum guard.
 		case SKIN_ZOMBIE_ASYLUM_GUARD:
 			pev->skin = SKIN_ASYLUM_GUARD;
 			break;
 		default:
 			break;
 		}
-	}
-	
-	// Prevent zombie cops from being 'used'.
-	if( IsZombieCop() )
-	{
-		SetUse( NULL );
 	}
 }
 
@@ -463,8 +491,7 @@ void CBarney::Spawn()
 //=========================================================
 void CBarney::Precache()
 {
-	PRECACHE_MODEL( "models/barney.mdl" );
-	PRECACHE_MODEL( "models/pilot.mdl" );
+	PRECACHE_MODEL( pev->model ? STRING( pev->model ) : "models/barney.mdl" );
 
 	PRECACHE_SOUND( "barney/ba_attack1.wav" );
 	PRECACHE_SOUND( "barney/ba_attack2.wav" );
@@ -543,7 +570,7 @@ int CBarney::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float 
 		return ret;
 
 	// Do not speak about players harming me if I am a zombie.
-	if( IsZombieCop() )
+	if( FBitSet( pev->spawnflags, SF_MONSTER_ZOMBIECOP ) )
 		return ret;
 
 	if( m_MonsterState != MONSTERSTATE_PRONE && ( pevAttacker->flags & FL_CLIENT ) )
@@ -628,7 +655,7 @@ void CBarney::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir
 	{
 	case HITGROUP_CHEST:
 	case HITGROUP_STOMACH:
-		if( ( bitsDamageType & ( DMG_BULLET | DMG_SLASH | DMG_BLAST ) )&& HasKevlar() )
+		if( ( bitsDamageType & ( DMG_BULLET | DMG_SLASH | DMG_BLAST ) ) )
 		{
 			flDamage = flDamage / 2;
 		}
@@ -811,55 +838,7 @@ void CBarney::DeclineFollowing( void )
 {
 	PlaySentence( "BA_POK", 2, VOL_NORM, ATTN_NORM );
 }
-
-//=========================================================
-// IdleRespond
-// Respond to a previous question
-//=========================================================
-void CBarney::IdleRespond( void )
-{
-        if( IsZombieCop() )
-                return;
-
-        CTalkMonster::IdleRespond();
-}
-
-int CBarney::FOkToSpeak( void )
-{
-        if( IsZombieCop() )
-                return FALSE;
         
-        return CTalkMonster::FOkToSpeak();
-}
-        
-BOOL CBarney::IsZombieCop( void ) const
-{
-        return ( m_iBarneyFlags & BF_ZOMBIECOP );
-}
-        
-BOOL CBarney::HasKevlar() const
-{
-        return pev->skin == SKIN_ASYLUM_GUARD || pev->skin == SKIN_ZOMBIE_ASYLUM_GUARD;
-}
-        
-//=========================================================
-// Only called by monstermaker.
-// Used to fix up Barney skin.
-//=========================================================
-void CBarney::FixupBarneySkin( BOOL bZombieCop )
-{
-        if( bZombieCop )
-        {
-                // Map they21
-                //
-                // This Barney should attack players but use regular skin.
-                if( FStrEq( STRING( gpGlobals->mapname ), "they21" ) && FStrEq( STRING( pev->targetname ), "discoverer" ) )
-                {
-                        pev->skin = SKIN_NORMAL_COP;
-                }
-        }
-}
-
 //=========================================================
 // DEAD BARNEY PROP
 //
@@ -902,8 +881,10 @@ LINK_ENTITY_TO_CLASS( monster_barney_dead, CDeadBarney )
 //=========================================================
 void CDeadBarney::Spawn()
 {
-	PRECACHE_MODEL( "models/barney.mdl" );
-	SET_MODEL( ENT( pev ), "models/barney.mdl" );
+	if( !pev->model )
+		pev->model = MAKE_STRING( "models/barney.mdl" );
+	PRECACHE_MODEL( STRING( pev->model ) );
+	SET_MODEL( ENT( pev ), STRING( pev->model ) );
 
 	pev->effects = 0;
 	pev->yaw_speed = 8;

@@ -46,8 +46,6 @@ DLL_GLOBAL	short g_sModelIndexBubbles;// holds the index for the bubbles model
 DLL_GLOBAL	short g_sModelIndexBloodDrop;// holds the sprite index for the initial blood
 DLL_GLOBAL	short g_sModelIndexBloodSpray;// holds the sprite index for splattered blood
 
-DLL_GLOBAL	short g_sModelIndexFThrow; // holds the index for the flamethrower
-
 ItemInfo CBasePlayerItem::ItemInfoArray[MAX_WEAPONS];
 AmmoInfo CBasePlayerItem::AmmoInfoArray[MAX_AMMO_SLOTS];
 
@@ -171,10 +169,6 @@ void DecalGunshot( TraceResult *pTrace, int iBulletType )
 		case BULLET_MONSTER_MP5:
 		case BULLET_PLAYER_BUCKSHOT:
 		case BULLET_PLAYER_357:
-		case BULLET_PLAYER_AP9:
-		case BULLET_PLAYER_CHAINGUN:
-		case BULLET_PLAYER_SNIPER:
-		case BULLET_PLAYER_TAURUS:
 		default:
 			// smoke and decal
 			UTIL_GunshotDecalTrace( pTrace, DamageDecal( pEntity, DMG_BULLET ) );
@@ -345,6 +339,7 @@ void W_Precache( void )
 
 	// egon
 	UTIL_PrecacheOtherWeapon( "weapon_egon" );
+	UTIL_PrecacheOther( "ammo_egonclip" );
 #endif
 	// tripmine
 	UTIL_PrecacheOtherWeapon( "weapon_tripmine" );
@@ -371,8 +366,11 @@ void W_Precache( void )
 	// shovel
 	UTIL_PrecacheOtherWeapon( "weapon_th_shovel" );
 
-	// sniper
+	// tfcsniper
 	UTIL_PrecacheOtherWeapon( "weapon_einar1" );
+	// UTIL_PrecacheOther( "ammo_einar1" );
+
+	// sniper
 	UTIL_PrecacheOtherWeapon( "weapon_th_sniper" );
 	UTIL_PrecacheOther( "ammo_th_sniper" );
 
@@ -399,8 +397,6 @@ void W_Precache( void )
 	g_sModelIndexLaser = PRECACHE_MODEL( g_pModelNameLaser );
 	g_sModelIndexLaserDot = PRECACHE_MODEL( "sprites/laserdot.spr" );
 
-	g_sModelIndexFThrow = PRECACHE_MODEL( "sprites/fthrow.spr" );
-
 	// used by explosions
 	PRECACHE_MODEL( "models/grenade.mdl" );
 	PRECACHE_MODEL( "sprites/explode1.spr" );
@@ -415,6 +411,9 @@ void W_Precache( void )
 
 	PRECACHE_SOUND( "weapons/bullet_hit1.wav" );	// hit by bullet
 	PRECACHE_SOUND( "weapons/bullet_hit2.wav" );	// hit by bullet
+
+	PRECACHE_SOUND( "kelly/bullet_kelly1.wav" );
+	PRECACHE_SOUND( "kelly/bullet_kelly2.wav" );
 
 	PRECACHE_SOUND( "items/weapondrop1.wav" );// weapon falls to the ground
 
@@ -647,15 +646,13 @@ void CBasePlayerWeapon::ItemPostFrame( void )
 		m_iClip += j;
 		m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] -= j;
 
-		m_pPlayer->TabulateAmmo();
-
 		m_fInReload = FALSE;
 	}
 
-	if( !( m_pPlayer->pev->button & IN_ATTACK ) )
+	/*if( !( m_pPlayer->pev->button & IN_ATTACK ) )
 	{
 		m_flLastFireTime = 0.0f;
-	}
+	}*/
 
 	if( ( m_pPlayer->pev->button & IN_ATTACK2 ) && CanAttack( m_flNextSecondaryAttack, gpGlobals->time, UseDecrement() ) )
 	{
@@ -664,7 +661,6 @@ void CBasePlayerWeapon::ItemPostFrame( void )
 			m_fFireOnEmpty = TRUE;
 		}
 
-		m_pPlayer->TabulateAmmo();
 		SecondaryAttack();
 		m_pPlayer->pev->button &= ~IN_ATTACK2;
 	}
@@ -675,7 +671,6 @@ void CBasePlayerWeapon::ItemPostFrame( void )
 			m_fFireOnEmpty = TRUE;
 		}
 
-		m_pPlayer->TabulateAmmo();
 		PrimaryAttack();
 	}
 	else if( m_pPlayer->pev->button & IN_RELOAD && iMaxClip() != WEAPON_NOCLIP && !m_fInReload ) 
@@ -980,7 +975,6 @@ BOOL CBasePlayerWeapon::DefaultDeploy( const char *szViewModel, const char *szWe
 	if( !CanDeploy() )
 		return FALSE;
 
-	m_pPlayer->TabulateAmmo();
 	m_pPlayer->pev->viewmodel = MAKE_STRING( szViewModel );
 	m_pPlayer->pev->weaponmodel = MAKE_STRING( szWeaponModel );
 	strcpy( m_pPlayer->m_szAnimExtention, szAnimExt );
@@ -988,7 +982,7 @@ BOOL CBasePlayerWeapon::DefaultDeploy( const char *szViewModel, const char *szWe
 
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.0;
-	m_flLastFireTime = 0.0f;
+	//m_flLastFireTime = 0.0f;
 
 	return TRUE;
 }
@@ -1186,7 +1180,7 @@ void CBasePlayerWeapon::RetireWeapon( void )
 		}
 	}
 }
-
+/*
 //=========================================================================
 // GetNextAttackDelay - An accurate way of calcualting the next attack time.
 //=========================================================================
@@ -1218,6 +1212,7 @@ float CBasePlayerWeapon::GetNextAttackDelay( float delay )
 	//OutputDebugString( szMsg );
 	return flNextAttack;
 }
+*/
 //*********************************************************
 // weaponbox code:
 //*********************************************************
@@ -1636,27 +1631,6 @@ TYPEDESCRIPTION	CGauss::m_SaveData[] =
 
 IMPLEMENT_SAVERESTORE( CGauss, CBasePlayerWeapon )
 
-TYPEDESCRIPTION	CEgon::m_SaveData[] =
-{
-	//DEFINE_FIELD( CEgon, m_pBeam, FIELD_CLASSPTR ),
-	//DEFINE_FIELD( CEgon, m_pNoise, FIELD_CLASSPTR ),
-	//DEFINE_FIELD( CEgon, m_pSprite, FIELD_CLASSPTR ),
-	DEFINE_FIELD( CEgon, m_shootTime, FIELD_TIME ),
-	DEFINE_FIELD( CEgon, m_fireState, FIELD_INTEGER ),
-	DEFINE_FIELD( CEgon, m_fireMode, FIELD_INTEGER ),
-	DEFINE_FIELD( CEgon, m_shakeTime, FIELD_TIME ),
-	DEFINE_FIELD( CEgon, m_flAmmoUseTime, FIELD_TIME ),
-};
-
-IMPLEMENT_SAVERESTORE( CEgon, CBasePlayerWeapon )
-
-TYPEDESCRIPTION CHgun::m_SaveData[] =
-{
-	DEFINE_FIELD( CHgun, m_flRechargeTime, FIELD_FLOAT ),
-};
-
-IMPLEMENT_SAVERESTORE( CHgun, CBasePlayerWeapon )
-
 TYPEDESCRIPTION	CSatchel::m_SaveData[] = 
 {
 	DEFINE_FIELD( CSatchel, m_chargeReady, FIELD_INTEGER ),
@@ -1664,39 +1638,44 @@ TYPEDESCRIPTION	CSatchel::m_SaveData[] =
 
 IMPLEMENT_SAVERESTORE( CSatchel, CBasePlayerWeapon )
 
-TYPEDESCRIPTION	CGlock::m_SaveData[] =
-{
-	DEFINE_FIELD( CGlock, m_fSilencerOn, FIELD_BOOLEAN ),
-};
-
-IMPLEMENT_SAVERESTORE( CGlock, CBasePlayerWeapon );
-
 TYPEDESCRIPTION	CPython::m_SaveData[] =
 {
 	DEFINE_FIELD( CPython, m_flSoundDelay, FIELD_TIME ),
 };
 
-IMPLEMENT_SAVERESTORE( CPython, CBasePlayerWeapon );
+IMPLEMENT_SAVERESTORE( CPython, CBasePlayerWeapon )
 
-TYPEDESCRIPTION	CAP9::m_SaveData[] =
+TYPEDESCRIPTION	CWeaponEinarAP9::m_SaveData[] =
 {
-	DEFINE_FIELD( CAP9, m_iBurstShots, FIELD_INTEGER ),
+	DEFINE_FIELD( CWeaponEinarAP9, m_iBurstShots, FIELD_INTEGER ),
 };
 
-IMPLEMENT_SAVERESTORE( CAP9, CBasePlayerWeapon );
+IMPLEMENT_SAVERESTORE( CWeaponEinarAP9, CBasePlayerWeapon )
 
-TYPEDESCRIPTION	CSniper::m_SaveData[] =
+TYPEDESCRIPTION CWeaponEinarSniper::m_SaveData[] =
 {
-	DEFINE_FIELD( CSniper, m_fInZoom, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CWeaponEinarSniper, m_fInZoom, FIELD_INTEGER ),
 };
 
-IMPLEMENT_SAVERESTORE( CSniper, CBasePlayerWeapon )
+IMPLEMENT_SAVERESTORE( CWeaponEinarSniper, CBasePlayerWeapon )
 
-#if 0
-TYPEDESCRIPTION	CEinar1::m_SaveData[] =
+TYPEDESCRIPTION CWeaponEinarTFCSniper::m_SaveData[] =
 {
-	DEFINE_FIELD( CEinar1, m_fInZoom, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CWeaponEinarTFCSniper, m_fInZoom, FIELD_INTEGER ),
 };
 
-IMPLEMENT_SAVERESTORE( CEinar1, CBasePlayerWeapon )
-#endif
+IMPLEMENT_SAVERESTORE( CWeaponEinarTFCSniper, CBasePlayerWeapon )
+
+TYPEDESCRIPTION CWeaponEinarChaingun::m_SaveData[] =
+{
+        DEFINE_FIELD( CWeaponEinarChaingun, m_fInAttack, FIELD_INTEGER ),
+};
+
+IMPLEMENT_SAVERESTORE( CWeaponEinarChaingun, CBasePlayerWeapon )
+
+TYPEDESCRIPTION CWeaponEinarMedkit::m_SaveData[] =
+{
+        DEFINE_FIELD( CWeaponEinarMedkit, m_fInAttack, FIELD_INTEGER ),
+};
+
+IMPLEMENT_SAVERESTORE( CWeaponEinarMedkit, CBasePlayerWeapon )

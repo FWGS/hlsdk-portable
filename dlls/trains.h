@@ -120,10 +120,6 @@ public:
 	float m_flBank;
 	float m_oldSpeed;
 
-	BOOL UseCustomSounds( void ) const;
-	BOOL IsCar( void ) const;
-	BOOL IsTrain( void ) const;
-
 private:
 	unsigned short m_usAdjustPitch;
 };

@@ -384,7 +384,7 @@ void CTripmine::Precache( void )
 	PRECACHE_MODEL( "models/p_tripmine.mdl" );
 	UTIL_PrecacheOther( "monster_tripmine" );
 
-	m_usTripFire = PRECACHE_EVENT( 1, "events/tripfire.sc" );
+	//m_usTripFire = PRECACHE_EVENT( 1, "events/tripfire.sc" );
 }
 
 int CTripmine::GetItemInfo( ItemInfo *p )
@@ -438,14 +438,6 @@ void CTripmine::PrimaryAttack( void )
 
 	UTIL_TraceLine( vecSrc, vecSrc + vecAiming * 128, dont_ignore_monsters, ENT( m_pPlayer->pev ), &tr );
 
-	int flags;
-#ifdef CLIENT_WEAPONS
-	flags = FEV_NOTHOST;
-#else
-	flags = 0;
-#endif
-	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usTripFire, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, 0, 0, 0, 0 );
-
 	if( tr.flFraction < 1.0 )
 	{
 		CBaseEntity *pEntity = CBaseEntity::Instance( tr.pHit );
@@ -477,7 +469,7 @@ void CTripmine::PrimaryAttack( void )
 
 	}*/
 
-	m_flNextPrimaryAttack = GetNextAttackDelay( 0.3 );
+	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.3;
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
 }
 

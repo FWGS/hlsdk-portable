@@ -255,7 +255,10 @@ void CTentacle::Spawn()
 	pev->takedamage = DAMAGE_AIM;
 	pev->flags |= FL_MONSTER;
 
-	m_bloodColor = BLOOD_COLOR_GREEN;
+	if( FBitSet( pev->spawnflags, SF_MONSTER_REDBLOOD ) )
+		m_bloodColor = BLOOD_COLOR_RED;
+	else
+		m_bloodColor = BLOOD_COLOR_GREEN;
 
 	SetThink( &CTentacle::Start );
 	SetTouch( &CTentacle::HitTouch );

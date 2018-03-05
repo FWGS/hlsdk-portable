@@ -25,8 +25,6 @@
 #include <string.h>
 #include <stdio.h>
 
-extern bool bIsMultiplayer( void );
-
 DECLARE_MESSAGE( m_Flash, FlashBat )
 DECLARE_MESSAGE( m_Flash, Flashlight )
 
@@ -113,13 +111,13 @@ int CHudFlashlight::Draw( float flTime )
 	if( !( gHUD.m_iWeaponBits & ( 1 << ( WEAPON_SUIT ) ) ) )
 		return 1;
 
-	if( m_fOn )
-		a = 225;
-	else
-		a = MIN_ALPHA;
-
-	if( bIsMultiplayer() )
+	if( !( gHUD.m_iHideHUDDisplay & HIDEHUD_NOHEV ) )
 	{
+		if( m_fOn )
+			a = 225;
+		else
+			a = MIN_ALPHA;
+
 		if( m_flBat < 0.20 )
 			UnpackRGB( r, g, b, RGB_REDISH );
 		else
@@ -127,6 +125,10 @@ int CHudFlashlight::Draw( float flTime )
 	}
 	else
 	{
+		if( m_fOn && m_flBat >= 0.20 )
+			a = 225;
+		else
+			a = MIN_ALPHA;
 		UnpackRGB( r, g, b, RGB_REDISH );
 	}
 

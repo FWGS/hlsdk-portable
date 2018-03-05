@@ -16,6 +16,8 @@
 #ifndef BULLSQUID_H
 #define BULLSQUID_H
 
+#define		SQUID_SPRINT_DIST	256 // how close the squid has to get before starting to sprint and refusing to swerve
+
 //=========================================================
 // monster-specific schedule types
 //=========================================================
@@ -45,12 +47,12 @@ class CSquidSpit : public CBaseEntity
 public:
 	void Spawn( void );
 
-	static void Shoot( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity );
+	static void Shoot( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity, int iSpitSize );
 	void Touch( CBaseEntity *pOther );
 	void EXPORT Animate( void );
 
-	virtual int		Save( CSave &save );
-	virtual int		Restore( CRestore &restore );
+	int		Save( CSave &save );
+	int		Restore( CRestore &restore );
 	static	TYPEDESCRIPTION m_SaveData[];
 
 	int  m_maxFrame;
@@ -59,30 +61,30 @@ public:
 class CBullsquid : public CBaseMonster
 {
 public:
-	void Spawn( void );
-	void Precache( void );
-	void SetYawSpeed( void );
+	virtual void Spawn( void );
+	virtual void Precache( void );
+	virtual void SetYawSpeed( void );
 	int  ISoundMask( void );
-	int  Classify ( void );
-	void HandleAnimEvent( MonsterEvent_t *pEvent );
-	void IdleSound( void );
-	void PainSound( void );
-	void DeathSound( void );
-	void AlertSound ( void );
-	void AttackSound( void );
-	void StartTask ( Task_t *pTask );
-	void RunTask ( Task_t *pTask );
-	BOOL CheckMeleeAttack1 ( float flDot, float flDist );
-	BOOL CheckMeleeAttack2 ( float flDot, float flDist );
-	BOOL CheckRangeAttack1 ( float flDot, float flDist );
-	void RunAI( void );
+	virtual int  Classify ( void );
+	virtual void HandleAnimEvent( MonsterEvent_t *pEvent );
+	virtual void IdleSound( void );
+	virtual void PainSound( void );
+	virtual void DeathSound( void );
+	virtual void AlertSound ( void );
+	virtual void AttackSound( void );
+	virtual void StartTask ( Task_t *pTask );
+	virtual void RunTask ( Task_t *pTask );
+	virtual BOOL CheckMeleeAttack1 ( float flDot, float flDist );
+	virtual BOOL CheckMeleeAttack2 ( float flDot, float flDist );
+	virtual BOOL CheckRangeAttack1 ( float flDot, float flDist );
+	virtual void RunAI( void );
 	BOOL FValidateHintType ( short sHint );
-	Schedule_t *GetSchedule( void );
-	Schedule_t *GetScheduleOfType ( int Type );
-	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
-	int IRelationship ( CBaseEntity *pTarget );
-	int IgnoreConditions ( void );
-	MONSTERSTATE GetIdealState ( void );
+	virtual Schedule_t *GetSchedule( void );
+	virtual Schedule_t *GetScheduleOfType ( int Type );
+	virtual int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
+	virtual int IRelationship ( CBaseEntity *pTarget );
+	virtual int IgnoreConditions ( void );
+	virtual MONSTERSTATE GetIdealState ( void );
 
 	int	Save( CSave &save ); 
 	int Restore( CRestore &restore );

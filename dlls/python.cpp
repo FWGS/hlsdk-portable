@@ -161,7 +161,7 @@ void CPython::PrimaryAttack()
 	if( m_pPlayer->pev->waterlevel == 3 )
 	{
 		PlayEmptySound();
-		m_flNextPrimaryAttack = 0.15;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.15;
 		return;
 	}
 
@@ -172,7 +172,7 @@ void CPython::PrimaryAttack()
 		else
 		{
 			PlayEmptySound();
-			m_flNextPrimaryAttack = 0.15;
+			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.15;
 		}
 
 		return;
@@ -208,7 +208,7 @@ void CPython::PrimaryAttack()
 		// HEV suit - indicate out of ammo condition
 		m_pPlayer->SetSuitUpdate( "!HEV_AMO0", FALSE, 0 );
 
-	m_flNextPrimaryAttack = 0.75;
+	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.75;
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
 }
 
@@ -231,7 +231,7 @@ void CPython::Reload( void )
 #endif
 	if( DefaultReload( PYTHON_MAX_CLIP, PYTHON_RELOAD, 2.0, bUseScope ) )
 	{
-		m_flSoundDelay = 1.5;
+		m_flSoundDelay = UTIL_WeaponTimeBase() + 1.5;
 	}
 }
 

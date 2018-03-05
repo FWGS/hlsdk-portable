@@ -50,6 +50,7 @@ TYPEDESCRIPTION	CApache::m_SaveData[] =
 	DEFINE_FIELD( CApache, m_pBeam, FIELD_CLASSPTR ),
 	DEFINE_FIELD( CApache, m_flGoalSpeed, FIELD_FLOAT ),
 	DEFINE_FIELD( CApache, m_iDoSmokePuff, FIELD_INTEGER ),
+	DEFINE_FIELD( CApache, m_iShots, FIELD_INTEGER ),
 };
 
 IMPLEMENT_SAVERESTORE( CApache, CBaseMonster )
@@ -61,13 +62,14 @@ void CApache::Spawn( void )
 	pev->movetype = MOVETYPE_FLY;
 	pev->solid = SOLID_BBOX;
 
-	SET_MODEL( ENT( pev ), (char*)STRING( pev->model ) );
+	SET_MODEL( ENT( pev ), pev->model ? STRING( pev->model ) : "models/apache.mdl" );
 	UTIL_SetSize( pev, Vector( -32, -32, -64 ), Vector( 32, 32, 0 ) );
 	UTIL_SetOrigin( pev, pev->origin );
 
 	pev->flags |= FL_MONSTER;
 	pev->takedamage = DAMAGE_AIM;
-	pev->health = gSkillData.apacheHealth;
+	if( !pev->health )
+		pev->health = gSkillData.apacheHealth;
 
 	m_flFieldOfView = -0.707; // 270 degrees
 
@@ -93,8 +95,7 @@ void CApache::Spawn( void )
 
 void CApache::Precache( void )
 {
-	PRECACHE_MODEL( "models/apache2.mdl" );
-	PRECACHE_MODEL( "models/huey_apache.mdl" );
+	PRECACHE_MODEL( pev->model ? STRING( pev->model ) : "models/apache.mdl" );
 
 	PRECACHE_SOUND( "apache/ap_rotor1.wav" );
 	PRECACHE_SOUND( "apache/ap_rotor2.wav" );
@@ -767,7 +768,7 @@ BOOL CApache::FireGun()
 	GetAttachment( 0, posBarrel, angBarrel );
 	Vector vecGun = ( posBarrel - posGun ).Normalize();
 
-	if( DotProduct( vecGun, vecTarget ) > 0.98 )
+	if( DotProduct( vecGun, vecTarget ) > 0.98 && !( ( ++m_iShots ) % 2 ) )
 	{
 #if 1
 		FireBullets( 1, posGun, vecGun, VECTOR_CONE_4DEGREES, 8192, BULLET_MONSTER_12MM, 1 );
@@ -801,6 +802,8 @@ BOOL CApache::FireGun()
 			UTIL_Remove( m_pBeam );
 			m_pBeam = NULL;
 		}
+		if( m_iShots % 2 )
+			++m_iShots;
 	}
 	return FALSE;
 }
@@ -857,8 +860,8 @@ void CApache::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir
 	if( flDamage > 50 || ptr->iHitgroup == 1 || ptr->iHitgroup == 2 )
 	{
 		// ALERT( at_console, "%.0f\n", flDamage );
-		AddMultiDamage( pevAttacker, this, flDamage, bitsDamageType );
-		m_iDoSmokePuff = 3 + ( flDamage / 5.0 );
+		AddMultiDamage( pevAttacker, this, flDamage / 4, bitsDamageType );
+		m_iDoSmokePuff = 3 + ( flDamage / 20.0 );
 	}
 	else
 	{

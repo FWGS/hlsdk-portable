@@ -16,16 +16,7 @@
 // Agrunt - Dominant, warlike alien grunt monster
 //=========================================================
 
-#include	"extdll.h"
-#include	"util.h"
-#include	"cbase.h"
-#include	"monsters.h"
-#include	"schedule.h"
-#include	"squadmonster.h"
-#include	"weapons.h"
-#include	"soundent.h"
-#include	"hornet.h"
-#include	"hgrunt.h"
+#include	"agrunt.h"
 
 //=========================================================
 // monster-specific schedule types
@@ -67,60 +58,7 @@ int iAgruntMuzzleFlash;
 
 #define		AGRUNT_MELEE_DIST	100
 
-class CAGrunt : public CSquadMonster
-{
-public:
-	void Spawn( void );
-	void Precache( void );
-	void SetYawSpeed( void );
-	int Classify( void );
-	int ISoundMask( void );
-	void HandleAnimEvent( MonsterEvent_t *pEvent );
-	void SetObjectCollisionBox( void )
-	{
-		pev->absmin = pev->origin + Vector( -32, -32, 0 );
-		pev->absmax = pev->origin + Vector( 32, 32, 85 );
-	}
-
-	Schedule_t *GetSchedule( void );
-	Schedule_t *GetScheduleOfType( int Type );
-	BOOL FCanCheckAttacks( void );
-	BOOL CheckMeleeAttack1( float flDot, float flDist );
-	BOOL CheckRangeAttack1( float flDot, float flDist );
-	void StartTask( Task_t *pTask );
-	void AlertSound( void );
-	void DeathSound( void );
-	void PainSound( void );
-	void AttackSound( void );
-	void PrescheduleThink( void );
-	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType );
-	int IRelationship( CBaseEntity *pTarget );
-	void StopTalking( void );
-	BOOL ShouldSpeak( void );
-	CUSTOM_SCHEDULES
-
-	virtual int Save( CSave &save );
-	virtual int Restore( CRestore &restore );
-	static TYPEDESCRIPTION m_SaveData[];
-
-	static const char *pAttackHitSounds[];
-	static const char *pAttackMissSounds[];
-	static const char *pAttackSounds[];
-	static const char *pDieSounds[];
-	static const char *pPainSounds[];
-	static const char *pIdleSounds[];
-	static const char *pAlertSounds[];
-
-	BOOL m_fCanHornetAttack;
-	float m_flNextHornetAttackCheck;
-
-	float m_flNextPainTime;
-
-	// three hacky fields for speech stuff. These don't really need to be saved.
-	float m_flNextSpeakTime;
-	float m_flNextWordTime;
-	int m_iLastWord;
-};
+#define		AGRUNT_WORD_LENGTH	6
 
 LINK_ENTITY_TO_CLASS( monster_alien_grunt, CAGrunt )
 
@@ -210,8 +148,46 @@ int CAGrunt::ISoundMask( void )
 //=========================================================
 void CAGrunt::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType )
 {
-	SpawnBlood( ptr->vecEndPos, BloodColor(), flDamage ); // a little surface blood.
-	TraceBleed( flDamage, vecDir, ptr, bitsDamageType );
+	if( ptr->iHitgroup == 10 && ( bitsDamageType & ( DMG_BULLET | DMG_SLASH | DMG_CLUB ) ) )
+	{
+		// hit armor
+		if( pev->dmgtime != gpGlobals->time || ( RANDOM_LONG( 0, 10 ) < 1 ) )
+		{
+			UTIL_Ricochet( ptr->vecEndPos, RANDOM_FLOAT( 1, 2 ) );
+			pev->dmgtime = gpGlobals->time;
+		}
+
+		if( RANDOM_LONG( 0, 1 ) == 0 )
+		{
+			Vector vecTracerDir = vecDir;
+
+			vecTracerDir.x += RANDOM_FLOAT( -0.3, 0.3 );
+			vecTracerDir.y += RANDOM_FLOAT( -0.3, 0.3 );
+			vecTracerDir.z += RANDOM_FLOAT( -0.3, 0.3 );
+
+			vecTracerDir = vecTracerDir * -512;
+
+			MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, ptr->vecEndPos );
+			WRITE_BYTE( TE_TRACER );
+				WRITE_COORD( ptr->vecEndPos.x );
+				WRITE_COORD( ptr->vecEndPos.y );
+				WRITE_COORD( ptr->vecEndPos.z );
+
+				WRITE_COORD( vecTracerDir.x );
+				WRITE_COORD( vecTracerDir.y );
+				WRITE_COORD( vecTracerDir.z );
+			MESSAGE_END();
+		}
+
+		flDamage -= 20;
+		if( flDamage <= 0 )
+			flDamage = 0.1;// don't hurt the monster much, but allow bits_COND_LIGHT_DAMAGE to be generated
+	}
+	else
+	{
+		SpawnBlood( ptr->vecEndPos, BloodColor(), flDamage );// a little surface blood.
+		TraceBleed( flDamage, vecDir, ptr, bitsDamageType );
+	}
 
 	AddMultiDamage( pevAttacker, this, flDamage, bitsDamageType );
 }
@@ -221,7 +197,7 @@ void CAGrunt::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir
 //=========================================================
 void CAGrunt::StopTalking( void )
 {
-	m_flNextWordTime = m_flNextSpeakTime = gpGlobals->time + 50 + RANDOM_LONG( 0, 10 );
+	// m_flNextWordTime = m_flNextSpeakTime = gpGlobals->time + 10 + RANDOM_LONG( 0, 10 );
 }
 
 //=========================================================
@@ -229,7 +205,7 @@ void CAGrunt::StopTalking( void )
 //=========================================================
 BOOL CAGrunt::ShouldSpeak( void )
 {
-	if( m_flNextSpeakTime > gpGlobals->time )
+/*	if( m_flNextSpeakTime > gpGlobals->time )
 	{
 		// my time to talk is still in the future.
 		return FALSE;
@@ -247,8 +223,8 @@ BOOL CAGrunt::ShouldSpeak( void )
 			return FALSE;
 		}
 	}
-
-	return TRUE;
+*/
+	return FALSE;
 }
 
 //=========================================================
@@ -260,6 +236,7 @@ void CAGrunt::PrescheduleThink( void )
 	{
 		if( m_flNextWordTime < gpGlobals->time )
 		{
+			const char *pszSound;
 			int num = -1;
 
 			do
@@ -270,7 +247,12 @@ void CAGrunt::PrescheduleThink( void )
 			m_iLastWord = num;
 
 			// play a new sound
-			EMIT_SOUND( ENT( pev ), CHAN_VOICE, pIdleSounds[num], 1.0, ATTN_NORM );
+			if( pev->message )
+				pszSound = STRING( szCustomIdleSounds[num] );
+			else
+				pszSound = pIdleSounds[num];
+
+			EMIT_SOUND( ENT( pev ), CHAN_VOICE, pszSound, 1.0, ATTN_NORM );
 
 			// is this word our last?
 			if( RANDOM_LONG( 1, 10 ) <= 1 )
@@ -280,7 +262,7 @@ void CAGrunt::PrescheduleThink( void )
 			}
 			else
 			{
-				m_flNextWordTime = gpGlobals->time + RANDOM_FLOAT( 20, 25 );
+				m_flNextWordTime = gpGlobals->time + RANDOM_FLOAT( 0.5, 1 );
 			}
 		}
 	}
@@ -293,7 +275,15 @@ void CAGrunt::DeathSound( void )
 {
 	StopTalking();
 
-	EMIT_SOUND( ENT( pev ), CHAN_VOICE, pDieSounds[RANDOM_LONG( 0, ARRAYSIZE( pDieSounds ) - 1 )], 1.0, ATTN_NORM );
+	const char *pszSound;
+	int iRand = RANDOM_LONG( 0, ARRAYSIZE( pDieSounds ) - 1 );
+
+	if( pev->message )
+		pszSound = STRING( szCustomDieSounds[iRand] );
+	else
+		pszSound = pDieSounds[iRand];
+
+	EMIT_SOUND( ENT( pev ), CHAN_VOICE, pszSound, 1.0, ATTN_NORM );
 }
 
 //=========================================================
@@ -303,7 +293,15 @@ void CAGrunt::AlertSound( void )
 {
 	StopTalking();
 
-	EMIT_SOUND( ENT( pev ), CHAN_VOICE, pAlertSounds[RANDOM_LONG( 0, ARRAYSIZE( pAlertSounds ) - 1 )], 1.0, ATTN_NORM );
+	const char *pszSound;
+	int iRand = RANDOM_LONG( 0, ARRAYSIZE( pAlertSounds ) - 1 );
+
+	if( pev->message )
+		pszSound = STRING( szCustomAlertSounds[iRand] );
+	else
+		pszSound = pAlertSounds[iRand];
+
+	EMIT_SOUND( ENT( pev ), CHAN_VOICE, pszSound, 1.0, ATTN_NORM );
 }
 
 //=========================================================
@@ -313,7 +311,15 @@ void CAGrunt::AttackSound( void )
 {
 	StopTalking();
 
-	EMIT_SOUND( ENT( pev ), CHAN_VOICE, pAttackSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackSounds ) - 1 )], 1.0, ATTN_NORM );
+	const char *pszSound;
+	int iRand = RANDOM_LONG( 0, ARRAYSIZE( pAttackSounds ) - 1 );
+
+	if( pev->message )
+		pszSound = STRING( szCustomAttackSounds[iRand] );
+	else
+		pszSound = pAttackSounds[iRand];
+
+	EMIT_SOUND( ENT( pev ), CHAN_VOICE, pszSound, 1.0, ATTN_NORM );
 }
 
 //=========================================================
@@ -330,7 +336,15 @@ void CAGrunt::PainSound( void )
 
 	StopTalking();
 
-	EMIT_SOUND( ENT( pev ), CHAN_VOICE, pPainSounds[RANDOM_LONG( 0, ARRAYSIZE( pPainSounds ) - 1 )], 1.0, ATTN_NORM );
+	const char *pszSound;
+	int iRand = RANDOM_LONG( 0, ARRAYSIZE( pPainSounds ) - 1 );
+
+	if( pev->message )
+		pszSound = STRING( szCustomPainSounds[iRand] );
+	else
+		pszSound = pPainSounds[iRand];
+
+	EMIT_SOUND( ENT( pev ), CHAN_VOICE, pszSound, 1.0, ATTN_NORM );
 }
 
 //=========================================================
@@ -462,10 +476,10 @@ void CAGrunt::HandleAnimEvent( MonsterEvent_t *pEvent )
 		switch( RANDOM_LONG( 0, 1 ) )
 		{
 		case 0:
-			EMIT_SOUND_DYN( ENT( pev ), CHAN_BODY, "zork/leftfoot1.wav", 1, ATTN_NORM, 0, 70 );
+			EMIT_SOUND_DYN( ENT( pev ), CHAN_BODY, "zork/rightfoot1.wav", 1, ATTN_NORM, 0, 70 );
 			break;
 		case 1:
-			EMIT_SOUND_DYN( ENT( pev ), CHAN_BODY, "zork/leftfoot3.wav", 1, ATTN_NORM, 0 ,70);
+			EMIT_SOUND_DYN( ENT( pev ), CHAN_BODY, "zork/rightfoot3.wav", 1, ATTN_NORM, 0, 70 );
 			break;
 		}
 		break;
@@ -548,7 +562,8 @@ void CAGrunt::Spawn()
 	pev->movetype = MOVETYPE_STEP;
 	m_bloodColor = BLOOD_COLOR_RED;
 	pev->effects = 0;
-	pev->health = gSkillData.agruntHealth;
+	if( !pev->health )
+		pev->health = gSkillData.agruntHealth;
 	m_flFieldOfView = 0.2;// indicates the width of this monster's forward view cone ( as a dotproduct result )
 	m_MonsterState = MONSTERSTATE_NONE;
 	m_afCapability = 0;
@@ -556,7 +571,7 @@ void CAGrunt::Spawn()
 
 	m_HackedGunPos = Vector( 24, 64, 48 );
 
-	m_flNextSpeakTime = m_flNextWordTime = gpGlobals->time + 50 + RANDOM_LONG( 0, 10 );
+	//m_flNextSpeakTime = m_flNextWordTime = gpGlobals->time + 10 + RANDOM_LONG( 0, 10 );
 
 	MonsterInit();
 }
@@ -576,32 +591,80 @@ void CAGrunt::Precache()
 	for( i = 0; i < ARRAYSIZE( pAttackMissSounds ); i++ )
 		PRECACHE_SOUND( pAttackMissSounds[i] );
 
-	for( i = 0; i < ARRAYSIZE( pIdleSounds ); i++ )
-		PRECACHE_SOUND( pIdleSounds[i] );
+	if( pev->message )
+	{
+		char szSound[32];
 
-	for( i = 0; i < ARRAYSIZE( pDieSounds ); i++ )
-		PRECACHE_SOUND( pDieSounds[i] );
+		strcpy( szSound, STRING( pev->message ) );
 
-	for( i = 0; i < ARRAYSIZE( pPainSounds ); i++ )
-		PRECACHE_SOUND( pPainSounds[i] );
+		for( i = 0; i < ARRAYSIZE( pAttackSounds ); i++ )
+		{
+			strcat( szSound, pAttackSounds[i] + AGRUNT_WORD_LENGTH );
+			szCustomAttackSounds[i] = ALLOC_STRING( szSound );
+			PRECACHE_SOUND( STRING( szCustomAttackSounds[i] ) );
+			szSound[strlen( STRING( pev->message ) )] = 0;
+		}
 
-	for( i = 0; i < ARRAYSIZE( pAttackSounds ); i++ )
-		PRECACHE_SOUND( pAttackSounds[i] );
+		for( i = 0; i < ARRAYSIZE( pIdleSounds ); i++ )
+		{
+			strcat( szSound, pIdleSounds[i] + AGRUNT_WORD_LENGTH );
+			szCustomIdleSounds[i] = ALLOC_STRING( szSound );
+			PRECACHE_SOUND( STRING( szCustomIdleSounds[i] ) );
+			szSound[strlen( STRING( pev->message ) )] = 0;
+		}
 
-	for( i = 0; i < ARRAYSIZE( pAlertSounds ); i++ )
-		PRECACHE_SOUND( pAlertSounds[i] );
+		for( i = 0; i < ARRAYSIZE( pAlertSounds ); i++ )
+		{
+			strcat( szSound, pAlertSounds[i] + AGRUNT_WORD_LENGTH );
+			szCustomAlertSounds[i] = ALLOC_STRING( szSound );
+			PRECACHE_SOUND( STRING( szCustomAlertSounds[i] ) );
+			szSound[strlen( STRING( pev->message ) )] = 0;
+		}
+
+		for( i = 0; i < ARRAYSIZE( pPainSounds ); i++ )
+		{
+			strcat( szSound, pPainSounds[i] + AGRUNT_WORD_LENGTH );
+			szCustomPainSounds[i] = ALLOC_STRING( szSound );
+			PRECACHE_SOUND( STRING( szCustomPainSounds[i] ) );
+			szSound[strlen( STRING( pev->message ) )] = 0;
+		}
+
+		for( i = 0; i < ARRAYSIZE( pDieSounds ); i++ )
+		{
+			strcat( szSound, pDieSounds[i] + AGRUNT_WORD_LENGTH );
+			szCustomDieSounds[i] = ALLOC_STRING( szSound );
+			PRECACHE_SOUND( STRING( szCustomDieSounds[i] ) );
+			szSound[strlen( STRING( pev->message ) )] = 0;
+		}
+	}
+	else
+	{
+		for( i = 0; i < ARRAYSIZE( pAttackSounds ); i++ )
+			PRECACHE_SOUND( pAttackSounds[i] );
+
+		for( i = 0; i < ARRAYSIZE( pIdleSounds ); i++ )
+			PRECACHE_SOUND( pIdleSounds[i] );
+
+		for( i = 0; i < ARRAYSIZE( pAlertSounds ); i++ )
+			PRECACHE_SOUND( pAlertSounds[i] );
+
+		for( i = 0; i < ARRAYSIZE( pPainSounds ); i++ )
+			PRECACHE_SOUND( pPainSounds[i] );
+
+		for( i = 0; i < ARRAYSIZE( pDieSounds ); i++ )
+			PRECACHE_SOUND( pDieSounds[i] );
+	}
 
 	PRECACHE_SOUND( "hassault/hw_shoot1.wav" );
 
 	iAgruntMuzzleFlash = PRECACHE_MODEL( "sprites/muz4.spr" );
-
-	UTIL_PrecacheOther( "hornet" );
 
 	PRECACHE_SOUND( "zork/leftfoot2.wav" );
 	PRECACHE_SOUND( "zork/leftfoot4.wav" );
 	PRECACHE_SOUND( "zork/rightfoot1.wav" );
 	PRECACHE_SOUND( "zork/rightfoot3.wav" );
 
+	UTIL_PrecacheOther( "hornet" );
 }
 
 //=========================================================
@@ -889,7 +952,34 @@ BOOL CAGrunt::CheckMeleeAttack1( float flDot, float flDist )
 //=========================================================
 BOOL CAGrunt::CheckRangeAttack1( float flDot, float flDist )
 {
-	return FALSE;
+	if( gpGlobals->time < m_flNextHornetAttackCheck )
+	{
+		return m_fCanHornetAttack;
+	}
+
+	if( !FBitSet( pev->spawnflags, SF_SQUADMONSTER_NOZAP ) && HasConditions( bits_COND_SEE_ENEMY ) && flDist >= AGRUNT_MELEE_DIST && flDist <= 1024 && flDot >= 0.5 && NoFriendlyFire() )
+	{
+		TraceResult tr;
+		Vector	vecArmPos, vecArmDir;
+
+		// verify that a shot fired from the gun will hit the enemy before the world.
+		// !!!LATER - we may wish to do something different for projectile weapons as opposed to instant-hit
+		UTIL_MakeVectors( pev->angles );
+		GetAttachment( 0, vecArmPos, vecArmDir );
+		//UTIL_TraceLine( vecArmPos, vecArmPos + gpGlobals->v_forward * 256, ignore_monsters, ENT( pev ), &tr );
+		UTIL_TraceLine( vecArmPos, m_hEnemy->BodyTarget( vecArmPos ), dont_ignore_monsters, ENT( pev ), &tr );
+
+		if( tr.flFraction == 1.0 || tr.pHit == m_hEnemy->edict() )
+		{
+			m_flNextHornetAttackCheck = gpGlobals->time + RANDOM_FLOAT( 2, 5 );
+			m_fCanHornetAttack = TRUE;
+			return m_fCanHornetAttack;
+		}
+	}
+
+	m_flNextHornetAttackCheck = gpGlobals->time + 0.2;// don't check for half second if this check wasn't successful
+	m_fCanHornetAttack = FALSE;
+	return m_fCanHornetAttack;
 }
 
 //=========================================================

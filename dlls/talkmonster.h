@@ -130,8 +130,6 @@ public:
 	int				FIdleHello( void );
 	void			IdleHeadTurn( Vector &vecFriend );
 	virtual int		FOkToSpeak( void );
-	int				FWoundSpeak( void );
-	int				FMortalSpeak( void );
 	void			TrySmellTalk( void );
 	CBaseEntity		*EnumFriends( CBaseEntity *pentPrevious, int listNumber, BOOL bTrace );
 	void			AlertFriends( void );

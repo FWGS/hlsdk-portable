@@ -357,7 +357,12 @@ void CController::Spawn()
 	pev->solid		= SOLID_SLIDEBOX;
 	pev->movetype		= MOVETYPE_FLY;
 	pev->flags		|= FL_FLY;
-	m_bloodColor		= BLOOD_COLOR_GREEN;
+
+	if( FBitSet( pev->spawnflags, SF_MONSTER_REDBLOOD ) )
+		m_bloodColor	= BLOOD_COLOR_RED;
+	else
+		m_bloodColor	= BLOOD_COLOR_GREEN;
+
 	pev->health		= gSkillData.controllerHealth;
 	pev->view_ofs		= Vector( 0, 0, -2 );// position of the eyes relative to monster's origin.
 	m_flFieldOfView		= VIEW_FIELD_FULL;// indicates the width of this monster's forward view cone ( as a dotproduct result )

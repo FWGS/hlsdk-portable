@@ -23,58 +23,13 @@
 #include	"cbase.h"
 #include	"monsters.h"
 #include	"schedule.h"
-#include	"zombie.h"
 
 //
 // Spawn Flags
 //
 #define SF_ZOMBIE_FASTMODE	1024
 
-#define NUM_ZOMBIE1_BODIES	11
-#define NUM_ZOMBIE2_BODIES	6
-#define NUM_ZOMBIE3_BODIES	5
-
-enum
-{
-	ZOMBIE1_FUNERAL = 0,
-	ZOMBIE1_FUNERAL_HEADLESS,
-	ZOMBIE1_CIVILIAN,
-	ZOMBIE1_CIVILIAN_HEADLESS,
-	ZOMBIE1_COP,
-	ZOMBIE1_FEMALE,
-	ZOMBIE1_BIOHAZARD_SUIT,
-	ZOMBIE1_ECHELON_OFFICER,
-	ZOMBIE1_EINSTEIN,
-	ZOMBIE1_DOCTOR,
-	ZOMBIE1_PATIENT
-};
-
-enum
-{
-	ZOMBIE2_COP_HEADOPEN = 0,
-	ZOMBIE2_COP_CROWBAR,
-	ZOMBIE2_DOCTOR,
-	ZOMBIE2_DOCTOR_BUTCHER,
-	ZOMBIE2_DOCTOR_SHOTGUN,
-	ZOMBIE2_CIVILIAN_CHEST_GUN
-};
-
-enum
-{
-	ZOMBIE3_NEIL = 0,
-	ZOMBIE3_BROOM,
-	ZOMBIE3_OLD,
-	ZOMBIE3_MECHANIC,
-	ZOMBIE3_HAMMER
-};
-
-enum
-{
-	LPZOMBIE_STANDARD = 0,
-	LPZOMBIE_COP,
-	LPZOMBIE_BURNT,
-	LPZOMBIE_FLESH
-};
+#define ZOMBIE_WORD_LENGTH	6
 
 //=========================================================
 // Monster's Anim Events Go Here
@@ -85,14 +40,44 @@ enum
 
 #define ZOMBIE_FLINCH_DELAY		2		// at most one flinch every n secs
 
-LINK_ENTITY_TO_CLASS( monster_zombie, CZombie )
-
-TYPEDESCRIPTION	CZombie::m_SaveData[] =
+class CZombie : public CBaseMonster
 {
-	DEFINE_FIELD( CZombie, m_iZombieFlags, FIELD_INTEGER ),
+public:
+	void Spawn();
+	void Precache();
+	void SetYawSpeed();
+	int Classify();
+	void HandleAnimEvent( MonsterEvent_t *pEvent );
+	int IgnoreConditions();
+
+	float m_flNextFlinch;
+
+	void PainSound();
+	void AlertSound();
+	void IdleSound();
+	void AttackSound();
+
+	static const char *pAttackSounds[];
+	static const char *pIdleSounds[];
+	static const char *pAlertSounds[];
+	static const char *pPainSounds[];
+	static const char *pAttackHitSounds[];
+	static const char *pAttackMissSounds[];
+
+	string_t szCustomAttackSounds[2];
+	string_t szCustomIdleSounds[4];
+	string_t szCustomAlertSounds[3];
+	string_t szCustomPainSounds[2];
+
+	// No range attacks
+	BOOL CheckRangeAttack1( float flDot, float flDist ) { return FALSE; }
+	BOOL CheckRangeAttack2( float flDot, float flDist ) { return FALSE; }
+	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
+
+	void RunAI();
 };
 
-IMPLEMENT_SAVERESTORE( CZombie, CBaseMonster )
+LINK_ENTITY_TO_CLASS( monster_zombie, CZombie )
 
 const char *CZombie::pAttackHitSounds[] =
 {
@@ -133,135 +118,6 @@ const char *CZombie::pPainSounds[] =
 	"zombie/zo_pain1.wav",
 	"zombie/zo_pain2.wav",
 };
-
-const char *CZombie::pCopAttackSounds[] =
-{
-	"zombiecop/zo_attack1.wav",
-	"zombiecop/zo_attack2.wav",
-};
-
-const char *CZombie::pCopIdleSounds[] =
-{
-	"zombiecop/zo_idle1.wav",
-	"zombiecop/zo_idle2.wav",
-	"zombiecop/zo_idle3.wav",
-	"zombiecop/zo_idle4.wav",
-};
-
-const char *CZombie::pCopAlertSounds[] =
-{
-	"zombiecop/zo_alert10.wav",
-	"zombiecop/zo_alert20.wav",
-	"zombiecop/zo_alert30.wav",
-};
-
-const char *CZombie::pCopPainSounds[] =
-{
-	"zombiecop/zo_pain1.wav",
-	"zombiecop/zo_pain2.wav",
-};
-
-const char *CZombie::pFemaleAttackSounds[] =
-{
-	"zfemale/zo_attack1.wav",
-	"zfemale/zo_attack2.wav",
-};
-
-const char *CZombie::pFemaleIdleSounds[] =
-{
-	"zfemale/zo_idle1.wav",
-	"zfemale/zo_idle2.wav",
-	"zfemale/zo_idle3.wav",
-	"zfemale/zo_idle4.wav",
-};
-
-const char *CZombie::pFemaleAlertSounds[] =
-{
-	"zfemale/zo_alert10.wav",
-	"zfemale/zo_alert20.wav",
-	"zfemale/zo_alert30.wav",
-};
-
-const char *CZombie::pFemalePainSounds[] =
-{
-	"zfemale/zo_pain1.wav",
-	"zfemale/zo_pain2.wav",
-};
-
-const char *CZombie::pNurseAttackSounds[] =
-{
-	"znurse/zo_attack1.wav",
-	"znurse/zo_attack2.wav",
-};
-
-const char *CZombie::pNurseIdleSounds[] =
-{
-	"znurse/zo_idle1.wav",
-	"znurse/zo_idle2.wav",
-	"znurse/zo_idle3.wav",
-	"znurse/zo_idle4.wav",
-};
-
-const char *CZombie::pNurseAlertSounds[] =
-{
-	"znurse/zo_alert10.wav",
-	"znurse/zo_alert20.wav",
-	"znurse/zo_alert30.wav",
-};
-
-const char *CZombie::pNursePainSounds[] =
-{
-	"znurse/zo_pain1.wav",
-	"znurse/zo_pain2.wav",
-};
-
-const char *CZombie::pNewAttackSounds[] =
-{
-	"zombienew/zo_attack1.wav",
-	"zombienew/zo_attack2.wav",
-};
-
-const char *CZombie::pNewIdleSounds[] =
-{
-	"zombienew/zo_idle1.wav",
-	"zombienew/zo_idle2.wav",
-	"zombienew/zo_idle3.wav",
-	"zombienew/zo_idle4.wav",
-};
-
-const char *CZombie::pNewAlertSounds[] =
-{
-	"zombienew/zo_alert10.wav",
-	"zombienew/zo_alert20.wav",
-	"zombienew/zo_alert30.wav",
-};
-
-const char *CZombie::pNewPainSounds[] =
-{
-	"zombienew/zo_pain1.wav",
-	"zombienew/zo_pain2.wav",
-	"zombienew/zo_pain3.wav",
-};
-
-BOOL CZombie::IsFemale() const
-{
-	return ( m_iZombieFlags & ZF_FEMALE );
-}
-
-BOOL CZombie::IsNurse() const
-{
-	return ( m_iZombieFlags & ZF_NURSE );
-}
-
-BOOL CZombie::IsCop() const
-{
-	return ( m_iZombieFlags & ZF_COP );
-}
-
-BOOL CZombie::UseNewSounds() const
-{
-	return ( m_iZombieFlags & ZF_NEWSOUNDS );
-}
 
 //=========================================================
 // Classify - indicates this monster's place in the 
@@ -311,144 +167,61 @@ void CZombie::PainSound( void )
 {
 	if( RANDOM_LONG( 0, 5 ) < 2 )
 	{
+		const char *pszSound;
 		int pitch = 95 + RANDOM_LONG( 0, 9 );
+		int iRand = RANDOM_LONG( 0, ARRAYSIZE( pPainSounds ) - 1 );
 
-		if( IsFemale() )
-		{
-			if( IsNurse() )
-			{
-				EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pNursePainSounds[RANDOM_LONG( 0, ARRAYSIZE( pNursePainSounds) - 1 )], 1.0, ATTN_NORM, 0, pitch );
-			}
-			else
-			{
-				EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pFemalePainSounds[RANDOM_LONG( 0, ARRAYSIZE( pFemalePainSounds ) - 1 )], 1.0, ATTN_NORM, 0, pitch );
-			}
-		}
+		if( pev->message )
+			pszSound = STRING( szCustomPainSounds[iRand] );
 		else
-		{
-			if( IsCop() )
-			{
-				EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pCopPainSounds[RANDOM_LONG( 0, ARRAYSIZE( pCopPainSounds ) - 1 )], 1.0, ATTN_NORM, 0, pitch );
-			}
-			else
-			{
-				if( UseNewSounds() )
-				{
-					EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pNewPainSounds[RANDOM_LONG( 0, ARRAYSIZE( pNewPainSounds ) - 1 )], 1.0, ATTN_NORM, 0, pitch );
-				}
-				else
-				{
-					EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pPainSounds[RANDOM_LONG( 0, ARRAYSIZE( pPainSounds ) - 1 )], 1.0, ATTN_NORM, 0, pitch );
-				}
-			}
-		}
+			pszSound = pPainSounds[iRand];
+
+		EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pszSound, 1.0, ATTN_NORM, 0, pitch );
 	}
 }
 
 void CZombie::AlertSound( void )
 {
+	const char *pszSound;
 	int pitch = 95 + RANDOM_LONG( 0, 9 );
+	int iRand = RANDOM_LONG( 0, ARRAYSIZE( pAlertSounds ) - 1 );
 
-	if( IsFemale() )
-	{
-		if( IsNurse() )
-		{
-			EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pNurseAlertSounds[RANDOM_LONG( 0, ARRAYSIZE( pNurseAlertSounds ) - 1 )], 1.0, ATTN_NORM, 0, pitch );
-		}
-		else
-		{
-			EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pFemaleAlertSounds[RANDOM_LONG( 0, ARRAYSIZE( pFemaleAlertSounds ) - 1 )], 1.0, ATTN_NORM, 0, pitch );
-		}
-	}
+	if( pev->message )
+		pszSound = STRING( szCustomAlertSounds[iRand] );
 	else
-	{
-		if( IsCop() )
-		{
-			EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pCopAlertSounds[RANDOM_LONG(0, ARRAYSIZE(pCopAlertSounds) - 1)], 1.0, ATTN_NORM, 0, pitch);
-		}
-		else
-		{
-			if( UseNewSounds() )
-			{
-				EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pNewAlertSounds[RANDOM_LONG( 0, ARRAYSIZE( pNewAlertSounds ) - 1 )], 1.0, ATTN_NORM, 0, pitch );
-			}
-			else
-			{
-				EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pAlertSounds[RANDOM_LONG( 0, ARRAYSIZE( pAlertSounds ) - 1 )], 1.0, ATTN_NORM, 0, pitch );
-			}
-		}
-	}
+		pszSound = pAlertSounds[iRand];
+
+	EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pszSound, 1.0, ATTN_NORM, 0, pitch );
 }
 
 void CZombie::IdleSound( void )
 {
+	const char *pszSound;
 	int pitch = 95 + RANDOM_LONG( 0, 9 );
+	int iRand = RANDOM_LONG( 0, ARRAYSIZE( pIdleSounds ) - 1 );
 
-	if( IsFemale() )
-	{
-		if( IsNurse() )
-		{
-			EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pNurseIdleSounds[RANDOM_LONG( 0, ARRAYSIZE( pNurseIdleSounds ) - 1 )], 1.0, ATTN_NORM, 0, pitch );
-		}
-		else
-		{
-			EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pFemaleIdleSounds[RANDOM_LONG( 0, ARRAYSIZE( pFemaleIdleSounds ) - 1 )], 1.0, ATTN_NORM, 0, pitch );
-		}
-	}
+	// Play a random idle sound
+	if( pev->message )
+		pszSound = STRING( szCustomIdleSounds[iRand] );
 	else
-	{
-		if( IsCop() )
-		{
-			EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pCopIdleSounds[RANDOM_LONG(0, ARRAYSIZE(pCopIdleSounds) - 1)], 1.0, ATTN_NORM, 0, pitch);
-		}
-		else
-		{
-			if( UseNewSounds() )
-			{
-				EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pNewIdleSounds[RANDOM_LONG( 0, ARRAYSIZE( pNewIdleSounds ) - 1 )], 1.0, ATTN_NORM, 0, pitch );
-			}
-			else
-			{
-				EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pIdleSounds[RANDOM_LONG( 0, ARRAYSIZE( pIdleSounds ) - 1 )], 1.0, ATTN_NORM, 0, pitch );
-			}
-		}
-	}
+		pszSound = pIdleSounds[iRand];
+
+	EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pszSound, 1.0, ATTN_NORM, 0, pitch );
 }
 
 void CZombie::AttackSound( void )
 {
+	const char *pszSound;
 	int pitch = 100 + RANDOM_LONG( -5, 5 );
+	int iRand = RANDOM_LONG( 0, ARRAYSIZE( pAttackSounds ) - 1 );
 
 	// Play a random attack sound
-	if( IsFemale() )
-	{
-		if( IsNurse() )
-		{
-			EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pNurseAttackSounds[RANDOM_LONG( 0, ARRAYSIZE( pNurseAttackSounds ) - 1 )], 1.0, ATTN_NORM, 0, pitch );
-		}
-		else
-		{
-			EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pFemaleAttackSounds[RANDOM_LONG( 0, ARRAYSIZE( pFemaleAttackSounds ) - 1 )], 1.0, ATTN_NORM, 0, pitch );
-		}
-	}
+	if( pev->message )
+		pszSound = STRING( szCustomAttackSounds[iRand] );
 	else
-	{
-		if( IsCop() )
-		{
-			EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pCopAttackSounds[RANDOM_LONG( 0, ARRAYSIZE( pCopAttackSounds ) - 1 )], 1.0, ATTN_NORM, 0, pitch );
-		}
-		else
-		{
-			if( UseNewSounds() )
-			{
-				EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pNewAttackSounds[RANDOM_LONG( 0, ARRAYSIZE( pNewAttackSounds ) - 1 )], 1.0, ATTN_NORM, 0, pitch );
-			}
-			else
-			{
-				EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pAttackSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackSounds ) - 1 )], 1.0, ATTN_NORM, 0, pitch );
-			}
-		}
-	}
+		pszSound = pAttackSounds[iRand];
+
+	EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pszSound, 1.0, ATTN_NORM, 0, pitch );
 }
 
 //=========================================================
@@ -548,83 +321,14 @@ void CZombie::Spawn()
 	pev->solid		= SOLID_SLIDEBOX;
 	pev->movetype		= MOVETYPE_STEP;
 	m_bloodColor		= BLOOD_COLOR_RED;
-	pev->health		= gSkillData.zombieHealth;
+	if( !pev->health )
+		pev->health	= gSkillData.zombieHealth;
 	pev->view_ofs		= VEC_VIEW;// position of the eyes relative to monster's origin.
 	m_flFieldOfView		= 0.5;// indicates the width of this monster's forward view cone ( as a dotproduct result )
 	m_MonsterState		= MONSTERSTATE_NONE;
 	m_afCapability		= bits_CAP_DOORS_GROUP;
 
 	MonsterInit();
-
-	m_iZombieFlags = 0;
-
-	if( FStrEq( STRING( pev->model ), "models/zombie.mdl" ) )
-	{
-		switch( pev->body )
-		{
-		case ZOMBIE1_COP:
-			m_iZombieFlags |= ZF_COP;
-			break;
-		case ZOMBIE1_FEMALE:
-			m_iZombieFlags |= ZF_FEMALE;
-			break;
-		default:
-			break;
-		}
-	}
-	else if( FStrEq( STRING( pev->model ), "models/zombie2.mdl" ) )
-	{
-		switch( pev->body )
-		{
-		case ZOMBIE2_COP_HEADOPEN:
-		case ZOMBIE2_COP_CROWBAR:
-			m_iZombieFlags |= ZF_COP;
-			break;
-		default:
-			break;
-		}
-	}
-	else if( FStrEq( STRING( pev->model ), "models/zombie3.mdl" ) )
-	{
-		// Third zombie model always use new sounds.
-		m_iZombieFlags |= ZF_NEWSOUNDS;
-
-		switch( pev->body )
-		{
-		case ZOMBIE3_BROOM:
-			m_iZombieFlags |= ZF_FEMALE;
-			break;
-		default:
-			break;
-		}
-	}
-	else if( FStrEq( STRING( pev->model ), "models/nursezombie.mdl" ) )
-	{
-		m_iZombieFlags |= ( ZF_FEMALE | ZF_NURSE );
-	}
-	else if( FStrEq( STRING( pev->model ), "models/lpzombie.mdl" ) ) // Special zombie type with few polygons.
-	{
-		// Low polygon zombie model always use new sounds.
-		m_iZombieFlags |= ZF_NEWSOUNDS;
-
-		switch( pev->skin )
-		{
-		case LPZOMBIE_COP:
-			m_iZombieFlags |= ZF_COP;
-			break;
-		case LPZOMBIE_FLESH:
-			// Unable to differentiate genders so set this flag randomly.
-			if( RANDOM_LONG( 0, 1 ) )
-				m_iZombieFlags |= ZF_FEMALE;
-			break;
-		default:
-			break;
-		}
-	}
-	else
-	{
-		ALERT( at_warning, "Unsupported zombie model %s\n", STRING( pev->model ) );
-}
 }
 
 //=========================================================
@@ -634,11 +338,8 @@ void CZombie::Precache()
 {
 	size_t i;
 
-	PRECACHE_MODEL( "models/zombie.mdl" );
-	PRECACHE_MODEL( "models/zombie2.mdl" );
-	PRECACHE_MODEL( "models/zombie3.mdl" );
-	PRECACHE_MODEL( "models/nursezombie.mdl" );
-	PRECACHE_MODEL( "models/lpzombie.mdl" );
+	// Mapper can customize zombie's models and sounds
+	PRECACHE_MODEL( pev->model ? STRING( pev->model ) : "models/zombie.mdl" );
 
 	for( i = 0; i < ARRAYSIZE( pAttackHitSounds ); i++ )
 		PRECACHE_SOUND( pAttackHitSounds[i] );
@@ -646,43 +347,63 @@ void CZombie::Precache()
 	for( i = 0; i < ARRAYSIZE( pAttackMissSounds ); i++ )
 		PRECACHE_SOUND( pAttackMissSounds[i] );
 
-	for( i = 0; i < ARRAYSIZE( pAttackSounds ); i++ )
-		PRECACHE_SOUND( pAttackSounds[i] );
+	if( pev->message )
+	{
+		char szSound[32];
 
-	for( i = 0; i < ARRAYSIZE( pIdleSounds ); i++ )
-		PRECACHE_SOUND( pIdleSounds[i] );
+		strcpy( szSound, STRING( pev->message ) );
 
-	for( i = 0; i < ARRAYSIZE( pAlertSounds ); i++ )
-		PRECACHE_SOUND( pAlertSounds[i] );
+		for( i = 0; i < ARRAYSIZE( pAttackSounds ); i++ )
+		{
+			strcat( szSound, pAttackSounds[i] + ZOMBIE_WORD_LENGTH );
+			szCustomAttackSounds[i] = ALLOC_STRING( szSound );
+			PRECACHE_SOUND( STRING( szCustomAttackSounds[i] ) );
+			szSound[strlen( STRING( pev->message ) )] = 0;
+		}
 
-	for( i = 0; i < ARRAYSIZE( pPainSounds ); i++ )
-		PRECACHE_SOUND( pPainSounds[i] );
+		for( i = 0; i < ARRAYSIZE( pIdleSounds ); i++ )
+		{
+			strcat( szSound, pIdleSounds[i] + ZOMBIE_WORD_LENGTH );
+			szCustomIdleSounds[i] = ALLOC_STRING( szSound );
+			PRECACHE_SOUND( STRING( szCustomIdleSounds[i] ) );
+			szSound[strlen( STRING( pev->message ) )] = 0;
+		}
 
-	PRECACHE_SOUND_ARRAY( pCopAttackSounds );
-	PRECACHE_SOUND_ARRAY( pCopIdleSounds );
-	PRECACHE_SOUND_ARRAY( pCopAlertSounds );
-	PRECACHE_SOUND_ARRAY( pCopPainSounds );
+		for( i = 0; i < ARRAYSIZE( pAlertSounds ); i++ )
+		{
+			strcat( szSound, pAlertSounds[i] + ZOMBIE_WORD_LENGTH );
+			szCustomAlertSounds[i] = ALLOC_STRING( szSound );
+			PRECACHE_SOUND( STRING( szCustomAlertSounds[i] ) );
+			szSound[strlen( STRING( pev->message ) )] = 0;
+		}
 
-	PRECACHE_SOUND_ARRAY( pFemaleAttackSounds );
-	PRECACHE_SOUND_ARRAY( pFemaleIdleSounds );
-	PRECACHE_SOUND_ARRAY( pFemaleAlertSounds );
-	PRECACHE_SOUND_ARRAY( pFemalePainSounds );
+		for( i = 0; i < ARRAYSIZE( pPainSounds ); i++ )
+		{
+			strcat( szSound, pPainSounds[i] + ZOMBIE_WORD_LENGTH );
+			szCustomPainSounds[i] = ALLOC_STRING( szSound );
+			PRECACHE_SOUND( STRING( szCustomPainSounds[i] ) );
+			szSound[strlen( STRING( pev->message ) )] = 0;
+		}
+	}
+	else
+	{
+		for( i = 0; i < ARRAYSIZE( pAttackSounds ); i++ )
+			PRECACHE_SOUND( pAttackSounds[i] );
 
-	PRECACHE_SOUND_ARRAY( pNurseAttackSounds );
-	PRECACHE_SOUND_ARRAY( pNurseIdleSounds );
-	PRECACHE_SOUND_ARRAY( pNurseAlertSounds );
-	PRECACHE_SOUND_ARRAY( pNursePainSounds );
+		for( i = 0; i < ARRAYSIZE( pIdleSounds ); i++ )
+			PRECACHE_SOUND( pIdleSounds[i] );
 
-	PRECACHE_SOUND_ARRAY( pNewAttackSounds );
-	PRECACHE_SOUND_ARRAY( pNewIdleSounds );
-	PRECACHE_SOUND_ARRAY( pNewAlertSounds );
-	PRECACHE_SOUND_ARRAY( pNewPainSounds );
+		for( i = 0; i < ARRAYSIZE( pAlertSounds ); i++ )
+			PRECACHE_SOUND( pAlertSounds[i] );
+
+		for( i = 0; i < ARRAYSIZE( pPainSounds ); i++ )
+			PRECACHE_SOUND( pPainSounds[i] );
+	}
 }
 
 //=========================================================
 // AI Schedules Specific to this monster
 //=========================================================
-
 int CZombie::IgnoreConditions( void )
 {
 	int iIgnore = CBaseMonster::IgnoreConditions();
@@ -718,7 +439,7 @@ void CZombie::RunAI( void )
 
 	if( pev->spawnflags & SF_ZOMBIE_FASTMODE )
 	{
-		if( m_Activity == ACT_WALK || m_Activity == ACT_RUN )
+		if( pev->gaitsequence == ACT_WALK )
 		{
 			pev->framerate = 1.5;
 		}

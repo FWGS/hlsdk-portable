@@ -38,8 +38,6 @@ extern DLL_GLOBAL int		g_iSkillLevel;
 #define		ISLAVE_AE_ZAP_SHOOT		( 4 )
 #define		ISLAVE_AE_ZAP_DONE		( 5 )
 
-#define		ISLAVE_MAX_BEAMS		8
-
 LINK_ENTITY_TO_CLASS( monster_alien_slave, CISlave )
 LINK_ENTITY_TO_CLASS( monster_vortigaunt, CISlave )
 
@@ -136,6 +134,7 @@ void CISlave::AlertSound( void )
 		SENTENCEG_PlayRndSz( ENT( pev ), "SLV_ALERT", 0.85, ATTN_NORM, 0, m_voicePitch );
 
 		CallForHelp( "monster_alien_slave", 512, m_hEnemy, m_vecEnemyLKP );
+		CallForHelp( "monster_th_babykelly", 512, m_hEnemy, m_vecEnemyLKP );
 	}
 }
 
@@ -383,6 +382,9 @@ void CISlave::HandleAnimEvent( MonsterEvent_t *pEvent )
 //=========================================================
 BOOL CISlave::CheckRangeAttack1( float flDot, float flDist )
 {
+	if( FBitSet( pev->spawnflags, SF_SQUADMONSTER_NOZAP ) )
+		return FALSE;
+
 	if( m_flNextAttack > gpGlobals->time )
 	{
 		return FALSE;
@@ -453,7 +455,7 @@ void CISlave::Spawn()
 {
 	Precache();
 
-	SET_MODEL( ENT( pev ), "models/islave.mdl" );
+	SET_MODEL( ENT( pev ), pev->model ? STRING( pev->model ) : "models/islave.mdl" );
 	UTIL_SetSize( pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX );
 
 	pev->solid		= SOLID_SLIDEBOX;
@@ -478,7 +480,7 @@ void CISlave::Precache()
 {
 	size_t i;
 
-	PRECACHE_MODEL( "models/islave.mdl" );
+	PRECACHE_MODEL( pev->model ? STRING( pev->model ) : "models/islave.mdl" );
 	PRECACHE_MODEL( "sprites/lgtning.spr" );
 	PRECACHE_SOUND( "debris/zap1.wav" );
 	PRECACHE_SOUND( "debris/zap4.wav" );

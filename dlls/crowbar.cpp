@@ -70,8 +70,6 @@ void CCrowbar::Precache( void )
 	PRECACHE_SOUND( "kelly/cbar_hitkelly1.wav" );
 	PRECACHE_SOUND( "kelly/cbar_hitkelly2.wav" );
 	PRECACHE_SOUND( "kelly/cbar_hitkelly3.wav" );
-
-	m_usCrowbar = PRECACHE_EVENT( 1, "events/crowbar.sc" );
 }
 
 int CCrowbar::GetItemInfo( ItemInfo *p )
@@ -204,19 +202,26 @@ int CCrowbar::Swing( int fFirst )
 		}
 	}
 #endif
-	if( fFirst )
-	{
-		PLAYBACK_EVENT_FULL( FEV_NOTHOST, m_pPlayer->edict(), m_usCrowbar, 
-		0.0, (float *)&g_vecZero, (float *)&g_vecZero, 0, 0, 0,
-		0, 0, 0 );
-	}
 
 	if( tr.flFraction >= 1.0 )
 	{
 		if( fFirst )
 		{
 			// miss
-			m_flNextPrimaryAttack = GetNextAttackDelay( 0.5 );
+			switch( ( m_iSwing++ ) % 3 )
+			{
+			case 0:
+				SendWeaponAnim( CROWBAR_ATTACK1MISS );
+				break;
+			case 1:
+				SendWeaponAnim( CROWBAR_ATTACK2MISS );
+				break;
+			case 2:
+				SendWeaponAnim( CROWBAR_ATTACK3MISS );
+				break;
+			}
+			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5;
+			EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_WEAPON, "weapons/cbar_miss1.wav", 1, ATTN_NORM, 0, 94 + RANDOM_LONG( 0, 0xF ) );
 #ifdef CROWBAR_IDLE_ANIM
 			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
 #endif
@@ -253,24 +258,33 @@ int CCrowbar::Swing( int fFirst )
 
 		if( pEntity )
 		{
+			float flDmg;
 			ClearMultiDamage();
+
+			if( g_pGameRules->IsMultiplayer() )
+			{
+				// more damage in multiplayer
+				flDmg = gSkillData.plrDmgCrowbar * 1.4;
+			}
 			// If building with the clientside weapon prediction system,
 			// UTIL_WeaponTimeBase() is always 0 and m_flNextPrimaryAttack is >= -1.0f, thus making
 			// m_flNextPrimaryAttack + 1 < UTIL_WeaponTimeBase() always evaluate to false.
 #ifdef CLIENT_WEAPONS
-			if( ( m_flNextPrimaryAttack + 1 == UTIL_WeaponTimeBase() ) || g_pGameRules->IsMultiplayer() )
+			else if( m_flNextPrimaryAttack + 1 == UTIL_WeaponTimeBase() )
 #else
-			if( ( m_flNextPrimaryAttack + 1 < UTIL_WeaponTimeBase() ) || g_pGameRules->IsMultiplayer() )
+			else if( m_flNextPrimaryAttack + 1 < UTIL_WeaponTimeBase() )
 #endif
 			{
 				// first swing does full damage
-				pEntity->TraceAttack( m_pPlayer->pev, gSkillData.plrDmgCrowbar, gpGlobals->v_forward, &tr, DMG_CLUB ); 
+				flDmg = gSkillData.plrDmgCrowbar;
 			}
 			else
 			{
 				// subsequent swings do half
-				pEntity->TraceAttack( m_pPlayer->pev, gSkillData.plrDmgCrowbar / 2, gpGlobals->v_forward, &tr, DMG_CLUB ); 
+				flDmg = gSkillData.plrDmgCrowbar / 2;
 			}
+
+			pEntity->TraceAttack( m_pPlayer->pev, flDmg, gpGlobals->v_forward, &tr, DMG_CLUB );
 			ApplyMultiDamage( m_pPlayer->pev, m_pPlayer->pev );
 
 			if( pEntity->Classify() != CLASS_NONE && pEntity->Classify() != CLASS_MACHINE )
@@ -354,7 +368,7 @@ int CCrowbar::Swing( int fFirst )
 		SetThink( &CCrowbar::Smack );
 		pev->nextthink = UTIL_WeaponTimeBase() + 0.2;
 #endif
-		m_flNextPrimaryAttack = GetNextAttackDelay( 0.25 );
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.25;
 	}
 #ifdef CROWBAR_IDLE_ANIM
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );

@@ -25,36 +25,18 @@ project (CLDLL)
 
 set (CLDLL_LIBRARY client)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-write-strings -DLINUX -D_LINUX -Dstricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp -DCLIENT_WEAPONS -DCLIENT_DLL -w")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-write-strings -DLINUX -D_LINUX -Dstricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp -DCLIENT_DLL -w")
 if (GOLDSOURCE_SUPPORT)
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DGOLDSOURCE_SUPPORT")
 endif()
 set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS}")
 
 set (CLDLL_SOURCES
-	hunger/zoom.cpp
 	../dlls/hunger/ap9.cpp
 	../dlls/hunger/chaingun.cpp
-	../dlls/hunger/hkg36.cpp
-	../dlls/hunger/medkit.cpp
-	../dlls/hunger/shovel.cpp
 	../dlls/hunger/sniper.cpp
-	../dlls/hunger/spanner.cpp
 	../dlls/hunger/taurus.cpp
-	../dlls/hunger/weapon_einar1.cpp
-	../dlls/crossbow.cpp 
-	../dlls/crowbar.cpp 
-	../dlls/egon.cpp 
-	../dlls/gauss.cpp 
-	../dlls/handgrenade.cpp 
-	../dlls/hornetgun.cpp 
-	../dlls/mp5.cpp 
-	../dlls/python.cpp 
-	../dlls/rpg.cpp 
-	../dlls/satchel.cpp 
-	../dlls/shotgun.cpp 
-	../dlls/squeakgrenade.cpp 
-	../dlls/tripmine.cpp 
+	../dlls/hunger/tfcsniper.cpp
 	../dlls/glock.cpp
 	ev_hldm.cpp
 	hl/hl_baseentity.cpp

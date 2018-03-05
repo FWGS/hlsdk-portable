@@ -22,7 +22,6 @@
 #include "cbase.h"
 #include "monsters.h"
 #include "saverestore.h"
-#include "barney.h"
 
 // Monstermaker spawnflags
 #define	SF_MONSTERMAKER_START_ON	1 // start active ( if has targetname )
@@ -223,10 +222,29 @@ void CMonsterMaker::MakeMonster( void )
 	if( pev->spawnflags & SF_MONSTER_ZOMBIECOP )
 		SetBits( pevCreate->spawnflags, SF_MONSTER_ZOMBIECOP );
 
+	if( pev->spawnflags & SF_MONSTER_PREDISASTER )
+		SetBits( pevCreate->spawnflags, SF_MONSTER_PREDISASTER );
+
 	// Override monster framerate.
 	if( pev->spawnflags & SF_MONSTER_FASTZOMBIEMODE )
 		SetBits( pevCreate->spawnflags, SF_MONSTER_FASTZOMBIEMODE );
 
+	// Override monster sound folder.
+	if( pev->message )
+		pevCreate->message = pev->message;
+
+	// Override monster model.
+	if( pev->model )
+		pevCreate->model = pev->model;
+
+	// Override monster skin.
+	if( pev->skin )
+		pevCreate->skin = pev->skin;
+
+	// Override monster health.
+	if( pev->health )
+		pevCreate->health = pev->health;
+	
 	DispatchSpawn( ENT( pevCreate ) );
 	pevCreate->owner = edict();
 
@@ -235,10 +253,6 @@ void CMonsterMaker::MakeMonster( void )
 		// if I have a netname (overloaded), give the child monster that name as a targetname
 		pevCreate->targetname = pev->netname;
 	}
-
-	CBarney* pBarney = (CBarney*)CBaseEntity::Instance( pevCreate );
-	if( pBarney )
-		pBarney->FixupBarneySkin( ( pev->spawnflags & SF_MONSTER_ZOMBIECOP ) ? TRUE : FALSE );
 
 	m_cLiveChildren++;// count this monster
 	m_cNumMonsters--;

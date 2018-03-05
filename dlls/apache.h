@@ -77,5 +77,6 @@ public:
 
 	int m_iDoSmokePuff;
 	CBeam *m_pBeam;
+	unsigned int m_iShots;
 };
 #endif // APACHE_H

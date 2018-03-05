@@ -69,7 +69,7 @@ BOOL CHealthKit::MyTouch( CBasePlayer *pPlayer )
 		return FALSE;
 	}
 
-	if( pPlayer->TakeHealth( gSkillData.healthkitCapacity, DMG_GENERIC ) )
+	if( pPlayer->TakeHealth( pev->health ? pev->health : gSkillData.healthkitCapacity, DMG_GENERIC ) )
 	{
 		MESSAGE_BEGIN( MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev );
 			WRITE_STRING( STRING( pev->classname ) );
@@ -187,7 +187,9 @@ void CWallHealth::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE u
 	}
 
 	// if the player doesn't have the suit, or there is no juice left, make the deny noise
-	if( ( m_iJuice <= 0 ) || ( !( pActivator->pev->weapons & ( 1 << WEAPON_SUIT ) ) ) )
+	if( ( m_iJuice <= 0 ) || ( !( pActivator->pev->weapons & ( 1 << WEAPON_SUIT ) ) 
+		|| ( FBitSet( ((CBasePlayer*)pActivator)->m_iHideHUD, HIDEHUD_NOHEV )
+		&& !g_pGameRules->IsMultiplayer() ) ) )
 	{
 		if( m_flSoundTime <= gpGlobals->time )
 		{

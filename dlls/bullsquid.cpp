@@ -28,7 +28,7 @@
 #include	"game.h"
 #include	"bullsquid.h"
 
-#define		SQUID_SPRINT_DIST	256 // how close the squid has to get before starting to sprint and refusing to swerve
+#define		BULLSQUID_SPIT_SIZE	1
 
 int iSquidSpitSprite;
 	
@@ -72,7 +72,7 @@ void CSquidSpit::Animate( void )
 	}
 }
 
-void CSquidSpit::Shoot( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity )
+void CSquidSpit::Shoot( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity, int iSpitSize )
 {
 	CSquidSpit *pSpit = GetClassPtr( (CSquidSpit *)NULL );
 	pSpit->Spawn();
@@ -83,6 +83,7 @@ void CSquidSpit::Shoot( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity
 
 	pSpit->SetThink( &CSquidSpit::Animate );
 	pSpit->pev->nextthink = gpGlobals->time + 0.1;
+	pSpit->pev->scale *= iSpitSize;
 }
 
 void CSquidSpit::Touch( CBaseEntity *pOther )
@@ -128,7 +129,7 @@ void CSquidSpit::Touch( CBaseEntity *pOther )
 	}
 	else
 	{
-		pOther->TakeDamage( pev, pev, gSkillData.bullsquidDmgSpit, DMG_GENERIC );
+		pOther->TakeDamage( pev, pev, gSkillData.bullsquidDmgSpit * pev->scale * 2, DMG_GENERIC );
 	}
 
 	SetThink( &CBaseEntity::SUB_Remove );
@@ -490,7 +491,7 @@ void CBullsquid::HandleAnimEvent( MonsterEvent_t *pEvent )
 					WRITE_BYTE( 25 );			// noise ( client will divide by 100 )
 				MESSAGE_END();
 
-				CSquidSpit::Shoot( pev, vecSpitOffset, vecSpitDir * 900 );
+				CSquidSpit::Shoot( pev, vecSpitOffset, vecSpitDir * 900, BULLSQUID_SPIT_SIZE );
 			}
 			break;
 		case BSQUID_AE_BITE:
@@ -594,7 +595,7 @@ void CBullsquid::Spawn()
 
 	pev->solid = SOLID_SLIDEBOX;
 	pev->movetype = MOVETYPE_STEP;
-	m_bloodColor = BLOOD_COLOR_GREEN;
+	m_bloodColor = BLOOD_COLOR_RED;
 	pev->effects = 0;
 	pev->health = gSkillData.bullsquidHealth;
 	m_flFieldOfView = 0.2;// indicates the width of this monster's forward view cone ( as a dotproduct result )

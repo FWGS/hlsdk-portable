@@ -28,8 +28,6 @@
 
 #include "ammohistory.h"
 
-extern bool bIsMultiplayer( void );
-
 WEAPON *gpActiveSel;	// NULL means off, 1 means just the menu bar, otherwise
 						// this points to the active weapon menu item
 WEAPON *gpLastSel;		// Last weapon menu selection 
@@ -549,13 +547,13 @@ int CHudAmmo::MsgFunc_HideWeapon( const char *pszName, int iSize, void *pbuf )
 	{
 		if( m_pWeapon )
 		{
-			if( bIsMultiplayer() )
+			if( gHUD.m_iHideHUDDisplay & HIDEHUD_NOHEV )
 			{
-				SetCrosshair( m_pWeapon->hCrosshair, m_pWeapon->rcCrosshair, 255, 255, 255 );
+				SetCrosshair( m_pWeapon->hCrosshair, m_pWeapon->rcCrosshair, 255, 16, 16 );
 			}
 			else
 			{
-				SetCrosshair( m_pWeapon->hCrosshair, m_pWeapon->rcCrosshair, 255, 0, 0 );
+				SetCrosshair( m_pWeapon->hCrosshair, m_pWeapon->rcCrosshair, 255, 255, 255 );
 			}
 		}
 	}
@@ -627,24 +625,24 @@ int CHudAmmo::MsgFunc_CurWeapon( const char *pszName, int iSize, void *pbuf )
 			// normal crosshairs
 			if( fOnTarget && m_pWeapon->hAutoaim )
 			{
-				if( bIsMultiplayer() )
+				if( gHUD.m_iHideHUDDisplay & HIDEHUD_NOHEV )
 				{
-					SetCrosshair( m_pWeapon->hAutoaim, m_pWeapon->rcAutoaim, 255, 255, 255 );
+					SetCrosshair( m_pWeapon->hAutoaim, m_pWeapon->rcAutoaim, 255, 16, 16 );
 				}
 				else
 				{
-					SetCrosshair( m_pWeapon->hAutoaim, m_pWeapon->rcAutoaim, 255, 0, 0 );
+					SetCrosshair( m_pWeapon->hAutoaim, m_pWeapon->rcAutoaim, 255, 255, 255 );
 				}
 			}
 			else
 			{
-				if( bIsMultiplayer() )
+				if( gHUD.m_iHideHUDDisplay & HIDEHUD_NOHEV )
 				{
-					SetCrosshair( m_pWeapon->hCrosshair, m_pWeapon->rcCrosshair, 255, 255, 255 );
+					SetCrosshair( m_pWeapon->hCrosshair, m_pWeapon->rcCrosshair, 255, 16, 16 );
 				}
 				else
 				{
-					SetCrosshair( m_pWeapon->hCrosshair, m_pWeapon->rcCrosshair, 255, 0, 0 );
+					SetCrosshair( m_pWeapon->hCrosshair, m_pWeapon->rcCrosshair, 255, 255, 255 );
 				}
 			}
 		}
@@ -653,24 +651,24 @@ int CHudAmmo::MsgFunc_CurWeapon( const char *pszName, int iSize, void *pbuf )
 			// zoomed crosshairs
 			if( fOnTarget && m_pWeapon->hZoomedAutoaim )
 			{
-				if( bIsMultiplayer() )
+				if( gHUD.m_iHideHUDDisplay & HIDEHUD_NOHEV )
 				{
-					SetCrosshair( m_pWeapon->hZoomedAutoaim, m_pWeapon->rcZoomedAutoaim, 255, 255, 255);
+					SetCrosshair( m_pWeapon->hZoomedAutoaim, m_pWeapon->rcZoomedAutoaim, 255, 16, 16 );
 				}
 				else
 				{
-					SetCrosshair( m_pWeapon->hZoomedAutoaim, m_pWeapon->rcZoomedAutoaim, 255, 0, 0);
+					SetCrosshair( m_pWeapon->hZoomedAutoaim, m_pWeapon->rcZoomedAutoaim, 255, 255, 255 );
 				}
 			}
 			else
 			{
-				if( bIsMultiplayer() )
+				if( gHUD.m_iHideHUDDisplay & HIDEHUD_NOHEV )
 				{
-					SetCrosshair( m_pWeapon->hZoomedCrosshair, m_pWeapon->rcZoomedCrosshair, 255, 255, 255 );
+					SetCrosshair( m_pWeapon->hZoomedCrosshair, m_pWeapon->rcZoomedCrosshair, 255, 16, 16 );
 				}
 				else
 				{
-					SetCrosshair( m_pWeapon->hZoomedCrosshair, m_pWeapon->rcZoomedCrosshair, 255, 0, 0 );
+					SetCrosshair( m_pWeapon->hZoomedCrosshair, m_pWeapon->rcZoomedCrosshair, 255, 255, 255 );
 				}
 			}
 		}
@@ -688,7 +686,7 @@ int CHudAmmo::MsgFunc_CurWeapon( const char *pszName, int iSize, void *pbuf )
 int CHudAmmo::MsgFunc_WeaponList( const char *pszName, int iSize, void *pbuf )
 {
 	BEGIN_READ( pbuf, iSize );
-	
+
 	WEAPON Weapon;
 
 	strcpy( Weapon.szName, READ_STRING() );
@@ -913,13 +911,13 @@ int CHudAmmo::Draw( float flTime )
 	if( m_fFade > 0 )
 		m_fFade -= ( gHUD.m_flTimeDelta * 20 );
 
-	if( bIsMultiplayer() )
+	if( gHUD.m_iHideHUDDisplay & HIDEHUD_NOHEV )
 	{
-		UnpackRGB( r, g, b, RGB_YELLOWISH );
+		UnpackRGB( r, g, b, RGB_REDISH );
 	}
 	else
 	{
-		UnpackRGB( r, g, b, RGB_REDISH );
+		UnpackRGB( r, g, b, RGB_YELLOWISH );
 	}
 
 	ScaleColors( r, g, b, a );
@@ -948,13 +946,13 @@ int CHudAmmo::Draw( float flTime )
 
 			x += AmmoWidth / 2;
 
-			if( bIsMultiplayer() )
+			if( gHUD.m_iHideHUDDisplay & HIDEHUD_NOHEV )
 			{
-				UnpackRGB( r, g, b, RGB_YELLOWISH );
+				UnpackRGB( r, g, b, RGB_REDISH );
 			}
 			else
 			{
-				UnpackRGB( r, g, b, RGB_REDISH );
+				UnpackRGB( r, g, b, RGB_YELLOWISH );
 			}
 
 			// draw the | bar
@@ -1024,8 +1022,10 @@ int DrawBar( int x, int y, int width, int height, float f )
 		x += w;
 		width -= w;
 	}
-
-	UnpackRGB( r, g, b, RGB_REDISH );
+	if( gHUD.m_iHideHUDDisplay & HIDEHUD_NOHEV )
+		UnpackRGB( r, g, b, RGB_REDISH );
+	else
+		UnpackRGB( r, g, b, RGB_YELLOWISH );
 
 	FillRGBA( x, y, width, height, r, g, b, 128 );
 

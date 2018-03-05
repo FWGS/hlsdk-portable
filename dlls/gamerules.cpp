@@ -301,53 +301,6 @@ void CGameRules::RefreshSkillData ( void )
 	gSkillData.plrStomach = GetSkillCvar( "sk_player_stomach" );
 	gSkillData.plrLeg = GetSkillCvar( "sk_player_leg" );
 	gSkillData.plrArm = GetSkillCvar( "sk_player_arm" );
-
-	// MONSTERS
-
-	// Baby kelly
-	gSkillData.babykellyhealth = GetSkillCvar( "sk_islave_health" );
-
-	// Boss 
-	gSkillData.bossHealth = GetSkillCvar( "sk_apache_health" );
-
-	// Cyber Franklin
-	gSkillData.cyberfranklinHealth = GetSkillCvar( "sk_apache_health" );
-
-	// Houndeye
-	gSkillData.houndeyeDmgBite = GetSkillCvar( "sk_hgrunt_kick" );
-
-	// Megasquid
-	gSkillData.megasquidHealth = GetSkillCvar( "sk_bullsquid_health" );
-
-	// Zombie bull
-	gSkillData.zombiebullHealth = GetSkillCvar( "sk_bullsquid_health" );
-	gSkillData.zombiebullDmgBite = GetSkillCvar( "sk_bullsquid_dmg_bite" );
-	gSkillData.zombiebullDmgWhip = GetSkillCvar( "sk_bullsquid_dmg_whip" );
-
-	// PLAYER WEAPONS
-
-	// Shovel
-	gSkillData.plrDmgShovel = GetSkillCvar( "sk_plr_crowbar" );
-
-	// Spanner
-	gSkillData.plrDmgSpanner = GetSkillCvar( "sk_plr_crowbar" );
-
-	// AP9 Round
-	gSkillData.plrDmgAP9 = GetSkillCvar( "sk_plr_9mmAR_bullet" );
-
-	// Taurus Round
-	gSkillData.plrDmgTaurus = GetSkillCvar( "sk_plr_9mm_bullet" );
-
-	// Sniper Round
-	gSkillData.plrDmgSniper = GetSkillCvar( "sk_plr_xbow_bolt_monster" );
-
-	// Flamethrower
-	gSkillData.plrDmgFlame = GetSkillCvar( "sk_plr_egon_wide" );
-
-	// HEALTH/CHARGE
-
-	// Medkit
-	gSkillData.medkitHeal = GetSkillCvar( "sk_scientist_heal" );
 }
 
 //=========================================================

@@ -297,7 +297,7 @@ void CRpg::Reload( void )
 	// Set the next attack time into the future so that WeaponIdle will get called more often
 	// than reload, allowing the RPG LTD to be updated
 	
-	m_flNextPrimaryAttack = GetNextAttackDelay( 0.5 );
+	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5;
 
 	if( m_cActiveRockets && m_fSpotActive )
 	{
@@ -360,7 +360,7 @@ void CRpg::Precache( void )
 	PRECACHE_SOUND( "weapons/rocketfire1.wav" );
 	PRECACHE_SOUND( "weapons/glauncher.wav" ); // alternative fire sound
 
-	m_usRpg = PRECACHE_EVENT( 1, "events/rpg.sc" );
+	// m_usRpg = PRECACHE_EVENT( 1, "events/rpg.sc" );
 }
 
 int CRpg::GetItemInfo( ItemInfo *p )
@@ -438,6 +438,8 @@ void CRpg::PrimaryAttack()
 		m_pPlayer->m_iWeaponFlash = BRIGHT_GUN_FLASH;
 
 #ifndef CLIENT_DLL
+		SendWeaponAnim( RPG_FIRE2 );
+
 		// player "shoot" animation
 		m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
 
@@ -459,12 +461,14 @@ void CRpg::PrimaryAttack()
 #else
 	flags = 0;
 #endif
-		PLAYBACK_EVENT( flags, m_pPlayer->edict(), m_usRpg );
+		EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_WEAPON, "weapons/rocketfire1.wav", 0.9, ATTN_NORM );
+		EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/glauncher.wav", 0.7, ATTN_NORM );
 
-		m_iClip--; 
+		m_iClip--;
 
-		m_flNextPrimaryAttack = GetNextAttackDelay( 1.5 );
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 1.5;
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.5;
+		m_pPlayer->pev->punchangle.x -= 5;
 
 		ResetEmptySound();
 	}

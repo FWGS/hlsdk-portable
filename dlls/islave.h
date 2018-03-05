@@ -12,17 +12,16 @@
 *   use or distribution of this code by or to any unlicensed person is illegal.
 *
 ****/
-
 #ifndef ISLAVE_H
 #define ISLAVE_H
 
-#define ISLAVE_MAX_BEAMS	8
+#define		ISLAVE_MAX_BEAMS	8
 
 class CISlave : public CSquadMonster
 {
 public:
-	void Spawn( void );
-	void Precache( void );
+	virtual void Spawn( void );
+	virtual void Precache( void );
 	void UpdateOnRemove();
 	void SetYawSpeed( void );
 	int	 ISoundMask( void );
@@ -35,10 +34,10 @@ public:
 	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType);
 	int TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
 
-	void DeathSound( void );
-	void PainSound( void );
-	void AlertSound( void );
-	void IdleSound( void );
+	virtual void DeathSound( void );
+	virtual void PainSound( void );
+	virtual void AlertSound( void );
+	virtual void IdleSound( void );
 
 	void Killed( entvars_t *pevAttacker, int iGib );
 	BOOL ShouldGibMonster(int iGib) { return FALSE; }

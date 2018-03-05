@@ -83,7 +83,7 @@ void CMP5::Precache( void )
 	PRECACHE_SOUND( "weapons/357_cock1.wav" );
 
 	m_usMP5 = PRECACHE_EVENT( 1, "events/mp5.sc" );
-	m_usMP52 = PRECACHE_EVENT( 1, "events/mp52.sc" );
+	//m_usMP52 = PRECACHE_EVENT( 1, "events/mp52.sc" );
 }
 
 int CMP5::GetItemInfo( ItemInfo *p )
@@ -177,7 +177,7 @@ void CMP5::PrimaryAttack()
 		// HEV suit - indicate out of ammo condition
 		m_pPlayer->SetSuitUpdate( "!HEV_AMO0", FALSE, 0 );
 
-	m_flNextPrimaryAttack = GetNextAttackDelay( 0.1 );
+	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.1;
 
 	if( m_flNextPrimaryAttack < UTIL_WeaponTimeBase() )
 		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.1;
@@ -209,8 +209,13 @@ void CMP5::SecondaryAttack( void )
 
 	m_pPlayer->m_rgAmmo[m_iSecondaryAmmoType]--;
 
+	SendWeaponAnim( MP5_LAUNCH );
+
 	// player "shoot" animation
 	m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
+
+	// play this sound through BODY channel so we can hear it if player didn't stop firing MP3
+	EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_WEAPON, RANDOM_LONG( 0, 1 ) ? "weapons/glauncher.wav" : "weapons/glauncher2.wav", 0.8, ATTN_NORM );
 
  	UTIL_MakeVectors( m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle );
 
@@ -219,21 +224,15 @@ void CMP5::SecondaryAttack( void )
 					m_pPlayer->pev->origin + m_pPlayer->pev->view_ofs + gpGlobals->v_forward * 16, 
 					gpGlobals->v_forward * 800 );
 
-	int flags;
-#if defined( CLIENT_WEAPONS )
-	flags = FEV_NOTHOST;
-#else
-	flags = 0;
-#endif
-	PLAYBACK_EVENT( flags, m_pPlayer->edict(), m_usMP52 );
-
-	m_flNextPrimaryAttack = GetNextAttackDelay( 1 );
+	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 1;
 	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1;
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 5;// idle pretty soon after shooting.
 
 	if( !m_pPlayer->m_rgAmmo[m_iSecondaryAmmoType] )
 		// HEV suit - indicate out of ammo condition
 		m_pPlayer->SetSuitUpdate( "!HEV_AMO0", FALSE, 0 );
+
+	m_pPlayer->pev->punchangle.x -= 10;
 }
 
 void CMP5::Reload( void )

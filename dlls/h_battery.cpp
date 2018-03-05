@@ -26,6 +26,7 @@
 #include "saverestore.h"
 #include "skill.h"
 #include "gamerules.h"
+#include "player.h"
 
 class CRecharge : public CBaseToggle
 {
@@ -111,12 +112,14 @@ void CRecharge::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE use
 	// if there is no juice left, turn it off
 	if( m_iJuice <= 0 )
 	{
-		pev->frame = 1;			
+		pev->frame = 1;
 		Off();
 	}
 
 	// if the player doesn't have the suit, or there is no juice left, make the deny noise
-	if( ( m_iJuice <= 0 ) || ( !( pActivator->pev->weapons & ( 1 << WEAPON_SUIT ) ) ) )
+	if( ( m_iJuice <= 0 ) || ( !( pActivator->pev->weapons & ( 1 << WEAPON_SUIT ) )
+		|| ( FBitSet( ( (CBasePlayer*)pActivator )->m_iHideHUD, HIDEHUD_NOHEV )
+		&& !g_pGameRules->IsMultiplayer() ) ) )
 	{
 		if( m_flSoundTime <= gpGlobals->time )
 		{

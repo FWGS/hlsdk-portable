@@ -318,7 +318,7 @@ void CHeadCrab::LeapTouch( CBaseEntity *pOther )
 	// Don't hit if back on ground
 	if( !FBitSet( pev->flags, FL_ONGROUND ) )
 	{
-		EMIT_SOUND_DYN( edict(), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pBiteSounds ), GetSoundVolue(), ATTN_IDLE, 0, GetVoicePitch() );
+		BiteSound();
 
 		pOther->TakeDamage( pev, pev, GetDamageAmount(), DMG_SLASH );
 	}
@@ -346,7 +346,7 @@ void CHeadCrab::StartTask( Task_t *pTask )
 	{
 	case TASK_RANGE_ATTACK1:
 		{
-			EMIT_SOUND_DYN( edict(), CHAN_WEAPON, pAttackSounds[0], GetSoundVolue(), ATTN_IDLE, 0, GetVoicePitch() );
+			StartAttackSound();
 			m_IdealActivity = ACT_RANGE_ATTACK1;
 			SetTouch( &CHeadCrab::LeapTouch );
 			break;
@@ -430,6 +430,14 @@ void CHeadCrab::DeathSound( void )
 }
 
 //=========================================================
+// AttackSound2
+//=========================================================
+void CHeadCrab::StartAttackSound( void )
+{
+	EMIT_SOUND_DYN( edict(), CHAN_WEAPON, pAttackSounds[0], GetSoundVolue(), ATTN_IDLE, 0, GetVoicePitch() );
+}
+
+//=========================================================
 // AttackSound 
 //=========================================================
 void CHeadCrab::AttackSound( void )
@@ -437,6 +445,14 @@ void CHeadCrab::AttackSound( void )
 	int iSound = RANDOM_LONG(0, 2);
 	if( iSound != 0 )
 		EMIT_SOUND_DYN( edict(), CHAN_VOICE, pAttackSounds[iSound], GetSoundVolue(), ATTN_IDLE, 0, GetVoicePitch() );
+}
+
+//=========================================================
+// AttackSound
+//=========================================================
+void CHeadCrab::BiteSound( void )
+{
+	EMIT_SOUND_DYN( edict(), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pBiteSounds ), GetSoundVolue(), ATTN_IDLE, 0, GetVoicePitch() );
 }
 
 Schedule_t *CHeadCrab::GetScheduleOfType( int Type )

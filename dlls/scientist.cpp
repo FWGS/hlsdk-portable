@@ -38,8 +38,6 @@ enum
 	HEAD_SLICK = 3
 };
 
-#define	NUM_SCIENTIST_SKINS		4
-
 enum
 {
 	SKIN_GLASSES = 0,
@@ -606,7 +604,8 @@ void CScientist::Spawn( void )
 	pev->solid = SOLID_SLIDEBOX;
 	pev->movetype = MOVETYPE_STEP;
 	m_bloodColor = BLOOD_COLOR_RED;
-	pev->health = gSkillData.scientistHealth;
+	if( !pev->health )
+		pev->health = gSkillData.scientistHealth;
 	pev->view_ofs = Vector( 0, 0, 50 );// position of the eyes relative to monster's origin.
 	m_flFieldOfView = VIEW_FIELD_WIDE; // NOTE: we need a wide field of view so scientists will notice player and say hello
 	m_MonsterState = MONSTERSTATE_NONE;
@@ -615,11 +614,18 @@ void CScientist::Spawn( void )
 
 	m_afCapability = bits_CAP_HEAR | bits_CAP_TURN_HEAD | bits_CAP_OPEN_DOORS | bits_CAP_AUTO_DOORS | bits_CAP_USE;
 
+	// White hands
+	pev->skin = 0;
+
 	if( pev->body == -1 )
 	{
 		// -1 chooses a random head
 		pev->body = RANDOM_LONG( 0, NUM_SCIENTIST_HEADS - 1 );// pick a head, any head
 	}
+
+	// Luther is black, make his hands black
+	if( pev->body == HEAD_LUTHER )
+		pev->skin = 1;
 
 	MonsterInit();
 	SetUse( &CTalkMonster::FollowerUse );
@@ -1081,6 +1087,12 @@ void CDeadScientist::Spawn()
 		pev->body = RANDOM_LONG( 0, NUM_SCIENTIST_HEADS - 1 );// pick a head, any head
 	}
 
+	// Luther is black, make his hands black
+	if( pev->body == HEAD_LUTHER )
+		pev->skin = 1;
+	else
+		pev->skin = 0;
+
 	pev->sequence = LookupSequence( m_szPoses[m_iPose] );
 	if( pev->sequence == -1 )
 	{
@@ -1145,6 +1157,9 @@ void CSittingScientist::Spawn()
 		pev->body = RANDOM_LONG( 0, NUM_SCIENTIST_HEADS - 1 );// pick a head, any head
 	}
 
+	// Luther is black, make his hands black
+	if( pev->body == HEAD_LUTHER )
+		pev->skin = 1;
 	m_baseSequence = LookupSequence( "sitlookleft" );
 	pev->sequence = m_baseSequence + RANDOM_LONG( 0, 4 );
 	ResetSequenceInfo();

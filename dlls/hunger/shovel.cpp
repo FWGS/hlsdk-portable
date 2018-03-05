@@ -25,11 +25,12 @@
 #define	SHOVEL_BODYHIT_VOLUME 128
 #define	SHOVEL_WALLHIT_VOLUME 512
 
-void FindHullIntersection(const Vector &vecSrc, TraceResult &tr, float *mins, float *maxs, edict_t *pEntity);
+extern void FindHullIntersection( const Vector &vecSrc, TraceResult &tr, float *mins, float *maxs, edict_t *pEntity );
 
-LINK_ENTITY_TO_CLASS(weapon_th_shovel, CShovel);
+LINK_ENTITY_TO_CLASS( weapon_th_shovel, CWeaponEinarShovel )
 
-enum shovel_e {
+enum shovel_e
+{
 	SHOVEL_IDLE = 0,
 	SHOVEL_DRAW,
 	SHOVEL_HOLSTER,
@@ -40,43 +41,41 @@ enum shovel_e {
 	SHOVEL_ATTACK3MISS,
 	SHOVEL_ATTACK3HIT,
 	SHOVEL_IDLE2,
-	SHOVEL_IDLE3,
+	SHOVEL_IDLE3
 };
 
-
-void CShovel::Spawn()
+void CWeaponEinarShovel::Spawn()
 {
 	Precache();
 	m_iId = WEAPON_SHOVEL;
-	SET_MODEL(ENT(pev), "models/w_shovel.mdl");
+	SET_MODEL( ENT( pev ), "models/w_shovel.mdl" );
 	m_iClip = -1;
 
 	FallInit();// get ready to fall down.
 }
 
-
-void CShovel::Precache(void)
+void CWeaponEinarShovel::Precache()
 {
-	PRECACHE_MODEL("models/v_shovel.mdl");
-	PRECACHE_MODEL("models/w_shovel.mdl");
-	PRECACHE_MODEL("models/p_shovel.mdl");
-	PRECACHE_SOUND("weapons/cbar_hit1.wav");
-	PRECACHE_SOUND("weapons/cbar_hit2.wav");
-	PRECACHE_SOUND("weapons/cbar_hitbod1.wav");
-	PRECACHE_SOUND("weapons/cbar_hitbod2.wav");
-	PRECACHE_SOUND("weapons/cbar_hitbod3.wav");
-	PRECACHE_SOUND("weapons/cbar_miss1.wav");
+	PRECACHE_MODEL( "models/v_shovel.mdl" );
+	PRECACHE_MODEL( "models/w_shovel.mdl" );
+	PRECACHE_MODEL( "models/p_shovel.mdl" );
+/*
+	PRECACHE_SOUND( "weapons/cbar_hit1.wav" );
+	PRECACHE_SOUND( "weapons/cbar_hit2.wav" );
+	PRECACHE_SOUND( "weapons/cbar_hitbod1.wav" );
+	PRECACHE_SOUND( "weapons/cbar_hitbod2.wav" );
+	PRECACHE_SOUND( "weapons/cbar_hitbod3.wav" );
+	PRECACHE_SOUND( "weapons/cbar_miss1.wav");
 
-	PRECACHE_SOUND("kelly/cbar_hitkelly1.wav");
-	PRECACHE_SOUND("kelly/cbar_hitkelly2.wav");
-	PRECACHE_SOUND("kelly/cbar_hitkelly3.wav");
-
-	m_usShovel = PRECACHE_EVENT(1, "events/shovel.sc");
+	PRECACHE_SOUND( "kelly/cbar_hitkelly1.wav" );
+	PRECACHE_SOUND( "kelly/cbar_hitkelly2.wav" );
+	PRECACHE_SOUND( "kelly/cbar_hitkelly3.wav" );
+*/
 }
 
-int CShovel::GetItemInfo(ItemInfo *p)
+int CWeaponEinarShovel::GetItemInfo( ItemInfo *p )
 {
-	p->pszName = STRING(pev->classname);
+	p->pszName = STRING( pev->classname );
 	p->pszAmmo1 = NULL;
 	p->iMaxAmmo1 = -1;
 	p->pszAmmo2 = NULL;
@@ -89,147 +88,193 @@ int CShovel::GetItemInfo(ItemInfo *p)
 	return 1;
 }
 
-
-
-BOOL CShovel::Deploy()
+int CWeaponEinarShovel::AddToPlayer( CBasePlayer *pPlayer )
 {
-	return DefaultDeploy("models/v_shovel.mdl", "models/p_shovel.mdl", SHOVEL_DRAW, "shovel");
+	if( CBasePlayerWeapon::AddToPlayer( pPlayer ) )
+	{
+		MESSAGE_BEGIN( MSG_ONE, gmsgWeapPickup, NULL, pPlayer->pev );
+			WRITE_BYTE( m_iId );
+		MESSAGE_END();
+		return TRUE;
+	}
+	return FALSE;
 }
 
-void CShovel::Holster(int skiplocal /* = 0 */)
+BOOL CWeaponEinarShovel::Deploy()
+{
+	return DefaultDeploy( "models/v_shovel.mdl", "models/p_shovel.mdl", SHOVEL_DRAW, "crowbar" );
+}
+
+void CWeaponEinarShovel::Holster( int skiplocal /* = 0 */ )
 {
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
-	SendWeaponAnim(SHOVEL_HOLSTER);
+	SendWeaponAnim( SHOVEL_HOLSTER );
 }
 
-void CShovel::PrimaryAttack()
+void CWeaponEinarShovel::PrimaryAttack()
 {
-	if (!Swing(1))
+	if( !Swing( 1 ) )
 	{
-		SetThink(&CShovel::SwingAgain);
+		SetThink( &CWeaponEinarShovel::SwingAgain );
 		pev->nextthink = gpGlobals->time + 0.1;
 	}
 }
 
-int CShovel::Swing(int fFirst)
+void CWeaponEinarShovel::Smack()
+{
+	DecalGunshot( &m_trHit, BULLET_PLAYER_CROWBAR );
+}
+
+void CWeaponEinarShovel::SwingAgain()
+{
+	Swing( 0 );
+}
+
+int CWeaponEinarShovel::Swing( int fFirst )
 {
 	int fDidHit = FALSE;
 
 	TraceResult tr;
 
-	UTIL_MakeVectors(m_pPlayer->pev->v_angle);
+	UTIL_MakeVectors( m_pPlayer->pev->v_angle );
 	Vector vecSrc = m_pPlayer->GetGunPosition();
 	Vector vecEnd = vecSrc + gpGlobals->v_forward * 32;
 
-	UTIL_TraceLine(vecSrc, vecEnd, dont_ignore_monsters, ENT(m_pPlayer->pev), &tr);
+	UTIL_TraceLine( vecSrc, vecEnd, dont_ignore_monsters, ENT( m_pPlayer->pev ), &tr );
 
 #ifndef CLIENT_DLL
-	if (tr.flFraction >= 1.0)
+	if( tr.flFraction >= 1.0 )
 	{
-		UTIL_TraceHull(vecSrc, vecEnd, dont_ignore_monsters, head_hull, ENT(m_pPlayer->pev), &tr);
-		if (tr.flFraction < 1.0)
+		UTIL_TraceHull( vecSrc, vecEnd, dont_ignore_monsters, head_hull, ENT( m_pPlayer->pev ), &tr );
+		if( tr.flFraction < 1.0 )
 		{
 			// Calculate the point of intersection of the line (or hull) and the object we hit
 			// This is and approximation of the "best" intersection
-			CBaseEntity *pHit = CBaseEntity::Instance(tr.pHit);
-			if (!pHit || pHit->IsBSPModel())
-				FindHullIntersection(vecSrc, tr, VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX, m_pPlayer->edict());
+			CBaseEntity *pHit = CBaseEntity::Instance( tr.pHit );
+			if( !pHit || pHit->IsBSPModel() )
+				FindHullIntersection( vecSrc, tr, VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX, m_pPlayer->edict() );
 			vecEnd = tr.vecEndPos;	// This is the point on the actual surface (the hull could have hit space)
 		}
 	}
 #endif
-
-	PLAYBACK_EVENT_FULL(FEV_NOTHOST, m_pPlayer->edict(), m_usShovel,
-		0.0, (float *)&g_vecZero, (float *)&g_vecZero, 0, 0, 0,
-		0.0, 0, 0.0);
-
-
-	if (tr.flFraction >= 1.0)
+	if( tr.flFraction >= 1.0 )
 	{
-		if (fFirst)
+		if( fFirst )
 		{
 			// miss
-			m_flNextPrimaryAttack = GetNextAttackDelay(0.56); // 0.5
+			if( RANDOM_FLOAT( 0.0, 1.0 ) <= 0.25 )
+				++m_iSwing;
+			switch( ( m_iSwing++ ) % 2 )
+			{
+			case 0:
+				SendWeaponAnim( SHOVEL_ATTACK1MISS );
+				break;
+			case 1:
+				SendWeaponAnim( SHOVEL_ATTACK2MISS );
+				break;  
+			/*case 2:
+				SendWeaponAnim( SHOVEL_ATTACK3MISS );
+				break;*/
+                        }
+			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5;
 
 			// player "shoot" animation
-			m_pPlayer->SetAnimation(PLAYER_ATTACK1);
+			m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
+#ifdef CROWBAR_IDLE_ANIM
+			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
+#endif
+			EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_WEAPON, "weapons/cbar_miss1.wav", 1, ATTN_NORM, 0, 94 + RANDOM_LONG( 0, 0xF ) );
 		}
 	}
 	else
 	{
-		// switch (((m_iSwing++) % 2) + 1)
-		switch (RANDOM_LONG(0, 2))
+		// switch ( ( ( m_iSwing++ ) % 2 ) + 1 )
+		switch( RANDOM_LONG( 0, 2 ) )
 		{
 		case 0:
-			SendWeaponAnim(SHOVEL_ATTACK1MISS); break;
+			SendWeaponAnim(	SHOVEL_ATTACK1HIT );
+			break;
 		case 1:
-			SendWeaponAnim(SHOVEL_ATTACK2MISS); break;
+			SendWeaponAnim(	SHOVEL_ATTACK2HIT );
+			break;
 		case 2:
-			SendWeaponAnim(SHOVEL_ATTACK3MISS); break;
+			SendWeaponAnim(	SHOVEL_ATTACK3HIT );
+			break;
 		}
 
 		// player "shoot" animation
-		m_pPlayer->SetAnimation(PLAYER_ATTACK1);
-
+		m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
 #ifndef CLIENT_DLL
 
 		// hit
 		fDidHit = TRUE;
-		CBaseEntity *pEntity = CBaseEntity::Instance(tr.pHit);
-
-		ClearMultiDamage();
-
-		if ((m_flNextPrimaryAttack + 1 < UTIL_WeaponTimeBase()) || g_pGameRules->IsMultiplayer())
-		{
-			// first swing does full damage
-			pEntity->TraceAttack(m_pPlayer->pev, gSkillData.plrDmgShovel, gpGlobals->v_forward, &tr, DMG_CLUB);
-		}
-		else
-		{
-			// subsequent swings do half
-			pEntity->TraceAttack(m_pPlayer->pev, gSkillData.plrDmgShovel / 2, gpGlobals->v_forward, &tr, DMG_CLUB);
-		}
-		ApplyMultiDamage(m_pPlayer->pev, m_pPlayer->pev);
+		CBaseEntity *pEntity = CBaseEntity::Instance( tr.pHit );
 
 		// play thwack, smack, or dong sound
 		float flVol = 1.0;
 		int fHitWorld = TRUE;
 
-		if (pEntity)
+		if( pEntity )
 		{
-			if (pEntity->Classify() != CLASS_NONE && pEntity->Classify() != CLASS_MACHINE)
+			float flDmg;
+			ClearMultiDamage();
+
+			if( g_pGameRules->IsMultiplayer() )
+			{
+				// more damage in multiplayer
+				flDmg = gSkillData.plrDmgCrowbar * 1.6;
+			}
+			else if( m_flNextPrimaryAttack + 1 < UTIL_WeaponTimeBase() )
+			{
+				// first swing does full damage
+				flDmg = gSkillData.plrDmgCrowbar * 1.2;
+			}
+			else
+			{
+				// subsequent swings do half
+				flDmg = gSkillData.plrDmgCrowbar * 0.6;
+			}
+			pEntity->TraceAttack( m_pPlayer->pev, flDmg, gpGlobals->v_forward, &tr, DMG_CLUB );
+			ApplyMultiDamage( m_pPlayer->pev, m_pPlayer->pev );
+
+			if( pEntity->Classify() != CLASS_NONE && pEntity->Classify() != CLASS_MACHINE )
 			{
 				// Skeletons make different hit sounds.
-				if (pEntity->Classify() == CLASS_SKELETON)
+				if( pEntity->Classify() == CLASS_SKELETON )
 				{
 					// play thwack or smack sound
-					switch (RANDOM_LONG(0, 2))
+					switch( RANDOM_LONG( 0, 2 ) )
 					{
 					case 0:
-						EMIT_SOUND(ENT(m_pPlayer->pev), CHAN_ITEM, "kelly/cbar_hitkelly1.wav", 1, ATTN_NORM); break;
+						EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_ITEM, "kelly/cbar_hitkelly1.wav", 1, ATTN_NORM );
+						break;
 					case 1:
-						EMIT_SOUND(ENT(m_pPlayer->pev), CHAN_ITEM, "kelly/cbar_hitkelly2.wav", 1, ATTN_NORM); break;
+						EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_ITEM, "kelly/cbar_hitkelly2.wav", 1, ATTN_NORM );
+						break;
 					case 2:
-						EMIT_SOUND(ENT(m_pPlayer->pev), CHAN_ITEM, "kelly/cbar_hitkelly3.wav", 1, ATTN_NORM); break;
+						EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_ITEM, "kelly/cbar_hitkelly3.wav", 1, ATTN_NORM );
+						break;
 					}
 				}
 				else
 				{
 					// play thwack or smack sound
-					switch (RANDOM_LONG(0, 2))
+					switch( RANDOM_LONG( 0, 2 ) )
 					{
 					case 0:
-						EMIT_SOUND(ENT(m_pPlayer->pev), CHAN_ITEM, "weapons/cbar_hitbod1.wav", 1, ATTN_NORM); break;
+						EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/cbar_hitbod1.wav", 1, ATTN_NORM );
+						break;
 					case 1:
-						EMIT_SOUND(ENT(m_pPlayer->pev), CHAN_ITEM, "weapons/cbar_hitbod2.wav", 1, ATTN_NORM); break;
+						EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/cbar_hitbod2.wav", 1, ATTN_NORM );
+						break;
 					case 2:
-						EMIT_SOUND(ENT(m_pPlayer->pev), CHAN_ITEM, "weapons/cbar_hitbod3.wav", 1, ATTN_NORM); break;
+						EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/cbar_hitbod3.wav", 1, ATTN_NORM );
+						break;
 					}
 				}
 
-
 				m_pPlayer->m_iWeaponVolume = SHOVEL_BODYHIT_VOLUME;
-				if (!pEntity->IsAlive())
+				if( !pEntity->IsAlive() )
 					return TRUE;
 				else
 					flVol = 0.1;
@@ -241,11 +286,11 @@ int CShovel::Swing(int fFirst)
 		// play texture hit sound
 		// UNDONE: Calculate the correct point of intersection when we hit with the hull instead of the line
 
-		if (fHitWorld)
+		if( fHitWorld )
 		{
-			float fvolbar = TEXTURETYPE_PlaySound(&tr, vecSrc, vecSrc + (vecEnd - vecSrc) * 2, BULLET_PLAYER_CROWBAR);
+			float fvolbar = TEXTURETYPE_PlaySound( &tr, vecSrc, vecSrc + ( vecEnd - vecSrc ) * 2, BULLET_PLAYER_CROWBAR );
 
-			if (g_pGameRules->IsMultiplayer())
+			if( g_pGameRules->IsMultiplayer() )
 			{
 				// override the volume here, cause we don't play texture sounds in multiplayer, 
 				// and fvolbar is going to be 0 from the above call.
@@ -254,13 +299,13 @@ int CShovel::Swing(int fFirst)
 			}
 
 			// also play crowbar strike
-			switch (RANDOM_LONG(0, 1))
+			switch( RANDOM_LONG( 0, 1 ) )
 			{
 			case 0:
-				EMIT_SOUND_DYN(ENT(m_pPlayer->pev), CHAN_ITEM, "weapons/cbar_hit1.wav", fvolbar, ATTN_NORM, 0, 98 + RANDOM_LONG(0, 3));
+				EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/cbar_hit1.wav", fvolbar, ATTN_NORM, 0, 98 + RANDOM_LONG( 0, 3 ) );
 				break;
 			case 1:
-				EMIT_SOUND_DYN(ENT(m_pPlayer->pev), CHAN_ITEM, "weapons/cbar_hit2.wav", fvolbar, ATTN_NORM, 0, 98 + RANDOM_LONG(0, 3));
+				EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/cbar_hit2.wav", fvolbar, ATTN_NORM, 0, 98 + RANDOM_LONG( 0, 3 ) );
 				break;
 			}
 
@@ -270,15 +315,43 @@ int CShovel::Swing(int fFirst)
 
 		m_pPlayer->m_iWeaponVolume = flVol * SHOVEL_WALLHIT_VOLUME;
 #endif
-		m_flNextPrimaryAttack = GetNextAttackDelay(0.26); // 0.25
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.25;
 
-		SetThink(&CShovel::Smack);
+		SetThink( &CWeaponEinarShovel::Smack );
 		pev->nextthink = UTIL_WeaponTimeBase() + 0.2;
-
-
 	}
+#ifdef CROWBAR_IDLE_ANIM
+	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
+#endif
 	return fDidHit;
 }
 
-
-
+#ifdef CROWBAR_IDLE_ANIM
+void CWeaponEinarShovel::WeaponIdle( void )
+{
+	if( m_flTimeWeaponIdle < UTIL_WeaponTimeBase() )
+	{
+		int iAnim;
+		float flRand = UTIL_SharedRandomFloat( m_pPlayer->random_seed, 0, 1 );
+		if( flRand > 0.9 )
+		{
+			iAnim = SHOVEL_IDLE2;
+			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 160.0 / 30.0;
+		}
+		else
+		{
+			if( flRand > 0.5 )
+			{
+				iAnim = SHOVEL_IDLE;
+				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 70.0 / 30.0;
+			}
+			else
+			{
+				iAnim = SHOVEL_IDLE3;
+				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 160.0 / 30.0;
+			}
+		}
+		SendWeaponAnim( iAnim );
+	}
+}
+#endif

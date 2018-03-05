@@ -13,8 +13,8 @@ ifeq ($(TARGET_ARCH_ABI),armeabi-v7a-hard)
 LOCAL_MODULE_FILENAME = libserver_hardfp
 endif
 
-LOCAL_CFLAGS += -D_LINUX -DCLIENT_WEAPONS -Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf \
-	-fno-exceptions -DNO_VOICEGAMEMGR -w
+LOCAL_CFLAGS += -D_LINUX -Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf \
+	-fno-exceptions -DNO_VOICEGAMEMGR -DCROWBAR_IDLE_ANIM -w
 
 LOCAL_CPPFLAGS := $(LOCAL_CFLAGS)
 
@@ -75,7 +75,6 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
            healthkit.cpp \
            hgrunt.cpp \
            hornet.cpp \
-           hornetgun.cpp \
            houndeye.cpp \
            ichthyosaur.cpp \
            islave.cpp \
@@ -136,15 +135,13 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
 	   hunger/cyberfranklin.cpp \
 	   hunger/flame.cpp \
 	   hunger/hand.cpp \
-	   hunger/hkg36.cpp \
 	   hunger/medkit.cpp \
 	   hunger/megasquid.cpp \
 	   hunger/shovel.cpp \
 	   hunger/sniper.cpp \
 	   hunger/spanner.cpp \
 	   hunger/taurus.cpp \
-	   hunger/tnt.cpp \
-	   hunger/weapon_einar1.cpp \
+	   hunger/tfcsniper.cpp \
 	   hunger/zombiebull.cpp \
 	   ../pm_shared/pm_debug.c \
 	   ../pm_shared/pm_math.c \

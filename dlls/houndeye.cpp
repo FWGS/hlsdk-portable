@@ -26,13 +26,15 @@
 #include	"squadmonster.h"
 #include	"soundent.h"
 #include	"game.h"
+#include	"weapons.h"
 
 extern CGraph WorldGraph;
 
 // houndeye does 20 points of damage spread over a sphere 384 units in diameter, and each additional 
 // squad member increases the BASE damage by 110%, per the spec.
 #define HOUNDEYE_MAX_SQUAD_SIZE			4
-#define	HOUNDEYE_MAX_ATTACK_RADIUS		96
+#define	HOUNDEYE_MAX_ATTACK_RADIUS		384
+#define HOUNDEYE_MIN_ATTACK_RADIUS		128
 #define	HOUNDEYE_SQUAD_BONUS			(float)1.1
 
 #define HOUNDEYE_EYE_FRAMES 4 // how many different switchable maps for the eye
@@ -192,7 +194,14 @@ BOOL CHoundeye::FCanActiveIdle( void )
 //=========================================================
 BOOL CHoundeye::CheckRangeAttack1( float flDot, float flDist )
 {
-	if( flDist <= ( HOUNDEYE_MAX_ATTACK_RADIUS * 0.5 ) && flDot >= 0.3 )
+	float flRadius;
+
+	if( FBitSet( pev->spawnflags, SF_SQUADMONSTER_NOZAP ) )
+		flRadius = HOUNDEYE_MIN_ATTACK_RADIUS;
+	else
+		flRadius = HOUNDEYE_MAX_ATTACK_RADIUS;
+
+	if( flDist <= ( flRadius * 0.5 ) && flDot >= 0.3 )
 	{
 		return TRUE;
 	}
@@ -277,23 +286,7 @@ void CHoundeye::HandleAnimEvent( MonsterEvent_t *pEvent )
 			WarnSound();
 			break;
 		case HOUND_AE_STARTATTACK:
-			{
-				// SOUND HERE!
-				CBaseEntity *pHurt = CheckTraceHullAttack( 80, gSkillData.houndeyeDmgBite, DMG_SLASH );
-
-				if( pHurt )
-				{
-					if( pHurt->pev->flags & ( FL_CLIENT | FL_MONSTER ) )
-					{
-						pHurt->pev->punchangle.x = 2;
-					}
-
-					pHurt->pev->velocity = pHurt->pev->velocity - gpGlobals->v_forward * 16;
-					pHurt->pev->velocity = pHurt->pev->velocity + gpGlobals->v_up * 8;
-				}
-
-				WarmUpSound();
-			}
+			WarmUpSound();
 			break;
 		case HOUND_AE_HOPBACK:
 			{
@@ -306,6 +299,8 @@ void CHoundeye::HandleAnimEvent( MonsterEvent_t *pEvent )
 				break;
 			}
 		case HOUND_AE_THUMP:
+			// emit the shockwaves
+			SonicAttack();
 			break;
 		case HOUND_AE_ANGERSOUND1:
 			EMIT_SOUND( ENT( pev ), CHAN_VOICE, "houndeye/he_pain3.wav", 1, ATTN_NORM );
@@ -357,6 +352,10 @@ void CHoundeye::Precache()
 {
 	PRECACHE_MODEL( "models/houndeye.mdl" );
 
+	PRECACHE_SOUND( "houndeye/rex_bite1.wav" );
+	PRECACHE_SOUND( "houndeye/rex_bite2.wav" );
+	PRECACHE_SOUND( "houndeye/rex_bite3.wav" );
+
 	PRECACHE_SOUND( "houndeye/he_alert1.wav" );
 	PRECACHE_SOUND( "houndeye/he_alert2.wav" );
 	PRECACHE_SOUND( "houndeye/he_alert3.wav" );
@@ -382,12 +381,15 @@ void CHoundeye::Precache()
 	PRECACHE_SOUND( "houndeye/he_attack2.wav" );
 	PRECACHE_SOUND( "houndeye/he_attack3.wav" );
 
-	PRECACHE_SOUND( "houndeye/he_blast1.wav" );
-	PRECACHE_SOUND( "houndeye/he_blast2.wav" );
-	PRECACHE_SOUND( "houndeye/he_blast3.wav" );
+	if( !FBitSet( pev->spawnflags, SF_SQUADMONSTER_NOZAP ) )
+	{
+		PRECACHE_SOUND( "houndeye/he_blast1.wav" );
+		PRECACHE_SOUND( "houndeye/he_blast2.wav" );
+		PRECACHE_SOUND( "houndeye/he_blast3.wav" );
 
-	m_iSpriteTexture = PRECACHE_MODEL( "sprites/shockwave.spr" );
-}	
+		m_iSpriteTexture = PRECACHE_MODEL( "sprites/shockwave.spr" );
+	}
+}
 
 //=========================================================
 // IdleSound
@@ -413,18 +415,61 @@ void CHoundeye::IdleSound( void )
 //=========================================================
 void CHoundeye::WarmUpSound( void )
 {
-	switch( RANDOM_LONG( 0, 2 ) )
+	const char *pszSound;
+
+	if( FBitSet( pev->spawnflags, SF_SQUADMONSTER_NOZAP ) )
 	{
-	case 0:
-		EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "houndeye/he_attack1.wav", 0.7, ATTN_NORM );	
-		break;
-	case 1:
-		EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "houndeye/he_attack3.wav", 0.7, ATTN_NORM );	
-		break;
-	case 2:
-		EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "houndeye/he_attack2.wav", 0.7, ATTN_NORM );
-		break;
+		Vector vecMouthPos, vecMouthAng;
+		CBaseEntity *pHurt = 0;
+		pHurt = CheckTraceHullAttack( 80, gSkillData.houndeyeDmgBlast * 0.4, DMG_SLASH );
+
+		if( pHurt )
+		{
+			if( pHurt->pev->flags & ( FL_CLIENT | FL_MONSTER ) )
+			{
+				pHurt->pev->punchangle.x = 8;
+				pHurt->pev->punchangle.y = RANDOM_LONG( -8, 8 );
+				pHurt->pev->punchangle.z = RANDOM_LONG( -8, 8 );
+			}
+
+			if( pHurt->IsPlayer() )
+			{
+				pHurt->pev->velocity = pHurt->pev->velocity + gpGlobals->v_forward * 100;
+				pHurt->pev->velocity = pHurt->pev->velocity + gpGlobals->v_up * 50;
+			}
+			GetAttachment( 0, vecMouthPos, vecMouthAng );
+			SpawnBlood( vecMouthPos, pHurt->BloodColor(), 25 );
+		}
+
+		switch( RANDOM_LONG( 0, 2 ) )
+		{
+		case 0:
+			pszSound = "houndeye/rex_bite1.wav";
+			break;
+		case 1:
+			pszSound = "houndeye/rex_bite2.wav";
+			break;
+		case 2:
+			pszSound = "houndeye/rex_bite3.wav";
+			break;
+		}
 	}
+	else
+	{
+		switch( RANDOM_LONG( 0, 2 ) )
+		{
+		case 0:
+			pszSound = "houndeye/he_attack1.wav";	
+			break;
+		case 1:
+			pszSound = "houndeye/he_attack3.wav";	
+			break;
+		case 2:
+			pszSound = "houndeye/he_attack2.wav";
+			break;
+		}
+	}
+	EMIT_SOUND( ENT( pev ), CHAN_WEAPON, pszSound, 0.7, ATTN_NORM );
 }
 
 //=========================================================
@@ -564,6 +609,12 @@ void CHoundeye::SonicAttack( void )
 {
 	float flAdjustedDamage;
 	float flDist;
+
+	if( FBitSet( pev->spawnflags, SF_SQUADMONSTER_NOZAP ) )
+	{
+		WarnSound();
+		return;
+	}
 
 	switch( RANDOM_LONG( 0, 2 ) )
 	{

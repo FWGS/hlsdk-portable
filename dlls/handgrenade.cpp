@@ -155,7 +155,7 @@ void CHandGrenade::WeaponIdle( void )
 		if( time < 0 )
 			time = 0;
 
-		CTnt::ShootTimed( m_pPlayer->pev, vecSrc, vecThrow, time );
+		CHandGrenade::ShootTimed( m_pPlayer->pev, vecSrc, vecThrow, time );
 
 		if( flVel < 500 )
 		{
@@ -175,7 +175,7 @@ void CHandGrenade::WeaponIdle( void )
 
 		m_flReleaseThrow = 0;
 		m_flStartThrow = 0;
-		m_flNextPrimaryAttack = GetNextAttackDelay( 0.5 );
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5;
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.5;
 
 		m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]--;
@@ -185,7 +185,7 @@ void CHandGrenade::WeaponIdle( void )
 			// just threw last grenade
 			// set attack times in the future, and weapon idle in the future so we can see the whole throw
 			// animation, weapon idle will automatically retire the weapon for us.
-			m_flTimeWeaponIdle = m_flNextSecondaryAttack = m_flNextPrimaryAttack = GetNextAttackDelay( 0.5 );// ensure that the animation can finish playing
+			m_flTimeWeaponIdle = m_flNextSecondaryAttack = m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5;// ensure that the animation can finish playing
 		}
 		return;
 	}
@@ -226,4 +226,43 @@ void CHandGrenade::WeaponIdle( void )
 
 		SendWeaponAnim( iAnim );
 	}
+}
+
+CGrenade *CHandGrenade::ShootTimed( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity, float time )
+{
+	CGrenade *pGrenade = GetClassPtr( (CGrenade *)NULL );
+	pGrenade->Spawn();
+	UTIL_SetOrigin( pGrenade->pev, vecStart );
+	pGrenade->pev->velocity = vecVelocity;
+	pGrenade->pev->angles = UTIL_VecToAngles( pGrenade->pev->velocity );
+	pGrenade->pev->owner = ENT( pevOwner );
+
+	pGrenade->SetTouch( &CGrenade::BounceTouch );	// Bounce if touched
+
+	// Take one second off of the desired detonation time and set the think to PreDetonate. PreDetonate
+	// will insert a DANGER sound into the world sound list and delay detonation for one second so that
+	// the grenade explodes after the exact amount of time specified in the call to ShootTimed().
+
+	pGrenade->pev->dmgtime = gpGlobals->time + time;
+	pGrenade->SetThink( &CGrenade::TumbleThink );
+	pGrenade->pev->nextthink = gpGlobals->time + 0.1;
+	if( time < 0.1 )
+	{
+		pGrenade->pev->nextthink = gpGlobals->time;
+		pGrenade->pev->velocity = Vector( 0, 0, 0 );
+	}
+
+	pGrenade->pev->sequence = RANDOM_LONG( 3, 6 );
+	pGrenade->pev->framerate = 1.0;
+ 
+	// Tumble through the air
+	// pGrenade->pev->avelocity.x = -400;
+
+	pGrenade->pev->gravity = 0.5;
+	pGrenade->pev->friction = 0.8;
+
+	SET_MODEL( ENT( pGrenade->pev ), "models/w_tnt.mdl" );
+	pGrenade->pev->dmg = 100;
+
+	return pGrenade;
 }

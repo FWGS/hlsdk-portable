@@ -637,7 +637,12 @@ void CBigMomma::Spawn()
 
 	pev->solid = SOLID_SLIDEBOX;
 	pev->movetype = MOVETYPE_STEP;
-	m_bloodColor = BLOOD_COLOR_GREEN;
+
+	if( FBitSet( pev->spawnflags, SF_MONSTER_REDBLOOD ) )
+		m_bloodColor = BLOOD_COLOR_RED;
+	else
+		m_bloodColor = BLOOD_COLOR_GREEN;
+
 	pev->health = 150 * gSkillData.bigmommaHealthFactor;
 	pev->view_ofs = Vector( 0, 0, 128 );// position of the eyes relative to monster's origin.
 	m_flFieldOfView = 0.3;// indicates the width of this monster's forward view cone ( as a dotproduct result )

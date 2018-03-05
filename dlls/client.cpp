@@ -890,8 +890,6 @@ void ClientPrecache( void )
 	PRECACHE_SOUND( "debris/wood3.wav" );
 
 	PRECACHE_SOUND( "plats/train_use1.wav" );		// use a train
-	PRECACHE_SOUND( "plats/train_use2.wav" );
-	PRECACHE_SOUND( "plats/train_use6.wav" );
 
 	PRECACHE_SOUND( "buttons/spark5.wav" );		// hit computer texture
 	PRECACHE_SOUND( "buttons/spark6.wav" );
@@ -932,7 +930,8 @@ void ClientPrecache( void )
 	if( giPrecacheGrunt )
 		UTIL_PrecacheOther( "monster_human_grunt" );
 
-	UTIL_PrecacheOther( "monster_th_cyberfranklin" );
+	PRECACHE_SOUND( "garg/gar_step1.wav" );
+	PRECACHE_SOUND( "garg/gar_step2.wav" );
 }
 
 /*
@@ -947,7 +946,7 @@ const char *GetGameDescription()
 	if( g_pGameRules ) // this function may be called before the world has spawned, and the game rules initialized
 		return g_pGameRules->GetGameDescription();
 	else
-		return "Half-Life";
+		return "They Hunger";
 }
 
 /*

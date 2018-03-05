@@ -19,20 +19,13 @@
 //=========================================================
 // Flamethrower flame entity
 //=========================================================
-class CFlame : public CBaseEntity
+class CEinarFlameRocket : public CBaseEntity
 {
 public:
-	void Spawn(void);
-
-	static void Shoot(entvars_t *pevOwner, Vector vecStart, Vector vecVelocity);
-	void Touch(CBaseEntity *pOther);
-	void EXPORT Animate(void);
-
-	virtual int		Save(CSave &save);
-	virtual int		Restore(CRestore &restore);
-	static	TYPEDESCRIPTION m_SaveData[];
-
-	int  m_maxFrame;
+	void Spawn();
+	void Precache();
+	void EXPORT FlameTouch( CBaseEntity *pOther );
+	static CEinarFlameRocket *FlameCreate( const Vector &pOrigin, const Vector &pAngles, edict_t *pevOwner );
 };
 
 #endif // FLAME_H

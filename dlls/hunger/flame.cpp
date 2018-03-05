@@ -25,75 +25,93 @@
 #include	"game.h"
 #include	"flame.h"
 #include	"weapons.h"
+#include	"gamerules.h"
 
-LINK_ENTITY_TO_CLASS(flame, CFlame);
+LINK_ENTITY_TO_CLASS( einar_flame, CEinarFlameRocket );
 
-TYPEDESCRIPTION	CFlame::m_SaveData[] =
+CEinarFlameRocket *CEinarFlameRocket::FlameCreate( const Vector &pOrigin, const Vector &pAngles, edict_t *pevOwner )
 {
-	DEFINE_FIELD(CFlame, m_maxFrame, FIELD_INTEGER),
-};
-
-IMPLEMENT_SAVERESTORE(CFlame, CBaseEntity);
-
-void CFlame::Spawn(void)
-{
-	pev->movetype = MOVETYPE_FLY;
-
-	pev->solid = SOLID_BBOX;
-	pev->rendermode = kRenderTransAlpha;
-	pev->renderamt = 255;
-	pev->effects = EF_DIMLIGHT;
-
-	SET_MODEL(ENT(pev), "sprites/fthrow.spr");
-	pev->frame = 0;
-	pev->scale = RANDOM_FLOAT(0.9f, 1.1f);
-	pev->dmg = gSkillData.plrDmgFlame * 1.3;
-
-	UTIL_SetSize(pev, Vector(0, 0, 0), Vector(0, 0, 0));
-
-	m_maxFrame = (float)MODEL_FRAMES(pev->modelindex) - 1;
-}
-
-void CFlame::Animate(void)
-{
-	pev->nextthink = gpGlobals->time + 0.1;
-
-	pev->frame += 2;
-
-	if (pev->frame)
-	{
-		if (pev->frame > m_maxFrame)
-		{
-			pev->frame = m_maxFrame;
-
-			SetThink(&CFlame::SUB_Remove);
-			pev->nextthink = gpGlobals->time;
-		}
-	}
-}
-
-void CFlame::Shoot(entvars_t *pevOwner, Vector vecStart, Vector vecVelocity)
-{
-	CFlame *pFlame = GetClassPtr((CFlame *)NULL);
+	// Create a new entity with CEinarFlameRocket private data
+	CEinarFlameRocket *pFlame = GetClassPtr( (CEinarFlameRocket *)NULL );
+	UTIL_SetOrigin( pFlame->pev, pOrigin );
+	pFlame->pev->angles = pAngles;
 	pFlame->Spawn();
+	pFlame->pev->owner = pevOwner;
 
-	UTIL_SetOrigin(pFlame->pev, vecStart);
-	pFlame->pev->velocity = vecVelocity;
-	pFlame->pev->owner = ENT(pevOwner);
-	pFlame->pev->flags |= EF_BRIGHTLIGHT; // Required to make flame glow.
-
-	pFlame->SetThink(&CFlame::Animate);
-	pFlame->pev->nextthink = gpGlobals->time + 0.1;
+	return pFlame;
 }
 
-void CFlame::Touch(CBaseEntity *pOther)
+void CEinarFlameRocket::Spawn()
 {
-	if (pOther->pev->takedamage)
-	{
-		pOther->TakeDamage(pev, pev, pev->dmg, DMG_BURN | DMG_NEVERGIB);
-		SpawnBlood(pev->origin, pOther->BloodColor(), pev->dmg);
-	}
+	Precache();
 
-	SetThink(&CFlame::SUB_Remove);
-	pev->nextthink = gpGlobals->time;
+	pev->movetype = MOVETYPE_FLY;
+	pev->solid = SOLID_BBOX;
+	pev->rendermode = kRenderTransTexture;
+	pev->renderamt = 0;
+	pev->effects |= EF_DIMLIGHT;
+
+	SET_MODEL( ENT( pev ), "sprites/fthrow.spr" );
+	UTIL_SetSize( pev, g_vecZero, g_vecZero );
+	UTIL_SetOrigin( pev, pev->origin );
+
+	pev->classname = MAKE_STRING( "einar_flame" );
+	pev->speed = g_pGameRules->IsMultiplayer() ? 500 : 400;
+
+	SetTouch( &CEinarFlameRocket::FlameTouch );
+	SetThink( &CBaseEntity::SUB_Remove );
+	pev->nextthink = gpGlobals->time + 1.1;
+
+	UTIL_MakeVectors( pev->angles );
+	pev->velocity = gpGlobals->v_forward * pev->speed;
+	pev->gravity = 0;
+
+	MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
+		WRITE_BYTE( TE_PROJECTILE );
+		WRITE_COORD( pev->origin.x );
+		WRITE_COORD( pev->origin.y );
+		WRITE_COORD( pev->origin.z );
+		WRITE_COORD( pev->velocity.x );
+		WRITE_COORD( pev->velocity.y );
+		WRITE_COORD( pev->velocity.z );
+		WRITE_SHORT( pev->modelindex );
+		WRITE_BYTE( 1 );
+		WRITE_BYTE( 0 );
+	MESSAGE_END();	
+}
+
+void CEinarFlameRocket::FlameTouch( CBaseEntity *pOther )
+{
+	if( pev->watertype != CONTENT_WATER && pOther->pev->takedamage )
+	{
+		TraceResult tr = UTIL_GetGlobalTrace();
+
+		entvars_t *pevOwner;
+ 
+		if( pev->owner != 0 )
+		{
+			pevOwner = &pev->owner->v;
+		}
+		else
+		{
+			pevOwner = 0;
+		}
+ 
+		pev->dmg = g_pGameRules->IsMultiplayer() ? gSkillData.plrDmgEgonWide : ( gSkillData.plrDmgEgonNarrow * 1.5 );
+		pev->dmg *= 2;
+
+		ClearMultiDamage();
+		pOther->TraceAttack(pevOwner, pev->dmg, pev->velocity.Normalize(), &tr, DMG_BURN );
+		ApplyMultiDamage( pevOwner, pevOwner );
+	}
+	pev->solid = SOLID_NOT;
+	pev->takedamage = 0;
+	pev->velocity = g_vecZero;
+	pev->deadflag = DEAD_DEAD;
+	UTIL_Remove( this );
+}
+
+void CEinarFlameRocket::Precache()
+{
+	PRECACHE_MODEL( "sprites/fthrow.spr" );
 }

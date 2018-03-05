@@ -22,17 +22,22 @@
 #include "gamerules.h"
 #include "shake.h"
 
-enum sniper_e
+enum tfcsniper_e
 {
-	SNIPER_IDLE = 0,
-	SNIPER_RELOAD,
-	SNIPER_DRAW,
-	SNIPER_SHOOT1
+	TFCSNIPER_IDLE = 0,
+	TFCSNIPER_AIM,
+	TFCSNIPER_FIRE,
+	TFCSNIPER_DRAW,
+	TFCSNIPER_HOLSTER,
+	TFCSNIPER_AUTOIDLE,
+	TFCSNIPER_AUTOFIRE,
+	TFCSNIPER_AUTODRAW,
+	TFCSNIPER_AUTOHOLSTER
 };
 
-LINK_ENTITY_TO_CLASS( weapon_th_sniper, CWeaponEinarSniper )
+LINK_ENTITY_TO_CLASS( weapon_einar1, CWeaponEinarTFCSniper )
 
-int CWeaponEinarSniper::AddToPlayer( CBasePlayer *pPlayer )
+int CWeaponEinarTFCSniper::AddToPlayer( CBasePlayer *pPlayer )
 {
 	if( CBasePlayerWeapon::AddToPlayer( pPlayer ) )
 	{
@@ -44,17 +49,7 @@ int CWeaponEinarSniper::AddToPlayer( CBasePlayer *pPlayer )
 	return FALSE;
 }
 
-void CWeaponEinarSniper::Holster( int skiplocal /* = 0 */ )
-{
-	m_fInReload = FALSE;// cancel any reload in progress.
-
-	if( m_fInZoom )
-		SecondaryAttack();
-
-	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
-}
-
-int CWeaponEinarSniper::GetItemInfo( ItemInfo *p )
+int CWeaponEinarTFCSniper::GetItemInfo( ItemInfo *p )
 {
 	p->pszName = STRING( pev->classname );
 	p->pszAmmo1 = "bullets";
@@ -64,69 +59,55 @@ int CWeaponEinarSniper::GetItemInfo( ItemInfo *p )
 	p->iMaxClip = SNIPER_MAX_CLIP;
 	p->iFlags = 0;
 	p->iSlot = 2;
-	p->iPosition = 3;
-	p->iId = m_iId = WEAPON_SNIPER;
+	p->iPosition = 4;
+	p->iId = m_iId = WEAPON_TFCSNIPER;
 	p->iWeight = SNIPER_WEIGHT;
 
 	return 1;
 }
 
-void CWeaponEinarSniper::Spawn()
+void CWeaponEinarTFCSniper::Spawn()
 {
 	Precache();
-	m_iId = WEAPON_SNIPER;
-	SET_MODEL( ENT( pev ), "models/w_hkg36.mdl" );
+	m_iId = WEAPON_TFCSNIPER;
+	SET_MODEL( ENT( pev ), "models/w_isotopebox.mdl" );
 
 	m_iDefaultAmmo = SNIPER_DEFAULT_GIVE;
 
 	FallInit();// get ready to fall down.
 }
 
-void CWeaponEinarSniper::Precache()
+void CWeaponEinarTFCSniper::Precache()
 {
-	PRECACHE_MODEL( "models/v_hkg36.mdl" );
-	PRECACHE_MODEL( "models/w_hkg36.mdl" );
-	PRECACHE_MODEL( "models/p_hkg36.mdl" );
+	PRECACHE_MODEL( "models/v_tfc_sniper.mdl" );
+	PRECACHE_MODEL( "models/w_isotopebox.mdl" );
+	PRECACHE_MODEL( "models/p_sniper.mdl" );
 
-	PRECACHE_SOUND( "items/9mmclip1.wav" );
 	PRECACHE_SOUND( "weapons/sniper.wav" );
+	PRECACHE_SOUND( "weapons/reload3.wav" );
 
-	PRECACHE_SOUND( "weapons/ap9_bolt.wav" );
-	PRECACHE_SOUND( "weapons/ap9_clipin.wav" );
-	PRECACHE_SOUND( "weapons/ap9_clipout.wav" );
-
-	m_usFireSniper = PRECACHE_EVENT( 1, "events/sniper.sc" );
+	m_usFireSniper = PRECACHE_EVENT( 1, "events/sniper2.sc" );
 }
 
-BOOL CWeaponEinarSniper::Deploy()
+BOOL CWeaponEinarTFCSniper::Deploy()
 {
-	return DefaultDeploy( "models/v_hkg36.mdl", "models/p_hkg36.mdl", SNIPER_DRAW, "bow" );
+	m_fInSpecialReload = 0;
+	return DefaultDeploy( "models/v_tfc_sniper.mdl", "models/p_sniper.mdl", TFCSNIPER_AUTODRAW, "bow" );
 }
 
-void CWeaponEinarSniper::SecondaryAttack()
+void CWeaponEinarTFCSniper::Holster( int skiplocal /* = 0 */ )
 {
-	int iFadeFlags = 0;
+	m_fInReload = FALSE;// cancel any reload in progress.
 
 	if( m_fInZoom )
 	{
-		m_pPlayer->pev->fov = m_pPlayer->m_iFOV = 0;
-		m_fInZoom = 0;
-		SetBits( iFadeFlags, FFADE_IN );
+		SecondaryAttack();
 	}
-	else
-	{
-		m_pPlayer->pev->fov = m_pPlayer->m_iFOV = 20;
-		m_fInZoom = 1;
-		SetBits( iFadeFlags, FFADE_OUT | FFADE_STAYOUT );
-	}
-#ifndef CLIENT_DLL
-	UTIL_ScreenFade( m_pPlayer, Vector( 0, 255, 0 ), 0.0, 0.0, 70, iFadeFlags );
-#endif
-	pev->nextthink = UTIL_WeaponTimeBase() + 0.11;
-	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.75;
+
+	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
 }
 
-void CWeaponEinarSniper::PrimaryAttack()
+void CWeaponEinarTFCSniper::PrimaryAttack()
 {
 	float flSpread;
 	int iDmg;
@@ -140,7 +121,10 @@ void CWeaponEinarSniper::PrimaryAttack()
 			m_flNextPrimaryAttack = 0.25;
 		}
 		if( m_flTimeWeaponIdle > UTIL_WeaponTimeBase() )
+		{
+			SendWeaponAnim( TFCSNIPER_AUTOIDLE );
 			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 15, 20 );
+		}
 		return;
 	}
 
@@ -216,46 +200,64 @@ void CWeaponEinarSniper::PrimaryAttack()
 	}
 }
 
-void CWeaponEinarSniper::Reload()
+void CWeaponEinarTFCSniper::SecondaryAttack()
+{
+	int iFadeFlags = 0;
+	if( m_fInZoom )
+	{
+		m_pPlayer->pev->fov = m_pPlayer->m_iFOV = 0;
+		m_fInZoom = 0;
+		SetBits( iFadeFlags, FFADE_IN );
+	}
+	else
+	{
+		m_pPlayer->pev->fov = m_pPlayer->m_iFOV = 20;
+		m_fInZoom = 1;
+		SetBits( iFadeFlags, FFADE_OUT | FFADE_STAYOUT );
+	}
+#ifndef CLIENT_DLL
+	UTIL_ScreenFade( m_pPlayer, Vector( 0, 255, 0 ), 0.0, 0.0, 70, iFadeFlags );
+#endif
+	pev->nextthink = UTIL_WeaponTimeBase() + 0.11;
+	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.75;
+}
+
+void CWeaponEinarTFCSniper::Reload()
 {
 	if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0 || m_iClip == SNIPER_MAX_CLIP )
 		return;
 
-	if( m_fInZoom )
-		SecondaryAttack();
-
-	int iResult = DefaultReload( SNIPER_MAX_CLIP, SNIPER_RELOAD, 3.3 );
+        if( m_fInZoom )
+                SecondaryAttack();
+                
+	if( DefaultReload( SNIPER_MAX_CLIP, TFCSNIPER_AUTOHOLSTER, 0.5 ) )
+	{
+		m_fInSpecialReload = 2;
+		m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 2.0;
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 5, 10 );		
+	}
 }
 
-void CWeaponEinarSniper::WeaponIdle()
+void CWeaponEinarTFCSniper::WeaponIdle()
 {
 	ResetEmptySound();
-	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 20.0;
-}
-
-class CSniperAmmo : public CBasePlayerAmmo
-{
-	void Spawn()
+	if( m_pPlayer->m_flNextAttack < UTIL_WeaponTimeBase() )
 	{
-		Precache();
-		pev->classname = MAKE_STRING( "ammo_th_sniper" );
-		SET_MODEL( ENT( pev ), "models/w_antidote.mdl" );
-		CBasePlayerAmmo::Spawn();
-	}
-	void Precache()
-	{
-		PRECACHE_MODEL( "models/w_antidote.mdl" );
-		PRECACHE_SOUND( "items/9mmclip1.wav" );
-	}
-	BOOL AddAmmo( CBaseEntity *pOther )
-	{
-		if( pOther->GiveAmmo( AMMO_SNIPER_GIVE, "bullets", SNIPER_MAX_CARRY ) != -1 )
+		if( m_fInSpecialReload == 3 )
 		{
-			EMIT_SOUND( ENT( pev ), CHAN_ITEM, "items/9mmclip1.wav", 1, ATTN_NORM );
-			return TRUE;
+			SendWeaponAnim( TFCSNIPER_AUTODRAW, 0 );
+			m_fInSpecialReload = 1;
 		}
-		return FALSE;
+		if( m_fInSpecialReload == 2 )
+		{
+			EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/reload3.wav", RANDOM_LONG( 0.8, 0.9 ), ATTN_NORM, 0, 93 + RANDOM_LONG( 0, 0x1f ) );
+			m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 1.0;
+			m_fInSpecialReload = 3;
+		}
+		if( m_flTimeWeaponIdle <= UTIL_WeaponTimeBase() )
+		{
+			SendWeaponAnim( TFCSNIPER_AUTOIDLE, 1 );
+			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 15, 20 );
+		}
 	}
-};
-LINK_ENTITY_TO_CLASS( ammo_th_sniper, CSniperAmmo )
-LINK_ENTITY_TO_CLASS( ammo_einar1, CSniperAmmo )
+}

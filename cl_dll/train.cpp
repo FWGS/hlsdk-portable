@@ -24,8 +24,6 @@
 #include <stdio.h>
 #include "parsemsg.h"
 
-extern bool bIsMultiplayer( void );
-
 DECLARE_MESSAGE( m_Train, Train )
 
 int CHudTrain::Init( void )
@@ -55,13 +53,13 @@ int CHudTrain::Draw( float fTime )
 	{
 		int r, g, b, x, y;
 
-		if( bIsMultiplayer() )
+		if( gHUD.m_iHideHUDDisplay & HIDEHUD_NOHEV )
 		{
-			UnpackRGB( r, g, b, RGB_YELLOWISH );
+			UnpackRGB( r, g, b, RGB_REDISH );
 		}
 		else
 		{
-			UnpackRGB( r, g, b, RGB_REDISH );
+			UnpackRGB( r, g, b, RGB_YELLOWISH );
 		}
 
 		SPR_Set( m_hSprite, r, g, b );

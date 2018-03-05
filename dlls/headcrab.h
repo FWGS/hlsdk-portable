@@ -12,18 +12,17 @@
 *   use or distribution of this code by or to any unlicensed person is illegal.
 *
 ****/
-
 #ifndef HEADCRAB_H
 #define HEADCRAB_H
 
 class CHeadCrab : public CBaseMonster
 {
 public:
-	void Spawn( void );
-	void Precache( void );
+	virtual void Spawn( void );
+	virtual void Precache( void );
 	void RunTask ( Task_t *pTask );
 	void StartTask ( Task_t *pTask );
-	void SetYawSpeed ( void );
+	virtual void SetYawSpeed ( void );
 	void EXPORT LeapTouch ( CBaseEntity *pOther );
 	Vector Center( void );
 	Vector BodyTarget( const Vector &posSrc );
@@ -32,9 +31,11 @@ public:
 	virtual void IdleSound( void );
 	virtual void AlertSound( void );
 	virtual void AttackSound( void );
+	virtual void StartAttackSound( void );
+	virtual void BiteSound( void );
 	void PrescheduleThink( void );
-	int  Classify ( void );
-	void HandleAnimEvent( MonsterEvent_t *pEvent );
+	virtual int  Classify ( void );
+	virtual void HandleAnimEvent( MonsterEvent_t *pEvent );
 	BOOL CheckRangeAttack1 ( float flDot, float flDist );
 	BOOL CheckRangeAttack2 ( float flDot, float flDist );
 	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );

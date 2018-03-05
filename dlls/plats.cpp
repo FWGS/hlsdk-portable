@@ -1053,6 +1053,7 @@ void CFuncTrackTrain::StopSound( void )
 	// if sound playing, stop it
 	if( m_soundPlaying && pev->noise )
 	{
+		const char *pszSound = 0;
 		unsigned short us_encode;
 		unsigned short us_sound  = ( (unsigned short)( m_sounds ) & 0x0007 ) << 12;
 
@@ -1063,17 +1064,35 @@ void CFuncTrackTrain::StopSound( void )
 		/*
 		STOP_SOUND( ENT( pev ), CHAN_STATIC, STRING( pev->noise ) );
 		*/
-		const char *brake = "plats/ttrain_brake1.wav";
 
-		if( UseCustomSounds() )
+		if( FBitSet( pev->spawnflags, SF_TRACKTRAIN_TH_SOUNDS ) )
 		{
-			if( IsCar() )
-				brake = "plats/ttrain_brake2.wav";
-			else if( IsTrain() )
-				brake = "plats/ttrain_brake6.wav";
+			switch( m_sounds )
+			{
+			default:
+				// no sound
+				break;
+			case 2:
+				pszSound = "plats/ttrain_brake2.wav";
+				break;
+			case 3:
+				pszSound = "plats/ttrain_brake3.wav";
+				break;
+			case 4:
+				pszSound = "plats/ttrain_brake4.wav";
+				break;
+			case 5:
+				pszSound = "plats/ttrain_brake6.wav";
+				break;
+			case 6:
+				pszSound = "plats/ttrain_brake7.wav";
+				break;
+			}
 		}
 
-		EMIT_SOUND_DYN( ENT( pev ), CHAN_ITEM, brake, m_flVolume, ATTN_NORM, 0, 100 );
+		if( !pszSound )
+			pszSound = "plats/ttrain_brake1.wav";
+		EMIT_SOUND_DYN( ENT( pev ), CHAN_ITEM, pszSound, m_flVolume, ATTN_NORM, 0, 100 );
 	}
 
 	m_soundPlaying = 0;
@@ -1094,17 +1113,37 @@ void CFuncTrackTrain::UpdateSound( void )
 	if( !m_soundPlaying )
 	{
 		// play startup sound for train
-		const char *start = "plats/ttrain_start1.wav";
+		const char *pszSound = 0;
 
-		if( UseCustomSounds() )
+		if( FBitSet( pev->spawnflags, SF_TRACKTRAIN_TH_SOUNDS ) )
 		{
-			if( IsCar() )
-				start = "plats/ttrain_start2.wav";
-			else if( IsTrain() )
-				start = "plats/ttrain_start6.wav";
+			switch( m_sounds )
+			{
+			default:
+				// no sound
+				break;
+			case 2:
+				pszSound = "plats/ttrain_start2.wav";
+				break;
+			case 3:
+				pszSound = "plats/ttrain_start3.wav";
+				break;
+			case 4:
+				pszSound = "plats/ttrain_start4.wav";
+				break;
+			case 5:
+				pszSound = "plats/ttrain_start6.wav";
+				break;
+			case 6:
+				pszSound = "plats/ttrain_start7.wav";
+				break;
+			}
 		}
 
-		EMIT_SOUND_DYN( ENT( pev ), CHAN_ITEM, start, m_flVolume, ATTN_NORM, 0, 100 );
+		if( !pszSound )
+			pszSound = "plats/ttrain_brake1.wav";
+
+		EMIT_SOUND_DYN( ENT( pev ), CHAN_ITEM, pszSound, m_flVolume, ATTN_NORM, 0, 100 );
 		EMIT_SOUND_DYN( ENT( pev ), CHAN_STATIC, STRING( pev->noise ), m_flVolume, ATTN_NORM, 0, (int)flpitch );
 		m_soundPlaying = 1;
 	} 
@@ -1491,10 +1530,45 @@ void CFuncTrackTrain::Spawn( void )
 
 void CFuncTrackTrain::Precache( void )
 {
-	const char *pszSound;
+	const char *pszSound, *pszSoundUse = 0, *pszSoundBrake = 0, *pszSoundStart = 0;
 
 	if( m_flVolume == 0.0 )
 		m_flVolume = 1.0;
+
+	if( FBitSet( pev->spawnflags, SF_TRACKTRAIN_TH_SOUNDS ) )
+	{
+		switch( m_sounds )
+		{
+		default:
+			// no sound
+			break;
+		case 2:
+			pszSoundUse = "plats/train_use2.wav";
+			pszSoundBrake = "plats/ttrain_brake2.wav";
+			pszSoundStart = "plats/ttrain_start2.wav";
+			break;
+		case 3:
+			pszSoundUse = "plats/train_use3.wav";
+			pszSoundBrake = "plats/ttrain_brake3.wav";
+			pszSoundStart = "plats/ttrain_start3.wav";
+			break;
+		case 4:
+			pszSoundUse = "plats/train_use4.wav";
+			pszSoundBrake = "plats/ttrain_brake4.wav";
+			pszSoundStart = "plats/ttrain_start4.wav";
+			break;
+		case 5:
+			pszSoundUse = "plats/train_use6.wav";
+			pszSoundBrake = "plats/ttrain_brake6.wav";
+			pszSoundStart = "plats/ttrain_start6.wav";
+			break;
+		case 6:
+			pszSoundUse = "plats/train_use7.wav";
+			pszSoundBrake = "plats/ttrain_brake7.wav";
+			pszSoundStart = "plats/ttrain_start7.wav";
+			break;
+		}
+	}
 
 	switch( m_sounds )
 	{
@@ -1530,31 +1604,18 @@ void CFuncTrackTrain::Precache( void )
 	else
 		pev->noise = 0;
 
-	PRECACHE_SOUND( "plats/ttrain_brake1.wav" );
-	PRECACHE_SOUND( "plats/ttrain_start1.wav" );
+	if( pszSoundUse )
+		PRECACHE_SOUND( pszSoundUse );
 
-	PRECACHE_SOUND( "plats/ttrain_brake2.wav" );
-	PRECACHE_SOUND( "plats/ttrain_start2.wav" );
-
-	PRECACHE_SOUND( "plats/ttrain_brake6.wav" );
-	PRECACHE_SOUND( "plats/ttrain_start6.wav" );
+	if( !pszSoundBrake )
+	{
+		pszSoundBrake = "plats/ttrain_brake1.wav";
+		pszSoundStart = "plats/ttrain_start1.wav";
+	}
+	PRECACHE_SOUND( pszSoundBrake );
+	PRECACHE_SOUND( pszSoundStart );
 
 	m_usAdjustPitch = PRECACHE_EVENT( 1, "events/train.sc" );
-}
-
-BOOL CFuncTrackTrain::UseCustomSounds( void ) const
-{
-	return ( pev->spawnflags & SF_TRACKTRAIN_TH_SOUNDS );
-}
-
-BOOL CFuncTrackTrain::IsCar( void ) const
-{
-	return FStrEq( STRING( pev->noise ), "plats/ttrain2.wav" );
-}
-
-BOOL CFuncTrackTrain::IsTrain(void) const
-{
-	return FStrEq( STRING( pev->noise ), "plats/ttrain6.wav" );
 }
 
 // This class defines the volume of space that the player must stand in to control the train
