@@ -94,17 +94,23 @@ public:
 	virtual void BounceSound(void);
 	virtual int	BloodColor(void) { return DONT_BLEED; }
 	virtual void Killed(entvars_t *pevAttacker, int iGib);
+
 	virtual float TouchGravGun( CBaseEntity *attacker, int stage )
 	{
 		float speed = 2500;
+
 		if( pev->deadflag )
 			return 0;
+
 		pev->movetype = MOVETYPE_BOUNCE;
-		if(stage)
+
+		if( stage )
 		{
 			pev->nextthink = gpGlobals->time + m_flRespawnTime;
 			SetThink( &CProp::RespawnThink );
+			m_flLastGravgun = gpGlobals->time;
 		}
+
 		if( stage == 2 )
 		{
 			UTIL_MakeVectors( attacker->pev->v_angle + attacker->pev->punchangle);
@@ -119,28 +125,39 @@ public:
 			pev->avelocity.y = UTIL_AngleDiff(atarget.y, pev->angles.y) * 10;
 			pev->avelocity.z = UTIL_AngleDiff(atarget.z, pev->angles.z) * 10;
 		}
+
 		if( stage == 3 )
 		{
 			pev->avelocity.y = pev->avelocity.y*1.5 + RANDOM_FLOAT(100, -100);
 			pev->avelocity.x = pev->avelocity.x*1.5 + RANDOM_FLOAT(100, -100);
+			m_flLastGravgun = -1;
 		}
+
 		if( !m_attacker || m_attacker == this )
 		{
 			m_owner2 = attacker;
 			m_attacker = attacker;
 			return speed;
 		}
-		if( !m_owner2 && m_attacker && ( pev->velocity.Length() < 400) )
+
+		if( !m_owner2 && m_attacker && ( pev->velocity.Length() < 200)  )
+		{
 			m_attacker = attacker;
 			return speed;
-		if( ( stage == 2 ) && ( m_attacker == attacker ) )
+		}
+
+		if( stage != 2 && ( pev->velocity.Length() == 0 ) )
+			return speed;
+
+		if( m_attacker == attacker )
 		{
 			m_owner2 = attacker;
-
 			return speed;
 		}
+
 		return 0;
 	}
+
 	void CheckRotate();
 	void EXPORT RespawnThink();
 	void EXPORT AngleThink();
@@ -179,10 +196,15 @@ public:
 	Vector spawnOrigin;
 	Vector spawnAngles;
 
+	// multiplayer
 	EHANDLE m_owner2;
 	EHANDLE m_attacker;
+
+	// hand throw
 	float m_flNextAttack;
 	float m_flRespawnTime;
+
+	// shape change
 	PropShape m_shape;
 	PropShape m_oldshape;
 	EHANDLE m_pHolstered;
@@ -196,6 +218,7 @@ public:
 	int m_iaCustomAnglesZ[10];
 	float m_flTouchTimer;
 	int m_iTouchCounter;
+	float m_flLastGravgun;
 };
 LINK_ENTITY_TO_CLASS(prop, CProp);
 
@@ -848,6 +871,12 @@ void CProp::BounceTouch(CBaseEntity *pOther)
 		return;
 	}
 	pev->movetype = MOVETYPE_BOUNCE;
+	if( gpGlobals->time - m_flLastGravgun < 0.1 )
+	{
+		//pev->nextthink = gpGlobals->time + 0.1;
+		return;
+	}
+
 	if( gpGlobals->time - m_flTouchTimer < 1 && m_iTouchCounter > 100 )
 		{
 			if( pOther->pev->solid == SOLID_BBOX || pOther->pev->solid == SOLID_SLIDEBOX )
@@ -1059,9 +1088,14 @@ void CProp::RespawnThink()
 
 void CProp::AngleThink()
 {
+	if( gpGlobals->time - m_flLastGravgun < 0.1 )
+	{
+		pev->nextthink = gpGlobals->time + 0.1;
+		return;
+	}
 	pev->nextthink = gpGlobals->time + m_flRespawnTime;
 	SetThink( &CProp::RespawnThink);
-	if (!(pev->flags & FL_ONGROUND || fabs(pev->velocity.z) < 40))
+	if( pev->flags & FL_ONGROUND || fabs(pev->velocity.z) < 40 )
 	{
 		m_owner2 = m_attacker = 0;
 		return;
@@ -1172,8 +1206,8 @@ int CProp::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flD
 {
 	Vector r = (pevInflictor->origin - pev->origin);
 	if ( (!m_attacker
-		  || (pev->velocity.Length() < 700)) && ((CBaseEntity*)GET_PRIVATE(ENT(pevAttacker)))
-		 && ((CBaseEntity*)GET_PRIVATE(ENT(pevAttacker)))->IsPlayer())
+		  || (pev->velocity.Length() < 400)) && ((CBaseEntity*)GET_PRIVATE(ENT(pevAttacker)))
+		 && ((CBaseEntity*)GET_PRIVATE(ENT(pevAttacker)))->IsPlayer() && gpGlobals->time - m_flLastGravgun > 0.1 )
 		m_attacker.Set(ENT(pevAttacker));
 	DeployThink();
 

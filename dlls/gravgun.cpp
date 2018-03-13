@@ -539,7 +539,7 @@ void CGravGun::Pull(CBaseEntity* ent)
 			if(ent->pev->velocity.Length() > 500 )
 				ent->pev->velocity = diff.Normalize() * 500;
 
-			pev->velocity.z += 10;
+			ent->pev->velocity.z += 20;
 			if( diff.Length() < 150 )
 			{
 				m_iStage = 1;
@@ -554,7 +554,7 @@ void CGravGun::Pull(CBaseEntity* ent)
 			ent->pev->velocity = diff.Normalize()*(55000.0* 1.0/diff.Length());
 			if(ent->pev->velocity.Length() > 900 )
 				ent->pev->velocity = diff.Normalize() * 900;
-			pev->velocity.z += 15;
+			ent->pev->velocity.z += 15;
 			ALERT( at_notice, "vel %f\n", ent->pev->velocity.Length() );
 		}
 		//ent->pev->velocity = ent->pev->velocity + m_pPlayer->pev->velocity;
