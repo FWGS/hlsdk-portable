@@ -112,6 +112,7 @@ class CStrooper : public CHGrunt
 {
 public:
 	void Spawn(void);
+	void MonsterThink();
 	void Precache(void);
 	int  Classify(void);
 	void HandleAnimEvent(MonsterEvent_t *pEvent);
@@ -134,6 +135,9 @@ public:
 	static TYPEDESCRIPTION m_SaveData[];
 
 	BOOL m_fRightClaw;
+	float m_rechargeTime;
+	float m_blinkTime;
+	float m_eyeChangeTime;
 
 	static const char *pGruntSentences[];
 };
@@ -143,6 +147,9 @@ LINK_ENTITY_TO_CLASS(monster_shocktrooper, CStrooper);
 TYPEDESCRIPTION	CStrooper::m_SaveData[] =
 {
 	DEFINE_FIELD(CStrooper, m_fRightClaw, FIELD_BOOLEAN),
+	DEFINE_FIELD(CStrooper, m_rechargeTime, FIELD_TIME),
+	DEFINE_FIELD(CStrooper, m_blinkTime, FIELD_TIME),
+	DEFINE_FIELD(CStrooper, m_eyeChangeTime, FIELD_TIME),
 };
 
 IMPLEMENT_SAVERESTORE(CStrooper, CHGrunt);
@@ -336,41 +343,38 @@ void CStrooper::HandleAnimEvent(MonsterEvent_t *pEvent)
 
 	case STROOPER_AE_BURST1:
 	{
-		//Shoot();
-
-		Vector	vecGunPos;
-		Vector	vecGunAngles;
-
-		GetAttachment(0, vecGunPos, vecGunAngles);
-
-		MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, vecGunPos );
-			WRITE_BYTE( TE_SPRITE );
-			WRITE_COORD( vecGunPos.x );	// pos
-			WRITE_COORD( vecGunPos.y );
-			WRITE_COORD( vecGunPos.z );
-			WRITE_SHORT( iStrooperMuzzleFlash );		// model
-			WRITE_BYTE( 4 );				// size * 10
-			WRITE_BYTE( 196 );			// brightness
-		MESSAGE_END();
-
 		if (m_hEnemy)
 		{
-			vecGunAngles = (m_hEnemy->EyePosition() - vecGunPos).Normalize();
+			Vector	vecGunPos;
+			Vector	vecGunAngles;
+
+			GetAttachment(0, vecGunPos, vecGunAngles);
+
+			MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, vecGunPos );
+				WRITE_BYTE( TE_SPRITE );
+				WRITE_COORD( vecGunPos.x );	// pos
+				WRITE_COORD( vecGunPos.y );
+				WRITE_COORD( vecGunPos.z );
+				WRITE_SHORT( iStrooperMuzzleFlash );		// model
+				WRITE_BYTE( 4 );				// size * 10
+				WRITE_BYTE( 128 );			// brightness
+			MESSAGE_END();
+
+			Vector vecShootOrigin = GetGunPosition();
+			Vector vecShootDir = ShootAtEnemy( vecShootOrigin );
+			vecGunAngles = UTIL_VecToAngles(vecShootDir);
+
+			CBaseEntity *pShock = CBaseEntity::Create("shock_beam", vecShootOrigin, vecGunAngles, edict());
+			vecGunAngles.z += RANDOM_FLOAT( -0.05, 0 );
+			pShock->pev->velocity = vecShootDir * 2000;
+			pShock->pev->nextthink = gpGlobals->time;
+			m_cAmmoLoaded--;
+			SetBlending( 0, vecGunAngles.x );
+
+			// Play fire sound.
+			EMIT_SOUND(ENT(pev), CHAN_WEAPON, "weapons/shock_fire.wav", 1, ATTN_NORM);
+			CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, 384, 0.3);
 		}
-		else
-		{
-			vecGunAngles = (m_vecEnemyLKP - vecGunPos).Normalize();
-		}
-
-		CBaseEntity *pShock = CBaseEntity::Create("shock_beam", vecGunPos, pev->angles, edict());
-		vecGunAngles.z += RANDOM_FLOAT( -0.05, 0 );
-		pShock->pev->velocity = vecGunAngles * 2000;
-		pShock->pev->nextthink = gpGlobals->time;
-
-		// Play fire sound.
-		EMIT_SOUND(ENT(pev), CHAN_WEAPON, "weapons/shock_fire.wav", 1, ATTN_NORM);
-
-		CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, 384, 0.3);
 	}
 	break;
 
@@ -419,13 +423,13 @@ void CStrooper::Spawn()
 	Precache();
 
 	SET_MODEL(ENT(pev), "models/strooper.mdl");
-	UTIL_SetSize(pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX);
+	UTIL_SetSize( pev, Vector(-24, -24, 0), Vector(24, 24, 72) );
 
 	pev->solid = SOLID_SLIDEBOX;
 	pev->movetype = MOVETYPE_STEP;
 	m_bloodColor = BLOOD_COLOR_GREEN;
 	pev->effects = 0;
-	pev->health = gSkillData.strooperHealth;
+	pev->health = gSkillData.strooperHealth * 2.5;
 	m_flFieldOfView = 0.2;// indicates the width of this monster's forward view cone ( as a dotproduct result )
 	m_MonsterState = MONSTERSTATE_NONE;
 	m_flNextGrenadeCheck = gpGlobals->time + 1;
@@ -445,15 +449,44 @@ void CStrooper::Spawn()
 		pev->weapons = STROOPER_SHOCKRIFLE | STROOPER_HANDGRENADE;
 	}
 
-	m_cClipSize = SHOCKRIFLE_MAX_CLIP;
+	m_cClipSize = gSkillData.strooperMaxCharge;
 
 	m_cAmmoLoaded = m_cClipSize;
 
 	m_fRightClaw = FALSE;
 
 	CTalkMonster::g_talkWaitTime = 0;
+	m_rechargeTime = gpGlobals->time + gSkillData.strooperRchgSpeed;
+	m_blinkTime = gpGlobals->time + RANDOM_FLOAT(3.0f, 7.0f);
 
 	MonsterInit();
+}
+
+void CStrooper::MonsterThink()
+{
+	if (m_cAmmoLoaded < m_cClipSize)
+	{
+		if (m_rechargeTime < gpGlobals->time)
+		{
+			m_cAmmoLoaded++;
+			m_rechargeTime = gpGlobals->time + gSkillData.strooperRchgSpeed;
+		}
+	}
+	if (m_blinkTime <= gpGlobals->time && pev->skin == 0) {
+		pev->skin = 1;
+		m_blinkTime = gpGlobals->time + RANDOM_FLOAT(3.0f, 7.0f);
+		m_eyeChangeTime = gpGlobals->time + 0.1;
+	}
+	if (pev->skin != 0) {
+		if (m_eyeChangeTime <= gpGlobals->time) {
+			m_eyeChangeTime = gpGlobals->time + 0.1;
+			pev->skin++;
+			if (pev->skin > 3) {
+				pev->skin = 0;
+			}
+		}
+	}
+	CHGrunt::MonsterThink();
 }
 
 //=========================================================
