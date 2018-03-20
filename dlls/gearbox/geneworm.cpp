@@ -437,7 +437,7 @@ void CGeneWorm::NextActivity(void)
 	float flDist = (m_posDesired - pev->origin).Length();
 	float flDot = DotProduct(m_vecDesired, gpGlobals->v_forward);
 
-	if (m_hEnemy != NULL && !m_hEnemy->IsAlive())
+	if (m_hEnemy != 0 && !m_hEnemy->IsAlive())
 	{
 		m_hEnemy = NULL;
 	}
@@ -447,7 +447,7 @@ void CGeneWorm::NextActivity(void)
 		m_hEnemy = NULL;
 	}
 
-	if (m_hEnemy == NULL)
+	if (m_hEnemy == 0)
 	{
 		Look(4096);
 		m_hEnemy = BestVisibleEnemy();
@@ -459,7 +459,7 @@ void CGeneWorm::NextActivity(void)
 		}
 	}
 
-	if (m_hEnemy != NULL)
+	if (m_hEnemy != 0)
 	{
 		if (m_flLastSeen + 5 > gpGlobals->time)
 		{
@@ -499,7 +499,7 @@ void CGeneWorm::HuntThink(void)
 	}
 
 	// look for current enemy	
-	if (m_hEnemy != NULL)
+	if (m_hEnemy != 0)
 	{
 		// Update level.
 		m_iLevel = Level( m_hEnemy->pev->origin.z );

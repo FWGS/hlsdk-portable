@@ -25,10 +25,37 @@ project (CLDLL)
 
 set (CLDLL_LIBRARY client)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-write-strings -DLINUX -D_LINUX -Dstricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp -DCLIENT_WEAPONS -DCLIENT_DLL -w")
-set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS}")
+add_definitions(-DCLIENT_WEAPONS -DCLIENT_DLL)
 
-set (CLDLL_SOURCES 
+if(NOT MSVC)
+	add_compile_options(-fno-exceptions) # GCC/Clang flag
+	add_compile_options(-Wno-write-strings) # GCC/Clang flag
+	add_definitions(-D_LINUX -DLINUX) # It seems enough for all non-Win32 systems
+	add_definitions(-Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf -D_vsnprintf=vsnprintf )
+else()
+	add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_DEPRECATE)
+endif()
+
+if (GOLDSOURCE_SUPPORT)
+	add_definitions(-DGOLDSOURCE_SUPPORT)
+endif()
+
+
+set (CLDLL_SOURCES
+	../dlls/crossbow.cpp
+	../dlls/crowbar.cpp
+	../dlls/egon.cpp
+	../dlls/gauss.cpp
+	../dlls/handgrenade.cpp
+	../dlls/hornetgun.cpp
+	../dlls/mp5.cpp
+	../dlls/python.cpp
+	../dlls/rpg.cpp
+	../dlls/satchel.cpp
+	../dlls/shotgun.cpp
+	../dlls/squeakgrenade.cpp
+	../dlls/tripmine.cpp
+	../dlls/glock.cpp
 	gearbox/hud_nightvision.cpp
 	../dlls/gearbox/displacer.cpp
 	../dlls/gearbox/knife.cpp
@@ -40,21 +67,7 @@ set (CLDLL_SOURCES
 	../dlls/gearbox/shockrifle.cpp
 	../dlls/gearbox/sniperrifle.cpp
 	../dlls/gearbox/sporelauncher.cpp
-	../dlls/crossbow.cpp 
-	../dlls/crowbar.cpp 
-	../dlls/egon.cpp 
-	../dlls/gauss.cpp 
-	../dlls/handgrenade.cpp 
-	../dlls/hornetgun.cpp 
-	../dlls/mp5.cpp 
-	../dlls/python.cpp 
-	../dlls/rpg.cpp 
-	../dlls/satchel.cpp 
-	../dlls/shotgun.cpp 
-	../dlls/squeakgrenade.cpp 
-	../dlls/tripmine.cpp 
-	../dlls/glock.cpp
-	ev_hldm.cpp 
+	ev_hldm.cpp
 	hl/hl_baseentity.cpp
 	hl/hl_events.cpp
 	hl/hl_objects.cpp
@@ -81,7 +94,9 @@ set (CLDLL_SOURCES
 	hud_update.cpp
 	in_camera.cpp
 	input.cpp
-#SRCS+=./inputw32.cpp
+	input_goldsource.cpp
+	input_mouse.cpp
+	input_xash3d.cpp
 	menu.cpp
 	message.cpp
 	overview.cpp
@@ -99,10 +114,10 @@ set (CLDLL_SOURCES
 	tri.cpp
 	util.cpp
 	view.cpp
-	input_xash3d.cpp
 	scoreboard.cpp
 	MOTD.cpp)
-include_directories (. hl/ ../dlls ../dlls/wpn_shared ../common ../engine ../pm_shared ../game_shared ../public ../dlls/gearbox )
+
+include_directories (. hl/ ../dlls ../dlls/wpn_shared ../common ../engine ../pm_shared ../game_shared ../public ../dlls/gearbox ../utils/false_vgui/include)
 
 if(USE_VOICEMGR)
 	#set(CLDLL_SOURCES
@@ -112,7 +127,21 @@ if(USE_VOICEMGR)
 endif()
 
 add_library (${CLDLL_LIBRARY} SHARED ${CLDLL_SOURCES})
+if (GOLDSOURCE_SUPPORT)
+	target_link_libraries( ${CLDLL_LIBRARY} ${CMAKE_DL_LIBS} )
+endif()
 
-set_target_properties (${CLDLL_SHARED} PROPERTIES
+set_target_properties (${CLDLL_LIBRARY} PROPERTIES
 	POSITION_INDEPENDENT_CODE 1)
 
+if(APPLE OR WIN32 OR ${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+	set_target_properties(${CLDLL_LIBRARY} PROPERTIES
+		OUTPUT_NAME "client"
+		PREFIX "")
+endif()
+
+install( TARGETS ${CLDLL_LIBRARY}
+	DESTINATION "${GAMEDIR}/${CLIENT_INSTALL_DIR}/"
+	PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+	    GROUP_READ GROUP_EXECUTE
+		WORLD_READ WORLD_EXECUTE )

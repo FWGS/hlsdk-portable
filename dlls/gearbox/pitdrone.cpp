@@ -884,7 +884,7 @@ int CPitDrone::TakeDamage(entvars_t *pevInflictor, entvars_t *pevAttacker, float
 
 	// if the pitdrone is running, has an enemy, was hurt by the enemy, and isn't too close to the enemy,
 	// it will swerve. (whew).
-	if (m_hEnemy != NULL && IsMoving() && pevAttacker == m_hEnemy->pev)
+	if (m_hEnemy != 0 && IsMoving() && pevAttacker == m_hEnemy->pev)
 	{
 		flDist = (pev->origin - m_hEnemy->pev->origin).Length2D();
 
@@ -1268,7 +1268,7 @@ void CPitDrone::RunAI(void)
 	// first, do base class stuff
 	CBaseMonster::RunAI();
 
-	if (m_hEnemy != NULL && m_Activity == ACT_RUN)
+	if (m_hEnemy != 0 && m_Activity == ACT_RUN)
 	{
 		// chasing enemy. Sprint for last bit
 		if ((pev->origin - m_hEnemy->pev->origin).Length2D() < PITDRONE_SPRINT_DIST)

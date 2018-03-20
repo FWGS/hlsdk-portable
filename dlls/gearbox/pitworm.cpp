@@ -836,7 +836,7 @@ void CPitWorm::HuntThink(void)
 	}
 
 	// look for current enemy	
-	if (m_hEnemy != NULL)
+	if (m_hEnemy != 0)
 	{
 		// Update level based on enemy's altitude (z).
 		m_iLevel = Level(m_hEnemy->pev->origin.z);
@@ -928,14 +928,14 @@ void CPitWorm::NextActivity()
 	}
 #else
 
-	if (m_hEnemy == NULL)
+	if (m_hEnemy == 0)
 	{
 		m_flLastSeen = gpGlobals->time;
 		m_hEnemy = UTIL_PlayerByIndex(1);
 	}
 #endif
 
-	if (m_hEnemy == NULL)
+	if (m_hEnemy == 0)
 	{
 		Look(4096);
 		m_hEnemy = BestVisibleEnemy();
@@ -944,7 +944,7 @@ void CPitWorm::NextActivity()
 	//pev->sequence = LookupSequence("idle2");
 	//return;
 
-	if (m_hEnemy != NULL)
+	if (m_hEnemy != 0)
 	{
 		m_vecDesired = m_hEnemy->pev->origin;
 		flDist = (m_vecDesired - m_vecLevels[m_iLevel]).Length();

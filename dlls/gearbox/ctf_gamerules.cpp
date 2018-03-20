@@ -22,7 +22,7 @@ This contains all the gamerules for the Half-Life: Opposing force CTF Gamemode.
 
 #define NUM_TEAMS 2
 
-char *sTeamNames[] =
+const char *sTeamNames[] =
 {
 	"SPECTATOR",
 	"RED",
@@ -88,7 +88,7 @@ static CCTFGameMgrHelper g_GameMgrHelper;
 
 extern DLL_GLOBAL BOOL		g_fGameOver;
 
-char* GetTeamName(int team)
+const char* GetTeamName(int team)
 {
 	if (team < 0 || team > NUM_TEAMS)
 		team = 0;
@@ -499,7 +499,7 @@ void CCTFMultiplay::PlayerSpawn(CBasePlayer *pPlayer)
 	MESSAGE_END();*/
 }
 
-void CBasePlayer::ShowMenu(int bitsValidSlots, int nDisplayTime, BOOL fNeedMore, char *pszText)
+void CBasePlayer::ShowMenu(int bitsValidSlots, int nDisplayTime, BOOL fNeedMore, const char *pszText)
 {
 	MESSAGE_BEGIN(MSG_ONE, gmsgShowMenu, NULL, pev);
 	WRITE_SHORT(bitsValidSlots);
@@ -730,7 +730,7 @@ void CCTFMultiplay::ClientDisconnected(edict_t *pClient)
 
 			// drop any runes the player has
 			CBaseEntity *pRune;
-			char * runeName;
+			const char * runeName;
 
 			switch (pPlayer->m_iRuneStatus)
 			{
@@ -1280,7 +1280,7 @@ void CCTFMultiplay::PlayerKilled(CBasePlayer *pVictim, entvars_t *pKiller, entva
 	}
 
 	CBaseEntity *pRune;
-	char * runeName;
+	const char * runeName;
 
 	switch (pVictim->m_iRuneStatus)
 	{

@@ -108,12 +108,12 @@ class CDeadCleansuitScientist : public CDeadScientist
 public:
 	virtual void Spawn(void);
 
-	static char *m_szPoses[9];
+	static const char *m_szPoses[9];
 };
 
 LINK_ENTITY_TO_CLASS(monster_cleansuit_scientist_dead, CDeadCleansuitScientist);
 
-char *CDeadCleansuitScientist::m_szPoses[] = { "lying_on_back", "lying_on_stomach", "dead_sitting", "dead_hang", "dead_table1", "dead_table2", "dead_table3", "scientist_deadpose1", "dead_against_wall" };
+const char *CDeadCleansuitScientist::m_szPoses[] = { "lying_on_back", "lying_on_stomach", "dead_sitting", "dead_hang", "dead_table1", "dead_table2", "dead_table3", "scientist_deadpose1", "dead_against_wall" };
 
 void CDeadCleansuitScientist::Spawn(void)
 {

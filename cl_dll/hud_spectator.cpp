@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2002, Valve LLC, All rights reserved. ============
+//========= Copyright (c) 1996-2002, Valve LLC, All rights reserved. ============
 //
 // Purpose: 
 //
@@ -175,13 +175,13 @@ void UTIL_StringToVector( float * pVector, const char *pString )
 	}
 }
 
-int UTIL_FindEntityInMap( char * name, float * origin, float * angle )
+int UTIL_FindEntityInMap( const char *name, float *origin, float *angle )
 {
 	int			n, found = 0;
 	char			keyname[256];
 	char			token[2048];
 
-	cl_entity_t *	pEnt = gEngfuncs.GetEntityByIndex( 0 );	// get world model
+	cl_entity_t *pEnt = gEngfuncs.GetEntityByIndex( 0 );	// get world model
 
 	if( !pEnt )
 		return 0;
@@ -189,7 +189,7 @@ int UTIL_FindEntityInMap( char * name, float * origin, float * angle )
 	if( !pEnt->model )
 		return 0;
 
-	char * data = pEnt->model->entities;
+	char *data = pEnt->model->entities;
 
 	while( data )
 	{
@@ -1374,12 +1374,12 @@ void CHudSpectator::DeathMessage( int victim )
 		AddOverviewEntityToList(m_hsprPlayerDead, pl, gEngfuncs.GetClientTime() + 2.0f );
 }
 
-bool CHudSpectator::AddOverviewEntityToList(HSPRITE sprite, cl_entity_t *ent, double killTime)
+bool CHudSpectator::AddOverviewEntityToList( HSPRITE sprite, cl_entity_t *ent, double killTime )
 {
 	for( int i = 0; i < MAX_OVERVIEW_ENTITIES; i++ )
 	{
 		// find empty entity slot
-		if( m_OverviewEntities[i].entity == NULL)
+		if( m_OverviewEntities[i].entity == NULL )
 		{
 			m_OverviewEntities[i].entity = ent;
 			m_OverviewEntities[i].hSprite = sprite;

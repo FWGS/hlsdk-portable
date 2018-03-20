@@ -46,54 +46,54 @@ enum TANKBULLET
 class CFuncTank : public CBaseEntity
 {
 public:
-	void	Spawn(void);
-	void	Precache(void);
-	void	KeyValue(KeyValueData *pkvd);
-	void	Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value);
-	void	Think(void);
-	void	TrackTarget(void);
+	void Spawn( void );
+	void Precache( void );
+	void KeyValue( KeyValueData *pkvd );
+	void Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+	void Think( void );
+	void TrackTarget( void );
 
-	virtual void Fire(const Vector &barrelEnd, const Vector &forward, entvars_t *pevAttacker);
-	virtual Vector UpdateTargetPosition(CBaseEntity *pTarget)
+	virtual void Fire( const Vector &barrelEnd, const Vector &forward, entvars_t *pevAttacker );
+	virtual Vector UpdateTargetPosition( CBaseEntity *pTarget )
 	{
-		return pTarget->BodyTarget(pev->origin);
+		return pTarget->BodyTarget( pev->origin );
 	}
 
-	void	StartRotSound(void);
-	void	StopRotSound(void);
+	void StartRotSound( void );
+	void StopRotSound( void );
 
 	// Bmodels don't go across transitions
-	virtual int	ObjectCaps(void) { return CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
+	virtual int ObjectCaps( void ) { return CBaseEntity :: ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
 
-	inline BOOL IsActive(void) { return (pev->spawnflags & SF_TANK_ACTIVE) ? TRUE : FALSE; }
-	inline void TankActivate(void) { pev->spawnflags |= SF_TANK_ACTIVE; pev->nextthink = pev->ltime + 0.1; m_fireLast = 0; }
-	inline void TankDeactivate(void) { pev->spawnflags &= ~SF_TANK_ACTIVE; m_fireLast = 0; StopRotSound(); }
-	inline BOOL CanFire(void) { return (gpGlobals->time - m_lastSightTime) < m_persist; }
-	BOOL		InRange(float range);
+	inline BOOL IsActive( void ) { return (pev->spawnflags & SF_TANK_ACTIVE)?TRUE:FALSE; }
+	inline void TankActivate( void ) { pev->spawnflags |= SF_TANK_ACTIVE; pev->nextthink = pev->ltime + 0.1; m_fireLast = 0; }
+	inline void TankDeactivate( void ) { pev->spawnflags &= ~SF_TANK_ACTIVE; m_fireLast = 0; StopRotSound(); }
+	inline BOOL CanFire( void ) { return (gpGlobals->time - m_lastSightTime) < m_persist; }
+	BOOL InRange( float range );
 
 	// Acquire a target.  pPlayer is a player in the PVS
-	edict_t		*FindTarget(edict_t *pPlayer);
+	edict_t		*FindTarget( edict_t *pPlayer );
 
-	void		TankTrace(const Vector &vecStart, const Vector &vecForward, const Vector &vecSpread, TraceResult &tr);
+	void		TankTrace( const Vector &vecStart, const Vector &vecForward, const Vector &vecSpread, TraceResult &tr );
 
-	Vector		BarrelPosition(void)
+	Vector		BarrelPosition( void )
 	{
 		Vector forward, right, up;
-		UTIL_MakeVectorsPrivate(pev->angles, forward, right, up);
+		UTIL_MakeVectorsPrivate( pev->angles, forward, right, up );
 		return pev->origin + (forward * m_barrelPos.x) + (right * m_barrelPos.y) + (up * m_barrelPos.z);
 	}
 
-	void		AdjustAnglesForBarrel(Vector &angles, float distance);
+	void		AdjustAnglesForBarrel( Vector &angles, float distance );
 
-	virtual int	Save(CSave &save);
-	virtual int	Restore(CRestore &restore);
+	virtual int	Save( CSave &save );
+	virtual int	Restore( CRestore &restore );
 	static	TYPEDESCRIPTION m_SaveData[];
 
-	BOOL OnControls(entvars_t *pevTest);
-	BOOL StartControl(CBasePlayer* pController);
-	void StopControl(void);
-	void ControllerPostFrame(void);
-
+	BOOL OnControls( entvars_t *pevTest );
+	BOOL StartControl( CBasePlayer* pController );
+	void StopControl( void );
+	void ControllerPostFrame( void );
+	virtual void StopFire( void ){}
 
 protected:
 	CBasePlayer* m_pController;
@@ -103,7 +103,7 @@ protected:
 	float		m_yawCenter;	// "Center" yaw
 	float		m_yawRate;		// Max turn rate to track targets
 	float		m_yawRange;		// Range of turning motion (one-sided: 30 is +/- 30 degress from center)
-	// Zero is full rotation
+								// Zero is full rotation
 	float		m_yawTolerance;	// Tolerance angle
 
 	float		m_pitchCenter;	// "Center" pitch
@@ -120,14 +120,14 @@ protected:
 
 	Vector		m_barrelPos;	// Length of the freakin barrel
 	float		m_spriteScale;	// Scale of any sprites we shoot
-	int			m_iszSpriteSmoke;
-	int			m_iszSpriteFlash;
+	string_t	m_iszSpriteSmoke;
+	string_t	m_iszSpriteFlash;
 	TANKBULLET	m_bulletType;	// Bullet type
 	int			m_iBulletDamage; // 0 means use Bullet type's default damage
 
 	Vector		m_sightOrigin;	// Last sight of target
 	int			m_spread;		// firing spread
-	int			m_iszMaster;	// Master entity (game_team_master or multisource)
+	string_t	m_iszMaster;	// Master entity (game_team_master or multisource)
 };
 
 //=========================================================
@@ -146,19 +146,20 @@ public:
 class CFuncTankLaser : public CFuncTank
 {
 public:
-	void	Activate(void);
-	void	KeyValue(KeyValueData *pkvd);
-	void	Fire(const Vector &barrelEnd, const Vector &forward, entvars_t *pevAttacker);
-	void	Think(void);
-	CLaser *GetLaser(void);
+	void Activate( void );
+	void KeyValue( KeyValueData *pkvd );
+	void Fire( const Vector &barrelEnd, const Vector &forward, entvars_t *pevAttacker );
+	void Think( void );
+	CLaser *GetLaser( void );
 
-	virtual int	Save(CSave &save);
-	virtual int	Restore(CRestore &restore);
-	static	TYPEDESCRIPTION m_SaveData[];
+	virtual int Save( CSave &save );
+	virtual int Restore( CRestore &restore );
+	static TYPEDESCRIPTION m_SaveData[];
+	virtual void StopFire( void );
 
 private:
-	CLaser	*m_pLaser;
-	float	m_laserTime;
+	CLaser *m_pLaser;
+	float m_laserTime;
 };
 
 //=========================================================

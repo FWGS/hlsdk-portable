@@ -32,10 +32,10 @@ public:
 	void KeyValue(KeyValueData *pkvd);
 
 	int	m_iPose;// which sequence to display	-- temporary, don't need to save
-	static char *m_szPoses[4];
+	static const char *m_szPoses[4];
 };
 
-char *CSkeleton::m_szPoses[] = { "s_onback", "s_sitting", "dead_against_wall", "dead_stomach" };
+const char *CSkeleton::m_szPoses[] = { "s_onback", "s_sitting", "dead_against_wall", "dead_stomach" };
 
 void CSkeleton::KeyValue(KeyValueData *pkvd)
 {

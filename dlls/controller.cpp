@@ -47,6 +47,7 @@ public:
 
 	void Spawn( void );
 	void Precache( void );
+	void UpdateOnRemove();
 	void SetYawSpeed( void );
 	int Classify( void );
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
@@ -384,6 +385,23 @@ void CController::Precache()
 	UTIL_PrecacheOther( "controller_head_ball" );
 }	
 
+void CController::UpdateOnRemove()
+{
+	CBaseEntity::UpdateOnRemove();
+
+	if( m_pBall[0] )
+	{
+		UTIL_Remove( m_pBall[0] );
+		m_pBall[0] = 0;
+	}
+
+	if( m_pBall[1] )
+	{
+		UTIL_Remove( m_pBall[1] );
+		m_pBall[1] = 0;
+	}
+}
+
 //=========================================================
 // AI Schedules Specific to this monster
 //=========================================================
@@ -614,7 +632,7 @@ void CController::RunTask( Task_t *pTask )
 			Vector vecSrc = vecHand + pev->velocity * ( m_flShootTime - gpGlobals->time );
 			Vector vecDir;
 
-			if( m_hEnemy != NULL )
+			if( m_hEnemy != 0 )
 			{
 				if( HasConditions( bits_COND_SEE_ENEMY ) )
 				{
@@ -707,7 +725,7 @@ Schedule_t *CController::GetSchedule( void )
 	{
 	case MONSTERSTATE_COMBAT:
 		{
-			Vector vecTmp = Intersect( Vector( 0, 0, 0 ), Vector( 100, 4, 7 ), Vector( 2, 10, -3 ), 20.0 );
+			// Vector vecTmp = Intersect( Vector( 0, 0, 0 ), Vector( 100, 4, 7 ), Vector( 2, 10, -3 ), 20.0 );
 
 			// dead enemy
 			if( HasConditions( bits_COND_LIGHT_DAMAGE ) )
@@ -1095,7 +1113,6 @@ class CControllerHeadBall : public CBaseMonster
 	void EXPORT BounceTouch( CBaseEntity *pOther );
 	void MovetoTarget( Vector vecTarget );
 	void Crawl( void );
-	int m_iTrail;
 	int m_flNextAttack;
 	Vector m_vecIdeal;
 	EHANDLE m_hOwner;
@@ -1160,7 +1177,7 @@ void CControllerHeadBall::HuntThink( void )
 	MESSAGE_END();
 
 	// check world boundaries
-	if( gpGlobals->time - pev->dmgtime > 5 || pev->renderamt < 64 || m_hEnemy == NULL || m_hOwner == NULL || pev->origin.x < -4096 || pev->origin.x > 4096 || pev->origin.y < -4096 || pev->origin.y > 4096 || pev->origin.z < -4096 || pev->origin.z > 4096 )
+	if( gpGlobals->time - pev->dmgtime > 5 || pev->renderamt < 64 || m_hEnemy == 0 || m_hOwner == 0 || pev->origin.x < -4096 || pev->origin.x > 4096 || pev->origin.y < -4096 || pev->origin.y > 4096 || pev->origin.z < -4096 || pev->origin.z > 4096 )
 	{
 		SetTouch( NULL );
 		UTIL_Remove( this );
@@ -1340,7 +1357,7 @@ void CControllerZapBall::ExplodeTouch( CBaseEntity *pOther )
 
 		entvars_t *pevOwner;
 
-		if( m_hOwner != NULL )
+		if( m_hOwner != 0 )
 		{
 			pevOwner = m_hOwner->pev;
 		}

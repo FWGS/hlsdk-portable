@@ -85,7 +85,7 @@ AlertMessage
 Print debug messages to console
 ======================
 */
-void AlertMessage( ALERT_TYPE atype, char *szFmt, ... )
+void AlertMessage( ALERT_TYPE atype, const char *szFmt, ... )
 {
 	va_list argptr;
 	static char string[1024];
@@ -106,7 +106,7 @@ bool bIsMultiplayer( void )
 }
 
 //Just loads a v_ model.
-void LoadVModel( char *szViewModel, CBasePlayer *m_pPlayer )
+void LoadVModel( const char *szViewModel, CBasePlayer *m_pPlayer )
 {
 	gEngfuncs.CL_LoadModel( szViewModel, &m_pPlayer->pev->viewmodel );
 }
@@ -161,7 +161,7 @@ BOOL CBasePlayerWeapon::DefaultReload( int iClipSize, int iAnim, float fDelay, i
 	if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0 )
 		return FALSE;
 
-	int j = min( iClipSize - m_iClip, m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] );
+	int j = Q_min( iClipSize - m_iClip, m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] );
 
 	if( j == 0 )
 		return FALSE;
@@ -218,7 +218,7 @@ CBasePlayerWeapon::DefaultDeploy
 
 =====================
 */
-BOOL CBasePlayerWeapon::DefaultDeploy( char *szViewModel, char *szWeaponModel, int iAnim, char *szAnimExt, int skiplocal, int	body )
+BOOL CBasePlayerWeapon::DefaultDeploy( const char *szViewModel, const char *szWeaponModel, int iAnim, const char *szAnimExt, int skiplocal, int body )
 {
 	if( !CanDeploy() )
 		return FALSE;
@@ -298,7 +298,7 @@ Only produces random numbers to match the server ones.
 */
 Vector CBaseEntity::FireBulletsPlayer ( ULONG cShots, Vector vecSrc, Vector vecDirShooting, Vector vecSpread, float flDistance, int iBulletType, int iTracerFreq, int iDamage, entvars_t *pevAttacker, int shared_rand )
 {
-	float x = 0, y = 0, z;
+	float x = 0.0f, y = 0.0f, z;
 
 	for( ULONG iShot = 1; iShot <= cShots; iShot++ )
 	{
@@ -568,27 +568,6 @@ For debugging, draw a line made out of particles
 void UTIL_ParticleLine( CBasePlayer *player, float *start, float *end, float life, unsigned char r, unsigned char g, unsigned char b )
 {
 	gEngfuncs.pEfxAPI->R_ParticleLine( start, end, r, g, b, life );
-}
-
-/*
-=====================
-CBasePlayerWeapon::PrintState
-
-For debugging, print out state variables to log file
-=====================
-*/
-void CBasePlayerWeapon::PrintState( void )
-{
-	COM_Log( "c:\\hl.log", "%.4f ", gpGlobals->time );
-	COM_Log( "c:\\hl.log", "%.4f ", m_pPlayer->m_flNextAttack );
-	COM_Log( "c:\\hl.log", "%.4f ", m_flNextPrimaryAttack );
-	COM_Log( "c:\\hl.log", "%.4f ", m_flTimeWeaponIdle - gpGlobals->time );
-	COM_Log( "c:\\hl.log", "%i ", m_iClip );
-}
-
-int RandomLong( int a, int b )
-{
-	return gEngfuncs.pfnRandomLong( a, b );
 }
 
 /*

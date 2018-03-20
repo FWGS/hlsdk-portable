@@ -302,7 +302,7 @@ void CSniperrifle::ItemPostFrame(void)
 		else
 		{
 			// complete the reload. 
-			int j = min(iMaxClip() - m_iClip, m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]);
+			int j = Q_min(iMaxClip() - m_iClip, m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]);
 
 			// Add them to the clip
 			m_iClip += j;

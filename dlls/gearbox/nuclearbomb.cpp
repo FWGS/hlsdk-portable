@@ -215,7 +215,7 @@ void CNukeCase::Precache(void)
 {
 	CBaseButton::Precache();
 
-	PRECACHE_MODEL((char*)STRING(pev->model));
+	PRECACHE_MODEL(STRING(pev->model));
 
 	PRECACHE_SOUND( "common/nuke_ticking.wav" );
 
@@ -332,7 +332,7 @@ void CNukeCase::ButtonActivate(void)
 	ASSERT(m_toggle_state == TS_AT_BOTTOM);
 	m_toggle_state = TS_AT_TOP;
 
-	EMIT_SOUND(ENT(pev), CHAN_VOICE, (char*)STRING(pev->noise), 1, ATTN_NORM);
+	EMIT_SOUND(ENT(pev), CHAN_VOICE, STRING(pev->noise), 1, ATTN_NORM);
 
 	TurnOff();
 
