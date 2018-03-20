@@ -359,7 +359,7 @@ const char *CFGrunt::pGruntSentences[] =
 	"FG_TAUNT", // say rude things
 };
 
-enum
+typedef enum
 {
 	FGRUNT_SENT_NONE = -1,
 	FGRUNT_SENT_GREN = 0,
@@ -561,7 +561,7 @@ Vector CFGrunt::GetGunPosition()
 //=========================================================
 void CFGrunt::AlertSound(void)
 {
-	if (m_hEnemy != NULL)
+	if (m_hEnemy != 0)
 	{
 		if (FOkToSpeak())
 		{
@@ -631,7 +631,7 @@ BOOL CFGrunt::CheckMeleeAttack1(float flDot, float flDist)
 {
 	CBaseMonster *pEnemy;
 
-	if (m_hEnemy != NULL)
+	if (m_hEnemy != 0)
 	{
 		pEnemy = m_hEnemy->MyMonsterPointer();
 
@@ -857,7 +857,7 @@ void CFGrunt::Fire(const Vector& vecShootOrigin, const Vector& vecShootDir, cons
 //=========================================================
 void CFGrunt::Shoot(void)
 {
-	if (m_hEnemy == NULL)
+	if (m_hEnemy == 0)
 	{
 		return;
 	}
@@ -872,7 +872,7 @@ void CFGrunt::Shoot(void)
 //=========================================================
 void CFGrunt::Shotgun(void)
 {
-	if (m_hEnemy == NULL)
+	if (m_hEnemy == 0)
 	{
 		return;
 	}
@@ -887,7 +887,7 @@ void CFGrunt::Shotgun(void)
 //=========================================================
 void CFGrunt::Saw(void)
 {
-	if (m_hEnemy == NULL)
+	if (m_hEnemy == 0)
 	{
 		return;
 	}
@@ -1233,7 +1233,7 @@ int CFGrunt::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float f
 
 		// This is a heurstic to determine if the player intended to harm me
 		// If I have an enemy, we can't establish intent (may just be crossfire)
-		if (m_hEnemy == NULL)
+		if (m_hEnemy == 0)
 		{
 			// If the player was facing directly at me, or I'm already suspicious, get mad
 			if ((m_afMemory & bits_MEMORY_SUSPICIOUS) || IsFacing(pevAttacker, pev->origin))
@@ -1379,7 +1379,7 @@ void CFGrunt::PrescheduleThink(void)
 {
 	CSquadMonster* pSquadMonster = MySquadMonsterPointer();
 
-	if (pSquadMonster && pSquadMonster->InSquad() && m_hEnemy != NULL)
+	if (pSquadMonster && pSquadMonster->InSquad() && m_hEnemy != 0)
 	{
 		if (HasConditions(bits_COND_SEE_ENEMY))
 		{
@@ -1531,7 +1531,7 @@ Schedule_t* CFGrunt::GetScheduleOfType(int Type)
 	}
 	case SCHED_FAIL:
 	{
-		if (m_hEnemy != NULL)
+		if (m_hEnemy != 0)
 		{
 			// grunt has an enemy, so pick a different default fail schedule most likely to help recover.
 			return &slGruntCombatFail[0];
@@ -1557,7 +1557,7 @@ Schedule_t* CFGrunt::GetScheduleOfType(int Type)
 	}
 
 	case SCHED_ARM_WEAPON:
-		if ( m_hEnemy != NULL )
+		if ( m_hEnemy != 0 )
 		{
 			// face enemy, then draw.
 			return slBarneyEnemyDraw;
@@ -1681,10 +1681,10 @@ Schedule_t *CFGrunt::GetSquadSchedule(void)
 				// before he starts pluggin away.
 				if (FOkToSpeak())// && RANDOM_LONG(0,1))
 				{
-					if ((m_hEnemy != NULL) && m_hEnemy->IsPlayer())
+					if ((m_hEnemy != 0) && m_hEnemy->IsPlayer())
 						// player
 						SENTENCEG_PlayRndSz(ENT(pev), "FG_ALERT", FGRUNT_SENTENCE_VOLUME, FGRUNT_ATTN, 0, m_voicePitch);
-					else if ((m_hEnemy != NULL) &&
+					else if ((m_hEnemy != 0) &&
 						(m_hEnemy->Classify() != CLASS_PLAYER_ALLY) &&
 						(m_hEnemy->Classify() != CLASS_HUMAN_PASSIVE) &&
 						(m_hEnemy->Classify() != CLASS_MACHINE))
@@ -1896,7 +1896,7 @@ Schedule_t *CFGrunt::GetSchedule(void)
 			// 10% chance of flinch.
 			int iPercent = RANDOM_LONG(0, 99);
 
-			if (iPercent <= 90 && m_hEnemy != NULL)
+			if (iPercent <= 90 && m_hEnemy != 0)
 			{
 				// only try to take cover if we actually have an enemy!
 
@@ -1961,7 +1961,7 @@ Schedule_t *CFGrunt::GetSchedule(void)
 			return GetScheduleOfType(SCHED_SMALL_FLINCH);
 		}
 
-		if (m_hEnemy == NULL && IsFollowing())
+		if (m_hEnemy == 0 && IsFollowing())
 		{
 			if (!m_hTargetEnt->IsAlive())
 			{
@@ -2354,7 +2354,7 @@ public:
 
 	int	m_iPose;// which sequence to display	-- temporary, don't need to save
 	int m_iHead;
-	static char *m_szPoses[6];
+	static const char *m_szPoses[6];
 };
 
 LINK_ENTITY_TO_CLASS(monster_human_grunt_ally_dead, CDeadFGrunt);
@@ -2366,7 +2366,7 @@ TYPEDESCRIPTION CDeadFGrunt::m_SaveData[] =
 
 IMPLEMENT_SAVERESTORE(CDeadFGrunt, CBaseMonster);
 
-char *CDeadFGrunt::m_szPoses[] = { "deadstomach", "deadside", "deadsitting", "dead_on_back", "dead_on_stomach", "dead_headcrabed" };
+const char *CDeadFGrunt::m_szPoses[] = { "deadstomach", "deadside", "deadsitting", "dead_on_back", "dead_on_stomach", "dead_headcrabed" };
 
 void CDeadFGrunt::KeyValue(KeyValueData *pkvd)
 {

@@ -158,7 +158,7 @@ const char *CStrooper::pGruntSentences[] =
 	"ST_TAUNT",		// say rude things
 };
 
-enum
+typedef enum
 {
 	STROOPER_SENT_NONE = -1,
 	STROOPER_SENT_GREN = 0,
@@ -742,10 +742,10 @@ Schedule_t *CStrooper::GetSchedule(void)
 					// before he starts pluggin away.
 					if (FOkToSpeak())// && RANDOM_LONG(0,1))
 					{
-						if ((m_hEnemy != NULL) && m_hEnemy->IsPlayer())
+						if ((m_hEnemy != 0) && m_hEnemy->IsPlayer())
 							// player
 							SENTENCEG_PlayRndSz(ENT(pev), "ST_ALERT", STROOPER_SENTENCE_VOLUME, STROOPER_ATTN, 0, m_voicePitch);
-						else if ((m_hEnemy != NULL) &&
+						else if ((m_hEnemy != 0) &&
 							(m_hEnemy->Classify() != CLASS_PLAYER_ALLY) &&
 							(m_hEnemy->Classify() != CLASS_HUMAN_PASSIVE) &&
 							(m_hEnemy->Classify() != CLASS_MACHINE))
@@ -783,7 +783,7 @@ Schedule_t *CStrooper::GetSchedule(void)
 			// 10% chance of flinch.
 			int iPercent = RANDOM_LONG(0, 99);
 
-			if (iPercent <= 90 && m_hEnemy != NULL)
+			if (iPercent <= 90 && m_hEnemy != 0)
 			{
 				// only try to take cover if we actually have an enemy!
 

@@ -462,7 +462,7 @@ int CVoltigore::TakeDamage(entvars_t *pevInflictor, entvars_t *pevAttacker, floa
 
 	// if the voltigore is running, has an enemy, was hurt by the enemy, hasn't been hurt in the last 3 seconds, and isn't too close to the enemy,
 	// it will swerve. (whew).
-	if (m_hEnemy != NULL && IsMoving() && pevAttacker == m_hEnemy->pev)
+	if (m_hEnemy != 0 && IsMoving() && pevAttacker == m_hEnemy->pev)
 	{
 		flDist = (pev->origin - m_hEnemy->pev->origin).Length2D();
 
@@ -493,7 +493,7 @@ BOOL CVoltigore::CheckRangeAttack1(float flDot, float flDist)
 
 	if (flDist > 64 && flDist <= 784 && flDot >= 0.5 && gpGlobals->time >= m_flNextZapTime)
 	{
-		if (m_hEnemy != NULL)
+		if (m_hEnemy != 0)
 		{
 			if (fabs(pev->origin.z - m_hEnemy->pev->origin.z) > 256)
 			{
@@ -752,7 +752,7 @@ void CVoltigore::Precache()
 
 void CVoltigore::PrecacheImpl(const char *modelName)
 {
-	PRECACHE_MODEL((char*)modelName);
+	PRECACHE_MODEL(modelName);
 	
 	PRECACHE_SOUND_ARRAY(pAlertSounds);
 	PRECACHE_SOUND_ARRAY(pAttackMeleeSounds);

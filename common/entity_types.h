@@ -12,7 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
-
+#pragma once
 #ifndef ENTITY_TYPES_H
 #define ENTITY_TYPES_H
 

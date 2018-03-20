@@ -73,7 +73,7 @@ CTF MIL STAND CODE
 void CFlagStand::Spawn(void)
 {
 	Precache();
-	SET_MODEL(ENT(pev),(char*)STRING(pev->model));
+	SET_MODEL(ENT(pev), STRING(pev->model));
 
 	pev->movetype = MOVETYPE_TOSS;
 	pev->solid = SOLID_TRIGGER;
@@ -118,7 +118,7 @@ void CFlagStand::StandThink(void)
 
 void CFlagStand::Precache(void)
 {
-	PRECACHE_MODEL((char*)STRING(pev->model));
+	PRECACHE_MODEL(STRING(pev->model));
 }
 
 void CFlagStand::StandTouch(CBaseEntity *pToucher)

@@ -174,7 +174,7 @@ void CBarney::RunTask( Task_t *pTask )
 	switch( pTask->iTask )
 	{
 	case TASK_RANGE_ATTACK1:
-		if( m_hEnemy != NULL && ( m_hEnemy->IsPlayer() ) )
+		if( m_hEnemy != 0 && ( m_hEnemy->IsPlayer() ) )
 		{
 			pev->framerate = 1.5;
 		}
@@ -215,7 +215,7 @@ int CBarney::Classify( void )
 //=========================================================
 void CBarney::AlertSound( void )
 {
-	if( m_hEnemy != NULL )
+	if( m_hEnemy != 0 )
 	{
 		if( FOkToSpeak() )
 		{
@@ -457,7 +457,7 @@ int CBarney::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float 
 
 		// This is a heurstic to determine if the player intended to harm me
 		// If I have an enemy, we can't establish intent (may just be crossfire)
-		if( m_hEnemy == NULL )
+		if( m_hEnemy == 0 )
 		{
 			// If the player was facing directly at me, or I'm already suspicious, get mad
 			if( ( m_afMemory & bits_MEMORY_SUSPICIOUS ) || IsFacing( pevAttacker, pev->origin ) )
@@ -569,7 +569,7 @@ void CBarney::Killed( entvars_t *pevAttacker, int iGib )
 
 		GetAttachment( 0, vecGunPos, vecGunAngles );
 
-		CBaseEntity *pGun = DropItem( "weapon_9mmhandgun", vecGunPos, vecGunAngles );
+		DropItem( "weapon_9mmhandgun", vecGunPos, vecGunAngles );
 	}
 
 	SetUse( NULL );	
@@ -586,7 +586,7 @@ Schedule_t *CBarney::GetScheduleOfType( int Type )
 	switch( Type )
 	{
 	case SCHED_ARM_WEAPON:
-		if( m_hEnemy != NULL )
+		if( m_hEnemy != 0 )
 		{
 			// face enemy, then draw.
 			return slBarneyEnemyDraw;
@@ -674,7 +674,7 @@ Schedule_t *CBarney::GetSchedule( void )
 			return GetScheduleOfType( SCHED_SMALL_FLINCH );
 		}
 
-		if( m_hEnemy == NULL && IsFollowing() )
+		if( m_hEnemy == 0 && IsFollowing() )
 		{
 			if( !m_hTargetEnt->IsAlive() )
 			{
@@ -736,10 +736,10 @@ public:
 	void KeyValue( KeyValueData *pkvd );
 
 	int m_iPose;// which sequence to display	-- temporary, don't need to save
-	static char *m_szPoses[3];
+	static const char *m_szPoses[3];
 };
 
-char *CDeadBarney::m_szPoses[] = { "lying_on_back", "lying_on_side", "lying_on_stomach" };
+const char *CDeadBarney::m_szPoses[] = { "lying_on_back", "lying_on_side", "lying_on_stomach" };
 
 void CDeadBarney::KeyValue( KeyValueData *pkvd )
 {

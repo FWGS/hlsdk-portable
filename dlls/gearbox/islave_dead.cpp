@@ -34,10 +34,10 @@ public:
 	void KeyValue(KeyValueData *pkvd);
 
 	int	m_iPose;// which sequence to display	-- temporary, don't need to save
-	static char *m_szPoses[1];
+	static const char *m_szPoses[1];
 };
 
-char *CDeadISlave::m_szPoses[] = { "dead_on_stomach" };
+const char *CDeadISlave::m_szPoses[] = { "dead_on_stomach" };
 
 void CDeadISlave::KeyValue(KeyValueData *pkvd)
 {

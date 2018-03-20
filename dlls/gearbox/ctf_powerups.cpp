@@ -94,11 +94,11 @@ void CPowerupCTFBase::Spawn(void)
 	if (GetRuneFlag() < 0)
 	{
 		int flag;
-		char* modelname = (char*)SelectRuneRandom(&flag);
+		const char* modelname = SelectRuneRandom(&flag);
 
 		if (modelname != NULL && flag > 0)
 		{
-			char* printname = NULL;
+			const char* printname = NULL;
 
 			if (flag & IT_CTF_ACCELERATOR_FLAG)
 				printname = "Accelerator";
@@ -115,11 +115,11 @@ void CPowerupCTFBase::Spawn(void)
 		}
 
 
-		SET_MODEL(ENT(pev), (char*)SelectRuneRandom(&m_iRuneFlag) );
+		SET_MODEL(ENT(pev), SelectRuneRandom(&m_iRuneFlag) );
 	}
 	else
 	{
-		SET_MODEL(ENT(pev), (char*)GetRuneModel());
+		SET_MODEL(ENT(pev), GetRuneModel());
 		m_iRuneFlag = GetRuneFlag();
 	}
 
@@ -389,7 +389,7 @@ void DropRune(CBasePlayer *pPlayer)
 	}
 
 	CBaseEntity *pRune = NULL;
-	char * runeName;
+	const char * runeName;
 
 	if (pPlayer->m_iRuneStatus == IT_CTF_ACCELERATOR_FLAG)
 	{
@@ -468,7 +468,7 @@ void SpawnRunes(void)
 	for (int i = 0; i < ARRAYSIZE(g_pszRuneClassName); i++)
 	{
 		pentSpawnSpot = RuneSelectSpawnPoint();
-		CBaseEntity::Create((char*)g_pszRuneClassName[i], VARS(pentSpawnSpot)->origin, VARS(pentSpawnSpot)->angles, NULL);
+		CBaseEntity::Create(g_pszRuneClassName[i], VARS(pentSpawnSpot)->origin, VARS(pentSpawnSpot)->angles, NULL);
 	}
 
 	g_bSpawnedRunes = TRUE;

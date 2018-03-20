@@ -50,7 +50,7 @@ IMPLEMENT_SAVERESTORE(CItemGeneric, CBaseAnimating);
 void CItemGeneric::Spawn(void)
 {
 	Precache();
-	SET_MODEL(ENT(pev),(char*)STRING(pev->model));
+	SET_MODEL(ENT(pev), STRING(pev->model));
 
 	UTIL_SetOrigin(pev, pev->origin);
 	UTIL_SetSize(pev, Vector(-16, -16, 0), Vector(16, 16, 32));
@@ -66,7 +66,7 @@ void CItemGeneric::Spawn(void)
 
 void CItemGeneric::Precache(void)
 {
-	PRECACHE_MODEL((char*)STRING(pev->model));
+	PRECACHE_MODEL(STRING(pev->model));
 }
 
 void CItemGeneric::KeyValue(KeyValueData* pkvd)

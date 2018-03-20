@@ -281,7 +281,7 @@ const char *CMGrunt::pMGruntSentences[] =
 	"MG_NOTHEAL",
 };
 
-enum
+typedef enum
 {
 	MGRUNT_SENT_NONE = -1,
 	MGRUNT_SENT_HEAL = 0,
