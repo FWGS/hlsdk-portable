@@ -639,10 +639,10 @@ void CDisplacer::Teleport( void )
 		if( !g_pGameRules->IsMultiplayer())
 		{
 			m_pPlayer->m_fInXen = !m_pPlayer->m_fInXen;
-			/*if (m_pPlayer->m_fInXen)
+			if (m_pPlayer->m_fInXen)
 				m_pPlayer->pev->gravity = 0.5;
 			else
-				m_pPlayer->pev->gravity = 1.0;*/
+				m_pPlayer->pev->gravity = 1.0;
 		}
 	}
 	else
