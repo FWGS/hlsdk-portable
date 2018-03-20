@@ -31,7 +31,8 @@ LINK_ENTITY_TO_CLASS(monster_shockroach, CShockRoach);
 
 TYPEDESCRIPTION	CShockRoach::m_SaveData[] =
 {
-	DEFINE_FIELD(CShockRoach, m_flDie, FIELD_TIME),
+	DEFINE_FIELD(CShockRoach, m_flBirthTime, FIELD_TIME),
+	DEFINE_FIELD(CShockRoach, m_fRoachSolid, FIELD_BOOLEAN),
 };
 
 IMPLEMENT_SAVERESTORE(CShockRoach, CHeadCrab);
@@ -75,7 +76,6 @@ void CShockRoach::Spawn()
 	Precache();
 
 	SET_MODEL(ENT(pev), "models/w_shock_rifle.mdl");
-	UTIL_SetSize(pev, Vector(-12, -12, 0), Vector(12, 12, 24));
 
 	pev->solid = SOLID_SLIDEBOX;
 	pev->movetype = MOVETYPE_STEP;
@@ -87,7 +87,8 @@ void CShockRoach::Spawn()
 	m_flFieldOfView = 0.5;// indicates the width of this monster's forward view cone ( as a dotproduct result )
 	m_MonsterState = MONSTERSTATE_NONE;
 
-	m_flDie = gpGlobals->time + RANDOM_LONG(10, 15);
+	m_fRoachSolid = 0;
+	m_flBirthTime = gpGlobals->time;
 
 	MonsterInit();
 }
@@ -152,7 +153,12 @@ void CShockRoach::LeapTouch(CBaseEntity *pOther)
 void CShockRoach::PrescheduleThink(void)
 {
 	// explode when ready
-	if (gpGlobals->time >= m_flDie)
+	if (!m_fRoachSolid && m_flBirthTime + 0.2 >= gpGlobals->time) {
+		m_fRoachSolid = TRUE;
+		UTIL_SetSize(pev, Vector(-12, -12, 0), Vector(12, 12, 24));
+	}
+	// explode when ready
+	if (gpGlobals->time >= m_flBirthTime + gSkillData.sroachLifespan)
 	{
 		pev->health = -1;
 		Killed(pev, 0);

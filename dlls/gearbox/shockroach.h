@@ -44,7 +44,8 @@ public:
 	static const char *pDeathSounds[];
 	static const char *pBiteSounds[];
 
-	float m_flDie;
+	float m_flBirthTime;
+	BOOL m_fRoachSolid;
 };
 
 
