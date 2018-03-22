@@ -1,4 +1,4 @@
-//========= Copyright © 2004-2008, Raven City Team, All rights reserved. ============//
+//========= Copyright (c) 2004-2008, Raven City Team, All rights reserved. ============//
 //																					 //
 // Purpose:																			 //
 //																					 //
@@ -100,18 +100,22 @@ void CEagle::Holster( int skiplocal /* = 0 */ )
 
 void CEagle::SecondaryAttack()
 {
-	m_fEagleLaserActive = ! m_fEagleLaserActive;
-	if (!m_fEagleLaserActive && m_pEagleLaser)
+	if ((m_pEagleLaser && m_fEagleLaserActive) // don't turn off if it was not created yet
+			|| !m_fEagleLaserActive)
 	{
-		EMIT_SOUND_DYN(ENT(m_pPlayer->pev), CHAN_ITEM, "weapons/desert_eagle_sight2.wav", 1.0, ATTN_NORM, 0, PITCH_NORM);
-		m_pEagleLaser->Killed( NULL, GIB_NORMAL );
-		m_pEagleLaser = NULL;
+		m_fEagleLaserActive = !m_fEagleLaserActive;
+		if (!m_fEagleLaserActive && m_pEagleLaser)
+		{
+			EMIT_SOUND_DYN(ENT(m_pPlayer->pev), CHAN_ITEM, "weapons/desert_eagle_sight2.wav", 1.0, ATTN_NORM, 0, PITCH_NORM);
+			m_pEagleLaser->Killed( NULL, GIB_NORMAL );
+			m_pEagleLaser = NULL;
+		}
+		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5;
 	}
 	else
 	{
-		EMIT_SOUND_DYN(ENT(m_pPlayer->pev), CHAN_ITEM, "weapons/desert_eagle_sight.wav", 1.0, ATTN_NORM, 0, PITCH_NORM);
+		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.1;
 	}
-	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5;
 }
 
 void CEagle::PrimaryAttack()
@@ -225,6 +229,7 @@ void CEagle::UpdateSpot( void )
 			m_pEagleLaser = CLaserSpot::CreateSpot();
 			m_pEagleLaser->pev->classname = MAKE_STRING("eagle_laser");
 			m_pEagleLaser->pev->scale = 0.5;
+			EMIT_SOUND_DYN(ENT(m_pPlayer->pev), CHAN_ITEM, "weapons/desert_eagle_sight.wav", 1.0, ATTN_NORM, 0, PITCH_NORM);
 		}
 
 		UTIL_MakeVectors( m_pPlayer->pev->v_angle );
@@ -235,13 +240,6 @@ void CEagle::UpdateSpot( void )
 		UTIL_TraceLine ( vecSrc, vecSrc + vecAiming * 8192, dont_ignore_monsters, ENT(m_pPlayer->pev), &tr );
 		
 		UTIL_SetOrigin( m_pEagleLaser->pev, tr.vecEndPos );
-
-		if ( UTIL_PointContents(tr.vecEndPos) == CONTENT_SKY )
-		{
-			UTIL_Remove( m_pEagleLaser );
-			m_pEagleLaser = FALSE;
-		}
-
 	}
 #endif
 }
