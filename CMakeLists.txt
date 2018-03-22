@@ -32,6 +32,7 @@ project (HLSDK-XASH3D)
 #--------------
 # USER DEFINES \
 ################\
+option(64BIT "Allow 64 Bit builds" OFF)
 option(USE_VGUI "Enable VGUI1. UNDONE" OFF)
 option(USE_VGUI2 "Enable VGUI2. UNDONE" OFF)
 option(USE_VOICEMGR "Enable VOICE MANAGER." OFF)
@@ -50,7 +51,7 @@ set(SERVER_LIBRARY_NAME "hl" CACHE STRING "Library name for Linux/MacOS/Windows"
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
 # Build 32-bit Xash on 64-bit, because Xash3D not support this
-if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+if(CMAKE_SIZEOF_VOID_P EQUAL 8 AND NOT 64BIT)
 	if(MSVC)
 			error("UNDONE: set 32 build flags")
 	else()
