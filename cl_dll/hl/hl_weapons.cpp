@@ -880,6 +880,10 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 		( (CRpg *)player.m_pActiveItem )->m_fSpotActive = (int)from->client.vuser2[1];
 		( (CRpg *)player.m_pActiveItem )->m_cActiveRockets = (int)from->client.vuser2[2];
 	}
+	else if (player.m_pActiveItem->m_iId == WEAPON_EAGLE)
+	{
+		( (CEagle *)player.m_pActiveItem )->m_fEagleLaserActive = (int)from->client.vuser2[1];
+	}
 	else if( player.m_pActiveItem->m_iId == WEAPON_M249 )
 	{
 		player.ammo_556 = (int)from->client.vuser2[1];
@@ -963,6 +967,10 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 	{
 		from->client.vuser2[1] = ( (CRpg *)player.m_pActiveItem)->m_fSpotActive;
 		from->client.vuser2[2] = ( (CRpg *)player.m_pActiveItem)->m_cActiveRockets;
+	}
+	else if ( player.m_pActiveItem->m_iId == WEAPON_EAGLE )
+	{
+		from->client.vuser2[1] = ( (CEagle *)player.m_pActiveItem )->m_fEagleLaserActive;;
 	}
 	else if( player.m_pActiveItem->m_iId == WEAPON_M249 )
 	{

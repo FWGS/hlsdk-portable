@@ -100,22 +100,18 @@ void CEagle::Holster( int skiplocal /* = 0 */ )
 
 void CEagle::SecondaryAttack()
 {
-	if ((m_pEagleLaser && m_fEagleLaserActive) // don't turn off if it was not created yet
-			|| !m_fEagleLaserActive)
+	bool wasActive = m_fEagleLaserActive;
+	m_fEagleLaserActive = !m_fEagleLaserActive;
+	if (wasActive)
 	{
-		m_fEagleLaserActive = !m_fEagleLaserActive;
-		if (!m_fEagleLaserActive && m_pEagleLaser)
+		if (m_pEagleLaser)
 		{
 			EMIT_SOUND_DYN(ENT(m_pPlayer->pev), CHAN_ITEM, "weapons/desert_eagle_sight2.wav", 1.0, ATTN_NORM, 0, PITCH_NORM);
 			m_pEagleLaser->Killed( NULL, GIB_NORMAL );
 			m_pEagleLaser = NULL;
 		}
-		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5;
 	}
-	else
-	{
-		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.1;
-	}
+	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5;
 }
 
 void CEagle::PrimaryAttack()
@@ -141,7 +137,7 @@ void CEagle::PrimaryAttack()
 
 	UpdateSpot( );
 
-	float flSpread = 0.01;
+	float flSpread = 0.001;
 
 	m_iClip--;
 
@@ -166,7 +162,7 @@ void CEagle::PrimaryAttack()
 	vecAiming = gpGlobals->v_forward;
 
 	Vector vecDir;
-	if (m_pEagleLaser)
+	if (m_fEagleLaserActive)
 	{
 		vecDir = m_pPlayer->FireBulletsPlayer( 1, vecSrc, vecAiming, Vector( flSpread, flSpread, flSpread ), 8192, BULLET_PLAYER_357, 0, 0, m_pPlayer->pev, m_pPlayer->random_seed );
 		m_flNextPrimaryAttack = UTIL_WeaponTimeBase()+ 0.5;
@@ -178,7 +174,7 @@ void CEagle::PrimaryAttack()
 	else
 	{
 		flSpread = 0.1;
-		vecDir = m_pPlayer->FireBulletsPlayer( 1, vecSrc, vecAiming, VECTOR_CONE_10DEGREES, 8192, BULLET_PLAYER_357, 0, 0, m_pPlayer->pev, m_pPlayer->random_seed );
+		vecDir = m_pPlayer->FireBulletsPlayer( 1, vecSrc, vecAiming, Vector(flSpread, flSpread, flSpread), 8192, BULLET_PLAYER_357, 0, 0, m_pPlayer->pev, m_pPlayer->random_seed );
 		m_flNextPrimaryAttack = UTIL_WeaponTimeBase()+ 0.22;
 		m_fLaserOn = FALSE;
 	}
@@ -260,7 +256,7 @@ void CEagle::WeaponIdle( void )
 			int iAnim;
 			float flRand = UTIL_SharedRandomFloat( m_pPlayer->random_seed, 0.0, 1.0 );
 
-			if (m_pEagleLaser)
+			if (m_fEagleLaserActive)
 			{
 				if (flRand > 0.5 )
 				{
