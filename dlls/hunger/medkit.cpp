@@ -99,7 +99,7 @@ void CWeaponEinarMedkit::PrimaryAttack()
 
 	if( m_fInAttack )
 	{
-		if( m_flNextSecondaryAttack < UTIL_WeaponTimeBase() );
+		if( m_flNextSecondaryAttack < UTIL_WeaponTimeBase() )
 			Heal();
 		return;
 	}

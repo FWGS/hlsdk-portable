@@ -250,7 +250,7 @@ void CWeaponEinarTFCSniper::WeaponIdle()
 		}
 		if( m_fInSpecialReload == 2 )
 		{
-			EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/reload3.wav", RANDOM_LONG( 0.8, 0.9 ), ATTN_NORM, 0, 93 + RANDOM_LONG( 0, 0x1f ) );
+			EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/reload3.wav", RANDOM_FLOAT( 0.8, 0.9 ), ATTN_NORM, 0, 93 + RANDOM_LONG( 0, 0x1f ) );
 			m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 1.0;
 			m_fInSpecialReload = 3;
 		}
