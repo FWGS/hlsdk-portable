@@ -3282,7 +3282,7 @@ void CBasePlayer::GiveNamedItem( const char *pszName )
 		return;
 	}
 
-	if( g_pGameRules->IsMultiplayer()
+	if( g_pGameRules->IsMultiplayer() )
 	{
 		if( FClassnameIs( VARS( pent ), "weapon_9mmhandgun" ) )
 			VARS( pent )->body = 1;
