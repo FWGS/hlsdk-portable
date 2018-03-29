@@ -34,6 +34,7 @@
 
 extern globalvars_t *gpGlobals;
 extern int g_iUser1;
+extern bool g_hasPredictedFOV;	// Vit_amiN: from HUD
 
 // Pool of client side entities/entvars_t
 static entvars_t ev[32];
@@ -820,6 +821,7 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 	to->client.fuser2 = player.m_flNextAmmoBurn;
 	to->client.fuser3 = player.m_flAmmoStartCharge;
 	to->client.maxspeed = player.pev->maxspeed;
+	g_hasPredictedFOV	= true;	// Vit_amiN: ready
 
 	// Make sure that weapon animation matches what the game .dll is telling us
 	//  over the wire ( fixes some animation glitches )
