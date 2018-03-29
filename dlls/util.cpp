@@ -989,7 +989,7 @@ float UTIL_Approach( float target, float value, float speed )
 float UTIL_ApproachAngle( float target, float value, float speed )
 {
 	target = UTIL_AngleMod( target );
-	value = UTIL_AngleMod( target );
+	value = UTIL_AngleMod( value );
 
 	float delta = target - value;
 

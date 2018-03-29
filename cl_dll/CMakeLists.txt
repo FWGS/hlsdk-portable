@@ -25,11 +25,21 @@ project (CLDLL)
 
 set (CLDLL_LIBRARY client)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-write-strings -DLINUX -D_LINUX -Dstricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp -DCLIENT_DLL -w")
-if (GOLDSOURCE_SUPPORT)
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DGOLDSOURCE_SUPPORT")
+add_definitions(-DCLIENT_DLL)
+
+if(NOT MSVC)
+	add_compile_options(-fno-exceptions) # GCC/Clang flag
+	add_compile_options(-Wno-write-strings) # GCC/Clang flag
+	add_definitions(-D_LINUX -DLINUX) # It seems enough for all non-Win32 systems
+	add_definitions(-Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf -D_vsnprintf=vsnprintf )
+else()
+	add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_DEPRECATE)
 endif()
-set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS}")
+
+if (GOLDSOURCE_SUPPORT)
+	add_definitions(-DGOLDSOURCE_SUPPORT)
+endif()
+
 
 set (CLDLL_SOURCES
 	../dlls/hunger/ap9.cpp
@@ -106,8 +116,13 @@ set_target_properties (${CLDLL_LIBRARY} PROPERTIES
 	POSITION_INDEPENDENT_CODE 1)
 
 if(APPLE OR WIN32 OR ${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+	set(CLDLL_NAME "client")
+	if(64BIT)
+		set(CLDLL_NAME "client64")
+	endif()
+
 	set_target_properties(${CLDLL_LIBRARY} PROPERTIES
-		OUTPUT_NAME "client"
+		OUTPUT_NAME ${CLDLL_NAME}
 		PREFIX "")
 endif()
 
