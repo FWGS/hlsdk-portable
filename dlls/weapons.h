@@ -63,16 +63,13 @@ public:
 #define ITEM_BATTERY		4
 
 #define WEAPON_NONE			0
-#define WEAPON_HEATERPIPE		2
-#define	WEAPON_BRADNAILER		3
-#define WEAPON_NAILGUN			4
-#define WEAPON_SHOTGUN			5
-#define WEAPON_CMLWBR			6
-#define WEAPON_XS			7
-#define WEAPON_PIPEBOMB			8
-#define WEAPON_PAR21			9
-#define WEAPON_CROWBAR			10
-#define	WEAPON_SATCHEL			11
+#define WEAPON_CROWBAR			1
+#define	WEAPON_GLOCK			2
+#define WEAPON_MP5			4
+#define WEAPON_CROSSBOW			6
+#define WEAPON_SHOTGUN			7
+#define WEAPON_GAUSS			9
+#define WEAPON_SATCHEL			14
 
 #define WEAPON_ALLWEAPONS		(~(1<<WEAPON_SUIT))
 
