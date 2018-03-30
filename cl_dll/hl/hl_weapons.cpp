@@ -53,13 +53,6 @@ int g_irunninggausspred = 0;
 vec3_t previousorigin;
 
 // HLDM Weapon placeholder entities.
-CHeaterPipe g_HeaterPipe;
-CCmlwbr g_Cmlwbr;
-CShotgun g_Shotgun;
-CPipeBomb g_PipeBomb;
-CBradnailer g_Bradnailer;
-CNailgun g_Nailgun;
-CXenSquasher g_Xs;
 /*
 ======================
 AlertMessage
@@ -594,13 +587,6 @@ void HUD_InitClientWeapons( void )
 	HUD_PrepEntity( &player, NULL );
 
 	// Allocate slot(s) for each weapon that we are going to be predicting
-	HUD_PrepEntity( &g_HeaterPipe, &player );
-	HUD_PrepEntity( &g_Shotgun, &player );
-	HUD_PrepEntity( &g_Cmlwbr, &player );
-	HUD_PrepEntity( &g_PipeBomb, &player );
-	HUD_PrepEntity( &g_Bradnailer, &player );
-	HUD_PrepEntity( &g_Nailgun, &player );
-	HUD_PrepEntity( &g_Xs, &player );
 }
 
 /*
@@ -662,30 +648,6 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 
 	// Fill in data based on selected weapon
 	// FIXME, make this a method in each weapon?  where you pass in an entity_state_t *?
-	switch( from->client.m_iId )
-	{
-	case WEAPON_HEATERPIPE:
-		pWeapon = &g_HeaterPipe;
-		break;
-	case WEAPON_SHOTGUN:
-		pWeapon = &g_Shotgun;
-		break;
-	case WEAPON_CMLWBR:
-		pWeapon = &g_Cmlwbr;
-		break;
-	case WEAPON_PIPEBOMB:
-		pWeapon = &g_PipeBomb;
-		break;
-	case WEAPON_BRADNAILER:
-		pWeapon = &g_Bradnailer;
-		break;
-	case WEAPON_NAILGUN:
-		pWeapon = &g_Nailgun;
-		break;
-	case WEAPON_XS:
-		pWeapon = &g_Xs;
-		break;
-	}
 
 	// Store pointer to our destination entity_state_t so we can get our origin, etc. from it
 	//  for setting up events on the client
