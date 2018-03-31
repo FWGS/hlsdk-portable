@@ -12,10 +12,9 @@
 *   without written permission from Valve LLC.
 *
 ****/
+#pragma once
 #ifndef PM_DEBUG_H
 #define PM_DEBUG_H
-
-#pragma once
 
 void PM_ViewEntity( void );
 void PM_DrawBBox( vec3_t mins, vec3_t maxs, vec3_t origin, int pcolor, float life );

@@ -13,7 +13,9 @@
 *
 ****/
 // mathlib.h
-
+#pragma once
+#ifndef MATHLIB_H
+#define MATHLIB_H
 #include <math.h>
 
 typedef float vec_t;
@@ -98,3 +100,4 @@ float	anglemod(float a);
 	)										\
 	:										\
 		BoxOnPlaneSide( (emins), (emaxs), (p)))
+#endif // MATHLIB_H

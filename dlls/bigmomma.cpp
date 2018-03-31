@@ -49,7 +49,7 @@ public:
 	virtual int Restore( CRestore &restore );
 	static TYPEDESCRIPTION m_SaveData[];
 
-	int m_preSequence;
+	string_t m_preSequence;
 };
 
 LINK_ENTITY_TO_CLASS( info_bigmomma, CInfoBM )

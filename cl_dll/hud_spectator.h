@@ -1,13 +1,13 @@
-//========= Copyright © 1996-2002, Valve LLC, All rights reserved. ============
+//========= Copyright (c) 1996-2002, Valve LLC, All rights reserved. ============
 //
 // Purpose: 
 //
 // $NoKeywords: $
 //=============================================================================
 
-#ifndef SPECTATOR_H
-#define SPECTATOR_H
 #pragma once
+#ifndef HUD_SPECTATOR_H
+#define HUD_SPECTATOR_H
 
 #include "cl_entity.h"
 

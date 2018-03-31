@@ -19,7 +19,9 @@
 //
 // CHud handles the message, calculation, and drawing the HUD
 //
-
+#pragma once
+#ifndef HUD_H
+#define HUD_H
 #define RGB_YELLOWISH 0x00FFA000 //255,160,0
 #define RGB_REDISH 0x00FF1010 //255,160,0
 #define RGB_GREENISH 0x0000A000 //0,160,0
@@ -228,7 +230,7 @@ public:
 	void InitHUDData( void );
 	int VidInit( void );
 	int Draw( float flTime );
-	int DrawPlayers( int xoffset, float listslot, int nameoffset = 0, char *team = NULL ); // returns the ypos where it finishes drawing
+	int DrawPlayers( int xoffset, float listslot, int nameoffset = 0, const char *team = NULL ); // returns the ypos where it finishes drawing
 	void UserCmd_ShowScores( void );
 	void UserCmd_HideScores( void );
 	int MsgFunc_ScoreInfo( const char *pszName, int iSize, void *pbuf );
@@ -677,3 +679,4 @@ extern int g_iTeamNumber;
 extern int g_iUser1;
 extern int g_iUser2;
 extern int g_iUser3;
+#endif

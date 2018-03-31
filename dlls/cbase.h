@@ -12,6 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
+#pragma once
 #ifndef CBASE_H
 #define CBASE_H
 /*
@@ -282,7 +283,7 @@ public:
 #ifdef _DEBUG
 	void FunctionCheck( void *pFunction, char *name ) 
 	{ 
-		if( pFunction && !NAME_FOR_FUNCTION( (size_t)( pFunction ) ) )
+		if( pFunction && !NAME_FOR_FUNCTION( pFunction ) )
 			ALERT( at_error, "No EXPORT: %s:%s (%08lx)\n", STRING( pev->classname ), name, (size_t)pFunction );
 	}
 
@@ -438,7 +439,7 @@ class CBaseDelay : public CBaseEntity
 {
 public:
 	float m_flDelay;
-	int m_iszKillTarget;
+	string_t m_iszKillTarget;
 
 	virtual void KeyValue( KeyValueData *pkvd );
 	virtual int Save( CSave &save );
