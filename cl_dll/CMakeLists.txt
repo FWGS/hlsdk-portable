@@ -128,8 +128,13 @@ set_target_properties (${CLDLL_LIBRARY} PROPERTIES
 	POSITION_INDEPENDENT_CODE 1)
 
 if(APPLE OR WIN32 OR ${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+	set(CLDLL_NAME "client")
+	if(64BIT)
+		set(CLDLL_NAME "client64")
+	endif()
+
 	set_target_properties(${CLDLL_LIBRARY} PROPERTIES
-		OUTPUT_NAME "client"
+		OUTPUT_NAME ${CLDLL_NAME}
 		PREFIX "")
 endif()
 
