@@ -31,36 +31,6 @@ void HUD_GetLastOrg( float *org );
 
 void UpdateBeams( void )
 {
-	vec3_t forward, vecSrc, vecEnd, origin, angles, right, up;
-	vec3_t view_ofs;
-	pmtrace_t tr;
-	cl_entity_t *pthisplayer = gEngfuncs.GetLocalPlayer();
-	int idx = pthisplayer->index;
-		
-	// Get our exact viewangles from engine
-	gEngfuncs.GetViewAngles( (float *)angles );
-
-	// Determine our last predicted origin
-	HUD_GetLastOrg( (float *)&origin );
-
-	AngleVectors( angles, forward, right, up );
-
-	VectorCopy( origin, vecSrc );
-
-	VectorMA( vecSrc, 2048, forward, vecEnd );
-
-	gEngfuncs.pEventAPI->EV_SetUpPlayerPrediction( false, true );	
-					
-	// Store off the old count
-	gEngfuncs.pEventAPI->EV_PushPMStates();
-
-	// Now add in all of the players.
-	gEngfuncs.pEventAPI->EV_SetSolidPlayers( idx - 1 );	
-
-	gEngfuncs.pEventAPI->EV_SetTraceHull( 2 );
-	gEngfuncs.pEventAPI->EV_PlayerTrace( vecSrc, vecEnd, PM_STUDIO_BOX, -1, &tr );
-
-	gEngfuncs.pEventAPI->EV_PopPMStates();
 }
 
 /*
