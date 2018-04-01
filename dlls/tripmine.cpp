@@ -105,7 +105,11 @@ void CTripmineGrenade::Spawn( void )
 	ResetSequenceInfo();
 	pev->framerate = 0;
 	
-	UTIL_SetSize( pev, Vector( -8, -8, -8 ), Vector( 8, 8, 8 ) );
+	if (pev->angles.y >= 270.0 || pev->angles.y <= 90.0) {
+		UTIL_SetSize( pev, Vector( 0, 0, 0 ), Vector( 1, 1, 1 ) );
+	} else {
+		UTIL_SetSize( pev, Vector( -1, -1, 0 ), Vector( 0, 0, 1 ) );
+	}
 	UTIL_SetOrigin( pev, pev->origin );
 
 	if( pev->spawnflags & 1 )
@@ -282,7 +286,7 @@ void CTripmineGrenade::BeamBreakThink( void )
 			m_hOwner = CBaseEntity::Instance( tr.pHit );	// reset owner too
 	}
 
-	if( fabs( m_flBeamLength - tr.flFraction ) > 0.001 )
+	if( tr.fStartSolid || fabs( m_flBeamLength - tr.flFraction ) > 0.001 )
 	{
 		bBlowup = 1;
 	}
