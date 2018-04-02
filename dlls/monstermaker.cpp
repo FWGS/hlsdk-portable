@@ -151,7 +151,29 @@ void CMonsterMaker::Precache( void )
 {
 	CBaseMonster::Precache();
 
-	UTIL_PrecacheOther( STRING( m_iszMonsterClassname ) );
+	if( pev->message )
+	{
+		edict_t *pent;
+
+		pent = CREATE_NAMED_ENTITY( m_iszMonsterClassname );
+
+		if( FNullEnt( pent ) )
+		{
+			ALERT( at_console, "NULL Ent in UTIL_PrecacheOther\n" );
+			return;
+		}
+
+		CBaseEntity *pEntity = CBaseEntity::Instance( VARS( pent ) );
+
+		pEntity->pev->message = pev->message;
+
+		if( pEntity )
+			pEntity->Precache();
+
+		REMOVE_ENTITY( pent );
+        }
+	else
+		UTIL_PrecacheOther( STRING( m_iszMonsterClassname ) );
 }
 
 //=========================================================
