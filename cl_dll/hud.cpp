@@ -381,6 +381,18 @@ void CHud::VidInit( void )
 	// assumption: number_1, number_2, etc, are all listed and loaded sequentially
 	m_HUD_number_0 = GetSpriteIndex( "number_0" );
 
+	if( m_HUD_number_0 == -1 )
+	{
+		const char *msg = "There is something wrong with your game data! Please, reinstall\n";
+
+		if( HUD_MessageBox( msg ) )
+		{
+			gEngfuncs.pfnClientCmd( "quit\n" );
+		}
+
+		return;
+	}
+
 	m_iFontHeight = m_rgrcRects[m_HUD_number_0].bottom - m_rgrcRects[m_HUD_number_0].top;
 
 	m_Ammo.VidInit();
