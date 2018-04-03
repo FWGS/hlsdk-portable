@@ -10,6 +10,12 @@ Half-Life SDK for Xash3D & GoldSource with some fixes.
     cmake ../
     make
 
+Crosscompiling using mingw:
+
+    mkdir build-mingw && cd build-mingw
+    TOOLCHAIN_PREFIX=i686-w64-mingw32 # check up the actual mingw prefix of your mingw installation
+    cmake ../ -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_C_COMPILER="$TOOLCHAIN_PREFIX-gcc" -DCMAKE_CXX_COMPILER="$TOOLCHAIN_PREFIX-g++"
+
 You may enable or disable some build options by -Dkey=value. All available build options are defined in CMakeLists.txt at root directory.
 See below if you want to build the GoldSource compatible libraries.
 
@@ -67,6 +73,8 @@ or when using make without cmake:
     make GOLDSOURCE_SUPPORT=1
 
 Unlike original client by Valve the resulting client library will not depend on vgui or SDL2 just like the one that's used in FWGS Xash3d.
+
+Note for **Windows**: it's not possible to create GoldSource compatible libraries using mingw, only msvc builds will work.
 
 Note for **Linux**: GoldSource requires libraries (both client and server) to be compiled with libstdc++ bundled with g++ of major version 4 (versions from 4.6 to 4.9 should work).
 If your Linux distribution does not provide compatible g++ version you have several options.
