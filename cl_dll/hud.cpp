@@ -35,6 +35,7 @@ extern client_sprite_t *GetSpriteList( client_sprite_t *pList, const char *psz, 
 
 extern cvar_t *sensitivity;
 cvar_t *cl_lw = NULL;
+cvar_t *cl_viewbob = NULL;
 
 void ShutdownInput( void );
 
@@ -194,6 +195,7 @@ void CHud::Init( void )
 	m_pCvarStealMouse = CVAR_CREATE( "hud_capturemouse", "1", FCVAR_ARCHIVE );
 	m_pCvarDraw = CVAR_CREATE( "hud_draw", "1", FCVAR_ARCHIVE );
 	cl_lw = gEngfuncs.pfnGetCvarPointer( "cl_lw" );
+	cl_viewbob = CVAR_CREATE( "cl_viewbob", "0", FCVAR_ARCHIVE );
 
 	m_pSpriteList = NULL;
 
@@ -411,6 +413,7 @@ int CHud::MsgFunc_Logo( const char *pszName,  int iSize, void *pbuf )
 }
 
 float g_lastFOV = 0.0;
+bool g_hasPredictedFOV = false;	// Vit_amiN: it'll became true after the first prediction
 
 /*
 ============
@@ -512,7 +515,7 @@ int CHud::MsgFunc_SetFOV( const char *pszName,  int iSize, void *pbuf )
 	int def_fov = CVAR_GET_FLOAT( "default_fov" );
 
 	//Weapon prediction already takes care of changing the fog. ( g_lastFOV ).
-	if( cl_lw && cl_lw->value )
+	if( g_hasPredictedFOV )
 		return 1;
 
 	g_lastFOV = newfov;

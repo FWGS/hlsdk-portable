@@ -115,7 +115,7 @@ public:
 	static TYPEDESCRIPTION m_SaveData[];
 
 private:
-	int m_globalstate;
+	string_t m_globalstate;
 	USE_TYPE triggerType;
 };
 
@@ -268,10 +268,10 @@ public:
 
 	static TYPEDESCRIPTION m_SaveData[];
 
-	int m_cTargets;	// the total number of targets in this manager's fire list.
+	int m_cTargets; // the total number of targets in this manager's fire list.
 	int m_index;	// Current target
 	float m_startTime;// Time we started firing
-	int m_iTargetName[MAX_MULTI_TARGETS];// list if indexes into global string array
+	string_t m_iTargetName[MAX_MULTI_TARGETS];// list if indexes into global string array
 	float m_flTargetDelay[MAX_MULTI_TARGETS];// delay (in seconds) from time of manager fire to target fire
 private:
 	inline BOOL IsClone( void ) { return ( pev->spawnflags & SF_MULTIMAN_CLONE ) ? TRUE : FALSE; }
@@ -528,7 +528,7 @@ void CBaseTrigger::InitTrigger()
 		SetMovedir( pev );
 	pev->solid = SOLID_TRIGGER;
 	pev->movetype = MOVETYPE_NONE;
-	SET_MODEL(ENT(pev), STRING( pev->model ) );    // set size and link into world
+	SET_MODEL( ENT( pev ), STRING( pev->model ) );    // set size and link into world
 	if( CVAR_GET_FLOAT( "showtriggers" ) == 0 )
 		SetBits( pev->effects, EF_NODRAW );
 }
@@ -689,7 +689,7 @@ void PlayCDTrack( int iTrack )
 
 	if( iTrack == -1 )
 	{
-		CLIENT_COMMAND( pClient, "cd pause\n" );
+		CLIENT_COMMAND( pClient, "cd stop\n" );
 	}
 	else
 	{
@@ -1141,7 +1141,7 @@ void CBaseTrigger::ActivateMultiTrigger( CBaseEntity *pActivator )
 	}
 
 	if( !FStringNull( pev->noise ) )
-		EMIT_SOUND( ENT( pev ), CHAN_VOICE, (char*)STRING( pev->noise ), 1, ATTN_NORM );
+		EMIT_SOUND( ENT( pev ), CHAN_VOICE, STRING( pev->noise ), 1, ATTN_NORM );
 
 	// don't trigger again until reset
 	// pev->takedamage = DAMAGE_NO;
@@ -1270,8 +1270,8 @@ void CTriggerVolume::Spawn( void )
 {
 	pev->solid = SOLID_NOT;
 	pev->movetype = MOVETYPE_NONE;
-	SET_MODEL( ENT(pev), STRING( pev->model ) );    // set size and link into world
-	pev->model = NULL;
+	SET_MODEL( ENT( pev ), STRING( pev->model ) );    // set size and link into world
+	pev->model = 0;
 	pev->modelindex = 0;
 }
 
@@ -1329,7 +1329,7 @@ public:
 
 	char m_szMapName[cchMapNameMost];		// trigger_changelevel only:  next map
 	char m_szLandmarkName[cchMapNameMost];		// trigger_changelevel only:  landmark on next map
-	int m_changeTarget;
+	string_t m_changeTarget;
 	float m_changeTargetDelay;
 };
 
@@ -1344,7 +1344,7 @@ TYPEDESCRIPTION	CChangeLevel::m_SaveData[] =
 	DEFINE_FIELD( CChangeLevel, m_changeTargetDelay, FIELD_FLOAT ),
 };
 
-IMPLEMENT_SAVERESTORE(CChangeLevel,CBaseTrigger)
+IMPLEMENT_SAVERESTORE( CChangeLevel, CBaseTrigger )
 
 //
 // Cache user-entity-field values until spawn is called.
@@ -1444,7 +1444,7 @@ void CChangeLevel::UseChangeLevel( CBaseEntity *pActivator, CBaseEntity *pCaller
 void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 {
 	edict_t	*pentLandmark;
-	LEVELLIST levels[16];
+	//LEVELLIST levels[16];
 
 	ASSERT( !FStrEq( m_szMapName, "" ) );
 
@@ -1695,7 +1695,7 @@ void NextLevel( void )
 	// go back to start if no trigger_changelevel
 	if( FNullEnt( pent ) )
 	{
-		gpGlobals->mapname = ALLOC_STRING( "start" );
+		gpGlobals->mapname = MAKE_STRING( "start" );
 		pChange = GetClassPtr( (CChangeLevel *)NULL );
 		strcpy( pChange->m_szMapName, "start" );
 	}
@@ -2060,7 +2060,7 @@ public:
 	static TYPEDESCRIPTION m_SaveData[];
 
 private:
-	int m_iszNewTarget;
+	string_t m_iszNewTarget;
 };
 
 LINK_ENTITY_TO_CLASS( trigger_changetarget, CTriggerChangeTarget )
@@ -2123,7 +2123,7 @@ public:
 	EHANDLE m_hPlayer;
 	EHANDLE m_hTarget;
 	CBaseEntity *m_pentPath;
-	int m_sPath;
+	string_t m_sPath;
 	float m_flWait;
 	float m_flReturnTime;
 	float m_flStopTime;
@@ -2230,7 +2230,7 @@ void CTriggerCamera::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYP
 	}
 
 	// Nothing to look at!
-	if( m_hTarget == NULL )
+	if( m_hTarget == 0 )
 	{
 		return;
 	}
@@ -2286,10 +2286,10 @@ void CTriggerCamera::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYP
 
 void CTriggerCamera::FollowTarget()
 {
-	if( m_hPlayer == NULL )
+	if( m_hPlayer == 0 )
 		return;
 
-	if( m_hTarget == NULL || m_flReturnTime < gpGlobals->time )
+	if( m_hTarget == 0 || m_flReturnTime < gpGlobals->time )
 	{
 		if( m_hPlayer->IsAlive() )
 		{

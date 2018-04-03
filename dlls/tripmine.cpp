@@ -119,6 +119,13 @@ void CTripmineGrenade::Precache( void )
 	PRECACHE_SOUND( "weapons/mine_charge.wav" );
 }
 
+void CTripmineGrenade::UpdateOnRemove()
+{
+	CBaseEntity::UpdateOnRemove();
+
+	KillBeam();
+}
+
 void CTripmineGrenade::WarningThink( void )
 {
 	// play warning sound
@@ -133,7 +140,7 @@ void CTripmineGrenade::PowerupThink( void )
 {
 	TraceResult tr;
 
-	if( m_hOwner == NULL )
+	if( m_hOwner == 0 )
 	{
 		// find an owner
 		edict_t *oldowner = pev->owner;
@@ -188,7 +195,7 @@ void CTripmineGrenade::PowerupThink( void )
 		MakeBeam();
 
 		// play enabled sound
-		EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, "weapons/mine_activate.wav", 0.5, ATTN_NORM, 1.0, 75 );
+		EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, "weapons/mine_activate.wav", 0.5, ATTN_NORM, 1, 75 );
 	}
 	pev->nextthink = gpGlobals->time + 0.1;
 }
@@ -273,7 +280,7 @@ void CTripmineGrenade::BeamBreakThink( void )
 	}
 	else
 	{
-		if( m_hOwner == NULL )
+		if( m_hOwner == 0 )
 			bBlowup = 1;
 		else if( m_posOwner != m_hOwner->pev->origin )
 			bBlowup = 1;
@@ -412,8 +419,7 @@ void CTripmine::Holster( int skiplocal /* = 0 */ )
 	{
 		// out of mines
 		m_pPlayer->pev->weapons &= ~( 1 << WEAPON_TRIPMINE );
-		SetThink( &CBasePlayerItem::DestroyItem );
-		pev->nextthink = gpGlobals->time + 0.1;
+		DestroyItem();
 	}
 
 	SendWeaponAnim( TRIPMINE_HOLSTER );
@@ -459,7 +465,7 @@ void CTripmine::BModAttack( BOOL flashbang )
 		{
 			Vector angles = UTIL_VecToAngles( tr.vecPlaneNormal );
 
-			CBaseEntity *pEnt = CBaseEntity::Create( "monster_tripmine", tr.vecEndPos + tr.vecPlaneNormal * 8, angles, m_pPlayer->edict() );
+			CBaseEntity::Create( "monster_tripmine", tr.vecEndPos + tr.vecPlaneNormal * 8, angles, m_pPlayer->edict() );
 
 			// BMOD Begin - flshbang
 			CTripmineGrenade *pMine = (CTripmineGrenade *)pEnt;
@@ -488,7 +494,7 @@ void CTripmine::BModAttack( BOOL flashbang )
 
 	}*/
 
-	m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.3;
+	m_flNextPrimaryAttack = GetNextAttackDelay( 0.3 );
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
 }
 

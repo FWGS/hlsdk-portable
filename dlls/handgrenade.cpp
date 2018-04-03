@@ -99,8 +99,13 @@ void CHandGrenade::Holster( int skiplocal /* = 0 */ )
 	{
 		// no more grenades!
 		m_pPlayer->pev->weapons &= ~( 1 << WEAPON_HANDGRENADE );
-		SetThink( &CBasePlayerItem::DestroyItem );
-		pev->nextthink = gpGlobals->time + 0.1;
+		DestroyItem();
+	}
+
+	if( m_flStartThrow )
+	{
+		m_flStartThrow = 0;
+		m_flReleaseThrow = 0;
 	}
 
 	//BMOD Begin - fix for short fuse hand grenades.
@@ -183,7 +188,7 @@ void CHandGrenade::WeaponIdle( void )
 
 		m_flReleaseThrow = 0;
 		m_flStartThrow = 0;
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5;
+		m_flNextPrimaryAttack = GetNextAttackDelay( 0.5 );
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.5;
 
 		m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]--;
@@ -193,7 +198,7 @@ void CHandGrenade::WeaponIdle( void )
 			// just threw last grenade
 			// set attack times in the future, and weapon idle in the future so we can see the whole throw
 			// animation, weapon idle will automatically retire the weapon for us.
-			m_flTimeWeaponIdle = m_flNextSecondaryAttack = m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5;// ensure that the animation can finish playing
+			m_flTimeWeaponIdle = m_flNextSecondaryAttack = m_flNextPrimaryAttack = GetNextAttackDelay( 0.5 );// ensure that the animation can finish playing
 		}
 		return;
 	}

@@ -12,12 +12,12 @@
 *   without written permission from Valve LLC.
 *
 ****/
-#ifndef GAMERULES_H
-#define GAMERULES_H
 //=========================================================
 // GameRules
 //=========================================================
-
+#pragma once
+#ifndef GAMERULES_H
+#define GAMERULES_H
 //#include "weapons.h"
 //#include "items.h"
 class CBasePlayerItem;
@@ -380,4 +380,5 @@ protected:
 };
 
 extern DLL_GLOBAL CGameRules *g_pGameRules;
-#endif
+#endif // GAMERULES_H
+

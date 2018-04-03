@@ -129,11 +129,13 @@ OBJ = \
 	$(DLL_OBJDIR)/multiplay_gamerules.o \
 	$(DLL_OBJDIR)/nihilanth.o \
 	$(DLL_OBJDIR)/nodes.o \
+	$(DLL_OBJDIR)/observer.o \
 	$(DLL_OBJDIR)/osprey.o \
 	$(DLL_OBJDIR)/pathcorner.o \
 	$(DLL_OBJDIR)/plane.o \
 	$(DLL_OBJDIR)/plats.o \
 	$(DLL_OBJDIR)/player.o \
+	$(DLL_OBJDIR)/playermonster.o \
 	$(DLL_OBJDIR)/python.o \
 	$(DLL_OBJDIR)/rat.o \
 	$(DLL_OBJDIR)/roach.o \
