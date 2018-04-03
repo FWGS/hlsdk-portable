@@ -330,7 +330,7 @@ void CShotgun::Reload( void )
 		// Add them to the clip
 		if( m_pPlayer->m_RuneFlags == RUNE_SHOTGUN || bm_shotty_mod.value )
 		{
-			int ammo = min( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType], SHOTGUN_MAX_CLIP -  m_iClip );
+			int ammo = Q_min( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType], SHOTGUN_MAX_CLIP -  m_iClip );
 			m_iClip += ammo;
 			m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] -= ammo;
 		}

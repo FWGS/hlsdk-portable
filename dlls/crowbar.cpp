@@ -399,7 +399,7 @@ void CCrowbar::SecondaryAttack()
 		if( m_pPlayer->m_RuneFlags != RUNE_CROWBAR )
 		{
 			// Nope! take away the crowbar
-			m_pPlayer->RemovePlayerItem( this );
+			m_pPlayer->RemovePlayerItem( this, TRUE );
 
 			// take item off hud
 			m_pPlayer->pev->weapons &= ~( 1 << this->m_iId );

@@ -59,7 +59,7 @@ extern int gmsgSpectator;
 extern edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer );
 extern int CountPlayers( void );
 extern void DestroyMapCycle( mapcycle_t *cycle );
-extern int ReloadMapCycleFile( char *filename, mapcycle_t *cycle );
+extern int ReloadMapCycleFile( const char *filename, mapcycle_t *cycle );
 extern void ExtractCommandString( char *s, char *szCommand );
 
 extern cvar_t	bm_guns;

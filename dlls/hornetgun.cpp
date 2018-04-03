@@ -412,7 +412,7 @@ void CHgun::FreezeRay( void )
 
 		pPlayer->pev->renderamt = 60;  // glow shell distance from entity
 
-		float freezetime = max (.6, bm_freezetime.value);
+		float freezetime = Q_max (.6, bm_freezetime.value);
 
 		// freeze the player and set the "unfreeze" time...
 		pPlayer->EnableControl(FALSE);

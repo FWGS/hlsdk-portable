@@ -1937,8 +1937,8 @@ void CBasePlayer::PreThink( void )
 	if( IsObserver() )
 	{
 		Observer_HandleButtons();
-		Observer_CheckTarget();
-		Observer_CheckProperties();
+		//Observer_CheckTarget();
+		//Observer_CheckProperties();
 		pev->impulse = 0;
 		return;
 	}
@@ -4039,7 +4039,7 @@ void CBasePlayer::UpdateClientData( void )
 			g_pGameRules->InitHUD( this );
 			m_fGameHUDInitialized = TRUE;
 
-			m_iObserverLastMode = OBS_ROAMING;
+			// m_iObserverLastMode = OBS_ROAMING;
 
 			if( g_pGameRules->IsMultiplayer() )
 			{

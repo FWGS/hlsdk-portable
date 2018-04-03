@@ -6,6 +6,7 @@ class CTripmineGrenade : public CGrenade
 {
 	void Spawn( void );
 	void Precache( void );
+	void UpdateOnRemove();
 
 	virtual int		Save( CSave &save );
 	virtual int		Restore( CRestore &restore );

@@ -1694,7 +1694,6 @@ TYPEDESCRIPTION	CEgon::m_SaveData[] =
 };
 
 IMPLEMENT_SAVERESTORE( CEgon, CBasePlayerWeapon )
-*/
 
 TYPEDESCRIPTION CHgun::m_SaveData[] =
 {
@@ -1702,6 +1701,7 @@ TYPEDESCRIPTION CHgun::m_SaveData[] =
 };
 
 IMPLEMENT_SAVERESTORE( CHgun, CBasePlayerWeapon )
+*/
 
 TYPEDESCRIPTION	CSatchel::m_SaveData[] = 
 {

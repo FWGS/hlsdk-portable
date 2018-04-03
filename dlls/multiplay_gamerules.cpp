@@ -776,7 +776,7 @@ void CHalfLifeMultiplay::PlayerKilled( CBasePlayer *pVictim, entvars_t *pKiller,
 void CHalfLifeMultiplay::DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, entvars_t *pevInflictor )
 {
 	// Work out what killed the player, and send a message to all clients about it
-	CBaseEntity::Instance( pKiller );
+	CBaseEntity *Killer = CBaseEntity::Instance( pKiller );
 
 	const char *killer_weapon_name = "world";		// by default, the player is killed by the world
 	const char *killer_weapon_name_client = "world";	// by default, the player is killed by the world
