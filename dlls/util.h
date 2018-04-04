@@ -587,7 +587,7 @@ CBasePlayer* UTIL_CastPlayer( int index );
 
 BOOL UTIL_OBB_LineTest( Vector vecSrc, Vector vecDst, Vector boxP, Vector boxE );
 BOOL UTIL_OBB_PointTest( Vector vecSrc, Vector boxP, Vector boxE );
-void UTIL_SpeakAll( char *message );
+void UTIL_SpeakAll( const char *message );
 char *UTIL_CountVotes( void );
 void UTIL_SpeakBadWeapon( void );
 char *UTIL_CountVotes( void );

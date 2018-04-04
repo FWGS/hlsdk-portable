@@ -65,7 +65,7 @@ void CBasePlayer::StartObserver( Vector vecPosition, Vector vecViewAngle )
 		m_pActiveItem->Holster( );
 
 	// ?? Let go of tanks?
-	if ( m_pTank != NULL )
+	if( m_pTank != 0 )
 	{
 	 	m_pTank->Use( this, this, USE_OFF, 0 );
 	 	m_pTank = NULL;
@@ -190,8 +190,8 @@ void CBasePlayer::Observer_FindNextPlayer( bool bReverse )
 		// Don't spec observers or invisible players or defunct players
 		if ( ((CBasePlayer*)pEnt)->IsObserver() 
 			|| (pEnt->pev->effects & EF_NODRAW) 
-			|| (STRING(pEnt->pev->netname)[0] == 0) 
-			|| (!((CBasePlayer*)pEnt)->m_bIsConnected) 
+			|| ( ( STRING( pEnt->pev->netname ) )[0] == 0 ) 
+			|| (!((CBasePlayer*)pEnt)->m_bIsConnected)
 			)
 			continue;
 
@@ -272,7 +272,7 @@ void CBasePlayer::Observer_HandleButtons()
 	m_afButtonReleased = 0;
 
 	pev->impulse = 0;
-	if ((m_hObserverTarget != NULL) && (m_hObserverTarget->IsPlayer()) && (pev->iuser1 == OBS_CHASE_FREE))
+	if ((m_hObserverTarget != 0) && (m_hObserverTarget->IsPlayer()) && (pev->iuser1 == OBS_CHASE_FREE))
 	{
 		pev->origin = m_hObserverTarget->pev->origin;
 		pev->velocity = m_hObserverTarget->pev->velocity;
@@ -304,7 +304,7 @@ void CBasePlayer::Observer_SetMode( int iMode )
 	if ( iMode == OBS_CHASE_LOCKED )
 	{
 		// If changing from Roaming, or starting observing, make sure there is a target
-		if ( m_hObserverTarget == NULL )
+		if ( m_hObserverTarget == 0 )
 			Observer_FindNextPlayer( false );
 
 		if (m_hObserverTarget)
@@ -589,25 +589,25 @@ void CBasePlayer::BMOD_Identify( void )
 			strcat(szExtra, "\nTyping! DO NOT SHOOT!");
 		}
 
-		CBasePlayer *pPlayer = (CBasePlayer *)pOther;
+		CBasePlayer *pOtherPlayer = (CBasePlayer *)pOther;
 		if (IsObserver())
 				ClientPrint( pev, HUD_PRINTCENTER, UTIL_VarArgs ("-%s-\n(%s) %i / %i%s", 
-					STRING( pPlayer->pev->netname ), 
-					g_engfuncs.pfnInfoKeyValue( g_engfuncs.pfnGetInfoKeyBuffer( pPlayer->edict() ), "model" ),
-					(int)pPlayer->pev->health, 
-					(int)pPlayer->pev->armorvalue,
+					STRING( pOtherPlayer->pev->netname ), 
+					g_engfuncs.pfnInfoKeyValue( g_engfuncs.pfnGetInfoKeyBuffer( pOtherPlayer->edict() ), "model" ),
+					(int)pOtherPlayer->pev->health, 
+					(int)pOtherPlayer->pev->armorvalue,
 					szExtra
 					) );
 		else if ( g_pGameRules->PlayerRelationship( pOther, this ) == GR_TEAMMATE )
 				ClientPrint( pev, HUD_PRINTCENTER, UTIL_VarArgs ("-%s-\n%i / %i", 
-					STRING( pPlayer->pev->netname ), 
-					(int)pPlayer->pev->health, 
-					(int)pPlayer->pev->armorvalue) 
+					STRING( pOtherPlayer->pev->netname ), 
+					(int)pOtherPlayer->pev->health, 
+					(int)pOtherPlayer->pev->armorvalue) 
 					);
 		else
 				ClientPrint( pev, HUD_PRINTCENTER, UTIL_VarArgs ("-%s-\n(%s)%s", 
-					STRING( pPlayer->pev->netname ),
-					g_engfuncs.pfnInfoKeyValue( g_engfuncs.pfnGetInfoKeyBuffer( pPlayer->edict() ), "model" ),
+					STRING( pOtherPlayer->pev->netname ),
+					g_engfuncs.pfnInfoKeyValue( g_engfuncs.pfnGetInfoKeyBuffer( pOtherPlayer->edict() ), "model" ),
 					szExtra
 					) );
 

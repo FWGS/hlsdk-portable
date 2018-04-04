@@ -60,11 +60,11 @@ void CCamPoint::Think( void )
 	// If we have no owner, our owner is not in type mode,
 	// our owner is not connected, our owner is invisible,
 	// or our owner is a defuct player, remove ourselves.
-	if (!m_pOwner 
+	if( !m_pOwner
 		|| !m_pOwner->m_bIsConnected 
 		|| !m_pOwner->m_bTypeMode
 		|| m_pOwner->pev->effects & EF_NODRAW
-		|| (STRING(m_pOwner->pev->netname)[0] == 0)
+		|| ( ( STRING( m_pOwner->pev->netname ) )[0] == 0 )
 		) {
 		// UTIL_ClientPrintAll( HUD_PRINTTALK, "<SERVER> Camera point destroyed.\n");
 		UTIL_Remove( this );

@@ -42,7 +42,7 @@ extern cvar_t fraglimit;
 // Special msg values:
 //   "SPEC" - spectator message.
 //
-void PrintMessage( CBaseEntity *pEnt, int iChannel, Vector vecColor, Vector vecTime, char *msg)
+void PrintMessage( CBaseEntity *pEnt, int iChannel, Vector vecColor, Vector vecTime, const char *msg )
 {
 	char szText[256];
 	hudtextparms_t hText = {0};

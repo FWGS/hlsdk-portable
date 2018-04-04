@@ -216,7 +216,7 @@ BOOL UTIL_OBB_PointTest(Vector vecSrc, Vector boxP, Vector boxE)
 		return TRUE;
 }
 
-void UTIL_SpeakAll( char *message )
+void UTIL_SpeakAll( const char *message )
 {
 	char text[256];
 	strcpy(text, "speak \"");
@@ -491,7 +491,7 @@ void UTIL_SayTime( void ) {
 	hour = hour > 12 ? hour - 12 : hour;
 	hour = hour == 0 ? 12 : hour;
 	int min = adjustedTime->tm_min;
-	char *ampm = "AM";
+	const char *ampm = "AM";
 	if (adjustedTime->tm_hour > 11)
 		ampm = "PM";
 

@@ -39,6 +39,6 @@
 #define BMOD_CHAN_COUNTDOWN	3
 #define BMOD_CHAN_WEAPON		4
 
-void PrintMessage( CBaseEntity *pEnt, int iChannel, Vector vecColor, Vector vecTime, char *msg);
+void PrintMessage( CBaseEntity *pEnt, int iChannel, Vector vecColor, Vector vecTime, const char *msg);
 
 #endif

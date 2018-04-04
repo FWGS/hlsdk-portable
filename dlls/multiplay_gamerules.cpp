@@ -1007,12 +1007,12 @@ void CHalfLifeMultiplay::DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, 
 
 		// BMOD Start - match kills.
 		// tag kills where killer matched weapons with victim.
-		if( bm_matchkills.value && strcmp( killer_weapon_name, "tripmine" ) && strcmp( killer_weapon_name, "snark" ) &&
+		if( ( bm_matchkills.value && strcmp( killer_weapon_name, "tripmine" ) && strcmp( killer_weapon_name, "snark" ) &&
 				( pVictim->m_pActiveItem &&
 				( (CBasePlayer *)Killer )->m_pActiveItem &&
 				!strcmp( STRING( ( (CBasePlayer *)Killer )->m_pActiveItem->pev->classname ), 
 			        STRING( pVictim->m_pActiveItem->pev->classname ) ) &&
-				( (CBasePlayer *)Killer )->m_RuneFlags == RUNE_NONE )
+				( (CBasePlayer *)Killer )->m_RuneFlags == RUNE_NONE ) )
 				|| // OR...
 				( !strcmp( killer_weapon_name, "flying_crowbar" ) &&
 				( !pVictim->m_pActiveItem ||
@@ -1041,8 +1041,8 @@ void CHalfLifeMultiplay::DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, 
 			weapon_name = STRING( pVictim->m_pActiveItem->pev->classname );
 
 			// Hack to fix name change
-			char *rpg = "rpg_rocket";
-			char *hand_grenade = "hand_grenade";
+			const char *rpg = "rpg_rocket";
+			const char *hand_grenade = "hand_grenade";
 
 			// strip the monster_* or weapon_* from the classname
 			if( strncmp( weapon_name, "weapon_", 7 ) == 0 )

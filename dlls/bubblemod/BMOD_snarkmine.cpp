@@ -50,7 +50,7 @@ enum tripmine_e {
 	TRIPMINE_HOLSTER,
 	TRIPMINE_DRAW,
 	TRIPMINE_WORLD,
-	TRIPMINE_GROUND,
+	TRIPMINE_GROUND
 };
 
 LINK_ENTITY_TO_CLASS( monster_tripsnark, CTripSnarkGrenade );
@@ -149,7 +149,7 @@ void CTripSnarkGrenade :: PowerupThink( void  )
 {
 	TraceResult tr;
 
-	if (m_hOwner == NULL)
+	if( m_hOwner == 0 )
 	{
 		// find an owner
 		edict_t *oldowner = pev->owner;
@@ -289,14 +289,14 @@ void CTripSnarkGrenade :: BeamBreakThink( void  )
 	}
 	else
 	{
-		if (m_hOwner == NULL)
+		if( m_hOwner == 0 )
 			bBlowup = 1;
-		else if (m_posOwner != m_hOwner->pev->origin)
+		else if( m_posOwner != m_hOwner->pev->origin )
 			bBlowup = 1;
-		else if (m_angleOwner != m_hOwner->pev->angles)
+		else if( m_angleOwner != m_hOwner->pev->angles )
 			bBlowup = 1;
 	}
-
+	
 	if (bBlowup)
 	{
 		// a bit of a hack, but all CGrenade code passes pev->owner along to make sure the proper player gets credit for the kill

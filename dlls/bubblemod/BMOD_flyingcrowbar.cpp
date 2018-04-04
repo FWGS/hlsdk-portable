@@ -92,7 +92,7 @@ void CFlyingCrowbar::SpinTouch( CBaseEntity *pOther )
       ClearMultiDamage( );
       pOther->TraceAttack(pev, 90, pev->velocity.Normalize(), &tr, 
                           DMG_NEVERGIB ); 
-      if (m_hOwner != NULL)
+      if( m_hOwner != 0 )
          ApplyMultiDamage( pev, m_hOwner->pev );
       else
          ApplyMultiDamage( pev, pev );

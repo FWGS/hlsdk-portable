@@ -40,7 +40,7 @@ public:
 	void	EXPORT MaterializeRandom( void );
 	virtual BOOL MyTouch( CBasePlayer *pPlayer ) { EMIT_SOUND( pPlayer->edict(), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM ); return TRUE; };
 	BOOL	IsRune( void ) { return TRUE; }
-	virtual char* RuneName ( void ) { return "Generic Rune"; }
+	virtual const char* RuneName ( void ) { return "Generic Rune"; }
 
 	BOOL	m_randomize;
 	Vector	m_vRuneColor;

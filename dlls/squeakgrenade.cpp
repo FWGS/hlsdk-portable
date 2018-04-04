@@ -230,7 +230,7 @@ void CSqueakGrenade::HuntThink( void )
 		m_hEnemy = BMOD_BestVisibleEnemy();
 	}
 
-	if( m_hEnemy!= NULL && m_hEnemy->IsPlayer() )
+	if( m_hEnemy!= 0 && m_hEnemy->IsPlayer() )
 	{
 		CBasePlayer* pPlayer = (CBasePlayer*)( (CBaseEntity *)m_hEnemy );
 		if( pPlayer->BMOD_IsTyping() )
