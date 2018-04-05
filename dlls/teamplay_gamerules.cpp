@@ -245,7 +245,7 @@ void CHalfLifeTeamplay::InitHUD( CBasePlayer *pPlayer )
 	ChangePlayerTeam( pPlayer, pPlayer->m_szTeamName, FALSE, FALSE );
 	UTIL_SayText( text, pPlayer );
 	//int clientIndex = pPlayer->entindex();
-	RecountTeams();
+	RecountTeams( TRUE );
 	// update this player with all the other players team info
 	// loop through all active players and send their team info to the new client
 	/*for( i = 1; i <= gpGlobals->maxClients; i++ )
