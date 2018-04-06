@@ -84,7 +84,7 @@ float EV_HLDM_PlayTextureSound( int idx, pmtrace_t *ptr, float *vecSrc, float *v
 	char chTextureType = CHAR_TEX_CONCRETE;
 	float fvol;
 	float fvolbar;
-	char *rgsz[4];
+	const char *rgsz[4];
 	int cnt;
 	float fattn = ATTN_NORM;
 	int entity;
@@ -495,6 +495,7 @@ void EV_FireShotGunSingle( event_args_t *args )
 	VectorCopy( args->origin, origin );
 	VectorCopy( args->angles, angles );
 	VectorCopy( args->velocity, velocity );
+	int empty = args->bparam1;
 
 	AngleVectors( angles, forward, right, up );
 
@@ -604,7 +605,6 @@ void EV_FireAxeSwing( event_args_t *args  )
 {
 	int idx;
 	vec3_t origin;
-	
 	idx = args->entindex;
 	VectorCopy( args->origin, origin );
 
@@ -675,7 +675,6 @@ void EV_PowerupCallback ( struct tempent_s *ent, float frametime, float currentt
 		dl->color.b = 255;
 	}
 }
-
 
 void EV_PlayerPowerup (event_args_t *args)
 {
@@ -817,7 +816,6 @@ void EV_FireRocket( event_args_t *args )
 {
 	int idx;
 	vec3_t origin;
-	
 	idx = args->entindex;
 	VectorCopy( args->origin, origin );
 

@@ -16,7 +16,7 @@ endif
 LOCAL_CFLAGS += -D_LINUX -DCLIENT_WEAPONS -Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf \
 	-fno-exceptions -DNO_VOICEGAMEMGR -w
 
-LOCAL_CPPFLAGS := $(LOCAL_CFLAGS) -frtti
+LOCAL_CPPFLAGS := $(LOCAL_CFLAGS)
 
 LOCAL_C_INCLUDES := $(SDL_PATH)/include \
 		    $(LOCAL_PATH)/. \

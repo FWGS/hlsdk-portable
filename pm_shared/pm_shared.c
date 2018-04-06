@@ -27,16 +27,20 @@
 #include <stdlib.h> // atoi
 #include <ctype.h>  // isspace
 
+int g_bhopcap = 1;
+
 #ifdef CLIENT_DLL
-	// Spectator Mode
-	int	iJumpSpectator;
-extern	float	vJumpOrigin[3];
-extern	float	vJumpAngles[3];
+// Spectator Mode
+int iJumpSpectator;
+extern float vJumpOrigin[3];
+extern float vJumpAngles[3];
 #endif
 
 static int pm_shared_initialized = 0;
 
+#ifdef _MSC_VER
 #pragma warning( disable : 4305 )
+#endif
 
 playermove_t *pmove = NULL;
 
@@ -87,8 +91,13 @@ playermove_t *pmove = NULL;
 
 #define PLAYER_LONGJUMP_SPEED		350 // how fast we longjump
 
+#define PLAYER_DUCKING_MULTIPLIER	0.333
+
 // double to float warning
+#ifdef _MSC_VER
 #pragma warning(disable : 4244)
+#endif
+
 #define max(a, b)  (((a) > (b)) ? (a) : (b))
 #define min(a, b)  (((a) < (b)) ? (a) : (b))
 // up / down
@@ -325,7 +334,7 @@ void PM_UpdateStepSound( void )
 	float fvol;
 	vec3_t knee;
 	vec3_t feet;
-	vec3_t center;
+	//vec3_t center;
 	float height;
 	float speed;
 	float velrun;
@@ -368,7 +377,7 @@ void PM_UpdateStepSound( void )
 	{
 		fWalking = speed < velrun;		
 
-		VectorCopy( pmove->origin, center );
+		//VectorCopy( pmove->origin, center );
 		VectorCopy( pmove->origin, knee );
 		VectorCopy( pmove->origin, feet );
 
@@ -822,7 +831,7 @@ Only used by players.  Moves along the ground when player is a MOVETYPE_WALK.
 */
 void PM_WalkMove()
 {
-	int clip;
+	//int clip;
 	int oldonground;
 	int i;
 
@@ -832,7 +841,7 @@ void PM_WalkMove()
 	vec3_t wishdir;
 	float wishspeed;
 
-	vec3_t dest, start;
+	vec3_t dest; //, start;
 	vec3_t original, originalvel;
 	vec3_t down, downvel;
 	float downdist, updist;
@@ -895,7 +904,7 @@ void PM_WalkMove()
 	dest[2] = pmove->origin[2];
 
 	// first try moving directly to the next spot
-	VectorCopy( dest, start );
+	//VectorCopy( dest, start );
 	trace = pmove->PM_PlayerTrace( pmove->origin, dest, PM_NORMAL, -1 );
 	// If we made it all the way, then copy trace end
 	//  as new player position.
@@ -918,7 +927,8 @@ void PM_WalkMove()
 	VectorCopy( pmove->velocity, originalvel ); // velocity.
 
 	// Slide move
-	clip = PM_FlyMove();
+	//clip = PM_FlyMove();
+	PM_FlyMove();
 
 	// Copy the results out
 	VectorCopy( pmove->origin, down );
@@ -943,7 +953,8 @@ void PM_WalkMove()
 	}
 
 	// slide move the rest of the way.
-	clip = PM_FlyMove();
+	//clip = PM_FlyMove();
+	PM_FlyMove();
 
 	// Now try going back down from the end point
 	//  press down the stepheight
@@ -1748,6 +1759,7 @@ void PM_AddGravity()
 	pmove->basevelocity[2] = 0;
 	PM_CheckVelocity();
 }
+
 /*
 ============
 PM_PushEntity
@@ -2022,7 +2034,8 @@ void PM_Jump( void )
 	// In the air now.
 	pmove->onground = -1;
 
-	PM_PreventMegaBunnyJumping();
+	if( g_bhopcap )
+		PM_PreventMegaBunnyJumping();
 
 	pmove->PM_PlaySound( CHAN_BODY, "player/plyrjmp8.wav", 0.5, ATTN_NORM, 0, PITCH_NORM );
 
@@ -2716,8 +2729,8 @@ void PM_Move( struct playermove_s *ppmove, int server )
 		pmove->flags &= ~FL_ONGROUND;
 	}
 
-	// In single player, reset friction after each movement to FrictionModifier Triggers work still.
-	if( !pmove->multiplayer && ( pmove->movetype == MOVETYPE_WALK ) )
+	// Reset friction after each movement to FrictionModifier Triggers work still.
+	if( pmove->movetype == MOVETYPE_WALK )
 	{
 		pmove->friction = 1.0f;
 	}

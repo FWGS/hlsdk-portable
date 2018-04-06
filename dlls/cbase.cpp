@@ -26,7 +26,7 @@ void EntvarsKeyvalue( entvars_t *pev, KeyValueData *pkvd );
 
 extern "C" void PM_Move ( struct playermove_s *ppmove, int server );
 extern "C" void PM_Init ( struct playermove_s *ppmove  );
-extern "C" char PM_FindTextureType( char *name );
+extern "C" char PM_FindTextureType( const char *name );
 
 extern Vector VecBModelOrigin( entvars_t* pevBModel );
 extern DLL_GLOBAL Vector g_vecAttackDir;
@@ -441,9 +441,16 @@ edict_t *EHANDLE::Get( void )
 
 edict_t *EHANDLE::Set( edict_t *pent )
 {
-	m_pent = pent;  
-	if( pent ) 
-		m_serialnumber = m_pent->serialnumber; 
+	if( pent )
+	{
+		m_pent = pent;
+		m_serialnumber = m_pent->serialnumber;
+	}
+	else
+	{
+		m_pent = NULL;
+		m_serialnumber = 0;
+	}
 	return pent; 
 }
 
@@ -598,7 +605,7 @@ int CBaseEntity::Restore( CRestore &restore )
 		mins = pev->mins;	// Set model is about to destroy these
 		maxs = pev->maxs;
 
-		PRECACHE_MODEL( (char *)STRING( pev->model ) );
+		PRECACHE_MODEL( STRING( pev->model ) );
 		SET_MODEL( ENT( pev ), STRING( pev->model ) );
 		UTIL_SetSize( pev, mins, maxs );	// Reset them
 	}
@@ -739,7 +746,7 @@ int CBaseEntity::DamageDecal( int bitsDamageType )
 
 // NOTE: szName must be a pointer to constant memory, e.g. "monster_class" because the entity
 // will keep a pointer to it after this call.
-CBaseEntity *CBaseEntity::Create( char *szName, const Vector &vecOrigin, const Vector &vecAngles, edict_t *pentOwner )
+CBaseEntity *CBaseEntity::Create( const char *szName, const Vector &vecOrigin, const Vector &vecAngles, edict_t *pentOwner )
 {
 	edict_t	*pent;
 	CBaseEntity *pEntity;

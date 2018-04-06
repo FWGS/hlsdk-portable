@@ -15,6 +15,9 @@
 //
 // teamplay_gamerules.h
 //
+#pragma once
+#ifndef TEAMPLAY_GAMERULES_H
+#define TEAMPLAY_GAMERULES_H
 
 #define MAX_TEAMNAME_LENGTH		16
 #define MAX_TEAMS			32
@@ -59,3 +62,4 @@ private:
 	BOOL m_teamLimit;				// This means the server set only some teams as valid
 	char m_szTeamList[TEAMPLAY_TEAMLISTLENGTH];
 };
+#endif // TEAMPLAY_GAMERULES_H

@@ -1,13 +1,13 @@
-//========= Copyright © 1996-2002, Valve LLC, All rights reserved. ============
+//========= Copyright (c) 1996-2002, Valve LLC, All rights reserved. ============
 //
 // Purpose: 
 //
 // $NoKeywords: $
 //=============================================================================
 
+#pragma once
 #if !defined( DEMOH )
 #define DEMOH
-#pragma once
 
 // Types of demo messages we can write/parse
 enum

@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2002, Valve LLC, All rights reserved. ============
+//========= Copyright (c) 1996-2002, Valve LLC, All rights reserved. ============
 //
 // Purpose: 
 //
@@ -550,10 +550,10 @@ void DLLEXPORT HUD_TempEntUpdate (
 	static int gTempEntFrame = 0;
 	int			i;
 	TEMPENTITY	*pTemp, *pnext, *pprev;
-	float		freq, gravity, gravitySlow, life, fastFreq;
+	float		/*freq,*/ gravity, gravitySlow, life, fastFreq;
 
 	// Nothing to simulate
-	if ( !*ppTempEntActive )		
+	if( !*ppTempEntActive )	
 		return;
 
 	// in order to have tents collide with players, we have to run the player prediction code so
@@ -566,7 +566,7 @@ void DLLEXPORT HUD_TempEntUpdate (
 	gEngfuncs.pEventAPI->EV_PushPMStates();
 
 	// Now add in all of the players.
-	gEngfuncs.pEventAPI->EV_SetSolidPlayers( -1 );	
+	gEngfuncs.pEventAPI->EV_SetSolidPlayers( -1 );
 
 	// !!!BUGBUG	-- This needs to be time based
 	gTempEntFrame = ( gTempEntFrame + 1 ) & 31;
@@ -588,7 +588,7 @@ void DLLEXPORT HUD_TempEntUpdate (
 	}
 
 	pprev = NULL;
-	freq = client_time * 0.01;
+	//freq = client_time * 0.01;
 	fastFreq = client_time * 5.5;
 	gravity = -frametime * cl_gravity;
 	gravitySlow = gravity * 0.5;
@@ -674,12 +674,12 @@ void DLLEXPORT HUD_TempEntUpdate (
 			}
 			else if( pTemp->flags & FTENT_SPIRAL )
 			{
-				float s, c;
+				/*float s, c;
 				s = sin( pTemp->entity.baseline.origin[2] + fastFreq );
-				c = cos( pTemp->entity.baseline.origin[2] + fastFreq );
+				c = cos( pTemp->entity.baseline.origin[2] + fastFreq );*/
 
-				pTemp->entity.origin[0] += pTemp->entity.baseline.origin[0] * frametime + 8 * sin( client_time * 20 + (int)(size_t)pTemp );
-				pTemp->entity.origin[1] += pTemp->entity.baseline.origin[1] * frametime + 4 * sin( client_time * 30 + (int)(size_t)pTemp );
+				pTemp->entity.origin[0] += pTemp->entity.baseline.origin[0] * frametime + 8 * sin( client_time * 20 + (size_t)pTemp );
+				pTemp->entity.origin[1] += pTemp->entity.baseline.origin[1] * frametime + 4 * sin( client_time * 30 + (size_t)pTemp );
 				pTemp->entity.origin[2] += pTemp->entity.baseline.origin[2] * frametime;
 			}
 			else 

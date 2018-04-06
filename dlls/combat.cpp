@@ -402,11 +402,11 @@ Activity CBaseMonster::GetSmallFlinchActivity( void )
 {
 	Activity	flinchActivity;
 	BOOL		fTriedDirection;
-	float		flDot;
+	//float		flDot;
 
 	fTriedDirection = FALSE;
 	UTIL_MakeVectors( pev->angles );
-	flDot = DotProduct( gpGlobals->v_forward, g_vecAttackDir * -1 );
+	//flDot = DotProduct( gpGlobals->v_forward, g_vecAttackDir * -1 );
 
 	switch( m_LastHitGroup )
 	{
@@ -591,7 +591,7 @@ void CGib::BounceGibTouch( CBaseEntity *pOther )
 			float volume;
 			float zvel = fabs( pev->velocity.z );
 
-			volume = 0.8 * min( 1.0, ( (float)zvel ) / 450.0 );
+			volume = 0.8 * Q_min( 1.0, ( (float)zvel ) / 450.0 );
 
 			CBreakable::MaterialSoundRandom( edict(), (Materials)m_material, volume );
 		}
@@ -769,7 +769,7 @@ int CBaseMonster::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, f
 			// enemy's last known position is somewhere down the vector that the attack came from.
 			if( pevInflictor )
 			{
-				if( m_hEnemy == NULL || pevInflictor == m_hEnemy->pev || !HasConditions( bits_COND_SEE_ENEMY ) )
+				if( m_hEnemy == 0 || pevInflictor == m_hEnemy->pev || !HasConditions( bits_COND_SEE_ENEMY ) )
 				{
 					m_vecEnemyLKP = pevInflictor->origin;
 				}
@@ -963,7 +963,8 @@ Vector CBaseEntity::FireBulletsPlayer( ULONG cShots, Vector vecSrc, Vector vecDi
 	TraceResult tr;
 	Vector vecRight = gpGlobals->v_right;
 	Vector vecUp = gpGlobals->v_up;
-	float x, y, z;
+	float x = 0.0f, y = 0.0f;
+	float z;
 
 	if( pevAttacker == NULL )
 		pevAttacker = pev;  // the default attacker is ourselves
@@ -977,7 +978,7 @@ Vector CBaseEntity::FireBulletsPlayer( ULONG cShots, Vector vecSrc, Vector vecDi
 		// get circular gaussian spread
 		x = UTIL_SharedRandomFloat( shared_rand + iShot, -0.5, 0.5 ) + UTIL_SharedRandomFloat( shared_rand + ( 1 + iShot ) , -0.5, 0.5 );
 		y = UTIL_SharedRandomFloat( shared_rand + ( 2 + iShot ), -0.5, 0.5 ) + UTIL_SharedRandomFloat( shared_rand + ( 3 + iShot ), -0.5, 0.5 );
-		z = x * x + y * y;
+		//z = x * x + y * y;
 
 		Vector vecDir = vecDirShooting +
 						x * vecSpread.x * vecRight +
@@ -1028,7 +1029,7 @@ Vector CBaseEntity::FireBulletsPlayer( ULONG cShots, Vector vecSrc, Vector vecDi
 			}
 		}
 		// make bullet trails
-		UTIL_BubbleTrail( vecSrc, tr.vecEndPos, ( flDistance * tr.flFraction ) / 64.0 );
+		UTIL_BubbleTrail( vecSrc, tr.vecEndPos, (int)( ( flDistance * tr.flFraction ) / 64.0 ) );
 	}
 	ApplyMultiDamage( pev, pevAttacker );
 

@@ -204,8 +204,8 @@ int CHudDeathNotice::MsgFunc_DeathMsg( const char *pszName, int iSize, void *pbu
 	gHUD.m_Scoreboard.GetAllPlayersInfo();
 
 	// Get the Killer's name
-	char *killer_name = g_PlayerInfoList[killer].name;
-	char *victim_name = g_PlayerInfoList[victim].name;
+	const char *killer_name = g_PlayerInfoList[killer].name;
+	const char *victim_name = g_PlayerInfoList[victim].name;
 	if( !killer_name )
 	{
 		killer_name = "";
@@ -218,7 +218,7 @@ int CHudDeathNotice::MsgFunc_DeathMsg( const char *pszName, int iSize, void *pbu
 		rgDeathNoticeList[i].szKiller[MAX_PLAYER_NAME_LENGTH - 1] = 0;
 	}
 
-	if ( !victim_name )
+	if( !victim_name )
 	{
 		victim_name = "";
 		rgDeathNoticeList[i].szVictim[0] = 0;
@@ -274,13 +274,6 @@ int CHudDeathNotice::MsgFunc_DeathMsg( const char *pszName, int iSize, void *pbu
 	if( *killedwith && (*killedwith > 13 ) && strcmp( killedwith, "d_world" ) && !rgDeathNoticeList[i].iTeamKill )
 	{
 		ConsolePrint( " with " );
-
-		// replace the code names with the 'real' names
-		if( !strcmp( killedwith + 2, "egon" ) )
-			strcpy( killedwith, "d_gluon gun" );
-		if( !strcmp( killedwith + 2, "gauss" ) )
-			strcpy( killedwith, "d_tau cannon" );
-
 		ConsolePrint( killedwith + 2 ); // skip over the "d_" part
 	}
 

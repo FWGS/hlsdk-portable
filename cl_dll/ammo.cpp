@@ -308,6 +308,9 @@ void CHudAmmo::Reset( void )
 	gHR.Reset();
 
 	//VidInit();
+	wrect_t nullrc = {0,};
+	SetCrosshair( 0, nullrc, 0, 0, 0 ); // reset crosshair
+	m_pWeapon = NULL; // reset last weapon
 }
 
 int CHudAmmo::VidInit( void )
@@ -530,7 +533,7 @@ int CHudAmmo::MsgFunc_HideWeapon( const char *pszName, int iSize, void *pbuf )
 
 	if( gHUD.m_iHideHUDDisplay & ( HIDEHUD_WEAPONS | HIDEHUD_ALL ) )
 	{
-		static wrect_t nullrc;
+		wrect_t nullrc = {0,};
 		gpActiveSel = NULL;
 		SetCrosshair( 0, nullrc, 0, 0, 0 );
 	}
@@ -545,7 +548,7 @@ int CHudAmmo::MsgFunc_HideWeapon( const char *pszName, int iSize, void *pbuf )
 //
 int CHudAmmo::MsgFunc_CurWeapon( const char *pszName, int iSize, void *pbuf )
 {
-	static wrect_t nullrc;
+	wrect_t nullrc = {0,};
 	int fOnTarget = FALSE;
 
 	BEGIN_READ( pbuf, iSize );
@@ -563,6 +566,8 @@ int CHudAmmo::MsgFunc_CurWeapon( const char *pszName, int iSize, void *pbuf )
 	if( iId < 1 )
 	{
 		SetCrosshair( 0, nullrc, 0, 0, 0 );
+		// Clear out the weapon so we don't keep drawing the last active weapon's ammo. - Solokiller
+		m_pWeapon = 0;
 		return 0;
 	}
 

@@ -3,14 +3,9 @@
 #include "cvardef.h"
 #include "kbutton.h"
 #include "keydefs.h"
-cvar_t		*sensitivity;
-cvar_t		*in_joystick;
-#define	PITCH	0
-#define	YAW		1
-#define	ROLL	2 
-
-extern "C"  void DLLEXPORT IN_ClientMoveEvent( float forwardmove, float sidemove );
-extern "C" void DLLEXPORT IN_ClientLookEvent( float relyaw, float relpitch );
+#include "input_mouse.h"
+extern cvar_t		*sensitivity;
+extern cvar_t		*in_joystick;
 
 extern kbutton_t	in_strafe;
 extern kbutton_t	in_mlook;
@@ -37,12 +32,6 @@ extern cvar_t	*cl_movespeedkey;
 cvar_t	*cl_laddermode;
 
 
-float ac_forwardmove;
-float ac_sidemove;
-int ac_movecount;
-float rel_yaw;
-float rel_pitch;
-
 #define F 1U<<0	// Forward
 #define B 1U<<1	// Back
 #define L 1U<<2	// Left
@@ -55,7 +44,7 @@ float rel_pitch;
 #define IMPULSE_UP		4
 
 int CL_IsDead( void );
-Vector dead_viewangles(0, 0, 0);
+extern Vector dead_viewangles;
 
 void IN_ToggleButtons( float forwardmove, float sidemove )
 {
@@ -135,7 +124,7 @@ void IN_ToggleButtons( float forwardmove, float sidemove )
 	}
 }
 
-void IN_ClientMoveEvent( float forwardmove, float sidemove )
+void FWGSInput::IN_ClientMoveEvent( float forwardmove, float sidemove )
 {
 	//gEngfuncs.Con_Printf("IN_MoveEvent\n");
 
@@ -144,14 +133,14 @@ void IN_ClientMoveEvent( float forwardmove, float sidemove )
 	ac_movecount++;
 }
 
-void IN_ClientLookEvent( float relyaw, float relpitch )
+void FWGSInput::IN_ClientLookEvent( float relyaw, float relpitch )
 {
 	rel_yaw += relyaw;
 	rel_pitch += relpitch;
 }
 
 // Rotate camera and add move values to usercmd
-void IN_Move( float frametime, usercmd_t *cmd )
+void FWGSInput::IN_Move( float frametime, usercmd_t *cmd )
 {
 	Vector viewangles;
 	bool fLadder = false;
@@ -235,7 +224,7 @@ void IN_Move( float frametime, usercmd_t *cmd )
 	ac_movecount = 0;
 }
 
-extern "C" void DLLEXPORT IN_MouseEvent( int mstate )
+void FWGSInput::IN_MouseEvent( int mstate )
 {
 	static int mouse_oldbuttonstate;
 	// perform button actions
@@ -257,37 +246,37 @@ extern "C" void DLLEXPORT IN_MouseEvent( int mstate )
 
 // Stubs
 
-extern "C" void DLLEXPORT IN_ClearStates( void )
+void FWGSInput::IN_ClearStates( void )
 {
 	//gEngfuncs.Con_Printf( "IN_ClearStates\n" );
 }
 
-extern "C" void DLLEXPORT IN_ActivateMouse( void )
+void FWGSInput::IN_ActivateMouse( void )
 {
 	//gEngfuncs.Con_Printf( "IN_ActivateMouse\n" );
 }
 
-extern "C" void DLLEXPORT IN_DeactivateMouse( void )
+void FWGSInput::IN_DeactivateMouse( void )
 {
 	//gEngfuncs.Con_Printf( "IN_DeactivateMouse\n" );
 }
 
-extern "C" void DLLEXPORT IN_Accumulate( void )
+void FWGSInput::IN_Accumulate( void )
 {
 	//gEngfuncs.Con_Printf( "IN_Accumulate\n" );
 }
 
-void IN_Commands( void )
+void FWGSInput::IN_Commands( void )
 {
 	//gEngfuncs.Con_Printf( "IN_Commands\n" );
 }
 
-void IN_Shutdown( void )
+void FWGSInput::IN_Shutdown( void )
 {
 }
 
 // Register cvars and reset data
-void IN_Init( void )
+void FWGSInput::IN_Init( void )
 {
 	sensitivity = gEngfuncs.pfnRegisterVariable( "sensitivity", "3", FCVAR_ARCHIVE );
 	in_joystick = gEngfuncs.pfnRegisterVariable( "joystick", "0", FCVAR_ARCHIVE );

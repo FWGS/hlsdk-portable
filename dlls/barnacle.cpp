@@ -170,7 +170,7 @@ void CBarnacle::BarnacleThink( void )
 #endif
 	pev->nextthink = gpGlobals->time + 0.1;
 
-	if( m_hEnemy != NULL )
+	if( m_hEnemy != 0 )
 	{
 		// barnacle has prey.
 		if( !m_hEnemy->IsAlive() )
@@ -183,7 +183,7 @@ void CBarnacle::BarnacleThink( void )
 
 		if( m_fLiftingPrey )
 		{
-			if( m_hEnemy != NULL && m_hEnemy->pev->deadflag != DEAD_NO )
+			if( m_hEnemy != 0 && m_hEnemy->pev->deadflag != DEAD_NO )
 			{
 				// crap, someone killed the prey on the way up.
 				m_hEnemy = NULL;
@@ -352,7 +352,7 @@ void CBarnacle::Killed( entvars_t *pevAttacker, int iGib )
 	pev->solid = SOLID_NOT;
 	pev->takedamage = DAMAGE_NO;
 
-	if( m_hEnemy != NULL )
+	if( m_hEnemy != 0 )
 	{
 		pVictim = m_hEnemy->MyMonsterPointer();
 

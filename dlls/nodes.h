@@ -15,7 +15,7 @@
 //=========================================================
 // nodes.h
 //=========================================================
-
+#pragma once
 #ifndef	NODES_H
 #define	NODES_H
 #define NO_NODE			-1
@@ -40,8 +40,8 @@ public:
 	void	InitGraph( void );
 	int		AllocNodes ( void );
 	
-	int		CheckNODFile(char *szMapName);
-	int		FLoadGraph(char *szMapName);
+	int		CheckNODFile(const char *szMapName);
+	int		FLoadGraph(const char *szMapName);
 	int		FSetGraphPointers(void);
 	void	ShowNodeConnections ( int iNode );
 	int		FindNearestNode ( const Vector &vecOrigin, CBaseEntity *pEntity );
@@ -51,4 +51,4 @@ public:
 
 extern CGraph WorldGraph;
 
-#endif	// NODES_H
+#endif // NODES_H

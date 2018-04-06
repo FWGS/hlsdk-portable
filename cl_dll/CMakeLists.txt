@@ -25,18 +25,31 @@ project (CLDLL)
 
 set (CLDLL_LIBRARY client)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-write-strings -DLINUX -D_LINUX -Dstricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp -DCLIENT_WEAPONS -DCLIENT_DLL -w")
-set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS}")
+add_definitions(-DCLIENT_WEAPONS -DCLIENT_DLL)
 
-set (CLDLL_SOURCES 
+if(NOT MSVC)
+	add_compile_options(-fno-exceptions) # GCC/Clang flag
+	add_compile_options(-Wno-write-strings) # GCC/Clang flag
+	add_definitions(-D_LINUX -DLINUX) # It seems enough for all non-Win32 systems
+	add_definitions(-Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf -D_vsnprintf=vsnprintf )
+else()
+	add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_DEPRECATE)
+endif()
+
+if (GOLDSOURCE_SUPPORT)
+	add_definitions(-DGOLDSOURCE_SUPPORT)
+endif()
+
+
+set (CLDLL_SOURCES
 	dmc/DMC_Teleporters.cpp
-	ev_hldm.cpp
-	../dlls/dmc/quake_gun.cpp
-	../dlls/dmc/quake_weapons_all.cpp
-	quake/quake_baseentity.cpp
-	quake/quake_events.cpp
-	quake/quake_objects.cpp
-	quake/quake_weapons.cpp
+        ev_hldm.cpp
+        ../dlls/dmc/quake_gun.cpp
+        ../dlls/dmc/quake_weapons_all.cpp
+        quake/quake_baseentity.cpp
+        quake/quake_events.cpp
+        quake/quake_objects.cpp
+        quake/quake_weapons.cpp
 	ammo.cpp
 	ammo_secondary.cpp
 	ammohistory.cpp
@@ -59,7 +72,9 @@ set (CLDLL_SOURCES
 	hud_update.cpp
 	in_camera.cpp
 	input.cpp
-#SRCS+=./inputw32.cpp
+	input_goldsource.cpp
+	input_mouse.cpp
+	input_xash3d.cpp
 	menu.cpp
 	message.cpp
 	overview.cpp
@@ -77,10 +92,9 @@ set (CLDLL_SOURCES
 	tri.cpp
 	util.cpp
 	view.cpp
-	input_xash3d.cpp
 	scoreboard.cpp
 	MOTD.cpp)
-include_directories (. hl/ ../dlls ../dlls/wpn_shared ../common ../engine ../pm_shared ../game_shared ../public dmc ../dlls/dmc ../dlls/dmc .. ../dlls/aghl )
+include_directories (. hl/ ../dlls ../dlls/wpn_shared ../common ../engine ../pm_shared ../game_shared ../public dmc ../dlls/dmc ../dlls/dmc .. ../dlls/aghl ../utils/false_vgui/include )
 
 if(USE_VOICEMGR)
 	#set(CLDLL_SOURCES
@@ -90,7 +104,26 @@ if(USE_VOICEMGR)
 endif()
 
 add_library (${CLDLL_LIBRARY} SHARED ${CLDLL_SOURCES})
+if (GOLDSOURCE_SUPPORT)
+	target_link_libraries( ${CLDLL_LIBRARY} ${CMAKE_DL_LIBS} )
+endif()
 
-set_target_properties (${CLDLL_SHARED} PROPERTIES
+set_target_properties (${CLDLL_LIBRARY} PROPERTIES
 	POSITION_INDEPENDENT_CODE 1)
 
+if(APPLE OR WIN32 OR ${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+	set(CLDLL_NAME "client")
+	if(64BIT)
+		set(CLDLL_NAME "client64")
+	endif()
+
+	set_target_properties(${CLDLL_LIBRARY} PROPERTIES
+		OUTPUT_NAME ${CLDLL_NAME}
+		PREFIX "")
+endif()
+
+install( TARGETS ${CLDLL_LIBRARY}
+	DESTINATION "${GAMEDIR}/${CLIENT_INSTALL_DIR}/"
+	PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+	    GROUP_READ GROUP_EXECUTE
+		WORLD_READ WORLD_EXECUTE )

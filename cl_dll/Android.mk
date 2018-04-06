@@ -13,7 +13,6 @@ LOCAL_MODULE := client
 #else
 APP_PLATFORM := android-8
 #endif
-LOCAL_CONLYFLAGS += -std=c99
 
 include $(XASH3D_CONFIG)
 
@@ -76,6 +75,8 @@ SRCS+=./hud_spectator.cpp
 SRCS+=./hud_update.cpp
 SRCS+=./in_camera.cpp
 SRCS+=./input.cpp
+SRCS+=./input_goldsource.cpp
+SRCS+=./input_mouse.cpp
 #SRCS+=./inputw32.cpp
 SRCS+=./menu.cpp
 SRCS+=./message.cpp
@@ -97,8 +98,8 @@ SRCS+=./view.cpp
 SRCS+=./input_xash3d.cpp
 SRCS+=./scoreboard.cpp
 SRCS+=./MOTD.cpp
-INCLUDES =  -I../common -I. -I../game_shared -I../pm_shared -I../engine -I../dlls
-DEFINES = -Wno-write-strings -DLINUX -D_LINUX -Dstricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp -DCLIENT_WEAPONS -DCLIENT_DLL -w
+INCLUDES =  -I../common -I. -I../game_shared -I../pm_shared -I../engine -I../dlls -I../utils/false_vgui/include
+DEFINES = -Wno-write-strings -DLINUX -D_LINUX -Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -DCLIENT_WEAPONS -DCLIENT_DLL -w -D_snprintf=snprintf
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/. \
 		 $(LOCAL_PATH)/../common \
@@ -109,9 +110,16 @@ LOCAL_C_INCLUDES := $(LOCAL_PATH)/. \
 		 $(LOCAL_PATH)/../dlls/aghl \
 		 $(LOCAL_PATH)/../dlls/dmc \
 		 $(LOCAL_PATH)/.. \
-		 $(LOCAL_PATH)/dmc
-
+		 $(LOCAL_PATH)/dmc \
+		 $(LOCAL_PATH)/../utils/false_vgui/include
 LOCAL_CFLAGS += $(DEFINES) $(INCLUDES)
+
+ifeq ($(GOLDSOURCE_SUPPORT),1)
+	DEFINES += -DGOLDSOURCE_SUPPORT
+	ifeq ($(shell uname -s),Linux)
+		LOCAL_LDLIBS += -ldl
+	endif
+endif
 
 LOCAL_SRC_FILES := $(SRCS) $(SRCS_C)
 

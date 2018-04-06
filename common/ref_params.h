@@ -12,7 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
-
+#pragma once
 #ifndef REF_PARAMS_H
 #define REF_PARAMS_H
 

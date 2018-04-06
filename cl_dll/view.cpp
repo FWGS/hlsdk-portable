@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2002, Valve LLC, All rights reserved. ============
+//========= Copyright (c) 1996-2002, Valve LLC, All rights reserved. ============
 //
 // Purpose: 
 //
@@ -77,7 +77,7 @@ extern Vector   dead_viewangles;
 vec3_t v_origin, v_angles, v_cl_angles, v_sim_org, v_lastAngles;
 float v_frametime, v_lastDistance;	
 
-vec3_t ev_punchangle;
+vec3_t g_ev_punchangle;
 
 cvar_t	*scr_ofsx;
 cvar_t	*scr_ofsy;
@@ -341,7 +341,7 @@ V_CalcIntermissionRefdef
 */
 void V_CalcIntermissionRefdef( struct ref_params_s *pparams )
 {
-	cl_entity_t *ent, *view;
+	cl_entity_t /**ent,*/ *view;
 	float old;
 
 	// don't allow cheats in multiplayer
@@ -353,7 +353,7 @@ void V_CalcIntermissionRefdef( struct ref_params_s *pparams )
 	}
 
 	// ent is the player model ( visible when out of body )
-	ent = gEngfuncs.GetLocalPlayer();
+	//ent = gEngfuncs.GetLocalPlayer();
 
 	// view is the weapon model (only visible from inside body )
 	view = gEngfuncs.GetViewModel();
@@ -542,7 +542,7 @@ void V_CalcNormalRefdef( struct ref_params_s *pparams )
 	V_AddIdle( pparams );
 
 	// offsets
-	if ( pparams->health <= 0 )
+	if( pparams->health <= 0 )
 	{
 		VectorCopy( dead_viewangles, angles );
 	}
@@ -637,9 +637,9 @@ void V_CalcNormalRefdef( struct ref_params_s *pparams )
 	VectorAdd( pparams->viewangles, pparams->punchangle, pparams->viewangles );
 
 	// Include client side punch, too
-	VectorAdd( pparams->viewangles, (float *)&ev_punchangle, pparams->viewangles );
+	VectorAdd( pparams->viewangles, (float *)&g_ev_punchangle, pparams->viewangles );
 
-	V_DropPunchAngle( pparams->frametime, (float *)&ev_punchangle );
+	V_DropPunchAngle( pparams->frametime, (float *)&g_ev_punchangle );
 
 	// smooth out stair step ups
 #if 1
@@ -1146,7 +1146,7 @@ void V_GetMapChasePosition( int target, float *cl_angles, float *origin, float *
 
 int V_FindViewModelByWeaponModel( int weaponindex )
 {
-	static char *modelmap[][2] =
+	static const char *modelmap[][2] =
 	{
 		{ "models/p_crossbow.mdl",	"models/v_crossbow.mdl" },
 		{ "models/p_crowbar.mdl",	"models/v_crowbar.mdl" },
@@ -1160,7 +1160,7 @@ int V_FindViewModelByWeaponModel( int weaponindex )
 		{ NULL, NULL }
 	};
 
-	struct model_s * weaponModel = IEngineStudio.GetModelByIndex( weaponindex );
+	struct model_s *weaponModel = IEngineStudio.GetModelByIndex( weaponindex );
 
 	if( weaponModel )
 	{
@@ -1546,7 +1546,7 @@ Client side punch effect
 */
 void V_PunchAxis( int axis, float punch )
 {
-	ev_punchangle[axis] = punch;
+	g_ev_punchangle[axis] = punch;
 }
 
 /*

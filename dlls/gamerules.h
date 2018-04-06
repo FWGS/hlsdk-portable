@@ -15,11 +15,10 @@
 //=========================================================
 // GameRules
 //=========================================================
-
+#pragma once
+#ifndef GAMERULES_H
+#define GAMERULES_H
 //++ BulliT
-#if !defined(_GAMERULES_H_)
-#define _GAMERULES_H_
-
 #define NORMAL	3
 #define ARENA	4
 #define LMS	5
@@ -387,6 +386,5 @@ protected:
 
 extern DLL_GLOBAL CGameRules *g_pGameRules;
 
-//++ BulliT
-#endif //_GAMERULES_H_
-//-- Martin Webrant
+#endif // GAMERULES_H
+

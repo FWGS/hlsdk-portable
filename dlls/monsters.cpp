@@ -62,14 +62,14 @@ int CBaseMonster :: CheckEnemy ( CBaseEntity *pEnemy ) { return 0; }
 void CBaseMonster :: PushEnemy( CBaseEntity *pEnemy, Vector &vecLastKnownPos ) { }
 BOOL CBaseMonster :: PopEnemy( ) { return FALSE; }
 void CBaseMonster :: SetActivity ( Activity NewActivity ) { }
-void CBaseMonster :: SetSequenceByName ( char *szSequence ) { }
+void CBaseMonster :: SetSequenceByName ( const char *szSequence ) { }
 int CBaseMonster :: CheckLocalMove ( const Vector &vecStart, const Vector &vecEnd, CBaseEntity *pTarget, float *pflDist ) { return 0; }
 float CBaseMonster :: OpenDoorAndWait( entvars_t *pevDoor ) { return 0.0; }
 void CBaseMonster :: AdvanceRoute ( float distance ) { }
 int CBaseMonster :: RouteClassify( int iMoveFlag ) { return 0; }
 BOOL CBaseMonster :: BuildRoute ( const Vector &vecGoal, int iMoveFlag, CBaseEntity *pTarget ) { return FALSE; }
 void CBaseMonster :: InsertWaypoint ( Vector vecLocation, int afMoveFlags ) { }
-BOOL CBaseMonster :: FTriangulate ( const Vector &vecStart , const Vector &vecEnd, float flDist, CBaseEntity *pTargetEnt, Vector *pApex ) { return FALSE; }
+BOOL CBaseMonster :: FTriangulate ( const Vector &vecStart, const Vector &vecEnd, float flDist, CBaseEntity *pTargetEnt, Vector *pApex ) { return FALSE; }
 void CBaseMonster :: Move ( float flInterval ) { }
 BOOL CBaseMonster:: ShouldAdvanceRoute( float flWaypointDist ) { return FALSE; }
 void CBaseMonster::MoveExecute( CBaseEntity *pTargetEnt, const Vector &vecDir, float flInterval ) { }
@@ -113,7 +113,7 @@ void CBaseMonster :: MonsterInitDead( void ) { }
 BOOL CBaseMonster :: BBoxFlat ( void ) { return TRUE; }
 BOOL CBaseMonster :: GetEnemy ( void ) { return FALSE; }
 void CBaseMonster :: TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType) { }
-CBaseEntity* CBaseMonster :: DropItem ( char *pszItemName, const Vector &vecPos, const Vector &vecAng ) { return NULL; }
+CBaseEntity* CBaseMonster :: DropItem ( const char *pszItemName, const Vector &vecPos, const Vector &vecAng ) { return NULL; }
 BOOL CBaseMonster :: ShouldFadeOnDeath( void ) { return FALSE; }
 void CBaseMonster::FadeMonster( void ) { }
 BOOL CBaseMonster :: HasHumanGibs( void ) { return TRUE; }
