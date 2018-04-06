@@ -448,7 +448,7 @@ BOOL CQuakeGun::Deploy( )
 	return TRUE;
 }
 
-int HUD_GetModelIndex( char *modelname )
+int HUD_GetModelIndex( const char *modelname )
 {
 	int retval = 0;
 	gEngfuncs.CL_LoadModel( modelname, &retval );

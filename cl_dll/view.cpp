@@ -1373,7 +1373,6 @@ void V_CalcSpectatorRefdef( struct ref_params_s *pparams )
 			if( i < ORIGIN_MASK &&  ViewInterp.OriginTime[foundidx & ORIGIN_MASK] != 0.0 )
 			{
 				// Interpolate
-				vec3_t delta;
 				double frac;
 				double dt;
 				vec3_t neworg;

@@ -716,13 +716,11 @@ void EV_FireLightning( event_args_t *args )
 	int idx;
 	vec3_t origin, endorigin;
 	vec3_t angles;
-	vec3_t vecEnd;
 	vec3_t up, right, forward;
 	int iShutDown;
 	
 	cl_entity_t *player;
 	
-	pmtrace_t tr;
 	int modelIndex;
 
 	bool bSound = false;
@@ -750,7 +748,7 @@ void EV_FireLightning( event_args_t *args )
 
 		V_PunchAxis( 0, Q_SMALL_PUNCHANGLE_KICK );
 
-		cl_entity_t *player = gEngfuncs.GetViewModel();
+		player = gEngfuncs.GetViewModel();
 		origin = player->attachment[0];
 	}
 	else
@@ -767,7 +765,7 @@ void EV_FireLightning( event_args_t *args )
 
 	if ( iShutDown == 0 && EV_IsLocal( idx ) && pBeam == NULL )
 	{
-		vec3_t vecSrc, vecEnd, origin, angles, forward, right, up;
+		vec3_t vecSrc, vecEnd;
 		pmtrace_t tr;
 
 		cl_entity_t *pl = gEngfuncs.GetEntityByIndex( idx );

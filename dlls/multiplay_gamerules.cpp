@@ -47,7 +47,7 @@ bool g_bHaveMOTD;
 #define WEAPON_RESPAWN_TIME	20
 #define AMMO_RESPAWN_TIME	20
 
-char *g_szDeathType;
+const char *g_szDeathType;
 float g_flIntermissionStartTime = 0;
 
 #ifndef NO_VOICEGAMEMGR

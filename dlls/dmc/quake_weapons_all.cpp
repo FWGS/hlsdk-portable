@@ -132,9 +132,9 @@ void CBasePlayer::W_SetCurrentAmmo( int sendanim /* = 1 */ )
 {
 	m_iQuakeItems &= ~(IT_SHELLS | IT_NAILS | IT_ROCKETS | IT_CELLS);
 	int	iszViewModel = 0;
-	char *viewmodel = "";
+	const char *viewmodel = "";
 	int iszWeaponModel = 0;
-	char *szAnimExt;
+	const char *szAnimExt;
 	
 	// Find out what weapon the player's using
 	if (m_iQuakeWeapon == IT_AXE)
@@ -223,7 +223,8 @@ void CBasePlayer::W_SetCurrentAmmo( int sendanim /* = 1 */ )
 #else
 	{
 
-		int HUD_GetModelIndex( char *modelname );
+extern int HUD_GetModelIndex( const char *modelname );
+
 		pev->viewmodel = HUD_GetModelIndex( viewmodel );
 		
 		cl_entity_t *view;

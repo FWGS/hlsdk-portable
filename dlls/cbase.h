@@ -783,7 +783,7 @@ public:
 };
 
 // QUAKECLASSIC
-extern char *g_szDeathType;
+extern const char *g_szDeathType;
 
 //++ BulliT
 #endif //_CBASE_H_

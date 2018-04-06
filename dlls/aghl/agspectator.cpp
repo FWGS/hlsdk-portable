@@ -94,7 +94,7 @@ void CBasePlayer::Spectate_Start()
   
   EnableControl(TRUE);
   
-  if ( m_pTank != NULL )
+  if ( m_pTank != 0 )
   {
     m_pTank->Use( this, this, USE_OFF, 0 );
     m_pTank = NULL;
