@@ -218,7 +218,7 @@ void CBasePlayer::W_SetCurrentAmmo( int sendanim /* = 1 */ )
 	pev->viewmodel = iszViewModel;
 
 	pev->weaponmodel = iszWeaponModel;
-	strcpy( m_szAnimExtention, szAnimExt );
+	m_pszAnimExtention = szAnimExt;
 
 #else
 	{

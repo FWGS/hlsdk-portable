@@ -832,9 +832,9 @@ void CItemAmmo::Spawn( void )
 void CItemAmmo::Precache( void )
 {
 	if (pev->spawnflags & BIG_AMMOBOX)
-		PRECACHE_MODEL( (char*)STRING(m_isLargeBox) );
+		PRECACHE_MODEL( STRING(m_isLargeBox) );
 	else
-		PRECACHE_MODEL( (char*)STRING(m_isSmallBox) );
+		PRECACHE_MODEL( STRING(m_isSmallBox) );
 }
 
 BOOL CItemAmmo::MyTouch( CBasePlayer *pPlayer )

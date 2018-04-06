@@ -823,7 +823,7 @@ void CBaseDoor::Blocked( CBaseEntity *pOther )
 	if( m_fNextSoundPlay <= gpGlobals->time )
 	{
 		m_fNextSoundPlay = gpGlobals->time + 0.3;
-		STOP_SOUND( ENT( pev ), CHAN_STATIC, (char*)STRING( pev->noiseMoving ) );
+		STOP_SOUND( ENT( pev ), CHAN_STATIC, STRING( pev->noiseMoving ) );
 	}
 
 	// Block all door pieces with the same targetname here.

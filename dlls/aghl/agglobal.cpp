@@ -143,18 +143,6 @@ void AgResetMap()
     UTIL_Remove(pEntity);
   
   pEntity = NULL;	
-  while ((pEntity = UTIL_FindEntityByClassname( pEntity, "monster_satchel" )) != NULL)
-    UTIL_Remove(pEntity);
-  
-  pEntity = NULL;	
-  while ((pEntity = UTIL_FindEntityByClassname( pEntity, "monster_tripmine" )) != NULL)
-    UTIL_Remove(pEntity);
-
-  pEntity = NULL;	
-  while ((pEntity = UTIL_FindEntityByClassname( pEntity, "monster_snark" )) != NULL)
-    UTIL_Remove(pEntity);
-  
-  pEntity = NULL;	
   while ((pEntity = UTIL_FindEntityByClassname( pEntity, "beam" )) != NULL)
     UTIL_Remove(pEntity);
 

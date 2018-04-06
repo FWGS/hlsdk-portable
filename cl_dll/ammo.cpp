@@ -802,7 +802,7 @@ int CHudAmmo::Draw( float flTime )
 	int iCrossX;
 	int iCrossY;
 	int iCrossLength;
-	char *chCrossHair = "+"; // Heh
+	const char *chCrossHair = "+"; // Heh
 
 	//if( !( gHUD.m_iWeaponBits & ( 1 << ( WEAPON_SUIT ) ) ) )
 	//	return 1;
@@ -845,7 +845,7 @@ int CHudAmmo::Draw( float flTime )
 	y = ScreenHeight - gHUD.m_iFontHeight - gHUD.m_iFontHeight / 2;
 
 	/******************* DRAW CROSSHAIR *********************/
-	iCrossLength = gHUD.m_scrinfo.charWidths[*chCrossHair];
+	iCrossLength = gHUD.m_scrinfo.charWidths[(unsigned char)*chCrossHair];
 	iCrossY = ScreenHeight / 2 - gHUD.m_scrinfo.iCharHeight / 2;
 	iCrossX = ScreenWidth / 2 - iCrossLength / 2;
 

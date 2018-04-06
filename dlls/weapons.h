@@ -294,8 +294,8 @@ public:
 	virtual int AddWeapon( void ) { ExtractAmmo( this ); return TRUE; };	// Return TRUE if you want to add yourself to the player
 
 	// generic "shared" ammo handlers
-	BOOL AddPrimaryAmmo( int iCount, char *szName, int iMaxClip, int iMaxCarry );
-	BOOL AddSecondaryAmmo( int iCount, char *szName, int iMaxCarry );
+	BOOL AddPrimaryAmmo( int iCount, const char *szName, int iMaxClip, int iMaxCarry );
+	BOOL AddSecondaryAmmo( int iCount, const char *szName, int iMaxCarry );
 
 	virtual void UpdateItemInfo( void ) {};	// updates HUD state
 

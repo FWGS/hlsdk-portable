@@ -87,7 +87,7 @@ CHalfLifeMultiplay::CHalfLifeMultiplay()
 #endif
 	int length;
 
-	char *pFileList = (char*)LOAD_FILE_FOR_ME( "motd.txt", &length );
+	const char *pFileList = (const char*)LOAD_FILE_FOR_ME( "motd.txt", &length );
 
 	if( pFileList )
 		g_bHaveMOTD = true;

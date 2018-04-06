@@ -794,7 +794,7 @@ void CBasePlayerWeapon::SendWeaponAnim( int iAnim, int skiplocal )
 	MESSAGE_END();
 }
 
-BOOL CBasePlayerWeapon::AddPrimaryAmmo( int iCount, char *szName, int iMaxClip, int iMaxCarry )
+BOOL CBasePlayerWeapon::AddPrimaryAmmo( int iCount, const char *szName, int iMaxClip, int iMaxCarry )
 {
 	int iIdAmmo;
 
@@ -831,7 +831,7 @@ BOOL CBasePlayerWeapon::AddPrimaryAmmo( int iCount, char *szName, int iMaxClip, 
 	return iIdAmmo > 0 ? TRUE : FALSE;
 }
 
-BOOL CBasePlayerWeapon::AddSecondaryAmmo( int iCount, char *szName, int iMax )
+BOOL CBasePlayerWeapon::AddSecondaryAmmo( int iCount, const char *szName, int iMax )
 {
 	int iIdAmmo;
 
@@ -906,7 +906,7 @@ BOOL CBasePlayerWeapon::DefaultDeploy( const char *szViewModel, const char *szWe
 
 	m_pPlayer->pev->viewmodel = MAKE_STRING( szViewModel );
 	m_pPlayer->pev->weaponmodel = MAKE_STRING( szWeaponModel );
-	strcpy( m_pPlayer->m_szAnimExtention, szAnimExt );
+	m_pPlayer->m_pszAnimExtention = szAnimExt;
 	SendWeaponAnim( iAnim, skiplocal );
 
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
@@ -1056,13 +1056,13 @@ int CBasePlayerWeapon::ExtractAmmo( CBasePlayerWeapon *pWeapon )
 	{
 		// blindly call with m_iDefaultAmmo. It's either going to be a value or zero. If it is zero,
 		// we only get the ammo in the weapon's clip, which is what we want. 
-		iReturn = pWeapon->AddPrimaryAmmo( m_iDefaultAmmo, (char *)pszAmmo1(), iMaxClip(), iMaxAmmo1() );
+		iReturn = pWeapon->AddPrimaryAmmo( m_iDefaultAmmo, pszAmmo1(), iMaxClip(), iMaxAmmo1() );
 		m_iDefaultAmmo = 0;
 	}
 
 	if( pszAmmo2() != NULL )
 	{
-		iReturn = pWeapon->AddSecondaryAmmo( 0, (char *)pszAmmo2(), iMaxAmmo2() );
+		iReturn = pWeapon->AddSecondaryAmmo( 0, pszAmmo2(), iMaxAmmo2() );
 	}
 
 	return iReturn;
@@ -1084,7 +1084,7 @@ int CBasePlayerWeapon::ExtractClipAmmo( CBasePlayerWeapon *pWeapon )
 		iAmmo = m_iClip;
 	}
 
-	return pWeapon->m_pPlayer->GiveAmmo( iAmmo, (char *)pszAmmo1(), iMaxAmmo1() ); // , &m_iPrimaryAmmoType
+	return pWeapon->m_pPlayer->GiveAmmo( iAmmo, pszAmmo1(), iMaxAmmo1() ); // , &m_iPrimaryAmmoType
 }
 	
 //=========================================================

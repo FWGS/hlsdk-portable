@@ -83,21 +83,21 @@ we set up the m_pPlayer field.
 */
 void HUD_PrepEntity( CBaseEntity *pEntity, CBasePlayer *pWeaponOwner )
 {
-	memset( &ev[ num_ents ], 0, sizeof( entvars_t ) );
-	pEntity->pev = &ev[ num_ents++ ];
+	memset( &ev[num_ents], 0, sizeof(entvars_t) );
+	pEntity->pev = &ev[num_ents++];
 
 	pEntity->Precache();
 	pEntity->Spawn();
 
-	if ( pWeaponOwner )
+	if( pWeaponOwner )
 	{
 		ItemInfo info;
+		CBasePlayerWeapon *pWeapon = (CBasePlayerWeapon *)pEntity;
+		pWeapon->m_pPlayer = pWeaponOwner;
 		
-		((CBasePlayerWeapon *)pEntity)->m_pPlayer = pWeaponOwner;
-		
-		((CBasePlayerWeapon *)pEntity)->GetItemInfo( &info );
+		pWeapon->GetItemInfo( &info );
 
-		g_pWpns[ info.iId ] = (CBasePlayerWeapon *)pEntity;
+		g_pWpns[info.iId] = pWeapon;
 	}
 }
 
@@ -121,7 +121,7 @@ CQuakeNail *CQuakeNail::CreateNail( Vector vecOrigin, Vector vecAngles, CBaseEnt
 	return NULL;
 }
 
-void CBasePlayer :: Precache( void )
+void CBasePlayer::Precache( void )
 {
 	m_usShotgunSingle	= PRECACHE_EVENT( 1, "events/shotgun1.sc" );
 	m_usShotgunDouble	= PRECACHE_EVENT( 1, "events/shotgun2.sc" );
@@ -141,7 +141,7 @@ CBaseEntity :: Killed
 If weapons code "kills" an entity, just set its effects to EF_NODRAW
 =====================
 */
-void CBaseEntity :: Killed( entvars_t *pevAttacker, int iGib )
+void CBaseEntity::Killed( entvars_t *pevAttacker, int iGib )
 {
 	pev->effects |= EF_NODRAW;
 }
@@ -151,7 +151,7 @@ void CBaseEntity :: Killed( entvars_t *pevAttacker, int iGib )
 CBasePlayerWeapon :: DefaultReload
 =====================
 */
-BOOL CBasePlayerWeapon :: DefaultReload( int iClipSize, int iAnim, float fDelay )
+BOOL CBasePlayerWeapon::DefaultReload( int iClipSize, int iAnim, float fDelay )
 {
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + fDelay;
 
@@ -444,7 +444,7 @@ void CBasePlayer::Spawn( void )
 BOOL CQuakeGun::Deploy( )
 {
 	gEngfuncs.CL_LoadModel( "models/v_axe.mdl", &m_pPlayer->pev->viewmodel );
-	strcpy( m_pPlayer->m_szAnimExtention, "onehanded" );
+	m_pPlayer->m_pszAnimExtention = "onehanded";
 	return TRUE;
 }
 

@@ -725,7 +725,7 @@ void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim )
 			strcpy( szAnim, "crouch_shoot_" );
 		else
 			strcpy( szAnim, "ref_shoot_" );
-		strcat( szAnim, m_szAnimExtention );
+		strcat( szAnim, m_pszAnimExtention );
 		animDesired = LookupSequence( szAnim );
 		if( animDesired == -1 )
 			animDesired = 0;
@@ -752,7 +752,7 @@ void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim )
 				strcpy( szAnim, "crouch_aim_" );
 			else
 				strcpy( szAnim, "ref_aim_" );
-			strcat( szAnim, m_szAnimExtention );
+			strcat( szAnim, m_pszAnimExtention );
 			animDesired = LookupSequence( szAnim );
 			if( animDesired == -1 )
 				animDesired = 0;

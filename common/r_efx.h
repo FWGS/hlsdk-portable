@@ -168,7 +168,7 @@ struct efx_api_s
 	TEMPENTITY	*(*R_DefaultSprite)( float *pos, int spriteIndex, float framerate );
 	TEMPENTITY	*(*R_TempSprite)( float *pos, float *dir, float scale, int modelIndex, int rendermode, int renderfx, float a, float life, int flags );
 	int		(*Draw_DecalIndex)( int id );
-	int		(*Draw_DecalIndexFromName)( char *name );
+	int		(*Draw_DecalIndexFromName)( const char *name );
 	void		(*R_DecalShoot)( int textureIndex, int entity, int modelIndex, float *position, int flags );
 	void		(*R_AttachTentToPlayer)( int client, int modelIndex, float zoffset, float life );
 	void		(*R_KillAttachedTents)( int client );

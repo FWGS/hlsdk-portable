@@ -40,9 +40,9 @@
 								gHUD.y.UserCmd_##x( ); \
 							}
 
-inline float CVAR_GET_FLOAT( const char *x ) {	return gEngfuncs.pfnGetCvarFloat( (char*)x ); }
-inline char* CVAR_GET_STRING( const char *x ) {	return gEngfuncs.pfnGetCvarString( (char*)x ); }
-inline struct cvar_s *CVAR_CREATE( const char *cv, const char *val, const int flags ) {	return gEngfuncs.pfnRegisterVariable( (char*)cv, (char*)val, flags ); }
+inline float CVAR_GET_FLOAT( const char *x ) {	return gEngfuncs.pfnGetCvarFloat( x ); }
+inline char* CVAR_GET_STRING( const char *x ) {	return gEngfuncs.pfnGetCvarString( x ); }
+inline struct cvar_s *CVAR_CREATE( const char *cv, const char *val, const int flags ) {	return gEngfuncs.pfnRegisterVariable( cv, val, flags ); }
 
 #define SPR_Load ( *gEngfuncs.pfnSPR_Load )
 #define SPR_Set ( *gEngfuncs.pfnSPR_Set )
@@ -108,16 +108,16 @@ inline int TextMessageDrawChar( int x, int y, int number, int r, int g, int b )
 inline int DrawConsoleString( int x, int y, const char *string )
 {
 	if( hud_textmode->value == 1 )
-		return gHUD.DrawHudString( x, y, 9999, (char*)string, 255 * g_hud_text_color[0], 255 * g_hud_text_color[1], 255 * g_hud_text_color[2] );
-	return gEngfuncs.pfnDrawConsoleString( x, y, (char*) string );
+		return gHUD.DrawHudString( x, y, 9999, string, 255 * g_hud_text_color[0], 255 * g_hud_text_color[1], 255 * g_hud_text_color[2] );
+	return gEngfuncs.pfnDrawConsoleString( x, y, string );
 }
 
 inline void GetConsoleStringSize( const char *string, int *width, int *height )
 {
 	if( hud_textmode->value == 1 )
-		*height = 13, *width = gHUD.DrawHudStringLen( (char*)string );
+		*height = 13, *width = gHUD.DrawHudStringLen( string );
 	else
-		gEngfuncs.pfnDrawConsoleStringLen( (char*)string, width, height );
+		gEngfuncs.pfnDrawConsoleStringLen( string, width, height );
 }
 
 int DrawUtfString( int xpos, int ypos, int iMaxX, const char *szIt, int r, int g, int b );
@@ -126,7 +126,7 @@ inline int ConsoleStringLen( const char *string )
 {
 	int _width = 0, _height = 0;
 	if( hud_textmode->value == 1 )
-		return gHUD.DrawHudStringLen( (char*)string );
+		return gHUD.DrawHudStringLen( string );
 	GetConsoleStringSize( string, &_width, &_height );
 	return _width;
 }
