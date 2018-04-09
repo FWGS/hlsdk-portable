@@ -11,7 +11,7 @@ include $(XASH3D_CONFIG)
 
 LOCAL_CFLAGS += -D_LINUX -DCLIENT_WEAPONS \
 	-Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf \
-	-Wno-write-strings -Wno-invalid-offsetof -Wno-conversion-null
+	-Wno-write-strings -Wno-invalid-offsetof -Wno-conversion-null -DNO_VOICEGAMEMGR
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/. \
 		    $(LOCAL_PATH)/../common \
@@ -21,7 +21,7 @@ LOCAL_C_INCLUDES := $(LOCAL_PATH)/. \
 		    $(LOCAL_PATH)/../pm_shared \
 		    $(LOCAL_PATH)/../game_shared
 
-LOCAL_SRC_FILES := aflock.cpp agrunt.cpp AI_BaseNPC_Schedule.cpp airtank.cpp \
+LOCAL_SRC_FILES := aflock.cpp agrunt.cpp schedule.cpp airtank.cpp \
 		alias.cpp animating.cpp animation.cpp apache.cpp barnacle.cpp barney.cpp \
 		bigmomma.cpp bloater.cpp bmodels.cpp bullsquid.cpp buttons.cpp cbase.cpp \
 		client.cpp combat.cpp controller.cpp crossbow.cpp crowbar.cpp defaultai.cpp \
@@ -32,12 +32,12 @@ LOCAL_SRC_FILES := aflock.cpp agrunt.cpp AI_BaseNPC_Schedule.cpp airtank.cpp \
 		hgrunt.cpp hornet.cpp hornetgun.cpp houndeye.cpp ichthyosaur.cpp islave_deamon.cpp \
 		items.cpp leech.cpp lights.cpp locus.cpp maprules.cpp monstermaker.cpp monsters.cpp \
 		monsterstate.cpp mortar.cpp movewith.cpp mp5.cpp multiplay_gamerules.cpp nihilanth.cpp \
-		nodes.cpp osprey.cpp pathcorner.cpp plane.cpp plats.cpp player.cpp playermonster.cpp \
+		nodes.cpp observer.cpp osprey.cpp pathcorner.cpp plane.cpp plats.cpp player.cpp playermonster.cpp \
 		python.cpp rat.cpp roach.cpp rpg.cpp satchel.cpp scientist.cpp scripted.cpp shotgun.cpp \
 		singleplay_gamerules.cpp skill.cpp sound.cpp soundent.cpp spectator.cpp squadmonster.cpp \
 		squeakgrenade.cpp stats.cpp subs.cpp talkmonster.cpp teamplay_gamerules.cpp tempmonster.cpp \
 		tentacle.cpp triggers.cpp tripmine.cpp turret.cpp util.cpp weapons.cpp world.cpp xen.cpp \
-		zombie.cpp wpn_shared/hl_wpn_glock.cpp \
+		zombie.cpp glock.cpp \
 	   ../pm_shared/pm_debug.c ../pm_shared/pm_math.c ../pm_shared/pm_shared.c
 
 
