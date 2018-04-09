@@ -58,6 +58,8 @@
 #define BMOD_PLATFORM			"WIN32-MinGW"
 #elif defined(__ANDROID__)
 #define BMOD_PLATFORM			"Android"
+#elif defined(__APPLE__) && ( defined(__arm__) || defined(__aarch64__) )
+#define BMOD_PLATFORM			"ios"
 #elif defined(__APPLE__)
 #define BMOD_PLATFORM			"Apple"
 #elif defined(__FreeBSD__)
