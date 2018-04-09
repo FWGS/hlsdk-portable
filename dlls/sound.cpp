@@ -1454,14 +1454,6 @@ void EMIT_GROUPNAME_SUIT( edict_t *entity, const char *groupname )
 // texture name to a material type.  Play footstep sound based
 // on material type.
 
-int fTextureTypeInit = FALSE;
-
-#define CTEXTURESMAX		512			// max number of textures loaded
-
-int gcTextures = 0;
-char grgszTextureName[CTEXTURESMAX][CBTEXTURENAMEMAX];	// texture names
-char grgchTextureType[CTEXTURESMAX];						// parallel array of texture types
-
 // open materials.txt,  get size, alloc space, 
 // save in array.  Only works first time called, 
 // ignored on subsequent calls.
@@ -1513,87 +1505,17 @@ static char *memfgets( byte *pMemFile, int fileSize, int &filePos, char *pBuffer
 	return NULL;
 }
 
-void TEXTURETYPE_Init()
-{
-	char buffer[512];
-	int i, j;
-	byte *pMemFile;
-	int fileSize, filePos = 0;
-
-	if( fTextureTypeInit )
-		return;
-
-	memset( &( grgszTextureName[0][0] ), 0, CTEXTURESMAX * CBTEXTURENAMEMAX );
-	memset( grgchTextureType, 0, CTEXTURESMAX );
-
-	gcTextures = 0;
-
-	pMemFile = g_engfuncs.pfnLoadFileForMe( "sound/materials.txt", &fileSize );
-	if( !pMemFile )
-		return;
-
-	memset( buffer, 0, 512 );
-	// for each line in the file...
-	while( memfgets( pMemFile, fileSize, filePos, buffer, 511 ) != NULL && ( gcTextures < CTEXTURESMAX) )
-	{
-		// skip whitespace
-		i = 0;
-		while( buffer[i] && isspace( buffer[i] ) )
-			i++;
-
-		if( !buffer[i] )
-			continue;
-
-		// skip comment lines
-		if( buffer[i] == '/' || !isalpha( buffer[i] ) )
-			continue;
-
-		// get texture type
-		grgchTextureType[gcTextures] = toupper( buffer[i++] );
-
-		// skip whitespace
-		while( buffer[i] && isspace( buffer[i] ) )
-			i++;
-
-		if( !buffer[i] )
-			continue;
-
-		// get sentence name
-		j = i;
-		while( buffer[j] && !isspace( buffer[j] ) )
-			j++;
-
-		if( !buffer[j] )
-			continue;
-
-		// null-terminate name and save in sentences array
-		j = Q_min( j, CBTEXTURENAMEMAX - 1 + i );
-		buffer[j] = 0;
-		strcpy( &( grgszTextureName[gcTextures++][0] ), &( buffer[i] ) );
-	}
-
-	g_engfuncs.pfnFreeFile( pMemFile );
-
-	fTextureTypeInit = TRUE;
-}
-
 // given texture name, find texture type
 // if not found, return type 'concrete'
 
 // NOTE: this routine should ONLY be called if the 
 // current texture under the player changes!
 
+extern "C" char PM_FindTextureType( char *name );
+
 char TEXTURETYPE_Find( char *name )
 {
-	// CONSIDER: pre-sort texture names and perform faster binary search here
-
-	for( int i = 0; i < gcTextures; i++ )
-	{
-		if( !strnicmp( name, &( grgszTextureName[i][0] ), CBTEXTURENAMEMAX - 1 ) )
-			return grgchTextureType[i];
-	}
-
-	return CHAR_TEX_CONCRETE;
+	return PM_FindTextureType(name);
 }
 
 // play a strike sound based on the texture that was hit by the attack traceline.  VecSrc/VecEnd are the
