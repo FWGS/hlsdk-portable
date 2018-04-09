@@ -72,10 +72,14 @@
 
 #if defined(__amd64__) || defined(_M_X64)
 #define BMOD_ARCH			"amd64"
+#elif defined(__aarch64__)
+#define BMOD_ARCH			"arm64"
 #elif defined(__i386__) || defined(_X86_) || defined(_M_IX86)
 #define BMOD_ARCH			"i386"
 #elif defined(__arm__) || defined(_M_ARM)
 #define BMOD_ARCH			"arm"
+#else
+#define BMOD_ARCH			"arch-unknown"
 #endif
 
 #endif
