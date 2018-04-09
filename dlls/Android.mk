@@ -11,7 +11,7 @@ include $(XASH3D_CONFIG)
 
 LOCAL_CFLAGS += -D_LINUX -DCLIENT_WEAPONS \
 	-Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf \
-	-Wno-write-strings -Wno-invalid-offsetof -Wno-conversion-null
+	-Wno-write-strings -Wno-invalid-offsetof -Wno-conversion-null -DNO_VOICEGAMEMGR
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/. \
 		    $(LOCAL_PATH)/../common \
@@ -33,7 +33,7 @@ LOCAL_SRC_FILES := aflock.cpp agrunt.cpp schedule.cpp airtank.cpp \
 		hgrunt.cpp hornet.cpp houndeye.cpp ichthyosaur.cpp islave_deamon.cpp \
 		items.cpp leech.cpp lights.cpp locus.cpp maprules.cpp monstermaker.cpp monsters.cpp \
 		monsterstate.cpp mortar.cpp movewith.cpp multiplay_gamerules.cpp nihilanth.cpp \
-		nodes.cpp osprey.cpp pathcorner.cpp plane.cpp plats.cpp player.cpp playermonster.cpp \
+		nodes.cpp observer.cpp osprey.cpp pathcorner.cpp plane.cpp plats.cpp player.cpp playermonster.cpp \
 		rat.cpp roach.cpp rpg.cpp scientist.cpp scripted.cpp shotgun.cpp \
 		singleplay_gamerules.cpp skill.cpp sound.cpp soundent.cpp spectator.cpp squadmonster.cpp \
 		squeakgrenade.cpp stats.cpp subs.cpp talkmonster.cpp teamplay_gamerules.cpp tempmonster.cpp \
