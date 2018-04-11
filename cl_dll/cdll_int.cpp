@@ -94,13 +94,13 @@ int DLLEXPORT HUD_GetHullBounds( int hullnumber, float *mins, float *maxs )
 	switch( hullnumber )
 	{
 	case 0:				// Normal player
-		Vector( -16, -16, -36 ).CopyToArray(mins);
-		Vector( 16, 16, 36 ).CopyToArray(maxs);
+		Vector( -16, -16, -32 ).CopyToArray(mins);
+		Vector( 16, 16, 32 ).CopyToArray(maxs);
 		iret = 1;
 		break;
 	case 1:				// Crouched player
-		Vector( -16, -16, -18 ).CopyToArray(mins);
-		Vector( 16, 16, 18 ).CopyToArray(maxs);
+		Vector( -16, -16, -32 ).CopyToArray(mins);
+		Vector( 16, 16, 32 ).CopyToArray(maxs);
 		iret = 1;
 		break;
 	case 2:				// Point based hull
