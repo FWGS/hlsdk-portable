@@ -1985,3 +1985,29 @@ void CSpeaker::KeyValue( KeyValueData *pkvd )
 	else
 		CBaseEntity::KeyValue( pkvd );
 }
+
+class CAmbientDrip : public CBaseEntity
+{
+public:
+	void Precache()
+	{
+		PRECACHE_SOUND( "ambience/drips.wav" );
+		EMIT_AMBIENT_SOUND( ENT( pev ), (float*)pev->origin, "ambience/drips.wav", 0.5, ATTN_STATIC, SND_SPAWNING, 100 );
+	}
+	void Spawn() { Precache(); }
+};
+
+LINK_ENTITY_TO_CLASS( ambient_drip, CAmbientDrip )
+
+class CAmbientSuckWind : public CBaseEntity
+{
+public:
+	void Precache()
+	{
+		PRECACHE_SOUND( "ambience/wind1.wav" );
+		EMIT_AMBIENT_SOUND( ENT( pev ), (float*)pev->origin, "ambience/wind1.wav", 1, ATTN_STATIC, SND_SPAWNING, 100 );
+	}
+	void Spawn() { Precache(); }
+};
+
+LINK_ENTITY_TO_CLASS( ambient_suck_wind, CAmbientSuckWind )
