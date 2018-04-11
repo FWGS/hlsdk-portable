@@ -246,7 +246,6 @@ void LinkUserMessages( void )
 	gmsgFade = REG_USER_MSG( "ScreenFade", sizeof(ScreenFade) );
 	gmsgAmmoX = REG_USER_MSG( "AmmoX", 2 );
 	gmsgTeamNames = REG_USER_MSG( "TeamNames", -1 );
-	gmsgBhopcap = REG_USER_MSG( "Bhopcap", 1 );
 
 	gmsgQItems = REG_USER_MSG( "QItems", 4 );
 
@@ -257,6 +256,7 @@ void LinkUserMessages( void )
 	gmsgAllowSpec = REG_USER_MSG( "AllowSpec", 1 );   //Allow spectator button message.
 	gmsgSpectator = REG_USER_MSG( "Spectator", 2 );   //Spectator message.
 //-- Martin Webrant
+	gmsgBhopcap = REG_USER_MSG( "Bhopcap", 1 );
 }
 
 LINK_ENTITY_TO_CLASS( player, CBasePlayer )
@@ -3639,7 +3639,7 @@ void CBasePlayer::UpdateClientData( void )
 		}
 
 		FireTargets( "game_playerspawn", this, this, USE_TOGGLE, 0 );
-
+/*
 		// Send flashlight status
 		MESSAGE_BEGIN( MSG_ONE, gmsgFlashlight, NULL, pev );
 			WRITE_BYTE( FlashlightIsOn() ? 1 : 0 );
@@ -3650,7 +3650,7 @@ void CBasePlayer::UpdateClientData( void )
 		MESSAGE_BEGIN( MSG_ONE, gmsgGeigerRange, NULL, pev );
 			WRITE_BYTE( 0 );
 		MESSAGE_END();
-
+*/
 		InitStatusBar();
 	}
 
