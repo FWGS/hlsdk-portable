@@ -2734,6 +2734,16 @@ void PM_Move( struct playermove_s *ppmove, int server )
 	{
 		pmove->friction = 1.0f;
 	}
+
+#ifdef CLIENT_DLL
+	extern int g_onground;
+	extern int g_inwater;
+	extern int g_walking;
+
+	g_onground = ( pmove->onground != -1 );
+	g_inwater = ( pmove->waterlevel > 1 );
+	g_walking = ( pmove->movetype == MOVETYPE_WALK );
+#endif
 }
 
 int PM_GetInfo( int ent )
