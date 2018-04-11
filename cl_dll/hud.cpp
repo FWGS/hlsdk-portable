@@ -135,6 +135,9 @@ void CHud::Init( void )
 	m_pCvarDraw = CVAR_CREATE( "hud_draw", "1", FCVAR_ARCHIVE );
 	cl_lw = gEngfuncs.pfnGetCvarPointer( "cl_lw" );
 
+	if( cl_lw && cl_lw->value == 0 )
+		gEngfuncs.Cvar_SetValue( "cl_lw", 1.0 );
+
 	/************************ CLIENT CVAR DEFINITIONS ************************/
 	cl_autowepswitch = gEngfuncs.pfnRegisterVariable( "cl_autowepswitch", "2", FCVAR_USERINFO | FCVAR_ARCHIVE );
 	cl_rollangle = gEngfuncs.pfnRegisterVariable( "cl_rollangle", "0.65", FCVAR_CLIENTDLL | FCVAR_ARCHIVE );
