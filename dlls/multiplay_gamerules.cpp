@@ -1650,8 +1650,8 @@ void CHalfLifeMultiplay::SendMOTDToClient( edict_t *client )
 {
 	// read from the MOTD.txt file
 	int length, char_count = 0;
-	const char *pFileList;
-	const char *aFileList = pFileList = (const char*)LOAD_FILE_FOR_ME( CVAR_GET_STRING( "motdfile" ), &length );
+	char *pFileList;
+	char *aFileList = pFileList = (char*)LOAD_FILE_FOR_ME( CVAR_GET_STRING( "motdfile" ), &length );
 
 	// send the server name
 	MESSAGE_BEGIN( MSG_ONE, gmsgServerName, NULL, client );
@@ -1679,10 +1679,10 @@ void CHalfLifeMultiplay::SendMOTDToClient( edict_t *client )
 		if( char_count < MAX_MOTD_LENGTH )
 			pFileList = aFileList + char_count; 
 		else
-			pFileList = 0;
+			*pFileList = 0;
 
 		MESSAGE_BEGIN( MSG_ONE, gmsgMOTD, NULL, client );
-			WRITE_BYTE( pFileList ? FALSE : TRUE );	// FALSE means there is still more message to come
+			WRITE_BYTE( *pFileList ? FALSE : TRUE );	// FALSE means there is still more message to come
 			WRITE_STRING( chunk );
 		MESSAGE_END();
 	}
