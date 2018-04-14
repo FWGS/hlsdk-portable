@@ -39,6 +39,11 @@ void EV_DMC_DoorGoDown( struct event_args_s *args  );
 void EV_DMC_DoorHitTop( struct event_args_s *args  );
 void EV_DMC_DoorHitBottom( struct event_args_s *args  );
 
+void EV_Hook( event_args_t *args );
+void EV_Cable( struct event_args_s *args );
+void EV_FollowCarrier( struct event_args_s *args );
+void EV_FlagSpawn( struct event_args_s *args );
+
 // HLDM
 void EV_TrainPitchAdjust( struct event_args_s *args );
 }
@@ -78,6 +83,11 @@ void Game_HookEvents( void )
 	gEngfuncs.pfnHookEvent( "events/door/doorgodown.sc",		EV_DMC_DoorGoDown );
 	gEngfuncs.pfnHookEvent( "events/door/doorhittop.sc",		EV_DMC_DoorHitTop );
 	gEngfuncs.pfnHookEvent( "events/door/doorhitbottom.sc",		EV_DMC_DoorHitBottom );
+
+	gEngfuncs.pfnHookEvent( "events/hook.sc",		EV_Hook );
+        gEngfuncs.pfnHookEvent( "events/cable.sc",		EV_Cable );
+        gEngfuncs.pfnHookEvent( "events/follow.sc",		EV_FollowCarrier );
+        gEngfuncs.pfnHookEvent( "events/flagspawn.sc",		EV_FlagSpawn );
 
 	gEngfuncs.pfnHookEvent( "events/train.sc",					EV_TrainPitchAdjust );
 }

@@ -71,6 +71,11 @@ typedef enum
 	PLAYER_ATTACK1
 } PLAYER_ANIM;
 
+enum Player_Menu {
+	Team_Menu,
+	Team_Menu_IG
+};
+
 #define MAX_ID_RANGE 2048
 #define SBAR_STRING_SIZE 128
 
@@ -441,6 +446,35 @@ public:
 	bool Spectate_HLTV();
 	bool m_bSentBhopcap; // If false, the player just joined and needs a bhopcap message.
 //-- Martin Webrant
+
+	int m_bHasFlag;
+	void ShowMenu( int bitsValidSlots, int nDisplayTime, BOOL fNeedMore, char *pszText );
+	int m_iMenu;
+
+	float m_flNextTeamChange;
+
+	CBasePlayer *pFlagCarrierKiller;
+	CBasePlayer *pFlagReturner;
+	CBasePlayer *pCarrierHurter;
+
+	float m_flCarrierHurtTime;
+	float m_flCarrierPickupTime;
+	float m_flFlagCarrierKillTime;
+	float m_flFlagReturnTime;
+	float m_flFlagStatusTime;
+
+	float m_flRegenTime;
+
+	int m_iRuneStatus;
+
+	void W_FireHook();
+	void Throw_Grapple();
+
+	bool m_bHook_Out;
+	bool m_bOn_Hook;
+	CBaseEntity *m_ppHook;
+
+	void Service_Grapple();
 };
 
 //++ BulliT
@@ -512,6 +546,11 @@ inline bool CBasePlayer::IsProxy()
 #define IT_INVULNERABILITY              (1 << 20)
 #define IT_SUIT                         (1 << 21)
 #define IT_QUAD                         (1 << 22)
+
+#define ITEM_RUNE1_FLAG			1
+#define ITEM_RUNE2_FLAG			2
+#define ITEM_RUNE3_FLAG			3
+#define ITEM_RUNE4_FLAG			4
 
 #define AUTOAIM_2DEGREES  0.0348994967025
 #define AUTOAIM_5DEGREES  0.08715574274766

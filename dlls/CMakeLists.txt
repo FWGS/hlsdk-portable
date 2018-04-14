@@ -37,6 +37,7 @@ else()
 endif()
 
 set (SVDLL_SOURCES 
+	3wave/threewave_gamerules.cpp
 	aghl/agarena.cpp
 	aghl/agglobal.cpp
 	aghl/aglms.cpp
@@ -151,7 +152,7 @@ set (SVDLL_SOURCES
 	../pm_shared/pm_shared.c
 )
 	
-include_directories (. wpn_shared ../common ../engine ../pm_shared ../game_shared ../public dmc aghl .. )
+include_directories (. wpn_shared ../common ../engine ../pm_shared ../game_shared ../public dmc aghl 3wave .. )
 
 if(USE_VOICEMGR)
 	set(SVDLL_SOURCES

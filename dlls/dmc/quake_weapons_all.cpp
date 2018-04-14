@@ -31,6 +31,10 @@
 char gszQ_DeathType[128];
 DLL_GLOBAL	short	g_sModelIndexNail;
 
+extern unsigned short g_usHook;
+extern unsigned short g_usCable;
+extern unsigned short g_usCarried;
+
 #ifdef CLIENT_DLL
 #include "cl_entity.h"
 struct cl_entity_s *GetViewEntity( void );
@@ -105,6 +109,8 @@ void QuakeClassicPrecache( void )
 	PRECACHE_SOUND("weapons/pkup.wav");
 	PRECACHE_SOUND("items/itembk2.wav");
 	PRECACHE_MODEL("models/backpack.mdl");
+
+	PRECACHE_MODEL("models/v_grapple.mdl");
 }
 
 //================================================================================================
@@ -208,6 +214,13 @@ void CBasePlayer::W_SetCurrentAmmo( int sendanim /* = 1 */ )
 		m_iQuakeItems |= IT_CELLS;
 		szAnimExt = "gauss";
 	}
+	else if( m_iQuakeWeapon == IT_EXTRA_WEAPON )
+	{
+		m_pCurrentAmmo = NULL;
+		viewmodel = "models/v_grapple.mdl";
+		iszViewModel = MAKE_STRING( viewmodel );
+		szAnimExt = "crowbar";
+	}
 	else
 	{
 		m_pCurrentAmmo = NULL;
@@ -298,6 +311,9 @@ BOOL CBasePlayer::W_CheckNoAmmo()
 	if ( m_iQuakeWeapon == IT_AXE )
 		return TRUE;
 
+	if( m_iQuakeWeapon == IT_EXTRA_WEAPON )
+		return TRUE;
+
 	if ( m_iQuakeWeapon == IT_LIGHTNING )
 	{
 		 PLAYBACK_EVENT_FULL( FEV_NOTHOST, edict(), m_usLightning, 0, (float *)&pev->origin, (float *)&pev->angles, 0.0, 0.0, 0, 1, 0, 0 );
@@ -371,6 +387,10 @@ void CBasePlayer::W_ChangeWeapon( int iWeaponNumber )
 		
 		if (m_iAmmoCells < 1)
 			bHaveAmmo = FALSE;
+	}
+	else if (iWeaponNumber == 9)
+	{
+		iWeapon = IT_EXTRA_WEAPON;
 	}
 
 	// Have the weapon?
@@ -745,6 +765,23 @@ void CBasePlayer::W_FireShotgun( int iQuadSound )
 	Q_FireBullets(6, vecDir, Vector(0.04, 0.04, 0) );
 }
 
+void CBasePlayer::W_FireHook( void )
+{
+	PLAYBACK_EVENT_FULL( FEV_NOTHOST | FEV_GLOBAL, edict(), g_usHook, 0, (float *)&pev->origin, (float *)&pev->angles, 0.0, 0.0, 0, 0, 0, 0 );
+
+	Throw_Grapple();
+}
+
+#ifdef CLIENT_DLL
+unsigned short g_usCable;
+unsigned short g_usHook;
+unsigned short g_usCarried;
+
+void CBasePlayer::Throw_Grapple( void )
+{
+}
+#endif
+
 // Double barrel shotgun
 void CBasePlayer::W_FireSuperShotgun( int iQuadSound )
 {
@@ -935,7 +972,10 @@ void CBasePlayer::W_Attack( int iQuadSound )
 
 	if (m_iQuakeWeapon == IT_AXE)
 	{
-		m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
+		if( m_iRuneStatus == ITEM_RUNE3_FLAG )
+			m_flNextAttack = UTIL_WeaponTimeBase() + 0.3;
+		else
+			m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
 
 		PLAYBACK_EVENT_FULL( FEV_NOTHOST, edict(), m_usAxeSwing, 0, (float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, iQuadSound, 0, 0, 0 );
 
@@ -947,18 +987,24 @@ void CBasePlayer::W_Attack( int iQuadSound )
 	}
 	else if (m_iQuakeWeapon == IT_SHOTGUN)
 	{
-		m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
+		if( m_iRuneStatus == ITEM_RUNE3_FLAG )
+			m_flNextAttack = UTIL_WeaponTimeBase() + 0.3;
+		else
+			m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
 
 		W_FireShotgun( iQuadSound );
 	}
 	else if (m_iQuakeWeapon == IT_SUPER_SHOTGUN)
 	{
-		m_flNextAttack = UTIL_WeaponTimeBase() + 0.7;
+		if( m_iRuneStatus == ITEM_RUNE3_FLAG )
+			m_flNextAttack = UTIL_WeaponTimeBase() + 0.4;
+		else
+			m_flNextAttack = UTIL_WeaponTimeBase() + 0.7;
 
 		W_FireSuperShotgun( iQuadSound );
 	}
 	else if (m_iQuakeWeapon == IT_NAILGUN)
-	{	
+	{
 		m_flNextAttack = UTIL_WeaponTimeBase() + 0.1;
 	
 		W_FireSpikes( iQuadSound );
@@ -970,13 +1016,19 @@ void CBasePlayer::W_Attack( int iQuadSound )
 	}
 	else if (m_iQuakeWeapon == IT_GRENADE_LAUNCHER)
 	{
-		m_flNextAttack = UTIL_WeaponTimeBase() + 0.6;
+		if( m_iRuneStatus == ITEM_RUNE3_FLAG )
+			m_flNextAttack = UTIL_WeaponTimeBase() + 0.3;
+		else
+			m_flNextAttack = UTIL_WeaponTimeBase() + 0.6;
 
 		W_FireGrenade( iQuadSound );
 	}
 	else if (m_iQuakeWeapon == IT_ROCKET_LAUNCHER)
 	{
-		m_flNextAttack = UTIL_WeaponTimeBase() + 0.8;
+		if( m_iRuneStatus == ITEM_RUNE3_FLAG )
+			m_flNextAttack = UTIL_WeaponTimeBase() + 0.4;
+		else
+			m_flNextAttack = UTIL_WeaponTimeBase() + 0.8;
 			
 		W_FireRocket( iQuadSound );
 	}
@@ -989,6 +1041,13 @@ void CBasePlayer::W_Attack( int iQuadSound )
 			EMIT_SOUND(ENT(pev), CHAN_AUTO, "weapons/lstart.wav", 1, ATTN_NORM);
 
 		W_FireLightning( iQuadSound );
+	}
+	else if( m_iQuakeWeapon == IT_EXTRA_WEAPON )
+	{
+		if( !m_bHook_Out )
+			W_FireHook();
+
+		m_flNextAttack = UTIL_WeaponTimeBase() + 0.1;
 	}
 
 	// Make player attack

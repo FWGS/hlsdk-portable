@@ -50,6 +50,8 @@ extern DLL_GLOBAL BOOL		g_fGameOver;
 extern DLL_GLOBAL int		g_iSkillLevel;
 extern DLL_GLOBAL ULONG		g_ulFrameCount;
 
+const char* GetTeamName( int team );
+
 extern bool g_bHaveMOTD;
 
 extern void CopyToBodyQue( entvars_t* pev );
@@ -64,6 +66,11 @@ extern unsigned short g_sTeleport;
 extern unsigned short g_sTrail;
 extern unsigned short g_sExplosion;
 extern unsigned short g_usPowerUp;
+
+extern unsigned short g_usHook;
+extern unsigned short g_usCable;
+extern unsigned short g_usCarried;
+extern unsigned short g_usFlagSpawn;
 
 extern int g_teamplay;
 
@@ -216,6 +223,8 @@ void ClientPutInServer( edict_t *pEntity )
 	pPlayer->pev->iuser1 = 0;
 	pPlayer->pev->iuser2 = 0;
 }
+
+#include "threewave_gamerules.h"
 
 #ifndef NO_VOICEGAMEMGR
 #include "voice_gamemgr.h"
@@ -444,7 +453,14 @@ void Host_Say( edict_t *pEntity, int teamonly )
 		temp = "say";
 
 	// team match?
-	if( g_teamplay )
+	UTIL_LogPrintf( "\"%s<%i><%s><%s>\" %s \"%s\"\n",
+		STRING( pEntity->v.netname ),
+		GETPLAYERUSERID( pEntity ),
+		GETPLAYERAUTHID( pEntity ),
+		GetTeamName( pEntity->v.team ),
+		temp,
+		p );
+	/*if( g_teamplay )
 	{
 		UTIL_LogPrintf( "\"%s<%i><%s><%s>\" %s \"%s\"\n", 
 			STRING( pEntity->v.netname ), 
@@ -463,7 +479,7 @@ void Host_Say( edict_t *pEntity, int teamonly )
 			GETPLAYERUSERID( pEntity ),
 			temp,
 			p );
-	}
+	}*/
 }
 
 /*
@@ -548,7 +564,7 @@ void ClientCommand( edict_t *pEntity )
 //-- Martin Webrant
 
                         pPlayer->m_bHadFirstSpawn = true;
-                        pPlayer->Spawn();
+                        // pPlayer->Spawn();
 		}
 	}
 	else if( FStrEq( pcmd, "lastinv" ) )
@@ -819,6 +835,13 @@ void ClientUserInfoChanged( edict_t *pEntity, char *infobuffer )
 		}
 
 		// team match?
+		UTIL_LogPrintf( "\"%s<%i><%s><%s>\" changed name to \"%s\"\n",
+			STRING( pEntity->v.netname ),
+			GETPLAYERUSERID( pEntity ),
+			GETPLAYERAUTHID( pEntity ),
+			GetTeamName( pEntity->v.team ),
+			g_engfuncs.pfnInfoKeyValue( infobuffer, "name" ) );
+		/*
 		if( g_teamplay )
 		{
 			UTIL_LogPrintf( "\"%s<%i><%s><%s>\" changed name to \"%s\"\n", 
@@ -836,7 +859,7 @@ void ClientUserInfoChanged( edict_t *pEntity, char *infobuffer )
 				GETPLAYERAUTHID( pEntity ),
 				GETPLAYERUSERID( pEntity ), 
 				g_engfuncs.pfnInfoKeyValue( infobuffer, "name" ) );
-		}
+		}*/
 	}
 
 	// QUAKECLASSIC
@@ -1104,6 +1127,32 @@ void ClientPrecache( void )
 	PRECACHE_MODEL( "models/gib_3.mdl" );
 
 	PRECACHE_SOUND( "player/plyrjmp8.wav" );
+
+	PRECACHE_MODEL( "models/rune_resist.mdl" );
+	PRECACHE_MODEL( "models/rune_haste.mdl" );
+	PRECACHE_MODEL( "models/rune_regen.mdl" );
+	PRECACHE_MODEL( "models/rune_strength.mdl" );
+
+	PRECACHE_SOUND( "rune/rune1.wav" );
+	PRECACHE_SOUND( "rune/rune2.wav" );
+	PRECACHE_SOUND( "rune/rune22.wav" ); // Quad + Strength Rune.
+	PRECACHE_SOUND( "rune/rune3.wav" );
+	PRECACHE_SOUND( "rune/rune4.wav" );
+
+	PRECACHE_MODEL( "models/hook.mdl" );
+ 
+	PRECACHE_MODEL( "sprites/rope.spr" );
+
+	PRECACHE_SOUND( "weapons/grfire.wav" );
+	PRECACHE_SOUND( "weapons/grhang.wav" );
+	PRECACHE_SOUND( "weapons/grhit.wav" );
+	PRECACHE_SOUND( "weapons/grpull.wav" );
+	PRECACHE_SOUND( "weapons/grreset.wav" );
+
+	g_usHook = PRECACHE_EVENT( 1, "events/hook.sc" );
+	g_usCable = PRECACHE_EVENT( 1, "events/cable.sc" );
+	g_usCarried = PRECACHE_EVENT( 1, "events/follow.sc" );
+	g_usFlagSpawn = PRECACHE_EVENT( 1, "events/flagspawn.sc" );
 
 	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/p_crowbar.mdl" );
 	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/p_light.mdl" );
@@ -1994,6 +2043,7 @@ void UpdateClientData( const struct edict_s *ent, int sendweapons, struct client
 			cd->fuser1 = (float)pl->m_iQuakeWeapon;
 			cd->iuser4 = gpGlobals->deathmatch;
 			cd->fuser2 = pl->m_iNailOffset > 0 ? 1.0 : 0.0;
+			cd->fuser3 = (float)pl->m_iRuneStatus;
 
 			cd->iuser3 = pl->m_iQuakeItems;
 
