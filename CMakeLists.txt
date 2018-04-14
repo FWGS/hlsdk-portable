@@ -72,6 +72,11 @@ else()
 	message(STATUS "Building for 32 Bit")
 endif()
 
+if (MINGW)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libstdc++ -static-libgcc")
+	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--add-stdcall-alias")
+endif()
+
 # add_compile_options for older cmake versions
 if(${CMAKE_VERSION} VERSION_LESS "3.0.2")
 	macro(add_compile_options)
