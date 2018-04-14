@@ -376,7 +376,22 @@ void DLLEXPORT HUD_MobilityInterface( mobile_engfuncs_t *gpMobileEngfuncs )
 	gMobileEngfuncs = gpMobileEngfuncs;
 }
 
-bool isXashFWGS()
+bool HUD_MessageBox( const char *msg )
+{
+	gEngfuncs.Con_Printf( msg ); // just in case
+
+	if( IsXashFWGS() )
+	{
+		gMobileEngfuncs->pfnSys_Warn( msg );
+		return true;
+	}
+
+	// TODO: Load SDL2 and call ShowSimpleMessageBox
+
+	return false;
+}
+
+bool IsXashFWGS()
 {
 	return gMobileEngfuncs != NULL;
 }
