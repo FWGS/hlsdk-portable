@@ -32,6 +32,7 @@ float g_iStartDist;
 float g_iEndDist;
 
 extern float g_lastFOV;			// Vit_amiN
+
 /// USER-DEFINED SERVER MESSAGE HANDLERS
 
 int CHud::MsgFunc_ResetHUD( const char *pszName, int iSize, void *pbuf )
