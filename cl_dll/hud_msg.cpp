@@ -25,7 +25,6 @@
 
 
 extern float g_lastFOV;			// Vit_amiN
-extern bool g_hasPredictedFOV;	// Vit_amiN
 
 /// USER-DEFINED SERVER MESSAGE HANDLERS
 
@@ -52,7 +51,6 @@ int CHud::MsgFunc_ResetHUD( const char *pszName, int iSize, void *pbuf )
 	// Vit_amiN: reset the FOV
 	m_iFOV = 0;	// default_fov
 	g_lastFOV = 0.0f;
-	g_hasPredictedFOV = false;
 
 	return 1;
 }
