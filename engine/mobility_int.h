@@ -34,7 +34,7 @@ extern "C" {
 #define TOUCH_FL_DEF_HIDE		(1U << 6)
 #define TOUCH_FL_DRAW_ADDITIVE	(1U << 7)
 #define TOUCH_FL_STROKE			(1U << 8)
-#define TOUCH_FL_PRECISION			(1U << 9)
+#define TOUCH_FL_PRECISION		(1U << 9)
 
 typedef struct mobile_engfuncs_s
 {
@@ -65,12 +65,20 @@ typedef struct mobile_engfuncs_s
 	void (*pfnTouchSetClientOnly)( unsigned char state );
 
 	// Clean defaults list
-	void (*pfnTouchResetDefaultButtons)();
+	void (*pfnTouchResetDefaultButtons)( void );
 
+	// Draw scaled font for client
+	int (*pfnDrawScaledCharacter)( int x, int y, int number, int r, int g, int b, float scale );
+
+	void (*pfnSys_Warn)( const char *format, ... );
+
+	// Get native object for current platform.
+	// Pass NULL to arguments to receive an array of available objects or NULL if nothing
+	void *(*pfnGetNativeObject)( const char *obj );
+
+	void (*pfnSetCustomClientID)( const char *id );
 	// To be continued...
 } mobile_engfuncs_t;
-
-extern mobile_engfuncs_t *gMobileEngfuncs;
 
 // function exported from client
 // returns 0 on no error otherwise error
