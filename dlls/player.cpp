@@ -61,7 +61,7 @@ BOOL gInitHUD = TRUE;
 extern void CopyToBodyQue( entvars_t *pev);
 extern void respawn( entvars_t *pev, BOOL fCopyCorpse );
 extern Vector VecBModelOrigin( entvars_t *pevBModel );
-extern edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer );
+extern edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer, bool bCheckDM );
 
 // the world node graph
 extern CGraph WorldGraph;
@@ -204,6 +204,12 @@ int gmsgAllowSpec = 0;
 int gmsgSpectator = 0;
 //-- Martin Webrant
 
+// ThreeWave
+int gmsgFlagStatus = 0;
+int gmsgFlagCarrier = 0;
+int gmsgRuneStatus = 0;
+int gmsgCTFMsgs = 0;
+
 void LinkUserMessages( void )
 {
 	// Already taken care of?
@@ -252,6 +258,10 @@ void LinkUserMessages( void )
 	gmsgStatusText = REG_USER_MSG( "StatusText", -1 );
 	gmsgStatusValue = REG_USER_MSG( "StatusValue", 3 );
 
+	gmsgCTFMsgs = REG_USER_MSG( "Bonus", -1 );
+	gmsgFlagStatus = REG_USER_MSG( "FlagStat", 5 );
+	gmsgRuneStatus = REG_USER_MSG( "RuneStat", 1 );
+	gmsgFlagCarrier = REG_USER_MSG( "FlagCarrier", 2 );
 //++ BulliT
 	gmsgAllowSpec = REG_USER_MSG( "AllowSpec", 1 );   //Allow spectator button message.
 	gmsgSpectator = REG_USER_MSG( "Spectator", 2 );   //Spectator message.
@@ -2396,15 +2406,16 @@ Returns the entity to spawn at
 USES AND SETS GLOBAL g_pLastSpawn
 ============
 */
-edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer )
+edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer, bool bCheckDM )
 {
 	CBaseEntity *pSpot;
 	edict_t *player;
+	const char *pszName;
 
 	player = pPlayer->edict();
 
 	// choose a info_player_deathmatch point
-	if( g_pGameRules->IsCoOp() )
+	/*if( g_pGameRules->IsCoOp() )
 	{
 		pSpot = UTIL_FindEntityByClassname( g_pLastSpawn, "info_player_coop" );
 		if( !FNullEnt( pSpot ) )
@@ -2413,14 +2424,41 @@ edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer )
 		if( !FNullEnt(pSpot) ) 
 			goto ReturnSpot;
 	}
-	else if( g_pGameRules->IsDeathmatch() )
+	else if( g_pGameRules->IsDeathmatch() )*/
 	{
 		pSpot = g_pLastSpawn;
 		// Randomize the start spot
 		for( int i = RANDOM_LONG( 1, 5 ); i > 0; i-- )
-			pSpot = UTIL_FindEntityByClassname( pSpot, "info_player_deathmatch" );
+		{
+			if( !bCheckDM )
+			{
+				if( player->v.team == 1 )
+					pszName = "info_player_team1";
+				else if( player->v.team == 2 )
+					pszName = "info_player_team2";
+				else
+					pszName = "info_player_deathmatch";
+			}
+			else
+				pszName = "info_player_deathmatch";
+			pSpot = UTIL_FindEntityByClassname( pSpot, pszName );
+		}
+
 		if( FNullEnt( pSpot ) )  // skip over the null point
-			pSpot = UTIL_FindEntityByClassname( pSpot, "info_player_deathmatch" );
+		{
+			if( !bCheckDM )
+			{
+				if( player->v.team == 1 )
+					pszName = "info_player_team1";
+				else if( player->v.team == 2 )
+					pszName = "info_player_team2";
+				else
+					pszName = "info_player_deathmatch";
+			}
+			else
+				pszName = "info_player_deathmatch";
+			pSpot = UTIL_FindEntityByClassname( pSpot, pszName );
+		}
 
 		CBaseEntity *pFirstSpot = pSpot;
 
@@ -2433,7 +2471,18 @@ edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer )
 				{
 					if( pSpot->pev->origin == Vector( 0, 0, 0 ) )
 					{
-						pSpot = UTIL_FindEntityByClassname( pSpot, "info_player_deathmatch" );
+						if( !bCheckDM )
+						{
+							if( player->v.team == 1 )
+								pszName = "info_player_team1";
+							else if( player->v.team == 2 )
+								pszName = "info_player_team2";
+							else
+								pszName = "info_player_deathmatch";
+						}
+						else
+							pszName = "info_player_deathmatch";
+						pSpot = UTIL_FindEntityByClassname( pSpot, pszName );
 						continue;
 					}
 
@@ -2442,7 +2491,18 @@ edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer )
 				}
 			}
 			// increment pSpot
-			pSpot = UTIL_FindEntityByClassname( pSpot, "info_player_deathmatch" );
+			if( !bCheckDM )
+			{
+				if( player->v.team == 1 )
+					pszName = "info_player_team1";
+				else if( player->v.team == 2 )
+					pszName = "info_player_team2";
+				else
+					pszName = "info_player_deathmatch";
+			}
+			else
+				pszName = "info_player_deathmatch";
+			pSpot = UTIL_FindEntityByClassname( pSpot, pszName );
 		} while( pSpot != pFirstSpot ); // loop if we're not back to the start
 
 		// we haven't found a place to spawn yet,  so kill any guy at the first spawn point and spawn there
@@ -2682,7 +2742,7 @@ int CBasePlayer::Restore( CRestore &restore )
 		ALERT( at_console, "No Landmark:%s\n", pSaveData->szLandmarkName );
 
 		// default to normal spawn
-		edict_t *pentSpawnSpot = EntSelectSpawnPoint( this );
+		edict_t *pentSpawnSpot = EntSelectSpawnPoint( this, TRUE );
 		pev->origin = VARS( pentSpawnSpot )->origin + Vector( 0, 0, 1 );
 		pev->angles = VARS( pentSpawnSpot )->angles;
 	}

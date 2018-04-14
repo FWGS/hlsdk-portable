@@ -30,7 +30,7 @@ extern Vector g_vecTeleMins[MAX_TELES];
 extern Vector g_vecTeleMaxs[MAX_TELES];
 extern int g_iTeleNum;
 
-extern edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer );
+extern edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer, bool bCheckDM );
 
 DLL_GLOBAL CGameRules *g_pGameRules = NULL;
 extern DLL_GLOBAL BOOL g_fGameOver;
@@ -66,7 +66,7 @@ BOOL CGameRules::CanHaveAmmo( CBasePlayer *pPlayer, const char *pszAmmoName, int
 //=========================================================
 edict_t *CGameRules::GetPlayerSpawnSpot( CBasePlayer *pPlayer )
 {
-	edict_t *pentSpawnSpot = EntSelectSpawnPoint( pPlayer );
+	edict_t *pentSpawnSpot = EntSelectSpawnPoint( pPlayer, TRUE );
 
 	pPlayer->pev->origin = VARS( pentSpawnSpot )->origin + Vector( 0, 0, 1 );
 	pPlayer->pev->v_angle  = g_vecZero;

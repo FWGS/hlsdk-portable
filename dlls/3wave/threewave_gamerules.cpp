@@ -48,11 +48,10 @@ extern int gmsgRuneStatus;
 extern int gmsgFlagCarrier;
 extern int gmsgScoreInfo;
 
-extern unsigned short g_usHook;	
-extern unsigned short g_usCable;
-extern unsigned short g_usCarried;
-extern unsigned short g_usFlagSpawn;
-
+unsigned short g_usHook;	
+unsigned short g_usCable;
+unsigned short g_usCarried;
+unsigned short g_usFlagSpawn;
 
 static char team_names[MAX_TEAMS][MAX_TEAMNAME_LENGTH];
 static int team_scores[MAX_TEAMS];
@@ -112,7 +111,7 @@ static CThreeWaveGameMgrHelper g_GameMgrHelper;
 
 extern DLL_GLOBAL BOOL		g_fGameOver;
 
-char* GetTeamName( int team )
+const char* GetTeamName( int team )
 {
 	if ( team < 0 || team > NUM_TEAMS )
 		team = 0;
@@ -122,9 +121,10 @@ char* GetTeamName( int team )
 
 CThreeWave :: CThreeWave()
 {
+#ifndef NO_VOICEGAMEMGR
 	// CHalfLifeMultiplay already initialized it - just override its helper callback.
 	m_VoiceGameMgr.SetHelper(&g_GameMgrHelper);
-
+#endif
 	m_DisableDeathMessages = FALSE;
 	m_DisableDeathPenalty = FALSE;
 
@@ -173,8 +173,9 @@ extern cvar_t timeleft, fragsleft;
 
 void CThreeWave :: Think ( void )
 {
+#ifndef NO_VOICEGAMEMGR
 	m_VoiceGameMgr.Update(gpGlobals->frametime);
-
+#endif
 	///// Check game rules /////
 	static int last_frags;
 	static int last_time;
@@ -335,9 +336,10 @@ void DropRune ( CBasePlayer *pPlayer );
 //=========================================================
 BOOL CThreeWave :: ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 {
+#ifndef NO_VOICEGAMEMGR
 	if( m_VoiceGameMgr.ClientCommand( pPlayer, pcmd ) )
 		return TRUE;
-
+#endif
 	if ( FStrEq( pcmd, "menuselect" ) )
 	{
 		if ( CMD_ARGC() < 2 )
@@ -1657,8 +1659,8 @@ void CItemFlag::Spawn ( void )
     UTIL_SetOrigin( pev, pev->origin );
     UTIL_SetSize(pev, Vector(-16, -16, 0), Vector(16, 16, 16)); 
 
-    SetThink( FlagThink );
-    SetTouch( FlagTouch ); 
+    SetThink( &CItemFlag::FlagThink );
+    SetTouch( &CItemFlag::FlagTouch ); 
 
     pev->nextthink = gpGlobals->time + 0.3; 
 
@@ -2014,10 +2016,9 @@ void CItemFlag::Materialize( void )
 
 	Dropped = FALSE;
 
-    SetTouch( FlagTouch );
-    SetThink( FlagThink );
-} 
-
+    SetTouch( &CItemFlag::FlagTouch );
+    SetThink( &CItemFlag::FlagThink );
+}
 
 void CItemFlag::ResetFlag( int iTeam )
 {
@@ -2135,7 +2136,7 @@ void CCarriedFlag ::Spawn( )
 
 	m_iOwnerOldVel = 0;
 
-    SetThink( FlagThink );
+    SetThink( &CCarriedFlag::FlagThink );
     pev->nextthink = gpGlobals->time + 0.1;
 } 
 
@@ -2470,7 +2471,7 @@ void CResistRune::MakeTouchable ( void )
 	pev->nextthink = gpGlobals->time + 120; // if no one touches it in two minutes,
 											// respawn it somewhere else, so inaccessible 
 											// ones will come 'back'
-	SetThink ( RuneRespawn );
+	SetThink ( &CResistRune::RuneRespawn );
 }
 
 void CResistRune::Spawn ( void )
@@ -2511,10 +2512,10 @@ void CResistRune::Spawn ( void )
 	
 	pev->owner = NULL;
 	
-	SetTouch( RuneTouch );
+	SetTouch( &CResistRune::RuneTouch );
 	
 	pev->nextthink = gpGlobals->time + 1; 
-	SetThink ( MakeTouchable );
+	SetThink ( &CResistRune::MakeTouchable );
 }
 
 
@@ -2527,7 +2528,7 @@ void CStrengthRune::MakeTouchable ( void )
 	pev->nextthink = gpGlobals->time + 120; // if no one touches it in two minutes,
 											// respawn it somewhere else, so inaccessible 
 											// ones will come 'back'
-	SetThink ( RuneRespawn );
+	SetThink ( &CStrengthRune::RuneRespawn );
 }
 
 void CStrengthRune::RuneTouch ( CBaseEntity *pOther )
@@ -2634,10 +2635,10 @@ void CStrengthRune::Spawn ( void )
 	
 	pev->owner = NULL;
 	
-	SetTouch( RuneTouch );
+	SetTouch( &CStrengthRune::RuneTouch );
 
 	pev->nextthink = gpGlobals->time + 1; 
-	SetThink ( MakeTouchable );
+	SetThink ( &CStrengthRune::MakeTouchable );
 }
 
 
@@ -2649,7 +2650,7 @@ void CHasteRune::MakeTouchable ( void )
 	pev->nextthink = gpGlobals->time + 120; // if no one touches it in two minutes,
 											// respawn it somewhere else, so inaccessible 
 											// ones will come 'back'
-	SetThink ( RuneRespawn );
+	SetThink ( &CHasteRune::RuneRespawn );
 }
 
 
@@ -2759,12 +2760,12 @@ void CHasteRune::Spawn ( void )
 	
 	pev->owner = NULL;
 	
-	SetTouch( RuneTouch );
+	SetTouch( &CHasteRune::RuneTouch );
 
 	pev->nextthink = gpGlobals->time + 1; // if no one touches it in two minutes,
 											// respawn it somewhere else, so inaccessible 
 											// ones will come 'back'
-	SetThink ( MakeTouchable );
+	SetThink ( &CHasteRune::MakeTouchable );
 }
 
 
@@ -2777,7 +2778,7 @@ void CRegenRune::MakeTouchable ( void )
 	pev->nextthink = gpGlobals->time + 120; // if no one touches it in two minutes,
 											// respawn it somewhere else, so inaccessible 
 											// ones will come 'back'
-	SetThink ( RuneRespawn );
+	SetThink ( &CRegenRune::RuneRespawn );
 }
 
 void CRegenRune::RuneTouch ( CBaseEntity *pOther )
@@ -2885,12 +2886,12 @@ void CRegenRune::Spawn ( void )
 	
 	pev->owner = NULL;
 
-	SetTouch( RuneTouch );
+	SetTouch( &CRegenRune::RuneTouch );
 
 	pev->nextthink = gpGlobals->time + 1; // if no one touches it in two minutes,
 											// respawn it somewhere else, so inaccessible 
 											// ones will come 'back'
-	SetThink ( MakeTouchable );
+	SetThink ( &CRegenRune::MakeTouchable );
 }
 
 
@@ -3042,7 +3043,7 @@ void CGrapple::GrappleTouch ( CBaseEntity *pOther )
 		STOP_SOUND( ((CBasePlayer *)pOwner)->edict(), CHAN_WEAPON, "weapons/grfire.wav" );
 
         pev->enemy = pOther->edict();// remember this guy!
-        SetThink ( Grapple_Track );
+        SetThink ( &CGrapple::Grapple_Track );
         pev->nextthink = gpGlobals->time;
 		m_flNextIdleTime = gpGlobals->time + 0.1;
 		pev->solid = SOLID_NOT;
@@ -3223,8 +3224,8 @@ void CGrapple::Spawn ( void )
 
 	SET_MODEL ( ENT(pev),"models/hook.mdl");
 
-	SetTouch ( GrappleTouch );
-	SetThink ( OnAirThink );
+	SetTouch ( &CGrapple::GrappleTouch );
+	SetThink ( &CGrapple::OnAirThink );
 
 	pev->nextthink = gpGlobals->time + 0.1;
 }
