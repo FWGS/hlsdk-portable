@@ -60,14 +60,14 @@ char *sBonusStrings[] =
 
 DECLARE_MESSAGE(m_Bonus, Bonus)
 
-struct bonus_info_t
+typedef struct bonus_info_s
 {
 	int iSlot;
 	int iType;
 	bool bActive;
 	float flBonusTime;
 	char sPlayerName[64];
-};
+} bonus_info_t;
 
 bonus_info_t  g_PlayerBonus[MAX_BONUS+1]; 
 
@@ -159,9 +159,10 @@ int CHudBonus ::Draw(float flTime )
  
 int CHudBonus::MsgFunc_Bonus(const char *pszName, int iSize, void *pbuf)
 {
+	int index;
     BEGIN_READ( pbuf, iSize ); 
 
-	for ( int index = 1; index < MAX_BONUS + 1; index++)
+	for ( index = 1; index < MAX_BONUS + 1; index++)
 	{
 		//Find wich one is not used
 		if ( g_PlayerBonus[ index ].bActive == false )

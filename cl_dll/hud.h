@@ -343,6 +343,7 @@ struct extra_player_info_t
 	short playerclass;
 	short teamnumber;
 	char teamname[MAX_TEAM_NAME];
+	int iHasFlag;
 };
 
 struct team_info_t
@@ -580,6 +581,74 @@ private:
 //
 //-----------------------------------------------------
 //
+class CHudFlagStatus : public CHudBase
+{
+public:
+	int Init();
+	int VidInit();
+	void Reset();
+	int Draw( float flTime );
+	int MsgFunc_FlagStat( const char *pszName, int iSize, void *pbuf );
+	int MsgFunc_RuneStat( const char *pszName, int iSize, void *pbuf );
+	int MsgFunc_FlagCarrier( const char *pszName, int iSize, void *pbuf );
+
+	int iDrawStatus;
+	int iRedFlagStatus;
+	int iBlueFlagStatus;
+	int iRedTeamScore;
+	int iBlueTeamScore;
+
+private:
+	int m_iBlueAtBaseIndex;
+	int m_iBlueFlagIndex;
+	int m_iBlueLostIndex;
+	int m_iBlueStolenIndex;
+
+	int m_iRedAtBaseIndex;
+	int m_iRedFlagIndex;
+	int m_iRedLostIndex;
+	int m_iRedStolenIndex;
+
+	int m_iRune1Index;
+	int m_iRune2Index;
+	int m_iRune3Index;
+	int m_iRune4Index;
+	int m_iRuneStat;
+
+	HSPRITE m_hBlueFlag;
+	HSPRITE m_hBlueAtBase;
+	HSPRITE m_hBlueLost;
+	HSPRITE m_hBlueStolen;
+
+	HSPRITE	m_hRedFlag;
+	HSPRITE m_hRedAtBase;
+	HSPRITE m_hRedLost;
+	HSPRITE m_hRedStolen;
+
+	HSPRITE m_hRune1;
+	HSPRITE m_hRune2;
+	HSPRITE m_hRune3;
+	HSPRITE m_hRune4;
+};
+
+//
+//-----------------------------------------------------
+//
+class CHudBonus : public CHudBase
+{
+public:
+	int Init();
+	int VidInit();
+	void Reset();
+	int Draw( float flTime );
+	int MsgFunc_Bonus( const char *pszName, int iSize, void *pbuf );
+
+private:
+	bool m_bUsedSlot[32];
+};
+//
+//-----------------------------------------------------
+//
 class CHud
 {
 private:
@@ -658,6 +727,8 @@ public:
 	CHudStatusIcons m_StatusIcons;
 	CHudScoreboard	m_Scoreboard;
 	CHudMOTD	m_MOTD;
+	CHudFlagStatus	m_FlagStat;
+	CHudBonus	m_Bonus;
 
 	void Init( void );
 	void VidInit( void );

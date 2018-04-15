@@ -45,6 +45,8 @@ endif()
 
 
 set (CLDLL_SOURCES
+	3wave/CTF_FlagStatus.cpp
+	3wave/CTF_HudMessage.cpp
 	dmc/DMC_Teleporters.cpp
         ev_hldm.cpp
         ../dlls/dmc/quake_gun.cpp

@@ -26,8 +26,8 @@
 #include "pm_materials.h"
 #include "ref_params.h"
 #include <string.h>
-#include "vgui_viewport.h"
-#include "vgui_ScorePanel.h"
+//#include "vgui_viewport.h"
+//#include "vgui_ScorePanel.h"
 
 #define RED_FLAG_STOLE 1
 #define BLUE_FLAG_STOLE 2
@@ -247,10 +247,10 @@ int CHudFlagStatus::MsgFunc_FlagCarrier(const char *pszName, int iSize, void *pb
 		}
 	}
 	
-	if ( !bRedFlag )
-		gViewPort->m_pScoreBoard->m_pImages[ 5 ]->setVisible( false );
-	if ( !bBlueFlag )
-		gViewPort->m_pScoreBoard->m_pImages[ 4 ]->setVisible( false );
+	if ( !bRedFlag );
+		//gViewPort->m_pScoreBoard->m_pImages[ 5 ]->setVisible( false );
+	if ( !bBlueFlag );
+		//gViewPort->m_pScoreBoard->m_pImages[ 4 ]->setVisible( false );
 			
 	return 1;
 }
