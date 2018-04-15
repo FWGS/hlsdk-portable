@@ -67,6 +67,8 @@ private:
 LINK_ENTITY_TO_CLASS( info_player_deathmatch, CBaseDMStart )
 LINK_ENTITY_TO_CLASS( info_player_start, CPointEntity )
 LINK_ENTITY_TO_CLASS( info_landmark, CPointEntity )
+LINK_ENTITY_TO_CLASS( info_player_team1, CPointEntity )
+LINK_ENTITY_TO_CLASS( info_player_team2, CPointEntity )
 
 void CBaseDMStart::KeyValue( KeyValueData *pkvd )
 {
