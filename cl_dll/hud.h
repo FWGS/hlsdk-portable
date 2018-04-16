@@ -598,6 +598,9 @@ public:
 	int iRedTeamScore;
 	int iBlueTeamScore;
 
+	HSPRITE m_hBlueFlag;
+	HSPRITE m_hRedFlag;
+
 private:
 	int m_iBlueAtBaseIndex;
 	int m_iBlueFlagIndex;
@@ -615,12 +618,10 @@ private:
 	int m_iRune4Index;
 	int m_iRuneStat;
 
-	HSPRITE m_hBlueFlag;
 	HSPRITE m_hBlueAtBase;
 	HSPRITE m_hBlueLost;
 	HSPRITE m_hBlueStolen;
 
-	HSPRITE	m_hRedFlag;
 	HSPRITE m_hRedAtBase;
 	HSPRITE m_hRedLost;
 	HSPRITE m_hRedStolen;

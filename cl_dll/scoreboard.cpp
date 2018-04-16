@@ -427,6 +427,22 @@ int CHudScoreboard::DrawPlayers( int xpos_rel, float list_slot, int nameoffset, 
 			FillRGBA( xpos - 5, ypos, FAR_RIGHT, ROW_GAP, 0, 0, 255, 70 );
 		}
 
+		if( g_PlayerExtraInfo[best_player].iHasFlag )
+		{
+			HSPRITE hFlag;
+
+			if( g_PlayerExtraInfo[best_player].teamnumber == 1 )
+			{
+				hFlag = gHUD.m_FlagStat.m_hBlueFlag;
+			}
+			else if( g_PlayerExtraInfo[best_player].teamnumber == 2 )
+			{
+				hFlag = gHUD.m_FlagStat.m_hRedFlag;
+			}
+			SPR_Set( hFlag, 255, 255, 255 );
+			SPR_DrawHoles( 1, xpos, ypos + 5, NULL );
+		}
+
 		// draw their name (left to right)
 		DrawUtfString( xpos + nameoffset, ypos, NAME_RANGE_MAX + xpos_rel, pl_info->name, r, g, b );
 
@@ -492,14 +508,14 @@ int CHudScoreboard::MsgFunc_ScoreInfo( const char *pszName, int iSize, void *pbu
 	short cl = READ_BYTE();
 	short frags = READ_SHORT();
 	short deaths = READ_SHORT();
-	short playerclass = READ_SHORT();
+	// short playerclass = READ_SHORT();
 	short teamnumber = READ_SHORT();
 
 	if( cl > 0 && cl <= MAX_PLAYERS )
 	{
 		g_PlayerExtraInfo[cl].frags = frags;
 		g_PlayerExtraInfo[cl].deaths = deaths;
-		g_PlayerExtraInfo[cl].playerclass = playerclass;
+		// g_PlayerExtraInfo[cl].playerclass = playerclass;
 		g_PlayerExtraInfo[cl].teamnumber = teamnumber;
 
 		//gViewPort->UpdateOnPlayerInfo();

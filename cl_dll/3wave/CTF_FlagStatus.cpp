@@ -218,39 +218,20 @@ int CHudFlagStatus::MsgFunc_FlagStat(const char *pszName, int iSize, void *pbuf)
 
 int CHudFlagStatus::MsgFunc_RuneStat(const char *pszName, int iSize, void *pbuf)
 {
-    BEGIN_READ( pbuf, iSize ); 
+	BEGIN_READ( pbuf, iSize ); 
 
 	m_iRuneStat = READ_BYTE();
-	
+
 	return 1;
 }
 
 int CHudFlagStatus::MsgFunc_FlagCarrier(const char *pszName, int iSize, void *pbuf)
 {
-    BEGIN_READ( pbuf, iSize ); 
+	BEGIN_READ( pbuf, iSize ); 
 
 	int index = READ_BYTE();
 
-	bool bRedFlag = false;
-	bool bBlueFlag = false;
+	g_PlayerExtraInfo[index].iHasFlag = READ_BYTE();
 
-	g_PlayerExtraInfo[ index ].iHasFlag = READ_BYTE();
-
-	for ( int i = 1; i < MAX_PLAYERS + 1; i++ )
-	{
-		if ( g_PlayerExtraInfo[ i ].iHasFlag )
-		{
-			if ( g_PlayerExtraInfo[ i ].teamnumber == 1 )
-				bRedFlag = true;
-			else if ( g_PlayerExtraInfo[ i ].teamnumber == 2 )
-				bBlueFlag = true;
-		}
-	}
-	
-	if ( !bRedFlag );
-		//gViewPort->m_pScoreBoard->m_pImages[ 5 ]->setVisible( false );
-	if ( !bBlueFlag );
-		//gViewPort->m_pScoreBoard->m_pImages[ 4 ]->setVisible( false );
-			
 	return 1;
 }

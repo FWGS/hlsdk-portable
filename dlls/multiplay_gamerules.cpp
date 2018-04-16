@@ -501,7 +501,6 @@ void CHalfLifeMultiplay::InitHUD( CBasePlayer *pl )
 		WRITE_SHORT( 0 );
 		WRITE_SHORT( 0 );
 		WRITE_SHORT( 0 );
-		WRITE_SHORT( 0 );
 	MESSAGE_END();
 
 	SendMOTDToClient( pl->edict() );
@@ -518,7 +517,6 @@ void CHalfLifeMultiplay::InitHUD( CBasePlayer *pl )
 				WRITE_BYTE( i );	// client number
 				WRITE_SHORT( (int)plr->pev->frags );
 				WRITE_SHORT( plr->m_iDeaths );
-				WRITE_SHORT( 0 );
 				WRITE_SHORT( GetTeamIndex( plr->m_szTeamName ) + 1 );
 			MESSAGE_END();
 		}
@@ -746,7 +744,6 @@ void CHalfLifeMultiplay::PlayerKilled( CBasePlayer *pVictim, entvars_t *pKiller,
 		WRITE_BYTE( ENTINDEX(pVictim->edict()) );
 		WRITE_SHORT( (int)pVictim->pev->frags );
 		WRITE_SHORT( pVictim->m_iDeaths );
-		WRITE_SHORT( 0 );
 		WRITE_SHORT( GetTeamIndex( pVictim->m_szTeamName ) + 1 );
 	MESSAGE_END();
 
@@ -760,7 +757,6 @@ void CHalfLifeMultiplay::PlayerKilled( CBasePlayer *pVictim, entvars_t *pKiller,
 			WRITE_BYTE( ENTINDEX( PK->edict() ) );
 			WRITE_SHORT( (int)PK->pev->frags );
 			WRITE_SHORT( PK->m_iDeaths );
-			WRITE_SHORT( 0 );
 			WRITE_SHORT( GetTeamIndex( PK->m_szTeamName ) + 1 );
 		MESSAGE_END();
 
