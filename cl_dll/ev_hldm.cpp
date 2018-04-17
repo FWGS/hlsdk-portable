@@ -404,8 +404,27 @@ void EV_HLDM_DecalGunshot( pmtrace_t *pTrace, int iBulletType )
 
 void EV_Quake_PlayQuadSound ( int idx, float *origin, int iFlag )
 {
-	if( iFlag == 1 )
-		gEngfuncs.pEventAPI->EV_PlaySound( idx, origin, CHAN_ITEM, "items/damage3.wav", 1, ATTN_NORM, 0, PITCH_NORM);
+	const char *pszSound;
+
+	switch( iFlag )
+	{
+	case 1:
+		pszSound = "items/damage3.wav";
+		break;
+	case 2:
+		pszSound = "rune/rune2.wav";
+		break;
+	case 3:
+		pszSound = "rune/rune22.wav";
+		break;
+	case 4:
+		pszSound = "rune/rune3.wav";
+		break;
+	default:
+		return;
+	}
+
+	gEngfuncs.pEventAPI->EV_PlaySound( idx, origin, CHAN_ITEM, pszSound, 1, ATTN_NORM, 0, PITCH_NORM );
 }
 
 /*

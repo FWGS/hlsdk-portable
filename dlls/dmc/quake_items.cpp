@@ -258,7 +258,7 @@ void CItemHealth::MegahealthRot( void )
 	{
 		CBasePlayer *pPlayer = ((CBasePlayer *)((CBaseEntity *)m_hRotTarget));
 
-		if (pPlayer->pev->health > pPlayer->pev->max_health )
+		if( pPlayer->pev->health > pPlayer->pev->max_health && pPlayer->m_iRuneStatus != ITEM_RUNE4_FLAG )
 		{
 			pPlayer->pev->health--;
 			pev->nextthink = gpGlobals->time + 1;

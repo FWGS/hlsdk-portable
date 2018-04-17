@@ -126,8 +126,18 @@ int CBasePlayer::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 			else
 				flDamage *= 4;
 		}
+
+		if( ( (CBasePlayer*)pAttacker )->m_iRuneStatus == ITEM_RUNE2_FLAG )
+		{
+			flDamage *= 2;
+		}
 	}
 
+	if( m_iRuneStatus == ITEM_RUNE1_FLAG )
+	{
+		flDamage /= 2;
+		EMIT_SOUND( ENT( pev ), CHAN_ITEM, "rune/rune1.wav", 1, ATTN_NORM );
+	}
 //++ BulliT
 	if( g_pGameRules->m_iGameMode >= LMS )
 	{

@@ -146,15 +146,26 @@ BOOL CQuakeGun::Deploy( )
 // Plays quad sound if needed
 int CQuakeGun::SuperDamageSound()
 {
-	if ( m_pPlayer->m_iQuakeItems & IT_QUAD )
+	if( m_pPlayer->m_iQuakeItems & IT_QUAD )
 	{
-		if ( m_pPlayer->m_flNextQuadSound < gpGlobals->time)
+		if( m_pPlayer->m_flNextQuadSound < gpGlobals->time)
 		{
 			m_pPlayer->m_flNextQuadSound = gpGlobals->time + 1;
-				return 1;
+			return ( m_pPlayer->m_iRuneStatus == ITEM_RUNE2_FLAG ) ? 3 : 1;
 		}
 	}
-
+	else if( m_pPlayer->m_iRuneStatus == ITEM_RUNE2_FLAG
+		&& m_pPlayer->m_flNextQuadSound < gpGlobals->time )
+	{
+		m_pPlayer->m_flNextQuadSound = gpGlobals->time + 1;
+		return 2;
+	}
+	else if( m_pPlayer->m_iRuneStatus == ITEM_RUNE3_FLAG
+		&& m_pPlayer->m_flNextQuadSound < gpGlobals->time )
+        {
+		m_pPlayer->m_flNextQuadSound = gpGlobals->time + 1;
+		return 4;
+	}
 	return 0;
 }
 
