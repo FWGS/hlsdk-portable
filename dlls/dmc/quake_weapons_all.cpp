@@ -140,7 +140,7 @@ void CBasePlayer::W_SetCurrentAmmo( int sendanim /* = 1 */ )
 	int	iszViewModel = 0;
 	const char *viewmodel = "";
 	int iszWeaponModel = 0;
-	const char *szAnimExt;
+	const char *szAnimExt = "";
 	
 	// Find out what weapon the player's using
 	if (m_iQuakeWeapon == IT_AXE)

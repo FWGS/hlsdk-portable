@@ -23,7 +23,7 @@
 
 #define NUM_TEAMS 2
 
-char *sTeamNames[] =
+const char *sTeamNames[] =
 {
 	"SPECTATOR",
 	"RED",
@@ -277,7 +277,7 @@ int CThreeWave::TeamWithFewestPlayers( void )
 
 	int iNumRed, iNumBlue;
 	
-	int iTeam;
+	int iTeam = 0;
 
 	// Initialize the player counts..
 	iNumRed = iNumBlue = 0;
@@ -488,7 +488,7 @@ void CThreeWave :: PlayerSpawn( CBasePlayer *pPlayer )
 		
 		addDefault = TRUE;
 
-		while ( pWeaponEntity = UTIL_FindEntityByClassname( pWeaponEntity, "game_player_equip" ))
+		while( ( pWeaponEntity = UTIL_FindEntityByClassname( pWeaponEntity, "game_player_equip" ) ) )
 		{
 			pWeaponEntity->Touch( pPlayer );
 			addDefault = FALSE;
@@ -521,7 +521,7 @@ void CThreeWave :: PlayerSpawn( CBasePlayer *pPlayer )
 	MESSAGE_END();*/
 }
 
-void CBasePlayer::ShowMenu ( int bitsValidSlots, int nDisplayTime, BOOL fNeedMore, char *pszText )
+void CBasePlayer::ShowMenu ( int bitsValidSlots, int nDisplayTime, BOOL fNeedMore, const char *pszText )
 {
 	MESSAGE_BEGIN( MSG_ONE, gmsgShowMenu, NULL, pev);
         WRITE_SHORT( bitsValidSlots);
@@ -698,7 +698,7 @@ void CThreeWave :: ClientDisconnected( edict_t *pClient )
 			//We have the flag, spawn it
 			if ( pPlayer->m_bHasFlag )
 			{
-				CBaseEntity *pEnt; 
+				CBaseEntity *pEnt = NULL;
 
 				//We have the BLUE flag, Spawn it
 				if ( pPlayer->pev->team == RED )
@@ -750,7 +750,7 @@ void CThreeWave :: ClientDisconnected( edict_t *pClient )
 
 			// drop any runes the player has
 			CBaseEntity *pRune;
-			char * runeName;
+			const char *runeName;
 
 			switch ( pPlayer->m_iRuneStatus )
 			{
@@ -995,7 +995,7 @@ void CThreeWave :: PlayerKilled( CBasePlayer *pVictim, entvars_t *pKiller, entva
 		}
 
 
-        CBaseEntity *pEnt; 
+        CBaseEntity *pEnt = NULL;
 
 		//We have the BLUE flag, Spawn it
         if ( pVictim->pev->team == RED )
@@ -1236,7 +1236,7 @@ void CThreeWave :: PlayerKilled( CBasePlayer *pVictim, entvars_t *pKiller, entva
 	}
 
 	CBaseEntity *pRune;
-	char * runeName;
+	const char * runeName;
 
 	switch ( pVictim->m_iRuneStatus )
 	{
@@ -2345,7 +2345,7 @@ void DropRune ( CBasePlayer *pPlayer )
 	}
 
 	CBaseEntity *pRune = NULL;
-	char * runeName;
+	const char * runeName;
 
 	if ( pPlayer->m_iRuneStatus == ITEM_RUNE1_FLAG )
 	{

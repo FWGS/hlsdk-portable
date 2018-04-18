@@ -448,7 +448,7 @@ public:
 //-- Martin Webrant
 
 	int m_bHasFlag;
-	void ShowMenu( int bitsValidSlots, int nDisplayTime, BOOL fNeedMore, char *pszText );
+	void ShowMenu( int bitsValidSlots, int nDisplayTime, BOOL fNeedMore, const char *pszText );
 	int m_iMenu;
 
 	float m_flNextTeamChange;

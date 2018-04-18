@@ -12,7 +12,6 @@
 *   without written permission from Valve LLC.
 *
 ****/
-
 #include "hud.h"
 #include "cl_util.h"
 #include "parsemsg.h"
@@ -27,7 +26,6 @@
 #include "ref_params.h"
 #include <string.h>
 
-
 #define MAX_BONUS 10
 
 #define RED_FLAG_STOLEN 1
@@ -41,9 +39,7 @@
 #define RED_FLAG_LOST_HUD 9
 #define BLUE_FLAG_LOST_HUD 10
 
-
-
-char *sBonusStrings[] = 
+const char *sBonusStrings[] = 
 {
 	"",
 	"\\w stole the \\rRED\\w Flag!",

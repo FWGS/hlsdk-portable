@@ -429,7 +429,7 @@ int CHudScoreboard::DrawPlayers( int xpos_rel, float list_slot, int nameoffset, 
 
 		if( g_PlayerExtraInfo[best_player].iHasFlag )
 		{
-			HSPRITE hFlag;
+			HSPRITE hFlag = 0;
 
 			if( g_PlayerExtraInfo[best_player].teamnumber == 1 )
 			{
