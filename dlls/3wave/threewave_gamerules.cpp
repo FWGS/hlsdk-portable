@@ -2096,6 +2096,7 @@ class CItemFlagTeam1 : public CItemFlag
 {
     void Spawn( void )
     {
+	pev->classname = MAKE_STRING( "item_flag_team1" );
         pev->team = RED;
         CItemFlag::Spawn( );
     }
@@ -2105,16 +2106,18 @@ class CItemFlagTeam2 : public CItemFlag
 {
     void Spawn( void )
     {
+	pev->classname = MAKE_STRING( "item_flag_team2" );
         pev->team = BLUE;
         CItemFlag::Spawn( );
     }
 }; 
 
-LINK_ENTITY_TO_CLASS( item_flag_team1, CItemFlagTeam1 ); 
-LINK_ENTITY_TO_CLASS( item_flag_team2, CItemFlagTeam2 ); 
+LINK_ENTITY_TO_CLASS( item_flag_team1, CItemFlagTeam1 )
+LINK_ENTITY_TO_CLASS( ctf_redflag, CItemFlagTeam1 ) 
+LINK_ENTITY_TO_CLASS( item_flag_team2, CItemFlagTeam2 )
+LINK_ENTITY_TO_CLASS( ctf_blueflag, CItemFlagTeam2 ) 
 
-
-void CCarriedFlag ::Spawn( )
+void CCarriedFlag ::Spawn()
 {
     Precache( ); 
 

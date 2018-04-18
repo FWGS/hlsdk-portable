@@ -67,8 +67,29 @@ private:
 LINK_ENTITY_TO_CLASS( info_player_deathmatch, CBaseDMStart )
 LINK_ENTITY_TO_CLASS( info_player_start, CPointEntity )
 LINK_ENTITY_TO_CLASS( info_landmark, CPointEntity )
-LINK_ENTITY_TO_CLASS( info_player_team1, CPointEntity )
-LINK_ENTITY_TO_CLASS( info_player_team2, CPointEntity )
+
+class CCTFRedSpawnPoint : public CPointEntity
+{
+public:
+	void Spawn()
+	{
+		pev->classname = MAKE_STRING( "info_player_team1" );
+	}
+};
+LINK_ENTITY_TO_CLASS( info_player_team1, CCTFRedSpawnPoint )
+LINK_ENTITY_TO_CLASS( ctf_redspawn, CCTFRedSpawnPoint )
+
+class CCTFBlueSpawnPoint : public CPointEntity
+{
+public:
+	void Spawn()
+	{
+		pev->classname = MAKE_STRING( "info_player_team2" );
+	}
+};
+
+LINK_ENTITY_TO_CLASS( info_player_team2, CCTFBlueSpawnPoint )
+LINK_ENTITY_TO_CLASS( ctf_bluespawn, CCTFBlueSpawnPoint )
 
 void CBaseDMStart::KeyValue( KeyValueData *pkvd )
 {
