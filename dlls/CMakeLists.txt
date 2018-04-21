@@ -37,6 +37,9 @@ else()
 endif()
 
 set (SVDLL_SOURCES 
+	3wave/flags.cpp
+	3wave/grapple.cpp
+	3wave/runes.cpp
 	3wave/threewave_gamerules.cpp
 	aghl/agarena.cpp
 	aghl/agglobal.cpp

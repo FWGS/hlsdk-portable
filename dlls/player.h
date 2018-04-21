@@ -17,6 +17,7 @@
 #define PLAYER_H
 
 #include "pm_materials.h"
+#include "grapple.h"
 
 #define PLAYER_FATAL_FALL_SPEED		1024// approx 60 feet
 #define PLAYER_MAX_SAFE_FALL_SPEED	580// approx 20 feet
@@ -472,7 +473,7 @@ public:
 
 	bool m_bHook_Out;
 	bool m_bOn_Hook;
-	CBaseEntity *m_ppHook;
+	CGrapple *m_ppHook;
 
 	void Service_Grapple();
 };

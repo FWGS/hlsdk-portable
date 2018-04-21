@@ -602,20 +602,6 @@ public:
 	HSPRITE m_hRedFlag;
 
 private:
-	int m_iBlueAtBaseIndex;
-	int m_iBlueFlagIndex;
-	int m_iBlueLostIndex;
-	int m_iBlueStolenIndex;
-
-	int m_iRedAtBaseIndex;
-	int m_iRedFlagIndex;
-	int m_iRedLostIndex;
-	int m_iRedStolenIndex;
-
-	int m_iRune1Index;
-	int m_iRune2Index;
-	int m_iRune3Index;
-	int m_iRune4Index;
 	int m_iRuneStat;
 
 	HSPRITE m_hBlueAtBase;

@@ -904,7 +904,7 @@ void CItemAmmoShells::Spawn( void )
 class CItemAmmoSpikes : public CItemAmmo
 {
 public:
-	void Spawn( void );
+	void Spawn();
 };
 LINK_ENTITY_TO_CLASS(item_spikes, CItemAmmoSpikes);
 

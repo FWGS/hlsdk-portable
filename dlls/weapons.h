@@ -460,9 +460,10 @@ void Q_RadiusDamage( CBaseEntity *pInflictor, CBaseEntity *pAttacker, float flDa
 class CQuakeRocket : public CBaseEntity
 {
 public:
-	void Spawn( void );
-	void Precache( void );
-	void Explode( void );
+	void Spawn();
+	void Precache();
+	void Explode();
+	int Classify() { return CLASS_PROJECTILE; };
 
 	// Rocket funcs
 	static CQuakeRocket *CreateRocket( Vector vecOrigin, Vector vecAngles, CBaseEntity *pOwner );
@@ -480,7 +481,8 @@ public:
 class CQuakeNail : public CBaseEntity
 {
 public:
-	void Spawn( void );
+	void Spawn();
+	int Classify() { return CLASS_PROJECTILE; };
 	static	CQuakeNail *CreateNail( Vector vecOrigin, Vector vecAngles, CBaseEntity *pOwner );
 	static	CQuakeNail *CreateSuperNail( Vector vecOrigin, Vector vecAngles, CBaseEntity *pOwner );
 	void	EXPORT NailTouch( CBaseEntity *pOther );

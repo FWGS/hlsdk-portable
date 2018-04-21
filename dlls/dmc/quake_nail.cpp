@@ -72,7 +72,7 @@ void CQuakeNail::Spawn( void )
 
 	// Model
 	SET_MODEL( ENT(pev), "models/spike.mdl" );
-	UTIL_SetSize(pev, Vector( 0, 0, 0), Vector(0, 0, 0));
+	UTIL_SetSize( pev, g_vecZero, g_vecZero );
 	UTIL_SetOrigin( pev, pev->origin );
 
 	// Damage
@@ -117,6 +117,3 @@ void CQuakeNail::NailTouch( CBaseEntity *pOther )
 
 	UTIL_Remove( this );
 }
-
-
-

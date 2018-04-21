@@ -65,7 +65,6 @@ int CQuakeGun::GetItemInfo(ItemInfo *p)
 
 void CQuakeGun::DestroyEffect( void )
 {
-
 #ifndef CLIENT_DLL
 	if ( m_pBeam )
 	{
@@ -73,12 +72,10 @@ void CQuakeGun::DestroyEffect( void )
 		m_pBeam = NULL;
 	}
 #endif
-
 }
 
 void CQuakeGun::CreateEffect( void )
 {
-
 #ifndef CLIENT_DLL
 	DestroyEffect();
 
@@ -93,7 +90,6 @@ void CQuakeGun::CreateEffect( void )
 	m_pBeam->SetScrollRate( 110 );
 	m_pBeam->SetNoise( 5 );
 #endif
-
 }
 
 void CQuakeGun::UpdateEffect( void )
@@ -146,25 +142,23 @@ BOOL CQuakeGun::Deploy( )
 // Plays quad sound if needed
 int CQuakeGun::SuperDamageSound()
 {
-	if( m_pPlayer->m_iQuakeItems & IT_QUAD )
+	if( m_pPlayer->m_flNextQuadSound < gpGlobals->time )
 	{
-		if( m_pPlayer->m_flNextQuadSound < gpGlobals->time)
+		if( m_pPlayer->m_iQuakeItems & IT_QUAD )
 		{
 			m_pPlayer->m_flNextQuadSound = gpGlobals->time + 1;
 			return ( m_pPlayer->m_iRuneStatus == ITEM_RUNE2_FLAG ) ? 3 : 1;
 		}
-	}
-	else if( m_pPlayer->m_iRuneStatus == ITEM_RUNE2_FLAG
-		&& m_pPlayer->m_flNextQuadSound < gpGlobals->time )
-	{
-		m_pPlayer->m_flNextQuadSound = gpGlobals->time + 1;
-		return 2;
-	}
-	else if( m_pPlayer->m_iRuneStatus == ITEM_RUNE3_FLAG
-		&& m_pPlayer->m_flNextQuadSound < gpGlobals->time )
-        {
-		m_pPlayer->m_flNextQuadSound = gpGlobals->time + 1;
-		return 4;
+		else if( m_pPlayer->m_iRuneStatus == ITEM_RUNE2_FLAG )
+		{
+			m_pPlayer->m_flNextQuadSound = gpGlobals->time + 1;
+			return 2;
+		}
+		else if( m_pPlayer->m_iRuneStatus == ITEM_RUNE3_FLAG )
+		{
+			m_pPlayer->m_flNextQuadSound = gpGlobals->time + 1;
+			return 4;
+		}
 	}
 	return 0;
 }

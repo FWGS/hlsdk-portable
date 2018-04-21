@@ -51,160 +51,149 @@ int CHudFlagStatus::Init(void)
 	HOOK_MESSAGE( RuneStat );
 	HOOK_MESSAGE( FlagCarrier );
 
-    m_iFlags |= HUD_ACTIVE;
+	m_iFlags |= HUD_ACTIVE;
 
 	gHUD.AddHudElem(this);
 
 	Reset();
-    
-    return 1;
-}; 
 
-int CHudFlagStatus::VidInit(void)
+	return 1;
+};
+
+int CHudFlagStatus::VidInit()
 {
-	m_iBlueAtBaseIndex = gHUD.GetSpriteIndex( "blue_atbase" );
-	m_iBlueLostIndex = gHUD.GetSpriteIndex( "blue_lost" );
-	m_iBlueStolenIndex = gHUD.GetSpriteIndex( "blue_stolen" );
+	m_hBlueAtBase = gHUD.GetSprite( gHUD.GetSpriteIndex( "blue_atbase" ) );
+	m_hBlueLost = gHUD.GetSprite( gHUD.GetSpriteIndex( "blue_lost" ) );
+	m_hBlueStolen = gHUD.GetSprite( gHUD.GetSpriteIndex( "blue_stolen" ) );
 
-	m_iRedAtBaseIndex = gHUD.GetSpriteIndex( "red_atbase" );
-	m_iRedLostIndex = gHUD.GetSpriteIndex( "red_lost" );
-	m_iRedStolenIndex = gHUD.GetSpriteIndex( "red_stolen" );
+	m_hRedAtBase = gHUD.GetSprite( gHUD.GetSpriteIndex( "red_atbase" ) );
+	m_hRedLost = gHUD.GetSprite( gHUD.GetSpriteIndex( "red_lost" ) );
+	m_hRedStolen = gHUD.GetSprite( gHUD.GetSpriteIndex( "red_stolen" ) );
 
-	m_iRune1Index = gHUD.GetSpriteIndex( "rune1" );
-	m_iRune2Index = gHUD.GetSpriteIndex( "rune2" );
-	m_iRune3Index = gHUD.GetSpriteIndex( "rune3" );
-	m_iRune4Index = gHUD.GetSpriteIndex( "rune4" );
-
-	m_hBlueAtBase = gHUD.GetSprite( m_iBlueAtBaseIndex );
-	m_hBlueLost = gHUD.GetSprite( m_iBlueLostIndex );
-	m_hBlueStolen = gHUD.GetSprite( m_iBlueStolenIndex );
-
-	m_hRedAtBase = gHUD.GetSprite( m_iRedAtBaseIndex );
-	m_hRedLost = gHUD.GetSprite( m_iRedLostIndex );
-	m_hRedStolen = gHUD.GetSprite( m_iRedStolenIndex );
-
-	m_hRune1 = gHUD.GetSprite( m_iRune1Index );
-	m_hRune2 = gHUD.GetSprite( m_iRune2Index );
-	m_hRune3 = gHUD.GetSprite( m_iRune3Index );
-	m_hRune4 = gHUD.GetSprite( m_iRune4Index );
+	m_hRune1 = gHUD.GetSprite( gHUD.GetSpriteIndex( "rune1" ) );
+	m_hRune2 = gHUD.GetSprite( gHUD.GetSpriteIndex( "rune2" ) );
+	m_hRune3 = gHUD.GetSprite( gHUD.GetSpriteIndex( "rune3" ) );
+	m_hRune4 = gHUD.GetSprite( gHUD.GetSpriteIndex( "rune4" ) );
 
 	// Load sprites here
-	m_iBlueFlagIndex = gHUD.GetSpriteIndex( "b_flag_c" );
-	m_iRedFlagIndex = gHUD.GetSpriteIndex( "r_flag_c" );
+	m_hBlueFlag = gHUD.GetSprite( gHUD.GetSpriteIndex( "b_flag_c" ) );
+	m_hRedFlag = gHUD.GetSprite( gHUD.GetSpriteIndex( "r_flag_c" ) );
 
-	m_hBlueFlag = gHUD.GetSprite( m_iBlueFlagIndex );
-	m_hRedFlag = gHUD.GetSprite( m_iRedFlagIndex );
-
-    return 1;
+	return 1;
 }
 
-void CHudFlagStatus :: Reset( void )
+void CHudFlagStatus::Reset()
 {
-     return;
+	return;
 }
 
-
-int CHudFlagStatus ::Draw(float flTime )
+int CHudFlagStatus::Draw( float flTime )
 {
+	HSPRITE hSprite = 0;
+	int iDigits = DHN_DRAWZERO;
 
-   if ( !iDrawStatus )
-	   return 1;
+	if( !iDrawStatus )
+		return 1;
 
-   int x, y;
-   int r,g,b;
+	int x, y;
+	int r, g, b;
 
-   r = g = b = 255;
+	r = g = b = 255;
 
-   x = 20;
-   y = ( ScreenHeight - gHUD.m_iFontHeight ) - ( gHUD.m_iFontHeight / 2 ) - 40;
-   
+	x = 20;
+	y = ( ScreenHeight - gHUD.m_iFontHeight ) - ( gHUD.m_iFontHeight / 2 ) - 40;
 
-   switch ( iBlueFlagStatus )
-   {
-	   case BLUE_FLAG_STOLE:
-		   SPR_Set( m_hBlueStolen, r, g, b );
-		   SPR_DrawHoles( 1, x, y, NULL );
-		   break;
-       case BLUE_FLAG_LOST:
-		   SPR_Set( m_hBlueLost, r, g, b );
-		   SPR_DrawHoles( 1, x, y, NULL );
-		   break;
-	   case BLUE_FLAG_ATBASE:
-		   SPR_Set( m_hBlueAtBase, r, g, b );
-		   SPR_DrawHoles( 1, x, y, NULL );
-		   break;
-   }
+	switch( iBlueFlagStatus )
+	{
+	case BLUE_FLAG_STOLE:
+		hSprite = m_hBlueStolen;
+		break;
+	case BLUE_FLAG_LOST:
+		hSprite = m_hBlueLost;
+		break;
+	case BLUE_FLAG_ATBASE:
+		hSprite = m_hBlueAtBase;
+		break;
+	default:
+		return 1;
+	}
 
-   x = 50;
-   
-   if ( iBlueTeamScore < 10)
-   {
-	   x += 3;
-   	   gHUD.DrawHudNumber( x, y + 4, DHN_DRAWZERO, iBlueTeamScore, 255, 255, 255 );
-   }
-   else if ( iBlueTeamScore >= 10 && iBlueTeamScore < 100 )
-        gHUD.DrawHudNumber( x, y + 4, DHN_2DIGITS | DHN_DRAWZERO, iBlueTeamScore, 255, 255, 255 );
-      
-   x = 20;
-   y = ( ScreenHeight - gHUD.m_iFontHeight ) - ( gHUD.m_iFontHeight / 2 ) - 75;
+	SPR_Set( hSprite, r, g, b );
+	SPR_DrawHoles( 1, x, y, NULL );
 
-   switch ( iRedFlagStatus )
-   {
-	   case RED_FLAG_STOLE:
-		   SPR_Set( m_hRedStolen, r, g, b );
-		   SPR_DrawHoles( 1, x, y, NULL );
-		   break;
-       case RED_FLAG_LOST:
-		   SPR_Set( m_hRedLost, r, g, b );
-		   SPR_DrawHoles( 1, x, y, NULL );
-		   break;
-	   case RED_FLAG_ATBASE:
-		   SPR_Set( m_hRedAtBase, r, g, b );
-		   SPR_DrawHoles( 1, x, y, NULL );
-		   break;
-   }
+	x = 50;
+
+	if( iBlueTeamScore < 10 )
+	{
+		x += 3;
+	}
+	else if( iBlueTeamScore >= 10 && iBlueTeamScore < 100 )
+		iDigits |= DHN_2DIGITS;
+
+	gHUD.DrawHudNumber( x, y + 4, iDigits, iBlueTeamScore, 255, 255, 255 );
+
+	x = 20;
+	y -= 35;
+
+	switch( iRedFlagStatus )
+	{
+	case RED_FLAG_STOLE:
+		hSprite = m_hRedStolen;
+		break;
+	case RED_FLAG_LOST:
+		hSprite = m_hRedLost;
+		break;
+	case RED_FLAG_ATBASE:
+		hSprite = m_hRedAtBase;
+		break;
+	default:
+		return 1;
+	}
+
+	SPR_Set( hSprite, r, g, b );
+	SPR_DrawHoles( 1, x, y, NULL );
  
-   x = 50;
-   if ( iRedTeamScore < 10)
-   {
-	   x += 3;
-	   gHUD.DrawHudNumber( x, y + 4, DHN_DRAWZERO, iRedTeamScore, 255, 255, 255 );
-   }
-   else if ( iBlueTeamScore >= 10 && iBlueTeamScore < 100 )
-       gHUD.DrawHudNumber( x, y + 4, DHN_2DIGITS | DHN_DRAWZERO, iRedTeamScore, 255, 255, 255 );
+	x = 50;
+	iDigits = DHN_DRAWZERO;
 
-   x = 20;
-   y = ( ScreenHeight - gHUD.m_iFontHeight ) - ( gHUD.m_iFontHeight / 2 ) - 110;
+	if( iRedTeamScore < 10 )
+	{
+		x += 3;
+	}
+	else if( iRedTeamScore >= 10 && iRedTeamScore < 100 )
+		iDigits |= DHN_2DIGITS;
 
-   switch ( m_iRuneStat )
-   {
-		case ITEM_RUNE1_FLAG:
-		   SPR_Set( m_hRune1, r, g, b );
-		   SPR_Draw( 1, x, y, NULL );
-		   break;
+	gHUD.DrawHudNumber( x, y + 4, iDigits, iRedTeamScore, 255, 255, 255 );
 
-		case ITEM_RUNE2_FLAG:
-		   SPR_Set( m_hRune2, r, g, b );
-		   SPR_Draw( 1, x, y, NULL );
-		   break;
+	x = 20;
+	y -= 35;
 
-		case ITEM_RUNE3_FLAG:
-		   SPR_Set( m_hRune3, r, g, b );
-		   SPR_Draw( 1, x, y, NULL );
-		   break;
+	switch( m_iRuneStat )
+	{
+	case ITEM_RUNE1_FLAG:
+		hSprite = m_hRune1;
+		break;
+	case ITEM_RUNE2_FLAG:
+		hSprite = m_hRune2;
+		break;
+	case ITEM_RUNE3_FLAG:
+		hSprite = m_hRune3;
+		break;
+	case ITEM_RUNE4_FLAG:
+		hSprite = m_hRune4;
+		break;
+	default:
+		return 1;
+	}
+	SPR_Set( hSprite, r, g, b );
+	SPR_DrawHoles( 1, x, y, NULL );
 
-		case ITEM_RUNE4_FLAG:
-		   SPR_Set( m_hRune4, r, g, b );
-		   SPR_Draw( 1, x, y, NULL );
-		   break;
-   }
-	   
-   return 1;
+	return 1;
 }
  
 int CHudFlagStatus::MsgFunc_FlagStat(const char *pszName, int iSize, void *pbuf)
 {
-    BEGIN_READ( pbuf, iSize ); 
+	BEGIN_READ( pbuf, iSize ); 
 
 	iDrawStatus = READ_BYTE();
 	iRedFlagStatus = READ_BYTE();

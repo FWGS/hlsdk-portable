@@ -99,7 +99,7 @@ set (CLDLL_SOURCES
 	view.cpp
 	scoreboard.cpp
 	MOTD.cpp)
-include_directories (. hl/ ../dlls ../dlls/wpn_shared ../common ../engine ../pm_shared ../game_shared ../public dmc ../dlls/dmc ../dlls/dmc .. ../dlls/aghl ../utils/false_vgui/include )
+include_directories (. hl/ ../dlls ../dlls/wpn_shared ../common ../engine ../pm_shared ../game_shared ../public dmc ../dlls/dmc ../dlls/dmc .. ../dlls/aghl ../dlls/3wave ../utils/false_vgui/include )
 
 if(USE_VOICEMGR)
 	#set(CLDLL_SOURCES

@@ -112,7 +112,7 @@ void CQuakeRocket::Spawn( void )
 {
 	Precache();
 
-	UTIL_SetSize(pev, Vector( 0, 0, 0), Vector(0, 0, 0));
+	UTIL_SetSize(pev, g_vecZero, g_vecZero );
 	UTIL_SetOrigin( pev, pev->origin );
 }
 
@@ -155,15 +155,14 @@ void CQuakeRocket::GrenadeTouch( CBaseEntity *pOther )
 	}
 
 	if (pev->flags & FL_ONGROUND)
+	{
+		// add a bit of static friction
+		pev->velocity = pev->velocity * 0.75;
+		if (pev->velocity.Length() <= 20)
 		{
-			// add a bit of static friction
-			pev->velocity = pev->velocity * 0.75;
-
-			if (pev->velocity.Length() <= 20)
-			{
-				pev->avelocity = g_vecZero;
-			}
+			pev->avelocity = g_vecZero;
 		}
+	}
 
 	EMIT_SOUND(ENT(pev), CHAN_WEAPON, "weapons/bounce.wav", 1, ATTN_NORM);
 
