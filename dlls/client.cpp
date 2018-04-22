@@ -592,7 +592,7 @@ void ClientCommand( edict_t *pEntity )
 			return;
 		}
 
-		if( g_bIsThreeWave )
+		if( g_bIsThreeWave || !allow_spectators.value )
 			return;
 
 		//Dont spectate if player is in game in arena.
