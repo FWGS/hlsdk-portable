@@ -30,6 +30,7 @@ static int team_scores[MAX_TEAMS];
 static int num_teams = 0;
 
 extern DLL_GLOBAL BOOL		g_fGameOver;
+extern bool g_bIsThreeWave;
 
 CHalfLifeTeamplay::CHalfLifeTeamplay()
 {
@@ -92,7 +93,7 @@ void CHalfLifeTeamplay::Think( void )
 	}
 
 //++ BulliT
-	if( g_pGameRules->m_iGameMode == LTS )
+	if( !g_bIsThreeWave && g_pGameRules->m_iGameMode == LTS )
 		m_LMS.Think();
 
 	if( m_iGameMode != CVAR_GET_FLOAT( "mp_teamplay" ) )

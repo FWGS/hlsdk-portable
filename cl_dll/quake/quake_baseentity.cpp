@@ -33,7 +33,7 @@ const Vector g_vecZero = Vector( 0, 0, 0 );
 int gmsgWeapPickup = 0;
 enginefuncs_t g_engfuncs;
 globalvars_t  *gpGlobals;
-
+bool g_bIsThreeWave;
 short	g_sModelIndexLaser;
 
 ItemInfo CBasePlayerItem::ItemInfoArray[MAX_WEAPONS];

@@ -38,6 +38,8 @@
 
 #define		HUDELEM_ACTIVE	1
 
+extern int HUD_IsGame( const char *game );
+
 typedef struct
 {
 	int x, y;

@@ -25,11 +25,12 @@
 #include	"teamplay_gamerules.h"
 #include	"skill.h"
 #include	"game.h"
+#include	"threewave_gamerules.h"
 
 extern Vector g_vecTeleMins[MAX_TELES];
 extern Vector g_vecTeleMaxs[MAX_TELES];
 extern int g_iTeleNum;
-
+extern bool g_bIsThreeWave;
 extern edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer, bool bCheckDM );
 
 DLL_GLOBAL CGameRules *g_pGameRules = NULL;
@@ -164,7 +165,11 @@ CGameRules *InstallGameRules( void )
 	}
 	else
 	{
-		if( CVAR_GET_FLOAT( "mp_teamplay" ) >= LTS )
+		if( g_bIsThreeWave )
+		{
+			return new CThreeWave;
+		}
+		else if( CVAR_GET_FLOAT( "mp_teamplay" ) >= LTS )
 		{
 			// lts
 			return new CHalfLifeTeamplay;

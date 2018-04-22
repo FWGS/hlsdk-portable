@@ -31,6 +31,7 @@ extern entvars_t *g_pevLastInflictor;
 extern int gmsgStatusText;
 extern int gmsgStatusValue; 
 extern DLL_GLOBAL Vector		g_vecAttackDir;
+extern bool g_bIsThreeWave;
 
 /*************************************/
 /*			  STATUS BAR */
@@ -116,6 +117,39 @@ int CBasePlayer::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 	// keep track of amount of damage last sustained
 	m_lastDamageAmount = flDamage;
 
+	if( !g_bIsThreeWave )
+	{
+//++ BulliT
+		if( g_pGameRules->m_iGameMode >= LMS )
+		{
+			if( !g_pGameRules->m_LMS.CanTakeDamage() )
+				return 0;
+		}
+		else if( g_pGameRules->m_iGameMode == ARENA )
+		{
+			if( !g_pGameRules->m_Arena.CanTakeDamage() )
+				return 0;
+		}
+//++ BulliT
+	}
+
+	// team play damage avoidance
+	if( g_pGameRules->PlayerRelationship( this, pAttacker ) == GR_TEAMMATE )
+	{
+//++ BulliT
+		// LTS you can still hurt yourself
+		if( !g_bIsThreeWave && g_pGameRules->m_iGameMode == LTS && pAttacker != this )
+			return 0;
+//-- Martin Webrant
+		// Teamplay 3 you can still hurt yourself
+		if ( CVAR_GET_FLOAT( "mp_teamplay" ) == 3 && pAttacker != this )
+			return 0;
+		// Teamplay 1 can't hurt any teammates, including yourself
+		if ( CVAR_GET_FLOAT( "mp_teamplay" ) == 1 )
+			return 0;
+		// Teamplay 2 you can still hurt teammates
+	}
+
 	// check for quad damage powerup on the attacker
 	if (pAttacker->IsPlayer())
 	{
@@ -138,36 +172,6 @@ int CBasePlayer::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 		flDamage /= 2;
 		EMIT_SOUND( ENT( pev ), CHAN_ITEM, "rune/rune1.wav", 1, ATTN_NORM );
 	}
-//++ BulliT
-	if( g_pGameRules->m_iGameMode >= LMS )
-	{
-		if( !g_pGameRules->m_LMS.CanTakeDamage() )
-			return 0;
-	}
-	else if( g_pGameRules->m_iGameMode == ARENA )
-	{
-		if( !g_pGameRules->m_Arena.CanTakeDamage() )
-			return 0;
-	}
-//++ BulliT
-
-	// team play damage avoidance
-	if ( g_pGameRules->PlayerRelationship( this, pAttacker ) == GR_TEAMMATE )
-	{
-//++ BulliT
-		// LTS you can still hurt yourself
-		if ( g_pGameRules->m_iGameMode == LTS && pAttacker != this )
-			return 0;
-//-- Martin Webrant
-		// Teamplay 3 you can still hurt yourself
-		if ( CVAR_GET_FLOAT( "mp_teamplay" ) == 3 && pAttacker != this )
-			return 0;
-		// Teamplay 1 can't hurt any teammates, including yourself
-		if ( CVAR_GET_FLOAT( "mp_teamplay" ) == 1 )
-			return 0;
-		// Teamplay 2 you can still hurt teammates
-	}
-
 
 	// save damage based on the target's armor level
 	float flSave = ceil(pev->armortype * flDamage);

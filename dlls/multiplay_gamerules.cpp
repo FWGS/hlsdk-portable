@@ -39,6 +39,7 @@ extern int gmsgMOTD;
 extern int gmsgServerName;
 
 extern int g_teamplay;
+extern bool g_bIsThreeWave;
 
 bool g_bHaveMOTD;
 
@@ -248,12 +249,16 @@ void CHalfLifeMultiplay::Think( void )
 		return;
 	}
 
+	if( !g_bIsThreeWave )
+	{
 //++ BulliT
-	if( g_pGameRules->m_iGameMode == LMS )
-		m_LMS.Think();
-	else if( g_pGameRules->m_iGameMode == ARENA )
-		m_Arena.Think();
+		if( g_pGameRules->m_iGameMode == LMS )
+			m_LMS.Think();
+		else if( g_pGameRules->m_iGameMode == ARENA )
+			m_Arena.Think();
 //-- Martin Webrant
+	}
+
 	if( m_flGameEndTime != 0.0 && m_flGameEndTime <= gpGlobals->time )
 	{
 		GoToIntermission();
@@ -469,13 +474,15 @@ void CHalfLifeMultiplay::InitHUD( CBasePlayer *pl )
 		( pl->pev->netname && ( STRING( pl->pev->netname ) )[0] != 0 ) ? STRING( pl->pev->netname ) : "unconnected" ) );
 
 	// team match?
-	UTIL_LogPrintf( "\"%s<%i><%s><%s>\" entered the game\n",
-		STRING( pl->pev->netname ),
-		GETPLAYERUSERID( pl->edict() ),
-		GETPLAYERAUTHID( pl->edict() ),
-		GetTeamName( pl->pev->team ) );
-	/*
-	if( g_teamplay )
+	if( g_bIsThreeWave )
+	{
+		UTIL_LogPrintf( "\"%s<%i><%s><%s>\" entered the game\n",
+			STRING( pl->pev->netname ),
+			GETPLAYERUSERID( pl->edict() ),
+			GETPLAYERAUTHID( pl->edict() ),
+			GetTeamName( pl->pev->team ) );
+	}
+	else if( g_teamplay )
 	{
 		UTIL_LogPrintf( "\"%s<%i><%s><%s>\" entered the game\n",  
 			STRING( pl->pev->netname ), 
@@ -490,7 +497,7 @@ void CHalfLifeMultiplay::InitHUD( CBasePlayer *pl )
 			GETPLAYERUSERID( pl->edict() ),
 			GETPLAYERAUTHID( pl->edict() ),
 			GETPLAYERUSERID( pl->edict() ) );
-	}*/
+	}
 
 	UpdateGameMode( pl );
 
@@ -539,23 +546,28 @@ void CHalfLifeMultiplay::ClientDisconnected( edict_t *pClient )
 
 		if( pPlayer )
 		{
+			if( !g_bIsThreeWave )
+			{
 //++ BulliT
-			if( g_pGameRules->m_iGameMode >= LMS )
-				m_LMS.ClientDisconnected( pPlayer );
-			else if( g_pGameRules->m_iGameMode == ARENA )
-				m_Arena.ClientDisconnected( pPlayer );
+				if( g_pGameRules->m_iGameMode >= LMS )
+					m_LMS.ClientDisconnected( pPlayer );
+				else if( g_pGameRules->m_iGameMode == ARENA )
+					m_Arena.ClientDisconnected( pPlayer );
 //-- Martin Webrant
+			}
 
 			FireTargets( "game_playerleave", pPlayer, pPlayer, USE_TOGGLE, 0 );
 
 			// team match?
-			UTIL_LogPrintf( "\"%s<%i><%s><%s>\" disconnected\n",
-				STRING( pPlayer->pev->netname ),
-				GETPLAYERUSERID( pPlayer->edict() ),
-				GETPLAYERAUTHID( pPlayer->edict() ),
-				GetTeamName( pPlayer->pev->team ) );
-
-			/*if( g_teamplay )
+			if( g_bIsThreeWave )
+			{
+				UTIL_LogPrintf( "\"%s<%i><%s><%s>\" disconnected\n",
+					STRING( pPlayer->pev->netname ),
+					GETPLAYERUSERID( pPlayer->edict() ),
+					GETPLAYERAUTHID( pPlayer->edict() ),
+					GetTeamName( pPlayer->pev->team ) );
+			}
+			else if( g_teamplay )
 			{
 				UTIL_LogPrintf( "\"%s<%i><%s><%s>\" disconnected\n",  
 					STRING( pPlayer->pev->netname ), 
@@ -570,7 +582,7 @@ void CHalfLifeMultiplay::ClientDisconnected( edict_t *pClient )
 					GETPLAYERUSERID( pPlayer->edict() ),
 					GETPLAYERAUTHID( pPlayer->edict() ),
 					GETPLAYERUSERID( pPlayer->edict() ) );
-			}*/
+			}
 
 			pPlayer->RemoveAllItems( TRUE );// destroy all of the players weapons and items
 		}
@@ -648,7 +660,7 @@ void CHalfLifeMultiplay::PlayerSpawn( CBasePlayer *pPlayer )
 		pPlayer->GiveNamedItem( "weapon_quakegun" );
 
 		//++ BulliT
-		if( g_pGameRules->m_iGameMode >= ARENA )
+		if( !g_bIsThreeWave && g_pGameRules->m_iGameMode >= ARENA )
 		{
 			pPlayer->m_iQuakeItems |= ( IT_AXE | IT_SHOTGUN | IT_SUPER_SHOTGUN | IT_NAILGUN | IT_SUPER_NAILGUN | IT_GRENADE_LAUNCHER  | IT_ROCKET_LAUNCHER | IT_LIGHTNING );
 			pPlayer->m_iAmmoRockets = 100;
@@ -866,14 +878,16 @@ void CHalfLifeMultiplay::DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, 
 		// killed self
 
 		// team match?
-		UTIL_LogPrintf( "\"%s<%i><%s><%s>\" committed suicide with \"%s\"\n",
-			STRING( pVictim->pev->netname ),
-			GETPLAYERUSERID( pVictim->edict() ),
-			GETPLAYERAUTHID( pVictim->edict() ),
-			GetTeamName( pVictim->pev->team ),
-			killer_weapon_name );
-		/*
-		if( g_teamplay )
+		if( g_bIsThreeWave )
+		{
+			UTIL_LogPrintf( "\"%s<%i><%s><%s>\" committed suicide with \"%s\"\n",
+				STRING( pVictim->pev->netname ),
+				GETPLAYERUSERID( pVictim->edict() ),
+				GETPLAYERAUTHID( pVictim->edict() ),
+				GetTeamName( pVictim->pev->team ),
+				killer_weapon_name );
+		}
+		else if( g_teamplay )
 		{
 			UTIL_LogPrintf( "\"%s<%i><%s><%s>\" committed suicide with \"%s\"\n",  
 				STRING( pVictim->pev->netname ), 
@@ -890,22 +904,25 @@ void CHalfLifeMultiplay::DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, 
 				GETPLAYERAUTHID( pVictim->edict() ),
 				GETPLAYERUSERID( pVictim->edict() ),
 				killer_weapon_name );		
-		}*/
+		}
 	}
 	else if( pKiller->flags & FL_CLIENT )
 	{
 		// team match?
-		UTIL_LogPrintf( "\"%s<%i><%s><%s>\" killed \"%s<%i><%s><%s>\" with \"%s\"\n",
-			STRING( pKiller->netname ),
-			GETPLAYERUSERID( ENT(pKiller) ),
-			GETPLAYERAUTHID( ENT(pKiller) ),
-			GetTeamName( pKiller->team ),
-			STRING( pVictim->pev->netname ),
-			GETPLAYERUSERID( pVictim->edict() ),
-			GETPLAYERAUTHID( pVictim->edict() ),
-			GetTeamName( pVictim->pev->team ),
-			killer_weapon_name );
-		/*if( g_teamplay )
+		if( g_bIsThreeWave )
+		{
+			UTIL_LogPrintf( "\"%s<%i><%s><%s>\" killed \"%s<%i><%s><%s>\" with \"%s\"\n",
+				STRING( pKiller->netname ),
+				GETPLAYERUSERID( ENT(pKiller) ),
+				GETPLAYERAUTHID( ENT(pKiller) ),
+				GetTeamName( pKiller->team ),
+				STRING( pVictim->pev->netname ),
+				GETPLAYERUSERID( pVictim->edict() ),
+				GETPLAYERAUTHID( pVictim->edict() ),
+				GetTeamName( pVictim->pev->team ),
+				killer_weapon_name );
+		}
+		else if( g_teamplay )
 		{
 			UTIL_LogPrintf( "\"%s<%i><%s><%s>\" killed \"%s<%i><%s><%s>\" with \"%s\"\n",  
 				STRING( pKiller->netname ),
@@ -930,21 +947,23 @@ void CHalfLifeMultiplay::DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, 
 				GETPLAYERAUTHID( pVictim->edict() ),
 				GETPLAYERUSERID( pVictim->edict() ),
 				killer_weapon_name );
-		}*/
+		}
 	}
 	else
 	{ 
 		// killed by the world
 
 		// team match?
-		UTIL_LogPrintf( "\"%s<%i><%s><%s>\" committed suicide with \"%s\" (world)\n",
-			STRING( pVictim->pev->netname ),
-			GETPLAYERUSERID( pVictim->edict() ),
-			GETPLAYERAUTHID( pVictim->edict() ),
-			GetTeamName( pVictim->pev->team ),
-			killer_weapon_name );
-
-		/*if( g_teamplay )
+		if( g_bIsThreeWave )
+		{
+			UTIL_LogPrintf( "\"%s<%i><%s><%s>\" committed suicide with \"%s\" (world)\n",
+				STRING( pVictim->pev->netname ),
+				GETPLAYERUSERID( pVictim->edict() ),
+				GETPLAYERAUTHID( pVictim->edict() ),
+				GetTeamName( pVictim->pev->team ),
+				killer_weapon_name );
+		}
+		else if( g_teamplay )
 		{
 			UTIL_LogPrintf( "\"%s<%i><%s><%s>\" committed suicide with \"%s\" (world)\n",
 				STRING( pVictim->pev->netname ), 
@@ -961,7 +980,7 @@ void CHalfLifeMultiplay::DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, 
 				GETPLAYERAUTHID( pVictim->edict() ),
 				GETPLAYERUSERID( pVictim->edict() ),
 				killer_weapon_name );		
-		}*/
+		}
 	}
 
 	MESSAGE_BEGIN( MSG_SPEC, SVC_DIRECTOR );

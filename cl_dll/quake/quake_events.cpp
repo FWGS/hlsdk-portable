@@ -79,15 +79,18 @@ void Game_HookEvents( void )
 
 	gEngfuncs.pfnHookEvent( "events/powerup.sc",				EV_PlayerPowerup );
 
-	gEngfuncs.pfnHookEvent( "events/door/doorgoup.sc",			EV_DMC_DoorGoUp );
+	gEngfuncs.pfnHookEvent( "events/door/doorgoup.sc",		EV_DMC_DoorGoUp );
 	gEngfuncs.pfnHookEvent( "events/door/doorgodown.sc",		EV_DMC_DoorGoDown );
 	gEngfuncs.pfnHookEvent( "events/door/doorhittop.sc",		EV_DMC_DoorHitTop );
 	gEngfuncs.pfnHookEvent( "events/door/doorhitbottom.sc",		EV_DMC_DoorHitBottom );
 
-	gEngfuncs.pfnHookEvent( "events/hook.sc",		EV_Hook );
-        gEngfuncs.pfnHookEvent( "events/cable.sc",		EV_Cable );
-        gEngfuncs.pfnHookEvent( "events/follow.sc",		EV_FollowCarrier );
-        gEngfuncs.pfnHookEvent( "events/flagspawn.sc",		EV_FlagSpawn );
+	if( HUD_IsGame( "3wave" ) )
+	{
+		gEngfuncs.pfnHookEvent( "events/hook.sc",		EV_Hook );
+		gEngfuncs.pfnHookEvent( "events/cable.sc",		EV_Cable );
+		gEngfuncs.pfnHookEvent( "events/follow.sc",		EV_FollowCarrier );
+		gEngfuncs.pfnHookEvent( "events/flagspawn.sc",		EV_FlagSpawn );
+	}
 
-	gEngfuncs.pfnHookEvent( "events/train.sc",					EV_TrainPitchAdjust );
+	gEngfuncs.pfnHookEvent( "events/train.sc",			EV_TrainPitchAdjust );
 }

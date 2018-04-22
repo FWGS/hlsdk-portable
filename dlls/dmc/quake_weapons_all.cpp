@@ -35,6 +35,8 @@ extern unsigned short g_usHook;
 extern unsigned short g_usCable;
 extern unsigned short g_usCarried;
 
+extern bool g_bIsThreeWave;
+
 #ifdef CLIENT_DLL
 #include "cl_entity.h"
 struct cl_entity_s *GetViewEntity( void );
@@ -110,7 +112,8 @@ void QuakeClassicPrecache( void )
 	PRECACHE_SOUND("items/itembk2.wav");
 	PRECACHE_MODEL("models/backpack.mdl");
 
-	PRECACHE_MODEL("models/v_grapple.mdl");
+	if( g_bIsThreeWave )
+		PRECACHE_MODEL("models/v_grapple.mdl");
 }
 
 //================================================================================================

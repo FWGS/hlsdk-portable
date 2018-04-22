@@ -53,7 +53,7 @@ extern DLL_GLOBAL ULONG		g_ulFrameCount;
 const char* GetTeamName( int team );
 
 extern bool g_bHaveMOTD;
-
+extern bool g_bIsThreeWave;
 extern void CopyToBodyQue( entvars_t* pev );
 extern int giPrecacheGrunt;
 extern int gmsgSayText;
@@ -453,14 +453,17 @@ void Host_Say( edict_t *pEntity, int teamonly )
 		temp = "say";
 
 	// team match?
-	UTIL_LogPrintf( "\"%s<%i><%s><%s>\" %s \"%s\"\n",
-		STRING( pEntity->v.netname ),
-		GETPLAYERUSERID( pEntity ),
-		GETPLAYERAUTHID( pEntity ),
-		GetTeamName( pEntity->v.team ),
-		temp,
-		p );
-	/*if( g_teamplay )
+	if( g_bIsThreeWave )
+	{
+		UTIL_LogPrintf( "\"%s<%i><%s><%s>\" %s \"%s\"\n",
+			STRING( pEntity->v.netname ),
+			GETPLAYERUSERID( pEntity ),
+			GETPLAYERAUTHID( pEntity ),
+			GetTeamName( pEntity->v.team ),
+			temp,
+			p );
+	}
+	else if( g_teamplay )
 	{
 		UTIL_LogPrintf( "\"%s<%i><%s><%s>\" %s \"%s\"\n", 
 			STRING( pEntity->v.netname ), 
@@ -479,7 +482,7 @@ void Host_Say( edict_t *pEntity, int teamonly )
 			GETPLAYERUSERID( pEntity ),
 			temp,
 			p );
-	}*/
+	}
 }
 
 /*
@@ -563,8 +566,9 @@ void ClientCommand( edict_t *pEntity )
 				return;
 //-- Martin Webrant
 
-                        pPlayer->m_bHadFirstSpawn = true;
-                        // pPlayer->Spawn();
+			pPlayer->m_bHadFirstSpawn = true;
+			if( !g_bIsThreeWave )
+				pPlayer->Spawn();
 		}
 	}
 	else if( FStrEq( pcmd, "lastinv" ) )
@@ -572,7 +576,7 @@ void ClientCommand( edict_t *pEntity )
 		GetClassPtr( (CBasePlayer *)pev )->SelectLastItem();
 	}
 	else if( FStrEq( pcmd, "spectate" ) )	// added for proxy support
-	{
+	{		
 		CBasePlayer * pPlayer = GetClassPtr( (CBasePlayer *)pev );
 
 //++ BulliT
@@ -587,6 +591,9 @@ void ClientCommand( edict_t *pEntity )
 			pPlayer->Spectate_HLTV();
 			return;
 		}
+
+		if( g_bIsThreeWave )
+			return;
 
 		//Dont spectate if player is in game in arena.
 		if( pPlayer->IsIngame() && g_pGameRules->m_iGameMode >= ARENA )
@@ -678,6 +685,8 @@ void ClientCommand( edict_t *pEntity )
 //++ BulliT
 	else if( FStrEq( CMD_ARGV( 0 ), "ready" ) )
 	{	
+		if( g_bIsThreeWave )
+			return;
 		CBasePlayer *pPlayer = GetClassPtr( (CBasePlayer *)pev );
 		if( g_pGameRules->m_iGameMode >= LMS )
 		{
@@ -704,6 +713,8 @@ void ClientCommand( edict_t *pEntity )
 	}
 	else if( FStrEq( CMD_ARGV( 0 ), "notready" ) )
 	{
+		if( g_bIsThreeWave )
+			return;
 		CBasePlayer *pPlayer = GetClassPtr( (CBasePlayer *)pev );
 		if( g_pGameRules->m_iGameMode >= LMS )
 		{
@@ -835,14 +846,16 @@ void ClientUserInfoChanged( edict_t *pEntity, char *infobuffer )
 		}
 
 		// team match?
-		UTIL_LogPrintf( "\"%s<%i><%s><%s>\" changed name to \"%s\"\n",
-			STRING( pEntity->v.netname ),
-			GETPLAYERUSERID( pEntity ),
-			GETPLAYERAUTHID( pEntity ),
-			GetTeamName( pEntity->v.team ),
-			g_engfuncs.pfnInfoKeyValue( infobuffer, "name" ) );
-		/*
-		if( g_teamplay )
+		if( g_bIsThreeWave )
+		{
+			UTIL_LogPrintf( "\"%s<%i><%s><%s>\" changed name to \"%s\"\n",
+				STRING( pEntity->v.netname ),
+				GETPLAYERUSERID( pEntity ),
+				GETPLAYERAUTHID( pEntity ),
+				GetTeamName( pEntity->v.team ),
+				g_engfuncs.pfnInfoKeyValue( infobuffer, "name" ) );
+		}
+		else if( g_teamplay )
 		{
 			UTIL_LogPrintf( "\"%s<%i><%s><%s>\" changed name to \"%s\"\n", 
 				STRING( pEntity->v.netname ), 
@@ -859,7 +872,7 @@ void ClientUserInfoChanged( edict_t *pEntity, char *infobuffer )
 				GETPLAYERAUTHID( pEntity ),
 				GETPLAYERUSERID( pEntity ), 
 				g_engfuncs.pfnInfoKeyValue( infobuffer, "name" ) );
-		}*/
+		}
 	}
 
 	// QUAKECLASSIC
@@ -1128,79 +1141,77 @@ void ClientPrecache( void )
 
 	PRECACHE_SOUND( "player/plyrjmp8.wav" );
 
-	PRECACHE_MODEL( "models/rune_resist.mdl" );
-	PRECACHE_MODEL( "models/rune_haste.mdl" );
-	PRECACHE_MODEL( "models/rune_regen.mdl" );
-	PRECACHE_MODEL( "models/rune_strength.mdl" );
+	if( g_bIsThreeWave )
+	{
+		PRECACHE_MODEL( "models/rune_resist.mdl" );
+		PRECACHE_MODEL( "models/rune_haste.mdl" );
+		PRECACHE_MODEL( "models/rune_regen.mdl" );
+		PRECACHE_MODEL( "models/rune_strength.mdl" );
 
-	PRECACHE_SOUND( "rune/rune1.wav" );
-	PRECACHE_SOUND( "rune/rune2.wav" );
-	PRECACHE_SOUND( "rune/rune22.wav" ); // Quad + Strength Rune.
-	PRECACHE_SOUND( "rune/rune3.wav" );
-	PRECACHE_SOUND( "rune/rune4.wav" );
+		PRECACHE_SOUND( "rune/rune1.wav" );
+		PRECACHE_SOUND( "rune/rune2.wav" );
+		PRECACHE_SOUND( "rune/rune22.wav" ); // Quad + Strength Rune.
+		PRECACHE_SOUND( "rune/rune3.wav" );
+		PRECACHE_SOUND( "rune/rune4.wav" );
 
-	PRECACHE_MODEL( "models/hook.mdl" );
- 
-	PRECACHE_MODEL( "sprites/rope.spr" );
+		PRECACHE_MODEL( "models/hook.mdl" );
 
-	PRECACHE_SOUND( "weapons/grfire.wav" );
-	PRECACHE_SOUND( "weapons/grhang.wav" );
-	PRECACHE_SOUND( "weapons/grhit.wav" );
-	PRECACHE_SOUND( "weapons/grpull.wav" );
-	PRECACHE_SOUND( "weapons/grreset.wav" );
+		PRECACHE_MODEL( "sprites/rope.spr" );
 
-	g_usHook = PRECACHE_EVENT( 1, "events/hook.sc" );
-	g_usCable = PRECACHE_EVENT( 1, "events/cable.sc" );
-	g_usCarried = PRECACHE_EVENT( 1, "events/follow.sc" );
-	g_usFlagSpawn = PRECACHE_EVENT( 1, "events/flagspawn.sc" );
+		PRECACHE_SOUND( "weapons/grfire.wav" );
+		PRECACHE_SOUND( "weapons/grhang.wav" );
+		PRECACHE_SOUND( "weapons/grhit.wav" );
+		PRECACHE_SOUND( "weapons/grpull.wav" );
+		PRECACHE_SOUND( "weapons/grreset.wav" );
 
-	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/p_crowbar.mdl" );
-	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/p_light.mdl" );
-	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/p_nail.mdl" );
-	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/p_nail2.mdl" );
-	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/p_rock.mdl" );
-	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/p_rock2.mdl" );
-	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/p_shot.mdl" );
-	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/p_shot2.mdl" );
-	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/spike.mdl" );
-	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/rocket.mdl" );
-	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/grenade.mdl" );
-	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/backpack.mdl" );
-	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/backpack.mdl" );
-	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/armor_g.mdl" );
-	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/armor_r.mdl" );
-	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/armor_y.mdl" );
-	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/armor_y.mdl" );
-	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/b_nail0.mdl" );
-	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/b_nail1.mdl" );
-	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/g_light.mdl" );
-	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/g_nail.mdl" );
-	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/g_nail2.mdl" );
-	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/g_rock.mdl" );
-	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/g_rock2.mdl" );
-	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/g_shot2.mdl" );
-	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/pow_invis.mdl" );
-	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/pow_quad.mdl" );
-	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/pow_invuln.mdl" );
-	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/suit.mdl" );
-	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/w_battery.mdl" );
-	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/w_batteryl.mdl" );
-	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/w_medkit.mdl" );
-	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/w_medkitl.mdl" );
-	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/w_medkits.mdl" );
-	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/w_rpgammo.mdl" );
-	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/w_rpgammo_big.mdl" );
-	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/w_shotbox.mdl" );
-	ENGINE_FORCE_UNMODIFIED( force_exactfile, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), "models/w_shotbox_big.mdl" );
+		g_usHook = PRECACHE_EVENT( 1, "events/hook.sc" );
+		g_usCable = PRECACHE_EVENT( 1, "events/cable.sc" );
+		g_usCarried = PRECACHE_EVENT( 1, "events/follow.sc" );
+		g_usFlagSpawn = PRECACHE_EVENT( 1, "events/flagspawn.sc" );
+	}
+
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, g_vecZero, g_vecZero, "models/p_crowbar.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, g_vecZero, g_vecZero, "models/p_light.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, g_vecZero, g_vecZero, "models/p_nail.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, g_vecZero, g_vecZero, "models/p_nail2.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, g_vecZero, g_vecZero, "models/p_rock.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, g_vecZero, g_vecZero, "models/p_rock2.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, g_vecZero, g_vecZero, "models/p_shot.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, g_vecZero, g_vecZero, "models/p_shot2.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, g_vecZero, g_vecZero, "models/spike.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, g_vecZero, g_vecZero, "models/rocket.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, g_vecZero, g_vecZero, "models/grenade.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, g_vecZero, g_vecZero, "models/backpack.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, g_vecZero, g_vecZero, "models/armor_g.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, g_vecZero, g_vecZero, "models/armor_r.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, g_vecZero, g_vecZero, "models/armor_y.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, g_vecZero, g_vecZero, "models/b_nail0.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, g_vecZero, g_vecZero, "models/b_nail1.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, g_vecZero, g_vecZero, "models/g_light.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, g_vecZero, g_vecZero, "models/g_nail.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, g_vecZero, g_vecZero, "models/g_nail2.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, g_vecZero, g_vecZero, "models/g_rock.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, g_vecZero, g_vecZero, "models/g_rock2.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, g_vecZero, g_vecZero, "models/g_shot2.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, g_vecZero, g_vecZero, "models/pow_invis.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, g_vecZero, g_vecZero, "models/pow_quad.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, g_vecZero, g_vecZero, "models/pow_invuln.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, g_vecZero, g_vecZero, "models/suit.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, g_vecZero, g_vecZero, "models/w_battery.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, g_vecZero, g_vecZero, "models/w_batteryl.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, g_vecZero, g_vecZero, "models/w_medkit.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, g_vecZero, g_vecZero, "models/w_medkitl.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, g_vecZero, g_vecZero, "models/w_medkits.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, g_vecZero, g_vecZero, "models/w_rpgammo.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, g_vecZero, g_vecZero, "models/w_rpgammo_big.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, g_vecZero, g_vecZero, "models/w_shotbox.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, g_vecZero, g_vecZero, "models/w_shotbox_big.mdl" );
 
 	g_sGibbed = PRECACHE_EVENT( 1, "events/gibs.sc" );
 	g_sTeleport = PRECACHE_EVENT( 1, "events/teleport.sc" );
 	g_sTrail = PRECACHE_EVENT( 1, "events/trail.sc" );
 	g_sExplosion = PRECACHE_EVENT( 1, "events/explosion.sc" );
 	g_usPowerUp = PRECACHE_EVENT( 1, "events/powerup.sc" );
-
-	if( giPrecacheGrunt )
-		UTIL_PrecacheOther( "monster_human_grunt" );
 }
 
 /*

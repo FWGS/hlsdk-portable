@@ -30,6 +30,8 @@ enginefuncs_t g_engfuncs;
 globalvars_t *gpGlobals;
 server_physics_api_t g_physfuncs;
 
+bool g_bIsThreeWave;
+
 #ifdef _WIN32
 
 // Required DLL entry point
@@ -52,6 +54,13 @@ BOOL WINAPI DllMain( HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved )
 
 extern "C" void DLLEXPORT EXPORT2 GiveFnptrsToDll( enginefuncs_t *pengfuncsFromEngine, globalvars_t *pGlobals )
 {
+	char gamedir[256];
+
 	memcpy( &g_engfuncs, pengfuncsFromEngine, sizeof(enginefuncs_t) );
 	gpGlobals = pGlobals;
+
+	GET_GAME_DIR( gamedir );
+
+	if( FStrEq( gamedir, "3wave" ) )
+		g_bIsThreeWave = true;
 }

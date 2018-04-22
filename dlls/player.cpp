@@ -62,6 +62,7 @@ extern void CopyToBodyQue( entvars_t *pev);
 extern void respawn( entvars_t *pev, BOOL fCopyCorpse );
 extern Vector VecBModelOrigin( entvars_t *pevBModel );
 extern edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer, bool bCheckDM );
+extern bool g_bIsThreeWave;
 
 // the world node graph
 extern CGraph WorldGraph;
@@ -638,7 +639,7 @@ void CBasePlayer::Killed( entvars_t *pevAttacker, int iGib )
 	pev->angles.z = 0;
 
 //++ BulliT
-	if( g_pGameRules->m_iGameMode >= ARENA )
+	if( !g_bIsThreeWave && g_pGameRules->m_iGameMode >= ARENA )
 		m_iQuakeWeapon = 0;
 //-- Martin Webrant
 	SetThink( &CBasePlayer::PlayerDeathThink );
@@ -4712,7 +4713,11 @@ LINK_ENTITY_TO_CLASS( info_intermission, CInfoIntermission )
 void CBasePlayer::Init()
 {
 	m_bReady = true;
-	m_bIngame = g_pGameRules->m_iGameMode < ARENA;
+	m_bIngame = ( g_bIsThreeWave || g_pGameRules->m_iGameMode < ARENA );
+
+	if( g_bIsThreeWave )
+		return;
+
 	if( g_pGameRules->m_iGameMode >= LMS )
 		g_pGameRules->m_LMS.ClientConnected( this );
 	else if( g_pGameRules->m_iGameMode == ARENA )

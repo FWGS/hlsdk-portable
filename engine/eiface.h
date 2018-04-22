@@ -241,7 +241,7 @@ typedef struct enginefuncs_s
 	// Forces the client and server to be running with the same version of the specified file
 	//  ( e.g., a player model ).
 	// Calling this has no effect in single player
-	void	(*pfnForceUnmodified)( FORCE_TYPE type, float *mins, float *maxs, const char *filename );
+	void	(*pfnForceUnmodified)( FORCE_TYPE type, const float *mins, const float *maxs, const char *filename );
 
 	void	(*pfnGetPlayerStats)( const edict_t *pClient, int *ping, int *packet_loss );
 
