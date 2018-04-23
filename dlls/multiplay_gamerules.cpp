@@ -659,7 +659,7 @@ void CHalfLifeMultiplay::PlayerSpawn( CBasePlayer *pPlayer )
 		pPlayer->GiveNamedItem( "weapon_quakegun" );
 
 		//++ BulliT
-		if( !g_bIsThreeWave && g_pGameRules->m_iGameMode >= ARENA )
+		if( ( arcade.value ) || ( !g_bIsThreeWave && g_pGameRules->m_iGameMode >= ARENA ) )
 		{
 			pPlayer->m_iQuakeItems |= ( IT_AXE | IT_SHOTGUN | IT_SUPER_SHOTGUN | IT_NAILGUN | IT_SUPER_NAILGUN | IT_GRENADE_LAUNCHER  | IT_ROCKET_LAUNCHER | IT_LIGHTNING );
 			pPlayer->m_iAmmoRockets = 100;

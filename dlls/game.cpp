@@ -47,6 +47,7 @@ cvar_t allowmonsters	= { "mp_allowmonsters","0", FCVAR_SERVER };
 cvar_t bhopcap		= { "mp_bhopcap", "1", FCVAR_SERVER };
 cvar_t allowhook	= { "mp_allow_hook", "1", FCVAR_SERVER };
 cvar_t instagib		= { "mp_instagib", "0", FCVAR_SERVER };
+cvar_t arcade		= { "mp_arcade", "0", FCVAR_SERVER };
 
 cvar_t allow_spectators = { "allow_spectators", "0", FCVAR_SERVER };	// 0 prevents players from being spectators
 
@@ -489,6 +490,7 @@ void GameDLLInit( void )
 	CVAR_REGISTER( &bhopcap );
 	CVAR_REGISTER( &allowhook );
 	CVAR_REGISTER( &instagib );
+	CVAR_REGISTER( &arcade );
 
 	CVAR_REGISTER( &mp_chattime );
 

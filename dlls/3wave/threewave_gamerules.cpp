@@ -426,7 +426,22 @@ void CThreeWave::PlayerSpawn( CBasePlayer *pPlayer )
 
 			// Start with shotgun and axe
 			pPlayer->GiveNamedItem( "weapon_quakegun" );
-			pPlayer->m_iQuakeItems |= ( IT_SHOTGUN | IT_AXE );
+
+			if( arcade.value )
+			{
+				pPlayer->m_iQuakeItems |= ( IT_AXE | IT_SHOTGUN | IT_SUPER_SHOTGUN | IT_NAILGUN | IT_SUPER_NAILGUN | IT_GRENADE_LAUNCHER | IT_ROCKET_LAUNCHER | IT_LIGHTNING );
+				pPlayer->m_iAmmoRockets = 100;
+				pPlayer->m_iAmmoCells = 100;
+				pPlayer->m_iAmmoShells = 100;
+				pPlayer->m_iAmmoNails = 200;
+				pPlayer->pev->health = 200;
+				pPlayer->pev->armortype = 0.8;
+				pPlayer->pev->armorvalue = 200;
+				pPlayer->m_iQuakeItems &= ~( IT_ARMOR1 | IT_ARMOR2 | IT_ARMOR3 );
+				pPlayer->m_iQuakeItems |= IT_ARMOR3;
+			}
+			else
+				pPlayer->m_iQuakeItems |= ( IT_SHOTGUN | IT_AXE );
 
 			if( allowhook.value )
 				pPlayer->m_iQuakeItems |= IT_EXTRA_WEAPON;

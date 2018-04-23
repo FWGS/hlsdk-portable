@@ -36,6 +36,8 @@ extern cvar_t teamoverride;
 extern cvar_t defaultteam;
 extern cvar_t allowmonsters;
 extern cvar_t allowhook;
+extern cvar_t instagib;
+extern cvar_t arcade;
 
 // Engine Cvars
 extern cvar_t *g_psv_gravity;
