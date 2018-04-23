@@ -426,7 +426,11 @@ void CThreeWave::PlayerSpawn( CBasePlayer *pPlayer )
 
 			// Start with shotgun and axe
 			pPlayer->GiveNamedItem( "weapon_quakegun" );
-			pPlayer->m_iQuakeItems |= ( IT_SHOTGUN | IT_AXE | IT_EXTRA_WEAPON );
+			pPlayer->m_iQuakeItems |= ( IT_SHOTGUN | IT_AXE );
+
+			if( allowhook.value )
+				pPlayer->m_iQuakeItems |= IT_EXTRA_WEAPON;
+
 			pPlayer->m_iQuakeWeapon = pPlayer->W_BestWeapon();
 			pPlayer->W_SetCurrentAmmo();
 
@@ -835,7 +839,7 @@ void CThreeWave::PlayerKilled( CBasePlayer *pVictim, entvars_t *pKiller, entvars
 
 							if( pTeamMate )
 							{
-								if ( pTeamMate->m_bHasFlag )
+								if( pTeamMate->m_bHasFlag )
 								{
 									pTeamMate->pFlagCarrierKiller = pk;
 									pTeamMate->m_flFlagCarrierKillTime = gpGlobals->time + TEAM_CAPTURE_FRAG_CARRIER_ASSIST_TIMEOUT;
