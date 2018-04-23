@@ -25,6 +25,7 @@
 #define LTS	6
 //-- Martin Webrant
 
+#include "agtimer.h"
 //#include "weapons.h"
 //#include "items.h"
 class CBasePlayerItem;
@@ -177,6 +178,7 @@ public:
 //++ BulliT
 	AgArena	m_Arena;
 	AgLMS	m_LMS;
+	AgTimer	m_Timer;
 	int	m_iGameMode;
 	float	m_fGameStart;
 //-- Martin Webrant

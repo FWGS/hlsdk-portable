@@ -145,6 +145,9 @@ void CThreeWave::Think( void )
 		return;
 	}
 
+	// Update HUD timer and effective time.
+	m_Timer.Think();
+
 	float flTimeLimit = CVAR_GET_FLOAT("mp_timelimit") * 60;
 
 	time_remaining = (int)(flTimeLimit ? ( flTimeLimit - gpGlobals->time ) : 0);

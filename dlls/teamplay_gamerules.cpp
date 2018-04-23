@@ -92,8 +92,11 @@ void CHalfLifeTeamplay::Think( void )
 		return;
 	}
 
+	// Update HUD timer and effective time.
+	m_Timer.Think();
+
 //++ BulliT
-	if( !g_bIsThreeWave && g_pGameRules->m_iGameMode == LTS )
+	if( g_pGameRules->m_iGameMode == LTS )
 		m_LMS.Think();
 
 	if( m_iGameMode != CVAR_GET_FLOAT( "mp_teamplay" ) )

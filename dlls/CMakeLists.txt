@@ -45,6 +45,7 @@ set (SVDLL_SOURCES
 	aghl/agglobal.cpp
 	aghl/aglms.cpp
 	aghl/agspectator.cpp
+	aghl/agtimer.cpp
 	dmc/quake_gun.cpp
 	dmc/quake_items.cpp
 	dmc/quake_nail.cpp

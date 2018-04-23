@@ -249,15 +249,14 @@ void CHalfLifeMultiplay::Think( void )
 		return;
 	}
 
-	if( !g_bIsThreeWave )
-	{
+	// Update HUD timer and effective time.
+	m_Timer.Think();
 //++ BulliT
-		if( g_pGameRules->m_iGameMode == LMS )
-			m_LMS.Think();
-		else if( g_pGameRules->m_iGameMode == ARENA )
-			m_Arena.Think();
+	if( g_pGameRules->m_iGameMode == LMS )
+		m_LMS.Think();
+	else if( g_pGameRules->m_iGameMode == ARENA )
+		m_Arena.Think();
 //-- Martin Webrant
-	}
 
 	if( m_flGameEndTime != 0.0 && m_flGameEndTime <= gpGlobals->time )
 	{
