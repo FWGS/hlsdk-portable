@@ -24,6 +24,7 @@
 #include "util.h"
 #include "cbase.h"
 #include "player.h"
+#include "game.h"
 #include "gamerules.h"
 #include "hltv.h"
 
@@ -101,6 +102,8 @@ void CBasePlayer::UpdateStatusBar()
 //-----------------------------------------------------------------------------
 int CBasePlayer::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )
 {
+	float flTake;
+
 	if ( (pev->takedamage == DAMAGE_NO) || (IsAlive() == FALSE) )
 		return 0;
 
@@ -150,39 +153,46 @@ int CBasePlayer::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 		// Teamplay 2 you can still hurt teammates
 	}
 
-	// check for quad damage powerup on the attacker
-	if (pAttacker->IsPlayer())
+	if( instagib.value )
 	{
-		if ( ((CBasePlayer*)pAttacker)->m_flSuperDamageFinished > gpGlobals->time )
+		flTake = 900.0;
+	}
+	else
+	{
+		// check for quad damage powerup on the attacker
+		if (pAttacker->IsPlayer())
 		{
-			if (gpGlobals->deathmatch == 4)
-				flDamage *= 8;
-			else
-				flDamage *= 4;
+			if ( ((CBasePlayer*)pAttacker)->m_flSuperDamageFinished > gpGlobals->time )
+			{
+				if (gpGlobals->deathmatch == 4)
+					flDamage *= 8;
+				else
+					flDamage *= 4;
+			}
+
+			if( ( (CBasePlayer*)pAttacker )->m_iRuneStatus == ITEM_RUNE2_FLAG )
+			{
+				flDamage *= 2;
+			}
 		}
 
-		if( ( (CBasePlayer*)pAttacker )->m_iRuneStatus == ITEM_RUNE2_FLAG )
+		if( m_iRuneStatus == ITEM_RUNE1_FLAG )
 		{
-			flDamage *= 2;
+			flDamage /= 2;
+			EMIT_SOUND( ENT( pev ), CHAN_ITEM, "rune/rune1.wav", 1, ATTN_NORM );
 		}
-	}
 
-	if( m_iRuneStatus == ITEM_RUNE1_FLAG )
-	{
-		flDamage /= 2;
-		EMIT_SOUND( ENT( pev ), CHAN_ITEM, "rune/rune1.wav", 1, ATTN_NORM );
+		// save damage based on the target's armor level
+		float flSave = ceil(pev->armortype * flDamage);
+		if (flSave >= pev->armorvalue)
+		{
+			flSave = pev->armorvalue;
+			pev->armortype = 0;     // lost all armor
+			m_iQuakeItems &= ~(IT_ARMOR1 | IT_ARMOR2 | IT_ARMOR3);
+		}
+		pev->armorvalue -= flSave;
+		flTake = ceil(flDamage - flSave);
 	}
-
-	// save damage based on the target's armor level
-	float flSave = ceil(pev->armortype * flDamage);
-	if (flSave >= pev->armorvalue)
-	{
-		flSave = pev->armorvalue;
-		pev->armortype = 0;     // lost all armor
-		m_iQuakeItems &= ~(IT_ARMOR1 | IT_ARMOR2 | IT_ARMOR3);
-	}
-	pev->armorvalue -= flSave;
-	float flTake = ceil(flDamage - flSave);
 
 	// add to the damage total for clients, which will be sent as a single message at the end of the frame
 	pev->dmg_take = pev->dmg_take + flTake;
@@ -202,7 +212,6 @@ int CBasePlayer::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 
 	// this global is still used for glass and other non-monster killables, along with decals.
 	g_vecAttackDir = vecTemp.Normalize();
-
 
 	// figure momentum add
 	if ( (pevInflictor) && (pev->movetype == MOVETYPE_WALK) && !( FBitSet (bitsDamageType, DMG_BURN) ) && !( FBitSet (bitsDamageType, DMG_ACID) ) )
