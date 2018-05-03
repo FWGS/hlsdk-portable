@@ -139,11 +139,7 @@ void UTIL_CoopPrintMessage( const char *format, ... )
 	int len = vsnprintf( string, 256, format, argptr );
 	va_end( argptr );
 	string[len] = 0;
-
-	MESSAGE_BEGIN( MSG_ALL, 8, NULL ); // svc_print
-		WRITE_BYTE( 3 ); // PRINT_CHAT
-		WRITE_STRING( string );
-	MESSAGE_END();
+	UTIL_ClientPrintAll( HUD_PRINTCONSOLE, string );
 }
 
 

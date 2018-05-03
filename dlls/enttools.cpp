@@ -192,10 +192,7 @@ void Ent_ClientPrintf( edict_t *player, const char *format, ... )
 	va_end( argptr );
 	string[len] = 0;
 
-	MESSAGE_BEGIN( MSG_ONE, 8, g_vecZero, player ); // svc_print
-		WRITE_BYTE( 0 ); // PRINT_LOW
-		WRITE_STRING( string );
-	MESSAGE_END();
+	ClientPrint( &player->v, HUD_PRINTCONSOLE, string );
 }
 
 
