@@ -119,7 +119,7 @@ Vector CGravGun::PredictTarget(float length)
 {
 	Vector predicted = m_pPlayer->pev->origin;
 	float cmdtime = gpGlobals->time - m_flLastCmd;
-	ALERT( at_notice, "PredictTarget %f\n", cmdtime );
+	//ALERT( at_notice, "PredictTarget %f\n", cmdtime );
 
 	// button-based prediction
 	if( m_pPlayer->pev->button & IN_FORWARD )
@@ -555,7 +555,7 @@ void CGravGun::Pull(CBaseEntity* ent)
 			if(ent->pev->velocity.Length() > 900 )
 				ent->pev->velocity = diff.Normalize() * 900;
 			ent->pev->velocity.z += 15;
-			ALERT( at_notice, "vel %f\n", ent->pev->velocity.Length() );
+			//ALERT( at_notice, "vel %f\n", ent->pev->velocity.Length() );
 		}
 		//ent->pev->velocity = ent->pev->velocity + m_pPlayer->pev->velocity;
 			/////
