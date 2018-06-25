@@ -134,9 +134,7 @@ void CEinarHand::SetYawSpeed()
 //=========================================================
 void CEinarHand::AttackSound()
 {
-	int iSound = RANDOM_LONG( 0, 2 );
-	if( iSound != 0 )
-		EMIT_SOUND_DYN( edict(), CHAN_VOICE, pAttackSounds[iSound], GetSoundVolue(), ATTN_IDLE, 0, GetVoicePitch() );
+	EMIT_SOUND_DYN( edict(), CHAN_VOICE, RANDOM_SOUND_ARRAY( pAttackSounds ), GetSoundVolue(), ATTN_IDLE, 0, GetVoicePitch() );
 }
 
 //=========================================================
