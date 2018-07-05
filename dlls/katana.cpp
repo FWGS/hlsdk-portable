@@ -109,8 +109,8 @@ int CKatana::GetItemInfo( ItemInfo *p )
 
 BOOL CKatana::Deploy()
 {
-int ret = DefaultDeploy( "models/v_katana.mdl", "models/p_katana.mdl", CROWBAR_DRAW, "katana" );EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/katana_draw.wav", 1, ATTN_NORM );
-return ret;
+	EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/katana_draw.wav", 1, ATTN_NORM );
+	return DefaultDeploy( "models/v_katana.mdl", "models/p_katana.mdl", CROWBAR_DRAW, "crowbar" );;
 }
  
 void CKatana::Holster( int skiplocal /* = 0 */ )
