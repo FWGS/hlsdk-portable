@@ -46,14 +46,7 @@ public:
 	BOOL Deploy( void );
 	void WeaponIdle( void );
 
-	virtual BOOL UseDecrement( void )
-	{ 
-#if defined( CLIENT_WEAPONS )
-		return TRUE;
-#else
-		return FALSE;
-#endif
-	}
+	virtual BOOL UseDecrement( void ){ return FALSE; }
 };
 
 
@@ -97,34 +90,33 @@ int CRock::GetItemInfo( ItemInfo *p )
 
 BOOL CRock::Deploy()
 {
-	return DefaultDeploy( "models/v_rock.mdl", "models/p_rock.mdl", PEPSIGUN_DRAW, "PEPSIGUN" );
+	return DefaultDeploy( "models/v_rock.mdl", "models/p_rock.mdl", PEPSIGUN_DRAW, "crowbar" );
 }
 
 void CRock::PrimaryAttack()
 {
-		Vector angThrow = m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle;
+	Vector angThrow = m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle;
 
-		if( angThrow.x < 0 )
-			angThrow.x = -10 + angThrow.x * ( ( 90 - 10 ) / 90.0 );
-		else
-			angThrow.x = -10 + angThrow.x * ( ( 90 + 10 ) / 90.0 );
+	if( angThrow.x < 0 )
+		angThrow.x = -10 + angThrow.x * ( ( 90 - 10 ) / 90.0 );
+	else
+		angThrow.x = -10 + angThrow.x * ( ( 90 + 10 ) / 90.0 );
 
-		float flVel = ( 90 - angThrow.x ) * 4;
-		if( flVel > 500 )
-			flVel = 1300;
+	float flVel = ( 90 - angThrow.x ) * 4;
+	if( flVel > 500 )
+		flVel = 1300;
 
-		UTIL_MakeVectors( angThrow );
+	UTIL_MakeVectors( angThrow );
+	Vector vecSrc = m_pPlayer->pev->origin + m_pPlayer->pev->view_ofs + gpGlobals->v_forward * 16;
 
-		Vector vecSrc = m_pPlayer->pev->origin + m_pPlayer->pev->view_ofs + gpGlobals->v_forward * 16;
+	Vector vecThrow = gpGlobals->v_forward * flVel + m_pPlayer->pev->velocity;	
+	CGrenadeRock::ShootTimed( m_pPlayer->pev, vecSrc, vecThrow * 1.5, 300000000000 );
+	SendWeaponAnim( PEPSIGUN_THROW );
+	m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
 
-		Vector vecThrow = gpGlobals->v_forward * flVel + m_pPlayer->pev->velocity;	
-		CGrenadeRock::ShootTimed( m_pPlayer->pev, vecSrc, vecThrow * 1.5, 300000000000 );
-		SendWeaponAnim( PEPSIGUN_THROW );
-		m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
-
-	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5;
-	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.75;
-	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.75;
+	m_flNextPrimaryAttack = gpGlobals->time + 0.5;
+	m_flNextSecondaryAttack = gpGlobals->time + 0.75;
+	m_flTimeWeaponIdle = gpGlobals->time + 0.75;
 	m_fInSpecialReload = 0;
 }
 
@@ -140,7 +132,7 @@ void CRock::WeaponIdle( void )
 		m_flPumpTime = 0;
 	}
 
-	if( m_flTimeWeaponIdle <  UTIL_WeaponTimeBase() )
+	if( m_flTimeWeaponIdle <  gpGlobals->time )
 	{
 		if( m_iClip == 0 && m_fInSpecialReload == 0 && m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] )
 		{
@@ -155,7 +147,7 @@ void CRock::WeaponIdle( void )
 			else
 			{
 			m_fInSpecialReload = 0;
-			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.5;
+			m_flTimeWeaponIdle = gpGlobals->time + 1.5;
 			}
 		}
 		else
@@ -164,7 +156,7 @@ void CRock::WeaponIdle( void )
 			float flRand = UTIL_SharedRandomFloat( m_pPlayer->random_seed, 0, 1 );
 
 				iAnim = PEPSIGUN_IDLE;
-				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + ( 20.0 / 9.0 );
+				m_flTimeWeaponIdle = gpGlobals->time + ( 20.0 / 9.0 );
 			SendWeaponAnim( iAnim );
 		}
 	}
