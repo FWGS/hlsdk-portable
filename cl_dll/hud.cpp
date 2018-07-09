@@ -100,6 +100,23 @@ void __CmdFunc_ToggleServerBrowser( void )
 {
 }
 
+int __MsgFunc_PlayMP3( const char *pszName, int iSize, void *pbuf )
+{
+	char cmd[64];
+
+	BEGIN_READ( pbuf, iSize );
+
+	sprintf( cmd, "sound/mp3/%s", READ_STRING() );
+	gEngfuncs.pfnPrimeMusicStream( cmd, 1 );
+
+	return 1;
+}
+
+void __CmdFunc_StopMP3( void )
+{
+	gEngfuncs.pfnPrimeMusicStream( 0, 0 );
+}
+
 // TFFree Command Menu Message Handlers
 int __MsgFunc_ValClass( const char *pszName, int iSize, void *pbuf )
 {
@@ -182,6 +199,9 @@ void CHud::Init( void )
 
 	// VGUI Menus
 	HOOK_MESSAGE( VGUIMenu );
+
+	HOOK_MESSAGE( PlayMP3 );
+	HOOK_COMMAND( "stopmp3", StopMP3 );
 
 	CVAR_CREATE( "hud_classautokill", "1", FCVAR_ARCHIVE | FCVAR_USERINFO );		// controls whether or not to suicide immediately on TF class switch
 	CVAR_CREATE( "hud_takesshots", "0", FCVAR_ARCHIVE );		// controls whether or not to automatically take screenshots at the end of a round

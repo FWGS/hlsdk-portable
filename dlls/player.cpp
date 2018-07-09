@@ -190,6 +190,7 @@ int gmsgStatusText = 0;
 int gmsgStatusValue = 0;
 
 int gmsgScope = 0;
+int gmsgPlayMP3 = 0;
 
 void LinkUserMessages( void )
 {
@@ -233,12 +234,12 @@ void LinkUserMessages( void )
 	gmsgFade = REG_USER_MSG( "ScreenFade", sizeof(ScreenFade) );
 	gmsgAmmoX = REG_USER_MSG( "AmmoX", 2 );
 	gmsgTeamNames = REG_USER_MSG( "TeamNames", -1 );
+	gmsgPlayMP3 = REG_USER_MSG( "PlayMP3", -1 );
+	gmsgScope = REG_USER_MSG( "Scope", 1 );
 	gmsgBhopcap = REG_USER_MSG( "Bhopcap", 1 );
 
 	gmsgStatusText = REG_USER_MSG( "StatusText", -1 );
 	gmsgStatusValue = REG_USER_MSG( "StatusValue", 3 );
-
-	gmsgScope = REG_USER_MSG( "Scope", 1 );
 }
 
 LINK_ENTITY_TO_CLASS( player, CBasePlayer )
