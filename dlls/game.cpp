@@ -20,6 +20,9 @@
 //++ BulliT
 #include "agglobal.h"
 //-- Martin Webrant
+
+extern bool g_bIsThreeWave;
+
 // QUAKECLASSIC
 cvar_t rj		= { "rj", "0" };
 
@@ -462,6 +465,9 @@ void GameDLLInit( void )
 	g_psv_gravity = CVAR_GET_POINTER( "sv_gravity" );
 	g_psv_aim = CVAR_GET_POINTER( "sv_aim" );
 	g_footsteps = CVAR_GET_POINTER( "mp_footsteps" );
+
+	if( g_bIsThreeWave )
+		teamplay.string = "3";
 
 	// QUAKECLASSIC
 	CVAR_REGISTER( &rj );
