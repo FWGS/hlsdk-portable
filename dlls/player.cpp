@@ -259,10 +259,13 @@ void LinkUserMessages( void )
 	gmsgStatusText = REG_USER_MSG( "StatusText", -1 );
 	gmsgStatusValue = REG_USER_MSG( "StatusValue", 3 );
 
-	gmsgCTFMsgs = REG_USER_MSG( "Bonus", -1 );
-	gmsgFlagStatus = REG_USER_MSG( "FlagStat", 5 );
-	gmsgRuneStatus = REG_USER_MSG( "RuneStat", 1 );
-	gmsgFlagCarrier = REG_USER_MSG( "FlagCarrier", 2 );
+	if( g_bIsThreeWave )
+	{
+		gmsgCTFMsgs = REG_USER_MSG( "Bonus", -1 );
+		gmsgFlagStatus = REG_USER_MSG( "FlagStat", 5 );
+		gmsgRuneStatus = REG_USER_MSG( "RuneStat", 1 );
+		gmsgFlagCarrier = REG_USER_MSG( "FlagCarrier", 2 );
+	}
 //++ BulliT
 	gmsgAllowSpec = REG_USER_MSG( "AllowSpec", 1 );   //Allow spectator button message.
 	gmsgSpectator = REG_USER_MSG( "Spectator", 2 );   //Spectator message.
