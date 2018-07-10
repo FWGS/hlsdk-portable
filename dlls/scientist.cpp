@@ -614,9 +614,6 @@ void CScientist::Spawn( void )
 
 	m_afCapability = bits_CAP_HEAR | bits_CAP_TURN_HEAD | bits_CAP_OPEN_DOORS | bits_CAP_AUTO_DOORS | bits_CAP_USE;
 
-	// White hands
-	pev->skin = 0;
-
 	if( pev->body == -1 )
 	{
 		// -1 chooses a random head
@@ -624,8 +621,8 @@ void CScientist::Spawn( void )
 	}
 
 	// Luther is black, make his hands black
-	if( pev->body == HEAD_LUTHER )
-		pev->skin = 1;
+	if( pev->skin == SKIN_GLASSES && pev->body == HEAD_LUTHER )
+		pev->skin = SKIN_DOCTOR;
 
 	MonsterInit();
 	SetUse( &CTalkMonster::FollowerUse );
@@ -1087,11 +1084,11 @@ void CDeadScientist::Spawn()
 		pev->body = RANDOM_LONG( 0, NUM_SCIENTIST_HEADS - 1 );// pick a head, any head
 	}
 
-	// Luther is black, make his hands black
-	if( pev->body == HEAD_LUTHER )
-		pev->skin = 1;
-	else
-		pev->skin = 0;
+	if( pev->skin == SKIN_GLASSES )
+	{
+		pev->skin = SKIN_PREIST;
+		pev->body = HEAD_LUTHER;
+	}
 
 	pev->sequence = LookupSequence( m_szPoses[m_iPose] );
 	if( pev->sequence == -1 )
@@ -1158,8 +1155,9 @@ void CSittingScientist::Spawn()
 	}
 
 	// Luther is black, make his hands black
-	if( pev->body == HEAD_LUTHER )
-		pev->skin = 1;
+	if( pev->skin == SKIN_GLASSES && pev->body == HEAD_LUTHER )
+		pev->skin = SKIN_DOCTOR;
+	
 	m_baseSequence = LookupSequence( "sitlookleft" );
 	pev->sequence = m_baseSequence + RANDOM_LONG( 0, 4 );
 	ResetSequenceInfo();
