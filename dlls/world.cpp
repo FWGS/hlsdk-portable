@@ -500,9 +500,6 @@ void CWorld::Precache( void )
 	// ok to call this multiple times, calls after first are ignored.
 	SENTENCEG_Init();
 
-	// init texture type array from materials.txt
-	TEXTURETYPE_Init();
-
 	// the area based ambient sounds MUST be the first precache_sounds
 	// player precaches
 	W_Precache();				// get weapon precaches

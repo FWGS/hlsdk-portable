@@ -235,7 +235,7 @@ int CHud::DrawHudString( int xpos, int ypos, int iMaxX, const char *szIt, int r,
 
 int DrawUtfString( int xpos, int ypos, int iMaxX, const char *szIt, int r, int g, int b )
 {
-	if (isXashFWGS())
+	if (IsXashFWGS())
 	{
 		// xash3d: reset unicode state
 		gEngfuncs.pfnVGUI2DrawCharacterAdditive( 0, 0, 0, 0, 0, 0, 0 );
