@@ -32,8 +32,9 @@ extern CGraph WorldGraph;
 // houndeye does 20 points of damage spread over a sphere 384 units in diameter, and each additional 
 // squad member increases the BASE damage by 110%, per the spec.
 #define HOUNDEYE_MAX_SQUAD_SIZE			4
-#define	HOUNDEYE_MAX_ATTACK_RADIUS		144
+#define	HOUNDEYE_MAX_ATTACK_RADIUS		120
 #define	HOUNDEYE_SQUAD_BONUS			(float)1.1
+#define HOUNDEYE_MELEE_DAMAGE			7
 
 #define HOUNDEYE_EYE_FRAMES 4 // how many different switchable maps for the eye
 
@@ -291,17 +292,8 @@ void CHoundeye::HandleAnimEvent( MonsterEvent_t *pEvent )
 				break;
 			}
 		case HOUND_AE_THUMP:
-			{
-				// SOUND HERE!
-				CBaseEntity *pHurt = CheckTraceHullAttack( 70, gSkillData.bullsquidDmgBite, DMG_SLASH );
-
-				if( pHurt )
-				{
-					pHurt->pev->punchangle.x = 5;
-					pHurt->pev->velocity = pHurt->pev->velocity - gpGlobals->v_forward * 16;
-					pHurt->pev->velocity = pHurt->pev->velocity + gpGlobals->v_up * 2;
-				}
-			}
+			// emit the shockwaves
+			SonicAttack();
 			break;
 		case HOUND_AE_ANGERSOUND1:
 			EMIT_SOUND( ENT( pev ), CHAN_VOICE, "houndeye/he_pain3.wav", 1, ATTN_NORM );
@@ -570,99 +562,18 @@ void CHoundeye::SonicAttack( void )
 		break;
 	}
 
-	// blast circles
-	MESSAGE_BEGIN( MSG_PAS, SVC_TEMPENTITY, pev->origin );
-		WRITE_BYTE( TE_BEAMCYLINDER );
-		WRITE_COORD( pev->origin.x );
-		WRITE_COORD( pev->origin.y );
-		WRITE_COORD( pev->origin.z + 16 );
-		WRITE_COORD( pev->origin.x );
-		WRITE_COORD( pev->origin.y );
-		WRITE_COORD( pev->origin.z + 16 + HOUNDEYE_MAX_ATTACK_RADIUS / .2 ); // reach damage radius over .3 seconds
-		WRITE_SHORT( m_iSpriteTexture );
-		WRITE_BYTE( 0 ); // startframe
-		WRITE_BYTE( 0 ); // framerate
-		WRITE_BYTE( 2 ); // life
-		WRITE_BYTE( 16 );  // width
-		WRITE_BYTE( 0 );   // noise
-
-		WriteBeamColor();
-
-		WRITE_BYTE( 255 ); //brightness
-		WRITE_BYTE( 0 );		// speed
-	MESSAGE_END();
-
-	MESSAGE_BEGIN( MSG_PAS, SVC_TEMPENTITY, pev->origin );
-		WRITE_BYTE( TE_BEAMCYLINDER );
-		WRITE_COORD( pev->origin.x );
-		WRITE_COORD( pev->origin.y );
-		WRITE_COORD( pev->origin.z + 16 );
-		WRITE_COORD( pev->origin.x );
-		WRITE_COORD( pev->origin.y );
-		WRITE_COORD( pev->origin.z + 16 + ( HOUNDEYE_MAX_ATTACK_RADIUS / 2 ) / .2 ); // reach damage radius over .3 seconds
-		WRITE_SHORT( m_iSpriteTexture );
-		WRITE_BYTE( 0 ); // startframe
-		WRITE_BYTE( 0 ); // framerate
-		WRITE_BYTE( 2 ); // life
-		WRITE_BYTE( 16 );  // width
-		WRITE_BYTE( 0 );   // noise
-
-		WriteBeamColor();
-
-		WRITE_BYTE( 255 ); //brightness
-		WRITE_BYTE( 0 );		// speed
-	MESSAGE_END();
-
 	CBaseEntity *pEntity = NULL;
 	// iterate on all entities in the vicinity.
 	while( ( pEntity = UTIL_FindEntityInSphere( pEntity, pev->origin, HOUNDEYE_MAX_ATTACK_RADIUS ) ) != NULL )
 	{
-		if( pEntity->pev->takedamage != DAMAGE_NO )
+		if( pEntity->pev->takedamage == DAMAGE_NO )
 		{
-			if( !FClassnameIs( pEntity->pev, "monster_houndeye" ) )
+			if( pEntity->IsPlayer() )
 			{
-				// houndeyes don't hurt other houndeyes with their attack
-				// houndeyes do FULL damage if the ent in question is visible. Half damage otherwise.
-				// This means that you must get out of the houndeye's attack range entirely to avoid damage.
-				// Calculate full damage first
-
-				if( SquadCount() > 1 )
-				{
-					// squad gets attack bonus.
-					flAdjustedDamage = gSkillData.houndeyeDmgBlast + gSkillData.houndeyeDmgBlast * ( HOUNDEYE_SQUAD_BONUS * ( SquadCount() - 1 ) );
-				}
+				if( FVisible( pEntity ) )
+					pEntity->TakeDamage( pev, pev, HOUNDEYE_MELEE_DAMAGE, DMG_SONIC | DMG_ALWAYSGIB );
 				else
-				{
-					// solo
-					flAdjustedDamage = gSkillData.houndeyeDmgBlast;
-				}
-
-				flDist = ( pEntity->Center() - pev->origin ).Length();
-
-				flAdjustedDamage -= ( flDist / HOUNDEYE_MAX_ATTACK_RADIUS ) * flAdjustedDamage;
-
-				if( !FVisible( pEntity ) )
-				{
-					if( pEntity->IsPlayer() )
-					{
-						// if this entity is a client, and is not in full view, inflict half damage. We do this so that players still 
-						// take the residual damage if they don't totally leave the houndeye's effective radius. We restrict it to clients
-						// so that monsters in other parts of the level don't take the damage and get pissed.
-						flAdjustedDamage *= 0.5;
-					}
-					else if( !FClassnameIs( pEntity->pev, "func_breakable" ) && !FClassnameIs( pEntity->pev, "func_pushable" ) ) 
-					{
-						// do not hurt nonclients through walls, but allow damage to be done to breakables
-						flAdjustedDamage = 0;
-					}
-				}
-
-				//ALERT ( at_aiconsole, "Damage: %f\n", flAdjustedDamage );
-
-				if( flAdjustedDamage > 0 )
-				{
-					pEntity->TakeDamage( pev, pev, flAdjustedDamage, DMG_SONIC | DMG_ALWAYSGIB );
-				}
+					pEntity->TakeDamage( pev, pev, HOUNDEYE_MELEE_DAMAGE / 2, DMG_SONIC | DMG_ALWAYSGIB );
 			}
 		}
 	}
