@@ -566,7 +566,7 @@ void CHoundeye::SonicAttack( void )
 	// iterate on all entities in the vicinity.
 	while( ( pEntity = UTIL_FindEntityInSphere( pEntity, pev->origin, HOUNDEYE_MAX_ATTACK_RADIUS ) ) != NULL )
 	{
-		if( pEntity->pev->takedamage == DAMAGE_NO )
+		if( pEntity->pev->takedamage != DAMAGE_NO )
 		{
 			if( pEntity->IsPlayer() )
 			{
