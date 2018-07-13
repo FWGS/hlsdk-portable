@@ -24,6 +24,8 @@ LOCAL_CFLAGS += -DCLIENT_DLL=1
 
 SRCS=
 SRCS_C=
+SRCS+=./3wave/CTF_FlagStatus.cpp
+SRCS+=./3wave/CTF_HudMessage.cpp
 SRCS+=./dmc/DMC_Teleporters.cpp
 SRCS+=../dlls/dmc/quake_gun.cpp
 SRCS+=../dlls/dmc/quake_weapons_all.cpp
@@ -110,6 +112,7 @@ LOCAL_C_INCLUDES := $(LOCAL_PATH)/. \
 		 $(LOCAL_PATH)/../dlls/aghl \
 		 $(LOCAL_PATH)/../dlls/dmc \
 		 $(LOCAL_PATH)/.. \
+		 $(LOCAL_PATH)/../dlls/3wave \
 		 $(LOCAL_PATH)/dmc \
 		 $(LOCAL_PATH)/../utils/false_vgui/include
 LOCAL_CFLAGS += $(DEFINES) $(INCLUDES)

@@ -28,6 +28,7 @@ LOCAL_C_INCLUDES := $(SDL_PATH)/include \
 		    $(LOCAL_PATH)/../pm_shared \
 		    $(LOCAL_PATH)/../game_shared \
 		    $(LOCAL_PATH)/.. \
+		    $(LOCAL_PATH)/3wave \
 		    $(LOCAL_PATH)/aghl \
 		    $(LOCAL_PATH)/dmc
 
@@ -67,10 +68,15 @@ LOCAL_SRC_FILES := animating.cpp \
            util.cpp \
            weapons.cpp \
 	   world.cpp \
+	   3wave/flags.cpp \
+	   3wave/grapple.cpp \
+	   3wave/runes.cpp \
+	   3wave/threewave_gamerules.cpp \
 	   aghl/agarena.cpp \
 	   aghl/agglobal.cpp \
 	   aghl/aglms.cpp \
 	   aghl/agspectator.cpp \
+	   aghl/agtimer.cpp \
 	   dmc/quake_gun.cpp \
 	   dmc/quake_items.cpp \
 	   dmc/quake_nail.cpp \
