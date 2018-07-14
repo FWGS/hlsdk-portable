@@ -1084,11 +1084,9 @@ void CDeadScientist::Spawn()
 		pev->body = RANDOM_LONG( 0, NUM_SCIENTIST_HEADS - 1 );// pick a head, any head
 	}
 
-	if( pev->skin == SKIN_GLASSES )
-	{
-		pev->skin = SKIN_PREIST;
-		pev->body = HEAD_LUTHER;
-	}
+	// Luther is black, make his hands black
+	if( pev->skin == SKIN_GLASSES && pev->body == HEAD_LUTHER )
+		pev->skin = SKIN_DOCTOR;
 
 	pev->sequence = LookupSequence( m_szPoses[m_iPose] );
 	if( pev->sequence == -1 )
