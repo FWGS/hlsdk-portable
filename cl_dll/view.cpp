@@ -828,6 +828,8 @@ void V_GetChaseOrigin( float * angles, float * origin, float distance, qboolean 
 
 	while( !tracefinished )
 	{
+		trace = gEngfuncs.PM_TraceLine( vecStart, vecEnd, PM_TRACELINE_PHYSENTSONLY, 2, -1 );
+
 		if( trace->ent <= 0 || !worldOnly )
 		{
 			tracefinished = true;
