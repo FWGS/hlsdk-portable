@@ -51,6 +51,7 @@ static int num_teams = 0;
 bool g_bSpawnedRunes;
 extern void SpawnRunes( void );
 
+extern bool g_bHaveMOTD;
 extern unsigned short g_usCarried;
 extern edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer, bool bCheckDM );
 extern edict_t *RuneSelectSpawnPoint( void );
@@ -274,6 +275,9 @@ BOOL CThreeWave::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 	if( m_VoiceGameMgr.ClientCommand( pPlayer, pcmd ) )
 		return TRUE;
 #endif
+	if( pPlayer->m_bHadFirstSpawn == false && g_bHaveMOTD )
+		pPlayer->m_bHadFirstSpawn = true;
+
 	if( FStrEq( pcmd, "menuselect" ) )
 	{
 		int iTeam = 0;
