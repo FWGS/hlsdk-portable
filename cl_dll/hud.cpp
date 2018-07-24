@@ -256,7 +256,7 @@ void CHud::VidInit( void )
 			client_sprite_t *p = m_pSpriteList;
 			for( j = 0; j < m_iSpriteCountAllRes; j++ )
 			{
-				if( p->iRes == m_iRes )
+				if( p->iRes == m_iRes || !strncmp( p->szSprite, "640_", 4 ) )
 					m_iSpriteCount++;
 				p++;
 			}
@@ -270,7 +270,7 @@ void CHud::VidInit( void )
 			int index = 0;
 			for( j = 0; j < m_iSpriteCountAllRes; j++ )
 			{
-				if( p->iRes == m_iRes )
+				if( p->iRes == m_iRes || !strncmp( p->szSprite, "640_", 4 ) )
 				{
 					char sz[256];
 					sprintf( sz, "sprites/%s.spr", p->szSprite );
@@ -295,7 +295,7 @@ void CHud::VidInit( void )
 		m_iSpriteCount = 0;
 		for( j = 0; j < m_iSpriteCountAllRes; j++ )
 		{
-			if( p->iRes == m_iRes )
+			if( p->iRes == m_iRes || !strncmp( p->szSprite, "640_", 4 ) )
 				m_iSpriteCount++;
 			p++;
 		}
@@ -313,7 +313,7 @@ void CHud::VidInit( void )
 		int index = 0;
 		for( j = 0; j < m_iSpriteCountAllRes; j++ )
 		{
-			if( p->iRes == m_iRes )
+			if( p->iRes == m_iRes || !strncmp( p->szSprite, "640_", 4 ) )
 			{
 				char sz[256];
 				sprintf( sz, "sprites/%s.spr", p->szSprite );
