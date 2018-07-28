@@ -118,9 +118,13 @@ inline void *GET_PRIVATE( edict_t *pent )
 #define NAME_FOR_FUNCTION			(*g_engfuncs.pfnNameForFunction)
 #define TRACE_TEXTURE				(*g_engfuncs.pfnTraceTexture)
 #define CLIENT_PRINTF				(*g_engfuncs.pfnClientPrintf)
-#define CMD_ARGS					(*g_engfuncs.pfnCmd_Args)
-#define CMD_ARGC					(*g_engfuncs.pfnCmd_Argc)
-#define CMD_ARGV					(*g_engfuncs.pfnCmd_Argv)
+//#define CMD_ARGS					(*g_engfuncs.pfnCmd_Args)
+//#define CMD_ARGC					(*g_engfuncs.pfnCmd_Argc)
+//#define CMD_ARGV					(*g_engfuncs.pfnCmd_Argv)
+// gravgunmod.cpp hack
+extern "C" int CMD_ARGC();
+extern "C" const char *CMD_ARGS();
+extern "C" const char *CMD_ARGV( int i );
 #define GET_ATTACHMENT			(*g_engfuncs.pfnGetAttachment)
 #define SET_VIEW				(*g_engfuncs.pfnSetView)
 #define SET_CROSSHAIRANGLE		(*g_engfuncs.pfnCrosshairAngle)

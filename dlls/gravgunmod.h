@@ -17,6 +17,7 @@ extern cvar_t cvar_agibcount;
 extern cvar_t mp_spectator;
 extern cvar_t mp_fixhornetbug;
 extern cvar_t mp_checkentities;
+extern cvar_t mp_touchmenu;
 
 void GGM_RegisterCVars( void );
 void Ent_RunGC( bool common, bool enttools, const char *userid );
@@ -45,6 +46,28 @@ enum PlayerMenuState
 	MENUSTATE_LOCAL_CONFIRM
 };
 
+
+class GGM_PlayerMenu
+{
+	struct GGM_MenuItem
+	{
+		char command[256];
+		char name[32];
+	} m_items[5];
+	int m_iCount;
+	char m_sTitle[32];
+
+public:
+	CBasePlayer *pPlayer;
+	bool MenuSelect( int select );
+	GGM_PlayerMenu &SetTitle(const char *title);
+	GGM_PlayerMenu &New(const char *title);
+	GGM_PlayerMenu &Add( const char *name, const char *command );
+	GGM_PlayerMenu &Clear();
+	void Show();
+};
+
+
 struct GGMData
 {
 	float m_flSpawnTime;
@@ -56,6 +79,7 @@ struct GGMData
 	float m_flEntScope;
 	float m_flEntTime;
 	char uid[33];
+	GGM_PlayerMenu menu;
 };
 
 #endif // GRAVGUNMOD_H

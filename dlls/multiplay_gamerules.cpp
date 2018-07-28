@@ -138,20 +138,23 @@ BOOL CHalfLifeMultiplay::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 
 			return TRUE;
 		}
-		if( FStrEq( pcmd, "menuselect" ) )
-		{
-			int imenu = atoi( CMD_ARGV( 1 ) );
 
-			UTIL_CoopProcessMenu( pPlayer, imenu );
-
-			return TRUE;
-		}
 		if( FStrEq( pcmd, "coopmenu" ) )
 		{
 				UTIL_CoopMenu( pPlayer );
 
 			return TRUE;
 		}
+	}
+
+	if( FStrEq( pcmd, "menuselect" ) )
+	{
+		int imenu = atoi( CMD_ARGV( 1 ) );
+
+		if( mp_coop.value )
+			UTIL_CoopProcessMenu( pPlayer, imenu );
+
+		return pPlayer->gravgunmod_data.menu.MenuSelect(imenu);
 	}
 
 	return CGameRules::ClientCommand( pPlayer, pcmd );
