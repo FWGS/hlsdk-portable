@@ -12,6 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
+#pragma once
 #ifndef PM_DEBUG_H
 #define PM_DEBUG_H
 

@@ -121,6 +121,13 @@ void CBaseEntity::UpdateOnRemove( void )
 
 	if( pev->globalname )
 		gGlobalState.EntitySetState( pev->globalname, GLOBAL_DEAD );
+
+	// tell owner ( if any ) that we're dead.This is mostly for MonsterMaker functionality.
+	//Killtarget didn't do this before, so the counter broke. - Solokiller
+	if( CBaseEntity* pOwner = pev->owner ? Instance( pev->owner ) : 0 )
+	{
+		pOwner->DeathNotice( pev );
+	}
 }
 
 // Convenient way to delay removing oneself
@@ -429,6 +436,7 @@ After moving, set origin to exact final destination, call "move done" function
 */
 void CBaseToggle::LinearMoveDone( void )
 {
+#if 0
 	// stupid bug: Linear move is broken during changelevel
 	if( mp_coop.value && pev->globalname )
 	{
@@ -443,6 +451,16 @@ void CBaseToggle::LinearMoveDone( void )
 			return;
 		}
 	}
+#else
+	Vector delta = m_vecFinalDest - pev->origin;
+	float error = delta.Length();
+	if( error > 0.03125 )
+	{
+		LinearMove( m_vecFinalDest, 100 );
+		return;
+	}
+
+#endif
 	UTIL_SetOrigin( pev, m_vecFinalDest );
 	pev->velocity = g_vecZero;
 	pev->nextthink = -1;

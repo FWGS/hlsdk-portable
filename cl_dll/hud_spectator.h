@@ -1,13 +1,13 @@
-//========= Copyright © 1996-2002, Valve LLC, All rights reserved. ============
+//========= Copyright (c) 1996-2002, Valve LLC, All rights reserved. ============
 //
 // Purpose: 
 //
 // $NoKeywords: $
 //=============================================================================
 
-#ifndef SPECTATOR_H
-#define SPECTATOR_H
 #pragma once
+#ifndef HUD_SPECTATOR_H
+#define HUD_SPECTATOR_H
 
 #include "cl_entity.h"
 
@@ -64,11 +64,11 @@ public:
 	void CheckOverviewEntities();
 	void DrawOverview();
 	void DrawOverviewEntities();
-	void GetMapPosition( float * returnvec );
+	void GetMapPosition( float *returnvec );
 	void DrawOverviewLayer();
 	void LoadMapSprites();
 	bool ParseOverviewFile();
-	bool IsActivePlayer( cl_entity_t * ent );
+	bool IsActivePlayer( cl_entity_t *ent );
 	void SetModes( int iMainMode, int iInsetMode );
 	void HandleButtonsDown( int ButtonPressed );
 	void HandleButtonsUp( int ButtonPressed );

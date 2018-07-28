@@ -312,9 +312,9 @@ void CProp::MaterialSoundPrecache( Materials precacheMaterial )
 
 	pSoundList = MaterialSoundList( precacheMaterial, soundCount );
 
-	for ( i = 0; i < soundCount; i++ )
+	for( i = 0; i < soundCount; i++ )
 	{
-		PRECACHE_SOUND( (char *)pSoundList[i] );
+		PRECACHE_SOUND( (char*)pSoundList[i] );
 	}
 }
 

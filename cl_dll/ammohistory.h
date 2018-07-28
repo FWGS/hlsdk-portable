@@ -15,6 +15,9 @@
 //
 // ammohistory.h
 //
+#pragma once
+#ifndef AMMOHISTORY_H
+#define AMMOHISTORY_H
 
 // this is the max number of items in each bucket
 #define MAX_WEAPON_POSITIONS		MAX_WEAPON_SLOTS
@@ -137,3 +140,4 @@ public:
 };
 
 extern HistoryResource gHR;
+#endif // AMMOHISTORY_H

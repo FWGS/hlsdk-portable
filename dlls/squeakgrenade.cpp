@@ -103,7 +103,7 @@ int CSqueakGrenade::Classify( void )
 	if( m_iMyClass != 0 )
 		return m_iMyClass; // protect against recursion
 
-	if( m_hEnemy != NULL )
+	if( m_hEnemy != 0 )
 	{
 		m_iMyClass = CLASS_INSECT; // no one cares about it
 		switch( m_hEnemy->Classify() )
@@ -189,13 +189,13 @@ void CSqueakGrenade::Killed( entvars_t *pevAttacker, int iGib )
 
 	UTIL_BloodDrips( pev->origin, g_vecZero, BloodColor(), 80 );
 
-	if( m_hOwner != NULL )
+	if( m_hOwner != 0 )
 		RadiusDamage( pev, m_hOwner->pev, pev->dmg, CLASS_NONE, DMG_BLAST );
 	else
 		RadiusDamage( pev, pev, pev->dmg, CLASS_NONE, DMG_BLAST );
 
 	// reset owner so death message happens
-	if( m_hOwner != NULL )
+	if( m_hOwner != 0 )
 		pev->owner = m_hOwner->edict();
 
 	CBaseMonster::Killed( pevAttacker, GIB_ALWAYS );
@@ -239,7 +239,7 @@ void CSqueakGrenade::HuntThink( void )
 		pev->velocity = pev->velocity * 0.9;
 		pev->velocity.z += 8.0;
 	}
-	else if( ( pev->movetype = MOVETYPE_FLY ) )
+	else if( pev->movetype == MOVETYPE_FLY )
 	{
 		pev->movetype = MOVETYPE_BOUNCE;
 	}
@@ -250,7 +250,7 @@ void CSqueakGrenade::HuntThink( void )
 
 	m_flNextHunt = gpGlobals->time + 2.0;
 
-	CBaseEntity *pOther = NULL;
+	//CBaseEntity *pOther = NULL;
 	Vector vecDir;
 	TraceResult tr;
 
@@ -260,7 +260,7 @@ void CSqueakGrenade::HuntThink( void )
 
 	UTIL_MakeVectors( pev->angles );
 
-	if( m_hEnemy == NULL || !m_hEnemy->IsAlive() )
+	if( m_hEnemy == 0 || !m_hEnemy->IsAlive() )
 	{
 		// find target, bounce a bit towards it.
 		Look( 512 );
@@ -279,7 +279,7 @@ void CSqueakGrenade::HuntThink( void )
 	if( flpitch < 100 )
 		flpitch = 100;
 
-	if( m_hEnemy != NULL )
+	if( m_hEnemy != 0 )
 	{
 		if( FVisible( m_hEnemy ) )
 		{
@@ -362,9 +362,9 @@ void CSqueakGrenade::SuperBounceTouch( CBaseEntity *pOther )
 			if( tr.pHit->v.modelindex != pev->modelindex )
 			{
 				// ALERT( at_console, "hit enemy\n" );
-				ClearMultiDamage( );
+				ClearMultiDamage();
 				pOther->TraceAttack( pev, gSkillData.snarkDmgBite, gpGlobals->v_forward, &tr, DMG_SLASH ); 
-				if( m_hOwner != NULL )
+				if( m_hOwner != 0 )
 					ApplyMultiDamage( pev, m_hOwner->pev );
 				else
 					ApplyMultiDamage( pev, pev );
@@ -487,8 +487,7 @@ void CSqueak::Holster( int skiplocal /* = 0 */ )
 	if( !m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] )
 	{
 		m_pPlayer->pev->weapons &= ~( 1 << WEAPON_SNARK );
-		SetThink( &CBasePlayerItem::DestroyItem );
-		pev->nextthink = gpGlobals->time + 0.1;
+		DestroyItem();
 		return;
 	}
 
@@ -545,7 +544,7 @@ void CSqueak::PrimaryAttack()
 
 			m_fJustThrown = 1;
 
-			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.3;
+			m_flNextPrimaryAttack = GetNextAttackDelay( 0.3 );
 			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.0;
 		}
 	}

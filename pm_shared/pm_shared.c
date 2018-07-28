@@ -30,16 +30,20 @@
 #include <stdlib.h> // atoi
 #include <ctype.h>  // isspace
 
+int g_bhopcap = 1;
+
 #ifdef CLIENT_DLL
-	// Spectator Mode
-	int	iJumpSpectator;
-extern	float	vJumpOrigin[3];
-extern	float	vJumpAngles[3];
+// Spectator Mode
+int iJumpSpectator;
+extern float vJumpOrigin[3];
+extern float vJumpAngles[3];
 #endif
 
 static int pm_shared_initialized = 0;
 
+#ifdef _MSC_VER
 #pragma warning( disable : 4305 )
+#endif
 
 playermove_t *pmove = NULL;
 
@@ -90,8 +94,13 @@ playermove_t *pmove = NULL;
 
 #define PLAYER_LONGJUMP_SPEED		350 // how fast we longjump
 
+#define PLAYER_DUCKING_MULTIPLIER	0.333
+
 // double to float warning
+#ifdef _MSC_VER
 #pragma warning(disable : 4244)
+#endif
+
 #define max(a, b)  (((a) > (b)) ? (a) : (b))
 #define min(a, b)  (((a) < (b)) ? (a) : (b))
 // up / down
@@ -170,24 +179,25 @@ void PM_InitTextureTypes()
 	char buffer[512];
 	int i, j;
 	byte *pMemFile;
-	int fileSize, filePos;
+	int fileSize, filePos = 0;
 	static qboolean bTextureTypeInit = false;
 
 	if( bTextureTypeInit )
 		return;
 
-	memset(&( grgszTextureName[0][0] ), 0, CTEXTURESMAX * CBTEXTURENAMEMAX );
-	memset( grgchTextureType, 0, CTEXTURESMAX );
+	memset(&( grgszTextureName[0][0] ), 0, sizeof( grgszTextureName ) );
+	memset( grgchTextureType, 0, sizeof( grgchTextureType ) );
 
 	gcTextures = 0;
 
 	fileSize = pmove->COM_FileSize( materials_path );
-	pMemFile = pmove->COM_LoadFile( materials_path, 5, NULL );
+	pMemFile = pmove->COM_LoadFile( materials_path, 5, &fileSize );
+
 	if( !pMemFile )
 		return;
 
-	memset( buffer, 0, 512 );
-	filePos = 0;
+	memset( buffer, 0, sizeof( buffer ) );
+
 	// for each line in the file...
 	while( pmove->memfgets( pMemFile, fileSize, &filePos, buffer, 511 ) != NULL && (gcTextures < CTEXTURESMAX ) )
 	{
@@ -558,7 +568,7 @@ void PM_UpdateStepSound( void )
 	float fvol;
 	vec3_t knee;
 	vec3_t feet;
-	vec3_t center;
+	//vec3_t center;
 	float height;
 	float speed;
 	float velrun;
@@ -601,7 +611,7 @@ void PM_UpdateStepSound( void )
 	{
 		fWalking = speed < velrun;		
 
-		VectorCopy( pmove->origin, center );
+		//VectorCopy( pmove->origin, center );
 		VectorCopy( pmove->origin, knee );
 		VectorCopy( pmove->origin, feet );
 
@@ -1071,7 +1081,7 @@ Only used by players.  Moves along the ground when player is a MOVETYPE_WALK.
 */
 void PM_WalkMove()
 {
-	int clip;
+	//int clip;
 	int oldonground;
 	int i;
 
@@ -1081,7 +1091,7 @@ void PM_WalkMove()
 	vec3_t wishdir;
 	float wishspeed;
 
-	vec3_t dest, start;
+	vec3_t dest; //, start;
 	vec3_t original, originalvel;
 	vec3_t down, downvel;
 	float downdist, updist;
@@ -1144,7 +1154,7 @@ void PM_WalkMove()
 	dest[2] = pmove->origin[2];
 
 	// first try moving directly to the next spot
-	VectorCopy( dest, start );
+	//VectorCopy( dest, start );
 	trace = pmove->PM_PlayerTrace( pmove->origin, dest, PM_NORMAL, -1 );
 	// If we made it all the way, then copy trace end
 	//  as new player position.
@@ -1167,7 +1177,8 @@ void PM_WalkMove()
 	VectorCopy( pmove->velocity, originalvel ); // velocity.
 
 	// Slide move
-	clip = PM_FlyMove();
+	//clip = PM_FlyMove();
+	PM_FlyMove();
 
 	// Copy the results out
 	VectorCopy( pmove->origin, down );
@@ -1192,7 +1203,8 @@ void PM_WalkMove()
 	}
 
 	// slide move the rest of the way.
-	clip = PM_FlyMove();
+	//clip = PM_FlyMove();
+	PM_FlyMove();
 
 	// Now try going back down from the end point
 	//  press down the stepheight
@@ -2003,8 +2015,8 @@ void PM_Duck( void )
 	int buttonsChanged = ( pmove->oldbuttons ^ pmove->cmd.buttons );	// These buttons have changed this frame
 	int nButtonPressed = buttonsChanged & pmove->cmd.buttons;		// The changed ones still down are "pressed"
 
-	int duckchange = buttonsChanged & IN_DUCK ? 1 : 0;
-	int duckpressed = nButtonPressed & IN_DUCK ? 1 : 0;
+	//int duckchange = buttonsChanged & IN_DUCK ? 1 : 0;
+	//int duckpressed = nButtonPressed & IN_DUCK ? 1 : 0;
 
 	if( pmove->cmd.buttons & IN_DUCK )
 	{
@@ -2028,9 +2040,9 @@ void PM_Duck( void )
 
 	if( pmove->flags & FL_DUCKING )
 	{
-		pmove->cmd.forwardmove *= 0.333;
-		pmove->cmd.sidemove *= 0.333;
-		pmove->cmd.upmove *= 0.333;
+		pmove->cmd.forwardmove *= PLAYER_DUCKING_MULTIPLIER;
+		pmove->cmd.sidemove *= PLAYER_DUCKING_MULTIPLIER;
+		pmove->cmd.upmove *= PLAYER_DUCKING_MULTIPLIER;
 	}
 
 	if( ( pmove->cmd.buttons & IN_DUCK ) || ( pmove->bInDuck ) || ( pmove->flags & FL_DUCKING ) )
@@ -2121,16 +2133,24 @@ void PM_LadderMove( physent_t *pLadder )
 	{
 		float forward = 0, right = 0;
 		vec3_t vpn, v_right;
+		float flSpeed = MAX_CLIMB_SPEED;
+
+		// they shouldn't be able to move faster than their maxspeed
+		if( flSpeed > pmove->maxspeed )
+			flSpeed = pmove->maxspeed;
 
 		AngleVectors( pmove->angles, vpn, v_right, NULL );
+
+		if( pmove->flags & FL_DUCKING )
+			flSpeed *= PLAYER_DUCKING_MULTIPLIER;
 		if( pmove->cmd.buttons & IN_BACK )
-			forward -= MAX_CLIMB_SPEED;
+			forward -= flSpeed;
 		if( pmove->cmd.buttons & IN_FORWARD )
-			forward += MAX_CLIMB_SPEED;
+			forward += flSpeed;
 		if( pmove->cmd.buttons & IN_MOVELEFT )
-			right -= MAX_CLIMB_SPEED;
+			right -= flSpeed;
 		if( pmove->cmd.buttons & IN_MOVERIGHT )
-			right += MAX_CLIMB_SPEED;
+			right += flSpeed;
 
 		if( pmove->cmd.buttons & IN_JUMP )
 		{
@@ -2262,6 +2282,7 @@ void PM_AddGravity()
 	pmove->basevelocity[2] = 0;
 	PM_CheckVelocity();
 }
+
 /*
 ============
 PM_PushEntity
@@ -2549,7 +2570,8 @@ void PM_Jump( void )
 	// In the air now.
 	pmove->onground = -1;
 
-	PM_PreventMegaBunnyJumping();
+	if( g_bhopcap )
+		PM_PreventMegaBunnyJumping();
 
 	if( tfc )
 	{
@@ -3302,8 +3324,8 @@ void PM_Move( struct playermove_s *ppmove, int server )
 		pmove->flags &= ~FL_ONGROUND;
 	}
 
-	// In single player, reset friction after each movement to FrictionModifier Triggers work still.
-	if( !pmove->multiplayer && ( pmove->movetype == MOVETYPE_WALK ) )
+	// Reset friction after each movement to FrictionModifier Triggers work still.
+	if( pmove->movetype == MOVETYPE_WALK )
 	{
 		pmove->friction = 1.0f;
 	}

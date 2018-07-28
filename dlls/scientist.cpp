@@ -435,7 +435,7 @@ void CScientist::Scream( void )
 
 Activity CScientist::GetStoppedActivity( void )
 { 
-	if( m_hEnemy != NULL ) 
+	if( m_hEnemy != 0 ) 
 		return ACT_EXCITED;
 	return CTalkMonster::GetStoppedActivity();
 }
@@ -465,7 +465,10 @@ void CScientist::StartTask( Task_t *pTask )
 		{
 			Talk( 2 );
 			m_hTalkTarget = m_hEnemy;
-			if( m_hEnemy->IsPlayer() )
+
+			//The enemy can be null here. - Solokiller
+			//Discovered while testing the barnacle grapple on headcrabs with scientists in view.
+			if( m_hEnemy != 0 && m_hEnemy->IsPlayer() )
 				PlaySentence( "SC_PLFEAR", 5, VOL_NORM, ATTN_NORM );
 			else
 				PlaySentence( "SC_FEAR", 5, VOL_NORM, ATTN_NORM );
@@ -511,7 +514,7 @@ void CScientist::RunTask( Task_t *pTask )
 			if( RANDOM_LONG( 0, 63 ) < 8 )
 				Scream();
 
-			if( m_hEnemy == NULL )
+			if( m_hEnemy == 0 )
 			{
 				TaskFail();
 			}
@@ -896,8 +899,8 @@ Schedule_t *CScientist::GetSchedule( void )
 				m_fearTime = gpGlobals->time;
 			else if( DisregardEnemy( pEnemy ) )		// After 15 seconds of being hidden, return to alert
 			{
-				m_hEnemy = NULL;
-				pEnemy = NULL;
+				m_hEnemy = 0;
+				pEnemy = 0;
 			}
 		}
 
@@ -1024,12 +1027,12 @@ MONSTERSTATE CScientist::GetIdealState( void )
 				{
 					// Strip enemy when going to alert
 					m_IdealMonsterState = MONSTERSTATE_ALERT;
-					m_hEnemy = NULL;
+					m_hEnemy = 0;
 					return m_IdealMonsterState;
 				}
 
 				// Follow if only scared a little
-				if( m_hTargetEnt != NULL )
+				if( m_hTargetEnt != 0 )
 				{
 					m_IdealMonsterState = MONSTERSTATE_ALERT;
 					return m_IdealMonsterState;
@@ -1053,7 +1056,7 @@ MONSTERSTATE CScientist::GetIdealState( void )
 
 BOOL CScientist::CanHeal( void )
 { 
-	if( ( m_healTime > gpGlobals->time ) || ( m_hTargetEnt == NULL ) || ( m_hTargetEnt->pev->health > ( m_hTargetEnt->pev->max_health * 0.5 ) ) )
+	if( ( m_healTime > gpGlobals->time ) || ( m_hTargetEnt == 0 ) || ( m_hTargetEnt->pev->health > ( m_hTargetEnt->pev->max_health * 0.5 ) ) )
 		return FALSE;
 
 	return TRUE;
@@ -1096,10 +1099,10 @@ public:
 
 	void KeyValue( KeyValueData *pkvd );
 	int m_iPose;// which sequence to display
-	static char *m_szPoses[7];
+	static const char *m_szPoses[7];
 };
 
-char *CDeadScientist::m_szPoses[] =
+const char *CDeadScientist::m_szPoses[] =
 {
 	"lying_on_back",
 	"lying_on_stomach",

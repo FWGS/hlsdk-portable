@@ -159,7 +159,7 @@ void CWallHealth::Spawn()
 	UTIL_SetOrigin( pev, pev->origin );		// set size and link into world
 	UTIL_SetSize( pev, pev->mins, pev->maxs );
 	SET_MODEL( ENT( pev ), STRING( pev->model ) );
-	m_iJuice = gSkillData.healthchargerCapacity;
+	m_iJuice = (int)gSkillData.healthchargerCapacity;
 	pev->frame = 0;
 }
 
@@ -230,7 +230,7 @@ void CWallHealth::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE u
 void CWallHealth::Recharge( void )
 {
 	EMIT_SOUND( ENT( pev ), CHAN_ITEM, "items/medshot4.wav", 1.0, ATTN_NORM );
-	m_iJuice = gSkillData.healthchargerCapacity;
+	m_iJuice = (int)gSkillData.healthchargerCapacity;
 	pev->frame = 0;			
 	SetThink( &CBaseEntity::SUB_DoNothing );
 }
@@ -243,7 +243,7 @@ void CWallHealth::Off( void )
 
 	m_iOn = 0;
 
-	if( ( !m_iJuice ) && ( ( m_iReactivate = g_pGameRules->FlHealthChargerRechargeTime() ) > 0 ) )
+	if( ( !m_iJuice ) && ( ( m_iReactivate = (int)g_pGameRules->FlHealthChargerRechargeTime() ) > 0 ) )
 	{
 		pev->nextthink = pev->ltime + m_iReactivate;
 		SetThink( &CWallHealth::Recharge );

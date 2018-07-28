@@ -17,7 +17,7 @@ LOCAL_CFLAGS += -D_LINUX -DCLIENT_WEAPONS -Dstricmp=strcasecmp -Dstrnicmp=strnca
 	-fno-exceptions -DNO_VOICEGAMEMGR -Wno-conversion-null -Wno-write-strings -std=gnu++98 -Wno-invalid-offsetof
 
 
-LOCAL_CPPFLAGS := $(LOCAL_CFLAGS) -frtti
+LOCAL_CPPFLAGS := $(LOCAL_CFLAGS)
 
 LOCAL_C_INCLUDES := $(SDL_PATH)/include \
 		    $(LOCAL_PATH)/. \
@@ -92,11 +92,13 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
            multiplay_gamerules.cpp \
            nihilanth.cpp \
            nodes.cpp \
+	   observer.cpp \
            osprey.cpp \
            pathcorner.cpp \
            plane.cpp \
            plats.cpp \
            player.cpp \
+	   playermonster.cpp \
            python.cpp \
            rat.cpp \
            roach.cpp \
