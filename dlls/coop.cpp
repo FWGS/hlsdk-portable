@@ -217,7 +217,7 @@ void UTIL_BecomeSpectator( CBasePlayer *pPlayer )
 {
 	//pPlayer->m_bDoneFirstSpawn = true;
 	pPlayer->pev->takedamage = DAMAGE_NO;
-	//pPlayer->pev->flags |= FL_SPECTATOR;
+	pPlayer->pev->flags |= FL_SPECTATOR;
 	pPlayer->pev->flags |= FL_NOTARGET;
 	pPlayer->pev->effects |= EF_NODRAW;
 	pPlayer->pev->solid = SOLID_NOT;
