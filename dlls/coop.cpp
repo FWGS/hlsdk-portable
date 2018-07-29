@@ -627,8 +627,8 @@ void CWeaponList::AddWeapon( const char *classname )
 {
 	int i;
 
-	if( !strcmp( classname, "item_suit") )
-		return;
+	//if( !strcmp( classname, "item_suit") )
+		//return;
 
 	if( !strcmp( classname, "item_healthkit") )
 		return;
