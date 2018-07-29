@@ -42,6 +42,12 @@ public:
 	{
 		return Get() != other.Get();
 	}
+
+
+	bool operator !=(my_nullptr_t null)
+	{
+		return Get() != (edict_t*)0;
+	}
 };
 #else
 #define EHBasePlayerItem CBasePlayerItem*
