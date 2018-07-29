@@ -97,6 +97,7 @@ typedef float vec_t;				// needed before including progdefs.h
 #endif
 
 // Make NULL null pointer, not null integer
+#if 0
 #ifdef __cplusplus
 struct my_nullptr_t
 {
@@ -109,6 +110,6 @@ static my_nullptr_t my_nullptr;
 #endif
 #define NULL my_nullptr
 #endif
-
+#endif
 
 #endif //EXTDLL_H
