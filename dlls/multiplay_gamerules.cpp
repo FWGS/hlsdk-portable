@@ -663,7 +663,7 @@ void CHalfLifeMultiplay::PlayerSpawn( CBasePlayer *pPlayer )
 		addDefault = FALSE;
 	}
 
-	if( pPlayer->gravgunmod_data.m_state = STATE_SPAWNED )
+	if( pPlayer->gravgunmod_data.m_state != STATE_SPAWNED )
 		return;
 
 	if( addDefault )
