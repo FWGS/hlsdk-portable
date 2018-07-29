@@ -42,11 +42,12 @@ public:
 	{
 		return Get() != other.Get();
 	}
-
+#if 0
 	bool operator !=(my_nullptr_t &null1)
 	{
 		return Get() != (edict_t*)0;
 	}
+#endif
 	bool operator !=(int null1)
 	{
 		return Get() != (edict_t*)null1;
