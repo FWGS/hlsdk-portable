@@ -44,7 +44,7 @@ public:
 	}
 
 
-	bool operator !=(my_nullptr_t null)
+	bool operator !=(my_nullptr_t &null)
 	{
 		return Get() != (edict_t*)0;
 	}
