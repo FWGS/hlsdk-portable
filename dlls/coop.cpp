@@ -164,7 +164,7 @@ void UTIL_CleanSpawnPoint( Vector origin, float dist )
 }
 
 
-Vector UTIL_FixupSpawnPoint(Vector spawn)
+Vector COOP_FixupSpawnPoint(Vector spawn)
 {
 	int i = 0;
 	// predict that spawn point is almost correct
@@ -330,7 +330,7 @@ struct checkpoint_s
 } g_checkpoints[4];
 
 
-void UTIL_CoopClearData( void )
+void COOP_ClearData( void )
 {
 	// nullify
 	SavedCoords l_SavedCoords = {0};
@@ -340,7 +340,7 @@ void UTIL_CoopClearData( void )
 }
 
 bool g_fPause;
-void UTIL_CoopApplyData( void )
+void COOP_ApplyData( void )
 {
 	if( s_SavedCoords.valid )
 	{
@@ -449,15 +449,6 @@ void GlobalVote::ShowGlobalMenu( const char *title, int count, const char **menu
 
 void GlobalVote::ConfirmMenu( CBasePlayer *pPlayer, CBaseEntity *trigger, const char *mapname )
 {
-	/*if( g_iMenu && gpGlobals->time - m_flTime < 30 )
-		return; // wait 30s before new confirm vote
-	if( pPlayer->gravgunmod_data.m_iMenuState == MENUSTATE_LOCAL_CONFIRM )
-		return;
-	if( pPlayer->gravgunmod_data.m_iLocalConfirm < 3 )
-	{
-		UTIL_CoopLocalConfirmMenu( pPlayer );
-		return;
-	}*/
 	g_iVote = 1;
 	m_flTime = gpGlobals->time;
 	m_pTrigger = trigger;
@@ -485,41 +476,7 @@ void COOP_NewCheckpoint( entvars_t *pevPlayer )
 	g_checkpoints[0].angles = pevPlayer->angles;
 	UTIL_CoopHudMessage(  1, 5, 0xFF0000FF, 0xFF0000FF, 0, 0.7, "New checkpoint by %s!\n", STRING( pevPlayer->netname ) );
 }
-/*
-void UTIL_CoopMenu( CBasePlayer *pPlayer )
-{
-	if( pPlayer->gravgunmod_data.m_state == STATE_SPAWNED )
-	{
-		pPlayer->gravgunmod_data.m_iMenuState = MENUSTATE_COOPMENU;
-		if( mp_coop.value )
-		{
-			const char *menu[] = {
-				"Force respawn",
-				"Unblock",
-				"Become spectator",
-				"Vote changelevel",
-				"Checkpoint/restore"
-			};
-			int count1 = ARRAYSIZE( menu ) - 1;
-			if( mp_coop_checkpoints.value )
-				count1++;
-			UTIL_CoopShowMenu( pPlayer, "Coop menu", count1, menu );
-		}
-	}
-	else if ( pPlayer->gravgunmod_data.m_state == STATE_SPECTATOR )
-	{
-		pPlayer->gravgunmod_data.m_iMenuState = MENUSTATE_COOPMENU_SPEC;
-		if( mp_coop.value )
-		{
-			const char *menu[] = {
-				"Spawn",
-				"Close menu"
-			};
-			UTIL_CoopShowMenu( pPlayer, "Spectator menu", ARRAYSIZE( menu ), menu );
-		}
-	}
-}
-*/
+
 
 bool COOP_PlayerDeath( CBasePlayer *pPlayer )
 {
@@ -535,89 +492,6 @@ bool COOP_PlayerDeath( CBasePlayer *pPlayer )
 
 	return false;
 }
-/*
-void UTIL_CoopProcessMenu( CBasePlayer *pPlayer, int imenu )
-{
-			switch( pPlayer->gravgunmod_data.m_iMenuState )
-			{
-				case MENUSTATE_COOPMENU_SPEC:
-					if( imenu == 1 )
-					{
-						if( g_checkpoints[0].time )
-							UTIL_CoopCheckpointMenu( pPlayer );
-						else
-						{
-							UTIL_SpawnPlayer( pPlayer );
-							pPlayer->gravgunmod_data.m_state = STATE_SPAWNED;
-						}
-					}
-					if( imenu == 2 )
-					{
-						pPlayer->gravgunmod_data.m_state = STATE_SPECTATOR;
-						CLIENT_COMMAND( pPlayer->edict(), "touch_show _coopm*\n" );
-					}
-				break;
-				case MENUSTATE_COOPMENU:
-					if( pPlayer->gravgunmod_data.m_state != STATE_SPAWNED )
-						break;
-					if( imenu == 1 )
-					{
-						pPlayer->RemoveAllItems( TRUE );
-						UTIL_SpawnPlayer( pPlayer );
-					}
-					if( imenu == 2 )
-					{
-						UTIL_CleanSpawnPoint( pPlayer->pev->origin, 150 );
-					}
-					if( imenu == 3 )
-					{
-						pPlayer->RemoveAllItems( TRUE );
-						UTIL_BecomeSpectator( pPlayer );
-						pPlayer->gravgunmod_data.m_state = STATE_SPECTATOR;
-					}
-					if( imenu == 4 )
-					{
-						UTIL_CoopVoteMenu( pPlayer );
-					}
-					if( imenu == 5 )
-					{
-						UTIL_CoopCheckpointMenu( pPlayer );
-					}
-				break;
-				case MENUSTATE_GLOBAL:
-					if( !UTIL_CoopIsBadPlayer( pPlayer ) )
-						g_GlobalMenu.Process( pPlayer, imenu );
-				break;
-				case MENUSTATE_CHECKPOINT:
-					if( imenu == 1 )
-					{
-						if( pPlayer->gravgunmod_data.m_state != STATE_SPAWNED || ( pPlayer->pev->health <= 0 ) )
-							UTIL_SpawnPlayer( pPlayer );
-						else if( !UTIL_CoopIsBadPlayer( pPlayer ) )
-							UTIL_CoopNewCheckpoint( pPlayer->pev );
-					}
-					else if( imenu > 1 && imenu < 5 )
-					{
-						pPlayer->RemoveAllItems( TRUE );
-						UTIL_SpawnPlayer( pPlayer );
-						pPlayer->pev->origin = g_checkpoints[imenu-2].origin;
-						pPlayer->pev->angles = g_checkpoints[imenu-2].angles;
-					}
-					pPlayer->gravgunmod_data.m_iMenuState = MENUSTATE_NONE;
-				break;
-				case MENUSTATE_LOCAL_CONFIRM:
-					if( imenu - 1 == pPlayer->gravgunmod_data.m_iConfirmKey )
-						pPlayer->gravgunmod_data.m_iLocalConfirm++;
-					else
-						pPlayer->gravgunmod_data.m_iLocalConfirm = 0;
-					pPlayer->gravgunmod_data.m_iMenuState = MENUSTATE_NONE;
-				break;
-				default:
-				break;
-			}
-	//pPlayer->gravgunmod_data.m_iMenuState = MENUSTATE_NONE;
-}
-*/
 
 bool UTIL_CoopRestorePlayerCoords(CBaseEntity *player, Vector *origin, Vector *angles )
 {
@@ -764,71 +638,6 @@ void CWeaponList::AddWeapon( const char *classname )
 			return;
 	strcpy(weapons[m_iWeapons++], classname);
 }
-extern int gmsgShowMenu;
-
-void UTIL_CoopShowMenu( CBasePlayer *pPlayer, const char *title, int count, const char **slot, signed char time )
-{
-	if( pPlayer->gravgunmod_data.m_fTouchMenu)
-	{
-		char buf[256];
-		#define MENU_STR(VAR) (#VAR)
-		sprintf( buf, MENU_STR(slot10\ntouch_hide _coops*\ntouch_show _coops\ntouch_addbutton "_coopst" "#%s" "" 0.16 0.11 0.41 0.3 0 255 0 255 78 1.5\n), title);
-		CLIENT_COMMAND( pPlayer->edict(), buf);
-		for( int i = 0; i < count; i++ )
-		{
-			sprintf( buf, MENU_STR(touch_settexture _coops%d "#%d. %s"\ntouch_show _coops%d\n), i+1, i+1, slot[i], i + 1 );
-			CLIENT_COMMAND( pPlayer->edict(), buf);
-		}
-	}
-	else
-	{
-		char buf[128], *pbuf = buf;
-		short int flags = 1<<9;
-		pbuf += sprintf( pbuf, "^2%s:\n", title );
-		for( int i = 0; i < count; i++ )
-		{
-			pbuf += sprintf( pbuf, "^3%d.^7 %s\n", i+1, slot[i]);
-			flags |= 1<<i;
-		}
-		MESSAGE_BEGIN(MSG_ONE, gmsgShowMenu, NULL, pPlayer->pev);
-		WRITE_SHORT( flags ); // slots
-		WRITE_CHAR( time ); // show time
-		WRITE_BYTE( 0 ); // need more
-		WRITE_STRING( buf );
-		MESSAGE_END();
-	}
-	//CLIENT_COMMAND( pPlayer->edict(), "exec touch_default/numbers.cfg\n");
-}
-
-bool UTIL_CoopConfirmMenu(CBaseEntity *pTrigger, CBaseEntity *pActivator, int count2, char *mapname )
-{
-	if( gpGlobals->time - g_GlobalVote.m_flTime > 30 )
-	{
-		g_iVote = 0;
-		g_GlobalVote.m_iConfirm = 0;
-	}
-	if( g_iVote != 1 )
-	{
-		if( !UTIL_CoopIsBadPlayer( pActivator ) )
-			g_GlobalVote.ConfirmMenu( (CBasePlayer*)pActivator, pTrigger, mapname );
-		return false;
-	}
-	if( g_GlobalVote.m_iConfirm < count2 )
-		return false;
-	if( mp_coop_strongcheckpoints.value )
-	{
-		// do not allow go back if there are checkpoints, but not near changelevel
-		if( g_checkpoints[0].time && (g_checkpoints[0].origin - VecBModelOrigin(pTrigger->pev)).Length() > 150 )
-		{
-			g_GlobalVote.m_iConfirm = 0;
-			UTIL_CoopPlayerMessage( pActivator,  1, 5, 0xFF0000FF, 0xFF0000FF, 0, 0.7, "Changelevel back locked by checkpoint\nCheckpoint here to activate trigger!");
-			return false;
-		}
-		//if( count2 < 2 )
-			//return;
-	}
-	return true;
-}
 
 void COOP_ResetVote( void )
 {
@@ -883,19 +692,24 @@ bool COOP_ConfirmMenu(CBaseEntity *pTrigger, CBaseEntity *pActivator, int count2
 void COOP_CheckpointMenu( CBasePlayer *pPlayer )
 {
 	int i;
+
 	if( !mp_coop_checkpoints.value )
 		return;
+
 	GGM_PlayerMenu &m = pPlayer->gravgunmod_data.menu.New("Select checkpoint");
+
 	if( pPlayer->gravgunmod_data.m_state == STATE_SPECTATOR || pPlayer->gravgunmod_data.m_state == STATE_SPECTATOR_BEGIN || pPlayer->pev->health <= 0 )
 		m.Add("Map begin", "respawn");
 	else
 		m.Add("New checkpoint", "newcheckpoint");
+
 	for( i = 1; g_checkpoints[i-1].time; i++ )
 	{
 		char cmd[32];
 		sprintf(cmd, "loadcheckpoint %d", i-1 );
 		m.Add(g_checkpoints[i-1].str, cmd);
 	}
+
 	m.Show();
 }
 

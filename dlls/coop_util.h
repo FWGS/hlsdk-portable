@@ -54,10 +54,9 @@ bool UTIL_CoopGetSpawnPoint( Vector *point, Vector *angles);
 
 bool UTIL_CoopRestorePlayerCoords(CBaseEntity *player, Vector *origin, Vector *angles );
 void UTIL_CoopSaveTrain( CBaseEntity *pPlayer, SavedCoords *coords);
-Vector UTIL_FixupSpawnPoint(Vector spawn);
-void UTIL_CoopActivateChangeLevel( CBaseEntity *pTrigger );
-void UTIL_CoopClearData( void );
-void UTIL_CoopApplyData( void );
+Vector COOP_FixupSpawnPoint(Vector spawn);
+void COOP_ClearData( void );
+void COOP_ApplyData( void );
 void UTIL_CoopPrintMessage( const char *format, ... );
 void UTIL_CoopHudMessage( int channel, float time, unsigned int color1, unsigned int color2, float x, float y,  const char *format, ... );
 void UTIL_CoopPlayerMessage( CBaseEntity *pPlayer, int channel, float time, unsigned int color1, unsigned int color2, float x, float y,  const char *format, ... );
@@ -72,13 +71,9 @@ void UTIL_CoopKickPlayer(CBaseEntity *pPlayer);
 bool UTIL_CoopIsBadPlayer( CBaseEntity *plr );
 void COOP_NewCheckpoint( entvars_t *pevPlayer );
 CBaseEntity *UTIL_CoopGetPlayerTrain( CBaseEntity *pPlayer);
-void UTIL_CoopMenu( CBasePlayer *pPlayer );
 void UTIL_SpawnPlayer( CBasePlayer *pPlayer );
 void UTIL_BecomeSpectator( CBasePlayer *pPlayer );
 void COOP_CheckpointMenu( CBasePlayer *pPlayer );
-void UTIL_CoopVoteMenu( CBasePlayer *pPlayer );
-void UTIL_CoopShowMenu( CBasePlayer *pPlayer, const char *title, int count, const char **slot, signed char time = -1 );
-bool UTIL_CoopConfirmMenu( CBaseEntity *pTrigger, CBaseEntity *pActivator, int count2, char *mapname );
 extern int g_iVote;
 class CWeaponList
 {

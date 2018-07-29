@@ -114,7 +114,7 @@ edict_t *CGameRules::GetPlayerSpawnSpot( CBasePlayer *pPlayer )
 			}
 		}
 	pPlayer->pev->fixangle = TRUE;
-	pPlayer->pev->origin = UTIL_FixupSpawnPoint( pPlayer->pev->origin );
+	pPlayer->pev->origin = COOP_FixupSpawnPoint( pPlayer->pev->origin );
 	if( g_fSavedDuck )
 		pPlayer->pev->flags |= FL_DUCKING;
 

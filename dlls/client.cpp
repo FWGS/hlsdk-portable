@@ -849,7 +849,7 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 	LinkUserMessages();
 	if( mp_coop.value )
 	{
-		UTIL_CoopApplyData();
+		COOP_ApplyData();
 		for( int i = 1; i <= gpGlobals->maxClients; i++ )
 		{
 			CBasePlayer *plr = (CBasePlayer*)UTIL_PlayerByIndex( i );
@@ -917,7 +917,7 @@ void ParmsNewLevel( void )
 	else
 		if( mp_coop_changelevel.value )
 		{
-			UTIL_CoopClearData();
+			COOP_ClearData();
 			g_WeaponList.Clear();
 		}
 }
@@ -936,7 +936,7 @@ void ParmsChangeLevel( void )
 	else
 		if( mp_coop_changelevel.value )
 		{
-			UTIL_CoopClearData();
+			COOP_ClearData();
 			g_WeaponList.Clear();
 		}
 
