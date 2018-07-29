@@ -37,19 +37,19 @@ public:
 		Set(0);
 		return 0;
 	}
-	operator int ()
-	{
-		return Get() != NULL;
-	}
 
 	bool operator !=(EHBasePlayerItem &other)
 	{
 		return Get() != other.Get();
 	}
 
-	bool operator !=(my_nullptr_t &null)
+	bool operator !=(my_nullptr_t &null1)
 	{
 		return Get() != (edict_t*)0;
+	}
+	bool operator !=(int null1)
+	{
+		return Get() != (edict_t*)null1;
 	}
 };
 #else
