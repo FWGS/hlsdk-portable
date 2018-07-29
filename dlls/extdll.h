@@ -96,4 +96,11 @@ typedef float vec_t;				// needed before including progdefs.h
 #define Q_max(a,b)  (((a) > (b)) ? (a) : (b))
 #endif
 
+// Make NULL null pointer, not null integer
+#ifdef __clang__
+#ifdef NULL
+#undef NULL
+#endif
+#define NULL nullptr
+#endif
 #endif //EXTDLL_H
