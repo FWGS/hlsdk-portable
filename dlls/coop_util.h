@@ -64,6 +64,7 @@ void UTIL_CoopPlayerMessage( CBaseEntity *pPlayer, int channel, float time, unsi
 bool UTIL_CoopPlayerDeath( CBasePlayer *pPlayer );
 void COOP_RegisterCVars( void );
 bool COOP_ClientCommand( edict_t *pEntity );
+bool COOP_ConfirmMenu(CBaseEntity *pTrigger, CBaseEntity *pActivator, int count2, char *mapname );
 
 #ifdef PLAYER_H
 void UTIL_CoopKickPlayer(CBaseEntity *pPlayer);

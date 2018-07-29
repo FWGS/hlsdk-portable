@@ -1722,7 +1722,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 				//	return;
 
 				if( m_fIsBack )
-					if( !UTIL_CoopConfirmMenu( this, pActivator, count2, m_szMapName ) )
+					if( !COOP_ConfirmMenu( this, pActivator, count2, m_szMapName ) )
 						return;
 			}
 

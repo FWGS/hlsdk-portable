@@ -436,15 +436,15 @@ void GlobalMenu::ShowGlobalMenu( const char *title, int count, const char **menu
 
 void GlobalMenu::ConfirmMenu( CBasePlayer *pPlayer, CBaseEntity *trigger, const char *mapname )
 {
-	if( g_iMenu && gpGlobals->time - m_flTime < 30 )
-		return; // wait 30s befor new confirm vote
+	/*if( g_iMenu && gpGlobals->time - m_flTime < 30 )
+		return; // wait 30s before new confirm vote
 	if( pPlayer->gravgunmod_data.m_iMenuState == MENUSTATE_LOCAL_CONFIRM )
 		return;
 	if( pPlayer->gravgunmod_data.m_iLocalConfirm < 3 )
 	{
 		UTIL_CoopLocalConfirmMenu( pPlayer );
 		return;
-	}
+	}*/
 	g_iMenu = 1;
 	m_flTime = gpGlobals->time;
 	m_pTrigger = trigger;
@@ -861,6 +861,50 @@ bool UTIL_CoopConfirmMenu(CBaseEntity *pTrigger, CBaseEntity *pActivator, int co
 	return true;
 }
 
+bool COOP_ConfirmMenu(CBaseEntity *pTrigger, CBaseEntity *pActivator, int count2, char *mapname )
+{
+	if( gpGlobals->time - g_GlobalMenu.m_flTime > 30 )
+	{
+		g_iMenu = 0;
+		g_GlobalMenu.m_iConfirm = 0;
+	}
+	if( g_iMenu != 1 )
+	{
+		if( !UTIL_CoopIsBadPlayer( pActivator ) )
+		{
+			CBasePlayer *pPlayer = (CBasePlayer*)pActivator;
+
+			if( pPlayer->gravgunmod_data.m_iLocalConfirm == 0 )
+				pPlayer->gravgunmod_data.m_iLocalConfirm = 1;
+			if( pPlayer->gravgunmod_data.m_iLocalConfirm < 3 )
+			{
+				pPlayer->gravgunmod_data.menu.New("This will change map back. Are you sure?")
+						.Add("Confirm", "confirmchangelevel")
+						.Add("Cancel", "")
+						.Show();
+			}
+			else
+				g_GlobalMenu.ConfirmMenu(pPlayer, pTrigger, mapname );
+		}
+		return false;
+	}
+	if( g_GlobalMenu.m_iConfirm < count2 )
+		return false;
+	if( mp_coop_strongcheckpoints.value )
+	{
+		// do not allow go back if there are checkpoints, but not near changelevel
+		if( g_checkpoints[0].time && (g_checkpoints[0].origin - VecBModelOrigin(pTrigger->pev)).Length() > 150 )
+		{
+			g_GlobalMenu.m_iConfirm = 0;
+			UTIL_CoopPlayerMessage( pActivator,  1, 5, 0xFF0000FF, 0xFF0000FF, 0, 0.7, "Changelevel back locked by checkpoint\nCheckpoint here to activate trigger!");
+			return false;
+		}
+		//if( count2 < 2 )
+			//return;
+	}
+	return true;
+}
+
 void COOP_CheckpointMenu( CBasePlayer *pPlayer )
 {
 	int i;
@@ -968,6 +1012,13 @@ bool COOP_ClientCommand( edict_t *pEntity )
 		else
 			return false;
 		return true;
+	}
+	else if( FStrEq( pcmd, "confirmchangelevel" ) )
+	{
+		if( pPlayer->gravgunmod_data.m_iLocalConfirm )
+			pPlayer->gravgunmod_data.m_iLocalConfirm++;
+		else
+			return false;
 	}
 
 	return false;
