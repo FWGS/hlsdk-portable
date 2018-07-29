@@ -603,10 +603,10 @@ void ClientCommand( edict_t *pEntity )
 	else if( FStrEq( pcmd, "spectate" ) ) // clients wants to become a spectator
 	{
 		CBasePlayer *pPlayer = GetClassPtr( (CBasePlayer *)pev );
-		if( !pPlayer->IsObserver() )
+		/*if( !pPlayer->IsObserver() )
 		{
 			// always allow proxies to become a spectator
-			if( ( pev->flags & FL_PROXY ) || allow_spectators.value )
+			if( ( pev->flags & FL_PROXY ) || allow_spectators.value || mp_coop.value )
 			{
 				edict_t *pentSpawnSpot = g_pGameRules->GetPlayerSpawnSpot( pPlayer );
 				pPlayer->StartObserver( pev->origin, VARS( pentSpawnSpot )->angles );
@@ -625,7 +625,9 @@ void ClientCommand( edict_t *pEntity )
 			// notify other clients of player left spectators
 			UTIL_ClientPrintAll( HUD_PRINTNOTIFY, UTIL_VarArgs( "%s has left spectator mode\n",
 					( pev->netname && ( STRING( pev->netname ) )[0] != 0 ) ? STRING( pev->netname ) : "unconnected" ) );
-		}
+		}*/
+		pPlayer->RemoveAllItems(TRUE);
+		UTIL_BecomeSpectator(pPlayer);
 	}
 	else if( FStrEq( pcmd, "specmode" ) ) // new spectator mode
 	{

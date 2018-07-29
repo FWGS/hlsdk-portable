@@ -627,6 +627,7 @@ void CHalfLifeMultiplay::PlayerSpawn( CBasePlayer *pPlayer )
 	if( pPlayer->gravgunmod_data.m_state == STATE_UNINITIALIZED )
 	{
 		ClientPutInServer( pPlayer->edict() );
+		UTIL_BecomeSpectator( pPlayer );
 		return;
 	}
 
@@ -638,7 +639,7 @@ void CHalfLifeMultiplay::PlayerSpawn( CBasePlayer *pPlayer )
 		return;
 	}
 
-	if( mp_coop_changelevel.value && pPlayer->gravgunmod_data.m_state == STATE_POINT_SELECT && !(pPlayer->pev->flags & FL_SPECTATOR) )
+	if( mp_coop_changelevel.value && pPlayer->gravgunmod_data.m_state == STATE_POINT_SELECT && !pPlayer->IsObserver() )
 	{
 		pPlayer->RemoveAllItems( TRUE );
 		UTIL_BecomeSpectator( pPlayer );
