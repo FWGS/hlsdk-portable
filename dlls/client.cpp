@@ -664,6 +664,13 @@ void ClientCommand( edict_t *pEntity )
 		if ( mp_coop.value )
 			UTIL_CleanSpawnPoint( pev->origin, 150 );
 	}
+	else if( FStrEq(pcmd, "client") )
+	{
+		char args[256] = {0};
+		strncpy(args, CMD_ARGS(),254);
+		strcat(args,"\n");
+		CLIENT_COMMAND( pEntity, args );
+	}
 	else if( FStrEq(pcmd, "m1"))
 	{
 #define MENU_STR(VAR) (#VAR)
