@@ -46,7 +46,7 @@ struct SavedCoords
 
 
 
-void UTIL_CoopValidateOffset( void );
+void COOP_ValidateOffset( void );
 void UTIL_CleanSpawnPoint( Vector origin, float radius );
 char *UTIL_CoopPlayerName( CBaseEntity *pPlayer );
 
@@ -61,7 +61,7 @@ void UTIL_CoopApplyData( void );
 void UTIL_CoopPrintMessage( const char *format, ... );
 void UTIL_CoopHudMessage( int channel, float time, unsigned int color1, unsigned int color2, float x, float y,  const char *format, ... );
 void UTIL_CoopPlayerMessage( CBaseEntity *pPlayer, int channel, float time, unsigned int color1, unsigned int color2, float x, float y,  const char *format, ... );
-bool UTIL_CoopPlayerDeath( CBasePlayer *pPlayer );
+bool COOP_PlayerDeath( CBasePlayer *pPlayer );
 void COOP_RegisterCVars( void );
 bool COOP_ClientCommand( edict_t *pEntity );
 bool COOP_ConfirmMenu(CBaseEntity *pTrigger, CBaseEntity *pActivator, int count2, char *mapname );
@@ -70,12 +70,12 @@ void COOP_ResetVote( void );
 class CBasePlayer;
 void UTIL_CoopKickPlayer(CBaseEntity *pPlayer);
 bool UTIL_CoopIsBadPlayer( CBaseEntity *plr );
-void UTIL_CoopNewCheckpoint( entvars_t *pevPlayer );
+void COOP_NewCheckpoint( entvars_t *pevPlayer );
 CBaseEntity *UTIL_CoopGetPlayerTrain( CBaseEntity *pPlayer);
 void UTIL_CoopMenu( CBasePlayer *pPlayer );
 void UTIL_SpawnPlayer( CBasePlayer *pPlayer );
 void UTIL_BecomeSpectator( CBasePlayer *pPlayer );
-void UTIL_CoopCheckpointMenu( CBasePlayer *pPlayer );
+void COOP_CheckpointMenu( CBasePlayer *pPlayer );
 void UTIL_CoopVoteMenu( CBasePlayer *pPlayer );
 void UTIL_CoopShowMenu( CBasePlayer *pPlayer, const char *title, int count, const char **slot, signed char time = -1 );
 bool UTIL_CoopConfirmMenu( CBaseEntity *pTrigger, CBaseEntity *pActivator, int count2, char *mapname );

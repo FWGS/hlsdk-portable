@@ -1298,7 +1298,7 @@ void CBasePlayer::PlayerDeathThink( void )
 			return;
 
 
-		if( UTIL_CoopPlayerDeath( this ) )
+		if( COOP_PlayerDeath( this ) )
 			return;
 
 		if( g_pGameRules->FPlayerCanRespawn( this ) )

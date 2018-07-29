@@ -27,6 +27,36 @@ cvar_t mp_spectator = { "mp_spectator", "0", FCVAR_SERVER };
 cvar_t materials_txt = { "materials_txt", "sound/materials.txt", FCVAR_SERVER };
 cvar_t sentences_txt = { "sentences_txt", "sound/sentences.txt", FCVAR_SERVER };
 
+edict_t *COOP_FindLandmark( const char *pLandmarkName )
+{
+	edict_t	*pentLandmark;
+
+	pentLandmark = FIND_ENTITY_BY_STRING( NULL, "targetname", pLandmarkName );
+	while( !FNullEnt( pentLandmark ) )
+	{
+		// Found the landmark
+		if( FClassnameIs( pentLandmark, "info_landmark" ) )
+			return pentLandmark;
+		else
+			pentLandmark = FIND_ENTITY_BY_STRING( pentLandmark, "targetname", pLandmarkName );
+	}
+	ALERT( at_error, "Can't find landmark %s\n", pLandmarkName );
+	return NULL;
+}
+
+
+void COOP_ValidateOffset( void )
+{
+	if( !g_SavedCoords.validoffset )
+	{
+		edict_t *landmark = COOP_FindLandmark( g_SavedCoords.landmark );
+		if(landmark)
+			g_SavedCoords.offset = landmark->v.origin - g_SavedCoords.offset;
+		else
+			g_SavedCoords.offset = g_vecZero - g_SavedCoords.offset;
+		g_SavedCoords.validoffset = true;
+	}
+}
 
 
 void UTIL_CoopPlayerMessage( CBaseEntity *pPlayer, int channel, float time, unsigned int color1, unsigned int color2, float x, float y,  const char *format, ... )
@@ -444,30 +474,7 @@ void GlobalVote::ConfirmMenu( CBasePlayer *pPlayer, CBaseEntity *trigger, const 
 }
 
 
-
-void UTIL_CoopCheckpointMenu( CBasePlayer *pPlayer )
-{
-	//if( pPlayer->gravgunmod_data.m_state == STATE_SPAWNED )
-	{
-
-		if( mp_coop_checkpoints.value )
-		{
-			const char *menu[5] = {
-				"New checkpoint"
-			};
-			int i;
-			if( pPlayer->gravgunmod_data.m_state == STATE_SPECTATOR || pPlayer->gravgunmod_data.m_state == STATE_SPECTATOR_BEGIN || pPlayer->pev->health <= 0  )
-				menu[0] = "Just spawn";
-			for( i = 1; g_checkpoints[i-1].time; i++ )
-				menu[i] = g_checkpoints[i-1].str;
-			UTIL_CoopShowMenu( pPlayer, "Select checkpoint", i, menu );
-			pPlayer->gravgunmod_data.m_iMenuState = MENUSTATE_CHECKPOINT;
-		}
-	}
-}
-
-
-void UTIL_CoopNewCheckpoint( entvars_t *pevPlayer )
+void COOP_NewCheckpoint( entvars_t *pevPlayer )
 {
 	if( !pevPlayer->netname )
 		return;
@@ -477,7 +484,6 @@ void UTIL_CoopNewCheckpoint( entvars_t *pevPlayer )
 	g_checkpoints[0].origin = pevPlayer->origin;
 	g_checkpoints[0].angles = pevPlayer->angles;
 	UTIL_CoopHudMessage(  1, 5, 0xFF0000FF, 0xFF0000FF, 0, 0.7, "New checkpoint by %s!\n", STRING( pevPlayer->netname ) );
-
 }
 /*
 void UTIL_CoopMenu( CBasePlayer *pPlayer )
@@ -515,7 +521,7 @@ void UTIL_CoopMenu( CBasePlayer *pPlayer )
 }
 */
 
-bool UTIL_CoopPlayerDeath( CBasePlayer *pPlayer )
+bool COOP_PlayerDeath( CBasePlayer *pPlayer )
 {
 
 	if( pPlayer->gravgunmod_data.m_iMenuState == MENUSTATE_CHECKPOINT )
@@ -523,7 +529,7 @@ bool UTIL_CoopPlayerDeath( CBasePlayer *pPlayer )
 
 	if( g_checkpoints[0].time )
 	{
-		UTIL_CoopCheckpointMenu( pPlayer );
+		COOP_CheckpointMenu( pPlayer );
 		return true;
 	}
 
@@ -617,7 +623,7 @@ bool UTIL_CoopRestorePlayerCoords(CBaseEntity *player, Vector *origin, Vector *a
 {
 	if(!g_SavedCoords.valid)
 		return false;
-	UTIL_CoopValidateOffset();
+	COOP_ValidateOffset();
 	// compute player by IQ
 	char *ip = g_engfuncs.pfnInfoKeyValue( g_engfuncs.pfnGetInfoKeyBuffer( player->edict() ), "ip" );
 	for( int i = 0;i < g_SavedCoords.iCount;i++)
@@ -667,7 +673,7 @@ bool UTIL_CoopGetSpawnPoint( Vector *origin, Vector *angles)
 		TraceResult tr;
 		Vector angle;
 		UTIL_MakeVectorsPrivate( *angles, (float*)&angle, NULL, NULL );
-		UTIL_CoopValidateOffset();
+		COOP_ValidateOffset();
 		point = point + g_SavedCoords.offset;
 		//UTIL_TraceHull( point, point, ignore_monsters, human_hull, NULL, &tr );
 
@@ -977,7 +983,7 @@ bool COOP_ClientCommand( edict_t *pEntity )
 		if( !mp_coop_checkpoints.value )
 			return false;
 		if( !UTIL_CoopIsBadPlayer( pPlayer ) )
-			UTIL_CoopNewCheckpoint( pPlayer->pev );
+			COOP_NewCheckpoint( pPlayer->pev );
 		else
 			return false;
 		return true;

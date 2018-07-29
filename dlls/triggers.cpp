@@ -1491,31 +1491,6 @@ void CChangeLevel::UseChangeLevel( CBaseEntity *pActivator, CBaseEntity *pCaller
 	ChangeLevelNow( pActivator );
 }
 
-void UTIL_CoopActivateChangeLevel( CBaseEntity *pTrigger )
-{
-	CChangeLevel *trigger = (CChangeLevel*) pTrigger;
-
-	if( !trigger )
-		return;
-
-	trigger->m_bUsed = true;
-	trigger->ChangeLevelNow( NULL );
-}
-
-void UTIL_CoopValidateOffset( void )
-{
-	if( !g_SavedCoords.validoffset)
-	{
-		edict_t *landmark = CChangeLevel::FindLandmark(g_SavedCoords.landmark);
-		if(landmark)
-			g_SavedCoords.offset = landmark->v.origin - g_SavedCoords.offset;
-		else
-			g_SavedCoords.offset = g_vecZero - g_SavedCoords.offset;
-		g_SavedCoords.validoffset = true;
-	}
-}
-
-
 
 void CChangeLevel::UpdateColor( void )
 {
