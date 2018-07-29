@@ -682,8 +682,9 @@ void CHalfLifeMultiplay::PlayerSpawn( CBasePlayer *pPlayer )
 		pPlayer->GiveAmmo( 68, "9mm", _9MM_MAX_CARRY );// 4 full reloads
 
 	}
-	if(mp_coop.value)
+	if(mp_coop_changelevel.value)
 	{
+//		pPlayer->GiveNamedItem( "item_suit" );
 		g_WeaponList.GiveToPlayer(pPlayer);
 	}
 }

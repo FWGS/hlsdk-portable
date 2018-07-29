@@ -385,8 +385,11 @@ void GlobalVote::Process( CBasePlayer *pPlayer, int imenu )
 	if( gpGlobals->time - m_flTime > 30 )
 	{
 		g_iVote = 0;
+		m_iConfirm = 0;
 		return;
 	}
+
+	g_GlobalVote.m_flTime = gpGlobals->time;
 
 	switch( g_iVote )
 	{
@@ -643,6 +646,8 @@ void COOP_ResetVote( void )
 {
 	g_iVote = 0;
 	g_GlobalVote.m_iConfirm = 0;
+	g_GlobalVote.m_flTime = gpGlobals->time;
+
 }
 
 bool COOP_ConfirmMenu(CBaseEntity *pTrigger, CBaseEntity *pActivator, int count2, char *mapname )
@@ -652,6 +657,9 @@ bool COOP_ConfirmMenu(CBaseEntity *pTrigger, CBaseEntity *pActivator, int count2
 		g_iVote = 0;
 		g_GlobalVote.m_iConfirm = 0;
 	}
+
+		g_GlobalVote.m_flTime = gpGlobals->time;
+
 	if( g_iVote != 1 )
 	{
 		if( !UTIL_CoopIsBadPlayer( pActivator ) )
@@ -736,9 +744,9 @@ bool COOP_ClientCommand( edict_t *pEntity )
 			COOP_CheckpointMenu( pPlayer );
 		else
 		{
-			UTIL_SpawnPlayer( pPlayer );
 			pPlayer->RemoveAllItems( TRUE );
 			pPlayer->gravgunmod_data.m_state = STATE_SPAWNED;
+			UTIL_SpawnPlayer( pPlayer );
 		}
 		return true;
 	}
@@ -813,6 +821,7 @@ bool COOP_ClientCommand( edict_t *pEntity )
 	{
 		int i = atoi( CMD_ARGV(1) );
 		g_GlobalVote.Process(pPlayer, i);
+		return false;
 	}
 
 	return false;
