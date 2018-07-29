@@ -139,6 +139,10 @@ set (SVDLL_SOURCES
 	../pm_shared/pm_debug.c
 	../pm_shared/pm_math.c
 	../pm_shared/pm_shared.c
+	coop.cpp
+	gravgunmod.cpp
+	enttools.cpp
+	prop.cpp
 )
 	
 include_directories (. wpn_shared ../common ../engine ../pm_shared ../game_shared ../public)
