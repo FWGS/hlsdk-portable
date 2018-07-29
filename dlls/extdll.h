@@ -97,10 +97,18 @@ typedef float vec_t;				// needed before including progdefs.h
 #endif
 
 // Make NULL null pointer, not null integer
-#ifdef __clang__
+#ifdef __cplusplus
+struct my_nullptr_t
+{
+  template <typename T>
+  inline operator T*() { return static_cast<T*>(0); }
+};
+static my_nullptr_t my_nullptr;
 #ifdef NULL
 #undef NULL
 #endif
-#define NULL nullptr
+#define NULL my_nullptr
 #endif
+
+
 #endif //EXTDLL_H
