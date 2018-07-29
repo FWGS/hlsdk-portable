@@ -861,6 +861,118 @@ bool UTIL_CoopConfirmMenu(CBaseEntity *pTrigger, CBaseEntity *pActivator, int co
 	return true;
 }
 
+void COOP_CheckpointMenu( CBasePlayer *pPlayer )
+{
+	int i;
+	if( !mp_coop_checkpoints.value )
+		return;
+	GGM_PlayerMenu &m = pPlayer->gravgunmod_data.menu.New("Select checkpoint");
+	if( pPlayer->gravgunmod_data.m_state == STATE_SPECTATOR || pPlayer->gravgunmod_data.m_state == STATE_SPECTATOR_BEGIN || pPlayer->pev->health <= 0 )
+		m.Add("Map begin", "respawn");
+	else
+		m.Add("New checkpoint", "newcheckpoint");
+	for( i = 1; g_checkpoints[i-1].time; i++ )
+	{
+		char cmd[32];
+		sprintf(cmd, "loadcheckpoint %d", i-1 );
+		m.Add(g_checkpoints[i-1].str, cmd);
+	}
+	m.Show();
+}
+
+bool COOP_ClientCommand( edict_t *pEntity )
+{
+	const char *pcmd = CMD_ARGV(0);
+	CBasePlayer *pPlayer = (CBasePlayer*)GET_PRIVATE(pEntity);
+	entvars_t *pev = &pEntity->v;
+	if( !mp_coop.value )
+		return false;
+
+	else if( FStrEq(pcmd, "unblock") )
+	{
+		if( pPlayer->gravgunmod_data.m_state != STATE_SPAWNED )
+			return false;
+		UTIL_CleanSpawnPoint( pev->origin, 150 );
+		return true;
+	}
+	else if( FStrEq( pcmd, "joincoop" ) )
+	{
+		if( pPlayer->gravgunmod_data.m_state == STATE_SPAWNED )
+			return false;
+		if( mp_coop_checkpoints.value && g_checkpoints[0].str[0] )
+			COOP_CheckpointMenu( pPlayer );
+		else
+		{
+			UTIL_SpawnPlayer( pPlayer );
+			pPlayer->RemoveAllItems( TRUE );
+			pPlayer->gravgunmod_data.m_state = STATE_SPAWNED;
+		}
+		return true;
+	}
+	else if( FStrEq( pcmd, "coopmenu" ) )
+	{
+		//UTIL_CoopMenu( pPlayer );
+		if( pPlayer->gravgunmod_data.m_state == STATE_SPAWNED )
+		{
+			GGM_PlayerMenu &m = pPlayer->gravgunmod_data.menu.New( "COOP MENU" )
+					.Add( "Force respawn", "respawn" )
+					.Add( "Unblock", "unblock" )
+					.Add( "Become spectator", "spectate" );
+			if( mp_coop_checkpoints.value )
+				m.Add( "Checkpoints", "checkpointmenu" );
+			m.Add( "Cancel", "" );
+			m.Show();
+			return true;
+		}
+		else if( pPlayer->gravgunmod_data.m_state == STATE_SPECTATOR )
+		{
+			pPlayer->gravgunmod_data.menu.New( "COOP MENU" )
+					.Add( "Join game", "joincoop" )
+					.Add( "Cancel", "" )
+					.Show();
+			return true;
+
+		}
+	}
+	else if( FStrEq( pcmd, "respawn" ) )
+	{
+		pPlayer->RemoveAllItems( TRUE );
+		UTIL_SpawnPlayer( pPlayer );
+		return true;
+	}
+	else if( FStrEq( pcmd, "checkpointmenu") )
+	{
+		if( !mp_coop_checkpoints.value )
+			return false;
+		COOP_CheckpointMenu( pPlayer );
+
+		return true;
+	}
+	else if( FStrEq( pcmd, "loadcheckpoint") )
+	{
+		int i = atoi(CMD_ARGV(1));
+		if( i > 4 )
+			return false;
+		pPlayer->RemoveAllItems( TRUE );
+		UTIL_SpawnPlayer( pPlayer );
+		pPlayer->pev->origin = g_checkpoints[i].origin;
+		pPlayer->pev->angles = g_checkpoints[i].angles;
+		return true;
+	}
+	else if( FStrEq( pcmd, "newcheckpoint") )
+	{
+		if( !mp_coop_checkpoints.value )
+			return false;
+		if( !UTIL_CoopIsBadPlayer( pPlayer ) )
+			UTIL_CoopNewCheckpoint( pPlayer->pev );
+		else
+			return false;
+		return true;
+	}
+
+	return false;
+}
+
 void COOP_RegisterCVars()
 {
 	CVAR_REGISTER( &mp_coop );

@@ -659,11 +659,6 @@ void ClientCommand( edict_t *pEntity )
 		if ( g_flWeaponCheat != 0.0 )
 			DumpProps();
 	}
-	else if( FStrEq(pcmd, "unblock") )
-	{
-		if ( mp_coop.value )
-			UTIL_CleanSpawnPoint( pev->origin, 150 );
-	}
 	else if( FStrEq(pcmd, "client") )
 	{
 		char args[256] = {0};
@@ -671,6 +666,8 @@ void ClientCommand( edict_t *pEntity )
 		strcat(args,"\n");
 		CLIENT_COMMAND( pEntity, args );
 	}
+	else if( COOP_ClientCommand( pEntity ) )
+		return;
 	else if( FStrEq(pcmd, "m1"))
 	{
 #define MENU_STR(VAR) (#VAR)
@@ -702,11 +699,11 @@ void ClientCommand( edict_t *pEntity )
 		if( mp_coop.value )
 		{
 			CBasePlayer *pl = GetClassPtr( (CBasePlayer *)pev );
-			const char *menu[] = {
-				"Join coop",
-				"Join spectators"
-			};
-			UTIL_CoopShowMenu( pl, "COOP SERVER", ARRAYSIZE( menu ), menu );
+			pl->gravgunmod_data.menu.New( "COOP SERVER" )
+					.Add("Join coop", "joincoop")
+					.Add("Spectate", "spectate")
+					.Show();
+
 		}
 	}
 	else if( !Ent_ProcessClientCommand( pEntity ) )

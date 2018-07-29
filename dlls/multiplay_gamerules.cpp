@@ -127,25 +127,6 @@ BOOL CHalfLifeMultiplay::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 	if( g_VoiceGameMgr.ClientCommand( pPlayer, pcmd ) )
 		return TRUE;
 #endif
-	if( mp_coop.value )
-	{
-		if( FStrEq( pcmd, "joincoop" ) )
-		{
-			if( pPlayer->gravgunmod_data.m_state == STATE_SPECTATOR_BEGIN )
-				UTIL_SpawnPlayer( pPlayer );
-			else
-				ClientPrint( pPlayer->pev, HUD_PRINTCONSOLE, "You cannot use joincoop now!\n\n" );
-
-			return TRUE;
-		}
-
-		if( FStrEq( pcmd, "coopmenu" ) )
-		{
-				UTIL_CoopMenu( pPlayer );
-
-			return TRUE;
-		}
-	}
 
 	if( FStrEq( pcmd, "menuselect" ) )
 	{
@@ -522,15 +503,13 @@ void CHalfLifeMultiplay::InitHUD( CBasePlayer *pl )
 
 		if( pl->gravgunmod_data.m_state == STATE_SPECTATOR_BEGIN )
 		{
-			pl->gravgunmod_data.m_iMenuState = MENUSTATE_COOPMENU_SPEC;
 
 			if( mp_coop.value && !pl->gravgunmod_data.m_fTouchMenu )
 			{
-				const char *menu[] = {
-					"Join coop",
-					"Join spectators"
-				};
-				UTIL_CoopShowMenu( pl, "COOP SERVER", ARRAYSIZE( menu ), menu );
+				pl->gravgunmod_data.menu.New( "COOP SERVER" )
+						.Add("Join coop", "joincoop")
+						.Add("Spectate", "spectate")
+						.Show();
 			}
 		}
 	}
