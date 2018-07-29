@@ -61,8 +61,8 @@ class GGM_PlayerMenu
 public:
 	CBasePlayer *pPlayer;
 	bool MenuSelect( int select );
-	GGM_PlayerMenu &SetTitle(const char *title);
-	GGM_PlayerMenu &New(const char *title);
+	GGM_PlayerMenu &SetTitle( const char *title );
+	GGM_PlayerMenu &New( const char *title );
 	GGM_PlayerMenu &Add( const char *name, const char *command );
 	GGM_PlayerMenu &Clear();
 	void Show();

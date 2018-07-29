@@ -483,11 +483,32 @@ void GGM_PlayerMenu::Show()
 		char buf[256];
 		#define MENU_STR(VAR) (#VAR)
 		sprintf( buf, MENU_STR(slot10\ntouch_hide _coops*\ntouch_show _coops\ntouch_addbutton "_coopst" "#%s" "" 0.16 0.11 0.41 0.3 0 255 0 255 78 1.5\n), m_sTitle);
-		CLIENT_COMMAND( pPlayer->edict(), buf);
+
+		if( pPlayer )
+			CLIENT_COMMAND( pPlayer->edict(), buf);
+		/*else
+		{
+			for( int i = 1; i <= gpGlobals->maxClients; i++ )
+			{
+				CBaseEntity *plr = UTIL_PlayerByIndex( i );
+				if( plr && plr->IsPlayer() )
+					CLIENT_COMMAND( plr->edict(), buf);
+			}
+		}*/
 		for( int i = 0; i < m_iCount; i++ )
 		{
 			sprintf( buf, MENU_STR(touch_settexture _coops%d "#%d. %s"\ntouch_show _coops%d\n), i+1, i+1, m_items[i].name, i + 1 );
-			CLIENT_COMMAND( pPlayer->edict(), buf);
+			if( pPlayer )
+				CLIENT_COMMAND( pPlayer->edict(), buf);
+			/*else
+			{
+				for( int i = 1; i <= gpGlobals->maxClients; i++ )
+				{
+					CBaseEntity *plr = UTIL_PlayerByIndex( i );
+					if( plr && plr->IsPlayer() )
+						CLIENT_COMMAND( plr->edict(), buf);
+				}
+			}*/
 		}
 	}
 	else
@@ -500,7 +521,10 @@ void GGM_PlayerMenu::Show()
 			pbuf += sprintf( pbuf, "^3%d.^7 %s\n", i+1, m_items[i].name);
 			flags |= 1<<i;
 		}
-		MESSAGE_BEGIN(MSG_ONE, gmsgShowMenu, NULL, pPlayer->pev);
+		/*if( !pPlayer )
+			MESSAGE_BEGIN( MSG_ALL, gmsgShowMenu, NULL );
+		else*/
+			MESSAGE_BEGIN( MSG_ONE, gmsgShowMenu, NULL, pPlayer->pev );
 		WRITE_SHORT( flags ); // slots
 		WRITE_CHAR( 255 ); // show time
 		WRITE_BYTE( 0 ); // need more

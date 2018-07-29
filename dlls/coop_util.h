@@ -92,10 +92,8 @@ public:
 	float m_flTime;
 	const char *maps[5];
 	int votes[5];
-	CBaseEntity *triggers[5];
 	EHANDLE m_pTrigger;
 	EHANDLE m_pPlayer;
-	void VoteMenu( CBasePlayer *pPlayer );
 	void ConfirmMenu( CBasePlayer *pPlayer, CBaseEntity *trigger, const char *mapname );
 	void ShowGlobalMenu( const char *title, int count, const char **menu );
 	void Process( CBasePlayer *pPlayer, int imenu );

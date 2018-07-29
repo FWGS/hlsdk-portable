@@ -329,23 +329,6 @@ void UTIL_CoopApplyData( void )
 
 int g_iMenu;
 
-
-void UTIL_CoopLocalConfirmMenu(CBasePlayer *pPlayer)
-{
-		const char *menu[] = {
-			"No",
-			"Cancel",
-			"Do not confirm",
-			"Don't confirm",
-			"Единая Россия"
-		};
-
-		menu[pPlayer->gravgunmod_data.m_iConfirmKey = RANDOM_LONG(2,4)] = "Confirm";
-		UTIL_CoopShowMenu(pPlayer, "Confirm changing map BACK (NOT RECOMMENDED)?", ARRAYSIZE(menu), menu);
-		pPlayer->gravgunmod_data.m_iMenuState = MENUSTATE_LOCAL_CONFIRM;
-}
-
-
 void GlobalMenu::Process( CBasePlayer *pPlayer, int imenu )
 {
 	if( pPlayer->pev->flags & FL_SPECTATOR )
@@ -386,37 +369,12 @@ void GlobalMenu::Process( CBasePlayer *pPlayer, int imenu )
 				UTIL_CoopKickPlayer( m_pPlayer );
 		}
 		break;
-	case 2: // vote by request
-		UTIL_CoopPrintMessage( "%s^7 selected ^3%s\n", UTIL_CoopPlayerName( pPlayer ), maps[imenu - 1] );
-
-		if( imenu < m_iConfirm )
-		{
-			votes[imenu-1]++;
-			m_iVoteCount++;
-
-			if( votes[1] >= 2 )
-			{
-				 // two players vote for ban
-				UTIL_CoopKickPlayer( m_pPlayer );
-			}
-
-			if( m_iVoteCount >= m_iMaxCount )
-			{
-				for( int i = 0; i <= m_iConfirm; i++ )
-					if( votes[i] >= m_iMaxCount )
-					{
-						UTIL_CoopActivateChangeLevel( triggers[i] );
-						g_iMenu = 0;
-					}
-
-			}
-
-		}
 	}
 }
 void GlobalMenu::ShowGlobalMenu( const char *title, int count, const char **menu )
 {
 	int count2 = 0;
+
 	for( int i = 1; i <= gpGlobals->maxClients; i++ )
 	{
 		CBaseEntity *plr = UTIL_PlayerByIndex( i );
@@ -425,8 +383,14 @@ void GlobalMenu::ShowGlobalMenu( const char *title, int count, const char **menu
 		{
 			count2++;
 			CBasePlayer *player = (CBasePlayer *) plr;
-			UTIL_CoopShowMenu( player, title, count, menu, 30 );
-			player->gravgunmod_data.m_iMenuState = MENUSTATE_GLOBAL;
+			GGM_PlayerMenu &m = player->gravgunmod_data.menu.New( title );
+			for( int j = 0; j < count; j++ )
+			{
+				char cmd[32];
+				sprintf(cmd, "votemenu %d", i );
+				m.Add( menu[j], cmd );
+			}
+			m.Show();
 
 		}
 	}
@@ -496,28 +460,7 @@ void UTIL_CoopNewCheckpoint( entvars_t *pevPlayer )
 	UTIL_CoopHudMessage(  1, 5, 0xFF0000FF, 0xFF0000FF, 0, 0.7, "New checkpoint by %s!\n", STRING( pevPlayer->netname ) );
 
 }
-
-
-void UTIL_CoopVoteMenu( CBasePlayer *pPlayer )
-{
-	int count = 0;
-	for( int i = 1; i <= gpGlobals->maxClients; i++ )
-	{
-		CBaseEntity *plr = UTIL_PlayerByIndex( i );
-
-		if( plr && plr->IsPlayer() )
-		{
-			count++;
-		}
-	}
-	if( count < 4 )
-	{
-		UTIL_CoopPlayerMessage( pPlayer, 1, 5, 0xFFFFFFFF, 0xFFFFFFFF, 0, 0.7, "Need at least 4 players to vote changelevel!\n");
-		return;
-	}
-	g_GlobalMenu.VoteMenu(pPlayer);
-}
-
+/*
 void UTIL_CoopMenu( CBasePlayer *pPlayer )
 {
 	if( pPlayer->gravgunmod_data.m_state == STATE_SPAWNED )
@@ -551,7 +494,7 @@ void UTIL_CoopMenu( CBasePlayer *pPlayer )
 		}
 	}
 }
-
+*/
 
 bool UTIL_CoopPlayerDeath( CBasePlayer *pPlayer )
 {
@@ -567,7 +510,7 @@ bool UTIL_CoopPlayerDeath( CBasePlayer *pPlayer )
 
 	return false;
 }
-
+/*
 void UTIL_CoopProcessMenu( CBasePlayer *pPlayer, int imenu )
 {
 			switch( pPlayer->gravgunmod_data.m_iMenuState )
@@ -649,6 +592,7 @@ void UTIL_CoopProcessMenu( CBasePlayer *pPlayer, int imenu )
 			}
 	//pPlayer->gravgunmod_data.m_iMenuState = MENUSTATE_NONE;
 }
+*/
 
 bool UTIL_CoopRestorePlayerCoords(CBaseEntity *player, Vector *origin, Vector *angles )
 {
@@ -1019,6 +963,11 @@ bool COOP_ClientCommand( edict_t *pEntity )
 			pPlayer->gravgunmod_data.m_iLocalConfirm++;
 		else
 			return false;
+	}
+	else if( FStrEq( pcmd, "votemenu" ) )
+	{
+		int i = atoi( CMD_ARGV(1) );
+		g_GlobalMenu.Process(pPlayer, i);
 	}
 
 	return false;

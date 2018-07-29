@@ -1502,36 +1502,6 @@ void UTIL_CoopActivateChangeLevel( CBaseEntity *pTrigger )
 	trigger->ChangeLevelNow( NULL );
 }
 
-void GlobalMenu::VoteMenu( CBasePlayer *pPlayer )
-{
-	if( g_iMenu && gpGlobals->time - m_flTime < 30 )
-		return; // wait 30s befor new confirm vote
-	CBaseEntity *pTrigger = NULL;
-	int i = 0;
-	g_iMenu = 2;
-	m_flTime = gpGlobals->time;
-	maps[i++] = "Keep this map";
-	maps[i++] = "BAN";
-	while( (pTrigger = UTIL_FindEntityByClassname( pTrigger, "trigger_changelevel" )) && (i < 5) )
-	{
-		  CChangeLevel *ent = (CChangeLevel *)pTrigger;
-		  votes[i] = 0;
-		  triggers[i] = ent;
-		  maps[i++] = ent->m_szMapName;
-
-
-	}
-	votes[i] = 0;
-	triggers[i] = NULL;
-	m_iConfirm = i;
-	m_iVoteCount = 0;
-	m_pPlayer = pPlayer;
-	UTIL_CoopPrintMessage( "%s^7 opened vote menu\n", UTIL_CoopPlayerName( pPlayer ) );
-	ShowGlobalMenu(UTIL_VarArgs("%s requested to force change map", UTIL_CoopPlayerName( pPlayer ) ), i, maps);
-
-}
-
-
 void UTIL_CoopValidateOffset( void )
 {
 	if( !g_SavedCoords.validoffset)
