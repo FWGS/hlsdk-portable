@@ -1524,9 +1524,9 @@ void CChangeLevel::UpdateColor( void )
 	CBaseEntity *pPlayer;
 	pev->nextthink = gpGlobals->time + 30;
 
-	if( !m_fIsBack && (pPlayer = UTIL_FindEntityByClassname( NULL, "info_player_start" ))  )
+	/*if( !m_fIsBack && (pPlayer = UTIL_FindEntityByClassname( NULL, "info_player_start" ))  )
 		if( (origin - pPlayer->pev->origin).Length() < 500 )
-			m_fIsBack = true;
+			m_fIsBack = true;*/
 	if( !m_fIsBack && UTIL_CoopGetSpawnPoint( &point, &angles ) )
 		if( (origin - point).Length() < 500 )
 			m_fIsBack = true;
@@ -1535,12 +1535,6 @@ void CChangeLevel::UpdateColor( void )
 		pev->rendercolor.z = 255;
 	else
 		pev->rendercolor.y = 255;
-	if( gpGlobals->time - g_GlobalMenu.m_flTime > 30 )
-	{
-		g_iMenu = 0;
-		g_GlobalMenu.m_iConfirm = 0;
-	}
-
 }
 
 // If some player is on train with global state, save id
@@ -1811,8 +1805,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 
 	//ALERT( at_console, "Level touches %d levels\n", ChangeList( levels, 16 ) );
 	ALERT( at_console, "CHANGE LEVEL: %s %s\n", st_szNextMap, st_szNextSpot );
-	g_iMenu = 0;
-	g_GlobalMenu.m_iConfirm = 0;
+	COOP_ResetVote();
 	// loop through all clients, reset state
 	if( mp_coop_changelevel.value )
 	{

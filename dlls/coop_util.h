@@ -65,8 +65,9 @@ bool UTIL_CoopPlayerDeath( CBasePlayer *pPlayer );
 void COOP_RegisterCVars( void );
 bool COOP_ClientCommand( edict_t *pEntity );
 bool COOP_ConfirmMenu(CBaseEntity *pTrigger, CBaseEntity *pActivator, int count2, char *mapname );
+void COOP_ResetVote( void );
 
-#ifdef PLAYER_H
+class CBasePlayer;
 void UTIL_CoopKickPlayer(CBaseEntity *pPlayer);
 bool UTIL_CoopIsBadPlayer( CBaseEntity *plr );
 void UTIL_CoopNewCheckpoint( entvars_t *pevPlayer );
@@ -78,29 +79,7 @@ void UTIL_CoopCheckpointMenu( CBasePlayer *pPlayer );
 void UTIL_CoopVoteMenu( CBasePlayer *pPlayer );
 void UTIL_CoopShowMenu( CBasePlayer *pPlayer, const char *title, int count, const char **slot, signed char time = -1 );
 bool UTIL_CoopConfirmMenu( CBaseEntity *pTrigger, CBaseEntity *pActivator, int count2, char *mapname );
-extern int g_iMenu;
-
-// Show to all spawned players: voting, etc..
-class GlobalMenu
-{
-public:
-
-	int m_iConfirm;
-	int m_iVoteCount;
-	int m_iMaxCount;
-	int m_iBanCount;
-	float m_flTime;
-	const char *maps[5];
-	int votes[5];
-	EHANDLE m_pTrigger;
-	EHANDLE m_pPlayer;
-	void ConfirmMenu( CBasePlayer *pPlayer, CBaseEntity *trigger, const char *mapname );
-	void ShowGlobalMenu( const char *title, int count, const char **menu );
-	void Process( CBasePlayer *pPlayer, int imenu );
-};
-
-extern GlobalMenu g_GlobalMenu;
-
+extern int g_iVote;
 class CWeaponList
 {
 	char weapons[64][256];
@@ -113,7 +92,6 @@ public:
 
 extern CWeaponList g_WeaponList;
 
-#endif
 extern struct SavedCoords g_SavedCoords, s_SavedCoords;
 
 #endif // COOP_UTIL_H
