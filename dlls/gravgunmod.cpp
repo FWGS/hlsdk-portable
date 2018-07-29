@@ -426,6 +426,24 @@ extern "C" const char *CMD_ARGV( int i )
 	return g_engfuncs.pfnCmd_Argv( i );
 }
 
+// client.cpp
+void ClientCommand( edict_t *pEntity );
+
+// Allow say /command as alias to command
+void GGM_Say( edict_t *pEntity )
+{
+	const char *args = CMD_ARGS();
+
+	if( !args || strlen( args ) < 2 )
+		return;
+
+	if( args[1] != '/' )
+		return;
+
+	GGM::Cmd_TokenizeString( args + 2 );
+	ClientCommand( pEntity );
+	GGM::Cmd_Reset();
+}
 
 
 GGM_PlayerMenu &GGM_PlayerMenu::Add(const char *name, const char *command)
@@ -490,9 +508,6 @@ void GGM_PlayerMenu::Show()
 		MESSAGE_END();
 	}
 }
-
-// client.cpp
-void ClientCommand( edict_t *pEntity );
 
 bool GGM_PlayerMenu::MenuSelect( int select )
 {

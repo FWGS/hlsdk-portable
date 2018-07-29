@@ -26,6 +26,7 @@ void GGM_ClientPutinServer(edict_t *pEntity , CBasePlayer *pPlayer);
 void GGM_ClientFirstSpawn(CBasePlayer *pPlayer );
 const char *GGM_GetPlayerID( edict_t *player );
 edict_t *GGM_PlayerByID( const char *id );
+void GGM_Say( edict_t *pEntity );
 enum PlayerState
 {
 	STATE_UNINITIALIZED = 0,

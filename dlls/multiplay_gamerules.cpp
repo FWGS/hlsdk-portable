@@ -524,7 +524,7 @@ void CHalfLifeMultiplay::InitHUD( CBasePlayer *pl )
 		{
 			pl->gravgunmod_data.m_iMenuState = MENUSTATE_COOPMENU_SPEC;
 
-			if( mp_coop.value )
+			if( mp_coop.value && !pl->gravgunmod_data.m_fTouchMenu )
 			{
 				const char *menu[] = {
 					"Join coop",

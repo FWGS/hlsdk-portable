@@ -523,6 +523,7 @@ void ClientCommand( edict_t *pEntity )
 	if ( FStrEq(pcmd, "say" ) )
 	{
 		Host_Say( pEntity, 0 );
+		GGM_Say(pEntity);
 	}
 	else if ( FStrEq(pcmd, "say_team" ) )
 	{
