@@ -645,6 +645,9 @@ void CHalfLifeMultiplay::PlayerSpawn( CBasePlayer *pPlayer )
 		return;
 	}
 
+	if( pPlayer->pev->flags & FL_SPECTATOR )
+		return;
+
 	if( !mp_coop_changelevel.value )
 		pPlayer->gravgunmod_data.m_state = STATE_SPAWNED;
 
@@ -659,6 +662,9 @@ void CHalfLifeMultiplay::PlayerSpawn( CBasePlayer *pPlayer )
 		pWeaponEntity->Touch( pPlayer );
 		addDefault = FALSE;
 	}
+
+	if( pPlayer->gravgunmod_data.m_state = STATE_SPAWNED )
+		return;
 
 	if( addDefault )
 	{
@@ -677,7 +683,9 @@ void CHalfLifeMultiplay::PlayerSpawn( CBasePlayer *pPlayer )
 
 	}
 	if(mp_coop.value)
+	{
 		g_WeaponList.GiveToPlayer(pPlayer);
+	}
 }
 
 //=========================================================
