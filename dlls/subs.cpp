@@ -456,7 +456,7 @@ void CBaseToggle::LinearMoveDone( void )
 	float error = delta.Length();
 	if( error > 0.03125 )
 	{
-		LinearMove( m_vecFinalDest, 100 );
+		LinearMove( m_vecFinalDest, 1000 );
 		return;
 	}
 

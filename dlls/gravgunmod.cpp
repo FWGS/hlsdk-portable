@@ -541,4 +541,6 @@ bool GGM_PlayerMenu::MenuSelect( int select )
 	GGM::Cmd_TokenizeString( m_items[select-1].command );
 	ClientCommand( pPlayer->edict() );
 	GGM::Cmd_Reset();
+
+	return true;
 }

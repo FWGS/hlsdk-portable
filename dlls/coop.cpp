@@ -382,43 +382,47 @@ void GlobalVote::Process( CBasePlayer *pPlayer, int imenu )
 {
 	if( pPlayer->pev->flags & FL_SPECTATOR )
 		return;
-	if( gpGlobals->time - m_flTime > 30 )
+	if( gpGlobals->time - m_flTime > 20 )
 	{
-		g_iVote = 0;
-		m_iConfirm = 0;
+		COOP_ResetVote();
 		return;
 	}
 
-	g_GlobalVote.m_flTime = gpGlobals->time;
+	//g_GlobalVote.m_flTime = gpGlobals->time;
 
 	switch( g_iVote )
 	{
 	case 1: // touch blue trigger
 		m_iVoteCount++;
 
-		if( imenu == 1 ) // confirm
+		if( imenu == 0 ) // confirm
 		{
 			if( m_iBanCount >= 2 )
 			{
 				UTIL_CoopKickPlayer( pPlayer );
 				m_iConfirm-= 5;
+				m_iBanCount = 0;
 				return;
 			}
 			m_iConfirm++;
 			UTIL_CoopPrintMessage( "%s^7 confirmed map change\n", UTIL_CoopPlayerName( pPlayer ));
 
 		}
-		if( imenu == 2 ) // cancel
+		if( imenu == 1 ) // cancel
 		{
 			m_iConfirm--;
 			if( pPlayer == m_pPlayer )
+			{
 				m_iConfirm -= 100; // player mistake
+				g_iVote = 0;
+			}
 		}
-		if( imenu == 3 )
+		if( imenu == 2 )
 		{
 			m_iBanCount++;
 			if( m_iBanCount >= 2 && m_iConfirm > -50 )
 				UTIL_CoopKickPlayer( m_pPlayer );
+			g_iVote = 0;
 		}
 		break;
 	}
@@ -439,7 +443,7 @@ void GlobalVote::ShowGlobalMenu( const char *title, int count, const char **menu
 			for( int j = 0; j < count; j++ )
 			{
 				char cmd[32];
-				sprintf(cmd, "votemenu %d", i );
+				sprintf(cmd, "votemenu %d", j );
 				m.Add( menu[j], cmd );
 			}
 			m.Show();
@@ -646,19 +650,16 @@ void COOP_ResetVote( void )
 {
 	g_iVote = 0;
 	g_GlobalVote.m_iConfirm = 0;
+	g_GlobalVote.m_iBanCount = 0;
 	g_GlobalVote.m_flTime = gpGlobals->time;
 
 }
 
 bool COOP_ConfirmMenu(CBaseEntity *pTrigger, CBaseEntity *pActivator, int count2, char *mapname )
 {
-	if( gpGlobals->time - g_GlobalVote.m_flTime > 30 )
-	{
-		g_iVote = 0;
-		g_GlobalVote.m_iConfirm = 0;
-	}
-
-		g_GlobalVote.m_flTime = gpGlobals->time;
+	if( gpGlobals->time - g_GlobalVote.m_flTime > 10 )
+		COOP_ResetVote();
+	//g_GlobalVote.m_flTime = gpGlobals->time;
 
 	if( g_iVote != 1 )
 	{
@@ -666,7 +667,7 @@ bool COOP_ConfirmMenu(CBaseEntity *pTrigger, CBaseEntity *pActivator, int count2
 		{
 			CBasePlayer *pPlayer = (CBasePlayer*)pActivator;
 
-			if( pPlayer->gravgunmod_data.m_iLocalConfirm == 0 )
+			if( pPlayer->gravgunmod_data.m_iLocalConfirm <= 0 )
 				pPlayer->gravgunmod_data.m_iLocalConfirm = 1;
 			if( pPlayer->gravgunmod_data.m_iLocalConfirm < 3 )
 			{
@@ -676,7 +677,10 @@ bool COOP_ConfirmMenu(CBaseEntity *pTrigger, CBaseEntity *pActivator, int count2
 						.Show();
 			}
 			else
+			{
 				g_GlobalVote.ConfirmMenu(pPlayer, pTrigger, mapname );
+				pPlayer->gravgunmod_data.m_iLocalConfirm = 0;
+			}
 		}
 		return false;
 	}
@@ -687,7 +691,7 @@ bool COOP_ConfirmMenu(CBaseEntity *pTrigger, CBaseEntity *pActivator, int count2
 		// do not allow go back if there are checkpoints, but not near changelevel
 		if( g_checkpoints[0].time && (g_checkpoints[0].origin - VecBModelOrigin(pTrigger->pev)).Length() > 150 )
 		{
-			g_GlobalVote.m_iConfirm = 0;
+			COOP_ResetVote();
 			UTIL_CoopPlayerMessage( pActivator,  1, 5, 0xFF0000FF, 0xFF0000FF, 0, 0.7, "Changelevel back locked by checkpoint\nCheckpoint here to activate trigger!");
 			return false;
 		}
@@ -804,6 +808,8 @@ bool COOP_ClientCommand( edict_t *pEntity )
 	{
 		if( !mp_coop_checkpoints.value )
 			return false;
+		if( pPlayer->gravgunmod_data.m_state != STATE_SPAWNED )
+			return false;
 		if( !UTIL_CoopIsBadPlayer( pPlayer ) )
 			COOP_NewCheckpoint( pPlayer->pev );
 		else
@@ -821,7 +827,7 @@ bool COOP_ClientCommand( edict_t *pEntity )
 	{
 		int i = atoi( CMD_ARGV(1) );
 		g_GlobalVote.Process(pPlayer, i);
-		return false;
+		return true;
 	}
 
 	return false;

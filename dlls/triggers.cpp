@@ -1592,7 +1592,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 					continue;
 
 				// count only players spawned more 30 seconds ago
-				if( plr && plr->IsPlayer() && (pTrain || (gpGlobals->time -((CBasePlayer*)plr)->gravgunmod_data.m_flSpawnTime ) > 30 ) )
+				if( plr && plr->IsPlayer() && (pTrain || (gpGlobals->time -((CBasePlayer*)plr)->gravgunmod_data.m_flSpawnTime ) > 30 ) && plr->pev->modelindex )
 				{
 					count2++;
 
@@ -1654,7 +1654,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 
 				ALERT( at_console, "^3CHANGELEVEL:^7 %d %d\n", count2, count1 );
 
-				if( count1 > 1 && count1 < count2 / 3 )
+				if( !m_fIsBack && count1 > 1 && count1 < count2 / 3 )
 					return;
 
 				//if( count1 <= 1 && count2 == 2 )

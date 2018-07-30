@@ -628,6 +628,7 @@ void ClientCommand( edict_t *pEntity )
 		}*/
 		pPlayer->RemoveAllItems(TRUE);
 		UTIL_BecomeSpectator(pPlayer);
+		pPlayer->gravgunmod_data.m_state = STATE_SPECTATOR;
 	}
 	else if( FStrEq( pcmd, "specmode" ) ) // new spectator mode
 	{
