@@ -529,7 +529,6 @@ void Ent_Fire_f( edict_t *player )
 		ent = g_engfuncs.pfnPEntityOfEntIndex( i );
 		if( !Ent_IsValidEdict( ent ))
 		{
-			 Ent_ClientPrintf( player, "Got invalid entity\n" );
 			if( single )
 				break;
 			continue;
@@ -545,41 +544,37 @@ void Ent_Fire_f( edict_t *player )
 
 		if( !stricmp( cmd, "help" ) )
 		{
-			Ent_ClientPrintf( player, "Availiavle commands:\n"
-				"Set fields:\n"
-				"        (Only set entity field, does not call any functions)\n"
-				"    health\n"
-				"    gravity\n"
-				"    movetype\n"
-				"    solid\n"
-				"    rendermode\n"
-				"    rendercolor (vector)\n"
-				"    renderfx\n"
-				"    renderamt\n"
-				"    hullmin (vector)\n"
-				"    hullmax (vector)\n" );
-			Ent_ClientPrintf( player,
-				"Actions\n"
-				"    rename: set entity targetname\n"
-				"    settarget: set entity target (only targetnames)\n"
-				"    setmodel: set entity model\n"
-				"    set: set <key> <value> by server library\n"
-				"        See game FGD to get list.\n"
-				"        command takes two arguments\n");
-			Ent_ClientPrintf( player,
-				"    touch: touch entity by current player.\n"
-				"    use: use entity by current player.\n"
-				"    movehere: place entity in player fov.\n"
-				"    drop2floor: place entity to nearest floor surface\n"
-				"    moveup: move entity to 25 units up\n");
-			Ent_ClientPrintf( player,
-				"Flags:\n"
-				"        (Set/clear specified flag bit, arg is bit number)\n"
-				"    setflag\n"
-				"    clearflag\n"
-				"    setspawnflag\n"
-				"    clearspawnflag\n"
-			);
+			Ent_ClientPrintf( player, "Availiavle commands:\n" );
+			Ent_ClientPrintf( player, "Set fields:\n" );
+			Ent_ClientPrintf( player, "        (Only set entity field, does not call any functions)\n" );
+			Ent_ClientPrintf( player, "    health\n" );
+			Ent_ClientPrintf( player, "    gravity\n" );
+			Ent_ClientPrintf( player, "    movetype\n" );
+			Ent_ClientPrintf( player, "    solid\n" );
+			Ent_ClientPrintf( player, "    rendermode\n" );
+			Ent_ClientPrintf( player, "    rendercolor (vector)\n" );
+			Ent_ClientPrintf( player, "    renderfx\n" );
+			Ent_ClientPrintf( player, "    renderamt\n" );
+			Ent_ClientPrintf( player, "    hullmin (vector)\n" );
+			Ent_ClientPrintf( player, "    hullmax (vector)\n" );
+			Ent_ClientPrintf( player, "Actions\n" );
+			Ent_ClientPrintf( player, "    rename: set entity targetname\n" );
+			Ent_ClientPrintf( player, "    settarget: set entity target (only targetnames)\n" );
+			Ent_ClientPrintf( player, "    setmodel: set entity model\n" );
+			Ent_ClientPrintf( player, "    set: set <key> <value> by server library\n" );
+			Ent_ClientPrintf( player, "        See game FGD to get list.\n" );
+			Ent_ClientPrintf( player, "        command takes two arguments\n" );
+			Ent_ClientPrintf( player, "    touch: touch entity by current player.\n" );
+			Ent_ClientPrintf( player, "    use: use entity by current player.\n" );
+			Ent_ClientPrintf( player, "    movehere: place entity in player fov.\n" );
+			Ent_ClientPrintf( player, "    drop2floor: place entity to nearest floor surface\n" );
+			Ent_ClientPrintf( player, "    move: move entity up/fowrard\n" );
+			Ent_ClientPrintf( player, "Flags:\n" );
+			Ent_ClientPrintf( player, "        (Set/clear specified flag bit, arg is bit number)\n" );
+			Ent_ClientPrintf( player, "    setflag\n" );
+			Ent_ClientPrintf( player, "    clearflag\n" );
+			Ent_ClientPrintf( player, "    setspawnflag\n" );
+			Ent_ClientPrintf( player, "    clearspawnflag\n" );
 			return;
 		}
 
@@ -597,37 +592,30 @@ void Ent_Fire_f( edict_t *player )
 		if( !stricmp( cmd, "health" ) )
 		{
 			ent->v.health = atoi( CMD_ARGV ( 3 ) );
-			continue;
 		}
 		if( !stricmp( cmd, "gravity" ) )
 		{
 			ent->v.gravity = atof( CMD_ARGV ( 3 ) );
-			continue;
 		}
 		if( !stricmp( cmd, "movetype" ) )
 		{
 			ent->v.movetype = atoi( CMD_ARGV ( 3 ) );
-			continue;
 		}
 		if( !stricmp( cmd, "solid" ) )
 		{
 			ent->v.solid = atoi( CMD_ARGV ( 3 ) );
-			continue;
 		}
 		if( !stricmp( cmd, "rename" ) )
 		{
 			ent->v.targetname = ALLOC_STRING( CMD_ARGV ( 3 ) );
-			continue;
 		}
 		if( !stricmp( cmd, "settarget" ) )
 		{
 			ent->v.target = ALLOC_STRING( CMD_ARGV ( 3 ) );
-			continue;
 		}
 		if( !stricmp( cmd, "setmodel" ) )
 		{
 			SET_MODEL( ent, CMD_ARGV( 3 ) );
-			continue;
 		}
 		if( !stricmp( cmd, "set" ) )
 		{
@@ -635,7 +623,7 @@ void Ent_Fire_f( edict_t *player )
 			char value[256];
 			KeyValueData	pkvd;
 			if( CMD_ARGC() != 5 )
-				continue;
+				break;
 			pkvd.szClassName = (char*)STRING( ent->v.classname );
 			strncpy( keyname, CMD_ARGV( 3 ), 256 );
 			strncpy( value, CMD_ARGV( 4 ), 256 );
@@ -646,7 +634,6 @@ void Ent_Fire_f( edict_t *player )
 			DispatchKeyValue( ent, &pkvd );
 			if( pkvd.fHandled )
 				Ent_ClientPrintf( player, "value set successfully!\n" );
-			continue;
 		}
 		if( !stricmp( cmd, "touch" ) )
 		{
@@ -658,7 +645,6 @@ void Ent_Fire_f( edict_t *player )
 			}
 			else
 				DispatchTouch( ent, player );
-			continue;
 		}
 		if( !stricmp( cmd, "use" ) )
 		{
@@ -670,19 +656,16 @@ void Ent_Fire_f( edict_t *player )
 			}
 			else
 				DispatchUse( ent, player );
-			continue;
 		}
 		if( !stricmp( cmd, "movehere" ) )
 		{
 			UTIL_SetOrigin( &ent->v, player->v.origin + Vector( 100 * cos( player->v.angles[1]/180*M_PI ), 100 * sin( player->v.angles[1]/180*M_PI), 25 ) );
-			continue;
 		}
 		if( !stricmp( cmd, "drop2floor" ) )
 		{
 			DROP_TO_FLOOR( ent );
-			continue;
 		}
-		if( !stricmp( cmd, "moveup" ) )
+		if( !stricmp( cmd, "moveup" ) ||  !stricmp( cmd, "move" ) )
 		{
 			float dist = 25;
 
@@ -693,7 +676,6 @@ void Ent_Fire_f( edict_t *player )
 
 			if( CMD_ARGC() >= 5 )
 				ent->v.origin = ent->v.origin + Vector( cos( player->v.angles[1]/180*M_PI ), sin( player->v.angles[1]/180*M_PI), 0 ) * atof( CMD_ARGV( 4 ) );
-			continue;
 		}
 		if( !stricmp( cmd, "becomeowner" ) )
 		{
@@ -701,7 +683,6 @@ void Ent_Fire_f( edict_t *player )
 				ent->v.owner = Ent_FindSingle( player,  CMD_ARGV( 3 ) );
 			else
 				ent->v.owner = player;
-			continue;
 		}
 		if( !stricmp( cmd, "becomeenemy" ) )
 		{
@@ -709,16 +690,15 @@ void Ent_Fire_f( edict_t *player )
 				ent->v.enemy = Ent_FindSingle( player,  CMD_ARGV( 3 ) );
 			else
 				ent->v.enemy = player;
-			continue;
 		}
-		else if( !stricmp( cmd, "becomeaiment" ) )
+		if( !stricmp( cmd, "becomeaiment" ) )
 		{
 			if( CMD_ARGC() == 4 )
 				ent->v.aiment= Ent_FindSingle( player,  CMD_ARGV( 3 ) );
 			else
 				ent->v.aiment = player;
 		}
-		else if( !stricmp( cmd, "hullmin" ) )
+		if( !stricmp( cmd, "hullmin" ) )
 		{
 			if( CMD_ARGC() != 6 )
 				return;
@@ -905,6 +885,7 @@ void Ent_Create_f( edict_t *player )
 			Ent_ClientPrintf( player, "value \"%s\" set to \"%s\"!\n", pkvd.szKeyName, pkvd.szValue );
 	}
 
+	// onwership
 	CBaseEntity *entity = CBaseEntity::Instance( ent );
 	if( entity )
 	{
