@@ -352,6 +352,8 @@ void COOP_ApplyData( void )
 	g_fPause = false;
 	ALERT( at_console, "^2CoopApplyData()\n" );
 	memset( &g_checkpoints, 0, sizeof( g_checkpoints ) );
+	msglimittime1 = msglimittime2 = 0;
+
 }
 
 
@@ -481,7 +483,7 @@ void COOP_NewCheckpoint( entvars_t *pevPlayer )
 	snprintf( g_checkpoints[0].str, 31,  "%5s %d", STRING( pevPlayer->netname ), (int)( gpGlobals->time / 60 ) );
 	g_checkpoints[0].origin = pevPlayer->origin;
 	g_checkpoints[0].angles = pevPlayer->angles;
-	UTIL_CoopHudMessage(  1, 5, 0xFF0000FF, 0xFF0000FF, 0, 0.7, "New checkpoint by %s!\n", STRING( pevPlayer->netname ) );
+	UTIL_CoopPrintMessage("New checkpoint by %s!\n", STRING( pevPlayer->netname ) );
 }
 
 
@@ -660,6 +662,19 @@ bool COOP_ConfirmMenu(CBaseEntity *pTrigger, CBaseEntity *pActivator, int count2
 	if( gpGlobals->time - g_GlobalVote.m_flTime > 10 )
 		COOP_ResetVote();
 	//g_GlobalVote.m_flTime = gpGlobals->time;
+	if( mp_coop_strongcheckpoints.value )
+	{
+		// do not allow go back if there are checkpoints, but not near changelevel
+		if( g_checkpoints[0].time && (g_checkpoints[0].origin - VecBModelOrigin(pTrigger->pev)).Length() > 150 )
+		{
+			COOP_ResetVote();
+			//UTIL_CoopPlayerMessage( pActivator,  1, 5, 0xFF0000FF, 0xFF0000FF, 0, 0.7, "Changelevel back locked by checkpoint\nCheckpoint here to activate trigger!");
+			ClientPrint( pActivator->pev, HUD_PRINTCENTER, "Changelevel back locked by checkpoint\nCheckpoint here to activate trigger!");
+			return false;
+		}
+		//if( count2 < 2 )
+			//return;
+	}
 
 	if( g_iVote != 1 )
 	{
@@ -686,19 +701,6 @@ bool COOP_ConfirmMenu(CBaseEntity *pTrigger, CBaseEntity *pActivator, int count2
 	}
 	if( g_GlobalVote.m_iConfirm < count2 )
 		return false;
-	if( mp_coop_strongcheckpoints.value )
-	{
-		// do not allow go back if there are checkpoints, but not near changelevel
-		if( g_checkpoints[0].time && (g_checkpoints[0].origin - VecBModelOrigin(pTrigger->pev)).Length() > 150 )
-		{
-			COOP_ResetVote();
-			//UTIL_CoopPlayerMessage( pActivator,  1, 5, 0xFF0000FF, 0xFF0000FF, 0, 0.7, "Changelevel back locked by checkpoint\nCheckpoint here to activate trigger!");
-			ClientPrint( pActivator->pev, HUD_PRINTCENTER, "Changelevel back locked by checkpoint\nCheckpoint here to activate trigger!");
-			return false;
-		}
-		//if( count2 < 2 )
-			//return;
-	}
 	return true;
 }
 

@@ -1552,7 +1552,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 
 	if( !strcmp( m_szMapName, mp_coop_disabledmap.string ) )
 	{
-		UTIL_CoopPlayerMessage( pActivator, 1, 5, 0xFF000FF, 0xFFFF00FF, 0, 0.7, "MAP %S IS DISABLED", m_szMapName );
+		ClientPrint( pActivator->pev, HUD_PRINTCENTER, "MAP %S IS DISABLED", m_szMapName );
 		return;
 	}
 	// forget touch by some fool
@@ -1629,7 +1629,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 						pPlayer->gravgunmod_data.m_iLocalConfirm = -2;
 					}
 
-					UTIL_CoopHudMessage( 1, 5, 0xFF0000FF, 0xFF0000FF, 0, 0.7, "Cannot change level: Not enough players!\nWait 30 sec before you may changelevel!" );
+					ClientPrint( pActivator->pev, HUD_PRINTCENTER, "Cannot change level: Not enough players!\nWait 30 sec before you may changelevel!" );
 					return;
 				}
 
@@ -1639,7 +1639,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 					i = 1;
 
 				if( i )
-					UTIL_CoopHudMessage( 1, 7, 0x00FFFFFF, 0xFF00FFFF, 0, 0,
+					UTIL_CoopPrintMessage(
 						"%s touched end of map\nnext is %s %s, %d to go\n",
 						UTIL_CoopPlayerName( pActivator ),
 						st_szNextMap, st_szNextSpot, i );
