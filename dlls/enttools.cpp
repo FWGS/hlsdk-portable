@@ -464,6 +464,41 @@ void Ent_GetVars_f( edict_t *player )
 	Ent_SendVars( player,  ent );
 }
 
+void Ent_HelpFire( edict_t *player )
+{
+	Ent_ClientPrintf( player, "Availiavle commands:\n" );
+	Ent_ClientPrintf( player, "Set fields:\n" );
+	Ent_ClientPrintf( player, "        (Only set entity field, does not call any functions)\n" );
+	Ent_ClientPrintf( player, "    health\n" );
+	Ent_ClientPrintf( player, "    gravity\n" );
+	Ent_ClientPrintf( player, "    movetype\n" );
+	Ent_ClientPrintf( player, "    solid\n" );
+	Ent_ClientPrintf( player, "    rendermode\n" );
+	Ent_ClientPrintf( player, "    rendercolor (vector)\n" );
+	Ent_ClientPrintf( player, "    renderfx\n" );
+	Ent_ClientPrintf( player, "    renderamt\n" );
+	Ent_ClientPrintf( player, "    hullmin (vector)\n" );
+	Ent_ClientPrintf( player, "    hullmax (vector)\n" );
+	Ent_ClientPrintf( player, "Actions\n" );
+	Ent_ClientPrintf( player, "    rename: set entity targetname\n" );
+	Ent_ClientPrintf( player, "    settarget: set entity target (only targetnames)\n" );
+	Ent_ClientPrintf( player, "    setmodel: set entity model\n" );
+	Ent_ClientPrintf( player, "    set: set <key> <value> by server library\n" );
+	Ent_ClientPrintf( player, "        See game FGD to get list.\n" );
+	Ent_ClientPrintf( player, "        command takes two arguments\n" );
+	Ent_ClientPrintf( player, "    touch: touch entity by current player.\n" );
+	Ent_ClientPrintf( player, "    use: use entity by current player.\n" );
+	Ent_ClientPrintf( player, "    movehere: place entity in player fov.\n" );
+	Ent_ClientPrintf( player, "    drop2floor: place entity to nearest floor surface\n" );
+	Ent_ClientPrintf( player, "    move: move entity up/fowrard\n" );
+	Ent_ClientPrintf( player, "Flags:\n" );
+	Ent_ClientPrintf( player, "        (Set/clear specified flag bit, arg is bit number)\n" );
+	Ent_ClientPrintf( player, "    setflag\n" );
+	Ent_ClientPrintf( player, "    clearflag\n" );
+	Ent_ClientPrintf( player, "    setspawnflag\n" );
+	Ent_ClientPrintf( player, "    clearspawnflag\n" );
+}
+
 /*
 ===============
 Ent_Fire_f
@@ -480,7 +515,9 @@ void Ent_Fire_f( edict_t *player )
 	if( CMD_ARGC() < 3 )
 	{
 		Ent_ClientPrintf( player, "Use ent_fire <index||pattern> <command> [<values>]\n"
-			"Use ent_fire 0 help to get command list\n" );
+			"Use ent_fire help to get command list\n" );
+		if( CMD_ARGC() == 2 )
+			Ent_HelpFire( player );
 		return;
 	}
 
@@ -544,37 +581,7 @@ void Ent_Fire_f( edict_t *player )
 
 		if( !stricmp( cmd, "help" ) )
 		{
-			Ent_ClientPrintf( player, "Availiavle commands:\n" );
-			Ent_ClientPrintf( player, "Set fields:\n" );
-			Ent_ClientPrintf( player, "        (Only set entity field, does not call any functions)\n" );
-			Ent_ClientPrintf( player, "    health\n" );
-			Ent_ClientPrintf( player, "    gravity\n" );
-			Ent_ClientPrintf( player, "    movetype\n" );
-			Ent_ClientPrintf( player, "    solid\n" );
-			Ent_ClientPrintf( player, "    rendermode\n" );
-			Ent_ClientPrintf( player, "    rendercolor (vector)\n" );
-			Ent_ClientPrintf( player, "    renderfx\n" );
-			Ent_ClientPrintf( player, "    renderamt\n" );
-			Ent_ClientPrintf( player, "    hullmin (vector)\n" );
-			Ent_ClientPrintf( player, "    hullmax (vector)\n" );
-			Ent_ClientPrintf( player, "Actions\n" );
-			Ent_ClientPrintf( player, "    rename: set entity targetname\n" );
-			Ent_ClientPrintf( player, "    settarget: set entity target (only targetnames)\n" );
-			Ent_ClientPrintf( player, "    setmodel: set entity model\n" );
-			Ent_ClientPrintf( player, "    set: set <key> <value> by server library\n" );
-			Ent_ClientPrintf( player, "        See game FGD to get list.\n" );
-			Ent_ClientPrintf( player, "        command takes two arguments\n" );
-			Ent_ClientPrintf( player, "    touch: touch entity by current player.\n" );
-			Ent_ClientPrintf( player, "    use: use entity by current player.\n" );
-			Ent_ClientPrintf( player, "    movehere: place entity in player fov.\n" );
-			Ent_ClientPrintf( player, "    drop2floor: place entity to nearest floor surface\n" );
-			Ent_ClientPrintf( player, "    move: move entity up/fowrard\n" );
-			Ent_ClientPrintf( player, "Flags:\n" );
-			Ent_ClientPrintf( player, "        (Set/clear specified flag bit, arg is bit number)\n" );
-			Ent_ClientPrintf( player, "    setflag\n" );
-			Ent_ClientPrintf( player, "    clearflag\n" );
-			Ent_ClientPrintf( player, "    setspawnflag\n" );
-			Ent_ClientPrintf( player, "    clearspawnflag\n" );
+			Ent_HelpFire( player );
 			return;
 		}
 
@@ -706,7 +713,7 @@ void Ent_Fire_f( edict_t *player )
 			ent->v.mins[1] = atof( CMD_ARGV( 4 ) );
 			ent->v.mins[2] = atof( CMD_ARGV( 5 ) );
 		}
-		else if( !stricmp( cmd, "hullmax" ) )
+		if( !stricmp( cmd, "hullmax" ) )
 		{
 			if( CMD_ARGC() != 6 )
 				return;
@@ -714,7 +721,7 @@ void Ent_Fire_f( edict_t *player )
 			ent->v.maxs[1] = atof( CMD_ARGV( 4 ) );
 			ent->v.maxs[2] = atof( CMD_ARGV( 5 ) );
 		}
-		else if( !stricmp( cmd, "rendercolor" ) )
+		if( !stricmp( cmd, "rendercolor" ) )
 		{
 			if( CMD_ARGC() != 6 )
 				return;
@@ -722,50 +729,45 @@ void Ent_Fire_f( edict_t *player )
 			ent->v.rendercolor[1] = atof( CMD_ARGV( 4 ) );
 			ent->v.rendercolor[2] = atof( CMD_ARGV( 5 ) );
 		}
-		else if( !stricmp( cmd, "renderamt" ) )
+		if( !stricmp( cmd, "renderamt" ) )
 		{
 			ent->v.renderamt = atof( CMD_ARGV( 3 ) );
 		}
-		else if( !stricmp( cmd, "renderfx" ) )
+		if( !stricmp( cmd, "renderfx" ) )
 		{
 			ent->v.renderfx = atoi( CMD_ARGV( 3 ) );
 		}
-		else if( !stricmp( cmd, "rendermode" ) )
+		if( !stricmp( cmd, "rendermode" ) )
 		{
 			ent->v.rendermode = atoi( CMD_ARGV( 3 ) );
 		}
-		else if( !stricmp( cmd, "angles" ) )
+		if( !stricmp( cmd, "angles" ) )
 		{
 			ent->v.angles[0] = atof( CMD_ARGV( 3 ) );
 			ent->v.angles[1] = atof( CMD_ARGV( 4 ) );
 			ent->v.angles[2] = atof( CMD_ARGV( 5 ) );
 		}
-		else if( !stricmp( cmd, "setflag" ) )
+		if( !stricmp( cmd, "setflag" ) )
 		{
 			ent->v.flags |= 1U << atoi( CMD_ARGV ( 3 ) );
 			Ent_ClientPrintf( player, "flags set to 0x%x\n", ent->v.flags );
 		}
-		else if( !stricmp( cmd, "clearflag" ) )
+		if( !stricmp( cmd, "clearflag" ) )
 		{
 			ent->v.flags &= ~( 1U << atoi( CMD_ARGV ( 3 ) ) );
 			Ent_ClientPrintf( player, "flags set to 0x%x\n", ent->v.flags );
 		}
-		else if( !stricmp( cmd, "setspawnflag" ) )
+		if( !stricmp( cmd, "setspawnflag" ) )
 		{
 			ent->v.spawnflags |= 1U << atoi( CMD_ARGV ( 3 ) );
 			Ent_ClientPrintf( player, "spawnflags set to 0x%x\n", ent->v.spawnflags );
 		}
-		else if( !stricmp( cmd, "clearspawnflag" ) )
+		if( !stricmp( cmd, "clearspawnflag" ) )
 		{
 			ent->v.spawnflags &= ~( 1U << atoi( CMD_ARGV ( 3 ) ) );
 			Ent_ClientPrintf( player, "spawnflags set to 0x%x\n", ent->v.flags );
 		}
 
-		else
-		{
-			Ent_ClientPrintf( player, "Unknown command %s!\nUse \"ent_fire 0 help\" to list commands.\n", cmd );
-			return;
-		}
 		if( single )
 			break;
 	}
