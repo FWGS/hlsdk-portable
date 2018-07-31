@@ -1623,13 +1623,13 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 					if( pActivator && pActivator->IsPlayer() && m_flRepeatTimer - gpGlobals->time < -1 )
 					{
 						CBasePlayer *pPlayer = (CBasePlayer*)pActivator;
-						UTIL_CoopPrintMessage("%s^7 trying activate changelevel too soon\n", UTIL_CoopPlayerName( pPlayer ));
+						//UTIL_CoopPrintMessage("%s^7 trying activate changelevel too early\n", UTIL_CoopPlayerName( pPlayer ));
 						UTIL_CleanSpawnPoint( pPlayer->pev->origin, 50 );
 						m_flRepeatTimer = gpGlobals->time;
 						pPlayer->gravgunmod_data.m_iLocalConfirm = -2;
 					}
 
-					ClientPrint( pActivator->pev, HUD_PRINTCENTER, "Cannot change level: Not enough players!\nWait 30 sec before you may changelevel!" );
+					ClientPrint( pActivator->pev, HUD_PRINTCENTER, "Too early! You or other players near you\nplaying less than 30 seconds!" );
 					return;
 				}
 
