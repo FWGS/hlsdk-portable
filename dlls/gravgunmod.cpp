@@ -448,6 +448,9 @@ void GGM_Say( edict_t *pEntity )
 
 GGM_PlayerMenu &GGM_PlayerMenu::Add(const char *name, const char *command)
 {
+	if( m_fShow )
+		return *this;
+
 	if( m_iCount > 4 )
 	{
 		ALERT( at_error, "GGM_PlayerMenu::Add: Only 5 menu items supported" );
@@ -461,17 +464,25 @@ GGM_PlayerMenu &GGM_PlayerMenu::Add(const char *name, const char *command)
 }
 GGM_PlayerMenu &GGM_PlayerMenu::Clear()
 {
+	m_fShow = false;
 	m_iCount = 0;
 	return *this;
 }
 
 GGM_PlayerMenu &GGM_PlayerMenu::SetTitle(const char *title)
 {
+	if( m_fShow )
+		return *this;
 	strncpy( m_sTitle, title, sizeof(m_sTitle) - 1);
 	return *this;
 }
-GGM_PlayerMenu &GGM_PlayerMenu::New(const char *title)
+GGM_PlayerMenu &GGM_PlayerMenu::New(const char *title, bool force)
 {
+	if( m_fShow && !force )
+		return *this;
+
+	m_fShow = false;
+
 	SetTitle(title);
 	return Clear();
 }
@@ -531,12 +542,15 @@ void GGM_PlayerMenu::Show()
 		WRITE_STRING( buf );
 		MESSAGE_END();
 	}
+	m_fShow = true;
 }
 
 bool GGM_PlayerMenu::MenuSelect( int select )
 {
 	if( select > m_iCount || select < 1 )
 		return false;
+
+	m_fShow = false;
 
 	GGM::Cmd_TokenizeString( m_items[select-1].command );
 	ClientCommand( pPlayer->edict() );

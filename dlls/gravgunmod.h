@@ -57,12 +57,13 @@ class GGM_PlayerMenu
 	} m_items[5];
 	int m_iCount;
 	char m_sTitle[32];
+	bool m_fShow;
 
 public:
 	CBasePlayer *pPlayer;
 	bool MenuSelect( int select );
 	GGM_PlayerMenu &SetTitle( const char *title );
-	GGM_PlayerMenu &New( const char *title );
+	GGM_PlayerMenu &New( const char *title, bool force = true );
 	GGM_PlayerMenu &Add( const char *name, const char *command );
 	GGM_PlayerMenu &Clear();
 	void Show();

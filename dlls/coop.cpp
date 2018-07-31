@@ -133,13 +133,13 @@ void UTIL_CoopPrintMessage( const char *format, ... )
 	msglimittime2 = gpGlobals->time + 0.4;
 
 	va_list	argptr;
-	char string[256];
+	char string[256] = "^2";
 
 	va_start( argptr, format );
-	int len = vsnprintf( string, 256, format, argptr );
+	int len = vsnprintf( string + 2, 253, format, argptr );
 	va_end( argptr );
-	string[len] = 0;
-	UTIL_ClientPrintAll( HUD_PRINTCONSOLE, string );
+	string[len+2] = 0;
+	UTIL_ClientPrintAll( HUD_PRINTTALK, string );
 }
 
 
@@ -671,7 +671,7 @@ bool COOP_ConfirmMenu(CBaseEntity *pTrigger, CBaseEntity *pActivator, int count2
 				pPlayer->gravgunmod_data.m_iLocalConfirm = 1;
 			if( pPlayer->gravgunmod_data.m_iLocalConfirm < 3 )
 			{
-				pPlayer->gravgunmod_data.menu.New("This will change map back. Are you sure?")
+				pPlayer->gravgunmod_data.menu.New("This will change map back", false)
 						.Add("Confirm", "confirmchangelevel")
 						.Add("Cancel", "")
 						.Show();
@@ -692,7 +692,8 @@ bool COOP_ConfirmMenu(CBaseEntity *pTrigger, CBaseEntity *pActivator, int count2
 		if( g_checkpoints[0].time && (g_checkpoints[0].origin - VecBModelOrigin(pTrigger->pev)).Length() > 150 )
 		{
 			COOP_ResetVote();
-			UTIL_CoopPlayerMessage( pActivator,  1, 5, 0xFF0000FF, 0xFF0000FF, 0, 0.7, "Changelevel back locked by checkpoint\nCheckpoint here to activate trigger!");
+			//UTIL_CoopPlayerMessage( pActivator,  1, 5, 0xFF0000FF, 0xFF0000FF, 0, 0.7, "Changelevel back locked by checkpoint\nCheckpoint here to activate trigger!");
+			ClientPrint( pActivator->pev, HUD_PRINTCENTER, "Changelevel back locked by checkpoint\nCheckpoint here to activate trigger!");
 			return false;
 		}
 		//if( count2 < 2 )
@@ -708,7 +709,7 @@ void COOP_CheckpointMenu( CBasePlayer *pPlayer )
 	if( !mp_coop_checkpoints.value )
 		return;
 
-	GGM_PlayerMenu &m = pPlayer->gravgunmod_data.menu.New("Select checkpoint");
+	GGM_PlayerMenu &m = pPlayer->gravgunmod_data.menu.New("Select checkpoint", false);
 
 	if( pPlayer->gravgunmod_data.m_state == STATE_SPECTATOR || pPlayer->gravgunmod_data.m_state == STATE_SPECTATOR_BEGIN || pPlayer->pev->health <= 0 )
 		m.Add("Map begin", "respawn");
