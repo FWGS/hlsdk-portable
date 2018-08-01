@@ -506,8 +506,6 @@ called each time a player uses a "cmd" command
 */
 extern float g_flWeaponCheat;
 
-void DumpProps(); // prop.cpp
-
 // Use CMD_ARGV,  CMD_ARGV, and CMD_ARGC to get pointers the character string command.
 void ClientCommand( edict_t *pEntity )
 {
@@ -657,59 +655,7 @@ void ClientCommand( edict_t *pEntity )
 		// clear 'Unknown command: VModEnable' in singleplayer
 		return;
 	}
-	else if( FStrEq(pcmd, "dumpprops") )
-	{
-		if ( g_flWeaponCheat != 0.0 )
-			DumpProps();
-	}
-	else if( FStrEq(pcmd, "client") )
-	{
-		char args[256] = {0};
-		strncpy(args, CMD_ARGS(),254);
-		strcat(args,"\n");
-		CLIENT_COMMAND( pEntity, args );
-	}
-	else if( COOP_ClientCommand( pEntity ) )
-		return;
-	else if( FStrEq(pcmd, "m1"))
-	{
-#define MENU_STR(VAR) (#VAR)
-		if( mp_touchmenu.value )
-			CLIENT_COMMAND( pEntity,
-				MENU_STR(touch_addbutton "_coops" "*black" "" 0.15 0.1 0.4 0.72 0 0 0 128 335\ntouch_addbutton "_coopst" "#" "" 0.16 0.11 0.41 0.3 0 255 0 255 79 1.5\nm2\n)
-				);
-	}
-	else if( FStrEq(pcmd, "m2"))
-	{
-		if( mp_touchmenu.value )
-			CLIENT_COMMAND( pEntity,
-				MENU_STR(touch_addbutton "_coops1" "#" "menuselect 1;touch_hide _coops*" 0.16 0.21 0.39 0.3 255 255 255 255 335 1.5\ntouch_addbutton "_coops2" "#" "menuselect 2;touch_hide _coops*" 0.16 0.31 0.39 0.4 255 255 255 255 335 1.5\nm3\n)
-				);
-	}
-	else if( FStrEq(pcmd, "m3"))
-	{
-		if( mp_touchmenu.value )
-			CLIENT_COMMAND( pEntity,
-				MENU_STR(touch_addbutton "_coops3" "#" "menuselect 3;touch_hide _coops*" 0.16 0.41 0.39 0.5 255 255 255 255 335 1.5\ntouch_addbutton "_coops4" "#" "menuselect 4;touch_hide _coops*" 0.16 0.51 0.39 0.6 255 255 255 255 335 1.5\nm4\n)
-				);
-	}
-	else if( FStrEq(pcmd, "m4"))
-	{
-		if( mp_touchmenu.value )
-			CLIENT_COMMAND( pEntity,
-				MENU_STR(touch_addbutton "_coops5" "#" "menuselect 5;touch_hide _coops*" 0.16 0.61 0.39 0.7 255 255 255 255 335 1.5;wait;slot10\n)
-				);
-		if( mp_coop.value )
-		{
-			CBasePlayer *pl = GetClassPtr( (CBasePlayer *)pev );
-			pl->gravgunmod_data.menu.New( "COOP SERVER" )
-					.Add("Join coop", "joincoop")
-					.Add("Spectate", "spectate")
-					.Show();
-
-		}
-	}
-	else if( !Ent_ProcessClientCommand( pEntity ) )
+	else if( !GGM_ClientCommand( GetClassPtr( (CBasePlayer *)pev ), pcmd ))
 	{
 		// tell the user they entered an unknown command
 		char command[128];
@@ -2111,16 +2057,7 @@ void CreateInstancedBaselines ( void )
 
 void CvarValue2( const edict_t *pEnt, int requestID, const char *cvarName, const char *value )
 {
-	if( pEnt && requestID == 111  && FStrEq( cvarName , "touch_enable" ) && atoi( value) )
-	{
-		CBasePlayer *player = (CBasePlayer * ) CBaseEntity::Instance( (edict_t*)pEnt );
-		player->gravgunmod_data.m_fTouchMenu = !!atof( value );
-		if( mp_coop.value )
-			CLIENT_COMMAND((edict_t*)pEnt, "touch_addbutton \"_coopm\" \"*black\" \"coopmenu\" 0 0.05 0.15 0.11 0 0 0 128 335\ntouch_addbutton \"_coopmt\" \"#COOP MENU\" \"\" 0 0.05 0.16 0.11 255 255 127 255 79 2\nm1\n");
-		else if( mp_touchmenu.value )
-			CLIENT_COMMAND((edict_t*)pEnt, "m1\n");
-	}
-
+	GGM_CvarValue2( pEnt, requestID, cvarName, value );
 }
 
 

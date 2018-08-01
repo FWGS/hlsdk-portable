@@ -128,19 +128,6 @@ BOOL CHalfLifeMultiplay::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 		return TRUE;
 #endif
 
-	if( FStrEq( pcmd, "menuselect" ) )
-	{
-		int imenu = atoi( CMD_ARGV( 1 ) );
-
-		return pPlayer->gravgunmod_data.menu.MenuSelect(imenu);
-	}
-
-	if( GGM_MOTDCommand( pPlayer, pcmd ) )
-		return true;
-
-	if( GGM_MenuCommand( pPlayer, pcmd ) )
-		return true;
-
 	return CGameRules::ClientCommand( pPlayer, pcmd );
 }
 
@@ -501,21 +488,8 @@ void CHalfLifeMultiplay::InitHUD( CBasePlayer *pl )
 	if( pl->gravgunmod_data.m_state <= STATE_CONNECTED )
 		ClientPutInServer( pl->edict() );
 
-	if( mp_coop.value )
-	{
-
-		if( pl->gravgunmod_data.m_state == STATE_SPECTATOR_BEGIN )
-		{
-
-			if( mp_coop.value && !pl->gravgunmod_data.m_fTouchMenu )
-			{
-				pl->gravgunmod_data.menu.New( "COOP SERVER" )
-						.Add("Join coop", "joincoop")
-						.Add("Spectate", "spectate")
-						.Show();
-			}
-		}
-	}
+	if( pl->gravgunmod_data.m_state == STATE_SPECTATOR_BEGIN && !pl->gravgunmod_data.m_fTouchMenu )
+		GGM_InitialMenus( pl );
 
 }
 

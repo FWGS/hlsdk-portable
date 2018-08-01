@@ -21,6 +21,8 @@ cvar_t mp_gravgun_players = { "mp_gravgun_players", "0", FCVAR_SERVER };
 cvar_t mp_fixhornetbug = { "mp_fixhornetbug", "0", FCVAR_SERVER };
 cvar_t mp_checkentities = { "mp_checkentities", "0", FCVAR_SERVER };
 cvar_t mp_touchmenu = { "mp_touchmenu", "1", FCVAR_SERVER };
+cvar_t mp_touchname = { "mp_touchname", "", FCVAR_SERVER };
+cvar_t mp_touchcommand = { "mp_touchcommand", "", FCVAR_SERVER };
 
 void Ent_RunGC_f( void );
 
@@ -40,6 +42,8 @@ void GGM_RegisterCVars( void )
 	CVAR_REGISTER( &mp_fixhornetbug );
 	CVAR_REGISTER( &mp_checkentities );
 	CVAR_REGISTER( &mp_touchmenu );
+	CVAR_REGISTER( &mp_touchname );
+	CVAR_REGISTER( &mp_touchcommand );
 	g_engfuncs.pfnAddServerCommand( "ent_rungc", Ent_RunGC_f );
 }
 
@@ -494,14 +498,14 @@ void GGM_PlayerMenu::Show()
 		char buf[256];
 
 		#define MENU_STR(VAR) (#VAR)
-		sprintf( buf, MENU_STR(slot10\ntouch_hide _coops*\ntouch_show _coops\ntouch_addbutton "_coopst" "#%s" "" 0.16 0.11 0.41 0.3 0 255 0 255 78 1.5\n), m_sTitle);
+		sprintf( buf, MENU_STR(slot10\ntouch_hide _sm*\ntouch_show _sm\ntouch_addbutton "_smt" "#%s" "" 0.16 0.11 0.41 0.3 0 255 0 255 78 1.5\n), m_sTitle);
 
 		if( pPlayer )
 			CLIENT_COMMAND( pPlayer->edict(), buf);
 
 		for( int i = 0; i < m_iCount; i++ )
 		{
-			sprintf( buf, MENU_STR(touch_settexture _coops%d "#%d. %s"\ntouch_show _coops%d\n), i+1, i+1, m_items[i].name, i + 1 );
+			sprintf( buf, MENU_STR(touch_settexture _sm%d "#%d. %s"\ntouch_show _sm%d\n), i+1, i+1, m_items[i].name, i + 1 );
 
 			if( pPlayer )
 				CLIENT_COMMAND( pPlayer->edict(), buf);
@@ -655,4 +659,126 @@ bool GGM_MOTDCommand( CBasePlayer *player, const char *name )
 
 	FREE_FILE(file);
 	return true;
+}
+
+void GGM_InitialMenus( CBasePlayer *pPlayer )
+{
+	pPlayer->gravgunmod_data.touch_loading = false;
+
+	if( !GGM_MenuCommand( pPlayer, "init" ) && mp_coop.value )
+		pPlayer->gravgunmod_data.menu.New( "COOP SERVER" )
+				.Add("Join coop", "joincoop")
+				.Add("Spectate", "spectate")
+				.Show();
+}
+
+bool GGM_TouchCommand( CBasePlayer *pPlayer, const char *pcmd )
+{
+	edict_t *pEntity = pPlayer->edict();
+
+	if( FStrEq(pcmd, "tb") )
+	{
+		CLIENT_COMMAND( pEntity, "touch_show _sb*\n");
+		return true;
+	}
+
+	if( !pPlayer->gravgunmod_data.touch_loading )
+		return false;
+
+	if( FStrEq(pcmd, "m1"))
+	{
+		if( mp_touchmenu.value )
+			CLIENT_COMMAND( pEntity,
+				MENU_STR(touch_addbutton "_sm" "*black" "" 0.15 0.1 0.4 0.72 0 0 0 128 335\ntouch_addbutton "_smt" "#" "" 0.16 0.11 0.41 0.3 0 255 0 255 79 1.5\nm2\n)
+				);
+	}
+	else if( FStrEq(pcmd, "m2"))
+	{
+		if( mp_touchmenu.value )
+			CLIENT_COMMAND( pEntity,
+				MENU_STR(touch_addbutton "_sm1" "#" "menuselect 1;touch_hide _sm*" 0.16 0.21 0.39 0.3 255 255 255 255 335 1.5\ntouch_addbutton "_sm2" "#" "menuselect 2;touch_hide _sm*" 0.16 0.31 0.39 0.4 255 255 255 255 335 1.5\nm3\n)
+				);
+	}
+	else if( FStrEq(pcmd, "m3"))
+	{
+		if( mp_touchmenu.value )
+			CLIENT_COMMAND( pEntity,
+				MENU_STR(touch_addbutton "_sm3" "#" "menuselect 3;touch_hide _sm*" 0.16 0.41 0.39 0.5 255 255 255 255 335 1.5\ntouch_addbutton "_sm4" "#" "menuselect 4;touch_hide _sm*" 0.16 0.51 0.39 0.6 255 255 255 255 335 1.5\nm4\n)
+				);
+	}
+	else if( FStrEq(pcmd, "m4"))
+	{
+		if( mp_touchmenu.value )
+			CLIENT_COMMAND( pEntity,
+				MENU_STR(touch_addbutton "_sm5" "#" "menuselect 5;touch_hide _sm*" 0.16 0.61 0.39 0.7 255 255 255 255 335 1.5;wait;slot10\n)
+				);
+		GGM_InitialMenus( pPlayer );
+	}
+	else return false;
+	return true;
+}
+
+extern float g_flWeaponCheat;
+
+void DumpProps(); // prop.cpp
+
+bool GGM_ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
+{
+
+	if( FStrEq( pcmd, "menuselect" ) )
+	{
+		int imenu = atoi( CMD_ARGV( 1 ) );
+
+		return pPlayer->gravgunmod_data.menu.MenuSelect(imenu);
+	}
+	else if( GGM_MOTDCommand( pPlayer, pcmd ) )
+		return true;
+	else if( GGM_MenuCommand( pPlayer, pcmd ) )
+		return true;
+	else if( GGM_TouchCommand( pPlayer, pcmd ) )
+		return true;
+	else if( FStrEq(pcmd, "dumpprops") )
+	{
+		if ( g_flWeaponCheat != 0.0 )
+			DumpProps();
+	}
+	else if( FStrEq(pcmd, "client") )
+	{
+		char args[256] = {0};
+		strncpy(args, CMD_ARGS(),254);
+		strcat(args,"\n");
+		CLIENT_COMMAND( pPlayer->edict(), args );
+	}
+	else if( COOP_ClientCommand( pPlayer->edict() ) )
+		return true;
+	else if( !Ent_ProcessClientCommand( pPlayer->edict() ) )
+		return true;
+
+	return false;
+
+}
+
+void GGM_CvarValue2( const edict_t *pEnt, int requestID, const char *cvarName, const char *value )
+{
+	if( pEnt && requestID == 111  && FStrEq( cvarName , "touch_enable" ) && atoi( value) )
+	{
+		CBasePlayer *player = (CBasePlayer * ) CBaseEntity::Instance( (edict_t*)pEnt );
+		player->gravgunmod_data.m_fTouchMenu = !!atof( value );
+
+		CLIENT_COMMAND((edict_t*)pEnt, "m1\n");
+		player->gravgunmod_data.touch_loading = true;
+
+		const char *name = NULL, *command = NULL;
+		if( mp_coop.value )
+			name = "COOP MENU", command = "coopmenu";
+		else if( mp_touchname.string[0] && mp_touchcommand.string[0] )
+			name = mp_touchname.string, command = mp_touchcommand.string;
+		else
+			return;
+		CLIENT_COMMAND( (edict_t*)pEnt,
+			UTIL_VarArgs(MENU_STR(touch_addbutton "_sb" "*black" "%s;touch_hide _sb*;tb" 0 0.05 0.15 0.11 0 0 0 128 334\ntouch_addbutton "_sbt" "#%s" "" 0 0.05 0.16 0.11 255 255 127 255 78 2\n	), command, name ));
+
+
+	}
+
 }

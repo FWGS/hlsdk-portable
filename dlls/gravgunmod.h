@@ -27,8 +27,10 @@ void GGM_ClientFirstSpawn(CBasePlayer *pPlayer );
 const char *GGM_GetPlayerID( edict_t *player );
 edict_t *GGM_PlayerByID( const char *id );
 void GGM_Say( edict_t *pEntity );
-bool GGM_MOTDCommand( CBasePlayer *player, const char *name );
-bool GGM_MenuCommand( CBasePlayer *player, const char *name );
+bool GGM_ClientCommand( CBasePlayer *player, const char *pcmd );
+void GGM_InitialMenus( CBasePlayer *pPlayer );
+void GGM_CvarValue2( const edict_t *pEnt, int requestID, const char *cvarName, const char *value );
+
 enum PlayerState
 {
 	STATE_UNINITIALIZED = 0,
@@ -84,6 +86,7 @@ struct GGMData
 	float m_flEntTime;
 	char uid[33];
 	GGM_PlayerMenu menu;
+	bool touch_loading;
 };
 
 #endif // GRAVGUNMOD_H
