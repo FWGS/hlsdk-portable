@@ -132,11 +132,14 @@ BOOL CHalfLifeMultiplay::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 	{
 		int imenu = atoi( CMD_ARGV( 1 ) );
 
-	//	if( mp_coop.value )
-		//	UTIL_CoopProcessMenu( pPlayer, imenu );
-
 		return pPlayer->gravgunmod_data.menu.MenuSelect(imenu);
 	}
+
+	if( GGM_MOTDCommand( pPlayer, pcmd ) )
+		return true;
+
+	if( GGM_MenuCommand( pPlayer, pcmd ) )
+		return true;
 
 	return CGameRules::ClientCommand( pPlayer, pcmd );
 }

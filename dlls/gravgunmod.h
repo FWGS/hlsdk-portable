@@ -27,6 +27,8 @@ void GGM_ClientFirstSpawn(CBasePlayer *pPlayer );
 const char *GGM_GetPlayerID( edict_t *player );
 edict_t *GGM_PlayerByID( const char *id );
 void GGM_Say( edict_t *pEntity );
+bool GGM_MOTDCommand( CBasePlayer *player, const char *name );
+bool GGM_MenuCommand( CBasePlayer *player, const char *name );
 enum PlayerState
 {
 	STATE_UNINITIALIZED = 0,
@@ -65,7 +67,7 @@ public:
 	GGM_PlayerMenu &SetTitle( const char *title );
 	GGM_PlayerMenu &New( const char *title, bool force = true );
 	GGM_PlayerMenu &Add( const char *name, const char *command );
-	GGM_PlayerMenu &Clear();
+	GGM_PlayerMenu &Clear( void );
 	void Show();
 };
 

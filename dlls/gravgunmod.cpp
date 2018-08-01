@@ -462,21 +462,21 @@ GGM_PlayerMenu &GGM_PlayerMenu::Add(const char *name, const char *command)
 	m_iCount++;
 	return *this;
 }
-GGM_PlayerMenu &GGM_PlayerMenu::Clear()
+GGM_PlayerMenu &GGM_PlayerMenu::Clear( void )
 {
 	m_fShow = false;
 	m_iCount = 0;
 	return *this;
 }
 
-GGM_PlayerMenu &GGM_PlayerMenu::SetTitle(const char *title)
+GGM_PlayerMenu &GGM_PlayerMenu::SetTitle( const char *title )
 {
 	if( m_fShow )
 		return *this;
 	strncpy( m_sTitle, title, sizeof(m_sTitle) - 1);
 	return *this;
 }
-GGM_PlayerMenu &GGM_PlayerMenu::New(const char *title, bool force)
+GGM_PlayerMenu &GGM_PlayerMenu::New( const char *title, bool force )
 {
 	if( m_fShow && !force )
 		return *this;
@@ -492,69 +492,167 @@ void GGM_PlayerMenu::Show()
 	if( pPlayer->gravgunmod_data.m_fTouchMenu)
 	{
 		char buf[256];
+
 		#define MENU_STR(VAR) (#VAR)
 		sprintf( buf, MENU_STR(slot10\ntouch_hide _coops*\ntouch_show _coops\ntouch_addbutton "_coopst" "#%s" "" 0.16 0.11 0.41 0.3 0 255 0 255 78 1.5\n), m_sTitle);
 
 		if( pPlayer )
 			CLIENT_COMMAND( pPlayer->edict(), buf);
-		/*else
-		{
-			for( int i = 1; i <= gpGlobals->maxClients; i++ )
-			{
-				CBaseEntity *plr = UTIL_PlayerByIndex( i );
-				if( plr && plr->IsPlayer() )
-					CLIENT_COMMAND( plr->edict(), buf);
-			}
-		}*/
+
 		for( int i = 0; i < m_iCount; i++ )
 		{
 			sprintf( buf, MENU_STR(touch_settexture _coops%d "#%d. %s"\ntouch_show _coops%d\n), i+1, i+1, m_items[i].name, i + 1 );
+
 			if( pPlayer )
 				CLIENT_COMMAND( pPlayer->edict(), buf);
-			/*else
-			{
-				for( int i = 1; i <= gpGlobals->maxClients; i++ )
-				{
-					CBaseEntity *plr = UTIL_PlayerByIndex( i );
-					if( plr && plr->IsPlayer() )
-						CLIENT_COMMAND( plr->edict(), buf);
-				}
-			}*/
 		}
 	}
 	else
 	{
 		char buf[128], *pbuf = buf;
 		short int flags = 1<<9;
+
 		pbuf += sprintf( pbuf, "^2%s:\n", m_sTitle );
+
 		for( int i = 0; i < m_iCount; i++ )
 		{
 			pbuf += sprintf( pbuf, "^3%d.^7 %s\n", i+1, m_items[i].name);
 			flags |= 1<<i;
 		}
-		/*if( !pPlayer )
-			MESSAGE_BEGIN( MSG_ALL, gmsgShowMenu, NULL );
-		else*/
-			MESSAGE_BEGIN( MSG_ONE, gmsgShowMenu, NULL, pPlayer->pev );
+
+		MESSAGE_BEGIN( MSG_ONE, gmsgShowMenu, NULL, pPlayer->pev );
 		WRITE_SHORT( flags ); // slots
 		WRITE_CHAR( 255 ); // show time
 		WRITE_BYTE( 0 ); // need more
 		WRITE_STRING( buf );
 		MESSAGE_END();
 	}
+
 	m_fShow = true;
 }
 
 bool GGM_PlayerMenu::MenuSelect( int select )
 {
+	m_fShow = false;
+
 	if( select > m_iCount || select < 1 )
 		return false;
 
-	m_fShow = false;
+
+	if( !m_items[select-1].command[0] )
+		return true;
 
 	GGM::Cmd_TokenizeString( m_items[select-1].command );
 	ClientCommand( pPlayer->edict() );
 	GGM::Cmd_Reset();
 
+	return true;
+}
+
+bool GGM_FilterFileName( const char *name )
+{
+	while( name && *name )
+	{
+		if( *name >= 'A' && *name <= 'z' || *name >= '0' && *name <= '9' )
+		{
+			name++;
+			continue;
+		}
+		return false;
+	}
+
+	return true;
+}
+
+bool GGM_MenuCommand( CBasePlayer *player, const char *name )
+{
+	char buf[256] = "ggm/menus/";
+	char *file, *pFile;
+
+	if( !GGM_FilterFileName( name ) )
+		return false;
+
+	strncat( buf, name, sizeof(buf) - 1 );
+
+	file = pFile = (char*)LOAD_FILE_FOR_ME( buf, NULL );
+
+	if( !file )
+		return false;
+
+	pFile = GGM::COM_ParseFile( pFile, buf );
+
+	// no title
+	if( !pFile )
+	{
+		FREE_FILE( file );
+		return false;
+	}
+
+	GGM_PlayerMenu &m = player->gravgunmod_data.menu.New( buf );
+
+	while( pFile = GGM::COM_ParseFile( pFile, buf ) )
+	{
+		char cmd[256];
+		if( !(pFile = GGM::COM_ParseFile( pFile, cmd )) )
+			break;
+
+		m.Add( buf, cmd );
+	}
+
+	m.Show();
+	return true;
+}
+
+// half-life special math?
+#define MAX_MOTD_CHUNK	  60
+#define MAX_MOTD_LENGTH   1536 // (MAX_MOTD_CHUNK * 4)
+extern int gmsgMOTD;
+
+bool GGM_MOTDCommand( CBasePlayer *player, const char *name )
+{
+	char buf[256] = "ggm/motd/";
+	char *file, *pFileList;
+	int char_count = 0;
+
+	if( !GGM_FilterFileName( name ) )
+		return false;
+
+	strncat( buf, name, sizeof(buf) - 1 );
+
+	file = pFileList = (char*)LOAD_FILE_FOR_ME( buf, NULL );
+
+	if( !file )
+		return false;
+
+	// Send the message of the day
+	// read it chunk-by-chunk,  and send it in parts
+
+	while( pFileList && *pFileList && char_count < MAX_MOTD_LENGTH )
+	{
+		char chunk[MAX_MOTD_CHUNK + 1];
+
+		if( strlen( pFileList ) < MAX_MOTD_CHUNK )
+		{
+			strcpy( chunk, pFileList );
+		}
+		else
+		{
+			strncpy( chunk, pFileList, MAX_MOTD_CHUNK );
+			chunk[MAX_MOTD_CHUNK] = 0;		// strncpy doesn't always append the null terminator
+		}
+
+		char_count += strlen( chunk );
+		if( char_count < MAX_MOTD_LENGTH )
+			pFileList = file + char_count;
+		else
+			*pFileList = 0;
+
+		MESSAGE_BEGIN( MSG_ONE, gmsgMOTD, NULL, player->edict() );
+			WRITE_BYTE( *pFileList ? FALSE : TRUE );	// FALSE means there is still more message to come
+			WRITE_STRING( chunk );
+		MESSAGE_END();
+	}
+
+	FREE_FILE(file);
 	return true;
 }
