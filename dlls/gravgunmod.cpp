@@ -751,7 +751,7 @@ bool GGM_ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 	}
 	else if( COOP_ClientCommand( pPlayer->edict() ) )
 		return true;
-	else if( !Ent_ProcessClientCommand( pPlayer->edict() ) )
+	else if( Ent_ProcessClientCommand( pPlayer->edict() ) )
 		return true;
 
 	return false;

@@ -192,9 +192,9 @@ void Ent_ClientPrintf( edict_t *player, const char *format, ... )
 	va_end( argptr );
 	string[len] = 0;
 
-	ClientPrint( &player->v, HUD_PRINTCONSOLE, string );
+	//ClientPrint( &player->v, HUD_PRINTCONSOLE, string );
+	CLIENT_PRINTF( player, print_console, string );
 }
-
 
 static edict_t *Ent_GetCrossEnt( edict_t *player )
 {
