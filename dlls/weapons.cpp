@@ -606,6 +606,8 @@ CBaseEntity* CBasePlayerItem::Respawn( void )
 
 		DROP_TO_FLOOR( ENT( pev ) );
 
+		pNewWeapon->enttools_data = enttools_data;
+
 		// not a typo! We want to know when the weapon the player just picked up should respawn! This new entity we created is the replacement,
 		// but when it should respawn is based on conditions belonging to the weapon that was taken.
 		pNewWeapon->pev->nextthink = g_pGameRules->FlWeaponRespawnTime( this );
@@ -822,6 +824,8 @@ void CBasePlayerItem::AttachToPlayer( CBasePlayer *pPlayer )
 	pev->nextthink = 0;// Remove think - prevents futher attempts to materialize
 	SetTouch( NULL );
 	SetThink( NULL );
+
+	enttools_data.enttools = false;
 }
 
 // CALLED THROUGH the newly-touched weapon's instance. The existing player weapon is pOriginal
