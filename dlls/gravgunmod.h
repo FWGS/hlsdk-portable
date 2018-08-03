@@ -20,7 +20,8 @@ extern cvar_t mp_checkentities;
 extern cvar_t mp_touchmenu;
 
 void GGM_RegisterCVars( void );
-void Ent_RunGC( bool common, bool enttools, const char *userid );
+void Ent_RunGC( bool common, bool enttools, const char *userid, const char *pattern = NULL );
+bool Q_stricmpext( const char *pattern, const char *text );
 class CBasePlayer;
 void GGM_ClientPutinServer(edict_t *pEntity , CBasePlayer *pPlayer);
 void GGM_ClientFirstSpawn(CBasePlayer *pPlayer );

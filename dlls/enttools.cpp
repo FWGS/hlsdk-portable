@@ -11,54 +11,7 @@ static cvar_t mp_enttools_players = { "mp_enttools_players", "0", FCVAR_SERVER }
 // prevent ent_fire with entities not created with enttools
 static cvar_t mp_enttools_lockmapentities = { "mp_enttools_lockmapentities", "0", FCVAR_SERVER };
 static cvar_t mp_enttools_checkowner = { "mp_enttools_checkowner", "0", FCVAR_SERVER };
-bool Q_stricmpext( const char *pattern, const char *text );
 
-static bool Q_starcmp( const char *pattern, const char *text )
-{
-	char		c, c1;
-	const char	*p = pattern, *t = text;
-
-	while(( c = *p++ ) == '?' || c == '*' )
-	{
-		if( c == '?' && *t++ == '\0' )
-			return false;
-	}
-
-	if( c == '\0' ) return true;
-
-	for( c1 = (( c == '\\' ) ? *p : c ); ; )
-	{
-		if( tolower( *t ) == c1 && Q_stricmpext( p - 1, t ))
-			return true;
-		if( *t++ == '\0' ) return false;
-	}
-}
-
-bool Q_stricmpext( const char *pattern, const char *text )
-{
-	char	c;
-
-	while(( c = *pattern++ ) != '\0' )
-	{
-		switch( c )
-		{
-		case '?':
-			if( *text++ == '\0' )
-				return false;
-			break;
-		case '\\':
-			if( tolower( *pattern++ ) != tolower( *text++ ))
-				return false;
-			break;
-		case '*':
-			return Q_starcmp( pattern, text );
-		default:
-			if( tolower( c ) != tolower( *text++ ))
-				return false;
-		}
-	}
-	return true;
-}
 
 bool Q_isdigit( const char *str )
 {

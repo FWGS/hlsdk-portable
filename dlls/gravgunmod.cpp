@@ -26,6 +26,53 @@ cvar_t mp_touchcommand = { "mp_touchcommand", "", FCVAR_SERVER };
 
 void Ent_RunGC_f( void );
 
+static bool Q_starcmp( const char *pattern, const char *text )
+{
+	char		c, c1;
+	const char	*p = pattern, *t = text;
+
+	while(( c = *p++ ) == '?' || c == '*' )
+	{
+		if( c == '?' && *t++ == '\0' )
+			return false;
+	}
+
+	if( c == '\0' ) return true;
+
+	for( c1 = (( c == '\\' ) ? *p : c ); ; )
+	{
+		if( tolower( *t ) == c1 && Q_stricmpext( p - 1, t ))
+			return true;
+		if( *t++ == '\0' ) return false;
+	}
+}
+
+bool Q_stricmpext( const char *pattern, const char *text )
+{
+	char	c;
+
+	while(( c = *pattern++ ) != '\0' )
+	{
+		switch( c )
+		{
+		case '?':
+			if( *text++ == '\0' )
+				return false;
+			break;
+		case '\\':
+			if( tolower( *pattern++ ) != tolower( *text++ ))
+				return false;
+			break;
+		case '*':
+			return Q_starcmp( pattern, text );
+		default:
+			if( tolower( c ) != tolower( *text++ ))
+				return false;
+		}
+	}
+	return true;
+}
+
 void GGM_RegisterCVars( void )
 {
 	CVAR_REGISTER( &cvar_allow_ar2 );
@@ -47,7 +94,7 @@ void GGM_RegisterCVars( void )
 	g_engfuncs.pfnAddServerCommand( "ent_rungc", Ent_RunGC_f );
 }
 
-void Ent_RunGC( bool common, bool enttools, const char *userid )
+void Ent_RunGC( bool common, bool enttools, const char *userid, const char *pattern )
 {
 	int i, count = 0, removed = 0;
 	edict_t *ent = g_engfuncs.pfnPEntityOfEntIndex( gpGlobals->maxClients + 5 );
@@ -85,7 +132,7 @@ void Ent_RunGC( bool common, bool enttools, const char *userid )
 				continue;
 			}
 		}
-		if( !enttools )
+		if( !enttools && !pattern )
 		{
 			if( strncmp( classname, "monster_", 8 ) || strncmp( classname, "weapon_", 7 ) || strncmp( classname, "ammo_", 5 ) )
 				continue;
@@ -117,11 +164,25 @@ void Ent_RunGC( bool common, bool enttools, const char *userid )
 			}
 		}
 
-		else if( common && !entity->IsInWorld() )
+		if( common && !entity->IsInWorld() )
 		{
 			ent->v.flags |= FL_KILLME;
 			removed++;
 			continue;
+		}
+
+		if( pattern )
+		{
+			const char *targetname = STRING( ent->v.targetname );
+			if( !targetname || !ent->v.targetname )
+				targetname = "";
+
+			if( Q_stricmpext( pattern, classname ) || Q_stricmpext( pattern, targetname ) )
+			{
+				ent->v.flags |= FL_KILLME;
+				removed++;
+				continue;
+			}
 		}
 	}
 
@@ -132,7 +193,10 @@ void Ent_RunGC( bool common, bool enttools, const char *userid )
 void Ent_RunGC_f()
 {
 	int enttools = atoi(CMD_ARGV(1));
-	Ent_RunGC( !enttools, enttools, NULL );
+	const char *pattern = CMD_ARGV( 2 );
+	if( enttools != 2 || !pattern[0] )
+		pattern = NULL;
+	Ent_RunGC( enttools == 0, enttools == 1, NULL, pattern );
 }
 
 int Ent_CheckEntitySpawn( edict_t *pent )
