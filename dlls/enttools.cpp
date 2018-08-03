@@ -443,7 +443,7 @@ void Ent_HelpFire( edict_t *player )
 	Ent_ClientPrintf( player, "    use: use entity by current player.\n" );
 	Ent_ClientPrintf( player, "    movehere: place entity in player fov.\n" );
 	Ent_ClientPrintf( player, "    drop2floor: place entity to nearest floor surface\n" );
-	Ent_ClientPrintf( player, "    move: move entity up/fowrard\n" );
+	Ent_ClientPrintf( player, "    move: move entity up/forward\n" );
 	Ent_ClientPrintf( player, "Flags:\n" );
 	Ent_ClientPrintf( player, "        (Set/clear specified flag bit, arg is bit number)\n" );
 	Ent_ClientPrintf( player, "    setflag\n" );
