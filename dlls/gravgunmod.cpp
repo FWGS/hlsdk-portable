@@ -805,6 +805,7 @@ bool GGM_ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 	{
 		if ( g_flWeaponCheat != 0.0 )
 			DumpProps();
+		return true;
 	}
 	else if( FStrEq(pcmd, "client") )
 	{
@@ -812,6 +813,7 @@ bool GGM_ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 		strncpy(args, CMD_ARGS(),254);
 		strcat(args,"\n");
 		CLIENT_COMMAND( pPlayer->edict(), args );
+		return true;
 	}
 	else if( COOP_ClientCommand( pPlayer->edict() ) )
 		return true;
