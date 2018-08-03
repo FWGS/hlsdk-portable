@@ -577,7 +577,7 @@ void CBullsquid::HandleAnimEvent( MonsterEvent_t *pEvent )
 				// SOUND HERE!
 				CBaseEntity *pHurt = CheckTraceHullAttack( 70, gSkillData.bullsquidDmgBite, DMG_SLASH );
 
-				if( pHurt )
+				if( pHurt && ENTINDEX(pHurt->edict()) )
 				{
 					//pHurt->pev->punchangle.z = -15;
 					//pHurt->pev->punchangle.x = -45;
@@ -590,7 +590,7 @@ void CBullsquid::HandleAnimEvent( MonsterEvent_t *pEvent )
 			{
 				CBaseEntity *pHurt = CheckTraceHullAttack( 70, gSkillData.bullsquidDmgWhip, DMG_CLUB | DMG_ALWAYSGIB );
 
-				if( pHurt ) 
+				if( pHurt && ENTINDEX(pHurt->edict()) ) 
 				{
 					pHurt->pev->punchangle.z = -20;
 					pHurt->pev->punchangle.x = 20;
@@ -627,7 +627,7 @@ void CBullsquid::HandleAnimEvent( MonsterEvent_t *pEvent )
 				// squid throws its prey IF the prey is a client. 
 				CBaseEntity *pHurt = CheckTraceHullAttack( 70, 0, 0 );
 
-				if( pHurt )
+				if( pHurt && ENTINDEX(pHurt->edict()) )
 				{
 					// croonchy bite sound
 					iPitch = RANDOM_FLOAT( 90, 110 );
