@@ -219,6 +219,8 @@ void CBaseMonster::Listen( void )
 	ClearConditions( bits_COND_HEAR_SOUND | bits_COND_SMELL_FOOD | bits_COND_SMELL );
 	hearingSensitivity = HearingSensitivity();
 
+	int i = 0;
+
 	while( iSound != SOUNDLIST_EMPTY )
 	{
 		pCurrentSound = CSoundEnt::SoundPointerForIndex( iSound );
@@ -260,13 +262,15 @@ void CBaseMonster::Listen( void )
 
 			m_iAudibleList = iSound;
 		}
-		else if( iSound == pCurrentSound->m_iNext )
+		else if( i > 9999 || iSound == pCurrentSound->m_iNext )
 		{
+			void GGM_CleanSoundEnt( void );
 			m_iAudibleList = SOUNDLIST_EMPTY;
+			pCurrentSound->m_iNext = -1;
 			ALERT( at_error, "Sound list is broken, preventing infinite loop!\n" );
+			GGM_CleanSoundEnt();
 			return;
 		}
-
 
 		//iSound = g_pSoundEnt->m_SoundPool[iSound].m_iNext;
 		iSound = pCurrentSound->m_iNext;

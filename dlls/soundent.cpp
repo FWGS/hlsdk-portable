@@ -376,3 +376,12 @@ int CSoundEnt::ClientSoundIndex( edict_t *pClient )
 
 	return iReturn;
 }
+
+void GGM_CleanSoundEnt( void )
+{
+	if( !pSoundEnt )
+		return;
+	pSoundEnt->pev->flags |= FL_KILLME;
+	pSoundEnt = NULL;
+}
+
