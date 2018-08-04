@@ -506,7 +506,10 @@ void Ent_Fire_f( edict_t *player )
 			return;
 
 		ent = g_engfuncs.pfnPEntityOfEntIndex( i );
-		if( ent->serialnumber != atoi( cmd ) )
+		if( ent && ent->serialnumber != atoi( cmd ) )
+			return;
+
+		if( !Ent_IsValidEdict( ent ) )
 			return;
 	}
 	else
