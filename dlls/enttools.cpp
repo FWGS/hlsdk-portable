@@ -750,7 +750,17 @@ void Ent_Create_f( edict_t *player )
 	if( !Ent_CheckCreate( player, CMD_ARGV(1) ) )
 		return;
 
+
 	classname = ALLOC_STRING( CMD_ARGV( 1 ) );
+
+	if( !strcmp(CMD_ARGV( 1 ), "monstermaker" ) )
+	{
+		// apply keyvales
+		for( i = 2; i < CMD_ARGC() - 1; i++ )
+			if( !strcmp( CMD_ARGV(i), "monstertype") && !Ent_CheckCreate( player, CMD_ARGV( i + 1 ) ) )
+				return;
+	}
+
 	ent = CREATE_NAMED_ENTITY( classname );
 
 	if( !ent )
