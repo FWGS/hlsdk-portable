@@ -1391,6 +1391,63 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 		if( ent->v.movetype == MOVETYPE_WALK || ent->v.movetype == MOVETYPE_STEP )
 			//state->effects |= EF_NOINTERP;
 			state->movetype = MOVETYPE_TOSS;
+
+		if( mp_serverdistclip.value )
+		{
+			bool bmodel = false, trash = false;
+			const char *classname = "";
+
+			if( ent->v.model && STRING(ent->v.model) && *STRING(ent->v.model) == '*' )
+				bmodel = true;
+
+			if( ent->v.classname && STRING(ent->v.classname) )
+				classname = STRING( ent->v.classname );
+
+			if( !strcmp( classname, "gib" ) || !strncmp( classname, "weapon_", 7) || !strncmp( classname, "ammo_", 5) || !strncmp( classname, "item_", 5)  )
+				trash = true;
+
+			Vector delta = VecBModelOrigin(&ent->v) - host->v.origin;
+
+			float dist = 0;
+			if( abs(delta.x) > dist )
+				dist = abs(delta.x);
+			if( abs(delta.y) > dist )
+				dist = abs(delta.y);
+			if( abs(delta.z) > dist )
+				dist = abs(delta.z);
+
+			float size = 0;
+
+			if( ent->v.size.x > size )
+				size = ent->v.size.x;
+			if( ent->v.size.y > size )
+				size = ent->v.size.y;
+			if( ent->v.size.z > size )
+				size = ent->v.size.z;
+
+			dist -= size;
+
+			bool hide = false;
+
+			if( bmodel )
+			{
+				if( dist > mp_maxbmodeldist.value )
+					hide  = true;
+			}
+			else if( trash && dist > mp_maxtrashdist.value )
+				hide = true;
+			else if( dist > mp_maxotherdist.value )
+				hide = true;
+
+			// func_water renders too slow
+			if( !strcmp( classname, "func_water" ) && dist > mp_maxwaterdist.value  )
+				hide = true;
+			else if( size > 512 ) // big brushes may be rotated, but dist check does not cover this
+				hide = false;
+
+			if( hide )
+				state->effects |= EF_NODRAW;
+		}
 		// gravgun hacks
 		if( ent->pvPrivateData && CBaseEntity::Instance( ent)->m_fireState == ENTINDEX(host) )
 		{

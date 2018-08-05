@@ -23,6 +23,11 @@ cvar_t mp_checkentities = { "mp_checkentities", "0", FCVAR_SERVER };
 cvar_t mp_touchmenu = { "mp_touchmenu", "1", FCVAR_SERVER };
 cvar_t mp_touchname = { "mp_touchname", "", FCVAR_SERVER };
 cvar_t mp_touchcommand = { "mp_touchcommand", "", FCVAR_SERVER };
+cvar_t mp_serverdistclip = { "mp_serverdistclip", "0", FCVAR_SERVER};
+cvar_t mp_maxbmodeldist = { "mp_maxbmodeldist", "4096", FCVAR_SERVER};
+cvar_t mp_maxtrashdist = { "mp_maxtrashdist", "4096", FCVAR_SERVER};
+cvar_t mp_maxwaterdist = { "mp_maxwaterdist", "4096", FCVAR_SERVER};
+cvar_t mp_maxotherdist = { "mp_maxotherdist", "4096", FCVAR_SERVER};
 
 void Ent_RunGC_f( void );
 
@@ -91,6 +96,12 @@ void GGM_RegisterCVars( void )
 	CVAR_REGISTER( &mp_touchmenu );
 	CVAR_REGISTER( &mp_touchname );
 	CVAR_REGISTER( &mp_touchcommand );
+	CVAR_REGISTER( &mp_serverdistclip );
+	CVAR_REGISTER( &mp_maxbmodeldist );
+	CVAR_REGISTER( &mp_maxtrashdist );
+	CVAR_REGISTER( &mp_maxwaterdist );
+	CVAR_REGISTER( &mp_maxotherdist );
+
 	g_engfuncs.pfnAddServerCommand( "ent_rungc", Ent_RunGC_f );
 }
 

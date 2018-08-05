@@ -19,6 +19,13 @@ extern cvar_t mp_fixhornetbug;
 extern cvar_t mp_checkentities;
 extern cvar_t mp_touchmenu;
 
+// distance clipping (client.cpp)
+extern cvar_t mp_serverdistclip;
+extern cvar_t mp_maxbmodeldist;
+extern cvar_t mp_maxtrashdist;
+extern cvar_t mp_maxwaterdist;
+extern cvar_t mp_maxotherdist;
+
 void GGM_RegisterCVars( void );
 void Ent_RunGC( bool common, bool enttools, const char *userid, const char *pattern = NULL );
 bool Q_stricmpext( const char *pattern, const char *text );
