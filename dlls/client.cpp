@@ -1221,6 +1221,11 @@ we could also use the pas/ pvs that we set in SetupVisibility, if we wanted to. 
 int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *host, int hostflags, int player, unsigned char *pSet )
 {
 	int					i;
+	static int counter; // XASH3DMAX_VISIBLE_PACKET == 512
+	bool hide = false;
+
+	if( ( ent == host || player ) && counter > gpGlobals->maxClients  + 1 )
+		counter = 0;
 
 	// don't send if flagged for NODRAW and it's not the host getting the message
 	if( ( ent->v.effects & EF_NODRAW ) && ( ent != host ) )
@@ -1234,6 +1239,70 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 	if ( ( ent->v.flags & FL_SPECTATOR ) && ( ent != host ) )
 	{
 		return 0;
+	}
+
+	if( mp_serverdistclip.value )
+	{
+		bool bmodel = false, trash = false;
+		const char *classname = "";
+
+		if( ent->v.model && STRING(ent->v.model) && *STRING(ent->v.model) == '*' )
+			bmodel = true;
+
+		if( ent->v.classname && STRING(ent->v.classname) )
+			classname = STRING( ent->v.classname );
+
+		if( !strcmp( classname, "gib" ) || !strncmp( classname, "weapon_", 7) || !strncmp( classname, "ammo_", 5) || !strncmp( classname, "item_", 5)  )
+			trash = true;
+
+		Vector delta = VecBModelOrigin(&ent->v) - host->v.origin;
+
+		float dist = 0;
+		if( abs(delta.x) > dist )
+			dist = abs(delta.x);
+		if( abs(delta.y) > dist )
+			dist = abs(delta.y);
+		if( abs(delta.z) > dist )
+			dist = abs(delta.z);
+
+		float size = 0;
+
+		if( ent->v.size.x > size )
+			size = ent->v.size.x;
+		if( ent->v.size.y > size )
+			size = ent->v.size.y;
+		if( ent->v.size.z > size )
+			size = ent->v.size.z;
+
+		dist -= size;
+
+		if( bmodel ) // brushes needed to pmove prediction
+		{
+			if( dist > mp_maxbmodeldist.value )
+				hide  = true;
+		} // low priority models. Nothing will break if we hide it, so hide if packet full
+		else if( trash && ( dist > mp_maxtrashdist.value || counter > 480 ) )
+			hide = true; // other entities. May break beams, etc...
+		else if( dist > mp_maxotherdist.value )
+			hide = true;
+
+		// func_water renders too slow
+		if( !strcmp( classname, "func_water" ) && dist > mp_maxwaterdist.value  )
+			hide = true;
+		else if( size > 512 ) // big brushes may be rotated, but dist check does not cover this
+			hide = false;
+
+		if( hide )
+		{
+			// printf("%s %d\n", classname, counter );
+			// trash class does not have any important
+			// attachments/sounds, so we may just skip adding it to packet
+			// but left it just hidden if we have enough visents to prevent
+			// sending big delta packets, but reserve 256 slots for visible
+			if( counter > 128 && !trash || counter > 256 )
+				return 0;
+		}
+
 	}
 
 	// Ignore if not the host and not touching a PVS/PAS leaf
@@ -1319,6 +1388,8 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 
 	state->skin       = ent->v.skin;
 	state->effects    = ent->v.effects;
+	if( hide )
+		state->effects |= EF_NODRAW;
 
 	// This non-player entity is being moved by the game .dll and not the physics simulation system
 	//  make sure that we interpolate it's position on the client if it moves
@@ -1392,62 +1463,7 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 			//state->effects |= EF_NOINTERP;
 			state->movetype = MOVETYPE_TOSS;
 
-		if( mp_serverdistclip.value )
-		{
-			bool bmodel = false, trash = false;
-			const char *classname = "";
 
-			if( ent->v.model && STRING(ent->v.model) && *STRING(ent->v.model) == '*' )
-				bmodel = true;
-
-			if( ent->v.classname && STRING(ent->v.classname) )
-				classname = STRING( ent->v.classname );
-
-			if( !strcmp( classname, "gib" ) || !strncmp( classname, "weapon_", 7) || !strncmp( classname, "ammo_", 5) || !strncmp( classname, "item_", 5)  )
-				trash = true;
-
-			Vector delta = VecBModelOrigin(&ent->v) - host->v.origin;
-
-			float dist = 0;
-			if( abs(delta.x) > dist )
-				dist = abs(delta.x);
-			if( abs(delta.y) > dist )
-				dist = abs(delta.y);
-			if( abs(delta.z) > dist )
-				dist = abs(delta.z);
-
-			float size = 0;
-
-			if( ent->v.size.x > size )
-				size = ent->v.size.x;
-			if( ent->v.size.y > size )
-				size = ent->v.size.y;
-			if( ent->v.size.z > size )
-				size = ent->v.size.z;
-
-			dist -= size;
-
-			bool hide = false;
-
-			if( bmodel )
-			{
-				if( dist > mp_maxbmodeldist.value )
-					hide  = true;
-			}
-			else if( trash && dist > mp_maxtrashdist.value )
-				hide = true;
-			else if( dist > mp_maxotherdist.value )
-				hide = true;
-
-			// func_water renders too slow
-			if( !strcmp( classname, "func_water" ) && dist > mp_maxwaterdist.value  )
-				hide = true;
-			else if( size > 512 ) // big brushes may be rotated, but dist check does not cover this
-				hide = false;
-
-			if( hide )
-				state->effects |= EF_NODRAW;
-		}
 		// gravgun hacks
 		if( ent->pvPrivateData && CBaseEntity::Instance( ent)->m_fireState == ENTINDEX(host) )
 		{
@@ -1496,6 +1512,8 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 				state->movetype = MOVETYPE_NONE;
 		}
 	}
+
+	counter++;
 
 	return 1;
 }
