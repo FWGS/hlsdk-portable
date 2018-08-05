@@ -94,6 +94,8 @@ public:
 	virtual void BounceSound(void);
 	virtual int	BloodColor(void) { return DONT_BLEED; }
 	virtual void Killed(entvars_t *pevAttacker, int iGib);
+	int		Save( CSave &save );
+	int		Restore( CRestore &restore );
 
 	virtual float TouchGravGun( CBaseEntity *attacker, int stage )
 	{
@@ -184,7 +186,6 @@ public:
 	static const char **MaterialSoundList( Materials precacheMaterial, int &soundCount );
 	void EXPORT		Die( void );
 
-	BOOL m_bBarrel;
 	float m_flFloorFriction;
 	float m_flCollideFriction;
 
@@ -219,8 +220,42 @@ public:
 	float m_flTouchTimer;
 	int m_iTouchCounter;
 	float m_flLastGravgun;
+	static TYPEDESCRIPTION m_SaveData[];
 };
 LINK_ENTITY_TO_CLASS(prop, CProp);
+
+TYPEDESCRIPTION CProp::m_SaveData[] =
+{
+	DEFINE_FIELD( CProp, m_shape, FIELD_INTEGER ),
+	DEFINE_FIELD( CProp, m_oldshape, FIELD_INTEGER ),
+	DEFINE_FIELD( CProp, m_pHolstered, FIELD_EHANDLE ),
+	DEFINE_FIELD( CProp, m_flSpawnHealth, FIELD_FLOAT ),
+	DEFINE_FIELD( CProp, m_flFloorFriction, FIELD_FLOAT ),
+	DEFINE_FIELD( CProp, m_flCollideFriction, FIELD_FLOAT ),
+	DEFINE_FIELD( CProp, minsH, FIELD_VECTOR ),
+	DEFINE_FIELD( CProp, maxsH, FIELD_VECTOR ),
+	DEFINE_FIELD( CProp, minsV, FIELD_VECTOR ),
+	DEFINE_FIELD( CProp, maxsV, FIELD_VECTOR ),
+	DEFINE_FIELD( CProp, spawnOrigin, FIELD_POSITION_VECTOR ),
+	DEFINE_FIELD( CProp, spawnAngles, FIELD_VECTOR ),
+
+
+	// breakable stuff
+	DEFINE_FIELD( CProp, m_Material, FIELD_INTEGER ),
+	DEFINE_FIELD( CProp, m_Explosion, FIELD_INTEGER ),
+
+// Don't need to save/restore these because we precache after restore
+//	DEFINE_FIELD( CProp, m_idShard, FIELD_INTEGER ),
+
+	DEFINE_FIELD( CProp, m_angle, FIELD_FLOAT ),
+	DEFINE_FIELD( CProp, m_iszGibModel, FIELD_STRING ),
+	// Explosion magnitude is stored in pev->impulse
+	DEFINE_ARRAY( CProp, m_iaCustomAnglesX, FIELD_INTEGER, 10 ),
+	DEFINE_ARRAY( CProp, m_iaCustomAnglesZ, FIELD_INTEGER, 10 ),
+
+};
+
+IMPLEMENT_SAVERESTORE( CProp, CBaseEntity )
 
 static int propTouchSelector;
 
