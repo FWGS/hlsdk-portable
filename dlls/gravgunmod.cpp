@@ -112,7 +112,7 @@ void Ent_RunGC( bool common, bool enttools, const char *userid, const char *patt
 
 	ALERT( at_warning, "Running garbage collector\n" );
 
-	for( i = gpGlobals->maxClients; i < gpGlobals->maxEntities; i++, ent++ )
+	for( i = gpGlobals->maxClients + 5; i < gpGlobals->maxEntities; i++, ent++ )
 	{
 		const char *classname = STRING( ent->v.classname );
 
