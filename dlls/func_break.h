@@ -89,8 +89,12 @@ public:
 	string_t m_iszSpawnObject;
 	virtual float TouchGravGun( CBaseEntity *attacker, int stage )
 	{
-		pev->framerate = 1;
-		return 200;
+		if( pev->movetype == MOVETYPE_PUSHSTEP )
+		{
+			pev->framerate = 1;
+			return 200;
+		}
+		return 0;
 	}
 };
 #endif	// FUNC_BREAK_H
