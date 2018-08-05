@@ -217,6 +217,9 @@ void CMonsterMaker::MakeMonster( void )
 	DispatchSpawn( ENT( pevCreate ) );
 	pevCreate->owner = edict();
 
+	// preserve enttools owner/rights
+	CBaseEntity::Instance(pent)->enttools_data = enttools_data;
+
 	if( !FStringNull( pev->netname ) )
 	{
 		// if I have a netname (overloaded), give the child monster that name as a targetname
