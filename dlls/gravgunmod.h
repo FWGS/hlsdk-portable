@@ -25,6 +25,8 @@ extern cvar_t mp_maxbmodeldist;
 extern cvar_t mp_maxtrashdist;
 extern cvar_t mp_maxwaterdist;
 extern cvar_t mp_maxotherdist;
+extern cvar_t mp_servercliptents;
+extern cvar_t mp_maxtentdist;
 
 void GGM_RegisterCVars( void );
 void Ent_RunGC( bool common, bool enttools, const char *userid, const char *pattern = NULL );

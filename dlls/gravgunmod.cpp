@@ -28,6 +28,8 @@ cvar_t mp_maxbmodeldist = { "mp_maxbmodeldist", "4096", FCVAR_SERVER};
 cvar_t mp_maxtrashdist = { "mp_maxtrashdist", "4096", FCVAR_SERVER};
 cvar_t mp_maxwaterdist = { "mp_maxwaterdist", "4096", FCVAR_SERVER};
 cvar_t mp_maxotherdist = { "mp_maxotherdist", "4096", FCVAR_SERVER};
+cvar_t mp_servercliptents = { "mp_servercliptents", "0", FCVAR_SERVER};
+cvar_t mp_maxtentdist = { "mp_maxtentdist", "4096", FCVAR_SERVER};
 
 void Ent_RunGC_f( void );
 
@@ -101,6 +103,8 @@ void GGM_RegisterCVars( void )
 	CVAR_REGISTER( &mp_maxtrashdist );
 	CVAR_REGISTER( &mp_maxwaterdist );
 	CVAR_REGISTER( &mp_maxotherdist );
+	CVAR_REGISTER( &mp_servercliptents );
+	CVAR_REGISTER( &mp_maxtentdist );
 
 	g_engfuncs.pfnAddServerCommand( "ent_rungc", Ent_RunGC_f );
 }
