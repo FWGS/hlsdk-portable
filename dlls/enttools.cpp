@@ -444,6 +444,7 @@ void Ent_HelpFire( edict_t *player )
 	Ent_ClientPrintf( player, "    movehere: place entity in player fov.\n" );
 	Ent_ClientPrintf( player, "    drop2floor: place entity to nearest floor surface\n" );
 	Ent_ClientPrintf( player, "    move: move entity up/forward\n" );
+	Ent_ClientPrintf( player, "    relink: relink entity to world to fix collisions\n" );
 	Ent_ClientPrintf( player, "Flags:\n" );
 	Ent_ClientPrintf( player, "        (Set/clear specified flag bit, arg is bit number)\n" );
 	Ent_ClientPrintf( player, "    setflag\n" );
@@ -660,6 +661,10 @@ void Ent_Fire_f( edict_t *player )
 				ent->v.aiment= Ent_FindSingle( player,  CMD_ARGV( 3 ) );
 			else
 				ent->v.aiment = player;
+		}
+		if( !stricmp( cmd, "relink" ) )
+		{
+			UTIL_SetOrigin( &ent->v, ent->v.origin );
 		}
 		if( !stricmp( cmd, "hullmin" ) )
 		{
