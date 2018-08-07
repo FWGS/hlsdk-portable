@@ -1243,29 +1243,23 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 
 	if( mp_serverdistclip.value )
 	{
-		bool bmodel = false, trash = false;
+		bool isbmodel = false, istrash = false, ismonster = false;
 		const char *classname = "";
 
 		if( ent->v.model && STRING(ent->v.model) && *STRING(ent->v.model) == '*' )
-			bmodel = true;
+			isbmodel = true;
 
 		if( ent->v.classname && STRING(ent->v.classname) )
 			classname = STRING( ent->v.classname );
 
 		if( !strcmp( classname, "gib" ) || !strncmp( classname, "weapon_", 7) || !strncmp( classname, "ammo_", 5) || !strncmp( classname, "item_", 5)  )
-			trash = true;
+			istrash = true;
+		else if( !strncmp( classname, "monster_", 8 ) )
+			ismonster = true;
 
-		Vector delta = VecBModelOrigin(&ent->v) - host->v.origin;
+		Vector delta = ( ent->v.absmin + ent->v.absmax ) / 2 - host->v.origin;
 
-		float dist = 0;
-		if( abs(delta.x) > dist )
-			dist = abs(delta.x);
-		if( abs(delta.y) > dist )
-			dist = abs(delta.y);
-		if( abs(delta.z) > dist )
-			dist = abs(delta.z);
-
-		float size = 0;
+		float size = 0, dist = 0;
 
 		if( ent->v.size.x > size )
 			size = ent->v.size.x;
@@ -1274,23 +1268,39 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 		if( ent->v.size.z > size )
 			size = ent->v.size.z;
 
-		dist -= size;
-
-		if( bmodel ) // brushes needed to pmove prediction
+		if( size > 512 ) // big brushes may be rotated, but dist check does not cover this
+			dist = abs(delta.z), size = ent->v.size.z;
+		else
 		{
-			if( dist > mp_maxbmodeldist.value )
-				hide  = true;
-		} // low priority models. Nothing will break if we hide it, so hide if packet full
-		else if( trash && ( dist > mp_maxtrashdist.value || counter > 480 ) )
-			hide = true; // other entities. May break beams, etc...
-		else if( dist > mp_maxotherdist.value )
-			hide = true;
+			if( abs(delta.x) > dist )
+				dist = abs(delta.x);
+			if( abs(delta.y) > dist )
+				dist = abs(delta.y);
+			if( abs(delta.z) > dist )
+				dist = abs(delta.z);
+		}
+		dist -= size / 2;
 
-		// func_water renders too slow
-		if( !strcmp( classname, "func_water" ) && dist > mp_maxwaterdist.value  )
+		if( size <= 32 && ismonster )
+			istrash = true; // we can hide small monsters like trash
+
+		//printf("%s %s %f %f %f %f %f\n", classname, STRING(ent->v.model), size, dist, delta.z,ent->v.origin.z, host->v.origin.z );
+
+		if( isbmodel ) // brushes needed to pmove prediction
+		{
+			// water renders too slow
+			if( ent->v.skin == -3 && dist > mp_maxwaterdist.value  )
+				hide = true;
+			else if( dist > mp_maxbmodeldist.value )
+				hide  = true;
+		}
+		else if( istrash && ( dist > mp_maxtrashdist.value || counter > 448 ) ) // reserve 64 visents
+			hide = true;	// low priority models.
+							// Nothing will break if we hide it, so hide if packet full
+		else if( ismonster && dist > mp_maxmonsterdist.value )
 			hide = true;
-		else if( size > 512 ) // big brushes may be rotated, but dist check does not cover this
-			hide = false;
+		else if( dist > mp_maxotherdist.value )
+			hide = true; // other entities. May break beams, etc...
 
 		if( hide )
 		{
@@ -1299,7 +1309,7 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 			// attachments/sounds, so we may just skip adding it to packet
 			// but left it just hidden if we have enough visents to prevent
 			// sending big delta packets, but reserve 256 slots for visible
-			if( counter > 128 && !trash || counter > 256 )
+			if( counter > 128 && !istrash || counter > 256 )
 				return 0;
 		}
 

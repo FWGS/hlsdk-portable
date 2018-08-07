@@ -24,6 +24,7 @@ extern cvar_t mp_serverdistclip;
 extern cvar_t mp_maxbmodeldist;
 extern cvar_t mp_maxtrashdist;
 extern cvar_t mp_maxwaterdist;
+extern cvar_t mp_maxmonsterdist;
 extern cvar_t mp_maxotherdist;
 extern cvar_t mp_servercliptents;
 extern cvar_t mp_maxtentdist;
