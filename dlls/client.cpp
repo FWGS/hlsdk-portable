@@ -686,6 +686,19 @@ void ClientUserInfoChanged( edict_t *pEntity, char *infobuffer )
 	if ( !pEntity->pvPrivateData )
 		return;
 
+
+	// prevent keeping other's uid on saverestore
+	CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)&pEntity->v);
+	const char *uid = GETPLAYERAUTHID( pPlayer->edict() );
+	if( !uid || strstr(uid, "PENDING") )
+		uid = g_engfuncs.pfnInfoKeyValue( g_engfuncs.pfnGetInfoKeyBuffer( pPlayer->edict() ), "ip" );
+
+	if( strncmp( uid ,pPlayer->gravgunmod_data.uid, 32 ) )
+		pEntity->v.netname = pEntity->v.frags = 0;
+
+	strncpy( pPlayer->gravgunmod_data.uid, uid, 32 );
+	pPlayer->gravgunmod_data.uid[32] = 0;
+
 	// msg everyone if someone changes their name,  and it isn't the first time (changing no name to current name)
 	if( pEntity->v.netname && ( STRING( pEntity->v.netname ) )[0] != 0 && !FStrEq( STRING( pEntity->v.netname ), g_engfuncs.pfnInfoKeyValue( infobuffer, "name" ) ) )
 	{
