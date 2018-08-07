@@ -1251,6 +1251,9 @@ void UTIL_DecalTrace( TraceResult *pTrace, int decalNumber )
 	if( decalNumber < 0 )
 		return;
 
+	if( !mp_maxdecals.value ) // even do not send if decals disabled
+		return;
+
 	index = gDecals[decalNumber].index;
 
 	if( index < 0 )
@@ -1363,6 +1366,9 @@ void UTIL_PlayerDecalTrace( TraceResult *pTrace, int playernum, int decalNumber,
 	if( pTrace->flFraction == 1.0 )
 		return;
 
+	if( !mp_maxdecals.value ) // even do not send if decals disabled
+		return;
+
 	if( mp_serverdistclip.value && mp_servercliptents.value )
 	{
 		// loop through all players
@@ -1411,6 +1417,9 @@ void UTIL_PlayerDecalTrace( TraceResult *pTrace, int playernum, int decalNumber,
 
 void UTIL_GunshotDecalTrace( TraceResult *pTrace, int decalNumber )
 {
+	if( !mp_maxdecals.value ) // even do not send if decals disabled
+		return;
+
 	if( decalNumber < 0 )
 		return;
 

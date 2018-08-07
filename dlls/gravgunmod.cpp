@@ -31,6 +31,7 @@ cvar_t mp_maxotherdist = { "mp_maxotherdist", "4096", FCVAR_SERVER};
 cvar_t mp_maxmonsterdist = { "mp_maxmonsterdist", "4096", FCVAR_SERVER};
 cvar_t mp_servercliptents = { "mp_servercliptents", "0", FCVAR_SERVER};
 cvar_t mp_maxtentdist = { "mp_maxtentdist", "4096", FCVAR_SERVER};
+cvar_t mp_maxdecals = { "mp_maxdecals", "-1", FCVAR_SERVER };
 
 void Ent_RunGC_f( void );
 
@@ -107,6 +108,7 @@ void GGM_RegisterCVars( void )
 	CVAR_REGISTER( &mp_maxotherdist );
 	CVAR_REGISTER( &mp_servercliptents );
 	CVAR_REGISTER( &mp_maxtentdist );
+	CVAR_REGISTER( &mp_maxdecals );
 
 	g_engfuncs.pfnAddServerCommand( "ent_rungc", Ent_RunGC_f );
 }
@@ -751,6 +753,9 @@ void GGM_InitialMenus( CBasePlayer *pPlayer )
 				.Add("Join coop", "joincoop")
 				.Add("Spectate", "spectate")
 				.Show();
+
+	if( mp_maxdecals.value >= 0 )
+		CLIENT_COMMAND( pPlayer->edict(), UTIL_VarArgs("r_decals %f\n", mp_maxdecals.value ) );
 }
 
 bool GGM_TouchCommand( CBasePlayer *pPlayer, const char *pcmd )

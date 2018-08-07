@@ -20,14 +20,27 @@ extern cvar_t mp_checkentities;
 extern cvar_t mp_touchmenu;
 
 // distance clipping (client.cpp)
+// useful for open world
 extern cvar_t mp_serverdistclip;
 extern cvar_t mp_maxbmodeldist;
 extern cvar_t mp_maxtrashdist;
 extern cvar_t mp_maxwaterdist;
 extern cvar_t mp_maxmonsterdist;
 extern cvar_t mp_maxotherdist;
+
+// tempentity clipping
+// if enabled, ignores PVS, so use only on open world
 extern cvar_t mp_servercliptents;
 extern cvar_t mp_maxtentdist;
+
+// control decals count from server
+// decals is unuseful on sandbox servers
+// 100 instancs of single bmodel with 100 decals
+// will cause in 10000 decals in frame
+// r_decals limit does not cover it because it
+// only limit decal count on different models
+
+extern cvar_t mp_maxdecals;
 
 void GGM_RegisterCVars( void );
 void Ent_RunGC( bool common, bool enttools, const char *userid, const char *pattern = NULL );
