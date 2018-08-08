@@ -692,7 +692,6 @@ void CProp::Killed(entvars_t *pevAttacker, int iGib)
 	pev->nextthink = gpGlobals->time + m_flRespawnTime;
 	SetThink( &CProp::RespawnThink );
 	SetTouch( NULL );
-	SetUse( NULL );
 	//m_owner2 = NULL;
 	//m_attacker = NULL;
 }
@@ -1097,7 +1096,6 @@ void CProp::PropRespawn()
 	m_oldshape = (PropShape)-1;
 	CheckRotate();
 	SetTouch( &CProp::BounceTouch );
-	SetUse( &CProp::Use );
 
 	pev->framerate = 1.0f;
 	UTIL_SetOrigin( pev, spawnOrigin );
