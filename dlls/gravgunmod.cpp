@@ -564,7 +564,7 @@ GGM_PlayerMenu &GGM_PlayerMenu::Add(const char *name, const char *command)
 
 	if( m_iCount > 4 )
 	{
-		ALERT( at_error, "GGM_PlayerMenu::Add: Only 5 menu items supported" );
+		ALERT( at_error, "GGM_PlayerMenu::Add: Only 5 menu items supported\n" );
 		return *this;
 	}
 
