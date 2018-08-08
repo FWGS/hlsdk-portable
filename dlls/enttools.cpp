@@ -453,6 +453,34 @@ void Ent_HelpFire( edict_t *player )
 	Ent_ClientPrintf( player, "    clearspawnflag\n" );
 }
 
+// xash3d only
+// maybe incompatible with BSP2 engine
+#include <com_model.h>
+#include <physint.h>
+bool Ent_CheckModel( const char *model )
+{
+	if( !mp_enttools_checkmodels.value )
+		return true;
+
+	// null model is safe
+	if( !model || !model[0] )
+		return true;
+
+	// check for brush submodel safety
+	if( model[0] == '*' )
+	{
+		if( !model[1] || !Q_isdigit(model + 1) ) // will crash client engine before 0.19.3
+			return false;
+		model_t *world = (model_t*)g_physfuncs.pfnGetModel(1);
+		int submodel = atoi(model + 1);
+		if( submodel < 1 || world && submodel >= world->numsubmodels )
+			return false;
+	} // do not allow to set different model types. bsp models will destroy all submodels on map
+	else if( !strstr( model, ".mdl" ) || !strstr( model, ".spr" ) )
+		return false;
+	return true;
+}
+
 /*
 ===============
 Ent_Fire_f
@@ -579,7 +607,13 @@ void Ent_Fire_f( edict_t *player )
 		}
 		if( !stricmp( cmd, "setmodel" ) )
 		{
-			SET_MODEL( ent, CMD_ARGV( 3 ) );
+			const char *model = CMD_ARGV( 3 );
+			if( !Ent_CheckModel( model ) )
+			{
+				Ent_ClientPrintf(player, "Bad model %s\n", model );
+				return;
+			}
+			SET_MODEL( ent, model );
 		}
 		if( !stricmp( cmd, "set" ) )
 		{
@@ -733,6 +767,7 @@ void Ent_Fire_f( edict_t *player )
 			break;
 	}
 }
+
 /*
 ===============
 Ent_Create_f
@@ -856,6 +891,14 @@ void Ent_Create_f( edict_t *player )
 		DispatchKeyValue( ent, &pkvd );
 		if( pkvd.fHandled )
 			Ent_ClientPrintf( player, "value \"%s\" set to \"%s\"!\n", pkvd.szKeyName, pkvd.szValue );
+	}
+
+	if( ent && ent->v.model && !Ent_CheckModel( STRING( ent->v.model ) ) )
+	{
+		Ent_ClientPrintf( player, "Bad model %s, removing entity\n", STRING( ent->v.model ) );
+		ent->v.effects |= EF_NODRAW;
+		ent->v.flags |= FL_KILLME;
+		return;
 	}
 
 	// onwership

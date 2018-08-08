@@ -27,6 +27,7 @@ extern cvar_t mp_maxtrashdist;
 extern cvar_t mp_maxwaterdist;
 extern cvar_t mp_maxmonsterdist;
 extern cvar_t mp_maxotherdist;
+extern cvar_t mp_enttools_checkmodels;
 
 // tempentity clipping
 // if enabled, ignores PVS, so use only on open world
