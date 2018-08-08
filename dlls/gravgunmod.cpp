@@ -535,6 +535,28 @@ void GGM_Say( edict_t *pEntity )
 }
 
 
+bool GGM_ClearHelpMessage( CBasePlayer *pPlayer )
+{
+
+	hudtextparms_t params;
+
+	params.x = 0.5, params.y = 0.3;
+	params.fadeinTime = params.fadeoutTime = 0;
+	params.holdTime = 0;
+	int color2 = 0xFF0000FF, color1 = 0x00FF00FF;
+
+	params.r1 = (color1 >> 24) & 0xFF, params.g1 = (color1 >> 16) & 0xFF, params.b1 = (color1 >> 8) & 0xFF, params.a1 = color1 & 0xFF;
+	params.r2 = (color2 >> 24) & 0xFF, params.g2 = (color2 >> 16) & 0xFF, params.b2 = (color2 >> 8) & 0xFF, params.a2 = color2 & 0xFF;
+	params.channel = 7;
+	params.effect = 0;
+
+	UTIL_HudMessage( pPlayer, params, "" );
+
+	return true;
+}
+
+
+
 GGM_PlayerMenu &GGM_PlayerMenu::Add(const char *name, const char *command)
 {
 	if( m_fShow )
@@ -629,7 +651,11 @@ bool GGM_PlayerMenu::MenuSelect( int select )
 
 
 	if( !m_items[select-1].command[0] )
+	{
+		// cancel menu item
+		GGM_ClearHelpMessage( pPlayer );
 		return true;
+	}
 
 	GGM::Cmd_TokenizeString( m_items[select-1].command );
 	ClientCommand( pPlayer->edict() );
@@ -746,6 +772,52 @@ bool GGM_MOTDCommand( CBasePlayer *player, const char *name )
 	return true;
 }
 
+bool GGM_HelpCommand( CBasePlayer *pPlayer, const char *name )
+{
+	char buf[256] = "ggm/help/";
+	char *file, *pFileList;
+	int char_count = 0;
+
+	if( !pPlayer )
+		return false;
+
+	if( !GGM_FilterFileName( name ) )
+		return false;
+
+	hudtextparms_t params;
+
+	strncat( buf, name, sizeof(buf) - 1 );
+
+	file = (char*)LOAD_FILE_FOR_ME( buf, NULL );
+
+	if( !file )
+		return false;
+	params.x = 0.5, params.y = 0.3;
+	params.fadeinTime = params.fadeoutTime = 0.05f;
+	params.holdTime = 30;
+	int color2 = 0xFF0000FF, color1 = 0x00FF00FF;
+
+	params.r1 = (color1 >> 24) & 0xFF, params.g1 = (color1 >> 16) & 0xFF, params.b1 = (color1 >> 8) & 0xFF, params.a1 = color1 & 0xFF;
+	params.r2 = (color2 >> 24) & 0xFF, params.g2 = (color2 >> 16) & 0xFF, params.b2 = (color2 >> 8) & 0xFF, params.a2 = color2 & 0xFF;
+	params.channel = 7;
+	params.effect = 2;
+	char *pstr = file;
+
+	// set line breaks
+	for( int i = 0; *pstr; pstr++,i++ )
+	{
+		if( *pstr == '\n' )
+			i = 0;
+		if( i >= 79 )
+			*pstr = '\n', i = 0;
+	}
+
+	UTIL_HudMessage( pPlayer, params, file );
+
+	FREE_FILE(file);
+	return true;
+}
+
 void GGM_InitialMenus( CBasePlayer *pPlayer )
 {
 	pPlayer->gravgunmod_data.touch_loading = false;
@@ -755,6 +827,8 @@ void GGM_InitialMenus( CBasePlayer *pPlayer )
 				.Add("Join coop", "joincoop")
 				.Add("Spectate", "spectate")
 				.Show();
+
+	GGM_HelpCommand( pPlayer, "init" );
 
 	if( mp_maxdecals.value >= 0 )
 		CLIENT_COMMAND( pPlayer->edict(), UTIL_VarArgs("r_decals %f\n", mp_maxdecals.value ) );
@@ -812,6 +886,7 @@ void DumpProps(); // prop.cpp
 
 bool GGM_ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 {
+	bool ret = GGM_HelpCommand( pPlayer, pcmd );
 
 	if( FStrEq( pcmd, "menuselect" ) )
 	{
@@ -844,7 +919,7 @@ bool GGM_ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 	else if( Ent_ProcessClientCommand( pPlayer->edict() ) )
 		return true;
 
-	return false;
+	return ret;
 
 }
 
