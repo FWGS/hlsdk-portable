@@ -1234,7 +1234,7 @@ we could also use the pas/ pvs that we set in SetupVisibility, if we wanted to. 
 int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *host, int hostflags, int player, unsigned char *pSet )
 {
 	int					i;
-	static int counter; // XASH3DMAX_VISIBLE_PACKET == 512
+	static int counter; // XASH3D MAX_VISIBLE_PACKET == 512
 	bool hide = false;
 
 	if( ( ent == host || player ) && counter > gpGlobals->maxClients  + 1 )

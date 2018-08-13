@@ -736,6 +736,12 @@ void CFuncTrain::Next( void )
 		return;
 	}
 
+	if( pTarg->GetNextTarget() == pTarg )
+	{
+		ALERT(at_error, "train short loop!");
+		return;
+	}
+
 	// Save last target in case we need to find it again
 	pev->message = pev->target;
 
