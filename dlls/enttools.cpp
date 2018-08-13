@@ -476,7 +476,7 @@ bool Ent_CheckModel( const char *model )
 		if( submodel < 1 || world && submodel >= world->numsubmodels )
 			return false;
 	} // do not allow to set different model types. bsp models will destroy all submodels on map
-	else if( !strstr( model, ".mdl" ) || !strstr( model, ".spr" ) )
+	else if( !strstr( model, ".mdl" ) && !strstr( model, ".spr" ) )
 		return false;
 	return true;
 }
