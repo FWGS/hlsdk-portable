@@ -139,7 +139,7 @@ void Ent_RunGC( bool common, bool enttools, const char *userid, const char *patt
 
 		if( common )
 		{
-			if( !strcmp( classname, "gib" ) )
+			if( !strcmp( classname, "gib" ) || !strcmp( classname, "gateofbabylon_bolt" ) )
 			{
 				ent->v.flags |= FL_KILLME;
 				removed++;
@@ -155,7 +155,7 @@ void Ent_RunGC( bool common, bool enttools, const char *userid, const char *patt
 		}
 		if( !enttools && !pattern )
 		{
-			if( strncmp( classname, "monster_", 8 ) || strncmp( classname, "weapon_", 7 ) || strncmp( classname, "ammo_", 5 ) )
+			if( strncmp( classname, "monster_", 8 ) || strncmp( classname, "weapon_", 7 ) || strncmp( classname, "ammo_", 5 ) || strncmp( classname, "item_", 5 ) )
 				continue;
 		}
 
@@ -207,7 +207,7 @@ void Ent_RunGC( bool common, bool enttools, const char *userid, const char *patt
 		}
 	}
 
-	ALERT( at_notice, "Total %d entities, %d cleaned\n", count, removed );
+	ALERT( at_notice, "Total %d entities, %d removed\n", count, removed );
 
 }
 
@@ -251,7 +251,13 @@ int Ent_CheckEntitySpawn( edict_t *pent )
 			return 0;
 		}
 
-		if( index > gpGlobals->maxEntities / 2 && counter - lastgc > 64 )
+		if( index > gpGlobals->maxEntities / 2 && counter - lastgc > 256 )
+		{
+			lastgc = counter;
+			Ent_RunGC( true, false, NULL );
+			return 0;
+		}
+		else if( counter - lastgc > gpGlobals->maxEntities )
 		{
 			lastgc = counter;
 			Ent_RunGC( true, false, NULL );
