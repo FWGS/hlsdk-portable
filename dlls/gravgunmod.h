@@ -18,6 +18,7 @@ extern cvar_t mp_spectator;
 extern cvar_t mp_fixhornetbug;
 extern cvar_t mp_checkentities;
 extern cvar_t mp_touchmenu;
+extern cvar_t mp_fixsavetime;
 
 // distance clipping (client.cpp)
 // useful for open world

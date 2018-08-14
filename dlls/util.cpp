@@ -1829,6 +1829,9 @@ void UTIL_StripToken( const char *pKey, char *pDest )
 	pDest[i] = 0;
 }
 
+bool g_isReadingHeader;
+float g_SaveTime;
+
 // --------------------------------------------------------------
 //
 // CSave
@@ -2420,17 +2423,24 @@ int CRestore::ReadField( void *pBaseData, TYPEDESCRIPTION *pFields, int fieldCou
 					switch( pTest->fieldType )
 					{
 					case FIELD_TIME:
-					#ifdef __VFP_FP__
+
 						memcpy( &timeData, pInputData, 4 );
 						// Re-base time variables
 						timeData += time;
+						if( mp_fixsavetime.value )
+						{
+							if( g_isReadingHeader )
+								g_SaveTime = timeData;
+
+							if( g_SaveTime > 10000 && timeData > 0.1 )
+							{
+								timeData -= g_SaveTime - 500;
+								if( timeData && timeData < 0.1 )
+									timeData = 0.1;
+							}
+						}
 						memcpy( pOutputData, &timeData, 4 );
-					#else
-						timeData = *(float *)pInputData;
-						// Re-base time variables
-						timeData += time;
-						*( (float *)pOutputData ) = timeData;
-					#endif
+
 						break;
 					case FIELD_FLOAT:
 						memcpy( pOutputData, pInputData, 4 );
@@ -2574,6 +2584,8 @@ int CRestore::ReadFields( const char *pname, void *pBaseData, TYPEDESCRIPTION *p
 	unsigned short i, token;
 	int lastField, fileCount;
 	HEADER header;
+
+	g_isReadingHeader = !strcmp( pname, "Save Header" );
 
 	i = ReadShort();
 	ASSERT( i == sizeof(int) );			// First entry should be an int
