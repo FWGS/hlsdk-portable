@@ -84,6 +84,21 @@ bool Q_stricmpext( const char *pattern, const char *text )
 	return true;
 }
 
+void GGM_LightStyle_f( void )
+{
+	if( CMD_ARGC() != 3 )
+	{
+		ALERT( at_error, "Usage: mp_lightstyle <number> <pattern>\n" );
+		return;
+	}
+
+	int style = atoi( CMD_ARGV(1) );
+	if( style < 0 || style > 256 )
+		return;
+
+	LIGHT_STYLE( style, CMD_ARGV(2) );
+}
+
 void GGM_RegisterCVars( void )
 {
 	CVAR_REGISTER( &cvar_allow_ar2 );
@@ -98,6 +113,7 @@ void GGM_RegisterCVars( void )
 	CVAR_REGISTER( &cvar_agibcount );
 	CVAR_REGISTER( &mp_gravgun_players );
 	CVAR_REGISTER( &mp_fixhornetbug );
+	CVAR_REGISTER( &mp_fixsavetime );
 	CVAR_REGISTER( &mp_checkentities );
 	CVAR_REGISTER( &mp_touchmenu );
 	CVAR_REGISTER( &mp_touchname );
@@ -114,6 +130,7 @@ void GGM_RegisterCVars( void )
 	CVAR_REGISTER( &mp_enttools_checkmodels );
 
 	g_engfuncs.pfnAddServerCommand( "ent_rungc", Ent_RunGC_f );
+	g_engfuncs.pfnAddServerCommand( "mp_lightstyle", GGM_LightStyle_f );
 }
 
 void Ent_RunGC( bool common, bool enttools, const char *userid, const char *pattern )
