@@ -1185,6 +1185,13 @@ int SENTENCEG_PlayRndSz( edict_t *entity, const char *szgroupname, float volume,
 
 	name[0] = 0;
 
+	// allow setting sound path
+	if( szgroupname[0] == '=' )
+	{
+		EMIT_SOUND_DYN( entity, CHAN_VOICE, szgroupname + 1, volume, attenuation, flags, pitch );
+		return -1;
+	}
+
 	isentenceg = SENTENCEG_GetIndex( szgroupname );
 	if( isentenceg < 0 )
 	{
