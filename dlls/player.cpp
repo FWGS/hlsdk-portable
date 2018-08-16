@@ -787,6 +787,9 @@ void CBasePlayer::PackDeadPlayerItems( void )
 
 void CBasePlayer::RemoveAllItems( BOOL removeSuit )
 {
+	int i;
+	CBasePlayerItem *pPendingItem;
+
 	if( m_pActiveItem )
 	{
 		ResetAutoaim();
@@ -800,8 +803,8 @@ void CBasePlayer::RemoveAllItems( BOOL removeSuit )
 	if( m_pTank != 0 )
 		m_pTank->Use( this, this, USE_OFF, 0 );
 
-	int i;
-	CBasePlayerItem *pPendingItem;
+	m_iTrain = TRAIN_NEW; // turn off train
+
 	for( i = 0; i < MAX_ITEM_TYPES; i++ )
 	{
 		m_pActiveItem = m_rgpPlayerItems[i];
@@ -1403,7 +1406,7 @@ void CBasePlayer::StartObserver( Vector vecPosition, Vector vecViewAngle )
 	MESSAGE_END();
 
 	// Setup flags
-	m_iHideHUD = ( HIDEHUD_HEALTH | HIDEHUD_WEAPONS );
+	m_iHideHUD = ( HIDEHUD_HEALTH | HIDEHUD_FLASHLIGHT | HIDEHUD_WEAPONS );
 	m_afPhysicsFlags |= PFLAG_OBSERVER;
 	pev->effects = EF_NODRAW;
 	pev->view_ofs = g_vecZero;
@@ -1842,6 +1845,7 @@ void CBasePlayer::PreThink( void )
 	{
 		CBaseEntity *pTrain = CBaseEntity::Instance( pev->groundentity );
 		float vel;
+		int iGearId;	// Vit_amiN: keeps the train control HUD in sync
 
 		if( !pTrain )
 		{
@@ -1882,10 +1886,12 @@ void CBasePlayer::PreThink( void )
 			pTrain->Use( this, this, USE_SET, (float)vel );
 		}
 
-		if( vel )
+		iGearId = TrainSpeed( pTrain->pev->speed, pTrain->pev->impulse );
+
+		if( iGearId != ( m_iTrain & 0x0F ) )	// Vit_amiN: speed changed
 		{
-			m_iTrain = TrainSpeed( (int)pTrain->pev->speed, pTrain->pev->impulse );
-			m_iTrain |= TRAIN_ACTIVE|TRAIN_NEW;
+			m_iTrain = iGearId;
+			m_iTrain |= TRAIN_ACTIVE | TRAIN_NEW;
 		}
 	}
 	else if( m_iTrain & TRAIN_ACTIVE )
@@ -2903,6 +2909,8 @@ void CBasePlayer::Precache( void )
 
 	if( gInitHUD )
 		m_fInitHUD = TRUE;
+
+	pev->fov = m_iFOV;	// Vit_amiN: restore the FOV on level change or map/saved game load
 }
 
 int CBasePlayer::Save( CSave &save )
@@ -3315,6 +3323,8 @@ void CBasePlayer::ForceClientDllUpdate( void )
 {
 	m_iClientHealth = -1;
 	m_iClientBattery = -1;
+	m_iClientHideHUD = -1;	// Vit_amiN: forcing to update
+	m_iClientFOV = -1;	// Vit_amiN: force client weapons to be sent
 	m_iTrain |= TRAIN_NEW;  // Force new train message.
 	m_fWeapon = FALSE;          // Force weapon send
 	m_fKnownItem = FALSE;    // Force weaponinit messages.
@@ -3905,6 +3915,11 @@ void CBasePlayer::UpdateClientData( void )
 			WRITE_BYTE( m_iFlashBattery );
 		MESSAGE_END();
 
+		// Vit_amiN: the geiger state could run out of sync, too
+		MESSAGE_BEGIN( MSG_ONE, gmsgGeigerRange, NULL, pev );
+			WRITE_BYTE( 0 );
+		MESSAGE_END();
+
 		InitStatusBar();
 	}
 
@@ -3950,7 +3965,7 @@ void CBasePlayer::UpdateClientData( void )
 		m_iClientHealth = (int)pev->health;
 	}
 
-	if( pev->armorvalue != m_iClientBattery )
+	if( (int)pev->armorvalue != m_iClientBattery )
 	{
 		m_iClientBattery = (int)pev->armorvalue;
 
