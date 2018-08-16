@@ -1087,6 +1087,7 @@ public:
 	int iItemSlot( void ) { return 2; }
 	int GetItemInfo(ItemInfo *p);
 
+	int AddToPlayer( CBasePlayer *pPlayer );
 	void PrimaryAttack( void );
 	void SecondaryAttack( void );
 	void BerettaFire( float flSpread, float flCycleTime, BOOL fUseAutoAim );
@@ -1122,6 +1123,7 @@ public:
 	void EXPORT Smack( void );
 	int GetItemInfo(ItemInfo *p);
 
+	int AddToPlayer( CBasePlayer *pPlayer );
 	void PrimaryAttack( void );
 	int Swing( int fFirst );
 	BOOL Deploy( void );
