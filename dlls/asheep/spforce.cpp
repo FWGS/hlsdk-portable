@@ -216,7 +216,7 @@ int CSPForce :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, flo
 //=========================================================
 void CSPForce :: Shoot ( void )
 {
-	if (m_hEnemy == NULL)
+	if (m_hEnemy == 0)
 	{
 		return;
 	}
@@ -243,7 +243,7 @@ void CSPForce :: Shoot ( void )
 //=========================================================
 void CSPForce :: Beretta ( void )
 {
-	if (m_hEnemy == NULL)
+	if (m_hEnemy == 0)
 	{
 		return;
 	}

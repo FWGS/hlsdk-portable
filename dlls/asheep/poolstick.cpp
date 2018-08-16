@@ -83,7 +83,7 @@ int CPoolstick::GetItemInfo(ItemInfo *p)
 	return 1;
 }
 
-int CBeretta::AddToPlayer( CBasePlayer *pPlayer )
+int CPoolstick::AddToPlayer( CBasePlayer *pPlayer )
 {
 	if( CBasePlayerWeapon::AddToPlayer( pPlayer ) )
 	{                                                                           
