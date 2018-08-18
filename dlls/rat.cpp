@@ -39,6 +39,7 @@ public:
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
 	void EXPORT RatLeapTouch( CBaseEntity *pOther );
 	void StartTask( Task_t *pTask );
+	float GetDamageAmount( void ) { return gSkillData.leechDmgBite; }
 
 	void PainSound( void );
 	void DeathSound( void );
@@ -110,7 +111,7 @@ void CRat::Spawn()
 	pev->solid = SOLID_SLIDEBOX;
 	pev->movetype = MOVETYPE_STEP;
 	m_bloodColor = BLOOD_COLOR_RED;
-	pev->health = 8;
+	pev->health = gSkillData.leechHealth;;
 	pev->view_ofs = Vector( 0, 0, 6 );// position of the eyes relative to monster's origin.
 	m_flFieldOfView = 0.5;// indicates the width of this monster's forward view cone ( as a dotproduct result )
 	m_MonsterState = MONSTERSTATE_NONE;
