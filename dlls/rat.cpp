@@ -183,7 +183,8 @@ void CRat::HandleAnimEvent( MonsterEvent_t *pEvent )
 				vecJumpDir = Vector( gpGlobals->v_forward.x, gpGlobals->v_forward.y, gpGlobals->v_up.z ) * 350;
 			}
 
-			EMIT_SOUND_DYN( edict(), CHAN_VOICE, pAttackSounds[0], GetSoundVolue(), ATTN_IDLE, 0, GetVoicePitch() );
+			if( RANDOM_LONG( 0, 2 ) )
+				EMIT_SOUND_DYN( edict(), CHAN_VOICE, pAttackSounds[0], GetSoundVolue(), ATTN_IDLE, 0, GetVoicePitch() );
 
 			pev->velocity = vecJumpDir;
 			m_flNextAttack = gpGlobals->time + 2;
