@@ -639,7 +639,7 @@ public:
 	void Spawn( void );
 
 	virtual void Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
-	void PlayTrack( void );
+	void EXPORT PlayTrack( void );
 	void Touch( CBaseEntity *pOther );
 };
 
@@ -657,17 +657,19 @@ void CTriggerCDAudio::Touch( CBaseEntity *pOther )
 		return;
 	}
 
-	PlayTrack();
+	SetThink( &CTriggerCDAudio::PlayTrack );
+	pev->nextthink = gpGlobals->time + 0.2f;
 }
 
 void CTriggerCDAudio::Spawn( void )
 {
-	InitTrigger();
+	InitTrigger();	
 }
 
 void CTriggerCDAudio::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
-	PlayTrack();
+	SetThink( &CTriggerCDAudio::PlayTrack );
+	pev->nextthink = gpGlobals->time + 0.2f;
 }
 
 void PlayCDTrack( int iTrack )
