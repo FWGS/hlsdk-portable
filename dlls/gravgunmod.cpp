@@ -34,6 +34,9 @@ cvar_t mp_servercliptents = { "mp_servercliptents", "0", FCVAR_SERVER};
 cvar_t mp_maxtentdist = { "mp_maxtentdist", "4096", FCVAR_SERVER};
 cvar_t mp_maxdecals = { "mp_maxdecals", "-1", FCVAR_SERVER };
 cvar_t mp_enttools_checkmodels = { "mp_enttools_checkmodels", "0", FCVAR_SERVER };
+cvar_t mp_errormdl = { "mp_errormdl", "0", FCVAR_SERVER };
+cvar_t mp_errormdlpath = { "mp_errormdlpath", "models/error.mdl", FCVAR_SERVER };
+
 
 void Ent_RunGC_f( void );
 
@@ -128,6 +131,8 @@ void GGM_RegisterCVars( void )
 	CVAR_REGISTER( &mp_maxtentdist );
 	CVAR_REGISTER( &mp_maxdecals );
 	CVAR_REGISTER( &mp_enttools_checkmodels );
+	CVAR_REGISTER( &mp_errormdl );
+	CVAR_REGISTER( &mp_errormdlpath );
 
 	g_engfuncs.pfnAddServerCommand( "ent_rungc", Ent_RunGC_f );
 	g_engfuncs.pfnAddServerCommand( "mp_lightstyle", GGM_LightStyle_f );
@@ -970,4 +975,61 @@ void GGM_CvarValue2( const edict_t *pEnt, int requestID, const char *cvarName, c
 
 	}
 
+}
+#include "com_model.h"
+
+// error.mdl stuff
+
+void SET_MODEL( edict_t *e, const char *model )
+{
+	g_engfuncs.pfnSetModel( e, model );
+
+	if( !mp_errormdl.value )
+		return;
+
+	if( model && model[0] && e )
+	{
+		if( e->v.modelindex )
+		{
+			model_t *mod = (model_t*)g_physfuncs.pfnGetModel(e->v.modelindex);
+			if( mod )
+			{
+				ALERT( at_console, "SET_MODEL %s %d %x %d %x\n", model, e->v.modelindex, mod->nodes, mod->type, mod->cache.data );
+				if( mod->type == mod_brush &&  !mod->nodes )
+					g_engfuncs.pfnSetModel( e, mp_errormdlpath.string );
+			}
+			else
+			{
+				int index = g_engfuncs.pfnPrecacheModel(model);
+				model_t *mod = (model_t*)g_physfuncs.pfnGetModel(index);
+				if( !mod || mod->type == mod_brush && !mod->nodes )
+					g_engfuncs.pfnSetModel( e, mp_errormdlpath.string );
+
+				ALERT( at_console, "SET_MODEL %s %d\n", model, e->v.modelindex );
+			}
+
+		}
+	}
+}
+
+int PRECACHE_MODEL(const char *model)
+{
+	int index = g_engfuncs.pfnPrecacheModel( model );
+
+	if( !index || !mp_errormdl.value )
+		return index;
+
+	model_t *mod = (model_t*)g_physfuncs.pfnGetModel( index );
+	if( !mod )
+	{
+		ALERT( at_console, "PRECACHE_MODEL %s %d\n", model, index );
+		return g_engfuncs.pfnPrecacheModel( mp_errormdlpath.string );
+	}
+	else
+	{
+		if( mod->type == mod_brush &&  !mod->nodes )
+			return g_engfuncs.pfnPrecacheModel( mp_errormdlpath.string );
+	}
+
+	return index;
 }
