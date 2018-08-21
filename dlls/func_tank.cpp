@@ -153,6 +153,8 @@ public:
 
 	void StartRotSound( void );
 	void StopRotSound( void );
+	STATE GetState( void ) { return m_iActive?STATE_ON:STATE_OFF; }//Support this stuff for watcher
+	int m_iActive;
 
 	// Bmodels don't go across transitions
 	virtual int ObjectCaps( void ) { return CBaseEntity :: ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
@@ -276,6 +278,7 @@ TYPEDESCRIPTION	CFuncTank::m_SaveData[] =
 	DEFINE_FIELD( CFuncTank, m_iszFireMaster, FIELD_STRING ), //LRC
 	DEFINE_FIELD( CFuncTank, m_iszLocusFire, FIELD_STRING ), //LRC
 	DEFINE_FIELD( CFuncTank, m_pFireProxy, FIELD_CLASSPTR ), //LRC
+	DEFINE_FIELD( CFuncTank, m_iActive, FIELD_INTEGER ),//G-Cont.
 };
 
 IMPLEMENT_SAVERESTORE( CFuncTank, CBaseEntity )
@@ -307,6 +310,15 @@ void CFuncTank::Spawn( void )
 		SetNextThink(1.0);
 	}
 
+	if( !m_iTankClass )
+	{
+		m_iTankClass = 0;
+	}
+
+	if( ( m_maxRange == 0 ) || ( FStringNull( m_maxRange ) ) )
+	{
+		m_maxRange = 4096; //G-Cont. for normal working func_tank in original HL
+	}
 	m_sightOrigin = BarrelPosition(); // Point at the end of the barrel
 
 	if( m_fireRate <= 0 )
@@ -512,6 +524,7 @@ BOOL CFuncTank :: StartControl( CBasePlayer* pController, CFuncTankControls *pCo
 
 //	ALERT( at_console, "using TANK!\n");
 
+	m_iActive = 1;
 	m_pControls = pControls;
 
 	if (m_pSpot) m_pSpot->Revive();
@@ -519,6 +532,8 @@ BOOL CFuncTank :: StartControl( CBasePlayer* pController, CFuncTankControls *pCo
 
 	SetNextThink(0.1);
 //	ALERT(at_debug,"StartControl succeeded\n");
+	m_iActive = 0;
+
 	return TRUE;
 }
 
@@ -916,11 +931,14 @@ void CFuncTank::TrackTarget( void )
 			AdjustAnglesForBarrel( angles, direction.Length() );
 		}
 		else
-	{
+		{
 			// "Match angles" mode
 			// just get the player's angles
 			angles = pController->pev->v_angle;
-		angles[0] = 0 - angles[0];
+			angles[0] = 0 - angles[0];
+
+			UpdateSpot();
+			SetNextThink( 0.05 );//G-Cont.For more smoothing motion a laser spot
 		}
 	}
 	else
@@ -1648,6 +1666,7 @@ void CFuncTankControls::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_
 
 		m_pController = NULL;
 		m_active = false;
+		((CBasePlayer *)pActivator)->m_iFOV = 0;//reset FOV
 	}
 
 
