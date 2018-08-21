@@ -115,6 +115,8 @@ public:
 	static const char *pPainSounds[];
 	static const char *pIdleSounds[];
 	static const char *pAlertSounds[];
+	static const char *pStepSounds[];
+	static const char *pFireSounds[];
 
 	BOOL m_fCanHornetAttack;
 	float m_flNextHornetAttackCheck;
@@ -191,6 +193,21 @@ const char *CAGrunt::pAlertSounds[] =
 	"agrunt/ag_alert3.wav",
 	"agrunt/ag_alert4.wav",
 	"agrunt/ag_alert5.wav",
+};
+
+const char *CAGrunt::pStepSounds[] =
+{
+	"agrunt/ag_step1.wav",
+	"agrunt/ag_step2.wav",
+	"agrunt/ag_step3.wav",
+	"agrunt/ag_step4.wav",
+};
+
+const char *CAGrunt::pFireSounds[] =
+{
+	"agrunt/ag_fire1.wav",
+	"agrunt/ag_fire2.wav",
+	"agrunt/ag_fire3.wav",
 };
 
 //=========================================================
@@ -472,6 +489,13 @@ void CAGrunt::HandleAnimEvent( MonsterEvent_t *pEvent )
 			UTIL_MakeVectors ( pHornet->pev->angles );
 			pHornet->pev->velocity = gpGlobals->v_forward * 300;
 
+			switch ( RANDOM_LONG ( 0 , 2 ) )
+			{
+				case 0:	EMIT_SOUND_DYN ( ENT(pev), CHAN_WEAPON, "agrunt/ag_fire1.wav", 1.0, ATTN_NORM, 0, 100 );	break;
+				case 1:	EMIT_SOUND_DYN ( ENT(pev), CHAN_WEAPON, "agrunt/ag_fire2.wav", 1.0, ATTN_NORM, 0, 100 );	break;
+				case 2:	EMIT_SOUND_DYN ( ENT(pev), CHAN_WEAPON, "agrunt/ag_fire3.wav", 1.0, ATTN_NORM, 0, 100 );	break;
+			}
+
 			CBaseMonster *pHornetMonster = pHornet->MyMonsterPointer();
 
 			//LRC - hornets have the same allegiance as their creators
@@ -494,10 +518,10 @@ void CAGrunt::HandleAnimEvent( MonsterEvent_t *pEvent )
 		{
 		// left foot
 		case 0:
-			EMIT_SOUND_DYN( ENT( pev ), CHAN_BODY, "player/pl_ladder2.wav", 1, ATTN_NORM, 0, 70 );
+			EMIT_SOUND_DYN( ENT( pev ), CHAN_BODY, "agrunt/ag_step2.wav", 1, ATTN_NORM, 0, 70 );
 			break;
 		case 1:
-			EMIT_SOUND_DYN( ENT( pev ), CHAN_BODY, "player/pl_ladder4.wav", 1, ATTN_NORM, 0, 70 );
+			EMIT_SOUND_DYN( ENT( pev ), CHAN_BODY, "agrunt/ag_step4.wav", 1, ATTN_NORM, 0, 70 );
 			break;
 		}
 		break;
@@ -506,10 +530,10 @@ void CAGrunt::HandleAnimEvent( MonsterEvent_t *pEvent )
 		switch( RANDOM_LONG( 0, 1 ) )
 		{
 		case 0:
-			EMIT_SOUND_DYN( ENT( pev ), CHAN_BODY, "player/pl_ladder1.wav", 1, ATTN_NORM, 0, 70 );
+			EMIT_SOUND_DYN( ENT( pev ), CHAN_BODY, "agrunt/ag_step1.wav", 1, ATTN_NORM, 0, 70 );
 			break;
 		case 1:
-			EMIT_SOUND_DYN( ENT( pev ), CHAN_BODY, "player/pl_ladder3.wav", 1, ATTN_NORM, 0 ,70);
+			EMIT_SOUND_DYN( ENT( pev ), CHAN_BODY, "agrunt/ag_step3.wav", 1, ATTN_NORM, 0 ,70);
 			break;
 		}
 		break;
@@ -641,6 +665,12 @@ void CAGrunt::Precache()
 
 	for( i = 0; i < ARRAYSIZE( pAlertSounds ); i++ )
 		PRECACHE_SOUND( pAlertSounds[i] );
+
+	for( i = 0; i < ARRAYSIZE( pFireSounds ); i++ )
+		PRECACHE_SOUND( pFireSounds[i] );
+		
+	for( i = 0; i < ARRAYSIZE( pStepSounds ); i++ )
+		PRECACHE_SOUND( pStepSounds[i] );
 
 	PRECACHE_SOUND( "hassault/hw_shoot1.wav" );
 
