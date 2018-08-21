@@ -129,7 +129,7 @@ IMPLEMENT_SAVERESTORE( CHoundeye, CSquadMonster )
 //=========================================================
 int CHoundeye::Classify( void )
 {
-	return CLASS_ALIEN_MONSTER;
+	return m_iClass?m_iClass:CLASS_ALIEN_MONSTER;
 }
 
 //=========================================================
@@ -221,6 +221,7 @@ void CHoundeye::SetYawSpeed( void )
 	case ACT_RUN:	
 	case ACT_TURN_LEFT:
 	case ACT_TURN_RIGHT:
+		ys = 90;
 		break;
 	default:
 		break;
@@ -318,6 +319,9 @@ void CHoundeye::Spawn()
 {
 	Precache();
 
+	if (pev->model)
+		SET_MODEL(ENT(pev), STRING(pev->model)); //LRC
+	else
 	SET_MODEL( ENT( pev ), "models/houndeye.mdl" );
 	UTIL_SetSize( pev, Vector( -16, -16, 0 ), Vector( 16, 16, 36 ) );
 
@@ -325,6 +329,7 @@ void CHoundeye::Spawn()
 	pev->movetype		= MOVETYPE_STEP;
 	m_bloodColor		= BLOOD_COLOR_YELLOW;
 	pev->effects		= 0;
+	if (pev->health == 0)
 	pev->health		= gSkillData.houndeyeHealth;
 	pev->yaw_speed		= 5;//!!! should we put this in the monster's changeanim function since turn rates may vary with state/anim?
 	m_flFieldOfView		= 0.5;// indicates the width of this monster's forward view cone ( as a dotproduct result )
@@ -341,6 +346,9 @@ void CHoundeye::Spawn()
 //=========================================================
 void CHoundeye::Precache()
 {
+	if (pev->model)
+		PRECACHE_MODEL(STRING(pev->model)); //LRC
+	else
 	PRECACHE_MODEL( "models/houndeye.mdl" );
 
 	PRECACHE_SOUND( "houndeye/he_alert1.wav" );

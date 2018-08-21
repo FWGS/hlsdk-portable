@@ -159,7 +159,7 @@ void CCrowbar::PrimaryAttack()
 	{
 #ifndef CLIENT_DLL
 		SetThink( &CCrowbar::SwingAgain );
-		pev->nextthink = gpGlobals->time + 0.1;
+		SetNextThink( 0.1 );
 #endif
 	}
 }
@@ -203,7 +203,7 @@ int CCrowbar::Swing( int fFirst )
 #endif
 	if( fFirst )
 	{
-		PLAYBACK_EVENT_FULL( FEV_NOTHOST, m_pPlayer->edict(), m_usCrowbar, 
+		PLAYBACK_EVENT_FULL( FEV_NOTHOST, m_pPlayer->edict(), m_usCrowbar,
 		0.0, (float *)&g_vecZero, (float *)&g_vecZero, 0, 0, 0,
 		0, 0, 0 );
 	}
@@ -244,7 +244,7 @@ int CCrowbar::Swing( int fFirst )
 		fDidHit = TRUE;
 		CBaseEntity *pEntity = CBaseEntity::Instance( tr.pHit );
 
-		// play thwack, smack, or dong sound
+        // play thwack, smack, or dong sound
                 float flVol = 1.0;
                 int fHitWorld = TRUE;
 
@@ -261,12 +261,12 @@ int CCrowbar::Swing( int fFirst )
 #endif
 			{
 				// first swing does full damage
-				pEntity->TraceAttack( m_pPlayer->pev, gSkillData.plrDmgCrowbar, gpGlobals->v_forward, &tr, DMG_CLUB ); 
+				pEntity->TraceAttack( m_pPlayer->pev, gSkillData.plrDmgCrowbar, gpGlobals->v_forward, &tr, DMG_CLUB );
 			}
 			else
 			{
 				// subsequent swings do half
-				pEntity->TraceAttack( m_pPlayer->pev, gSkillData.plrDmgCrowbar / 2, gpGlobals->v_forward, &tr, DMG_CLUB ); 
+				pEntity->TraceAttack( m_pPlayer->pev, gSkillData.plrDmgCrowbar / 2, gpGlobals->v_forward, &tr, DMG_CLUB );
 			}
 			ApplyMultiDamage( m_pPlayer->pev, m_pPlayer->pev );
 
@@ -304,7 +304,7 @@ int CCrowbar::Swing( int fFirst )
 
 			if( g_pGameRules->IsMultiplayer() )
 			{
-				// override the volume here, cause we don't play texture sounds in multiplayer, 
+				// override the volume here, cause we don't play texture sounds in multiplayer,
 				// and fvolbar is going to be 0 from the above call.
 
 				fvolbar = 1;
@@ -314,7 +314,7 @@ int CCrowbar::Swing( int fFirst )
 			switch( RANDOM_LONG( 0, 1 ) )
 			{
 			case 0:
-				EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/cbar_hit1.wav", fvolbar, ATTN_NORM, 0, 98 + RANDOM_LONG( 0, 3 ) ); 
+				EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/cbar_hit1.wav", fvolbar, ATTN_NORM, 0, 98 + RANDOM_LONG( 0, 3 ) );
 				break;
 			case 1:
 				EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/cbar_hit2.wav", fvolbar, ATTN_NORM, 0, 98 + RANDOM_LONG( 0, 3 ) );
@@ -328,7 +328,7 @@ int CCrowbar::Swing( int fFirst )
 		m_pPlayer->m_iWeaponVolume = (int)( flVol * CROWBAR_WALLHIT_VOLUME );
 
 		SetThink( &CCrowbar::Smack );
-		pev->nextthink = UTIL_WeaponTimeBase() + 0.2;
+		SetNextThink( 0.2 );
 #endif
 		m_flNextPrimaryAttack = GetNextAttackDelay( 0.25 );
 	}

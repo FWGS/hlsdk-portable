@@ -40,16 +40,16 @@ typedef vec_t		vec4_t[4];
 // model types
 typedef enum
 {
-	mod_bad = -1,
-	mod_brush, 
-	mod_sprite, 
-	mod_alias, 
-	mod_studio
+        mod_bad = -1,
+        mod_brush,
+        mod_sprite,
+        mod_alias,
+        mod_studio
 } modtype_t;
 
 typedef struct mplane_s
 {
-	vec3_t		normal;
+        vec3_t		normal;
 	float		dist;
 	byte		type;		// for fast side tests
 	byte		signbits;		// signx + (signy<<1) + (signz<<1)
@@ -175,7 +175,11 @@ typedef struct mleaf_s
 
 typedef struct msurface_s
 {
-	int		visframe;		// should be drawn when node is crossed
+        int		visframe;		// should be drawn when node is crossed
+
+	int			dlightframe;	// last frame the surface was checked by an animated light
+	int			dlightbits;		// dynamically generated. Indicates if the surface illumination
+	                                                        // is modified by an animated light.
 
 	mplane_t		*plane;		// pointer to shared plane
 	int		flags;		// see SURF_ #defines
@@ -192,11 +196,6 @@ typedef struct msurface_s
 	struct msurface_s	*texturechain;
 
 	mtexinfo_t	*texinfo;
-
-	// lighting info
-	int		dlightframe;	// last frame the surface was checked by an animated light
-	int		dlightbits;	// dynamically generated. Indicates if the surface illumination
-					// is modified by an animated light.
 
 	int		lightmaptexturenum;
 	byte		styles[MAXLIGHTMAPS];
@@ -241,7 +240,7 @@ typedef struct mextrasurf_s
 
 typedef struct hull_s
 {
-	dclipnode_t	*clipnodes;
+        dclipnode_t	*clipnodes;
 	mplane_t		*planes;
 	int		firstclipnode;
 	int		lastclipnode;

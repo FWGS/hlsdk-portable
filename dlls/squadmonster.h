@@ -75,6 +75,7 @@ public:
 	void Killed( entvars_t *pevAttacker, int iGib );
 	BOOL OccupySlot( int iDesiredSlot );
 	BOOL NoFriendlyFire( void );
+	BOOL NoFriendlyFire( BOOL playerAlly );
 
 	// squad functions still left in base class
 	CSquadMonster *MySquadLeader()

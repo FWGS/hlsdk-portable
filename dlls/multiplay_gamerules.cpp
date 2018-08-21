@@ -15,6 +15,7 @@
 //
 // teamplay_gamerules.cpp
 //
+#include <ctype.h>
 
 #include	"extdll.h"
 #include	"util.h"

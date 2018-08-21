@@ -45,7 +45,7 @@ LINK_ENTITY_TO_CLASS( my_monster, CMyMonster )
 //=========================================================
 int	CMyMonster :: Classify ( void )
 {
-	return	CLASS_MY_MONSTER;
+	return m_iClass?m_iClass:CLASS_MY_MONSTER;
 }
 
 //=========================================================
@@ -88,12 +88,16 @@ void CMyMonster :: Spawn()
 {
 	Precache( );
 
-	SET_MODEL(ENT(pev), "models/mymodel.mdl");
+	if (pev->model)
+		SET_MODEL(ENT(pev), STRING(pev->model)); //LRC
+	else
+		SET_MODEL(ENT(pev), "models/mymodel.mdl");
 	UTIL_SetSize( pev, Vector( -12, -12, 0 ), Vector( 12, 12, 24 ) );
 
 	pev->solid			= SOLID_SLIDEBOX;
 	pev->movetype		= MOVETYPE_STEP;
 	m_bloodColor		= BLOOD_COLOR_GREEN;
+	if (pev->health == 0)
 	pev->health			= 8;
 	pev->view_ofs		= Vector ( 0, 0, 0 );// position of the eyes relative to monster's origin.
 	m_flFieldOfView		= 0.5;// indicates the width of this monster's forward view cone ( as a dotproduct result )

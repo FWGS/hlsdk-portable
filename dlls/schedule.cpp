@@ -236,6 +236,8 @@ void CBaseMonster::MaintainSchedule( void )
 			if( m_IdealMonsterState != MONSTERSTATE_DEAD && 
 				 ( m_IdealMonsterState != MONSTERSTATE_SCRIPT || m_IdealMonsterState == m_MonsterState ) )
 			{
+				// if we're here, then either we're being told to do something (besides dying or playing a script)
+				// or our current schedule (besides dying) is invalid. -- LRC
 				if( (m_afConditions && !HasConditions( bits_COND_SCHEDULE_DONE ) ) ||
 						( m_pSchedule && (m_pSchedule->iInterruptMask & bits_COND_SCHEDULE_DONE ) ) ||
 						( ( m_MonsterState == MONSTERSTATE_COMBAT ) && ( m_hEnemy == 0 ) )	)
@@ -520,11 +522,6 @@ void CBaseMonster::RunTask( Task_t *pTask )
 			if( m_pCine->m_iDelay <= 0 && gpGlobals->time >= m_pCine->m_startTime )
 			{
 				TaskComplete();
-				m_pCine->StartSequence( (CBaseMonster *)this, m_pCine->m_iszPlay, TRUE );
-				if( m_fSequenceFinished )
-					ClearSchedule();
-				pev->framerate = 1.0;
-				//ALERT( at_aiconsole, "Script %s has begun for %s\n", STRING( m_pCine->m_iszPlay ), STRING( pev->classname ) );
 			}
 			break;
 		}
@@ -532,7 +529,18 @@ void CBaseMonster::RunTask( Task_t *pTask )
 		{
 			if( m_fSequenceFinished )
 			{
-				m_pCine->SequenceDone( this );
+				ALERT( at_console, "Anim Finished\n" );
+				if( m_pCine->m_iRepeatsLeft > 0 )
+				{
+					//ALERT( at_console, "Frame %f; Repeat %d from %f\n", pev->frame, m_pCine->m_iRepeatsLeft, m_pCine->m_fRepeatFrame );
+					m_pCine->m_iRepeatsLeft--;
+					pev->frame = m_pCine->m_fRepeatFrame;
+					ResetSequenceInfo();
+				}
+				else
+				{
+					TaskComplete();
+				}
 			}
 			break;
 		}
@@ -885,16 +893,16 @@ void CBaseMonster::StartTask( Task_t *pTask )
 			}
 			break;
 		}
-	case TASK_RUN_TO_TARGET:
-	case TASK_WALK_TO_TARGET:
+	case TASK_RUN_TO_SCRIPT:
+	case TASK_WALK_TO_SCRIPT:
 		{
 			Activity newActivity;
 
-			if( ( m_hTargetEnt->pev->origin - pev->origin ).Length() < 1 )
+			if( !m_pGoalEnt || ( m_pGoalEnt->pev->origin - pev->origin ).Length() < 1 )
 				TaskComplete();
 			else
 			{
-				if( pTask->iTask == TASK_WALK_TO_TARGET )
+				if( pTask->iTask == TASK_WALK_TO_SCRIPT )
 					newActivity = ACT_WALK;
 				else
 					newActivity = ACT_RUN;
@@ -904,12 +912,24 @@ void CBaseMonster::StartTask( Task_t *pTask )
 					TaskComplete();
 				else 
 				{
-					if( m_hTargetEnt == 0 || !MoveToTarget( newActivity, 2 ) )
+					if( m_pGoalEnt != NULL )
+					{
+						Vector vecDest;
+						vecDest = m_pGoalEnt->pev->origin;
+
+						if( !MoveToLocation( newActivity, 2, vecDest ) )
+ 						{
+ 							TaskFail();
+							ALERT( at_aiconsole, "%s Failed to reach script!!!\n", STRING( pev->classname ) );
+							RouteClear();
+						}
+					}
+					else
 					{
 						TaskFail();
-						ALERT( at_aiconsole, "%s Failed to reach target!!!\n", STRING( pev->classname ) );
-						RouteClear();
-					}
+						ALERT( at_aiconsole, "%s: MoveTarget is missing!?!\n", STRING( pev->classname ) );
+ 						RouteClear();
+ 					}
 				}
 			}
 			TaskComplete();
@@ -1027,7 +1047,7 @@ void CBaseMonster::StartTask( Task_t *pTask )
 		break;
 	case TASK_GET_PATH_TO_SPOT:
 		{
-			CBaseEntity *pPlayer = CBaseEntity::Instance( FIND_ENTITY_BY_CLASSNAME( NULL, "player" ) );
+			CBaseEntity *pPlayer = UTIL_FindEntityByClassname( 0, "player" );
 			if( BuildRoute( m_vecMoveGoal, bits_MF_TO_LOCATION, pPlayer ) )
 			{
 				TaskComplete();
@@ -1044,6 +1064,21 @@ void CBaseMonster::StartTask( Task_t *pTask )
 		{
 			RouteClear();
 			if( m_hTargetEnt != 0 && MoveToTarget( m_movementActivity, 1 ) )
+			{
+				TaskComplete();
+			}
+			else
+			{
+				// no way to get there =(
+				ALERT( at_aiconsole, "GetPathToSpot failed!!\n" );
+				TaskFail();
+			}
+			break;
+		}
+	case TASK_GET_PATH_TO_SCRIPT:
+		{
+			RouteClear();
+			if( m_pCine != 0 && MoveToLocation( m_movementActivity, 1, m_pCine->pev->origin ) )
 			{
 				TaskComplete();
 			}
@@ -1245,7 +1280,11 @@ void CBaseMonster::StartTask( Task_t *pTask )
 		}
 	case TASK_WAIT_FOR_SCRIPT:
 		{
-			if( m_pCine->m_iszIdle )
+			if( m_pCine->m_iDelay <= 0 && gpGlobals->time >= m_pCine->m_startTime )
+			{
+				TaskComplete(); //LRC - start playing immediately
+			}
+			else if( !m_pCine->IsAction() && m_pCine->m_iszIdle )
 			{
 				m_pCine->StartSequence( (CBaseMonster *)this, m_pCine->m_iszIdle, FALSE );
 				if( FStrEq( STRING( m_pCine->m_iszIdle ), STRING( m_pCine->m_iszPlay ) ) )
@@ -1259,9 +1298,56 @@ void CBaseMonster::StartTask( Task_t *pTask )
 		}
 	case TASK_PLAY_SCRIPT:
 		{
-			pev->movetype = MOVETYPE_FLY;
-			ClearBits( pev->flags, FL_ONGROUND );
-			m_scriptState = SCRIPT_PLAYING;
+			if( m_pCine->IsAction() )
+			{
+				// ALERT( at_console, "PlayScript: setting idealactivity %d\n",m_pCine->m_fAction );
+				switch( m_pCine->m_fAction )
+				{
+				case 0:
+					m_IdealActivity = ACT_RANGE_ATTACK1;
+					break;
+				case 1:
+					m_IdealActivity = ACT_RANGE_ATTACK2;
+					break;
+				case 2:
+					m_IdealActivity = ACT_MELEE_ATTACK1;
+					break;
+				case 3:
+					m_IdealActivity = ACT_MELEE_ATTACK2;
+					break;
+				case 4:
+					m_IdealActivity = ACT_SPECIAL_ATTACK1;
+					break;
+				case 5:
+					m_IdealActivity = ACT_SPECIAL_ATTACK2;
+					break;
+				case 6:
+					m_IdealActivity = ACT_RELOAD;
+					break;
+				case 7:
+					m_IdealActivity = ACT_HOP;
+					break;
+				}
+				pev->framerate = 1.0; // shouldn't be needed, but just in case
+	 			pev->movetype = MOVETYPE_FLY;
+ 				ClearBits( pev->flags, FL_ONGROUND );
+			}
+			else
+			{
+				m_pCine->StartSequence( (CBaseMonster *)this, m_pCine->m_iszPlay, TRUE );
+				if( m_fSequenceFinished )
+					ClearSchedule();
+				pev->framerate = 1.0;
+				//ALERT( at_aiconsole, "Script %s has begun for %s\n", STRING( m_pCine->m_iszPlay ), STRING( pev->classname ) );
+			}
+ 			m_scriptState = SCRIPT_PLAYING;
+ 			break;
+		}
+//LRC
+	case TASK_END_SCRIPT:
+		{
+			m_pCine->SequenceDone( this );
+			TaskComplete();
 			break;
 		}
 	case TASK_ENABLE_SCRIPT:
@@ -1272,9 +1358,24 @@ void CBaseMonster::StartTask( Task_t *pTask )
 		}
 	case TASK_PLANT_ON_SCRIPT:
 		{
-			if( m_hTargetEnt != 0 )
+			if ( m_pCine != NULL )
 			{
-				pev->origin = m_hTargetEnt->pev->origin;	// Plant on target
+				// Plant on script
+				// LRC - if it's a teleport script, do the turn too
+				if (m_pCine->m_fMoveTo == 4 || m_pCine->m_fMoveTo == 6)
+			{
+					if (m_pCine->m_fTurnType == 0) //LRC
+						pev->angles.y = m_hTargetEnt->pev->angles.y;
+					else if (m_pCine->m_fTurnType == 1)
+						pev->angles.y = UTIL_VecToYaw(m_hTargetEnt->pev->origin - pev->origin);
+					pev->ideal_yaw = pev->angles.y;
+					pev->avelocity = Vector( 0, 0, 0 );
+					pev->velocity = Vector( 0, 0, 0 );
+					pev->effects |= EF_NOINTERP;
+				}
+
+				if (m_pCine->m_fMoveTo != 6)
+					pev->origin = m_pGoalEnt->pev->origin;
 			}
 
 			TaskComplete();
@@ -1282,9 +1383,22 @@ void CBaseMonster::StartTask( Task_t *pTask )
 		}
 	case TASK_FACE_SCRIPT:
 		{
-			if( m_hTargetEnt != 0 )
+			if ( m_pCine != NULL && m_pCine->m_fMoveTo != 0) // movetype "no move" makes us ignore turntype
 			{
-				pev->ideal_yaw = UTIL_AngleMod( m_hTargetEnt->pev->angles.y );
+				switch (m_pCine->m_fTurnType)
+			{
+				case 0:
+					pev->ideal_yaw = UTIL_AngleMod( m_pCine->pev->angles.y );
+					break;
+				case 1:
+					// yes, this is inconsistent- turn to face uses the "target" and turn to angle uses the "cine".
+					if (m_hTargetEnt)
+						MakeIdealYaw ( m_hTargetEnt->pev->origin );
+					else
+						MakeIdealYaw ( m_pCine->pev->origin );
+					break;
+				// default: don't turn
+				}
 			}
 
 			TaskComplete();

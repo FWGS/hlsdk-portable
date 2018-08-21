@@ -23,6 +23,8 @@
 
 */
 
+#include <ctype.h>
+
 #include "extdll.h"
 #include "util.h"
 #include "cbase.h"
@@ -38,6 +40,7 @@
 #include "weaponinfo.h"
 #include "usercmd.h"
 #include "netadr.h"
+#include "movewith.h"
 #include "pm_shared.h"
 
 extern DLL_GLOBAL ULONG		g_ulModelIndexPlayer;
@@ -49,7 +52,7 @@ extern void CopyToBodyQue( entvars_t* pev );
 extern int giPrecacheGrunt;
 extern int gmsgSayText;
 extern int gmsgBhopcap;
-
+extern int gmsgHUDColor;
 extern cvar_t allow_spectators;
 
 extern int g_teamplay;
@@ -125,8 +128,8 @@ void ClientDisconnect( edict_t *pEntity )
 	// since the edict doesn't get deleted, fix it so it doesn't interfere.
 	pEntity->v.takedamage = DAMAGE_NO;// don't attract autoaim
 	pEntity->v.solid = SOLID_NOT;// nonsolid
-	pEntity->v.effects = 0;// clear any effects
-	UTIL_SetOrigin( &pEntity->v, pEntity->v.origin );
+	pEntity->v.effects = 0;// clear any effect
+	UTIL_SetEdictOrigin ( pEntity, pEntity->v.origin );
 
 	g_pGameRules->ClientDisconnected( pEntity );
 }
@@ -475,29 +478,29 @@ void ClientCommand( edict_t *pEntity )
 
 	entvars_t *pev = &pEntity->v;
 
-	if( FStrEq( pcmd, "say" ) )
+	if ( FStrEq(pcmd, "VModEnable") ) //LRC - shut up about VModEnable...
 	{
-		Host_Say( pEntity, 0 );
+		return;
 	}
-	else if( FStrEq( pcmd, "say_team" ) )
+	else if ( FStrEq(pcmd, "hud_color") ) //LRC
 	{
-		Host_Say( pEntity, 1 );
+		if (CMD_ARGC() == 4)
+	{
+			int col = (atoi(CMD_ARGV(1)) & 255) << 16;
+			col += (atoi(CMD_ARGV(2)) & 255) << 8;
+			col += (atoi(CMD_ARGV(3)) & 255);
+			MESSAGE_BEGIN( MSG_ONE, gmsgHUDColor, NULL, &pEntity->v );
+				WRITE_LONG(col);
+			MESSAGE_END();
 	}
-	else if( FStrEq( pcmd, "fullupdate" ) )
+		else
 	{
-		GetClassPtr( (CBasePlayer *)pev )->ForceClientDllUpdate(); 
-	}
-	else if( FStrEq(pcmd, "give" ) )
-	{
-		if( g_flWeaponCheat != 0.0 )
-		{
-			int iszItem = ALLOC_STRING( CMD_ARGV( 1 ) );	// Make a copy of the classname
-			GetClassPtr( (CBasePlayer *)pev )->GiveNamedItem( STRING( iszItem ) );
+			ALERT(at_console, "Syntax: hud_color RRR GGG BBB\n");
 		}
 	}
-	else if( FStrEq( pcmd, "fire" ) )
+	else if ( FStrEq(pcmd, "fire") ) //LRC - trigger entities manually
 	{
-		if( g_flWeaponCheat != 0.0 )
+		if (g_flWeaponCheat)
 		{
 			CBaseEntity *pPlayer = CBaseEntity::Instance( pEntity );
 			if( CMD_ARGC() > 1 )
@@ -526,6 +529,27 @@ void ClientCommand( edict_t *pEntity )
 			}
 		}
 	}
+	else if ( FStrEq(pcmd, "say" ) )
+	{
+		Host_Say( pEntity, 0 );
+	}
+	else if ( FStrEq(pcmd, "say_team" ) )
+	{
+		Host_Say( pEntity, 1 );
+	}
+	else if ( FStrEq(pcmd, "fullupdate" ) )
+	{
+		GetClassPtr((CBasePlayer *)pev)->ForceClientDllUpdate(); 
+	}
+	else if ( FStrEq(pcmd, "give" ) )
+	{
+		if ( g_flWeaponCheat != 0.0)
+		{
+			int iszItem = ALLOC_STRING( CMD_ARGV(1) );	// Make a copy of the classname
+			GetClassPtr((CBasePlayer *)pev)->GiveNamedItem( STRING(iszItem) );
+		}
+	}
+
 	else if( FStrEq( pcmd, "drop" ) )
 	{
 		// player is dropping an item. 
@@ -602,11 +626,6 @@ void ClientCommand( edict_t *pEntity )
 	else if( g_pGameRules->ClientCommand( GetClassPtr( (CBasePlayer *)pev ), pcmd ) )
 	{
 		// MenuSelect returns true only if the command is properly handled,  so don't print a warning
-	}
-	else if( FStrEq( pcmd, "VModEnable" ) )
-	{
-		// clear 'Unknown command: VModEnable' in singleplayer
-		return;
 	}
 	else
 	{
@@ -695,7 +714,8 @@ static int g_serveractive = 0;
 
 void ServerDeactivate( void )
 {
-	//ALERT( at_console, "ServerDeactivate()\n" );
+	// make sure they reinitialise the World in the next server
+	g_pWorld = NULL;
 
 	// It's possible that the engine will call this function more times than is necessary
 	//  Therefore, only run it one time for each call to ServerActivate 
@@ -714,8 +734,6 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 {
 	int		i;
 	CBaseEntity	*pClass;
-
-	//ALERT( at_console, "ServerActivate()\n" );
 
 	// Every call to ServerActivate should be matched by a call to ServerDeactivate
 	g_serveractive = 1;
@@ -746,6 +764,10 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 	LinkUserMessages();
 }
 
+// a cached version of gpGlobals->frametime. The engine sets frametime to 0 if the player is frozen... so we just cache it in prethink,
+// allowing it to be restored later and used by CheckDesiredList.
+float cached_frametime = 0.0f;
+
 /*
 ================
 PlayerPreThink
@@ -761,6 +783,8 @@ void PlayerPreThink( edict_t *pEntity )
 
 	if( pPlayer )
 		pPlayer->PreThink();
+
+	cached_frametime = gpGlobals->frametime;
 }
 
 /*
@@ -778,6 +802,13 @@ void PlayerPostThink( edict_t *pEntity )
 
 	if( pPlayer )
 		pPlayer->PostThink();
+
+	// use the old frametime, even if the engine has reset it
+	gpGlobals->frametime = cached_frametime;
+
+	//LRC - moved to here from CBasePlayer::PostThink, so that
+	// things don't stop when the player dies
+	CheckDesiredList( );
 }
 
 void ParmsNewLevel( void )
@@ -809,6 +840,8 @@ void StartFrame( void )
 	gpGlobals->teamplay = teamplay.value;
 	g_ulFrameCount++;
 
+	//	CheckDesiredList(); //LRC
+	CheckAssistList(); //LRC
 	int oldBhopcap = g_bhopcap;
 	g_bhopcap = ( g_pGameRules->IsMultiplayer() && bhopcap.value != 0.0f ) ? 1 : 0;
 	if( g_bhopcap != oldBhopcap )
@@ -919,6 +952,10 @@ void ClientPrecache( void )
 	PRECACHE_SOUND( "common/wpn_select.wav" );
 	PRECACHE_SOUND( "common/wpn_denyselect.wav" );
 
+#ifdef XENWARRIOR
+	PRECACHE_SOUND( SOUND_FLASHLIGHT_IDLE );
+#endif
+
 	// geiger sounds
 	PRECACHE_SOUND( "player/geiger6.wav" );
 	PRECACHE_SOUND( "player/geiger5.wav" );
@@ -943,7 +980,7 @@ const char *GetGameDescription()
 	if( g_pGameRules ) // this function may be called before the world has spawned, and the game rules initialized
 		return g_pGameRules->GetGameDescription();
 	else
-		return "Half-Life";
+		return GAME_NAME;
 }
 
 /*
@@ -1282,6 +1319,7 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 
 	// HACK:  Somewhat...
 	// Class is overridden for non-players to signify a breakable glass object ( sort of a class? )
+	// that's 'class' in the sense medic, engineer, etc... !! --LRC
 	if( !player )
 	{
 		state->playerclass  = ent->v.playerclass;

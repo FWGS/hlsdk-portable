@@ -48,9 +48,13 @@
 #define SF_MONSTER_PRISONER			16 // monster won't attack anyone, no one will attacke him.
 //										32
 //										64
-#define	SF_MONSTER_WAIT_FOR_SCRIPT		128 //spawnflag that makes monsters wait to check for attacking until the script is done or they've been attacked
+#define SF_MONSTER_NO_YELLOW_BLOBS		128 //LRC- if the monster is stuck, don't give errors or show yellow blobs.
+//LRC- wasn't implemented. #define	SF_MONSTER_WAIT_FOR_SCRIPT		128 //spawnflag that makes monsters wait to check for attacking until the script is done or they've been attacked
 #define SF_MONSTER_PREDISASTER			256	//this is a predisaster scientist or barney. Influences how they speak.
 #define SF_MONSTER_FADECORPSE			512 // Fade out corpse after death
+#define SF_MONSTER_NO_WPN_DROP			1024 //LRC- never drop your weapon (player can't pick it up.)
+//LRC - this clashes with 'not in deathmatch'. Replaced with m_iPlayerReact.
+//#define SF_MONSTER_INVERT_PLAYERREACT	2048 //LRC- if this monster would usually attack the player, don't attack unless provoked. If you would usually NOT attack the player, attack him.
 #define SF_MONSTER_FALL_TO_GROUND		0x80000000
 
 // specialty spawnflags
@@ -148,7 +152,9 @@ public:
 
 	virtual int ObjectCaps( void ) { return ( CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION ) | FCAP_DONT_SAVE; }
 	static void SpawnHeadGib( entvars_t *pevVictim );
+	static	void SpawnHeadGib( entvars_t *pevVictim, const char *szGibModel );
 	static void SpawnRandomGibs( entvars_t *pevVictim, int cGibs, int human );
+	static	void SpawnRandomGibs( entvars_t *pevVictim, int cGibs, int notfirst, const char *szGibModel ); //LRC
 	static void SpawnStickyGibs( entvars_t *pevVictim, Vector vecOrigin, int cGibs );
 
 	int m_bloodColor;

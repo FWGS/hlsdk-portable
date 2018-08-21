@@ -356,14 +356,6 @@ void VectorScale( const vec3_t in, vec_t scale, vec3_t out )
 	out[2] = in[2] * scale;
 }
 
-int Q_log2( int val )
-{
-	int answer = 0;
-	while( val >>= 1 )
-		answer++;
-	return answer;
-}
-
 void VectorMatrix( vec3_t forward, vec3_t right, vec3_t up )
 {
 	vec3_t tmp;

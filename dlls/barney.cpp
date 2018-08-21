@@ -77,6 +77,7 @@ public:
 	virtual int Restore( CRestore &restore );
 	static TYPEDESCRIPTION m_SaveData[];
 
+	int		m_iBaseBody; //LRC - for barneys with different bodies
 	BOOL m_fGunDrawn;
 	float m_painTime;
 	float m_checkAttackTime;
@@ -92,6 +93,7 @@ LINK_ENTITY_TO_CLASS( monster_barney, CBarney )
 
 TYPEDESCRIPTION	CBarney::m_SaveData[] =
 {
+	DEFINE_FIELD( CBarney, m_iBaseBody, FIELD_INTEGER ), //LRC
 	DEFINE_FIELD( CBarney, m_fGunDrawn, FIELD_BOOLEAN ),
 	DEFINE_FIELD( CBarney, m_painTime, FIELD_TIME ),
 	DEFINE_FIELD( CBarney, m_checkAttackTime, FIELD_TIME ),
@@ -254,7 +256,7 @@ int CBarney::ISoundMask( void)
 //=========================================================
 int CBarney::Classify( void )
 {
-	return CLASS_PLAYER_ALLY;
+	return m_iClass?m_iClass:CLASS_PLAYER_ALLY;
 }
 
 //=========================================================
@@ -266,11 +268,20 @@ void CBarney::AlertSound( void )
 	{
 		if( FOkToSpeak() )
 		{
-			PlaySentence( "BA_ATTACK", RANDOM_FLOAT( 2.8, 3.2 ), VOL_NORM, ATTN_IDLE );
+			if (m_iszSpeakAs)
+			{
+				char szBuf[32];
+				strcpy(szBuf,STRING(m_iszSpeakAs));
+				strcat(szBuf,"_ATTACK");
+				PlaySentence( szBuf, RANDOM_FLOAT(2.8, 3.2), VOL_NORM, ATTN_IDLE );
+			}
+			else
+			{
+				PlaySentence( "BA_ATTACK", RANDOM_FLOAT( 2.8, 3.2 ), VOL_NORM, ATTN_IDLE );
+			}
 		}
 	}
 }
-
 //=========================================================
 // SetYawSpeed - allows each sequence to have a different
 // turn rate associated with it.
@@ -343,16 +354,27 @@ void CBarney::BarneyFirePistol( void )
 	SetBlending( 0, angDir.x );
 	pev->effects = EF_MUZZLEFLASH;
 
-	FireBullets( 1, vecShootOrigin, vecShootDir, VECTOR_CONE_2DEGREES, 1024, BULLET_MONSTER_9MM );
-
-	int pitchShift = RANDOM_LONG( 0, 20 );
-	
-	// Only shift about half the time
-	if( pitchShift > 10 )
-		pitchShift = 0;
+	if (pev->frags)
+	{
+		FireBullets(1, vecShootOrigin, vecShootDir, VECTOR_CONE_2DEGREES, 1024, BULLET_PLAYER_357);
+		if (RANDOM_LONG(0, 1))
+			EMIT_SOUND_DYN( ENT(pev), CHAN_WEAPON, "weapons/357_shot1.wav", 1, ATTN_NORM, 0, 100 );
+		else
+			EMIT_SOUND_DYN( ENT(pev), CHAN_WEAPON, "weapons/357_shot2.wav", 1, ATTN_NORM, 0, 100 );
+	}
 	else
-		pitchShift -= 5;
-	EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, "barney/ba_attack2.wav", 1, ATTN_NORM, 0, 100 + pitchShift );
+	{
+		FireBullets( 1, vecShootOrigin, vecShootDir, VECTOR_CONE_2DEGREES, 1024, BULLET_MONSTER_9MM );
+
+		int pitchShift = RANDOM_LONG( 0, 20 );
+
+		// Only shift about half the time
+		if( pitchShift > 10 )
+			pitchShift = 0;
+		else
+			pitchShift -= 5;
+		EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, "barney/ba_attack2.wav", 1, ATTN_NORM, 0, 100 + pitchShift );
+	}
 
 	CSoundEnt::InsertSound( bits_SOUND_COMBAT, pev->origin, 384, 0.3 );
 
@@ -375,12 +397,12 @@ void CBarney::HandleAnimEvent( MonsterEvent_t *pEvent )
 		break;
 	case BARNEY_AE_DRAW:
 		// barney's bodygroup switches here so he can pull gun from holster
-		pev->body = BARNEY_BODY_GUNDRAWN;
+		pev->body = m_iBaseBody + BARNEY_BODY_GUNDRAWN;
 		m_fGunDrawn = TRUE;
 		break;
 	case BARNEY_AE_HOLSTER:
 		// change bodygroup to replace gun in holster
-		pev->body = BARNEY_BODY_GUNHOLSTERED;
+		pev->body = m_iBaseBody + BARNEY_BODY_GUNHOLSTERED;
 		m_fGunDrawn = FALSE;
 		break;
 	default:
@@ -395,24 +417,29 @@ void CBarney::Spawn()
 {
 	Precache();
 
-	SET_MODEL( ENT( pev ), "models/barney.mdl" );
+	if (pev->model)
+		SET_MODEL(ENT(pev), STRING(pev->model)); //LRC
+	else
+		SET_MODEL( ENT( pev ), "models/barney.mdl" );
 	UTIL_SetSize( pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX );
 
 	pev->solid = SOLID_SLIDEBOX;
 	pev->movetype = MOVETYPE_STEP;
 	m_bloodColor = BLOOD_COLOR_RED;
-	pev->health = gSkillData.barneyHealth;
+	if (pev->health == 0) //LRC
+		pev->health = gSkillData.barneyHealth;
 	pev->view_ofs = Vector ( 0, 0, 50 );// position of the eyes relative to monster's origin.
 	m_flFieldOfView = VIEW_FIELD_WIDE; // NOTE: we need a wide field of view so npc will notice player and say hello
 	m_MonsterState = MONSTERSTATE_NONE;
 
-	pev->body = 0; // gun in holster
+	m_iBaseBody = pev->body; //LRC
+	pev->body			= m_iBaseBody + BARNEY_BODY_GUNHOLSTERED; // gun in holster
 	m_fGunDrawn = FALSE;
 
 	m_afCapability = bits_CAP_HEAR | bits_CAP_TURN_HEAD | bits_CAP_DOORS_GROUP;
 
 	MonsterInit();
-	SetUse( &CTalkMonster::FollowerUse );
+	SetUse(&CBarney :: FollowerUse );
 }
 
 //=========================================================
@@ -420,7 +447,10 @@ void CBarney::Spawn()
 //=========================================================
 void CBarney::Precache()
 {
-	PRECACHE_MODEL( "models/barney.mdl" );
+	if (pev->model)
+		PRECACHE_MODEL(STRING(pev->model)); //LRC
+	else
+		PRECACHE_MODEL( "models/barney.mdl" );
 
 	PRECACHE_SOUND( "barney/ba_attack1.wav" );
 	PRECACHE_SOUND( "barney/ba_attack2.wav" );
@@ -444,30 +474,44 @@ void CBarney::TalkInit()
 {
 	CTalkMonster::TalkInit();
 
-	// scientists speach group names (group names are in sentences.txt)
-	m_szGrp[TLK_ANSWER] = "BA_ANSWER";
-	m_szGrp[TLK_QUESTION] =	"BA_QUESTION";
-	m_szGrp[TLK_IDLE] = "BA_IDLE";
-	m_szGrp[TLK_STARE] = "BA_STARE";
-	m_szGrp[TLK_USE] = "BA_OK";
-	m_szGrp[TLK_UNUSE] = "BA_WAIT";
-	m_szGrp[TLK_STOP] = "BA_STOP";
+	// barney speech group names (group names are in sentences.txt)
 
-	m_szGrp[TLK_NOSHOOT] = "BA_SCARED";
-	m_szGrp[TLK_HELLO] = "BA_HELLO";
+	if (!m_iszSpeakAs)
+	{
+		m_szGrp[TLK_ANSWER] = "BA_ANSWER";
+		m_szGrp[TLK_QUESTION] =	"BA_QUESTION";
+		m_szGrp[TLK_IDLE] = "BA_IDLE";
+		m_szGrp[TLK_STARE] = "BA_STARE";
+		if (pev->spawnflags & SF_MONSTER_PREDISASTER) //LRC
+			m_szGrp[TLK_USE]	=	"BA_PFOLLOW";
+		else
+		m_szGrp[TLK_USE] = "BA_OK";
+		if (pev->spawnflags & SF_MONSTER_PREDISASTER)
+			m_szGrp[TLK_UNUSE] = "BA_PWAIT";
+		else
+		m_szGrp[TLK_UNUSE] = "BA_WAIT";
+		if (pev->spawnflags & SF_MONSTER_PREDISASTER)
+			m_szGrp[TLK_DECLINE] =	"BA_POK";
+		else
+			m_szGrp[TLK_DECLINE] =	"BA_NOTOK";
+		m_szGrp[TLK_STOP] = "BA_STOP";
 
-	m_szGrp[TLK_PLHURT1] = "!BA_CUREA";
-	m_szGrp[TLK_PLHURT2] = "!BA_CUREB"; 
-	m_szGrp[TLK_PLHURT3] = "!BA_CUREC";
+		m_szGrp[TLK_NOSHOOT] = "BA_SCARED";
+		m_szGrp[TLK_HELLO] = "BA_HELLO";
 
-	m_szGrp[TLK_PHELLO] = NULL;	//"BA_PHELLO";		// UNDONE
-	m_szGrp[TLK_PIDLE] = NULL;	//"BA_PIDLE";			// UNDONE
-	m_szGrp[TLK_PQUESTION] = "BA_PQUEST";		// UNDONE
+		m_szGrp[TLK_PLHURT1] = "!BA_CUREA";
+		m_szGrp[TLK_PLHURT2] = "!BA_CUREB";
+		m_szGrp[TLK_PLHURT3] = "!BA_CUREC";
 
-	m_szGrp[TLK_SMELL] = "BA_SMELL";
-	
-	m_szGrp[TLK_WOUND] = "BA_WOUND";
-	m_szGrp[TLK_MORTAL] = "BA_MORTAL";
+		m_szGrp[TLK_PHELLO] = NULL;	//"BA_PHELLO";		// UNDONE
+		m_szGrp[TLK_PIDLE] = NULL;	//"BA_PIDLE";			// UNDONE
+		m_szGrp[TLK_PQUESTION] = "BA_PQUEST";		// UNDONE
+
+		m_szGrp[TLK_SMELL] = "BA_SMELL";
+
+		m_szGrp[TLK_WOUND] = "BA_WOUND";
+		m_szGrp[TLK_MORTAL] = "BA_MORTAL";
+	}
 
 	// get voice for head - just one barney voice for now
 	m_voicePitch = 100;
@@ -498,6 +542,9 @@ int CBarney::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float 
 	if( !IsAlive() || pev->deadflag == DEAD_DYING )
 		return ret;
 
+	// LRC - if my reaction to the player has been overridden, don't do this stuff
+	if (m_iPlayerReact) return ret;
+
 	if( m_MonsterState != MONSTERSTATE_PRONE && ( pevAttacker->flags & FL_CLIENT ) )
 	{
 		m_flPlayerDamage += flDamage;
@@ -510,7 +557,17 @@ int CBarney::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float 
 			if( ( m_afMemory & bits_MEMORY_SUSPICIOUS ) || IsFacing( pevAttacker, pev->origin ) )
 			{
 				// Alright, now I'm pissed!
-				PlaySentence( "BA_MAD", 4, VOL_NORM, ATTN_NORM );
+				if (m_iszSpeakAs)
+				{
+					char szBuf[32];
+					strcpy(szBuf,STRING(m_iszSpeakAs));
+					strcat(szBuf,"_MAD");
+					PlaySentence( szBuf, 4, VOL_NORM, ATTN_NORM );
+				}
+				else
+				{
+					PlaySentence( "BA_MAD", 4, VOL_NORM, ATTN_NORM );
+				}
 
 				Remember( bits_MEMORY_PROVOKED );
 				StopFollowing( TRUE );
@@ -518,13 +575,33 @@ int CBarney::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float 
 			else
 			{
 				// Hey, be careful with that
-				PlaySentence( "BA_SHOT", 4, VOL_NORM, ATTN_NORM );
+				if (m_iszSpeakAs)
+				{
+					char szBuf[32];
+					strcpy(szBuf,STRING(m_iszSpeakAs));
+					strcat(szBuf,"_SHOT");
+					PlaySentence( szBuf, 4, VOL_NORM, ATTN_NORM );
+				}
+				else
+				{
+					PlaySentence( "BA_SHOT", 4, VOL_NORM, ATTN_NORM );
+				}
 				Remember( bits_MEMORY_SUSPICIOUS );
 			}
 		}
 		else if( !( m_hEnemy->IsPlayer()) && pev->deadflag == DEAD_NO )
 		{
-			PlaySentence( "BA_SHOT", 4, VOL_NORM, ATTN_NORM );
+			if (m_iszSpeakAs)
+			{
+				char szBuf[32];
+				strcpy(szBuf,STRING(m_iszSpeakAs));
+				strcat(szBuf,"_SHOT");
+				PlaySentence( szBuf, 4, VOL_NORM, ATTN_NORM );
+			}
+			else
+			{
+				PlaySentence( "BA_SHOT", 4, VOL_NORM, ATTN_NORM );
+			}
 		}
 	}
 
@@ -606,17 +683,20 @@ void CBarney::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir
 
 void CBarney::Killed( entvars_t *pevAttacker, int iGib )
 {
-	if( pev->body < BARNEY_BODY_GUNGONE )
-	{
-		// drop the gun!
+	if ( pev->body < m_iBaseBody + BARNEY_BODY_GUNGONE && !(pev->spawnflags & SF_MONSTER_NO_WPN_DROP))
+	{// drop the gun!
 		Vector vecGunPos;
 		Vector vecGunAngles;
 
-		pev->body = BARNEY_BODY_GUNGONE;
+		pev->body = m_iBaseBody + BARNEY_BODY_GUNGONE;
 
 		GetAttachment( 0, vecGunPos, vecGunAngles );
 
-		DropItem( "weapon_9mmhandgun", vecGunPos, vecGunAngles );
+		CBaseEntity *pGun;
+		if (pev->frags)
+			pGun = DropItem( "weapon_357", vecGunPos, vecGunAngles );
+		else
+			pGun = DropItem( "weapon_9mmhandgun", vecGunPos, vecGunAngles );
 	}
 
 	SetUse( NULL );	
@@ -687,7 +767,18 @@ Schedule_t *CBarney::GetSchedule( void )
 	}
 	if( HasConditions( bits_COND_ENEMY_DEAD ) && FOkToSpeak() )
 	{
-		PlaySentence( "BA_KILL", 4, VOL_NORM, ATTN_NORM );
+		// Hey, be careful with that
+		if (m_iszSpeakAs)
+		{
+			char szBuf[32];
+			strcpy(szBuf,STRING(m_iszSpeakAs));
+			strcat(szBuf,"_KILL");
+			PlaySentence( szBuf, 4, VOL_NORM, ATTN_NORM );
+		}
+		else
+		{
+			PlaySentence( "BA_KILL", 4, VOL_NORM, ATTN_NORM );
+		}
 	}
 
 	switch( m_MonsterState )
@@ -761,7 +852,7 @@ MONSTERSTATE CBarney::GetIdealState( void )
 
 void CBarney::DeclineFollowing( void )
 {
-	PlaySentence( "BA_POK", 2, VOL_NORM, ATTN_NORM );
+	PlaySentence( m_szGrp[TLK_DECLINE], 2, VOL_NORM, ATTN_NORM ); //LRC
 }
 
 //=========================================================

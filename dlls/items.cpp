@@ -90,7 +90,7 @@ void CItem::Spawn( void )
 {
 	pev->movetype = MOVETYPE_TOSS;
 	pev->solid = SOLID_TRIGGER;
-	UTIL_SetOrigin( pev, pev->origin );
+	UTIL_SetOrigin( this, pev->origin );
 	UTIL_SetSize( pev, Vector( -16, -16, 0 ), Vector( 16, 16, 16 ) );
 	SetTouch( &CItem::ItemTouch );
 
@@ -148,10 +148,10 @@ CBaseEntity* CItem::Respawn( void )
 	SetTouch( NULL );
 	pev->effects |= EF_NODRAW;
 
-	UTIL_SetOrigin( pev, g_pGameRules->VecItemRespawnSpot( this ) );// blip to whereever you should respawn.
+	UTIL_SetOrigin( this, g_pGameRules->VecItemRespawnSpot( this ) );// blip to whereever you should respawn.
 
 	SetThink( &CItem::Materialize );
-	pev->nextthink = g_pGameRules->FlItemRespawnTime( this ); 
+	AbsoluteNextThink( g_pGameRules->FlItemRespawnTime( this ) );
 	return this;
 }
 
@@ -185,6 +185,11 @@ class CItemSuit : public CItem
 	}
 	BOOL MyTouch( CBasePlayer *pPlayer )
 	{
+		if ( pPlayer->pev->deadflag != DEAD_NO )
+		{
+			return FALSE;
+		}
+
 		if( pPlayer->pev->weapons & ( 1<<WEAPON_SUIT ) )
 			return FALSE;
 
@@ -205,13 +210,23 @@ class CItemBattery : public CItem
 	void Spawn( void )
 	{ 
 		Precache();
-		SET_MODEL( ENT( pev ), "models/w_battery.mdl" );
+		if (pev->model)
+			SET_MODEL(ENT(pev), STRING(pev->model)); //LRC
+		else
+			SET_MODEL( ENT( pev ), "models/w_battery.mdl" );
 		CItem::Spawn();
 	}
 	void Precache( void )
 	{
-		PRECACHE_MODEL( "models/w_battery.mdl" );
-		PRECACHE_SOUND( "items/gunpickup2.wav" );
+		if (pev->model)
+			PRECACHE_MODEL(STRING(pev->model)); //LRC
+		else
+			PRECACHE_MODEL( "models/w_battery.mdl" );
+
+		if (pev->noise)
+			PRECACHE_SOUND( STRING(pev->noise) ); //LRC
+		else
+			PRECACHE_SOUND( "items/gunpickup2.wav" );
 	}
 	BOOL MyTouch( CBasePlayer *pPlayer )
 	{
@@ -226,9 +241,15 @@ class CItemBattery : public CItem
 			int pct;
 			char szcharge[64];
 
+			if (pev->armorvalue)
+				pPlayer->pev->armorvalue += pev->armorvalue;
+			else
 			pPlayer->pev->armorvalue += gSkillData.batteryCapacity;
 			pPlayer->pev->armorvalue = Q_min( pPlayer->pev->armorvalue, MAX_NORMAL_BATTERY );
 
+			if (pev->noise)
+				EMIT_SOUND( pPlayer->edict(), CHAN_ITEM, STRING(pev->noise), 1, ATTN_NORM ); //LRC
+			else
 			EMIT_SOUND( pPlayer->edict(), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM );
 
 			MESSAGE_BEGIN( MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev );

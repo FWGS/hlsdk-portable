@@ -18,7 +18,7 @@
 #include <math.h>
 #include "hud.h"
 #include "cl_util.h"
-//#include "triangleapi.h"
+#include "triangleapi.h"
 
 #define MAX_LOGO_FRAMES 56
 
@@ -79,6 +79,13 @@ void CHud::Think( void )
 	}
 }
 
+//LRC - fog fading values
+extern float g_fFadeDuration;
+extern float g_fStartDist;
+extern float g_fEndDist;
+//extern int g_iFinalStartDist;
+extern int g_iFinalEndDist;
+
 // Redraw
 // step through the local data,  placing the appropriate graphics & text as appropriate
 // returns 1 if they've changed, 0 otherwise
@@ -87,18 +94,53 @@ int CHud::Redraw( float flTime, int intermission )
 	m_fOldTime = m_flTime;	// save time of previous redraw
 	m_flTime = flTime;
 	m_flTimeDelta = (double)m_flTime - m_fOldTime;
-	static float m_flShotTime = 0;
+	static int m_flShotTime = 0;
+
+	//LRC - handle fog fading effects. (is this the right place for it?)
+	if (g_fFadeDuration)
+	{
+		// Nicer might be to use some kind of logarithmic fade-in?
+		double fFraction = m_flTimeDelta/g_fFadeDuration;
+//		g_fStartDist -= (FOG_LIMIT - g_iFinalStartDist)*fFraction;
+		g_fEndDist -= (FOG_LIMIT - g_iFinalEndDist)*fFraction;
+
+//		CONPRINT("FogFading: %f - %f, frac %f, time %f, final %d\n", g_fStartDist, g_fEndDist, fFraction, flTime, g_iFinalEndDist);
+
+		// cap it
+//		if (g_fStartDist > FOG_LIMIT)				g_fStartDist = FOG_LIMIT;
+		if (g_fEndDist   > FOG_LIMIT)				g_fEndDist = FOG_LIMIT;
+//		if (g_fStartDist < g_iFinalStartDist)	g_fStartDist = g_iFinalStartDist;
+		if (g_fEndDist   < g_iFinalEndDist)		g_fEndDist   = g_iFinalEndDist;
+	}
 
 	// Clock was reset, reset delta
 	if( m_flTimeDelta < 0 )
 		m_flTimeDelta = 0;
 
-	if( !m_iIntermission && intermission )
+	// Bring up the scoreboard during intermission
+	/*if (gViewPort)
 	{
+		if ( m_iIntermission && !intermission )
+		{
+			// Have to do this here so the scoreboard goes away
+			m_iIntermission = intermission;
+			gViewPort->HideCommandMenu();
+			gViewPort->HideScoreBoard();
+			gViewPort->UpdateSpectatorPanel();
+		}
+		else if ( !m_iIntermission && intermission )
+	{
+			m_iIntermission = intermission;
+			gViewPort->HideCommandMenu();
+			gViewPort->HideVGUIMenu();
+			gViewPort->ShowScoreBoard();
+			gViewPort->UpdateSpectatorPanel();
+
 		// Take a screenshot if the client's got the cvar set
 		if( CVAR_GET_FLOAT( "hud_takesshots" ) != 0 )
 			m_flShotTime = flTime + 1.0;	// Take a screenshot in a second
 	}
+	}*/
 
 	if( m_flShotTime && m_flShotTime < flTime )
 	{

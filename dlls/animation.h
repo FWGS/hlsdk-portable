@@ -38,6 +38,11 @@ int FindTransition( void *pmodel, int iEndingAnim, int iGoalAnim, int *piDir );
 void SetBodygroup( void *pmodel, entvars_t *pev, int iGroup, int iValue );
 int GetBodygroup( void *pmodel, entvars_t *pev, int iGroup );
 
+//LRC
+void SetBones( void *pmodel, float (*data)[3], int datasize );
+int GetBoneCount( void *pmodel );
+int GetSequenceFrames( void *pmodel, entvars_t *pev ); //LRC
+
 int GetAnimationEvent( void *pmodel, entvars_t *pev, MonsterEvent_t *pMonsterEvent, float flStart, float flEnd, int index );
 int ExtractBbox( void *pmodel, int sequence, float *mins, float *maxs );
 

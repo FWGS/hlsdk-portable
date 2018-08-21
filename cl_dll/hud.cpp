@@ -18,6 +18,9 @@
 // implementation of CHud class
 //
 
+//LRC - define to help track what calls are made on changelevel, save/restore, etc
+//#define ENGINE_DEBUG
+
 #include "hud.h"
 #include "cl_util.h"
 #include <string.h>
@@ -46,13 +49,53 @@ int __MsgFunc_Logo( const char *pszName, int iSize, void *pbuf )
 }
 
 //DECLARE_MESSAGE( m_Logo, Logo )
+//LRC
+int __MsgFunc_HUDColor(const char *pszName, int iSize, void *pbuf)
+{
+	return gHUD.MsgFunc_HUDColor(pszName, iSize, pbuf );
+}
+
+//LRC
+int __MsgFunc_SetFog(const char *pszName, int iSize, void *pbuf)
+{
+	gHUD.MsgFunc_SetFog( pszName, iSize, pbuf );
+	return 1;
+}
+
+//LRC
+int __MsgFunc_KeyedDLight(const char *pszName, int iSize, void *pbuf)
+{
+	gHUD.MsgFunc_KeyedDLight( pszName, iSize, pbuf );
+	return 1;
+}
+
+//LRC
+int __MsgFunc_AddShine(const char *pszName, int iSize, void *pbuf)
+{
+	gHUD.MsgFunc_AddShine( pszName, iSize, pbuf );
+	return 1;
+}
+
+//LRC
+int __MsgFunc_SetSky(const char *pszName, int iSize, void *pbuf)
+{
+	gHUD.MsgFunc_SetSky( pszName, iSize, pbuf );
+	return 1;
+}
+
 int __MsgFunc_ResetHUD( const char *pszName, int iSize, void *pbuf )
 {
+#ifdef ENGINE_DEBUG
+	CONPRINT("## ResetHUD\n");
+#endif
 	return gHUD.MsgFunc_ResetHUD( pszName, iSize, pbuf );
 }
 
 int __MsgFunc_InitHUD( const char *pszName, int iSize, void *pbuf )
 {
+#ifdef ENGINE_DEBUG
+	CONPRINT("## InitHUD\n");
+#endif
 	gHUD.MsgFunc_InitHUD( pszName, iSize, pbuf );
 	return 1;
 }
@@ -125,7 +168,12 @@ int __MsgFunc_VGUIMenu( const char *pszName, int iSize, void *pbuf )
 {
 	return 0;
 }
-
+/*
+int __MsgFunc_MOTD(const char *pszName, int iSize, void *pbuf)
+{
+	return 0;
+}
+*/
 int __MsgFunc_BuildSt( const char *pszName, int iSize, void *pbuf )
 {
 	return 0;
@@ -140,7 +188,22 @@ int __MsgFunc_ServerName( const char *pszName, int iSize, void *pbuf )
 {
 	return 0;
 }
+/*
+int __MsgFunc_ScoreInfo(const char *pszName, int iSize, void *pbuf)
+{
+	return 0;
+}
 
+int __MsgFunc_TeamScore(const char *pszName, int iSize, void *pbuf)
+{
+	return 0;
+}
+
+int __MsgFunc_TeamInfo(const char *pszName, int iSize, void *pbuf)
+{
+	return 0;
+}
+*/
 int __MsgFunc_Spectator( const char *pszName, int iSize, void *pbuf )
 {
 	return 0;
@@ -154,6 +217,9 @@ int __MsgFunc_AllowSpec( const char *pszName, int iSize, void *pbuf )
 // This is called every time the DLL is loaded
 void CHud::Init( void )
 {
+#ifdef ENGINE_DEBUG
+	CONPRINT("## CHud::Init\n");
+#endif
 	HOOK_MESSAGE( Logo );
 	HOOK_MESSAGE( ResetHUD );
 	HOOK_MESSAGE( GameMode );
@@ -161,6 +227,11 @@ void CHud::Init( void )
 	HOOK_MESSAGE( ViewMode );
 	HOOK_MESSAGE( SetFOV );
 	HOOK_MESSAGE( Concuss );
+	HOOK_MESSAGE( HUDColor ); //LRC
+	HOOK_MESSAGE( SetFog ); //LRC
+	HOOK_MESSAGE( KeyedDLight ); //LRC
+	HOOK_MESSAGE( AddShine ); //LRC
+	HOOK_MESSAGE( SetSky ); //LRC
 
 	// TFFree CommandMenu
 	HOOK_COMMAND( "+commandmenu", OpenCommandMenu );
@@ -173,9 +244,13 @@ void CHud::Init( void )
 	HOOK_MESSAGE( TeamNames );
 	HOOK_MESSAGE( Feign );
 	HOOK_MESSAGE( Detpack );
+	//HOOK_MESSAGE( MOTD );
 	HOOK_MESSAGE( BuildSt );
 	HOOK_MESSAGE( RandomPC );
 	HOOK_MESSAGE( ServerName );
+	//HOOK_MESSAGE( ScoreInfo );
+	//HOOK_MESSAGE( TeamScore );
+	//HOOK_MESSAGE( TeamInfo );
 
 	HOOK_MESSAGE( Spectator );
 	HOOK_MESSAGE( AllowSpec );
@@ -189,6 +264,7 @@ void CHud::Init( void )
 
 	m_iLogo = 0;
 	m_iFOV = 0;
+	m_iHUDColor = 0x00FFA000; //255,160,0 -- LRC
 
 	CVAR_CREATE( "zoom_sensitivity_ratio", "1.2", 0 );
 	default_fov = CVAR_CREATE( "default_fov", "90", 0 );
@@ -198,6 +274,7 @@ void CHud::Init( void )
 	cl_viewbob = CVAR_CREATE( "cl_viewbob", "0", FCVAR_ARCHIVE );
 
 	m_pSpriteList = NULL;
+	m_pShinySurface = NULL; //LRC
 
 	// Clear any old HUD list
 	if( m_pHudList )
@@ -214,6 +291,7 @@ void CHud::Init( void )
 
 	// In case we get messages before the first update -- time will be valid
 	m_flTime = 1.0;
+	m_iNoConsolePrint = 0;
 
 	m_Ammo.Init();
 	m_Health.Init();
@@ -231,6 +309,7 @@ void CHud::Init( void )
 	m_StatusIcons.Init();
 	m_MOTD.Init();
 	m_Scoreboard.Init();
+	m_Particle.Init(); // (LRC) -- 30/08/02 November235: Particles to Order
 
 	m_Menu.Init();
 	
@@ -241,6 +320,9 @@ void CHud::Init( void )
 // cleans up memory allocated for m_rg* arrays
 CHud::~CHud()
 {
+#ifdef ENGINE_DEBUG
+	CONPRINT("## CHud::destructor\n");
+#endif
 	delete[] m_rghSprites;
 	delete[] m_rgrcRects;
 	delete[] m_rgszSpriteNames;
@@ -276,6 +358,9 @@ int CHud::GetSpriteIndex( const char *SpriteName )
 
 void CHud::VidInit( void )
 {
+#ifdef ENGINE_DEBUG
+	CONPRINT("## CHud::VidInit\n");
+#endif
 	int j;
 	m_scrinfo.iSize = sizeof(m_scrinfo);
 	GetScreenInfo( &m_scrinfo );
@@ -412,6 +497,7 @@ void CHud::VidInit( void )
 	m_StatusIcons.VidInit();
 	m_Scoreboard.VidInit();
 	m_MOTD.VidInit();
+	m_Particle.VidInit(); // (LRC) -- 30/08/02 November235: Particles to Order
 }
 
 int CHud::MsgFunc_Logo( const char *pszName,  int iSize, void *pbuf )
@@ -420,6 +506,16 @@ int CHud::MsgFunc_Logo( const char *pszName,  int iSize, void *pbuf )
 
 	// update Train data
 	m_iLogo = READ_BYTE();
+
+	return 1;
+}
+
+//LRC
+int CHud::MsgFunc_HUDColor(const char *pszName,  int iSize, void *pbuf)
+{
+	BEGIN_READ( pbuf, iSize );
+
+	m_iHUDColor = READ_LONG();
 
 	return 1;
 }

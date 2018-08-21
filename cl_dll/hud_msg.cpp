@@ -21,6 +21,14 @@
 #include "parsemsg.h"
 #include "r_efx.h"
 
+//LRC - the fogging fog
+float g_fFogColor[3];
+float g_fStartDist;
+float g_fEndDist;
+//int g_iFinalStartDist; //for fading
+int g_iFinalEndDist;   //for fading
+float g_fFadeDuration; //negative = fading out
+
 #define MAX_CLIENTS 32
 
 extern BEAM *pBeam;
@@ -51,6 +59,10 @@ int CHud::MsgFunc_ResetHUD( const char *pszName, int iSize, void *pbuf )
 	// reset concussion effect
 	m_iConcussionEffect = 0;
 
+	//LRC - reset fog
+	g_fStartDist = 0;
+	g_fEndDist = 0;
+
 	// Vit_amiN: reset the FOV
 	m_iFOV = 0;	// default_fov
 	g_lastFOV = 0.0f;
@@ -67,6 +79,20 @@ void CHud::MsgFunc_ViewMode( const char *pszName, int iSize, void *pbuf )
 
 void CHud::MsgFunc_InitHUD( const char *pszName, int iSize, void *pbuf )
 {
+//	CONPRINT("MSG:InitHUD");
+	//LRC - clear the fog
+	g_fStartDist = 0;
+	g_fEndDist = 0;
+
+	//LRC - clear all shiny surfaces
+	if (m_pShinySurface)
+	{
+		delete m_pShinySurface;
+		m_pShinySurface = NULL;
+	}
+
+	m_iSkyMode = SKY_OFF; //LRC
+
 	// prepare all hud data
 	HUDLIST *pList = m_pHudList;
 
@@ -80,6 +106,108 @@ void CHud::MsgFunc_InitHUD( const char *pszName, int iSize, void *pbuf )
 	//Probably not a good place to put this.
 	pBeam = pBeam2 = NULL;
 	pFlare = NULL;	// Vit_amiN: clear egon's beam flare
+}
+
+//LRC
+void CHud :: MsgFunc_SetFog( const char *pszName, int iSize, void *pbuf )
+{
+//	CONPRINT("MSG:SetFog");
+	BEGIN_READ( pbuf, iSize );
+
+	for ( int i = 0; i < 3; i++ )
+		 g_fFogColor[ i ] = READ_BYTE();
+
+	g_fFadeDuration = READ_SHORT();
+	g_fStartDist = READ_SHORT();
+
+	if (g_fFadeDuration > 0)
+	{
+//		// fading in
+//		g_fStartDist = READ_SHORT();
+		g_iFinalEndDist = READ_SHORT();
+//		g_fStartDist = FOG_LIMIT;
+		g_fEndDist = FOG_LIMIT;
+	}
+	else if (g_fFadeDuration < 0)
+	{
+//		// fading out
+//		g_iFinalStartDist = 
+		g_iFinalEndDist = g_fEndDist = READ_SHORT();
+	}
+	else
+	{
+//		g_fStartDist = READ_SHORT();
+		g_fEndDist = READ_SHORT();
+	}
+}
+
+//LRC
+void CHud :: MsgFunc_KeyedDLight( const char *pszName, int iSize, void *pbuf )
+{
+//	CONPRINT("MSG:KeyedDLight");
+	BEGIN_READ( pbuf, iSize );
+
+// as-yet unused:
+//	float	decay;				// drop this each second
+//	float	minlight;			// don't add when contributing less
+//	qboolean	dark;			// subtracts light instead of adding (doesn't seem to do anything?)
+
+	int iKey = READ_BYTE();
+	dlight_t *dl = gEngfuncs.pEfxAPI->CL_AllocDlight( iKey );
+
+	int bActive = READ_BYTE();
+	if (!bActive)
+	{
+		// die instantly
+		dl->die = gEngfuncs.GetClientTime();
+	}
+	else
+	{
+		// never die
+		dl->die = gEngfuncs.GetClientTime() + 1E6;
+
+		dl->origin[0] = READ_COORD();
+		dl->origin[1] = READ_COORD();
+		dl->origin[2] = READ_COORD();
+		dl->radius = READ_BYTE();
+		dl->color.r = READ_BYTE();
+		dl->color.g = READ_BYTE();
+		dl->color.b = READ_BYTE();
+	}
+}
+
+//LRC
+void CHud :: MsgFunc_AddShine( const char *pszName, int iSize, void *pbuf )
+{
+//	CONPRINT("MSG:AddShine");
+	BEGIN_READ( pbuf, iSize );
+
+	float fScale = READ_BYTE();
+	float fAlpha = READ_BYTE()/255.0;
+	float fMinX = READ_COORD();
+	float fMaxX = READ_COORD();
+	float fMinY = READ_COORD();
+	float fMaxY = READ_COORD();
+	float fZ = READ_COORD();
+	char *szSprite = READ_STRING();
+
+//	gEngfuncs.Con_Printf("minx %f, maxx %f, miny %f, maxy %f\n", fMinX, fMaxX, fMinY, fMaxY);
+
+	CShinySurface *pSurface = new CShinySurface(fScale, fAlpha, fMinX, fMaxX, fMinY, fMaxY, fZ, szSprite);
+	pSurface->m_pNext = m_pShinySurface;
+	m_pShinySurface = pSurface;
+}
+
+//LRC
+void CHud :: MsgFunc_SetSky( const char *pszName, int iSize, void *pbuf )
+{
+//	CONPRINT("MSG:SetSky");
+	BEGIN_READ( pbuf, iSize );
+
+	m_iSkyMode = READ_BYTE();
+	m_vecSkyPos.x = READ_COORD();
+	m_vecSkyPos.y = READ_COORD();
+	m_vecSkyPos.z = READ_COORD();
 }
 
 int CHud::MsgFunc_GameMode( const char *pszName, int iSize, void *pbuf )

@@ -407,6 +407,8 @@ V_CalcRefdef
 
 ==================
 */
+extern void RenderFog( void ); //LRC
+
 void V_CalcNormalRefdef( struct ref_params_s *pparams )
 {
 	cl_entity_t *ent, *view;
@@ -418,8 +420,27 @@ void V_CalcNormalRefdef( struct ref_params_s *pparams )
 	static float oldz = 0;
 	static float lasttime;
 
-	vec3_t camAngles, camForward, camRight, camUp;
+	vec3_t camAngles( 0.0f, 0.0f, 0.0f ), camForward, camRight, camUp;
 	cl_entity_t *pwater;
+
+	static struct model_s *savedviewmodel;
+
+	//LRC - if this is the second pass through, then we've just drawn the sky, and now we're setting up the normal view.
+	if (pparams->nextView == 1)
+	{
+		view = gEngfuncs.GetViewModel();
+		view->model = savedviewmodel;
+		pparams->viewangles[0] = v_angles.x;
+		pparams->viewangles[1] = v_angles.y;
+		pparams->viewangles[2] = v_angles.z;
+		pparams->vieworg[0] = v_origin.x;
+		pparams->vieworg[1] = v_origin.y;
+		pparams->vieworg[2] = v_origin.z;
+		pparams->nextView = 0;
+		return;
+	}
+
+	//V_DriftPitch ( pparams );
 
 	if( gEngfuncs.IsSpectateOnly() )
 	{
@@ -433,6 +454,13 @@ void V_CalcNormalRefdef( struct ref_params_s *pparams )
 
 	// view is the weapon model (only visible from inside body)
 	view = gEngfuncs.GetViewModel();
+
+	//LRC - don't show weapon models when we're drawing the sky.
+	if (gHUD.m_iSkyMode == SKY_ON)
+	{
+		savedviewmodel = view->model;
+		view->model = NULL;
+	}
 
 	// transform the view offset by the model's matrix to get the offset from
 	// model origin for the view
@@ -768,6 +796,18 @@ void V_CalcNormalRefdef( struct ref_params_s *pparams )
 	lasttime = pparams->time;
 
 	v_origin = pparams->vieworg;
+
+	//LRC
+	RenderFog();
+
+	// LRC - override the view position if we're drawing a sky, rather than the player's view
+	if (gHUD.m_iSkyMode == SKY_ON && pparams->nextView == 0)
+	{
+		pparams->vieworg[0] = gHUD.m_vecSkyPos.x;
+		pparams->vieworg[1] = gHUD.m_vecSkyPos.y;
+		pparams->vieworg[2] = gHUD.m_vecSkyPos.z;
+		pparams->nextView = 1;
+	}
 }
 
 void V_SmoothInterpolateAngles( float * startAngle, float * endAngle, float * finalAngle, float degreesPerSec )

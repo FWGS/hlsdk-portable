@@ -22,6 +22,7 @@
 #pragma once
 #ifndef HUD_H
 #define HUD_H
+#define FOG_LIMIT 30000
 #define RGB_YELLOWISH 0x00FFA000 //255,160,0
 #define RGB_REDISH 0x00FF1010 //255,160,0
 #define RGB_GREENISH 0x0000A000 //0,160,0
@@ -90,6 +91,7 @@ struct HUDLIST
 //
 //-----------------------------------------------------
 #include "hud_spectator.h"
+#define _cdecl
 
 //
 //-----------------------------------------------------
@@ -454,6 +456,19 @@ private:
 //
 //-----------------------------------------------------
 //
+// (LRC) -- 30/08/02 November235: Particles to Order
+class CHudParticle: public CHudBase
+{
+public:
+	int Init(void);
+	int VidInit(void);
+	int Draw(float flTime);
+	int MsgFunc_Particle(const char *pszName, int iSize, void *pbuf );
+};
+
+//
+//-----------------------------------------------------
+//
 const int maxHUDMessages = 16;
 struct message_parms_t
 {
@@ -556,11 +571,47 @@ private:
 	} icon_sprite_t;
 
 	icon_sprite_t m_IconList[MAX_ICONSPRITES];
+
 };
 
 //
 //-----------------------------------------------------
 //
+
+//LRC
+//methods actually defined in tri.cpp
+
+class CShinySurface
+{
+	float m_fMinX, m_fMinY, m_fMaxX, m_fMaxY, m_fZ;
+	char m_fScale;
+	float m_fAlpha; // texture scale and brighness
+	HSPRITE m_hsprSprite;
+	char m_szSprite[128];
+
+public:
+	CShinySurface *m_pNext;
+
+	CShinySurface( float fScale, float fAlpha, float fMinX, float fMaxX, float fMinY, float fMaxY, float fZ, char *szSprite);
+	~CShinySurface();
+
+	// draw the surface as seen from the given position
+	void Draw(const vec3_t &org);
+
+	void DrawAll(const vec3_t &org);
+};
+
+//
+//-----------------------------------------------------
+//
+
+
+//LRC - for the moment, skymode has only two settings
+#define SKY_OFF 0
+#define SKY_ON  1
+
+
+
 class CHud
 {
 private:
@@ -585,8 +636,12 @@ public:
 	int		m_iFOV;
 	int		m_Teamplay;
 	int		m_iRes;
+	float	m_flScale;
 	cvar_t  *m_pCvarStealMouse;
 	cvar_t	*m_pCvarDraw;
+	CShinySurface *m_pShinySurface; //LRC
+	Vector	m_vecSkyPos; //LRC
+	int		m_iSkyMode;  //LRC
 
 	int m_iFontHeight;
 	int DrawHudNumber( int x, int y, int iFlags, int iNumber, int r, int g, int b );
@@ -596,6 +651,8 @@ public:
 	int GetNumWidth( int iNumber, int iFlags );
 	int DrawHudStringLen( const char *szIt );
 	void DrawDarkRectangle( int x, int y, int wide, int tall );
+
+	int m_iHUDColor; //LRC
 
 private:
 	// the memory for these arrays are allocated in the first call to CHud::VidInit(), when the hud.txt and associated sprites are loaded.
@@ -635,6 +692,7 @@ public:
 	CHudStatusIcons m_StatusIcons;
 	CHudScoreboard	m_Scoreboard;
 	CHudMOTD	m_MOTD;
+	CHudParticle	m_Particle; // (LRC) -- 30/08/02 November235: Particles to Order
 
 	void Init( void );
 	void VidInit( void );
@@ -642,7 +700,7 @@ public:
 	int Redraw( float flTime, int intermission );
 	int UpdateClientData( client_data_t *cdata, float time );
 
-	CHud() : m_iSpriteCount(0), m_pHudList(NULL) {}  
+	CHud() : m_iSpriteCount(0), m_pHudList(NULL), m_pShinySurface(NULL) {}
 	~CHud();			// destructor, frees allocated memory
 
 	// user messages
@@ -654,6 +712,12 @@ public:
 	void _cdecl MsgFunc_ViewMode( const char *pszName, int iSize, void *pbuf );
 	int _cdecl MsgFunc_SetFOV( const char *pszName,  int iSize, void *pbuf );
 	int  _cdecl MsgFunc_Concuss( const char *pszName, int iSize, void *pbuf );
+
+	int _cdecl MsgFunc_HUDColor(const char *pszName,  int iSize, void *pbuf);		//LRC
+	void _cdecl MsgFunc_SetFog( const char *pszName, int iSize, void *pbuf );		//LRC
+	void _cdecl MsgFunc_KeyedDLight( const char *pszName, int iSize, void *pbuf );	//LRC
+	void _cdecl MsgFunc_SetSky( const char *pszName, int iSize, void *pbuf );		//LRC
+    void _cdecl MsgFunc_AddShine( const char *pszName, int iSize, void *pbuf );     //LRC
 
 	// Screen information
 	SCREENINFO	m_scrinfo;

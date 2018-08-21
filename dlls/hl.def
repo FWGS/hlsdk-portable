@@ -1,4 +1,4 @@
-LIBRARY hl
+LIBRARY spirit
 EXPORTS
 	GiveFnptrsToDll			@1
 SECTIONS

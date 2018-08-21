@@ -83,12 +83,12 @@ void CSatchelCharge::Spawn( void )
 	SET_MODEL( ENT( pev ), "models/w_satchel.mdl" );
 	//UTIL_SetSize( pev, Vector( -16, -16, -4 ), Vector( 16, 16, 32 ) );	// Old box -- size of headcrab monsters/players get blocked by this
 	UTIL_SetSize( pev, Vector( -4, -4, -4 ), Vector( 4, 4, 4 ) );	// Uses point-sized, and can be stepped over
-	UTIL_SetOrigin( pev, pev->origin );
+	UTIL_SetOrigin( this, pev->origin );
 
 	SetTouch( &CSatchelCharge::SatchelSlide );
-	SetUse( &CGrenade::DetonateUse );
+	SetUse(&CSatchelCharge :: DetonateUse );
 	SetThink( &CSatchelCharge::SatchelThink );
-	pev->nextthink = gpGlobals->time + 0.1;
+	SetNextThink( 0.1 );
 
 	pev->gravity = 0.5;
 	pev->friction = 0.8;
@@ -133,9 +133,8 @@ void CSatchelCharge::SatchelSlide( CBaseEntity *pOther )
 
 void CSatchelCharge::SatchelThink( void )
 {
-	// There is no model animation so commented this out to prevent net traffic
-	// StudioFrameAdvance();
-	pev->nextthink = gpGlobals->time + 0.1;
+	//StudioFrameAdvance( );
+	SetNextThink( 0.1 );
 
 	if( !IsInWorld() )
 	{
@@ -143,14 +142,14 @@ void CSatchelCharge::SatchelThink( void )
 		return;
 	}
 
-	if( pev->waterlevel == 3 )
+	if (pev->waterlevel == 3 && pev->watertype != CONTENT_FOG)
 	{
 		pev->movetype = MOVETYPE_FLY;
 		pev->velocity = pev->velocity * 0.8;
 		pev->avelocity = pev->avelocity * 0.9;
 		pev->velocity.z += 8;
 	}
-	else if( pev->waterlevel == 0 )
+	else if (pev->waterlevel == 0 || pev->watertype == CONTENT_FOG)
 	{
 		pev->movetype = MOVETYPE_BOUNCE;
 	}
@@ -320,7 +319,8 @@ void CSatchel::Holster( int skiplocal /* = 0 */ )
 	if( !m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] && m_chargeReady != SATCHEL_READY )
 	{
 		m_pPlayer->pev->weapons &= ~( 1 << WEAPON_SATCHEL );
-		DestroyItem();
+		SetThink(&CSatchel:: DestroyItem );
+		SetNextThink( 0.1 );
 	}
 }
 

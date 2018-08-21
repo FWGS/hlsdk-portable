@@ -27,6 +27,9 @@
 #include	"weapons.h"
 #include	"game.h"
 
+//LRC brought in from animation.h
+#define ACTIVITY_NOT_AVAILABLE		-1
+
 #define SF_INFOBM_RUN		0x0001
 #define SF_INFOBM_WAIT		0x0002
 
@@ -181,6 +184,7 @@ public:
 	Schedule_t *GetSchedule( void );
 	Schedule_t *GetScheduleOfType( int Type );
 	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType );
+	void		SetActivity ( Activity NewActivity );
 
 	void NodeStart( int iszNextNode );
 	void NodeReach( void );
@@ -400,7 +404,7 @@ void CBigMomma::KeyValue( KeyValueData *pkvd )
 //=========================================================
 int CBigMomma::Classify( void )
 {
-	return CLASS_ALIEN_MONSTER;
+	return m_iClass?m_iClass:CLASS_ALIEN_MONSTER;
 }
 
 //=========================================================
@@ -515,10 +519,10 @@ void CBigMomma::HandleAnimEvent( MonsterEvent_t *pEvent )
 		case BIG_AE_JUMP_FORWARD:
 			ClearBits( pev->flags, FL_ONGROUND );
 
-			UTIL_SetOrigin( pev, pev->origin + Vector( 0, 0, 1) );// take him off ground so engine doesn't instantly reset onground 
+			UTIL_SetOrigin (this, pev->origin + Vector ( 0 , 0 , 1) );// take her off ground so engine doesn't instantly reset onground 
 			UTIL_MakeVectors( pev->angles );
 
-			pev->velocity = gpGlobals->v_forward * 200 + gpGlobals->v_up * 500;
+			pev->velocity = (gpGlobals->v_forward * 200) + gpGlobals->v_up * 500;
 			break;
 		case BIG_AE_EARLY_TARGET:
 			{
@@ -618,9 +622,26 @@ void CBigMomma::LaunchMortar( void )
 
 	Vector startPos = pev->origin;
 	startPos.z += 180;
+	Vector vecLaunch = g_vecZero;
+
+	if (m_pCine) // is a scripted_action making me shoot?
+	{
+		if (m_hTargetEnt != 0) // don't check m_fTurnType- bigmomma can fire in any direction.
+		{
+			vecLaunch = VecCheckSplatToss( pev, startPos, m_hTargetEnt->pev->origin, RANDOM_FLOAT( 150, 500 ) );
+		}
+		if (vecLaunch == g_vecZero)
+		{
+			vecLaunch = pev->movedir;
+		}
+	}
+	else
+	{
+		vecLaunch = pev->movedir;
+	}
 
 	EMIT_SOUND_DYN( edict(), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pSackSounds ), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
-	CBMortar *pBomb = CBMortar::Shoot( edict(), startPos, pev->movedir );
+	CBMortar *pBomb = CBMortar::Shoot( edict(), startPos, vecLaunch );
 	pBomb->pev->gravity = 1.0;
 	MortarSpray( startPos, Vector( 0, 0, 1 ), gSpitSprite, 24 );
 }
@@ -632,13 +653,17 @@ void CBigMomma::Spawn()
 {
 	Precache();
 
-	SET_MODEL( ENT( pev ), "models/big_mom.mdl" );
+	if (pev->model)
+		SET_MODEL(ENT(pev), STRING(pev->model)); //LRC
+	else
+		SET_MODEL( ENT( pev ), "models/big_mom.mdl" );
 	UTIL_SetSize( pev, Vector( -32, -32, 0 ), Vector( 32, 32, 64 ) );
 
 	pev->solid = SOLID_SLIDEBOX;
 	pev->movetype = MOVETYPE_STEP;
 	m_bloodColor = BLOOD_COLOR_GREEN;
-	pev->health = 150 * gSkillData.bigmommaHealthFactor;
+	if (pev->health == 0)
+		pev->health = 150 * gSkillData.bigmommaHealthFactor;
 	pev->view_ofs = Vector( 0, 0, 128 );// position of the eyes relative to monster's origin.
 	m_flFieldOfView = 0.3;// indicates the width of this monster's forward view cone ( as a dotproduct result )
 	m_MonsterState = MONSTERSTATE_NONE;
@@ -651,7 +676,10 @@ void CBigMomma::Spawn()
 //=========================================================
 void CBigMomma::Precache()
 {
-	PRECACHE_MODEL( "models/big_mom.mdl" );
+	if (pev->model)
+		PRECACHE_MODEL(STRING(pev->model)); //LRC
+	else
+		PRECACHE_MODEL( "models/big_mom.mdl" );
 
 	PRECACHE_SOUND_ARRAY( pChildDieSounds );
 	PRECACHE_SOUND_ARRAY( pSackSounds );
@@ -679,6 +707,8 @@ void CBigMomma::Activate( void )
 {
 	if( m_hTargetEnt == 0 )
 		Remember( bits_MEMORY_ADVANCE_NODE );	// Start 'er up
+
+	CBaseMonster::Activate();
 }
 
 void CBigMomma::NodeStart( int iszNextNode )
@@ -861,6 +891,47 @@ BOOL CBigMomma::ShouldGoToNode( void )
 			return TRUE;
 	}
 	return FALSE;
+}
+
+// Overridden to make BigMomma jump on command; the model doesn't support it otherwise.
+void CBigMomma :: SetActivity ( Activity NewActivity )
+{
+	int	iSequence;
+
+	if (NewActivity == ACT_HOP)
+	{
+		iSequence = LookupSequence( "jump" );
+	}
+	else
+	{
+		iSequence = LookupActivity ( NewActivity );
+	}
+
+	// Set to the desired anim, or default anim if the desired is not present
+	if ( iSequence > ACTIVITY_NOT_AVAILABLE )
+	{
+		if ( pev->sequence != iSequence || !m_fSequenceLoops )
+		{
+			// don't reset frame between walk and run
+			if ( !(m_Activity == ACT_WALK || m_Activity == ACT_RUN) || !(NewActivity == ACT_WALK || NewActivity == ACT_RUN))
+				pev->frame = 0;
+		}
+
+		pev->sequence		= iSequence;	// Set to the reset anim (if it's there)
+		ResetSequenceInfo( );
+		SetYawSpeed();
+	}
+	else
+	{
+		// Not available try to get default anim
+		ALERT ( at_aiconsole, "%s has no sequence for act:%d\n", STRING(pev->classname), NewActivity );
+		pev->sequence		= 0;	// Set to the reset anim (if it's there)
+	}
+
+	m_Activity = NewActivity; // Go ahead and set this so it doesn't keep trying when the anim is not present
+	
+	// In case someone calls this with something other than the ideal activity
+	m_IdealActivity = m_Activity;
 }
 
 Schedule_t *CBigMomma::GetSchedule( void )
@@ -1109,7 +1180,7 @@ void CBMortar::Spawn( void )
 
 void CBMortar::Animate( void )
 {
-	pev->nextthink = gpGlobals->time + 0.1;
+	SetNextThink( 0.1 );
 
 	if( gpGlobals->time > pev->dmgtime )
 	{
@@ -1130,12 +1201,12 @@ CBMortar *CBMortar::Shoot( edict_t *pOwner, Vector vecStart, Vector vecVelocity 
 	CBMortar *pSpit = GetClassPtr( (CBMortar *)NULL );
 	pSpit->Spawn();
 	
-	UTIL_SetOrigin( pSpit->pev, vecStart );
+	UTIL_SetOrigin( pSpit, vecStart );
 	pSpit->pev->velocity = vecVelocity;
 	pSpit->pev->owner = pOwner;
 	pSpit->pev->scale = 2.5;
 	pSpit->SetThink( &CBMortar::Animate );
-	pSpit->pev->nextthink = gpGlobals->time + 0.1;
+	pSpit->SetNextThink( 0.1 );
 
 	return pSpit;
 }

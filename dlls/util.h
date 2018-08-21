@@ -18,6 +18,8 @@
 //
 // Misc utility code
 //
+#include <string.h>
+
 #ifndef ACTIVITY_H
 #include "activity.h"
 #endif
@@ -159,6 +161,7 @@ inline void MESSAGE_BEGIN( int msg_dest, int msg_type, const float *pOrigin, ent
 }
 
 // Testing the three types of "entity" for nullity
+//LRC- four types, rather; see cbase.h
 #define eoNullEntity 0
 inline BOOL FNullEnt(EOFFSET eoffset)			{ return eoffset == 0; }
 inline BOOL FNullEnt(const edict_t* pent)	{ return pent == NULL || FNullEnt(OFFSET(pent)); }
@@ -195,7 +198,18 @@ typedef enum
 	MONSTERSTATE_DEAD
 } MONSTERSTATE;
 
+//LRC- the values used for the new "global states" mechanism.
+typedef enum
+{
+	STATE_OFF = 0,	// disabled, inactive, invisible, closed, or stateless. Or non-alert monster.
+	STATE_TURN_ON,  // door opening, env_fade fading in, etc.
+	STATE_ON,		// enabled, active, visisble, or open. Or alert monster.
+	STATE_TURN_OFF, // door closing, monster dying (?).
+	STATE_IN_USE,	// player is in control (train/tank/barney/scientist).
+					// In_Use isn't very useful, I'll probably remove it.
+} STATE;
 
+extern const char *GetStringForState( STATE state );
 
 // Things that toggle (buttons/triggers/doors) need this
 typedef enum
@@ -231,10 +245,20 @@ extern Vector		UTIL_VecToAngles		(const Vector &vec);
 extern float		UTIL_AngleMod			(float a);
 extern float		UTIL_AngleDiff			( float destAngle, float srcAngle );
 
+extern Vector		UTIL_AxisRotationToAngles	(const Vector &vec, float angle); //LRC
+extern Vector		UTIL_AxisRotationToVec	(const Vector &vec, float angle); //LRC
+
+//LRC
+class CBaseAlias;
+extern void			UTIL_AddToAliasList( CBaseAlias *pAlias );
+extern void			UTIL_FlushAliases( void );
+
 extern CBaseEntity	*UTIL_FindEntityInSphere(CBaseEntity *pStartEntity, const Vector &vecCenter, float flRadius);
 extern CBaseEntity	*UTIL_FindEntityByString(CBaseEntity *pStartEntity, const char *szKeyword, const char *szValue );
 extern CBaseEntity	*UTIL_FindEntityByClassname(CBaseEntity *pStartEntity, const char *szName );
 extern CBaseEntity	*UTIL_FindEntityByTargetname(CBaseEntity *pStartEntity, const char *szName );
+extern CBaseEntity	*UTIL_FindEntityByTargetname(CBaseEntity *pStartEntity, const char *szName, CBaseEntity *pActivator ); //LRC - for $locus references
+extern CBaseEntity	*UTIL_FindEntityByTarget(CBaseEntity *pStartEntity, const char *szName );
 extern CBaseEntity	*UTIL_FindEntityGeneric(const char *szName, Vector &vecSrc, float flRadius );
 
 // returns a CBaseEntity pointer to a player by index.  Only returns if the player is spawned and connected
@@ -257,7 +281,8 @@ inline void UTIL_MakeVectorsPrivate( const Vector &vecAngles, float *p_vForward,
 extern void			UTIL_MakeAimVectors		( const Vector &vecAngles ); // like MakeVectors, but assumes pitch isn't inverted
 extern void			UTIL_MakeInvVectors		( const Vector &vec, globalvars_t *pgv );
 
-extern void			UTIL_SetOrigin			( entvars_t* pev, const Vector &vecOrigin );
+extern void			UTIL_SetEdictOrigin			( edict_t *pEdict, const Vector &vecOrigin );
+extern void			UTIL_SetOrigin			( CBaseEntity* pEntity, const Vector &vecOrigin );
 extern void			UTIL_EmitAmbientSound	( edict_t *entity, const Vector &vecOrigin, const char *samp, float vol, float attenuation, int fFlags, int pitch );
 extern void			UTIL_ParticleEffect		( const Vector &vecOrigin, const Vector &vecDirection, ULONG ulColor, ULONG ulCount );
 extern void			UTIL_ScreenShake		( const Vector &center, float amplitude, float frequency, float duration, float radius );
@@ -309,6 +334,7 @@ extern void			UTIL_GunshotDecalTrace( TraceResult *pTrace, int decalNumber );
 extern void			UTIL_Sparks( const Vector &position );
 extern void			UTIL_Ricochet( const Vector &position, float scale );
 extern void			UTIL_StringToVector( float *pVector, const char *pString );
+extern void			UTIL_StringToRandomVector( float *pVector, const char *pString ); //LRC
 extern void			UTIL_StringToIntArray( int *pVector, int count, const char *pString );
 extern Vector		UTIL_ClampVectorToBox( const Vector &input, const Vector &clampSize );
 extern float		UTIL_Approach( float target, float value, float speed );
@@ -319,6 +345,7 @@ extern char			*UTIL_VarArgs( const char *format, ... );
 extern void			UTIL_Remove( CBaseEntity *pEntity );
 extern BOOL			UTIL_IsValidEntity( edict_t *pent );
 extern BOOL			UTIL_TeamsMatch( const char *pTeamName1, const char *pTeamName2 );
+extern BOOL			UTIL_IsFacing( entvars_t *pevTest, const Vector &reference ); //LRC
 
 // Use for ease-in, ease-out style interpolation (accel/decel)
 extern float		UTIL_SplineFraction( float value, float scale );
@@ -384,6 +411,7 @@ extern void UTIL_StripToken( const char *pKey, char *pDest );// for redundant ke
 
 // Misc functions
 extern void SetMovedir(entvars_t* pev);
+extern Vector GetMovedir( Vector vecAngles );
 extern Vector VecBModelOrigin( entvars_t* pevBModel );
 extern int BuildChangeList( LEVELLIST *pLevelList, int maxList );
 
@@ -433,7 +461,7 @@ extern DLL_GLOBAL int			g_Language;
 #define LFO_RANDOM			3
 
 // func_rotating
-#define SF_BRUSH_ROTATE_Y_AXIS		0
+#define SF_BRUSH_ROTATE_Y_AXIS		0 //!?! (LRC)
 #define SF_BRUSH_ROTATE_INSTANT		1
 #define SF_BRUSH_ROTATE_BACKWARDS	2
 #define SF_BRUSH_ROTATE_Z_AXIS		4
@@ -471,15 +499,19 @@ extern DLL_GLOBAL int			g_Language;
 #define	SF_TRIGGER_ALLOWMONSTERS	1// monsters allowed to fire this trigger
 #define	SF_TRIGGER_NOCLIENTS		2// players not allowed to fire this trigger
 #define SF_TRIGGER_PUSHABLES		4// only pushables can fire this trigger
+#define SF_TRIGGER_EVERYTHING		8// everything else can fire this trigger (e.g. gibs, rockets)
 
 // func breakable
 #define SF_BREAK_TRIGGER_ONLY	1// may only be broken by trigger
 #define	SF_BREAK_TOUCH			2// can be 'crashed through' by running player (plate glass)
 #define SF_BREAK_PRESSURE		4// can be broken by a player standing on it
+#define SF_BREAK_FADE_RESPAWN	8// LRC- fades in gradually when respawned
 #define SF_BREAK_CROWBAR		256// instant break if hit with crowbar
 
 // func_pushable (it's also func_breakable, so don't collide with those flags)
 #define SF_PUSH_BREAKABLE		128
+#define SF_PUSH_NOPULL			512//LRC
+#define SF_PUSH_USECUSTOMSIZE	0x800000 //LRC, not yet used
 
 #define SF_LIGHT_START_OFF		1
 
@@ -578,4 +610,8 @@ int UTIL_SharedRandomLong( unsigned int seed, int low, int high );
 float UTIL_SharedRandomFloat( unsigned int seed, float low, float high );
 
 float UTIL_WeaponTimeBase( void );
+int GetStdLightStyle (int iStyle); //LRC- declared here so it can be used by everything that
+									// needs to deal with the standard lightstyles.
+// LRC- for aliases and groups
+CBaseEntity* UTIL_FollowReference( CBaseEntity* pStartEntity, const char* szName );
 #endif // UTIL_H

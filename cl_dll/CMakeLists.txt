@@ -95,6 +95,9 @@ set (CLDLL_SOURCES
 	message.cpp
 	overview.cpp
 	parsemsg.cpp
+	particlemgr.cpp
+	particlemsg.cpp
+	particlesys.cpp
 	../pm_shared/pm_debug.c
 	../pm_shared/pm_math.c
 	../pm_shared/pm_shared.c

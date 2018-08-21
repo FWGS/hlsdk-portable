@@ -70,7 +70,7 @@ void CBasePlayer::Observer_FindNextPlayer( bool bReverse )
 	if( m_hObserverTarget )
 	{
 		// Move to the target
-		UTIL_SetOrigin( pev, m_hObserverTarget->pev->origin );
+		UTIL_SetOrigin( this, m_hObserverTarget->pev->origin );
 
 		// ALERT( at_console, "Now Tracking %s\n", STRING( m_hObserverTarget->pev->netname ) );
 

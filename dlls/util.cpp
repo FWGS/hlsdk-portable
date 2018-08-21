@@ -30,6 +30,8 @@
 #include "player.h"
 #include "weapons.h"
 #include "gamerules.h"
+#include "movewith.h"
+#include "locus.h"
 
 float UTIL_WeaponTimeBase( void )
 {
@@ -385,6 +387,36 @@ Vector UTIL_VecToAngles( const Vector &vec )
 	return Vector( rgflVecOut );
 }
 
+//LRC - pass in a normalised axis vector and a number of degrees, and this returns the corresponding
+// angles value for an entity.
+Vector UTIL_AxisRotationToAngles( const Vector &vecAxis, float flDegs )
+{
+	Vector vecTemp = UTIL_AxisRotationToVec( vecAxis, flDegs );
+	float rgflVecOut[3];
+	//ugh, mathsy.
+	rgflVecOut[0] = asin(vecTemp.z) * (-180.0 / M_PI);
+	rgflVecOut[1] = acos(vecTemp.x) * (180.0 / M_PI);
+	if (vecTemp.y < 0)
+		rgflVecOut[1] = -rgflVecOut[1];
+	rgflVecOut[2] = 0; //for now
+	return Vector(rgflVecOut);
+}
+
+//LRC - as above, but returns the position of point 1 0 0 under the given rotation
+Vector UTIL_AxisRotationToVec( const Vector &vecAxis, float flDegs )
+{
+	float rgflVecOut[3];
+	float flRads = flDegs * (M_PI / 180.0);
+	float c = cos(flRads);
+	float s = sin(flRads);
+	float v = vecAxis.x * (1-c);
+	//ugh, more maths. Thank goodness for internet geometry sites...
+	rgflVecOut[0] = vecAxis.x*v + c;
+	rgflVecOut[1] = vecAxis.y*v + vecAxis.z*s;
+	rgflVecOut[2] = vecAxis.z*v - vecAxis.y*s;
+	return Vector(rgflVecOut);
+}
+	
 // float UTIL_MoveToOrigin( edict_t *pent, const Vector vecGoal, float flDist, int iMoveType )
 void UTIL_MoveToOrigin( edict_t *pent, const Vector &vecGoal, float flDist, int iMoveType )
 {
@@ -514,17 +546,31 @@ CBaseEntity *UTIL_FindEntityInSphere( CBaseEntity *pStartEntity, const Vector &v
 CBaseEntity *UTIL_FindEntityByString( CBaseEntity *pStartEntity, const char *szKeyword, const char *szValue )
 {
 	edict_t	*pentEntity;
+	CBaseEntity *pEntity;
 
 	if( pStartEntity )
 		pentEntity = pStartEntity->edict();
 	else
 		pentEntity = NULL;
 
+	for (;;)
+	{
+		// Don't change this to use UTIL_FindEntityByString!
 	pentEntity = FIND_ENTITY_BY_STRING( pentEntity, szKeyword, szValue );
 
-	if( !FNullEnt( pentEntity ) )
-		return CBaseEntity::Instance( pentEntity );
+		// if pentEntity (the edict) is null, we're at the end of the entities. Give up.
+		if (FNullEnt(pentEntity))
+		{
 	return NULL;
+}
+		else
+		{
+			// ...but if only pEntity (the classptr) is null, we've just got one dud, so we try again.
+			pEntity = CBaseEntity::Instance(pentEntity);
+			if (pEntity)
+				return pEntity;
+		}
+	}
 }
 
 CBaseEntity *UTIL_FindEntityByClassname( CBaseEntity *pStartEntity, const char *szName )
@@ -532,9 +578,245 @@ CBaseEntity *UTIL_FindEntityByClassname( CBaseEntity *pStartEntity, const char *
 	return UTIL_FindEntityByString( pStartEntity, "classname", szName );
 }
 
+#define MAX_ALIASNAME_LEN 80
+
+//LRC - things get messed up if aliases change in the middle of an entity traversal.
+// so instead, they record what changes should be made, and wait until this function gets
+// called.
+void UTIL_FlushAliases( void )
+{
+//	ALERT(at_console, "Flushing alias list\n");
+	if (!g_pWorld)
+	{
+		ALERT(at_console, "FlushAliases has no AliasList!\n");
+		return;
+	}
+
+	while (g_pWorld->m_pFirstAlias)
+	{
+		if (g_pWorld->m_pFirstAlias->m_iLFlags & LF_ALIASLIST)
+		{
+//			ALERT(at_console, "call FlushChanges for %s \"%s\"\n", STRING(g_pWorld->m_pFirstAlias->pev->classname), STRING(g_pWorld->m_pFirstAlias->pev->targetname));
+			g_pWorld->m_pFirstAlias->FlushChanges();
+			g_pWorld->m_pFirstAlias->m_iLFlags &= ~LF_ALIASLIST;
+		}
+		g_pWorld->m_pFirstAlias = g_pWorld->m_pFirstAlias->m_pNextAlias;
+	}
+}
+
+void UTIL_AddToAliasList( CBaseAlias *pAlias )
+{
+	if (!g_pWorld)
+	{
+		ALERT(at_console, "AddToAliasList has no AliasList!\n");
+		return;
+	}
+
+	pAlias->m_iLFlags |= LF_ALIASLIST;
+
+//	ALERT(at_console, "Adding %s \"%s\" to alias list\n", STRING(pAlias->pev->classname), STRING(pAlias->pev->targetname));
+	if (g_pWorld->m_pFirstAlias == NULL)
+	{
+		g_pWorld->m_pFirstAlias = pAlias;
+		pAlias->m_pNextAlias = NULL;
+	}
+	else if (g_pWorld->m_pFirstAlias == pAlias)
+	{
+		// already in the list
+		return;
+	}
+	else
+	{
+		CBaseAlias *pCurrent = g_pWorld->m_pFirstAlias;
+		while (pCurrent->m_pNextAlias != NULL)
+		{
+			if (pCurrent->m_pNextAlias == pAlias)
+			{
+				// already in the list
+				return;
+			}
+			pCurrent = pCurrent->m_pNextAlias;
+		}
+		pCurrent->m_pNextAlias = pAlias;
+		pAlias->m_pNextAlias = NULL;
+	}
+}
+
+// for every alias which has the given name, find the earliest entity which any of them refers to
+// and which is later than pStartEntity.
+CBaseEntity *UTIL_FollowAliasReference(CBaseEntity *pStartEntity, const char* szValue)
+{
+	CBaseEntity* pEntity;
+	CBaseEntity* pBestEntity = NULL; // the entity we're currently planning to return.
+	int iBestOffset = -1; // the offset of that entity.
+	CBaseEntity* pTempEntity;
+	int iTempOffset;
+
+	pEntity = UTIL_FindEntityByTargetname(NULL,szValue);
+
+	while ( pEntity )
+	{
+		if (pEntity->IsAlias())
+		{
+			pTempEntity = ((CBaseAlias*)pEntity)->FollowAlias( pStartEntity );
+			if ( pTempEntity )
+			{
+				// We've found an entity; only use it if its offset is lower than the offset we've currently got.
+				iTempOffset = OFFSET(pTempEntity->pev);
+				if (iBestOffset == -1 || iTempOffset < iBestOffset)
+				{
+					iBestOffset = iTempOffset;
+					pBestEntity = pTempEntity;
+				}
+			}
+		}
+		pEntity = UTIL_FindEntityByTargetname(pEntity,szValue);
+	}
+
+	return pBestEntity;
+}
+
+// for every info_group which has the given groupname, find the earliest entity which is referred to by its member
+// with the given membername and which is later than pStartEntity.
+CBaseEntity *UTIL_FollowGroupReference(CBaseEntity *pStartEntity, char* szGroupName, char* szMemberName)
+{
+	CBaseEntity* pEntity;
+	CBaseEntity* pBestEntity = NULL; // the entity we're currently planning to return.
+	int iBestOffset = -1; // the offset of that entity.
+	CBaseEntity* pTempEntity;
+	int iTempOffset;
+	char szBuf[MAX_ALIASNAME_LEN];
+	char* szThisMember = szMemberName;
+	char* szTail = NULL;
+	int iszMemberValue;
+	int i;
+
+	// find the first '.' in the membername and if there is one, split the string at that point.
+	for (i = 0; szMemberName[i]; i++)
+	{
+		if (szMemberName[i] == '.')
+		{
+			// recursive member-reference
+			// FIXME: we should probably check that i < MAX_ALIASNAME_LEN.
+			strncpy(szBuf,szMemberName,i);
+			szBuf[i] = 0;
+			szTail = &(szMemberName[i+1]);
+			szThisMember = szBuf;
+			break;
+		}
+	}
+
+	pEntity = UTIL_FindEntityByTargetname(NULL,szGroupName);
+	while ( pEntity )
+	{
+		if (FStrEq(STRING(pEntity->pev->classname), "info_group"))
+		{
+			iszMemberValue = ((CInfoGroup*)pEntity)->GetMember(szThisMember);
+//			ALERT(at_console,"survived getMember\n");
+//			return NULL;
+			if (!FStringNull(iszMemberValue))
+			{
+				if (szTail) // do we have more references to follow?
+					pTempEntity = UTIL_FollowGroupReference(pStartEntity, (char*)STRING(iszMemberValue), szTail);
+				else
+					pTempEntity = UTIL_FindEntityByTargetname(pStartEntity,STRING(iszMemberValue));
+
+				if ( pTempEntity )
+				{
+					iTempOffset = OFFSET(pTempEntity->pev);
+					if (iBestOffset == -1 || iTempOffset < iBestOffset)
+					{
+						iBestOffset = iTempOffset;
+						pBestEntity = pTempEntity;
+					}
+				}
+			}
+		}
+		pEntity = UTIL_FindEntityByTargetname(pEntity,szGroupName);
+	}
+
+	if (pBestEntity)
+	{
+//		ALERT(at_console,"\"%s\".\"%s\" returns %s\n",szGroupName,szMemberName,STRING(pBestEntity->pev->targetname));
+		return pBestEntity;
+	}
+	return NULL;
+}
+
+// Returns the first entity which szName refers to and which is after pStartEntity.
+CBaseEntity *UTIL_FollowReference( CBaseEntity *pStartEntity, const char* szName )
+{
+	char szRoot[MAX_ALIASNAME_LEN+1]; // allow room for null-terminator
+	char* szMember;
+	int i;
+	CBaseEntity *pResult;
+
+	if (!szName || szName[0] == 0) return NULL;
+
+	// reference through an info_group?
+	for (i = 0; szName[i]; i++)
+	{
+		if (szName[i] == '.')
+		{
+			// yes, it looks like a reference through an info_group...
+			// FIXME: we should probably check that i < MAX_ALIASNAME_LEN.
+			strncpy(szRoot,szName,i);
+			szRoot[i] = 0;
+			szMember = (char*)&szName[i+1];
+			//ALERT(at_console,"Following reference- group %s with member %s\n",szRoot,szMember);
+			pResult = UTIL_FollowGroupReference(pStartEntity, szRoot, szMember);
+//			if (pResult)
+//				ALERT(at_console,"\"%s\".\"%s\" = %s\n",szRoot,szMember,STRING(pResult->pev->targetname));
+			return pResult;
+		}
+	}
+	// reference through an info_alias?
+	if ( szName[0] == '*' )
+	{
+		if (FStrEq(szName, "*player"))
+		{
+			CBaseEntity* pPlayer = UTIL_FindEntityByClassname(NULL, "player");
+			if (pPlayer && (pStartEntity == NULL || pPlayer->eoffset() > pStartEntity->eoffset()))
+				return pPlayer;
+			else
+				return NULL;
+		}
+		//ALERT(at_console,"Following alias %s\n",szName+1);
+		pResult = UTIL_FollowAliasReference( pStartEntity, szName+1 );
+//		if (pResult)
+//			ALERT(at_console,"alias \"%s\" = %s\n",szName+1,STRING(pResult->pev->targetname));
+		return pResult;
+	}
+	// not a reference
+//	ALERT(at_console,"%s is not a reference\n",szName);
+	return NULL;
+}
+
 CBaseEntity *UTIL_FindEntityByTargetname( CBaseEntity *pStartEntity, const char *szName )
 {
+	CBaseEntity *pFound = UTIL_FollowReference( pStartEntity, szName );
+	if (pFound)
+		return pFound;
+	else
 	return UTIL_FindEntityByString( pStartEntity, "targetname", szName );
+}
+
+CBaseEntity *UTIL_FindEntityByTargetname( CBaseEntity *pStartEntity, const char *szName, CBaseEntity *pActivator )
+{
+	if (FStrEq(szName, "*locus"))
+	{
+		if (pActivator && (pStartEntity == NULL || pActivator->eoffset() > pStartEntity->eoffset()))
+			return pActivator;
+		else
+			return NULL;
+	}
+	else 
+		return UTIL_FindEntityByTargetname( pStartEntity, szName );
+}
+
+CBaseEntity *UTIL_FindEntityByTarget( CBaseEntity *pStartEntity, const char *szName )
+{
+	return UTIL_FindEntityByString( pStartEntity, "target", szName );
 }
 
 CBaseEntity *UTIL_FindEntityGeneric( const char *szWhatever, Vector &vecSrc, float flRadius )
@@ -654,6 +936,7 @@ static short FixedSigned16( float value, float scale )
 // UNDONE: Allow caller to shake clients not ONGROUND?
 // UNDONE: Fix falloff model (disabled)?
 // UNDONE: Affect user controls?
+//LRC UNDONE: Work during trigger_camera?
 void UTIL_ScreenShake( const Vector &center, float amplitude, float frequency, float duration, float radius )
 {
 	int		i;
@@ -739,6 +1022,11 @@ void UTIL_ScreenFadeAll( const Vector &color, float fadeTime, float fadeHold, in
 	{
 		CBaseEntity *pPlayer = UTIL_PlayerByIndex( i );
 
+		#ifdef XENWARRIOR
+		if (((CBasePlayer*)pPlayer)->FlashlightIsOn())
+			((CBasePlayer*)pPlayer)->FlashlightTurnOff();
+		#endif
+	
 		UTIL_ScreenFadeWrite( fade, pPlayer );
 	}
 }
@@ -960,11 +1248,15 @@ float UTIL_VecToYaw( const Vector &vec )
 	return VEC_TO_YAW( vec );
 }
 
-void UTIL_SetOrigin( entvars_t *pev, const Vector &vecOrigin )
+void UTIL_SetEdictOrigin( edict_t *pEdict, const Vector &vecOrigin )
 {
-	edict_t *ent = ENT( pev );
-	if( ent )
-		SET_ORIGIN( ent, vecOrigin );
+	SET_ORIGIN(pEdict, vecOrigin );
+}
+
+// 'links' the entity into the world
+void UTIL_SetOrigin( CBaseEntity *pEntity, const Vector &vecOrigin )
+{
+	SET_ORIGIN(ENT(pEntity->pev), vecOrigin );
 }
 
 void UTIL_ParticleEffect( const Vector &vecOrigin, const Vector &vecDirection, ULONG ulColor, ULONG ulCount )
@@ -1016,9 +1308,10 @@ float UTIL_AngleDistance( float next, float cur )
 {
 	float delta = next - cur;
 
-	if( delta < -180 )
+// LRC- correct for deltas > 360
+	while ( delta < -180 )
 		delta += 360;
-	else if( delta > 180 )
+	while ( delta > 180 )
 		delta -= 360;
 
 	return delta;
@@ -1052,24 +1345,73 @@ Vector UTIL_GetAimVector( edict_t *pent, float flSpeed )
 	return tmp;
 }
 
-int UTIL_IsMasterTriggered( string_t sMaster, CBaseEntity *pActivator )
+BOOL UTIL_IsMasterTriggered(string_t iszMaster, CBaseEntity *pActivator)
 {
-	if( sMaster )
-	{
-		edict_t *pentTarget = FIND_ENTITY_BY_TARGETNAME( NULL, STRING( sMaster ) );
+	int i, j, found = false;
+	const char *szMaster;
+	char szBuf[80];
+	CBaseEntity *pMaster;
+	int reverse = false;
 
-		if( !FNullEnt( pentTarget ) )
-		{
-			CBaseEntity *pMaster = CBaseEntity::Instance( pentTarget );
-			if( pMaster && ( pMaster->ObjectCaps() & FCAP_MASTER ) )
-				return pMaster->IsTriggered( pActivator );
+
+	if (iszMaster)
+{
+//		ALERT(at_console, "IsMasterTriggered(%s, %s \"%s\")\n", STRING(iszMaster), STRING(pActivator->pev->classname), STRING(pActivator->pev->targetname));
+		szMaster = STRING(iszMaster);
+		if (szMaster[0] == '~') //inverse master
+	{
+			reverse = true;
+			szMaster++;
 		}
 
-		ALERT( at_console, "Master was null or not a master!\n" );
+		pMaster = UTIL_FindEntityByTargetname( NULL, szMaster );
+		if ( !pMaster )
+		{
+			for (i = 0; szMaster[i]; i++)
+			{
+				if (szMaster[i] == '(')
+				{
+					for (j = i+1; szMaster[j]; j++)
+					{
+						if (szMaster[j] == ')')
+						{
+							strncpy(szBuf, szMaster+i+1, (j-i)-1);
+							szBuf[(j-i)-1] = 0;
+							pActivator = UTIL_FindEntityByTargetname( NULL, szBuf );
+							found = true;
+							break;
+						}
+					}
+					if (!found) // no ) found
+					{
+						ALERT(at_error, "Missing ')' in master \"%s\"\n", szMaster);
+						return FALSE;
+					}
+					break;
+				}
+			}
+			if (!found) // no ( found
+		{
+				ALERT(at_console, "Master \"%s\" not found!\n",szMaster);
+				return TRUE;
+			}
+
+			strncpy(szBuf, szMaster, i);
+			szBuf[i] = 0;
+			pMaster = UTIL_FindEntityByTargetname( NULL, szBuf );
+		}
+
+		if (pMaster)
+		{
+			if (reverse)
+				return (pMaster->GetState( pActivator ) != STATE_ON);
+			else
+				return (pMaster->GetState( pActivator ) == STATE_ON);
+		}
 	}
 
-	// if this isn't a master entity, just say yes.
-	return 1;
+	// if the entity has no master (or the master is missing), just say yes.
+	return TRUE;
 }
 
 BOOL UTIL_ShouldShowBlood( int color )
@@ -1326,6 +1668,24 @@ BOOL UTIL_TeamsMatch( const char *pTeamName1, const char *pTeamName2 )
 	return FALSE;
 }
 
+//LRC - moved here from barney.cpp
+BOOL UTIL_IsFacing( entvars_t *pevTest, const Vector &reference )
+{
+	Vector vecDir = (reference - pevTest->origin);
+	vecDir.z = 0;
+	vecDir = vecDir.Normalize();
+	Vector forward, angle;
+	angle = pevTest->v_angle;
+	angle.x = 0;
+	UTIL_MakeVectorsPrivate( angle, forward, NULL, NULL );
+	// He's facing me, he meant it
+	if ( DotProduct( forward, vecDir ) > 0.96 )	// +/- 15 degrees or so
+	{
+		return TRUE;
+	}
+	return FALSE;
+}
+
 void UTIL_StringToVector( float *pVector, const char *pString )
 {
 	char *pstr, *pfront, tempString[128];
@@ -1355,6 +1715,51 @@ void UTIL_StringToVector( float *pVector, const char *pString )
 			pVector[j] = 0;
 	}
 }
+
+
+//LRC - randomized vectors of the form "0 0 0 .. 1 0 0"
+void UTIL_StringToRandomVector( float *pVector, const char *pString )
+{
+	char *pstr, *pfront, tempString[128];
+	int	j;
+	float pAltVec[3];
+
+	strcpy( tempString, pString );
+	pstr = pfront = tempString;
+
+	for ( j = 0; j < 3; j++ )			// lifted from pr_edict.c
+	{
+		pVector[j] = atof( pfront );
+
+		while ( *pstr && *pstr != ' ' ) pstr++;
+		if (!*pstr) break;
+		pstr++;
+		pfront = pstr;
+	}
+	if (j < 2)
+	{
+		/*
+		ALERT( at_error, "Bad field in entity!! %s:%s == \"%s\"\n",
+			pkvd->szClassName, pkvd->szKeyName, pkvd->szValue );
+		*/
+		for (j = j+1;j < 3; j++)
+			pVector[j] = 0;
+	}
+	else if (*pstr == '.')
+	{
+		pstr++;
+		if (*pstr != '.') return;
+		pstr++;
+		if (*pstr != ' ') return;
+
+		UTIL_StringToVector(pAltVec, pstr);
+
+		pVector[0] = RANDOM_FLOAT( pVector[0], pAltVec[0] );
+		pVector[1] = RANDOM_FLOAT( pVector[1], pAltVec[1] );
+		pVector[2] = RANDOM_FLOAT( pVector[2], pAltVec[2] );
+	}
+}
+
 
 void UTIL_StringToIntArray( int *pVector, int count, const char *pString )
 {
@@ -1577,6 +1982,36 @@ void UTIL_StripToken( const char *pKey, char *pDest )
 	}
 	pDest[i] = 0;
 }
+
+
+const char* GetStringForUseType( USE_TYPE useType )
+{
+	switch(useType)
+	{
+	case USE_ON: return "USE_ON";
+	case USE_OFF: return "USE_OFF";
+	case USE_TOGGLE: return "USE_TOGGLE";
+	case USE_KILL: return "USE_KILL";
+	case USE_NOT: return "USE_NOT";
+	default:
+		return "USE_UNKNOWN!?";
+	}
+}
+
+const char *GetStringForState( STATE state )
+{
+	switch(state)
+	{
+	case STATE_ON: return "ON";
+	case STATE_OFF: return "OFF";
+	case STATE_TURN_ON: return "TURN ON";
+	case STATE_TURN_OFF: return "TURN OFF";
+	case STATE_IN_USE: return "IN USE";
+	default:
+		return "STATE_UNKNOWN!?";
+	}
+}
+
 
 // --------------------------------------------------------------
 //
@@ -1913,7 +2348,8 @@ void CSave::WritePositionVector( const char *pname, const float *value, int coun
 	}
 }
 
-void CSave::WriteFunction( const char *pname, void **data, int count )
+
+void CSave :: WriteFunction( const char* cname, const char *pname, void **data, int count )
 {
 	const char *functionName;
 
@@ -1921,7 +2357,7 @@ void CSave::WriteFunction( const char *pname, void **data, int count )
 	if( functionName )
 		BufferField( pname, strlen( functionName ) + 1, functionName );
 	else
-		ALERT( at_error, "Invalid function pointer in entity!\n" );
+		ALERT( at_error, "Member \"%s\" of \"%s\" contains an invalid function pointer %p!", pname, cname, *data );
 }
 
 void EntvarsKeyvalue( entvars_t *pev, KeyValueData *pkvd )
@@ -1970,10 +2406,15 @@ void EntvarsKeyvalue( entvars_t *pev, KeyValueData *pkvd )
 
 int CSave::WriteEntVars( const char *pname, entvars_t *pev )
 {
-	return WriteFields( pname, pev, gEntvarsDescription, ENTVARS_COUNT );
+	if (pev->targetname)
+		return WriteFields( STRING(pev->targetname), pname, pev, gEntvarsDescription, ENTVARS_COUNT );
+	else
+		return WriteFields( STRING(pev->classname), pname, pev, gEntvarsDescription, ENTVARS_COUNT );
 }
 
-int CSave::WriteFields( const char *pname, void *pBaseData, TYPEDESCRIPTION *pFields, int fieldCount )
+
+
+int CSave :: WriteFields( const char *cname, const char *pname, void *pBaseData, TYPEDESCRIPTION *pFields, int fieldCount )
 {
 	int i, j, actualCount, emptyCount;
 	TYPEDESCRIPTION	*pTest;
@@ -2069,7 +2510,7 @@ int CSave::WriteFields( const char *pname, void *pBaseData, TYPEDESCRIPTION *pFi
 			WriteInt( pTest->fieldName, (int *)(char *)pOutputData, pTest->fieldSize );
 			break;
 		case FIELD_FUNCTION:
-			WriteFunction( pTest->fieldName, (void **)pOutputData, pTest->fieldSize );
+			WriteFunction( cname, pTest->fieldName, (void **)pOutputData, pTest->fieldSize );
 			break;
 		default:
 			ALERT( at_error, "Bad field type\n" );
@@ -2229,7 +2670,10 @@ int CRestore::ReadField( void *pBaseData, TYPEDESCRIPTION *pFields, int fieldCou
 						if( pent )
 							*( (CBaseEntity **)pOutputData ) = CBaseEntity::Instance( pent );
 						else
+						{
 							*( (CBaseEntity **)pOutputData ) = NULL;
+							if (entityIndex != -1) ALERT(at_console, "## Restore: invalid entitynum %d\n", entityIndex);
+						}
 						break;
 					case FIELD_EDICT:
 						entityIndex = *(int *)pInputData;

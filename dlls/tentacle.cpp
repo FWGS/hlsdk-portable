@@ -70,7 +70,8 @@ public:
 	void Killed( entvars_t *pevAttacker, int iGib );
 
 	MONSTERSTATE GetIdealState( void ) { return MONSTERSTATE_IDLE; };
-	int CanPlaySequence( BOOL fDisregardState ) { return TRUE; };
+//	int CanPlaySequence( BOOL fDisregardState ) { return TRUE; };
+	int CanPlaySequence( int interruptFlags ) { return TRUE; };
 
 	int Classify( void );
 
@@ -233,7 +234,7 @@ typedef enum
 //=========================================================
 int CTentacle::Classify( void )
 {
-	return CLASS_ALIEN_MONSTER;
+	return m_iClass?m_iClass:CLASS_ALIEN_MONSTER;
 }
 
 //
@@ -261,7 +262,7 @@ void CTentacle::Spawn()
 	SetTouch( &CTentacle::HitTouch );
 	SetUse( &CTentacle::CommandUse );
 
-	pev->nextthink = gpGlobals->time + 0.2;
+	SetNextThink( 0.2 );
 
 	ResetSequenceInfo();
 	m_iDir = 1;
@@ -280,8 +281,8 @@ void CTentacle::Spawn()
 
 	m_MonsterState = MONSTERSTATE_IDLE;
 
-	// SetThink( &Test );
-	UTIL_SetOrigin( pev, pev->origin );
+	// SetThink( Test );
+	UTIL_SetOrigin( this, pev->origin );
 }
 
 void CTentacle::Precache()
@@ -426,7 +427,7 @@ void CTentacle::Test( void )
 	pev->sequence = TENTACLE_ANIM_Floor_Strike;
 	pev->framerate = 0;
 	StudioFrameAdvance();
-	pev->nextthink = gpGlobals->time + 0.1;
+	SetNextThink( 0.1 );
 }
 
 //
@@ -435,7 +436,7 @@ void CTentacle::Test( void )
 void CTentacle::Cycle( void )
 {
 	// ALERT( at_console, "%s %.2f %d %d\n", STRING( pev->targetname ), pev->origin.z, m_MonsterState, m_IdealMonsterState );
-	pev->nextthink = gpGlobals-> time + 0.1;
+	SetNextThink( 0.1 );
 
 	// ALERT( at_console, "%s %d %d %d %f %f\n", STRING( pev->targetname ), pev->sequence, m_iGoalAnim, m_iDir, pev->framerate, pev->health );
 
@@ -707,19 +708,24 @@ void CTentacle::CommandUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_T
 			CSoundEnt::InsertSound( bits_SOUND_WORLD, pActivator->pev->origin, 1024, 1.0 );
 		}
 		break;
-	case USE_SET:
-		break;
 	case USE_TOGGLE:
 		pev->takedamage = DAMAGE_NO;
 		SetThink( &CTentacle::DieThink );
 		m_iGoalAnim = TENTACLE_ANIM_Engine_Idle;
+		break;
+	case USE_SET:
+	case USE_KILL:
+	case USE_SAME:
+	case USE_NOT:
+		break;
+	default:
 		break;
 	}
 }
 
 void CTentacle::DieThink( void )
 {
-	pev->nextthink = gpGlobals-> time + 0.1;
+	SetNextThink( 0.1 );
 
 	DispatchAnimEvents();
 	StudioFrameAdvance();
@@ -929,7 +935,7 @@ void CTentacle::Start( void )
 		g_fSquirmSound = TRUE;
 	}
 	
-	pev->nextthink = gpGlobals->time + 0.1;
+	SetNextThink( 0.1 );
 }
 
 void CTentacle::HitTouch( CBaseEntity *pOther )

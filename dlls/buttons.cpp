@@ -28,9 +28,13 @@
 
 #define SF_BUTTON_DONTMOVE		1
 #define SF_ROTBUTTON_NOTSOLID		1
+#define SF_BUTTON_ONLYDIRECT	16  //LRC - button can't be used through walls.
 #define	SF_BUTTON_TOGGLE		32	// button stays pushed until reactivated
 #define	SF_BUTTON_SPARK_IF_OFF		64	// button sparks in OFF state
-#define SF_BUTTON_TOUCH_ONLY		256	// button only fires as a result of USE key.
+#define SF_BUTTON_NOT_SOLID		128	// button isn't solid
+#define SF_BUTTON_TOUCH_ONLY	256	// button must be touched to be used.
+#define SF_BUTTON_USEKEY		512 // change the reaction of the button to the USE key.
+									// (i.e. if it's meant to be ignored, don't ignore it; otherwise ignore it.)
 
 #define SF_GLOBAL_SET			1	// Set global state to initial state on spawn
 
@@ -121,6 +125,208 @@ void CEnvGlobal::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE us
 		gGlobalState.EntityAdd( m_globalstate, gpGlobals->mapname, newState );
 }
 
+
+//==================================================
+//LRC- a simple entity, just maintains a state
+//==================================================
+
+#define SF_ENVSTATE_START_ON		1
+#define SF_ENVSTATE_DEBUG			2
+
+class CEnvState : public CPointEntity
+{
+public:
+	void	Spawn( void );
+	void	Think( void );
+	void	KeyValue( KeyValueData *pkvd );
+	void	Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+
+	BOOL	IsLockedByMaster( void ) { return !UTIL_IsMasterTriggered(m_sMaster, NULL); };
+
+	virtual int		Save( CSave &save );
+	virtual int		Restore( CRestore &restore );
+
+	virtual STATE	GetState() { return m_iState; }
+
+	static	TYPEDESCRIPTION m_SaveData[];
+	
+	STATE		m_iState;
+	float		m_fTurnOnTime;
+	float		m_fTurnOffTime;
+	int			m_sMaster;
+};
+
+void CEnvState::Spawn( void )
+{
+	if (pev->spawnflags & SF_ENVSTATE_START_ON)
+		m_iState = STATE_ON;
+	else
+		m_iState = STATE_OFF;
+}
+
+TYPEDESCRIPTION CEnvState::m_SaveData[] =
+{
+	DEFINE_FIELD( CEnvState, m_iState, FIELD_INTEGER ),
+	DEFINE_FIELD( CEnvState, m_fTurnOnTime, FIELD_INTEGER ),
+	DEFINE_FIELD( CEnvState, m_fTurnOffTime, FIELD_INTEGER ),
+	DEFINE_FIELD( CEnvState, m_sMaster, FIELD_STRING ),
+};
+
+IMPLEMENT_SAVERESTORE( CEnvState, CPointEntity );
+
+LINK_ENTITY_TO_CLASS( env_state, CEnvState );
+
+void CEnvState::KeyValue( KeyValueData *pkvd )
+{
+	pkvd->fHandled = TRUE;
+
+	if ( FStrEq(pkvd->szKeyName, "turnontime") )
+		m_fTurnOnTime = atof( pkvd->szValue );
+	else if ( FStrEq(pkvd->szKeyName, "turnofftime") )
+		m_fTurnOffTime = atof( pkvd->szValue );
+	else if ( FStrEq(pkvd->szKeyName, "master") )
+		m_sMaster = ALLOC_STRING( pkvd->szValue );
+	else
+		CPointEntity::KeyValue( pkvd );
+}
+
+void CEnvState::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
+{
+	if (!ShouldToggle(useType) || IsLockedByMaster())
+	{
+		if (pev->spawnflags & SF_ENVSTATE_DEBUG)
+		{
+			ALERT(at_console,"DEBUG: env_state \"%s\" ",STRING(pev->targetname));
+			if (IsLockedByMaster())
+				ALERT(at_console,"ignored trigger %s; locked by master \"%s\".\n",GetStringForUseType(useType),STRING(m_sMaster));
+			else if (useType == USE_ON)
+				ALERT(at_console,"ignored trigger USE_ON; already on\n");
+			else if (useType == USE_OFF)
+				ALERT(at_console,"ignored trigger USE_OFF; already off\n");
+			else
+				ALERT(at_console,"ignored trigger %s.\n",GetStringForUseType(useType));
+		}
+		return;
+	}
+
+	switch (GetState())
+	{
+	case STATE_ON:
+	case STATE_TURN_ON:
+		if (m_fTurnOffTime)
+		{
+			m_iState = STATE_TURN_OFF;
+			if (pev->spawnflags & SF_ENVSTATE_DEBUG)
+			{
+				ALERT(at_console,"DEBUG: env_state \"%s\" triggered; will turn off in %f seconds.\n", STRING(pev->targetname), m_fTurnOffTime);
+			}
+			SetNextThink( m_fTurnOffTime );
+		}
+		else
+		{
+			m_iState = STATE_OFF;
+			if (pev->spawnflags & SF_ENVSTATE_DEBUG)
+			{
+				ALERT(at_console,"DEBUG: env_state \"%s\" triggered, turned off", STRING(pev->targetname));
+				if (pev->target)
+				{
+					ALERT(at_console,": firing \"%s\"",STRING(pev->target));
+					if (pev->noise2)
+						ALERT(at_console," and \"%s\"",STRING(pev->noise2));
+				}
+				else if (pev->noise2)
+					ALERT(at_console,": firing \"%s\"",STRING(pev->noise2));
+				ALERT(at_console,".\n");
+			}
+			FireTargets(STRING(pev->target),pActivator,this,USE_OFF,0);
+			FireTargets(STRING(pev->noise2),pActivator,this,USE_TOGGLE,0);
+			DontThink();
+		}
+		break;
+	case STATE_OFF:
+	case STATE_TURN_OFF:
+		if (m_fTurnOnTime)
+		{
+			m_iState = STATE_TURN_ON;
+			if (pev->spawnflags & SF_ENVSTATE_DEBUG)
+			{
+				ALERT(at_console,"DEBUG: env_state \"%s\" triggered; will turn on in %f seconds.\n", STRING(pev->targetname), m_fTurnOnTime);
+			}
+			SetNextThink( m_fTurnOnTime );
+		}
+		else
+		{
+			m_iState = STATE_ON;
+			if (pev->spawnflags & SF_ENVSTATE_DEBUG)
+			{
+				ALERT(at_console,"DEBUG: env_state \"%s\" triggered, turned on",STRING(pev->targetname));
+				if (pev->target)
+				{
+					ALERT(at_console,": firing \"%s\"",STRING(pev->target));
+					if (pev->noise1)
+						ALERT(at_console," and \"%s\"",STRING(pev->noise1));
+				}
+				else if (pev->noise1)
+					ALERT(at_console,": firing \"%s\"", STRING(pev->noise1));
+				ALERT(at_console,".\n");
+			}
+			FireTargets(STRING(pev->target),pActivator,this,USE_ON,0);
+			FireTargets(STRING(pev->noise1),pActivator,this,USE_TOGGLE,0);
+			DontThink();
+		}
+		break;
+	case STATE_IN_USE:
+		break;
+	default:
+		break;
+	}
+}
+
+void CEnvState::Think( void )
+{
+	if (m_iState == STATE_TURN_ON)
+	{
+		m_iState = STATE_ON;
+		if (pev->spawnflags & SF_ENVSTATE_DEBUG)
+		{
+			ALERT(at_console,"DEBUG: env_state \"%s\" turned itself on",STRING(pev->targetname));
+			if (pev->target)
+			{
+				ALERT(at_console,": firing %s",STRING(pev->target));
+				if (pev->noise1)
+					ALERT(at_console," and %s",STRING(pev->noise1));
+			}
+			else if (pev->noise1)
+				ALERT(at_console,": firing %s",STRING(pev->noise1));
+			ALERT(at_console,".\n");
+		}
+		FireTargets(STRING(pev->target),this,this,USE_ON,0);
+		FireTargets(STRING(pev->noise1),this,this,USE_TOGGLE,0);
+	}
+	else if (m_iState == STATE_TURN_OFF)
+	{
+		m_iState = STATE_OFF;
+		if (pev->spawnflags & SF_ENVSTATE_DEBUG)
+		{
+			ALERT(at_console,"DEBUG: env_state \"%s\" turned itself off",STRING(pev->targetname));
+			if (pev->target)
+				ALERT(at_console,": firing %s",STRING(pev->target));
+				if (pev->noise2)
+					ALERT(at_console," and %s",STRING(pev->noise2));
+			else if (pev->noise2)
+				ALERT(at_console,": firing %s",STRING(pev->noise2));
+			ALERT(at_console,".\n");
+		}
+		FireTargets(STRING(pev->target),this,this,USE_OFF,0);
+		FireTargets(STRING(pev->noise2),this,this,USE_TOGGLE,0);
+	}
+}
+
+
+//===========================
+//LRC- the evil multisource...
+//===========================
+
 TYPEDESCRIPTION CMultiSource::m_SaveData[] =
 {
 	//!!!BUGBUG FIX
@@ -155,7 +361,8 @@ void CMultiSource::KeyValue( KeyValueData *pkvd )
 		CPointEntity::KeyValue( pkvd );
 }
 
-#define SF_MULTI_INIT		1
+#define SF_MULTI_FIREONCLOSE	1
+#define SF_MULTI_INIT			2
 
 void CMultiSource::Spawn()
 { 
@@ -163,7 +370,7 @@ void CMultiSource::Spawn()
 
 	pev->solid = SOLID_NOT;
 	pev->movetype = MOVETYPE_NONE;
-	pev->nextthink = gpGlobals->time + 0.1;
+	SetNextThink( 0.1 );
 	pev->spawnflags |= SF_MULTI_INIT;	// Until it's initialized
 	SetThink( &CMultiSource::Register );
 }
@@ -180,32 +387,58 @@ void CMultiSource::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE 
 	// if we didn't find it, report error and leave
 	if( i > m_iTotal )
 	{
-		ALERT( at_console, "MultiSrc:Used by non member %s.\n", STRING( pCaller->pev->classname ) );
+		if (pCaller->pev->targetname)
+			ALERT(at_console, "multisource \"%s\": Used by non-member %s \"%s\"\n", STRING(pev->targetname), STRING(pCaller->pev->classname), STRING(pCaller->pev->targetname));
+		else
+			ALERT(at_console, "multisource \"%s\": Used by non-member %s\n", STRING(pev->targetname), STRING(pCaller->pev->classname));
 		return;	
 	}
 
 	// CONSIDER: a Use input to the multisource always toggles.  Could check useType for ON/OFF/TOGGLE
+	// LRC- On could be meaningful. Off, sadly, can't work in the obvious manner.
+	// LRC (09/06/01)- er... why not?
+	// LRC (28/04/02)- that depends what the "obvious" manner is.
+
+	// store the state before the change, so we can compare it to the new state
+	STATE s = GetState();
+
+	// do the change
 	m_rgTriggered[i - 1] ^= 1;
 
-	// 
-	if( IsTriggered( pActivator ) )
+	// did we change state?
+	if ( s == GetState() )
+		return;
+
+	if ( s == STATE_ON && pev->netname)
 	{
+		// the change disabled me and I have a "fire on disable" field
+		ALERT( at_aiconsole, "Multisource %s deactivated (%d inputs)\n", STRING(pev->targetname), m_iTotal );
+		if ( m_globalstate )
+			FireTargets( STRING(pev->netname), NULL, this, USE_OFF, 0 );
+		else
+			FireTargets( STRING(pev->netname), NULL, this, USE_TOGGLE, 0 );
+	}
+	else if ( s == STATE_OFF )
+	{
+		// the change activated me
 		ALERT( at_aiconsole, "Multisource %s enabled (%d inputs)\n", STRING( pev->targetname ), m_iTotal );
-		useType = USE_TOGGLE;
+		USE_TYPE useType = USE_TOGGLE;
 		if( m_globalstate )
 			useType = USE_ON;
 		SUB_UseTargets( NULL, useType, 0 );
 	}
 }
 
-BOOL CMultiSource::IsTriggered( CBaseEntity * )
+
+//LRC- while we're in STATE_OFF, mastered entities can't do anything.
+STATE CMultiSource::GetState( void )
 {
 	// Is everything triggered?
 	int i = 0;
 
 	// Still initializing?
 	if( pev->spawnflags & SF_MULTI_INIT )
-		return 0;
+		return STATE_OFF;
 
 	while( i < m_iTotal )
 	{
@@ -217,12 +450,12 @@ BOOL CMultiSource::IsTriggered( CBaseEntity * )
 	if( i == m_iTotal )
 	{
 		if( !m_globalstate || gGlobalState.EntityGetState( m_globalstate ) == GLOBAL_ON )
-			return 1;
+			return STATE_ON;
 	}
 
-	return 0;
+	return STATE_OFF;
 }
-
+/*
 void CMultiSource::Register( void )
 { 
 	edict_t *pentTarget = NULL;
@@ -230,7 +463,7 @@ void CMultiSource::Register( void )
 	m_iTotal = 0;
 	memset( m_rgEntities, 0, MS_MAX_TARGETS * sizeof(EHANDLE) );
 
-	SetThink( &CBaseEntity::SUB_DoNothing );
+	SetThink(&CMultiSource::SUB_DoNothing);
 
 	// search for all entities which target this multisource (pev->targetname)
 	pentTarget = FIND_ENTITY_BY_STRING( NULL, "target", STRING( pev->targetname ) );
@@ -254,6 +487,53 @@ void CMultiSource::Register( void )
 		pentTarget = FIND_ENTITY_BY_STRING( pentTarget, "classname", "multi_manager" );
 	}
 	pev->spawnflags &= ~SF_MULTI_INIT;
+}
+*/
+void CMultiSource::Register(void)
+{ 
+	m_iTotal = 0;
+	memset( m_rgEntities, 0, MS_MAX_TARGETS * sizeof(EHANDLE) );
+
+	SetThink(&CMultiSource::SUB_DoNothing);
+
+	// search for all entities which target this multisource (pev->targetname)
+
+	CBaseEntity *pTarget = UTIL_FindEntityByTarget( NULL, STRING(pev->targetname) );
+	while (pTarget && (m_iTotal < MS_MAX_TARGETS))
+	{
+		m_rgEntities[m_iTotal++] = pTarget;
+
+		pTarget = UTIL_FindEntityByTarget( pTarget, STRING(pev->targetname));
+	}
+
+	pTarget = UTIL_FindEntityByClassname(NULL, "multi_manager");
+	while (pTarget && (m_iTotal < MS_MAX_TARGETS))
+	{
+		if ( pTarget->HasTarget(pev->targetname) )
+			m_rgEntities[m_iTotal++] = pTarget;
+
+		pTarget = UTIL_FindEntityByClassname( pTarget, "multi_manager" );
+	}
+
+	if (m_iTotal >= MS_MAX_TARGETS)
+	{
+		ALERT(at_console,"WARNING: There are too many entities targetting multisource \"%s\". (limit is %d)\n", STRING(pev->targetname), MS_MAX_TARGETS);
+	}
+
+	pev->spawnflags &= ~SF_MULTI_INIT;
+}
+
+//===================================
+// func_button (= CBaseButton)
+//===================================
+
+//LRC - moved here from cbase.h to use the spawnflags defined in this file
+// Buttons that don't take damage can be IMPULSE used
+int	CBaseButton::ObjectCaps( void )
+{
+	return (CBaseToggle:: ObjectCaps() & ~FCAP_ACROSS_TRANSITION) |
+		(pev->takedamage?0:FCAP_IMPULSE_USE) |
+		(pev->spawnflags & SF_BUTTON_ONLYDIRECT?FCAP_ONLYDIRECT_USE:0);
 }
 
 // CBaseButton
@@ -476,14 +756,26 @@ void CBaseButton::Spawn()
 	if( FBitSet( pev->spawnflags, SF_BUTTON_SPARK_IF_OFF ) )// this button should spark in OFF state
 	{
 		SetThink( &CBaseButton::ButtonSpark );
-		pev->nextthink = gpGlobals->time + 0.5;// no hurry, make sure everything else spawns
+		SetNextThink( 0.5 );// no hurry, make sure everything else spawns
 	}
 
 	SetMovedir( pev );
 
 	pev->movetype = MOVETYPE_PUSH;
+	if ( FBitSet ( pev->spawnflags, SF_BUTTON_NOT_SOLID ) )
+	{
+		pev->solid		= SOLID_NOT;
+		pev->skin		= CONTENTS_EMPTY;
+	}
+	else
+	{
 	pev->solid = SOLID_BSP;
+	}
 	SET_MODEL( ENT( pev ), STRING( pev->model ) );
+	
+	//LRC
+	if (m_iStyle >= 32) LIGHT_STYLE(m_iStyle, "z");
+	else if (m_iStyle <= -32) LIGHT_STYLE(-m_iStyle, "a");
 	
 	if( pev->speed == 0 )
 		pev->speed = 40;
@@ -514,12 +806,34 @@ void CBaseButton::Spawn()
 	if( FBitSet( pev->spawnflags, SF_BUTTON_TOUCH_ONLY ) ) // touchable button
 	{
 		SetTouch( &CBaseButton::ButtonTouch );
+		if ( !FBitSet ( pev->spawnflags, SF_BUTTON_USEKEY ) )
+			SetUse(&CBaseButton:: ButtonUse_IgnorePlayer );
+		else
+			SetUse(&CBaseButton:: ButtonUse );
 	}
 	else 
 	{
 		SetTouch( NULL );
+		if ( FBitSet ( pev->spawnflags, SF_BUTTON_USEKEY ) )
+			SetUse(&CBaseButton:: ButtonUse_IgnorePlayer );
+		else
 		SetUse( &CBaseButton::ButtonUse );
 	}
+}
+
+//LRC
+void CBaseButton :: PostSpawn( void )
+{
+	if (m_pMoveWith)
+		m_vecPosition1 = pev->origin - m_pMoveWith->pev->origin;
+	else
+		m_vecPosition1 = pev->origin;
+	// Subtract 2 from size because the engine expands bboxes by 1 in all directions
+	m_vecPosition2	= m_vecPosition1 + (pev->movedir * (fabs( pev->movedir.x * (pev->size.x-2) ) + fabs( pev->movedir.y * (pev->size.y-2) ) + fabs( pev->movedir.z * (pev->size.z-2) ) - m_flLip));
+
+	// Is this a non-moving button?
+	if ( ((m_vecPosition2 - m_vecPosition1).Length() < 1) || (pev->spawnflags & SF_BUTTON_DONTMOVE) )
+		m_vecPosition2 = m_vecPosition1;
 }
 
 // Button sound table. 
@@ -637,7 +951,7 @@ void DoSpark( entvars_t *pev, const Vector &location )
 void CBaseButton::ButtonSpark( void )
 {
 	SetThink( &CBaseButton::ButtonSpark );
-	pev->nextthink = gpGlobals->time + 0.1 + RANDOM_FLOAT( 0, 1.5 );// spark again at random interval
+	SetNextThink( 0.1 + RANDOM_FLOAT ( 0, 1.5 ) );// spark again at random interval
 
 	DoSpark( pev, pev->mins );
 }
@@ -665,6 +979,13 @@ void CBaseButton::ButtonUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_
 	}
 	else
 		ButtonActivate();
+}
+
+//LRC - they had it set up so that a touch-only button couldn't even be triggered!?
+void CBaseButton::ButtonUse_IgnorePlayer ( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
+{
+	if ( !pCaller || !pCaller->IsPlayer() )
+		ButtonUse( pActivator, pCaller, useType, value );
 }
 
 CBaseButton::BUTTON_CODE CBaseButton::ButtonResponseToTouch( void )
@@ -746,11 +1067,21 @@ void CBaseButton::ButtonActivate()
 	ASSERT( m_toggle_state == TS_AT_BOTTOM );
 	m_toggle_state = TS_GOING_UP;
 	
+	//LRC - unhelpfully, SF_BUTTON_DONTMOVE is the same value as
+	// SF_ROTBUTTON_NOTSOLID, so we have to assume that a rotbutton will
+	// never be DONTMOVE.
+	if (pev->spawnflags & SF_BUTTON_DONTMOVE && !m_fRotating)
+	{
+		TriggerAndWait();
+	}
+	else
+	{
 	SetMoveDone( &CBaseButton::TriggerAndWait );
 	if( !m_fRotating )
 		LinearMove( m_vecPosition2, pev->speed );
 	else
 		AngularMove( m_vecAngle2, pev->speed );
+}
 }
 
 //
@@ -765,6 +1096,13 @@ void CBaseButton::TriggerAndWait( void )
 
 	m_toggle_state = TS_AT_TOP;
 
+	pev->frame = 1;			// use alternate textures
+	//LRC
+	if (m_iStyle >= 32) LIGHT_STYLE(m_iStyle, "a");
+	else if (m_iStyle <= -32) LIGHT_STYLE(-m_iStyle, "z");
+
+	SUB_UseTargets( m_hActivator, USE_TOGGLE, 0 );
+	
 	// If button automatically comes back out, start it moving out.
 	// Else re-instate touch method
 	if( m_fStayPushed || FBitSet( pev->spawnflags, SF_BUTTON_TOGGLE ) )
@@ -779,14 +1117,18 @@ void CBaseButton::TriggerAndWait( void )
 	}
 	else
 	{
-		pev->nextthink = pev->ltime + m_flWait;
 		SetThink( &CBaseButton::ButtonReturn );
+		if ( m_flWait )
+		{
+			SetNextThink( m_flWait );
+		}
+		else
+		{
+			ButtonReturn();
+		}
+	}
 	}
 
-	pev->frame = 1;			// use alternate textures
-
-	SUB_UseTargets( m_hActivator, USE_TOGGLE, 0 );
-}
 
 //
 // Starts the button moving "out/down".
@@ -796,14 +1138,26 @@ void CBaseButton::ButtonReturn( void )
 	ASSERT( m_toggle_state == TS_AT_TOP );
 	m_toggle_state = TS_GOING_DOWN;
 	
+	pev->frame = 0;			// use normal textures
+
+	//LRC
+	if (m_iStyle >= 32) LIGHT_STYLE(m_iStyle, "z");
+	else if (m_iStyle <= -32) LIGHT_STYLE(-m_iStyle, "a");
+
+	if (pev->spawnflags & SF_BUTTON_DONTMOVE)
+	{
+		ButtonBackHome();
+	}
+	else
+	{
 	SetMoveDone( &CBaseButton::ButtonBackHome );
 	if( !m_fRotating )
 		LinearMove( m_vecPosition1, pev->speed );
 	else
 		AngularMove( m_vecAngle1, pev->speed );
-
-	pev->frame = 0;			// use normal textures
+	}
 }
+
 
 //
 // Button has returned to start state.  Quiesce it.
@@ -822,19 +1176,18 @@ void CBaseButton::ButtonBackHome( void )
 
 	if( !FStringNull( pev->target ) )
 	{
-		edict_t *pentTarget = NULL;
+		CBaseEntity *pTarget = NULL;
 		for( ;; )
 		{
-			pentTarget = FIND_ENTITY_BY_TARGETNAME( pentTarget, STRING( pev->target ) );
+			pTarget = UTIL_FindEntityByTargetname(pTarget, STRING(pev->target), m_hActivator);
 
-			if( FNullEnt( pentTarget ) )
+			if (FNullEnt(pTarget))
 				break;
 
-			if( !FClassnameIs( pentTarget, "multisource" ) )
+			if (!FClassnameIs(pTarget->pev, "multisource"))
+				// LRC- hmm... I see. On returning, a button will only turn off multisources.
 				continue;
-			CBaseEntity *pTarget = CBaseEntity::Instance( pentTarget );
 
-			if( pTarget )
 				pTarget->Use( m_hActivator, this, USE_TOGGLE, 0 );
 		}
 	}
@@ -852,7 +1205,11 @@ void CBaseButton::ButtonBackHome( void )
 	if( FBitSet( pev->spawnflags, SF_BUTTON_SPARK_IF_OFF ) )
 	{
 		SetThink( &CBaseButton::ButtonSpark );
-		pev->nextthink = gpGlobals->time + 0.5;// no hurry.
+		SetNextThink( 0.5 );// no hurry.
+	}
+	else
+	{
+		DontThink();
 	}
 }
 
@@ -863,9 +1220,22 @@ class CRotButton : public CBaseButton
 {
 public:
 	void Spawn( void );
+	void PostSpawn( void ) {} // don't use the moveWith fix from CBaseButton
+	virtual void KeyValue( KeyValueData* pkvd);
 };
 
 LINK_ENTITY_TO_CLASS( func_rot_button, CRotButton )
+
+void CRotButton::KeyValue( KeyValueData *pkvd )
+{
+	if (FStrEq(pkvd->szKeyName, "axes"))
+	{
+		UTIL_StringToVector( (float*)(pev->movedir), pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else
+		CBaseButton::KeyValue( pkvd );
+}
 
 void CRotButton::Spawn( void )
 {
@@ -917,10 +1287,19 @@ void CRotButton::Spawn( void )
 	if( !FBitSet( pev->spawnflags, SF_BUTTON_TOUCH_ONLY ) )
 	{
 		SetTouch( NULL );
-		SetUse( &CBaseButton::ButtonUse );
+		if ( FBitSet ( pev->spawnflags, SF_BUTTON_USEKEY ) )
+			SetUse(&CRotButton:: ButtonUse_IgnorePlayer );
+		else
+			SetUse(&CRotButton:: ButtonUse );
 	}
 	else // touchable button
-		SetTouch( &CBaseButton::ButtonTouch );
+	{
+		SetTouch(&CRotButton:: ButtonTouch );
+		if ( !FBitSet ( pev->spawnflags, SF_BUTTON_USEKEY ) )
+			SetUse(&CRotButton:: ButtonUse_IgnorePlayer );
+		else
+			SetUse(&CRotButton:: ButtonUse );
+	}
 
 	//SetTouch( &ButtonTouch );
 }
@@ -1007,7 +1386,7 @@ void CMomentaryRotButton::Spawn( void )
 		pev->solid = SOLID_NOT;
 
 	pev->movetype = MOVETYPE_PUSH;
-	UTIL_SetOrigin( pev, pev->origin );
+	UTIL_SetOrigin(this, pev->origin);
 	SET_MODEL( ENT( pev ), STRING( pev->model ) );
 
 	const char *pszSound = ButtonSound( m_sounds );
@@ -1028,6 +1407,11 @@ void CMomentaryRotButton::KeyValue( KeyValueData *pkvd )
 		m_sounds = atoi( pkvd->szValue );
 		pkvd->fHandled = TRUE;
 	}
+	else if (FStrEq(pkvd->szKeyName, "axes"))
+	{
+		UTIL_StringToVector((float*)(pev->movedir), pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
 	else
 		CBaseToggle::KeyValue( pkvd );
 }
@@ -1042,31 +1426,39 @@ void CMomentaryRotButton::PlaySound( void )
 // current, not future position.
 void CMomentaryRotButton::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
+	if (IsLockedByMaster()) return; //LRC
+	// the distance between the current angle and the "base" angle.
 	pev->ideal_yaw = CBaseToggle::AxisDelta( pev->spawnflags, pev->angles, m_start ) / m_flMoveDistance;
 
 	UpdateAllButtons( pev->ideal_yaw, 1 );
-
+	// TODO: which code to use?
+#if 1 // spirit
+	float f = m_fNextThink - pev->ltime;
+	f = CBaseToggle::AxisDelta( pev->spawnflags, pev->angles + pev->avelocity*f, m_start ) / m_flMoveDistance;
+	//	ALERT(at_console,"sending update = %f\n", f);
+	UpdateTarget( f );
+#else // hlsdk-xash3d master
 	// Calculate destination angle and use it to predict value, this prevents sending target in wrong direction on retriggering
 	Vector dest = pev->angles + pev->avelocity * ( pev->nextthink - pev->ltime );
 	float value1 = CBaseToggle::AxisDelta( pev->spawnflags, dest, m_start ) / m_flMoveDistance;
 	UpdateTarget( value1 );
+#endif
 }
 
 void CMomentaryRotButton::UpdateAllButtons( float value, int start )
 {
-	// Update all rot buttons attached to the same target
-	edict_t *pentTarget = NULL;
+	// Update all rot buttons attached to my target
+	// (this includes myself)
+	CBaseEntity *pTarget = NULL;
 	for( ; ; )
 	{
-		pentTarget = FIND_ENTITY_BY_STRING( pentTarget, "target", STRING( pev->target ) );
-		if( FNullEnt( pentTarget ) )
+		pTarget = UTIL_FindEntityByTarget(pTarget, STRING(pev->target));
+		if (FNullEnt(pTarget))
 			break;
 
-		if( FClassnameIs( VARS( pentTarget ), "momentary_rot_button" ) )
-		{
-			CMomentaryRotButton *pEntity = CMomentaryRotButton::Instance( pentTarget );
-			if( pEntity )
+		if ( FClassnameIs( pTarget->pev, "momentary_rot_button" ) )
 			{
+			CMomentaryRotButton *pEntity = (CMomentaryRotButton*)pTarget;
 				if( start )
 					pEntity->UpdateSelf( value );
 				else
@@ -1074,7 +1466,6 @@ void CMomentaryRotButton::UpdateAllButtons( float value, int start )
 			}
 		}
 	}
-}
 
 void CMomentaryRotButton::UpdateSelf( float value )
 {
@@ -1087,7 +1478,9 @@ void CMomentaryRotButton::UpdateSelf( float value )
 	}
 	m_lastUsed = 1;
 
-	pev->nextthink = pev->ltime + 0.1;
+	SetNextThink( 0.1 );
+
+	//LRC check if we're outside the boundaries
 	if( m_direction > 0 && value >= 1.0 )
 	{
 		pev->avelocity = g_vecZero;
@@ -1104,11 +1497,16 @@ void CMomentaryRotButton::UpdateSelf( float value )
 	if( fplaysound )
 		PlaySound();
 
-	// HACKHACK -- If we're going slow, we'll get multiple player packets per frame, bump nexthink on each one to avoid stalling
-	if( pev->nextthink < pev->ltime )
-		pev->nextthink = pev->ltime + 0.1;
+	// HACKHACK -- If we're going slow, we'll get multiple player packets per frame;
+	// bump nexthink on each one to avoid stalling
+	//LRC- that is to say: our avelocity will get us to the target point in 0.1 secs.
+	// If we're being told to move further than that, wait that much longer.
+	if ( m_fNextThink < pev->ltime )
+		SetNextThink( 0.1 );
 	else
-		pev->nextthink += 0.1;
+	{
+		AbsoluteNextThink( m_fNextThink + 0.1 );
+	}
 	
 	pev->avelocity = m_direction * pev->speed * pev->movedir;
 	SetThink( &CMomentaryRotButton::Off );
@@ -1118,17 +1516,13 @@ void CMomentaryRotButton::UpdateTarget( float value )
 {
 	if( !FStringNull( pev->target ) )
 	{
-		edict_t *pentTarget= NULL;
+		CBaseEntity* pTarget = NULL;
 		for( ; ; )
 		{
-			pentTarget = FIND_ENTITY_BY_TARGETNAME( pentTarget, STRING( pev->target ) );
-			if( FNullEnt( pentTarget ) )
+			pTarget = UTIL_FindEntityByTargetname(pTarget, STRING(pev->target));
+			if ( !pTarget )
 				break;
-			CBaseEntity *pEntity = CBaseEntity::Instance( pentTarget );
-			if( pEntity )
-			{
-				pEntity->Use( this, this, USE_SET, value );
-			}
+			pTarget->Use( this, this, USE_SET, value );
 		}
 	}
 }
@@ -1140,7 +1534,7 @@ void CMomentaryRotButton::Off( void )
 	if( FBitSet( pev->spawnflags, SF_PENDULUM_AUTO_RETURN ) && m_returnSpeed > 0 )
 	{
 		SetThink( &CMomentaryRotButton::Return );
-		pev->nextthink = pev->ltime + 0.1;
+		SetNextThink( 0.1 );
 		m_direction = -1;
 	}
 	else
@@ -1162,13 +1556,13 @@ void CMomentaryRotButton::UpdateSelfReturn( float value )
 	{
 		pev->avelocity = g_vecZero;
 		pev->angles = m_start;
-		pev->nextthink = -1;
+		DontThink();
 		SetThink( NULL );
 	}
 	else
 	{
 		pev->avelocity = -m_returnSpeed * pev->movedir;
-		pev->nextthink = pev->ltime + 0.1;
+		SetNextThink( 0.1 );
 	}
 }
 
@@ -1182,6 +1576,8 @@ public:
 	void Spawn( void );
 	void Precache( void );
 	void EXPORT SparkThink( void );
+	void	EXPORT SparkWait(void);
+	void	EXPORT SparkCyclic(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
 	void EXPORT SparkStart( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
 	void EXPORT SparkStop( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
 	void KeyValue( KeyValueData *pkvd );
@@ -1191,11 +1587,14 @@ public:
 	static TYPEDESCRIPTION m_SaveData[];
 
 	float m_flDelay;
+	STATE	m_iState; //LRC
+	virtual STATE	GetState( void ) { return m_iState; };
 };
 
 TYPEDESCRIPTION CEnvSpark::m_SaveData[] =
 {
 	DEFINE_FIELD( CEnvSpark, m_flDelay, FIELD_FLOAT),
+	DEFINE_FIELD( CEnvSpark, m_iState, FIELD_INTEGER), //LRC
 };
 
 IMPLEMENT_SAVERESTORE( CEnvSpark, CBaseEntity )
@@ -1208,7 +1607,11 @@ void CEnvSpark::Spawn( void )
 	SetThink( NULL );
 	SetUse( NULL );
 
-	if( FBitSet( pev->spawnflags, 32 ) ) // Use for on/off
+	if (FBitSet(pev->spawnflags, 16))
+	{
+		SetUse(&CEnvSpark::SparkCyclic);
+	}
+	else if (FBitSet(pev->spawnflags, 32)) // Use for on/off
 	{
 		if( FBitSet( pev->spawnflags, 64 ) ) // Start on
 		{
@@ -1221,10 +1624,13 @@ void CEnvSpark::Spawn( void )
 	else
 		SetThink( &CEnvSpark::SparkThink );
 		
-	pev->nextthink = gpGlobals->time + 0.1 + RANDOM_FLOAT( 0, 1.5 );
+	if (this->m_pfnThink)
+	{
+		SetNextThink( 0.1 + RANDOM_FLOAT ( 0, 1.5 ) );
 
 	if( m_flDelay <= 0 )
 		m_flDelay = 1.5;
+	}
 
 	Precache();
 }
@@ -1257,23 +1663,51 @@ void CEnvSpark::KeyValue( KeyValueData *pkvd )
 		CBaseEntity::KeyValue( pkvd );
 }
 
+void EXPORT CEnvSpark::SparkCyclic(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
+{
+	if (m_pfnThink == NULL)
+	{
+		DoSpark( pev, pev->origin );
+		SetThink(&CEnvSpark:: SparkWait );
+		SetNextThink( m_flDelay );
+	}
+	else
+	{
+		SetThink(&CEnvSpark::SparkThink ); // if we're on SparkWait, change to actually spark at the specified time.
+	}
+}
+
+void EXPORT CEnvSpark::SparkWait(void)
+{
+	SetThink( NULL );
+}
+
 void EXPORT CEnvSpark::SparkThink( void )
 {
-	pev->nextthink = gpGlobals->time + 0.1 + RANDOM_FLOAT( 0, m_flDelay );
 	DoSpark( pev, pev->origin );
+	if (pev->spawnflags & 16)
+	{
+		SetThink( NULL );
+	}
+	else
+	{
+		SetNextThink( 0.1 + RANDOM_FLOAT (0, m_flDelay) );
+	}
 }
 
 void EXPORT CEnvSpark::SparkStart( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
 	SetUse( &CEnvSpark::SparkStop );
 	SetThink( &CEnvSpark::SparkThink );
-	pev->nextthink = gpGlobals->time + 0.1 + RANDOM_FLOAT( 0, m_flDelay );
+	m_iState = STATE_ON; //LRC
+	SetNextThink( 0.1 + RANDOM_FLOAT ( 0, m_flDelay) );
 }
 
 void EXPORT CEnvSpark::SparkStop( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
 	SetUse( &CEnvSpark::SparkStart);
 	SetThink( NULL );
+	m_iState = STATE_OFF; //LRC
 }
 
 #define SF_BTARGET_USE		0x0001

@@ -40,6 +40,7 @@
 #include	"soundent.h"
 #include	"effects.h"
 #include	"customentity.h"
+#include	"scripted.h" //LRC
 
 int g_fGruntQuestion;				// true if an idle grunt asked a question. Cleared when someone answers.
 
@@ -262,7 +263,8 @@ void CHGrunt::SpeakSentence( void )
 //=========================================================
 int CHGrunt::IRelationship( CBaseEntity *pTarget )
 {
-	if( FClassnameIs( pTarget->pev, "monster_alien_grunt" ) || ( FClassnameIs( pTarget->pev,  "monster_gargantua" ) ) )
+	//LRC- only hate alien grunts if my behaviour hasn't been overridden
+	if( ( !m_iClass && FClassnameIs( pTarget->pev, "monster_alien_grunt" ) ) || ( FClassnameIs( pTarget->pev,  "monster_gargantua" ) ) )
 	{
 		return R_NM;
 	}
@@ -450,7 +452,7 @@ BOOL CHGrunt::CheckRangeAttack1( float flDot, float flDist )
 
 		if( !m_hEnemy->IsPlayer() && flDist <= 64 )
 		{
-			// kick nonclients, but don't shoot at them.
+			// kick nonclients who are close enough, but don't shoot at them.
 			return FALSE;
 		}
 
@@ -492,7 +494,7 @@ BOOL CHGrunt::CheckRangeAttack2( float flDot, float flDist )
 		return m_fThrowGrenade;
 	}
 
-	if( !FBitSet ( m_hEnemy->pev->flags, FL_ONGROUND ) && m_hEnemy->pev->waterlevel == 0 && m_vecEnemyLKP.z > pev->absmax.z  )
+	if ( !FBitSet ( m_hEnemy->pev->flags, FL_ONGROUND ) && (m_hEnemy->pev->waterlevel == 0 || m_hEnemy->pev->watertype==CONTENT_FOG) && m_vecEnemyLKP.z > pev->absmax.z  )
 	{
 		//!!!BUGBUG - we should make this check movetype and make sure it isn't FLY? Players who jump a lot are unlikely to 
 		// be grenaded.
@@ -741,7 +743,7 @@ void CHGrunt::CheckAmmo( void )
 //=========================================================
 int CHGrunt::Classify( void )
 {
-	return CLASS_HUMAN_MILITARY;
+	return m_iClass?m_iClass:CLASS_HUMAN_MILITARY;
 }
 
 //=========================================================
@@ -787,7 +789,7 @@ Vector CHGrunt::GetGunPosition()
 //=========================================================
 void CHGrunt::Shoot( void )
 {
-	if( m_hEnemy == 0 )
+	if (m_hEnemy == 0 && m_pCine == 0) //LRC - scripts may fire when you have no enemy
 	{
 		return;
 	}
@@ -795,6 +797,8 @@ void CHGrunt::Shoot( void )
 	Vector vecShootOrigin = GetGunPosition();
 	Vector vecShootDir = ShootAtEnemy( vecShootOrigin );
 
+	if (m_cAmmoLoaded > 0)
+	{
 	UTIL_MakeVectors( pev->angles );
 
 	Vector vecShellVelocity = gpGlobals->v_right * RANDOM_FLOAT( 40, 90 ) + gpGlobals->v_up * RANDOM_FLOAT( 75, 200 ) + gpGlobals->v_forward * RANDOM_FLOAT( -40, 40 );
@@ -804,6 +808,7 @@ void CHGrunt::Shoot( void )
 	pev->effects |= EF_MUZZLEFLASH;
 
 	m_cAmmoLoaded--;// take away a bullet!
+	}
 
 	Vector angDir = UTIL_VecToAngles( vecShootDir );
 	SetBlending( 0, angDir.x );
@@ -814,7 +819,7 @@ void CHGrunt::Shoot( void )
 //=========================================================
 void CHGrunt::Shotgun( void )
 {
-	if( m_hEnemy == 0 )
+	if (m_hEnemy == 0 && m_pCine == 0)
 	{
 		return;
 	}
@@ -849,6 +854,8 @@ void CHGrunt::HandleAnimEvent( MonsterEvent_t *pEvent )
 	{
 		case HGRUNT_AE_DROP_GUN:
 		{
+			if (pev->spawnflags & SF_MONSTER_NO_WPN_DROP) break; //LRC
+
 			Vector vecGunPos;
 			Vector vecGunAngles;
 
@@ -882,6 +889,21 @@ void CHGrunt::HandleAnimEvent( MonsterEvent_t *pEvent )
 		{
 			UTIL_MakeVectors( pev->angles );
 			// CGrenade::ShootTimed( pev, pev->origin + gpGlobals->v_forward * 34 + Vector( 0, 0, 32 ), m_vecTossVelocity, 3.5 );
+			//LRC - a bit of a hack. Ideally the grunts would work out in advance whether it's ok to throw.
+			if (m_pCine)
+			{
+				Vector vecToss = g_vecZero;
+				if (m_hTargetEnt != 0 && m_pCine->PreciseAttack())
+				{
+					vecToss = VecCheckToss( pev, GetGunPosition(), m_hTargetEnt->pev->origin, 0.5 );
+				}
+				if (vecToss == g_vecZero)
+				{
+					vecToss = (gpGlobals->v_forward*0.5+gpGlobals->v_up*0.5).Normalize()*gSkillData.hgruntGrenadeSpeed;
+				}
+				CGrenade::ShootTimed( pev, GetGunPosition(), vecToss, 3.5 );
+			}
+			else
 			CGrenade::ShootTimed( pev, GetGunPosition(), m_vecTossVelocity, 3.5 );
 
 			m_fThrowGrenade = FALSE;
@@ -892,6 +914,21 @@ void CHGrunt::HandleAnimEvent( MonsterEvent_t *pEvent )
 		case HGRUNT_AE_GREN_LAUNCH:
 		{
 			EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "weapons/glauncher.wav", 0.8, ATTN_NORM );
+			//LRC: firing due to a script?
+			if (m_pCine)
+			{
+				Vector vecToss;
+				if (m_hTargetEnt != 0 && m_pCine->PreciseAttack())
+					vecToss = VecCheckThrow( pev, GetGunPosition(), m_hTargetEnt->pev->origin, gSkillData.hgruntGrenadeSpeed, 0.5 );
+				else
+				{
+					// just shoot diagonally up+forwards
+					UTIL_MakeVectors(pev->angles);
+					vecToss = (gpGlobals->v_forward*0.5 + gpGlobals->v_up*0.5).Normalize() * gSkillData.hgruntGrenadeSpeed;
+				}
+				CGrenade::ShootContact( pev, GetGunPosition(), vecToss );
+			}
+			else
 			CGrenade::ShootContact( pev, GetGunPosition(), m_vecTossVelocity );
 			m_fThrowGrenade = FALSE;
 			if( g_iSkillLevel == SKILL_HARD )
@@ -910,9 +947,9 @@ void CHGrunt::HandleAnimEvent( MonsterEvent_t *pEvent )
 		{
 			if( FBitSet( pev->weapons, HGRUNT_9MMAR ) )
 			{
-				Shoot();
-
 				// the first round of the three round burst plays the sound and puts a sound in the world sound list.
+				if (m_cAmmoLoaded > 0)
+				{
 				if( RANDOM_LONG( 0, 1 ) )
 				{
 					EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "hgrunt/gr_mgun1.wav", 1, ATTN_NORM );
@@ -921,6 +958,13 @@ void CHGrunt::HandleAnimEvent( MonsterEvent_t *pEvent )
 				{
 					EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "hgrunt/gr_mgun2.wav", 1, ATTN_NORM );
 				}
+			}
+			else
+			{
+					EMIT_SOUND( ENT(pev), CHAN_WEAPON, "weapons/dryfire1.wav", 1, ATTN_NORM );
+				}
+
+				Shoot();
 			}
 			else
 			{
@@ -973,14 +1017,18 @@ void CHGrunt::Spawn()
 {
 	Precache();
 
-	SET_MODEL( ENT( pev ), "models/hgrunt.mdl" );
+	if (pev->model)
+		SET_MODEL(ENT(pev), STRING(pev->model)); //LRC
+	else
+		SET_MODEL( ENT( pev ), "models/hgrunt.mdl" );
 	UTIL_SetSize( pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX );
 
 	pev->solid		= SOLID_SLIDEBOX;
 	pev->movetype		= MOVETYPE_STEP;
 	m_bloodColor		= BLOOD_COLOR_RED;
 	pev->effects		= 0;
-	pev->health		= gSkillData.hgruntHealth;
+	if (pev->health == 0)
+		pev->health		= gSkillData.hgruntHealth;
 	m_flFieldOfView		= 0.2;// indicates the width of this monster's forward view cone ( as a dotproduct result )
 	m_MonsterState		= MONSTERSTATE_NONE;
 	m_flNextGrenadeCheck	= gpGlobals->time + 1;
@@ -1038,7 +1086,12 @@ void CHGrunt::Spawn()
 //=========================================================
 void CHGrunt::Precache()
 {
-	PRECACHE_MODEL( "models/hgrunt.mdl" );
+	if (pev->model)
+		PRECACHE_MODEL(STRING(pev->model)); //LRC
+	else
+		PRECACHE_MODEL( "models/hgrunt.mdl" );
+
+	PRECACHE_SOUND( "weapons/dryfire1.wav" ); //LRC
 
 	PRECACHE_SOUND( "hgrunt/gr_mgun1.wav" );
 	PRECACHE_SOUND( "hgrunt/gr_mgun2.wav" );
@@ -1876,10 +1929,15 @@ void CHGrunt::SetActivity( Activity NewActivity )
 			// get toss anim
 			iSequence = LookupSequence( "throwgrenade" );
 		}
-		else
+		// LRC: added a test to stop a marine without a launcher from firing.
+		else if ( pev->weapons & HGRUNT_GRENADELAUNCHER )
 		{
 			// get launch anim
 			iSequence = LookupSequence( "launchgrenade" );
+		}
+		else
+		{
+			ALERT( at_console, "No grenades available. "); // flow into the error message we get at the end...
 		}
 		break;
 	case ACT_RUN:
@@ -2213,13 +2271,13 @@ Schedule_t *CHGrunt::GetScheduleOfType( int Type )
 			}
 			else
 			{
-				if( RANDOM_LONG( 0, 1 ) )
+				if ( OccupySlot( bits_SLOTS_HGRUNT_GRENADE ) && RANDOM_LONG(0,1) )
 				{
-					return &slGruntTakeCover[0];
+					return &slGruntGrenadeCover[ 0 ];
 				}
 				else
 				{
-					return &slGruntGrenadeCover[0];
+					return &slGruntTakeCover[ 0 ];
 				}
 			}
 		}
@@ -2391,8 +2449,8 @@ void CHGruntRepel::RepelUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_
 	pBeam->PointEntInit( pev->origin + Vector( 0, 0, 112 ), pGrunt->entindex() );
 	pBeam->SetFlags( BEAM_FSOLID );
 	pBeam->SetColor( 255, 255, 255 );
-	pBeam->SetThink( &CBaseEntity::SUB_Remove );
-	pBeam->pev->nextthink = gpGlobals->time + -4096.0 * tr.flFraction / pGrunt->pev->velocity.z + 0.5;
+	pBeam->SetThink(&CBeam:: SUB_Remove );
+	pBeam->SetNextThink( -4096.0 * tr.flFraction / pGrunt->pev->velocity.z + 0.5 );
 
 	UTIL_Remove( this );
 }
@@ -2432,6 +2490,8 @@ LINK_ENTITY_TO_CLASS( monster_hgrunt_dead, CDeadHGrunt )
 //=========================================================
 void CDeadHGrunt::Spawn( void )
 {
+	int oldBody;
+
 	PRECACHE_MODEL( "models/hgrunt.mdl" );
 	SET_MODEL( ENT( pev ), "models/hgrunt.mdl" );
 
@@ -2450,36 +2510,44 @@ void CDeadHGrunt::Spawn( void )
 	// Corpses have less health
 	pev->health = 8;
 
-	// map old bodies onto new bodies
-	switch( pev->body )
+	oldBody = pev->body;
+		pev->body = 0;
+
+	if (oldBody >= 5 && oldBody <= 7)
+		pev->skin = 1;
+	else
+		pev->skin = 0;
+
+	switch( pev->weapons )
 	{
-	case 0:
-		// Grunt with Gun
-		pev->body = 0;
-		pev->skin = 0;
-		SetBodygroup( HEAD_GROUP, HEAD_GRUNT );
+	case 0: // MP5
 		SetBodygroup( GUN_GROUP, GUN_MP5 );
 		break;
-	case 1:
-		// Commander with Gun
-		pev->body = 0;
-		pev->skin = 0;
-		SetBodygroup( HEAD_GROUP, HEAD_COMMANDER );
-		SetBodygroup( GUN_GROUP, GUN_MP5 );
+	case 1: // Shotgun
+		SetBodygroup( GUN_GROUP, GUN_SHOTGUN );
 		break;
-	case 2:
-		// Grunt no Gun
-		pev->body = 0;
-		pev->skin = 0;
+	case 2: // No gun
+		SetBodygroup( GUN_GROUP, GUN_NONE );
+		break;
+	}
+
+	switch( oldBody )
+	{
+	case 2: // Gasmask, no gun
+		SetBodygroup( GUN_GROUP, GUN_NONE ); //fall through
+	case 0: case 6: // Gasmask (white/black)
 		SetBodygroup( HEAD_GROUP, HEAD_GRUNT );
-		SetBodygroup( GUN_GROUP, GUN_NONE );
 		break;
-	case 3:
-		// Commander no Gun
-		pev->body = 0;
-		pev->skin = 0;
+	case 3: // Commander, no gun
+		SetBodygroup( GUN_GROUP, GUN_NONE ); //fall through
+	case 1: // Commander
 		SetBodygroup( HEAD_GROUP, HEAD_COMMANDER );
-		SetBodygroup( GUN_GROUP, GUN_NONE );
+		break;
+	case 4: case 7: // Skimask (white/black)
+		SetBodygroup( HEAD_GROUP, HEAD_SHOTGUN );
+		break;
+	case 5: // Commander
+		SetBodygroup( HEAD_GROUP, HEAD_M203 );
 		break;
 	}
 
