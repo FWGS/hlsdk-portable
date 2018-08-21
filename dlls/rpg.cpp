@@ -436,8 +436,10 @@ void CRpg::Holster( int skiplocal /* = 0 */ )
 
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
 
-	SendWeaponAnim( RPG_HOLSTER1 );
-
+	if( m_iClip )
+		SendWeaponAnim( RPG_HOLSTER1 );
+	else
+		SendWeaponAnim( RPG_HOLSTER2 );
 #ifndef CLIENT_DLL
 	if( m_pSpot )
 	{

@@ -540,6 +540,7 @@ BOOL CHGrunt::CheckRangeAttack2( float flDot, float flDist )
 			// crap, I might blow my own guy up. Don't throw a grenade and don't check again for a while.
 			m_flNextGrenadeCheck = gpGlobals->time + 1; // one full second.
 			m_fThrowGrenade = FALSE;
+			return m_fThrowGrenade; //AJH need this or it is overridden later.
 		}
 	}
 

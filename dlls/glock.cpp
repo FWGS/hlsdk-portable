@@ -50,6 +50,12 @@ void CGlock::Spawn()
 	FallInit();// get ready to fall down.
 }
 
+void CGlock::Holster( int skiplocal )
+{
+	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
+	SendWeaponAnim( GLOCK_HOLSTER );
+}
+
 void CGlock::Precache( void )
 {
 	PRECACHE_MODEL( "models/v_9mmhandgun.mdl" );

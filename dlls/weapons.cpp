@@ -300,6 +300,7 @@ void W_Precache( void )
 	UTIL_PrecacheOther( "item_antidote" );
 	UTIL_PrecacheOther( "item_security" );
 	UTIL_PrecacheOther( "item_longjump" );
+	//UTIL_PrecacheOtherWeapon( "weapon_debug" );
 
 	// shotgun
 	UTIL_PrecacheOtherWeapon( "weapon_shotgun" );
@@ -386,6 +387,17 @@ void W_Precache( void )
 	PRECACHE_SOUND( "items/weapondrop1.wav" );// weapon falls to the ground
 }
 
+void CBasePlayerItem::KeyValue( KeyValueData *pkvd ) //AJH
+{
+	if (FStrEq(pkvd->szKeyName, "master"))
+	{
+		m_sMaster = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else
+		CBaseDelay::KeyValue( pkvd );
+}
+
 TYPEDESCRIPTION	CBasePlayerItem::m_SaveData[] =
 {
 	DEFINE_FIELD( CBasePlayerItem, m_pPlayer, FIELD_CLASSPTR ),
@@ -415,6 +427,7 @@ TYPEDESCRIPTION	CBasePlayerWeapon::m_SaveData[] =
 	DEFINE_FIELD( CBasePlayerWeapon, m_iDefaultAmmo, FIELD_INTEGER ),
 	//DEFINE_FIELD( CBasePlayerWeapon, m_iClientClip, FIELD_INTEGER ), reset to zero on load so hud gets updated correctly
 	//DEFINE_FIELD( CBasePlayerWeapon, m_iClientWeaponState, FIELD_INTEGER ), reset to zero on load so hud gets updated correctly
+	DEFINE_FIELD( CBasePlayerWeapon, m_sMaster, FIELD_STRING ), //  AJH master entity for Lockable weapons
 };
 
 IMPLEMENT_SAVERESTORE( CBasePlayerWeapon, CBasePlayerItem )
@@ -577,9 +590,33 @@ void CBasePlayerItem::DefaultTouch( CBaseEntity *pOther )
 	{
 		AttachToPlayer( pPlayer );
 		EMIT_SOUND( ENT( pPlayer->pev ), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM );
+
+		if( !gEvilImpulse101 )
+		{
+			int i;
+			char sample[32];
+			char weapon_name[32];
+			strcpy(weapon_name, STRING(pev->classname));
+
+			if(strncmp(weapon_name, "weapon_", 7) == 0)
+				i = 7;
+			else if (strncmp(weapon_name, "item_", 5) == 0)
+				i = 5;
+			else
+				i = 0;
+
+			sprintf( sample, "!%s", weapon_name + i );
+			pPlayer->SetSuitUpdate( sample, FALSE, SUIT_NEXT_IN_30SEC );
+		}
 	}
 
 	SUB_UseTargets( pOther, USE_TOGGLE, 0 ); // UNDONE: when should this happen?
+}
+
+void CBasePlayerItem::Spawn()
+{
+	pev->animtime = gpGlobals->time + 0.1;
+	CBaseAnimating::Spawn();
 }
 
 BOOL CanAttack( float attack_time, float curtime, BOOL isPredicted )
@@ -745,6 +782,9 @@ void CBasePlayerWeapon :: SetNextThink( float delay )
 // CALLED THROUGH the newly-touched weapon's instance. The existing player weapon is pOriginal
 int CBasePlayerWeapon::AddDuplicate( CBasePlayerItem *pOriginal )
 {
+	if( !UTIL_IsMasterTriggered( m_sMaster, m_pPlayer ) )
+		return FALSE;				// AJH allows for locked weapons
+
 	if( m_iDefaultAmmo )
 	{
 		return ExtractAmmo( (CBasePlayerWeapon *)pOriginal );
@@ -758,6 +798,9 @@ int CBasePlayerWeapon::AddDuplicate( CBasePlayerItem *pOriginal )
 
 int CBasePlayerWeapon::AddToPlayer( CBasePlayer *pPlayer )
 {
+	if( !UTIL_IsMasterTriggered( m_sMaster, m_pPlayer ) )
+		return FALSE;		// AJH allows for locked weapons
+
 	int bResult = CBasePlayerItem::AddToPlayer( pPlayer );
 
 	pPlayer->pev->weapons |= ( 1 << m_iId );
@@ -905,16 +948,7 @@ BOOL CBasePlayerWeapon::AddSecondaryAmmo( int iCount, char *szName, int iMax )
 //=========================================================
 BOOL CBasePlayerWeapon::IsUseable( void )
 {
-	if( m_iClip <= 0 )
-	{
-		if( m_pPlayer->m_rgAmmo[PrimaryAmmoIndex()] <= 0 && iMaxAmmo1() != -1 )			
-		{
-			// clip is empty (or nonexistant) and the player has no more ammo of this type. 
-			return FALSE;
-		}
-	}
-
-	return TRUE;
+	return CanDeploy();
 }
 
 BOOL CBasePlayerWeapon::CanDeploy( void )
@@ -1066,6 +1100,9 @@ void CBasePlayerAmmo::DefaultTouch( CBaseEntity *pOther )
 	{
 		return;
 	}
+
+	if( !UTIL_IsMasterTriggered( m_sMaster, m_pPlayer ) )
+		return;				// AJH allows for locked weapons
 
 	if( AddAmmo( pOther ) )
 	{

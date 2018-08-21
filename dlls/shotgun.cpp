@@ -113,6 +113,12 @@ BOOL CShotgun::Deploy()
 	return DefaultDeploy( "models/v_shotgun.mdl", "models/p_shotgun.mdl", SHOTGUN_DRAW, "shotgun" );
 }
 
+void CShotgun::Holster( int skiplocal )
+{
+	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
+	SendWeaponAnim( SHOTGUN_HOLSTER );
+}
+
 void CShotgun::PrimaryAttack()
 {
 	// don't fire underwater

@@ -1429,6 +1429,8 @@ void CBaseEntity::FireBullets( ULONG cShots, Vector vecSrc, Vector vecDirShootin
 	Vector vecRight = gpGlobals->v_right;
 	Vector vecUp = gpGlobals->v_up;
 
+	UTIL_MuzzleLight( vecSrc, 160, 255, 255, 128, 0, 0 );
+
 	if( pevAttacker == NULL )
 		pevAttacker = pev;  // the default attacker is ourselves
 
@@ -1568,6 +1570,8 @@ Vector CBaseEntity::FireBulletsPlayer( ULONG cShots, Vector vecSrc, Vector vecDi
 	Vector vecUp = gpGlobals->v_up;
 	float x = 0.0f, y = 0.0f;
 	float z;
+
+	UTIL_MuzzleLight( vecSrc, 160, 255, 255, 128, 0, 0 );
 
 	if( pevAttacker == NULL )
 		pevAttacker = pev;  // the default attacker is ourselves

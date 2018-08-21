@@ -66,18 +66,19 @@ public:
 #define WEAPON_CROWBAR			1
 #define	WEAPON_GLOCK			2
 #define WEAPON_PYTHON			3
-#define WEAPON_MP5				4
-#define WEAPON_CHAINGUN			5
-#define WEAPON_CROSSBOW			6
-#define WEAPON_SHOTGUN			7
-#define WEAPON_RPG				8
-#define WEAPON_GAUSS			9
-#define WEAPON_EGON				10
-#define WEAPON_HORNETGUN		11
-#define WEAPON_HANDGRENADE		12
-#define WEAPON_TRIPMINE			13
-#define	WEAPON_SATCHEL			14
-#define	WEAPON_SNARK			15
+#define WEAPON_GENERIC			4
+#define WEAPON_MP5				5
+#define WEAPON_DEBUG			6
+#define WEAPON_CROSSBOW			7
+#define WEAPON_SHOTGUN			8
+#define WEAPON_RPG				9
+#define WEAPON_GAUSS			10
+#define WEAPON_EGON				11
+#define WEAPON_HORNETGUN		12
+#define WEAPON_HANDGRENADE		13
+#define WEAPON_TRIPMINE			14
+#define	WEAPON_SATCHEL			15
+#define	WEAPON_SNARK			16
 
 #define WEAPON_ALLWEAPONS		(~(1<<WEAPON_SUIT))
 
@@ -216,6 +217,9 @@ class CBasePlayerItem : public CBaseAnimating
 public:
 	virtual void SetObjectCollisionBox( void );
 
+#ifndef CLIENT_DLL // AJH for lockable weapons
+	virtual void	KeyValue( KeyValueData* pkvd);
+#endif
 	virtual int		Save( CSave &save );
 	virtual int		Restore( CRestore &restore );
 
@@ -257,11 +261,23 @@ public:
 	static ItemInfo ItemInfoArray[ MAX_WEAPONS ];
 	static AmmoInfo AmmoInfoArray[ MAX_AMMO_SLOTS ];
 
+	string_t m_sMaster;	//AJH for lockable weapons
+
 	CBasePlayer	*m_pPlayer;
 	CBasePlayerItem *m_pNext;
 	int		m_iId;												// WEAPON_???
 
-	virtual int iItemSlot( void ) { return 0; }			// return 0 to MAX_ITEMS_SLOTS, used in hud
+#ifndef CLIENT_DLL//AJH Test Debug
+	virtual void Spawn();
+#endif//AJH
+	virtual int iItemSlot( void )
+	{
+		ItemInfo II;
+		if(GetItemInfo(&II))
+			return II.iSlot + 1;
+		else
+			return 0;// return 0 to MAX_ITEMS_SLOTS, used in hud
+	}
 
 	int			iItemPosition( void ) { return ItemInfoArray[ m_iId ].iPosition; }
 	const char	*pszAmmo1( void )	{ return ItemInfoArray[ m_iId ].pszAmmo1; }
@@ -328,6 +344,7 @@ public:
 	virtual BOOL ShouldWeaponIdle( void ) {return FALSE; };
 	virtual void Holster( int skiplocal = 0 );
 	virtual BOOL UseDecrement( void ) { return FALSE; };
+	//void KeyValue( KeyValueData *pkvd );
 
 	//LRC - used by weaponstrip
 	void DrainClip(CBasePlayer* pPlayer, BOOL keep, int i9mm, int i357, int iBuck, int iBolt, int iARGren, int iRock, int iUranium, int iSatchel, int iSnark, int iTrip, int iGren );
@@ -341,7 +358,7 @@ public:
 	float GetNextAttackDelay( float delay );
 
 	float m_flPumpTime;
-	int		m_fInSpecialReload;									// Are we in the middle of a reload for the shotguns
+	int		m_fInSpecialReload;								// Are we in the middle of a reload for the shotguns
 	float	m_flNextPrimaryAttack;								// soonest time ItemPostFrame will call PrimaryAttack
 	float	m_flNextSecondaryAttack;							// soonest time ItemPostFrame will call SecondaryAttack
 	float	m_flTimeWeaponIdle;									// soonest time ItemPostFrame will call WeaponIdle
@@ -351,6 +368,7 @@ public:
 	int		m_iClientClip;										// the last version of m_iClip sent to hud dll
 	int		m_iClientWeaponState;								// the last version of the weapon state sent to hud dll (is current weapon, is on target)
 	int		m_fInReload;										// Are we in the middle of a reload;
+	int		m_iClipSize;//This required weapon_generic, defintion in same class will crash'es compile
 
 	int		m_iDefaultAmmo;// how much ammo you get when you pick up this weapon as placed by a level designer.
 
@@ -359,7 +377,7 @@ public:
 	float	m_flLastFireTime;
 };
 
-class CBasePlayerAmmo : public CBaseEntity
+class CBasePlayerAmmo : public CBasePlayerItem //AJH
 {
 public:
 	virtual void Spawn( void );
@@ -468,7 +486,6 @@ class CGlock : public CBasePlayerWeapon
 public:
 	void Spawn( void );
 	void Precache( void );
-	int iItemSlot( void ) { return 2; }
 	int GetItemInfo( ItemInfo *p );
 	int AddToPlayer( CBasePlayer *pPlayer );
 
@@ -476,6 +493,7 @@ public:
 	void SecondaryAttack( void );
 	void GlockFire( float flSpread, float flCycleTime, BOOL fUseAutoAim );
 	BOOL Deploy( void );
+	void Holster( int skiplocal = 0 );
 	void Reload( void );
 	void WeaponIdle( void );
 
@@ -500,7 +518,6 @@ class CCrowbar : public CBasePlayerWeapon
 public:
 	void Spawn( void );
 	void Precache( void );
-	int iItemSlot( void ) { return 1; }
 	void EXPORT SwingAgain( void );
 	void EXPORT Smack( void );
 	int GetItemInfo( ItemInfo *p );
@@ -533,7 +550,6 @@ class CPython : public CBasePlayerWeapon
 public:
 	void Spawn( void );
 	void Precache( void );
-	int iItemSlot( void ) { return 2; }
 	int GetItemInfo(ItemInfo *p);
 	int AddToPlayer( CBasePlayer *pPlayer );
 	void PrimaryAttack( void );
@@ -564,7 +580,6 @@ class CMP5 : public CBasePlayerWeapon
 public:
 	void Spawn( void );
 	void Precache( void );
-	int iItemSlot( void ) { return 3; }
 	int GetItemInfo(ItemInfo *p);
 	int AddToPlayer( CBasePlayer *pPlayer );
 
@@ -572,6 +587,7 @@ public:
 	void SecondaryAttack( void );
 	int SecondaryAmmoIndex( void );
 	BOOL Deploy( void );
+	void Holster( int skiplocal = 0 );
 	void Reload( void );
 	void WeaponIdle( void );
 	BOOL IsUseable();
@@ -597,7 +613,6 @@ class CCrossbow : public CBasePlayerWeapon
 public:
 	void Spawn( void );
 	void Precache( void );
-	int iItemSlot( ) { return 3; }
 	int GetItemInfo(ItemInfo *p);
 
 	void FireBolt( void );
@@ -636,13 +651,13 @@ public:
 #endif
 	void Spawn( void );
 	void Precache( void );
-	int iItemSlot( ) { return 3; }
 	int GetItemInfo(ItemInfo *p);
 	int AddToPlayer( CBasePlayer *pPlayer );
 
 	void PrimaryAttack( void );
 	void SecondaryAttack( void );
 	BOOL Deploy( );
+	void Holster( int skiplocal = 0 );
 	void Reload( void );
 	void WeaponTick();
 	void WeaponIdle( void );
@@ -690,7 +705,6 @@ public:
 	void Spawn( void );
 	void Precache( void );
 	void Reload( void );
-	int iItemSlot( void ) { return 4; }
 	int GetItemInfo(ItemInfo *p);
 	int AddToPlayer( CBasePlayer *pPlayer );
 
@@ -750,7 +764,6 @@ public:
 #endif
 	void Spawn( void );
 	void Precache( void );
-	int iItemSlot( void ) { return 4; }
 	int GetItemInfo(ItemInfo *p);
 	int AddToPlayer( CBasePlayer *pPlayer );
 	BOOL IsUseable();
@@ -797,7 +810,6 @@ public:
 #endif
 	void Spawn( void );
 	void Precache( void );
-	int iItemSlot( void ) { return 4; }
 	int GetItemInfo(ItemInfo *p);
 	int AddToPlayer( CBasePlayer *pPlayer );
 
@@ -863,7 +875,6 @@ public:
 #endif
 	void Spawn( void );
 	void Precache( void );
-	int iItemSlot( void ) { return 4; }
 	int GetItemInfo(ItemInfo *p);
 	int AddToPlayer( CBasePlayer *pPlayer );
 
@@ -897,7 +908,6 @@ class CHandGrenade : public CBasePlayerWeapon
 public:
 	void Spawn( void );
 	void Precache( void );
-	int iItemSlot( void ) { return 5; }
 	int GetItemInfo(ItemInfo *p);
 
 	void PrimaryAttack( void );
@@ -926,7 +936,6 @@ public:
 #endif
 	void Spawn( void );
 	void Precache( void );
-	int iItemSlot( void ) { return 5; }
 	int GetItemInfo(ItemInfo *p);
 	int AddToPlayer( CBasePlayer *pPlayer );
 	void PrimaryAttack( void );
@@ -955,7 +964,6 @@ class CTripmine : public CBasePlayerWeapon
 public:
 	void Spawn( void );
 	void Precache( void );
-	int iItemSlot( void ) { return 5; }
 	int GetItemInfo(ItemInfo *p);
 	void SetObjectCollisionBox( void )
 	{
@@ -987,7 +995,6 @@ class CSqueak : public CBasePlayerWeapon
 public:
 	void Spawn( void );
 	void Precache( void );
-	int iItemSlot( void ) { return 5; }
 	int GetItemInfo(ItemInfo *p);
 
 	void PrimaryAttack( void );
