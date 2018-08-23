@@ -259,6 +259,12 @@ void CBaseTurret::Spawn()
 		m_iAutoStart = TRUE;
 	}
 
+	if( m_iOrientation == 1 )
+	{
+		pev->idealpitch = 180;
+		pev->angles.x = 180;
+	}
+
 	ResetSequenceInfo();
 	SetBoneController( 0, 0 );
 	SetBoneController( 1, 0 );
@@ -386,8 +392,8 @@ void CBaseTurret::Initialize( void )
 	m_flStartYaw = pev->angles.y;
 	if( m_iOrientation == 1 )
 	{
-		pev->idealpitch = 180;
-		pev->angles.x = 180;
+		//pev->idealpitch = 180;
+		//pev->angles.x = 180; //This is moved to CBaseTurret::Spawn for fix old bug in original HL. G-Cont.
 		pev->view_ofs.z = -pev->view_ofs.z;
 		pev->effects |= EF_INVLIGHT;
 		pev->angles.y = pev->angles.y + 180;
@@ -1183,7 +1189,9 @@ void CSentry::Spawn()
 		pev->health = gSkillData.sentryHealth;
 	m_HackedGunPos = Vector( 0, 0, 48 );
 	pev->view_ofs.z = 48;
-	m_flMaxWait = 1E6;
+	// m_flMaxWait = 1E6;
+	if( m_flMaxWait == 0 )
+		m_flMaxWait = TURRET_MAXWAIT;//G-Cont. now sentry can deployed
 	m_flMaxSpin = 1E6;
 
 	CBaseTurret::Spawn();
