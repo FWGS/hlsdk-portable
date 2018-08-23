@@ -4,13 +4,17 @@
 #include "gravgunmod.h"
 #include "player.h"
 #include "coop_util.h"
+#include "gamerules.h"
 
 
-cvar_t cvar_allow_gravgun = { "mp_allow_gravgun","1", FCVAR_SERVER };
+cvar_t cvar_allow_gravgun = { "mp_allow_gravgun","2", FCVAR_SERVER };
 cvar_t cvar_allow_ar2 = { "mp_allow_ar2","0", FCVAR_SERVER };
 cvar_t cvar_ar2_mp5 = { "mp_ar2_mp5","0", FCVAR_SERVER };
 cvar_t cvar_ar2_balls = { "mp_ar2_balls","0", FCVAR_SERVER };
 cvar_t cvar_ar2_bullets = { "mp_ar2_bullets","0", FCVAR_SERVER };
+cvar_t cvar_allow_bigcock = { "mp_allow_bigcock","0", FCVAR_SERVER };
+cvar_t cvar_allow_gateofbabylon = { "mp_allow_gateofbabylon","0", FCVAR_SERVER };
+
 cvar_t cvar_wresptime = { "mp_wresptime","20", FCVAR_SERVER };
 cvar_t cvar_iresptime = { "mp_iresptime","30", FCVAR_SERVER };
 cvar_t cvar_gibtime = { "mp_gibtime","250", FCVAR_SERVER };
@@ -109,6 +113,8 @@ void GGM_RegisterCVars( void )
 	CVAR_REGISTER( &cvar_ar2_mp5 );
 	CVAR_REGISTER( &cvar_ar2_bullets );
 	CVAR_REGISTER( &cvar_ar2_balls );
+	CVAR_REGISTER( &cvar_allow_bigcock );
+	CVAR_REGISTER( &cvar_allow_gateofbabylon );
 	CVAR_REGISTER( &cvar_wresptime );
 	CVAR_REGISTER( &cvar_iresptime );
 	CVAR_REGISTER( &cvar_gibtime );
@@ -314,7 +320,7 @@ void GGM_ClientPutinServer(edict_t *pEntity, CBasePlayer *pPlayer)
 void GGM_ClientFirstSpawn(CBasePlayer *pPlayer)
 {
 	// AGHL-like spectator
-	if( mp_spectator.value )
+	if( mp_spectator.value && g_pGameRules->IsMultiplayer()  )
 	{
 		pPlayer->RemoveAllItems( TRUE );
 		UTIL_BecomeSpectator( pPlayer );

@@ -647,19 +647,24 @@ void CHalfLifeMultiplay::PlayerSpawn( CBasePlayer *pPlayer )
 	{
 		pPlayer->GiveNamedItem( "weapon_crowbar" );
 		pPlayer->GiveNamedItem( "weapon_9mmhandgun" );
-		if( cvar_allow_gravgun.value)
-			pPlayer->GiveNamedItem( "weapon_gravgun" );
-		if( cvar_allow_ar2.value )
-			pPlayer->GiveNamedItem( "weapon_ar2" );
-		if( !cvar_ar2_mp5.value )
-		{
-			pPlayer->GiveAmmo( cvar_ar2_bullets.value, "AR2", 120 );
-			pPlayer->GiveAmmo( cvar_ar2_balls.value, "AR2grenades", 3 );
-		}
 		pPlayer->GiveAmmo( 68, "9mm", _9MM_MAX_CARRY );// 4 full reloads
-
 	}
-	if(mp_coop_changelevel.value)
+
+	if( (int)cvar_allow_gravgun.value == 2 )
+		pPlayer->GiveNamedItem( "weapon_gravgun" );
+	if( (int)cvar_allow_ar2.value == 2 )
+		pPlayer->GiveNamedItem( "weapon_ar2" );
+	if( !cvar_ar2_mp5.value )
+	{
+		pPlayer->GiveAmmo( cvar_ar2_bullets.value, "AR2", 120 );
+		pPlayer->GiveAmmo( cvar_ar2_balls.value, "AR2grenades", 3 );
+	}
+	if( (int)cvar_allow_bigcock.value == 2 )
+		pPlayer->GiveNamedItem( "weapon_big_cock" );
+	if( (int)cvar_allow_gateofbabylon.value == 2 )
+		pPlayer->GiveNamedItem( "weapon_gateofbabylon" );
+
+	if( mp_coop_changelevel.value )
 	{
 //		pPlayer->GiveNamedItem( "item_suit" );
 		g_WeaponList.GiveToPlayer(pPlayer);

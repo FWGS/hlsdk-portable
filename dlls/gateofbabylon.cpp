@@ -25,6 +25,7 @@
 #include "sprite.h"
 #include "com_model.h"
 #include "customweapons.h"
+#include "unpredictedweapon.h"
 
 #ifndef CLIENT_DLL
 #define BOLT_AIR_VELOCITY	2700
@@ -32,7 +33,7 @@
 
 class CGateOfBabylonSpawner;
 #define MAX_SPAWNERS 7
-class CGateOfBabylon : public CBasePlayerWeapon
+class CGateOfBabylon : public CBasePlayerWeaponU
 {
 public:
 	void Spawn( void );
@@ -53,16 +54,7 @@ public:
 	void Reload( void );
 	void WeaponIdle( void );
 
-	virtual BOOL UseDecrement( void )
-	{
-//#if defined( CLIENT_WEAPONS )
-//		return ;
-//#else
-		return false;
-//#endif
-	}
-
-	CGateOfBabylonSpawner *m_pSpawners[MAX_SPAWNERS];
+	EHANDLE m_pSpawners[MAX_SPAWNERS];
 	bool IntersectOtherSpawner( CGateOfBabylonSpawner *spawner );
 
 private:
@@ -147,6 +139,11 @@ CGateOfBabylonBolt *CGateOfBabylonBolt::BoltCreate( void )
 
 void CGateOfBabylonBolt::Spawn()
 {
+	if( !cvar_allow_gateofbabylon.value )
+	{
+		pev->flags = FL_KILLME;
+		return;
+	}
 	Precache();
 	pev->movetype = MOVETYPE_FLY;
 	pev->solid = SOLID_BBOX;
@@ -167,6 +164,10 @@ void CGateOfBabylonBolt::Spawn()
 
 void CGateOfBabylonBolt::Precache()
 {
+	if( !cvar_allow_gateofbabylon.value )
+	{
+		return;
+	}
 	PRECACHE_MODEL( "models/w_crowbar.mdl" );
 	PRECACHE_SOUND( "weapons/xbow_hitbod1.wav" );
 	PRECACHE_SOUND( "weapons/xbow_hitbod2.wav" );
@@ -174,6 +175,7 @@ void CGateOfBabylonBolt::Precache()
 	PRECACHE_SOUND( "weapons/xbow_hit1.wav" );
 	PRECACHE_SOUND( "fvox/beep.wav" );
 	m_iTrail = PRECACHE_MODEL( "sprites/lgtning.spr" );
+	PRECACHE_GENERIC("sprites/weapon_gateofbabylon.txt");
 }
 
 void CGateOfBabylonBolt::RemoveThink( void )
@@ -466,6 +468,13 @@ CGateOfBabylonSpawner *CGateOfBabylonSpawner::CreateSpawner(
 bool CGateOfBabylonSpawner::FireBolts( void )
 {
 	TraceResult tr;
+
+	if( !m_pGates )
+	{
+		pev->flags = FL_KILLME;
+		return false;
+	}
+
 	CBasePlayer *pPlayer = m_pGates->m_pPlayer;
 
 	if( m_flNextNPThrow > gpGlobals->time )
@@ -530,21 +539,18 @@ TYPEDESCRIPTION CGateOfBabylonSpawner::m_SaveData[] =
 	DEFINE_FIELD( CGateOfBabylonSpawner, m_vecOffset, FIELD_VECTOR ),
 	DEFINE_FIELD( CGateOfBabylonSpawner, m_flNextNPThrow, FIELD_TIME ),
 	DEFINE_FIELD( CGateOfBabylonSpawner, m_flLastTimeAnim, FIELD_TIME ),
-	DEFINE_FIELD( CGateOfBabylonSpawner, m_pGates, FIELD_CLASSPTR )
+	DEFINE_FIELD( CGateOfBabylonSpawner, m_pGates, FIELD_EHANDLE )
 };
 
 IMPLEMENT_SAVERESTORE( CGateOfBabylonSpawner, CBaseEntity );
 
 TYPEDESCRIPTION	CGateOfBabylon::m_SaveData[] =
 {
-	DEFINE_FIELD( CBasePlayerWeapon, m_flNextPrimaryAttack, FIELD_TIME ),
-	DEFINE_FIELD( CBasePlayerWeapon, m_flNextSecondaryAttack, FIELD_TIME ),
-	DEFINE_FIELD( CBasePlayerWeapon, m_flTimeWeaponIdle, FIELD_TIME ),
 	DEFINE_FIELD( CGateOfBabylon, m_iSpawnerCount, FIELD_INTEGER ),
-	DEFINE_ARRAY( CGateOfBabylon, m_pSpawners, FIELD_CLASSPTR, MAX_SPAWNERS )
+	DEFINE_ARRAY( CGateOfBabylon, m_pSpawners, FIELD_EHANDLE, MAX_SPAWNERS )
 };
 
-IMPLEMENT_SAVERESTORE( CGateOfBabylon, CBasePlayerWeapon );
+IMPLEMENT_SAVERESTORE( CGateOfBabylon, CBasePlayerWeaponU );
 
 
 int CGateOfBabylon::ObjectCaps()
@@ -564,6 +570,10 @@ void CGateOfBabylon::Spawn()
 
 int CGateOfBabylon::AddToPlayer( CBasePlayer *pPlayer )
 {
+	if( !cvar_allow_gateofbabylon.value )
+	{
+		return FALSE;
+	}
 	if( CBasePlayerWeapon::AddToPlayer( pPlayer ) )
 	{
 		MESSAGE_BEGIN( MSG_ONE, gmsgWeapPickup, NULL, pPlayer->pev );
@@ -638,7 +648,7 @@ void CGateOfBabylon::PrimaryAttack( void )
 
 		if( m_pSpawners[i] )
 		{
-			fire = m_pSpawners[i]->FireBolts();
+			fire = ((CGateOfBabylonSpawner *)((CBaseEntity*)m_pSpawners[i]))->FireBolts();
 		}
 	} while( !fire && j++ < m_iSpawnerCount); // give up after some retries
 
@@ -728,7 +738,7 @@ bool CGateOfBabylon::IntersectOtherSpawner( CGateOfBabylonSpawner *spawner )
 {
 	for( int i = 0; i < m_iSpawnerCount; i++ )
 	{
-		CGateOfBabylonSpawner *o = m_pSpawners[i];
+		CGateOfBabylonSpawner *o = (CGateOfBabylonSpawner *)(CBaseEntity*)m_pSpawners[i];
 
 		if( spawner == o || !o )
 			continue;

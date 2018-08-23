@@ -16,6 +16,7 @@
 #include "gamerules.h"
 #include "game.h"
 #include "customweapons.h"
+#include "unpredictedweapon.h"
 
 #define AR2_BEAM_SPRITE		"sprites/xbeam1.spr"
 enum AR2_e
@@ -30,7 +31,7 @@ enum AR2_e
 	AR2_FIRE3,
 };
 
-class CAR2 : public CBasePlayerWeapon
+class CAR2 : public CBasePlayerWeaponU
 {
 public:
 	void Spawn(void);
@@ -50,13 +51,6 @@ public:
 	void WeaponIdle(void);
 	float m_flNextAnimTime;
 	int m_iShell;
-
-	virtual BOOL UseDecrement(void)
-	{
-		return false;
-
-	}
-
 };
 
 LINK_ENTITY_TO_CLASS(weapon_ar2, CAR2);
@@ -394,6 +388,11 @@ int CAR2::SecondaryAmmoIndex(void)
 
 void CAR2::Spawn()
 {
+	if( !cvar_allow_ar2.value )
+	{
+		pev->flags = FL_KILLME;
+		return;
+	}
 	pev->classname = MAKE_STRING("weapon_ar2");
 	Precache();
 	SET_MODEL(ENT(pev), "models/w_ar2.mdl");
@@ -407,6 +406,8 @@ void CAR2::Spawn()
 
 void CAR2::Precache(void)
 {
+	if( !cvar_allow_ar2.value )
+		return;
 	PRECACHE_MODEL("models/v_ar2.mdl");
 	PRECACHE_MODEL("models/w_ar2.mdl");
 	PRECACHE_MODEL("models/p_ar2.mdl");
@@ -426,6 +427,7 @@ void CAR2::Precache(void)
 	PRECACHE_SOUND("ar2launch.wav");
 
 	PRECACHE_SOUND("weapons/357_cock1.wav");
+	PRECACHE_GENERIC("sprites/weapon_ar2.txt");
 
 }
 
@@ -458,6 +460,8 @@ int CAR2::GetItemInfo(ItemInfo *p)
 
 int CAR2::AddToPlayer(CBasePlayer *pPlayer)
 {
+	if( !cvar_allow_ar2.value )
+		return FALSE;
 	if (CBasePlayerWeapon::AddToPlayer(pPlayer))
 	{
 		MESSAGE_BEGIN(MSG_ONE, gmsgWeapPickup, NULL, pPlayer->pev);

@@ -3,7 +3,7 @@
 
 #include "weapons.h"
 
-class CBasePlayerWeaponU: CBasePlayerWeapon
+class CBasePlayerWeaponU: public CBasePlayerWeapon
 {
 public:
 	virtual int		Save( CSave &save );

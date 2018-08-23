@@ -7,6 +7,8 @@ extern cvar_t cvar_allow_ar2;
 extern cvar_t cvar_ar2_mp5;
 extern cvar_t cvar_ar2_bullets;
 extern cvar_t cvar_ar2_balls;
+extern cvar_t cvar_allow_bigcock;
+extern cvar_t cvar_allow_gateofbabylon;
 extern cvar_t cvar_wresptime;
 extern cvar_t cvar_iresptime;
 

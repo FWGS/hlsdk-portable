@@ -17,6 +17,7 @@ Created by Solexid
 #include "customentity.h"
 #include "gamerules.h"
 #include "customweapons.h"
+#include "unpredictedweapon.h"
 
 #define	GRAV_BEAM_SPRITE_PRIMARY_VOLUME		30
 #define GRAV_BEAM_SPRITE		"sprites/xbeam3.spr"
@@ -40,7 +41,7 @@ enum gauss_e {
 };
 
 
-class CGravGun : public CBasePlayerWeapon
+class CGravGun : public CBasePlayerWeaponU
 {
 public:
 
@@ -87,11 +88,6 @@ public:
 	CBeam				*m_pNoise;
 	CSprite				*m_pSprite;
 
-	virtual BOOL UseDecrement(void)
-	{
-		return false;
-	}
-
 private:
 	float				m_shootTime;
 	GRAV_FIREMODE		m_fireMode;
@@ -104,7 +100,12 @@ LINK_ENTITY_TO_CLASS(weapon_gravgun, CGravGun);
 
 void CGravGun::Spawn()
 {
-	pev->classname = MAKE_STRING("weapon_gravgun"); // hack to allow for old names
+	if( !cvar_allow_gravgun.value )
+	{
+		pev->flags = FL_KILLME;
+		return;
+	}
+	pev->classname = MAKE_STRING("weapon_gravgun");
 	Precache();
 	m_iId = WEAPON_GRAVGUN;
 	SET_MODEL(ENT(pev), "models/w_gravcannon.mdl");
@@ -142,6 +143,8 @@ Vector CGravGun::PredictTarget(float length)
 
 void CGravGun::Precache(void)
 {
+	if( !cvar_allow_gravgun.value )
+		return;
 	PRECACHE_MODEL("models/w_gravcannon.mdl");
 	PRECACHE_MODEL("models/v_gravcannon.mdl");
 	PRECACHE_MODEL("models/p_gravcannon.mdl");
@@ -158,6 +161,7 @@ void CGravGun::Precache(void)
 	PRECACHE_MODEL("sprites/hotglow.spr");
 
 	PRECACHE_SOUND("weapons/357_cock1.wav");
+	PRECACHE_GENERIC("sprites/weapon_gravgun.txt");
 
 }
 
@@ -172,6 +176,9 @@ BOOL CGravGun::Deploy(void)
 
 int CGravGun::AddToPlayer(CBasePlayer *pPlayer)
 {
+	if( !cvar_allow_gravgun.value )
+		return FALSE;
+
 	if (CBasePlayerWeapon::AddToPlayer(pPlayer))
 	{
 		MESSAGE_BEGIN(MSG_ONE, gmsgWeapPickup, NULL, pPlayer->pev);

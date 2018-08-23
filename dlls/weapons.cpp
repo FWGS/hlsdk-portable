@@ -355,10 +355,14 @@ void W_Precache( void )
 	// hornetgun
 	UTIL_PrecacheOtherWeapon( "weapon_hornetgun" );
 #endif
-	UTIL_PrecacheOtherWeapon( "weapon_gravgun" );
-	UTIL_PrecacheOtherWeapon( "weapon_ar2" );
-	UTIL_PrecacheOtherWeapon( "weapon_big_cock" );
-	UTIL_PrecacheOtherWeapon( "weapon_gateofbabylon" );
+	if( cvar_allow_gravgun.value )
+		UTIL_PrecacheOtherWeapon( "weapon_gravgun" );
+	if( cvar_allow_ar2.value )
+		UTIL_PrecacheOtherWeapon( "weapon_ar2" );
+	if( cvar_allow_bigcock.value )
+		UTIL_PrecacheOtherWeapon( "weapon_big_cock" );
+	if( cvar_allow_gateofbabylon.value )
+		UTIL_PrecacheOtherWeapon( "weapon_gateofbabylon" );
 
 
 #if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )

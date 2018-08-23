@@ -13,6 +13,7 @@
 #include "nodes.h"
 #include "player.h"
 #include "customweapons.h"
+#include "unpredictedweapon.h"
 
 #define BIG_COCK_WEIGHT 21
 
@@ -30,7 +31,7 @@ enum glock_e {
 	GLOCK_ADD_SILENCER
 };
 
-class CBig_Cock : public CBasePlayerWeapon
+class CBig_Cock : public CBasePlayerWeaponU
 {
 public:
 	void Spawn( void );
@@ -58,6 +59,11 @@ LINK_ENTITY_TO_CLASS(weapon_90mhandcock, CBig_Cock);
 
 void CBig_Cock::Spawn()
 {
+	if( !cvar_allow_bigcock.value )
+	{
+		pev->flags = FL_KILLME;
+		return;
+	}
 	pev->classname = MAKE_STRING("weapon_big_cock"); // hack to allow for old names
 	Precache( );
 	m_iId = WEAPON_BIG_COCK;
@@ -71,6 +77,8 @@ void CBig_Cock::Spawn()
 
 void CBig_Cock::Precache(void)
 {
+	if( !cvar_allow_bigcock.value )
+		return;
 	PRECACHE_MODEL("models/v_9mmcockgunn.mdl");
 	PRECACHE_MODEL("models/w_9mmcockgunn.mdl");
 	PRECACHE_MODEL("models/p_9mmcockgunn.mdl");
@@ -86,6 +94,7 @@ void CBig_Cock::Precache(void)
 
 	m_usFireGlock1 = PRECACHE_EVENT( 1, "events/glock1.sc" );
 	m_usFireGlock2 = PRECACHE_EVENT( 1, "events/glock2.sc" );
+	PRECACHE_GENERIC("sprites/weapon_big_cock.txt");
 }
 
 int CBig_Cock::GetItemInfo(ItemInfo *p)
@@ -294,7 +303,7 @@ void CBig_Cock::WeaponIdle(void)
 class CGlockAmmo : public CBasePlayerAmmo
 {
 	void Spawn( void )
-	{ 
+	{
 		Precache( );
 		SET_MODEL(ENT(pev), "models/w_9mmclip.mdl");
 		CBasePlayerAmmo::Spawn( );
