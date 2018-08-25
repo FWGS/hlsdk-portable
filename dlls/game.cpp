@@ -230,6 +230,11 @@ cvar_t	sk_nihilanth_zap1 = {"sk_nihilanth_zap1","0"};
 cvar_t	sk_nihilanth_zap2 = {"sk_nihilanth_zap2","0"};
 cvar_t	sk_nihilanth_zap3 = {"sk_nihilanth_zap3","0"};
 
+// Barney
+cvar_t  sk_roy_health1 = {"sk_roy_health1","0"};
+cvar_t  sk_roy_health2 = {"sk_roy_health2","0"};
+cvar_t  sk_roy_health3 = {"sk_roy_health3","0"};
+
 // Scientist
 cvar_t	sk_scientist_health1 = {"sk_scientist_health1","0"};
 cvar_t	sk_scientist_health2 = {"sk_scientist_health2","0"};
@@ -653,6 +658,11 @@ void GameDLLInit( void )
 	CVAR_REGISTER( &sk_nihilanth_zap1 );
 	CVAR_REGISTER( &sk_nihilanth_zap2 );
 	CVAR_REGISTER( &sk_nihilanth_zap3 );
+
+	// Roy
+	CVAR_REGISTER( &sk_roy_health1 );// {"sk_roy_health1","0"};
+	CVAR_REGISTER( &sk_roy_health2 );// {"sk_roy_health2","0"};
+	CVAR_REGISTER( &sk_roy_health3 );// {"sk_roy_health3","0"};
 
 	// Scientist
 	CVAR_REGISTER( &sk_scientist_health1 );// {"sk_scientist_health1","0"};
