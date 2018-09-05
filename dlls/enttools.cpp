@@ -3,7 +3,7 @@
 #include "cbase.h"
 #include "game.h"
 #include "player.h"
-
+#include "saverestore.h"
 #define Ent_IsValidEdict( e )	( e && !e->free )
 
 // stop any actions with players
@@ -481,6 +481,182 @@ bool Ent_CheckModel( const char *model )
 	return true;
 }
 
+class CDumper: public CSave
+{
+public:
+	CDumper( edict_t *cl, bool E, bool EV ) : CSave(NULL), client(cl), dumpEmpty(E), dumpEntvars(EV) {};
+	/*CSave& operator CSave&()
+	{
+		return (CSave&)*this;
+	}*/
+	int WriteFields( const char *pname, void *pBaseData, TYPEDESCRIPTION *pFields, int fieldCount );
+	int WriteEntVars( const char *pname, entvars_t *pev )
+	{
+		if( dumpEntvars )
+			return CSave::WriteEntVars( pname, pev );
+		return true;
+	}
+private:
+	edict_t *client;
+	bool dumpEmpty;
+	bool dumpEntvars;
+};
+#ifdef __GNUC__
+extern "C" char *__cxa_demangle(const char* mangled_name,
+								char* output_buffer, size_t* length,
+								int* status);
+#endif
+#define PRINTARR(pat, type, add) \
+	for( j = 0; j < pTest->fieldSize - 1; j++ ) \
+		Ent_ClientPrintf( client, pat", ", ((type*)pOutputData)[j] add ); \
+	Ent_ClientPrintf( client, pat"\n", ((type*)pOutputData)[pTest->fieldSize - 1] add);
+
+int CDumper::WriteFields( const char *pname, void *pBaseData, TYPEDESCRIPTION *pFields, int fieldCount )
+{
+	int i, j;
+
+	if( !dumpEntvars && !strcmp( pname, "ENTVARS") )
+		return 0;
+
+	Ent_ClientPrintf( client, "%s:\n", pname );
+
+	for( i = 0; i < fieldCount; i++ )
+	{
+		TYPEDESCRIPTION	*pTest = &pFields[i];
+		void *pOutputData = ( (char *)pBaseData + pTest->fieldOffset );
+
+		if( !dumpEmpty && FieldEmpty(pTest, pOutputData) )
+			continue;
+
+		if( pTest->fieldSize > 1 )
+			Ent_ClientPrintf( client, "%s : \n", pTest->fieldName );
+		else
+			Ent_ClientPrintf( client, "%s : ", pTest->fieldName );
+
+		switch( pTest->fieldType )
+		{
+		case FIELD_FLOAT:
+			PRINTARR("%f",float,)
+			break;
+		case FIELD_TIME:
+			PRINTARR("%+fs",float,-gpGlobals->time)
+			break;
+		case FIELD_MODELNAME:
+		case FIELD_SOUNDNAME:
+		case FIELD_STRING:
+			for( j = 0; j < pTest->fieldSize - 1; j++ )
+				if(((string_t*)pOutputData)[j])
+					Ent_ClientPrintf( client, "\"%s\", ", STRING(((string_t*)pOutputData)[j]) );
+				else
+					Ent_ClientPrintf( client, "null, ");
+
+			if(((string_t*)pOutputData)[pTest->fieldSize - 1])
+				Ent_ClientPrintf( client, "\"%s\"\n", STRING(((string_t*)pOutputData)[pTest->fieldSize - 1]) );
+			else
+				Ent_ClientPrintf( client, "null\n");
+			break;
+		case FIELD_CLASSPTR:
+		case FIELD_EVARS:
+		case FIELD_EDICT:
+		case FIELD_ENTITY:
+		case FIELD_EHANDLE:
+			for( j = 0; j < pTest->fieldSize; j++ )
+			{
+				CBaseEntity *ent;
+				switch( pTest->fieldType )
+				{
+					case FIELD_EVARS:
+						ent = CBaseEntity::Instance( ( (entvars_t **)pOutputData )[j] );
+						break;
+					case FIELD_CLASSPTR:
+						ent = ( (CBaseEntity **)pOutputData )[j];
+						break;
+					case FIELD_EDICT:
+						ent = CBaseEntity::Instance( ( (edict_t **)pOutputData )[j] );
+						break;
+					case FIELD_ENTITY:
+						ent = CBaseEntity::Instance( ( (EOFFSET *)pOutputData )[j] );
+						break;
+					case FIELD_EHANDLE:
+						ent = (CBaseEntity *)( ( (EHANDLE *)pOutputData)[j] );
+						break;
+					default:
+						break;
+				}
+				if( ent )
+				{
+					const char *classname = "";
+					if( ent->pev->classname )
+						classname = STRING(ent->pev->classname);
+
+					Ent_ClientPrintf( client, "%i %s\n", ENTINDEX(ent->edict()), classname);
+				}
+				else
+					Ent_ClientPrintf( client, "null\n");
+
+			}
+			break;
+		case FIELD_POSITION_VECTOR:
+		case FIELD_VECTOR:
+			for( j = 0; j < pTest->fieldSize; j++ )
+				Ent_ClientPrintf( client, "%f %f %f\n", ((float*)pOutputData)[j*3],((float*)pOutputData)[j*3+1],((float*)pOutputData)[j*3+2] );
+			break;
+		case FIELD_BOOLEAN:
+		case FIELD_INTEGER:
+			PRINTARR("%i",int,)
+			break;
+		case FIELD_SHORT:
+			PRINTARR("%i",short,)
+			break;
+		case FIELD_CHARACTER:
+			for( j = 0; j < pTest->fieldSize; j++ )
+			{
+				signed char c =  ((char*)pOutputData)[j];
+				if( c < 32 ) // allow bool/int types
+					Ent_ClientPrintf( client, "\\%d", c);
+				else
+					Ent_ClientPrintf( client, "%c", c);
+				if( c == 0 )
+					break;
+			}
+			Ent_ClientPrintf( client, "\n");
+			break;
+		// For now, just write the address out, we're not going to change memory while doing this yet!
+		case FIELD_POINTER:
+			PRINTARR("%p",void*,)
+			break;
+		case FIELD_FUNCTION:
+			for( j = 0; j < pTest->fieldSize; j++ )
+			{
+				const char *name = NAME_FOR_FUNCTION(((void**)pOutputData)[j]);
+#ifdef __GNUC__
+				char *demangled = __cxa_demangle( name, NULL, NULL, NULL );
+				if( demangled ) name = demangled;
+				Ent_ClientPrintf( client, "%s\n", name );
+				if( demangled ) free( demangled );
+#else
+				Ent_ClientPrintf( client, "%s\n", name );
+#endif
+
+			}
+			break;
+		default:
+			ALERT( at_error, "Bad field type\n" );
+		}
+	}
+	return 1;
+}
+
+
+void Ent_Dump_f(edict_t *player)
+{
+	CDumper dumper( player, atoi(CMD_ARGV(2)), atoi(CMD_ARGV(3)) );
+	edict_t *pent = Ent_FindSingle(player, CMD_ARGV(1));
+	CBaseEntity *ent = CBaseEntity::Instance( pent );
+	if( ent )
+		ent->Save( dumper );
+}
+
 /*
 ===============
 Ent_Fire_f
@@ -929,6 +1105,8 @@ ucmd_t enttoolscmds[] =
 { "ent_fire", Ent_Fire_f },
 { "ent_create", Ent_Create_f },
 { "ent_getvars", Ent_GetVars_f },
+{ "ent_dump", Ent_Dump_f },
+
 { NULL, NULL }
 };
 

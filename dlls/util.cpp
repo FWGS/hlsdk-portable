@@ -2227,6 +2227,17 @@ int CSave::WriteEntVars( const char *pname, entvars_t *pev )
 	return WriteFields( pname, pev, gEntvarsDescription, ENTVARS_COUNT );
 }
 
+bool FieldEmpty( TYPEDESCRIPTION	*field, void *pOutputData )
+{
+	int j;
+
+	for( j = 0; j < field->fieldSize * gSizes[field->fieldType]; j++ )
+		if( ((const char*)pOutputData)[j] )
+			return false;
+
+	return true;
+}
+
 int CSave::WriteFields( const char *pname, void *pBaseData, TYPEDESCRIPTION *pFields, int fieldCount )
 {
 	int i, j, actualCount, emptyCount;
