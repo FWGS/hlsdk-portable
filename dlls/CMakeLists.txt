@@ -158,13 +158,8 @@ set (SVDLL_SOURCES
 	../pm_shared/pm_math.c
 	../pm_shared/pm_shared.c
 )
-<<<<<<< HEAD
 	
 include_directories (. hunger wpn_shared ../common ../engine ../pm_shared ../game_shared ../public)
-=======
-
-include_directories (. wpn_shared ../common ../engine ../pm_shared ../game_shared ../public)
->>>>>>> master
 
 if(USE_VOICEMGR)
 	set(SVDLL_SOURCES
