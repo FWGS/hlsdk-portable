@@ -351,7 +351,7 @@ void CCrossbow::PrimaryAttack( void )
 	if( m_pPlayer->pev->waterlevel == 3 )
 	{
 		PlayEmptySound();
-		m_flNextPrimaryAttack = 0.15;
+		m_flNextPrimaryAttack = 0.1;
 		return;
 	}
 
@@ -404,7 +404,7 @@ void CCrossbow::PrimaryAttack( void )
 		// HEV suit - indicate out of ammo condition
 		m_pPlayer->SetSuitUpdate( "!HEV_AMO0", FALSE, 0 );
 
-	m_flNextPrimaryAttack = GetNextAttackDelay( 3.0 );
+	m_flNextPrimaryAttack = GetNextAttackDelay( 0.1 );
 
 	//m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 3.0;
 }
