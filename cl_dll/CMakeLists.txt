@@ -46,12 +46,6 @@ endif()
 
 
 set (CLDLL_SOURCES
-	../dlls/hunger/ap9.cpp
-	../dlls/hunger/chaingun.cpp
-	../dlls/hunger/sniper.cpp
-	../dlls/hunger/taurus.cpp
-	../dlls/hunger/tfcsniper.cpp
-	../dlls/glock.cpp
 	ev_hldm.cpp
 	hl/hl_baseentity.cpp
 	hl/hl_events.cpp

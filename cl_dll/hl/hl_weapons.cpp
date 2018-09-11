@@ -54,12 +54,6 @@ int g_irunninggausspred = 0;
 vec3_t previousorigin;
 
 // HLDM Weapon placeholder entities.
-CGlock g_Glock;
-CWeaponEinarAP9 g_AP9;
-CWeaponEinarTaurus g_Taurus;
-CWeaponEinarSniper g_Sniper;
-CWeaponEinarTFCSniper g_TFCSniper;
-CWeaponEinarChaingun g_Chaingun;
 
 /*
 ======================
@@ -595,12 +589,6 @@ void HUD_InitClientWeapons( void )
 	HUD_PrepEntity( &player, NULL );
 
 	// Allocate slot(s) for each weapon that we are going to be predicting
-	HUD_PrepEntity( &g_Glock, &player );
-	HUD_PrepEntity( &g_AP9, &player );
-	HUD_PrepEntity( &g_Taurus, &player );
-	HUD_PrepEntity( &g_Sniper, &player );
-	HUD_PrepEntity( &g_TFCSniper, &player );
-	HUD_PrepEntity( &g_Chaingun, &player );
 }
 
 /*
@@ -662,7 +650,7 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 
 	// Fill in data based on selected weapon
 	// FIXME, make this a method in each weapon?  where you pass in an entity_state_t *?
-	switch( from->client.m_iId )
+/*	switch( from->client.m_iId )
 	{
 		case WEAPON_GLOCK:
 			pWeapon = &g_Glock;
@@ -682,7 +670,7 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 		case WEAPON_CHAINGUN:
 			pWeapon = &g_Chaingun;
 			break;
-	}
+	}*/
 
 	// Store pointer to our destination entity_state_t so we can get our origin, etc. from it
 	//  for setting up events on the client
@@ -828,9 +816,6 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 	if( g_runfuncs && ( HUD_GetWeaponAnim() != to->client.weaponanim ) )
 	{
 		int body = 2;
-
-		if( pWeapon == &g_Glock && bIsMultiplayer() )
-			body = 1;
 
 		// Force a fixed anim down to viewmodel
 		HUD_SendWeaponAnim( to->client.weaponanim, body, 1 );
