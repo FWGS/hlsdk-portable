@@ -118,7 +118,7 @@ void CWeaponEinarTFCSniper::PrimaryAttack()
 		if( m_fFireOnEmpty )
 		{
 			PlayEmptySound();
-			m_flNextPrimaryAttack = 0.25;
+			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.25;
 		}
 		if( m_flTimeWeaponIdle > UTIL_WeaponTimeBase() )
 		{

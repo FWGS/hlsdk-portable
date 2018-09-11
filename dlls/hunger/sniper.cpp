@@ -137,7 +137,7 @@ void CWeaponEinarSniper::PrimaryAttack()
 		if( m_fFireOnEmpty )
 		{
 			PlayEmptySound();
-			m_flNextPrimaryAttack = 0.25;
+			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.25;
 		}
 		if( m_flTimeWeaponIdle > UTIL_WeaponTimeBase() )
 			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 15, 20 );
