@@ -184,29 +184,29 @@ void CWheelchair :: Precache()
 	int i;
 	m_vomitSprite = PRECACHE_MODEL("sprites/wheelchair_vomit.spr");
 	if (pev->model)
-		PRECACHE_MODEL((char*)STRING(pev->model)); //LRC
+		PRECACHE_MODEL(STRING(pev->model)); //LRC
 	else
 		PRECACHE_MODEL("models/wheelchair_monster.mdl");
 
 	PRECACHE_SOUND( "wheelchair/wcm_squirt.wav" );
 
 	for ( i = 0; i < ARRAYSIZE( pAttackHitSounds ); i++ )
-		PRECACHE_SOUND((char *)pAttackHitSounds[i]);
+		PRECACHE_SOUND( pAttackHitSounds[i] );
 
 	for ( i = 0; i < ARRAYSIZE( pAttackMissSounds ); i++ )
-		PRECACHE_SOUND((char *)pAttackMissSounds[i]);
+		PRECACHE_SOUND( pAttackMissSounds[i] );
 
 	for ( i = 0; i < ARRAYSIZE( pAttackSounds ); i++ )
-		PRECACHE_SOUND((char *)pAttackSounds[i]);
+		PRECACHE_SOUND( pAttackSounds[i] );
 
 	for ( i = 0; i < ARRAYSIZE( pIdleSounds ); i++ )
-		PRECACHE_SOUND((char *)pIdleSounds[i]);
+		PRECACHE_SOUND( pIdleSounds[i] );
 
 	for ( i = 0; i < ARRAYSIZE( pAlertSounds ); i++ )
-		PRECACHE_SOUND((char *)pAlertSounds[i]);
+		PRECACHE_SOUND( pAlertSounds[i] );
 
 	for ( i = 0; i < ARRAYSIZE( pPainSounds ); i++ )
-		PRECACHE_SOUND((char *)pPainSounds[i]);
+		PRECACHE_SOUND( pPainSounds[i] );
 }	
 
 //=========================================================

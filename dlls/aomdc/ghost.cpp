@@ -153,17 +153,17 @@ void CGhost :: Precache()
 	int i;
 
 	if (pev->model)
-		PRECACHE_MODEL((char*)STRING(pev->model)); //LRC
+		PRECACHE_MODEL( STRING(pev->model) ); //LRC
 	else
 		PRECACHE_MODEL("models/ghost.mdl");
 
 	PRECACHE_SOUND("ghost/ear_ringing.wav");
 
 	for ( i = 0; i < ARRAYSIZE( pAlertSounds ); i++ )
-		PRECACHE_SOUND((char *)pAlertSounds[i]);
+		PRECACHE_SOUND( pAlertSounds[i] );
 
 	for ( i = 0; i < ARRAYSIZE( pDeathSounds ); i++ )
-                PRECACHE_SOUND((char *)pDeathSounds[i]);
+                PRECACHE_SOUND( pDeathSounds[i] );
 }	
 
 //=========================================================
