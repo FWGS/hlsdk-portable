@@ -30,13 +30,14 @@ add_definitions(-DCLIENT_WEAPONS)
 if(NOT MSVC)
 	add_compile_options(-fno-exceptions) # GCC/Clang flag
 	add_compile_options(-Wno-invalid-offsetof) # GCC/Clang flag
+	add_compile_options(-fvisibility=hidden) # GCC/Clang flag
 	add_definitions(-D_LINUX) # It seems enough for all non-Win32 systems
 	add_definitions(-Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf -D_vsnprintf=vsnprintf )
 else()
 	add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_DEPRECATE)
 endif()
 
-set (SVDLL_SOURCES 
+set (SVDLL_SOURCES
 	agrunt.cpp
 	airtank.cpp
 	aflock.cpp
@@ -143,7 +144,7 @@ set (SVDLL_SOURCES
 	../pm_shared/pm_math.c
 	../pm_shared/pm_shared.c
 )
-	
+
 include_directories (. wpn_shared ../common ../engine ../pm_shared ../game_shared ../public)
 
 if(USE_VOICEMGR)
