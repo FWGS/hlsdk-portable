@@ -118,7 +118,7 @@ float UTIL_SharedRandomFloat( unsigned int seed, float low, float high )
 	U_Random();
 	U_Random();
 
-	range = high - low;
+	range = (int)( high - low );
 	if( !range )
 	{
 		return low;
@@ -625,7 +625,7 @@ static unsigned short FixedUnsigned16( float value, float scale )
 {
 	int output;
 
-	output = value * scale;
+	output = (int)( value * scale );
 	if( output < 0 )
 		output = 0;
 	if( output > 0xFFFF )
@@ -638,7 +638,7 @@ static short FixedSigned16( float value, float scale )
 {
 	int output;
 
-	output = value * scale;
+	output = (int)( value * scale );
 
 	if( output > 32767 )
 		output = 32767;
@@ -945,10 +945,10 @@ TraceResult UTIL_GetGlobalTrace( )
 {
 	TraceResult tr;
 
-	tr.fAllSolid		= gpGlobals->trace_allsolid;
-	tr.fStartSolid		= gpGlobals->trace_startsolid;
-	tr.fInOpen		= gpGlobals->trace_inopen;
-	tr.fInWater		= gpGlobals->trace_inwater;
+	tr.fAllSolid		= (int)gpGlobals->trace_allsolid;
+	tr.fStartSolid		= (int)gpGlobals->trace_startsolid;
+	tr.fInOpen		= (int)gpGlobals->trace_inopen;
+	tr.fInWater		= (int)gpGlobals->trace_inwater;
 	tr.flFraction		= gpGlobals->trace_fraction;
 	tr.flPlaneDist		= gpGlobals->trace_plane_dist;
 	tr.pHit			= gpGlobals->trace_ent;
@@ -997,7 +997,7 @@ float UTIL_Approach( float target, float value, float speed )
 float UTIL_ApproachAngle( float target, float value, float speed )
 {
 	target = UTIL_AngleMod( target );
-	value = UTIL_AngleMod( target );
+	value = UTIL_AngleMod( value );
 
 	float delta = target - value;
 
@@ -1041,7 +1041,7 @@ float UTIL_SplineFraction( float value, float scale )
 	return 3 * valueSquared - 2 * valueSquared * value;
 }
 
-char *UTIL_VarArgs( char *format, ... )
+char *UTIL_VarArgs( const char *format, ... )
 {
 	va_list	argptr;
 	static char string[1024];
@@ -1060,7 +1060,7 @@ Vector UTIL_GetAimVector( edict_t *pent, float flSpeed )
 	return tmp;
 }
 
-int UTIL_IsMasterTriggered(string_t sMaster, CBaseEntity *pActivator)
+int UTIL_IsMasterTriggered( string_t sMaster, CBaseEntity *pActivator )
 {
 	if( sMaster )
 	{
@@ -1120,7 +1120,7 @@ void UTIL_BloodStream( const Vector &origin, const Vector &direction, int color,
 		WRITE_COORD( direction.y );
 		WRITE_COORD( direction.z );
 		WRITE_BYTE( color );
-		WRITE_BYTE( min( amount, 255 ) );
+		WRITE_BYTE( Q_min( amount, 255 ) );
 	MESSAGE_END();
 }				
 
@@ -1152,7 +1152,7 @@ void UTIL_BloodDrips( const Vector &origin, const Vector &direction, int color, 
 		WRITE_SHORT( g_sModelIndexBloodSpray );				// initial sprite model
 		WRITE_SHORT( g_sModelIndexBloodDrop );				// droplet sprite models
 		WRITE_BYTE( color );								// color index into host_basepal
-		WRITE_BYTE( min( max( 3, amount / 10 ), 16 ) );		// size
+		WRITE_BYTE( Q_min( Q_max( 3, amount / 10 ), 16 ) );		// size
 	MESSAGE_END();
 }				
 
@@ -1370,7 +1370,7 @@ void UTIL_StringToVector( float *pVector, const char *pString )
 
 		while( *pstr && *pstr != ' ' )
 			pstr++;
-		if( !(*pstr) )
+		if( !( *pstr ) )
 			break;
 		pstr++;
 		pfront = pstr;
@@ -1566,7 +1566,7 @@ void UTIL_PrecacheOther( const char *szClassname )
 // UTIL_LogPrintf - Prints a logged message to console.
 // Preceded by LOG: ( timestamp ) < message >
 //=========================================================
-void UTIL_LogPrintf( char *fmt, ... )
+void UTIL_LogPrintf( const char *fmt, ... )
 {
 	va_list		argptr;
 	static char	string[1024];
@@ -1616,7 +1616,34 @@ void UTIL_StripToken( const char *pKey, char *pDest )
 static int gSizes[FIELD_TYPECOUNT] =
 {
 	sizeof(float),		// FIELD_FLOAT
-	sizeof(int),		// FIELD_STRING
+	sizeof(string_t),		// FIELD_STRING
+	sizeof(void*),		// FIELD_ENTITY
+	sizeof(void*),		// FIELD_CLASSPTR
+	sizeof(void*),		// FIELD_EHANDLE
+	sizeof(void*),		// FIELD_entvars_t
+	sizeof(void*),		// FIELD_EDICT
+	sizeof(float) * 3,	// FIELD_VECTOR
+	sizeof(float) * 3,	// FIELD_POSITION_VECTOR
+	sizeof(void *),		// FIELD_POINTER
+	sizeof(int),		// FIELD_INTEGER
+#ifdef GNUC
+	sizeof(void *) * 2,	// FIELD_FUNCTION
+#else
+	sizeof(void *),		// FIELD_FUNCTION	
+#endif
+	sizeof(int),		// FIELD_BOOLEAN
+	sizeof(short),		// FIELD_SHORT
+	sizeof(char),		// FIELD_CHARACTER
+	sizeof(float),		// FIELD_TIME
+	sizeof(int),		// FIELD_MODELNAME
+	sizeof(int),		// FIELD_SOUNDNAME
+};
+
+// entities has different store size
+static int gInputSizes[FIELD_TYPECOUNT] =
+{
+	sizeof(float),		// FIELD_FLOAT
+	sizeof(string_t),		// FIELD_STRING
 	sizeof(int),		// FIELD_ENTITY
 	sizeof(int),		// FIELD_CLASSPTR
 	sizeof(int),		// FIELD_EHANDLE
@@ -1624,12 +1651,12 @@ static int gSizes[FIELD_TYPECOUNT] =
 	sizeof(int),		// FIELD_EDICT
 	sizeof(float) * 3,	// FIELD_VECTOR
 	sizeof(float) * 3,	// FIELD_POSITION_VECTOR
-	sizeof(int *),		// FIELD_POINTER
+	sizeof(void *),		// FIELD_POINTER
 	sizeof(int),		// FIELD_INTEGER
 #ifdef GNUC
-	sizeof(int *) * 2,	// FIELD_FUNCTION
+	sizeof(void *) * 2,	// FIELD_FUNCTION
 #else
-	sizeof(int *),		// FIELD_FUNCTION	
+	sizeof(void *),		// FIELD_FUNCTION
 #endif
 	sizeof(int),		// FIELD_BOOLEAN
 	sizeof(short),		// FIELD_SHORT
@@ -1861,7 +1888,7 @@ void CSave::WriteString( const char *pname, const int *stringId, int count )
 #if 0
 	if( count != 1 )
 		ALERT( at_error, "No string arrays!\n" );
-	WriteString( pname, (char *)STRING( *stringId ) );
+	WriteString( pname, STRING( *stringId ) );
 #endif
 	size = 0;
 	for( i = 0; i < count; i++ )
@@ -1916,7 +1943,7 @@ void CSave::WritePositionVector( const char *pname, const float *value, int coun
 	}
 }
 
-void CSave::WriteFunction( const char *pname, const int *data, int count )
+void CSave::WriteFunction( const char *pname, void **data, int count )
 {
 	const char *functionName;
 
@@ -1924,7 +1951,7 @@ void CSave::WriteFunction( const char *pname, const int *data, int count )
 	if( functionName )
 		BufferField( pname, strlen( functionName ) + 1, functionName );
 	else
-		ALERT( at_error, "Invalid function pointer in entity!" );
+		ALERT( at_error, "Invalid function pointer in entity!\n" );
 }
 
 void EntvarsKeyvalue( entvars_t *pev, KeyValueData *pkvd )
@@ -1932,7 +1959,7 @@ void EntvarsKeyvalue( entvars_t *pev, KeyValueData *pkvd )
 	int i;
 	TYPEDESCRIPTION *pField;
 
-	for( i = 0; i < ENTVARS_COUNT; i++ )
+	for( i = 0; i < (int)ENTVARS_COUNT; i++ )
 	{
 		pField = &gEntvarsDescription[i];
 
@@ -1943,7 +1970,7 @@ void EntvarsKeyvalue( entvars_t *pev, KeyValueData *pkvd )
 			case FIELD_MODELNAME:
 			case FIELD_SOUNDNAME:
 			case FIELD_STRING:
-				( *(int *)( (char *)pev + pField->fieldOffset ) ) = ALLOC_STRING( pkvd->szValue );
+				( *(string_t *)( (char *)pev + pField->fieldOffset ) ) = ALLOC_STRING( pkvd->szValue );
 				break;
 			case FIELD_TIME:
 			case FIELD_FLOAT:
@@ -2017,7 +2044,7 @@ int CSave::WriteFields( const char *pname, void *pBaseData, TYPEDESCRIPTION *pFi
 		case FIELD_MODELNAME:
 		case FIELD_SOUNDNAME:
 		case FIELD_STRING:
-			WriteString( pTest->fieldName, (int *)pOutputData, pTest->fieldSize );
+			WriteString( pTest->fieldName, (string_t *)pOutputData, pTest->fieldSize );
 			break;
 		case FIELD_CLASSPTR:
 		case FIELD_EVARS:
@@ -2072,7 +2099,7 @@ int CSave::WriteFields( const char *pname, void *pBaseData, TYPEDESCRIPTION *pFi
 			WriteInt( pTest->fieldName, (int *)(char *)pOutputData, pTest->fieldSize );
 			break;
 		case FIELD_FUNCTION:
-			WriteFunction( pTest->fieldName, (int *)pOutputData, pTest->fieldSize );
+			WriteFunction( pTest->fieldName, (void **)pOutputData, pTest->fieldSize );
 			break;
 		default:
 			ALERT( at_error, "Bad field type\n" );
@@ -2167,7 +2194,7 @@ int CRestore::ReadField( void *pBaseData, TYPEDESCRIPTION *pFields, int fieldCou
 				for( j = 0; j < pTest->fieldSize; j++ )
 				{
 					void *pOutputData = ( (char *)pBaseData + pTest->fieldOffset + ( j * gSizes[pTest->fieldType] ) );
-					void *pInputData = (char *)pData + j * gSizes[pTest->fieldType];
+					void *pInputData = (char *)pData + j * gInputSizes[pTest->fieldType];
 
 					switch( pTest->fieldType )
 					{
@@ -2200,21 +2227,21 @@ int CRestore::ReadField( void *pBaseData, TYPEDESCRIPTION *pFields, int fieldCou
 						}
 						pInputData = pString;
 						if( strlen( (char *)pInputData ) == 0 )
-							*( (int *)pOutputData ) = 0;
+							*( (string_t *)pOutputData ) = 0;
 						else
 						{
-							int string;
+							string_t string;
 
 							string = ALLOC_STRING( (char *)pInputData );
 
-							*( (int *)pOutputData ) = string;
+							*( (string_t *)pOutputData ) = string;
 
 							if( !FStringNull( string ) && m_precache )
 							{
 								if( pTest->fieldType == FIELD_MODELNAME )
-									PRECACHE_MODEL( (char *)STRING( string ) );
+									PRECACHE_MODEL( STRING( string ) );
 								else if( pTest->fieldType == FIELD_SOUNDNAME )
-									PRECACHE_SOUND( (char *)STRING( string ) );
+									PRECACHE_SOUND( STRING( string ) );
 							}
 						}
 						break;
@@ -2297,7 +2324,7 @@ int CRestore::ReadField( void *pBaseData, TYPEDESCRIPTION *pFields, int fieldCou
 						if( strlen( (char *)pInputData ) == 0 )
 							*( (void**)pOutputData ) = 0;
 						else
-							*( (void**)pOutputData ) = (void**)FUNCTION_FROM_NAME( (char *)pInputData );
+							*( (void**)pOutputData ) = (void*)FUNCTION_FROM_NAME( (char *)pInputData );
 						break;
 					default:
 						ALERT( at_error, "Bad field type\n" );

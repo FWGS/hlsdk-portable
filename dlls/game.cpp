@@ -31,6 +31,8 @@ cvar_t timelimit	= { "mp_timelimit","0", FCVAR_SERVER };
 cvar_t friendlyfire	= { "mp_friendlyfire","0", FCVAR_SERVER };
 cvar_t falldamage	= { "mp_falldamage","0", FCVAR_SERVER };
 cvar_t weaponstay	= { "mp_weaponstay","0", FCVAR_SERVER };
+cvar_t selfgauss	= { "mp_selfgauss", "1", FCVAR_SERVER };
+cvar_t satchelfix	= { "mp_satchelfix", "0", FCVAR_SERVER };
 cvar_t forcerespawn	= { "mp_forcerespawn","1", FCVAR_SERVER };
 cvar_t flashlight	= { "mp_flashlight","1", FCVAR_SERVER };
 cvar_t aimcrosshair	= { "mp_autocrosshair","1", FCVAR_SERVER };
@@ -53,6 +55,10 @@ cvar_t cwc		= { "chris_bravery","0", FCVAR_SERVER };
 
 cvar_t mp3player	= { "mp3player", "1", FCVAR_SERVER };
 cvar_t mp3volume	= { "mp3volume", "1", FCVAR_SERVER };
+cvar_t bhopcap		= { "mp_bhopcap", "1", FCVAR_SERVER };
+
+cvar_t allow_spectators = { "allow_spectators", "0", FCVAR_SERVER };	// 0 prevents players from being spectators
+
 cvar_t mp_chattime	= { "mp_chattime","10", FCVAR_SERVER };
 
 // Engine Cvars
@@ -554,6 +560,7 @@ void GameDLLInit( void )
 	g_footsteps = CVAR_GET_POINTER( "mp_footsteps" );
 
 	CVAR_REGISTER( &displaysoundlist );
+	CVAR_REGISTER( &allow_spectators );
 
 	CVAR_REGISTER( &gameplay );
 	CVAR_REGISTER( &fraglimit );
@@ -568,6 +575,8 @@ void GameDLLInit( void )
 	CVAR_REGISTER( &friendlyfire );
 	CVAR_REGISTER( &falldamage );
 	CVAR_REGISTER( &weaponstay );
+	CVAR_REGISTER( &selfgauss );
+	CVAR_REGISTER( &satchelfix );
 	CVAR_REGISTER( &forcerespawn );
 	CVAR_REGISTER( &flashlight );
 	CVAR_REGISTER( &aimcrosshair );
@@ -585,6 +594,7 @@ void GameDLLInit( void )
 	CVAR_REGISTER( &shtugn );
 	CVAR_REGISTER( &cwc );
 	//CVAR_REGISTER( &shtogn );
+	CVAR_REGISTER( &bhopcap );
 
 	CVAR_REGISTER( &mp_chattime );
 

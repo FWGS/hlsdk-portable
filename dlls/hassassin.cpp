@@ -185,7 +185,7 @@ void CHAssassin::SetYawSpeed( void )
 //=========================================================
 void CHAssassin::Shoot( void )
 {
-	if( m_hEnemy == NULL )
+	if( m_hEnemy == 0 )
 	{
 		return;
 	}
@@ -597,7 +597,7 @@ IMPLEMENT_CUSTOM_SCHEDULES( CHAssassin, CBaseMonster )
 //=========================================================
 BOOL CHAssassin::CheckMeleeAttack1( float flDot, float flDist )
 {
-	if( m_flNextJump < gpGlobals->time && ( flDist <= 128 || HasMemory( bits_MEMORY_BADJUMP ) ) && m_hEnemy != NULL )
+	if( m_flNextJump < gpGlobals->time && ( flDist <= 128 || HasMemory( bits_MEMORY_BADJUMP ) ) && m_hEnemy != 0 )
 	{
 		TraceResult tr;
 
@@ -687,7 +687,7 @@ void CHAssassin::RunAI( void )
 
 	// always visible if moving
 	// always visible is not on hard
-	if( g_iSkillLevel != SKILL_HARD || m_hEnemy == NULL || pev->deadflag != DEAD_NO || m_Activity == ACT_RUN || m_Activity == ACT_WALK || !( pev->flags & FL_ONGROUND ) )
+	if( g_iSkillLevel != SKILL_HARD || m_hEnemy == 0 || pev->deadflag != DEAD_NO || m_Activity == ACT_RUN || m_Activity == ACT_WALK || !( pev->flags & FL_ONGROUND ) )
 		m_iTargetRanderamt = 255;
 	else
 		m_iTargetRanderamt = 20;
@@ -699,12 +699,12 @@ void CHAssassin::RunAI( void )
 			EMIT_SOUND( ENT( pev ), CHAN_BODY, "debris/beamstart1.wav", 0.2, ATTN_NORM );
 		}
 
-		pev->renderamt = max( pev->renderamt - 50, m_iTargetRanderamt );
+		pev->renderamt = Q_max( pev->renderamt - 50, m_iTargetRanderamt );
 		pev->rendermode = kRenderTransTexture;
 	}
 	else if( pev->renderamt < m_iTargetRanderamt )
 	{
-		pev->renderamt = min( pev->renderamt + 50, m_iTargetRanderamt );
+		pev->renderamt = Q_min( pev->renderamt + 50, m_iTargetRanderamt );
 		if( pev->renderamt == 255 )
 			pev->rendermode = kRenderNormal;
 	}

@@ -119,7 +119,7 @@ void CBreakable::KeyValue( KeyValueData* pkvd )
 	else if( FStrEq( pkvd->szKeyName, "spawnobject" ) )
 	{
 		int object = atoi( pkvd->szValue );
-		if( object > 0 && object < ARRAYSIZE( pSpawnObjects ) )
+		if( object > 0 && object < (int)ARRAYSIZE( pSpawnObjects ) )
 			m_iszSpawnObject = MAKE_STRING( pSpawnObjects[object] );
 		pkvd->fHandled = TRUE;
 	}
@@ -274,7 +274,7 @@ void CBreakable::MaterialSoundPrecache( Materials precacheMaterial )
 
 	for( i = 0; i < soundCount; i++ )
 	{
-		PRECACHE_SOUND( (char *)pSoundList[i] );
+		PRECACHE_SOUND( pSoundList[i] );
 	}
 }
 
@@ -355,11 +355,11 @@ void CBreakable::Precache( void )
 	if( m_iszGibModel )
 		pGibName = STRING( m_iszGibModel );
 
-	m_idShard = PRECACHE_MODEL( (char *)pGibName );
+	m_idShard = PRECACHE_MODEL( pGibName );
 
 	// Precache the spawn item's data
 	if( m_iszSpawnObject )
-		UTIL_PrecacheOther( (char *)STRING( m_iszSpawnObject ) );
+		UTIL_PrecacheOther( STRING( m_iszSpawnObject ) );
 }
 
 // play shard sound when func_breakable takes damage.
@@ -368,7 +368,7 @@ void CBreakable::DamageSound( void )
 {
 	int pitch;
 	float fvol;
-	char *rgpsz[6];
+	const char *rgpsz[6];
 	int i = 0;
 	int material = m_Material;
 
@@ -597,7 +597,6 @@ void CBreakable::Die( void )
 {
 	Vector vecSpot;// shard origin
 	Vector vecVelocity;// shard velocity
-	CBaseEntity *pEntity = NULL;
 	char cFlag = 0;
 	int pitch;
 	float fvol;
@@ -779,7 +778,7 @@ void CBreakable::Die( void )
 	}
 	pev->nextthink = pev->ltime + 0.1;
 	if( m_iszSpawnObject )
-		CBaseEntity::Create( (char *)STRING( m_iszSpawnObject ), VecBModelOrigin( pev ), pev->angles, edict() );
+		CBaseEntity::Create( STRING( m_iszSpawnObject ), VecBModelOrigin( pev ), pev->angles, edict() );
 
 	if( Explodable() )
 	{
@@ -840,7 +839,7 @@ public:
 
 	static TYPEDESCRIPTION m_SaveData[];
 
-	static char *m_soundNames[3];
+	static const char *m_soundNames[3];
 	int m_lastSound;	// no need to save/restore, just keeps the same sound from playing twice in a row
 	float m_maxSpeed;
 	float m_soundTime;
@@ -856,7 +855,7 @@ IMPLEMENT_SAVERESTORE( CPushable, CBreakable )
 
 LINK_ENTITY_TO_CLASS( func_pushable, CPushable )
 
-char *CPushable::m_soundNames[3] =
+const char *CPushable::m_soundNames[3] =
 {
 	"debris/pushbox1.wav",
 	"debris/pushbox2.wav",
@@ -885,7 +884,7 @@ void CPushable::Spawn( void )
 	UTIL_SetOrigin( pev, pev->origin );
 
 	// Multiply by area of the box's cross-section (assume 1000 units^3 standard volume)
-	pev->skin = ( pev->skin * ( pev->maxs.x - pev->mins.x ) * ( pev->maxs.y - pev->mins.y ) ) * 0.0005;
+	pev->skin = (int)( ( pev->skin * ( pev->maxs.x - pev->mins.x ) * ( pev->maxs.y - pev->mins.y ) ) * 0.0005 );
 	m_soundTime = 0;
 }
 
@@ -928,7 +927,7 @@ void CPushable::KeyValue( KeyValueData *pkvd )
 	}
 	else if( FStrEq( pkvd->szKeyName, "buoyancy" ) )
 	{
-		pev->skin = atof( pkvd->szValue );
+		pev->skin = atoi( pkvd->szValue );
 		pkvd->fHandled = TRUE;
 	}
 	else

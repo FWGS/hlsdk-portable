@@ -46,6 +46,7 @@ public:
 			return  CLASS_ALIEN_MILITARY;
 		}
 	};
+	void UpdateOnRemove();
 	int BloodColor( void ) { return BLOOD_COLOR_YELLOW; }
 	void Killed( entvars_t *pevAttacker, int iGib );
 	void GibMonster( void );
@@ -356,6 +357,26 @@ void CNihilanth::Precache( void )
 	PRECACHE_SOUND( "debris/beamstart7.wav" );
 }
 
+void CNihilanth::UpdateOnRemove()
+{
+	CBaseEntity::UpdateOnRemove();
+ 
+	if( m_pBall )
+	{
+		UTIL_Remove( m_pBall );
+		m_pBall = 0;
+	}
+
+	for( int i = 0; i < N_SPHERES; i++ )
+	{
+		if( CBaseEntity* pSphere = (CBaseEntity *)m_hSphere[i] )
+		{
+			UTIL_Remove( pSphere );
+			m_hSphere[i] = 0;
+		}
+	}
+}
+
 void CNihilanth::PainSound( void )
 {
 	if( m_flNextPainSound > gpGlobals->time )
@@ -468,7 +489,7 @@ void CNihilanth::DyingThink( void )
 	{
 		if( m_pBall->pev->renderamt > 0 )
 		{
-			m_pBall->pev->renderamt = max( 0, m_pBall->pev->renderamt - 2 );
+			m_pBall->pev->renderamt = Q_max( 0, m_pBall->pev->renderamt - 2 );
 		}
 		else
 		{
@@ -598,7 +619,7 @@ void CNihilanth::ShootBalls( void )
 
 		while( m_flShootTime < m_flShootEnd && m_flShootTime < gpGlobals->time )
 		{
-			if( m_hEnemy != NULL )
+			if( m_hEnemy != 0 )
 			{
 				Vector vecSrc, vecDir;
 				CNihilanthHVR *pEntity;
@@ -632,14 +653,14 @@ void CNihilanth::MakeFriend( Vector vecStart )
 
 	for( i = 0; i < 3; i++ )
 	{
-		if( m_hFriend[i] != NULL && !m_hFriend[i]->IsAlive() )
+		if( m_hFriend[i] != 0 && !m_hFriend[i]->IsAlive() )
 		{
 			if( pev->rendermode == kRenderNormal ) // don't do it if they are already fading
 				m_hFriend[i]->MyMonsterPointer()->FadeMonster();
 			m_hFriend[i] = NULL;
 		}
 
-		if( m_hFriend[i] == NULL )
+		if( m_hFriend[i] == 0 )
 		{
 			if( RANDOM_LONG( 0, 1 ) == 0 )
 			{
@@ -665,7 +686,7 @@ void CNihilanth::MakeFriend( Vector vecStart )
 						m_hFriend[i] = Create( "monster_alien_slave", node.m_vecOrigin, pev->angles );
 				}
 			}
-			if( m_hFriend[i] != NULL )
+			if( m_hFriend[i] != 0 )
 			{
 				EMIT_SOUND( m_hFriend[i]->edict(), CHAN_WEAPON, "debris/beamstart7.wav", 1.0, ATTN_NORM );
 			}
@@ -712,7 +733,7 @@ void CNihilanth::NextActivity()
 		}
 	}
 
-	if( ( pev->health < gSkillData.nihilanthHealth / 2 || m_iActiveSpheres < N_SPHERES / 2 ) && m_hRecharger == NULL && m_iLevel <= 9 )
+	if( ( pev->health < gSkillData.nihilanthHealth / 2 || m_iActiveSpheres < N_SPHERES / 2 ) && m_hRecharger == 0 && m_iLevel <= 9 )
 	{
 		char szName[64];
 
@@ -753,7 +774,7 @@ void CNihilanth::NextActivity()
 	float flDist = ( m_posDesired - pev->origin ).Length();
 	float flDot = DotProduct( m_vecDesired, gpGlobals->v_forward );
 
-	if( m_hRecharger != NULL )
+	if( m_hRecharger != 0 )
 	{
 		// at we at power up yet?
 		if( flDist < 128.0 )
@@ -778,23 +799,23 @@ void CNihilanth::NextActivity()
 		return;
 	}
 
-	if( m_hEnemy != NULL && !m_hEnemy->IsAlive() )
+	if( m_hEnemy != 0 && !m_hEnemy->IsAlive() )
 	{
-		m_hEnemy = NULL;
+		m_hEnemy = 0;
 	}
 
 	if( m_flLastSeen + 15 < gpGlobals->time )
 	{
-		m_hEnemy = NULL;
+		m_hEnemy = 0;
 	}
 
-	if( m_hEnemy == NULL )
+	if( m_hEnemy == 0 )
 	{
 		Look( 4096 );
 		m_hEnemy = BestVisibleEnemy();
 	}
 
-	if( m_hEnemy != NULL && m_irritation != 0 )
+	if( m_hEnemy != 0 && m_irritation != 0 )
 	{
 		if( m_flLastSeen + 5 > gpGlobals->time && flDist < 256 && flDot > 0 )
 		{
@@ -871,7 +892,7 @@ void CNihilanth::HuntThink( void )
 	}
 
 	// look for current enemy	
-	if( m_hEnemy != NULL && m_hRecharger == NULL )
+	if( m_hEnemy != 0 && m_hRecharger == 0 )
 	{
 		if( FVisible( m_hEnemy ) )
 		{
@@ -885,7 +906,7 @@ void CNihilanth::HuntThink( void )
 		}
 		else
 		{
-			m_flAdj = min( m_flAdj + 10, 1000 );
+			m_flAdj = Q_min( m_flAdj + 10, 1000 );
 		}
 	}
 
@@ -939,7 +960,7 @@ void CNihilanth::Flight( void )
 	if( flDir < 0 )
 		flSpeed = -flSpeed;
 
-	float flDist = DotProduct( m_posDesired - vecEst, gpGlobals->v_forward );
+	//float flDist = DotProduct( m_posDesired - vecEst, gpGlobals->v_forward );
 
 	// sideways drag
 	m_velocity.x = m_velocity.x * ( 1.0 - fabs( gpGlobals->v_right.x ) * 0.05 );
@@ -970,7 +991,7 @@ BOOL CNihilanth::AbsorbSphere( void )
 {
 	for( int i = 0; i < N_SPHERES; i++ )
 	{
-		if( m_hSphere[i] != NULL )
+		if( m_hSphere[i] != 0 )
 		{
 			CNihilanthHVR *pSphere = (CNihilanthHVR *)( (CBaseEntity *)m_hSphere[i] );
 			pSphere->AbsorbInit();
@@ -989,7 +1010,7 @@ BOOL CNihilanth::EmitSphere( void )
 
 	for( int i = 0; i < N_SPHERES; i++ )
 	{
-		if( m_hSphere[i] != NULL )
+		if( m_hSphere[i] != 0 )
 		{
 			m_iActiveSpheres++;
 		}
@@ -1018,10 +1039,10 @@ void CNihilanth::TargetSphere( USE_TYPE useType, float value )
 
 	for( i = 0; i < N_SPHERES; i++ )
 	{
-		if( m_hSphere[i] != NULL )
+		if( m_hSphere[i] != 0 )
 		{
 			pSphere = m_hSphere[i]->MyMonsterPointer();
-			if( pSphere->m_hEnemy == NULL )
+			if( pSphere->m_hEnemy == 0 )
 				break;
 		}
 	}
@@ -1047,7 +1068,7 @@ void CNihilanth::HandleAnimEvent( MonsterEvent_t *pEvent )
 		break;
 	case 2:
 		// zen
-		if( m_hEnemy != NULL )
+		if( m_hEnemy != 0 )
 		{
 			if( RANDOM_LONG( 0, 4 ) == 0 )
 				EMIT_SOUND( edict(), CHAN_VOICE, RANDOM_SOUND_ARRAY( pAttackSounds ), 1.0, 0.2 ); 
@@ -1088,7 +1109,7 @@ void CNihilanth::HandleAnimEvent( MonsterEvent_t *pEvent )
 		break;
 	case 3:
 		// prayer
-		if (m_hEnemy != NULL)
+		if( m_hEnemy != 0 )
 		{
 			char szText[32];
 
@@ -1152,7 +1173,7 @@ void CNihilanth::HandleAnimEvent( MonsterEvent_t *pEvent )
 	case 4:
 		// get a sphere
 		{
-			if( m_hRecharger != NULL )
+			if( m_hRecharger != 0 )
 			{
 				if( !EmitSphere() )
 				{
@@ -1168,7 +1189,7 @@ void CNihilanth::HandleAnimEvent( MonsterEvent_t *pEvent )
 		}
 		break;
 	case 6:
-		if( m_hEnemy != NULL )
+		if( m_hEnemy != 0 )
 		{
 			Vector vecSrc, vecAngles;
 			GetAttachment( 2, vecSrc, vecAngles ); 
@@ -1196,8 +1217,22 @@ void CNihilanth::CommandUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_
 	case USE_OFF:
 		{
 			CBaseEntity *pTouch = UTIL_FindEntityByTargetname( NULL, m_szDeadTouch );
-			if( pTouch && m_hEnemy != NULL )
-				pTouch->Touch( m_hEnemy );
+			if( pTouch )
+			{
+				if( m_hEnemy != 0 )
+				{
+					pTouch->Touch( m_hEnemy );
+				}
+				// if the player is using "notarget", the ending sequence won't fire unless we catch it here
+				else
+				{
+					CBaseEntity *pEntity = UTIL_FindEntityByClassname( NULL, "player" );
+					if( pEntity != NULL && pEntity->IsAlive() )
+					{
+						pTouch->Touch( pEntity );
+					}
+				}
+			}
 		}
 		break;
 	case USE_ON:
@@ -1337,7 +1372,7 @@ void CNihilanthHVR::HoverThink( void )
 {
 	pev->nextthink = gpGlobals->time + 0.1;
 
-	if( m_hTargetEnt != NULL )
+	if( m_hTargetEnt != 0 )
 	{
 		CircleTarget( m_hTargetEnt->pev->origin + Vector( 0, 0, 16 * N_SCALE ) );
 	}
@@ -1421,7 +1456,7 @@ void CNihilanthHVR::ZapThink( void )
 	pev->nextthink = gpGlobals->time + 0.05;
 
 	// check world boundaries
-	if( m_hEnemy == NULL ||  pev->origin.x < -4096 || pev->origin.x > 4096 || pev->origin.y < -4096 || pev->origin.y > 4096 || pev->origin.z < -4096 || pev->origin.z > 4096 )
+	if( m_hEnemy == 0 ||  pev->origin.x < -4096 || pev->origin.x > 4096 || pev->origin.y < -4096 || pev->origin.y > 4096 || pev->origin.z < -4096 || pev->origin.z > 4096 )
 	{
 		SetTouch( NULL );
 		UTIL_Remove( this );
@@ -1558,7 +1593,7 @@ void CNihilanthHVR::TeleportThink( void )
 	pev->nextthink = gpGlobals->time + 0.1;
 
 	// check world boundaries
-	if( m_hEnemy == NULL || !m_hEnemy->IsAlive() || pev->origin.x < -4096 || pev->origin.x > 4096 || pev->origin.y < -4096 || pev->origin.y > 4096 || pev->origin.z < -4096 || pev->origin.z > 4096 )
+	if( m_hEnemy == 0 || !m_hEnemy->IsAlive() || pev->origin.x < -4096 || pev->origin.x > 4096 || pev->origin.y < -4096 || pev->origin.y > 4096 || pev->origin.z < -4096 || pev->origin.z > 4096 )
 	{
 		STOP_SOUND( edict(), CHAN_WEAPON, "x/x_teleattack1.wav" );
 		UTIL_Remove( this );
@@ -1570,10 +1605,10 @@ void CNihilanthHVR::TeleportThink( void )
 		STOP_SOUND( edict(), CHAN_WEAPON, "x/x_teleattack1.wav" );
 		UTIL_Remove( this );
 
-		if( m_hTargetEnt != NULL )
+		if( m_hTargetEnt != 0 )
 			m_hTargetEnt->Use( m_hEnemy, m_hEnemy, USE_ON, 1.0 );
 
-		if( m_hTouch != NULL && m_hEnemy != NULL )
+		if( m_hTouch != 0 && m_hEnemy != 0 )
 			m_hTouch->Touch( m_hEnemy );
 	}
 	else 
@@ -1627,10 +1662,10 @@ void CNihilanthHVR::TeleportTouch( CBaseEntity *pOther )
 
 	if( pOther == pEnemy )
 	{
-		if( m_hTargetEnt != NULL )
+		if( m_hTargetEnt != 0 )
 			m_hTargetEnt->Use( pEnemy, pEnemy, USE_ON, 1.0 );
 
-		if( m_hTouch != NULL && pEnemy != NULL )
+		if( m_hTouch != 0 && pEnemy != NULL )
 			m_hTouch->Touch( pEnemy );
 	}
 	else
@@ -1653,7 +1688,7 @@ void CNihilanthHVR::DissipateThink( void )
 	pev->renderamt -= 2;
 	pev->scale += 0.1;
 
-	if( m_hTargetEnt != NULL )
+	if( m_hTargetEnt != 0 )
 	{
 		CircleTarget( m_hTargetEnt->pev->origin + Vector( 0, 0, 4096 ) );
 	}

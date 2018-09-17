@@ -12,6 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
+#pragma once
 #ifndef DECALS_H
 #define DECALS_H
 
@@ -69,7 +70,7 @@ enum decal_e
 
 typedef struct 
 {
-	char *name;
+	const char *name;
 	int index;
 } DLL_DECALLIST;
 

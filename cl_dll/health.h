@@ -12,6 +12,9 @@
 *   without written permission from Valve LLC.
 *
 ****/
+#pragma once
+#ifndef HEALTH_H
+#define HEALTH_H
 
 #define DMG_IMAGE_LIFE		2	// seconds that image is up
 
@@ -153,3 +156,6 @@ private:
 	int m_iWidth;
 	char *charSpriteName;
 };
+
+#endif // HEALTH_H
+

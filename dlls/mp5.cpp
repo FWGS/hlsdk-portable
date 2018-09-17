@@ -177,7 +177,7 @@ void CMP5::PrimaryAttack()
 		// HEV suit - indicate out of ammo condition
 		m_pPlayer->SetSuitUpdate( "!HEV_AMO0", FALSE, 0 );
 
-	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.1;
+	m_flNextPrimaryAttack = GetNextAttackDelay( 0.1 );
 
 	if( m_flNextPrimaryAttack < UTIL_WeaponTimeBase() )
 		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.1;
@@ -227,7 +227,7 @@ void CMP5::SecondaryAttack( void )
 #endif
 	PLAYBACK_EVENT( flags, m_pPlayer->edict(), m_usMP52 );
 
-	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.01;
+	m_flNextPrimaryAttack = GetNextAttackDelay( 0.01 );
 	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.2;
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.05;// idle pretty soon after shooting.
 
@@ -238,7 +238,7 @@ void CMP5::SecondaryAttack( void )
 
 void CMP5::Reload( void )
 {
-	if( m_pPlayer->ammo_9mm <= 0 )
+	if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0 || m_iClip == MP5_MAX_CLIP )
 		return;
 
 	DefaultReload( MP5_MAX_CLIP, MP5_RELOAD, 1.5 );
@@ -268,6 +268,12 @@ void CMP5::WeaponIdle( void )
 	SendWeaponAnim( iAnim );
 
 	m_flTimeWeaponIdle = UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 ); // how long till we do this again.
+}
+
+BOOL CMP5::IsUseable()
+{
+	//Can be used if the player has AR grenades. - Solokiller
+	return CBasePlayerWeapon::IsUseable() || m_pPlayer->m_rgAmmo[m_iSecondaryAmmoType] > 0;
 }
 
 class CMP5AmmoClip : public CBasePlayerAmmo

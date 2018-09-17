@@ -94,6 +94,18 @@ int CGlock::GetItemInfo( ItemInfo *p )
 	return 1;
 }
 
+int CGlock::AddToPlayer( CBasePlayer *pPlayer )
+{
+	if( CBasePlayerWeapon::AddToPlayer( pPlayer ) )
+	{
+		MESSAGE_BEGIN( MSG_ONE, gmsgWeapPickup, NULL, pPlayer->pev );
+			WRITE_BYTE( m_iId );
+		MESSAGE_END();
+		return TRUE;
+	}
+	return FALSE;
+}
+
 BOOL CGlock::Deploy()
 {
 	// pev->body = 1;
@@ -117,7 +129,7 @@ void CGlock::GlockFire( float flSpread, float flCycleTime, BOOL fUseAutoAim )
 		if( m_fFireOnEmpty )
 		{
 			PlayEmptySound();
-			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.2;
+			m_flNextPrimaryAttack = GetNextAttackDelay( 0.2 );
 		}
 
 		return;
@@ -166,7 +178,7 @@ void CGlock::GlockFire( float flSpread, float flCycleTime, BOOL fUseAutoAim )
 
 	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), fUseAutoAim ? m_usFireGlock1 : m_usFireGlock2, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, vecDir.x, vecDir.y, 0, 0, ( m_iClip == 0 ) ? 1 : 0, 0 );
 
-	m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + flCycleTime;
+	m_flNextPrimaryAttack = m_flNextSecondaryAttack = GetNextAttackDelay( flCycleTime );
 
 	if( !m_iClip && m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0 )
 		// HEV suit - indicate out of ammo condition
@@ -177,15 +189,15 @@ void CGlock::GlockFire( float flSpread, float flCycleTime, BOOL fUseAutoAim )
 
 void CGlock::Reload( void )
 {
-	if( m_pPlayer->ammo_9mm <= 0 )
-		 return;
+	if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0 || m_iClip == GLOCK_MAX_CLIP )
+		return;
 
 	int iResult;
 
 	if( m_iClip == 0 )
-		iResult = DefaultReload( 13, GLOCK_RELOAD, 1.5 );
+		iResult = DefaultReload( GLOCK_MAX_CLIP, GLOCK_RELOAD, 1.5 );
 	else
-		iResult = DefaultReload( 13, GLOCK_RELOAD_NOT_EMPTY, 1.5 );
+		iResult = DefaultReload( GLOCK_MAX_CLIP, GLOCK_RELOAD_NOT_EMPTY, 1.5 );
 
 	if( iResult )
 	{

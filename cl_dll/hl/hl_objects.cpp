@@ -64,4 +64,3 @@ void UpdateBeams( void )
 
 	gEngfuncs.pEventAPI->EV_PopPMStates();
 }
-
