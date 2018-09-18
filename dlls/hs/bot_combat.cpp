@@ -113,9 +113,9 @@ ammo_check_t ammo_check[] = {
    {"", 0, 0}};
 
 // sounds for Bot taunting after a kill...
-char barney_taunt[][30] = { BA_TNT1, BA_TNT2, BA_TNT3, BA_TNT4, BA_TNT5 };
-char scientist_taunt[][30] = { SC_TNT1, SC_TNT2, SC_TNT3, SC_TNT4, SC_TNT5 };
-char vader_taunt[][30] = { DV_TNT1, DV_TNT2, DV_TNT3, DV_TNT4, DV_TNT5 };
+const char *barney_taunt[] = { BA_TNT1, BA_TNT2, BA_TNT3, BA_TNT4, BA_TNT5 };
+const char *scientist_taunt[] = { SC_TNT1, SC_TNT2, SC_TNT3, SC_TNT4, SC_TNT5 };
+const char *vader_taunt[] = { DV_TNT1, DV_TNT2, DV_TNT3, DV_TNT4, DV_TNT5 };
 
 
 CBaseEntity * CBot::BotFindEnemy( void )

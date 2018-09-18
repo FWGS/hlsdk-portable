@@ -446,7 +446,7 @@ void Host_Say( edict_t *pEntity, int teamonly )
 	time_t tTime = time( 0 );
 	struct tm *stTimeNow = localtime( &tTime );
 
-	char *dd = "AM";
+	const char *dd = "AM";
 
 	if( stTimeNow->tm_hour > 11 )
 	{

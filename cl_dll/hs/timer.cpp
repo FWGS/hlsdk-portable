@@ -60,8 +60,7 @@ int CHudTimer::Draw( float flTime )
 		}
 		if (smbSoundCounter == 5) //Note: the counter will still continue until 120 seconds turns into 119.
 		{
-			char * songchoice = "media/hurryup.mp3";
-			gEngfuncs.pfnPrimeMusicStream( songchoice, 0 );
+			gEngfuncs.pfnPrimeMusicStream( "media/hurryup.mp3", 0 );
 			//gMP3.PlayMP3NL( songchoice );
 		}
 		//Draw BG
@@ -80,10 +79,10 @@ int CHudTimer::Draw( float flTime )
 
 	}
 
-		if (smbSoundCounter >= 0 && g_iRoundtime > 120) //If server manually changed the round time or new round, Reset the sound timer.
-		{
-			smbSoundCounter = 0;
-		}
+	if (smbSoundCounter >= 0 && g_iRoundtime > 120) //If server manually changed the round time or new round, Reset the sound timer.
+	{
+		smbSoundCounter = 0;
+	}
 
 	return 1;
 }

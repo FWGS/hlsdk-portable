@@ -153,7 +153,7 @@ void CGrinman :: StartTask( Task_t *pTask )
 	switch( pTask->iTask )
 	{
 	case TASK_WAIT:
-		if (m_hPlayer == NULL)
+		if (m_hPlayer == 0)
 		{
 			m_hPlayer = UTIL_FindEntityByClassname( NULL, "player" );
 		}
@@ -168,7 +168,7 @@ void CGrinman :: RunTask( Task_t *pTask )
 	{
 	case TASK_WAIT:
 		// look at who I'm talking to
-		if (m_flTalkTime > gpGlobals->time && m_hTalkTarget != NULL)
+		if (m_flTalkTime > gpGlobals->time && m_hTalkTarget != 0)
 		{
 			float yaw = VecToYaw(m_hTalkTarget->pev->origin - pev->origin) - pev->angles.y;
 
@@ -179,7 +179,7 @@ void CGrinman :: RunTask( Task_t *pTask )
 			SetBoneController( 0, yaw );
 		}
 		// look at player, but only if playing a "safe" idle animation
-		else if (m_hPlayer != NULL && pev->sequence == 0)
+		else if (m_hPlayer != 0 && pev->sequence == 0)
 		{
 			float yaw = VecToYaw(m_hPlayer->pev->origin - pev->origin) - pev->angles.y;
 

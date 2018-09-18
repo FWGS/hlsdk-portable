@@ -639,7 +639,7 @@ CGrenade *CGrenade::ShootJihad( entvars_t *pevOwner, Vector vecStart, Vector vec
 		pGrenade->pev->velocity = Vector( 0, 0, 0 );
 	}
 
-	pGrenade->pev->sequence = 0.01;
+	pGrenade->pev->sequence = 0;
 	pGrenade->pev->framerate = 1.0;
 
 	// Tumble through the air

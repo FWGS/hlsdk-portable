@@ -326,16 +326,16 @@ int CMonsterplay::iKillforMonster(const char *classname)
 const char *CMonsterplay::PrepareMonsterName( const char *monster_name )
 {
 	// Hack to fix name change
-			char *gayglenn = "Gay Glenn";
-			char *barney = "Barney";
-			char *scientist = "Scientist";
-			char *xmast = "X-Mas Tree";
-			char *sinistar = "Sinistar";
-			char *cwc = "Chris-Chan";
-			char *zombie = "Zombie";
-			char *controller = "Alien Controller";
-			char *bullsquid = "Bull Squid";
-			char *grinman = "Grinman";
+			const char *gayglenn = "Gay Glenn";
+			const char *barney = "Barney";
+			const char *scientist = "Scientist";
+			const char *xmast = "X-Mas Tree";
+			const char *sinistar = "Sinistar";
+			const char *cwc = "Chris-Chan";
+			const char *zombie = "Zombie";
+			const char *controller = "Alien Controller";
+			const char *bullsquid = "Bull Squid";
+			const char *grinman = "Grinman";
 
 			monster_name += 8;
 

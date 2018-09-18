@@ -68,12 +68,12 @@ BOOL skin_used[MAX_SKINS] = {
    FALSE, FALSE, FALSE, FALSE, FALSE};
 
 // store the names of the models...
-char *bot_skins[MAX_SKINS] = {
+const char *bot_skins[MAX_SKINS] = {
    "barney", "jamison", "gman", "gordon", "eva01",
    "hgrunt", "haruhi", "robo", "scientist", "vader"};
 
 // store the player names for each of the models...
-char *bot_names[MAX_SKINS] = {
+const char *bot_names[MAX_SKINS] = {
    "Barney", "Jamison_Trumpets", "G-Man", "Gordon", "Evangelion01",
    "H-Grunt", "Haruhi", "Robo", "Scientist", "DarthVader"};
 
@@ -87,9 +87,9 @@ float pause_time[5][2] = {
 extern ammo_check_t ammo_check[];
 
 // sounds for TakeDamage speaking effects...
-char hgrunt_sounds[][30] = { HG_SND1, HG_SND2, HG_SND3, HG_SND4, HG_SND5 };
-char barney_sounds[][30] = { BA_SND1, BA_SND2, BA_SND3, BA_SND4, BA_SND5 };
-char scientist_sounds[][30] = { SC_SND1, SC_SND2, SC_SND3, SC_SND4, SC_SND5 };
+const char *hgrunt_sounds[] = { HG_SND1, HG_SND2, HG_SND3, HG_SND4, HG_SND5 };
+const char *barney_sounds[] = { BA_SND1, BA_SND2, BA_SND3, BA_SND4, BA_SND5 };
+const char *scientist_sounds[] = { SC_SND1, SC_SND2, SC_SND3, SC_SND4, SC_SND5 };
 
 
 LINK_ENTITY_TO_CLASS( bot, CBot );
@@ -105,13 +105,13 @@ inline char *GET_INFOBUFFER( edict_t *e )
    return (*g_engfuncs.pfnGetInfoKeyBuffer)( e );
 }
 
-inline char *GET_INFO_KEY_VALUE( char *infobuffer, char *key )
+inline char *GET_INFO_KEY_VALUE( const char *infobuffer, const char *key )
 {
    return (g_engfuncs.pfnInfoKeyValue( infobuffer, key ));
 }
 
-inline void SET_CLIENT_KEY_VALUE( int clientIndex, char *infobuffer,
-                                  char *key, char *value )
+inline void SET_CLIENT_KEY_VALUE( int clientIndex, const char *infobuffer,
+                                  const char *key, const char *value )
 {
    (*g_engfuncs.pfnSetClientKeyValue)( clientIndex, infobuffer, key, value );
 }

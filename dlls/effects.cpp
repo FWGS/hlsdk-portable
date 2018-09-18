@@ -2297,7 +2297,7 @@ void CEnvELight::SendData( void )
 {
 	edict_t *pTarget = NULL;
 
-	if( pev->target != NULL )
+	if( pev->target != 0 )
 	{
 		pTarget = FIND_ENTITY_BY_TARGETNAME( NULL, STRING( pev->target ) );
 		m_fParentedElight = TRUE;
@@ -2333,7 +2333,7 @@ void CEnvELight::SendData( void )
 		}
 	MESSAGE_END();
 
-	if( m_iParentEntindex == NULL && m_fParentedElight )
+	if( m_iParentEntindex == 0 && m_fParentedElight )
 		m_iParentEntindex = ( ENTINDEX( pTarget ) + 0x1000 * pev->impulse );
 
 	m_fNotReloaded = TRUE;
