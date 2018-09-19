@@ -53,7 +53,7 @@ IMPLEMENT_SAVERESTORE( CHSModel, CBaseMonster );
 class CGeneriCHSModel : public CHSModel
 {
 public:
-	void Spawn( void ) { GeneriCHSModelSpawn( (char *)STRING(pev->model), Vector(-16, -16, 0), Vector(16, 16, 72) ); }
+	void Spawn( void ) { GeneriCHSModelSpawn( STRING(pev->model), Vector(-16, -16, 0), Vector(16, 16, 72) ); }
 };
 LINK_ENTITY_TO_CLASS( hs_model, CGeneriCHSModel );
 
@@ -184,7 +184,7 @@ void CHSModelSprite::Spawn( void )
 	m_animate			= 1;
 	m_lastTime			= gpGlobals->time;
 
-	PRECACHE_MODEL( (char *)STRING(pev->model) );
+	PRECACHE_MODEL( STRING(pev->model) );
 	SET_MODEL( ENT(pev), STRING(pev->model) );
 
 	m_maxFrame = (float) MODEL_FRAMES( pev->modelindex ) - 1;

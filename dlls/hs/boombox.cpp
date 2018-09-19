@@ -35,13 +35,13 @@ enum gauss_e {
 
 const char *CBoombox::pBoomboxSongs[] =
 {
-"bbox/song1.wav",
-"bbox/song2.wav",
-"bbox/song3.wav",
-"bbox/song4.wav",
-"bbox/song5.wav",
-"bbox/song6.wav",
-"bbox/song7.wav"
+	"bbox/song1.wav",
+	"bbox/song2.wav",
+	"bbox/song3.wav",
+	"bbox/song4.wav",
+	"bbox/song5.wav",
+	"bbox/song6.wav",
+	"bbox/song7.wav"
 };
 
 void CBoombox::Spawn( )
@@ -62,7 +62,7 @@ void CBoombox::Precache( void )
 	PRECACHE_MODEL("models/w_boombox.mdl");
 	PRECACHE_MODEL("models/p_boombox.mdl");
 	for ( i = 0; i < ARRAYSIZE( pBoomboxSongs ); i++ )
-		PRECACHE_SOUND((char *)pBoomboxSongs[i]);
+		PRECACHE_SOUND(pBoomboxSongs[i]);
 	PRECACHE_SOUND("bbox/xmassong.wav");
 	PRECACHE_SOUND("bbox/songrc.wav");
 
@@ -100,7 +100,7 @@ void CBoombox::Holster( int skiplocal /* = 0 */ )
 	SendWeaponAnim( BOOMBOX_HOLSTER );
 	for ( i = 0; i < ARRAYSIZE( pBoomboxSongs ); i++ )
 	{
-	STOP_SOUND(ENT(m_pPlayer->pev), CHAN_WEAPON, pBoomboxSongs[i]);
+		STOP_SOUND(ENT(m_pPlayer->pev), CHAN_WEAPON, pBoomboxSongs[i]);
 	}
 }
 

@@ -192,10 +192,10 @@ void CChrisChan :: Precache()
 	SonicRings = PRECACHE_MODEL("sprites/s2ring.spr");// client side spittle of coins!
 
 	int i;
-		for ( i = 0; i < ARRAYSIZE( pIdleSounds ); i++ )
-		PRECACHE_SOUND((char *)pIdleSounds[i]);
-		for ( i = 0; i < ARRAYSIZE( pPainSounds ); i++ )
-		PRECACHE_SOUND((char *)pPainSounds[i]);
+	for ( i = 0; i < ARRAYSIZE( pIdleSounds ); i++ )
+		PRECACHE_SOUND(pIdleSounds[i]);
+	for ( i = 0; i < ARRAYSIZE( pPainSounds ); i++ )
+		PRECACHE_SOUND(pPainSounds[i]);
 }	
 
 //=========================================================

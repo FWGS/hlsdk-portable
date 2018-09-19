@@ -212,7 +212,7 @@ void CCaptureTeam1 :: Spawn( )
 
 void CCaptureTeam1 :: Precache( )
 {
-    PRECACHE_MODEL( (char*)STRING(pev->model) );
+    PRECACHE_MODEL( STRING(pev->model) );
 }
 void CCaptureTeam1 :: Think( )
 {
@@ -328,8 +328,9 @@ void CCaptureTeam2 :: Spawn( )
 
 void CCaptureTeam2 :: Precache( )
 {
-    PRECACHE_MODEL( (char*)STRING(pev->model) );
+    PRECACHE_MODEL( STRING(pev->model) );
 }
+
 void CCaptureTeam2 :: Think( )
 {
     // loop through every player and check if they are in the area
