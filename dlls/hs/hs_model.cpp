@@ -24,7 +24,7 @@
 class CHSModel : public CBaseMonster
 {
 public:
-	void GeneriCHSModelSpawn(char *szModel, Vector vecMin, Vector vecMax);
+	void GeneriCHSModelSpawn(const char *szModel, Vector vecMin, Vector vecMax);
 	virtual int	ObjectCaps( void ) { return (CBaseEntity :: ObjectCaps() | FCAP_IMPULSE_USE); }
 	void Spawn( void );
 	void Think( void );
@@ -60,7 +60,7 @@ LINK_ENTITY_TO_CLASS( hs_model, CGeneriCHSModel );
 
 // Cycler member functions
 
-void CHSModel :: GeneriCHSModelSpawn(char *szModel, Vector vecMin, Vector vecMax)
+void CHSModel :: GeneriCHSModelSpawn(const char *szModel, Vector vecMin, Vector vecMax)
 {
 	if (!szModel || !*szModel)
 	{
