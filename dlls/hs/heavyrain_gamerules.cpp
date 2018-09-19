@@ -36,7 +36,7 @@ CHeavyRainplay :: CHeavyRainplay()
 
 BOOL CHeavyRainplay::IsHeavyRain()
 {
- return TRUE;
+	return TRUE;
 }
 
 void CHeavyRainplay::PlayerSpawn( CBasePlayer *pPlayer )
@@ -74,8 +74,7 @@ void CHeavyRainplay::PlayerKilled( CBasePlayer *pVictim, entvars_t *pKiller, ent
 	if ( pVictim->pev == pKiller )  
 	{  // killed self
 		pVictim->pev->frags -= 10;
-		char victext[1024] = "You sacrificed your life for Jason\nYou lose 10 Jasons for revival costs.\n";
-		UTIL_SayText( victext, pVictim );
+		UTIL_SayText( "You sacrificed your life for Jason\nYou lose 10 Jasons for revival costs.\n", pVictim );
 		return;
 	}
 	else if ( ktmp && ktmp->IsPlayer() )
@@ -84,16 +83,15 @@ void CHeavyRainplay::PlayerKilled( CBasePlayer *pVictim, entvars_t *pKiller, ent
 		pKiller->frags += JasonsStolen(FUCK);
 		pVictim->pev->frags -= JasonsStolen(FUCK);
 
-		char victext[1024] = "You lose your Jasons to the killer.\nKILL HIM AND GET THEM BACK! ;)\n";
-		UTIL_SayText( victext, pVictim );
+		UTIL_SayText( "You lose your Jasons to the killer.\nKILL HIM AND GET THEM BACK! ;)\n", pVictim );
 
 		MESSAGE_BEGIN( MSG_ALL, gmsgScoreInfo );
-		WRITE_BYTE( ENTINDEX(pVictim->edict()) );
-		WRITE_SHORT( pVictim->pev->frags );
-		WRITE_SHORT( pVictim->m_iDeaths );
-		WRITE_SHORT( 0 );
-		WRITE_SHORT( g_pGameRules->GetTeamIndex( pVictim->m_szTeamName ) + 1 );
-		WRITE_SHORT( pVictim->m_fHSDev );
+			WRITE_BYTE( ENTINDEX(pVictim->edict()) );
+			WRITE_SHORT( pVictim->pev->frags );
+			WRITE_SHORT( pVictim->m_iDeaths );
+			WRITE_SHORT( 0 );
+			WRITE_SHORT( g_pGameRules->GetTeamIndex( pVictim->m_szTeamName ) + 1 );
+			WRITE_SHORT( pVictim->m_fHSDev );
 		MESSAGE_END();
 
 	CBaseEntity *ep = CBaseEntity::Instance( pKiller );
@@ -101,8 +99,7 @@ void CHeavyRainplay::PlayerKilled( CBasePlayer *pVictim, entvars_t *pKiller, ent
 	{
 		CBasePlayer *PK = (CBasePlayer*)ep;
 
-		char kiltext[1024] = "You stole your victim's Jasons and it is now added to your score.\nNo doubt hes out for blood, watch out ;)\n";
-		UTIL_SayText( kiltext, PK );
+		UTIL_SayText( "You stole your victim's Jasons and it is now added to your score.\nNo doubt hes out for blood, watch out ;)\n", PK );
 
 		MESSAGE_BEGIN( MSG_ALL, gmsgScoreInfo );
 			WRITE_BYTE( ENTINDEX(PK->edict()) );
@@ -125,5 +122,5 @@ void CHeavyRainplay::PlayerKilled( CBasePlayer *pVictim, entvars_t *pKiller, ent
 
 int CHeavyRainplay::JasonsStolen(int jason)
 {
-return jason; //JASON! I found you!
+	return jason; //JASON! I found you!
 }

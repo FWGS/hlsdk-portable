@@ -415,17 +415,17 @@ void CHalfLifeShytplay :: PlayerKilled( CBasePlayer *pVictim, entvars_t *pKiller
 	}
 	else 
 	{
-		char text[1024];
+		const char *pText;
 		switch(RANDOM_LONG(0,4))
 		{
-		case 0: sprintf( text, "Super Bitchy Admin: FAGGOT!\n" ); break;
-		case 1: sprintf( text, "Super Bitchy Admin: OBVIOUS HACKER\n" ); break;
-		case 2: sprintf( text, "Super Bitchy Admin: EAT SHIT IN THE BAN LIST MOTHERFUCKER!\n" ); break;
-		case 3: sprintf( text, "Super Bitchy Admin: FUCK YOU!\n" ); break;
-		case 4: sprintf( text, "Super Bitchy Admin: THIS AIN'T CALL OF DUTY! DON'T FIRE YOUR GUNS, AGAINST SERVER RULES!\n" ); break;
+		case 0: pText = "Super Bitchy Admin: FAGGOT!\n"; break;
+		case 1: pText = "Super Bitchy Admin: OBVIOUS HACKER\n"; break;
+		case 2: pText = "Super Bitchy Admin: EAT SHIT IN THE BAN LIST MOTHERFUCKER!\n"; break;
+		case 3: pText = "Super Bitchy Admin: FUCK YOU!\n"; break;
+		case 4: pText = "Super Bitchy Admin: THIS AIN'T CALL OF DUTY! DON'T FIRE YOUR GUNS, AGAINST SERVER RULES!\n"; break;
 		}
 
-		UTIL_SayTextAll( text, pVictim );
+		UTIL_SayTextAll( pText, pVictim );
 
 		char cmd[40];
 		sprintf(cmd, "kick \"%s\"\n", STRING(pKiller->netname));

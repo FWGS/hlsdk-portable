@@ -86,32 +86,30 @@ void CTestplay::PlayerKilled( CBasePlayer *pVictim, entvars_t *pKiller, entvars_
 {
 	CBasePlayer *peKiller = NULL;
 	CBaseEntity *ktmp = CBaseEntity::Instance( pKiller );
-	if ( pVictim->pev == pKiller )  
-	{  // killed self
-		char victext[1024] = "You killed yourself.\n";
-		UTIL_SayText( victext, pVictim );
+	if( pVictim->pev == pKiller )  
+	{
+		// killed self
+		UTIL_SayText( "You killed yourself.\n", pVictim );
 		return;
 	}
 	else if ( ktmp && ktmp->IsPlayer() )
 	{
+		UTIL_SayText( "You got shot and died.\n", pVictim );
 
-		char victext[1024] = "You got shot and died.\n";
-		UTIL_SayText( victext, pVictim );
+		CBaseEntity *ep = CBaseEntity::Instance( pKiller );
 
-	CBaseEntity *ep = CBaseEntity::Instance( pKiller );
-	if ( ep && ep->Classify() == CLASS_PLAYER )
-	{
-		CBasePlayer *PK = (CBasePlayer*)ep;
+		if ( ep && ep->Classify() == CLASS_PLAYER )
+		{
+			CBasePlayer *PK = (CBasePlayer*)ep;
 
-		char kiltext[1024] = "You killed a person.\n";
-		UTIL_SayText( kiltext, PK );
+			UTIL_SayText( "You killed a person.\n", PK );
 
-		PK->m_flNextDecalTime = gpGlobals->time;
-	}
-	else
-	{
-		// World did them in, Genuflect.
-	}
+			PK->m_flNextDecalTime = gpGlobals->time;
+		}
+		else
+		{
+			// World did them in, Genuflect.
+		}
 	}
 }
 
