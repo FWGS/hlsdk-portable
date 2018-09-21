@@ -42,7 +42,7 @@ void CBaseMonster::SetState( MONSTERSTATE State )
 
 	// Drop enemy pointers when going to idle
 	case MONSTERSTATE_IDLE:
-		if( m_hEnemy != NULL )
+		if( m_hEnemy != 0 )
 		{
 			m_hEnemy = NULL;// not allowed to have an enemy anymore.
 			ALERT( at_aiconsole, "Stripped\n" );
@@ -92,7 +92,7 @@ void CBaseMonster::RunAI( void )
 		}
 
 		// do these calculations if monster has an enemy.
-		if( m_hEnemy != NULL )
+		if( m_hEnemy != 0 )
 		{
 			CheckEnemy( m_hEnemy );
 		}
@@ -198,7 +198,7 @@ MONSTERSTATE CBaseMonster::GetIdealState( void )
 		COMBAT goes to ALERT upon death of enemy
 		*/
 		{
-			if( m_hEnemy == NULL )
+			if( m_hEnemy == 0 )
 			{
 				m_IdealMonsterState = MONSTERSTATE_ALERT;
 				// pev->effects = EF_BRIGHTFIELD;

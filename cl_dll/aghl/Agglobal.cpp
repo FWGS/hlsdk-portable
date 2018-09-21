@@ -213,7 +213,7 @@ int AgDrawHudStringCentered(int xpos, int ypos, int iMaxX, const char *szIt, int
 	return xpos;
 }
 
-int AgDrawHudString(int xpos, int ypos, int iMaxX, char *szIt, int r, int g, int b )
+int AgDrawHudString(int xpos, int ypos, int iMaxX, const char *szIt, int r, int g, int b )
 {
 
   int rx = r, gx = g, bx = b;

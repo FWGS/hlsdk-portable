@@ -202,7 +202,8 @@ int CHudDeathNotice::MsgFunc_DeathMsg( const char *pszName, int iSize, void *pbu
 	gHUD.m_Scoreboard.GetAllPlayersInfo();
 
 	// Get the Killer's name
-	char *killer_name = g_PlayerInfoList[killer].name;
+	const char *killer_name = "";
+	killer_name = g_PlayerInfoList[killer].name;
 	if( !killer_name )
 	{
 		killer_name = "";
@@ -216,11 +217,11 @@ int CHudDeathNotice::MsgFunc_DeathMsg( const char *pszName, int iSize, void *pbu
 	}
 
 	// Get the Victim's name
-	char *victim_name = NULL;
+	const char *victim_name = "";
 	// If victim is -1, the killer killed a specific, non-player object (like a sentrygun)
-	if ( ( (char)victim ) != -1 )
+	if( ( (char)victim ) != -1 )
 		victim_name = g_PlayerInfoList[victim].name;
-	if ( !victim_name )
+	if( !victim_name )
 	{
 		victim_name = "";
 		rgDeathNoticeList[i].szVictim[0] = 0;
@@ -233,7 +234,7 @@ int CHudDeathNotice::MsgFunc_DeathMsg( const char *pszName, int iSize, void *pbu
 	}
 
 	// Is it a non-player object kill?
-	if ( ( (char)victim ) == -1 )
+	if( ( (char)victim ) == -1 )
 	{
 		rgDeathNoticeList[i].iNonPlayerKill = TRUE;
 
@@ -242,10 +243,10 @@ int CHudDeathNotice::MsgFunc_DeathMsg( const char *pszName, int iSize, void *pbu
 	}
 	else
 	{
-		if ( killer == victim || killer == 0 )
+		if( killer == victim || killer == 0 )
 			rgDeathNoticeList[i].iSuicide = TRUE;
 
-		if ( !strcmp( killedwith, "d_teammate" ) )
+		if( !strcmp( killedwith, "d_teammate" ) )
 			rgDeathNoticeList[i].iTeamKill = TRUE;
 	}
 
@@ -300,7 +301,7 @@ int CHudDeathNotice::MsgFunc_DeathMsg( const char *pszName, int iSize, void *pbu
 			// replace the code names with the 'real' names
 			if( !strcmp( killedwith + 2, "egon" ) )
 				strcpy( killedwith, "d_gluon gun" );
-			if ( !strcmp( killedwith + 2, "gauss" ) )
+			if( !strcmp( killedwith + 2, "gauss" ) )
 				strcpy( killedwith, "d_tau cannon" );
 
 			ConsolePrint( killedwith + 2 ); // skip over the "d_" part

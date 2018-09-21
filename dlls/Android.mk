@@ -16,7 +16,7 @@ endif
 LOCAL_CFLAGS += -D_LINUX -DCLIENT_WEAPONS -Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf \
 	-fno-exceptions -DNO_VOICEGAMEMGR -DAG_USE_CHEATPROTECTION -w
 
-LOCAL_CPPFLAGS := $(LOCAL_CFLAGS) -frtti
+LOCAL_CPPFLAGS := $(LOCAL_CFLAGS)
 
 LOCAL_C_INCLUDES := $(SDL_PATH)/include \
 		    $(LOCAL_PATH)/. \
@@ -92,11 +92,13 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
            multiplay_gamerules.cpp \
            nihilanth.cpp \
            nodes.cpp \
+	   observer.cpp \
            osprey.cpp \
            pathcorner.cpp \
            plane.cpp \
            plats.cpp \
            player.cpp \
+	   playermonster.cpp \
            python.cpp \
            rat.cpp \
            roach.cpp \

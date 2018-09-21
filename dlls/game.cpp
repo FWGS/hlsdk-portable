@@ -29,11 +29,13 @@ cvar_t timeleft		= { "mp_timeleft","0" , FCVAR_SERVER | FCVAR_UNLOGGED };	  // "
 
 // multiplayer server rules
 cvar_t teamplay		= { "mp_teamplay","0", FCVAR_SERVER };
-cvar_t fraglimit	= {"mp_fraglimit","0", FCVAR_SERVER };
+cvar_t fraglimit	= { "mp_fraglimit","0", FCVAR_SERVER };
 cvar_t timelimit	= { "mp_timelimit","0", FCVAR_SERVER };
 cvar_t friendlyfire	= { "mp_friendlyfire","0", FCVAR_SERVER };
 cvar_t falldamage	= { "mp_falldamage","0", FCVAR_SERVER };
 cvar_t weaponstay	= { "mp_weaponstay","0", FCVAR_SERVER };
+cvar_t selfgauss	= { "mp_selfgauss", "1", FCVAR_SERVER };
+cvar_t satchelfix	= { "mp_satchelfix", "0", FCVAR_SERVER };
 cvar_t forcerespawn	= { "mp_forcerespawn","1", FCVAR_SERVER };
 cvar_t flashlight	= { "mp_flashlight","0", FCVAR_SERVER };
 cvar_t aimcrosshair	= { "mp_autocrosshair","1", FCVAR_SERVER };
@@ -42,6 +44,8 @@ cvar_t teamlist		= { "mp_teamlist","hgrunt;scientist", FCVAR_SERVER };
 cvar_t teamoverride	= { "mp_teamoverride","1" };
 cvar_t defaultteam	= { "mp_defaultteam","0" };
 cvar_t allowmonsters	= { "mp_allowmonsters","0", FCVAR_SERVER };
+
+cvar_t allow_spectators = { "allow_spectators", "0", FCVAR_SERVER };	// 0 prevents players from being spectators
 
 cvar_t mp_chattime	= { "mp_chattime","10", FCVAR_SERVER };
 
@@ -456,6 +460,7 @@ void GameDLLInit( void )
 	g_footsteps = CVAR_GET_POINTER( "mp_footsteps" );
 
 	CVAR_REGISTER( &displaysoundlist );
+	CVAR_REGISTER( &allow_spectators );
 
 	CVAR_REGISTER( &teamplay );
 	CVAR_REGISTER( &fraglimit );
@@ -467,6 +472,8 @@ void GameDLLInit( void )
 	CVAR_REGISTER( &friendlyfire );
 	CVAR_REGISTER( &falldamage );
 	CVAR_REGISTER( &weaponstay );
+	CVAR_REGISTER( &selfgauss );
+	CVAR_REGISTER( &satchelfix );
 	CVAR_REGISTER( &forcerespawn );
 	CVAR_REGISTER( &flashlight );
 	CVAR_REGISTER( &aimcrosshair );

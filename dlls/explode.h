@@ -12,6 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
+#pragma once
 #ifndef EXPLODE_H
 #define EXPLODE_H
 
@@ -26,7 +27,8 @@ extern DLL_GLOBAL short g_sModelIndexFireball;
 extern DLL_GLOBAL short g_sModelIndexSmoke;
 
 //++ BulliT
-//extern void ExplosionCreate( const Vector &center, const Vector &angles, edict_t *pOwner, int magnitude, BOOL doDamage);
+//extern void ExplosionCreate( const Vector &center, const Vector &angles, edict_t *pOwner, int magnitude, BOOL doDamage );
 extern void ExplosionCreate( const Vector &center, const Vector &angles, edict_t *pOwner, int magnitude, BOOL doDamage, CBaseEntity *pEnt = NULL );
 //-- Martin Webrant
-#endif			//EXPLODE_H
+#endif	// EXPLODE_H
+

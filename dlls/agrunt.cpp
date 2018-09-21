@@ -608,30 +608,30 @@ void CAGrunt::Spawn()
 //=========================================================
 void CAGrunt::Precache()
 {
-	int i;
+	size_t i;
 
 	PRECACHE_MODEL( "models/agrunt.mdl" );
 
 	for( i = 0; i < ARRAYSIZE( pAttackHitSounds ); i++ )
-		PRECACHE_SOUND( (char *)pAttackHitSounds[i] );
+		PRECACHE_SOUND( pAttackHitSounds[i] );
 
 	for( i = 0; i < ARRAYSIZE( pAttackMissSounds ); i++ )
-		PRECACHE_SOUND( (char *)pAttackMissSounds[i] );
+		PRECACHE_SOUND( pAttackMissSounds[i] );
 
 	for( i = 0; i < ARRAYSIZE( pIdleSounds ); i++ )
-		PRECACHE_SOUND( (char *)pIdleSounds[i] );
+		PRECACHE_SOUND( pIdleSounds[i] );
 
 	for( i = 0; i < ARRAYSIZE( pDieSounds ); i++ )
-		PRECACHE_SOUND( (char *)pDieSounds[i] );
+		PRECACHE_SOUND( pDieSounds[i] );
 
 	for( i = 0; i < ARRAYSIZE( pPainSounds ); i++ )
-		PRECACHE_SOUND( (char *)pPainSounds[i] );
+		PRECACHE_SOUND( pPainSounds[i] );
 
 	for( i = 0; i < ARRAYSIZE( pAttackSounds ); i++ )
-		PRECACHE_SOUND( (char *)pAttackSounds[i] );
+		PRECACHE_SOUND( pAttackSounds[i] );
 
 	for( i = 0; i < ARRAYSIZE( pAlertSounds ); i++ )
-		PRECACHE_SOUND( (char *)pAlertSounds[i] );
+		PRECACHE_SOUND( pAlertSounds[i] );
 
 	PRECACHE_SOUND( "hassault/hw_shoot1.wav" );
 
@@ -909,7 +909,7 @@ BOOL CAGrunt::FCanCheckAttacks( void )
 //=========================================================
 BOOL CAGrunt::CheckMeleeAttack1( float flDot, float flDist )
 {
-	if( HasConditions( bits_COND_SEE_ENEMY ) && flDist <= AGRUNT_MELEE_DIST && flDot >= 0.6 && m_hEnemy != NULL )
+	if( HasConditions( bits_COND_SEE_ENEMY ) && flDist <= AGRUNT_MELEE_DIST && flDot >= 0.6 && m_hEnemy != 0 )
 	{
 		return TRUE;
 	}
@@ -1160,7 +1160,7 @@ Schedule_t *CAGrunt::GetScheduleOfType( int Type )
 	case SCHED_FAIL:
 		// no fail schedule specified, so pick a good generic one.
 		{
-			if( m_hEnemy != NULL )
+			if( m_hEnemy != 0 )
 			{
 				// I have an enemy
 				// !!!LATER - what if this enemy is really far away and i'm chasing him?

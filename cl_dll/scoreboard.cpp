@@ -102,6 +102,7 @@ We have a minimum width of 1-320 - we could have the field widths scale with it?
 // relative to the side of the scoreboard
 #define NAME_RANGE_MIN  20
 #define NAME_RANGE_MAX  145
+#define NAME_RANGE_MODIFIER  120
 #define KILLS_RANGE_MIN 130
 #define KILLS_RANGE_MAX 170
 #define DIVIDER_POS		180
@@ -137,11 +138,11 @@ int CHudScoreboard::Draw( float fTime )
 	if( cl_showpacketloss && cl_showpacketloss->value && ( ScreenWidth >= 400 ) )
 	{
 		can_show_packetloss = 1;
-		SCOREBOARD_WIDTH = 400;
+		SCOREBOARD_WIDTH = ( ScreenWidth >= 520 ) ? ( 400 - NAME_RANGE_MODIFIER ) : 400;
 	}
 	else
 	{
-		SCOREBOARD_WIDTH = 320;
+		SCOREBOARD_WIDTH = ( ScreenWidth >= 440 ) ? ( 320 - NAME_RANGE_MODIFIER ) : 320;
 	}
 
 	// just sort the list on the fly
@@ -155,6 +156,13 @@ int CHudScoreboard::Draw( float fTime )
 
 	FAR_RIGHT = can_show_packetloss ? PL_RANGE_MAX : PING_RANGE_MAX;
 	FAR_RIGHT += 5;
+
+	if( ( ScreenWidth >= 440 && !can_show_packetloss ) || ( ScreenWidth >= 520 && can_show_packetloss ) )
+	{
+		xpos -= NAME_RANGE_MODIFIER;
+		FAR_RIGHT += NAME_RANGE_MODIFIER;
+	}
+
 	if( cl_scoreboard_bg && cl_scoreboard_bg->value )
 		gHUD.DrawDarkRectangle( xpos - 31, ypos - 5, FAR_RIGHT + 26, ROW_RANGE_MAX );
 	if( !gHUD.m_Teamplay )
@@ -279,12 +287,18 @@ int CHudScoreboard::Draw( float fTime )
 			break;
 
 		xpos = NAME_RANGE_MIN + xpos_rel;
+
+		if( ( ScreenWidth >= 440 && !can_show_packetloss ) || ( ScreenWidth >= 520 && can_show_packetloss ) )
+		{
+	        	xpos -= NAME_RANGE_MODIFIER;
+		}
+
 		int r = 255, g = 225, b = 55; // draw the stuff kinda yellowish
 
 		if( team_info->ownteam ) // if it is their team, draw the background different color
 		{
 			// overlay the background in blue,  then draw the score text over it
-			FillRGBA( NAME_RANGE_MIN + xpos_rel - 5, ypos, FAR_RIGHT, ROW_GAP, 0, 0, 255, 70 );
+			FillRGBA( xpos - 5, ypos, FAR_RIGHT, ROW_GAP, 0, 0, 255, 70 );
 		}
 
 		// draw their name (left to right)
@@ -336,7 +350,7 @@ int CHudScoreboard::Draw( float fTime )
 extern float *GetClientColor( int client );
 
 // returns the ypos where it finishes drawing
-int CHudScoreboard::DrawPlayers( int xpos_rel, float list_slot, int nameoffset, char *team )
+int CHudScoreboard::DrawPlayers( int xpos_rel, float list_slot, int nameoffset, const char *team )
 {
 	int can_show_packetloss = 0;
 	int FAR_RIGHT;
@@ -354,6 +368,11 @@ int CHudScoreboard::DrawPlayers( int xpos_rel, float list_slot, int nameoffset, 
 
 	FAR_RIGHT = can_show_packetloss ? PL_RANGE_MAX : PING_RANGE_MAX;
 	FAR_RIGHT += 5;
+
+	if( ( ScreenWidth >= 440 && !can_show_packetloss ) || ( ScreenWidth >= 520 && can_show_packetloss ) )
+	{
+		FAR_RIGHT += NAME_RANGE_MODIFIER;
+	}
 
 	// draw the players, in order,  and restricted to team if set
 	while( 1 )
@@ -393,6 +412,12 @@ int CHudScoreboard::DrawPlayers( int xpos_rel, float list_slot, int nameoffset, 
 			break;
 
 		int xpos = NAME_RANGE_MIN + xpos_rel;
+
+		if( ( ScreenWidth >= 440 && !can_show_packetloss ) || ( ScreenWidth >= 520 && can_show_packetloss ) )
+		{
+			xpos -= NAME_RANGE_MODIFIER;
+		}
+
 		int r = 255, g = 255, b = 255;
 		//float *colors = GetClientColor( best_player );
 		//r *= colors[0], g *= colors[1], b *= colors[2];
@@ -401,18 +426,18 @@ int CHudScoreboard::DrawPlayers( int xpos_rel, float list_slot, int nameoffset, 
 			if( pl_info->thisplayer )
 			{
 				// green is the suicide color? i wish this could do grey...
-				FillRGBA( NAME_RANGE_MIN + xpos_rel - 5, ypos, FAR_RIGHT, ROW_GAP, 80, 155, 0, 70 );
+				FillRGBA( xpos - 5, ypos, FAR_RIGHT, ROW_GAP, 80, 155, 0, 70 );
 			}
 			else
 			{
 				// Highlight the killers name - overlay the background in red,  then draw the score text over it
-				FillRGBA( NAME_RANGE_MIN + xpos_rel - 5, ypos, FAR_RIGHT, ROW_GAP, 255, 0, 0, ( (float)15 * (float)( m_fLastKillTime - gHUD.m_flTime ) ) );
+				FillRGBA( xpos - 5, ypos, FAR_RIGHT, ROW_GAP, 255, 0, 0, ( (float)15 * (float)( m_fLastKillTime - gHUD.m_flTime ) ) );
 			}
 		}
 		else if( pl_info->thisplayer ) // if it is their name, draw it a different color
 		{
 			// overlay the background in blue,  then draw the score text over it
-			FillRGBA( NAME_RANGE_MIN + xpos_rel - 5, ypos, FAR_RIGHT, ROW_GAP, 0, 0, 255, 70 );
+			FillRGBA( xpos - 5, ypos, FAR_RIGHT, ROW_GAP, 0, 0, 255, 70 );
 		}
 
 		if( g_iPlayerFlag1 == best_player || g_iPlayerFlag2 == best_player )

@@ -12,7 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
-
+#pragma once
 #ifndef NET_API_H
 #define NET_API_H
 
@@ -94,4 +94,4 @@ typedef struct net_api_s
 	void		(*SetValueForKey)( char *s, const char *key, const char *value, int maxsize );
 } net_api_t;
 
-#endif//NET_APIH
+#endif // NET_APIH

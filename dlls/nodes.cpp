@@ -217,7 +217,7 @@ entvars_t *CGraph::LinkEntForLink( CLink *pLink, CNode *pNode )
 //=========================================================
 int CGraph::HandleLinkEnt( int iNode, entvars_t *pevLinkEnt, int afCapMask, NODEQUERY queryType )
 {
-	edict_t *pentWorld;
+	//edict_t *pentWorld;
 	CBaseEntity *pDoor;
 	TraceResult tr;
 
@@ -233,7 +233,7 @@ int CGraph::HandleLinkEnt( int iNode, entvars_t *pevLinkEnt, int afCapMask, NODE
 		ALERT( at_aiconsole, "dead path ent!\n" );
 		return TRUE;
 	}
-	pentWorld = NULL;
+	//pentWorld = NULL;
 
 	// func_door
 	if( FClassnameIs( pevLinkEnt, "func_door" ) || FClassnameIs( pevLinkEnt, "func_door_rotating" ) )
@@ -589,7 +589,7 @@ int CGraph::FindShortestPath( int *piPath, int iStart, int iDest, int iHull, int
 	int iVisitNode;
 	int iCurrentNode;
 	int iNumPathNodes;
-	int iHullMask;
+	int iHullMask = 0;
 
 	if( !m_fGraphPresent || !m_fGraphPointersSet )
 	{
@@ -796,12 +796,12 @@ void inline CalcBounds( int &Lower, int &Upper, int Goal, int Best )
 	int Temp = 2 * Goal - Best;
 	if( Best > Goal )
 	{
-		Lower = max( 0, Temp );
+		Lower = Q_max( 0, Temp );
 		Upper = Best;
 	}
 	else
 	{
-		Upper = min( 255, Temp );
+		Upper = Q_min( 255, Temp );
 		Lower = Best;
 	}
 }
@@ -965,7 +965,7 @@ int CGraph::FindNearestNode( const Vector &vecOrigin, int afNodeTypes )
 		}
 	}
 
-	for( i = max( m_minY, halfY + 1 ); i <= m_maxY; i++ )
+	for( i = Q_max( m_minY, halfY + 1 ); i <= m_maxY; i++ )
 	{
 		for( j = m_RangeStart[1][i]; j <= m_RangeEnd[1][i]; j++ )
 		{
@@ -990,7 +990,7 @@ int CGraph::FindNearestNode( const Vector &vecOrigin, int afNodeTypes )
 		}
 	}
 
-	for( i = min( m_maxZ, halfZ ); i >= m_minZ; i-- )
+	for( i = Q_min( m_maxZ, halfZ ); i >= m_minZ; i-- )
 	{
 		for( j = m_RangeStart[2][i]; j <= m_RangeEnd[2][i]; j++ )
 		{
@@ -1015,7 +1015,7 @@ int CGraph::FindNearestNode( const Vector &vecOrigin, int afNodeTypes )
 		}
 	}
 
-	for( i = max( m_minX, halfX + 1 ); i <= m_maxX; i++ )
+	for( i = Q_max( m_minX, halfX + 1 ); i <= m_maxX; i++ )
 	{
 		for( j = m_RangeStart[0][i]; j <= m_RangeEnd[0][i]; j++ )
 		{
@@ -1037,7 +1037,7 @@ int CGraph::FindNearestNode( const Vector &vecOrigin, int afNodeTypes )
 		}
 	}
 
-	for( i = min( m_maxY, halfY ); i >= m_minY; i-- )
+	for( i = Q_min( m_maxY, halfY ); i >= m_minY; i-- )
 	{
 		for( j = m_RangeStart[1][i]; j <= m_RangeEnd[1][i]; j++ )
 		{
@@ -1058,7 +1058,7 @@ int CGraph::FindNearestNode( const Vector &vecOrigin, int afNodeTypes )
 		}
 	}
 
-	for( i = max( m_minZ, halfZ + 1 ); i <= m_maxZ; i++ )
+	for( i = Q_max( m_minZ, halfZ + 1 ); i <= m_maxZ; i++ )
 	{
 		for( j = m_RangeStart[2][i]; j <= m_RangeEnd[2][i]; j++ )
 		{
@@ -1668,10 +1668,10 @@ void CTestHull::BuildNodeGraph( void )
 
 	int iBadNode;// this is the node that caused graph generation to fail
 
-	int cMaxInitialLinks = 0;
-	int cMaxValidLinks = 0;
+	//int cMaxInitialLinks = 0;
+	//int cMaxValidLinks = 0;
 
-	int iPoolIndex = 0;
+	//int iPoolIndex = 0;
 	int cPoolLinks;// number of links in the pool.
 
 	Vector vecDirToCheckNode;
@@ -2063,11 +2063,16 @@ void CTestHull::BuildNodeGraph( void )
 		fprintf( file, "\nAll Connections are Paired!\n" );
 	}
 
+#ifdef _MSC_VER
+#define SIZET_FMT "%Iu"
+#else
+#define SIZET_FMT "%zu"
+#endif
 	fprintf( file, "-------------------------------------------------------------------------------\n" );
 	fprintf( file, "\n\n-------------------------------------------------------------------------------\n" );
 	fprintf( file, "Total Number of Connections in Pool: %d\n", cPoolLinks );
 	fprintf( file, "-------------------------------------------------------------------------------\n" );
-	fprintf( file, "Connection Pool: %d bytes\n", sizeof(CLink) * cPoolLinks );
+	fprintf( file, "Connection Pool: " SIZET_FMT " bytes\n", sizeof(CLink) * cPoolLinks );
 	fprintf( file, "-------------------------------------------------------------------------------\n" );
 
 	ALERT( at_aiconsole, "%d Nodes, %d Connections\n", WorldGraph.m_cNodes, cPoolLinks );
@@ -2108,7 +2113,7 @@ void CTestHull::BuildNodeGraph( void )
 	WorldGraph.ComputeStaticRoutingTables();
 
 	// save the node graph for this level	
-	WorldGraph.FSaveGraph( (char *)STRING( gpGlobals->mapname ) );
+	WorldGraph.FSaveGraph( STRING( gpGlobals->mapname ) );
 	ALERT( at_console, "Done.\n" );
 }
 
@@ -2363,7 +2368,7 @@ void CQueuePriority::Heap_SiftUp( void )
 // will be loaded. If file cannot be loaded, the node tree
 // will be created and saved to disk.
 //=========================================================
-int CGraph::FLoadGraph( char *szMapName )
+int CGraph::FLoadGraph( const char *szMapName )
 {
 	char szFilename[MAX_PATH];
 	int iVersion;
@@ -2544,7 +2549,7 @@ NoMemory:
 // CGraph - FSaveGraph - It's not rocket science.
 // this WILL overwrite existing files.
 //=========================================================
-int CGraph::FSaveGraph( char *szMapName )
+int CGraph::FSaveGraph( const char *szMapName )
 {
 	int iVersion = GRAPH_VERSION;
 	char szFilename[MAX_PATH];
@@ -2678,7 +2683,7 @@ int CGraph::FSetGraphPointers( void )
 // though. ( I now suspect that we are getting GMT back from
 // these functions and must compensate for local time ) (sjb)
 //=========================================================
-int CGraph::CheckNODFile( char *szMapName )
+int CGraph::CheckNODFile( const char *szMapName )
 {
 	int retValue;
 

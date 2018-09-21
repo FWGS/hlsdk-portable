@@ -15,7 +15,7 @@
 //
 // teamplay_gamerules.h
 //
-
+#pragma once
 //++ BulliT
 #if !defined(_TEAMPLAY_H_)
 #include "multi_gamerules.h"
@@ -62,4 +62,5 @@ private:
 	BOOL m_teamLimit;				// This means the server set only some teams as valid
 	char m_szTeamList[TEAMPLAY_TEAMLISTLENGTH];
 };
-#endif
+#endif // TEAMPLAY_GAMERULES_H
+

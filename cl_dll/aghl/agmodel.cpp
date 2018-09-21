@@ -225,7 +225,7 @@ void CalcBonePosition( int frame, mstudiobone_t *pbone, mstudioanim_t *panim, fl
 
 bool AgModel::CheckModel(const char* szModelName)
 {
-  try 
+/*  try 
   {
     ReadModel(szModelName);
   }
@@ -246,7 +246,7 @@ bool AgModel::CheckModel(const char* szModelName)
     return false;
 #endif
   }
-
+*/
 	Vector	vMaxBounds = Vector(0,0,0);
   Vector  vBounds = m_vMaxBounds - m_vMinBounds;
   if ( !strnicmp( szModelName, "/models/player", 14) )

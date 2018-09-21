@@ -15,12 +15,12 @@
 //=========================================================
 // GameRules
 //=========================================================
+#pragma once
 //++ BulliT
 #if !defined(_GAMERULES_H_)
 #define _GAMERULES_H_
 #include "agglobal.h"
 //-- Martin Webrant
-
 //#include "weapons.h"
 //#include "items.h"
 class CBasePlayerItem;
@@ -266,5 +266,5 @@ public:
 extern AgGameRules *InstallGameRules( void );
 extern DLL_GLOBAL AgGameRules *g_pGameRules;
 //-- Martin Webrant
-
 #endif //_GAMERULES_H_
+

@@ -12,7 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
-
+#pragma once
 #ifndef WEAPONINFO_H
 #define WEAPONINFO_H
 

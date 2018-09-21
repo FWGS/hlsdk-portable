@@ -37,7 +37,7 @@ typedef list<AgString> AgStringList;
 typedef set<AgString, less<AgString> > AgStringSet;
 
 void AgInitClientDll();
-int AgDrawHudString(int xpos, int ypos, int iMaxX, char *szIt, int r, int g, int b );
+int AgDrawHudString(int xpos, int ypos, int iMaxX, const char *szIt, int r, int g, int b );
 int AgDrawHudStringCentered(int xpos, int ypos, int iMaxX, const char *szIt, int r, int g, int b );
 int AgDrawConsoleString( int x, int y, const char *string, float r = 0, float g = 0, float b = 0 );
 void AgSetTextColor(int r, int g, int b);
