@@ -577,7 +577,7 @@ inline const char* CBasePlayer::GetAuthID()
 
 inline const char* CBasePlayer::GetName()
 {
-	return pev->netname ? STRING(pev->netname)[0] ? STRING(pev->netname) : "" : "";
+	return pev->netname ? ( STRING( pev->netname ) )[0] ? STRING( pev->netname ) : "" : "";
 };
 
 inline bool CBasePlayer::IsAdmin()

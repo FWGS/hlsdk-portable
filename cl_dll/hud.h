@@ -42,7 +42,7 @@ typedef struct
 	int x, y;
 } POSITION;
 
-enum 
+enum teamplay_e
 { 
 	MAX_PLAYERS = 64,
 	MAX_TEAMS = 64,
@@ -149,7 +149,8 @@ public:
 	int MsgFunc_SecAmmoIcon( const char *pszName, int iSize, void *pbuf );
 
 private:
-	enum {
+	enum ammo_e
+	{
 		MAX_SEC_AMMO_VALUES = 4
 	};
 
@@ -274,7 +275,7 @@ public:
 	int MsgFunc_StatusValue( const char *pszName, int iSize, void *pbuf );
 
 protected:
-	enum
+	enum statusbar_e
 	{ 
 		MAX_STATUSTEXT_LENGTH = 128,
 		MAX_STATUSBAR_VALUES = 8,

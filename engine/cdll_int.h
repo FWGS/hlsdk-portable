@@ -41,6 +41,12 @@ typedef struct cmdalias_s
 // so make sure engine declarations aren't done twice
 
 typedef int HSPRITE;	// handle to a graphic
+#ifdef _WIN32
+#define HSPRITE HSPRITE_win32
+#include <windows.h>
+#undef HSPRITE
+#endif
+
 typedef int (*pfnUserMsgHook)( const char *pszName, int iSize, void *pbuf );
 
 #include "wrect.h"

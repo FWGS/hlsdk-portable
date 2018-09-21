@@ -149,7 +149,7 @@ void DLLEXPORT HUD_PlayerMove( struct playermove_s *ppmove, int server )
 	PM_Move( ppmove, server );
 }
 
-#if defined(AG_USE_CHEATPROTECTION) && defined(_WIN32)
+#if defined(AG_USE_CHEATPROTECTION) && defined(_WIN32) && !defined(__MINGW32__)
 void* pFromModuleAddress = 0;
 int DLLEXPORT Initialize_Body( cl_enginefunc_t *pEnginefuncs, int iVersion )
 #else
@@ -168,7 +168,7 @@ int DLLEXPORT Initialize( cl_enginefunc_t *pEnginefuncs, int iVersion )
 //++ BulliT
 	AgInitClientDll();
 
-#if defined(AG_USE_CHEATPROTECTION) && defined(_WIN32)
+#if defined(AG_USE_CHEATPROTECTION) && defined(_WIN32) && !defined(__MINGW32__)
 	g_Wallhack.SetHLAddressToValidate( (DWORD)pFromModuleAddress );
 #endif
 //-- Martin Webrant
@@ -176,7 +176,7 @@ int DLLEXPORT Initialize( cl_enginefunc_t *pEnginefuncs, int iVersion )
 	return 1;
 }
 
-#if defined(AG_USE_CHEATPROTECTION) && defined(_WIN32)
+#if defined(AG_USE_CHEATPROTECTION) && defined(_WIN32) && !defined(__MINGW32__)
 __declspec(naked) int Initialize( cl_enginefunc_t *pEnginefuncs, int Version )
 {
 	__asm pop pFromModuleAddress;

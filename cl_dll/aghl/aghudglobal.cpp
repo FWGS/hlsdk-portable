@@ -380,7 +380,7 @@ void AgHudGlobal::UserCmd_ToggleMapBrowser()
 
 void AgHudGlobal::UserCmd_LoadAuthID()
 {
-  char* pszFileName = "realnames.txt";
+  const char* pszFileName = "realnames.txt";
 	if (gEngfuncs.Cmd_Argc() == 2)
 	{
 		char szSaveAs[MAX_PATH];

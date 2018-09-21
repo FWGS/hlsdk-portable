@@ -121,7 +121,7 @@ int AgHudCTF::MsgFunc_CTF(const char *pszName,  int iSize, void *pbuf)
 	return 1;
 }
 
-static char* s_szSounds[] =
+static const char* s_szSounds[] =
 {
   "ctf/youhaveflag.wav",
   "ctf/teamhaveflag.wav",

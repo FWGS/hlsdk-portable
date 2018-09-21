@@ -212,7 +212,7 @@ FILE_GLOBAL COMMANDS s_Commands[]=
 };
 
 
-FILE_GLOBAL char* s_szVars[] =
+FILE_GLOBAL const char* s_szVars[] =
 {
   "sv_ag_max_spectators <0-32> - Max spectators allowed.",
   "sv_ag_spec_enable_disable<0/1> - Allow players to disable tracking in spectator.",

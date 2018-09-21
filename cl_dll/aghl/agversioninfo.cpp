@@ -2,8 +2,8 @@
 
 #if defined(AG_USE_CHEATPROTECTION) && defined(_WIN32)
 
-#include "AgGlobal.h"
-#include "AgVersionInfo.h"
+#include "agglobal.h"
+#include "agversioninfo.h"
 
 #pragma comment(lib,"version.lib")
 
@@ -17,7 +17,7 @@ DWORD AgVersionInfo::SetError()
 
 DWORD AgVersionInfo::LoadVersionInfo(LPCSTR pszFileName)
 {
-  try
+//  try
   {
     // get size of fileversion
     DWORD dwLen = ::GetFileVersionInfoSize((LPTSTR)pszFileName,&m_dwHandle);
@@ -69,11 +69,11 @@ DWORD AgVersionInfo::LoadVersionInfo(LPCSTR pszFileName)
     m_dwLastError = 0;
     return m_dwLastError;
   }
-  catch (...)
+/*  catch (...)
   {
     AgLog("LoadVersionInfo failed");
     return SetError();
-  }
+  }*/
   return 0;
 }
 

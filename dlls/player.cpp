@@ -1823,7 +1823,7 @@ void CBasePlayer::UpdateStatusBar()
 			CBaseEntity *pEntity = CBaseEntity::Instance( tr.pHit );
 
 			//if( pEntity->Classify() == CLASS_PLAYER )
-			if( pEntity->Classify() == CLASS_PLAYER && !( m_hSpectateTarget != NULL && ENTINDEX( m_hSpectateTarget->edict() ) == pEntity->entindex() ) )
+			if( pEntity->Classify() == CLASS_PLAYER && !( m_hSpectateTarget != 0 && ENTINDEX( m_hSpectateTarget->edict() ) == pEntity->entindex() ) )
 			{
 				newSBarState[SBAR_ID_TARGETNAME] = ENTINDEX( pEntity->edict() );
 				strcpy( sbuf1, "1 %p1\n2 Health: %i2%%\n3 Armor: %i3%%" );
@@ -4207,7 +4207,7 @@ void CBasePlayer::UpdateClientData( void )
 
 //++ BulliT
 	CBasePlayer* pPlayerTarget = NULL;
-	if( m_hSpectateTarget != NULL && m_hSpectateTarget->pev != NULL )
+	if( m_hSpectateTarget != 0 && m_hSpectateTarget->pev != 0 )
 		pPlayerTarget = (CBasePlayer*)CBasePlayer::Instance( m_hSpectateTarget->pev );
 
 #ifndef AG_NO_CLIENT_DLL
@@ -5373,10 +5373,10 @@ bool CBasePlayer::RespawnMatch()
 	//Remove all weapons/items
 	RemoveAllItemsNoClientMessage();
 
-	if( m_pTank != NULL )
+	if( m_pTank != 0 )
 	{
 		m_pTank->Use( this, this, USE_OFF, 0 );
-		m_pTank = NULL;
+		m_pTank = 0;
 	}
 
 	//Make sure hud is shown correctly

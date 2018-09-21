@@ -2,50 +2,50 @@
 #include "hud.h"
 #include "cl_util.h"
 
-static char szDisconnect[] = "disconnect\n";
+static const char *szDisconnect = "disconnect\n";
 
 struct FILES
 {
-  char*		pszFile;
-	WORD32	w32CheckSum;
+  const char*		pszFile;
+  WORD32	w32CheckSum;
 };
 
 static FILES s_Files[] = 
 {
-		"gfx.wad", 1240178454,
-//		"halflife.wad", 1657905259,
-		"liquids.wad", 1067140096, 
-		"models/player/hgrunt/hgrunt.mdl", 4178952236,
-		"models/player/scientist/scientist.mdl", 801952511,
-		"models/player/gordon/gordon.mdl", 1899521925,
-		"models/player/helmet/helmet.mdl", 413544432,
-		"models/player/robo/robo.mdl", 1066728661,
-		"models/player/barney/barney.mdl", 2342238586,
-		"models/player/recon/recon.mdl", 196824764,
-		"models/player/zombie/zombie.mdl", 2613106147,
-		"models/player/gman/gman.mdl", 363240166,
-		"models/player.mdl", 348061911,
-		"models/flag.mdl", 1312518787,
-		"models/p_crowbar.mdl", 2596481415,
-		"models/p_9mmhandgun.mdl", 459325257,
-		"models/p_9mmAR.mdl", 786579345,
-		"models/p_357.mdl", 96835772,
-		"models/p_gauss.mdl", 2413538144,
-		"models/p_rpg.mdl", 3201388383,
-		"models/p_crossbow.mdl", 1075131750,
-		"models/p_egon.mdl", 1795269724,
-		"models/p_tripmine.mdl", 2904825111,
-		"models/p_satchel.mdl", 1240685151,
-		"models/p_satchel_radio.mdl", 3737744643,
-		"models/p_shotgun.mdl", 2602382707,
-		"models/p_grenade.mdl", 3427694132,
-		"models/p_squeak.mdl", 472781321,
-		"models/p_hgun.mdl", 2327206545,
-//		"models/player/blue/blue.mdl", 3578029767,
-//		"models/player/red/red.mdl", 834545538,
+		"gfx.wad", 1240178454U,
+//		"halflife.wad", 1657905259U,
+		"liquids.wad", 1067140096U, 
+		"models/player/hgrunt/hgrunt.mdl", 4178952236U,
+		"models/player/scientist/scientist.mdl", 801952511U,
+		"models/player/gordon/gordon.mdl", 1899521925U,
+		"models/player/helmet/helmet.mdl", 413544432U,
+		"models/player/robo/robo.mdl", 1066728661U,
+		"models/player/barney/barney.mdl", 2342238586U,
+		"models/player/recon/recon.mdl", 196824764U,
+		"models/player/zombie/zombie.mdl", 2613106147U,
+		"models/player/gman/gman.mdl", 363240166U,
+		"models/player.mdl", 348061911U,
+		"models/flag.mdl", 1312518787U,
+		"models/p_crowbar.mdl", 2596481415U,
+		"models/p_9mmhandgun.mdl", 459325257U,
+		"models/p_9mmAR.mdl", 786579345U,
+		"models/p_357.mdl", 96835772U,
+		"models/p_gauss.mdl", 2413538144U,
+		"models/p_rpg.mdl", 3201388383U,
+		"models/p_crossbow.mdl", 1075131750U,
+		"models/p_egon.mdl", 1795269724U,
+		"models/p_tripmine.mdl", 2904825111U,
+		"models/p_satchel.mdl", 1240685151U,
+		"models/p_satchel_radio.mdl", 3737744643U,
+		"models/p_shotgun.mdl", 2602382707U,
+		"models/p_grenade.mdl", 3427694132U,
+		"models/p_squeak.mdl", 472781321U,
+		"models/p_hgun.mdl", 2327206545U,
+//		"models/player/blue/blue.mdl", 3578029767U,
+//		"models/player/red/red.mdl", 834545538U,
 };
 
-WORD32 AgCRC32EnforceFileInternal(char* pszFile)
+WORD32 AgCRC32EnforceFileInternal(const char* pszFile)
 {
 	int iLength = 0;
 	void* pFile = gEngfuncs.COM_LoadFile(pszFile, 5, &iLength);
@@ -58,7 +58,7 @@ WORD32 AgCRC32EnforceFileInternal(char* pszFile)
 	return -1;
 }
 
-bool AgCRC32EnforceFile(char* pszFile, WORD32 w32CheckSum)
+bool AgCRC32EnforceFile(const char* pszFile, WORD32 w32CheckSum)
 {
 	if (w32CheckSum != AgCRC32EnforceFileInternal(pszFile))
   {

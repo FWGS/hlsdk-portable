@@ -4,8 +4,8 @@
 
 #if defined(AG_USE_CHEATPROTECTION) && defined(_WIN32)
 
-#include "AgWallhack.h"
-#include "AgVersionInfo.h"
+#include "agwallhack.h"
+#include "agversioninfo.h"
 #include "com_weapons.h"
 #include "agbase64.h"
 #include "agmapi.h"
@@ -24,7 +24,7 @@ bool CheckHooks(const char* pszModule, const char* pszMethod, BYTE* pBytesToChec
   HMODULE hModule = ::GetModuleHandle(pszModule);
   if (!hModule)
     return true; //The dll aint loaded
-  LPVOID pAddress = ::GetProcAddress(hModule, pszMethod);
+  LPVOID pAddress = (LPVOID)::GetProcAddress(hModule, pszMethod);
 
   // change the page-protection for the intercepted function
   DWORD dwOldProtect;
@@ -63,9 +63,9 @@ bool CheckHooks(const char* pszModule, const char* pszMethod, BYTE* pBytesToChec
 
 
 AgWallhack g_Wallhack;
-static char szDisconnect[] = "disconnect\n";
-static char szMicrosoft[] = "Microsoft Corporation";
-static char szCDFPS[] = "cd_fps";
+static const char *szDisconnect = "disconnect\n";
+static const char *szMicrosoft = "Microsoft Corporation";
+static const char *szCDFPS = "cd_fps";
 
 static char* s_szGoodDlls[] =
 {

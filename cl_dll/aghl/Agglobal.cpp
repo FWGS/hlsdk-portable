@@ -427,12 +427,13 @@ void AgLog(const char* pszLog)
 
 void AgDirList(const AgString& sDir, AgStringSet& setFiles)
 {
-/*
-#ifdef _WIN32 
-  WIN32_FIND_DATA FindData;
-  char szSearchDirectory[_MAX_PATH];
-  sprintf(szSearchDirectory,"%s/*.*",sDir.c_str());
-  HANDLE hFind = FindFirstFile(szSearchDirectory, &FindData);
+
+//#ifdef _WIN32 
+// WIN32_FIND_DATA FindData;
+//  char szSearchDirectory[_MAX_PATH];
+//  sprintf(szSearchDirectory,"%s/*.*",sDir.c_str());
+
+/*  HANDLE hFind = FindFirstFile(szSearchDirectory, &FindData);
 
   if (INVALID_HANDLE_VALUE != hFind)
   {

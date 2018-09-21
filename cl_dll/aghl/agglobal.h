@@ -17,6 +17,7 @@
 #include <assert.h>
 #define NOWINRES
 #define NOIME
+#undef _WIN32_WINNT
 #define _WIN32_WINNT  0x0400
 #ifdef _WIN32
 #include <windows.h>

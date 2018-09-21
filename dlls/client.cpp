@@ -170,7 +170,7 @@ void ClientKill( edict_t *pEntity )
 	CBasePlayer *pl = (CBasePlayer*)CBasePlayer::Instance( pev );
 
 //++ BulliT
-	if( pl->m_fNextSuicideTime > gpGlobals->time && !pl->IsSpectator() || ARENA == AgGametype() || ag_match_running.value > 0 )
+	if( ( pl->m_fNextSuicideTime > gpGlobals->time && !pl->IsSpectator() ) || ARENA == AgGametype() || ag_match_running.value > 0 )
 	//if( pl->m_fNextSuicideTime > gpGlobals->time )
 //-- Martin Webrant
 		return;  // prevent suiciding too ofter

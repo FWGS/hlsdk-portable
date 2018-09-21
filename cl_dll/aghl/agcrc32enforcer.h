@@ -5,7 +5,7 @@
 
 #include "agcrc32.h"
 
-bool AgCRC32EnforceFile(char* pszFile, WORD32 w32CheckSum);
+bool AgCRC32EnforceFile(const char* pszFile, WORD32 w32CheckSum);
 
 bool AgCRC32EnforceFiles();
 

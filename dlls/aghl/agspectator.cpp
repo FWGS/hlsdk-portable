@@ -103,7 +103,7 @@ void CBasePlayer::Spectate_Start(bool bResetScore)
   
   EnableControl(TRUE);
   
-  if ( m_pTank != NULL )
+  if ( m_pTank != 0 )
   {
     m_pTank->Use( this, this, USE_OFF, 0 );
     m_pTank = NULL;
@@ -129,7 +129,7 @@ void CBasePlayer::Spectate_Start(bool bResetScore)
   pev->movetype = MOVETYPE_NOCLIP;
   pev->effects |= EF_NODRAW;
   pev->view_ofs = g_vecZero;
-  m_hSpectateTarget = NULL;
+  m_hSpectateTarget = 0;
   // clear attack/use commands from player
   m_afButtonPressed = 0;
   pev->button = 0;
@@ -260,13 +260,13 @@ void CBasePlayer::Spectate_Nextplayer( bool bReverse )
   //				only a subset of the players. e.g. Make it check the target's team.
   
   int		iStart;
-  if ( m_hSpectateTarget )
+  if ( m_hSpectateTarget != 0 )
     iStart = ENTINDEX( m_hSpectateTarget->edict() );
   else
     iStart = ENTINDEX( edict() );
   
   int	    iCurrent = iStart;
-  m_hSpectateTarget = NULL;
+  m_hSpectateTarget = 0;
   int iDir = bReverse ? -1 : 1; 
   
   do
@@ -298,7 +298,7 @@ void CBasePlayer::Spectate_Nextplayer( bool bReverse )
   while ( iCurrent != iStart );
   
   // Did we find a target?
-  if (m_hSpectateTarget != NULL && m_hSpectateTarget->pev != NULL)
+  if (m_hSpectateTarget != 0 && m_hSpectateTarget->pev != 0)
   {
     // Store the target in pev so the physics DLL can get to it
     pev->iuser2 = ENTINDEX( m_hSpectateTarget->edict() );
@@ -442,10 +442,10 @@ void CBasePlayer::Spectate_SetMode( int iMode )
   if (iMode == OBS_CHASE_FREE  || iMode == OBS_MAP_CHASE || iMode == OBS_CHASE_LOCKED)
   {
     // If changing from Roaming, or starting observing, make sure there is a target
-    if ( m_hSpectateTarget == NULL )
+    if ( m_hSpectateTarget == 0 )
       Spectate_Nextplayer( false );
     
-    if (m_hSpectateTarget)
+    if( m_hSpectateTarget != 0 )
     {
       pev->iuser1 = iMode;
       pev->iuser2 = ENTINDEX( m_hSpectateTarget->edict() );
@@ -468,10 +468,10 @@ void CBasePlayer::Spectate_SetMode( int iMode )
   if ( iMode == OBS_IN_EYE)
   {
     // If changing from Roaming, or starting observing, make sure there is a target
-    if ( m_hSpectateTarget == NULL )
+    if ( m_hSpectateTarget == 0 )
       Spectate_Nextplayer( false );
     
-    if (m_hSpectateTarget)
+    if (m_hSpectateTarget != 0)
     {
       pev->iuser1 = iMode;
       pev->iuser2 = ENTINDEX( m_hSpectateTarget->edict() );

@@ -26,7 +26,7 @@ AgModelCheck g_ModelCheck;
 extern int g_iPure;
 extern engine_studio_api_t IEngineStudio;
 
-static char* s_szPure1[] =
+static const char* s_szPure1[] =
 {
   "gordon",
   "helmet",

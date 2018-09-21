@@ -42,7 +42,7 @@ AgClient::~AgClient()
 {
 }
 
-FILE_GLOBAL char* s_szCommands[] =
+FILE_GLOBAL const char* s_szCommands[] =
 {
   "hud_spectatebar <1,0> - Spectator bar with information.",
   "hud_timer <0-3> - Timer mode, 0 off, 1 = Time remaining, 2 = Effective time, 3 clock.",
@@ -615,11 +615,11 @@ void AgClient::Say(CBasePlayer* pPlayer, say_type Type )
 #endif
   
 	// team match?
-	char * temp;
+	const char *temp;
 	if (All == Type)
 		temp = "say";
 	else
-    temp = "say_team";
+		temp = "say_team";
 		
 	if ( g_teamplay )
 	{

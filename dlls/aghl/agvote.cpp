@@ -14,7 +14,7 @@
 //////////////////////////////////////////////////////////////////////
 extern int gmsgVote;
 
-FILE_GLOBAL char* s_szCommands[] =
+FILE_GLOBAL const char* s_szCommands[] =
 {
   "yes - Vote yes.",
   "no  - Vote no.",
@@ -22,7 +22,7 @@ FILE_GLOBAL char* s_szCommands[] =
   "aglistvotes - List available votes."
 };
 
-FILE_GLOBAL char* s_szVotes[] =
+FILE_GLOBAL const char* s_szVotes[] =
 {
   "agkick <name/#number> - Kick a player.",
   "agadmin <name/#number> - Vote a player admin.",

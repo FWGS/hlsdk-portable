@@ -430,7 +430,7 @@ CBasePlayer* AgPlayerByIndex(int iPlayerIndex )
       CBaseEntity* pEnt = (CBaseEntity *)CBaseEntity::Instance( pPlayerEdict );
       if (pEnt && pEnt->pev && CLASS_PLAYER == pEnt->Classify())
       {
-        if (pEnt->pev->netname && 0 != STRING(pEnt->pev->netname)[0])
+        if (pEnt->pev->netname && 0 != ( STRING( pEnt->pev->netname ) )[0])
         {
           pPlayer = (CBasePlayer*)pEnt;
         }
