@@ -28,6 +28,8 @@
 
 extern edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer );
 
+extern BOOL gPhysicsInterfaceInitialized;
+
 //++ BulliT
 DLL_GLOBAL AgGameRules *g_pGameRules = NULL;
 //-- Martin Webrant
@@ -313,8 +315,11 @@ void CGameRules::RefreshSkillData ( void )
 AgGameRules *InstallGameRules( void )
 //-- Martin Webrant
 {
-	SERVER_COMMAND( "exec game.cfg\n" );
-	SERVER_EXECUTE();
+	if( !gPhysicsInterfaceInitialized )
+	{
+		SERVER_COMMAND( "exec game.cfg\n" );
+		SERVER_EXECUTE();
+	}
 
 //++ BulliT
 	char *servercfgfile = (char *)CVAR_GET_STRING( "servercfgfile" );
