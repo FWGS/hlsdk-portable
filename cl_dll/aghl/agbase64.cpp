@@ -1,5 +1,6 @@
 //++ BulliT
 
+#ifdef _WIN32
 #include "agbase64.h"
 #include <string.h>
 #include <assert.h>
@@ -149,3 +150,4 @@ static char* s_szBadCodes[] =
       OutputDebugString(szTest);
   }
 */
+#endif // _WIN32

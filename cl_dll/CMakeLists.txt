@@ -94,7 +94,7 @@ set (CLDLL_SOURCES
 	message.cpp
 	overview.cpp
 	parsemsg.cpp
-#	aghl/agbase64.cpp
+	aghl/agbase64.cpp
 	aghl/agcrc32.cpp
 	aghl/agcrc32enforcer.cpp
 #	aghl/agdownload.cpp
@@ -162,6 +162,10 @@ endif()
 add_library (${CLDLL_LIBRARY} SHARED ${CLDLL_SOURCES})
 if (GOLDSOURCE_SUPPORT)
 	target_link_libraries( ${CLDLL_LIBRARY} ${CMAKE_DL_LIBS} )
+endif()
+
+if (WIN32)
+	target_link_libraries( ${CLDLL_LIBRARY} version.lib )
 endif()
 
 set_target_properties (${CLDLL_LIBRARY} PROPERTIES
