@@ -182,7 +182,7 @@ int CHudScoreboard::Draw( float fTime )
 
 	list_slot += 1.2;
 	ypos = ROW_TOP + ROW_RANGE_MIN + ( list_slot * ROW_GAP );
-	xpos = NAME_RANGE_MIN + xpos_rel;
+	// xpos = NAME_RANGE_MIN + xpos_rel;
 
 	if( cl_scoreboard_bg && cl_scoreboard_bg->value )
 		FillRGBA( xpos - 30, ypos, FAR_RIGHT + 24, 1, 255, 140, 0, 255 );
