@@ -455,6 +455,7 @@ extern DLL_GLOBAL BOOL		g_fGameOver;
 float g_flWeaponCheat; 
 
 BOOL g_startSuit; //LRC
+BOOL g_allowGJump;
 
 void CWorld::Spawn( void )
 {
@@ -542,6 +543,24 @@ void CWorld::Precache( void )
 	PRECACHE_SOUND( "weapons/ric3.wav" );
 	PRECACHE_SOUND( "weapons/ric4.wav" );
 	PRECACHE_SOUND( "weapons/ric5.wav" );
+	PRECACHE_SOUND( "fx/whizz_bullet1.wav" );
+	PRECACHE_SOUND( "fx/whizz_bullet2.wav" );
+	PRECACHE_SOUND( "fx/whizz_bullet3.wav" );
+	PRECACHE_SOUND( "fx/whizz_bullet4.wav" );
+	PRECACHE_SOUND( "fx/whizz_bullet5.wav" );
+	PRECACHE_SOUND( "fx/whizz_bullet6.wav" );
+	PRECACHE_SOUND( "fx/whizz_bullet7.wav" );
+	PRECACHE_SOUND( "fx/whizz_bullet8.wav" );
+	PRECACHE_SOUND( "fx/whizz_bullet9.wav" );
+	PRECACHE_SOUND( "fx/whizz_bullet10.wav" );
+	PRECACHE_SOUND( "fx/whizz_bullet11.wav" );
+	PRECACHE_SOUND( "fx/whizz_bullet12.wav" );
+	PRECACHE_SOUND( "fx/whizz_bullet13.wav" );
+	PRECACHE_SOUND( "fx/whizz_bullet14.wav" );
+	PRECACHE_SOUND( "fx/whizz_bullet15.wav" );
+	PRECACHE_SOUND( "fx/whizz_bullet16.wav" );
+	PRECACHE_SOUND( "fx/whizz_bullet17.wav" );
+	PRECACHE_SOUND( "fx/whizz_bullet18.wav" );
 
 	PRECACHE_MODEL( "sprites/null.spr" ); //LRC
 
@@ -637,6 +656,8 @@ void CWorld::Precache( void )
 	g_flWeaponCheat = CVAR_GET_FLOAT( "sv_cheats" );  // Is the impulse 101 command allowed?
 }
 
+// int g_darklevel;
+
 //
 // Just to ignore the "wad" field.
 //
@@ -706,6 +727,11 @@ void CWorld::KeyValue( KeyValueData *pkvd )
 		}
 		pkvd->fHandled = TRUE;
 	}
+	/*else if( FStrEq( pkvd->szKeyName, "darklevel" ) )
+	{
+		g_darklevel = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}*/
 	//LRC- let map designers start the player with his suit already on
 	else if ( FStrEq(pkvd->szKeyName, "startsuit") )
 	{
@@ -718,6 +744,11 @@ void CWorld::KeyValue( KeyValueData *pkvd )
 		pkvd->fHandled = TRUE;
 	}
 //LRC- ends
+	else if( FStrEq( pkvd->szKeyName, "allow_sp_gjump" ) )
+	{
+		g_allowGJump = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
 	else
 		CBaseEntity::KeyValue( pkvd );
 }

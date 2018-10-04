@@ -19,7 +19,8 @@ LOCAL_C_INCLUDES := $(LOCAL_PATH)/. \
 		    $(LOCAL_PATH)/../engine \
 		    $(LOCAL_PATH)/../public \
 		    $(LOCAL_PATH)/../pm_shared \
-		    $(LOCAL_PATH)/../game_shared
+		    $(LOCAL_PATH)/../game_shared \
+		    $(LOCAL_PATH)/zx
 
 LOCAL_SRC_FILES := aflock.cpp agrunt.cpp schedule.cpp airtank.cpp \
 		alias.cpp animating.cpp animation.cpp apache.cpp barnacle.cpp barney.cpp \
@@ -37,6 +38,13 @@ LOCAL_SRC_FILES := aflock.cpp agrunt.cpp schedule.cpp airtank.cpp \
 		singleplay_gamerules.cpp skill.cpp sound.cpp soundent.cpp spectator.cpp squadmonster.cpp \
 		squeakgrenade.cpp stats.cpp subs.cpp talkmonster.cpp teamplay_gamerules.cpp tempmonster.cpp \
 		tentacle.cpp triggers.cpp tripmine.cpp turret.cpp util.cpp weapons.cpp world.cpp xen.cpp \
+		zx/ak47.cpp zx/apache_blackop.cpp zx/auto_shotgun.cpp \
+		zx/barney_suit.cpp zx/barniel.cpp zx/bot_combat.cpp zx/bot.cpp \
+		zx/botcam.cpp zx/eagel.cpp \
+		zx/kate.cpp zx/massn.cpp zx/minigun.cpp zx/mp41a.cpp \
+		zx/scientist_suit.cpp zx/shock.cpp zx/shockball.cpp zx/shockgun.cpp \
+		zx/swort.cpp zx/torch.cpp zx/uzi.cpp \
+		zx/zombie_barney.cpp zx/zombie_gus.cpp zx/zombie_soldier.cpp \
 		zombie.cpp glock.cpp \
 	   ../pm_shared/pm_debug.c ../pm_shared/pm_math.c ../pm_shared/pm_shared.c
 

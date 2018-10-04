@@ -22,6 +22,7 @@
 #include "cl_util.h"
 #include "netadr.h"
 #include "parsemsg.h"
+//#include "bumpmap.h"
 
 #if defined(GOLDSOURCE_SUPPORT) && (defined(_WIN32) || defined(__linux__) || defined(__APPLE__)) && (defined(__i386) || defined(_M_IX86))
 #define USE_VGUI_FOR_GOLDSOURCE_SUPPORT
@@ -296,6 +297,8 @@ redraw the HUD.
 
 int DLLEXPORT HUD_Redraw( float time, int intermission )
 {
+	//g_BumpmapMgr.Render(2);
+
 	gHUD.Redraw( time, intermission );
 
 	return 1;

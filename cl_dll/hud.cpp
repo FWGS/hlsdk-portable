@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include "parsemsg.h"
 #include "hud_servers.h"
+//#include "bumpmap.h"
 
 #include "demo.h"
 #include "demo_api.h"
@@ -38,7 +39,8 @@ extern client_sprite_t *GetSpriteList( client_sprite_t *pList, const char *psz, 
 
 extern cvar_t *sensitivity;
 cvar_t *cl_lw = NULL;
-cvar_t *cl_viewbob = NULL;
+cvar_t *cl_rollangle;
+cvar_t *cl_rollspeed;
 
 void ShutdownInput( void );
 
@@ -121,6 +123,80 @@ int __MsgFunc_GameMode( const char *pszName, int iSize, void *pbuf )
 	return gHUD.MsgFunc_GameMode( pszName, iSize, pbuf );
 }
 
+int __MsgFunc_PlayMP3( const char *pszName, int iSize, void *pbuf )
+{
+	return gHUD.MsgFunc_PlayMP3( pszName, iSize, pbuf );
+}
+
+int __MsgFunc_BumpLight( const char *pszName, int iSize, void *pbuf )
+{
+/*	float rad, strength;
+	Vector pos, col;
+	int moveWithEnt;
+	bool enabled;
+	char* targetname;
+	bool moveWithExtraInfo = false;
+	Vector moveWithPos, moveWithAngles;
+	int style;
+
+	BEGIN_READ( pbuf, iSize );
+
+	int msgtype = READ_BYTE();
+
+	if( msgtype == 0 )
+	{
+		// create a new light
+		targetname = READ_STRING();
+
+		pos.x = READ_COORD();
+		pos.y = READ_COORD();
+		pos.z = READ_COORD();
+
+		rad = READ_COORD();
+		strength = READ_COORD();
+		col.x = READ_BYTE() / 255.0f;
+		col.y = READ_BYTE() / 255.0f;
+		col.z = READ_BYTE() / 255.0f;
+
+		style = READ_BYTE();
+
+		enabled = ( READ_BYTE() ? true : false );
+
+		moveWithEnt = READ_SHORT();
+
+		if( moveWithEnt != -1 && READ_BYTE() )
+		{
+			moveWithPos.x = READ_COORD();
+			moveWithPos.y = READ_COORD();
+			moveWithPos.z = READ_COORD();
+
+			moveWithAngles.x = READ_ANGLE();
+			moveWithAngles.y = READ_ANGLE();
+			moveWithAngles.z = READ_ANGLE();
+
+			moveWithExtraInfo = true;
+		}
+
+		g_BumpmapMgr.AddLight( targetname, pos, col, strength, rad, enabled, style, moveWithEnt, moveWithExtraInfo,
+			moveWithPos, moveWithAngles );
+	}
+	else if( msgtype == 1 )
+	{
+		// set the enabled/disabled state of an existing one
+
+		targetname = READ_STRING();
+		enabled = ( READ_BYTE() ? true : false );
+
+		g_BumpmapMgr.EnableLight( targetname, enabled );
+	}
+	else
+	{
+		gEngfuncs.Con_Printf( "BUMPMAPPING: Bogus bump light message type: %i\n", msgtype ); // Totally bogus, dude.
+	}
+*/
+	return 1;
+}
+
 // TFFree Command Menu
 void __CmdFunc_OpenCommandMenu( void )
 {
@@ -141,6 +217,14 @@ void __CmdFunc_ForceCloseCommandMenu( void )
 
 void __CmdFunc_ToggleServerBrowser( void )
 {
+}
+
+void __CmdFunc_StopMP3( void )
+{
+	if( !IsXashFWGS() && gEngfuncs.pfnGetCvarPointer( "gl_overbright" ) )
+		gEngfuncs.pfnClientCmd( "mp3 stop\n" );
+	else
+		gEngfuncs.pfnPrimeMusicStream( 0, 0 );
 }
 
 // TFFree Command Menu Message Handlers
@@ -233,6 +317,12 @@ void CHud::Init( void )
 	HOOK_MESSAGE( AddShine ); //LRC
 	HOOK_MESSAGE( SetSky ); //LRC
 
+	//KILLAR: MP3	
+	// if( gMP3.Initialize() )
+	// {
+		HOOK_MESSAGE( PlayMP3 );
+		HOOK_COMMAND( "stopaudio", StopMP3 );
+	// }
 	// TFFree CommandMenu
 	HOOK_COMMAND( "+commandmenu", OpenCommandMenu );
 	HOOK_COMMAND( "-commandmenu", CloseCommandMenu );
@@ -255,6 +345,8 @@ void CHud::Init( void )
 	HOOK_MESSAGE( Spectator );
 	HOOK_MESSAGE( AllowSpec );
 
+	HOOK_MESSAGE( BumpLight );
+
 	// VGUI Menus
 	HOOK_MESSAGE( VGUIMenu );
 
@@ -262,16 +354,28 @@ void CHud::Init( void )
 	CVAR_CREATE( "hud_takesshots", "0", FCVAR_ARCHIVE );		// controls whether or not to automatically take screenshots at the end of a round
 	hud_textmode = CVAR_CREATE ( "hud_textmode", "0", FCVAR_ARCHIVE );
 
+	// start glow effect --FragBait0
+	// CVAR_CREATE( "r_glow", "0", FCVAR_ARCHIVE );
+	// CVAR_CREATE( "r_glowmode", "0", FCVAR_ARCHIVE ); //AJH this is now redundant
+	// CVAR_CREATE( "r_glowstrength", "1", FCVAR_ARCHIVE );
+	// CVAR_CREATE( "r_glowblur", "4", FCVAR_ARCHIVE );
+	// CVAR_CREATE( "r_glowdark", "2", FCVAR_ARCHIVE );
+	// CVAR_CREATE( "r_shadows", "0", FCVAR_ARCHIVE );
+	// end glow effect
+
+	//viewEntityIndex = 0; // trigger_viewset stuff
+	//viewFlags = 0;
+
 	m_iLogo = 0;
 	m_iFOV = 0;
-	m_iHUDColor = 0x00FFA000; //255,160,0 -- LRC
+	//numMirrors = 0;
+	m_iHUDColor = 0x00FF0000; //255,0,0 -- LRC
 
 	CVAR_CREATE( "zoom_sensitivity_ratio", "1.2", 0 );
 	default_fov = CVAR_CREATE( "default_fov", "90", 0 );
 	m_pCvarStealMouse = CVAR_CREATE( "hud_capturemouse", "1", FCVAR_ARCHIVE );
 	m_pCvarDraw = CVAR_CREATE( "hud_draw", "1", FCVAR_ARCHIVE );
 	cl_lw = gEngfuncs.pfnGetCvarPointer( "cl_lw" );
-	cl_viewbob = CVAR_CREATE( "cl_viewbob", "0", FCVAR_ARCHIVE );
 
 	m_pSpriteList = NULL;
 	m_pShinySurface = NULL; //LRC
@@ -313,7 +417,13 @@ void CHud::Init( void )
 
 	m_Menu.Init();
 	
+// advanced NVG
+	//m_NVG.Init();
+// advanced NVG
+
 	MsgFunc_ResetHUD( 0, 0, NULL );
+	cl_rollangle = gEngfuncs.pfnRegisterVariable ( "cl_rollangle", "0.65", FCVAR_CLIENTDLL | FCVAR_ARCHIVE );
+	cl_rollspeed = gEngfuncs.pfnRegisterVariable ( "cl_rollspeed", "300", FCVAR_CLIENTDLL | FCVAR_ARCHIVE );
 }
 
 // CHud destructor
@@ -326,6 +436,14 @@ CHud::~CHud()
 	delete[] m_rghSprites;
 	delete[] m_rgrcRects;
 	delete[] m_rgszSpriteNames;
+
+	//gMP3.Shutdown();
+	//LRC - clear all shiny surfaces
+	if( m_pShinySurface )
+	{
+		delete m_pShinySurface;
+		m_pShinySurface = NULL;
+	}
 
 	if( m_pHudList )
 	{
@@ -368,10 +486,18 @@ void CHud::VidInit( void )
 	// ----------
 	// Load Sprites
 	// ---------
-	//m_hsprFont = LoadSprite("sprites/%d_font.spr");
+	// m_hsprFont = LoadSprite("sprites/%d_font.spr");
 
 	m_hsprLogo = 0;	
 	m_hsprCursor = 0;
+	//numMirrors = 0;
+
+	// LRC - clear all shiny surfaces
+	if( m_pShinySurface )
+	{
+		delete m_pShinySurface;
+		m_pShinySurface = NULL;
+	}
 
 	if( ScreenWidth < 640 )
 		m_iRes = 320;
@@ -495,6 +621,9 @@ void CHud::VidInit( void )
 	m_AmmoSecondary.VidInit();
 	m_TextMessage.VidInit();
 	m_StatusIcons.VidInit();
+// advanced NVG
+//	m_NVG.VidInit();
+// advanced NVG
 	m_Scoreboard.VidInit();
 	m_MOTD.VidInit();
 	m_Particle.VidInit(); // (LRC) -- 30/08/02 November235: Particles to Order

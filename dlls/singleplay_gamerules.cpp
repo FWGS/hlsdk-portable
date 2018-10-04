@@ -24,6 +24,7 @@
 #include	"gamerules.h"
 #include	"skill.h"
 #include	"items.h"
+// #include	"bumplight.h"
 
 extern DLL_GLOBAL CGameRules	*g_pGameRules;
 extern DLL_GLOBAL BOOL	g_fGameOver;
@@ -133,6 +134,23 @@ void CHalfLifeRules::PlayerSpawn( CBasePlayer *pPlayer )
 	{
 		pWeaponEntity->Touch( pPlayer );
 	}
+/*
+	edict_t *pFind;
+
+	pFind = FIND_ENTITY_BY_CLASSNAME( NULL, "light_bump" );
+
+	while( !FNullEnt( pFind ) )
+	{
+		CBaseEntity *pEnt = CBaseEntity::Instance( pFind );
+		CBumpLight *pLight = (CBumpLight *)pEnt;
+
+		if( pLight )
+		{
+			pLight->CreateOnClient();
+		}
+
+		pFind = FIND_ENTITY_BY_CLASSNAME( pFind, "light_bump" );
+	}*/
 }
 
 //=========================================================

@@ -143,9 +143,35 @@ set (SVDLL_SOURCES
 	../pm_shared/pm_debug.c
 	../pm_shared/pm_math.c
 	../pm_shared/pm_shared.c
+	zx/ak47.cpp
+	zx/apache_blackop.cpp
+	zx/auto_shotgun.cpp
+	zx/barney_suit.cpp
+	zx/barniel.cpp
+	zx/bot_combat.cpp
+	zx/bot.cpp
+	zx/botcam.cpp
+#	zx/bumplight.cpp
+#	zx/debugger.cpp
+	zx/eagel.cpp
+	zx/kate.cpp
+	zx/massn.cpp
+	zx/minigun.cpp
+	zx/mp41a.cpp
+	zx/scientist_suit.cpp
+	zx/shock.cpp
+	zx/shockball.cpp
+	zx/shockgun.cpp
+	zx/swort.cpp
+#	zx/teamdm.cpp
+	zx/torch.cpp
+	zx/uzi.cpp
+	zx/zombie_barney.cpp
+	zx/zombie_gus.cpp
+	zx/zombie_soldier.cpp
 )
 
-include_directories (. wpn_shared ../common ../engine ../pm_shared ../game_shared ../public)
+include_directories (. wpn_shared ../common ../engine ../pm_shared ../game_shared ../public zx)
 
 if(USE_VOICEMGR)
 	set(SVDLL_SOURCES

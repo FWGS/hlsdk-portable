@@ -25,6 +25,7 @@
 #include "screenfade.h"
 #include "shake.h"
 #include "hltv.h"
+//#include "bumpmap.h"
 
 // Spectator Mode
 extern "C" 
@@ -78,7 +79,8 @@ extern cvar_t	*cl_forwardspeed;
 extern cvar_t	*chase_active;
 extern cvar_t	*scr_ofsx, *scr_ofsy, *scr_ofsz;
 extern cvar_t	*cl_vsmoothing;
-extern cvar_t	*cl_viewbob;
+extern cvar_t	*cl_rollangle;
+extern cvar_t	*cl_rollspeed;
 extern Vector   dead_viewangles;
 
 #define	CAM_MODE_RELAX		1
@@ -330,6 +332,8 @@ void V_CalcViewRoll( struct ref_params_s *pparams )
 	viewentity = gEngfuncs.GetEntityByIndex( pparams->viewentity );
 	if( !viewentity )
 		return;
+
+	pparams->viewangles[ROLL] = V_CalcRoll (pparams->viewangles, pparams->simvel, cl_rollangle->value, cl_rollspeed->value ) * 4;
 
 	side = V_CalcRoll( viewentity->angles, pparams->simvel, pparams->movevars->rollangle, pparams->movevars->rollspeed );
 
@@ -626,9 +630,6 @@ void V_CalcNormalRefdef( struct ref_params_s *pparams )
 	view->angles[YAW] -= bob * 0.5;
 	view->angles[ROLL] -= bob * 1;
 	view->angles[PITCH] -= bob * 0.3;
-
-	if( cl_viewbob && cl_viewbob->value )
-		VectorCopy( view->angles, view->curstate.angles );
 
 	// pushing the view origin down off of the same X/Z plane as the ent's origin will give the
 	// gun a very nice 'shifting' effect when the player looks up/down. If there is a problem
@@ -1355,14 +1356,17 @@ int V_FindViewModelByWeaponModel( int weaponindex )
 	{
 		{ "models/p_crossbow.mdl",	"models/v_crossbow.mdl" },
 		{ "models/p_crowbar.mdl",	"models/v_crowbar.mdl" },
+		{ "models/p_swort.mdl",		"models/v_swort.mdl" },
 		{ "models/p_egon.mdl",		"models/v_egon.mdl" },
 		{ "models/p_gauss.mdl",		"models/v_gauss.mdl" },
 		{ "models/p_9mmhandgun.mdl",	"models/v_9mmhandgun.mdl" },
 		{ "models/p_grenade.mdl",	"models/v_grenade.mdl" },
 		{ "models/p_hgun.mdl",		"models/v_hgun.mdl" },
 		{ "models/p_9mmAR.mdl",		"models/v_9mmAR.mdl" },
+		{ "models/p_minigun.mdl",	"models/v_minigun.mdl" },
 		{ "models/p_357.mdl",		"models/v_357.mdl" },
 		{ "models/p_rpg.mdl",		"models/v_rpg.mdl" },
+		{ "models/p_autoshotgun.mdl",	"models/v_autoshotgun.mdl" },
 		{ "models/p_shotgun.mdl",	"models/v_shotgun.mdl" },
 		{ "models/p_squeak.mdl",	"models/v_squeak.mdl" },
 		{ "models/p_tripmine.mdl",	"models/v_tripmine.mdl" },

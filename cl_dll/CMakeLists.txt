@@ -47,6 +47,14 @@ endif()
 
 
 set (CLDLL_SOURCES
+	../dlls/zx/ak47.cpp
+	../dlls/zx/auto_shotgun.cpp
+	../dlls/zx/eagel.cpp
+	../dlls/zx/minigun.cpp
+	../dlls/zx/mp41a.cpp
+	../dlls/zx/shockgun.cpp
+	../dlls/zx/swort.cpp
+	../dlls/zx/uzi.cpp
 	../dlls/crossbow.cpp
 	../dlls/crowbar.cpp
 	../dlls/egon.cpp

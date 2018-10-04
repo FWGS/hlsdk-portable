@@ -26,6 +26,7 @@
 #include "nodes.h"
 #include "soundent.h"
 #include "decals.h"
+#include "shake.h"
 
 //===================grenade
 
@@ -42,6 +43,7 @@ void CGrenade::Explode( Vector vecSrc, Vector vecAim )
 {
 	TraceResult tr;
 	UTIL_TraceLine( pev->origin, pev->origin + Vector( 0, 0, -32 ), ignore_monsters, ENT( pev ), & tr );
+	UTIL_ScreenShake( pev->origin, 12.0, 100.0, 2.0, 1000 );
 
 	Explode( &tr, DMG_BLAST );
 }
@@ -55,6 +57,8 @@ void CGrenade::Explode( TraceResult *pTrace, int bitsDamageType )
 	pev->solid = SOLID_NOT;// intangible
 
 	pev->takedamage = DAMAGE_NO;
+
+	UTIL_ScreenShake( pev->origin, 12.0, 100.0, 2.0, 1000 );
 
 	// Pull out of the wall a bit
 	if( pTrace->flFraction != 1.0 )
@@ -317,6 +321,8 @@ void CGrenade::BounceSound( void )
 
 void CGrenade::TumbleThink( void )
 {
+	pev->effects = EF_LIGHT;
+
 	if( !IsInWorld() )
 	{
 		UTIL_Remove( this );

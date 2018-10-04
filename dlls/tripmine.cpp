@@ -30,7 +30,7 @@ enum tripmine_e
 	TRIPMINE_IDLE1 = 0,
 	TRIPMINE_IDLE2,
 	TRIPMINE_ARM1,
-	TRIPMINE_ARM2,
+	TRIPMINE_PLACE,
 	TRIPMINE_FIDGET,
 	TRIPMINE_HOLSTER,
 	TRIPMINE_DRAW,
@@ -257,9 +257,9 @@ void CTripmineGrenade::MakeBeam( void )
 
 	m_pBeam = CBeam::BeamCreate( g_pModelNameLaser, 10 );
 	m_pBeam->PointEntInit( vecTmpEnd, entindex() );
-	m_pBeam->SetColor( 0, 214, 198 );
+	m_pBeam->SetColor( CVAR_GET_FLOAT( "mp_minecolorred" ), CVAR_GET_FLOAT( "mp_minecolorgreen" ), CVAR_GET_FLOAT( "mp_minecolorblue" ) );
 	m_pBeam->SetScrollRate( 255 );
-	m_pBeam->SetBrightness( 64 );
+	m_pBeam->SetBrightness( CVAR_GET_FLOAT( "mp_tripmine" ) );
 }
 
 void CTripmineGrenade::BeamBreakThink( void )
@@ -438,6 +438,8 @@ void CTripmine::PrimaryAttack( void )
 	TraceResult tr;
 
 	UTIL_TraceLine( vecSrc, vecSrc + vecAiming * 128, dont_ignore_monsters, ENT( m_pPlayer->pev ), &tr );
+
+	SendWeaponAnim( TRIPMINE_PLACE );
 
 	int flags;
 #ifdef CLIENT_WEAPONS

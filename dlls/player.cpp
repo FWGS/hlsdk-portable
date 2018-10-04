@@ -38,6 +38,7 @@
 #include "hltv.h"
 #include "effects.h" //LRC
 #include "movewith.h" //LRC
+#include "teamdm.h"
 
 // #define DUCKFIX
 
@@ -175,6 +176,7 @@ int gmsgSetSky = 0;		//LRC
 int gmsgHUDColor = 0;	//LRC
 int gmsgAddShine = 0;   // LRC
 int gmsgParticle = 0; // LRC
+int gmsgPlayMP3 = 0;
 int gmsgShowGameTitle = 0;
 int gmsgCurWeapon = 0;
 int gmsgHealth = 0;
@@ -201,12 +203,18 @@ int gmsgSayText = 0;
 int gmsgTextMsg = 0;
 int gmsgSetFOV = 0;
 int gmsgShowMenu = 0;
+// advanced NVG
+int gmsgNVG = 0;
+int gmsgNVGActivate = 0;
+// advanced NVG
 int gmsgGeigerRange = 0;
+int gmsgSpectator = 0;
 int gmsgTeamNames = 0;
 int gmsgStatusIcon = 0; //LRC
 int gmsgBhopcap = 0;
 int gmsgStatusText = 0;
 int gmsgStatusValue = 0;
+int gmsgBumpLight = 0;
 
 void LinkUserMessages( void )
 {
@@ -256,12 +264,19 @@ void LinkUserMessages( void )
 	gmsgShake = REG_USER_MSG( "ScreenShake", sizeof(ScreenShake) );
 	gmsgFade = REG_USER_MSG( "ScreenFade", sizeof(ScreenFade) );
 	gmsgAmmoX = REG_USER_MSG( "AmmoX", 2 );
+// advanced NVG
+	gmsgNVG = REG_USER_MSG("NVG", 2);
+	gmsgNVGActivate = REG_USER_MSG("NVGActivate", 2);
+// advanced NVG
 	gmsgTeamNames = REG_USER_MSG( "TeamNames", -1 );
 	gmsgStatusIcon = REG_USER_MSG( "StatusIcon", -1 );
-	gmsgBhopcap = REG_USER_MSG( "Bhopcap", 1 );
 
 	gmsgStatusText = REG_USER_MSG( "StatusText", -1 );
 	gmsgStatusValue = REG_USER_MSG( "StatusValue", 3 );
+	gmsgPlayMP3 = REG_USER_MSG( "PlayMP3", -1 );
+
+	gmsgBumpLight = REG_USER_MSG( "BumpLight", -1 );
+	gmsgBhopcap = REG_USER_MSG( "Bhopcap", 1 );
 }
 
 LINK_ENTITY_TO_CLASS( player, CBasePlayer )
@@ -518,6 +533,8 @@ int CBasePlayer::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 
 		flDamage = flNew;
 	}
+
+	UTIL_ScreenFade( this, Vector( 128, 0, 0 ), 1, 1, Q_min( 255, flDamage * 3 ), FFADE_IN ); //FX
 
 	// this cast to INT is critical!!! If a player ends up with 0.5 health, the engine will get that
 	// as an int (zero) and think the player is dead! (this will incite a clientside screentilt, etc)
@@ -1014,6 +1031,8 @@ void CBasePlayer::Killed( entvars_t *pevAttacker, int iGib )
 {
 	CSound *pSound;
 
+	UTIL_ScreenFade( this, Vector( 128, 0, 0 ), 10, 15, 200, FFADE_OUT | FFADE_STAYOUT ); //FX
+
 	// Holster weapon immediately, to allow it to cleanup
 	if( m_pActiveItem )
 		m_pActiveItem->Holster();
@@ -1023,6 +1042,24 @@ void CBasePlayer::Killed( entvars_t *pevAttacker, int iGib )
 	if( m_pTank != 0 )
 		m_pTank->Use( this, this, USE_OFF, 0 );
 
+	// advanced NVG
+	// We don't want no NVG while dead
+/*	if( m_fNVG )
+	{
+		if( m_fNVGActivated )
+		{
+			NVGToggle( FALSE );    // deactivate the NVG if necessary...
+		}
+
+		m_fNVG = FALSE;        // ... and remove it
+
+		MESSAGE_BEGIN( MSG_ONE, gmsgNVG, NULL, pev );
+			WRITE_BYTE( 0 );    // we don't have NVG any more
+			WRITE_BYTE( 0 );
+		MESSAGE_END();
+	}
+	// advanced NVG
+*/
 	// this client isn't going to be thinking for a while, so reset the sound until they respawn
 	pSound = CSoundEnt::SoundPointerForIndex( CSoundEnt::ClientSoundIndex( edict() ) );
 	{
@@ -1265,6 +1302,7 @@ all the ammo we have into the ammo vars.
 void CBasePlayer::TabulateAmmo()
 {
 	ammo_9mm = AmmoInventory( GetAmmoIndex( "9mm" ) );
+	ammo_12mm = AmmoInventory( GetAmmoIndex( "12mm" ) );
 	ammo_357 = AmmoInventory( GetAmmoIndex( "357" ) );
 	ammo_argrens = AmmoInventory( GetAmmoIndex( "ARgrenades" ) );
 	ammo_bolts = AmmoInventory( GetAmmoIndex( "bolts" ) );
@@ -1475,6 +1513,7 @@ void CBasePlayer::PlayerDeathThink( void )
 	{
 		// go to dead camera. 
 		StartDeathCam();
+		UTIL_ScreenFade( this, Vector( 128, 0, 0 ), 1, 15, 0, FFADE_OUT | FFADE_STAYOUT ); //FX
 	}
 
 	if( pev->iuser1 )	// player is in spectator mode
@@ -1528,15 +1567,15 @@ void CBasePlayer::StartDeathCam( void )
 		}
 
 		CopyToBodyQue( pev );
-		StartObserver( pSpot->pev->origin, pSpot->pev->v_angle );
+		// StartObserver( pSpot->pev->origin, pSpot->pev->v_angle );
 	}
 	else
 	{
 		// no intermission spot. Push them up in the air, looking down at their corpse
 		TraceResult tr;
 		CopyToBodyQue( pev );
-		UTIL_TraceLine( pev->origin, pev->origin + Vector( 0, 0, 128 ), ignore_monsters, edict(), &tr );
-		StartObserver( tr.vecEndPos, UTIL_VecToAngles( tr.vecEndPos - pev->origin  ) );
+		// UTIL_TraceLine( pev->origin, pev->origin + Vector( 0, 0, 128 ), ignore_monsters, edict(), &tr );
+		// StartObserver( tr.vecEndPos, UTIL_VecToAngles( tr.vecEndPos - pev->origin  ) );
 		return;
 	}
 
@@ -1834,6 +1873,9 @@ void CBasePlayer::Duck()
 //
 int CBasePlayer::Classify( void )
 {
+	//if (Illumination() <= g_darklevel)
+	//return CLASS_NONE;
+
 	return CLASS_PLAYER;
 }
 
@@ -1987,6 +2029,58 @@ void CBasePlayer::UpdateStatusBar()
 
 void CBasePlayer::PreThink( void )
 {
+	if( gpGlobals->time > m_flNextNameDisplay )
+	{
+		// if it's time to display a name
+		TraceResult tr;
+		CBaseEntity *pEnemy = NULL;
+
+		// trace straight ahead 1300 units and check if it hits a player
+		UTIL_MakeVectors( pev->v_angle );
+		UTIL_TraceLine( pev->origin + pev->view_ofs,pev->origin + pev->view_ofs + gpGlobals->v_forward * 1300,dont_ignore_monsters, edict(), &tr );
+
+		if( tr.flFraction != 1.0 && !FNullEnt( tr.pHit ) )
+		{
+			// if we hit something, get an instance of it
+			pEnemy = CBaseEntity::Instance( tr.pHit );
+		}
+
+		if( pEnemy && pEnemy->IsPlayer() )
+		{
+			// we have a valid pointer
+			char szEnemy[256];
+			hudtextparms_t hText = {0,};
+
+			hText.channel = 1;
+			hText.x = 0.01;
+			hText.y = 0.91;
+			hText.effect = 0;
+			hText.r2 = hText.g2 = hText.b2 = 100;
+			hText.a1 = 100;
+			hText.r1 = 240;
+			hText.g1 = 110;
+			hText.b1 = 0;
+			hText.a2 = 100;
+			hText.fadeinTime = 1;
+			hText.fadeoutTime =  1.5;
+			hText.holdTime = 0;
+			hText.fxTime = 0;
+
+			if( pEnemy->IsAlive() )
+			{
+				// player still lives
+				sprintf(szEnemy, "%s - %d%%", STRING(pEnemy->pev->netname), (int)pEnemy->pev->health);
+			}
+			else
+			{
+				// player is dead
+				sprintf(szEnemy, "%s - %d%%", STRING(pEnemy->pev->netname), 0);
+			}
+
+			UTIL_HudMessage(this, hText, szEnemy); // diplay message
+			m_flNextNameDisplay = gpGlobals->time + 0.5; // show next name in 0.5 sec
+		}
+	}
 	int buttonsChanged = ( m_afButtonLast ^ pev->button );	// These buttons have changed this frame
 
 	// Debounced button codes for pressed/released
@@ -2017,6 +2111,13 @@ void CBasePlayer::PreThink( void )
 
 	CheckTimeBasedDamage();
 
+	// Observer Tastatus-Steuerung
+	if( IsObserver() )
+	{
+		pev->impulse = 0;
+		return;
+	}
+
 	CheckSuitUpdate();
 
 	// Observer Button Handling
@@ -2034,6 +2135,12 @@ void CBasePlayer::PreThink( void )
 		PlayerDeathThink();
 		return;
 	}
+
+	// advanced NVG
+	// update the NVG state
+/*	if( m_fNVG )
+		NVGUpdate();*/
+	// advanced NVG
 
 	// So the correct flags get sent to client asap.
 	//
@@ -2858,7 +2965,99 @@ pt_end:
 	return;
 #endif
 }
+/*
+edict_t *EntSelectTeamSpawnPoint( CBaseEntity *pPlayer )
+{
+	CBaseEntity *pSpot;
+	edict_t	*player;
 
+	player = pPlayer->edict();
+
+	CBasePlayer *pBPlayer = (CBasePlayer *)pPlayer;
+
+	pSpot = g_pLastSpawn;
+	const char *szTempNextTeam = NULL;
+	switch( pBPlayer->m_iNextTeam )         // should only ever be 0, 1, or 2 by now
+	{
+	default:
+		break;
+	case 0:
+		szTempNextTeam = TEAM1;
+		break;
+	case 1: szTempNextTeam = TEAM2;
+		break;
+	}
+
+	// Randomize the start spot
+	for( int i = RANDOM_LONG( 1, 5 ); i > 0; i-- )
+	{
+		if( FStrEq( szTempNextTeam, TEAM1 ) )
+			pSpot = UTIL_FindEntityByClassname( pSpot, "info_player_team1" );
+		else
+			pSpot = UTIL_FindEntityByClassname( pSpot, "info_player_team2" );
+	}
+
+	if( FNullEnt( pSpot ) )  // skip over the null point
+	{
+		if( FStrEq( szTempNextTeam, TEAM1 ) )
+			pSpot = UTIL_FindEntityByClassname( pSpot, "info_player_team1" );
+		else
+			pSpot = UTIL_FindEntityByClassname( pSpot, "info_player_team2" );
+	}
+
+	CBaseEntity *pFirstSpot = pSpot;
+
+	do
+	{
+		if( pSpot )
+		{
+			// check if pSpot is valid
+			if( IsSpawnPointValid( pPlayer, pSpot ) )
+			{
+				if( pSpot->pev->origin == Vector( 0, 0, 0 ) )
+				{
+					if( FStrEq( szTempNextTeam, TEAM1 ) )
+						pSpot = UTIL_FindEntityByClassname( pSpot, "info_player_team1" );
+					else
+						pSpot = UTIL_FindEntityByClassname( pSpot, "info_player_team2" );
+					continue;
+				}
+				// if so, go to pSpot
+				goto ReturnTeamSpot;
+			}
+		}
+
+		// increment pSpot
+		if( FStrEq( szTempNextTeam, TEAM1 ) )
+			pSpot = UTIL_FindEntityByClassname( pSpot, "info_player_team1" );
+		else
+			pSpot = UTIL_FindEntityByClassname( pSpot, "info_player_team2" );
+
+	} while( pSpot != pFirstSpot ); // loop if we're not back to the start
+
+	// we haven't found a place to spawn yet,  so kill any guy at the first spawn point and spawn there
+	if( !FNullEnt( pSpot ) )
+	{
+		CBaseEntity *ent = NULL;
+		while( ( ent = UTIL_FindEntityInSphere( ent, pSpot->pev->origin, 128 ) ) != NULL )
+		{
+			// if ent is a client, kill em (unless they are ourselves)
+			if( ent->IsPlayer() && !( ent->edict() == player ) )
+				ent->TakeDamage( VARS( INDEXENT( 0 ) ), VARS( INDEXENT( 0 ) ), 300, DMG_GENERIC );
+		}
+		goto ReturnTeamSpot;
+	}
+
+ReturnTeamSpot:
+	if( FNullEnt( pSpot ) )
+	{
+		ALERT( at_error, "PutClientInServer: no player/team start on level" );
+		return INDEXENT( 0 );
+	}
+	g_pLastSpawn = pSpot;
+	return pSpot->edict();
+}
+*/
 // checks if the spot is clear of players
 BOOL IsSpawnPointValid( CBaseEntity *pPlayer, CBaseEntity *pSpot )
 {
@@ -2983,7 +3182,9 @@ ReturnSpot:
 void CBasePlayer::Spawn( void )
 {
 	pev->classname = MAKE_STRING( "player" );
-	pev->health = 100;
+	m_flNextDecalTime = 0;// let this player decal as soon as he spawns.
+	m_flNextNameDisplay = 0;
+	pev->health = 120;
 	pev->armorvalue = 0;
 	pev->takedamage = DAMAGE_AIM;
 	pev->solid = SOLID_SLIDEBOX;
@@ -3004,6 +3205,7 @@ void CBasePlayer::Spawn( void )
 	m_afPhysicsFlags = 0;
 	m_fLongJump = FALSE;// no longjump module. 
 
+	UTIL_ScreenFade( this, Vector(128,0,0), 1, 15, 0, FFADE_OUT | FFADE_STAYOUT ); //FX
 	g_engfuncs.pfnSetPhysicsKeyValue( edict(), "slj", "0" );
 	g_engfuncs.pfnSetPhysicsKeyValue( edict(), "hl", "1" );
 
@@ -3068,10 +3270,170 @@ void CBasePlayer::Spawn( void )
 
 	m_lastx = m_lasty = 0;
 
+	// advanced NVG
+/*	m_fNVG = FALSE;
+	m_fNVGActivated = FALSE;
+	m_flNVGBattery = 100;
+	m_flNVGUpdate = gpGlobals->time;
+	for( i = 0; i < 32; i++ )
+	{
+		m_flInfraredUpdate[i] = gpGlobals->time;
+		m_fInfrared[i] = FALSE;
+ 	}*/
+	// advanced NVG
+
 	m_flNextChatTime = gpGlobals->time;
+
+	// START BOT
+	pBotCam = NULL;
+	// END BOT
 
 	g_pGameRules->PlayerSpawn( this );
 }
+
+/*
+// advanced NVG
+void CBasePlayer::NVGToggle( BOOL activate )
+{
+	if( !m_fNVG )
+		return;
+
+	if( activate && !m_fNVGActivated )
+	{
+		m_fNVGActivated = TRUE;
+
+		// inform the client about the change
+		MESSAGE_BEGIN( MSG_ONE, gmsgNVGActivate, NULL, pev );
+			WRITE_BYTE( 1 );
+			WRITE_BYTE( m_flNVGBattery );
+		MESSAGE_END();
+	}
+	else if( !activate && m_fNVGActivated )
+	{
+		m_fNVGActivated = FALSE;
+
+		// inform the client about the change
+		MESSAGE_BEGIN( MSG_ONE, gmsgNVGActivate, NULL, pev );
+			WRITE_BYTE( 0 );
+			WRITE_BYTE( m_flNVGBattery );
+		MESSAGE_END();
+
+		for( int i = 1; i < 32; i++ )
+		{
+			if( m_fInfrared[i - 1] )
+			{
+				edict_t *pPlayer = INDEXENT( i );
+				if( pPlayer )
+					NVGCreateInfrared( pPlayer, i, FALSE );
+			}
+		}
+	}
+}
+
+// this will create/destroy the infrared effect on a player
+void CBasePlayer::NVGCreateInfrared( edict_t *pPlayer, int pIndex, BOOL fOn )
+{
+	int r, g, b, life;
+
+	// just some sanity checks
+	if( !pPlayer || pPlayer->free )
+		return;
+
+	// set up some variables
+	if( fOn )
+	{
+		r = 128; g = 255; b = 128;
+		life = 255;
+		m_flInfraredUpdate[pIndex - 1] = gpGlobals->time + 24.5;
+		m_fInfrared[pIndex-1] = TRUE;
+	}
+	else
+	{
+		r = g = b = 0;
+		life = 0;
+		m_fInfrared[pIndex-1] = FALSE;
+	}
+
+	// ... this is it!!
+	MESSAGE_BEGIN( MSG_ONE, SVC_TEMPENTITY, pPlayer->v.origin, pev );
+		WRITE_BYTE( TE_ELIGHT );
+		WRITE_SHORT( pIndex );	// entity to follow
+		WRITE_COORD( pPlayer->v.origin.x );	// original origin
+		WRITE_COORD( pPlayer->v.origin.y );
+		WRITE_COORD( pPlayer->v.origin.z );
+		WRITE_COORD( 2 );	// radius
+		WRITE_BYTE( r );	// color
+		WRITE_BYTE( g );
+		WRITE_BYTE( b );
+		WRITE_BYTE( life );	// life
+		WRITE_COORD( 0 );	// decay
+	MESSAGE_END();
+}
+
+void CBasePlayer::NVGUpdate()
+{
+	float flDelta = gpGlobals->time - m_flNVGUpdate;
+	m_flNVGUpdate = gpGlobals->time;
+
+	// update battery level
+	if( m_fNVGActivated )
+	{
+		m_flNVGBattery -= flDelta * NVG_DRAIN_PER_SECOND;
+		if( m_flNVGBattery <= 0 )
+		{
+			m_flNVGBattery = 0;
+			NVGToggle( FALSE );
+		}
+	}
+	else if( m_flNVGBattery < 100 )
+	{
+		m_flNVGBattery += flDelta * NVG_RECHARGE_PER_SECOND;
+		if( m_flNVGBattery > 100 )
+		{
+			m_flNVGBattery = 100;
+
+			// inform the client of the correct state, just to be sure
+			MESSAGE_BEGIN( MSG_ONE, gmsgNVGActivate, NULL, pev );
+				WRITE_BYTE( 0 );	// NVG not activated
+				WRITE_BYTE( m_flNVGBattery );
+			MESSAGE_END();
+		}
+	}
+
+	// now for the infrared effect:
+	if( m_fNVGActivated )
+	{
+		edict_t *pEdict = UTIL_EntitiesInPVS( edict() );
+
+		while( !FNullEnt( pEdict ) )
+		{
+			int index = ENTINDEX( pEdict );
+			CBaseEntity *pPlayer = Instance( pEdict );
+
+			// is it an existing, valid player ?
+			if( pPlayer && pPlayer->IsPlayer() )
+			{
+				// is he dead or alive?
+				if( !pPlayer->IsAlive() )
+				{
+					// if he's dead, shut the effect off (unless this is already done)
+					if( m_fInfrared[index - 1] )
+						NVGCreateInfrared( pEdict, index, FALSE );
+				}
+				else
+				{
+					// if he's alive, check if it's time to update him
+					if( !m_fInfrared[index - 1] || m_flInfraredUpdate[index - 1] < gpGlobals->time )
+						NVGCreateInfrared( pEdict, index, TRUE );
+				}
+			}
+
+			pEdict = pEdict->v.chain;
+		}
+	}
+}
+// advanced NVG
+*/
 
 void CBasePlayer::Precache( void )
 {
@@ -3714,13 +4076,23 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		gEvilImpulse101 = TRUE;
 		GiveNamedItem( "item_suit" );
 		GiveNamedItem( "item_battery" );
+		// GiveNamedItem( "item_nvg" );
 		GiveNamedItem( "weapon_crowbar" );
+		// GiveNamedItem( "weapon_swort" );
+		// GiveNamedItem( "weapon_hands" );
 		GiveNamedItem( "weapon_9mmhandgun" );
+		GiveNamedItem( "weapon_eagel" );
 		GiveNamedItem( "ammo_9mmclip" );
+		GiveNamedItem( "ammo_eagelclip" );
+		GiveNamedItem( "weapon_autoshotgun" );
 		GiveNamedItem( "weapon_shotgun" );
 		GiveNamedItem( "ammo_buckshot" );
 		GiveNamedItem( "weapon_9mmAR" );
+		GiveNamedItem( "weapon_minigun" );
+		GiveNamedItem( "ammo_minigun" );
+		GiveNamedItem( "weapon_9mm41a" );
 		GiveNamedItem( "ammo_9mmAR" );
+		GiveNamedItem( "ammo_minigun" );
 		GiveNamedItem( "ammo_ARgrenades" );
 		GiveNamedItem( "weapon_handgrenade" );
 		GiveNamedItem( "weapon_tripmine" );
@@ -3737,6 +4109,9 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		GiveNamedItem( "weapon_satchel" );
 		GiveNamedItem( "weapon_snark" );
 		GiveNamedItem( "weapon_hornetgun" );
+		GiveNamedItem( "weapon_uzi" );
+		GiveNamedItem( "weapon_shockrifle" );
+		GiveNamedItem( "weapon_ak47" );
 #endif
 		gEvilImpulse101 = FALSE;
 		break;
@@ -4411,6 +4786,9 @@ void CBasePlayer::BarnacleVictimReleased( void )
 int CBasePlayer::Illumination( void )
 {
 	int iIllum = CBaseEntity::Illumination();
+
+	if (!FlashlightIsOn() == false)
+	iIllum += 200;
 
 	iIllum += m_iWeaponFlash;
 	if( iIllum > 255 )

@@ -22,7 +22,7 @@
 
 #define MAX_WEAPONS		32		// ???
 
-#define MAX_WEAPON_SLOTS		5	// hud item selection slots
+#define MAX_WEAPON_SLOTS		6	// hud item selection slots
 #define MAX_ITEM_TYPES			6	// hud item selection slots
 
 #define MAX_ITEMS				5	// hard coded item types
@@ -43,4 +43,9 @@
 
 
 #define WEAPON_SUIT		31
+
+// advanced NVG
+#define NVG_DRAIN_PER_SECOND	0.75
+#define NVG_RECHARGE_PER_SECOND	7.5
+// advanced NVG
 #endif

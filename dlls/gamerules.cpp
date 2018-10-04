@@ -25,6 +25,10 @@
 #include	"teamplay_gamerules.h"
 #include	"skill.h"
 #include	"game.h"
+#include	"teamdm.h"
+// #include	"assault.h"
+// #include	"ctf.h"
+// #include	"domination.h"
 
 extern edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer );
 
@@ -143,8 +147,20 @@ void CGameRules::RefreshSkillData ( void )
 	// Apache 
 	gSkillData.apacheHealth = GetSkillCvar( "sk_apache_health" );
 
+	// Apache Blackops
+	gSkillData.apacheblackopHealth = GetSkillCvar( "sk_apache_blackop_health" );
+
 	// Barney
 	gSkillData.barneyHealth = GetSkillCvar( "sk_barney_health" );
+
+	// Kate
+	gSkillData.kateHealth = GetSkillCvar( "sk_kate_health" );
+
+	// Barniel
+	gSkillData.barnielHealth = GetSkillCvar( "sk_barniel_health" );
+
+	// Barney Suit
+	gSkillData.barneysuitHealth = GetSkillCvar( "sk_barney_suit_health");
 
 	// Big Momma
 	gSkillData.bigmommaHealthFactor = GetSkillCvar( "sk_bigmomma_health_factor" );
@@ -176,6 +192,12 @@ void CGameRules::RefreshSkillData ( void )
 	gSkillData.hgruntDmgKick = GetSkillCvar( "sk_hgrunt_kick" );
 	gSkillData.hgruntShotgunPellets = GetSkillCvar( "sk_hgrunt_pellets" );
 	gSkillData.hgruntGrenadeSpeed = GetSkillCvar( "sk_hgrunt_gspeed" );
+
+	// Blackops
+	gSkillData.hgruntblackopHealth = GetSkillCvar( "sk_hgrunt_blackop_health" );
+	gSkillData.hgruntblackopDmgKick = GetSkillCvar( "sk_hgrunt_blackop_kick" );
+	gSkillData.hgruntblackopShotgunPellets = GetSkillCvar( "sk_hgrunt_blackop_pellets" );
+	gSkillData.hgruntblackopGrenadeSpeed = GetSkillCvar( "sk_hgrunt_blackop_gspeed" );
 
 	// Houndeye
 	gSkillData.houndeyeHealth = GetSkillCvar( "sk_houndeye_health" );
@@ -209,6 +231,9 @@ void CGameRules::RefreshSkillData ( void )
 	// Scientist
 	gSkillData.scientistHealth = GetSkillCvar( "sk_scientist_health" );
 
+	// Scientist Suit
+	gSkillData.scientistsuitHealth = GetSkillCvar( "sk_scientist_suit_health" );
+
 	// Snark
 	gSkillData.snarkHealth = GetSkillCvar( "sk_snark_health" );
 	gSkillData.snarkDmgBite = GetSkillCvar( "sk_snark_dmg_bite" );
@@ -218,6 +243,21 @@ void CGameRules::RefreshSkillData ( void )
 	gSkillData.zombieHealth = GetSkillCvar( "sk_zombie_health" );
 	gSkillData.zombieDmgOneSlash = GetSkillCvar( "sk_zombie_dmg_one_slash" );
 	gSkillData.zombieDmgBothSlash = GetSkillCvar( "sk_zombie_dmg_both_slash" );
+
+	// Zombie Gus
+	gSkillData.zombiegusHealth = GetSkillCvar( "sk_zombie_gus_health" );
+	gSkillData.zombiegusDmgOneSlash = GetSkillCvar( "sk_zombie_gus_dmg_one_slash" );
+	gSkillData.zombiegusDmgBothSlash = GetSkillCvar( "sk_zombie_gus_dmg_both_slash" );
+
+	// Zombie Barney
+	gSkillData.zombiebarneyHealth = GetSkillCvar( "sk_zombie_barney_health" );
+	gSkillData.zombiebarneyDmgOneSlash = GetSkillCvar( "sk_zombie_barney_dmg_one_slash" );
+	gSkillData.zombiebarneyDmgBothSlash = GetSkillCvar( "sk_zombie_barney_dmg_both_slash" );
+
+	// Zombie Soldier
+	gSkillData.zombiesoldierHealth = GetSkillCvar( "sk_zombie_soldier_health" );
+	gSkillData.zombiesoldierDmgOneSlash = GetSkillCvar( "sk_zombie_soldier_dmg_one_slash" );
+	gSkillData.zombiesoldierDmgBothSlash = GetSkillCvar( "sk_zombie_soldier_dmg_both_slash" );
 
 	//Turret
 	gSkillData.turretHealth = GetSkillCvar( "sk_turret_health" );
@@ -233,8 +273,18 @@ void CGameRules::RefreshSkillData ( void )
 	// Crowbar whack
 	gSkillData.plrDmgCrowbar = GetSkillCvar( "sk_plr_crowbar" );
 
+	// Shock whack
+	gSkillData.plrDmgShocks = GetSkillCvar( "sk_plr_shock" );
+	gSkillData.plrDmgShockm = GetSkillCvar( "sk_plr_shockm" );
+
+	// Swort whack
+	gSkillData.plrDmgSwort = GetSkillCvar( "sk_plr_swort");
+
 	// Glock Round
 	gSkillData.plrDmg9MM = GetSkillCvar( "sk_plr_9mm_bullet" );
+
+	// Eagel Round
+	gSkillData.plrDmgEagel = GetSkillCvar( "sk_plr_eagel_bullet" );
 
 	// 357 Round
 	gSkillData.plrDmg357 = GetSkillCvar( "sk_plr_357_bullet" );
@@ -242,8 +292,17 @@ void CGameRules::RefreshSkillData ( void )
 	// MP5 Round
 	gSkillData.plrDmgMP5 = GetSkillCvar( "sk_plr_9mmAR_bullet" );
 
+	// Minigun Round
+	gSkillData.plrDmgMinigun = GetSkillCvar( "sk_plr_minigun_bullet" );
+
 	// M203 grenade
 	gSkillData.plrDmgM203Grenade = GetSkillCvar( "sk_plr_9mmAR_grenade" );
+
+	// MP41a Round
+	gSkillData.plrDmgMP41a = GetSkillCvar( "sk_plr_9mm41a_bullet" );
+
+	// M20341a grenade
+	gSkillData.plrDmgM20341aGrenade = GetSkillCvar( "sk_plr_9mm41a_grenade" );
 
 	// Shotgun buckshot
 	gSkillData.plrDmgBuckshot = GetSkillCvar( "sk_plr_buckshot" );
@@ -273,7 +332,7 @@ void CGameRules::RefreshSkillData ( void )
 
 	// MONSTER WEAPONS
 	gSkillData.monDmg12MM = GetSkillCvar( "sk_12mm_bullet" );
-	gSkillData.monDmgMP5 = GetSkillCvar ("sk_9mmAR_bullet" );
+	gSkillData.monDmgMP5 = GetSkillCvar ("sk_plr_9mmAR_bullet" );
 	gSkillData.monDmg9MM = GetSkillCvar( "sk_9mm_bullet" );
 
 	// MONSTER HORNET
@@ -320,27 +379,17 @@ CGameRules *InstallGameRules( void )
 
 	if( !gpGlobals->deathmatch )
 	{
-		// generic half-life
-		g_teamplay = 0;
 		return new CHalfLifeRules;
 	}
 	else
 	{
 		if( teamplay.value > 0 )
 		{
-			// teamplay
 			g_teamplay = 1;
 			return new CHalfLifeTeamplay;
 		}
-		if( (int)gpGlobals->deathmatch == 1 )
-		{
-			// vanilla deathmatch
-			g_teamplay = 0;
-			return new CHalfLifeMultiplay;
-		}
 		else
 		{
-			// vanilla deathmatch??
 			g_teamplay = 0;
 			return new CHalfLifeMultiplay;
 		}

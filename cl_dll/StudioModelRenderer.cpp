@@ -32,6 +32,19 @@
 // Global engine <-> studio model rendering code interface
 engine_studio_api_t IEngineStudio;
 
+/*
+void (*GL_StudioDrawShadow)( void );
+
+__declspec(naked) void HackShadows( void )
+{
+	_asm
+	{
+		push ecx;
+		jmp [GL_StudioDrawShadow];
+	}
+}
+*/
+
 /////////////////////
 // Implementation of CStudioModelRenderer.h
 #define LEGS_BONES_COUNT	8
@@ -1736,6 +1749,15 @@ void CStudioModelRenderer::StudioRenderFinal_Hardware( void )
 
 			IEngineStudio.GL_SetRenderMode( rendermode );
 			IEngineStudio.StudioDrawPoints();
+
+			/*
+			if( CVAR_GET_FLOAT("r_shadows") )
+			{
+				GL_StudioDrawShadow = ( void(*)(void) )( ( (unsigned int)IEngineStudio.GL_StudioDrawShadow ) + 32 );
+				HackShadows();
+			}
+			else*/
+
 			IEngineStudio.GL_StudioDrawShadow();
 		}
 	}

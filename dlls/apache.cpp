@@ -781,6 +781,8 @@ void CApache::FireRocket( void )
 	m_iRockets--;
 
 	side = - side;
+
+	UTIL_MuzzleLight( pev->origin, 160, 255, 255, 128, 0.5f, 320 );
 }
 
 BOOL CApache::FireGun()

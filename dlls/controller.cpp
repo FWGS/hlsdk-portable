@@ -1370,6 +1370,7 @@ void CControllerZapBall::Precache( void )
 
 void CControllerZapBall::AnimateThink( void )
 {
+	UTIL_MuzzleLight( pev->origin, 80, 255, 192, 64, 0.2f, 0 );
 	SetNextThink( 0.1 );
 
 	pev->frame = ( (int)pev->frame + 1 ) % 11;

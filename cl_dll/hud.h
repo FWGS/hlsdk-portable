@@ -285,6 +285,39 @@ protected:
 	float *m_pflNameColors[MAX_STATUSBAR_LINES];
 };
 
+// advanced NVG
+//
+//-----------------------------------------------------
+//
+/*class CHudNVG: public CHudBase
+{
+public:
+	int Init( void );
+	int VidInit( void );
+	int Draw( float flTime );
+	int MsgFunc_NVG( const char *pszName, int iSize, void *pbuf );
+	int MsgFunc_NVGActivate( const char *pszName, int iSize, void *pbuf );
+
+private:
+	HSPRITE m_hFlicker;
+
+	HSPRITE m_hBatteryFull;
+	HSPRITE m_hBatteryEmpty;
+	wrect_t *m_prcBatteryFull;
+	wrect_t *m_prcBatteryEmpty;
+
+	int m_iBatteryY;
+	int m_iWidth;
+
+	int m_iNVG;
+	int m_iOn;
+	float m_flBattery;
+};*/
+// advanced NVG
+//
+//-----------------------------------------------------
+//
+
 //
 //-----------------------------------------------------
 //
@@ -610,7 +643,13 @@ public:
 #define SKY_OFF 0
 #define SKY_ON  1
 
-
+typedef struct cl_mirror_s
+{
+	vec3_t origin;
+	int enabled;
+	float radius;
+	int type;
+} cl_mirror_t;
 
 class CHud
 {
@@ -642,6 +681,10 @@ public:
 	CShinySurface *m_pShinySurface; //LRC
 	Vector	m_vecSkyPos; //LRC
 	int		m_iSkyMode;  //LRC
+	// int viewEntityIndex; // for trigger_viewset
+	// int viewFlags;
+	// struct cl_mirror_s Mirrors[32]; //Limit - 32 mirrors!
+	// int numMirrors;
 
 	int m_iFontHeight;
 	int DrawHudNumber( int x, int y, int iFlags, int iNumber, int r, int g, int b );
@@ -690,6 +733,9 @@ public:
 	CHudAmmoSecondary	m_AmmoSecondary;
 	CHudTextMessage m_TextMessage;
 	CHudStatusIcons m_StatusIcons;
+// advanced NVG
+	// CHudNVG m_NVG;
+// advanced NVG
 	CHudScoreboard	m_Scoreboard;
 	CHudMOTD	m_MOTD;
 	CHudParticle	m_Particle; // (LRC) -- 30/08/02 November235: Particles to Order
@@ -713,6 +759,7 @@ public:
 	int _cdecl MsgFunc_SetFOV( const char *pszName,  int iSize, void *pbuf );
 	int  _cdecl MsgFunc_Concuss( const char *pszName, int iSize, void *pbuf );
 
+	int _cdecl MsgFunc_PlayMP3( const char *pszName, int iSize, void *pbuf );		// KILLAR
 	int _cdecl MsgFunc_HUDColor(const char *pszName,  int iSize, void *pbuf);		//LRC
 	void _cdecl MsgFunc_SetFog( const char *pszName, int iSize, void *pbuf );		//LRC
 	void _cdecl MsgFunc_KeyedDLight( const char *pszName, int iSize, void *pbuf );	//LRC

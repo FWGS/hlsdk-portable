@@ -175,6 +175,102 @@ void CRpgRocket::RocketTouch( CBaseEntity *pOther )
 
 	STOP_SOUND( edict(), CHAN_VOICE, "weapons/rocket1.wav" );
 	ExplodeTouch( pOther );
+
+	// initialize a vector that finds the center of the RPG models hitbox
+	Vector vecSpot = pev->origin + ( pev->mins + pev->maxs ) * 0.5;
+
+	MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, vecSpot );
+		WRITE_BYTE( TE_SPRITE );//additive sprite plays though once
+		WRITE_COORD( vecSpot.x );//where to make the sprite appear on x axis
+		WRITE_COORD( vecSpot.y );//where to make the sprite appear on y axis
+		WRITE_COORD( vecSpot.z + 128 );//Creates sprite 128 units above model's center
+		WRITE_SHORT( m_iExplode );//Name of the sprite to use, as defined at begining of tut
+		WRITE_BYTE( 60 ); // scale in .1 units --by comparison the player is 72 units tall
+		WRITE_BYTE( 255 ); // brightness (this is as bright as it gets)
+	MESSAGE_END();
+
+	// Big Plume of Smoke
+	MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, vecSpot );
+		WRITE_BYTE( TE_SMOKE );//alphablended sprite
+		WRITE_COORD( vecSpot.x );
+		WRITE_COORD( vecSpot.y );
+		WRITE_COORD( vecSpot.z + 256 );
+		WRITE_SHORT( g_sModelIndexSmoke );//This is Defined in weapons.cpp and weapons.h
+		WRITE_BYTE( 125 ); //scale in .1 units
+		WRITE_BYTE( 5 ); // framerate to playback sprite
+	MESSAGE_END();
+
+	// blast circle "The Infamous Disc of Death"
+	MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, pev->origin );
+		WRITE_BYTE( TE_BEAMCYLINDER );
+		WRITE_COORD( pev->origin.x );//center of effect on x axis
+		WRITE_COORD( pev->origin.y );//center of effect on y axis
+		WRITE_COORD( pev->origin.z );//center of effect on z axis
+		WRITE_COORD( pev->origin.x );//axis of effect on x axis
+		WRITE_COORD( pev->origin.y );//axis of effect on y axis
+		WRITE_COORD( pev->origin.z + 320 ); // z axis and Radius of effect
+		WRITE_SHORT( m_iSpriteTexture );//Name of the sprite to use, as defined at begining of tut
+		WRITE_BYTE( 0 ); // startframe
+		WRITE_BYTE( 0 ); //framerate in 0.1's
+		WRITE_BYTE( 4 ); //Life in 0.1's
+		WRITE_BYTE( 32 ); //Line Width in .1 units
+		WRITE_BYTE( 0 ); //Noise Amplitude in 0.01's
+		WRITE_BYTE( 255 ); // Red Color Value
+		WRITE_BYTE( 255 ); // Green Color Value
+		WRITE_BYTE( 192 ); // Blue Color Value
+		WRITE_BYTE( 128 ); // brightness
+		WRITE_BYTE( 0 ); // speed
+	MESSAGE_END();
+
+	// insane glow
+	MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, pev->origin );
+		WRITE_BYTE( TE_GLOWSPRITE );//Big Flare Effect
+		WRITE_COORD( pev->origin.x ); //where to make the sprite appear on x axis
+		WRITE_COORD( pev->origin.y );//where to make the sprite appear on y axis
+		WRITE_COORD( pev->origin.z );//where to make the sprite appear on zaxis
+		WRITE_SHORT( m_iGlow ); //Name of the sprite to use, as defined at begining of tut
+		WRITE_BYTE( 20 ); //Life in 0.1's
+		WRITE_BYTE( 128 ); //Size in 0.1's
+		WRITE_BYTE( 190 ); // brightness
+	MESSAGE_END();
+
+	EMIT_SOUND( ENT( pev ), CHAN_STATIC, "weapons/bfg_fire_sunofgod.wav", 1.0, 0.3 );
+
+	UTIL_ScreenShake( pev->origin, 25.0, 150.0, 1.0, 1080 );
+	RadiusDamage( pev->origin, pev, pev, 150, CLASS_NONE, DMG_BLAST | DMG_RADIATION );
+
+	entvars_t *pevOwner;	// defines owner
+
+	if( pev->owner )
+		pevOwner = VARS( pev->owner );
+	else
+		pevOwner = NULL;
+
+	pev->owner = NULL; // can't traceline attack owner if this is set
+
+	pev->effects |= EF_NODRAW;	// stop showing the model!!
+	pev->velocity = g_vecZero;	// set velocity to "0"
+	SetThink( &CRpgRocket::AfterGlow );
+	pev->nextthink = gpGlobals->time +.7;	// set next think into future
+}
+
+void CRpgRocket::AfterGlow( void )
+{
+	// aftermath glow
+	MESSAGE_BEGIN( MSG_PAS, SVC_TEMPENTITY, pev->origin );
+		WRITE_BYTE( TE_GLOWSPRITE );//Like the AfterGlow from the Gauss
+		WRITE_COORD( pev->origin.x); //where to make the sprite appear on x axis
+		WRITE_COORD( pev->origin.y); //where to make the sprite appear on y axis
+		WRITE_COORD( pev->origin.z); //where to make the sprite appear on z axis
+		WRITE_SHORT( m_iGlow ); //Name of the sprite to use, as defined at begining of tut
+		WRITE_BYTE( 60 ); //Life in 0.1's
+		WRITE_BYTE( 64 ); //Size in 0.1's
+		WRITE_BYTE( 200 ); // brightness
+	MESSAGE_END();
+
+	/*insert radiation think for 2nd tutorial later,
+	for now just get rid of this damn thing.*/
+	UTIL_Remove( this );
 }
 
 //=========================================================
@@ -183,7 +279,11 @@ void CRpgRocket::Precache( void )
 {
 	PRECACHE_MODEL( "models/rpgrocket.mdl" );
 	m_iTrail = PRECACHE_MODEL( "sprites/smoke.spr" );
+	m_iSpriteTexture = PRECACHE_MODEL( "sprites/white.spr" );
+	m_iExplode = PRECACHE_MODEL( "sprites/fexplo.spr" );
+	m_iGlow = PRECACHE_MODEL( "sprites/hotglow.spr" );
 	PRECACHE_SOUND( "weapons/rocket1.wav" );
+	PRECACHE_SOUND( "weapons/bfg_fire_sunofgod.wav" );
 }
 
 void CRpgRocket::IgniteThink( void )
@@ -388,11 +488,12 @@ int CRpg::GetItemInfo( ItemInfo *p )
 	p->pszAmmo2 = NULL;
 	p->iMaxAmmo2 = -1;
 	p->iMaxClip = RPG_MAX_CLIP;
-	p->iSlot = 3;
+	p->iSlot = 5;
 	p->iPosition = 0;
 	p->iId = m_iId = WEAPON_RPG;
 	p->iFlags = 0;
 	p->iWeight = RPG_WEIGHT;
+	p->weaponName = "Rocket Grenade Launcher Nuke";
 
 	return 1;
 }

@@ -204,3 +204,46 @@ void EV_MuzzleFlash( void )
 	// Or in the muzzle flash
 	ent->curstate.effects |= EF_MUZZLEFLASH;
 }
+
+// <paul>
+/*
+=================
+EV_PointLineIntersect
+
+Checks start->end vector intersects with given origin+radius
+=================
+*/
+bool EV_PointLineIntersect( vec3_t start, vec3_t end, vec3_t point, float rad, vec3_t intersection )
+{
+	vec3_t	dir;
+	vec3_t	distance;
+	float	len;
+	float	lineSize;
+
+	VectorSubtract( end, start, dir );
+	lineSize = VectorNormalize( dir );
+
+	// Calculate the distance from the shooter to the target
+	VectorSubtract( point, start, distance );
+
+	// Use that distance to determine the point of tangent in relation to
+	// the center of the player entity
+	VectorMA( start, DotProduct( dir, distance ), dir, intersection );
+
+	VectorSubtract( intersection, point, distance );
+	len = VectorNormalize( distance );
+
+	// Is the intersection point within the given radius requirements?
+	if( len < rad * rad )
+	{
+		// Make sure its not past the end of the given line
+		VectorSubtract( intersection, start, distance );
+		len = VectorNormalize( distance );
+
+		// If the len
+		if( len < lineSize * lineSize )
+			return true;
+	}
+
+	return false;
+}

@@ -44,6 +44,8 @@ float AmmoDamage( const char *pName )
 		return gSkillData.plrDmgSatchel;
 	if( !strcmp( pName, "Trip Mine") )
 		return gSkillData.plrDmgTripmine;
+	if( !strcmp( pName, "Shock" ) )
+		return gSkillData.plrDmgShocks;
 
 	return 0;
 }

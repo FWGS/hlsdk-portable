@@ -356,3 +356,52 @@ class CItemLongJump : public CItem
 };
 
 LINK_ENTITY_TO_CLASS( item_longjump, CItemLongJump )
+/*
+// advanced NVG
+extern int gmsgNVG;	// we need to send this message
+
+class CItemNVG : public CItem
+{
+	void Spawn()
+	{
+		Precache();
+		SET_MODEL( ENT( pev ), "models/w_longjump.mdl" );	// you'll want to change this
+		CItem::Spawn();
+	}
+	void Precache()
+	{
+		PRECACHE_MODEL( "models/w_longjump.mdl" );    // you'll want to change this
+		PRECACHE_SOUND( "buttons/blip1.wav" );
+	}
+	BOOL MyTouch( CBasePlayer *pPlayer )
+	{
+		if( pPlayer->m_fNVG )    // does the player already have it
+		{
+			return FALSE;    // if so, quit
+		}
+
+		if( ( pPlayer->pev->weapons & ( 1 << WEAPON_SUIT ) ) )
+		{
+			pPlayer->m_fNVG = TRUE;    // player now has night vision goggles
+
+			// make the client.dll print out the symbol on ammo history
+			MESSAGE_BEGIN( MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev );
+				WRITE_STRING( STRING( pev->classname ) );
+			MESSAGE_END();
+
+			// ... and tell them that we now have an NVG
+			MESSAGE_BEGIN( MSG_ONE, gmsgNVG, NULL, pPlayer->pev );
+				WRITE_BYTE( 1 );
+				WRITE_BYTE( pPlayer->m_flNVGBattery );
+			MESSAGE_END();
+
+			// play a sound to tell the player he's picked up the NVG
+			EMIT_SOUND( pPlayer->edict(), CHAN_WEAPON, "buttons/blip1.wav", 0.8, ATTN_NORM );
+			return TRUE;
+		}
+		return FALSE;
+	}
+};
+
+LINK_ENTITY_TO_CLASS( item_nvg, CItemNVG );*/
+// advanced NVG

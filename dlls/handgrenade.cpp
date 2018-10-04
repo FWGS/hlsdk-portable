@@ -71,6 +71,7 @@ int CHandGrenade::GetItemInfo( ItemInfo *p )
 	p->iId = m_iId = WEAPON_HANDGRENADE;
 	p->iWeight = HANDGRENADE_WEIGHT;
 	p->iFlags = ITEM_FLAG_LIMITINWORLD | ITEM_FLAG_EXHAUSTIBLE;
+	p->weaponName = "Hand Grenade";
 
 	return 1;
 }

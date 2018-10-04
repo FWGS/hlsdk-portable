@@ -31,6 +31,18 @@ static int num_teams = 0;
 
 extern DLL_GLOBAL BOOL		g_fGameOver;
 
+extern int gmsgShowMenu;
+/*
+void ShowMenu( CBasePlayer *pPlayer, int bitsValidSlots, int nDisplayTime, BOOL fNeedMore, char pszText[500] )
+{
+	MESSAGE_BEGIN( MSG_ONE, gmsgShowMenu, NULL, pPlayer->pev );
+		WRITE_SHORT( bitsValidSlots );
+		WRITE_CHAR( nDisplayTime );
+		WRITE_BYTE( fNeedMore );
+		WRITE_STRING( pszText );
+	MESSAGE_END();
+}
+*/
 CHalfLifeTeamplay::CHalfLifeTeamplay()
 {
 	m_DisableDeathMessages = FALSE;
@@ -160,8 +172,11 @@ BOOL CHalfLifeTeamplay::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 		//int slot = atoi( CMD_ARGV( 1 ) );
 
 		// select the item from the current menu
+		//pPlayer->m_iPlayerClass = slot;
 		return TRUE;
 	}
+//	else if( FStrEq( pcmd, "changeclass" ) )
+//		ShowMenu( pPlayer, 0x3F, 0, 0, "#class_list" );
 
 	return FALSE;
 }
@@ -213,6 +228,7 @@ void CHalfLifeTeamplay::InitHUD( CBasePlayer *pPlayer )
 {
 	int i;
 
+	// ShowMenu( pPlayer, 0x3F, 0, 0, "#class_list" );
 	SetDefaultPlayerTeam( pPlayer );
 	CHalfLifeMultiplay::InitHUD( pPlayer );
 
@@ -239,7 +255,7 @@ void CHalfLifeTeamplay::InitHUD( CBasePlayer *pPlayer )
 		sprintf( text, "* assigned to team %s\n", pPlayer->m_szTeamName );
 	}
 
-	ChangePlayerTeam( pPlayer, pPlayer->m_szTeamName, FALSE, FALSE );
+	ChangeTeam( pPlayer, pPlayer->m_szTeamName, FALSE, FALSE );
 	UTIL_SayText( text, pPlayer );
 	//int clientIndex = pPlayer->entindex();
 	RecountTeams();
@@ -258,7 +274,7 @@ void CHalfLifeTeamplay::InitHUD( CBasePlayer *pPlayer )
 	}
 }
 
-void CHalfLifeTeamplay::ChangePlayerTeam( CBasePlayer *pPlayer, const char *pTeamName, BOOL bKill, BOOL bGib )
+void CHalfLifeTeamplay::ChangeTeam( CBasePlayer *pPlayer, const char *pTeamName, BOOL bKill, BOOL bGib )
 {
 	int damageFlags = DMG_GENERIC;
 	int clientIndex = pPlayer->entindex();
@@ -353,7 +369,7 @@ void CHalfLifeTeamplay::ClientUserInfoChanged( CBasePlayer *pPlayer, char *infob
 		pPlayer->m_szTeamName,
 		mdls );
 
-	ChangePlayerTeam( pPlayer, mdls, TRUE, TRUE );
+	ChangeTeam( pPlayer, mdls, TRUE, TRUE );
 
 	// recound stuff
 	RecountTeams( TRUE );

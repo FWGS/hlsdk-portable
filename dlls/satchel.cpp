@@ -261,6 +261,7 @@ int CSatchel::GetItemInfo( ItemInfo *p )
 	p->iFlags = ITEM_FLAG_SELECTONEMPTY | ITEM_FLAG_LIMITINWORLD | ITEM_FLAG_EXHAUSTIBLE;
 	p->iId = m_iId = WEAPON_SATCHEL;
 	p->iWeight = SATCHEL_WEIGHT;
+	p->weaponName = "C4 Satchel";
 
 	return 1;
 }

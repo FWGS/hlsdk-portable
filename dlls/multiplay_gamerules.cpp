@@ -23,7 +23,9 @@
 #include	"player.h"
 #include	"weapons.h"
 #include	"gamerules.h"
- 
+#include	"bot.h"
+#include	"botcam.h"
+
 #include	"skill.h"
 #include	"game.h"
 #include	"items.h"
@@ -37,7 +39,9 @@ extern DLL_GLOBAL BOOL	g_fGameOver;
 extern int gmsgDeathMsg;	// client dll messages
 extern int gmsgScoreInfo;
 extern int gmsgMOTD;
+extern int gmsgSpectator;
 extern int gmsgServerName;
+extern respawn_t bot_respawn[32];
 
 extern int g_teamplay;
 
@@ -141,22 +145,51 @@ void CHalfLifeMultiplay::RefreshSkillData( void )
 	// override some values for multiplay.
 
 	// suitcharger
-	gSkillData.suitchargerCapacity = 30;
+	gSkillData.suitchargerCapacity = 200;
 
 	// Crowbar whack
 	gSkillData.plrDmgCrowbar = 25;
 
+	// Swort whack
+	gSkillData.plrDmgSwort = 50;
+
 	// Glock Round
 	gSkillData.plrDmg9MM = 12;
+
+	// Eagel Round
+	gSkillData.plrDmgEagel = 50;
 
 	// 357 Round
 	gSkillData.plrDmg357 = 40;
 
 	// MP5 Round
-	gSkillData.plrDmgMP5 = 12;
+	gSkillData.plrDmgMP5 = 20;
+
+	// AK47 Round
+	gSkillData.plrDmgak47 = 30;
+
+	// UZI Round
+	gSkillData.plrDmgUZI = 20;
+
+	// Shocks Round
+	gSkillData.plrDmgShocks = 10;
+
+	// Shockm Round
+	gSkillData.plrDmgShockm = 15;
+
+	// Minigun Round
+	gSkillData.plrDmgMinigun = 20;
+
+	gSkillData.plrDmg50cal = 15;
 
 	// M203 grenade
 	gSkillData.plrDmgM203Grenade = 100;
+
+	// MP41a Round
+	gSkillData.plrDmgMP41a = 20;
+
+	// M20341a grenade
+	gSkillData.plrDmgM20341aGrenade = 150;
 
 	// Shotgun buckshot
 	gSkillData.plrDmgBuckshot = 20;// fewer pellets in deathmatch
@@ -473,6 +506,12 @@ void CHalfLifeMultiplay::InitHUD( CBasePlayer *pl )
 				WRITE_SHORT( 0 );
 				WRITE_SHORT( GetTeamIndex( plr->m_szTeamName ) + 1 );
 			MESSAGE_END();
+
+			// Sende den Spectator-Status
+/*			MESSAGE_BEGIN( MSG_ONE, gmsgSpectator, NULL, pl->edict() );
+				WRITE_BYTE( i );
+				WRITE_BYTE( ( plr->pev->iuser1 != 0 ) );
+			MESSAGE_END();*/
 		}
 	}
 
@@ -514,6 +553,30 @@ void CHalfLifeMultiplay::ClientDisconnected( edict_t *pClient )
 			}
 
 			pPlayer->RemoveAllItems( TRUE );// destroy all of the players weapons and items
+/*
+			// Allen Clients mitteilen, dass dieser Client kein Spectator mehr ist
+			MESSAGE_BEGIN( MSG_ALL, gmsgSpectator );
+				WRITE_BYTE( ENTINDEX(pClient) );
+				WRITE_BYTE( 0 );
+			MESSAGE_END();
+
+			CBasePlayer *client = NULL;
+			while( ( ( client = (CBasePlayer*)UTIL_FindEntityByClassname( client, "player" ) ) != NULL )
+				&& ( !FNullEnt( client->edict() ) ) )
+			{
+				if( !client->pev )
+					continue;
+				if( client == pPlayer )
+					continue;
+
+				// Wenn ein Spectator diesen Spieler verfolgt hat, soll er sich ein neues Ziel suchen
+				if( client->m_hObserverTarget == pPlayer )
+				{
+					int iMode = client->pev->iuser1;
+					client->pev->iuser1 = 0;
+					client->m_hObserverTarget = NULL;
+				}
+			}*/
 		}
 	}
 }
@@ -570,6 +633,13 @@ void CHalfLifeMultiplay::PlayerSpawn( CBasePlayer *pPlayer )
 	BOOL		addDefault;
 	CBaseEntity	*pWeaponEntity = NULL;
 
+	MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
+		WRITE_BYTE( TE_TELEPORT );
+		WRITE_COORD( pPlayer->pev->origin.x );
+		WRITE_COORD( pPlayer->pev->origin.y );
+		WRITE_COORD( pPlayer->pev->origin.z );
+	MESSAGE_END();
+
 	pPlayer->pev->weapons |= ( 1 << WEAPON_SUIT );
 
 	addDefault = TRUE;
@@ -583,8 +653,30 @@ void CHalfLifeMultiplay::PlayerSpawn( CBasePlayer *pPlayer )
 	if( addDefault )
 	{
 		pPlayer->GiveNamedItem( "weapon_crowbar" );
+		pPlayer->GiveNamedItem( "weapon_swort" );
 		pPlayer->GiveNamedItem( "weapon_9mmhandgun" );
-		pPlayer->GiveAmmo( 68, "9mm", _9MM_MAX_CARRY );// 4 full reloads
+		pPlayer->GiveAmmo( 100, "9mm", _9MM_MAX_CARRY );
+		pPlayer->GiveNamedItem( "weapon_9mm41a" );
+		pPlayer->GiveNamedItem( "weapon_autoshotgun" );
+		pPlayer->GiveNamedItem( "weapon_minigun" );
+		pPlayer->GiveNamedItem( "weapon_eagel" );
+		pPlayer->GiveNamedItem( "weapon_uzi" );
+		pPlayer->GiveNamedItem( "weapon_shockrifle" );
+		pPlayer->GiveNamedItem( "weapon_ak47" );
+		pPlayer->pev->armorvalue = 50;
+
+		if( pPlayer->m_iPlayerClass == 1 )
+		{
+			g_engfuncs.pfnSetClientKeyValue( pPlayer->entindex(), g_engfuncs.pfnGetInfoKeyBuffer( pPlayer->edict() ), "model", "blue" );
+		}
+		else if( pPlayer->m_iPlayerClass == 2 )
+		{
+			g_engfuncs.pfnSetClientKeyValue( pPlayer->entindex(), g_engfuncs.pfnGetInfoKeyBuffer( pPlayer->edict() ), "model", "red" );
+		}
+		else if( pPlayer->m_iPlayerClass == 3 )
+		{
+			g_engfuncs.pfnSetClientKeyValue( pPlayer->entindex(), g_engfuncs.pfnGetInfoKeyBuffer( pPlayer->edict() ), "model", "gordon" );
+		}
 	}
 }
 
@@ -1627,6 +1719,35 @@ void CHalfLifeMultiplay::ChangeLevel( void )
 
 	g_fGameOver = TRUE;
 
+	// START BOT
+	// loop through all the players...
+	for( int i = 1; i <= gpGlobals->maxClients; i++ )
+	{
+		CBaseEntity *pEntity = UTIL_PlayerByIndex( i );
+
+		if( !pEntity )  // if invalid then continue with next index...
+			continue;
+
+		CBasePlayer *pPlayer = (CBasePlayer *)pEntity;
+
+		// if botcam is in use, disconnect so buttons will work...
+		if( pPlayer->pBotCam )
+			pPlayer->pBotCam->Disconnect();
+	}
+
+	// kick any bot off of the server after time/frag limit...
+	for( int index = 0; index < 32; index++ )
+	{
+		if( bot_respawn[index].is_used )  // is this slot used?
+		{
+			char cmd[40];
+			sprintf( cmd, "kick \"%s\"\n", bot_respawn[index].name );
+			bot_respawn[index].state = BOT_NEED_TO_RESPAWN;
+			SERVER_COMMAND( cmd );  // kick the bot using (kick "name")
+		}
+	}
+	// END BOT
+
 	ALERT( at_console, "CHANGE LEVEL: %s\n", szNextMap );
 	if( minplayers || maxplayers )
 	{
@@ -1638,7 +1759,7 @@ void CHalfLifeMultiplay::ChangeLevel( void )
 	}
 
 	CHANGE_LEVEL( szNextMap, NULL );
-	if( strlen( szCommands ) > 0 )
+	if( strlen( szCommands ) > 1 )
 	{
 		SERVER_COMMAND( szCommands );
 	}
@@ -1653,6 +1774,7 @@ void CHalfLifeMultiplay::SendMOTDToClient( edict_t *client )
 	int length, char_count = 0;
 	char *pFileList;
 	char *aFileList = pFileList = (char*)LOAD_FILE_FOR_ME( CVAR_GET_STRING( "motdfile" ), &length );
+	SERVER_COMMAND( UTIL_VarArgs("exec maps/%s.cfg\n", STRING( gpGlobals->mapname ) ) );
 
 	// send the server name
 	MESSAGE_BEGIN( MSG_ONE, gmsgServerName, NULL, client );

@@ -15,6 +15,7 @@
 #include "cl_entity.h"
 #include "dlight.h"
 #include "triangleapi.h"
+//#include "bumpmap.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -71,6 +72,13 @@ R_StudioDrawModel
 int R_StudioDrawModel( int flags )
 {
 	return g_StudioRenderer.StudioDrawModel( flags );
+
+	// FGW
+	/*g_BumpmapMgr.RenderStudioModel( true );
+	int ret = g_StudioRenderer.StudioDrawModel( flags );
+	g_BumpmapMgr.RenderStudioModel( false );
+
+	return ret;*/
 }
 
 /*

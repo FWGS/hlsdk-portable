@@ -917,7 +917,7 @@ void CGamePlayerTeam::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TY
 		if ( pszTargetTeam )
 		{
 			CBasePlayer *pPlayer = (CBasePlayer *)pActivator;
-			g_pGameRules->ChangePlayerTeam( pPlayer, pszTargetTeam, ShouldKillPlayer(), ShouldGibPlayer() );
+			g_pGameRules->ChangeTeam( pPlayer, pszTargetTeam, ShouldKillPlayer(), ShouldGibPlayer() );
 		}
 	}
 	

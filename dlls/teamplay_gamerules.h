@@ -39,7 +39,7 @@ public:
 	virtual int IPointsForKill( CBasePlayer *pAttacker, CBasePlayer *pKilled );
 	virtual void InitHUD( CBasePlayer *pl );
 	virtual void DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, entvars_t *pevInflictor );
-	virtual const char *GetGameDescription( void ) { return "HL Teamplay"; }  // this is the game name that gets seen in the server browser
+	virtual const char *GetGameDescription( void ) { return "ZX Teamplay"; }  // this is the game name that gets seen in the server browser
 	virtual void UpdateGameMode( CBasePlayer *pPlayer );  // the client needs to be informed of the current game mode
 	virtual void PlayerKilled( CBasePlayer *pVictim, entvars_t *pKiller, entvars_t *pInflictor );
 	virtual void Think( void );
@@ -47,7 +47,7 @@ public:
 	virtual const char *GetIndexedTeamName( int teamIndex );
 	virtual BOOL IsValidTeam( const char *pTeamName );
 	const char *SetDefaultPlayerTeam( CBasePlayer *pPlayer );
-	virtual void ChangePlayerTeam( CBasePlayer *pPlayer, const char *pTeamName, BOOL bKill, BOOL bGib );
+	virtual void ChangeTeam( CBasePlayer *pPlayer, const char *pTeamName, BOOL bKill, BOOL bGib );
 
 private:
 	void RecountTeams( bool bResendInfo = FALSE );

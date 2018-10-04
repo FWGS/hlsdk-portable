@@ -18,6 +18,9 @@
 
 #include "pm_materials.h"
 
+// START BOT
+class CBotCam;
+// END BOT
 
 //LRC - code for Werner Spahl's mod.
 //#define XENWARRIOR
@@ -104,6 +107,19 @@ enum sbar_data
 class CBasePlayer : public CBaseMonster
 {
 public:
+	// advanced NVG
+	BOOL	m_fNVG;			// do they have it?
+	BOOL	m_fNVGActivated;	// is it activated?
+	float	m_flNVGBattery;
+	float	m_flNVGUpdate;
+	float	m_flInfraredUpdate[32];
+	BOOL	m_fInfrared[32];
+
+	void NVGCreateInfrared(edict_t *pEdict, int pIndex, BOOL fOn);
+	void NVGToggle(BOOL activate);
+	void NVGUpdate();
+	// advanced NVG
+
 	// Spectator camera
 	void	Observer_FindNextPlayer( bool bReverse );
 	void	Observer_HandleButtons();
@@ -127,7 +143,7 @@ public:
 
 	float				m_flFlashLightTime;	// Time until next battery draw/Recharge
 	int					m_iFlashBattery;		// Flashlight Battery Draw
-
+	int					m_iPlayerClass;	// Teamchange
 	int					m_afButtonLast;
 	int					m_afButtonPressed;
 	int					m_afButtonReleased;
@@ -146,6 +162,7 @@ public:
 	float				m_fNextSuicideTime; // the time after which the player can next use the suicide command
 
 	// these are time-sensitive things that we keep track of
+	float				m_flNextNameDisplay;
 	float				m_flTimeStepSound;	// when the last stepping sound was made
 	float				m_flTimeWeaponIdle; // when to play another weapon idle animation.
 	float				m_flSwimTime;		// how long player has been underwater
@@ -213,6 +230,10 @@ public:
 	float	m_flNextDecalTime;// next time this player can spray a decal
 
 	char m_szTeamName[TEAM_NAME_LENGTH];
+
+	// START BOT
+	CBotCam *pBotCam;
+	// END BOT
 
 	virtual void Spawn( void );
 	void Pain( void );
@@ -324,6 +345,13 @@ public:
 	void SetCustomDecalFrames( int nFrames );
 	int GetCustomDecalFrames( void );
 
+	int BloodColor( void )
+	{
+		if( CVAR_GET_FLOAT( "mp_allowblood" ) != 0 )
+			return m_bloodColor;
+		else
+			return DONT_BLEED;
+	}
 	void TabulateAmmo( void );
 
 	Vector m_vecLastViewAngles;
@@ -344,6 +372,8 @@ public:
 
 	float m_flNextChatTime;
 
+	int m_iNextTeam;
+
 	bool m_bSentBhopcap; // If false, the player just joined and needs a bhopcap message.
 };
 
@@ -356,4 +386,8 @@ extern int gmsgHudText;
 extern int	gmsgParticle; // LRC
 extern BOOL gInitHUD;
 
+// Observer-Bewegungscodes
+#define OBS_CHASE_LOCKED		1
+#define OBS_CHASE_FREE			2
+#define OBS_ROAMING			3
 #endif // PLAYER_H
