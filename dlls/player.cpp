@@ -258,10 +258,10 @@ void LinkUserMessages( void )
 	gmsgAmmoX = REG_USER_MSG( "AmmoX", 2 );
 	gmsgTeamNames = REG_USER_MSG( "TeamNames", -1 );
 	gmsgStatusIcon = REG_USER_MSG( "StatusIcon", -1 );
-	gmsgBhopcap = REG_USER_MSG( "Bhopcap", 1 );
 
 	gmsgStatusText = REG_USER_MSG( "StatusText", -1 );
 	gmsgStatusValue = REG_USER_MSG( "StatusValue", 3 );
+	gmsgBhopcap = REG_USER_MSG( "Bhopcap", 1 );
 }
 
 LINK_ENTITY_TO_CLASS( player, CBasePlayer )
