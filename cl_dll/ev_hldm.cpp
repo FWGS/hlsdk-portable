@@ -39,7 +39,7 @@
 
 extern engine_studio_api_t IEngineStudio;
 
-static int tracerCount[4096];
+static int g_tracerCount[32];
 
 extern "C" char PM_FindTextureType( char *name );
 
@@ -546,7 +546,7 @@ void EV_FireGlock2( event_args_t *args )
 
 	VectorCopy( forward, vecAiming );
 
-	EV_HLDM_FireBullets( idx, forward, right, up, 1, vecSrc, vecAiming, 8192, BULLET_PLAYER_9MM, 0, 0, args->fparam1, args->fparam2 );
+	EV_HLDM_FireBullets( idx, forward, right, up, 1, vecSrc, vecAiming, 8192, BULLET_PLAYER_9MM, 0, &g_tracerCount[idx - 1], args->fparam1, args->fparam2 );
 }
 //======================
 //	   GLOCK END
@@ -602,11 +602,11 @@ void EV_FireShotGunDouble( event_args_t *args )
 
 	if( gEngfuncs.GetMaxClients() > 1 )
 	{
-		EV_HLDM_FireBullets( idx, forward, right, up, 8, vecSrc, vecAiming, 2048, BULLET_PLAYER_BUCKSHOT, 0, 0, 0.17365, 0.04362 );
+		EV_HLDM_FireBullets( idx, forward, right, up, 8, vecSrc, vecAiming, 2048, BULLET_PLAYER_BUCKSHOT, 0, &g_tracerCount[idx - 1], 0.17365, 0.04362 );
 	}
 	else
 	{
-		EV_HLDM_FireBullets( idx, forward, right, up, 12, vecSrc, vecAiming, 2048, BULLET_PLAYER_BUCKSHOT, 0, 0, 0.08716, 0.08716 );
+		EV_HLDM_FireBullets( idx, forward, right, up, 12, vecSrc, vecAiming, 2048, BULLET_PLAYER_BUCKSHOT, 0, &g_tracerCount[idx - 1], 0.08716, 0.08716 );
 	}
 }
 
@@ -654,11 +654,11 @@ void EV_FireShotGunSingle( event_args_t *args )
 
 	if( gEngfuncs.GetMaxClients() > 1 )
 	{
-		EV_HLDM_FireBullets( idx, forward, right, up, 4, vecSrc, vecAiming, 2048, BULLET_PLAYER_BUCKSHOT, 0, 0, 0.08716, 0.04362 );
+		EV_HLDM_FireBullets( idx, forward, right, up, 4, vecSrc, vecAiming, 2048, BULLET_PLAYER_BUCKSHOT, 0, &g_tracerCount[idx - 1], 0.08716, 0.04362 );
 	}
 	else
 	{
-		EV_HLDM_FireBullets( idx, forward, right, up, 6, vecSrc, vecAiming, 2048, BULLET_PLAYER_BUCKSHOT, 0, 0, 0.08716, 0.08716 );
+		EV_HLDM_FireBullets( idx, forward, right, up, 6, vecSrc, vecAiming, 2048, BULLET_PLAYER_BUCKSHOT, 0, &g_tracerCount[idx - 1], 0.08716, 0.08716 );
 	}
 }
 //======================
@@ -717,7 +717,14 @@ void EV_FireMP5( event_args_t *args )
 	EV_GetGunPosition( args, vecSrc, origin );
 	VectorCopy( forward, vecAiming );
 
-	EV_HLDM_FireBullets( idx, forward, right, up, 1, vecSrc, vecAiming, 8192, BULLET_PLAYER_MP5, 2, &tracerCount[idx % ARRAYSIZE( tracerCount )- 1], args->fparam1, args->fparam2 );
+	if( gEngfuncs.GetMaxClients() > 1 )
+	{
+		EV_HLDM_FireBullets( idx, forward, right, up, 1, vecSrc, vecAiming, 8192, BULLET_PLAYER_MP5, 2, &g_tracerCount[idx - 1], args->fparam1, args->fparam2 );
+	}
+	else
+	{
+		EV_HLDM_FireBullets( idx, forward, right, up, 1, vecSrc, vecAiming, 8192, BULLET_PLAYER_MP5, 2, &g_tracerCount[idx - 1], args->fparam1, args->fparam2 );
+	}
 }
 
 // We only predict the animation and sound
@@ -1131,7 +1138,13 @@ enum crowbar_e
 	CROWBAR_ATTACK2MISS,
 	CROWBAR_ATTACK2HIT,
 	CROWBAR_ATTACK3MISS,
+#ifndef CROWBAR_IDLE_ANIM
 	CROWBAR_ATTACK3HIT
+#else
+	CROWBAR_ATTACK3HIT,
+	CROWBAR_IDLE2,
+	CROWBAR_IDLE3
+#endif
 };
 
 int g_iSwing;
@@ -1397,10 +1410,23 @@ enum EGON_FIREMODE
 #define EGON_SOUND_RUN			"weapons/egon_run3.wav"
 #define EGON_SOUND_STARTUP		"weapons/egon_windup2.wav"
 
+#ifndef ARRAYSIZE
 #define ARRAYSIZE(p)		( sizeof(p) /sizeof(p[0]) )
+#endif
 
 BEAM *pBeam;
 BEAM *pBeam2;
+TEMPENTITY *pFlare;	// Vit_amiN: egon's beam flare
+
+void EV_EgonFlareCallback( struct tempent_s *ent, float frametime, float currenttime )
+{
+	float delta = currenttime - ent->tentOffset.z;	// time past since the last scale
+	if( delta >= ent->tentOffset.y )
+	{
+		ent->entity.curstate.scale += ent->tentOffset.x * delta;
+		ent->tentOffset.z = currenttime;
+	}
+}
 
 void EV_EgonFire( event_args_t *args )
 {
@@ -1438,7 +1464,7 @@ void EV_EgonFire( event_args_t *args )
 	if( EV_IsLocal( idx ) )
 		gEngfuncs.pEventAPI->EV_WeaponAnimation( g_fireAnims1[gEngfuncs.pfnRandomLong( 0, 3 )], 1 );
 
-	if( iStartup == 1 && EV_IsLocal( idx ) && !pBeam && !pBeam2 && cl_lw->value ) //Adrian: Added the cl_lw check for those lital people that hate weapon prediction.
+	if( iStartup == 1 && EV_IsLocal( idx ) && !( pBeam || pBeam2 || pFlare ) && cl_lw->value ) //Adrian: Added the cl_lw check for those lital people that hate weapon prediction.
 	{
 		vec3_t vecSrc, vecEnd, angles, forward, right, up;
 		pmtrace_t tr;
@@ -1486,7 +1512,15 @@ void EV_EgonFire( event_args_t *args )
 				 pBeam->flags |= ( FBEAM_SINENOISE );
 
 			pBeam2 = gEngfuncs.pEfxAPI->R_BeamEntPoint( idx | 0x1000, tr.endpos, iBeamModelIndex, 99999, 5.0, 0.08, 0.7, 25, 0, 0, r, g, b );
+
+			// Vit_amiN: egon beam flare
+			pFlare = gEngfuncs.pEfxAPI->R_TempSprite( tr.endpos, vec3_origin, 1.0, gEngfuncs.pEventAPI->EV_FindModelIndex( EGON_FLARE_SPRITE ), kRenderGlow, kRenderFxNoDissipation, 1.0, 99999, FTENT_SPRCYCLE | FTENT_PERSIST );
 		}
+	}
+
+	if( pFlare )	// Vit_amiN: store the last mode for EV_EgonStop()
+	{
+		pFlare->tentOffset.x = ( iFireMode == FIRE_WIDE ) ? 1.0f : 0.0f;
 	}
 }
 
@@ -1515,6 +1549,26 @@ void EV_EgonStop( event_args_t *args )
 		{
 			pBeam2->die = 0.0;
 			pBeam2 = NULL;
+		}
+
+		if( pFlare )	// Vit_amiN: egon beam flare
+		{
+			pFlare->die = gEngfuncs.GetClientTime();
+
+			if( gEngfuncs.GetMaxClients() == 1 || !(pFlare->flags & FTENT_NOMODEL) )
+			{
+				if( pFlare->tentOffset.x != 0.0f )	// true for iFireMode == FIRE_WIDE
+				{
+					pFlare->callback = &EV_EgonFlareCallback;
+					pFlare->fadeSpeed = 2.0;			// fade out will take 0.5 sec
+					pFlare->tentOffset.x = 10.0;		// scaling speed per second
+					pFlare->tentOffset.y = 0.1;			// min time between two scales
+					pFlare->tentOffset.z = pFlare->die;	// the last callback run time
+					pFlare->flags = FTENT_FADEOUT | FTENT_CLIENTCUSTOM;
+				}
+			}
+
+			pFlare = NULL;
 		}
 	}
 }

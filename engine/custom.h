@@ -12,10 +12,9 @@
 *   without written permission from Valve LLC.
 *
 ****/
+#pragma once
 #ifndef CUSTOM_H
 #define CUSTOM_H
-
-#pragma once
 
 #include "const.h"
 

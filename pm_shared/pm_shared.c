@@ -117,6 +117,10 @@ playermove_t *pmove = NULL;
 #define	CONTENTS_CURRENT_DOWN		-14
 
 #define CONTENTS_TRANSLUCENT		-15
+//LRC
+#define CONTENTS_FLYFIELD		-17
+#define CONTENTS_FLYFIELD_GRAVITY	-18
+#define CONTENTS_FOG			-19
 
 static vec3_t rgv3tStuckTable[54];
 static int rgStuckLast[MAX_CLIENTS][2];
@@ -168,24 +172,23 @@ void PM_InitTextureTypes()
 	char buffer[512];
 	int i, j;
 	byte *pMemFile;
-	int fileSize, filePos;
+	int fileSize, filePos = 0;
 	static qboolean bTextureTypeInit = false;
 
 	if( bTextureTypeInit )
 		return;
 
-	memset(&( grgszTextureName[0][0] ), 0, CTEXTURESMAX * CBTEXTURENAMEMAX );
-	memset( grgchTextureType, 0, CTEXTURESMAX );
+	memset(&( grgszTextureName[0][0] ), 0, sizeof( grgszTextureName ) );
+	memset( grgchTextureType, 0, sizeof( grgchTextureType ) );
 
 	gcTextures = 0;
 
-	fileSize = pmove->COM_FileSize( "sound/materials.txt" );
-	pMemFile = pmove->COM_LoadFile( "sound/materials.txt", 5, NULL );
+	pMemFile = pmove->COM_LoadFile( "sound/materials.txt", 5, &fileSize );
 	if( !pMemFile )
 		return;
 
-	memset( buffer, 0, 512 );
-	filePos = 0;
+	memset( buffer, 0, sizeof( buffer ) );
+
 	// for each line in the file...
 	while( pmove->memfgets( pMemFile, fileSize, &filePos, buffer, 511 ) != NULL && (gcTextures < CTEXTURESMAX ) )
 	{
@@ -265,11 +268,39 @@ char PM_FindTextureType( char *name )
 	return CHAR_TEX_CONCRETE;
 }
 
+void PM_PlayGroupSound( const char* szValue, int irand, float fvol )
+{
+	static char szBuf[128];
+	int i;
+	for (i = 0; szValue[i]; i++)
+	{
+		if (szValue[i] == '?')
+		{
+			strcpy(szBuf, szValue);
+			switch (irand)
+			{
+			// right foot
+			case 0:	szBuf[i] = '1';	break;
+			case 1:	szBuf[i] = '3';	break;
+			// left foot
+			case 2:	szBuf[i] = '2';	break;
+			case 3:	szBuf[i] = '4';	break;
+			default: szBuf[i] = '#';
+			}
+			pmove->PM_PlaySound( CHAN_BODY, szBuf, fvol, ATTN_NORM, 0, PITCH_NORM );
+			return;
+		}
+	}
+	pmove->PM_PlaySound( CHAN_BODY, szValue, fvol, ATTN_NORM, 0, PITCH_NORM );
+}
+
 void PM_PlayStepSound( int step, float fvol )
 {
 	static int iSkipStep = 0;
 	int irand;
 	vec3_t hvel;
+	const char* szValue;
+	int iType;
 
 	pmove->iStepLeft = !pmove->iStepLeft;
 
@@ -289,6 +320,53 @@ void PM_PlayStepSound( int step, float fvol )
 
 	if( pmove->multiplayer && ( !g_onladder && Length( hvel ) <= 220 ) )
 		return;
+
+	//LRC - custom footstep sounds
+	switch ( step )
+	{
+	case STEP_LADDER:
+		szValue = pmove->PM_Info_ValueForKey( pmove->physinfo, "lsnd" );
+		if (szValue[0] && szValue[1])
+		{
+			PM_PlayGroupSound( szValue, irand, fvol );
+			return;
+		}
+		break;
+	case STEP_SLOSH:
+		szValue = pmove->PM_Info_ValueForKey( pmove->physinfo, "psnd" );
+		if (szValue[0] && szValue[1])
+		{
+			PM_PlayGroupSound( szValue, irand, fvol );
+			return;
+		}
+		break;
+	case STEP_WADE:
+		szValue = pmove->PM_Info_ValueForKey( pmove->physinfo, "wsnd" );
+		if (szValue[0] && szValue[1])
+		{
+			if ( iSkipStep == 0 )
+			{ iSkipStep++; return; }
+
+			if ( iSkipStep++ == 3 )
+			{ iSkipStep = 0; }
+
+			PM_PlayGroupSound( szValue, irand, fvol );
+			return;
+		}
+		break;
+	default:
+		szValue = pmove->PM_Info_ValueForKey( pmove->physinfo, "ssnd" );
+		if (szValue[0] && szValue[1])
+		{
+			PM_PlayGroupSound( szValue, irand, fvol );
+			return;
+		}
+		iType = atoi(pmove->PM_Info_ValueForKey( pmove->physinfo, "stype" ));
+		if (iType == -1)
+			step = STEP_CONCRETE;
+		else if (iType)
+			step = iType;
+	}
 
 	// irand - 0,1 for right foot, 2,3 for left foot
 	// used to alternate left and right foot
@@ -1152,8 +1230,8 @@ void PM_WalkMove()
 		return;
 	}
 
-	// Don't walk up stairs if not on ground.
-	if( oldonground == -1 && pmove->waterlevel  == 0 )
+	if (oldonground == -1 &&   // Don't walk up stairs if not on ground.
+		(pmove->waterlevel  == 0 || pmove->watertype == CONTENT_FOG))
 		return;
 
 	if( pmove->waterjumptime )	// If we are jumping out of water, don't do anything more.
@@ -1373,7 +1451,7 @@ void PM_WaterMove( void )
 		wishvel[i] = pmove->forward[i] * pmove->cmd.forwardmove + pmove->right[i] * pmove->cmd.sidemove;
 
 	// Sinking after no other movement occurs
-	if( !pmove->cmd.forwardmove && !pmove->cmd.sidemove && !pmove->cmd.upmove )
+	if (!pmove->cmd.forwardmove && !pmove->cmd.sidemove && !pmove->cmd.upmove && pmove->watertype != CONTENT_FLYFIELD) //LRC
 		wishvel[2] -= 60;		// drift towards bottom
 	else  // Go straight up by upmove amount.
 		wishvel[2] += pmove->cmd.upmove;
@@ -1497,7 +1575,7 @@ void PM_AirMove( void )
 
 qboolean PM_InWater( void )
 {
-	return ( pmove->waterlevel > 1 );
+	return ( pmove->waterlevel > 1 && pmove->watertype != CONTENT_FOG );
 }
 
 /*
@@ -1527,7 +1605,7 @@ qboolean PM_CheckWater()
 	// Grab point contents.
 	cont = pmove->PM_PointContents (point, &truecont );
 	// Are we under water? (not solid and not empty?)
-	if( cont <= CONTENTS_WATER && cont > CONTENTS_TRANSLUCENT )
+	if ((cont <= CONTENTS_WATER && cont > CONTENTS_TRANSLUCENT ) || (cont >= CONTENTS_FOG && cont <= CONTENTS_FLYFIELD))
 	{
 		// Set water type
 		pmove->watertype = cont;
@@ -1542,7 +1620,7 @@ qboolean PM_CheckWater()
 		point[2] = pmove->origin[2] + heightover2;
 		cont = pmove->PM_PointContents( point, NULL );
 		// If that point is also under water...
-		if( cont <= CONTENTS_WATER && cont > CONTENTS_TRANSLUCENT )
+		if ((cont <= CONTENTS_WATER && cont > CONTENTS_TRANSLUCENT ) || (cont >= CONTENTS_FOG && cont <= CONTENTS_FLYFIELD))
 		{
 			// Set a higher water level.
 			pmove->waterlevel = 2;
@@ -1551,7 +1629,7 @@ qboolean PM_CheckWater()
 			point[2] = pmove->origin[2] + pmove->view_ofs[2];
 
 			cont = pmove->PM_PointContents( point, NULL );
-			if( cont <= CONTENTS_WATER && cont > CONTENTS_TRANSLUCENT ) 
+			if ((cont <= CONTENTS_WATER && cont > CONTENTS_TRANSLUCENT ) || cont == CONTENTS_FOG) // Flyfields never cover the eyes
 				pmove->waterlevel = 3;  // In over our eyes
 		}
 
@@ -2103,6 +2181,7 @@ void PM_LadderMove( physent_t *pLadder )
 
 	VectorAdd( modelmins, modelmaxs, ladderCenter );
 	VectorScale( ladderCenter, 0.5, ladderCenter );
+	VectorAdd( ladderCenter, pLadder->origin, ladderCenter ); //LRC- allow for ladders moving around
 
 	pmove->movetype = MOVETYPE_FLY;
 
@@ -2132,13 +2211,13 @@ void PM_LadderMove( physent_t *pLadder )
 		if( pmove->flags & FL_DUCKING )
 			flSpeed *= PLAYER_DUCKING_MULTIPLIER;
 		if( pmove->cmd.buttons & IN_BACK )
-			forward -= flSpeed;
+			forward -= MAX_CLIMB_SPEED;
 		if( pmove->cmd.buttons & IN_FORWARD )
-			forward += flSpeed;
+			forward += MAX_CLIMB_SPEED;
 		if( pmove->cmd.buttons & IN_MOVELEFT )
-			right -= flSpeed;
+			right -= MAX_CLIMB_SPEED;
 		if( pmove->cmd.buttons & IN_MOVERIGHT )
-			right += flSpeed;
+			right += MAX_CLIMB_SPEED;
 
 		if( pmove->cmd.buttons & IN_JUMP )
 		{
@@ -2505,9 +2584,8 @@ void PM_Jump( void )
 	}
 
 	// If we are in the water most of the way...
-	if( pmove->waterlevel >= 2 )
-	{
-		// swimming, not jumping
+	if (pmove->waterlevel >= 2 && pmove->watertype != CONTENTS_FOG)
+	{	// swimming, not jumping
 		pmove->onground = -1;
 
 		if( pmove->watertype == CONTENTS_WATER )	// We move up a certain amount
@@ -2754,7 +2832,8 @@ PM_PlayWaterSounds
 void PM_PlayWaterSounds( void )
 {
 	// Did we enter or leave water?
-	if( ( pmove->oldwaterlevel == 0 && pmove->waterlevel != 0 ) || ( pmove->oldwaterlevel != 0 && pmove->waterlevel == 0 ) )
+	if  ( ( pmove->oldwaterlevel == 0 && pmove->waterlevel != 0 && pmove->watertype > CONTENT_FLYFIELD) ||
+		  ( pmove->oldwaterlevel != 0 && pmove->waterlevel == 0 ))
 	{
 		switch( pmove->RandomLong( 0, 3 ) )
 		{
@@ -2860,6 +2939,7 @@ void PM_CheckParamters( void )
 		pmove->cmd.forwardmove = 0;
 		pmove->cmd.sidemove = 0;
 		pmove->cmd.upmove = 0;
+		pmove->cmd.buttons     = 0; // LRC - no jump sounds when frozen!
 	}
 
 	PM_DropPunchAngle( pmove->punchangle );
@@ -2976,6 +3056,10 @@ void PM_PlayerMove( qboolean server )
 
 	// Store off the starting water level
 	pmove->oldwaterlevel = pmove->waterlevel;
+	if (pmove->watertype > CONTENT_FLYFIELD)
+		pmove->oldwaterlevel = pmove->waterlevel;
+	else
+		pmove->oldwaterlevel = 0;
 
 	// If we are not on ground, store off how fast we are moving down
 	if( pmove->onground == -1 )
@@ -3076,7 +3160,7 @@ void PM_PlayerMove( qboolean server )
 
 		// If we are swimming in the water, see if we are nudging against a place we can jump up out
 		//  of, and, if so, start out jump.  Otherwise, if we are not moving up, then reset jump timer to 0
-		if( pmove->waterlevel >= 2 ) 
+		if ( pmove->waterlevel >= 2 && pmove->watertype != CONTENT_FOG) 
 		{
 			if( pmove->waterlevel == 2 )
 			{
@@ -3312,8 +3396,8 @@ void PM_Move( struct playermove_s *ppmove, int server )
 		pmove->flags &= ~FL_ONGROUND;
 	}
 
-	// In single player, reset friction after each movement to FrictionModifier Triggers work still.
-	if( !pmove->multiplayer && ( pmove->movetype == MOVETYPE_WALK ) )
+	// Reset friction after each movement to FrictionModifier Triggers work still.
+	if( pmove->movetype == MOVETYPE_WALK )
 	{
 		pmove->friction = 1.0f;
 	}

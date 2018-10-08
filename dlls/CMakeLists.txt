@@ -25,13 +25,23 @@ project (SVDLL)
 
 set (SVDLL_LIBRARY server)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_LINUX -DCLIENT_WEAPONS -DCLIENT_FOG -Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf -D_vsnprintf=vsnprintf -fno-exceptions -w")
-set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS}")
+add_definitions(-DCLIENT_WEAPONS)
 
-set (SVDLL_SOURCES 
+if(NOT MSVC)
+	add_compile_options(-fno-exceptions) # GCC/Clang flag
+	add_compile_options(-Wno-invalid-offsetof) # GCC/Clang flag
+	add_compile_options(-fvisibility=hidden) # GCC/Clang flag
+	add_definitions(-D_LINUX) # It seems enough for all non-Win32 systems
+	add_definitions(-Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf -D_vsnprintf=vsnprintf )
+else()
+	add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_DEPRECATE)
+endif()
+
+set (SVDLL_SOURCES
 	agrunt.cpp
 	airtank.cpp
 	aflock.cpp
+	alias.cpp
 	animating.cpp
 	animation.cpp
 	apache.cpp
@@ -79,15 +89,17 @@ set (SVDLL_SOURCES
 	hornetgun.cpp
 	houndeye.cpp
 	ichthyosaur.cpp
-	islave.cpp
+	islave_deamon.cpp
 	items.cpp
 	leech.cpp
 	lights.cpp
+	locus.cpp
 	maprules.cpp
 	monstermaker.cpp
 	monsters.cpp
 	monsterstate.cpp
 	mortar.cpp
+	movewith.cpp
 	mp5.cpp
 	multiplay_gamerules.cpp
 	nihilanth.cpp
@@ -98,6 +110,7 @@ set (SVDLL_SOURCES
 	plane.cpp
 	plats.cpp
 	player.cpp
+	playermonster.cpp
 	python.cpp
 	rat.cpp
 	roach.cpp
@@ -127,13 +140,11 @@ set (SVDLL_SOURCES
 	world.cpp
 	xen.cpp
 	zombie.cpp
-	shall/fog.cpp
 	shall/shall_map_fixes.cpp
 	../pm_shared/pm_debug.c
 	../pm_shared/pm_math.c
 	../pm_shared/pm_shared.c
 )
-	
 include_directories (. wpn_shared ../common ../engine ../pm_shared ../game_shared ../public shall)
 
 if(USE_VOICEMGR)
@@ -146,6 +157,22 @@ endif()
 
 add_library (${SVDLL_LIBRARY} SHARED ${SVDLL_SOURCES})
 
-set_target_properties (${SVDLL_SHARED} PROPERTIES
+set_target_properties (${SVDLL_LIBRARY} PROPERTIES
 	POSITION_INDEPENDENT_CODE 1)
 
+if(APPLE OR WIN32 OR ${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+	set(SVDLL_NAME "${SERVER_LIBRARY_NAME}")
+	if(64BIT)
+		set(SVDLL_NAME "${SERVER_LIBRARY_NAME}64")
+	endif()
+
+	set_target_properties(${SVDLL_LIBRARY} PROPERTIES
+		OUTPUT_NAME ${SVDLL_NAME}
+		PREFIX "")
+endif()
+
+install( TARGETS ${SVDLL_LIBRARY}
+	DESTINATION "${GAMEDIR}/${SERVER_INSTALL_DIR}/"
+	PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+	    GROUP_READ GROUP_EXECUTE
+		WORLD_READ WORLD_EXECUTE)

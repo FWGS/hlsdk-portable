@@ -1,10 +1,10 @@
-//========= Copyright © 1996-2002, Valve LLC, All rights reserved. ============
+//========= Copyright (c) 1996-2002, Valve LLC, All rights reserved. ============
 //
 // Purpose: 
 //
 // $NoKeywords: $
 //=============================================================================
-
+#if 0
 #include "hud.h"
 #include "cl_util.h"
 #include "cl_entity.h"
@@ -159,3 +159,5 @@ void CHudOverview::InitHUDData()
 	//gEngfuncs.Overview_SetDrawOverview( 1 );
 	//gEngfuncs.Overview_SetDrawInset( 0 );
 }
+
+#endif

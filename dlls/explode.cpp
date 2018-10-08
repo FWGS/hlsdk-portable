@@ -24,6 +24,7 @@
 #include "cbase.h"
 #include "decals.h"
 #include "explode.h"
+#include "locus.h"
 
 // Spark Shower
 class CShower : public CBaseEntity
@@ -47,7 +48,7 @@ void CShower::Spawn( void )
 		pev->velocity.z -= 200;
 	pev->movetype = MOVETYPE_BOUNCE;
 	pev->gravity = 0.5;
-	pev->nextthink = gpGlobals->time + 0.1;
+	SetNextThink( 0.1 );
 	pev->solid = SOLID_NOT;
 	SET_MODEL( edict(), "models/grenade.mdl" );	// Need a model, just use the grenade, we don't draw it anyway
 	UTIL_SetSize( pev, g_vecZero, g_vecZero );
@@ -63,7 +64,7 @@ void CShower::Think( void )
 
 	pev->speed -= 0.1;
 	if( pev->speed > 0 )
-		pev->nextthink = gpGlobals->time + 0.1;
+		SetNextThink( 0.1 );
 	else
 		UTIL_Remove( this );
 	pev->flags &= ~FL_ONGROUND;
@@ -155,9 +156,17 @@ void CEnvExplosion::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE
 
 	Vector vecSpot;// trace starts here!
 
-	vecSpot = pev->origin + Vector( 0, 0, 8 );
+	//LRC
+	if (FStringNull(pev->target))
+	{
+		vecSpot = pev->origin;
+	}
+	else
+	{
+		vecSpot = CalcLocus_Position(this, pActivator, STRING(pev->target));
+	}
 
-	UTIL_TraceLine( vecSpot, vecSpot + Vector( 0, 0, -40 ),  ignore_monsters, ENT( pev ), &tr );
+	UTIL_TraceLine ( vecSpot + Vector( 0, 0, 8 ), vecSpot + Vector ( 0, 0, -32 ),  ignore_monsters, ENT(pev), & tr);
 
 	// Pull out of the wall a bit
 	if( tr.flFraction != 1.0 )
@@ -166,7 +175,7 @@ void CEnvExplosion::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE
 	}
 	else
 	{
-		pev->origin = pev->origin;
+		pev->origin = vecSpot; //LRC
 	}
 
 	// draw decal
@@ -217,7 +226,7 @@ void CEnvExplosion::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE
 	}
 
 	SetThink( &CEnvExplosion::Smoke );
-	pev->nextthink = gpGlobals->time + 0.3;
+	SetNextThink( 0.3 );
 
 	// draw sparks
 	if( !( pev->spawnflags & SF_ENVEXPLOSION_NOSPARKS ) )

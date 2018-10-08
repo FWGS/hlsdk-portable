@@ -108,6 +108,9 @@ int CHudFlashlight::Draw( float flTime )
 	int r, g, b, x, y, a;
 	wrect_t rc;
 
+	if( gEngfuncs.IsSpectateOnly() )
+		return 1;
+
 	if( !( gHUD.m_iWeaponBits & ( 1 << ( WEAPON_SUIT ) ) ) )
 		return 1;
 
@@ -119,7 +122,7 @@ int CHudFlashlight::Draw( float flTime )
 	if( m_flBat < 0.20 )
 		UnpackRGB( r,g,b, RGB_REDISH );
 	else
-		UnpackRGB( r,g,b, RGB_YELLOWISH );
+		UnpackRGB(r,g,b, gHUD.m_iHUDColor);
 
 	ScaleColors( r, g, b, a );
 

@@ -149,7 +149,7 @@ void CGauss::Holster( int skiplocal /* = 0 */ )
 void CGauss::PrimaryAttack()
 {
 	// don't fire underwater
-	if( m_pPlayer->pev->waterlevel == 3 )
+	if ( m_pPlayer->pev->waterlevel == 3 && m_pPlayer->pev->watertype > CONTENT_FLYFIELD )
 	{
 		PlayEmptySound();
 		m_flNextSecondaryAttack = m_flNextPrimaryAttack = GetNextAttackDelay( 0.15 );

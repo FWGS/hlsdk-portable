@@ -126,7 +126,7 @@ void CLegacyCineMonster :: CineSpawn( const char *szModel )
 	if ( FStringNull(pev->targetname) )	
 	{
 		SetThink( &CLegacyCineMonster::CineThink );
-		pev->nextthink += 1.0;
+		AbsoluteNextThink( m_fNextThink + 0.1 );
 	}
 }
 
@@ -137,7 +137,7 @@ void CLegacyCineMonster :: Use( CBaseEntity *pActivator, CBaseEntity *pCaller, U
 {
 	pev->animtime = 0;	// reset the sequence
 	SetThink( &CLegacyCineMonster::CineThink );
-	pev->nextthink = gpGlobals->time;
+	SetNextThink( 0 );
 }
 
 //
@@ -145,7 +145,7 @@ void CLegacyCineMonster :: Use( CBaseEntity *pActivator, CBaseEntity *pCaller, U
 //
 void CLegacyCineMonster :: Die( void )
 {
-	SetThink( &CBaseEntity::SUB_Remove );
+	SetThink(&CLegacyCineMonster :: SUB_Remove );
 }
 
 //
@@ -167,7 +167,7 @@ void CLegacyCineMonster :: CineThink( void )
 	if (!pev->animtime)
 		ResetSequenceInfo( );
 
-	pev->nextthink = gpGlobals->time + 1.0;
+	SetNextThink( 1.0 );
 
 	if (pev->spawnflags != 0 && m_fSequenceFinished)
 	{
@@ -196,7 +196,7 @@ void CCineBlood :: BloodGush ( void )
 {
 	Vector	vecSplatDir;
 	TraceResult	tr;
-	pev->nextthink = gpGlobals->time + 0.1;
+	SetNextThink( 0.1 );
 
 	UTIL_MakeVectors(pev->angles);
 	if ( pev->health-- < 0 )
@@ -229,7 +229,7 @@ void CCineBlood :: BloodGush ( void )
 void CCineBlood :: BloodStart ( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
 	SetThink( &CCineBlood::BloodGush );
-	pev->nextthink = gpGlobals->time;// now!
+	SetNextThink( 0 );// now!
 }
 
 void CCineBlood :: Spawn ( void )

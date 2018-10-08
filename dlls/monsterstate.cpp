@@ -225,6 +225,10 @@ MONSTERSTATE CBaseMonster::GetIdealState( void )
 	case MONSTERSTATE_DEAD:
 		m_IdealMonsterState = MONSTERSTATE_DEAD;
 		break;
+	case MONSTERSTATE_NONE:
+	case MONSTERSTATE_PRONE:
+	case MONSTERSTATE_PLAYDEAD:
+		break;
 	default:
 		break;
 	}

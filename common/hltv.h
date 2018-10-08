@@ -12,7 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
-
+#pragma once
 #ifndef HLTV_H
 #define HLTV_H
 

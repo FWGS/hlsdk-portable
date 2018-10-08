@@ -12,6 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
+#pragma once
 #ifndef WEAPONS_H
 #define WEAPONS_H
 
@@ -285,6 +286,8 @@ public:
 
 	static	TYPEDESCRIPTION m_SaveData[];
 
+	virtual void SetNextThink( float delay ); //LRC
+
 	// generic weapon versions of CBasePlayerItem calls
 	virtual int AddToPlayer( CBasePlayer *pPlayer );
 	virtual int AddDuplicate( CBasePlayerItem *pItem );
@@ -326,6 +329,9 @@ public:
 	virtual void Holster( int skiplocal = 0 );
 	virtual BOOL UseDecrement( void ) { return FALSE; };
 
+	//LRC - used by weaponstrip
+	void DrainClip(CBasePlayer* pPlayer, BOOL keep, int i9mm, int i357, int iBuck, int iBolt, int iARGren, int iRock, int iUranium, int iSatchel, int iSnark, int iTrip, int iGren );
+	
 	int	PrimaryAmmoIndex(); 
 	int	SecondaryAmmoIndex(); 
 
@@ -446,7 +452,7 @@ public:
 
 	CBasePlayerItem	*m_rgpPlayerItems[MAX_ITEM_TYPES];// one slot for each 
 
-	int m_rgiszAmmo[MAX_AMMO_SLOTS];// ammo names
+	string_t m_rgiszAmmo[MAX_AMMO_SLOTS];// ammo names
 	int	m_rgAmmo[MAX_AMMO_SLOTS];// ammo quantities
 
 	int m_cAmmoTypes;// how many ammo types packed into this box (if packed by a level designer)
@@ -504,6 +510,9 @@ public:
 	int Swing( int fFirst );
 	BOOL Deploy( void );
 	void Holster( int skiplocal = 0 );
+#ifdef CROWBAR_IDLE_ANIM
+	void WeaponIdle();
+#endif
 	int m_iSwing;
 	TraceResult m_trHit;
 
@@ -667,6 +676,7 @@ public:
 	void EXPORT Revive( void );
 
 	static CLaserSpot *CreateSpot( void );
+	static CLaserSpot *CreateSpot( const char* spritename );
 };
 
 class CRpg : public CBasePlayerWeapon

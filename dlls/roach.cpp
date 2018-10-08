@@ -76,7 +76,7 @@ int CRoach::ISoundMask( void )
 //=========================================================
 int CRoach::Classify( void )
 {
-	return CLASS_INSECT;
+	return m_iClass?m_iClass:CLASS_INSECT;
 }
 
 //=========================================================
@@ -121,7 +121,10 @@ void CRoach::Spawn()
 {
 	Precache();
 
-	SET_MODEL( ENT( pev ), "models/roach.mdl" );
+	if (pev->model)
+		SET_MODEL(ENT(pev), STRING(pev->model)); //LRC
+	else
+		SET_MODEL( ENT( pev ), "models/roach.mdl" );
 	UTIL_SetSize( pev, Vector( -1, -1, 0 ), Vector( 1, 1, 2 ) );
 
 	pev->solid = SOLID_SLIDEBOX;
@@ -148,7 +151,10 @@ void CRoach::Spawn()
 //=========================================================
 void CRoach::Precache()
 {
-	PRECACHE_MODEL( "models/roach.mdl" );
+	if (pev->model)
+		PRECACHE_MODEL(STRING(pev->model)); //LRC
+	else
+		PRECACHE_MODEL( "models/roach.mdl" );
 
 	PRECACHE_SOUND( "roach/rch_die.wav" );
 	PRECACHE_SOUND( "roach/rch_walk.wav" );
@@ -188,9 +194,9 @@ void CRoach::Killed( entvars_t *pevAttacker, int iGib )
 void CRoach::MonsterThink( void )
 {
 	if( FNullEnt( FIND_CLIENT_IN_PVS( edict() ) ) )
-		pev->nextthink = gpGlobals->time + RANDOM_FLOAT( 1, 1.5 );
+		SetNextThink( RANDOM_FLOAT(1,1.5) );
 	else
-		pev->nextthink = gpGlobals->time + 0.1;// keep monster thinking
+		SetNextThink( 0.1 );// keep monster thinking
 
 	float flInterval = StudioFrameAdvance(); // animate
 
@@ -198,7 +204,7 @@ void CRoach::MonsterThink( void )
 	{
 		// if light value hasn't been collection for the first time yet, 
 		// suspend the creature for a second so the world finishes spawning, then we'll collect the light level.
-		pev->nextthink = gpGlobals->time + 1;
+		SetNextThink( 1 );
 		m_fLightHacked = TRUE;
 		return;
 	}

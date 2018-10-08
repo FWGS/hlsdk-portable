@@ -113,7 +113,7 @@ const char *CZombie::pPainSounds[] =
 //=========================================================
 int CZombie::Classify( void )
 {
-	return	CLASS_ALIEN_MONSTER;
+	return m_iClass?m_iClass:CLASS_ALIEN_MONSTER;
 }
 
 //=========================================================
@@ -268,7 +268,10 @@ void CZombie::Spawn()
 {
 	Precache();
 
-	SET_MODEL( ENT( pev ), "models/zombie.mdl" );
+	if (pev->model)
+		SET_MODEL(ENT(pev), STRING(pev->model)); //LRC
+	else
+		SET_MODEL( ENT( pev ), "models/zombie.mdl" );
 	// Reapers have a taller model.
 	UTIL_SetSize( pev, VEC_HUMAN_HULL_MIN + Vector( -8, -8, 0 ), VEC_HUMAN_HULL_MAX + Vector( 8, 8, 48 ) );
 
@@ -276,7 +279,8 @@ void CZombie::Spawn()
 	pev->movetype		= MOVETYPE_STEP;
 	// Reapers should use red blood color.
 	m_bloodColor		= BLOOD_COLOR_RED;
-	pev->health		= gSkillData.zombieHealth;
+	if (pev->health == 0)
+		pev->health		= gSkillData.zombieHealth;
 	pev->view_ofs		= VEC_VIEW;// position of the eyes relative to monster's origin.
 	m_flFieldOfView		= 0.5;// indicates the width of this monster's forward view cone ( as a dotproduct result )
 	m_MonsterState		= MONSTERSTATE_NONE;
@@ -292,7 +296,10 @@ void CZombie::Precache()
 {
 	size_t i;
 
-	PRECACHE_MODEL( "models/zombie.mdl" );
+	if (pev->model)
+		PRECACHE_MODEL(STRING(pev->model)); //LRC
+	else
+		PRECACHE_MODEL( "models/zombie.mdl" );
 
 	for( i = 0; i < ARRAYSIZE( pAttackHitSounds ); i++ )
 		PRECACHE_SOUND( pAttackHitSounds[i] );

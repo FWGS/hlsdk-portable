@@ -29,6 +29,7 @@
 #include "animation.h"
 #include "weapons.h"
 #include "func_break.h"
+#include "../engine/studio.h" //LRC
 
 extern DLL_GLOBAL Vector		g_vecAttackDir;
 extern DLL_GLOBAL int			g_iSkillLevel;
@@ -123,18 +124,18 @@ void CGib::SpawnStickyGibs( entvars_t *pevVictim, Vector vecOrigin, int cGibs )
 
 void CGib::SpawnHeadGib( entvars_t *pevVictim )
 {
+	if( g_Language == LANGUAGE_GERMAN )
+		SpawnHeadGib(pevVictim, "models/germangibs.mdl" );// throw one head
+	else
+		SpawnHeadGib(pevVictim, "models/hgibs.mdl" );
+	}
+
+void CGib :: SpawnHeadGib( entvars_t *pevVictim, const char* szGibModel )
+	{
 	CGib *pGib = GetClassPtr( (CGib *)NULL );
 
-	if( g_Language == LANGUAGE_GERMAN )
-	{
-		pGib->Spawn( "models/germangibs.mdl" );// throw one head
+	pGib->Spawn( szGibModel );// throw one head
 		pGib->pev->body = 0;
-	}
-	else
-	{
-		pGib->Spawn( "models/hgibs.mdl" );// throw one head
-		pGib->pev->body = 0;
-	}
 
 	if( pevVictim )
 	{
@@ -180,32 +181,42 @@ void CGib::SpawnHeadGib( entvars_t *pevVictim )
 
 void CGib::SpawnRandomGibs( entvars_t *pevVictim, int cGibs, int human )
 {
-	int cSplat;
+	if ( g_Language == LANGUAGE_GERMAN )
+		SpawnRandomGibs(pevVictim, cGibs, 1, "models/germangibs.mdl");
+	else if (human)
+		SpawnRandomGibs(pevVictim, cGibs, 1, "models/hgibs.mdl");
+	else
+		SpawnRandomGibs(pevVictim, cGibs, 0, "models/agibs.mdl");
+}
 
-	for( cSplat = 0; cSplat < cGibs; cSplat++ )
+//LRC - changed signature, to support custom gib models
+void CGib :: SpawnRandomGibs( entvars_t *pevVictim, int cGibs, int notfirst, const char *szGibModel )
 	{
-		CGib *pGib = GetClassPtr( (CGib *)NULL );
+	if (cGibs == 0) return; // spawn nothing!
 
-		if( g_Language == LANGUAGE_GERMAN )
+		CGib *pGib = GetClassPtr( (CGib *)NULL );
+	pGib->Spawn( szGibModel );
+
+	//LRC - check the model itself to find out how many gibs are available
+	studiohdr_t *pstudiohdr = (studiohdr_t *)(GET_MODEL_PTR( ENT(pGib->pev) ));
+	if (! pstudiohdr)
+		return;
+
+	mstudiobodyparts_t *pbodypart = (mstudiobodyparts_t *)((byte *)pstudiohdr + pstudiohdr->bodypartindex);
+	//ALERT(at_console, "read %d bodyparts, canonical is %d\n", pbodypart->nummodels, HUMAN_GIB_COUNT);
+
+	for (int cSplat = 0 ; cSplat < cGibs ; cSplat++ )
 		{
-			pGib->Spawn( "models/germangibs.mdl" );
-			pGib->pev->body = RANDOM_LONG( 0, GERMAN_GIB_COUNT - 1 );
-		}
-		else
+		if (pGib == NULL) // first time through, we set pGib before the loop started
 		{
-			if( human )
-			{
-				// human pieces
-				pGib->Spawn( "models/hgibs.mdl" );
-				pGib->pev->body = RANDOM_LONG( 1, HUMAN_GIB_COUNT - 1 );// start at one to avoid throwing random amounts of skulls (0th gib)
+			pGib = GetClassPtr( (CGib *)NULL );
+			pGib->Spawn( szGibModel );
 			}
+
+		if (notfirst)
+			pGib->pev->body = RANDOM_LONG(1, pbodypart->nummodels - 1);// start at one to avoid throwing random amounts of skulls (0th gib)
 			else
-			{
-				// aliens
-				pGib->Spawn( "models/agibs.mdl" );
-				pGib->pev->body = RANDOM_LONG( 0, ALIEN_GIB_COUNT - 1 );
-			}
-		}
+			pGib->pev->body = RANDOM_LONG(0, pbodypart->nummodels - 1);
 
 		if( pevVictim )
 		{
@@ -247,8 +258,11 @@ void CGib::SpawnRandomGibs( entvars_t *pevVictim, int cGibs, int human )
 			UTIL_SetSize( pGib->pev, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ) );
 		}
 		pGib->LimitVelocity();
+		pGib = NULL; //LRC
 	}
 }
+
+//LRC - work out gibs from blood colour, instead of from class.
 
 BOOL CBaseMonster::HasHumanGibs( void )
 {
@@ -262,19 +276,29 @@ BOOL CBaseMonster::HasHumanGibs( void )
 	if( myClass == CLASS_ALIEN_MILITARY && FClassnameIs( pev, "monster_alien_slave" ) )
 		return TRUE;
 
-	if( myClass == CLASS_HUMAN_MILITARY ||
-		myClass == CLASS_PLAYER_ALLY ||
-		myClass == CLASS_HUMAN_PASSIVE ||
+	// these types of monster don't use gibs
+	if( myClass == CLASS_NONE || myClass == CLASS_MACHINE ||
+		( myClass == CLASS_PLAYER_BIOWEAPON && myClass == CLASS_ALIEN_BIOWEAPON ) )
+	{
+		return FALSE;
+	}
+	else
+	{
+		return ( this->m_bloodColor == BLOOD_COLOR_RED );
+	}
 
-		// Vampire should have human gibs.
-		myClass == CLASS_ALIEN_PREY ||
-		myClass == CLASS_PLAYER )
-
-		 return TRUE;
-
-	return FALSE;
+//	if ( myClass == CLASS_HUMAN_MILITARY ||
+//		 myClass == CLASS_PLAYER_ALLY	||
+//		 myClass == CLASS_HUMAN_PASSIVE  ||
+//		 myClass == CLASS_PLAYER )
+//
+//		 return TRUE;
+//
+//	return FALSE;
 }
 
+
+//LRC - work out gibs from blood colour, instead.
 BOOL CBaseMonster::HasAlienGibs( void )
 {
 	int myClass = Classify();
@@ -287,14 +311,31 @@ BOOL CBaseMonster::HasAlienGibs( void )
 	if( myClass == CLASS_ALIEN_MILITARY && !FClassnameIs( pev, "monster_alien_slave" ) )
 		return TRUE;
 
-	if( myClass == CLASS_ALIEN_PASSIVE ||
-		myClass == CLASS_INSECT ||
-		myClass == CLASS_ALIEN_PREDATOR )
+	// these types of monster don't use gibs
+	if( myClass == CLASS_NONE || myClass == CLASS_MACHINE ||
+		( myClass == CLASS_PLAYER_BIOWEAPON && myClass == CLASS_ALIEN_BIOWEAPON ) )
+	{
+		return FALSE;
+	}
+	else
+	{
+		return (this->m_bloodColor == BLOOD_COLOR_RED);
+	}
 
-		return TRUE;
-
-	return FALSE;
+//	int myClass = Classify();
+//
+//	if ( myClass == CLASS_ALIEN_MILITARY ||
+//		 myClass == CLASS_ALIEN_MONSTER	||
+//		 myClass == CLASS_ALIEN_PASSIVE  ||
+//		 myClass == CLASS_INSECT  ||
+//		 myClass == CLASS_ALIEN_PREDATOR  ||
+//		 myClass == CLASS_ALIEN_PREY )
+//
+//		 return TRUE;
+//
+//	return FALSE;
 }
+
 
 void CBaseMonster::FadeMonster( void )
 {
@@ -315,11 +356,21 @@ void CBaseMonster::GibMonster( void )
 {
 	TraceResult	tr;
 	BOOL		gibbed = FALSE;
+	int			iszCustomGibs;
 
 	EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "common/bodysplat.wav", 1, ATTN_NORM );
 
+	if ( ( iszCustomGibs = HasCustomGibs() ) ) //LRC - monster_generic can have a custom gibset
+	{
+		if ( CVAR_GET_FLOAT("violence_hgibs") != 0 )
+		{
+			CGib::SpawnHeadGib( pev, STRING(iszCustomGibs) );
+			CGib::SpawnRandomGibs( pev, 4, 1, STRING(iszCustomGibs) );
+		}
+		gibbed = TRUE;
+	}
 	// only humans throw skulls !!!UNDONE - eventually monsters will have their own sets of gibs
-	if( HasHumanGibs() )
+	else if ( HasHumanGibs() )
 	{
 		if( CVAR_GET_FLOAT( "violence_hgibs" ) != 0 )	// Only the player will ever get here
 		{
@@ -342,8 +393,8 @@ void CBaseMonster::GibMonster( void )
 		if( gibbed )
 		{
 			// don't remove players!
-			SetThink( &CBaseEntity::SUB_Remove );
-			pev->nextthink = gpGlobals->time;
+			SetThink(&CBaseMonster :: SUB_Remove );
+			SetNextThink( 0 );
 		}
 		else
 		{
@@ -655,7 +706,7 @@ void CBaseEntity::SUB_StartFadeOut( void )
 	pev->solid = SOLID_NOT;
 	pev->avelocity = g_vecZero;
 
-	pev->nextthink = gpGlobals->time + 0.1;
+	SetNextThink( 0.1 );
 	SetThink( &CBaseEntity::SUB_FadeOut );
 }
 
@@ -664,12 +715,12 @@ void CBaseEntity::SUB_FadeOut( void )
 	if( pev->renderamt > 7 )
 	{
 		pev->renderamt -= 7;
-		pev->nextthink = gpGlobals->time + 0.1;
+		SetNextThink( 0.1 );
 	}
 	else 
 	{
 		pev->renderamt = 0;
-		pev->nextthink = gpGlobals->time + 0.2;
+		SetNextThink( 0.2 );
 		SetThink( &CBaseEntity::SUB_Remove );
 	}
 }
@@ -690,8 +741,8 @@ void CGib::WaitTillLand( void )
 
 	if( pev->velocity == g_vecZero )
 	{
-		SetThink( &CBaseEntity::SUB_StartFadeOut );
-		pev->nextthink = gpGlobals->time + m_lifeTime;
+		SetThink(&CGib ::SUB_StartFadeOut);
+		SetNextThink( m_lifeTime );
 
 		// If you bleed, you stink!
 		if( m_bloodColor != DONT_BLEED )
@@ -703,7 +754,7 @@ void CGib::WaitTillLand( void )
 	else
 	{
 		// wait and check again in another half second.
-		pev->nextthink = gpGlobals->time + 0.5;
+		SetNextThink( 0.5 );
 	}
 }
 
@@ -743,7 +794,7 @@ void CGib::BounceGibTouch( CBaseEntity *pOther )
 			float volume;
 			float zvel = fabs( pev->velocity.z );
 
-			volume = 0.8 * min( 1.0, ( (float)zvel ) / 450.0 );
+			volume = 0.8 * Q_min( 1.0, ( (float)zvel ) / 450.0 );
 
 			CBreakable::MaterialSoundRandom( edict(), (Materials)m_material, volume );
 		}
@@ -758,12 +809,12 @@ void CGib::StickyGibTouch( CBaseEntity *pOther )
 	Vector	vecSpot;
 	TraceResult	tr;
 
-	SetThink( &CBaseEntity::SUB_Remove );
-	pev->nextthink = gpGlobals->time + 10;
+	SetThink(&CGib :: SUB_Remove );
+	SetNextThink( 10 );
 
 	if( !FClassnameIs( pOther->pev, "worldspawn" ) )
 	{
-		pev->nextthink = gpGlobals->time;
+		SetNextThink( 0 );
 		return;
 	}
 
@@ -791,13 +842,14 @@ void CGib::Spawn( const char *szGibModel )
 	pev->renderamt = 255;
 	pev->rendermode = kRenderNormal;
 	pev->renderfx = kRenderFxNone;
-	pev->solid = SOLID_SLIDEBOX;/// hopefully this will fix the VELOCITY TOO LOW crap
+	pev->solid = SOLID_TRIGGER; //LRC - so that they don't get in each other's way when we fire lots
+//	pev->solid = SOLID_SLIDEBOX;/// hopefully this will fix the VELOCITY TOO LOW crap
 	pev->classname = MAKE_STRING( "gib" );
 
 	SET_MODEL( ENT( pev ), szGibModel );
 	UTIL_SetSize( pev, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ) );
 
-	pev->nextthink = gpGlobals->time + 4;
+	SetNextThink( 4 );
 	m_lifeTime = 25;
 	SetThink( &CGib::WaitTillLand );
 	SetTouch( &CGib::BounceGibTouch );
@@ -930,6 +982,27 @@ int CBaseMonster::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, f
 	// react to the damage (get mad)
 	if( ( pev->flags & FL_MONSTER ) && !FNullEnt( pevAttacker ) )
 	{
+		//LRC - new behaviours, for m_iPlayerReact.
+		if (pevAttacker->flags & FL_CLIENT)
+		{
+			if (m_iPlayerReact == 2)
+			{
+				// just get angry.
+				Remember( bits_MEMORY_PROVOKED );
+			}
+			else if (m_iPlayerReact == 3)
+			{
+				// try to decide whether it was deliberate... if I have an enemy, assume it was just crossfire.
+				if ( m_hEnemy == 0 )
+				{
+					if ( (m_afMemory & bits_MEMORY_SUSPICIOUS) || UTIL_IsFacing( pevAttacker, pev->origin ) )
+						Remember( bits_MEMORY_PROVOKED );
+					else
+						Remember( bits_MEMORY_SUSPICIOUS );
+				}
+			}
+		}
+
 		if( pevAttacker->flags & ( FL_MONSTER | FL_CLIENT ) )
 		{
 			// only if the attack was a monster or client!
@@ -1235,7 +1308,7 @@ BOOL CBaseEntity::FVisible( CBaseEntity *pEntity )
 
 	UTIL_TraceLine( vecLookerOrigin, vecTargetOrigin, ignore_monsters, ignore_glass, ENT( pev )/*pentIgnore*/, &tr );
 
-	if( tr.flFraction != 1.0 )
+	if (tr.flFraction != 1.0 && tr.pHit != ENT(pEntity->pev)) //LRC - added so that monsters can "see" some bsp objects
 	{
 		return FALSE;// Line of sight is not established
 	}
@@ -1466,6 +1539,16 @@ void CBaseEntity::FireBullets( ULONG cShots, Vector vecSrc, Vector vecDirShootin
 					DecalGunshot( &tr, iBulletType );
 				}
 				break;
+			
+			case BULLET_PLAYER_357:
+				pEntity->TraceAttack(pevAttacker, gSkillData.plrDmg357, vecDir, &tr, DMG_BULLET);
+				if ( !tracer )
+				{
+					TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType);
+					DecalGunshot( &tr, iBulletType );
+				}
+				break;
+
 			case BULLET_NONE: // FIX
 				pEntity->TraceAttack( pevAttacker, 50, vecDir, &tr, DMG_CLUB );
 				TEXTURETYPE_PlaySound( &tr, vecSrc, vecEnd, iBulletType );

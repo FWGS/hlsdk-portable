@@ -434,7 +434,13 @@ void CSquadMonster::StartMonster( void )
 			SetBodygroup( 1, 1 ); // UNDONE: truly ugly hack
 			pev->skin = 0;
 		}
+
 	}
+	}
+
+BOOL CSquadMonster :: NoFriendlyFire( void )
+{
+	return NoFriendlyFire( FALSE ); //default: don't like the player
 }
 
 //=========================================================
@@ -442,10 +448,12 @@ void CSquadMonster::StartMonster( void )
 //
 // Builds a large box in front of the grunt and checks to see 
 // if any squad members are in that box. 
+//
+// Can now, also, check whether the player is in the box. LRC
 //=========================================================
-BOOL CSquadMonster::NoFriendlyFire( void )
+BOOL CSquadMonster :: NoFriendlyFire( BOOL playerAlly )
 {
-	if( !InSquad() )
+	if ( !playerAlly && !InSquad() )
 	{
 		return TRUE;
 	}
@@ -499,6 +507,19 @@ BOOL CSquadMonster::NoFriendlyFire( void )
 		}
 	}
 
+	if (playerAlly)
+	{
+		edict_t		*pentPlayer = FIND_CLIENT_IN_PVS( edict() );
+		if (!FNullEnt(pentPlayer) &&
+			backPlane.PointInFront  ( pentPlayer->v.origin ) &&
+			leftPlane.PointInFront  ( pentPlayer->v.origin ) && 
+			rightPlane.PointInFront ( pentPlayer->v.origin ) )
+		{
+			// the player is in the check volume! Don't shoot!
+			return FALSE;
+		}
+	}
+
 	return TRUE;
 }
 
@@ -508,7 +529,9 @@ BOOL CSquadMonster::NoFriendlyFire( void )
 //=========================================================
 MONSTERSTATE CSquadMonster::GetIdealState ( void )
 {
-	IScheduleFlags();
+	int	iConditions;
+
+	iConditions = IScheduleFlags();
 
 	// If no schedule conditions, the new ideal state is probably the reason we're in here.
 	switch( m_MonsterState )

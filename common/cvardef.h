@@ -12,6 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
+#pragma once
 #ifndef CVARDEF_H
 #define CVARDEF_H
 

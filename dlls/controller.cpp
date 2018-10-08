@@ -26,6 +26,7 @@
 #include	"schedule.h"
 #include	"weapons.h"
 #include	"squadmonster.h"
+#include	"scripted.h"
 
 //=========================================================
 // Monster's Anim Events Go Here
@@ -158,7 +159,7 @@ const char *CController::pDeathSounds[] =
 //=========================================================
 int CController::Classify( void )
 {
-	return	CLASS_ALIEN_MILITARY;
+	return m_iClass?m_iClass:CLASS_ALIEN_MILITARY;
 }
 
 //=========================================================
@@ -312,7 +313,14 @@ void CController::HandleAnimEvent( MonsterEvent_t *pEvent )
 			CBaseMonster *pBall = (CBaseMonster*)Create( "controller_head_ball", vecStart, pev->angles, edict() );
 
 			pBall->pev->velocity = Vector( 0, 0, 32 );
+			if (m_pCine)
+			{
+				pBall->m_hEnemy = m_hTargetEnt;
+			}
+			else
+			{
 			pBall->m_hEnemy = m_hEnemy;
+			}
 
 			m_iBall[0] = 0;
 			m_iBall[1] = 0;
@@ -354,15 +362,20 @@ void CController::Spawn()
 {
 	Precache();
 
+	if (pev->model)
+		SET_MODEL(ENT(pev), STRING(pev->model)); //LRC
+	else
 	SET_MODEL( ENT( pev ), "models/controller.mdl" );
 	UTIL_SetSize( pev, Vector( -32, -32, 0 ), Vector( 32, 32, 64 ) );
 
 	pev->solid		= SOLID_SLIDEBOX;
 	pev->movetype		= MOVETYPE_FLY;
 	pev->flags		|= FL_FLY;
+
 	// Ghost use red blood.
 	m_bloodColor		= BLOOD_COLOR_RED;
-	pev->health		= gSkillData.controllerHealth;
+	if (pev->health == 0)
+		pev->health		= gSkillData.controllerHealth;
 	pev->view_ofs		= Vector( 0, 0, -2 );// position of the eyes relative to monster's origin.
 	m_flFieldOfView		= VIEW_FIELD_FULL;// indicates the width of this monster's forward view cone ( as a dotproduct result )
 	m_MonsterState		= MONSTERSTATE_NONE;
@@ -375,6 +388,9 @@ void CController::Spawn()
 //=========================================================
 void CController::Precache()
 {
+	if (pev->model)
+		PRECACHE_MODEL(STRING(pev->model)); //LRC
+	else
 	PRECACHE_MODEL( "models/controller.mdl" );
 
 	PRECACHE_SOUND_ARRAY( pAttackSounds );
@@ -636,7 +652,21 @@ void CController::RunTask( Task_t *pTask )
 			Vector vecSrc = vecHand + pev->velocity * ( m_flShootTime - gpGlobals->time );
 			Vector vecDir;
 
-			if( m_hEnemy != 0 )
+			if (m_pCine != 0 || m_hEnemy != 0 )
+			{
+				if (m_pCine != 0) // LRC- is this a script that's telling it to fire?
+				{
+					if (m_hTargetEnt != 0 && m_pCine->PreciseAttack())
+					{
+						vecDir = (m_hTargetEnt->pev->origin - pev->origin).Normalize() * gSkillData.controllerSpeedBall;
+					}
+					else
+					{
+						UTIL_MakeVectors(pev->angles);
+						vecDir = gpGlobals->v_forward * gSkillData.controllerSpeedBall;
+					}
+				}
+				else if (m_hEnemy != 0)
 			{
 				if( HasConditions( bits_COND_SEE_ENEMY ) )
 				{
@@ -647,6 +677,8 @@ void CController::RunTask( Task_t *pTask )
 					m_vecEstVelocity = m_vecEstVelocity * 0.8;
 				}
 				vecDir = Intersect( vecSrc, m_hEnemy->BodyTarget( pev->origin ), m_vecEstVelocity, gSkillData.controllerSpeedBall );
+				}
+
 				float delta = 0.03490; // +-2 degree
 				vecDir = vecDir + Vector( RANDOM_FLOAT( -delta, delta ), RANDOM_FLOAT( -delta, delta ), RANDOM_FLOAT( -delta, delta ) ) * gSkillData.controllerSpeedBall;
 
@@ -849,7 +881,7 @@ void CController::RunAI( void )
 		m_pBall[i]->SetBrightness( m_iBallCurrent[i] );
 
 		GetAttachment( i + 2, vecStart, angleGun );
-		UTIL_SetOrigin( m_pBall[i]->pev, vecStart );
+		UTIL_SetOrigin( m_pBall[i], vecStart );
 
 		MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
 			WRITE_BYTE( TE_ELIGHT );
@@ -1117,6 +1149,7 @@ class CControllerHeadBall : public CBaseMonster
 	void EXPORT BounceTouch( CBaseEntity *pOther );
 	void MovetoTarget( Vector vecTarget );
 	void Crawl( void );
+	int m_iTrail;
 	int m_flNextAttack;
 	Vector m_vecIdeal;
 	EHANDLE m_hOwner;
@@ -1140,14 +1173,14 @@ void CControllerHeadBall::Spawn( void )
 	pev->scale = 2.0;
 
 	UTIL_SetSize(pev, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ) );
-	UTIL_SetOrigin( pev, pev->origin );
+	UTIL_SetOrigin( this, pev->origin );
 
 	SetThink( &CControllerHeadBall::HuntThink );
 	SetTouch( &CControllerHeadBall::BounceTouch );
 
 	m_vecIdeal = Vector( 0, 0, 0 );
 
-	pev->nextthink = gpGlobals->time + 0.1;
+	SetNextThink( 0.1 );
 
 	m_hOwner = Instance( pev->owner );
 	pev->dmgtime = gpGlobals->time;
@@ -1162,7 +1195,7 @@ void CControllerHeadBall::Precache( void )
 
 void CControllerHeadBall::HuntThink( void )
 {
-	pev->nextthink = gpGlobals->time + 0.1;
+	SetNextThink( 0.1 );
 
 	pev->renderamt -= 5;
 
@@ -1228,7 +1261,7 @@ void CControllerHeadBall::HuntThink( void )
 		m_flNextAttack = gpGlobals->time + 3.0;
 
 		SetThink( &CControllerHeadBall::DieThink );
-		pev->nextthink = gpGlobals->time + 0.3;
+		SetNextThink( 0.3 );
 	}
 
 	//Crawl();
@@ -1323,14 +1356,14 @@ void CControllerZapBall::Spawn( void )
 	pev->scale = 0.5;
 
 	UTIL_SetSize( pev, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ) );
-	UTIL_SetOrigin( pev, pev->origin );
+	UTIL_SetOrigin( this, pev->origin );
 
 	SetThink( &CControllerZapBall::AnimateThink );
 	SetTouch( &CControllerZapBall::ExplodeTouch );
 
 	m_hOwner = Instance( pev->owner );
 	pev->dmgtime = gpGlobals->time; // keep track of when ball spawned
-	pev->nextthink = gpGlobals->time + 0.1;
+	SetNextThink( 0.1 );
 }
 
 void CControllerZapBall::Precache( void )
@@ -1342,7 +1375,7 @@ void CControllerZapBall::Precache( void )
 
 void CControllerZapBall::AnimateThink( void )
 {
-	pev->nextthink = gpGlobals->time + 0.1;
+	SetNextThink( 0.1 );
 
 	pev->frame = ( (int)pev->frame + 1 ) % 11;
 

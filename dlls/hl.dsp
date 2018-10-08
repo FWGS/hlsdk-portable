@@ -24,8 +24,8 @@ CFG=hl - Win32 Release
 
 # Begin Project
 # PROP AllowPerConfigDependencies 0
-# PROP Scc_ProjName ""
-# PROP Scc_LocalPath ""
+# PROP Scc_ProjName ""$/GoldSrc/dlls", ELEBAAAA"
+# PROP Scc_LocalPath "."
 CPP=cl.exe
 MTL=midl.exe
 RSC=rc.exe
@@ -39,12 +39,12 @@ RSC=rc.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "..\temp\dlls\!release"
-# PROP Intermediate_Dir "..\temp\dlls\!release"
-# PROP Ignore_Export_Lib 1
+# PROP Output_Dir ".\Releasehl"
+# PROP Intermediate_Dir ".\Releasehl"
+# PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /YX /c
-# ADD CPP /nologo /G5 /MT /W3 /O2 /I "..\dlls" /I "..\engine" /I "..\common" /I "..\pm_shared" /I "..\game_shared" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "QUIVER" /D "VOXEL" /D "QUAKE2" /D "VALVE_DLL" /D "CLIENT_WEAPONS" /Fr /YX /FD /c
+# ADD CPP /nologo /G5 /MT /W3 /Zi /O2 /I "..\dlls" /I "..\engine" /I "..\common" /I "..\pm_shared" /I "..\game_shared" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "QUIVER" /D "VOXEL" /D "QUAKE2" /D "VALVE_DLL" /D "CLIENT_WEAPONS" /Fr /YX /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
@@ -54,15 +54,15 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /machine:I386
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib /nologo /subsystem:windows /dll /debug /machine:I386 /def:".\hl.def"
-# SUBTRACT LINK32 /profile /map
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib /nologo /subsystem:windows /dll /map /debug /machine:I386 /def:".\hl.def" /out:".\Releasehl/spirit.dll"
+# SUBTRACT LINK32 /profile
 # Begin Custom Build
-TargetDir=\Xash3D\src_main\temp\dlls\!release
-InputPath=\Xash3D\src_main\temp\dlls\!release\hl.dll
+TargetDir=.\Releasehl
+InputPath=.\Releasehl\spirit.dll
 SOURCE="$(InputPath)"
 
-"D:\Xash3D\valve\dlls\hl.dll" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	copy $(TargetDir)\hl.dll "D:\Xash3D\valve\dlls\hl.dll"
+"C:\games\half-life\spiritdev\dlls\spirit.dll" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	copy $(TargetDir)\spirit.dll "C:\games\half-life\spiritdev\dlls\spirit.dll"
 
 # End Custom Build
 
@@ -75,9 +75,9 @@ SOURCE="$(InputPath)"
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "..\temp\dlls\!debug"
-# PROP Intermediate_Dir "..\temp\dlls\!debug"
-# PROP Ignore_Export_Lib 1
+# PROP Output_Dir ".\debughl"
+# PROP Intermediate_Dir ".\debughl"
+# PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /YX /c
 # ADD CPP /nologo /G5 /MTd /W3 /Gm /ZI /Od /I "..\dlls" /I "..\engine" /I "..\common" /I "..\game_shared" /I "..\pm_shared" /I "..\\" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "QUIVER" /D "VOXEL" /D "QUAKE2" /D "VALVE_DLL" /D "CLIENT_WEAPONS" /FR /YX /FD /c
@@ -90,15 +90,15 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /debug /machine:I386
-# ADD LINK32 user32.lib advapi32.lib /nologo /subsystem:windows /dll /debug /machine:I386 /def:".\hl.def"
+# ADD LINK32 user32.lib advapi32.lib /nologo /subsystem:windows /dll /debug /machine:I386 /def:".\hl.def" /out:".\debughl/spirit.dll" /implib:".\Debug\hl.lib"
 # SUBTRACT LINK32 /profile
 # Begin Custom Build
-TargetDir=\Xash3D\src_main\temp\dlls\!debug
-InputPath=\Xash3D\src_main\temp\dlls\!debug\hl.dll
+TargetDir=.\debughl
+InputPath=.\debughl\spirit.dll
 SOURCE="$(InputPath)"
 
-"D:\Xash3D\valve\dlls\hl.dll" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	copy $(TargetDir)\hl.dll "D:\Xash3D\valve\dlls\hl.dll"
+"C:\sierra\half-life\spiritdev\dlls\spirit.dll" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	copy $(TargetDir)\spirit.dll "C:\sierra\half-life\spiritdev\dlls\spirit.dll"
 
 # End Custom Build
 
@@ -111,14 +111,13 @@ SOURCE="$(InputPath)"
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "..\temp\dlls\!profile"
-# PROP Intermediate_Dir "..\temp\dlls\!profile"
-# PROP Ignore_Export_Lib 1
+# PROP Output_Dir ".\Profilehl"
+# PROP Intermediate_Dir ".\Profilehl"
+# PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /G5 /MT /W3 /GX /Zi /O2 /I "..\engine" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "QUIVER" /D "VOXEL" /D "QUAKE2" /D "VALVE_DLL" /YX /c
 # SUBTRACT BASE CPP /Fr
-# ADD CPP /nologo /G5 /MT /W3 /Zi /O2 /I "..\dlls" /I "..\engine" /I "..\common" /I "..\pm_shared" /I "..\game_shared" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "QUIVER" /D "VOXEL" /D "QUAKE2" /D "VALVE_DLL" /D "CLIENT_WEAPONS" /YX /FD /c
-# SUBTRACT CPP /Fr
+# ADD CPP /nologo /G5 /MT /W3 /Zi /O2 /I "..\dlls" /I "..\engine" /I "..\common" /I "..\pm_shared" /I "..\game_shared" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "QUIVER" /D "VOXEL" /D "QUAKE2" /D "VALVE_DLL" /D "CLIENT_WEAPONS" /Fr /YX /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
@@ -129,14 +128,14 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib /nologo /subsystem:windows /dll /debug /machine:I386 /def:".\hl.def"
 # SUBTRACT BASE LINK32 /profile
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib /nologo /subsystem:windows /dll /profile /debug /machine:I386 /def:".\hl.def"
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib /nologo /subsystem:windows /dll /profile /debug /machine:I386 /def:".\hl.def" /out:".\Profilehl/spirit.dll"
 # Begin Custom Build
-TargetDir=\Xash3D\src_main\temp\dlls\!profile
-InputPath=\Xash3D\src_main\temp\dlls\!profile\hl.dll
+TargetDir=.\Profilehl
+InputPath=.\Profilehl\spirit.dll
 SOURCE="$(InputPath)"
 
-"D:\Xash3D\valve\dlls\hl.dll" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	copy $(TargetDir)\hl.dll "D:\Xash3D\valve\dlls\hl.dll"
+"C:\sierra\half-life\spiritdev\dlls\spirit.dll" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	copy $(TargetDir)\spirit.dll "C:\sierra\half-life\spiritdev\dlls\spirit.dll"
 
 # End Custom Build
 
@@ -160,7 +159,15 @@ SOURCE=.\agrunt.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\AI_BaseNPC_Schedule.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\airtank.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\alias.cpp
 # End Source File
 # Begin Source File
 
@@ -288,10 +295,6 @@ SOURCE=.\globals.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\glock.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\gman.cpp
 # End Source File
 # Begin Source File
@@ -336,6 +339,10 @@ SOURCE=.\hgrunt.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\wpn_shared\hl_wpn_glock.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\hornet.cpp
 # End Source File
 # Begin Source File
@@ -368,6 +375,10 @@ SOURCE=.\lights.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\locus.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\maprules.cpp
 # End Source File
 # Begin Source File
@@ -385,6 +396,10 @@ SOURCE=.\monsterstate.cpp
 # Begin Source File
 
 SOURCE=.\mortar.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\movewith.cpp
 # End Source File
 # Begin Source File
 
@@ -453,10 +468,6 @@ SOURCE=.\rpg.cpp
 # Begin Source File
 
 SOURCE=.\satchel.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\schedule.cpp
 # End Source File
 # Begin Source File
 
@@ -640,11 +651,19 @@ SOURCE=.\items.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\locus.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\monsterevent.h
 # End Source File
 # Begin Source File
 
 SOURCE=.\monsters.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\movewith.h
 # End Source File
 # Begin Source File
 

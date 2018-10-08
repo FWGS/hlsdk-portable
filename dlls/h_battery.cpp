@@ -39,6 +39,7 @@ public:
 	virtual int ObjectCaps( void ) { return ( CBaseToggle::ObjectCaps() | FCAP_CONTINUOUS_USE ) & ~FCAP_ACROSS_TRANSITION; }
 	virtual int Save( CSave &save );
 	virtual int Restore( CRestore &restore );
+	virtual STATE GetState( void );
 
 	static TYPEDESCRIPTION m_SaveData[];
 
@@ -88,11 +89,14 @@ void CRecharge::Spawn()
 	pev->solid = SOLID_BSP;
 	pev->movetype = MOVETYPE_PUSH;
 
-	UTIL_SetOrigin( pev, pev->origin );		// set size and link into world
+	UTIL_SetOrigin(this, pev->origin);		// set size and link into world
 	UTIL_SetSize( pev, pev->mins, pev->maxs );
 	SET_MODEL( ENT( pev ), STRING( pev->model ) );
 	m_iJuice = (int)gSkillData.suitchargerCapacity;
 	pev->frame = 0;			
+	//LRC
+	if (m_iStyle >= 32) LIGHT_STYLE(m_iStyle, "a");
+	else if (m_iStyle <= -32) LIGHT_STYLE(-m_iStyle, "z");
 }
 
 void CRecharge::Precache()
@@ -112,6 +116,9 @@ void CRecharge::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE use
 	if( m_iJuice <= 0 )
 	{
 		pev->frame = 1;			
+		//LRC
+		if (m_iStyle >= 32) LIGHT_STYLE(m_iStyle, "z");
+		else if (m_iStyle <= -32) LIGHT_STYLE(-m_iStyle, "a");
 		Off();
 	}
 
@@ -126,7 +133,7 @@ void CRecharge::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE use
 		return;
 	}
 
-	pev->nextthink = pev->ltime + 0.25;
+	SetNextThink( 0.25 );
 	SetThink( &CRecharge::Off );
 
 	// Time to recharge yet?
@@ -174,7 +181,10 @@ void CRecharge::Recharge( void )
 {
 	m_iJuice = (int)gSkillData.suitchargerCapacity;
 	pev->frame = 0;	
-	SetThink( &CBaseEntity::SUB_DoNothing );
+	//LRC
+	if (m_iStyle >= 32) LIGHT_STYLE(m_iStyle, "a");
+	else if (m_iStyle <= -32) LIGHT_STYLE(-m_iStyle, "z");
+	SetThink(&CRecharge:: SUB_DoNothing );
 }
 
 void CRecharge::Off( void )
@@ -187,9 +197,19 @@ void CRecharge::Off( void )
 
 	if( ( !m_iJuice ) &&  ( ( m_iReactivate = (int)g_pGameRules->FlHEVChargerRechargeTime() ) > 0 ) )
 	{
-		pev->nextthink = pev->ltime + m_iReactivate;
+		SetNextThink( m_iReactivate );
 		SetThink( &CRecharge::Recharge );
 	}
 	else
-		SetThink( &CBaseEntity::SUB_DoNothing );
+		SetThink(&CRecharge:: SUB_DoNothing );
+}
+
+STATE CRecharge::GetState( void )
+{
+	if (m_iOn == 2)
+		return STATE_IN_USE;
+	else if (m_iJuice)
+		return STATE_ON;
+	else
+		return STATE_OFF;
 }

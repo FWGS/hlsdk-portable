@@ -25,9 +25,10 @@
 #include "gamerules.h"
 #include "shall_map_fixes.h"
 
-#define RANDOM_ANGLE() Vector( 0, RANDOM_LONG(1, 6) * RANDOM_LONG(1, 6) * RANDOM_LONG(1, 10), 0 )
 
-static CBaseEntity* CreateItemAtPosition(char* classname, const Vector& position, const Vector& angles)
+#define RANDOM_ANGLE() Vector( 0, RANDOM_LONG( 0, 360 ), 0 )
+
+static CBaseEntity* CreateItemAtPosition(const char* classname, const Vector& position, const Vector& angles)
 {
 	CBaseEntity* item = CBaseEntity::Create(classname, position, angles, NULL);
 	if (item != NULL)
@@ -268,7 +269,7 @@ void MapFixPatchSpawnPosition::ApplyFixToPlayer( CBasePlayer* player )
 	player->pev->velocity = player->pev->avelocity = g_vecZero;
 	player->pev->angles = player->pev->v_angle = Vector(0, 90, 0);
 
-	UTIL_SetOrigin(player->pev, Vector(2910, -2332, -410));
+	UTIL_SetOrigin(player, Vector(2910, -2332, -410));
 }
 
 void MapFixPatchAddWeaponsAndAmmo::ApplyFix()
@@ -445,7 +446,7 @@ void CChangeLevelToGrave::TeleportPlayerToChangeLevel(CBaseEntity* pActivator, C
 
 void CChangeLevelToGrave::TeleportThink(void)
 {
-	CBasePlayer* player = dynamic_cast<CBasePlayer*>(UTIL_FindEntityByClassname(NULL, "player"));
+	CBasePlayer* player = static_cast<CBasePlayer*>(UTIL_FindEntityByClassname(NULL, "player"));
 	if (player != NULL)
 	{
 		CBaseEntity* teleportDestination = UTIL_FindEntityByTargetname(NULL, "mx2");
@@ -454,7 +455,7 @@ void CChangeLevelToGrave::TeleportThink(void)
 			// Constantly teleport the player to the changelevel
 			// volume in case the event was missed.
 			player->pev->velocity = player->pev->avelocity = g_vecZero;
-			UTIL_SetOrigin(player->pev, teleportDestination->pev->origin);
+			UTIL_SetOrigin(player, teleportDestination->pev->origin);
 		}
 	}
 
@@ -534,7 +535,7 @@ void MapFixVamp::ApplyFix()
 
 void MapFixVamp::CreateAndSetupTriggerToCallLift1()
 {
-	CBaseToggle* trigger = dynamic_cast<CBaseToggle*>(CreateLiftTrigger(Vector(-384, 0, -312), g_vecZero, LIFT_HEIGHT));
+	CBaseToggle* trigger = static_cast<CBaseToggle*>(CreateLiftTrigger(Vector(-384, 0, -312), g_vecZero, LIFT_HEIGHT));
 
 	if (trigger)
 	{
@@ -545,7 +546,7 @@ void MapFixVamp::CreateAndSetupTriggerToCallLift1()
 
 void MapFixVamp::CreateAndSetupTriggerToCallLift2()
 {
-	CBaseToggle* trigger = dynamic_cast<CBaseToggle*>(CreateLiftTrigger(Vector(1408, 1024, 255), g_vecZero, LIFT_HEIGHT));
+	CBaseToggle* trigger = static_cast<CBaseToggle*>(CreateLiftTrigger(Vector(1408, 1024, 255), g_vecZero, LIFT_HEIGHT));
 
 	if (trigger)
 	{
@@ -556,7 +557,7 @@ void MapFixVamp::CreateAndSetupTriggerToCallLift2()
 
 void MapFixVamp::CreateAndSetupTriggerToCallLift3()
 {
-	CBaseToggle* trigger = dynamic_cast<CBaseToggle*>(CreateLiftTrigger(Vector(-1408, 1792, 200), g_vecZero, LIFT_HEIGHT));
+	CBaseToggle* trigger = static_cast<CBaseToggle*>(CreateLiftTrigger(Vector(-1408, 1792, 200), g_vecZero, LIFT_HEIGHT));
 
 	if (trigger)
 	{
@@ -584,7 +585,7 @@ CBaseEntity* MapFixVamp::CreateLiftTrigger(const Vector& origin, const Vector& a
 		return NULL;
 	}
 
-	CBaseToggle* trigger = dynamic_cast<CBaseToggle*>(CBaseEntity::Instance(pevCreate));
+	CBaseToggle* trigger = static_cast<CBaseToggle*>(CBaseEntity::Instance(pevCreate));
 
 	if (trigger == NULL)
 	{
@@ -595,7 +596,7 @@ CBaseEntity* MapFixVamp::CreateLiftTrigger(const Vector& origin, const Vector& a
 	trigger->pev->angles = angles;
 	DispatchSpawn(trigger->edict());
 
-	UTIL_SetOrigin(trigger->pev, origin);
+	UTIL_SetOrigin(trigger, origin);
 	UTIL_SetSize(trigger->pev, Vector(-64, -64, 0), Vector( 64, 64, liftHeight ) );
 
 	return trigger;

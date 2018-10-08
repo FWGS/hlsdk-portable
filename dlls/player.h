@@ -12,10 +12,25 @@
 *   without written permission from Valve LLC.
 *
 ****/
+#pragma once
 #ifndef PLAYER_H
 #define PLAYER_H
 
 #include "pm_materials.h"
+
+
+//LRC - code for Werner Spahl's mod.
+//#define XENWARRIOR
+
+#ifdef XENWARRIOR
+#define SOUND_FLASHLIGHT_IDLE   "ambience/alien_clicker1.wav"
+#define LF_FLASH_RESUME (1<<13)
+#define LF_FLASH_RESUME2 (1<<14)
+
+extern float g_fEnvFadeTime;
+#endif
+
+
 
 #define PLAYER_FATAL_FALL_SPEED		1024// approx 60 feet
 #define PLAYER_MAX_SAFE_FALL_SPEED	580// approx 20 feet
@@ -69,6 +84,9 @@ typedef enum
 	PLAYER_DIE,
 	PLAYER_ATTACK1
 } PLAYER_ANIM;
+
+
+//NB: changing this structure will cause problems! --LRC
 
 #define MAX_ID_RANGE 2048
 #define SBAR_STRING_SIZE 128
@@ -228,6 +246,8 @@ public:
 	void RenewItems(void);
 	void PackDeadPlayerItems( void );
 	void RemoveAllItems( BOOL removeSuit );
+	void RemoveItems( int iWeaponMask, int i9mm, int i357, int iBuck, int iBolt, int iARGren, int iRock, int iEgon, int iSatchel, int iSnark, int iTrip, int iGren, int iHornet );
+	void RemoveAmmo( const char* szName, int iAmount );
 	BOOL SwitchWeapon( CBasePlayerItem *pWeapon );
 
 	// JOHN:  sends custom messages if player HUD data has changed  (eg health, ammo)
@@ -308,6 +328,8 @@ public:
 
 	void TabulateAmmo( void );
 
+	Vector m_vecLastViewAngles;
+
 	float m_flStartCharge;
 	float m_flAmmoStartCharge;
 	float m_flPlayAftershock;
@@ -333,6 +355,7 @@ public:
 #define AUTOAIM_10DEGREES 0.1736481776669
 
 extern int gmsgHudText;
+extern int	gmsgParticle; // LRC
 extern BOOL gInitHUD;
 
 #endif // PLAYER_H

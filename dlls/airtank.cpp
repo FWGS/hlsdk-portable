@@ -55,7 +55,7 @@ void CAirtank::Spawn( void )
 
 	SET_MODEL( ENT( pev ), "models/w_oxygen.mdl" );
 	UTIL_SetSize( pev, Vector( -16, -16, 0), Vector( 16, 16, 36 ) );
-	UTIL_SetOrigin( pev, pev->origin );
+	UTIL_SetOrigin( this, pev->origin );
 
 	SetTouch( &CAirtank::TankTouch );
 	SetThink( &CAirtank::TankThink );
@@ -108,7 +108,7 @@ void CAirtank::TankTouch( CBaseEntity *pOther )
 	EMIT_SOUND( ENT( pev ), CHAN_VOICE, "doors/aliendoor3.wav", 1.0, ATTN_NORM );
 
 	// recharge airtank in 30 seconds
-	pev->nextthink = gpGlobals->time + 30;
+	SetNextThink( 30 );
 	m_state = 0;
 	SUB_UseTargets( this, USE_TOGGLE, 1 );
 }

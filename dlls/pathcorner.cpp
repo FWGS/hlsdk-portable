@@ -58,6 +58,15 @@ void CPathCorner::KeyValue( KeyValueData *pkvd )
 		m_flWait = atof( pkvd->szValue );
 		pkvd->fHandled = TRUE;
 	}
+	else if (FStrEq(pkvd->szKeyName, "turnspeed")) //LRC
+	{
+		if (pkvd->szValue[0]) // if the field is blank, don't set the spawnflag.
+		{
+			pev->spawnflags |= SF_CORNER_AVELOCITY;
+			UTIL_StringToVector( (float*)pev->avelocity, pkvd->szValue);
+		}
+		pkvd->fHandled = TRUE;
+	}
 	else 
 		CPointEntity::KeyValue( pkvd );
 }
@@ -102,7 +111,7 @@ void CPathCorner::Touch( CBaseEntity *pOther )
 		ALERT( at_warning, "PathCornerTouch: no next stop specified" );
 	}
 
-	pOther->m_pGoalEnt = CBaseEntity::Instance( FIND_ENTITY_BY_TARGETNAME( NULL, STRING( pev->target ) ) );
+	pOther->m_pGoalEnt = UTIL_FindEntityByTargetname ( NULL, STRING(pev->target) );
 
 	// If "next spot" was not found (does not exist - level design error)
 	if( !pOther->m_pGoalEnt )
@@ -136,6 +145,15 @@ void CPathTrack::KeyValue( KeyValueData *pkvd )
 	if( FStrEq( pkvd->szKeyName, "altpath" ) )
 	{
 		m_altName = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "turnspeed")) //LRC
+	{
+		if (pkvd->szValue[0]) // if the field is blank, don't set the spawnflag.
+		{
+			pev->spawnflags |= SF_PATH_AVELOCITY;
+			UTIL_StringToVector( (float*)pev->avelocity, pkvd->szValue);
+		}
 		pkvd->fHandled = TRUE;
 	}
 	else
@@ -174,20 +192,16 @@ void CPathTrack::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE us
 
 void CPathTrack::Link( void )
 {
-	edict_t *pentTarget;
+	CBaseEntity *pTarget;
 
 	if( !FStringNull( pev->target ) )
 	{
-		pentTarget = FIND_ENTITY_BY_TARGETNAME( NULL, STRING( pev->target ) );
-		if( !FNullEnt(pentTarget) )
-		{
-			m_pnext = CPathTrack::Instance( pentTarget );
-
-			if( m_pnext )		// If no next pointer, this is the end of a path
+		pTarget = UTIL_FindEntityByTargetname( NULL, STRING(pev->target) );
+		if ( pTarget )
 			{
+			m_pnext = (CPathTrack*)pTarget;
 				m_pnext->SetPrevious( this );
 			}
-		}
 		else
 			ALERT( at_console, "Dead end link %s\n", STRING( pev->target ) );
 	}
@@ -195,18 +209,15 @@ void CPathTrack::Link( void )
 	// Find "alternate" path
 	if( m_altName )
 	{
-		pentTarget = FIND_ENTITY_BY_TARGETNAME( NULL, STRING( m_altName ) );
-		if( !FNullEnt( pentTarget ) )
-		{
-			m_paltpath = CPathTrack::Instance( pentTarget );
-
-			if( m_paltpath )		// If no next pointer, this is the end of a path
+		pTarget = UTIL_FindEntityByTargetname( NULL, STRING(m_altName) );
+		if ( pTarget )		// If no next pointer, this is the end of a path
 			{
+			m_paltpath = (CPathTrack*)pTarget;
 				m_paltpath->SetPrevious( this );
 			}
 		}
 	}
-}
+
 
 void CPathTrack::Spawn( void )
 {
@@ -217,8 +228,8 @@ void CPathTrack::Spawn( void )
 	m_pprevious = NULL;
 // DEBUGGING CODE
 #if PATH_SPARKLE_DEBUG
-	SetThink( &Sparkle );
-	pev->nextthink = gpGlobals->time + 0.5;
+	SetThink(&CPathTrack :: Sparkle );
+	SetNextThink( 0.5 );
 #endif
 }
 
@@ -226,6 +237,8 @@ void CPathTrack::Activate( void )
 {
 	if( !FStringNull( pev->targetname ) )		// Link to next, and back-link
 		Link();
+
+	CPointEntity::Activate();
 }
 
 CPathTrack *CPathTrack::ValidPath( CPathTrack *ppath, int testFlag )
@@ -402,7 +415,8 @@ CPathTrack *CPathTrack::Instance( edict_t *pent )
 #if PATH_SPARKLE_DEBUG
 void CPathTrack::Sparkle( void )
 {
-	pev->nextthink = gpGlobals->time + 0.2;
+
+	SetNextThink( 0.2 );
 	if( FBitSet( pev->spawnflags, SF_PATH_DISABLED ) )
 		UTIL_ParticleEffect( pev->origin, Vector( 0, 0,100 ), 210, 10 );
 	else

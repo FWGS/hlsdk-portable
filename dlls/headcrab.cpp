@@ -160,7 +160,7 @@ const char *CHeadCrab::pBiteSounds[] =
 //=========================================================
 int CHeadCrab::Classify( void )
 {
-	return CLASS_ALIEN_PREY;
+	return m_iClass?m_iClass:CLASS_ALIEN_PREY;
 }
 
 //=========================================================
@@ -222,7 +222,7 @@ void CHeadCrab::HandleAnimEvent( MonsterEvent_t *pEvent )
 		{
 			ClearBits( pev->flags, FL_ONGROUND );
 
-			UTIL_SetOrigin( pev, pev->origin + Vector( 0, 0, 1 ) );// take him off ground so engine doesn't instantly reset onground 
+			UTIL_SetOrigin (this, pev->origin + Vector ( 0 , 0 , 1) );// take him off ground so engine doesn't instantly reset onground 
 			UTIL_MakeVectors( pev->angles );
 
 			Vector vecJumpDir;
@@ -281,8 +281,10 @@ void CHeadCrab::Spawn()
 {
 	Precache();
 
-	SET_MODEL( ENT( pev ), "models/headcrab.mdl" );
-	// Vampire monsters use human hull size.
+	if (pev->model)
+		SET_MODEL(ENT(pev), STRING(pev->model)); //LRC
+	else
+		SET_MODEL( ENT( pev ), "models/headcrab.mdl" );
 	UTIL_SetSize( pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX );
 
 	pev->solid		= SOLID_SLIDEBOX;
@@ -290,7 +292,8 @@ void CHeadCrab::Spawn()
 	// Vampires use red blood.
 	m_bloodColor		= BLOOD_COLOR_RED;
 	pev->effects		= 0;
-	pev->health		= gSkillData.headcrabHealth;
+	if (pev->health == 0)
+		pev->health		= gSkillData.headcrabHealth;
 	pev->view_ofs		= Vector( 0, 0, 20 );// position of the eyes relative to monster's origin.
 	pev->yaw_speed		= 5;//!!! should we put this in the monster's changeanim function since turn rates may vary with state/anim?
 	// Allow vampires to see 360 degrees (+180/-180)
@@ -312,7 +315,10 @@ void CHeadCrab::Precache()
 	PRECACHE_SOUND_ARRAY( pDeathSounds );
 	PRECACHE_SOUND_ARRAY( pBiteSounds );
 
-	PRECACHE_MODEL( "models/headcrab.mdl" );
+	if (pev->model)
+		PRECACHE_MODEL(STRING(pev->model)); //LRC
+	else
+		PRECACHE_MODEL( "models/headcrab.mdl" );
 }
 
 //=========================================================
@@ -502,7 +508,10 @@ LINK_ENTITY_TO_CLASS( monster_babycrab, CBabyCrab )
 void CBabyCrab::Spawn( void )
 {
 	CHeadCrab::Spawn();
-	SET_MODEL( ENT( pev ), "models/baby_headcrab.mdl" );
+	if (pev->model)
+		SET_MODEL(ENT(pev), STRING(pev->model)); //LRC
+	else
+		SET_MODEL( ENT( pev ), "models/baby_headcrab.mdl" );
 	pev->rendermode = kRenderTransTexture;
 	pev->renderamt = 192;
 	UTIL_SetSize( pev, Vector( -12, -12, 0 ), Vector( 12, 12, 24 ) );
@@ -512,7 +521,10 @@ void CBabyCrab::Spawn( void )
 
 void CBabyCrab::Precache( void )
 {
-	PRECACHE_MODEL( "models/baby_headcrab.mdl" );
+	if (pev->model)
+		PRECACHE_MODEL(STRING(pev->model)); //LRC
+	else
+		PRECACHE_MODEL( "models/baby_headcrab.mdl" );
 	CHeadCrab::Precache();
 }
 

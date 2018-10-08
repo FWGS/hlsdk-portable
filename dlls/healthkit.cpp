@@ -107,6 +107,7 @@ public:
 	virtual int ObjectCaps( void ) { return ( CBaseToggle::ObjectCaps() | FCAP_CONTINUOUS_USE ) & ~FCAP_ACROSS_TRANSITION; }
 	virtual int Save( CSave &save );
 	virtual int Restore( CRestore &restore );
+	virtual STATE GetState( void );
 
 	static TYPEDESCRIPTION m_SaveData[];
 
@@ -156,11 +157,14 @@ void CWallHealth::Spawn()
 	pev->solid = SOLID_BSP;
 	pev->movetype = MOVETYPE_PUSH;
 
-	UTIL_SetOrigin( pev, pev->origin );		// set size and link into world
+	UTIL_SetOrigin(this, pev->origin);		// set size and link into world
 	UTIL_SetSize( pev, pev->mins, pev->maxs );
 	SET_MODEL( ENT( pev ), STRING( pev->model ) );
 	m_iJuice = (int)gSkillData.healthchargerCapacity;
 	pev->frame = 0;
+	//LRC
+	if (m_iStyle >= 32) LIGHT_STYLE(m_iStyle, "a");
+	else if (m_iStyle <= -32) LIGHT_STYLE(-m_iStyle, "z");
 }
 
 void CWallHealth::Precache()
@@ -183,6 +187,9 @@ void CWallHealth::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE u
 	if( m_iJuice <= 0 )
 	{
 		pev->frame = 1;			
+		//LRC
+		if (m_iStyle >= 32) LIGHT_STYLE(m_iStyle, "z");
+		else if (m_iStyle <= -32) LIGHT_STYLE(-m_iStyle, "a");
 		Off();
 	}
 
@@ -197,7 +204,7 @@ void CWallHealth::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE u
 		return;
 	}
 
-	pev->nextthink = pev->ltime + 0.25;
+	SetNextThink( 0.25 );
 	SetThink( &CWallHealth::Off );
 
 	// Time to recharge yet?
@@ -232,7 +239,10 @@ void CWallHealth::Recharge( void )
 	EMIT_SOUND( ENT( pev ), CHAN_ITEM, "items/medshot4.wav", 1.0, ATTN_NORM );
 	m_iJuice = (int)gSkillData.healthchargerCapacity;
 	pev->frame = 0;			
-	SetThink( &CBaseEntity::SUB_DoNothing );
+	//LRC
+	if (m_iStyle >= 32) LIGHT_STYLE(m_iStyle, "a");
+	else if (m_iStyle <= -32) LIGHT_STYLE(-m_iStyle, "z");
+	SetThink(&CWallHealth:: SUB_DoNothing );
 }
 
 void CWallHealth::Off( void )
@@ -245,9 +255,19 @@ void CWallHealth::Off( void )
 
 	if( ( !m_iJuice ) && ( ( m_iReactivate = (int)g_pGameRules->FlHealthChargerRechargeTime() ) > 0 ) )
 	{
-		pev->nextthink = pev->ltime + m_iReactivate;
+		SetNextThink( m_iReactivate );
 		SetThink( &CWallHealth::Recharge );
 	}
 	else
-		SetThink( &CBaseEntity::SUB_DoNothing );
+		SetThink(&CWallHealth:: SUB_DoNothing );
+}
+
+STATE CWallHealth::GetState( void )
+{
+	if (m_iOn == 2)
+		return STATE_IN_USE;
+	else if (m_iJuice)
+		return STATE_ON;
+	else
+		return STATE_OFF;
 }

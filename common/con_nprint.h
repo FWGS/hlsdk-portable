@@ -12,6 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
+#pragma once
 #ifndef CON_NPRINT_H
 #define CON_NPRINT_H
 
@@ -22,4 +23,7 @@ typedef struct con_nprint_s
 	float	color[3];		// RGB colors ( 0.0 -> 1.0 scale )
 } con_nprint_t;
 
-#endif//CON_NPRINT_H
+void Con_NPrintf( int idx, char *fmt, ... );
+void Con_NXPrintf( struct con_nprint_s *info, char *fmt, ... );
+
+#endif

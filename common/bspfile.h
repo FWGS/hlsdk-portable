@@ -12,7 +12,7 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
-
+#pragma once
 #ifndef BSPFILE_H
 #define BSPFILE_H
 
@@ -208,7 +208,7 @@ typedef struct
 
 typedef struct
 {
-	int	planenum;
+        int	planenum;
 	short	children[2];		// negative numbers are contents
 } dclipnode_t;
 

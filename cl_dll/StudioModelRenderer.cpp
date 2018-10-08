@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2002, Valve LLC, All rights reserved. ============
+//========= Copyright (c) 1996-2002, Valve LLC, All rights reserved. ============
 //
 // Purpose: 
 //
@@ -557,7 +557,19 @@ void CStudioModelRenderer::StudioSetUpTransform( int trivial_accept )
 	(*m_protationmatrix)[0][3] = modelpos[0];
 	(*m_protationmatrix)[1][3] = modelpos[1];
 	(*m_protationmatrix)[2][3] = modelpos[2];
+
+	//LRC - apply scale to models!
+	if (m_pCurrentEntity->curstate.scale != 0)
+	{
+		int j;
+		for (i = 0; i < 3; i++)
+			for (j = 0; j < 3; j++)
+			{
+				(*m_protationmatrix)[i][j] *= m_pCurrentEntity->curstate.scale;
+			}
+	}
 }
+
 
 /*
 ====================
@@ -1171,6 +1183,77 @@ int CStudioModelRenderer::StudioDrawModel( int flags )
 		IEngineStudio.StudioSetRemapColors( m_nTopColor, m_nBottomColor );
 
 		StudioRenderModel();
+	}
+
+
+
+	//LRC
+	if (m_pCurrentEntity->curstate.renderfx == kRenderFxReflection )
+	{ 
+		m_pCurrentEntity->curstate.renderfx = kRenderFxNone;
+		(*m_protationmatrix)[2][2] *= -1;
+		gEngfuncs.pTriAPI->CullFace( TRI_NONE ); // we're turning the model inside out, so we need to draw
+					// the opposite faces of the tris. This should really be TRI_BACK, but that's not available. :(
+//		glCullFace(GL_BACK);
+
+		if (flags & STUDIO_RENDER)
+		{
+			// see if the bounding box lets us trivially reject, also sets
+			if (!IEngineStudio.StudioCheckBBox ())
+				return 0;
+
+			(*m_pModelsDrawn)++;
+			(*m_pStudioModelCount)++; // render data cache cookie
+
+			if (m_pStudioHeader->numbodyparts == 0)
+				return 1;
+		}
+
+		if (m_pCurrentEntity->curstate.movetype == MOVETYPE_FOLLOW)
+		{
+			StudioMergeBones( m_pRenderModel );
+		}
+		else
+		{
+			StudioSetupBones( );
+		}
+		StudioSaveBones( );
+
+		if (flags & STUDIO_EVENTS)
+		{
+			StudioCalcAttachments( );
+			IEngineStudio.StudioClientEvents( );
+			// copy attachments into global entity array
+			if ( m_pCurrentEntity->index > 0 )
+			{
+				cl_entity_t *ent = gEngfuncs.GetEntityByIndex( m_pCurrentEntity->index );
+
+				memcpy( ent->attachment, m_pCurrentEntity->attachment, sizeof( vec3_t ) * 4 );
+			}
+		}
+
+		if (flags & STUDIO_RENDER)
+		{
+			lighting.plightvec = dir;
+			IEngineStudio.StudioDynamicLight(m_pCurrentEntity, &lighting );
+
+			IEngineStudio.StudioEntityLight( &lighting );
+
+			// model and frame independant
+			IEngineStudio.StudioSetupLighting (&lighting);
+
+			// get remap colors
+			m_nTopColor = m_pCurrentEntity->curstate.colormap & 0xFF;
+			m_nBottomColor = (m_pCurrentEntity->curstate.colormap & 0xFF00) >> 8;
+
+			IEngineStudio.StudioSetRemapColors( m_nTopColor, m_nBottomColor );
+
+			StudioRenderModel( );
+		}
+
+//		glCullFace(GL_FRONT);
+		gEngfuncs.pTriAPI->CullFace( TRI_FRONT );
+		m_pCurrentEntity->curstate.renderfx = kRenderFxReflection;
 	}
 
 	return 1;

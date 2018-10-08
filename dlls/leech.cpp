@@ -169,7 +169,10 @@ const char *CLeech::pAlertSounds[] =
 void CLeech::Spawn( void )
 {
 	Precache();
-	SET_MODEL( ENT( pev ), "models/leech.mdl" );
+	if (pev->model)
+		SET_MODEL(ENT(pev), STRING(pev->model)); //LRC
+	else
+		SET_MODEL( ENT( pev ), "models/leech.mdl" );
 	// Just for fun
 	//	SET_MODEL( ENT( pev ), "models/icky.mdl" );
 	
@@ -179,7 +182,8 @@ void CLeech::Spawn( void )
 	pev->solid = SOLID_SLIDEBOX;
 	pev->movetype = MOVETYPE_FLY;
 	SetBits( pev->flags, FL_SWIM );
-	pev->health = gSkillData.leechHealth;
+	if (pev->health == 0)
+		pev->health = gSkillData.leechHealth;
 
 	m_flFieldOfView = -0.5;	// 180 degree FOV
 	m_flDistLook = 750;
@@ -199,6 +203,7 @@ void CLeech::Spawn( void )
 void CLeech::Activate( void )
 {
 	RecalculateWaterlevel();
+	CBaseMonster::Activate();
 }
 
 void CLeech::RecalculateWaterlevel( void )
@@ -238,7 +243,7 @@ void CLeech::SwitchLeechState( void )
 	{
 		Look( m_flDistLook );
 		CBaseEntity *pEnemy = BestVisibleEnemy();
-		if( pEnemy && pEnemy->pev->waterlevel != 0 )
+		if ( pEnemy && pEnemy->pev->waterlevel != 0 && pEnemy->pev->watertype != CONTENT_FOG)
 		{
 			m_hEnemy = pEnemy;
 			SetState( MONSTERSTATE_COMBAT );
@@ -274,7 +279,10 @@ void CLeech::Precache( void )
 	size_t i;
 
 	//PRECACHE_MODEL( "models/icky.mdl" );
-	PRECACHE_MODEL( "models/leech.mdl" );
+	if (pev->model)
+		PRECACHE_MODEL(STRING(pev->model)); //LRC
+	else
+		PRECACHE_MODEL( "models/leech.mdl" );
 
 	for( i = 0; i < ARRAYSIZE( pAttackSounds ); i++ )
 		PRECACHE_SOUND( pAttackSounds[i] );
@@ -408,7 +416,7 @@ void CLeech::DeadThink( void )
 		}
 	}
 	StudioFrameAdvance();
-	pev->nextthink = gpGlobals->time + 0.1;
+	SetNextThink( 0.1 );
 
 	// Apply damage velocity, but keep out of the walls
 	if( pev->velocity.x != 0 || pev->velocity.y != 0 )
@@ -472,7 +480,7 @@ void CLeech::UpdateMotion( void )
 		m_IdealActivity = ACT_MELEE_ATTACK1;
 
 	// Out of water check
-	if( !pev->waterlevel )
+	if ( !pev->waterlevel || pev->watertype == CONTENT_FOG)
 	{
 		pev->movetype = MOVETYPE_TOSS;
 		m_IdealActivity = ACT_TWITCH;
@@ -532,12 +540,12 @@ void CLeech::SwimThink( void )
 
 	if( FNullEnt( FIND_CLIENT_IN_PVS( edict() ) ) )
 	{
-		pev->nextthink = gpGlobals->time + RANDOM_FLOAT( 1, 1.5 );
+		SetNextThink( RANDOM_FLOAT(1,1.5) );
 		pev->velocity = g_vecZero;
 		return;
 	}
 	else
-		pev->nextthink = gpGlobals->time + 0.1;
+		SetNextThink( 0.1 );
 
 	targetSpeed = LEECH_SWIM_SPEED;
 
@@ -663,7 +671,7 @@ void CLeech::Killed( entvars_t *pevAttacker, int iGib )
 		pOwner->DeathNotice( pev );
 
 	// When we hit the ground, play the "death_end" activity
-	if( pev->waterlevel )
+	if ( pev->waterlevel && pev->watertype != CONTENT_FOG)
 	{
 		pev->angles.z = 0;
 		pev->angles.x = 0;

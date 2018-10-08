@@ -13,7 +13,7 @@
 *
 ****/
 // Base class for flying monsters.  This overrides the movement test & execution code from CBaseMonster
-
+#pragma once
 #ifndef FLYINGMONSTER_H
 #define FLYINGMONSTER_H
 

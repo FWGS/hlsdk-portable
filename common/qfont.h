@@ -12,7 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
-
+#pragma once
 #ifndef QFONT_H
 #define QFONT_H
 
