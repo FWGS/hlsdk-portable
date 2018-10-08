@@ -144,7 +144,7 @@ void GGM_RegisterCVars( void )
 	g_engfuncs.pfnAddServerCommand( "mp_lightstyle", GGM_LightStyle_f );
 }
 
-void Ent_RunGC( bool common, bool enttools, const char *userid, const char *pattern )
+void Ent_RunGC( int flags, const char *userid, const char *pattern )
 {
 	int i, count = 0, removed = 0;
 	edict_t *ent = g_engfuncs.pfnPEntityOfEntIndex( gpGlobals->maxClients + 5 );
@@ -166,7 +166,7 @@ void Ent_RunGC( bool common, bool enttools, const char *userid, const char *patt
 		if( ent->v.flags & FL_KILLME )
 			continue;
 
-		if( common )
+		if( flags & GC_COMMON )
 		{
 			if( !strcmp( classname, "gib" ) || !strcmp( classname, "gateofbabylon_bolt" ) )
 			{
@@ -182,7 +182,7 @@ void Ent_RunGC( bool common, bool enttools, const char *userid, const char *patt
 				continue;
 			}
 		}
-		if( !enttools && !pattern )
+		if( !(flags & GC_ENTTOOLS) && !pattern )
 		{
 			if( strncmp( classname, "monster_", 8 ) || strncmp( classname, "weapon_", 7 ) || strncmp( classname, "ammo_", 5 ) || strncmp( classname, "item_", 5 ) )
 				continue;
@@ -204,7 +204,7 @@ void Ent_RunGC( bool common, bool enttools, const char *userid, const char *patt
 			continue;
 		}
 
-		if( enttools && entity->enttools_data.enttools )
+		if( (flags & GC_ENTTOOLS) && entity->enttools_data.enttools )
 		{
 			if( !userid || !strcmp( userid, entity->enttools_data.ownerid ) )
 			{
@@ -214,7 +214,7 @@ void Ent_RunGC( bool common, bool enttools, const char *userid, const char *patt
 			}
 		}
 
-		if( common && !entity->IsInWorld() )
+		if( (flags & GC_COMMON) && !entity->IsInWorld() )
 		{
 			ent->v.flags |= FL_KILLME;
 			removed++;
@@ -246,7 +246,12 @@ void Ent_RunGC_f()
 	const char *pattern = CMD_ARGV( 2 );
 	if( enttools != 2 || !pattern[0] )
 		pattern = NULL;
-	Ent_RunGC( enttools == 0, enttools == 1, NULL, pattern );
+	int flags = 0;
+	if( !enttools )
+		flags |= GC_COMMON;
+	if( enttools == 1 )
+		flags |= GC_ENTTOOLS;
+	Ent_RunGC( flags, NULL, pattern );
 }
 
 int Ent_CheckEntitySpawn( edict_t *pent )
@@ -262,7 +267,7 @@ int Ent_CheckEntitySpawn( edict_t *pent )
 		if( gpGlobals->maxEntities - index < 10 )
 		{
 			ALERT( at_error, "REFUSING CREATING ENTITY %s\n", STRING( pent->v.classname ) );
-			Ent_RunGC( true, true, NULL );
+			//Ent_RunGC( 0, NULL );
 			return 1;
 		}
 
@@ -275,7 +280,7 @@ int Ent_CheckEntitySpawn( edict_t *pent )
 				return 1;
 
 
-			Ent_RunGC( true, false, NULL );
+			Ent_RunGC( GC_COMMON, NULL );
 
 			return 0;
 		}
@@ -283,13 +288,13 @@ int Ent_CheckEntitySpawn( edict_t *pent )
 		if( index > gpGlobals->maxEntities / 2 && counter - lastgc > 256 )
 		{
 			lastgc = counter;
-			Ent_RunGC( true, false, NULL );
+			Ent_RunGC( GC_COMMON, NULL );
 			return 0;
 		}
 		else if( counter - lastgc > gpGlobals->maxEntities )
 		{
 			lastgc = counter;
-			Ent_RunGC( true, false, NULL );
+			Ent_RunGC( GC_COMMON, NULL );
 			return 0;
 		}
 	}

@@ -47,7 +47,9 @@ extern cvar_t mp_maxtentdist;
 extern cvar_t mp_maxdecals;
 
 void GGM_RegisterCVars( void );
-void Ent_RunGC( bool common, bool enttools, const char *userid, const char *pattern = NULL );
+#define GC_COMMON (1<<0)
+#define GC_ENTTOOLS (1<<1)
+void Ent_RunGC( int flags, const char *userid, const char *pattern = NULL );
 bool Q_stricmpext( const char *pattern, const char *text );
 class CBasePlayer;
 void GGM_ClientPutinServer(edict_t *pEntity , CBasePlayer *pPlayer);

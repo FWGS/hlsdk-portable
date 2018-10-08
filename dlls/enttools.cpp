@@ -116,7 +116,7 @@ bool Ent_CheckCreate( edict_t *player, const char *classname )
 			{
 				// remove all created entities
 				if( node->clear )
-				    Ent_RunGC( false, true, GGM_GetPlayerID( player ) );
+					Ent_RunGC( GC_ENTTOOLS, GGM_GetPlayerID( player ) );
 
 				if( node->behaviour == 2 )
 				{
@@ -757,7 +757,7 @@ void Ent_Fire_f( edict_t *player )
 		Ent_ClientPrintf( player, "entity %i\n", i );
 
 		if( single && count > 0 )
-		    break;
+			break;
 
 
 		count++;
