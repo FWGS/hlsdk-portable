@@ -166,6 +166,23 @@ void Ent_RunGC( int flags, const char *userid, const char *pattern )
 		if( ent->v.flags & FL_KILLME )
 			continue;
 
+		if( !strcmp( classname, "spark_shower" ) )
+		{
+			ent->v.flags |= FL_KILLME;
+			removed++;
+			continue;
+		}
+
+		if( !strncmp( classname, "weapon_", 7 ) || !strncmp( classname, "ammo_", 5 ) || !strncmp( classname, "item_", 5 ) || !strcmp( classname, "prop" ) )
+		{
+			if( ent->v.velocity.z < -1600 )
+			{
+				ent->v.flags |= FL_KILLME;
+				removed++;
+				continue;
+			}
+		}
+
 		if( flags & GC_COMMON )
 		{
 			if( !strcmp( classname, "gib" ) || !strcmp( classname, "gateofbabylon_bolt" ) )
@@ -254,6 +271,21 @@ void Ent_RunGC_f()
 	Ent_RunGC( flags, NULL, pattern );
 }
 
+edict_t *CREATE_NAMED_ENTITY( string_t name )
+{
+	static int lastindex;
+	static float time;
+
+	// if entities overflowed in this frame, do not allow create new one
+	if( gpGlobals->maxEntities - lastindex < 10 && time == gpGlobals->time )
+		return NULL;
+
+	edict_t *pent = g_engfuncs.pfnCreateNamedEntity(name);
+	lastindex = ENTINDEX( pent );
+	time = gpGlobals->time;
+	return pent;
+}
+
 int Ent_CheckEntitySpawn( edict_t *pent )
 {
 
@@ -267,7 +299,7 @@ int Ent_CheckEntitySpawn( edict_t *pent )
 		if( gpGlobals->maxEntities - index < 10 )
 		{
 			ALERT( at_error, "REFUSING CREATING ENTITY %s\n", STRING( pent->v.classname ) );
-			//Ent_RunGC( 0, NULL );
+			Ent_RunGC( GC_COMMON, NULL );
 			return 1;
 		}
 

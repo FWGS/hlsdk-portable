@@ -47,7 +47,8 @@ void SET_MODEL( edict_t *e, const char *model );
 #define MAKE_VECTORS	(*g_engfuncs.pfnMakeVectors)
 #define CREATE_ENTITY	(*g_engfuncs.pfnCreateEntity)
 #define REMOVE_ENTITY	(*g_engfuncs.pfnRemoveEntity)
-#define CREATE_NAMED_ENTITY		(*g_engfuncs.pfnCreateNamedEntity)
+//#define CREATE_NAMED_ENTITY		(*g_engfuncs.pfnCreateNamedEntity)
+edict_t *CREATE_NAMED_ENTITY( string_t name );
 #define MAKE_STATIC		(*g_engfuncs.pfnMakeStatic)
 #define ENT_IS_ON_FLOOR	(*g_engfuncs.pfnEntIsOnFloor)
 #define DROP_TO_FLOOR	(*g_engfuncs.pfnDropToFloor)
