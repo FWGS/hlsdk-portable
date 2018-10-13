@@ -234,7 +234,8 @@ void UTIL_BecomeSpectator( CBasePlayer *pPlayer )
 void UTIL_SpawnPlayer( CBasePlayer *pPlayer )
 {
 	//pPlayer->StopObserver();
-	pPlayer->gravgunmod_data.m_state = STATE_SPAWNED;
+	if( pPlayer->gravgunmod_data.m_state == STATE_SPECTATOR )
+		pPlayer->gravgunmod_data.m_state = STATE_SPAWNED;
 	pPlayer->m_iRespawnFrames = 0;
 	pPlayer->pev->effects &= ~EF_NODRAW;
 

@@ -698,16 +698,18 @@ void ClientUserInfoChanged( edict_t *pEntity, char *infobuffer )
 	if( !uid || strstr(uid, "PENDING") )
 		uid = g_engfuncs.pfnInfoKeyValue( g_engfuncs.pfnGetInfoKeyBuffer( pPlayer->edict() ), "ip" );
 
-	GGMPlayerState *pState = GGM_GetState(uid, name);
-	if( pState != pPlayer->gravgunmod_data.pState )
+	if( !pPlayer->gravgunmod_data.pState || !pPlayer->gravgunmod_data.pState->registered ||  pPlayer->gravgunmod_data.m_state != STATE_SPAWNED )
 	{
-		pEntity->v.netname = pEntity->v.frags = 0;
-		GGM_SaveState( pPlayer );
-		pPlayer->gravgunmod_data.pState = pState;
-		pPlayer->gravgunmod_data.m_state = STATE_UNINITIALIZED;
+		GGMPlayerState *pState = GGM_GetState(uid, name);
+
+		if( pState != pPlayer->gravgunmod_data.pState )
+		{
+			GGM_SaveState( pPlayer );
+			pEntity->v.netname = pEntity->v.frags = 0;
+			pPlayer->gravgunmod_data.pState = pState;
+			pPlayer->gravgunmod_data.m_state = STATE_UNINITIALIZED;
+		}
 	}
-	//strncpy( pPlayer->gravgunmod_data.uid, uid, 32 );
-	//pPlayer->gravgunmod_data.uid[32] = 0;
 
 	// msg everyone if someone changes their name,  and it isn't the first time (changing no name to current name)
 	if( pEntity->v.netname && ( STRING( pEntity->v.netname ) )[0] != 0 && !FStrEq( STRING( pEntity->v.netname ), name ) )
