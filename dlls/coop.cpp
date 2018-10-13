@@ -490,8 +490,8 @@ void COOP_NewCheckpoint( entvars_t *pevPlayer )
 bool COOP_PlayerDeath( CBasePlayer *pPlayer )
 {
 
-	if( pPlayer->gravgunmod_data.m_iMenuState == MENUSTATE_CHECKPOINT )
-		return true;
+//	if( pPlayer->gravgunmod_data.m_iMenuState == MENUSTATE_CHECKPOINT )
+	//	return true;
 
 	if( g_checkpoints[0].time )
 	{

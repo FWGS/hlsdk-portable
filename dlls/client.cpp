@@ -116,6 +116,15 @@ GLOBALS ASSUMED SET:  g_fGameOver
 */
 void ClientDisconnect( edict_t *pEntity )
 {
+
+	CBasePlayer *pPlayer = (CBasePlayer*)CBaseEntity::Instance( pEntity );
+
+	if( pPlayer && pPlayer->IsPlayer() )
+	{
+		GGM_SaveState( pPlayer );
+		pPlayer->gravgunmod_data.m_state = STATE_UNINITIALIZED;
+	}
+
 	if (g_fGameOver)
 		return;
 
@@ -145,12 +154,6 @@ void ClientDisconnect( edict_t *pEntity )
 	UTIL_SetOrigin( &pEntity->v, pEntity->v.origin );
 
 	g_pGameRules->ClientDisconnected( pEntity );
-	if( mp_coop.value )
-	{
-		CBasePlayer *pPlayer = (CBasePlayer*)CBaseEntity::Instance( pEntity );
-		if( pPlayer )
-			pPlayer->gravgunmod_data.m_state = STATE_UNINITIALIZED;
-	}
 
 }
 
@@ -686,6 +689,8 @@ void ClientUserInfoChanged( edict_t *pEntity, char *infobuffer )
 	if ( !pEntity->pvPrivateData )
 		return;
 
+	const char *name =  g_engfuncs.pfnInfoKeyValue( infobuffer, "name" );
+
 
 	// prevent keeping other's uid on saverestore
 	CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)&pEntity->v);
@@ -693,14 +698,19 @@ void ClientUserInfoChanged( edict_t *pEntity, char *infobuffer )
 	if( !uid || strstr(uid, "PENDING") )
 		uid = g_engfuncs.pfnInfoKeyValue( g_engfuncs.pfnGetInfoKeyBuffer( pPlayer->edict() ), "ip" );
 
-	if( strncmp( uid ,pPlayer->gravgunmod_data.uid, 32 ) )
+	GGMPlayerState *pState = GGM_GetState(uid, name);
+	if( pState != pPlayer->gravgunmod_data.pState )
+	{
 		pEntity->v.netname = pEntity->v.frags = 0;
-
-	strncpy( pPlayer->gravgunmod_data.uid, uid, 32 );
-	pPlayer->gravgunmod_data.uid[32] = 0;
+		GGM_SaveState( pPlayer );
+		pPlayer->gravgunmod_data.pState = pState;
+		pPlayer->gravgunmod_data.m_state = STATE_UNINITIALIZED;
+	}
+	//strncpy( pPlayer->gravgunmod_data.uid, uid, 32 );
+	//pPlayer->gravgunmod_data.uid[32] = 0;
 
 	// msg everyone if someone changes their name,  and it isn't the first time (changing no name to current name)
-	if( pEntity->v.netname && ( STRING( pEntity->v.netname ) )[0] != 0 && !FStrEq( STRING( pEntity->v.netname ), g_engfuncs.pfnInfoKeyValue( infobuffer, "name" ) ) )
+	if( pEntity->v.netname && ( STRING( pEntity->v.netname ) )[0] != 0 && !FStrEq( STRING( pEntity->v.netname ), name ) )
 	{
 		char sName[256];
 		char *pName = g_engfuncs.pfnInfoKeyValue( infobuffer, "name" );

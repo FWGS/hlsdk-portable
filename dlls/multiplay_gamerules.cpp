@@ -414,6 +414,7 @@ BOOL CHalfLifeMultiplay::ClientConnected( edict_t *pEntity, const char *pszName,
 extern int gmsgSayText;
 extern int gmsgGameMode;
 
+
 void ClientPutInServer( edict_t *client );
 
 void CHalfLifeMultiplay::UpdateGameMode( CBasePlayer *pPlayer )
@@ -598,50 +599,19 @@ extern EHANDLE				g_pLastSpawn;
 //=========================================================
 void CHalfLifeMultiplay::PlayerSpawn( CBasePlayer *pPlayer )
 {
-	BOOL		addDefault;
+	BOOL		addDefault = !mp_skipdefaults.value;
 	CBaseEntity	*pWeaponEntity = NULL;
 
-	if( pPlayer->gravgunmod_data.m_state == STATE_UNINITIALIZED )
-	{
-		ClientPutInServer( pPlayer->edict() );
+	if( GGM_PlayerSpawn( pPlayer ) )
 		return;
-	}
-
-	if( mp_spectator.value && pPlayer->gravgunmod_data.m_state == STATE_CONNECTED )
-	{
-		pPlayer->gravgunmod_data.m_state = STATE_SPECTATOR_BEGIN;
-		pPlayer->RemoveAllItems( TRUE );
-		UTIL_BecomeSpectator( pPlayer );
-		return;
-	}
-
-	if( mp_coop_changelevel.value && pPlayer->gravgunmod_data.m_state == STATE_POINT_SELECT && !(pPlayer->pev->flags & FL_SPECTATOR) )
-	{
-		pPlayer->RemoveAllItems( TRUE );
-		UTIL_BecomeSpectator( pPlayer );
-		return;
-	}
-
-	if( pPlayer->pev->flags & FL_SPECTATOR )
-		return;
-
-	if( !mp_coop_changelevel.value )
-		pPlayer->gravgunmod_data.m_state = STATE_SPAWNED;
-
-	g_fPause = false;
 
 	pPlayer->pev->weapons |= ( 1 << WEAPON_SUIT );
-
-	addDefault = !mp_skipdefaults.value;
 
 	while( ( pWeaponEntity = UTIL_FindEntityByClassname( pWeaponEntity, "game_player_equip" ) ) )
 	{
 		pWeaponEntity->Touch( pPlayer );
 		addDefault = FALSE;
 	}
-
-	if( pPlayer->gravgunmod_data.m_state != STATE_SPAWNED )
-		return;
 
 	if( addDefault )
 	{

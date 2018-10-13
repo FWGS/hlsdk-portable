@@ -57,7 +57,7 @@ void GGM_ClientFirstSpawn(CBasePlayer *pPlayer );
 const char *GGM_GetPlayerID( edict_t *player );
 edict_t *GGM_PlayerByID( const char *id );
 void GGM_Say( edict_t *pEntity );
-bool GGM_ClientCommand( CBasePlayer *player, const char *pcmd );
+bool GGM_ClientCommand( CBasePlayer *player, const char *pCmd );
 void GGM_InitialMenus( CBasePlayer *pPlayer );
 void GGM_CvarValue2( const edict_t *pEnt, int requestID, const char *cvarName, const char *value );
 
@@ -104,20 +104,67 @@ public:
 };
 
 
+struct GGMLogin
+{
+	struct GGMLogin *pNext;
+	char uid[33];
+	char name[32];
+	struct GGMPlayerState *pState;
+};
+
+// registration and game stats
+// saved on every change to separate file
+// but only for registered users
+struct GGMPersist
+{
+	// uid or nickname
+	char uid[33];
+	/// todo:salt/hash
+	char password[33];
+};
+
+// complete player state
+// saved on save request, but kept in runtime
+struct GGMTempState
+{
+	char mapname[32];
+	Vector vecOrigin;
+	float flHealth;
+	float flBattery;
+	int iFrags;
+	int iDeaths;
+	char rgWeapons[MAX_WEAPONS][32];// weapon names
+	char rgiClip[MAX_WEAPONS];// ammo names
+	int	rgAmmo[MAX_AMMO_SLOTS];// ammo quantities
+	char WeaponName[32];
+};
+
+struct GGMPlayerState
+{
+	struct GGMPlayerState *pNext;
+	struct GGMPersist p;
+	struct GGMTempState t;
+	bool registered;
+};
+
+
 struct GGMData
 {
 	float m_flSpawnTime;
 	PlayerState m_state;
 	bool m_fTouchMenu;
-	int m_iMenuState;
 	int m_iLocalConfirm;
-	int m_iConfirmKey;
 	float m_flEntScope;
 	float m_flEntTime;
-	char uid[33];
 	GGM_PlayerMenu menu;
 	bool touch_loading;
+	struct GGMPlayerState *pState;
+	char registering_name[32];
 };
 
+struct GGMPlayerState *GGM_GetState(const char *uid, const char *name);
+bool GGM_RestoreState( CBasePlayer *pPlayer );
+void GGM_SaveState( CBasePlayer *pPlayer );
+bool GGM_PlayerSpawn( CBasePlayer *pPlayer );
 #endif // GRAVGUNMOD_H
 
