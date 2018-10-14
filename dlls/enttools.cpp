@@ -62,7 +62,6 @@ void Ent_ClearBlacklist_f( void )
 	}
 }
 
-
 bool Ent_CheckFire( edict_t *player, edict_t *ent, const char *command )
 {
 	if( !mp_enttools_players.value && ENTINDEX( ent ) < gpGlobals->maxClients + 1 )
@@ -75,11 +74,13 @@ bool Ent_CheckFire( edict_t *player, edict_t *ent, const char *command )
 		if( mp_enttools_lockmapentities.value && !pEntity->enttools_data.enttools )
 			return false;
 
-		// only if player online
+		// only if player online or registered
 		if( mp_enttools_checkowner.value == 1 )
 		{
 			if( GGM_PlayerByID( pEntity->enttools_data.ownerid ) )
 				return !strcmp( pEntity->enttools_data.ownerid, GGM_GetPlayerID( player ) );
+			if( pEntity->enttools_data.enttools == 2 )
+				return false;
 		}
 
 		if( mp_enttools_checkowner.value == 2 )
@@ -1087,7 +1088,11 @@ void Ent_Create_f( edict_t *player )
 	if( entity )
 	{
 		const char *plid = GGM_GetPlayerID( player );
-		entity->enttools_data.enttools = true;
+		CBasePlayer *pPlayer = (CBasePlayer*)CBaseEntity::Instance( player );
+		entity->enttools_data.enttools = 1;
+		if( pPlayer && pPlayer->IsPlayer() && pPlayer->gravgunmod_data.pState && pPlayer->gravgunmod_data.pState->registered )
+			entity->enttools_data.enttools = 2;
+
 		if( plid );
 			strcpy( entity->enttools_data.ownerid, plid );
 	}

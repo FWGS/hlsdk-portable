@@ -104,11 +104,15 @@ public:
 };
 
 
+
+
 struct GGMLogin
 {
 	struct GGMLogin *pNext;
+	struct {
 	char uid[33];
 	char name[32];
+	} f;
 	struct GGMPlayerState *pState;
 };
 
@@ -145,6 +149,7 @@ struct GGMPlayerState
 	struct GGMPersist p;
 	struct GGMTempState t;
 	bool registered;
+	bool fNeedWrite;
 };
 
 
@@ -166,5 +171,6 @@ struct GGMPlayerState *GGM_GetState(const char *uid, const char *name);
 bool GGM_RestoreState( CBasePlayer *pPlayer );
 void GGM_SaveState( CBasePlayer *pPlayer );
 bool GGM_PlayerSpawn( CBasePlayer *pPlayer );
+const char *GGM_GetAuthID( CBasePlayer *pPlayer );
 #endif // GRAVGUNMOD_H
 

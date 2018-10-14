@@ -7,7 +7,10 @@ bool Ent_ProcessClientCommand( edict_t *player );
 void ENT_RegisterCVars( void );
 
 struct EntoolsEntData {
-	bool enttools; // created by enttools
+	// 0 - not created by enttools
+	// 1 - created by anonymous user
+	// 2 - created by registered user
+	char enttools;
 	char ownerid[33];
 };
 

@@ -41,7 +41,7 @@ cvar_t mp_maxdecals = { "mp_maxdecals", "-1", FCVAR_SERVER };
 cvar_t mp_enttools_checkmodels = { "mp_enttools_checkmodels", "0", FCVAR_SERVER };
 cvar_t mp_errormdl = { "mp_errormdl", "0", FCVAR_SERVER };
 cvar_t mp_errormdlpath = { "mp_errormdlpath", "models/error.mdl", FCVAR_SERVER };
-
+static char gamedir[MAX_PATH];
 void Ent_RunGC_f( void );
 
 static bool Q_starcmp( const char *pattern, const char *text )
@@ -142,6 +142,7 @@ void GGM_RegisterCVars( void )
 
 	g_engfuncs.pfnAddServerCommand( "ent_rungc", Ent_RunGC_f );
 	g_engfuncs.pfnAddServerCommand( "mp_lightstyle", GGM_LightStyle_f );
+	GET_GAME_DIR(gamedir);
 }
 
 
@@ -223,7 +224,7 @@ void Ent_RunGC( int flags, const char *userid, const char *pattern )
 			continue;
 		}
 
-		if( (flags & GC_ENTTOOLS) && entity->enttools_data.enttools )
+		if( (flags & GC_ENTTOOLS) && entity->enttools_data.enttools == 1 )
 		{
 			if( !userid || !strcmp( userid, entity->enttools_data.ownerid ) )
 			{
@@ -350,23 +351,60 @@ void GGM_ChatPrintf( CBasePlayer *pPlayer, const char *format, ... )
 	CLIENT_PRINTF( pPlayer->edict(), print_chat, string );
 }
 
+bool GGM_FilterFileName( const char *name )
+{
+	while( name && *name )
+	{
+		if( *name >= 'A' && *name <= 'z' || *name >= '0' && *name <= '9' || *name == '_' )
+		{
+			name++;
+			continue;
+		}
+		return false;
+	}
 
-void GGM_ClientPutinServer(edict_t *pEntity, CBasePlayer *pPlayer)
+	return true;
+}
+const char *GGM_GetAuthID( CBasePlayer *pPlayer )
+{
+	static char uid[33];
+	const char *authid = GETPLAYERAUTHID( pPlayer->edict() );
+
+	if( !authid || strstr(authid, "PENDING") )
+	{
+		const char *ip = g_engfuncs.pfnInfoKeyValue( g_engfuncs.pfnGetInfoKeyBuffer( pPlayer->edict() ), "ip" );
+		if( ip )
+		{
+			char *pUid;
+
+			snprintf( uid, 32, "IP_%s", ip );
+
+			for( pUid = uid; *pUid; pUid++ )
+				if( *pUid == '.' ) *pUid = '_';
+		}
+		else
+			return "UNKNOWN";
+	}
+	else strncpy( uid, authid, 32 );
+
+	if( GGM_FilterFileName( uid ) )
+		return uid;
+
+	return "UNKNOWN";
+}
+
+void GGM_ClientPutinServer( edict_t *pEntity, CBasePlayer *pPlayer )
 {
 	if( mp_touchmenu.value && pPlayer->gravgunmod_data.m_state == STATE_UNINITIALIZED )
 		g_engfuncs.pfnQueryClientCvarValue2( pEntity, "touch_enable", 111 );
 
 	pPlayer->gravgunmod_data.m_state = STATE_CONNECTED;
 
-	const char *uid = GETPLAYERAUTHID( pPlayer->edict() );
-	if( !uid || strstr(uid, "PENDING") )
-		uid = g_engfuncs.pfnInfoKeyValue( g_engfuncs.pfnGetInfoKeyBuffer( pPlayer->edict() ), "ip" );
-
 	pPlayer->gravgunmod_data.m_flEntTime = 0;
 	pPlayer->gravgunmod_data.m_flEntScope = 0;
 	pPlayer->gravgunmod_data.menu.pPlayer = pPlayer;
 	pPlayer->gravgunmod_data.menu.Clear();
-	pPlayer->gravgunmod_data.pState = GGM_GetState( uid, STRING(pEntity->v.netname) );
+	pPlayer->gravgunmod_data.pState = GGM_GetState( GGM_GetAuthID(pPlayer), STRING(pEntity->v.netname) );
 }
 
 void GGM_ClientFirstSpawn(CBasePlayer *pPlayer)
@@ -430,18 +468,162 @@ struct GGMPlayerState *GGM_FindState( GGMPlayerState *list, const char *uid )
 	return NULL;
 }
 
+void GGM_WritePersist( GGMPlayerState *pState )
+{
+	FILE *f;
+	char path[64] = "";
+
+	if( !pState->registered )
+		return;
+
+	snprintf( path, 63, "%s/ggm/registrations/%s", gamedir, pState->p.uid );
+
+	f = fopen( path, "wb" );
+
+	if( !f )
+		return;
+
+	fwrite( &pState->p, 1, sizeof( pState->p ), f );
+	fclose( f );
+}
+
+void GGM_ReadPersist( GGMPlayerState *pState )
+{
+	FILE *f;
+	char path[64] = "";
+
+	if( !pState->registered )
+		return;
+
+	snprintf( path, 63, "%s/ggm/registrations/%s", gamedir, pState->p.uid );
+
+	f = fopen( path, "rb" );
+
+	if( !f )
+		return;
+
+	fread( &pState->p, 1, sizeof( pState->p ), f );
+	fclose( f );
+}
+
+struct GGMPlayerState *GGM_GetRegistration( const char *name )
+{
+	struct GGMPlayerState *pState = GGM_FindState( registered_list, name );
+
+	if( pState )
+	{
+		GGM_ReadPersist( pState );
+		return pState;
+	}
+	else
+	{
+		FILE *f;
+		char path[64] = "";
+
+		snprintf( path, 63, "%s/ggm/registrations/%s", gamedir, name );
+
+		f = fopen( path, "rb" );
+
+		if( !f )
+			return NULL;
+
+		pState = (struct GGMPlayerState*)calloc( 1, sizeof( struct GGMPlayerState ) );
+		memset( pState, 0, sizeof( struct GGMPlayerState ) );
+
+		fread( &pState->p, 1, sizeof( pState->p ), f );
+		fclose( f );
+		pState->pNext = registered_list;
+		pState->registered = true;
+		registered_list = pState;
+		return pState;
+	}
+}
+
+unsigned int GGM_HashString( const char *s )
+{
+	unsigned int hashval;
+
+	for( hashval = 0; *s; s++ )
+		hashval = *s + 31*hashval;
+	return hashval;
+}
+
+void GGM_WriteLogin( struct GGMLogin *pLogin )
+{
+	FILE *f;
+	char path[64] = "";
+
+	if( !pLogin->pState )
+		return;
+
+	if( !GGM_FilterFileName( pLogin->f.uid ) || !GGM_FilterFileName( pLogin->f.name ) )
+		snprintf( path, 63,  "%s/ggm/logins/%d.%d", gamedir, GGM_HashString( pLogin->f.uid ), GGM_HashString( pLogin->f.name ) );
+	else
+		snprintf( path, 63, "%s/ggm/logins/%s.%s", gamedir, pLogin->f.uid, pLogin->f.name );
+
+	f = fopen( path, "wb" );
+
+	if( !f )
+		return;
+
+	fwrite( &pLogin->f, 1, sizeof( pLogin->f ), f );
+	fwrite( &pLogin->pState->p.uid, 1, 33, f );
+	fclose( f );
+}
+
+struct GGMLogin *GGM_LoadLogin( const char *uid, const char *name )
+{
+	FILE *f;
+	char path[64] = "";
+	struct GGMLogin *pLogin;
+
+	for( pLogin = login_list; pLogin; pLogin = pLogin->pNext )
+	{
+		if( !strcmp( name, pLogin->f.name ) && !strcmp(uid, pLogin->f.uid ) )
+		{
+			return pLogin;
+		}
+	}
+
+	if( !GGM_FilterFileName( uid ) || !GGM_FilterFileName( name ) )
+		snprintf( path, 63,  "%s/ggm/logins/%d.%d", gamedir, GGM_HashString( uid ), GGM_HashString( name ) );
+	else
+		snprintf( path, 63, "%s/ggm/logins/%s.%s", gamedir, uid, name );
+
+	f = fopen( path, "rb" );
+
+	if( !f )
+		return NULL;
+
+	pLogin = (struct GGMLogin*)calloc(1, sizeof( struct GGMLogin ) );
+	fread( &pLogin->f, 1, sizeof( pLogin->f ), f );
+	fread( path, 1, 33, f );
+	path[32] = 0;
+	fclose( f );
+	pLogin->pState = GGM_GetRegistration(path);
+	pLogin->pNext = login_list;
+	login_list = pLogin;
+	return pLogin;
+}
+
+
 struct GGMPlayerState *GGM_GetState( const char *uid, const char *name )
 {
 	struct GGMPlayerState *pState;
+	struct GGMLogin *pLogin = GGM_LoadLogin( uid, name );
 
-	for( struct GGMLogin *login = login_list; login; login = login->pNext )
+	if( pLogin )
 	{
-		if( !strcmp( name, login->name ) )
+		return pLogin->pState;
+	}
+	else
+	{
+		for( struct GGMLogin *login = login_list; login; login = login->pNext )
 		{
-			if( !strncmp(uid, login->uid, 32 ) )
-				return login->pState;
-			else
-				return NULL; // ask for login or nickname change
+			if( !strcmp( name, login->f.name ) )
+			{
+				return NULL;
+			}
 		}
 	}
 
@@ -507,6 +689,8 @@ bool GGM_RestoreState(CBasePlayer *pPlayer)
 
 	if( !pState )
 		return false;
+
+	GGM_ReadPersist( pState );
 
 	pPlayer->pev->frags = pState->t.iFrags;
 	pPlayer->m_iDeaths = pState->t.iDeaths;
@@ -593,31 +777,17 @@ bool GGM_PlayerSpawn( CBasePlayer *pPlayer )
 	return pPlayer->gravgunmod_data.m_state != STATE_SPAWNED;
 }
 
-bool GGM_FilterFileName( const char *name )
-{
-	while( name && *name )
-	{
-		if( *name >= 'A' && *name <= 'z' || *name >= '0' && *name <= '9' )
-		{
-			name++;
-			continue;
-		}
-		return false;
-	}
-
-	return true;
-}
-
 void GGM_Logout( CBasePlayer *pPlayer )
 {
 	struct GGMLogin *pLogin, *pPrevLogin = NULL;
-	const char *uid = GETPLAYERAUTHID( pPlayer->edict() );
+	const char *uid = GGM_GetAuthID( pPlayer );
 	const char *name = STRING( pPlayer->pev->netname );
+	char path[64] = "";
 
 	// unlink from list and free
 	for( pLogin = login_list; pLogin; pLogin = pLogin->pNext )
 	{
-		if( strncmp( uid, pLogin->uid, 32 ) || strncmp( name, pLogin->name, 32 ) )
+		if( strcmp( uid, pLogin->f.uid ) || strcmp( name, pLogin->f.name ) )
 		{
 			pPrevLogin = pLogin;
 			continue;
@@ -643,6 +813,13 @@ void GGM_Logout( CBasePlayer *pPlayer )
 	pPlayer->gravgunmod_data.pState = GGM_GetState(uid, name);
 	if( pPlayer->gravgunmod_data.m_state == STATE_SPAWNED )
 		GGM_RestoreState( pPlayer );
+
+	// remove login record
+	if( !GGM_FilterFileName( uid ) || !GGM_FilterFileName( name ) )
+		snprintf( path, 63,  "%s/ggm/logins/%d.%d", gamedir, GGM_HashString( uid ), GGM_HashString( name ) );
+	else
+		snprintf( path, 63, "%s/ggm/logins/%s.%s", gamedir, uid, name );
+	remove(path);
 }
 
 void GGM_FreeState( const char *uid )
@@ -657,7 +834,7 @@ void GGM_FreeState( const char *uid )
 
 		if( pPlayer && pPlayer->IsPlayer() && pPlayer->gravgunmod_data.pState )
 		{
-			if( !pPlayer->gravgunmod_data.pState->registered && !strncmp( uid, pPlayer->gravgunmod_data.pState->p.uid, 32  ) )
+			if( !pPlayer->gravgunmod_data.pState->registered && !strcmp( uid, pPlayer->gravgunmod_data.pState->p.uid ) )
 				pPlayer->gravgunmod_data.pState = NULL;
 		}
 	}
@@ -665,7 +842,7 @@ void GGM_FreeState( const char *uid )
 	// unlink from list and free
 	for( pState = anonymous_list; pState; pState = pState->pNext )
 	{
-		if( strncmp( uid, pState->p.uid, 32 ) )
+		if( strcmp( uid, pState->p.uid ) )
 		{
 			pPrevState = pState;
 			continue;
@@ -708,7 +885,7 @@ bool GGM_CheckUserName( CBasePlayer *pPlayer, const char *name, bool exist )
 		return false;
 	}
 
-	if( exist && GGM_FindState( registered_list, name ) )
+	if( exist && GGM_GetRegistration( name ) )
 	{
 		GGM_ChatPrintf( pPlayer, "Name %s busy!\n", name );
 		return false;
@@ -745,12 +922,14 @@ void GGM_Register( CBasePlayer *pPlayer, const char *name, const char *password 
 	pState->t = pPlayer->gravgunmod_data.pState->t;
 	pState->pNext = registered_list;
 	registered_list = pState;
+	GGM_WritePersist( pState );
 	pLogin = (struct GGMLogin*)calloc(1, sizeof( struct GGMLogin ) );
 	pLogin->pState = pState;
-	strncpy( pLogin->name, STRING(pPlayer->pev->netname ), 32 );
-	strncpy( pLogin->uid, pPlayer->gravgunmod_data.pState->p.uid, 32 );
+	strncpy( pLogin->f.name, STRING(pPlayer->pev->netname ), 32 );
+	strncpy( pLogin->f.uid, pPlayer->gravgunmod_data.pState->p.uid, 32 );
 	pLogin->pNext = login_list;
 	login_list = pLogin;
+	GGM_WriteLogin( pLogin );
 	GGM_FreeState( pPlayer->gravgunmod_data.pState->p.uid );
 	pPlayer->gravgunmod_data.pState = pState;
 	GGM_ChatPrintf( pPlayer, "Successfully registered as %s!\n", name );
@@ -817,13 +996,13 @@ void GGM_Login( CBasePlayer *pPlayer, const char *name, const char *password )
 	if( !GGM_CheckUserName( pPlayer, name, false ) )
 		return;
 
-	pState = GGM_FindState( registered_list, name );
+	pState = GGM_GetRegistration( name );
 
 	if( !pPlayer->gravgunmod_data.pState )
 	{
 		for( pLogin = login_list; pLogin; pLogin = pLogin->pNext )
 		{
-			if( !strncmp( pLogin->name, STRING(pPlayer->pev->netname ), 32 ) )
+			if( !strcmp( pLogin->f.name, STRING(pPlayer->pev->netname ) ) )
 			{
 				if( pState == pLogin->pState ) // same person
 					break;
@@ -844,11 +1023,13 @@ void GGM_Login( CBasePlayer *pPlayer, const char *name, const char *password )
 	}
 	pLogin = (struct GGMLogin*)calloc(1, sizeof( struct GGMLogin ) );
 	pLogin->pState = pState;
-	strncpy( pLogin->name, STRING(pPlayer->pev->netname ), 32 );
-	strncpy( pLogin->uid, pPlayer->gravgunmod_data.pState->p.uid, 32 );
+	strncpy( pLogin->f.name, STRING(pPlayer->pev->netname ), 32 );
+	strncpy( pLogin->f.uid, GGM_GetAuthID(pPlayer), 32 );
 	pLogin->pNext = login_list;
 	login_list = pLogin;
-	GGM_FreeState( pPlayer->gravgunmod_data.pState->p.uid );
+	GGM_WriteLogin( pLogin );
+	if( pPlayer->gravgunmod_data.pState )
+		GGM_FreeState( pPlayer->gravgunmod_data.pState->p.uid );
 	pPlayer->gravgunmod_data.pState = pState;
 	GGM_ChatPrintf( pPlayer, "Successfully logged in as %s\n", name );
 

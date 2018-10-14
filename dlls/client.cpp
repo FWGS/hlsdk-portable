@@ -694,10 +694,7 @@ void ClientUserInfoChanged( edict_t *pEntity, char *infobuffer )
 
 	// prevent keeping other's uid on saverestore
 	CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)&pEntity->v);
-	const char *uid = GETPLAYERAUTHID( pPlayer->edict() );
-	if( !uid || strstr(uid, "PENDING") )
-		uid = g_engfuncs.pfnInfoKeyValue( g_engfuncs.pfnGetInfoKeyBuffer( pPlayer->edict() ), "ip" );
-
+	const char *uid = GGM_GetAuthID( pPlayer );
 	if( !pPlayer->gravgunmod_data.pState || !pPlayer->gravgunmod_data.pState->registered ||  pPlayer->gravgunmod_data.m_state != STATE_SPAWNED )
 	{
 		GGMPlayerState *pState = GGM_GetState(uid, name);

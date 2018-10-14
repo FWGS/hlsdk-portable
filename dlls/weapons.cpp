@@ -828,8 +828,7 @@ void CBasePlayerItem::AttachToPlayer( CBasePlayer *pPlayer )
 	pev->nextthink = 0;// Remove think - prevents futher attempts to materialize
 	SetTouch( NULL );
 	SetThink( NULL );
-
-	enttools_data.enttools = false;
+	enttools_data.enttools = 0;
 }
 
 // CALLED THROUGH the newly-touched weapon's instance. The existing player weapon is pOriginal
