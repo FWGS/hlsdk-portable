@@ -130,8 +130,6 @@ struct GGMPersist
 // saved on save request, but kept in runtime
 struct GGMTempState
 {
-	char mapname[32];
-	Vector vecOrigin;
 	float flHealth;
 	float flBattery;
 	int iFrags;
@@ -140,6 +138,7 @@ struct GGMTempState
 	char rgiClip[MAX_WEAPONS];// ammo names
 	int	rgAmmo[MAX_AMMO_SLOTS];// ammo quantities
 	char WeaponName[32];
+	Vector vecOrigin;
 };
 
 struct GGMPlayerState

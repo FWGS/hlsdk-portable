@@ -338,47 +338,6 @@ int Ent_CheckEntitySpawn( edict_t *pent )
 	return 0;
 }
 
-
-void GGM_RegisterCVars( void )
-{
-	CVAR_REGISTER( &cvar_allow_ar2 );
-	CVAR_REGISTER( &cvar_allow_gravgun );
-	CVAR_REGISTER( &cvar_ar2_mp5 );
-	CVAR_REGISTER( &cvar_ar2_bullets );
-	CVAR_REGISTER( &cvar_ar2_balls );
-	CVAR_REGISTER( &cvar_allow_bigcock );
-	CVAR_REGISTER( &cvar_allow_gateofbabylon );
-	CVAR_REGISTER( &cvar_wresptime );
-	CVAR_REGISTER( &cvar_iresptime );
-	CVAR_REGISTER( &cvar_gibtime );
-	CVAR_REGISTER( &cvar_hgibcount );
-	CVAR_REGISTER( &cvar_agibcount );
-	CVAR_REGISTER( &mp_gravgun_players );
-	CVAR_REGISTER( &mp_fixhornetbug );
-	CVAR_REGISTER( &mp_fixsavetime );
-	CVAR_REGISTER( &mp_checkentities );
-	CVAR_REGISTER( &mp_touchmenu );
-	CVAR_REGISTER( &mp_touchname );
-	CVAR_REGISTER( &mp_touchcommand );
-	CVAR_REGISTER( &mp_serverdistclip );
-	CVAR_REGISTER( &mp_maxbmodeldist );
-	CVAR_REGISTER( &mp_maxtrashdist );
-	CVAR_REGISTER( &mp_maxwaterdist );
-	CVAR_REGISTER( &mp_maxmonsterdist );
-	CVAR_REGISTER( &mp_maxotherdist );
-	CVAR_REGISTER( &mp_servercliptents );
-	CVAR_REGISTER( &mp_maxtentdist );
-	CVAR_REGISTER( &mp_maxdecals );
-	CVAR_REGISTER( &mp_enttools_checkmodels );
-	CVAR_REGISTER( &mp_errormdl );
-	CVAR_REGISTER( &mp_errormdlpath );
-
-	g_engfuncs.pfnAddServerCommand( "ent_rungc", Ent_RunGC_f );
-	g_engfuncs.pfnAddServerCommand( "mp_lightstyle", GGM_LightStyle_f );
-	g_engfuncs.pfnAddServerCommand( "ent_chown", Ent_Chown_f );
-	GET_GAME_DIR(gamedir);
-}
-
 void GGM_ChatPrintf( CBasePlayer *pPlayer, const char *format, ... )
 {
 	va_list	argptr;
@@ -518,6 +477,8 @@ void GGM_WritePersist( GGMPlayerState *pState )
 	if( !pState->fRegistered )
 		return;
 
+	pState->fNeedWrite = false;
+
 	snprintf( path, 63, "%s/ggm/registrations/%s", gamedir, pState->uid );
 
 	f = fopen( path, "wb" );
@@ -546,6 +507,144 @@ void GGM_ReadPersist( GGMPlayerState *pState )
 
 	fread( &pState->p, 1, sizeof( pState->p ), f );
 	fclose( f );
+}
+
+void GGM_ClearLists( void )
+{
+	// unlink from all players
+	for( int i = 1; i <= gpGlobals->maxClients; i++ )
+	{
+		CBasePlayer *pPlayer = (CBasePlayer*)UTIL_PlayerByIndex( i );
+
+		if( pPlayer && pPlayer->IsPlayer() )
+			pPlayer->gravgunmod_data.pState = NULL;
+	}
+
+	while( login_list )
+	{
+		struct GGMLogin *pLogin = login_list;
+
+		login_list = login_list->pNext;
+		free( pLogin );
+	}
+
+	while( registered_list )
+	{
+		struct GGMPlayerState *pState = registered_list;
+
+		registered_list = registered_list->pNext;
+		free( pState );
+	}
+
+	while( anonymous_list )
+	{
+		struct GGMPlayerState *pState = anonymous_list;
+
+		anonymous_list = anonymous_list->pNext;
+		free( pState );
+	}
+}
+
+void GGM_WritePlayers( const char *path )
+{
+	FILE *f = fopen( path, "wb" );
+	unsigned int tsize = sizeof( struct GGMTempState );
+	struct GGMPlayerState *pState = registered_list;
+	bool reg_completed = false;
+
+	if( !f )
+		return;
+
+	// make state actual
+	for( int i = 1; i <= gpGlobals->maxClients; i++ )
+	{
+		CBasePlayer *pPlayer = (CBasePlayer*)UTIL_PlayerByIndex( i );
+
+		if( pPlayer && pPlayer->IsPlayer() )
+			GGM_SaveState( pPlayer );
+	}
+
+	// keep size to allow extent struct
+	fwrite( &tsize, 4, 1, f );
+
+	while( true )
+	{
+		if( !pState && !reg_completed )
+		{
+			pState = anonymous_list;
+			reg_completed = true;
+		}
+		if( !pState )
+			break;
+
+		fwrite( &pState->fRegistered, 1, 1, f );
+		fwrite( &pState->uid, 33, 1, f );
+		fwrite( &pState->t, sizeof( struct GGMTempState ), 1, f );
+
+		pState = pState->pNext;
+	}
+	fclose( f );
+}
+
+bool GGM_ReadPlayers( const char *path )
+{
+	FILE *f = fopen( path, "rb" );
+	unsigned int tsize;
+
+	if( !f )
+		return false;
+
+	GGM_ClearLists();
+
+	if( !fread( &tsize, 4, 1, f ) )
+		return false;
+
+	// do not allow shrink structure
+	if( tsize > sizeof( struct GGMTempState ) )
+		return false;
+
+	while( true )
+	{
+		struct GGMPlayerState *pState = (struct GGMPlayerState *)calloc( 1, sizeof( struct GGMPlayerState ) );
+
+		memset( pState, 0, sizeof( struct GGMPlayerState ) );
+
+		fread( &pState->fRegistered, 1, 1, f );
+		fread( &pState->uid, 33, 1, f );
+		fread( &pState->t, tsize, 1, f );
+
+		if( feof(f) || ferror( f ) )
+		{
+			free( pState );
+			break;
+		}
+
+		if( pState->fRegistered )
+		{
+			pState->pNext = registered_list;
+			registered_list = pState;
+			GGM_ReadPersist( pState );
+		}
+		else
+		{
+			pState->pNext = anonymous_list;
+			anonymous_list = pState;
+		}
+	}
+
+	fclose( f );
+	return true;
+}
+
+void GGM_SavePlayers_f( void )
+{
+	GGM_WritePlayers( CMD_ARGV(1) );
+}
+
+void GGM_LoadPlayers_f( void )
+{
+	if( !GGM_ReadPlayers( CMD_ARGV(1) ) )
+		ALERT( at_error, "Failed to load player states from %s\n", CMD_ARGV( 1 ) );
 }
 
 struct GGMPlayerState *GGM_GetRegistration( const char *name )
@@ -682,7 +781,7 @@ struct GGMPlayerState *GGM_GetState( const char *uid, const char *name )
 	return anonymous_list = pState;
 }
 
-void GGM_SaveState(CBasePlayer *pPlayer)
+void GGM_SaveState( CBasePlayer *pPlayer )
 {
 	if( !pPlayer )
 		return;
@@ -723,6 +822,9 @@ void GGM_SaveState(CBasePlayer *pPlayer)
 	pState->t.rgWeapons[j][0] = 0;
 	for( i = 0; i < MAX_AMMO_SLOTS; i++ )
 		pState->t.rgAmmo[i] = pPlayer->m_rgAmmo[i];
+
+	if( pState->fNeedWrite )
+		GGM_WritePersist( pState );
 }
 
 bool GGM_RestoreState(CBasePlayer *pPlayer)
@@ -1874,4 +1976,48 @@ int PRECACHE_MODEL(const char *model)
 	}
 
 	return index;
+}
+
+void GGM_RegisterCVars( void )
+{
+	CVAR_REGISTER( &cvar_allow_ar2 );
+	CVAR_REGISTER( &cvar_allow_gravgun );
+	CVAR_REGISTER( &cvar_ar2_mp5 );
+	CVAR_REGISTER( &cvar_ar2_bullets );
+	CVAR_REGISTER( &cvar_ar2_balls );
+	CVAR_REGISTER( &cvar_allow_bigcock );
+	CVAR_REGISTER( &cvar_allow_gateofbabylon );
+	CVAR_REGISTER( &cvar_wresptime );
+	CVAR_REGISTER( &cvar_iresptime );
+	CVAR_REGISTER( &cvar_gibtime );
+	CVAR_REGISTER( &cvar_hgibcount );
+	CVAR_REGISTER( &cvar_agibcount );
+	CVAR_REGISTER( &mp_gravgun_players );
+	CVAR_REGISTER( &mp_fixhornetbug );
+	CVAR_REGISTER( &mp_fixsavetime );
+	CVAR_REGISTER( &mp_checkentities );
+	CVAR_REGISTER( &mp_touchmenu );
+	CVAR_REGISTER( &mp_touchname );
+	CVAR_REGISTER( &mp_touchcommand );
+	CVAR_REGISTER( &mp_serverdistclip );
+	CVAR_REGISTER( &mp_maxbmodeldist );
+	CVAR_REGISTER( &mp_maxtrashdist );
+	CVAR_REGISTER( &mp_maxwaterdist );
+	CVAR_REGISTER( &mp_maxmonsterdist );
+	CVAR_REGISTER( &mp_maxotherdist );
+	CVAR_REGISTER( &mp_servercliptents );
+	CVAR_REGISTER( &mp_maxtentdist );
+	CVAR_REGISTER( &mp_maxdecals );
+	CVAR_REGISTER( &mp_enttools_checkmodels );
+	CVAR_REGISTER( &mp_errormdl );
+	CVAR_REGISTER( &mp_errormdlpath );
+
+	g_engfuncs.pfnAddServerCommand( "ent_rungc", Ent_RunGC_f );
+	g_engfuncs.pfnAddServerCommand( "mp_lightstyle", GGM_LightStyle_f );
+	g_engfuncs.pfnAddServerCommand( "ent_chown", Ent_Chown_f );
+	g_engfuncs.pfnAddServerCommand( "saveplayers", GGM_SavePlayers_f );
+	g_engfuncs.pfnAddServerCommand( "loadplayers", GGM_LoadPlayers_f );
+
+
+	GET_GAME_DIR(gamedir);
 }
