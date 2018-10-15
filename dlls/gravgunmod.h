@@ -121,8 +121,7 @@ struct GGMLogin
 // but only for registered users
 struct GGMPersist
 {
-	// uid or nickname
-	char uid[33];
+
 	/// todo:salt/hash
 	char password[33];
 };
@@ -148,8 +147,10 @@ struct GGMPlayerState
 	struct GGMPlayerState *pNext;
 	struct GGMPersist p;
 	struct GGMTempState t;
-	bool registered;
+	bool fRegistered;
 	bool fNeedWrite;
+	// uid or nickname
+	char uid[33];
 };
 
 

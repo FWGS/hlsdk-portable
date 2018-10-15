@@ -1090,7 +1090,7 @@ void Ent_Create_f( edict_t *player )
 		const char *plid = GGM_GetPlayerID( player );
 		CBasePlayer *pPlayer = (CBasePlayer*)CBaseEntity::Instance( player );
 		entity->enttools_data.enttools = 1;
-		if( pPlayer && pPlayer->IsPlayer() && pPlayer->gravgunmod_data.pState && pPlayer->gravgunmod_data.pState->registered )
+		if( pPlayer && pPlayer->IsPlayer() && pPlayer->gravgunmod_data.pState && pPlayer->gravgunmod_data.pState->fRegistered )
 			entity->enttools_data.enttools = 2;
 
 		if( plid );
