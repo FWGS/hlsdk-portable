@@ -41,6 +41,8 @@ cvar_t mp_maxdecals = { "mp_maxdecals", "-1", FCVAR_SERVER };
 cvar_t mp_enttools_checkmodels = { "mp_enttools_checkmodels", "0", FCVAR_SERVER };
 cvar_t mp_errormdl = { "mp_errormdl", "0", FCVAR_SERVER };
 cvar_t mp_errormdlpath = { "mp_errormdlpath", "models/error.mdl", FCVAR_SERVER };
+
+cvar_t *zombietime = NULL;
 static char gamedir[MAX_PATH];
 void Ent_RunGC_f( void );
 
@@ -645,6 +647,77 @@ void GGM_LoadPlayers_f( void )
 {
 	if( !GGM_ReadPlayers( CMD_ARGV(1) ) )
 		ALERT( at_error, "Failed to load player states from %s\n", CMD_ARGV( 1 ) );
+}
+
+// hack to make save work when client 0 not connected
+void GGM_Save( const char *savename )
+{
+	edict_t *client0 = INDEXENT( 1 );
+	edict_t *bot = NULL;
+	char cmd[33] = "";
+	float health = client0->v.health;
+	int deadflag = client0->v.deadflag;
+	float zombietime_old;
+	SERVER_EXECUTE();
+
+	// save even with dead player
+	if( health <= 0 )
+		client0->v.health = 1;
+
+	client0->v.deadflag = 0;
+
+	if( zombietime )
+		zombietime_old = zombietime->value;
+
+	// hack to make save work when client 0 not connected
+	if( !(g_engfuncs.pfnGetInfoKeyBuffer( client0 )[0]) || !(g_engfuncs.pfnGetPhysicsInfoString( client0 )[0]) || !client0->v.netname )
+	{
+		snprintf( cmd, 32, "kick #%d\n", GETPLAYERUSERID( client0 ) );
+		SERVER_COMMAND(cmd);
+		SERVER_EXECUTE();
+		bot = g_engfuncs.pfnCreateFakeClient("_save_bot");
+		if( bot != client0 )
+			ALERT( at_warning, "Bot is not player 1\n" );
+		bot->v.health = 1;
+		bot->v.deadflag = 0;
+	}
+
+	snprintf( cmd, 32, "save %s\n", savename);
+	SERVER_COMMAND(cmd);
+	if( bot )
+		SERVER_COMMAND( "kick _save_bot\n");
+	SERVER_EXECUTE();
+	client0->v.deadflag = deadflag;
+	client0->v.health = health;
+	if( zombietime )
+		zombietime->value = zombietime_old;
+	snprintf( cmd, 32, "%s/save/%s.players", gamedir, savename );
+	GGM_WritePlayers( cmd );
+}
+
+void GGM_Save_f( void )
+{
+	char savename[33] = "";
+	strncpy( savename, CMD_ARGV(1), 32);
+	GGM_Save( savename );
+}
+
+void GGM_Load( const char *savename )
+{
+	char cmd[33] = "";
+
+	snprintf( cmd, 32, "load %s\n", savename);
+	SERVER_COMMAND( cmd );
+	SERVER_EXECUTE();
+	snprintf( cmd, 32, "%s/save/%s.players", gamedir, savename );
+	GGM_ReadPlayers( cmd );
+}
+
+void GGM_Load_f( void )
+{
+	char savename[33] = "";
+	strncpy( savename, CMD_ARGV(1), 32);
+	GGM_Load( savename );
 }
 
 struct GGMPlayerState *GGM_GetRegistration( const char *name )
@@ -2017,6 +2090,9 @@ void GGM_RegisterCVars( void )
 	g_engfuncs.pfnAddServerCommand( "ent_chown", Ent_Chown_f );
 	g_engfuncs.pfnAddServerCommand( "saveplayers", GGM_SavePlayers_f );
 	g_engfuncs.pfnAddServerCommand( "loadplayers", GGM_LoadPlayers_f );
+	g_engfuncs.pfnAddServerCommand( "ggm_save", GGM_Save_f );
+	g_engfuncs.pfnAddServerCommand( "ggm_load", GGM_Load_f );
+	zombietime = CVAR_GET_POINTER("zombietime");
 
 
 	GET_GAME_DIR(gamedir);
