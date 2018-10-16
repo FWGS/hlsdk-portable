@@ -960,14 +960,14 @@ public:
 	virtual int Restore( CRestore &restore );
 	static TYPEDESCRIPTION m_SaveData[];
 
-	CFuncTank *m_pTank;
+	EHANDLE m_pTank;
 };
 
 LINK_ENTITY_TO_CLASS( func_tankcontrols, CFuncTankControls )
 
 TYPEDESCRIPTION	CFuncTankControls::m_SaveData[] =
 {
-	DEFINE_FIELD( CFuncTankControls, m_pTank, FIELD_CLASSPTR ),
+	DEFINE_FIELD( CFuncTankControls, m_pTank, FIELD_EHANDLE ),
 };
 
 IMPLEMENT_SAVERESTORE( CFuncTankControls, CBaseEntity )
@@ -1001,7 +1001,7 @@ void CFuncTankControls::Think( void )
 		return;
 	}
 
-	m_pTank = (CFuncTank*)Instance( pTarget );
+	m_pTank = Instance( pTarget );
 }
 
 void CFuncTankControls::Spawn( void )
