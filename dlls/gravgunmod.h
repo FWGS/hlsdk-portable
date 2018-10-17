@@ -103,9 +103,35 @@ public:
 	void Show();
 };
 
+// offset for all maps relative to current map
+struct GGMMapOffset
+{
+	struct GGMMapOffset *pNext;
+	char mapName[32];
+	Vector vecOffset;
+};
 
+// use this to translate GGMMapOffset during changelevel
+struct GGMLandmarkTransition
+{
+	char sourceMap[32];
+	char targetMap[32];
+	Vector vecLandmark;
+};
 
+// full player map-independed position data
+struct GGMPosition
+{
+	Vector vecOrigin;
+	Vector vecAngles;
+	char mapName[32];
+	char trainGlobal[32];
+	Vector vecTrainOffset;
+	Vector vecTrainAngles;
+	bool fDuck;
+};
 
+// login records are persistent
 struct GGMLogin
 {
 	struct GGMLogin *pNext;
@@ -138,7 +164,7 @@ struct GGMTempState
 	char rgiClip[MAX_WEAPONS];// ammo names
 	int	rgAmmo[MAX_AMMO_SLOTS];// ammo quantities
 	char WeaponName[32];
-	Vector vecOrigin;
+	GGMPosition pos;
 };
 
 struct GGMPlayerState

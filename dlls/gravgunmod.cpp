@@ -873,7 +873,11 @@ void GGM_SaveState( CBasePlayer *pPlayer )
 	if( pPlayer->pev->health <= 0 )
 		return;
 
-	pState->t.vecOrigin = pPlayer->pev->origin;
+	pState->t.pos.vecOrigin = pPlayer->pev->origin;
+	pState->t.pos.vecAngles = pPlayer->pev->angles;
+	pState->t.pos.fDuck = !!(pPlayer->pev->flags & FL_DUCKING);
+	strncpy( pState->t.pos.mapName, STRING(gpGlobals->mapname), 31 );
+
 	pState->t.flHealth = pPlayer->pev->health;
 	pState->t.flBattery = pPlayer->pev->armorvalue;
 	if(pPlayer->m_pActiveItem.Get())
@@ -915,8 +919,16 @@ bool GGM_RestoreState(CBasePlayer *pPlayer)
 	if( pState->t.flHealth < 1 )
 		return false;
 	pPlayer->pev->armorvalue = pState->t.flBattery;
-	pPlayer->pev->origin = pState->t.vecOrigin;
 	pPlayer->pev->health = pState->t.flHealth;
+	pPlayer->pev->origin = pState->t.pos.vecOrigin;
+	if( pState->t.pos.fDuck )
+	{
+		pPlayer->pev->view_ofs.z = 12;
+		pPlayer->pev->flags |= FL_DUCKING;
+		UTIL_SetSize( pPlayer->pev, VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX );
+	}
+	pPlayer->pev->angles = pState->t.pos.vecAngles;
+
 	pPlayer->RemoveAllItems( FALSE );
 
 	for( i = 0; i < MAX_WEAPONS; i++ )
