@@ -854,6 +854,100 @@ struct GGMPlayerState *GGM_GetState( const char *uid, const char *name )
 	return anonymous_list = pState;
 }
 
+
+GGMMapOffset *g_pMapOffsets;
+GGMLandmarkTransition g_landmarkTransition;
+edict_t *COOP_FindLandmark( const char *pLandmarkName );
+bool  COOP_ProcessTransition( void )
+{
+	bool fAddCurrent = true;
+	edict_t *landmark;
+
+	if( !mp_coop.value )
+		return false;
+
+	if( !g_landmarkTransition.landmarkName[0] )
+		return false;
+
+	if( strcmp( g_landmarkTransition.targetMap, STRING(gpGlobals->mapname) ) )
+		return false;
+	landmark = COOP_FindLandmark( g_landmarkTransition.landmarkName );
+	if( !landmark )
+		return false;
+	Vector &lm = landmark->v.origin;
+
+	for( GGMMapOffset *pOffset = g_pMapOffsets; pOffset; pOffset = pOffset->pNext )
+	{
+		if( !strcmp( pOffset->mapName, STRING(gpGlobals->mapname) ) )
+		{
+			pOffset->vecOffset = Vector( 0, 0, 0 );
+			fAddCurrent = false;
+			continue;
+		}
+		pOffset->vecOffset = pOffset->vecOffset - g_landmarkTransition.vecLandmark + lm;
+	}
+
+	if( fAddCurrent )
+	{
+		GGMMapOffset *pNewOffset = (GGMMapOffset *)calloc(1, sizeof( struct GGMMapOffset ) );
+
+		pNewOffset->pNext = g_pMapOffsets;
+		pNewOffset->vecOffset = Vector(0, 0, 0);
+		strncpy(pNewOffset->mapName, STRING(gpGlobals->mapname), 31);
+		g_pMapOffsets = pNewOffset;
+	}
+	return true;
+}
+
+void COOP_SetupLandmarkTransition( const char *szNextMap, const char *szNextSpot, Vector vecLandmarkOffset )
+{
+	strncpy(g_landmarkTransition.sourceMap, STRING(gpGlobals->mapname), 31 );
+	strncpy(g_landmarkTransition.targetMap, szNextMap, 31 );
+	strncpy(g_landmarkTransition.landmarkName, szNextSpot, 31 );
+	g_landmarkTransition.vecLandmark = vecLandmarkOffset;
+}
+void GGM_ServerActivate( void )
+{
+	if( !COOP_ProcessTransition() )
+	{
+		ALERT( at_console, "Transition failed, new game started\n");
+		while( g_pMapOffsets )
+		{
+			GGMMapOffset *pOffset = g_pMapOffsets;
+			g_pMapOffsets = pOffset->pNext;
+			free( pOffset );
+		}
+		GGMMapOffset *pNewOffset = (GGMMapOffset *)calloc(1, sizeof( struct GGMMapOffset ) );
+
+		pNewOffset->pNext = g_pMapOffsets;
+		pNewOffset->vecOffset = Vector(0, 0, 0);
+		strncpy(pNewOffset->mapName, STRING(gpGlobals->mapname), 31);
+		g_pMapOffsets = pNewOffset;
+		if( mp_coop.value )
+			COOP_ClearData();
+	}
+	else if( mp_coop.value ) COOP_ApplyData();
+
+
+	if( mp_coop.value )
+	{
+		for( int i = 1; i <= gpGlobals->maxClients; i++ )
+		{
+			CBasePlayer *plr = (CBasePlayer*)UTIL_PlayerByIndex( i );
+
+			// reset all players state
+			if( plr )
+			{
+				plr->gravgunmod_data.m_state = STATE_UNINITIALIZED;
+				plr->RemoveAllItems( TRUE );
+				UTIL_BecomeSpectator( plr );
+				//plr->Spawn();
+			}
+		}
+	}
+	g_landmarkTransition.landmarkName[0] = false;
+}
+
 void GGM_SaveState( CBasePlayer *pPlayer )
 {
 	if( !pPlayer )
@@ -877,6 +971,19 @@ void GGM_SaveState( CBasePlayer *pPlayer )
 	pState->t.pos.vecAngles = pPlayer->pev->angles;
 	pState->t.pos.fDuck = !!(pPlayer->pev->flags & FL_DUCKING);
 	strncpy( pState->t.pos.mapName, STRING(gpGlobals->mapname), 31 );
+	CBaseEntity *pTrain = UTIL_CoopGetPlayerTrain(pPlayer);
+	if( pTrain )
+	{
+		strcpy( pState->t.pos.trainGlobal, STRING( pTrain->pev->globalname ) );
+		if( pTrain->pev->angles == g_vecZero )
+			pState->t.pos.vecTrainOffset = pPlayer->pev->origin - VecBModelOrigin(pTrain->pev);
+		else
+			pState->t.pos.vecTrainOffset = pPlayer->pev->origin - pTrain->pev->origin;
+
+		pState->t.pos.vecTrainAngles = pTrain->pev->angles;
+	}
+	else pState->t.pos.trainGlobal[0] = 0;
+
 
 	pState->t.flHealth = pPlayer->pev->health;
 	pState->t.flBattery = pPlayer->pev->armorvalue;
@@ -903,11 +1010,11 @@ void GGM_SaveState( CBasePlayer *pPlayer )
 	if( pState->fNeedWrite )
 		GGM_WritePersist( pState );
 }
-
 bool GGM_RestoreState(CBasePlayer *pPlayer)
 {
 	GGMPlayerState *pState = pPlayer->gravgunmod_data.pState;
 	int i;
+	bool fOriginSet = false;
 
 	if( !pState )
 		return false;
@@ -920,7 +1027,51 @@ bool GGM_RestoreState(CBasePlayer *pPlayer)
 		return false;
 	pPlayer->pev->armorvalue = pState->t.flBattery;
 	pPlayer->pev->health = pState->t.flHealth;
-	pPlayer->pev->origin = pState->t.pos.vecOrigin;
+
+	//pPlayer->pev->origin = pState->t.pos.vecOrigin;
+	for( GGMMapOffset *offset = g_pMapOffsets; offset; offset = offset->pNext )
+	{
+		if( !strcmp( offset->mapName, pState->t.pos.mapName ) )
+		{
+			pPlayer->pev->origin = pState->t.pos.vecOrigin + offset->vecOffset;
+			fOriginSet = true;
+			break;
+		}
+	}
+
+	if( pState->t.pos.trainGlobal[0] )
+	{
+		CBaseEntity *pTrain =  UTIL_FindEntityByString( NULL, "globalname", pState->t.pos.trainGlobal );
+		if( pTrain )
+		{
+			Vector vecTrainOrigin;
+			if( pState->t.pos.vecTrainAngles == g_vecZero )
+				vecTrainOrigin = VecBModelOrigin( pTrain->pev );
+			else
+				vecTrainOrigin = pTrain->pev->origin;
+
+			Vector angleDiff = pTrain->pev->angles - pState->t.pos.vecAngles;
+			if( angleDiff != g_vecZero )
+			{
+				float length = pState->t.pos.vecTrainOffset.Length();
+				Vector newAngles = UTIL_VecToAngles( pState->t.pos.vecTrainOffset) + angleDiff;
+				//newAngles[0] = -newAngles[0];
+				Vector newOffset;
+				UTIL_MakeVectorsPrivate( newAngles, newOffset, NULL, NULL );
+				pPlayer->pev->origin = vecTrainOrigin - newOffset * length;
+			}
+			else
+				pPlayer->pev->origin = vecTrainOrigin + pState->t.pos.vecTrainOffset;
+			fOriginSet = true;
+		}
+	}
+	if( mp_coop.value && !fOriginSet )
+	{
+		g_pGameRules->GetPlayerSpawnSpot( pPlayer );
+		if( pPlayer->gravgunmod_data.m_state = STATE_POINT_SELECT )
+			return false;
+	}
+
 	if( pState->t.pos.fDuck )
 	{
 		pPlayer->pev->view_ofs.z = 12;
@@ -987,7 +1138,45 @@ bool GGM_PlayerSpawn( CBasePlayer *pPlayer )
 	if( pPlayer->pev->flags & FL_SPECTATOR )
 		return true;
 
-	if( !mp_coop_changelevel.value )
+	if( mp_coop_changelevel.value )
+	{
+		if( pPlayer->gravgunmod_data.m_state != STATE_SPAWNED )
+		{
+			pPlayer->gravgunmod_data.m_state = STATE_SPAWNED;
+			g_fPause = false;
+			if( GGM_RestoreState( pPlayer ) )
+			{
+				pPlayer->pev->weapons |= (1 << WEAPON_SUIT);
+				return true;
+			}
+			else
+			{
+				/*edict_t *pentSpawnSpot = EntSelectSpawnPoint( pPlayer );
+				pPlayer->pev->origin = VARS( pentSpawnSpot )->origin + Vector( 0, 0, 1 );
+				pPlayer->pev->v_angle  = g_vecZero;
+				pPlayer->pev->velocity = g_vecZero;
+				pPlayer->pev->angles = VARS( pentSpawnSpot )->angles;
+				pPlayer->pev->punchangle = g_vecZero;
+				pPlayer->pev->fixangle = TRUE;
+				if( !(pPlayer->pev->flags & FL_SPECTATOR ) )
+				if( !UTIL_CoopGetSpawnPoint( &pPlayer->pev->origin, &pPlayer->pev->angles ) )
+				{
+					ClientPrint( pPlayer->pev, HUD_PRINTCENTER, "Server cannot select a spawnpoint\nplease fly to it manually\nand press attack button");
+					pPlayer->m_afButtonPressed = 0;
+					if(pPlayer->pev->origin.Length() > 8192)
+						pPlayer->pev->origin = g_vecZero;
+					pPlayer->gravgunmod_data.m_state = STATE_POINT_SELECT;
+					pPlayer->m_afButtonPressed = 0;
+				}*/
+			}
+		}
+		else
+		{
+
+		}
+		g_pGameRules->GetPlayerSpawnSpot( pPlayer );
+	}
+	else
 	{
 		if( pPlayer->gravgunmod_data.m_state != STATE_SPAWNED )
 		{

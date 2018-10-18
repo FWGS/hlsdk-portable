@@ -818,23 +818,7 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 
 	// Link user messages here to make sure first client can get them...
 	LinkUserMessages();
-	if( mp_coop.value )
-	{
-		COOP_ApplyData();
-		for( int i = 1; i <= gpGlobals->maxClients; i++ )
-		{
-			CBasePlayer *plr = (CBasePlayer*)UTIL_PlayerByIndex( i );
-
-			// reset all players state
-			if( plr )
-			{
-				plr->gravgunmod_data.m_state = STATE_UNINITIALIZED;
-				plr->RemoveAllItems( TRUE );
-				UTIL_BecomeSpectator( plr );
-				//plr->Spawn();
-			}
-		}
-	}
+	GGM_ServerActivate();
 }
 
 

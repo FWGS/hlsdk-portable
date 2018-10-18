@@ -1150,7 +1150,7 @@ void CFuncTrackTrain::Next( void )
 		int count = UTIL_EntitiesInBox( &pList, 1, mins, maxs, FL_ONGROUND );
 		if( !count || !pList->IsPlayer() )
 		{
-			pev->velocity = g_vecZero;
+			pev->velocity = pev->avelocity = g_vecZero;
 			NextThink( pev->ltime + time, TRUE );
 			return;
 		}

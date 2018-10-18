@@ -88,7 +88,7 @@ edict_t *CGameRules::GetPlayerSpawnSpot( CBasePlayer *pPlayer )
 	pPlayer->pev->angles = VARS( pentSpawnSpot )->angles;
 	pPlayer->pev->punchangle = g_vecZero;
 	if( !(pPlayer->pev->flags & FL_SPECTATOR ) )
-	if( mp_coop_changelevel.value && !UTIL_CoopRestorePlayerCoords( pPlayer, &pPlayer->pev->origin, &pPlayer->pev->angles ))
+	if( mp_coop_changelevel.value )
 		if( !UTIL_CoopGetSpawnPoint( &pPlayer->pev->origin, &pPlayer->pev->angles ) )
 		{
 			if( !g_pLastSpawn )

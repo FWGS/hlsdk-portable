@@ -1791,6 +1791,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 			// reset all players state to make it spawn again after restart
 			if( plr )
 			{
+				GGM_SaveState( plr );
 				plr->gravgunmod_data.m_state = STATE_UNINITIALIZED;
 				plr->RemoveAllItems( TRUE );
 				UTIL_BecomeSpectator( plr );
@@ -1803,6 +1804,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 	}
 	s_SavedCoords.fUsed = m_bUsed;
 	s_SavedCoords.valid = valid;
+	COOP_SetupLandmarkTransition( st_szNextMap, st_szNextSpot, gpGlobals->vecLandmarkOffset );
 
 	// wait 5 frames to make sure all players are in reconnected state
 	if( mp_coop_reconnect_hack.value )

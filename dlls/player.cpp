@@ -2945,7 +2945,7 @@ void CBasePlayer::Spawn( void )
 	m_flFallVelocity = 0;
 
 	g_pGameRules->SetDefaultPlayerTeam( this );
-	g_pGameRules->GetPlayerSpawnSpot( this );
+	if( !mp_coop.value )g_pGameRules->GetPlayerSpawnSpot( this );
 
 	SET_MODEL( ENT( pev ), "models/player.mdl" );
 	g_ulModelIndexPlayer = pev->modelindex;

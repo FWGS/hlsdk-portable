@@ -116,6 +116,7 @@ struct GGMLandmarkTransition
 {
 	char sourceMap[32];
 	char targetMap[32];
+	char landmarkName[32];
 	Vector vecLandmark;
 };
 
@@ -198,5 +199,7 @@ bool GGM_RestoreState( CBasePlayer *pPlayer );
 void GGM_SaveState( CBasePlayer *pPlayer );
 bool GGM_PlayerSpawn( CBasePlayer *pPlayer );
 const char *GGM_GetAuthID( CBasePlayer *pPlayer );
+void GGM_ServerActivate( void );
+void COOP_SetupLandmarkTransition( const char *szNextMap, const char *szNextSpot, Vector vecLandmarkOffset );
 #endif // GRAVGUNMOD_H
 

@@ -753,7 +753,6 @@ bool COOP_ClientCommand( edict_t *pEntity )
 		else
 		{
 			pPlayer->RemoveAllItems( TRUE );
-			pPlayer->gravgunmod_data.m_state = STATE_SPAWNED;
 			UTIL_SpawnPlayer( pPlayer );
 		}
 		return true;
