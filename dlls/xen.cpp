@@ -234,8 +234,12 @@ void CXenTreeTrigger::Touch( CBaseEntity *pOther )
 	{
 		CBaseEntity *pEntity = CBaseEntity::Instance( pev->owner );
 		if( pEntity )
+		{
 			pEntity->Touch( pOther );
+			return;
+		}
 	}
+	pev->flags |= FL_KILLME;
 }
 
 #define TREE_AE_ATTACK		1
