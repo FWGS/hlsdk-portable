@@ -899,7 +899,7 @@ bool COOP_ClientCommand( edict_t *pEntity )
 		int i = atoi(CMD_ARGV(1));
 		if( i > 4 )
 			return false;
-		if( pPlayer->gravgunmod_data.m_state != STATE_SPAWNED )
+		if( pPlayer->gravgunmod_data.m_state != STATE_SPAWNED || pPlayer->pev->health < 1 )
 			UTIL_SpawnPlayer( pPlayer );
 		GGM_RestorePosition( pPlayer, &g_pCurrentMap->checkpoints[i].pos );
 		return true;
