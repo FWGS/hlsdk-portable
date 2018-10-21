@@ -860,6 +860,27 @@ void GGM_ServerActivate( void )
 	COOP_ServerActivate();
 }
 
+void GGM_SavePosition( CBasePlayer *pPlayer, struct GGMPosition *pos )
+{
+	pos->vecOrigin = pPlayer->pev->origin;
+	pos->vecAngles = pPlayer->pev->angles;
+	pos->fDuck = !!(pPlayer->pev->flags & FL_DUCKING);
+	strncpy( pos->mapName, STRING(gpGlobals->mapname), 31 );
+	CBaseEntity *pTrain = UTIL_CoopGetPlayerTrain(pPlayer);
+	if( pTrain )
+	{
+		strcpy( pos->trainGlobal, STRING( pTrain->pev->globalname ) );
+		if( pTrain->pev->angles == g_vecZero )
+			pos->vecTrainOffset = pPlayer->pev->origin - VecBModelOrigin(pTrain->pev);
+		else
+			pos->vecTrainOffset = pPlayer->pev->origin - pTrain->pev->origin;
+
+		pos->vecTrainAngles = pTrain->pev->angles;
+	}
+	else pos->trainGlobal[0] = 0;
+
+}
+
 void GGM_SaveState( CBasePlayer *pPlayer )
 {
 	if( !pPlayer )
@@ -879,23 +900,7 @@ void GGM_SaveState( CBasePlayer *pPlayer )
 	if( pPlayer->pev->health <= 0 )
 		return;
 
-	pState->t.pos.vecOrigin = pPlayer->pev->origin;
-	pState->t.pos.vecAngles = pPlayer->pev->angles;
-	pState->t.pos.fDuck = !!(pPlayer->pev->flags & FL_DUCKING);
-	strncpy( pState->t.pos.mapName, STRING(gpGlobals->mapname), 31 );
-	CBaseEntity *pTrain = UTIL_CoopGetPlayerTrain(pPlayer);
-	if( pTrain )
-	{
-		strcpy( pState->t.pos.trainGlobal, STRING( pTrain->pev->globalname ) );
-		if( pTrain->pev->angles == g_vecZero )
-			pState->t.pos.vecTrainOffset = pPlayer->pev->origin - VecBModelOrigin(pTrain->pev);
-		else
-			pState->t.pos.vecTrainOffset = pPlayer->pev->origin - pTrain->pev->origin;
-
-		pState->t.pos.vecTrainAngles = pTrain->pev->angles;
-	}
-	else pState->t.pos.trainGlobal[0] = 0;
-
+	GGM_SavePosition( pPlayer, &pState->t.pos );
 
 	pState->t.flHealth = pPlayer->pev->health;
 	pState->t.flBattery = pPlayer->pev->armorvalue;
@@ -988,7 +993,7 @@ bool GGM_RestoreState( CBasePlayer *pPlayer )
 	pPlayer->pev->armorvalue = pState->t.flBattery;
 	pPlayer->pev->health = pState->t.flHealth;
 
-	if( !GGM_RestorePosition( pPlayer, &pPlayer->gravgunmod_data.pState->t.pos ) )
+	if( !GGM_RestorePosition( pPlayer, &pState->t.pos ) )
 		return false;
 
 	pPlayer->RemoveAllItems( FALSE );

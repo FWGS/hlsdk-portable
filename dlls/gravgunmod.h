@@ -179,6 +179,8 @@ struct GGMData
 
 struct GGMPlayerState *GGM_GetState(const char *uid, const char *name);
 bool GGM_RestoreState( CBasePlayer *pPlayer );
+bool GGM_RestorePosition( CBasePlayer *pPlayer, struct GGMPosition *pos );
+void GGM_SavePosition( CBasePlayer *pPlayer, struct GGMPosition *pos );
 void GGM_SaveState( CBasePlayer *pPlayer );
 bool GGM_PlayerSpawn( CBasePlayer *pPlayer );
 const char *GGM_GetAuthID( CBasePlayer *pPlayer );
