@@ -103,23 +103,6 @@ public:
 	void Show();
 };
 
-// offset for all maps relative to current map
-struct GGMMapOffset
-{
-	struct GGMMapOffset *pNext;
-	char mapName[32];
-	Vector vecOffset;
-};
-
-// use this to translate GGMMapOffset during changelevel
-struct GGMLandmarkTransition
-{
-	char sourceMap[32];
-	char targetMap[32];
-	char landmarkName[32];
-	Vector vecLandmark;
-};
-
 // full player map-independed position data
 struct GGMPosition
 {

@@ -357,6 +357,130 @@ void COOP_ApplyData( void )
 
 }
 
+// use this to translate GGMMapOffset during changelevel
+struct GGMLandmarkTransition
+{
+	char sourceMap[32];
+	char targetMap[32];
+	char landmarkName[32];
+	Vector vecLandmark;
+};
+
+// offset for all maps relative to current map
+struct GGMMapState
+{
+	struct GGMMapState *pNext;
+	char mapName[32];
+	Vector vecOffset;
+};
+
+GGMMapState *g_pMapOffsets;
+GGMLandmarkTransition g_landmarkTransition;
+edict_t *COOP_FindLandmark( const char *pLandmarkName );
+bool  COOP_ProcessTransition( void )
+{
+	bool fAddCurrent = true;
+	edict_t *landmark;
+
+	if( !mp_coop.value )
+		return false;
+
+	if( !g_landmarkTransition.landmarkName[0] )
+		return false;
+
+	if( strcmp( g_landmarkTransition.targetMap, STRING(gpGlobals->mapname) ) )
+		return false;
+	landmark = COOP_FindLandmark( g_landmarkTransition.landmarkName );
+	if( !landmark )
+		return false;
+	Vector &lm = landmark->v.origin;
+
+	for( GGMMapState *pOffset = g_pMapOffsets; pOffset; pOffset = pOffset->pNext )
+	{
+		if( !strcmp( pOffset->mapName, STRING(gpGlobals->mapname) ) )
+		{
+			pOffset->vecOffset = Vector( 0, 0, 0 );
+			fAddCurrent = false;
+			continue;
+		}
+		pOffset->vecOffset = pOffset->vecOffset - g_landmarkTransition.vecLandmark + lm;
+	}
+
+	if( fAddCurrent )
+	{
+		GGMMapState *pNewOffset = (GGMMapState *)calloc(1, sizeof( struct GGMMapState ) );
+
+		pNewOffset->pNext = g_pMapOffsets;
+		pNewOffset->vecOffset = Vector(0, 0, 0);
+		strncpy(pNewOffset->mapName, STRING(gpGlobals->mapname), 31);
+		g_pMapOffsets = pNewOffset;
+	}
+	return true;
+}
+
+void COOP_SetupLandmarkTransition( const char *szNextMap, const char *szNextSpot, Vector vecLandmarkOffset )
+{
+	strncpy(g_landmarkTransition.sourceMap, STRING(gpGlobals->mapname), 31 );
+	strncpy(g_landmarkTransition.targetMap, szNextMap, 31 );
+	strncpy(g_landmarkTransition.landmarkName, szNextSpot, 31 );
+	g_landmarkTransition.vecLandmark = vecLandmarkOffset;
+}
+
+void COOP_ServerActivate( void )
+{
+	if( !COOP_ProcessTransition() )
+	{
+		ALERT( at_console, "Transition failed, new game started\n");
+		while( g_pMapOffsets )
+		{
+			GGMMapState *pOffset = g_pMapOffsets;
+			g_pMapOffsets = pOffset->pNext;
+			free( pOffset );
+		}
+		GGMMapState *pNewOffset = (GGMMapState *)calloc(1, sizeof( struct GGMMapState ) );
+
+		pNewOffset->pNext = g_pMapOffsets;
+		pNewOffset->vecOffset = Vector(0, 0, 0);
+		strncpy(pNewOffset->mapName, STRING(gpGlobals->mapname), 31);
+		g_pMapOffsets = pNewOffset;
+		if( mp_coop.value )
+			COOP_ClearData();
+	}
+	else if( mp_coop.value ) COOP_ApplyData();
+
+
+	if( mp_coop.value )
+	{
+		for( int i = 1; i <= gpGlobals->maxClients; i++ )
+		{
+			CBasePlayer *plr = (CBasePlayer*)UTIL_PlayerByIndex( i );
+
+			// reset all players state
+			if( plr )
+			{
+				plr->gravgunmod_data.m_state = STATE_UNINITIALIZED;
+				plr->RemoveAllItems( TRUE );
+				UTIL_BecomeSpectator( plr );
+				//plr->Spawn();
+			}
+		}
+	}
+	g_landmarkTransition.landmarkName[0] = false;
+}
+
+bool COOP_GetOrigin( Vector *pvecNewOrigin, const Vector &vecOrigin, const char *pszMapName )
+{
+	for( GGMMapState *pOffset = g_pMapOffsets; pOffset; pOffset = pOffset->pNext )
+	{
+		if( !strcmp( pOffset->mapName, pszMapName ) )
+		{
+			*pvecNewOrigin = vecOrigin + pOffset->vecOffset;
+			return true;
+		}
+	}
+
+	return false;
+}
 
 int g_iVote;
 

@@ -66,6 +66,8 @@ bool COOP_ClientCommand( edict_t *pEntity );
 bool COOP_ConfirmMenu(CBaseEntity *pTrigger, CBaseEntity *pActivator, int count2, char *mapname );
 void COOP_ResetVote( void );
 
+void COOP_ServerActivate( void );
+bool COOP_GetOrigin( Vector *pvecNewOrigin, const Vector &vecOrigin, const char *pszMapName );
 class CBasePlayer;
 void UTIL_CoopKickPlayer(CBaseEntity *pPlayer);
 bool UTIL_CoopIsBadPlayer( CBaseEntity *plr );
