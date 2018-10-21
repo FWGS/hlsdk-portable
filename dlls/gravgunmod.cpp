@@ -2056,6 +2056,16 @@ bool GGM_ClientCommand( CBasePlayer *pPlayer, const char *pCmd )
 		GGM_ChangePassword_f(pPlayer);
 		return true;
 	}
+	else if( FStrEq(pCmd, "qsave") )
+	{
+		GGM_SaveState( pPlayer );
+		return true;
+	}
+	else if( FStrEq(pCmd, "qload") )
+	{
+		GGM_RestoreState( pPlayer );
+		return true;
+	}
 	else if( FStrEq(pCmd, "ent_import" ) )
 	{
 		if( !pPlayer->gravgunmod_data.pState || !pPlayer->gravgunmod_data.pState->fRegistered )

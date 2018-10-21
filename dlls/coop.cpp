@@ -897,7 +897,7 @@ bool COOP_ClientCommand( edict_t *pEntity )
 	else if( FStrEq( pcmd, "loadcheckpoint") )
 	{
 		int i = atoi(CMD_ARGV(1));
-		if( i > 4 )
+		if( i > 4 || i < 0 )
 			return false;
 		if( pPlayer->gravgunmod_data.m_state != STATE_SPAWNED || pPlayer->pev->health < 1 )
 			UTIL_SpawnPlayer( pPlayer );
