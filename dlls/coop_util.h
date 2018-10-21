@@ -24,9 +24,6 @@ extern bool g_fPause;
 
 struct SavedCoords
 {
-	char ip[32][32];
-	Vector origin[32];
-	Vector angles[32];
 	char landmark[32];
 	Vector triggerorigin;
 	Vector triggerangles;
@@ -52,7 +49,6 @@ char *UTIL_CoopPlayerName( CBaseEntity *pPlayer );
 
 bool UTIL_CoopGetSpawnPoint( Vector *point, Vector *angles);
 
-bool UTIL_CoopRestorePlayerCoords(CBaseEntity *player, Vector *origin, Vector *angles );
 void UTIL_CoopSaveTrain( CBaseEntity *pPlayer, SavedCoords *coords);
 Vector COOP_FixupSpawnPoint(Vector spawn);
 void COOP_ClearData( void );

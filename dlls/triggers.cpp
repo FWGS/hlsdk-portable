@@ -1604,10 +1604,6 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 						{
 							l_SavedCoords.fDuck |= !!(plr->pev->flags & FL_DUCKING);
 							UTIL_CoopSaveTrain( plr, &l_SavedCoords );
-							char *ip = g_engfuncs.pfnInfoKeyValue( g_engfuncs.pfnGetInfoKeyBuffer( plr->edict() ), "ip" );
-							strcpy(l_SavedCoords.ip[l_SavedCoords.iCount], ip );
-							l_SavedCoords.origin[l_SavedCoords.iCount] = plr->pev->origin;
-							l_SavedCoords.angles[l_SavedCoords.iCount] = plr->pev->angles;
 							l_SavedCoords.iCount++;
 						}
 					}

@@ -626,34 +626,6 @@ bool COOP_PlayerDeath( CBasePlayer *pPlayer )
 	return false;
 }
 
-bool UTIL_CoopRestorePlayerCoords(CBaseEntity *player, Vector *origin, Vector *angles )
-{
-	if(!g_SavedCoords.valid)
-		return false;
-	COOP_ValidateOffset();
-	// compute player by IQ
-	char *ip = g_engfuncs.pfnInfoKeyValue( g_engfuncs.pfnGetInfoKeyBuffer( player->edict() ), "ip" );
-	for( int i = 0;i < g_SavedCoords.iCount;i++)
-	{
-		if(ip && ip[0] && !strcmp(ip, g_SavedCoords.ip[i]) )
-		{
-			TraceResult tr;
-			Vector point = g_SavedCoords.origin[i] + g_SavedCoords.offset;
-
-			UTIL_TraceHull( point, point, missile, (mp_unduck.value&&g_fSavedDuck)?head_hull:human_hull, NULL, &tr );
-
-			g_SavedCoords.ip[i][0] = 0;
-
-			if( tr.fStartSolid || tr.fAllSolid )
-				return false;
-			*origin = point;
-			*angles = g_SavedCoords.angles[i];
-			return true;
-		}
-	}
-	return false;
-}
-
 bool UTIL_CoopGetSpawnPoint( Vector *origin, Vector *angles)
 {
 	if(!g_SavedCoords.valid)
