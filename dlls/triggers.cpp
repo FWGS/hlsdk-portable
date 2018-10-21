@@ -1420,7 +1420,7 @@ void CChangeLevel::Spawn( void )
 	if( !( pev->spawnflags & SF_CHANGELEVEL_USEONLY ) )
 	{
 		SetTouch( &CChangeLevel::TouchChangeLevel );
-		if( mp_coop_changelevel.value )
+		if( mp_coop.value )
 		{
 			if( gpGlobals->startspot && STRING(gpGlobals->startspot) && !strcmp(STRING(gpGlobals->startspot), m_szLandmarkName) )
 				m_fIsBack = true;
@@ -1550,11 +1550,6 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 	if( s_SavedCoords.valid )
 		return; //already pending
 
-	if( !strcmp( m_szMapName, mp_coop_disabledmap.string ) )
-	{
-		ClientPrint( pActivator->pev, HUD_PRINTCENTER, "MAP %S IS DISABLED", m_szMapName );
-		return;
-	}
 	// forget touch by some fool
 	if( gpGlobals->time - pev->dmgtime > 30)
 	{
@@ -1562,7 +1557,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 		pev->nextthink = gpGlobals->time + 30;
 	}
 
-	if(mp_coop_changelevel.value)
+	if(mp_coop.value)
 	{
 		SavedCoords l_SavedCoords = {};
 		// if not activated by touch, do not count players
@@ -1778,7 +1773,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 	ALERT( at_console, "CHANGE LEVEL: %s %s\n", st_szNextMap, st_szNextSpot );
 	COOP_ResetVote();
 	// loop through all clients, reset state
-	if( mp_coop_changelevel.value )
+	if( mp_coop.value )
 	{
 		for( int i = 1; i <= gpGlobals->maxClients; i++ )
 		{

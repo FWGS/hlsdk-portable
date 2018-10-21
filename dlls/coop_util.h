@@ -2,9 +2,7 @@
 #define COOP_UTIL_H
 extern cvar_t mp_gravgun_players;
 extern cvar_t mp_coop;
-extern cvar_t mp_coop_changelevel;
 extern cvar_t mp_coop_nofriendlyfire;
-extern cvar_t mp_coop_disabledmap;
 extern cvar_t mp_coop_checkpoints;
 extern cvar_t mp_skipdefaults;
 extern cvar_t mp_coop_strongcheckpoints;

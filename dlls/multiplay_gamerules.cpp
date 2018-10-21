@@ -634,7 +634,7 @@ void CHalfLifeMultiplay::PlayerSpawn( CBasePlayer *pPlayer )
 	if( (int)cvar_allow_gateofbabylon.value == 2 )
 		pPlayer->GiveNamedItem( "weapon_gateofbabylon" );
 
-	if( mp_coop_changelevel.value )
+	if( mp_coop.value )
 	{
 //		pPlayer->GiveNamedItem( "item_suit" );
 		g_WeaponList.GiveToPlayer(pPlayer);

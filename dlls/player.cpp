@@ -3117,7 +3117,7 @@ int CBasePlayer::Restore( CRestore &restore )
 #endif
 
 	// restored player has some bugs untill respawned
-	if( mp_coop_changelevel.value )
+	if( mp_coop.value )
 	{
 		gravgunmod_data.m_state = STATE_CONNECTED;
 		SetThink( &CBasePlayer::Spawn );

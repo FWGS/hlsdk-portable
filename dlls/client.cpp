@@ -870,7 +870,7 @@ void ParmsNewLevel( void )
 		pSaveData->connectionCount = BuildChangeList( pSaveData->levelList, MAX_LEVEL_CONNECTIONS );
 	}
 	else
-		if( mp_coop_changelevel.value )
+		if( mp_coop.value )
 		{
 			COOP_ClearData();
 			g_WeaponList.Clear();
@@ -889,7 +889,7 @@ void ParmsChangeLevel( void )
 		pSaveData->connectionCount = BuildChangeList( pSaveData->levelList, MAX_LEVEL_CONNECTIONS );
 	}
 	else
-		if( mp_coop_changelevel.value )
+		if( mp_coop.value )
 		{
 			COOP_ClearData();
 			g_WeaponList.Clear();

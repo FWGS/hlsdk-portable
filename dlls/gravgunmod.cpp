@@ -1044,7 +1044,7 @@ bool GGM_PlayerSpawn( CBasePlayer *pPlayer )
 		return true;
 	}
 
-	if( mp_coop_changelevel.value && pPlayer->gravgunmod_data.m_state == STATE_POINT_SELECT && !(pPlayer->pev->flags & FL_SPECTATOR) )
+	if( mp_coop.value && pPlayer->gravgunmod_data.m_state == STATE_POINT_SELECT && !(pPlayer->pev->flags & FL_SPECTATOR) )
 	{
 		pPlayer->RemoveAllItems( TRUE );
 		UTIL_BecomeSpectator( pPlayer );
@@ -1054,7 +1054,7 @@ bool GGM_PlayerSpawn( CBasePlayer *pPlayer )
 	if( pPlayer->pev->flags & FL_SPECTATOR )
 		return true;
 
-	if( mp_coop_changelevel.value )
+	if( mp_coop.value )
 	{
 		if( pPlayer->gravgunmod_data.m_state != STATE_SPAWNED )
 		{

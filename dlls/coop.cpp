@@ -11,9 +11,7 @@ struct SavedCoords g_SavedCoords, s_SavedCoords;
 static float msglimittime1, msglimittime2;
 
 cvar_t mp_coop = { "mp_coop", "0", FCVAR_SERVER };
-cvar_t mp_coop_changelevel = { "mp_coop_changelevel", "0", FCVAR_SERVER };
 cvar_t mp_coop_nofriendlyfire = { "mp_coop_nofriendlyfire", "0", FCVAR_SERVER };
-cvar_t mp_coop_disabledmap = { "mp_coop_disabledmap", "", FCVAR_SERVER };
 cvar_t mp_coop_reconnect_hack = { "mp_coop_reconnect_hack", "0", FCVAR_SERVER };
 cvar_t mp_coop_noangry = { "mp_coop_noangry", "0", FCVAR_SERVER };
 cvar_t mp_coop_checkpoints = { "mp_coop_checkpoints", "1", FCVAR_SERVER };
@@ -936,9 +934,7 @@ bool COOP_ClientCommand( edict_t *pEntity )
 void COOP_RegisterCVars()
 {
 	CVAR_REGISTER( &mp_coop );
-	CVAR_REGISTER( &mp_coop_changelevel );
 	CVAR_REGISTER( &mp_coop_nofriendlyfire );
-	CVAR_REGISTER( &mp_coop_disabledmap );
 	CVAR_REGISTER( &mp_unduck );
 	CVAR_REGISTER( &mp_semclip );
 	CVAR_REGISTER( &mp_coop_reconnect_hack );
