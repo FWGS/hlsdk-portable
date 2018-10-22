@@ -40,7 +40,7 @@
 #define MASSN_9MMAR					(1 << 0)
 #define MASSN_HANDGRENADE			(1 << 1)
 #define MASSN_GRENADELAUNCHER		(1 << 2)
-#define MASSN_SNIPERRIFLE			(1 << 4)
+#define MASSN_SNIPERRIFLE			(1 << 3)
 
 // Body groups.
 #define HEAD_GROUP					1
