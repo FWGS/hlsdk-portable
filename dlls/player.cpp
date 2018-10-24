@@ -2858,7 +2858,7 @@ edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer )
 			if( !FStrEq( STRING( pSpot->pev->netname ), STRING( gpGlobals->mapname ) ) )
 				continue;
 			// check if it is placed in wall
-			UTIL_TraceHull( pSpot->pev->origin, pSpot->pev->origin , missile, (mp_unduck.value&&g_fSavedDuck)?head_hull:human_hull, NULL, &tr );
+			UTIL_TraceHull( pSpot->pev->origin, pSpot->pev->origin , missile, human_hull, NULL, &tr );
 			if( tr.fStartSolid || tr.fAllSolid  )
 				continue;
 			// trace down to find if there is no floor
@@ -3116,13 +3116,6 @@ int CBasePlayer::Restore( CRestore &restore )
 	m_flNextAttack = UTIL_WeaponTimeBase();
 #endif
 
-	// restored player has some bugs untill respawned
-	if( mp_coop.value )
-	{
-		gravgunmod_data.m_state = STATE_CONNECTED;
-		SetThink( &CBasePlayer::Spawn );
-		pev->nextthink = gpGlobals->time + 0.5;
-	}
 	return status;
 }
 

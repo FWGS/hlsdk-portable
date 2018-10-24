@@ -961,8 +961,9 @@ bool GGM_RestorePosition( CBasePlayer *pPlayer, struct GGMPosition *pos )
 	}
 	if( mp_coop.value && !fOriginSet )
 	{
-		g_pGameRules->GetPlayerSpawnSpot( pPlayer );
-		if( pPlayer->gravgunmod_data.m_state = STATE_POINT_SELECT )
+		if( !COOP_SetDefaultSpawnPosition( pPlayer ) )
+			g_pGameRules->GetPlayerSpawnSpot( pPlayer );
+		if( pPlayer->gravgunmod_data.m_state == STATE_POINT_SELECT )
 			return false;
 	}
 
@@ -973,6 +974,7 @@ bool GGM_RestorePosition( CBasePlayer *pPlayer, struct GGMPosition *pos )
 		UTIL_SetSize( pPlayer->pev, VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX );
 	}
 	pPlayer->pev->angles = pos->vecAngles;
+	pPlayer->pev->fixangle = TRUE;
 	return true;
 }
 
@@ -1033,7 +1035,7 @@ bool GGM_PlayerSpawn( CBasePlayer *pPlayer )
 		return true;
 	}
 
-	if( mp_spectator.value && pPlayer->gravgunmod_data.m_state == STATE_CONNECTED || !pPlayer->gravgunmod_data.pState  )
+	if( ( mp_coop.value || mp_spectator.value ) && pPlayer->gravgunmod_data.m_state == STATE_CONNECTED || !pPlayer->gravgunmod_data.pState  )
 	{
 		if( !pPlayer->gravgunmod_data.pState )
 			GGM_ChatPrintf( pPlayer, "This nickname busy! Please login or change nickname\n" );
@@ -1041,6 +1043,8 @@ bool GGM_PlayerSpawn( CBasePlayer *pPlayer )
 		pPlayer->gravgunmod_data.m_state = STATE_SPECTATOR_BEGIN;
 		pPlayer->RemoveAllItems( TRUE );
 		UTIL_BecomeSpectator( pPlayer );
+		if( !COOP_SetDefaultSpawnPosition( pPlayer ) )
+			g_pGameRules->GetPlayerSpawnSpot( pPlayer );
 		return true;
 	}
 
@@ -1090,7 +1094,8 @@ bool GGM_PlayerSpawn( CBasePlayer *pPlayer )
 		{
 
 		}
-		g_pGameRules->GetPlayerSpawnSpot( pPlayer );
+		if( !COOP_SetDefaultSpawnPosition( pPlayer ) )
+			g_pGameRules->GetPlayerSpawnSpot( pPlayer );
 	}
 	else
 	{

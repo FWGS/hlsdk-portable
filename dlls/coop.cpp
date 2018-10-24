@@ -5,9 +5,6 @@
 #include "coop_util.h"
 #include "gravgunmod.h"
 
-
-struct SavedCoords g_SavedCoords, s_SavedCoords;
-
 static float msglimittime1, msglimittime2;
 
 cvar_t mp_coop = { "mp_coop", "0", FCVAR_SERVER };
@@ -41,21 +38,6 @@ edict_t *COOP_FindLandmark( const char *pLandmarkName )
 	ALERT( at_error, "Can't find landmark %s\n", pLandmarkName );
 	return NULL;
 }
-
-
-void COOP_ValidateOffset( void )
-{
-	if( !g_SavedCoords.validoffset )
-	{
-		edict_t *landmark = COOP_FindLandmark( g_SavedCoords.landmark );
-		if(landmark)
-			g_SavedCoords.offset = landmark->v.origin - g_SavedCoords.offset;
-		else
-			g_SavedCoords.offset = g_vecZero - g_SavedCoords.offset;
-		g_SavedCoords.validoffset = true;
-	}
-}
-
 
 void UTIL_CoopPlayerMessage( CBaseEntity *pPlayer, int channel, float time, unsigned int color1, unsigned int color2, float x, float y,  const char *format, ... )
 {
@@ -158,57 +140,22 @@ void UTIL_CleanSpawnPoint( Vector origin, float dist )
 }
 
 
-Vector COOP_FixupSpawnPoint(Vector spawn)
+Vector COOP_FixupSpawnPoint( Vector vecOrigin, bool fDuck )
 {
 	int i = 0;
 	// predict that spawn point is almost correct
 	while( i < 2 ) // 2 player heights
 	{
-		Vector point = spawn + Vector( 0, 0, 36 * i );
+		Vector point = vecOrigin + Vector( 0, 0, 36 * i );
 		TraceResult tr;
-		UTIL_TraceHull( point, point, ignore_monsters, (mp_unduck.value&&g_fSavedDuck)?head_hull:human_hull, NULL, &tr );
+		UTIL_TraceHull( point, point, ignore_monsters, (mp_unduck.value&&fDuck)?head_hull:human_hull, NULL, &tr );
 		if( !tr.fStartSolid && !tr.fAllSolid )
 			return point;
 		i = -i;
 		if( i >= 0 )
 			i++;
 	}
-	return spawn;
-}
-
-void UTIL_CoopSaveTrain( CBaseEntity *pPlayer, SavedCoords *coords)
-{
-	if( coords->trainsaved )
-		return;
-
-	CBaseEntity *train = UTIL_CoopGetPlayerTrain(pPlayer);
-	if( !train )
-	{
-		ALERT( at_console, "^1NO TRAIN!\n");
-		return;
-	}
-	ALERT( at_console, "^1TRAIN IS %s\n", STRING( train->pev->classname ) );
-
-	if( !pPlayer->IsPlayer() )
-	{
-		// it is trainnitself, try find player on it
-		CBaseEntity *pList;
-		Vector mins = pPlayer->pev->absmin;
-		Vector maxs = pPlayer->pev->absmax;
-		maxs.z += 72;
-		int count = UTIL_EntitiesInBox( &pList, 1, mins, maxs, FL_ONGROUND );
-		if( count && pList && pList->IsPlayer() )
-			pPlayer = pList;
-		else
-		{
-			ALERT( at_console, "Train without players\n" );
-			return;
-		}
-	}
-
-	strcpy( coords->trainglobal, STRING(train->pev->globalname) );
-	coords->trainoffset = pPlayer->pev->origin - VecBModelOrigin(train->pev);
-	coords->trainsaved = true;
+	return vecOrigin;
 }
 
 void UTIL_BecomeSpectator( CBasePlayer *pPlayer )
@@ -247,14 +194,13 @@ void UTIL_SpawnPlayer( CBasePlayer *pPlayer )
 
 }
 
-char * UTIL_CoopPlayerName( CBaseEntity *pPlayer )
+char *UTIL_CoopPlayerName( CBaseEntity *pPlayer )
 {
 	if( !pPlayer )
 		return (char*)"unnamed(NULL)";
 	return (char*)( ( pPlayer->pev->netname && STRING( pPlayer->pev->netname )[0] != 0 ) ? STRING( pPlayer->pev->netname ) : "unconnected" );
 }
 
-bool g_fSavedDuck;
 
 char *badlist[256] = {
 "player", // does not even can set own name
@@ -319,29 +265,19 @@ bool UTIL_CoopIsBadPlayer( CBaseEntity *plr )
 
 	return false;
 }
-
+bool g_fPause;
 void COOP_ClearData( void )
 {
-	// nullify
-	SavedCoords l_SavedCoords = {0};
-	g_SavedCoords = l_SavedCoords;
+	g_fPause = false;
 	msglimittime1 = msglimittime2 = 0;
 }
 
-bool g_fPause;
+
 void COOP_ApplyData( void )
 {
-	if( s_SavedCoords.valid )
-	{
-		struct SavedCoords null1 = {0};
-		g_SavedCoords = s_SavedCoords;
-		s_SavedCoords = null1;
-		g_fSavedDuck = g_SavedCoords.fDuck;
-	}
-	g_fPause = false;
 	ALERT( at_console, "^2CoopApplyData()\n" );
 	msglimittime1 = msglimittime2 = 0;
-
+	g_fPause = false;
 }
 
 // use this to translate GGMMapOffset during changelevel
@@ -351,6 +287,9 @@ struct GGMLandmarkTransition
 	char targetMap[32];
 	char landmarkName[32];
 	Vector vecLandmark;
+	bool fTriggerUsed;
+	bool fSavedPos;
+	GGMPosition pos;
 };
 
 
@@ -373,11 +312,42 @@ struct GGMMapState
 GGMMapState *g_pMapStates;
 GGMMapState *g_pCurrentMap;
 GGMLandmarkTransition g_landmarkTransition;
+struct GGMCoopState
+{
+	struct GGMPosition savedPos;
+	bool fSaved;
+} g_CoopState;
 edict_t *COOP_FindLandmark( const char *pLandmarkName );
+
+void COOP_MarkTriggers( void )
+{
+	CBaseEntity *pTrigger = NULL;
+
+	while( pTrigger = UTIL_FindEntityByClassname( pTrigger, "trigger_changelevel" ) )
+	{
+		struct COOPChangelevelData *pData = COOP_GetTriggerData( pTrigger );
+		pData->fIsBack = !strcmp( pData->pszMapName, g_landmarkTransition.sourceMap );
+		//	if( gpGlobals->startspot && STRING(gpGlobals->startspot) && !strcmp(STRING(gpGlobals->startspot), m_szLandmarkName) )
+		// m_coopData.fIsBack = true;
+
+		pTrigger->pev->renderamt = 127;
+		pTrigger->pev->effects &= ~EF_NODRAW;
+		pTrigger->pev->rendermode = kRenderTransColor;
+		pTrigger->pev->rendercolor = g_vecZero;
+		if( pData->fIsBack )
+			pTrigger->pev->rendercolor.z = 255;
+		else
+			pTrigger->pev->rendercolor.y = 255;
+	}
+}
+
 bool  COOP_ProcessTransition( void )
 {
 	bool fAddCurrent = true;
 	edict_t *landmark;
+
+	g_CoopState.savedPos = g_landmarkTransition.pos;
+	g_CoopState.fSaved = g_landmarkTransition.fSavedPos;
 
 	if( !mp_coop.value )
 		return false;
@@ -416,16 +386,22 @@ bool  COOP_ProcessTransition( void )
 	return true;
 }
 
-void COOP_SetupLandmarkTransition( const char *szNextMap, const char *szNextSpot, Vector vecLandmarkOffset )
+void COOP_SetupLandmarkTransition( const char *szNextMap, const char *szNextSpot, Vector vecLandmarkOffset, struct GGMPosition *pPos )
 {
 	strncpy(g_landmarkTransition.sourceMap, STRING(gpGlobals->mapname), 31 );
 	strncpy(g_landmarkTransition.targetMap, szNextMap, 31 );
 	strncpy(g_landmarkTransition.landmarkName, szNextSpot, 31 );
 	g_landmarkTransition.vecLandmark = vecLandmarkOffset;
+	if( pPos )
+	{
+		g_landmarkTransition.pos = *pPos;
+		g_landmarkTransition.fSavedPos = true;
+	}
 }
 
 void COOP_ServerActivate( void )
 {
+	COOP_MarkTriggers();
 	if( !COOP_ProcessTransition() )
 	{
 		ALERT( at_console, "Transition failed, new game started\n");
@@ -463,7 +439,7 @@ void COOP_ServerActivate( void )
 			}
 		}
 	}
-	g_landmarkTransition.landmarkName[0] = false;
+	memset( &g_landmarkTransition, 0, sizeof( GGMLandmarkTransition ) );
 }
 
 bool COOP_GetOrigin( Vector *pvecNewOrigin, const Vector &vecOrigin, const char *pszMapName )
@@ -624,62 +600,12 @@ bool COOP_PlayerDeath( CBasePlayer *pPlayer )
 	return false;
 }
 
-bool UTIL_CoopGetSpawnPoint( Vector *origin, Vector *angles)
+bool COOP_SetDefaultSpawnPosition( CBasePlayer *pPlayer )
 {
-	if(!g_SavedCoords.valid)
+	if( !g_CoopState.fSaved )
 		return false;
-
-	// spawn on elevator or train
-	if( g_SavedCoords.trainsaved )
-	{
-		CBaseEntity *train = UTIL_FindEntityByString( NULL, "globalname", g_SavedCoords.trainglobal );
-		if( !train ) train = UTIL_FindEntityByString( NULL, "classname", g_SavedCoords.trainglobal );
-		if( train && ( !g_SavedCoords.trainuser1 || train->pev->iuser1 == g_SavedCoords.trainuser1 ) )
-		{
-			*angles = g_SavedCoords.triggerangles;
-			*origin = VecBModelOrigin(train->pev) + g_SavedCoords.trainoffset;
-			g_SavedCoords.trainuser1 = train->pev->iuser1;
-			return true;
-		}
-		ALERT( at_console, "Failed to get train %s (map design error?)\n", g_SavedCoords.trainglobal );
-	}
-	Vector point = g_SavedCoords.triggerorigin;
-	*angles = g_SavedCoords.triggerangles;
-	if( !g_SavedCoords.validspawnpoint )
-	{
-		TraceResult tr;
-		Vector angle;
-		UTIL_MakeVectorsPrivate( *angles, (float*)&angle, NULL, NULL );
-		COOP_ValidateOffset();
-		point = point + g_SavedCoords.offset;
-		//UTIL_TraceHull( point, point, ignore_monsters, human_hull, NULL, &tr );
-
-		if( mp_unduck.value && g_fSavedDuck && !g_SavedCoords.fUsed )
-			UTIL_TraceHull( point, point + angle * 100, missile, head_hull, NULL, &tr );
-		else
-			UTIL_TraceHull( point, point + angle * 100, ignore_monsters, human_hull, NULL, &tr );
-
-		if( !tr.fStartSolid && !tr.fAllSolid || ENTINDEX( tr.pHit ) && ENTINDEX( tr.pHit ) <= gpGlobals->maxClients )
-		{
-			//g_SavedCoords.triggerorigin = tr.vecEndPos;
-			//g_SavedCoords.validspawnpoint = true;
-			if( tr.pHit && FClassnameIs( tr.pHit, "func_door" ) )
-				tr.pHit->v.solid = SOLID_NOT;
-			ALERT( at_console, "CoopGetSpawnPoint: ^2offset set\n");
-
-		}
-		else
-		{
-			//g_SavedCoords.valid = false;
-			ALERT( at_console, "CoopGetSpawnPoint: ^2trace failed\n");
-			return false;
-		}
-	}
-	*origin = point;
-
-	return true;
+	return GGM_RestorePosition( pPlayer, &g_CoopState.savedPos );
 }
-
 
 CBaseEntity *UTIL_CoopGetPlayerTrain( CBaseEntity *pPlayer)
 {

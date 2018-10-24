@@ -65,58 +65,13 @@ extern EHANDLE				g_pLastSpawn;
 edict_t *CGameRules::GetPlayerSpawnSpot( CBasePlayer *pPlayer )
 {
 	edict_t *pentSpawnSpot = EntSelectSpawnPoint( pPlayer );
-	if( pPlayer->gravgunmod_data.m_state == STATE_POINT_SELECT )
-	{
-		pPlayer->gravgunmod_data.m_state = STATE_SPAWNED;
-		pPlayer->pev->effects &= ~EF_NODRAW;
 
-		pPlayer->pev->takedamage = DAMAGE_YES;
-		pPlayer->pev->flags &= ~FL_SPECTATOR;
-		pPlayer->pev->movetype = MOVETYPE_WALK;
-		CLIENT_COMMAND( pPlayer->edict(), "touch_show _coopm*\n" );
-
-		return NULL;
-	}
-
-	if( mp_coop.value )
-		UTIL_CleanSpawnPoint( pentSpawnSpot->v.origin, 100 );
-
-	if( g_pLastSpawn )
 	pPlayer->pev->origin = VARS( pentSpawnSpot )->origin + Vector( 0, 0, 1 );
 	pPlayer->pev->v_angle  = g_vecZero;
 	pPlayer->pev->velocity = g_vecZero;
 	pPlayer->pev->angles = VARS( pentSpawnSpot )->angles;
 	pPlayer->pev->punchangle = g_vecZero;
-	if( !(pPlayer->pev->flags & FL_SPECTATOR ) )
-	if( mp_coop.value )
-		if( !UTIL_CoopGetSpawnPoint( &pPlayer->pev->origin, &pPlayer->pev->angles ) )
-		{
-			if( !g_pLastSpawn )
-			{
-				hudtextparms_t params = {};
-				params.fadeinTime = 0.5;
-				params.fadeoutTime = .5;
-				params.holdTime = 10;
-				params.channel = 0;
-				params.x = params.y = -1;
-				params.r2 = params.g2 = params.b2 = params.a2 = params.r1 = params.g1 = params.b1 = params.a1 = 255;
-
-
-				UTIL_HudMessage( pPlayer, params, "Server cannot select a spawnpoint\nplease fly to it manually\nand press attack button" );
-				// select spawn point
-				pPlayer->gravgunmod_data.m_state = STATE_POINT_SELECT;
-				pPlayer->m_afButtonPressed = 0;
-				
-				if(pPlayer->pev->origin.Length() > 8192)
-					pPlayer->pev->origin = g_vecZero;
-		
-
-			}
-		}
 	pPlayer->pev->fixangle = TRUE;
-	pPlayer->pev->origin = COOP_FixupSpawnPoint( pPlayer->pev->origin );
-	if( g_fSavedDuck )
-		pPlayer->pev->flags |= FL_DUCKING;
 
 	return pentSpawnSpot;
 }

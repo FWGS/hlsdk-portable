@@ -1,5 +1,6 @@
 #ifndef COOP_UTIL_H
 #define COOP_UTIL_H
+#include "gravgunmod.h"
 extern cvar_t mp_gravgun_players;
 extern cvar_t mp_coop;
 extern cvar_t mp_coop_nofriendlyfire;
@@ -20,35 +21,24 @@ extern cvar_t materials_txt;
 extern bool g_fSavedDuck;
 extern bool g_fPause;
 
-struct SavedCoords
+struct COOPChangelevelData
 {
-	char landmark[32];
-	Vector triggerorigin;
-	Vector triggerangles;
-	Vector offset;
-	int iCount;
-	bool valid;
-	bool validoffset;
-	bool validspawnpoint;
-	int changeback;
-	bool trainsaved;
-	Vector trainoffset;
-	char trainglobal[256];
-	int trainuser1;
+	bool fIsBack;
+	bool fSkipSpawnCheck;
+	struct GGMPosition savedPosition;
+	bool fSpawnSaved;
 	bool fUsed;
-	bool fDuck;
+	unsigned int bitsTouchCount;
+	float flRepeatTimer;
+	const char *pszMapName;
+	bool fValid;
 };
 
-
-
-void COOP_ValidateOffset( void );
 void UTIL_CleanSpawnPoint( Vector origin, float radius );
 char *UTIL_CoopPlayerName( CBaseEntity *pPlayer );
 
-bool UTIL_CoopGetSpawnPoint( Vector *point, Vector *angles);
-
-void UTIL_CoopSaveTrain( CBaseEntity *pPlayer, SavedCoords *coords);
-Vector COOP_FixupSpawnPoint(Vector spawn);
+bool COOP_SetDefaultSpawnPosition( CBasePlayer *pPlayer );
+Vector COOP_FixupSpawnPoint( Vector vecOrigin, bool fDuck );
 void COOP_ClearData( void );
 void COOP_ApplyData( void );
 void UTIL_CoopPrintMessage( const char *format, ... );
@@ -83,7 +73,6 @@ public:
 
 extern CWeaponList g_WeaponList;
 
-extern struct SavedCoords g_SavedCoords, s_SavedCoords;
-
+struct COOPChangelevelData *COOP_GetTriggerData( CBaseEntity *pTrigger );
 #endif // COOP_UTIL_H
 
