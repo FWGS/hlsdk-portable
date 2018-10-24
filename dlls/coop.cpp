@@ -401,6 +401,7 @@ void COOP_SetupLandmarkTransition( const char *szNextMap, const char *szNextSpot
 
 void COOP_ServerActivate( void )
 {
+	memset( &g_CoopState, 0, sizeof( g_CoopState ) );
 	COOP_MarkTriggers();
 	if( !COOP_ProcessTransition() )
 	{
