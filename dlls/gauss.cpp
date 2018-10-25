@@ -150,7 +150,7 @@ void CXS::PrimaryAttack()
 	if( m_pPlayer->pev->waterlevel == 3 )
 	{
 		PlayEmptySound();
-		m_flNextSecondaryAttack = m_flNextPrimaryAttack = GetNextAttackDelay( 0.15 );
+		m_flNextSecondaryAttack = m_flNextPrimaryAttack = UTIL_WeaponTimeBase() +  0.15;
 		return;
 	}
 
@@ -188,7 +188,7 @@ void CXS::SecondaryAttack()
 			PlayEmptySound();
 		}
 
-		m_flNextSecondaryAttack = m_flNextPrimaryAttack = GetNextAttackDelay( 0.5 );
+		m_flNextSecondaryAttack = m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5;
 		return;
 	}
 
