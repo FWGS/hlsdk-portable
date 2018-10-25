@@ -56,7 +56,6 @@ void EV_FireShotGunSingle( struct event_args_s *args );
 
 void EV_TrainPitchAdjust( struct event_args_s *args );
 
-void EV_SpinXS(struct event_args_s *args);
 void EV_FirePar21(struct event_args_s *args);
 void EV_M203(struct event_args_s *args);
 }
@@ -683,60 +682,6 @@ int EV_TFC_IsAllyTeam( int iTeam1, int iTeam2 )
 	return 0;
 }
 
-//======================
-//	 XENSQUASHER START 
-//======================
-enum xensquasher_e
-{
-	XS_IDLE = 0,
-	XS_IDLE2,
-	XS_FIDGET,
-	XS_SPINUP,
-	XS_SPIN,
-	XS_FIRE,
-	XS_FIRE2,
-	XS_HOLSTER,
-	XS_DRAW,
-	XS_RELOAD,
-};
-
-void EV_StopPreviousXS( int idx )
-{
-	// Make sure we don't have a gauss spin event in the queue for this guy
-	gEngfuncs.pEventAPI->EV_KillEvents( idx, "events/xsspin.sc" );
-	gEngfuncs.pEventAPI->EV_StopSound( idx, CHAN_WEAPON, "weapons/xs_windup.wav" );
-	if( EV_IsLocal( idx ) )
-                gEngfuncs.pEventAPI->EV_WeaponAnimation( XS_FIRE2, 2 );
-}
-
-void EV_SpinXS( event_args_t *args )
-{
-	int idx;
-	vec3_t origin;
-	vec3_t angles;
-	vec3_t velocity;
-	int iSoundState = 0;
-
-	int pitch;
-
-	idx = args->entindex;
-
-	if( args->bparam2 )
-	{
-		EV_StopPreviousXS( idx );
-		return;
-	}
-
-	VectorCopy( args->origin, origin );
-	// VectorCopy( args->angles, angles );
-	// VectorCopy( args->velocity, velocity );
-
-	pitch = args->iparam1;
-
-	iSoundState = args->bparam1 ? SND_CHANGE_PITCH : 0;
-
-	gEngfuncs.pEventAPI->EV_PlaySound( idx, origin, CHAN_WEAPON, "weapons/xs_windup.wav", 1.0, ATTN_NORM, iSoundState, pitch );
-}
 
 //======================
 //	 PAR21 START 

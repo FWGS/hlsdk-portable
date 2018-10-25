@@ -3350,16 +3350,10 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 	case 101:
 		gEvilImpulse101 = TRUE;
 		GiveNamedItem( "weapon_heaterpipe" );
-		GiveNamedItem( "weapon_bradnailer" );
-		GiveNamedItem( "ammo_nailclip" );
-		GiveNamedItem( "weapon_nailgun" );
-		GiveNamedItem( "ammo_nailround" );
 		GiveNamedItem( "weapon_shotgun" );
 		GiveNamedItem( "ammo_buckshot" );
 		GiveNamedItem( "weapon_cmlwbr" );
 		GiveNamedItem( "ammo_bolts" );
-		GiveNamedItem( "weapon_xs" );
-		GiveNamedItem( "ammo_xencandy" );
 		GiveNamedItem( "weapon_pipebomb" );
 		GiveNamedItem( "weapon_par21" );
 		GiveNamedItem( "ammo_par21_clip" );

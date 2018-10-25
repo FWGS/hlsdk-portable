@@ -26,7 +26,6 @@ void EV_FireShotGunSingle( struct event_args_s *args  );
 
 void EV_TrainPitchAdjust( struct event_args_s *args );
 
-void EV_SpinXS( struct event_args_s *args );
 void EV_FirePar21( struct event_args_s *args );
 void EV_M203( struct event_args_s *args );
 }
@@ -49,7 +48,6 @@ void Game_HookEvents( void )
 	// gEngfuncs.pfnHookEvent( "events/glock1.sc", EV_FireGlock1 );
 	// gEngfuncs.pfnHookEvent( "events/glock2.sc", EV_FireGlock2 );	
 	gEngfuncs.pfnHookEvent( "events/shotgun1.sc", EV_FireShotGunSingle );
-	gEngfuncs.pfnHookEvent( "events/xsspin.sc", EV_SpinXS );
 	gEngfuncs.pfnHookEvent( "events/par21.sc", EV_FirePar21 );
 	gEngfuncs.pfnHookEvent( "events/m203.sc", EV_M203 );
 	gEngfuncs.pfnHookEvent( "events/train.sc", EV_TrainPitchAdjust );

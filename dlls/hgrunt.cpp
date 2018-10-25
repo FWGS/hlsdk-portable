@@ -1019,9 +1019,6 @@ void CHGrunt::Spawn()
 		// pev->weapons = HGRUNT_9MMAR | HGRUNT_GRENADELAUNCHER;
 	}
 
-	if( FBitSet( pev->weapons, HGRUNT_GRENADELAUNCHER ) )
-		ClearBits( pev->weapons, HGRUNT_GRENADELAUNCHER );
-
 	if( FBitSet( pev->weapons, HGRUNT_SHOTGUN ) )
 	{
 		SetBodygroup( GUN_GROUP, GUN_SHOTGUN );

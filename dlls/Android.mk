@@ -56,11 +56,9 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
            func_tank.cpp \
            game.cpp \
            gamerules.cpp \
-	   gauss.cpp \
            gargantua.cpp \
            genericmonster.cpp \
            ggrenade.cpp \
-	   glock.cpp \
            globals.cpp \
            gman.cpp \
            h_ai.cpp \
@@ -128,9 +126,7 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
 	   poke646/firetrail.cpp \
 	   poke646/genericmodel.cpp \
 	   poke646/mp3.cpp \
-	   poke646/nail.cpp \
 	   poke646/robocop.cpp \
-	   poke646/xsbeam.cpp \
 	   vendetta/par21.cpp
 #	   ../game_shared/voice_gamemgr.cpp
 

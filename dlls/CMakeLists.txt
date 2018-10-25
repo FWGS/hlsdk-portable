@@ -68,11 +68,9 @@ set (SVDLL_SOURCES
 	game.cpp
 	gamerules.cpp
 	gargantua.cpp
-	gauss.cpp
 	genericmonster.cpp
 	ggrenade.cpp
 	globals.cpp
-	glock.cpp
 	gman.cpp
 	h_ai.cpp
 	h_battery.cpp
@@ -97,7 +95,6 @@ set (SVDLL_SOURCES
 	monsters.cpp
 	monsterstate.cpp
 	mortar.cpp
-	mp5.cpp
 	multiplay_gamerules.cpp
 	nihilanth.cpp
 	nodes.cpp
@@ -143,9 +140,7 @@ set (SVDLL_SOURCES
 	poke646/firetrail.cpp
 	poke646/genericmodel.cpp
 	poke646/mp3.cpp
-	poke646/nail.cpp
 	poke646/robocop.cpp
-	poke646/xsbeam.cpp
 	vendetta/par21.cpp
 )
 
