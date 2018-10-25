@@ -585,6 +585,8 @@ BOOL CRoboCop::CheckRangeAttack1(float flDot, float flDist)
 	{
 		return TRUE;
 	}
+
+	return FALSE;
 }
 
 //=========================================================
