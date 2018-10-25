@@ -80,6 +80,7 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
            leech.cpp \
            lights.cpp \
            maprules.cpp \
+	   mp5.cpp \
            monstermaker.cpp \
            monsters.cpp \
            monsterstate.cpp \
@@ -130,7 +131,7 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
 	   poke646/mp3.cpp \
 	   poke646/nail.cpp \
 	   poke646/robocop.cpp \
-	   poke646/xsbeam..cpp
+	   poke646/xsbeam.cpp
 #	   ../game_shared/voice_gamemgr.cpp
 
 LOCAL_LDLIBS := -llog
