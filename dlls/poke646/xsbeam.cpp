@@ -104,7 +104,7 @@ void CXSBeam::Init()
 		if( m_pBeam[i] )
 		{
 			m_pBeam[i]->pev->scale = 0.5;
-			m_pBeam[i]->SetTransparency( kRenderGlow, 255, 255, 255, 255, kRenderFxFadeFast );
+			m_pBeam[i]->SetTransparency( kRenderGlow, 255, 255, 255, 255, kRenderFxNoDissipation );
 			UTIL_SetOrigin( m_pBeam[i]->pev, pev->origin );
 
 			m_pBeam[i]->pev->spawnflags |= SF_SPRITE_TEMPORARY;
