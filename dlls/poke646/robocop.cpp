@@ -690,6 +690,8 @@ Schedule_t* CRoboCop::GetSchedule()
 
 		// Wander or simply walk.
 		return GetScheduleOfType(SCHED_STANDOFF);
+	default:
+		break;
 	}
 
 	return CBaseMonster::GetSchedule();

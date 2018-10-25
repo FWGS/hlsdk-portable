@@ -21,17 +21,25 @@
 #
 
 cmake_minimum_required(VERSION 2.6.0)
+
+# Install custom module path
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
+
+include(VSForceXPToolchain) # Force XP toolchain for Visual Studio
+
 project (HLSDK-XASH3D)
 
 #--------------
 # USER DEFINES \
 ################\
+option(64BIT "Allow 64 Bit builds" OFF)
 option(USE_VGUI "Enable VGUI1. UNDONE" OFF)
 option(USE_VGUI2 "Enable VGUI2. UNDONE" OFF)
 option(USE_VOICEMGR "Enable VOICE MANAGER." OFF)
 option(BUILD_CLIENT "Build client dll" ON)
 option(BUILD_SERVER "Build server dll" ON)
 option(GOLDSOURCE_SUPPORT "Build goldsource compatible client library" OFF)
+option(64BIT "Disable auto -m32 appending to compiler flags" OFF)
 set(GAMEDIR "valve" CACHE STRING "Gamedir path")
 set(SERVER_INSTALL_DIR "dlls" CACHE STRING "Where put server dll")
 set(CLIENT_INSTALL_DIR "cl_dlls" CACHE STRING "Where put client dll")
@@ -43,15 +51,40 @@ set(SERVER_LIBRARY_NAME "hl" CACHE STRING "Library name for Linux/MacOS/Windows"
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
-# Build 32-bit Xash on 64-bit, because Xash3D not support this
-if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+if(CMAKE_SIZEOF_VOID_P EQUAL 8 AND NOT 64BIT)
 	if(MSVC)
-			error("UNDONE: set 32 build flags")
+		error("UNDONE: set 32 build flags")
 	else()
-	set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32")
-	set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32")
-	set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -m32")
+		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32")
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_C_FLAGS}")
+		set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -m32")
 	endif()
+	set(CMAKE_SIZEOF_VOID_P 4)
+endif()
+
+if(64BIT AND CMAKE_SIZEOF_VOID_P EQUAL 4)
+	message(FATAL_ERROR "You enabled XASH_64BIT, but compiler can't create 64 bit code!")
+endif()
+
+if(64BIT)
+	message(STATUS "Building for 64 Bit")
+else()
+	message(STATUS "Building for 32 Bit")
+endif()
+
+if (MINGW)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libstdc++ -static-libgcc")
+	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--add-stdcall-alias")
+endif()
+
+# add_compile_options for older cmake versions
+if(${CMAKE_VERSION} VERSION_LESS "3.0.2")
+	macro(add_compile_options)
+		set(list_var "${ARGV}")
+		foreach(arg IN LISTS list_var)
+			set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${arg}")
+		endforeach()
+	endmacro()
 endif()
 
 if(BUILD_CLIENT)
