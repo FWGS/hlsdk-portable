@@ -302,10 +302,6 @@ const char *CBasePlayer::TeamID( void ) { return ""; }
 int CBasePlayer::GiveAmmo( int iCount, const char *szName, int iMax ) { return 0; }
 void CBasePlayer::AddPoints( int score, BOOL bAllowNegativeScore ) { } 
 void CBasePlayer::AddPointsToTeam( int score, BOOL bAllowNegativeScore ) { } 
-void CBasePlayer::IncrementExertLevel( int amount ) { }
-void CBasePlayer::DecrementExertLevel( int amount ) { }
-void CBasePlayer::ShowPlayerHUD( BOOL bInstant ) {}
-void CBasePlayer::HidePlayerHUD( BOOL bInstant ) {}
 
 void ClearMultiDamage( void ) { }
 void ApplyMultiDamage( entvars_t *pevInflictor, entvars_t *pevAttacker ) { }

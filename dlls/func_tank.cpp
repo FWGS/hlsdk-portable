@@ -128,6 +128,7 @@ protected:
 	Vector		m_sightOrigin;	// Last sight of target
 	int			m_spread;		// firing spread
 	string_t	m_iszMaster;	// Master entity (game_team_master or multisource)
+	int		m_iControllerHUDFlags;
 };
 
 TYPEDESCRIPTION	CFuncTank::m_SaveData[] =
@@ -158,6 +159,7 @@ TYPEDESCRIPTION	CFuncTank::m_SaveData[] =
 	DEFINE_FIELD( CFuncTank, m_flNextAttack, FIELD_TIME ),
 	DEFINE_FIELD( CFuncTank, m_iBulletDamage, FIELD_INTEGER ),
 	DEFINE_FIELD( CFuncTank, m_iszMaster, FIELD_STRING ),
+	DEFINE_FIELD( CFuncTank, m_iControllerHUDFlags, FIELD_INTEGER ),
 };
 
 IMPLEMENT_SAVERESTORE( CFuncTank, CBaseEntity )
@@ -360,6 +362,7 @@ BOOL CFuncTank::StartControl( CBasePlayer *pController )
 		m_pController->pev->viewmodel = 0;
 	}
 
+	m_iControllerHUDFlags = m_pController->m_iHideHUD;
 	m_pController->m_iHideHUD |= HIDEHUD_WEAPONS;
 	m_vecControllerUsePos = m_pController->pev->origin;
 
@@ -381,7 +384,7 @@ void CFuncTank::StopControl()
 
 	ALERT( at_console, "stopped using TANK\n");
 
-	m_pController->m_iHideHUD &= ~HIDEHUD_WEAPONS;
+	m_pController->m_iHideHUD = m_iControllerHUDFlags;
 
 	pev->nextthink = 0;
 

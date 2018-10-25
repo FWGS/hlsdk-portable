@@ -500,6 +500,17 @@ extern DLL_GLOBAL int			g_Language;
 #define CBSENTENCENAME_MAX 16
 #define CVOXFILESENTENCEMAX		1536		// max number of sentences in game. NOTE: this must match
 							// CVOXFILESENTENCEMAX in engine\sound.h!!!
+typedef struct soundtrack_s
+{
+        char mapname[32];
+        char soundfile[32];
+        BOOL loop;
+} soundtrack_t;
+
+extern int g_soundtrackCount;
+extern soundtrack_t g_soundtracklist[30];
+
+void SOUNDTRACKLIST_Init();
 
 extern char gszallsentencenames[CVOXFILESENTENCEMAX][CBSENTENCENAME_MAX];
 extern int gcallsentences;
@@ -577,5 +588,6 @@ void UTIL_UnsetGroupTrace( void );
 int UTIL_SharedRandomLong( unsigned int seed, int low, int high );
 float UTIL_SharedRandomFloat( unsigned int seed, float low, float high );
 
+void UTIL_MakeTracer( const Vector &vecSrc, const Vector &vecDest );
 float UTIL_WeaponTimeBase( void );
 #endif // UTIL_H

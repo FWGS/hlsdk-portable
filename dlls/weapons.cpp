@@ -170,8 +170,6 @@ void DecalGunshot( TraceResult *pTrace, int iBulletType )
 		case BULLET_MONSTER_MP5:
 		case BULLET_PLAYER_BUCKSHOT:
 		case BULLET_PLAYER_357:
-		case BULLET_PLAYER_NAIL1:
-		case BULLET_PLAYER_NAIL2:
 		default:
 			// smoke and decal
 			UTIL_GunshotDecalTrace( pTrace, DamageDecal( pEntity, DMG_BULLET ) );
@@ -346,10 +344,6 @@ void W_Precache( void )
 	g_sModelIndexLaser = PRECACHE_MODEL( g_pModelNameLaser );
 	g_sModelIndexLaserDot = PRECACHE_MODEL( "sprites/laserdot.spr" );
 
-	g_sModelIndexShockwave = PRECACHE_MODEL( "sprites/shockwave.spr" ); // shockwave explosion
-
-	PRECACHE_MODEL( "sprites/wallsmoke.spr" );
-
 	// used by explosions
 	PRECACHE_MODEL( "models/grenade.mdl" );
 	PRECACHE_MODEL( "sprites/explode1.spr" );
@@ -368,11 +362,6 @@ void W_Precache( void )
 	PRECACHE_SOUND( "items/weapondrop1.wav" );// weapon falls to the ground
 
 	PRECACHE_MODEL( "models/w_grenade.mdl" );
-
-	PRECACHE_SOUND( "weapons/brad_hit1.wav" );	// hit by nail
-	PRECACHE_SOUND( "weapons/brad_hit2.wav" );	// hit by nail
-
-	UTIL_PrecacheOther( "fire_trail" );	// pipebomb explosion effect.
 }
 
 TYPEDESCRIPTION	CBasePlayerItem::m_SaveData[] =
@@ -600,8 +589,6 @@ void CBasePlayerWeapon::ItemPostFrame( void )
 		m_iClip += j;
 		m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] -= j;
 
-		m_pPlayer->TabulateAmmo();
-
 		m_fInReload = FALSE;
 	}
 
@@ -617,7 +604,6 @@ void CBasePlayerWeapon::ItemPostFrame( void )
 			m_fFireOnEmpty = TRUE;
 		}
 
-		m_pPlayer->TabulateAmmo();
 		SecondaryAttack();
 		m_pPlayer->pev->button &= ~IN_ATTACK2;
 	}
@@ -628,7 +614,6 @@ void CBasePlayerWeapon::ItemPostFrame( void )
 			m_fFireOnEmpty = TRUE;
 		}
 
-		m_pPlayer->TabulateAmmo();
 		PrimaryAttack();
 	}
 	else if( m_pPlayer->pev->button & IN_RELOAD && iMaxClip() != WEAPON_NOCLIP && !m_fInReload ) 
@@ -933,7 +918,6 @@ BOOL CBasePlayerWeapon::DefaultDeploy( const char *szViewModel, const char *szWe
 	if( !CanDeploy() )
 		return FALSE;
 
-	m_pPlayer->TabulateAmmo();
 	m_pPlayer->pev->viewmodel = MAKE_STRING( szViewModel );
 	m_pPlayer->pev->weaponmodel = MAKE_STRING( szWeaponModel );
 	strcpy( m_pPlayer->m_szAnimExtention, szAnimExt );
@@ -1572,79 +1556,43 @@ TYPEDESCRIPTION	CShotgun::m_SaveData[] =
 {
 	DEFINE_FIELD( CShotgun, m_flNextReload, FIELD_TIME ),
 	DEFINE_FIELD( CShotgun, m_fInSpecialReload, FIELD_INTEGER ),
-	DEFINE_FIELD( CShotgun, m_flNextReload, FIELD_TIME ),
 	// DEFINE_FIELD( CShotgun, m_iShell, FIELD_INTEGER ),
 	DEFINE_FIELD( CShotgun, m_flPumpTime, FIELD_TIME ),
 };
 
 IMPLEMENT_SAVERESTORE( CShotgun, CBasePlayerWeapon )
 
-TYPEDESCRIPTION	CGauss::m_SaveData[] =
+TYPEDESCRIPTION	CCrossbow::m_SaveData[] =
 {
-	DEFINE_FIELD( CGauss, m_fInAttack, FIELD_INTEGER ),
+	DEFINE_FIELD( CCrossbow, m_fInAttack, FIELD_INTEGER ),
+	DEFINE_FIELD( CCrossbow, m_fInZoom, FIELD_INTEGER ),
+};
+
+IMPLEMENT_SAVERESTORE( CCrossbow, CBasePlayerWeapon )
+
+TYPEDESCRIPTION	CXS::m_SaveData[] =
+{
+	DEFINE_FIELD( CXS, m_fInAttack, FIELD_INTEGER ),
 	//DEFINE_FIELD( CGauss, m_flStartCharge, FIELD_TIME ),
 	//DEFINE_FIELD( CGauss, m_flPlayAftershock, FIELD_TIME ),
 	//DEFINE_FIELD( CGauss, m_flNextAmmoBurn, FIELD_TIME ),
-	DEFINE_FIELD( CGauss, m_fPrimaryFire, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CXS, m_fPrimaryFire, FIELD_BOOLEAN ),
 };
 
-IMPLEMENT_SAVERESTORE( CGauss, CBasePlayerWeapon )
+IMPLEMENT_SAVERESTORE( CXS, CBasePlayerWeapon )
 
-TYPEDESCRIPTION	CEgon::m_SaveData[] =
+TYPEDESCRIPTION	CPipebomb::m_SaveData[] =
 {
-	//DEFINE_FIELD( CEgon, m_pBeam, FIELD_CLASSPTR ),
-	//DEFINE_FIELD( CEgon, m_pNoise, FIELD_CLASSPTR ),
-	//DEFINE_FIELD( CEgon, m_pSprite, FIELD_CLASSPTR ),
-	DEFINE_FIELD( CEgon, m_shootTime, FIELD_TIME ),
-	DEFINE_FIELD( CEgon, m_fireState, FIELD_INTEGER ),
-	DEFINE_FIELD( CEgon, m_fireMode, FIELD_INTEGER ),
-	DEFINE_FIELD( CEgon, m_shakeTime, FIELD_TIME ),
-	DEFINE_FIELD( CEgon, m_flAmmoUseTime, FIELD_TIME ),
+	DEFINE_FIELD( CPipebomb, m_chargeReady, FIELD_INTEGER ),
 };
 
-IMPLEMENT_SAVERESTORE( CEgon, CBasePlayerWeapon )
+IMPLEMENT_SAVERESTORE( CPipebomb, CBasePlayerWeapon )
 
-TYPEDESCRIPTION	CSatchel::m_SaveData[] = 
+TYPEDESCRIPTION CPipebombCharge::m_SaveData[] =
 {
-	DEFINE_FIELD( CSatchel, m_chargeReady, FIELD_INTEGER ),
+        DEFINE_FIELD( CPipebombCharge, m_flDropTime, FIELD_FLOAT ),
+	DEFINE_FIELD( CPipebombCharge, m_iTrail, FIELD_INTEGER ),
+	DEFINE_FIELD( CPipebombCharge, m_hOwner, FIELD_EHANDLE ),
 };
 
-IMPLEMENT_SAVERESTORE( CSatchel, CBasePlayerWeapon )
-
-TYPEDESCRIPTION CBradnailer::m_SaveData[] =
-{
-	DEFINE_FIELD( CBradnailer, m_flNextPrimaryAttack, FIELD_TIME ),
-	DEFINE_FIELD( CBradnailer, m_flNextSecondaryAttack, FIELD_TIME ),
-	DEFINE_FIELD( CBradnailer, m_flTimeWeaponIdle, FIELD_TIME ),
-};
-
-IMPLEMENT_SAVERESTORE( CBradnailer, CBasePlayerWeapon )
-
-TYPEDESCRIPTION	CCmlwbr::m_SaveData[] =
-{
-	DEFINE_FIELD( CCmlwbr, m_fInAttack, FIELD_INTEGER ),
-	DEFINE_FIELD( CCmlwbr, m_fInZoom, FIELD_INTEGER ),
-};
-
-IMPLEMENT_SAVERESTORE( CCmlwbr, CBasePlayerWeapon )
-
-TYPEDESCRIPTION	CXenSquasher::m_SaveData[] =
-{
-	DEFINE_FIELD( CXenSquasher, m_fInAttack, FIELD_INTEGER ),
-	DEFINE_FIELD( CXenSquasher, m_flNextPrimaryAttack, FIELD_TIME ),
-	DEFINE_FIELD( CXenSquasher, m_flNextSecondaryAttack, FIELD_TIME ),
-	DEFINE_FIELD( CXenSquasher, m_flTimeWeaponIdle, FIELD_TIME ),
-	//DEFINE_FIELD( CGauss, m_flStartCharge, FIELD_TIME ),
-	//DEFINE_FIELD( CGauss, m_flPlayAftershock, FIELD_TIME ),
-	//DEFINE_FIELD( CGauss, m_flNextAmmoBurn, FIELD_TIME ),
-	DEFINE_FIELD( CXenSquasher, m_fPrimaryFire, FIELD_BOOLEAN ),
-};
-
-IMPLEMENT_SAVERESTORE( CXenSquasher, CBasePlayerWeapon )
-
-TYPEDESCRIPTION	CPipeBomb::m_SaveData[] =
-{
-	DEFINE_FIELD( CPipeBomb, m_thrownByPlayer, FIELD_INTEGER ),
-};
-
-IMPLEMENT_SAVERESTORE( CPipeBomb, CSatchel )
+IMPLEMENT_SAVERESTORE( CPipebombCharge, CGrenade )

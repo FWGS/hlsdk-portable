@@ -56,34 +56,7 @@ void CGrenade::Explode( TraceResult *pTrace, int bitsDamageType )
 
 	pev->takedamage = DAMAGE_NO;
 
-	if( FClassnameIs( pev, "monster_pipebomb" ) )
-	{
-		int trailCount = RANDOM_LONG( 1, 4 );
-		for( int i = 0; i < trailCount; i++ )
-			Create( "fire_trail", pev->origin, pTrace->vecPlaneNormal, NULL );
-
-		// blast circles
-		MESSAGE_BEGIN( MSG_PAS, SVC_TEMPENTITY, pev->origin );
-		WRITE_BYTE( TE_BEAMCYLINDER );
-			WRITE_COORD( pev->origin.x );
-			WRITE_COORD( pev->origin.y );
-			WRITE_COORD( pev->origin.z + 16 );
-			WRITE_COORD( pev->origin.x );
-			WRITE_COORD( pev->origin.y );
-			WRITE_COORD( pev->origin.z + 16 + 384 ); // reach damage radius over .3 seconds
-			WRITE_SHORT( g_sModelIndexShockwave );
-			WRITE_BYTE( 0 ); // startframe
-			WRITE_BYTE( 0 ); // framerate
-			WRITE_BYTE( 3 ); // life
-			WRITE_BYTE( 16 ); // width
-			WRITE_BYTE( 0 ); // noise
-			WRITE_BYTE( 255 ); // r
-			WRITE_BYTE( 255 ); // g
-			WRITE_BYTE( 255 ); // b
-			WRITE_BYTE( 255 ); //brightness
-			WRITE_BYTE( 0 ); // speed
-		MESSAGE_END();
-	}
+	Vector vecOldOrigin = pev->origin;
 
 	// Pull out of the wall a bit
 	if( pTrace->flFraction != 1.0 )
@@ -110,6 +83,35 @@ void CGrenade::Explode( TraceResult *pTrace, int bitsDamageType )
 		WRITE_BYTE( 15 ); // framerate
 		WRITE_BYTE( TE_EXPLFLAG_NONE );
 	MESSAGE_END();
+
+	if( FClassnameIs( pev, "monster_satchel" ) && iContents != CONTENTS_WATER )
+	{
+		// blast circles
+		MESSAGE_BEGIN( MSG_PAS, SVC_TEMPENTITY, pev->origin );
+			WRITE_BYTE( TE_BEAMCYLINDER );
+			WRITE_COORD( vecOldOrigin.x );
+			WRITE_COORD( vecOldOrigin.y );
+			WRITE_COORD( vecOldOrigin.z + 16 );
+			WRITE_COORD( vecOldOrigin.x );
+			WRITE_COORD( vecOldOrigin.y );
+			WRITE_COORD( vecOldOrigin.z + 700 ); // reach damage radius over .3 seconds
+			WRITE_SHORT( static_cast<CPipebombCharge *>( this )->m_iTrail );
+			WRITE_BYTE( 0 ); // startframe
+			WRITE_BYTE( 10 ); // framerate
+			WRITE_BYTE( 2 ); // life
+			WRITE_BYTE( 16 ); // width
+			WRITE_BYTE( 0 ); // noise
+			WRITE_BYTE( 255 ); // r
+			WRITE_BYTE( 255 ); // g
+			WRITE_BYTE( 255 ); // b
+			WRITE_BYTE( 128 ); //brightness
+			WRITE_BYTE( 0 ); // speed
+		MESSAGE_END();
+
+		int trailCount = RANDOM_LONG( 2, 4 );
+		for( int i = 0; i < trailCount; i++ )
+			Create( "fire_trail", pev->origin, pTrace->vecPlaneNormal, NULL );
+        }
 
 	CSoundEnt::InsertSound( bits_SOUND_COMBAT, pev->origin, NORMAL_EXPLOSION_VOLUME, 3.0 );
 	entvars_t *pevOwner;

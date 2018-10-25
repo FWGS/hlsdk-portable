@@ -26,6 +26,7 @@
 #include "shake.h"
 #include "hltv.h"
 
+extern bool bDrawScope;
 // Spectator Mode
 extern "C" 
 {
@@ -762,6 +763,7 @@ void V_CalcNormalRefdef( struct ref_params_s *pparams )
 
 			// Store off overridden viewangles
 			v_angles = pparams->viewangles;
+			bDrawScope = 0;
 		}
 	}
 

@@ -12,35 +12,34 @@
 *   without written permission from Valve LLC.
 *
 ****/
-
-#ifndef PIPEBOMBGRENADE_H
-#define PIPEBOMBGRENADE_H
-
-#ifdef _WIN32
 #pragma once
-#endif
+#ifndef XSBEAM_H
+#define XSBEAM_H
 
-class CPipeBombGrenade : public CGrenade
+#define XENSQUASHER_MAX_BEAMS	4
+
+class CXSBeam : public CBaseEntity
 {
 public:
+	void Spawn();
+	void Precache();
 
-	void Spawn(void);
-	void Precache(void);
-	void BounceSound(void);
+	static CXSBeam* CXSBeamCreate( float flDamage );
+	void Init();
+	void EXPORT BeamTouch(CBaseEntity *pOther);
+	void EXPORT FlyThink();
+	void EXPORT RemoveThink();
 
-	void EXPORT BombSlide(CBaseEntity *pOther);
-	void EXPORT BombThink(void);
-	void EXPORT PickupTouch(CBaseEntity* pOther);
-
-	virtual int		Save(CSave &save);
-	virtual int		Restore(CRestore &restore);
+	int		Save(CSave &save);
+	int		Restore(CRestore &restore);
 	static	TYPEDESCRIPTION m_SaveData[];
 
-
-	EHANDLE		m_hOwner;
-
-public:
-	void Deactivate(void);
+	int m_iTrail;
+	int m_iBeamCount;
+	float m_flDmg;
+	float m_flDeflectionDist;
+	float m_flDeflectionDot[XENSQUASHER_MAX_BEAMS];
+	Vector m_vecOldOrigin;
+	CSprite *m_pBeam[XENSQUASHER_MAX_BEAMS];
 };
-
-#endif // PIPEBOMBGRENADE_H
+#endif // XSBEAM_H

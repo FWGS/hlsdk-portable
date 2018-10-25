@@ -616,7 +616,7 @@ void CBarney::Killed( entvars_t *pevAttacker, int iGib )
 
 		GetAttachment( 0, vecGunPos, vecGunAngles );
 
-		DropItem( "weapon_9mmhandgun", vecGunPos, vecGunAngles );
+		DropItem( "weapon_bradnailer", vecGunPos, vecGunAngles );
 	}
 
 	SetUse( NULL );	

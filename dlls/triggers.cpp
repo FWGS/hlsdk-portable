@@ -27,6 +27,7 @@
 #include "saverestore.h"
 #include "trains.h"			// trigger_camera has train functionality
 #include "gamerules.h"
+#include "weapons.h"
 
 #define	SF_TRIGGER_PUSH_START_OFF	2//spawnflag that makes trigger_push spawn turned OFF
 #define SF_TRIGGER_HURT_TARGETONCE	1// Only fire hurt target once
@@ -2105,6 +2106,7 @@ class CTriggerCamera : public CBaseDelay
 public:
 	void Spawn( void );
 	void KeyValue( KeyValueData *pkvd );
+	void EXPORT CallAgain();
 	void Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
 	void EXPORT FollowTarget( void );
 	void Move( void );
@@ -2127,6 +2129,10 @@ public:
 	float m_acceleration;
 	float m_deceleration;
 	int m_state;
+	EHANDLE m_hActivator;
+	EHANDLE m_hCaller;
+	USE_TYPE m_useType;
+	float m_flValue;
 };
 
 LINK_ENTITY_TO_CLASS( trigger_camera, CTriggerCamera )
@@ -2147,6 +2153,10 @@ TYPEDESCRIPTION	CTriggerCamera::m_SaveData[] =
 	DEFINE_FIELD( CTriggerCamera, m_acceleration, FIELD_FLOAT ),
 	DEFINE_FIELD( CTriggerCamera, m_deceleration, FIELD_FLOAT ),
 	DEFINE_FIELD( CTriggerCamera, m_state, FIELD_INTEGER ),
+	DEFINE_FIELD( CTriggerCamera, m_hActivator, FIELD_EHANDLE ),
+	DEFINE_FIELD( CTriggerCamera, m_hCaller, FIELD_EHANDLE ),
+	DEFINE_FIELD( CTriggerCamera, m_useType, FIELD_INTEGER ),
+	DEFINE_FIELD( CTriggerCamera, m_flValue, FIELD_FLOAT ),
 };
 
 IMPLEMENT_SAVERESTORE( CTriggerCamera, CBaseDelay )
@@ -2191,6 +2201,11 @@ void CTriggerCamera::KeyValue( KeyValueData *pkvd )
 		CBaseDelay::KeyValue( pkvd );
 }
 
+void CTriggerCamera::CallAgain()
+{
+	Use( m_hActivator, m_hCaller, m_useType, m_flValue );
+}
+
 void CTriggerCamera::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
 	if( !ShouldToggle( useType, m_state ) )
@@ -2209,6 +2224,22 @@ void CTriggerCamera::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYP
 	}
 
 	m_hPlayer = pActivator;
+
+	if( pActivator->pev->iuser4 )
+	{
+		CBasePlayer *pPlayer = (CBasePlayer *)pActivator;
+		if( FClassnameIs( pPlayer->m_pActiveItem->pev, "weapon_cmlwbr" ) )
+		{
+			CCrossbow *pCrossbow = (CCrossbow *)pPlayer->m_pActiveItem;
+			pCrossbow->ZoomOut();
+			m_hActivator = pActivator;
+			m_hCaller = pCaller;
+			m_useType = useType;
+			m_flValue = value;
+			SetThink( &CTriggerCamera::CallAgain );
+			pev->nextthink = gpGlobals->time + 0.1f;
+		}
+	}
 
 	m_flReturnTime = gpGlobals->time + m_flWait;
 	pev->speed = m_initialSpeed;
@@ -2232,16 +2263,9 @@ void CTriggerCamera::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYP
 	if( FBitSet( pev->spawnflags, SF_CAMERA_PLAYER_TAKECONTROL ) )
 	{
 		( (CBasePlayer *)pActivator )->EnableControl( FALSE );
-
-		if( !( FStrEq( STRING( gpGlobals->mapname ), "po_haz01" ) && FStrEq( STRING( pev->targetname ), "cam" ) ) &&
-			!( FStrEq( STRING( gpGlobals->mapname ), "po_aud01" ) && FStrEq( STRING( pev->targetname ), "cam" ) ) )
-		{
-			if( ( (CBasePlayer *)pActivator )->pev->weapons & ( 1 << WEAPON_SUIT ) )
-			{
-				( (CBasePlayer *)pActivator )->HidePlayerHUD();
-			}
-		}
 	}
+
+	SetBits( ( (CBasePlayer *)pActivator )->m_iHideHUD, HIDEHUD_WEAPONS | HIDEHUD_HEALTH );
 
 	if( m_sPath )
 	{
@@ -2296,17 +2320,10 @@ void CTriggerCamera::FollowTarget()
 	{
 		if( m_hPlayer->IsAlive() )
 		{
+			CBasePlayer *pPlayer = (CBasePlayer *)( (CBaseEntity *)m_hPlayer );
 			SET_VIEW( m_hPlayer->edict(), m_hPlayer->edict() );
-			( (CBasePlayer *)( (CBaseEntity *)m_hPlayer ) )->EnableControl( TRUE );
-
-			if( !( FStrEq( STRING( gpGlobals->mapname ), "po_aud01" ) && FStrEq( STRING( pev->targetname ), "cam" ) ) &&
-				!( FStrEq( STRING( gpGlobals->mapname ), "credits" ) && FStrEq( STRING( pev->targetname ), "credits_cam" ) ) )
-			{
-				if( ( (CBasePlayer *)( (CBaseEntity *)m_hPlayer ) )->pev->weapons & ( 1 << WEAPON_SUIT ) )
-				{
-					( (CBasePlayer *)( (CBaseEntity *)m_hPlayer ) )->ShowPlayerHUD();
-				}
-			}
+			pPlayer->EnableControl( TRUE );
+			ClearBits( pPlayer->m_iHideHUD, HIDEHUD_WEAPONS | HIDEHUD_HEALTH );
 		}
 		SUB_UseTargets( this, USE_TOGGLE, 0 );
 		pev->avelocity = Vector( 0, 0, 0 );

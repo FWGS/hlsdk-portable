@@ -980,6 +980,52 @@ void CEnvSound::Spawn()
 	pev->nextthink = gpGlobals->time + RANDOM_FLOAT( 0.0, 0.5 ); 
 }
 
+int g_soundtrackCount;
+soundtrack_t g_soundtracklist[30];
+
+void SOUNDTRACKLIST_Init()
+{
+	char buffer[512] = {0,};
+	int i, j = 0;
+	byte *pMemFile;
+	int fileSize, filePos = 0;
+
+	pMemFile = g_engfuncs.pfnLoadFileForMe( "sound/soundtrack.txt", &fileSize );
+	if( !pMemFile )
+		return;
+
+	// for each line in the file...
+	while( memfgets( pMemFile, fileSize, filePos, buffer, 511 ) != NULL && j < 30 )
+	{
+		char *pos;
+
+		// skip whitespace
+		i = 0;
+		while( buffer[i] && isspace( buffer[i] ) )
+			i++;
+
+		if( !buffer[i] )
+			continue;
+
+		// skip comment lines
+		if( buffer[i] == '/' )
+			continue;
+
+		if( 3 > sscanf( &buffer[i], "\"%31[^\"]\" \"%31[^\"]\" \"%d\" ", \
+			g_soundtracklist[j].mapname, g_soundtracklist[j].soundfile, &g_soundtracklist[j].loop ) )
+			continue;
+
+		pos = strchr( g_soundtracklist[j].mapname, '.' );
+		*pos = '\0';
+
+		j++;
+	}
+
+	g_soundtrackCount = j;
+
+	g_engfuncs.pfnFreeFile( pMemFile );
+}
+
 // ==================== SENTENCE GROUPS, UTILITY FUNCTIONS  ======================================
 
 #define CSENTENCE_LRU_MAX	32		// max number of elements per sentence group
@@ -1739,16 +1785,8 @@ float TEXTURETYPE_PlaySound( TraceResult *ptr,  Vector vecSrc, Vector vecEnd, in
 			return 0.0; // crowbar already makes this sound
 		fvol = 1.0;
 		fvolbar = 0.2;
-		if( iBulletType == BULLET_PLAYER_NAIL1 || iBulletType == BULLET_PLAYER_NAIL2 )
-		{
-			rgsz[0] = "weapons/brad_hit1.wav";
-			rgsz[1] = "weapons/brad_hit2.wav";
-		}
-		else
-		{
-			rgsz[0] = "weapons/bullet_hit1.wav";
-			rgsz[1] = "weapons/bullet_hit2.wav";
-		}
+		rgsz[0] = "weapons/bullet_hit1.wav";
+		rgsz[1] = "weapons/bullet_hit2.wav";
 		fattn = 1.0;
 		cnt = 2;
 		break;

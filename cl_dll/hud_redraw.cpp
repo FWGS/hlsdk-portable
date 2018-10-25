@@ -79,7 +79,6 @@ void CHud::Think( void )
 	}
 }
 
-void HUD_DrawOrthoTriangles( void );
 
 // Redraw
 // step through the local data,  placing the appropriate graphics & text as appropriate
@@ -112,8 +111,6 @@ int CHud::Redraw( float flTime, int intermission )
 
 	// if no redrawing is necessary
 	// return 0;
-
-	HUD_DrawOrthoTriangles();
 
 	if( m_pCvarDraw->value )
 	{
@@ -180,23 +177,26 @@ int CHud::Redraw( float flTime, int intermission )
 	}
 	*/
 
-	//
-	// Slowly increase HUD alpha value.
-	//
-	if( m_flAlpha != m_flTargetAlpha )
-	{
-		if( m_flAlpha < m_flTargetAlpha )
-			m_flAlpha = min( m_flAlpha + 2, m_flTargetAlpha );
-		else if( m_flAlpha > m_flTargetAlpha )
-			m_flAlpha = max( m_flAlpha - 8, m_flTargetAlpha );
-	}
-
 	return 1;
 }
 
 void ScaleColors( int &r, int &g, int &b, int a )
 {
-	float x = (float)a / 255;
+	float f = 1.0;
+	if( gHUD.m_flScaleColorTime != 0.0f )
+	{
+		float flTimeDiff = gHUD.m_flScaleColorTime - gHUD.m_flTime;
+		if( flTimeDiff > 0.0f && flTimeDiff >= 1.0f )
+		{
+			flTimeDiff = 1.0f;
+		}
+		else if( flTimeDiff <= 0.0f )
+		{
+			flTimeDiff = 0.0f;
+		}
+		f = 1.0f - flTimeDiff; 
+	}
+	float x = f * (float)a / 255;
 	r = (int)( r * x );
 	g = (int)( g * x );
 	b = (int)( b * x );

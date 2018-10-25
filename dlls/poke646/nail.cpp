@@ -25,109 +25,116 @@
 #include	"nail.h"
 
 
-LINK_ENTITY_TO_CLASS(nail, CNail);
+LINK_ENTITY_TO_CLASS( nailgun_nail, CNailGunNail )
 
-CNail *CNail::NailCreate(void)
+CNailGunNail *CNailGunNail::NailCreate( BOOL bIsBradnailer )
 {
 	// Create a new entity with CCrossbowBolt private data
-	CNail *pBolt = GetClassPtr((CNail *)NULL);
-	pBolt->pev->classname = MAKE_STRING("nail");
-	pBolt->Spawn();
-
-	return pBolt;
+	CNailGunNail *pNail = GetClassPtr((CNailGunNail *)NULL);
+	pNail->pev->classname = MAKE_STRING("nailgun_nail");
+	pNail->m_bIsBradnailer = bIsBradnailer;
+	pNail->Spawn();
+	
+	return pNail;
 }
 
-void CNail::Spawn()
+void CNailGunNail::Spawn()
 {
 	Precache();
 	pev->movetype = MOVETYPE_FLY;
 	pev->solid = SOLID_BBOX;
 
-	pev->gravity = 0.0;
+	pev->gravity = 0.5;
 
 	SET_MODEL(ENT(pev), "models/nail.mdl");
 
 	UTIL_SetOrigin(pev, pev->origin);
-	UTIL_SetSize(pev, Vector(0, 0, 0), Vector(0, 0, 0));
+	UTIL_SetSize(pev, g_vecZero, g_vecZero);
 
-	SetTouch(&CNail::NailTouch);
-	SetThink(&CNail::NailThink);
+	SetTouch(&CNailGunNail::NailTouch);
+	SetThink(&CNailGunNail::BubbleThink);
 	pev->nextthink = gpGlobals->time + 0.2;
 }
 
 
-void CNail::Precache()
+void CNailGunNail::Precache()
 {
 	PRECACHE_MODEL("models/nail.mdl");
 	PRECACHE_SOUND("weapons/brad_hit1.wav");
 	PRECACHE_SOUND("weapons/brad_hit2.wav");
 }
 
-int	CNail::Classify(void)
+int CNailGunNail::Classify()
 {
 	return	CLASS_NONE;
 }
 
-void CNail::NailTouch(CBaseEntity *pOther)
+void CNailGunNail::NailTouch( CBaseEntity *pOther )
 {
-	SetTouch(NULL);
-	SetThink(NULL);
+	SetTouch( NULL );
+	SetThink( NULL );
 
-	if (pOther->pev->takedamage)
+	if( pOther->pev->takedamage )
 	{
 		TraceResult tr = UTIL_GetGlobalTrace();
-		entvars_t	*pevOwner;
-
-		pevOwner = VARS(pev->owner);
+		entvars_t *pevOwner = VARS( pev->owner );
 
 		// UNDONE: this needs to call TraceAttack instead
 		ClearMultiDamage();
 
-		//pOther->TraceAttack(pevOwner, 0, pev->velocity.Normalize(), &tr, DMG_NEVERGIB);
+		pOther->TraceAttack( pevOwner, m_bIsBradnailer ? gSkillData.plrDmg9MM : gSkillData.plrDmgMP5, pev->velocity.Normalize(), &tr, DMG_NEVERGIB );
 
-		ApplyMultiDamage(pev, pevOwner);
+		ApplyMultiDamage( pev, pevOwner );
 
-		pev->velocity = Vector(0, 0, 0);
+		pev->velocity = g_vecZero;
 		// play body "thwack" sound
-		switch (RANDOM_LONG(0, 1))
+		switch( RANDOM_LONG( 0, 1 ) )
 		{
 		case 0:
-			EMIT_SOUND(ENT(pev), CHAN_BODY, "weapons/brad_hit1.wav", 1, ATTN_NORM); break;
+			EMIT_SOUND( ENT( pev ), CHAN_BODY, "weapons/brad_hit1.wav", 1, ATTN_NORM );
+			break;
 		case 1:
-			EMIT_SOUND(ENT(pev), CHAN_BODY, "weapons/brad_hit2.wav", 1, ATTN_NORM); break;
+			if( m_bIsBradnailer )
+				EMIT_SOUND( ENT( pev ), CHAN_BODY, "weapons/brad_hit2.wav", 1, ATTN_NORM );
+			break;
 		}
 
-		Killed(pev, GIB_NEVER);
+		Killed( pev, GIB_NEVER );
 	}
 	else
 	{
-		EMIT_SOUND_DYN(ENT(pev), CHAN_BODY, "weapons/brad_hit1.wav", RANDOM_FLOAT(0.95, 1.0), ATTN_NORM, 0, 98 + RANDOM_LONG(0, 7));
+		// EMIT_SOUND_DYN(ENT(pev), CHAN_BODY, "weapons/brad_hit1.wav", RANDOM_FLOAT(0.95, 1.0), ATTN_NORM, 0, 98 + RANDOM_LONG(0, 7));
 
-		SetThink(&CNail::SUB_Remove);
+		SetThink( &CBaseEntity::SUB_Remove );
 		pev->nextthink = gpGlobals->time;// this will get changed below if the bolt is allowed to stick in what it hit.
 
-		if (FClassnameIs(pOther->pev, "worldspawn"))
+		if( FClassnameIs( pOther->pev, "worldspawn" ) )
 		{
 			// if what we hit is static architecture, can stay around for a while.
 			Vector vecDir = pev->velocity.Normalize();
-			UTIL_SetOrigin(pev, pev->origin - vecDir * 12);
-			pev->angles = UTIL_VecToAngles(vecDir);
+			UTIL_SetOrigin( pev, pev->origin - vecDir * RANDOM_LONG( 6, 10 ) );
+			pev->angles = UTIL_VecToAngles( vecDir );
 			pev->solid = SOLID_NOT;
 			pev->movetype = MOVETYPE_FLY;
-			pev->velocity = Vector(0, 0, 0);
+			pev->velocity = g_vecZero;
 			pev->avelocity.z = 0;
-			pev->angles.z = RANDOM_LONG(0, 360);
-			pev->nextthink = gpGlobals->time + 10.0;
+			pev->angles.z = RANDOM_LONG( 0, 360 );
+			pev->nextthink = gpGlobals->time + 2.0;
 		}
 
-		/*if (UTIL_PointContents(pev->origin) != CONTENTS_WATER)
+		if( UTIL_PointContents( pev->origin ) != CONTENTS_WATER && RANDOM_LONG( 0, 4 ) == 4 )
 		{
-			UTIL_Sparks(pev->origin);
-		}*/
+			UTIL_Sparks( pev->origin );
+		}
 	}
 }
 
-void CNail::NailThink(void)
+void CNailGunNail::BubbleThink()
 {
 	pev->nextthink = gpGlobals->time + 0.1;
+
+	if( pev->waterlevel == 0 )
+		return;
+                        
+	UTIL_BubbleTrail( pev->origin - pev->velocity * 0.1, pev->origin, 1 );
 }

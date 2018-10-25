@@ -25,10 +25,9 @@
 #include	"explode.h"
 
 #define ROBOCOP_EYE_SPRITE_NAME			"sprites/gargeye1.spr"
-#define ROBOCOP_EYE_BEAM_NAME			"sprites/laserbeam.spr"
-#define ROBOCOP_EYE_SPOT_NAME			"sprites/glow02.spr"
+#define ROBOCOP_EYE_BEAM_NAME			"sprites/smoke.spr"
+#define ROBOCOP_EYE_SPOT_NAME			"sprites/gargeye1.spr"
 
-#define ROBOCOP_MAX_SHOCKWAVE_RADIUS	384
 #define ROBOCOP_MAX_MORTAR_RADIUS		256
 
 #define ROBOCOP_MORTAR_CHARGE_TIME		2.0f
@@ -40,8 +39,13 @@
 #define ROBOCOP_RANGE_ATTACK_DIST		512
 #define ROBOCOP_MAX_CHASE_DIST			1024
 
-#define ROBOCOP_DEATH_DURATION			10.0f
+#define ROBOCOP_DEATH_DURATION			2.1f
+#define ROBOCOP_GIB_MODEL			"models/metalplategibs.mdl"
 
+// Robocop is immune to any damage but this
+#define ROBOCOP_DAMAGE			(DMG_ENERGYBEAM|DMG_CRUSH|DMG_MORTAR|DMG_BLAST)
+
+void SpawnExplosion( Vector center, float randomRange, float time, int magnitude );
 
 // AI Nodes for RoboCop
 class CInfoRCNode : public CPointEntity
@@ -197,7 +201,10 @@ public:
 	void ScheduleChange(void);
 	BOOL ShouldGibMonster(int iGib) { return FALSE; }
 	void Killed(entvars_t *pevAttacker, int iGib);
+	void UpdateOnRemove();
 
+	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType );
+	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
 	Schedule_t *GetSchedule(void);
 	Schedule_t *GetScheduleOfType(int Type);
 	void StartTask(Task_t *pTask);
@@ -241,7 +248,7 @@ public:
 	void SetupNodes(float flRadius);
 
 	int			m_iSpriteTexture;
-
+	int			m_iRobocopGibModel;
 	CSprite*	m_pEyeGlow;			// Glow around the eyes
 	int			m_eyeBrightness;	// Brightness target
 
@@ -263,8 +270,6 @@ public:
 	int				m_lastsector;
 
 	float		m_flNextSparkTime;
-
-	static const char* pSparkSounds[];
 };
 
 void CreateRoboCopNodes(CRoboCop* pOwner);
@@ -295,16 +300,6 @@ TYPEDESCRIPTION	CRoboCop::m_SaveData[] =
 };
 
 IMPLEMENT_SAVERESTORE(CRoboCop, CBaseMonster);
-
-const char* CRoboCop::pSparkSounds[] =
-{
-	"buttons/spark1.wav",
-	"buttons/spark2.wav",
-	"buttons/spark3.wav",
-	"buttons/spark4.wav",
-	"buttons/spark5.wav",
-	"buttons/spark6.wav",
-};
 
 //=========================================================
 // AI Schedules Specific to this monster
@@ -399,13 +394,16 @@ void CRoboCop::SetYawSpeed(void)
 {
 	int ys;
 
-	ys = 120;
-
-#if 0
-	switch (m_Activity)
+	switch( m_Activity )
 	{
+	case ACT_TURN_LEFT:
+	case ACT_TURN_RIGHT:
+		ys = 180;
+		break;
+	default:
+		ys = 90;
+		break;
 	}
-#endif
 
 	pev->yaw_speed = ys;
 }
@@ -420,11 +418,8 @@ void CRoboCop::HandleAnimEvent(MonsterEvent_t *pEvent)
 	{
 	case ROBOCOP_AE_RIGHT_FOOT:
 	case ROBOCOP_AE_LEFT_FOOT:
-		switch (RANDOM_LONG(0, 1))
-		{
-		case 0:	EMIT_SOUND_DYN(ENT(pev), CHAN_BODY, "robocop/rc_step1.wav", 1, ATTN_NORM, 0, 70);	break;
-		case 1:	EMIT_SOUND_DYN(ENT(pev), CHAN_BODY, "robocop/rc_step2.wav", 1, ATTN_NORM, 0, 70);	break;
-		}
+		UTIL_ScreenShake( pev->origin, 4.0, 3.0, 1.0, 250.0 );
+		EMIT_SOUND_DYN( ENT( pev ), CHAN_BODY, RANDOM_LONG( 0, 1 ) ? "robocop/rc_step2.wav" : "robocop/rc_step1.wav", 1, ATTN_NORM, 0, PITCH_NORM + RANDOM_LONG( -10, 10 ) );
 		break;
 
 	case ROBOCOP_AE_FIST:
@@ -490,14 +485,16 @@ void CRoboCop::Precache()
 	PRECACHE_SOUND("robocop/rc_laser.wav");
 	PRECACHE_SOUND("robocop/rc_step1.wav");
 	PRECACHE_SOUND("robocop/rc_step2.wav");
-
-	PRECACHE_SOUND_ARRAY(pSparkSounds);
+	PRECACHE_SOUND("ambience/sparks.wav");
 
 	PRECACHE_MODEL(ROBOCOP_EYE_SPRITE_NAME);
 	PRECACHE_MODEL(ROBOCOP_EYE_BEAM_NAME);
-	PRECACHE_MODEL(ROBOCOP_EYE_SPOT_NAME);
+	// PRECACHE_MODEL(ROBOCOP_EYE_SPOT_NAME);
 
-	m_iSpriteTexture = PRECACHE_MODEL("sprites/shockwave.spr");
+	m_iSpriteTexture = PRECACHE_MODEL("sprites/xbeam3.spr");
+	m_iRobocopGibModel = PRECACHE_MODEL( ROBOCOP_GIB_MODEL );
+
+	UTIL_PrecacheOther( "monster_mortar" );
 }
 
 //=========================================================
@@ -511,6 +508,37 @@ void CRoboCop::MonsterThink(void)
 	// Override ground speed.
 	if (m_Activity == ACT_WALK || m_Activity == ACT_RUN)
 		m_flGroundSpeed = 200;
+}
+
+void CRoboCop::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType )
+{
+	bitsDamageType &= ROBOCOP_DAMAGE;
+
+	if( IsAlive() && !FBitSet( bitsDamageType, ROBOCOP_DAMAGE ) )
+	{
+		if( pev->dmgtime != gpGlobals->time || (RANDOM_LONG( 0, 100 ) < 20 ) )
+		{
+			UTIL_Ricochet( ptr->vecEndPos, RANDOM_FLOAT( 0.5, 1.5 ) );
+			pev->dmgtime = gpGlobals->time;
+		}
+
+		flDamage = 0;
+	}
+
+	CBaseMonster::TraceAttack( pevAttacker, flDamage, vecDir, ptr, bitsDamageType );
+}
+
+int CRoboCop::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )
+{
+	if( IsAlive() )
+	{
+		if( !FBitSet( bitsDamageType, ROBOCOP_DAMAGE ) )
+			flDamage *= 0.01;
+		if( bitsDamageType & DMG_BLAST )
+			SetConditions( bits_COND_LIGHT_DAMAGE );
+	}
+
+	return CBaseMonster::TakeDamage( pevInflictor, pevAttacker, flDamage, bitsDamageType );
 }
 
 //=========================================================
@@ -536,7 +564,7 @@ BOOL CRoboCop::FCanCheckAttacks(void)
 //=========================================================
 BOOL CRoboCop::CheckMeleeAttack1(float flDot, float flDist)
 {
-	if (flDist <= ROBOCOP_MELEE_ATTACK_DIST)
+	if( flDot >= 0.8f && flDist < gSkillData.robocopSWRadius )
 	{
 		return TRUE;
 	}
@@ -553,7 +581,7 @@ BOOL CRoboCop::CheckRangeAttack1(float flDot, float flDist)
 	if (m_flNextMortarAttack > gpGlobals->time)
 		return FALSE;
 
-	if (flDist > ROBOCOP_MELEE_ATTACK_DIST && flDist < ROBOCOP_RANGE_ATTACK_DIST && !HasConditions(bits_COND_CAN_MELEE_ATTACK1))
+	if (flDot >= 0.8f && flDist > gSkillData.robocopSWRadius && flDist < 4096.0f && !HasConditions(bits_COND_CAN_MELEE_ATTACK1))
 	{
 		return TRUE;
 	}
@@ -586,7 +614,19 @@ void CRoboCop::Killed(entvars_t *pevAttacker, int iGib)
 	CBaseMonster::Killed(pevAttacker, GIB_NEVER);
 }
 
+void CRoboCop::UpdateOnRemove()
+{
+	CBaseEntity::UpdateOnRemove();
 
+	EyeOff();
+	DestroyEffects();
+
+	if (m_pTemp)
+	{
+		UTIL_Remove(m_pTemp);
+		m_pTemp = NULL;
+	}
+}
 void CRoboCop::PrescheduleThink(void)
 {
 	CBaseMonster::PrescheduleThink();
@@ -753,11 +793,11 @@ void CRoboCop::StartTask(Task_t *pTask)
 
 	case TASK_DIE:
 		m_flWaitFinished = gpGlobals->time + ROBOCOP_DEATH_DURATION;
-		m_flNextSparkTime = gpGlobals->time + RANDOM_FLOAT(0, 0.5f);
+		m_flNextSparkTime = gpGlobals->time + 0.3f;
+		pev->renderamt = 19;
 		pev->renderfx = kRenderFxGlowShell;
-		pev->rendercolor = Vector(64, 64, 255);
-		CBaseMonster::StartTask(pTask);
-		break;
+		pev->rendercolor = Vector(67, 85, 255);
+		pev->health = 0;
 	default:
 		CBaseMonster::StartTask(pTask);
 		break;
@@ -868,57 +908,60 @@ void CRoboCop::RunTask(Task_t *pTask)
 	case TASK_DIE:
 		if (m_flWaitFinished > gpGlobals->time)
 		{
-			if (gpGlobals->time > m_flNextSparkTime)
+			if( pev->frame >= 255.0f )
 			{
-				float flRemainingWaitTime = m_flWaitFinished - gpGlobals->time;
-				float flRemainingProp = flRemainingWaitTime / ROBOCOP_DEATH_DURATION;
+				EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "common/null.wav", 1.0, ATTN_NORM, 0, 100);
+				MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, pev->origin );
+					WRITE_BYTE( TE_BREAKMODEL );
 
-				if (flRemainingProp < 0)
-					flRemainingProp = 0;
+					// position
+					WRITE_COORD( pev->origin.x );
+					WRITE_COORD( pev->origin.y );
+					WRITE_COORD( pev->origin.z );
 
-				Vector vSparkPos = pev->origin;
-				Vector forward, right, up;
+					// size
+					WRITE_COORD( 200 );
+					WRITE_COORD( 200 );
+					WRITE_COORD( 128 );
 
-				Vector angles = pev->angles;
-				angles.x = 0;
+					// velocity
+					WRITE_COORD( 0 );
+					WRITE_COORD( 0 );
+					WRITE_COORD( 0 );
 
-				UTIL_MakeVectors(angles);
+					// randomization
+					WRITE_BYTE( 200 );
 
-				forward = gpGlobals->v_forward;
-				right = gpGlobals->v_right;
-				up = gpGlobals->v_up;
+					// Model
+					WRITE_SHORT( m_iRobocopGibModel );   //model id#
 
-				float halfHeight = pev->view_ofs.z * 0.5f;
-				float halfWidth = 32;
+					// # of shards
+					WRITE_BYTE( 20 );
 
-				float flMinHeight = 4;
-				float flMaxHeight = flMinHeight + flRemainingProp * pev->view_ofs.z;
+					// duration
+					WRITE_BYTE( 20 );// 3.0 seconds
 
-				float flCenterZ = (flMinHeight + flMaxHeight) / 2;
+					// flags
+					WRITE_BYTE( BREAK_FLESH );
+				MESSAGE_END();
 
-				vSparkPos = vSparkPos + forward * ((1 - flRemainingProp) * 180);
-				vSparkPos = vSparkPos + right * halfWidth * (RANDOM_LONG(-1, 1) + RANDOM_FLOAT(0, 1));
-				vSparkPos = vSparkPos + up * (flCenterZ + RANDOM_LONG(-1, 1) * RANDOM_FLOAT(0, 1));
+				SpawnExplosion( pev->origin, 70, 0, 150 );
 
-				UTIL_Sparks(vSparkPos);
+				int trailCount = RANDOM_LONG( 2, 4 );
+				for( int i = 0; i < trailCount; i++ )
+					Create( "fire_trail", pev->origin, Vector( 0, 0, 1 ), NULL );
 
-				EMIT_SOUND_DYN(ENT(pev), CHAN_BODY, RANDOM_SOUND_ARRAY(pSparkSounds), 1.0, 0.6, 0, RANDOM_LONG(95, 105));
-
-				m_flNextSparkTime = gpGlobals->time + RANDOM_FLOAT(0.3f, 0.5f);
+				SetBodygroup( 0, 1 );
+				return;
 			}
 		}
-		else
+		if (gpGlobals->time > m_flNextSparkTime)
 		{
-			pev->renderfx = kRenderFxNone;
-			pev->rendercolor.x =
-			pev->rendercolor.y =
-			pev->rendercolor.z = 255;
-
-			m_flNextSparkTime = 0;
-
-			CBaseMonster::RunTask(pTask);
+			Create( "spark_shower", pev->origin, Vector( 0, 0, 1 ), NULL );
+			EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "ambience/sparks.wav", 1.0, ATTN_NORM, 0, 100);
+			m_flNextSparkTime = gpGlobals->time + 0.3f;
+			return;
 		}
-		break;
 	default:
 		CBaseMonster::RunTask(pTask);
 		break;
@@ -933,58 +976,56 @@ void CRoboCop::SonicAttack(void)
 {
 	float		flAdjustedDamage;
 	float		flDist;
+	Vector		vecDist;
+	int		i, r, g, b;
 
-	EMIT_SOUND(ENT(pev), CHAN_WEAPON, "robocop/rc_fist.wav", 1, ATTN_NORM);
+	UTIL_MakeVectors( pev->angles );
+	Vector vecSrc = pev->origin + 12 * gpGlobals->v_right + 95 * gpGlobals->v_forward;
 
-	// blast circles
-	MESSAGE_BEGIN(MSG_PAS, SVC_TEMPENTITY, pev->origin);
-	WRITE_BYTE(TE_BEAMCYLINDER);
-	WRITE_COORD(pev->origin.x);
-	WRITE_COORD(pev->origin.y);
-	WRITE_COORD(pev->origin.z + 16);
-	WRITE_COORD(pev->origin.x);
-	WRITE_COORD(pev->origin.y);
-	WRITE_COORD(pev->origin.z + 16 + ROBOCOP_MAX_SHOCKWAVE_RADIUS / .2); // reach damage radius over .3 seconds
-	WRITE_SHORT(m_iSpriteTexture);
-	WRITE_BYTE(0); // startframe
-	WRITE_BYTE(0); // framerate
-	WRITE_BYTE(2); // life
-	WRITE_BYTE(16);  // width
-	WRITE_BYTE(0);   // noise
-	WRITE_BYTE(62);  // r
-	WRITE_BYTE(33);  // g
-	WRITE_BYTE(211); // b
-	WRITE_BYTE(255); //brightness
-	WRITE_BYTE(0);		// speed
-	MESSAGE_END();
-
-	MESSAGE_BEGIN(MSG_PAS, SVC_TEMPENTITY, pev->origin);
-	WRITE_BYTE(TE_BEAMCYLINDER);
-	WRITE_COORD(pev->origin.x);
-	WRITE_COORD(pev->origin.y);
-	WRITE_COORD(pev->origin.z + 16);
-	WRITE_COORD(pev->origin.x);
-	WRITE_COORD(pev->origin.y);
-	WRITE_COORD(pev->origin.z + 16 + (ROBOCOP_MAX_SHOCKWAVE_RADIUS / 2) / .2); // reach damage radius over .3 seconds
-	WRITE_SHORT(m_iSpriteTexture);
-	WRITE_BYTE(0); // startframe
-	WRITE_BYTE(0); // framerate
-	WRITE_BYTE(2); // life
-	WRITE_BYTE(16);  // width
-	WRITE_BYTE(0);   // noise
-	WRITE_BYTE(62);  // r
-	WRITE_BYTE(33);  // g
-	WRITE_BYTE(211); // b
-	WRITE_BYTE(255); //brightness
-	WRITE_BYTE(0);		// speed
-	MESSAGE_END();
+	for( i = 0; i < 3; i++ )
+	{
+		switch( i )
+		{
+		case 0:
+			r = 101, g = 133, b = 221;
+			break;
+		case 1:
+			r = 67, g = 85, b = 255;
+			break;
+		case 2:
+			r = 62, g = 33, b = 211;
+			break;
+		}
+ 
+		// blast circles
+		MESSAGE_BEGIN( MSG_PAS, SVC_TEMPENTITY, pev->origin );
+			WRITE_BYTE( TE_BEAMCYLINDER );
+			WRITE_COORD( vecSrc.x );
+			WRITE_COORD( vecSrc.y );
+			WRITE_COORD( vecSrc.z + 16 );
+			WRITE_COORD( vecSrc.x );
+			WRITE_COORD( vecSrc.y );
+			WRITE_COORD( vecSrc.z + gSkillData.robocopSWRadius / ( ( i + 1 ) * .2 ) ); // reach damage radius over .3 seconds
+			WRITE_SHORT( m_iSpriteTexture );
+			WRITE_BYTE( 0 ); // startframe
+			WRITE_BYTE( 10 ); // framerate
+			WRITE_BYTE( i + 2 ); // life
+			WRITE_BYTE( 32 );  // width
+			WRITE_BYTE( 0 );   // noise
+			WRITE_BYTE( r );  // r
+			WRITE_BYTE( g );  // g
+			WRITE_BYTE( b ); // b
+			WRITE_BYTE( 255 ); //brightness
+			WRITE_BYTE( 0 );          // speed
+		MESSAGE_END();
+	}
 
 	// Shake the screen.
 	UTIL_ScreenShake(pev->origin, 12.0, 100.0, 2.0, 1000);
 
 	CBaseEntity *pEntity = NULL;
 	// iterate on all entities in the vicinity.
-	while ((pEntity = UTIL_FindEntityInSphere(pEntity, pev->origin, ROBOCOP_MAX_SHOCKWAVE_RADIUS)) != NULL)
+	while ((pEntity = UTIL_FindEntityInSphere(pEntity, pev->origin, gSkillData.robocopSWRadius)) != NULL)
 	{
 		if ( pEntity->pev->takedamage != DAMAGE_NO )
 		{
@@ -995,12 +1036,10 @@ void CRoboCop::SonicAttack(void)
 				// This means that you must get out of the houndeye's attack range entirely to avoid damage.
 				// Calculate full damage first
 
-				// solo
-				flAdjustedDamage = gSkillData.robocopDmgFist;
+				vecDist = pEntity->Center() - vecSrc;
+				flDist = Q_max( 0, gSkillData.robocopSWRadius - vecDist.Length() );
 
-				flDist = (pEntity->Center() - pev->origin).Length();
-
-				flAdjustedDamage -= (flDist / ROBOCOP_MAX_SHOCKWAVE_RADIUS) * flAdjustedDamage;
+				flDist = flDist / gSkillData.robocopSWRadius;
 
 				if (!FVisible(pEntity))
 				{
@@ -1009,24 +1048,35 @@ void CRoboCop::SonicAttack(void)
 						// if this entity is a client, and is not in full view, inflict half damage. We do this so that players still 
 						// take the residual damage if they don't totally leave the houndeye's effective radius. We restrict it to clients
 						// so that monsters in other parts of the level don't take the damage and get pissed.
-						flAdjustedDamage *= 0.5;
+						flDist *= 0.5;
 					}
 					else if (!FClassnameIs(pEntity->pev, "func_breakable") && !FClassnameIs(pEntity->pev, "func_pushable"))
 					{
 						// do not hurt nonclients through walls, but allow damage to be done to breakables
-						flAdjustedDamage = 0;
+						flDist = 0;
 					}
 				}
 
+				flAdjustedDamage = gSkillData.robocopDmgFist * flDist;
 				//ALERT ( at_aiconsole, "Damage: %f\n", flAdjustedDamage );
 
 				if (flAdjustedDamage > 0)
 				{
-					pEntity->TakeDamage(pev, pev, flAdjustedDamage, DMG_SONIC | DMG_ALWAYSGIB);
+					pEntity->TakeDamage(pev, pev, flAdjustedDamage, DMG_SONIC);
+				}
+				if( pEntity->IsPlayer() )
+				{
+					vecDist = vecDist.Normalize();
+					vecDist.x = vecDist.x * flDist * 600.0f;
+					vecDist.y = vecDist.y * flDist * 600.0f;
+					vecDist.z = flDist * 450.0f;
+					pEntity->pev->velocity = vecDist + pEntity->pev->velocity;
+					pEntity->pev->punchangle.x = 5;
 				}
 			}
 		}
 	}
+	EMIT_SOUND_DYN( edict(), CHAN_WEAPON, "robocop/rc_fist.wav", 1.0, ATTN_NORM, 0, PITCH_NORM + RANDOM_LONG( -10, 10 ) );
 }
 
 
@@ -1035,110 +1085,9 @@ void CRoboCop::SonicAttack(void)
 //=========================================================
 void CRoboCop::MortarAttack(Vector vecSrc)
 {
-	float		flAdjustedDamage;
-	float		flDist;
-
-
-	// blast circles
-	MESSAGE_BEGIN(MSG_PAS, SVC_TEMPENTITY, vecSrc);
-	WRITE_BYTE(TE_BEAMCYLINDER);
-	WRITE_COORD(vecSrc.x);
-	WRITE_COORD(vecSrc.y);
-	WRITE_COORD(vecSrc.z + 16);
-	WRITE_COORD(vecSrc.x);
-	WRITE_COORD(vecSrc.y);
-	WRITE_COORD(vecSrc.z + 16 + ROBOCOP_MAX_MORTAR_RADIUS / .2); // reach damage radius over .3 seconds
-	WRITE_SHORT(m_iSpriteTexture);
-	WRITE_BYTE(0); // startframe
-	WRITE_BYTE(0); // framerate
-	WRITE_BYTE(2); // life
-	WRITE_BYTE(12);  // width // 16
-	WRITE_BYTE(0);   // noise
-	WRITE_BYTE(255);   // r
-	WRITE_BYTE(128);  // g
-	WRITE_BYTE(64);   // b
-	WRITE_BYTE(255); //brightness
-	WRITE_BYTE(0);		// speed
-	MESSAGE_END();
-
-	MESSAGE_BEGIN(MSG_PAS, SVC_TEMPENTITY, pev->origin);
-	WRITE_BYTE(TE_BEAMCYLINDER);
-	WRITE_COORD(vecSrc.x);
-	WRITE_COORD(vecSrc.y);
-	WRITE_COORD(vecSrc.z + 16);
-	WRITE_COORD(vecSrc.x);
-	WRITE_COORD(vecSrc.y);
-	WRITE_COORD(vecSrc.z + 16 + (ROBOCOP_MAX_MORTAR_RADIUS / 2) / .2); // reach damage radius over .3 seconds
-	WRITE_SHORT(m_iSpriteTexture);
-	WRITE_BYTE(0); // startframe
-	WRITE_BYTE(0); // framerate
-	WRITE_BYTE(2); // life
-	WRITE_BYTE(12);  // width // 16
-	WRITE_BYTE(0);   // noise
-	WRITE_BYTE(255);  // r
-	WRITE_BYTE(128);  // g
-	WRITE_BYTE(64); // b
-	WRITE_BYTE(255); //brightness
-	WRITE_BYTE(0);		// speed
-	MESSAGE_END();
-
-	// Explosion
-	MESSAGE_BEGIN(MSG_PAS, SVC_TEMPENTITY, vecSrc);
-		WRITE_BYTE( TE_EXPLOSION );		// This makes a dynamic light and the explosion sprites/sound
-		WRITE_COORD(vecSrc.x);	// Send to PAS because of the sound
-		WRITE_COORD(vecSrc.y);
-		WRITE_COORD(vecSrc.z);
-		WRITE_SHORT( g_sModelIndexFireball );
-		WRITE_BYTE( 50 ); // scale * 10
-		WRITE_BYTE( 15  ); // framerate
-		WRITE_BYTE(TE_EXPLFLAG_NONE | TE_EXPLFLAG_NODLIGHTS);
-	MESSAGE_END();
-
-	CBaseEntity *pEntity = NULL;
-	// iterate on all entities in the vicinity.
-	while ((pEntity = UTIL_FindEntityInSphere(pEntity, vecSrc, ROBOCOP_MAX_MORTAR_RADIUS)) != NULL)
-	{
-		if (pEntity->pev->takedamage != DAMAGE_NO)
-		{
-			// Robocop does not take damage from it's own attacks.
-			if (pEntity != this)
-			{
-				// houndeyes do FULL damage if the ent in question is visible. Half damage otherwise.
-				// This means that you must get out of the houndeye's attack range entirely to avoid damage.
-				// Calculate full damage first
-
-				// solo
-				flAdjustedDamage = 20;// gSkillData.robocopDmgMortar;
-
-				flDist = (pEntity->Center() - vecSrc).Length();
-
-				flAdjustedDamage -= (flDist / ROBOCOP_MAX_MORTAR_RADIUS) * flAdjustedDamage;
-
-				if (!FVisible(pEntity))
-				{
-					if (pEntity->IsPlayer())
-					{
-						// if this entity is a client, and is not in full view, inflict half damage. We do this so that players still 
-						// take the residual damage if they don't totally leave the houndeye's effective radius. We restrict it to clients
-						// so that monsters in other parts of the level don't take the damage and get pissed.
-						flAdjustedDamage *= 0.5;
-					}
-					else if (!FClassnameIs(pEntity->pev, "func_breakable") && !FClassnameIs(pEntity->pev, "func_pushable"))
-					{
-						// do not hurt nonclients through walls, but allow damage to be done to breakables
-						flAdjustedDamage = 0;
-					}
-				}
-
-				//ALERT ( at_aiconsole, "Damage: %f\n", flAdjustedDamage );
-
-				if (flAdjustedDamage > 0)
-				{
-					pEntity->TakeDamage(pev, pev, flAdjustedDamage, DMG_SONIC | DMG_ALWAYSGIB);
-				}
-			}
-		}
-	}
+	CBaseEntity *pMortar = Create( "monster_mortar", vecSrc, g_vecZero, 0 );
+	pMortar->pev->nextthink = gpGlobals->time + 0.1;
+	pMortar->pev->dmg = gSkillData.robocopDmgMortar;
 }
 
 void CRoboCop::StartMortarAttack(void)
@@ -1225,7 +1174,7 @@ BOOL CRoboCop::IsEnemyReachable(CBaseEntity* pEnemy)
 void CRoboCop::CreateEyeGlow(void)
 {
 	m_pEyeGlow = CSprite::SpriteCreate(ROBOCOP_EYE_SPRITE_NAME, pev->origin, FALSE);
-	m_pEyeGlow->SetTransparency(kRenderGlow, 255, 255, 255, 0, kRenderFxNoDissipation);
+	m_pEyeGlow->SetTransparency(kRenderTransAdd, 255, 255, 255, 0, kRenderFxNoDissipation);
 	m_pEyeGlow->SetAttachment(edict(), 1);
 	m_pEyeGlow->SetScale(0.5f);
 }
@@ -1238,7 +1187,7 @@ void CRoboCop::DestroyEyeGlow(void)
 
 void CRoboCop::CreateBeam(void)
 {
-	m_pBeam = CBeam::BeamCreate(ROBOCOP_EYE_BEAM_NAME, 20);
+	m_pBeam = CBeam::BeamCreate(ROBOCOP_EYE_BEAM_NAME, 30);
 	m_pBeam->PointEntInit(pev->origin, entindex());
 	m_pBeam->SetEndAttachment(1);
 	m_pBeam->SetBrightness(0);
@@ -1254,8 +1203,8 @@ void CRoboCop::DestroyBeam(void)
 void CRoboCop::CreateSpot(void)
 {
 	m_pBeamSpot = CSprite::SpriteCreate(ROBOCOP_EYE_SPOT_NAME, pev->origin, FALSE);
-	m_pBeamSpot->SetTransparency(kRenderGlow, 255, 0, 0, 0, kRenderFxNoDissipation);
-	m_pBeamSpot->SetScale(0.15f);
+	m_pBeamSpot->SetTransparency(kRenderTransAdd, 255, 255, 255, 0, kRenderFxNoDissipation);
+	m_pBeamSpot->SetScale(0.30f);
 }
 
 void CRoboCop::DestroySpot(void)
@@ -1321,7 +1270,7 @@ void CRoboCop::EyeUpdate(void)
 
 	if (m_pEyeGlow)
 	{
-		m_pEyeGlow->pev->renderamt = UTIL_Approach(m_eyeBrightness, m_pEyeGlow->pev->renderamt, 26);
+		m_pEyeGlow->pev->renderamt = UTIL_Approach(m_eyeBrightness, m_pEyeGlow->pev->renderamt, 30);
 		if (m_pEyeGlow->pev->renderamt == 0)
 			m_pEyeGlow->pev->effects |= EF_NODRAW;
 		else

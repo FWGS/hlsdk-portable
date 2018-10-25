@@ -1052,11 +1052,8 @@ MONSTERSTATE CScientist::GetIdealState( void )
 }
 
 BOOL CScientist::CanHeal( void )
-{ 
-	if( ( m_healTime > gpGlobals->time ) || ( m_hTargetEnt == 0 ) || ( m_hTargetEnt->pev->health > ( m_hTargetEnt->pev->max_health * 0.5 ) ) )
-		return FALSE;
-
-	return TRUE;
+{
+	return FALSE;
 }
 
 void CScientist::Heal( void )

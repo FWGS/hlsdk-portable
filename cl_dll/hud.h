@@ -22,8 +22,9 @@
 #pragma once
 #ifndef HUD_H
 #define HUD_H
-#define RGB_YELLOWISH 0x00FFFFFF //255,255,255
-#define RGB_REDISH 0x00FF1010 //255,160,0
+#define RGB_YELLOWISH 0x00C1CFCB //193,207,203
+#define RGB_WHITEISH 0x00FAFAFA //250,250,250
+#define RGB_REDISH 0x00FA0000 //250,0,0
 #define RGB_GREENISH 0x0000A000 //0,160,0
 
 #include "wrect.h"
@@ -132,6 +133,7 @@ private:
 	WEAPON *m_pWeapon;
 	int m_HUD_bucket0;
 	int m_HUD_selection;
+	int m_HUD_stripe;
 };
 
 //
@@ -561,15 +563,9 @@ private:
 //
 //-----------------------------------------------------
 //
-class CHudScope : public CHudBase
+class CHudScope
 {
 public:
-	int Init( void );
-	int VidInit( void );
-	int Draw( float flTime );
-	void Reset( void );
-	int MsgFunc_Scope( const char *pszName, int iSize, void *pbuf );
-
 	int DrawScope( void );
 
 private:
@@ -595,6 +591,7 @@ public:
 	HSPRITE						m_hsprCursor;
 	float m_flTime;	   // the current client time
 	float m_fOldTime;  // the time at which the HUD was last redrawn
+	float m_flScaleColorTime;
 	double m_flTimeDelta; // the difference between flTime and fOldTime
 	Vector	m_vecOrigin;
 	Vector	m_vecAngles;
@@ -673,7 +670,6 @@ public:
 	void _cdecl MsgFunc_ViewMode( const char *pszName, int iSize, void *pbuf );
 	int _cdecl MsgFunc_SetFOV( const char *pszName,  int iSize, void *pbuf );
 	int  _cdecl MsgFunc_Concuss( const char *pszName, int iSize, void *pbuf );
-	int _cdecl MsgFunc_StartUp( const char *pszName, int iSize, void *pbuf );
 
 	// Screen information
 	SCREENINFO	m_scrinfo;
@@ -690,11 +686,6 @@ public:
 	void AddHudElem( CHudBase *p );
 
 	float GetSensitivity();
-
-	float m_flAlpha;
-
-private:
-	float m_flTargetAlpha;
 };
 
 extern CHud gHUD;

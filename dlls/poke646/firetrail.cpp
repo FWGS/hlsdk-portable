@@ -23,23 +23,47 @@
 // Fire Trail
 class CFireTrail : public CBaseEntity
 {
+public:
 	void Spawn(void);
 	void Think(void);
 	void Touch(CBaseEntity *pOther);
 	int ObjectCaps(void) { return FCAP_DONT_SAVE; }
+
+	int Save( CSave &save );
+	int Restore( CRestore &restore );
+	static TYPEDESCRIPTION m_SaveData[];
+private:
+	int m_spriteScale; // what's the exact fireball sprite scale?
 };
 
-LINK_ENTITY_TO_CLASS(fire_trail, CFireTrail);
+LINK_ENTITY_TO_CLASS( fire_trail, CFireTrail );
 
-void CFireTrail::Spawn(void)
+TYPEDESCRIPTION CFireTrail::m_SaveData[] =
 {
-	pev->velocity = RANDOM_FLOAT(200, 300) * pev->angles;
-	pev->velocity.x += RANDOM_FLOAT(-100.f, 100.f);
-	pev->velocity.y += RANDOM_FLOAT(-100.f, 100.f);
-	if (pev->velocity.z >= 0)
+        DEFINE_FIELD( CFireTrail, m_spriteScale, FIELD_INTEGER ),
+};
+
+IMPLEMENT_SAVERESTORE( CFireTrail, CBaseEntity )
+
+void CFireTrail::Spawn( void )
+{
+	pev->velocity = RANDOM_FLOAT(100.0f, 150.0f) * pev->angles;
+	if( RANDOM_LONG( 0, 1 ) )
+		pev->velocity.x += RANDOM_FLOAT(-300.f, -100.f);
+	else
+		pev->velocity.x += RANDOM_FLOAT(100.f, 300.f);
+
+	if( RANDOM_LONG( 0, 1 ) )
+		pev->velocity.y += RANDOM_FLOAT(-300.f, -100.f);
+	else
+		pev->velocity.y += RANDOM_FLOAT(100.f, 300.f);
+
+	if( pev->velocity.z >= 0 )
 		pev->velocity.z += 200;
 	else
 		pev->velocity.z -= 200;
+
+	m_spriteScale = RANDOM_LONG( 7, 13 );
 	pev->movetype = MOVETYPE_BOUNCE;
 	pev->gravity = 0.5;
 	pev->nextthink = gpGlobals->time + 0.1;
@@ -53,14 +77,18 @@ void CFireTrail::Spawn(void)
 	pev->angles = g_vecZero;
 }
 
-
 void CFireTrail::Think(void)
 {
-	CSprite* pSprite = CSprite::SpriteCreate("sprites/zerogxplode.spr", pev->origin, TRUE);
-	pSprite->AnimateAndDie(RANDOM_FLOAT(15.0f, 20.0f));
-	pSprite->SetTransparency( kRenderTransAdd, 255, 255, 255, 192, kRenderFxNoDissipation );
-	pSprite->SetScale(pev->speed);
-	pSprite->pev->frame = pSprite->Frames() - ((Q_max(0, pev->speed - (0.1 * pSprite->pev->framerate)) * pSprite->Frames()) / pev->maxspeed);
+	MESSAGE_BEGIN( MSG_PAS, SVC_TEMPENTITY, pev->origin );
+		WRITE_BYTE( TE_EXPLOSION);
+		WRITE_COORD( pev->origin.x );
+		WRITE_COORD( pev->origin.y );
+		WRITE_COORD( pev->origin.z );
+		WRITE_SHORT( g_sModelIndexFireball );
+		WRITE_BYTE( (BYTE)( m_spriteScale * pev->speed ) ); // scale * 10
+		WRITE_BYTE( 15 ); // framerate
+		WRITE_BYTE( TE_EXPLFLAG_NOSOUND );
+	MESSAGE_END();
 
 	pev->speed -= 0.1;
 	if (pev->speed > 0)

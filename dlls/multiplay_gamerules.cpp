@@ -406,7 +406,8 @@ BOOL CHalfLifeMultiplay::ClientConnected( edict_t *pEntity, const char *pszName,
 #ifndef NO_VOICEGAMEMGR
 	g_VoiceGameMgr.ClientConnected( pEntity );
 #endif
-	return TRUE;
+	ALERT( at_error, "Sorry, there's no multiplayer mode in Poke646!\n" );
+	return FALSE;
 }
 
 extern int gmsgSayText;

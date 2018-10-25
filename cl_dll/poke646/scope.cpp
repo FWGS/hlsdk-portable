@@ -26,63 +26,15 @@
 #include "pm_shared.h"
 #include "pm_defs.h"
 #include "pmtrace.h"
-
+extern bool bDrawScope;
 extern vec3_t v_origin;		// last view origin
 extern vec3_t v_angles;		// last view angle
 extern vec3_t v_cl_angles;	// last client/mouse angle
 extern vec3_t v_sim_org;	// last sim origin
 
-DECLARE_MESSAGE(m_Scope, Scope)
-
-int CHudScope::Init(void)
+int CHudScope::DrawScope()
 {
-	HOOK_MESSAGE(Scope);
-
-	m_iFlags = 0;
-
-	gHUD.AddHudElem(this);
-	return 1;
-}
-
-void CHudScope::Reset(void)
-{
-
-}
-
-int CHudScope::VidInit(void)
-{
-	m_hSprite = SPR_Load("sprites/scopeborder.spr");
-
-	return 1;
-}
-
-int CHudScope::MsgFunc_Scope(const char *pszName, int iSize, void *pbuf)
-{
-	// TODO: update local health data
-	BEGIN_READ(pbuf, iSize);
-	int fOn = READ_BYTE();
-
-	if (fOn)
-	{
-		m_iFlags |= HUD_ACTIVE;
-	}
-	else
-	{
-		m_iFlags &= ~HUD_ACTIVE;
-	}
-
-	return 1;
-}
-
-
-int CHudScope::Draw(float flTime)
-{
-	return 1;
-}
-
-int CHudScope::DrawScope(void)
-{
-	if (!(m_iFlags & HUD_ACTIVE))
+	if( !bDrawScope )
 		return 1;
 
 	if (!m_hSprite)

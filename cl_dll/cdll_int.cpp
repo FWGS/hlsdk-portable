@@ -45,11 +45,6 @@ void InitInput( void );
 void EV_HookEvents( void );
 void IN_Commands( void );
 
-extern cvar_t *cl_upspeed;
-extern cvar_t *cl_forwardspeed;
-extern cvar_t *cl_backspeed;
-extern cvar_t *cl_sidespeed;
-
 int __MsgFunc_Bhopcap( const char *pszName, int iSize, void *pbuf )
 {
 	BEGIN_READ( pbuf, iSize );
@@ -241,14 +236,6 @@ so the HUD can reinitialize itself.
 int DLLEXPORT HUD_VidInit( void )
 {
 	gHUD.VidInit();
-
-	//
-	// Fixup player speed.
-	//
-	cl_upspeed->value	=
-	cl_forwardspeed->value	=
-	cl_backspeed->value	=
-	cl_sidespeed->value	= 200;
 
 #ifdef USE_VGUI_FOR_GOLDSOURCE_SUPPORT
 	vgui::Panel* root=(vgui::Panel*)gEngfuncs.VGui_GetPanel();

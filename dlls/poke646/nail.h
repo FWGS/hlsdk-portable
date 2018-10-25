@@ -22,16 +22,18 @@
 //=========================================================
 // Nail projectile
 //=========================================================
-class CNail : public CBaseEntity
+class CNailGunNail : public CBaseEntity
 {
-	void Spawn(void);
-	void Precache(void);
-	int  Classify(void);
-	void EXPORT NailThink(void);
-	void EXPORT NailTouch(CBaseEntity *pOther);
-
 public:
-	static CNail *NailCreate(void);
+	void Spawn();
+	void Precache();
+	int  Classify();
+	void EXPORT NailTouch( CBaseEntity *pOther );
+	void EXPORT BubbleThink();
+	static CNailGunNail *NailCreate( BOOL bIsBradnailer );
+
+private:
+	BOOL m_bIsBradnailer;
 };
 
 #endif // NAIL_H

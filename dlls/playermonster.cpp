@@ -82,7 +82,7 @@ void CPlayerMonster :: HandleAnimEvent( MonsterEvent_t *pEvent )
 //=========================================================
 int CPlayerMonster::ISoundMask( void )
 {
-	return NULL;
+	return 0;
 }
 
 //=========================================================

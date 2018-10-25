@@ -112,19 +112,9 @@ Render any triangles with transparent rendermode needs here
 */
 void DLLEXPORT HUD_DrawTransparentTriangles( void )
 {
+	gHUD.m_Scope.DrawScope();
 #if defined( TEST_IT )
 //	Draw_Triangles();
 #endif
 }
 
-/*
-=================
-HUD_DrawOrthoTriangles
-Orthogonal Triangles -- (relative to resolution,
-smackdab on the screen) add them here
-=================
-*/
-void HUD_DrawOrthoTriangles( void )
-{
-	gHUD.m_Scope.DrawScope();
-}

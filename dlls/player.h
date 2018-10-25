@@ -23,6 +23,7 @@
 #define DAMAGE_FOR_FALL_SPEED		(float) 100 / ( PLAYER_FATAL_FALL_SPEED - PLAYER_MAX_SAFE_FALL_SPEED )// damage per unit per second.
 #define PLAYER_MIN_BOUNCE_SPEED		200
 #define PLAYER_FALL_PUNCH_THRESHHOLD (float)350 // won't punch player's screen/make scrape noise unless player falling at least this fast.
+#define PLAYER_MAX_SPEED		220
 
 //
 // Player PHYSICS FLAGS bits
@@ -60,18 +61,6 @@
 #define	SOUND_FLASHLIGHT_OFF	"items/flashlight1.wav"
 
 #define TEAM_NAME_LENGTH	16
-
-//
-// Player exert.
-//
-
-#define PLAYER_EXERT_LEVEL_MIN			0
-#define PLAYER_EXERT_LEVEL_MAX			50
-#define PLAYER_EXERT_RATE			0.2f
-
-#define PLAYER_BREATHE_LEVEL			5
-#define PLAYER_BREATHE_VOLUME_MAX		2.0f
-#define PLAYER_BREATHE_SOUND			"player/breathe2.wav"
 
 typedef enum
 {
@@ -277,6 +266,7 @@ public:
 	void DropPlayerItem ( char *pszItemName );
 	BOOL HasPlayerItem( CBasePlayerItem *pCheckItem );
 	BOOL HasNamedPlayerItem( const char *pszItemName );
+	CBasePlayerItem *GiveNamedPlayerItem( const char *pszItemName );
 	BOOL HasWeapons( void );// do I have ANY weapons?
 	void SelectPrevItem( int iItem );
 	void SelectNextItem( int iItem );
@@ -317,8 +307,6 @@ public:
 	void SetCustomDecalFrames( int nFrames );
 	int GetCustomDecalFrames( void );
 
-	void TabulateAmmo( void );
-
 	Vector m_vecLastViewAngles;
 
 	float m_flStartCharge;
@@ -337,35 +325,6 @@ public:
 
 	float m_flNextChatTime;
 
-	// Music
-	BOOL m_bSong01_Played;
-	BOOL m_bSong02_Played;
-	BOOL m_bSong03_Played;
-	BOOL m_bSong04_Played;
-	BOOL m_bSong05_Played;
-	BOOL m_bSong06_Played;
-	float m_flMusicCheckWait;
-
-	//
-	// Exert
-	//
-	void IncrementExertLevel( int amount );
-	void DecrementExertLevel( int amount );
-	void SetExertLevel( int level );
-	int GetExertLevel( void ) const;
-
-	void UpdateExertLevel( void );
-
-	int m_iExertLevel;
-	float m_flExertRate;
-	float m_flExertUpdateStart;
-
-	// HUD visibility
-	void ShowPlayerHUD( BOOL bInstant = FALSE );
-	void HidePlayerHUD( BOOL bInstant = FALSE );
-
-	BOOL m_fHudVisible;
-	BOOL m_fUpdateHudVisibility;
 	bool m_bSentBhopcap; // If false, the player just joined and needs a bhopcap message.
 };
 

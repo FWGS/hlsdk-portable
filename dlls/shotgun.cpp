@@ -59,6 +59,8 @@ void CShotgun::Precache( void )
 
 	m_iShell = PRECACHE_MODEL( "models/shotgunshell.mdl" );// shotgun shell
 
+	PRECACHE_MODEL( "sprites/wallsmoke.spr" );
+
 	PRECACHE_SOUND( "items/9mmclip1.wav" );
 
 	PRECACHE_SOUND( "weapons/dbarrel1.wav" );//shotgun
@@ -74,7 +76,6 @@ void CShotgun::Precache( void )
 	PRECACHE_SOUND( "weapons/scock1.wav" );	// cock gun
 
 	m_usSingleFire = PRECACHE_EVENT( 1, "events/shotgun1.sc" );
-	m_usDoubleFire = PRECACHE_EVENT( 1, "events/shotgun2.sc" );
 }
 
 int CShotgun::AddToPlayer( CBasePlayer *pPlayer )
@@ -121,11 +122,10 @@ void CShotgun::PrimaryAttack()
 		return;
 	}
 
-	if( m_iClip <= 0 )
+	if( m_iClip <= 1 )
 	{
 		Reload();
-		if( m_iClip == 0 )
-			PlayEmptySound();
+		PlayEmptySound();
 		return;
 	}
 
@@ -155,24 +155,21 @@ void CShotgun::PrimaryAttack()
 
 	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usSingleFire, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, vecDir.x, vecDir.y, 0, 0, 0, 0 );
 
-	m_flNextPrimaryAttack = GetNextAttackDelay( 1.15 );
-	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1.15;
+	m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1.2;
 	if( m_iClip != 0 )
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 5.0;
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 6.0;
 	else
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.15;
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.2;
 
 	m_fInSpecialReload = 0;
 
 	UTIL_MakeVectors( m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle );
 
-	// Take the inverse forward unit vector and zero out z.
-	// Only horizontal impulse allowed.
-	Vector vecImpulse = -gpGlobals->v_forward;
-	vecImpulse.z = 0;
+	Vector oldVelocity = m_pPlayer->pev->velocity;
 
 	// Send player impulse.
-	m_pPlayer->pev->velocity = m_pPlayer->pev->velocity + vecImpulse * 200;
+	m_pPlayer->pev->velocity = m_pPlayer->pev->velocity - gpGlobals->v_forward * 200;
+	m_pPlayer->pev->velocity = m_pPlayer->pev->velocity - ( m_pPlayer->pev->velocity - oldVelocity ) * 0.5f;
 }
 
 void CShotgun::SecondaryAttack( void )
@@ -193,10 +190,10 @@ void CShotgun::Reload( void )
 	{
 		SendWeaponAnim( SHOTGUN_START_RELOAD );
 		m_fInSpecialReload = 1;
-		m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.6;
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.6;
-		m_flNextPrimaryAttack = GetNextAttackDelay( 1.0 );
-		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1.0;
+		m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.4;
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.4;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.8;
+		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.8;
 		return;
 	}
 	else if( m_fInSpecialReload == 1 )

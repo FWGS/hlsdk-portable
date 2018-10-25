@@ -139,8 +139,10 @@ int HistoryResource::DrawAmmoHistory( float flTime )
 					SPR_DrawAdditive( 0, xpos, ypos, &rcPic );
 				}
 
-				// Draw the number
-				gHUD.DrawHudNumberString( xpos - 10, ypos, xpos - 100, rgAmmoHistory[i].iCount, r, g, b );
+				// do not draw black console string
+				if( !( ( hud_textmode->value == 2 ) && ( scale < 200 ) ) )
+					// Draw the number
+					gHUD.DrawHudNumberString( xpos - 10, ypos, xpos - 100, rgAmmoHistory[i].iCount, r, g, b );
 			}
 			else if( rgAmmoHistory[i].type == HISTSLOT_WEAP )
 			{
@@ -156,7 +158,7 @@ int HistoryResource::DrawAmmoHistory( float flTime )
 					UnpackRGB( r, g, b, RGB_REDISH );	// if the weapon doesn't have ammo, display it as red
 
 				float scale = ( rgAmmoHistory[i].DisplayTime - flTime ) * 80;
-				ScaleColors( r, g, b, min( gHUD.m_flAlpha, min( scale, 255 ) ) );
+				ScaleColors( r, g, b, min( scale, 255 ) );
 
 				int ypos = ScreenHeight - ( AMMO_PICKUP_PICK_HEIGHT + ( AMMO_PICKUP_GAP * i ) );
 				int xpos = ScreenWidth - ( weap->rcInactive.right - weap->rcInactive.left );
@@ -174,7 +176,7 @@ int HistoryResource::DrawAmmoHistory( float flTime )
 
 				UnpackRGB( r, g, b, RGB_YELLOWISH );
 				float scale = ( rgAmmoHistory[i].DisplayTime - flTime ) * 80;
-				ScaleColors( r, g, b, min( gHUD.m_flAlpha, min( scale, 255 ) ) );
+				ScaleColors( r, g, b, min( scale, 255 ) );
 
 				int ypos = ScreenHeight - ( AMMO_PICKUP_PICK_HEIGHT + ( AMMO_PICKUP_GAP * i ) );
 				int xpos = ScreenWidth - ( rect.right - rect.left ) - 10;

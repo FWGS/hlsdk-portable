@@ -34,10 +34,10 @@
 #include "gamerules.h"
 #include "teamplay_gamerules.h"
 #include "physcallback.h"
+#include "mp3.h"
 
 extern CGraph WorldGraph;
 extern CSoundEnt *pSoundEnt;
-
 extern CBaseEntity				*g_pLastSpawn;
 DLL_GLOBAL edict_t				*g_pBodyQueueHead;
 CGlobalState					gGlobalState;
@@ -448,6 +448,7 @@ LINK_ENTITY_TO_CLASS( worldspawn, CWorld )
 #define SF_WORLD_DARK		0x0001		// Fade from black at startup
 #define SF_WORLD_TITLE		0x0002		// Display game title at startup
 #define SF_WORLD_FORCETEAM	0x0004		// Force teams
+#define SF_WORLD_AMBIENT_MP3	0x0008
 
 extern DLL_GLOBAL BOOL		g_fGameOver;
 float g_flWeaponCheat; 
@@ -634,6 +635,17 @@ void CWorld::Precache( void )
 		}
 	}
 
+	if( pev->spawnflags & SF_WORLD_AMBIENT_MP3 )
+	{
+		CAmbientMP3 *pMPlayer = CAmbientMP3::AmbientMP3Create( "#po_soundtrack#" );
+
+		if( pMPlayer )
+		{
+			pMPlayer->SetThink( &CBaseEntity::SUB_CallUseToggle );
+			pMPlayer->pev->nextthink = gpGlobals->time + 1.0f;
+		}
+		pev->spawnflags &= ~SF_WORLD_AMBIENT_MP3;
+	}
 	if( pev->spawnflags & SF_WORLD_DARK )
 		CVAR_SET_FLOAT( "v_dark", 1.0 );
 	else
@@ -666,6 +678,8 @@ void CWorld::Precache( void )
 //
 void CWorld::KeyValue( KeyValueData *pkvd )
 {
+	if( !( pev->spawnflags & SF_WORLD_AMBIENT_MP3 ) )
+		pev->spawnflags |= SF_WORLD_AMBIENT_MP3;	
 	if( FStrEq( pkvd->szKeyName, "skyname" ) )
 	{
 		// Sent over net now.

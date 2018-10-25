@@ -22,6 +22,7 @@
 
 void Game_AddObjects( void );
 
+bool bDrawScope;
 extern vec3_t v_origin;
 
 int g_iAlive = 1;
@@ -95,6 +96,7 @@ void DLLEXPORT HUD_TxferLocalOverrides( struct entity_state_s *state, const stru
 
 	// Fire prevention
 	state->iuser4 = client->iuser4;
+	bDrawScope = client->iuser4;
 }
 
 /*
@@ -213,6 +215,7 @@ void DLLEXPORT HUD_TxferPredictionData( struct entity_state_s *ps, const struct 
 
 	// Fire prevention
 	pcd->iuser4 					= ppcd->iuser4;
+	bDrawScope = ppcd->iuser4;
 
 	pcd->fuser2					= ppcd->fuser2;
 	pcd->fuser3					= ppcd->fuser3;

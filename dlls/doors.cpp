@@ -742,7 +742,7 @@ void CBaseDoor::Blocked( CBaseEntity *pOther )
 	{
 		// Detonate satchels
 		if( !strcmp( "monster_satchel", STRING( pOther->pev->classname ) ) )
-			( (CSatchel*)pOther )->Use( this, this, USE_ON, 0 );
+			( (CPipebomb*)pOther )->Use( this, this, USE_ON, 0 );
 	}
 
 	// if a door has a negative wait, it would never come back if blocked,

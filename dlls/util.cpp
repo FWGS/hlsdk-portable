@@ -31,6 +31,20 @@
 #include "weapons.h"
 #include "gamerules.h"
 
+
+void UTIL_MakeTracer( const Vector &vecSrc, const Vector &vecDest )
+{
+	MESSAGE_BEGIN( MSG_PAS, SVC_TEMPENTITY, vecSrc );
+		WRITE_BYTE( TE_TRACER );
+		WRITE_COORD( vecSrc.x );
+		WRITE_COORD( vecSrc.y );
+		WRITE_COORD( vecSrc.z );
+		WRITE_COORD( vecDest.x );
+		WRITE_COORD( vecDest.y );
+		WRITE_COORD( vecDest.z );
+	MESSAGE_END();
+}
+
 float UTIL_WeaponTimeBase( void )
 {
 #if defined( CLIENT_WEAPONS )

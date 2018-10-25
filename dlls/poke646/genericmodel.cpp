@@ -21,6 +21,8 @@
 #include "weapons.h"
 #include "player.h"
 
+#define SF_MODEL_ANIMATE	1
+
 class CGenericModel : public CBaseAnimating
 {
 public:
@@ -28,8 +30,6 @@ public:
 	void Spawn(void);
 	void Precache(void);
 	void KeyValue(KeyValueData* pkvd);
-
-	void EXPORT IdleThink(void);
 
 	virtual int		Save(CSave &save);
 	virtual int		Restore(CRestore &restore);
@@ -50,74 +50,34 @@ IMPLEMENT_SAVERESTORE(CGenericModel, CBaseAnimating);
 void CGenericModel::KeyValue(KeyValueData* pkvd)
 {
 	// UNDONE_WC: explicitly ignoring these fields, but they shouldn't be in the map file!
-	if (FStrEq(pkvd->szKeyName, "sequencename"))
+	if( FStrEq( pkvd->szKeyName, "sequencename" ) )
 	{
-		m_iszSequence = ALLOC_STRING(pkvd->szValue);
+		m_iszSequence = ALLOC_STRING( pkvd->szValue );
 		pkvd->fHandled = TRUE;
 	}
 	else
 		CBaseDelay::KeyValue(pkvd);
 }
 
-void CGenericModel::Spawn(void)
+void CGenericModel::Spawn()
 {
 	Precache();
 
 	pev->solid = SOLID_NOT;
 	pev->movetype = MOVETYPE_NONE;
-	pev->takedamage = DAMAGE_NO;
 
 	SET_MODEL( ENT(pev), STRING(pev->model) );
-	UTIL_SetSize( pev, Vector(0, 0, 0), Vector(0, 0, 0) );
+	UTIL_SetSize( pev, g_vecZero, g_vecZero );
 
-	if (!FStringNull(m_iszSequence))
+	if( FBitSet( pev->spawnflags, SF_MODEL_ANIMATE ) )
 	{
-		pev->sequence = LookupSequence(STRING(m_iszSequence));
-
-		if (pev->sequence < 0)
-		{
-			ALERT(at_warning, "Generic model %s: Unknown sequence named: %s\n", STRING(pev->model), STRING(m_iszSequence));
-			pev->sequence = 0;
-		}
+		pev->sequence = LookupSequence( STRING( m_iszSequence ) );
+		pev->animtime = gpGlobals->time;
+		pev->framerate = 1.0f;
 	}
-	else
-	{
-		pev->sequence = 0;
-	}
-
-	pev->frame = 0;
-	pev->framerate = 1.0f;
-
-	SetThink(&CGenericModel::IdleThink);
-	SetTouch(NULL);
-	SetUse(NULL);
-
-	pev->nextthink = gpGlobals->time + 0.1;
 }
 
-void CGenericModel::Precache(void)
+void CGenericModel::Precache()
 {
-	PRECACHE_MODEL((char*)STRING(pev->model));
-}
-
-void CGenericModel::IdleThink(void)
-{
-	float flInterval = StudioFrameAdvance();
-
-	pev->nextthink = gpGlobals->time + 0.5;
-
-	DispatchAnimEvents(flInterval);
-
-	if (m_fSequenceFinished)
-	{
-		if (m_fSequenceLoops)
-		{
-			pev->frame = 0;
-			ResetSequenceInfo();
-		}
-		else
-		{
-			SetThink( NULL );
-		}
-	}
+	PRECACHE_MODEL( STRING( pev->model ) );
 }

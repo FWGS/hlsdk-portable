@@ -119,28 +119,6 @@ TYPEDESCRIPTION	CBasePlayer::m_playerSaveData[] =
 	DEFINE_FIELD( CBasePlayer, m_iHideHUD, FIELD_INTEGER ),
 	DEFINE_FIELD( CBasePlayer, m_iFOV, FIELD_INTEGER ),
 
-	// Music
-	DEFINE_FIELD( CBasePlayer, m_bSong01_Played, FIELD_BOOLEAN ),
-	DEFINE_FIELD( CBasePlayer, m_bSong02_Played, FIELD_BOOLEAN ),
-	DEFINE_FIELD( CBasePlayer, m_bSong03_Played, FIELD_BOOLEAN ),
-	DEFINE_FIELD( CBasePlayer, m_bSong04_Played, FIELD_BOOLEAN ),
-	DEFINE_FIELD( CBasePlayer, m_bSong05_Played, FIELD_BOOLEAN ),
-	DEFINE_FIELD( CBasePlayer, m_bSong06_Played, FIELD_BOOLEAN ),
-	DEFINE_FIELD( CBasePlayer, m_flMusicCheckWait, FIELD_TIME ),
-
-	// Player exert.
-	DEFINE_FIELD( CBasePlayer, m_iExertLevel, FIELD_INTEGER ),
-	DEFINE_FIELD( CBasePlayer, m_flExertRate, FIELD_FLOAT ),
-	DEFINE_FIELD( CBasePlayer, m_flExertUpdateStart, FIELD_TIME ),
-
-	DEFINE_FIELD( CBasePlayer, m_fHudVisible, FIELD_BOOLEAN ),
-	DEFINE_FIELD( CBasePlayer, m_fUpdateHudVisibility, FIELD_BOOLEAN ),
-
-	// Xensquasher
-        DEFINE_FIELD( CBasePlayer, m_flStartCharge, FIELD_TIME ),
-	DEFINE_FIELD( CBasePlayer, m_flPlayAftershock, FIELD_TIME ),
-	DEFINE_FIELD( CBasePlayer, m_flNextAmmoBurn, FIELD_TIME ),
-
 	//DEFINE_FIELD( CBasePlayer, m_fDeadTime, FIELD_FLOAT ), // only used in multiplayer games
 	//DEFINE_FIELD( CBasePlayer, m_fGameHUDInitialized, FIELD_INTEGER ), // only used in multiplayer games
 	//DEFINE_FIELD( CBasePlayer, m_flStopExtraSoundTime, FIELD_TIME ),
@@ -206,12 +184,10 @@ int gmsgShowMenu = 0;
 int gmsgGeigerRange = 0;
 int gmsgTeamNames = 0;
 int gmsgBhopcap = 0;
+int gmsgPlayMP3 = 0;
 
 int gmsgStatusText = 0;
 int gmsgStatusValue = 0;
-
-int gmsgStartUp = 0;
-int gmsgScope = 0;
 
 void LinkUserMessages( void )
 {
@@ -245,7 +221,7 @@ void LinkUserMessages( void )
 	gmsgGameMode = REG_USER_MSG( "GameMode", 1 );
 	gmsgMOTD = REG_USER_MSG( "MOTD", -1 );
 	gmsgServerName = REG_USER_MSG( "ServerName", -1 );
-	gmsgAmmoPickup = REG_USER_MSG( "AmmoPickup", 2 );
+	gmsgAmmoPickup = REG_USER_MSG( "AmmoPickup", 3 );
 	gmsgWeapPickup = REG_USER_MSG( "WeapPickup", 1 );
 	gmsgItemPickup = REG_USER_MSG( "ItemPickup", -1 );
 	gmsgHideWeapon = REG_USER_MSG( "HideWeapon", 1 );
@@ -253,15 +229,14 @@ void LinkUserMessages( void )
 	gmsgShowMenu = REG_USER_MSG( "ShowMenu", -1 );
 	gmsgShake = REG_USER_MSG( "ScreenShake", sizeof(ScreenShake) );
 	gmsgFade = REG_USER_MSG( "ScreenFade", sizeof(ScreenFade) );
-	gmsgAmmoX = REG_USER_MSG( "AmmoX", 2 );
+	gmsgAmmoX = REG_USER_MSG( "AmmoX", 3 );
+	gmsgPlayMP3 = REG_USER_MSG( "PlayMP3", -1 );
 	gmsgTeamNames = REG_USER_MSG( "TeamNames", -1 );
-	gmsgBhopcap = REG_USER_MSG( "Bhopcap", 1 );
 
 	gmsgStatusText = REG_USER_MSG( "StatusText", -1 );
 	gmsgStatusValue = REG_USER_MSG( "StatusValue", 3 );
 
-	gmsgStartUp = REG_USER_MSG( "StartUp", 2 );
-	gmsgScope = REG_USER_MSG( "Scope", 1 );
+	gmsgBhopcap = REG_USER_MSG( "Bhopcap", 1 );
 }
 
 LINK_ENTITY_TO_CLASS( player, CBasePlayer )
@@ -838,13 +813,11 @@ void CBasePlayer::RemoveAllItems( BOOL removeSuit )
 	pev->weaponmodel = 0;
 
 	if( removeSuit )
-	{
 		pev->weapons = 0;
-
-		HidePlayerHUD();
-	}
 	else
 		pev->weapons &= ~WEAPON_ALLWEAPONS;
+
+	m_iHideHUD |= HIDEHUD_WEAPONS;
 
 	// Turn off flashlight
 	ClearBits( pev->effects, EF_DIMLIGHT );
@@ -853,7 +826,7 @@ void CBasePlayer::RemoveAllItems( BOOL removeSuit )
 		m_rgAmmo[i] = 0;
 
 	if( satchelfix.value )
-		DeactivateSatchels( this );
+		DeactivatePipebombs( this );
 
 	UpdateClientData();
 
@@ -1114,27 +1087,6 @@ void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim )
 	pev->sequence = animDesired;
 	pev->frame = 0;
 	ResetSequenceInfo();
-}
-
-/*
-===========
-TabulateAmmo
-This function is used to find and store 
-all the ammo we have into the ammo vars.
-============
-*/
-void CBasePlayer::TabulateAmmo()
-{
-	ammo_9mm = AmmoInventory( GetAmmoIndex( "9mm" ) );
-	ammo_357 = AmmoInventory( GetAmmoIndex( "357" ) );
-	ammo_argrens = AmmoInventory( GetAmmoIndex( "ARgrenades" ) );
-	ammo_bolts = AmmoInventory( GetAmmoIndex( "bolts" ) );
-	ammo_buckshot = AmmoInventory( GetAmmoIndex( "buckshot" ) );
-	ammo_rockets = AmmoInventory( GetAmmoIndex( "rockets" ) );
-	ammo_uranium = AmmoInventory( GetAmmoIndex( "uranium" ) );
-	ammo_hornets = AmmoInventory( GetAmmoIndex( "Hornets" ) );
-	ammo_nails = AmmoInventory( GetAmmoIndex( "nails" ) );
-	ammo_xencandy = AmmoInventory( GetAmmoIndex( "xencandy" ) );
 }
 
 /*
@@ -1962,59 +1914,6 @@ void CBasePlayer::PreThink( void )
 	{
 		pev->velocity = g_vecZero;
 	}
-
-	// Only try to play music if wait time has elapsed.
-	if( m_flMusicCheckWait <= gpGlobals->time )
-	{
-		if( !m_bSong01_Played )
-		{
-			if( FStrEq( STRING( gpGlobals->mapname ), "po_haz01" ) )
-			{
-				CLIENT_COMMAND( edict(), "play sound/mp3/hazard.mp3\n" );
-				m_bSong01_Played = TRUE;
-			}
-		}
-		if( !m_bSong02_Played )
-		{
-			if( FStrEq( STRING( gpGlobals->mapname ), "po_aud01" ) )
-			{
-				CLIENT_COMMAND( edict(), "play sound/mp3/audion.mp3\n" );
-				m_bSong02_Played = TRUE;
-			}
-		}
-		if( !m_bSong03_Played )
-		{
-			if( FStrEq( STRING( gpGlobals->mapname ), "po_sew01" ) )
-			{
-				CLIENT_COMMAND( edict(), "play sound/mp3/sewer.mp3\n" );
-				m_bSong03_Played = TRUE;
-			}
-		}
-		if( !m_bSong04_Played )
-		{
-			if( FStrEq( STRING( gpGlobals->mapname ), "po_lib01" ) )
-			{
-				CLIENT_COMMAND( edict(), "play sound/mp3/library.mp3\n" );
-				m_bSong04_Played = TRUE;
-			}
-		}
-		if( !m_bSong05_Played )
-		{
-			if( FStrEq( STRING( gpGlobals->mapname ), "po_eas01" ) )
-			{
-				CLIENT_COMMAND( edict(), "play sound/mp3/eastend.mp3\n" );
-				m_bSong05_Played = TRUE;
-			}
-		}
-		if( !m_bSong06_Played )
-		{
-			if( FStrEq( STRING( gpGlobals->mapname ), "credits" ) )
-			{
-				CLIENT_COMMAND( edict(), "play sound/mp3/credits.mp3\n" );
-				m_bSong06_Played = TRUE;
-			}
-		}
-	}
 }
 /* Time based Damage works as follows: 
 	1) There are several types of timebased damage:
@@ -2592,8 +2491,6 @@ pt_end:
 	else
 		pev->angles = m_vecLastViewAngles;
 
-	UpdateExertLevel();
-
 	// Track button info so we can detect 'pressed' and 'released' buttons next frame
 	m_afButtonLast = pev->button;
 
@@ -2809,6 +2706,7 @@ void CBasePlayer::Spawn( void )
 
 	g_engfuncs.pfnSetPhysicsKeyValue( edict(), "slj", "0" );
 	g_engfuncs.pfnSetPhysicsKeyValue( edict(), "hl", "1" );
+	SET_CLIENT_MAX_SPEED( edict(), PLAYER_MAX_SPEED );
 
 	pev->fov = m_iFOV = 0;// init field of view.
 	m_iClientFOV = -1; // make sure fov reset is sent
@@ -2872,17 +2770,6 @@ void CBasePlayer::Spawn( void )
 	m_lastx = m_lasty = 0;
 
 	m_flNextChatTime = gpGlobals->time;
-
-	m_bSong01_Played =
-	m_bSong02_Played =
-	m_bSong03_Played =
-	m_bSong04_Played =
-	m_bSong05_Played =
-	m_bSong06_Played = FALSE;
-
-	m_fHudVisible = FALSE;
-	m_fUpdateHudVisibility = FALSE;
-	m_flMusicCheckWait = gpGlobals->time + 0.1f; // Give a bit of time before attempting to use MP3 player.
 
 	g_pGameRules->PlayerSpawn( this );
 }
@@ -3007,9 +2894,6 @@ int CBasePlayer::Restore( CRestore &restore )
 	//			Barring that, we clear it out here instead of using the incorrect restored time value.
 	m_flNextAttack = UTIL_WeaponTimeBase();
 #endif
-	m_fUpdateHudVisibility = TRUE;
-
-	m_flMusicCheckWait = gpGlobals->time + 0.5f;
 
 	return status;
 }
@@ -3454,19 +3338,18 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		break;
 	case 101:
 		gEvilImpulse101 = TRUE;
-		GiveNamedItem( "item_suit" );
 		GiveNamedItem( "weapon_heaterpipe" );
+		GiveNamedItem( "weapon_bradnailer" );
+		GiveNamedItem( "ammo_nailclip" );
+		GiveNamedItem( "weapon_nailgun" );
+		GiveNamedItem( "ammo_nailround" );
 		GiveNamedItem( "weapon_shotgun" );
 		GiveNamedItem( "ammo_buckshot" );
 		GiveNamedItem( "weapon_cmlwbr" );
 		GiveNamedItem( "ammo_bolts" );
-		GiveNamedItem( "weapon_pipebomb" );
-		GiveNamedItem( "weapon_bradnailer" );
-		GiveNamedItem( "ammo_nailclip" );
-		GiveNamedItem( "ammo_nailround" );
-		GiveNamedItem( "weapon_nailgun" );
 		GiveNamedItem( "weapon_xs" );
 		GiveNamedItem( "ammo_xencandy" );
+		GiveNamedItem( "weapon_pipebomb" );
 
 		gEvilImpulse101 = FALSE;
 		break;
@@ -3627,6 +3510,8 @@ int CBasePlayer::AddPlayerItem( CBasePlayerItem *pItem )
 		g_pGameRules->PlayerGotWeapon( this, pItem );
 		pItem->CheckRespawn();
 
+		m_iHideHUD &= ~HIDEHUD_WEAPONS;
+
 		pItem->m_pNext = m_rgpPlayerItems[pItem->iItemSlot()];
 		m_rgpPlayerItems[pItem->iItemSlot()] = pItem;
 
@@ -3722,11 +3607,9 @@ int CBasePlayer::GiveAmmo( int iCount, const char *szName, int iMax )
 		// Send the message that ammo has been picked up
 		MESSAGE_BEGIN( MSG_ONE, gmsgAmmoPickup, NULL, pev );
 			WRITE_BYTE( GetAmmoIndex( szName ) );		// ammo ID
-			WRITE_BYTE( iAdd );		// amount
+			WRITE_SHORT( iAdd );		// amount
 		MESSAGE_END();
 	}
-
-	TabulateAmmo();
 
 	return i;
 }
@@ -3832,7 +3715,7 @@ void CBasePlayer::SendAmmoUpdate( void )
 			// send "Ammo" update message
 			MESSAGE_BEGIN( MSG_ONE, gmsgAmmoX, NULL, pev );
 				WRITE_BYTE( i );
-				WRITE_BYTE( Q_max( Q_min( m_rgAmmo[i], 254 ), 0 ) );  // clamp the value to one byte
+				WRITE_SHORT( Q_max( m_rgAmmo[i], 0 ) );  // clamp the value to 2 bytes
 			MESSAGE_END();
 		}
 	}
@@ -3885,77 +3768,6 @@ void CBasePlayer::UpdateClientData( void )
 		MESSAGE_END();
 
 		InitStatusBar();
-	}
-
-	//
-	// Poke646 & Vendetta - Give suit to toggle hud on map po_aud01 or po_orl01
-	//
-	if( !( pev->weapons & ( 1 << WEAPON_SUIT ) ) )
-	{
-		if( FStrEq( STRING( gpGlobals->mapname ), "po_haz01" ) )
-		{
-			pev->weapons |= ( 1 << WEAPON_SUIT );
-
-			// Force HUD update.
-			m_fHudVisible = TRUE;
-
-			//
-			// Make HUD completely transparent.
-			//
-			HidePlayerHUD( TRUE );
-		}
-		else if( FStrEq( STRING( gpGlobals->mapname ), "po_aud01" ) )
-		{
-			pev->weapons |= ( 1 << WEAPON_SUIT );
-
-			//
-			// Make HUD completely transparent and slowly increase it's alpha.
-			//
-			ShowPlayerHUD();
-		}
-		else if( FStrEq( STRING( gpGlobals->mapname ), "credits" ) )
-		{
-			pev->weapons = 0;
-
-			//
-			// Make HUD completely transparent and slowly increase it's alpha.
-			//
-			HidePlayerHUD( TRUE );
-		}
-	}
-
-	// Update HUD visibility.
-	if( m_fUpdateHudVisibility )
-	{
-		// If player is frozen, tell client to hide HUD,
-		// if visible.
-		if( ( pev->flags & FL_FROZEN ) && m_fHudVisible )
-		{
-			if( pev->weapons & ( 1 << WEAPON_SUIT ) )
-			{
-				HidePlayerHUD();
-			}
-		}
-		// If player is not frozen, tell client to show HUD,
-		// if not visible.
-		else if( !( pev->flags & FL_FROZEN ) && !m_fHudVisible )
-		{
-			if( pev->weapons & ( 1 << WEAPON_SUIT ) )
-			{
-				ShowPlayerHUD();
-			}
-		}
-		else
-		{
-			if( pev->weapons & ( 1 << WEAPON_SUIT ) )
-			{
-				m_fHudVisible = FALSE;
-
-				ShowPlayerHUD( TRUE );
-			}
-		}
-
-		m_fUpdateHudVisibility = FALSE;
 	}
 
 	if( m_iHideHUD != m_iClientHideHUD )
@@ -4612,6 +4424,27 @@ BOOL CBasePlayer::HasNamedPlayerItem( const char *pszItemName )
 	return FALSE;
 }
 
+CBasePlayerItem *CBasePlayer::GiveNamedPlayerItem( const char *pszItemName )
+{
+	CBasePlayerItem *pItem;
+	int i;
+
+	for( i = 0; i < MAX_ITEM_TYPES; i++ )
+	{
+		pItem = m_rgpPlayerItems[i];
+
+		while( pItem )
+		{
+			if( !strcmp( pszItemName, STRING( pItem->pev->classname ) ) )
+			{
+				return pItem;
+			}
+			pItem = pItem->m_pNext;
+		}
+	}
+
+	return 0;
+}
 //=========================================================
 // 
 //=========================================================
@@ -4633,82 +4466,6 @@ BOOL CBasePlayer::SwitchWeapon( CBasePlayerItem *pWeapon )
 	pWeapon->Deploy();
 
 	return TRUE;
-}
-
-void CBasePlayer::IncrementExertLevel( int amount )
-{
-	m_iExertLevel += Q_min( amount, PLAYER_EXERT_LEVEL_MAX - m_iExertLevel );
-}
-
-void CBasePlayer::DecrementExertLevel( int amount )
-{
-	m_iExertLevel -= Q_min( amount, m_iExertLevel );
-}
-
-void CBasePlayer::SetExertLevel( int level )
-{
-	m_iExertLevel = clamp( level, PLAYER_EXERT_LEVEL_MIN, PLAYER_EXERT_LEVEL_MAX );
-}
-
-int CBasePlayer::GetExertLevel( void ) const
-{
-	return m_iExertLevel;
-}
-
-void CBasePlayer::UpdateExertLevel( void )
-{
-	if( m_iExertLevel > PLAYER_EXERT_LEVEL_MIN )
-	{
-		// Slowly decrease exert level.
-		if( ( gpGlobals->time - m_flExertUpdateStart ) > m_flExertRate )
-		{
-			float temp = (float)m_iExertLevel * 0.0625f;
-
-			if( temp < 1 )
-				temp = 1;
-
-			m_iExertLevel -= Q_min( m_iExertLevel, temp );
-
-			m_flExertRate = PLAYER_EXERT_RATE;
-			m_flExertUpdateStart = gpGlobals->time;
-		}
-	}
-
-#ifndef CLIENT_DLL
-	// ALERT( at_console, "Player exert level: %d\n", m_iExertLevel );
-#endif
-}
-
-void CBasePlayer::ShowPlayerHUD( BOOL bInstant )
-{
-	if( m_fHudVisible )
-		return;
-
-	m_fHudVisible = TRUE;
-
-	MESSAGE_BEGIN( MSG_ONE, gmsgStartUp, NULL, pev );
-		WRITE_BYTE( 255 );	// Target alpha
-	if( bInstant )
-		WRITE_BYTE( 255 );	// Startup alpha
-	else
-		WRITE_BYTE( 0 );	// Startup alpha
-	MESSAGE_END();
-}
-
-void CBasePlayer::HidePlayerHUD( BOOL bInstant )
-{
-	if( !m_fHudVisible )
-		return;
-
-	m_fHudVisible = FALSE;
-
-	MESSAGE_BEGIN( MSG_ONE, gmsgStartUp, NULL, pev );
-		WRITE_BYTE( 0 );	// Target alpha
-	if( bInstant )
-		WRITE_BYTE( 0 );	// Startup alpha
-	else
-		WRITE_BYTE( 255 );	// Startup alpha
-	MESSAGE_END();
 }
 
 //=========================================================
@@ -4803,12 +4560,7 @@ void CStripWeapons::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE
 	}
 
 	if( pPlayer )
-	{
-		if( !FStrEq( STRING( gpGlobals->mapname ), "po_xen01" ) )
-			pPlayer->RemoveAllItems( TRUE );
-		else
-			pPlayer->RemoveAllItems( FALSE );
-	}
+		pPlayer->RemoveAllItems( FALSE );
 }
 
 class CRevertSaved : public CPointEntity

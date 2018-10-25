@@ -204,6 +204,7 @@ void ClientPutInServer( edict_t *pEntity )
 
 	pPlayer->pev->iuser1 = 0;
 	pPlayer->pev->iuser2 = 0;
+	pPlayer->pev->iuser4 = 0;
 }
 
 #ifndef NO_VOICEGAMEMGR
@@ -667,6 +668,8 @@ void ClientUserInfoChanged( edict_t *pEntity, char *infobuffer )
 			MESSAGE_END();
 		}
 
+		SET_CLIENT_MAX_SPEED( pEntity, PLAYER_MAX_SPEED );
+
 		// team match?
 		if( g_teamplay )
 		{
@@ -929,8 +932,6 @@ void ClientPrecache( void )
 
 	if( giPrecacheGrunt )
 		UTIL_PrecacheOther( "monster_human_grunt" );
-
-	PRECACHE_SOUND("player/breathe2.wav");
 }
 
 /*
@@ -945,7 +946,7 @@ const char *GetGameDescription()
 	if( g_pGameRules ) // this function may be called before the world has spawned, and the game rules initialized
 		return g_pGameRules->GetGameDescription();
 	else
-		return "Half-Life";
+		return "Poke646";
 }
 
 /*
@@ -1745,11 +1746,13 @@ void UpdateClientData( const struct edict_s *ent, int sendweapons, struct client
 		// don't use spec vars from chased player
 		cd->iuser1		= pevOrg->iuser1;
 		cd->iuser2		= pevOrg->iuser2;
+		cd->iuser4		= pevOrg->iuser4;
 	}
 	else
 	{
 		cd->iuser1		= pev->iuser1;
 		cd->iuser2		= pev->iuser2;
+		cd->iuser4		= pev->iuser4;
 	}
 #if defined( CLIENT_WEAPONS )
 	if( sendweapons )

@@ -56,9 +56,11 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
            func_tank.cpp \
            game.cpp \
            gamerules.cpp \
+	   gauss.cpp \
            gargantua.cpp \
            genericmonster.cpp \
            ggrenade.cpp \
+	   glock.cpp \
            globals.cpp \
            gman.cpp \
            h_ai.cpp \
@@ -123,18 +125,12 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
 	   ../pm_shared/pm_debug.c \
 	   ../pm_shared/pm_math.c \
 	   ../pm_shared/pm_shared.c \
-	   poke646/bradnailer.cpp \
-	   poke646/cmlwbr.cpp \
 	   poke646/firetrail.cpp \
 	   poke646/genericmodel.cpp \
-	   poke646/heaterpipe.cpp \
+	   poke646/mp3.cpp \
 	   poke646/nail.cpp \
-	   poke646/nailgun.cpp \
-	   poke646/pipebomb.cpp \
 	   poke646/robocop.cpp \
-	   poke646/weapon_pipebomb.cpp \
-	   poke646/xenspit.cpp \
-	   poke646/xensquasher.cpp
+	   poke646/xsbeam..cpp
 #	   ../game_shared/voice_gamemgr.cpp
 
 LOCAL_LDLIBS := -llog

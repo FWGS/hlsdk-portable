@@ -934,6 +934,33 @@ void CHGrunt::Spawn()
 
 	m_HackedGunPos = Vector( 0, 0, 55 );
 
+	if( pev->body )
+	{
+		switch( pev->body )
+		{
+			case 1:
+				SetBodygroup( HEAD_GROUP, HEAD_GRUNT );
+				break;
+			case 2:
+				SetBodygroup( HEAD_GROUP, HEAD_COMMANDER );
+				break;
+			case 3:
+				SetBodygroup( HEAD_GROUP, HEAD_SHOTGUN );
+				break;
+			case 4:
+				SetBodygroup( HEAD_GROUP, HEAD_M203 );
+				break;
+			default:
+				break;
+		}
+	}
+	else
+	{
+		SetBodygroup( HEAD_GROUP, RANDOM_LONG( HEAD_COMMANDER, HEAD_M203) );
+	}
+
+	pev->skin = 0;
+
 	if( pev->weapons == 0 )
 	{
 		// initialize to original values
@@ -941,6 +968,9 @@ void CHGrunt::Spawn()
 		// pev->weapons = HGRUNT_SHOTGUN;
 		// pev->weapons = HGRUNT_9MMAR | HGRUNT_GRENADELAUNCHER;
 	}
+
+	if( FBitSet( pev->weapons, HGRUNT_GRENADELAUNCHER ) )
+		ClearBits( pev->weapons, HGRUNT_GRENADELAUNCHER );
 
 	if( FBitSet( pev->weapons, HGRUNT_SHOTGUN ) )
 	{
@@ -2374,6 +2404,39 @@ void CDeadHGrunt::Spawn( void )
 
 	// Corpses have less health
 	pev->health = 8;
+
+		// map old bodies onto new bodies
+	switch( pev->body )
+	{
+	case 0:
+		// Grunt with Gun
+		pev->body = 0;
+		pev->skin = 0;
+		SetBodygroup( HEAD_GROUP, HEAD_COMMANDER );
+		SetBodygroup( GUN_GROUP, GUN_MP5 );
+		break;
+	case 1:
+		// Commander with Gun
+		pev->body = 0;
+		pev->skin = 0;
+		SetBodygroup( HEAD_GROUP, HEAD_GRUNT );
+		SetBodygroup( GUN_GROUP, GUN_MP5 );
+		break;
+	case 2:
+		// Grunt no Gun
+		pev->body = 0;
+		pev->skin = 0;
+		SetBodygroup( HEAD_GROUP, HEAD_COMMANDER );
+		SetBodygroup( GUN_GROUP, GUN_NONE );
+		break;
+	case 3:
+		// Commander no Gun
+		pev->body = 0;
+		pev->skin = 0;
+		SetBodygroup( HEAD_GROUP, HEAD_GRUNT );
+		SetBodygroup( GUN_GROUP, GUN_NONE );
+		break;
+	}
 
 	MonsterInitDead();
 }

@@ -61,7 +61,7 @@ int CHudHealth::Init( void )
 {
 	HOOK_MESSAGE( Health );
 	HOOK_MESSAGE( Damage );
-	m_iHealth = 50;
+	m_iHealth = 100;
 	m_fFade = 0;
 	m_iFlags = 0;
 	m_bitsDamage = 0;
@@ -156,25 +156,33 @@ int CHudHealth::MsgFunc_Damage( const char *pszName, int iSize, void *pbuf )
 // Green <-> Yellow <-> Red ramp
 void CHudHealth::GetPainColor( int &r, int &g, int &b )
 {
+#if 0
 	int iHealth = m_iHealth;
 
 	if( iHealth > 25 )
 		iHealth -= 25;
 	else if( iHealth < 0 )
 		iHealth = 0;
-#if 0
+
 	g = iHealth * 255 / 100;
 	r = 255 - g;
 	b = 0;
 #else
-	if( m_iHealth > 25 )
+	if( m_iHealth <= 0 )
+	{
+		UnpackRGB( r, g, b, RGB_REDISH );
+	}
+	else if( m_iHealth > 15 )
 	{
 		UnpackRGB( r, g, b, RGB_YELLOWISH );
 	}
 	else
 	{
 		UnpackRGB( r, g, b, RGB_YELLOWISH );
-		g = b = 255 * fabs( sin( gEngfuncs.GetClientTime() * M_PI * 2.0f ) );
+		float f = ( sin( ( 16 - gHUD.m_flTime ) * m_iHealth ) + 1.0 ) * 0.5;
+		r = (int)( r * f * 58.0f );
+		g = (int)( g * f );
+		b = (int)( b * f );
 	}
 #endif
 }
@@ -197,44 +205,37 @@ int CHudHealth::Draw( float flTime )
 		m_fFade -= ( gHUD.m_flTimeDelta * 20 );
 		if( m_fFade <= 0 )
 		{
-			a = MIN_ALPHA;
 			m_fFade = 0;
 		}
 
 		// Fade the health number back to dim
-		a = min( gHUD.m_flAlpha, MIN_ALPHA ) + ( m_fFade / FADE_TIME ) * 128;
+		a = MIN_ALPHA + ( m_fFade / FADE_TIME ) * 128;
 	}
 	else
-		a = min( gHUD.m_flAlpha, MIN_ALPHA );
+		a = MIN_ALPHA;
 
 	// If health is getting low, make it bright red
 	if( m_iHealth <= 15 )
-		a = 255;
+		a = 192;
 
 	GetPainColor( r, g, b );
 	ScaleColors( r, g, b, a );
 
-	// Only draw health if we have the suit.
-	if( gHUD.m_iWeaponBits & ( 1 << ( WEAPON_SUIT ) ) )
-	{
-		HealthWidth = gHUD.GetSpriteRect( gHUD.m_HUD_number_0 ).right - gHUD.GetSpriteRect( gHUD.m_HUD_number_0 ).left;
+	wrect_t cross = gHUD.GetSpriteRect( m_HUD_cross );
 
-		wrect_t cross = gHUD.GetSpriteRect( m_HUD_cross );
+	int CrossWidth = cross.right - cross.left;
+	int CrossHeight = cross.bottom - cross.top;
 
-		int CrossWidth = cross.right - cross.left;
-		int CrossHeight = cross.bottom - cross.top;
+	x = 10;
+	y = ScreenHeight - CrossHeight - 10;
 
-		y = ScreenHeight - gHUD.m_iFontHeight / 2 - CrossHeight;
-		x = CrossWidth;
+	SPR_Set( gHUD.GetSprite( m_HUD_cross ), r, g, b );
+	SPR_DrawAdditive( 0, 10, y, &cross );
 
-		SPR_Set( gHUD.GetSprite( m_HUD_cross ), r, g, b );
-		SPR_DrawAdditive( 0, x, y, &cross );
+	x = CrossWidth + 20;
+	y = ScreenHeight - gHUD.m_iFontHeight - 10;
 
-		y = ScreenHeight - gHUD.m_iFontHeight - gHUD.m_iFontHeight / 2;
-		x = CrossWidth * 2.0f + HealthWidth;
-
-		x = gHUD.DrawHudNumber( x, y, DHN_3DIGITS | DHN_DRAWZERO, m_iHealth, r, g, b );
-	}
+	gHUD.DrawHudNumber( x, y, DHN_3DIGITS | DHN_DRAWZERO, m_iHealth, r, g, b );
 
 	DrawDamage( flTime );
 	return DrawPain( flTime );

@@ -47,67 +47,77 @@ enum satchel_radio_e
 	SATCHEL_RADIO_HOLSTER
 };
 
-class CSatchelCharge : public CGrenade
-{
-	Vector m_lastBounceOrigin;	// Used to fix a bug in engine: when object isn't moving, but its speed isn't 0 and on ground isn't set
-	void Spawn( void );
-	void Precache( void );
-	void BounceSound( void );
-
-	void EXPORT SatchelSlide( CBaseEntity *pOther );
-	void EXPORT SatchelThink( void );
-
-public:
-	void Deactivate( void );
-};
-
-LINK_ENTITY_TO_CLASS( monster_satchel, CSatchelCharge )
+LINK_ENTITY_TO_CLASS( monster_satchel, CPipebombCharge )
 
 //=========================================================
 // Deactivate - do whatever it is we do to an orphaned 
 // satchel when we don't want it in the world anymore.
 //=========================================================
-void CSatchelCharge::Deactivate( void )
+void CPipebombCharge::Deactivate( void )
 {
 	pev->solid = SOLID_NOT;
 	UTIL_Remove( this );
 }
 
-void CSatchelCharge::Spawn( void )
+void CPipebombCharge::PipebombUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
+{
+	pev->owner = m_hOwner->edict();
+
+	SetThink( &CGrenade::Detonate );
+	pev->nextthink = gpGlobals->time;
+}
+
+void CPipebombCharge::Spawn( void )
 {
 	Precache();
 	// motor
 	pev->movetype = MOVETYPE_BOUNCE;
 	pev->solid = SOLID_BBOX;
 
-	SET_MODEL( ENT( pev ), "models/w_satchel.mdl" );
+	SET_MODEL( ENT( pev ), "models/w_pipebomb.mdl" );
 	//UTIL_SetSize( pev, Vector( -16, -16, -4 ), Vector( 16, 16, 32 ) );	// Old box -- size of headcrab monsters/players get blocked by this
 	UTIL_SetSize( pev, Vector( -4, -4, -4 ), Vector( 4, 4, 4 ) );	// Uses point-sized, and can be stepped over
 	UTIL_SetOrigin( pev, pev->origin );
 
-	SetTouch( &CSatchelCharge::SatchelSlide );
-	SetUse( &CGrenade::DetonateUse );
-	SetThink( &CSatchelCharge::SatchelThink );
+	SetTouch( &CPipebombCharge::PipebombSlide );
+	SetUse( &CPipebombCharge::PipebombUse );
+	SetThink( &CPipebombCharge::PipebombThink );
 	pev->nextthink = gpGlobals->time + 0.1;
 
 	pev->gravity = 0.5;
-	pev->friction = 0.8;
+	pev->friction = 0.5;
 
 	pev->dmg = gSkillData.plrDmgSatchel;
 	// ResetSequenceInfo();
 	pev->sequence = 1;
+	m_flDropTime = gpGlobals->time;
 }
 
-void CSatchelCharge::SatchelSlide( CBaseEntity *pOther )
+void CPipebombCharge::PipebombSlide( CBaseEntity *pOther )
 {
 	//entvars_t *pevOther = pOther->pev;
 
 	// don't hit the guy that launched this grenade
-	if( pOther->edict() == pev->owner )
-		return;
+	if( pOther->edict() == m_hOwner->edict() )
+	{
+		if( pev->velocity.Length2D() < 10.0f
+			&& m_flDropTime + 0.5f <= gpGlobals->time
+			&& pOther->GiveAmmo( SATCHEL_DEFAULT_GIVE, "Satchel Charge", SATCHEL_MAX_CARRY ) != -1 )
+		{
+			CBasePlayer *pPlayer = static_cast<CBasePlayer*>( pOther );
 
+			EMIT_SOUND( ENT( pev ), CHAN_ITEM, "items/9mmclip1.wav", 1, ATTN_NORM );
+
+			UTIL_Remove( this );
+
+			CPipebomb *pPipebomb = static_cast<CPipebomb*>( pPlayer->GiveNamedPlayerItem( "weapon_pipebomb" ) );
+			if( pPipebomb )
+				pPipebomb->PipebombReload();
+		}
+		return;
+	}
 	// pev->avelocity = Vector( 300, 300, 300 );
-	pev->gravity = 1;// normal gravity now
+	pev->gravity = 0.7f;// normal gravity now
 
 	// HACKHACK - On ground isn't always set, so look for ground underneath
 	TraceResult tr;
@@ -116,7 +126,7 @@ void CSatchelCharge::SatchelSlide( CBaseEntity *pOther )
 	if( tr.flFraction < 1.0 )
 	{
 		// add a bit of static friction
-		pev->velocity = pev->velocity * 0.95;
+		pev->velocity = pev->velocity * 0.7;
 		pev->avelocity = pev->avelocity * 0.9;
 		// play sliding sound, volume based on velocity
 	}
@@ -131,11 +141,14 @@ void CSatchelCharge::SatchelSlide( CBaseEntity *pOther )
 	// StudioFrameAdvance();
 }
 
-void CSatchelCharge::SatchelThink( void )
+void CPipebombCharge::PipebombThink( void )
 {
 	// There is no model animation so commented this out to prevent net traffic
 	// StudioFrameAdvance();
 	pev->nextthink = gpGlobals->time + 0.1;
+
+	if( pev->owner && m_flDropTime + 0.5f <= gpGlobals->time )
+		pev->owner = 0;
 
 	if( !IsInWorld() )
 	{
@@ -160,38 +173,38 @@ void CSatchelCharge::SatchelThink( void )
 	}	
 }
 
-void CSatchelCharge::Precache( void )
+void CPipebombCharge::Precache( void )
 {
-	PRECACHE_MODEL( "models/w_satchel.mdl" );
-	PRECACHE_SOUND( "weapons/g_bounce1.wav" );
-	PRECACHE_SOUND( "weapons/g_bounce2.wav" );
-	PRECACHE_SOUND( "weapons/g_bounce3.wav" );
+	PRECACHE_SOUND( "weapons/pb_bounce1.wav" );
+	PRECACHE_SOUND( "weapons/pb_bounce2.wav" );
+	PRECACHE_SOUND( "weapons/pb_bounce3.wav" );
+	m_iTrail = PRECACHE_MODEL( "sprites/white.spr" );
 }
 
-void CSatchelCharge::BounceSound( void )
+void CPipebombCharge::BounceSound( void )
 {
 	switch( RANDOM_LONG( 0, 2 ) )
 	{
 	case 0:
-		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "weapons/g_bounce1.wav", 1, ATTN_NORM );
+		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "weapons/pb_bounce1.wav", 1, ATTN_NORM );
 		break;
 	case 1:
-		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "weapons/g_bounce2.wav", 1, ATTN_NORM );
+		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "weapons/pb_bounce2.wav", 1, ATTN_NORM );
 		break;
 	case 2:
-		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "weapons/g_bounce3.wav", 1, ATTN_NORM );
+		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "weapons/pb_bounce3.wav", 1, ATTN_NORM );
 		break;
 	}
 }
 
-LINK_ENTITY_TO_CLASS( weapon_satchel, CSatchel )
+LINK_ENTITY_TO_CLASS( weapon_pipebomb, CPipebomb )
 
 //=========================================================
 // CALLED THROUGH the newly-touched weapon's instance. The existing player weapon is pOriginal
 //=========================================================
-int CSatchel::AddDuplicate( CBasePlayerItem *pOriginal )
+int CPipebomb::AddDuplicate( CBasePlayerItem *pOriginal )
 {
-	CSatchel *pSatchel;
+	CPipebomb *pPipebomb;
 
 #ifdef CLIENT_DLL
 	if( bIsMultiplayer() )
@@ -199,9 +212,9 @@ int CSatchel::AddDuplicate( CBasePlayerItem *pOriginal )
 	if( g_pGameRules->IsMultiplayer() )
 #endif
 	{
-		pSatchel = (CSatchel *)pOriginal;
+		pPipebomb = (CPipebomb *)pOriginal;
 
-		if( pSatchel->m_chargeReady != SATCHEL_IDLE )
+		if( pPipebomb->m_chargeReady != SATCHEL_IDLE )
 		{
 			// player has some satchels deployed. Refuse to add more.
 			return FALSE;
@@ -213,7 +226,7 @@ int CSatchel::AddDuplicate( CBasePlayerItem *pOriginal )
 
 //=========================================================
 //=========================================================
-int CSatchel::AddToPlayer( CBasePlayer *pPlayer )
+int CPipebomb::AddToPlayer( CBasePlayer *pPlayer )
 {
 	int bResult = CBasePlayerItem::AddToPlayer( pPlayer );
 
@@ -227,29 +240,29 @@ int CSatchel::AddToPlayer( CBasePlayer *pPlayer )
 	return FALSE;
 }
 
-void CSatchel::Spawn()
+void CPipebomb::Spawn()
 {
 	Precache();
 	m_iId = WEAPON_SATCHEL;
-	SET_MODEL( ENT( pev ), "models/w_satchel.mdl" );
+	SET_MODEL( ENT( pev ), "models/w_pipebomb.mdl" );
 
 	m_iDefaultAmmo = SATCHEL_DEFAULT_GIVE;
-		
+
 	FallInit();// get ready to fall down.
 }
 
-void CSatchel::Precache( void )
+void CPipebomb::Precache( void )
 {
-	PRECACHE_MODEL( "models/v_satchel.mdl" );
-	PRECACHE_MODEL( "models/v_satchel_radio.mdl" );
-	PRECACHE_MODEL( "models/w_satchel.mdl" );
-	PRECACHE_MODEL( "models/p_satchel.mdl" );
-	PRECACHE_MODEL( "models/p_satchel_radio.mdl" );
+	PRECACHE_MODEL( "models/v_pipebomb.mdl" );
+	PRECACHE_MODEL( "models/v_pipebomb_watch.mdl" );
+	PRECACHE_MODEL( "models/w_pipebomb.mdl" );
+	PRECACHE_MODEL( "models/p_pipebomb.mdl" );
+	PRECACHE_MODEL( "models/p_pipebomb_watch.mdl" );
 
 	UTIL_PrecacheOther( "monster_satchel" );
 }
 
-int CSatchel::GetItemInfo( ItemInfo *p )
+int CPipebomb::GetItemInfo( ItemInfo *p )
 {
 	p->pszName = STRING( pev->classname );
 	p->pszAmmo1 = "Satchel Charge";
@@ -258,7 +271,7 @@ int CSatchel::GetItemInfo( ItemInfo *p )
 	p->iMaxAmmo2 = -1;
 	p->iMaxClip = WEAPON_NOCLIP;
 	p->iSlot = 4;
-	p->iPosition = 1;
+	p->iPosition = 0;
 	p->iFlags = ITEM_FLAG_SELECTONEMPTY | ITEM_FLAG_LIMITINWORLD | ITEM_FLAG_EXHAUSTIBLE;
 	p->iId = m_iId = WEAPON_SATCHEL;
 	p->iWeight = SATCHEL_WEIGHT;
@@ -268,12 +281,12 @@ int CSatchel::GetItemInfo( ItemInfo *p )
 
 //=========================================================
 //=========================================================
-BOOL CSatchel::IsUseable( void )
+BOOL CPipebomb::IsUseable( void )
 {
 	return CanDeploy();
 }
 
-BOOL CSatchel::CanDeploy( void )
+BOOL CPipebomb::CanDeploy( void )
 {
 	if( m_pPlayer->m_rgAmmo[PrimaryAmmoIndex()] > 0 ) 
 	{
@@ -290,20 +303,20 @@ BOOL CSatchel::CanDeploy( void )
 	return FALSE;
 }
 
-BOOL CSatchel::Deploy()
+BOOL CPipebomb::Deploy()
 {
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 1.0;
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
 
 	if( m_chargeReady )
-		return DefaultDeploy( "models/v_satchel_radio.mdl", "models/p_satchel_radio.mdl", SATCHEL_RADIO_DRAW, "hive" );
+		return DefaultDeploy( "models/w_pipebomb_watch.mdl", "models/p_pipebomb_watch.mdl", SATCHEL_RADIO_DRAW, "hive" );
 	else
-		return DefaultDeploy( "models/v_satchel.mdl", "models/p_satchel.mdl", SATCHEL_DRAW, "trip" );
+		return DefaultDeploy( "models/v_pipebomb.mdl", "models/w_pipebomb.mdl", SATCHEL_DRAW, "trip" );
 	
 	return TRUE;
 }
 
-void CSatchel::Holster( int skiplocal /* = 0 */ )
+void CPipebomb::Holster( int skiplocal /* = 0 */ )
 {
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
 
@@ -324,7 +337,7 @@ void CSatchel::Holster( int skiplocal /* = 0 */ )
 	}
 }
 
-void CSatchel::PrimaryAttack()
+void CPipebomb::PrimaryAttack()
 {
 	switch( m_chargeReady )
 	{
@@ -339,15 +352,16 @@ void CSatchel::PrimaryAttack()
 
 			edict_t *pPlayer = m_pPlayer->edict();
 
-			CBaseEntity *pSatchel = NULL;
+			CBaseEntity *pEnt = NULL;
 
-			while( ( pSatchel = UTIL_FindEntityInSphere( pSatchel, m_pPlayer->pev->origin, 4096 ) ) != NULL )
+			while( ( pEnt = UTIL_FindEntityInSphere( pEnt, m_pPlayer->pev->origin, 4096 ) ) != NULL )
 			{
-				if( FClassnameIs( pSatchel->pev, "monster_satchel" ) )
+				if( FClassnameIs( pEnt->pev, "monster_satchel" ) )
 				{
-					if( pSatchel->pev->owner == pPlayer )
+					CPipebombCharge *pPipebomb = (CPipebombCharge *)pEnt;
+					if( pPipebomb->m_hOwner->edict() == pPlayer )
 					{
-						pSatchel->Use( m_pPlayer, m_pPlayer, USE_ON, 0 );
+						pPipebomb->Use( m_pPlayer, m_pPlayer, USE_ON, 0 );
 					}
 				}
 			}
@@ -364,7 +378,7 @@ void CSatchel::PrimaryAttack()
 	}
 }
 
-void CSatchel::SecondaryAttack( void )
+void CPipebomb::SecondaryAttack( void )
 {
 	if( m_chargeReady != SATCHEL_RELOAD )
 	{
@@ -372,7 +386,7 @@ void CSatchel::SecondaryAttack( void )
 	}
 }
 
-void CSatchel::Throw( void )
+void CPipebomb::Throw( void )
 {
 	if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] )
 	{
@@ -381,14 +395,16 @@ void CSatchel::Throw( void )
 
 		Vector vecThrow = gpGlobals->v_forward * 274 + m_pPlayer->pev->velocity;
 
-		CBaseEntity *pSatchel = Create( "monster_satchel", vecSrc, Vector( 0, 0, 0 ), m_pPlayer->edict() );
-		pSatchel->pev->velocity = vecThrow;
-		pSatchel->pev->avelocity.y = 400;
+		CPipebombCharge *pPipebomb = (CPipebombCharge *)Create( "monster_satchel", vecSrc, g_vecZero, m_pPlayer->edict() );
+		pPipebomb->pev->velocity = vecThrow;
+		pPipebomb->pev->avelocity.y = 400;
+		pPipebomb->m_hOwner = m_pPlayer;
+		pPipebomb->pev->owner = pPipebomb->m_hOwner->edict();
 
-		m_pPlayer->pev->viewmodel = MAKE_STRING( "models/v_satchel_radio.mdl" );
-		m_pPlayer->pev->weaponmodel = MAKE_STRING( "models/p_satchel_radio.mdl" );
+		m_pPlayer->pev->viewmodel = MAKE_STRING( "models/v_pipebomb_watch.mdl" );
+		m_pPlayer->pev->weaponmodel = MAKE_STRING( "models/p_pipebomb_watch.mdl" );
 #else
-		LoadVModel( "models/v_satchel_radio.mdl", m_pPlayer );
+		LoadVModel( "models/v_pipebomb_watch.mdl", m_pPlayer );
 #endif
 
 		SendWeaponAnim( SATCHEL_RADIO_DRAW );
@@ -405,7 +421,7 @@ void CSatchel::Throw( void )
 	}
 }
 
-void CSatchel::WeaponIdle( void )
+void CPipebomb::WeaponIdle( void )
 {
 	if( m_flTimeWeaponIdle > UTIL_WeaponTimeBase() )
 		return;
@@ -431,10 +447,10 @@ void CSatchel::WeaponIdle( void )
 		}
 
 #ifndef CLIENT_DLL
-		m_pPlayer->pev->viewmodel = MAKE_STRING( "models/v_satchel.mdl" );
-		m_pPlayer->pev->weaponmodel = MAKE_STRING( "models/p_satchel.mdl" );
+		m_pPlayer->pev->viewmodel = MAKE_STRING( "models/v_pipebomb.mdl" );
+		m_pPlayer->pev->weaponmodel = MAKE_STRING( "models/p_pipebomb.mdl" );
 #else
-		LoadVModel( "models/v_satchel.mdl", m_pPlayer );
+		LoadVModel( "models/v_pipebomb.mdl", m_pPlayer );
 #endif
 		SendWeaponAnim( SATCHEL_DRAW );
 
@@ -449,13 +465,41 @@ void CSatchel::WeaponIdle( void )
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );// how long till we do this again.
 }
 
+void CPipebomb::PipebombReload()
+{
+	int i = 0;
+
+	edict_t *pPlayer = m_pPlayer->edict();
+
+	CBaseEntity *pEntity = NULL;
+
+	while( ( pEntity = UTIL_FindEntityInSphere( pEntity, m_pPlayer->pev->origin, 4096 ) ) != NULL )
+	{
+		if( FClassnameIs( pEntity->pev, "monster_satchel" ) )
+		{
+			CPipebombCharge *pPipebomb = (CPipebombCharge *)pEntity; 
+			if( pPipebomb->m_hOwner->edict() == pPlayer )
+			{
+				++i;
+			}
+		}
+	}
+
+	if( i < 2 )
+	{
+		m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5;
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase();
+		m_chargeReady = SATCHEL_RELOAD;
+	}
+}
+
 //=========================================================
-// DeactivateSatchels - removes all satchels owned by
+// DeactivatePipebombs - removes all pipebombs owned by
 // the provided player. Should only be used upon death.
 //
 // Made this global on purpose.
 //=========================================================
-void DeactivateSatchels( CBasePlayer *pOwner )
+void DeactivatePipebombs( CBasePlayer *pOwner )
 {
 	edict_t *pFind; 
 
@@ -464,13 +508,13 @@ void DeactivateSatchels( CBasePlayer *pOwner )
 	while( !FNullEnt( pFind ) )
 	{
 		CBaseEntity *pEnt = CBaseEntity::Instance( pFind );
-		CSatchelCharge *pSatchel = (CSatchelCharge *)pEnt;
+		CPipebombCharge *pPipebomb = (CPipebombCharge *)pEnt;
 
-		if( pSatchel )
+		if( pPipebomb )
 		{
-			if( pSatchel->pev->owner == pOwner->edict() )
+			if( pPipebomb->m_hOwner->edict() == pOwner->edict() )
 			{
-				pSatchel->Deactivate();
+				pPipebomb->Deactivate();
 			}
 		}
 

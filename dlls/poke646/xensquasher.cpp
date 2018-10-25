@@ -39,7 +39,7 @@ enum xensquasher_e {
 	XS_FIRE2,
 	XS_HOLSTER,
 	XS_DRAW,
-	XS_RELOAD,
+	XS_RELOAD
 };
 
 LINK_ENTITY_TO_CLASS(weapon_xs, CXenSquasher);
@@ -81,18 +81,11 @@ void CXenSquasher::Precache(void)
 	PRECACHE_SOUND("weapons/xs_shot.wav");
 	PRECACHE_SOUND("weapons/xs_windup.wav");
 
-	m_iGlow = PRECACHE_MODEL("sprites/hotglow.spr");
-	m_iBalls = PRECACHE_MODEL("sprites/hotglow.spr");
-	m_iBeam = PRECACHE_MODEL("sprites/smoke.spr");
-
-	m_usXSFire = PRECACHE_EVENT(1, "events/xs.sc");
 	m_usXSSpin = PRECACHE_EVENT(1, "events/xsspin.sc");
-	m_usReload = PRECACHE_EVENT(1, "events/reload.sc");
 
 	PRECACHE_MODEL("sprites/glow02.spr");
 
-	UTIL_PrecacheOther("xensmallspit");
-	UTIL_PrecacheOther("xenlargespit");
+	UTIL_PrecacheOther("xs_beam");
 }
 
 int CXenSquasher::AddToPlayer(CBasePlayer *pPlayer)
