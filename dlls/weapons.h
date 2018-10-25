@@ -63,12 +63,12 @@ public:
 #define ITEM_BATTERY		4
 
 #define WEAPON_NONE			0
-#define WEAPON_HOLSTER			1
-#define WEAPON_TORCH			2
-#define WEAPON_CROWBAR			3
-#define	WEAPON_GLOCK			4
-#define WEAPON_MP5			5
-#define WEAPON_SHOTGUN			6
+#define WEAPON_CROWBAR			1
+#define WEAPON_GLOCK			2
+#define WEAPON_TORCH			3
+#define WEAPON_MP5			4
+#define WEAPON_SHOTGUN			7
+#define WEAPON_HOLSTER			17
 
 #define WEAPON_ALLWEAPONS		(~(1<<WEAPON_SUIT))
 
@@ -444,6 +444,7 @@ public:
 private:
 	int m_iShell;
 
+	int m_fInAttack;
 	unsigned short m_usFireGlock1;
 	unsigned short m_usFireGlock2;
 };
@@ -469,6 +470,8 @@ public:
 	int m_iSwing;
 	TraceResult m_trHit;
 
+	float m_flReleaseThrow;
+	float m_flStartThrow;
 	virtual BOOL UseDecrement( void )
 	{ 
 #if defined( CLIENT_WEAPONS )
