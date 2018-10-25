@@ -118,7 +118,7 @@ void CShotgun::PrimaryAttack()
 	if( m_pPlayer->pev->waterlevel == 3 )
 	{
 		PlayEmptySound();
-		m_flNextPrimaryAttack = GetNextAttackDelay( 0.15 );
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.15;
 		return;
 	}
 

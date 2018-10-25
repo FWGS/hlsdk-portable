@@ -1564,17 +1564,6 @@ TYPEDESCRIPTION	CCrossbow::m_SaveData[] =
 
 IMPLEMENT_SAVERESTORE( CCrossbow, CBasePlayerWeapon )
 
-TYPEDESCRIPTION	CXS::m_SaveData[] =
-{
-	DEFINE_FIELD( CXS, m_fInAttack, FIELD_INTEGER ),
-	//DEFINE_FIELD( CGauss, m_flStartCharge, FIELD_TIME ),
-	//DEFINE_FIELD( CGauss, m_flPlayAftershock, FIELD_TIME ),
-	//DEFINE_FIELD( CGauss, m_flNextAmmoBurn, FIELD_TIME ),
-	DEFINE_FIELD( CXS, m_fPrimaryFire, FIELD_BOOLEAN ),
-};
-
-IMPLEMENT_SAVERESTORE( CXS, CBasePlayerWeapon )
-
 TYPEDESCRIPTION	CPipebomb::m_SaveData[] =
 {
 	DEFINE_FIELD( CPipebomb, m_chargeReady, FIELD_INTEGER ),

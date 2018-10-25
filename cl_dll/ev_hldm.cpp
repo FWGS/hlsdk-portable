@@ -253,7 +253,7 @@ void EV_WallPuffCallback( struct tempent_s *ent, float frametime, float currentt
 	ent->entity.angles = ent->entity.baseline.vuser1;
 }
 
-void EV_HLDM_GunshotDecalTrace( pmtrace_t *pTrace, char *decalName )
+void EV_HLDM_GunshotDecalTrace( pmtrace_t *pTrace, char *decalName, int iBulletType )
 {
 	int iRand;
 	physent_t *pe;
@@ -282,6 +282,9 @@ void EV_HLDM_GunshotDecalTrace( pmtrace_t *pTrace, char *decalName )
 			break;
 		}
 	}
+
+	if( iBulletType != BULLET_PLAYER_BUCKSHOT )
+		return;
 
 	pe = gEngfuncs.pEventAPI->EV_GetPhysent( pTrace->ent );
 
@@ -344,7 +347,7 @@ void EV_HLDM_DecalGunshot( pmtrace_t *pTrace, int iBulletType )
 		case BULLET_PLAYER_357:
 		default:
 			// smoke and decal
-			EV_HLDM_GunshotDecalTrace( pTrace, EV_HLDM_DamageDecal( pe ) );
+			EV_HLDM_GunshotDecalTrace( pTrace, EV_HLDM_DamageDecal( pe ), iBulletType );
 			break;
 		}
 	}

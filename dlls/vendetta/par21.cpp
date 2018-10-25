@@ -32,11 +32,11 @@ enum par21_e
 	PAR21_DEPLOY,
 	PAR21_FIRE1,
 	PAR21_FIRE2,
-	PAR21_FIRE3,
+	PAR21_FIRE3
 };
 
 
-LINK_ENTITY_TO_CLASS(weapon_par21, CPar21);
+LINK_ENTITY_TO_CLASS(weapon_par21, CPar21)
 
 
 //=========================================================
@@ -129,14 +129,14 @@ void CPar21::PrimaryAttack()
 	if (m_pPlayer->pev->waterlevel == 3)
 	{
 		PlayEmptySound();
-		m_flNextPrimaryAttack = 0.15;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.15;
 		return;
 	}
 
 	if (m_iClip <= 0)
 	{
 		PlayEmptySound();
-		m_flNextPrimaryAttack = 0.15;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.15;
 		return;
 	}
 
@@ -167,7 +167,7 @@ void CPar21::PrimaryAttack()
 
 	PLAYBACK_EVENT_FULL(flags, m_pPlayer->edict(), m_usPar21, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, vecDir.x, vecDir.y, 0, 0, 0, 0);
 
-	m_flNextPrimaryAttack = GetNextAttackDelay(0.1);
+	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.1;
 
 	if (m_flNextPrimaryAttack < UTIL_WeaponTimeBase())
 		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.1;
@@ -183,7 +183,7 @@ void CPar21::SecondaryAttack(void)
 	if (m_pPlayer->pev->waterlevel == 3)
 	{
 		PlayEmptySound();
-		m_flNextPrimaryAttack = 0.15;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.15;
 		return;
 	}
 
