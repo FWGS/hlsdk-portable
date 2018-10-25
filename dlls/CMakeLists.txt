@@ -25,8 +25,6 @@ project (SVDLL)
 
 set (SVDLL_LIBRARY server)
 
-add_definitions(-DCLIENT_WEAPONS)
-
 if(NOT MSVC)
 	add_compile_options(-fno-exceptions) # GCC/Clang flag
 	add_compile_options(-Wno-invalid-offsetof) # GCC/Clang flag

@@ -53,12 +53,6 @@ int g_irunninggausspred = 0;
 vec3_t previousorigin;
 
 // HLDM Weapon placeholder entities.
-CHolster g_Holster;
-CTorch g_Torch;
-CGlock g_Glock;
-CCrowbar g_Crowbar;
-CMP5 g_Mp5;
-CShotgun g_Shotgun;
 
 /*
 ======================
@@ -592,14 +586,6 @@ void HUD_InitClientWeapons( void )
 
 	// Allocate a slot for the local player
 	HUD_PrepEntity( &player, NULL );
-
-	// Allocate slot(s) for each weapon that we are going to be predicting
-	HUD_PrepEntity( &g_Holster, &player );
-	HUD_PrepEntity( &g_Torch, &player );
-	HUD_PrepEntity( &g_Glock, &player );
-	HUD_PrepEntity( &g_Crowbar, &player );
-	HUD_PrepEntity( &g_Mp5, &player );
-	HUD_PrepEntity( &g_Shotgun, &player );
 }
 
 /*
@@ -658,30 +644,6 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 
 	// Get current clock
 	gpGlobals->time = time;
-
-	// Fill in data based on selected weapon
-	// FIXME, make this a method in each weapon?  where you pass in an entity_state_t *?
-	switch( from->client.m_iId )
-	{
-		case WEAPON_HOLSTER:
-			pWeapon = &g_Holster;
-			break;
-		case WEAPON_TORCH:
-			pWeapon = &g_Torch;
-			break;
-		case WEAPON_CROWBAR:
-			pWeapon = &g_Crowbar;
-			break;
-		case WEAPON_GLOCK:
-			pWeapon = &g_Glock;
-			break;
-		case WEAPON_MP5:
-			pWeapon = &g_Mp5;
-			break;
-		case WEAPON_SHOTGUN:
-			pWeapon = &g_Shotgun;
-			break;
-	}
 
 	// Store pointer to our destination entity_state_t so we can get our origin, etc. from it
 	//  for setting up events on the client

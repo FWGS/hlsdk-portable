@@ -26,7 +26,7 @@ project (CLDLL)
 set (CLDLL_LIBRARY client)
 
 
-add_definitions(-DCLIENT_WEAPONS -DCLIENT_DLL)
+add_definitions(-DCLIENT_DLL)
 
 if(NOT MSVC)
 	add_compile_options(-fno-exceptions) # GCC/Clang flag
@@ -51,22 +51,6 @@ set (CLDLL_SOURCES
 	noffice/pain.cpp
 	noffice/cinematic.cpp
 	noffice/deathvision.cpp
-	../dlls/noffice/torch.cpp
-	../dlls/noffice/holster.cpp
-#	../dlls/crossbow.cpp 
-	../dlls/crowbar.cpp 
-#	../dlls/egon.cpp 
-#	../dlls/gauss.cpp 
-#	../dlls/handgrenade.cpp 
-#	../dlls/hornetgun.cpp 
-	../dlls/mp5.cpp 
-#	../dlls/python.cpp 
-	../dlls/rpg.cpp 
-#	../dlls/satchel.cpp 
-	../dlls/shotgun.cpp 
-#	../dlls/squeakgrenade.cpp 
-	../dlls/tripmine.cpp 
-	../dlls/glock.cpp
 	ev_hldm.cpp
 	hl/hl_baseentity.cpp
 	hl/hl_events.cpp
