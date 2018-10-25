@@ -14,9 +14,9 @@ LOCAL_MODULE_FILENAME = libserver_hardfp
 endif
 
 LOCAL_CFLAGS += -D_LINUX -DCLIENT_WEAPONS -Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf \
-	-fno-exceptions -DNO_VOICEGAMEMGR -w
+	-fno-exceptions -DNO_VOICEGAMEMGR -DCROWBAR_IDLE_ANIM -w
 
-LOCAL_CPPFLAGS := $(LOCAL_CFLAGS) -frtti
+LOCAL_CPPFLAGS := $(LOCAL_CFLAGS)
 
 LOCAL_C_INCLUDES := $(SDL_PATH)/include \
 		    $(LOCAL_PATH)/. \
@@ -56,9 +56,11 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
            func_tank.cpp \
            game.cpp \
            gamerules.cpp \
+	   gauss.cpp \
            gargantua.cpp \
            genericmonster.cpp \
            ggrenade.cpp \
+	   glock.cpp \
            globals.cpp \
            gman.cpp \
            h_ai.cpp \
@@ -85,11 +87,13 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
            multiplay_gamerules.cpp \
            nihilanth.cpp \
            nodes.cpp \
+	   observer.cpp \
            osprey.cpp \
            pathcorner.cpp \
            plane.cpp \
            plats.cpp \
            player.cpp \
+	   playermonster.cpp \
            rat.cpp \
            roach.cpp \
            rpg.cpp \
@@ -121,18 +125,12 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
 	   ../pm_shared/pm_debug.c \
 	   ../pm_shared/pm_math.c \
 	   ../pm_shared/pm_shared.c \
-	   poke646/bradnailer.cpp \
-	   poke646/cmlwbr.cpp \
 	   poke646/firetrail.cpp \
 	   poke646/genericmodel.cpp \
-	   poke646/heaterpipe.cpp \
+	   poke646/mp3.cpp \
 	   poke646/nail.cpp \
-	   poke646/nailgun.cpp \
-	   poke646/pipebomb.cpp \
 	   poke646/robocop.cpp \
-	   poke646/weapon_pipebomb.cpp \
-	   poke646/xenspit.cpp \
-	   poke646/xensquasher.cpp \
+	   poke646/xsbeam.cpp \
 	   vendetta/par21.cpp
 #	   ../game_shared/voice_gamemgr.cpp
 

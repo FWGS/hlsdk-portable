@@ -12,6 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
+#pragma once
 #ifndef EXPLODE_H
 #define EXPLODE_H
 
@@ -28,4 +29,4 @@ extern DLL_GLOBAL short g_sModelIndexSmoke;
 extern DLL_GLOBAL short g_sModelIndexShockwave;
 
 extern void ExplosionCreate( const Vector &center, const Vector &angles, edict_t *pOwner, int magnitude, BOOL doDamage );
-#endif			//EXPLODE_H
+#endif	// EXPLODE_H

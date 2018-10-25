@@ -15,13 +15,16 @@
 //=========================================================
 // skill.h - skill level concerns
 //=========================================================
+#pragma once
+#ifndef SKILL_H
+#define SKILL_H
 
 struct skilldata_t
 {
 	int iSkillLevel; // game skill level
 
 	// Monster Health & Damage
-	float	agruntHealth;
+	float agruntHealth;
 	float agruntDmgPunch;
 
 	float apacheHealth;
@@ -138,17 +141,14 @@ struct skilldata_t
 	float plrStomach;
 	float plrLeg;
 	float plrArm;
-
-	float plrDmgNail;
-
-	float plrDmgPar21;
 };
 
 extern	DLL_GLOBAL	skilldata_t	gSkillData;
-float GetSkillCvar( char *pName );
+float GetSkillCvar( const char *pName );
 
 extern DLL_GLOBAL int		g_iSkillLevel;
 
 #define SKILL_EASY		1
 #define SKILL_MEDIUM	2
 #define SKILL_HARD		3
+#endif // SKILL_H

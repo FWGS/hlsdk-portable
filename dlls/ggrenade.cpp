@@ -49,41 +49,14 @@ void CGrenade::Explode( Vector vecSrc, Vector vecAim )
 // UNDONE: temporary scorching for PreAlpha - find a less sleazy permenant solution.
 void CGrenade::Explode( TraceResult *pTrace, int bitsDamageType )
 {
-	float flRndSound;// sound randomizer
+	// float flRndSound;// sound randomizer
 
 	pev->model = iStringNull;//invisible
 	pev->solid = SOLID_NOT;// intangible
 
 	pev->takedamage = DAMAGE_NO;
 
-	if( FClassnameIs( pev, "monster_pipebomb" ) )
-	{
-		int trailCount = RANDOM_LONG( 1, 4 );
-		for( int i = 0; i < trailCount; i++ )
-			Create( "fire_trail", pev->origin, pTrace->vecPlaneNormal, NULL );
-
-		// blast circles
-		MESSAGE_BEGIN( MSG_PAS, SVC_TEMPENTITY, pev->origin );
-		WRITE_BYTE( TE_BEAMCYLINDER );
-			WRITE_COORD( pev->origin.x );
-			WRITE_COORD( pev->origin.y );
-			WRITE_COORD( pev->origin.z + 16 );
-			WRITE_COORD( pev->origin.x );
-			WRITE_COORD( pev->origin.y );
-			WRITE_COORD( pev->origin.z + 16 + 384 ); // reach damage radius over .3 seconds
-			WRITE_SHORT( g_sModelIndexShockwave );
-			WRITE_BYTE( 0 ); // startframe
-			WRITE_BYTE( 0 ); // framerate
-			WRITE_BYTE( 3 ); // life
-			WRITE_BYTE( 16 ); // width
-			WRITE_BYTE( 0 ); // noise
-			WRITE_BYTE( 255 ); // r
-			WRITE_BYTE( 255 ); // g
-			WRITE_BYTE( 255 ); // b
-			WRITE_BYTE( 255 ); //brightness
-			WRITE_BYTE( 0 ); // speed
-		MESSAGE_END();
-	}
+	Vector vecOldOrigin = pev->origin;
 
 	// Pull out of the wall a bit
 	if( pTrace->flFraction != 1.0 )
@@ -111,6 +84,35 @@ void CGrenade::Explode( TraceResult *pTrace, int bitsDamageType )
 		WRITE_BYTE( TE_EXPLFLAG_NONE );
 	MESSAGE_END();
 
+	if( FClassnameIs( pev, "monster_satchel" ) && iContents != CONTENTS_WATER )
+	{
+		// blast circles
+		MESSAGE_BEGIN( MSG_PAS, SVC_TEMPENTITY, pev->origin );
+			WRITE_BYTE( TE_BEAMCYLINDER );
+			WRITE_COORD( vecOldOrigin.x );
+			WRITE_COORD( vecOldOrigin.y );
+			WRITE_COORD( vecOldOrigin.z + 16 );
+			WRITE_COORD( vecOldOrigin.x );
+			WRITE_COORD( vecOldOrigin.y );
+			WRITE_COORD( vecOldOrigin.z + 700 ); // reach damage radius over .3 seconds
+			WRITE_SHORT( static_cast<CPipebombCharge *>( this )->m_iTrail );
+			WRITE_BYTE( 0 ); // startframe
+			WRITE_BYTE( 10 ); // framerate
+			WRITE_BYTE( 2 ); // life
+			WRITE_BYTE( 16 ); // width
+			WRITE_BYTE( 0 ); // noise
+			WRITE_BYTE( 255 ); // r
+			WRITE_BYTE( 255 ); // g
+			WRITE_BYTE( 255 ); // b
+			WRITE_BYTE( 128 ); //brightness
+			WRITE_BYTE( 0 ); // speed
+		MESSAGE_END();
+
+		int trailCount = RANDOM_LONG( 2, 4 );
+		for( int i = 0; i < trailCount; i++ )
+			Create( "fire_trail", pev->origin, pTrace->vecPlaneNormal, NULL );
+        }
+
 	CSoundEnt::InsertSound( bits_SOUND_COMBAT, pev->origin, NORMAL_EXPLOSION_VOLUME, 3.0 );
 	entvars_t *pevOwner;
 	if( pev->owner )
@@ -131,7 +133,7 @@ void CGrenade::Explode( TraceResult *pTrace, int bitsDamageType )
 		UTIL_DecalTrace( pTrace, DECAL_SCORCH2 );
 	}
 
-	flRndSound = RANDOM_FLOAT( 0, 1 );
+	//flRndSound = RANDOM_FLOAT( 0, 1 );
 
 	switch( RANDOM_LONG( 0, 2 ) )
 	{
@@ -173,8 +175,8 @@ void CGrenade::Smoke( void )
 			WRITE_COORD( pev->origin.y );
 			WRITE_COORD( pev->origin.z );
 			WRITE_SHORT( g_sModelIndexSmoke );
-			WRITE_BYTE( ( pev->dmg - 50 ) * 0.80 ); // scale * 10
-			WRITE_BYTE( 12  ); // framerate
+			WRITE_BYTE( (int)( ( pev->dmg - 50 ) * 0.80 ) ); // scale * 10
+			WRITE_BYTE( 12 ); // framerate
 		MESSAGE_END();
 	}
 	UTIL_Remove( this );
@@ -194,7 +196,7 @@ void CGrenade::DetonateUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_T
 
 void CGrenade::PreDetonate( void )
 {
-	CSoundEnt::InsertSound ( bits_SOUND_DANGER, pev->origin, 400, 0.3 );
+	CSoundEnt::InsertSound( bits_SOUND_DANGER, pev->origin, 400, 0.3 );
 
 	SetThink( &CGrenade::Detonate );
 	pev->nextthink = gpGlobals->time + 1;
@@ -236,7 +238,7 @@ void CGrenade::DangerSoundThink( void )
 		return;
 	}
 
-	CSoundEnt::InsertSound ( bits_SOUND_DANGER, pev->origin + pev->velocity * 0.5, pev->velocity.Length(), 0.2 );
+	CSoundEnt::InsertSound( bits_SOUND_DANGER, pev->origin + pev->velocity * 0.5, (int)pev->velocity.Length(), 0.2 );
 	pev->nextthink = gpGlobals->time + 0.2;
 
 	if( pev->waterlevel != 0 )
@@ -282,7 +284,7 @@ void CGrenade::BounceTouch( CBaseEntity *pOther )
 		// go ahead and emit the danger sound.
 
 		// register a radius louder than the explosion, so we make sure everyone gets out of the way
-		CSoundEnt::InsertSound( bits_SOUND_DANGER, pev->origin, pev->dmg / 0.4, 0.3 );
+		CSoundEnt::InsertSound( bits_SOUND_DANGER, pev->origin, (int)( pev->dmg / 0.4 ), 0.3 );
 		m_fRegisteredSound = TRUE;
 	}
 

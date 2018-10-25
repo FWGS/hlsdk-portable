@@ -43,6 +43,7 @@ class CTripmineGrenade : public CGrenade
 {
 	void Spawn( void );
 	void Precache( void );
+	void UpdateOnRemove();
 
 	virtual int Save( CSave &save );
 	virtual int Restore( CRestore &restore );
@@ -148,6 +149,13 @@ void CTripmineGrenade::Precache( void )
 	PRECACHE_SOUND( "weapons/mine_charge.wav" );
 }
 
+void CTripmineGrenade::UpdateOnRemove()
+{
+	CBaseEntity::UpdateOnRemove();
+
+	KillBeam();
+}
+
 void CTripmineGrenade::WarningThink( void )
 {
 	// play warning sound
@@ -162,7 +170,7 @@ void CTripmineGrenade::PowerupThink( void )
 {
 	TraceResult tr;
 
-	if( m_hOwner == NULL )
+	if( m_hOwner == 0 )
 	{
 		// find an owner
 		edict_t *oldowner = pev->owner;
@@ -217,7 +225,7 @@ void CTripmineGrenade::PowerupThink( void )
 		MakeBeam();
 
 		// play enabled sound
-		EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, "weapons/mine_activate.wav", 0.5, ATTN_NORM, 1.0, 75 );
+		EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, "weapons/mine_activate.wav", 0.5, ATTN_NORM, 1, 75 );
 	}
 	pev->nextthink = gpGlobals->time + 0.1;
 }
@@ -280,7 +288,7 @@ void CTripmineGrenade::BeamBreakThink( void )
 	}
 	else
 	{
-		if( m_hOwner == NULL )
+		if( m_hOwner == 0 )
 			bBlowup = 1;
 		else if( m_posOwner != m_hOwner->pev->origin )
 			bBlowup = 1;
@@ -342,3 +350,4 @@ void CTripmineGrenade::DelayDeathThink( void )
 	Explode( &tr, DMG_BLAST );
 }
 #endif
+

@@ -14,9 +14,13 @@
 ****/
 #ifndef ENGINECALLBACK_H
 #define ENGINECALLBACK_H
+
 #pragma once
 
 #include "event_flags.h"
+
+// Fix warning in MSVC8
+#undef SERVER_EXECUTE
 
 // Must be provided by user of this code
 extern enginefuncs_t g_engfuncs;
@@ -156,5 +160,6 @@ inline void *GET_PRIVATE( edict_t *pent )
 #define ENGINE_FORCE_UNMODIFIED	( *g_engfuncs.pfnForceUnmodified )
 
 #define PLAYER_CNX_STATS		( *g_engfuncs.pfnGetPlayerStats )
+#define	SET_CLIENT_MAX_SPEED		( *g_engfuncs.pfnSetClientMaxspeed )
 
 #endif		//ENGINECALLBACK_H

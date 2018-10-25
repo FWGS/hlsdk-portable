@@ -12,9 +12,9 @@
 *   without written permission from Valve LLC.
 *
 ****/
+#pragma once
 #ifndef PHYSCALLBACK_H
 #define PHYSCALLBACK_H
-#pragma once
 
 #include "physint.h"
 

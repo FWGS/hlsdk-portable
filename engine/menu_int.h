@@ -12,7 +12,7 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
-
+#pragma once
 #ifndef MENU_INT_H
 #define MENU_INT_H
 
@@ -155,7 +155,7 @@ typedef struct ui_enginefuncs_s
 	// menu interface is freezed at version 0.75
 	// new functions starts here 
 	float	(*pfnRandomFloat)( float flLow, float flHigh );	
-	long	(*pfnRandomLong)( long lLow, long lHigh );
+	int	(*pfnRandomLong)( int lLow, int lHigh );
 
 	void	(*pfnSetCursor)( void *hCursor );			// change cursor
 	int	(*pfnIsMapValid)( char *filename );

@@ -25,10 +25,19 @@ project (SVDLL)
 
 set (SVDLL_LIBRARY server)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_LINUX -DCLIENT_WEAPONS -Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf -D_vsnprintf=vsnprintf -fno-exceptions -w")
-set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS}")
+add_definitions(-DCROWBAR_IDLE_ANIM)
 
-set (SVDLL_SOURCES 
+if(NOT MSVC)
+	add_compile_options(-fno-exceptions) # GCC/Clang flag
+	add_compile_options(-Wno-invalid-offsetof) # GCC/Clang flag
+	add_compile_options(-fvisibility=hidden) # GCC/Clang flag
+	add_definitions(-D_LINUX) # It seems enough for all non-Win32 systems
+	add_definitions(-Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf -D_vsnprintf=vsnprintf )
+else()
+	add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_DEPRECATE)
+endif()
+
+set (SVDLL_SOURCES
 	agrunt.cpp
 	airtank.cpp
 	aflock.cpp
@@ -59,11 +68,11 @@ set (SVDLL_SOURCES
 	game.cpp
 	gamerules.cpp
 	gargantua.cpp
-#	gauss.cpp
+	gauss.cpp
 	genericmonster.cpp
 	ggrenade.cpp
 	globals.cpp
-#	glock.cpp
+	glock.cpp
 	gman.cpp
 	h_ai.cpp
 	h_battery.cpp
@@ -88,16 +97,18 @@ set (SVDLL_SOURCES
 	monsters.cpp
 	monsterstate.cpp
 	mortar.cpp
-#	mp5.cpp
+	mp5.cpp
 	multiplay_gamerules.cpp
 	nihilanth.cpp
 	nodes.cpp
+	observer.cpp
 	osprey.cpp
 	pathcorner.cpp
 	plane.cpp
 	plats.cpp
 	player.cpp
 #	python.cpp
+	playermonster.cpp
 	rat.cpp
 	roach.cpp
 	rpg.cpp
@@ -129,21 +140,15 @@ set (SVDLL_SOURCES
 	../pm_shared/pm_debug.c
 	../pm_shared/pm_math.c
 	../pm_shared/pm_shared.c
-	poke646/bradnailer.cpp
-	poke646/cmlwbr.cpp
 	poke646/firetrail.cpp
 	poke646/genericmodel.cpp
-	poke646/heaterpipe.cpp
+	poke646/mp3.cpp
 	poke646/nail.cpp
-	poke646/nailgun.cpp
-	poke646/pipebomb.cpp
 	poke646/robocop.cpp
-	poke646/weapon_pipebomb.cpp
-	poke646/xenspit.cpp
-	poke646/xensquasher.cpp
+	poke646/xsbeam.cpp
 	vendetta/par21.cpp
 )
-	
+
 include_directories (. wpn_shared poke646 ../common ../engine ../pm_shared ../game_shared ../public)
 
 if(USE_VOICEMGR)
@@ -156,6 +161,22 @@ endif()
 
 add_library (${SVDLL_LIBRARY} SHARED ${SVDLL_SOURCES})
 
-set_target_properties (${SVDLL_SHARED} PROPERTIES
+set_target_properties (${SVDLL_LIBRARY} PROPERTIES
 	POSITION_INDEPENDENT_CODE 1)
 
+if(APPLE OR WIN32 OR ${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+	set(SVDLL_NAME "${SERVER_LIBRARY_NAME}")
+	if(64BIT)
+		set(SVDLL_NAME "${SERVER_LIBRARY_NAME}64")
+	endif()
+
+	set_target_properties(${SVDLL_LIBRARY} PROPERTIES
+		OUTPUT_NAME ${SVDLL_NAME}
+		PREFIX "")
+endif()
+
+install( TARGETS ${SVDLL_LIBRARY}
+	DESTINATION "${GAMEDIR}/${SERVER_INSTALL_DIR}/"
+	PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+	    GROUP_READ GROUP_EXECUTE
+		WORLD_READ WORLD_EXECUTE)

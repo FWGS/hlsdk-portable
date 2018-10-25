@@ -83,7 +83,6 @@ void CPar21::Precache(void)
 
 	PRECACHE_SOUND("weapons/357_cock1.wav");
 
-	m_usReload = PRECACHE_EVENT(1, "events/reload.sc");
 	m_usPar21 = PRECACHE_EVENT(1, "events/par21.sc");
 	m_usM203 = PRECACHE_EVENT(1, "events/m203.sc");
 }
@@ -91,13 +90,13 @@ void CPar21::Precache(void)
 int CPar21::GetItemInfo(ItemInfo *p)
 {
 	p->pszName = STRING(pev->classname);
-	p->pszAmmo1 = "par21";
+	p->pszAmmo1 = "NATO";
 	p->iMaxAmmo1 = PAR21_MAX_CARRY;
 	p->pszAmmo2 = "M203grenades";
 	p->iMaxAmmo2 = M203_GRENADE_MAX_CARRY;
 	p->iMaxClip = PAR21_MAX_CLIP;
 	p->iSlot = 1;
-	p->iPosition = 0;
+	p->iPosition = 2;
 	p->iFlags = 0;
 	p->iId = m_iId = WEAPON_PAR21;
 	p->iWeight = PAR21_WEIGHT;
@@ -157,7 +156,7 @@ void CPar21::PrimaryAttack()
 	Vector vecDir;
 
 	// single player spread
-	vecDir = m_pPlayer->FireBulletsPlayer(1, vecSrc, vecAiming, VECTOR_CONE_3DEGREES, 8192, BULLET_PLAYER_PAR21, 2, 0, m_pPlayer->pev, m_pPlayer->random_seed);
+	vecDir = m_pPlayer->FireBulletsPlayer(1, vecSrc, vecAiming, VECTOR_CONE_3DEGREES, 8192, BULLET_PLAYER_MP5, 2, 0, m_pPlayer->pev, m_pPlayer->random_seed);
 
 	int flags;
 #if defined( CLIENT_WEAPONS )
@@ -221,25 +220,24 @@ void CPar21::SecondaryAttack(void)
 
 	PLAYBACK_EVENT(0, m_pPlayer->edict(), m_usM203);
 
-	m_flNextPrimaryAttack = GetNextAttackDelay(1);
-	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1;
-	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 5;// idle pretty soon after shooting.
+	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.9f;
+	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.9f;
+	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 5.0f;// idle pretty soon after shooting.
 }
 
 void CPar21::Reload(void)
 {
-	if (m_pPlayer->ammo_par21 <= 0)
-		return;
-
-	int iAnim = PAR21_RELOAD;
-	int iResult = DefaultReload(PAR21_MAX_CLIP, iAnim, 1.5);
-
-	if ( iResult )
-	{
-		PLAYBACK_EVENT_FULL(0, m_pPlayer->edict(), m_usReload, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, iAnim, 0, 0, 0);
-	}
+	if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0 || m_iClip == PAR21_MAX_CLIP )
+                return;
+                
+        DefaultReload( PAR21_MAX_CLIP, PAR21_RELOAD, 1.6 );
 }
 
+BOOL CPar21::IsUseable()
+{
+	//Can be used if the player has AR grenades. - Solokiller
+	return CBasePlayerWeapon::IsUseable() || m_pPlayer->m_rgAmmo[m_iSecondaryAmmoType] > 0;
+}
 
 void CPar21::WeaponIdle(void)
 {
@@ -285,7 +283,7 @@ class CPar21AmmoClip : public CBasePlayerAmmo
 	}
 	BOOL AddAmmo(CBaseEntity *pOther)
 	{
-		int bResult = (pOther->GiveAmmo(AMMO_PAR21CLIP_GIVE, "par21", PAR21_MAX_CARRY) != -1);
+		int bResult = (pOther->GiveAmmo(AMMO_PAR21CLIP_GIVE, "NATO", PAR21_MAX_CARRY) != -1);
 		if (bResult)
 		{
 			EMIT_SOUND(ENT(pev), CHAN_ITEM, "items/9mmclip1.wav", 1, ATTN_NORM);
@@ -293,8 +291,8 @@ class CPar21AmmoClip : public CBasePlayerAmmo
 		return bResult;
 	}
 };
-LINK_ENTITY_TO_CLASS(ammo_par21_clip, CPar21AmmoClip);
-
+LINK_ENTITY_TO_CLASS(ammo_par21_clip, CPar21AmmoClip)
+LINK_ENTITY_TO_CLASS(ammo_natoclip, CPar21AmmoClip)
 
 class CM203GrenadeAmmo : public CBasePlayerAmmo
 {
@@ -320,5 +318,5 @@ class CM203GrenadeAmmo : public CBasePlayerAmmo
 		return bResult;
 	}
 };
-LINK_ENTITY_TO_CLASS(ammo_par21_grenade, CM203GrenadeAmmo);
-LINK_ENTITY_TO_CLASS(ammo_m203grenade, CM203GrenadeAmmo);
+LINK_ENTITY_TO_CLASS(ammo_par21_grenade, CM203GrenadeAmmo)
+LINK_ENTITY_TO_CLASS(ammo_m203grenade, CM203GrenadeAmmo)

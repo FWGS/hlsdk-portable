@@ -182,7 +182,7 @@ void CAmbientGeneric::Spawn( void )
 		m_flAttenuation = ATTN_STATIC;
 	}
 
-	char* szSoundFile = (char*)STRING( pev->message );
+	const char *szSoundFile = STRING( pev->message );
 
 	if( FStringNull( pev->message ) || strlen( szSoundFile ) < 1 )
 	{
@@ -216,7 +216,7 @@ void CAmbientGeneric::Spawn( void )
 
 void CAmbientGeneric::Precache( void )
 {
-	char* szSoundFile = (char*)STRING( pev->message );
+	const char *szSoundFile = STRING( pev->message );
 
 	if( !FStringNull( pev->message ) && strlen( szSoundFile ) > 1 )
 	{
@@ -248,7 +248,7 @@ void CAmbientGeneric::Precache( void )
 // with lfo if active.
 void CAmbientGeneric::RampThink( void )
 {
-	char* szSoundFile = (char*) STRING(pev->message);
+	const char *szSoundFile = STRING( pev->message );
 	int pitch = m_dpv.pitch; 
 	int vol = m_dpv.vol;
 	int flags = 0;
@@ -448,7 +448,7 @@ void CAmbientGeneric::InitModulationParms( void )
 {
 	int pitchinc;
 
-	m_dpv.volrun = pev->health * 10;	// 0 - 100
+	m_dpv.volrun = (int)( pev->health * 10 );	// 0 - 100
 	if( m_dpv.volrun > 100 )
 		m_dpv.volrun = 100;
 	if( m_dpv.volrun < 0 )
@@ -533,7 +533,7 @@ void CAmbientGeneric::InitModulationParms( void )
 //
 void CAmbientGeneric::ToggleUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
-	char* szSoundFile = (char*)STRING( pev->message );
+	const char *szSoundFile = STRING( pev->message );
 	float fraction;
 
 	if( useType != USE_TOGGLE )
@@ -553,7 +553,7 @@ void CAmbientGeneric::ToggleUse( CBaseEntity *pActivator, CBaseEntity *pCaller, 
 		if( fraction < 0.0 )
 			fraction = 0.01;
 
-		m_dpv.pitch = fraction * 255;
+		m_dpv.pitch = (int)( fraction * 255 );
 
 		UTIL_EmitAmbientSound( ENT( pev ), pev->origin, szSoundFile, 0, 0, SND_CHANGE_PITCH, m_dpv.pitch );
 		return;
@@ -978,6 +978,52 @@ void CEnvSound::Spawn()
 {
 	// spread think times
 	pev->nextthink = gpGlobals->time + RANDOM_FLOAT( 0.0, 0.5 ); 
+}
+
+int g_soundtrackCount;
+soundtrack_t g_soundtracklist[30];
+
+void SOUNDTRACKLIST_Init()
+{
+	char buffer[512] = {0,};
+	int i, j = 0;
+	byte *pMemFile;
+	int fileSize, filePos = 0;
+
+	pMemFile = g_engfuncs.pfnLoadFileForMe( "sound/soundtrack.txt", &fileSize );
+	if( !pMemFile )
+		return;
+
+	// for each line in the file...
+	while( memfgets( pMemFile, fileSize, filePos, buffer, 511 ) != NULL && j < 30 )
+	{
+		char *pos;
+
+		// skip whitespace
+		i = 0;
+		while( buffer[i] && isspace( buffer[i] ) )
+			i++;
+
+		if( !buffer[i] )
+			continue;
+
+		// skip comment lines
+		if( buffer[i] == '/' )
+			continue;
+
+		if( 3 > sscanf( &buffer[i], "\"%31[^\"]\" \"%31[^\"]\" \"%d\" ", \
+			g_soundtracklist[j].mapname, g_soundtracklist[j].soundfile, &g_soundtracklist[j].loop ) )
+			continue;
+
+		pos = strchr( g_soundtracklist[j].mapname, '.' );
+		*pos = '\0';
+
+		j++;
+	}
+
+	g_soundtrackCount = j;
+
+	g_engfuncs.pfnFreeFile( pMemFile );
 }
 
 // ==================== SENTENCE GROUPS, UTILITY FUNCTIONS  ======================================
@@ -1454,14 +1500,6 @@ void EMIT_GROUPNAME_SUIT( edict_t *entity, const char *groupname )
 // texture name to a material type.  Play footstep sound based
 // on material type.
 
-int fTextureTypeInit = FALSE;
-
-#define CTEXTURESMAX		512			// max number of textures loaded
-
-int gcTextures = 0;
-char grgszTextureName[CTEXTURESMAX][CBTEXTURENAMEMAX];	// texture names
-char grgchTextureType[CTEXTURESMAX];						// parallel array of texture types
-
 // open materials.txt,  get size, alloc space, 
 // save in array.  Only works first time called, 
 // ignored on subsequent calls.
@@ -1513,87 +1551,17 @@ static char *memfgets( byte *pMemFile, int fileSize, int &filePos, char *pBuffer
 	return NULL;
 }
 
-void TEXTURETYPE_Init()
-{
-	char buffer[512];
-	int i, j;
-	byte *pMemFile;
-	int fileSize, filePos = 0;
-
-	if( fTextureTypeInit )
-		return;
-
-	memset( &( grgszTextureName[0][0] ), 0, CTEXTURESMAX * CBTEXTURENAMEMAX );
-	memset( grgchTextureType, 0, CTEXTURESMAX );
-
-	gcTextures = 0;
-
-	pMemFile = g_engfuncs.pfnLoadFileForMe( "sound/materials.txt", &fileSize );
-	if( !pMemFile )
-		return;
-
-	memset( buffer, 0, 512 );
-	// for each line in the file...
-	while( memfgets( pMemFile, fileSize, filePos, buffer, 511 ) != NULL && ( gcTextures < CTEXTURESMAX) )
-	{
-		// skip whitespace
-		i = 0;
-		while( buffer[i] && isspace( buffer[i] ) )
-			i++;
-
-		if( !buffer[i] )
-			continue;
-
-		// skip comment lines
-		if( buffer[i] == '/' || !isalpha( buffer[i] ) )
-			continue;
-
-		// get texture type
-		grgchTextureType[gcTextures] = toupper( buffer[i++] );
-
-		// skip whitespace
-		while( buffer[i] && isspace( buffer[i] ) )
-			i++;
-
-		if( !buffer[i] )
-			continue;
-
-		// get sentence name
-		j = i;
-		while( buffer[j] && !isspace( buffer[j] ) )
-			j++;
-
-		if( !buffer[j] )
-			continue;
-
-		// null-terminate name and save in sentences array
-		j = min( j, CBTEXTURENAMEMAX - 1 + i );
-		buffer[j] = 0;
-		strcpy( &( grgszTextureName[gcTextures++][0] ), &( buffer[i] ) );
-	}
-
-	g_engfuncs.pfnFreeFile( pMemFile );
-
-	fTextureTypeInit = TRUE;
-}
-
 // given texture name, find texture type
 // if not found, return type 'concrete'
 
 // NOTE: this routine should ONLY be called if the 
 // current texture under the player changes!
 
+extern "C" char PM_FindTextureType( char *name );
+
 char TEXTURETYPE_Find( char *name )
 {
-	// CONSIDER: pre-sort texture names and perform faster binary search here
-
-	for( int i = 0; i < gcTextures; i++ )
-	{
-		if( !strnicmp( name, &( grgszTextureName[i][0] ), CBTEXTURENAMEMAX - 1 ) )
-			return grgchTextureType[i];
-	}
-
-	return CHAR_TEX_CONCRETE;
+	return PM_FindTextureType(name);
 }
 
 // play a strike sound based on the texture that was hit by the attack traceline.  VecSrc/VecEnd are the
@@ -1610,7 +1578,7 @@ float TEXTURETYPE_PlaySound( TraceResult *ptr,  Vector vecSrc, Vector vecEnd, in
 	const char *pTextureName;
 	float rgfl1[3];
 	float rgfl2[3];
-	char *rgsz[4];
+	const char *rgsz[4];
 	int cnt;
 	float fattn = ATTN_NORM;
 
@@ -1739,16 +1707,8 @@ float TEXTURETYPE_PlaySound( TraceResult *ptr,  Vector vecSrc, Vector vecEnd, in
 			return 0.0; // crowbar already makes this sound
 		fvol = 1.0;
 		fvolbar = 0.2;
-		if( iBulletType == BULLET_PLAYER_NAIL )
-		{
-			rgsz[0] = "weapons/brad_hit1.wav";
-			rgsz[1] = "weapons/brad_hit2.wav";
-		}
-		else
-		{
-			rgsz[0] = "weapons/bullet_hit1.wav";
-			rgsz[1] = "weapons/bullet_hit2.wav";
-		}
+		rgsz[0] = "weapons/bullet_hit1.wav";
+		rgsz[1] = "weapons/bullet_hit2.wav";
 		fattn = 1.0;
 		cnt = 2;
 		break;
@@ -1830,7 +1790,7 @@ IMPLEMENT_SAVERESTORE( CSpeaker, CBaseEntity )
 //
 void CSpeaker::Spawn( void )
 {
-	char *szSoundFile = (char*) STRING( pev->message );
+	const char *szSoundFile = STRING( pev->message );
 
 	if( !m_preset && ( FStringNull( pev->message ) || strlen( szSoundFile ) < 1 ) )
 	{
@@ -1862,7 +1822,7 @@ void CSpeaker::Precache( void )
 }
 void CSpeaker::SpeakerThink( void )
 {
-	char* szSoundFile;
+	const char* szSoundFile = NULL;
 	float flvolume = pev->health * 0.1;
 	float flattenuation = 0.3;
 	int flags = 0;
@@ -1919,7 +1879,7 @@ void CSpeaker::SpeakerThink( void )
 		}
 	}
 	else
-		szSoundFile = (char*)STRING( pev->message );
+		szSoundFile = STRING( pev->message );
 
 	if( szSoundFile[0] == '!' )
 	{

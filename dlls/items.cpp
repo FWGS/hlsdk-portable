@@ -30,7 +30,6 @@
 #include "gamerules.h"
 
 extern int gmsgItemPickup;
-extern int gmsgStartUp;
 
 class CWorldItem : public CBaseEntity
 {
@@ -167,6 +166,7 @@ void CItem::Materialize( void )
 	}
 
 	SetTouch( &CItem::ItemTouch );
+	SetThink( NULL );
 }
 
 #define SF_SUIT_SHORTLOGON		0x0001
@@ -188,10 +188,10 @@ class CItemSuit : public CItem
 		if( pPlayer->pev->weapons & ( 1<<WEAPON_SUIT ) )
 			return FALSE;
 
-		//
-		// Make HUD completely transparent and slowly increase it's alpha.
-		//
-		pPlayer->ShowPlayerHUD();
+		if( pev->spawnflags & SF_SUIT_SHORTLOGON )
+			EMIT_SOUND_SUIT( pPlayer->edict(), "!HEV_A0" );		// short version of suit logon,
+		else
+			EMIT_SOUND_SUIT( pPlayer->edict(), "!HEV_AAx" );	// long version of suit logon
 
 		pPlayer->pev->weapons |= ( 1 << WEAPON_SUIT );
 		return TRUE;
@@ -227,7 +227,7 @@ class CItemBattery : public CItem
 			char szcharge[64];
 
 			pPlayer->pev->armorvalue += gSkillData.batteryCapacity;
-			pPlayer->pev->armorvalue = min( pPlayer->pev->armorvalue, MAX_NORMAL_BATTERY );
+			pPlayer->pev->armorvalue = Q_min( pPlayer->pev->armorvalue, MAX_NORMAL_BATTERY );
 
 			EMIT_SOUND( pPlayer->edict(), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM );
 

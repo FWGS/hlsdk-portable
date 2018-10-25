@@ -12,7 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
-
+#pragma once
 #ifndef KEYDEFS_H
 #define KEYDEFS_H
 

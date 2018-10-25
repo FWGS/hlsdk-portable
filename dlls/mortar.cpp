@@ -45,8 +45,8 @@ public:
 
 	void EXPORT FieldUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
 
-	int m_iszXController;
-	int m_iszYController;
+	string_t m_iszXController;
+	string_t m_iszYController;
 	float m_flSpread;
 	float m_flDelay;
 	int m_iCount;
@@ -197,6 +197,7 @@ public:
 	void EXPORT MortarExplode( void );
 
 	int m_spriteTexture;
+	int m_blastwave;
 };
 
 LINK_ENTITY_TO_CLASS( monster_mortar, CMortar )
@@ -217,6 +218,7 @@ void CMortar::Spawn()
 void CMortar::Precache()
 {
 	m_spriteTexture = PRECACHE_MODEL( "sprites/lgtning.spr" );
+	m_blastwave = PRECACHE_MODEL( "sprites/xbeam3.spr" );
 }
 
 void CMortar::MortarExplode( void )
@@ -245,7 +247,7 @@ void CMortar::MortarExplode( void )
 	MESSAGE_END();
 #endif
 
-#if 0
+#if 1
 	// blast circle
 	MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
 		WRITE_BYTE( TE_BEAMTORUS );
@@ -255,7 +257,7 @@ void CMortar::MortarExplode( void )
 		WRITE_COORD( pev->origin.x );
 		WRITE_COORD( pev->origin.y );
 		WRITE_COORD( pev->origin.z + 32 + pev->dmg * 2 / .2 ); // reach damage radius over .3 seconds
-		WRITE_SHORT( m_spriteTexture );
+		WRITE_SHORT( m_blastwave );
 		WRITE_BYTE( 0 ); // startframe
 		WRITE_BYTE( 0 ); // framerate
 		WRITE_BYTE( 2 ); // life

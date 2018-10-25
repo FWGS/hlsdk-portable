@@ -35,6 +35,7 @@ extern client_sprite_t *GetSpriteList( client_sprite_t *pList, const char *psz, 
 
 extern cvar_t *sensitivity;
 cvar_t *cl_lw = NULL;
+cvar_t *cl_viewbob = NULL;
 
 void ShutdownInput( void );
 
@@ -77,9 +78,26 @@ int __MsgFunc_GameMode( const char *pszName, int iSize, void *pbuf )
 	return gHUD.MsgFunc_GameMode( pszName, iSize, pbuf );
 }
 
-int __MsgFunc_StartUp( const char *pszName, int iSize, void *pbuf )
+int __MsgFunc_PlayMP3( const char *pszName, int iSize, void *pbuf )
 {
-	return gHUD.MsgFunc_StartUp( pszName, iSize, pbuf );
+	const char *pszSound;
+	char cmd[64], path[64];
+	int loop;
+
+	BEGIN_READ( pbuf, iSize );
+	pszSound = READ_STRING();
+	loop = READ_BYTE();
+
+	sprintf( path, "sound/%s", pszSound );
+	if( !IsXashFWGS() && gEngfuncs.pfnGetCvarPointer( "gl_overbright" ) )
+	{
+		sprintf( cmd, "mp3 play %s\n", path );
+		gEngfuncs.pfnClientCmd( cmd );
+	}
+	else
+		gEngfuncs.pfnPrimeMusicStream( path, loop );
+
+        return 1;
 }
 
 // TFFree Command Menu
@@ -165,7 +183,7 @@ void CHud::Init( void )
 	HOOK_MESSAGE( ViewMode );
 	HOOK_MESSAGE( SetFOV );
 	HOOK_MESSAGE( Concuss );
-	HOOK_MESSAGE( StartUp );
+	HOOK_MESSAGE( PlayMP3 );
 
 	// TFFree CommandMenu
 	HOOK_COMMAND( "+commandmenu", OpenCommandMenu );
@@ -194,14 +212,13 @@ void CHud::Init( void )
 
 	m_iLogo = 0;
 	m_iFOV = 0;
-	m_flAlpha = 0;
-	m_flTargetAlpha = 0;
 
 	CVAR_CREATE( "zoom_sensitivity_ratio", "1.2", 0 );
 	default_fov = CVAR_CREATE( "default_fov", "90", 0 );
 	m_pCvarStealMouse = CVAR_CREATE( "hud_capturemouse", "1", FCVAR_ARCHIVE );
 	m_pCvarDraw = CVAR_CREATE( "hud_draw", "1", FCVAR_ARCHIVE );
 	cl_lw = gEngfuncs.pfnGetCvarPointer( "cl_lw" );
+	cl_viewbob = CVAR_CREATE( "cl_viewbob", "0", FCVAR_ARCHIVE );
 
 	m_pSpriteList = NULL;
 
@@ -235,7 +252,6 @@ void CHud::Init( void )
 	m_AmmoSecondary.Init();
 	m_TextMessage.Init();
 	m_StatusIcons.Init();
-	m_Scope.Init();
 	m_MOTD.Init();
 	m_Scoreboard.Init();
 
@@ -388,6 +404,18 @@ void CHud::VidInit( void )
 	// assumption: number_1, number_2, etc, are all listed and loaded sequentially
 	m_HUD_number_0 = GetSpriteIndex( "number_0" );
 
+	if( m_HUD_number_0 == -1 )
+	{
+		const char *msg = "There is something wrong with your game data! Please, reinstall\n";
+
+		if( HUD_MessageBox( msg ) )
+		{
+			gEngfuncs.pfnClientCmd( "quit\n" );
+		}
+
+		return;
+	}
+
 	m_iFontHeight = m_rgrcRects[m_HUD_number_0].bottom - m_rgrcRects[m_HUD_number_0].top;
 
 	m_Ammo.VidInit();
@@ -405,7 +433,6 @@ void CHud::VidInit( void )
 	m_AmmoSecondary.VidInit();
 	m_TextMessage.VidInit();
 	m_StatusIcons.VidInit();
-	m_Scope.VidInit();
 	m_Scoreboard.VidInit();
 	m_MOTD.VidInit();
 }
@@ -521,10 +548,6 @@ int CHud::MsgFunc_SetFOV( const char *pszName,  int iSize, void *pbuf )
 	int newfov = READ_BYTE();
 	int def_fov = CVAR_GET_FLOAT( "default_fov" );
 
-	//Weapon prediction already takes care of changing the fog. ( g_lastFOV ).
-	if( cl_lw && cl_lw->value )
-		return 1;
-
 	g_lastFOV = newfov;
 
 	if( newfov == 0 )
@@ -588,29 +611,3 @@ float CHud::GetSensitivity( void )
 	return m_flMouseSensitivity;
 }
 
-int CHud::MsgFunc_StartUp( const char *pszName, int iSize, void *pbuf )
-{
-       BEGIN_READ( pbuf, iSize );
-
-	// Target alpha
-	float alpha = READ_BYTE();
-
-	if( alpha < 0 )
-		alpha = 0;
-	else if( alpha > 255 )
-		alpha = 255;
-
-	m_flTargetAlpha = alpha;
-
-	// Start alpha
-	alpha = READ_BYTE();
-
-	if( alpha < 0 )
-		alpha = 0;
-	else if( alpha > 255 )
-		alpha = 255;
-
-	m_flAlpha = alpha;
-
-	return 1;
-}

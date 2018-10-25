@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2002, Valve LLC, All rights reserved. ============
+//========= Copyright (c) 1996-2002, Valve LLC, All rights reserved. ============
 //
 // Purpose: 
 //
@@ -26,6 +26,7 @@
 #include "shake.h"
 #include "hltv.h"
 
+extern bool bDrawScope;
 // Spectator Mode
 extern "C" 
 {
@@ -78,6 +79,7 @@ extern cvar_t	*cl_forwardspeed;
 extern cvar_t	*chase_active;
 extern cvar_t	*scr_ofsx, *scr_ofsy, *scr_ofsz;
 extern cvar_t	*cl_vsmoothing;
+extern cvar_t	*cl_viewbob;
 extern Vector   dead_viewangles;
 
 #define	CAM_MODE_RELAX		1
@@ -90,7 +92,7 @@ float v_cameraFocusAngle = 35.0f;
 int v_cameraMode = CAM_MODE_FOCUS;
 qboolean v_resetCamera = 1;
 
-vec3_t ev_punchangle;
+vec3_t g_ev_punchangle;
 
 cvar_t	*scr_ofsx;
 cvar_t	*scr_ofsy;
@@ -351,11 +353,11 @@ V_CalcIntermissionRefdef
 */
 void V_CalcIntermissionRefdef( struct ref_params_s *pparams )
 {
-	cl_entity_t *ent, *view;
+	cl_entity_t /**ent,*/ *view;
 	float old;
 
 	// ent is the player model ( visible when out of body )
-	ent = gEngfuncs.GetLocalPlayer();
+	//ent = gEngfuncs.GetLocalPlayer();
 
 	// view is the weapon model (only visible from inside body )
 	view = gEngfuncs.GetViewModel();
@@ -527,7 +529,7 @@ void V_CalcNormalRefdef( struct ref_params_s *pparams )
 	V_AddIdle( pparams );
 
 	// offsets
-	if ( pparams->health <= 0 )
+	if( pparams->health <= 0 )
 	{
 		VectorCopy( dead_viewangles, angles );
 	}
@@ -598,6 +600,9 @@ void V_CalcNormalRefdef( struct ref_params_s *pparams )
 	view->angles[ROLL] -= bob * 1;
 	view->angles[PITCH] -= bob * 0.3;
 
+	if( cl_viewbob && cl_viewbob->value )
+		VectorCopy( view->angles, view->curstate.angles );
+
 	// pushing the view origin down off of the same X/Z plane as the ent's origin will give the
 	// gun a very nice 'shifting' effect when the player looks up/down. If there is a problem
 	// with view model distortion, this may be a cause. (SJB). 
@@ -626,9 +631,9 @@ void V_CalcNormalRefdef( struct ref_params_s *pparams )
 	VectorAdd( pparams->viewangles, pparams->punchangle, pparams->viewangles );
 
 	// Include client side punch, too
-	VectorAdd( pparams->viewangles, (float *)&ev_punchangle, pparams->viewangles );
+	VectorAdd( pparams->viewangles, (float *)&g_ev_punchangle, pparams->viewangles );
 
-	V_DropPunchAngle( pparams->frametime, (float *)&ev_punchangle );
+	V_DropPunchAngle( pparams->frametime, (float *)&g_ev_punchangle );
 
 	// smooth out stair step ups
 #if 1
@@ -758,6 +763,7 @@ void V_CalcNormalRefdef( struct ref_params_s *pparams )
 
 			// Store off overridden viewangles
 			v_angles = pparams->viewangles;
+			bDrawScope = 0;
 		}
 	}
 
@@ -1307,7 +1313,7 @@ void V_GetMapChasePosition( int target, float *cl_angles, float *origin, float *
 
 int V_FindViewModelByWeaponModel( int weaponindex )
 {
-	static char *modelmap[][2] =
+	static const char *modelmap[][2] =
 	{
 		{ "models/p_bradnailer.mdl", "models/v_bradnailer.mdl" },
 		{ "models/p_cmlwbr.mdl", "models/v_cmlwbr.mdl" },
@@ -1321,7 +1327,7 @@ int V_FindViewModelByWeaponModel( int weaponindex )
 		{ NULL, NULL }
 	};
 
-	struct model_s * weaponModel = IEngineStudio.GetModelByIndex( weaponindex );
+	struct model_s *weaponModel = IEngineStudio.GetModelByIndex( weaponindex );
 
 	if( weaponModel )
 	{
@@ -1569,7 +1575,7 @@ Client side punch effect
 */
 void V_PunchAxis( int axis, float punch )
 {
-	ev_punchangle[axis] = punch;
+	g_ev_punchangle[axis] = punch;
 }
 
 /*

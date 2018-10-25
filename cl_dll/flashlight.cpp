@@ -49,6 +49,8 @@ void CHudFlashlight::Reset( void )
 {
 	m_fFade = 0;
 	m_fOn = 0;
+	m_iBat = 100;
+	m_flBat = 1.0;
 }
 
 int CHudFlashlight::VidInit( void )
@@ -91,5 +93,6 @@ int CHudFlashlight::MsgFunc_Flashlight( const char *pszName,  int iSize, void *p
 
 int CHudFlashlight::Draw( float flTime )
 {
+	gMobileEngfuncs->pfnTouchHideButtons( "flashlight", 1 );
 	return 1;
 }

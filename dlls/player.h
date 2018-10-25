@@ -12,6 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
+#pragma once
 #ifndef PLAYER_H
 #define PLAYER_H
 
@@ -22,6 +23,7 @@
 #define DAMAGE_FOR_FALL_SPEED		(float) 100 / ( PLAYER_FATAL_FALL_SPEED - PLAYER_MAX_SAFE_FALL_SPEED )// damage per unit per second.
 #define PLAYER_MIN_BOUNCE_SPEED		200
 #define PLAYER_FALL_PUNCH_THRESHHOLD (float)350 // won't punch player's screen/make scrape noise unless player falling at least this fast.
+#define PLAYER_MAX_SPEED		220
 
 //
 // Player PHYSICS FLAGS bits
@@ -60,18 +62,6 @@
 
 #define TEAM_NAME_LENGTH	16
 
-//
-// Player exert.
-//
-
-#define PLAYER_EXERT_LEVEL_MIN			0
-#define PLAYER_EXERT_LEVEL_MAX			50
-#define PLAYER_EXERT_RATE			0.2f
-
-#define PLAYER_BREATHE_LEVEL			5
-#define PLAYER_BREATHE_VOLUME_MAX		2.0f
-#define PLAYER_BREATHE_SOUND			"player/breathe2.wav"
-
 typedef enum
 {
 	PLAYER_IDLE,
@@ -98,6 +88,18 @@ enum sbar_data
 class CBasePlayer : public CBaseMonster
 {
 public:
+	// Spectator camera
+	void	Observer_FindNextPlayer( bool bReverse );
+	void	Observer_HandleButtons();
+	void	Observer_SetMode( int iMode );
+	void	Observer_CheckTarget();
+	void	Observer_CheckProperties();
+	EHANDLE	m_hObserverTarget;
+	float	m_flNextObserverInput;
+	int		m_iObserverWeapon;	// weapon of current tracked target
+	int		m_iObserverLastMode;// last used observer mode
+	int		IsObserver() { return pev->iuser1; };
+
 	int					random_seed;    // See that is shared between client & server for shared weapons code
 
 	int					m_iPlayerSound;// the index of the sound list slot reserved for this player
@@ -255,14 +257,16 @@ public:
 
 	void StartDeathCam( void );
 	void StartObserver( Vector vecPosition, Vector vecViewAngle );
+	void StopObserver();
 
 	void AddPoints( int score, BOOL bAllowNegativeScore );
 	void AddPointsToTeam( int score, BOOL bAllowNegativeScore );
 	BOOL AddPlayerItem( CBasePlayerItem *pItem );
-	BOOL RemovePlayerItem( CBasePlayerItem *pItem );
+	BOOL RemovePlayerItem( CBasePlayerItem *pItem, bool bCallHoster );
 	void DropPlayerItem ( char *pszItemName );
 	BOOL HasPlayerItem( CBasePlayerItem *pCheckItem );
 	BOOL HasNamedPlayerItem( const char *pszItemName );
+	CBasePlayerItem *GiveNamedPlayerItem( const char *pszItemName );
 	BOOL HasWeapons( void );// do I have ANY weapons?
 	void SelectPrevItem( int iItem );
 	void SelectNextItem( int iItem );
@@ -273,7 +277,7 @@ public:
 	void GiveNamedItem( const char *szName );
 	void EnableControl(BOOL fControl);
 
-	int  GiveAmmo( int iAmount, char *szName, int iMax );
+	int  GiveAmmo( int iAmount, const char *szName, int iMax );
 	void SendAmmoUpdate(void);
 
 	void WaterMove( void );
@@ -281,7 +285,7 @@ public:
 	void PlayerUse( void );
 
 	void CheckSuitUpdate();
-	void SetSuitUpdate(char *name, int fgroup, int iNoRepeat);
+	void SetSuitUpdate( const char *name, int fgroup, int iNoRepeat );
 	void UpdateGeigerCounter( void );
 	void CheckTimeBasedDamage( void );
 
@@ -303,7 +307,7 @@ public:
 	void SetCustomDecalFrames( int nFrames );
 	int GetCustomDecalFrames( void );
 
-	void TabulateAmmo( void );
+	Vector m_vecLastViewAngles;
 
 	float m_flStartCharge;
 	float m_flAmmoStartCharge;
@@ -313,43 +317,15 @@ public:
 	//Player ID
 	void InitStatusBar( void );
 	void UpdateStatusBar( void );
-	int m_izSBarState[ SBAR_END ];
+	int m_izSBarState[SBAR_END];
 	float m_flNextSBarUpdateTime;
 	float m_flStatusBarDisappearDelay;
-	char m_SbarString0[ SBAR_STRING_SIZE ];
-	char m_SbarString1[ SBAR_STRING_SIZE ];
+	char m_SbarString0[SBAR_STRING_SIZE];
+	char m_SbarString1[SBAR_STRING_SIZE];
 
 	float m_flNextChatTime;
 
-	// Music
-	BOOL m_bSong01_Played;
-	BOOL m_bSong02_Played;
-	BOOL m_bSong03_Played;
-	BOOL m_bSong04_Played;
-	BOOL m_bSong05_Played;
-	BOOL m_bSong06_Played;
-	float m_flMusicCheckWait;
-
-	//
-	// Exert
-	//
-	void IncrementExertLevel( int amount );
-	void DecrementExertLevel( int amount );
-	void SetExertLevel( int level );
-	int GetExertLevel( void ) const;
-
-	void UpdateExertLevel( void );
-
-	int m_iExertLevel;
-	float m_flExertRate;
-	float m_flExertUpdateStart;
-
-	// HUD visibility
-	void ShowPlayerHUD( BOOL bInstant = FALSE );
-	void HidePlayerHUD( BOOL bInstant = FALSE );
-
-	BOOL m_fHudVisible;
-	BOOL m_fUpdateHudVisibility;
+	bool m_bSentBhopcap; // If false, the player just joined and needs a bhopcap message.
 };
 
 #define AUTOAIM_2DEGREES  0.0348994967025
@@ -357,7 +333,7 @@ public:
 #define AUTOAIM_8DEGREES  0.1391731009601
 #define AUTOAIM_10DEGREES 0.1736481776669
 
-extern int	gmsgHudText;
+extern int gmsgHudText;
 extern BOOL gInitHUD;
 
 #endif // PLAYER_H

@@ -27,6 +27,7 @@
 #include "saverestore.h"
 #include "trains.h"			// trigger_camera has train functionality
 #include "gamerules.h"
+#include "weapons.h"
 
 #define	SF_TRIGGER_PUSH_START_OFF	2//spawnflag that makes trigger_push spawn turned OFF
 #define SF_TRIGGER_HURT_TARGETONCE	1// Only fire hurt target once
@@ -114,7 +115,7 @@ public:
 	static TYPEDESCRIPTION m_SaveData[];
 
 private:
-	int m_globalstate;
+	string_t m_globalstate;
 	USE_TYPE triggerType;
 };
 
@@ -267,10 +268,10 @@ public:
 
 	static TYPEDESCRIPTION m_SaveData[];
 
-	int m_cTargets;	// the total number of targets in this manager's fire list.
+	int m_cTargets; // the total number of targets in this manager's fire list.
 	int m_index;	// Current target
 	float m_startTime;// Time we started firing
-	int m_iTargetName[MAX_MULTI_TARGETS];// list if indexes into global string array
+	string_t m_iTargetName[MAX_MULTI_TARGETS];// list if indexes into global string array
 	float m_flTargetDelay[MAX_MULTI_TARGETS];// delay (in seconds) from time of manager fire to target fire
 private:
 	inline BOOL IsClone( void ) { return ( pev->spawnflags & SF_MULTIMAN_CLONE ) ? TRUE : FALSE; }
@@ -527,7 +528,7 @@ void CBaseTrigger::InitTrigger()
 		SetMovedir( pev );
 	pev->solid = SOLID_TRIGGER;
 	pev->movetype = MOVETYPE_NONE;
-	SET_MODEL(ENT(pev), STRING( pev->model ) );    // set size and link into world
+	SET_MODEL( ENT( pev ), STRING( pev->model ) );    // set size and link into world
 	if( CVAR_GET_FLOAT( "showtriggers" ) == 0 )
 		SetBits( pev->effects, EF_NODRAW );
 }
@@ -688,7 +689,7 @@ void PlayCDTrack( int iTrack )
 
 	if( iTrack == -1 )
 	{
-		CLIENT_COMMAND( pClient, "cd pause\n" );
+		CLIENT_COMMAND( pClient, "cd stop\n" );
 	}
 	else
 	{
@@ -1135,7 +1136,7 @@ void CBaseTrigger::ActivateMultiTrigger( CBaseEntity *pActivator )
 	}
 
 	if( !FStringNull( pev->noise ) )
-		EMIT_SOUND( ENT( pev ), CHAN_VOICE, (char*)STRING( pev->noise ), 1, ATTN_NORM );
+		EMIT_SOUND( ENT( pev ), CHAN_VOICE, STRING( pev->noise ), 1, ATTN_NORM );
 
 	// don't trigger again until reset
 	// pev->takedamage = DAMAGE_NO;
@@ -1264,8 +1265,8 @@ void CTriggerVolume::Spawn( void )
 {
 	pev->solid = SOLID_NOT;
 	pev->movetype = MOVETYPE_NONE;
-	SET_MODEL( ENT(pev), STRING( pev->model ) );    // set size and link into world
-	pev->model = NULL;
+	SET_MODEL( ENT( pev ), STRING( pev->model ) );    // set size and link into world
+	pev->model = 0;
 	pev->modelindex = 0;
 }
 
@@ -1323,7 +1324,7 @@ public:
 
 	char m_szMapName[cchMapNameMost];		// trigger_changelevel only:  next map
 	char m_szLandmarkName[cchMapNameMost];		// trigger_changelevel only:  landmark on next map
-	int m_changeTarget;
+	string_t m_changeTarget;
 	float m_changeTargetDelay;
 };
 
@@ -1338,7 +1339,7 @@ TYPEDESCRIPTION	CChangeLevel::m_SaveData[] =
 	DEFINE_FIELD( CChangeLevel, m_changeTargetDelay, FIELD_FLOAT ),
 };
 
-IMPLEMENT_SAVERESTORE(CChangeLevel,CBaseTrigger)
+IMPLEMENT_SAVERESTORE( CChangeLevel, CBaseTrigger )
 
 //
 // Cache user-entity-field values until spawn is called.
@@ -1438,7 +1439,7 @@ void CChangeLevel::UseChangeLevel( CBaseEntity *pActivator, CBaseEntity *pCaller
 void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 {
 	edict_t	*pentLandmark;
-	LEVELLIST levels[16];
+	//LEVELLIST levels[16];
 
 	ASSERT( !FStrEq( m_szMapName, "" ) );
 
@@ -1689,7 +1690,7 @@ void NextLevel( void )
 	// go back to start if no trigger_changelevel
 	if( FNullEnt( pent ) )
 	{
-		gpGlobals->mapname = ALLOC_STRING( "start" );
+		gpGlobals->mapname = MAKE_STRING( "start" );
 		pChange = GetClassPtr( (CChangeLevel *)NULL );
 		strcpy( pChange->m_szMapName, "start" );
 	}
@@ -2054,7 +2055,7 @@ public:
 	static TYPEDESCRIPTION m_SaveData[];
 
 private:
-	int m_iszNewTarget;
+	string_t m_iszNewTarget;
 };
 
 LINK_ENTITY_TO_CLASS( trigger_changetarget, CTriggerChangeTarget )
@@ -2105,6 +2106,7 @@ class CTriggerCamera : public CBaseDelay
 public:
 	void Spawn( void );
 	void KeyValue( KeyValueData *pkvd );
+	void EXPORT CallAgain();
 	void Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
 	void EXPORT FollowTarget( void );
 	void Move( void );
@@ -2117,7 +2119,7 @@ public:
 	EHANDLE m_hPlayer;
 	EHANDLE m_hTarget;
 	CBaseEntity *m_pentPath;
-	int m_sPath;
+	string_t m_sPath;
 	float m_flWait;
 	float m_flReturnTime;
 	float m_flStopTime;
@@ -2127,6 +2129,10 @@ public:
 	float m_acceleration;
 	float m_deceleration;
 	int m_state;
+	EHANDLE m_hActivator;
+	EHANDLE m_hCaller;
+	USE_TYPE m_useType;
+	float m_flValue;
 };
 
 LINK_ENTITY_TO_CLASS( trigger_camera, CTriggerCamera )
@@ -2147,6 +2153,10 @@ TYPEDESCRIPTION	CTriggerCamera::m_SaveData[] =
 	DEFINE_FIELD( CTriggerCamera, m_acceleration, FIELD_FLOAT ),
 	DEFINE_FIELD( CTriggerCamera, m_deceleration, FIELD_FLOAT ),
 	DEFINE_FIELD( CTriggerCamera, m_state, FIELD_INTEGER ),
+	DEFINE_FIELD( CTriggerCamera, m_hActivator, FIELD_EHANDLE ),
+	DEFINE_FIELD( CTriggerCamera, m_hCaller, FIELD_EHANDLE ),
+	DEFINE_FIELD( CTriggerCamera, m_useType, FIELD_INTEGER ),
+	DEFINE_FIELD( CTriggerCamera, m_flValue, FIELD_FLOAT ),
 };
 
 IMPLEMENT_SAVERESTORE( CTriggerCamera, CBaseDelay )
@@ -2191,6 +2201,11 @@ void CTriggerCamera::KeyValue( KeyValueData *pkvd )
 		CBaseDelay::KeyValue( pkvd );
 }
 
+void CTriggerCamera::CallAgain()
+{
+	Use( m_hActivator, m_hCaller, m_useType, m_flValue );
+}
+
 void CTriggerCamera::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
 	if( !ShouldToggle( useType, m_state ) )
@@ -2210,6 +2225,22 @@ void CTriggerCamera::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYP
 
 	m_hPlayer = pActivator;
 
+	if( pActivator->pev->iuser4 )
+	{
+		CBasePlayer *pPlayer = (CBasePlayer *)pActivator;
+		if( FClassnameIs( pPlayer->m_pActiveItem->pev, "weapon_cmlwbr" ) )
+		{
+			CCrossbow *pCrossbow = (CCrossbow *)pPlayer->m_pActiveItem;
+			pCrossbow->ZoomOut();
+			m_hActivator = pActivator;
+			m_hCaller = pCaller;
+			m_useType = useType;
+			m_flValue = value;
+			SetThink( &CTriggerCamera::CallAgain );
+			pev->nextthink = gpGlobals->time + 0.1f;
+		}
+	}
+
 	m_flReturnTime = gpGlobals->time + m_flWait;
 	pev->speed = m_initialSpeed;
 	m_targetSpeed = m_initialSpeed;
@@ -2224,7 +2255,7 @@ void CTriggerCamera::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYP
 	}
 
 	// Nothing to look at!
-	if( m_hTarget == NULL )
+	if( m_hTarget == 0 )
 	{
 		return;
 	}
@@ -2232,12 +2263,9 @@ void CTriggerCamera::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYP
 	if( FBitSet( pev->spawnflags, SF_CAMERA_PLAYER_TAKECONTROL ) )
 	{
 		( (CBasePlayer *)pActivator )->EnableControl( FALSE );
-
-		if( ( (CBasePlayer *)pActivator )->pev->weapons & ( 1 << WEAPON_SUIT ) )
-		{
-			( (CBasePlayer *)pActivator )->HidePlayerHUD();
-		}
 	}
+
+	SetBits( ( (CBasePlayer *)pActivator )->m_iHideHUD, HIDEHUD_WEAPONS | HIDEHUD_HEALTH );
 
 	if( m_sPath )
 	{
@@ -2285,20 +2313,17 @@ void CTriggerCamera::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYP
 
 void CTriggerCamera::FollowTarget()
 {
-	if( m_hPlayer == NULL )
+	if( m_hPlayer == 0 )
 		return;
 
-	if( m_hTarget == NULL || m_flReturnTime < gpGlobals->time )
+	if( m_hTarget == 0 || m_flReturnTime < gpGlobals->time )
 	{
 		if( m_hPlayer->IsAlive() )
 		{
+			CBasePlayer *pPlayer = (CBasePlayer *)( (CBaseEntity *)m_hPlayer );
 			SET_VIEW( m_hPlayer->edict(), m_hPlayer->edict() );
-			( (CBasePlayer *)( (CBaseEntity *)m_hPlayer ) )->EnableControl( TRUE );
-
-			if( ( (CBasePlayer *)( (CBaseEntity *)m_hPlayer ) )->pev->weapons & ( 1 << WEAPON_SUIT ) )
-			{
-				( (CBasePlayer *)( (CBaseEntity *)m_hPlayer ) )->ShowPlayerHUD();
-			}
+			pPlayer->EnableControl( TRUE );
+			ClearBits( pPlayer->m_iHideHUD, HIDEHUD_WEAPONS | HIDEHUD_HEALTH );
 		}
 		SUB_UseTargets( this, USE_TOGGLE, 0 );
 		pev->avelocity = Vector( 0, 0, 0 );

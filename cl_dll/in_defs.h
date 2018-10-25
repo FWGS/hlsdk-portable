@@ -1,13 +1,13 @@
-//========= Copyright © 1996-2002, Valve LLC, All rights reserved. ============
+//========= Copyright (c) 1996-2002, Valve LLC, All rights reserved. ============
 //
 // Purpose: 
 //
 // $NoKeywords: $
 //=============================================================================
 
+#pragma once
 #if !defined( IN_DEFSH )
 #define IN_DEFSH
-#pragma once
 
 // up / down
 #define	PITCH	0
