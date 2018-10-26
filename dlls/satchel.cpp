@@ -309,9 +309,9 @@ BOOL CPipebomb::Deploy()
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
 
 	if( m_chargeReady )
-		return DefaultDeploy( "models/w_pipebomb_watch.mdl", "models/p_pipebomb_watch.mdl", SATCHEL_RADIO_DRAW, "hive" );
+		return DefaultDeploy( "models/v_pipebomb_watch.mdl", "models/p_pipebomb_watch.mdl", SATCHEL_RADIO_DRAW, "hive" );
 	else
-		return DefaultDeploy( "models/v_pipebomb.mdl", "models/w_pipebomb.mdl", SATCHEL_DRAW, "trip" );
+		return DefaultDeploy( "models/v_pipebomb.mdl", "models/p_pipebomb.mdl", SATCHEL_DRAW, "trip" );
 	
 	return TRUE;
 }

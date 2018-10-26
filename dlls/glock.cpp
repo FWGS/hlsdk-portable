@@ -205,7 +205,7 @@ void CGlock::GlockFire( float flCycleTime, BOOL fUseAutoAim )
 	pNail->pev->speed = 1600.0f;
 	pNail->pev->avelocity.z = 10;
 
-	m_flNextPrimaryAttack = m_flNextSecondaryAttack = GetNextAttackDelay( flCycleTime );
+	m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + flCycleTime;
 
 	if( m_fInAttack )
 	{
