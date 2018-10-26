@@ -2853,18 +2853,36 @@ edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer )
 		{
 			TraceResult tr;
 			if( FNullEnt( pSpot ) )
+			{
+				ALERT( at_console, "Null spot\n");
 				continue;
+			}
 			// only spawnpoints from current map are valid
 			if( !FStrEq( STRING( pSpot->pev->netname ), STRING( gpGlobals->mapname ) ) )
+			{
+				ALERT( at_console, "Spot from different map\n");
 				continue;
+			}
 			// check if it is placed in wall
 			UTIL_TraceHull( pSpot->pev->origin, pSpot->pev->origin , missile, human_hull, NULL, &tr );
 			if( tr.fStartSolid || tr.fAllSolid  )
-				continue;
+			{
+				if( tr.pHit )
+					ALERT( at_console, "Spot solid check failed, blocked by is %s\n", STRING(tr.pHit->v.classname) );
+				else
+					ALERT( at_console, "Spot solid check failed\n" );
+				int index  = ENTINDEX( tr.pHit );
+				// check if is client
+				if( index == 0 || index > gpGlobals->maxClients )
+					continue;
+			}
 			// trace down to find if there is no floor
 			UTIL_TraceHull( pSpot->pev->origin, pSpot->pev->origin - Vector( 0, 0, -200 ) , missile, human_hull, NULL, &tr );
 			if( tr.vecEndPos.z - pSpot->pev->origin.z < -190 )
+			{
+				ALERT( at_console, "Spot floor check failed\n");
 				continue;
+			}
 			goto ReturnSpot;
 		}
 	}
@@ -2886,7 +2904,7 @@ edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer )
 ReturnSpot:
 	if( FNullEnt( pSpot ) )
 	{
-		ALERT( at_error, "PutClientInServer: no info_player_start on level" );
+		ALERT( at_error, "PutClientInServer: no info_player_start on level\n" );
 		g_pLastSpawn = NULL;
 		return INDEXENT( 0 );
 	}
