@@ -1589,6 +1589,10 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 
 			m_coopData.bitsTouchCount |=  1 << ( ENTINDEX( pActivator->edict() ) - 1);
 
+			// train has priority on not-train
+			if( pActTrain && !m_coopData.savedPosition.trainGlobal[0] )
+				GGM_SavePosition( (CBasePlayer*)(CBaseEntity*)m_hActivator, &m_coopData.savedPosition );
+
 			// loop through all clients, count number of players
 			for( i = 1; i <= gpGlobals->maxClients; i++ )
 			{
@@ -1598,14 +1602,21 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 				if( !pTrain && UTIL_CoopIsBadPlayer( plr ) )
 					continue;
 
-				// refuse
+				// refuse and cancel
 				if( plr && (pTrain != pActTrain) )
+				{
+					m_coopData.fSpawnSaved = false;
 					return;
+				}
 
 				// count only players spawned more 30 seconds ago
 				if( plr && plr->IsPlayer() && (pTrain || (gpGlobals->time -((CBasePlayer*)plr)->gravgunmod_data.m_flSpawnTime ) > 30 ) && plr->pev->modelindex )
 				{
 					count2++;
+
+					// train has priority on not-train
+					if( pTrain && !m_coopData.savedPosition.trainGlobal[0] )
+						GGM_SavePosition( (CBasePlayer*)plr, &m_coopData.savedPosition );
 
 					// player touched trigger, count it
 					if( m_coopData.bitsTouchCount & (1<<(i - 1)) )
@@ -1722,6 +1733,13 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 			ALERT( at_console, "Player isn't in the transition volume %s, but changelevel forced\n", m_szLandmarkName );
 	}
 	else ALERT( at_console, "Player is in the transition volume %s, changing level now\n", m_szLandmarkName );
+
+	if( !m_coopData.savedPosition.trainGlobal[0] && pPlayer )
+	{
+		if( UTIL_CoopGetPlayerTrain( pPlayer ) )
+		GGM_SavePosition( (CBasePlayer*)pPlayer, &m_coopData.savedPosition );
+	}
+
 
 	UTIL_CoopPrintMessage( "%s^7 activated changelevel, spawncheck is %d\n", UTIL_CoopPlayerName( pPlayer ), (int)!m_coopData.fSkipSpawnCheck );
 
