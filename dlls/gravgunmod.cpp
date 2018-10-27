@@ -978,6 +978,8 @@ bool GGM_RestorePosition( CBasePlayer *pPlayer, struct GGMPosition *pos )
 	return true;
 }
 
+extern int gmsgScoreInfo;
+
 bool GGM_RestoreState( CBasePlayer *pPlayer )
 {
 	GGMPlayerState *pState = pPlayer->gravgunmod_data.pState;
@@ -990,6 +992,16 @@ bool GGM_RestoreState( CBasePlayer *pPlayer )
 
 	pPlayer->pev->frags = pState->t.iFrags;
 	pPlayer->m_iDeaths = pState->t.iDeaths;
+
+	// update the scores
+	MESSAGE_BEGIN( MSG_ALL, gmsgScoreInfo );
+		WRITE_BYTE( ENTINDEX(pPlayer->edict()) );
+		WRITE_SHORT( (int)pPlayer->pev->frags );
+		WRITE_SHORT( pPlayer->m_iDeaths );
+		WRITE_SHORT( 0 );
+		WRITE_SHORT( 0 );
+	MESSAGE_END();
+
 	if( pState->t.flHealth < 1 )
 		return false;
 	pPlayer->pev->armorvalue = pState->t.flBattery;
@@ -1735,6 +1747,8 @@ GGM_PlayerMenu &GGM_PlayerMenu::New( const char *title, bool force )
 extern int gmsgShowMenu;
 void GGM_PlayerMenu::Show()
 {
+	if( !pPlayer )
+		return;
 	if( pPlayer->gravgunmod_data.m_fTouchMenu)
 	{
 		char buf[256];
