@@ -93,6 +93,6 @@ int CHudFlashlight::MsgFunc_Flashlight( const char *pszName,  int iSize, void *p
 
 int CHudFlashlight::Draw( float flTime )
 {
-	gMobileEngfuncs->pfnTouchHideButtons( "flashlight", 1 );
+	// gMobileEngfuncs->pfnTouchHideButtons( "flashlight", 1 );
 	return 1;
 }
