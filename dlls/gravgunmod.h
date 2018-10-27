@@ -186,5 +186,6 @@ bool GGM_PlayerSpawn( CBasePlayer *pPlayer );
 const char *GGM_GetAuthID( CBasePlayer *pPlayer );
 void GGM_ServerActivate( void );
 void COOP_SetupLandmarkTransition( const char *szNextMap, const char *szNextSpot, Vector vecLandmarkOffset, struct GGMPosition *pPos );
+void GGM_ClearLists( void );
 #endif // GRAVGUNMOD_H
 

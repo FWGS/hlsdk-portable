@@ -420,6 +420,8 @@ void COOP_ServerActivate( void )
 		g_pMapStates = g_pCurrentMap = pNewState;
 		if( mp_coop.value )
 			COOP_ClearData();
+		GGM_ClearLists();
+		g_WeaponList.Clear();
 	}
 	else if( mp_coop.value ) COOP_ApplyData();
 
@@ -438,6 +440,13 @@ void COOP_ServerActivate( void )
 				UTIL_BecomeSpectator( plr );
 				//plr->Spawn();
 			}
+		}
+		if( g_CoopState.fSaved && mp_coop_checkpoints.value )
+		{
+			memmove( &g_pCurrentMap->checkpoints[1], &g_pCurrentMap->checkpoints[0], sizeof ( g_pCurrentMap->checkpoints[0] ) * 3 );
+			g_pCurrentMap->checkpoints[0].flTime = gpGlobals->time;
+			snprintf( g_pCurrentMap->checkpoints[0].szDisplayName, 31,  "From %s", g_landmarkTransition.sourceMap );
+			g_pCurrentMap->checkpoints[0].pos = g_CoopState.savedPos;
 		}
 	}
 	memset( &g_landmarkTransition, 0, sizeof( GGMLandmarkTransition ) );
@@ -576,7 +585,7 @@ void GlobalVote::ConfirmMenu( CBasePlayer *pPlayer, CBaseEntity *trigger, const 
 
 void COOP_NewCheckpoint( entvars_t *pevPlayer )
 {
-	if( !pevPlayer->netname )
+	if( !pevPlayer->netname || pevPlayer->health <= 0 )
 		return;
 	memmove( &g_pCurrentMap->checkpoints[1], &g_pCurrentMap->checkpoints[0], sizeof ( g_pCurrentMap->checkpoints[0] ) * 3 );
 	g_pCurrentMap->checkpoints[0].flTime = gpGlobals->time;
@@ -588,13 +597,21 @@ void COOP_NewCheckpoint( entvars_t *pevPlayer )
 
 bool COOP_PlayerDeath( CBasePlayer *pPlayer )
 {
-
+	static bool st_fSkipNext;
+	if( st_fSkipNext )
+	{
+		st_fSkipNext = false;
+		return false;
+	}
+	if( pPlayer->pev->health > 0 || pPlayer->gravgunmod_data.m_state != STATE_SPAWNED )
+		return true;
 //	if( pPlayer->gravgunmod_data.m_iMenuState == MENUSTATE_CHECKPOINT )
 	//	return true;
 
 	if( g_pCurrentMap->checkpoints[0].flTime )
 	{
 		COOP_CheckpointMenu( pPlayer );
+		st_fSkipNext = true;
 		return true;
 	}
 
@@ -667,6 +684,15 @@ void CWeaponList::AddWeapon( const char *classname )
 		if(!strcmp(weapons[i], classname))
 			return;
 	strcpy(weapons[m_iWeapons++], classname);
+	for( int i = 1; i <= gpGlobals->maxClients; i++ )
+	{
+		CBasePlayer *plr = (CBasePlayer*)UTIL_PlayerByIndex( i );
+
+		// broadcast to active players
+		if( plr && plr->pev->modelindex )
+			plr->GiveNamedItem( classname );
+	}
+
 }
 
 void COOP_ResetVote( void )
@@ -738,7 +764,7 @@ void COOP_CheckpointMenu( CBasePlayer *pPlayer )
 	GGM_PlayerMenu &m = pPlayer->gravgunmod_data.menu.New("Select checkpoint", false);
 
 	if( pPlayer->gravgunmod_data.m_state == STATE_SPECTATOR || pPlayer->gravgunmod_data.m_state == STATE_SPECTATOR_BEGIN || pPlayer->pev->health <= 0 )
-		m.Add("Map begin", "respawn");
+		m.Add("Default", "respawn");
 	else
 		m.Add("New checkpoint", "newcheckpoint");
 
