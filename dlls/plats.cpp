@@ -736,7 +736,7 @@ void CFuncTrain::Next( void )
 		return;
 	}
 
-	if( pTarg->GetNextTarget() == pTarg )
+	if( pTarg->GetNextTarget() == pTarg && (pTarg->pev->origin - pev->origin).Length() < 0.01 )
 	{
 		ALERT(at_error, "train short loop!");
 		return;
