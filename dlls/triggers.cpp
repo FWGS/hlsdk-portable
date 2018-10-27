@@ -1553,7 +1553,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 					for( int i = 1; i < gpGlobals->maxClients; i++ )
 					{
 						CBaseEntity *plr = UTIL_PlayerByIndex( i );
-						if( plr && plr->IsNetClient() && pTransition->Intersects( plr ) )
+						if( plr && plr->IsNetClient() && plr->pev->modelindex && pTransition->Intersects( plr ) )
 						{
 							float diff = (vecOrigin - plr->pev->origin).Length();
 							if( dist > diff )
@@ -1573,6 +1573,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 			GGM_SavePosition(pRealActivator, &m_coopData.savedPosition);
 			m_hActivator = pRealActivator;
 			m_coopData.fSpawnSaved = true;
+			ALERT( at_logged, "CL %s %s: saved position %s, %d\n", m_szMapName, m_szLandmarkName, STRING( pRealActivator->pev->netname ), m_coopData.fUsed );
 		}
 	}
 
@@ -1601,17 +1602,20 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 
 				if( !pTrain && UTIL_CoopIsBadPlayer( plr ) )
 					continue;
-
-				// refuse and cancel
-				if( plr && (pTrain != pActTrain) )
-				{
-					m_coopData.fSpawnSaved = false;
-					return;
-				}
-
+					
 				// count only players spawned more 30 seconds ago
 				if( plr && plr->IsPlayer() && (pTrain || (gpGlobals->time -((CBasePlayer*)plr)->gravgunmod_data.m_flSpawnTime ) > 30 ) && plr->pev->modelindex )
 				{
+
+
+					// refuse and cancel
+					if( plr && pTrain && (pTrain != pActTrain) )
+					{
+						m_coopData.fSpawnSaved = false;
+						return;
+					}
+
+
 					count2++;
 
 					// train has priority on not-train
@@ -1779,6 +1783,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 	}
 
 	m_coopData.fValid = true;
+	ALERT( at_logged, "CL %s %s: activating %s, %d\n", m_szMapName, m_szLandmarkName, STRING( pPlayer->pev->netname ), m_coopData.fUsed );
 
 	//ALERT( at_console, "Level touches %d levels\n", ChangeList( levels, 16 ) );
 	ALERT( at_console, "CHANGE LEVEL: %s %s\n", st_szNextMap, st_szNextSpot );
