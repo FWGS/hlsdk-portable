@@ -1,4 +1,4 @@
-//========= Copyright © 2004-2008, Raven City Team, All rights reserved. ============//
+//========= Copyright (c) 2004-2008, Raven City Team, All rights reserved. ============//
 //																					 //
 // Purpose:																			 //
 //																					 //
@@ -235,13 +235,6 @@ void CEagle::UpdateSpot( void )
 		UTIL_TraceLine ( vecSrc, vecSrc + vecAiming * 8192, dont_ignore_monsters, ENT(m_pPlayer->pev), &tr );
 		
 		UTIL_SetOrigin( m_pEagleLaser->pev, tr.vecEndPos );
-
-		if ( UTIL_PointContents(tr.vecEndPos) == CONTENT_SKY )
-		{
-			UTIL_Remove( m_pEagleLaser );
-			m_pEagleLaser = FALSE;
-		}
-
 	}
 #endif
 }
