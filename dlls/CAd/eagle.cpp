@@ -80,6 +80,18 @@ int CEagle::GetItemInfo(ItemInfo *p)
 	return 1;
 }
 
+int CEagle::AddToPlayer( CBasePlayer *pPlayer )
+{
+	if( CBasePlayerWeapon::AddToPlayer( pPlayer ) )
+	{
+		MESSAGE_BEGIN( MSG_ONE, gmsgWeapPickup, NULL, pPlayer->pev );
+			WRITE_BYTE( m_iId );
+		MESSAGE_END();
+		return TRUE;
+	}
+	return FALSE;
+}
+
 BOOL CEagle::Deploy( )
 {
 	return DefaultDeploy( "models/v_desert_eagle.mdl", "models/p_desert_eagle.mdl", DEAGLE_DRAW, "onehanded", 0 );

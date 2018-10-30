@@ -1076,6 +1076,7 @@ public:
 
 	void PrimaryAttack( void );
 	void SecondaryAttack( void );
+	int AddToPlayer( CBasePlayer *pPlayer );
 	BOOL Deploy( void );
 	void Holster( int skiplocal = 0 );
 	void Reload( void );
