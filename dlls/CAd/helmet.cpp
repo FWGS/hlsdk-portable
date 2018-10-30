@@ -65,142 +65,14 @@ public:
 
         void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType);
         void Killed( entvars_t *pevAttacker, int iGib );
-
-        virtual int Save( CSave &save );
-        virtual int Restore( CRestore &restore );
-        static TYPEDESCRIPTION m_SaveData[];
-
-        CUSTOM_SCHEDULES
 };
 
 LINK_ENTITY_TO_CLASS( monster_helmet, CHelmet )
-
-TYPEDESCRIPTION	CHelmet::m_SaveData[] =
-{
-	DEFINE_FIELD( CHelmet, m_fGunDrawn, FIELD_BOOLEAN ),
-	DEFINE_FIELD( CHelmet, m_painTime, FIELD_TIME ),
-	DEFINE_FIELD( CHelmet, m_checkAttackTime, FIELD_TIME ),
-	DEFINE_FIELD( CHelmet, m_lastAttackCheck, FIELD_BOOLEAN ),
-	DEFINE_FIELD( CHelmet, m_flPlayerDamage, FIELD_FLOAT ),
-};
-
-IMPLEMENT_SAVERESTORE( CHelmet, CTalkMonster )
-/*
-//=========================================================
-// AI Schedules Specific to this monster
-//=========================================================
-Task_t tlBaFollow[] =
-{
-	{ TASK_MOVE_TO_TARGET_RANGE, (float)128 },	// Move within 128 of target ent (client)
-	{ TASK_SET_SCHEDULE, (float)SCHED_TARGET_FACE },
-};
-
-Schedule_t slBaFollow[] =
-{
-	{
-		tlBaFollow,
-		ARRAYSIZE( tlBaFollow ),
-		bits_COND_NEW_ENEMY |
-		bits_COND_LIGHT_DAMAGE |
-		bits_COND_HEAVY_DAMAGE |
-		bits_COND_HEAR_SOUND |
-		bits_COND_PROVOKED,
-		bits_SOUND_DANGER,
-		"Follow"
-	},
-};
-
-//=========================================================
-// BarneyDraw - much better looking draw schedule for when
-// barney knows who he's gonna attack.
-//=========================================================
-Task_t tlBarneyEnemyDraw[] =
-{
-	{ TASK_STOP_MOVING, 0 },
-	{ TASK_FACE_ENEMY, 0 },
-	{ TASK_PLAY_SEQUENCE_FACE_ENEMY, (float) ACT_ARM },
-};
-
-Schedule_t slBarneyEnemyDraw[] =
-{
-	{
-		tlBarneyEnemyDraw,
-		ARRAYSIZE( tlBarneyEnemyDraw ),
-		0,
-		0,
-		"Barney Enemy Draw"
-	}
-};
-
-Task_t tlBaFaceTarget[] =
-{
-	{ TASK_SET_ACTIVITY, (float)ACT_IDLE },
-	{ TASK_FACE_TARGET, (float)0 },
-	{ TASK_SET_ACTIVITY, (float)ACT_IDLE },
-	{ TASK_SET_SCHEDULE, (float)SCHED_TARGET_CHASE },
-};
-
-Schedule_t slBaFaceTarget[] =
-{
-	{
-		tlBaFaceTarget,
-		ARRAYSIZE( tlBaFaceTarget ),
-		bits_COND_CLIENT_PUSH |
-		bits_COND_NEW_ENEMY |
-		bits_COND_LIGHT_DAMAGE |
-		bits_COND_HEAVY_DAMAGE |
-		bits_COND_HEAR_SOUND |
-		bits_COND_PROVOKED,
-		bits_SOUND_DANGER,
-		"FaceTarget"
-	},
-};
-
-Task_t tlIdleBaStand[] =
-{
-	{ TASK_STOP_MOVING, 0 },
-	{ TASK_SET_ACTIVITY, (float)ACT_IDLE },
-	{ TASK_WAIT, (float)2 }, // repick IDLESTAND every two seconds.
-	{ TASK_TLK_HEADRESET, (float)0 }, // reset head position
-};
-
-Schedule_t slIdleBaStand[] =
-{
-	{
-		tlIdleBaStand,
-		ARRAYSIZE( tlIdleBaStand ),
-		bits_COND_NEW_ENEMY |
-		bits_COND_LIGHT_DAMAGE |
-		bits_COND_HEAVY_DAMAGE |
-		bits_COND_HEAR_SOUND |
-		bits_COND_SMELL |
-		bits_COND_PROVOKED,
-		bits_SOUND_COMBAT |// sound flags - change these, and you'll break the talking code.
-		//bits_SOUND_PLAYER |
-		//bits_SOUND_WORLD |
-		bits_SOUND_DANGER |
-		bits_SOUND_MEAT |// scents
-		bits_SOUND_CARCASS |
-		bits_SOUND_GARBAGE,
-		"IdleStand"
-	},
-};
-*/
 
 extern Schedule_t	slBaFollow[];
 extern Schedule_t	slBarneyEnemyDraw[];
 extern Schedule_t	slBaFaceTarget[];
 extern Schedule_t	slIdleBaStand[];
-
-DEFINE_CUSTOM_SCHEDULES( CHelmet )
-{
-	slBaFollow,
-	slBarneyEnemyDraw,
-	slBaFaceTarget,
-	slIdleBaStand,
-};
-
-IMPLEMENT_CUSTOM_SCHEDULES( CHelmet, CTalkMonster )
 
 //=========================================================
 // ALertSound - barney says "Freeze!"
