@@ -493,6 +493,7 @@ int CBasePlayer::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 		{
 			if( ( bitsDamageType & DMG_BLAST ) && flDamage > 10 )
 			{
+				STOP_SOUND( ENT( pev ), CHAN_STATIC, "player/ear_ringing.wav" );
 				EMIT_SOUND_DYN( ENT( pev ), CHAN_STATIC, "player/ear_ringing.wav", 1.0, ATTN_NORM, 0, PITCH_NORM );
 			}
 		}
