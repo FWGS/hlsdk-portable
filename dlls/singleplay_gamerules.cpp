@@ -121,7 +121,7 @@ float CHalfLifeRules::FlPlayerFallDamage( CBasePlayer *pPlayer )
 //=========================================================
 void CHalfLifeRules::PlayerSpawn( CBasePlayer *pPlayer )
 {
-	pPlayer->gravgunmod_data.m_state = STATE_SPAWNED;
+	pPlayer->gravgunmod_data.iState = STATE_SPAWNED;
 }
 
 //=========================================================

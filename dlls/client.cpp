@@ -90,7 +90,7 @@ BOOL ClientConnect( edict_t *pEntity, const char *pszName, const char *pszAddres
 		CBasePlayer *pl = (CBasePlayer *)CBaseEntity::Instance( pEntity ) ;
 		if( pl )
 		{
-			pl->gravgunmod_data.m_state = STATE_UNINITIALIZED;
+			pl->gravgunmod_data.iState = STATE_UNINITIALIZED;
 			pl->RemoveAllItems( TRUE );
 			UTIL_BecomeSpectator( pl );
 		}
@@ -122,7 +122,7 @@ void ClientDisconnect( edict_t *pEntity )
 	if( pPlayer && pPlayer->IsPlayer() )
 	{
 		GGM_SaveState( pPlayer );
-		pPlayer->gravgunmod_data.m_state = STATE_UNINITIALIZED;
+		pPlayer->gravgunmod_data.iState = STATE_UNINITIALIZED;
 	}
 
 	if (g_fGameOver)
@@ -629,7 +629,7 @@ void ClientCommand( edict_t *pEntity )
 		}*/
 		pPlayer->RemoveAllItems(TRUE);
 		UTIL_BecomeSpectator(pPlayer);
-		pPlayer->gravgunmod_data.m_state = STATE_SPECTATOR;
+		pPlayer->gravgunmod_data.iState = STATE_SPECTATOR;
 	}
 	else if( FStrEq( pcmd, "specmode" ) ) // new spectator mode
 	{
@@ -695,7 +695,7 @@ void ClientUserInfoChanged( edict_t *pEntity, char *infobuffer )
 	// prevent keeping other's uid on saverestore
 	CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)&pEntity->v);
 	const char *uid = GGM_GetAuthID( pPlayer );
-	if( !pPlayer->gravgunmod_data.pState || !pPlayer->gravgunmod_data.pState->fRegistered ||  pPlayer->gravgunmod_data.m_state != STATE_SPAWNED )
+	if( !pPlayer->gravgunmod_data.pState || !pPlayer->gravgunmod_data.pState->fRegistered ||  pPlayer->gravgunmod_data.iState != STATE_SPAWNED )
 	{
 		GGMPlayerState *pState = GGM_GetState(uid, name);
 
@@ -704,7 +704,7 @@ void ClientUserInfoChanged( edict_t *pEntity, char *infobuffer )
 			GGM_SaveState( pPlayer );
 			pEntity->v.netname = pEntity->v.frags = 0;
 			pPlayer->gravgunmod_data.pState = pState;
-			pPlayer->gravgunmod_data.m_state = STATE_UNINITIALIZED;
+			pPlayer->gravgunmod_data.iState = STATE_UNINITIALIZED;
 		}
 	}
 
@@ -728,7 +728,7 @@ void ClientUserInfoChanged( edict_t *pEntity, char *infobuffer )
 		g_engfuncs.pfnSetClientKeyValue( ENTINDEX(pEntity), infobuffer, "name", sName );
 
 		// prevent phantom nickname changed messages
-		if( mp_coop.value && ((CBasePlayer *)pEntity->pvPrivateData)->gravgunmod_data.m_state == STATE_UNINITIALIZED )
+		if( mp_coop.value && ((CBasePlayer *)pEntity->pvPrivateData)->gravgunmod_data.iState == STATE_UNINITIALIZED )
 			return;
 
 		if( gpGlobals->maxClients > 1 )

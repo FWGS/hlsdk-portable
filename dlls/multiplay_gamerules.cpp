@@ -486,10 +486,10 @@ void CHalfLifeMultiplay::InitHUD( CBasePlayer *pl )
 		MESSAGE_END();
 	}
 
-	if( pl->gravgunmod_data.m_state <= STATE_CONNECTED )
+	if( pl->gravgunmod_data.iState <= STATE_CONNECTED )
 		ClientPutInServer( pl->edict() );
 
-	if( pl->gravgunmod_data.m_state == STATE_SPECTATOR_BEGIN && !pl->gravgunmod_data.m_fTouchMenu )
+	if( pl->gravgunmod_data.iState == STATE_SPECTATOR_BEGIN && !pl->gravgunmod_data.fTouchMenu )
 		GGM_InitialMenus( pl );
 
 }
@@ -563,10 +563,10 @@ BOOL CHalfLifeMultiplay::FPlayerCanTakeDamage( CBasePlayer *pPlayer, CBaseEntity
 //=========================================================
 void CHalfLifeMultiplay::PlayerThink( CBasePlayer *pPlayer )
 {
-	if( !mp_coop.value && pPlayer->gravgunmod_data.m_state == STATE_SPECTATOR_BEGIN )
+	if( !mp_coop.value && pPlayer->gravgunmod_data.iState == STATE_SPECTATOR_BEGIN )
 		if( pPlayer->m_afButtonPressed & ( IN_DUCK | IN_ATTACK | IN_ATTACK2 | IN_USE | IN_JUMP ) )
 			UTIL_SpawnPlayer( pPlayer );
-	if( pPlayer->gravgunmod_data.m_state == STATE_UNINITIALIZED )
+	if( pPlayer->gravgunmod_data.iState == STATE_UNINITIALIZED )
 		if( pPlayer->m_afButtonPressed || pPlayer->pev->button )
 		{
 			ClientPutInServer( pPlayer->edict() );
@@ -576,7 +576,7 @@ void CHalfLifeMultiplay::PlayerThink( CBasePlayer *pPlayer )
 			return;
 		}
 
-	if( pPlayer->gravgunmod_data.m_state == STATE_POINT_SELECT )
+	if( pPlayer->gravgunmod_data.iState == STATE_POINT_SELECT )
 	{
 		if( pPlayer->m_afButtonPressed & ( IN_DUCK | IN_ATTACK | IN_ATTACK2 | IN_USE | IN_JUMP ) )
 			pPlayer->Spawn();

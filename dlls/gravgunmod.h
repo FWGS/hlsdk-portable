@@ -165,16 +165,16 @@ struct GGMPlayerState
 
 struct GGMData
 {
-	float m_flSpawnTime;
-	PlayerState m_state;
-	bool m_fTouchMenu;
-	int m_iLocalConfirm;
-	float m_flEntScope;
-	float m_flEntTime;
+	float flSpawnTime;
+	PlayerState iState;
+	bool fTouchMenu;
+	int iLocalConfirm;
+	float flEntScore;
+	float flEntTime;
 	GGM_PlayerMenu menu;
-	bool touch_loading;
+	bool fTouchLoading;
 	struct GGMPlayerState *pState;
-	char registering_name[32];
+	char fRegisterInput[32];
 };
 
 struct GGMPlayerState *GGM_GetState(const char *uid, const char *name);

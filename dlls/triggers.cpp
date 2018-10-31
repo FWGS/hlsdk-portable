@@ -1604,7 +1604,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 					continue;
 					
 				// count only players spawned more 30 seconds ago
-				if( plr && plr->IsPlayer() && (pTrain || (gpGlobals->time -((CBasePlayer*)plr)->gravgunmod_data.m_flSpawnTime ) > 30 ) && plr->pev->modelindex )
+				if( plr && plr->IsPlayer() && (pTrain || (gpGlobals->time -((CBasePlayer*)plr)->gravgunmod_data.flSpawnTime ) > 30 ) && plr->pev->modelindex )
 				{
 
 
@@ -1639,7 +1639,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 						//UTIL_CoopPrintMessage("%s^7 trying activate changelevel too early\n", UTIL_CoopPlayerName( pPlayer ));
 						UTIL_CleanSpawnPoint( pPlayer->pev->origin, 50 );
 						m_coopData.flRepeatTimer = gpGlobals->time;
-						pPlayer->gravgunmod_data.m_iLocalConfirm = -2;
+						pPlayer->gravgunmod_data.iLocalConfirm = -2;
 					}
 
 					ClientPrint( pActivator->pev, HUD_PRINTCENTER, "Too early! You or other players near you\nplaying less than 30 seconds!" );
@@ -1708,7 +1708,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 		{
 			CBaseEntity *plr = UTIL_PlayerByIndex( i );
 
-			if( plr && plr->IsPlayer() && ( !FindTriggerTransition( m_szLandmarkName ) || (gpGlobals->time -((CBasePlayer*)plr)->gravgunmod_data.m_flSpawnTime ) > 30  || m_coopData.fSkipSpawnCheck ) )
+			if( plr && plr->IsPlayer() && ( !FindTriggerTransition( m_szLandmarkName ) || (gpGlobals->time -((CBasePlayer*)plr)->gravgunmod_data.flSpawnTime ) > 30  || m_coopData.fSkipSpawnCheck ) )
 			{
 					if( InTransitionVolume( plr, m_szLandmarkName ))
 					{
@@ -1726,7 +1726,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 		ALERT( at_console, "There are %d players in transition volume %s\n", count, m_szLandmarkName );
 			
 	}
-	else if( ( (gpGlobals->time -((CBasePlayer*)pPlayer)->gravgunmod_data.m_flSpawnTime ) < 30 )  && FindTriggerTransition( m_szLandmarkName ) || !InTransitionVolume( pPlayer, m_szLandmarkName ) )
+	else if( ( (gpGlobals->time -((CBasePlayer*)pPlayer)->gravgunmod_data.flSpawnTime ) < 30 )  && FindTriggerTransition( m_szLandmarkName ) || !InTransitionVolume( pPlayer, m_szLandmarkName ) )
 	{
 		if( !m_coopData.fSkipSpawnCheck )
 		{
@@ -1799,7 +1799,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 			if( plr )
 			{
 				GGM_SaveState( plr );
-				plr->gravgunmod_data.m_state = STATE_UNINITIALIZED;
+				plr->gravgunmod_data.iState = STATE_UNINITIALIZED;
 				plr->RemoveAllItems( TRUE );
 				UTIL_BecomeSpectator( plr );
 				// HACK: force perform reconnection

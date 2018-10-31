@@ -100,20 +100,20 @@ bool Ent_CheckCreate( edict_t *player, const char *classname )
 	if( !p )
 		return false;
 
-	if( p->gravgunmod_data.m_flEntScope > 1 )
+	if( p->gravgunmod_data.flEntScore > 1 )
 		return false;
 
-	if( gpGlobals->time - p->gravgunmod_data.m_flEntTime > 60 )
+	if( gpGlobals->time - p->gravgunmod_data.flEntTime > 60 )
 	{
-		p->gravgunmod_data.m_flEntTime = gpGlobals->time;
-		p->gravgunmod_data.m_flEntScope = 0;
+		p->gravgunmod_data.flEntTime = gpGlobals->time;
+		p->gravgunmod_data.flEntScore = 0;
 	}
 
 	for( node = entblacklist; node; node = node->next )
 	{
 		if( Q_stricmpext(node->pattern, classname ) )
 		{
-			if( !node->limit || ( p->gravgunmod_data.m_flEntScope + 1.0f / (float)node->limit > 1 ) )
+			if( !node->limit || ( p->gravgunmod_data.flEntScore + 1.0f / (float)node->limit > 1 ) )
 			{
 				// remove all created entities
 				if( node->clear )
@@ -129,7 +129,7 @@ bool Ent_CheckCreate( edict_t *player, const char *classname )
 				}
 				return false;
 			}
-			p->gravgunmod_data.m_flEntScope += 1.0f / (float)node->limit;
+			p->gravgunmod_data.flEntScore += 1.0f / (float)node->limit;
 		}
 	}
 
