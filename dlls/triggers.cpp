@@ -1591,7 +1591,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 			m_coopData.bitsTouchCount |=  1 << ( ENTINDEX( pActivator->edict() ) - 1);
 
 			// train has priority on not-train
-			if( pActTrain && !m_coopData.savedPosition.trainGlobal[0] )
+			if( pActTrain && !m_coopData.savedPosition.szTrainGlobal[0] )
 				GGM_SavePosition( (CBasePlayer*)(CBaseEntity*)m_hActivator, &m_coopData.savedPosition );
 
 			// loop through all clients, count number of players
@@ -1619,7 +1619,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 					count2++;
 
 					// train has priority on not-train
-					if( pTrain && !m_coopData.savedPosition.trainGlobal[0] )
+					if( pTrain && !m_coopData.savedPosition.szTrainGlobal[0] )
 						GGM_SavePosition( (CBasePlayer*)plr, &m_coopData.savedPosition );
 
 					// player touched trigger, count it
@@ -1738,7 +1738,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 	}
 	else ALERT( at_console, "Player is in the transition volume %s, changing level now\n", m_szLandmarkName );
 
-	if( !m_coopData.savedPosition.trainGlobal[0] && pPlayer )
+	if( !m_coopData.savedPosition.szTrainGlobal[0] && pPlayer )
 	{
 		if( UTIL_CoopGetPlayerTrain( pPlayer ) )
 		GGM_SavePosition( (CBasePlayer*)pPlayer, &m_coopData.savedPosition );

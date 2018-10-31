@@ -771,10 +771,10 @@ void GGM_WriteLogin( struct GGMLogin *pLogin )
 	if( !pLogin->pState )
 		return;
 
-	if( !GGM_FilterFileName( pLogin->f.uid ) || !GGM_FilterFileName( pLogin->f.name ) )
-		snprintf( path, 63,  "%s/ggm/logins/%d.%d", gamedir, GGM_HashString( pLogin->f.uid ), GGM_HashString( pLogin->f.name ) );
+	if( !GGM_FilterFileName( pLogin->f.szUID ) || !GGM_FilterFileName( pLogin->f.szName ) )
+		snprintf( path, 63,  "%s/ggm/logins/%d.%d", gamedir, GGM_HashString( pLogin->f.szUID ), GGM_HashString( pLogin->f.szName ) );
 	else
-		snprintf( path, 63, "%s/ggm/logins/%s.%s", gamedir, pLogin->f.uid, pLogin->f.name );
+		snprintf( path, 63, "%s/ggm/logins/%s.%s", gamedir, pLogin->f.szUID, pLogin->f.szName );
 
 	f = fopen( path, "wb" );
 
@@ -794,7 +794,7 @@ struct GGMLogin *GGM_LoadLogin( const char *uid, const char *name )
 
 	for( pLogin = login_list; pLogin; pLogin = pLogin->pNext )
 	{
-		if( !strcmp( name, pLogin->f.name ) && !strcmp(uid, pLogin->f.uid ) )
+		if( !strcmp( name, pLogin->f.szName ) && !strcmp(uid, pLogin->f.szUID ) )
 		{
 			return pLogin;
 		}
@@ -835,7 +835,7 @@ struct GGMPlayerState *GGM_GetState( const char *uid, const char *name )
 	{
 		for( struct GGMLogin *login = login_list; login; login = login->pNext )
 		{
-			if( !strcmp( name, login->f.name ) )
+			if( !strcmp( name, login->f.szName ) )
 			{
 				return NULL;
 			}
@@ -865,11 +865,11 @@ void GGM_SavePosition( CBasePlayer *pPlayer, struct GGMPosition *pos )
 	pos->vecOrigin = pPlayer->pev->origin;
 	pos->vecAngles = pPlayer->pev->angles;
 	pos->fDuck = !!(pPlayer->pev->flags & FL_DUCKING);
-	strncpy( pos->mapName, STRING(gpGlobals->mapname), 31 );
+	strncpy( pos->szMapName, STRING(gpGlobals->mapname), 31 );
 	CBaseEntity *pTrain = UTIL_CoopGetPlayerTrain(pPlayer);
 	if( pTrain )
 	{
-		strcpy( pos->trainGlobal, STRING( pTrain->pev->globalname ) );
+		strcpy( pos->szTrainGlobal, STRING( pTrain->pev->globalname ) );
 		if( pTrain->pev->angles == g_vecZero )
 			pos->vecTrainOffset = pPlayer->pev->origin - VecBModelOrigin(pTrain->pev);
 		else
@@ -877,7 +877,7 @@ void GGM_SavePosition( CBasePlayer *pPlayer, struct GGMPosition *pos )
 
 		pos->vecTrainAngles = pTrain->pev->angles;
 	}
-	else pos->trainGlobal[0] = 0;
+	else pos->szTrainGlobal[0] = 0;
 
 }
 
@@ -930,12 +930,12 @@ void GGM_SaveState( CBasePlayer *pPlayer )
 
 bool GGM_RestorePosition( CBasePlayer *pPlayer, struct GGMPosition *pos )
 {
-	bool fOriginSet = COOP_GetOrigin( &pPlayer->pev->origin, pos->vecOrigin, pos->mapName );
+	bool fOriginSet = COOP_GetOrigin( &pPlayer->pev->origin, pos->vecOrigin, pos->szMapName );
 	//pPlayer->pev->origin = pState->t.pos.vecOrigin;
 
-	if( pos->trainGlobal[0] )
+	if( pos->szTrainGlobal[0] )
 	{
-		CBaseEntity *pTrain =  UTIL_FindEntityByString( NULL, "globalname", pos->trainGlobal );
+		CBaseEntity *pTrain =  UTIL_FindEntityByString( NULL, "globalname", pos->szTrainGlobal );
 		if( pTrain )
 		{
 			Vector vecTrainOrigin;
@@ -1139,7 +1139,7 @@ void GGM_Logout( CBasePlayer *pPlayer )
 	// unlink from list and free
 	for( pLogin = login_list; pLogin; pLogin = pLogin->pNext )
 	{
-		if( strcmp( uid, pLogin->f.uid ) || strcmp( name, pLogin->f.name ) )
+		if( strcmp( uid, pLogin->f.szUID ) || strcmp( name, pLogin->f.szName ) )
 		{
 			pPrevLogin = pLogin;
 			continue;
@@ -1280,17 +1280,17 @@ void GGM_Register( CBasePlayer *pPlayer, const char *name, const char *password 
 	strncpy( pState->uid, name, 32 );
 	pState->uid[32] = 0;
 	pState->fRegistered = true;
-	strncpy( pState->p.password, password, 32 );
-	GGM_Munge( pState->p.password );
-	pState->p.password[32] = 0;
+	strncpy( pState->p.szPassword, password, 32 );
+	GGM_Munge( pState->p.szPassword );
+	pState->p.szPassword[32] = 0;
 	pState->t = pPlayer->gravgunmod_data.pState->t;
 	pState->pNext = registered_list;
 	registered_list = pState;
 	GGM_WritePersist( pState );
 	pLogin = (struct GGMLogin*)calloc(1, sizeof( struct GGMLogin ) );
 	pLogin->pState = pState;
-	strncpy( pLogin->f.name, STRING(pPlayer->pev->netname ), 32 );
-	strncpy( pLogin->f.uid, pPlayer->gravgunmod_data.pState->uid, 32 );
+	strncpy( pLogin->f.szName, STRING(pPlayer->pev->netname ), 32 );
+	strncpy( pLogin->f.szUID, pPlayer->gravgunmod_data.pState->uid, 32 );
 	pLogin->pNext = login_list;
 	login_list = pLogin;
 	GGM_WriteLogin( pLogin );
@@ -1367,7 +1367,7 @@ void GGM_Login( CBasePlayer *pPlayer, const char *name, const char *password )
 	{
 		for( pLogin = login_list; pLogin; pLogin = pLogin->pNext )
 		{
-			if( !strcmp( pLogin->f.name, STRING(pPlayer->pev->netname ) ) )
+			if( !strcmp( pLogin->f.szName, STRING(pPlayer->pev->netname ) ) )
 			{
 				if( pState == pLogin->pState ) // same person
 					break;
@@ -1384,15 +1384,15 @@ void GGM_Login( CBasePlayer *pPlayer, const char *name, const char *password )
 	strncpy( mpassword, password, 32 );
 	GGM_Munge( mpassword );
 
-	if( !pState || strncmp( mpassword, pState->p.password, 32 ) )
+	if( !pState || strncmp( mpassword, pState->p.szPassword, 32 ) )
 	{
 		GGM_ChatPrintf( pPlayer, "Login failed!\n" );
 		return;
 	}
 	pLogin = (struct GGMLogin*)calloc(1, sizeof( struct GGMLogin ) );
 	pLogin->pState = pState;
-	strncpy( pLogin->f.name, STRING(pPlayer->pev->netname ), 32 );
-	strncpy( pLogin->f.uid, GGM_GetAuthID(pPlayer), 32 );
+	strncpy( pLogin->f.szName, STRING(pPlayer->pev->netname ), 32 );
+	strncpy( pLogin->f.szUID, GGM_GetAuthID(pPlayer), 32 );
 	pLogin->pNext = login_list;
 	login_list = pLogin;
 	GGM_WriteLogin( pLogin );
@@ -1459,8 +1459,8 @@ void GGM_ChangePassword_f( CBasePlayer *pPlayer )
 	}
 	else if( CMD_ARGC() == 2 )
 	{
-		strncpy( pPlayer->gravgunmod_data.pState->p.password, CMD_ARGV(1), 32 );
-		GGM_Munge( pPlayer->gravgunmod_data.pState->p.password );
+		strncpy( pPlayer->gravgunmod_data.pState->p.szPassword, CMD_ARGV(1), 32 );
+		GGM_Munge( pPlayer->gravgunmod_data.pState->p.szPassword );
 		GGM_WritePersist( pPlayer->gravgunmod_data.pState );
 	}
 	else

@@ -108,8 +108,8 @@ struct GGMPosition
 {
 	Vector vecOrigin;
 	Vector vecAngles;
-	char mapName[32];
-	char trainGlobal[32];
+	char szMapName[32];
+	char szTrainGlobal[32];
 	Vector vecTrainOffset;
 	Vector vecTrainAngles;
 	bool fDuck;
@@ -120,8 +120,8 @@ struct GGMLogin
 {
 	struct GGMLogin *pNext;
 	struct {
-	char uid[33];
-	char name[32];
+	char szUID[33];
+	char szName[32];
 	} f;
 	struct GGMPlayerState *pState;
 };
@@ -133,7 +133,7 @@ struct GGMPersist
 {
 
 	/// todo:salt/hash
-	char password[33];
+	char szPassword[33];
 };
 
 // complete player state
