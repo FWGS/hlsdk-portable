@@ -86,9 +86,9 @@ class GGM_PlayerMenu
 {
 	struct GGM_MenuItem
 	{
-		char command[256];
-		char name[32];
-	} m_items[5];
+		char szCommand[256];
+		char szName[32];
+	} m_rgItems[5];
 	int m_iCount;
 	char m_sTitle[32];
 	bool m_fShow;

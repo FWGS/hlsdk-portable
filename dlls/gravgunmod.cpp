@@ -1715,8 +1715,8 @@ GGM_PlayerMenu &GGM_PlayerMenu::Add(const char *name, const char *command)
 		return *this;
 	}
 
-	strncpy( m_items[m_iCount].name, name, sizeof(m_items[m_iCount].name) - 1 );
-	strncpy( m_items[m_iCount].command, command, sizeof(m_items[m_iCount].command) - 1 );
+	strncpy( m_rgItems[m_iCount].szName, name, sizeof(m_rgItems[m_iCount].szName) - 1 );
+	strncpy( m_rgItems[m_iCount].szCommand, command, sizeof(m_rgItems[m_iCount].szCommand) - 1 );
 	m_iCount++;
 	return *this;
 }
@@ -1761,7 +1761,7 @@ void GGM_PlayerMenu::Show()
 
 		for( int i = 0; i < m_iCount; i++ )
 		{
-			sprintf( buf, MENU_STR(touch_settexture _sm%d "#%d. %s"\ntouch_show _sm%d\n), i+1, i+1, m_items[i].name, i + 1 );
+			sprintf( buf, MENU_STR(touch_settexture _sm%d "#%d. %s"\ntouch_show _sm%d\n), i+1, i+1, m_rgItems[i].szName, i + 1 );
 
 			if( pPlayer )
 				CLIENT_COMMAND( pPlayer->edict(), buf);
@@ -1776,7 +1776,7 @@ void GGM_PlayerMenu::Show()
 
 		for( int i = 0; i < m_iCount; i++ )
 		{
-			pbuf += sprintf( pbuf, "^3%d.^7 %s\n", i+1, m_items[i].name);
+			pbuf += sprintf( pbuf, "^3%d.^7 %s\n", i+1, m_rgItems[i].szName);
 			flags |= 1<<i;
 		}
 
@@ -1799,14 +1799,14 @@ bool GGM_PlayerMenu::MenuSelect( int select )
 		return false;
 
 
-	if( !m_items[select-1].command[0] )
+	if( !m_rgItems[select-1].szCommand[0] )
 	{
 		// cancel menu item
 		GGM_ClearHelpMessage( pPlayer );
 		return true;
 	}
 
-	GGM::Cmd_TokenizeString( m_items[select-1].command );
+	GGM::Cmd_TokenizeString( m_rgItems[select-1].szCommand );
 	ClientCommand( pPlayer->edict() );
 	GGM::Cmd_Reset();
 
