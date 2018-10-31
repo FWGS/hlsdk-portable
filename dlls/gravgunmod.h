@@ -94,7 +94,7 @@ class GGM_PlayerMenu
 	bool m_fShow;
 
 public:
-	CBasePlayer *pPlayer;
+	CBasePlayer *m_pPlayer;
 	bool MenuSelect( int select );
 	GGM_PlayerMenu &SetTitle( const char *title );
 	GGM_PlayerMenu &New( const char *title, bool force = true );

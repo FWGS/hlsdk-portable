@@ -179,8 +179,8 @@ void UTIL_BecomeSpectator( CBasePlayer *pPlayer )
 void UTIL_SpawnPlayer( CBasePlayer *pPlayer )
 {
 	//pPlayer->StopObserver();
-	if( pPlayer->gravgunmod_data.iState == STATE_SPECTATOR )
-		pPlayer->gravgunmod_data.iState = STATE_SPAWNED;
+	if( pPlayer->m_ggm.iState == STATE_SPECTATOR )
+		pPlayer->m_ggm.iState = STATE_SPAWNED;
 	pPlayer->m_iRespawnFrames = 0;
 	pPlayer->pev->effects &= ~EF_NODRAW;
 
@@ -435,7 +435,7 @@ void COOP_ServerActivate( void )
 			// reset all players state
 			if( plr )
 			{
-				plr->gravgunmod_data.iState = STATE_UNINITIALIZED;
+				plr->m_ggm.iState = STATE_UNINITIALIZED;
 				plr->RemoveAllItems( TRUE );
 				UTIL_BecomeSpectator( plr );
 				//plr->Spawn();
@@ -550,7 +550,7 @@ void GlobalVote::ShowGlobalMenu( const char *title, int count, const char **menu
 		{
 			count2++;
 			CBasePlayer *player = (CBasePlayer *) plr;
-			GGM_PlayerMenu &m = player->gravgunmod_data.menu.New( title );
+			GGM_PlayerMenu &m = player->m_ggm.menu.New( title );
 			for( int j = 0; j < count; j++ )
 			{
 				char cmd[32];
@@ -603,7 +603,7 @@ bool COOP_PlayerDeath( CBasePlayer *pPlayer )
 		st_fSkipNext = false;
 		return false;
 	}
-	if( pPlayer->pev->health > 0 || pPlayer->gravgunmod_data.iState != STATE_SPAWNED )
+	if( pPlayer->pev->health > 0 || pPlayer->m_ggm.iState != STATE_SPAWNED )
 		return true;
 //	if( pPlayer->gravgunmod_data.m_iMenuState == MENUSTATE_CHECKPOINT )
 	//	return true;
@@ -729,11 +729,11 @@ bool COOP_ConfirmMenu(CBaseEntity *pTrigger, CBaseEntity *pActivator, int count2
 		{
 			CBasePlayer *pPlayer = (CBasePlayer*)pActivator;
 
-			if( pPlayer->gravgunmod_data.iLocalConfirm <= 0 )
-				pPlayer->gravgunmod_data.iLocalConfirm = 1;
-			if( pPlayer->gravgunmod_data.iLocalConfirm < 3 )
+			if( pPlayer->m_ggm.iLocalConfirm <= 0 )
+				pPlayer->m_ggm.iLocalConfirm = 1;
+			if( pPlayer->m_ggm.iLocalConfirm < 3 )
 			{
-				pPlayer->gravgunmod_data.menu.New("This will change map back", false)
+				pPlayer->m_ggm.menu.New("This will change map back", false)
 						.Add("Confirm", "confirmchangelevel")
 						.Add("Cancel", "")
 						.Show();
@@ -741,7 +741,7 @@ bool COOP_ConfirmMenu(CBaseEntity *pTrigger, CBaseEntity *pActivator, int count2
 			else
 			{
 				g_GlobalVote.ConfirmMenu(pPlayer, pTrigger, mapname );
-				pPlayer->gravgunmod_data.iLocalConfirm = 0;
+				pPlayer->m_ggm.iLocalConfirm = 0;
 			}
 		}
 		return false;
@@ -761,9 +761,9 @@ void COOP_CheckpointMenu( CBasePlayer *pPlayer )
 	if( !g_pCurrentMap )
 		return;
 
-	GGM_PlayerMenu &m = pPlayer->gravgunmod_data.menu.New("Select checkpoint", false);
+	GGM_PlayerMenu &m = pPlayer->m_ggm.menu.New("Select checkpoint", false);
 
-	if( pPlayer->gravgunmod_data.iState == STATE_SPECTATOR || pPlayer->gravgunmod_data.iState == STATE_SPECTATOR_BEGIN || pPlayer->pev->health <= 0 )
+	if( pPlayer->m_ggm.iState == STATE_SPECTATOR || pPlayer->m_ggm.iState == STATE_SPECTATOR_BEGIN || pPlayer->pev->health <= 0 )
 		m.Add("Default", "respawn");
 	else
 		m.Add("New checkpoint", "newcheckpoint");
@@ -788,14 +788,14 @@ bool COOP_ClientCommand( edict_t *pEntity )
 
 	else if( FStrEq(pcmd, "unblock") )
 	{
-		if( pPlayer->gravgunmod_data.iState != STATE_SPAWNED )
+		if( pPlayer->m_ggm.iState != STATE_SPAWNED )
 			return false;
 		UTIL_CleanSpawnPoint( pev->origin, 150 );
 		return true;
 	}
 	else if( FStrEq( pcmd, "joincoop" ) )
 	{
-		if( pPlayer->gravgunmod_data.iState == STATE_SPAWNED )
+		if( pPlayer->m_ggm.iState == STATE_SPAWNED )
 			return false;
 		if( mp_coop_checkpoints.value && g_pCurrentMap && g_pCurrentMap->checkpoints[0].szDisplayName[0] )
 			COOP_CheckpointMenu( pPlayer );
@@ -809,9 +809,9 @@ bool COOP_ClientCommand( edict_t *pEntity )
 	else if( FStrEq( pcmd, "coopmenu" ) )
 	{
 		//UTIL_CoopMenu( pPlayer );
-		if( pPlayer->gravgunmod_data.iState == STATE_SPAWNED )
+		if( pPlayer->m_ggm.iState == STATE_SPAWNED )
 		{
-			GGM_PlayerMenu &m = pPlayer->gravgunmod_data.menu.New( "COOP MENU" )
+			GGM_PlayerMenu &m = pPlayer->m_ggm.menu.New( "COOP MENU" )
 					.Add( "Force respawn", "respawn" )
 					.Add( "Unblock", "unblock" )
 					.Add( "Become spectator", "spectate" );
@@ -821,9 +821,9 @@ bool COOP_ClientCommand( edict_t *pEntity )
 			m.Show();
 			return true;
 		}
-		else if( pPlayer->gravgunmod_data.iState == STATE_SPECTATOR )
+		else if( pPlayer->m_ggm.iState == STATE_SPECTATOR )
 		{
-			pPlayer->gravgunmod_data.menu.New( "COOP MENU" )
+			pPlayer->m_ggm.menu.New( "COOP MENU" )
 					.Add( "Join game", "joincoop" )
 					.Add( "Cancel", "" )
 					.Show();
@@ -850,7 +850,7 @@ bool COOP_ClientCommand( edict_t *pEntity )
 		int i = atoi(CMD_ARGV(1));
 		if( i > 4 || i < 0 )
 			return false;
-		if( pPlayer->gravgunmod_data.iState != STATE_SPAWNED || pPlayer->pev->health < 1 )
+		if( pPlayer->m_ggm.iState != STATE_SPAWNED || pPlayer->pev->health < 1 )
 			UTIL_SpawnPlayer( pPlayer );
 		GGM_RestorePosition( pPlayer, &g_pCurrentMap->checkpoints[i].pos );
 		return true;
@@ -859,7 +859,7 @@ bool COOP_ClientCommand( edict_t *pEntity )
 	{
 		if( !mp_coop_checkpoints.value )
 			return false;
-		if( pPlayer->gravgunmod_data.iState != STATE_SPAWNED )
+		if( pPlayer->m_ggm.iState != STATE_SPAWNED )
 			return false;
 		if( !UTIL_CoopIsBadPlayer( pPlayer ) )
 			COOP_NewCheckpoint( pPlayer->pev );
@@ -869,8 +869,8 @@ bool COOP_ClientCommand( edict_t *pEntity )
 	}
 	else if( FStrEq( pcmd, "confirmchangelevel" ) )
 	{
-		if( pPlayer->gravgunmod_data.iLocalConfirm )
-			pPlayer->gravgunmod_data.iLocalConfirm++;
+		if( pPlayer->m_ggm.iLocalConfirm )
+			pPlayer->m_ggm.iLocalConfirm++;
 		else
 			return false;
 	}

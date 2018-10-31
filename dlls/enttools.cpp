@@ -100,20 +100,20 @@ bool Ent_CheckCreate( edict_t *player, const char *classname )
 	if( !p )
 		return false;
 
-	if( p->gravgunmod_data.flEntScore > 1 )
+	if( p->m_ggm.flEntScore > 1 )
 		return false;
 
-	if( gpGlobals->time - p->gravgunmod_data.flEntTime > 60 )
+	if( gpGlobals->time - p->m_ggm.flEntTime > 60 )
 	{
-		p->gravgunmod_data.flEntTime = gpGlobals->time;
-		p->gravgunmod_data.flEntScore = 0;
+		p->m_ggm.flEntTime = gpGlobals->time;
+		p->m_ggm.flEntScore = 0;
 	}
 
 	for( node = entblacklist; node; node = node->next )
 	{
 		if( Q_stricmpext(node->pattern, classname ) )
 		{
-			if( !node->limit || ( p->gravgunmod_data.flEntScore + 1.0f / (float)node->limit > 1 ) )
+			if( !node->limit || ( p->m_ggm.flEntScore + 1.0f / (float)node->limit > 1 ) )
 			{
 				// remove all created entities
 				if( node->clear )
@@ -129,7 +129,7 @@ bool Ent_CheckCreate( edict_t *player, const char *classname )
 				}
 				return false;
 			}
-			p->gravgunmod_data.flEntScore += 1.0f / (float)node->limit;
+			p->m_ggm.flEntScore += 1.0f / (float)node->limit;
 		}
 	}
 
@@ -1090,7 +1090,7 @@ void Ent_Create_f( edict_t *player )
 		const char *plid = GGM_GetPlayerID( player );
 		CBasePlayer *pPlayer = (CBasePlayer*)CBaseEntity::Instance( player );
 		entity->enttools_data.enttools = 1;
-		if( pPlayer && pPlayer->IsPlayer() && pPlayer->gravgunmod_data.pState && pPlayer->gravgunmod_data.pState->fRegistered )
+		if( pPlayer && pPlayer->IsPlayer() && pPlayer->m_ggm.pState && pPlayer->m_ggm.pState->fRegistered )
 			entity->enttools_data.enttools = 2;
 
 		if( plid );

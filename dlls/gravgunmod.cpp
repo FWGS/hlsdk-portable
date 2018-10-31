@@ -398,16 +398,16 @@ const char *GGM_GetAuthID( CBasePlayer *pPlayer )
 
 void GGM_ClientPutinServer( edict_t *pEntity, CBasePlayer *pPlayer )
 {
-	if( mp_touchmenu.value && pPlayer->gravgunmod_data.iState == STATE_UNINITIALIZED )
+	if( mp_touchmenu.value && pPlayer->m_ggm.iState == STATE_UNINITIALIZED )
 		g_engfuncs.pfnQueryClientCvarValue2( pEntity, "touch_enable", 111 );
 
-	pPlayer->gravgunmod_data.iState = STATE_CONNECTED;
+	pPlayer->m_ggm.iState = STATE_CONNECTED;
 
-	pPlayer->gravgunmod_data.flEntTime = 0;
-	pPlayer->gravgunmod_data.flEntScore = 0;
-	pPlayer->gravgunmod_data.menu.pPlayer = pPlayer;
-	pPlayer->gravgunmod_data.menu.Clear();
-	pPlayer->gravgunmod_data.pState = GGM_GetState( GGM_GetAuthID(pPlayer), STRING(pEntity->v.netname) );
+	pPlayer->m_ggm.flEntTime = 0;
+	pPlayer->m_ggm.flEntScore = 0;
+	pPlayer->m_ggm.menu.m_pPlayer = pPlayer;
+	pPlayer->m_ggm.menu.Clear();
+	pPlayer->m_ggm.pState = GGM_GetState( GGM_GetAuthID(pPlayer), STRING(pEntity->v.netname) );
 }
 
 void GGM_ClientFirstSpawn(CBasePlayer *pPlayer)
@@ -431,10 +431,10 @@ edict_t *GGM_PlayerByID( const char *id )
 		{
 			CBasePlayer *player = (CBasePlayer *) plr;
 
-			if( !player->gravgunmod_data.pState )
+			if( !player->m_ggm.pState )
 				continue;
 
-			if( !strcmp( player->gravgunmod_data.pState->szUID, id ) )
+			if( !strcmp( player->m_ggm.pState->szUID, id ) )
 				return player->edict();
 		}
 	}
@@ -449,10 +449,10 @@ const char *GGM_GetPlayerID( edict_t *player )
 	if( !plr->IsPlayer() )
 		return NULL;
 
-	if( !plr->gravgunmod_data.pState )
+	if( !plr->m_ggm.pState )
 		return NULL;
 
-	return plr->gravgunmod_data.pState->szUID;
+	return plr->m_ggm.pState->szUID;
 }
 
 struct GGMPlayerState *registered_list;
@@ -519,7 +519,7 @@ void GGM_ClearLists( void )
 		CBasePlayer *pPlayer = (CBasePlayer*)UTIL_PlayerByIndex( i );
 
 		if( pPlayer && pPlayer->IsPlayer() )
-			pPlayer->gravgunmod_data.pState = NULL;
+			pPlayer->m_ggm.pState = NULL;
 	}
 
 	while( login_list )
@@ -885,7 +885,7 @@ void GGM_SaveState( CBasePlayer *pPlayer )
 {
 	if( !pPlayer )
 		return;
-	GGMPlayerState *pState = pPlayer->gravgunmod_data.pState;
+	GGMPlayerState *pState = pPlayer->m_ggm.pState;
 	int i, j = 0;
 
 	if( !pState )
@@ -894,7 +894,7 @@ void GGM_SaveState( CBasePlayer *pPlayer )
 	pState->t.iFrags = pPlayer->pev->frags;
 	pState->t.iDeaths = pPlayer->m_iDeaths;
 
-	if( pPlayer->gravgunmod_data.iState != STATE_SPAWNED )
+	if( pPlayer->m_ggm.iState != STATE_SPAWNED )
 		return;
 
 	if( pPlayer->pev->health <= 0 )
@@ -963,7 +963,7 @@ bool GGM_RestorePosition( CBasePlayer *pPlayer, struct GGMPosition *pos )
 	{
 		if( !COOP_SetDefaultSpawnPosition( pPlayer ) )
 			g_pGameRules->GetPlayerSpawnSpot( pPlayer );
-		if( pPlayer->gravgunmod_data.iState == STATE_POINT_SELECT )
+		if( pPlayer->m_ggm.iState == STATE_POINT_SELECT )
 			return false;
 	}
 
@@ -982,7 +982,7 @@ extern int gmsgScoreInfo;
 
 bool GGM_RestoreState( CBasePlayer *pPlayer )
 {
-	GGMPlayerState *pState = pPlayer->gravgunmod_data.pState;
+	GGMPlayerState *pState = pPlayer->m_ggm.pState;
 	int i;
 
 	if( !pState )
@@ -1041,18 +1041,18 @@ void ClientPutInServer( edict_t *client );
 
 bool GGM_PlayerSpawn( CBasePlayer *pPlayer )
 {
-	if( pPlayer->gravgunmod_data.iState == STATE_UNINITIALIZED )
+	if( pPlayer->m_ggm.iState == STATE_UNINITIALIZED )
 	{
 		ClientPutInServer( pPlayer->edict() );
 		return true;
 	}
 
-	if( ( mp_coop.value || mp_spectator.value ) && pPlayer->gravgunmod_data.iState == STATE_CONNECTED || !pPlayer->gravgunmod_data.pState  )
+	if( ( mp_coop.value || mp_spectator.value ) && pPlayer->m_ggm.iState == STATE_CONNECTED || !pPlayer->m_ggm.pState  )
 	{
-		if( !pPlayer->gravgunmod_data.pState )
+		if( !pPlayer->m_ggm.pState )
 			GGM_ChatPrintf( pPlayer, "This nickname busy! Please login or change nickname\n" );
 
-		pPlayer->gravgunmod_data.iState = STATE_SPECTATOR_BEGIN;
+		pPlayer->m_ggm.iState = STATE_SPECTATOR_BEGIN;
 		pPlayer->RemoveAllItems( TRUE );
 		UTIL_BecomeSpectator( pPlayer );
 		if( !COOP_SetDefaultSpawnPosition( pPlayer ) )
@@ -1060,7 +1060,7 @@ bool GGM_PlayerSpawn( CBasePlayer *pPlayer )
 		return true;
 	}
 
-	if( mp_coop.value && pPlayer->gravgunmod_data.iState == STATE_POINT_SELECT && !(pPlayer->pev->flags & FL_SPECTATOR) )
+	if( mp_coop.value && pPlayer->m_ggm.iState == STATE_POINT_SELECT && !(pPlayer->pev->flags & FL_SPECTATOR) )
 	{
 		pPlayer->RemoveAllItems( TRUE );
 		UTIL_BecomeSpectator( pPlayer );
@@ -1072,9 +1072,9 @@ bool GGM_PlayerSpawn( CBasePlayer *pPlayer )
 
 	if( mp_coop.value )
 	{
-		if( pPlayer->gravgunmod_data.iState != STATE_SPAWNED )
+		if( pPlayer->m_ggm.iState != STATE_SPAWNED )
 		{
-			pPlayer->gravgunmod_data.iState = STATE_SPAWNED;
+			pPlayer->m_ggm.iState = STATE_SPAWNED;
 			g_fPause = false;
 			if( GGM_RestoreState( pPlayer ) )
 			{
@@ -1111,9 +1111,9 @@ bool GGM_PlayerSpawn( CBasePlayer *pPlayer )
 	}
 	else
 	{
-		if( pPlayer->gravgunmod_data.iState != STATE_SPAWNED )
+		if( pPlayer->m_ggm.iState != STATE_SPAWNED )
 		{
-			pPlayer->gravgunmod_data.iState = STATE_SPAWNED;
+			pPlayer->m_ggm.iState = STATE_SPAWNED;
 			g_fPause = false;
 			if( GGM_RestoreState( pPlayer ) )
 			{
@@ -1126,7 +1126,7 @@ bool GGM_PlayerSpawn( CBasePlayer *pPlayer )
 
 	g_fPause = false;
 
-	return pPlayer->gravgunmod_data.iState != STATE_SPAWNED;
+	return pPlayer->m_ggm.iState != STATE_SPAWNED;
 }
 
 void GGM_Logout( CBasePlayer *pPlayer )
@@ -1159,11 +1159,11 @@ void GGM_Logout( CBasePlayer *pPlayer )
 		break;
 	}
 
-	if( pPlayer->gravgunmod_data.iState == STATE_SPAWNED )
+	if( pPlayer->m_ggm.iState == STATE_SPAWNED )
 		GGM_SaveState( pPlayer );
 
-	pPlayer->gravgunmod_data.pState = GGM_GetState(uid, name);
-	if( pPlayer->gravgunmod_data.iState == STATE_SPAWNED )
+	pPlayer->m_ggm.pState = GGM_GetState(uid, name);
+	if( pPlayer->m_ggm.iState == STATE_SPAWNED )
 		GGM_RestoreState( pPlayer );
 
 	// remove login record
@@ -1184,10 +1184,10 @@ void GGM_FreeState( const char *uid )
 	{
 		CBasePlayer *pPlayer = (CBasePlayer*)UTIL_PlayerByIndex( i );
 
-		if( pPlayer && pPlayer->IsPlayer() && pPlayer->gravgunmod_data.pState )
+		if( pPlayer && pPlayer->IsPlayer() && pPlayer->m_ggm.pState )
 		{
-			if( !pPlayer->gravgunmod_data.pState->fRegistered && !strcmp( uid, pPlayer->gravgunmod_data.pState->szUID ) )
-				pPlayer->gravgunmod_data.pState = NULL;
+			if( !pPlayer->m_ggm.pState->fRegistered && !strcmp( uid, pPlayer->m_ggm.pState->szUID ) )
+				pPlayer->m_ggm.pState = NULL;
 		}
 	}
 
@@ -1262,10 +1262,10 @@ void GGM_Register( CBasePlayer *pPlayer, const char *name, const char *password 
 	struct GGMPlayerState *pState;
 	struct GGMLogin *pLogin;
 
-	if( !pPlayer || !pPlayer->gravgunmod_data.pState )
+	if( !pPlayer || !pPlayer->m_ggm.pState )
 		return;
 
-	if( pPlayer->gravgunmod_data.pState->fRegistered )
+	if( pPlayer->m_ggm.pState->fRegistered )
 	{
 		GGM_ChatPrintf( pPlayer, "Cannot register, when logged in\n" );
 		return;
@@ -1283,19 +1283,19 @@ void GGM_Register( CBasePlayer *pPlayer, const char *name, const char *password 
 	strncpy( pState->p.szPassword, password, 32 );
 	GGM_Munge( pState->p.szPassword );
 	pState->p.szPassword[32] = 0;
-	pState->t = pPlayer->gravgunmod_data.pState->t;
+	pState->t = pPlayer->m_ggm.pState->t;
 	pState->pNext = registered_list;
 	registered_list = pState;
 	GGM_WritePersist( pState );
 	pLogin = (struct GGMLogin*)calloc(1, sizeof( struct GGMLogin ) );
 	pLogin->pState = pState;
 	strncpy( pLogin->f.szName, STRING(pPlayer->pev->netname ), 32 );
-	strncpy( pLogin->f.szUID, pPlayer->gravgunmod_data.pState->szUID, 32 );
+	strncpy( pLogin->f.szUID, pPlayer->m_ggm.pState->szUID, 32 );
 	pLogin->pNext = login_list;
 	login_list = pLogin;
 	GGM_WriteLogin( pLogin );
-	GGM_FreeState( pPlayer->gravgunmod_data.pState->szUID );
-	pPlayer->gravgunmod_data.pState = pState;
+	GGM_FreeState( pPlayer->m_ggm.pState->szUID );
+	pPlayer->m_ggm.pState = pState;
 	GGM_ChatPrintf( pPlayer, "Successfully registered as %s!\n", name );
 }
 
@@ -1311,7 +1311,7 @@ void GGM_RegName_f( CBasePlayer *pPlayer )
 	if( !GGM_CheckUserName( pPlayer, CMD_ARGV(1), true ) )
 		return;
 
-	strncpy( pPlayer->gravgunmod_data.fRegisterInput, CMD_ARGV(1), 31 );
+	strncpy( pPlayer->m_ggm.fRegisterInput, CMD_ARGV(1), 31 );
 
 	CLIENT_COMMAND( pPlayer->edict(), "messagemode reg_Password\n");
 }
@@ -1340,7 +1340,7 @@ void GGM_RegPassword_f( CBasePlayer *pPlayer )
 	if( CMD_ARGC() != 2 )
 		return;
 
-	GGM_Register( pPlayer, pPlayer->gravgunmod_data.fRegisterInput, CMD_ARGV(1) );
+	GGM_Register( pPlayer, pPlayer->m_ggm.fRegisterInput, CMD_ARGV(1) );
 }
 
 void GGM_Login( CBasePlayer *pPlayer, const char *name, const char *password )
@@ -1352,7 +1352,7 @@ void GGM_Login( CBasePlayer *pPlayer, const char *name, const char *password )
 	if( !pPlayer )
 		return;
 
-	if( pPlayer->gravgunmod_data.pState && pPlayer->gravgunmod_data.pState->fRegistered )
+	if( pPlayer->m_ggm.pState && pPlayer->m_ggm.pState->fRegistered )
 	{
 		GGM_ChatPrintf( pPlayer, "Cannot login, already logged in\n" );
 		return;
@@ -1363,7 +1363,7 @@ void GGM_Login( CBasePlayer *pPlayer, const char *name, const char *password )
 
 	pState = GGM_GetRegistration( name );
 
-	if( !pPlayer->gravgunmod_data.pState )
+	if( !pPlayer->m_ggm.pState )
 	{
 		for( pLogin = login_list; pLogin; pLogin = pLogin->pNext )
 		{
@@ -1396,12 +1396,12 @@ void GGM_Login( CBasePlayer *pPlayer, const char *name, const char *password )
 	pLogin->pNext = login_list;
 	login_list = pLogin;
 	GGM_WriteLogin( pLogin );
-	if( pPlayer->gravgunmod_data.pState )
-		GGM_FreeState( pPlayer->gravgunmod_data.pState->szUID );
-	pPlayer->gravgunmod_data.pState = pState;
+	if( pPlayer->m_ggm.pState )
+		GGM_FreeState( pPlayer->m_ggm.pState->szUID );
+	pPlayer->m_ggm.pState = pState;
 	GGM_ChatPrintf( pPlayer, "Successfully logged in as %s\n", name );
 
-	if( pPlayer->gravgunmod_data.iState == STATE_SPAWNED )
+	if( pPlayer->m_ggm.iState == STATE_SPAWNED )
 		GGM_RestoreState( pPlayer );
 }
 
@@ -1414,7 +1414,7 @@ void GGM_LoginPassword_f( CBasePlayer *pPlayer )
 	if( CMD_ARGC() != 2 )
 		return;
 
-	GGM_Login( pPlayer, pPlayer->gravgunmod_data.fRegisterInput, CMD_ARGV(1) );
+	GGM_Login( pPlayer, pPlayer->m_ggm.fRegisterInput, CMD_ARGV(1) );
 }
 
 void GGM_LoginName_f( CBasePlayer *pPlayer )
@@ -1428,7 +1428,7 @@ void GGM_LoginName_f( CBasePlayer *pPlayer )
 	if( !GGM_CheckUserName( pPlayer, CMD_ARGV(1), false ) )
 		return;
 
-	strncpy( pPlayer->gravgunmod_data.fRegisterInput, CMD_ARGV(1), 31 );
+	strncpy( pPlayer->m_ggm.fRegisterInput, CMD_ARGV(1), 31 );
 
 	CLIENT_COMMAND( pPlayer->edict(), "messagemode login_Password\n");
 }
@@ -1449,19 +1449,19 @@ void GGM_Login_f( CBasePlayer *pPlayer )
 
 void GGM_ChangePassword_f( CBasePlayer *pPlayer )
 {
-	if( !pPlayer || !pPlayer->gravgunmod_data.pState || !pPlayer->gravgunmod_data.pState->fRegistered )
+	if( !pPlayer || !pPlayer->m_ggm.pState || !pPlayer->m_ggm.pState->fRegistered )
 		return;
 
-	if( !pPlayer->gravgunmod_data.pState->fRegistered )
+	if( !pPlayer->m_ggm.pState->fRegistered )
 	{
 		GGM_ChatPrintf( pPlayer, "Cannot register, when logged in\n" );
 		return;
 	}
 	else if( CMD_ARGC() == 2 )
 	{
-		strncpy( pPlayer->gravgunmod_data.pState->p.szPassword, CMD_ARGV(1), 32 );
-		GGM_Munge( pPlayer->gravgunmod_data.pState->p.szPassword );
-		GGM_WritePersist( pPlayer->gravgunmod_data.pState );
+		strncpy( pPlayer->m_ggm.pState->p.szPassword, CMD_ARGV(1), 32 );
+		GGM_Munge( pPlayer->m_ggm.pState->p.szPassword );
+		GGM_WritePersist( pPlayer->m_ggm.pState );
 	}
 	else
 		CLIENT_COMMAND( pPlayer->edict(), "messagemode New_Password\n");
@@ -1747,24 +1747,24 @@ GGM_PlayerMenu &GGM_PlayerMenu::New( const char *title, bool force )
 extern int gmsgShowMenu;
 void GGM_PlayerMenu::Show()
 {
-	if( !pPlayer )
+	if( !m_pPlayer )
 		return;
-	if( pPlayer->gravgunmod_data.fTouchMenu)
+	if( m_pPlayer->m_ggm.fTouchMenu)
 	{
 		char buf[256];
 
 		#define MENU_STR(VAR) (#VAR)
 		sprintf( buf, MENU_STR(slot10\ntouch_hide _sm*\ntouch_show _sm\ntouch_addbutton "_smt" "#%s" "" 0.16 0.11 0.41 0.3 0 255 0 255 78 1.5\n), m_sTitle);
 
-		if( pPlayer )
-			CLIENT_COMMAND( pPlayer->edict(), buf);
+		if( m_pPlayer )
+			CLIENT_COMMAND( m_pPlayer->edict(), buf);
 
 		for( int i = 0; i < m_iCount; i++ )
 		{
 			sprintf( buf, MENU_STR(touch_settexture _sm%d "#%d. %s"\ntouch_show _sm%d\n), i+1, i+1, m_rgItems[i].szName, i + 1 );
 
-			if( pPlayer )
-				CLIENT_COMMAND( pPlayer->edict(), buf);
+			if( m_pPlayer )
+				CLIENT_COMMAND( m_pPlayer->edict(), buf);
 		}
 	}
 	else
@@ -1780,7 +1780,7 @@ void GGM_PlayerMenu::Show()
 			flags |= 1<<i;
 		}
 
-		MESSAGE_BEGIN( MSG_ONE, gmsgShowMenu, NULL, pPlayer->pev );
+		MESSAGE_BEGIN( MSG_ONE, gmsgShowMenu, NULL, m_pPlayer->pev );
 		WRITE_SHORT( flags ); // slots
 		WRITE_CHAR( 255 ); // show time
 		WRITE_BYTE( 0 ); // need more
@@ -1802,12 +1802,12 @@ bool GGM_PlayerMenu::MenuSelect( int select )
 	if( !m_rgItems[select-1].szCommand[0] )
 	{
 		// cancel menu item
-		GGM_ClearHelpMessage( pPlayer );
+		GGM_ClearHelpMessage( m_pPlayer );
 		return true;
 	}
 
 	GGM::Cmd_TokenizeString( m_rgItems[select-1].szCommand );
-	ClientCommand( pPlayer->edict() );
+	ClientCommand( m_pPlayer->edict() );
 	GGM::Cmd_Reset();
 
 	return true;
@@ -1837,7 +1837,7 @@ bool GGM_MenuCommand( CBasePlayer *player, const char *name )
 		return false;
 	}
 
-	GGM_PlayerMenu &m = player->gravgunmod_data.menu.New( buf );
+	GGM_PlayerMenu &m = player->m_ggm.menu.New( buf );
 
 	while( pFile = GGM::COM_ParseFile( pFile, buf ) )
 	{
@@ -1954,10 +1954,10 @@ bool GGM_HelpCommand( CBasePlayer *pPlayer, const char *name )
 
 void GGM_InitialMenus( CBasePlayer *pPlayer )
 {
-	pPlayer->gravgunmod_data.fTouchLoading = false;
+	pPlayer->m_ggm.fTouchLoading = false;
 
 	if( !GGM_MenuCommand( pPlayer, "init" ) && mp_coop.value )
-		pPlayer->gravgunmod_data.menu.New( "COOP SERVER" )
+		pPlayer->m_ggm.menu.New( "COOP SERVER" )
 				.Add("Join coop", "joincoop")
 				.Add("Spectate", "spectate")
 				.Show();
@@ -1978,7 +1978,7 @@ bool GGM_TouchCommand( CBasePlayer *pPlayer, const char *pcmd )
 		return true;
 	}
 
-	if( !pPlayer->gravgunmod_data.fTouchLoading )
+	if( !pPlayer->m_ggm.fTouchLoading )
 		return false;
 
 	if( FStrEq(pcmd, "m1"))
@@ -2026,7 +2026,7 @@ bool GGM_ClientCommand( CBasePlayer *pPlayer, const char *pCmd )
 	{
 		int imenu = atoi( CMD_ARGV( 1 ) );
 
-		return pPlayer->gravgunmod_data.menu.MenuSelect(imenu);
+		return pPlayer->m_ggm.menu.MenuSelect(imenu);
 	}
 	else if( GGM_MOTDCommand( pPlayer, pCmd ) )
 		return true;
@@ -2087,10 +2087,10 @@ bool GGM_ClientCommand( CBasePlayer *pPlayer, const char *pCmd )
 	}
 	else if( FStrEq(pCmd, "ent_import" ) )
 	{
-		if( !pPlayer->gravgunmod_data.pState || !pPlayer->gravgunmod_data.pState->fRegistered )
+		if( !pPlayer->m_ggm.pState || !pPlayer->m_ggm.pState->fRegistered )
 			return false;
 
-		Ent_ChangeOwner( GGM_GetAuthID(pPlayer), NULL, pPlayer->gravgunmod_data.pState->szUID, 1, 2 );
+		Ent_ChangeOwner( GGM_GetAuthID(pPlayer), NULL, pPlayer->m_ggm.pState->szUID, 1, 2 );
 		return true;
 	}
 	else if( FStrEq(pCmd, "logout") )
@@ -2120,10 +2120,10 @@ void GGM_CvarValue2( const edict_t *pEnt, int requestID, const char *cvarName, c
 	if( pEnt && requestID == 111  && FStrEq( cvarName , "touch_enable" ) && atoi( value) )
 	{
 		CBasePlayer *player = (CBasePlayer * ) CBaseEntity::Instance( (edict_t*)pEnt );
-		player->gravgunmod_data.fTouchMenu = !!atof( value );
+		player->m_ggm.fTouchMenu = !!atof( value );
 
 		CLIENT_COMMAND((edict_t*)pEnt, "m1\n");
-		player->gravgunmod_data.fTouchLoading = true;
+		player->m_ggm.fTouchLoading = true;
 
 		const char *name = NULL, *command = NULL;
 		if( mp_coop.value )

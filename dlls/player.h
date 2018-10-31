@@ -332,7 +332,7 @@ public:
 
 	virtual float TouchGravGun( CBaseEntity *attacker, int stage );
 
-	struct GGMData gravgunmod_data;
+	struct GGMData m_ggm;
 	virtual void Touch( CBaseEntity *pOther );
 
 };
