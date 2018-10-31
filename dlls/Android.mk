@@ -78,7 +78,6 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
            leech.cpp \
            lights.cpp \
            maprules.cpp \
-	   mp5.cpp \
            monstermaker.cpp \
            monsters.cpp \
            monsterstate.cpp \
