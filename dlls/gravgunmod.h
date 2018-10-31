@@ -144,10 +144,10 @@ struct GGMTempState
 	float flBattery;
 	int iFrags;
 	int iDeaths;
-	char rgWeapons[MAX_WEAPONS][32];// weapon names
+	char rgszWeapons[MAX_WEAPONS][32];// weapon names
 	char rgiClip[MAX_WEAPONS];// ammo names
-	int	rgAmmo[MAX_AMMO_SLOTS];// ammo quantities
-	char WeaponName[32];
+	int	rgszAmmo[MAX_AMMO_SLOTS];// ammo quantities
+	char szWeaponName[32];
 	GGMPosition pos;
 };
 
@@ -159,7 +159,7 @@ struct GGMPlayerState
 	bool fRegistered;
 	bool fNeedWrite;
 	// uid or nickname
-	char uid[33];
+	char szUID[33];
 };
 
 

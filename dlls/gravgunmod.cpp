@@ -434,7 +434,7 @@ edict_t *GGM_PlayerByID( const char *id )
 			if( !player->gravgunmod_data.pState )
 				continue;
 
-			if( !strcmp( player->gravgunmod_data.pState->uid, id ) )
+			if( !strcmp( player->gravgunmod_data.pState->szUID, id ) )
 				return player->edict();
 		}
 	}
@@ -452,7 +452,7 @@ const char *GGM_GetPlayerID( edict_t *player )
 	if( !plr->gravgunmod_data.pState )
 		return NULL;
 
-	return plr->gravgunmod_data.pState->uid;
+	return plr->gravgunmod_data.pState->szUID;
 }
 
 struct GGMPlayerState *registered_list;
@@ -465,7 +465,7 @@ struct GGMPlayerState *GGM_FindState( GGMPlayerState *list, const char *uid )
 
 	for( pState = list; pState; pState = pState->pNext )
 	{
-		if( !strncmp( uid, pState->uid, 32 ) )
+		if( !strncmp( uid, pState->szUID, 32 ) )
 			return pState;
 	}
 	return NULL;
@@ -481,7 +481,7 @@ void GGM_WritePersist( GGMPlayerState *pState )
 
 	pState->fNeedWrite = false;
 
-	snprintf( path, 63, "%s/ggm/registrations/%s", gamedir, pState->uid );
+	snprintf( path, 63, "%s/ggm/registrations/%s", gamedir, pState->szUID );
 
 	f = fopen( path, "wb" );
 
@@ -500,7 +500,7 @@ void GGM_ReadPersist( GGMPlayerState *pState )
 	if( !pState->fRegistered )
 		return;
 
-	snprintf( path, 63, "%s/ggm/registrations/%s", gamedir, pState->uid );
+	snprintf( path, 63, "%s/ggm/registrations/%s", gamedir, pState->szUID );
 
 	f = fopen( path, "rb" );
 
@@ -580,7 +580,7 @@ void GGM_WritePlayers( const char *path )
 			break;
 
 		fwrite( &pState->fRegistered, 1, 1, f );
-		fwrite( &pState->uid, 33, 1, f );
+		fwrite( &pState->szUID, 33, 1, f );
 		fwrite( &pState->t, sizeof( struct GGMTempState ), 1, f );
 
 		pState = pState->pNext;
@@ -612,7 +612,7 @@ bool GGM_ReadPlayers( const char *path )
 		memset( pState, 0, sizeof( struct GGMPlayerState ) );
 
 		fread( &pState->fRegistered, 1, 1, f );
-		fread( &pState->uid, 33, 1, f );
+		fread( &pState->szUID, 33, 1, f );
 		fread( &pState->t, tsize, 1, f );
 
 		if( feof(f) || ferror( f ) )
@@ -749,7 +749,7 @@ struct GGMPlayerState *GGM_GetRegistration( const char *name )
 		pState->pNext = registered_list;
 		pState->fRegistered = true;
 		registered_list = pState;
-		strncpy( pState->uid, name, 32 );
+		strncpy( pState->szUID, name, 32 );
 		return pState;
 	}
 }
@@ -782,7 +782,7 @@ void GGM_WriteLogin( struct GGMLogin *pLogin )
 		return;
 
 	fwrite( &pLogin->f, 1, sizeof( pLogin->f ), f );
-	fwrite( &pLogin->pState->uid, 1, 33, f );
+	fwrite( &pLogin->pState->szUID, 1, 33, f );
 	fclose( f );
 }
 
@@ -847,8 +847,8 @@ struct GGMPlayerState *GGM_GetState( const char *uid, const char *name )
 
 	pState = (struct GGMPlayerState*)calloc( 1, sizeof( struct GGMPlayerState ) );
 	memset( pState, 0, sizeof( struct GGMPlayerState ) );
-	strncpy( pState->uid, uid, 32 );
-	pState->uid[32] = 0;
+	strncpy( pState->szUID, uid, 32 );
+	pState->szUID[32] = 0;
 	pState->pNext = anonymous_list;
 
 	return anonymous_list = pState;
@@ -905,7 +905,7 @@ void GGM_SaveState( CBasePlayer *pPlayer )
 	pState->t.flHealth = pPlayer->pev->health;
 	pState->t.flBattery = pPlayer->pev->armorvalue;
 	if(pPlayer->m_pActiveItem.Get())
-		strncpy( pState->t.WeaponName, STRING(pPlayer->m_pActiveItem.Get()->v.classname), 31);
+		strncpy( pState->t.szWeaponName, STRING(pPlayer->m_pActiveItem.Get()->v.classname), 31);
 
 
 	for( i = 0; i < MAX_ITEM_TYPES; i++ )
@@ -914,15 +914,15 @@ void GGM_SaveState( CBasePlayer *pPlayer )
 
 		while( pWeapon )
 		{
-			strncpy( pState->t.rgWeapons[j], STRING(pWeapon->pev->classname), 31);
+			strncpy( pState->t.rgszWeapons[j], STRING(pWeapon->pev->classname), 31);
 			pState->t.rgiClip[j] = pWeapon->m_iClip;
 			j++;
 			pWeapon = pWeapon->m_pNext;
 		}
 	}
-	pState->t.rgWeapons[j][0] = 0;
+	pState->t.rgszWeapons[j][0] = 0;
 	for( i = 0; i < MAX_AMMO_SLOTS; i++ )
-		pState->t.rgAmmo[i] = pPlayer->m_rgAmmo[i];
+		pState->t.rgszAmmo[i] = pPlayer->m_rgAmmo[i];
 
 	if( pState->fNeedWrite )
 		GGM_WritePersist( pState );
@@ -1014,10 +1014,10 @@ bool GGM_RestoreState( CBasePlayer *pPlayer )
 
 	for( i = 0; i < MAX_WEAPONS; i++ )
 	{
-		if( !pState->t.rgWeapons[i][0] )
+		if( !pState->t.rgszWeapons[i][0] )
 			break;
 
-		CBasePlayerWeapon *pWeapon = (CBasePlayerWeapon*)CBaseEntity::Create(pState->t.rgWeapons[i], pPlayer->pev->origin, pPlayer->pev->angles );
+		CBasePlayerWeapon *pWeapon = (CBasePlayerWeapon*)CBaseEntity::Create(pState->t.rgszWeapons[i], pPlayer->pev->origin, pPlayer->pev->angles );
 
 		if( !pWeapon )
 			continue;
@@ -1030,8 +1030,8 @@ bool GGM_RestoreState( CBasePlayer *pPlayer )
 		}
 	}
 	for( i = 0; i < MAX_AMMO_SLOTS; i++ )
-		 pPlayer->m_rgAmmo[i] = pState->t.rgAmmo[i];
-	pPlayer->SelectItem(pState->t.WeaponName);
+		 pPlayer->m_rgAmmo[i] = pState->t.rgszAmmo[i];
+	pPlayer->SelectItem(pState->t.szWeaponName);
 
 	return true;
 }
@@ -1186,7 +1186,7 @@ void GGM_FreeState( const char *uid )
 
 		if( pPlayer && pPlayer->IsPlayer() && pPlayer->gravgunmod_data.pState )
 		{
-			if( !pPlayer->gravgunmod_data.pState->fRegistered && !strcmp( uid, pPlayer->gravgunmod_data.pState->uid ) )
+			if( !pPlayer->gravgunmod_data.pState->fRegistered && !strcmp( uid, pPlayer->gravgunmod_data.pState->szUID ) )
 				pPlayer->gravgunmod_data.pState = NULL;
 		}
 	}
@@ -1194,7 +1194,7 @@ void GGM_FreeState( const char *uid )
 	// unlink from list and free
 	for( pState = anonymous_list; pState; pState = pState->pNext )
 	{
-		if( strcmp( uid, pState->uid ) )
+		if( strcmp( uid, pState->szUID ) )
 		{
 			pPrevState = pState;
 			continue;
@@ -1277,8 +1277,8 @@ void GGM_Register( CBasePlayer *pPlayer, const char *name, const char *password 
 
 	pState = (struct GGMPlayerState*)calloc( 1, sizeof( struct GGMPlayerState ) );
 	memset( pState, 0, sizeof( struct GGMPlayerState ) );
-	strncpy( pState->uid, name, 32 );
-	pState->uid[32] = 0;
+	strncpy( pState->szUID, name, 32 );
+	pState->szUID[32] = 0;
 	pState->fRegistered = true;
 	strncpy( pState->p.szPassword, password, 32 );
 	GGM_Munge( pState->p.szPassword );
@@ -1290,11 +1290,11 @@ void GGM_Register( CBasePlayer *pPlayer, const char *name, const char *password 
 	pLogin = (struct GGMLogin*)calloc(1, sizeof( struct GGMLogin ) );
 	pLogin->pState = pState;
 	strncpy( pLogin->f.szName, STRING(pPlayer->pev->netname ), 32 );
-	strncpy( pLogin->f.szUID, pPlayer->gravgunmod_data.pState->uid, 32 );
+	strncpy( pLogin->f.szUID, pPlayer->gravgunmod_data.pState->szUID, 32 );
 	pLogin->pNext = login_list;
 	login_list = pLogin;
 	GGM_WriteLogin( pLogin );
-	GGM_FreeState( pPlayer->gravgunmod_data.pState->uid );
+	GGM_FreeState( pPlayer->gravgunmod_data.pState->szUID );
 	pPlayer->gravgunmod_data.pState = pState;
 	GGM_ChatPrintf( pPlayer, "Successfully registered as %s!\n", name );
 }
@@ -1397,7 +1397,7 @@ void GGM_Login( CBasePlayer *pPlayer, const char *name, const char *password )
 	login_list = pLogin;
 	GGM_WriteLogin( pLogin );
 	if( pPlayer->gravgunmod_data.pState )
-		GGM_FreeState( pPlayer->gravgunmod_data.pState->uid );
+		GGM_FreeState( pPlayer->gravgunmod_data.pState->szUID );
 	pPlayer->gravgunmod_data.pState = pState;
 	GGM_ChatPrintf( pPlayer, "Successfully logged in as %s\n", name );
 
@@ -2090,7 +2090,7 @@ bool GGM_ClientCommand( CBasePlayer *pPlayer, const char *pCmd )
 		if( !pPlayer->gravgunmod_data.pState || !pPlayer->gravgunmod_data.pState->fRegistered )
 			return false;
 
-		Ent_ChangeOwner( GGM_GetAuthID(pPlayer), NULL, pPlayer->gravgunmod_data.pState->uid, 1, 2 );
+		Ent_ChangeOwner( GGM_GetAuthID(pPlayer), NULL, pPlayer->gravgunmod_data.pState->szUID, 1, 2 );
 		return true;
 	}
 	else if( FStrEq(pCmd, "logout") )
