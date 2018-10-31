@@ -283,13 +283,13 @@ void COOP_ApplyData( void )
 // use this to translate GGMMapOffset during changelevel
 struct GGMLandmarkTransition
 {
-	char sourceMap[32];
-	char targetMap[32];
-	char landmarkName[32];
+	char szSourceMap[32];
+	char szTargetMap[32];
+	char szLandmarkName[32];
 	Vector vecLandmark;
 	bool fTriggerUsed;
 	bool fSavedPos;
-	GGMPosition pos;
+	struct GGMPosition pos;
 };
 
 
@@ -304,9 +304,9 @@ struct GGMPosition pos;
 struct GGMMapState
 {
 	struct GGMMapState *pNext;
-	char mapName[32];
+	char szMapName[32];
 	Vector vecOffset;
-	struct GGMCheckpoint checkpoints[5];
+	struct GGMCheckpoint rgCheckpoints[5];
 };
 
 GGMMapState *g_pMapStates;
@@ -326,7 +326,7 @@ void COOP_MarkTriggers( void )
 	while( pTrigger = UTIL_FindEntityByClassname( pTrigger, "trigger_changelevel" ) )
 	{
 		struct COOPChangelevelData *pData = COOP_GetTriggerData( pTrigger );
-		pData->fIsBack = !strcmp( pData->pszMapName, g_landmarkTransition.sourceMap );
+		pData->fIsBack = !strcmp( pData->pszMapName, g_landmarkTransition.szSourceMap );
 		//	if( gpGlobals->startspot && STRING(gpGlobals->startspot) && !strcmp(STRING(gpGlobals->startspot), m_szLandmarkName) )
 		// m_coopData.fIsBack = true;
 
@@ -352,19 +352,19 @@ bool  COOP_ProcessTransition( void )
 	if( !mp_coop.value )
 		return false;
 
-	if( !g_landmarkTransition.landmarkName[0] )
+	if( !g_landmarkTransition.szLandmarkName[0] )
 		return false;
 
-	if( strcmp( g_landmarkTransition.targetMap, STRING(gpGlobals->mapname) ) )
+	if( strcmp( g_landmarkTransition.szTargetMap, STRING(gpGlobals->mapname) ) )
 		return false;
-	landmark = COOP_FindLandmark( g_landmarkTransition.landmarkName );
+	landmark = COOP_FindLandmark( g_landmarkTransition.szLandmarkName );
 	if( !landmark )
 		return false;
 	Vector &lm = landmark->v.origin;
 
 	for( struct GGMMapState *pMapState = g_pMapStates; pMapState; pMapState = pMapState->pNext )
 	{
-		if( !strcmp( pMapState->mapName, STRING(gpGlobals->mapname) ) )
+		if( !strcmp( pMapState->szMapName, STRING(gpGlobals->mapname) ) )
 		{
 			pMapState->vecOffset = Vector( 0, 0, 0 );
 			fAddCurrent = false;
@@ -380,7 +380,7 @@ bool  COOP_ProcessTransition( void )
 
 		pNewState->pNext = g_pMapStates;
 		pNewState->vecOffset = Vector(0, 0, 0);
-		strncpy(pNewState->mapName, STRING(gpGlobals->mapname), 31);
+		strncpy(pNewState->szMapName, STRING(gpGlobals->mapname), 31);
 		g_pMapStates = g_pCurrentMap = pNewState;
 	}
 	return true;
@@ -388,9 +388,9 @@ bool  COOP_ProcessTransition( void )
 
 void COOP_SetupLandmarkTransition( const char *szNextMap, const char *szNextSpot, Vector vecLandmarkOffset, struct GGMPosition *pPos )
 {
-	strncpy(g_landmarkTransition.sourceMap, STRING(gpGlobals->mapname), 31 );
-	strncpy(g_landmarkTransition.targetMap, szNextMap, 31 );
-	strncpy(g_landmarkTransition.landmarkName, szNextSpot, 31 );
+	strncpy(g_landmarkTransition.szSourceMap, STRING(gpGlobals->mapname), 31 );
+	strncpy(g_landmarkTransition.szTargetMap, szNextMap, 31 );
+	strncpy(g_landmarkTransition.szLandmarkName, szNextSpot, 31 );
 	g_landmarkTransition.vecLandmark = vecLandmarkOffset;
 	if( pPos )
 	{
@@ -416,7 +416,7 @@ void COOP_ServerActivate( void )
 
 		pNewState->pNext = g_pMapStates;
 		pNewState->vecOffset = Vector(0, 0, 0);
-		strncpy(pNewState->mapName, STRING(gpGlobals->mapname), 31);
+		strncpy(pNewState->szMapName, STRING(gpGlobals->mapname), 31);
 		g_pMapStates = g_pCurrentMap = pNewState;
 		if( mp_coop.value )
 			COOP_ClearData();
@@ -443,10 +443,10 @@ void COOP_ServerActivate( void )
 		}
 		if( g_CoopState.fSaved && mp_coop_checkpoints.value )
 		{
-			memmove( &g_pCurrentMap->checkpoints[1], &g_pCurrentMap->checkpoints[0], sizeof ( g_pCurrentMap->checkpoints[0] ) * 3 );
-			g_pCurrentMap->checkpoints[0].flTime = gpGlobals->time;
-			snprintf( g_pCurrentMap->checkpoints[0].szDisplayName, 31,  "From %s", g_landmarkTransition.sourceMap );
-			g_pCurrentMap->checkpoints[0].pos = g_CoopState.savedPos;
+			memmove( &g_pCurrentMap->rgCheckpoints[1], &g_pCurrentMap->rgCheckpoints[0], sizeof ( g_pCurrentMap->rgCheckpoints[0] ) * 3 );
+			g_pCurrentMap->rgCheckpoints[0].flTime = gpGlobals->time;
+			snprintf( g_pCurrentMap->rgCheckpoints[0].szDisplayName, 31,  "From %s", g_landmarkTransition.szSourceMap );
+			g_pCurrentMap->rgCheckpoints[0].pos = g_CoopState.savedPos;
 		}
 	}
 	memset( &g_landmarkTransition, 0, sizeof( GGMLandmarkTransition ) );
@@ -456,7 +456,7 @@ bool COOP_GetOrigin( Vector *pvecNewOrigin, const Vector &vecOrigin, const char 
 {
 	for( GGMMapState *pOffset = g_pMapStates; pOffset; pOffset = pOffset->pNext )
 	{
-		if( !strcmp( pOffset->mapName, pszMapName ) )
+		if( !strcmp( pOffset->szMapName, pszMapName ) )
 		{
 			*pvecNewOrigin = vecOrigin + pOffset->vecOffset;
 			return true;
@@ -587,10 +587,10 @@ void COOP_NewCheckpoint( entvars_t *pevPlayer )
 {
 	if( !pevPlayer->netname || pevPlayer->health <= 0 )
 		return;
-	memmove( &g_pCurrentMap->checkpoints[1], &g_pCurrentMap->checkpoints[0], sizeof ( g_pCurrentMap->checkpoints[0] ) * 3 );
-	g_pCurrentMap->checkpoints[0].flTime = gpGlobals->time;
-	snprintf( g_pCurrentMap->checkpoints[0].szDisplayName, 31,  "%5s %d", STRING( pevPlayer->netname ), (int)( gpGlobals->time / 60 ) );
-	GGM_SavePosition( (CBasePlayer*)CBaseEntity::Instance( pevPlayer ), &g_pCurrentMap->checkpoints[0].pos );
+	memmove( &g_pCurrentMap->rgCheckpoints[1], &g_pCurrentMap->rgCheckpoints[0], sizeof ( g_pCurrentMap->rgCheckpoints[0] ) * 3 );
+	g_pCurrentMap->rgCheckpoints[0].flTime = gpGlobals->time;
+	snprintf( g_pCurrentMap->rgCheckpoints[0].szDisplayName, 31,  "%5s %d", STRING( pevPlayer->netname ), (int)( gpGlobals->time / 60 ) );
+	GGM_SavePosition( (CBasePlayer*)CBaseEntity::Instance( pevPlayer ), &g_pCurrentMap->rgCheckpoints[0].pos );
 	UTIL_CoopPrintMessage("New checkpoint by %s!\n", STRING( pevPlayer->netname ) );
 }
 
@@ -608,7 +608,7 @@ bool COOP_PlayerDeath( CBasePlayer *pPlayer )
 //	if( pPlayer->gravgunmod_data.m_iMenuState == MENUSTATE_CHECKPOINT )
 	//	return true;
 
-	if( g_pCurrentMap->checkpoints[0].flTime )
+	if( g_pCurrentMap->rgCheckpoints[0].flTime )
 	{
 		COOP_CheckpointMenu( pPlayer );
 		st_fSkipNext = true;
@@ -712,7 +712,7 @@ bool COOP_ConfirmMenu(CBaseEntity *pTrigger, CBaseEntity *pActivator, int count2
 	if( mp_coop_strongcheckpoints.value )
 	{
 		// do not allow go back if there are checkpoints, but not near changelevel
-		if( g_pCurrentMap->checkpoints[0].flTime && (g_pCurrentMap->checkpoints[0].pos.vecOrigin - VecBModelOrigin(pTrigger->pev)).Length() > 150 )
+		if( g_pCurrentMap->rgCheckpoints[0].flTime && (g_pCurrentMap->rgCheckpoints[0].pos.vecOrigin - VecBModelOrigin(pTrigger->pev)).Length() > 150 )
 		{
 			COOP_ResetVote();
 			//UTIL_CoopPlayerMessage( pActivator,  1, 5, 0xFF0000FF, 0xFF0000FF, 0, 0.7, "Changelevel back locked by checkpoint\nCheckpoint here to activate trigger!");
@@ -768,11 +768,11 @@ void COOP_CheckpointMenu( CBasePlayer *pPlayer )
 	else
 		m.Add("New checkpoint", "newcheckpoint");
 
-	for( i = 1; g_pCurrentMap->checkpoints[i-1].flTime; i++ )
+	for( i = 1; g_pCurrentMap->rgCheckpoints[i-1].flTime; i++ )
 	{
 		char cmd[32];
 		sprintf(cmd, "loadcheckpoint %d", i-1 );
-		m.Add(g_pCurrentMap->checkpoints[i-1].szDisplayName, cmd);
+		m.Add(g_pCurrentMap->rgCheckpoints[i-1].szDisplayName, cmd);
 	}
 
 	m.Show();
@@ -797,7 +797,7 @@ bool COOP_ClientCommand( edict_t *pEntity )
 	{
 		if( pPlayer->m_ggm.iState == STATE_SPAWNED )
 			return false;
-		if( mp_coop_checkpoints.value && g_pCurrentMap && g_pCurrentMap->checkpoints[0].szDisplayName[0] )
+		if( mp_coop_checkpoints.value && g_pCurrentMap && g_pCurrentMap->rgCheckpoints[0].szDisplayName[0] )
 			COOP_CheckpointMenu( pPlayer );
 		else
 		{
@@ -852,7 +852,7 @@ bool COOP_ClientCommand( edict_t *pEntity )
 			return false;
 		if( pPlayer->m_ggm.iState != STATE_SPAWNED || pPlayer->pev->health < 1 )
 			UTIL_SpawnPlayer( pPlayer );
-		GGM_RestorePosition( pPlayer, &g_pCurrentMap->checkpoints[i].pos );
+		GGM_RestorePosition( pPlayer, &g_pCurrentMap->rgCheckpoints[i].pos );
 		return true;
 	}
 	else if( FStrEq( pcmd, "newcheckpoint") )
