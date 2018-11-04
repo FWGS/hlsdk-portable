@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Set your package name here -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+      package="in.celest.xash3d.Cracklifecampaign"
+      android:versionCode="1"
+      android:versionName="1.4">
+    <uses-sdk android:minSdkVersion="3" android:targetSdkVersion="5"/>
+    <!-- Set your application name here -->
+    <application     android:icon="@drawable/ic_launcher" 
+	android:label="Crack-Life: Campaign Mode" 
+	android:debuggable="true">
+    <!-- Set your launcher title here -->
+        <activity android:name="in.celest.xash3d.LauncherActivity"
+                android:label="Crack-Life: Campaign Mode"
+	android:windowSoftInputMode="stateHidden|adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest> 
