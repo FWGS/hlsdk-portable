@@ -292,7 +292,7 @@ globalentity_t *CGlobalState::Find( string_t globalname )
 //#ifdef _DEBUG
 void CGlobalState::DumpGlobals( void )
 {
-	static char *estates[] = { "Off", "On", "Dead" };
+	static const char *estates[] = { "Off", "On", "Dead" };
 	globalentity_t *pTest;
 
 	ALERT( at_console, "-- Globals --\n" );
@@ -484,9 +484,12 @@ void CWorld::Precache( void )
 	///!!!LATER - do we want a sound ent in deathmatch? (sjb)
 	//pSoundEnt = CBaseEntity::Create( "soundent", g_vecZero, g_vecZero, edict() );
 	pSoundEnt = GetClassPtr( ( CSoundEnt *)NULL );
-	pSoundEnt->Spawn();
 
-	if( !pSoundEnt )
+	if( pSoundEnt )
+	{
+		pSoundEnt->Spawn();
+	}
+	else
 	{
 		ALERT ( at_console, "**COULD NOT CREATE SOUNDENT**\n" );
 	}
@@ -496,9 +499,6 @@ void CWorld::Precache( void )
 	// init sentence group playback stuff from sentences.txt.
 	// ok to call this multiple times, calls after first are ignored.
 	SENTENCEG_Init();
-
-	// init texture type array from materials.txt
-	TEXTURETYPE_Init();
 
 	// the area based ambient sounds MUST be the first precache_sounds
 	// player precaches
@@ -582,14 +582,14 @@ void CWorld::Precache( void )
 	// 63 testing
 	LIGHT_STYLE( 63, "a" );
 
-	for( int i = 0; i < ARRAYSIZE( gDecals ); i++ )
+	for( int i = 0; i < (int)ARRAYSIZE( gDecals ); i++ )
 		gDecals[i].index = DECAL_INDEX( gDecals[i].name );
 
 	// init the WorldGraph.
 	WorldGraph.InitGraph();
 
 	// make sure the .NOD file is newer than the .BSP file.
-	if( !WorldGraph.CheckNODFile( ( char * )STRING( gpGlobals->mapname ) ) )
+	if( !WorldGraph.CheckNODFile( STRING( gpGlobals->mapname ) ) )
 	{
 		// NOD file is not present, or is older than the BSP file.
 		WorldGraph.AllocNodes();
@@ -597,7 +597,7 @@ void CWorld::Precache( void )
 	else
 	{
 		// Load the node graph for this level
-		if( !WorldGraph.FLoadGraph ( (char *)STRING( gpGlobals->mapname ) ) )
+		if( !WorldGraph.FLoadGraph( STRING( gpGlobals->mapname ) ) )
 		{
 			// couldn't load, so alloc and prepare to build a graph.
 			ALERT( at_console, "*Error opening .NOD file\n" );

@@ -29,7 +29,7 @@ DECLARE_MESSAGE( m_Message, GameTitle )
 
 // 1 Global client_textmessage_t for custom messages that aren't in the titles.txt
 client_textmessage_t	g_pCustomMessage;
-char *g_pCustomName = "Custom";
+const char *g_pCustomName = "Custom";
 char g_pCustomText[1024];
 
 int CHudMessage::Init( void )
@@ -260,7 +260,7 @@ void CHudMessage::MessageDrawScan( client_textmessage_t *pMessage, float time )
 			width = 0;
 		}
 		else
-			width += gHUD.m_scrinfo.charWidths[*pText];
+			width += gHUD.m_scrinfo.charWidths[(unsigned char)*pText];
 		pText++;
 		length++;
 	}
@@ -310,7 +310,7 @@ int CHudMessage::Draw( float fTime )
 {
 	int i, drawn;
 	client_textmessage_t *pMessage;
-	float endTime;
+	float endTime = 0.0f;
 
 	drawn = 0;
 

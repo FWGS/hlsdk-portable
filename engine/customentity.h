@@ -12,7 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
-
+#pragma once
 #ifndef CUSTOMENTITY_H
 #define CUSTOMENTITY_H
 

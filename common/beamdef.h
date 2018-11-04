@@ -12,7 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
-
+#pragma once
 #ifndef BEAMDEF_H
 #define BEAMDEF_H
 

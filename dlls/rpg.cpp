@@ -96,8 +96,8 @@ CRpgRocket *CRpgRocket::CreateRpgRocket( Vector vecOrigin, Vector vecAngles, CBa
 	pRocket->pev->angles = vecAngles;
 	pRocket->Spawn();
 	pRocket->SetTouch( &CRpgRocket::RocketTouch );
-	pRocket->m_pLauncher = pLauncher;// remember what RPG fired me. 
-	pRocket->m_pLauncher->m_cActiveRockets++;// register this missile as active for the launcher
+	pRocket->m_hLauncher = pLauncher;// remember what RPG fired me. 
+	pLauncher->m_cActiveRockets++;// register this missile as active for the launcher
 	pRocket->pev->owner = pOwner->edict();
 
 	return pRocket;
@@ -137,10 +137,10 @@ void CRpgRocket::Spawn( void )
 //=========================================================
 void CRpgRocket::RocketTouch( CBaseEntity *pOther )
 {
-	if( m_pLauncher )
+	if( CRpg* pLauncher = (CRpg*)( (CBaseEntity*)( m_hLauncher ) ) )
 	{
 		// my launcher is still around, tell it I'm dead.
-		m_pLauncher->m_cActiveRockets--;
+		pLauncher->m_cActiveRockets--;
 	}
 
 	STOP_SOUND( edict(), CHAN_VOICE, "weapons/rocket1.wav" );
@@ -252,6 +252,11 @@ void CRpgRocket::FollowThink( void )
 		pev->velocity = pev->velocity * 0.2 + vecTarget * flSpeed * 0.798;
 		if( pev->waterlevel == 0 && pev->velocity.Length() < 1500 )
 		{
+			if( CRpg *pLauncher = (CRpg*)( (CBaseEntity*)( m_hLauncher ) ) )
+			{
+				// my launcher is still around, tell it I'm dead.
+				pLauncher->m_cActiveRockets--;
+			}
 			Detonate();
 		}
 	}
@@ -265,13 +270,8 @@ void CRpg::Reload( void )
 {
 	int iResult = 0;
 
-	if( m_iClip == 1 )
-	{
-		// don't bother with any of this if don't need to reload.
-		return;
-	}
-
-	if( m_pPlayer->ammo_rockets <= 0 )
+	// don't bother with any of this if don't need to reload.
+	if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0 || m_iClip == RPG_MAX_CLIP )
 		return;
 
 	// because the RPG waits to autoreload when no missiles are active while  the LTD is on, the
@@ -283,8 +283,8 @@ void CRpg::Reload( void )
 	//
 	// Set the next attack time into the future so that WeaponIdle will get called more often
 	// than reload, allowing the RPG LTD to be updated
-	
-	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.7;
+
+	m_flNextPrimaryAttack = GetNextAttackDelay( 0.7 );
 
 	if( m_cActiveRockets && m_fSpotActive )
 	{
@@ -460,9 +460,10 @@ void CRpg::PrimaryAttack()
 				m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]--;
 
 
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.45;
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.45;
+
 		gun = !gun;
+		m_flNextPrimaryAttack = GetNextAttackDelay( 0.45 );
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.45;
 	}
 	else
 	{
@@ -490,13 +491,13 @@ void CRpg::WeaponIdle( void )
 {
 	UpdateSpot();
 
-	ResetEmptySound();
-
 	if( m_flTimeWeaponIdle > UTIL_WeaponTimeBase() )
 		return;
 
 	if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] )
 	{
+		ResetEmptySound();
+
 		int iAnim;
 		float flRand = UTIL_SharedRandomFloat( m_pPlayer->random_seed, 0, 1 );
 		if( flRand <= 0.75 || m_fSpotActive )
