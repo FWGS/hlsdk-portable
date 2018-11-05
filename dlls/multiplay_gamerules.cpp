@@ -638,7 +638,7 @@ void CHalfLifeMultiplay::PlayerSpawn( CBasePlayer *pPlayer )
 	}
 	else
 	{
-		g_WeaponList.GiveToPlayer(pPlayer);
+		COOP_GiveDefaultWeapons( pPlayer );
 	}
 }
 
@@ -950,7 +950,7 @@ void CHalfLifeMultiplay::DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, 
 void CHalfLifeMultiplay::PlayerGotWeapon( CBasePlayer *pPlayer, CBasePlayerItem *pWeapon )
 {
 	if(mp_coop.value)
-		g_WeaponList.AddWeapon(STRING(pWeapon->pev->classname));
+		COOP_AddDefaultWeapon(STRING(pWeapon->pev->classname));
 }
 
 //=========================================================
@@ -1060,7 +1060,7 @@ BOOL CHalfLifeMultiplay::CanHaveItem( CBasePlayer *pPlayer, CItem *pItem )
 void CHalfLifeMultiplay::PlayerGotItem( CBasePlayer *pPlayer, CItem *pItem )
 {
 	if(mp_coop.value)
-		g_WeaponList.AddWeapon(STRING(pItem->pev->classname));
+		COOP_AddDefaultWeapon(STRING(pItem->pev->classname));
 }
 
 //=========================================================
@@ -1098,7 +1098,7 @@ void CHalfLifeMultiplay::PlayerGotAmmo( CBasePlayer *pPlayer, char *szName, int 
 {
 
 	if(mp_coop.value)
-		g_WeaponList.AddWeapon(szName);
+		COOP_AddDefaultWeapon(szName);
 }
 
 //=========================================================

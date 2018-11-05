@@ -22,6 +22,9 @@ cvar_t cvar_gibtime = { "mp_gibtime","250", FCVAR_SERVER };
 cvar_t cvar_hgibcount = { "mp_hgibcount","12", FCVAR_SERVER };
 cvar_t cvar_agibcount = { "mp_agibcount","8", FCVAR_SERVER };
 cvar_t mp_gravgun_players = { "mp_gravgun_players", "0", FCVAR_SERVER };
+cvar_t mp_skipdefaults = { "mp_skipdefaults", "0", FCVAR_SERVER };
+cvar_t mp_spectator = { "mp_spectator", "0", FCVAR_SERVER };
+cvar_t mp_unduck = { "mp_unduck", "0", FCVAR_SERVER };
 
 cvar_t mp_fixhornetbug = { "mp_fixhornetbug", "0", FCVAR_SERVER };
 cvar_t mp_fixsavetime = { "mp_fixsavetime", "0", FCVAR_SERVER };
@@ -2230,6 +2233,9 @@ void GGM_RegisterCVars( void )
 	CVAR_REGISTER( &mp_enttools_checkmodels );
 	CVAR_REGISTER( &mp_errormdl );
 	CVAR_REGISTER( &mp_errormdlpath );
+	CVAR_REGISTER( &mp_unduck );
+	CVAR_REGISTER( &mp_skipdefaults );
+	CVAR_REGISTER( &mp_spectator );
 
 	g_engfuncs.pfnAddServerCommand( "ent_rungc", Ent_RunGC_f );
 	g_engfuncs.pfnAddServerCommand( "mp_lightstyle", GGM_LightStyle_f );
