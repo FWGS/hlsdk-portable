@@ -696,6 +696,11 @@ void GGM_Save( const char *savename )
 		zombietime->value = zombietime_old;
 	snprintf( cmd, 32, "%s/save/%s.players", gamedir, savename );
 	GGM_WritePlayers( cmd );
+	if( mp_coop.value )
+	{
+		snprintf( cmd, 32, "%s/save/%s.coop", gamedir, savename );
+		COOP_WriteState( cmd );
+	}
 }
 
 void GGM_Save_f( void )
@@ -709,11 +714,28 @@ void GGM_Load( const char *savename )
 {
 	char cmd[33] = "";
 
+	if( mp_coop.value )
+	{
+
+		snprintf( cmd, 32, "%s/save/%s.coop", gamedir, savename );
+		if( !COOP_ReadState( cmd ) )
+		{
+			ALERT( at_error, "Failed to read gravgunmod coop state %s\n", cmd );
+			return;
+		}
+	}
+
+	snprintf( cmd, 32, "%s/save/%s.players", gamedir, savename );
+	if( !GGM_ReadPlayers( cmd ) )
+	{
+		ALERT( at_error, "Failed to read gravgunmod players state %s\n", cmd );
+		return;
+	}
+
 	snprintf( cmd, 32, "load %s\n", savename);
 	SERVER_COMMAND( cmd );
 	SERVER_EXECUTE();
-	snprintf( cmd, 32, "%s/save/%s.players", gamedir, savename );
-	GGM_ReadPlayers( cmd );
+
 }
 
 void GGM_Load_f( void )

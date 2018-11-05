@@ -29,6 +29,7 @@ struct COOPChangelevelData
 	unsigned int bitsTouchCount;
 	float flRepeatTimer;
 	const char *pszMapName;
+	const char *pszLandmarkName;
 	bool fValid;
 };
 
@@ -54,6 +55,8 @@ void UTIL_SpawnPlayer( CBasePlayer *pPlayer );
 void UTIL_BecomeSpectator( CBasePlayer *pPlayer );
 void COOP_GiveDefaultWeapons( CBasePlayer *pPlayer );
 void COOP_AddDefaultWeapon( const char *pszClassName );
+void COOP_WriteState( const char *path );
+bool COOP_ReadState( const char *path );
 
 struct COOPChangelevelData *COOP_GetTriggerData( CBaseEntity *pTrigger );
 #endif // COOP_UTIL_H

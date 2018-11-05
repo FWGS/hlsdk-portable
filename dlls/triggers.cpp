@@ -1354,6 +1354,7 @@ TYPEDESCRIPTION	CChangeLevel::m_SaveData[] =
 	DEFINE_ARRAY( CChangeLevel, m_szLandmarkName, FIELD_CHARACTER, cchMapNameMost ),
 	DEFINE_FIELD( CChangeLevel, m_changeTarget, FIELD_STRING ),
 	DEFINE_FIELD( CChangeLevel, m_changeTargetDelay, FIELD_FLOAT ),
+	DEFINE_FIELD( CChangeLevel, m_coopData.fIsBack, FIELD_CHARACTER ),
 };
 
 IMPLEMENT_SAVERESTORE( CChangeLevel, CBaseTrigger )
@@ -1362,6 +1363,8 @@ struct COOPChangelevelData *COOP_GetTriggerData( CBaseEntity *pTrigger )
 {
 	CChangeLevel *pChangeLevel = (CChangeLevel*)pTrigger;
 	pChangeLevel->m_coopData.pszMapName = pChangeLevel->m_szMapName;
+	pChangeLevel->m_coopData.pszLandmarkName = pChangeLevel->m_szLandmarkName;
+
 
 	return &pChangeLevel->m_coopData;
 }
