@@ -354,10 +354,10 @@ void COOP_MarkTriggers( void )
 	while( pTrigger = UTIL_FindEntityByClassname( pTrigger, "trigger_changelevel" ) )
 	{
 		struct COOPChangelevelData *pData = COOP_GetTriggerData( pTrigger );
-		pData->fIsBack = !strcmp( pData->pszMapName, g_CoopState.landmarkTransition.szSourceMap );
-		//pData->fIsBack = false;
-		//if( gpGlobals->startspot && STRING(gpGlobals->startspot) && !strcmp(STRING(gpGlobals->startspot), g_CoopState.landmarkTransition.szLandmarkName) )
-			//pData->fIsBack = true;
+		//pData->fIsBack = !strcmp( pData->pszMapName, g_CoopState.landmarkTransition.szSourceMap );
+		pData->fIsBack = false;
+		if( !strcmp(pData->pszLandmarkName, g_CoopState.landmarkTransition.szLandmarkName) )
+			pData->fIsBack = true;
 
 		pTrigger->pev->renderamt = 127;
 		pTrigger->pev->effects &= ~EF_NODRAW;
