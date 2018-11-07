@@ -354,80 +354,6 @@ void UTIL_SpawnPlayer( CBasePlayer *pPlayer )
 
 }
 
-char *UTIL_CoopPlayerName( CBaseEntity *pPlayer )
-{
-	if( !pPlayer )
-		return (char*)"unnamed(NULL)";
-	return (char*)( ( pPlayer->pev->netname && STRING( pPlayer->pev->netname )[0] != 0 ) ? STRING( pPlayer->pev->netname ) : "unconnected" );
-}
-
-
-char *badlist[256] = {
-"player", // does not even can set own name
-"talat",
-"hmse",
-"mhmd",
-"aeman",
-"famas",
-"danek",
-"ame syia",
-"melih",
-"aliance",
-"vladick"
-};
-
-void UTIL_CoopKickPlayer(CBaseEntity *pPlayer)
-{
-	int i;
-
-	if( !pPlayer )
-		return;
-
-	char *name = UTIL_CoopPlayerName( pPlayer );
-	SERVER_COMMAND( UTIL_VarArgs( "kick %d\n", ENTINDEX(pPlayer->pev->pContainingEntity) - 1 ) );
-
-	if( strlen( name ) < 5 )
-		return;
-
-	// find last slot
-	for( i = 0; badlist[i]; i++ );
-	if( i > 254 )
-		return;
-
-	badlist[i] = strdup( name );
-}
-#ifdef __WIN32 // no strcasestr
-#include <windows.h>
-#include <string.h>
-const char *strcasestr( const char *s1, const char *s2 )
-{
-	if( s1 == 0 || s2 == 0 )
-		return 0;
-
-	size_t n = strlen(s2);
-
-	while(*s1)
-		if(!strnicmp(s1++,s2,n))
-			return (s1-1);
-
-	return 0;
-}
-#endif
-
-bool UTIL_CoopIsBadPlayer( CBaseEntity *plr )
-{
-	if( !plr )
-		return false;
-
-	for( int i = 0; badlist[i];i++ )
-		if( strcasestr( (char*)UTIL_CoopPlayerName( plr ), badlist[i] ) )
-			return true;
-
-	return false;
-}
-
-
-
 // Collect all weapons tat player touchet in coop ant give to all players at spawn
 void COOP_ClearWeaponList( void )
 {
@@ -641,116 +567,6 @@ bool COOP_GetOrigin( Vector *pvecNewOrigin, const Vector &vecOrigin, const char 
 	return false;
 }
 
-// Show to all spawned players: voting, etc..
-class GlobalVote
-{
-public:
-
-	int m_iConfirm;
-	int m_iBanCount;
-	float m_flTime;
-	EHANDLE m_pTrigger;
-	EHANDLE m_pPlayer;
-	void ConfirmMenu( CBasePlayer *pPlayer, CBaseEntity *trigger, const char *mapname );
-	void ShowGlobalMenu( const char *title, int count, const char **menu );
-	void Process( CBasePlayer *pPlayer, int imenu );
-};
-
-GlobalVote g_GlobalVote;
-
-void GlobalVote::Process( CBasePlayer *pPlayer, int imenu )
-{
-	if( pPlayer->pev->flags & FL_SPECTATOR )
-		return;
-	if( gpGlobals->time - m_flTime > 20 )
-	{
-		COOP_ResetVote();
-		return;
-	}
-
-	//g_GlobalVote.m_flTime = gpGlobals->time;
-
-	switch( g_CoopState.iVote )
-	{
-	case 1: // touch blue trigger
-
-		if( imenu == 0 ) // confirm
-		{
-			if( m_iBanCount >= 2 )
-			{
-				UTIL_CoopKickPlayer( pPlayer );
-				m_iConfirm-= 5;
-				m_iBanCount = 0;
-				return;
-			}
-			m_iConfirm++;
-			UTIL_CoopPrintMessage( "%s^7 confirmed map change\n", UTIL_CoopPlayerName( pPlayer ));
-			DispatchTouch( m_pTrigger->edict(), m_pPlayer->edict() );
-
-		}
-		if( imenu == 1 ) // cancel
-		{
-			m_iConfirm--;
-			if( pPlayer == m_pPlayer )
-			{
-				m_iConfirm = -10; // player mistake
-				g_CoopState.iVote = 0;
-			}
-		}
-		if( imenu == 2 )
-		{
-			m_iBanCount++;
-			if( m_iBanCount >= 2 && m_iConfirm > -9 )
-				UTIL_CoopKickPlayer( m_pPlayer );
-			g_CoopState.iVote = 0;
-		}
-		break;
-	}
-}
-void GlobalVote::ShowGlobalMenu( const char *title, int count, const char **menu )
-{
-	int count2 = 0;
-
-	for( int i = 1; i <= gpGlobals->maxClients; i++ )
-	{
-		CBaseEntity *plr = UTIL_PlayerByIndex( i );
-
-		if( plr && plr->IsPlayer() && !UTIL_CoopIsBadPlayer( plr ) )
-		{
-			count2++;
-			CBasePlayer *player = (CBasePlayer *) plr;
-			GGM_PlayerMenu &m = player->m_ggm.menu.New( title );
-			for( int j = 0; j < count; j++ )
-			{
-				char cmd[32];
-				sprintf(cmd, "votemenu %d", j );
-				m.Add( menu[j], cmd );
-			}
-			m.Show();
-
-		}
-	}
-	m_iBanCount = 0;
-}
-
-void GlobalVote::ConfirmMenu( CBasePlayer *pPlayer, CBaseEntity *trigger, const char *mapname )
-{
-	g_CoopState.iVote = 1;
-	m_flTime = gpGlobals->time;
-	m_pTrigger = trigger;
-	m_pPlayer = pPlayer;
-	const char *menu[] = {
-		"Confirm",
-		"Cancel",
-		"BAN"
-	};
-
-	UTIL_CoopPrintMessage( "%s^7 wants to change map ^1BACK to %s\n", UTIL_CoopPlayerName( pPlayer ), mapname );
-	ShowGlobalMenu(UTIL_VarArgs("Confirm changing map BACK TO %s?", mapname), ARRAYSIZE(menu), menu);
-
-}
-
-
 void COOP_NewCheckpoint( entvars_t *pevPlayer )
 {
 	if( !pevPlayer->netname || pevPlayer->health <= 0 )
@@ -824,62 +640,21 @@ CBaseEntity *UTIL_CoopGetPlayerTrain( CBaseEntity *pPlayer)
 }
 
 
-
-void COOP_ResetVote( void )
-{
-	g_CoopState.iVote = 0;
-	g_GlobalVote.m_iConfirm = 0;
-	g_GlobalVote.m_iBanCount = 0;
-	g_GlobalVote.m_flTime = gpGlobals->time;
-
-}
-
 bool COOP_ConfirmMenu(CBaseEntity *pTrigger, CBaseEntity *pActivator, int count2, char *mapname )
 {
-	if( gpGlobals->time - g_GlobalVote.m_flTime > 10 )
-		COOP_ResetVote();
-	//g_GlobalVote.m_flTime = gpGlobals->time;
 	if( mp_coop_strongcheckpoints.value )
 	{
 		// do not allow go back if there are checkpoints, but not near changelevel
 		if( g_CoopState.pCurrentMap->p.rgCheckpoints[0].flTime && (g_CoopState.pCurrentMap->p.rgCheckpoints[0].pos.vecOrigin - VecBModelOrigin(pTrigger->pev)).Length() > 150 )
 		{
-			COOP_ResetVote();
-			//UTIL_CoopPlayerMessage( pActivator,  1, 5, 0xFF0000FF, 0xFF0000FF, 0, 0.7, "Changelevel back locked by checkpoint\nCheckpoint here to activate trigger!");
 			ClientPrint( pActivator->pev, HUD_PRINTCENTER, "Changelevel back locked by checkpoint\nCheckpoint here to activate trigger!");
 			return false;
 		}
-		//if( count2 < 2 )
-			//return;
 	}
 
-	if( g_CoopState.iVote != 1 )
-	{
-		if( !UTIL_CoopIsBadPlayer( pActivator ) )
-		{
-			CBasePlayer *pPlayer = (CBasePlayer*)pActivator;
+	if( GGM_ChangelevelVote((CBasePlayer*)pActivator, pTrigger->edict(), mapname ) < count2 )
+		return false;
 
-			if( pPlayer->m_ggm.iLocalConfirm <= 0 )
-				pPlayer->m_ggm.iLocalConfirm = 1;
-			if( pPlayer->m_ggm.iLocalConfirm < 3 )
-			{
-				pPlayer->m_ggm.pChangeLevel = pTrigger->edict();
-				pPlayer->m_ggm.menu.New("This will change map back", false)
-						.Add("Confirm", "confirmchangelevel")
-						.Add("Cancel", "")
-						.Show();
-			}
-			else
-			{
-				g_GlobalVote.ConfirmMenu(pPlayer, pTrigger, mapname );
-				pPlayer->m_ggm.iLocalConfirm = 0;
-				pPlayer->m_ggm.pChangeLevel = NULL;
-			}
-		}
-		return false;
-	}
-	if( g_GlobalVote.m_iConfirm < count2 )
-		return false;
 	return true;
 }
 
@@ -993,7 +768,7 @@ bool COOP_ClientCommand( edict_t *pEntity )
 			return false;
 		if( pPlayer->m_ggm.iState != STATE_SPAWNED )
 			return false;
-		if( !UTIL_CoopIsBadPlayer( pPlayer ) )
+		if( !GGM_IsTempBanned( pPlayer ) )
 			COOP_NewCheckpoint( pPlayer->pev );
 		else
 			return false;
@@ -1015,12 +790,6 @@ bool COOP_ClientCommand( edict_t *pEntity )
 		}
 		else
 			return false;
-	}
-	else if( FStrEq( pcmd, "votemenu" ) )
-	{
-		int i = atoi( CMD_ARGV(1) );
-		g_GlobalVote.Process(pPlayer, i);
-		return true;
 	}
 
 	return false;

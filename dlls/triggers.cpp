@@ -1603,7 +1603,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 				CBaseEntity *plr = UTIL_PlayerByIndex( i );
 				CBaseEntity *pTrain = UTIL_CoopGetPlayerTrain( plr );
 
-				if( !pTrain && UTIL_CoopIsBadPlayer( plr ) )
+				if( !pTrain && GGM_IsTempBanned( plr ) )
 					continue;
 					
 				// count only players spawned more 30 seconds ago
@@ -1655,7 +1655,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 				if( i )
 					UTIL_CoopPrintMessage(
 						"%s touched end of map\nnext is %s %s, %d to go\n",
-						UTIL_CoopPlayerName( pActivator ),
+						GGM_PlayerName( pActivator ),
 						st_szNextMap, st_szNextSpot, i );
 				if( count2 )
 				{
@@ -1666,7 +1666,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 						pev->rendercolor.y = 255 - pev->rendercolor.x;
 				}
 
-				ALERT( at_console, "^3CHANGELEVEL:^7 %d %d\n", count2, count1 );
+				//ALERT( at_console, "^3CHANGELEVEL:^7 %d %d\n", count2, count1 );
 
 				if( !m_coopData.fIsBack && count1 > 1 && count1 < count2 / 3 )
 					return;
@@ -1748,7 +1748,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 	}
 
 
-	UTIL_CoopPrintMessage( "%s^7 activated changelevel, spawncheck is %d\n", UTIL_CoopPlayerName( pPlayer ), (int)!m_coopData.fSkipSpawnCheck );
+	UTIL_CoopPrintMessage( "%s^7 activated changelevel, spawncheck is %d\n", GGM_PlayerName( pPlayer ), (int)!m_coopData.fSkipSpawnCheck );
 
 	// This object will get removed in the call to CHANGE_LEVEL, copy the params into "safe" memory
 	strcpy( st_szNextMap, m_szMapName );
@@ -1790,7 +1790,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 
 	//ALERT( at_console, "Level touches %d levels\n", ChangeList( levels, 16 ) );
 	ALERT( at_console, "CHANGE LEVEL: %s %s\n", st_szNextMap, st_szNextSpot );
-	COOP_ResetVote();
+	GGM_ClearVote();
 	// loop through all clients, reset state
 	if( mp_coop.value )
 	{

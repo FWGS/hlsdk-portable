@@ -152,6 +152,7 @@ struct GGMTempState
 	int	rgszAmmo[MAX_AMMO_SLOTS];// ammo quantities
 	char szWeaponName[32];
 	GGMPosition pos;
+	bool fIsTempBanned; // prevent some actions
 };
 
 struct GGMPlayerState
@@ -193,5 +194,10 @@ void COOP_SetupLandmarkTransition( const char *szNextMap, const char *szNextSpot
 void GGM_ClearLists( void );
 void GGM_Save( const char *savename );
 void GGM_Load( const char *savename );
+const char *GGM_PlayerName( CBaseEntity *pPlayer );
+bool GGM_IsTempBanned( CBaseEntity *plr );
+void GGM_TempBan( CBaseEntity *pEnt );
+int GGM_ChangelevelVote( CBasePlayer *pPlayer, edict_t *pTrigger, const char *pszMapName );
+void GGM_ClearVote( void );
 #endif // GRAVGUNMOD_H
 

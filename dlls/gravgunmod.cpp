@@ -49,6 +49,240 @@ cvar_t *zombietime = NULL;
 static char gamedir[MAX_PATH];
 void Ent_RunGC_f( void );
 
+enum GGMVoteMode
+{
+	VOTE_NONE = 0,
+	VOTE_COOP_CHANGELEVEL,
+	VOTE_COMMAND
+};
+
+// cancel vote after 15 seconds
+#define VOTE_INACTIVE_TIME 15.0f
+// ignore vote first 2 seconds
+#define VOTE_MISCLICK_TIME 2.0f
+
+struct GGMVote
+{
+	int iMode;
+	EHANDLE pPlayer;
+	// changelevel
+	edict_t *pTrigger;
+	char szCommand[256];
+	char szMessage[256];
+	float flStartTime;
+	float flLastActiveTime;
+	int iMaxCount;
+	int iTempBanCount;
+	int iConfirm;
+} g_Vote;
+
+bool GGM_IsTempBanned( CBaseEntity *pEnt )
+{
+	CBasePlayer *pPlayer = (CBasePlayer*)pEnt;
+
+	if( !pPlayer || !pPlayer->IsPlayer() )
+		return false;
+
+	if( !pPlayer->m_ggm.pState )
+		return false;
+
+	return pPlayer->m_ggm.pState->t.fIsTempBanned;
+}
+
+void GGM_ClearVote( void )
+{
+	memset( &g_Vote, 0, sizeof( g_Vote ) );
+}
+
+void GGM_SendVote( CBasePlayer *pPlayer )
+{
+	pPlayer->m_ggm.menu.New( g_Vote.szMessage )
+			.Add( "Confirm", "voteconfirm" )
+			.Add( "Cancel", "votecancel" )
+			.Add( "BAN", "votetempban" )
+			.Show();
+}
+
+void GGM_BroadcastVote( void )
+{
+	int iCount = 0;
+
+	for( int i = 1; i <= gpGlobals->maxClients; i++ )
+	{
+		CBaseEntity *plr = UTIL_PlayerByIndex( i );
+
+		if( plr && plr->IsPlayer() && !GGM_IsTempBanned( plr ) )
+		{
+			CBasePlayer *pPlayer = (CBasePlayer *) plr;
+
+			if( pPlayer->m_ggm.iState != STATE_SPAWNED )
+				continue;
+
+			iCount++;
+			GGM_SendVote( pPlayer );
+		}
+	}
+	g_Vote.flLastActiveTime = g_Vote.flStartTime = gpGlobals->time;
+	g_Vote.iTempBanCount = 0;
+	g_Vote.iConfirm = 0;
+	g_Vote.iMaxCount = iCount;
+}
+
+void GGM_StartVoteCommand( CBasePlayer *pPlayer, const char *pszCommand, const char *pszMessage )
+{
+	if( gpGlobals->time - g_Vote.flLastActiveTime > VOTE_INACTIVE_TIME )
+		GGM_ClearVote();
+
+	// vote pending
+	if( g_Vote.iMode )
+		return;
+
+	g_Vote.iMode = VOTE_COMMAND;
+	g_Vote.pPlayer = pPlayer;
+	snprintf( g_Vote.szCommand, 255, "%s\n", pszCommand);
+	strncpy( g_Vote.szMessage, pszMessage, 255 );
+
+	GGM_BroadcastVote();
+}
+
+void GGM_VoteCommand_f( void )
+{
+	GGM_StartVoteCommand( NULL, CMD_ARGV(1), CMD_ARGV(2));
+}
+
+int GGM_ChangelevelVote( CBasePlayer *pPlayer, edict_t *pTrigger, const char *pszMapName )
+{
+	if( gpGlobals->time - g_Vote.flLastActiveTime > VOTE_INACTIVE_TIME )
+		GGM_ClearVote();
+
+	if( g_Vote.iMode == VOTE_COOP_CHANGELEVEL )
+	{
+		if( g_Vote.pTrigger == pTrigger )
+			return g_Vote.iConfirm;
+		else
+			return -1;
+	}
+
+	if( g_Vote.iMode )
+		return -1;
+
+	if( !GGM_IsTempBanned( pPlayer ) )
+	{
+		if( pPlayer->m_ggm.iLocalConfirm <= 0 )
+			pPlayer->m_ggm.iLocalConfirm = 1;
+		if( pPlayer->m_ggm.iLocalConfirm < 3 )
+		{
+			pPlayer->m_ggm.pChangeLevel = pTrigger;
+			pPlayer->m_ggm.menu.New("This will change map back", false)
+					.Add("Confirm", "confirmchangelevel")
+					.Add("Cancel", "")
+					.Show();
+			return -1;
+		}
+		else
+		{
+			g_Vote.iMode = VOTE_COOP_CHANGELEVEL;
+			g_Vote.pTrigger = pTrigger;
+			g_Vote.pPlayer = pPlayer;
+			UTIL_CoopPrintMessage( "%s^7 wants to change map ^1BACK to %s\n", GGM_PlayerName( pPlayer ), pszMapName );
+			snprintf(g_Vote.szMessage, 255, "Change map BACK TO %s?", pszMapName );
+			GGM_BroadcastVote();
+			pPlayer->m_ggm.iLocalConfirm = 0;
+			pPlayer->m_ggm.pChangeLevel = NULL;
+			return 0;
+		}
+	}
+	return -1;
+}
+
+bool GGM_VoteProcess( CBasePlayer *pPlayer, const char *pszStr )
+{
+	if( !g_Vote.iMode )
+		return false;
+
+	if( gpGlobals->time - g_Vote.flLastActiveTime > VOTE_INACTIVE_TIME )
+	{
+		GGM_ClearVote();
+		return false;
+	}
+
+	if( gpGlobals->time - g_Vote.flStartTime < VOTE_MISCLICK_TIME )
+	{
+		GGM_SendVote( pPlayer );
+		return false;
+	}
+
+	if( !strcmp( pszStr, "voteconfirm" ) )
+	{
+		if( g_Vote.iTempBanCount >= 3 )
+		{
+			GGM_TempBan( pPlayer );
+			g_Vote.iConfirm -= 5;
+			g_Vote.iTempBanCount = 0;
+			return true;
+		}
+		g_Vote.iConfirm++;
+
+		if( g_Vote.iMode == VOTE_COOP_CHANGELEVEL )
+		{
+			UTIL_CoopPrintMessage( "%s^7 confirmed map change\n", GGM_PlayerName( pPlayer ));
+			DispatchTouch( g_Vote.pTrigger, g_Vote.pPlayer.Get() );
+		}
+		else if( g_Vote.iMode == VOTE_COMMAND )
+		{
+			UTIL_CoopPrintMessage( "%s^7 confirmed vote\n", GGM_PlayerName( pPlayer ));
+			if( g_Vote.iConfirm > g_Vote.iMaxCount / 2 )
+			{
+				SERVER_COMMAND( g_Vote.szCommand );
+				SERVER_EXECUTE();
+				GGM_ClearVote();
+			}
+		}
+		return true;
+	}
+	else if( !strcmp( pszStr, "votecancel" ) )
+	{
+		g_Vote.iConfirm--;
+		if( g_Vote.pPlayer == pPlayer )
+			GGM_ClearVote();
+		return true;
+	}
+	else if( !strcmp( pszStr, "votetempban" ) )
+	{
+		g_Vote.iTempBanCount++;
+		if( g_Vote.iTempBanCount >= 3 )
+		{
+			GGM_TempBan( g_Vote.pPlayer );
+			GGM_ClearVote();
+		}
+		return true;
+	}
+
+	return false;
+}
+
+const char *GGM_PlayerName( CBaseEntity *pPlayer )
+{
+	if( !pPlayer )
+		return "unnamed(NULL)";
+	return (const char*)( ( pPlayer->pev->netname && STRING( pPlayer->pev->netname )[0] != 0 ) ? STRING( pPlayer->pev->netname ) : "unconnected" );
+}
+
+void GGM_TempBan( CBaseEntity *pEnt )
+{
+	CBasePlayer *pPlayer = (CBasePlayer*)pEnt;
+
+	if( !pEnt || pEnt->IsPlayer() )
+		return;
+
+	if( !pPlayer->m_ggm.pState )
+		return;
+
+	pPlayer->m_ggm.pState->t.fIsTempBanned = true;
+
+	SERVER_COMMAND( UTIL_VarArgs( "kick #%d\n", GETPLAYERUSERID( pPlayer->edict() ) ) );
+}
+
 static bool Q_starcmp( const char *pattern, const char *text )
 {
 	char		c, c1;
@@ -661,6 +895,7 @@ void GGM_Save( const char *savename )
 	float health = client0->v.health;
 	int deadflag = client0->v.deadflag;
 	float zombietime_old;
+	bool fNeedKick = false;
 	SERVER_EXECUTE();
 
 	// save even with dead player
@@ -671,9 +906,17 @@ void GGM_Save( const char *savename )
 
 	if( zombietime )
 		zombietime_old = zombietime->value;
+	if( !(g_engfuncs.pfnGetInfoKeyBuffer( client0 )[0]))
+		fNeedKick = true;
+	if( !(g_engfuncs.pfnGetPhysicsInfoString( client0 )[0]))
+		fNeedKick = true;
+	if( !client0->v.netname )
+		fNeedKick = true;
+	if( !strcmp( GETPLAYERAUTHID( client0 ), "VALVE_ID_LOOPBACK" ) )
+		fNeedKick = false;
 
 	// hack to make save work when client 0 not connected
-	if( !(g_engfuncs.pfnGetInfoKeyBuffer( client0 )[0]) || !(g_engfuncs.pfnGetPhysicsInfoString( client0 )[0]) || !client0->v.netname )
+	if( !client0->v.netname )
 	{
 		snprintf( cmd, 32, "kick #%d\n", GETPLAYERUSERID( client0 ) );
 		SERVER_COMMAND(cmd);
@@ -846,11 +1089,24 @@ struct GGMLogin *GGM_LoadLogin( const char *uid, const char *name )
 	return pLogin;
 }
 
-
 struct GGMPlayerState *GGM_GetState( const char *uid, const char *name )
 {
 	struct GGMPlayerState *pState;
 	struct GGMLogin *pLogin = GGM_LoadLogin( uid, name );
+	char *rgpszBadNames[] = {
+	"player*", // does not even can set own name
+	"*talat*",
+	"*hmse*",
+	"*mhmd*",
+	"*aeman*",
+	"*famas*",
+	"*danek*",
+	"ame syia*",
+	"*melih*",
+	"*aliance*",
+	"*alliance*",
+	"*vladick*",
+	};
 
 	if( pLogin )
 	{
@@ -876,6 +1132,15 @@ struct GGMPlayerState *GGM_GetState( const char *uid, const char *name )
 	pState->szUID[32] = 0;
 	pState->pNext = anonymous_list;
 
+	for( int i = 0; i < ARRAYSIZE( rgpszBadNames ); i++ )
+	{
+		if( Q_stricmpext( rgpszBadNames[i], name ) )
+		{
+			pState->t.fIsTempBanned = true;
+			break;
+		}
+	}
+
 	return anonymous_list = pState;
 }
 
@@ -883,6 +1148,7 @@ struct GGMPlayerState *GGM_GetState( const char *uid, const char *name )
 void GGM_ServerActivate( void )
 {
 	COOP_ServerActivate();
+	GGM_ClearVote();
 }
 
 void GGM_SavePosition( CBasePlayer *pPlayer, struct GGMPosition *pos )
@@ -1288,6 +1554,9 @@ void GGM_Register( CBasePlayer *pPlayer, const char *name, const char *password 
 	struct GGMLogin *pLogin;
 
 	if( !pPlayer || !pPlayer->m_ggm.pState )
+		return;
+
+	if( pPlayer->m_ggm.pState->t.fIsTempBanned )
 		return;
 
 	if( pPlayer->m_ggm.pState->fRegistered )
@@ -2059,6 +2328,8 @@ bool GGM_ClientCommand( CBasePlayer *pPlayer, const char *pCmd )
 		return true;
 	else if( GGM_TouchCommand( pPlayer, pCmd ) )
 		return true;
+	else if( GGM_VoteProcess( pPlayer, pCmd ) )
+		return true;
 	else if( FStrEq(pCmd, "dumpprops") )
 	{
 		if ( g_flWeaponCheat != 0.0 )
@@ -2266,6 +2537,8 @@ void GGM_RegisterCVars( void )
 	g_engfuncs.pfnAddServerCommand( "loadplayers", GGM_LoadPlayers_f );
 	g_engfuncs.pfnAddServerCommand( "ggm_save", GGM_Save_f );
 	g_engfuncs.pfnAddServerCommand( "ggm_load", GGM_Load_f );
+	g_engfuncs.pfnAddServerCommand( "ggm_votecommand", GGM_VoteCommand_f );
+
 	zombietime = CVAR_GET_POINTER("zombietime");
 
 

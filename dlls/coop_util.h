@@ -34,7 +34,6 @@ struct COOPChangelevelData
 };
 
 void UTIL_CleanSpawnPoint( Vector origin, float radius );
-char *UTIL_CoopPlayerName( CBaseEntity *pPlayer );
 
 bool COOP_SetDefaultSpawnPosition( CBasePlayer *pPlayer );
 void UTIL_CoopPrintMessage( const char *format, ... );
@@ -49,7 +48,6 @@ void COOP_ResetVote( void );
 void COOP_ServerActivate( void );
 bool COOP_GetOrigin( Vector *pvecNewOrigin, const Vector &vecOrigin, const char *pszMapName );
 class CBasePlayer;
-bool UTIL_CoopIsBadPlayer( CBaseEntity *plr );
 CBaseEntity *UTIL_CoopGetPlayerTrain( CBaseEntity *pPlayer);
 void UTIL_SpawnPlayer( CBasePlayer *pPlayer );
 void UTIL_BecomeSpectator( CBasePlayer *pPlayer );
