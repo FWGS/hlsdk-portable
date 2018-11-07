@@ -35,7 +35,7 @@ int PRECACHE_MODEL(const char *model);
 #define PRECACHE_SOUND	(*g_engfuncs.pfnPrecacheSound)
 #define PRECACHE_GENERIC	(*g_engfuncs.pfnPrecacheGeneric)
 #ifdef CLIENT_DLL
-//#define SET_MODEL		(*g_engfuncs.pfnSetModel)
+#define SET_MODEL		(*g_engfuncs.pfnSetModel)
 #else
 void SET_MODEL( edict_t *e, const char *model );
 #endif
@@ -54,7 +54,7 @@ void SET_MODEL( edict_t *e, const char *model );
 #define CREATE_ENTITY	(*g_engfuncs.pfnCreateEntity)
 #define REMOVE_ENTITY	(*g_engfuncs.pfnRemoveEntity)
 #ifdef CLIENT_DLL
-//#define CREATE_NAMED_ENTITY		(*g_engfuncs.pfnCreateNamedEntity)
+#define CREATE_NAMED_ENTITY		(*g_engfuncs.pfnCreateNamedEntity)
 #else
 edict_t *CREATE_NAMED_ENTITY( string_t name );
 #endif
@@ -131,9 +131,9 @@ inline void *GET_PRIVATE( edict_t *pent )
 #define TRACE_TEXTURE				(*g_engfuncs.pfnTraceTexture)
 #define CLIENT_PRINTF				(*g_engfuncs.pfnClientPrintf)
 #ifdef CLIENT_DLL
-//#define CMD_ARGS					(*g_engfuncs.pfnCmd_Args)
-//#define CMD_ARGC					(*g_engfuncs.pfnCmd_Argc)
-//#define CMD_ARGV					(*g_engfuncs.pfnCmd_Argv)
+#define CMD_ARGS					(*g_engfuncs.pfnCmd_Args)
+#define CMD_ARGC					(*g_engfuncs.pfnCmd_Argc)
+#define CMD_ARGV					(*g_engfuncs.pfnCmd_Argv)
 #else
 // gravgunmod.cpp hack
 extern "C" int CMD_ARGC();
