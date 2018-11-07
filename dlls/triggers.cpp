@@ -2271,7 +2271,7 @@ LINK_ENTITY_TO_CLASS( trigger_autosave, CTriggerSave )
 
 void CTriggerSave::Spawn( void )
 {
-	if( g_pGameRules->IsDeathmatch() )
+	if( !mp_coop.value && g_pGameRules->IsDeathmatch() )
 	{
 		REMOVE_ENTITY( ENT( pev ) );
 		return;
@@ -2292,7 +2292,10 @@ void CTriggerSave::SaveTouch( CBaseEntity *pOther )
 
 	SetTouch( NULL );
 	UTIL_Remove( this );
-	SERVER_COMMAND( "autosave\n" );
+	if( mp_coop.value )
+		COOP_AutoSave();
+	else
+		SERVER_COMMAND( "autosave\n" );
 }
 
 #define SF_ENDSECTION_USEONLY		0x0001

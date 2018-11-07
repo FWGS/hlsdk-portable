@@ -14,7 +14,7 @@ struct COOPMapState
 	{
 		char szMapName[32];
 		Vector vecOffset;
-		struct GGMCheckpoint {
+		struct COOPCheckpoint {
 			char szDisplayName[32];
 			float flTime;
 			struct GGMPosition pos;
@@ -35,18 +35,32 @@ struct COOPLandmarkTransition {
 	bool fLoading;
 };
 
+enum COOPSaveSlot
+{
+	COOP_SAVE_START1 = 0,
+	COOP_SAVE_START2,
+	COOP_SAVE_AUTO1,
+	COOP_SAVE_AUTO2,
+	COOP_SAVE_COUNT
+};
+
 struct COOPState
 {
 	// will be saved
 	struct COOPPersist
 	{
 		// weapon list
-		char rgszWeapons[64][256];
+		char rgszWeapons[64][32];
 		int iWeaponCount;
+
 		// data for spawnpoint
 		struct GGMPosition savedPos;
 		bool fSaved;
+		char rgszSaveSlots[COOP_SAVE_COUNT][32];
+		char iLastAutoSave;
 	} p;
+
+	// runtime state
 	struct COOPMapState *pMapStates;
 	struct COOPMapState *pCurrentMap;
 
@@ -142,6 +156,29 @@ bool COOP_ReadState( const char *path )
 
 	fclose( f );
 	return true;
+}
+
+void COOP_AutoSave( void )
+{
+	strncpy( g_CoopState.p.rgszSaveSlots[COOP_SAVE_AUTO2], g_CoopState.p.rgszSaveSlots[COOP_SAVE_AUTO1], 31 );
+	g_CoopState.p.iLastAutoSave ^= 1;
+	snprintf( g_CoopState.p.rgszSaveSlots[COOP_SAVE_AUTO1], 31, "%s-auto%d", STRING( gpGlobals->mapname ), g_CoopState.p.iLastAutoSave );
+	GGM_Save( g_CoopState.p.rgszSaveSlots[COOP_SAVE_AUTO1] );
+}
+
+void COOP_MapStartSave( void )
+{
+	char szSavename[32] = "";
+
+	snprintf( szSavename, 31, "%s-start", STRING( gpGlobals->mapname ) );
+
+	// moving to previous map and returning back should not trigger save
+	if( !strcmp( g_CoopState.p.rgszSaveSlots[COOP_SAVE_START1], szSavename ) || !strcmp( g_CoopState.p.rgszSaveSlots[COOP_SAVE_START2], szSavename ) )
+		return;
+
+	strncpy( g_CoopState.p.rgszSaveSlots[COOP_SAVE_START2], g_CoopState.p.rgszSaveSlots[COOP_SAVE_START1], 31 );
+	strncpy( g_CoopState.p.rgszSaveSlots[COOP_SAVE_START1], szSavename, 31 );
+	GGM_Save( g_CoopState.p.rgszSaveSlots[COOP_SAVE_START1] );
 }
 
 
@@ -575,8 +612,10 @@ void COOP_ServerActivate( void )
 		snprintf( g_CoopState.pCurrentMap->p.rgCheckpoints[0].szDisplayName, 31,  "From %s", g_CoopState.landmarkTransition.szSourceMap );
 		g_CoopState.pCurrentMap->p.rgCheckpoints[0].pos = g_CoopState.p.savedPos;
 	}
-
+	if( !g_CoopState.landmarkTransition.fLoading )
+		COOP_MapStartSave();
 	memset( &g_CoopState.landmarkTransition, 0, sizeof( struct COOPLandmarkTransition ) );
+
 }
 
 bool COOP_GetOrigin( Vector *pvecNewOrigin, const Vector &vecOrigin, const char *pszMapName )
