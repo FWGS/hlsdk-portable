@@ -178,7 +178,7 @@ void COOP_MapStartSave( void )
 
 	strncpy( g_CoopState.p.rgszSaveSlots[COOP_SAVE_START2], g_CoopState.p.rgszSaveSlots[COOP_SAVE_START1], 31 );
 	strncpy( g_CoopState.p.rgszSaveSlots[COOP_SAVE_START1], szSavename, 31 );
-	GGM_Save( g_CoopState.p.rgszSaveSlots[COOP_SAVE_START1] );
+	SERVER_COMMAND( UTIL_VarArgs( "wait;wait;ggm_save %s\n", g_CoopState.p.rgszSaveSlots[COOP_SAVE_START1] ) );
 }
 
 
