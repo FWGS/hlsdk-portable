@@ -863,6 +863,7 @@ bool COOP_ConfirmMenu(CBaseEntity *pTrigger, CBaseEntity *pActivator, int count2
 				pPlayer->m_ggm.iLocalConfirm = 1;
 			if( pPlayer->m_ggm.iLocalConfirm < 3 )
 			{
+				pPlayer->m_ggm.pChangeLevel = pTrigger->edict();
 				pPlayer->m_ggm.menu.New("This will change map back", false)
 						.Add("Confirm", "confirmchangelevel")
 						.Add("Cancel", "")
@@ -872,6 +873,7 @@ bool COOP_ConfirmMenu(CBaseEntity *pTrigger, CBaseEntity *pActivator, int count2
 			{
 				g_GlobalVote.ConfirmMenu(pPlayer, pTrigger, mapname );
 				pPlayer->m_ggm.iLocalConfirm = 0;
+				pPlayer->m_ggm.pChangeLevel = NULL;
 			}
 		}
 		return false;
@@ -1000,7 +1002,17 @@ bool COOP_ClientCommand( edict_t *pEntity )
 	else if( FStrEq( pcmd, "confirmchangelevel" ) )
 	{
 		if( pPlayer->m_ggm.iLocalConfirm )
+		{
 			pPlayer->m_ggm.iLocalConfirm++;
+			if( pPlayer->m_ggm.pChangeLevel )
+			{
+				edict_t *pChangeLevel = pPlayer->m_ggm.pChangeLevel;
+				pPlayer->m_ggm.pChangeLevel = NULL;
+				DispatchTouch( pChangeLevel, pPlayer->edict() );
+			}
+			return true;
+
+		}
 		else
 			return false;
 	}

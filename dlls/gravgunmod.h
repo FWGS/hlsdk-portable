@@ -172,6 +172,7 @@ struct GGMData
 	PlayerState iState;
 	bool fTouchMenu;
 	int iLocalConfirm;
+	edict_t *pChangeLevel;
 	float flEntScore;
 	float flEntTime;
 	GGM_PlayerMenu menu;
