@@ -917,7 +917,7 @@ void GGM_Save( const char *savename )
 		fNeedKick = false;
 
 	// hack to make save work when client 0 not connected
-	if( !client0->v.netname )
+	if( fNeedKick )
 	{
 		snprintf( cmd, 32, "kick #%d\n", GETPLAYERUSERID( client0 ) );
 		SERVER_COMMAND(cmd);
