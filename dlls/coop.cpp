@@ -647,12 +647,8 @@ class GlobalVote
 public:
 
 	int m_iConfirm;
-	int m_iVoteCount;
-	int m_iMaxCount;
 	int m_iBanCount;
 	float m_flTime;
-	const char *maps[5];
-	int votes[5];
 	EHANDLE m_pTrigger;
 	EHANDLE m_pPlayer;
 	void ConfirmMenu( CBasePlayer *pPlayer, CBaseEntity *trigger, const char *mapname );
@@ -677,7 +673,6 @@ void GlobalVote::Process( CBasePlayer *pPlayer, int imenu )
 	switch( g_CoopState.iVote )
 	{
 	case 1: // touch blue trigger
-		m_iVoteCount++;
 
 		if( imenu == 0 ) // confirm
 		{
@@ -690,6 +685,7 @@ void GlobalVote::Process( CBasePlayer *pPlayer, int imenu )
 			}
 			m_iConfirm++;
 			UTIL_CoopPrintMessage( "%s^7 confirmed map change\n", UTIL_CoopPlayerName( pPlayer ));
+			DispatchTouch( m_pTrigger->edict(), m_pPlayer->edict() );
 
 		}
 		if( imenu == 1 ) // cancel
@@ -734,7 +730,6 @@ void GlobalVote::ShowGlobalMenu( const char *title, int count, const char **menu
 
 		}
 	}
-	m_iMaxCount = count2;
 	m_iBanCount = 0;
 }
 
