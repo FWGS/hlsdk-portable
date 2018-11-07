@@ -27,12 +27,18 @@ extern enginefuncs_t g_engfuncs;
 
 // The actual engine callbacks
 #define GETPLAYERUSERID (*g_engfuncs.pfnGetPlayerUserId)
-//#define PRECACHE_MODEL	(*g_engfuncs.pfnPrecacheModel)
+#ifdef CLIENT_DLL
+#define PRECACHE_MODEL	(*g_engfuncs.pfnPrecacheModel)
+#else
 int PRECACHE_MODEL(const char *model);
+#endif
 #define PRECACHE_SOUND	(*g_engfuncs.pfnPrecacheSound)
 #define PRECACHE_GENERIC	(*g_engfuncs.pfnPrecacheGeneric)
+#ifdef CLIENT_DLL
 //#define SET_MODEL		(*g_engfuncs.pfnSetModel)
+#else
 void SET_MODEL( edict_t *e, const char *model );
+#endif
 #define MODEL_INDEX		(*g_engfuncs.pfnModelIndex)
 #define MODEL_FRAMES	(*g_engfuncs.pfnModelFrames)
 #define SET_SIZE		(*g_engfuncs.pfnSetSize)
@@ -47,8 +53,11 @@ void SET_MODEL( edict_t *e, const char *model );
 #define MAKE_VECTORS	(*g_engfuncs.pfnMakeVectors)
 #define CREATE_ENTITY	(*g_engfuncs.pfnCreateEntity)
 #define REMOVE_ENTITY	(*g_engfuncs.pfnRemoveEntity)
+#ifdef CLIENT_DLL
 //#define CREATE_NAMED_ENTITY		(*g_engfuncs.pfnCreateNamedEntity)
+#else
 edict_t *CREATE_NAMED_ENTITY( string_t name );
+#endif
 #define MAKE_STATIC		(*g_engfuncs.pfnMakeStatic)
 #define ENT_IS_ON_FLOOR	(*g_engfuncs.pfnEntIsOnFloor)
 #define DROP_TO_FLOOR	(*g_engfuncs.pfnDropToFloor)
@@ -121,13 +130,16 @@ inline void *GET_PRIVATE( edict_t *pent )
 #define NAME_FOR_FUNCTION			(*g_engfuncs.pfnNameForFunction)
 #define TRACE_TEXTURE				(*g_engfuncs.pfnTraceTexture)
 #define CLIENT_PRINTF				(*g_engfuncs.pfnClientPrintf)
+#ifdef CLIENT_DLL
 //#define CMD_ARGS					(*g_engfuncs.pfnCmd_Args)
 //#define CMD_ARGC					(*g_engfuncs.pfnCmd_Argc)
 //#define CMD_ARGV					(*g_engfuncs.pfnCmd_Argv)
+#else
 // gravgunmod.cpp hack
 extern "C" int CMD_ARGC();
 extern "C" const char *CMD_ARGS();
 extern "C" const char *CMD_ARGV( int i );
+#endif
 #define GET_ATTACHMENT			(*g_engfuncs.pfnGetAttachment)
 #define SET_VIEW				(*g_engfuncs.pfnSetView)
 #define SET_CROSSHAIRANGLE		(*g_engfuncs.pfnCrosshairAngle)
