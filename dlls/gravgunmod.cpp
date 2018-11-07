@@ -48,7 +48,7 @@ cvar_t mp_errormdlpath = { "mp_errormdlpath", "models/error.mdl", FCVAR_SERVER }
 cvar_t *zombietime = NULL;
 static char gamedir[MAX_PATH];
 void Ent_RunGC_f( void );
-
+static bool g_fCmdUsed;
 enum GGMVoteMode
 {
 	VOTE_NONE = 0,
@@ -233,6 +233,7 @@ bool GGM_VoteProcess( CBasePlayer *pPlayer, const char *pszStr )
 			UTIL_CoopPrintMessage( "%s^7 confirmed vote\n", GGM_PlayerName( pPlayer ));
 			if( g_Vote.iConfirm > g_Vote.iMaxCount / 2 )
 			{
+				g_fCmdUsed = false;
 				SERVER_COMMAND( g_Vote.szCommand );
 				SERVER_EXECUTE();
 				GGM_ClearVote();
@@ -1773,7 +1774,7 @@ so perform all parsing here, allowing to change CMD_ARGV result
 ===============================
 */
 
-bool cmd_used;
+
 // CMD_ARGS replacement
 namespace GGM
 {
@@ -1883,7 +1884,7 @@ static void Cmd_TokenizeString( const char *text )
 	cmd_argc = 0; // clear previous args
 	cmd_args = NULL;
 
-	cmd_used = true;
+	g_fCmdUsed = true;
 
 	if( !text ) return;
 
@@ -1921,14 +1922,14 @@ static void Cmd_TokenizeString( const char *text )
 
 static void Cmd_Reset( void )
 {
-	cmd_used = false;
+	g_fCmdUsed = false;
 }
 
 }
 
 extern "C" int CMD_ARGC()
 {
-	if( cmd_used )
+	if( g_fCmdUsed )
 	{
 		return GGM::cmd_argc;
 	}
@@ -1937,7 +1938,7 @@ extern "C" int CMD_ARGC()
 
 extern "C" const char *CMD_ARGS()
 {
-	if( cmd_used )
+	if( g_fCmdUsed )
 	{
 		if(!GGM::cmd_args)
 			return "";
@@ -1947,7 +1948,7 @@ extern "C" const char *CMD_ARGS()
 }
 extern "C" const char *CMD_ARGV( int i )
 {
-	if( cmd_used )
+	if( g_fCmdUsed )
 	{
 		if( i < 0 || i >= GGM::cmd_argc|| !GGM::cmd_argv[i] )
 			return "";

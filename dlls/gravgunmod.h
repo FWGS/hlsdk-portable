@@ -199,5 +199,6 @@ bool GGM_IsTempBanned( CBaseEntity *plr );
 void GGM_TempBan( CBaseEntity *pEnt );
 int GGM_ChangelevelVote( CBasePlayer *pPlayer, edict_t *pTrigger, const char *pszMapName );
 void GGM_ClearVote( void );
+void GGM_StartVoteCommand( CBasePlayer *pPlayer, const char *pszCommand, const char *pszMessage );
 #endif // GRAVGUNMOD_H
 

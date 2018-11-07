@@ -354,11 +354,6 @@ void UTIL_SpawnPlayer( CBasePlayer *pPlayer )
 
 }
 
-// Collect all weapons tat player touchet in coop ant give to all players at spawn
-void COOP_ClearWeaponList( void )
-{
-	g_CoopState.p.iWeaponCount = 0;
-}
 void COOP_GiveDefaultWeapons(CBasePlayer *pPlayer)
 {
 	for(int i = 0; i < g_CoopState.p.iWeaponCount;i++)
@@ -506,12 +501,12 @@ void COOP_ServerActivate( void )
 		}
 		COOPMapState *pNewState = (COOPMapState *)calloc(1, sizeof( struct COOPMapState ) );
 
+		memset( &g_CoopState.p, 0, sizeof( g_CoopState.p ) );
 		pNewState->pNext = g_CoopState.pMapStates;
 		pNewState->p.vecOffset = Vector(0, 0, 0);
 		strncpy(pNewState->p.szMapName, STRING(gpGlobals->mapname), 31);
 		g_CoopState.pMapStates = g_CoopState.pCurrentMap = pNewState;
 		GGM_ClearLists();
-		COOP_ClearWeaponList();
 	}
 
 	g_fPause = false;
@@ -719,9 +714,10 @@ bool COOP_ClientCommand( edict_t *pEntity )
 		if( pPlayer->m_ggm.iState == STATE_SPAWNED )
 		{
 			GGM_PlayerMenu &m = pPlayer->m_ggm.menu.New( "COOP MENU" )
-					.Add( "Force respawn", "respawn" )
 					.Add( "Unblock", "unblock" )
-					.Add( "Become spectator", "spectate" );
+					/// TODO: statistics button here
+					.Add( "Respawn", "respawn" )
+					.Add( "Other", "coopmenu1");
 			if( mp_coop_checkpoints.value )
 				m.Add( "Checkpoints", "checkpointmenu" );
 			m.Add( "Cancel", "" );
@@ -736,6 +732,20 @@ bool COOP_ClientCommand( edict_t *pEntity )
 					.Show();
 			return true;
 
+		}
+	}
+	else if( FStrEq( pcmd, "coopmenu1" ) )
+	{
+		//UTIL_CoopMenu( pPlayer );
+		if( pPlayer->m_ggm.iState == STATE_SPAWNED )
+		{
+			pPlayer->m_ggm.menu.New( "COOP MENU" )
+					.Add( "Force respawn", "respawn" )
+					.Add( "Spectate", "spectate" )
+					.Add( "Vote load", "voteload")
+					.Add( "Cancel", "" )
+					.Show();
+			return true;
 		}
 	}
 	else if( FStrEq( pcmd, "respawn" ) )
@@ -770,6 +780,36 @@ bool COOP_ClientCommand( edict_t *pEntity )
 			return false;
 		if( !GGM_IsTempBanned( pPlayer ) )
 			COOP_NewCheckpoint( pPlayer->pev );
+		else
+			return false;
+		return true;
+	}
+	else if( FStrEq( pcmd, "voteload") )
+	{
+		if( !mp_coop_checkpoints.value )
+			return false;
+		if( pPlayer->m_ggm.iState != STATE_SPAWNED )
+			return false;
+		if( !GGM_IsTempBanned( pPlayer ) )
+		{
+			if( CMD_ARGC() == 1)
+			{
+				GGM_PlayerMenu &menu = pPlayer->m_ggm.menu.New("Select save", false );
+
+				for( int i = 0; i < 4; i++ )
+					if( g_CoopState.p.rgszSaveSlots[i][0] )
+						menu.Add( g_CoopState.p.rgszSaveSlots[i], UTIL_VarArgs("voteload %s",g_CoopState.p.rgszSaveSlots[i]) );
+
+				menu.Add( "Cancel", "" ).Show();
+			}
+			else
+			{
+				char szCommand[32];
+				snprintf( szCommand, 31, "ggm_load %s", CMD_ARGV(1) );
+
+				GGM_StartVoteCommand( pPlayer, szCommand, UTIL_VarArgs("Load save %s", CMD_ARGV(1) ));
+			}
+		}
 		else
 			return false;
 		return true;
