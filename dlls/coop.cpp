@@ -136,6 +136,15 @@ bool COOP_ReadState( const char *path )
 		return true;
 	}
 
+	g_CoopState.pCurrentMap = NULL;
+	while( g_CoopState.pMapStates )
+	{
+		struct COOPMapState *pState = g_CoopState.pMapStates;
+
+		g_CoopState.pMapStates = pState->pNext;
+		free( pState );
+	}
+
 	while( true )
 	{
 		struct COOPMapState *pState = (struct COOPMapState *)calloc( 1, sizeof( struct COOPMapState ) );
@@ -503,7 +512,15 @@ void COOP_ServerActivate( void )
 	if( !mp_coop.value )
 		return;
 
-	if( g_flDupCheck && gpGlobals->time && g_flDupCheck == gpGlobals->time )
+	if( !gpGlobals->mapname )
+	{
+		ALERT( at_error, "NULL mapname\n" );
+		return;
+	}
+
+	ALERT( at_console, "COOP_ServerActivate: %s", STRING( gpGlobals->mapname ) );
+
+	if( g_flDupCheck && gpGlobals->time && ( fabs( g_flDupCheck -gpGlobals->time ) < 1 || g_flDupCheck == 1 )  )
 	{
 		g_flDupCheck = 0.0f;
 		return;
