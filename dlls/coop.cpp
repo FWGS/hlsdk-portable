@@ -485,8 +485,12 @@ void COOP_SetupLandmarkTransition( const char *szNextMap, const char *szNextSpot
 	}
 }
 
+static float g_flDupCheck;
+
 bool COOP_PlayerSpawn( CBasePlayer *pPlayer )
 {
+	if( !g_CoopState.landmarkTransition.fLoading )
+		g_flDupCheck = 0.0f;
 	if( g_CoopState.landmarkTransition.fLoading && pPlayer )
 		pPlayer->m_ggm.iState = STATE_LOAD_FIX;
 	if( pPlayer->m_ggm.iState == STATE_LOAD_FIX )
@@ -496,20 +500,18 @@ bool COOP_PlayerSpawn( CBasePlayer *pPlayer )
 
 void COOP_ServerActivate( void )
 {
-	static float st_DupCheck;
-
 	if( !mp_coop.value )
 		return;
 
-	if( st_DupCheck && gpGlobals->time && st_DupCheck == gpGlobals->time)
+	if( g_flDupCheck && gpGlobals->time && g_flDupCheck == gpGlobals->time )
 	{
-		st_DupCheck = 0.0f;
+		g_flDupCheck = 0.0f;
 		return;
 	}
 
 	if( g_CoopState.landmarkTransition.fLoading )
 	{
-		st_DupCheck = gpGlobals->time;
+		g_flDupCheck = gpGlobals->time;
 	}
 
 	GGM_ConnectSaveBot();
