@@ -691,7 +691,6 @@ void ClientUserInfoChanged( edict_t *pEntity, char *infobuffer )
 
 	const char *name =  g_engfuncs.pfnInfoKeyValue( infobuffer, "name" );
 
-
 	// prevent keeping other's uid on saverestore
 	CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)&pEntity->v);
 	const char *uid = GGM_GetAuthID( pPlayer );
@@ -701,10 +700,10 @@ void ClientUserInfoChanged( edict_t *pEntity, char *infobuffer )
 
 		if( pState != pPlayer->m_ggm.pState )
 		{
-			GGM_SaveState( pPlayer );
 			pEntity->v.netname = pEntity->v.frags = 0;
 			if( pPlayer->m_ggm.iState == STATE_LOAD_FIX )
 				return;
+			GGM_SaveState( pPlayer );
 			pPlayer->m_ggm.pState = pState;
 			pPlayer->m_ggm.iState = STATE_UNINITIALIZED;
 		}

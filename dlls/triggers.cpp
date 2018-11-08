@@ -1803,6 +1803,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 			{
 				GGM_SaveState( plr );
 				plr->m_ggm.iState = STATE_UNINITIALIZED;
+				plr->m_ggm.pState = NULL;
 				plr->RemoveAllItems( TRUE );
 				UTIL_BecomeSpectator( plr );
 				// HACK: force perform reconnection

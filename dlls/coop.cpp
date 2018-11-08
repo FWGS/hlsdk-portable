@@ -518,7 +518,7 @@ void COOP_ServerActivate( void )
 		return;
 	}
 
-	ALERT( at_console, "COOP_ServerActivate: %s", STRING( gpGlobals->mapname ) );
+	ALERT( at_console, "COOP_ServerActivate: %s\n", STRING( gpGlobals->mapname ) );
 
 	if( g_flDupCheck && gpGlobals->time && ( fabs( g_flDupCheck -gpGlobals->time ) < 1 || g_flDupCheck == 1 )  )
 	{
@@ -565,6 +565,7 @@ void COOP_ServerActivate( void )
 
 
 			plr->m_ggm.iState = STATE_UNINITIALIZED;
+			plr->m_ggm.pState = NULL;
 			plr->RemoveAllItems( TRUE );
 			UTIL_BecomeSpectator( plr );
 			if( g_CoopState.landmarkTransition.fLoading )

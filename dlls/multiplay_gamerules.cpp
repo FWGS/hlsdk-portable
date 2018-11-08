@@ -568,6 +568,7 @@ void CHalfLifeMultiplay::PlayerThink( CBasePlayer *pPlayer )
 		{
 			CLIENT_COMMAND( pPlayer->edict(), "reconnect\n" );
 			pPlayer->m_ggm.iState = STATE_UNINITIALIZED;
+			pPlayer->m_ggm.pState = NULL;
 			pPlayer->m_afButtonPressed = 0;
 			return;
 		}
