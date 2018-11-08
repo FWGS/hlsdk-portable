@@ -88,7 +88,7 @@ BOOL ClientConnect( edict_t *pEntity, const char *pszName, const char *pszAddres
 	if( mp_coop.value && pEntity )
 	{
 		CBasePlayer *pl = (CBasePlayer *)CBaseEntity::Instance( pEntity ) ;
-		if( pl )
+		if( pl && pl->m_ggm.iState != STATE_LOAD_FIX )
 		{
 			pl->m_ggm.iState = STATE_UNINITIALIZED;
 			pl->RemoveAllItems( TRUE );
@@ -703,6 +703,8 @@ void ClientUserInfoChanged( edict_t *pEntity, char *infobuffer )
 		{
 			GGM_SaveState( pPlayer );
 			pEntity->v.netname = pEntity->v.frags = 0;
+			if( pPlayer->m_ggm.iState == STATE_LOAD_FIX )
+				return;
 			pPlayer->m_ggm.pState = pState;
 			pPlayer->m_ggm.iState = STATE_UNINITIALIZED;
 		}

@@ -485,13 +485,21 @@ void COOP_SetupLandmarkTransition( const char *szNextMap, const char *szNextSpot
 	}
 }
 
+bool COOP_PlayerSpawn( CBasePlayer *pPlayer )
+{
+	if( g_CoopState.landmarkTransition.fLoading && pPlayer )
+		pPlayer->m_ggm.iState = STATE_LOAD_FIX;
+	if( pPlayer->m_ggm.iState == STATE_LOAD_FIX )
+		return true;
+	return false;
+}
+
 void COOP_ServerActivate( void )
 {
 	static float st_DupCheck;
-	if( g_CoopState.landmarkTransition.fLoading )
-	{
-		st_DupCheck = gpGlobals->time;
-	}
+
+	if( !mp_coop.value )
+		return;
 
 	if( st_DupCheck && gpGlobals->time && st_DupCheck == gpGlobals->time)
 	{
@@ -499,8 +507,10 @@ void COOP_ServerActivate( void )
 		return;
 	}
 
-	if( !mp_coop.value )
-		return;
+	if( g_CoopState.landmarkTransition.fLoading )
+	{
+		st_DupCheck = gpGlobals->time;
+	}
 
 	GGM_ConnectSaveBot();
 
@@ -530,13 +540,21 @@ void COOP_ServerActivate( void )
 	for( int i = 1; i <= gpGlobals->maxClients; i++ )
 	{
 		CBasePlayer *plr = (CBasePlayer*)UTIL_PlayerByIndex( i );
-
 		// reset all players state
 		if( plr )
 		{
+
+
 			plr->m_ggm.iState = STATE_UNINITIALIZED;
 			plr->RemoveAllItems( TRUE );
 			UTIL_BecomeSpectator( plr );
+			if( g_CoopState.landmarkTransition.fLoading )
+			{
+//				plr->Spawn();
+//				CLIENT_COMMAND( plr->edict(), "reconnect\n");
+				plr->m_ggm.iState = STATE_LOAD_FIX;
+
+			}
 			//plr->Spawn();
 		}
 	}

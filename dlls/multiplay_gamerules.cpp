@@ -563,6 +563,15 @@ BOOL CHalfLifeMultiplay::FPlayerCanTakeDamage( CBasePlayer *pPlayer, CBaseEntity
 //=========================================================
 void CHalfLifeMultiplay::PlayerThink( CBasePlayer *pPlayer )
 {
+	if( pPlayer->m_ggm.iState == STATE_LOAD_FIX )
+		if( pPlayer->m_afButtonPressed & ( IN_DUCK | IN_ATTACK | IN_ATTACK2 | IN_USE | IN_JUMP ) )
+		{
+			CLIENT_COMMAND( pPlayer->edict(), "reconnect\n" );
+			pPlayer->m_ggm.iState = STATE_UNINITIALIZED;
+			pPlayer->m_afButtonPressed = 0;
+			return;
+		}
+
 	if( !mp_coop.value && pPlayer->m_ggm.iState == STATE_SPECTATOR_BEGIN )
 		if( pPlayer->m_afButtonPressed & ( IN_DUCK | IN_ATTACK | IN_ATTACK2 | IN_USE | IN_JUMP ) )
 			UTIL_SpawnPlayer( pPlayer );

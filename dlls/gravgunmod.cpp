@@ -636,6 +636,8 @@ const char *GGM_GetAuthID( CBasePlayer *pPlayer )
 
 void GGM_ClientPutinServer( edict_t *pEntity, CBasePlayer *pPlayer )
 {
+	if( pPlayer->m_ggm.iState == STATE_LOAD_FIX )
+		return;
 	if( mp_touchmenu.value && pPlayer->m_ggm.iState == STATE_UNINITIALIZED )
 		g_engfuncs.pfnQueryClientCvarValue2( pEntity, "touch_enable", 111 );
 
@@ -1371,6 +1373,12 @@ void ClientPutInServer( edict_t *client );
 
 bool GGM_PlayerSpawn( CBasePlayer *pPlayer )
 {
+	if( mp_coop.value )
+		if( COOP_PlayerSpawn( pPlayer ) )
+			return true;
+
+	if( pPlayer->m_ggm.iState == STATE_LOAD_FIX )
+		return true;
 	if( pPlayer->m_ggm.iState == STATE_UNINITIALIZED )
 	{
 		ClientPutInServer( pPlayer->edict() );
