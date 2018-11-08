@@ -426,6 +426,9 @@ bool COOP_ProcessTransition( void )
 		return false;
 	}
 
+	memset( &g_CoopState.p.savedPos, 0, sizeof( struct GGMPosition ) );
+	g_CoopState.p.fSaved = false;
+
 	COOP_MarkTriggers();
 
 	g_CoopState.p.savedPos = g_CoopState.landmarkTransition.pos;
@@ -484,11 +487,22 @@ void COOP_SetupLandmarkTransition( const char *szNextMap, const char *szNextSpot
 
 void COOP_ServerActivate( void )
 {
-	memset( &g_CoopState.p.savedPos, 0, sizeof( struct GGMPosition ) );
-	g_CoopState.p.fSaved = false;
+	static float st_DupCheck;
+	if( g_CoopState.landmarkTransition.fLoading )
+	{
+		st_DupCheck = gpGlobals->time;
+	}
+
+	if( st_DupCheck && gpGlobals->time && st_DupCheck == gpGlobals->time)
+	{
+		st_DupCheck = 0.0f;
+		return;
+	}
 
 	if( !mp_coop.value )
 		return;
+
+	GGM_ConnectSaveBot();
 
 	if( !COOP_ProcessTransition() )
 	{

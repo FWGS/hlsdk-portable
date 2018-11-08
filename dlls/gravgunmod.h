@@ -200,5 +200,6 @@ void GGM_TempBan( CBaseEntity *pEnt );
 int GGM_ChangelevelVote( CBasePlayer *pPlayer, edict_t *pTrigger, const char *pszMapName );
 void GGM_ClearVote( void );
 void GGM_StartVoteCommand( CBasePlayer *pPlayer, const char *pszCommand, const char *pszMessage );
+void GGM_ConnectSaveBot( void );
 #endif // GRAVGUNMOD_H
 

@@ -887,6 +887,41 @@ void GGM_LoadPlayers_f( void )
 		ALERT( at_error, "Failed to load player states from %s\n", CMD_ARGV( 1 ) );
 }
 
+void GGM_ConnectSaveBot( void )
+{
+	edict_t *client0 = INDEXENT( 1 );
+	edict_t *bot = NULL;
+	char cmd[33] = "";
+	float health = client0->v.health;
+	int deadflag = client0->v.deadflag;
+	float zombietime_old;
+	bool fNeedKick = false;
+	SERVER_EXECUTE();
+
+	// save even with dead player
+	if( health <= 0 )
+		client0->v.health = 1;
+
+	client0->v.deadflag = 0;
+
+	if( g_engfuncs.pfnGetInfoKeyBuffer( client0 )[0] )
+		return;
+
+	snprintf( cmd, 32, "kick #%d\n", GETPLAYERUSERID( client0 ) );
+	SERVER_COMMAND(cmd);
+	SERVER_EXECUTE();
+	bot = g_engfuncs.pfnCreateFakeClient("_save_bot");
+	if( bot != client0 )
+		ALERT( at_warning, "Bot is not player 1\n" );
+	bot->v.health = 1;
+	bot->v.deadflag = 0;
+
+	client0->v.deadflag = deadflag;
+	client0->v.health = health;
+	if( zombietime )
+		zombietime->value = zombietime_old;
+}
+
 // hack to make save work when client 0 not connected
 void GGM_Save( const char *savename )
 {
@@ -914,6 +949,9 @@ void GGM_Save( const char *savename )
 	if( !client0->v.netname )
 		fNeedKick = true;
 	if( !strcmp( GETPLAYERAUTHID( client0 ), "VALVE_ID_LOOPBACK" ) )
+		fNeedKick = false;
+
+	if( mp_coop.value )
 		fNeedKick = false;
 
 	// hack to make save work when client 0 not connected
