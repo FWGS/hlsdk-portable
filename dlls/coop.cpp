@@ -85,7 +85,13 @@ cvar_t materials_txt = { "materials_txt", "sound/materials.txt", FCVAR_SERVER };
 cvar_t sentences_txt = { "sentences_txt", "sound/sentences.txt", FCVAR_SERVER };
 void COOP_CheckpointMenu( CBasePlayer *pPlayer );
 
+/*
+=========================
+COOP_WriteState
 
+Write COOP state to file
+=========================
+*/
 void COOP_WriteState( const char *path )
 {
 	FILE *f = fopen( path, "wb" );
@@ -110,6 +116,13 @@ void COOP_WriteState( const char *path )
 	fclose( f );
 }
 
+/*
+=========================
+COOP_ReadState
+
+Read COOP state from file
+=========================
+*/
 bool COOP_ReadState( const char *path )
 {
 	FILE *f = fopen( path, "rb" );
@@ -167,6 +180,13 @@ bool COOP_ReadState( const char *path )
 	return true;
 }
 
+/*
+=========================
+COOP_AutoSave
+
+Helper for trigger_autosave
+=========================
+*/
 void COOP_AutoSave( void )
 {
 	strncpy( g_CoopState.p.rgszSaveSlots[COOP_SAVE_AUTO2], g_CoopState.p.rgszSaveSlots[COOP_SAVE_AUTO1], 31 );
@@ -175,6 +195,13 @@ void COOP_AutoSave( void )
 	GGM_Save( g_CoopState.p.rgszSaveSlots[COOP_SAVE_AUTO1] );
 }
 
+/*
+=========================
+COOP_MapStartSave
+
+Create save when reaching new map
+=========================
+*/
 void COOP_MapStartSave( void )
 {
 	char szSavename[32] = "";
@@ -190,7 +217,13 @@ void COOP_MapStartSave( void )
 	SERVER_COMMAND( UTIL_VarArgs( "wait;wait;ggm_save %s\n", g_CoopState.p.rgszSaveSlots[COOP_SAVE_START1] ) );
 }
 
+/*
+=========================
+COOP_FindLandmark
 
+return info_landmark pointer
+=========================
+*/
 edict_t *COOP_FindLandmark( const char *pLandmarkName )
 {
 	edict_t	*pentLandmark;
@@ -291,7 +324,13 @@ void UTIL_CoopPrintMessage( const char *format, ... )
 	UTIL_ClientPrintAll( HUD_PRINTTALK, string );
 }
 
+/*
+=========================
+COOP_CleanSpawnPoint
 
+Move all players near specified origin to prevent stucking
+=========================
+*/
 void UTIL_CleanSpawnPoint( Vector origin, float dist )
 {
 	CBaseEntity *ent = NULL;
@@ -308,7 +347,13 @@ void UTIL_CleanSpawnPoint( Vector origin, float dist )
 	}
 }
 
+/*
+=========================
+COOP_FixupSpawnPoint
 
+Trace and fix origin to prevent stuch (unused)
+=========================
+*/
 Vector COOP_FixupSpawnPoint( Vector vecOrigin, bool fDuck )
 {
 	int i = 0;
@@ -327,6 +372,13 @@ Vector COOP_FixupSpawnPoint( Vector vecOrigin, bool fDuck )
 	return vecOrigin;
 }
 
+/*
+=========================
+UTIL_BecomeSpectator
+
+Set noclip and invisibility
+=========================
+*/
 void UTIL_BecomeSpectator( CBasePlayer *pPlayer )
 {
 	//pPlayer->m_bDoneFirstSpawn = true;
@@ -345,6 +397,13 @@ void UTIL_BecomeSpectator( CBasePlayer *pPlayer )
 	return;
 }
 
+/*
+=========================
+UTIL_SpawnPlayer
+
+Spawn player which is marked as spectator
+=========================
+*/
 void UTIL_SpawnPlayer( CBasePlayer *pPlayer )
 {
 	//pPlayer->StopObserver();
@@ -363,11 +422,26 @@ void UTIL_SpawnPlayer( CBasePlayer *pPlayer )
 
 }
 
+/*
+=========================
+COOP_GiveDefaultWeapons
+
+Give each item in weapon list
+=========================
+*/
 void COOP_GiveDefaultWeapons(CBasePlayer *pPlayer)
 {
 	for(int i = 0; i < g_CoopState.p.iWeaponCount;i++)
 		pPlayer->GiveNamedItem(g_CoopState.p.rgszWeapons[i]);
 }
+
+/*
+=========================
+COOP_AddDefaultWeapon
+
+Write weapon name to weapon list
+=========================
+*/
 void COOP_AddDefaultWeapon( const char *classname )
 {
 	int i;
@@ -393,6 +467,13 @@ void COOP_AddDefaultWeapon( const char *classname )
 
 }
 
+/*
+=========================
+COOP_MarkTriggers
+
+Setup trigger_changelevel color and direction
+=========================
+*/
 void COOP_MarkTriggers( void )
 {
 	CBaseEntity *pTrigger = NULL;
@@ -416,6 +497,14 @@ void COOP_MarkTriggers( void )
 	}
 }
 
+/*
+=========================
+COOP_ProcessTransition
+
+Process landmark transition
+return false to start new game
+=========================
+*/
 bool COOP_ProcessTransition( void )
 {
 	bool fAddCurrent = true;
@@ -480,6 +569,14 @@ bool COOP_ProcessTransition( void )
 	return true;
 }
 
+
+/*
+=========================
+COOP_SetupLandmarkTransition
+
+set cross-level state
+=========================
+*/
 void COOP_SetupLandmarkTransition( const char *szNextMap, const char *szNextSpot, Vector vecLandmarkOffset, struct GGMPosition *pPos )
 {
 	g_CoopState.landmarkTransition.fLoading = false;
@@ -496,6 +593,13 @@ void COOP_SetupLandmarkTransition( const char *szNextMap, const char *szNextSpot
 
 static float g_flDupCheck;
 
+/*
+=========================
+COOP_PlayerSpawn
+
+handle load fix. return true to refuse state change
+=========================
+*/
 bool COOP_PlayerSpawn( CBasePlayer *pPlayer )
 {
 	if( !g_CoopState.landmarkTransition.fLoading )
@@ -507,6 +611,13 @@ bool COOP_PlayerSpawn( CBasePlayer *pPlayer )
 	return false;
 }
 
+/*
+=========================
+COOP_ServerActivate
+
+Handle landmark transition, load or game restart
+=========================
+*/
 void COOP_ServerActivate( void )
 {
 	if( !mp_coop.value )
@@ -591,6 +702,13 @@ void COOP_ServerActivate( void )
 
 }
 
+/*
+=========================
+COOP_GetOrigin
+
+Compute origin by landmarks
+=========================
+*/
 bool COOP_GetOrigin( Vector *pvecNewOrigin, const Vector &vecOrigin, const char *pszMapName )
 {
 	if( !mp_coop.value )
@@ -614,6 +732,13 @@ bool COOP_GetOrigin( Vector *pvecNewOrigin, const Vector &vecOrigin, const char 
 	return false;
 }
 
+/*
+=========================
+COOP_NewCheckpoint
+
+Check if player allowed to make checkpoint and create it
+=========================
+*/
 void COOP_NewCheckpoint( entvars_t *pevPlayer )
 {
 	if( !pevPlayer->netname || pevPlayer->health <= 0 )
@@ -625,7 +750,13 @@ void COOP_NewCheckpoint( entvars_t *pevPlayer )
 	UTIL_CoopPrintMessage("New checkpoint by %s!\n", STRING( pevPlayer->netname ) );
 }
 
+/*
+=========================
+COOP_PlayerDeath
 
+Show checkpoints menu for dead player
+=========================
+*/
 bool COOP_PlayerDeath( CBasePlayer *pPlayer )
 {
 	static bool st_fSkipNext;
@@ -649,6 +780,13 @@ bool COOP_PlayerDeath( CBasePlayer *pPlayer )
 	return false;
 }
 
+/*
+=========================
+COOP_SetDefaultSpawnPosition
+
+Set position got from landmark transition
+=========================
+*/
 bool COOP_SetDefaultSpawnPosition( CBasePlayer *pPlayer )
 {
 	if( !g_CoopState.p.fSaved )
@@ -656,6 +794,13 @@ bool COOP_SetDefaultSpawnPosition( CBasePlayer *pPlayer )
 	return GGM_RestorePosition( pPlayer, &g_CoopState.p.savedPos );
 }
 
+/*
+=========================
+UTIL_CoopGetPlayerTrain
+
+Check if player on global platform and return pointer
+=========================
+*/
 CBaseEntity *UTIL_CoopGetPlayerTrain( CBaseEntity *pPlayer)
 {
 	CBaseEntity *train = NULL;
@@ -686,8 +831,14 @@ CBaseEntity *UTIL_CoopGetPlayerTrain( CBaseEntity *pPlayer)
 	return train;
 }
 
+/*
+=========================
+COOP_ConfirmMenu
 
-bool COOP_ConfirmMenu(CBaseEntity *pTrigger, CBaseEntity *pActivator, int count2, char *mapname )
+Check blue triggers and ask for changelevel confirmation
+=========================
+*/
+bool COOP_ConfirmMenu( CBaseEntity *pTrigger, CBaseEntity *pActivator, int count2, char *mapname )
 {
 	if( mp_coop_strongcheckpoints.value )
 	{
@@ -705,6 +856,13 @@ bool COOP_ConfirmMenu(CBaseEntity *pTrigger, CBaseEntity *pActivator, int count2
 	return true;
 }
 
+/*
+=========================
+COOP_CheckPointMenu
+
+Build and show checkpoint menu for player
+=========================
+*/
 void COOP_CheckpointMenu( CBasePlayer *pPlayer )
 {
 	int i;
@@ -732,6 +890,11 @@ void COOP_CheckpointMenu( CBasePlayer *pPlayer )
 	m.Show();
 }
 
+/*
+=========================
+COOP_ClientCommand
+=========================
+*/
 bool COOP_ClientCommand( edict_t *pEntity )
 {
 	const char *pcmd = CMD_ARGV(0);
@@ -887,6 +1050,13 @@ bool COOP_ClientCommand( edict_t *pEntity )
 	return false;
 }
 
+/*
+=========================
+COOP_RegisterCVars
+
+Register console vars and commands for COOP
+=========================
+*/
 void COOP_RegisterCVars()
 {
 	CVAR_REGISTER( &mp_coop );

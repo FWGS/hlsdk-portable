@@ -119,7 +119,8 @@ struct GGMPosition
 	bool fDuck;
 };
 
-// login records are persistent
+// login record
+// this maps pair of nickname and uid to registration
 struct GGMLogin
 {
 	struct GGMLogin *pNext;
@@ -156,6 +157,7 @@ struct GGMTempState
 	bool fIsTempBanned; // prevent some actions
 };
 
+// state which every spawned player has
 struct GGMPlayerState
 {
 	struct GGMPlayerState *pNext;
@@ -167,7 +169,7 @@ struct GGMPlayerState
 	char szUID[33];
 };
 
-
+// player ggm data. additional struct for CBasePlayer
 struct GGMData
 {
 	float flSpawnTime;

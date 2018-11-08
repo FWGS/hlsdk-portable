@@ -61,6 +61,7 @@ enum GGMVoteMode
 // ignore vote first 2 seconds
 #define VOTE_MISCLICK_TIME 2.0f
 
+// global vote state
 struct GGMVote
 {
 	int iMode;
@@ -76,6 +77,13 @@ struct GGMVote
 	int iConfirm;
 } g_Vote;
 
+/*
+=====================
+GGM_IsTempBanned
+
+Return true if tempban active for player
+=====================
+*/
 bool GGM_IsTempBanned( CBaseEntity *pEnt )
 {
 	CBasePlayer *pPlayer = (CBasePlayer*)pEnt;
@@ -89,11 +97,25 @@ bool GGM_IsTempBanned( CBaseEntity *pEnt )
 	return pPlayer->m_ggm.pState->t.fIsTempBanned;
 }
 
+/*
+=====================
+GGM_ClearVote
+
+Reset vote state
+=====================
+*/
 void GGM_ClearVote( void )
 {
 	memset( &g_Vote, 0, sizeof( g_Vote ) );
 }
 
+/*
+=====================
+GGM_SendVote
+
+Send menu for current vote for specified player
+=====================
+*/
 void GGM_SendVote( CBasePlayer *pPlayer )
 {
 	pPlayer->m_ggm.menu.New( g_Vote.szMessage )
@@ -103,6 +125,13 @@ void GGM_SendVote( CBasePlayer *pPlayer )
 			.Show();
 }
 
+/*
+=====================
+GGM_BroadcastVote
+
+Send menu for current vote for all players
+=====================
+*/
 void GGM_BroadcastVote( void )
 {
 	int iCount = 0;
@@ -128,6 +157,13 @@ void GGM_BroadcastVote( void )
 	g_Vote.iMaxCount = iCount;
 }
 
+/*
+=====================
+GGM_VoteCommand
+
+Start vote for specified command and message
+=====================
+*/
 void GGM_StartVoteCommand( CBasePlayer *pPlayer, const char *pszCommand, const char *pszMessage )
 {
 	if( gpGlobals->time - g_Vote.flLastActiveTime > VOTE_INACTIVE_TIME )
@@ -150,6 +186,13 @@ void GGM_VoteCommand_f( void )
 	GGM_StartVoteCommand( NULL, CMD_ARGV(1), CMD_ARGV(2));
 }
 
+/*
+=====================
+GGM_ChangelevelVote
+
+Start changelevel vote or get vote confirm count
+=====================
+*/
 int GGM_ChangelevelVote( CBasePlayer *pPlayer, edict_t *pTrigger, const char *pszMapName )
 {
 	if( gpGlobals->time - g_Vote.flLastActiveTime > VOTE_INACTIVE_TIME )
@@ -195,6 +238,13 @@ int GGM_ChangelevelVote( CBasePlayer *pPlayer, edict_t *pTrigger, const char *ps
 	return -1;
 }
 
+/*
+=====================
+GGM_VoteProcess
+
+Handle vote commands, do actions
+=====================
+*/
 bool GGM_VoteProcess( CBasePlayer *pPlayer, const char *pszStr )
 {
 	if( !g_Vote.iMode )
@@ -262,6 +312,13 @@ bool GGM_VoteProcess( CBasePlayer *pPlayer, const char *pszStr )
 	return false;
 }
 
+/*
+=====================
+GGM_PlayerName
+
+Return readable player name
+=====================
+*/
 const char *GGM_PlayerName( CBaseEntity *pPlayer )
 {
 	if( !pPlayer )
@@ -269,6 +326,14 @@ const char *GGM_PlayerName( CBaseEntity *pPlayer )
 	return (const char*)( ( pPlayer->pev->netname && STRING( pPlayer->pev->netname )[0] != 0 ) ? STRING( pPlayer->pev->netname ) : "unconnected" );
 }
 
+/*
+=====================
+GGM_TempBan
+
+Mark player as temprary banned and kick from server
+This bans player from votes and changelevel activation
+=====================
+*/
 void GGM_TempBan( CBaseEntity *pEnt )
 {
 	CBasePlayer *pPlayer = (CBasePlayer*)pEnt;
@@ -284,6 +349,13 @@ void GGM_TempBan( CBaseEntity *pEnt )
 	SERVER_COMMAND( UTIL_VarArgs( "kick #%d\n", GETPLAYERUSERID( pPlayer->edict() ) ) );
 }
 
+/*
+=====================
+Q_starcmp
+
+string comparing with pattern (from Xash3D)
+=====================
+*/
 static bool Q_starcmp( const char *pattern, const char *text )
 {
 	char		c, c1;
@@ -304,7 +376,13 @@ static bool Q_starcmp( const char *pattern, const char *text )
 		if( *t++ == '\0' ) return false;
 	}
 }
+/*
+=====================
+Q_stricmpext
 
+string comparing with pattern (from Xash3D)
+=====================
+*/
 bool Q_stricmpext( const char *pattern, const char *text )
 {
 	char	c;
@@ -331,6 +409,13 @@ bool Q_stricmpext( const char *pattern, const char *text )
 	return true;
 }
 
+/*
+=====================
+GGM_LightStyle_f
+
+Allow server admin to change lightstyles
+=====================
+*/
 void GGM_LightStyle_f( void )
 {
 	if( CMD_ARGC() != 3 )
@@ -346,7 +431,15 @@ void GGM_LightStyle_f( void )
 	LIGHT_STYLE( style, CMD_ARGV(2) );
 }
 
+/*
+=====================
+Ent_RunGC
 
+Run Garbage Collector
+Clean trash that we can remove without breaking game
+Remove entities by uid or pattern
+=====================
+*/
 void Ent_RunGC( int flags, const char *userid, const char *pattern )
 {
 	int i, count = 0, removed = 0;
@@ -460,6 +553,13 @@ void Ent_RunGC( int flags, const char *userid, const char *pattern )
 
 }
 
+/*
+=====================
+Ent_RunGC_f
+
+Run some GC modes manually
+=====================
+*/
 void Ent_RunGC_f()
 {
 	int enttools = atoi(CMD_ARGV(1));
@@ -474,6 +574,14 @@ void Ent_RunGC_f()
 	Ent_RunGC( flags, NULL, pattern );
 }
 
+/*
+=====================
+CREATE_NAMED_ENTITY wrapper
+
+return NULL when out of edicts instead of Host_Error
+use timer to detect spawn in same frame
+=====================
+*/
 edict_t *CREATE_NAMED_ENTITY( string_t name )
 {
 	static int lastindex;
@@ -489,6 +597,13 @@ edict_t *CREATE_NAMED_ENTITY( string_t name )
 	return pent;
 }
 
+/*
+=====================
+Ent_ChangeOwner
+
+Change owner and enttools state by pattern or old owner id
+=====================
+*/
 void Ent_ChangeOwner( const char *szOld, const char *pattern, const char *szNew, int oldstate, int newstate )
 {
 	edict_t *ent = g_engfuncs.pfnPEntityOfEntIndex( gpGlobals->maxClients + 5 );
@@ -521,6 +636,11 @@ void Ent_ChangeOwner( const char *szOld, const char *pattern, const char *szNew,
 	}
 }
 
+/*
+=====================
+Ent_ChangeOwner_f
+=====================
+*/
 void Ent_Chown_f()
 {
 	if( CMD_ARGC() != 6 )
@@ -530,6 +650,14 @@ void Ent_Chown_f()
 	Ent_ChangeOwner( CMD_ARGV(1), CMD_ARGV(2), CMD_ARGV(3), atoi(CMD_ARGV(4)), atoi(CMD_ARGV(5)) );
 }
 
+
+/*
+=====================
+Ent_CheckEntitySpawn
+
+Refuse some entities to spawn
+=====================
+*/
 int Ent_CheckEntitySpawn( edict_t *pent )
 {
 
@@ -578,6 +706,13 @@ int Ent_CheckEntitySpawn( edict_t *pent )
 	return 0;
 }
 
+/*
+=====================
+GGM_ChatPrintf
+
+Print message to player's chat
+=====================
+*/
 void GGM_ChatPrintf( CBasePlayer *pPlayer, const char *format, ... )
 {
 	va_list	argptr;
@@ -592,6 +727,13 @@ void GGM_ChatPrintf( CBasePlayer *pPlayer, const char *format, ... )
 	CLIENT_PRINTF( pPlayer->edict(), print_chat, string );
 }
 
+/*
+=====================
+GGM_FilterFileName
+
+Allow only safe characters
+=====================
+*/
 bool GGM_FilterFileName( const char *name )
 {
 	while( name && *name )
@@ -606,6 +748,15 @@ bool GGM_FilterFileName( const char *name )
 
 	return true;
 }
+
+/*
+=====================
+GGM_GetAuthId
+
+Calculate auth id for connected client
+This does not require player state filled
+=====================
+*/
 const char *GGM_GetAuthID( CBasePlayer *pPlayer )
 {
 	static char uid[33];
@@ -634,6 +785,14 @@ const char *GGM_GetAuthID( CBasePlayer *pPlayer )
 	return "UNKNOWN";
 }
 
+/*
+=====================
+GGM_ClientPutinServer
+
+Let The Emperor connect to the server
+Mark player as connected and setup pState
+=====================
+*/
 void GGM_ClientPutinServer( edict_t *pEntity, CBasePlayer *pPlayer )
 {
 	if( pPlayer->m_ggm.iState == STATE_LOAD_FIX )
@@ -650,6 +809,13 @@ void GGM_ClientPutinServer( edict_t *pEntity, CBasePlayer *pPlayer )
 	pPlayer->m_ggm.pState = GGM_GetState( GGM_GetAuthID(pPlayer), STRING(pEntity->v.netname) );
 }
 
+/*
+=====================
+GGM_ClientFirstSpawn
+
+Handle first spawn in deathmatch
+=====================
+*/
 void GGM_ClientFirstSpawn(CBasePlayer *pPlayer)
 {
 	// AGHL-like spectator
@@ -661,6 +827,13 @@ void GGM_ClientFirstSpawn(CBasePlayer *pPlayer)
 
 }
 
+/*
+=====================
+GGM_PlayerByID
+
+Find connected player with specified UID
+=====================
+*/
 edict_t *GGM_PlayerByID( const char *id )
 {
 	for( int i = 1; i <= gpGlobals->maxClients; i++ )
@@ -682,6 +855,13 @@ edict_t *GGM_PlayerByID( const char *id )
 	return NULL;
 }
 
+/*
+=====================
+GGM_GetPlayerID
+
+Check player pointed and return UID or NULL
+=====================
+*/
 const char *GGM_GetPlayerID( edict_t *player )
 {
 	CBasePlayer *plr = (CBasePlayer*)CBaseEntity::Instance( player );
@@ -699,6 +879,13 @@ struct GGMPlayerState *registered_list;
 struct GGMPlayerState *anonymous_list;
 struct GGMLogin *login_list;
 
+/*
+=====================
+GGM_FindState
+
+Find state in given list
+=====================
+*/
 struct GGMPlayerState *GGM_FindState( GGMPlayerState *list, const char *uid )
 {
 	struct GGMPlayerState *pState;
@@ -711,6 +898,14 @@ struct GGMPlayerState *GGM_FindState( GGMPlayerState *list, const char *uid )
 	return NULL;
 }
 
+/*
+=====================
+GGM_WritePersist
+
+Write persistent cross-server state
+This enabled only for registered players
+=====================
+*/
 void GGM_WritePersist( GGMPlayerState *pState )
 {
 	FILE *f;
@@ -732,6 +927,14 @@ void GGM_WritePersist( GGMPlayerState *pState )
 	fclose( f );
 }
 
+/*
+=====================
+GGM_ReadPersist
+
+Read persistent cross-server state
+This enabled only for registered players
+=====================
+*/
 void GGM_ReadPersist( GGMPlayerState *pState )
 {
 	FILE *f;
@@ -751,6 +954,15 @@ void GGM_ReadPersist( GGMPlayerState *pState )
 	fclose( f );
 }
 
+/*
+=====================
+GGM_ClearLists
+
+Clear all GGMPlayerState records
+This used before loading player states
+or when starting new game
+=====================
+*/
 void GGM_ClearLists( void )
 {
 	// unlink from all players
@@ -787,6 +999,14 @@ void GGM_ClearLists( void )
 	}
 }
 
+/*
+=====================
+GGM_WritePlayers
+
+Write players non-persistent state
+This used during ggm_save to fully save game
+=====================
+*/
 void GGM_WritePlayers( const char *path )
 {
 	FILE *f = fopen( path, "wb" );
@@ -828,6 +1048,14 @@ void GGM_WritePlayers( const char *path )
 	fclose( f );
 }
 
+/*
+=====================
+GGM_ReadPlayers
+
+Read players non-persistent state
+This used during ggm_load to fully restore game
+=====================
+*/
 bool GGM_ReadPlayers( const char *path )
 {
 	FILE *f = fopen( path, "rb" );
@@ -883,12 +1111,21 @@ void GGM_SavePlayers_f( void )
 	GGM_WritePlayers( CMD_ARGV(1) );
 }
 
+
 void GGM_LoadPlayers_f( void )
 {
 	if( !GGM_ReadPlayers( CMD_ARGV(1) ) )
 		ALERT( at_error, "Failed to load player states from %s\n", CMD_ARGV( 1 ) );
 }
 
+/*
+=====================
+GGM_ConnectSaveBot
+
+if need to do automatic saves,
+connect bot to reserve first slot
+======================
+*/
 void GGM_ConnectSaveBot( void )
 {
 	edict_t *client0 = INDEXENT( 1 );
@@ -897,7 +1134,6 @@ void GGM_ConnectSaveBot( void )
 	float health = client0->v.health;
 	int deadflag = client0->v.deadflag;
 	float zombietime_old;
-	bool fNeedKick = false;
 	SERVER_EXECUTE();
 
 	// save even with dead player
@@ -917,6 +1153,7 @@ void GGM_ConnectSaveBot( void )
 		ALERT( at_warning, "Bot is not player 1\n" );
 	bot->v.health = 1;
 	bot->v.deadflag = 0;
+	bot->v.effects |= EF_NODRAW;
 
 	client0->v.deadflag = deadflag;
 	client0->v.health = health;
@@ -924,7 +1161,15 @@ void GGM_ConnectSaveBot( void )
 		zombietime->value = zombietime_old;
 }
 
-// hack to make save work when client 0 not connected
+/*
+=====================
+GGM_Save
+
+wrapper to save that saves all GGM states
+if mp_coop disabled, connect bot if client0 is not alive
+to force engine allow save without player 1
+=====================
+*/
 void GGM_Save( const char *savename )
 {
 	edict_t *client0 = INDEXENT( 1 );
@@ -987,6 +1232,11 @@ void GGM_Save( const char *savename )
 	}
 }
 
+/*
+=====================
+GGM_Save_f
+=====================
+*/
 void GGM_Save_f( void )
 {
 	char savename[33] = "";
@@ -994,6 +1244,13 @@ void GGM_Save_f( void )
 	GGM_Save( savename );
 }
 
+/*
+=====================
+GGM_Load
+
+wrapper to load that loads all GGM states
+=====================
+*/
 void GGM_Load( const char *savename )
 {
 	char cmd[33] = "";
@@ -1022,6 +1279,11 @@ void GGM_Load( const char *savename )
 
 }
 
+/*
+=====================
+GGM_Load_f
+=====================
+*/
 void GGM_Load_f( void )
 {
 	char savename[33] = "";
@@ -1029,6 +1291,13 @@ void GGM_Load_f( void )
 	GGM_Load( savename );
 }
 
+/*
+=====================
+GGM_GetRegistration
+
+find/load registration record by name
+=====================
+*/
 struct GGMPlayerState *GGM_GetRegistration( const char *name )
 {
 	struct GGMPlayerState *pState = GGM_FindState( registered_list, name );
@@ -1063,6 +1332,13 @@ struct GGMPlayerState *GGM_GetRegistration( const char *name )
 	}
 }
 
+/*
+=====================
+GGM_HashString
+
+Numeric string replacement to replace strigns with bad symbols
+=====================
+*/
 unsigned int GGM_HashString( const char *s )
 {
 	unsigned int hashval;
@@ -1072,6 +1348,14 @@ unsigned int GGM_HashString( const char *s )
 	return hashval;
 }
 
+
+/*
+=====================
+GGM_WriteLogin
+
+Save login to filesystem to share it between servers
+=====================
+*/
 void GGM_WriteLogin( struct GGMLogin *pLogin )
 {
 	FILE *f;
@@ -1095,6 +1379,13 @@ void GGM_WriteLogin( struct GGMLogin *pLogin )
 	fclose( f );
 }
 
+/*
+=====================
+GGM_LoadLogin
+
+Find or read GGMLogin
+=====================
+*/
 struct GGMLogin *GGM_LoadLogin( const char *uid, const char *name )
 {
 	FILE *f;
@@ -1130,6 +1421,13 @@ struct GGMLogin *GGM_LoadLogin( const char *uid, const char *name )
 	return pLogin;
 }
 
+/*
+=====================
+GGM_GetState
+
+Find or read GGMPlayerState
+=====================
+*/
 struct GGMPlayerState *GGM_GetState( const char *uid, const char *name )
 {
 	struct GGMPlayerState *pState;
@@ -1185,13 +1483,25 @@ struct GGMPlayerState *GGM_GetState( const char *uid, const char *name )
 	return anonymous_list = pState;
 }
 
-
+/*
+=====================
+Activate server
+Clear states and handle changelevel
+=====================
+*/
 void GGM_ServerActivate( void )
 {
 	COOP_ServerActivate();
 	GGM_ClearVote();
 }
+/*
+=====================
+GGM_SavePostiton
 
+Build GGMPostition from player
+save platform-relative and landmark-relative postitions
+=====================
+*/
 void GGM_SavePosition( CBasePlayer *pPlayer, struct GGMPosition *pos )
 {
 	pos->vecOrigin = pPlayer->pev->origin;
@@ -1213,6 +1523,13 @@ void GGM_SavePosition( CBasePlayer *pPlayer, struct GGMPosition *pos )
 
 }
 
+/*
+=====================
+GGM_SaveState
+
+Update GGMPlayerState record
+=====================
+*/
 void GGM_SaveState( CBasePlayer *pPlayer )
 {
 	if( !pPlayer )
@@ -1260,6 +1577,14 @@ void GGM_SaveState( CBasePlayer *pPlayer )
 		GGM_WritePersist( pState );
 }
 
+/*
+=====================
+GGM_RestorePostiton
+
+Copy position from GGMPostition to real player
+Restore platform-relative and landmark-relative postitions
+=====================
+*/
 bool GGM_RestorePosition( CBasePlayer *pPlayer, struct GGMPosition *pos )
 {
 	bool fOriginSet = COOP_GetOrigin( &pPlayer->pev->origin, pos->vecOrigin, pos->szMapName );
@@ -1312,6 +1637,13 @@ bool GGM_RestorePosition( CBasePlayer *pPlayer, struct GGMPosition *pos )
 
 extern int gmsgScoreInfo;
 
+/*
+=====================
+GGM_RestoreState
+
+Copy data from GGMPlayerState to player, update persist part
+=====================
+*/
 bool GGM_RestoreState( CBasePlayer *pPlayer )
 {
 	GGMPlayerState *pState = pPlayer->m_ggm.pState;
@@ -1371,6 +1703,15 @@ bool GGM_RestoreState( CBasePlayer *pPlayer )
 
 void ClientPutInServer( edict_t *client );
 
+/*
+=====================
+GGM_PlayerSpawn
+
+Handle state change when game wants player to spawn
+return true if spawn handled here
+return false to allow gamerules to handle spawn
+=====================
+*/
 bool GGM_PlayerSpawn( CBasePlayer *pPlayer )
 {
 	if( mp_coop.value )
@@ -1467,6 +1808,14 @@ bool GGM_PlayerSpawn( CBasePlayer *pPlayer )
 	return pPlayer->m_ggm.iState != STATE_SPAWNED;
 }
 
+/*
+=====================
+GGM_Logout
+
+Remove login record. This does not free state
+just unlogs current nickname
+=====================
+*/
 void GGM_Logout( CBasePlayer *pPlayer )
 {
 	struct GGMLogin *pLogin, *pPrevLogin = NULL;
@@ -1512,6 +1861,14 @@ void GGM_Logout( CBasePlayer *pPlayer )
 	remove(path);
 }
 
+/*
+=====================
+GGM_FreeState
+
+Free temporary anonymous state
+Used on login or register
+=====================
+*/
 void GGM_FreeState( const char *uid )
 {
 	struct GGMPlayerState *pState, *pPrevState = NULL;
@@ -1553,6 +1910,13 @@ void GGM_FreeState( const char *uid )
 	}
 }
 
+/*
+=====================
+GGM_CheckUserName
+
+Login record must be valid filename
+=====================
+*/
 bool GGM_CheckUserName( CBasePlayer *pPlayer, const char *name, bool exist )
 {
 	int len = strlen( name );
@@ -1584,6 +1948,13 @@ bool GGM_CheckUserName( CBasePlayer *pPlayer, const char *name, bool exist )
 	return true;
 }
 
+/*
+=====================
+GGM_Munge
+
+Munge password to prevent accidentally reading
+=====================
+*/
 static void GGM_Munge( char *pStr )
 {
 	int len = strlen(pStr);
@@ -1595,6 +1966,13 @@ static void GGM_Munge( char *pStr )
 	}
 }
 
+/*
+=====================
+GGM_Register
+
+Add new registration record and login automaticly
+=====================
+*/
 void GGM_Register( CBasePlayer *pPlayer, const char *name, const char *password )
 {
 	struct GGMPlayerState *pState;
@@ -1611,7 +1989,6 @@ void GGM_Register( CBasePlayer *pPlayer, const char *name, const char *password 
 		GGM_ChatPrintf( pPlayer, "Cannot register, when logged in\n" );
 		return;
 	}
-
 
 	if( !GGM_CheckUserName( pPlayer, name, true ) )
 		return;
@@ -1640,7 +2017,11 @@ void GGM_Register( CBasePlayer *pPlayer, const char *name, const char *password 
 	GGM_ChatPrintf( pPlayer, "Successfully registered as %s!\n", name );
 }
 
-
+/*
+=====================
+GGM_RegName_f
+=====================
+*/
 void GGM_RegName_f( CBasePlayer *pPlayer )
 {
 	if( !pPlayer )
@@ -1657,7 +2038,11 @@ void GGM_RegName_f( CBasePlayer *pPlayer )
 	CLIENT_COMMAND( pPlayer->edict(), "messagemode reg_Password\n");
 }
 
-
+/*
+=====================
+GGM_Register_f
+=====================
+*/
 void GGM_Register_f( CBasePlayer *pPlayer )
 {
 	if( !pPlayer )
@@ -1672,7 +2057,11 @@ void GGM_Register_f( CBasePlayer *pPlayer )
 
 }
 
-
+/*
+=====================
+GGM_RegPassword_f
+=====================
+*/
 void GGM_RegPassword_f( CBasePlayer *pPlayer )
 {
 	if( !pPlayer )
@@ -1684,6 +2073,13 @@ void GGM_RegPassword_f( CBasePlayer *pPlayer )
 	GGM_Register( pPlayer, pPlayer->m_ggm.fRegisterInput, CMD_ARGV(1) );
 }
 
+/*
+=====================
+GGM_Login
+
+Auth user and create login record
+=====================
+*/
 void GGM_Login( CBasePlayer *pPlayer, const char *name, const char *password )
 {
 	struct GGMPlayerState *pState;
@@ -1746,7 +2142,11 @@ void GGM_Login( CBasePlayer *pPlayer, const char *name, const char *password )
 		GGM_RestoreState( pPlayer );
 }
 
-
+/*
+=====================
+GGM_LoginPassword_f
+=====================
+*/
 void GGM_LoginPassword_f( CBasePlayer *pPlayer )
 {
 	if( !pPlayer )
@@ -1758,6 +2158,11 @@ void GGM_LoginPassword_f( CBasePlayer *pPlayer )
 	GGM_Login( pPlayer, pPlayer->m_ggm.fRegisterInput, CMD_ARGV(1) );
 }
 
+/*
+=====================
+GGM_LoginName_f
+======================
+*/
 void GGM_LoginName_f( CBasePlayer *pPlayer )
 {
 	if( !pPlayer )
@@ -1774,6 +2179,11 @@ void GGM_LoginName_f( CBasePlayer *pPlayer )
 	CLIENT_COMMAND( pPlayer->edict(), "messagemode login_Password\n");
 }
 
+/*
+=====================
+GGM_Login_f
+=====================
+*/
 void GGM_Login_f( CBasePlayer *pPlayer )
 {
 	if( !pPlayer )
@@ -1787,7 +2197,11 @@ void GGM_Login_f( CBasePlayer *pPlayer )
 		CLIENT_COMMAND( pPlayer->edict(), "messagemode login_Name\n");
 }
 
-
+/*
+=====================
+GGM_ChangePassword_f
+=====================
+*/
 void GGM_ChangePassword_f( CBasePlayer *pPlayer )
 {
 	if( !pPlayer || !pPlayer->m_ggm.pState || !pPlayer->m_ggm.pState->fRegistered )
@@ -1972,7 +2386,14 @@ static void Cmd_Reset( void )
 }
 
 }
-
+/*
+=====================
+Command wrappers
+When g_fCmdUsed set, use internal
+arguments istead of engine calls
+Used for GGM_Say and internal menu processing
+=====================
+*/
 extern "C" int CMD_ARGC()
 {
 	if( g_fCmdUsed )
@@ -2005,8 +2426,14 @@ extern "C" const char *CMD_ARGV( int i )
 
 // client.cpp
 void ClientCommand( edict_t *pEntity );
+/*
+=====================
+GGM_Say
 
-// Allow say /command as alias to command
+Redirect chat commands to ClientCommand
+This allows say /command as alias to command
+=====================
+*/
 void GGM_Say( edict_t *pEntity )
 {
 	const char *args = CMD_ARGS();
@@ -2022,7 +2449,13 @@ void GGM_Say( edict_t *pEntity )
 	GGM::Cmd_Reset();
 }
 
+/*
+=====================
+GGM_ClearHelpMessage
 
+Hide help message when hiding menu
+=====================
+*/
 bool GGM_ClearHelpMessage( CBasePlayer *pPlayer )
 {
 
@@ -2043,7 +2476,14 @@ bool GGM_ClearHelpMessage( CBasePlayer *pPlayer )
 	return true;
 }
 
+/*
+=====================
+GGM_PlayerMenu
 
+Build and show menu
+You may use method chunks
+=====================
+*/
 
 GGM_PlayerMenu &GGM_PlayerMenu::Add(const char *name, const char *command)
 {
@@ -2154,6 +2594,13 @@ bool GGM_PlayerMenu::MenuSelect( int select )
 	return true;
 }
 
+/*
+=====================
+GGM_MenuCommand
+
+Show menu defined in file
+=====================
+*/
 bool GGM_MenuCommand( CBasePlayer *player, const char *name )
 {
 	char buf[256] = "ggm/menus/";
@@ -2197,7 +2644,13 @@ bool GGM_MenuCommand( CBasePlayer *player, const char *name )
 #define MAX_MOTD_CHUNK	  60
 #define MAX_MOTD_LENGTH   1536 // (MAX_MOTD_CHUNK * 4)
 extern int gmsgMOTD;
+/*
+=====================
+GGM_MOTDCommand
 
+Send custom text as motd
+=====================
+*/
 bool GGM_MOTDCommand( CBasePlayer *player, const char *name )
 {
 	char buf[256] = "ggm/motd/";
@@ -2247,6 +2700,13 @@ bool GGM_MOTDCommand( CBasePlayer *player, const char *name )
 	return true;
 }
 
+/*
+=====================
+GGM_HelpCommand
+
+Send help messages which will show parallel to menu
+=====================
+*/
 bool GGM_HelpCommand( CBasePlayer *pPlayer, const char *name )
 {
 	char buf[256] = "ggm/help/";
@@ -2293,6 +2753,13 @@ bool GGM_HelpCommand( CBasePlayer *pPlayer, const char *name )
 	return true;
 }
 
+/*
+=====================
+GGM_InitialMenus
+
+When touch menu loading done, or it not needed, send initial menu to client
+=====================
+*/
 void GGM_InitialMenus( CBasePlayer *pPlayer )
 {
 	pPlayer->m_ggm.fTouchLoading = false;
@@ -2309,6 +2776,13 @@ void GGM_InitialMenus( CBasePlayer *pPlayer )
 		CLIENT_COMMAND( pPlayer->edict(), UTIL_VarArgs("r_decals %f\n", mp_maxdecals.value ) );
 }
 
+/*
+=====================
+GGM_TouchCommand
+
+Handle touch menu loading
+=====================
+*/
 bool GGM_TouchCommand( CBasePlayer *pPlayer, const char *pcmd )
 {
 	edict_t *pEntity = pPlayer->edict();
@@ -2359,6 +2833,14 @@ extern float g_flWeaponCheat;
 
 void DumpProps(); // prop.cpp
 
+
+/*
+=====================
+GGM_ClientCommand
+
+Handle client commands and redirect to related functions
+=====================
+*/
 bool GGM_ClientCommand( CBasePlayer *pPlayer, const char *pCmd )
 {
 	bool ret = GGM_HelpCommand( pPlayer, pCmd );
@@ -2458,6 +2940,13 @@ bool GGM_ClientCommand( CBasePlayer *pPlayer, const char *pCmd )
 
 }
 
+/*
+=====================
+GGM_CvarValue2
+
+Handle touch_enable cvar request
+=====================
+*/
 void GGM_CvarValue2( const edict_t *pEnt, int requestID, const char *cvarName, const char *value )
 {
 	if( pEnt && requestID == 111  && FStrEq( cvarName , "touch_enable" ) && atoi( value) )
@@ -2483,8 +2972,16 @@ void GGM_CvarValue2( const edict_t *pEnt, int requestID, const char *cvarName, c
 
 }
 #include "com_model.h"
-
+//==================
 // error.mdl stuff
+//==================
+/*
+=====================
+SET_MODEL wrapper
+
+set fallback model if SetModel failed
+=====================
+*/
 
 void SET_MODEL( edict_t *e, const char *model )
 {
@@ -2518,6 +3015,13 @@ void SET_MODEL( edict_t *e, const char *model )
 	}
 }
 
+/*
+=====================
+PRECACHE_MODEL wrapper
+
+set fallback model if PrecacheModel failed
+=====================
+*/
 int PRECACHE_MODEL(const char *model)
 {
 	int index = g_engfuncs.pfnPrecacheModel( model );
@@ -2540,6 +3044,14 @@ int PRECACHE_MODEL(const char *model)
 	return index;
 }
 
+
+/*
+=====================
+GGM_RegisterCVars
+
+Call on server load
+=====================
+*/
 void GGM_RegisterCVars( void )
 {
 	CVAR_REGISTER( &cvar_allow_ar2 );
