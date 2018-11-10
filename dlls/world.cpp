@@ -771,12 +771,22 @@ int DispatchCreateEntity( edict_t *pent, const char *szName )
 	return -1;
 }
 
+extern bool g_fPause;
+
 //
 // run custom physics for each entity
 // return 0 to use built-in engine physic
 //
 int DispatchPhysicsEntity( edict_t *pEdict )
 {
+#if 1
+	if( g_fPause )
+	{
+		if( pEdict->v.nextthink > gpGlobals->time )
+			pEdict->v.nextthink += gpGlobals->frametime;
+		return 1;
+	}
+#else
 	CBaseEntity *pEntity = (CBaseEntity *)GET_PRIVATE( pEdict );
 
 	if( !pEntity )
@@ -784,7 +794,7 @@ int DispatchPhysicsEntity( edict_t *pEdict )
 		//ALERT( at_console, "skip %s [%i] without private data\n", STRING( pEdict->v.classname ), ENTINDEX( pEdict ) ); 
 		return 0;	// not initialized
 	}
-
+#endif
 	// NOTE: at this point pEntity assume to be valid
 /*
 #ifdef CUSTOM_PHYSICS_TEST

@@ -3044,6 +3044,10 @@ int PRECACHE_MODEL(const char *model)
 	return index;
 }
 
+void GGM_Pause_f( void )
+{
+	g_fPause ^= true;
+}
 
 /*
 =====================
@@ -3097,6 +3101,7 @@ void GGM_RegisterCVars( void )
 	g_engfuncs.pfnAddServerCommand( "ggm_save", GGM_Save_f );
 	g_engfuncs.pfnAddServerCommand( "ggm_load", GGM_Load_f );
 	g_engfuncs.pfnAddServerCommand( "ggm_votecommand", GGM_VoteCommand_f );
+	g_engfuncs.pfnAddServerCommand( "ggm_pause", GGM_Pause_f );
 
 	zombietime = CVAR_GET_POINTER("zombietime");
 

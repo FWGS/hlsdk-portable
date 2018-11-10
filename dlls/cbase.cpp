@@ -214,7 +214,21 @@ BOOL gTouchDisabled = FALSE;
 void DispatchTouch( edict_t *pentTouched, edict_t *pentOther )
 {
 	if( g_fPause )
-		return;
+	{
+		int iOther = ENTINDEX( pentOther );
+		int iTouched = ENTINDEX( pentTouched );
+		if( iOther <= gpGlobals->maxClients )
+			if( iOther )
+				return;
+		if( iTouched <= gpGlobals->maxClients )
+			if( iTouched )
+				return;
+
+		ALERT( at_console, "Touch with pause: %d %s %d %s\n",
+			   iOther, STRING( pentOther->v.classname ),
+			   iTouched, STRING( pentTouched->v.classname ) );
+	}
+
 
 	if( gTouchDisabled )
 		return;
@@ -240,9 +254,15 @@ void DispatchUse( edict_t *pentUsed, edict_t *pentOther )
 
 void DispatchThink( edict_t *pent )
 {
-	if( g_fPause )
+	if( g_fPause ) // called only when physint unavailiable. try workaround errors here
 	{
-		pent->v.nextthink = gpGlobals->time;
+		pent->v.nextthink = gpGlobals->time + gpGlobals->frametime;
+		if( pent->v.movetype == MOVETYPE_PUSH )
+		{
+			pent->v.velocity = g_vecZero;
+			if( pent->v.ltime )
+				pent->v.ltime += gpGlobals->frametime;
+		}
 		return;
 	}
 
@@ -258,8 +278,8 @@ void DispatchThink( edict_t *pent )
 
 void DispatchBlocked( edict_t *pentBlocked, edict_t *pentOther )
 {
-	if( g_fPause )
-		return;
+	//if( g_fPause )
+	//	return;
 
 	CBaseEntity *pEntity = (CBaseEntity *)GET_PRIVATE( pentBlocked );
 	CBaseEntity *pOther = (CBaseEntity *)GET_PRIVATE( pentOther );
