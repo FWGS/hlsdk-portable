@@ -79,6 +79,7 @@ cvar_t mp_coop_noangry = { "mp_coop_noangry", "0", FCVAR_SERVER };
 cvar_t mp_coop_checkpoints = { "mp_coop_checkpoints", "1", FCVAR_SERVER };
 cvar_t mp_coop_strongcheckpoints = { "mp_coop_strongcheckpoints", "0", FCVAR_SERVER };
 cvar_t mp_semclip = { "mp_semclip", "0", FCVAR_SERVER };
+cvar_t mp_coop_pause = { "mp_coop_pause", "1", FCVAR_SERVER };
 
 
 cvar_t materials_txt = { "materials_txt", "sound/materials.txt", FCVAR_SERVER };
@@ -142,6 +143,9 @@ bool COOP_ReadState( const char *path )
 
 	if( !fread( &g_CoopState.p, tsize, 1, f ) )
 		return false;
+
+	if( mp_coop_pause.value )
+		g_fPause = true;
 
 	if( !fread( &tsize, 4, 1, f ) )
 	{
@@ -407,8 +411,15 @@ Spawn player which is marked as spectator
 void UTIL_SpawnPlayer( CBasePlayer *pPlayer )
 {
 	//pPlayer->StopObserver();
+	if( pPlayer->m_ggm.iState == STATE_LOAD_FIX )
+		return;
+
+	if( !pPlayer->m_ggm.pState )
+		return;
+
 	if( pPlayer->m_ggm.iState == STATE_SPECTATOR )
 		pPlayer->m_ggm.iState = STATE_SPAWNED;
+
 	pPlayer->m_iRespawnFrames = 0;
 	pPlayer->pev->effects &= ~EF_NODRAW;
 
@@ -663,7 +674,7 @@ void COOP_ServerActivate( void )
 		GGM_ClearLists();
 	}
 
-	g_fPause = false;
+	g_fPause = (mp_coop_pause.value == 1);
 	g_CoopState.flMsgLimit1 = g_CoopState.flMsgLimit2 = 0;
 
 
@@ -1061,6 +1072,8 @@ void COOP_RegisterCVars()
 {
 	CVAR_REGISTER( &mp_coop );
 	CVAR_REGISTER( &mp_coop_nofriendlyfire );
+	CVAR_REGISTER( &mp_coop_pause );
+
 
 	CVAR_REGISTER( &mp_semclip );
 	CVAR_REGISTER( &mp_coop_reconnect_hack );
