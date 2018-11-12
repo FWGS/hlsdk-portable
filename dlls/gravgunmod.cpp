@@ -807,6 +807,8 @@ void GGM_ClientPutinServer( edict_t *pEntity, CBasePlayer *pPlayer )
 	pPlayer->m_ggm.menu.m_pPlayer = pPlayer;
 	pPlayer->m_ggm.menu.Clear();
 	pPlayer->m_ggm.pState = GGM_GetState( GGM_GetAuthID(pPlayer), STRING(pEntity->v.netname) );
+	// restore frags
+	GGM_RestoreState( pPlayer );
 }
 
 /*
