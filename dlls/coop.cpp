@@ -195,7 +195,7 @@ void COOP_AutoSave( void )
 {
 	strncpy( g_CoopState.p.rgszSaveSlots[COOP_SAVE_AUTO2], g_CoopState.p.rgszSaveSlots[COOP_SAVE_AUTO1], 31 );
 	g_CoopState.p.iLastAutoSave ^= 1;
-	snprintf( g_CoopState.p.rgszSaveSlots[COOP_SAVE_AUTO1], 31, "%s-auto%d", STRING( gpGlobals->mapname ), g_CoopState.p.iLastAutoSave );
+	snprintf( g_CoopState.p.rgszSaveSlots[COOP_SAVE_AUTO1], 31, "auto%d-%s", g_CoopState.p.iLastAutoSave, STRING( gpGlobals->mapname ) );
 	GGM_Save( g_CoopState.p.rgszSaveSlots[COOP_SAVE_AUTO1] );
 }
 
@@ -210,7 +210,7 @@ void COOP_MapStartSave( void )
 {
 	char szSavename[32] = "";
 
-	snprintf( szSavename, 31, "%s-start", STRING( gpGlobals->mapname ) );
+	snprintf( szSavename, 31, "start-%s", STRING( gpGlobals->mapname ) );
 
 	// moving to previous map and returning back should not trigger save
 	if( !strcmp( g_CoopState.p.rgszSaveSlots[COOP_SAVE_START1], szSavename ) || !strcmp( g_CoopState.p.rgszSaveSlots[COOP_SAVE_START2], szSavename ) )
