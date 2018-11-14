@@ -34,6 +34,7 @@
 #include "gamerules.h"
 #include "teamplay_gamerules.h"
 #include "physcallback.h"
+#include "coop_util.h"
 
 extern CGraph WorldGraph;
 extern CSoundEnt *pSoundEnt;
@@ -706,7 +707,11 @@ void CWorld::KeyValue( KeyValueData *pkvd )
 	{
 		// Single player only.  Clear save directory if set
 		if( atoi( pkvd->szValue ) )
+		{
 			CVAR_SET_FLOAT( "sv_newunit", 1 );
+			if( mp_coop.value )
+				COOP_ClearSaves();
+		}
 		pkvd->fHandled = TRUE;
 	}
 	else if( FStrEq(pkvd->szKeyName, "gametitle" ) )

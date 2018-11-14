@@ -2323,6 +2323,8 @@ void CTriggerEndSection::EndSectionUse( CBaseEntity *pActivator, CBaseEntity *pC
 	if( pev->message )
 	{
 		g_engfuncs.pfnEndSection( STRING( pev->message ) );
+		if( mp_coop.value )
+			COOP_ClearSaves();
 	}
 	UTIL_Remove( this );
 }
@@ -2355,6 +2357,8 @@ void CTriggerEndSection::EndSectionTouch( CBaseEntity *pOther )
 	if( pev->message )
 	{
 		g_engfuncs.pfnEndSection( STRING( pev->message ) );
+		if( mp_coop.value )
+			COOP_ClearSaves();
 	}
 	UTIL_Remove( this );
 }

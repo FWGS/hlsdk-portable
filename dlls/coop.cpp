@@ -199,6 +199,48 @@ void COOP_AutoSave( void )
 	GGM_Save( g_CoopState.p.rgszSaveSlots[COOP_SAVE_AUTO1] );
 }
 
+#include <dirent.h>
+#ifdef _WIN32
+#define PATHSEP "\\"
+#else
+#define PATHSEP "/"
+#endif
+void COOP_ClearSaves( void )
+{
+	char path[256];
+	GET_GAME_DIR(path);
+	strcat( path, PATHSEP"save" );
+	DIR *dir;
+	struct dirent *entry;
+
+	ALERT( at_console, "COOP_ClearSaves\n" );
+	memset( g_CoopState.p.rgszSaveSlots, 0, sizeof( g_CoopState.p.rgszSaveSlots ) );
+	g_CoopState.p.iLastAutoSave = 0;
+
+	dir = opendir( path );
+	if( !dir )
+	{
+		ALERT( at_error, "opendir failed, cannot clean save files!\n");
+		return;
+	}
+
+	while( entry = readdir( dir) )
+	{
+		if( Q_stricmpext("auto0-*", entry->d_name ) ||
+			Q_stricmpext("auto1-*", entry->d_name ) ||
+			Q_stricmpext("start-*", entry->d_name )	)
+		{
+			char fpath[256] = "";
+			strcpy( fpath, path );
+			strcat( fpath, PATHSEP );
+			strcat( fpath, entry->d_name );
+			ALERT( at_console, "Removing %s\n", fpath );
+			remove( fpath );
+		}
+	}
+	closedir(dir);
+}
+
 /*
 =========================
 COOP_MapStartSave
@@ -658,6 +700,9 @@ void COOP_ServerActivate( void )
 	if( !COOP_ProcessTransition() )
 	{
 		ALERT( at_console, "Transition failed, new game started\n");
+
+		COOP_ClearSaves();
+
 		while( g_CoopState.pMapStates )
 		{
 			COOPMapState *pMapState = g_CoopState.pMapStates;
