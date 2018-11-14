@@ -787,8 +787,14 @@ int DispatchPhysicsEntity( edict_t *pEdict )
 #if 1
 	if( g_fPause )
 	{
+		if( gpGlobals->frametime > 1 )
+			return 1;
 		if( pEdict->v.nextthink > gpGlobals->time )
+		{
 			pEdict->v.nextthink += gpGlobals->frametime;
+			if( pEdict->v.movetype == MOVETYPE_PUSH && pEdict->v.ltime )
+				pEdict->v.ltime += gpGlobals->frametime;
+		}
 		return 1;
 	}
 #else
