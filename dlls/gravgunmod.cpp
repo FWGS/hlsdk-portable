@@ -1670,11 +1670,17 @@ bool GGM_RestoreState( CBasePlayer *pPlayer )
 
 	if( pState->t.flHealth < 1 )
 		return false;
+
+
+	if( pPlayer->m_ggm.iState != STATE_SPAWNED )
+		return false;
+
 	pPlayer->pev->armorvalue = pState->t.flBattery;
 	pPlayer->pev->health = pState->t.flHealth;
 
 	if( !GGM_RestorePosition( pPlayer, &pState->t.pos ) )
 		return false;
+
 
 	pPlayer->RemoveAllItems( FALSE );
 
@@ -1852,8 +1858,7 @@ void GGM_Logout( CBasePlayer *pPlayer )
 		GGM_SaveState( pPlayer );
 
 	pPlayer->m_ggm.pState = GGM_GetState(uid, name);
-	if( pPlayer->m_ggm.iState == STATE_SPAWNED )
-		GGM_RestoreState( pPlayer );
+	GGM_RestoreState( pPlayer );
 
 	// remove login record
 	if( !GGM_FilterFileName( uid ) || !GGM_FilterFileName( name ) )
@@ -2140,8 +2145,7 @@ void GGM_Login( CBasePlayer *pPlayer, const char *name, const char *password )
 	pPlayer->m_ggm.pState = pState;
 	GGM_ChatPrintf( pPlayer, "Successfully logged in as %s\n", name );
 
-	if( pPlayer->m_ggm.iState == STATE_SPAWNED )
-		GGM_RestoreState( pPlayer );
+	GGM_RestoreState( pPlayer );
 }
 
 /*

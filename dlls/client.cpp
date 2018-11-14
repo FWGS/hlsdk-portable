@@ -700,12 +700,17 @@ void ClientUserInfoChanged( edict_t *pEntity, char *infobuffer )
 
 		if( pState != pPlayer->m_ggm.pState )
 		{
-			pEntity->v.netname = pEntity->v.frags = 0;
+
 			if( pPlayer->m_ggm.iState == STATE_LOAD_FIX )
+			{
+				pEntity->v.netname = pEntity->v.frags = 0;
 				return;
+			}
 			GGM_SaveState( pPlayer );
+			pEntity->v.netname = pEntity->v.frags = 0;
 			pPlayer->m_ggm.pState = pState;
 			pPlayer->m_ggm.iState = STATE_UNINITIALIZED;
+			GGM_RestoreState( pPlayer );
 		}
 	}
 
