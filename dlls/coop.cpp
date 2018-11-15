@@ -205,17 +205,58 @@ void COOP_AutoSave( void )
 #else
 #define PATHSEP "/"
 #endif
+/*
+=========================
+COOP_CheckSaveSlots
+
+Nullify slots that are not exist in filesystem
+=========================
+*/
+static void COOP_CheckSaveSlots( void )
+{
+	char path[256];
+	int i;
+
+	// check save slots (may be cleaned by newunit)
+	GET_GAME_DIR(path);
+	strcat( path, PATHSEP"save" );
+	for( i = 0; i < ARRAYSIZE( g_CoopState.p.rgszSaveSlots ); i++ )
+	{
+		char fpath[256] = "";
+		FILE *f;
+
+		if( !g_CoopState.p.rgszSaveSlots[i] )
+			continue;
+
+		snprintf( fpath, 255, "%s"PATHSEP"%s.coop", path, g_CoopState.p.rgszSaveSlots[i] );
+		if( f = fopen( fpath, "rb" ) )
+			fclose( f );
+		else
+			g_CoopState.p.rgszSaveSlots[i][0] = 0;
+	}
+}
+
+/*
+=========================
+COOP_ClearSaves
+
+Clear all save files except of last map (newunit)
+=========================
+*/
 void COOP_ClearSaves( void )
 {
 	char path[256];
-	GET_GAME_DIR(path);
-	strcat( path, PATHSEP"save" );
 	DIR *dir;
 	struct dirent *entry;
+	const char *pszOldMap = NULL;
+
+	GET_GAME_DIR(path);
+	strcat( path, PATHSEP"save" );
+
+	if( g_CoopState.landmarkTransition.szSourceMap[0] )
+		pszOldMap = g_CoopState.landmarkTransition.szSourceMap;
 
 	ALERT( at_console, "COOP_ClearSaves\n" );
-	memset( g_CoopState.p.rgszSaveSlots, 0, sizeof( g_CoopState.p.rgszSaveSlots ) );
-	g_CoopState.p.iLastAutoSave = 0;
 
 	dir = opendir( path );
 	if( !dir )
@@ -231,14 +272,16 @@ void COOP_ClearSaves( void )
 			Q_stricmpext("start-*", entry->d_name )	)
 		{
 			char fpath[256] = "";
-			strcpy( fpath, path );
-			strcat( fpath, PATHSEP );
-			strcat( fpath, entry->d_name );
+			if( pszOldMap && !strncmp( entry->d_name + 6, pszOldMap, strlen( pszOldMap ) ) )
+				continue;
+
+			snprintf( fpath, 255, "%s"PATHSEP"%s", path, entry->d_name );
 			ALERT( at_console, "Removing %s\n", fpath );
 			remove( fpath );
 		}
 	}
 	closedir(dir);
+	COOP_CheckSaveSlots();
 }
 
 /*
@@ -566,6 +609,8 @@ bool COOP_ProcessTransition( void )
 	// only set pCurrentMap when loading
 	if( g_CoopState.landmarkTransition.fLoading )
 	{
+		COOP_CheckSaveSlots();
+
 		for( struct COOPMapState *pMapState = g_CoopState.pMapStates; pMapState; pMapState = pMapState->pNext )
 		{
 			if( !strcmp( pMapState->p.szMapName, STRING(gpGlobals->mapname) ) )
