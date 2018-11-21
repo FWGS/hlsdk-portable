@@ -1156,6 +1156,7 @@ void GGM_ConnectSaveBot( void )
 	bot->v.health = 1;
 	bot->v.deadflag = 0;
 	bot->v.effects |= EF_NODRAW;
+	bot->free = true;
 
 	client0->v.deadflag = deadflag;
 	client0->v.health = health;
