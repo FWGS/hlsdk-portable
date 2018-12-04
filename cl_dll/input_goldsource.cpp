@@ -161,6 +161,7 @@ bool isMouseRelative = false;
 extern globalvars_t *gpGlobals;
 #endif
 
+int CL_IsDead( void );
 extern Vector dead_viewangles;
 
 void V_StopPitchDrift( void )
@@ -823,7 +824,17 @@ void GoldSourceInput::IN_MouseMove ( float frametime, usercmd_t *cmd)
     int     mx, my;
     vec3_t viewangles;
 
-    gEngfuncs.GetViewAngles( (float *)viewangles );
+	if( gHUD.m_iIntermission )
+		return; // we can't move during intermission
+
+	if( CL_IsDead() )
+	{
+		viewangles = dead_viewangles; // HACKHACK: see below
+	}
+	else
+	{
+		gEngfuncs.GetViewAngles( viewangles );
+	}
 
     if ( in_mlook.state & 1)
     {
@@ -880,8 +891,14 @@ void GoldSourceInput::IN_MouseMove ( float frametime, usercmd_t *cmd)
         }
     }
 
-    gEngfuncs.SetViewAngles( (float *)viewangles );
+	// HACKHACK: change viewangles directly in viewcode,
+	// so viewangles when player is dead will not be changed on server
+	if( !CL_IsDead() )
+	{
+		gEngfuncs.SetViewAngles( viewangles );
+	}
 
+	dead_viewangles = viewangles; // keep them actual
 /*
 //#define TRACE_TEST
 #if defined( TRACE_TEST )
