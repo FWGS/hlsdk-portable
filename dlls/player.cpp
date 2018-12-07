@@ -147,46 +147,62 @@ TYPEDESCRIPTION	CBasePlayer::m_playerSaveData[] =
 	//DEFINE_FIELD( CBasePlayer, m_nCustomSprayFrames, FIELD_INTEGER ), // Don't need to restore
 };	
 
-int giPrecacheGrunt = 0;
-int gmsgShake = 0;
-int gmsgFade = 0;
-int gmsgSelAmmo = 0;
-int gmsgFlashlight = 0;
-int gmsgFlashBattery = 0;
-int gmsgResetHUD = 0;
-int gmsgInitHUD = 0;
-int gmsgShowGameTitle = 0;
-int gmsgCurWeapon = 0;
-int gmsgHealth = 0;
-int gmsgDamage = 0;
-int gmsgBattery = 0;
-int gmsgTrain = 0;
-int gmsgLogo = 0;
-int gmsgWeaponList = 0;
-int gmsgAmmoX = 0;
-int gmsgHudText = 0;
-int gmsgDeathMsg = 0;
-int gmsgScoreInfo = 0;
-int gmsgTeamInfo = 0;
-int gmsgTeamScore = 0;
-int gmsgGameMode = 0;
-int gmsgMOTD = 0;
-int gmsgServerName = 0;
-int gmsgAmmoPickup = 0;
-int gmsgWeapPickup = 0;
-int gmsgItemPickup = 0;
-int gmsgHideWeapon = 0;
-int gmsgSetCurWeap = 0;
-int gmsgSayText = 0;
-int gmsgTextMsg = 0;
-int gmsgSetFOV = 0;
-int gmsgShowMenu = 0;
-int gmsgGeigerRange = 0;
-int gmsgTeamNames = 0;
+int giPrecacheGrunt;
+int gmsgShake;
+int gmsgFade;
+int gmsgSelAmmo;
+int gmsgFlashlight;
+int gmsgFlashBattery;
+int gmsgResetHUD;
+int gmsgInitHUD;
+int gmsgViewMode;
+int gmsgShowGameTitle;
+int gmsgCurWeapon;
+int gmsgHealth;
+int gmsgDamage;
+int gmsgBattery;
+int gmsgGrenades;
+int gmsgSetSecAmmoIcon;
+int gmsgTrain;
+int gmsgLogo;
+int gmsgWeaponList;
+int gmsgAmmoX;
+int gmsgHudText;
+int gmsgDeathMsg;
+int gmsgScoreInfo;
+int gmsgTeamInfo;
+int gmsgTeamScore;
+int gmsgGameMode;
+int gmsgMOTD;
+int gmsgServerName;
+int gmsgAmmoPickup;
+int gmsgWeapPickup;
+int gmsgItemPickup;
+int gmsgHideWeapon;
+int gmsgSayText;
+int gmsgStatusIcon;
+int gmsgTextMsg;
+int gmsgSpecHealth;
+int gmsgStatusText;
+int gmsgStatusValue;
+int gmsgSetFOV;
+int gmsgShowMenu;
+int gmsgItems;
+int gmsgConcuss;
+int gmsgSpectator;
+int gmsgValidClasses;
+int gmsgTeamNames;
+int gmsgFeignState;
+int gmsgDetpackState;
+int gmsgVGUIMenu;
+int gmsgBuildState;
+int gmsgRandomPC;
+int gmsgBench;
+int gmsgAllowSpec;
+int gmsgSpecFade;
+int gmsgResetFade;
+int gmsgGeigerRange;
 int gmsgBhopcap = 0;
-
-int gmsgStatusText = 0;
-int gmsgStatusValue = 0;
 
 void LinkUserMessages( void )
 {
@@ -203,15 +219,24 @@ void LinkUserMessages( void )
 	gmsgFlashBattery = REG_USER_MSG( "FlashBat", 1 );
 	gmsgHealth = REG_USER_MSG( "Health", 1 );
 	gmsgDamage = REG_USER_MSG( "Damage", 12 );
-	gmsgBattery = REG_USER_MSG( "Battery", 2);
+	gmsgBattery = REG_USER_MSG( "Battery", 4);
+	gmsgGrenades = REG_USER_MSG( "SecAmmoVal", 2 );
+	gmsgSetSecAmmoIcon = REG_USER_MSG( "SecAmmoIcon", -1 );
 	gmsgTrain = REG_USER_MSG( "Train", 1 );
+	gmsgItems = REG_USER_MSG( "Items", 4 );
+	gmsgConcuss = REG_USER_MSG( "Concuss", 1 );
 	//gmsgHudText = REG_USER_MSG( "HudTextPro", -1 );
 	gmsgHudText = REG_USER_MSG( "HudText", -1 ); // we don't use the message but 3rd party addons may!
 	gmsgSayText = REG_USER_MSG( "SayText", -1 );
+	gmsgStatusIcon = REG_USER_MSG("StatusIcon", -1);
 	gmsgTextMsg = REG_USER_MSG( "TextMsg", -1 );
+	gmsgSpecHealth = REG_USER_MSG("SpecHealth", 1);
+	gmsgStatusText = REG_USER_MSG( "StatusText", -1 );
+	gmsgStatusValue = REG_USER_MSG( "StatusValue", 3 );
 	gmsgWeaponList = REG_USER_MSG( "WeaponList", -1 );
 	gmsgResetHUD = REG_USER_MSG( "ResetHUD", 1 );		// called every respawn
 	gmsgInitHUD = REG_USER_MSG( "InitHUD", 0 );		// called every time a new player joins the server
+	gmsgViewMode = REG_USER_MSG( "ViewMode", 0 );
 	gmsgShowGameTitle = REG_USER_MSG( "GameTitle", 1 );
 	gmsgDeathMsg = REG_USER_MSG( "DeathMsg", -1 );
 	gmsgScoreInfo = REG_USER_MSG( "ScoreInfo", 9 );
@@ -229,11 +254,19 @@ void LinkUserMessages( void )
 	gmsgShake = REG_USER_MSG( "ScreenShake", sizeof(ScreenShake) );
 	gmsgFade = REG_USER_MSG( "ScreenFade", sizeof(ScreenFade) );
 	gmsgAmmoX = REG_USER_MSG( "AmmoX", 2 );
+	gmsgBench = REG_USER_MSG( "Bench", 1 );
+	gmsgSpectator = REG_USER_MSG( "Spectator", 2 );
+	gmsgAllowSpec = REG_USER_MSG( "AllowSpec", 1 );
+	gmsgSpecFade = REG_USER_MSG( "SpecFade", 6 );
+	gmsgResetFade = REG_USER_MSG( "ResetFade", 0 );
+	gmsgValidClasses = REG_USER_MSG( "ValClass", 10 );
 	gmsgTeamNames = REG_USER_MSG( "TeamNames", -1 );
+	gmsgFeignState = REG_USER_MSG( "Feign", 1);
+	gmsgDetpackState = REG_USER_MSG( "Detpack", 1 );
+	gmsgVGUIMenu = REG_USER_MSG( "VGUIMenu", -1 );
+	gmsgBuildState = REG_USER_MSG( "BuildSt", 2 );
+	gmsgRandomPC = REG_USER_MSG( "RandomPC", 1 );
 	gmsgBhopcap = REG_USER_MSG( "Bhopcap", 1 );
-
-	gmsgStatusText = REG_USER_MSG( "StatusText", -1 );
-	gmsgStatusValue = REG_USER_MSG( "StatusValue", 3 );
 }
 
 LINK_ENTITY_TO_CLASS( player, CBasePlayer )
