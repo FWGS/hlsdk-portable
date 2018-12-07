@@ -59,6 +59,82 @@ extern "C" int g_bhopcap;
 
 void LinkUserMessages( void );
 
+static const char *sOldClassModelFiles[] =
+{
+	NULL,
+	"models/player/scout/scout2.mdl",
+	"models/player/sniper/sniper2.mdl",
+	"models/player/soldier/soldier2.mdl",
+	"models/player/demo/demo2.mdl",
+	"models/player/medic/medic2.mdl",
+	"models/player/hvyweapon/hvyweapon2.mdl",
+	"models/player/pyro/pyro2.mdl",
+	"models/player/spy/spy2.mdl",
+	"models/player/engineer/engineer2.mdl",
+	"models/player.mdl",
+	"models/player/civilian/civilian.mdl"
+};
+
+static const char *sNewClassModelFiles[] =
+{
+	NULL,
+	"models/player/scout/scout.mdl",
+	"models/player/sniper/sniper.mdl",
+	"models/player/soldier/soldier.mdl",
+	"models/player/demo/demo.mdl",
+	"models/player/medic/medic.mdl",
+	"models/player/hvyweapon/hvyweapon.mdl",
+	"models/player/pyro/pyro.mdl",
+	"models/player/spy/spy.mdl",
+	"models/player/engineer/engineer.mdl",
+	"models/player.mdl",
+	"models/player/civilian/civilian.mdl"
+};
+
+static const char *sOldWeaponPModels[] =
+{
+	"models/p_9mmhandgun2.mdl",
+	"models/p_crowbar2.mdl",
+	"models/p_egon2.mdl",
+	"models/p_glauncher2.mdl",
+	"models/p_grenade2.mdl",
+	"models/p_knife2.mdl",
+	"models/p_medkit2.mdl",
+	"models/p_mini2.mdl",
+	"models/p_nailgun2.mdl",
+	"models/p_rpg2.mdl",
+	"models/p_shotgun2.mdl",
+	"models/p_snailgun2.mdl",
+	"models/p_sniper2.mdl",
+	"models/p_spanner2.mdl",
+	"models/p_umbrella.mdl",
+	"models/p_rpg2.mdl",
+	"models/p_9mmhandgun2.mdl",
+	"models/p_shotgun2.mdl"
+};
+
+static const char *sNewWeaponPModels[] =
+{
+	"models/p_9mmhandgun.mdl",
+	"models/p_crowbar.mdl",
+	"models/p_egon.mdl",
+	"models/p_glauncher.mdl",
+	"models/p_grenade.mdl",
+	"models/p_knife.mdl",
+	"models/p_medkit.mdl",
+	"models/p_mini.mdl",
+	"models/p_nailgun.mdl",
+	"models/p_srpg.mdl",
+	"models/p_shotgun.mdl",
+	"models/p_snailgun.mdl",
+	"models/p_sniper.mdl",
+	"models/p_spanner.mdl",
+	"models/p_umbrella.mdl",
+	"models/p_rpg.mdl",
+	"models/p_spygun.mdl",
+	"models/p_smallshotgun.mdl"
+};
+
 /*
  * used by kill command and disconnect command
  * ROBIN: Moved here from player.cpp, to allow multiple player models
@@ -824,7 +900,32 @@ void ClientPrecache( void )
 	// setup precaches always needed
 	PRECACHE_SOUND( "player/sprayer.wav" );			// spray paint sound for PreAlpha
 
+	PRECACHE_SOUND( "player/plyrjmp8.wav" );
 	// PRECACHE_SOUND( "player/pl_jumpland2.wav" );		// UNDONE: play 2x step sound
+
+	PRECACHE_SOUND( "misc/talk.wav" );
+
+	PRECACHE_SOUND( "player/pain1.wav" );
+	PRECACHE_SOUND( "player/pain2.wav" );
+	PRECACHE_SOUND( "player/pain3.wav" );
+	PRECACHE_SOUND( "player/pain4.wav" );
+	PRECACHE_SOUND( "player/pain5.wav" );
+	PRECACHE_SOUND( "player/pain6.wav" );
+
+	PRECACHE_SOUND( "player/axhit1.wav" );
+
+	PRECACHE_SOUND( "player/drown1.wav" );
+	PRECACHE_SOUND( "player/drown2.wav" );
+
+	PRECACHE_SOUND( "player/h2odeath.wav" );
+
+	PRECACHE_SOUND( "player/death1.wav" );
+	PRECACHE_SOUND( "player/death2.wav" );
+	PRECACHE_SOUND( "player/death3.wav" );
+	PRECACHE_SOUND( "player/death4.wav" );
+	PRECACHE_SOUND( "player/death5.wav" );
+
+	PRECACHE_SOUND( "player/gib.wav" );
 
 	PRECACHE_SOUND( "player/pl_fallpain2.wav" );
 	PRECACHE_SOUND( "player/pl_fallpain3.wav" );
@@ -897,6 +998,18 @@ void ClientPrecache( void )
 	PRECACHE_SOUND( "debris/glass2.wav" );
 	PRECACHE_SOUND( "debris/glass3.wav" );
 
+	PRECACHE_SOUND( "misc/r_tele3.wav" );
+	PRECACHE_SOUND( "misc/r_tele4.wav" );
+
+	PRECACHE_SOUND( "items/medshot4.wav" );
+	PRECACHE_SOUND( "items/medshot5.wav" );
+
+	PRECACHE_SOUND( "items/r_item2.wav" );
+	PRECACHE_SOUND( "weapons/building.wav" );
+	PRECACHE_SOUND( "weapons/ax1.wav" );
+	PRECACHE_SOUND( "weapons/timer.wav" );
+	PRECACHE_SOUND( "items/itembk2.wav" );
+
 	PRECACHE_SOUND( SOUND_FLASHLIGHT_ON );
 	PRECACHE_SOUND( SOUND_FLASHLIGHT_OFF );
 
@@ -910,7 +1023,81 @@ void ClientPrecache( void )
 	PRECACHE_SOUND( "player/pl_pain6.wav" );
 	PRECACHE_SOUND( "player/pl_pain7.wav" );
 
-	PRECACHE_MODEL( "models/player.mdl" );
+	PRECACHE_SOUND( "speech/saveme1.wav" );
+	PRECACHE_SOUND( "speech/saveme2.wav" );
+
+	PRECACHE_SOUND( "vox/stolen.wav" );
+
+	size_t i;
+
+	for( i = 1; i < ARRAYSIZE(sOldClassModelFiles); i++ )
+		PRECACHE_MODEL( sOldClassModelFiles[i] );
+
+	for( i = 1; i < ARRAYSIZE(sNewClassModelFiles); i++ )
+		PRECACHE_MODEL( sNewClassModelFiles[i] );
+
+	for( i = 0; i < ARRAYSIZE(sOldWeaponPModels); i++ )
+	{
+		PRECACHE_MODEL( sOldWeaponPModels[i] );
+		PRECACHE_MODEL( sNewWeaponPModels[i] );
+	}
+
+	Vector modelMins( -43, -14, -49 );
+	Vector modelMaxs( 43, 11, 49 );
+
+	for( i = 1; i < ARRAYSIZE(sOldClassModelFiles); i++ )
+		ENGINE_FORCE_UNMODIFIED( force_model_specifybounds, modelMins, modelMaxs, sOldClassModelFiles[i] );
+
+	for( i = 1; i < ARRAYSIZE(sNewClassModelFiles); i++ )
+		ENGINE_FORCE_UNMODIFIED( force_model_specifybounds, modelMins, modelMaxs, sNewClassModelFiles[i] );
+
+	for( i = 0; i < ARRAYSIZE(sOldWeaponPModels); i++ )
+	{
+		ENGINE_FORCE_UNMODIFIED( force_exactfile, g_vecZero, g_vecZero, sOldWeaponPModels[i] );
+		ENGINE_FORCE_UNMODIFIED( force_exactfile, g_vecZero, g_vecZero, sNewWeaponPModels[i] );
+	}
+
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, g_vecZero, g_vecZero, "models/w_grenade.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, g_vecZero, g_vecZero, "models/spy_grenade.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, g_vecZero, g_vecZero, "models/ngrenade.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, g_vecZero, g_vecZero, "models/napalm.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, g_vecZero, g_vecZero, "models/pipebomb.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, g_vecZero, g_vecZero, "models/mirv_grenade.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, g_vecZero, g_vecZero, "models/bomblet.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, g_vecZero, g_vecZero, "models/emp_grenade.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, g_vecZero, g_vecZero, "models/conc_grenade.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, g_vecZero, g_vecZero, "models/caltrop.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, g_vecZero, g_vecZero, "models/flag.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, g_vecZero, g_vecZero, "models/ball.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, g_vecZero, g_vecZero, "models/detpack.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, g_vecZero, g_vecZero, "models/w_rpg.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, g_vecZero, g_vecZero, "models/rpgrocket.mdl" );
+
+	modelMins = Vector( -32, -32, -32 );
+	modelMaxs = Vector( 32, 32, 32 );
+
+	ENGINE_FORCE_UNMODIFIED( force_model_specifybounds, modelMins, modelMaxs, "models/base.mdl" );
+
+	modelMins = Vector( -24, -24, -24 );
+
+	ENGINE_FORCE_UNMODIFIED( force_model_specifybounds, modelMins, modelMaxs, "models/sentry1.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_model_specifybounds, modelMins, modelMaxs, "models/sentry2.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_model_specifybounds, modelMins, modelMaxs, "models/sentry3.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_model_specifybounds, modelMins, Vector( 16, 64, 16 ), "models/dispenser.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_model_specifybounds, Vector( -29, -29, -1 ), Vector( 29, 26, 12 ), "models/teleporter.mdl" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, g_vecZero, g_vecZero, "sprites/playerflame.spr" );
+	ENGINE_FORCE_UNMODIFIED( force_exactfile, g_vecZero, g_vecZero, "sprites/fthrow.spr" );
+
+	UTIL_PrecacheOther( "detpack" );
+
+	PRECACHE_SOUND( "ambience/flameburst1.wav" );
+	PRECACHE_SOUND( "ambience/steamburst1.wav" );
+
+	PRECACHE_SOUND( "misc/b1.wav" );
+	PRECACHE_SOUND( "misc/b2.wav" );
+
+	PRECACHE_SOUND( "misc/party1.wav" );
+	PRECACHE_SOUND( "misc/party2.wav" );
 
 	// hud sounds
 	PRECACHE_SOUND( "common/wpn_hudoff.wav" );
@@ -918,17 +1105,6 @@ void ClientPrecache( void )
 	PRECACHE_SOUND( "common/wpn_moveselect.wav" );
 	PRECACHE_SOUND( "common/wpn_select.wav" );
 	PRECACHE_SOUND( "common/wpn_denyselect.wav" );
-
-	// geiger sounds
-	PRECACHE_SOUND( "player/geiger6.wav" );
-	PRECACHE_SOUND( "player/geiger5.wav" );
-	PRECACHE_SOUND( "player/geiger4.wav" );
-	PRECACHE_SOUND( "player/geiger3.wav" );
-	PRECACHE_SOUND( "player/geiger2.wav" );
-	PRECACHE_SOUND( "player/geiger1.wav" );
-
-	if( giPrecacheGrunt )
-		UTIL_PrecacheOther( "monster_human_grunt" );
 }
 
 /*
@@ -940,10 +1116,7 @@ Returns the descriptive name of this .dll.  E.g., Half-Life, or Team Fortress 2
 */
 const char *GetGameDescription()
 {
-	if( g_pGameRules ) // this function may be called before the world has spawned, and the game rules initialized
-		return g_pGameRules->GetGameDescription();
-	else
-		return "Half-Life";
+	return "Team Fortress Classic";
 }
 
 /*
