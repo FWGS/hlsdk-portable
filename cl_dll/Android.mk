@@ -24,25 +24,26 @@ LOCAL_CFLAGS += -DCLIENT_DLL=1
 
 SRCS=
 SRCS_C=
-SRCS+=../dlls/crossbow.cpp
-SRCS+=../dlls/crowbar.cpp
-SRCS+=../dlls/egon.cpp
-SRCS+=./ev_hldm.cpp
-SRCS+=../dlls/gauss.cpp
-SRCS+=../dlls/handgrenade.cpp
+SRCS+=./tfc/ev_tfc.cpp
 SRCS+=./hl/hl_baseentity.cpp
-SRCS+=./hl/hl_events.cpp
+SRCS+=./tfc/tfc_events.cpp
 SRCS+=./hl/hl_objects.cpp
-SRCS+=./hl/hl_weapons.cpp
-SRCS+=../dlls/hornetgun.cpp
-SRCS+=../dlls/mp5.cpp
-SRCS+=../dlls/python.cpp
-SRCS+=../dlls/rpg.cpp
-SRCS+=../dlls/satchel.cpp
-SRCS+=../dlls/shotgun.cpp
-SRCS+=../dlls/squeakgrenade.cpp
-SRCS+=../dlls/tripmine.cpp
-SRCS+=../dlls/glock.cpp
+SRCS+=./tfc/tfc_weapons.cpp
+SRCS+=../dlls/crowbar.cpp
+SRCS+=../dlls/tfc/assaultcannon.cpp
+SRCS+=../dlls/tfc/axe.cpp
+SRCS+=../dlls/tfc/flamethrower.cpp
+SRCS+=../dlls/tfc/grenadelauncher.cpp
+SRCS+=../dlls/tfc/incendiarycannon.cpp
+SRCS+=../dlls/tfc/nailgun.cpp
+SRCS+=../dlls/tfc/pipebomblauncher.cpp
+SRCS+=../dlls/tfc/railgun.cpp
+SRCS+=../dlls/tfc/rpg.cpp
+SRCS+=../dlls/tfc/shotgun.cpp
+SRCS+=../dlls/tfc/sniperrifle.cpp
+SRCS+=../dlls/tfc/spanner.cpp
+SRCS+=../dlls/tfc/supernailgun.cpp
+SRCS+=../dlls/tfc/supershotgun.cpp
 #SRCS+=../game_shared/voice_banmgr.cpp
 #SRCS+=../game_shared/voice_status.cpp
 SRCS+=./ammo.cpp
@@ -100,6 +101,7 @@ LOCAL_C_INCLUDES := $(LOCAL_PATH)/. \
 		 $(LOCAL_PATH)/../game_shared \
 		 $(LOCAL_PATH)/../dlls \
 		 $(LOCAL_PATH)/../pm_shared \
+		 $(LOCAL_PATH)/../dlls/tfc \
 		 $(LOCAL_PATH)/../utils/false_vgui/include
 LOCAL_CFLAGS += $(DEFINES) $(INCLUDES)
 

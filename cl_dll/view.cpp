@@ -1313,21 +1313,21 @@ int V_FindViewModelByWeaponModel( int weaponindex )
 {
 	static const char *modelmap[][2] =
 	{
-		{ "models/p_crossbow.mdl",	"models/v_crossbow.mdl" },
-		{ "models/p_crowbar.mdl",	"models/v_crowbar.mdl" },
-		{ "models/p_egon.mdl",		"models/v_egon.mdl" },
-		{ "models/p_gauss.mdl",		"models/v_gauss.mdl" },
-		{ "models/p_9mmhandgun.mdl",	"models/v_9mmhandgun.mdl" },
-		{ "models/p_grenade.mdl",	"models/v_grenade.mdl" },
-		{ "models/p_hgun.mdl",		"models/v_hgun.mdl" },
-		{ "models/p_9mmAR.mdl",		"models/v_9mmAR.mdl" },
-		{ "models/p_357.mdl",		"models/v_357.mdl" },
-		{ "models/p_rpg.mdl",		"models/v_rpg.mdl" },
-		{ "models/p_shotgun.mdl",	"models/v_shotgun.mdl" },
-		{ "models/p_squeak.mdl",	"models/v_squeak.mdl" },
-		{ "models/p_tripmine.mdl",	"models/v_tripmine.mdl" },
-		{ "models/p_satchel_radio.mdl",	"models/v_satchel_radio.mdl" },
-		{ "models/p_satchel.mdl",	"models/v_satchel.mdl" },
+		{ "models/p_mini.mdl", "models/v_tfac.mdl" },
+		{ "models/p_sniper.mdl", "models/v_tfc_sniper.mdl" },
+		{ "models/p_umbrella.mdl", "models/v_umbrella.mdl" },
+		{ "models/p_crowbar.mdl", "models/v_tfc_crowbar.mdl" },
+		{ "models/p_spanner.mdl", "models/v_tfc_spanner.mdl" },
+		{ "models/p_knife.mdl", "models/v_tfc_knife.mdl" },
+		{ "models/p_medkit.mdl", "models/v_tfc_medkit.mdl" },
+		{ "models/p_egon.mdl", "models/v_flame.mdl" },
+		{ "models/p_glauncher.mdl", "models/v_tfgl.mdl" },
+		{ "models/p_rpg.mdl", "models/v_tfc_rpg.mdl" },
+		{ "models/p_nailgun.mdl", "models/v_tfc_nailgun.mdl" },
+		{ "models/p_snailgun.mdl", "models/v_tfc_supernailgun.mdl" },
+		{ "models/p_9mmhandgun.mdl", "models/v_tfc_railgun.mdl"	},
+		{ "models/p_srpg.mdl", "models/v_tfc_rpg.mdl"		},
+		{ "models/p_smallshotgun.mdl", "models/v_tfc_12gauge.mdl"	},
 		{ NULL, NULL }
 	};
 

@@ -420,6 +420,7 @@ private:
 	wrect_t *m_prc1;
 	wrect_t *m_prc2;
 	int m_iBat;
+	int m_iBatMax;
 	float m_fFade;
 	int m_iHeight;		// width of the battery innards
 };
@@ -597,6 +598,8 @@ public:
 	int DrawHudStringLen( const char *szIt );
 	void DrawDarkRectangle( int x, int y, int wide, int tall );
 
+	bool m_bAllowSpec;
+
 private:
 	// the memory for these arrays are allocated in the first call to CHud::VidInit(), when the hud.txt and associated sprites are loaded.
 	// freed in ~CHud()
@@ -655,6 +658,9 @@ public:
 	int _cdecl MsgFunc_SetFOV( const char *pszName,  int iSize, void *pbuf );
 	int  _cdecl MsgFunc_Concuss( const char *pszName, int iSize, void *pbuf );
 
+	int  _cdecl MsgFunc_AllowSpec( const char *pszName, int iSize, void *pbuf );
+	int  _cdecl MsgFunc_VGUIMenu( const char *pszName, int iSize, void *pbuf );
+
 	// Screen information
 	SCREENINFO	m_scrinfo;
 
@@ -670,6 +676,8 @@ public:
 	void AddHudElem( CHudBase *p );
 
 	float GetSensitivity();
+
+	void ShowVGUIMenu( int menuType );
 };
 
 extern CHud gHUD;

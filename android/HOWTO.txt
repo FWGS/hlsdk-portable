@@ -1,0 +1,24 @@
+### Android/Java part
+ * AndroidManifest.xml:
+ * * Rename manifest package
+ * * Change appliction label
+ * * Uncomment icon and InstallReceiver if used
+ * src/in/celest/xash3d/LauncherActivity.java
+ * * Set mod gamedir
+ * * Set mod and launch button title
+ * * Set library loading options
+ * * Enable extras.pak extracting
+ * * Pass envieoment variables
+ * src/in/celest/xash3d/ExtractAssets.java
+ * * Add extra files to unpack
+
+### Native part
+ * Place folders with your mod project to jni/
+
+ * You may provide extras.pak for additional files
+ * You may use client from other package for server mods (read comments in LauncherActivity)
+ * You may use original server libraries for bots by loading it directly from native part
+ * Use getenv("XASH3D_GAMELIBDIR") and getenv("XASH3D_ENGLIBDIR") to get mod and half-life libraries path
+ * You may add options and pass it as enviroment variables (read comments in LauncherActivity)
+ * Place icon to res/drawable/ic_launcher.png and uncomment lines in AndroidManifest
+ 

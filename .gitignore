@@ -1,4 +1,4 @@
-# Binaries
+.vscode/
 *.o
 *.so
 */*.o
@@ -17,3 +17,4 @@ cmake_install.cmake
 *.vsxproj
 *.vsproj
 *.sln
+*.cmd

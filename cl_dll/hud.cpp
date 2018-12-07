@@ -28,6 +28,9 @@
 #include "demo.h"
 #include "demo_api.h"
 
+#define MENU_TEAM 2
+#define MENU_CLASS 3
+
 cvar_t *hud_textmode;
 float g_hud_text_color[3];
 
@@ -123,7 +126,7 @@ int __MsgFunc_Detpack( const char *pszName, int iSize, void *pbuf )
 
 int __MsgFunc_VGUIMenu( const char *pszName, int iSize, void *pbuf )
 {
-	return 0;
+	return gHUD.MsgFunc_VGUIMenu( pszName, iSize, pbuf );
 }
 
 int __MsgFunc_BuildSt( const char *pszName, int iSize, void *pbuf )
@@ -148,7 +151,7 @@ int __MsgFunc_Spectator( const char *pszName, int iSize, void *pbuf )
 
 int __MsgFunc_AllowSpec( const char *pszName, int iSize, void *pbuf )
 {
-	return 0;
+	return gHUD.MsgFunc_AllowSpec( pszName, iSize, pbuf );
 }
  
 // This is called every time the DLL is loaded
@@ -586,4 +589,43 @@ void CHud::AddHudElem( CHudBase *phudelem )
 float CHud::GetSensitivity( void )
 {
 	return m_flMouseSensitivity;
+}
+
+int CHud::MsgFunc_AllowSpec( const char *pszName,  int iSize, void *pbuf )
+{
+	BEGIN_READ( pbuf, iSize );
+
+	m_bAllowSpec = (bool)READ_BYTE();
+
+	return 1;
+}
+
+int CHud::MsgFunc_VGUIMenu( const char *pszName,  int iSize, void *pbuf )
+{
+	BEGIN_READ( pbuf, iSize );
+
+	int menuType = READ_BYTE();
+	//m_bitsValidSlots = READ_SHORT(); // is ignored
+
+	ShowVGUIMenu(menuType);
+	return 1;
+}
+
+void CHud::ShowVGUIMenu( int menuType )
+{
+    char *szCmd;
+
+	switch(menuType)
+	{
+	case MENU_TEAM:
+		szCmd = "exec touch/chooseteam.cfg";
+		break;
+	default:
+		szCmd = "touch_removebutton _menu_*"; // back to the default touch page
+		//m_fMenuDisplayed = 0;
+		break;
+	}
+	//Velaron: Touch Menus
+	//m_fMenuDisplayed = 1;
+	ClientCmd(szCmd);
 }

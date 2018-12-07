@@ -21,6 +21,8 @@
 #include "nodes.h"
 #include "player.h"
 
+#include "tf_defs.h"
+
 #include "usercmd.h"
 #include "entity_state.h"
 #include "demo_api.h"
@@ -52,21 +54,21 @@ int g_irunninggausspred = 0;
 
 vec3_t previousorigin;
 
-// HLDM Weapon placeholder entities.
-CGlock g_Glock;
-CCrowbar g_Crowbar;
-CPython g_Python;
-CMP5 g_Mp5;
-CCrossbow g_Crossbow;
-CShotgun g_Shotgun;
-CRpg g_Rpg;
-CGauss g_Gauss;
-CEgon g_Egon;
-CHgun g_HGun;
-CHandGrenade g_HandGren;
-CSatchel g_Satchel;
-CTripmine g_Tripmine;
-CSqueak g_Snark;
+// TFC Weapons
+CTFShotgun g_TFShotgun;
+CTFSuperShotgun g_TFSuperShotgun;
+CTFNailgun g_TFNailgun;
+CTFSuperNailgun g_TFSuperNailgun;
+CTFSniperRifle g_TFSniperRifle;
+CTFRpg g_TFRpg;
+CTFIncendiaryC g_TFIncediaryC;
+CTFFlamethrower g_TFFlamethrower;
+CTFAxe g_TFAxe;
+CTFSpanner g_TFSpanner;
+CTFRailgun g_TFRailgun;
+CTFGrenadeLauncher g_TFGrenadeLauncher;
+CTFAssaultC g_TFAssaultC;
+CTFPipebombLauncher g_TFPipebombLauncher;
 
 /*
 ======================
@@ -602,20 +604,20 @@ void HUD_InitClientWeapons( void )
 	HUD_PrepEntity( &player, NULL );
 
 	// Allocate slot(s) for each weapon that we are going to be predicting
-	HUD_PrepEntity( &g_Glock, &player );
-	HUD_PrepEntity( &g_Crowbar, &player );
-	HUD_PrepEntity( &g_Python, &player );
-	HUD_PrepEntity( &g_Mp5, &player );
-	HUD_PrepEntity( &g_Crossbow, &player );
-	HUD_PrepEntity( &g_Shotgun, &player );
-	HUD_PrepEntity( &g_Rpg, &player );
-	HUD_PrepEntity( &g_Gauss, &player );
-	HUD_PrepEntity( &g_Egon, &player );
-	HUD_PrepEntity( &g_HGun, &player );
-	HUD_PrepEntity( &g_HandGren, &player );
-	HUD_PrepEntity( &g_Satchel, &player );
-	HUD_PrepEntity( &g_Tripmine, &player );
-	HUD_PrepEntity( &g_Snark, &player );
+	HUD_PrepEntity( &g_TFShotgun, &player );
+	HUD_PrepEntity( &g_TFSuperShotgun, &player );
+	HUD_PrepEntity( &g_TFNailgun, &player );
+	HUD_PrepEntity( &g_TFSuperNailgun, &player );
+	HUD_PrepEntity( &g_TFSniperRifle, &player );
+	HUD_PrepEntity( &g_TFRpg, &player );
+	HUD_PrepEntity( &g_TFIncediaryC, &player );
+	HUD_PrepEntity( &g_TFFlamethrower, &player );
+	HUD_PrepEntity( &g_TFAxe, &player );
+	HUD_PrepEntity( &g_TFSpanner, &player );
+	HUD_PrepEntity( &g_TFRailgun, &player );
+	HUD_PrepEntity( &g_TFGrenadeLauncher, &player );
+	HUD_PrepEntity( &g_TFAssaultC, &player );
+	HUD_PrepEntity( &g_TFPipebombLauncher, &player );
 }
 
 /*
@@ -679,47 +681,71 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 	// FIXME, make this a method in each weapon?  where you pass in an entity_state_t *?
 	switch( from->client.m_iId )
 	{
-		case WEAPON_CROWBAR:
-			pWeapon = &g_Crowbar;
+		case WEAPON_HOOK:
+			//pWeapon = &;
 			break;
-		case WEAPON_GLOCK:
-			pWeapon = &g_Glock;
+		case WEAPON_BIOWEAPON:
+			//pWeapon = &;
 			break;
-		case WEAPON_PYTHON:
-			pWeapon = &g_Python;
+		case WEAPON_SPANNER:
+			pWeapon = &g_TFSpanner;
 			break;
-		case WEAPON_MP5:
-			pWeapon = &g_Mp5;
+		case WEAPON_AXE:
+			pWeapon = &g_TFAxe;
 			break;
-		case WEAPON_CROSSBOW:
-			pWeapon = &g_Crossbow;
+		case WEAPON_SNIPER_RIFLE:
+			pWeapon = &g_TFSniperRifle;
 			break;
-		case WEAPON_SHOTGUN:
-			pWeapon = &g_Shotgun;
+		case WEAPON_AUTO_RIFLE:
+			//pWeapon = &;
 			break;
-		case WEAPON_RPG:
-			pWeapon = &g_Rpg;
+		case WEAPON_TF_SHOTGUN:
+			pWeapon = &g_TFShotgun;
 			break;
-		case WEAPON_GAUSS:
-			pWeapon = &g_Gauss;
+		case WEAPON_SUPER_SHOTGUN:
+			pWeapon = &g_TFSuperShotgun;
 			break;
-		case WEAPON_EGON:
-			pWeapon = &g_Egon;
+		case WEAPON_NAILGUN:
+			pWeapon = &g_TFNailgun;
 			break;
-		case WEAPON_HORNETGUN:
-			pWeapon = &g_HGun;
+		case WEAPON_SUPER_NAILGUN:
+			pWeapon = &g_TFSuperNailgun;
 			break;
-		case WEAPON_HANDGRENADE:
-			pWeapon = &g_HandGren;
+		case WEAPON_GRENADE_LAUNCHER:
+			pWeapon = &g_TFGrenadeLauncher;
 			break;
-		case WEAPON_SATCHEL:
-			pWeapon = &g_Satchel;
+		case WEAPON_FLAMETHROWER:
+			pWeapon = &g_TFFlamethrower;
 			break;
-		case WEAPON_TRIPMINE:
-			pWeapon = &g_Tripmine;
+		case WEAPON_ROCKET_LAUNCHER:
+			pWeapon = &g_TFRpg;
 			break;
-		case WEAPON_SNARK:
-			pWeapon = &g_Snark;
+		case WEAPON_INCENDIARY:
+			pWeapon = &g_TFIncediaryC;
+			break;
+		case WEAPON_ASSAULT_CANNON:
+			pWeapon = &g_TFAssaultC;
+			break;
+		case WEAPON_LIGHTNING:
+			//pWeapon = &;
+			break;
+		case WEAPON_DETPACK:
+			//pWeapon = &;
+			break;
+		case WEAPON_TRANQ:
+			//pWeapon = &;
+			break;
+		case WEAPON_LASER:
+			pWeapon = &g_TFRailgun;
+			break;
+		case WEAPON_PIPEBOMB_LAUNCHER:
+			pWeapon = &g_TFPipebombLauncher;
+			break;
+		case WEAPON_KNIFE:
+			//pWeapon = &;
+			break;
+		case WEAPON_BENCHMARK:
+			//pWeapon = &;
 			break;
 	}
 
@@ -824,13 +850,13 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 	{
 		player.m_pActiveItem = g_pWpns[from->client.m_iId];
 	}
-
+/*
 	if( player.m_pActiveItem->m_iId == WEAPON_RPG )
 	{
 		( (CRpg *)player.m_pActiveItem )->m_fSpotActive = (int)from->client.vuser2[1];
 		( (CRpg *)player.m_pActiveItem )->m_cActiveRockets = (int)from->client.vuser2[2];
 	}
-
+*/
 	// Don't go firing anything if we have died.
 	// Or if we don't have a weapon model deployed
 	if( ( player.pev->deadflag != ( DEAD_DISCARDBODY + 1 ) ) && 
@@ -892,7 +918,7 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 	to->client.ammo_cells = player.ammo_uranium;
 	to->client.vuser2[0] = player.ammo_hornets;
 	to->client.ammo_rockets = player.ammo_rockets;
-
+/*
 	if( player.m_pActiveItem->m_iId == WEAPON_RPG )
 	{
 		from->client.vuser2[1] = ( (CRpg *)player.m_pActiveItem)->m_fSpotActive;
@@ -916,7 +942,7 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 		// Force a fixed anim down to viewmodel
 		HUD_SendWeaponAnim( to->client.weaponanim, body, 1 );
 	}
-
+*/
 	for( i = 0; i < 32; i++ )
 	{
 		pCurrent = g_pWpns[i];
