@@ -645,15 +645,6 @@ void CWorld::Precache( void )
 
 	pev->spawnflags &= ~SF_WORLD_TITLE;		// g-cont. don't show logo after save\restore
 
-	if( pev->spawnflags & SF_WORLD_FORCETEAM )
-	{
-		CVAR_SET_FLOAT( "mp_defaultteam", 1 );
-	}
-	else
-	{
-		CVAR_SET_FLOAT( "mp_defaultteam", 0 );
-	}
-
 	// g-cont. moved here so cheats will working on restore level
 	g_flWeaponCheat = CVAR_GET_FLOAT( "sv_cheats" );  // Is the impulse 101 command allowed?
 }
@@ -716,14 +707,6 @@ void CWorld::KeyValue( KeyValueData *pkvd )
 	else if( FStrEq( pkvd->szKeyName, "mapteams" ) )
 	{
 		pev->team = ALLOC_STRING( pkvd->szValue );
-		pkvd->fHandled = TRUE;
-	}
-	else if( FStrEq( pkvd->szKeyName, "defaultteam" ) )
-	{
-		if( atoi( pkvd->szValue ) )
-		{
-			pev->spawnflags |= SF_WORLD_FORCETEAM;
-		}
 		pkvd->fHandled = TRUE;
 	}
 	else

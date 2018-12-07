@@ -44,20 +44,8 @@ CHalfLifeTeamplay::CHalfLifeTeamplay()
 	m_szTeamList[0] = 0;
 
 	// Cache this because the team code doesn't want to deal with changing this in the middle of a game
-	strncpy( m_szTeamList, teamlist.string, TEAMPLAY_TEAMLISTLENGTH );
 
 	edict_t *pWorld = INDEXENT( 0 );
-	if( pWorld && pWorld->v.team )
-	{
-		if( teamoverride.value )
-		{
-			const char *pTeamList = STRING( pWorld->v.team );
-			if( pTeamList && strlen( pTeamList ) )
-			{
-				strncpy( m_szTeamList, pTeamList, TEAMPLAY_TEAMLISTLENGTH );
-			}
-		}
-	}
 	// Has the server set teams
 	if( strlen( m_szTeamList ) )
 		m_teamLimit = TRUE;
@@ -188,18 +176,11 @@ const char *CHalfLifeTeamplay::SetDefaultPlayerTeam( CBasePlayer *pPlayer )
 	RecountTeams();
 
 	// update the current player of the team he is joining
-	if( pPlayer->m_szTeamName[0] == '\0' || !IsValidTeam( pPlayer->m_szTeamName ) || defaultteam.value )
+	if( pPlayer->m_szTeamName[0] == '\0' || !IsValidTeam( pPlayer->m_szTeamName ) )
 	{
 		const char *pTeamName = NULL;
 
-		if( defaultteam.value )
-		{
-			pTeamName = team_names[0];
-		}
-		else
-		{
-			pTeamName = TeamWithFewestPlayers();
-		}
+		pTeamName = TeamWithFewestPlayers();
 		strncpy( pPlayer->m_szTeamName, pTeamName, TEAM_NAME_LENGTH );
 	}
 
@@ -320,18 +301,7 @@ void CHalfLifeTeamplay::ClientUserInfoChanged( CBasePlayer *pPlayer, char *infob
 	if( !stricmp( mdls, pPlayer->m_szTeamName ) )
 		return;
 
-	if( defaultteam.value )
-	{
-		int clientIndex = pPlayer->entindex();
-
-		g_engfuncs.pfnSetClientKeyValue( clientIndex, g_engfuncs.pfnGetInfoKeyBuffer( pPlayer->edict() ), "model", pPlayer->m_szTeamName );
-		g_engfuncs.pfnSetClientKeyValue( clientIndex, g_engfuncs.pfnGetInfoKeyBuffer( pPlayer->edict() ), "team", pPlayer->m_szTeamName );
-		sprintf( text, "* Not allowed to change teams in this game!\n" );
-		UTIL_SayText( text, pPlayer );
-		return;
-	}
-
-	if( defaultteam.value || !IsValidTeam( mdls ) )
+	if( !IsValidTeam( mdls ) )
 	{
 		int clientIndex = pPlayer->entindex();
 
