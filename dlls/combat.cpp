@@ -607,7 +607,7 @@ void CBaseMonster::Killed( entvars_t *pevAttacker, int iGib )
 	if( mp_coop.value )
 	{
 		int classs = Classify();
-		if( !mp_coop_nofriendlyfire.value && classs == CLASS_HUMAN_PASSIVE || classs == CLASS_PLAYER_ALLY )
+		if( !mp_coop_nofriendlyfire.value && ( classs == CLASS_HUMAN_PASSIVE || classs == CLASS_PLAYER_ALLY ) )
 		{
 			if( activator && activator->IsPlayer() )
 			{
@@ -615,8 +615,16 @@ void CBaseMonster::Killed( entvars_t *pevAttacker, int iGib )
 				activator->AddPoints( 0, true );
 			}
 		}
-		else if( classs >= 5 )
+		else if( classs >= 4 )
 		{
+			int points = 1;
+			if( classs == CLASS_HUMAN_MILITARY )
+				points = 2;
+			if( classs == CLASS_ALIEN_MILITARY )
+				points = 2;
+			if( classs == CLASS_ALIEN_PREDATOR )
+				points = 3;
+
 			if( activator && activator->IsPlayer() )
 				activator->AddPoints( 1, true );
 		}
