@@ -191,12 +191,17 @@ COOP_AutoSave
 Helper for trigger_autosave
 =========================
 */
-void COOP_AutoSave( void )
+void COOP_AutoSave( CBaseEntity *pPlayer )
 {
 	strncpy( g_CoopState.p.rgszSaveSlots[COOP_SAVE_AUTO2], g_CoopState.p.rgszSaveSlots[COOP_SAVE_AUTO1], 31 );
 	g_CoopState.p.iLastAutoSave ^= 1;
 	snprintf( g_CoopState.p.rgszSaveSlots[COOP_SAVE_AUTO1], 31, "auto%d-%s", g_CoopState.p.iLastAutoSave, STRING( gpGlobals->mapname ) );
 	GGM_Save( g_CoopState.p.rgszSaveSlots[COOP_SAVE_AUTO1] );
+	memmove( &g_CoopState.pCurrentMap->p.rgCheckpoints[1], &g_CoopState.pCurrentMap->p.rgCheckpoints[0], sizeof ( g_CoopState.pCurrentMap->p.rgCheckpoints[0] ) * 3 );
+	g_CoopState.pCurrentMap->p.rgCheckpoints[0].flTime = gpGlobals->time;
+	snprintf( g_CoopState.pCurrentMap->p.rgCheckpoints[0].szDisplayName, 31,  "autosave %d", (int)( gpGlobals->time / 60 ) );
+	GGM_SavePosition( (CBasePlayer*)pPlayer, &g_CoopState.pCurrentMap->p.rgCheckpoints[0].pos );
+	UTIL_CoopPrintMessage("%s activated autosave!\n", GGM_PlayerName( pPlayer ) );
 }
 
 #include <dirent.h>

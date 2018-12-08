@@ -2294,7 +2294,7 @@ void CTriggerSave::SaveTouch( CBaseEntity *pOther )
 	SetTouch( NULL );
 	UTIL_Remove( this );
 	if( mp_coop.value )
-		COOP_AutoSave();
+		COOP_AutoSave( pOther );
 	else
 		SERVER_COMMAND( "autosave\n" );
 }

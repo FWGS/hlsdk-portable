@@ -55,7 +55,7 @@ void COOP_GiveDefaultWeapons( CBasePlayer *pPlayer );
 void COOP_AddDefaultWeapon( const char *pszClassName );
 void COOP_WriteState( const char *path );
 bool COOP_ReadState( const char *path );
-void COOP_AutoSave( void );
+void COOP_AutoSave( CBaseEntity *pPlayer );
 bool COOP_PlayerSpawn( CBasePlayer *pPlayer );
 void COOP_ClearSaves( void );
 struct COOPChangelevelData *COOP_GetTriggerData( CBaseEntity *pTrigger );
