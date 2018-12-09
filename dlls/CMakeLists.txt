@@ -38,111 +38,101 @@ else()
 endif()
 
 set (SVDLL_SOURCES
-	agrunt.cpp
 	airtank.cpp
-	aflock.cpp
 	animating.cpp
 	animation.cpp
-	apache.cpp
-	barnacle.cpp
-	barney.cpp
-	bigmomma.cpp
-	bloater.cpp
 	bmodels.cpp
-	bullsquid.cpp
 	buttons.cpp
 	cbase.cpp
 	client.cpp
 	combat.cpp
-	controller.cpp
-	crossbow.cpp
 	crowbar.cpp
 	defaultai.cpp
 	doors.cpp
 	effects.cpp
-	egon.cpp
 	explode.cpp
-	flyingmonster.cpp
 	func_break.cpp
 	func_tank.cpp
 	game.cpp
 	gamerules.cpp
-	gargantua.cpp
-	gauss.cpp
-	genericmonster.cpp
 	ggrenade.cpp
 	globals.cpp
-	glock.cpp
-	gman.cpp
 	h_ai.cpp
 	h_battery.cpp
 	h_cine.cpp
 	h_cycler.cpp
 	h_export.cpp
-	handgrenade.cpp
-	hassassin.cpp
-	headcrab.cpp
+#	handgrenade.cpp
 	healthkit.cpp
-	hgrunt.cpp
-	hornet.cpp
-	hornetgun.cpp
-	houndeye.cpp
-	ichthyosaur.cpp
-	islave.cpp
 	items.cpp
-	leech.cpp
 	lights.cpp
-	maprules.cpp
-	monstermaker.cpp
 	monsters.cpp
 	monsterstate.cpp
 	mortar.cpp
-	mp5.cpp
+#	mpstubb.cpp
 	multiplay_gamerules.cpp
-	nihilanth.cpp
 	nodes.cpp
 	observer.cpp
-	osprey.cpp
 	pathcorner.cpp
 	plane.cpp
 	plats.cpp
 	player.cpp
 	playermonster.cpp
-	python.cpp
-	rat.cpp
-	roach.cpp
-	rpg.cpp
-	satchel.cpp
+#	prop.cpp
+#	rpg.cpp
 	schedule.cpp
-	scientist.cpp
 	scripted.cpp
-	shotgun.cpp
-	singleplay_gamerules.cpp
 	skill.cpp
 	sound.cpp
 	soundent.cpp
 	spectator.cpp
 	squadmonster.cpp
-	squeakgrenade.cpp
 	subs.cpp
 	talkmonster.cpp
 	teamplay_gamerules.cpp
 	tempmonster.cpp
-	tentacle.cpp
 	triggers.cpp
-	tripmine.cpp
 	turret.cpp
 	util.cpp
 	weapons.cpp
 	world.cpp
 	xen.cpp
-	zombie.cpp
+	tfc/areadef.cpp
+	tfc/demoman.cpp
+	tfc/dispenser.cpp
+	tfc/engineer.cpp
+	tfc/pyro.cpp
+	tfc/sentry.cpp
+	tfc/spy.cpp
+	tfc/teleporter.cpp
+	tfc/tf_admin.cpp
+	tfc/tf_clan.cpp
+	tfc/tf_gamerules.cpp
+	tfc/tf_item.cpp
+	tfc/tf_sbar.cpp
+	tfc/tf_wpn_ac.cpp
+	tfc/tf_wpn_ar.cpp
+	tfc/tf_wpn_axe.cpp
+	tfc/tf_wpn_flame.cpp
+	tfc/tf_wpn_gl.cpp
+	tfc/tf_wpn_grenades.cpp
+	tfc/tf_wpn_ic.cpp
+	tfc/tf_wpn_nails.cpp
+	tfc/tf_wpn_ng.cpp
+	tfc/tf_wpn_railgun.cpp
+	tfc/tf_wpn_rpg.cpp
+	tfc/tf_wpn_sg.cpp
+	tfc/tf_wpn_srifle.cpp
+	tfc/tf_wpn_tranq.cpp
+	tfc/tfort.cpp
+	tfc/tfortmap.cpp
+	tfc/tforttm.cpp
 	../pm_shared/pm_debug.c
 	../pm_shared/pm_math.c
 	../pm_shared/pm_shared.c
 )
 
-include_directories (. wpn_shared ../common ../engine ../pm_shared ../game_shared ../public)
+include_directories (. wpn_shared ../common ../engine ../pm_shared ../game_shared ../public tfc)
 
 if(USE_VOICEMGR)
 	set(SVDLL_SOURCES

@@ -47,25 +47,24 @@ endif()
 
 
 set (CLDLL_SOURCES
-	../dlls/crossbow.cpp
+	../dlls/tfc/tf_wpn_ac.cpp
+	../dlls/tfc/tf_wpn_ar.cpp
+	../dlls/tfc/tf_wpn_axe.cpp
+	../dlls/tfc/tf_wpn_flame.cpp
+	../dlls/tfc/tf_wpn_gl.cpp
+	../dlls/tfc/tf_wpn_ic.cpp
+	../dlls/tfc/tf_wpn_ng.cpp
+	../dlls/tfc/tf_wpn_railgun.cpp
+	../dlls/tfc/tf_wpn_rpg.cpp
+	../dlls/tfc/tf_wpn_sg.cpp
+	../dlls/tfc/tf_wpn_srifle.cpp
+	../dlls/tfc/tf_wpn_tranq.cpp
 	../dlls/crowbar.cpp
-	../dlls/egon.cpp
-	../dlls/gauss.cpp
-	../dlls/handgrenade.cpp
-	../dlls/hornetgun.cpp
-	../dlls/mp5.cpp
-	../dlls/python.cpp
-	../dlls/rpg.cpp
-	../dlls/satchel.cpp
-	../dlls/shotgun.cpp
-	../dlls/squeakgrenade.cpp
-	../dlls/tripmine.cpp
-	../dlls/glock.cpp
-	ev_hldm.cpp
-	hl/hl_baseentity.cpp
-	hl/hl_events.cpp
-	hl/hl_objects.cpp
-	hl/hl_weapons.cpp
+	tfc/ev_tfc.cpp
+	tfc/tf_baseentity.cpp
+	tfc/tf_events.cpp
+	tfc/tf_objects.cpp
+	tfc/tf_weapons.cpp
 	ammo.cpp
 	ammo_secondary.cpp
 	ammohistory.cpp
@@ -111,7 +110,7 @@ set (CLDLL_SOURCES
 	scoreboard.cpp
 	MOTD.cpp)
 
-include_directories (. hl/ ../dlls ../dlls/wpn_shared ../common ../engine ../pm_shared ../game_shared ../public ../utils/false_vgui/include)
+include_directories (. hl/ ../dlls ../dlls/tfc ../common ../engine ../pm_shared ../game_shared ../public ../utils/false_vgui/include)
 
 if(USE_VOICEMGR)
 	#set(CLDLL_SOURCES
