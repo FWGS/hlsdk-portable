@@ -62,4 +62,6 @@ extern void CreateInstancedBaselines( void );
 extern int InconsistentFile( const edict_t *player, const char *filename, char *disconnect_message );
 
 extern int AllowLagCompensation( void );
+
+extern int ShouldCollide( edict_t *pentTouched, edict_t *pentOther );
 #endif // CLIENT_H

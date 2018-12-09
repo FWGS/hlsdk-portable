@@ -192,7 +192,7 @@ void CGameRules::RefreshSkillData ( void )
 //=========================================================
 // instantiate the proper game rules object
 //=========================================================
-
+/*
 CGameRules *InstallGameRules( void )
 {
 	SERVER_COMMAND( "exec game.cfg\n" );
@@ -225,4 +225,4 @@ CGameRules *InstallGameRules( void )
 			return new CHalfLifeMultiplay;
 		}
 	}
-}
+}*/

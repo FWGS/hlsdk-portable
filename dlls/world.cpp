@@ -477,7 +477,7 @@ void CWorld::Precache( void )
 		g_pGameRules = NULL;
 	}
 
-	g_pGameRules = InstallGameRules();
+	// g_pGameRules = InstallGameRules();
 
 	//!!!UNDONE why is there so much Spawn code in the Precache function? I'll just keep it here 
 

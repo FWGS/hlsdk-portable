@@ -58,6 +58,7 @@ CBaseEntity
 
 extern "C" EXPORT int GetEntityAPI( DLL_FUNCTIONS *pFunctionTable, int interfaceVersion );
 extern "C" EXPORT int GetEntityAPI2( DLL_FUNCTIONS *pFunctionTable, int *interfaceVersion );
+extern "C" EXPORT int GetNewDLLFunctions( NEW_DLL_FUNCTIONS *pFunctionTable, int *interfaceVersion );
 extern "C" EXPORT int Server_GetPhysicsInterface( int iVersion, server_physics_api_t *pfuncsFromEngine, physics_interface_t *pFunctionTable );
 
 extern int DispatchSpawn( edict_t *pent );
@@ -66,6 +67,7 @@ extern void DispatchTouch( edict_t *pentTouched, edict_t *pentOther );
 extern void DispatchUse( edict_t *pentUsed, edict_t *pentOther );
 extern void DispatchThink( edict_t *pent );
 extern void DispatchBlocked( edict_t *pentBlocked, edict_t *pentOther );
+extern void OnFreeEntPrivateData( edict_t *pEdict );
 extern void DispatchSave( edict_t *pent, SAVERESTOREDATA *pSaveData );
 extern int DispatchRestore( edict_t *pent, SAVERESTOREDATA *pSaveData, int globalEntity );
 extern void DispatchObjectCollsionBox( edict_t *pent );

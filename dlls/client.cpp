@@ -2118,3 +2118,8 @@ int AllowLagCompensation( void )
 {
 	return 1;
 }
+
+int ShouldCollide( edict_t *pentTouched, edict_t *pentOther )
+{
+	return 1;
+}

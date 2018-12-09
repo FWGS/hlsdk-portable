@@ -96,6 +96,13 @@ static DLL_FUNCTIONS gFunctionTable =
 	AllowLagCompensation,		//pfnAllowLagCompensation
 };
 
+NEW_DLL_FUNCTIONS gNewDLLFunctions =
+{
+	OnFreeEntPrivateData,
+	GameDLLShutdown,
+	ShouldCollide
+};
+
 static void SetObjectCollisionBox( entvars_t *pev );
 
 #ifndef _WIN32
@@ -122,6 +129,19 @@ int GetEntityAPI2( DLL_FUNCTIONS *pFunctionTable, int *interfaceVersion )
 	}
 
 	memcpy( pFunctionTable, &gFunctionTable, sizeof(DLL_FUNCTIONS) );
+	return TRUE;
+}
+
+int GetNewDLLFunctions( NEW_DLL_FUNCTIONS *pFunctionTable, int *interfaceVersion )
+{
+	if( !pFunctionTable || *interfaceVersion != NEW_DLL_FUNCTIONS_VERSION )
+	{
+		// Tell engine what version we had, so it can figure out who is out of date.
+		*interfaceVersion = NEW_DLL_FUNCTIONS_VERSION;
+		return FALSE;
+	}
+
+	memcpy( pFunctionTable, &gNewDLLFunctions, sizeof(NEW_DLL_FUNCTIONS) );
 	return TRUE;
 }
 
@@ -245,6 +265,15 @@ void DispatchBlocked( edict_t *pentBlocked, edict_t *pentOther )
 
 	if( pEntity )
 		pEntity->Blocked( pOther );
+}
+
+void OnFreeEntPrivateData( edict_t *pEdict )
+{
+	CBaseEntity *pEntity = CBaseEntity::Instance(pEdict);
+	if( !pEntity )
+		return;
+
+	pEntity->UpdateOnRemove();
 }
 
 void DispatchSave( edict_t *pent, SAVERESTOREDATA *pSaveData )

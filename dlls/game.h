@@ -17,7 +17,7 @@
 #define GAME_H
 
 extern void GameDLLInit( void );
-
+extern void GameDLLShutdown( void );
 extern cvar_t displaysoundlist;
 
 // multiplayer server rules

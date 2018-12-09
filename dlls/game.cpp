@@ -141,3 +141,6 @@ void GameDLLInit( void )
 	CVAR_REGISTER( &mp_chattime );
 }
 
+void GameDLLShutdown( void )
+{
+}

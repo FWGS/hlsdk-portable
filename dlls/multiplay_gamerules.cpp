@@ -1131,7 +1131,7 @@ BOOL CHalfLifeMultiplay::FAllowFlashlight( void )
 //=========================================================
 BOOL CHalfLifeMultiplay::FAllowMonsters( void )
 {
-	return ( allowmonsters.value != 0 );
+	return FALSE;
 }
 
 //=========================================================
