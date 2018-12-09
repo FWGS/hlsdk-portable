@@ -305,8 +305,6 @@ public:
 	void SetCustomDecalFrames( int nFrames );
 	int GetCustomDecalFrames( void );
 
-	void TabulateAmmo( void );
-
 	Vector m_vecLastViewAngles;
 
 	float m_flStartCharge;

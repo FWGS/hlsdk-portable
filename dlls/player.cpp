@@ -1122,25 +1122,6 @@ void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim )
 
 /*
 ===========
-TabulateAmmo
-This function is used to find and store 
-all the ammo we have into the ammo vars.
-============
-*/
-void CBasePlayer::TabulateAmmo()
-{
-	ammo_9mm = AmmoInventory( GetAmmoIndex( "9mm" ) );
-	ammo_357 = AmmoInventory( GetAmmoIndex( "357" ) );
-	ammo_argrens = AmmoInventory( GetAmmoIndex( "ARgrenades" ) );
-	ammo_bolts = AmmoInventory( GetAmmoIndex( "bolts" ) );
-	ammo_buckshot = AmmoInventory( GetAmmoIndex( "buckshot" ) );
-	ammo_rockets = AmmoInventory( GetAmmoIndex( "rockets" ) );
-	ammo_uranium = AmmoInventory( GetAmmoIndex( "uranium" ) );
-	ammo_hornets = AmmoInventory( GetAmmoIndex( "Hornets" ) );
-}
-
-/*
-===========
 WaterMove
 ============
 */
@@ -3768,8 +3749,6 @@ int CBasePlayer::GiveAmmo( int iCount, const char *szName, int iMax )
 			WRITE_BYTE( iAdd );		// amount
 		MESSAGE_END();
 	}
-
-	TabulateAmmo();
 
 	return i;
 }
