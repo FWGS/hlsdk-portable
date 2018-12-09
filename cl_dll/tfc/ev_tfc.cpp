@@ -2223,3 +2223,11 @@ int EV_TFC_Medkit(int idx, float *origin, float *forward, float *right, int enti
     }
   return 1;
 }
+
+void ClearEventList()
+{
+}
+
+void RunEventList()
+{
+}

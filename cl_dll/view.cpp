@@ -1326,8 +1326,10 @@ int V_FindViewModelByWeaponModel( int weaponindex )
 		{ "models/p_nailgun.mdl", "models/v_tfc_nailgun.mdl" },
 		{ "models/p_snailgun.mdl", "models/v_tfc_supernailgun.mdl" },
 		{ "models/p_9mmhandgun.mdl", "models/v_tfc_railgun.mdl"	},
-		{ "models/p_srpg.mdl", "models/v_tfc_rpg.mdl"		},
-		{ "models/p_smallshotgun.mdl", "models/v_tfc_12gauge.mdl"	},
+		{ "models/p_srpg.mdl", "models/v_tfc_rpg.mdl" },
+		{ "models/p_smallshotgun.mdl", "models/v_tfc_12gauge.mdl" },
+		{ "models/p_shotgun.mdl", "models/v_tfc_shotgun.mdl" },
+		{ "models/p_spygun.mdl", "models/v_tfc_pistol.mdl" },
 		{ NULL, NULL }
 	};
 
@@ -1397,7 +1399,7 @@ void V_CalcSpectatorRefdef( struct ref_params_s * pparams )
 		}
 
 		// predict missing client data and set weapon model ( in HLTV mode or inset in eye mode )
-		if( gEngfuncs.IsSpectateOnly() )
+		if( gEngfuncs.IsSpectateOnly() || gHUD.m_Spectator.m_pip->value == INSET_IN_EYE )
 		{
 			V_GetInEyePos( g_iUser2, pparams->simorg, pparams->cl_viewangles );
 

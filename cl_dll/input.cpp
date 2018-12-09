@@ -550,6 +550,8 @@ void IN_Attack2Down( void )
 {
 	KeyDown( &in_attack2 );
 
+	// __CmdFunc_InputPlayerSpecial();
+
 	gHUD.m_Spectator.HandleButtonsDown( IN_ATTACK2 );
 }
 
@@ -1128,7 +1130,11 @@ void ShutdownInput( void )
 	KB_Shutdown();
 }
 
+void ClearEventList( void );
+
 void DLLEXPORT HUD_Shutdown( void )
 {
 	ShutdownInput();
+
+	ClearEventList();
 }

@@ -59,11 +59,13 @@ int CHudBattery::MsgFunc_Battery( const char *pszName,  int iSize, void *pbuf )
 
 	BEGIN_READ( pbuf, iSize );
 	int x = READ_SHORT();
+	int y = READ_SHORT();
 
-	if( x != m_iBat )
+	if( x != m_iBat || y != m_iBatMax )
 	{
 		m_fFade = FADE_TIME;
 		m_iBat = x;
+		m_iBatMax = y;
 	}
 
 	return 1;
@@ -78,7 +80,12 @@ int CHudBattery::Draw( float flTime )
 	wrect_t rc;
 
 	rc = *m_prc2;
-	rc.top  += m_iHeight * ( (float)( 100 - ( min( 100,m_iBat ) ) ) * 0.01 );	// battery can go from 0 to 100 so * 0.01 goes from 0 to 1
+	float fScale = 0.0;
+
+	if( m_iBatMax > 0 )
+		fScale = 1.0 / (float)m_iBatMax;
+
+	rc.top  += m_iHeight * ((float)(m_iBatMax-(min(m_iBatMax,m_iBat))) * fScale); // battery can go from 0 to m_iBatMax so * fScale goes from 0 to 1
 
 	UnpackRGB( r, g, b, RGB_YELLOWISH );
 

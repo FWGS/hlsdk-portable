@@ -39,7 +39,7 @@ extern client_sprite_t *GetSpriteList( client_sprite_t *pList, const char *psz, 
 extern cvar_t *sensitivity;
 cvar_t *cl_lw = NULL;
 cvar_t *cl_viewbob = NULL;
-
+cvar_t *tfc_newmodels;
 void ShutdownInput( void );
 
 //DECLARE_MESSAGE( m_Logo, Logo )
@@ -188,6 +188,7 @@ void CHud::Init( void )
 
 	CVAR_CREATE( "hud_classautokill", "1", FCVAR_ARCHIVE | FCVAR_USERINFO );		// controls whether or not to suicide immediately on TF class switch
 	CVAR_CREATE( "hud_takesshots", "0", FCVAR_ARCHIVE );		// controls whether or not to automatically take screenshots at the end of a round
+	tfc_newmodels = CVAR_CREATE( "tfc_newmodels", "1", FCVAR_ARCHIVE | FCVAR_CLIENTDLL );
 	hud_textmode = CVAR_CREATE ( "hud_textmode", "0", FCVAR_ARCHIVE );
 
 	m_iLogo = 0;
@@ -199,7 +200,6 @@ void CHud::Init( void )
 	m_pCvarDraw = CVAR_CREATE( "hud_draw", "1", FCVAR_ARCHIVE );
 	cl_lw = gEngfuncs.pfnGetCvarPointer( "cl_lw" );
 	cl_viewbob = CVAR_CREATE( "cl_viewbob", "0", FCVAR_ARCHIVE );
-
 	m_pSpriteList = NULL;
 
 	// Clear any old HUD list

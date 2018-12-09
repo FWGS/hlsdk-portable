@@ -29,7 +29,7 @@
 DECLARE_MESSAGE( m_StatusBar, StatusText )
 DECLARE_MESSAGE( m_StatusBar, StatusValue )
 
-#define STATUSBAR_ID_LINE		1
+#define STATUSBAR_ID_LINE		2
 
 float *GetClientColor( int clientIndex );
 extern float g_ColorYellow[3];

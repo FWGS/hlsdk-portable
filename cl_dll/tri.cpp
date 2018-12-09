@@ -103,6 +103,7 @@ void DLLEXPORT HUD_DrawNormalTriangles( void )
 #endif
 }
 
+void RunEventList( void );
 /*
 =================
 HUD_DrawTransparentTriangles
@@ -115,4 +116,6 @@ void DLLEXPORT HUD_DrawTransparentTriangles( void )
 #if defined( TEST_IT )
 //	Draw_Triangles();
 #endif
+
+	RunEventList();
 }
