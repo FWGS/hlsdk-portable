@@ -73,6 +73,17 @@ public:
 	BYTE m_bLockedSentence;	
 	BYTE m_bUnlockedSound;	
 	BYTE m_bUnlockedSentence;
+
+	float m_fNextSoundPlay;
+	bool m_bIsReopening;		// If the bIsReopening flag is set, the door's not fully shut, but it still wants to reopen
+					// because a player's standing in it's field.
+	bool m_bStoppedOpenSound; // TRUE once the original opening sound has been stopped
+
+private:
+	unsigned short m_usDoorGoUp;
+	unsigned short m_usDoorGoDown;
+	unsigned short m_usDoorHitTop;
+	unsigned short m_usDoorHitBottom;
 };
 
 TYPEDESCRIPTION	CBaseDoor::m_SaveData[] =
@@ -311,6 +322,10 @@ void CBaseDoor::Spawn()
 
 	m_toggle_state = TS_AT_BOTTOM;
 
+	m_fNextSoundPlay = 0;
+	m_bIsReopening = false;
+	m_bStoppedOpenSound = false;
+
 	// if the door is flagged for USE button activation only, use NULL touch function
 	if( FBitSet( pev->spawnflags, SF_DOOR_USE_ONLY ) )
 	{
@@ -513,6 +528,11 @@ void CBaseDoor::Precache( void )
 			m_ls.sUnlockedSentence = 0;
 			break;
 	}
+
+	m_usDoorGoUp		= PRECACHE_EVENT( 1, "events/door/doorgoup.sc" );
+	m_usDoorGoDown		= PRECACHE_EVENT( 1, "events/door/doorgodown.sc" );
+	m_usDoorHitTop		= PRECACHE_EVENT( 1, "events/door/doorhittop.sc" );
+	m_usDoorHitBottom	= PRECACHE_EVENT( 1, "events/door/doorhitbottom.sc" );
 }
 
 //
@@ -582,7 +602,8 @@ int CBaseDoor::DoorActivate()
 		}
 
 		// play door unlock sounds
-		PlayLockSounds( pev, &m_ls, FALSE, FALSE );
+		if( !m_bIsReopening )
+			PlayLockSounds( pev, &m_ls, FALSE, FALSE );
 
 		DoorGoUp();
 	}
@@ -600,13 +621,18 @@ void CBaseDoor::DoorGoUp( void )
 	entvars_t *pevActivator;
 
 	// It could be going-down, if blocked.
-	ASSERT( m_toggle_state == TS_AT_BOTTOM || m_toggle_state == TS_GOING_DOWN );
+	ASSERT( m_bIsReopening == true || m_toggle_state == TS_AT_BOTTOM || m_toggle_state == TS_GOING_DOWN );
 
 	// emit door moving and stop sounds on CHAN_STATIC so that the multicast doesn't
 	// filter them out and leave a client stuck with looping door sounds!
-	if( !FBitSet( pev->spawnflags, SF_DOOR_SILENT ) )
-		if( m_toggle_state != TS_GOING_UP && m_toggle_state != TS_GOING_DOWN )
-			EMIT_SOUND( ENT( pev ), CHAN_STATIC, STRING( pev->noiseMoving ), 1, ATTN_NORM );
+	if( !FBitSet( pev->spawnflags, SF_DOOR_SILENT ) && && !m_bIsReopening )
+	{
+		// don't play sounds too often
+		if( m_fNextSoundPlay < gpGlobals->time )
+		{
+			PLAYBACK_EVENT_FULL( FEV_RELIABLE, NULL, m_usDoorGoUp, 0.0, (float *)&Center(), (float *)&g_vecZero, 0.0, 0.0, ( m_bMoveSnd << 8 ) | ( m_bStopSnd & 0xff ), 0, 0, 0 );
+		}
+	}
 
 	m_toggle_state = TS_GOING_UP;
 
@@ -646,12 +672,17 @@ void CBaseDoor::DoorHitTop( void )
 {
 	if( !FBitSet( pev->spawnflags, SF_DOOR_SILENT ) )
 	{
-		STOP_SOUND( ENT( pev ), CHAN_STATIC, STRING( pev->noiseMoving ) );
-		EMIT_SOUND( ENT( pev ), CHAN_STATIC, STRING( pev->noiseArrived ), 1, ATTN_NORM );
+		if( ( ( m_fNextSoundPlay < gpGlobals->time ) && !m_bIsReopening ) || ( !m_bStoppedOpenSound ) )
+		{
+			m_bStoppedOpenSound = true;
+ 
+			PLAYBACK_EVENT_FULL( FEV_RELIABLE, NULL, m_usDoorHitTop, 0.0, (float *)&Center(), (float *)&g_vecZero, 0.0, 0.0, ( m_bMoveSnd << 8 ) | ( m_bStopSnd & 0xff ), 0, 0, 0 );
+		}
 	}
 
 	ASSERT( m_toggle_state == TS_GOING_UP );
 	m_toggle_state = TS_AT_TOP;
+	m_bIsReopening = false;
 
 	// toggle-doors don't come down automatically, they wait for refire.
 	if( FBitSet( pev->spawnflags, SF_DOOR_NO_AUTO_RETURN ) )
@@ -685,8 +716,13 @@ void CBaseDoor::DoorHitTop( void )
 void CBaseDoor::DoorGoDown( void )
 {
 	if( !FBitSet( pev->spawnflags, SF_DOOR_SILENT ) )
-		if( m_toggle_state != TS_GOING_UP && m_toggle_state != TS_GOING_DOWN )
-			EMIT_SOUND( ENT( pev ), CHAN_STATIC, STRING( pev->noiseMoving ), 1, ATTN_NORM );	
+	{
+		// don't play sounds too often
+		if( m_fNextSoundPlay < gpGlobals->time )
+		{
+			PLAYBACK_EVENT_FULL( FEV_RELIABLE, NULL, m_usDoorGoDown, 0.0, (float *)&Center(), (float *)&g_vecZero, 0.0, 0.0, ( m_bMoveSnd << 8 ) | ( m_bStopSnd & 0xff ), 0, 0, 0 );
+		}
+	}
 #ifdef DOOR_ASSERT
 	ASSERT( m_toggle_state == TS_AT_TOP );
 #endif // DOOR_ASSERT
@@ -706,8 +742,11 @@ void CBaseDoor::DoorHitBottom( void )
 {
 	if( !FBitSet( pev->spawnflags, SF_DOOR_SILENT ) )
 	{
-		STOP_SOUND( ENT( pev ), CHAN_STATIC, STRING( pev->noiseMoving ) );
-		EMIT_SOUND( ENT( pev ), CHAN_STATIC, STRING( pev->noiseArrived ), 1, ATTN_NORM );
+		// don't play sounds too often
+		if( m_fNextSoundPlay < gpGlobals->time )
+		{
+			PLAYBACK_EVENT_FULL( FEV_RELIABLE, NULL, m_usDoorHitBottom, 0.0, (float *)&Center(), (float *)&g_vecZero, 0.0, 0.0, ( m_bMoveSnd << 8 ) | ( m_bStopSnd & 0xff ), 0, 0, 0 );
+		}
 	}
 
 	ASSERT( m_toggle_state == TS_GOING_DOWN );
@@ -755,6 +794,13 @@ void CBaseDoor::Blocked( CBaseEntity *pOther )
 		{
 			DoorGoDown();
 		}
+	}
+
+	// Don't play blocked sounds too often
+	if( m_fNextSoundPlay <= gpGlobals->time )
+	{
+		m_fNextSoundPlay = gpGlobals->time + 0.3;
+		STOP_SOUND( ENT( pev ), CHAN_STATIC, STRING( pev->noiseMoving ) );
 	}
 
 	// Block all door pieces with the same targetname here.
