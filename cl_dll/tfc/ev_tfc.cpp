@@ -607,17 +607,24 @@ void EV_TFC_Axe(event_args_t *args)
     gEngfuncs.pEventAPI->EV_PushPMStates();
     gEngfuncs.pEventAPI->EV_SetSolidPlayers(idx - 1);
     gEngfuncs.pEventAPI->EV_SetTraceHull(2);
-    gEngfuncs.pEventAPI->EV_PlayerTrace(vecSrc, vecEnd, PM_STUDIO_BOX, -1, &tr);
+    gEngfuncs.pEventAPI->EV_PlayerTrace(vecSrc, vecEnd, PM_NORMAL, -1, &tr);
     if (tr.fraction >= 1.0)
     {
         gEngfuncs.pEventAPI->EV_SetTraceHull(1);
-        gEngfuncs.pEventAPI->EV_PlayerTrace(vecSrc, vecEnd, PM_STUDIO_BOX, -1, &tr2);
+        gEngfuncs.pEventAPI->EV_PlayerTrace(vecSrc, vecEnd, PM_NORMAL, -1, &tr2);
         if(tr2.fraction < 1.0)
             tr = tr2;
     }
     gEngfuncs.pEventAPI->EV_PopPMStates();
+    gp_tr_decal[idx-1] = 0;
     if(tr.fraction >= 1.0)
     {
+        if (!EV_IsLocal(idx))
+        {
+            EV_TFC_PlayAxeSound(idx, classid, origin, 0, 0.0);
+            return;
+        }
+
         switch(classid)
         {
         default:
@@ -1070,15 +1077,15 @@ void EV_TFC_BloodDrips(float *vecOrigin, signed int iDamage, long double height)
     }
 }
 
-enum tfc_assault_e
+enum tf_ac_e
 {
-    ASSAULT_IDLE = 0,
-    ASSAULT_IDLE2,
-    ASSAULT_SPINUP,
-    ASSAULT_SPINDOWN,
-    ASSAULT_FIRE,
-    ASSAULT_DRAW,
-    ASSAULT_HOLSTER
+    AC_IDLE = 0,
+    AC_IDLE2,
+    AC_SPINUP,
+    AC_SPINDOWN,
+    AC_FIRE,
+    AC_DRAW,
+    AC_HOLSTER
 };
 
 void EV_TFC_Assault_WindUp(event_args_t *args)
@@ -1092,7 +1099,7 @@ void EV_TFC_Assault_WindUp(event_args_t *args)
     gEngfuncs.GetClientTime();
     g_flSpinUpTime[idx - 1] = 0.0 + 3.5;
     if (EV_IsLocal(idx))
-        gEngfuncs.pEventAPI->EV_WeaponAnimation(ASSAULT_SPINUP, 2);
+        gEngfuncs.pEventAPI->EV_WeaponAnimation(AC_SPINUP, 2);
     g_bACSpinning[idx - 1] = 0;
     gEngfuncs.pEventAPI->EV_StopSound(idx, CHAN_STATIC, "weapons/asscan2.wav");
     gEngfuncs.pEventAPI->EV_StopSound(idx, CHAN_STATIC, "weapons/asscan4.wav");
@@ -1112,10 +1119,10 @@ void EV_TFC_Assault_WindDown(event_args_t *args)
         gEngfuncs.GetClientTime();
         g_flSpinDownTime[idx - 1] = 0.0 + 3.0;
         if(EV_IsLocal(idx))
-            gEngfuncs.pEventAPI->EV_WeaponAnimation(ASSAULT_SPINDOWN, 2);
+            gEngfuncs.pEventAPI->EV_WeaponAnimation(AC_SPINDOWN, 2);
     }
     else if(EV_IsLocal(idx))
-        gEngfuncs.pEventAPI->EV_WeaponAnimation(ASSAULT_SPINDOWN, 2);
+        gEngfuncs.pEventAPI->EV_WeaponAnimation(AC_SPINDOWN, 2);
 
     g_bACSpinning[idx - 1] = 0;
     gEngfuncs.pEventAPI->EV_StopSound(idx, CHAN_STATIC, "weapons/asscan2.wav");
@@ -1160,7 +1167,7 @@ void EV_TFC_Assault_Fire(event_args_t *args)
     if(EV_IsLocal(idx))
     {
         EV_MuzzleFlash();
-        gEngfuncs.pEventAPI->EV_WeaponAnimation(ASSAULT_FIRE, 2);
+        gEngfuncs.pEventAPI->EV_WeaponAnimation(AC_FIRE, 2);
     }
     g_bACSpinning[idx - 1] = 0;
     if(oddammo)
@@ -1182,7 +1189,7 @@ void EV_TFC_Assault_Spin(event_args_t *args)
 
     idx = args->entindex;
     if (EV_IsLocal(idx))
-        gEngfuncs.pEventAPI->EV_WeaponAnimation(ASSAULT_FIRE, 2);
+        gEngfuncs.pEventAPI->EV_WeaponAnimation(AC_FIRE, 2);
     g_bACSpinning[idx - 1] = 1;
 }
 
@@ -1584,20 +1591,20 @@ void EV_TFC_NailgrenadeNail(event_args_t *args)
     }
 }
 
-enum tfc_grenadelauncher_e
+enum tf_gl_e
 {
-    TFGL_IDLE = 0,
-    TFPL_IDLE,
-    TFGL_FIRE,
-    TFPL_FIRE,
-    TFGL_RELOAD1,
-    TFGL_RELOAD2,
-    TFPL_RELOAD1,
-    TFPL_RELOAD2,
-    TFGL_DRAW,
-    TFPL_DRAW,
-    TFGL_HOLSTER,
-    TFPL_HOLSTER
+    GL_IDLE = 0,
+    PL_IDLE,
+    GL_FIRE,
+    PL_FIRE,
+    GL_RELOAD1,
+    GL_RELOAD2,
+    PL_RELOAD1,
+    PL_RELOAD2,
+    GL_DRAW,
+    PL_DRAW,
+    GL_HOLSTER,
+    PL_HOLSTER
 };
 
 void EV_TFC_GrenadeLauncher(event_args_t *args)
@@ -1608,7 +1615,7 @@ void EV_TFC_GrenadeLauncher(event_args_t *args)
     idx = args->entindex;
     VectorCopy(args->origin, origin);
     if(EV_IsLocal(idx))
-        gEngfuncs.pEventAPI->EV_WeaponAnimation(TFGL_FIRE, 2);
+        gEngfuncs.pEventAPI->EV_WeaponAnimation(GL_FIRE, 2);
     gEngfuncs.pEventAPI->EV_PlaySound(-1, origin, CHAN_WEAPON, "weapons/glauncher.wav", 0.7, 0.8, 0, 100);
     if(EV_IsLocal(idx))
         V_PunchAxis(0, -2.0);
@@ -1622,7 +1629,7 @@ void EV_TFC_PipeLauncher(event_args_t *args)
     idx = args->entindex;
     VectorCopy(args->origin, origin);
     if(EV_IsLocal(idx))
-        gEngfuncs.pEventAPI->EV_WeaponAnimation(TFPL_FIRE, 2);
+        gEngfuncs.pEventAPI->EV_WeaponAnimation(PL_FIRE, 2);
     gEngfuncs.pEventAPI->EV_PlaySound(-1, origin, CHAN_WEAPON, "weapons/glauncher.wav", 0.7, 0.8, 0, 100);
     if(EV_IsLocal(idx))
         V_PunchAxis(0, -2.0);

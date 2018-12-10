@@ -642,6 +642,11 @@ public:
 	void Reload(void);
 	int AddToPlayer(CBasePlayer *pPlayer);
 	void PrimaryAttack(void);
+	int m_iAnim_Holster;
+	int m_iAnim_Idle;
+	int m_iAnim_ReloadDown;
+	int m_iAnim_ReloadUp;
+	int m_iAnim_Deploy;;
 
 private:
 	unsigned short m_usFireGL;
@@ -732,15 +737,15 @@ private:
 	unsigned short m_usFireIC;
 };
 
-enum tfc_assault_e
+enum tf_ac_e
 {
-    ASSAULT_IDLE = 0,
-    ASSAULT_IDLE2,
-    ASSAULT_SPINUP,
-    ASSAULT_SPINDOWN,
-    ASSAULT_FIRE,
-    ASSAULT_DRAW,
-    ASSAULT_HOLSTER
+    AC_IDLE = 0,
+    AC_IDLE2,
+    AC_SPINUP,
+    AC_SPINDOWN,
+    AC_FIRE,
+    AC_DRAW,
+    AC_HOLSTER
 };
 
 class CTFAssaultC : public CBasePlayerWeapon

@@ -6,18 +6,39 @@
 #include "nodes.h"
 #include "player.h"
 #include "gamerules.h"
+#include "tf_defs.h"
+
+enum tf_gl_e
+{
+    GL_IDLE = 0,
+    PL_IDLE,
+    GL_FIRE,
+    PL_FIRE,
+    GL_RELOAD1,
+    GL_RELOAD2,
+    PL_RELOAD1,
+    PL_RELOAD2,
+    GL_DRAW,
+    PL_DRAW,
+    GL_HOLSTER,
+    PL_HOLSTER
+};
 
 LINK_ENTITY_TO_CLASS( tf_weapon_gl, CTFGrenadeLauncher )
 
 void CTFGrenadeLauncher::Spawn()
 {
     Precache();
-
     SET_MODEL( ENT( pev ), "models/w_gauss.mdl" );
     m_iId = 12;
     m_iDefaultAmmo = 50;
     m_fReloadTime = 0.666667;
     pev->solid = SOLID_TRIGGER;
+    m_iAnim_Deploy = GL_DRAW;
+    m_iAnim_Holster = GL_HOLSTER;
+    m_iAnim_Idle = GL_IDLE;
+    m_iAnim_ReloadDown = GL_RELOAD1;
+    m_iAnim_ReloadUp = GL_RELOAD2;
 }
 
 void CTFGrenadeLauncher::Precache()
@@ -59,14 +80,14 @@ void CTFGrenadeLauncher::Holster()
     //m_pPlayer->m_iGLClip = m_iClip;
     //tfstate?
     m_fInSpecialReload = 0;
-    SendWeaponAnim(10, 1);
+    SendWeaponAnim(m_iAnim_Holster, 1);
     m_flTimeWeaponIdle = 1000;
     m_pPlayer->m_flNextAttack = 0.5;
 }
 
 BOOL CTFGrenadeLauncher::Deploy()
 {
-	return DefaultDeploy( "models/v_tfgl.mdl", "models/p_glauncher.mdl", 8, "mp5", 1 );
+	return DefaultDeploy( "models/v_tfgl.mdl", "models/p_glauncher.mdl", m_iAnim_Deploy, "mp5", 1 );
 }
 
 void CTFGrenadeLauncher::Reload()
@@ -96,7 +117,7 @@ void CTFGrenadeLauncher::Reload()
             }
             else
             {
-                SendWeaponAnim(4, 1);
+                SendWeaponAnim(m_iAnim_ReloadDown, 1);
                 //m_pPlayer->tfstate |= 2;
                 m_fInSpecialReload = 1;
                 m_pPlayer->m_flNextAttack = 0.1;
@@ -133,7 +154,7 @@ void CTFGrenadeLauncher::WeaponIdle( void )
         {
             if(m_iClip == 6)
             {
-                SendWeaponAnim(5, 1);
+                SendWeaponAnim(m_iAnim_ReloadUp, 1);
                 m_fInSpecialReload = 0;
                 m_flTimeWeaponIdle = 1.5;
                 return;
@@ -146,15 +167,15 @@ void CTFGrenadeLauncher::WeaponIdle( void )
         }
     }
     m_flTimeWeaponIdle = 3;
-    SendWeaponAnim(0, 1);
+    SendWeaponAnim(m_iAnim_Idle, 1);
 }
 
 void CTFGrenadeLauncher::PrimaryAttack()
 {
-    if(m_pPlayer->ammo_rockets <= 0)
+    if(m_iClip <= 0)
     {
         m_flNextPrimaryAttack = 1;
-        SendWeaponAnim(0, 1);
+        SendWeaponAnim(m_iAnim_Idle, 1);
         PlayEmptySound();
         m_fInSpecialReload = 0;
         //tfstate
@@ -178,13 +199,17 @@ LINK_ENTITY_TO_CLASS( tf_weapon_pl, CTFPipebombLauncher )
 void CTFPipebombLauncher::Spawn()
 {
     Precache();
-
     SET_MODEL( ENT( pev ), "models/w_gauss.mdl" );
-    m_iId = 22;
+    m_iId = WEAPON_PIPEBOMB_LAUNCHER;
     m_iDefaultAmmo = 50;
     m_fReloadTime = 0.666667;
     pev->solid = SOLID_TRIGGER;
-    m_usFireGL = PRECACHE_EVENT(1, "events/wpn/tf_gl.sc");
+    m_usFireGL = PRECACHE_EVENT(1, "events/wpn/tf_pipel.sc");
+    m_iAnim_Holster = PL_HOLSTER;
+    m_iAnim_Idle = PL_IDLE;
+    m_iAnim_ReloadDown = PL_RELOAD1;
+    m_iAnim_ReloadUp = PL_RELOAD2;
+    m_iAnim_Deploy = PL_DRAW;
 }
 
 int CTFPipebombLauncher::GetItemInfo( ItemInfo *p )
@@ -198,17 +223,17 @@ int CTFPipebombLauncher::GetItemInfo( ItemInfo *p )
     p->iPosition = 4;
     p->iFlags = 0;
     p->iMaxClip = 6;
-    p->iId = 22;
+    p->iId = WEAPON_PIPEBOMB_LAUNCHER;
     p->iWeight = 15;
     return 1;
 }
 
 void CTFPipebombLauncher::PrimaryAttack()
 {
-    if(m_pPlayer->ammo_rockets <= 0)
+    if(m_iClip <= 0)
     {
         m_flNextPrimaryAttack = 1;
-        SendWeaponAnim(0, 1);
+        SendWeaponAnim(m_iAnim_Idle, 1);
         PlayEmptySound();
         m_fInSpecialReload = 0;
         //tfstate
