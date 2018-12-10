@@ -58,14 +58,14 @@ void CTFRpg::Precache()
 
 void CTFRpg::Reload( void )
 {
-    if ( m_pPlayer->ammo_rockets == 0 || m_iClip == 4 || m_flNextReload > 0.0 || m_flNextPrimaryAttack > 0.0)
+    if ( m_pPlayer->ammo_rockets == 0 || m_iClip == 4 || m_flNextPrimaryAttack > 0.0) // || m_flNextReload > 0.0
         return;
 
     if ( m_fInSpecialReload )
     {
         if ( m_fInSpecialReload == 1 )
         {
-            if ( m_flTimeWeaponIdle <= gpGlobals->time )
+            if ( m_flTimeWeaponIdle <= UTIL_WeaponTimeBase() )
             {
                 m_fInSpecialReload = 2;
                 SendWeaponAnim(TFCRPG_RELCYCLE, 1);
@@ -95,65 +95,69 @@ void CTFRpg::Reload( void )
 
 void CTFRpg::WeaponIdle( void )
 {
+
     ResetEmptySound();
-    if (m_flTimeWeaponIdle > 0.0)
-        return;
-    
-    if(m_iClip > 0)
+    if(m_flTimeWeaponIdle <= 0.0)
     {
-        if (!m_fInSpecialReload)
+        if(m_iClip)
         {
-            if (m_pPlayer->ammo_rockets > 0)
+            if(!m_fInSpecialReload)
             {
-                if(m_iClip == 0)
-                    SendWeaponAnim(TFCRPG_FIDGET2, 1);
+                if(m_pPlayer->ammo_rockets)
+                {
+                    m_flTimeWeaponIdle = 3.0;
+                    /*
+                    if(m_iClip < 1)
+                        SendWeaponAnim(TFCRPG_FIDGET2, 1);
+                    else
+                        SendWeaponAnim(TFCRPG_FIDGET, 1);
+                    */
+                }
                 else
-                    SendWeaponAnim(TFCRPG_IDLE, 1);
-                m_flTimeWeaponIdle = 3;
+                    m_flTimeWeaponIdle = 1.0;
+                return;
+            }
+            if(m_iClip == 4)
+            {
+                SendWeaponAnim(TFCRPG_RELEND, 1);
+                m_fInSpecialReload = 0;
+                m_flTimeWeaponIdle = 1.5;
+                return;
+            }
+        }
+        else if (!m_fInSpecialReload)
+        {
+            if(m_pPlayer->ammo_rockets > 0)
+            {
+                Reload();
+                return;
+            }
+            if(m_pPlayer->ammo_rockets)
+            {
+                m_flTimeWeaponIdle = 3.0;
+                /*
+                    if(m_iClip < 1)
+                        SendWeaponAnim(TFCRPG_FIDGET2, 1);
+                    else
+                        SendWeaponAnim(TFCRPG_FIDGET, 1);
+                */
             }
             else
-                m_flTimeWeaponIdle = 1;
+                m_flTimeWeaponIdle = 1.0;
             return;
         }
-        if (m_iClip == 4)
-        {
-            SendWeaponAnim(TFCRPG_RELEND, 1);
-            m_fInSpecialReload = 0;
-            m_flTimeWeaponIdle = 1.5;
-            return;
-        }
-    }
-    else if (!m_fInSpecialReload)
-    {
-        if (m_pPlayer->ammo_rockets > 0)
+
+        if(m_pPlayer->ammo_rockets > 0)
         {
             Reload();
-            return; 
+            return;
         }
 
-        if (m_pPlayer->ammo_rockets > 0)
-        {
-            if(m_iClip == 0)
-                SendWeaponAnim(TFCRPG_FIDGET2, 1);
-            else
-                SendWeaponAnim(TFCRPG_IDLE, 1);
-            m_flTimeWeaponIdle = 3;
-        }
-        else
-            m_flTimeWeaponIdle = 1;
+        SendWeaponAnim(TFCRPG_RELEND, 1);
+        m_fInSpecialReload = 0;
+        m_flTimeWeaponIdle = 1.5;
         return;
     }
-
-    if (m_pPlayer->ammo_rockets > 0)
-    {
-        Reload();
-        return; 
-    }
-
-    SendWeaponAnim(TFCRPG_RELEND, 1);
-    m_fInSpecialReload = 0;
-    m_flTimeWeaponIdle = 1.5;
-    return;
 }
 
 BOOL CTFRpg::Deploy()

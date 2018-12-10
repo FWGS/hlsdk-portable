@@ -532,7 +532,7 @@ void DLLEXPORT HUD_CreateEntities( void )
 	Game_AddObjects();
 }
 
-extern int g_bACSpinning[33];
+int g_bACSpinning[33];
 
 /*
 =========================

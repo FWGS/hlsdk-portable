@@ -463,8 +463,11 @@ public:
 	int GetItemInfo(ItemInfo *p);
 	BOOL CanHolster(void) {return 1;};
 	void Holster(void);
+	BOOL AxeHit(CBaseEntity *pTarget, Vector p_vecDir, TraceResult *ptr);
 	BOOL Deploy(void);
 	void PrimaryAttack(void);
+	int iItemSlot( void ) {return 1;}
+	int IsUseable( void ) {return 1;}
 	int classid;
 	BOOL m_bHullHit;
 	unsigned short m_usAxe;

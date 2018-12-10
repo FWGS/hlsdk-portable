@@ -96,6 +96,8 @@ public:
 	// Process movement of player
 	virtual void StudioProcessGait( entity_state_t *pplayer );
 
+	virtual int ReturnDiguisedClass( int iPlayerIndex );
+
 public:
 
 	// Client clock

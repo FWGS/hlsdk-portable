@@ -61,10 +61,10 @@ struct eventnode_s
 };
 typedef eventnode_s eventnode_t;
 
-pmtrace_t *gp_tr_decal[32];
-float g_flSpinDownTime[32];
-int g_bACSpinning[32];
-float g_flSpinUpTime[32];
+pmtrace_t *gp_tr_decal[33];
+extern float g_flSpinDownTime[33];
+extern int g_bACSpinning[33];
+extern float g_flSpinUpTime[33];
 
 extern "C"
 {

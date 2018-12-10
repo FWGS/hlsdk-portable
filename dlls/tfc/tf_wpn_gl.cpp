@@ -73,7 +73,7 @@ void CTFGrenadeLauncher::Reload()
 {
     if ( m_pPlayer->ammo_rockets > 0 )
     {
-        if ( m_iClip != 6 && m_flNextReload <= 0.0 && m_flNextPrimaryAttack <= 0.0 )
+        if ( m_iClip != 6  && m_flNextPrimaryAttack <= 0.0 ) //&& m_flNextReload <= 0.0
         {
             if (m_fInSpecialReload)
             {

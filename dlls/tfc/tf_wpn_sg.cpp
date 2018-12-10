@@ -118,7 +118,7 @@ void CTFShotgun::Reload( void )
 {
     if ( m_pPlayer->ammo_buckshot >= m_iShellsReloaded )
     {
-        if ( m_iClip != m_iMaxClipSize && m_flNextReload <= 0.0 && m_flNextPrimaryAttack <= 0.0 )
+        if ( m_iClip != m_iMaxClipSize && m_flNextPrimaryAttack <= 0.0 ) // && m_flNextReload <= 0.0
         {
             if (m_fInSpecialReload)
             {
