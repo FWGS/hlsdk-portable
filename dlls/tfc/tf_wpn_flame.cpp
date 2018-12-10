@@ -76,7 +76,7 @@ void CTFFlamethrower::WeaponIdle( void )
 
 BOOL CTFFlamethrower::Deploy()
 {
-	return DefaultDeploy( "models/v_flame.mdl", "models/p_egon.mdl", 9, "egon", 1 );
+	return DefaultDeploy( "models/v_flame.mdl", "models/p_egon.mdl", FT_DRAW, "egon", 1 );
 }
 
 int CTFFlamethrower::AddToPlayer( CBasePlayer *pPlayer )
