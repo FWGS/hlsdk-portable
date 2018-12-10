@@ -53,7 +53,7 @@ int CTFNailgun::GetItemInfo( ItemInfo *p )
 
 BOOL CTFNailgun::Deploy()
 {
-	return DefaultDeploy( "models/v_tfc_nailgun.mdl", "models/p_nailgun.mdl", NAILGUN_DEPLOY, "mp5", 1 );
+	return DefaultDeploy( "models/v_tfc_nailgun.mdl", "models/p_nailgun.mdl", NG_DEPLOY, "mp5", 1 );
 }
 
 void CTFNailgun::WeaponIdle( void )
@@ -61,7 +61,7 @@ void CTFNailgun::WeaponIdle( void )
     if(m_flTimeWeaponIdle < 0.0)
     {
         m_flTimeWeaponIdle = 15;
-        SendWeaponAnim(NAILGUN_IDLE1, 1);
+        SendWeaponAnim(NG_IDLE1, 1);
     }
 }
 
@@ -120,7 +120,7 @@ int CTFSuperNailgun::GetItemInfo( ItemInfo *p )
 
 BOOL CTFSuperNailgun::Deploy()
 {
-	return DefaultDeploy( "models/v_tfc_supernailgun.mdl", "models/p_snailgun.mdl", NAILGUN_DEPLOY, "mp5", 1 );
+	return DefaultDeploy( "models/v_tfc_supernailgun.mdl", "models/p_snailgun.mdl", NG_DEPLOY, "mp5", 1 );
 }
 
 void CTFSuperNailgun::PrimaryAttack()

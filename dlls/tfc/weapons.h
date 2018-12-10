@@ -587,16 +587,16 @@ private:
 	unsigned short m_usFireSuperShotgun;
 };
 
-enum tfc_nailgun_e
+enum tf_ng_e
 {
-    NAILGUN_LONGIDLE = 0,
-    NAILGUN_IDLE1,
-    NAILGUN_GRENADE,
-    NAILGUN_RELOAD,
-    NAILGUN_DEPLOY,
-    NAILGUN_SHOOT1,
-    NAILGUN_SHOOT2,
-    NAILGUN_SHOOT3
+    NG_LONGIDLE = 0,
+    NG_IDLE1,
+    NG_GRENADE,
+    NG_RELOAD,
+    NG_DEPLOY,
+    NG_SHOOT1,
+    NG_SHOOT2,
+    NG_SHOOT3
 };
 
 class CTFNailgun : public CBasePlayerWeapon
@@ -628,6 +628,22 @@ public:
 
 private:
 	unsigned short m_usFireSuperNailGun;
+};
+
+enum tf_gl_e
+{
+    GL_IDLE = 0,
+    PL_IDLE,
+    GL_FIRE,
+    PL_FIRE,
+    GL_RELOAD1,
+    GL_RELOAD2,
+    PL_RELOAD1,
+    PL_RELOAD2,
+    GL_DRAW,
+    PL_DRAW,
+    GL_HOLSTER,
+    PL_HOLSTER
 };
 
 class CTFGrenadeLauncher : public CBasePlayerWeapon
@@ -665,6 +681,21 @@ private:
 	unsigned short m_usFireGL;
 	float m_fReloadTime;
 	float m_flNextReload;
+};
+
+enum tf_ft_e
+{
+	FT_IDLE = 0,
+	FT_FIDGET,
+	FT_ALTON,
+	FT_ALTCYCLE,
+	FT_ALTOFF,
+	FT_FIRE1,
+	FR_FIRE2,
+	FT_FIRE3,
+	FT_FIRE4,
+	FT_DRAW,
+	FT_HOLSTER
 };
 
 class CTFFlamethrower : public CBasePlayerWeapon

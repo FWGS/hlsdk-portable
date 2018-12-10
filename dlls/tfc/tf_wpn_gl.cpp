@@ -8,22 +8,6 @@
 #include "gamerules.h"
 #include "tf_defs.h"
 
-enum tf_gl_e
-{
-    GL_IDLE = 0,
-    PL_IDLE,
-    GL_FIRE,
-    PL_FIRE,
-    GL_RELOAD1,
-    GL_RELOAD2,
-    PL_RELOAD1,
-    PL_RELOAD2,
-    GL_DRAW,
-    PL_DRAW,
-    GL_HOLSTER,
-    PL_HOLSTER
-};
-
 LINK_ENTITY_TO_CLASS( tf_weapon_gl, CTFGrenadeLauncher )
 
 void CTFGrenadeLauncher::Spawn()

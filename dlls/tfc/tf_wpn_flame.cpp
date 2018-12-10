@@ -6,14 +6,14 @@
 #include "nodes.h"
 #include "player.h"
 #include "gamerules.h"
+#include "tf_defs.h"
 
 LINK_ENTITY_TO_CLASS( tf_weapon_flamethrower, CTFFlamethrower )
 
 void CTFFlamethrower::Spawn()
 {
     Precache();
-
-    m_iId = 13;
+    m_iId = WEAPON_FLAMETHROWER;
     SET_MODEL(ENT(pev), "models/w_egon.mdl");
     m_iDefaultAmmo = 50;
     pev->solid = SOLID_TRIGGER;
@@ -22,7 +22,7 @@ void CTFFlamethrower::Spawn()
 int CTFFlamethrower::GetItemInfo( ItemInfo *p )
 {
     p->pszAmmo1 = "uranium";
-    p->pszName = STRING( pev->classname );
+    p->pszName = STRING(pev->classname);
     p->iMaxAmmo1 = 200;
     p->pszAmmo2 = 0;
     p->iMaxAmmo2 = -1;
@@ -30,7 +30,7 @@ int CTFFlamethrower::GetItemInfo( ItemInfo *p )
     p->iPosition = 2;
     p->iFlags = 0;
     p->iMaxClip = -1;
-    p->iId = 13;
+    p->iId = WEAPON_FLAMETHROWER;
     p->iWeight = 20;
     return 1;
 }
@@ -64,19 +64,19 @@ void CTFFlamethrower::WeaponIdle( void )
         if(UTIL_SharedRandomLong(m_pPlayer->random_seed, 0, 4))
         {
             m_flTimeWeaponIdle = 12.5;
-            SendWeaponAnim(0, 1);
+            SendWeaponAnim(FT_IDLE, 1);
         }
         else
         {
             m_flTimeWeaponIdle = 3;
-            SendWeaponAnim(1, 1);
+            SendWeaponAnim(FT_FIDGET, 1);
         }
     }
 }
 
 BOOL CTFFlamethrower::Deploy()
 {
-	return DefaultDeploy( "models/v_flame.mdl", "models/p_egon.mdl", 5, "egon", 1 );
+	return DefaultDeploy( "models/v_flame.mdl", "models/p_egon.mdl", 9, "egon", 1 );
 }
 
 int CTFFlamethrower::AddToPlayer( CBasePlayer *pPlayer )

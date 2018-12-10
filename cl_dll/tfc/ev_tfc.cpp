@@ -826,16 +826,16 @@ void EV_PumpTFCShotgun(event_args_t *args)
   gEngfuncs.pEventAPI->EV_PlaySound(idx, origin, CHAN_WEAPON, "weapons/scock1.wav", 1.0, 0.8, 0, gEngfuncs.pfnRandomLong(0, 31) + 95);
 }
 
-enum tfc_nailgun_e
+enum tf_ng_e
 {
-    NAILGUN_LONGIDLE = 0,
-    NAILGUN_IDLE1,
-    NAILGUN_GRENADE,
-    NAILGUN_RELOAD,
-    NAILGUN_DEPLOY,
-    NAILGUN_SHOOT1,
-    NAILGUN_SHOOT2,
-    NAILGUN_SHOOT3
+    NG_LONGIDLE = 0,
+    NG_IDLE1,
+    NG_GRENADE,
+    NG_RELOAD,
+    NG_DEPLOY,
+    NG_SHOOT1,
+    NG_SHOOT2,
+    NG_SHOOT3
 };
 
 void EV_FireTFCNailgun(event_args_t *args)
@@ -861,7 +861,7 @@ void EV_FireTFCNailgun(event_args_t *args)
 	shell = gEngfuncs.pEventAPI->EV_FindModelIndex("models/nail.mdl");
 
     if(EV_IsLocal(idx))
-        gEngfuncs.pEventAPI->EV_WeaponAnimation(NAILGUN_SHOOT1, 2);
+        gEngfuncs.pEventAPI->EV_WeaponAnimation(NG_SHOOT1, 2);
     EV_GetGunPosition(args, ShellOrigin, origin);
     VectorMA(ShellOrigin, -4.0, up, ShellOrigin);
     VectorMA(ShellOrigin, 2.0, right, ShellOrigin);
@@ -912,7 +912,7 @@ void EV_FireTFCSuperNailgun(event_args_t *args)
 	shell = gEngfuncs.pEventAPI->EV_FindModelIndex("models/nail.mdl");
 
     if(EV_IsLocal(idx))
-        gEngfuncs.pEventAPI->EV_WeaponAnimation(NAILGUN_SHOOT1, 2);
+        gEngfuncs.pEventAPI->EV_WeaponAnimation(NG_SHOOT1, 2);
     EV_GetGunPosition(args, ShellOrigin, origin);
     VectorMA(ShellOrigin, -4.0, up, ShellOrigin);
     VectorMA(ShellOrigin, 2.0, right, ShellOrigin);
@@ -1844,6 +1844,21 @@ void EV_TFC_EMP(event_args_t *args)
     gEngfuncs.pEfxAPI->R_BeamCirclePoints(21, vecSpot, vecEnd, sprite, 0.2, 70, 0, 1.0, 0, 0, 0, 1.0, 1.0, 0.0);
 }
 
+enum tf_ft_e
+{
+	FT_IDLE = 0,
+	FT_FIDGET,
+	FT_ALTON,
+	FT_ALTCYCLE,
+	FT_ALTOFF,
+	FT_FIRE1,
+	FR_FIRE2,
+	FT_FIRE3,
+	FT_FIRE4,
+	FT_DRAW,
+	FT_HOLSTER
+};
+
 void EV_TFC_Flame_Fire(event_args_t *args)
 {
     int idx;
@@ -1862,7 +1877,7 @@ void EV_TFC_Flame_Fire(event_args_t *args)
     bubble = gEngfuncs.pEventAPI->EV_FindModelIndex("sprites/bubble.spr");
     gEngfuncs.pfnAngleVectors(angles, forward, right, up);
     if(EV_IsLocal(idx))
-        gEngfuncs.pEventAPI->EV_WeaponAnimation(5, 2);
+        gEngfuncs.pEventAPI->EV_WeaponAnimation(FT_FIRE1, 2);
     EV_GetGunPosition(args, ShellOrigin, origin);
     VectorMA(ShellOrigin, -8.0, up, ShellOrigin);
     VectorMA(ShellOrigin, 8.0, right, ShellOrigin);
