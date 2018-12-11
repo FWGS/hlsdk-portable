@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2002, Valve LLC, All rights reserved. ============
+//========= Copyright ï¿½ 1996-2002, Valve LLC, All rights reserved. ============
 //
 // Purpose:
 //
@@ -38,5 +38,11 @@ void EV_TFC_TranqNailTouch( tempent_s *ent, pmtrace_t *ptr );
 void EV_TFC_PlayAxeSound( int idx, int classid, float *origin, int iSoundType, float fSoundData );
 int EV_TFC_AxeHit(int idx, float *origin, float *forward, float *right, int entity, float *vecDir, pmtrace_t *ptr);
 int EV_TFC_Medkit(int idx, float *origin, float *forward, float *right, int entity, float *vecDir, pmtrace_t *ptr);
-//tempent_s EV_TFC_CreateGib(float *origin, float *attackdir, int multiplier, int ishead);
+tempent_s* EV_TFC_CreateGib(float *origin, float *attackdir, int multiplier, int ishead);
+
+cvar_t  *cl_gibcount;
+cvar_t  *cl_giblife;
+cvar_t  *cl_gibvelscale;
+cvar_t  *cl_localblood;
+
 #endif // EV_HLDMH

@@ -16,6 +16,7 @@
 #include "../hud.h"
 #include "../cl_util.h"
 #include "event_api.h"
+#include "ev_tfc.h"
 
 extern "C"
 {
@@ -126,4 +127,9 @@ void Game_HookEvents( void )
     gEngfuncs.pfnHookEvent("events/wpn/tf_rail.sc", EV_TFC_Railgun);
     gEngfuncs.pfnHookEvent("events/wpn/tf_tranq.sc", EV_TFC_Tranquilizer);
     gEngfuncs.pfnHookEvent("events/explode/tf_ng.sc", EV_TFC_NailGrenade);
+
+    cl_gibcount = gEngfuncs.pfnRegisterVariable("cl_gibcount", "4", 1);
+    cl_giblife = gEngfuncs.pfnRegisterVariable("cl_giblife", "25", 1);
+    cl_gibvelscale = gEngfuncs.pfnRegisterVariable("cl_gibvelscale", "1.0", 1);
+    cl_localblood = gEngfuncs.pfnRegisterVariable("cl_lb", "0.0", 3);
 }

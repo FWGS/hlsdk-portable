@@ -751,6 +751,20 @@ private:
 	float m_flNextReload;
 };
 
+enum tf_ic_e
+{
+	IC_IDLE = 0,
+	IC_FIDGET,
+	IC_RELOAD,
+	IC_FIRE,
+	IC_HOLSTER,
+	IC_DRAW,
+	IC_HOLSTER2,
+	IC_DRAW2,
+	IC_IDLE2,
+	IC_FIDGET2,
+};
+
 class CTFIncendiaryC : public CBasePlayerWeapon
 {
 public:

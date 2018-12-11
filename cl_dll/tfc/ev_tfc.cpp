@@ -678,7 +678,7 @@ void EV_TFC_Axe(event_args_t *args)
             {
                 if(!EV_TFC_IsAlly(idx, ent))
                 {
-                    if(gEngfuncs.pfnGetCvarFloat("cl_localblood") != 0.0)
+                    if(cl_localblood->value != 0.0)
                         EV_TFC_TraceAttack(idx, forward, &tr, 20.0);
                 }
                 if(EV_IsPlayer(ent))
@@ -1005,7 +1005,7 @@ void EV_FireTFCAutoRifle(event_args_t *args)
 
     if ( tr.fraction != 1.0 )
     {
-        if(gEngfuncs.pfnGetCvarFloat("cl_localblood") != 0.0)
+        if(cl_localblood->value != 0.0)
             EV_TFC_TraceAttack(idx, vecAiming, &tr, 8.0);
         EV_HLDM_PlayTextureSound(idx, &tr, vecSrc, vecEnd, BULLET_PLAYER_357);
         pe = gEngfuncs.pEventAPI->EV_GetPhysent(tr.ent);
@@ -1483,7 +1483,7 @@ void EV_FireTFCSniper(event_args_t *args)
 
     if ( tr.fraction != 1.0 )
     {
-        if(gEngfuncs.pfnGetCvarFloat("cl_localblood") != 0.0)
+        if(cl_localblood->value != 0.0)
             EV_TFC_TraceAttack(idx, vecDir, &tr, iDamage);
         EV_HLDM_PlayTextureSound(idx, &tr, vecSrc, vecEnd, BULLET_PLAYER_357);
         pe = gEngfuncs.pEventAPI->EV_GetPhysent(tr.ent);
@@ -1491,7 +1491,6 @@ void EV_FireTFCSniper(event_args_t *args)
             EV_HLDM_DecalGunshot(&tr, BULLET_PLAYER_357);
     }
 }
-
 
 void EV_TFC_SniperHit(event_args_s *args)
 {
@@ -1515,6 +1514,20 @@ void EV_TFC_SniperHit(event_args_s *args)
     gEngfuncs.pEventAPI->EV_PlaySound(idx, origin, CHAN_STATIC, sound, volume, 0.8, 0, 100);
 }
 
+enum tf_ic_e
+{
+	IC_IDLE = 0,
+	IC_FIDGET,
+	IC_RELOAD,
+	IC_FIRE,
+	IC_HOLSTER,
+	IC_DRAW,
+	IC_HOLSTER2,
+	IC_DRAW2,
+	IC_IDLE2,
+	IC_FIDGET2,
+};
+
 void EV_TFC_FireIC(event_args_t *args)
 {
     int idx;
@@ -1525,7 +1538,7 @@ void EV_TFC_FireIC(event_args_t *args)
     VectorCopy(args->origin, origin);
 
     if(EV_IsLocal(idx))
-    gEngfuncs.pEventAPI->EV_WeaponAnimation(3, 2);
+        gEngfuncs.pEventAPI->EV_WeaponAnimation(IC_FIRE, 2);
     gEngfuncs.pEventAPI->EV_PlaySound(-1, origin, CHAN_WEAPON, "weapons/sgun1.wav", 0.9, 0.8, 0, 100);
     if(EV_IsLocal(idx))
         V_PunchAxis(0, -5.0);
@@ -2027,7 +2040,7 @@ void EV_TFC_RailDie(particle_s *particle)
                     }
                 }
             }
-            else if (gEngfuncs.pfnGetCvarFloat("cl_localblood") != 0.0)
+            else if (cl_localblood->value != 0.0)
             {
                 EV_TFC_BloodDrips(tr.endpos, 25, 0.0);
             }
@@ -2122,7 +2135,6 @@ void EV_TFC_TranqNailTouch(tempent_s *ent, pmtrace_t *ptr)
     }
 }
 
-
 void EV_TFC_NailGrenade(event_args_t *args)
 {
     pmtrace_t tr;
@@ -2142,20 +2154,60 @@ void EV_TFC_NailGrenade(event_args_t *args)
     EV_TFC_Explode(origin, 180, &tr, 78);
 }
 
+tempent_s* EV_TFC_CreateGib(float *origin, float *attackdir, int multiplier, int ishead)
+{
+    int modelindex;
+    tempent_s* ent;
+    float vmultiple;
+    float mins0[3];
+    float maxs0[3];
+    //TEMPENTITY tmpent;
+
+    model_s* gib = gEngfuncs.CL_LoadModel("models/hgibs.mdl", &modelindex);
+
+    if(!gib)
+        return 0;
+
+    if(multiplier < 0)
+        vmultiple = 0.7 * cl_gibvelscale->value;
+    else
+        vmultiple = multiplier * cl_gibvelscale->value;
+
+    gEngfuncs.pEventAPI->EV_LocalPlayerBounds(0, mins0, maxs0);
+    //ent = gEngfuncs.pEfxAPI->CL_TentEntAllocCustom(origin, gib, 0, EV_TFC_GibCallback);
+
+    if(ent)
+    {
+        if(ishead)
+            ent->entity.curstate.body = 0;
+        else
+            ent->entity.curstate.body = gEngfuncs.pfnRandomLong(1, 5);
+
+        if(ishead)
+        {
+
+        }
+    }
+}
+
 void EV_TFC_Gibs(event_args_t *args)
 {
     int idx;
     int multiplier;
     vec3_t origin, attackdir;
+    int gibcount;
 
     idx = args->entindex;
     VectorCopy(args->origin, origin)
     VectorCopy(args->angles, attackdir)
     multiplier = args->iparam1;
     gEngfuncs.pEventAPI->EV_PlaySound(idx, origin, CHAN_WEAPON, "common/bodysplat.wav", 1.0, 0.8, 0, 100);
-//    for(int x = 0; x < 6; x++)
-//        EV_TFC_CreateGib(origin, attackdir, multiplier, 0);
-//    EV_TFC_CreateGib(origin, attackdir, multiplier, 1);
+    gibcount = cl_gibcount->value;
+    if(gibcount > 64)
+        gibcount = 64;
+    for(int x = 0; x < gibcount; x++)
+        EV_TFC_CreateGib(origin, attackdir, multiplier, 0);
+    EV_TFC_CreateGib(origin, attackdir, multiplier, 1);
 }
 
 void EV_TFC_PlayAxeSound(int idx, int classid, float *origin, int iSoundType, float fSoundData)
@@ -2210,20 +2262,20 @@ int EV_TFC_AxeHit(int idx, float *origin, float *forward, float *right, int enti
         AngleVectors(ent->curstate.angles, tf_0, tu, tr);
         if (tr.x * forward[1] - *forward * tr.y <= 0.0)
         {
-            if (gEngfuncs.pfnGetCvarFloat("cl_localblood") != 0.0)
+            if (cl_localblood->value != 0.0)
                 EV_TFC_TraceAttack(idx, vecDir, ptr, 40.0);
             if (EV_IsLocal(idx))
                 gEngfuncs.pEventAPI->EV_WeaponAnimation(2, 2);
         }
         else
         {
-            if (gEngfuncs.pfnGetCvarFloat("cl_localblood") != 0.0)
+            if (cl_localblood->value != 0.0)
                 EV_TFC_TraceAttack(idx, vecDir, ptr, 120.0);
             if (EV_IsLocal(idx))
                 gEngfuncs.pEventAPI->EV_WeaponAnimation(3, 2);
         }
     }
-    else if (gEngfuncs.pfnGetCvarFloat("cl_localblood") != 0.0)
+    else if (cl_localblood->value != 0.0)
         EV_TFC_TraceAttack(idx, vecDir, ptr, 20.0);
     return 1;
 }
@@ -2237,7 +2289,7 @@ int EV_TFC_Medkit(int idx, float *origin, float *forward, float *right, int enti
         ent = GetEntity(entity - 1);
         if (!EV_TFC_IsAlly(idx, entity))
         {
-            if (gEngfuncs.pfnGetCvarFloat("cl_localblood") != 0.0)
+            if (cl_localblood->value != 0.0)
                 EV_TFC_TraceAttack(idx, vecDir, ptr, 10.0);
             if (ent->curstate.playerclass != 5)
                 gEngfuncs.pEventAPI->EV_PlaySound(idx, origin, 2, "player/death2.wav", 1.0, 0.8, 0, 100);
