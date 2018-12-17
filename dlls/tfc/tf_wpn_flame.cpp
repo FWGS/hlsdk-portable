@@ -109,12 +109,12 @@ void CTFFlamethrower::PrimaryAttack()
     if(bUnderwater)
     {
         m_flTimeWeaponIdle = 1;
-        m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 1;
+        m_flNextPrimaryAttack = 1;
     }
     else
     {
         m_flTimeWeaponIdle = 0.15;
-        m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.15;
+        m_flNextPrimaryAttack = 0.15;
     }
     m_pPlayer->ammo_uranium--;
 }

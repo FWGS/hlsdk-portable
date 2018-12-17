@@ -122,8 +122,8 @@ void CTFAssaultC::PrimaryAttack()
             else
                 Fire();
 
-            m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.1;
-            m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.1;
+            m_flTimeWeaponIdle = 0.1;
+            m_flNextPrimaryAttack = 0.1;
             return;
         }
         case 3:
@@ -136,8 +136,8 @@ void CTFAssaultC::PrimaryAttack()
             else
                 m_iWeaponState = 1;
             
-            m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.1;
-            m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.1;
+            m_flTimeWeaponIdle = 0.1;
+            m_flNextPrimaryAttack = 0.1;
             return;
         }
         case 1:
@@ -148,7 +148,7 @@ void CTFAssaultC::PrimaryAttack()
             PLAYBACK_EVENT_FULL(7, ENT(m_pPlayer->pev), m_usACStart, 0, (float *)&g_vecZero, (float *)&g_vecZero, 0, 0, 0, 0, 0, 0);
             m_iWeaponState = 2;
             m_flTimeWeaponIdle = 0.1;
-            m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.1;
+            m_flNextPrimaryAttack = 0.1;
             return;
         }
     }
@@ -162,7 +162,7 @@ void CTFAssaultC::PrimaryAttack()
     }
 
     m_flTimeWeaponIdle = 0.6;
-    m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5;
+    m_flNextPrimaryAttack = 0.5;
 }
 
 void CTFAssaultC::Fire()

@@ -56,7 +56,7 @@ void CTFRailgun::PrimaryAttack()
     if(m_pPlayer->ammo_bolts <= 0)
     {
         PlayEmptySound();
-        m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.2;
+        m_flNextPrimaryAttack = 0.2;
         return;
     }
 
@@ -66,7 +66,7 @@ void CTFRailgun::PrimaryAttack()
     m_pPlayer->pev->effects |= EF_MUZZLEFLASH;
     m_pPlayer->SetAnimation(PLAYER_ATTACK1);
     m_pPlayer->ammo_bolts--;
-    m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.4;
+    m_flNextPrimaryAttack = 0.4;
     m_flTimeWeaponIdle = 12.5;
 }
 

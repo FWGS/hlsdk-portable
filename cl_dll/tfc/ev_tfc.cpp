@@ -2167,6 +2167,19 @@ void EV_TFC_NailGrenade(event_args_t *args)
     EV_TFC_Explode(origin, 180, &tr, 78);
 }
 
+void EV_TFC_GibCallback(tempent_s *ent, float frametime)
+{
+    float vel = Length(ent->entity.baseline.origin);
+    if(ent->entity.curstate.playerclass == 2)
+    {
+        ent->entity.curstate.playerclass = 3;
+        gEngfuncs.GetClientTime();
+        ent->entity.curstate.renderamt = 255;
+        ent->entity.curstate.rendermode = kRenderFxPulseFast;
+        ent->die = vel + 2.5;
+    }
+}
+
 tempent_s* EV_TFC_CreateGib(float *origin, float *attackdir, int multiplier, int ishead)
 {
     int modelindex;

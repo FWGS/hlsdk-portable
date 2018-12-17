@@ -8,6 +8,9 @@
 #include "gamerules.h"
 #include "tf_defs.h"
 
+#include "cdll_int.h"
+extern cl_enginefunc_t gEngfuncs;
+
 LINK_ENTITY_TO_CLASS( tf_weapon_tranq, CTFTranq )
 
 void CTFTranq::Spawn()
@@ -46,8 +49,7 @@ int CTFTranq::GetItemInfo( ItemInfo *p )
 
 BOOL CTFTranq::Deploy()
 {
-    pev->body = 1;
-	return DefaultDeploy( "models/v_tfc_pistol.mdl", "models/p_spygun.mdl", TRANQ_DRAW, 0);
+	return DefaultDeploy( "models/v_tfc_pistol.mdl", "models/p_spygun.mdl", TRANQ_DRAW, 0, 0, 1);
 }
 
 void CTFTranq::WeaponIdle( void )
@@ -62,18 +64,21 @@ void CTFTranq::WeaponIdle( void )
             {
                 m_flTimeWeaponIdle = 3.75;
                 SendWeaponAnim(TRANQ_IDLE1, 1, 1);
+                gEngfuncs.Con_Printf("1 %.5f\n", m_flTimeWeaponIdle);
             }
             break;
             case 2:
             {
                 m_flTimeWeaponIdle = 3.0625;
                 SendWeaponAnim(TRANQ_IDLE3, 1, 1);
+                gEngfuncs.Con_Printf("3 %.5f\n", m_flTimeWeaponIdle);
             }
             break;
             default:
             {
                 m_flTimeWeaponIdle = 2.5;
                 SendWeaponAnim(TRANQ_IDLE2, 1, 1);
+                gEngfuncs.Con_Printf("2 %.5f\n", m_flTimeWeaponIdle);
             }
             break;
         }

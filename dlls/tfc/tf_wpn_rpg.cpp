@@ -65,12 +65,12 @@ void CTFRpg::Reload( void )
     {
         if ( m_fInSpecialReload == 1 )
         {
-            if ( m_flTimeWeaponIdle <= UTIL_WeaponTimeBase() )
+            if ( m_flTimeWeaponIdle <= 0.0 )
             {
                 m_fInSpecialReload = 2;
                 SendWeaponAnim(TFCRPG_RELCYCLE, 1);
-                m_flNextReload = UTIL_WeaponTimeBase() + m_fReloadTime;
-                m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + m_fReloadTime;
+                m_flNextReload = m_fReloadTime;
+                m_flTimeWeaponIdle = m_fReloadTime;
             }
         }
         else
@@ -86,7 +86,7 @@ void CTFRpg::Reload( void )
         SendWeaponAnim(TFCRPG_RELSTART, 1);
         //m_pPlayer->tfstate |= 2;
         m_fInSpecialReload = 1;
-        m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.1;
+        m_pPlayer->m_flNextAttack = + 0.1;
         m_flTimeWeaponIdle = 0.1;
         m_flNextSecondaryAttack = 0.1;
         m_flNextPrimaryAttack = 0.0;
@@ -193,5 +193,5 @@ void CTFRpg::PrimaryAttack()
     //tfstatatata
     m_iClip--;
     m_flTimeWeaponIdle = 0.8;
-    m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.8;
+    m_flNextPrimaryAttack = 0.8;
 }

@@ -103,5 +103,5 @@ void CTFIncendiaryC::PrimaryAttack()
     m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
     m_pPlayer->ammo_rockets--;
     m_flTimeWeaponIdle = 1.2;
-    m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 1.2;
+    m_flNextPrimaryAttack = 1.2;
 }

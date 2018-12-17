@@ -39,6 +39,7 @@ void EV_TFC_PlayAxeSound( int idx, int classid, float *origin, int iSoundType, f
 int EV_TFC_AxeHit(int idx, float *origin, float *forward, float *right, int entity, float *vecDir, pmtrace_t *ptr);
 int EV_TFC_Medkit(int idx, float *origin, float *forward, float *right, int entity, float *vecDir, pmtrace_t *ptr);
 tempent_s* EV_TFC_CreateGib(float *origin, float *attackdir, int multiplier, int ishead);
+void EV_TFC_GibCallback(tempent_s *ent, float frametime);
 
 extern cvar_t *cl_gibcount;
 extern cvar_t *cl_giblife;

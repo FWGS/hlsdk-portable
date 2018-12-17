@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Set your package name here -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-      package="in.celest.xash3d.tfc15client"
+      package="in.celest.xash3d.tf15client"
       android:versionCode="1"
       android:versionName="1.0">
     <uses-sdk android:minSdkVersion="5" android:targetSdkVersion="8"/>
     <!-- Set your application name here -->
-    <application android:label="TFC15-Client" android:debuggable="true"
+    <application android:label="TF15-Client" android:debuggable="true"
 		android:icon="@drawable/ic_launcher">
     <!-- Set your launcher title here -->
         <activity android:name="in.celest.xash3d.LauncherActivity"
-                  android:label="TFC15-Client"
+                  android:label="TF15-Client"
 			android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

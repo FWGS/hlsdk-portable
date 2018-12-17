@@ -91,7 +91,7 @@ void CTFNailgun::PrimaryAttack()
     m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
     m_pPlayer->ammo_bolts--;
     m_flTimeWeaponIdle = 10;
-    m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.1;
+    m_flNextPrimaryAttack = 0.1;
 }
 
 LINK_ENTITY_TO_CLASS( tf_weapon_superng, CTFSuperNailgun )
@@ -139,5 +139,5 @@ void CTFSuperNailgun::PrimaryAttack()
     if(m_pPlayer->ammo_bolts < 0)
         m_pPlayer->ammo_bolts = 0;
     m_flTimeWeaponIdle = 10;
-    m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.1;
+    m_flNextPrimaryAttack = 0.1;
 }

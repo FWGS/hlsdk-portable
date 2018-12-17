@@ -110,7 +110,7 @@ void CTFShotgun::PrimaryAttack()
         //m_pPlayer->tfstate &= 2;
         if ( m_iClip )
             m_flPumpTime = 0.5;
-        m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5;
+        m_flNextPrimaryAttack = 0.5;
     }
 }
 
@@ -148,7 +148,7 @@ void CTFShotgun::Reload( void )
                 m_pPlayer->m_flNextAttack = 0.1;
                 m_flTimeWeaponIdle = 0.1;
                 m_flNextSecondaryAttack = 0.1;
-                m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.1;
+                m_flNextPrimaryAttack = 0.1;
             }
         }
     }
@@ -300,6 +300,6 @@ void CTFSuperShotgun::PrimaryAttack()
         //m_pPlayer->tfstate &= 2;
         if ( m_iClip )
             m_flPumpTime = 0.7;
-        m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5;
+        m_flNextPrimaryAttack = 0.5;
     }
 }

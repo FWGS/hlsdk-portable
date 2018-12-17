@@ -50,7 +50,7 @@ public class LauncherActivity extends Activity {
 		LayoutParams buttonparams = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
 		buttonparams.setMargins(10,20,10,20);
 		launcherTitle.setLayoutParams(titleparams);
-        launcherTitle.setText("TFC15-Client");
+        launcherTitle.setText("TF15-Client");
         launcherTitle.setTextAppearance(this, android.R.attr.textAppearanceMedium);
 		launcherTitle.setTextSize(25);
 		launcherTitle.setBackgroundColor(0xFF555555);
@@ -101,7 +101,7 @@ public class LauncherActivity extends Activity {
 		Button startButton = new Button(this);
 
 		// Set launch button title here
-		startButton.setText(styleButtonString("Launch " + "TFC15-Client" + "!"));
+		startButton.setText(styleButtonString("Launch " + "TF15-Client" + "!"));
 		LayoutParams buttonParams = new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT);
 		buttonParams.gravity = 5;
 		startButton.setLayoutParams(buttonParams);
