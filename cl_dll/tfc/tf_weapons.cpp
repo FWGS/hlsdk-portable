@@ -69,6 +69,7 @@ CTFRailgun g_TFRailgun;
 CTFGrenadeLauncher g_TFGrenadeLauncher;
 CTFAssaultC g_TFAssaultC;
 CTFPipebombLauncher g_TFPipebombLauncher;
+CTFTranq g_TFTranq;
 
 /*
 ======================
@@ -618,6 +619,7 @@ void HUD_InitClientWeapons( void )
 	HUD_PrepEntity( &g_TFGrenadeLauncher, &player );
 	HUD_PrepEntity( &g_TFAssaultC, &player );
 	HUD_PrepEntity( &g_TFPipebombLauncher, &player );
+	HUD_PrepEntity( &g_TFTranq, &player );
 }
 
 /*
@@ -733,7 +735,7 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 			//pWeapon = &;
 			break;
 		case WEAPON_TRANQ:
-			//pWeapon = &;
+			pWeapon = &g_TFTranq;
 			break;
 		case WEAPON_LASER:
 			pWeapon = &g_TFRailgun;

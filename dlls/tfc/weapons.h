@@ -832,4 +832,32 @@ private:
 	unsigned short m_usFireRail;
 };
 
+enum tf_tranq_e
+{
+    TRANQ_IDLE1 = 0,
+    TRANQ_IDLE2,
+    TRANQ_IDLE3,
+    TRANQ_SHOOT,
+    TRANQ_SHOOT_EMPTY,
+    TRANQ_RELOAD,
+    TRANQ_DRAW,
+    TRANQ_HOLSTER,
+    TRANQ_ADD_SILENCER,
+};
+
+class CTFTranq : public CBasePlayerWeapon
+{
+public:
+	void Spawn(void);
+	void Precache(void);
+	int GetItemInfo(ItemInfo *p);
+	void WeaponIdle(void);
+	BOOL Deploy(void);
+	void PrimaryAttack(void);
+	virtual int iItemSlot( void ) { return 2; }
+
+private:
+	unsigned short m_usFireTranquilizer;
+};
+
 #endif // WEAPONS_H

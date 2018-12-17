@@ -16,7 +16,13 @@
 #include "../hud.h"
 #include "../cl_util.h"
 #include "event_api.h"
+#include "pm_defs.h"
 #include "ev_tfc.h"
+
+cvar_t *cl_gibcount;
+cvar_t *cl_giblife;
+cvar_t *cl_gibvelscale;
+cvar_t *cl_localblood;
 
 extern "C"
 {

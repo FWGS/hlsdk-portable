@@ -2083,6 +2083,19 @@ int EV_TFC_IsAlly(int idx1, int idx2)
     return result;
 }
 
+enum tf_tranq_e
+{
+    TRANQ_IDLE1 = 0,
+    TRANQ_IDLE2,
+    TRANQ_IDLE3,
+    TRANQ_SHOOT,
+    TRANQ_SHOOT_EMPTY,
+    TRANQ_RELOAD,
+    TRANQ_DRAW,
+    TRANQ_HOLSTER,
+    TRANQ_ADD_SILENCER,
+};
+
 void EV_TFC_Tranquilizer(event_args_t *args)
 {
     int idx;
@@ -2097,7 +2110,7 @@ void EV_TFC_Tranquilizer(event_args_t *args)
     if(EV_IsLocal(idx))
     {
         EV_MuzzleFlash();
-        gEngfuncs.pEventAPI->EV_WeaponAnimation(3, 1);
+        gEngfuncs.pEventAPI->EV_WeaponAnimation(TRANQ_SHOOT, 1);
     }
     EV_GetGunPosition(args, ShellOrigin, origin);
     VectorMA(ShellOrigin, -4.0, up, ShellOrigin);
@@ -2223,10 +2236,13 @@ void EV_TFC_PlayAxeSound(int idx, int classid, float *origin, int iSoundType, fl
             {
             case 1:
                 gEngfuncs.pEventAPI->EV_PlaySound(idx, origin, CHAN_WEAPON, "weapons/cbar_hitbod2.wav", 1.0, 0.8, 0, 100);
+                break;
             case 2:
                 gEngfuncs.pEventAPI->EV_PlaySound(idx, origin, CHAN_WEAPON, "weapons/cbar_hitbod3.wav", 1.0, 0.8, 0, 100);
+                break;
             default:
                 gEngfuncs.pEventAPI->EV_PlaySound(idx, origin, CHAN_WEAPON, "weapons/cbar_hitbod1.wav", 1.0, 0.8, 0, 100);
+                break;
             }
         }
         break;
@@ -2236,8 +2252,10 @@ void EV_TFC_PlayAxeSound(int idx, int classid, float *origin, int iSoundType, fl
             {
             case 1:
                 gEngfuncs.pEventAPI->EV_PlaySound(idx, origin, CHAN_WEAPON, "weapons/cbar_hit2", fSoundData, 0.8, 0, gEngfuncs.pfnRandomLong(0, 3) + 98);
+                break;
             default:
                 gEngfuncs.pEventAPI->EV_PlaySound(idx, origin, CHAN_WEAPON, "weapons/cbar_hit1", fSoundData, 0.8, 0, gEngfuncs.pfnRandomLong(0, 3) + 98);
+                break;
             }
         }
         break;

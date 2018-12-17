@@ -127,9 +127,7 @@ BOOL CTFSniperRifle::Deploy()
     m_flTimeWeaponIdle = 0.5;
     m_fAimedDamage = 0;
     m_iSpotActive = 0;
-
-    //Velaron: "autosniper" draw animation
-	return DefaultDeploy( "models/v_tfc_sniper.mdl", "models/p_sniper.mdl", SNIPER_DRAW, "mp5", 1 );
+	return DefaultDeploy( "models/v_tfc_sniper.mdl", "models/p_sniper.mdl", SNIPER_DRAW, "autosniper", 1 );
 }
 
 int CTFSniperRifle::AddToPlayer( CBasePlayer *pPlayer )
@@ -155,8 +153,7 @@ void CTFSniperRifle::UpdateSpot()
     if(!m_pSpot)
     {
         m_pSpot = CLaserSpot::CreateSpot();
-        //Velaron: effect 256
-        //m_pSpot->pev->effects |= 256;
+        m_pSpot->pev->effects |= EF_NIGHTVISION;
         m_pSpot->pev->owner = ENT(m_pPlayer->pev);
     }
 
