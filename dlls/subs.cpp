@@ -550,3 +550,942 @@ BOOL FEntIsVisible( entvars_t *pev, entvars_t *pevTarget)
 
 	return FALSE;
 }
+
+void CBaseEntity::tfgoal_timer_tick()
+{
+}
+
+void CBaseEntity::ReturnItem()
+{
+}
+
+void CBaseEntity::item_tfgoal_touch( CBaseEntity *pOther )
+{
+}
+
+void CBaseEntity::tfgoal_touch( CBaseEntity *pOther )
+{
+}
+
+void CBaseEntity::DelayedResult()
+{
+}
+
+void CBaseEntity::DoDrop( Vector *p_vecOrigin )
+{
+}
+
+void CBaseEntity::KeyValue( KeyValueData *pkvd )
+{
+	if( FStrEq( pkvd->szKeyName, "goal_no" ) )
+	{
+		goal_no = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq(pkvd->szKeyName, "mdl" ) )
+	{
+		pev->model = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "group_no" ) )
+	{
+		group_no = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq(pkvd->szKeyName, "team_no" ) )
+	{
+		team_no = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq(pkvd->szKeyName, "playerclass" ) )
+	{
+		playerclass = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq(pkvd->szKeyName, "items_allowed" ) )
+	{
+		items_allowed = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq(pkvd->szKeyName, "goal_state" ) )
+	{
+		goal_state = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq(pkvd->szKeyName, "items" ) )
+	{
+		items = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "owned_by" ) )
+	{
+		owned_by = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "armorclass" ) )
+	{
+		armorclass = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "goal_activation" )
+	    || FStrEq( pkvd->szKeyName, "g_a" ) )
+	{
+		goal_activation = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "goal_effects" )
+	    || FStrEq( pkvd->szKeyName, "g_e" ))
+	{
+		goal_effects = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "goal_result" ) )
+	{
+		goal_result = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "goal_group" ) )
+	{
+		goal_group = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "else_goal" ) )
+	{
+		else_goal = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "if_goal_is_active" ) )
+	{
+		if_goal_is_active = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "if_goal_is_inactive" ) )
+	{
+		if_goal_is_inactive = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "if_goal_is_removed" ) )
+	{
+		if_goal_is_removed = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "if_group_is_active" ) )
+	{
+		if_group_is_active = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "if_group_is_inactive" ) )
+	{
+		if_group_is_inactive = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "if_group_is_removed" ) )
+	{
+		if_group_is_removed = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "search_time" ) )
+	{
+		search_time = atof( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "t_length" ) )
+	{
+		t_length = atof( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "activate_goal_no" ) )
+	{
+		activate_goal_no = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "inactivate_goal_no" ) )
+	{
+		inactivate_goal_no = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "remove_goal_no" )
+	    || FStrEq( pkvd->szKeyName, "rv_g" ) )
+	{
+		remove_goal_no = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "restore_goal_no" )
+	    || FStrEq( pkvd->szKeyName, "rs_g" ) )
+	{
+		restore_goal_no = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "activate_group_no" ) )
+	{
+		activate_group_no = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "inactivate_group_no" ) )
+	{
+		inactivate_group_no = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "remove_group_no" )
+	    || FStrEq( pkvd->szKeyName, "rv_gr" ) )
+	{
+		remove_group_no = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "restore_group_no" )
+	    || FStrEq( pkvd->szKeyName, "rs_gr" ) )
+	{
+		restore_group_no = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "goal_min" ) )
+	{
+		UTIL_StringToVector( goal_min, pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "goal_max" ) )
+	{
+		UTIL_StringToVector( goal_max, pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "has_item_from_group" )
+	    || FStrEq( pkvd->szKeyName, "h_i_g" ) )
+	{
+		has_item_from_group = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "hasnt_item_from_group" )
+	    || FStrEq( pkvd->szKeyName, "hn_i_g" ) )
+	{
+		hasnt_item_from_group = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "remove_item_group" )
+	    || FStrEq( pkvd->szKeyName, "r_i_g" ) )
+	{
+		remove_item_group = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "return_item_no" ) )
+	{
+		return_item_no = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "if_item_has_moved" ) )
+	{
+		if_item_has_moved = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "if_item_hasnt_moved" ) )
+	{
+		if_item_hasnt_moved = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "remove_spawnpoint" ) )
+	{
+		remove_spawnpoint = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "restore_spawnpoint" ) )
+	{
+		restore_spawnpoint = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "remove_spawngroup" )
+	    || FStrEq( pkvd->szKeyName, "rv_s_h" ) )
+	{
+		remove_spawngroup = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "restore_spawngroup" )
+	    || FStrEq( pkvd->szKeyName, "rs_s_h" ) )
+	{
+		restore_spawngroup = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "display_item_status1" ) )
+	{
+		display_item_status[0] = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "display_item_status2" ) )
+	{
+		display_item_status[1] = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "display_item_status3" ) )
+	{
+		display_item_status[2] = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "display_item_status4" ) )
+	{
+		display_item_status[3] = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "team_str_home" )
+	    || FStrEq( pkvd->szKeyName, "t_s_g" ) )
+	{
+		team_str_home = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "team_str_moved" )
+	    || FStrEq( pkvd->szKeyName, "t_s_m" ) )
+	{
+		team_str_moved = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "team_str_carried" )
+	    || FStrEq( pkvd->szKeyName, "t_s_c" ) )
+	{
+		team_str_carried = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "non_team_str_home" )
+	    || FStrEq( pkvd->szKeyName, "t_s_h" ) )
+	{
+		non_team_str_home = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "non_team_str_moved" ) )
+	{
+		non_team_str_moved = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "non_team_str_carried" )
+	    || FStrEq( pkvd->szKeyName, "n_s_c" ) )
+	{
+		non_team_str_carried = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "ex_skill_min" ) )
+	{
+		ex_skill_min = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "ex_skill_max" ) )
+	{
+		ex_skill_max = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "increase_team1" ) )
+	{
+		increase_team[0] = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "increase_team2" ) )
+	{
+		increase_team[1] = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "increase_team3" ) )
+	{
+		increase_team[2] = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "increase_team4" ) )
+	{
+		increase_team[3] = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else
+		KeyValuePartTwo( pkvd );
+}
+
+void CBaseEntity::KeyValuePartTwo( KeyValueData *pkvd )
+{
+	if( FStrEq( pkvd->szKeyName, "wait" ) )
+	{
+		wait = atof( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "increase_team" ) )
+	{
+		count = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "axhitme" ) )
+	{
+		axhitme = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "pausetime" )
+	    || FStrEq( pkvd->szKeyName, "delay" ) )
+	{
+		drop_time = atof( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "attack_finished" ) )
+	{
+		attack_finished = atof( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "axhitme" ) )
+	{
+		axhitme = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "distance" ) )
+	{
+		distance = atof( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "killtarget" ) )
+	{
+		killtarget = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "noise4" ) )
+	{
+		noise4 = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "broadcast" )
+	    || FStrEq( pkvd->szKeyName, "b_b" ) )
+	{
+		broadcast = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "team_broadcast" )
+	    || FStrEq( pkvd->szKeyName, "b_t" ) )
+	{
+		axhitme = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "speak" ) )
+	{
+		speak = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "team_speak" ) )
+	{
+		team_speak = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "owners_team_speak" ) )
+	{
+		owners_team_speak = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "non_owners_team_speak" ) )
+	{
+		non_owners_team_speak = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "non_team_broadcast" )
+	    || FStrEq( pkvd->szKeyName, "b_n" ) )
+	{
+		non_team_broadcast = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "non_team_speak" ) )
+	{
+		non_team_speak = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "owners_team_broadcast" )
+	    || FStrEq( pkvd->szKeyName, "b_o" ) )
+	{
+		owners_team_broadcast = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "non_owners_team_broadcast" ) )
+	{
+		non_owners_team_broadcast = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "netname_broadcast" )
+	    || FStrEq( pkvd->szKeyName, "n_b" ) )
+	{
+		netname_broadcast = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "netname_team_broadcast" )
+	    || FStrEq( pkvd->szKeyName, "n_t" ) )
+	{
+		netname_team_broadcast = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "netname_non_team_broadcast" )
+	    || FStrEq( pkvd->szKeyName, "n_n" ) )
+	{
+		netname_non_team_broadcast = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "netname_owners_team_broadcast" )
+	    || FStrEq( pkvd->szKeyName, "n_o" ) )
+	{
+		netname_owners_team_broadcast = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "team_drop" )
+	    || FStrEq( pkvd->szKeyName, "d_t" ) )
+        {
+                team_drop = ALLOC_STRING( pkvd->szValue );
+                pkvd->fHandled = TRUE;
+        }
+	else if( FStrEq( pkvd->szKeyName, "non_team_drop" )
+	    || FStrEq( pkvd->szKeyName, "d_n" ) )
+	{
+		non_team_drop = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "netname_team_drop" )
+	    || FStrEq( pkvd->szKeyName, "d_n_t" ) )
+	{
+		netname_team_drop = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "netname_non_team_drop" )
+	    || FStrEq( pkvd->szKeyName, "d_n_n" ) )
+	{
+		netname_non_team_drop = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "all_active" ) )
+	{
+		all_active = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "delay_time" ) )
+	{
+		delay_time = atof( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "ammo_shells" )
+	    || FStrEq( pkvd->szKeyName, "a_s" ) )
+	{
+		ammo_shells = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "ammo_nails" )
+	    || FStrEq( pkvd->szKeyName, "a_n" ) )
+	{
+		ammo_nails = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "ammo_rockets" )
+	    || FStrEq( pkvd->szKeyName, "a_r" ) )
+	{
+		ammo_rockets = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "ammo_cells" )
+	    || FStrEq( pkvd->szKeyName, "a_c" ) )
+	{
+		ammo_cells = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "ammo_medikit" ) )
+	{
+		ammo_medikit = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "ammo_detpack" ) )
+	{
+		ammo_detpack = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "no_grenades_1" ) )
+	{
+		no_grenades_1 = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "no_grenades_2" ) )
+	{
+		no_grenades_2 = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "maxammo_shells" ) )
+	{
+		maxammo_shells = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "maxammo_nails" ) )
+	{
+		maxammo_nails = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "maxammo_rockets" ) )
+	{
+		maxammo_rockets = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "maxammo_cells" ) )
+	{
+		maxammo_cells = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "maxammo_medikit" ) )
+	{
+		maxammo_medikit = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "maxammo_detpack" ) )
+	{
+		maxammo_detpack = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "team1_allies" ) )
+	{
+		teamallies[1] = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "team2_allies" ) )
+	{
+		teamallies[2] = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "team3_allies" ) )
+	{
+		teamallies[3] = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "team4_allies" ) )
+	{
+		teamallies[4] = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "invincible_finished" ) )
+	{
+		invincible_finished = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "invisible_finished" ) )
+	{
+		invisible_finished = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "super_damage_finished" ) )
+	{
+		super_damage_finished = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "radsuit_finished" ) )
+	{
+		radsuit_finished = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "deathtype" ) )
+	{
+		deathtype = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "speed_reduction" ) )
+	{
+		speed_reduction = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "endround_time" ) )
+	{
+		m_flEndRoundTime = atof( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "endround_team1" ) )
+	{
+		m_iszEndRoundMsg_Team1 = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "endround_team2" ) )
+	{
+		m_iszEndRoundMsg_Team2 = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "endround_team3" ) )
+	{
+		m_iszEndRoundMsg_Team3 = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "endround_team4" ) )
+	{
+		m_iszEndRoundMsg_Team4 = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "endround_win_team1" ) )
+	{
+		m_iszEndRoundMsg_Team1_Win = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "endround_win_team2" ) )
+	{
+		m_iszEndRoundMsg_Team2_Win = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "endround_win_team3" ) )
+	{
+		m_iszEndRoundMsg_Team3_Win = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "endround_win_team4" ) )
+	{
+		m_iszEndRoundMsg_Team4_Win = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "endround_lose_team1" ) )
+	{
+		m_iszEndRoundMsg_Team1_Lose = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "endround_lose_team2" ) )
+	{
+		m_iszEndRoundMsg_Team2_Lose = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "endround_lose_team3" ) )
+	{
+		m_iszEndRoundMsg_Team3_Lose = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "endround_lose_team4" ) )
+	{
+		m_iszEndRoundMsg_Team4_Lose = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "teamcheck" ) )
+	{
+		teamcheck = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "owned_by_teamcheck" ) )
+	{
+		owned_by_teamcheck = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "team1_name" )
+	    || FStrEq( pkvd->szKeyName, "team2_name" )
+	    || FStrEq( pkvd->szKeyName, "team3_name" )
+	    || FStrEq( pkvd->szKeyName, "team4_name" )
+	    || FStrEq( pkvd->szKeyName, "number_of_teams" )
+	    || FStrEq( pkvd->szKeyName, "last_impulse" ) )
+	{
+		last_impulse = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else
+		KeyValuePartThree( pkvd );
+}
+
+void CBaseEntity::KeyValuePartThree( KeyValueData *pkvd )
+{
+	if( FStrEq( pkvd->szKeyName, "endround_owned_by" ) )
+	{
+		m_iszEndRoundMsg_OwnedBy = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "endround_non_owned_by" ) )
+	{
+		m_iszEndRoundMsg_NonOwnedBy = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "org_broadcast" )
+	    || FStrEq( pkvd->szKeyName, "org_b_b" ) )
+	{
+		org_broadcast = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "org_team_broadcast" )
+	    || FStrEq( pkvd->szKeyName, "org_b_t" ) )
+	{
+		org_team_broadcast = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "org_message" ) )
+	{
+		org_message = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "org_owners_team_broadcast" )
+	    || FStrEq( pkvd->szKeyName, "org_b_o" ) )
+	{
+		org_owners_team_broadcast = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "org_non_owners_team_broadcast" ) )
+	{
+		org_non_owners_team_broadcast = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "org_non_team_broadcast" )
+	    || FStrEq( pkvd->szKeyName, "org_b_n" ) )
+	{
+		org_non_team_broadcast = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "org_noise3" ) )
+	{
+		org_noise3 = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "org_noise4" ) )
+	{
+		org_noise4 = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "org_team_drop" )
+	    || FStrEq( pkvd->szKeyName, "org_d_t" ) )
+	{
+		org_team_drop = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "org_non_team_drop" )
+	    || FStrEq( pkvd->szKeyName, "org_d_n" ) )
+	{
+		org_non_team_drop = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "increase_team_owned_by" ) )
+	{
+		increase_team_owned_by = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "replacement_model" ) )
+	{
+		replacement_model = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "replacement_model_body" ) )
+	{
+		replacement_model_body = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "replacement_model_skin" ) )
+	{
+		replacement_model_skin = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "replacement_model_flags" ) )
+	{
+		replacement_model_flags = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else
+		pkvd->fHandled = FALSE;
+}
+
+BOOL CBaseEntity::CheckExistence()
+{
+	return TRUE;
+}
+
+void CBaseEntity::DoRespawn()
+{
+}
+
+void CBaseEntity::tfgoalitem_dropthink()
+{
+}
+
+void CBaseEntity::DoDrop( Vector vecOrigin )
+{
+}
+
+void CBaseEntity::tfgoalitem_remove()
+{
+}
+
+void CBaseEntity::EndRoundEnd()
+{
+}
+
+void CBaseEntity::tfgoalitem_droptouch()
+{
+}
+
+BOOL CBaseEntity::IsTeammate( CBaseEntity *pOther )
+{
+	return TRUE;
+}
+
+BOOL CBaseEntity::IsAlly( int iTeamNo )
+{
+	return TRUE;
+}
+
+BOOL CBaseEntity::IsAlly( CBaseEntity *pOther )
+{
+	return TRUE;
+}
+
+CBaseEntity *CBaseEntity::FindTeamSpawnPoint()
+{
+	return 0;
+}
+
+void CBaseEntity::Timer_AutokickThink()
+{
+}
+
+void CBaseEntity::Timer_CeaseFireThink()
+{
+}
+
+void CBaseEntity::Timer_SpyUndercoverThink()
+{
+}
+
+void CBaseEntity::Timer_FinishedBuilding()
+{
+}
+
+void CBaseEntity::Timer_CheckBuildDistance()
+{
+}
+
+void CBaseEntity::Timer_DetpackDisarm()
+{
+}
+
+void CBaseEntity::Timer_DetpackSet()
+{
+}
+
+void CBaseEntity::Timer_Birthday()
+{
+}
+
+void CBaseEntity::Timer_Regeneration()
+{
+}
+
+void CBaseEntity::Timer_Tranquilisation()
+{
+}
+
+void CBaseEntity::Timer_Hallucination()
+{
+}
+
+void CBaseEntity::Timer_HealthRot()
+{
+}
+
+CBaseEntity *CBaseEntity::CreateTimer( int iTimerType )
+{
+	return 0;
+}
+
+CBaseEntity *CBaseEntity::FindTimer( int iTimerType )
+{
+	return 0;
+}
+
+void CBaseEntity::Timer_Infection()
+{
+}
+
+void CBaseEntity::CheckBelowBuilding( int iDist )
+{
+}
+
+int CBaseEntity::CheckArea( CBaseEntity *pIgnore )
+{
+	return 0;
+}
+
+void CBaseEntity::TeamFortress_CalcEMPDmgRad( float dmg, float rad )
+{
+}
+
+void CBaseEntity::TeamFortress_EMPExplode( entvars_t *pevGren, float damage, float radius )
+{
+}

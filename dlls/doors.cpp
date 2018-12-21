@@ -625,12 +625,12 @@ void CBaseDoor::DoorGoUp( void )
 
 	// emit door moving and stop sounds on CHAN_STATIC so that the multicast doesn't
 	// filter them out and leave a client stuck with looping door sounds!
-	if( !FBitSet( pev->spawnflags, SF_DOOR_SILENT ) && && !m_bIsReopening )
+	if( !FBitSet( pev->spawnflags, SF_DOOR_SILENT ) && !m_bIsReopening )
 	{
 		// don't play sounds too often
 		if( m_fNextSoundPlay < gpGlobals->time )
 		{
-			PLAYBACK_EVENT_FULL( FEV_RELIABLE, NULL, m_usDoorGoUp, 0.0, (float *)&Center(), (float *)&g_vecZero, 0.0, 0.0, ( m_bMoveSnd << 8 ) | ( m_bStopSnd & 0xff ), 0, 0, 0 );
+			PLAYBACK_EVENT_FULL( FEV_RELIABLE, NULL, m_usDoorGoUp, 0.0, (float *)Center(), (float *)&g_vecZero, 0.0, 0.0, ( m_bMoveSnd << 8 ) | ( m_bStopSnd & 0xff ), 0, 0, 0 );
 		}
 	}
 
@@ -676,7 +676,7 @@ void CBaseDoor::DoorHitTop( void )
 		{
 			m_bStoppedOpenSound = true;
  
-			PLAYBACK_EVENT_FULL( FEV_RELIABLE, NULL, m_usDoorHitTop, 0.0, (float *)&Center(), (float *)&g_vecZero, 0.0, 0.0, ( m_bMoveSnd << 8 ) | ( m_bStopSnd & 0xff ), 0, 0, 0 );
+			PLAYBACK_EVENT_FULL( FEV_RELIABLE, NULL, m_usDoorHitTop, 0.0, (float *)Center(), (float *)&g_vecZero, 0.0, 0.0, ( m_bMoveSnd << 8 ) | ( m_bStopSnd & 0xff ), 0, 0, 0 );
 		}
 	}
 
@@ -720,7 +720,7 @@ void CBaseDoor::DoorGoDown( void )
 		// don't play sounds too often
 		if( m_fNextSoundPlay < gpGlobals->time )
 		{
-			PLAYBACK_EVENT_FULL( FEV_RELIABLE, NULL, m_usDoorGoDown, 0.0, (float *)&Center(), (float *)&g_vecZero, 0.0, 0.0, ( m_bMoveSnd << 8 ) | ( m_bStopSnd & 0xff ), 0, 0, 0 );
+			PLAYBACK_EVENT_FULL( FEV_RELIABLE, NULL, m_usDoorGoDown, 0.0, (float *)Center(), (float *)&g_vecZero, 0.0, 0.0, ( m_bMoveSnd << 8 ) | ( m_bStopSnd & 0xff ), 0, 0, 0 );
 		}
 	}
 #ifdef DOOR_ASSERT
@@ -745,7 +745,7 @@ void CBaseDoor::DoorHitBottom( void )
 		// don't play sounds too often
 		if( m_fNextSoundPlay < gpGlobals->time )
 		{
-			PLAYBACK_EVENT_FULL( FEV_RELIABLE, NULL, m_usDoorHitBottom, 0.0, (float *)&Center(), (float *)&g_vecZero, 0.0, 0.0, ( m_bMoveSnd << 8 ) | ( m_bStopSnd & 0xff ), 0, 0, 0 );
+			PLAYBACK_EVENT_FULL( FEV_RELIABLE, NULL, m_usDoorHitBottom, 0.0, (float *)Center(), (float *)&g_vecZero, 0.0, 0.0, ( m_bMoveSnd << 8 ) | ( m_bStopSnd & 0xff ), 0, 0, 0 );
 		}
 	}
 

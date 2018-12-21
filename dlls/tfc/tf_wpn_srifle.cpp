@@ -187,7 +187,7 @@ void CTFSniperRifle::PrimaryAttack()
     vec3_t vecSrc, vecEnd;
     TraceResult tr;
 
-    if(m_pPlayer->ammo_buckshot <= 0)
+    if(m_pPlayer->ammo_shells <= 0)
     {
         PlayEmptySound();
         return;
@@ -207,7 +207,7 @@ void CTFSniperRifle::PrimaryAttack()
 
     PLAYBACK_EVENT_FULL(1, ENT(m_pPlayer->pev), m_usSniperHit, 0, (float *)&g_vecZero, (float *)&g_vecZero, 0, 0, 0, 0, 0, 0);
 
-    m_pPlayer->ammo_buckshot--;
+    m_pPlayer->ammo_shells--;
 }
 
 void CTFSniperRifle::ItemPostFrame()
