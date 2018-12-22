@@ -94,6 +94,9 @@ void CItem::Spawn( void )
 	UTIL_SetSize( pev, Vector( -16, -16, 0 ), Vector( 16, 16, 16 ) );
 	SetTouch( &CItem::ItemTouch );
 
+	if( m_flRespawnTime == 0.0f )
+		m_flRespawnTime = 20.0f;
+
 	if( DROP_TO_FLOOR(ENT( pev ) ) == 0 )
 	{
 		ALERT(at_error, "Item %s fell out of level at %f,%f,%f\n", STRING( pev->classname ), pev->origin.x, pev->origin.y, pev->origin.z);
@@ -164,9 +167,27 @@ void CItem::Materialize( void )
 		pev->effects &= ~EF_NODRAW;
 		pev->effects |= EF_MUZZLEFLASH;
 	}
+	else
+		EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, "items/itembk2.wav", 1, ATTN_NORM, 0, 150 );
 
 	SetTouch( &CItem::ItemTouch );
 	SetThink( NULL );
+}
+
+void CItem::TeamFortress_EMPRemove()
+{
+	Respawn();
+}
+
+void CItem::KeyValue( KeyValueData *pkvd )
+{
+	if( FStrEq( pkvd->szKeyName, "respawn_delay" ) )
+	{
+		m_flRespawnTime = atof( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else
+		CBaseEntity::KeyValue( pkvd );
 }
 
 #define SF_SUIT_SHORTLOGON		0x0001
