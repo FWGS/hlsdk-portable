@@ -36,7 +36,6 @@ SRCS+=../dlls/tfc/tf_wpn_rpg.cpp
 SRCS+=../dlls/tfc/tf_wpn_sg.cpp
 SRCS+=../dlls/tfc/tf_wpn_srifle.cpp
 SRCS+=../dlls/tfc/tf_wpn_tranq.cpp
-SRCS+=../dlls/crowbar.cpp
 SRCS+=tfc/ev_tfc.cpp
 SRCS+=tfc/tf_baseentity.cpp
 SRCS+=tfc/tf_events.cpp
