@@ -79,7 +79,7 @@ int CTFNailgun::AddToPlayer( CBasePlayer *pPlayer )
 
 void CTFNailgun::PrimaryAttack()
 {
-    if(m_pPlayer->ammo_bolts <= 0)
+    if(m_pPlayer->ammo_nails <= 0)
     {
         PlayEmptySound();
         return;
@@ -89,7 +89,7 @@ void CTFNailgun::PrimaryAttack()
     m_pPlayer->m_iWeaponFlash = 512;
     PLAYBACK_EVENT_FULL(1, ENT(m_pPlayer->pev), m_usFireNailGun, 0, (float *)&g_vecZero, (float *)&g_vecZero, 0, 0, 0, 0, 0, 0);
     m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
-    m_pPlayer->ammo_bolts--;
+    m_pPlayer->ammo_nails--;
     m_flTimeWeaponIdle = 10;
     m_flNextPrimaryAttack = 0.1;
 }
@@ -125,7 +125,7 @@ BOOL CTFSuperNailgun::Deploy()
 
 void CTFSuperNailgun::PrimaryAttack()
 {
-    if(m_pPlayer->ammo_bolts <= 0)
+    if(m_pPlayer->ammo_nails <= 0)
     {
         PlayEmptySound();
         return;
@@ -135,9 +135,9 @@ void CTFSuperNailgun::PrimaryAttack()
     m_pPlayer->m_iWeaponFlash = 512;
     PLAYBACK_EVENT_FULL(1, ENT(m_pPlayer->pev), m_usFireSuperNailGun, 0, (float *)&g_vecZero, (float *)&g_vecZero, 0, 0, 0, 0, 0, 0);
     m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
-    m_pPlayer->ammo_bolts -= 2;
-    if(m_pPlayer->ammo_bolts < 0)
-        m_pPlayer->ammo_bolts = 0;
+    m_pPlayer->ammo_nails -= 2;
+    if(m_pPlayer->ammo_nails < 0)
+        m_pPlayer->ammo_nails = 0;
     m_flTimeWeaponIdle = 10;
     m_flNextPrimaryAttack = 0.1;
 }

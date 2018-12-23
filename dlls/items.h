@@ -27,5 +27,9 @@ public:
 	{
 		return FALSE;
 	};
+	void TeamFortress_EMPRemove();
+	void KeyValue( KeyValueData *pkvd );
+
+	float m_flRespawnTime;
 };
 #endif // ITEMS_H

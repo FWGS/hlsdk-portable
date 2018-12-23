@@ -98,7 +98,7 @@ void CTFShotgun::PrimaryAttack()
         spread.y = 0.04;
         spread.z = 0;
         m_pPlayer->FireBullets(6, vecSrc, vecAiming, spread, 2048.0, 6, 0, 4, 0);
-        if ( !m_iClip && m_pPlayer->ammo_buckshot <= 0 )
+        if ( !m_iClip && m_pPlayer->ammo_shells <= 0 )
         {
             p_vecDirShooting = 0;
             flDelta = 0.0;
@@ -116,7 +116,7 @@ void CTFShotgun::PrimaryAttack()
 
 void CTFShotgun::Reload( void )
 {
-    if ( m_pPlayer->ammo_buckshot >= m_iShellsReloaded )
+    if ( m_pPlayer->ammo_shells >= m_iShellsReloaded )
     {
         if ( m_iClip != m_iMaxClipSize && m_flNextPrimaryAttack <= 0.0 ) // && m_flNextReload <= 0.0
         {
@@ -135,7 +135,7 @@ void CTFShotgun::Reload( void )
                 else
                 {
                     m_iClip = m_iShellsReloaded + m_iClip;
-                    m_pPlayer->ammo_buckshot -= m_iShellsReloaded;
+                    m_pPlayer->ammo_shells -= m_iShellsReloaded;
                     m_fInSpecialReload = 1;
                     //m_pPlayer->tfstate &= 2;
                 }
@@ -169,7 +169,7 @@ void CTFShotgun::WeaponIdle( void )
     {
         if ( m_fInSpecialReload )
         {
-            if ( m_iClip == m_iMaxClipSize || m_pPlayer->ammo_buckshot < m_iShellsReloaded )
+            if ( m_iClip == m_iMaxClipSize || m_pPlayer->ammo_shells < m_iShellsReloaded )
             {
                 PLAYBACK_EVENT_FULL(1, ENT(m_pPlayer->pev), m_usPumpShotgun, 0, (float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, 0, 0, 1, 0);
                 m_fInSpecialReload = 0;
@@ -288,7 +288,7 @@ void CTFSuperShotgun::PrimaryAttack()
         spread.y = 0.04;
         spread.z = 0;
         m_pPlayer->FireBullets(14, vecSrc, vecAiming, spread, 2048.0, 6, 4, 4, 0);
-        if ( !m_iClip && m_pPlayer->ammo_buckshot <= 0 )
+        if ( !m_iClip && m_pPlayer->ammo_shells <= 0 )
         {
             p_vecDirShooting = 0;
             flDelta = 0.0;

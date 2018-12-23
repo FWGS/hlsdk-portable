@@ -95,7 +95,7 @@ void CTFFlamethrower::PrimaryAttack()
 {
     BOOL bUnderwater;
 
-    if(m_pPlayer->ammo_uranium <= 0)
+    if(m_pPlayer->ammo_cells <= 0)
     {
         PlayEmptySound();
         return;
@@ -116,5 +116,5 @@ void CTFFlamethrower::PrimaryAttack()
         m_flTimeWeaponIdle = 0.15;
         m_flNextPrimaryAttack = 0.15;
     }
-    m_pPlayer->ammo_uranium--;
+    m_pPlayer->ammo_cells--;
 }

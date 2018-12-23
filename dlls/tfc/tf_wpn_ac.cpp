@@ -112,7 +112,7 @@ void CTFAssaultC::PrimaryAttack()
     {
         case 2:
         {
-            if(m_pPlayer->ammo_buckshot <= 0)
+            if(m_pPlayer->ammo_shells <= 0)
             {
                 PLAYBACK_EVENT_FULL(7, ENT(m_pPlayer->pev), m_usStartSpin, 0, (float *)&g_vecZero, (float *)&g_vecZero, 0, 0, 0, 0, 0, 0);
                 m_iWeaponState = 3;
@@ -128,7 +128,7 @@ void CTFAssaultC::PrimaryAttack()
         }
         case 3:
         {
-            if(m_pPlayer->ammo_buckshot <= 0)
+            if(m_pPlayer->ammo_shells <= 0)
             {
                 PLAYBACK_EVENT_FULL(7, ENT(m_pPlayer->pev), m_usSpin, 0, (float *)&g_vecZero, (float *)&g_vecZero, 0, 0, 0, 0, 0, 0);
                 m_pPlayer->SetAnimation(PLAYER_ATTACK1);
@@ -172,7 +172,7 @@ void CTFAssaultC::Fire()
     if(m_flNextPrimaryAttack > 0)
         return;
 
-    PLAYBACK_EVENT_FULL(9, ENT(m_pPlayer->pev), m_usWindUp, 0, (float *)&g_vecZero, (float *)&g_vecZero, 0, 0, 0, 0, m_pPlayer->ammo_buckshot & 1, 0);
+    PLAYBACK_EVENT_FULL(9, ENT(m_pPlayer->pev), m_usWindUp, 0, (float *)&g_vecZero, (float *)&g_vecZero, 0, 0, 0, 0, m_pPlayer->ammo_shells & 1, 0);
     m_pPlayer->m_iWeaponVolume = 600;
     m_pPlayer->m_iWeaponFlash = 256;
     m_pPlayer->pev->effects |= EF_MUZZLEFLASH;
@@ -184,5 +184,5 @@ void CTFAssaultC::Fire()
     vecSpread.y = 0.1;
     vecSpread.z = 0.0;
     FireBullets(5, p_vecSrc, vecAiming, vecSpread, 8192.0, 7, 8, 7, 0);
-    m_pPlayer->ammo_buckshot--;
+    m_pPlayer->ammo_shells--;
 }

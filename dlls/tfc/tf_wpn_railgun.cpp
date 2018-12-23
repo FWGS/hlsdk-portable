@@ -53,7 +53,7 @@ BOOL CTFRailgun::Deploy()
 
 void CTFRailgun::PrimaryAttack()
 {
-    if(m_pPlayer->ammo_bolts <= 0)
+    if(m_pPlayer->ammo_nails <= 0)
     {
         PlayEmptySound();
         m_flNextPrimaryAttack = 0.2;
@@ -65,7 +65,7 @@ void CTFRailgun::PrimaryAttack()
     PLAYBACK_EVENT_FULL(1, ENT(m_pPlayer->pev), m_usFireRail, 0, (float *)&g_vecZero, (float *)&g_vecZero, 0, 0, 0, 0, 0, 0);
     m_pPlayer->pev->effects |= EF_MUZZLEFLASH;
     m_pPlayer->SetAnimation(PLAYER_ATTACK1);
-    m_pPlayer->ammo_bolts--;
+    m_pPlayer->ammo_nails--;
     m_flNextPrimaryAttack = 0.4;
     m_flTimeWeaponIdle = 12.5;
 }
