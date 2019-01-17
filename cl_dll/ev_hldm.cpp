@@ -252,14 +252,6 @@ char *EV_HLDM_DamageDecal( physent_t *pe )
 	return decalname;
 }
 
-//=====================
-// EV_WallPuffCallback
-//=====================
-void EV_WallPuffCallback( struct tempent_s *ent, float frametime, float currenttime )
-{
-	ent->entity.angles = ent->entity.baseline.vuser1;
-}
-
 void EV_HLDM_GunshotDecalTrace( pmtrace_t *pTrace, char *decalName )
 {
 	int iRand;
@@ -300,35 +292,6 @@ void EV_HLDM_GunshotDecalTrace( pmtrace_t *pTrace, char *decalName )
 			gEngfuncs.pEfxAPI->R_DecalShoot(
 				gEngfuncs.pEfxAPI->Draw_DecalIndex( gEngfuncs.pEfxAPI->Draw_DecalIndexFromName( decalName ) ),
 				gEngfuncs.pEventAPI->EV_IndexFromTrace( pTrace ), 0, pTrace->endpos, 0 );
-
-			//
-			// Spawn small smoke puffs at the trace end location.
-			//
-			int modelindex = gEngfuncs.pEventAPI->EV_FindModelIndex( "sprites/wallsmoke.spr" );
-			Vector position = pTrace->endpos + pTrace->plane.normal * 2;
-			Vector velocity = pTrace->plane.normal * gEngfuncs.pfnRandomFloat( 8, 10 );
-
-			TEMPENTITY* pSmoke = gEngfuncs.pEfxAPI->R_TempSprite(
-				position, 				// position
-				velocity,				// velocity
-				0.4, // scale
-				modelindex, 				// model index
-				kRenderNormal, 				// rendermode
-				kRenderFxNoDissipation, 		// renderfx
-				1.0, 	// alpha
-				0.3, 					// life
-				FTENT_SPRCYCLE | FTENT_FADEOUT);	// flags
-
-			if( pSmoke )
-			{
-				Vector angles;
-				VectorAngles( velocity, angles );
-
-				pSmoke->flags |= FTENT_CLIENTCUSTOM;
-				pSmoke->entity.curstate.framerate = 4;
-				pSmoke->entity.baseline.vuser1 = angles;
-				pSmoke->callback = EV_WallPuffCallback;
-			}
 		}
 	}
 }
@@ -411,6 +374,136 @@ int EV_HLDM_CheckTracer( int idx, float *vecSrc, float *end, float *forward, flo
 }
 
 /*
+TTT: Event which spawns a smokepuff and/or sparks at a given origin
+Note that you have to precache the sprites in the game dll
+*/
+void EV_HLDM_SmokePuff( pmtrace_t *pTrace, float *vecSrc, float *vecEnd )
+{
+	physent_t *pe;
+
+	// get entity at endpoint
+	pe = gEngfuncs.pEventAPI->EV_GetPhysent( pTrace->ent );
+
+	if( pe && pe->solid == SOLID_BSP )
+	{
+		// if it's a solid wall / entity
+		char chTextureType = CHAR_TEX_CONCRETE;
+		const char *pTextureName;
+		char texname[64];
+		char szbuffer[64];
+
+		// get texture name
+		pTextureName = gEngfuncs.pEventAPI->EV_TraceTexture( pTrace->ent, vecSrc, vecEnd );
+
+		if( pTextureName )
+		{
+			strcpy( texname, pTextureName );
+			pTextureName = texname;
+
+			// strip leading '-0' or '+0~' or '{' or '!'
+			if(*pTextureName == '-' || *pTextureName == '+')
+			{
+				pTextureName += 2;
+			}
+
+			if (*pTextureName == '{' || *pTextureName == '!' || *pTextureName == '~' || *pTextureName == ' ')
+			{
+				pTextureName++;
+			}
+
+			// '}}'
+			strcpy( szbuffer, pTextureName );
+			szbuffer[CBTEXTURENAMEMAX - 1 ] = 0;
+
+			// get texture type
+			chTextureType = PM_FindTextureType( szbuffer );
+		}
+
+		bool fDoPuffs = false;
+		bool fDoSparks = false;
+		int a, r, g, b;
+
+		switch( chTextureType )
+		{
+			// do smoke puff and eventually add sparks
+			case CHAR_TEX_TILE:
+			case CHAR_TEX_CONCRETE:
+				fDoSparks = ( gEngfuncs.pfnRandomLong( 1, 4 ) ==  1 );
+				fDoPuffs = true;
+				a = 128;
+				r = 200;
+				g = 200;
+				b = 200;
+				break;
+			// don't draw puff, but add sparks often
+			case CHAR_TEX_VENT:
+			case CHAR_TEX_GRATE:
+			case CHAR_TEX_METAL:
+				fDoSparks = ( gEngfuncs.pfnRandomLong( 1, 2 ) == 1 );
+				break;
+			// draw brown puff, but don't do sparks
+			case CHAR_TEX_DIRT:
+			case CHAR_TEX_WOOD:
+				fDoPuffs = true;
+				a = 250;
+				r = 97;
+				g = 86;
+				b = 53;
+				break;
+			// don't do anything if those textures (perhaps add something later...)
+			default:
+			case CHAR_TEX_GLASS:
+			case CHAR_TEX_COMPUTER:
+			case CHAR_TEX_SLOSH:
+				break;
+		}
+
+		if( fDoPuffs )
+		{
+			vec3_t angles, forward, right, up;
+
+			VectorAngles( pTrace->plane.normal, angles );
+
+			AngleVectors( angles, forward, up, right );
+			forward.z = -forward.z;
+
+			// get sprite index
+			int iWallsmoke = gEngfuncs.pEventAPI->EV_FindModelIndex( "sprites/wallsmoke.spr" );
+
+			// create sprite
+			TEMPENTITY *pTemp = gEngfuncs.pEfxAPI->R_TempSprite(
+				pTrace->endpos,
+				forward * gEngfuncs.pfnRandomFloat( 10, 30 ) + right * gEngfuncs.pfnRandomFloat( -6, 6 ) + up * gEngfuncs.pfnRandomFloat( 0, 6 ),
+				0.4,
+				iWallsmoke,
+				kRenderTransAlpha,
+				kRenderFxNone,
+				1.0,
+				0.3,
+				FTENT_SPRANIMATE | FTENT_FADEOUT
+				);
+
+			if( pTemp )
+			{
+				// sprite created successfully, adjust some things
+				pTemp->fadeSpeed = 2.0;
+				pTemp->entity.curstate.framerate = 20.0;
+				pTemp->entity.curstate.renderamt = a;
+				pTemp->entity.curstate.rendercolor.r = r;
+				pTemp->entity.curstate.rendercolor.g = g;
+				pTemp->entity.curstate.rendercolor.b = b;
+			}
+		}
+
+		if( fDoSparks )
+		{
+			// spawn some sparks
+			gEngfuncs.pEfxAPI->R_SparkShower( pTrace->endpos );
+		}
+	}
+}
+
+/*
 ================
 FireBullets
 
@@ -475,6 +568,7 @@ void EV_HLDM_FireBullets( int idx, float *forward, float *right, float *up, int 
 			case BULLET_PLAYER_9MM:
 				EV_HLDM_PlayTextureSound( idx, &tr, vecSrc, vecEnd, iBulletType );
 				EV_HLDM_DecalGunshot( &tr, iBulletType );
+				EV_HLDM_SmokePuff( &tr, vecSrc, vecEnd );
 				break;
 			case BULLET_PLAYER_MP5:
 			case BULLET_PLAYER_AK47:
@@ -483,15 +577,18 @@ void EV_HLDM_FireBullets( int idx, float *forward, float *right, float *up, int 
 				{
 					EV_HLDM_PlayTextureSound( idx, &tr, vecSrc, vecEnd, iBulletType );
 					EV_HLDM_DecalGunshot( &tr, iBulletType );
+					EV_HLDM_SmokePuff( &tr, vecSrc, vecEnd );
 				}
 				break;
 			case BULLET_PLAYER_BUCKSHOT:
 				EV_HLDM_DecalGunshot( &tr, iBulletType );
+				EV_HLDM_SmokePuff( &tr, vecSrc, vecEnd );
 				break;
 			case BULLET_PLAYER_357:
 			case BULLET_PLAYER_SNIPER:
 				EV_HLDM_PlayTextureSound( idx, &tr, vecSrc, vecEnd, iBulletType );
 				EV_HLDM_DecalGunshot( &tr, iBulletType );
+				EV_HLDM_SmokePuff( &tr, vecSrc, vecEnd );
 				break;
 			}
 		}
