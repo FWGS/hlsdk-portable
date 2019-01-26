@@ -795,6 +795,7 @@ class CPitDrone : public CBaseMonster
 };
 
 LINK_ENTITY_TO_CLASS(monster_pitdrone, CPitDrone)
+LINK_ENTITY_TO_CLASS(monster_pit_drone, CPitDrone)
 
 TYPEDESCRIPTION	CPitDrone::m_SaveData[] =
 {
