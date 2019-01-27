@@ -1,33 +1,74 @@
-#HLSDK server Android port
-#Copyright (c) nicknekit
+#
+# Half-Life Full SDK 2.3 hl_i386.so Makefile for x86 Linux
+#
+# October 2002 by Leon Hartwig (hartwig@valvesoftware.com)
+#
 
-LOCAL_PATH := $(call my-dir)
+DLLNAME=hl
 
-include $(CLEAR_VARS)
+ARCH=i386
 
-LOCAL_MODULE := server
+#make sure this is the correct compiler for your system
+CC=gcc
+CXX=g++
 
-include $(XASH3D_CONFIG)
+DLL_SRCDIR=.
+ENGINE_SRCDIR=../engine
+COMMON_SRCDIR=../common
+WPN_SHARED_SRCDIR=./wpn_shared
+PM_SHARED_SRCDIR=../pm_shared
+GAME_SHARED_SRCDIR=../game_shared
 
-ifeq ($(TARGET_ARCH_ABI),armeabi-v7a-hard)
-LOCAL_MODULE_FILENAME = libserver_hardfp
-endif
+DLL_OBJDIR=$(DLL_SRCDIR)/obj
+WPN_SHARED_OBJDIR=$(WPN_SHARED_SRCDIR)/obj
+PM_SHARED_OBJDIR=$(PM_SHARED_SRCDIR)/obj
+GAME_SHARED_OBJDIR=$(GAME_SHARED_SRCDIR)/obj
 
-LOCAL_CFLAGS += -D_LINUX -DCLIENT_WEAPONS -Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf \
+#BASE_CFLAGS=	-Dstricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp \
+		-DCLIENT_WEAPONS -DNO_VOICEGAMEMGR
+
+BASE_CFLAGS= -DCLIENT_WEAPONS -Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf \
 	-fno-exceptions -DNO_VOICEGAMEMGR -Wno-conversion-null -Wno-write-strings -std=gnu++98 -Wno-invalid-offsetof
 
 
-LOCAL_CPPFLAGS := $(LOCAL_CFLAGS)
+#safe optimization
+CFLAGS=$(BASE_CFLAGS) -m32 -w -O1
 
-LOCAL_C_INCLUDES := $(SDL_PATH)/include \
-		    $(LOCAL_PATH)/. \
-		    $(LOCAL_PATH)/wpn_shared \
-		    $(LOCAL_PATH)/../common \
-		    $(LOCAL_PATH)/../engine/common \
-		    $(LOCAL_PATH)/../engine \
-		    $(LOCAL_PATH)/../public \
-		    $(LOCAL_PATH)/../pm_shared \
-		    $(LOCAL_PATH)/../game_shared
+#full optimization
+#CFLAGS=$(BASE_CFLAGS) -w -O1 -m486 -ffast-math -funroll-loops \
+	-fomit-frame-pointer -fexpensive-optimizations \
+	-malign-loops=2 -malign-jumps=2 -malign-functions=2
+
+#use these when debugging 
+#CFLAGS=$(BASE_CFLAGS) -g
+
+INCLUDEDIRS=-I. -I$(ENGINE_SRCDIR) -I$(COMMON_SRCDIR) -I$(PM_SHARED_SRCDIR) -I$(GAME_SHARED_SRCDIR)
+
+LDFLAGS=
+
+SHLIBEXT=dll
+SHLIBCFLAGS=-fPIC
+SHLIBLDFLAGS=-static-libgcc -static-libstdc++ -shared -Wl,--add-stdcall-alias -Wl,--no-warn-mismatch -Wl,--no-undefined
+
+DO_CC=$(CC) $(CFLAGS) $(SHLIBCFLAGS) $(INCLUDEDIRS) -o $@ -c $<
+DO_CXX=$(CXX) $(CFLAGS) $(SHLIBCFLAGS) $(INCLUDEDIRS) -o $@ -c $<
+
+#############################################################################
+# SETUP AND BUILD
+# GAME
+#############################################################################
+
+$(DLL_OBJDIR)/%.o: $(DLL_SRCDIR)/%.cpp
+	$(DO_CXX)
+
+$(WPN_SHARED_OBJDIR)/%.o: $(WPN_SHARED_SRCDIR)/%.cpp
+	$(DO_CXX)
+
+$(GAME_SHARED_OBJDIR)/%.o: $(GAME_SHARED_SRCDIR)/%.cpp
+	$(DO_CXX)
+
+$(PM_SHARED_OBJDIR)/%.o: $(PM_SHARED_SRCDIR)/%.c
+	$(DO_CC)
 
 LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
            aflock.cpp \
@@ -131,17 +172,35 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
            prop.cpp \
            gravgun.cpp \
            ar2.cpp \
-		   big_cock.cpp \
-		   swinging_rope.cpp \
+           big_cock.cpp \
            unpredictedweapon.cpp \
-	   ../pm_shared/pm_debug.c \
-	   ../pm_shared/pm_math.c \
-	   ../pm_shared/pm_shared.c \
 	   coop.cpp \
 	   gateofbabylon.cpp \
-	   gravgunmod.cpp \
-#	   ../game_shared/voice_gamemgr.cpp
+	   gravgunmod.cpp
 
-LOCAL_LDLIBS := -llog
+LOCAL_SRC_FILES+= swinging_rope.cpp
 
-include $(BUILD_SHARED_LIBRARY)
+OBJ = $(patsubst %.cpp,$(DLL_OBJDIR)/%.o,$(LOCAL_SRC_FILES))
+
+OBJ += $(PM_SHARED_OBJDIR)/pm_debug.o \
+	$(PM_SHARED_OBJDIR)/pm_math.o \
+	$(PM_SHARED_OBJDIR)/pm_shared.o 
+
+
+$(DLLNAME).$(SHLIBEXT) : neat $(OBJ)
+	$(CXX) $(CFLAGS) $(SHLIBLDFLAGS) $(LDFLAGS) -o $@ $(OBJ)
+
+neat:
+	-mkdir "$(DLL_OBJDIR)"
+	-mkdir "$(WPN_SHARED_OBJDIR)"
+	-mkdir "$(GAME_SHARED_OBJDIR)"
+	-mkdir "$(PM_SHARED_OBJDIR)"
+clean:
+	-rm -f "$(OBJ)"
+	-rm -f "$(DLLNAME).$(SHLIBEXT)"
+spotless: clean
+	-rm -r $(DLL_OBJDIR)
+	-rm -r $(WPN_SHARED_OBJDIR)
+	-rm -r $(GAME_SHARED_OBJDIR)
+	-rm -r $(PM_SHARED_OBJDIR)
+

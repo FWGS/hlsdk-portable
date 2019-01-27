@@ -2,3 +2,4 @@
 #define WEAPON_BIG_COCK			18
 #define WEAPON_AR2				19
 #define WEAPON_GATEOFBABYLON	20
+#define WEAPON_ROPE 21

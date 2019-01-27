@@ -363,6 +363,7 @@ void W_Precache( void )
 		UTIL_PrecacheOtherWeapon( "weapon_big_cock" );
 	if( cvar_allow_gateofbabylon.value )
 		UTIL_PrecacheOtherWeapon( "weapon_gateofbabylon" );
+	UTIL_PrecacheOtherWeapon( "weapon_rope" );
 
 
 #if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
