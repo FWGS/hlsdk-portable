@@ -5,13 +5,13 @@
 
 //#include "nodes.h"
 
-#if _GRAPH_VERSION != 16
+#if _GRAPH_VERSION != _GRAPH_VERSION_RETAIL
 
 #include "stdint.h"
 
 typedef int32_t PTR32;
 
-class CGraph_32
+class CGraph_Retail
 {
 public:
 
@@ -62,10 +62,11 @@ public:
 		other->m_nRouteInfo	= m_nRouteInfo;
 
 		other->m_di = NULL;
-#if _GRAPH_VERSION == 160
+
 		memcpy( (void *) &other->m_RangeStart, (void *) m_RangeStart,
 				offsetof(class CGraph, m_pHashLinks) - offsetof(class CGraph, m_RangeStart) );
-#else	// fallback routine if the graph version changes
+
+#if 0	          // replacement routine in case a change in CGraph breaks the above memcpy
 		for (int i = 0; i < 3; ++i)
 			for (int j = 0; j < NUM_RANGES; ++j)
 				other->m_RangeStart[i][j] = m_RangeStart[i][j];
@@ -102,6 +103,7 @@ public:
 			other->m_HashPrimes[i]	= m_HashPrimes[i];
 //		m_HashPrimes[16]
 #endif
+
 		other->m_pHashLinks = NULL;
 		other->m_nHashLinks	= m_nHashLinks;
 
@@ -114,7 +116,7 @@ public:
 };
 
 
-class CLink_32
+class CLink_Retail
 {
 
 public:
