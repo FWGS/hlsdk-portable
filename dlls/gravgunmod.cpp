@@ -3062,6 +3062,36 @@ void GGM_Pause_f( void )
 	g_fPause ^= true;
 }
 
+extern int gmsgSayText;
+
+void GGM_SayText( const char *line )
+{
+	char text[254] = {};
+
+	snprintf( text, sizeof( text ), "%s\n", line );
+
+	MESSAGE_BEGIN( MSG_ALL, gmsgSayText, NULL );
+	WRITE_BYTE( ENTINDEX(0) );
+	WRITE_STRING( text );
+	MESSAGE_END();
+}
+
+void GGM_SayText_f( void )
+{
+	GGM_SayText(CMD_ARGS());
+}
+
+int GGM_ConnectionlessPacket( const struct netadr_s *net_from, const char *args, char *response_buffer, int *response_buffer_size )
+{
+	if( !strncmp( args, "ggm_chat ", 9 ) )
+	{
+		GGM_SayText( args + 9 );
+		*response_buffer_size = 0;
+		return 1;
+	}
+	return 0;
+}
+
 /*
 =====================
 GGM_RegisterCVars
@@ -3115,6 +3145,7 @@ void GGM_RegisterCVars( void )
 	g_engfuncs.pfnAddServerCommand( "ggm_load", GGM_Load_f );
 	g_engfuncs.pfnAddServerCommand( "ggm_votecommand", GGM_VoteCommand_f );
 	g_engfuncs.pfnAddServerCommand( "ggm_pause", GGM_Pause_f );
+	g_engfuncs.pfnAddServerCommand( "ggm_saytext", GGM_SayText_f );
 
 	zombietime = CVAR_GET_POINTER("zombietime");
 
