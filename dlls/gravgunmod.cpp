@@ -227,6 +227,7 @@ int GGM_ChangelevelVote( CBasePlayer *pPlayer, edict_t *pTrigger, const char *ps
 			g_Vote.iMode = VOTE_COOP_CHANGELEVEL;
 			g_Vote.pTrigger = pTrigger;
 			g_Vote.pPlayer = pPlayer;
+			ALERT( at_logged, "coop: %s started vote changelevel for %s\n", GGM_PlayerName( pPlayer ), pszMapName );
 			UTIL_CoopPrintMessage( "%s^7 wants to change map ^1BACK to %s\n", GGM_PlayerName( pPlayer ), pszMapName );
 			snprintf(g_Vote.szMessage, 255, "Change map BACK TO %s?", pszMapName );
 			GGM_BroadcastVote();
@@ -275,12 +276,15 @@ bool GGM_VoteProcess( CBasePlayer *pPlayer, const char *pszStr )
 
 		if( g_Vote.iMode == VOTE_COOP_CHANGELEVEL )
 		{
-			UTIL_CoopPrintMessage( "%s^7 confirmed map change\n", GGM_PlayerName( pPlayer ));
+			UTIL_CoopPrintMessage( "%s^7 confirmed map change\n", GGM_PlayerName( pPlayer ) );
+			ALERT( at_logged, "coop: %s confirmed map change\n", GGM_PlayerName( pPlayer ) );
+			
 			DispatchTouch( g_Vote.pTrigger, g_Vote.pPlayer.Get() );
 		}
 		else if( g_Vote.iMode == VOTE_COMMAND )
 		{
-			UTIL_CoopPrintMessage( "%s^7 confirmed vote\n", GGM_PlayerName( pPlayer ));
+			UTIL_CoopPrintMessage( "%s^7 confirmed vote\n", GGM_PlayerName( pPlayer ) );
+			ALERT( at_logged, "ggm: %s confirmed vote for \"%s\"\n", GGM_PlayerName( pPlayer ), g_Vote.szCommand );
 			if( g_Vote.iConfirm > g_Vote.iMaxCount / 2 )
 			{
 				g_fCmdUsed = false;
@@ -2430,6 +2434,8 @@ extern "C" const char *CMD_ARGV( int i )
 	}
 	return g_engfuncs.pfnCmd_Argv( i );
 }
+
+
 
 // client.cpp
 void ClientCommand( edict_t *pEntity );
