@@ -12,7 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
-#pragma once
+
 #ifndef SPRITE_H
 #define SPRITE_H
 

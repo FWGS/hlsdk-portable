@@ -12,12 +12,13 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
-#pragma once
+
 #ifndef PHYSINT_H
 #define PHYSINT_H
 
 #define SV_PHYSICS_INTERFACE_VERSION		6
 
+#define ADDRESS_OF_AREA				8
 #define STRUCT_FROM_LINK( l, t, m )		((t *)((byte *)l - (int)&(((t *)0)->m)))
 #define EDICT_FROM_AREA( l )			STRUCT_FROM_LINK( l, edict_t, area )
 
@@ -59,11 +60,11 @@ typedef struct server_physics_api_s
 	void		( *pfnUpdateFogSettings )( unsigned int packed_fog );
 	char		**(*pfnGetFilesList)( const char *pattern, int *numFiles, int gamedironly );
 	struct msurface_s	*(*pfnTraceSurface)( edict_t *pTextureEntity, const float *v1, const float *v2 );
-	const byte	*(*pfnGetTextureData)( unsigned int texnum );
+	const byte *(*pfnGetTextureData)( unsigned int texnum );
 
 	// static allocations
-	void		*(*pfnMemAlloc)( size_t cb, const char *filename, const int fileline );
-	void		(*pfnMemFree)( void *mem, const char *filename, const int fileline );
+	void	*(*pfnMemAlloc)( size_t cb, const char *filename, const int fileline );
+	void	(*pfnMemFree)( void *mem, const char *filename, const int fileline );
 } server_physics_api_t;
 
 // physic callbacks

@@ -12,7 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
-#pragma once
+
 #ifndef CUSTOMENTITY_H
 #define CUSTOMENTITY_H
 
@@ -28,7 +28,7 @@ enum
 	BEAM_POINTS = 0,
 	BEAM_ENTPOINT,
 	BEAM_ENTS,
-	BEAM_HOSE
+	BEAM_HOSE,
 };
 
 #define BEAM_FSINE		0x10
