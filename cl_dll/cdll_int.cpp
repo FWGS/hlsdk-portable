@@ -40,6 +40,13 @@ cl_enginefunc_t gEngfuncs;
 CHud gHUD;
 mobile_engfuncs_t *gMobileEngfuncs = NULL;
 
+#include "game_menu_int.h"
+HINTERFACEMODULE g_hMainUIModule = NULL;
+IGameMenuExports *g_pMainUI = NULL;
+
+void CL_LoadMainUI( void );
+void CL_UnloadMainUI( void );
+
 extern "C" int g_bhopcap;
 void InitInput( void );
 void EV_HookEvents( void );
@@ -396,4 +403,41 @@ bool HUD_MessageBox( const char *msg )
 bool IsXashFWGS()
 {
 	return gMobileEngfuncs != NULL;
+}
+
+void CL_UnloadMainUI( void )
+{
+	Sys_FreeModule( g_hMainUIModule );
+
+	g_pMainUI = NULL;
+	g_hMainUIModule = NULL;
+}
+
+void CL_LoadMainUI( void )
+{
+	char szPDir[512];
+
+	if ( gEngfuncs.COM_ExpandFilename( MAINUI_DLLNAME, szPDir, sizeof( szPDir ) ) == FALSE )
+	{
+		g_pMainUI = NULL;
+		g_hMainUIModule = NULL;
+		return;
+	}
+
+	g_hMainUIModule = Sys_LoadModule( szPDir );
+	CreateInterfaceFn MainUIFactory = Sys_GetFactory( g_hMainUIModule );
+
+	if ( MainUIFactory == NULL )
+	{
+		g_pMainUI = NULL;
+		g_hMainUIModule = NULL;
+		return;
+	}
+
+	g_pMainUI = (IGameMenuExports *)MainUIFactory( GAMEMENUEXPORTS_INTERFACE_VERSION, NULL);
+
+	if ( g_pMainUI )
+	{
+		 g_pMainUI->Initialize( MainUIFactory );
+	}
 }

@@ -63,6 +63,7 @@ typedef struct cvar_s cvar_t;
 
 #define	MAX_MOTD_LENGTH				1536
 
+
 //
 //-----------------------------------------------------
 //
@@ -599,6 +600,7 @@ public:
 	void DrawDarkRectangle( int x, int y, int wide, int tall );
 
 	bool m_bAllowSpec;
+	int m_iNumberOfTeams;
 
 private:
 	// the memory for these arrays are allocated in the first call to CHud::VidInit(), when the hud.txt and associated sprites are loaded.
@@ -659,6 +661,7 @@ public:
 	int  _cdecl MsgFunc_Concuss( const char *pszName, int iSize, void *pbuf );
 
 	int  _cdecl MsgFunc_AllowSpec( const char *pszName, int iSize, void *pbuf );
+	int  _cdecl MsgFunc_TeamNames( const char *pszName, int iSize, void *pbuf );
 	int  _cdecl MsgFunc_VGUIMenu( const char *pszName, int iSize, void *pbuf );
 
 	// Screen information

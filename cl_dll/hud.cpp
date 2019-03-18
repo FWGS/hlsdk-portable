@@ -111,7 +111,7 @@ int __MsgFunc_ValClass( const char *pszName, int iSize, void *pbuf )
 
 int __MsgFunc_TeamNames( const char *pszName, int iSize, void *pbuf )
 {
-	return 0;
+	return gHUD.MsgFunc_TeamNames( pszName, iSize, pbuf );
 }
 
 int __MsgFunc_Feign( const char *pszName, int iSize, void *pbuf )
@@ -600,6 +600,15 @@ int CHud::MsgFunc_AllowSpec( const char *pszName,  int iSize, void *pbuf )
 	return 1;
 }
 
+int CHud::MsgFunc_TeamNames( const char *pszName,  int iSize, void *pbuf )
+{
+	BEGIN_READ( pbuf, iSize );
+
+	m_iNumberOfTeams = READ_BYTE();
+
+	return 1;
+}
+
 int CHud::MsgFunc_VGUIMenu( const char *pszName,  int iSize, void *pbuf )
 {
 	BEGIN_READ( pbuf, iSize );
@@ -614,18 +623,32 @@ int CHud::MsgFunc_VGUIMenu( const char *pszName,  int iSize, void *pbuf )
 void CHud::ShowVGUIMenu( int menuType )
 {
     char *szCmd;
+	int iTeam;
 
-	switch(menuType)
+	iTeam = g_PlayerExtraInfo[m_Scoreboard.m_iPlayerNum].teamnumber;
+
+	switch( menuType )
 	{
 	case MENU_TEAM:
-		szCmd = "exec touch/chooseteam.cfg";
+		if( m_iNumberOfTeams == 2)
+			szCmd = "exec touch/tf_2teams_menu.cfg";
+		if( m_iNumberOfTeams == 4)
+			szCmd = "exec touch/tf_4teams_menu.cfg";
+		break;
+	case MENU_CLASS:
+		if( iTeam == 0 )
+			szCmd = "exec touch/tf_class_menu_blue.cfg";
+		if( iTeam == 1 )
+			szCmd = "exec touch/tf_class_menu_red.cfg";
+		if( iTeam == 2 )
+			szCmd = "exec touch/tf_class_menu_yellow.cfg";
+		if( iTeam == 3 )
+			szCmd = "exec touch/tf_class_menu_green.cfg";
 		break;
 	default:
-		szCmd = "touch_removebutton _menu_*"; // back to the default touch page
-		//m_fMenuDisplayed = 0;
+		szCmd = "touch_removebutton menu_*"; // back to the default touch page
 		break;
 	}
-	//Velaron: Touch Menus
-	//m_fMenuDisplayed = 1;
-	ClientCmd(szCmd);
+
+	ClientCmd( szCmd );
 }

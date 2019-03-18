@@ -14,6 +14,8 @@
 		#define EXPORT
 	#endif
 #endif
+#ifndef DLLEXPORT
 #define DLLEXPORT EXPORT
+#endif
 #define _DLLEXPORT EXPORT
 #endif // EXPORTDEF_H

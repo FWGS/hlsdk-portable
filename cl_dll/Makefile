@@ -1,27 +1,25 @@
-CC?=gcc
-CXX?=g++
-SRCS+=../dlls/crossbow.cpp
+CC ?= gcc
+CXX ?= g++
+
+SRCS+=../dlls/tfc/tf_wpn_ac.cpp
+SRCS+=../dlls/tfc/tf_wpn_ar.cpp
+SRCS+=../dlls/tfc/tf_wpn_axe.cpp
+SRCS+=../dlls/tfc/tf_wpn_flame.cpp
+SRCS+=../dlls/tfc/tf_wpn_gl.cpp
+SRCS+=../dlls/tfc/tf_wpn_ic.cpp
+SRCS+=../dlls/tfc/tf_wpn_ng.cpp
+SRCS+=../dlls/tfc/tf_wpn_railgun.cpp
+SRCS+=../dlls/tfc/tf_wpn_rpg.cpp
+SRCS+=../dlls/tfc/tf_wpn_sg.cpp
+SRCS+=../dlls/tfc/tf_wpn_srifle.cpp
+SRCS+=../dlls/tfc/tf_wpn_tranq.cpp
+SRCS+=./tfc/ev_tfc.cpp
+SRCS+=./tfc/tf_baseentity.cpp
+SRCS+=./tfc/tf_events.cpp
+SRCS+=./tfc/tf_objects.cpp
+SRCS+=./tfc/tf_weapons.cpp
 SRCS+=../dlls/crowbar.cpp
-SRCS+=../dlls/egon.cpp
-SRCS+=./ev_hldm.cpp
-SRCS+=../dlls/gauss.cpp
-SRCS+=../dlls/handgrenade.cpp
-SRCS+=./hl/hl_baseentity.cpp
-SRCS+=./hl/hl_events.cpp
-SRCS+=./hl/hl_objects.cpp
-SRCS+=./hl/hl_weapons.cpp
-SRCS+=../dlls/glock.cpp
-SRCS+=../dlls/hornetgun.cpp
-#SRCS+=../common/interface.cpp
-SRCS+=../dlls/mp5.cpp
-SRCS+=../dlls/python.cpp
-SRCS+=../dlls/rpg.cpp
-SRCS+=../dlls/satchel.cpp
-SRCS+=../dlls/shotgun.cpp
-SRCS+=../dlls/squeakgrenade.cpp
-SRCS+=../dlls/tripmine.cpp
-#SRCS+=../game_shared/voice_banmgr.cpp
-#SRCS+=../game_shared/voice_status.cpp
+SRCS+=../common/interface.cpp
 SRCS+=./ammo.cpp
 SRCS+=./ammo_secondary.cpp
 SRCS+=./ammohistory.cpp
@@ -40,13 +38,12 @@ SRCS+=./health.cpp
 SRCS+=./hud.cpp
 SRCS+=./hud_msg.cpp
 SRCS+=./hud_redraw.cpp
-#SRCS+=./hud_servers.cpp
 SRCS+=./hud_spectator.cpp
 SRCS+=./hud_update.cpp
 SRCS+=./in_camera.cpp
 SRCS+=./input.cpp
-SRCS+=./input_mouse.cpp
 SRCS+=./input_goldsource.cpp
+SRCS+=./input_mouse.cpp
 SRCS+=./menu.cpp
 SRCS+=./message.cpp
 SRCS+=./overview.cpp
@@ -67,27 +64,21 @@ SRCS+=./view.cpp
 SRCS+=./input_xash3d.cpp
 SRCS+=./scoreboard.cpp
 SRCS+=./MOTD.cpp
-INCLUDES =  -I../common -I. -I../game_shared -I../pm_shared -I../engine -I../dlls -I../utils/false_vgui/include
-DEFINES = -Wno-write-strings -Dstricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp -DCLIENT_WEAPONS -DCLIENT_DLL
+
+INCLUDES = -I../common -I. -I../game_shared -I../pm_shared -I../engine -I../dlls -I../dlls/tfc -I../utils/false_vgui/include
+DEFINES = -Wno-write-strings -DLINUX -D_LINUX -Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -DCLIENT_WEAPONS -DCLIENT_DLL
 CFLAGS = -m32
 OBJS = $(SRCS:.cpp=.o) $(SRCS_C:.c=.o)
-
-LIBS=-lm
-ifeq ($(GOLDSOURCE_SUPPORT),1)
-	DEFINES += -DGOLDSOURCE_SUPPORT
-endif
-
-ifeq ($(shell uname -s),Linux)
-	LIBS += -ldl
-endif
+LIBS = -lm
 
 %.o : %.c
-	$(CC) $(CFLAGS) $(INCLUDES) $(DEFINES) -fPIC -c $< -o $@
+	$(CC) $(CFLAGS) $(INCLUDES) $(DEFINES) -c $< -o $@
 
 %.o : %.cpp
-	$(CXX) $(CFLAGS) $(INCLUDES) $(DEFINES) -fPIC -c $< -o $@
-client.so : $(OBJS)
-	$(CXX) $(CFLAGS) $(OBJS) -o client.so -shared -Wl,--no-undefined -fPIC $(LIBS)
+	$(CXX) $(CFLAGS) $(INCLUDES) $(DEFINES) -c $< -o $@
+
+all : $(OBJS)
+	$(CXX) $(CFLAGS) $(OBJS) -o client.dll -shared -Wl,--no-undefined $(LIBS)
 
 clean:
-	$(RM) $(OBJS)
+	-cmd /c del $(subst /,\,$(OBJS))

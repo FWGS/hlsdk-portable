@@ -18,3 +18,9 @@ cmake_install.cmake
 *.vsproj
 *.sln
 *.cmd
+
+*.config
+*.files
+*.includes
+*.creator
+*.user
