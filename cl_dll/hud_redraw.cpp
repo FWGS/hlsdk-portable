@@ -176,6 +176,9 @@ int CHud::Redraw( float flTime, int intermission )
 	}
 	*/
 
+	//Velaron: TEMP HACK!!!
+	gEngfuncs.Cvar_SetValue( "cl_lw", 0.0f );
+
 	return 1;
 }
 

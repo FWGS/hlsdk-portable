@@ -23,6 +23,8 @@
 
 #define MAX_CLIENTS 32
 
+extern BEAM *pBeam;
+extern BEAM *pBeam2;
 void ClearEventList( void );
 
 extern float g_lastFOV;			// Vit_amiN
@@ -79,6 +81,9 @@ void CHud::MsgFunc_InitHUD( const char *pszName, int iSize, void *pbuf )
 
 	// catch up on any building events that are going on
 	gEngfuncs.pfnServerCmd("sendevents");
+
+	//Probably not a good place to put this.
+		pBeam = pBeam2 = NULL;
 }
 
 int CHud::MsgFunc_GameMode( const char *pszName, int iSize, void *pbuf )

@@ -2098,6 +2098,9 @@ void PM_LadderMove( physent_t *pLadder )
 	if( pmove->movetype == MOVETYPE_NOCLIP )
 		return;
 
+	if ( pmove->maxspeed <= 1.0 )
+			return;
+
 	pmove->PM_GetModelBounds( pLadder->model, modelmins, modelmaxs );
 
 	VectorAdd( modelmins, modelmaxs, ladderCenter );
@@ -3010,12 +3013,6 @@ void PM_PlayerMove( qboolean server )
 			//  it will be set immediately again next frame if necessary
 			pmove->movetype = MOVETYPE_WALK;
 		}
-	}
-
-	// Slow down, I'm pulling it! (a box maybe) but only when I'm standing on ground
-	if( ( pmove->onground != -1 ) && ( pmove->cmd.buttons & IN_USE ) )
-	{
-		VectorScale( pmove->velocity, 0.3, pmove->velocity );
 	}
 
 	// Handle movement

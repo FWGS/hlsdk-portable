@@ -1625,7 +1625,7 @@ int CStudioModelRenderer::StudioDrawPlayer( int flags, entity_state_t *pplayer )
 
 	int modelindex; 
 	int iSwitchClass = pplayer->playerclass;
-/* crashes
+/* Velaron: fix crash!
 	if( iSwitchClass == PC_SPY )
 		iSwitchClass = ReturnDiguisedClass( m_nPlayerIndex );
 */

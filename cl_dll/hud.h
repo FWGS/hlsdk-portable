@@ -63,6 +63,13 @@ typedef struct cvar_s cvar_t;
 
 #define	MAX_MOTD_LENGTH				1536
 
+/*
+#include "progdefs.h"
+#include "screenfade.h"
+#include "shake.h"
+#include "pm_shared.h"
+extern globalvars_t				*gpGlobals;
+*/
 
 //
 //-----------------------------------------------------
@@ -599,8 +606,13 @@ public:
 	int DrawHudStringLen( const char *szIt );
 	void DrawDarkRectangle( int x, int y, int wide, int tall );
 
-	bool m_bAllowSpec;
+	bool m_iAllowSpectators;
+	int	m_iValidClasses[5];
+	int m_iIsFeigning;
 	int m_iNumberOfTeams;
+	int m_iIsSettingDetpack;
+	int m_iBuildState;
+	int m_iRandomPC;
 
 private:
 	// the memory for these arrays are allocated in the first call to CHud::VidInit(), when the hud.txt and associated sprites are loaded.
@@ -663,6 +675,16 @@ public:
 	int  _cdecl MsgFunc_AllowSpec( const char *pszName, int iSize, void *pbuf );
 	int  _cdecl MsgFunc_TeamNames( const char *pszName, int iSize, void *pbuf );
 	int  _cdecl MsgFunc_VGUIMenu( const char *pszName, int iSize, void *pbuf );
+	void  _cdecl CmdFunc_InputPlayerSpecial( void );
+	int _cdecl MsgFunc_ValClass( const char *pszName,  int iSize, void *pbuf );
+	int _cdecl MsgFunc_Feign( const char *pszName,  int iSize, void *pbuf );
+	int _cdecl MsgFunc_Detpack( const char *pszName,  int iSize, void *pbuf );
+	int _cdecl MsgFunc_BuildSt( const char *pszName,  int iSize, void *pbuf );
+	int _cdecl MsgFunc_RandomPC( const char *pszName,  int iSize, void *pbuf );
+/*
+	int _cdecl MsgFunc_ResetFade( const char *pszName,  int iSize, void *pbuf );
+	int _cdecl MsgFunc_SpecFade( const char *pszName,  int iSize, void *pbuf );
+*/
 
 	// Screen information
 	SCREENINFO	m_scrinfo;

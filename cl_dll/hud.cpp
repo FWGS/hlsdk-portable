@@ -81,14 +81,13 @@ int __MsgFunc_GameMode( const char *pszName, int iSize, void *pbuf )
 	return gHUD.MsgFunc_GameMode( pszName, iSize, pbuf );
 }
 
-// TFFree Command Menu
 void __CmdFunc_OpenCommandMenu( void )
 {
 }
 
-// TFC "special" command
 void __CmdFunc_InputPlayerSpecial( void )
 {
+	gHUD.CmdFunc_InputPlayerSpecial();
 }
 
 void __CmdFunc_CloseCommandMenu( void )
@@ -103,10 +102,9 @@ void __CmdFunc_ToggleServerBrowser( void )
 {
 }
 
-// TFFree Command Menu Message Handlers
 int __MsgFunc_ValClass( const char *pszName, int iSize, void *pbuf )
 {
-	return 0;
+	return gHUD.MsgFunc_ValClass( pszName, iSize, pbuf );
 }
 
 int __MsgFunc_TeamNames( const char *pszName, int iSize, void *pbuf )
@@ -116,12 +114,12 @@ int __MsgFunc_TeamNames( const char *pszName, int iSize, void *pbuf )
 
 int __MsgFunc_Feign( const char *pszName, int iSize, void *pbuf )
 {
-	return 0;
+	return gHUD.MsgFunc_Feign( pszName, iSize, pbuf );
 }
 
 int __MsgFunc_Detpack( const char *pszName, int iSize, void *pbuf )
 {
-	return 0;
+	return gHUD.MsgFunc_Detpack( pszName, iSize, pbuf );
 }
 
 int __MsgFunc_VGUIMenu( const char *pszName, int iSize, void *pbuf )
@@ -131,12 +129,12 @@ int __MsgFunc_VGUIMenu( const char *pszName, int iSize, void *pbuf )
 
 int __MsgFunc_BuildSt( const char *pszName, int iSize, void *pbuf )
 {
-	return 0;
+	return gHUD.MsgFunc_BuildSt( pszName, iSize, pbuf );
 }
 
 int __MsgFunc_RandomPC( const char *pszName, int iSize, void *pbuf )
 {
-	return 0;
+	return gHUD.MsgFunc_RandomPC( pszName, iSize, pbuf );
 }
  
 int __MsgFunc_ServerName( const char *pszName, int iSize, void *pbuf )
@@ -153,7 +151,19 @@ int __MsgFunc_AllowSpec( const char *pszName, int iSize, void *pbuf )
 {
 	return gHUD.MsgFunc_AllowSpec( pszName, iSize, pbuf );
 }
- 
+
+/*
+int __MsgFunc_SpecFade(const char *pszName, int iSize, void *pbuf)
+{
+	return gHUD.MsgFunc_SpecFade( pszName, iSize, pbuf );
+}
+
+int __MsgFunc_ResetFade(const char *pszName, int iSize, void *pbuf)
+{
+	return gHUD.MsgFunc_ResetFade( pszName, iSize, pbuf );
+}
+ */
+
 // This is called every time the DLL is loaded
 void CHud::Init( void )
 {
@@ -165,7 +175,6 @@ void CHud::Init( void )
 	HOOK_MESSAGE( SetFOV );
 	HOOK_MESSAGE( Concuss );
 
-	// TFFree CommandMenu
 	HOOK_COMMAND( "+commandmenu", OpenCommandMenu );
 	HOOK_COMMAND( "-commandmenu", CloseCommandMenu );
 	HOOK_COMMAND( "ForceCloseCommandMenu", ForceCloseCommandMenu );
@@ -182,6 +191,10 @@ void CHud::Init( void )
 
 	HOOK_MESSAGE( Spectator );
 	HOOK_MESSAGE( AllowSpec );
+/*
+	HOOK_MESSAGE( SpecFade );
+	HOOK_MESSAGE( ResetFade );
+*/
 
 	// VGUI Menus
 	HOOK_MESSAGE( VGUIMenu );
@@ -595,7 +608,7 @@ int CHud::MsgFunc_AllowSpec( const char *pszName,  int iSize, void *pbuf )
 {
 	BEGIN_READ( pbuf, iSize );
 
-	m_bAllowSpec = (bool)READ_BYTE();
+	m_iAllowSpectators = READ_BYTE();
 
 	return 1;
 }
@@ -614,7 +627,6 @@ int CHud::MsgFunc_VGUIMenu( const char *pszName,  int iSize, void *pbuf )
 	BEGIN_READ( pbuf, iSize );
 
 	int menuType = READ_BYTE();
-	//m_bitsValidSlots = READ_SHORT(); // is ignored
 
 	ShowVGUIMenu(menuType);
 	return 1;
@@ -652,3 +664,143 @@ void CHud::ShowVGUIMenu( int menuType )
 
 	ClientCmd( szCmd );
 }
+
+void CHud::CmdFunc_InputPlayerSpecial( void )
+{
+		ClientCmd( "_special" );
+}
+
+int CHud::MsgFunc_ValClass( const char *pszName,  int iSize, void *pbuf )
+{
+	BEGIN_READ( pbuf, iSize );
+
+	for (int i = 0; i < 5; i++)
+		m_iValidClasses[i] = READ_SHORT();
+
+	return 1;
+}
+
+int CHud::MsgFunc_Feign( const char *pszName,  int iSize, void *pbuf )
+{
+	BEGIN_READ( pbuf, iSize );
+
+	m_iIsFeigning = READ_BYTE();
+
+	return 1;
+}
+
+int CHud::MsgFunc_Detpack( const char *pszName,  int iSize, void *pbuf )
+{
+	BEGIN_READ( pbuf, iSize );
+
+	m_iIsSettingDetpack = READ_BYTE();
+
+	return 1;
+}
+
+int CHud::MsgFunc_BuildSt( const char *pszName,  int iSize, void *pbuf )
+{
+	BEGIN_READ( pbuf, iSize );
+
+	m_iBuildState = READ_BYTE();
+
+	return 1;
+}
+
+int CHud::MsgFunc_RandomPC( const char *pszName,  int iSize, void *pbuf )
+{
+	BEGIN_READ( pbuf, iSize );
+
+	m_iRandomPC = READ_BYTE();
+
+	return 1;
+}
+
+/*
+int CHud::MsgFunc_ResetFade( const char *pszName,  int iSize, void *pbuf )
+{
+	if ( !gpGlobals )
+		return 0;
+
+	screenfade_t sf;
+	gEngfuncs.pfnGetScreenFade( &sf );
+
+	sf.fader = 0;
+	sf.fadeg = 0;
+	sf.fadeb = 0;
+	sf.fadealpha = 0;
+
+	sf.fadeEnd = 0.1;
+	sf.fadeReset = 0.0;
+	sf.fadeSpeed = 0.0;
+
+	sf.fadeFlags = FFADE_IN;
+
+	sf.fadeReset += gpGlobals->time;
+	sf.fadeEnd += sf.fadeReset;
+
+	gEngfuncs.pfnSetScreenFade( &sf );
+
+	return 1;
+}
+
+int CHud::MsgFunc_SpecFade( const char *pszName,  int iSize, void *pbuf )
+{
+	BEGIN_READ( pbuf, iSize );
+
+	int iIndex = READ_BYTE();
+
+	// we're in first-person spectator mode (...not first-person in the PIP)
+	if ( g_iUser1 == OBS_IN_EYE )
+	{
+		// this is the person we're watching
+		if ( g_iUser2 == iIndex )
+		{
+			int iFade = READ_BYTE();
+			int iTeam = READ_BYTE();
+			float flTime = ( (float)READ_SHORT() / 100.0 );
+			int iAlpha = READ_BYTE();
+
+			Vector team = GetTeamColor( iTeam );
+
+			screenfade_t sf;
+			gEngfuncs.pfnGetScreenFade( &sf );
+
+			sf.fader = team[0];
+			sf.fadeg = team[1];
+			sf.fadeb = team[2];
+			sf.fadealpha = iAlpha;
+
+			sf.fadeEnd = flTime;
+			sf.fadeReset = 0.0;
+			sf.fadeSpeed = 0.0;
+
+			if ( iFade == BUILD_TELEPORTER_FADE_OUT )
+			{
+				sf.fadeFlags = FFADE_OUT;
+				sf.fadeReset = flTime;
+
+				if ( sf.fadeEnd )
+					sf.fadeSpeed = -(float)sf.fadealpha / sf.fadeEnd;
+
+				sf.fadeTotalEnd = sf.fadeEnd += gpGlobals->time;
+				sf.fadeReset += sf.fadeEnd;
+			}
+			else
+			{
+				sf.fadeFlags = FFADE_IN;
+
+				if ( sf.fadeEnd )
+					sf.fadeSpeed = (float)sf.fadealpha / sf.fadeEnd;
+
+				sf.fadeReset += gpGlobals->time;
+				sf.fadeEnd += sf.fadeReset;
+			}
+
+			gEngfuncs.pfnSetScreenFade( &sf );
+		}
+	}
+
+	return 1;
+}
+*/

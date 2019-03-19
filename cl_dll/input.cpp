@@ -550,7 +550,7 @@ void IN_Attack2Down( void )
 {
 	KeyDown( &in_attack2 );
 
-	// __CmdFunc_InputPlayerSpecial();
+	__CmdFunc_InputPlayerSpecial();
 
 	gHUD.m_Spectator.HandleButtonsDown( IN_ATTACK2 );
 }
