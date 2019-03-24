@@ -5,7 +5,9 @@
 #include "../mainui/font/FontRenderer.h"
 
 #ifdef _WIN32
-#include "windows.h"
+#define HSPRITE HSPRITE_win32
+#include <windows.h>
+#undef HSPRITE
 #define MAINUI_DLLNAME "cl_dlls/menu.dll"
 #elif defined(OSX)
 #define MAINUI_DLLNAME "cl_dlls/menu.dylib"
@@ -28,7 +30,7 @@ public:
 	virtual void GetCharABCWide( HFont font, int ch, int &a, int &b, int &c ) = 0;
 	virtual int GetFontTall( HFont font ) = 0;
 	virtual int GetCharacterWidth(HFont font, int ch, int charH ) = 0;
-	virtual void GetTextSize( HFont font, const char *text, int *wide, int *height = 0, int size = -1 ) = 0;
+	virtual void GetTextSize( HFont font, const char *text, int *wide, int *height, int size = -1 ) = 0;
 	virtual int	 GetTextHeight( HFont font, const char *text, int size = -1 ) = 0;
 	virtual int DrawCharacter( HFont font, int ch, int x, int y, int charH, const unsigned int color, bool forceAdditive = false ) = 0;
 	virtual void SetupScoreboard( int xstart, int xend, int ystart, int yend, unsigned int color, bool drawStroke ) = 0;

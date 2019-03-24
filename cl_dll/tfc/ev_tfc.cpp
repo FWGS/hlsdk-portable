@@ -345,7 +345,7 @@ void EV_HLDM_GunshotDecalTrace( pmtrace_t *pTrace, char *decalName )
 	}
 }
 
-void EV_HLDM_DecalGunshot( pmtrace_t *pTrace, int iBulletType )
+void EV_TFC_DecalGunshot( pmtrace_t *pTrace, int iBulletType )
 {
 	physent_t *pe;
 
@@ -476,21 +476,21 @@ void EV_HLDM_FireBullets( int idx, float *forward, float *right, float *up, int 
 			default:
 			case BULLET_PLAYER_9MM:
 				EV_HLDM_PlayTextureSound( idx, &tr, vecSrc, vecEnd, iBulletType );
-				EV_HLDM_DecalGunshot( &tr, iBulletType );
+				EV_TFC_DecalGunshot( &tr, iBulletType );
 				break;
 			case BULLET_PLAYER_MP5:
 				if( !tracer )
 				{
 					EV_HLDM_PlayTextureSound( idx, &tr, vecSrc, vecEnd, iBulletType );
-					EV_HLDM_DecalGunshot( &tr, iBulletType );
+					EV_TFC_DecalGunshot( &tr, iBulletType );
 				}
 				break;
 			case BULLET_PLAYER_BUCKSHOT:
-				EV_HLDM_DecalGunshot( &tr, iBulletType );
+				EV_TFC_DecalGunshot( &tr, iBulletType );
 				break;
 			case BULLET_PLAYER_357:
 				EV_HLDM_PlayTextureSound( idx, &tr, vecSrc, vecEnd, iBulletType );
-				EV_HLDM_DecalGunshot( &tr, iBulletType );
+				EV_TFC_DecalGunshot( &tr, iBulletType );
 				break;
 			}
 		}
@@ -1010,7 +1010,7 @@ void EV_FireTFCAutoRifle(event_args_t *args)
         EV_HLDM_PlayTextureSound(idx, &tr, vecSrc, vecEnd, BULLET_PLAYER_357);
         pe = gEngfuncs.pEventAPI->EV_GetPhysent(tr.ent);
         if(pe && (pe->solid == SOLID_BSP || pe->movetype == MOVETYPE_PUSHSTEP))
-            EV_HLDM_DecalGunshot(&tr, BULLET_PLAYER_357);
+            EV_TFC_DecalGunshot(&tr, BULLET_PLAYER_357);
     }
     gEngfuncs.pEventAPI->EV_PopPMStates();
 }
@@ -1488,7 +1488,7 @@ void EV_FireTFCSniper(event_args_t *args)
         EV_HLDM_PlayTextureSound(idx, &tr, vecSrc, vecEnd, BULLET_PLAYER_357);
         pe = gEngfuncs.pEventAPI->EV_GetPhysent(tr.ent);
         if(pe && (pe->solid == SOLID_BSP || pe->movetype == MOVETYPE_PUSHSTEP))
-            EV_HLDM_DecalGunshot(&tr, BULLET_PLAYER_357);
+            EV_TFC_DecalGunshot(&tr, BULLET_PLAYER_357);
     }
 }
 
@@ -1691,7 +1691,7 @@ void EV_TFC_AxeDecal(event_args_t *args)
     {
         pe = gEngfuncs.pEventAPI->EV_GetPhysent(tr->ent);
         if ( pe && (pe->solid == 4 || pe->movetype == 13) )
-            EV_HLDM_DecalGunshot(tr, BULLET_PLAYER_CROWBAR);
+            EV_TFC_DecalGunshot(tr, BULLET_PLAYER_CROWBAR);
         tr = 0;
     }
 }

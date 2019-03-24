@@ -18,6 +18,7 @@ SRCS+=./tfc/tf_baseentity.cpp
 SRCS+=./tfc/tf_events.cpp
 SRCS+=./tfc/tf_objects.cpp
 SRCS+=./tfc/tf_weapons.cpp
+SRCS+=./tfc/touch.cpp
 SRCS+=../dlls/crowbar.cpp
 SRCS+=../common/interface.cpp
 SRCS+=./ammo.cpp
@@ -65,9 +66,9 @@ SRCS+=./input_xash3d.cpp
 SRCS+=./scoreboard.cpp
 SRCS+=./MOTD.cpp
 
-INCLUDES = -I../common -I. -I../game_shared -I../pm_shared -I../engine -I../dlls -I../dlls/tfc -I../utils/false_vgui/include
+INCLUDES = -I../common -I. -I../game_shared -I../pm_shared -I../engine -I../dlls -Itfc -I../dlls/tfc -I../utils/false_vgui/include
 DEFINES = -Wno-write-strings -DLINUX -D_LINUX -Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -DCLIENT_WEAPONS -DCLIENT_DLL
-CFLAGS = -m32
+CFLAGS = -m32 -g
 OBJS = $(SRCS:.cpp=.o) $(SRCS_C:.c=.o)
 LIBS = -lm
 
@@ -78,7 +79,7 @@ LIBS = -lm
 	$(CXX) $(CFLAGS) $(INCLUDES) $(DEFINES) -c $< -o $@
 
 all : $(OBJS)
-	$(CXX) $(CFLAGS) $(OBJS) -o client.dll -shared -Wl,--no-undefined $(LIBS)
+	$(CXX) $(CFLAGS) $(OBJS) -g -o client.dll -shared -Wl,--no-undefined $(LIBS)
 
 clean:
 	-cmd /c del $(subst /,\,$(OBJS))

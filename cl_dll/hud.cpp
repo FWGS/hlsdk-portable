@@ -619,6 +619,27 @@ int CHud::MsgFunc_TeamNames( const char *pszName,  int iSize, void *pbuf )
 
 	m_iNumberOfTeams = READ_BYTE();
 
+	for ( int i = 0; i < m_iNumberOfTeams; i++ )
+	{
+		int teamNum = i + 1;
+
+		m_TextMessage.LocaliseTextString( READ_STRING(), m_sTeamNames[teamNum], 32 );
+
+		if(m_TeamTouchMenu.m_pButtons[i])
+			m_TeamTouchMenu.m_pButtons[i]->SetText( m_sTeamNames[teamNum] );
+
+/*
+		if ( teamNum < 5 )
+		{
+			if ( m_pDisguiseButtons[teamNum] )
+				m_pDisguiseButtons[teamNum]->setText( m_sTeamNames[teamNum] );
+		}
+*/
+	}
+
+	if(m_TeamTouchMenu.Initialized)
+		m_TeamTouchMenu.Update();
+
 	return 1;
 }
 
@@ -634,40 +655,22 @@ int CHud::MsgFunc_VGUIMenu( const char *pszName,  int iSize, void *pbuf )
 
 void CHud::ShowVGUIMenu( int menuType )
 {
-    char *szCmd;
-	int iTeam;
-
-	iTeam = g_PlayerExtraInfo[m_Scoreboard.m_iPlayerNum].teamnumber;
-
 	switch( menuType )
 	{
 	case MENU_TEAM:
-		if( m_iNumberOfTeams == 2)
-			szCmd = "exec touch/tf_2teams_menu.cfg";
-		if( m_iNumberOfTeams == 4)
-			szCmd = "exec touch/tf_4teams_menu.cfg";
+		m_TeamTouchMenu.Draw();
 		break;
 	case MENU_CLASS:
-		if( iTeam == 0 )
-			szCmd = "exec touch/tf_class_menu_blue.cfg";
-		if( iTeam == 1 )
-			szCmd = "exec touch/tf_class_menu_red.cfg";
-		if( iTeam == 2 )
-			szCmd = "exec touch/tf_class_menu_yellow.cfg";
-		if( iTeam == 3 )
-			szCmd = "exec touch/tf_class_menu_green.cfg";
 		break;
 	default:
-		szCmd = "touch_removebutton menu_*"; // back to the default touch page
+		m_TeamTouchMenu.Hide(); // back to the default touch page
 		break;
 	}
-
-	ClientCmd( szCmd );
 }
 
 void CHud::CmdFunc_InputPlayerSpecial( void )
 {
-		ClientCmd( "_special" );
+	ClientCmd( "_special" );
 }
 
 int CHud::MsgFunc_ValClass( const char *pszName,  int iSize, void *pbuf )

@@ -30,6 +30,8 @@
 #include "cl_dll.h"
 #include "ammo.h"
 
+#include "touch.h"
+
 #define DHN_DRAWZERO 1
 #define DHN_2DIGITS  2
 #define DHN_3DIGITS  4
@@ -606,6 +608,7 @@ public:
 	int DrawHudStringLen( const char *szIt );
 	void DrawDarkRectangle( int x, int y, int wide, int tall );
 
+	CTeamTouchMenu m_TeamTouchMenu;
 	bool m_iAllowSpectators;
 	int	m_iValidClasses[5];
 	int m_iIsFeigning;
@@ -613,6 +616,7 @@ public:
 	int m_iIsSettingDetpack;
 	int m_iBuildState;
 	int m_iRandomPC;
+	char m_sTeamNames[5][32];
 
 private:
 	// the memory for these arrays are allocated in the first call to CHud::VidInit(), when the hud.txt and associated sprites are loaded.
