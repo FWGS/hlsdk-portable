@@ -661,9 +661,11 @@ void CHud::ShowVGUIMenu( int menuType )
 		m_TeamTouchMenu.Draw();
 		break;
 	case MENU_CLASS:
+		m_ClassTouchMenu.Draw();
 		break;
 	default:
 		m_TeamTouchMenu.Hide(); // back to the default touch page
+		m_ClassTouchMenu.Hide();
 		break;
 	}
 }

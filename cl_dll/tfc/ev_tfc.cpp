@@ -45,12 +45,6 @@ extern "C" char PM_FindTextureType( char *name );
 void V_PunchAxis( int axis, float punch );
 void VectorAngles( const float *forward, float *angles );
 
-extern cvar_t *cl_lw;
-
-
-BEAM *pBeam;
-BEAM *pBeam2;
-
 extern "C" float anglemod( float a );
 
 struct eventnode_s
@@ -65,6 +59,10 @@ pmtrace_t *gp_tr_decal[33];
 extern float g_flSpinDownTime[33];
 extern int g_bACSpinning[33];
 extern float g_flSpinUpTime[33];
+int m_iSwing;
+extern cvar_t *cl_lw;
+BEAM *pBeam;
+BEAM *pBeam2;
 
 extern "C"
 {
@@ -345,7 +343,7 @@ void EV_HLDM_GunshotDecalTrace( pmtrace_t *pTrace, char *decalName )
 	}
 }
 
-void EV_TFC_DecalGunshot( pmtrace_t *pTrace, int iBulletType )
+void EV_HLDM_DecalGunshot( pmtrace_t *pTrace, int iBulletType )
 {
 	physent_t *pe;
 
@@ -476,21 +474,21 @@ void EV_HLDM_FireBullets( int idx, float *forward, float *right, float *up, int 
 			default:
 			case BULLET_PLAYER_9MM:
 				EV_HLDM_PlayTextureSound( idx, &tr, vecSrc, vecEnd, iBulletType );
-				EV_TFC_DecalGunshot( &tr, iBulletType );
+				EV_HLDM_DecalGunshot( &tr, iBulletType );
 				break;
 			case BULLET_PLAYER_MP5:
 				if( !tracer )
 				{
 					EV_HLDM_PlayTextureSound( idx, &tr, vecSrc, vecEnd, iBulletType );
-					EV_TFC_DecalGunshot( &tr, iBulletType );
+					EV_HLDM_DecalGunshot( &tr, iBulletType );
 				}
 				break;
 			case BULLET_PLAYER_BUCKSHOT:
-				EV_TFC_DecalGunshot( &tr, iBulletType );
+				EV_HLDM_DecalGunshot( &tr, iBulletType );
 				break;
 			case BULLET_PLAYER_357:
 				EV_HLDM_PlayTextureSound( idx, &tr, vecSrc, vecEnd, iBulletType );
-				EV_TFC_DecalGunshot( &tr, iBulletType );
+				EV_HLDM_DecalGunshot( &tr, iBulletType );
 				break;
 			}
 		}
@@ -581,9 +579,37 @@ enum tfc_axe_e
     AXE_IDLE3
 };
 
-int m_iSwing;
+int EV_TFC_PlayCrowbarAnim( int iAnimType )
+{
+	m_iSwing++;
 
-void EV_TFC_Axe(event_args_t *args)
+	if( iAnimType == 1 )
+	{
+		if( m_iSwing % 2 == 0 )
+			return AXE_ATTACK2HIT;
+		else
+			return AXE_ATTACK3HIT;
+	}
+	else
+	{
+		switch( m_iSwing % 3 )
+		{
+		case 0:
+			return AXE_ATTACK1;
+		case 1:
+			return AXE_ATTACK2;
+		case 2:
+			return AXE_ATTACK3;
+		}
+	}
+}
+
+#define CLASS_SPY 0
+#define CLASS_ENGINEER 1
+#define CLASS_MEDIC 2
+#define CLASS_DEFAULT 3
+
+void EV_TFC_Axe( event_args_t *args )
 {
     int idx;
     float fSoundData;
@@ -595,6 +621,7 @@ void EV_TFC_Axe(event_args_t *args)
     vec3_t vecSrc, vecEnd;
     vec3_t right, forward, up;
     vec3_t origin, angles;
+	unsigned short m_usAxeDecal;
 
     idx = args->entindex;
     classid = args->iparam1;
@@ -608,136 +635,105 @@ void EV_TFC_Axe(event_args_t *args)
     gEngfuncs.pEventAPI->EV_SetSolidPlayers(idx - 1);
     gEngfuncs.pEventAPI->EV_SetTraceHull(2);
     gEngfuncs.pEventAPI->EV_PlayerTrace(vecSrc, vecEnd, PM_NORMAL, -1, &tr);
+
     if (tr.fraction >= 1.0)
     {
         gEngfuncs.pEventAPI->EV_SetTraceHull(1);
-        gEngfuncs.pEventAPI->EV_PlayerTrace(vecSrc, vecEnd, PM_NORMAL, -1, &tr2);
+        gEngfuncs.pEventAPI->EV_PlayerTrace( vecSrc, vecEnd, PM_NORMAL, -1, &tr2 );
+
         if(tr2.fraction < 1.0)
             tr = tr2;
     }
+
     gEngfuncs.pEventAPI->EV_PopPMStates();
     gp_tr_decal[idx-1] = 0;
-    if(tr.fraction >= 1.0)
+
+    if( tr.fraction >= 1.0 )
     {
-        if (!EV_IsLocal(idx))
+        if ( !EV_IsLocal(idx) )
         {
-            EV_TFC_PlayAxeSound(idx, classid, origin, 0, 0.0);
+            EV_TFC_PlayAxeSound( idx, classid, origin, 0, 0.0 );
             return;
         }
 
-        switch(classid)
+        switch( classid )
         {
+		case CLASS_DEFAULT:
+		{
+			gEngfuncs.pEventAPI->EV_WeaponAnimation( EV_TFC_PlayCrowbarAnim( 0 ), 2 );
+			EV_TFC_PlayAxeSound( idx, classid, origin, 0, 1.0 );
+			return;
+		}
         default:
-            {
-                switch((m_iSwing++) % 3)
-                {
-                case 1:
-                    if (EV_IsLocal(idx))
-                    gEngfuncs.pEventAPI->EV_WeaponAnimation( AXE_ATTACK1, 2 );
-                    break;
-                case 2:
-                    if (EV_IsLocal(idx))
-                    gEngfuncs.pEventAPI->EV_WeaponAnimation( AXE_ATTACK2, 2 );
-                    break;
-                default:
-                    if (EV_IsLocal(idx))
-                    gEngfuncs.pEventAPI->EV_WeaponAnimation( AXE_ATTACK3, 2 );
-                    break;
-                }
-                if (EV_IsLocal(idx))
-                    EV_TFC_PlayAxeSound(idx, classid, origin, 0, 1.0);
-            }
-            break;
-        case 2:
-        case 0:
-            {
-                if (EV_IsLocal(idx))
-                {
-                    gEngfuncs.pEventAPI->EV_WeaponAnimation( 2, 2 );
-                    EV_TFC_PlayAxeSound(idx, classid, origin, 0, 1.0);
-                }
-            }
-            break;
-        case 1:
-            {
-                if (EV_IsLocal(idx))
-                {
-                    gEngfuncs.pEventAPI->EV_WeaponAnimation( 1, 2 );
-                    EV_TFC_PlayAxeSound(idx, classid, origin, 0, 1.0);
-                }
-            }
-            break;
-        }
+		{
+			gEngfuncs.pEventAPI->EV_WeaponAnimation( ( classid == CLASS_ENGINEER ) ? 1 : 2, 2 );
+			EV_TFC_PlayAxeSound( idx, classid, origin, 0, 1.0 );
+			return;
+		}
+		}
     }
-    else
+
+	gp_tr_decal[idx-1] = &tr; //Velaron: add g_tr_decal?
+	ent = gEngfuncs.pEventAPI->EV_IndexFromTrace( &tr );
+
+    if( EV_IsLocal(idx) )
     {
-        ent = gEngfuncs.pEventAPI->EV_IndexFromTrace(&tr);
-        switch(classid)
+		switch( classid )
         {
+		case CLASS_DEFAULT:
+		{
+			gEngfuncs.pEventAPI->EV_WeaponAnimation( EV_TFC_PlayCrowbarAnim( 1 ), 2 );
+			break;
+		}
         default:
-            {
-                if(!EV_TFC_IsAlly(idx, ent))
-                {
-                    if(cl_localblood->value != 0.0)
-                        EV_TFC_TraceAttack(idx, forward, &tr, 20.0);
-                }
-                if(EV_IsPlayer(ent))
-                    EV_TFC_PlayAxeSound(idx, classid, origin, 1, 1.0);
-                else
-                    EV_TFC_PlayAxeSound(idx, classid, origin, 2, 1.0);
-                switch((m_iSwing++) % 2)
-                {
-                case 1:
-                    if (EV_IsLocal(idx))
-                    gEngfuncs.pEventAPI->EV_WeaponAnimation( AXE_ATTACK2HIT, 2 );
-                    break;
-                default:
-                    if (EV_IsLocal(idx))
-                    gEngfuncs.pEventAPI->EV_WeaponAnimation( AXE_ATTACK3HIT, 2 );
-                    break;
-                }
-            }
-            break;
-        case 0:
-            {
-                if (EV_IsLocal(idx))
-                    gEngfuncs.pEventAPI->EV_WeaponAnimation(2, 2);
-                EV_TFC_AxeHit(idx, origin, forward, right, ent, forward, &tr);
-                if (EV_IsLocal(idx))
-                    if(EV_IsPlayer(ent))
-                        EV_TFC_PlayAxeSound(idx, classid, origin, 1, 1.0);
-                    else
-                        EV_TFC_PlayAxeSound(idx, classid, origin, 2, 1.0);
-            }
-            break;
-        case 2:
-            {
-                EV_TFC_Medkit(idx, origin, forward, right, ent, forward, &tr);
-                if (EV_IsLocal(idx))
-                {
-                    gEngfuncs.pEventAPI->EV_WeaponAnimation(3, 2);
-                    if(EV_IsPlayer(ent))
-                        EV_TFC_PlayAxeSound(idx, classid, origin, 1, 1.0);
-                    else
-                        EV_TFC_PlayAxeSound(idx, classid, origin, 2, 1.0);
-                }
-            }
-            break;
-        case 1:
-            {
-                EV_TFC_AxeHit(idx, origin, forward, right, ent, forward, &tr);
-                if (EV_IsLocal(idx))
-                {
-                    gEngfuncs.pEventAPI->EV_WeaponAnimation(3, 2);
-                    if(EV_IsPlayer(ent))
-                        EV_TFC_PlayAxeSound(idx, classid, origin, 1, 1.0);
-                    else
-                        EV_TFC_PlayAxeSound(idx, classid, origin, 2, 1.0);
-                }
-            }
-            break;
-        }
-    }
+		{
+			gEngfuncs.pEventAPI->EV_WeaponAnimation( ( classid == CLASS_SPY ) ? 2 : 3, 2 );
+			break;
+		}
+		}
+	}
+
+	if( EV_IsLocal(idx) )
+    {
+		switch( classid )
+        {
+		case CLASS_ENGINEER:
+		{
+			if ( !EV_TFC_IsAlly( idx, ent ) )
+				if ( cl_localblood && cl_localblood->value != 0.0 )
+					EV_TFC_TraceAttack(idx, forward, &tr, 20);
+			break;
+		}
+		case CLASS_MEDIC:
+		{
+			gp_tr_decal[idx-1] = 0;
+			EV_TFC_Medkit( idx, origin, forward, right, ent, forward, &tr );
+			break;
+		}
+        default:
+		{
+			EV_TFC_AxeHit( idx, origin, forward, right, ent, forward, &tr );
+			break;
+		}
+		}
+	}
+
+	if ( gp_tr_decal[idx-1] )
+	{
+		m_usAxeDecal = gEngfuncs.pEventAPI->EV_PrecacheEvent( 1, "events/wpn/tf_axedecal.sc" );
+		gEngfuncs.pEventAPI->EV_PlaybackEvent( idx, 0, m_usAxeDecal, 0.2, (float *)&origin, (float *)&angles, 0, 0, 0, 0, 0, 0 );
+	}
+
+	if ( EV_IsPlayer(ent) )
+	{
+		EV_TFC_PlayAxeSound( idx, classid, origin, 1, 0.0 );
+		return;
+	}
+
+	fSoundData = 1.0;
+	if ( gEngfuncs.GetMaxClients() < 2 )
+		fSoundData = EV_HLDM_PlayTextureSound( idx, &tr, vecSrc, vecSrc, 5 );
+	EV_TFC_PlayAxeSound( idx, classid, origin, 2, fSoundData );
 }
 
 enum tfc_shotgun_e
@@ -1010,7 +1006,7 @@ void EV_FireTFCAutoRifle(event_args_t *args)
         EV_HLDM_PlayTextureSound(idx, &tr, vecSrc, vecEnd, BULLET_PLAYER_357);
         pe = gEngfuncs.pEventAPI->EV_GetPhysent(tr.ent);
         if(pe && (pe->solid == SOLID_BSP || pe->movetype == MOVETYPE_PUSHSTEP))
-            EV_TFC_DecalGunshot(&tr, BULLET_PLAYER_357);
+            EV_HLDM_DecalGunshot(&tr, BULLET_PLAYER_357);
     }
     gEngfuncs.pEventAPI->EV_PopPMStates();
 }
@@ -1488,7 +1484,7 @@ void EV_FireTFCSniper(event_args_t *args)
         EV_HLDM_PlayTextureSound(idx, &tr, vecSrc, vecEnd, BULLET_PLAYER_357);
         pe = gEngfuncs.pEventAPI->EV_GetPhysent(tr.ent);
         if(pe && (pe->solid == SOLID_BSP || pe->movetype == MOVETYPE_PUSHSTEP))
-            EV_TFC_DecalGunshot(&tr, BULLET_PLAYER_357);
+            EV_HLDM_DecalGunshot(&tr, BULLET_PLAYER_357);
     }
 }
 
@@ -1679,7 +1675,7 @@ void EV_TFC_SteamShot(event_args_t *args)
     gEngfuncs.pEventAPI->EV_PlaySound(-1, origin, CHAN_ITEM, "ambience/steamburst1.wav", 1, 0.8, 0, 100);
 }
 
-void EV_TFC_AxeDecal(event_args_t *args)
+void EV_TFC_AxeDecal( event_args_t *args )
 {
     int idx;
     pmtrace_t *tr;
@@ -1687,11 +1683,12 @@ void EV_TFC_AxeDecal(event_args_t *args)
 
     idx = args->entindex;
     tr = gp_tr_decal[idx-1];
-    if (tr)
+
+    if ( tr )
     {
-        pe = gEngfuncs.pEventAPI->EV_GetPhysent(tr->ent);
-        if ( pe && (pe->solid == 4 || pe->movetype == 13) )
-            EV_TFC_DecalGunshot(tr, BULLET_PLAYER_CROWBAR);
+        pe = gEngfuncs.pEventAPI->EV_GetPhysent( tr->ent );
+        if ( pe && ( pe->solid == SOLID_BSP || pe->movetype == MOVETYPE_PUSHSTEP ) )
+            EV_HLDM_DecalGunshot( tr, BULLET_PLAYER_CROWBAR );
         tr = 0;
     }
 }
@@ -2023,6 +2020,7 @@ void EV_TFC_RailDie(particle_s *particle)
         gEngfuncs.pEventAPI->EV_SetSolidPlayers(particle->context - 1);
         gEngfuncs.pEventAPI->EV_SetTraceHull(2);
         gEngfuncs.pEventAPI->EV_PlayerTrace(vecSrc, vecEnd, PM_STUDIO_BOX, -1, &tr);
+
         if(tr.ent != -1)
         {
             pe = gEngfuncs.pEventAPI->EV_GetPhysent(tr.ent);
@@ -2180,6 +2178,7 @@ void EV_TFC_GibCallback(tempent_s *ent, float frametime)
     }
 }
 
+//Velaron: unfinished code
 tempent_s* EV_TFC_CreateGib(float *origin, float *attackdir, int multiplier, int ishead)
 {
     int modelindex;

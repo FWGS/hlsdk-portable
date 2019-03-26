@@ -88,12 +88,12 @@ void CButton::SetPosition( int x, int y )
 	Position.X2 = ( ( (float)x + (float)Size.Width ) * ( (float)ScreenWidth / 640.0f ) ) / (float)ScreenWidth;
 	Position.Y2 = ( ( (float)y + (float)Size.Height ) * ( (float)ScreenHeight / 480.0f ) ) / (float)ScreenHeight;
 
-	Label->SetPosition( x + 2, y + ( Size.Height / 3 ) );
+	Label->SetPosition( x + 2, y + ( Size.Height / 4 ) );
 }
 
 void CButton::SetText( const char* str )
 {
-	Label->SetText(str);
+	Label->SetText( str );
 	Label->SetColor( 255, 174, 0, 255 );
 	Label->SetVisibility( true );
 }
@@ -125,7 +125,7 @@ void CButton::Draw( void )
 	ClientCmd( szCmd );
 }
 
-void CTeamTouchMenu::SetStroke( int width, int r, int g, int b, int a )
+void CTouchMenu::SetStroke( int width, int r, int g, int b, int a )
 {
 	char szCmd[64];
 
@@ -134,13 +134,19 @@ void CTeamTouchMenu::SetStroke( int width, int r, int g, int b, int a )
 	ClientCmd( szCmd );
 }
 
-void CTeamTouchMenu::Hide( void )
+void CTouchMenu::Hide( void )
 {
 	char szCmd[64];
 
 	sprintf( szCmd, CMD_EXIT );
 
 	ClientCmd( szCmd );
+}
+
+
+int CTouchMenu::GetNewButtonIndex( void )
+{
+	return ++BtnIndex;
 }
 
 void CTeamTouchMenu::Init( void )
@@ -150,11 +156,11 @@ void CTeamTouchMenu::Init( void )
 
 	SetStroke( 1, 156, 77, 20, 200 );
 
-	pTitle = new CLabel( GetNewButtonIndex(), 40, 32 );
-	//pTitle->SetText( gHUD.m_TextMessage.BufferedLocaliseTextString( "#Title_SelectYourTeam" ) );
-	pTitle->SetText( "SELECT YOUR TEAM" );
-	pTitle->SetColor( 255, 174, 0, 255 );
-	pTitle->SetVisibility( true );
+	m_pTitle = new CLabel( GetNewButtonIndex(), 40, 32 );
+	//m_pTitle->SetText( gHUD.m_TextMessage.BufferedLocaliseTextString( "#Title_SelectYourTeam" ) );
+	m_pTitle->SetText( "SELECT YOUR TEAM" );
+	m_pTitle->SetColor( 255, 174, 0, 255 );
+	m_pTitle->SetVisibility( true );
 
 	//CLabel *pMapName = new CLabel(16, 16);
 	//pMapName->SetColor(255, 174, 0, 255);
@@ -210,6 +216,7 @@ void CTeamTouchMenu::Update( void )
 		return;
 
 	int iYPos = 80;
+	char *szTeams[] = {":P", "1 RED", "2 BLUE", "3 GREEN", "4 YELLOW"};
 
 	for ( int i = 1; i <= 4; i++ )
 	{
@@ -217,31 +224,7 @@ void CTeamTouchMenu::Update( void )
 		{
 			m_pButtons[i]->SetPosition( 40, iYPos );
 			m_pButtons[i]->SetVisibility( true );
-
-			switch(i)
-			{
-			case 1:
-			{
-				m_pButtons[i]->SetText( "1 RED" );
-				break;
-			}
-			case 2:
-			{
-				m_pButtons[i]->SetText( "2 BLUE" );
-				break;
-			}
-			case 3:
-			{
-				m_pButtons[i]->SetText( "3 GREEN" );
-				break;
-			}
-			case 4:
-			{
-				m_pButtons[i]->SetText( "4 YELLOW" );
-				break;
-			}
-			}
-
+			m_pButtons[i]->SetText( szTeams[i] );
 			iYPos += 24 + 8;
 		}
 
@@ -270,7 +253,7 @@ void CTeamTouchMenu::Draw( void )
 
 	ClientCmd( "touch_setclientonly 1\n" );
 
-	pTitle->Draw();
+	m_pTitle->Draw();
 
 	for ( int i = 1; i <= 4; i++ )
 		m_pButtons[i]->Draw();
@@ -279,7 +262,45 @@ void CTeamTouchMenu::Draw( void )
 	m_pCancelButton->Draw();
 }
 
-int CTeamTouchMenu::GetNewButtonIndex( void )
+void CClassTouchMenu::Init( void )
 {
-	return ++BtnIndex;
+	if( Initialized )
+		return;
+
+	SetStroke( 1, 156, 77, 20, 200 );
+	int iYPos = 80;
+
+	m_pTitle = new CLabel( GetNewButtonIndex(), 40, 32 );
+	m_pTitle->SetText( "SELECT YOUR CLASS" );
+	m_pTitle->SetColor( 255, 174, 0, 255 );
+	m_pTitle->SetVisibility( true );
+
+	char *szCommands[] = {"scout", "sniper", "soldier", "demoman", "medic", "hwguy", "pyro", "spy", "engineer"};
+	char *szLabels[] = {"1 SCOUT", "2 SNIPER", "3 SOLDIER", "4 DEMOMAN", "5 MEDIC", "6 HWGUY", "7 PYRO", "8 SPY", "9 ENGINEER"};
+
+	for ( int i = 0; i <= 8; i++ )
+	{
+		m_pButtons[i] = new CButton( GetNewButtonIndex(), 40, iYPos, 124, 24 );
+		m_pButtons[i]->AddCommand( szCommands[i] );
+		m_pButtons[i]->AddCommand( CMD_EXIT );
+		m_pButtons[i]->SetText( szLabels[i] );
+		m_pButtons[i]->SetColor( 0, 0, 0, 50 );
+		m_pButtons[i]->SetVisibility( true );
+		iYPos += 24 + 8;
+	}
+
+	Initialized = true;
+}
+
+void CClassTouchMenu::Draw( void )
+{
+	if( !Initialized )
+		Init();
+
+	ClientCmd( "touch_setclientonly 1\n" );
+
+	m_pTitle->Draw();
+
+	for ( int i = 0; i <= 8; i++ )
+		m_pButtons[i]->Draw();
 }

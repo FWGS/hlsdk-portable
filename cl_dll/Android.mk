@@ -43,6 +43,7 @@ SRCS+=tfc/tf_baseentity.cpp
 SRCS+=tfc/tf_events.cpp
 SRCS+=tfc/tf_objects.cpp
 SRCS+=tfc/tf_weapons.cpp
+SRCS+=tfc/touch.cpp
 #SRCS+=../game_shared/voice_banmgr.cpp
 #SRCS+=../game_shared/voice_status.cpp
 SRCS+=./ammo.cpp
@@ -95,6 +96,7 @@ INCLUDES =  -I../common -I. -I../game_shared -I../pm_shared -I../engine -I../dll
 DEFINES = -Wno-write-strings -DLINUX -D_LINUX -Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -DCLIENT_WEAPONS -DCLIENT_DLL -w -D_snprintf=snprintf
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/. \
+		 $(LOCAL_PATH)/tfc \
 		 $(LOCAL_PATH)/../common \
 		 $(LOCAL_PATH)/../engine \
 		 $(LOCAL_PATH)/../game_shared \

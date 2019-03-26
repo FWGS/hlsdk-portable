@@ -57,24 +57,41 @@ private:
 	CLabel *Label;
 };
 
-class CTeamTouchMenu
+class CTouchMenu
 {
 public:
-	CTeamTouchMenu() :  BtnIndex(0), Initialized(false) {}
-	int BtnIndex;
-	void Init( void );
-	void Update ( void );
+	CTouchMenu() :  BtnIndex(0), Initialized(false) {}
+
 	void SetStroke( int width, int r, int g, int b, int a );
-	void Draw( void );
 	void Hide( void );
 	int GetNewButtonIndex( void );
+	int BtnIndex;
 	bool Initialized;
+};
+
+class CTeamTouchMenu : public CTouchMenu
+{
+public:
+	void Init( void );
+	void Update ( void );
+	void Draw( void );
 	CButton	*m_pButtons[6];
 
 private:
-	CLabel *pTitle;
+	CLabel *m_pTitle;
 	CButton *m_pSpectateButton;
 	CButton *m_pCancelButton;
+};
+
+class CClassTouchMenu : public CTouchMenu
+{
+public:
+	void Init( void );
+	void Draw( void );
+	CButton	*m_pButtons[9];
+
+private:
+	CLabel *m_pTitle;
 };
 
 #endif

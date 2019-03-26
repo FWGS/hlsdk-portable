@@ -24,7 +24,7 @@ typedef	enum
 }Bullet;
 
 void EV_HLDM_GunshotDecalTrace( pmtrace_t *pTrace, char *decalName );
-void EV_TFC_DecalGunshot( pmtrace_t *pTrace, int iBulletType );
+void EV_HLDM_DecalGunshot( pmtrace_t *pTrace, int iBulletType );
 int EV_HLDM_CheckTracer( int idx, float *vecSrc, float *end, float *forward, float *right, int iBulletType, int iTracerFreq, int *tracerCount );
 void EV_HLDM_FireBullets( int idx, float *forward, float *right, float *up, int cShots, float *vecSrc, float *vecDirShooting, float flDistance, int iBulletType, int iTracerFreq, int *tracerCount, float flSpreadX, float flSpreadY );
 void EV_TFC_NailTouch( struct tempent_s *ent, pmtrace_t *ptr );
@@ -36,10 +36,11 @@ void EV_TFC_RailDie( struct particle_s *particle );
 int EV_TFC_IsAlly( int idx1, int idx2 );
 void EV_TFC_TranqNailTouch( tempent_s *ent, pmtrace_t *ptr );
 void EV_TFC_PlayAxeSound( int idx, int classid, float *origin, int iSoundType, float fSoundData );
-int EV_TFC_AxeHit(int idx, float *origin, float *forward, float *right, int entity, float *vecDir, pmtrace_t *ptr);
-int EV_TFC_Medkit(int idx, float *origin, float *forward, float *right, int entity, float *vecDir, pmtrace_t *ptr);
-tempent_s* EV_TFC_CreateGib(float *origin, float *attackdir, int multiplier, int ishead);
-void EV_TFC_GibCallback(tempent_s *ent, float frametime);
+int EV_TFC_AxeHit( int idx, float *origin, float *forward, float *right, int entity, float *vecDir, pmtrace_t *ptr );
+int EV_TFC_Medkit( int idx, float *origin, float *forward, float *right, int entity, float *vecDir, pmtrace_t *ptr );
+tempent_s* EV_TFC_CreateGib( float *origin, float *attackdir, int multiplier, int ishead );
+void EV_TFC_GibCallback( tempent_s *ent, float frametime );
+int EV_TFC_PlayCrowbarAnim( int iAnimType );
 
 extern cvar_t *cl_gibcount;
 extern cvar_t *cl_giblife;

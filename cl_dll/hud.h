@@ -609,6 +609,7 @@ public:
 	void DrawDarkRectangle( int x, int y, int wide, int tall );
 
 	CTeamTouchMenu m_TeamTouchMenu;
+	CClassTouchMenu m_ClassTouchMenu;
 	bool m_iAllowSpectators;
 	int	m_iValidClasses[5];
 	int m_iIsFeigning;
