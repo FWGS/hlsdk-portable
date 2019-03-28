@@ -45,14 +45,14 @@ engine_studio_api_t IEngineStudio;
 // enumerate all the bones that used for gait animation
 const char *legs_bones[] =
 {
-	"Bip01",
-	"Bip01 Pelvis",
-	"Bip01 L Leg",
-	"Bip01 L Leg1",
-	"Bip01 L Foot",
-	"Bip01 R Leg",
-	"Bip01 R Leg1",
-	"Bip01 R Foot" 
+	"Bip01" ,
+	"Bip01 Pelvis" ,
+	"Bip01 L Thigh" ,
+	"Bip01 L Calf" ,
+	"Bip01 L Foot" ,
+	"Bip01 R Thigh" ,
+	"Bip01 R Calf" ,
+	"Bip01 R Foot"
 };
 
 /*
