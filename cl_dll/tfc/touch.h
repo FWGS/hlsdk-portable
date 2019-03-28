@@ -18,7 +18,7 @@ typedef struct dimensions_s {
 class CLabel
 {
 public:
-	CLabel( int index, int x, int y );
+	CLabel( int index, int x, int y, int width, int height );
 
 	void SetVisibility( bool visible );
 	void SetText( const char* str );
@@ -30,6 +30,7 @@ private:
 	char Name[64];
 	char Text[64];
 	position_t Position;
+	dimensions_t Size;
 	color_t Color;
 	bool Visible;
 };
@@ -88,7 +89,7 @@ class CClassTouchMenu : public CTouchMenu
 public:
 	void Init( void );
 	void Draw( void );
-	CButton	*m_pButtons[9];
+	CButton	*m_pButtons[10];
 
 private:
 	CLabel *m_pTitle;

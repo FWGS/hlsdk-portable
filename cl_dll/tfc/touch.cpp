@@ -4,12 +4,14 @@
 #include "hud.h"
 #include "cl_util.h"
 
-CLabel::CLabel( int index, int x, int y )
+CLabel::CLabel( int index, int x, int y, int width, int height )
 {
 	Position.X1 = ( (float)x * ( (float)ScreenWidth / 640.0f ) ) / (float)ScreenWidth;
 	Position.Y1 = ( (float)y * ( (float)ScreenHeight / 480.0f ) ) / (float)ScreenHeight;
-	Position.X2 = 1.0f;
-	Position.Y2 = 1.0f;
+	Position.X2 = ( ( (float)x + (float)width ) * ( (float)ScreenWidth / 640.0f ) ) / (float)ScreenWidth;
+	Position.Y2 = ( ( (float)y + (float)height ) * ( (float)ScreenHeight / 480.0f ) ) / (float)ScreenHeight;
+	Size.Width = width;
+	Size.Height = height;
 	sprintf( Name, "_vgui_label%i", index );
 	SetVisibility( false );
 }
@@ -23,6 +25,8 @@ void CLabel::SetPosition( int x, int y )
 {
 	Position.X1 = ( (float)x * ( (float)ScreenWidth / 640.0f ) ) / (float)ScreenWidth;
 	Position.Y1 = ( (float)y * ( (float)ScreenHeight / 480.0f ) ) / (float)ScreenHeight;
+	Position.X2 = ( ( (float)x + (float)Size.Width ) * ( (float)ScreenWidth / 640.0f ) ) / (float)ScreenWidth;
+	Position.Y2 = ( ( (float)y + (float)Size.Height ) * ( (float)ScreenHeight / 480.0f ) ) / (float)ScreenHeight;
 }
 
 void CLabel::SetColor( int r, int g, int b, int a )
@@ -62,7 +66,7 @@ CButton::CButton( int index, int x, int y, int width, int height )
 	NumCmds = 0;
 	sprintf( Name, "_vgui_button%i", index );
 
-	Label = new CLabel( index, x + 2 , y + ( height / 2 ) );
+	Label = new CLabel( index, x + 4 , y + ( height / 4 ), width - 4, height - ( height / 4 ) );
 
 	SetVisibility( false );
 }
@@ -88,7 +92,7 @@ void CButton::SetPosition( int x, int y )
 	Position.X2 = ( ( (float)x + (float)Size.Width ) * ( (float)ScreenWidth / 640.0f ) ) / (float)ScreenWidth;
 	Position.Y2 = ( ( (float)y + (float)Size.Height ) * ( (float)ScreenHeight / 480.0f ) ) / (float)ScreenHeight;
 
-	Label->SetPosition( x + 2, y + ( Size.Height / 4 ) );
+	Label->SetPosition( x + 4, y + ( Size.Height / 4 ) );
 }
 
 void CButton::SetText( const char* str )
@@ -156,7 +160,7 @@ void CTeamTouchMenu::Init( void )
 
 	SetStroke( 1, 156, 77, 20, 200 );
 
-	m_pTitle = new CLabel( GetNewButtonIndex(), 40, 32 );
+	m_pTitle = new CLabel( GetNewButtonIndex(), 40, 32, 124, 24 );
 	//m_pTitle->SetText( gHUD.m_TextMessage.BufferedLocaliseTextString( "#Title_SelectYourTeam" ) );
 	m_pTitle->SetText( "SELECT YOUR TEAM" );
 	m_pTitle->SetColor( 255, 174, 0, 255 );
@@ -175,20 +179,21 @@ void CTeamTouchMenu::Init( void )
 
 		sprintf(szCmd, "jointeam %d", i);
 
-		if (i == 5)
+		if ( i == 5 )
 		{
 			m_pButtons[i] = new CButton( GetNewButtonIndex(), 40, iYPos, 124, 24 );
 			m_pButtons[i]->AddCommand( szCmd );
 			m_pButtons[i]->AddCommand( CMD_EXIT );
 			//m_pButtons[i]->SetText( gHUD.m_TextMessage.BufferedLocaliseTextString( "#Team_AutoAssign" ) );
-			m_pButtons[i]->SetText( "AUTO-ASSIGN" );
-			m_pButtons[i]->SetColor( 0, 0, 0, 50 );
+			m_pButtons[i]->SetText( "5 AUTO-ASSIGN" );
+			m_pButtons[i]->SetColor( 0, 0, 0, 0 );
+			break;
 		}
 
 		m_pButtons[i] = new CButton( GetNewButtonIndex(), 40, iYPos, 124, 24 );
 		m_pButtons[i]->AddCommand( szCmd );
 		m_pButtons[i]->AddCommand( CMD_EXIT );
-		m_pButtons[i]->SetColor( 0, 0, 0, 50 );
+		m_pButtons[i]->SetColor( 0, 0, 0, 0 );
 
 		//Team Info?
 	}
@@ -202,8 +207,9 @@ void CTeamTouchMenu::Init( void )
 	m_pSpectateButton = new CButton( GetNewButtonIndex(), 40, 0, 124, 24 );
 	//m_pSpectateButton->SetText( gHUD.m_TextMessage.BufferedLocaliseTextString( "#Menu_Spectate" ) );
 	m_pSpectateButton->SetText( "SPECTATE" );
-	m_pSpectateButton->SetColor( 0, 0, 0, 50 );
+	m_pSpectateButton->SetColor( 0, 0, 0, 0 );
 	m_pSpectateButton->AddCommand( "spectate" );
+	m_pSpectateButton->AddCommand( CMD_EXIT );
 
 	Initialized = true;
 
@@ -216,7 +222,7 @@ void CTeamTouchMenu::Update( void )
 		return;
 
 	int iYPos = 80;
-	char *szTeams[] = {":P", "1 RED", "2 BLUE", "3 GREEN", "4 YELLOW"};
+	char *szTeams[] = {"1 BLUE", "2 RED", "3 GREEN", "4 YELLOW"};
 
 	for ( int i = 1; i <= 4; i++ )
 	{
@@ -224,13 +230,13 @@ void CTeamTouchMenu::Update( void )
 		{
 			m_pButtons[i]->SetPosition( 40, iYPos );
 			m_pButtons[i]->SetVisibility( true );
-			m_pButtons[i]->SetText( szTeams[i] );
+			m_pButtons[i]->SetText( szTeams[i-1] );
 			iYPos += 24 + 8;
 		}
-
 	}
 
 	m_pButtons[5]->SetPosition( 40, iYPos );
+	m_pButtons[5]->SetVisibility( true );
 	iYPos += 24 + 8;
 
 	m_pSpectateButton->SetPosition( 40, iYPos );
@@ -251,11 +257,13 @@ void CTeamTouchMenu::Draw( void )
 	if( !Initialized )
 		Init();
 
+	ClientCmd( "touch_addbutton \"_vgui_background\" \"*white\" \"\" 0.000000 0.000000 1.000000 1.000000 0 0 0 128 4\n" );
+
 	ClientCmd( "touch_setclientonly 1\n" );
 
 	m_pTitle->Draw();
 
-	for ( int i = 1; i <= 4; i++ )
+	for ( int i = 1; i <= 5; i++ )
 		m_pButtons[i]->Draw();
 
 	m_pSpectateButton->Draw();
@@ -270,21 +278,24 @@ void CClassTouchMenu::Init( void )
 	SetStroke( 1, 156, 77, 20, 200 );
 	int iYPos = 80;
 
-	m_pTitle = new CLabel( GetNewButtonIndex(), 40, 32 );
+	m_pTitle = new CLabel( GetNewButtonIndex(), 40, 32, 124, 24 );
 	m_pTitle->SetText( "SELECT YOUR CLASS" );
 	m_pTitle->SetColor( 255, 174, 0, 255 );
 	m_pTitle->SetVisibility( true );
 
 	char *szCommands[] = {"scout", "sniper", "soldier", "demoman", "medic", "hwguy", "pyro", "spy", "engineer"};
-	char *szLabels[] = {"1 SCOUT", "2 SNIPER", "3 SOLDIER", "4 DEMOMAN", "5 MEDIC", "6 HWGUY", "7 PYRO", "8 SPY", "9 ENGINEER"};
+	char *szLabels[] = {"1 SCOUT", "2 SNIPER", "3 SOLDIER", "4 DEMOMAN", "5 MEDIC", "6 HWGUY", "7 PYRO", "8 SPY", "9 ENGINEER", "0 RANDOM"};
 
-	for ( int i = 0; i <= 8; i++ )
+	for ( int i = 0; i <= 9; i++ )
 	{
 		m_pButtons[i] = new CButton( GetNewButtonIndex(), 40, iYPos, 124, 24 );
-		m_pButtons[i]->AddCommand( szCommands[i] );
+		if( i == 9 )
+			m_pButtons[i]->AddCommand( szCommands[gHUD.m_iRandomPC-1] );
+		else
+			m_pButtons[i]->AddCommand( szCommands[i] );
 		m_pButtons[i]->AddCommand( CMD_EXIT );
 		m_pButtons[i]->SetText( szLabels[i] );
-		m_pButtons[i]->SetColor( 0, 0, 0, 50 );
+		m_pButtons[i]->SetColor( 0, 0, 0, 0 );
 		m_pButtons[i]->SetVisibility( true );
 		iYPos += 24 + 8;
 	}
@@ -297,10 +308,12 @@ void CClassTouchMenu::Draw( void )
 	if( !Initialized )
 		Init();
 
+	ClientCmd( "touch_addbutton \"_vgui_background\" \"*white\" \"\" 0.000000 0.000000 1.000000 1.000000 0 0 0 128 4\n" );
+
 	ClientCmd( "touch_setclientonly 1\n" );
 
 	m_pTitle->Draw();
 
-	for ( int i = 0; i <= 8; i++ )
+	for ( int i = 0; i <= 9; i++ )
 		m_pButtons[i]->Draw();
 }
