@@ -55,6 +55,7 @@ struct eventnode_s
 };
 typedef eventnode_s eventnode_t;
 
+pmtrace_s g_tr_decal[33];
 pmtrace_t *gp_tr_decal[33];
 extern float g_flSpinDownTime[33];
 extern int g_bACSpinning[33];
@@ -602,6 +603,7 @@ int EV_TFC_PlayCrowbarAnim( int iAnimType )
 			return AXE_ATTACK3;
 		}
 	}
+	return 0;
 }
 
 #define CLASS_SPY 0
@@ -634,7 +636,7 @@ void EV_TFC_Axe( event_args_t *args )
     gEngfuncs.pEventAPI->EV_PushPMStates();
     gEngfuncs.pEventAPI->EV_SetSolidPlayers(idx - 1);
     gEngfuncs.pEventAPI->EV_SetTraceHull(2);
-    gEngfuncs.pEventAPI->EV_PlayerTrace(vecSrc, vecEnd, PM_NORMAL, -1, &tr);
+    gEngfuncs.pEventAPI->EV_PlayerTrace( vecSrc, vecEnd, PM_NORMAL, -1, &tr );
 
     if (tr.fraction >= 1.0)
     {
@@ -673,10 +675,11 @@ void EV_TFC_Axe( event_args_t *args )
 		}
     }
 
-	gp_tr_decal[idx-1] = &tr; //Velaron: add g_tr_decal?
+	memcpy(&g_tr_decal[idx-1], &tr, sizeof(pmtrace_s));
+	gp_tr_decal[idx-1] = &g_tr_decal[idx-1];
 	ent = gEngfuncs.pEventAPI->EV_IndexFromTrace( &tr );
 
-    if( EV_IsLocal(idx) )
+    if( EV_IsLocal( idx ) )
     {
 		switch( classid )
         {
@@ -870,8 +873,8 @@ void EV_FireTFCNailgun(event_args_t *args)
 
 void EV_TFC_NailTouch(struct tempent_s *ent, pmtrace_t *ptr)
 {
-  physent_t *pe;
-  char name;
+	physent_t *pe;
+	char name;
 
     pe = gEngfuncs.pEventAPI->EV_GetPhysent(ptr->ent);
     if(pe && (pe->solid == SOLID_BSP || pe->movetype == MOVETYPE_PUSHSTEP))

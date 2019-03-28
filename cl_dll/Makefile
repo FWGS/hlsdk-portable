@@ -67,7 +67,7 @@ SRCS+=./scoreboard.cpp
 SRCS+=./MOTD.cpp
 
 INCLUDES = -I../common -I. -I../game_shared -I../pm_shared -I../engine -I../dlls -Itfc -I../dlls/tfc -I../utils/false_vgui/include
-DEFINES = -Wno-write-strings -DLINUX -D_LINUX -Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -DCLIENT_WEAPONS -DCLIENT_DLL
+DEFINES = -Wno-write-strings -DCLIENT_WEAPONS -DCLIENT_DLL
 CFLAGS = -m32 -g
 OBJS = $(SRCS:.cpp=.o) $(SRCS_C:.c=.o)
 LIBS = -lm
