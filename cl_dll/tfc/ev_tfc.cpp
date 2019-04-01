@@ -1126,6 +1126,7 @@ void EV_TFC_Assault_WindDown(event_args_t *args)
     gEngfuncs.pEventAPI->EV_StopSound(idx, CHAN_STATIC, "weapons/asscan2.wav");
     gEngfuncs.pEventAPI->EV_StopSound(idx, CHAN_STATIC, "weapons/asscan4.wav");
     gEngfuncs.pEventAPI->EV_StopSound(idx, CHAN_WEAPON, "weapons/asscan1.wav");
+
     if(!args->bparam1)
         gEngfuncs.pEventAPI->EV_PlaySound(idx, origin, CHAN_WEAPON, "weapons/asscan3.wav", 0.98, 0.8, 0, 125);
 }
@@ -1142,7 +1143,7 @@ void EV_TFC_Assault_Start(event_args_t *args)
     g_bACSpinning[idx - 1] = 0;
     gEngfuncs.pEventAPI->EV_StopSound(idx, CHAN_STATIC, "weapons/asscan2.wav");
     gEngfuncs.pEventAPI->EV_StopSound(idx, CHAN_STATIC, "weapons/asscan4.wav");
-    gEngfuncs.pEventAPI->EV_PlaySound(idx, origin, CHAN_STATIC, "weapons/asscan3.wav", 0.98, 0.8, 0, 125);
+    gEngfuncs.pEventAPI->EV_PlaySound(idx, origin, CHAN_STATIC, "weapons/asscan2.wav", 0.98, 0.8, 0, 125);
 }
 
 void EV_TFC_Assault_Fire( event_args_t *args )
@@ -2078,6 +2079,8 @@ int EV_TFC_IsAlly(int idx1, int idx2)
         return result;
     if(iPlayer2 > 4 || iPlayer2 > 4)
         return 0;
+
+	//Velaron: rewrite
     v10 = strtol(gEngfuncs.PhysInfo_ValueForKey("ta"), 0, 10);
     result = 1;
     if (!(((v10 & 0x1F) + iPlayer1) >> (iPlayer2 - 1) & 1))
