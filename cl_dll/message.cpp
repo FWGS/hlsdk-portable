@@ -281,9 +281,12 @@ void CHudMessage::MessageDrawScan( client_textmessage_t *pMessage, float time )
 		while( *pText && *pText != '\n' )
 		{
 			unsigned char c = *pText;
-			line[m_parms.lineLength] = c;
-			m_parms.width += gHUD.m_scrinfo.charWidths[c];
-			m_parms.lineLength++;
+			if (m_parms.lineLength < sizeof(line)-1)
+			{
+				line[m_parms.lineLength] = c;
+				m_parms.width += gHUD.m_scrinfo.charWidths[c];
+				m_parms.lineLength++;
+			}
 			pText++;
 		}
 		pText++;		// Skip LF
