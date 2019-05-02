@@ -599,9 +599,13 @@ void IN_ResetMouse( void )
 	// no work to do in SDL
 #ifdef _WIN32
 	// reset only if mouse is active and not in visible mode:
-	if(mouseactive && !iVisibleMouse)
+	if(mouseactive && !iVisibleMouse && gEngfuncs.GetWindowCenterX && gEngfuncs.GetWindowCenterY)
 	{
-		if ( !m_bRawInput && gEngfuncs.GetWindowCenterX && gEngfuncs.GetWindowCenterY )
+		if ( !m_bMouseThread && m_bRawInput )
+		{
+			SetCursorPos ( gEngfuncs.GetWindowCenterX(), gEngfuncs.GetWindowCenterY() );
+		}
+		else if ( !m_bRawInput )
 		{
 			bool lockEntered = MouseThread_ActiveLock_Enter();
 
