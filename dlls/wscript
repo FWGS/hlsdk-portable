@@ -49,19 +49,16 @@ def build(bld):
 		])
 	else:
 		defines += ['NO_VOICEGAMEMGR']
-	
+
 	includes = Utils.to_list('. wpn_shared ../common ../engine ../pm_shared ../game_shared ../public')
-	
+
 	libs = []
-	
-	if bld.env.DEST_OS == 'win32':
-		libname = bld.env.SERVER_NAME + '.dll'
-	elif bld.env.DEST_OS == 'linux':
-		libname = bld.env.SERVER_NAME + '.so'
-	elif bld.env.DEST_OS == 'darwin':
-		libname = bld.env.SERVER_NAME + '.dylib'
-	else: libname = ''
-	
+
+	if bld.env.DEST_OS2 not in ['android']:
+		install_path = os.path.join(bld.env.GAMEDIR, bld.env.SERVER_DIR)
+	else:
+		install_path = bld.env.PREFIX
+
 	bld.shlib(
 		source   = source,
 		target   = 'server',
@@ -69,7 +66,7 @@ def build(bld):
 		includes = includes,
 		defines  = defines,
 		use      = libs,
-		install_path = os.path.join(bld.env.GAMEDIR, bld.env.SERVER_DIR, libname),
+		install_path = install_path,
 		subsystem = bld.env.MSVC_SUBSYSTEM,
 		idx      = 2
 	)

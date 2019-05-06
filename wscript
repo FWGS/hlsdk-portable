@@ -21,15 +21,15 @@ def options(opt):
 
 	grp.add_option('-8', '--64bits', action = 'store_true', dest = 'ALLOW64', default = False,
 		help = 'allow targetting 64-bit game dlls')
-	
+
 	grp.add_option('--enable-voicemgr', action = 'store_true', dest = 'VOICEMGR', default = False,
 		help = 'enable voice manager')
-	
+
 	grp.add_option('--enable-goldsrc-support', action = 'store_true', dest = 'GOLDSRC', default = False,
 		help = 'enable GoldSource engine support')
-		
+
 	opt.recurse('cl_dll dlls')
-	
+
 	opt.load('xcompile compiler_cxx compiler_c')
 	if sys.platform == 'win32':
 		opt.load('msvc msdev')
@@ -45,7 +45,7 @@ def configure(conf):
 	conf.env.PREFIX = ''
 
 	conf.load('reconfigure')
-	
+
 	conf.start_msg('Build type')
 	if conf.options.BUILD_TYPE == None:
 		conf.end_msg('not set', color='RED')
@@ -58,7 +58,7 @@ def configure(conf):
 	# -march=native should not be used
 	if conf.options.BUILD_TYPE == 'fast':
 	    Logs.warn('WARNING: \'fast\' build type should not be used in release builds')
-	
+
 	conf.env.VOICEMGR    = conf.options.VOICEMGR
 	conf.env.GOLDSRC     = conf.options.GOLDSRC
 
@@ -70,6 +70,11 @@ def configure(conf):
 	if sys.platform == 'win32':
 		conf.load('msvc msdev')
 	conf.load('xcompile compiler_c compiler_cxx')
+
+	if conf.env.DEST_OS2 == 'android':
+		conf.options.ALLOW64 = True
+		conf.options.GOLDSRC = False
+		conf.env.SERVER_NAME = 'server' # can't be any other name, until specified
 
 	# print(conf.options.ALLOW64)
 
@@ -122,24 +127,31 @@ def configure(conf):
 			'default': ['-O0']
 		}
 	}
-		
+
 	conf.env.append_unique('CFLAGS', fwgslib.get_flags_by_type(
 	    compiler_c_cxx_flags, conf.options.BUILD_TYPE, conf.env.COMPILER_CC))
 	conf.env.append_unique('CXXFLAGS', fwgslib.get_flags_by_type(
 	    compiler_c_cxx_flags, conf.options.BUILD_TYPE, conf.env.COMPILER_CC))
 	conf.env.append_unique('LINKFLAGS', fwgslib.get_flags_by_type(
 	    linker_flags, conf.options.BUILD_TYPE, conf.env.COMPILER_CC))
-	
+
 	if conf.env.COMPILER_CC == 'msvc':
 		conf.env.append_unique('DEFINES', ['_CRT_SECURE_NO_WARNINGS','_CRT_NONSTDC_NO_DEPRECATE'])
 	else:
 		conf.env.append_unique('DEFINES', ['stricmp=strcasecmp','strnicmp=strncasecmp','_LINUX','LINUX','_snprintf=snprintf','_vsnprintf=vsnprintf'])
-		cflags = ['-fvisibility=hidden','-Wno-write-strings','-fno-exceptions']
+		cflags = ['-fvisibility=hidden','-Wno-write-strings','-fno-exceptions','-fno-rtti']
 		conf.env.append_unique('CFLAGS', cflags)
 		conf.env.append_unique('CXXFLAGS', cflags + ['-Wno-invalid-offsetof'])
-	
+
+	# strip lib from pattern
+        if conf.env.DEST_OS in ['linux', 'darwin'] and conf.env.DEST_OS2 not in ['android']:
+                if conf.env.cshlib_PATTERN.startswith('lib'):
+                        conf.env.cshlib_PATTERN = conf.env.cshlib_PATTERN[3:]
+                if conf.env.cxxshlib_PATTERN.startswith('lib'):
+                        conf.env.cxxshlib_PATTERN = conf.env.cxxshlib_PATTERN[3:]
+
 	conf.env.append_unique('DEFINES', 'CLIENT_WEAPONS')
-	
+
 	conf.recurse('cl_dll dlls')
 
 def build(bld):
