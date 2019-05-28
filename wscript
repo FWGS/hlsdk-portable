@@ -139,9 +139,9 @@ def configure(conf):
 		conf.env.append_unique('DEFINES', ['_CRT_SECURE_NO_WARNINGS','_CRT_NONSTDC_NO_DEPRECATE'])
 	else:
 		conf.env.append_unique('DEFINES', ['stricmp=strcasecmp','strnicmp=strncasecmp','_LINUX','LINUX','_snprintf=snprintf','_vsnprintf=vsnprintf'])
-		cflags = ['-fvisibility=hidden','-Wno-write-strings','-fno-exceptions','-fno-rtti']
+		cflags = ['-fvisibility=hidden','-Wno-write-strings']
 		conf.env.append_unique('CFLAGS', cflags)
-		conf.env.append_unique('CXXFLAGS', cflags + ['-Wno-invalid-offsetof'])
+		conf.env.append_unique('CXXFLAGS', cflags + ['-Wno-invalid-offsetof', '-fno-rtti', '-fno-exceptions'])
 
 	# strip lib from pattern
         if conf.env.DEST_OS in ['linux', 'darwin'] and conf.env.DEST_OS2 not in ['android']:
