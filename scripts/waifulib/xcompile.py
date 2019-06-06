@@ -11,7 +11,8 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-from fwgslib import get_flags_by_compiler
+try: from fwgslib import get_flags_by_compiler
+except: from waflib.extras.fwgslib import get_flags_by_compiler
 from waflib import Logs
 import os
 import sys
@@ -76,8 +77,8 @@ class Android:
 
 		self.toolchain = toolchain
 
-                if self.ndk_rev >= 19 or 'clang' in self.toolchain:
-                        self.clang = True
+		if self.ndk_rev >= 19 or 'clang' in self.toolchain:
+			self.clang = True
 
 		if self.is_arm64() or self.is_amd64() and self.api < 21:
 			Logs.warn('API level for 64-bit target automatically was set to 21')

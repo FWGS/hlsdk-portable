@@ -21,7 +21,7 @@ def build(bld):
 		'dlls/hornetgun.cpp', 'dlls/mp5.cpp', 'dlls/python.cpp', 'dlls/rpg.cpp', 'dlls/satchel.cpp',
 		'dlls/shotgun.cpp',	'dlls/squeakgrenade.cpp', 'dlls/tripmine.cpp', 'dlls/glock.cpp'
 	])
-	
+
 	source += bld.path.ant_glob(['hl/*.cpp'])
 	source += [
 		'ev_hldm.cpp', 'ammo.cpp', 'ammo_secondary.cpp', 'ammohistory.cpp',
