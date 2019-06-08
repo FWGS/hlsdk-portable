@@ -7,7 +7,6 @@ from waflib import Logs
 import sys
 import os
 sys.path.append(os.path.realpath('scripts/waflib'))
-import fwgslib
 
 VERSION = '2.4'
 APPNAME = 'hlsdk-xash3d'
@@ -57,7 +56,7 @@ def configure(conf):
 
 	# -march=native should not be used
 	if conf.options.BUILD_TYPE == 'fast':
-	    Logs.warn('WARNING: \'fast\' build type should not be used in release builds')
+		Logs.warn('WARNING: \'fast\' build type should not be used in release builds')
 
 	conf.env.VOICEMGR    = conf.options.VOICEMGR
 	conf.env.GOLDSRC     = conf.options.GOLDSRC
@@ -128,12 +127,12 @@ def configure(conf):
 		}
 	}
 
-	conf.env.append_unique('CFLAGS', fwgslib.get_flags_by_type(
-	    compiler_c_cxx_flags, conf.options.BUILD_TYPE, conf.env.COMPILER_CC))
-	conf.env.append_unique('CXXFLAGS', fwgslib.get_flags_by_type(
-	    compiler_c_cxx_flags, conf.options.BUILD_TYPE, conf.env.COMPILER_CC))
-	conf.env.append_unique('LINKFLAGS', fwgslib.get_flags_by_type(
-	    linker_flags, conf.options.BUILD_TYPE, conf.env.COMPILER_CC))
+	conf.env.append_unique('CFLAGS', conf.get_flags_by_type(
+		compiler_c_cxx_flags, conf.options.BUILD_TYPE, conf.env.COMPILER_CC))
+	conf.env.append_unique('CXXFLAGS', conf.get_flags_by_type(
+		compiler_c_cxx_flags, conf.options.BUILD_TYPE, conf.env.COMPILER_CC))
+	conf.env.append_unique('LINKFLAGS', conf.get_flags_by_type(
+		linker_flags, conf.options.BUILD_TYPE, conf.env.COMPILER_CC))
 
 	if conf.env.COMPILER_CC == 'msvc':
 		conf.env.append_unique('DEFINES', ['_CRT_SECURE_NO_WARNINGS','_CRT_NONSTDC_NO_DEPRECATE'])
@@ -144,11 +143,11 @@ def configure(conf):
 		conf.env.append_unique('CXXFLAGS', cflags + ['-Wno-invalid-offsetof', '-fno-rtti', '-fno-exceptions'])
 
 	# strip lib from pattern
-        if conf.env.DEST_OS in ['linux', 'darwin'] and conf.env.DEST_OS2 not in ['android']:
-                if conf.env.cshlib_PATTERN.startswith('lib'):
-                        conf.env.cshlib_PATTERN = conf.env.cshlib_PATTERN[3:]
-                if conf.env.cxxshlib_PATTERN.startswith('lib'):
-                        conf.env.cxxshlib_PATTERN = conf.env.cxxshlib_PATTERN[3:]
+		if conf.env.DEST_OS in ['linux', 'darwin'] and conf.env.DEST_OS2 not in ['android']:
+				if conf.env.cshlib_PATTERN.startswith('lib'):
+						conf.env.cshlib_PATTERN = conf.env.cshlib_PATTERN[3:]
+				if conf.env.cxxshlib_PATTERN.startswith('lib'):
+						conf.env.cxxshlib_PATTERN = conf.env.cxxshlib_PATTERN[3:]
 
 	conf.env.append_unique('DEFINES', 'CLIENT_WEAPONS')
 
