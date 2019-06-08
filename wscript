@@ -56,7 +56,7 @@ def configure(conf):
 
 	# -march=native should not be used
 	if conf.options.BUILD_TYPE == 'fast':
-		Logs.warn('WARNING: \'fast\' build type should not be used in release builds')
+	    Logs.warn('WARNING: \'fast\' build type should not be used in release builds')
 
 	conf.env.VOICEMGR    = conf.options.VOICEMGR
 	conf.env.GOLDSRC     = conf.options.GOLDSRC
@@ -88,51 +88,51 @@ def configure(conf):
 
 	linker_flags = {
 		'common': {
-			'msvc':    ['/DEBUG'], # always create PDB, doesn't affect result binaries
-			'gcc':     ['-Wl,--no-undefined']
+			'msvc':	   ['/DEBUG'], # always create PDB, doesn't affect result binaries
+			'gcc':	   ['-Wl,--no-undefined']
 		},
 		'sanitize': {
-			'gcc':     ['-fsanitize=undefined', '-fsanitize=address'],
+			'gcc':	   ['-fsanitize=undefined', '-fsanitize=address'],
 		}
 	}
 
 	compiler_c_cxx_flags = {
 		'common': {
-			'msvc':    ['/D_USING_V110_SDK71_', '/Zi', '/FS'],
+			'msvc':	   ['/D_USING_V110_SDK71_', '/Zi', '/FS'],
 			'clang':   ['-g', '-gdwarf-2'],
-			'gcc':     ['-g', '-Werror=implicit-function-declaration', '-fdiagnostics-color=always']
+			'gcc':	   ['-g', '-Werror=implicit-function-declaration', '-fdiagnostics-color=always']
 		},
 		'fast': {
-			'msvc':    ['/O2', '/Oy'], #todo: check /GL /LTCG
-			'gcc':     ['-Ofast', '-march=native', '-funsafe-math-optimizations', '-funsafe-loop-optimizations', '-fomit-frame-pointer'],
+			'msvc':	   ['/O2', '/Oy'], #todo: check /GL /LTCG
+			'gcc':	   ['-Ofast', '-march=native', '-funsafe-math-optimizations', '-funsafe-loop-optimizations', '-fomit-frame-pointer'],
 			'default': ['-O3']
 		},
 		'release': {
-			'msvc':    ['/O2'],
+			'msvc':	   ['/O2'],
 			'default': ['-O3']
 		},
 		'debug': {
-			'msvc':    ['/O1'],
-			'gcc':     ['-Og'],
+			'msvc':	   ['/O1'],
+			'gcc':	   ['-Og'],
 			'default': ['-O1']
 		},
 		'sanitize': {
-			'msvc':    ['/Od', '/RTC1'],
-			'gcc':     ['-Og', '-fsanitize=undefined', '-fsanitize=address'],
+			'msvc':	   ['/Od', '/RTC1'],
+			'gcc':	   ['-Og', '-fsanitize=undefined', '-fsanitize=address'],
 			'default': ['-O1']
 		},
 		'nooptimize': {
-			'msvc':    ['/Od'],
+			'msvc':	   ['/Od'],
 			'default': ['-O0']
 		}
 	}
 
 	conf.env.append_unique('CFLAGS', conf.get_flags_by_type(
-		compiler_c_cxx_flags, conf.options.BUILD_TYPE, conf.env.COMPILER_CC))
+	    compiler_c_cxx_flags, conf.options.BUILD_TYPE, conf.env.COMPILER_CC))
 	conf.env.append_unique('CXXFLAGS', conf.get_flags_by_type(
-		compiler_c_cxx_flags, conf.options.BUILD_TYPE, conf.env.COMPILER_CC))
+	    compiler_c_cxx_flags, conf.options.BUILD_TYPE, conf.env.COMPILER_CC))
 	conf.env.append_unique('LINKFLAGS', conf.get_flags_by_type(
-		linker_flags, conf.options.BUILD_TYPE, conf.env.COMPILER_CC))
+	    linker_flags, conf.options.BUILD_TYPE, conf.env.COMPILER_CC))
 
 	if conf.env.COMPILER_CC == 'msvc':
 		conf.env.append_unique('DEFINES', ['_CRT_SECURE_NO_WARNINGS','_CRT_NONSTDC_NO_DEPRECATE'])
@@ -143,11 +143,11 @@ def configure(conf):
 		conf.env.append_unique('CXXFLAGS', cflags + ['-Wno-invalid-offsetof', '-fno-rtti', '-fno-exceptions'])
 
 	# strip lib from pattern
-		if conf.env.DEST_OS in ['linux', 'darwin'] and conf.env.DEST_OS2 not in ['android']:
-				if conf.env.cshlib_PATTERN.startswith('lib'):
-						conf.env.cshlib_PATTERN = conf.env.cshlib_PATTERN[3:]
-				if conf.env.cxxshlib_PATTERN.startswith('lib'):
-						conf.env.cxxshlib_PATTERN = conf.env.cxxshlib_PATTERN[3:]
+	if conf.env.DEST_OS in ['linux', 'darwin'] and conf.env.DEST_OS2 not in ['android']:
+		if conf.env.cshlib_PATTERN.startswith('lib'):
+			conf.env.cshlib_PATTERN = conf.env.cshlib_PATTERN[3:]
+		if conf.env.cxxshlib_PATTERN.startswith('lib'):
+			conf.env.cxxshlib_PATTERN = conf.env.cxxshlib_PATTERN[3:]
 
 	conf.env.append_unique('DEFINES', 'CLIENT_WEAPONS')
 
