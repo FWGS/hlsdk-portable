@@ -26,8 +26,8 @@ LOCAL_C_INCLUDES := $(SDL_PATH)/include \
 		    $(LOCAL_PATH)/../engine \
 		    $(LOCAL_PATH)/../public \
 		    $(LOCAL_PATH)/../pm_shared \
-		    $(LOCAL_PATH)/../game_shared
-
+		    $(LOCAL_PATH)/../game_shared \
+		    $(LOCAL_PATH)/../cl_dll
 LOCAL_SRC_FILES := airtank.cpp \
 	animating.cpp \
 	animation.cpp \
