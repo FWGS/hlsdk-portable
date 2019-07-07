@@ -45,9 +45,7 @@ LINK_ENTITY_TO_CLASS( info_node_air, CNodeEnt )
 #if !defined _WIN32
 #include <unistd.h>
 #include <sys/stat.h>
-#define CreateDirectory(p, n) mkdir(p, 0777)
-#else
-#define CreateDirectory(p, n) CreateDirectoryA(p, n)
+#define CreateDirectoryA(p, n) mkdir(p, 0777)
 #endif
 
 //=========================================================
@@ -1702,9 +1700,9 @@ void CTestHull::BuildNodeGraph( void )
 	// make sure directories have been made
 	GET_GAME_DIR( szNrpFilename );
 	strcat( szNrpFilename, "/maps" );
-	CreateDirectory( szNrpFilename, NULL );
+	CreateDirectoryA( szNrpFilename, NULL );
 	strcat( szNrpFilename, "/graphs" );
-	CreateDirectory( szNrpFilename, NULL );
+	CreateDirectoryA( szNrpFilename, NULL );
 
 	strcat( szNrpFilename, "/" );
 	strcat( szNrpFilename, STRING( gpGlobals->mapname ) );
@@ -2376,9 +2374,9 @@ int CGraph::FLoadGraph( const char *szMapName )
 	char szDirName[MAX_PATH];
 	GET_GAME_DIR( szDirName );
 	strcat( szDirName, "/maps" );
-	CreateDirectory( szDirName, NULL );
+	CreateDirectoryA( szDirName, NULL );
 	strcat( szDirName, "/graphs" );
-	CreateDirectory( szDirName, NULL );
+	CreateDirectoryA( szDirName, NULL );
 
 	strcpy( szFilename, "maps/graphs/" );
 	strcat( szFilename, szMapName );
@@ -2585,9 +2583,9 @@ int CGraph::FSaveGraph( const char *szMapName )
 	// make sure directories have been made
 	GET_GAME_DIR( szFilename );
 	strcat( szFilename, "/maps" );
-	CreateDirectory( szFilename, NULL );
+	CreateDirectoryA( szFilename, NULL );
 	strcat( szFilename, "/graphs" );
-	CreateDirectory( szFilename, NULL );
+	CreateDirectoryA( szFilename, NULL );
 
 	strcat( szFilename, "/" );
 	strcat( szFilename, szMapName );
