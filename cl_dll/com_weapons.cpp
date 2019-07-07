@@ -116,7 +116,7 @@ void HUD_PlaySound( const char *sound, float volume )
 	if( !g_runfuncs || !g_finalstate )
 		return;
 
-	gEngfuncs.pfnPlaySoundByNameAtLocation( sound, volume, (float *)&g_finalstate->playerstate.origin );
+	gEngfuncs.pfnPlaySoundByNameAtLocation( sound, volume, g_finalstate->playerstate.origin );
 }
 
 /*
@@ -138,7 +138,7 @@ void HUD_PlaybackEvent( int flags, const edict_t *pInvoker, unsigned short event
 	// Weapon prediction events are assumed to occur at the player's origin
 	org			= g_finalstate->playerstate.origin;
 	ang			= v_angles;
-	gEngfuncs.pfnPlaybackEvent( flags, pInvoker, eventindex, delay, (float *)&org, (float *)&ang, fparam1, fparam2, iparam1, iparam2, bparam1, bparam2 );
+	gEngfuncs.pfnPlaybackEvent( flags, pInvoker, eventindex, delay, org, ang, fparam1, fparam2, iparam1, iparam2, bparam1, bparam2 );
 }
 
 /*
