@@ -575,7 +575,7 @@ void CBaseToggle :: LinearMoveNow( void )
 
 	if( flTravelTime < 0.05 )
 	{
-		UTIL_SetOrigin( pev, m_vecFinalDest );
+		UTIL_SetOrigin( this, m_vecFinalDest );
 		LinearMoveDone();
 		return;
 	}

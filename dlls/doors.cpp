@@ -1394,6 +1394,7 @@ void CMomentaryDoor::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYP
 
 void CMomentaryDoor::MomentaryMoveDone( void )
 {
+	m_iState = STATE_OFF;
 	SetThink(&CMomentaryDoor::StopMoveSound);
 	pev->nextthink = pev->ltime + 0.1;
 }
