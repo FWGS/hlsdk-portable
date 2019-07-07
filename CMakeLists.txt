@@ -32,7 +32,6 @@ project (HLSDK-XASH3D)
 #--------------
 # USER DEFINES \
 ################\
-option(64BIT "Allow 64 Bit builds" OFF)
 option(USE_VGUI "Enable VGUI1. UNDONE" OFF)
 option(USE_VGUI2 "Enable VGUI2. UNDONE" OFF)
 option(USE_VOICEMGR "Enable VOICE MANAGER." OFF)
@@ -55,8 +54,8 @@ if(CMAKE_SIZEOF_VOID_P EQUAL 8 AND NOT 64BIT)
 	if(MSVC)
 		error("UNDONE: set 32 build flags")
 	else()
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32")
 		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32")
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_C_FLAGS}")
 		set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -m32")
 	endif()
 	set(CMAKE_SIZEOF_VOID_P 4)
