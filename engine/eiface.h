@@ -355,7 +355,7 @@ typedef enum _fieldtypes
 	FIELD_TYPECOUNT		// MUST BE LAST
 } FIELDTYPE;
 
-#if !defined(offsetof) && !defined(GNUC)
+#if !defined(offsetof) && !defined(__GNUC__)
 #define offsetof(s,m)	(size_t)&(((s *)0)->m)
 #endif
 
