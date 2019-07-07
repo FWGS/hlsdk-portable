@@ -17,3 +17,6 @@ cmake_install.cmake
 *.vsxproj
 *.vsproj
 *.sln
+.waf-*
+.lock*
+*.pyc
