@@ -28,33 +28,13 @@ int		iPitDroneSpitSprite;
 //=========================================================
 class CPitDroneSpit : public CBaseMonster
 {
+public:
 	void Spawn(void);
 	void Precache(void);
-	int  Classify(void);
-	void EXPORT Touch(CBaseEntity *pOther);
-
-	Vector m_vecForward;
-
-public:
-	static CPitDroneSpit *SpitCreate(void);
+	void Touch(CBaseEntity *pOther);
 };
 
 LINK_ENTITY_TO_CLASS(pitdronespit, CPitDroneSpit)
-
-CPitDroneSpit *CPitDroneSpit::SpitCreate(void)
-{
-	// Create a new entity with CShock private data
-	CPitDroneSpit *pSpit = GetClassPtr((CPitDroneSpit *)NULL);
-	pSpit->pev->classname = MAKE_STRING("pitdronespit");
-	pSpit->Spawn();
-
-	return pSpit;
-}
-
-int	CPitDroneSpit::Classify(void)
-{
-	return	CLASS_ALIEN_BIOWEAPON;
-}
 
 void CPitDroneSpit::Spawn(void)
 {
@@ -71,8 +51,6 @@ void CPitDroneSpit::Spawn(void)
 
 	UTIL_SetSize(pev, Vector(0, 0, 0), Vector(0, 0, 0));
 	UTIL_SetOrigin(pev, pev->origin);
-	UTIL_MakeAimVectors(pev->angles);
-	m_vecForward = gpGlobals->v_forward;
 	SetTouch(&CPitDroneSpit::Touch);
 }
 
@@ -126,7 +104,6 @@ void CPitDroneSpit::Touch(CBaseEntity *pOther)
 		SetThink( &CBaseEntity::SUB_Remove );
 		pev->nextthink = gpGlobals->time;
 	}
-
 }
 
 //
@@ -179,7 +156,7 @@ enum
 
 class CPitDrone : public CBaseMonster
 {
-
+public:
 	void Spawn(void);
 	void Precache(void);
 	void HandleAnimEvent(MonsterEvent_t *pEvent);
