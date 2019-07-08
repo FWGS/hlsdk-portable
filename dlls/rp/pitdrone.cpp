@@ -510,7 +510,7 @@ void CPitDrone::HandleAnimEvent(MonsterEvent_t *pEvent)
 
 		// !!!HACKHACK - the spot at which the spit originates (in front of the mouth) was measured in 3ds and hardcoded here.
 		// we should be able to read the position of bones at runtime for this info.
-		vecSpitOffset = (gpGlobals->v_forward * 36 + gpGlobals->v_up * 15);
+		vecSpitOffset = (gpGlobals->v_forward * 15 + gpGlobals->v_up * 36);
 		vecSpitOffset = (pev->origin + vecSpitOffset);
 		//vecSpitDir = ((m_hEnemy->pev->origin + m_hEnemy->pev->view_ofs) - vecSpitOffset).Normalize();
 		vecSpitDir = (m_hEnemy->BodyTarget(pev->origin) - vecSpitOffset).Normalize();
