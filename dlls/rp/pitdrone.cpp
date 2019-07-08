@@ -619,26 +619,16 @@ void CPitDrone::Spawn()
 //=========================================================
 void CPitDrone::Precache()
 {
-	int i;
 	PRECACHE_MODEL("models/pit_drone.mdl");
 	PRECACHE_MODEL("models/pit_drone_gibs.mdl");
 	PRECACHE_MODEL("models/pit_drone_spike.mdl");// spit projectile.
 	iPitDroneSpitSprite = PRECACHE_MODEL("sprites/tinyspit.spr");// client side spittle.
 
-	for (i = 0; i < ARRAYSIZE(pAttackMissSounds); i++)
-		PRECACHE_SOUND((char *)pAttackMissSounds[i]);
-
-	for (i = 0; i < ARRAYSIZE(pIdleSounds); i++)
-		PRECACHE_SOUND((char *)pIdleSounds[i]);
-
-	for (i = 0; i < ARRAYSIZE(pDieSounds); i++)
-		PRECACHE_SOUND((char *)pDieSounds[i]);
-
-	for (i = 0; i < ARRAYSIZE(pPainSounds); i++)
-		PRECACHE_SOUND((char *)pPainSounds[i]);
-
-	for (i = 0; i < ARRAYSIZE(pAlertSounds); i++)
-		PRECACHE_SOUND((char *)pAlertSounds[i]);
+	PRECACHE_SOUND_ARRAY(pAttackMissSounds);
+	PRECACHE_SOUND_ARRAY(pIdleSounds);
+	PRECACHE_SOUND_ARRAY(pDieSounds);
+	PRECACHE_SOUND_ARRAY(pPainSounds);
+	PRECACHE_SOUND_ARRAY(pAlertSounds);
 
 	PRECACHE_SOUND("bullchicken/bc_bite2.wav");
 	PRECACHE_SOUND("bullchicken/bc_bite3.wav");
