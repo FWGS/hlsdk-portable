@@ -162,7 +162,7 @@ enum
 //=========================================================
 enum
 {
-	TASK_PDRONE_HOPTURN = LAST_COMMON_SCHEDULE + 1
+	TASK_PDRONE_HOPTURN = LAST_COMMON_TASK + 1
 };
 
 //=========================================================
