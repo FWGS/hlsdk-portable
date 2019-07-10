@@ -214,7 +214,9 @@ void TeamFortressViewport::paintBackground()
 //	int wide, tall;
 //	getParent()->getSize( wide, tall );
 //	setSize( wide, tall );
-	gEngfuncs.VGui_ViewportPaintBackground(HUD_GetRect());
+	int extents[4];
+	getParent()->getAbsExtents(extents[0],extents[1],extents[2],extents[3]);
+	gEngfuncs.VGui_ViewportPaintBackground(extents);
 }
 
 void *TeamFortressViewport::operator new( size_t stAllocateBlock )
