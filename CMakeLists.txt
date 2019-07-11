@@ -32,7 +32,6 @@ project (HLSDK-XASH3D)
 #--------------
 # USER DEFINES \
 ################\
-option(64BIT "Allow 64 Bit builds" OFF)
 option(USE_VGUI "Enable VGUI1. UNDONE" OFF)
 option(USE_VGUI2 "Enable VGUI2. UNDONE" OFF)
 option(USE_VOICEMGR "Enable VOICE MANAGER." OFF)

@@ -35,6 +35,7 @@ cvar_t friendlyfire	= { "mp_friendlyfire","0", FCVAR_SERVER };
 cvar_t falldamage	= { "mp_falldamage","0", FCVAR_SERVER };
 cvar_t weaponstay	= { "mp_weaponstay","0", FCVAR_SERVER };
 cvar_t selfgauss	= { "mp_selfgauss", "1", FCVAR_SERVER };
+cvar_t chargerfix	= { "mp_chargerfix", "0", FCVAR_SERVER };
 cvar_t satchelfix	= { "mp_satchelfix", "0", FCVAR_SERVER };
 cvar_t forcerespawn	= { "mp_forcerespawn","1", FCVAR_SERVER };
 cvar_t flashlight	= { "mp_flashlight","0", FCVAR_SERVER };
@@ -47,6 +48,7 @@ cvar_t allowmonsters	= { "mp_allowmonsters","0", FCVAR_SERVER };
 cvar_t bhopcap		= { "mp_bhopcap", "1", FCVAR_SERVER };
 
 cvar_t allow_spectators = { "allow_spectators", "0", FCVAR_SERVER };	// 0 prevents players from being spectators
+cvar_t multibyte_only = { "mp_multibyte_only", "0", FCVAR_SERVER };
 
 cvar_t mp_chattime	= { "mp_chattime","10", FCVAR_SERVER };
 
@@ -570,6 +572,7 @@ void GameDLLInit( void )
 	CVAR_REGISTER( &falldamage );
 	CVAR_REGISTER( &weaponstay );
 	CVAR_REGISTER( &selfgauss );
+	CVAR_REGISTER( &chargerfix );
 	CVAR_REGISTER( &satchelfix );
 	CVAR_REGISTER( &forcerespawn );
 	CVAR_REGISTER( &flashlight );
@@ -580,6 +583,7 @@ void GameDLLInit( void )
 	CVAR_REGISTER( &defaultteam );
 	CVAR_REGISTER( &allowmonsters );
 	CVAR_REGISTER( &bhopcap );
+	CVAR_REGISTER( &multibyte_only );
 
 	CVAR_REGISTER( &mp_chattime );
 
