@@ -1620,7 +1620,7 @@ IMPLEMENT_SAVERESTORE( CEgon, CBasePlayerWeapon )
 
 TYPEDESCRIPTION CHgun::m_SaveData[] =
 {
-	DEFINE_FIELD( CHgun, m_flRechargeTime, FIELD_FLOAT ),
+	DEFINE_FIELD( CHgun, m_flRechargeTime, FIELD_TIME ),
 };
 
 IMPLEMENT_SAVERESTORE( CHgun, CBasePlayerWeapon )
