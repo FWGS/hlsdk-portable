@@ -53,6 +53,7 @@ cvar_t instagib		= { "mp_instagib", "0", FCVAR_SERVER };
 cvar_t arcade		= { "mp_arcade", "0", FCVAR_SERVER };
 
 cvar_t allow_spectators = { "allow_spectators", "0", FCVAR_SERVER };	// 0 prevents players from being spectators
+cvar_t multibyte_only = { "mp_multibyte_only", "0", FCVAR_SERVER };
 
 cvar_t mp_chattime	= { "mp_chattime","10", FCVAR_SERVER };
 
@@ -497,6 +498,7 @@ void GameDLLInit( void )
 	CVAR_REGISTER( &allowhook );
 	CVAR_REGISTER( &instagib );
 	CVAR_REGISTER( &arcade );
+	CVAR_REGISTER( &multibyte_only );
 
 	CVAR_REGISTER( &mp_chattime );
 

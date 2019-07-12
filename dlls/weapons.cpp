@@ -1508,3 +1508,4 @@ void CWeaponBox::SetObjectCollisionBox( void )
 void CBasePlayerWeapon::PrintState( void )
 {
 }
+

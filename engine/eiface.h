@@ -124,7 +124,7 @@ typedef struct enginefuncs_s
 	int	(*pfnWalkMove)( edict_t *ent, float yaw, float dist, int iMode );
 	void	(*pfnSetOrigin)( edict_t *e, const float *rgflOrigin );
 	void	(*pfnEmitSound)( edict_t *entity, int channel, const char *sample, /*int*/float volume, float attenuation, int fFlags, int pitch );
-	void	(*pfnEmitAmbientSound)( edict_t *entity, float *pos, const char *samp, float vol, float attenuation, int fFlags, int pitch );
+	void	(*pfnEmitAmbientSound)( edict_t *entity, const float *pos, const char *samp, float vol, float attenuation, int fFlags, int pitch );
 	void	(*pfnTraceLine)( const float *v1, const float *v2, int fNoMonsters, edict_t *pentToSkip, TraceResult *ptr );
 	void	(*pfnTraceToss)( edict_t* pent, edict_t* pentToIgnore, TraceResult *ptr );
 	int	(*pfnTraceMonsterHull)( edict_t *pEdict, const float *v1, const float *v2, int fNoMonsters, edict_t *pentToSkip, TraceResult *ptr );
@@ -219,10 +219,10 @@ typedef struct enginefuncs_s
 	void	(*pfnSetPhysicsKeyValue)( const edict_t *pClient, const char *key, const char *value );
 	const char *(*pfnGetPhysicsInfoString)( const edict_t *pClient );
 	unsigned short (*pfnPrecacheEvent)( int type, const char*psz );
-	void	(*pfnPlaybackEvent)( int flags, const edict_t *pInvoker, unsigned short eventindex, float delay, float *origin, float *angles, float fparam1, float fparam2, int iparam1, int iparam2, int bparam1, int bparam2 );
-	
-	unsigned char *(*pfnSetFatPVS)( float *org );
-	unsigned char *(*pfnSetFatPAS)( float *org );
+	void	(*pfnPlaybackEvent)( int flags, const edict_t *pInvoker, unsigned short eventindex, float delay, const float *origin, const float *angles, float fparam1, float fparam2, int iparam1, int iparam2, int bparam1, int bparam2 );
+
+	unsigned char *(*pfnSetFatPVS)( const float *org );
+	unsigned char *(*pfnSetFatPAS)( const float *org );
 
 	int	(*pfnCheckVisibility )( const edict_t *entity, unsigned char *pset );
 
@@ -355,7 +355,7 @@ typedef enum _fieldtypes
 	FIELD_TYPECOUNT		// MUST BE LAST
 } FIELDTYPE;
 
-#if !defined(offsetof) && !defined(GNUC)
+#if !defined(offsetof) && !defined(__GNUC__)
 #define offsetof(s,m)	(size_t)&(((s *)0)->m)
 #endif
 

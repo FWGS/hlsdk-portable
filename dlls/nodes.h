@@ -27,7 +27,6 @@ public:
 	entvars_t	*m_pLinkEnt;// the entity that blocks this connection (doors, etc)
 };
 
-
 class CGraph
 {
 public:

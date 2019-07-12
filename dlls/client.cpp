@@ -60,6 +60,7 @@ extern int gmsgSayText;
 extern int gmsgBhopcap;
 
 extern cvar_t allow_spectators;
+extern cvar_t multibyte_only;
 
 extern unsigned short g_sGibbed;
 extern unsigned short g_sTeleport;
@@ -307,6 +308,10 @@ decodeFinishedMaybeCESU8:
 bool Q_UnicodeValidate( const char *pUTF8 )
 {
 	bool bError = false;
+
+	if( !multibyte_only.value )
+		return true;
+
 	while( *pUTF8 )
 	{
 		unsigned int uVal;
@@ -1380,8 +1385,8 @@ void SetupVisibility( edict_t *pViewEntity, edict_t *pClient, unsigned char **pv
 		}
 	}
 
-	*pvs = ENGINE_SET_PVS( (float *)&org );
-	*pas = ENGINE_SET_PAS( (float *)&org );
+	*pvs = ENGINE_SET_PVS( org );
+	*pas = ENGINE_SET_PAS( org );
 }
 
 #include "entity_state.h"

@@ -1115,8 +1115,6 @@ void EV_FireSpike( event_args_t *args )
 
 	int shell;
 
-	// gEngfuncs.Con_NPrintf( 22, "offset %f", offset );
-
 	idx = args->entindex;
 	VectorCopy( args->origin, origin );
 	VectorCopy( args->angles, angles );
