@@ -1060,7 +1060,7 @@ void CFuncTrackTrain::StopSound( void )
 		us_encode = us_sound;
 
 		PLAYBACK_EVENT_FULL( FEV_RELIABLE | FEV_UPDATE, edict(), m_usAdjustPitch, 0.0, 
-			(float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, us_encode, 0, 1, 0 );
+			g_vecZero, g_vecZero, 0.0, 0.0, us_encode, 0, 1, 0 );
 		/*
 		STOP_SOUND( ENT( pev ), CHAN_STATIC, STRING( pev->noise ) );
 		*/
@@ -1166,7 +1166,7 @@ void CFuncTrackTrain::UpdateSound( void )
 		us_encode = us_sound | us_pitch | us_volume;
 
 		PLAYBACK_EVENT_FULL( FEV_RELIABLE | FEV_UPDATE, edict(), m_usAdjustPitch, 0.0,
-			(float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, us_encode, 0, 0, 0 );
+			g_vecZero, g_vecZero, 0.0, 0.0, us_encode, 0, 0, 0 );
 	}
 }
 
