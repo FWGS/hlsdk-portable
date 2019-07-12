@@ -56,7 +56,7 @@ void CHudMOTD::Reset( void )
 	m_bShow = 0;
 }
 
-#define LINE_HEIGHT  13
+#define LINE_HEIGHT  (gHUD.m_scrinfo.iCharHeight)
 #define ROW_GAP  13
 #define ROW_RANGE_MIN 30
 #define ROW_RANGE_MAX ( ScreenHeight - 100 )
