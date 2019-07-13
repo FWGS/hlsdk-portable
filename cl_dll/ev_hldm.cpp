@@ -1410,7 +1410,7 @@ enum EGON_FIREMODE
 #define EGON_SOUND_RUN			"weapons/egon_run3.wav"
 #define EGON_SOUND_STARTUP		"weapons/egon_windup2.wav"
 
-#ifndef ARRAYSIZE
+#if !defined(ARRAYSIZE)
 #define ARRAYSIZE(p)		( sizeof(p) /sizeof(p[0]) )
 #endif
 
