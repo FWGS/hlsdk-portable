@@ -347,3 +347,4 @@ void CTripmineGrenade::DelayDeathThink( void )
 	Explode( &tr, DMG_BLAST );
 }
 #endif
+
