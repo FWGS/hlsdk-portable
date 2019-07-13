@@ -1629,3 +1629,4 @@ TYPEDESCRIPTION	CShotgun::m_SaveData[] =
 };
 
 IMPLEMENT_SAVERESTORE( CShotgun, CBasePlayerWeapon )
+

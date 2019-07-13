@@ -1160,6 +1160,7 @@ public:
 	void Spawn( void );
 	void Precache( void );
 	void EXPORT MomentaryMoveDone( void );
+	void EXPORT StopMoveSound( void );
 
 	void KeyValue( KeyValueData *pkvd );
 	void Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
@@ -1386,5 +1387,14 @@ void CMomentaryDoor::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYP
 void CMomentaryDoor::MomentaryMoveDone( void )
 {
 	m_iState = STATE_OFF;
-	STOP_SOUND(ENT(pev), CHAN_STATIC, STRING(pev->noiseMoving));
+	SetThink(&CMomentaryDoor::StopMoveSound);
+	pev->nextthink = pev->ltime + 0.1;
+}
+
+void CMomentaryDoor::StopMoveSound()
+{
+	STOP_SOUND( ENT( pev ), CHAN_STATIC, STRING( pev->noiseMoving ) );
+	EMIT_SOUND( ENT( pev ), CHAN_STATIC, STRING( pev->noiseArrived ), 1, ATTN_NORM );
+	pev->nextthink = -1;
+	ResetThink();
 }
