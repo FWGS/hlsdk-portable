@@ -105,11 +105,14 @@ typedef struct
 //=========================================================
 // CGraph 
 //=========================================================
+#define _GRAPH_VERSION_RETAIL 16 // Retail Half-Life graph version. Don't increment this
 #ifdef XASH_64BIT
-#define	GRAPH_VERSION	(int)16 * 10
+#define	_GRAPH_VERSION	(16 * 10)
 #else
-#define	GRAPH_VERSION	(int)16// !!!increment this whever graph/node/link classes change, to obsolesce older disk files.
+#define	_GRAPH_VERSION	(16) // !!!increment this whenever graph/node/link classes change, to obsolesce older disk files.
 #endif
+#define GRAPH_VERSION (int)_GRAPH_VERSION
+#define GRAPH_VERSION_RETAIL (int)_GRAPH_VERSION_RETAIL
 
 class CGraph
 {
