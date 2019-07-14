@@ -238,7 +238,7 @@ void CBaseMonster::MaintainSchedule( void )
 			{
 				if( (m_afConditions && !HasConditions( bits_COND_SCHEDULE_DONE ) ) ||
 						( m_pSchedule && (m_pSchedule->iInterruptMask & bits_COND_SCHEDULE_DONE ) ) ||
-						( ( m_MonsterState == MONSTERSTATE_COMBAT ) && ( m_hEnemy == NULL ) )	)
+						( ( m_MonsterState == MONSTERSTATE_COMBAT ) && ( m_hEnemy == 0 ) )	)
 				{
 					GetIdealState();
 				}
@@ -407,7 +407,7 @@ void CBaseMonster::RunTask( Task_t *pTask )
 		{
 			float distance;
 
-			if( m_hTargetEnt == NULL )
+			if( m_hTargetEnt == 0 )
 				TaskFail();
 			else
 			{
@@ -675,7 +675,7 @@ void CBaseMonster::StartTask( Task_t *pTask )
 		}
 	case TASK_FIND_NEAR_NODE_COVER_FROM_ENEMY:
 		{
-			if( m_hEnemy == NULL )
+			if( m_hEnemy == 0 )
 			{
 				TaskFail();
 				return;
@@ -695,7 +695,7 @@ void CBaseMonster::StartTask( Task_t *pTask )
 		}
 	case TASK_FIND_FAR_NODE_COVER_FROM_ENEMY:
 		{
-			if( m_hEnemy == NULL )
+			if( m_hEnemy == 0 )
 			{
 				TaskFail();
 				return;
@@ -715,7 +715,7 @@ void CBaseMonster::StartTask( Task_t *pTask )
 		}
 	case TASK_FIND_NODE_COVER_FROM_ENEMY:
 		{
-			if( m_hEnemy == NULL )
+			if( m_hEnemy == 0 )
 			{
 				TaskFail();
 				return;
@@ -737,7 +737,7 @@ void CBaseMonster::StartTask( Task_t *pTask )
 		{
 			entvars_t *pevCover;
 
-			if( m_hEnemy == NULL )
+			if( m_hEnemy == 0 )
 			{
 				// Find cover from self if no enemy available
 				pevCover = pev;
@@ -821,7 +821,7 @@ void CBaseMonster::StartTask( Task_t *pTask )
 		SetTurnActivity(); 
 		break;
 	case TASK_FACE_TARGET:
-		if( m_hTargetEnt != NULL )
+		if( m_hTargetEnt != 0 )
 		{
 			MakeIdealYaw( m_hTargetEnt->pev->origin );
 			SetTurnActivity(); 
@@ -904,7 +904,7 @@ void CBaseMonster::StartTask( Task_t *pTask )
 					TaskComplete();
 				else 
 				{
-					if( m_hTargetEnt == NULL || !MoveToTarget( newActivity, 2 ) )
+					if( m_hTargetEnt == 0 || !MoveToTarget( newActivity, 2 ) )
 					{
 						TaskFail();
 						ALERT( at_aiconsole, "%s Failed to reach target!!!\n", STRING( pev->classname ) );
@@ -1043,7 +1043,7 @@ void CBaseMonster::StartTask( Task_t *pTask )
 	case TASK_GET_PATH_TO_TARGET:
 		{
 			RouteClear();
-			if( m_hTargetEnt != NULL && MoveToTarget( m_movementActivity, 1 ) )
+			if( m_hTargetEnt != 0 && MoveToTarget( m_movementActivity, 1 ) )
 			{
 				TaskComplete();
 			}
@@ -1272,7 +1272,7 @@ void CBaseMonster::StartTask( Task_t *pTask )
 		}
 	case TASK_PLANT_ON_SCRIPT:
 		{
-			if( m_hTargetEnt != NULL )
+			if( m_hTargetEnt != 0 )
 			{
 				pev->origin = m_hTargetEnt->pev->origin;	// Plant on target
 			}
@@ -1282,7 +1282,7 @@ void CBaseMonster::StartTask( Task_t *pTask )
 		}
 	case TASK_FACE_SCRIPT:
 		{
-			if( m_hTargetEnt != NULL )
+			if( m_hTargetEnt != 0 )
 			{
 				pev->ideal_yaw = UTIL_AngleMod( m_hTargetEnt->pev->angles.y );
 			}

@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2002, Valve LLC, All rights reserved. ============
+//========= Copyright (c) 1996-2002, Valve LLC, All rights reserved. ============
 //
 // Purpose: New version of the slider bar
 //
@@ -48,7 +48,7 @@ float AmmoDamage( const char *pName )
 	return 0;
 }
 
-void UpdateStatsFile( float dataTime, char *pMapname, float health, float ammo, int skillLevel )
+void UpdateStatsFile( float dataTime, const char *pMapname, float health, float ammo, int skillLevel )
 {
 	FILE *fp;
 
@@ -136,7 +136,7 @@ void UpdateStats( CBasePlayer *pPlayer )
 	}
 	else if( ( gStats.nextOutputTime != 0 && gStats.nextOutputTime < gStats.gameTime ) || forceWrite )
 	{
-		UpdateStatsFile( gStats.dataTime, (char *)STRING( gpGlobals->mapname ), health, ammo, (int)CVAR_GET_FLOAT( "skill" ) );
+		UpdateStatsFile( gStats.dataTime, STRING( gpGlobals->mapname ), health, ammo, (int)CVAR_GET_FLOAT( "skill" ) );
 
 		gStats.lastAmmo = ammo;
 		gStats.lastHealth = health;

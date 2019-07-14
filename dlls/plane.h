@@ -12,12 +12,12 @@
 *   without written permission from Valve LLC.
 *
 ****/
-#ifndef PLANE_H
-#define PLANE_H
-
 //=========================================================
 // Plane
 //=========================================================
+#ifndef PLANE_H
+#define PLANE_H
+
 class CPlane
 {
 public:

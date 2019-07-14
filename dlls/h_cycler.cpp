@@ -34,7 +34,7 @@
 class CCycler : public CBaseMonster
 {
 public:
-	void GenericCyclerSpawn(char *szModel, Vector vecMin, Vector vecMax);
+	void GenericCyclerSpawn( const char *szModel, Vector vecMin, Vector vecMax );
 	virtual int ObjectCaps( void ) { return ( CBaseEntity::ObjectCaps() | FCAP_IMPULSE_USE ); }
 	int TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType );
 	void Spawn( void );
@@ -67,7 +67,7 @@ class CGenericCycler : public CCycler
 public:
 	void Spawn( void )
 	{
-		GenericCyclerSpawn( (char *)STRING( pev->model ), Vector( -16, -16, 0 ), Vector( 16, 16, 72 ) );
+		GenericCyclerSpawn( STRING( pev->model ), Vector( -16, -16, 0 ), Vector( 16, 16, 72 ) );
 	}
 };
 
@@ -92,7 +92,7 @@ void CCyclerProbe::Spawn( void )
 }
 
 // Cycler member functions
-void CCycler::GenericCyclerSpawn( char *szModel, Vector vecMin, Vector vecMax )
+void CCycler::GenericCyclerSpawn( const char *szModel, Vector vecMin, Vector vecMax )
 {
 	if( !szModel || !*szModel )
 	{
@@ -255,7 +255,7 @@ void CCyclerSprite::Spawn( void )
 	m_animate		= 1;
 	m_lastTime		= gpGlobals->time;
 
-	PRECACHE_MODEL( (char *)STRING( pev->model ) );
+	PRECACHE_MODEL( STRING( pev->model ) );
 	SET_MODEL( ENT( pev ), STRING( pev->model ) );
 
 	m_maxFrame = (float)MODEL_FRAMES( pev->modelindex ) - 1;
@@ -314,7 +314,7 @@ void CWeaponCycler::Spawn()
 	pev->solid = SOLID_SLIDEBOX;
 	pev->movetype = MOVETYPE_NONE;
 
-	PRECACHE_MODEL( (char *)STRING( pev->model ) );
+	PRECACHE_MODEL( STRING( pev->model ) );
 	SET_MODEL( ENT( pev ), STRING( pev->model ) );
 	m_iszModel = pev->model;
 	m_iModel = pev->modelindex;
@@ -401,18 +401,18 @@ void CWreckage::Spawn( void )
 
 	if( pev->model )
 	{
-		PRECACHE_MODEL( (char *)STRING( pev->model ) );
+		PRECACHE_MODEL( STRING( pev->model ) );
 		SET_MODEL( ENT( pev ), STRING( pev->model ) );
 	}
 	// pev->scale = 5.0;
 
-	m_flStartTime = gpGlobals->time;
+	m_flStartTime = (int)gpGlobals->time;
 }
 
 void CWreckage::Precache()
 {
 	if( pev->model )
-		PRECACHE_MODEL( (char *)STRING( pev->model ) );
+		PRECACHE_MODEL( STRING( pev->model ) );
 }
 
 void CWreckage::Think( void )

@@ -27,7 +27,7 @@
 
 LINK_ENTITY_TO_CLASS( weapon_crowbar, CCrowbar )
 
-enum gauss_e
+enum crowbar_e
 {
 	CROWBAR_IDLE = 0,
 	CROWBAR_DRAW,
@@ -37,11 +37,16 @@ enum gauss_e
 	CROWBAR_ATTACK2MISS,
 	CROWBAR_ATTACK2HIT,
 	CROWBAR_ATTACK3MISS,
+#ifndef CROWBAR_IDLE_ANIM	
 	CROWBAR_ATTACK3HIT
+#else
+	CROWBAR_ATTACK3HIT,
+	CROWBAR_IDLE2,
+	CROWBAR_IDLE3
+#endif
 };
 
-
-void CCrowbar::Spawn( )
+void CCrowbar::Spawn()
 {
 	Precache();
 	m_iId = WEAPON_CROWBAR;
@@ -79,6 +84,18 @@ int CCrowbar::GetItemInfo( ItemInfo *p )
 	p->iId = WEAPON_CROWBAR;
 	p->iWeight = CROWBAR_WEIGHT;
 	return 1;
+}
+
+int CCrowbar::AddToPlayer( CBasePlayer *pPlayer )
+{
+	if( CBasePlayerWeapon::AddToPlayer( pPlayer ) )
+	{
+		MESSAGE_BEGIN( MSG_ONE, gmsgWeapPickup, NULL, pPlayer->pev );
+			WRITE_BYTE( m_iId );
+		MESSAGE_END();
+		return TRUE;
+	}
+	return FALSE;
 }
 
 BOOL CCrowbar::Deploy()
@@ -140,8 +157,10 @@ void CCrowbar::PrimaryAttack()
 {
 	if( !Swing( 1 ) )
 	{
+#ifndef CLIENT_DLL
 		SetThink( &CCrowbar::SwingAgain );
 		pev->nextthink = gpGlobals->time + 0.1;
+#endif
 	}
 }
 
@@ -182,17 +201,22 @@ int CCrowbar::Swing( int fFirst )
 		}
 	}
 #endif
-	PLAYBACK_EVENT_FULL( FEV_NOTHOST, m_pPlayer->edict(), m_usCrowbar, 
-	0.0, (float *)&g_vecZero, (float *)&g_vecZero, 0, 0, 0,
-	0.0, 0, 0.0 );
+	if( fFirst )
+	{
+		PLAYBACK_EVENT_FULL( FEV_NOTHOST, m_pPlayer->edict(), m_usCrowbar, 
+		0.0, g_vecZero, g_vecZero, 0, 0, 0,
+		0, 0, 0 );
+	}
 
 	if( tr.flFraction >= 1.0 )
 	{
 		if( fFirst )
 		{
 			// miss
-			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5;
-
+			m_flNextPrimaryAttack = GetNextAttackDelay( 0.5 );
+#ifdef CROWBAR_IDLE_ANIM
+			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
+#endif
 			// player "shoot" animation
 			m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
 		}
@@ -220,26 +244,32 @@ int CCrowbar::Swing( int fFirst )
 		fDidHit = TRUE;
 		CBaseEntity *pEntity = CBaseEntity::Instance( tr.pHit );
 
-		ClearMultiDamage();
-
-		if( ( m_flNextPrimaryAttack + 1 < UTIL_WeaponTimeBase() ) || g_pGameRules->IsMultiplayer() )
-		{
-			// first swing does full damage
-			pEntity->TraceAttack( m_pPlayer->pev, gSkillData.plrDmgCrowbar, gpGlobals->v_forward, &tr, DMG_CLUB ); 
-		}
-		else
-		{
-			// subsequent swings do half
-			pEntity->TraceAttack( m_pPlayer->pev, gSkillData.plrDmgCrowbar / 2, gpGlobals->v_forward, &tr, DMG_CLUB ); 
-		}
-		ApplyMultiDamage( m_pPlayer->pev, m_pPlayer->pev );
-
 		// play thwack, smack, or dong sound
-		float flVol = 1.0;
-		int fHitWorld = TRUE;
+                float flVol = 1.0;
+                int fHitWorld = TRUE;
 
 		if( pEntity )
 		{
+			ClearMultiDamage();
+			// If building with the clientside weapon prediction system,
+			// UTIL_WeaponTimeBase() is always 0 and m_flNextPrimaryAttack is >= -1.0f, thus making
+			// m_flNextPrimaryAttack + 1 < UTIL_WeaponTimeBase() always evaluate to false.
+#ifdef CLIENT_WEAPONS
+			if( ( m_flNextPrimaryAttack + 1 == UTIL_WeaponTimeBase() ) || g_pGameRules->IsMultiplayer() )
+#else
+			if( ( m_flNextPrimaryAttack + 1 < UTIL_WeaponTimeBase() ) || g_pGameRules->IsMultiplayer() )
+#endif
+			{
+				// first swing does full damage
+				pEntity->TraceAttack( m_pPlayer->pev, gSkillData.plrDmgCrowbar, gpGlobals->v_forward, &tr, DMG_CLUB ); 
+			}
+			else
+			{
+				// subsequent swings do half
+				pEntity->TraceAttack( m_pPlayer->pev, gSkillData.plrDmgCrowbar / 2, gpGlobals->v_forward, &tr, DMG_CLUB ); 
+			}
+			ApplyMultiDamage( m_pPlayer->pev, m_pPlayer->pev );
+
 			if( pEntity->Classify() != CLASS_NONE && pEntity->Classify() != CLASS_MACHINE )
 			{
 				// play thwack or smack sound
@@ -295,12 +325,45 @@ int CCrowbar::Swing( int fFirst )
 			m_trHit = tr;
 		}
 
-		m_pPlayer->m_iWeaponVolume = flVol * CROWBAR_WALLHIT_VOLUME;
-#endif
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.25;
+		m_pPlayer->m_iWeaponVolume = (int)( flVol * CROWBAR_WALLHIT_VOLUME );
 
 		SetThink( &CCrowbar::Smack );
 		pev->nextthink = UTIL_WeaponTimeBase() + 0.2;
+#endif
+		m_flNextPrimaryAttack = GetNextAttackDelay( 0.25 );
 	}
+#ifdef CROWBAR_IDLE_ANIM
+	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
+#endif
 	return fDidHit;
 }
+
+#ifdef CROWBAR_IDLE_ANIM
+void CCrowbar::WeaponIdle( void )
+{
+	if( m_flTimeWeaponIdle < UTIL_WeaponTimeBase() )
+	{
+		int iAnim;
+		float flRand = UTIL_SharedRandomFloat( m_pPlayer->random_seed, 0, 1 );
+		if( flRand > 0.9 )
+		{
+			iAnim = CROWBAR_IDLE2;
+			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 160.0 / 30.0;
+		}
+		else
+		{
+			if( flRand > 0.5 )
+			{
+				iAnim = CROWBAR_IDLE;
+				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 70.0 / 30.0;
+			}
+			else
+			{
+				iAnim = CROWBAR_IDLE3;
+				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 160.0 / 30.0;
+			}
+		}
+		SendWeaponAnim( iAnim );
+	}
+}
+#endif

@@ -137,7 +137,7 @@ int CHoundeye::Classify( void )
 //=========================================================
 BOOL CHoundeye::FValidateHintType( short sHint )
 {
-	int i;
+	size_t i;
 
 	static short sHoundHints[] =
 	{
@@ -155,7 +155,7 @@ BOOL CHoundeye::FValidateHintType( short sHint )
 		}
 	}
 
-	ALERT( at_aiconsole, "Couldn't validate hint type" );
+	ALERT( at_aiconsole, "Couldn't validate hint type\n" );
 	return FALSE;
 }
 

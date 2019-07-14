@@ -166,6 +166,7 @@ void CItem::Materialize( void )
 	}
 
 	SetTouch( &CItem::ItemTouch );
+	SetThink( NULL );
 }
 
 #define SF_SUIT_SHORTLOGON		0x0001
@@ -226,7 +227,7 @@ class CItemBattery : public CItem
 			char szcharge[64];
 
 			pPlayer->pev->armorvalue += gSkillData.batteryCapacity;
-			pPlayer->pev->armorvalue = min( pPlayer->pev->armorvalue, MAX_NORMAL_BATTERY );
+			pPlayer->pev->armorvalue = Q_min( pPlayer->pev->armorvalue, MAX_NORMAL_BATTERY );
 
 			EMIT_SOUND( pPlayer->edict(), CHAN_ITEM, "items/smallmedkit1.wav", 1, ATTN_NORM );
 

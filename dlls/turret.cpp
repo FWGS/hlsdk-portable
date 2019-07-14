@@ -56,6 +56,7 @@ class CBaseTurret : public CBaseMonster
 public:
 	void Spawn( void );
 	virtual void Precache( void );
+	void UpdateOnRemove();
 	void KeyValue( KeyValueData *pkvd );
 	void EXPORT TurretUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
 
@@ -279,6 +280,17 @@ void CBaseTurret::Precache()
 	PRECACHE_SOUND( "turret/tu_alert.wav" );
 }
 
+void CBaseTurret::UpdateOnRemove()
+{
+	CBaseEntity::UpdateOnRemove();
+
+	if( m_pEyeGlow )
+	{
+		UTIL_Remove( m_pEyeGlow );
+		m_pEyeGlow = 0;
+	}
+}
+
 #define TURRET_GLOW_SPRITE "sprites/flare3.spr"
 
 void CTurret::Spawn()
@@ -442,7 +454,7 @@ void CBaseTurret::EyeOff()
 	{
 		if( m_eyeBrightness > 0 )
 		{
-			m_eyeBrightness = max( 0, m_eyeBrightness - 30 );
+			m_eyeBrightness = Q_max( 0, m_eyeBrightness - 30 );
 			m_pEyeGlow->SetBrightness( m_eyeBrightness );
 		}
 	}
@@ -456,7 +468,7 @@ void CBaseTurret::ActiveThink( void )
 	pev->nextthink = gpGlobals->time + 0.1;
 	StudioFrameAdvance();
 
-	if( ( !m_iOn ) || ( m_hEnemy == NULL ) )
+	if( ( !m_iOn ) || ( m_hEnemy == 0 ) )
 	{
 		m_hEnemy = NULL;
 		m_flLastSight = gpGlobals->time + m_flMaxWait;
@@ -826,21 +838,21 @@ void CBaseTurret::SearchThink( void )
 	Ping();
 
 	// If we have a target and we're still healthy
-	if( m_hEnemy != NULL )
+	if( m_hEnemy != 0 )
 	{
 		if( !m_hEnemy->IsAlive() )
 			m_hEnemy = NULL;// Dead enemy forces a search for new one
 	}
 
 	// Acquire Target
-	if( m_hEnemy == NULL )
+	if( m_hEnemy == 0 )
 	{
 		Look( TURRET_RANGE );
 		m_hEnemy = BestVisibleEnemy();
 	}
 
 	// If we've found a target, spin up the barrel and start to attack
-	if( m_hEnemy != NULL )
+	if( m_hEnemy != 0 )
 	{
 		m_flLastSight = 0;
 		m_flSpinUpTime = 0;
@@ -881,20 +893,20 @@ void CBaseTurret::AutoSearchThink( void )
 	pev->nextthink = gpGlobals->time + 0.3;
 
 	// If we have a target and we're still healthy
-	if( m_hEnemy != NULL )
+	if( m_hEnemy != 0 )
 	{
 		if( !m_hEnemy->IsAlive() )
 			m_hEnemy = NULL;// Dead enemy forces a search for new one
 	}
 
 	// Acquire Target
-	if( m_hEnemy == NULL )
+	if( m_hEnemy == 0 )
 	{
 		Look( TURRET_RANGE );
 		m_hEnemy = BestVisibleEnemy();
 	}
 
-	if( m_hEnemy != NULL )
+	if( m_hEnemy != 0 )
 	{
 		SetThink( &CBaseTurret::Deploy );
 		EMIT_SOUND( ENT( pev ), CHAN_BODY, "turret/tu_alert.wav", TURRET_MACHINE_VOLUME, ATTN_NORM );
@@ -903,7 +915,7 @@ void CBaseTurret::AutoSearchThink( void )
 
 void CBaseTurret::TurretDeath( void )
 {
-	BOOL iActive = FALSE;
+	//BOOL iActive = FALSE;
 
 	StudioFrameAdvance();
 	pev->nextthink = gpGlobals->time + 0.1;
@@ -1222,7 +1234,7 @@ void CSentry::SentryTouch( CBaseEntity *pOther )
 
 void CSentry::SentryDeath( void )
 {
-	BOOL iActive = FALSE;
+	//BOOL iActive = FALSE;
 
 	StudioFrameAdvance();
 	pev->nextthink = gpGlobals->time + 0.1;
