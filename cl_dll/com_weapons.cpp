@@ -41,12 +41,12 @@ COM_Log
 Log debug messages to file ( appends )
 ====================
 */
-void COM_Log( char *pszFile, char *fmt, ... )
+void COM_Log( const char *pszFile, const char *fmt, ... )
 {
 	va_list		argptr;
 	char		string[1024];
 	FILE *fp;
-	char *pfilename;
+	const char *pfilename;
 
 	if( !pszFile )
 	{
@@ -111,12 +111,12 @@ HUD_PlaySound
 Play a sound, if we are seeing this command for the first time
 =====================
 */
-void HUD_PlaySound( char *sound, float volume )
+void HUD_PlaySound( const char *sound, float volume )
 {
 	if( !g_runfuncs || !g_finalstate )
 		return;
 
-	gEngfuncs.pfnPlaySoundByNameAtLocation( sound, volume, (float *)&g_finalstate->playerstate.origin );
+	gEngfuncs.pfnPlaySoundByNameAtLocation( sound, volume, g_finalstate->playerstate.origin );
 }
 
 /*
@@ -127,7 +127,7 @@ Directly queue up an event on the client
 =====================
 */
 void HUD_PlaybackEvent( int flags, const edict_t *pInvoker, unsigned short eventindex, float delay,
-	float *origin, float *angles, float fparam1, float fparam2, int iparam1, int iparam2, int bparam1, int bparam2 )
+	const float *origin, const float *angles, float fparam1, float fparam2, int iparam1, int iparam2, int bparam1, int bparam2 )
 {
 	vec3_t org;
 	vec3_t ang;
@@ -138,7 +138,7 @@ void HUD_PlaybackEvent( int flags, const edict_t *pInvoker, unsigned short event
 	// Weapon prediction events are assumed to occur at the player's origin
 	org			= g_finalstate->playerstate.origin;
 	ang			= v_angles;
-	gEngfuncs.pfnPlaybackEvent( flags, pInvoker, eventindex, delay, (float *)&org, (float *)&ang, fparam1, fparam2, iparam1, iparam2, bparam1, bparam2 );
+	gEngfuncs.pfnPlaybackEvent( flags, pInvoker, eventindex, delay, org, ang, fparam1, fparam2, iparam1, iparam2, bparam1, bparam2 );
 }
 
 /*
@@ -268,12 +268,12 @@ stub functions for such things as precaching.  So we don't have to modify weapon
  is compiled into both game and client .dlls.
 ======================
 */
-int stub_PrecacheModel( char* s )
+int stub_PrecacheModel( const char* s )
 {
 	return 0;
 }
 
-int stub_PrecacheSound( char* s )
+int stub_PrecacheSound( const char* s )
 {
 	return 0;
 }
@@ -283,7 +283,7 @@ unsigned short stub_PrecacheEvent( int type, const char *s )
 	return 0;
 }
 
-const char *stub_NameForFunction( unsigned long function )
+const char *stub_NameForFunction( void *function )
 {
 	return "func";
 }

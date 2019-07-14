@@ -56,7 +56,7 @@ void CHudMOTD::Reset( void )
 	m_bShow = 0;
 }
 
-#define LINE_HEIGHT  13
+#define LINE_HEIGHT  (gHUD.m_scrinfo.iCharHeight)
 #define ROW_GAP  13
 #define ROW_RANGE_MIN 30
 #define ROW_RANGE_MAX ( ScreenHeight - 100 )
@@ -103,7 +103,7 @@ int CHudMOTD::Draw( float fTime )
 
 		// find where to start drawing the line
 		if( ( ypos > ROW_RANGE_MIN ) && ( ypos + LINE_HEIGHT <= ypos_r + height ) )
-			gHUD.DrawHudString( xpos, ypos, xmax, ch, 255, 180, 0 );
+			DrawUtfString( xpos, ypos, xmax, ch, 255, 180, 0 );
 
 		ypos += LINE_HEIGHT;
 

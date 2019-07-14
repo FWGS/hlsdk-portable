@@ -21,6 +21,7 @@
 #include	"cbase.h"
 #include	"monsters.h"
 #include	"nodes.h"
+#include	"nodes_compat.h"
 #include	"animation.h"
 #include	"doors.h"
 
@@ -44,9 +45,7 @@ LINK_ENTITY_TO_CLASS( info_node_air, CNodeEnt )
 #if !defined _WIN32
 #include <unistd.h>
 #include <sys/stat.h>
-#define CreateDirectory(p, n) mkdir(p, 0777)
-#else
-#define CreateDirectory(p, n) CreateDirectoryA(p, n)
+#define CreateDirectoryA(p, n) mkdir(p, 0777)
 #endif
 
 //=========================================================
@@ -214,7 +213,7 @@ entvars_t *CGraph::LinkEntForLink( CLink *pLink, CNode *pNode )
 //=========================================================
 int CGraph::HandleLinkEnt( int iNode, entvars_t *pevLinkEnt, int afCapMask, NODEQUERY queryType )
 {
-	edict_t *pentWorld;
+	//edict_t *pentWorld;
 	CBaseEntity *pDoor;
 	TraceResult tr;
 
@@ -230,7 +229,7 @@ int CGraph::HandleLinkEnt( int iNode, entvars_t *pevLinkEnt, int afCapMask, NODE
 		ALERT( at_aiconsole, "dead path ent!\n" );
 		return TRUE;
 	}
-	pentWorld = NULL;
+	//pentWorld = NULL;
 
 	// func_door
 	if( FClassnameIs( pevLinkEnt, "func_door" ) || FClassnameIs( pevLinkEnt, "func_door_rotating" ) )
@@ -586,7 +585,7 @@ int CGraph::FindShortestPath( int *piPath, int iStart, int iDest, int iHull, int
 	int iVisitNode;
 	int iCurrentNode;
 	int iNumPathNodes;
-	int iHullMask;
+	int iHullMask = 0;
 
 	if( !m_fGraphPresent || !m_fGraphPointersSet )
 	{
@@ -793,12 +792,12 @@ void inline CalcBounds( int &Lower, int &Upper, int Goal, int Best )
 	int Temp = 2 * Goal - Best;
 	if( Best > Goal )
 	{
-		Lower = max( 0, Temp );
+		Lower = Q_max( 0, Temp );
 		Upper = Best;
 	}
 	else
 	{
-		Upper = min( 255, Temp );
+		Upper = Q_min( 255, Temp );
 		Lower = Best;
 	}
 }
@@ -962,7 +961,7 @@ int CGraph::FindNearestNode( const Vector &vecOrigin, int afNodeTypes )
 		}
 	}
 
-	for( i = max( m_minY, halfY + 1 ); i <= m_maxY; i++ )
+	for( i = Q_max( m_minY, halfY + 1 ); i <= m_maxY; i++ )
 	{
 		for( j = m_RangeStart[1][i]; j <= m_RangeEnd[1][i]; j++ )
 		{
@@ -987,7 +986,7 @@ int CGraph::FindNearestNode( const Vector &vecOrigin, int afNodeTypes )
 		}
 	}
 
-	for( i = min( m_maxZ, halfZ ); i >= m_minZ; i-- )
+	for( i = Q_min( m_maxZ, halfZ ); i >= m_minZ; i-- )
 	{
 		for( j = m_RangeStart[2][i]; j <= m_RangeEnd[2][i]; j++ )
 		{
@@ -1012,7 +1011,7 @@ int CGraph::FindNearestNode( const Vector &vecOrigin, int afNodeTypes )
 		}
 	}
 
-	for( i = max( m_minX, halfX + 1 ); i <= m_maxX; i++ )
+	for( i = Q_max( m_minX, halfX + 1 ); i <= m_maxX; i++ )
 	{
 		for( j = m_RangeStart[0][i]; j <= m_RangeEnd[0][i]; j++ )
 		{
@@ -1034,7 +1033,7 @@ int CGraph::FindNearestNode( const Vector &vecOrigin, int afNodeTypes )
 		}
 	}
 
-	for( i = min( m_maxY, halfY ); i >= m_minY; i-- )
+	for( i = Q_min( m_maxY, halfY ); i >= m_minY; i-- )
 	{
 		for( j = m_RangeStart[1][i]; j <= m_RangeEnd[1][i]; j++ )
 		{
@@ -1055,7 +1054,7 @@ int CGraph::FindNearestNode( const Vector &vecOrigin, int afNodeTypes )
 		}
 	}
 
-	for( i = max( m_minZ, halfZ + 1 ); i <= m_maxZ; i++ )
+	for( i = Q_max( m_minZ, halfZ + 1 ); i <= m_maxZ; i++ )
 	{
 		for( j = m_RangeStart[2][i]; j <= m_RangeEnd[2][i]; j++ )
 		{
@@ -1665,10 +1664,10 @@ void CTestHull::BuildNodeGraph( void )
 
 	int iBadNode;// this is the node that caused graph generation to fail
 
-	int cMaxInitialLinks = 0;
-	int cMaxValidLinks = 0;
+	//int cMaxInitialLinks = 0;
+	//int cMaxValidLinks = 0;
 
-	int iPoolIndex = 0;
+	//int iPoolIndex = 0;
 	int cPoolLinks;// number of links in the pool.
 
 	Vector vecDirToCheckNode;
@@ -1701,9 +1700,9 @@ void CTestHull::BuildNodeGraph( void )
 	// make sure directories have been made
 	GET_GAME_DIR( szNrpFilename );
 	strcat( szNrpFilename, "/maps" );
-	CreateDirectory( szNrpFilename, NULL );
+	CreateDirectoryA( szNrpFilename, NULL );
 	strcat( szNrpFilename, "/graphs" );
-	CreateDirectory( szNrpFilename, NULL );
+	CreateDirectoryA( szNrpFilename, NULL );
 
 	strcat( szNrpFilename, "/" );
 	strcat( szNrpFilename, STRING( gpGlobals->mapname ) );
@@ -2058,11 +2057,16 @@ void CTestHull::BuildNodeGraph( void )
 		fprintf( file, "\nAll Connections are Paired!\n" );
 	}
 
+#ifdef _MSC_VER
+#define SIZET_FMT "%Iu"
+#else
+#define SIZET_FMT "%zu"
+#endif
 	fprintf( file, "-------------------------------------------------------------------------------\n" );
 	fprintf( file, "\n\n-------------------------------------------------------------------------------\n" );
 	fprintf( file, "Total Number of Connections in Pool: %d\n", cPoolLinks );
 	fprintf( file, "-------------------------------------------------------------------------------\n" );
-	fprintf( file, "Connection Pool: %d bytes\n", sizeof(CLink) * cPoolLinks );
+	fprintf( file, "Connection Pool: " SIZET_FMT " bytes\n", sizeof(CLink) * cPoolLinks );
 	fprintf( file, "-------------------------------------------------------------------------------\n" );
 
 	ALERT( at_aiconsole, "%d Nodes, %d Connections\n", WorldGraph.m_cNodes, cPoolLinks );
@@ -2103,7 +2107,7 @@ void CTestHull::BuildNodeGraph( void )
 	WorldGraph.ComputeStaticRoutingTables();
 
 	// save the node graph for this level	
-	WorldGraph.FSaveGraph( (char *)STRING( gpGlobals->mapname ) );
+	WorldGraph.FSaveGraph( STRING( gpGlobals->mapname ) );
 	ALERT( at_console, "Done.\n" );
 }
 
@@ -2358,7 +2362,7 @@ void CQueuePriority::Heap_SiftUp( void )
 // will be loaded. If file cannot be loaded, the node tree
 // will be created and saved to disk.
 //=========================================================
-int CGraph::FLoadGraph( char *szMapName )
+int CGraph::FLoadGraph( const char *szMapName )
 {
 	char szFilename[MAX_PATH];
 	int iVersion;
@@ -2370,9 +2374,9 @@ int CGraph::FLoadGraph( char *szMapName )
 	char szDirName[MAX_PATH];
 	GET_GAME_DIR( szDirName );
 	strcat( szDirName, "/maps" );
-	CreateDirectory( szDirName, NULL );
+	CreateDirectoryA( szDirName, NULL );
 	strcat( szDirName, "/graphs" );
-	CreateDirectory( szDirName, NULL );
+	CreateDirectoryA( szDirName, NULL );
 
 	strcpy( szFilename, "maps/graphs/" );
 	strcat( szFilename, szMapName );
@@ -2381,42 +2385,47 @@ int CGraph::FLoadGraph( char *szMapName )
 	pMemFile = aMemFile = LOAD_FILE_FOR_ME( szFilename, &length );
 
 	if( !aMemFile )
-	{
 		return FALSE;
-	}
-	else
+
+	// Read the graph version number
+	//
+	length -= sizeof(int);
+	if( length < 0 )
+		goto ShortFile;
+	iVersion = *(int *) pMemFile;
+	pMemFile += sizeof(int);
+
+	if( iVersion == GRAPH_VERSION || iVersion == GRAPH_VERSION_RETAIL )
 	{
-		// Read the graph version number
-		//
-		length -= sizeof(int);
-		if( length < 0 )
-			goto ShortFile;
-		memcpy( &iVersion, pMemFile, sizeof(int) );
-		pMemFile += sizeof(int);
-
-		if( iVersion != GRAPH_VERSION )
-		{
-			// This file was written by a different build of the dll!
-			//
-			ALERT( at_aiconsole, "**ERROR** Graph version is %d, expected %d\n", iVersion, GRAPH_VERSION );
-			goto ShortFile;
-		}
-
 		// Read the graph class
 		//
-		length -= sizeof(CGraph);
-		if( length < 0 )
-			goto ShortFile;
-		memcpy( this, pMemFile, sizeof(CGraph) );
-		pMemFile += sizeof(CGraph);
+		if ( iVersion == GRAPH_VERSION )
+		{
+			length -= sizeof(CGraph);
+			if( length < 0 )
+				goto ShortFile;
+			memcpy( this, pMemFile, sizeof(CGraph) );
+			pMemFile += sizeof(CGraph);
 
-		// Set the pointers to zero, just in case we run out of memory.
-		//
-		m_pNodes = NULL;
-		m_pLinkPool = NULL;
-		m_di = NULL;
-		m_pRouteInfo = NULL;
-		m_pHashLinks = NULL;
+			// Set the pointers to zero, just in case we run out of memory.
+			//
+			m_pNodes = NULL;
+			m_pLinkPool = NULL;
+			m_di = NULL;
+			m_pRouteInfo = NULL;
+			m_pHashLinks = NULL;
+		}
+#if _GRAPH_VERSION != _GRAPH_VERSION_RETAIL
+		else
+		{
+			ALERT( at_aiconsole, "Loading CGraph in GRAPH_VERSION 16 compatibility mode\n" );
+			length -= sizeof(CGraph_Retail);
+			if( length < 0 )
+				goto ShortFile;
+			reinterpret_cast<CGraph_Retail*>(pMemFile) -> copyOverTo(this);
+			pMemFile += sizeof(CGraph_Retail);
+		}
+#endif
 
 		// Malloc for the nodes
 		//
@@ -2448,11 +2457,25 @@ int CGraph::FLoadGraph( char *szMapName )
 
 		// Read in all the links
 		//
-		length -= sizeof(CLink) * m_cLinks;
-		if( length < 0 )
-			goto ShortFile;
-		memcpy( m_pLinkPool, pMemFile, sizeof(CLink) * m_cLinks );
-		pMemFile += sizeof(CLink) * m_cLinks;
+		if( iVersion == GRAPH_VERSION )
+		{
+			length -= sizeof(CLink) * m_cLinks;
+			if( length < 0 )
+				goto ShortFile;
+			memcpy( m_pLinkPool, pMemFile, sizeof(CLink) * m_cLinks );
+			pMemFile += sizeof(CLink) * m_cLinks;
+		}
+#if _GRAPH_VERSION != _GRAPH_VERSION_RETAIL
+		else
+		{
+			ALERT( at_aiconsole, "Loading CLink array in GRAPH_VERSION 16 compatibility mode\n" );
+			length -= sizeof(CLink_Retail) * m_cLinks;
+			if( length < 0 )
+				goto ShortFile;
+			reinterpret_cast<CLink_Retail*>(pMemFile) -> copyOverTo(m_pLinkPool);
+			pMemFile += sizeof(CLink_Retail) * m_cLinks;
+		}
+#endif
 
 		// Malloc for the sorting info.
 		//
@@ -2477,7 +2500,7 @@ int CGraph::FLoadGraph( char *szMapName )
 		m_pRouteInfo = (signed char *)calloc( sizeof(signed char), m_nRouteInfo );
 		if( !m_pRouteInfo )
 		{
-			ALERT( at_aiconsole, "***ERROR**\nCounldn't malloc %d route bytes!\n", m_nRouteInfo );
+			ALERT( at_aiconsole, "***ERROR**\nCouldn't malloc %d route bytes!\n", m_nRouteInfo );
 			goto NoMemory;
 		}
 		m_CheckedCounter = 0;
@@ -2500,7 +2523,7 @@ int CGraph::FLoadGraph( char *szMapName )
 		m_pHashLinks = (short *)calloc( sizeof(short), m_nHashLinks );
 		if( !m_pHashLinks )
 		{
-			ALERT( at_aiconsole, "***ERROR**\nCounldn't malloc %d hash link bytes!\n", m_nHashLinks );
+			ALERT( at_aiconsole, "***ERROR**\nCouldn't malloc %d hash link bytes!\n", m_nHashLinks );
 			goto NoMemory;
 		}
 
@@ -2526,6 +2549,13 @@ int CGraph::FLoadGraph( char *szMapName )
 
 		return TRUE;
 	}
+	else
+	{
+		// This file was written by a different build of the dll!
+		//
+		ALERT( at_aiconsole, "**ERROR** Graph version is %d, expected %d\n", iVersion, GRAPH_VERSION );
+		goto ShortFile;
+	}
 
 ShortFile:
 NoMemory:
@@ -2537,7 +2567,7 @@ NoMemory:
 // CGraph - FSaveGraph - It's not rocket science.
 // this WILL overwrite existing files.
 //=========================================================
-int CGraph::FSaveGraph( char *szMapName )
+int CGraph::FSaveGraph( const char *szMapName )
 {
 	int iVersion = GRAPH_VERSION;
 	char szFilename[MAX_PATH];
@@ -2553,9 +2583,9 @@ int CGraph::FSaveGraph( char *szMapName )
 	// make sure directories have been made
 	GET_GAME_DIR( szFilename );
 	strcat( szFilename, "/maps" );
-	CreateDirectory( szFilename, NULL );
+	CreateDirectoryA( szFilename, NULL );
 	strcat( szFilename, "/graphs" );
-	CreateDirectory( szFilename, NULL );
+	CreateDirectoryA( szFilename, NULL );
 
 	strcat( szFilename, "/" );
 	strcat( szFilename, szMapName );
@@ -2669,7 +2699,7 @@ int CGraph::FSetGraphPointers( void )
 // though. ( I now suspect that we are getting GMT back from
 // these functions and must compensate for local time ) (sjb)
 //=========================================================
-int CGraph::CheckNODFile( char *szMapName )
+int CGraph::CheckNODFile( const char *szMapName )
 {
 	int retValue;
 

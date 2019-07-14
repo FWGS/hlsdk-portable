@@ -1,13 +1,12 @@
-//========= Copyright © 1996-2002, Valve LLC, All rights reserved. ============
+//========= Copyright (c) 1996-2002, Valve LLC, All rights reserved. ============
 //
 // Purpose: 
 //
 // $NoKeywords: $
 //=============================================================================
-
+#pragma once
 #if !defined( KBUTTONH )
 #define KBUTTONH
-#pragma once
 
 typedef struct kbutton_s
 {

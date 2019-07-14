@@ -45,7 +45,8 @@ SRCS+=./hud_spectator.cpp
 SRCS+=./hud_update.cpp
 SRCS+=./in_camera.cpp
 SRCS+=./input.cpp
-#SRCS+=./inputw32.cpp
+SRCS+=./input_mouse.cpp
+SRCS+=./input_goldsource.cpp
 SRCS+=./menu.cpp
 SRCS+=./message.cpp
 SRCS+=./overview.cpp
@@ -66,15 +67,18 @@ SRCS+=./view.cpp
 SRCS+=./input_xash3d.cpp
 SRCS+=./scoreboard.cpp
 SRCS+=./MOTD.cpp
-INCLUDES =  -I../common -I. -I../game_shared -I../pm_shared -I../engine -I../dlls
+INCLUDES =  -I../common -I. -I../game_shared -I../pm_shared -I../engine -I../dlls -I../utils/false_vgui/include
 DEFINES = -Wno-write-strings -Dstricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp -DCLIENT_WEAPONS -DCLIENT_DLL
 CFLAGS = -m32
 OBJS = $(SRCS:.cpp=.o) $(SRCS_C:.c=.o)
 
 LIBS=-lm
+ifeq ($(GOLDSOURCE_SUPPORT),1)
+	DEFINES += -DGOLDSOURCE_SUPPORT
+endif
 
 ifeq ($(shell uname -s),Linux)
-	LIBS=$(LIBS) -ldl
+	LIBS += -ldl
 endif
 
 %.o : %.c
@@ -83,7 +87,7 @@ endif
 %.o : %.cpp
 	$(CXX) $(CFLAGS) $(INCLUDES) $(DEFINES) -fPIC -c $< -o $@
 client.so : $(OBJS)
-	$(CXX) $(OBJS) -o client.so -shared -Wl,--no-undefined -fPIC $(LIBS)
+	$(CXX) $(CFLAGS) $(OBJS) -o client.so -shared -Wl,--no-undefined -fPIC $(LIBS)
 
 clean:
 	$(RM) $(OBJS)

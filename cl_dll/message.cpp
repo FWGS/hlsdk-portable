@@ -29,7 +29,7 @@ DECLARE_MESSAGE( m_Message, GameTitle )
 
 // 1 Global client_textmessage_t for custom messages that aren't in the titles.txt
 client_textmessage_t	g_pCustomMessage;
-char *g_pCustomName = "Custom";
+const char *g_pCustomName = "Custom";
 char g_pCustomText[1024];
 
 int CHudMessage::Init( void )
@@ -240,7 +240,7 @@ void CHudMessage::MessageDrawScan( client_textmessage_t *pMessage, float time )
 {
 	int i, j, length, width;
 	const char *pText;
-	unsigned char line[80];
+	const char *pLineStart;
 
 	pText = pMessage->pMessage;
 	// Count lines
@@ -260,7 +260,7 @@ void CHudMessage::MessageDrawScan( client_textmessage_t *pMessage, float time )
 			width = 0;
 		}
 		else
-			width += gHUD.m_scrinfo.charWidths[*pText];
+			width += gHUD.m_scrinfo.charWidths[(unsigned char)*pText];
 		pText++;
 		length++;
 	}
@@ -278,22 +278,21 @@ void CHudMessage::MessageDrawScan( client_textmessage_t *pMessage, float time )
 	{
 		m_parms.lineLength = 0;
 		m_parms.width = 0;
+		pLineStart = pText;
 		while( *pText && *pText != '\n' )
 		{
 			unsigned char c = *pText;
-			line[m_parms.lineLength] = c;
 			m_parms.width += gHUD.m_scrinfo.charWidths[c];
 			m_parms.lineLength++;
 			pText++;
 		}
 		pText++;		// Skip LF
-		line[m_parms.lineLength] = 0;
 
 		m_parms.x = XPosition( pMessage->x, m_parms.width, m_parms.totalWidth );
 
 		for( j = 0; j < m_parms.lineLength; j++ )
 		{
-			m_parms.text = line[j];
+			m_parms.text = pLineStart[j];
 			int next = m_parms.x + gHUD.m_scrinfo.charWidths[m_parms.text];
 			MessageScanNextChar();
 
@@ -310,7 +309,7 @@ int CHudMessage::Draw( float fTime )
 {
 	int i, drawn;
 	client_textmessage_t *pMessage;
-	float endTime = 0;
+	float endTime = 0.0f;
 
 	drawn = 0;
 
