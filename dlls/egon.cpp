@@ -174,7 +174,7 @@ void CEgon::Attack( void )
 	}
 
 	UTIL_MakeVectors( m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle );
-	Vector vecAiming = gpGlobals->v_forward;
+	Vector vecAiming = m_pPlayer->GetAutoaimVector( AUTOAIM_10DEGREES );
 	Vector vecSrc = m_pPlayer->GetGunPosition();
 
 	int flags;
@@ -471,6 +471,8 @@ void CEgon::DestroyEffect( void )
 void CEgon::WeaponIdle( void )
 {
 	ResetEmptySound();
+
+	m_pPlayer->GetAutoaimVector( AUTOAIM_10DEGREES );
 
 	if( m_flTimeWeaponIdle > UTIL_WeaponTimeBase() )
 		return;

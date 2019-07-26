@@ -118,6 +118,7 @@ TYPEDESCRIPTION	CBasePlayer::m_playerSaveData[] =
 	DEFINE_FIELD( CBasePlayer, m_pTank, FIELD_EHANDLE ),
 	DEFINE_FIELD( CBasePlayer, m_iHideHUD, FIELD_INTEGER ),
 	DEFINE_FIELD( CBasePlayer, m_iFOV, FIELD_INTEGER ),
+	DEFINE_ARRAY( CBasePlayer, m_szAnimExtention, FIELD_CHARACTER, 32 )
 
 	//DEFINE_FIELD( CBasePlayer, m_fDeadTime, FIELD_FLOAT ), // only used in multiplayer games
 	//DEFINE_FIELD( CBasePlayer, m_fGameHUDInitialized, FIELD_INTEGER ), // only used in multiplayer games
@@ -370,11 +371,8 @@ Vector CBasePlayer::GetGunPosition()
 {
 	//UTIL_MakeVectors( pev->v_angle );
 	//m_HackedGunPos = pev->view_ofs;
-	Vector origin;
 
-	origin = pev->origin + pev->view_ofs;
-
-	return origin;
+	return EyePosition();
 }
 
 //=========================================================
@@ -966,6 +964,22 @@ void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim )
 			break;
 		}
 		break;
+	case PLAYER_RELOAD:
+	case PLAYER_RELOAD_START:
+		switch( m_Activity )
+		{
+		case ACT_HOVER:
+		case ACT_SWIM:
+		case ACT_HOP:
+		case ACT_LEAP:
+		case ACT_DIESIMPLE:
+			m_IdealActivity = m_Activity;
+			break;
+		default:
+			m_IdealActivity = ACT_RELOAD;
+			break;
+		}
+		break;
 	case PLAYER_IDLE:
 	case PLAYER_WALK:
 		if( !FBitSet( pev->flags, FL_ONGROUND ) && ( m_Activity == ACT_HOP || m_Activity == ACT_LEAP ) )	// Still jumping
@@ -1034,8 +1048,43 @@ void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim )
 		pev->sequence = animDesired;
 		ResetSequenceInfo();
 		break;
+	case ACT_RELOAD:
+		if( playerAnim == PLAYER_RELOAD_START )
+		{
+			if( FBitSet( pev->flags, FL_DUCKING ) )	// crouching
+				strcpy( szAnim, "reload_start_c_" );
+			else
+				strcpy( szAnim, "reload_start_" );
+		}
+		else
+		{
+			if( FBitSet(pev->flags, FL_DUCKING ) )	// crouching
+				strcpy(szAnim, "reload_c_");
+			else
+				strcpy(szAnim, "reload_");
+		}
+		strcat( szAnim, m_szAnimExtention );
+		animDesired = LookupSequence( szAnim ); // szAnim
+		if( animDesired == -1 )
+			animDesired = 0;
+
+		if( pev->sequence != animDesired || !m_fSequenceLoops )
+		{
+			pev->frame = 0;
+		}
+
+		if( !m_fSequenceLoops )
+		{
+			pev->effects |= EF_NOINTERP;
+		}
+
+		m_Activity = m_IdealActivity;
+
+		pev->sequence = animDesired;
+		ResetSequenceInfo();
+		break;
 	case ACT_WALK:
-		if( m_Activity != ACT_RANGE_ATTACK1 || m_fSequenceFinished )
+		if( ( m_Activity != ACT_RANGE_ATTACK1 && m_Activity != ACT_RELOAD ) || m_fSequenceFinished )
 		{
 			if( FBitSet( pev->flags, FL_DUCKING ) )	// crouching
 				strcpy( szAnim, "crouch_aim_" );
@@ -1506,7 +1555,7 @@ void CBasePlayer::PlayerUse( void )
 	CBaseEntity *pObject = NULL;
 	CBaseEntity *pClosest = NULL;
 	Vector vecLOS;
-	float flMaxDot = VIEW_FIELD_NARROW;
+	float flMaxDot = VIEW_FIELD_WIDE;
 	float flDot;
 
 	UTIL_MakeVectors( pev->v_angle );// so we know which way we are facing
@@ -2500,6 +2549,17 @@ void CBasePlayer::UpdatePlayerSound( void )
 
 void CBasePlayer::PostThink()
 {
+	if( ( pev->weapons & ( 1 << WEAPON_SUIT ) ) )
+	{
+		pev->body = 0;
+	}
+	else
+	{
+		pev->body = 1;
+	}
+
+	ALERT( at_console, "%s\n", m_szAnimExtention );
+
 	if( g_fGameOver )
 		goto pt_end;	// intermission or finale
 
@@ -3001,6 +3061,15 @@ int CBasePlayer::Restore( CRestore &restore )
 	//			Barring that, we clear it out here instead of using the incorrect restored time value.
 	m_flNextAttack = UTIL_WeaponTimeBase();
 #endif
+	if( ( pev->weapons & ( 1 << WEAPON_SUIT ) ) )
+	{
+		pev->body = 0;
+	}
+	else
+	{
+		pev->body = 1;
+	}
+
 	return status;
 }
 
@@ -3649,6 +3718,14 @@ int CBasePlayer::AddPlayerItem( CBasePlayerItem *pItem )
 			SwitchWeapon( pItem );
 		}
 
+		if( ( pev->weapons & ( 1 << WEAPON_SUIT ) ) )
+		{
+			pev->body = 0;
+		}
+		else
+		{
+			pev->body = 1;
+		}
 		return TRUE;
 	}
 	else if( gEvilImpulse101 )
@@ -4186,11 +4263,11 @@ void CBasePlayer::EnableControl( BOOL fControl )
 //=========================================================
 Vector CBasePlayer::GetAutoaimVector( float flDelta )
 {
-	if( g_iSkillLevel == SKILL_HARD )
+	/*if( g_iSkillLevel == SKILL_HARD )
 	{
 		UTIL_MakeVectors( pev->v_angle + pev->punchangle );
 		return gpGlobals->v_forward;
-	}
+	}*/
 
 	Vector vecSrc = GetGunPosition();
 	float flDist = 8192;
@@ -4223,38 +4300,23 @@ Vector CBasePlayer::GetAutoaimVector( float flDelta )
 	if( angles.y < -180 )
 		angles.y += 360;
 
-	if( angles.x > 25 )
-		angles.x = 25;
-	if( angles.x < -25 )
-		angles.x = -25;
-	if( angles.y > 12 )
-		angles.y = 12;
-	if( angles.y < -12 )
-		angles.y = -12;
+	if( angles.y > 10 )
+		angles.y = 10;
+	if( angles.y < -10 )
+		angles.y = -10;
 
 	// always use non-sticky autoaim
 	// UNDONE: use sever variable to chose!
-	if( 0 || g_iSkillLevel == SKILL_EASY )
-	{
-		m_vecAutoAim = m_vecAutoAim * 0.67 + angles * 0.33;
-	}
-	else
-	{
-		m_vecAutoAim = angles * 0.9;
-	}
+	m_vecAutoAim = m_vecAutoAim + angles; //* 0.67  * 0.33
 
 	// m_vecAutoAim = m_vecAutoAim * 0.99;
 
-	// Don't send across network if sv_aim is 0
-	if( g_psv_aim->value != 0 )
+	if( m_vecAutoAim.x != m_lastx || m_vecAutoAim.y != m_lasty )
 	{
-		if( m_vecAutoAim.x != m_lastx || m_vecAutoAim.y != m_lasty )
-		{
-			SET_CROSSHAIRANGLE( edict(), -m_vecAutoAim.x, m_vecAutoAim.y );
+		SET_CROSSHAIRANGLE( edict(), -m_vecAutoAim.x, m_vecAutoAim.y );
 
-			m_lastx = (int)m_vecAutoAim.x;
-			m_lasty = (int)m_vecAutoAim.y;
-		}
+		m_lastx = (int)m_vecAutoAim.x;
+		m_lasty = (int)m_vecAutoAim.y;
 	}
 
 	// ALERT( at_console, "%f %f\n", angles.x, angles.y );
@@ -4282,7 +4344,7 @@ Vector CBasePlayer::AutoaimDeflection( Vector &vecSrc, float flDist, float flDel
 
 	// try all possible entities
 	bestdir = gpGlobals->v_forward;
-	bestdot = flDelta; // +- 10 degrees
+	bestdot = 10; // flDelta; // +- 10 degrees
 	bestent = NULL;
 
 	m_fOnTarget = FALSE;
@@ -4338,7 +4400,7 @@ Vector CBasePlayer::AutoaimDeflection( Vector &vecSrc, float flDist, float flDel
 		if( DotProduct( dir, gpGlobals->v_forward ) < 0 )
 			continue;
 
-		dot = fabs( DotProduct( dir, gpGlobals->v_right ) ) + fabs( DotProduct( dir, gpGlobals->v_up ) ) * 0.5;
+		dot = fabs( DotProduct( dir, gpGlobals->v_right ) ) + fabs( DotProduct( dir, gpGlobals->v_up ) );
 
 		// tweek for distance
 		dot *= 1.0 + 0.2 * ( ( center - vecSrc ).Length() / flDist );

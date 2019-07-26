@@ -122,8 +122,10 @@ typedef unsigned int DWORD;
 
 #define MOUSE_BUTTON_COUNT 5
 
+float mouse_pos_extern[2];
+
 // use IN_SetVisibleMouse to set:
-int iVisibleMouse = 0;
+int iVisibleMouse = 1;
 
 extern cl_enginefunc_t gEngfuncs;
 
@@ -148,6 +150,8 @@ extern cvar_t *cl_sidespeed;
 extern cvar_t *cl_forwardspeed;
 extern cvar_t *cl_pitchspeed;
 extern cvar_t *cl_movespeedkey;
+
+float camYaw;
 
 #ifdef _WIN32
 static double s_flRawInputUpdateTime = 0.0f;
@@ -633,8 +637,8 @@ void GoldSourceInput::IN_MouseEvent (int mstate)
 {
 	int i;
 
-	if ( iMouseInUse || iVisibleMouse )
-		return;
+	// if ( iMouseInUse || iVisibleMouse )
+	//	return;
 
 	// perform button actions
 	for (i=0 ; i<mouse_buttons ; i++)
@@ -847,7 +851,7 @@ void GoldSourceInput::IN_MouseMove ( float frametime, usercmd_t *cmd)
 
 	//jjb - this disbles normal mouse control if the user is trying to
 	//  move the camera, or if the mouse cursor is visible or if we're in intermission
-	if ( !iMouseInUse && !gHUD.m_iIntermission && !iVisibleMouse )
+	if ( !iMouseInUse && !gHUD.m_iIntermission )
 	{
 		IN_GetMouseDelta( &mx, &my );
 
@@ -869,18 +873,38 @@ void GoldSourceInput::IN_MouseMove ( float frametime, usercmd_t *cmd)
 		IN_ScaleMouse( &mouse_x, &mouse_y );
 
 		// add mouse X/Y movement to cmd
+		/*
 		if ( (in_strafe.state & 1) || (lookstrafe->value && (in_mlook.state & 1) ))
 			cmd->sidemove += m_side->value * mouse_x;
 		else
 			viewangles[YAW] -= m_yaw->value * mouse_x;
+		*/
+
+		// Get mouse pos and normalize it to be sent to view.cpp
+		POINT mouse_pos;
+		GetCursorPos( &mouse_pos );
+
+		mouse_pos_extern[0] = mouse_pos.x;
+		mouse_pos_extern[1] = mouse_pos.y;
+		mouse_pos_extern[0] /= ScreenWidth / 2;
+		mouse_pos_extern[1] /= ScreenHeight / 2;
+		mouse_pos_extern[0] -= 1;
+		mouse_pos_extern[1] -= 1;
+
+		viewangles[YAW] = -atan2( double( mouse_pos_extern[1] * ( M_PI / 180 ) ), double( mouse_pos_extern[0] * ( M_PI / 180 ) ) ) * ( 180 / M_PI ) - 90; // I don't know why I have to negate the v
+
+		mouse_pos_extern[0] *= 27;
+		mouse_pos_extern[1] *= 27;
 
 		if ( (in_mlook.state & 1) && !(in_strafe.state & 1))
 		{
+			/*
 			viewangles[PITCH] += m_pitch->value * mouse_y;
 			if (viewangles[PITCH] > cl_pitchdown->value)
 				viewangles[PITCH] = cl_pitchdown->value;
 			if (viewangles[PITCH] < -cl_pitchup->value)
 				viewangles[PITCH] = -cl_pitchup->value;
+			*/
 		}
 		else
 		{

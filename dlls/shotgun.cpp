@@ -148,7 +148,7 @@ void CShotgun::PrimaryAttack()
 	m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
 
 	Vector vecSrc = m_pPlayer->GetGunPosition();
-	Vector vecAiming = m_pPlayer->GetAutoaimVector( AUTOAIM_5DEGREES );
+	Vector vecAiming = m_pPlayer->GetAutoaimVector( AUTOAIM_10DEGREES );
 
 	Vector vecDir;
 
@@ -218,7 +218,7 @@ void CShotgun::SecondaryAttack( void )
 	m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
 
 	Vector vecSrc = m_pPlayer->GetGunPosition();
-	Vector vecAiming = m_pPlayer->GetAutoaimVector( AUTOAIM_5DEGREES );
+	Vector vecAiming = m_pPlayer->GetAutoaimVector( AUTOAIM_10DEGREES );
 
 	Vector vecDir;
 
@@ -268,6 +268,7 @@ void CShotgun::Reload( void )
 	// check to see if we're ready to reload
 	if( m_fInSpecialReload == 0 )
 	{
+		m_pPlayer->SetAnimation( PLAYER_RELOAD_START );
 		SendWeaponAnim( SHOTGUN_START_RELOAD );
 		m_fInSpecialReload = 1;
 		m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.6;
@@ -289,6 +290,7 @@ void CShotgun::Reload( void )
 			EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/reload3.wav", 1, ATTN_NORM, 0, 85 + RANDOM_LONG( 0, 0x1f ) );
 
 		SendWeaponAnim( SHOTGUN_RELOAD );
+		m_pPlayer->SetAnimation( PLAYER_RELOAD );
 
 		m_flNextReload = UTIL_WeaponTimeBase() + 0.5;
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.5;
@@ -316,7 +318,7 @@ void CShotgun::WeaponIdle( void )
 {
 	ResetEmptySound();
 
-	m_pPlayer->GetAutoaimVector( AUTOAIM_5DEGREES );
+	m_pPlayer->GetAutoaimVector( AUTOAIM_10DEGREES );
 
 	if( m_flTimeWeaponIdle <  UTIL_WeaponTimeBase() )
 	{

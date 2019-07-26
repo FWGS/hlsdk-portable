@@ -154,7 +154,6 @@ int CHud::Redraw( float flTime, int intermission )
 		SPR_DrawAdditive( i, x, y, NULL );
 	}
 
-	/*
 	if( g_iVisibleMouse )
 	{
 		void IN_GetMousePos( int *mx, int *my );
@@ -174,7 +173,6 @@ int CHud::Redraw( float flTime, int intermission )
 		// Draw the logo at 20 fps
 		SPR_DrawAdditive( 0, mx, my, NULL );
 	}
-	*/
 
 	return 1;
 }

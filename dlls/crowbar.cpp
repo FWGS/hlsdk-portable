@@ -178,11 +178,16 @@ int CCrowbar::Swing( int fFirst )
 {
 	int fDidHit = FALSE;
 
-	TraceResult tr;
+	TraceResult tr, tr2;
 
 	UTIL_MakeVectors( m_pPlayer->pev->v_angle );
 	Vector vecSrc = m_pPlayer->GetGunPosition();
 	Vector vecEnd = vecSrc + gpGlobals->v_forward * 32;
+
+	if( FBitSet( m_pPlayer->pev->flags, FL_DUCKING ) )
+	{
+		vecEnd = vecSrc + ( ( -gpGlobals->v_up + gpGlobals->v_forward ).Normalize() ) * 32;
+	}
 
 	UTIL_TraceLine( vecSrc, vecEnd, dont_ignore_monsters, ENT( m_pPlayer->pev ), &tr );
 
@@ -240,6 +245,17 @@ int CCrowbar::Swing( int fFirst )
 		m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
 
 #ifndef CLIENT_DLL
+		Vector hitAngle;
+
+		if( FBitSet( m_pPlayer->pev->flags, FL_DUCKING ) )
+		{
+			hitAngle = ( ( -gpGlobals->v_up + gpGlobals->v_forward ).Normalize() );
+		}
+		else
+		{
+			hitAngle = gpGlobals->v_forward;
+		}
+
 		// hit
 		fDidHit = TRUE;
 		CBaseEntity *pEntity = CBaseEntity::Instance( tr.pHit );
@@ -261,12 +277,12 @@ int CCrowbar::Swing( int fFirst )
 #endif
 			{
 				// first swing does full damage
-				pEntity->TraceAttack( m_pPlayer->pev, gSkillData.plrDmgCrowbar, gpGlobals->v_forward, &tr, DMG_CLUB ); 
+				pEntity->TraceAttack( m_pPlayer->pev, gSkillData.plrDmgCrowbar, hitAngle, &tr, DMG_CLUB ); 
 			}
 			else
 			{
 				// subsequent swings do half
-				pEntity->TraceAttack( m_pPlayer->pev, gSkillData.plrDmgCrowbar / 2, gpGlobals->v_forward, &tr, DMG_CLUB ); 
+				pEntity->TraceAttack( m_pPlayer->pev, gSkillData.plrDmgCrowbar / 2, hitAngle, &tr, DMG_CLUB ); 
 			}
 			ApplyMultiDamage( m_pPlayer->pev, m_pPlayer->pev );
 

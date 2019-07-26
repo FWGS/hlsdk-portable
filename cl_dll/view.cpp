@@ -67,6 +67,12 @@ void VectorAngles( const float *forward, float *angles );
 
 extern engine_studio_api_t IEngineStudio;
 
+extern float mouse_pos_extern[2];
+extern cvar_t *cam_idealdist;
+extern cvar_t *cam_minDist;
+
+extern cvar_t *cam_contain;
+
 /*
 The view is allowed to move slightly from it's true position for bobbing,
 but if it exceeds 8 pixels linear distance (spherical, not box), the list of
@@ -83,6 +89,12 @@ extern Vector   dead_viewangles;
 
 #define	CAM_MODE_RELAX		1
 #define CAM_MODE_FOCUS		2
+
+vec3_t realOrigin;
+float realViewOrg[3];
+float camOffset[3];
+
+extern cvar_t *cam_lookahead;
 
 vec3_t v_origin, v_angles, v_cl_angles, v_sim_org, v_lastAngles;
 float v_frametime, v_lastDistance;	
@@ -407,6 +419,9 @@ V_CalcRefdef
 
 ==================
 */
+
+float offSetFactor = 1;
+
 void V_CalcNormalRefdef( struct ref_params_s *pparams )
 {
 	cl_entity_t *ent, *view;
@@ -440,7 +455,7 @@ void V_CalcNormalRefdef( struct ref_params_s *pparams )
 
 	// refresh position
 	VectorCopy( pparams->simorg, pparams->vieworg );
-	pparams->vieworg[2] += bob ;
+	//pparams->vieworg[2] += bob ;
 	VectorAdd( pparams->vieworg, pparams->viewheight, pparams->vieworg );
 
 	if( pparams->health <= 0 )
@@ -566,6 +581,50 @@ void V_CalcNormalRefdef( struct ref_params_s *pparams )
 		{
 			pparams->vieworg[i] += -ofs[2] * camForward[i];
 		}
+
+		//Calculations and setting externs for in_camera.cpp
+		realOrigin = ent->origin;
+
+		if( cam_contain->value == 1 )
+		{
+			Vector mousePos = Vector(-mouse_pos_extern[1], -mouse_pos_extern[0], 0.0f);
+
+			// Check if the new camera position is in the wall
+			Vector startPoint;
+
+			if( cam_idealdist->value + 25 <= cam_minDist->value )
+			{
+				startPoint = ent->origin + Vector( 0.0f, 0.0f, cam_idealdist->value );
+			}
+			else
+			{
+				// if camera is inside the wall trace from the player's origin
+				startPoint = ent->origin;
+			}
+
+			pmtrace_t *camTrace = gEngfuncs.PM_TraceLine( startPoint, startPoint + mousePos * offSetFactor * cam_lookahead->value, 1, 2, -1 );
+
+			// TODO: fix division
+
+			camOffset[0] = camTrace->endpos.x - startPoint.x;
+			camOffset[1] = camTrace->endpos.y - startPoint.y;
+
+			realViewOrg[0] = camTrace->endpos.x - startPoint.x;
+			realViewOrg[1] = camTrace->endpos.y - startPoint.y;
+			realViewOrg[2] = 0;
+		}
+		else
+		{
+			camOffset[0] = -mouse_pos_extern[1] * offSetFactor * cam_lookahead->value;
+			camOffset[1] = -mouse_pos_extern[0] * offSetFactor * cam_lookahead->value;
+
+			realViewOrg[0] = -mouse_pos_extern[1] * offSetFactor * cam_lookahead->value;
+			realViewOrg[1] = -mouse_pos_extern[0] * offSetFactor * cam_lookahead->value;
+			realViewOrg[2] = 0;
+		}
+
+		pparams->vieworg[0] += camOffset[0];
+		pparams->vieworg[1] += camOffset[1];
 	}
 
 	// Give gun our viewangles
@@ -744,10 +803,10 @@ void V_CalcNormalRefdef( struct ref_params_s *pparams )
 		pitch /= -3.0;
 
 		// Slam local player's pitch value
-		ent->angles[0] = pitch;
-		ent->curstate.angles[0] = pitch;
-		ent->prevstate.angles[0] = pitch;
-		ent->latched.prevangles[0] = pitch;
+		// ent->angles[0] = pitch;
+		// ent->curstate.angles[0] = pitch;
+		// ent->prevstate.angles[0] = pitch;
+		// ent->latched.prevangles[0] = pitch;
 	}
 
 	// override all previous settings if the viewent isn't the client

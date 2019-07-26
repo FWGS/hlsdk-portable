@@ -381,7 +381,7 @@ void CCrossbow::FireSniperBolt()
 	Vector anglesAim = m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle;
 	UTIL_MakeVectors( anglesAim );
 	Vector vecSrc = m_pPlayer->GetGunPosition() - gpGlobals->v_up * 2;
-	Vector vecDir = gpGlobals->v_forward;
+	Vector vecDir = m_pPlayer->GetAutoaimVector( AUTOAIM_10DEGREES ); // gpGlobals->v_forward;
 
 	UTIL_TraceLine( vecSrc, vecSrc + vecDir * 8192, dont_ignore_monsters, m_pPlayer->edict(), &tr );
 
@@ -428,7 +428,7 @@ void CCrossbow::FireBolt()
 
 #ifndef CLIENT_DLL
 	Vector vecSrc	= m_pPlayer->GetGunPosition() - gpGlobals->v_up * 2;
-	Vector vecDir	= gpGlobals->v_forward;
+	Vector vecDir	= m_pPlayer->GetAutoaimVector( AUTOAIM_10DEGREES ); // gpGlobals->v_forward;
 
 	CCrossbowBolt *pBolt = CCrossbowBolt::BoltCreate();
 	pBolt->pev->origin = vecSrc;
@@ -462,18 +462,24 @@ void CCrossbow::FireBolt()
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.75;
 }
 
+#ifdef CLIENT_DLL
+extern float offSetFactor;
+#endif
+
 void CCrossbow::SecondaryAttack()
 {
-	if( m_pPlayer->pev->fov != 0 )
+#ifdef CLIENT_DLL
+	if( offSetFactor != 1 )
 	{
-		m_pPlayer->pev->fov = m_pPlayer->m_iFOV = 0; // 0 means reset to default fov
+		offSetFactor = 1;
 		m_fInZoom = 0;
 	}
-	else if( m_pPlayer->pev->fov != 20 )
+	else if( offSetFactor != 5 )
 	{
-		m_pPlayer->pev->fov = m_pPlayer->m_iFOV = 20;
+		offSetFactor = 5;
 		m_fInZoom = 1;
 	}
+#endif
 
 	pev->nextthink = UTIL_WeaponTimeBase() + 0.1;
 	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1.0;
@@ -497,7 +503,7 @@ void CCrossbow::Reload( void )
 
 void CCrossbow::WeaponIdle( void )
 {
-	m_pPlayer->GetAutoaimVector( AUTOAIM_2DEGREES );  // get the autoaim vector but ignore it;  used for autoaim crosshair in DM
+	m_pPlayer->GetAutoaimVector( AUTOAIM_10DEGREES );  // get the autoaim vector but ignore it;  used for autoaim crosshair in DM
 
 	ResetEmptySound();
 	
