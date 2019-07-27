@@ -1375,7 +1375,7 @@ void PM_WaterMove( void )
 		wishvel[i] = pmove->forward[i] * fmove + pmove->right[i] * smove;
 
 	// Sinking after no other movement occurs
-	if( !pmove->cmd.forwardmove && !pmove->cmd.sidemove && !pmove->cmd.upmove )
+	if( !fmove && !smove && !pmove->cmd.upmove )
 		wishvel[2] -= 60;		// drift towards bottom
 	else  // Go straight up by upmove amount.
 		wishvel[2] += pmove->cmd.upmove;
