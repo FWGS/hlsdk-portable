@@ -2141,9 +2141,9 @@ void PM_LadderMove( physent_t *pLadder )
 		if( pmove->cmd.buttons & IN_FORWARD )
 			fmove += flSpeed;
 		if( pmove->cmd.buttons & IN_MOVELEFT )
-			fmove -= flSpeed;
+			smove -= flSpeed;
 		if( pmove->cmd.buttons & IN_MOVERIGHT )
-			fmove += flSpeed;
+			smove += flSpeed;
 
 		forward = ( fmove * ( cos( pmove->cmd.viewangles[YAW] * ( M_PI / 180 ) ) ) ) - ( smove * ( sin( pmove->cmd.viewangles[YAW] * ( M_PI / 180 ) ) ) );
 		right = ( fmove * ( sin( pmove->cmd.viewangles[YAW] * ( M_PI / 180 ) ) ) ) + ( smove * ( cos( pmove->cmd.viewangles[YAW] * ( M_PI / 180 ) ) ) );
