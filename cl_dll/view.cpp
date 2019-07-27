@@ -67,7 +67,7 @@ void VectorAngles( const float *forward, float *angles );
 
 extern engine_studio_api_t IEngineStudio;
 
-extern float mouse_pos_extern[2];
+float mouse_pos_extern[2];
 extern cvar_t *cam_idealdist;
 extern cvar_t *cam_minDist;
 

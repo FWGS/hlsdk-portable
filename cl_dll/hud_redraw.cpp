@@ -29,7 +29,9 @@ int grgLogoFrame[MAX_LOGO_FRAMES] =
 	29, 29, 29, 29, 29, 28, 27, 26, 25, 24, 30, 31 
 };
 
-extern int g_iVisibleMouse;
+#if defined(SUPPORT_GOLDSOURCE_INPUT)
+extern int iVisibleMouse;
+#endif
 
 float HUD_GetFOV( void );
 
@@ -154,7 +156,8 @@ int CHud::Redraw( float flTime, int intermission )
 		SPR_DrawAdditive( i, x, y, NULL );
 	}
 
-	if( g_iVisibleMouse )
+#if defined(SUPPORT_GOLDSOURCE_INPUT)
+	if( iVisibleMouse )
 	{
 		void IN_GetMousePos( int *mx, int *my );
 		int mx, my;
@@ -173,6 +176,7 @@ int CHud::Redraw( float flTime, int intermission )
 		// Draw the logo at 20 fps
 		SPR_DrawAdditive( 0, mx, my, NULL );
 	}
+#endif
 
 	return 1;
 }

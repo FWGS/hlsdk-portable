@@ -122,7 +122,7 @@ typedef unsigned int DWORD;
 
 #define MOUSE_BUTTON_COUNT 5
 
-float mouse_pos_extern[2];
+extern float mouse_pos_extern[2];
 
 // use IN_SetVisibleMouse to set:
 int iVisibleMouse = 1;
@@ -150,8 +150,6 @@ extern cvar_t *cl_sidespeed;
 extern cvar_t *cl_forwardspeed;
 extern cvar_t *cl_pitchspeed;
 extern cvar_t *cl_movespeedkey;
-
-float camYaw;
 
 #ifdef _WIN32
 static double s_flRawInputUpdateTime = 0.0f;

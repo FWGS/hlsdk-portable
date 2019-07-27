@@ -74,7 +74,7 @@ cvar_t	*cam_maxDist;
 cvar_t	*cam_smooth;
 cvar_t	*cam_lookahead;
 
-extern	float camYaw;
+static float camYaw;
 
 // pitch, yaw, dist
 vec3_t cam_ofs;
