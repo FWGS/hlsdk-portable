@@ -2558,7 +2558,7 @@ void CBasePlayer::PostThink()
 		pev->body = 1;
 	}
 
-	ALERT( at_console, "%s\n", m_szAnimExtention );
+	// ALERT( at_console, "%s\n", m_szAnimExtention );
 
 	if( g_fGameOver )
 		goto pt_end;	// intermission or finale
