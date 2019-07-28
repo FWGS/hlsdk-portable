@@ -28,6 +28,7 @@
 #include "demo.h"
 #include "demo_api.h"
 
+cvar_t *hud_ignore_mouse;
 cvar_t *hud_textmode;
 float g_hud_text_color[3];
 
@@ -196,6 +197,7 @@ void CHud::Init( void )
 	m_pCvarDraw = CVAR_CREATE( "hud_draw", "1", FCVAR_ARCHIVE );
 	cl_lw = gEngfuncs.pfnGetCvarPointer( "cl_lw" );
 	cl_viewbob = CVAR_CREATE( "cl_viewbob", "0", FCVAR_ARCHIVE );
+	hud_ignore_mouse = gEngfuncs.pfnGetCvarPointer( "m_ignore" );
 
 	m_pSpriteList = NULL;
 

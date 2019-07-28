@@ -125,7 +125,7 @@ typedef unsigned int DWORD;
 extern float mouse_pos_extern[2];
 
 // use IN_SetVisibleMouse to set:
-int iVisibleMouse = 1;
+extern int iVisibleMouse;
 
 extern cl_enginefunc_t gEngfuncs;
 
@@ -880,7 +880,10 @@ void GoldSourceInput::IN_MouseMove ( float frametime, usercmd_t *cmd)
 
 		// Get mouse pos and normalize it to be sent to view.cpp
 		POINT mouse_pos;
-		GetCursorPos( &mouse_pos );
+
+		// GetCursorPos( &mouse_pos );
+
+		IN_GetMousePos( &mouse_pos.x, &mouse_pos.y );
 
 		mouse_pos_extern[0] = mouse_pos.x;
 		mouse_pos_extern[1] = mouse_pos.y;
@@ -889,7 +892,7 @@ void GoldSourceInput::IN_MouseMove ( float frametime, usercmd_t *cmd)
 		mouse_pos_extern[0] -= 1;
 		mouse_pos_extern[1] -= 1;
 
-		viewangles[YAW] = -atan2( double( mouse_pos_extern[1] * ( M_PI / 180 ) ), double( mouse_pos_extern[0] * ( M_PI / 180 ) ) ) * ( 180 / M_PI ) - 90; // I don't know why I have to negate the v
+		viewangles[YAW] = -atan2( double( mouse_pos_extern[1] * ( M_PI / 180 ) ), double( mouse_pos_extern[0] * ( M_PI / 180 ) ) ) * ( 180 / M_PI ) - 90; // I don't know why I have to negate the value and subtract 90, it just works that way.
 
 		mouse_pos_extern[0] *= 27;
 		mouse_pos_extern[1] *= 27;

@@ -3,7 +3,9 @@
 #include "cvardef.h"
 #include "kbutton.h"
 #include "keydefs.h"
+#include "cl_util.h"
 #include "input_mouse.h"
+
 extern cvar_t		*sensitivity;
 extern cvar_t		*in_joystick;
 
@@ -15,6 +17,9 @@ extern kbutton_t	in_forward;
 extern kbutton_t	in_back;
 extern kbutton_t	in_moveleft;
 extern kbutton_t	in_moveright;
+
+extern float mouse_pos_extern[2];
+extern int iVisibleMouse;
 
 extern cvar_t	*m_pitch;
 extern cvar_t	*m_yaw;
@@ -170,33 +175,60 @@ void FWGSInput::IN_Move( float frametime, usercmd_t *cmd )
 	{
 		gEngfuncs.GetViewAngles( viewangles );
 	}
-	if( gHUD.GetSensitivity() != 0 )
+
+	if( !iVisibleMouse )
 	{
-		rel_yaw *= gHUD.GetSensitivity();
-		rel_pitch *= gHUD.GetSensitivity();
+		if( gHUD.GetSensitivity() != 0 )
+		{
+			rel_yaw *= gHUD.GetSensitivity();
+			rel_pitch *= gHUD.GetSensitivity();
+		}
+		else
+		{
+			rel_yaw *= sensitivity->value;
+			rel_pitch *= sensitivity->value;
+		}
+
+		viewangles[YAW] += rel_yaw;
+		if( fLadder )
+		{
+			if( cl_laddermode->value == 1 )
+				viewangles[YAW] -= ac_sidemove * 5;
+			ac_sidemove = 0;
+		}
 	}
 	else
 	{
-		rel_yaw *= sensitivity->value;
-		rel_pitch *= sensitivity->value;
+		// Get mouse pos and normalize it to be sent to view.cpp
+		// POINT mouse_pos;
+		int mx, my;
+
+		gEngfuncs.GetMousePosition( &mx, &my );
+		// GetCursorPos(&mouse_pos);
+
+		mouse_pos_extern[0] = mx; // mouse_pos.x;
+		mouse_pos_extern[1] = my; // mouse_pos.y;
+		mouse_pos_extern[0] /= ScreenWidth / 2;
+		mouse_pos_extern[1] /= ScreenHeight / 2;
+		mouse_pos_extern[0] -= 1;
+		mouse_pos_extern[1] -= 1;
+
+		viewangles[YAW] = -atan2( double( mouse_pos_extern[1] * ( M_PI / 180 ) ), double( mouse_pos_extern[0] * ( M_PI / 180 ) ) ) * ( 180 / M_PI ) - 90; // I don't know why I have to negate the value and subtract 90, it just works that way.
+
+		mouse_pos_extern[0] *= 27;
+		mouse_pos_extern[1] *= 27;
 	}
-	viewangles[YAW] += rel_yaw;
-	if( fLadder )
-	{
-		if( cl_laddermode->value == 1 )
-			viewangles[YAW] -= ac_sidemove * 5;
-		ac_sidemove = 0;
-	}
+
 	if( gHUD.m_MOTD.m_bShow )
 		gHUD.m_MOTD.scroll += rel_pitch;
-	else
+	/*else
 		viewangles[PITCH] += rel_pitch;
 
 	if( viewangles[PITCH] > cl_pitchdown->value )
 		viewangles[PITCH] = cl_pitchdown->value;
 	if( viewangles[PITCH] < -cl_pitchup->value )
 		viewangles[PITCH] = -cl_pitchup->value;
-	
+	*/
 	// HACKHACK: change viewangles directly in viewcode, 
 	// so viewangles when player is dead will not be changed on server
 	if( !CL_IsDead() )

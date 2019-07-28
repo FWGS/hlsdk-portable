@@ -18,7 +18,6 @@
 #include <math.h>
 #include "hud.h"
 #include "cl_util.h"
-#include "input_mouse.h"
 //#include "triangleapi.h"
 
 #define MAX_LOGO_FRAMES 56
@@ -30,13 +29,12 @@ int grgLogoFrame[MAX_LOGO_FRAMES] =
 	29, 29, 29, 29, 29, 28, 27, 26, 25, 24, 30, 31 
 };
 
-#if defined(SUPPORT_GOLDSOURCE_INPUT)
-extern int iVisibleMouse;
-#endif
+int iVisibleMouse = 1;
 
 float HUD_GetFOV( void );
 
 extern cvar_t *sensitivity;
+extern cvar_t *hud_ignore_mouse;
 
 // Think
 void CHud::Think( void )
@@ -157,13 +155,16 @@ int CHud::Redraw( float flTime, int intermission )
 		SPR_DrawAdditive( i, x, y, NULL );
 	}
 
-#if defined(SUPPORT_GOLDSOURCE_INPUT)
+	if( IsXashFWGS() && hud_ignore_mouse )
+		iVisibleMouse = hud_ignore_mouse->value ? 0 : 1;
+
 	if( iVisibleMouse )
 	{
-		void IN_GetMousePos( int *mx, int *my );
+		// void IN_GetMousePos( int *mx, int *my );
 		int mx, my;
 
-		IN_GetMousePos( &mx, &my );
+		// IN_GetMousePos( &mx, &my );
+		gEngfuncs.GetMousePosition( &mx, &my );
 
 		if( m_hsprCursor == 0 )
 		{
@@ -177,7 +178,6 @@ int CHud::Redraw( float flTime, int intermission )
 		// Draw the logo at 20 fps
 		SPR_DrawAdditive( 0, mx, my, NULL );
 	}
-#endif
 
 	return 1;
 }
