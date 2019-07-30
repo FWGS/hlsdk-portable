@@ -16,32 +16,47 @@
 #ifndef GRAPPLE_TONGUETIP_H
 #define GRAPPLE_TONGUETIP_H
 
-class CGrapple;
-
-//
-//
-//
-class CGrappleTonguetip : public CBaseEntity
+class CBarnacleGrappleTip : public CBaseEntity
 {
 public:
 
-#ifndef CLIENT_DLL
-	virtual int		Save(CSave &save);
-	virtual int		Restore(CRestore &restore);
+/*	virtual int		Save( CSave &save );
+	virtual int		Restore( CRestore &restore );
 	static	TYPEDESCRIPTION m_SaveData[];
+*/
+	int targetClass;
+	void Precache();
+	void Spawn();
+
+	void FlyThink();
+	void OffsetThink();
+
+	void TongueTouch( CBaseEntity* pOther );
+
+	int CheckTarget( CBaseEntity* pTarget );
+
+	void SetPosition( Vector vecOrigin, Vector vecAngles, CBaseEntity* pOwner );
+
+	int GetGrappleType() const { return m_GrappleType; }
+
+	bool IsStuck() const { return m_bIsStuck; }
+
+	bool HasMissed() const { return m_bMissed; }
+#ifndef CLIENT_DLL
+	EHANDLE& GetGrappleTarget() { return m_hGrappleTarget; }
+	void SetGrappleTarget( CBaseEntity* pTarget )
+	{
+		m_hGrappleTarget = pTarget;
+	}
 #endif
-
-	void Spawn(void);
-	void FlyThink(void);
-	void HitThink(void);
-	void TipTouch(CBaseEntity* pOther);
-	void PreRemoval(void);
-
-	CGrapple* m_pMyGrappler;
-
 private:
-	static CGrappleTonguetip* CreateTip(entvars_t *pevOwner, Vector vecStart, Vector vecVelocity);
-	friend class CGrapple;
+	int m_GrappleType;
+	bool m_bIsStuck;
+	bool m_bMissed;
+#ifndef CLIENT_DLL
+	EHANDLE m_hGrappleTarget;
+#endif
+	Vector m_vecOriginOffset;
 };
 
 #endif // GRAPPLE_TONGUETIP_H

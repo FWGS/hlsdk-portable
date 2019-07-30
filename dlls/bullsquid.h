@@ -73,8 +73,10 @@ public:
 	int	Save(CSave &save);
 	int Restore(CRestore &restore);
 
-	CUSTOM_SCHEDULES;
+	CUSTOM_SCHEDULES
 	static TYPEDESCRIPTION m_SaveData[];
+
+	virtual int SizeForGrapple() { return GRAPPLE_MEDIUM; }
 
 	BOOL m_fCanThreatDisplay;// this is so the squid only does the "I see a headcrab!" dance one time. 
 

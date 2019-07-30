@@ -102,6 +102,8 @@ public:
 	virtual int Restore( CRestore &restore );
 	static TYPEDESCRIPTION m_SaveData[];
 
+	virtual int SizeForGrapple() { return GRAPPLE_LARGE; }
+
 	static const char *pAttackHitSounds[];
 	static const char *pAttackMissSounds[];
 	static const char *pAttackSounds[];

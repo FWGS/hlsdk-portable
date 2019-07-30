@@ -44,4 +44,6 @@ public:
 	virtual BOOL CheckRangeAttack1( float flDot, float flDist ) { return FALSE; }
 	virtual BOOL CheckRangeAttack2( float flDot, float flDist ) { return FALSE; }
 	virtual int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
+
+	virtual int SizeForGrapple() { return GRAPPLE_MEDIUM; }
 };

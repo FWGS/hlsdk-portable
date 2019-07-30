@@ -1145,92 +1145,57 @@ private:
 	unsigned short m_usEagle;
 };
 
-class CGrappleTonguetip;
+class CBarnacleGrappleTip;
 
-class CGrapple : public CBasePlayerWeapon
+class CBarnacleGrapple : public CBasePlayerWeapon
 {
 public:
-
 #ifndef CLIENT_DLL
-	int		Save(CSave &save);
-	int		Restore(CRestore &restore);
+	virtual int		Save( CSave &save );
+	virtual int		Restore( CRestore &restore );
 	static	TYPEDESCRIPTION m_SaveData[];
 #endif
-
-	void Spawn(void);
-	void Precache(void);
-	int iItemSlot(void) { return 1; }
-	int GetItemInfo(ItemInfo *p);
-
-	void PrimaryAttack(void);
-	BOOL Deploy(void);
-	void Holster(int skiplocal = 0);
-	void WeaponIdle(void);
-	void ItemPostFrame(void);
-
-	virtual BOOL ShouldWeaponIdle(void) { return TRUE; }
-
-	virtual BOOL UseDecrement(void)
+	enum FireState
 	{
-#if defined( CLIENT_WEAPONS )
-		return TRUE;
-#else
-		return FALSE;
-#endif
-	}
-
-	void Fire(void);
-	void FireWait(void);
-	void FireReach(void);
-	void FireTravel(void);
-	void FireRelease(void);
-
-	void Fire2(void);
-
-	void OnTongueTipHitSurface( const Vector& vecTarget );
-	void OnTongueTipHitEntity( CBaseEntity* pEntity );
-
-	void StartPull( void );
-	void StopPull( void );
-	void Pull( void );
-
-	BOOL IsTongueColliding( const Vector& vecShootOrigin, const Vector& vecTipPos );
-	void CheckFireEligibility( void );
-	BOOL CheckTargetProximity( void );
-
-	void CreateTongueTip( void );
-	void DestroyTongueTip( void );
-	void UpdateTongueTip( void );
-
-	void CreateBeam( CBaseEntity* pTongueTip );
-	void DestroyBeam( void );
-	void UpdateBeam( void );
-
-	void StartPullSound( void );
-	void UpdatePullSound( void );
-	void ResetPullSound( void );
-
-	BOOL CanAttack(float attack_time, float curtime, BOOL isPredicted);
-
-	enum GRAPPLE_FIRESTATE 
-	{ 
-		FIRESTATE_NONE = 0, 
-		FIRESTATE_FIRE,
-		FIRESTATE_FIRE2,
-		FIRESTATE_WAIT, 
-		FIRESTATE_REACH, 
-		FIRESTATE_TRAVEL, 
-		FIRESTATE_RELEASE,
+		OFF		= 0,
+		CHARGE	= 1
 	};
 
-	int		m_iFirestate;
-	int		m_iHitFlags;
-	BOOL	m_fTipHit;
-	CGrappleTonguetip* m_pTongueTip;
-	CBeam*	m_pBeam;
-	float	m_flNextPullSoundTime;
-	BOOL	m_fPlayPullSound;
+	void Precache( void );
+	void Spawn( void );
+	int iItemSlot(void) { return 1; }
+	void EndAttack( void );
+
+	int GetItemInfo(ItemInfo *p);
+	int AddToPlayer( CBasePlayer* pPlayer );
+	BOOL Deploy();
+	void Holster( int skiplocal /* = 0 */ );
+	void WeaponIdle( void );
+	void PrimaryAttack( void );
+
+	void Fire( Vector vecOrigin, Vector vecDir );
+
+	void CreateEffect( void );
+	void UpdateEffect( void );
+	void DestroyEffect( void );
+	virtual BOOL UseDecrement(void)
+	{
+		return FALSE;
+	}
+
+	const char* MyWModel() { return "models/w_bgrap.mdl"; }
+
 private:
+	CBarnacleGrappleTip* m_pTip;
+
+	CBeam* m_pBeam;
+
+	float m_flShootTime;
+	float m_flDamageTime;
+
+	bool m_bGrappling;
+	bool m_bMissed;
+	bool m_bMomentaryStuck;
 };
 
 

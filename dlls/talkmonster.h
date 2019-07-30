@@ -154,7 +154,8 @@ public:
 	virtual int		Restore( CRestore &restore );
 	static	TYPEDESCRIPTION m_SaveData[];
 
-	
+	virtual int SizeForGrapple() { return GRAPPLE_MEDIUM; }
+
 	static const char *m_szFriends[TLK_CFRIENDS];		// array of friend names
 	static float g_talkWaitTime;
 	

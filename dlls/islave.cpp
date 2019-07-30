@@ -63,6 +63,8 @@ public:
 
 	void Killed( entvars_t *pevAttacker, int iGib );
 
+	virtual int SizeForGrapple() { return GRAPPLE_MEDIUM; }
+
 	void StartTask( Task_t *pTask );
 	Schedule_t *GetSchedule( void );
 	Schedule_t *GetScheduleOfType( int Type );

@@ -371,7 +371,7 @@ void W_Precache( void )
 	UTIL_PrecacheOtherWeapon( "weapon_displacer" );
 	UTIL_PrecacheOtherWeapon( "weapon_eagle" );
 	UTIL_PrecacheOtherWeapon( "weapon_grapple" );
-	UTIL_PrecacheOther( "grapple_tonguetip" );
+	UTIL_PrecacheOther( "grapple_tip" );
 	UTIL_PrecacheOtherWeapon( "weapon_knife" );
 	UTIL_PrecacheOtherWeapon( "weapon_m249" );
 	UTIL_PrecacheOther( "ammo_556" );
@@ -1687,17 +1687,13 @@ TYPEDESCRIPTION CEagle::m_SaveData[] =
 
 IMPLEMENT_SAVERESTORE( CEagle, CBasePlayerWeapon )
 
-TYPEDESCRIPTION CGrapple::m_SaveData[] =
+TYPEDESCRIPTION	CBarnacleGrapple::m_SaveData[] =
 {
-	DEFINE_FIELD( CGrapple, m_iFirestate, FIELD_INTEGER ),
-	DEFINE_FIELD( CGrapple, m_iHitFlags, FIELD_INTEGER ),
-	DEFINE_FIELD( CGrapple, m_fTipHit, FIELD_BOOLEAN ),
-	DEFINE_FIELD( CGrapple, m_pTongueTip, FIELD_CLASSPTR ),
-	DEFINE_FIELD( CGrapple, m_pBeam, FIELD_CLASSPTR ),
-	DEFINE_FIELD( CGrapple, m_flNextPullSoundTime, FIELD_TIME ),
-	DEFINE_FIELD( CGrapple, m_fPlayPullSound, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CBarnacleGrapple, m_pBeam, FIELD_CLASSPTR ),
+	DEFINE_FIELD( CBarnacleGrapple, m_flShootTime, FIELD_TIME ),
+	DEFINE_FIELD( CBarnacleGrapple, m_fireState, FIELD_INTEGER ),
 };
-IMPLEMENT_SAVERESTORE( CGrapple, CBasePlayerWeapon )
+IMPLEMENT_SAVERESTORE( CBarnacleGrapple, CBasePlayerWeapon )
 
 TYPEDESCRIPTION	CM249::m_SaveData[] =
 {

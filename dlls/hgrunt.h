@@ -60,8 +60,10 @@ public:
 	virtual BOOL FOkToSpeak(void);
 	void JustSpoke(void);
 
-	CUSTOM_SCHEDULES;
+	CUSTOM_SCHEDULES
 	static TYPEDESCRIPTION m_SaveData[];
+
+	virtual int SizeForGrapple() { return GRAPPLE_MEDIUM; }
 
 	// checking the feasibility of a grenade toss is kind of costly, so we do it every couple of seconds,
 	// not every server frame.

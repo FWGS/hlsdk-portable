@@ -46,7 +46,9 @@ public:
 	virtual float GetSoundVolue(void) { return 1.0; }
 	Schedule_t* GetScheduleOfType(int Type);
 
-	CUSTOM_SCHEDULES;
+	CUSTOM_SCHEDULES
+
+	virtual int SizeForGrapple() { return GRAPPLE_SMALL; }
 
 	static const char *pIdleSounds[];
 	static const char *pAlertSounds[];

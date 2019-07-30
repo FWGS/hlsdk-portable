@@ -134,6 +134,15 @@ public:
 	CBaseEntity *operator ->();
 };
 
+enum GrappleTarget
+{
+	GRAPPLE_NOT_A_TARGET	= 0,
+	GRAPPLE_SMALL			= 1,
+	GRAPPLE_MEDIUM			= 2,
+	GRAPPLE_LARGE			= 3,
+	GRAPPLE_FIXED			= 4,
+};
+
 //
 // Base Entity.  All entity types derive from this
 //
@@ -355,6 +364,8 @@ public:
 
 	virtual	BOOL FVisible( CBaseEntity *pEntity );
 	virtual	BOOL FVisible( const Vector &vecOrigin );
+
+	virtual int SizeForGrapple() { return GRAPPLE_NOT_A_TARGET; }
 
 	//We use this variables to store each ammo count.
 	int ammo_9mm;

@@ -336,6 +336,8 @@ public:
 	CUSTOM_SCHEDULES
 	static TYPEDESCRIPTION m_SaveData[];
 
+	virtual int SizeForGrapple() { return GRAPPLE_LARGE; }
+
 	float m_flNextZapTime; // last time the voltigore used the spit attack.
 	BOOL m_fShouldUpdateBeam;
 	CBeam* m_pBeam[3];
@@ -1209,6 +1211,8 @@ public:
 	void	GibMonster();
 	Schedule_t* GetSchedule();
 	Schedule_t* GetScheduleOfType(int Type);
+
+	virtual int SizeForGrapple() { return GRAPPLE_SMALL; }
 };
 
 LINK_ENTITY_TO_CLASS(monster_alien_babyvoltigore, CBabyVoltigore)

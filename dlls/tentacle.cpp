@@ -74,6 +74,8 @@ public:
 
 	int Classify( void );
 
+	virtual int SizeForGrapple() { return GRAPPLE_FIXED; }
+
 	int Level( float dz );
 	int MyLevel( void );
 	float MyHeight( void );

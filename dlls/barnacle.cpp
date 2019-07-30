@@ -47,6 +47,8 @@ public:
 	virtual int Restore( CRestore &restore );
 	static TYPEDESCRIPTION m_SaveData[];
 
+	virtual int SizeForGrapple() { return GRAPPLE_FIXED; }
+
 	float m_flAltitude;
 	float m_flCachedLength;	// tongue cached length
 	float m_flKillVictimTime;

@@ -237,6 +237,8 @@ public:
 	void GibMonster();
 	CUSTOM_SCHEDULES
 
+	virtual int SizeForGrapple() { return GRAPPLE_MEDIUM; }
+
 	float	m_flLastHurtTime;
 	float	m_flNextSpitTime;// last time the PitDrone used the spit attack.
 	float	m_flNextFlinch;
