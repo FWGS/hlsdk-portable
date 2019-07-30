@@ -118,7 +118,7 @@ enum
 //=========================================================
 // monster-specific conditions
 //=========================================================
-#define bits_COND_GRUNT_NOFIRE	( bits_COND_SPECIAL1 )
+#define bits_COND_GRUNT_NOFIRE	( bits_COND_NOFIRE )
 
 LINK_ENTITY_TO_CLASS( monster_human_grunt, CHGrunt )
 
@@ -2285,13 +2285,19 @@ void CHGruntRepel::Spawn( void )
 {
 	Precache();
 	pev->solid = SOLID_NOT;
+	pev->effects |= EF_NODRAW;
 
 	SetUse( &CHGruntRepel::RepelUse );
 }
 
+const char* CHGruntRepel::TrooperName()
+{
+	return "monster_human_grunt";
+}
+
 void CHGruntRepel::Precache( void )
 {
-	UTIL_PrecacheOther( "monster_human_grunt" );
+	UTIL_PrecacheOther( TrooperName() );
 	m_iSpriteTexture = PRECACHE_MODEL( "sprites/rope.spr" );
 }
 
@@ -2304,8 +2310,16 @@ void CHGruntRepel::RepelUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_
 		return NULL;
 	*/
 
-	CBaseEntity *pEntity = Create( "monster_human_grunt", pev->origin, pev->angles );
+	CBaseEntity *pEntity = Create( TrooperName(), pev->origin, pev->angles );
+	if (!pEntity) {
+		UTIL_Remove( this );
+		return;
+	}
 	CBaseMonster *pGrunt = pEntity->MyMonsterPointer();
+	if (!pGrunt) {
+		UTIL_Remove( this );
+		return;
+	}
 	pGrunt->pev->movetype = MOVETYPE_FLY;
 	pGrunt->pev->velocity = Vector( 0, 0, RANDOM_FLOAT( -196, -128 ) );
 	pGrunt->SetActivity( ACT_GLIDE );

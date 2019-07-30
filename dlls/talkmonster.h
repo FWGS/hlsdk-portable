@@ -19,6 +19,7 @@
 #ifndef MONSTERS_H
 #include "monsters.h"
 #endif
+#include "squadmonster.h"
 
 //=========================================================
 // Talking monster base class
@@ -38,7 +39,7 @@
 #define bit_saidHeard			(1<<6)
 #define bit_saidSmelled			(1<<7)
 
-#define TLK_CFRIENDS		3
+#define TLK_CFRIENDS		6
 
 typedef enum
 {
@@ -95,7 +96,7 @@ enum
 	LAST_TALKMONSTER_TASK			// MUST be last
 };
 
-class CTalkMonster : public CBaseMonster
+class CTalkMonster : public CSquadMonster
 {
 public:
 	void			TalkInit( void );				
@@ -149,6 +150,9 @@ public:
 	
 	virtual void	SetAnswerQuestion( CTalkMonster *pSpeaker );
 	virtual int		FriendNumber( int arrayNumber )	{ return arrayNumber; }
+	virtual const char* FriendByNumber( int arrayNumber ) { return m_szFriends[FriendNumber(arrayNumber)]; }
+	virtual int NumberOfFriends() { return TLK_CFRIENDS; }
+	virtual int MaxFollowers() { return 3; }
 
 	virtual int		Save( CSave &save );
 	virtual int		Restore( CRestore &restore );
@@ -174,8 +178,8 @@ public:
 	CUSTOM_SCHEDULES
 };
 
-// Clients can push talkmonsters out of their way
-#define		bits_COND_CLIENT_PUSH		( bits_COND_SPECIAL1 )
+BOOL IsFacing( entvars_t *pevTest, const Vector &reference );
+
 // Don't see a client right now.
 #define		bits_COND_CLIENT_UNSEEN		( bits_COND_SPECIAL2 )
 

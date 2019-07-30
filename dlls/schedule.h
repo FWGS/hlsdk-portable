@@ -274,6 +274,9 @@ struct WayPoint_t
 #define bits_COND_SEE_CLIENT			( 1 << 21) // see a client
 #define bits_COND_SEE_NEMESIS			( 1 << 22) // see my nemesis
 
+#define bits_COND_CLIENT_PUSH			( 1 << 26 ) // Clients can push ally monsters out of their way
+#define bits_COND_NOFIRE				( 1 << 27) // no friendly fire
+
 #define bits_COND_SPECIAL1				( 1 << 28) // Defined by individual monster
 #define bits_COND_SPECIAL2				( 1 << 29) // Defined by individual monster
 

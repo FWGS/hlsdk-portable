@@ -97,10 +97,11 @@ public:
 class CHGruntRepel : public CBaseMonster
 {
 public:
-	virtual void Spawn(void);
-	virtual void Precache(void);
-	virtual void EXPORT RepelUse(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value);
+	void Spawn( void );
+	void Precache( void );
+	void EXPORT RepelUse ( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
 	int m_iSpriteTexture;	// Don't save, precache
+	virtual const char* TrooperName();
 };
 
 #endif // HGRUNT_H

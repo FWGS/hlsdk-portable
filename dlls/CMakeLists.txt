@@ -47,8 +47,6 @@ set (SVDLL_SOURCES
 	gearbox/displacer.cpp
 	gearbox/drillsergeant.cpp
 	gearbox/eagle.cpp
-	gearbox/fgrunt_medic.cpp
-	gearbox/fgrunt_torch.cpp
 	gearbox/fgrunt.cpp
 	gearbox/func_tank_of.cpp
 #	gearbox/gearbox_client.cpp
