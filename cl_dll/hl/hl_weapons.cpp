@@ -884,6 +884,10 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 	{
 		( (CEagle *)player.m_pActiveItem )->m_fEagleLaserActive = (int)from->client.vuser2[1];
 	}
+	if( player.m_pActiveItem->m_iId == WEAPON_PIPEWRENCH )
+	{
+		( (CPipeWrench *)player.m_pActiveItem )->m_iSwingMode = (int)from->client.vuser2[1];
+	}
 	else if( player.m_pActiveItem->m_iId == WEAPON_M249 )
 	{
 		player.ammo_556 = (int)from->client.vuser2[1];
@@ -971,6 +975,10 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 	else if ( player.m_pActiveItem->m_iId == WEAPON_EAGLE )
 	{
 		from->client.vuser2[1] = ( (CEagle *)player.m_pActiveItem )->m_fEagleLaserActive;;
+	}
+	else if( player.m_pActiveItem->m_iId == WEAPON_PIPEWRENCH )
+	{
+		from->client.vuser2[1] = ( (CPipeWrench *)player.m_pActiveItem )->m_iSwingMode;
 	}
 	else if( player.m_pActiveItem->m_iId == WEAPON_M249 )
 	{

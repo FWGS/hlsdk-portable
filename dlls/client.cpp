@@ -1823,6 +1823,10 @@ void UpdateClientData( const struct edict_s *ent, int sendweapons, struct client
 					{
 						cd->vuser2.y = ( (CEagle *)pl->m_pActiveItem )->m_fEagleLaserActive;
 					}
+					else if( pl->m_pActiveItem->m_iId == WEAPON_PIPEWRENCH )
+					{
+						cd->vuser2.y = ( (CPipeWrench *)pl->m_pActiveItem )->m_iSwingMode;
+					}
 					else if( pl->m_pActiveItem->m_iId == WEAPON_M249 )
 					{
 						cd->vuser2.y = pl->ammo_556;

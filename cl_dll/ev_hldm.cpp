@@ -2157,7 +2157,7 @@ void EV_PipeWrench( event_args_t *args )
 				break;
 			}
 
-			gEngfuncs.pEventAPI->EV_WeaponAnimation( PIPEWRENCH_ATTACK1MISS, 1 );
+			//gEngfuncs.pEventAPI->EV_WeaponAnimation( PIPEWRENCH_ATTACK1MISS, 1 );
 
 			// Send weapon anim.
 			switch( ( g_iSwing++ ) % 3 )
