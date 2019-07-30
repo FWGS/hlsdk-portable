@@ -16,9 +16,8 @@
 #ifndef SPORE_GRENADE_H
 #define SPORE_GRENADE_H
 
-
 // Contact/Timed spore grenade
-class CSporeGrenade : public CGrenade
+class CSporeGrenade : public CBaseMonster
 {
 public:
 	virtual int		Save(CSave &save);
@@ -29,30 +28,25 @@ public:
 	void Precache(void);
 	void Spawn(void);
 
-	static CGrenade *ShootTimed(entvars_t *pevOwner, Vector vecStart, Vector vecVelocity, float time);
-	static CGrenade *ShootContact(entvars_t *pevOwner, Vector vecStart, Vector vecVelocity);
+	static CBaseEntity *ShootTimed(entvars_t *pevOwner, Vector vecStart, Vector vecVelocity, bool ai);
+	static CBaseEntity *ShootContact(entvars_t *pevOwner, Vector vecStart, Vector vecVelocity);
 
-	void Explode(TraceResult *pTrace, int bitsDamageType);
-	void EXPORT Smoke(void);
+	void Explode(TraceResult *pTrace);
 
-	void EXPORT BounceTouch(CBaseEntity *pOther); 
-	void EXPORT SlideTouch(CBaseEntity *pOther);
+	void EXPORT BounceTouch(CBaseEntity *pOther);
 	void EXPORT ExplodeTouch(CBaseEntity *pOther);
 	void EXPORT DangerSoundThink(void);
-	void EXPORT PreDetonate(void);
 	void EXPORT Detonate(void);
-	void EXPORT DetonateUse(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value);
 	void EXPORT TumbleThink(void);
-	void EXPORT FlyThink(void);
 
-	virtual void BounceSound(void);
-	virtual int	BloodColor(void) { return DONT_BLEED; }
-	virtual void Killed(entvars_t *pevAttacker, int iGib);
+	void BounceSound(void);
+	void DangerSound();
 	static void SpawnTrailParticles(const Vector& origin, const Vector& direction, int modelindex, int count, float speed, float noise);
 	static void SpawnExplosionParticles(const Vector& origin, const Vector& direction, int modelindex, int count, float speed, float noise);
 
+	void UpdateOnRemove();
+
 	CSprite* m_pSporeGlow;
-	float m_flNextSpriteTrailSpawn;
 };
 
 #endif // SPORE_GRENADE_H
