@@ -37,8 +37,7 @@ enum m249_e
 };
 
 
-LINK_ENTITY_TO_CLASS(weapon_m249, CM249);
-
+LINK_ENTITY_TO_CLASS(weapon_m249, CM249)
 
 //=========================================================
 //=========================================================
@@ -51,7 +50,7 @@ void CM249::Spawn()
 
 	m_iDefaultAmmo = M249_DEFAULT_GIVE;
 
-	m_iReloadState = RELOAD_STATE_NONE;
+	m_fInSpecialReload = 0;
 
 	FallInit();// get ready to fall down.
 }
@@ -111,9 +110,16 @@ int CM249::AddToPlayer(CBasePlayer *pPlayer)
 
 BOOL CM249::Deploy()
 {
+	m_fInSpecialReload = FALSE;
+	UpdateTape();
 	return DefaultDeploy("models/v_saw.mdl", "models/p_saw.mdl", M249_DEPLOY, "m249");
 }
 
+void CM249::Holster(int skiplocal)
+{
+	m_fInSpecialReload = FALSE;
+	CBasePlayerWeapon::Holster();
+}
 
 void CM249::PrimaryAttack()
 {
@@ -139,8 +145,7 @@ void CM249::PrimaryAttack()
 	m_pPlayer->m_iWeaponFlash = NORMAL_GUN_FLASH;
 
 	m_iClip--;
-
-
+	UpdateTape();
 	m_pPlayer->pev->effects = (int)(m_pPlayer->pev->effects) | EF_MUZZLEFLASH;
 
 	// player "shoot" animation
@@ -172,7 +177,7 @@ void CM249::PrimaryAttack()
 	flags = 0;
 #endif
 
-	PLAYBACK_EVENT_FULL(flags, m_pPlayer->edict(), m_usM249, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, vecDir.x, vecDir.y, 0, 0, 0, 0);
+	PLAYBACK_EVENT_FULL(flags, m_pPlayer->edict(), m_usM249, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, vecDir.x, vecDir.y, 0, pev->body, 0, 0);
 
 
 #ifndef CLIENT_DLL
@@ -193,7 +198,7 @@ void CM249::PrimaryAttack()
 		// HEV suit - indicate out of ammo condition
 		m_pPlayer->SetSuitUpdate("!HEV_AMO0", FALSE, 0);
 
-	m_flNextPrimaryAttack = GetNextAttackDelay(0.1);
+	m_flNextPrimaryAttack = GetNextAttackDelay(0.067);
 
 	if (m_flNextPrimaryAttack < UTIL_WeaponTimeBase())
 		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.1;
@@ -204,12 +209,31 @@ void CM249::PrimaryAttack()
 
 void CM249::Reload(void)
 {
-	if (m_pPlayer->ammo_556 <= 0)
+	if (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0 || m_iClip == M249_MAX_CLIP)
 		return;
 
-	DefaultReload(M249_MAX_CLIP, M249_RELOAD1, 1.5);
+	if (DefaultReload(M249_MAX_CLIP, M249_LAUNCH, 1.33, pev->body)) {
+		m_fInSpecialReload = TRUE;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 3.78;
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 3.78;
+	}
 }
 
+void CM249::WeaponTick()
+{
+	if ( m_fInSpecialReload )
+	{
+		if (m_pPlayer->m_flNextAttack <= UTIL_WeaponTimeBase())
+		{
+			UpdateTape();
+			m_fInSpecialReload = FALSE;
+			SendWeaponAnim( M249_RELOAD1, UseDecrement(), pev->body );
+			m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 2.4;
+		}
+
+		return;
+	}
+}
 
 void CM249::WeaponIdle(void)
 {
@@ -220,17 +244,14 @@ void CM249::WeaponIdle(void)
 	if (m_flTimeWeaponIdle > UTIL_WeaponTimeBase())
 		return;
 
+	float flRand = UTIL_SharedRandomFloat( m_pPlayer->random_seed, 0.0f, 1.0f );
 	int iAnim;
-	switch (RANDOM_LONG(0, 1))
-	{
-	case 0:
+	if (flRand <= 0.8) {
 		iAnim = M249_SLOWIDLE;
-		break;
-
-	default:
-	case 1:
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 5;
+	} else {
 		iAnim = M249_IDLE2;
-		break;
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 155.0/25.0;
 	}
 
 	SendWeaponAnim(iAnim);
@@ -238,15 +259,15 @@ void CM249::WeaponIdle(void)
 	m_flTimeWeaponIdle = UTIL_SharedRandomFloat(m_pPlayer->random_seed, 10, 15); // how long till we do this again.
 }
 
-
-void CM249::ReloadStart(void)
+void CM249::UpdateTape()
 {
-	SendWeaponAnim(M249_RELOAD1, UseDecrement());
-}
-
-void CM249::ReloadInsert(void)
-{
-	SendWeaponAnim(M249_RELOAD1, UseDecrement());
+	if (m_iClip == 0) {
+		pev->body = 8;
+	} else if (m_iClip > 0 && m_iClip < 8) {
+		pev->body = 9 - m_iClip;
+	} else {
+		pev->body = 0;
+	}
 }
 
 class CM249AmmoClip : public CBasePlayerAmmo

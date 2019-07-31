@@ -1005,6 +1005,16 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 		if( pWeapon == &g_Python && bIsMultiplayer() )
 			 body = 1;
 
+		if (pWeapon == &g_M249) {
+			if (g_M249.m_iClip == 0) {
+				body = 8;
+			} else if (g_M249.m_iClip > 0 && g_M249.m_iClip < 8) {
+				body = 9 - g_M249.m_iClip;
+			} else {
+				body = 0;
+			}
+		}
+
 		// Force a fixed anim down to viewmodel
 		HUD_SendWeaponAnim( to->client.weaponanim, body, 1 );
 	}

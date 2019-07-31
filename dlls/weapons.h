@@ -1247,7 +1247,9 @@ public:
 
 	void PrimaryAttack(void);
 	BOOL Deploy(void);
+	void Holster(int skiplocal = 0);
 	void Reload(void);
+	void WeaponTick();
 	void WeaponIdle(void);
 	virtual BOOL ShouldWeaponIdle(void) { return TRUE; }
 	float m_flNextAnimTime;
@@ -1262,12 +1264,7 @@ public:
 #endif
 	}
 
-	void ReloadStart( void );
-	void ReloadInsert( void );
-
-	enum M249_RELOAD_STATE { RELOAD_STATE_NONE = 0, RELOAD_STATE_OPEN, RELOAD_STATE_FILL };
-
-	int m_iReloadState;
+	void UpdateTape();
 
 private:
 	unsigned short m_usM249;

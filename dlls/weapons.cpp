@@ -1697,7 +1697,7 @@ IMPLEMENT_SAVERESTORE( CBarnacleGrapple, CBasePlayerWeapon )
 
 TYPEDESCRIPTION	CM249::m_SaveData[] =
 {
-	DEFINE_FIELD( CM249, m_iReloadState, FIELD_INTEGER ),
+	DEFINE_FIELD( CM249, m_fInSpecialReload, FIELD_INTEGER ),
 };
 IMPLEMENT_SAVERESTORE( CM249, CBasePlayerWeapon )
 
