@@ -31,6 +31,7 @@ public:
 	void AlertSound(void);
 	void PrescheduleThink(void);
 	void StartTask(Task_t* pTask);
+	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
 
 	virtual int		Save(CSave &save);
 	virtual int		Restore(CRestore &restore);

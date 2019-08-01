@@ -32,6 +32,7 @@ public:
 	BOOL CheckMeleeAttack1(float flDot, float flDist);
 	BOOL CheckRangeAttack1(float flDot, float flDist);
 	BOOL CheckRangeAttack2(float flDot, float flDist);
+	BOOL CheckRangeAttack2Impl( float grenadeSpeed, float flDot, float flDist );
 	void CheckAmmo(void);
 	void SetActivity(Activity NewActivity);
 	void StartTask(Task_t *pTask);

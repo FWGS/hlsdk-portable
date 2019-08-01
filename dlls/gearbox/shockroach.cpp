@@ -129,13 +129,11 @@ void CShockRoach::LeapTouch(CBaseEntity *pOther)
 	// Don't hit if back on ground
 	if (!FBitSet(pev->flags, FL_ONGROUND))
 	{
-		EMIT_SOUND_DYN(edict(), CHAN_WEAPON, RANDOM_SOUND_ARRAY(pBiteSounds), GetSoundVolue(), ATTN_IDLE, 0, GetVoicePitch());
-
+		EMIT_SOUND_DYN(edict(), CHAN_WEAPON, RANDOM_SOUND_ARRAY(pBiteSounds), GetSoundVolume(), ATTN_IDLE, 0, GetVoicePitch());
 
 		// Give the shockrifle weapon to the player, if not already in possession.
-		CBasePlayer* pPlayer = dynamic_cast<CBasePlayer*>(pOther);
-		if (pPlayer && !(pPlayer->pev->weapons & (1 << WEAPON_SHOCKRIFLE)))
-		{
+		if (pOther->IsPlayer() && pOther->IsAlive() && !(pOther->pev->weapons & (1 << WEAPON_SHOCKRIFLE))) {
+			CBasePlayer* pPlayer = (CBasePlayer*)(pOther);
 			pPlayer->GiveNamedItem("weapon_shockrifle");
 			pPlayer->pev->weapons |= (1 << WEAPON_SHOCKRIFLE);
 			UTIL_Remove(this);
@@ -173,7 +171,7 @@ void CShockRoach::PrescheduleThink(void)
 //=========================================================
 void CShockRoach::IdleSound(void)
 {
-	EMIT_SOUND_DYN(edict(), CHAN_VOICE, RANDOM_SOUND_ARRAY(pIdleSounds), GetSoundVolue(), ATTN_IDLE, 0, GetVoicePitch());
+	EMIT_SOUND_DYN(edict(), CHAN_VOICE, RANDOM_SOUND_ARRAY(pIdleSounds), GetSoundVolume(), ATTN_IDLE, 0, GetVoicePitch());
 }
 
 //=========================================================
@@ -181,7 +179,7 @@ void CShockRoach::IdleSound(void)
 //=========================================================
 void CShockRoach::AlertSound(void)
 {
-	EMIT_SOUND_DYN(edict(), CHAN_VOICE, RANDOM_SOUND_ARRAY(pAlertSounds), GetSoundVolue(), ATTN_IDLE, 0, GetVoicePitch());
+	EMIT_SOUND_DYN(edict(), CHAN_VOICE, RANDOM_SOUND_ARRAY(pAlertSounds), GetSoundVolume(), ATTN_IDLE, 0, GetVoicePitch());
 }
 
 //=========================================================
@@ -189,7 +187,7 @@ void CShockRoach::AlertSound(void)
 //=========================================================
 void CShockRoach::PainSound(void)
 {
-	EMIT_SOUND_DYN(edict(), CHAN_VOICE, RANDOM_SOUND_ARRAY(pPainSounds), GetSoundVolue(), ATTN_IDLE, 0, GetVoicePitch());
+	EMIT_SOUND_DYN(edict(), CHAN_VOICE, RANDOM_SOUND_ARRAY(pPainSounds), GetSoundVolume(), ATTN_IDLE, 0, GetVoicePitch());
 }
 
 //=========================================================
@@ -197,7 +195,7 @@ void CShockRoach::PainSound(void)
 //=========================================================
 void CShockRoach::DeathSound(void)
 {
-	EMIT_SOUND_DYN(edict(), CHAN_VOICE, RANDOM_SOUND_ARRAY(pDeathSounds), GetSoundVolue(), ATTN_IDLE, 0, GetVoicePitch());
+	EMIT_SOUND_DYN(edict(), CHAN_VOICE, RANDOM_SOUND_ARRAY(pDeathSounds), GetSoundVolume(), ATTN_IDLE, 0, GetVoicePitch());
 }
 
 
@@ -209,7 +207,7 @@ void CShockRoach::StartTask(Task_t *pTask)
 	{
 	case TASK_RANGE_ATTACK1:
 	{
-		EMIT_SOUND_DYN(edict(), CHAN_WEAPON, pAttackSounds[0], GetSoundVolue(), ATTN_IDLE, 0, GetVoicePitch());
+		EMIT_SOUND_DYN(edict(), CHAN_WEAPON, pAttackSounds[0], GetSoundVolume(), ATTN_IDLE, 0, GetVoicePitch());
 		m_IdealActivity = ACT_RANGE_ATTACK1;
 		SetTouch(&CShockRoach::LeapTouch);
 		break;
@@ -217,4 +215,10 @@ void CShockRoach::StartTask(Task_t *pTask)
 	default:
 		CHeadCrab::StartTask(pTask);
 	}
+}
+
+int CShockRoach::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )
+{
+	// Skip headcrab's TakeDamage to avoid unwanted immunity to acid.
+	return CBaseMonster::TakeDamage( pevInflictor, pevAttacker, flDamage, bitsDamageType );
 }

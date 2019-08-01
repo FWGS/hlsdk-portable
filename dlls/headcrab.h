@@ -43,7 +43,7 @@ public:
 
 	virtual float GetDamageAmount(void) { return gSkillData.headcrabDmgBite; }
 	virtual int GetVoicePitch(void) { return 100; }
-	virtual float GetSoundVolue(void) { return 1.0; }
+	virtual float GetSoundVolume(void) { return 1.0; }
 	Schedule_t* GetScheduleOfType(int Type);
 
 	CUSTOM_SCHEDULES

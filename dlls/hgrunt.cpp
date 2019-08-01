@@ -408,6 +408,11 @@ BOOL CHGrunt::CheckRangeAttack1( float flDot, float flDist )
 //=========================================================
 BOOL CHGrunt::CheckRangeAttack2( float flDot, float flDist )
 {
+	return CheckRangeAttack2Impl(gSkillData.hgruntGrenadeSpeed, flDot, flDist);
+}
+
+BOOL CHGrunt::CheckRangeAttack2Impl( float grenadeSpeed, float flDot, float flDist )
+{
 	if( !FBitSet( pev->weapons, ( HGRUNT_HANDGRENADE | HGRUNT_GRENADELAUNCHER ) ) )
 	{
 		return FALSE;
