@@ -336,7 +336,6 @@ public:
 	// Op4 player attributes.
 	//
 	BOOL	m_fInXen;
-	BOOL	m_fIsFrozen;
 
 	friend class CDisplacer;
 	friend class CTriggerXenReturn;
