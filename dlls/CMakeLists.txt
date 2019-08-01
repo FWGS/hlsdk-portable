@@ -188,6 +188,10 @@ set (SVDLL_SOURCES
 	../pm_shared/pm_math.c
 	../pm_shared/pm_shared.c
 )
+
+if(NOT MSVC)
+	set_source_files_properties(gearbox/ropes.cpp PROPERTIES COMPILE_FLAGS -O0)
+endif()
 	
 include_directories (. wpn_shared ../common ../engine ../pm_shared ../game_shared ../public gearbox)
 
