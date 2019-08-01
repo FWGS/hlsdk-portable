@@ -1395,9 +1395,8 @@ public:
 	void Holster(int skiplocal = 0);
 	void Reload(void);
 	void WeaponIdle(void);
-	void ItemPostFrame(void);
 
-	BOOL ShouldWeaponIdle(void) { return TRUE; };
+	BOOL ShouldWeaponIdle(void) { return TRUE; }
 
 	BOOL m_fInZoom;// don't save this. 
 
@@ -1409,11 +1408,6 @@ public:
 		return FALSE;
 #endif
 	}
-
-	BOOL m_fNeedAjustBolt;
-	int	 m_iBoltState;
-
-	enum SNIPER_BOLTSTATE { BOLTSTATE_FINE = 0, BOLTSTATE_ADJUST, BOLTSTATE_ADJUSTING, };
 
 private:
 	unsigned short m_usSniper;

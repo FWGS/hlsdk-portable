@@ -1712,8 +1712,7 @@ IMPLEMENT_SAVERESTORE( CPipeWrench, CBasePlayerWeapon )
 
 TYPEDESCRIPTION	CSniperrifle::m_SaveData[] =
 {
-	DEFINE_FIELD( CSniperrifle, m_fNeedAjustBolt, FIELD_BOOLEAN ),
-	DEFINE_FIELD( CSniperrifle, m_iBoltState, FIELD_INTEGER ),
+	DEFINE_FIELD( CSniperrifle, m_fInSpecialReload, FIELD_INTEGER ),
 };
 IMPLEMENT_SAVERESTORE( CSniperrifle, CBasePlayerWeapon )
 
