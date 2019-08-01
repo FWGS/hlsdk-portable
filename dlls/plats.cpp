@@ -2222,3 +2222,63 @@ void CGunTarget::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE us
 		Next();
 	}
 }
+
+//=========================================================
+// CSpriteTrain
+//=========================================================
+
+class CSpriteTrain : public CFuncTrain
+{
+public:
+	void Spawn( void );
+	void Precache( void );
+	float m_maxFrame;
+
+ 	virtual int Save( CSave &save );
+	virtual int Restore( CRestore &restore );
+
+ 	static TYPEDESCRIPTION m_SaveData[];
+};
+
+LINK_ENTITY_TO_CLASS(env_spritetrain, CSpriteTrain)
+
+TYPEDESCRIPTION	CSpriteTrain::m_SaveData[] =
+{
+	DEFINE_FIELD( CSpriteTrain, m_maxFrame, FIELD_FLOAT ),
+};
+
+IMPLEMENT_SAVERESTORE( CSpriteTrain, CFuncTrain )
+
+void CSpriteTrain::Spawn(void)
+{
+	pev->solid = SOLID_NOT;
+	pev->movetype = MOVETYPE_PUSH;
+	pev->effects = 0;
+
+	Precache();
+	SET_MODEL( ENT( pev ), STRING( pev->model ) );
+
+	if( pev->speed == 0 )
+		pev->speed = 100;
+
+	if( FStringNull(pev->target) )
+		ALERT( at_console, "%s with no target\n", STRING(pev->classname) );
+
+	if (!pev->rendermode)
+		pev->rendermode = kRenderTransAdd;
+	if (!pev->renderamt)
+		pev->renderamt = 255;
+
+	m_maxFrame = (float) MODEL_FRAMES( pev->modelindex ) - 1;
+	if( m_maxFrame > 0 )
+		pev->frame = m_maxFrame / 2;
+
+	UTIL_SetOrigin( pev, pev->origin );
+	m_activated = FALSE;
+	m_volume = 0;
+}
+
+void CSpriteTrain::Precache(void)
+{
+	PRECACHE_MODEL( STRING( pev->model ) );
+}
