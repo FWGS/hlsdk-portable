@@ -210,6 +210,7 @@ struct skilldata_t
 	float plrDmgGrapple;
 	float plrDmgEagle;
 	float plrDmgDisplacer;
+	float plrDisplacerRadius;
 	float plrDmgShockroachSingleplayer;
 	float plrDmgSpore;
 	float plrDmg762;

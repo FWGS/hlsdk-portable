@@ -375,7 +375,8 @@ void CGameRules::RefreshSkillData ( void )
 	gSkillData.plrDmgKnife = GetSkillCvar( "sk_plr_knife" );
 	gSkillData.plrDmgGrapple = GetSkillCvar( "sk_plr_grapple" );
 	gSkillData.plrDmgEagle = GetSkillCvar( "sk_plr_eagle" );
-	gSkillData.plrDmgDisplacer = GetSkillCvar( "sk_plr_displacer_self" );
+	gSkillData.plrDmgDisplacer = GetSkillCvar( "sk_plr_displacer_other" );
+	gSkillData.plrDisplacerRadius = GetSkillCvar( "sk_plr_displacer_radius" );
 	gSkillData.plrDmgShockroachSingleplayer = GetSkillCvar( "sk_plr_shockroachs" );
 	gSkillData.plrDmgSpore = GetSkillCvar( "sk_plr_spore" );
 	gSkillData.plrDmg762 = GetSkillCvar( "sk_plr_762_bullet" );
