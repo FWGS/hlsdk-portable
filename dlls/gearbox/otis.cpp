@@ -56,9 +56,7 @@
 class COtis : public CBarney
 {
 public:
-#if 1
 	void KeyValue(KeyValueData *pkvd);
-#endif
 
 	void Spawn(void);
 	void Precache(void);
@@ -81,7 +79,7 @@ public:
 	int		bodystate;
 };
 
-LINK_ENTITY_TO_CLASS(monster_otis, COtis);
+LINK_ENTITY_TO_CLASS(monster_otis, COtis)
 
 //=========================================================
 // ALertSound - otis says "Freeze!"
@@ -217,7 +215,7 @@ void COtis::Precache()
 {
 	PRECACHE_MODEL("models/otis.mdl");
 
-	PRECACHE_SOUND("barney/desert_eagle_fire.wav");
+	PRECACHE_SOUND("weapons/desert_eagle_fire.wav");
 
 	PRECACHE_SOUND("barney/ba_pain1.wav");
 	PRECACHE_SOUND("barney/ba_pain2.wav");
@@ -434,7 +432,7 @@ void CDeadOtis::KeyValue(KeyValueData *pkvd)
 		CBaseMonster::KeyValue(pkvd);
 }
 
-LINK_ENTITY_TO_CLASS(monster_otis_dead, CDeadOtis);
+LINK_ENTITY_TO_CLASS(monster_otis_dead, CDeadOtis)
 
 //=========================================================
 // ********** DeadOtis SPAWN **********
