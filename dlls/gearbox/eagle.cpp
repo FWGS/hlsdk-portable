@@ -35,13 +35,13 @@ LINK_ENTITY_TO_CLASS( eagle_laser, CLaserSpot )
 
 void CEagle::Spawn( void )
 {
-
-	pev->classname = MAKE_STRING("weapon_eagle"); // hack to allow for old names
 	Precache( );
 	m_iId = WEAPON_EAGLE;
 	SET_MODEL(ENT(pev), "models/w_desert_eagle.mdl");
 
 	m_iDefaultAmmo = EAGLE_DEFAULT_GIVE;
+	m_fEagleLaserActive = 0;
+	m_pEagleLaser = 0;
 
 	FallInit();// get ready to fall down.
 }
@@ -102,16 +102,18 @@ void CEagle::SecondaryAttack()
 {
 	bool wasActive = m_fEagleLaserActive;
 	m_fEagleLaserActive = !m_fEagleLaserActive;
+	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5;
 	if (wasActive)
 	{
+#ifndef CLIENT_DLL
 		if (m_pEagleLaser)
 		{
 			EMIT_SOUND_DYN(ENT(m_pPlayer->pev), CHAN_ITEM, "weapons/desert_eagle_sight2.wav", 1.0, ATTN_NORM, 0, PITCH_NORM);
 			m_pEagleLaser->Killed( NULL, GIB_NORMAL );
 			m_pEagleLaser = NULL;
 		}
+#endif
 	}
-	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5;
 }
 
 void CEagle::PrimaryAttack()
@@ -144,7 +146,6 @@ void CEagle::PrimaryAttack()
 	m_pPlayer->pev->effects = (int)(m_pPlayer->pev->effects) | EF_MUZZLEFLASH;
 
 	int flags;
-	BOOL m_fLaserOn;
 
 #if defined( CLIENT_WEAPONS )
 	flags = FEV_NOTHOST;
@@ -158,32 +159,29 @@ void CEagle::PrimaryAttack()
 	m_pPlayer->m_iWeaponFlash = NORMAL_GUN_FLASH;
 
 	Vector vecSrc	 = m_pPlayer->GetGunPosition( );
-	Vector vecAiming;
-	vecAiming = gpGlobals->v_forward;
+	Vector vecAiming = m_pPlayer->GetAutoaimVector( AUTOAIM_10DEGREES );
 
 	Vector vecDir;
 	if (m_fEagleLaserActive)
 	{
-		vecDir = m_pPlayer->FireBulletsPlayer( 1, vecSrc, vecAiming, Vector( flSpread, flSpread, flSpread ), 8192, BULLET_PLAYER_357, 0, 0, m_pPlayer->pev, m_pPlayer->random_seed );
+		vecDir = m_pPlayer->FireBulletsPlayer( 1, vecSrc, vecAiming, Vector( flSpread, flSpread, flSpread ), 8192, BULLET_PLAYER_EAGLE, 0, 0, m_pPlayer->pev, m_pPlayer->random_seed );
 		m_flNextPrimaryAttack = UTIL_WeaponTimeBase()+ 0.5;
 #ifndef CLIENT_DLL
 		m_pEagleLaser->Suspend( 0.6 );
 #endif
-		m_fLaserOn = TRUE;
 	}
 	else
 	{
 		flSpread = 0.1;
-		vecDir = m_pPlayer->FireBulletsPlayer( 1, vecSrc, vecAiming, Vector(flSpread, flSpread, flSpread), 8192, BULLET_PLAYER_357, 0, 0, m_pPlayer->pev, m_pPlayer->random_seed );
+		vecDir = m_pPlayer->FireBulletsPlayer( 1, vecSrc, vecAiming, Vector(flSpread, flSpread, flSpread), 8192, BULLET_PLAYER_EAGLE, 0, 0, m_pPlayer->pev, m_pPlayer->random_seed );
 		m_flNextPrimaryAttack = UTIL_WeaponTimeBase()+ 0.22;
-		m_fLaserOn = FALSE;
 	}
 
-	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usEagle, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, vecDir.x, vecDir.y, flSpread, flSpread, ( m_iClip == 0 ) ? 1 : 0, 0 );
+	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usEagle, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, vecDir.x, vecDir.y, 0, 0, 0, 0 );
 
 	if (!m_iClip && m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0)
 	// HEV suit - indicate out of ammo condition
-	m_pPlayer->SetSuitUpdate("!HEV_AMO0", FALSE, 0);
+		m_pPlayer->SetSuitUpdate("!HEV_AMO0", FALSE, 0);
 
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
 }
@@ -192,7 +190,10 @@ void CEagle::PrimaryAttack()
 void CEagle::Reload( void )
 {
 	if (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0 || m_iClip == EAGLE_MAX_CLIP)
-                return;
+	{
+		UpdateSpot();
+		return;
+	}
 
 	if ( m_pEagleLaser && m_fEagleLaserActive )
 	{
@@ -245,11 +246,12 @@ void CEagle::WeaponIdle( void )
 {
 	UpdateSpot( );
 
-	if (m_flTimeWeaponIdle <  UTIL_WeaponTimeBase() )
-	{
-		ResetEmptySound( );
-		m_pPlayer->GetAutoaimVector( AUTOAIM_10DEGREES );
+	ResetEmptySound( );
 
+	m_pPlayer->GetAutoaimVector( AUTOAIM_10DEGREES );
+
+	if (m_flTimeWeaponIdle <= UTIL_WeaponTimeBase() )
+	{
 		// only idle if the slid isn't back
 		if (m_iClip != 0)
 		{
