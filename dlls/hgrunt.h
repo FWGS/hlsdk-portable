@@ -103,6 +103,7 @@ public:
 	void EXPORT RepelUse ( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
 	int m_iSpriteTexture;	// Don't save, precache
 	virtual const char* TrooperName();
+	virtual void PrepareBeforeSpawn(CBaseEntity* pEntity);
 };
 
 #endif // HGRUNT_H

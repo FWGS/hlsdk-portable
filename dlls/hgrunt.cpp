@@ -2300,6 +2300,11 @@ const char* CHGruntRepel::TrooperName()
 	return "monster_human_grunt";
 }
 
+void CHGruntRepel::PrepareBeforeSpawn(CBaseEntity *pEntity)
+{
+
+}
+
 void CHGruntRepel::Precache( void )
 {
 	UTIL_PrecacheOther( TrooperName() );
@@ -2315,7 +2320,7 @@ void CHGruntRepel::RepelUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_
 		return NULL;
 	*/
 
-	CBaseEntity *pEntity = Create( TrooperName(), pev->origin, pev->angles );
+	CBaseEntity *pEntity = CreateNoSpawn( TrooperName(), pev->origin, pev->angles );
 	if (!pEntity) {
 		UTIL_Remove( this );
 		return;
@@ -2325,6 +2330,17 @@ void CHGruntRepel::RepelUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_
 		UTIL_Remove( this );
 		return;
 	}
+	const int knownFlags =
+			SF_MONSTER_GAG | SF_MONSTER_HITMONSTERCLIP |
+			SF_MONSTER_PRISONER | SF_SQUADMONSTER_LEADER;
+	const int flagsToSet = knownFlags & pev->spawnflags;
+	SetBits(pEntity->pev->spawnflags, flagsToSet);
+
+	pEntity->pev->netname = pev->netname;
+	pEntity->pev->weapons = pev->weapons;
+
+	PrepareBeforeSpawn(pEntity);
+	DispatchSpawn(pEntity->edict());
 	pGrunt->pev->movetype = MOVETYPE_FLY;
 	pGrunt->pev->velocity = Vector( 0, 0, RANDOM_FLOAT( -196, -128 ) );
 	pGrunt->SetActivity( ACT_GLIDE );
