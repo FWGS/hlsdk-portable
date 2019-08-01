@@ -62,3 +62,150 @@ CGib *CPitwormGibShooter::CreateGib(void)
 
 	return pGib;
 }
+
+#include "displacerball.h"
+#include "shock.h"
+#include "sporegrenade.h"
+
+enum
+{
+	BLOWERCANNON_SPOREROCKET = 1,
+	BLOWERCANNON_SPOREGRENADE,
+	BLOWERCANNON_SHOCKBEAM,
+	BLOWERCANNON_DISPLACERBALL,
+};
+
+enum
+{
+	BLOWERCANNON_TOGGLE = 1,
+	BLOWERCANNON_FIRE,
+};
+
+class CBlowerCannon : public CBaseEntity
+{
+public:
+	void Spawn( void );
+	void Precache( void );
+	void KeyValue(KeyValueData* pkvd);
+	void EXPORT BlowerCannonThink( void );
+	void EXPORT BlowerCannonStart( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+	void EXPORT BlowerCannonStop( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+
+	virtual int Save(CSave &save);
+	virtual int Restore(CRestore &restore);
+
+	static TYPEDESCRIPTION m_SaveData[];
+
+	int m_iWeapType;
+	float m_flDelay;
+	int m_iFireType;
+	int m_iZOffSet;
+};
+
+LINK_ENTITY_TO_CLASS(env_blowercannon, CBlowerCannon)
+
+TYPEDESCRIPTION	CBlowerCannon::m_SaveData[] =
+{
+	DEFINE_FIELD(CBlowerCannon, m_iFireType, FIELD_INTEGER),
+	DEFINE_FIELD(CBlowerCannon, m_iWeapType, FIELD_INTEGER),
+	DEFINE_FIELD(CBlowerCannon, m_iZOffSet, FIELD_INTEGER),
+	DEFINE_FIELD(CBlowerCannon, m_flDelay, FIELD_FLOAT),
+};
+IMPLEMENT_SAVERESTORE( CBlowerCannon, CBaseEntity )
+
+
+void CBlowerCannon::KeyValue(KeyValueData *pkvd)
+{
+	if (FStrEq(pkvd->szKeyName, "firetype"))
+	{
+		m_iFireType = (int)atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "delay"))
+	{
+		m_flDelay = (float)atof(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "weaptype"))
+	{
+		m_iWeapType = (int)atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "zoffset"))
+	{
+		m_iZOffSet = (int)atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else
+		pkvd->fHandled = FALSE;
+}
+
+void CBlowerCannon::Spawn(void)
+{
+	Precache();
+	UTIL_SetSize( pev, Vector(-16, -16, -16), Vector( 16, 16, 16 ) );
+	pev->solid = SOLID_TRIGGER;
+	if (m_flDelay <= 0.0f)
+		m_flDelay = 1.0f;
+	SetUse( &CBlowerCannon::BlowerCannonStart );
+}
+
+void CBlowerCannon::Precache( void )
+{
+	UTIL_PrecacheOther( "shock_beam" );
+	UTIL_PrecacheOther( "displacer_ball" );
+	UTIL_PrecacheOther( "spore" );
+}
+
+void CBlowerCannon::BlowerCannonStart( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
+{
+	SetUse( &CBlowerCannon::BlowerCannonStop );
+	SetThink( &CBlowerCannon::BlowerCannonThink );
+	pev->nextthink = gpGlobals->time + m_flDelay;
+}
+
+void CBlowerCannon::BlowerCannonStop( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
+{
+	SetUse( &CBlowerCannon::BlowerCannonStart );
+	SetThink( NULL );
+}
+
+void CBlowerCannon::BlowerCannonThink( void )
+{
+	CBaseEntity *pTarget = GetNextTarget();
+
+	if( pTarget && pTarget->IsAlive() )
+	{
+		Vector direction = pTarget->pev->origin - pev->origin;
+		direction.z = m_iZOffSet + pTarget->pev->origin.z - pev->origin.z;
+
+		Vector angles = UTIL_VecToAngles( direction );
+		UTIL_MakeVectors( angles );
+
+		switch (m_iWeapType)
+		{
+		case BLOWERCANNON_SPOREROCKET:
+			CSporeGrenade::ShootContact(pev, pev->origin, gpGlobals->v_forward * 1500);
+			break;
+		case BLOWERCANNON_SPOREGRENADE:
+			CSporeGrenade::ShootTimed(pev, pev->origin, gpGlobals->v_forward * 700, false);
+			break;
+		case BLOWERCANNON_SHOCKBEAM:
+			CShock::Shoot(pev, pev->angles, pev->origin, gpGlobals->v_forward * 2000);
+			break;
+		case BLOWERCANNON_DISPLACERBALL:
+			CDisplacerBall::Shoot(pev, pev->origin, gpGlobals->v_forward * 500, angles);
+			break;
+		default:
+			ALERT(at_console, "Unknown projectile type in blowercannon: %d\n", m_iWeapType);
+			break;
+		}
+	}
+	if( m_iFireType == BLOWERCANNON_FIRE )
+	{
+		SetUse( &CBlowerCannon::BlowerCannonStart );
+		SetThink( NULL );
+	}
+
+	pev->nextthink = gpGlobals->time + m_flDelay;
+}
