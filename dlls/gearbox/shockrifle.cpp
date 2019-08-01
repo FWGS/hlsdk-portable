@@ -22,7 +22,9 @@
 #include "nodes.h"
 #include "player.h"
 #include "gamerules.h"
-
+#ifndef CLIENT_DLL
+#include "shock.h"
+#endif
 
 enum shockrifle_e {
 	SHOCK_IDLE1 = 0,
@@ -32,7 +34,7 @@ enum shockrifle_e {
 	SHOCK_IDLE3,
 };
 
-LINK_ENTITY_TO_CLASS(weapon_shockrifle, CShockrifle);
+LINK_ENTITY_TO_CLASS(weapon_shockrifle, CShockrifle)
 
 void CShockrifle::Spawn()
 {
@@ -44,9 +46,6 @@ void CShockrifle::Spawn()
 	m_iFirePhase = 0;
 
 	FallInit();// get ready to fall down.
-
-	m_fShouldUpdateEffects = FALSE;
-	m_flBeamLifeTime = 0.0f;
 }
 
 
@@ -111,6 +110,15 @@ int CShockrifle::GetItemInfo(ItemInfo *p)
 
 BOOL CShockrifle::Deploy()
 {
+#ifdef CLIENT_DLL
+	if( bIsMultiplayer() )
+#else
+	if( g_pGameRules->IsMultiplayer() )
+#endif
+		m_flRechargeTime = gpGlobals->time + 0.25;
+	else
+		m_flRechargeTime = gpGlobals->time + 0.5;
+
 	return DefaultDeploy("models/v_shock.mdl", "models/p_shock.mdl", SHOCK_DRAW, "shockrifle");
 }
 
@@ -126,42 +134,37 @@ void CShockrifle::Holster(int skiplocal /* = 0 */)
 	}
 }
 
-
 void CShockrifle::PrimaryAttack()
 {
-	Reload();
-
 	if (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0)
-	{
 		return;
-	}
 
 	if (m_pPlayer->pev->waterlevel == 3)
 	{
 #ifndef CLIENT_DLL
-		RadiusDamage(m_pPlayer->pev->origin, m_pPlayer->pev, m_pPlayer->pev, 300, 144, CLASS_NONE, DMG_SHOCK | DMG_ALWAYSGIB );
+		int attenuation = 150 * m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType];
+		int dmg = 100 * m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType];
+		EMIT_SOUND(ENT(pev), CHAN_WEAPON, "weapons/shock_discharge.wav", VOL_NORM, ATTN_NORM);
+		m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] = 0;
+		RadiusDamage(m_pPlayer->pev->origin, m_pPlayer->pev, m_pPlayer->pev, dmg, attenuation, CLASS_NONE, DMG_SHOCK | DMG_ALWAYSGIB );
 #endif
 		return;
 	}
 
+	CreateChargeEffect();
+
 #ifndef CLIENT_DLL
 	Vector anglesAim = m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle;
-	anglesAim.x		= -anglesAim.x;
+	anglesAim.x = -anglesAim.x;
 	UTIL_MakeVectors(m_pPlayer->pev->v_angle);
 
 	Vector vecSrc;
+	vecSrc = m_pPlayer->GetGunPosition() + gpGlobals->v_forward * 8 + gpGlobals->v_right * 12 + gpGlobals->v_up * -12;
 
-	vecSrc = m_pPlayer->GetGunPosition();
-	vecSrc = vecSrc + gpGlobals->v_forward * 8;
-	vecSrc = vecSrc + gpGlobals->v_right * 8;
-	vecSrc = vecSrc + gpGlobals->v_up * -12;
+	CShock::Shoot(m_pPlayer->pev, anglesAim, vecSrc, gpGlobals->v_forward * 2000);
 
-	CBaseEntity *pShock = CBaseEntity::Create("shock_beam", vecSrc, anglesAim, m_pPlayer->edict());
-	pShock->pev->velocity = gpGlobals->v_forward * 2000;
-
-	m_flRechargeTime = gpGlobals->time + 0.5;
+	m_flRechargeTime = gpGlobals->time + 1;
 #endif
-
 	m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]--;
 
 
@@ -177,32 +180,22 @@ void CShockrifle::PrimaryAttack()
 
 	PLAYBACK_EVENT_FULL(flags, m_pPlayer->edict(), m_usShockFire, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, 0, 0, 0, 0);
 
-	if (!m_fShouldUpdateEffects)
-	{
-		// Toggle need to show effects.
-		m_fShouldUpdateEffects = TRUE;
-		m_flBeamLifeTime = gpGlobals->time + 1.0f;
-	}
-	else
-	{
-		UpdateEffects();
-		m_flBeamLifeTime = gpGlobals->time + 0.5f;
-	}
-
 	// player "shoot" animation
 	m_pPlayer->SetAnimation(PLAYER_ATTACK1);
+#ifdef CLIENT_DLL
+	if( bIsMultiplayer() )
+#else
+	if( g_pGameRules->IsMultiplayer() )
+#endif
+		m_flNextPrimaryAttack = GetNextAttackDelay(0.1);
+	else
+		m_flNextPrimaryAttack = GetNextAttackDelay(0.2);
 
-	m_flNextPrimaryAttack = GetNextAttackDelay(0.2);
+	SetThink( &CShockrifle::ClearBeams );
+	pev->nextthink = gpGlobals->time + 0.08;
 
-	if (m_flNextPrimaryAttack < UTIL_WeaponTimeBase())
-	{
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.2;
-	}
-
-	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat(m_pPlayer->random_seed, 10, 15);
+	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.33;
 }
-
-
 
 void CShockrifle::SecondaryAttack(void)
 {
@@ -218,7 +211,12 @@ void CShockrifle::Reload(void)
 		EMIT_SOUND(ENT(m_pPlayer->pev), CHAN_ITEM, "weapons/shock_recharge.wav", 1, ATTN_NORM);
 
 		m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]++;
-		m_flRechargeTime += 0.5;
+#ifndef CLIENT_DLL
+		if( g_pGameRules->IsMultiplayer() )
+			m_flRechargeTime += 0.25;
+		else
+			m_flRechargeTime += 0.5;
+#endif
 	}
 }
 
@@ -230,67 +228,55 @@ void CShockrifle::WeaponIdle(void)
 	if (m_flTimeWeaponIdle > UTIL_WeaponTimeBase())
 		return;
 
-	int iAnim;
 	float flRand = UTIL_SharedRandomFloat(m_pPlayer->random_seed, 0, 1);
-	if (flRand <= 0.5)
-	{
-		iAnim = SHOCK_IDLE1;
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 3.3f;
+	if (flRand <= 0.8) {
+		SendWeaponAnim(SHOCK_IDLE3);
+	} else {
+		SendWeaponAnim(SHOCK_IDLE1);
 	}
-	else
-	{
-		iAnim = SHOCK_IDLE3;
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 3.4f;
-	}
-	SendWeaponAnim(iAnim);
+	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 3.3f;
 }
 
-void CShockrifle::UpdateEffects()
+void CShockrifle::CreateChargeEffect( void )
 {
-	int flags;
-#if defined( CLIENT_WEAPONS )
-	flags = FEV_NOTHOST;
-#else
-	flags = 0;
+#ifndef CLIENT_DLL
+	if( g_pGameRules->IsMultiplayer())
+		return;
+	int iBeam = 0;
+
+	for( int i = 2; i < 5; i++)
+	{
+		if( !m_pBeam[iBeam] )
+			m_pBeam[iBeam] = CBeam::BeamCreate("sprites/lgtning.spr", 16);
+		m_pBeam[iBeam]->EntsInit( m_pPlayer->entindex(), m_pPlayer->entindex() );
+		m_pBeam[iBeam]->SetStartAttachment(1);
+		m_pBeam[iBeam]->SetEndAttachment(i);
+		m_pBeam[iBeam]->SetNoise( 75 );
+		m_pBeam[iBeam]->pev->scale= 10;
+		m_pBeam[iBeam]->SetColor( 0, 253, 253 );
+		m_pBeam[iBeam]->SetScrollRate( 30 );
+		m_pBeam[iBeam]->SetBrightness( 190 );
+		iBeam++;
+	}
 #endif
-
-	PLAYBACK_EVENT_FULL(
-		flags,
-		m_pPlayer->edict(),
-		m_usShockFire,
-		0.0,
-		(float *)&g_vecZero,
-		(float *)&g_vecZero,
-		0.0,
-		0.0,
-		TRUE,
-		0,
-		0,
-		0);
 }
 
-void CShockrifle::ItemPostFrame(void)
+void CShockrifle::ClearBeams( void )
 {
-	CBasePlayerWeapon::ItemPostFrame();
+#ifndef CLIENT_DLL
+	if( g_pGameRules->IsMultiplayer())
+		return;
 
-	if (!m_pPlayer->pev->button & IN_ATTACK)
+	for( int i = 0; i < 3; i++ )
 	{
-		if (m_fShouldUpdateEffects)
+		if( m_pBeam[i] )
 		{
-			if (gpGlobals->time <= m_flBeamLifeTime)
-			{
-				UpdateEffects();
-			}
-			else
-			{
-				m_fShouldUpdateEffects = FALSE;
-				m_flBeamLifeTime = 0.0f;
-			}
+			UTIL_Remove( m_pBeam[i] );
+			m_pBeam[i] = NULL;
 		}
 	}
+	SetThink( NULL );
+#endif
 }
-
-
-
 
 #endif

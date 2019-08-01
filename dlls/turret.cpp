@@ -467,6 +467,7 @@ void CBaseTurret::ActiveThink( void )
 
 	pev->nextthink = gpGlobals->time + 0.1;
 	StudioFrameAdvance();
+	GlowShellUpdate();
 
 	if( ( !m_iOn ) || ( m_hEnemy == 0 ) )
 	{
@@ -644,6 +645,7 @@ void CBaseTurret::Deploy( void )
 {
 	pev->nextthink = gpGlobals->time + 0.1;
 	StudioFrameAdvance();
+	GlowShellUpdate();
 
 	if( pev->sequence != TURRET_ANIM_DEPLOY )
 	{
@@ -687,6 +689,7 @@ void CBaseTurret::Retire( void )
 	pev->nextthink = gpGlobals->time + 0.1;
 
 	StudioFrameAdvance();
+	GlowShellUpdate();
 
 	EyeOff();
 
@@ -831,6 +834,7 @@ void CBaseTurret::SearchThink( void )
 	SetTurretAnim( TURRET_ANIM_SPIN );
 	StudioFrameAdvance();
 	pev->nextthink = gpGlobals->time + 0.1;
+	GlowShellUpdate();
 
 	if( m_flSpinUpTime == 0 && m_flMaxSpin )
 		m_flSpinUpTime = gpGlobals->time + m_flMaxSpin;
@@ -891,6 +895,7 @@ void CBaseTurret::AutoSearchThink( void )
 	// ensure rethink
 	StudioFrameAdvance();
 	pev->nextthink = gpGlobals->time + 0.3;
+	GlowShellUpdate();
 
 	// If we have a target and we're still healthy
 	if( m_hEnemy != 0 )
@@ -919,6 +924,7 @@ void CBaseTurret::TurretDeath( void )
 
 	StudioFrameAdvance();
 	pev->nextthink = gpGlobals->time + 0.1;
+	GlowShellUpdate();
 
 	if( pev->deadflag != DEAD_DEAD )
 	{
@@ -1238,6 +1244,7 @@ void CSentry::SentryDeath( void )
 
 	StudioFrameAdvance();
 	pev->nextthink = gpGlobals->time + 0.1;
+	GlowShellUpdate();
 
 	if( pev->deadflag != DEAD_DEAD )
 	{

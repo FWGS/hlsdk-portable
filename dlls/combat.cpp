@@ -910,11 +910,6 @@ int CBaseMonster::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, f
 		return 0;
 	}
 
-	if( ( bitsDamageType & DMG_ENERGYBEAM ) && FClassnameIs( pevAttacker, "shock_beam" ) )
-	{
-		GlowShellOn( Vector( 0, 220, 255 ), .5f );
-	}
-
 	// react to the damage (get mad)
 	if( ( pev->flags & FL_MONSTER ) && !FNullEnt( pevAttacker ) )
 	{
@@ -986,7 +981,7 @@ int CBaseMonster::DeadTakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacke
 	}
 #endif
 	// kill the corpse if enough damage was done to destroy the corpse and the damage is of a type that is allowed to destroy the corpse.
-	if( (bitsDamageType & DMG_GIB_CORPSE) || (( bitsDamageType & DMG_ENERGYBEAM ) && FClassnameIs( pevInflictor, "shock_beam" )) )
+	if( bitsDamageType & DMG_GIB_CORPSE )
 	{
 		if( pev->health <= flDamage )
 		{

@@ -1709,13 +1709,6 @@ TYPEDESCRIPTION	CPipeWrench::m_SaveData[] =
 };
 IMPLEMENT_SAVERESTORE( CPipeWrench, CBasePlayerWeapon )
 
-TYPEDESCRIPTION	CShockrifle::m_SaveData[] =
-{
-	DEFINE_FIELD( CShockrifle, m_fShouldUpdateEffects, FIELD_BOOLEAN ),
-	DEFINE_FIELD( CShockrifle, m_flBeamLifeTime, FIELD_TIME ),
-};
-IMPLEMENT_SAVERESTORE( CShockrifle, CHgun )
-
 TYPEDESCRIPTION	CSniperrifle::m_SaveData[] =
 {
 	DEFINE_FIELD( CSniperrifle, m_fNeedAjustBolt, FIELD_BOOLEAN ),

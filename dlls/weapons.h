@@ -1343,13 +1343,6 @@ private:
 class CShockrifle : public CHgun
 {
 public:
-
-#ifndef CLIENT_DLL
-	int		Save(CSave &save);
-	int		Restore(CRestore &restore);
-	static	TYPEDESCRIPTION m_SaveData[];
-#endif
-
 	void Spawn(void);
 	void Precache(void);
 	int iItemSlot(void) { return 7; }
@@ -1362,12 +1355,8 @@ public:
 	void Holster(int skiplocal = 0);
 	void Reload(void);
 	void WeaponIdle(void);
-	void ItemPostFrame(void);;
-
-	int m_fShouldUpdateEffects;
-	int m_flBeamLifeTime;
-
-	void UpdateEffects();
+	void CreateChargeEffect(void);
+	void ClearBeams(void);
 	
 	virtual BOOL UseDecrement(void)
 	{
@@ -1379,6 +1368,8 @@ public:
 	}
 private:
 	unsigned short m_usShockFire;
+
+	CBeam* m_pBeam[4];
 };
 
 class CSniperrifle : public CBasePlayerWeapon
