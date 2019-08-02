@@ -28,6 +28,7 @@ spawn and use functions for editor-placed triggers
 #include "trains.h"
 #include "gamerules.h"
 #include "triggers.h"
+#include "skill.h"
 
 //=========================================================
 // CTriggerXenReturn
@@ -124,12 +125,167 @@ void CTriggerXenReturn::TeleportTouch(CBaseEntity* pOther)
 // CTriggerGenewormHit
 //=========================================================
 
-class CTriggerGenewormHit : public CTriggerMultiple
+#define SF_TRIGGER_HURT_TARGETONCE	1// Only fire hurt target once
+#define	SF_TRIGGER_HURT_START_OFF	2//spawnflag that makes trigger_push spawn turned OFF
+#define	SF_TRIGGER_HURT_NO_CLIENTS	8//spawnflag that makes trigger_push spawn turned OFF
+#define SF_TRIGGER_HURT_CLIENTONLYFIRE	16// trigger hurt will only fire its target if it is hurting a client
+#define SF_TRIGGER_HURT_CLIENTONLYTOUCH 32// only clients may touch this trigger.
+
+class CTriggerGenewormHit : public CBaseTrigger
 {
 public:
+	void Spawn();
+	void Precache();
+	void EXPORT GeneWormTouch(CBaseEntity *pOther);
+
+	static const char* pAttackSounds[];
+
+	static TYPEDESCRIPTION m_SaveData[];
+
+	virtual int Save( CSave &save );
+	virtual int Restore( CRestore &restore );
+
+	float m_flLastDamageTime;
 };
 
-LINK_ENTITY_TO_CLASS(trigger_geneworm_hit, CTriggerMultiple);
+TYPEDESCRIPTION CTriggerGenewormHit::m_SaveData[] =
+{
+	DEFINE_FIELD(CTriggerGenewormHit, m_flLastDamageTime, FIELD_TIME),
+};
+
+IMPLEMENT_SAVERESTORE(CTriggerGenewormHit, CBaseTrigger)
+
+const char *CTriggerGenewormHit::pAttackSounds[] =
+{
+	"zombie/claw_strike1.wav",
+	"zombie/claw_strike2.wav",
+	"zombie/claw_strike3.wav"
+};
+
+void CTriggerGenewormHit::Spawn()
+{
+	Precache();
+	InitTrigger();
+
+	SetTouch(&CTriggerGenewormHit::GeneWormTouch);
+
+	if(pev->targetname)
+		SetUse(&CBaseTrigger::ToggleUse);
+
+
+	if(pev->spawnflags & SF_TRIGGER_HURT_START_OFF)
+		pev->solid = SOLID_NOT;
+
+	UTIL_SetOrigin(pev, pev->origin);
+	pev->dmg = gSkillData.gwormDmgHit;
+	m_flLastDamageTime = gpGlobals->time;
+}
+
+void CTriggerGenewormHit::Precache()
+{
+	PRECACHE_SOUND_ARRAY(pAttackSounds);
+}
+
+void CTriggerGenewormHit::GeneWormTouch(CBaseEntity *pOther)
+{
+	if( gpGlobals->time - m_flLastDamageTime < 2 || !pOther->pev->takedamage )
+		return;
+
+	if( ( pev->spawnflags & SF_TRIGGER_HURT_CLIENTONLYTOUCH ) && !pOther->IsPlayer() )
+	{
+		// this trigger is only allowed to touch clients, and this ain't a client.
+		return;
+	}
+
+	if( ( pev->spawnflags & SF_TRIGGER_HURT_NO_CLIENTS ) && pOther->IsPlayer() )
+		return;
+
+	// HACKHACK -- In multiplayer, players touch this based on packet receipt.
+	// So the players who send packets later aren't always hurt.  Keep track of
+	// how much time has passed and whether or not you've touched that player
+	if( g_pGameRules->IsMultiplayer() )
+	{
+		if( pev->dmgtime > gpGlobals->time )
+		{
+			if( gpGlobals->time != pev->pain_finished )
+			{
+				// too early to hurt again, and not same frame with a different entity
+				if( pOther->IsPlayer() )
+				{
+					int playerMask = 1 << ( pOther->entindex() - 1 );
+
+					// If I've already touched this player (this time), then bail out
+					if( pev->impulse & playerMask )
+						return;
+
+					// Mark this player as touched
+					// BUGBUG - There can be only 32 players!
+					pev->impulse |= playerMask;
+				}
+				else
+				{
+					return;
+				}
+			}
+		}
+		else
+		{
+			// New clock, "un-touch" all players
+			pev->impulse = 0;
+			if( pOther->IsPlayer() )
+			{
+				int playerMask = 1 << ( pOther->entindex() - 1 );
+
+				// Mark this player as touched
+				// BUGBUG - There can be only 32 players!
+				pev->impulse |= playerMask;
+			}
+		}
+	}
+	else	// Original code -- single player
+	{
+		if( pev->dmgtime > gpGlobals->time && gpGlobals->time != pev->pain_finished )
+		{
+			// too early to hurt again, and not same frame with a different entity
+			return;
+		}
+	}
+
+	// If this is time_based damage (poison, radiation), override the pev->dmg with a
+	// default for the given damage type.  Monsters only take time-based damage
+	// while touching the trigger.  Player continues taking damage for a while after
+	// leaving the trigger
+
+	pOther->TakeDamage( pev, pev, gSkillData.gwormDmgHit, m_bitsDamageInflict );
+
+	// Store pain time so we can get all of the other entities on this frame
+	pev->pain_finished = gpGlobals->time;
+
+	// Apply damage every half second
+	pev->dmgtime = gpGlobals->time + 0.5;// half second delay until this trigger can hurt toucher again
+
+	EMIT_SOUND_DYN(ENT(pev), CHAN_BODY, RANDOM_SOUND_ARRAY(pAttackSounds), VOL_NORM, 0.1, 0, 100 + RANDOM_FLOAT(-5,5));
+	m_flLastDamageTime = gpGlobals->time;
+
+	if( pev->target )
+	{
+		// trigger has a target it wants to fire.
+		if( pev->spawnflags & SF_TRIGGER_HURT_CLIENTONLYFIRE )
+		{
+			// if the toucher isn't a client, don't fire the target!
+			if( !pOther->IsPlayer() )
+			{
+				return;
+			}
+		}
+
+		SUB_UseTargets( pOther, USE_TOGGLE, 0 );
+		if( pev->spawnflags & SF_TRIGGER_HURT_TARGETONCE )
+			pev->target = 0;
+	}
+}
+
+LINK_ENTITY_TO_CLASS(trigger_geneworm_hit, CTriggerGenewormHit)
 
 //=========================================================
 // CPlayerFreeze
