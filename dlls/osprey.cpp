@@ -135,9 +135,13 @@ void COsprey::CommandUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYP
 void COsprey::FindAllThink( void )
 {
 	CBaseEntity *pEntity = NULL;
+	const char *pszName = "monster_human_grunt";
+
+	if( FClassnameIs( pev, "monster_blkop_osprey" ) )
+		pszName = "monster_male_assassin";
 
 	m_iUnits = 0;
-	while( m_iUnits < OSPREY_MAX_CARRY && ( pEntity = UTIL_FindEntityByClassname( pEntity, "monster_human_grunt" ) ) != NULL )
+	while( m_iUnits < OSPREY_MAX_CARRY && ( pEntity = UTIL_FindEntityByClassname( pEntity, pszName ) ) != NULL )
 	{
 		if( pEntity->IsAlive() )
 		{
@@ -208,6 +212,10 @@ CBaseMonster *COsprey::MakeGrunt( Vector vecSrc )
 {
 	CBaseEntity *pEntity;
 	CBaseMonster *pGrunt;
+	const char *pszName = "monster_human_grunt";
+
+	if( FClassnameIs( pev, "monster_blkop_osprey" ) )
+		pszName = "monster_male_assassin";
 
 	TraceResult tr;
 	UTIL_TraceLine( vecSrc, vecSrc + Vector( 0, 0, -4096.0 ), dont_ignore_monsters, ENT( pev ), &tr );
@@ -222,7 +230,7 @@ CBaseMonster *COsprey::MakeGrunt( Vector vecSrc )
 			{
 				m_hGrunt[i]->SUB_StartFadeOut();
 			}
-			pEntity = Create( "monster_human_grunt", vecSrc, pev->angles );
+			pEntity = Create( pszName, vecSrc, pev->angles );
 			pGrunt = pEntity->MyMonsterPointer();
 			pGrunt->pev->movetype = MOVETYPE_FLY;
 			pGrunt->pev->velocity = Vector( 0, 0, RANDOM_FLOAT( -196, -128 ) );

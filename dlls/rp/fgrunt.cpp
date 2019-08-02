@@ -915,12 +915,13 @@ Schedule_t *CFGrunt::GetScheduleOfType( int Type )
 // CNGruntRepel - when triggered, spawns a monster_nari_grunt
 // repelling down a line.
 //=========================================================
-class CFGruntRepel : public CHGruntRepel
+class CFGruntRepel : public CBaseMonster
 {
 public:
 	void Spawn(void);
 	void Precache(void);
 	void EXPORT RepelUse(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value);
+	int m_iSpriteTexture;	// Don't save, precache
 };
 
 LINK_ENTITY_TO_CLASS( monster_grunt_repel_ally, CFGruntRepel )

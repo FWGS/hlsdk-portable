@@ -171,18 +171,4 @@ typedef enum
 	HGRUNT_SENT_TAUNT
 } HGRUNT_SENTENCE_TYPES;
 
-//=========================================================
-// CHGruntRepel - when triggered, spawns a monster_human_grunt
-// repelling down a line.
-//=========================================================
-
-class CHGruntRepel : public CBaseMonster
-{
-public:
-	virtual void Spawn(void);
-	virtual void Precache(void);
-	virtual void EXPORT RepelUse(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value);
-	int m_iSpriteTexture;	// Don't save, precache
-};
-
 #endif // HGRUNT_H

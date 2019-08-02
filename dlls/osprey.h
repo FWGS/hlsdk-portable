@@ -37,9 +37,9 @@ public:
 	void EXPORT DeployThink(void);
 	void Flight(void);
 	void EXPORT HitTouch(CBaseEntity *pOther);
-	virtual void EXPORT FindAllThink(void);
+	void EXPORT FindAllThink(void);
 	void EXPORT HoverThink(void);
-	virtual CBaseMonster *MakeGrunt(Vector vecSrc);
+	CBaseMonster *MakeGrunt(Vector vecSrc);
 	void EXPORT CrashTouch(CBaseEntity *pOther);
 	void EXPORT DyingThink(void);
 	void EXPORT CommandUse(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value);

@@ -349,11 +349,13 @@ void CMassn::DeathSound(void)
 // repelling down a line.
 //=========================================================
 
-class CAssassinRepel : public CHGruntRepel
+class CAssassinRepel : public CBaseMonster
 {
 public:
 	void Precache(void);
+	void Spawn();
 	void EXPORT RepelUse(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value);
+	int m_iSpriteTexture;	// Don't save, precache
 };
 
 LINK_ENTITY_TO_CLASS(monster_assassin_repel, CAssassinRepel);
@@ -362,6 +364,14 @@ void CAssassinRepel::Precache(void)
 {
 	UTIL_PrecacheOther("monster_male_assassin");
 	m_iSpriteTexture = PRECACHE_MODEL("sprites/rope.spr");
+}
+
+void CAssassinRepel::Spawn( void )
+{
+	Precache();
+	pev->solid = SOLID_NOT;
+
+	SetUse( &CAssassinRepel::RepelUse );
 }
 
 void CAssassinRepel::RepelUse(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value)

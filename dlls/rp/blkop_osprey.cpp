@@ -31,13 +31,8 @@
 class CBlkopOsprey : public COsprey
 {
 public:
-
 	void Spawn( void );
 	void Precache( void );
-
-	void EXPORT FindAllThink(void);
-
-	CBaseMonster *MakeGrunt(Vector vecSrc);
 };
 
 LINK_ENTITY_TO_CLASS(monster_blkop_osprey, CBlkopOsprey);
@@ -99,71 +94,3 @@ void CBlkopOsprey::Precache(void)
 	m_iEngineGibs = PRECACHE_MODEL("models/blkop_enginegibs.mdl");
 }
 
-
-void CBlkopOsprey::FindAllThink(void)
-{
-	CBaseEntity *pEntity = NULL;
-
-	m_iUnits = 0;
-	while (m_iUnits < MAX_CARRY && (pEntity = UTIL_FindEntityByClassname(pEntity, "monster_male_assassin")) != NULL)
-	{
-		if (pEntity->IsAlive())
-		{
-			m_hGrunt[m_iUnits] = pEntity;
-			m_vecOrigin[m_iUnits] = pEntity->pev->origin;
-			m_iUnits++;
-		}
-	}
-
-	if (m_iUnits == 0)
-	{
-		ALERT(at_console, "osprey error: no assassins to resupply\n");
-		UTIL_Remove(this);
-		return;
-	}
-	SetThink(&COsprey::FlyThink);
-	pev->nextthink = gpGlobals->time + 0.1;
-	m_startTime = gpGlobals->time;
-}
-
-
-CBaseMonster *CBlkopOsprey::MakeGrunt(Vector vecSrc)
-{
-	CBaseEntity *pEntity;
-	CBaseMonster *pGrunt;
-
-	TraceResult tr;
-	UTIL_TraceLine(vecSrc, vecSrc + Vector(0, 0, -4096.0), dont_ignore_monsters, ENT(pev), &tr);
-	if (tr.pHit && Instance(tr.pHit)->pev->solid != SOLID_BSP)
-		return NULL;
-
-	for (int i = 0; i < m_iUnits; i++)
-	{
-		if (m_hGrunt[i] == 0 || !m_hGrunt[i]->IsAlive())
-		{
-			if (m_hGrunt[i] != 0 && m_hGrunt[i]->pev->rendermode == kRenderNormal)
-			{
-				m_hGrunt[i]->SUB_StartFadeOut();
-			}
-			pEntity = Create("monster_male_assassin", vecSrc, pev->angles);
-			pGrunt = pEntity->MyMonsterPointer();
-			pGrunt->pev->movetype = MOVETYPE_FLY;
-			pGrunt->pev->velocity = Vector(0, 0, RANDOM_FLOAT(-196, -128));
-			pGrunt->SetActivity(ACT_GLIDE);
-
-			CBeam *pBeam = CBeam::BeamCreate("sprites/rope.spr", 10);
-			pBeam->PointEntInit(vecSrc + Vector(0, 0, 112), pGrunt->entindex());
-			pBeam->SetFlags(BEAM_FSOLID);
-			pBeam->SetColor(255, 255, 255);
-			pBeam->SetThink(&CBeam::SUB_Remove);
-			pBeam->pev->nextthink = gpGlobals->time + -4096.0 * tr.flFraction / pGrunt->pev->velocity.z + 0.5;
-
-			// ALERT( at_console, "%d at %.0f %.0f %.0f\n", i, m_vecOrigin[i].x, m_vecOrigin[i].y, m_vecOrigin[i].z );  
-			pGrunt->m_vecLastPosition = m_vecOrigin[i];
-			m_hGrunt[i] = pGrunt;
-			return pGrunt;
-		}
-	}
-	// ALERT( at_console, "none dead\n");
-	return NULL;
-}
