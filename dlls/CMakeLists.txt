@@ -66,6 +66,7 @@ set (SVDLL_SOURCES
 	gearbox/m249.cpp
 	gearbox/massn.cpp
 	gearbox/nuclearbomb.cpp
+	gearbox/op4mortar.cpp
 	gearbox/otis.cpp
 	gearbox/penguin.cpp
 	gearbox/pipewrench.cpp
