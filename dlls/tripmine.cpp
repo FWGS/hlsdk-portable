@@ -399,6 +399,7 @@ int CTripmine::GetItemInfo( ItemInfo *p )
 	p->iPosition = 2;
 	p->iId = m_iId = WEAPON_TRIPMINE;
 	p->iWeight = TRIPMINE_WEIGHT;
+	p->weaponName = "Laser Tripmine";
 	p->iFlags = ITEM_FLAG_LIMITINWORLD | ITEM_FLAG_EXHAUSTIBLE;
 
 	return 1;
