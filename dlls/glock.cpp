@@ -191,15 +191,15 @@ void CGlock::GlockFire( float flSpread, float flCycleTime, BOOL fUseAutoAim )
 	{
 		if( m_pPlayer->pev->button & IN_JUMP )
 		{
-			vecSpread = Vector( m_pPlayer->m_flBulletSpreadCoefficient * 3.0 + 0.065, m_pPlayer->m_flBulletSpreadCoefficient * 2.0 + 0.055, 0 );
-			if( m_pPlayer->m_flBulletSpreadCoefficient < 0.06 )
-				m_pPlayer->m_flBulletSpreadCoefficient += 0.0045;
+			vecSpread = Vector( m_pPlayer->m_flBulletSpreadCoefficient * 8.0 + 0.1, m_pPlayer->m_flBulletSpreadCoefficient * 5.0 + 0.1, 0 );
+			if( m_pPlayer->m_flBulletSpreadCoefficient < 0.8 )
+				m_pPlayer->m_flBulletSpreadCoefficient += 0.009;
 		}
 		else
 		{
-			vecSpread = Vector( m_pPlayer->m_flBulletSpreadCoefficient * 8.0 + 0.1, m_pPlayer->m_flBulletSpreadCoefficient * 5.0 + 0.1, 0 );
-			if( m_pPlayer->m_flBulletSpreadCoefficient < 0.8 )
-			m_pPlayer->m_flBulletSpreadCoefficient += 0.009;
+			vecSpread = Vector( m_pPlayer->m_flBulletSpreadCoefficient * 3.0 + 0.065, m_pPlayer->m_flBulletSpreadCoefficient * 2.0 + 0.055, 0 );
+			if( m_pPlayer->m_flBulletSpreadCoefficient < 0.06 )
+				m_pPlayer->m_flBulletSpreadCoefficient += 0.0045;
 		}
 	}
 
