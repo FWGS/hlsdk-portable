@@ -540,6 +540,9 @@ private:
 
 	int m_HUD_title_life;
 	int m_HUD_title_half;
+
+	int m_HUD_title_opposing;
+	int m_HUD_title_force;
 };
 
 //
