@@ -588,7 +588,8 @@ void CScientist::Spawn( void )
 		pev->skin = 1;
 
 	MonsterInit();
-	SetUse( &CTalkMonster::FollowerUse );
+	if (!m_fStartSuspicious)
+		SetUse( &CTalkMonster::FollowerUse );
 }
 
 //=========================================================

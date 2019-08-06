@@ -205,7 +205,8 @@ void COtis::Spawn()
 	}
 
 	MonsterInit();
-	SetUse(&COtis::FollowerUse);
+	if (!m_fStartSuspicious)
+		SetUse(&COtis::FollowerUse);
 }
 
 //=========================================================

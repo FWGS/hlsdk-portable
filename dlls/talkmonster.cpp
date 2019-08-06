@@ -46,6 +46,7 @@ TYPEDESCRIPTION	CTalkMonster::m_SaveData[] =
 	DEFINE_FIELD( CTalkMonster, m_flLastSaidSmelled, FIELD_TIME ),
 	DEFINE_FIELD( CTalkMonster, m_flStopTalkTime, FIELD_TIME ),
 	DEFINE_FIELD( CTalkMonster, m_hTalkTarget, FIELD_EHANDLE ),
+	DEFINE_FIELD( CTalkMonster, m_fStartSuspicious, FIELD_BOOLEAN ),
 };
 
 IMPLEMENT_SAVERESTORE( CTalkMonster, CSquadMonster )
@@ -1298,6 +1299,15 @@ void CTalkMonster::TrySmellTalk( void )
 	}
 }
 
+void CTalkMonster::StartMonster()
+{
+	CBaseMonster::StartMonster();
+	if (m_fStartSuspicious) {
+		ALERT(at_console, "Talk Monster Pre-Provoked\n");
+		Remember(bits_MEMORY_PROVOKED);
+	}
+}
+
 int CTalkMonster::IRelationship( CBaseEntity *pTarget )
 {
 	if( pTarget->IsPlayer() )
@@ -1399,6 +1409,11 @@ void CTalkMonster::KeyValue( KeyValueData *pkvd )
 	else if( FStrEq( pkvd->szKeyName, "UnUseSentence" ) )
 	{
 		m_iszUnUse = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "suspicious" ) )
+	{
+		m_fStartSuspicious = atoi( pkvd->szValue );
 		pkvd->fHandled = TRUE;
 	}
 	else 

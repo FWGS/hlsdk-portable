@@ -109,6 +109,7 @@ public:
 	int				TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType);
 	void			Touch(	CBaseEntity *pOther );
 	void			Killed( entvars_t *pevAttacker, int iGib );
+	void			StartMonster( void );
 	int				IRelationship ( CBaseEntity *pTarget );
 	virtual int		CanPlaySentence( BOOL fDisregardState );
 	virtual void	PlaySentence( const char *pszSentence, float duration, float volume, float attenuation );
@@ -175,6 +176,7 @@ public:
 	float		m_flStopTalkTime;// when in the future that I'll be done saying this sentence.
 
 	EHANDLE		m_hTalkTarget;	// who to look at while talking
+	BOOL m_fStartSuspicious;
 	CUSTOM_SCHEDULES
 };
 

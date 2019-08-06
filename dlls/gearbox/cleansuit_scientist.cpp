@@ -73,7 +73,8 @@ void CCleansuitScientist::Spawn(void)
 		pev->skin = 1;
 
 	MonsterInit();
-	SetUse(&CScientist::FollowerUse);
+	if (!m_fStartSuspicious)
+		SetUse(&CScientist::FollowerUse);
 }
 
 //=========================================================
