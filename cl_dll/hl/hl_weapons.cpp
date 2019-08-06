@@ -76,6 +76,7 @@ CPipeWrench g_PipeWrench;
 CShockrifle g_Shock;
 CSniperrifle g_Sniper;
 CSporelauncher g_Spore;
+CBarnacleGrapple g_Grapple;
 
 /*
 ======================
@@ -634,6 +635,7 @@ void HUD_InitClientWeapons( void )
 	HUD_PrepEntity( &g_Shock, &player );
 	HUD_PrepEntity( &g_Sniper, &player );
 	HUD_PrepEntity( &g_Spore, &player );
+	HUD_PrepEntity( &g_Grapple, &player );
 }
 
 /*
@@ -765,6 +767,9 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 			break;
 		case WEAPON_SPORELAUNCHER:
 			pWeapon = &g_Spore;
+			break;
+		case WEAPON_GRAPPLE:
+			pWeapon = &g_Grapple;
 			break;
 	}
 
