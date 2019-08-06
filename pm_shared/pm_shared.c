@@ -465,6 +465,9 @@ void PM_PlayStepSound( int step, float fvol )
 		}
 		break;
 	case STEP_LADDER:
+		if (pmove->flags & FL_IMMUNE_SLIME) {
+			break;
+		}
 		switch( irand )
 		{
 		// right foot
