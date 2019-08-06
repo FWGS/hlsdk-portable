@@ -40,7 +40,7 @@
 #define MASSN_9MMAR					(1 << 0)
 #define MASSN_HANDGRENADE			(1 << 1)
 #define MASSN_GRENADELAUNCHER		(1 << 2)
-#define MASSN_SNIPERRIFLE			(1 << 4)
+#define MASSN_SNIPERRIFLE			(1 << 3)
 
 // Body groups.
 #define HEAD_GROUP					1
@@ -84,7 +84,7 @@ public:
 	void IdleSound(void);
 };
 
-LINK_ENTITY_TO_CLASS(monster_male_assassin, CMassn);
+LINK_ENTITY_TO_CLASS(monster_male_assassin, CMassn)
 
 //=========================================================
 // Purpose:
@@ -198,7 +198,7 @@ void CMassn::HandleAnimEvent(MonsterEvent_t *pEvent)
 		{
 			Sniperrifle();
 
-			EMIT_SOUND(ENT(pev), CHAN_WEAPON, "weapons/sniper_bolt1.wav", 1, ATTN_NORM);
+			EMIT_SOUND(ENT(pev), CHAN_WEAPON, "weapons/sniper_fire.wav", 1, ATTN_NORM);
 		}
 
 		CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, 384, 0.3);
@@ -301,6 +301,7 @@ void CMassn::Precache()
 	PRECACHE_SOUND("weapons/glauncher.wav");
 
 	PRECACHE_SOUND("weapons/sniper_bolt1.wav");
+	PRECACHE_SOUND("weapons/sniper_fire.wav");
 
 	PRECACHE_SOUND("zombie/claw_miss2.wav");// because we use the basemonster SWIPE animation event
 
