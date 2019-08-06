@@ -221,7 +221,7 @@ public:
 	virtual int Save(CSave &save);
 	virtual int Restore(CRestore &restore);
 	CBaseEntity *FindTarget();
-	void MortarThink();
+	void EXPORT MortarThink();
 	static TYPEDESCRIPTION m_SaveData[];
 	int ObjectCaps() { return 0; }
 
@@ -314,7 +314,7 @@ void COp4Mortar::Spawn()
 
 	m_flExplodeTime = gpGlobals->time + 5;
 
-	pev->nextthink = gpGlobals->time + 0.01;
+	pev->nextthink = gpGlobals->time + 0.1;
 }
 
 void COp4Mortar::UpdatePosition(float direction, int controller)
@@ -376,7 +376,7 @@ void COp4Mortar::MortarThink()
 		}
 	}
 
-	if(m_hEnemy)
+	if(m_hEnemy != 0)
 	{
 		vecTarget = Vector( m_hEnemy->pev->origin.x, m_hEnemy->pev->origin.y, m_hEnemy->pev->absmax.z);
 
@@ -424,7 +424,7 @@ CBaseEntity *COp4Mortar::FindTarget()
 	Vector BarretAngle;
 	Vector targetPosition;
 	TraceResult tr;
-	CBaseEntity *pIdealTarget;
+	CBaseEntity *pIdealTarget = NULL;
 
 	if((pPlayer = UTIL_FindEntityByClassname(0, "player")) == NULL )
 		return NULL;
@@ -447,10 +447,6 @@ CBaseEntity *COp4Mortar::FindTarget()
 				pIdealTarget = pPlayer;
 			}
 		}
-	}
-	else
-	{
-		pIdealTarget = NULL;
 	}
 
 	return pIdealTarget;
