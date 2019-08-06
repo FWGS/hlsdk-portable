@@ -224,9 +224,7 @@ void CHeadCrab::HandleAnimEvent( MonsterEvent_t *pEvent )
 				vecJumpDir = Vector( gpGlobals->v_forward.x, gpGlobals->v_forward.y, gpGlobals->v_up.z ) * 350;
 			}
 
-			int iSound = RANDOM_LONG(0,2);
-			if( iSound != 0 )
-				EMIT_SOUND_DYN( edict(), CHAN_VOICE, pAttackSounds[iSound], GetSoundVolume(), ATTN_IDLE, 0, GetVoicePitch() );
+			AttackSound();
 
 			pev->velocity = vecJumpDir;
 			m_flNextAttack = gpGlobals->time + 2;
@@ -443,6 +441,13 @@ Schedule_t *CHeadCrab::GetScheduleOfType( int Type )
 	}
 
 	return CBaseMonster::GetScheduleOfType( Type );
+}
+
+void CHeadCrab::AttackSound()
+{
+	int iSound = RANDOM_LONG(0,2);
+	if( iSound != 0 )
+		EMIT_SOUND_DYN( edict(), CHAN_VOICE, pAttackSounds[iSound], GetSoundVolume(), ATTN_IDLE, 0, GetVoicePitch() );
 }
 
 class CBabyCrab : public CHeadCrab

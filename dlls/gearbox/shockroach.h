@@ -47,6 +47,9 @@ public:
 
 	float m_flBirthTime;
 	BOOL m_fRoachSolid;
+
+protected:
+	void AttackSound();
 };
 
 

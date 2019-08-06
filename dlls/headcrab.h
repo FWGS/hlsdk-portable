@@ -56,6 +56,9 @@ public:
 	static const char *pAttackSounds[];
 	static const char *pDeathSounds[];
 	static const char *pBiteSounds[];
+
+protected:
+	virtual void AttackSound();
 };
 
 #endif

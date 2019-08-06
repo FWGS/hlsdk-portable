@@ -27,7 +27,7 @@
 #include	"headcrab.h"
 #include	"shockroach.h"
 
-LINK_ENTITY_TO_CLASS(monster_shockroach, CShockRoach);
+LINK_ENTITY_TO_CLASS(monster_shockroach, CShockRoach)
 
 TYPEDESCRIPTION	CShockRoach::m_SaveData[] =
 {
@@ -35,7 +35,7 @@ TYPEDESCRIPTION	CShockRoach::m_SaveData[] =
 	DEFINE_FIELD(CShockRoach, m_fRoachSolid, FIELD_BOOLEAN),
 };
 
-IMPLEMENT_SAVERESTORE(CShockRoach, CHeadCrab);
+IMPLEMENT_SAVERESTORE(CShockRoach, CHeadCrab)
 
 const char *CShockRoach::pIdleSounds[] =
 {
@@ -64,7 +64,7 @@ const char *CShockRoach::pDeathSounds[] =
 
 const char *CShockRoach::pBiteSounds[] =
 {
-	"shockroach/schock_bite.wav",
+	"shockroach/shock_bite.wav",
 };
 
 
@@ -207,7 +207,6 @@ void CShockRoach::StartTask(Task_t *pTask)
 	{
 	case TASK_RANGE_ATTACK1:
 	{
-		EMIT_SOUND_DYN(edict(), CHAN_WEAPON, pAttackSounds[0], GetSoundVolume(), ATTN_IDLE, 0, GetVoicePitch());
 		m_IdealActivity = ACT_RANGE_ATTACK1;
 		SetTouch(&CShockRoach::LeapTouch);
 		break;
@@ -221,4 +220,9 @@ int CShockRoach::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 {
 	// Skip headcrab's TakeDamage to avoid unwanted immunity to acid.
 	return CBaseMonster::TakeDamage( pevInflictor, pevAttacker, flDamage, bitsDamageType );
+}
+
+void CShockRoach::AttackSound()
+{
+	EMIT_SOUND_DYN(edict(), CHAN_WEAPON, RANDOM_SOUND_ARRAY(pAttackSounds), GetSoundVolume(), ATTN_IDLE, 0, GetVoicePitch());
 }
