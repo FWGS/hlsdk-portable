@@ -34,12 +34,13 @@
 class CLoader : public CGenericMonster
 {
 public:
-
 	void Spawn( void );
 	void Precache( void );
+	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType );
+	int TakeDamage(entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType) { return 1; }
 };
 
-LINK_ENTITY_TO_CLASS(monster_op4loader, CLoader);
+LINK_ENTITY_TO_CLASS(monster_op4loader, CLoader)
 
 
 //=========================================================
@@ -51,21 +52,21 @@ void CLoader::Spawn()
 
 	SET_MODEL(ENT(pev), "models/loader.mdl");
 
-	UTIL_SetSize(pev, VEC_HULL_MIN, VEC_HULL_MAX);
+	UTIL_SetSize(pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX);
 	
 	pev->solid = SOLID_SLIDEBOX;
 	pev->movetype = MOVETYPE_STEP;
-	m_bloodColor = BLOOD_COLOR_RED;
+	m_bloodColor = DONT_BLEED;
 	pev->health = 8;
 	m_flFieldOfView = 0.5;// indicates the width of this monster's forward view cone ( as a dotproduct result )
 	m_MonsterState = MONSTERSTATE_NONE;
 
 	MonsterInit();
 
+	pev->takedamage = DAMAGE_NO;
 	if (pev->spawnflags & SF_LOADER_NOTSOLID)
 	{
 		pev->solid = SOLID_NOT;
-		pev->takedamage = DAMAGE_NO;
 	}
 }
 
@@ -75,4 +76,9 @@ void CLoader::Spawn()
 void CLoader::Precache()
 {
 	PRECACHE_MODEL("models/loader.mdl");
+}
+
+void CLoader::TraceAttack(entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType)
+{
+	UTIL_Ricochet( ptr->vecEndPos, RANDOM_FLOAT(1.0,2.0) );
 }
