@@ -242,7 +242,7 @@ void CGonome::UnlockPlayer()
 		else // if ehandle is empty for some reason just unlock the first player
 			player = (CBasePlayer*)UTIL_FindEntityByClassname(0, "player");
 
-		if (player && player->IsAlive())
+		if (player)
 			player->EnableControl(TRUE);
 
 		m_lockedPlayer = 0;
