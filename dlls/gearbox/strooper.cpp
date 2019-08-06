@@ -270,7 +270,7 @@ void CStrooper::IdleSound(void)
 //=========================================================
 int	CStrooper::Classify(void)
 {
-	return CLASS_ALIEN_MILITARY;
+	return CLASS_RACEX_SHOCK;
 }
 
 BOOL CStrooper::CheckRangeAttack1(float flDot, float flDist)

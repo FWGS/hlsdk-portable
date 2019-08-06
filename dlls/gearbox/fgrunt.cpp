@@ -1370,7 +1370,7 @@ void CHFGrunt :: CheckAmmo ( void )
 //=========================================================
 int	CHFGrunt :: Classify ( void )
 {
-	return CLASS_PLAYER_ALLY;
+	return CLASS_PLAYER_ALLY_MILITARY;
 }
 //=========================================================
 // SetYawSpeed - allows each sequence to have a different
