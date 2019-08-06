@@ -864,7 +864,8 @@ BOOL CBaseMonster::CineCleanup()
 
 		// We should have some animation to put these guys in, but for now it's idle.
 		// Due to NOINTERP above, there won't be any blending between this anim & the sequence
-		m_Activity = ACT_RESET;
+		if (!FBitSet(pOldCine->pev->spawnflags, SF_SCRIPT_CONTINUOUS))
+			m_Activity = ACT_RESET;
 	}
 	// set them back into a normal state
 	pev->enemy = NULL;
