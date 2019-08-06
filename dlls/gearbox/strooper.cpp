@@ -604,7 +604,9 @@ void CStrooper::DropShockRoach()
 	vecPos.z += 32;
 
 	// now spawn a shockroach.
-	CBaseEntity::Create( "monster_shockroach", vecPos, vecDropAngles );
+	CBaseEntity* roach = CBaseEntity::Create( "monster_shockroach", vecPos, vecDropAngles );
+	if (ShouldFadeOnDeath())
+		roach->pev->spawnflags |= SF_MONSTER_FADECORPSE;
 }
 
 
