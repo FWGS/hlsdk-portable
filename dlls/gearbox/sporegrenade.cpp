@@ -119,11 +119,7 @@ void CSporeGrenade::Explode(TraceResult *pTrace)
 	RadiusDamage(pev, pevOwner, pev->dmg, CLASS_NONE, DMG_BLAST);
 
 	// Place a decal on the surface that was hit.
-#if FEATURE_OPFOR_DECALS
 	UTIL_DecalTrace(pTrace, DECAL_SPR_SPLT1 + RANDOM_LONG(0, 2));
-#else
-	UTIL_DecalTrace(pTrace, DECAL_YBLOOD5 + RANDOM_LONG(0, 1));
-#endif
 
 	UTIL_Remove(this);
 }

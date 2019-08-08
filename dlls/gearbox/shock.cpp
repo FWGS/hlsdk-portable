@@ -132,11 +132,7 @@ void CShock::Touch(CBaseEntity *pOther)
 	if (!pOther->pev->takedamage)
 	{
 		// make a splat on the wall
-#if FEATURE_OPFOR_DECALS
 		const int baseDecal = DECAL_OPFOR_SCORCH1;
-#else
-		const int baseDecal = DECAL_SMALLSCORCH1;
-#endif
 		UTIL_DecalTrace(&tr, baseDecal + RANDOM_LONG(0, 2));
 
 		int iContents = UTIL_PointContents(pev->origin);
