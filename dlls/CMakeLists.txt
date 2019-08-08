@@ -30,6 +30,7 @@ add_definitions(-DCLIENT_WEAPONS)
 if(NOT MSVC)
 	add_compile_options(-fno-exceptions) # GCC/Clang flag
 	add_compile_options(-Wno-invalid-offsetof) # GCC/Clang flag
+	add_compile_options(-fvisibility=hidden) # GCC/Clang flag
 	add_definitions(-D_LINUX) # It seems enough for all non-Win32 systems
 	add_definitions(-Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf -D_vsnprintf=vsnprintf )
 else()
@@ -206,8 +207,13 @@ set_target_properties (${SVDLL_LIBRARY} PROPERTIES
 	POSITION_INDEPENDENT_CODE 1)
 
 if(APPLE OR WIN32 OR ${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+	set(SVDLL_NAME "${SERVER_LIBRARY_NAME}")
+	if(64BIT)
+		set(SVDLL_NAME "${SERVER_LIBRARY_NAME}64")
+	endif()
+
 	set_target_properties(${SVDLL_LIBRARY} PROPERTIES
-		OUTPUT_NAME ${SERVER_LIBRARY_NAME}
+		OUTPUT_NAME ${SVDLL_NAME}
 		PREFIX "")
 endif()
 
