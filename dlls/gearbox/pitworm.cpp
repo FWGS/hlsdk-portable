@@ -1374,3 +1374,29 @@ void CPitWorm::TrackEnemy()
 		m_posDesired.z = m_flLevels[m_iLevel];
 	}
 }
+
+class CPitWormSteamTrigger : public CBaseEntity
+{
+public:
+	void Spawn();
+	void Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+};
+
+LINK_ENTITY_TO_CLASS(info_pitworm_steam_lock, CPitWormSteamTrigger)
+
+void CPitWormSteamTrigger::Spawn()
+{
+	pev->solid = SOLID_NOT;
+	pev->movetype = MOVETYPE_NONE;
+	pev->effects = EF_NODRAW;
+	UTIL_SetOrigin(pev, pev->origin);
+}
+
+void CPitWormSteamTrigger::Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value)
+{
+	CPitWorm* pWorm = (CPitWorm*)UTIL_FindEntityByClassname(0, "monster_pitworm_up");
+	if (pWorm)
+	{
+		pWorm->LockTopLevel();
+	}
+}
