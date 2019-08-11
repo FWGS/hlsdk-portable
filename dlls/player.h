@@ -316,8 +316,6 @@ public:
 
 	void TabulateAmmo( void );
 
-	Vector m_vecLastViewAngles;
-
 	float m_flStartCharge;
 	float m_flAmmoStartCharge;
 	float m_flPlayAftershock;
@@ -462,6 +460,7 @@ public:
 	void InitWeaponWeight();
 */
 //-- Martin Webrant
+	Vector m_vecLastViewAngles;
 };
 
 //++ BulliT
@@ -563,7 +562,7 @@ inline void CBasePlayer::Init()
 	m_bSentCheatCheck = false;
 
 #ifdef _DEBUG
-	if( 0 == strcmp( GetAuthID(),"237555" ) )
+	if( 0 == strcmp( GetAuthID(), "237555" ) )
 		m_bAdmin = true;
 #endif
 };
