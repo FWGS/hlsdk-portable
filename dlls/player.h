@@ -309,8 +309,6 @@ public:
 
 	void TabulateAmmo( void );
 
-	Vector m_vecLastViewAngles;
-
 	float m_flStartCharge;
 	float m_flAmmoStartCharge;
 	float m_flPlayAftershock;
@@ -376,6 +374,8 @@ public:
 	float m_RuneTime;			// Time at which this rune wears off. 
 
 	// BMOD End - extra player functions
+	Vector m_vecLastViewAngles;
+
 	bool m_bSentBhopcap; // If false, the player just joined and needs a bhopcap message.
 };
 
