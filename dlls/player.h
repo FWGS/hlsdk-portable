@@ -314,7 +314,12 @@ public:
 	void SetCustomDecalFrames( int nFrames );
 	int GetCustomDecalFrames( void );
 
-	Vector m_vecLastViewAngles;
+	void TabulateAmmo( void );
+
+	float m_flStartCharge;
+	float m_flAmmoStartCharge;
+	float m_flPlayAftershock;
+	float m_flNextAmmoBurn;// while charging, when to absorb another unit of player's ammo?
 
 	//Player ID
 	void InitStatusBar( void );
@@ -445,7 +450,6 @@ public:
 	bool Spectate_Think();
 	bool Spectate_Follow( EHANDLE &pPlayer,int iMode );
 	bool Spectate_HLTV();
-	bool m_bSentBhopcap; // If false, the player just joined and needs a bhopcap message.
 //-- Martin Webrant
 
 	int m_bHasFlag;
@@ -476,6 +480,10 @@ public:
 	CGrapple *m_ppHook;
 
 	void Service_Grapple();
+
+	Vector m_vecLastViewAngles;
+
+	bool m_bSentBhopcap; // If false, the player just joined and needs a bhopcap message.
 };
 
 //++ BulliT
