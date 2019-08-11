@@ -307,8 +307,6 @@ public:
 
 	void TabulateAmmo( void );
 
-	Vector m_vecLastViewAngles;
-
 	float m_flStartCharge;
 	float m_flAmmoStartCharge;
 	float m_flPlayAftershock;
@@ -327,6 +325,7 @@ public:
 
 	float m_flBulletSpreadCoefficient;
 	float m_flNextBulletSpreadRandTime;
+	Vector m_vecLastViewAngles;
 
 	bool m_bSentBhopcap; // If false, the player just joined and needs a bhopcap message.
 };
