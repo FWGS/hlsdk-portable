@@ -305,7 +305,6 @@ public:
 	void SetCustomDecalFrames( int nFrames );
 	int GetCustomDecalFrames( void );
 
-	Vector m_vecLastViewAngles;
 
 	float m_flStartCharge;
 	float m_flAmmoStartCharge;
@@ -329,6 +328,8 @@ public:
 	int m_iStaminaLevel;
 	float m_flStaminaStart;
 	BOOL m_bCinematicCompleted;
+	Vector m_vecLastViewAngles;
+
 	bool m_bSentBhopcap; // If false, the player just joined and needs a bhopcap message.
 };
 

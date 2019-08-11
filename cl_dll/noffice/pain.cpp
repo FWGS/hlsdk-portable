@@ -61,7 +61,7 @@ void CHudHealth::DrawPain2(void)
 		if (!m_hPainFront)
 			m_hPainFront = SPR_Load("sprites/pain_front.spr");
 
-		shade = a * max(m_fAttackFront, 0.5);
+		shade = a * Q_max(m_fAttackFront, 0.5);
 
 		gEngfuncs.pTriAPI->SpriteTexture((struct model_s *) gEngfuncs.GetSpritePointer(m_hPainFront), 0);
 		gEngfuncs.pTriAPI->Color4f(1, 1, 1, shade);
@@ -85,7 +85,7 @@ void CHudHealth::DrawPain2(void)
 
 		gEngfuncs.pTriAPI->End();
 
-		m_fAttackFront = max(0, m_fAttackFront - fFade);
+		m_fAttackFront = Q_max(0, m_fAttackFront - fFade);
 	}
 	else
 		m_fAttackFront = 0;
@@ -95,7 +95,7 @@ void CHudHealth::DrawPain2(void)
 		if (!m_hPainRight)
 			m_hPainRight = SPR_Load("sprites/pain_right.spr");
 
-		shade = a * max(m_fAttackRight, 0.5);
+		shade = a * Q_max(m_fAttackRight, 0.5);
 
 		gEngfuncs.pTriAPI->SpriteTexture((struct model_s *) gEngfuncs.GetSpritePointer(m_hPainRight), 0);
 		gEngfuncs.pTriAPI->Color4f(1, 1, 1, shade);
@@ -119,7 +119,7 @@ void CHudHealth::DrawPain2(void)
 
 		gEngfuncs.pTriAPI->End();
 
-		m_fAttackRight = max(0, m_fAttackRight - fFade);
+		m_fAttackRight = Q_max(0, m_fAttackRight - fFade);
 	}
 	else
 		m_fAttackRight = 0;
@@ -129,7 +129,7 @@ void CHudHealth::DrawPain2(void)
 		if (!m_hPainRear)
 			m_hPainRear = SPR_Load("sprites/pain_rear.spr");
 
-		shade = a * max(m_fAttackRear, 0.5);
+		shade = a * Q_max(m_fAttackRear, 0.5);
 
 		gEngfuncs.pTriAPI->SpriteTexture((struct model_s *) gEngfuncs.GetSpritePointer(m_hPainRear), 0);
 		gEngfuncs.pTriAPI->Color4f(1, 1, 1, shade);
@@ -153,7 +153,7 @@ void CHudHealth::DrawPain2(void)
 
 		gEngfuncs.pTriAPI->End();
 
-		m_fAttackRear = max(0, m_fAttackRear - fFade);
+		m_fAttackRear = Q_max(0, m_fAttackRear - fFade);
 	}
 	else
 		m_fAttackRear = 0;
@@ -163,7 +163,7 @@ void CHudHealth::DrawPain2(void)
 		if (!m_hPainLeft)
 			m_hPainLeft = SPR_Load("sprites/pain_left.spr");
 
-		shade = a * max(m_fAttackLeft, 0.5);
+		shade = a * Q_max(m_fAttackLeft, 0.5);
 
 		gEngfuncs.pTriAPI->SpriteTexture((struct model_s *) gEngfuncs.GetSpritePointer(m_hPainLeft), 0);
 		gEngfuncs.pTriAPI->Color4f(1, 1, 1, shade);
@@ -187,7 +187,7 @@ void CHudHealth::DrawPain2(void)
 
 		gEngfuncs.pTriAPI->End();
 
-		m_fAttackLeft = max(0, m_fAttackLeft - fFade);
+		m_fAttackLeft = Q_max(0, m_fAttackLeft - fFade);
 	}
 	else
 		m_fAttackLeft = 0;
