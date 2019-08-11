@@ -307,8 +307,6 @@ public:
 
 	void TabulateAmmo( void );
 
-	Vector m_vecLastViewAngles;
-
 	float m_flStartCharge;
 	float m_flAmmoStartCharge;
 	float m_flPlayAftershock;
@@ -326,6 +324,8 @@ public:
 	float m_flNextChatTime;
 
 	BOOL m_bUpdatePlayerModel;
+	Vector m_vecLastViewAngles;
+
 	bool m_bSentBhopcap; // If false, the player just joined and needs a bhopcap message.
 };
 
