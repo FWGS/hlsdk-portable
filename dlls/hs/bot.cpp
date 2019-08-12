@@ -590,7 +590,7 @@ float CBot::BotChangeYaw( float speed )
    ideal = pev->ideal_yaw;
 
    // find the difference in the current and ideal angle
-   diff = abs(current - ideal);
+   diff = fabs(current - ideal);
 
    // check if the bot is already facing the ideal_yaw direction...
    if (diff <= 1)
@@ -1334,10 +1334,10 @@ void CBot::BotTurnAtWall( TraceResult *tr )
    // D1 and D2 are the difference (in degrees) between the bot's current
    // angle and Y1 or Y2 (respectively).
 
-   D1 = abs(Y - Y1);
-   if (D1 > 179) D1 = abs(D1 - 360);
-   D2 = abs(Y - Y2);
-   if (D2 > 179) D2 = abs(D2 - 360);
+   D1 = fabs(Y - Y1);
+   if (D1 > 179) D1 = fabs(D1 - 360);
+   D2 = fabs(Y - Y2);
+   if (D2 > 179) D2 = fabs(D2 - 360);
 
    // If difference 1 (D1) is more than difference 2 (D2) then the bot will
    // have to turn LESS if it heads in direction Y1 otherwise, head in
