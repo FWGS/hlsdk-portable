@@ -19,6 +19,7 @@
 #ifndef MONSTERS_H
 #include "monsters.h"
 #endif
+#include "squadmonster.h"
 
 //=========================================================
 // Talking monster base class
@@ -38,7 +39,7 @@
 #define bit_saidHeard			(1<<6)
 #define bit_saidSmelled			(1<<7)
 
-#define TLK_CFRIENDS		3
+#define TLK_CFRIENDS		6
 
 typedef enum
 {
@@ -95,7 +96,7 @@ enum
 	LAST_TALKMONSTER_TASK			// MUST be last
 };
 
-class CTalkMonster : public CBaseMonster
+class CTalkMonster : public CSquadMonster
 {
 public:
 	void			TalkInit( void );				
@@ -108,6 +109,7 @@ public:
 	int				TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType);
 	void			Touch(	CBaseEntity *pOther );
 	void			Killed( entvars_t *pevAttacker, int iGib );
+	void			StartMonster( void );
 	int				IRelationship ( CBaseEntity *pTarget );
 	virtual int		CanPlaySentence( BOOL fDisregardState );
 	virtual void	PlaySentence( const char *pszSentence, float duration, float volume, float attenuation );
@@ -149,12 +151,16 @@ public:
 	
 	virtual void	SetAnswerQuestion( CTalkMonster *pSpeaker );
 	virtual int		FriendNumber( int arrayNumber )	{ return arrayNumber; }
+	virtual const char* FriendByNumber( int arrayNumber ) { return m_szFriends[FriendNumber(arrayNumber)]; }
+	virtual int NumberOfFriends() { return TLK_CFRIENDS; }
+	virtual int MaxFollowers() { return 3; }
 
 	virtual int		Save( CSave &save );
 	virtual int		Restore( CRestore &restore );
 	static	TYPEDESCRIPTION m_SaveData[];
 
-	
+	virtual int SizeForGrapple() { return GRAPPLE_MEDIUM; }
+
 	static const char *m_szFriends[TLK_CFRIENDS];		// array of friend names
 	static float g_talkWaitTime;
 	
@@ -170,11 +176,12 @@ public:
 	float		m_flStopTalkTime;// when in the future that I'll be done saying this sentence.
 
 	EHANDLE		m_hTalkTarget;	// who to look at while talking
+	BOOL m_fStartSuspicious;
 	CUSTOM_SCHEDULES
 };
 
-// Clients can push talkmonsters out of their way
-#define		bits_COND_CLIENT_PUSH		( bits_COND_SPECIAL1 )
+BOOL IsFacing( entvars_t *pevTest, const Vector &reference );
+
 // Don't see a client right now.
 #define		bits_COND_CLIENT_UNSEEN		( bits_COND_SPECIAL2 )
 

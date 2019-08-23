@@ -112,6 +112,8 @@ public:
 	static const char *pAttackSounds[];
 	static const char *pAlertSounds[];
 
+	virtual int SizeForGrapple() { return GRAPPLE_SMALL; }
+
 private:
 	// UNDONE: Remove unused boid vars, do group behavior
 	float m_flTurning;// is this boid turning?

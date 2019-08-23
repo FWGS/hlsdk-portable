@@ -1,21 +1,25 @@
 /***
 *
-*	Copyright (c) 1996-2001, Valve LLC. All rights reserved.
+*   SPIRIT OF HALF-LIFE 1.9: OPPOSING-FORCE EDITION
 *
-*	This product contains software technology licensed from Id
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
-*	All Rights Reserved.
+*   Spirit of Half-Life and their logos are the property of their respective owners.
+*   Copyright (c) 1996-2002, Valve LLC. All rights reserved.
 *
-*   This source code contains proprietary and confidential information of
-*   Valve LLC and its suppliers.  Access to this code is restricted to
-*   persons who have executed a written SDK license with Valve.  Any access,
-*   use or distribution of this code by or to any unlicensed person is illegal.
+*   This product contains software technology licensed from Id
+*   Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
 *
-****/
+*   Use, distribution, and modification of this source code and/or resulting
+*   object code is restricted to non-commercial enhancements to products from
+*   Valve LLC.  All other use, distribution, or modification is prohibited
+*   without written permission from Valve LLC.
+*
+*   All Rights Reserved.
+*
+*	Base Source-Code written by Marc-Antoine Lortie (https://github.com/malortie).
+*   Modifications by Hammermaps.de DEV Team (support@hammermaps.de).
+*
+***/
 
-//=========================================================
-// Generic Monster - purely for scripted sequence work.
-//=========================================================
 #include	"extdll.h"
 #include	"util.h"
 #include	"cbase.h"
@@ -25,16 +29,133 @@
 #include	"soundent.h"
 #include	"weapons.h"
 #include	"player.h"
-#include	"genericmonster.h"
+#include	"decals.h"
 
+#define PITWORM_ATTN 0.1
+#define NUM_PITWORM_LEVELS		4
 
-//=========================================================
-// Monster's defines
-//=========================================================
-#define PITWORM_HEIGHT					584
-#define PITWORM_EYE_OFFSET				Vector(0, 0, 445)
-#define PITWORM_EYEBLAST_ATTACK_DIST	512 // 464
-#define PITWORM_EYEBLAST_DURATION		3.03f					// 0.49 approximatly. (49 miliseconds)
+class CPitWorm : public CBaseMonster
+{
+public:
+	void Spawn(void);
+	void Precache(void);
+	int  Classify(void) { return CLASS_ALIEN_MONSTER; }
+	virtual int	ObjectCaps(void) { return CBaseMonster::ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
+	void SetObjectCollisionBox()
+	{
+		pev->absmin = pev->origin + Vector( -400, -400, 0 );
+		pev->absmax = pev->origin + Vector( 400, 400, 850 );
+	}
+	BOOL FVisible(CBaseEntity* pEntity);
+	BOOL FVisible(const Vector& vecOrigin);
+
+	void IdleSound(void);
+	void AlertSound(void);
+	void DeathSound(void);
+	void PainSound(void);
+
+	int		Save(CSave &save);
+	int		Restore(CRestore &restore);
+	static	TYPEDESCRIPTION m_SaveData[];
+
+	void AngrySound(void);
+	void SwipeSound(void);
+	void BeamSound(void);
+
+	void HandleAnimEvent(MonsterEvent_t *pEvent);
+	int TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
+	void TraceAttack(entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType);
+
+	void EXPORT StartupThink(void);
+	void EXPORT DyingThink(void);
+	void EXPORT StartupUse(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value);
+	void EXPORT NullThink(void);
+	void EXPORT CommandUse(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value);
+	void EXPORT	HuntThink(void);
+	void EXPORT HitTouch(CBaseEntity* pOther);
+
+	void LockTopLevel();
+	BOOL ClawAttack();
+	void ShootBeam();
+	void StrafeBeam();
+	void ChangeLevel();
+	void TrackEnemy();
+
+	void NextActivity(void);
+
+	void EyeLight(const Vector& vecEyePos);
+	void BeamEffect(TraceResult& tr);
+
+	int SizeForGrapple() { return GRAPPLE_LARGE; }
+
+	//
+	float m_flNextPainSound;
+
+	Vector m_vecTarget;
+	Vector m_posTarget;
+	Vector m_vecDesired;
+	Vector m_posDesired;
+
+	float m_offsetBeam;
+	Vector m_posBeam;
+	Vector m_vecBeam;
+	Vector m_angleBeam;
+	float m_flBeamExpireTime;
+	float m_flBeamDir;
+
+	float m_flTorsoYaw;
+	float m_flHeadYaw;
+	float m_flHeadPitch;
+	float m_flIdealTorsoYaw;
+	float m_flIdealHeadYaw;
+	float m_flIdealHeadPitch;
+
+	float m_flLevels[NUM_PITWORM_LEVELS];
+	float m_flTargetLevels[NUM_PITWORM_LEVELS];
+
+	float m_flLastSeen;
+
+	int m_iLevel;
+	float m_flLevelSpeed;
+
+	CBeam* m_pBeam;
+	CSprite* m_pSprite;
+
+	BOOL m_fAttacking;
+	BOOL m_fLockHeight;
+	BOOL m_fLockYaw;
+
+	int m_iWasHit;
+	float m_flTakeHitTime;
+
+	float m_flHitTime;
+	float m_flNextMeleeTime;
+	float m_flNextRangeTime;
+	float m_flDeathStartTime;
+
+	BOOL m_fFirstSighting;
+	BOOL m_fTopLevelLocked;
+
+	float m_flLastBlinkTime;
+	float m_flLastBlinkInterval;
+	float m_flLastEventTime;
+
+	static const char* pHitGroundSounds[];
+	static const char* pAngrySounds[];
+	static const char* pSwipeSounds[];
+	static const char* pShootSounds[];
+
+	static const char* pPainSounds[];
+	static const char* pAlertSounds[];
+	static const char* pIdleSounds[];
+	static const char* pDeathSounds[];
+	static const char* pAttackSounds[];
+};
+
+LINK_ENTITY_TO_CLASS(monster_pitworm, CPitWorm)
+LINK_ENTITY_TO_CLASS(monster_pitworm_up, CPitWorm)
+
+#define PITWORM_EYE_OFFSET				Vector(0, 0, 300)
 
 #define PITWORM_CONTROLLER_EYE_YAW		0
 #define PITWORM_CONTROLLER_EYE_PITCH	1
@@ -44,207 +165,70 @@
 #define PITWORM_EYE_PITCH_MAX	 45
 #define PITWORM_EYE_YAW_MIN		-45
 #define PITWORM_EYE_YAW_MAX		 45
-#define PITWORM_BODY_YAW_MIN	-50
-#define PITWORM_BODY_YAW_MAX	 50
-
-#define NUM_PITWORM_LEVELS		4
-
-#define PITWORM_LEVEL0			0		// Pitworm's 'foot' level | when player is at First level 1.
-#define PITWORM_LEVEL1			1		// First level | player goes to waste station door 1 or 2.
-#define PITWORM_LEVEL2			2		// Second level | player goes to narrow corridor that leads to stairs.
-#define PITWORM_LEVEL3			3		// Third level | entry room, steam vent and valve pressure controls.
-
-#define PITWORM_LEVEL0_HEIGHT	-632	// Pitworm's 'foot' level | when player is at First level 1. | (Hammer units) 
-#define PITWORM_LEVEL1_HEIGHT	-48		// First level | player goes to waste station door 1 or 2. | (Hammer units) 
-#define PITWORM_LEVEL2_HEIGHT	208		// Second level | player goes to narrow corridor that leads to stairs. | (Hammer units) 
-#define PITWORM_LEVEL3_HEIGHT	304		// Third level | entry room, steam vent and valve pressure controls. | (Hammer units) 
-
-
-#define PITWORM_LEVEL0_VIEWOFFSET	Vector(0, 0, PITWORM_HEIGHT)
-#define PITWORM_LEVEL1_VIEWOFFSET	Vector(0, 0, 256)
-#define PITWORM_LEVEL2_VIEWOFFSET	Vector(0, 0, 96)
-#define PITWORM_LEVEL3_VIEWOFFSET	PITWORM_LEVEL2_VIEWOFFSET
 
 //=========================================================
 // Monster's Anim Events Go Here
 //=========================================================
-
 #define PITWORM_AE_SWIPE			( 1 )
 #define PITWORM_AE_EYEBLAST_START	( 2 )
 #define PITWORM_AE_EYEBLAST_END		( 4 )
-
-//=========================================================
-// CPitWorm
-//=========================================================
-class CPitWorm : public CBaseMonster
-{
-public:
-
-	int		Save(CSave &save);
-	int		Restore(CRestore &restore);
-	static	TYPEDESCRIPTION m_SaveData[];
-
-	virtual int	ObjectCaps(void) { return CBaseMonster::ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
-
-	void Spawn(void);
-	void Precache(void);
-	int  Classify(void);
-
-	void IdleSound( void );
-	void AlertSound( void );
-	void DeathSound( void );
-	void PainSound( void );
-
-	void AngrySound( void );
-	void FlinchSound( void );
-	void SwipeSound( void );
-	void BeamSound( void );
-
-	void SetObjectCollisionBox(void);
-	void HandleAnimEvent(MonsterEvent_t *pEvent);
-	int TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
-
-	int CanPlaySequence(BOOL fDisregardState);
-
-	void EXPORT StartupThink(void);
-	void EXPORT DyingThink(void);
-	void EXPORT StartupUse(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value);
-	void EXPORT NullThink(void);
-	void EXPORT CommandUse(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value);
-	void EXPORT	HuntThink(void);
-
-	void EXPORT WormTouch(CBaseEntity* pOther);
-
-	void FloatSequence(void);
-	void NextActivity(void);
-
-	void Flight(void);
-
-
-	Vector m_avelocity;
-
-	Vector m_vecTarget;
-	Vector m_posTarget;
-
-	Vector m_vecDesired;
-	Vector m_posDesired;
-
-	float  m_flMinZ;
-	float  m_flMaxZ;
-
-	float m_flLastSeen;
-	float m_flPrevSeen;
-
-	int m_iLevel;
-
-	float m_flAdj;
-	float m_distDesired;
-
-	int Level( float dz );
-
-	const Vector& IdealPosition(const int level) const;
-	const Vector& IdealPosition(const float dz) const;
-	const Vector& IdealPosition(CBaseEntity* pEnemy) const;
-
-	void UpdateBodyControllers( void );
-	void UpdateBodyYaw( void );
-	void UpdateEyeYaw( void );
-	void UpdateEyePitch( void );
-
-	void CreateBeam(const Vector& src, const Vector& target, int width);
-	void DestroyBeam(void);
-	void UpdateBeam(const Vector& src, const Vector& target);
-
-	void SetupBeamPoints(CBaseEntity* pEnemy, Vector* vecleft, Vector* vecRight);
-	void UpdateBeamPoints( CBaseEntity* pEnemy, Vector* vecTarget );
-
-	void CreateGlow(void);
-	void DestroyGlow(void);
-	void EyeOff(void);
-	void EyeOn(int level);
-	void EyeUpdate(void);
-
-	float m_flInitialYaw;
-	Vector m_spawnAngles;
-	Vector m_vecLevels[NUM_PITWORM_LEVELS];
-
-	CBeam* m_pBeam;
-	float m_flBeamYaw;
-	float m_flBeamTime;
-	BOOL m_fBeamOn;
-	CSprite* m_pEyeGlow;
-	int m_eyeBrightness;
-
-	Vector m_vecGoalAngles;
-	Vector m_vecCurAngles;
-
-	float m_flNextAttackTime;
-	float m_flNextIdleSoundTime;
-
-	static const char* pHitSilo[];
-	static const char* pClangSounds[];
-	static const char* pAngrySounds[];
-	static const char* pSwipeSounds[];
-	static const char* pFlinchSounds[];
-
-	static const char* pAlertSounds[];
-	static const char* pIdleSounds[]; 
-	static const char* pDeathSounds[];
-};
-
-LINK_ENTITY_TO_CLASS(monster_pitworm, CPitWorm);
-LINK_ENTITY_TO_CLASS(monster_pitworm_up, CPitWorm);
 
 //=========================================================
 // Save & Restore
 //=========================================================
 TYPEDESCRIPTION	CPitWorm::m_SaveData[] =
 {
-	DEFINE_FIELD(CPitWorm, m_avelocity, FIELD_VECTOR),
+	DEFINE_FIELD(CPitWorm, m_flNextPainSound, FIELD_TIME),
 
-	DEFINE_FIELD(CPitWorm, m_vecTarget, FIELD_VECTOR),
+	DEFINE_FIELD(CPitWorm, m_vecTarget, FIELD_POSITION_VECTOR),
 	DEFINE_FIELD(CPitWorm, m_posTarget, FIELD_POSITION_VECTOR),
-	DEFINE_FIELD(CPitWorm, m_vecDesired, FIELD_VECTOR),
+	DEFINE_FIELD(CPitWorm, m_vecDesired, FIELD_POSITION_VECTOR),
 	DEFINE_FIELD(CPitWorm, m_posDesired, FIELD_POSITION_VECTOR),
-	DEFINE_FIELD(CPitWorm, m_flMinZ, FIELD_FLOAT),
-	DEFINE_FIELD(CPitWorm, m_flMaxZ, FIELD_FLOAT),
+
+	DEFINE_FIELD(CPitWorm, m_offsetBeam, FIELD_FLOAT),
+	DEFINE_FIELD(CPitWorm, m_posBeam, FIELD_POSITION_VECTOR),
+	DEFINE_FIELD(CPitWorm, m_vecBeam, FIELD_POSITION_VECTOR),
+	DEFINE_FIELD(CPitWorm, m_angleBeam, FIELD_POSITION_VECTOR),
+	DEFINE_FIELD(CPitWorm, m_flBeamExpireTime, FIELD_TIME),
+	DEFINE_FIELD(CPitWorm, m_flBeamDir, FIELD_FLOAT),
+
+	DEFINE_ARRAY(CPitWorm, m_flLevels, FIELD_FLOAT, NUM_PITWORM_LEVELS),
+	DEFINE_ARRAY(CPitWorm, m_flTargetLevels, FIELD_FLOAT, NUM_PITWORM_LEVELS),
 
 	DEFINE_FIELD(CPitWorm, m_flLastSeen, FIELD_TIME),
-	DEFINE_FIELD(CPitWorm, m_flPrevSeen, FIELD_TIME),
+
 	DEFINE_FIELD(CPitWorm, m_iLevel, FIELD_INTEGER),
-	DEFINE_FIELD(CPitWorm, m_flAdj, FIELD_FLOAT),
-	DEFINE_FIELD(CPitWorm, m_distDesired, FIELD_FLOAT),
+	DEFINE_FIELD(CPitWorm, m_flLevelSpeed, FIELD_FLOAT),
 
-	DEFINE_FIELD(CPitWorm, m_flInitialYaw, FIELD_FLOAT),
-	DEFINE_FIELD(CPitWorm, m_spawnAngles, FIELD_VECTOR),
-	DEFINE_ARRAY(CPitWorm, m_vecLevels, FIELD_POSITION_VECTOR, NUM_PITWORM_LEVELS),
 	DEFINE_FIELD(CPitWorm, m_pBeam, FIELD_CLASSPTR),
-	DEFINE_FIELD(CPitWorm, m_flBeamTime, FIELD_TIME),
-	DEFINE_FIELD(CPitWorm, m_flBeamYaw, FIELD_FLOAT),
-	DEFINE_FIELD(CPitWorm, m_fBeamOn, FIELD_BOOLEAN),
-	DEFINE_FIELD(CPitWorm, m_pEyeGlow, FIELD_CLASSPTR),
-	DEFINE_FIELD(CPitWorm, m_eyeBrightness, FIELD_INTEGER),
+	DEFINE_FIELD(CPitWorm, m_pSprite, FIELD_CLASSPTR),
 
-	DEFINE_FIELD(CPitWorm, m_vecGoalAngles, FIELD_VECTOR),
-	DEFINE_FIELD(CPitWorm, m_vecCurAngles, FIELD_VECTOR),
-	DEFINE_FIELD(CPitWorm, m_flNextAttackTime, FIELD_TIME),
-	DEFINE_FIELD(CPitWorm, m_flNextIdleSoundTime, FIELD_TIME),
+	DEFINE_FIELD(CPitWorm, m_fAttacking, FIELD_BOOLEAN),
+	DEFINE_FIELD(CPitWorm, m_fLockHeight, FIELD_BOOLEAN),
+	DEFINE_FIELD(CPitWorm, m_fLockYaw, FIELD_BOOLEAN),
+
+	DEFINE_FIELD(CPitWorm, m_iWasHit, FIELD_INTEGER),
+	DEFINE_FIELD(CPitWorm, m_flTakeHitTime, FIELD_TIME),
+
+	DEFINE_FIELD(CPitWorm, m_flHitTime, FIELD_TIME),
+	DEFINE_FIELD(CPitWorm, m_flNextMeleeTime, FIELD_TIME),
+	DEFINE_FIELD(CPitWorm, m_flNextRangeTime, FIELD_TIME),
+	DEFINE_FIELD(CPitWorm, m_flDeathStartTime, FIELD_TIME),
+
+	DEFINE_FIELD(CPitWorm, m_fFirstSighting, FIELD_BOOLEAN),
+	DEFINE_FIELD(CPitWorm, m_fTopLevelLocked, FIELD_BOOLEAN),
+
+	DEFINE_FIELD(CPitWorm, m_flLastBlinkTime, FIELD_TIME),
+	DEFINE_FIELD(CPitWorm, m_flLastBlinkInterval, FIELD_FLOAT),
+	DEFINE_FIELD(CPitWorm, m_flLastEventTime, FIELD_FLOAT),
 };
 
-IMPLEMENT_SAVERESTORE(CPitWorm, CBaseMonster);
+IMPLEMENT_SAVERESTORE(CPitWorm, CBaseMonster)
 
-
-const char *CPitWorm::pHitSilo[] =
+const char* CPitWorm::pHitGroundSounds[] =
 {
 	"tentacle/te_strike1.wav",
 	"tentacle/te_strike2.wav",
-};
-
-const char* CPitWorm::pClangSounds[] =
-{
-	"pitworm/clang1.wav",
-	"pitworm/clang2.wav",
-	"pitworm/clang3.wav",
 };
 
 const char* CPitWorm::pAngrySounds[] =
@@ -262,8 +246,13 @@ const char* CPitWorm::pSwipeSounds[] =
 	"pitworm/pit_worm_attack_swipe3.wav",
 };
 
+const char* CPitWorm::pShootSounds[] =
+{
+	"debris/beamstart3.wav",
+	"debris/beamstart8.wav",
+};
 
-const char* CPitWorm::pFlinchSounds[] =
+const char* CPitWorm::pPainSounds[] =
 {
 	"pitworm/pit_worm_flinch1.wav",
 	"pitworm/pit_worm_flinch2.wav",
@@ -286,46 +275,12 @@ const char* CPitWorm::pDeathSounds[] =
 	"pitworm/pit_worm_death.wav",
 };
 
-
-
-static const char* g_pszPitwormAnims[] =
+const char *CPitWorm::pAttackSounds[] =
 {
-	"idle",
-	"idle2",
-	"attack",
-	"scream",
-	"attacklow",
-	"doorclaw1",
-	"doorclaw2",
-	"doorclaw3",
-	"eyeblast",
-	"platclaw1",
-	"platclaw2",
-	"flinch1",
-	"flinch2",
-	"death",
+	"zombie/claw_strike1.wav",
+	"zombie/claw_strike2.wav",
+	"zombie/claw_strike3.wav"
 };
-
-typedef enum
-{
-	PITWORM_ANIM_IDLE,
-	PITWORM_ANIM_IDLE2,
-	PITWORM_ANIM_ATTACK,
-	PITWORM_ANIM_SCREAM,
-	PITWORM_ANIM_ATTACKLOW,
-	PITWORM_ANIM_DOORCLAW1,
-	PITWORM_ANIM_DOORCLAR2,
-	PITWORM_ANIM_DOORCLAR3,
-	PITWORM_ANIM_EYEBLAST,
-	PITWORM_ANIM_PLATCLAW1,
-	PITWORM_ANIM_PLATCLAW2,
-	PITWORM_ANIM_FLINCH1,
-	PITWORM_ANIM_FLINCH2,
-	PITWORM_ANIM_DEATH,
-
-} PITWORM_ANIM;
-
-
 
 //=========================================================
 // Spawn
@@ -333,60 +288,68 @@ typedef enum
 void CPitWorm::Spawn()
 {
 	Precache();
+	SET_MODEL(ENT(pev), "models/pit_worm_up.mdl");
 
 	pev->movetype = MOVETYPE_FLY;
 	pev->solid = SOLID_BBOX;
 
-	SET_MODEL(ENT(pev), "models/pit_worm_up.mdl");
 	UTIL_SetSize(pev, Vector(-32, -32, 0), Vector(32, 32, 64));
 	UTIL_SetOrigin(pev, pev->origin);
 
-	// Set fields common to all monsters
-	pev->flags		|= FL_MONSTER;
-	pev->takedamage  = DAMAGE_NO;
-	pev->health		 = 999;
-	pev->view_ofs	 = PITWORM_EYE_OFFSET;
+	pev->flags |= FL_MONSTER|FL_FLY;
+	pev->takedamage = DAMAGE_AIM;
 
-	m_flFieldOfView	 = -1;
+	pev->health = gSkillData.pwormHealth;
+	pev->max_health = pev->health;
+
+	pev->view_ofs = PITWORM_EYE_OFFSET;
+	m_bloodColor = BLOOD_COLOR_GREEN;
+	m_flFieldOfView = 0.5;
 
 	pev->sequence = 0;
 	ResetSequenceInfo();
 
+	m_flTorsoYaw = 0;
+	m_flHeadYaw = 0;
+	m_flHeadPitch = 0;
+	m_flIdealTorsoYaw = 0;
+	m_flIdealHeadYaw = 0;
+	m_flIdealHeadPitch = 0;
+
 	InitBoneControllers();
 
 	SetThink(&CPitWorm::StartupThink);
+	SetTouch(&CPitWorm::HitTouch);
 	pev->nextthink = gpGlobals->time + 0.1;
 
-	m_spawnAngles = pev->angles;
-	m_flInitialYaw = m_spawnAngles.y;
-	pev->ideal_yaw = m_flInitialYaw;
+	m_vecDesired = Vector(1,0,0);
+	m_posDesired = pev->origin;
 
-	m_IdealMonsterState = MONSTERSTATE_IDLE;// Assume monster will be idle, until proven otherwise
+	m_fAttacking = FALSE;
+	m_fLockHeight = FALSE;
+	m_fFirstSighting = FALSE;
+	m_flBeamExpireTime = gpGlobals->time;
+	m_iLevel = 0;
+	m_fLockYaw = FALSE;
 
-	m_IdealActivity = ACT_IDLE;
+	m_iWasHit = 0;
+	m_flTakeHitTime = 0;
+	m_flHitTime = 0;
+	m_flLevelSpeed = 10;
 
-	m_flDistTooFar = 1024.0;
-	m_flDistLook = 2048.0;
-
-	// set eye position
-	SetEyePosition();
-
-	m_flLastSeen = 0.0f;
-	m_flPrevSeen = 0.0f;
-	m_iLevel = PITWORM_LEVEL1;
-
-	m_pBeam = NULL;
-	m_flBeamYaw = 0.0f;
-	m_fBeamOn = FALSE;
-	m_eyeBrightness = 0;
-
-	m_vecCurAngles = Vector(0, pev->angles.y, 0);
-	m_vecGoalAngles = Vector(0, pev->angles.y, 0);
-	m_flNextAttackTime = gpGlobals->time;
-	m_flNextIdleSoundTime = gpGlobals->time;
-
-	// Create the eye glow.
-	CreateGlow();
+	m_fTopLevelLocked = FALSE;
+	m_flLastBlinkTime = gpGlobals->time;
+	m_flLastBlinkInterval = gpGlobals->time;
+	m_flLastEventTime = gpGlobals->time;
+	m_flTargetLevels[3] = pev->origin.z;
+	m_flLevels[3] = pev->origin.z - 350.0;
+	m_flTargetLevels[2] = pev->origin.z;
+	m_flLevels[2] = pev->origin.z - 300.0;
+	m_flTargetLevels[1] = pev->origin.z;
+	m_flLevels[1] = pev->origin.z - 300.0;
+	m_flTargetLevels[0] = pev->origin.z;
+	m_flLevels[0] = pev->origin.z - 300.0;;
+	m_pBeam = 0;
 }
 
 //=========================================================
@@ -396,30 +359,50 @@ void CPitWorm::Precache()
 {
 	PRECACHE_MODEL("models/pit_worm_up.mdl");
 
-	PRECACHE_SOUND_ARRAY(pHitSilo);
-
 	PRECACHE_SOUND("pitworm/pit_worm_alert.wav");
 	PRECACHE_SOUND("pitworm/pit_worm_attack_eyeblast.wav");
 	PRECACHE_SOUND("pitworm/pit_worm_attack_eyeblast_impact.wav");
 	PRECACHE_SOUND("pitworm/pit_worm_death.wav");
 
-	PRECACHE_SOUND_ARRAY(pClangSounds);
+	PRECACHE_SOUND_ARRAY(pHitGroundSounds);
 	PRECACHE_SOUND_ARRAY(pAngrySounds);
 	PRECACHE_SOUND_ARRAY(pSwipeSounds);
-	PRECACHE_SOUND_ARRAY(pFlinchSounds);
 	PRECACHE_SOUND_ARRAY(pIdleSounds);
+	PRECACHE_SOUND_ARRAY(pPainSounds);
+	PRECACHE_SOUND_ARRAY(pAttackSounds);
 
-	PRECACHE_MODEL("sprites/gworm_beam_02.spr");
-	PRECACHE_MODEL("sprites/glow_grn.spr");
-
+	PRECACHE_MODEL("sprites/laserbeam.spr");
+	PRECACHE_MODEL("sprites/tele1.spr");
 }
 
-//=========================================================
-// Classify
-//=========================================================
-int CPitWorm::Classify(void)
+BOOL CPitWorm::FVisible(CBaseEntity *pEntity)
 {
-	return CLASS_ALIEN_MONSTER;
+	if( FBitSet( pEntity->pev->flags, FL_NOTARGET ) )
+		return FALSE;
+
+	if( ( pev->waterlevel != 3 && pEntity->pev->waterlevel == 3 )
+		|| ( pev->waterlevel == 3 && pEntity->pev->waterlevel == 0 ) )
+		return FALSE;
+
+	TraceResult tr;
+	Vector vecLookerOrigin;
+	Vector vecLookerAngle;
+
+	GetAttachment(0, vecLookerOrigin, vecLookerAngle);
+	UTIL_TraceLine( vecLookerOrigin, pEntity->EyePosition(), ignore_monsters, ignore_glass, ENT( pev ), &tr );
+
+	return tr.flFraction == 1.0;
+}
+
+BOOL CPitWorm::FVisible(const Vector& vecOrigin)
+{
+	TraceResult tr;
+	Vector vecLookerOrigin;
+	Vector vecLookerAngle;
+
+	GetAttachment(0, vecLookerOrigin, vecLookerAngle);
+	UTIL_TraceLine( vecLookerOrigin, vecOrigin, ignore_monsters, ignore_glass, ENT( pev ), &tr );
+	return tr.flFraction == 1.0;
 }
 
 //=========================================================
@@ -427,7 +410,7 @@ int CPitWorm::Classify(void)
 //=========================================================
 void CPitWorm::IdleSound(void)
 {
-	EMIT_SOUND(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pIdleSounds), 1, ATTN_NORM);
+	EMIT_SOUND(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pPainSounds), VOL_NORM, PITWORM_ATTN);
 }
 
 //=========================================================
@@ -435,7 +418,7 @@ void CPitWorm::IdleSound(void)
 //=========================================================
 void CPitWorm::AlertSound(void)
 {
-	EMIT_SOUND(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pAlertSounds), 1, ATTN_NORM);
+	EMIT_SOUND(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pAlertSounds), VOL_NORM, PITWORM_ATTN);
 }
 
 //=========================================================
@@ -443,15 +426,16 @@ void CPitWorm::AlertSound(void)
 //=========================================================
 void CPitWorm::DeathSound(void)
 {
-	EMIT_SOUND(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pDeathSounds), 1, ATTN_NORM);
+	EMIT_SOUND(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pDeathSounds), VOL_NORM, PITWORM_ATTN);
 }
 
-//=========================================================
-// PainSound
-//=========================================================
 void CPitWorm::PainSound(void)
 {
-
+	if (m_flNextPainSound <= gpGlobals->time)
+	{
+		m_flNextPainSound = gpGlobals->time + RANDOM_LONG(2, 5);
+		EMIT_SOUND(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pPainSounds), VOL_NORM, PITWORM_ATTN);
+	}
 }
 
 //=========================================================
@@ -459,15 +443,7 @@ void CPitWorm::PainSound(void)
 //=========================================================
 void CPitWorm::AngrySound(void)
 {
-	EMIT_SOUND(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pAngrySounds), 1, ATTN_NORM);
-}
-
-//=========================================================
-// FlinchSound
-//=========================================================
-void CPitWorm::FlinchSound(void)
-{
-	EMIT_SOUND(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pFlinchSounds), 1, ATTN_NORM);
+	EMIT_SOUND(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pAngrySounds), VOL_NORM, PITWORM_ATTN);
 }
 
 //=========================================================
@@ -475,7 +451,7 @@ void CPitWorm::FlinchSound(void)
 //=========================================================
 void CPitWorm::SwipeSound(void)
 {
-	EMIT_SOUND(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pSwipeSounds), 1, ATTN_NORM);
+	EMIT_SOUND(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pSwipeSounds), VOL_NORM, PITWORM_ATTN);
 }
 
 //=========================================================
@@ -483,17 +459,7 @@ void CPitWorm::SwipeSound(void)
 //=========================================================
 void CPitWorm::BeamSound(void)
 {
-	EMIT_SOUND(ENT(pev), CHAN_VOICE, "pitworm/pit_worm_attack_eyeblast.wav", 2, ATTN_NORM);
-}
-
-
-//=========================================================
-// SetObjectCollisionBox
-//=========================================================
-void CPitWorm::SetObjectCollisionBox(void)
-{
-	pev->absmin = pev->origin + Vector(-96, -96, 0);
-	pev->absmax = pev->origin + Vector(96, 96, 512);
+	EMIT_SOUND(ENT(pev), CHAN_VOICE, "pitworm/pit_worm_attack_eyeblast.wav", VOL_NORM, PITWORM_ATTN);
 }
 
 //=========================================================
@@ -503,166 +469,178 @@ void CPitWorm::HandleAnimEvent(MonsterEvent_t *pEvent)
 {
 	switch (pEvent->event)
 	{
-	case PITWORM_AE_SWIPE:	// bang 
+	case PITWORM_AE_SWIPE:	// bang
 	{
-		Vector vecSrc, vecAngles;
-		GetAttachment(1, vecSrc, vecAngles);
+		EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, RANDOM_SOUND_ARRAY(pHitGroundSounds), VOL_NORM, ATTN_NORM, 0, 100 + RANDOM_FLOAT(-5,5));
 
-		if (m_hEnemy)
-		{
-			vecSrc = m_hEnemy->pev->origin;
-		}
-
-		UTIL_EmitAmbientSound(ENT(pev), vecSrc, RANDOM_SOUND_ARRAY(pHitSilo), 1.0, ATTN_NORM, 0, 100);
-
-		UTIL_ScreenShake(vecSrc, 6.0, 3.0, 1.0, 128);
-
-		// Trace a hull around to see if we hit an enemy.
-		TraceResult tr;
-		UTIL_TraceHull(vecSrc, vecSrc + Vector(0, -64, 0), dont_ignore_monsters, head_hull, ENT(pev), &tr);
-
-		CBaseEntity *pHurt = CBaseEntity::Instance(tr.pHit);
-		if (pHurt)
-			pHurt->TakeDamage(VARS(pev), VARS(pev), gSkillData.pwormDmgSwipe, DMG_CLUB | DMG_SLASH);
-
-		// Shake the screen.
-		UTIL_ScreenShake(vecSrc, 6.0, 3.0, 1.0, 128);
-
-		gpGlobals->force_retouch++;
+		if (pev->sequence == 2)
+			UTIL_ScreenShake(pev->origin, 12.0, 100.0, 2.0, 100);
+		else
+			UTIL_ScreenShake(pev->origin, 4.0, 3.0, 1.0, 750.0);
 	}
-	break;
-
+		break;
 	case PITWORM_AE_EYEBLAST_START: // start killing swing
 	{
-		ALERT(at_console, "PITWORM_AE_EYEBLAST_START\n");
+		if ( gpGlobals->time - m_flLastEventTime >= 1.1 )
+		{
+			if (m_hEnemy)
+			{
+				m_posBeam = m_hEnemy->pev->origin;
+				m_posBeam.z += 24;
 
-		// Remove the beam if not NULL.
-		DestroyBeam();
+				Vector vecEyePos, vecEyeAng;
+				GetAttachment(0, vecEyePos, vecEyeAng);
 
-		Vector src, angles;
-		GetAttachment(0, src, angles);
-		
-		// Create a new beam.
-		CreateBeam(src, src, 40);
-
-		// Turn eye glow on.
-		EyeOn( 255 );
-
-		// Reset beam yaw.
-		m_flBeamYaw = 0.0f;
-		m_flBeamTime = gpGlobals->time + PITWORM_EYEBLAST_DURATION;
+				m_vecBeam = (m_posBeam - vecEyePos).Normalize();
+				m_angleBeam = UTIL_VecToAngles(m_vecBeam);
+				UTIL_MakeVectors(m_angleBeam);
+				ShootBeam();
+				m_fLockYaw = TRUE;
+			}
+		}
 	}
-	break;
-
-
+		break;
 	case PITWORM_AE_EYEBLAST_END: // end killing swing
 	{
-#if 0
-		//ALERT(at_console, "PITWORM_AE_EYEBLAST_END\n");
-		DestroyBeam();
-
-		// Turn eye glow off.
-		EyeOff();
-
-		// Reset beam yaw.
-		m_flBeamYaw = 0.0f;
-
-		// Reset beam time.
-		m_flBeamTime = 0.0f;
-#endif
+		m_fLockYaw = TRUE;
 	}
-	break;
-
+		break;
 	default:
 		CBaseMonster::HandleAnimEvent(pEvent);
+
 	}
 }
 
+void CPitWorm::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType )
+{
+	if ( ptr->iHitgroup == HITGROUP_HEAD )
+	{
+		if (gpGlobals->time > m_flTakeHitTime )
+		{
+			pev->health -= flDamage;
+			if (pev->health <= 0)
+			{
+				pev->health = pev->max_health;
+				m_iWasHit = TRUE;
+				m_flTakeHitTime = m_flTakeHitTime + RANDOM_LONG(2,4);
+			}
+		}
 
+		UTIL_BloodDrips(ptr->vecEndPos, vecDir, m_bloodColor, flDamage * 10);
+		UTIL_BloodDecalTrace(ptr, m_bloodColor);
+
+		if (m_hEnemy == 0)
+		{
+			m_hEnemy = Instance(pevAttacker);
+		}
+		if (pev->skin == 0)
+		{
+			pev->skin = 1;
+			m_flLastBlinkInterval = gpGlobals->time;
+			m_flLastBlinkTime = gpGlobals->time;
+		}
+	}
+	else
+	{
+		if (pev->dmgtime != gpGlobals->time || RANDOM_LONG(0, 10) >= 0 )
+		{
+			UTIL_Ricochet(ptr->vecEndPos, RANDOM_LONG(0.5, 1.5));
+			pev->dmgtime = gpGlobals->time;
+		}
+	}
+}
 
 void CPitWorm::CommandUse(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value)
 {
 	switch (useType)
 	{
-	case USE_OFF:
-		//ALERT(at_console, "USE_OFF\n");
-		break;
 	case USE_ON:
+		CSoundEnt::InsertSound(bits_SOUND_WORLD, pActivator->pev->origin, 1024, 1.0);
 		//ALERT(at_console, "USE_ON\n");
 		break;
-	case USE_SET:
-		//ALERT(at_console, "USE_SET\n");
-		break;
+	case USE_OFF:
 	case USE_TOGGLE:
-		{
-			m_fSequenceFinished = TRUE;
-			pev->health = 0;
+	{
+		pev->takedamage = DAMAGE_NO;
+		pev->health = 0;
 
-			SetThink(&CPitWorm::DyingThink);
-			pev->nextthink = gpGlobals->time;
-		}
-		// ALERT(at_console, "USE_TOGGLE\n");
+		SetThink(&CPitWorm::DyingThink);
+		pev->nextthink = gpGlobals->time;
+	}
+		break;
+	default:
 		break;
 	}
 }
 
 
 //=========================================================
-// 
+//
 //=========================================================
-int CPitWorm::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType)
+int CPitWorm::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )
 {
-	if (flDamage > pev->health)
-	{
-		pev->health = 1;
-	}
-	else
-	{
-		pev->health -= flDamage;
-	}
-	return 1;
+	PainSound();
+	return 0;
 }
+
 
 //=========================================================
 // StartupThink
 //=========================================================
 void CPitWorm::StartupThink(void)
 {
-	m_flAdj = 350;
-	Vector src = pev->origin;
-
 	CBaseEntity *pEntity = NULL;
 
 	pEntity = UTIL_FindEntityByTargetname(NULL, "pw_tleveldead");
 	if (pEntity)
-		m_vecLevels[PITWORM_LEVEL0] = pEntity->pev->origin;
-	else
-		m_vecLevels[PITWORM_LEVEL0] = Vector(src.x, src.y, PITWORM_LEVEL0_HEIGHT);
+	{
+		ALERT(at_console, "level dead node set\n");
+		m_flTargetLevels[0] = pEntity->pev->origin.z;
+		m_flLevels[0] = m_flTargetLevels[0] - 300;
+	}
 
 	pEntity = UTIL_FindEntityByTargetname(NULL, "pw_tlevel1");
 	if (pEntity)
-		m_vecLevels[PITWORM_LEVEL1] = pEntity->pev->origin;
-	else
-		m_vecLevels[PITWORM_LEVEL1] = Vector(src.x, src.y, PITWORM_LEVEL2_HEIGHT);
+	{
+		ALERT(at_console, "level 1 node set\n");
+		m_flTargetLevels[1] = pEntity->pev->origin.z;
+		m_flLevels[1] = m_flTargetLevels[1] - 300;
+	}
 
 	pEntity = UTIL_FindEntityByTargetname(NULL, "pw_tlevel2");
 	if (pEntity)
-		m_vecLevels[PITWORM_LEVEL2] = pEntity->pev->origin;
-	else
-		m_vecLevels[PITWORM_LEVEL2] = Vector(src.x, src.y, PITWORM_LEVEL2_HEIGHT);
+	{
+		ALERT(at_console, "level 2 node set\n");
+		m_flTargetLevels[2] = pEntity->pev->origin.z;
+		m_flLevels[2] = m_flTargetLevels[2] - 300;
+	}
 
 	pEntity = UTIL_FindEntityByTargetname(NULL, "pw_tlevel3");
 	if (pEntity)
-		m_vecLevels[PITWORM_LEVEL3] = pEntity->pev->origin;
-	else
-		m_vecLevels[PITWORM_LEVEL3] = Vector(src.x, src.y, PITWORM_LEVEL3_HEIGHT);
+	{
+		ALERT(at_console, "level 3 node set\n");
+		m_flTargetLevels[3] = pEntity->pev->origin.z;
+		m_flLevels[3] = m_flTargetLevels[3] - 350;
+	}
 
-	// Set altitude limits.
-	m_flMinZ = m_vecLevels[PITWORM_LEVEL0].z;
-	m_flMaxZ = m_vecLevels[PITWORM_LEVEL3].z;
+	m_iLevel = 2;
+	if (!FStringNull(pev->target))
+	{
+		if (FStrEq(STRING(pev->target), "pw_level1"))
+			m_iLevel = 1;
+		else if (FStrEq(STRING(pev->target), "pw_level2"))
+			m_iLevel = 2;
+		else if (FStrEq(STRING(pev->target), "pw_level3"))
+			m_iLevel = 3;
+		else if (FStrEq(STRING(pev->target), "pw_leveldead"))
+			m_iLevel = 0;
+	}
 
-	// Set default level.
-	UTIL_SetOrigin(pev, IdealPosition( m_iLevel ) );
+	m_posDesired.z = m_flLevels[m_iLevel];
+
+	Vector vecEyePos, vecEyeAng;
+	GetAttachment(0, vecEyePos, vecEyeAng);
+	pev->view_ofs = vecEyePos - pev->origin;
 
 	SetThink(&CPitWorm::HuntThink);
 	SetUse(&CPitWorm::CommandUse);
@@ -670,7 +648,7 @@ void CPitWorm::StartupThink(void)
 }
 
 //=========================================================
-// 
+//
 //=========================================================
 void CPitWorm::StartupUse(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value)
 {
@@ -694,41 +672,56 @@ void CPitWorm::NullThink(void)
 void CPitWorm::DyingThink(void)
 {
 	pev->nextthink = gpGlobals->time + 0.1;
+	GlowShellUpdate();
 	DispatchAnimEvents();
 	StudioFrameAdvance();
 
-	if (pev->deadflag == DEAD_NO)
-	{
-		// Destroy the glow.
-		DestroyGlow();
-
-		DeathSound();
-		pev->deadflag = DEAD_DYING;
-	}
-
 	if (pev->deadflag == DEAD_DYING)
 	{
-		Flight();
-
-		if (fabs(pev->origin.z - m_flMaxZ) < 16)
+		if ( gpGlobals->time - m_flDeathStartTime > 3.0 )
+		{
+			ChangeLevel();
+		}
+		if ( fabs(pev->origin.z - this->m_flLevels[0]) < 16.0 )
 		{
 			pev->velocity = Vector(0, 0, 0);
 			pev->deadflag = DEAD_DEAD;
+			SetThink(&CBaseEntity::SUB_Remove);
+			pev->nextthink = gpGlobals->time + 0.1;
 		}
 	}
-
-	if (m_fSequenceFinished)
+	else
 	{
-		if (pev->sequence != LookupSequence("death"))
+		pev->deadflag = DEAD_DYING;
+		int deathAnim = LookupSequence("death");
+		int iDir = 1;
+		m_posDesired.z = m_flLevels[0];
+		pev->sequence = FindTransition(pev->sequence, deathAnim, &iDir);
+		if (iDir <= 0)
 		{
-			pev->sequence = LookupSequence("death");
-			pev->frame = 0;
-			pev->framerate = 0.2f; // Set the framerate manually until we find a better fix.
+			pev->frame = 255;
 		}
 		else
 		{
-			UTIL_Remove(this);
+			pev->frame = 0;
 		}
+		m_flLevelSpeed = 5;
+		ResetSequenceInfo();
+		DeathSound();
+
+		if (m_pBeam)
+		{
+			UTIL_Remove(m_pBeam);
+			m_pBeam = NULL;
+		}
+		if (m_pSprite)
+		{
+			UTIL_Remove(m_pSprite);
+			m_pSprite = NULL;
+		}
+
+		SetUse(NULL);
+		SetTouch(NULL);
 	}
 }
 
@@ -738,167 +731,140 @@ void CPitWorm::DyingThink(void)
 void CPitWorm::HuntThink(void)
 {
 	pev->nextthink = gpGlobals->time + 0.1;
+	GlowShellUpdate();
 	DispatchAnimEvents();
 	StudioFrameAdvance();
 
-	// Update the eye glow.
-	EyeUpdate();
-
-	if (m_hEnemy)
+	if (m_pBeam)
 	{
-		// Update body controllers.
-		UpdateBodyControllers();
-	
-		//float flDist = (m_hEnemy->pev->origin - m_vecLevels[m_iLevel]).Length();
-		//ALERT(at_console, "pitworm: Distance from eye %f\n", flDist);
-
-
-		// Update beam if we need to.
-		if (m_fBeamOn)
+		if (m_hEnemy != 0 && m_flBeamExpireTime > gpGlobals->time)
 		{
-			if (m_flBeamTime > gpGlobals->time && !m_fSequenceFinished)
-			{
-				Vector src, target, angles;
-				GetAttachment(0, src, angles);
-				UpdateBeamPoints(m_hEnemy, &target);
-
-				TraceResult tr;
-				UTIL_TraceLine(src, src + ((target - src).Normalize() * 1000), dont_ignore_monsters, ENT(pev), &tr);
-
-				UpdateBeam(src, tr.vecEndPos);
-
-				// Test to see if we hit
-				CBaseEntity *pHurt = CBaseEntity::Instance(tr.pHit);
-				if (pHurt)
-					pHurt->TakeDamage(VARS(pev), VARS(pev), gSkillData.pwormDmgBeam, DMG_BURN);
-			}
-			else
-			{
-				// Remove the beam.
-				DestroyBeam();
-
-				// Turn eye glow off.
-				EyeOff();
-
-				// Reset beam yaw.
-				m_flBeamYaw = 0.0f;
-
-				// Reset beam time.
-				m_flBeamTime = 0.0f;
-			}
-
-			pev->nextthink = gpGlobals->time + 0.01f;
-			return;
+			StrafeBeam();
+		}
+		else
+		{
+			UTIL_Remove(m_pBeam);
+			m_pBeam = NULL;
+			UTIL_Remove(m_pSprite);
+			m_pSprite = NULL;
 		}
 	}
 
-	switch (m_iLevel)
-	{
-	case PITWORM_LEVEL0: pev->view_ofs = PITWORM_EYE_OFFSET; break;
-	case PITWORM_LEVEL1: pev->view_ofs = PITWORM_EYE_OFFSET; break;
-	case PITWORM_LEVEL2: pev->view_ofs = PITWORM_EYE_OFFSET; break;
-	case PITWORM_LEVEL3: pev->view_ofs = PITWORM_EYE_OFFSET; break;
-	}
-	{
-		float currentZ = pev->origin.z;
-		float desiredZ = m_posDesired.z - m_flAdj;
-
-		if (currentZ > desiredZ)
-		{
-			pev->origin.z -= 8;
-
-			if (pev->origin.z < desiredZ)
-				pev->origin.z = desiredZ;
-		}
-		else if (currentZ < desiredZ)
-		{
-			pev->origin.z += 8;
-
-			if (pev->origin.z > desiredZ)
-				pev->origin.z = desiredZ;
-		}
-	}
-
-	// if dead, force cancelation of current animation
 	if (pev->health <= 0)
 	{
 		SetThink(&CPitWorm::DyingThink);
 		m_fSequenceFinished = TRUE;
-		return;
 	}
-
-	// get new sequence
-	if (m_fSequenceFinished)
+	else
 	{
-		pev->frame = 0;
-		NextActivity();
-		ResetSequenceInfo();
-	}
-
-	// look for current enemy	
-	if (m_hEnemy != 0)
-	{
-		// Update level based on enemy's altitude (z).
-		m_iLevel = Level(m_hEnemy->pev->origin.z);
-
-		if (FVisible(m_hEnemy))
+		if ( (gpGlobals->time - m_flLastBlinkTime) >= 6.0 && !m_pBeam )
 		{
-			if (m_flLastSeen < gpGlobals->time - 5)
-				m_flPrevSeen = gpGlobals->time;
+			pev->skin = 1;
+			m_flLastBlinkInterval = gpGlobals->time;
+			m_flLastBlinkTime = gpGlobals->time;
+		}
 
-			m_flLastSeen = gpGlobals->time;
-			m_posTarget = m_hEnemy->pev->origin;
-			m_vecTarget = (m_posTarget - pev->origin).Normalize();
-			m_vecDesired = m_vecTarget;
-			m_posDesired = IdealPosition(m_iLevel);
+		if (pev->skin)
+		{
+			if ( gpGlobals->time - m_flLastBlinkInterval >= 0.0 )
+			{
+				if ( pev->skin == 5 )
+					pev->skin = 0;
+				else
+					pev->skin++;
+				m_flLastBlinkInterval = gpGlobals->time;
+			}
+		}
+	}
+
+	if (m_iWasHit)
+	{
+		int iDir = 1;
+		const char* flinchAnim = RANDOM_LONG(0,1) ? "flinch1" : "flinch2";
+		pev->sequence = FindTransition(pev->sequence, LookupSequence(flinchAnim), &iDir);
+		if (iDir > 0)
+		{
+			pev->frame = 0;
 		}
 		else
 		{
-			//m_flAdj = min(m_flAdj + 10, 1000);
+			pev->frame = 255;
+		}
+		ResetSequenceInfo();
+		m_iWasHit = FALSE;
+		PainSound();
+	}
+	else if (m_fSequenceFinished)
+	{
+		int oldSeq = pev->sequence;
+		if ( m_fAttacking )
+		{
+			m_fLockHeight = FALSE;
+			m_fLockYaw = FALSE;
+			m_fAttacking = FALSE;
+			m_flNextMeleeTime = gpGlobals->time + 0.25;
+		}
+		NextActivity();
+		if (pev->sequence != oldSeq || !m_fSequenceLoops)
+		{
+			pev->frame = 0;
+			ResetSequenceInfo();
 		}
 	}
 
-	if (m_flNextIdleSoundTime < gpGlobals->time)
+	if (m_hEnemy != 0)
 	{
-		//IdleSound();
-		// Use flinch sounds.
-		FlinchSound();
-		m_flNextIdleSoundTime = gpGlobals->time + RANDOM_LONG(4.0f, 4.1f);
+		if (FVisible(m_hEnemy))
+		{
+			m_flLastSeen = gpGlobals->time;
+			m_posTarget = m_hEnemy->pev->origin;
+			m_posTarget.z += 24;
+			Vector vecEyePos, vecEyeAng;
+			GetAttachment(0, vecEyePos, vecEyeAng);
+			m_vecTarget = (m_posTarget - vecEyePos).Normalize();
+			m_vecDesired = m_vecTarget;
+		}
 	}
 
-	// don't go too high
-	if (m_posDesired.z > m_flMaxZ)
-		m_posDesired.z = m_flMaxZ;
-
-	// don't go too low
-	if (m_posDesired.z < m_flMinZ)
-		m_posDesired.z = m_flMinZ;
-
-	Flight();
-}
-
-
-void CPitWorm::Flight(void)
-{
-}
-
-
-
-//=========================================================
-// 
-//=========================================================
-void CPitWorm::WormTouch(CBaseEntity* pOther)
-{
-	pev->nextthink = gpGlobals->time + 0.1f;
-	SetTouch(NULL);
+	if (m_posDesired.z > m_flLevels[3])
+	{
+		m_posDesired.z = m_flLevels[3];
+	}
+	else if (m_posDesired.z < m_flLevels[0])
+	{
+		m_posDesired.z = m_flLevels[0];
+	}
+	ChangeLevel();
+	if (m_hEnemy != 0 && !m_pBeam)
+	{
+		TrackEnemy();
+	}
 }
 
 //=========================================================
-// 
+//
 //=========================================================
-int CPitWorm::CanPlaySequence(BOOL fDisregardState)
+void CPitWorm::HitTouch(CBaseEntity* pOther)
 {
-	return TRUE;
+	TraceResult tr = UTIL_GetGlobalTrace();
+
+	if (pOther->pev->modelindex == pev->modelindex)
+		return;
+
+	if (m_flHitTime > gpGlobals->time)
+		return;
+
+	if( tr.pHit == NULL || tr.pHit->v.modelindex != pev->modelindex )
+		return;
+
+	if (pOther->pev->takedamage)
+	{
+		pOther->TakeDamage(pev, pev, gSkillData.pwormDmgSwipe, DMG_CRUSH|DMG_SLASH);
+		pOther->pev->punchangle.z = 15;
+		pOther->pev->velocity.z += 200;
+		EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, RANDOM_SOUND_ARRAY(pAttackSounds), VOL_NORM, ATTN_NORM, 0, 100 + RANDOM_FLOAT(-5,5));
+		m_flHitTime = gpGlobals->time + 1.0;
+	}
 }
 
 //=========================================================
@@ -908,32 +874,23 @@ void CPitWorm::NextActivity()
 {
 	UTIL_MakeAimVectors(pev->angles);
 
-	Vector forward = gpGlobals->v_forward;
-	forward.z = 0;
-
-	//float flDist = (m_vecTarget - pev->origin).Length();
-	float flDist = (m_vecDesired - m_vecLevels[m_iLevel]).Length();
-	float flDot = DotProduct(m_vecDesired, forward);
-	float flDotSpawnAngles = DotProduct(m_vecDesired, m_spawnAngles);
-
-#if 0
-	if (m_hEnemy != NULL && !m_hEnemy->IsAlive())
+	if (m_hEnemy)
 	{
-		m_hEnemy = NULL;
+		if (!m_hEnemy->IsAlive())
+		{
+			m_hEnemy = 0;
+			m_flIdealHeadYaw = 0;
+		}
 	}
 
-	if (m_flLastSeen + 15 < gpGlobals->time)
+	if (gpGlobals->time > m_flLastSeen + 15)
 	{
-		m_hEnemy = NULL;
+		if (m_hEnemy != 0)
+		{
+			if ((pev->origin - m_hEnemy->pev->origin).Length() > 700)
+				m_hEnemy = NULL;
+		}
 	}
-#else
-
-	if (m_hEnemy == 0)
-	{
-		m_flLastSeen = gpGlobals->time;
-		m_hEnemy = UTIL_PlayerByIndex(1);
-	}
-#endif
 
 	if (m_hEnemy == 0)
 	{
@@ -941,390 +898,505 @@ void CPitWorm::NextActivity()
 		m_hEnemy = BestVisibleEnemy();
 	}
 
-	//pev->sequence = LookupSequence("idle2");
-	//return;
-
-	if (m_hEnemy != 0)
+	if (m_hEnemy != 0 || m_fFirstSighting)
 	{
-		m_vecDesired = m_hEnemy->pev->origin;
-		flDist = (m_vecDesired - m_vecLevels[m_iLevel]).Length();
-		flDot = DotProduct(m_vecDesired, forward);
-		flDotSpawnAngles = DotProduct(m_vecDesired, Vector(0, -1, 0));
-
-		if (m_flLastSeen + 5 > gpGlobals->time && (m_flNextAttackTime < gpGlobals->time))
+		if (m_iWasHit)
 		{
-			float flEnemyZ = m_hEnemy->pev->origin.z;
-
-			Vector enemyDir = m_hEnemy->pev->origin - pev->origin;
-			Vector spawnAngles = m_spawnAngles;
-			Vector up = CrossProduct(enemyDir, spawnAngles);
-
-			if (m_iLevel < PITWORM_LEVEL3)
+			const char* flinchAnim = RANDOM_LONG(0,1) ? "flinch1" : "flinch2";
+			pev->sequence = LookupSequence(flinchAnim);
+			m_iWasHit = FALSE;
+			PainSound();
+			m_fLockHeight = 0;
+			m_fLockYaw = 0;
+			m_fAttacking = 0;
+		}
+		else if (pev->origin.z == m_posDesired.z)
+		{
+			if ( abs((int)floor(m_flIdealTorsoYaw - m_flTorsoYaw)) > 10 || !ClawAttack() )
 			{
-				if (FVisible(m_hEnemy) && flDot > 0.95f)
+				if ( RANDOM_LONG(0, 2) == 0 )
 				{
-					if (flDist > PITWORM_EYEBLAST_ATTACK_DIST)
-					{
-						pev->sequence = LookupSequence("eyeblast");
-						BeamSound();
-					}
-					else
-					{
-						pev->sequence = LookupSequence("attacklow");
-						SwipeSound();
-					}
+					IdleSound();
+				}
+
+				pev->sequence = LookupSequence("idle2");
+				m_fLockHeight = FALSE;
+				m_fLockYaw = FALSE;
+				m_fAttacking = FALSE;
+			}
+		}
+		else
+		{
+			if ( RANDOM_LONG(0, 2) == 0 )
+			{
+				IdleSound();
+			}
+			pev->sequence = LookupSequence("idle");
+			m_fLockHeight = FALSE;
+			m_fLockYaw = FALSE;
+			m_fAttacking = FALSE;
+		}
+	}
+	if (m_hEnemy != 0 && !m_fFirstSighting)
+	{
+		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "pitworm/pit_worm_alert.wav", VOL_NORM, 0.1, 0, 100);
+		m_fFirstSighting = TRUE;
+		pev->sequence = LookupSequence("scream");
+	}
+}
+
+void CPitWorm::EyeLight(const Vector &vecEyePos)
+{
+	MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
+		WRITE_BYTE( TE_ELIGHT );
+		WRITE_SHORT( entindex() );		// entity, attachment
+		WRITE_COORD( vecEyePos.x );		// origin
+		WRITE_COORD( vecEyePos.y );
+		WRITE_COORD( vecEyePos.z );
+		WRITE_COORD( 128 );	// radius
+		WRITE_BYTE( 128 );	// R
+		WRITE_BYTE( 255 );	// G
+		WRITE_BYTE( 128 );	// B
+		WRITE_BYTE( 1 );	// life * 10
+		WRITE_COORD( 2 ); // decay
+	MESSAGE_END();
+}
+
+void CPitWorm::BeamEffect(TraceResult &tr)
+{
+	CBaseEntity *pEntity = CBaseEntity::Instance( tr.pHit );
+	if( pEntity != NULL && pEntity->pev->takedamage )
+	{
+		ClearMultiDamage();
+		pEntity->TraceAttack(pev, gSkillData.pwormDmgBeam, m_vecBeam, &tr, DMG_ENERGYBEAM);
+		ApplyMultiDamage(pev, pev);
+	}
+	else if ( tr.flFraction != 1.0f )
+	{
+		UTIL_DecalTrace(&tr, DECAL_GUNSHOT1 + RANDOM_LONG(0,4));
+		m_pBeam->DoSparks(tr.vecEndPos, tr.vecEndPos);
+	}
+}
+
+void CPitWorm::LockTopLevel()
+{
+	if (m_iLevel == 3)
+	{
+		pev->health = pev->max_health;
+		m_iWasHit = 1;
+		m_iLevel = 2;
+		m_fTopLevelLocked = TRUE;
+		m_flTakeHitTime = gpGlobals->time + RANDOM_LONG(0,2);
+		m_posDesired.z = m_flLevels[2];
+	}
+	else
+	{
+		m_fTopLevelLocked = TRUE;
+	}
+}
+
+BOOL CPitWorm::ClawAttack()
+{
+	if (m_hEnemy == 0)
+		return FALSE;
+	if (pev->origin.z != m_posDesired.z)
+		return FALSE;
+	if ( m_flNextMeleeTime > gpGlobals->time )
+		return FALSE;
+
+	float flDist = (pev->origin - m_hEnemy->pev->origin).Length2D();
+	Vector targetAngle = UTIL_VecToAngles((m_posTarget - pev->origin).Normalize());
+	float angleDiff = UTIL_AngleDiff(targetAngle.y, pev->angles.y);
+
+	if (!FVisible(m_posTarget))
+	{
+		if (flDist < 600)
+		{
+			return 0;
+		}
+
+		BOOL shouldClaw = FALSE;
+		if (m_iLevel == 2)
+		{
+			if (angleDiff >= 30)
+			{
+				pev->sequence = LookupSequence("doorclaw1");
+				m_flIdealHeadYaw = 0;
+				shouldClaw = TRUE;
+			}
+		}
+		else if (m_iLevel == 1)
+		{
+			if ( angleDiff <= -30.0 )
+			{
+				pev->sequence = LookupSequence("doorclaw2");
+				m_flIdealHeadYaw = 0;
+				shouldClaw = TRUE;
+			}
+			if ( angleDiff >= 30.0 )
+			{
+				pev->sequence = LookupSequence("doorclaw3");
+				m_flIdealHeadYaw = 0;
+				shouldClaw = TRUE;
+			}
+		}
+
+		if (shouldClaw)
+		{
+			SwipeSound();
+			m_fLockHeight = TRUE;
+			m_fLockYaw = TRUE;
+			m_fAttacking = TRUE;
+			return TRUE;
+		}
+
+		return FALSE;
+	}
+
+	m_fLockYaw = FALSE;
+	if (m_iLevel == 2)
+	{
+		if (angleDiff < 30)
+		{
+			if (flDist > 425 || angleDiff >= -50)
+			{
+				pev->sequence = LookupSequence("eyeblast");
+				m_posBeam = m_posTarget;
+				m_vecBeam = m_vecTarget;
+				m_angleBeam = UTIL_VecToAngles(m_vecBeam);
+			}
+			else
+			{
+				pev->sequence = LookupSequence("attack");
+			}
+		}
+		else
+		{
+			pev->sequence = LookupSequence("doorclaw1");
+			m_flIdealHeadYaw = 0;
+			m_fLockYaw = TRUE;
+		}
+	}
+	else if (m_iLevel == 3)
+	{
+		if (flDist <= 425)
+		{
+			pev->sequence = RANDOM_LONG(0,1) ? LookupSequence("platclaw1") : LookupSequence("platclaw2");
+		}
+		else
+		{
+			pev->sequence = LookupSequence("eyeblast");
+			m_posBeam = m_posTarget;
+			m_vecBeam = m_vecTarget;
+			m_angleBeam = UTIL_VecToAngles(m_vecBeam);
+		}
+	}
+	else if (m_iLevel == 1)
+	{
+		if (angleDiff < 50)
+		{
+			if (angleDiff > -30)
+			{
+				if (flDist > 425)
+				{
+					pev->sequence = LookupSequence("eyeblast");
+					m_posBeam = m_posTarget;
+					m_vecBeam = m_vecTarget;
+					m_angleBeam = UTIL_VecToAngles(m_vecBeam);
 				}
 				else
 				{
-					if (up.z < 0)
-					{
-						pev->sequence = LookupSequence("doorclaw2");
-					}
-					else
-					{
-						if (m_iLevel < PITWORM_LEVEL2)
-						{
-							pev->sequence = LookupSequence("doorclaw3");
-						}
-						else
-						{
-							pev->sequence = LookupSequence("doorclaw1");
-						}
-					}	
+					pev->sequence = LookupSequence("attacklow");
 				}
 			}
 			else
 			{
-				if (flDist > PITWORM_EYEBLAST_ATTACK_DIST)
-				{
-					pev->sequence = LookupSequence("eyeblast");
-					BeamSound();
-				}
-				else
-				{
-					if (up.z < 0)
-					{
-						pev->sequence = LookupSequence("platclaw1");
-
-						if (RANDOM_LONG(0,1) == 1) SwipeSound();
-					}
-					else
-					{
-						pev->sequence = LookupSequence("platclaw2");
-						if (RANDOM_LONG(0, 1) == 1) SwipeSound();
-					}
-				}
+				pev->sequence = LookupSequence("doorclaw2");
 			}
-
-			m_flNextAttackTime = gpGlobals->time + RANDOM_FLOAT(3, 3.1f);
-			return;
+		}
+		else
+		{
+			pev->sequence = LookupSequence("doorclaw3");
+			m_flIdealHeadYaw = 0;
+			m_fLockYaw = TRUE;
 		}
 	}
-
-	if (m_hEnemy)
+	if (pev->sequence == LookupSequence("eyeblast"))
 	{
-		pev->sequence = LookupSequence("idle2");
-		return;
+		BeamSound();
 	}
-
-	FloatSequence();
-}
-
-//=========================================================
-// FloatSequence
-//=========================================================
-void CPitWorm::FloatSequence(void)
-{
-	switch(RANDOM_LONG(0, 1))
-	{
-	case 0:
-		pev->sequence = LookupSequence("idle");
-		break;
-
-	case 1:
-		pev->sequence = LookupSequence("idle2");
-		break;
-	}
-}
-
-//=========================================================
-// IdealPosition
-//=========================================================
-int CPitWorm::Level( float dz )
-{
-	if (dz < PITWORM_LEVEL1_HEIGHT)
-		return PITWORM_LEVEL0;
-
-	if (dz < PITWORM_LEVEL2_HEIGHT)
-		return PITWORM_LEVEL1;
-
-	if (dz < PITWORM_LEVEL3_HEIGHT)
-		return PITWORM_LEVEL2;
-
-	return PITWORM_LEVEL3;
-}
-
-//=========================================================
-// IdealPosition
-//=========================================================
-const Vector& CPitWorm::IdealPosition(const int level) const
-{
-	switch (level)
-	{
-	case PITWORM_LEVEL0:
-		return m_vecLevels[PITWORM_LEVEL0];
-	case PITWORM_LEVEL1:
-		return m_vecLevels[PITWORM_LEVEL1];
-	case PITWORM_LEVEL2:
-		return m_vecLevels[PITWORM_LEVEL2];
-	case PITWORM_LEVEL3:
-		return m_vecLevels[PITWORM_LEVEL3];
-	}
-
-	return m_vecLevels[PITWORM_LEVEL3];
-}
-
-//=========================================================
-// IdealPosition
-//=========================================================
-const Vector& CPitWorm::IdealPosition(const float dz) const
-{
-	if (dz < PITWORM_LEVEL1_HEIGHT)
-		return m_vecLevels[PITWORM_LEVEL0];
-
-	if (dz < PITWORM_LEVEL2_HEIGHT)
-		return m_vecLevels[PITWORM_LEVEL1];
-
-	if (dz < PITWORM_LEVEL3_HEIGHT)
-		return m_vecLevels[PITWORM_LEVEL2];
-
-	return m_vecLevels[PITWORM_LEVEL3];
-}
-
-//=========================================================
-// IdealPosition
-//=========================================================
-const Vector& CPitWorm::IdealPosition(CBaseEntity* pEnemy) const
-{
-	return IdealPosition(pEnemy->pev->origin.z);
-}
-
-#define clamp( val, min, max ) ( ((val) > (max)) ? (max) : ( ((val) < (min)) ? (min) : (val) ) )
-
-//=========================================================
-// UpdateBodyControllers
-//=========================================================
-void CPitWorm::UpdateBodyControllers( void )
-{
-	if (!m_hEnemy)
-		return;
-
-	ASSERT( m_hEnemy );
-
-	Vector vecGoal		= m_hEnemy->EyePosition();
-	Vector vecEye		= EyePosition();
-
-	Vector target		= (vecGoal - vecEye).Normalize();
-	Vector angles		= UTIL_VecToAngles(target);
-	float yaw			= UTIL_VecToYaw(target);
-	float pitch			= angles.x;
-	float initialYaw	= m_flInitialYaw;
-	float targetYaw		= yaw - m_flInitialYaw;
-
-
-	if (pitch < -180)
-		pitch += 360;
-
-	if (pitch > 180)
-		pitch -= 360;
-
-	float bodyPitch		= 0;
-	float bodyYaw		= clamp(targetYaw, PITWORM_BODY_YAW_MIN, PITWORM_BODY_YAW_MAX);
-
-
-	float targetBody	= (fabs(targetYaw) * (bodyYaw - 5)) / 90;
-
-	// Convert value to clamp it between min / max value of bone controller.
-	float eyePitch		= pitch;
-	float eyeYaw		= (targetBody * PITWORM_EYE_YAW_MAX) / PITWORM_BODY_YAW_MAX;
-
-
-	// Clamp those values (ensure they stay between min / max).
-	eyePitch			= clamp(eyePitch, PITWORM_EYE_PITCH_MIN, PITWORM_EYE_PITCH_MAX);
-	eyeYaw				= clamp(eyeYaw, PITWORM_EYE_YAW_MIN, PITWORM_EYE_YAW_MAX);
-
-#if 0
-	// Just for debug.
-	ALERT(at_console, "Body pitch: %f\n",	bodyPitch);
-	ALERT(at_console, "Body yaw: %f\n",		bodyYaw);
-	ALERT(at_console, "Eye yaw: %f\n",		eyeYaw);
-	ALERT(at_console, "Eye pitch: %f\n",	eyePitch);
-#endif
-
-	// Update body yaw controller value.
-	SetBoneController(PITWORM_CONTROLLER_BODY_YAW, bodyYaw);
-
-	// Update eye pitch controller value.
-	SetBoneController(PITWORM_CONTROLLER_EYE_PITCH, -eyePitch);
-
-	// Update eye yaw contoller value.
-	SetBoneController(PITWORM_CONTROLLER_EYE_YAW, eyeYaw);
-}
-
-//=========================================================
-// CreateBeam
-//=========================================================
-void CPitWorm::CreateBeam(const Vector& src, const Vector& target, int width)
-{
-	m_pBeam = CBeam::BeamCreate("sprites/gworm_beam_02.spr", width);
-	if (m_pBeam)
-	{
-		m_pBeam->PointsInit(src, target);
-		m_pBeam->SetBrightness( 200 );
-		m_pBeam->SetColor( 0, 255, 0 );
-		m_pBeam->SetNoise( 0 );
-		m_pBeam->SetFrame( 0 );
-		m_pBeam->SetScrollRate( 10 );
-		m_pBeam->RelinkBeam();
-
-		m_fBeamOn = TRUE;
-	}
-}
-
-//=========================================================
-// DestroyBeam
-//=========================================================
-void CPitWorm::DestroyBeam(void)
-{
-	if (m_pBeam)
-	{
-		UTIL_Remove(m_pBeam);
-		m_pBeam = NULL;
-
-		m_fBeamOn = FALSE;
-	}
-}
-
-//=========================================================
-// UpdateBeam
-//=========================================================
-void CPitWorm::UpdateBeam(const Vector& src, const Vector& target)
-{
-	if (m_pBeam)
-	{
-		m_pBeam->SetStartPos(src);
-		m_pBeam->SetEndPos(target);
-		m_pBeam->SetColor(0, 255, 0);
-		m_pBeam->SetBrightness( 200 );
-		m_pBeam->RelinkBeam();
-	}
-}
-
-//=========================================================
-// SetupBeamPoints
-//=========================================================
-void CPitWorm::SetupBeamPoints(CBaseEntity* pEnemy, Vector* vecleft, Vector* vecRight )
-{
-	Vector pos;
-	Vector forward, right, up;
-
-	pos = pEnemy->pev->origin + Vector(0, 0, 4);
-
-	if (pEnemy->IsPlayer())
-		UTIL_MakeAimVectors(pEnemy->pev->v_angle);
 	else
-		UTIL_MakeAimVectors(pEnemy->pev->angles);
-
-	forward	= gpGlobals->v_forward;
-	right	= gpGlobals->v_right;
-	up		= gpGlobals->v_up;
-
-
-	Vector beamLeft, beamRight;
-
-	*vecleft	= pos + (right * -16);
-	*vecRight	= pos + (right * 64);
-}
-
-//=========================================================
-// UpdateBeamPoints
-//=========================================================
-void CPitWorm::UpdateBeamPoints(CBaseEntity* pEnemy, Vector* target)
-{
-	Vector left, right;
-	Vector dir;
-	float delta;
-
-	delta = 1.0f / PITWORM_EYEBLAST_DURATION; // 0.24 approximatly. (248 miliseconds)
-
-	// Update beam yaw.
-	m_flBeamYaw += delta;
-
-	// Convert to distance to make the correct interpolation.
-	float flDist = (80* m_flBeamYaw) / PITWORM_EYEBLAST_DURATION;
-
-	SetupBeamPoints( pEnemy, &left, &right );
-
-	// Direction from right to left.
-	dir = (left - right).Normalize();
-
-	// This is the result representing the next beam target
-	// position along the player's left and right computed beam
-	// positions.
-	*target = right + (dir * flDist);
-}
-
-//=========================================================
-// CreateGlow
-//=========================================================
-void CPitWorm::CreateGlow( void )
-{
-	m_pEyeGlow = CSprite::SpriteCreate("sprites/glow_grn.spr", pev->origin, TRUE);
-	m_pEyeGlow->SetTransparency(kRenderGlow, 255, 255, 255, 0, kRenderFxNoDissipation);
-	m_pEyeGlow->SetAttachment(edict(), 1);
-	m_pEyeGlow->SetScale( 1.5f );
-}
-
-//=========================================================
-// DestroyGlow
-//=========================================================
-void CPitWorm::DestroyGlow( void )
-{
-	if (m_pEyeGlow)
 	{
-		UTIL_Remove(m_pEyeGlow);
-		m_pEyeGlow = NULL;
+		SwipeSound();
+	}
+	m_fAttacking = TRUE;
+	m_fLockHeight = TRUE;
+	return 1;
+}
+
+void CPitWorm::ShootBeam()
+{
+	if ( m_hEnemy != 0 )
+	{
+		if ( m_flHeadYaw > 0.0 )
+		{
+			m_offsetBeam = 80;
+			m_flBeamDir = -1;
+		}
+		else
+		{
+			m_offsetBeam = -80;
+			m_flBeamDir = 1;
+		}
+		Vector vecEyePos, vecEyeAng;
+		GetAttachment(0, vecEyePos, vecEyeAng);
+
+		m_vecBeam = (m_posBeam - vecEyePos).Normalize();
+		m_angleBeam = UTIL_VecToAngles(m_vecBeam);
+		UTIL_MakeVectors(m_angleBeam);
+		m_vecBeam = gpGlobals->v_forward;
+		m_vecBeam.z = -m_vecBeam.z;
+		Vector vecEnd = m_vecBeam * m_offsetBeam + m_vecBeam * 1280 + vecEyePos;
+
+		TraceResult tr;
+		UTIL_TraceLine(vecEyePos, vecEnd, dont_ignore_monsters, ENT(pev), &tr);
+
+		m_pBeam = CBeam::BeamCreate("sprites/laserbeam.spr", 80);
+		if ( m_pBeam )
+		{
+			m_pBeam->PointEntInit(tr.vecEndPos, entindex());
+			m_pBeam->SetEndAttachment(1);
+			m_pBeam->SetColor(0,255,32);
+			m_pBeam->SetBrightness(128);
+			m_pBeam->SetWidth(32);
+			m_pBeam->pev->spawnflags |= SF_BEAM_SPARKSTART;
+
+			BeamEffect(tr);
+
+			m_pBeam->DoSparks(vecEyePos, vecEyePos);
+			m_flBeamExpireTime = gpGlobals->time + 0.9;
+			float beamYaw = m_flHeadYaw - m_flBeamDir * 25.0;
+			if ( beamYaw < -45.0 || beamYaw > 45.0 )
+			{
+				m_flIdealHeadYaw += m_flBeamDir * 50;
+			}
+
+			EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, RANDOM_SOUND_ARRAY(pShootSounds), VOL_NORM, ATTN_NORM, 0, 100 + RANDOM_LONG(-5,5));
+
+			EyeLight(vecEyePos);
+
+			m_pSprite = CSprite::SpriteCreate("sprites/tele1.spr", vecEyePos, TRUE);
+			if ( m_pSprite )
+			{
+				m_pSprite->SetTransparency(kRenderGlow, 0, 255, 0, 0, kRenderFxNoDissipation);
+				m_pSprite->SetAttachment(edict(), 1);
+				m_pSprite->SetScale(0.75);
+				m_pSprite->pev->framerate = 10;
+				m_pSprite->TurnOn();
+			}
+		}
 	}
 }
 
-//=========================================================
-// EyeOn
-//=========================================================
-void CPitWorm::EyeOn(int level)
+void CPitWorm::StrafeBeam()
 {
-	m_eyeBrightness = level;
+	m_offsetBeam += m_flBeamDir * 20;
+
+	Vector vecEyePos, vecEyeAng;
+	GetAttachment(0, vecEyePos, vecEyeAng);
+
+	m_vecBeam = (m_posBeam - vecEyePos).Normalize();
+	m_angleBeam = UTIL_VecToAngles(m_vecBeam);
+	UTIL_MakeVectors(m_angleBeam);
+	m_vecBeam = gpGlobals->v_forward;
+	m_vecBeam.z = -m_vecBeam.z;
+
+	Vector vecEnd = m_vecBeam * m_offsetBeam + m_vecBeam * 1280 + vecEyePos;
+
+	TraceResult tr;
+	UTIL_TraceLine(vecEyePos, vecEnd, dont_ignore_monsters, ENT(pev), &tr);
+
+	m_pBeam->SetStartPos(tr.vecEndPos);
+	BeamEffect(tr);
+
+	EyeLight(vecEyePos);
 }
 
-//=========================================================
-// EyeOff
-//=========================================================
-void CPitWorm::EyeOff(void)
+void CPitWorm::ChangeLevel()
 {
-	m_eyeBrightness = 0;
-}
-
-//=========================================================
-// EyeUpdate
-//=========================================================
-void CPitWorm::EyeUpdate(void)
-{
-	if (m_pEyeGlow)
+	float currentZ = pev->origin.z;
+	float desiredZ = m_posDesired.z;
+	if (currentZ > desiredZ)
 	{
-		m_pEyeGlow->pev->renderamt = UTIL_Approach(m_eyeBrightness, m_pEyeGlow->pev->renderamt, 100);
-		if (m_pEyeGlow->pev->renderamt == 0)
-			m_pEyeGlow->pev->effects |= EF_NODRAW;
+		pev->origin.z -= m_flLevelSpeed;
+
+		if (pev->origin.z < desiredZ)
+			pev->origin.z = desiredZ;
+	}
+	else if (currentZ < desiredZ)
+	{
+		pev->origin.z += m_flLevelSpeed;
+
+		if (pev->origin.z > desiredZ)
+			pev->origin.z = desiredZ;
+	}
+
+	if (m_flIdealTorsoYaw != m_flTorsoYaw)
+	{
+		if (m_flIdealTorsoYaw < m_flTorsoYaw)
+		{
+			m_flTorsoYaw -= 5.0;
+			if (m_flTorsoYaw < m_flIdealTorsoYaw)
+				m_flTorsoYaw = m_flIdealTorsoYaw;
+		}
+		else if (m_flIdealTorsoYaw > m_flTorsoYaw)
+		{
+			m_flTorsoYaw += 5;
+			if (m_flTorsoYaw > m_flIdealTorsoYaw)
+				m_flTorsoYaw = m_flIdealTorsoYaw;
+		}
+		SetBoneController(PITWORM_CONTROLLER_BODY_YAW, m_flTorsoYaw);
+	}
+
+	if (m_flIdealHeadYaw != m_flHeadYaw)
+	{
+		if (m_flIdealHeadYaw < m_flHeadYaw)
+		{
+			m_flHeadYaw -= 5.0;
+			if (m_flHeadYaw < m_flIdealHeadYaw)
+				m_flHeadYaw = m_flIdealHeadYaw;
+		}
+		else if (m_flIdealHeadYaw > m_flHeadYaw)
+		{
+			m_flHeadYaw += 5;
+			if (m_flHeadYaw > m_flIdealHeadYaw)
+				m_flHeadYaw = m_flIdealHeadYaw;
+		}
+		SetBoneController(PITWORM_CONTROLLER_EYE_YAW, m_flHeadYaw);
+	}
+
+	if (m_flIdealHeadPitch != m_flHeadPitch)
+	{
+		if (m_flIdealHeadPitch < m_flHeadPitch)
+		{
+			m_flHeadPitch -= 5.0;
+			if (m_flHeadPitch < m_flIdealHeadPitch)
+				m_flHeadPitch = m_flIdealHeadPitch;
+		}
+		else if (m_flIdealHeadPitch > m_flHeadPitch)
+		{
+			m_flHeadPitch += 5;
+			if (m_flHeadPitch > m_flIdealHeadPitch)
+				m_flHeadPitch = m_flIdealHeadPitch;
+		}
+		SetBoneController(PITWORM_CONTROLLER_EYE_PITCH, m_flHeadPitch);
+	}
+}
+
+void CPitWorm::TrackEnemy()
+{
+	Vector vecEyePos, vecEyeAng;
+	GetAttachment(0, vecEyePos, vecEyeAng);
+
+	Vector vec = (m_hEnemy->pev->origin + m_hEnemy->pev->view_ofs) - Vector(pev->origin.x, pev->origin.y, vecEyePos.z);
+	Vector vecDir = UTIL_VecToAngles(vec);
+	float angleDiff = UTIL_AngleDiff(vecDir.x, pev->angles.x);
+	if (angleDiff < PITWORM_EYE_PITCH_MIN)
+	{
+		angleDiff = PITWORM_EYE_PITCH_MIN;
+	}
+	else if (angleDiff > PITWORM_EYE_PITCH_MAX)
+	{
+		angleDiff = PITWORM_EYE_PITCH_MAX;
+	}
+	m_flIdealHeadPitch = angleDiff;
+
+	float targetYaw = UTIL_VecToYaw(m_hEnemy->pev->origin + m_hEnemy->pev->view_ofs - vecEyePos) - pev->angles.y;
+	if (targetYaw > 180)
+	{
+		targetYaw -= 360;
+	}
+	else if (targetYaw < -180)
+	{
+		targetYaw += 360;
+	}
+	if (!m_fLockYaw)
+	{
+		if (targetYaw < 0)
+		{
+			const float minYaw = (m_iLevel == 1) ? -30 : -50;
+			if (targetYaw <= minYaw)
+				targetYaw = minYaw;
+		}
 		else
-			m_pEyeGlow->pev->effects &= ~EF_NODRAW;
-		UTIL_SetOrigin(m_pEyeGlow->pev, pev->origin);
+		{
+			const float maxYaw = (m_iLevel == 2) ? 30 :50;
+			if (targetYaw > maxYaw)
+				targetYaw = maxYaw;
+		}
+		m_flIdealTorsoYaw = targetYaw;
+	}
+	float torsoYawDiff = m_flTorsoYaw - targetYaw;
+	if (torsoYawDiff > 0)
+	{
+		if (torsoYawDiff > PITWORM_EYE_YAW_MAX)
+		{
+			torsoYawDiff = PITWORM_EYE_YAW_MAX;
+		}
+		else if (torsoYawDiff < PITWORM_EYE_YAW_MIN)
+		{
+			torsoYawDiff = PITWORM_EYE_YAW_MIN;
+		}
+	}
+	if (!m_fAttacking || m_pBeam != 0)
+	{
+		m_flIdealHeadYaw = torsoYawDiff;
+	}
+
+	if (!m_fLockHeight)
+	{
+		if (m_hEnemy->pev->origin.z <= m_flTargetLevels[1])
+		{
+			m_iLevel = 0;
+		}
+		else if (m_hEnemy->pev->origin.z <= m_flTargetLevels[2])
+		{
+			m_iLevel = 1;
+		}
+		else if (m_fTopLevelLocked || m_hEnemy->pev->origin.z <= m_flTargetLevels[3])
+		{
+			m_iLevel = 2;
+		}
+		else
+		{
+			m_iLevel = 3;
+		}
+		m_posDesired.z = m_flLevels[m_iLevel];
+	}
+}
+
+class CPitWormSteamTrigger : public CBaseEntity
+{
+public:
+	void Spawn();
+	void Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+};
+
+LINK_ENTITY_TO_CLASS(info_pitworm_steam_lock, CPitWormSteamTrigger)
+
+void CPitWormSteamTrigger::Spawn()
+{
+	pev->solid = SOLID_NOT;
+	pev->movetype = MOVETYPE_NONE;
+	pev->effects = EF_NODRAW;
+	UTIL_SetOrigin(pev, pev->origin);
+}
+
+void CPitWormSteamTrigger::Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value)
+{
+	CPitWorm* pWorm = (CPitWorm*)UTIL_FindEntityByClassname(0, "monster_pitworm_up");
+	if (pWorm)
+	{
+		pWorm->LockTopLevel();
 	}
 }

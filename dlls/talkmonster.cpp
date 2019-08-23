@@ -46,9 +46,10 @@ TYPEDESCRIPTION	CTalkMonster::m_SaveData[] =
 	DEFINE_FIELD( CTalkMonster, m_flLastSaidSmelled, FIELD_TIME ),
 	DEFINE_FIELD( CTalkMonster, m_flStopTalkTime, FIELD_TIME ),
 	DEFINE_FIELD( CTalkMonster, m_hTalkTarget, FIELD_EHANDLE ),
+	DEFINE_FIELD( CTalkMonster, m_fStartSuspicious, FIELD_BOOLEAN ),
 };
 
-IMPLEMENT_SAVERESTORE( CTalkMonster, CBaseMonster )
+IMPLEMENT_SAVERESTORE( CTalkMonster, CSquadMonster )
 
 // array of friend names
 const char *CTalkMonster::m_szFriends[TLK_CFRIENDS] =
@@ -56,6 +57,9 @@ const char *CTalkMonster::m_szFriends[TLK_CFRIENDS] =
 	"monster_barney",
 	"monster_scientist",
 	"monster_sitting_scientist",
+	"monster_otis",
+	"monster_cleansuit_scientist",
+	"monster_sitting_cleansuit_scientist",
 };
 
 //=========================================================
@@ -69,7 +73,7 @@ Task_t tlIdleResponse[] =
 	{ TASK_TLK_RESPOND, (float)0 },	// Wait and then say my response
 	{ TASK_TLK_IDEALYAW, (float)0 },	// look at who I'm talking to
 	{ TASK_FACE_IDEAL, (float)0 }, 
-	{ TASK_SET_ACTIVITY, (float)ACT_SIGNAL3 },
+	{ TASK_SET_ACTIVITY, (float)ACT_IDLE },
 	{ TASK_TLK_EYECONTACT, (float)0	 },	// Wait until speaker is done
 };
 
@@ -91,7 +95,7 @@ Task_t tlIdleSpeak[] =
 	{ TASK_TLK_SPEAK, (float)0 },// question or remark
 	{ TASK_TLK_IDEALYAW, (float)0 },// look at who I'm talking to
 	{ TASK_FACE_IDEAL, (float)0 },
-	{ TASK_SET_ACTIVITY, (float)ACT_SIGNAL3	},
+	{ TASK_SET_ACTIVITY, (float)ACT_IDLE	},
 	{ TASK_TLK_EYECONTACT, (float)0 },
 	{ TASK_WAIT_RANDOM, (float)0.5 },
 };
@@ -112,7 +116,7 @@ Schedule_t slIdleSpeak[] =
 
 Task_t	tlIdleSpeakWait[] =
 {
-	{ TASK_SET_ACTIVITY, (float)ACT_SIGNAL3 },// Stop and talk
+	{ TASK_SET_ACTIVITY, (float)ACT_IDLE },// Stop and talk
 	{ TASK_TLK_SPEAK, (float)0 },// question or remark
 	{ TASK_TLK_EYECONTACT, (float)0 },// 
 	{ TASK_WAIT, (float)2 },// wait - used when sci is in 'use' mode to keep head turned
@@ -134,7 +138,7 @@ Schedule_t slIdleSpeakWait[] =
 
 Task_t tlIdleHello[] =
 {
-	{ TASK_SET_ACTIVITY, (float)ACT_SIGNAL3 },// Stop and talk
+	{ TASK_SET_ACTIVITY, (float)ACT_IDLE },// Stop and talk
 	{ TASK_TLK_HELLO, (float)0 },// Try to say hello to player
 	{ TASK_TLK_EYECONTACT, (float)0 },
 	{ TASK_WAIT, (float)0.5 },// wait a bit
@@ -259,7 +263,7 @@ Task_t tlTlkIdleWatchClientStare[] =
 	{ TASK_TLK_STARE, (float)0 },
 	{ TASK_TLK_IDEALYAW, (float)0 },// look at who I'm talking to
 	{ TASK_FACE_IDEAL, (float)0 }, 
-	{ TASK_SET_ACTIVITY, (float)ACT_SIGNAL3 },
+	{ TASK_SET_ACTIVITY, (float)ACT_IDLE },
 	{ TASK_TLK_EYECONTACT, (float)0 },
 };
 
@@ -312,7 +316,7 @@ Task_t	tlTlkIdleEyecontact[] =
 {
 	{ TASK_TLK_IDEALYAW, (float)0 },// look at who I'm talking to
 	{ TASK_FACE_IDEAL, (float)0 }, 
-	{ TASK_SET_ACTIVITY, (float)ACT_SIGNAL3 },
+	{ TASK_SET_ACTIVITY, (float)ACT_IDLE },
 	{ TASK_TLK_EYECONTACT, (float)0 },// Wait until speaker is done
 };
 
@@ -345,15 +349,15 @@ DEFINE_CUSTOM_SCHEDULES( CTalkMonster )
 	slTlkIdleEyecontact,
 };
 
-IMPLEMENT_CUSTOM_SCHEDULES( CTalkMonster, CBaseMonster )
+IMPLEMENT_CUSTOM_SCHEDULES( CTalkMonster, CSquadMonster )
 
 void CTalkMonster::SetActivity( Activity newActivity )
 {
-	if( newActivity == ACT_IDLE && IsTalking() )
-		newActivity = ACT_SIGNAL3;
+//	if( newActivity == ACT_IDLE && IsTalking() )
+//		newActivity = ACT_SIGNAL3;
 
-	if( newActivity == ACT_SIGNAL3 && ( LookupActivity( ACT_SIGNAL3 ) == ACTIVITY_NOT_AVAILABLE ) )
-		newActivity = ACT_IDLE;
+//	if( newActivity == ACT_SIGNAL3 && ( LookupActivity( ACT_SIGNAL3 ) == ACTIVITY_NOT_AVAILABLE ) )
+//		newActivity = ACT_IDLE;
 
 	CBaseMonster::SetActivity( newActivity );
 }
@@ -617,7 +621,7 @@ CBaseEntity *CTalkMonster::EnumFriends( CBaseEntity *pPrevious, int listNumber, 
 	TraceResult tr;
 	Vector vecCheck;
 
-	pszFriend = m_szFriends[FriendNumber( listNumber )];
+	pszFriend = FriendByNumber( listNumber );
 	while( ( pFriend = UTIL_FindEntityByClassname( pFriend, pszFriend ) ) )
 	{
 		if( pFriend == this || !pFriend->IsAlive() )
@@ -648,7 +652,7 @@ void CTalkMonster::AlertFriends( void )
 	int i;
 
 	// for each friend in this bsp...
-	for( i = 0; i < TLK_CFRIENDS; i++ )
+	for( i = 0; i < NumberOfFriends(); i++ )
 	{
 		while( ( pFriend = EnumFriends( pFriend, i, TRUE ) ) )
 		{
@@ -668,7 +672,7 @@ void CTalkMonster::ShutUpFriends( void )
 	int i;
 
 	// for each friend in this bsp...
-	for( i = 0; i < TLK_CFRIENDS; i++ )
+	for( i = 0; i < NumberOfFriends(); i++ )
 	{
 		while( ( pFriend = EnumFriends( pFriend, i, TRUE ) ) )
 		{
@@ -691,7 +695,7 @@ void CTalkMonster::LimitFollowers( CBaseEntity *pPlayer, int maxFollowers )
 	count = 0;
 
 	// for each friend in this bsp...
-	for( i = 0; i < TLK_CFRIENDS; i++ )
+	for( i = 0; i < NumberOfFriends(); i++ )
 	{
 		while( ( pFriend = EnumFriends( pFriend, i, FALSE ) ) )
 		{
@@ -772,7 +776,7 @@ CBaseEntity *CTalkMonster::FindNearestFriend( BOOL fPlayer )
 	if( fPlayer )
 		cfriends = 1;
 	else
-		cfriends = TLK_CFRIENDS;
+		cfriends = NumberOfFriends();
 
 	// for each type of friend...
 	for( i = cfriends-1; i > -1; i-- )
@@ -780,7 +784,7 @@ CBaseEntity *CTalkMonster::FindNearestFriend( BOOL fPlayer )
 		if( fPlayer )
 			pszFriend = "player";
 		else
-			pszFriend = m_szFriends[FriendNumber( i )];
+			pszFriend = FriendByNumber( i );
 
 		if( !pszFriend )
 			continue;
@@ -1246,7 +1250,7 @@ Schedule_t *CTalkMonster::GetScheduleOfType( int Type )
 		break;
 	}
 
-	return CBaseMonster::GetScheduleOfType( Type );
+	return CSquadMonster::GetScheduleOfType( Type );
 }
 
 //=========================================================
@@ -1292,6 +1296,15 @@ void CTalkMonster::TrySmellTalk( void )
 		PlaySentence( m_szGrp[TLK_SMELL], RANDOM_FLOAT( 2.8, 3.2 ), VOL_NORM, ATTN_IDLE );
 		m_flLastSaidSmelled = gpGlobals->time + 60;// don't talk about the stinky for a while.
 		SetBits( m_bitsSaid, bit_saidSmelled );
+	}
+}
+
+void CTalkMonster::StartMonster()
+{
+	CBaseMonster::StartMonster();
+	if (m_fStartSuspicious) {
+		ALERT(at_console, "Talk Monster Pre-Provoked\n");
+		Remember(bits_MEMORY_PROVOKED);
 	}
 }
 
@@ -1369,7 +1382,7 @@ void CTalkMonster::FollowerUse( CBaseEntity *pActivator, CBaseEntity *pCaller, U
 		}
 		else if( CanFollow() )
 		{
-			LimitFollowers( pCaller, 1 );
+			LimitFollowers( pCaller, MaxFollowers() );
 
 			if( m_afMemory & bits_MEMORY_PROVOKED )
 				ALERT( at_console, "I'm not following you, you evil person!\n" );
@@ -1396,6 +1409,11 @@ void CTalkMonster::KeyValue( KeyValueData *pkvd )
 	else if( FStrEq( pkvd->szKeyName, "UnUseSentence" ) )
 	{
 		m_iszUnUse = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "suspicious" ) )
+	{
+		m_fStartSuspicious = atoi( pkvd->szValue );
 		pkvd->fHandled = TRUE;
 	}
 	else 

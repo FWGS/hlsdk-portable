@@ -56,9 +56,7 @@
 class COtis : public CBarney
 {
 public:
-#if 1
 	void KeyValue(KeyValueData *pkvd);
-#endif
 
 	void Spawn(void);
 	void Precache(void);
@@ -81,7 +79,7 @@ public:
 	int		bodystate;
 };
 
-LINK_ENTITY_TO_CLASS(monster_otis, COtis);
+LINK_ENTITY_TO_CLASS(monster_otis, COtis)
 
 //=========================================================
 // ALertSound - otis says "Freeze!"
@@ -207,7 +205,8 @@ void COtis::Spawn()
 	}
 
 	MonsterInit();
-	SetUse(&COtis::FollowerUse);
+	if (!m_fStartSuspicious)
+		SetUse(&COtis::FollowerUse);
 }
 
 //=========================================================
@@ -217,7 +216,7 @@ void COtis::Precache()
 {
 	PRECACHE_MODEL("models/otis.mdl");
 
-	PRECACHE_SOUND("barney/desert_eagle_fire.wav");
+	PRECACHE_SOUND("weapons/desert_eagle_fire.wav");
 
 	PRECACHE_SOUND("barney/ba_pain1.wav");
 	PRECACHE_SOUND("barney/ba_pain2.wav");
@@ -266,24 +265,6 @@ void COtis::TalkInit()
 
 	// get voice for head - just one otis voice for now
 	m_voicePitch = 100;
-}
-
-
-static BOOL IsFacing(entvars_t *pevTest, const Vector &reference)
-{
-	Vector vecDir = (reference - pevTest->origin);
-	vecDir.z = 0;
-	vecDir = vecDir.Normalize();
-	Vector forward, angle;
-	angle = pevTest->v_angle;
-	angle.x = 0;
-	UTIL_MakeVectorsPrivate(angle, forward, NULL, NULL);
-	// He's facing me, he meant it
-	if (DotProduct(forward, vecDir) > 0.96)	// +/- 15 degrees or so
-	{
-		return TRUE;
-	}
-	return FALSE;
 }
 
 
@@ -452,7 +433,7 @@ void CDeadOtis::KeyValue(KeyValueData *pkvd)
 		CBaseMonster::KeyValue(pkvd);
 }
 
-LINK_ENTITY_TO_CLASS(monster_otis_dead, CDeadOtis);
+LINK_ENTITY_TO_CLASS(monster_otis_dead, CDeadOtis)
 
 //=========================================================
 // ********** DeadOtis SPAWN **********

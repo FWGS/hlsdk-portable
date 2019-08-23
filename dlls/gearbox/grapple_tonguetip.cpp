@@ -23,133 +23,193 @@
 #include "gamerules.h"
 #include "grapple_tonguetip.h"
 
-LINK_ENTITY_TO_CLASS(grapple_tonguetip, CGrappleTonguetip);
+LINK_ENTITY_TO_CLASS( grapple_tip, CBarnacleGrappleTip )
 
-TYPEDESCRIPTION	CGrappleTonguetip::m_SaveData[] =
+void CBarnacleGrappleTip::Precache()
 {
-	DEFINE_FIELD(CGrappleTonguetip, m_pMyGrappler, FIELD_CLASSPTR),
-};
+	PRECACHE_MODEL( "models/shock_effect.mdl" );
+}
 
-IMPLEMENT_SAVERESTORE(CGrappleTonguetip, CBaseEntity);
-
-//=========================================================
-// Purpose: Spawn
-//=========================================================
-void CGrappleTonguetip::Spawn(void)
+void CBarnacleGrappleTip::Spawn()
 {
-	pev->movetype = MOVETYPE_TOSS;
-	pev->classname = MAKE_STRING("grapple_tonguetip");
+	Precache();
 
+	pev->movetype = MOVETYPE_FLY;
 	pev->solid = SOLID_BBOX;
-	pev->rendermode = kRenderTransTexture;
-	pev->renderamt = 0;
-	pev->gravity = 0.01;
 
-	SET_MODEL(ENT(pev), "models/v_bgrap_tonguetip.mdl");
+	SET_MODEL( ENT(pev), "models/shock_effect.mdl" );
 
-	UTIL_SetSize(pev, Vector(0, 0, 0), Vector(0, 0, 0));
+	UTIL_SetSize( pev, Vector(0, 0, 0), Vector(0, 0, 0) );
 
-	SetTouch(&CGrappleTonguetip::TipTouch);
+	UTIL_SetOrigin( pev, pev->origin );
+
+	SetThink( &CBarnacleGrappleTip::FlyThink );
+	SetTouch( &CBarnacleGrappleTip::TongueTouch );
+
+	Vector vecAngles = pev->angles;
+
+	vecAngles.x -= 30.0;
+
+	pev->angles = vecAngles;
+
+	UTIL_MakeVectors( pev->angles );
+
+	vecAngles.x = -( 30.0 + vecAngles.x );
+
+	pev->velocity = g_vecZero;
+
+	pev->gravity = 1.0;
+
+	pev->nextthink = gpGlobals->time + 0.02;
+
+	m_bIsStuck = FALSE;
+	m_bMissed = FALSE;
 }
 
-//=========================================================
-// Purpose: CreateTip
-//=========================================================
-CGrappleTonguetip* CGrappleTonguetip::CreateTip(entvars_t *pevOwner, Vector vecStart, Vector vecVelocity)
+void CBarnacleGrappleTip::FlyThink()
 {
-	CGrappleTonguetip* pTonguetip = GetClassPtr((CGrappleTonguetip *)NULL);
-	pTonguetip->Spawn();
+	UTIL_MakeAimVectors( pev->angles );
 
-	UTIL_SetOrigin(pTonguetip->pev, vecStart);
-	pTonguetip->pev->velocity = vecVelocity;
-	pTonguetip->pev->owner = ENT(pevOwner);
-	pTonguetip->m_pMyGrappler = GetClassPtr((CGrapple*)pevOwner);
-	pTonguetip->SetThink(&CGrappleTonguetip::FlyThink);
-	pTonguetip->pev->nextthink = gpGlobals->time + 0.1;
+	pev->angles = UTIL_VecToAngles( gpGlobals->v_forward );
 
-	return pTonguetip;
-}
+	const float flNewVel = ( ( pev->velocity.Length() * 0.8 ) + 400.0 );
 
-//=========================================================
-// Purpose: FlyThink
-//=========================================================
-void CGrappleTonguetip::FlyThink(void)
-{
-	ALERT(at_console, "FlyThink\n");
+	pev->velocity = pev->velocity * 0.2 + ( flNewVel * gpGlobals->v_forward );
 
-	pev->nextthink = gpGlobals->time + 0.1f;
-}
-
-//=========================================================
-// Purpose: HitThink
-//=========================================================
-void CGrappleTonguetip::HitThink(void)
-{
-	ALERT(at_console, "HitThink\n");
-
-	pev->nextthink = gpGlobals->time + 0.1f;
-}
-
-//=========================================================
-// Purpose: TipTouch
-//=========================================================
-void CGrappleTonguetip::TipTouch(CBaseEntity *pOther)
-{
-	// Do not collide with the owner.
-	if (ENT(pOther->pev) == pev->owner || (ENT(pOther->pev) == VARS(pev->owner)->owner))
-		return;
-
-	ALERT(at_console, "TipTouch\n");
-
-	TraceResult tr;
-	UTIL_TraceLine(pev->origin, pev->origin + pev->velocity * 10, dont_ignore_monsters, ENT(pev), &tr);
-
-	pev->velocity = Vector(0, 0, 0);
-
-	int content = UTIL_PointContents(tr.vecEndPos);
-	int hitFlags = pOther->pev->flags;
-
-	m_pMyGrappler->m_fTipHit	= TRUE;
-	m_pMyGrappler->m_iHitFlags	= hitFlags;
-
-	if (hitFlags & (FL_CLIENT | FL_MONSTER))
+	if( !g_pGameRules->IsMultiplayer() )
 	{
-		// Set player attached flag.
-		if (pOther->IsPlayer())
-			((CBasePlayer*)pOther)->m_afPhysicsFlags |= PFLAG_ATTACHED;
-
-		pev->movetype = MOVETYPE_FOLLOW;
-		pev->aiment = ENT(pOther->pev);
-
-		m_pMyGrappler->OnTongueTipHitEntity(pOther);
+		//Note: the old grapple had a maximum velocity of 1600. - Solokiller
+		if( pev->velocity.Length() > 750.0 )
+		{
+			pev->velocity = pev->velocity.Normalize() * 750.0;
+		}
 	}
 	else
 	{
-		pev->velocity = Vector(0, 0, 0);
-		pev->movetype = MOVETYPE_NONE;
-		pev->gravity = 0.0f;
-
-		m_pMyGrappler->OnTongueTipHitSurface(tr.vecEndPos);
-	}
-
-	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "weapons/bgrapple_impact.wav", 1, ATTN_NORM, 0, 100);
-
-	SetTouch( NULL );
-	SetThink(&CGrappleTonguetip::HitThink);
-	pev->nextthink = gpGlobals->time + 0.1f;
-}
-
-void CGrappleTonguetip::PreRemoval(void)
-{
-	if (pev->aiment != NULL)
-	{
-		CBaseEntity* pEnt = GetClassPtr((CBaseEntity*)VARS(pev->aiment));
-		if (pEnt && pEnt->IsPlayer())
+		//TODO: should probably clamp at sv_maxvelocity to prevent the tip from going off course. - Solokiller
+		if( pev->velocity.Length() > 2000.0 )
 		{
-			// Remove attached flag of the target entity.
-			((CBasePlayer*)pEnt)->m_afPhysicsFlags &= ~PFLAG_ATTACHED;
+			pev->velocity = pev->velocity.Normalize() * 2000.0;
 		}
 	}
 
-	CBaseEntity::PreRemoval();
+	pev->nextthink = gpGlobals->time + 0.02;
+}
+
+void CBarnacleGrappleTip::OffsetThink()
+{
+	//Nothing
+}
+
+void CBarnacleGrappleTip::TongueTouch( CBaseEntity* pOther )
+{
+	if( !pOther )
+	{
+		targetClass = GRAPPLE_NOT_A_TARGET;
+		m_bMissed = TRUE;
+	}
+	else
+	{
+		if( pOther->IsPlayer() )
+		{
+			targetClass = GRAPPLE_MEDIUM;
+
+			m_hGrappleTarget = pOther;
+
+			m_bIsStuck = TRUE;
+		}
+		else
+		{
+			targetClass = CheckTarget( pOther );
+
+			if( targetClass != GRAPPLE_NOT_A_TARGET )
+			{
+				m_bIsStuck = TRUE;
+			}
+			else
+			{
+				m_bMissed = TRUE;
+			}
+		}
+	}
+
+	pev->velocity = g_vecZero;
+
+	m_GrappleType = targetClass;
+
+	SetThink( &CBarnacleGrappleTip::OffsetThink );
+	pev->nextthink = gpGlobals->time + 0.02;
+
+	SetTouch( NULL );
+}
+
+int CBarnacleGrappleTip::CheckTarget( CBaseEntity* pTarget )
+{
+	if( !pTarget )
+		return GRAPPLE_NOT_A_TARGET;
+
+	if( pTarget->IsPlayer() )
+	{
+		m_hGrappleTarget = pTarget;
+
+		return pTarget->SizeForGrapple();
+	}
+
+	Vector vecStart = pev->origin;
+	Vector vecEnd = pev->origin + pev->velocity * 1024.0;
+
+	TraceResult tr;
+
+	UTIL_TraceLine( vecStart, vecEnd, ignore_monsters, edict(), &tr );
+
+	CBaseEntity* pHit = Instance( tr.pHit );
+
+/*	if( !pHit )
+		pHit = CWorld::GetInstance();*/
+
+	float rgfl1[3];
+	float rgfl2[3];
+	const char *pTexture;
+
+	vecStart.CopyToArray(rgfl1);
+	vecEnd.CopyToArray(rgfl2);
+
+	if (pHit)
+		pTexture = TRACE_TEXTURE(ENT(pHit->pev), rgfl1, rgfl2);
+	else
+		pTexture = TRACE_TEXTURE(ENT(0), rgfl1, rgfl2);
+
+	bool bIsFixed = false;
+
+	if( pTexture && strnicmp( pTexture, "xeno_grapple", 12 ) == 0 )
+	{
+		bIsFixed = true;
+	}
+	else if (pTarget->SizeForGrapple() != GRAPPLE_NOT_A_TARGET)
+	{
+		if (pTarget->SizeForGrapple() == GRAPPLE_FIXED) {
+			bIsFixed = true;
+		} else {
+			m_hGrappleTarget = pTarget;
+			m_vecOriginOffset = pev->origin - pTarget->pev->origin;
+			return pTarget->SizeForGrapple();
+		}
+	}
+
+	if( bIsFixed )
+	{
+		m_hGrappleTarget = pTarget;
+		m_vecOriginOffset = g_vecZero;
+
+		return GRAPPLE_FIXED;
+	}
+
+	return GRAPPLE_NOT_A_TARGET;
+}
+
+void CBarnacleGrappleTip::SetPosition( Vector vecOrigin, Vector vecAngles, CBaseEntity* pOwner )
+{
+	UTIL_SetOrigin( pev, vecOrigin );
+	pev->angles = vecAngles;
+	pev->owner = pOwner->edict();
 }

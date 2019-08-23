@@ -212,7 +212,9 @@ void TeamFortressViewport::paintBackground()
 //	int wide, tall;
 //	getParent()->getSize( wide, tall );
 //	setSize( wide, tall );
-	gEngfuncs.VGui_ViewportPaintBackground(HUD_GetRect());
+	int extents[4];
+	getParent()->getAbsExtents(extents[0],extents[1],extents[2],extents[3]);
+	gEngfuncs.VGui_ViewportPaintBackground(extents);
 }
 
 void *TeamFortressViewport::operator new( size_t stAllocateBlock )
@@ -376,7 +378,22 @@ void DLLEXPORT HUD_MobilityInterface( mobile_engfuncs_t *gpMobileEngfuncs )
 	gMobileEngfuncs = gpMobileEngfuncs;
 }
 
-bool isXashFWGS()
+bool HUD_MessageBox( const char *msg )
+{
+	gEngfuncs.Con_Printf( msg ); // just in case
+
+	if( IsXashFWGS() )
+	{
+		gMobileEngfuncs->pfnSys_Warn( msg );
+		return true;
+	}
+
+	// TODO: Load SDL2 and call ShowSimpleMessageBox
+
+	return false;
+}
+
+bool IsXashFWGS()
 {
 	return gMobileEngfuncs != NULL;
 }

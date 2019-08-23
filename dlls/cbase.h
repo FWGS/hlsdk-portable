@@ -105,6 +105,8 @@ typedef void(CBaseEntity::*USEPTR)( CBaseEntity *pActivator, CBaseEntity *pCalle
 #define CLASS_PLAYER_BIOWEAPON		12 // hornets and snarks.launched by players
 #define CLASS_ALIEN_BIOWEAPON		13 // hornets and snarks.launched by the alien menace
 #define CLASS_RACEX_PREDATOR		14
+#define CLASS_RACEX_SHOCK		15
+#define CLASS_PLAYER_ALLY_MILITARY	16
 #define	CLASS_BARNACLE			99 // special because no one pays attention to it, and it eats a wide cross-section of creatures.
 
 class CBaseEntity;
@@ -132,6 +134,15 @@ public:
 
 	CBaseEntity *operator = ( CBaseEntity *pEntity );
 	CBaseEntity *operator ->();
+};
+
+enum GrappleTarget
+{
+	GRAPPLE_NOT_A_TARGET	= 0,
+	GRAPPLE_SMALL			= 1,
+	GRAPPLE_MEDIUM			= 2,
+	GRAPPLE_LARGE			= 3,
+	GRAPPLE_FIXED			= 4,
 };
 
 //
@@ -340,6 +351,7 @@ public:
 	virtual	void UpdateOwner( void ) { return; };
 
 	static CBaseEntity *Create( const char *szName, const Vector &vecOrigin, const Vector &vecAngles, edict_t *pentOwner = NULL );
+	static CBaseEntity *CreateNoSpawn( const char *szName, const Vector &vecOrigin, const Vector &vecAngles, edict_t *pentOwner = NULL );
 
 	virtual BOOL FBecomeProne( void ) {return FALSE;};
 	edict_t *edict() { return ENT( pev ); };
@@ -355,6 +367,8 @@ public:
 
 	virtual	BOOL FVisible( CBaseEntity *pEntity );
 	virtual	BOOL FVisible( const Vector &vecOrigin );
+
+	virtual int SizeForGrapple() { return GRAPPLE_NOT_A_TARGET; }
 
 	//We use this variables to store each ammo count.
 	int ammo_9mm;

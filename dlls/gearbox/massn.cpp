@@ -40,7 +40,7 @@
 #define MASSN_9MMAR					(1 << 0)
 #define MASSN_HANDGRENADE			(1 << 1)
 #define MASSN_GRENADELAUNCHER		(1 << 2)
-#define MASSN_SNIPERRIFLE			(1 << 4)
+#define MASSN_SNIPERRIFLE			(1 << 3)
 
 // Body groups.
 #define HEAD_GROUP					1
@@ -84,7 +84,7 @@ public:
 	void IdleSound(void);
 };
 
-LINK_ENTITY_TO_CLASS(monster_male_assassin, CMassn);
+LINK_ENTITY_TO_CLASS(monster_male_assassin, CMassn)
 
 //=========================================================
 // Purpose:
@@ -127,7 +127,7 @@ void CMassn::Sniperrifle(void)
 
 	Vector	vecShellVelocity = gpGlobals->v_right * RANDOM_FLOAT(40, 90) + gpGlobals->v_up * RANDOM_FLOAT(75, 200) + gpGlobals->v_forward * RANDOM_FLOAT(-40, 40);
 	EjectBrass(vecShootOrigin - vecShootDir * 24, vecShellVelocity, pev->angles.y, m_iBrassShell, TE_BOUNCE_SHELL);
-	FireBullets(1, vecShootOrigin, vecShootDir, VECTOR_CONE_1DEGREES, 2048, BULLET_PLAYER_357, 0); // shoot +-7.5 degrees
+	FireBullets(1, vecShootOrigin, vecShootDir, VECTOR_CONE_1DEGREES, 2048, BULLET_MONSTER_762, 0); // shoot +-7.5 degrees
 
 	pev->effects |= EF_MUZZLEFLASH;
 
@@ -198,7 +198,7 @@ void CMassn::HandleAnimEvent(MonsterEvent_t *pEvent)
 		{
 			Sniperrifle();
 
-			EMIT_SOUND(ENT(pev), CHAN_WEAPON, "weapons/sniper_bolt1.wav", 1, ATTN_NORM);
+			EMIT_SOUND(ENT(pev), CHAN_WEAPON, "weapons/sniper_fire.wav", 1, ATTN_NORM);
 		}
 
 		CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, 384, 0.3);
@@ -301,6 +301,7 @@ void CMassn::Precache()
 	PRECACHE_SOUND("weapons/glauncher.wav");
 
 	PRECACHE_SOUND("weapons/sniper_bolt1.wav");
+	PRECACHE_SOUND("weapons/sniper_fire.wav");
 
 	PRECACHE_SOUND("zombie/claw_miss2.wav");// because we use the basemonster SWIPE animation event
 
@@ -336,41 +337,9 @@ void CMassn::DeathSound(void)
 class CAssassinRepel : public CHGruntRepel
 {
 public:
-	void Precache(void);
-	void EXPORT RepelUse(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value);
+	const char* TrooperName() {
+		return "monster_male_assassin";
+	}
 };
 
-LINK_ENTITY_TO_CLASS(monster_assassin_repel, CAssassinRepel);
-
-void CAssassinRepel::Precache(void)
-{
-	UTIL_PrecacheOther("monster_male_assassin");
-	m_iSpriteTexture = PRECACHE_MODEL("sprites/rope.spr");
-}
-
-void CAssassinRepel::RepelUse(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value)
-{
-	TraceResult tr;
-	UTIL_TraceLine(pev->origin, pev->origin + Vector(0, 0, -4096.0), dont_ignore_monsters, ENT(pev), &tr);
-	/*
-	if ( tr.pHit && Instance( tr.pHit )->pev->solid != SOLID_BSP)
-	return NULL;
-	*/
-
-	CBaseEntity *pEntity = Create("monster_male_assassin", pev->origin, pev->angles);
-	CBaseMonster *pGrunt = pEntity->MyMonsterPointer();
-	pGrunt->pev->movetype = MOVETYPE_FLY;
-	pGrunt->pev->velocity = Vector(0, 0, RANDOM_FLOAT(-196, -128));
-	pGrunt->SetActivity(ACT_GLIDE);
-	// UNDONE: position?
-	pGrunt->m_vecLastPosition = tr.vecEndPos;
-
-	CBeam *pBeam = CBeam::BeamCreate("sprites/rope.spr", 10);
-	pBeam->PointEntInit(pev->origin + Vector(0, 0, 112), pGrunt->entindex());
-	pBeam->SetFlags(BEAM_FSOLID);
-	pBeam->SetColor(255, 255, 255);
-	pBeam->SetThink(&CBeam::SUB_Remove);
-	pBeam->pev->nextthink = gpGlobals->time + -4096.0 * tr.flFraction / pGrunt->pev->velocity.z + 0.5;
-
-	UTIL_Remove(this);
-}
+LINK_ENTITY_TO_CLASS(monster_assassin_repel, CAssassinRepel)

@@ -53,6 +53,7 @@ extern int gmsgSayText;
 extern int gmsgBhopcap;
 
 extern cvar_t allow_spectators;
+extern cvar_t multibyte_only;
 
 extern int g_teamplay;
 
@@ -289,6 +290,10 @@ decodeFinishedMaybeCESU8:
 bool Q_UnicodeValidate( const char *pUTF8 )
 {
 	bool bError = false;
+
+	if( !multibyte_only.value )
+		return true;
+
 	while( *pUTF8 )
 	{
 		unsigned int uVal;
@@ -1124,8 +1129,8 @@ void SetupVisibility( edict_t *pViewEntity, edict_t *pClient, unsigned char **pv
 		}
 	}
 
-	*pvs = ENGINE_SET_PVS( (float *)&org );
-	*pas = ENGINE_SET_PAS( (float *)&org );
+	*pvs = ENGINE_SET_PVS( org );
+	*pas = ENGINE_SET_PAS( org );
 }
 
 #include "entity_state.h"
@@ -1817,6 +1822,10 @@ void UpdateClientData( const struct edict_s *ent, int sendweapons, struct client
 					else if( pl->m_pActiveItem->m_iId == WEAPON_EAGLE )
 					{
 						cd->vuser2.y = ( (CEagle *)pl->m_pActiveItem )->m_fEagleLaserActive;
+					}
+					else if( pl->m_pActiveItem->m_iId == WEAPON_PIPEWRENCH )
+					{
+						cd->vuser2.y = ( (CPipeWrench *)pl->m_pActiveItem )->m_iSwingMode;
 					}
 					else if( pl->m_pActiveItem->m_iId == WEAPON_M249 )
 					{

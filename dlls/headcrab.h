@@ -43,10 +43,12 @@ public:
 
 	virtual float GetDamageAmount(void) { return gSkillData.headcrabDmgBite; }
 	virtual int GetVoicePitch(void) { return 100; }
-	virtual float GetSoundVolue(void) { return 1.0; }
+	virtual float GetSoundVolume(void) { return 1.0; }
 	Schedule_t* GetScheduleOfType(int Type);
 
-	CUSTOM_SCHEDULES;
+	CUSTOM_SCHEDULES
+
+	virtual int SizeForGrapple() { return GRAPPLE_SMALL; }
 
 	static const char *pIdleSounds[];
 	static const char *pAlertSounds[];
@@ -54,6 +56,9 @@ public:
 	static const char *pAttackSounds[];
 	static const char *pDeathSounds[];
 	static const char *pBiteSounds[];
+
+protected:
+	virtual void AttackSound();
 };
 
 #endif

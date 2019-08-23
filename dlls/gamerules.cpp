@@ -237,21 +237,21 @@ void CGameRules::RefreshSkillData ( void )
 	gSkillData.pitdroneDmgSpit = GetSkillCvar( "sk_pitdrone_dmg_spit" );
 
 	// Hgrunt Ally
-	gSkillData.hgruntAllyHealth = GetSkillCvar( "sk_hgrunt_ally_health" );
-	gSkillData.hgruntAllyDmgKick = GetSkillCvar( "sk_hgrunt_ally_kick" );
-	gSkillData.hgruntAllyShotgunPellets = GetSkillCvar( "sk_hgrunt_ally_pellets" );
-	gSkillData.hgruntAllyGrenadeSpeed = GetSkillCvar( "sk_hgrunt_ally_gspeed" );
+	gSkillData.fgruntHealth = GetSkillCvar( "sk_hgrunt_ally_health" );
+	gSkillData.fgruntDmgKick = GetSkillCvar( "sk_hgrunt_ally_kick" );
+	gSkillData.fgruntShotgunPellets = GetSkillCvar( "sk_hgrunt_ally_pellets" );
+	gSkillData.fgruntGrenadeSpeed = GetSkillCvar( "sk_hgrunt_ally_gspeed" );
 
 	// Medic Ally 
-	gSkillData.medicAllyHealth = GetSkillCvar( "sk_medic_ally_health" );
-	gSkillData.medicAllyDmgKick = GetSkillCvar( "sk_medic_ally_kick" );
-	gSkillData.medicAllyGrenadeSpeed = GetSkillCvar( "sk_medic_ally_gspeed" );
-	gSkillData.medicAllyHeal = GetSkillCvar( "sk_medic_ally_heal" );
+	gSkillData.medicHealth = GetSkillCvar( "sk_medic_ally_health" );
+	gSkillData.medicDmgKick = GetSkillCvar( "sk_medic_ally_kick" );
+	gSkillData.medicGrenadeSpeed = GetSkillCvar( "sk_medic_ally_gspeed" );
+	gSkillData.medicHeal = GetSkillCvar( "sk_medic_ally_heal" );
 
 	// Torch Ally 
-	gSkillData.torchAllyHealth = GetSkillCvar( "sk_torch_ally_health" );
-	gSkillData.torchAllyDmgKick = GetSkillCvar( "sk_torch_ally_kick" );
-	gSkillData.torchAllyGrenadeSpeed = GetSkillCvar( "sk_torch_ally_gspeed" );
+	gSkillData.torchHealth = GetSkillCvar( "sk_torch_ally_health" );
+	gSkillData.torchDmgKick = GetSkillCvar( "sk_torch_ally_kick" );
+	gSkillData.torchGrenadeSpeed = GetSkillCvar( "sk_torch_ally_gspeed" );
 
 	// Male Assassin
 	gSkillData.massnHealth = GetSkillCvar( "sk_massassin_health" );
@@ -375,7 +375,8 @@ void CGameRules::RefreshSkillData ( void )
 	gSkillData.plrDmgKnife = GetSkillCvar( "sk_plr_knife" );
 	gSkillData.plrDmgGrapple = GetSkillCvar( "sk_plr_grapple" );
 	gSkillData.plrDmgEagle = GetSkillCvar( "sk_plr_eagle" );
-	gSkillData.plrDmgDisplacer = GetSkillCvar( "sk_plr_displacer_self" );
+	gSkillData.plrDmgDisplacer = GetSkillCvar( "sk_plr_displacer_other" );
+	gSkillData.plrDisplacerRadius = GetSkillCvar( "sk_plr_displacer_radius" );
 	gSkillData.plrDmgShockroachSingleplayer = GetSkillCvar( "sk_plr_shockroachs" );
 	gSkillData.plrDmgSpore = GetSkillCvar( "sk_plr_spore" );
 	gSkillData.plrDmg762 = GetSkillCvar( "sk_plr_762_bullet" );

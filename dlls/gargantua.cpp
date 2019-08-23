@@ -244,6 +244,8 @@ public:
 
 	CUSTOM_SCHEDULES
 
+	virtual int SizeForGrapple() { return GRAPPLE_LARGE; }
+
 private:
 	static const char *pAttackHitSounds[];
 	static const char *pBeamAttackSounds[];

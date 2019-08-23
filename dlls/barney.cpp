@@ -365,7 +365,8 @@ void CBarney::Spawn()
 	m_afCapability = bits_CAP_HEAR | bits_CAP_TURN_HEAD | bits_CAP_DOORS_GROUP;
 
 	MonsterInit();
-	SetUse( &CTalkMonster::FollowerUse );
+	if (!m_fStartSuspicious)
+		SetUse( &CTalkMonster::FollowerUse );
 }
 
 //=========================================================
@@ -426,7 +427,7 @@ void CBarney::TalkInit()
 	m_voicePitch = 100;
 }
 
-static BOOL IsFacing( entvars_t *pevTest, const Vector &reference )
+BOOL IsFacing( entvars_t *pevTest, const Vector &reference )
 {
 	Vector vecDir = reference - pevTest->origin;
 	vecDir.z = 0;

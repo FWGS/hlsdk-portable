@@ -177,6 +177,7 @@ void DecalGunshot( TraceResult *pTrace, int iBulletType )
 		case BULLET_MONSTER_MP5:
 		case BULLET_PLAYER_BUCKSHOT:
 		case BULLET_PLAYER_357:
+		case BULLET_PLAYER_EAGLE:
 		case BULLET_MONSTER_357:
 		case BULLET_PLAYER_556:
 		case BULLET_MONSTER_556:
@@ -371,7 +372,7 @@ void W_Precache( void )
 	UTIL_PrecacheOtherWeapon( "weapon_displacer" );
 	UTIL_PrecacheOtherWeapon( "weapon_eagle" );
 	UTIL_PrecacheOtherWeapon( "weapon_grapple" );
-	UTIL_PrecacheOther( "grapple_tonguetip" );
+	UTIL_PrecacheOther( "grapple_tip" );
 	UTIL_PrecacheOtherWeapon( "weapon_knife" );
 	UTIL_PrecacheOtherWeapon( "weapon_m249" );
 	UTIL_PrecacheOther( "ammo_556" );
@@ -1660,7 +1661,7 @@ IMPLEMENT_SAVERESTORE( CEgon, CBasePlayerWeapon )
 
 TYPEDESCRIPTION CHgun::m_SaveData[] =
 {
-	DEFINE_FIELD( CHgun, m_flRechargeTime, FIELD_FLOAT ),
+	DEFINE_FIELD( CHgun, m_flRechargeTime, FIELD_TIME ),
 };
 
 IMPLEMENT_SAVERESTORE( CHgun, CBasePlayerWeapon )
@@ -1687,42 +1688,31 @@ TYPEDESCRIPTION CEagle::m_SaveData[] =
 
 IMPLEMENT_SAVERESTORE( CEagle, CBasePlayerWeapon )
 
-TYPEDESCRIPTION CGrapple::m_SaveData[] =
+TYPEDESCRIPTION	CBarnacleGrapple::m_SaveData[] =
 {
-	DEFINE_FIELD( CGrapple, m_iFirestate, FIELD_INTEGER ),
-	DEFINE_FIELD( CGrapple, m_iHitFlags, FIELD_INTEGER ),
-	DEFINE_FIELD( CGrapple, m_fTipHit, FIELD_BOOLEAN ),
-	DEFINE_FIELD( CGrapple, m_pTongueTip, FIELD_CLASSPTR ),
-	DEFINE_FIELD( CGrapple, m_pBeam, FIELD_CLASSPTR ),
-	DEFINE_FIELD( CGrapple, m_flNextPullSoundTime, FIELD_TIME ),
-	DEFINE_FIELD( CGrapple, m_fPlayPullSound, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CBarnacleGrapple, m_pBeam, FIELD_CLASSPTR ),
+	DEFINE_FIELD( CBarnacleGrapple, m_flShootTime, FIELD_TIME ),
+	DEFINE_FIELD( CBarnacleGrapple, m_fireState, FIELD_INTEGER ),
 };
-IMPLEMENT_SAVERESTORE( CGrapple, CBasePlayerWeapon )
+IMPLEMENT_SAVERESTORE( CBarnacleGrapple, CBasePlayerWeapon )
 
 TYPEDESCRIPTION	CM249::m_SaveData[] =
 {
-	DEFINE_FIELD( CM249, m_iReloadState, FIELD_INTEGER ),
+	DEFINE_FIELD( CM249, m_fInSpecialReload, FIELD_INTEGER ),
 };
 IMPLEMENT_SAVERESTORE( CM249, CBasePlayerWeapon )
 
 TYPEDESCRIPTION	CPipeWrench::m_SaveData[] =
 {
-	DEFINE_FIELD( CPipeWrench, m_iFirestate, FIELD_INTEGER ),
-	DEFINE_FIELD( CPipeWrench, m_flHoldStartTime, FIELD_TIME ),
+	DEFINE_FIELD( CPipeWrench, m_flBigSwingStart, FIELD_TIME ),
+	DEFINE_FIELD( CPipeWrench, m_iSwing, FIELD_INTEGER ),
+	DEFINE_FIELD( CPipeWrench, m_iSwingMode, FIELD_INTEGER ),
 };
 IMPLEMENT_SAVERESTORE( CPipeWrench, CBasePlayerWeapon )
 
-TYPEDESCRIPTION	CShockrifle::m_SaveData[] =
-{
-	DEFINE_FIELD( CShockrifle, m_fShouldUpdateEffects, FIELD_BOOLEAN ),
-	DEFINE_FIELD( CShockrifle, m_flBeamLifeTime, FIELD_TIME ),
-};
-IMPLEMENT_SAVERESTORE( CShockrifle, CHgun )
-
 TYPEDESCRIPTION	CSniperrifle::m_SaveData[] =
 {
-	DEFINE_FIELD( CSniperrifle, m_fNeedAjustBolt, FIELD_BOOLEAN ),
-	DEFINE_FIELD( CSniperrifle, m_iBoltState, FIELD_INTEGER ),
+	DEFINE_FIELD( CSniperrifle, m_fInSpecialReload, FIELD_INTEGER ),
 };
 IMPLEMENT_SAVERESTORE( CSniperrifle, CBasePlayerWeapon )
 

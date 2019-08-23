@@ -108,7 +108,7 @@ We have a minimum width of 1-320 - we could have the field widths scale with it?
 int SCOREBOARD_WIDTH = 320;
 
 // Y positions
-#define ROW_GAP  13
+#define ROW_GAP  (gHUD.m_scrinfo.iCharHeight)
 #define ROW_RANGE_MIN 15
 #define ROW_RANGE_MAX ( ScreenHeight - 50 )
 
@@ -337,7 +337,7 @@ int CHudScoreboard::Draw( float fTime )
 extern float *GetClientColor( int client );
 
 // returns the ypos where it finishes drawing
-int CHudScoreboard::DrawPlayers( int xpos_rel, float list_slot, int nameoffset, char *team )
+int CHudScoreboard::DrawPlayers( int xpos_rel, float list_slot, int nameoffset, const char *team )
 {
 	int can_show_packetloss = 0;
 	int FAR_RIGHT;

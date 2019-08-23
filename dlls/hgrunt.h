@@ -32,6 +32,7 @@ public:
 	BOOL CheckMeleeAttack1(float flDot, float flDist);
 	BOOL CheckRangeAttack1(float flDot, float flDist);
 	BOOL CheckRangeAttack2(float flDot, float flDist);
+	BOOL CheckRangeAttack2Impl( float grenadeSpeed, float flDot, float flDist );
 	void CheckAmmo(void);
 	void SetActivity(Activity NewActivity);
 	void StartTask(Task_t *pTask);
@@ -60,8 +61,10 @@ public:
 	virtual BOOL FOkToSpeak(void);
 	void JustSpoke(void);
 
-	CUSTOM_SCHEDULES;
+	CUSTOM_SCHEDULES
 	static TYPEDESCRIPTION m_SaveData[];
+
+	virtual int SizeForGrapple() { return GRAPPLE_MEDIUM; }
 
 	// checking the feasibility of a grenade toss is kind of costly, so we do it every couple of seconds,
 	// not every server frame.
@@ -95,10 +98,12 @@ public:
 class CHGruntRepel : public CBaseMonster
 {
 public:
-	virtual void Spawn(void);
-	virtual void Precache(void);
-	virtual void EXPORT RepelUse(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value);
+	void Spawn( void );
+	void Precache( void );
+	void EXPORT RepelUse ( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
 	int m_iSpriteTexture;	// Don't save, precache
+	virtual const char* TrooperName();
+	virtual void PrepareBeforeSpawn(CBaseEntity* pEntity);
 };
 
 #endif // HGRUNT_H

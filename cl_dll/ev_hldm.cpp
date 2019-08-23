@@ -327,6 +327,7 @@ void EV_HLDM_DecalGunshot( pmtrace_t *pTrace, int iBulletType )
 		case BULLET_MONSTER_MP5:
 		case BULLET_PLAYER_BUCKSHOT:
 		case BULLET_PLAYER_357:
+		case BULLET_PLAYER_EAGLE:
 		case BULLET_MONSTER_357:
 		case BULLET_PLAYER_556:
 		case BULLET_MONSTER_556:
@@ -467,6 +468,7 @@ void EV_HLDM_FireBullets( int idx, float *forward, float *right, float *up, int 
 				EV_HLDM_DecalGunshot( &tr, iBulletType );
 				break;
 			case BULLET_PLAYER_357:
+			case BULLET_PLAYER_EAGLE:
 				EV_HLDM_PlayTextureSound( idx, &tr, vecSrc, vecEnd, iBulletType );
 				EV_HLDM_DecalGunshot( &tr, iBulletType );
 				break;
@@ -1432,10 +1434,23 @@ enum EGON_FIREMODE
 #define EGON_SOUND_RUN			"weapons/egon_run3.wav"
 #define EGON_SOUND_STARTUP		"weapons/egon_windup2.wav"
 
+#if !defined(ARRAYSIZE)
 #define ARRAYSIZE(p)		( sizeof(p) /sizeof(p[0]) )
+#endif
 
 BEAM *pBeam;
 BEAM *pBeam2;
+TEMPENTITY *pFlare;	// Vit_amiN: egon's beam flare
+
+void EV_EgonFlareCallback( struct tempent_s *ent, float frametime, float currenttime )
+{
+	float delta = currenttime - ent->tentOffset.z;	// time past since the last scale
+	if( delta >= ent->tentOffset.y )
+	{
+		ent->entity.curstate.scale += ent->tentOffset.x * delta;
+		ent->tentOffset.z = currenttime;
+	}
+}
 
 void EV_EgonFire( event_args_t *args )
 {
@@ -1473,7 +1488,7 @@ void EV_EgonFire( event_args_t *args )
 	if( EV_IsLocal( idx ) )
 		gEngfuncs.pEventAPI->EV_WeaponAnimation( g_fireAnims1[gEngfuncs.pfnRandomLong( 0, 3 )], 1 );
 
-	if( iStartup == 1 && EV_IsLocal( idx ) && !pBeam && !pBeam2 && cl_lw->value ) //Adrian: Added the cl_lw check for those lital people that hate weapon prediction.
+	if( iStartup == 1 && EV_IsLocal( idx ) && !( pBeam || pBeam2 || pFlare ) && cl_lw->value ) //Adrian: Added the cl_lw check for those lital people that hate weapon prediction.
 	{
 		vec3_t vecSrc, vecEnd, angles, forward, right, up;
 		pmtrace_t tr;
@@ -1521,7 +1536,15 @@ void EV_EgonFire( event_args_t *args )
 				 pBeam->flags |= ( FBEAM_SINENOISE );
 
 			pBeam2 = gEngfuncs.pEfxAPI->R_BeamEntPoint( idx | 0x1000, tr.endpos, iBeamModelIndex, 99999, 5.0, 0.08, 0.7, 25, 0, 0, r, g, b );
+
+			// Vit_amiN: egon beam flare
+			pFlare = gEngfuncs.pEfxAPI->R_TempSprite( tr.endpos, vec3_origin, 1.0, gEngfuncs.pEventAPI->EV_FindModelIndex( EGON_FLARE_SPRITE ), kRenderGlow, kRenderFxNoDissipation, 1.0, 99999, FTENT_SPRCYCLE | FTENT_PERSIST );
 		}
+	}
+
+	if( pFlare )	// Vit_amiN: store the last mode for EV_EgonStop()
+	{
+		pFlare->tentOffset.x = ( iFireMode == FIRE_WIDE ) ? 1.0f : 0.0f;
 	}
 }
 
@@ -1550,6 +1573,26 @@ void EV_EgonStop( event_args_t *args )
 		{
 			pBeam2->die = 0.0;
 			pBeam2 = NULL;
+		}
+
+		if( pFlare )	// Vit_amiN: egon beam flare
+		{
+			pFlare->die = gEngfuncs.GetClientTime();
+
+			if( gEngfuncs.GetMaxClients() == 1 || !(pFlare->flags & FTENT_NOMODEL) )
+			{
+				if( pFlare->tentOffset.x != 0.0f )	// true for iFireMode == FIRE_WIDE
+				{
+					pFlare->callback = &EV_EgonFlareCallback;
+					pFlare->fadeSpeed = 2.0;			// fade out will take 0.5 sec
+					pFlare->tentOffset.x = 10.0;		// scaling speed per second
+					pFlare->tentOffset.y = 0.1;			// min time between two scales
+					pFlare->tentOffset.z = pFlare->die;	// the last callback run time
+					pFlare->flags = FTENT_FADEOUT | FTENT_CLIENTCUSTOM;
+				}
+			}
+
+			pFlare = NULL;
 		}
 	}
 }
@@ -1862,7 +1905,7 @@ void EV_FireEagle( event_args_t *args )
 
 	VectorCopy( forward, vecAiming );
 
-	EV_HLDM_FireBullets( idx, forward, right, up, 1, vecSrc, vecAiming, 8192, BULLET_PLAYER_357, 0, 0, args->fparam1, args->fparam2 );
+	EV_HLDM_FireBullets( idx, forward, right, up, 1, vecSrc, vecAiming, 8192, BULLET_PLAYER_EAGLE, 0, 0, args->fparam1, args->fparam2 );
 }
 //======================
 //	    DESERT EAGLE END 
@@ -1916,8 +1959,6 @@ void EV_Knife( event_args_t *args )
 
 	if( EV_IsLocal( idx ) )
 	{
-		gEngfuncs.pEventAPI->EV_WeaponAnimation( KNIFE_ATTACK1MISS, 1 );
-
 		switch( ( g_iSwing++ ) % 3 )
 		{
 		case 0:
@@ -1979,7 +2020,7 @@ void EV_FireM249( event_args_t *args )
 	{
 		// Add muzzle flash to current weapon model
 		EV_MuzzleFlash();
-		gEngfuncs.pEventAPI->EV_WeaponAnimation( M249_SHOOT1 + gEngfuncs.pfnRandomLong( 0, 2 ), 1 );
+		gEngfuncs.pEventAPI->EV_WeaponAnimation( M249_SHOOT1 + gEngfuncs.pfnRandomLong( 0, 2 ), args->iparam2 );
 
 		V_PunchAxis( 0, gEngfuncs.pfnRandomFloat( -2, 2 ) );
 	}
@@ -2116,7 +2157,7 @@ void EV_PipeWrench( event_args_t *args )
 				break;
 			}
 
-			gEngfuncs.pEventAPI->EV_WeaponAnimation( PIPEWRENCH_ATTACK1MISS, 1 );
+			//gEngfuncs.pEventAPI->EV_WeaponAnimation( PIPEWRENCH_ATTACK1MISS, 1 );
 
 			// Send weapon anim.
 			switch( ( g_iSwing++ ) % 3 )

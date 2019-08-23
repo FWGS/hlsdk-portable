@@ -21,8 +21,9 @@
 #include "nodes.h"
 #include "player.h"
 #include "gamerules.h"
-#include "xen.h"
+#ifndef CLIENT_DLL
 #include "sporegrenade.h"
+#endif
 
 // special deathmatch shotgun spreads
 #define VECTOR_CONE_DM_SHOTGUN	Vector( 0.08716, 0.04362, 0.00  )// 10 degrees by 5 degrees
@@ -40,7 +41,7 @@ enum sporelauncher_e {
 	SPLAUNCHER_IDLE2
 };
 
-LINK_ENTITY_TO_CLASS(weapon_sporelauncher, CSporelauncher);
+LINK_ENTITY_TO_CLASS(weapon_sporelauncher, CSporelauncher)
 
 void CSporelauncher::Spawn()
 {
@@ -71,7 +72,7 @@ void CSporelauncher::Precache(void)
 
 	PRECACHE_MODEL("sprites/bigspit.spr");
 	m_iSquidSpitSprite = PRECACHE_MODEL("sprites/tinyspit.spr");
-	UTIL_PrecacheOther("monster_spore");
+	UTIL_PrecacheOther("spore");
 
 	m_usSporeFire = PRECACHE_EVENT(1, "events/spore.sc");
 }
@@ -92,7 +93,7 @@ int CSporelauncher::AddToPlayer(CBasePlayer *pPlayer)
 int CSporelauncher::GetItemInfo(ItemInfo *p)
 {
 	p->pszName = STRING(pev->classname);
-	p->pszAmmo1 = "Spores";
+	p->pszAmmo1 = "spores";
 	p->iMaxAmmo1 = SPORE_MAX_CARRY;
 	p->pszAmmo2 = NULL;
 	p->iMaxAmmo2 = -1;
@@ -115,21 +116,8 @@ BOOL CSporelauncher::Deploy()
 
 void CSporelauncher::PrimaryAttack()
 {
-	// don't fire underwater
-	if (m_pPlayer->pev->waterlevel == 3)
-	{
-		PlayEmptySound();
-		m_flNextPrimaryAttack = GetNextAttackDelay(0.15);
-		return;
-	}
-
 	if (m_iClip <= 0)
-	{
-		Reload();
-		if (m_iClip == 0)
-			PlayEmptySound();
 		return;
-	}
 
 	m_pPlayer->m_iWeaponVolume = LOUD_GUN_VOLUME;
 	m_pPlayer->m_iWeaponFlash = NORMAL_GUN_FLASH;
@@ -145,38 +133,26 @@ void CSporelauncher::PrimaryAttack()
 
 
 	// m_pPlayer->pev->effects = (int)(m_pPlayer->pev->effects) | EF_MUZZLEFLASH;
-
-	Vector vecSrc = m_pPlayer->GetGunPosition();
-	Vector vecAiming = m_pPlayer->GetAutoaimVector(AUTOAIM_5DEGREES);
-
-	Vector vecDir;
-	Vector vecVel;
-
-	UTIL_MakeVectors(m_pPlayer->pev->v_angle);
-
-	vecSrc = vecSrc + gpGlobals->v_forward	* 16;
-	vecSrc = vecSrc + gpGlobals->v_right	* 8;
-	vecSrc = vecSrc + gpGlobals->v_up		* -12;
-
-	vecVel = gpGlobals->v_forward * 900;
-	vecDir = gpGlobals->v_forward + gpGlobals->v_right + gpGlobals->v_up;
-	vecDir = vecDir;
+	m_pPlayer->SetAnimation(PLAYER_ATTACK1);
+	UTIL_MakeVectors( m_pPlayer->pev->v_angle );
+	Vector vecSrc = m_pPlayer->GetGunPosition( ) + gpGlobals->v_forward * 16 + gpGlobals->v_right * 8 + gpGlobals->v_up * -8;
 
 #ifndef CLIENT_DLL
-	CSporeGrenade::ShootContact(m_pPlayer->pev, vecSrc, vecVel);
+		UTIL_MakeVectors( m_pPlayer->pev->v_angle );
+		CSporeGrenade::ShootContact( m_pPlayer->pev, vecSrc, gpGlobals->v_forward * 1500 );
 #endif
 
 	PLAYBACK_EVENT_FULL(
 		flags,
-		m_pPlayer->edict(), 
-		m_usSporeFire, 
-		0.0, 
-		(float *)&g_vecZero, 
-		(float *)&g_vecZero, 
-		vecDir.x,
-		vecDir.y,
-		*(int*)&vecDir.z,
-		m_iSquidSpitSprite, 
+		m_pPlayer->edict(),
+		m_usSporeFire,
+		0.0,
+		(float *)&g_vecZero,
+		(float *)&g_vecZero,
+		vecSrc.x,
+		vecSrc.y,
+		*(int*)&vecSrc.z,
+		m_iSquidSpitSprite,
 		0,
 		TRUE);
 
@@ -202,20 +178,8 @@ void CSporelauncher::PrimaryAttack()
 
 void CSporelauncher::SecondaryAttack(void)
 {
-	// don't fire underwater
-	if (m_pPlayer->pev->waterlevel == 3)
-	{
-		PlayEmptySound();
-		m_flNextPrimaryAttack = GetNextAttackDelay(0.15);
-		return;
-	}
-
 	if (m_iClip <= 0)
-	{
-		Reload();
-		PlayEmptySound();
 		return;
-	}
 
 	m_pPlayer->m_iWeaponVolume = LOUD_GUN_VOLUME;
 	m_pPlayer->m_iWeaponFlash = NORMAL_GUN_FLASH;
@@ -230,43 +194,30 @@ void CSporelauncher::SecondaryAttack(void)
 	flags = 0;
 #endif
 
-	m_pPlayer->pev->effects = (int)(m_pPlayer->pev->effects) | EF_MUZZLEFLASH;
+	//m_pPlayer->pev->effects = (int)(m_pPlayer->pev->effects) | EF_MUZZLEFLASH;
 
 	// player "shoot" animation
 	m_pPlayer->SetAnimation(PLAYER_ATTACK1);
-
-	Vector vecSrc = m_pPlayer->GetGunPosition();
-	Vector vecAiming = m_pPlayer->GetAutoaimVector(AUTOAIM_2DEGREES);
-
-	Vector vecDir;
-	Vector vecVel;
-
-	UTIL_MakeVectors(m_pPlayer->pev->v_angle);
-
-	vecSrc = vecSrc + gpGlobals->v_forward	* 16;
-	vecSrc = vecSrc + gpGlobals->v_right	* 8;
-	vecSrc = vecSrc + gpGlobals->v_up		* -12;
-
-	vecVel = gpGlobals->v_forward * 800;
-	vecDir = gpGlobals->v_forward + gpGlobals->v_right + gpGlobals->v_up;
-	vecDir = vecDir;
+	UTIL_MakeVectors( m_pPlayer->pev->v_angle );
+	Vector vecSrc = m_pPlayer->GetGunPosition( ) + gpGlobals->v_forward * 16 + gpGlobals->v_right * 8 + gpGlobals->v_up * -8;
 
 #ifndef CLIENT_DLL
-	CSporeGrenade::ShootTimed(m_pPlayer->pev, vecSrc, vecVel, RANDOM_FLOAT(5, 6));
+		UTIL_MakeVectors( m_pPlayer->pev->v_angle );
+		CSporeGrenade::ShootTimed(m_pPlayer->pev, vecSrc, gpGlobals->v_forward * 1000, false);
 #endif
 
 	PLAYBACK_EVENT_FULL(
-		flags, 
+		flags,
 		m_pPlayer->edict(),
-		m_usSporeFire, 
-		0.0, 
+		m_usSporeFire,
+		0.0,
 		(float *)&g_vecZero,
 		(float *)&g_vecZero,
-		vecDir.x, 
-		vecDir.y,
-		*(int*)&vecDir.z,
+		vecSrc.x,
+		vecSrc.y,
+		*(int*)&vecSrc.z,
 		m_iSquidSpitSprite,
-		0, 
+		0,
 		0);
 
 	if (!m_iClip && m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0)
@@ -366,14 +317,19 @@ void CSporelauncher::WeaponIdle(void)
 		{
 			int iAnim;
 			float flRand = UTIL_SharedRandomFloat(m_pPlayer->random_seed, 0, 1);
-			if (flRand <= 0.5)
+			if (flRand <= 0.4)
 			{
 				iAnim = SPLAUNCHER_IDLE;
 				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 2.0f;
 			}
-			else
+			else if (flRand <= 0.8)
 			{
 				iAnim = SPLAUNCHER_IDLE2;
+				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 4.0f;
+			}
+			else
+			{
+				iAnim = SPLAUNCHER_FIDGET;
 				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 4.0f;
 			}
 
@@ -381,30 +337,3 @@ void CSporelauncher::WeaponIdle(void)
 		}
 	}
 }
-
-
-class CSporeAmmo : public CBasePlayerAmmo
-{
-	void Spawn(void)
-	{
-		Precache();
-		SET_MODEL(ENT(pev), "models/spore.mdl");
-		CBasePlayerAmmo::Spawn();
-	}
-	void Precache(void)
-	{
-		PRECACHE_MODEL("models/spore.mdl");
-		PRECACHE_SOUND("weapons/spore_ammo.wav");
-	}
-	BOOL AddAmmo(CBaseEntity *pOther)
-	{
-		int bResult = (pOther->GiveAmmo(AMMO_SPORE_GIVE, "Spores", SPORE_MAX_CARRY) != -1);
-		if (bResult)
-		{
-			EMIT_SOUND(ENT(pev), CHAN_ITEM, "weapons/spore_ammo.wav", 1, ATTN_NORM);
-		}
-		return bResult;
-	}
-};
-
-LINK_ENTITY_TO_CLASS(ammo_spore, CSporeAmmo);

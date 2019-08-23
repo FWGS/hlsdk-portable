@@ -170,7 +170,7 @@ public:
 // the default amount of ammo that comes with each gun when it spawns
 #define GLOCK_DEFAULT_GIVE			17
 #define PYTHON_DEFAULT_GIVE			6
-#define MP5_DEFAULT_GIVE			25
+#define MP5_DEFAULT_GIVE			50
 #define MP5_DEFAULT_AMMO			25
 #define MP5_M203_DEFAULT_GIVE		0
 #define SHOTGUN_DEFAULT_GIVE		12
@@ -219,6 +219,8 @@ typedef	enum
 	BULLET_PLAYER_CROWBAR, // crowbar swipe
 	BULLET_PLAYER_556, // m249 
 	BULLET_PLAYER_762, // sniperrifle
+	BULLET_PLAYER_EAGLE, // desert eagle
+
 	BULLET_MONSTER_9MM,
 	BULLET_MONSTER_MP5,
 	BULLET_MONSTER_12MM,
@@ -1145,31 +1147,39 @@ private:
 	unsigned short m_usEagle;
 };
 
-class CGrappleTonguetip;
+class CBarnacleGrappleTip;
 
-class CGrapple : public CBasePlayerWeapon
+class CBarnacleGrapple : public CBasePlayerWeapon
 {
 public:
-
 #ifndef CLIENT_DLL
-	int		Save(CSave &save);
-	int		Restore(CRestore &restore);
+	virtual int		Save( CSave &save );
+	virtual int		Restore( CRestore &restore );
 	static	TYPEDESCRIPTION m_SaveData[];
 #endif
+	enum FireState
+	{
+		OFF		= 0,
+		CHARGE	= 1
+	};
 
-	void Spawn(void);
-	void Precache(void);
+	void Precache( void );
+	void Spawn( void );
 	int iItemSlot(void) { return 1; }
+	void EndAttack( void );
+
 	int GetItemInfo(ItemInfo *p);
+	int AddToPlayer( CBasePlayer* pPlayer );
+	BOOL Deploy();
+	void Holster( int skiplocal /* = 0 */ );
+	void WeaponIdle( void );
+	void PrimaryAttack( void );
 
-	void PrimaryAttack(void);
-	BOOL Deploy(void);
-	void Holster(int skiplocal = 0);
-	void WeaponIdle(void);
-	void ItemPostFrame(void);
+	void Fire( Vector vecOrigin, Vector vecDir );
 
-	virtual BOOL ShouldWeaponIdle(void) { return TRUE; }
-
+	void CreateEffect( void );
+	void UpdateEffect( void );
+	void DestroyEffect( void );
 	virtual BOOL UseDecrement(void)
 	{
 #if defined( CLIENT_WEAPONS )
@@ -1179,58 +1189,17 @@ public:
 #endif
 	}
 
-	void Fire(void);
-	void FireWait(void);
-	void FireReach(void);
-	void FireTravel(void);
-	void FireRelease(void);
-
-	void Fire2(void);
-
-	void OnTongueTipHitSurface( const Vector& vecTarget );
-	void OnTongueTipHitEntity( CBaseEntity* pEntity );
-
-	void StartPull( void );
-	void StopPull( void );
-	void Pull( void );
-
-	BOOL IsTongueColliding( const Vector& vecShootOrigin, const Vector& vecTipPos );
-	void CheckFireEligibility( void );
-	BOOL CheckTargetProximity( void );
-
-	void CreateTongueTip( void );
-	void DestroyTongueTip( void );
-	void UpdateTongueTip( void );
-
-	void CreateBeam( CBaseEntity* pTongueTip );
-	void DestroyBeam( void );
-	void UpdateBeam( void );
-
-	void StartPullSound( void );
-	void UpdatePullSound( void );
-	void ResetPullSound( void );
-
-	BOOL CanAttack(float attack_time, float curtime, BOOL isPredicted);
-
-	enum GRAPPLE_FIRESTATE 
-	{ 
-		FIRESTATE_NONE = 0, 
-		FIRESTATE_FIRE,
-		FIRESTATE_FIRE2,
-		FIRESTATE_WAIT, 
-		FIRESTATE_REACH, 
-		FIRESTATE_TRAVEL, 
-		FIRESTATE_RELEASE,
-	};
-
-	int		m_iFirestate;
-	int		m_iHitFlags;
-	BOOL	m_fTipHit;
-	CGrappleTonguetip* m_pTongueTip;
-	CBeam*	m_pBeam;
-	float	m_flNextPullSoundTime;
-	BOOL	m_fPlayPullSound;
 private:
+	CBarnacleGrappleTip* m_pTip;
+
+	CBeam* m_pBeam;
+
+	float m_flShootTime;
+	float m_flDamageTime;
+
+	bool m_bGrappling;
+	bool m_bMissed;
+	bool m_bMomentaryStuck;
 };
 
 
@@ -1282,7 +1251,9 @@ public:
 
 	void PrimaryAttack(void);
 	BOOL Deploy(void);
+	void Holster(int skiplocal = 0);
 	void Reload(void);
+	void WeaponTick();
 	void WeaponIdle(void);
 	virtual BOOL ShouldWeaponIdle(void) { return TRUE; }
 	float m_flNextAnimTime;
@@ -1297,12 +1268,7 @@ public:
 #endif
 	}
 
-	void ReloadStart( void );
-	void ReloadInsert( void );
-
-	enum M249_RELOAD_STATE { RELOAD_STATE_NONE = 0, RELOAD_STATE_OPEN, RELOAD_STATE_FILL };
-
-	int m_iReloadState;
+	void UpdateTape();
 
 private:
 	unsigned short m_usM249;
@@ -1345,7 +1311,6 @@ public:
 	static	TYPEDESCRIPTION m_SaveData[];
 #endif
 
-
 	void Spawn(void);
 	void Precache(void);
 	int iItemSlot(void) { return 1; }
@@ -1355,13 +1320,16 @@ public:
 
 	void PrimaryAttack(void);
 	void SecondaryAttack(void);
-	void ItemPostFrame(void);
-	virtual BOOL ShouldWeaponIdle(void) { return FALSE; };
-	int Swing(int fFirst, BOOL fIsPrimary);
+	int Swing(int fFirst);
 	BOOL Deploy(void);
+	void WeaponIdle(void);
 	void Holster(int skiplocal = 0);
+	void BigSwing(void);
+
 	int m_iSwing;
 	TraceResult m_trHit;
+	int m_iSwingMode;
+	float m_flBigSwingStart;
 
 	virtual BOOL UseDecrement(void)
 	{
@@ -1372,30 +1340,13 @@ public:
 #endif
 	}
 private:
-
 	unsigned short m_usPWrench;
-
-	void EXPORT WindUp(void);
-	void EXPORT WindLoop(void);
-	void EXPORT SwingAgain2(void);
-	BOOL CanAttack(float attack_time, float curtime, BOOL isPredicted);
-
-	enum PWRENCH_FIRESTATE { FIRESTATE_NONE = 0, FIRESTATE_WINDUP, FIRESTATE_WINDLOOP, FIRESTATE_BIGHIT };
-	int m_iFirestate;
-	float m_flHoldStartTime;
 };
 
 
 class CShockrifle : public CHgun
 {
 public:
-
-#ifndef CLIENT_DLL
-	int		Save(CSave &save);
-	int		Restore(CRestore &restore);
-	static	TYPEDESCRIPTION m_SaveData[];
-#endif
-
 	void Spawn(void);
 	void Precache(void);
 	int iItemSlot(void) { return 7; }
@@ -1408,12 +1359,8 @@ public:
 	void Holster(int skiplocal = 0);
 	void Reload(void);
 	void WeaponIdle(void);
-	void ItemPostFrame(void);;
-
-	int m_fShouldUpdateEffects;
-	int m_flBeamLifeTime;
-
-	void UpdateEffects();
+	void CreateChargeEffect(void);
+	void ClearBeams(void);
 	
 	virtual BOOL UseDecrement(void)
 	{
@@ -1425,6 +1372,8 @@ public:
 	}
 private:
 	unsigned short m_usShockFire;
+
+	CBeam* m_pBeam[4];
 };
 
 class CSniperrifle : public CBasePlayerWeapon
@@ -1448,9 +1397,8 @@ public:
 	void Holster(int skiplocal = 0);
 	void Reload(void);
 	void WeaponIdle(void);
-	void ItemPostFrame(void);
 
-	BOOL ShouldWeaponIdle(void) { return TRUE; };
+	BOOL ShouldWeaponIdle(void) { return TRUE; }
 
 	BOOL m_fInZoom;// don't save this. 
 
@@ -1462,11 +1410,6 @@ public:
 		return FALSE;
 #endif
 	}
-
-	BOOL m_fNeedAjustBolt;
-	int	 m_iBoltState;
-
-	enum SNIPER_BOLTSTATE { BOLTSTATE_FINE = 0, BOLTSTATE_ADJUST, BOLTSTATE_ADJUSTING, };
 
 private:
 	unsigned short m_usSniper;

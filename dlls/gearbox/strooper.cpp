@@ -115,7 +115,14 @@ public:
 	void MonsterThink();
 	void Precache(void);
 	int  Classify(void);
+	BOOL CheckRangeAttack1(float flDot, float flDist);
+	BOOL CheckRangeAttack2(float flDot, float flDist);
 	void HandleAnimEvent(MonsterEvent_t *pEvent);
+	void SetObjectCollisionBox( void )
+	{
+		pev->absmin = pev->origin + Vector( -24, -24, 0 );
+		pev->absmax = pev->origin + Vector( 24, 24, 72 );
+	}
 
 	void SetActivity(Activity NewActivity);
 
@@ -123,6 +130,11 @@ public:
 	void PainSound(void);
 	void IdleSound(void);
 	void GibMonster(void);
+
+	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType);
+	virtual int SizeForGrapple() { return GRAPPLE_LARGE; }
+
+	void DropShockRoach();
 
 	int	Save(CSave &save);
 	int Restore(CRestore &restore);
@@ -142,7 +154,7 @@ public:
 	static const char *pGruntSentences[];
 };
 
-LINK_ENTITY_TO_CLASS(monster_shocktrooper, CStrooper);
+LINK_ENTITY_TO_CLASS(monster_shocktrooper, CStrooper)
 
 TYPEDESCRIPTION	CStrooper::m_SaveData[] =
 {
@@ -152,7 +164,7 @@ TYPEDESCRIPTION	CStrooper::m_SaveData[] =
 	DEFINE_FIELD(CStrooper, m_eyeChangeTime, FIELD_TIME),
 };
 
-IMPLEMENT_SAVERESTORE(CStrooper, CHGrunt);
+IMPLEMENT_SAVERESTORE(CStrooper, CHGrunt)
 
 const char *CStrooper::pGruntSentences[] =
 {
@@ -198,25 +210,9 @@ void CStrooper::SpeakSentence( void )
 //=========================================================
 void CStrooper::GibMonster(void)
 {
-	Vector	vecGunPos;
-	Vector	vecGunAngles;
-
-	if (GetBodygroup(1) != 1)
-	{// throw a shockroach if the shock trooper has one
-		GetAttachment(0, vecGunPos, vecGunAngles);
-
-		CBaseEntity* pRoach = DropItem("monster_shockroach", vecGunPos, vecGunAngles);
-
-		if (pRoach)
-		{
-			pRoach->pev->owner = edict();
-	
-			if (m_hEnemy)
-				pRoach->pev->angles = (pev->origin - m_hEnemy->pev->origin).Normalize();
-
-			// Remove any pitch.
-			pRoach->pev->angles.x = 0;
-		}
+	if (GetBodygroup(GUN_GROUP) != GUN_NONE)
+	{
+		DropShockRoach();
 	}
 
 	EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "common/bodysplat.wav", 1, ATTN_NORM );
@@ -274,9 +270,22 @@ void CStrooper::IdleSound(void)
 //=========================================================
 int	CStrooper::Classify(void)
 {
-	return CLASS_ALIEN_MILITARY;
+	return CLASS_RACEX_SHOCK;
 }
 
+BOOL CStrooper::CheckRangeAttack1(float flDot, float flDist)
+{
+	return m_cAmmoLoaded >= 1 && CHGrunt::CheckRangeAttack1(flDot, flDist);
+}
+
+BOOL CStrooper::CheckRangeAttack2( float flDot, float flDist )
+{
+	if( !FBitSet( pev->weapons, STROOPER_HANDGRENADE ) )
+	{
+		return FALSE;
+	}
+	return CheckRangeAttack2Impl(gSkillData.strooperGrenadeSpeed, flDot, flDist);
+}
 
 //=========================================================
 // HandleAnimEvent - catches the monster-specific messages
@@ -288,34 +297,9 @@ void CStrooper::HandleAnimEvent(MonsterEvent_t *pEvent)
 	{
 	case STROOPER_AE_DROP_GUN:
 	{
-		Vector	vecGunPos;
-		Vector	vecGunAngles;
-
-		GetAttachment(0, vecGunPos, vecGunAngles);
-
-		// switch to body group with no gun.
-		SetBodygroup(GUN_GROUP, GUN_NONE);
-
-		Vector vecDropAngles = vecGunAngles;
-
-
-		if (m_hEnemy)
-			vecDropAngles = (m_hEnemy->pev->origin - pev->origin).Normalize();
-
-		// Remove any pitch.
-		vecDropAngles.x = 0;
-
-		// now spawn a shockroach.
-		CBaseEntity* pRoach = DropItem("monster_shockroach", vecGunPos, vecDropAngles);
-		if (pRoach)
+		if (GetBodygroup(GUN_GROUP) != GUN_NONE)
 		{
-			pRoach->pev->owner = edict();
-
-			if (m_hEnemy)
-				pRoach->pev->angles = (pev->origin - m_hEnemy->pev->origin).Normalize();
-
-			// Remove any pitch.
-			pRoach->pev->angles.x = 0;
+			DropShockRoach();
 		}
 	}
 	break;
@@ -516,6 +500,8 @@ void CStrooper::Precache()
 
 	PRECACHE_SOUND("zombie/claw_miss2.wav");// because we use the basemonster SWIPE animation event
 
+	UTIL_PrecacheOther("shock_beam");
+	UTIL_PrecacheOther("spore");
 	UTIL_PrecacheOther("monster_shockroach");
 
 	// get voice pitch
@@ -590,6 +576,37 @@ void CStrooper::DeathSound(void)
 		EMIT_SOUND(ENT(pev), CHAN_VOICE, "shocktrooper/shock_trooper_die4.wav", 1, ATTN_IDLE);
 		break;
 	}
+}
+
+//=========================================================
+// TraceAttack - reimplemented in shock trooper because they never have helmets
+//=========================================================
+void CStrooper::TraceAttack(entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType)
+{
+	CSquadMonster::TraceAttack(pevAttacker, flDamage, vecDir, ptr, bitsDamageType);
+}
+
+void CStrooper::DropShockRoach()
+{
+	Vector	vecGunPos;
+	Vector	vecGunAngles;
+
+	GetAttachment(0, vecGunPos, vecGunAngles);
+	SetBodygroup(GUN_GROUP, GUN_NONE);
+
+	Vector vecDropAngles = vecGunAngles;
+
+	// Remove any pitch.
+	vecDropAngles.x = 0;
+	vecDropAngles.z = 0;
+
+	Vector vecPos = pev->origin;
+	vecPos.z += 32;
+
+	// now spawn a shockroach.
+	CBaseEntity* roach = CBaseEntity::Create( "monster_shockroach", vecPos, vecDropAngles );
+	if (ShouldFadeOnDeath())
+		roach->pev->spawnflags |= SF_MONSTER_FADECORPSE;
 }
 
 

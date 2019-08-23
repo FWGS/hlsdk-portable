@@ -21,46 +21,17 @@
 #include "player.h"
 #include "gamerules.h"
 #include "shake.h"
+#include "displacerball.h"
 
 #ifndef CLIENT_DLL
 
 extern edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer );
 
-LINK_ENTITY_TO_CLASS(info_displacer_xen_target, CPointEntity);
-LINK_ENTITY_TO_CLASS(info_displacer_earth_target, CPointEntity);
+LINK_ENTITY_TO_CLASS(info_displacer_xen_target, CPointEntity)
+LINK_ENTITY_TO_CLASS(info_displacer_earth_target, CPointEntity)
 
 int iPortalSprite = 0;
 int iRingSprite = 0;
-//=========================================================
-// Displacement field
-//=========================================================
-class CDisplacerBall : public CBaseEntity
-{
-public:
-	void Spawn( void );
-
-	static void Shoot(entvars_t *pevOwner, Vector vecStart, Vector vecVelocity, Vector vecAngles);
-	static void SelfCreate(entvars_t *pevOwner, Vector vecStart);
-
-	void Touch(CBaseEntity *pOther);
-	void EXPORT ExplodeThink( void );
-	void EXPORT KillThink( void );
-	void Circle( void );
-
-	virtual int		Save(CSave &save);
-	virtual int		Restore(CRestore &restore);
-	static	TYPEDESCRIPTION m_SaveData[];
-
-	CBeam* m_pBeam[8];
-
-	void EXPORT FlyThink( void );
-	void ClearBeams( void );
-	void ArmBeam( int iSide );
-
-	int m_iBeams;
-
-	CBaseEntity *pRemoveEnt;
-};
 
 LINK_ENTITY_TO_CLASS(displacer_ball, CDisplacerBall)
 
@@ -74,6 +45,7 @@ IMPLEMENT_SAVERESTORE(CDisplacerBall, CBaseEntity);
 
 void CDisplacerBall::Spawn(void)
 {
+	pev->classname = MAKE_STRING("displacer_ball");
 	pev->movetype = MOVETYPE_FLY;
 
 	pev->solid = SOLID_BBOX;
@@ -169,9 +141,9 @@ void CDisplacerBall::Shoot(entvars_t *pevOwner, Vector vecStart, Vector vecVeloc
 void CDisplacerBall::SelfCreate(entvars_t *pevOwner,Vector vecStart)
 {
 	CDisplacerBall *pSelf = GetClassPtr((CDisplacerBall *)NULL);
+	UTIL_SetOrigin(pSelf->pev, vecStart);
 	pSelf->Spawn();
 	pSelf->ClearBeams();
-	UTIL_SetOrigin(pSelf->pev, vecStart);
 
 	pSelf->pev->owner = ENT(pevOwner);
 	pSelf->Circle();
@@ -288,7 +260,7 @@ void CDisplacerBall::ExplodeThink( void )
 
 	UTIL_Remove( this );
 
-	::RadiusDamage( pev->origin, pev, pevOwner, 300, 300, CLASS_NONE, DMG_ENERGYBEAM );
+	::RadiusDamage( pev->origin, pev, pevOwner, gSkillData.plrDmgDisplacer, gSkillData.plrDisplacerRadius, CLASS_NONE, DMG_ENERGYBEAM );
 }
 
 void CDisplacerBall::ClearBeams( void )
@@ -306,6 +278,9 @@ void CDisplacerBall::ClearBeams( void )
 
 #endif // !defined ( CLIENT_DLL )
 
+#define DISPLACER_SECONDARY_USAGE 60
+#define DISPLACER_PRIMARY_USAGE 20
+
 enum displacer_e {
 	DISPLACER_IDLE1 = 0,
 	DISPLACER_IDLE2,
@@ -316,10 +291,7 @@ enum displacer_e {
 	DISPLACER_HOLSTER,
 };
 
-#define DISPLACER_SECONDARY_USAGE 60
-#define DISPLACER_PRIMARY_USAGE 20
-
-LINK_ENTITY_TO_CLASS(weapon_displacer, CDisplacer);
+LINK_ENTITY_TO_CLASS(weapon_displacer, CDisplacer)
 
 //=========================================================
 // Purpose:
@@ -414,7 +386,7 @@ void CDisplacer::Precache(void)
 #endif
 
 	UTIL_PrecacheOther("displacer_ball");
-	
+
 	m_usDisplacer = PRECACHE_EVENT(1, "events/displacer.sc");
 }
 
@@ -535,7 +507,7 @@ void CDisplacer::SpinUp( void )
 
 	LightningEffect();
 
-	if( m_iFireMode == FIREMODE_FORWARD ) 
+	if( m_iFireMode == FIREMODE_FORWARD )
 	{
 		EMIT_SOUND( edict(), CHAN_WEAPON, "weapons/displacer_spin.wav", 1, ATTN_NORM );
 		SetThink (&CDisplacer::Displace);
@@ -561,7 +533,7 @@ void CDisplacer::Displace( void )
 	EMIT_SOUND( edict(), CHAN_WEAPON, "weapons/displacer_fire.wav", 1, ATTN_NORM );
 
 	// player "shoot" animation
-        m_pPlayer->SetAnimation( PLAYER_ATTACK1 );	
+        m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
 
 	m_pPlayer->pev->punchangle.x -= 2;
 #ifndef CLIENT_DLL
@@ -602,7 +574,7 @@ void CDisplacer::Teleport( void )
 		if( !m_pPlayer->m_fInXen )
 			pszName = "info_displacer_xen_target";
 		else
-			pszName = "info_displacer_earth_target"; // TODO: Implement trigger_xen_return
+			pszName = "info_displacer_earth_target";
 		pTarget = UTIL_FindEntityByClassname( 0, pszName );
 	}
 
@@ -618,12 +590,12 @@ void CDisplacer::Teleport( void )
 
 		UTIL_CleanSpawnPoint( tmp, 50 );
 
-		EMIT_SOUND( edict(), CHAN_BODY, "weapons/displacer_self.wav", 1, ATTN_NORM );
+		EMIT_SOUND( m_pPlayer->edict(), CHAN_WEAPON, "weapons/displacer_self.wav", 1, ATTN_NORM );
 	 	CDisplacerBall::SelfCreate(m_pPlayer->pev, m_pPlayer->pev->origin);
 
 		// make origin adjustments (origin in center, not at feet)
-		tmp.z -= m_pPlayer->pev->mins.z + 36;
-		tmp.z++;
+		//tmp.z -= m_pPlayer->pev->mins.z + 36;
+		tmp.z+=37;
 
 		m_pPlayer->pev->flags &= ~FL_ONGROUND;
 
@@ -640,7 +612,7 @@ void CDisplacer::Teleport( void )
 		{
 			m_pPlayer->m_fInXen = !m_pPlayer->m_fInXen;
 			if (m_pPlayer->m_fInXen)
-				m_pPlayer->pev->gravity = 0.5;
+				m_pPlayer->pev->gravity = 0.6;
 			else
 				m_pPlayer->pev->gravity = 1.0;
 		}
@@ -667,7 +639,7 @@ void CDisplacer::LightningEffect( void )
 	for( int i = 2; i < 5; ++i )
 	{
 		if( !m_pBeam[m_iBeams] )
-			m_pBeam[m_iBeams] = CBeam::BeamCreate( "sprites/lgtning.spr", 16 ); 
+			m_pBeam[m_iBeams] = CBeam::BeamCreate( "sprites/lgtning.spr", 16 );
 		m_pBeam[m_iBeams]->EntsInit( m_pPlayer->entindex(), m_pPlayer->entindex() );
  		m_pBeam[m_iBeams]->SetStartAttachment( i );
 		m_pBeam[m_iBeams]->SetEndAttachment( i == 4 ? i - 2 : i + 1 );

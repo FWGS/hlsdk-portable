@@ -47,6 +47,8 @@ public:
 	virtual int Restore( CRestore &restore );
 	static TYPEDESCRIPTION m_SaveData[];
 
+	virtual int SizeForGrapple() { return GRAPPLE_FIXED; }
+
 	float m_flAltitude;
 	float m_flCachedLength;	// tongue cached length
 	float m_flKillVictimTime;
@@ -169,6 +171,7 @@ void CBarnacle::BarnacleThink( void )
 	}
 #endif
 	pev->nextthink = gpGlobals->time + 0.1;
+	GlowShellUpdate();
 
 	if( m_hEnemy != 0 )
 	{
@@ -388,6 +391,7 @@ void CBarnacle::Killed( entvars_t *pevAttacker, int iGib )
 void CBarnacle::WaitTillDead( void )
 {
 	pev->nextthink = gpGlobals->time + 0.1;
+	GlowShellUpdate();
 
 	float flInterval = StudioFrameAdvance( 0.1 );
 	DispatchAnimEvents( flInterval );

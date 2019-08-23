@@ -69,7 +69,6 @@ CTripmine g_Tripmine;
 CSqueak g_Snark;
 CDisplacer g_Displacer;
 CEagle g_Eagle;
-CGrapple g_Grapple;
 CKnife g_Knife;
 CM249 g_M249;
 CPenguin g_Penguin;
@@ -77,6 +76,7 @@ CPipeWrench g_PipeWrench;
 CShockrifle g_Shock;
 CSniperrifle g_Sniper;
 CSporelauncher g_Spore;
+CBarnacleGrapple g_Grapple;
 
 /*
 ======================
@@ -628,7 +628,6 @@ void HUD_InitClientWeapons( void )
 	HUD_PrepEntity( &g_Snark, &player );
 	HUD_PrepEntity( &g_Displacer, &player );
 	HUD_PrepEntity( &g_Eagle, &player );
-	HUD_PrepEntity( &g_Grapple, &player );
 	HUD_PrepEntity( &g_Knife, &player );
 	HUD_PrepEntity( &g_M249, &player );
 	HUD_PrepEntity( &g_Penguin, &player );
@@ -636,6 +635,7 @@ void HUD_InitClientWeapons( void )
 	HUD_PrepEntity( &g_Shock, &player );
 	HUD_PrepEntity( &g_Sniper, &player );
 	HUD_PrepEntity( &g_Spore, &player );
+	HUD_PrepEntity( &g_Grapple, &player );
 }
 
 /*
@@ -744,9 +744,6 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 		case WEAPON_DISPLACER:
 			pWeapon = &g_Displacer;
 			break;
-		case WEAPON_GRAPPLE:
-			pWeapon = &g_Grapple;
-			break;
 		case WEAPON_EAGLE:
 			pWeapon = &g_Eagle;
 			break;
@@ -770,6 +767,9 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 			break;
 		case WEAPON_SPORELAUNCHER:
 			pWeapon = &g_Spore;
+			break;
+		case WEAPON_GRAPPLE:
+			pWeapon = &g_Grapple;
 			break;
 	}
 
@@ -884,6 +884,10 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 	{
 		( (CEagle *)player.m_pActiveItem )->m_fEagleLaserActive = (int)from->client.vuser2[1];
 	}
+	if( player.m_pActiveItem->m_iId == WEAPON_PIPEWRENCH )
+	{
+		( (CPipeWrench *)player.m_pActiveItem )->m_iSwingMode = (int)from->client.vuser2[1];
+	}
 	else if( player.m_pActiveItem->m_iId == WEAPON_M249 )
 	{
 		player.ammo_556 = (int)from->client.vuser2[1];
@@ -972,6 +976,10 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 	{
 		from->client.vuser2[1] = ( (CEagle *)player.m_pActiveItem )->m_fEagleLaserActive;;
 	}
+	else if( player.m_pActiveItem->m_iId == WEAPON_PIPEWRENCH )
+	{
+		from->client.vuser2[1] = ( (CPipeWrench *)player.m_pActiveItem )->m_iSwingMode;
+	}
 	else if( player.m_pActiveItem->m_iId == WEAPON_M249 )
 	{
 		from->client.vuser2[1] = player.ammo_556;
@@ -1001,6 +1009,16 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 		//Show laser sight/scope combo
 		if( pWeapon == &g_Python && bIsMultiplayer() )
 			 body = 1;
+
+		if (pWeapon == &g_M249) {
+			if (g_M249.m_iClip == 0) {
+				body = 8;
+			} else if (g_M249.m_iClip > 0 && g_M249.m_iClip < 8) {
+				body = 9 - g_M249.m_iClip;
+			} else {
+				body = 0;
+			}
+		}
 
 		// Force a fixed anim down to viewmodel
 		HUD_SendWeaponAnim( to->client.weaponanim, body, 1 );
