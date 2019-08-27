@@ -75,7 +75,7 @@ void CHud::Think( void )
 	if( m_iFOV == 0 )
 	{
 		// only let players adjust up in fov,  and only if they are not overriden by something else
-		m_iFOV = max( default_fov->value, 90 );  
+		m_iFOV = Q_max( default_fov->value, 90 );  
 	}
 }
 
