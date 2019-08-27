@@ -598,6 +598,7 @@ void CCTFMultiplay::ChangePlayerTeam(CBasePlayer *pPlayer, int iTeam)
 	WRITE_BYTE(ENTINDEX(pPlayer->edict()));
 	WRITE_SHORT(pPlayer->pev->frags);
 	WRITE_SHORT(pPlayer->m_iDeaths);
+	WRITE_SHORT(0);
 	WRITE_SHORT(pPlayer->pev->team);
 	MESSAGE_END();
 
