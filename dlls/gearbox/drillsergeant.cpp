@@ -20,6 +20,7 @@
 #include	"cbase.h"
 #include	"monsters.h"
 #include	"schedule.h"
+#include	"defaultai.h"
 #include	"weapons.h"
 #include	"talkmonster.h"
 #include	"soundent.h"
@@ -32,15 +33,20 @@ public:
 	void SetYawSpeed(void);
 	int ISoundMask(void);
 	virtual int ObjectCaps( void ) { return CTalkMonster::ObjectCaps() | FCAP_IMPULSE_USE; }
+	int Classify() { return CLASS_PLAYER_ALLY_MILITARY; }
 	void DeathSound( void );
 	void PainSound( void );
 
+	Schedule_t *GetScheduleOfType(int Type);
+	Schedule_t *GetSchedule(void);
+
 	void DeclineFollowing();
-	void EXPORT DrillUse(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value);
 
 	virtual int Save( CSave &save );
 	virtual int Restore( CRestore &restore );
 	static TYPEDESCRIPTION m_SaveData[];
+
+	void TalkInit();
 
 	float m_painTime;
 };
@@ -85,15 +91,7 @@ void CDrillSergeant::Spawn()
 	m_afCapability = bits_CAP_HEAR | bits_CAP_TURN_HEAD | bits_CAP_DOORS_GROUP;
 
 	MonsterInit();
-	SetUse( &CDrillSergeant::DrillUse );
-}
-
-void CDrillSergeant::DrillUse(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value)
-{
-	if( m_useTime > gpGlobals->time )
-		return;
-	if( pCaller != NULL && pCaller->IsPlayer() && IRelationship(pCaller) < R_DL && IRelationship(pCaller) != R_FR )
-		DeclineFollowing();
+	SetUse( &CTalkMonster::FollowerUse );
 }
 
 void CDrillSergeant::DeclineFollowing()
@@ -172,4 +170,144 @@ void CDrillSergeant::DeathSound( void )
 		EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, "barney/ba_die3.wav", 1, ATTN_NORM, 0, GetVoicePitch() );
 		break;
 	}
+}
+
+void CDrillSergeant::TalkInit()
+{
+	CTalkMonster::TalkInit();
+
+ 	m_szGrp[TLK_ANSWER] = "DR_ANSWER";
+	m_szGrp[TLK_QUESTION] = "DR_QUESTION";
+	m_szGrp[TLK_IDLE] = "DR_IDLE";
+	m_szGrp[TLK_STARE] = "DR_STARE";
+	m_szGrp[TLK_USE] = "DR_OK";
+	m_szGrp[TLK_UNUSE] = "DR_WAIT";
+	m_szGrp[TLK_STOP] = "DR_STOP";
+
+ 	m_szGrp[TLK_NOSHOOT] = "DR_SCARED";
+	m_szGrp[TLK_HELLO] = "DR_HELLO";
+
+ 	m_szGrp[TLK_PLHURT1] = "!DR_CUREA";
+	m_szGrp[TLK_PLHURT2] = "!DR_CUREB";
+	m_szGrp[TLK_PLHURT3] = "!DR_CUREC";
+
+ 	m_szGrp[TLK_PHELLO] = NULL;// UNDONE
+	m_szGrp[TLK_PIDLE] = NULL;// UNDONE
+	m_szGrp[TLK_PQUESTION] = "DR_PQUEST";
+
+ 	m_szGrp[TLK_SMELL] = "DR_SMELL";
+
+ 	m_szGrp[TLK_WOUND] = "DR_WOUND";
+	m_szGrp[TLK_MORTAL] = "DR_MORTAL";
+}
+
+extern Schedule_t slBaFaceTarget[];
+extern Schedule_t slBaFollow[];
+extern Schedule_t slIdleBaStand[];
+
+Schedule_t *CDrillSergeant::GetScheduleOfType( int Type )
+{
+	Schedule_t *psched;
+
+	switch( Type )
+	{
+	// Hook these to make a looping schedule
+	case SCHED_TARGET_FACE:
+		// call base class default so that barney will talk
+		// when 'used'
+		psched = CTalkMonster::GetScheduleOfType( Type );
+
+		if( psched == slIdleStand )
+			return slBaFaceTarget;	// override this for different target face behavior
+		else
+			return psched;
+	case SCHED_TARGET_CHASE:
+		return slBaFollow;
+	case SCHED_IDLE_STAND:
+		// call base class default so that scientist will talk
+		// when standing during idle
+		psched = CTalkMonster::GetScheduleOfType( Type );
+
+		if( psched == slIdleStand )
+		{
+			// just look straight ahead.
+			return slIdleBaStand;
+		}
+		else
+			return psched;
+	}
+
+	return CTalkMonster::GetScheduleOfType( Type );
+}
+
+Schedule_t *CDrillSergeant::GetSchedule( void )
+{
+	if( HasConditions( bits_COND_HEAR_SOUND ) )
+	{
+		CSound *pSound;
+		pSound = PBestSound();
+
+		ASSERT( pSound != NULL );
+		if( pSound && (pSound->m_iType & bits_SOUND_DANGER) )
+			return GetScheduleOfType( SCHED_TAKE_COVER_FROM_BEST_SOUND );
+	}
+
+	switch( m_MonsterState )
+	{
+	case MONSTERSTATE_COMBAT:
+		{
+			// dead enemy
+			if( HasConditions( bits_COND_ENEMY_DEAD ) )
+			{
+				// call base class, all code to handle dead enemies is centralized there.
+				return CBaseMonster::GetSchedule();
+			}
+
+			// always act surprized with a new enemy
+			if( HasConditions( bits_COND_NEW_ENEMY ) && HasConditions( bits_COND_LIGHT_DAMAGE ) )
+				return GetScheduleOfType( SCHED_SMALL_FLINCH );
+
+			if( HasConditions( bits_COND_HEAVY_DAMAGE ) )
+				return GetScheduleOfType( SCHED_TAKE_COVER_FROM_ENEMY );
+		}
+		break;
+	case MONSTERSTATE_ALERT:
+	case MONSTERSTATE_IDLE:
+		if( HasConditions( bits_COND_LIGHT_DAMAGE | bits_COND_HEAVY_DAMAGE ) )
+		{
+			// flinch if hurt
+			return GetScheduleOfType( SCHED_SMALL_FLINCH );
+		}
+
+		if( m_hEnemy == 0 && IsFollowing() )
+		{
+			if( !m_hTargetEnt->IsAlive() )
+			{
+				// UNDONE: Comment about the recently dead player here?
+				StopFollowing( FALSE );
+				break;
+			}
+			else
+			{
+				if( HasConditions( bits_COND_CLIENT_PUSH ) )
+				{
+					return GetScheduleOfType( SCHED_MOVE_AWAY_FOLLOW );
+				}
+				return GetScheduleOfType( SCHED_TARGET_FACE );
+			}
+		}
+
+		if( HasConditions( bits_COND_CLIENT_PUSH ) )
+		{
+			return GetScheduleOfType( SCHED_MOVE_AWAY );
+		}
+
+		// try to say something about smells
+		TrySmellTalk();
+		break;
+	default:
+		break;
+	}
+
+	return CTalkMonster::GetSchedule();
 }
