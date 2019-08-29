@@ -227,6 +227,7 @@ int GGM_ChangelevelVote( CBasePlayer *pPlayer, edict_t *pTrigger, const char *ps
 			g_Vote.iMode = VOTE_COOP_CHANGELEVEL;
 			g_Vote.pTrigger = pTrigger;
 			g_Vote.pPlayer = pPlayer;
+			ALERT( at_logged, "coop: %s started vote changelevel for %s\n", GGM_PlayerName( pPlayer ), pszMapName );
 			UTIL_CoopPrintMessage( "%s^7 wants to change map ^1BACK to %s\n", GGM_PlayerName( pPlayer ), pszMapName );
 			snprintf(g_Vote.szMessage, 255, "Change map BACK TO %s?", pszMapName );
 			GGM_BroadcastVote();
@@ -275,12 +276,15 @@ bool GGM_VoteProcess( CBasePlayer *pPlayer, const char *pszStr )
 
 		if( g_Vote.iMode == VOTE_COOP_CHANGELEVEL )
 		{
-			UTIL_CoopPrintMessage( "%s^7 confirmed map change\n", GGM_PlayerName( pPlayer ));
+			UTIL_CoopPrintMessage( "%s^7 confirmed map change\n", GGM_PlayerName( pPlayer ) );
+			ALERT( at_logged, "coop: %s confirmed map change\n", GGM_PlayerName( pPlayer ) );
+			
 			DispatchTouch( g_Vote.pTrigger, g_Vote.pPlayer.Get() );
 		}
 		else if( g_Vote.iMode == VOTE_COMMAND )
 		{
-			UTIL_CoopPrintMessage( "%s^7 confirmed vote\n", GGM_PlayerName( pPlayer ));
+			UTIL_CoopPrintMessage( "%s^7 confirmed vote\n", GGM_PlayerName( pPlayer ) );
+			ALERT( at_logged, "ggm: %s confirmed vote for \"%s\"\n", GGM_PlayerName( pPlayer ), g_Vote.szCommand );
 			if( g_Vote.iConfirm > g_Vote.iMaxCount / 2 )
 			{
 				g_fCmdUsed = false;
@@ -2431,6 +2435,8 @@ extern "C" const char *CMD_ARGV( int i )
 	return g_engfuncs.pfnCmd_Argv( i );
 }
 
+
+
 // client.cpp
 void ClientCommand( edict_t *pEntity );
 /*
@@ -3056,6 +3062,36 @@ void GGM_Pause_f( void )
 	g_fPause ^= true;
 }
 
+extern int gmsgSayText;
+
+void GGM_SayText( const char *line )
+{
+	char text[254] = {};
+
+	snprintf( text, sizeof( text ), "%s\n", line );
+
+	MESSAGE_BEGIN( MSG_ALL, gmsgSayText, NULL );
+	WRITE_BYTE( ENTINDEX(0) );
+	WRITE_STRING( text );
+	MESSAGE_END();
+}
+
+void GGM_SayText_f( void )
+{
+	GGM_SayText(CMD_ARGS());
+}
+
+int GGM_ConnectionlessPacket( const struct netadr_s *net_from, const char *args, char *response_buffer, int *response_buffer_size )
+{
+	if( !strncmp( args, "ggm_chat ", 9 ) )
+	{
+		GGM_SayText( args + 9 );
+		*response_buffer_size = 0;
+		return 1;
+	}
+	return 0;
+}
+
 /*
 =====================
 GGM_RegisterCVars
@@ -3109,6 +3145,7 @@ void GGM_RegisterCVars( void )
 	g_engfuncs.pfnAddServerCommand( "ggm_load", GGM_Load_f );
 	g_engfuncs.pfnAddServerCommand( "ggm_votecommand", GGM_VoteCommand_f );
 	g_engfuncs.pfnAddServerCommand( "ggm_pause", GGM_Pause_f );
+	g_engfuncs.pfnAddServerCommand( "ggm_saytext", GGM_SayText_f );
 
 	zombietime = CVAR_GET_POINTER("zombietime");
 

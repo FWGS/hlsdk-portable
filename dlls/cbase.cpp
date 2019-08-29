@@ -479,6 +479,30 @@ edict_t *EHANDLE::Get( void )
 { 
 	if( m_pent )
 	{
+		// try always return non-null when saved entity is player
+		if( ENTINDEX( m_pent ) > 0 && ENTINDEX( m_pent ) <= gpGlobals->maxClients )
+		{
+			int i;
+
+			// check if player entity exists
+			if( m_pent->pvPrivateData )
+			{
+				CBaseEntity *pPlayer = CBaseEntity::Instance( m_pent );
+				if( pPlayer && pPlayer->IsPlayer() )
+					return pPlayer->edict();
+			}
+
+			// if not, find any player
+			for( i = 1; i <= gpGlobals->maxClients; i++ )
+			{
+				CBaseEntity *pPlayer = UTIL_PlayerByIndex(i);
+				if( pPlayer && pPlayer->IsPlayer() )
+					return pPlayer->edict();
+			}
+
+			// no players found, return as is
+			return m_pent;
+		}
 		if( m_pent->serialnumber == m_serialnumber )
 			return m_pent; 
 		else

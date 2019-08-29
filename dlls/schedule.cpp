@@ -875,7 +875,7 @@ void CBaseMonster::StartTask( Task_t *pTask )
 		}
 	case TASK_MOVE_TO_TARGET_RANGE:
 		{
-			if( ( m_hTargetEnt->pev->origin - pev->origin ).Length() < 1 )
+			if( !m_hTargetEnt || ( m_hTargetEnt->pev->origin - pev->origin ).Length() < 1 )
 				TaskComplete();
 			else
 			{
@@ -890,7 +890,7 @@ void CBaseMonster::StartTask( Task_t *pTask )
 		{
 			Activity newActivity;
 
-			if( ( m_hTargetEnt->pev->origin - pev->origin ).Length() < 1 )
+			if( !m_hTargetEnt || ( m_hTargetEnt->pev->origin - pev->origin ).Length() < 1 )
 				TaskComplete();
 			else
 			{

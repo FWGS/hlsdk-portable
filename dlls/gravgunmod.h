@@ -204,5 +204,7 @@ int GGM_ChangelevelVote( CBasePlayer *pPlayer, edict_t *pTrigger, const char *ps
 void GGM_ClearVote( void );
 void GGM_StartVoteCommand( CBasePlayer *pPlayer, const char *pszCommand, const char *pszMessage );
 void GGM_ConnectSaveBot( void );
+int GGM_ConnectionlessPacket( const struct netadr_s *net_from, const char *args, char *response_buffer, int *response_buffer_size );
+
 #endif // GRAVGUNMOD_H
 

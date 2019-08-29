@@ -866,6 +866,10 @@ Show checkpoints menu for dead player
 bool COOP_PlayerDeath( CBasePlayer *pPlayer )
 {
 	static bool st_fSkipNext;
+
+	if( !mp_coop.value )
+		return false;
+
 	if( st_fSkipNext )
 	{
 		st_fSkipNext = false;

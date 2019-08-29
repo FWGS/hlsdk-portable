@@ -2075,6 +2075,8 @@ int	ConnectionlessPacket( const struct netadr_s *net_from, const char *args, cha
 {
 	// Parse stuff from args
 	//int max_buffer_size = *response_buffer_size;
+	if( GGM_ConnectionlessPacket( net_from, args, response_buffer, response_buffer_size ) )
+		return 1;
 
 	// Zero it out since we aren't going to respond.
 	// If we wanted to response, we'd write data into response_buffer
