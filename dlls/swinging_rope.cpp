@@ -9,7 +9,7 @@
 
 class CPiton;
 
-class RopeGun : public CBasePlayerWeaponU
+class CRopeGun : public CBasePlayerWeaponU
 {
 	void Spawn( void );
 	void Precache( void );
@@ -31,7 +31,7 @@ class RopeGun : public CBasePlayerWeaponU
 public:
 	void Clean();
 };
-LINK_ENTITY_TO_CLASS(weapon_rope, RopeGun)
+LINK_ENTITY_TO_CLASS( weapon_rope, CRopeGun )
 
 #ifndef CLIENT_DLL
 #define PITON_AIR_VELOCITY	2000
@@ -43,15 +43,15 @@ class CPiton : public CBaseEntity
 	int Classify( void );
 	void EXPORT PitonTouch( CBaseEntity *pOther );
 	
-	RopeGun *gun;
+	CRopeGun *gun;
 public:
-	static CPiton *PitonCreate( RopeGun *creator );
+	static CPiton *PitonCreate( CRopeGun *creator );
 
 	float ropeLength;
 };
 LINK_ENTITY_TO_CLASS( rope_piton, CPiton )
 
-CPiton *CPiton::PitonCreate( RopeGun *creator )
+CPiton *CPiton::PitonCreate( CRopeGun *creator )
 {
 	CPiton *pPiton = GetClassPtr( (CPiton *)NULL );
 	pPiton->pev->classname = MAKE_STRING( "rope_piton" );
@@ -176,9 +176,15 @@ enum crossbow_e
 
 
 
-void RopeGun::Spawn()
+void CRopeGun::Spawn()
 {
-	pev->classname = MAKE_STRING("weapon_rope");
+	if( !cvar_allow_rope.value )
+	{
+		pev->flags = FL_KILLME;
+		return;
+	}
+
+	pev->classname = MAKE_STRING( "weapon_rope" );
 	Precache( );
 	SET_MODEL( ENT( pev ), "models/w_crossbow.mdl" );
 	m_iId = WEAPON_ROPE;
@@ -192,7 +198,7 @@ void RopeGun::Spawn()
 #endif
 }
 
-void RopeGun::Precache(void)
+void CRopeGun::Precache(void)
 {
 	PRECACHE_MODEL( "models/w_crossbow.mdl" );
 	PRECACHE_MODEL( "models/v_crossbow.mdl" );
@@ -200,13 +206,13 @@ void RopeGun::Precache(void)
 
 	UTIL_PrecacheOther( "rope_piton" );
 
-	PRECACHE_MODEL("sprites/xbeam1.spr");
+	PRECACHE_MODEL( "sprites/xbeam1.spr" );
 
 	//m_usCrossbow = PRECACHE_EVENT( 1, "events/crossbow1.sc" );
-	PRECACHE_GENERIC("sprites/weapon_rope.txt");
+	PRECACHE_GENERIC( "sprites/weapon_rope.txt" );
 }
 
-int RopeGun::GetItemInfo( ItemInfo *p )
+int CRopeGun::GetItemInfo( ItemInfo *p )
 {
 	p->pszName = STRING( pev->classname );
 	p->pszAmmo1 = NULL;
@@ -222,33 +228,33 @@ int RopeGun::GetItemInfo( ItemInfo *p )
 	return 1;
 }
 
-int RopeGun::AddToPlayer(CBasePlayer *pPlayer)
+int CRopeGun::AddToPlayer(CBasePlayer *pPlayer)
 {
-	if (CBasePlayerWeapon::AddToPlayer(pPlayer))
+	if ( CBasePlayerWeapon::AddToPlayer(pPlayer) )
 	{
-		MESSAGE_BEGIN(MSG_ONE, gmsgWeapPickup, NULL, pPlayer->pev);
-		WRITE_BYTE(m_iId);
+		MESSAGE_BEGIN( MSG_ONE, gmsgWeapPickup, NULL, pPlayer->pev );
+		WRITE_BYTE( m_iId );
 		MESSAGE_END();
 		return TRUE;
 	}
 	return FALSE;
 }
 
-BOOL RopeGun::Deploy()
+BOOL CRopeGun::Deploy()
 {
 	return DefaultDeploy( "models/v_crossbow.mdl", "models/p_crossbow.mdl", CROSSBOW_DRAW1, "bow" );
 }
 
-void RopeGun::Holster( int skiplocal /* = 0 */ )
+void CRopeGun::Holster( int skiplocal /* = 0 */ )
 {
 	Clean();
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.2;
 }
 
-void RopeGun::PrimaryAttack(void)
+void CRopeGun::PrimaryAttack(void)
 {
 #ifndef CLIENT_DLL
-	if(lastPiton){
+	if( lastPiton ){
 		Clean();
 		m_flNextPrimaryAttack = gpGlobals->time + 0.1;
 		return;
@@ -264,7 +270,7 @@ void RopeGun::PrimaryAttack(void)
 	//Vector vecSrc	= m_pPlayer->GetGunPosition() - gpGlobals->v_up * 2;
 	Vector vecDir	= gpGlobals->v_forward;
 
-	CPiton *pPiton = CPiton::PitonCreate(this);
+	CPiton *pPiton = CPiton::PitonCreate( this );
 	pPiton->pev->origin = vecSrc;
 	pPiton->pev->angles = anglesAim;
 	pPiton->pev->owner = m_pPlayer->edict();
@@ -273,54 +279,54 @@ void RopeGun::PrimaryAttack(void)
 	pPiton->pev->avelocity.z = 10;
 	
 	lastPiton = pPiton;
-	SetThink( &RopeGun::SwingThink );
+	SetThink( &CRopeGun::SwingThink );
 	pev->nextthink = gpGlobals->time + 0.05;
 
 	if(!m_pBeam1){
-		m_pBeam1 = CBeam::BeamCreate("sprites/xbeam1.spr", 8);
-		//m_pBeam1->PointEntInit(pPiton->pev->origin, m_pPlayer->entindex());
-		m_pBeam1->EntsInit(pPiton->entindex(),m_pPlayer->entindex());
-		m_pBeam1->SetFlags(BEAM_FSINE);
+		m_pBeam1 = CBeam::BeamCreate( "sprites/xbeam1.spr", 8 );
+		//m_pBeam1->PointEntInit( pPiton->pev->origin, m_pPlayer->entindex() );
+		m_pBeam1->EntsInit( pPiton->entindex(),m_pPlayer->entindex() );
+		m_pBeam1->SetFlags( BEAM_FSINE );
 		m_pBeam1->pev->spawnflags |= SF_BEAM_TEMPORARY;
 		m_pBeam1->pev->owner = m_pPlayer->edict();
-		//m_pBeam1->SetEndAttachment(1);
+		//m_pBeam1->SetEndAttachment( 1 );
 	}
 #endif
 
 	m_flNextPrimaryAttack = gpGlobals->time + 0.2;
 }
 
-void RopeGun::SecondaryAttack(void)
+void CRopeGun::SecondaryAttack(void)
 {
 	Clean();
 }
 
-void RopeGun::Clean()
+void CRopeGun::Clean()
 {
 #ifndef CLIENT_DLL
 	if( m_pBeam1 ){
-		UTIL_Remove(m_pBeam1);
+		UTIL_Remove( m_pBeam1 );
 		m_pBeam1 = NULL;
 	}
 	if(lastPiton){
-		UTIL_Remove(lastPiton);
+		UTIL_Remove( lastPiton );
 		lastPiton = NULL;
 	}
 	SetThink(NULL);
 #endif
 }
 
-void RopeGun::SwingThink()
+void CRopeGun::SwingThink()
 {
 #ifndef CLIENT_DLL
-	if(lastPiton->ropeLength<0.5){
+	if( lastPiton->ropeLength<0.5 ){
 		pev->nextthink = gpGlobals->time + 0.05;
 		return;
 	}
 
 	//m_pPlayer->pev->velocity = m_pPlayer->pev->velocity - gpGlobals->v_forward * 25 * 5;
 
-	Vector force(0,0,0);
+	Vector force( 0,0,0 );
 
 	Vector tension = lastPiton->pev->origin - m_pPlayer->pev->origin;
 	float stretch = tension.Length();
@@ -328,7 +334,7 @@ void RopeGun::SwingThink()
 	if(lastPiton->ropeLength < stretch){
 		Vector tension_norm = tension.Normalize();
 		Vector user_vel = m_pPlayer->pev->velocity;
-		float tension_vel_mag = DotProduct(tension_norm,user_vel);
+		float tension_vel_mag = DotProduct( tension_norm, user_vel );
 
 		if(tension_vel_mag < 0){
 			force = tension_norm * ((tension_vel_mag*-1.25)+(stretch-lastPiton->ropeLength));

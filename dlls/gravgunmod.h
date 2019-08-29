@@ -9,6 +9,7 @@ extern cvar_t cvar_ar2_bullets;
 extern cvar_t cvar_ar2_balls;
 extern cvar_t cvar_allow_bigcock;
 extern cvar_t cvar_allow_gateofbabylon;
+extern cvar_t cvar_allow_rope;
 extern cvar_t cvar_wresptime;
 extern cvar_t cvar_iresptime;
 extern cvar_t mp_gravgun_players;

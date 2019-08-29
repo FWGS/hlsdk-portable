@@ -15,6 +15,7 @@ cvar_t cvar_ar2_balls = { "mp_ar2_balls","0", FCVAR_SERVER };
 cvar_t cvar_ar2_bullets = { "mp_ar2_bullets","0", FCVAR_SERVER };
 cvar_t cvar_allow_bigcock = { "mp_allow_bigcock","0", FCVAR_SERVER };
 cvar_t cvar_allow_gateofbabylon = { "mp_allow_gateofbabylon","0", FCVAR_SERVER };
+cvar_t cvar_allow_rope = { "mp_allow_rope","0", FCVAR_SERVER };
 
 cvar_t cvar_wresptime = { "mp_wresptime","20", FCVAR_SERVER };
 cvar_t cvar_iresptime = { "mp_iresptime","30", FCVAR_SERVER };
@@ -3108,6 +3109,7 @@ void GGM_RegisterCVars( void )
 	CVAR_REGISTER( &cvar_ar2_balls );
 	CVAR_REGISTER( &cvar_allow_bigcock );
 	CVAR_REGISTER( &cvar_allow_gateofbabylon );
+	CVAR_REGISTER( &cvar_allow_rope );
 	CVAR_REGISTER( &cvar_wresptime );
 	CVAR_REGISTER( &cvar_iresptime );
 	CVAR_REGISTER( &cvar_gibtime );
