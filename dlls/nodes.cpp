@@ -21,6 +21,7 @@
 #include	"cbase.h"
 #include	"monsters.h"
 #include	"nodes.h"
+#include	"nodes_compat.h"
 #include	"animation.h"
 #include	"doors.h"
 
@@ -44,9 +45,7 @@ LINK_ENTITY_TO_CLASS( info_node_air, CNodeEnt )
 #if !defined _WIN32
 #include <unistd.h>
 #include <sys/stat.h>
-#define CreateDirectory(p, n) mkdir(p, 0777)
-#else
-#define CreateDirectory(p, n) CreateDirectoryA(p, n)
+#define CreateDirectoryA(p, n) mkdir(p, 0777)
 #endif
 
 //=========================================================
@@ -1701,9 +1700,9 @@ void CTestHull::BuildNodeGraph( void )
 	// make sure directories have been made
 	GET_GAME_DIR( szNrpFilename );
 	strcat( szNrpFilename, "/maps" );
-	CreateDirectory( szNrpFilename, NULL );
+	CreateDirectoryA( szNrpFilename, NULL );
 	strcat( szNrpFilename, "/graphs" );
-	CreateDirectory( szNrpFilename, NULL );
+	CreateDirectoryA( szNrpFilename, NULL );
 
 	strcat( szNrpFilename, "/" );
 	strcat( szNrpFilename, STRING( gpGlobals->mapname ) );
@@ -2375,9 +2374,9 @@ int CGraph::FLoadGraph( const char *szMapName )
 	char szDirName[MAX_PATH];
 	GET_GAME_DIR( szDirName );
 	strcat( szDirName, "/maps" );
-	CreateDirectory( szDirName, NULL );
+	CreateDirectoryA( szDirName, NULL );
 	strcat( szDirName, "/graphs" );
-	CreateDirectory( szDirName, NULL );
+	CreateDirectoryA( szDirName, NULL );
 
 	strcpy( szFilename, "maps/graphs/" );
 	strcat( szFilename, szMapName );
@@ -2386,42 +2385,47 @@ int CGraph::FLoadGraph( const char *szMapName )
 	pMemFile = aMemFile = LOAD_FILE_FOR_ME( szFilename, &length );
 
 	if( !aMemFile )
-	{
 		return FALSE;
-	}
-	else
+
+	// Read the graph version number
+	//
+	length -= sizeof(int);
+	if( length < 0 )
+		goto ShortFile;
+	iVersion = *(int *) pMemFile;
+	pMemFile += sizeof(int);
+
+	if( iVersion == GRAPH_VERSION || iVersion == GRAPH_VERSION_RETAIL )
 	{
-		// Read the graph version number
-		//
-		length -= sizeof(int);
-		if( length < 0 )
-			goto ShortFile;
-		memcpy( &iVersion, pMemFile, sizeof(int) );
-		pMemFile += sizeof(int);
-
-		if( iVersion != GRAPH_VERSION )
-		{
-			// This file was written by a different build of the dll!
-			//
-			ALERT( at_aiconsole, "**ERROR** Graph version is %d, expected %d\n", iVersion, GRAPH_VERSION );
-			goto ShortFile;
-		}
-
 		// Read the graph class
 		//
-		length -= sizeof(CGraph);
-		if( length < 0 )
-			goto ShortFile;
-		memcpy( this, pMemFile, sizeof(CGraph) );
-		pMemFile += sizeof(CGraph);
+		if ( iVersion == GRAPH_VERSION )
+		{
+			length -= sizeof(CGraph);
+			if( length < 0 )
+				goto ShortFile;
+			memcpy( this, pMemFile, sizeof(CGraph) );
+			pMemFile += sizeof(CGraph);
 
-		// Set the pointers to zero, just in case we run out of memory.
-		//
-		m_pNodes = NULL;
-		m_pLinkPool = NULL;
-		m_di = NULL;
-		m_pRouteInfo = NULL;
-		m_pHashLinks = NULL;
+			// Set the pointers to zero, just in case we run out of memory.
+			//
+			m_pNodes = NULL;
+			m_pLinkPool = NULL;
+			m_di = NULL;
+			m_pRouteInfo = NULL;
+			m_pHashLinks = NULL;
+		}
+#if _GRAPH_VERSION != _GRAPH_VERSION_RETAIL
+		else
+		{
+			ALERT( at_aiconsole, "Loading CGraph in GRAPH_VERSION 16 compatibility mode\n" );
+			length -= sizeof(CGraph_Retail);
+			if( length < 0 )
+				goto ShortFile;
+			reinterpret_cast<CGraph_Retail*>(pMemFile) -> copyOverTo(this);
+			pMemFile += sizeof(CGraph_Retail);
+		}
+#endif
 
 		// Malloc for the nodes
 		//
@@ -2453,11 +2457,25 @@ int CGraph::FLoadGraph( const char *szMapName )
 
 		// Read in all the links
 		//
-		length -= sizeof(CLink) * m_cLinks;
-		if( length < 0 )
-			goto ShortFile;
-		memcpy( m_pLinkPool, pMemFile, sizeof(CLink) * m_cLinks );
-		pMemFile += sizeof(CLink) * m_cLinks;
+		if( iVersion == GRAPH_VERSION )
+		{
+			length -= sizeof(CLink) * m_cLinks;
+			if( length < 0 )
+				goto ShortFile;
+			memcpy( m_pLinkPool, pMemFile, sizeof(CLink) * m_cLinks );
+			pMemFile += sizeof(CLink) * m_cLinks;
+		}
+#if _GRAPH_VERSION != _GRAPH_VERSION_RETAIL
+		else
+		{
+			ALERT( at_aiconsole, "Loading CLink array in GRAPH_VERSION 16 compatibility mode\n" );
+			length -= sizeof(CLink_Retail) * m_cLinks;
+			if( length < 0 )
+				goto ShortFile;
+			reinterpret_cast<CLink_Retail*>(pMemFile) -> copyOverTo(m_pLinkPool);
+			pMemFile += sizeof(CLink_Retail) * m_cLinks;
+		}
+#endif
 
 		// Malloc for the sorting info.
 		//
@@ -2482,7 +2500,7 @@ int CGraph::FLoadGraph( const char *szMapName )
 		m_pRouteInfo = (signed char *)calloc( sizeof(signed char), m_nRouteInfo );
 		if( !m_pRouteInfo )
 		{
-			ALERT( at_aiconsole, "***ERROR**\nCounldn't malloc %d route bytes!\n", m_nRouteInfo );
+			ALERT( at_aiconsole, "***ERROR**\nCouldn't malloc %d route bytes!\n", m_nRouteInfo );
 			goto NoMemory;
 		}
 		m_CheckedCounter = 0;
@@ -2505,7 +2523,7 @@ int CGraph::FLoadGraph( const char *szMapName )
 		m_pHashLinks = (short *)calloc( sizeof(short), m_nHashLinks );
 		if( !m_pHashLinks )
 		{
-			ALERT( at_aiconsole, "***ERROR**\nCounldn't malloc %d hash link bytes!\n", m_nHashLinks );
+			ALERT( at_aiconsole, "***ERROR**\nCouldn't malloc %d hash link bytes!\n", m_nHashLinks );
 			goto NoMemory;
 		}
 
@@ -2530,6 +2548,13 @@ int CGraph::FLoadGraph( const char *szMapName )
 		}
 
 		return TRUE;
+	}
+	else
+	{
+		// This file was written by a different build of the dll!
+		//
+		ALERT( at_aiconsole, "**ERROR** Graph version is %d, expected %d\n", iVersion, GRAPH_VERSION );
+		goto ShortFile;
 	}
 
 ShortFile:
@@ -2558,9 +2583,9 @@ int CGraph::FSaveGraph( const char *szMapName )
 	// make sure directories have been made
 	GET_GAME_DIR( szFilename );
 	strcat( szFilename, "/maps" );
-	CreateDirectory( szFilename, NULL );
+	CreateDirectoryA( szFilename, NULL );
 	strcat( szFilename, "/graphs" );
-	CreateDirectory( szFilename, NULL );
+	CreateDirectoryA( szFilename, NULL );
 
 	strcat( szFilename, "/" );
 	strcat( szFilename, szMapName );

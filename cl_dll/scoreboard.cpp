@@ -108,7 +108,7 @@ We have a minimum width of 1-320 - we could have the field widths scale with it?
 int SCOREBOARD_WIDTH = 320;
 
 // Y positions
-#define ROW_GAP  13
+#define ROW_GAP  (gHUD.m_scrinfo.iCharHeight)
 #define ROW_RANGE_MIN 15
 #define ROW_RANGE_MAX ( ScreenHeight - 50 )
 
@@ -561,7 +561,7 @@ int CHudScoreboard::MsgFunc_TeamInfo( const char *pszName, int iSize, void *pbuf
 				if( g_TeamInfo[j].name[0] == '\0' )
 					break;
 			}
-			m_iNumTeams = max( j, m_iNumTeams );
+			m_iNumTeams = Q_max( j, m_iNumTeams );
 
 			strncpy( g_TeamInfo[j].name, g_PlayerExtraInfo[i].teamname, MAX_TEAM_NAME );
 			g_TeamInfo[j].players = 0;
