@@ -2849,7 +2849,7 @@ edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer )
 	if( mp_coop.value || FStringNull( gpGlobals->startspot ) || !strlen(STRING( gpGlobals->startspot ) ) )
 	{
 		pSpot = NULL;
-		while( pSpot = UTIL_FindEntityByClassname( pSpot, "info_player_start" ) )
+		while( ( pSpot = UTIL_FindEntityByClassname( pSpot, "info_player_start" ) ) )
 		{
 			TraceResult tr;
 			if( FNullEnt( pSpot ) )

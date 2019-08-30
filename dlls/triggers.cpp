@@ -1465,7 +1465,7 @@ void CChangeLevel::UseChangeLevel( CBaseEntity *pActivator, CBaseEntity *pCaller
 {
 	// if not activated by touch, do not count players
 	m_coopData.fUsed = true;
-	if( pCaller && FClassnameIs( pCaller->edict(), "multi_manager" ) || FClassnameIs( pCaller->edict(), "trigger_once" ) )
+	if( ( pCaller && FClassnameIs( pCaller->edict(), "multi_manager" ) ) || FClassnameIs( pCaller->edict(), "trigger_once" ) )
 		m_coopData.fSkipSpawnCheck = true;
 	else
 		m_coopData.fSkipSpawnCheck = false;
@@ -1729,7 +1729,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 		ALERT( at_console, "There are %d players in transition volume %s\n", count, m_szLandmarkName );
 			
 	}
-	else if( ( (gpGlobals->time -((CBasePlayer*)pPlayer)->m_ggm.flSpawnTime ) < 30 )  && FindTriggerTransition( m_szLandmarkName ) || !InTransitionVolume( pPlayer, m_szLandmarkName ) )
+	else if( ( ( (gpGlobals->time -((CBasePlayer*)pPlayer)->m_ggm.flSpawnTime ) < 30 ) && FindTriggerTransition( m_szLandmarkName ) ) || !InTransitionVolume( pPlayer, m_szLandmarkName ) )
 	{
 		if( !m_coopData.fSkipSpawnCheck )
 		{
@@ -2596,7 +2596,7 @@ void CTriggerCamera::CoopThink()
 	}
 
 	// Nothing to look at!
-	if( m_hTarget == NULL )
+	if( m_hTarget == 0 )
 	{
 		return;
 	}
@@ -2798,10 +2798,10 @@ void CTriggerCamera::FollowTarget()
 
 void CTriggerCamera::CoopFollowTarget()
 {
-//	if( m_hPlayer == NULL )
+//	if( m_hPlayer == 0 )
 //		return;
 
-	if( m_hTarget == NULL || m_flReturnTime < gpGlobals->time )
+	if( m_hTarget == 0 || m_flReturnTime < gpGlobals->time )
 	{
 		for( int i = 1; i <= gpGlobals->maxClients; i++ )
 		{

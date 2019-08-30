@@ -217,7 +217,7 @@ public:
 	virtual void StartSneaking( void ) { m_tSneaking = gpGlobals->time - 1; }
 	virtual void StopSneaking( void ) { m_tSneaking = gpGlobals->time + 30; }
 	virtual BOOL IsSneaking( void ) { return m_tSneaking <= gpGlobals->time; }
-	virtual BOOL IsAlive( void ) { return (pev->deadflag == DEAD_NO) && pev->health > 0 || ( pev->flags & FL_SPECTATOR ); }
+	virtual BOOL IsAlive( void ) { return ( ( pev->deadflag == DEAD_NO ) && pev->health > 0 ) || ( pev->flags & FL_SPECTATOR ); }
 	virtual BOOL ShouldFadeOnDeath( void ) { return FALSE; }
 	virtual	BOOL IsPlayer( void ) { return !( pev->flags & FL_SPECTATOR ); }			// Spectators should return FALSE for this, they aren't "players" as far as game logic is concerned
 

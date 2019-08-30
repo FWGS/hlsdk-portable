@@ -45,7 +45,7 @@ void Ent_AddToBlacklist_f( void )
 
 	node->next = entblacklist;
 	strncpy( node->pattern, CMD_ARGV(1), 31 );
-	node->pattern[32] = 0;
+	node->pattern[31] = 0;
 	node->limit = atoi( CMD_ARGV(2) );
 	node->behaviour = atoi( CMD_ARGV( 3 ) );
 	node->clear = !!atoi( CMD_ARGV( 4 ) );
@@ -474,7 +474,7 @@ bool Ent_CheckModel( const char *model )
 			return false;
 		model_t *world = (model_t*)g_physfuncs.pfnGetModel(1);
 		int submodel = atoi(model + 1);
-		if( submodel < 1 || world && submodel >= world->numsubmodels )
+		if( submodel < 1 || ( world && submodel >= world->numsubmodels ) )
 			return false;
 	} // do not allow to set different model types. bsp models will destroy all submodels on map
 	else if( !strstr( model, ".mdl" ) && !strstr( model, ".spr" ) )
@@ -1093,7 +1093,7 @@ void Ent_Create_f( edict_t *player )
 		if( pPlayer && pPlayer->IsPlayer() && pPlayer->m_ggm.pState && pPlayer->m_ggm.pState->fRegistered )
 			entity->enttools_data.enttools = 2;
 
-		if( plid );
+		if( plid )
 			strcpy( entity->enttools_data.ownerid, plid );
 	}
 }

@@ -224,7 +224,7 @@ static void COOP_CheckSaveSlots( void )
 
 	// check save slots (may be cleaned by newunit)
 	GET_GAME_DIR(path);
-	strcat( path, PATHSEP"save" );
+	strcat( path, PATHSEP "save" );
 	for( i = 0; i < ARRAYSIZE( g_CoopState.p.rgszSaveSlots ); i++ )
 	{
 		char fpath[256] = "";
@@ -233,8 +233,8 @@ static void COOP_CheckSaveSlots( void )
 		if( !g_CoopState.p.rgszSaveSlots[i] )
 			continue;
 
-		snprintf( fpath, 255, "%s"PATHSEP"%s.coop", path, g_CoopState.p.rgszSaveSlots[i] );
-		if( f = fopen( fpath, "rb" ) )
+		snprintf( fpath, 255, "%s" PATHSEP "%s.coop", path, g_CoopState.p.rgszSaveSlots[i] );
+		if( ( f = fopen( fpath, "rb" ) ) )
 			fclose( f );
 		else
 			g_CoopState.p.rgszSaveSlots[i][0] = 0;
@@ -256,7 +256,7 @@ void COOP_ClearSaves( void )
 	const char *pszOldMap = NULL;
 
 	GET_GAME_DIR(path);
-	strcat( path, PATHSEP"save" );
+	strcat( path, PATHSEP "save" );
 
 	if( g_CoopState.landmarkTransition.szSourceMap[0] )
 		pszOldMap = g_CoopState.landmarkTransition.szSourceMap;
@@ -270,7 +270,7 @@ void COOP_ClearSaves( void )
 		return;
 	}
 
-	while( entry = readdir( dir) )
+	while( ( entry = readdir( dir ) ) )
 	{
 		if( Q_stricmpext("auto0-*", entry->d_name ) ||
 			Q_stricmpext("auto1-*", entry->d_name ) ||
@@ -280,7 +280,7 @@ void COOP_ClearSaves( void )
 			if( pszOldMap && !strncmp( entry->d_name + 6, pszOldMap, strlen( pszOldMap ) ) )
 				continue;
 
-			snprintf( fpath, 255, "%s"PATHSEP"%s", path, entry->d_name );
+			snprintf( fpath, 255, "%s" PATHSEP "%s", path, entry->d_name );
 			ALERT( at_console, "Removing %s\n", fpath );
 			remove( fpath );
 		}
@@ -579,7 +579,7 @@ void COOP_MarkTriggers( void )
 {
 	CBaseEntity *pTrigger = NULL;
 
-	while( pTrigger = UTIL_FindEntityByClassname( pTrigger, "trigger_changelevel" ) )
+	while( ( pTrigger = UTIL_FindEntityByClassname( pTrigger, "trigger_changelevel" ) ) )
 	{
 		struct COOPChangelevelData *pData = COOP_GetTriggerData( pTrigger );
 		//pData->fIsBack = !strcmp( pData->pszMapName, g_CoopState.landmarkTransition.szSourceMap );
@@ -933,7 +933,7 @@ CBaseEntity *UTIL_CoopGetPlayerTrain( CBaseEntity *pPlayer)
 
 	if( !train )
 		return NULL;
-	if( !train->pev->globalname ||!STRING(train->pev->globalname) || !STRING(train->pev->globalname)[0] )
+	if( !train->pev->globalname || !( STRING( train->pev->globalname ) ) || !( STRING( train->pev->globalname ) )[0] )
 		return NULL;
 	// doors are elevators
 	if( strcmp( STRING( train->pev->classname ), "func_train") && strcmp( STRING( train->pev->classname ), "func_tracktrain") && strcmp( STRING( train->pev->classname ), "func_door")   )

@@ -484,7 +484,7 @@ public:
 		}*/
 		return 200;
 	}
-	int ObjectCaps( void ) { return CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION | FCAP_DONT_SAVE; }
+	int ObjectCaps( void ) { return ( CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION ) | FCAP_DONT_SAVE; }
 };
 
 #ifdef CLIENT_DLL

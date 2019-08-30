@@ -327,7 +327,7 @@ const char *GGM_PlayerName( CBaseEntity *pPlayer )
 {
 	if( !pPlayer )
 		return "unnamed(NULL)";
-	return (const char*)( ( pPlayer->pev->netname && STRING( pPlayer->pev->netname )[0] != 0 ) ? STRING( pPlayer->pev->netname ) : "unconnected" );
+	return (const char*)( ( pPlayer->pev->netname && ( STRING( pPlayer->pev->netname ) )[0] != 0 ) ? STRING( pPlayer->pev->netname ) : "unconnected" );
 }
 
 /*
@@ -492,7 +492,7 @@ void Ent_RunGC( int flags, const char *userid, const char *pattern )
 				continue;
 			}
 
-			if( !strncmp( classname, "monster_", 8 ) && ent->v.health <= 0 || ent->v.deadflag != DEAD_NO )
+			if( ( !strncmp( classname, "monster_", 8 ) && ent->v.health <= 0 ) || ent->v.deadflag != DEAD_NO )
 			{
 				ent->v.flags |= FL_KILLME;
 				removed++;
@@ -742,7 +742,7 @@ bool GGM_FilterFileName( const char *name )
 {
 	while( name && *name )
 	{
-		if( *name >= 'A' && *name <= 'z' || *name >= '0' && *name <= '9' || *name == '_' )
+		if( ( *name >= 'A' && *name <= 'z' ) || ( *name >= '0' && *name <= '9' ) || *name == '_' )
 		{
 			name++;
 			continue;
@@ -1439,7 +1439,7 @@ struct GGMPlayerState *GGM_GetState( const char *uid, const char *name )
 {
 	struct GGMPlayerState *pState;
 	struct GGMLogin *pLogin = GGM_LoadLogin( uid, name );
-	char *rgpszBadNames[] = {
+	const char *rgpszBadNames[] = {
 	"player*", // does not even can set own name
 	"*talat*",
 	"*hmse*",
@@ -1739,7 +1739,7 @@ bool GGM_PlayerSpawn( CBasePlayer *pPlayer )
 		return true;
 	}
 
-	if( ( mp_coop.value || mp_spectator.value ) && pPlayer->m_ggm.iState == STATE_CONNECTED || !pPlayer->m_ggm.pState  )
+	if( ( ( mp_coop.value || mp_spectator.value ) && pPlayer->m_ggm.iState == STATE_CONNECTED ) || !pPlayer->m_ggm.pState  )
 	{
 		if( !pPlayer->m_ggm.pState )
 			GGM_ChatPrintf( pPlayer, "This nickname busy! Please login or change nickname\n" );
@@ -2640,7 +2640,7 @@ bool GGM_MenuCommand( CBasePlayer *player, const char *name )
 
 	GGM_PlayerMenu &m = player->m_ggm.menu.New( buf );
 
-	while( pFile = GGM::COM_ParseFile( pFile, buf ) )
+	while( ( pFile = GGM::COM_ParseFile( pFile, buf ) ) )
 	{
 		char cmd[256];
 		if( !(pFile = GGM::COM_ParseFile( pFile, cmd )) )
@@ -3018,7 +3018,7 @@ void SET_MODEL( edict_t *e, const char *model )
 			{
 				int index = g_engfuncs.pfnPrecacheModel(model);
 				model_t *mod = (model_t*)g_physfuncs.pfnGetModel(index);
-				if( !mod || mod->type == mod_brush && !mod->nodes )
+				if( !mod || ( mod->type == mod_brush && !mod->nodes ) )
 					g_engfuncs.pfnSetModel( e, mp_errormdlpath.string );
 
 				ALERT( at_console, "SET_MODEL %s %d\n", model, e->v.modelindex );

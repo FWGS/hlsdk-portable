@@ -1274,15 +1274,15 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 			size = ent->v.size.z;
 
 		if( size > 512 ) // big brushes may be rotated, but dist check does not cover this
-			dist = abs(delta.z), size = ent->v.size.z;
+			dist = fabs(delta.z), size = ent->v.size.z;
 		else
 		{
-			if( abs(delta.x) > dist )
-				dist = abs(delta.x);
-			if( abs(delta.y) > dist )
-				dist = abs(delta.y);
-			if( abs(delta.z) > dist )
-				dist = abs(delta.z);
+			if( fabs(delta.x) > dist )
+				dist = fabs(delta.x);
+			if( fabs(delta.y) > dist )
+				dist = fabs(delta.y);
+			if( fabs(delta.z) > dist )
+				dist = fabs(delta.z);
 		}
 		dist -= size / 2;
 
@@ -1314,7 +1314,7 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 			// attachments/sounds, so we may just skip adding it to packet
 			// but left it just hidden if we have enough visents to prevent
 			// sending big delta packets, but reserve 256 slots for visible
-			if( counter > 128 && !istrash || counter > 256 )
+			if( ( counter > 128 && !istrash ) || counter > 256 )
 				return 0;
 		}
 

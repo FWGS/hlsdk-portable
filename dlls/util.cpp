@@ -1113,12 +1113,12 @@ void UTIL_BloodStream( const Vector &origin, const Vector &direction, int color,
 				Vector delta = origin - pPlayer->edict()->v.origin;
 				float dist = 0;
 
-				if( abs(delta.x) > dist )
-					dist = abs(delta.x);
-				if( abs(delta.y) > dist )
-					dist = abs(delta.y);
-				if( abs(delta.z) > dist )
-					dist = abs(delta.z);
+				if( fabs(delta.x) > dist )
+					dist = fabs(delta.x);
+				if( fabs(delta.y) > dist )
+					dist = fabs(delta.y);
+				if( fabs(delta.z) > dist )
+					dist = fabs(delta.z);
 				if( dist > mp_maxtentdist.value)
 					continue;
 
@@ -1183,12 +1183,12 @@ void UTIL_BloodDrips( const Vector &origin, const Vector &direction, int color, 
 				Vector delta = origin - pPlayer->edict()->v.origin;
 				float dist = 0;
 
-				if( abs(delta.x) > dist )
-					dist = abs(delta.x);
-				if( abs(delta.y) > dist )
-					dist = abs(delta.y);
-				if( abs(delta.z) > dist )
-					dist = abs(delta.z);
+				if( fabs(delta.x) > dist )
+					dist = fabs(delta.x);
+				if( fabs(delta.y) > dist )
+					dist = fabs(delta.y);
+				if( fabs(delta.z) > dist )
+					dist = fabs(delta.z);
 				if( dist > mp_maxtentdist.value)
 					continue;
 
@@ -1303,12 +1303,12 @@ void UTIL_DecalTrace( TraceResult *pTrace, int decalNumber )
 				Vector delta = pTrace->vecEndPos - pPlayer->edict()->v.origin;
 				float dist = 0;
 
-				if( abs(delta.x) > dist )
-					dist = abs(delta.x);
-				if( abs(delta.y) > dist )
-					dist = abs(delta.y);
-				if( abs(delta.z) > dist )
-					dist = abs(delta.z);
+				if( fabs(delta.x) > dist )
+					dist = fabs(delta.x);
+				if( fabs(delta.y) > dist )
+					dist = fabs(delta.y);
+				if( fabs(delta.z) > dist )
+					dist = fabs(delta.z);
 				if( dist > mp_maxtentdist.value)
 					continue;
 
@@ -1380,12 +1380,12 @@ void UTIL_PlayerDecalTrace( TraceResult *pTrace, int playernum, int decalNumber,
 				Vector delta = pTrace->vecEndPos - pPlayer->edict()->v.origin;
 				float dist = 0;
 
-				if( abs(delta.x) > dist )
-					dist = abs(delta.x);
-				if( abs(delta.y) > dist )
-					dist = abs(delta.y);
-				if( abs(delta.z) > dist )
-					dist = abs(delta.z);
+				if( fabs(delta.x) > dist )
+					dist = fabs(delta.x);
+				if( fabs(delta.y) > dist )
+					dist = fabs(delta.y);
+				if( fabs(delta.z) > dist )
+					dist = fabs(delta.z);
 				if( dist > mp_maxtentdist.value)
 					continue;
 
@@ -1441,12 +1441,12 @@ void UTIL_GunshotDecalTrace( TraceResult *pTrace, int decalNumber )
 				Vector delta = pTrace->vecEndPos - pPlayer->edict()->v.origin;
 				float dist = 0;
 
-				if( abs(delta.x) > dist )
-					dist = abs(delta.x);
-				if( abs(delta.y) > dist )
-					dist = abs(delta.y);
-				if( abs(delta.z) > dist )
-					dist = abs(delta.z);
+				if( fabs(delta.x) > dist )
+					dist = fabs(delta.x);
+				if( fabs(delta.y) > dist )
+					dist = fabs(delta.y);
+				if( fabs(delta.z) > dist )
+					dist = fabs(delta.z);
 				if( dist > mp_maxtentdist.value)
 					continue;
 
@@ -1488,12 +1488,12 @@ void UTIL_Sparks( const Vector &position )
 				Vector delta = position - pPlayer->edict()->v.origin;
 				float dist = 0;
 
-				if( abs(delta.x) > dist )
-					dist = abs(delta.x);
-				if( abs(delta.y) > dist )
-					dist = abs(delta.y);
-				if( abs(delta.z) > dist )
-					dist = abs(delta.z);
+				if( fabs(delta.x) > dist )
+					dist = fabs(delta.x);
+				if( fabs(delta.y) > dist )
+					dist = fabs(delta.y);
+				if( fabs(delta.z) > dist )
+					dist = fabs(delta.z);
 				if( dist > mp_maxtentdist.value)
 					continue;
 
@@ -1530,12 +1530,12 @@ void UTIL_Ricochet( const Vector &position, float scale )
 				Vector delta = position - pPlayer->edict()->v.origin;
 				float dist = 0;
 
-				if( abs(delta.x) > dist )
-					dist = abs(delta.x);
-				if( abs(delta.y) > dist )
-					dist = abs(delta.y);
-				if( abs(delta.z) > dist )
-					dist = abs(delta.z);
+				if( fabs(delta.x) > dist )
+					dist = fabs(delta.x);
+				if( fabs(delta.y) > dist )
+					dist = fabs(delta.y);
+				if( fabs(delta.z) > dist )
+					dist = fabs(delta.z);
 				if( dist > mp_maxtentdist.value)
 					continue;
 
