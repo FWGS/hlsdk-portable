@@ -2311,6 +2311,7 @@ int CHFGrunt :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, flo
 			PlaySentence( "FG_SHOT", 4, VOL_NORM, ATTN_NORM );
 		}
 	}
+	return ret;
 }
 
 //=========================================================

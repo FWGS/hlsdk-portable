@@ -238,6 +238,14 @@ float EV_HLDM_PlayTextureSound( int idx, pmtrace_t *ptr, float *vecSrc, float *v
 		fattn = 1.0;
 		cnt = 2;
 		break;
+	case CHAR_TEX_SNOW:
+		fvol = 0.9;
+		fvolbar = 0.1;
+		rgsz[0] = "player/pl_snow1.wav";
+		rgsz[1] = "player/pl_snow2.wav";
+		rgsz[2] = "player/pl_snow3.wav";
+		cnt = 3;
+		break;
 	}
 
 	// play material hit sound
