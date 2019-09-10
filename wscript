@@ -29,7 +29,7 @@ def options(opt):
 
 	opt.recurse('cl_dll dlls')
 
-	opt.load('xcompile compiler_cxx compiler_c')
+	opt.load('xcompile compiler_cxx compiler_c clang_compilation_database')
 	if sys.platform == 'win32':
 		opt.load('msvc msdev')
 	opt.load('reconfigure')
