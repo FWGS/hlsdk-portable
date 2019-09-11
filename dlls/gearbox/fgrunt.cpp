@@ -163,6 +163,7 @@ public:
 	// Override these to set behavior
 	Schedule_t *GetScheduleOfType ( int Type );
 	Schedule_t *GetSchedule ( void );
+	Schedule_t *PrioritizedSchedule();
 	MONSTERSTATE GetIdealState ( void );
 
 	void AlertSound( void );
@@ -2619,8 +2620,27 @@ void CHFGrunt :: SetActivity ( Activity NewActivity )
 // monster's member function to get a pointer to a schedule
 // of the proper type.
 //=========================================================
-Schedule_t *CHFGrunt :: GetSchedule ( void )
+Schedule_t* CHFGrunt::PrioritizedSchedule()
 {
+	// flying? If PRONE, barnacle has me. IF not, it's assumed I am rapelling.
+	if ( pev->movetype == MOVETYPE_FLY && m_MonsterState != MONSTERSTATE_PRONE )
+	{
+		if (pev->flags & FL_ONGROUND)
+		{
+			// just landed
+			pev->movetype = MOVETYPE_STEP;
+			return GetScheduleOfType ( SCHED_HGRUNT_ALLY_REPEL_LAND );
+		}
+		else
+		{
+			// repel down a rope,
+			if ( m_MonsterState == MONSTERSTATE_COMBAT )
+				return GetScheduleOfType ( SCHED_HGRUNT_ALLY_REPEL_ATTACK );
+			else
+				return GetScheduleOfType ( SCHED_HGRUNT_ALLY_REPEL );
+		}
+	}
+
 	// grunts place HIGH priority on running away from danger sounds.
 	if ( HasConditions(bits_COND_HEAR_SOUND) )
 	{
@@ -2649,24 +2669,15 @@ Schedule_t *CHFGrunt :: GetSchedule ( void )
 			}
 		}
 	}
-	// flying? If PRONE, barnacle has me. IF not, it's assumed I am rapelling.
-	if ( pev->movetype == MOVETYPE_FLY && m_MonsterState != MONSTERSTATE_PRONE )
-	{
-		if (pev->flags & FL_ONGROUND)
-		{
-			// just landed
-			pev->movetype = MOVETYPE_STEP;
-			return GetScheduleOfType ( SCHED_HGRUNT_ALLY_REPEL_LAND );
-		}
-		else
-		{
-			// repel down a rope,
-			if ( m_MonsterState == MONSTERSTATE_COMBAT )
-				return GetScheduleOfType ( SCHED_HGRUNT_ALLY_REPEL_ATTACK );
-			else
-				return GetScheduleOfType ( SCHED_HGRUNT_ALLY_REPEL );
-		}
-	}
+	return NULL;
+}
+
+Schedule_t *CHFGrunt :: GetSchedule ( void )
+{
+	Schedule_t* prioritizedSchedule = PrioritizedSchedule();
+	if (prioritizedSchedule)
+		return prioritizedSchedule;
+
 	if ( HasConditions( bits_COND_ENEMY_DEAD ) && FOkToSpeak() )
 	{
 		PlaySentence( "FG_KILL", 4, VOL_NORM, ATTN_NORM );
@@ -3617,6 +3628,10 @@ Schedule_t *CMedic::GetSchedule()
 	if (m_fHealing) {
 		StopHealing();
 	}
+
+	Schedule_t* prioritizedSchedule = PrioritizedSchedule();
+	if (prioritizedSchedule)
+		return prioritizedSchedule;
 	if ( FBitSet( pev->weapons, MEDIC_EAGLE|MEDIC_HANDGUN ) &&
 		 (GetBodygroup(MEDIC_GUN_GROUP) == MEDIC_GUN_NEEDLE || GetBodygroup(MEDIC_GUN_GROUP) == MEDIC_GUN_NONE)) {
 		return slMedicDrawGun;
