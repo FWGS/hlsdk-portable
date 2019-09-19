@@ -193,7 +193,7 @@ class Android:
 
 	def strip(self):
 		if self.is_host():
-			return 'strip'
+			return 'llvm-strip'
 		return os.path.join(self.gen_binutils_path(), 'strip')
 
 	def system_stl(self):
