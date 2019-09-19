@@ -70,7 +70,7 @@ def configure(conf):
 		conf.load('msvc msdev')
 	conf.load('xcompile compiler_c compiler_cxx strip_on_install')
 
-	if conf.env.DEST_OS2 == 'android':
+	if conf.env.DEST_OS == 'android':
 		conf.options.ALLOW64 = True
 		conf.options.GOLDSRC = False
 		conf.env.SERVER_NAME = 'server' # can't be any other name, until specified
