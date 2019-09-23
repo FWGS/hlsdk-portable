@@ -842,7 +842,7 @@ bool CHudSpectator::ParseOverviewFile()
 	m_OverviewData.layersHeights[0] = 0.0f;
 	strcpy( m_OverviewData.map, gEngfuncs.pfnGetLevelName() );
 
-	if( strlen( m_OverviewData.map ) == 0 )
+	if( m_OverviewData.map[0] == '\0' )
 		return false; // not active yet
 
 	strcpy( levelname, m_OverviewData.map + 5 );
