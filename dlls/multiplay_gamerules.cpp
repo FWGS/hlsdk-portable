@@ -1635,7 +1635,7 @@ void CHalfLifeMultiplay::ChangeLevel( void )
 		ALERT( at_console, "PLAYER COUNT:  min %i max %i current %i\n", minplayers, maxplayers, curplayers );
 	}
 
-	if( szRules != '\0' )
+	if( szRules[0] != '\0' )
 	{
 		ALERT( at_console, "RULES:  %s\n", szRules );
 	}
