@@ -77,7 +77,7 @@ void WeaponsResource::LoadWeaponSprites( WEAPON *pWeapon )
 	else
 		iRes = 640;
 
-	char sz[140];
+	char sz[256];
 
 	if( !pWeapon )
 		return;
