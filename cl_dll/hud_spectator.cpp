@@ -820,7 +820,7 @@ bool CHudSpectator::IsActivePlayer( cl_entity_t *ent )
 
 bool CHudSpectator::ParseOverviewFile()
 {
-	char filename[255] = { 0 };
+	char filename[270] = { 0 };
 	char levelname[255] = { 0 };
 	char token[1024] = { 0 };
 	float height;
