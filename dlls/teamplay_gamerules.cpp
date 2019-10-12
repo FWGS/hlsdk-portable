@@ -52,14 +52,14 @@ CHalfLifeTeamplay::CHalfLifeTeamplay()
 		if( teamoverride.value )
 		{
 			const char *pTeamList = STRING( pWorld->v.team );
-			if( pTeamList && strlen( pTeamList ) )
+			if( pTeamList && pTeamList[0] != '\0' )
 			{
 				strncpy( m_szTeamList, pTeamList, TEAMPLAY_TEAMLISTLENGTH );
 			}
 		}
 	}
 	// Has the server set teams
-	if( strlen( m_szTeamList ) )
+	if( m_szTeamList[0] != '\0' )
 		m_teamLimit = TRUE;
 	else
 		m_teamLimit = FALSE;

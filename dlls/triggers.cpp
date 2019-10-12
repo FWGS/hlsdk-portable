@@ -1124,7 +1124,7 @@ void CBaseTrigger::ActivateMultiTrigger( CBaseEntity *pActivator )
 	if( pev->nextthink > gpGlobals->time )
 		return;         // still waiting for reset time
 
-	if( !UTIL_IsMasterTriggered( m_sMaster,pActivator ) )
+	if( !UTIL_IsMasterTriggered( m_sMaster, pActivator ) )
 		return;
 
 	if( FClassnameIs( pev, "trigger_secret" ) )
@@ -1191,7 +1191,7 @@ void CBaseTrigger::CounterUse( CBaseEntity *pActivator, CBaseEntity *pCaller, US
 
 	BOOL fTellActivator =
 		( m_hActivator != 0 ) &&
-		FClassnameIs( m_hActivator->pev, "player" ) &&
+		m_hActivator->IsPlayer() &&
 		!FBitSet( pev->spawnflags, SPAWNFLAG_NOMESSAGE );
 	if( m_cTriggersLeft != 0 )
 	{
@@ -1499,7 +1499,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 //
 void CChangeLevel::TouchChangeLevel( CBaseEntity *pOther )
 {
-	if( !FClassnameIs( pOther->pev, "player" ) )
+	if( !pOther->IsPlayer() )
 		return;
 
 	ChangeLevelNow( pOther );

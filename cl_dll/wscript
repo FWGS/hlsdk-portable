@@ -48,7 +48,7 @@ def build(bld):
 	if bld.env.GOLDSRC:
 		libs += ['DL']
 
-	if bld.env.DEST_OS2 not in ['android']:
+	if bld.env.DEST_OS not in ['android']:
 		install_path = os.path.join(bld.env.GAMEDIR, bld.env.CLIENT_DIR)
 	else:
 		install_path = bld.env.PREFIX
