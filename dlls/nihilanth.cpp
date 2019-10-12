@@ -731,7 +731,7 @@ void CNihilanth::NextActivity()
 
 	if( ( pev->health < gSkillData.nihilanthHealth / 2 || m_iActiveSpheres < N_SPHERES / 2 ) && m_hRecharger == 0 && m_iLevel <= 9 )
 	{
-		char szName[64];
+		char szName[128];
 
 		CBaseEntity *pEnt = NULL;
 		CBaseEntity *pRecharger = NULL;
@@ -779,7 +779,7 @@ void CNihilanth::NextActivity()
 
 			if( iseq != pev->sequence )
 			{
-				char szText[64];
+				char szText[128];
 
 				sprintf( szText, "%s%d", m_szDrawUse, m_iLevel );
 				FireTargets( szText, this, this, USE_ON, 1.0 );
@@ -827,7 +827,7 @@ void CNihilanth::NextActivity()
 				}
 				else
 				{
-					char szText[64];
+					char szText[128];
 
 					sprintf( szText, "%s%d", m_szTeleportTouch, m_iTeleport );
 					CBaseEntity *pTouch = UTIL_FindEntityByTargetname( NULL, szText );
@@ -1109,7 +1109,7 @@ void CNihilanth::HandleAnimEvent( MonsterEvent_t *pEvent )
 		// prayer
 		if( m_hEnemy != 0 )
 		{
-			char szText[32];
+			char szText[128];
 
 			sprintf( szText, "%s%d", m_szTeleportTouch, m_iTeleport );
 			CBaseEntity *pTouch = UTIL_FindEntityByTargetname( NULL, szText );

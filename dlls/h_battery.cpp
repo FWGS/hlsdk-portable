@@ -110,8 +110,12 @@ void CRecharge::Precache()
 
 void CRecharge::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 { 
+	// Make sure that we have a caller
+	if( !pActivator )
+		return;
+
 	// if it's not a player, ignore
-	if( !FClassnameIs( pActivator->pev, "player" ) )
+	if( !pActivator->IsPlayer() )
 		return;
 
 	// if there is no juice left, turn it off
@@ -142,16 +146,8 @@ void CRecharge::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE use
 	if( m_flNextCharge >= gpGlobals->time )
 		return;
 
-	// Make sure that we have a caller
-	if( !pActivator )
-		return;
-
 	m_hActivator = pActivator;
 
-	//only recharge the player
-	if( !m_hActivator->IsPlayer() )
-		return;
-	
 	// Play the on sound or the looping charging sound
 	if( !m_iOn )
 	{
@@ -159,6 +155,7 @@ void CRecharge::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE use
 		EMIT_SOUND( ENT( pev ), CHAN_ITEM, "items/suitchargeok1.wav", 0.85, ATTN_NORM );
 		m_flSoundTime = 0.56 + gpGlobals->time;
 	}
+
 	if( ( m_iOn == 1 ) && ( m_flSoundTime <= gpGlobals->time ) )
 	{
 		m_iOn++;
