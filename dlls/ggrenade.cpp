@@ -243,7 +243,7 @@ void CGrenade::BounceTouch( CBaseEntity *pOther )
 	// or thrown very far tend to slow down too quickly for me to always catch just by testing velocity. 
 	// trimming the Z velocity a bit seems to help quite a bit.
 	vecTestVelocity = pev->velocity; 
-	vecTestVelocity.z *= 0.45;
+	vecTestVelocity.z *= 0.45f;
 
 	if( !m_fRegisteredSound && vecTestVelocity.Length() <= 60 )
 	{

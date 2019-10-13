@@ -668,7 +668,7 @@ void CApache::Flight( void )
 	{
 		// ALERT( at_console, "F " );
 		// lean forward
-		pev->avelocity.x -= 12.0;
+		pev->avelocity.x -= 12.0f;
 	}
 	else if( flDist < 0.0f && flSpeed > -50.0f && pev->angles.x + pev->avelocity.x < 20.0f )
 	{

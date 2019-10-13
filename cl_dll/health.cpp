@@ -191,7 +191,7 @@ int CHudHealth::Draw( float flTime )
 	// Has health changed? Flash the health #
 	if( m_fFade )
 	{
-		m_fFade -= ( gHUD.m_flTimeDelta * 20 );
+		m_fFade -= ( (float)gHUD.m_flTimeDelta * 20.0f );
 		if( m_fFade <= 0 )
 		{
 			a = MIN_ALPHA;
