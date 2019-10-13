@@ -218,8 +218,8 @@ BOOL CBasePlayerWeapon::DefaultDeploy( const char *szViewModel, const char *szWe
 	SendWeaponAnim( iAnim, skiplocal, body );
 
 	g_irunninggausspred = false;
-	m_pPlayer->m_flNextAttack = 0.5;
-	m_flTimeWeaponIdle = 1.0;
+	m_pPlayer->m_flNextAttack = 0.5f;
+	m_flTimeWeaponIdle = 1.0f;
 	return TRUE;
 }
 
@@ -233,7 +233,7 @@ BOOL CBasePlayerWeapon::PlayEmptySound( void )
 {
 	if( m_iPlayEmptySound )
 	{
-		HUD_PlaySound( "weapons/357_cock1.wav", 0.8 );
+		HUD_PlaySound( "weapons/357_cock1.wav", 0.8f );
 		m_iPlayEmptySound = 0;
 		return 0;
 	}
@@ -296,8 +296,8 @@ Vector CBaseEntity::FireBulletsPlayer ( ULONG cShots, Vector vecSrc, Vector vecD
 		{
 			// get circular gaussian spread
 			do {
-					x = RANDOM_FLOAT( -0.5, 0.5 ) + RANDOM_FLOAT( -0.5, 0.5 );
-					y = RANDOM_FLOAT( -0.5, 0.5 ) + RANDOM_FLOAT( -0.5, 0.5 );
+					x = RANDOM_FLOAT( -0.5f, 0.5f ) + RANDOM_FLOAT( -0.5f, 0.5f );
+					y = RANDOM_FLOAT( -0.5f, 0.5f ) + RANDOM_FLOAT( -0.5f, 0.5f );
 					z = x * x + y * y;
 			} while( z > 1 );
 		}
@@ -305,13 +305,13 @@ Vector CBaseEntity::FireBulletsPlayer ( ULONG cShots, Vector vecSrc, Vector vecD
 		{
 			//Use player's random seed.
 			// get circular gaussian spread
-			x = UTIL_SharedRandomFloat( shared_rand + iShot, -0.5, 0.5 ) + UTIL_SharedRandomFloat( shared_rand + ( 1 + iShot ) , -0.5, 0.5 );
-			y = UTIL_SharedRandomFloat( shared_rand + ( 2 + iShot ), -0.5, 0.5 ) + UTIL_SharedRandomFloat( shared_rand + ( 3 + iShot ), -0.5, 0.5 );
+			x = UTIL_SharedRandomFloat( shared_rand + iShot, -0.5f, 0.5f ) + UTIL_SharedRandomFloat( shared_rand + ( 1 + iShot ) , -0.5f, 0.5f );
+			y = UTIL_SharedRandomFloat( shared_rand + ( 2 + iShot ), -0.5f, 0.5f ) + UTIL_SharedRandomFloat( shared_rand + ( 3 + iShot ), -0.5f, 0.5f );
 			z = x * x + y * y;
 		}			
 	}
 
-	return Vector( x * vecSpread.x, y * vecSpread.y, 0.0 );
+	return Vector( x * vecSpread.x, y * vecSpread.y, 0.0f );
 }
 
 /*
@@ -323,7 +323,7 @@ Handles weapon firing, reloading, etc.
 */
 void CBasePlayerWeapon::ItemPostFrame( void )
 {
-	if( ( m_fInReload ) && ( m_pPlayer->m_flNextAttack <= 0.0 ) )
+	if( ( m_fInReload ) && ( m_pPlayer->m_flNextAttack <= 0.0f ) )
 	{
 #if 0 // FIXME, need ammo on client to make this work right
 		// complete the reload. 
@@ -338,7 +338,7 @@ void CBasePlayerWeapon::ItemPostFrame( void )
 		m_fInReload = FALSE;
 	}
 
-	if( ( m_pPlayer->pev->button & IN_ATTACK2 ) && ( m_flNextSecondaryAttack <= 0.0 ) )
+	if( ( m_pPlayer->pev->button & IN_ATTACK2 ) && ( m_flNextSecondaryAttack <= 0.0f ) )
 	{
 		if( pszAmmo2() && !m_pPlayer->m_rgAmmo[SecondaryAmmoIndex()] )
 		{
@@ -348,7 +348,7 @@ void CBasePlayerWeapon::ItemPostFrame( void )
 		SecondaryAttack();
 		m_pPlayer->pev->button &= ~IN_ATTACK2;
 	}
-	else if( ( m_pPlayer->pev->button & IN_ATTACK ) && ( m_flNextPrimaryAttack <= 0.0 ) )
+	else if( ( m_pPlayer->pev->button & IN_ATTACK ) && ( m_flNextPrimaryAttack <= 0.0f ) )
 	{
 		if( ( m_iClip == 0 && pszAmmo1() ) || ( iMaxClip() == -1 && !m_pPlayer->m_rgAmmo[PrimaryAmmoIndex()] ) )
 		{
@@ -368,7 +368,7 @@ void CBasePlayerWeapon::ItemPostFrame( void )
 		m_fFireOnEmpty = FALSE;
 
 		// weapon is useable. Reload if empty and weapon has waited as long as it has to after firing
-		if( m_iClip == 0 && !( iFlags() & ITEM_FLAG_NOAUTORELOAD ) && m_flNextPrimaryAttack < 0.0 )
+		if( m_iClip == 0 && !( iFlags() & ITEM_FLAG_NOAUTORELOAD ) && m_flNextPrimaryAttack < 0.0f )
 		{
 			Reload();
 			return;
@@ -483,7 +483,7 @@ Don't actually trace, but act like the trace didn't hit anything.
 void UTIL_TraceLine( const Vector &vecStart, const Vector &vecEnd, IGNORE_MONSTERS igmon, edict_t *pentIgnore, TraceResult *ptr )
 {
 	memset( ptr, 0, sizeof(*ptr) );
-	ptr->flFraction = 1.0;
+	ptr->flFraction = 1.0f;
 }
 
 /*
@@ -956,61 +956,61 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 		to->client.vuser4[1] = player.m_rgAmmo[pCurrent->m_iPrimaryAmmoType];
 		to->client.vuser4[2] = player.m_rgAmmo[pCurrent->m_iSecondaryAmmoType];
 
-/*		if( pto->m_flPumpTime != -9999 )
+/*		if( pto->m_flPumpTime != -9999.0f )
 		{
-			pto->m_flPumpTime -= cmd->msec / 1000.0;
-			if( pto->m_flPumpTime < -0.001 )
-				pto->m_flPumpTime = -0.001;
+			pto->m_flPumpTime -= cmd->msec / 1000.0f;
+			if( pto->m_flPumpTime < -0.001f )
+				pto->m_flPumpTime = -0.001f;
 		}*/
 
-		if( pto->m_fNextAimBonus < -1.0 )
+		if( pto->m_fNextAimBonus < -1.0f )
 		{
-			pto->m_fNextAimBonus = -1.0;
+			pto->m_fNextAimBonus = -1.0f;
 		}
 
-		if( pto->m_flNextPrimaryAttack < -1.0 )
+		if( pto->m_flNextPrimaryAttack < -1.0f )
 		{
-			pto->m_flNextPrimaryAttack = -1.0;
+			pto->m_flNextPrimaryAttack = -1.0f;
 		}
 
-		if( pto->m_flNextSecondaryAttack < -0.001 )
+		if( pto->m_flNextSecondaryAttack < -0.001f )
 		{
-			pto->m_flNextSecondaryAttack = -0.001;
+			pto->m_flNextSecondaryAttack = -0.001f;
 		}
 
-		if( pto->m_flTimeWeaponIdle < -0.001 )
+		if( pto->m_flTimeWeaponIdle < -0.001f )
 		{
-			pto->m_flTimeWeaponIdle = -0.001;
+			pto->m_flTimeWeaponIdle = -0.001f;
 		}
 
-		if( pto->m_flNextReload < -0.001 )
+		if( pto->m_flNextReload < -0.001f )
 		{
-			pto->m_flNextReload = -0.001;
+			pto->m_flNextReload = -0.001f;
 		}
 
-		if( pto->fuser1 < -0.001 )
+		if( pto->fuser1 < -0.001f )
 		{
-			pto->fuser1 = -0.001;
+			pto->fuser1 = -0.001f;
 		}
 	}
 
 	// m_flNextAttack is now part of the weapons, but is part of the player instead
-	to->client.m_flNextAttack -= cmd->msec / 1000.0;
-	if( to->client.m_flNextAttack < -0.001 )
+	to->client.m_flNextAttack -= cmd->msec / 1000.0f;
+	if( to->client.m_flNextAttack < -0.001f )
 	{
-		to->client.m_flNextAttack = -0.001;
+		to->client.m_flNextAttack = -0.001f;
 	}
 
-	to->client.fuser2 -= cmd->msec / 1000.0;
-	if( to->client.fuser2 < -0.001 )
+	to->client.fuser2 -= cmd->msec / 1000.0f;
+	if( to->client.fuser2 < -0.001f )
 	{
-		to->client.fuser2 = -0.001;
+		to->client.fuser2 = -0.001f;
 	}
 
-	to->client.fuser3 -= cmd->msec / 1000.0;
-	if( to->client.fuser3 < -0.001 )
+	to->client.fuser3 -= cmd->msec / 1000.0f;
+	if( to->client.fuser3 < -0.001f )
 	{
-		to->client.fuser3 = -0.001;
+		to->client.fuser3 = -0.001f;
 	}
 
 	// Store off the last position from the predicted state.

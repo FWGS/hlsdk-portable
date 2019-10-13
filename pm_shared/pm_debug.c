@@ -76,7 +76,7 @@ void PM_ShowClipBox( void )
 	// Show our BBOX in particles.
 	PM_DrawBBox( pmove->player_mins[pmove->usehull], pmove->player_maxs[pmove->usehull], org, pmove->server ? 132 : 0, 0.1 );
 
-	PM_ParticleLine( org, org, pmove->server ? 132 : 0, 0.1, 5.0 );
+	PM_ParticleLine( org, org, pmove->server ? 132 : 0, 0.1f, 5.0f );
 /*
 	{
 		int i;
@@ -179,13 +179,13 @@ void PM_DrawPhysEntBBox(int num, int pcolor, float life)
 		{
 			vec3_t	forward, right, up;
 
-			AngleVectorsTranspose(pe->angles, forward, right, up);
-			for (j = 0; j < 8; j++)
+			AngleVectorsTranspose( pe->angles, forward, right, up);
+			for( j = 0; j < 8; j++ )
 			{
 				VectorCopy(p[j], tmp);
-				p[j][0] = DotProduct  ( tmp, forward );
-				p[j][1] = DotProduct ( tmp, right );
-				p[j][2] = DotProduct  ( tmp, up );
+				p[j][0] = DotProduct( tmp, forward );
+				p[j][1] = DotProduct( tmp, right );
+				p[j][2] = DotProduct( tmp, up );
 			}
 		}
 
@@ -296,7 +296,7 @@ void PM_ViewEntity( void )
 
 	VectorCopy( pmove->origin, origin);
 
-	fup = 0.5*( pmove->player_mins[pmove->usehull][2] + pmove->player_maxs[pmove->usehull][2] );
+	fup = 0.5f * ( pmove->player_mins[pmove->usehull][2] + pmove->player_maxs[pmove->usehull][2] );
 	fup += pmove->view_ofs[2];
 	fup -= 4;
 

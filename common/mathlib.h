@@ -32,6 +32,10 @@ typedef vec_t vec4_t[4];	// x,y,z,w
 #define M_PI		3.14159265358979323846	// matches value in gcc v2 math.h
 #endif
 
+#ifndef M_PI_F
+#define M_PI_F		(float)M_PI
+#endif
+
 struct mplane_s;
 
 extern vec3_t vec3_origin;
