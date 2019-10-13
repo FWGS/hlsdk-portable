@@ -12,8 +12,12 @@
 *   without written permission from Valve LLC.
 *
 ****/
-
+#include <math.h>
 #include "mathlib.h"
+#ifdef HAVE_TGMATH_H
+#include <tgmath.h>
+#endif
+
 #include "const.h"
 #include "usercmd.h"
 #include "pm_defs.h"

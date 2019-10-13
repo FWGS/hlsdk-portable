@@ -13,10 +13,12 @@
 *
 ****/
 // pm_math.c -- math primitives
-
-#include "mathlib.h"
-#include "const.h"
 #include <math.h>
+#include "mathlib.h"
+#ifdef HAVE_TGMATH_H
+#include <tgmath.h>
+#endif
+#include "const.h"
 
 // up / down
 #define	PITCH	0

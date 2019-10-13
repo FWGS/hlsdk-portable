@@ -60,10 +60,10 @@ typedef int BOOL;
 #endif //_WIN32
 
 // Misc C-runtime library headers
-#include "stdio.h"
-#include "stdlib.h"
-#include "stddef.h"
-#include "math.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <stddef.h>
+#include <cmath>
 
 #ifndef M_PI_F
 #define M_PI_F          (float)M_PI

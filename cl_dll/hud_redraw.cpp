@@ -15,7 +15,8 @@
 //
 // hud_redraw.cpp
 //
-#include <math.h>
+#include <cmath>
+
 #include "hud.h"
 #include "cl_util.h"
 //#include "triangleapi.h"

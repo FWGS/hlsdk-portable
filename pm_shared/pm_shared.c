@@ -14,18 +14,22 @@
 ****/
 
 #include <assert.h>
+//#include <stdio.h>  // NULL
+#include <math.h>   // sqrt
+#include <string.h> // strcpy
+#include <stdlib.h> // atoi
+#include <ctype.h>  // isspace
 #include "mathlib.h"
+#ifdef HAVE_TGMATH_H
+#include <tgmath.h>
+#endif
+
 #include "const.h"
 #include "usercmd.h"
 #include "pm_defs.h"
 #include "pm_shared.h"
 #include "pm_movevars.h"
 #include "pm_debug.h"
-//#include <stdio.h>  // NULL
-#include <math.h>   // sqrt
-#include <string.h> // strcpy
-#include <stdlib.h> // atoi
-#include <ctype.h>  // isspace
 
 int g_bhopcap = 1;
 
