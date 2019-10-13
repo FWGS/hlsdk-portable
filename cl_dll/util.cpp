@@ -40,8 +40,6 @@ extern vec3_t vec3_origin;
 vec3_t vec3_origin;
 #endif
 
-double sqrt( double x );
-
 float Length( const float *v )
 {
 	int	i;
