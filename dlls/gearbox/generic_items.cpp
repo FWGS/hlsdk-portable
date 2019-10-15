@@ -54,11 +54,8 @@ void CItemGeneric::Spawn(void)
 	Precache();
 	SET_MODEL(ENT(pev), STRING(pev->model));
 
-	UTIL_SetOrigin(pev, pev->origin);
-	UTIL_SetSize(pev, Vector(-16, -16, 0), Vector(16, 16, 32));
-
 	pev->takedamage	 = DAMAGE_NO;
-	pev->solid		 = SOLID_BBOX;
+	pev->solid		 = SOLID_NOT;
 	pev->sequence	 = -1;
 
 	// Call startup sequence to look for a sequence to play.
