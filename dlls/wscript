@@ -68,5 +68,5 @@ def build(bld):
 		use      = libs,
 		install_path = install_path,
 		subsystem = bld.env.MSVC_SUBSYSTEM,
-		idx      = 2
+		idx      = bld.get_taskgen_count()
 	)
