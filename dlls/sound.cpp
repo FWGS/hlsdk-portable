@@ -184,7 +184,7 @@ void CAmbientGeneric::Spawn( void )
 
 	const char *szSoundFile = STRING( pev->message );
 
-	if( FStringNull( pev->message ) || strlen( szSoundFile ) < 1 )
+	if( FStringNull( pev->message ) || szSoundFile[0] == '\0' )
 	{
 		ALERT( at_error, "EMPTY AMBIENT AT: %f, %f, %f\n", pev->origin.x, pev->origin.y, pev->origin.z );
 		pev->nextthink = gpGlobals->time + 0.1;
@@ -218,7 +218,7 @@ void CAmbientGeneric::Precache( void )
 {
 	const char *szSoundFile = STRING( pev->message );
 
-	if( !FStringNull( pev->message ) && strlen( szSoundFile ) > 1 )
+	if( !FStringNull( pev->message ) && szSoundFile[0] != '\0' )
 	{
 		if( *szSoundFile != '!' )
 			PRECACHE_SOUND( szSoundFile );
@@ -1281,9 +1281,9 @@ void SENTENCEG_Init()
 		if( !buffer[j] )
 			continue;
 
-		if( gcallsentences > CVOXFILESENTENCEMAX )
+		if( gcallsentences >= CVOXFILESENTENCEMAX )
 		{
-			ALERT( at_error, "Too many sentences in sentences.txt!\n" );
+			ALERT( at_error, "Too many sentences in sentences.txt! >%d\n", gcallsentences );
 			break;
 		}
 
@@ -1740,7 +1740,7 @@ void CSpeaker::Spawn( void )
 {
 	const char *szSoundFile = STRING( pev->message );
 
-	if( !m_preset && ( FStringNull( pev->message ) || strlen( szSoundFile ) < 1 ) )
+	if( !m_preset && ( FStringNull( pev->message ) || szSoundFile[0] == '\0' ) )
 	{
 		ALERT( at_error, "SPEAKER with no Level/Sentence! at: %f, %f, %f\n", pev->origin.x, pev->origin.y, pev->origin.z );
 		pev->nextthink = gpGlobals->time + 0.1;

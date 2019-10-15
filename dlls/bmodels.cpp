@@ -434,7 +434,7 @@ void CFuncRotating::Precache( void )
 	BOOL NullSound = FALSE;
 
 	// set up fan sounds
-	if( !FStringNull( pev->message ) && strlen( szSoundFile ) > 0 )
+	if( !FStringNull( pev->message ) && szSoundFile[0] != '\0' )
 	{
 		// if a path is set for a wave, use it
 	}

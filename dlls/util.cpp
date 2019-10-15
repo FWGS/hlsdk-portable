@@ -2219,7 +2219,7 @@ int CRestore::ReadField( void *pBaseData, TYPEDESCRIPTION *pFields, int fieldCou
 							pString++;
 						}
 						pInputData = pString;
-						if( strlen( (char *)pInputData ) == 0 )
+						if( ( (char *)pInputData )[0] == '\0' )
 							*( (string_t *)pOutputData ) = 0;
 						else
 						{
@@ -2314,7 +2314,7 @@ int CRestore::ReadField( void *pBaseData, TYPEDESCRIPTION *pFields, int fieldCou
 						*( (void**)pOutputData ) = *(void **)pInputData;
 						break;
 					case FIELD_FUNCTION:
-						if( strlen( (char *)pInputData ) == 0 )
+						if( ( (char *)pInputData )[0] == '\0' )
 							*( (void**)pOutputData ) = 0;
 						else
 							*( (void**)pOutputData ) = (void*)FUNCTION_FROM_NAME( (char *)pInputData );

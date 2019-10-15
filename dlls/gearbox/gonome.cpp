@@ -148,6 +148,7 @@ public:
 
 	Schedule_t *GetSchedule();
 	Schedule_t *GetScheduleOfType( int Type );
+	void RunTask(Task_t* pTask);
 
 	int TakeDamage(entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType);
 	void Killed(entvars_t *pevAttacker, int iGib);
@@ -177,6 +178,8 @@ protected:
 	BOOL m_fPlayerLocked;
 	EHANDLE m_lockedPlayer;
 #endif
+	bool m_meleeAttack2;
+	bool m_playedAttackSound;
 };
 
 LINK_ENTITY_TO_CLASS(monster_gonome, CGonome)
@@ -316,10 +319,12 @@ void CGonome::SetActivity( Activity NewActivity )
 		// special melee animations
 		if ((pev->origin - m_hEnemy->pev->origin).Length2D() >= 48 )
 		{
+			m_meleeAttack2 = false;
 			iSequence = LookupSequence("attack1");
 		}
 		else
 		{
+			m_meleeAttack2 = true;
 			iSequence = LookupSequence("attack2");
 		}
 	}
@@ -472,7 +477,8 @@ void CGonome::HandleAnimEvent(MonsterEvent_t *pEvent)
 	switch (pEvent->event)
 	{
 	case GONOME_SCRIPT_EVENT_SOUND:
-		EMIT_SOUND(ENT(pev), CHAN_BODY, pEvent->options, 1, ATTN_NORM);
+		if (m_Activity != ACT_MELEE_ATTACK1)
+			EMIT_SOUND(ENT(pev), CHAN_BODY, pEvent->options, 1, ATTN_NORM);
 		break;
 	case GONOME_AE_SPIT:
 	{
@@ -481,6 +487,7 @@ void CGonome::HandleAnimEvent(MonsterEvent_t *pEvent)
 
 		if (GetGonomeGuts(vecArmPos))
 		{
+			m_pGonomeGuts->pev->skin = entindex();
 			m_pGonomeGuts->pev->body = 1;
 			m_pGonomeGuts->pev->aiment = ENT(pev);
 			m_pGonomeGuts->pev->movetype = MOVETYPE_FOLLOW;
@@ -849,6 +856,33 @@ Schedule_t* CGonome::GetScheduleOfType(int Type)
 		break;
 	}
 	return CBaseMonster::GetScheduleOfType(Type);
+}
+
+void CGonome::RunTask(Task_t *pTask)
+{
+	// HACK to stop Gonome from playing attack sound twice
+	if (pTask->iTask == TASK_MELEE_ATTACK1)
+	{
+		if (!m_playedAttackSound)
+		{
+			const char* sample = NULL;
+			if (m_meleeAttack2)
+			{
+				sample = "gonome/gonome_melee2.wav";
+			}
+			else
+			{
+				sample = "gonome/gonome_melee1.wav";
+			}
+			EMIT_SOUND(ENT(pev), CHAN_BODY, sample, 1, ATTN_NORM);
+			m_playedAttackSound = true;
+		}
+	}
+	else
+	{
+		m_playedAttackSound = false;
+	}
+	CBaseMonster::RunTask(pTask);
 }
 
 //=========================================================

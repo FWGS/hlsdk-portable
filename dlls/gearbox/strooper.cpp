@@ -134,7 +134,7 @@ public:
 	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType);
 	virtual int SizeForGrapple() { return GRAPPLE_LARGE; }
 
-	void DropShockRoach();
+	void DropShockRoach(bool gibbed);
 
 	int	Save(CSave &save);
 	int Restore(CRestore &restore);
@@ -212,7 +212,7 @@ void CStrooper::GibMonster(void)
 {
 	if (GetBodygroup(GUN_GROUP) != GUN_NONE)
 	{
-		DropShockRoach();
+		DropShockRoach(true);
 	}
 
 	EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "common/bodysplat.wav", 1, ATTN_NORM );
@@ -299,7 +299,7 @@ void CStrooper::HandleAnimEvent(MonsterEvent_t *pEvent)
 	{
 		if (GetBodygroup(GUN_GROUP) != GUN_NONE)
 		{
-			DropShockRoach();
+			DropShockRoach(false);
 		}
 	}
 	break;
@@ -586,7 +586,7 @@ void CStrooper::TraceAttack(entvars_t *pevAttacker, float flDamage, Vector vecDi
 	CSquadMonster::TraceAttack(pevAttacker, flDamage, vecDir, ptr, bitsDamageType);
 }
 
-void CStrooper::DropShockRoach()
+void CStrooper::DropShockRoach(bool gibbed)
 {
 	Vector	vecGunPos;
 	Vector	vecGunAngles;
@@ -594,19 +594,37 @@ void CStrooper::DropShockRoach()
 	GetAttachment(0, vecGunPos, vecGunAngles);
 	SetBodygroup(GUN_GROUP, GUN_NONE);
 
-	Vector vecDropAngles = vecGunAngles;
+	Vector vecDropAngles;
 
 	// Remove any pitch.
 	vecDropAngles.x = 0;
+	vecDropAngles.y = vecGunAngles.y;
 	vecDropAngles.z = 0;
 
 	Vector vecPos = pev->origin;
-	vecPos.z += 32;
+	if (gibbed)
+		vecPos.z += 32;
+	else
+		vecPos.z += 48;
 
 	// now spawn a shockroach.
 	CBaseEntity* roach = CBaseEntity::Create( "monster_shockroach", vecPos, vecDropAngles );
-	if (ShouldFadeOnDeath())
-		roach->pev->spawnflags |= SF_MONSTER_FADECORPSE;
+	if (roach)
+	{
+		if (ShouldFadeOnDeath())
+			roach->pev->spawnflags |= SF_MONSTER_FADECORPSE;
+		if (gibbed)
+		{
+			roach->pev->velocity = Vector(RANDOM_FLOAT(-100.0f, 100.0f), RANDOM_FLOAT(-100.0f, 100.0f), RANDOM_FLOAT(200.0f, 300.0f));
+			roach->pev->avelocity = Vector(0, RANDOM_FLOAT(200.0f, 300.0f), 0);
+		}
+		else
+		{
+			roach->pev->velocity = Vector(RANDOM_FLOAT(-20.0f, 20.0f) , RANDOM_FLOAT(-20.0f, 20.0f), RANDOM_FLOAT(20.0f, 30.0f));
+			roach->pev->avelocity = Vector(0, RANDOM_FLOAT(20.0f, 40.0f), 0);
+		}
+
+	}
 }
 
 

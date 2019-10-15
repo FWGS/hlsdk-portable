@@ -834,7 +834,7 @@ Schedule_t	slVoltigoreRangeAttack1[] =
 // Chase enemy schedule
 Task_t tlVoltigoreChaseEnemy1[] =
 {
-	{ TASK_SET_FAIL_SCHEDULE, (float)SCHED_RANGE_ATTACK1 },// !!!OEM - this will stop nasty voltigore oscillation.
+	{ TASK_SET_FAIL_SCHEDULE, (float)SCHED_CHASE_ENEMY_FAILED },
 	{ TASK_GET_PATH_TO_ENEMY, (float)0 },
 	{ TASK_RUN_PATH, (float)0 },
 	{ TASK_WAIT_FOR_MOVEMENT, (float)0 },
@@ -922,6 +922,10 @@ Schedule_t *CVoltigore::GetSchedule(void)
 			return GetScheduleOfType(SCHED_WAKE_ANGRY);
 		}
 
+		if( HasConditions( bits_COND_ENEMY_OCCLUDED ) )
+		{
+			return GetScheduleOfType(SCHED_CHASE_ENEMY);
+		}
 
 		if (HasConditions(bits_COND_CAN_RANGE_ATTACK1))
 		{
