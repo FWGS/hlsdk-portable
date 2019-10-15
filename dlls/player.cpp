@@ -4349,6 +4349,22 @@ void CBasePlayer::UpdateClientData( void )
 BOOL CBasePlayer::FBecomeProne( void )
 {
 	m_afPhysicsFlags |= PFLAG_ONBARNACLE;
+
+	if( (m_afPhysicsFlags & PFLAG_ONROPE) )
+	{
+		pev->movetype = MOVETYPE_WALK;
+		pev->solid = SOLID_SLIDEBOX;
+		this->m_afPhysicsFlags &= ~PFLAG_ONROPE;
+
+		if (m_pRope)
+		{
+			m_pRope->DetachObject();
+			m_pRope = NULL;
+		}
+
+		m_bIsClimbing = false;
+	}
+
 	return TRUE;
 }
 

@@ -20,11 +20,8 @@ class CRopeSample;
 
 struct RopeSampleData;
 
-struct Spring;
-
 #define MAX_SEGMENTS 63
 #define MAX_SAMPLES  64
-#define MAX_TEMP_SAMPLES 5
 
 /**
 *	A rope with a number of segments.
@@ -40,9 +37,8 @@ public:
 
 	virtual void Spawn();
 
-	void Think();
-
-	void Touch( CBaseEntity* pOther );
+	void EXPORT StartThink();
+	void EXPORT RopeThink();
 
 	virtual int		Save( CSave &save );
 	virtual int		Restore( CRestore &restore );
@@ -52,12 +48,6 @@ public:
 	*	Initializes the rope simulation data.
 	*/
 	void InitializeRopeSim();
-
-	/**
-	*	Initializes the springs.
-	*	@param uiNumSprings Number of springs to create.
-	*/
-	void InitializeSprings( const size_t uiNumSprings );
 
 	/**
 	*	Runs simulation on the samples.
@@ -88,7 +78,7 @@ public:
 	*	@param second Second sample.
 	*	@param spring Spring.
 	*/
-	void ComputeSpringForce( RopeSampleData& first, RopeSampleData& second, const Spring& spring );
+	void ComputeSpringForce(RopeSampleData& first, RopeSampleData& second);
 
 	/**
 	*	Runs RK4 integration.
@@ -96,7 +86,7 @@ public:
 	*	@param ppSampleSource Previous sample state.
 	*	@param ppSampleTarget Next sample state.
 	*/
-	void RK4Integrate( const float flDeltaTime, CRopeSample** ppSampleSource, CRopeSample** ppSampleTarget );
+	void RK4Integrate(const float flDeltaTime);
 
 	/**
 	*	Traces model positions and angles and corrects them.
@@ -108,7 +98,7 @@ public:
 	/**
 	*	Traces model positions and angles, makes visible segments visible and hidden segments hidden.
 	*/
-	void SetRopeSegments( const size_t uiNumSegments,
+	void SetRopeSegments( const int uiNumSegments,
 						  CRopeSegment** ppPrimarySegs, CRopeSegment** ppHiddenSegs );
 
 	/**
@@ -141,7 +131,7 @@ public:
 	*	@param vecForce Force.
 	*	@param uiSegment Segment index.
 	*/
-	void ApplyForceToSegment( const Vector& vecForce, const size_t uiSegment );
+	void ApplyForceToSegment( const Vector& vecForce, const int uiSegment );
 
 	/**
 	*	Attached an object to the given segment.
@@ -166,7 +156,7 @@ public:
 	/**
 	*	@return The number of segments.
 	*/
-	size_t GetNumSegments() const { return m_iSegments; }
+	int GetNumSegments() const { return m_iSegments; }
 
 	/**
 	*	@return The segments.
@@ -219,7 +209,7 @@ public:
 	/**
 	*	@return Segment length for the given segment.
 	*/
-	float GetSegmentLength( size_t uiSegmentIndex ) const;
+	float GetSegmentLength( int uiSegmentIndex ) const;
 
 	/**
 	*	@return Total rope length.
@@ -234,17 +224,17 @@ public:
 	/**
 	*	@return Whether the given segment index is valid.
 	*/
-	bool IsValidSegmentIndex( const size_t uiSegment ) const;
+	bool IsValidSegmentIndex( const int uiSegment ) const;
 
 	/**
 	*	@return The origin of the given segment.
 	*/
-	Vector GetSegmentOrigin( const size_t uiSegment ) const;
+	Vector GetSegmentOrigin( const int uiSegment ) const;
 
 	/**
 	*	@return The attachment point of the given segment.
 	*/
-	Vector GetSegmentAttachmentPoint( const size_t uiSegment ) const;
+	Vector GetSegmentAttachmentPoint( const int uiSegment ) const;
 
 	/**
 	*	@param pSegment Segment.
@@ -256,7 +246,7 @@ public:
 	*	@param uiSegmentIndex Segment index.
 	*	@return The segment direction normal from its origin.
 	*/
-	Vector GetSegmentDirFromOrigin( const size_t uiSegmentIndex ) const;
+	Vector GetSegmentDirFromOrigin( const int uiSegmentIndex ) const;
 
 	/**
 	*	@return The attached object position.
@@ -264,7 +254,7 @@ public:
 	Vector GetAttachedObjectsPosition() const;
 
 private:
-	size_t m_iSegments;
+	int m_iSegments;
 
 	CRopeSegment* seg[ MAX_SEGMENTS ];
 	CRopeSegment* altseg[ MAX_SEGMENTS ];
@@ -277,18 +267,10 @@ private:
 
 	Vector m_LastEndPos;
 	Vector m_Gravity;
-	float m_HookConstant;
-	float m_SpringDampning;
 
-	CRopeSample* m_CurrentSys[ MAX_SAMPLES ];
-	CRopeSample* m_TargetSys[ MAX_SAMPLES ];
-	RopeSampleData* m_TempSys[ MAX_TEMP_SAMPLES ];
+	CRopeSample* m_Samples[ MAX_SAMPLES ];
 
-	size_t m_NumSamples;
-
-	Spring* m_Spring;
-
-	size_t m_SpringCnt;
+	int m_NumSamples;
 
 	bool mSpringsInitialized;
 
@@ -296,7 +278,7 @@ private:
 
 	bool mObjectAttached;
 
-	size_t mAttachedObjectsSegment;
+	int mAttachedObjectsSegment;
 	float mAttachedObjectsOffset;
 	float detachTime;
 
