@@ -820,7 +820,7 @@ bool CHudSpectator::IsActivePlayer( cl_entity_t *ent )
 
 bool CHudSpectator::ParseOverviewFile()
 {
-	char filename[255] = { 0 };
+	char filename[512] = { 0 };
 	char levelname[255] = { 0 };
 	char token[1024] = { 0 };
 	float height;
@@ -842,7 +842,7 @@ bool CHudSpectator::ParseOverviewFile()
 	m_OverviewData.layersHeights[0] = 0.0f;
 	strcpy( m_OverviewData.map, gEngfuncs.pfnGetLevelName() );
 
-	if( strlen( m_OverviewData.map ) == 0 )
+	if( m_OverviewData.map[0] == '\0' )
 		return false; // not active yet
 
 	strcpy( levelname, m_OverviewData.map + 5 );

@@ -535,6 +535,9 @@ void CRpg::UpdateSpot( void )
 #ifndef CLIENT_DLL
 	if( m_fSpotActive )
 	{
+		if (m_pPlayer->pev->viewmodel == 0)
+			return;
+
 		if( !m_pSpot )
 		{
 			m_pSpot = CLaserSpot::CreateSpot();
