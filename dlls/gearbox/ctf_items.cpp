@@ -34,7 +34,7 @@ This contains the Flag entity information for the Half-Life : Opposing force CTF
 
 extern int gmsgCTFMsgs;
 
-extern char* GetTeamName(int team);
+extern const char* GetTeamName(int team);
 
 
 /*****************************************************

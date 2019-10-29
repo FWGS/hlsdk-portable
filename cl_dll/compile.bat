@@ -7,7 +7,7 @@ set PATH=%MSVCDir%\VC98\Bin;%MSVCDir%\Common\MSDev98\Bin\;%PATH%
 echo -- Compiler is MSVC6
 
 set XASH3DSRC=..\..\Xash3D_original
-set INCLUDES=-I../common -I../engine -I../pm_shared -I../game_shared -I../public -I../external -I../dlls -I../utils/false_vgui/include
+set INCLUDES=-I. -I../common -I../engine -I../pm_shared -I../game_shared -I../public -I../external -I../dlls -I../dlls/gearbox -Igearbox -I../utils/false_vgui/include
 set SOURCES=../dlls/crossbow.cpp ^
 	../dlls/crowbar.cpp ^
 	../dlls/egon.cpp ^
@@ -22,11 +22,22 @@ set SOURCES=../dlls/crossbow.cpp ^
 	../dlls/squeakgrenade.cpp ^
 	../dlls/tripmine.cpp ^
 	../dlls/glock.cpp ^
+	../dlls/gearbox/displacer.cpp ^
+	../dlls/gearbox/knife.cpp ^
+	../dlls/gearbox/eagle.cpp ^
+	../dlls/gearbox/grapple.cpp ^
+	../dlls/gearbox/m249.cpp ^
+	../dlls/gearbox/penguin.cpp ^
+	../dlls/gearbox/pipewrench.cpp ^
+	../dlls/gearbox/shockrifle.cpp ^
+	../dlls/gearbox/sniperrifle.cpp ^
+	../dlls/gearbox/sporelauncher.cpp ^
 	ev_hldm.cpp ^
 	hl/hl_baseentity.cpp ^
 	hl/hl_events.cpp ^
 	hl/hl_objects.cpp ^
 	hl/hl_weapons.cpp ^
+	gearbox/hud_nightvision.cpp ^
 	ammo.cpp ^
 	ammo_secondary.cpp ^
 	ammohistory.cpp ^

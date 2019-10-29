@@ -287,7 +287,7 @@ void CBlowerCannon::BlowerCannonThink( void )
 {
 	CBaseEntity *pTarget = GetNextTarget();
 
-	if( pTarget && pTarget->IsAlive() )
+	if( pTarget )
 	{
 		Vector direction = pTarget->pev->origin - pev->origin;
 		direction.z = m_iZOffSet + pTarget->pev->origin.z - pev->origin.z;

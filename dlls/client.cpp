@@ -45,7 +45,7 @@ extern DLL_GLOBAL BOOL		g_fGameOver;
 extern DLL_GLOBAL int		g_iSkillLevel;
 extern DLL_GLOBAL ULONG		g_ulFrameCount;
 
-char *GetTeamName( int team );
+const char *GetTeamName( int team );
 
 extern void CopyToBodyQue( entvars_t* pev );
 extern int giPrecacheGrunt;
