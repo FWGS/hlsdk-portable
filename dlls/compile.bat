@@ -7,8 +7,54 @@ set PATH=%MSVCDir%\VC98\Bin;%MSVCDir%\Common\MSDev98\Bin\;%PATH%
 echo -- Compiler is MSVC6
 
 set XASH3DSRC=..\..\Xash3D_original
-set INCLUDES=-I../common -I../engine -I../pm_shared -I../game_shared -I../public
-set SOURCES=agrunt.cpp ^
+set INCLUDES=-I. -I../common -I../engine -I../pm_shared -I../game_shared -I../public -Igearbox
+set SOURCES=gearbox/blkop_apache.cpp ^
+	gearbox/blkop_osprey.cpp ^
+	gearbox/cleansuit_scientist.cpp ^
+	gearbox/ctf_gamerules.cpp ^
+	gearbox/ctf_items.cpp ^
+	gearbox/ctf_powerups.cpp ^
+	gearbox/displacer.cpp ^
+	gearbox/drillsergeant.cpp ^
+	gearbox/eagle.cpp ^
+	gearbox/fgrunt.cpp ^
+	gearbox/func_tank_of.cpp ^
+	gearbox/gearbox_effects.cpp ^
+	gearbox/gearbox_triggers.cpp ^
+	gearbox/gearbox_utils.cpp ^
+	gearbox/generic_items.cpp ^
+	gearbox/geneworm.cpp ^
+	gearbox/gonome.cpp ^
+	gearbox/grapple_tonguetip.cpp ^
+	gearbox/grapple.cpp ^
+	gearbox/houndeye_dead.cpp ^
+	gearbox/islave_dead.cpp ^
+	gearbox/knife.cpp ^
+	gearbox/loader.cpp ^
+	gearbox/m249.cpp ^
+	gearbox/massn.cpp ^
+	gearbox/nuclearbomb.cpp ^
+	gearbox/op4mortar.cpp ^
+	gearbox/otis.cpp ^
+	gearbox/penguin.cpp ^
+	gearbox/pipewrench.cpp ^
+	gearbox/pitdrone.cpp ^
+	gearbox/pitworm.cpp ^
+	gearbox/recruit.cpp ^
+	gearbox/ropes.cpp ^
+	gearbox/shock.cpp ^
+	gearbox/shockrifle.cpp ^
+	gearbox/shockroach.cpp ^
+	gearbox/skeleton.cpp ^
+	gearbox/sniperrifle.cpp ^
+	gearbox/spore_ammo.cpp ^
+	gearbox/sporegrenade.cpp ^
+	gearbox/sporelauncher.cpp ^
+	gearbox/strooper.cpp ^
+	gearbox/voltigore.cpp ^
+	gearbox/zombie_barney.cpp ^
+	gearbox/zombie_soldier.cpp ^
+	agrunt.cpp ^
 	airtank.cpp ^
 	aflock.cpp ^
 	animating.cpp ^
