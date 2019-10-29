@@ -25,7 +25,7 @@ project (CLDLL)
 
 set (CLDLL_LIBRARY client)
 
-add_definitions(-DCLIENT_WEAPONS -DCLIENT_DLL -DCROWBAR_IDLE_ANIM)
+add_definitions(-DCLIENT_WEAPONS -DCLIENT_DLL -DCROWBAR_IDLE_ANIM -DCROWBAR_FIX_RAPID_CROWBAR -DCROWBAR_DELAY_FIX)
 
 if(NOT MSVC)
 	add_compile_options(-fno-exceptions) # GCC/Clang flag

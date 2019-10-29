@@ -51,12 +51,15 @@
 #ifndef TRUE
 #define TRUE (!FALSE)
 #endif
+#include <limits.h>
+#include <stdarg.h>
 typedef unsigned int ULONG;
 typedef unsigned char BYTE;
 typedef int BOOL;
 #define MAX_PATH PATH_MAX
-#include <limits.h>
-#include <stdarg.h>
+#ifndef PATH_MAX
+#define PATH_MAX 4096
+#endif
 #endif //_WIN32
 
 // Misc C-runtime library headers
