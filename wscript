@@ -13,6 +13,12 @@ top = '.'
 
 Context.Context.line_just = 55 # should fit for everything on 80x26
 
+@Configure.conf
+def get_taskgen_count(self):
+	try: idx = self.tg_idx_count
+	except: idx = 0 # don't set tg_idx_count to not increase counter
+	return idx
+
 def options(opt):
 	grp = opt.add_option_group('Common options')
 

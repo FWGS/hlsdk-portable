@@ -287,7 +287,12 @@ int CCrowbar::Swing( int fFirst )
 				}
 				m_pPlayer->m_iWeaponVolume = CROWBAR_BODYHIT_VOLUME;
 				if( !pEntity->IsAlive() )
+				{
+#ifdef CROWBAR_FIX_RAPID_CROWBAR
+					m_flNextPrimaryAttack = GetNextAttackDelay(0.25);
+#endif
 					return TRUE;
+				}
 				else
 					flVol = 0.1;
 
@@ -330,7 +335,11 @@ int CCrowbar::Swing( int fFirst )
 		SetThink( &CCrowbar::Smack );
 		pev->nextthink = UTIL_WeaponTimeBase() + 0.2;
 #endif
+#if CROWBAR_DELAY_FIX
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.25;
+#else
 		m_flNextPrimaryAttack = GetNextAttackDelay( 0.25 );
+#endif
 	}
 #ifdef CROWBAR_IDLE_ANIM
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
