@@ -125,6 +125,10 @@ if (GOLDSOURCE_SUPPORT)
 	target_link_libraries( ${CLDLL_LIBRARY} ${CMAKE_DL_LIBS} )
 endif()
 
+if(WIN32)
+	target_link_libraries( ${CLDLL_LIBRARY} user32.lib )
+endif()
+
 set_target_properties (${CLDLL_LIBRARY} PROPERTIES
 	POSITION_INDEPENDENT_CODE 1)
 
