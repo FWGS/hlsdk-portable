@@ -4,15 +4,17 @@
 
 from waflib import Utils
 import os
- 
+
 def options(opt):
 	# stub
 	return
 
 def configure(conf):
-	if conf.env.GOLDSRC:
-		if conf.env.DEST_OS != 'win32':
-			conf.check_cc(lib='dl')
+	if conf.env.GOLDSRC and conf.env.DEST_OS != 'win32':
+		conf.check_cc(lib='dl')
+
+	if conf.env.DEST_OS == 'win32':
+		conf.check_cxx( lib='user32' )
 
 def build(bld):
 	source = bld.path.parent.ant_glob([
@@ -45,8 +47,11 @@ def build(bld):
 		defines += ['GOLDSOURCE_SUPPORT']
 
 	libs = []
-	if bld.env.GOLDSRC:
+	if bld.env.GOLDSRC and bld.env.DEST_OS != 'win32':
 		libs += ['DL']
+
+	if bld.env.DEST_OS == 'win32':
+		libs += ["USER32"]
 
 	if bld.env.DEST_OS not in ['android']:
 		install_path = os.path.join(bld.env.GAMEDIR, bld.env.CLIENT_DIR)
