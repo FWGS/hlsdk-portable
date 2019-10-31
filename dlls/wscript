@@ -10,7 +10,7 @@ def options(opt):
 	return
 
 def configure(conf):
-	if conf.env.DEST_OS == 'win32':
+	if conf.env.COMPILER_CC == 'msvc':
 		# hl.def removes MSVC function name decoration from GiveFnptrsToDll on Windows.
 		# Without this, the lookup for this function fails.
 		hlDefNode = conf.path.find_resource("./hl.def")
