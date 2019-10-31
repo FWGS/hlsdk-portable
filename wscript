@@ -33,21 +33,20 @@ def options(opt):
 
 	grp.add_option('--enable-goldsrc-support', action = 'store_true', dest = 'GOLDSRC', default = False,
 		help = 'enable GoldSource engine support [default: %default]')
-	
+
 	grp.add_option('--enable-lto', action = 'store_true', dest = 'LTO', default = False,
 		help = 'enable Link Time Optimization [default: %default]')
 
 	grp.add_option('--enable-poly-opt', action = 'store_true', dest = 'POLLY', default = False,
 		help = 'enable polyhedral optimization if possible [default: %default]')
 
-
-	opt.recurse('cl_dll dlls')
-
 	opt.load('xcompile compiler_cxx compiler_c clang_compilation_database strip_on_install')
+
 	if sys.platform == 'win32':
 		opt.load('msvc msdev msvs')
-	opt.load('reconfigure')
 
+	opt.load('reconfigure subproject')
+	opt.add_subproject(["cl_dll", "dlls"])
 
 def configure(conf):
 	# Configuration
@@ -220,10 +219,10 @@ def configure(conf):
 
 	conf.define('CLIENT_WEAPONS', '1')
 
-	conf.recurse('cl_dll dlls')
+	conf.add_subproject(["cl_dll", "dlls"])
 
 def build(bld):
-	bld.recurse('cl_dll dlls')
-		
-		
-	
+	bld.add_subproject(["cl_dll", "dlls"])
+
+
+
