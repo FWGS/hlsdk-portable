@@ -16,7 +16,7 @@ def configure(conf):
 		hlDefNode = conf.path.find_resource("./hl.def")
 
 		if hlDefNode is not None:
-			conf.env.append_unique('LINKFLAGS', '/def:{}'.format(hlDefNode.abspath()))
+			conf.env.append_unique('LINKFLAGS', '/def:%s' % hlDefNode.abspath())
 		else:
 			conf.fatal("Could not find hl.def")
 
