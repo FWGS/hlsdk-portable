@@ -196,6 +196,7 @@ void ClientPutInServer( edict_t *pEntity )
 
 	pPlayer = GetClassPtr( (CBasePlayer *)pev );
 	pPlayer->SetCustomDecalFrames( -1 ); // Assume none;
+	pPlayer->SetPrefsFromUserinfo( g_engfuncs.pfnGetInfoKeyBuffer( pEntity ) );
 
 	// Allocate a CBasePlayer for pev, and call spawn
 	pPlayer->Spawn();

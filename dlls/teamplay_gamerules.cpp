@@ -357,6 +357,8 @@ void CHalfLifeTeamplay::ClientUserInfoChanged( CBasePlayer *pPlayer, char *infob
 
 	// recound stuff
 	RecountTeams( TRUE );
+
+	pPlayer->SetPrefsFromUserinfo( infobuffer );
 }
 
 extern int gmsgDeathMsg;

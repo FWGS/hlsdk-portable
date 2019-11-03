@@ -2876,6 +2876,8 @@ void CBasePlayer::Spawn( void )
 
 	m_flNextChatTime = gpGlobals->time;
 
+	m_iAutoWepSwitch = 1;
+
 	g_pGameRules->PlayerSpawn( this );
 }
 
@@ -4156,6 +4158,18 @@ int CBasePlayer::Illumination( void )
 	if( iIllum > 255 )
 		return 255;
 	return iIllum;
+}
+
+void CBasePlayer::SetPrefsFromUserinfo( char *infobuffer )
+{
+	const char *pszKeyVal;
+
+	pszKeyVal = g_engfuncs.pfnInfoKeyValue( infobuffer, "cl_autowepswitch" );
+
+	if( pszKeyVal[0] != '\0' )
+		m_iAutoWepSwitch = atoi( pszKeyVal );
+	else
+		m_iAutoWepSwitch = 1;
 }
 
 void CBasePlayer::EnableControl( BOOL fControl )
