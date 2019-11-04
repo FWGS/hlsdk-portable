@@ -56,7 +56,7 @@ void CHudMOTD::Reset( void )
 	m_bShow = 0;
 }
 
-#define LINE_HEIGHT  13
+#define LINE_HEIGHT  (gHUD.m_scrinfo.iCharHeight)
 #define ROW_GAP  13
 #define ROW_RANGE_MIN 30
 #define ROW_RANGE_MAX ( ScreenHeight - 100 )
@@ -80,9 +80,9 @@ int CHudMOTD::Draw( float fTime )
 	{
 		ypos = ROW_RANGE_MIN + 7 + scroll;
 		if( ypos  > ROW_RANGE_MIN + 4 )
-			scroll-= ( ypos - ( ROW_RANGE_MIN + 4 ) ) / 3.0;
+			scroll-= ( ypos - ( ROW_RANGE_MIN + 4 ) ) / 3.0f;
 		if( ypos + height < ROW_RANGE_MAX )
-			scroll+= ( ROW_RANGE_MAX - ( ypos + height ) ) / 3.0;
+			scroll+= ( ROW_RANGE_MAX - ( ypos + height ) ) / 3.0f;
 		ypos_r = ROW_RANGE_MIN;
 		height = ROW_RANGE_MAX;
 	}

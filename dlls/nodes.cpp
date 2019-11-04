@@ -21,6 +21,7 @@
 #include	"cbase.h"
 #include	"monsters.h"
 #include	"nodes.h"
+#include	"nodes_compat.h"
 #include	"animation.h"
 #include	"doors.h"
 
@@ -44,9 +45,7 @@ LINK_ENTITY_TO_CLASS( info_node_air, CNodeEnt )
 #if !defined _WIN32
 #include <unistd.h>
 #include <sys/stat.h>
-#define CreateDirectory(p, n) mkdir(p, 0777)
-#else
-#define CreateDirectory(p, n) CreateDirectoryA(p, n)
+#define CreateDirectoryA(p, n) mkdir(p, 0777)
 #endif
 
 //=========================================================
@@ -668,7 +667,7 @@ int CGraph::FindShortestPath( int *piPath, int iStart, int iDest, int iHull, int
 		//
 		for ( i = 0; i < m_cNodes; i++)
 		{
-			m_pNodes[i].m_flClosestSoFar = -1.0;
+			m_pNodes[i].m_flClosestSoFar = -1.0f;
 		}
 
 		m_pNodes[iStart].m_flClosestSoFar = 0.0;
@@ -710,8 +709,8 @@ int CGraph::FindShortestPath( int *piPath, int iStart, int iDest, int iHull, int
 					}
 				}
 				float flOurDistance = flCurrentDistance + m_pLinkPool[m_pNodes[iCurrentNode].m_iFirstLink + i].m_flWeight;
-				if(  m_pNodes[iVisitNode].m_flClosestSoFar < -0.5
-				   || flOurDistance < m_pNodes[iVisitNode].m_flClosestSoFar - 0.001 )
+				if(  m_pNodes[iVisitNode].m_flClosestSoFar < -0.5f
+				   || flOurDistance < m_pNodes[iVisitNode].m_flClosestSoFar - 0.001f )
 				{
 					m_pNodes[iVisitNode].m_flClosestSoFar = flOurDistance;
 					m_pNodes[iVisitNode].m_iPreviousNode = iCurrentNode;
@@ -720,7 +719,7 @@ int CGraph::FindShortestPath( int *piPath, int iStart, int iDest, int iHull, int
 				}
 			}
 		}
-		if( m_pNodes[iDest].m_flClosestSoFar < -0.5 )
+		if( m_pNodes[iDest].m_flClosestSoFar < -0.5f )
 		{
 			// Destination is unreachable, no path found.
 			return 0;
@@ -838,7 +837,7 @@ void CGraph::CheckNode( Vector vecOrigin, int iNode )
 		// make sure that vecOrigin can trace to this node!
 		UTIL_TraceLine( vecOrigin, m_pNodes[iNode].m_vecOriginPeek, ignore_monsters, 0, &tr );
 
-		if( tr.flFraction == 1.0 )
+		if( tr.flFraction == 1.0f )
 		{
 			m_iNearest = iNode;
 			m_flShortest = flDist;
@@ -908,7 +907,7 @@ int CGraph::FindNearestNode( const Vector &vecOrigin, int afNodeTypes )
 	}
 
 	m_iNearest = -1;
-	m_flShortest = 999999.0; // just a big number.
+	m_flShortest = 999999.0f; // just a big number.
 
 	// If we can find a visible point, then let CalcBounds set the limits, but if
 	// we have no visible point at all to start with, then don't restrict the limits.
@@ -1277,7 +1276,7 @@ int CGraph::LinkVisibleNodes( CLink *pLinkPool, FILE *file, int *piBadNode )
 			if( tr.fStartSolid )
 				continue;
 
-			if( tr.flFraction != 1.0 )
+			if( tr.flFraction != 1.0f )
 			{
 				// trace hit a brush ent, trace backwards to make sure that this ent is the only thing in the way.
 				pTraceEnt = tr.pHit;// store the ent that the trace hit, for comparison
@@ -1443,14 +1442,14 @@ int CGraph::RejectInlineLinks( CLink *pLinkPool, FILE *file )
 				flDistToTestNode = vec2DirToTestNode.Length();
 				vec2DirToTestNode = vec2DirToTestNode.Normalize();
 
-				if( DotProduct( vec2DirToCheckNode, vec2DirToTestNode ) >= 0.998 )
+				if( DotProduct( vec2DirToCheckNode, vec2DirToTestNode ) >= 0.998f )
 				{
 					// there's a chance that TestNode intersects the line to CheckNode. If so, we should disconnect the link to CheckNode. 
 					if( flDistToTestNode < flDistToCheckNode )
 					{
 						if( file )
 						{
-							fprintf( file, "REJECTED NODE %3d through Node %3d, Dot = %8f\n", pLinkPool[pSrcNode->m_iFirstLink + j].m_iDestNode, pLinkPool[pSrcNode->m_iFirstLink + k].m_iDestNode, DotProduct( vec2DirToCheckNode, vec2DirToTestNode ) );
+							fprintf( file, "REJECTED NODE %3d through Node %3d, Dot = %8f\n", pLinkPool[pSrcNode->m_iFirstLink + j].m_iDestNode, pLinkPool[pSrcNode->m_iFirstLink + k].m_iDestNode, (double)DotProduct( vec2DirToCheckNode, vec2DirToTestNode ) );
 						}
 
 						pLinkPool[pSrcNode->m_iFirstLink + j] = pLinkPool[pSrcNode->m_iFirstLink + ( pSrcNode->m_cNumLinks - 1 )];
@@ -1517,7 +1516,7 @@ void CTestHull::Spawn( entvars_t *pevMasterNode )
 	else
 	{
 		SetThink( &CTestHull::DropDelay );
-		pev->nextthink = gpGlobals->time + 1;
+		pev->nextthink = gpGlobals->time + 1.0f;
 	}
 
 	// Make this invisible
@@ -1538,7 +1537,7 @@ void CTestHull::DropDelay( void )
 
 	SetThink( &CTestHull::CallBuildNodeGraph );
 
-	pev->nextthink = gpGlobals->time + 1;
+	pev->nextthink = gpGlobals->time + 1.0f;
 }
 
 //=========================================================
@@ -1624,7 +1623,7 @@ void CTestHull::ShowBadNode( void )
 	UTIL_ParticleEffect( pev->origin + gpGlobals->v_right * 64, g_vecZero, 255, 25 );
 	UTIL_ParticleEffect( pev->origin - gpGlobals->v_right * 64, g_vecZero, 255, 25 );
 
-	pev->nextthink = gpGlobals->time + 0.1;
+	pev->nextthink = gpGlobals->time + 0.1f;
 }
 
 extern BOOL gTouchDisabled;
@@ -1701,9 +1700,9 @@ void CTestHull::BuildNodeGraph( void )
 	// make sure directories have been made
 	GET_GAME_DIR( szNrpFilename );
 	strcat( szNrpFilename, "/maps" );
-	CreateDirectory( szNrpFilename, NULL );
+	CreateDirectoryA( szNrpFilename, NULL );
 	strcat( szNrpFilename, "/graphs" );
-	CreateDirectory( szNrpFilename, NULL );
+	CreateDirectoryA( szNrpFilename, NULL );
 
 	strcat( szNrpFilename, "/" );
 	strcat( szNrpFilename, STRING( gpGlobals->mapname ) );
@@ -1738,7 +1737,7 @@ void CTestHull::BuildNodeGraph( void )
 		fprintf( file, "Location      %4d,%4d,%4d\n",(int)WorldGraph.m_pNodes[i].m_vecOrigin.x, (int)WorldGraph.m_pNodes[i].m_vecOrigin.y, (int)WorldGraph.m_pNodes[i].m_vecOrigin.z );
 		fprintf( file, "HintType:     %4d\n", WorldGraph.m_pNodes[i].m_sHintType );
 		fprintf( file, "HintActivity: %4d\n", WorldGraph.m_pNodes[i].m_sHintActivity );
-		fprintf( file, "HintYaw:      %4f\n", WorldGraph.m_pNodes[i].m_flHintYaw );
+		fprintf( file, "HintYaw:      %4f\n", (double)WorldGraph.m_pNodes[i].m_flHintYaw );
 		fprintf( file, "-------------------------------------------------------------------------------\n" );
 	}
 	fprintf( file, "\n\n" );
@@ -1960,7 +1959,7 @@ void CTestHull::BuildNodeGraph( void )
 					TraceResult tr;
 
 					UTIL_TraceHull( pSrcNode->m_vecOrigin + Vector( 0, 0, 32 ), pDestNode->m_vecOriginPeek + Vector( 0, 0, 32 ), ignore_monsters, large_hull, ENT( pev ), &tr );
-					if( tr.fStartSolid || tr.flFraction < 1.0 )
+					if( tr.fStartSolid || tr.flFraction < 1.0f )
 					{
 						pTempPool[pSrcNode->m_iFirstLink + j].m_afLinkInfo &= ~bits_LINK_FLY_HULL;
 					}
@@ -2375,9 +2374,9 @@ int CGraph::FLoadGraph( const char *szMapName )
 	char szDirName[MAX_PATH];
 	GET_GAME_DIR( szDirName );
 	strcat( szDirName, "/maps" );
-	CreateDirectory( szDirName, NULL );
+	CreateDirectoryA( szDirName, NULL );
 	strcat( szDirName, "/graphs" );
-	CreateDirectory( szDirName, NULL );
+	CreateDirectoryA( szDirName, NULL );
 
 	strcpy( szFilename, "maps/graphs/" );
 	strcat( szFilename, szMapName );
@@ -2386,42 +2385,47 @@ int CGraph::FLoadGraph( const char *szMapName )
 	pMemFile = aMemFile = LOAD_FILE_FOR_ME( szFilename, &length );
 
 	if( !aMemFile )
-	{
 		return FALSE;
-	}
-	else
+
+	// Read the graph version number
+	//
+	length -= sizeof(int);
+	if( length < 0 )
+		goto ShortFile;
+	iVersion = *(int *) pMemFile;
+	pMemFile += sizeof(int);
+
+	if( iVersion == GRAPH_VERSION || iVersion == GRAPH_VERSION_RETAIL )
 	{
-		// Read the graph version number
-		//
-		length -= sizeof(int);
-		if( length < 0 )
-			goto ShortFile;
-		memcpy( &iVersion, pMemFile, sizeof(int) );
-		pMemFile += sizeof(int);
-
-		if( iVersion != GRAPH_VERSION )
-		{
-			// This file was written by a different build of the dll!
-			//
-			ALERT( at_aiconsole, "**ERROR** Graph version is %d, expected %d\n", iVersion, GRAPH_VERSION );
-			goto ShortFile;
-		}
-
 		// Read the graph class
 		//
-		length -= sizeof(CGraph);
-		if( length < 0 )
-			goto ShortFile;
-		memcpy( this, pMemFile, sizeof(CGraph) );
-		pMemFile += sizeof(CGraph);
+		if ( iVersion == GRAPH_VERSION )
+		{
+			length -= sizeof(CGraph);
+			if( length < 0 )
+				goto ShortFile;
+			memcpy( this, pMemFile, sizeof(CGraph) );
+			pMemFile += sizeof(CGraph);
 
-		// Set the pointers to zero, just in case we run out of memory.
-		//
-		m_pNodes = NULL;
-		m_pLinkPool = NULL;
-		m_di = NULL;
-		m_pRouteInfo = NULL;
-		m_pHashLinks = NULL;
+			// Set the pointers to zero, just in case we run out of memory.
+			//
+			m_pNodes = NULL;
+			m_pLinkPool = NULL;
+			m_di = NULL;
+			m_pRouteInfo = NULL;
+			m_pHashLinks = NULL;
+		}
+#if _GRAPH_VERSION != _GRAPH_VERSION_RETAIL
+		else
+		{
+			ALERT( at_aiconsole, "Loading CGraph in GRAPH_VERSION 16 compatibility mode\n" );
+			length -= sizeof(CGraph_Retail);
+			if( length < 0 )
+				goto ShortFile;
+			reinterpret_cast<CGraph_Retail*>(pMemFile) -> copyOverTo(this);
+			pMemFile += sizeof(CGraph_Retail);
+		}
+#endif
 
 		// Malloc for the nodes
 		//
@@ -2453,11 +2457,25 @@ int CGraph::FLoadGraph( const char *szMapName )
 
 		// Read in all the links
 		//
-		length -= sizeof(CLink) * m_cLinks;
-		if( length < 0 )
-			goto ShortFile;
-		memcpy( m_pLinkPool, pMemFile, sizeof(CLink) * m_cLinks );
-		pMemFile += sizeof(CLink) * m_cLinks;
+		if( iVersion == GRAPH_VERSION )
+		{
+			length -= sizeof(CLink) * m_cLinks;
+			if( length < 0 )
+				goto ShortFile;
+			memcpy( m_pLinkPool, pMemFile, sizeof(CLink) * m_cLinks );
+			pMemFile += sizeof(CLink) * m_cLinks;
+		}
+#if _GRAPH_VERSION != _GRAPH_VERSION_RETAIL
+		else
+		{
+			ALERT( at_aiconsole, "Loading CLink array in GRAPH_VERSION 16 compatibility mode\n" );
+			length -= sizeof(CLink_Retail) * m_cLinks;
+			if( length < 0 )
+				goto ShortFile;
+			reinterpret_cast<CLink_Retail*>(pMemFile) -> copyOverTo(m_pLinkPool);
+			pMemFile += sizeof(CLink_Retail) * m_cLinks;
+		}
+#endif
 
 		// Malloc for the sorting info.
 		//
@@ -2482,7 +2500,7 @@ int CGraph::FLoadGraph( const char *szMapName )
 		m_pRouteInfo = (signed char *)calloc( sizeof(signed char), m_nRouteInfo );
 		if( !m_pRouteInfo )
 		{
-			ALERT( at_aiconsole, "***ERROR**\nCounldn't malloc %d route bytes!\n", m_nRouteInfo );
+			ALERT( at_aiconsole, "***ERROR**\nCouldn't malloc %d route bytes!\n", m_nRouteInfo );
 			goto NoMemory;
 		}
 		m_CheckedCounter = 0;
@@ -2505,7 +2523,7 @@ int CGraph::FLoadGraph( const char *szMapName )
 		m_pHashLinks = (short *)calloc( sizeof(short), m_nHashLinks );
 		if( !m_pHashLinks )
 		{
-			ALERT( at_aiconsole, "***ERROR**\nCounldn't malloc %d hash link bytes!\n", m_nHashLinks );
+			ALERT( at_aiconsole, "***ERROR**\nCouldn't malloc %d hash link bytes!\n", m_nHashLinks );
 			goto NoMemory;
 		}
 
@@ -2530,6 +2548,13 @@ int CGraph::FLoadGraph( const char *szMapName )
 		}
 
 		return TRUE;
+	}
+	else
+	{
+		// This file was written by a different build of the dll!
+		//
+		ALERT( at_aiconsole, "**ERROR** Graph version is %d, expected %d\n", iVersion, GRAPH_VERSION );
+		goto ShortFile;
 	}
 
 ShortFile:
@@ -2558,9 +2583,9 @@ int CGraph::FSaveGraph( const char *szMapName )
 	// make sure directories have been made
 	GET_GAME_DIR( szFilename );
 	strcat( szFilename, "/maps" );
-	CreateDirectory( szFilename, NULL );
+	CreateDirectoryA( szFilename, NULL );
 	strcat( szFilename, "/graphs" );
-	CreateDirectory( szFilename, NULL );
+	CreateDirectoryA( szFilename, NULL );
 
 	strcat( szFilename, "/" );
 	strcat( szFilename, szMapName );
@@ -3492,7 +3517,7 @@ void CGraph::TestRoutingTables( void )
 								ALERT( at_aiconsole, "No link.\n" );
 							}
 						}
-						if( fabs( flDistance1 - flDistance2 ) > 0.10 )
+						if( fabs( flDistance1 - flDistance2 ) > 0.1f )
 						{
 #else
 						if( cPathSize1 != cPathSize2 || memcmp( pMyPath, pMyPath2, sizeof(int) * cPathSize1 ) != 0 )

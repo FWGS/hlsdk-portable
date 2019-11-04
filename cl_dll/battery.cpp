@@ -78,7 +78,7 @@ int CHudBattery::Draw( float flTime )
 	wrect_t rc;
 
 	rc = *m_prc2;
-	rc.top  += m_iHeight * ( (float)( 100 - ( min( 100,m_iBat ) ) ) * 0.01 );	// battery can go from 0 to 100 so * 0.01 goes from 0 to 1
+	rc.top  += m_iHeight * ( (float)( 100 - ( Q_min( 100, m_iBat ) ) ) * 0.01f );	// battery can go from 0 to 100 so * 0.01 goes from 0 to 1
 
 	UnpackRGB( r, g, b, RGB_YELLOWISH );
 
@@ -91,7 +91,7 @@ int CHudBattery::Draw( float flTime )
 		if( m_fFade > FADE_TIME )
 			m_fFade = FADE_TIME;
 
-		m_fFade -= ( gHUD.m_flTimeDelta * 20 );
+		m_fFade -= ( (float)gHUD.m_flTimeDelta * 20.0f );
 		if( m_fFade <= 0 )
 		{
 			a = 128;
