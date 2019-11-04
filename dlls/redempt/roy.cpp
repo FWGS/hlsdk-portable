@@ -37,11 +37,11 @@
 class CRoy : public CBarney
 {
 public:
-        void Spawn( void );
-        void Precache( void );
-        void BarneyFirePistol( void );
-        void AlertSound( void );
-	CBaseEntity* CheckTraceHullAttack( float flDist, int iDamage, int iDmgType );
+	void Spawn( void );
+	void Precache( void );
+	void BarneyFirePistol( void );
+	void AlertSound( void );
+
 	int TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType );
 
 	void DeclineFollowing( void );
