@@ -203,6 +203,15 @@ def configure(conf):
 	conf.env.append_unique('CXXFLAGS', cxxflags)
 	conf.env.append_unique('LINKFLAGS', linkflags)
 
+	# check if we can use C99 tgmath
+	if conf.check_cc(header_name='tgmath.h', mandatory=False):
+		tgmath_usable = conf.check_cc(fragment='''#include<tgmath.h>
+			int main(void){ return (int)sin(2.0f); }''',
+			msg='Checking if tgmath.h is usable', mandatory=False):
+		conf.define_cond('HAVE_TGMATH_H', tgmath_usable)	
+	else:
+		conf.undefine('HAVE_TGMATH_H')
+
 	if conf.env.COMPILER_CC == 'msvc':
 		conf.define('_CRT_SECURE_NO_WARNINGS', 1)
 		conf.define('_CRT_NONSTDC_NO_DEPRECATE', 1)

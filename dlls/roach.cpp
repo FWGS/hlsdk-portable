@@ -190,7 +190,7 @@ void CRoach::MonsterThink( void )
 	if( FNullEnt( FIND_CLIENT_IN_PVS( edict() ) ) )
 		pev->nextthink = gpGlobals->time + RANDOM_FLOAT( 1, 1.5 );
 	else
-		pev->nextthink = gpGlobals->time + 0.1;// keep monster thinking
+		pev->nextthink = gpGlobals->time + 0.1f;// keep monster thinking
 
 	float flInterval = StudioFrameAdvance(); // animate
 
@@ -262,7 +262,7 @@ void CRoach::MonsterThink( void )
 					pSound = CSoundEnt::SoundPointerForIndex( m_iAudibleList );
 
 					// roach smells food and is just standing around. Go to food unless food isn't on same z-plane.
-					if( pSound && fabs( pSound->m_vecOrigin.z - pev->origin.z ) <= 3.0 )
+					if( pSound && fabs( pSound->m_vecOrigin.z - pev->origin.z ) <= 3.0f )
 					{
 						PickNewDest( ROACH_SMELL_FOOD );
 						SetActivity( ACT_WALK );
