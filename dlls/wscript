@@ -4,21 +4,28 @@
 
 from waflib import Utils
 import os
- 
+
 def options(opt):
 	# stub
 	return
 
 def configure(conf):
-	# stub
-	return
+	if conf.env.COMPILER_CC == 'msvc':
+		# hl.def removes MSVC function name decoration from GiveFnptrsToDll on Windows.
+		# Without this, the lookup for this function fails.
+		hlDefNode = conf.path.find_resource("./hl.def")
+
+		if hlDefNode is not None:
+			conf.env.append_unique('LINKFLAGS', '/def:%s' % hlDefNode.abspath())
+		else:
+			conf.fatal("Could not find hl.def")
 
 def build(bld):
 	defines = []
 	source = bld.path.parent.ant_glob([
 		'pm_shared/*.c',
 	])
-	
+
 	source += [
 		'agrunt.cpp', 'airtank.cpp', 'aflock.cpp', 'animating.cpp', 'animation.cpp', 'apache.cpp', 
 		'barnacle.cpp', 'barney.cpp', 'bigmomma.cpp', 'bloater.cpp', 'bmodels.cpp', 'bullsquid.cpp', 'buttons.cpp', 
@@ -42,7 +49,7 @@ def build(bld):
 		'triggers.cpp', 'tripmine.cpp', 'turret.cpp', 
 		'util.cpp', 
 		'weapons.cpp', 'world.cpp', 'xen.cpp', 'zombie.cpp']
-		
+
 	if bld.env.VOICEMGR:
 		source += bld.path.parent.ant_glob([
 			'game_shared/voice_gamemgr.cpp',
@@ -61,7 +68,7 @@ def build(bld):
 
 	bld.shlib(
 		source   = source,
-		target   = 'server',
+		target   = bld.env.SERVER_NAME,
 		features = 'c cxx',
 		includes = includes,
 		defines  = defines,

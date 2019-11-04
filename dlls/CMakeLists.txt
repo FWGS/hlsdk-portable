@@ -25,6 +25,12 @@ project (SVDLL)
 
 set (SVDLL_LIBRARY server)
 
+include(CheckIncludeFile)
+check_include_file("tgmath.h" HAVE_TGMATH_H)
+if(HAVE_TGMATH_H)
+	add_definitions(-DHAVE_TGMATH_H)
+endif()
+
 add_definitions(-DCLIENT_WEAPONS -DCROWBAR_IDLE_ANIM -DCROWBAR_FIX_RAPID_CROWBAR -DCROWBAR_DELAY_FIX)
 
 if(NOT MSVC)

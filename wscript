@@ -33,21 +33,20 @@ def options(opt):
 
 	grp.add_option('--enable-goldsrc-support', action = 'store_true', dest = 'GOLDSRC', default = False,
 		help = 'enable GoldSource engine support [default: %default]')
-	
+
 	grp.add_option('--enable-lto', action = 'store_true', dest = 'LTO', default = False,
 		help = 'enable Link Time Optimization [default: %default]')
 
 	grp.add_option('--enable-poly-opt', action = 'store_true', dest = 'POLLY', default = False,
 		help = 'enable polyhedral optimization if possible [default: %default]')
 
-
-	opt.recurse('cl_dll dlls')
-
 	opt.load('xcompile compiler_cxx compiler_c clang_compilation_database strip_on_install')
+
 	if sys.platform == 'win32':
 		opt.load('msvc msdev msvs')
-	opt.load('reconfigure')
 
+	opt.load('reconfigure subproject')
+	opt.add_subproject(["cl_dll", "dlls"])
 
 def configure(conf):
 	# Configuration
@@ -204,6 +203,15 @@ def configure(conf):
 	conf.env.append_unique('CXXFLAGS', cxxflags)
 	conf.env.append_unique('LINKFLAGS', linkflags)
 
+	# check if we can use C99 tgmath
+	if conf.check_cc(header_name='tgmath.h', mandatory=False):
+		tgmath_usable = conf.check_cc(fragment='''#include<tgmath.h>
+			int main(void){ return (int)sin(2.0f); }''',
+			msg='Checking if tgmath.h is usable', mandatory=False):
+		conf.define_cond('HAVE_TGMATH_H', tgmath_usable)	
+	else:
+		conf.undefine('HAVE_TGMATH_H')
+
 	if conf.env.COMPILER_CC == 'msvc':
 		conf.define('_CRT_SECURE_NO_WARNINGS', 1)
 		conf.define('_CRT_NONSTDC_NO_DEPRECATE', 1)
@@ -220,10 +228,10 @@ def configure(conf):
 
 	conf.define('CLIENT_WEAPONS', '1')
 
-	conf.recurse('cl_dll dlls')
+	conf.add_subproject(["cl_dll", "dlls"])
 
 def build(bld):
-	bld.recurse('cl_dll dlls')
-		
-		
-	
+	bld.add_subproject(["cl_dll", "dlls"])
+
+
+
