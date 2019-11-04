@@ -337,4 +337,43 @@ public:
 	int		m_iszStartPosition;
 	int		m_iTowardsMode;
 };
+
+class CEnvWarpBall : public CBaseEntity
+{
+public:
+	void Precache( void );
+	void Spawn( void ) { Precache(); }
+	void Think( void );
+	void Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+	virtual int ObjectCaps( void ) { return CBaseEntity :: ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
+};
+
+class CEnvFog : public CBaseEntity
+{
+public:
+	void Spawn( void );
+	void Precache( void );
+	void EXPORT ResumeThink( void );
+	void EXPORT TurnOn( void );
+	void EXPORT TurnOff( void );
+	void EXPORT FadeInDone( void );
+	void EXPORT FadeOutDone( void );
+	void SendData( Vector col, int fFadeTime, int StartDist, int iEndDist);
+	void KeyValue( KeyValueData *pkvd );
+	virtual int Save( CSave &save );
+	virtual int Restore( CRestore &restore );
+	static TYPEDESCRIPTION m_SaveData[];
+	void Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+	//virtual int ObjectCaps( void ) { return CBaseEntity :: ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
+
+	STATE GetState( void );
+
+	int m_iStartDist;
+	int m_iEndDist;
+	float m_iFadeIn;
+	float m_iFadeOut;
+	float m_fHoldTime;
+	float m_fFadeStart; // if we're fading in/out, then when did the fade start?
+};
+
 #endif		//EFFECTS_H

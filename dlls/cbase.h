@@ -123,9 +123,12 @@ typedef void(CBaseEntity::*USEPTR)( CBaseEntity *pActivator, CBaseEntity *pCalle
 #define CLASS_PLAYER_ALLY		11
 #define CLASS_PLAYER_BIOWEAPON		12 // hornets and snarks.launched by players
 #define CLASS_ALIEN_BIOWEAPON		13 // hornets and snarks.launched by the alien menace
-#define CLASS_FACTION_A			14 //LRC - very simple new classes, for use with Behaves As
-#define CLASS_FACTION_B			15
-#define CLASS_FACTION_C			16
+#define CLASS_HUMAN_CULTIST		14
+#define CLASS_MUNDANE_PREY		15 // like chickens
+#define CLASS_MUNDANE_PREDATOR		16 // like wolves
+#define CLASS_FACTION_A			17 //LRC - very simple new classes, for use with Behaves As
+#define CLASS_FACTION_B			18
+#define CLASS_FACTION_C			19
 #define	CLASS_BARNACLE			99 // special because no one pays attention to it, and it eats a wide cross-section of creatures.
 
 class CBaseEntity;
@@ -448,6 +451,8 @@ public:
 	virtual	BOOL FVisible( const Vector &vecOrigin );
 
 	//We use this variables to store each ammo count.
+	int ammo_revolver;
+/*
 	int ammo_9mm;
 	int ammo_357;
 	int ammo_bolts;
@@ -456,6 +461,7 @@ public:
 	int ammo_uranium;
 	int ammo_hornets;
 	int ammo_argrens;
+*/
 	//Special stuff for grenades and satchels.
 	float m_flStartThrow;
 	float m_flReleaseThrow;
@@ -737,9 +743,10 @@ public:
 #define DMG_SLOWBURN		(1 << 21)	// in an oven
 #define DMG_SLOWFREEZE		(1 << 22)	// in a subzero freezer
 #define DMG_MORTAR			(1 << 23)	// Hit by air raid (done to distinguish grenade from mortar)
+#define DMG_POWDER_IBN		(1 << 24)	// hit by powder of ibn...does zero damage but makes Dunwich Horror visible
 
 // these are the damage types that are allowed to gib corpses
-#define DMG_GIB_CORPSE		( DMG_CRUSH | DMG_FALL | DMG_BLAST | DMG_SONIC | DMG_CLUB )
+#define DMG_GIB_CORPSE		( DMG_CRUSH | DMG_SLASH | DMG_FALL | DMG_BLAST | DMG_SONIC | DMG_CLUB )
 
 // these are the damage types that have client hud art
 #define DMG_SHOWNHUD		(DMG_POISON | DMG_ACID | DMG_FREEZE | DMG_SLOWFREEZE | DMG_DROWN | DMG_BURN | DMG_SLOWBURN | DMG_NERVEGAS | DMG_RADIATION | DMG_SHOCK)

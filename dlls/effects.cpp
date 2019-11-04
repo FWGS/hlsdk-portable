@@ -656,6 +656,9 @@ void CLightning::StrikeUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_T
 
 int IsPointEntity( CBaseEntity *pEnt )
 {
+	if( pEnt == NULL )	// Cthulhu
+		return 0;
+
 //	ALERT(at_console, "IsPE: %s, %d\n", STRING(pEnt->pev->classname), pEnt->pev->modelindex);
 	if (pEnt->pev->modelindex && !(pEnt->pev->flags & FL_CUSTOMENTITY)) //LRC- follow (almost) any entity that has a model
 		return 0;
@@ -910,6 +913,12 @@ void CLightning::Zap( const Vector &vecSrc, const Vector &vecDest )
 	MESSAGE_END();
 #endif
 	DoSparks( vecSrc, vecDest );
+
+	// Cthulhu
+	TraceResult tr;
+	UTIL_TraceLine( vecSrc, vecDest, dont_ignore_monsters, NULL, &tr );
+	if( pev->dmg )
+		BeamDamageInstant( &tr, pev->dmg );
 }
 
 void CLightning::RandomArea( void )
@@ -1016,12 +1025,25 @@ void CLightning::BeamUpdatePoints( void )
 		if( beamType == BEAM_POINTS || beamType == BEAM_HOSE )
 			SetEndPos( pEnd->pev->origin );
 		else
-			SetEndEntity( ENTINDEX(ENT(pEnd->pev)) );
+		{
+			// Cthulhu: fix for bug..though it should not occur
+			if( pEnd )
+				SetEndEntity( ENTINDEX(ENT(pEnd->pev)) );
+			else
+				SetEndEntity( ENTINDEX(0) );
+		}
 	}
 	else
 	{
-		SetStartEntity( ENTINDEX(ENT(pStart->pev)) );
-		SetEndEntity( ENTINDEX(ENT(pEnd->pev)) );
+		if( pStart )
+			SetStartEntity( ENTINDEX(ENT(pStart->pev)) );
+		else
+			SetStartEntity( ENTINDEX(0) );
+
+		if( pEnd )
+			SetEndEntity( ENTINDEX(ENT(pEnd->pev)) );
+		else
+			SetEndEntity( ENTINDEX(0) );
 	}
 
 	RelinkBeam();
@@ -3087,7 +3109,7 @@ void CEnvBeamTrail::Affect( CBaseEntity *pTarget, USE_TYPE useType )
 			WRITE_SHORT(pTarget->entindex());	// entity
 			WRITE_SHORT( m_iSprite );	// model
 			WRITE_BYTE( pev->health*10 ); // life
-			WRITE_BYTE( pev->armorvalue );  // width
+			WRITE_BYTE( pev->sanity );  // width
 			WRITE_BYTE( pev->rendercolor.x );   // r, g, b
 			WRITE_BYTE( pev->rendercolor.y );   // r, g, b
 			WRITE_BYTE( pev->rendercolor.z );   // r, g, b
@@ -3588,15 +3610,6 @@ void CEnvRain::Think( void )
 //==================================================================
 //LRC- Xen monsters' warp-in effect, for those too lazy to build it. :)
 //==================================================================
-class CEnvWarpBall : public CBaseEntity
-{
-public:
-	void	Precache( void );
-	void	Spawn( void ) { Precache(); }
-	void	Think( void );
-	void	Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
-	virtual int	ObjectCaps( void ) { return CBaseEntity :: ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
-};
 
 LINK_ENTITY_TO_CLASS( env_warpball, CEnvWarpBall );
 
@@ -4235,34 +4248,6 @@ void CItemSoda::CanTouch( CBaseEntity *pOther )
 //=========================================================
 #define SF_FOG_ACTIVE 1
 #define SF_FOG_FADING 0x8000
-
-class CEnvFog : public CBaseEntity
-{
-public:
-	void Spawn( void );
-	void Precache( void );
-	void EXPORT ResumeThink( void );
-	void EXPORT Resume2Think( void );
-	void EXPORT TurnOn( void );
-	void EXPORT TurnOff( void );
-	void EXPORT FadeInDone( void );
-	void EXPORT FadeOutDone( void );
-	void SendData( Vector col, int fFadeTime, int StartDist, int iEndDist);
-	void KeyValue( KeyValueData *pkvd );
-	virtual int		Save( CSave &save );
-	virtual int		Restore( CRestore &restore );
-	static	TYPEDESCRIPTION m_SaveData[];
-	void Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
-
-	STATE GetState( void );
-
-	int m_iStartDist;
-	int m_iEndDist;
-	float m_iFadeIn;
-	float m_iFadeOut;
-	float m_fHoldTime;
-	float m_fFadeStart; // if we're fading in/out, then when did the fade start?
-};
 
 TYPEDESCRIPTION	CEnvFog::m_SaveData[] = 
 {

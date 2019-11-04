@@ -39,25 +39,24 @@ const char *CBreakable::pSpawnObjects[] =
 	NULL,			// 0
 	"item_battery",		// 1
 	"item_healthkit",	// 2
-	"weapon_9mmhandgun",	// 3
-	"ammo_9mmclip",		// 4
-	"weapon_9mmAR",		// 5
-	"ammo_9mmAR",		// 6
-	"ammo_ARgrenades",	// 7
+	"weapon_revolver",	// 3
+	"weapon_rifle",		// 4
+	"weapon_tommygun",	// 5
+	"ammo_revolver",	// 6
+	"ammo_rifle",		// 7
 	"weapon_shotgun",	// 8
-	"ammo_buckshot",	// 9
-	"weapon_crossbow",	// 10
-	"ammo_crossbow",	// 11
-	"weapon_357",		// 12
-	"ammo_357",		// 13
-	"weapon_rpg",		// 14
-	"ammo_rpgclip",		// 15
-	"ammo_gaussclip",	// 16
-	"weapon_handgrenade",	// 17
-	"weapon_tripmine",	// 18
-	"weapon_satchel",	// 19
-	"weapon_snark",		// 20
-	"weapon_hornetgun",	// 21
+	"ammo_shotgun",		// 9
+	"ammo_tommygun",	// 10
+	"ammo_lightninggun",	// 11
+	"weapon_dynamite",	// 12
+	"weapon_molotov",	// 13
+	"weapon_elder_sign",	// 14
+	"weapon_serpent_staff",	// 15
+	"weapon_dreadname",	// 16
+	"weapon_shrivelling",	// 17
+	"weapon_rlyeh_seal",	// 18
+	"weapon_drainlife",	// 19
+	"weapon_charm"		// 20
 };
 
 void CBreakable::KeyValue( KeyValueData* pkvd )
@@ -913,16 +912,17 @@ void CBreakable::Die( void )
 	{
 //		ALERT(at_debug,"No respawn\n");
 
-		//tidy up
+		// Cthulhu : remove sooner than 0.1 seconds, otherwise the MoveWith physics causes a crash
+		// tidy up
 		if (m_pHitProxy)
 		{
 			m_pHitProxy->SetThink(&CBreakable::SUB_Remove );
-			m_pHitProxy->SetNextThink( 0.1 );
+			m_pHitProxy->SetNextThink( 0.01f );
 			m_pHitProxy = NULL;
 		}
 
-	SetThink(&CBreakable::SUB_Remove );
-		SetNextThink( 0.1 );
+		SetThink(&CBreakable::SUB_Remove );
+		SetNextThink( 0.01f );
 //		ALERT(at_console, "Set SUB_Remove\n");
 	}
 

@@ -134,6 +134,7 @@ public:
 	virtual BOOL ShouldFadeOnDeath( void );
 
 	// Basic Monster AI functions
+	virtual float GetFleeDistance( void ) { return 500.0f; };
 	virtual float ChangeYaw( int speed );
 	float VecToYaw( Vector vecDir );
 	float FlYawDiff( void ); 
@@ -211,7 +212,7 @@ public:
 	void PushEnemy( CBaseEntity *pEnemy, Vector &vecLastKnownPos );
 	BOOL PopEnemy( void );
 
-	BOOL FGetNodeRoute( Vector vecDest );
+	virtual BOOL FGetNodeRoute( Vector vecDest );
 	
 	inline void TaskComplete( void ) { if ( !HasConditions( bits_COND_TASK_FAILED ) ) m_iTaskStatus = TASKSTATUS_COMPLETE; }
 	void MovementComplete( void );
@@ -229,11 +230,12 @@ public:
 	virtual BOOL FTriangulate( const Vector &vecStart , const Vector &vecEnd, float flDist, CBaseEntity *pTargetEnt, Vector *pApex );
 	void MakeIdealYaw( Vector vecTarget );
 	virtual void SetYawSpeed( void ) { return; };// allows different yaw_speeds for each activity
-	BOOL BuildRoute( const Vector &vecGoal, int iMoveFlag, CBaseEntity *pTarget );
+	virtual BOOL BuildRoute( const Vector &vecGoal, int iMoveFlag, CBaseEntity *pTarget );
 	virtual BOOL BuildNearestRoute( Vector vecThreat, Vector vecViewOffset, float flMinDist, float flMaxDist );
 	int RouteClassify( int iMoveFlag );
 	void InsertWaypoint( Vector vecLocation, int afMoveFlags );
 
+	BOOL RunAwayFromEnemy( void );
 	BOOL FindLateralCover( const Vector &vecThreat, const Vector &vecViewOffset );
 	virtual BOOL FindCover( Vector vecThreat, Vector vecViewOffset, float flMinDist, float flMaxDist );
 	virtual BOOL FValidateCover( const Vector &vecCoverLocation ) { return TRUE; };
@@ -272,6 +274,8 @@ public:
 	virtual void BarnacleVictimReleased( void );
 
 	void SetEyePosition( void );
+
+	void Panic( entvars_t *pevPanic );// make the monster panic for a while.
 
 	BOOL FShouldEat( void );// see if a monster is 'hungry'
 	void Eat( float flFullDuration );// make the monster 'full' for a while.

@@ -605,7 +605,7 @@ void CWorld::Precache( void )
 			pEntity->SetThink(&CWorld::SUB_CallUseToggle );
 			pEntity->pev->message = pev->netname;
 			pev->netname = 0;
-			pEntity->SetNextThink( 0.3 );
+			pEntity->SetNextThink( 1.0f );
 			pEntity->pev->spawnflags = SF_MESSAGE_ONCE;
 		}
 	}

@@ -147,6 +147,27 @@ int CBaseMonster::Restore( CRestore &restore )
 }
 
 //=========================================================
+// Panic - makes a monster panic for a little while.
+//=========================================================
+void CBaseMonster::Panic( entvars_t *pevPanic )
+{
+	float flPanicDuration = gSkillData.panicDuration;
+
+	Schedule_t      *pNewSchedule;
+
+	pNewSchedule = GetScheduleOfType( SCHED_DREAD_NAME_PANIC );
+
+	if( pNewSchedule )
+	{
+		// Get the last task and set the data depending on the monsters
+		// own panic time
+		pNewSchedule->pTasklist[5].flData = flPanicDuration;
+
+		ChangeSchedule( pNewSchedule );
+	}
+}
+
+//=========================================================
 // Eat - makes a monster full for a little while.
 //=========================================================
 void CBaseMonster::Eat( float flFullDuration )
@@ -409,6 +430,7 @@ int CBaseMonster::ISoundMask( void )
 {
 	return	bits_SOUND_WORLD |
 		bits_SOUND_COMBAT |
+		bits_SOUND_DANGER |
 		bits_SOUND_PLAYER;
 }
 
@@ -595,7 +617,16 @@ int CBaseMonster::IgnoreConditions( void )
 	}
 
 	if( m_MonsterState == MONSTERSTATE_SCRIPT && m_pCine )
-		iIgnoreConditions |= m_pCine->IgnoreConditions();
+	{
+		int tempIgnore = m_pCine->IgnoreConditions();
+
+		// if our trigger condition is "take damage", we do not want to forget the taken damage
+		if( m_iTriggerCondition == AITRIGGER_TAKEDAMAGE )
+		{
+			tempIgnore &= ~( bits_COND_LIGHT_DAMAGE | bits_COND_HEAVY_DAMAGE );
+		}
+		iIgnoreConditions |= tempIgnore;
+	}
 
 	return iIgnoreConditions;
 }
@@ -960,6 +991,21 @@ BOOL CBaseMonster::CheckRangeAttack2( float flDot, float flDist )
 BOOL CBaseMonster::CheckMeleeAttack1( float flDot, float flDist )
 {
 	// Decent fix to keep folks from kicking/punching hornets and snarks is to check the onground flag(sjb)
+	//int iGround = FBitSet( m_hEnemy->pev->flags, FL_ONGROUND );
+
+	// Cthulhu: but this stops the monster from hitting flying monsters that are
+	// melee attacking it (e.g. nightgaunt)
+	// Solution: explicitly check for monster types that we cannot hit
+
+	BOOL bHit = TRUE;	// we can hit by default
+	if( m_hEnemy )
+        {
+		if( FClassnameIs( m_hEnemy->pev, "hornet" )
+		    || FClassnameIs( m_hEnemy->pev, "monster_snark" ) )
+			bHit = FALSE;
+	}
+
+	// if( flDist <= 64 && flDot >= 0.7 && m_hEnemy != NULL && iGround )
 	if( flDist <= 64 && flDot >= 0.7 && m_hEnemy != 0 && FBitSet( m_hEnemy->pev->flags, FL_ONGROUND ) )
 	{
 		return TRUE;
@@ -2003,6 +2049,10 @@ void CBaseMonster::MonsterInit( void )
 	if( pev->spawnflags & SF_MONSTER_HITMONSTERCLIP )
 		pev->flags |= FL_MONSTERCLIP;
 
+	// all monster avoid burning molotov unless they are immune to fire
+	if( !FBitSet( pev->flags,FL_IMMUNE_LAVA ) )
+		pev->flags |= FL_BURNING_CLIP;
+
 	ClearSchedule();
 	RouteClear();
 	InitBoneControllers( ); // FIX: should be done in Spawn
@@ -2167,26 +2217,29 @@ int CBaseMonster::TaskIsRunning( void )
 //=========================================================
 int CBaseMonster::IRelationship( CBaseEntity *pTarget )
 {
-	static int iEnemy[17][17] =
-	{			 //   NONE	MACH	PLYR	HPASS	HMIL	AMIL	APASS	AMONST	APREY	APRED	INSECT	PLRALY	PBWPN	ABWPN	FACT_A	FACT_B	FACT_C
-	/*NONE*/		{ R_NO,	R_NO,	R_NO,	R_NO,	R_NO,	R_NO,	R_NO,	R_NO,	R_NO,	R_NO,	R_NO,	R_NO,	R_NO,	R_NO,	R_NO,	R_NO,	R_NO },
-	/*MACHINE*/		{ R_NO,	R_NO,	R_DL,	R_DL,	R_NO,	R_DL,	R_DL,	R_DL,	R_DL,	R_DL,	R_NO,	R_DL,	R_DL,	R_DL,	R_DL,	R_DL,	R_DL },
-	/*PLAYER*/		{ R_NO,	R_DL,	R_NO,	R_NO,	R_DL,	R_DL,	R_DL,	R_DL,	R_DL,	R_DL,	R_NO,	R_NO,	R_DL,	R_DL,	R_DL,	R_DL,	R_DL },
-	/*HUMANPASSIVE*/{ R_NO,	R_NO,	R_AL,	R_AL,	R_HT,	R_FR,	R_NO,	R_HT,	R_DL,	R_FR,	R_NO,	R_AL,	R_NO,	R_NO,	R_DL,	R_DL,	R_DL },
-	/*HUMANMILITAR*/{ R_NO,	R_NO,	R_HT,	R_DL,	R_NO,	R_HT,	R_DL,	R_DL,	R_DL,	R_DL,	R_NO,	R_HT,	R_NO,	R_NO,	R_DL,	R_DL,	R_DL },
-	/*ALIENMILITAR*/{ R_NO,	R_DL,	R_HT,	R_DL,	R_HT,	R_NO,	R_NO,	R_NO,	R_NO,	R_NO,	R_NO,	R_DL,	R_NO,	R_NO,	R_DL,	R_DL,	R_DL },
-	/*ALIENPASSIVE*/{ R_NO,	R_NO,	R_NO,	R_NO,	R_NO,	R_NO,	R_NO,	R_NO,	R_NO,	R_NO,	R_NO,	R_NO,	R_NO,	R_NO,	R_DL,	R_DL,	R_DL },
-	/*ALIENMONSTER*/{ R_NO,	R_DL,	R_DL,	R_DL,	R_DL,	R_NO,	R_NO,	R_NO,	R_NO,	R_NO,	R_NO,	R_DL,	R_NO,	R_NO,	R_DL,	R_DL,	R_DL },
-	/*ALIENPREY   */{ R_NO,	R_NO,	R_DL,	R_DL,	R_DL,	R_NO,	R_NO,	R_NO,	R_NO,	R_FR,	R_NO,	R_DL,	R_NO,	R_NO,	R_DL,	R_DL,	R_DL },
-	/*ALIENPREDATO*/{ R_NO,	R_NO,	R_DL,	R_DL,	R_DL,	R_NO,	R_NO,	R_NO,	R_HT,	R_DL,	R_NO,	R_DL,	R_NO,	R_NO,	R_DL,	R_DL,	R_DL },
-	/*INSECT*/		{ R_FR,	R_FR,	R_FR,	R_FR,	R_FR,	R_NO,	R_FR,	R_FR,	R_FR,	R_FR,	R_NO,	R_FR,	R_NO,	R_NO,	R_FR,	R_FR,	R_FR },
-	/*PLAYERALLY*/	{ R_NO,	R_DL,	R_AL,	R_AL,	R_DL,	R_DL,	R_DL,	R_DL,	R_DL,	R_DL,	R_NO,	R_NO,	R_NO,	R_NO,	R_DL,	R_DL,	R_DL },
-	/*PBIOWEAPON*/	{ R_NO,	R_NO,	R_DL,	R_DL,	R_DL,	R_DL,	R_DL,	R_DL,	R_DL,	R_DL,	R_NO,	R_DL,	R_NO,	R_DL,	R_DL,	R_DL,	R_DL },
-	/*ABIOWEAPON*/	{ R_NO,	R_NO,	R_DL,	R_DL,	R_DL,	R_AL,	R_NO,	R_DL,	R_DL,	R_NO,	R_NO,	R_DL,	R_DL,	R_NO,	R_DL,	R_DL,	R_DL },
-	/*FACTION_A*/   { R_NO,	R_DL,	R_DL,	R_DL,	R_DL,	R_DL,	R_DL,	R_DL,	R_DL,	R_DL,	R_NO,	R_DL,	R_DL,	R_DL,	R_AL,	R_DL,	R_DL },
-	/*FACTION_B*/   { R_NO,	R_DL,	R_DL,	R_DL,	R_DL,	R_DL,	R_DL,	R_DL,	R_DL,	R_DL,	R_NO,	R_DL,	R_DL,	R_DL,	R_DL,	R_AL,	R_DL },
-	/*FACTION_C*/   { R_NO,	R_DL,	R_DL,	R_DL,	R_DL,	R_DL,	R_DL,	R_DL,	R_DL,	R_DL,	R_NO,	R_DL,	R_DL,	R_DL,	R_DL,	R_DL,	R_AL }
-	};
+	static int iEnemy[20][20] =
+	{		// NONE	MACH	PLYR	HPASS	HMIL	AMIL	APASS	AMONST	APREY	APRED	INSECT	PLRALY	PBWPN	ABWPN	CULTIST PREY	PRED	FACT_A	FACT_B	FACT_C
+	/*NONE*/	{ R_NO,	R_NO,	R_NO,	R_NO,	R_NO,	R_NO,	R_NO,	R_NO,	R_NO,	R_NO,	R_NO,	R_NO,	R_NO,	R_NO,	R_NO,	R_NO,	R_NO,	R_NO,	R_NO,	R_NO },
+	/*MACHINE*/	{ R_NO,	R_NO,	R_DL,	R_DL,	R_NO,	R_DL,	R_DL,	R_DL,	R_DL,	R_DL,	R_NO,	R_DL,	R_DL,	R_DL,	R_NO,	R_NO,	R_DL,	R_DL,	R_DL,	R_DL },
+	/*PLAYER*/	{ R_NO,	R_DL,	R_NO,	R_NO,	R_DL,	R_DL,	R_DL,	R_DL,	R_DL,	R_DL,	R_NO,	R_NO,	R_DL,	R_DL,	R_HT,	R_NO,	R_DL,	R_DL,	R_DL,	R_DL },
+	/*HUMANPASSIVE*/{ R_NO,	R_NO,	R_AL,	R_AL,	R_HT,	R_FR,	R_NO,	R_HT,	R_DL,	R_DL,	R_NO,	R_AL,	R_NO,	R_NO,	R_DL,	R_NO,	R_DL,	R_DL,	R_DL,	R_DL },
+	/*HUMANMILITAR*/{ R_NO,	R_NO,	R_HT,	R_DL,	R_NO,	R_HT,	R_DL,	R_DL,	R_DL,	R_DL,	R_NO,	R_HT,	R_NO,	R_NO,	R_DL,	R_NO,	R_DL,	R_DL,	R_DL,	R_DL },
+	/*ALIENMILITAR*/{ R_NO,	R_DL,	R_HT,	R_DL,	R_HT,	R_NO,	R_NO,	R_NO,	R_NO,	R_NO,	R_NO,	R_DL,	R_NO,	R_NO,	R_AL,	R_DL,	R_DL,	R_DL,	R_DL,	R_DL },
+	/*ALIENPASSIVE*/{ R_NO,	R_NO,	R_NO,	R_NO,	R_NO,	R_NO,	R_NO,	R_NO,	R_NO,	R_NO,	R_NO,	R_NO,	R_NO,	R_NO,	R_AL,	R_NO,	R_DL,	R_DL,	R_DL,	R_DL },
+	/*ALIENMONSTER*/{ R_NO,	R_DL,	R_DL,	R_DL,	R_DL,	R_NO,	R_NO,	R_NO,	R_NO,	R_NO,	R_NO,	R_DL,	R_NO,	R_NO,	R_AL,	R_DL,	R_DL,	R_DL,	R_DL,	R_DL },
+	/*ALIENPREY*/	{ R_NO, R_NO,	R_DL,	R_DL,	R_DL,	R_NO,	R_NO,	R_NO,	R_NO,	R_FR,	R_NO,	R_DL,	R_NO,	R_NO,	R_AL,	R_NO,	R_FR,	R_DL,	R_DL,	R_DL },
+	/*ALIENPREDATO*/{ R_NO, R_NO,	R_DL,	R_DL,	R_DL,	R_NO,	R_NO,	R_NO,	R_HT,	R_NO,	R_NO,	R_DL,	R_NO,	R_NO,	R_DL,	R_DL,	R_DL,	R_DL,	R_DL,	R_DL },
+	/*INSECT*/	{ R_FR,	R_FR,	R_FR,	R_FR,	R_FR,	R_NO,	R_FR,	R_FR,	R_FR,	R_FR,	R_NO,	R_FR,	R_NO,	R_NO,	R_NO,	R_NO,	R_NO,	R_FR,	R_FR,	R_FR },
+	/*PLAYERALLY*/	{ R_NO, R_DL,	R_AL,	R_AL,	R_DL,	R_DL,	R_DL,	R_DL,	R_DL,	R_DL,	R_NO,	R_NO,	R_NO,	R_NO,	R_DL,	R_NO,	R_DL,	R_DL,	R_DL,	R_DL },
+	/*PBIOWEAPON*/	{ R_NO, R_NO,	R_DL,	R_DL,	R_DL,	R_DL,	R_DL,	R_DL,	R_DL,	R_DL,	R_NO,	R_DL,	R_NO,	R_DL,	R_DL,	R_NO,	R_DL,	R_DL,	R_DL,	R_DL },
+	/*ABIOWEAPON*/	{ R_NO, R_NO,	R_DL,	R_DL,	R_DL,	R_AL,	R_NO,	R_DL,	R_DL,	R_NO,	R_NO,	R_DL,	R_DL,	R_NO,	R_NO,	R_NO,	R_DL,	R_DL,	R_DL,	R_DL },
+	/*CULTIST*/	{ R_NO,	R_NO,	R_HT,	R_DL,	R_DL,	R_AL,	R_AL,	R_AL,	R_NO,	R_FR,	R_NO,	R_DL,	R_DL,	R_NO,	R_AL,	R_NO,	R_DL,	R_DL,	R_DL,	R_DL },
+	/*MUND_PREY*/	{ R_NO,	R_FR,	R_FR,	R_FR,	R_FR,	R_FR,	R_FR,	R_FR,	R_FR,	R_FR,	R_NO,	R_FR,	R_FR,	R_FR,	R_FR,	R_NO,	R_FR,	R_FR,	R_FR,	R_FR },
+	/*MUND_PRED*/	{ R_NO,	R_FR,	R_DL,	R_DL,	R_DL,	R_HT,	R_HT,	R_HT,	R_HT,	R_HT,	R_NO,	R_DL,	R_NO,	R_NO,	R_DL,	R_DL,	R_AL,	R_DL,	R_DL,	R_DL },
+	/*FACTION_A*/	{ R_NO,	R_DL,	R_DL,	R_DL,	R_DL,	R_DL,	R_DL,	R_DL,	R_DL,	R_DL,	R_NO,	R_DL,	R_DL,	R_DL,	R_DL,	R_NO,	R_DL,	R_AL,	R_DL,	R_DL },
+	/*FACTION_B*/	{ R_NO,	R_DL,	R_DL,	R_DL,	R_DL,	R_DL,	R_DL,	R_DL,	R_DL,	R_DL,	R_NO,	R_DL,	R_DL,	R_DL,	R_DL,	R_NO,	R_DL,	R_DL,	R_AL,	R_DL },
+	/*FACTION_C*/	{ R_NO,	R_DL,	R_DL,	R_DL,	R_DL,	R_DL,	R_DL,	R_DL,	R_DL,	R_DL,	R_NO,	R_DL,	R_DL,	R_DL,	R_DL,	R_NO,	R_DL,	R_DL,	R_DL,	R_AL }
+        };
 
 	int iTargClass = pTarget->Classify();
 
@@ -3120,6 +3173,30 @@ int CBaseMonster :: CanPlaySequence( int interruptFlags )
 }
 
 //=========================================================
+// RunAwayFromEnemy
+// simply runs directly away
+//=========================================================
+BOOL CBaseMonster::RunAwayFromEnemy( void )
+{
+	TraceResult	tr;
+	Vector run_away;
+	Vector enemy = m_hEnemy->pev->origin;
+	run_away = ( pev->origin - enemy );
+	run_away.z = 0.0f;
+	run_away.Normalize();
+	run_away = run_away * GetFleeDistance();
+	UTIL_TraceLine( pev->origin, pev->origin + run_away, ignore_monsters, ENT( pev )/*pentIgnore*/, &tr );
+
+	// get the furthest direction
+	if( MoveToLocation( ACT_RUN, 0, pev->origin + ( run_away * tr.flFraction * 0.95f ) ) )
+	{
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
+//=========================================================
 // FindLateralCover - attempts to locate a spot in the world
 // directly to the left or right of the caller that will
 // conceal them from view of pSightEnt
@@ -3189,7 +3266,10 @@ Vector CBaseMonster::ShootAtEnemy( const Vector &shootOrigin )
 	}
 	else if ( m_hEnemy )
 	{
-		return ( (m_hEnemy->BodyTarget( shootOrigin ) - m_hEnemy->pev->origin) + m_vecEnemyLKP - shootOrigin ).Normalize();
+		Vector bt = m_hEnemy->BodyTarget( shootOrigin );
+		Vector eo = m_hEnemy->pev->origin;
+		return ( ( bt - eo ) + m_vecEnemyLKP - shootOrigin ).Normalize();
+		// return ( (m_hEnemy->BodyTarget( shootOrigin ) - m_hEnemy->pev->origin) + m_vecEnemyLKP - shootOrigin ).Normalize();
 	}
 	else
 		return gpGlobals->v_forward;

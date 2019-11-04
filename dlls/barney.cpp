@@ -897,8 +897,13 @@ LINK_ENTITY_TO_CLASS( monster_barney_dead, CDeadBarney )
 //=========================================================
 void CDeadBarney::Spawn()
 {
-	PRECACHE_MODEL( "models/barney.mdl" );
-	SET_MODEL( ENT( pev ), "models/barney.mdl" );
+	const char *szModel = "models/barney.mdl";
+
+	if( pev->model )
+		szModel = STRING( pev->model ); //LRC
+
+	PRECACHE_MODEL( szModel );
+	SET_MODEL( ENT( pev ), szModel );
 
 	pev->effects = 0;
 	pev->yaw_speed = 8;

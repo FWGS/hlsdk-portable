@@ -321,7 +321,7 @@ void CheckDesiredList( void )
 		return;
 	}
 	pListMember = g_pWorld;
-	CBaseEntity *pNext;
+	CBaseEntity *pNext = pListMember->m_pAssistLink;
 
 //	int count = 0;
 //	int all = 0;
@@ -334,14 +334,18 @@ void CheckDesiredList( void )
 //	if (count)
 //		ALERT(at_console, "CheckDesiredList begins, length is %d, total %d\n", count, all);
 //	count = 0;
-	pListMember = g_pWorld->m_pAssistLink;
+//	pListMember = g_pWorld->m_pAssistLink;
+	
 
-	while (pListMember)
+	while (pNext)
 	{
 		// cache this, in case ApplyDesiredSettings does a SUB_Remove.
+		ApplyDesiredSettings( pNext );
+		pListMember = pListMember->m_pAssistLink;
+		if( !pListMember )
+			break;
+
 		pNext = pListMember->m_pAssistLink;
-		ApplyDesiredSettings( pListMember );
-		pListMember = pNext;
 		loopbreaker--;
 		if (loopbreaker <= 0)
 		{

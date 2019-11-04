@@ -347,8 +347,9 @@ void CFlockingFlyer::SpawnCommonCode()
 //=========================================================
 void CFlockingFlyer::BoidAdvanceFrame()
 {
-	float flapspeed = ( pev->speed - pev->armorvalue ) / AFLOCK_ACCELERATE;
-	pev->armorvalue = pev->armorvalue * .8 + pev->speed * .2;
+	// float flapspeed = ( pev->speed - pev->armorvalue ) / AFLOCK_ACCELERATE;
+	float flapspeed = pev->speed / AFLOCK_ACCELERATE;
+	// pev->armorvalue = pev->armorvalue * .8 + pev->speed * .2;
 
 	if( flapspeed < 0 )
 		flapspeed = -flapspeed;

@@ -497,12 +497,16 @@ BOOL CSquadMonster :: NoFriendlyFire( BOOL playerAlly )
 		CSquadMonster *pMember = pSquadLeader->MySquadMember( i );
 		if( pMember && pMember != this )
 		{
-			if( backPlane.PointInFront( pMember->pev->origin ) &&
-				leftPlane.PointInFront( pMember->pev->origin ) &&
-				rightPlane.PointInFront( pMember->pev->origin ) )
+			// are we of the same class (because if we are not, then we have probably been charmed, so it is ok to shoot!)
+			if (pMember->Classify() == Classify())
 			{
-				// this guy is in the check volume! Don't shoot!
-				return FALSE;
+				if( backPlane.PointInFront( pMember->pev->origin ) &&
+					leftPlane.PointInFront( pMember->pev->origin ) &&
+					rightPlane.PointInFront( pMember->pev->origin ) )
+				{
+					// this guy is in the check volume! Don't shoot!
+					return FALSE;
+				}
 			}
 		}
 	}

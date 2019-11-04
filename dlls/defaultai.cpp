@@ -621,6 +621,30 @@ Schedule_t slChaseEnemy[] =
 	},
 };
 
+Task_t tlChaseEnemyLKP1[] =
+{
+	{ TASK_SET_FAIL_SCHEDULE, (float)SCHED_CHASE_ENEMY_FAILED },
+	{ TASK_GET_PATH_TO_ENEMY_LKP, 0.0f },
+	{ TASK_RUN_PATH, 0.0f },
+	{ TASK_WAIT_FOR_MOVEMENT, 0.0f },
+};
+
+Schedule_t slChaseEnemyLKP[] =
+{
+	{
+		tlChaseEnemyLKP1,
+		ARRAYSIZE( tlChaseEnemyLKP1 ),
+		bits_COND_NEW_ENEMY |
+		bits_COND_CAN_RANGE_ATTACK1 |
+		bits_COND_CAN_MELEE_ATTACK1 |
+		bits_COND_CAN_RANGE_ATTACK2 |
+		bits_COND_CAN_MELEE_ATTACK2 |
+		bits_COND_TASK_FAILED |
+		bits_COND_HEAR_SOUND,
+		bits_SOUND_DANGER,
+		"Chase Enemy LKP"
+	},
+};
 
 // Chase enemy failure schedule
 Task_t tlChaseEnemyFailed[] =
@@ -913,6 +937,31 @@ Schedule_t slCower[] =
 };
 
 //=========================================================
+// Panic - used when dread name is spoken.
+//=========================================================
+Task_t tlPanic[] =
+{
+	{ TASK_STOP_MOVING, 0.0f },
+	{ TASK_FIND_COVER_FROM_ENEMY, 0.0f },
+	// { TASK_FIND_COVER_FROM_ORIGIN, 0.0f },
+	{ TASK_RUN_PATH, 0.0f },
+	{ TASK_WAIT_FOR_MOVEMENT, 0.0f },
+	{ TASK_PLAY_SEQUENCE, (float)ACT_COWER },
+	{ TASK_WAIT, 15.0f }, // default 5 seconds
+};
+
+Schedule_t slPanic[] =
+{
+	{
+		tlPanic,
+		ARRAYSIZE( tlPanic ),
+		0,
+		0,
+		"Panic"
+	},
+};
+
+//=========================================================
 // move away from where you're currently standing. 
 //=========================================================
 Task_t tlTakeCoverFromOrigin[] =
@@ -955,7 +1004,8 @@ Schedule_t slTakeCoverFromBestSound[] =
 		tlTakeCoverFromBestSound,
 		ARRAYSIZE( tlTakeCoverFromBestSound ),
 		bits_COND_NEW_ENEMY,
-		0,
+		// 0,
+		bits_SOUND_DANGER,
 		"TakeCoverFromBestSound"
 	},
 };
@@ -1012,6 +1062,7 @@ Schedule_t *CBaseMonster::m_scheduleList[] =
 	slSpecialAttack1,
 	slSpecialAttack2,
 	slChaseEnemy,
+	slChaseEnemyLKP,
 	slChaseEnemyFailed,
 	slSmallFlinch,
 	slDie,
@@ -1027,7 +1078,8 @@ Schedule_t *CBaseMonster::m_scheduleList[] =
 	slTakeCoverFromOrigin,
 	slTakeCoverFromBestSound,
 	slTakeCoverFromEnemy,
-	slFail
+	slFail,
+	slPanic
 };
 
 Schedule_t *CBaseMonster::ScheduleFromName( const char *pName )
@@ -1137,6 +1189,10 @@ Schedule_t* CBaseMonster::GetScheduleOfType( int Type )
 		{
 			return &slChaseEnemy[0];
 		}
+	case SCHED_CHASE_ENEMY_LKP:
+		{
+			return &slChaseEnemyLKP[0];
+		}
 	case SCHED_CHASE_ENEMY_FAILED:
 		{
 			return &slFail[0];
@@ -1196,6 +1252,10 @@ Schedule_t* CBaseMonster::GetScheduleOfType( int Type )
 	case SCHED_COWER:
 		{
 			return &slCower[0];
+		}
+	case SCHED_DREAD_NAME_PANIC:
+		{
+			return &slPanic[0];
 		}
 	case SCHED_AMBUSH:
 		{

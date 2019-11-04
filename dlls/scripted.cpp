@@ -102,16 +102,16 @@ void CCineMonster::KeyValue( KeyValueData *pkvd )
 		m_fAction = atoi( pkvd->szValue );
 		pkvd->fHandled = TRUE;
 	}
-// LRC	else if (FStrEq(pkvd->szKeyName, "m_flRepeat"))
-//	{
-//		m_flRepeat = atof( pkvd->szValue );
-//		pkvd->fHandled = TRUE;
-//	}
-	else if( FStrEq( pkvd->szKeyName, "m_flRadius" ) )
+	else if( FStrEq( pkvd->szKeyName, "m_flRepeat" ) )
 	{
-		m_flRadius = atof( pkvd->szValue );
+		m_flRepeat = atof( pkvd->szValue );
 		pkvd->fHandled = TRUE;
 	}
+// LRC	else if( FStrEq( pkvd->szKeyName, "m_flRadius" ) )
+//	{
+//		m_flRadius = atof( pkvd->szValue );
+//		pkvd->fHandled = TRUE;
+//	}
 	else if (FStrEq(pkvd->szKeyName, "m_iRepeats"))
 	{
 		m_iRepeats = atoi( pkvd->szValue );
@@ -503,6 +503,7 @@ BOOL CCineMonster::StartSequence( CBaseMonster *pTarget, int iszSeq, BOOL comple
 	ALERT( at_console, "%s (%s): started \"%s\":INT:%s\n", STRING( pTarget->pev->targetname ), STRING( pTarget->pev->classname ), STRING( iszSeq ), s );
 #endif
 
+	m_interruptable = 0;	// cthulhu bug fix
 	pTarget->pev->frame = 0;
 	pTarget->ResetSequenceInfo();
 	return TRUE;
@@ -517,6 +518,39 @@ BOOL CCineMonster::StartSequence( CBaseMonster *pTarget, int iszSeq, BOOL comple
 //=========================================================
 void CCineMonster::SequenceDone( CBaseMonster *pMonster )
 {
+	// CTHULHU: horrible hack...
+	if( FStrEq( STRING( m_iszPlay ), "busting_through_wall" ) )
+	{
+		// copied from CineCleanup
+		//////////////////////////
+		Vector new_origin, new_angle;
+		pMonster->GetBonePosition( 0, new_origin, new_angle );
+
+		// UNDONE: THIS SHOULD ONLY HAPPEN IF WE ACTUALLY PLAYED THE SEQUENCE.
+		//Vector oldOrigin = pMonster->pev->origin;
+
+		//UTIL_SetOrigin( pMonster, new_origin );
+		pMonster->pev->origin = new_origin;
+		DROP_TO_FLOOR( ENT( pMonster->pev ) );
+		//////////////////////////
+		// Need to also set "move to position" to false...
+		m_fMoveTo = 0;
+		m_iszPlay = MAKE_STRING( "getup" );
+		StartSequence( pMonster, m_iszPlay, FALSE );
+		return;
+	}
+	else if( FStrEq( STRING( m_iszPlay ), "insane" ) )
+	{
+		//////////////////////////
+		// Need to also set "move to position" to false...
+		m_fMoveTo = 0;
+		m_iszPlay = MAKE_STRING( "insane2" );
+		m_iRepeats = 100;
+		m_iRepeatsLeft = m_iRepeats;
+		StartSequence( pMonster, m_iszPlay, FALSE );
+		return;
+	}
+
 	m_iRepeatsLeft = m_iRepeats; //LRC - reset the repeater count
 	m_iState = STATE_OFF; // we've finished.
 //	ALERT( at_console, "Sequence %s finished\n", STRING(pev->targetname));//STRING( m_pCine->m_iszPlay ) );
@@ -1172,61 +1206,4 @@ BOOL CScriptedSentence::StartSentence( CBaseMonster *pTarget )
 	ALERT( at_aiconsole, "Playing sentence %s (%.1f)\n", STRING( m_iszSentence ), m_flDuration );
 	SUB_UseTargets( NULL, USE_TOGGLE, 0 );
 	return TRUE;
-}
-
-//=========================================================
-// Furniture - this is the cool comment I cut-and-pasted
-//=========================================================
-class CFurniture : public CBaseMonster
-{
-public:
-	void Spawn( void );
-	void Die( void );
-	int Classify( void );
-	virtual int ObjectCaps( void ) { return (CBaseMonster::ObjectCaps() & ~FCAP_ACROSS_TRANSITION); }
-};
-
-LINK_ENTITY_TO_CLASS( monster_furniture, CFurniture )
-
-//=========================================================
-// Furniture is killed
-//=========================================================
-void CFurniture::Die( void )
-{
-	SetThink( &CBaseEntity::SUB_Remove );
-	pev->nextthink = gpGlobals->time;
-}
-
-//=========================================================
-// This used to have something to do with bees flying, but 
-// now it only initializes moving furniture in scripted sequences
-//=========================================================
-void CFurniture::Spawn()
-{
-	PRECACHE_MODEL( STRING( pev->model ) );
-	SET_MODEL( ENT( pev ), STRING( pev->model ) );
-
-	pev->movetype = MOVETYPE_NONE;
-	pev->solid = SOLID_BBOX;
-	pev->health = 80000;
-	pev->takedamage = DAMAGE_AIM;
-	pev->effects = 0;
-	pev->yaw_speed = 0;
-	pev->sequence = 0;
-	pev->frame = 0;
-
-	//pev->nextthink += 1.0;
-	//SetThink( &WalkMonsterDelay );
-
-	ResetSequenceInfo();
-	pev->frame = 0;
-	MonsterInit();
-}
-
-//=========================================================
-// ID's Furniture as neutral (noone will attack it)
-//=========================================================
-int CFurniture::Classify( void )
-{
-	return m_iClass?m_iClass:CLASS_NONE;
 }

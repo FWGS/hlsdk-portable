@@ -53,9 +53,11 @@ public:
 	static TYPEDESCRIPTION m_SaveData[];
 	
 	string_t m_iszMonsterClassname;// classname of the monster(s) that will be created.
+	string_t m_iszTargetOnChildDeath;// target to be fired whenever a child dies...
 	
 	int m_cNumMonsters;// max number of monsters this ent can create
-	
+	int      m_iMonsterBody;// the monsters body number
+
 	int m_cLiveChildren;// how many monsters made by this monster maker that are currently alive
 	int m_iMaxLiveChildren;// max number of monsters that this maker may have out at one time.
 
@@ -71,7 +73,9 @@ LINK_ENTITY_TO_CLASS( monstermaker, CMonsterMaker )
 TYPEDESCRIPTION	CMonsterMaker::m_SaveData[] =
 {
 	DEFINE_FIELD( CMonsterMaker, m_iszMonsterClassname, FIELD_STRING ),
+	DEFINE_FIELD( CMonsterMaker, m_iszTargetOnChildDeath, FIELD_STRING ),
 	DEFINE_FIELD( CMonsterMaker, m_cNumMonsters, FIELD_INTEGER ),
+	DEFINE_FIELD( CMonsterMaker, m_iMonsterBody, FIELD_INTEGER ),
 	DEFINE_FIELD( CMonsterMaker, m_cLiveChildren, FIELD_INTEGER ),
 	DEFINE_FIELD( CMonsterMaker, m_flGround, FIELD_FLOAT ),
 	DEFINE_FIELD( CMonsterMaker, m_iMaxLiveChildren, FIELD_INTEGER ),
@@ -94,6 +98,11 @@ void CMonsterMaker::KeyValue( KeyValueData *pkvd )
 		m_iMaxLiveChildren = atoi( pkvd->szValue );
 		pkvd->fHandled = TRUE;
 	}
+	else if( FStrEq(pkvd->szKeyName, "monsterbody" ) )
+	{
+		m_iMonsterBody = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
 	else if( FStrEq( pkvd->szKeyName, "monstertype" ) )
 	{
 		m_iszMonsterClassname = ALLOC_STRING( pkvd->szValue );
@@ -102,6 +111,11 @@ void CMonsterMaker::KeyValue( KeyValueData *pkvd )
 	else if ( FStrEq(pkvd->szKeyName, "spawndelay") )
 	{
 		m_fSpawnDelay = atof( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq(pkvd->szKeyName, "targetondeath" ) )
+	{
+		m_iszTargetOnChildDeath = ALLOC_STRING( pkvd->szValue );
 		pkvd->fHandled = TRUE;
 	}
 	else
@@ -274,6 +288,9 @@ CBaseMonster* CMonsterMaker::MakeMonster( void )
 		pMonst->m_iPlayerReact = this->m_iPlayerReact;
 	}
 
+	// Cthulhu: allow monster maker to set the body...
+	pEntity->pev->body = m_iMonsterBody;
+
 	if( !FStringNull( pev->netname ) )
 	{
 		// if I have a netname (overloaded), give the child monster that name as a targetname
@@ -351,4 +368,13 @@ void CMonsterMaker::DeathNotice( entvars_t *pevChild )
 	{
 		pevChild->owner = NULL;
 	}
+
+	// do we need to fire a target?
+	CBaseEntity *pTarget = NULL;
+	pTarget = UTIL_FindEntityByTargetname( pTarget, STRING( m_iszTargetOnChildDeath ) );
+
+	if( !FNullEnt( pTarget ) )
+	{
+		pTarget->Use( NULL, this, USE_TOGGLE, 0 );
+        }
 }

@@ -65,7 +65,7 @@ public:
 
 	void Stop( void );
 	void Move( float flInterval );
-	int CheckLocalMove( const Vector &vecStart, const Vector &vecEnd, CBaseEntity *pTarget, float *pflDist );
+	virtual int CheckLocalMove( const Vector &vecStart, const Vector &vecEnd, CBaseEntity *pTarget, float *pflDist );
 	void MoveExecute( CBaseEntity *pTargetEnt, const Vector &vecDir, float flInterval );
 	void SetActivity( Activity NewActivity );
 	BOOL ShouldAdvanceRoute( float flWaypointDist );

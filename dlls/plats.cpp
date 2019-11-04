@@ -997,7 +997,7 @@ void CFuncTrain::Next( void )
 			//pev->avelocity = pTarg->pev->avelocity; //LRC
 		}
 
-		if (m_pevCurrentTarget->armorvalue)
+		if (m_pevCurrentTarget->sanity)
 		{
 			UTIL_SetAngles(this, m_pevCurrentTarget->angles);
 			//pev->angles = m_pevCurrentTarget->angles; //LRC - if we just passed a "turn to face" corner, set angle exactly.
@@ -1026,7 +1026,7 @@ void CFuncTrain::Next( void )
 				UTIL_AssignOrigin(this, pTarg->pev->origin - (pev->mins + pev->maxs) * 0.5 );
 		}
 
-		if (pTarg->pev->armorvalue) //LRC - "teleport and turn to face" means you set an angle as you teleport.
+		if (pTarg->pev->sanity) //LRC - "teleport and turn to face" means you set an angle as you teleport.
 		{
 			UTIL_SetAngles(this, pTarg->pev->angles);
 			//pev->angles = pTarg->pev->angles;
@@ -1051,7 +1051,7 @@ void CFuncTrain::Next( void )
 		ClearBits(pev->effects, EF_NOINTERP);
 		SetMoveDone(&CFuncTrain :: Wait );
 
-		if (pTarg->pev->armorvalue) //LRC - "turn to face" the next corner
+		if (pTarg->pev->sanity) //LRC - "turn to face" the next corner
 		{
 			Vector vTemp = pev->angles;
 			FixupAngles( vTemp );
@@ -1767,7 +1767,7 @@ void CFuncTrackTrain :: DesiredAction( void ) // Next( void )
 				pev->spawnflags |= SF_TRACKTRAIN_NOCONTROL;
 
 			//LRC is "match angle" set to "Yes"? If so, set the angle exactly, because we've reached the corner.
-			if ( pFire->pev->armorvalue == PATHMATCH_YES && pev->spawnflags & SF_TRACKTRAIN_AVELOCITY )
+			if ( pFire->pev->sanity == PATHMATCH_YES && pev->spawnflags & SF_TRACKTRAIN_AVELOCITY )
 			{
 				Vector vTemp = pFire->pev->angles;
 				vTemp.y -= 180; //the train is actually built facing west.
@@ -1846,7 +1846,7 @@ void CFuncTrackTrain :: DesiredAction( void ) // Next( void )
 			}
 
 			//LRC
-			if (pDest->pev->armorvalue == PATHMATCH_YES)
+			if (pDest->pev->sanity == PATHMATCH_YES)
 			{
 				pev->spawnflags |= SF_TRACKTRAIN_AVELOCITY | SF_TRACKTRAIN_AVEL_GEARS;
 				Vector vTemp = pev->angles;

@@ -58,14 +58,15 @@ void CWorldItem::Spawn( void )
 
 	switch( m_iType ) 
 	{
-	case 44: // ITEM_BATTERY:
-		pEntity = CBaseEntity::Create( "item_battery", pev->origin, pev->angles );
-		break;
+	// case 44: // ITEM_BATTERY:
+		// pEntity = CBaseEntity::Create( "item_battery", pev->origin, pev->angles );
+		// break;
 	case 42: // ITEM_ANTIDOTE:
 		pEntity = CBaseEntity::Create( "item_antidote", pev->origin, pev->angles );
 		break;
-	case 43: // ITEM_SECURITY:
-		pEntity = CBaseEntity::Create( "item_security", pev->origin, pev->angles );
+	case 43: // ITEM_KEY:
+		// pEntity = CBaseEntity::Create( "item_security", pev->origin, pev->angles );
+		pEntity = CBaseEntity::Create( "item_key", pev->origin, pev->angles );
 		break;
 	case 45: // ITEM_SUIT:
 		pEntity = CBaseEntity::Create( "item_suit", pev->origin, pev->angles );
@@ -193,10 +194,12 @@ class CItemSuit : public CItem
 		if( pPlayer->pev->weapons & ( 1<<WEAPON_SUIT ) )
 			return FALSE;
 
+		/* no suit logon for Cthulhu
 		if( pev->spawnflags & SF_SUIT_SHORTLOGON )
 			EMIT_SOUND_SUIT( pPlayer->edict(), "!HEV_A0" );		// short version of suit logon,
 		else
 			EMIT_SOUND_SUIT( pPlayer->edict(), "!HEV_AAx" );	// long version of suit logon
+		*/
 
 		pPlayer->pev->weapons |= ( 1 << WEAPON_SUIT );
 		return TRUE;
@@ -204,7 +207,7 @@ class CItemSuit : public CItem
 };
 
 LINK_ENTITY_TO_CLASS( item_suit, CItemSuit )
-
+/*
 class CItemBattery : public CItem
 {
 	void Spawn( void )
@@ -274,6 +277,7 @@ class CItemBattery : public CItem
 };
 
 LINK_ENTITY_TO_CLASS( item_battery, CItemBattery )
+*/
 
 class CItemAntidote : public CItem
 {
@@ -303,21 +307,24 @@ class CItemSecurity : public CItem
 	void Spawn( void )
 	{ 
 		Precache();
-		SET_MODEL( ENT( pev ), "models/w_security.mdl" );
+		SET_MODEL( ENT( pev ), "models/key.mdl" );
 		CItem::Spawn();
 	}
 	void Precache( void )
 	{
-		PRECACHE_MODEL( "models/w_security.mdl" );
+		PRECACHE_MODEL( "models/key.mdl" );
+		PRECACHE_SOUND( "items/ammopickup1.wav" );
 	}
 	BOOL MyTouch( CBasePlayer *pPlayer )
 	{
-		pPlayer->m_rgItems[ITEM_SECURITY] += 1;
+		pPlayer->m_rgItems[ITEM_SECURITY] += 2;
+		EMIT_SOUND( ENT( pPlayer->pev ), CHAN_ITEM, "items/ammopickup1.wav", 1, ATTN_NORM );
 		return TRUE;
 	}
 };
 
-LINK_ENTITY_TO_CLASS( item_security, CItemSecurity )
+// LINK_ENTITY_TO_CLASS( item_security, CItemSecurity )
+LINK_ENTITY_TO_CLASS( item_key, CItemSecurity )
 
 class CItemLongJump : public CItem
 {

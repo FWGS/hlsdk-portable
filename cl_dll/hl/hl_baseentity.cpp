@@ -260,6 +260,7 @@ void CBasePlayer::StartObserver( Vector vecPosition, Vector vecViewAngle ) { }
 void CBasePlayer::PlayerUse( void ) { }
 void CBasePlayer::Jump() { }
 void CBasePlayer::Duck() { }
+int CBasePlayer::LoseSanity( float flSanLoss ) { return 0; }
 int  CBasePlayer::Classify( void ) { return 0; }
 void CBasePlayer::PreThink(void) { }
 void CBasePlayer::CheckTimeBasedDamage()  { }

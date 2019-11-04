@@ -570,7 +570,7 @@ Vector CCalcVelocityPath::CalcVelocity( CBaseEntity *pLocus )
 	Vector vecOffs;
 	float fFactor = CalcLocus_Ratio( pLocus, STRING(pev->noise) );
 
-	switch ((int)pev->armorvalue)
+	switch ((int)pev->sanity)
 	{
 	case 0:
 		vecOffs = CalcLocus_Position( this, pLocus, STRING(pev->netname) ) - vecStart;

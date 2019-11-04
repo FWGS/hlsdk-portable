@@ -186,7 +186,7 @@ public:
 	float       m_tSneaking;
 	int			m_iUpdateTime;		// stores the number of frame ticks before sending HUD update messages
 	int			m_iClientHealth;	// the health currently known by the client.  If this changes, send a new
-	int			m_iClientBattery;	// the Battery currently known by the client.  If this changes, send a new
+	int			m_iClientSanity;	// the Battery currently known by the client.  If this changes, send a new
 	int			m_iHideHUD;		// the players hud weapon info is to be hidden
 	int			m_iClientHideHUD;
 	int			m_iFOV;			// field of view
@@ -226,6 +226,7 @@ public:
 	virtual int TakeHealth( float flHealth, int bitsDamageType );
 	virtual void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType);
 	virtual int TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
+	virtual int LoseSanity( float flSanLoss );
 	virtual void	Killed( entvars_t *pevAttacker, int iGib );
 	virtual Vector BodyTarget( const Vector &posSrc ) { return Center( ) + pev->view_ofs * RANDOM_FLOAT( 0.5, 1.1 ); };		// position to shoot at
 	virtual void StartSneaking( void ) { m_tSneaking = gpGlobals->time - 1; }
@@ -324,6 +325,8 @@ public:
 	void SetCustomDecalFrames( int nFrames );
 	int GetCustomDecalFrames( void );
 
+	void GoInsane( void ); // loads the "insane" map
+
 	void TabulateAmmo( void );
 
 	float m_flStartCharge;
@@ -355,5 +358,6 @@ public:
 extern int gmsgHudText;
 extern int	gmsgParticle; // LRC
 extern BOOL gInitHUD;
+extern char st_szPreInsaneMap[cchMapNameMost];
 
 #endif // PLAYER_H

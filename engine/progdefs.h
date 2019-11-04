@@ -149,7 +149,8 @@ typedef struct entvars_s
 	float		max_health;
 	float		teleport_time;
 	float		armortype;
-	float		armorvalue;
+	//float		armorvalue;
+	float		sanity;
 	int		waterlevel;
 	int		watertype;
 

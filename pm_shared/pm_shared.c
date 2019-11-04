@@ -2775,7 +2775,8 @@ void PM_CheckFalling( void )
 				//pmove->PM_PlaySound( CHAN_VOICE, "player/pl_fallpain2.wav", 1, ATTN_NORM, 0, PITCH_NORM );
 				//break;
 			//case 1:
-				pmove->PM_PlaySound( CHAN_VOICE, "player/pl_fallpain3.wav", 1, ATTN_NORM, 0, PITCH_NORM );
+				// pmove->PM_PlaySound( CHAN_VOICE, "player/pl_fallpain3.wav", 1, ATTN_NORM, 0, PITCH_NORM );
+				pmove->PM_PlaySound( CHAN_VOICE, "player/rs_pain2.wav", 1, ATTN_NORM, 0, PITCH_NORM );
 			//	break;
 			//}
 			fvol = 1.0;
@@ -2787,7 +2788,8 @@ void PM_CheckFalling( void )
 
 			if( tfc )
 			{
-				pmove->PM_PlaySound( CHAN_VOICE, "player/pl_fallpain3.wav", 1, ATTN_NORM, 0, PITCH_NORM );
+				// pmove->PM_PlaySound( CHAN_VOICE, "player/pl_fallpain3.wav", 1, ATTN_NORM, 0, PITCH_NORM );
+				pmove->PM_PlaySound( CHAN_VOICE, "player/rs_pain2.wav", 1, ATTN_NORM, 0, PITCH_NORM );
 			}
 
 			fvol = 0.85;

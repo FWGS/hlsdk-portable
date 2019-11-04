@@ -27,6 +27,8 @@
 #define RGB_REDISH 0x00FF1010 //255,160,0
 #define RGB_GREENISH 0x0000A000 //0,160,0
 
+#include "util_vector.h"
+#include "const.h"
 #include "wrect.h"
 #include "cl_dll.h"
 #include "ammo.h"
@@ -408,23 +410,41 @@ private:
 //
 //-----------------------------------------------------
 //
-class CHudBattery : public CHudBase
+class CHudSanity : public CHudBase
 {
 public:
 	int Init( void );
 	int VidInit( void );
 	int Draw( float flTime );
-	int MsgFunc_Battery( const char *pszName,  int iSize, void *pbuf );
+	int MsgFunc_Sanity( const char *pszName,  int iSize, void *pbuf );
 	
 private:
 	HSPRITE m_hSprite1;
 	HSPRITE m_hSprite2;
 	wrect_t *m_prc1;
 	wrect_t *m_prc2;
-	int m_iBat;
+	int m_iSan;
 	float m_fFade;
-	int m_iHeight;		// width of the battery innards
+	int m_iHeight;		// width of the sanity innards
 };
+
+//
+//-----------------------------------------------------
+//
+#include "ImageLabel.h"
+
+class CHudReadBook : public CHudBase
+{
+public:
+	int Init( void );
+	int VidInit( void );
+	// int Draw(float flTime);
+	int MsgFunc_ReadBook(const char *pszName,  int iSize, void *pbuf );
+
+private:
+	CImageLabel	*pImage;
+};
+
 
 //
 //-----------------------------------------------------
@@ -679,7 +699,9 @@ public:
 	CHudHealth		m_Health;
 	CHudSpectator		m_Spectator;
 	CHudGeiger		m_Geiger;
-	CHudBattery		m_Battery;
+	CHudSanity		m_Sanity;
+	CHudReadBook		m_ReadBook;
+	// CHudBattery		m_Battery;
 	CHudTrain		m_Train;
 	CHudFlashlight	m_Flash;
 	CHudMessage		m_Message;

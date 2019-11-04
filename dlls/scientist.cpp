@@ -1141,8 +1141,13 @@ LINK_ENTITY_TO_CLASS( monster_scientist_dead, CDeadScientist )
 //
 void CDeadScientist::Spawn()
 {
-	PRECACHE_MODEL( "models/scientist.mdl" );
-	SET_MODEL( ENT( pev ), "models/scientist.mdl" );
+	const char *szModel = "models/scientist.mdl";
+
+	if( pev->model )
+		szModel = STRING( pev->model );
+
+	PRECACHE_MODEL( szModel );
+	SET_MODEL( ENT( pev ), szModel );
 
 	pev->effects = 0;
 	pev->sequence = 0;

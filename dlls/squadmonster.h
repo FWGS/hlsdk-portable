@@ -24,31 +24,48 @@
 
 #define bits_NO_SLOT		0
 
+// HUMAN CULTISTS SLOTS
+#define bits_SLOT_CULTIST_ENGAGE1	( 1 << 0 )
+#define bits_SLOT_CULTIST_ENGAGE2	( 1 << 1 )
+#define bits_SLOTS_CULTIST_ENGAGE	( bits_SLOT_CULTIST_ENGAGE1 | bits_SLOT_CULTIST_ENGAGE2 )
+// Priests and Cultists use the same engagement slots
+#define bits_SLOTS_PRIEST_ENGAGE	( bits_SLOT_CULTIST_ENGAGE1 | bits_SLOT_CULTIST_ENGAGE2 )
+
+// GANGSTER SLOTS
+#define bits_SLOT_GANGSTER_ENGAGE1	( 1 << 2 )
+#define bits_SLOT_GANGSTER_ENGAGE2	( 1 << 3 )
+#define bits_SLOTS_GANGSTER_ENGAGE	( bits_SLOT_GANGSTER_ENGAGE1 | bits_SLOT_GANGSTER_ENGAGE2 )
+
 // HUMAN GRUNT SLOTS
-#define bits_SLOT_HGRUNT_ENGAGE1	( 1 << 0 )
-#define bits_SLOT_HGRUNT_ENGAGE2	( 1 << 1 )
+#define bits_SLOT_HGRUNT_ENGAGE1	( 1 << 4 )
+#define bits_SLOT_HGRUNT_ENGAGE2	( 1 << 5 )
 #define bits_SLOTS_HGRUNT_ENGAGE	( bits_SLOT_HGRUNT_ENGAGE1 | bits_SLOT_HGRUNT_ENGAGE2 )
 
-#define bits_SLOT_HGRUNT_GRENADE1	( 1 << 2 ) 
-#define bits_SLOT_HGRUNT_GRENADE2	( 1 << 3 ) 
+#define bits_SLOT_HGRUNT_GRENADE1	( 1 << 6 ) 
+#define bits_SLOT_HGRUNT_GRENADE2	( 1 << 7 ) 
 #define bits_SLOTS_HGRUNT_GRENADE	( bits_SLOT_HGRUNT_GRENADE1 | bits_SLOT_HGRUNT_GRENADE2 )
 
 // ALIEN GRUNT SLOTS
-#define bits_SLOT_AGRUNT_HORNET1	( 1 << 4 )
-#define bits_SLOT_AGRUNT_HORNET2	( 1 << 5 )
-#define bits_SLOT_AGRUNT_CHASE		( 1 << 6 )
+#define bits_SLOT_AGRUNT_HORNET1	( 1 << 8 )
+#define bits_SLOT_AGRUNT_HORNET2	( 1 << 9 )
+#define bits_SLOT_AGRUNT_CHASE		( 1 << 10 )
 #define bits_SLOTS_AGRUNT_HORNET	( bits_SLOT_AGRUNT_HORNET1 | bits_SLOT_AGRUNT_HORNET2 )
 
 // HOUNDEYE SLOTS
-#define bits_SLOT_HOUND_ATTACK1		( 1 << 7 )
-#define bits_SLOT_HOUND_ATTACK2		( 1 << 8 )
-#define bits_SLOT_HOUND_ATTACK3		( 1 << 9 )
+#define bits_SLOT_HOUND_ATTACK1		( 1 << 11 )
+#define bits_SLOT_HOUND_ATTACK2		( 1 << 12 )
+#define bits_SLOT_HOUND_ATTACK3		( 1 << 13 )
 #define bits_SLOTS_HOUND_ATTACK		( bits_SLOT_HOUND_ATTACK1 | bits_SLOT_HOUND_ATTACK2 | bits_SLOT_HOUND_ATTACK3 )
 
-// global slots
-#define bits_SLOT_SQUAD_SPLIT		( 1 << 10 )// squad members don't all have the same enemy
+// ORDERLY SLOTS
+#define bits_SLOT_ORDERLY_ENGAGE1	( 1 << 14 )
+#define bits_SLOT_ORDERLY_ENGAGE2	( 1 << 15 )
+#define bits_SLOTS_ORDERLY_ENGAGE	( bits_SLOT_ORDERLY_ENGAGE1 | bits_SLOT_ORDERLY_ENGAGE2 )
 
-#define NUM_SLOTS			11// update this every time you add/remove a slot.
+// global slots
+#define bits_SLOT_SQUAD_SPLIT		( 1 << 16 )// squad members don't all have the same enemy
+
+#define NUM_SLOTS			17// update this every time you add/remove a slot.
 
 #define	MAX_SQUAD_MEMBERS	5
 
@@ -69,7 +86,7 @@ public:
 	int m_iMySlot;// this is the behaviour slot that the monster currently holds in the squad. 
 
 	int CheckEnemy( CBaseEntity *pEnemy );
-	void StartMonster( void );
+	virtual void StartMonster( void );
 	void VacateSlot( void );
 	void ScheduleChange( void );
 	void Killed( entvars_t *pevAttacker, int iGib );

@@ -43,6 +43,7 @@ typedef enum
 		SCHED_COMBAT_FACE,
 		SCHED_COMBAT_STAND,
 		SCHED_CHASE_ENEMY,
+		SCHED_CHASE_ENEMY_LKP,
 		SCHED_CHASE_ENEMY_FAILED,
 		SCHED_VICTORY_DANCE,
 		SCHED_TARGET_FACE,
@@ -72,8 +73,9 @@ typedef enum
 		SCHED_BARNACLE_VICTIM_CHOMP,
 		SCHED_AISCRIPT,
 		SCHED_FAIL,
+		SCHED_DREAD_NAME_PANIC, // used only by the dread name
 
-		LAST_COMMON_SCHEDULE			// Leave this at the bottom
+		LAST_COMMON_SCHEDULE			// Leave this at the bottom (24)
 } SCHEDULE_TYPE;
 
 //=========================================================

@@ -16,14 +16,21 @@ typedef	enum
 	BULLET_PLAYER_9MM, // glock
 	BULLET_PLAYER_MP5, // mp5
 	BULLET_PLAYER_357, // python
-	BULLET_PLAYER_BUCKSHOT, // shotgun
+	BULLET_PLAYER_SHOTGUN, // shotgun
 	BULLET_PLAYER_CROWBAR, // crowbar swipe
+
+	BULLET_PLAYER_KNIFE, // knife swipe
+	BULLET_PLAYER_SWORDCANE, // swordcane swipe
+	BULLET_PLAYER_REVOLVER, // revolver shot
+	BULLET_PLAYER_TOMMYGUN, // tommy gun burst
+	BULLET_PLAYER_RIFLE, // rifle shot
 
 	BULLET_MONSTER_9MM,
 	BULLET_MONSTER_MP5,
 	BULLET_MONSTER_12MM
 }Bullet;
 
+/*
 enum glock_e
 {
 	GLOCK_IDLE1 = 0,
@@ -36,6 +43,22 @@ enum glock_e
 	GLOCK_DRAW,
 	GLOCK_HOLSTER,
 	GLOCK_ADD_SILENCER
+};
+*/
+
+enum revolver_e
+{
+	REVOLVER_IDLE1 = 0,
+	REVOLVER_FIDGET1,
+	REVOLVER_FIRE,
+	REVOLVER_RELOAD,
+	REVOLVER_HOLSTER,
+	REVOLVER_DRAW,
+	REVOLVER_IDLE2,
+	REVOLVER_IDLE3,
+	REVOLVER_QUICKFIRE_READY,
+	REVOLVER_QUICKFIRE_SHOOT,
+	REVOLVER_QUICKFIRE_RELAX
 };
 
 enum shotgun_e
@@ -52,6 +75,39 @@ enum shotgun_e
 	SHOTGUN_IDLE_DEEP
 };
 
+enum rifle_e
+{
+	RIFLE_IDLE1 = 0,
+	RIFLE_FIRE1,
+	RIFLE_RELOAD,
+	RIFLE_CLOSEBREAK,
+	RIFLE_BREAK,
+	RIFLE_DRAW,
+	RIFLE_HOLSTER
+};
+
+enum tommygun_e
+{
+	TOMMYGUN_IDLE = 0,
+	TOMMYGUN_RELOAD,
+	TOMMYGUN_DRAW,
+	TOMMYGUN_FIRE1,
+	TOMMYGUN_FIRE2,
+	TOMMYGUN_EMPTY_IDLE
+};
+
+enum LightningGun_e
+{
+	LIGHTNING_GUN_IDLE = 0,
+	LIGHTNING_GUN_DRAW,
+	LIGHTNING_GUN_HOLSTER,
+	LIGHTNING_GUN_ZAP
+};
+
+#define LIGHTNING_PRIMARY_CHARGE_VOLUME	256// how loud lightning is while charging
+#define LIGHTNING_PRIMARY_FIRE_VOLUME	450// how loud lightning is when discharged
+
+/*
 enum mp5_e
 {
 	MP5_LONGIDLE = 0,
@@ -91,6 +147,7 @@ enum gauss_e
 	GAUSS_HOLSTER,
 	GAUSS_DRAW
 };
+*/
 
 void EV_HLDM_GunshotDecalTrace( pmtrace_t *pTrace, char *decalName );
 void EV_HLDM_DecalGunshot( pmtrace_t *pTrace, int iBulletType );

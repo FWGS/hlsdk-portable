@@ -175,6 +175,12 @@ int DispatchSpawn( edict_t *pent )
 				else if( !FStrEq( STRING( gpGlobals->mapname ), pGlobal->levelName ) )
 					pEntity->MakeDormant();	// Hasn't been moved to this level yet, wait but stay alive
 				// In this level & not dead, continue on as normal
+				//LRCT
+				else
+				{
+					ALERT(at_console, "Deleting %s \"%s\" (\"%s\")\n", STRING(pEntity->pev->classname), STRING(pEntity->pev->targetname), STRING(pEntity->pev->globalname));
+					return -1;
+				}
 			}
 			else
 			{
@@ -614,7 +620,8 @@ void CBaseEntity :: SetEternalThink( void )
 void CBaseEntity :: SetNextThink( float delay, BOOL correctSpeed )
 {
 	// now monsters use this method, too.
-	if (m_pMoveWith || m_pChildMoveWith || pev->flags & FL_MONSTER)
+	if( m_pMoveWith || m_pChildMoveWith )
+	//if (m_pMoveWith || m_pChildMoveWith || pev->flags & FL_MONSTER) // Cthulhu - this causes a level transition bug
 	{
 		// use the Assist system, so that thinking doesn't mess up movement.
 		if (pev->movetype == MOVETYPE_PUSH)
@@ -994,6 +1001,7 @@ CBaseEntity *CBaseEntity::Create( const char *szName, const Vector &vecOrigin, c
 		return NULL;
 	}
 	pEntity = Instance( pent );
+	pEntity->m_pAssistLink = 0;
 	pEntity->pev->owner = pentOwner;
 	pEntity->pev->origin = vecOrigin;
 	pEntity->pev->angles = vecAngles;

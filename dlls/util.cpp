@@ -284,7 +284,7 @@ TYPEDESCRIPTION	gEntvarsDescription[] =
 	DEFINE_ENTITY_FIELD( max_health, FIELD_FLOAT ),
 	DEFINE_ENTITY_FIELD( teleport_time, FIELD_TIME ),
 	DEFINE_ENTITY_FIELD( armortype, FIELD_FLOAT ),
-	DEFINE_ENTITY_FIELD( armorvalue, FIELD_FLOAT ),
+	DEFINE_ENTITY_FIELD( sanity, FIELD_FLOAT ),
 	DEFINE_ENTITY_FIELD( waterlevel, FIELD_INTEGER ),
 	DEFINE_ENTITY_FIELD( watertype, FIELD_INTEGER ),
 
@@ -1146,6 +1146,15 @@ void UTIL_SayTextAll( const char *pText, CBaseEntity *pEntity )
 	MESSAGE_BEGIN( MSG_ALL, gmsgSayText, NULL );
 		WRITE_BYTE( pEntity->entindex() );
 		WRITE_STRING( pText );
+	MESSAGE_END();
+}
+
+extern int gmsgReadBook;
+
+void UTIL_ReadBook( const char *szImage )
+{
+	MESSAGE_BEGIN( MSG_ALL, gmsgReadBook, NULL );
+		WRITE_STRING( szImage );
 	MESSAGE_END();
 }
 

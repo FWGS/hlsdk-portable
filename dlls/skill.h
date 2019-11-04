@@ -24,6 +24,8 @@ struct skilldata_t
 	int iSkillLevel; // game skill level
 
 	// Monster Health & Damage
+	float panicDuration;		// replace this for either small/med/large or individual monsters
+
 	float agruntHealth;
 	float agruntDmgPunch;
 
@@ -41,6 +43,11 @@ struct skilldata_t
 	float bullsquidDmgWhip;
 	float bullsquidDmgSpit;
 
+	float cthonianHealth;
+	float cthonianDmgBite;
+	float cthonianDmgWhip;
+	float cthonianDmgSpit;
+
 	float gargantuaHealth;
 	float gargantuaDmgSlash;
 	float gargantuaDmgFire;
@@ -51,13 +58,40 @@ struct skilldata_t
 	float headcrabHealth;
 	float headcrabDmgBite;
 
+	float gangsterHealth;
+	float gangsterDmgKick;
+	float gangsterShotgunPellets;
+
 	float hgruntHealth;
 	float hgruntDmgKick;
 	float hgruntShotgunPellets;
 	float hgruntGrenadeSpeed;
 
+	float cultistHealth;
+	float cultistDmgKick;
+	float cultistShotgunPellets;
+
 	float houndeyeHealth;
 	float houndeyeDmgBlast;
+
+	float greatraceHealth;
+	float greatraceDmgClaw;
+	float greatraceDmgClawrake;
+	float greatraceDmgZap;
+
+	float yodanHealth;
+	float yodanDmgClaw;
+	float yodanDmgClawrake;
+	float yodanDmgZap;
+
+	float serpentmanHealth;
+	float serpentmanDmgStaff;
+
+	float nightgauntHealth;
+	float nightgauntDmgSlash;
+
+	float priestHealth;
+	float priestDmgKnife;
 
 	float slaveHealth;
 	float slaveDmgClaw;
@@ -80,25 +114,65 @@ struct skilldata_t
 
 	float scientistHealth;
 
+	float butlerHealth;
+
+	float sirhenryHealth;
+	float sirhenryDmgZap;
+	float sirhenryDmgKnife;
+
 	float snarkHealth;
 	float snarkDmgBite;
 	float snarkDmgPop;
 
+	float formless_spawnHealth;
+	float formless_spawnDmgAttack;
+
+	float snakeHealth;
+	float snakeDmgBite;
+
+	float deeponeHealth;
+	float deeponeDmgOneSlash;
+	float deeponeDmgBothSlash;
+
+	float shamblerHealth;
+	float shamblerDmgOneSlash;
+	float shamblerDmgBothSlash;
+
+	float huntinghorrorHealth;
+	float huntinghorrorDmgBite;
+
 	float zombieHealth;
 	float zombieDmgOneSlash;
 	float zombieDmgBothSlash;
+
+	float ghoulHealth;
+	float ghoulDmgOneSlash;
+	float ghoulDmgBothSlash;
 
 	float turretHealth;
 	float miniturretHealth;
 	float sentryHealth;
 
 	// Player Weapons
+	float plrDmgSwordCane;
+	float plrDmgKnife;
+	float plrDmgRevolver;
+	float plrDmgShotgun;
+	float plrDmgTommyGun;
+	float plrDmgRifle;
+	float plrDmgDynamite;
+	float plrDmgMolotov;
+	float plrDmgLightningGun;
+	float plrDmgShrivellingNarrow;
+	float plrDmgShrivellingWide;
+	float plrDmgDrainLife;
+
+	// OLD WEAPONS
 	float plrDmgCrowbar;
 	float plrDmg9MM;
 	float plrDmg357;
 	float plrDmgMP5;
 	float plrDmgM203Grenade;
-	float plrDmgBuckshot;
 	float plrDmgCrossbowClient;
 	float plrDmgCrossbowMonster;
 	float plrDmgRPG;
@@ -107,18 +181,21 @@ struct skilldata_t
 	float plrDmgEgonWide;
 	float plrDmgHornet;
 	float plrDmgHandGrenade;
-	float plrDmgSatchel;
 	float plrDmgTripmine;
+	float plrDmgSatchel;
 	
 	// weapons shared by monsters
 	float monDmg9MM;
 	float monDmgMP5;
 	float monDmg12MM;
 	float monDmgHornet;
+	float monDmgLightningGun;
+	float monDmgShrivelling;
+	float monDmgDagger;
 
 	// health/suit charge
-	float suitchargerCapacity;
-	float batteryCapacity;
+	// float suitchargerCapacity;
+	// float batteryCapacity;
 	float healthchargerCapacity;
 	float healthkitCapacity;
 	float scientistHeal;

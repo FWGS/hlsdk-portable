@@ -31,7 +31,7 @@
 #include	"explode.h"
 #include	"func_break.h"
 #include	"scripted.h"
-
+#include	"spiral.h"
 //=========================================================
 // Gargantua Monster
 //=========================================================
@@ -64,18 +64,6 @@ int gStompSprite = 0, gGargGibModel = 0;
 void SpawnExplosion( Vector center, float randomRange, float time, int magnitude );
 
 class CSmoker;
-
-// Spiral Effect
-class CSpiral : public CBaseEntity
-{
-public:
-	void Spawn( void );
-	void Think( void );
-	int ObjectCaps( void ) { return FCAP_DONT_SAVE; }
-	static CSpiral *Create( const Vector &origin, float height, float radius, float duration );
-};
-
-LINK_ENTITY_TO_CLASS( streak_spiral, CSpiral )
 
 class CStomp : public CBaseEntity
 {
@@ -1296,69 +1284,6 @@ void CSmoker::Think( void )
 	if( pev->health > 0 )
 		SetNextThink( RANDOM_FLOAT(0.1, 0.2) );
 	else
-		UTIL_Remove( this );
-}
-
-void CSpiral::Spawn( void )
-{
-	pev->movetype = MOVETYPE_NONE;
-	SetNextThink( 0 );
-	pev->solid = SOLID_NOT;
-	UTIL_SetSize( pev, g_vecZero, g_vecZero );
-	pev->effects |= EF_NODRAW;
-	pev->angles = g_vecZero;
-}
-
-CSpiral *CSpiral::Create( const Vector &origin, float height, float radius, float duration )
-{
-	if( duration <= 0 )
-		return NULL;
-
-	CSpiral *pSpiral = GetClassPtr( (CSpiral *)NULL );
-	pSpiral->Spawn();
-	pSpiral->pev->dmgtime = pSpiral->m_fNextThink;
-	pSpiral->pev->origin = origin;
-	pSpiral->pev->scale = radius;
-	pSpiral->pev->dmg = height;
-	pSpiral->pev->speed = duration;
-	pSpiral->pev->health = 0;
-	pSpiral->pev->angles = g_vecZero;
-
-	return pSpiral;
-}
-
-#define SPIRAL_INTERVAL		0.1 //025
-
-void CSpiral::Think( void )
-{
-	float time = gpGlobals->time - pev->dmgtime;
-
-	while( time > SPIRAL_INTERVAL )
-	{
-		Vector position = pev->origin;
-		Vector direction = Vector(0,0,1);
-
-		float fraction = 1.0 / pev->speed;
-
-		float radius = ( pev->scale * pev->health ) * fraction;
-
-		position.z += ( pev->health * pev->dmg ) * fraction;
-		pev->angles.y = ( pev->health * 360 * 8 ) * fraction;
-		UTIL_MakeVectors( pev->angles );
-		position = position + gpGlobals->v_forward * radius;
-		direction = ( direction + gpGlobals->v_forward ).Normalize();
-
-		StreakSplash( position, Vector( 0, 0, 1 ), RANDOM_LONG( 8, 11 ), 20, RANDOM_LONG( 50, 150 ), 400 );
-
-		// Jeez, how many counters should this take ? :)
-		pev->dmgtime += SPIRAL_INTERVAL;
-		pev->health += SPIRAL_INTERVAL;
-		time -= SPIRAL_INTERVAL;
-	}
-
-	SetNextThink( 0 );
-
-	if( pev->health >= pev->speed )
 		UTIL_Remove( this );
 }
 

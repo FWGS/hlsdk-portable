@@ -45,6 +45,8 @@ public:
 	int ISoundMask( void );
 	void KeyValue( KeyValueData *pkvd );
 
+	// virtual int   ObjectCaps( void ) { return (CBaseMonster :: ObjectCaps() & ~FCAP_ACROSS_TRANSITION); }
+
 	virtual int		Save( CSave &save );
 	virtual int		Restore( CRestore &restore );
 	static	TYPEDESCRIPTION m_SaveData[];
@@ -84,7 +86,8 @@ void CGenericMonster::KeyValue( KeyValueData *pkvd )
 //=========================================================
 int CGenericMonster::Classify( void )
 {
-	return m_iClass?m_iClass:CLASS_PLAYER_ALLY;
+	// return m_iClass?m_iClass:CLASS_PLAYER_ALLY;
+	return m_iClass ? m_iClass : CLASS_NONE;
 }
 
 //=========================================================

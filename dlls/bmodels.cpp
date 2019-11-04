@@ -24,6 +24,7 @@
 #include "util.h"
 #include "cbase.h"
 #include "doors.h"
+#include "bmodels.h"
 #include "movewith.h"
 
 extern DLL_GLOBAL Vector		g_vecAttackDir;
@@ -52,19 +53,6 @@ Vector VecBModelOrigin( entvars_t* pevBModel )
 /*QUAKED func_wall (0 .5 .8) ?
 This is just a solid wall if not inhibited
 */
-class CFuncWall : public CBaseEntity
-{
-public:
-	void Spawn( void );
-	void Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
-
-	virtual STATE GetState( void ) { return pev->frame?STATE_ON:STATE_OFF; };
-
-	// Bmodels don't go across transitions
-	virtual int ObjectCaps( void ) { return CBaseEntity :: ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
-
-	int m_iStyle;
-};
 
 LINK_ENTITY_TO_CLASS( func_wall, CFuncWall )
 
@@ -260,6 +248,30 @@ void CFuncIllusionary::Spawn( void )
 	//	MAKE_STATIC(ENT(pev));
 }
 
+// -------------------------------------------------------------------------------
+//
+// Burning clip brush
+//
+// This brush will be solid for any entity who has the FL_BURNING_CLIP flag set
+// in pev->flags
+//
+// otherwise it will be invisible and not solid.  This can be used to keep
+// specific monsters out of certain areas
+//
+// -------------------------------------------------------------------------------
+
+LINK_ENTITY_TO_CLASS( func_burning_clip, CFuncBurningClip );
+
+void CFuncBurningClip::Spawn( void )
+{
+	CFuncWall::Spawn();
+
+	if( CVAR_GET_FLOAT( "showtriggers" ) == 0 )
+		pev->effects = EF_NODRAW;
+
+	pev->flags |= FL_BURNING_CLIP;
+}
+
 // =================== FUNC_SHINE ==============================================
 
 //LRC - shiny surfaces
@@ -331,12 +343,6 @@ void CFuncShine :: Think( void )
 // specific monsters out of certain areas
 //
 // -------------------------------------------------------------------------------
-class CFuncMonsterClip : public CFuncWall
-{
-public:
-	void Spawn( void );
-	void Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value ) {}		// Clear out func_wall's use function
-};
 
 LINK_ENTITY_TO_CLASS( func_monsterclip, CFuncMonsterClip )
 
