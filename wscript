@@ -40,6 +40,9 @@ def options(opt):
 	grp.add_option('--enable-poly-opt', action = 'store_true', dest = 'POLLY', default = False,
 		help = 'enable polyhedral optimization if possible [default: %default]')
 
+	grp.add_option('--enable-magx', action = 'store_true', dest = 'MAGX', default = False,
+		help = 'enable targetting for MotoMAGX phones [default: %default]')
+
 	opt.load('xcompile compiler_cxx compiler_c clang_compilation_database strip_on_install')
 
 	if sys.platform == 'win32':
@@ -58,13 +61,16 @@ def configure(conf):
 
 	conf.load('fwgslib reconfigure')
 
+	enforce_pic = True # modern defaults
+	valid_build_types = ['fastnative', 'fast', 'release', 'debug', 'nooptimize', 'sanitize', 'none']
+	conf.load('fwgslib reconfigure')
 	conf.start_msg('Build type')
 	if conf.options.BUILD_TYPE == None:
 		conf.end_msg('not set', color='RED')
 		conf.fatal('Please set a build type, for example "-T release"')
-	elif not conf.options.BUILD_TYPE in ['fast', 'release', 'debug', 'nooptimize', 'sanitize', 'none']:
+	elif not conf.options.BUILD_TYPE in valid_build_types:
 		conf.end_msg(conf.options.BUILD_TYPE, color='RED')
-		conf.fatal('Invalid build type. Valid are "debug", "release" or "none"')
+		conf.fatal('Invalid build type. Valid are: %s' % valid_build_types.join(', '))
 	conf.end_msg(conf.options.BUILD_TYPE)
 
 	# -march=native should not be used
@@ -86,6 +92,21 @@ def configure(conf):
 	if conf.env.DEST_OS == 'android':
 		conf.options.GOLDSRC = False
 		conf.env.SERVER_NAME = 'server' # can't be any other name, until specified
+	
+	conf.env.MAGX = conf.options.MAGX
+	if conf.options.MAGX:
+		enforce_pic = False
+	
+	if enforce_pic:
+		# Every static library must have fPIC
+		if conf.env.DEST_OS != 'win32' and '-fPIC' in conf.env.CFLAGS_cshlib:
+			conf.env.append_unique('CFLAGS_cstlib', '-fPIC')
+			conf.env.append_unique('CXXFLAGS_cxxstlib', '-fPIC')
+	else:
+		conf.env.CFLAGS_cshlib.remove('-fPIC')
+		conf.env.CXXFLAGS_cxxshlib.remove('-fPIC')
+		conf.env.CFLAGS_MACBUNDLE.remove('-fPIC')
+		conf.env.CXXFLAGS_MACBUNDLE.remove('-fPIC')
 
 	# We restrict 64-bit builds ONLY for Win/Linux/OSX running on Intel architecture
 	# Because compatibility with original GoldSrc
@@ -114,10 +135,19 @@ def configure(conf):
 			# disable thread-safe local static initialization for C++11 code, as it cause crashes on Windows XP
 			'msvc':    ['/D_USING_V110_SDK71_', '/Zi', '/FS', '/Zc:threadSafeInit-', '/MT'],
 			'clang':   ['-g', '-gdwarf-2', '-fvisibility=hidden'],
-			'gcc':     ['-g', '-fvisibility=hidden']
+			'gcc':     ['-g']
 		},
 		'fast': {
-			'msvc':    ['/O2', '/Oy'], #todo: check /GL /LTCG
+			'msvc':    ['/O2', '/Oy'],
+			'gcc': {
+				'3':       ['-O3', '-Os', '-funsafe-math-optimizations', '-fomit-frame-pointer'],
+				'default': ['-Ofast', '-funsafe-math-optimizations', '-funsafe-loop-optimizations', '-fomit-frame-pointer']
+			},
+			'clang':   ['-Ofast'],
+			'default': ['-O3']
+		},
+		'fastnative': {
+			'msvc':    ['/O2', '/Oy'],
 			'gcc':     ['-Ofast', '-march=native', '-funsafe-math-optimizations', '-funsafe-loop-optimizations', '-fomit-frame-pointer'],
 			'clang':   ['-Ofast', '-march=native'],
 			'default': ['-O3']
