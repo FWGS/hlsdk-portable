@@ -242,8 +242,8 @@ def configure(conf):
 	if conf.check_cc(header_name='tgmath.h', mandatory=False):
 		tgmath_usable = conf.check_cc(fragment='''#include<tgmath.h>
 			int main(void){ return (int)sin(2.0f); }''',
-			msg='Checking if tgmath.h is usable', mandatory=False):
-		conf.define_cond('HAVE_TGMATH_H', tgmath_usable)	
+			msg='Checking if tgmath.h is usable', mandatory=False)
+		conf.define_cond('HAVE_TGMATH_H', tgmath_usable)
 	else:
 		conf.undefine('HAVE_TGMATH_H')
 
