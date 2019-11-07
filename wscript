@@ -89,6 +89,11 @@ def configure(conf):
 		conf.load('msvc msdev')
 	conf.load('xcompile compiler_c compiler_cxx strip_on_install')
 
+	try:
+		conf.env.CC_VERSION[0]
+	except IndexError:
+		conf.env.CC_VERSION = (0, )
+
 	if conf.env.DEST_OS == 'android':
 		conf.options.GOLDSRC = False
 		conf.env.SERVER_NAME = 'server' # can't be any other name, until specified
@@ -192,8 +197,8 @@ def configure(conf):
 		'-Werror=declaration-after-statement'
 	]
 
-	linkflags = conf.get_flags_by_type(linker_flags, conf.options.BUILD_TYPE, conf.env.COMPILER_CC)
-	cflags    = conf.get_flags_by_type(compiler_c_cxx_flags, conf.options.BUILD_TYPE, conf.env.COMPILER_CC)
+	linkflags = conf.get_flags_by_type(linker_flags, conf.options.BUILD_TYPE, conf.env.COMPILER_CC, conf.env.CC_VERSION[0])
+	cflags    = conf.get_flags_by_type(compiler_c_cxx_flags, conf.options.BUILD_TYPE, conf.env.COMPILER_CC, conf.env.CC_VERSION[0])
 
 	# Here we don't differentiate C or C++ flags
 	if conf.options.LTO:
