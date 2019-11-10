@@ -133,13 +133,13 @@ void CRecharge::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE use
 	{
 		if( m_flSoundTime <= gpGlobals->time )
 		{
-			m_flSoundTime = gpGlobals->time + 0.62;
+			m_flSoundTime = gpGlobals->time + 0.62f;
 			EMIT_SOUND( ENT( pev ), CHAN_ITEM, "items/suitchargeno1.wav", 0.85, ATTN_NORM );
 		}
 		return;
 	}
 
-	SetNextThink( 0.25 );
+	SetNextThink( 0.25f );
 	SetThink( &CRecharge::Off );
 
 	// Time to recharge yet?
@@ -153,7 +153,7 @@ void CRecharge::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE use
 	{
 		m_iOn++;
 		EMIT_SOUND( ENT( pev ), CHAN_ITEM, "items/suitchargeok1.wav", 0.85, ATTN_NORM );
-		m_flSoundTime = 0.56 + gpGlobals->time;
+		m_flSoundTime = 0.56f + gpGlobals->time;
 	}
 
 	if( ( m_iOn == 1 ) && ( m_flSoundTime <= gpGlobals->time ) )
@@ -173,7 +173,7 @@ void CRecharge::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE use
 	}
 
 	// govern the rate of charge
-	m_flNextCharge = gpGlobals->time + 0.1;
+	m_flNextCharge = gpGlobals->time + 0.1f;
 }
 
 void CRecharge::Recharge( void )

@@ -13,6 +13,12 @@ top = '.'
 
 Context.Context.line_just = 55 # should fit for everything on 80x26
 
+@Configure.conf
+def get_taskgen_count(self):
+	try: idx = self.tg_idx_count
+	except: idx = 0 # don't set tg_idx_count to not increase counter
+	return idx
+
 def options(opt):
 	grp = opt.add_option_group('Common options')
 
@@ -27,21 +33,23 @@ def options(opt):
 
 	grp.add_option('--enable-goldsrc-support', action = 'store_true', dest = 'GOLDSRC', default = False,
 		help = 'enable GoldSource engine support [default: %default]')
-	
+
 	grp.add_option('--enable-lto', action = 'store_true', dest = 'LTO', default = False,
 		help = 'enable Link Time Optimization [default: %default]')
 
 	grp.add_option('--enable-poly-opt', action = 'store_true', dest = 'POLLY', default = False,
 		help = 'enable polyhedral optimization if possible [default: %default]')
 
-
-	opt.recurse('cl_dll dlls')
+	grp.add_option('--enable-magx', action = 'store_true', dest = 'MAGX', default = False,
+		help = 'enable targetting for MotoMAGX phones [default: %default]')
 
 	opt.load('xcompile compiler_cxx compiler_c clang_compilation_database strip_on_install')
+
 	if sys.platform == 'win32':
 		opt.load('msvc msdev msvs')
-	opt.load('reconfigure')
 
+	opt.load('reconfigure subproject')
+	opt.add_subproject(["cl_dll", "dlls"])
 
 def configure(conf):
 	# Configuration
@@ -53,13 +61,16 @@ def configure(conf):
 
 	conf.load('fwgslib reconfigure')
 
+	enforce_pic = True # modern defaults
+	valid_build_types = ['fastnative', 'fast', 'release', 'debug', 'nooptimize', 'sanitize', 'none']
+	conf.load('fwgslib reconfigure')
 	conf.start_msg('Build type')
 	if conf.options.BUILD_TYPE == None:
 		conf.end_msg('not set', color='RED')
 		conf.fatal('Please set a build type, for example "-T release"')
-	elif not conf.options.BUILD_TYPE in ['fast', 'release', 'debug', 'nooptimize', 'sanitize', 'none']:
+	elif not conf.options.BUILD_TYPE in valid_build_types:
 		conf.end_msg(conf.options.BUILD_TYPE, color='RED')
-		conf.fatal('Invalid build type. Valid are "debug", "release" or "none"')
+		conf.fatal('Invalid build type. Valid are: %s' % valid_build_types.join(', '))
 	conf.end_msg(conf.options.BUILD_TYPE)
 
 	# -march=native should not be used
@@ -78,9 +89,29 @@ def configure(conf):
 		conf.load('msvc msdev')
 	conf.load('xcompile compiler_c compiler_cxx strip_on_install')
 
+	try:
+		conf.env.CC_VERSION[0]
+	except IndexError:
+		conf.env.CC_VERSION = (0, )
+
 	if conf.env.DEST_OS == 'android':
 		conf.options.GOLDSRC = False
 		conf.env.SERVER_NAME = 'server' # can't be any other name, until specified
+	
+	conf.env.MAGX = conf.options.MAGX
+	if conf.options.MAGX:
+		enforce_pic = False
+	
+	if enforce_pic:
+		# Every static library must have fPIC
+		if conf.env.DEST_OS != 'win32' and '-fPIC' in conf.env.CFLAGS_cshlib:
+			conf.env.append_unique('CFLAGS_cstlib', '-fPIC')
+			conf.env.append_unique('CXXFLAGS_cxxstlib', '-fPIC')
+	else:
+		conf.env.CFLAGS_cshlib.remove('-fPIC')
+		conf.env.CXXFLAGS_cxxshlib.remove('-fPIC')
+		conf.env.CFLAGS_MACBUNDLE.remove('-fPIC')
+		conf.env.CXXFLAGS_MACBUNDLE.remove('-fPIC')
 
 	# We restrict 64-bit builds ONLY for Win/Linux/OSX running on Intel architecture
 	# Because compatibility with original GoldSrc
@@ -109,10 +140,19 @@ def configure(conf):
 			# disable thread-safe local static initialization for C++11 code, as it cause crashes on Windows XP
 			'msvc':    ['/D_USING_V110_SDK71_', '/Zi', '/FS', '/Zc:threadSafeInit-', '/MT'],
 			'clang':   ['-g', '-gdwarf-2', '-fvisibility=hidden'],
-			'gcc':     ['-g', '-fvisibility=hidden']
+			'gcc':     ['-g']
 		},
 		'fast': {
-			'msvc':    ['/O2', '/Oy'], #todo: check /GL /LTCG
+			'msvc':    ['/O2', '/Oy'],
+			'gcc': {
+				'3':       ['-O3', '-Os', '-funsafe-math-optimizations', '-fomit-frame-pointer'],
+				'default': ['-Ofast', '-funsafe-math-optimizations', '-funsafe-loop-optimizations', '-fomit-frame-pointer']
+			},
+			'clang':   ['-Ofast'],
+			'default': ['-O3']
+		},
+		'fastnative': {
+			'msvc':    ['/O2', '/Oy'],
 			'gcc':     ['-Ofast', '-march=native', '-funsafe-math-optimizations', '-funsafe-loop-optimizations', '-fomit-frame-pointer'],
 			'clang':   ['-Ofast', '-march=native'],
 			'default': ['-O3']
@@ -157,8 +197,8 @@ def configure(conf):
 		'-Werror=declaration-after-statement'
 	]
 
-	linkflags = conf.get_flags_by_type(linker_flags, conf.options.BUILD_TYPE, conf.env.COMPILER_CC)
-	cflags    = conf.get_flags_by_type(compiler_c_cxx_flags, conf.options.BUILD_TYPE, conf.env.COMPILER_CC)
+	linkflags = conf.get_flags_by_type(linker_flags, conf.options.BUILD_TYPE, conf.env.COMPILER_CC, conf.env.CC_VERSION[0])
+	cflags    = conf.get_flags_by_type(compiler_c_cxx_flags, conf.options.BUILD_TYPE, conf.env.COMPILER_CC, conf.env.CC_VERSION[0])
 
 	# Here we don't differentiate C or C++ flags
 	if conf.options.LTO:
@@ -198,6 +238,15 @@ def configure(conf):
 	conf.env.append_unique('CXXFLAGS', cxxflags)
 	conf.env.append_unique('LINKFLAGS', linkflags)
 
+	# check if we can use C99 tgmath
+	if conf.check_cc(header_name='tgmath.h', mandatory=False):
+		tgmath_usable = conf.check_cc(fragment='''#include<tgmath.h>
+			int main(void){ return (int)sin(2.0f); }''',
+			msg='Checking if tgmath.h is usable', mandatory=False)
+		conf.define_cond('HAVE_TGMATH_H', tgmath_usable)
+	else:
+		conf.undefine('HAVE_TGMATH_H')
+
 	if conf.env.COMPILER_CC == 'msvc':
 		conf.define('_CRT_SECURE_NO_WARNINGS', 1)
 		conf.define('_CRT_NONSTDC_NO_DEPRECATE', 1)
@@ -214,10 +263,10 @@ def configure(conf):
 
 	conf.define('CLIENT_WEAPONS', '1')
 
-	conf.recurse('cl_dll dlls')
+	conf.add_subproject(["cl_dll", "dlls"])
 
 def build(bld):
-	bld.recurse('cl_dll dlls')
-		
-		
-	
+	bld.add_subproject(["cl_dll", "dlls"])
+
+
+

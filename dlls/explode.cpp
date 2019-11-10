@@ -39,21 +39,21 @@ LINK_ENTITY_TO_CLASS( spark_shower, CShower )
 
 void CShower::Spawn( void )
 {
-	pev->velocity = RANDOM_FLOAT( 200, 300 ) * pev->angles;
-	pev->velocity.x += RANDOM_FLOAT( -100.f, 100.f );
-	pev->velocity.y += RANDOM_FLOAT( -100.f, 100.f );
+	pev->velocity = RANDOM_FLOAT( 200.0f, 300.0f ) * pev->angles;
+	pev->velocity.x += RANDOM_FLOAT( -100.0f, 100.0f );
+	pev->velocity.y += RANDOM_FLOAT( -100.0f, 100.0f );
 	if( pev->velocity.z >= 0 )
-		pev->velocity.z += 200;
+		pev->velocity.z += 200.0f;
 	else
-		pev->velocity.z -= 200;
+		pev->velocity.z -= 200.0f;
 	pev->movetype = MOVETYPE_BOUNCE;
 	pev->gravity = 0.5;
-	SetNextThink( 0.1 );
+	SetNextThink( 0.1f );
 	pev->solid = SOLID_NOT;
 	SET_MODEL( edict(), "models/grenade.mdl" );	// Need a model, just use the grenade, we don't draw it anyway
 	UTIL_SetSize( pev, g_vecZero, g_vecZero );
 	pev->effects |= EF_NODRAW;
-	pev->speed = RANDOM_FLOAT( 0.5, 1.5 );
+	pev->speed = RANDOM_FLOAT( 0.5f, 1.5f );
 
 	pev->angles = g_vecZero;
 }
@@ -62,9 +62,9 @@ void CShower::Think( void )
 {
 	UTIL_Sparks( pev->origin );
 
-	pev->speed -= 0.1;
-	if( pev->speed > 0 )
-		SetNextThink( 0.1 );
+	pev->speed -= 0.1f;
+	if( pev->speed > 0.0f )
+		SetNextThink( 0.1f );
 	else
 		UTIL_Remove( this );
 	pev->flags &= ~FL_ONGROUND;
@@ -73,12 +73,12 @@ void CShower::Think( void )
 void CShower::Touch( CBaseEntity *pOther )
 {
 	if( pev->flags & FL_ONGROUND )
-		pev->velocity = pev->velocity * 0.1;
+		pev->velocity = pev->velocity * 0.1f;
 	else
-		pev->velocity = pev->velocity * 0.6;
+		pev->velocity = pev->velocity * 0.6f;
 
-	if( ( pev->velocity.x * pev->velocity.x + pev->velocity.y * pev->velocity.y ) < 10.0 )
-		pev->speed = 0;
+	if( ( pev->velocity.x * pev->velocity.x + pev->velocity.y * pev->velocity.y ) < 10.0f )
+		pev->speed = 0.0f;
 }
 
 class CEnvExplosion : public CBaseMonster
@@ -131,17 +131,17 @@ void CEnvExplosion::Spawn( void )
 	*/
 
 	float flSpriteScale;
-	flSpriteScale = ( m_iMagnitude - 50 ) * 0.6;
+	flSpriteScale = ( m_iMagnitude - 50 ) * 0.6f;
 
 	/*
-	if( flSpriteScale > 50 )
+	if( flSpriteScale > 50.0f )
 	{
-		flSpriteScale = 50;
+		flSpriteScale = 50.0f;
 	}
 	*/
-	if( flSpriteScale < 10 )
+	if( flSpriteScale < 10.0f )
 	{
-		flSpriteScale = 10;
+		flSpriteScale = 10.0f;
 	}
 
 	m_spriteScale = (int)flSpriteScale;
@@ -169,9 +169,9 @@ void CEnvExplosion::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE
 	UTIL_TraceLine ( vecSpot + Vector( 0, 0, 8 ), vecSpot + Vector ( 0, 0, -32 ),  ignore_monsters, ENT(pev), & tr);
 
 	// Pull out of the wall a bit
-	if( tr.flFraction != 1.0 )
+	if( tr.flFraction != 1.0f )
 	{
-		pev->origin = tr.vecEndPos + ( tr.vecPlaneNormal * ( m_iMagnitude - 24 ) * 0.6 );
+		pev->origin = tr.vecEndPos + ( tr.vecPlaneNormal * ( m_iMagnitude - 24 ) * 0.6f );
 	}
 	else
 	{
@@ -181,7 +181,7 @@ void CEnvExplosion::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE
 	// draw decal
 	if( !( pev->spawnflags & SF_ENVEXPLOSION_NODECAL ) )
 	{
-		if( RANDOM_FLOAT( 0, 1 ) < 0.5 )
+		if( RANDOM_FLOAT( 0.0f, 1.0f ) < 0.5f )
 		{
 			UTIL_DecalTrace( &tr, DECAL_SCORCH1 );
 		}
@@ -226,7 +226,7 @@ void CEnvExplosion::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE
 	}
 
 	SetThink( &CEnvExplosion::Smoke );
-	SetNextThink( 0.3 );
+	SetNextThink( 0.3f );
 
 	// draw sparks
 	if( !( pev->spawnflags & SF_ENVEXPLOSION_NOSPARKS ) )

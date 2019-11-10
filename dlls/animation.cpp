@@ -226,8 +226,8 @@ void GetSequenceInfo( void *pmodel, entvars_t *pev, float *pflFrameRate, float *
 
 	if( pev->sequence >= pstudiohdr->numseq )
 	{
-		*pflFrameRate = 0.0;
-		*pflGroundSpeed = 0.0;
+		*pflFrameRate = 0.0f;
+		*pflGroundSpeed = 0.0f;
 		return;
 	}
 
@@ -235,14 +235,14 @@ void GetSequenceInfo( void *pmodel, entvars_t *pev, float *pflFrameRate, float *
 
 	if( pseqdesc->numframes > 1 )
 	{
-		*pflFrameRate = 256 * pseqdesc->fps / ( pseqdesc->numframes - 1 );
+		*pflFrameRate = 256.0f * pseqdesc->fps / ( pseqdesc->numframes - 1 );
 		*pflGroundSpeed = sqrt( pseqdesc->linearmovement[0] * pseqdesc->linearmovement[0] + pseqdesc->linearmovement[1] * pseqdesc->linearmovement[1] + pseqdesc->linearmovement[2] * pseqdesc->linearmovement[2] );
 		*pflGroundSpeed = *pflGroundSpeed * pseqdesc->fps / ( pseqdesc->numframes - 1 );
 	}
 	else
 	{
-		*pflFrameRate = 256.0;
-		*pflGroundSpeed = 0.0;
+		*pflFrameRate = 256.0f;
+		*pflGroundSpeed = 0.0f;
 	}
 }
 
@@ -279,13 +279,13 @@ int GetAnimationEvent( void *pmodel, entvars_t *pev, MonsterEvent_t *pMonsterEve
 
 	if( pseqdesc->numframes > 1 )
 	{
-		flStart *= ( pseqdesc->numframes - 1 ) / 256.0;
-		flEnd *= (pseqdesc->numframes - 1) / 256.0;
+		flStart *= ( pseqdesc->numframes - 1 ) / 256.0f;
+		flEnd *= (pseqdesc->numframes - 1) / 256.0f;
 	}
 	else
 	{
-		flStart = 0;
-		flEnd = 1.0;
+		flStart = 0.0f;
+		flEnd = 1.0f;
 	}
 
 	for( ; index < pseqdesc->numevents; index++ )
@@ -333,19 +333,19 @@ float SetController( void *pmodel, entvars_t *pev, int iController, float flValu
 			flValue = -flValue;
 
 		// does the controller not wrap?
-		if( pbonecontroller->start + 359.0 >= pbonecontroller->end )
+		if( pbonecontroller->start + 359.0f >= pbonecontroller->end )
 		{
-			if( flValue > ( ( pbonecontroller->start + pbonecontroller->end ) / 2.0 ) + 180 )
-				flValue = flValue - 360;
-			if( flValue < ( ( pbonecontroller->start + pbonecontroller->end) / 2.0 ) - 180 )
-				flValue = flValue + 360;
+			if( flValue > ( ( pbonecontroller->start + pbonecontroller->end ) * 0.5f ) + 180.0f )
+				flValue = flValue - 360.0f;
+			if( flValue < ( ( pbonecontroller->start + pbonecontroller->end ) * 0.5f ) - 180.0f )
+				flValue = flValue + 360.0f;
 		}
 		else
 		{
-			if( flValue > 360 )
-				flValue = flValue - (int)( flValue / 360.0 ) * 360.0;
-			else if( flValue < 0 )
-				flValue = flValue + (int)( ( flValue / -360.0 ) + 1 ) * 360.0;
+			if( flValue > 360.0f )
+				flValue = flValue - (int)( flValue / 360.0f ) * 360.0f;
+			else if( flValue < 0.0f )
+				flValue = flValue + (int)( ( flValue / -360.0f ) + 1.0f ) * 360.0f;
 		}
 	}
 
@@ -357,7 +357,7 @@ float SetController( void *pmodel, entvars_t *pev, int iController, float flValu
 		setting = 255;
 	pev->controller[iController] = setting;
 
-	return setting * ( 1.0 / 255.0 ) * (pbonecontroller->end - pbonecontroller->start ) + pbonecontroller->start;
+	return setting * ( 1.0f / 255.0f ) * (pbonecontroller->end - pbonecontroller->start ) + pbonecontroller->start;
 }
 
 float SetBlending( void *pmodel, entvars_t *pev, int iBlender, float flValue )
@@ -382,12 +382,12 @@ float SetBlending( void *pmodel, entvars_t *pev, int iBlender, float flValue )
 			flValue = -flValue;
 
 		// does the controller not wrap?
-		if( pseqdesc->blendstart[iBlender] + 359.0 >= pseqdesc->blendend[iBlender] )
+		if( pseqdesc->blendstart[iBlender] + 359.0f >= pseqdesc->blendend[iBlender] )
 		{
-			if( flValue > ( ( pseqdesc->blendstart[iBlender] + pseqdesc->blendend[iBlender] ) / 2.0 ) + 180 )
-				flValue = flValue - 360;
-			if( flValue < ( ( pseqdesc->blendstart[iBlender] + pseqdesc->blendend[iBlender] ) / 2.0 ) - 180 )
-				flValue = flValue + 360;
+			if( flValue > ( ( pseqdesc->blendstart[iBlender] + pseqdesc->blendend[iBlender] ) * 0.5f ) + 180.0f )
+				flValue = flValue - 360.0f;
+			if( flValue < ( ( pseqdesc->blendstart[iBlender] + pseqdesc->blendend[iBlender] ) * 0.5f ) - 180.0f )
+				flValue = flValue + 360.0f;
 		}
 	}
 
@@ -400,7 +400,7 @@ float SetBlending( void *pmodel, entvars_t *pev, int iBlender, float flValue )
 
 	pev->blending[iBlender] = setting;
 
-	return setting * ( 1.0 / 255.0 ) * ( pseqdesc->blendend[iBlender] - pseqdesc->blendstart[iBlender] ) + pseqdesc->blendstart[iBlender];
+	return setting * ( 1.0f / 255.0f ) * ( pseqdesc->blendend[iBlender] - pseqdesc->blendstart[iBlender] ) + pseqdesc->blendstart[iBlender];
 }
 
 int FindTransition( void *pmodel, int iEndingAnim, int iGoalAnim, int *piDir )
