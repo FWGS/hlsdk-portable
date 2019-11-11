@@ -467,7 +467,7 @@ BOOL CISlave::CheckRangeAttack2( float flDot, float flDist )
 		TraceResult tr;
 
 		UTIL_TraceLine( EyePosition(), pEntity->EyePosition(), ignore_monsters, ENT( pev ), &tr );
-		if( tr.flFraction == 1.0 || tr.pHit == pEntity->edict() )
+		if( tr.flFraction == 1.0f || tr.pHit == pEntity->edict() )
 		{
 			if( pEntity->pev->deadflag == DEAD_DEAD )
 			{
@@ -723,7 +723,7 @@ void CISlave::ArmBeam( int side )
 	}
 
 	// Couldn't find anything close enough
-	if( flDist == 1.0 )
+	if( flDist == 1.0f )
 		return;
 
 	DecalGunshot( &tr, BULLET_PLAYER_CROWBAR );

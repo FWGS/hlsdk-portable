@@ -105,7 +105,7 @@ BOOL CHgun::Deploy()
 #else
 	if( !g_pGameRules->IsMultiplayer() )
 #endif
-		EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/suleuse.wav", 1.0, ATTN_NORM, 0, 100 );
+		EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/suleuse.wav", 1.0f, ATTN_NORM, 0, 100 );
 
 	return DefaultDeploy( "models/v_hgun.mdl", "models/p_hgun.mdl", HGUN_DEPLOY, "mp5" );
 }
@@ -167,16 +167,16 @@ void CHgun::PrimaryAttack()
 #else
 	flags = 0;
 #endif
-	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usHornetFire, 0.0, g_vecZero, g_vecZero, vecDir.x, vecDir.y, 0, 0, 0, 0 );
+	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usHornetFire, 0.0f, g_vecZero, g_vecZero, vecDir.x, vecDir.y, 0, 0, 0, 0 );
 
 	if( !m_iClip && m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0 )
 		// HEV suit - indicate out of ammo condition
 		m_pPlayer->SetSuitUpdate( "!HEV_AMO0", FALSE, 0 );
 
-	m_flNextPrimaryAttack = GetNextAttackDelay( 0.05 );
+	m_flNextPrimaryAttack = GetNextAttackDelay( 0.05f );
 
 	if( m_flNextPrimaryAttack < UTIL_WeaponTimeBase() )
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.05;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.05f;
 }
 
 void CHgun::Reload( void )
@@ -184,7 +184,7 @@ void CHgun::Reload( void )
 	if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0 || m_iClip == HORNETGUN_MAX_CLIP )
 		return;
 
-	EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/rotreload.wav", 1.0, ATTN_NORM, 0, 100 );
+	EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/rotreload.wav", 1.0f, ATTN_NORM, 0, 100 );
 	DefaultReload( HORNETGUN_MAX_CLIP, HGUN_RELOAD, 4.5f );
 }
 #endif

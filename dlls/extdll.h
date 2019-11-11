@@ -51,19 +51,26 @@
 #ifndef TRUE
 #define TRUE (!FALSE)
 #endif
+#include <limits.h>
+#include <stdarg.h>
 typedef unsigned int ULONG;
 typedef unsigned char BYTE;
 typedef int BOOL;
 #define MAX_PATH PATH_MAX
-#include <limits.h>
-#include <stdarg.h>
+#ifndef PATH_MAX
+#define PATH_MAX 4096
+#endif
 #endif //_WIN32
 
 // Misc C-runtime library headers
-#include "stdio.h"
-#include "stdlib.h"
-#include "stddef.h"
-#include "math.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <stddef.h>
+#include <cmath>
+
+#ifndef M_PI_F
+#define M_PI_F          (float)M_PI
+#endif
 
 #if defined(__LP64__) || defined(__LLP64__) || defined(_WIN64) || (defined(__x86_64__) && !defined(__ILP32__) ) || defined(_M_X64) || defined(__ia64) || defined (_M_IA64) || defined(__aarch64__) || defined(__powerpc64__)
   #define XASH_64BIT
