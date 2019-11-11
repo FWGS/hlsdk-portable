@@ -87,7 +87,7 @@ def configure(conf):
 	conf.env.MSVC_TARGETS = ['x86'] # explicitly request x86 target for MSVC
 	if sys.platform == 'win32':
 		conf.load('msvc msdev')
-	conf.load('xcompile compiler_c compiler_cxx strip_on_install library_naming')
+	conf.load('xcompile compiler_c compiler_cxx strip_on_install')
 
 	try:
 		conf.env.CC_VERSION[0]
@@ -122,7 +122,7 @@ def configure(conf):
 	else:
 		conf.env.BIT32_ALLOW64 = True
 	conf.env.BIT32_MANDATORY = not conf.env.BIT32_ALLOW64
-	conf.load('force_32bit')
+	conf.load('force_32bit library_naming')
 
 	linker_flags = {
 		'common': {
