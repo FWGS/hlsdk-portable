@@ -87,7 +87,7 @@ def configure(conf):
 	conf.env.MSVC_TARGETS = ['x86'] # explicitly request x86 target for MSVC
 	if sys.platform == 'win32':
 		conf.load('msvc msdev')
-	conf.load('xcompile compiler_c compiler_cxx strip_on_install')
+	conf.load('xcompile compiler_c compiler_cxx strip_on_install library_naming')
 
 	try:
 		conf.env.CC_VERSION[0]
