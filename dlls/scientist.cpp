@@ -76,7 +76,7 @@ IMPLEMENT_SAVERESTORE( CScientist, CTalkMonster )
 Task_t	tlFollow[] =
 {
 	{ TASK_SET_FAIL_SCHEDULE, (float)SCHED_CANT_FOLLOW },	// If you fail, bail out of follow
-	{ TASK_MOVE_TO_TARGET_RANGE, (float)128 },	// Move within 128 of target ent (client)
+	{ TASK_MOVE_TO_TARGET_RANGE, 128.0f },	// Move within 128 of target ent (client)
 	//{ TASK_SET_SCHEDULE, (float)SCHED_TARGET_FACE },
 };
 
@@ -98,7 +98,7 @@ Schedule_t slFollow[] =
 Task_t tlFollowScared[] =
 {
 	{ TASK_SET_FAIL_SCHEDULE, (float)SCHED_TARGET_CHASE },// If you fail, follow normally
-	{ TASK_MOVE_TO_TARGET_RANGE_SCARED, (float)128 },	// Move within 128 of target ent (client)
+	{ TASK_MOVE_TO_TARGET_RANGE_SCARED, 128.0f },	// Move within 128 of target ent (client)
 	//{ TASK_SET_SCHEDULE, (float)SCHED_TARGET_FACE_SCARED },
 };
 
@@ -118,7 +118,7 @@ Schedule_t slFollowScared[] =
 
 Task_t tlFaceTargetScared[] =
 {
-	{ TASK_FACE_TARGET, (float)0 },
+	{ TASK_FACE_TARGET, 0.0f },
 	{ TASK_SET_ACTIVITY, (float)ACT_CROUCHIDLE },
 	{ TASK_SET_SCHEDULE, (float)SCHED_TARGET_CHASE_SCARED },
 };
@@ -137,7 +137,7 @@ Schedule_t slFaceTargetScared[] =
 
 Task_t tlStopFollowing[] =
 {
-	{ TASK_CANT_FOLLOW, (float)0 },
+	{ TASK_CANT_FOLLOW, 0.0f },
 };
 
 Schedule_t slStopFollowing[] =
@@ -153,12 +153,12 @@ Schedule_t slStopFollowing[] =
 
 Task_t tlHeal[] =
 {
-	{ TASK_MOVE_TO_TARGET_RANGE, (float)50 },	// Move within 60 of target ent (client)
+	{ TASK_MOVE_TO_TARGET_RANGE, 50.0f },	// Move within 60 of target ent (client)
 	{ TASK_SET_FAIL_SCHEDULE, (float)SCHED_TARGET_CHASE },	// If you fail, catch up with that guy! (change this to put syringe away and then chase)
-	{ TASK_FACE_IDEAL, (float)0 },
-	{ TASK_SAY_HEAL, (float)0 },
+	{ TASK_FACE_IDEAL, 0.0f },
+	{ TASK_SAY_HEAL, 0.0f },
 	{ TASK_PLAY_SEQUENCE_FACE_TARGET, (float)ACT_ARM },			// Whip out the needle
-	{ TASK_HEAL, (float)0 },	// Put it in the player
+	{ TASK_HEAL, 0.0f },	// Put it in the player
 	{ TASK_PLAY_SEQUENCE_FACE_TARGET, (float)ACT_DISARM },			// Put away the needle
 };
 
@@ -175,8 +175,8 @@ Schedule_t slHeal[] =
 
 Task_t tlFaceTarget[] =
 {
-	{ TASK_STOP_MOVING, (float)0 },
-	{ TASK_FACE_TARGET, (float)0 },
+	{ TASK_STOP_MOVING, 0.0f },
+	{ TASK_FACE_TARGET, 0.0f },
 	{ TASK_SET_ACTIVITY, (float)ACT_IDLE },
 	{ TASK_SET_SCHEDULE, (float)SCHED_TARGET_CHASE },
 };
@@ -197,9 +197,9 @@ Schedule_t slFaceTarget[] =
 
 Task_t tlSciPanic[] =
 {
-	{ TASK_STOP_MOVING, (float)0 },
-	{ TASK_FACE_ENEMY, (float)0 },
-	{ TASK_SCREAM, (float)0 },
+	{ TASK_STOP_MOVING, 0.0f },
+	{ TASK_FACE_ENEMY, 0.0f },
+	{ TASK_SCREAM, 0.0f },
 	{ TASK_PLAY_SEQUENCE_FACE_ENEMY, (float)ACT_EXCITED },	// This is really fear-stricken excitement
 	{ TASK_SET_ACTIVITY, (float)ACT_IDLE },
 };
@@ -219,7 +219,7 @@ Task_t tlIdleSciStand[] =
 {
 	{ TASK_STOP_MOVING, 0 },
 	{ TASK_SET_ACTIVITY, (float)ACT_IDLE },
-	{ TASK_WAIT, (float)2 }, // repick IDLESTAND every two seconds.
+	{ TASK_WAIT, 2.0f }, // repick IDLESTAND every two seconds.
 	{ TASK_TLK_HEADRESET, (float)0 }, // reset head position
 };
 
@@ -250,10 +250,10 @@ Schedule_t slIdleSciStand[] =
 Task_t tlScientistCover[] =
 {
 	{ TASK_SET_FAIL_SCHEDULE, (float)SCHED_PANIC },		// If you fail, just panic!
-	{ TASK_STOP_MOVING, (float)0 },
-	{ TASK_FIND_COVER_FROM_ENEMY, (float)0 },
-	{ TASK_RUN_PATH_SCARED, (float)0 },
-	{ TASK_TURN_LEFT, (float)179 },
+	{ TASK_STOP_MOVING, 0.0f },
+	{ TASK_FIND_COVER_FROM_ENEMY, 0.0f },
+	{ TASK_RUN_PATH_SCARED, 0.0f },
+	{ TASK_TURN_LEFT, 179.0f },
 	{ TASK_SET_SCHEDULE, (float)SCHED_HIDE },
 };
 
@@ -271,10 +271,10 @@ Schedule_t slScientistCover[] =
 Task_t tlScientistHide[] =
 {
 	{ TASK_SET_FAIL_SCHEDULE, (float)SCHED_PANIC },		// If you fail, just panic!
-	{ TASK_STOP_MOVING, (float)0 },
+	{ TASK_STOP_MOVING, 0.0f },
 	{ TASK_PLAY_SEQUENCE, (float)ACT_CROUCH },
 	{ TASK_SET_ACTIVITY, (float)ACT_CROUCHIDLE },	// FIXME: This looks lame
-	{ TASK_WAIT_RANDOM, (float)10.0 },
+	{ TASK_WAIT_RANDOM, 10.0f },
 };
 
 Schedule_t slScientistHide[] =
@@ -296,12 +296,12 @@ Schedule_t slScientistHide[] =
 Task_t tlScientistStartle[] =
 {
 	{ TASK_SET_FAIL_SCHEDULE, (float)SCHED_PANIC },		// If you fail, just panic!
-	{ TASK_RANDOM_SCREAM, (float)0.3 },				// Scream 30% of the time
-	{ TASK_STOP_MOVING, (float)0 },
+	{ TASK_RANDOM_SCREAM, 0.3f },				// Scream 30% of the time
+	{ TASK_STOP_MOVING, 0.0f },
 	{ TASK_PLAY_SEQUENCE_FACE_ENEMY, (float)ACT_CROUCH },
-	{ TASK_RANDOM_SCREAM, (float)0.1 },				// Scream again 10% of the time
+	{ TASK_RANDOM_SCREAM, 0.1f },				// Scream again 10% of the time
 	{ TASK_PLAY_SEQUENCE_FACE_ENEMY, (float)ACT_CROUCHIDLE },
-	{ TASK_WAIT_RANDOM, (float)1.0 },
+	{ TASK_WAIT_RANDOM, 1.0f },
 };
 
 Schedule_t slScientistStartle[] =
@@ -321,9 +321,9 @@ Schedule_t slScientistStartle[] =
 
 Task_t tlFear[] =
 {
-	{ TASK_STOP_MOVING, (float)0 },
-	{ TASK_FACE_ENEMY, (float)0 },
-	{ TASK_SAY_FEAR, (float)0 },
+	{ TASK_STOP_MOVING, 0.0f },
+	{ TASK_FACE_ENEMY, 0.0f },
+	{ TASK_SAY_FEAR, 0.0f },
 	//{ TASK_PLAY_SEQUENCE, (float)ACT_FEAR_DISPLAY },
 };
 
@@ -369,7 +369,7 @@ void CScientist::Scream( void )
 	{
 		Talk( 10 );
 		m_hTalkTarget = m_hEnemy;
-		PlaySentence( "SC_SCREAM", RANDOM_FLOAT( 3, 6 ), VOL_NORM, ATTN_NORM );
+		PlaySentence( "SC_SCREAM", RANDOM_FLOAT( 3.0f, 6.0f ), VOL_NORM, ATTN_NORM );
 	}
 }
 
@@ -396,7 +396,7 @@ void CScientist::StartTask( Task_t *pTask )
 		TaskComplete();
 		break;
 	case TASK_RANDOM_SCREAM:
-		if( RANDOM_FLOAT( 0, 1 ) < pTask->flData )
+		if( RANDOM_FLOAT( 0.0f, 1.0f ) < pTask->flData )
 			Scream();
 		TaskComplete();
 		break;
@@ -423,8 +423,10 @@ void CScientist::StartTask( Task_t *pTask )
 		break;
 	case TASK_MOVE_TO_TARGET_RANGE_SCARED:
 		{
-			if( ( m_hTargetEnt->pev->origin - pev->origin).Length() < 1 )
+			if( ( m_hTargetEnt->pev->origin - pev->origin ).Length() < 1.0f )
+			{
 				TaskComplete();
+			}
 			else
 			{
 				m_vecMoveGoal = m_hTargetEnt->pev->origin;
@@ -464,7 +466,7 @@ void CScientist::RunTask( Task_t *pTask )
 
 				distance = ( m_vecMoveGoal - pev->origin ).Length2D();
 				// Re-evaluate when you think your finished, or the target has moved too far
-				if( ( distance < pTask->flData ) || ( m_vecMoveGoal - m_hTargetEnt->pev->origin ).Length() > pTask->flData * 0.5 )
+				if( ( distance < pTask->flData ) || ( m_vecMoveGoal - m_hTargetEnt->pev->origin ).Length() > pTask->flData * 0.5f )
 				{
 					m_vecMoveGoal = m_hTargetEnt->pev->origin;
 					distance = ( m_vecMoveGoal - pev->origin ).Length2D();
@@ -712,7 +714,7 @@ void CScientist::PainSound( void )
 	if( gpGlobals->time < m_painTime )
 		return;
 
-	m_painTime = gpGlobals->time + RANDOM_FLOAT( 0.5, 0.75 );
+	m_painTime = gpGlobals->time + RANDOM_FLOAT( 0.5f, 0.75f );
 
 	switch( RANDOM_LONG( 0, 4 ) )
 	{
@@ -988,7 +990,7 @@ MONSTERSTATE CScientist::GetIdealState( void )
 
 BOOL CScientist::CanHeal( void )
 { 
-	if( ( m_healTime > gpGlobals->time ) || ( m_hTargetEnt == 0 ) || ( m_hTargetEnt->pev->health > ( m_hTargetEnt->pev->max_health * 0.5 ) ) )
+	if( ( m_healTime > gpGlobals->time ) || ( m_hTargetEnt == 0 ) || ( m_hTargetEnt->pev->health > ( m_hTargetEnt->pev->max_health * 0.5f ) ) )
 		return FALSE;
 
 	return TRUE;
@@ -1000,7 +1002,7 @@ void CScientist::Heal( void )
 		return;
 
 	Vector target = m_hTargetEnt->pev->origin - pev->origin;
-	if( target.Length() > 100 )
+	if( target.Length() > 100.0f )
 		return;
 
 	m_hTargetEnt->TakeHealth( gSkillData.scientistHeal, DMG_GENERIC );
@@ -1165,7 +1167,7 @@ void CSittingScientist::Spawn()
 	ResetSequenceInfo();
 
 	SetThink( &CSittingScientist::SittingThink );
-	pev->nextthink = gpGlobals->time + 0.1;
+	pev->nextthink = gpGlobals->time + 0.1f;
 
 	DROP_TO_FLOOR( ENT( pev ) );
 }
@@ -1293,13 +1295,13 @@ void CSittingScientist::SittingThink( void )
 		pev->frame = 0;
 		SetBoneController( 0, m_headTurn );
 	}
-	pev->nextthink = gpGlobals->time + 0.1;
+	pev->nextthink = gpGlobals->time + 0.1f;
 }
 
 // prepare sitting scientist to answer a question
 void CSittingScientist::SetAnswerQuestion( CTalkMonster *pSpeaker )
 {
-	m_flResponseDelay = gpGlobals->time + RANDOM_FLOAT( 3, 4 );
+	m_flResponseDelay = gpGlobals->time + RANDOM_FLOAT( 3.0f, 4.0f );
 	m_hTalkTarget = (CBaseMonster *)pSpeaker;
 }
 
