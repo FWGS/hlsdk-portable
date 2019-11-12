@@ -250,6 +250,7 @@ public:
 	void StartTask( Task_t *pTask );
 	Schedule_t *GetSchedule ( void );
 	Schedule_t *GetScheduleOfType(int Type);
+	void OnChangeSchedule( Schedule_t *pNewSchedule );
 	void StopFollowing( BOOL clearSchedule );
 	void SetAnswerQuestion(CTalkMonster *pSpeaker);
 
@@ -3623,12 +3624,16 @@ void CMedic::RunTask(Task_t *pTask)
 	}
 }
 
-Schedule_t *CMedic::GetSchedule()
+void CMedic::OnChangeSchedule( Schedule_t *pNewSchedule )
 {
 	if (m_fHealing) {
 		StopHealing();
 	}
+	CHFGrunt::OnChangeSchedule( pNewSchedule );
+}
 
+Schedule_t *CMedic::GetSchedule()
+{
 	Schedule_t* prioritizedSchedule = PrioritizedSchedule();
 	if (prioritizedSchedule)
 		return prioritizedSchedule;
@@ -3866,7 +3871,6 @@ void CMedic::StartFollowingHealTarget(CBaseEntity *pTarget)
 	m_hTargetEnt = pTarget;
 	ClearConditions( bits_COND_CLIENT_PUSH );
 	ClearSchedule();
-	ChangeSchedule(GetScheduleOfType(SCHED_MEDIC_HEAL));
 	ALERT(at_aiconsole, "Medic started to follow injured %s\n", STRING(pTarget->pev->classname));
 }
 
