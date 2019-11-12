@@ -79,6 +79,8 @@ void CBaseMonster::ChangeSchedule( Schedule_t *pNewSchedule )
 {
 	ASSERT( pNewSchedule != NULL );
 
+	OnChangeSchedule( pNewSchedule );
+
 	m_pSchedule = pNewSchedule;
 	m_iScheduleIndex = 0;
 	m_iTaskStatus = TASKSTATUS_NEW;

@@ -250,6 +250,7 @@ public:
 	void StartTask( Task_t *pTask );
 	Schedule_t *GetSchedule ( void );
 	Schedule_t *GetScheduleOfType(int Type);
+	void OnChangeSchedule( Schedule_t *pNewSchedule );
 	void StopFollowing( BOOL clearSchedule );
 	void SetAnswerQuestion(CTalkMonster *pSpeaker);
 
@@ -2284,16 +2285,13 @@ int CHFGrunt :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, flo
 		if( m_hEnemy == 0 )
 		{
 			// If the player was facing directly at me, or I'm already suspicious, get mad
-			if( ( m_afMemory & bits_MEMORY_SUSPICIOUS ) || IsFacing( pevAttacker, pev->origin ) )
+			if( (( m_afMemory & bits_MEMORY_SUSPICIOUS ) || IsFacing( pevAttacker, pev->origin )) && gpGlobals->time - m_flLastHitByPlayer < 4.0 && m_iPlayerHits >= 3 )
 			{
-				if (gpGlobals->time - m_flLastHitByPlayer < 4.0 && m_iPlayerHits >= 3)
-				{
-					// Alright, now I'm pissed!
-					PlaySentence( "FG_MAD", 4, VOL_NORM, ATTN_NORM );
+				// Alright, now I'm pissed!
+				PlaySentence( "FG_MAD", 4, VOL_NORM, ATTN_NORM );
 
-					Remember( bits_MEMORY_PROVOKED );
-					StopFollowing( TRUE );
-				}
+				Remember( bits_MEMORY_PROVOKED );
+				StopFollowing( TRUE );
 			}
 			else
 			{
@@ -3623,12 +3621,16 @@ void CMedic::RunTask(Task_t *pTask)
 	}
 }
 
-Schedule_t *CMedic::GetSchedule()
+void CMedic::OnChangeSchedule( Schedule_t *pNewSchedule )
 {
 	if (m_fHealing) {
 		StopHealing();
 	}
+	CHFGrunt::OnChangeSchedule( pNewSchedule );
+}
 
+Schedule_t *CMedic::GetSchedule()
+{
 	Schedule_t* prioritizedSchedule = PrioritizedSchedule();
 	if (prioritizedSchedule)
 		return prioritizedSchedule;
@@ -3866,7 +3868,6 @@ void CMedic::StartFollowingHealTarget(CBaseEntity *pTarget)
 	m_hTargetEnt = pTarget;
 	ClearConditions( bits_COND_CLIENT_PUSH );
 	ClearSchedule();
-	ChangeSchedule(GetScheduleOfType(SCHED_MEDIC_HEAL));
 	ALERT(at_aiconsole, "Medic started to follow injured %s\n", STRING(pTarget->pev->classname));
 }
 

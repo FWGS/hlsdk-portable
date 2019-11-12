@@ -172,6 +172,7 @@ public:
 	void ClearSchedule( void );
 	BOOL FScheduleDone( void );
 	void ChangeSchedule( Schedule_t *pNewSchedule );
+	virtual void OnChangeSchedule( Schedule_t *pNewSchedule ) {}
 	void NextScheduledTask( void );
 	Schedule_t *ScheduleInList( const char *pName, Schedule_t **pList, int listCount );
 

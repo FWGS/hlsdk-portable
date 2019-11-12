@@ -611,7 +611,7 @@ void CTalkMonster::Killed( entvars_t *pevAttacker, int iGib )
 	// Don't finish that sentence
 	StopTalking();
 	SetUse( NULL );
-	CBaseMonster::Killed( pevAttacker, iGib );
+	CSquadMonster::Killed( pevAttacker, iGib );
 }
 
 CBaseEntity *CTalkMonster::EnumFriends( CBaseEntity *pPrevious, int listNumber, BOOL bTrace )
@@ -1301,7 +1301,7 @@ void CTalkMonster::TrySmellTalk( void )
 
 void CTalkMonster::StartMonster()
 {
-	CBaseMonster::StartMonster();
+	CSquadMonster::StartMonster();
 	if (m_fStartSuspicious) {
 		ALERT(at_console, "Talk Monster Pre-Provoked\n");
 		Remember(bits_MEMORY_PROVOKED);
