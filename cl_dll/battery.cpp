@@ -107,7 +107,7 @@ int CHudBattery::Draw( float flTime )
 		if( m_fFade > FADE_TIME )
 			m_fFade = FADE_TIME;
 
-		m_fFade -= ( gHUD.m_flTimeDelta * 20 );
+		m_fFade -= ( (float)gHUD.m_flTimeDelta * 20.0f );
 		if( m_fFade <= 0 )
 		{
 			a = 128;

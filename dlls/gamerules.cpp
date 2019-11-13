@@ -323,6 +323,11 @@ void CGameRules::RefreshSkillData ( void )
 	gSkillData.monDmgMac10 = GetSkillCvar( "sk_mac10_bullet" );
 }
 
+void CGameRules::ClientUserInfoChanged( CBasePlayer *pPlayer, char *infobuffer )
+{
+	pPlayer->SetPrefsFromUserinfo( infobuffer );
+}
+
 //=========================================================
 // instantiate the proper game rules object
 //=========================================================
