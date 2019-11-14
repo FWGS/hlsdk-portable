@@ -126,7 +126,7 @@ void CLegacyCineMonster :: CineSpawn( const char *szModel )
 	if ( FStringNull(pev->targetname) )	
 	{
 		SetThink( &CLegacyCineMonster::CineThink );
-		pev->nextthink += 1.0;
+		pev->nextthink += 1.0f;
 	}
 }
 
@@ -167,7 +167,7 @@ void CLegacyCineMonster :: CineThink( void )
 	if (!pev->animtime)
 		ResetSequenceInfo( );
 
-	pev->nextthink = gpGlobals->time + 1.0;
+	pev->nextthink = gpGlobals->time + 1.0f;
 
 	if (pev->spawnflags != 0 && m_fSequenceFinished)
 	{
@@ -196,14 +196,14 @@ void CCineBlood :: BloodGush ( void )
 {
 	Vector	vecSplatDir;
 	TraceResult	tr;
-	pev->nextthink = gpGlobals->time + 0.1;
+	pev->nextthink = gpGlobals->time + 0.1f;
 
-	UTIL_MakeVectors(pev->angles);
-	if ( pev->health-- < 0 )
-		REMOVE_ENTITY(ENT(pev));
+	UTIL_MakeVectors( pev->angles );
+	if( pev->health-- < 0 )
+		REMOVE_ENTITY( ENT( pev ) );
 	// CHANGE_METHOD ( ENT(pev), em_think, SUB_Remove );
 
-	if ( RANDOM_FLOAT ( 0 , 1 ) < 0.7 )// larger chance of globs
+	if ( RANDOM_FLOAT ( 0.0f, 1.0f ) < 0.7f )// larger chance of globs
 	{
 		UTIL_BloodDrips( pev->origin, UTIL_RandomBloodVector(), BLOOD_COLOR_RED, 10 );
 	}
@@ -212,13 +212,13 @@ void CCineBlood :: BloodGush ( void )
 		UTIL_BloodStream( pev->origin, UTIL_RandomBloodVector(), BLOOD_COLOR_RED, RANDOM_LONG(50, 150) );
 	}
 
-	if ( RANDOM_FLOAT ( 0, 1 ) < 0.75 )
+	if ( RANDOM_FLOAT ( 0, 1 ) < 0.75f )
 	{
 		// decals the floor with blood.
 		vecSplatDir = Vector ( 0 , 0 , -1 );
-		vecSplatDir = vecSplatDir + (RANDOM_FLOAT(-1,1) * 0.6 * gpGlobals->v_right) + (RANDOM_FLOAT(-1,1) * 0.6 * gpGlobals->v_forward);// randomize a bit
+		vecSplatDir = vecSplatDir + (RANDOM_FLOAT(-1,1) * 0.6f * gpGlobals->v_right) + (RANDOM_FLOAT(-1,1) * 0.6f * gpGlobals->v_forward);// randomize a bit
 		UTIL_TraceLine( pev->origin + Vector ( 0, 0 , 64) , pev->origin + vecSplatDir * 256, ignore_monsters, ENT(pev), &tr);
-		if ( tr.flFraction != 1.0 )
+		if ( tr.flFraction != 1.0f )
 		{
 			// Decal with a bloodsplat
 			UTIL_BloodDecalTrace( &tr, BLOOD_COLOR_RED );

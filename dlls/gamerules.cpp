@@ -303,6 +303,11 @@ void CGameRules::RefreshSkillData ( void )
 	gSkillData.plrArm = GetSkillCvar( "sk_player_arm" );
 }
 
+void CGameRules::ClientUserInfoChanged( CBasePlayer *pPlayer, char *infobuffer )
+{
+	pPlayer->SetPrefsFromUserinfo( infobuffer );
+}
+
 //=========================================================
 // instantiate the proper game rules object
 //=========================================================

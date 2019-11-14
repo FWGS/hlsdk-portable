@@ -19,7 +19,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <memory.h>
-#include <math.h>
+#include <cmath>
 
 #include "studio_util.h"
 #include "r_studioint.h"
