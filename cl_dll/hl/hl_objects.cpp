@@ -68,25 +68,25 @@ void UpdateBeams( void )
 	if( pBeam )
 	{
 		pBeam->target = tr.endpos;
-		pBeam->die = gEngfuncs.GetClientTime() + 0.1; // We keep it alive just a little bit forward in the future, just in case.
+		pBeam->die = gEngfuncs.GetClientTime() + 0.1f; // We keep it alive just a little bit forward in the future, just in case.
 	}
 
 	if( pBeam2 )
 	{
 		pBeam2->target = tr.endpos;
-		pBeam2->die = gEngfuncs.GetClientTime() + 0.1; // We keep it alive just a little bit forward in the future, just in case.
+		pBeam2->die = gEngfuncs.GetClientTime() + 0.1f; // We keep it alive just a little bit forward in the future, just in case.
 	}
 
 	if( pFlare )	// Vit_amiN: beam flare
 	{
 		pFlare->entity.origin = tr.endpos;
-		pFlare->die = gEngfuncs.GetClientTime() + 0.1; // We keep it alive just a little bit forward in the future, just in case.
+		pFlare->die = gEngfuncs.GetClientTime() + 0.1f; // We keep it alive just a little bit forward in the future, just in case.
 
 		if( gEngfuncs.GetMaxClients() != 1 )	// Singleplayer always draws the egon's energy beam flare
 		{
 			pFlare->flags |= FTENT_NOMODEL;
 
-			if( !( tr.allsolid || tr.ent <= 0 || tr.fraction == 1.0 ) )	// Beam hit some non-world entity
+			if( !( tr.allsolid || tr.ent <= 0 || tr.fraction == 1.0f ) )	// Beam hit some non-world entity
 			{
 				physent_t *pEntity = gEngfuncs.pEventAPI->EV_GetPhysent( tr.ent );
 
