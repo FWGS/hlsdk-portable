@@ -717,9 +717,9 @@ void CApache::Flight( void )
 			if( pitch == 100.0f )
 				pitch = 101.0f;
 
-			float flVol = ( m_flForce / 100.0f ) + 0.1f;
+			/*float flVol = ( m_flForce / 100.0f ) + 0.1f;
 			if( flVol > 1.0f ) 
-				flVol = 1.0f;
+				flVol = 1.0f;*/
 
 			EMIT_SOUND_DYN( ENT( pev ), CHAN_STATIC, "apache/ap_rotor2.wav", 1.0f, 0.3f, SND_CHANGE_PITCH | SND_CHANGE_VOL, pitch );
 		}
