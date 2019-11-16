@@ -170,7 +170,7 @@ int CHeadCrab::Classify( void )
 //=========================================================
 Vector CHeadCrab::Center( void )
 {
-	return Vector( pev->origin.x, pev->origin.y, pev->origin.z + 6 );
+	return Vector( pev->origin.x, pev->origin.y, pev->origin.z + 6.0f );
 }
 
 Vector CHeadCrab::BodyTarget( const Vector &posSrc ) 
@@ -241,7 +241,7 @@ void CHeadCrab::HandleAnimEvent( MonsterEvent_t *pEvent )
 
 				// Scale the sideways velocity to get there at the right time
 				vecJumpDir = m_hEnemy->pev->origin + m_hEnemy->pev->view_ofs - pev->origin;
-				vecJumpDir = vecJumpDir * ( 1.0 / time );
+				vecJumpDir = vecJumpDir * ( 1.0f / time );
 
 				// Speed to offset gravity at the desired height
 				vecJumpDir.z = speed;
@@ -249,23 +249,23 @@ void CHeadCrab::HandleAnimEvent( MonsterEvent_t *pEvent )
 				// Don't jump too far/fast
 				float distance = vecJumpDir.Length();
 
-				if( distance > 650 )
+				if( distance > 650.0f )
 				{
-					vecJumpDir = vecJumpDir * ( 650.0 / distance );
+					vecJumpDir = vecJumpDir * ( 650.0f / distance );
 				}
 			}
 			else
 			{
 				// jump hop, don't care where
-				vecJumpDir = Vector( gpGlobals->v_forward.x, gpGlobals->v_forward.y, gpGlobals->v_up.z ) * 350;
+				vecJumpDir = Vector( gpGlobals->v_forward.x, gpGlobals->v_forward.y, gpGlobals->v_up.z ) * 350.0f;
 			}
 
-			int iSound = RANDOM_LONG(0,2);
+			int iSound = RANDOM_LONG( 0, 2 );
 			if( iSound != 0 )
 				EMIT_SOUND_DYN( edict(), CHAN_VOICE, pAttackSounds[iSound], GetSoundVolue(), ATTN_IDLE, 0, GetVoicePitch() );
 
 			pev->velocity = vecJumpDir;
-			m_flNextAttack = gpGlobals->time + 2;
+			m_flNextAttack = gpGlobals->time + 2.0f;
 		}
 		break;
 		default:
@@ -370,7 +370,7 @@ void CHeadCrab::LeapTouch( CBaseEntity *pOther )
 void CHeadCrab::PrescheduleThink( void )
 {
 	// make the crab coo a little bit in combat state
-	if( m_MonsterState == MONSTERSTATE_COMBAT && RANDOM_FLOAT( 0, 5 ) < 0.1 )
+	if( m_MonsterState == MONSTERSTATE_COMBAT && RANDOM_FLOAT( 0, 5 ) < 0.1f )
 	{
 		IdleSound();
 	}
@@ -401,7 +401,7 @@ void CHeadCrab::StartTask( Task_t *pTask )
 //=========================================================
 BOOL CHeadCrab::CheckRangeAttack1( float flDot, float flDist )
 {
-	if( FBitSet( pev->flags, FL_ONGROUND ) && flDist <= 256 && flDot >= 0.65 )
+	if( FBitSet( pev->flags, FL_ONGROUND ) && flDist <= 256 && flDot >= 0.65f )
 	{
 		return TRUE;
 	}
@@ -416,7 +416,7 @@ BOOL CHeadCrab::CheckRangeAttack2( float flDot, float flDist )
 	return FALSE;
 	// BUGBUG: Why is this code here?  There is no ACT_RANGE_ATTACK2 animation.  I've disabled it for now.
 #if 0
-	if( FBitSet( pev->flags, FL_ONGROUND ) && flDist > 64 && flDist <= 256 && flDot >= 0.5 )
+	if( FBitSet( pev->flags, FL_ONGROUND ) && flDist > 64 && flDist <= 256 && flDot >= 0.5f )
 	{
 		return TRUE;
 	}
@@ -487,11 +487,11 @@ public:
 	void Spawn( void );
 	void Precache( void );
 	void SetYawSpeed( void );
-	float GetDamageAmount( void ) { return gSkillData.headcrabDmgBite * 0.3; }
+	float GetDamageAmount( void ) { return gSkillData.headcrabDmgBite * 0.3f; }
 	BOOL CheckRangeAttack1( float flDot, float flDist );
 	Schedule_t *GetScheduleOfType ( int Type );
 	virtual int GetVoicePitch( void ) { return PITCH_NORM + RANDOM_LONG( 40, 50 ); }
-	virtual float GetSoundVolue( void ) { return 0.8; }
+	virtual float GetSoundVolue( void ) { return 0.8f; }
 };
 
 LINK_ENTITY_TO_CLASS( monster_babycrab, CBabyCrab )
@@ -504,7 +504,7 @@ void CBabyCrab::Spawn( void )
 	pev->renderamt = 192;
 	UTIL_SetSize( pev, Vector( -12, -12, 0 ), Vector( 12, 12, 24 ) );
 	
-	pev->health = gSkillData.headcrabHealth * 0.25;	// less health than full grown
+	pev->health = gSkillData.headcrabHealth * 0.25f;	// less health than full grown
 }
 
 void CBabyCrab::Precache( void )
@@ -526,7 +526,7 @@ BOOL CBabyCrab::CheckRangeAttack1( float flDot, float flDist )
 			return TRUE;
 
 		// A little less accurate, but jump from closer
-		if( flDist <= 180 && flDot >= 0.55 )
+		if( flDist <= 180.0f && flDot >= 0.55f )
 			return TRUE;
 	}
 

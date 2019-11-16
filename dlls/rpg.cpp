@@ -118,14 +118,14 @@ void CRpgRocket::Spawn( void )
 	SetThink( &CRpgRocket::IgniteThink );
 	SetTouch( &CGrenade::ExplodeTouch );
 
-	pev->angles.x -= 30;
+	pev->angles.x -= 30.0f;
 	UTIL_MakeVectors( pev->angles );
-	pev->angles.x = -( pev->angles.x + 30 );
+	pev->angles.x = -( pev->angles.x + 30.0f );
 
-	pev->velocity = gpGlobals->v_forward * 250;
-	pev->gravity = 0.5;
+	pev->velocity = gpGlobals->v_forward * 250.0f;
+	pev->gravity = 0.5f;
 
-	pev->nextthink = gpGlobals->time + 0.4;
+	pev->nextthink = gpGlobals->time + 0.4f;
 
 	pev->dmg = gSkillData.plrDmgRPG;
 }
@@ -161,7 +161,7 @@ void CRpgRocket::IgniteThink( void )
 	pev->effects |= EF_LIGHT;
 
 	// make rocket sound
-	EMIT_SOUND( ENT( pev ), CHAN_VOICE, "weapons/rocket1.wav", 1, 0.5 );
+	EMIT_SOUND( ENT( pev ), CHAN_VOICE, "weapons/rocket1.wav", 1, 0.5f );
 
 	// rocket trail
 	MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
@@ -180,7 +180,7 @@ void CRpgRocket::IgniteThink( void )
 
 	// set to follow laser spot
 	SetThink( &CRpgRocket::FollowThink );
-	pev->nextthink = gpGlobals->time + 0.1;
+	pev->nextthink = gpGlobals->time + 0.1f;
 }
 
 void CRpgRocket::FollowThink( void )
@@ -201,7 +201,7 @@ void CRpgRocket::FollowThink( void )
 	{
 		UTIL_TraceLine( pev->origin, pOther->pev->origin, dont_ignore_monsters, ENT( pev ), &tr );
 		// ALERT( at_console, "%f\n", tr.flFraction );
-		if( tr.flFraction >= 0.90 )
+		if( tr.flFraction >= 0.9f )
 		{
 			vecDir = pOther->pev->origin - pev->origin;
 			flDist = vecDir.Length();
@@ -219,23 +219,23 @@ void CRpgRocket::FollowThink( void )
 
 	// this acceleration and turning math is totally wrong, but it seems to respond well so don't change it.
 	float flSpeed = pev->velocity.Length();
-	if( gpGlobals->time - m_flIgniteTime < 1.0 )
+	if( gpGlobals->time - m_flIgniteTime < 1.0f )
 	{
-		pev->velocity = pev->velocity * 0.2 + vecTarget * ( flSpeed * 0.8 + 400 );
+		pev->velocity = pev->velocity * 0.2f + vecTarget * ( flSpeed * 0.8f + 400.0f );
 		if( pev->waterlevel == 3 )
 		{
 			// go slow underwater
-			if( pev->velocity.Length() > 300 )
+			if( pev->velocity.Length() > 300.0f )
 			{
-				pev->velocity = pev->velocity.Normalize() * 300;
+				pev->velocity = pev->velocity.Normalize() * 300.0f;
 			}
-			UTIL_BubbleTrail( pev->origin - pev->velocity * 0.1, pev->origin, 4 );
+			UTIL_BubbleTrail( pev->origin - pev->velocity * 0.1f, pev->origin, 4 );
 		} 
 		else 
 		{
-			if( pev->velocity.Length() > 2000 )
+			if( pev->velocity.Length() > 2000.0f )
 			{
-				pev->velocity = pev->velocity.Normalize() * 2000;
+				pev->velocity = pev->velocity.Normalize() * 2000.0f;
 			}
 		}
 	}
@@ -246,8 +246,8 @@ void CRpgRocket::FollowThink( void )
 			pev->effects = 0;
 			STOP_SOUND( ENT( pev ), CHAN_VOICE, "weapons/rocket1.wav" );
 		}
-		pev->velocity = pev->velocity * 0.2 + vecTarget * flSpeed * 0.798;
-		if( pev->waterlevel == 0 && pev->velocity.Length() < 1500 )
+		pev->velocity = pev->velocity * 0.2f + vecTarget * flSpeed * 0.798f;
+		if( pev->waterlevel == 0 && pev->velocity.Length() < 1500.0f )
 		{
 			if( CRpg *pLauncher = (CRpg*)( (CBaseEntity*)( m_hLauncher ) ) )
 			{
@@ -259,7 +259,7 @@ void CRpgRocket::FollowThink( void )
 	}
 	// ALERT( at_console, "%.0f\n", flSpeed );
 
-	pev->nextthink = gpGlobals->time + 0.1;
+	pev->nextthink = gpGlobals->time + 0.1f;
 }
 #endif
 #endif
