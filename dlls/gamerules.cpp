@@ -340,6 +340,11 @@ void CGameRules::RefreshSkillData ( void )
 	gSkillData.plrDmgFOTN = GetSkillCvar( "sk_plr_fotn" );
 }
 
+void CGameRules::ClientUserInfoChanged( CBasePlayer *pPlayer, char *infobuffer )
+{
+	pPlayer->SetPrefsFromUserinfo( infobuffer );
+}
+
 //=========================================================
 // instantiate the proper game rules object
 //=========================================================

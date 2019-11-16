@@ -86,18 +86,18 @@ void EV_FireMW2( struct event_args_s *args );
 void EV_TrainPitchAdjust( struct event_args_s *args );
 }
 
-#define VECTOR_CONE_1DEGREES Vector( 0.00873, 0.00873, 0.00873 )
-#define VECTOR_CONE_2DEGREES Vector( 0.01745, 0.01745, 0.01745 )
-#define VECTOR_CONE_3DEGREES Vector( 0.02618, 0.02618, 0.02618 )
-#define VECTOR_CONE_4DEGREES Vector( 0.03490, 0.03490, 0.03490 )
-#define VECTOR_CONE_5DEGREES Vector( 0.04362, 0.04362, 0.04362 )
-#define VECTOR_CONE_6DEGREES Vector( 0.05234, 0.05234, 0.05234 )
-#define VECTOR_CONE_7DEGREES Vector( 0.06105, 0.06105, 0.06105 )	
-#define VECTOR_CONE_8DEGREES Vector( 0.06976, 0.06976, 0.06976 )
-#define VECTOR_CONE_9DEGREES Vector( 0.07846, 0.07846, 0.07846 )
-#define VECTOR_CONE_10DEGREES Vector( 0.08716, 0.08716, 0.08716 )
-#define VECTOR_CONE_15DEGREES Vector( 0.13053, 0.13053, 0.13053 )
-#define VECTOR_CONE_20DEGREES Vector( 0.17365, 0.17365, 0.17365 )
+#define VECTOR_CONE_1DEGREES Vector( 0.00873f, 0.00873f, 0.00873f )
+#define VECTOR_CONE_2DEGREES Vector( 0.01745f, 0.01745f, 0.01745f )
+#define VECTOR_CONE_3DEGREES Vector( 0.02618f, 0.02618f, 0.02618f )
+#define VECTOR_CONE_4DEGREES Vector( 0.03490f, 0.03490f, 0.03490f )
+#define VECTOR_CONE_5DEGREES Vector( 0.04362f, 0.04362f, 0.04362f )
+#define VECTOR_CONE_6DEGREES Vector( 0.05234f, 0.05234f, 0.05234f )
+#define VECTOR_CONE_7DEGREES Vector( 0.06105f, 0.06105f, 0.06105f )	
+#define VECTOR_CONE_8DEGREES Vector( 0.06976f, 0.06976f, 0.06976f )
+#define VECTOR_CONE_9DEGREES Vector( 0.07846f, 0.07846f, 0.07846f )
+#define VECTOR_CONE_10DEGREES Vector( 0.08716f, 0.08716f, 0.08716f )
+#define VECTOR_CONE_15DEGREES Vector( 0.13053f, 0.13053f, 0.13053f )
+#define VECTOR_CONE_20DEGREES Vector( 0.17365f, 0.17365f, 0.17365f )
 
 // play a strike sound based on the texture that was hit by the attack traceline.  VecSrc/VecEnd are the
 // original traceline endpoints used by the attacker, iBulletType is the type of bullet that hit the texture.
@@ -442,7 +442,7 @@ void EV_HLDM_FireBullets( int idx, float *forward, float *right, float *up, int 
 		tracer = EV_HLDM_CheckTracer( idx, vecSrc, tr.endpos, forward, right, iBulletType, iTracerFreq, tracerCount );
 
 		// do damage, paint decals
-		if( tr.fraction != 1.0 )
+		if( tr.fraction != 1.0f )
 		{
 			switch( iBulletType )
 			{
@@ -846,7 +846,7 @@ void EV_FireZAPPER( event_args_t *args )
 
 	if( EV_IsLocal( idx ) )
 	{
-		V_PunchAxis( 0, -.5 );
+		V_PunchAxis( 0.0f, -0.5f );
 	}
 }
 
@@ -1087,10 +1087,10 @@ void EV_TripmineFire( event_args_t *args )
 	// Now add in all of the players.
 	gEngfuncs.pEventAPI->EV_SetSolidPlayers( idx - 1 );	
 	gEngfuncs.pEventAPI->EV_SetTraceHull( 2 );
-	gEngfuncs.pEventAPI->EV_PlayerTrace( vecSrc, vecSrc + forward * 128, PM_NORMAL, -1, &tr );
+	gEngfuncs.pEventAPI->EV_PlayerTrace( vecSrc, vecSrc + forward * 128.0f, PM_NORMAL, -1, &tr );
 
 	//Hit something solid
-	if( tr.fraction < 1.0 )
+	if( tr.fraction < 1.0f )
 		 gEngfuncs.pEventAPI->EV_WeaponAnimation( TRIPMINE_DRAW, 0 );
 
 	gEngfuncs.pEventAPI->EV_PopPMStates();
@@ -1142,7 +1142,7 @@ void EV_SnarkFire( event_args_t *args )
 	gEngfuncs.pEventAPI->EV_PlayerTrace( vecSrc + forward * 20, vecSrc + forward * 64, PM_NORMAL, -1, &tr );
 
 	//Find space to drop the thing.
-	if( tr.allsolid == 0 && tr.startsolid == 0 && tr.fraction > 0.25 )
+	if( tr.allsolid == 0 && tr.startsolid == 0 && tr.fraction > 0.25f )
 		 gEngfuncs.pEventAPI->EV_WeaponAnimation( SQUEAK_THROW, 0 );
 
 	gEngfuncs.pEventAPI->EV_PopPMStates();
@@ -1807,9 +1807,9 @@ void EV_TrainPitchAdjust( event_args_t *args )
 	us_params = (unsigned short)args->iparam1;
 	stop = args->bparam1;
 
-	m_flVolume = (float)( us_params & 0x003f ) / 40.0;
+	m_flVolume = (float)( us_params & 0x003f ) / 40.0f;
 	noise = (int)( ( ( us_params ) >> 12 ) & 0x0007 );
-	pitch = (int)( 10.0 * (float)( ( us_params >> 6 ) & 0x003f ) );
+	pitch = (int)( 10.0f * (float)( ( us_params >> 6 ) & 0x003f ) );
 
 	switch( noise )
 	{

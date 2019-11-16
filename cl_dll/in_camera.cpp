@@ -28,16 +28,16 @@ extern cl_enginefunc_t gEngfuncs;
 
 //-------------------------------------------------- Constants
 
-#define CAM_DIST_DELTA 1.0
-#define CAM_ANGLE_DELTA 2.5
-#define CAM_ANGLE_SPEED 2.5
-#define CAM_MIN_DIST 30.0
-#define CAM_ANGLE_MOVE .5
-#define MAX_ANGLE_DIFF 10.0
-#define PITCH_MAX 90.0
-#define PITCH_MIN 0
-#define YAW_MAX  135.0
-#define YAW_MIN	 -135.0
+#define CAM_DIST_DELTA 1.0f
+#define CAM_ANGLE_DELTA 2.5f
+#define CAM_ANGLE_SPEED 2.5f
+#define CAM_MIN_DIST 30.0f
+#define CAM_ANGLE_MOVE 0.5f
+#define MAX_ANGLE_DIFF 10.0f
+#define PITCH_MAX 90.0f
+#define PITCH_MIN 0.0f
+#define YAW_MAX  135.0f
+#define YAW_MIN	 -135.0f
 
 enum ECAM_Command
 {
@@ -91,35 +91,35 @@ float MoveToward( float cur, float goal, float maxspeed )
 {
 	if( cur != goal )
 	{
-		if( fabs( cur - goal ) > 180.0 )
+		if( fabs( cur - goal ) > 180.0f )
 		{
 			if( cur < goal )
-				cur += 360.0;
+				cur += 360.0f;
 			else
-				cur -= 360.0;
+				cur -= 360.0f;
 		}
 
 		if( cur < goal )
 		{
-			if( cur < goal - 1.0 )
-				cur += ( goal - cur ) / 4.0;
+			if( cur < goal - 1.0f )
+				cur += ( goal - cur ) * 0.25f;
 			else
 				cur = goal;
 		}
 		else
 		{
-			if( cur > goal + 1.0 )
-				cur -= ( cur - goal ) / 4.0;
+			if( cur > goal + 1.0f )
+				cur -= ( cur - goal ) * 0.25f;
 			else
 				cur = goal;
 		}
 	}
 
 	// bring cur back into range
-	if( cur < 0 )
-		cur += 360.0;
-	else if( cur >= 360 )
-		cur -= 360;
+	if( cur < 0.0f )
+		cur += 360.0f;
+	else if( cur >= 360.0f )
+		cur -= 360.0f;
 
 	return cur;
 }
@@ -172,7 +172,7 @@ void DLLEXPORT CAM_Think( void )
 	if( cam_contain->value )
 	{
 		gEngfuncs.GetClientOrigin( origin );
-		ext[0] = ext[1] = ext[2] = 0.0;
+		ext[0] = ext[1] = ext[2] = 0.0f;
 	}
 #endif
 	camAngles[PITCH] = cam_idealpitch->value;
@@ -195,7 +195,7 @@ void DLLEXPORT CAM_Think( void )
 			//keep the camera within certain limits around the player (ie avoid certain bad viewing angles)  
 			if( cam_mouse.x>gEngfuncs.GetWindowCenterX() )
 			{
-				//if( ( camAngles[YAW] >= 225.0 ) || ( camAngles[YAW] < 135.0 ) )
+				//if( ( camAngles[YAW] >= 225.0f ) || ( camAngles[YAW] < 135.0f ) )
 				if( camAngles[YAW] < c_maxyaw->value )
 				{
 					camAngles[YAW] += CAM_ANGLE_MOVE * ( ( cam_mouse.x - gEngfuncs.GetWindowCenterX() ) / 2 );
@@ -207,7 +207,7 @@ void DLLEXPORT CAM_Think( void )
 			}
 			else if( cam_mouse.x<gEngfuncs.GetWindowCenterX() )
 			{
-				//if( ( camAngles[YAW] <= 135.0 ) || ( camAngles[YAW] > 225.0 ) )
+				//if( ( camAngles[YAW] <= 135.0f ) || ( camAngles[YAW] > 225.0f ) )
 				if( camAngles[YAW] > c_minyaw->value )
 				{
 					camAngles[YAW] -= CAM_ANGLE_MOVE * ( ( gEngfuncs.GetWindowCenterX() - cam_mouse.x ) / 2 );
@@ -363,10 +363,10 @@ void DLLEXPORT CAM_Think( void )
 		if( camAngles[PITCH] - viewangles[PITCH] != cam_idealpitch->value )
 			camAngles[PITCH] = MoveToward( camAngles[PITCH], cam_idealpitch->value + viewangles[PITCH], CAM_ANGLE_SPEED );
 
-		if( fabs( camAngles[2] - cam_idealdist->value ) < 2.0 )
+		if( fabs( camAngles[2] - cam_idealdist->value ) < 2.0f )
 			camAngles[2] = cam_idealdist->value;
 		else
-			camAngles[2] += ( cam_idealdist->value - camAngles[2] ) / 4.0;
+			camAngles[2] += ( cam_idealdist->value - camAngles[2] ) * 0.25f;
 	}
 #ifdef LATER
 	if( cam_contain->value )
@@ -382,9 +382,9 @@ void DLLEXPORT CAM_Think( void )
 
 		// check line from r_refdef.vieworg to pnt
 		memset( &clip, 0, sizeof(moveclip_t) );
-		ext[0] = ext[1] = ext[2] = 0.0;
+		ext[0] = ext[1] = ext[2] = 0.0f;
 		clip.trace = SV_ClipMoveToEntity( sv.edicts, r_refdef.vieworg, ext, ext, pnt );
-		if( clip.trace.fraction != 1.0 )
+		if( clip.trace.fraction != 1.0f )
 			return;
 	}
 #endif

@@ -136,11 +136,11 @@ int CZombie::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float 
 	// Take 30% damage from bullets
 	if( bitsDamageType == DMG_BULLET )
 	{
-		Vector vecDir = pev->origin - (pevInflictor->absmin + pevInflictor->absmax) * 0.5;
+		Vector vecDir = pev->origin - ( pevInflictor->absmin + pevInflictor->absmax ) * 0.5f;
 		vecDir = vecDir.Normalize();
 		float flForce = DamageForce( flDamage );
 		pev->velocity = pev->velocity + vecDir * flForce;
-		flDamage *= 0.3;
+		flDamage *= 0.3f;
 	}
 
 	// HACK HACK -- until we fix this.
