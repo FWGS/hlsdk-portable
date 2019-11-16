@@ -1762,7 +1762,7 @@ void CSpeaker::Precache( void )
 }
 void CSpeaker::SpeakerThink( void )
 {
-	const char* szSoundFile = NULL;
+	const char* szSoundFile = "";
 	float flvolume = pev->health * 0.1f;
 	float flattenuation = 0.3f;
 	int flags = 0;
