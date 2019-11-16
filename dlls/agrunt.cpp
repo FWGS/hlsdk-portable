@@ -56,7 +56,7 @@ int iAgruntMuzzleFlash;
 #define		AGRUNT_AE_LEFT_PUNCH ( 12 )
 #define		AGRUNT_AE_RIGHT_PUNCH ( 13 )
 
-#define		AGRUNT_MELEE_DIST	100
+#define		AGRUNT_MELEE_DIST	100.0f
 
 #define		AGRUNT_WORD_LENGTH	6
 
@@ -153,7 +153,7 @@ void CAGrunt::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir
 		// hit armor
 		if( pev->dmgtime != gpGlobals->time || ( RANDOM_LONG( 0, 10 ) < 1 ) )
 		{
-			UTIL_Ricochet( ptr->vecEndPos, RANDOM_FLOAT( 1, 2 ) );
+			UTIL_Ricochet( ptr->vecEndPos, RANDOM_FLOAT( 1.0f, 2.0f ) );
 			pev->dmgtime = gpGlobals->time;
 		}
 
@@ -161,11 +161,11 @@ void CAGrunt::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir
 		{
 			Vector vecTracerDir = vecDir;
 
-			vecTracerDir.x += RANDOM_FLOAT( -0.3, 0.3 );
-			vecTracerDir.y += RANDOM_FLOAT( -0.3, 0.3 );
-			vecTracerDir.z += RANDOM_FLOAT( -0.3, 0.3 );
+			vecTracerDir.x += RANDOM_FLOAT( -0.3f, 0.3f );
+			vecTracerDir.y += RANDOM_FLOAT( -0.3f, 0.3f );
+			vecTracerDir.z += RANDOM_FLOAT( -0.3f, 0.3f );
 
-			vecTracerDir = vecTracerDir * -512;
+			vecTracerDir = vecTracerDir * -512.0f;
 
 			MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, ptr->vecEndPos );
 			WRITE_BYTE( TE_TRACER );
@@ -179,9 +179,9 @@ void CAGrunt::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir
 			MESSAGE_END();
 		}
 
-		flDamage -= 20;
-		if( flDamage <= 0 )
-			flDamage = 0.1;// don't hurt the monster much, but allow bits_COND_LIGHT_DAMAGE to be generated
+		flDamage -= 20.0f;
+		if( flDamage <= 0.0f )
+			flDamage = 0.1f;// don't hurt the monster much, but allow bits_COND_LIGHT_DAMAGE to be generated
 	}
 	else
 	{
@@ -219,7 +219,7 @@ BOOL CAGrunt::ShouldSpeak( void )
 			// if not going to talk because of this, put the talk time 
 			// into the future a bit, so we don't talk immediately after 
 			// going into combat
-			m_flNextSpeakTime = gpGlobals->time + 3;
+			m_flNextSpeakTime = gpGlobals->time + 3.0f;
 			return FALSE;
 		}
 	}
@@ -262,7 +262,7 @@ void CAGrunt::PrescheduleThink( void )
 			}
 			else
 			{
-				m_flNextWordTime = gpGlobals->time + RANDOM_FLOAT( 0.5, 1 );
+				m_flNextWordTime = gpGlobals->time + RANDOM_FLOAT( 0.5f, 1.0f );
 			}
 		}
 	}
@@ -332,7 +332,7 @@ void CAGrunt::PainSound( void )
 		return;
 	}
 
-	m_flNextPainTime = gpGlobals->time + 0.6;
+	m_flNextPainTime = gpGlobals->time + 0.6f;
 
 	StopTalking();
 
@@ -415,15 +415,15 @@ void CAGrunt::HandleAnimEvent( MonsterEvent_t *pEvent )
 			pev->effects = EF_MUZZLEFLASH;
 
 			// make angles +-180
-			if( angDir.x > 180 )
+			if( angDir.x > 180.0f )
 			{
-				angDir.x = angDir.x - 360;
+				angDir.x = angDir.x - 360.0f;
 			}
 
 			SetBlending( 0, angDir.x );
 			GetAttachment( 0, vecArmPos, vecArmDir );
 
-			vecArmPos = vecArmPos + vecDirToEnemy * 32;
+			vecArmPos = vecArmPos + vecDirToEnemy * 32.0f;
 			MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, vecArmPos );
 				WRITE_BYTE( TE_SPRITE );
 				WRITE_COORD( vecArmPos.x );	// pos
@@ -435,10 +435,10 @@ void CAGrunt::HandleAnimEvent( MonsterEvent_t *pEvent )
 			MESSAGE_END();
 
 			CBaseEntity *pHornet = CBaseEntity::Create( "hornet", vecArmPos, UTIL_VecToAngles( vecDirToEnemy ), edict() );
-			UTIL_MakeVectors ( pHornet->pev->angles );
-			pHornet->pev->velocity = gpGlobals->v_forward * 300;
+			UTIL_MakeVectors( pHornet->pev->angles );
+			pHornet->pev->velocity = gpGlobals->v_forward * 300.0f;
 
-			switch( RANDOM_LONG ( 0 , 2 ) )
+			switch( RANDOM_LONG( 0, 2 ) )
 			{
 				case 0:
 					EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, "agrunt/ag_fire1.wav", 1.0, ATTN_NORM, 0, 100 );
@@ -490,17 +490,17 @@ void CAGrunt::HandleAnimEvent( MonsterEvent_t *pEvent )
 
 			if( pHurt )
 			{
-				pHurt->pev->punchangle.y = -25;
-				pHurt->pev->punchangle.x = 8;
+				pHurt->pev->punchangle.y = -25.0f;
+				pHurt->pev->punchangle.x = 8.0f;
 
 				// OK to use gpGlobals without calling MakeVectors, cause CheckTraceHullAttack called it above.
 				if( pHurt->IsPlayer() )
 				{
 					// this is a player. Knock him around.
-					pHurt->pev->velocity = pHurt->pev->velocity + gpGlobals->v_right * 250;
+					pHurt->pev->velocity = pHurt->pev->velocity + gpGlobals->v_right * 250.0f;
 				}
 
-				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, pAttackHitSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackHitSounds ) - 1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, pAttackHitSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackHitSounds ) - 1 )], 1.0f, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
 
 				Vector vecArmPos, vecArmAng;
 				GetAttachment( 0, vecArmPos, vecArmAng );
@@ -509,7 +509,7 @@ void CAGrunt::HandleAnimEvent( MonsterEvent_t *pEvent )
 			else
 			{
 				// Play a random attack miss sound
-				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, pAttackMissSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackMissSounds ) - 1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, pAttackMissSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackMissSounds ) - 1 )], 1.0f, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
 			}
 		}
 		break;
@@ -519,17 +519,17 @@ void CAGrunt::HandleAnimEvent( MonsterEvent_t *pEvent )
 
 			if( pHurt )
 			{
-				pHurt->pev->punchangle.y = 25;
-				pHurt->pev->punchangle.x = 8;
+				pHurt->pev->punchangle.y = 25.0f;
+				pHurt->pev->punchangle.x = 8.0f;
 
 				// OK to use gpGlobals without calling MakeVectors, cause CheckTraceHullAttack called it above.
 				if( pHurt->IsPlayer() )
 				{
 					// this is a player. Knock him around.
-					pHurt->pev->velocity = pHurt->pev->velocity + gpGlobals->v_right * -250;
+					pHurt->pev->velocity = pHurt->pev->velocity + gpGlobals->v_right * -250.0f;
 				}
 
-				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, pAttackHitSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackHitSounds ) - 1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, pAttackHitSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackHitSounds ) - 1 )], 1.0f, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
 
 				Vector vecArmPos, vecArmAng;
 				GetAttachment( 0, vecArmPos, vecArmAng );
@@ -538,7 +538,7 @@ void CAGrunt::HandleAnimEvent( MonsterEvent_t *pEvent )
 			else
 			{
 				// Play a random attack miss sound
-				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, pAttackMissSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackMissSounds ) - 1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, pAttackMissSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackMissSounds ) - 1 )], 1.0f, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
 			}
 		}
 		break;
@@ -556,7 +556,7 @@ void CAGrunt::Spawn()
 	Precache();
 
 	SET_MODEL( ENT( pev ), "models/agrunt.mdl" );
-	UTIL_SetSize( pev, Vector( -32, -32, 0 ), Vector( 32, 32, 64 ) );
+	UTIL_SetSize( pev, Vector( -32.0f, -32.0f, 0.0f ), Vector( 32.0f, 32.0f, 64.0f ) );
 
 	pev->solid = SOLID_SLIDEBOX;
 	pev->movetype = MOVETYPE_STEP;
@@ -564,12 +564,14 @@ void CAGrunt::Spawn()
 	pev->effects = 0;
 	if( !pev->health )
 		pev->health = gSkillData.agruntHealth;
-	m_flFieldOfView = 0.2;// indicates the width of this monster's forward view cone ( as a dotproduct result )
+	m_flFieldOfView = 0.2f;// indicates the width of this monster's forward view cone ( as a dotproduct result )
+	pev->health = gSkillData.agruntHealth;
+	m_flFieldOfView = 0.2f;// indicates the width of this monster's forward view cone ( as a dotproduct result )
 	m_MonsterState = MONSTERSTATE_NONE;
 	m_afCapability = 0;
 	m_afCapability |= bits_CAP_SQUAD;
 
-	m_HackedGunPos = Vector( 24, 64, 48 );
+	m_HackedGunPos = Vector( 24.0f, 64.0f, 48.0f );
 
 	//m_flNextSpeakTime = m_flNextWordTime = gpGlobals->time + 10 + RANDOM_LONG( 0, 10 );
 
@@ -678,8 +680,8 @@ Task_t tlAGruntFail[] =
 {
 	{ TASK_STOP_MOVING, 0 },
 	{ TASK_SET_ACTIVITY, (float)ACT_IDLE },
-	{ TASK_WAIT, (float)2 },
-	{ TASK_WAIT_PVS, (float)0 },
+	{ TASK_WAIT, 2.0f },
+	{ TASK_WAIT_PVS, 0.0f },
 };
 
 Schedule_t slAGruntFail[] =
@@ -701,8 +703,8 @@ Task_t tlAGruntCombatFail[] =
 {
 	{ TASK_STOP_MOVING, 0 },
 	{ TASK_SET_ACTIVITY, (float)ACT_IDLE },
-	{ TASK_WAIT_FACE_ENEMY, (float)2 },
-	{ TASK_WAIT_PVS, (float)0 },
+	{ TASK_WAIT_FACE_ENEMY, 2.0f },
+	{ TASK_WAIT_PVS, 0.0f },
 };
 
 Schedule_t slAGruntCombatFail[] =
@@ -724,9 +726,9 @@ Schedule_t slAGruntCombatFail[] =
 //=========================================================
 Task_t tlAGruntStandoff[] =
 {
-	{ TASK_STOP_MOVING, (float)0 },
+	{ TASK_STOP_MOVING, 0.0f },
 	{ TASK_SET_ACTIVITY, (float)ACT_IDLE },
-	{ TASK_WAIT_FACE_ENEMY, (float)2 },
+	{ TASK_WAIT_FACE_ENEMY, 2.0f },
 };
 
 Schedule_t slAGruntStandoff[] =
@@ -749,8 +751,8 @@ Schedule_t slAGruntStandoff[] =
 //=========================================================
 Task_t tlAGruntSuppressHornet[] =
 {
-	{ TASK_STOP_MOVING, (float)0 },
-	{ TASK_RANGE_ATTACK1, (float)0 },
+	{ TASK_STOP_MOVING, 0.0f },
+	{ TASK_RANGE_ATTACK1, 0.0f },
 };
 
 Schedule_t slAGruntSuppress[] =
@@ -769,9 +771,9 @@ Schedule_t slAGruntSuppress[] =
 //=========================================================
 Task_t tlAGruntRangeAttack1[] =
 {
-	{ TASK_STOP_MOVING, (float)0 },
-	{ TASK_FACE_ENEMY, (float)0 },
-	{ TASK_RANGE_ATTACK1, (float)0 },
+	{ TASK_STOP_MOVING, 0.0f },
+	{ TASK_FACE_ENEMY, 0.0f },
+	{ TASK_RANGE_ATTACK1, 0.0f },
 };
 
 Schedule_t slAGruntRangeAttack1[] =
@@ -815,13 +817,13 @@ Schedule_t slAGruntHiddenRangeAttack[] =
 //=========================================================
 Task_t tlAGruntTakeCoverFromEnemy[] =
 {
-	{ TASK_STOP_MOVING, (float)0 },
-	{ TASK_WAIT, (float)0.2 },
-	{ TASK_FIND_COVER_FROM_ENEMY, (float)0 },
-	{ TASK_RUN_PATH, (float)0 },
-	{ TASK_WAIT_FOR_MOVEMENT, (float)0 },
+	{ TASK_STOP_MOVING, 0.0f },
+	{ TASK_WAIT, 0.2f },
+	{ TASK_FIND_COVER_FROM_ENEMY, 0.0f },
+	{ TASK_RUN_PATH, 0.0f },
+	{ TASK_WAIT_FOR_MOVEMENT, 0.0f },
 	{ TASK_REMEMBER, (float)bits_MEMORY_INCOVER },
-	{ TASK_FACE_ENEMY, (float)0 },
+	{ TASK_FACE_ENEMY, 0.0f },
 };
 
 Schedule_t slAGruntTakeCoverFromEnemy[] =
@@ -840,13 +842,13 @@ Schedule_t slAGruntTakeCoverFromEnemy[] =
 //=========================================================
 Task_t tlAGruntVictoryDance[] =
 {
-	{ TASK_STOP_MOVING, (float)0 },
+	{ TASK_STOP_MOVING, 0.0f },
 	{ TASK_SET_FAIL_SCHEDULE, (float)SCHED_AGRUNT_THREAT_DISPLAY },
-	{ TASK_WAIT, (float)0.2 },
-	{ TASK_AGRUNT_GET_PATH_TO_ENEMY_CORPSE,	(float)0 },
-	{ TASK_WALK_PATH, (float)0 },
-	{ TASK_WAIT_FOR_MOVEMENT, (float)0 },
-	{ TASK_FACE_ENEMY, (float)0 },
+	{ TASK_WAIT, 0.2f },
+	{ TASK_AGRUNT_GET_PATH_TO_ENEMY_CORPSE,	0.0f },
+	{ TASK_WALK_PATH, 0.0f },
+	{ TASK_WAIT_FOR_MOVEMENT, 0.0f },
+	{ TASK_FACE_ENEMY, 0.0f },
 	{ TASK_PLAY_SEQUENCE, (float)ACT_CROUCH },
 	{ TASK_PLAY_SEQUENCE, (float)ACT_VICTORY_DANCE },
 	{ TASK_PLAY_SEQUENCE, (float)ACT_VICTORY_DANCE },
@@ -878,8 +880,8 @@ Schedule_t slAGruntVictoryDance[] =
 //=========================================================
 Task_t tlAGruntThreatDisplay[] =
 {
-	{ TASK_STOP_MOVING, (float)0 },
-	{ TASK_FACE_ENEMY, (float)0 },
+	{ TASK_STOP_MOVING, 0.0f },
+	{ TASK_FACE_ENEMY, 0.0f },
 	{ TASK_PLAY_SEQUENCE, (float)ACT_THREAT_DISPLAY },
 };
 
@@ -936,7 +938,7 @@ BOOL CAGrunt::FCanCheckAttacks( void )
 //=========================================================
 BOOL CAGrunt::CheckMeleeAttack1( float flDot, float flDist )
 {
-	if( HasConditions( bits_COND_SEE_ENEMY ) && flDist <= AGRUNT_MELEE_DIST && flDot >= 0.6 && m_hEnemy != 0 )
+	if( HasConditions( bits_COND_SEE_ENEMY ) && flDist <= AGRUNT_MELEE_DIST && flDot >= 0.6f && m_hEnemy != 0 )
 	{
 		return TRUE;
 	}
@@ -957,7 +959,7 @@ BOOL CAGrunt::CheckRangeAttack1( float flDot, float flDist )
 		return m_fCanHornetAttack;
 	}
 
-	if( !FBitSet( pev->spawnflags, SF_SQUADMONSTER_NOZAP ) && HasConditions( bits_COND_SEE_ENEMY ) && flDist >= AGRUNT_MELEE_DIST && flDist <= 1024 && flDot >= 0.5 && NoFriendlyFire() )
+	if( !FBitSet( pev->spawnflags, SF_SQUADMONSTER_NOZAP ) && HasConditions( bits_COND_SEE_ENEMY ) && flDist >= AGRUNT_MELEE_DIST && flDist <= 1024.0f && flDot >= 0.5f && NoFriendlyFire() )
 	{
 		TraceResult tr;
 		Vector	vecArmPos, vecArmDir;
@@ -966,18 +968,18 @@ BOOL CAGrunt::CheckRangeAttack1( float flDot, float flDist )
 		// !!!LATER - we may wish to do something different for projectile weapons as opposed to instant-hit
 		UTIL_MakeVectors( pev->angles );
 		GetAttachment( 0, vecArmPos, vecArmDir );
-		//UTIL_TraceLine( vecArmPos, vecArmPos + gpGlobals->v_forward * 256, ignore_monsters, ENT( pev ), &tr );
+		//UTIL_TraceLine( vecArmPos, vecArmPos + gpGlobals->v_forward * 256.0f, ignore_monsters, ENT( pev ), &tr );
 		UTIL_TraceLine( vecArmPos, m_hEnemy->BodyTarget( vecArmPos ), dont_ignore_monsters, ENT( pev ), &tr );
 
-		if( tr.flFraction == 1.0 || tr.pHit == m_hEnemy->edict() )
+		if( tr.flFraction == 1.0f || tr.pHit == m_hEnemy->edict() )
 		{
-			m_flNextHornetAttackCheck = gpGlobals->time + RANDOM_FLOAT( 2, 5 );
+			m_flNextHornetAttackCheck = gpGlobals->time + RANDOM_FLOAT( 2.0f, 5.0f );
 			m_fCanHornetAttack = TRUE;
 			return m_fCanHornetAttack;
 		}
 	}
 
-	m_flNextHornetAttackCheck = gpGlobals->time + 0.2;// don't check for half second if this check wasn't successful
+	m_flNextHornetAttackCheck = gpGlobals->time + 0.2f;// don't check for half second if this check wasn't successful
 	m_fCanHornetAttack = FALSE;
 	return m_fCanHornetAttack;
 }
@@ -992,7 +994,7 @@ void CAGrunt::StartTask( Task_t *pTask )
 	case TASK_AGRUNT_GET_PATH_TO_ENEMY_CORPSE:
 		{
 			UTIL_MakeVectors( pev->angles );
-			if( BuildRoute( m_vecEnemyLKP - gpGlobals->v_forward * 50, bits_MF_TO_LOCATION, NULL ) )
+			if( BuildRoute( m_vecEnemyLKP - gpGlobals->v_forward * 50.0f, bits_MF_TO_LOCATION, NULL ) )
 			{
 				TaskComplete();
 			}
@@ -1022,20 +1024,20 @@ void CAGrunt::StartTask( Task_t *pTask )
 
 			UTIL_VecToAngles( m_vecEnemyLKP - pev->origin );
 
-			UTIL_TraceLine( Center() + gpGlobals->v_forward * 128, m_vecEnemyLKP, ignore_monsters, ENT( pev ), &tr );
-			if( tr.flFraction == 1.0 )
+			UTIL_TraceLine( Center() + gpGlobals->v_forward * 128.0f, m_vecEnemyLKP, ignore_monsters, ENT( pev ), &tr );
+			if( tr.flFraction == 1.0f )
 			{
-				MakeIdealYaw( pev->origin + gpGlobals->v_right * 128 );
+				MakeIdealYaw( pev->origin + gpGlobals->v_right * 128.0f );
 				fSkip = TRUE;
 				TaskComplete();
 			}
 
 			if( !fSkip )
 			{
-				UTIL_TraceLine( Center() - gpGlobals->v_forward * 128, m_vecEnemyLKP, ignore_monsters, ENT( pev ), &tr );
-				if( tr.flFraction == 1.0 )
+				UTIL_TraceLine( Center() - gpGlobals->v_forward * 128.0f, m_vecEnemyLKP, ignore_monsters, ENT( pev ), &tr );
+				if( tr.flFraction == 1.0f )
 				{
-					MakeIdealYaw( pev->origin - gpGlobals->v_right * 128 );
+					MakeIdealYaw( pev->origin - gpGlobals->v_right * 128.0f );
 					fSkip = TRUE;
 					TaskComplete();
 				}
@@ -1043,10 +1045,10 @@ void CAGrunt::StartTask( Task_t *pTask )
 
 			if( !fSkip )
 			{
-				UTIL_TraceLine( Center() + gpGlobals->v_forward * 256, m_vecEnemyLKP, ignore_monsters, ENT( pev ), &tr );
-				if( tr.flFraction == 1.0 )
+				UTIL_TraceLine( Center() + gpGlobals->v_forward * 256.0f, m_vecEnemyLKP, ignore_monsters, ENT( pev ), &tr );
+				if( tr.flFraction == 1.0f )
 				{
-					MakeIdealYaw( pev->origin + gpGlobals->v_right * 256 );
+					MakeIdealYaw( pev->origin + gpGlobals->v_right * 256.0f );
 					fSkip = TRUE;
 					TaskComplete();
 				}
@@ -1054,10 +1056,10 @@ void CAGrunt::StartTask( Task_t *pTask )
 
 			if( !fSkip )
 			{
-				UTIL_TraceLine( Center() - gpGlobals->v_forward * 256, m_vecEnemyLKP, ignore_monsters, ENT( pev ), &tr );
-				if( tr.flFraction == 1.0 )
+				UTIL_TraceLine( Center() - gpGlobals->v_forward * 256.0f, m_vecEnemyLKP, ignore_monsters, ENT( pev ), &tr );
+				if( tr.flFraction == 1.0f )
 				{
-					MakeIdealYaw( pev->origin - gpGlobals->v_right * 256 );
+					MakeIdealYaw( pev->origin - gpGlobals->v_right * 256.0f );
 					fSkip = TRUE;
 					TaskComplete();
 				}

@@ -80,13 +80,13 @@ int CHudMOTD::Draw( float fTime )
 	{
 		ypos = ROW_RANGE_MIN + 7 + scroll;
 		if( ypos  > ROW_RANGE_MIN + 4 )
-			scroll-= ( ypos - ( ROW_RANGE_MIN + 4 ) ) / 3.0;
+			scroll-= ( ypos - ( ROW_RANGE_MIN + 4 ) ) / 3.0f;
 		if( ypos + height < ROW_RANGE_MAX )
-			scroll+= ( ROW_RANGE_MAX - ( ypos + height ) ) / 3.0;
+			scroll+= ( ROW_RANGE_MAX - ( ypos + height ) ) / 3.0f;
 		ypos_r = ROW_RANGE_MIN;
 		height = ROW_RANGE_MAX;
 	}
-	int ymax = ypos + height;
+	// int ymax = ypos + height;
 	if( xmax > ScreenWidth - 30 ) xmax = ScreenWidth - 30;
 	gHUD.DrawDarkRectangle( xpos - 5, ypos_r - 5, xmax - xpos + 10, height + 10 );
 	while( *ch )
@@ -157,7 +157,7 @@ int CHudMOTD::MsgFunc_MOTD( const char *pszName, int iSize, void *pbuf )
 		if( length > m_iMaxLength )
 		{
 			m_iMaxLength = length;
-			length = 0;
+			// length = 0;
 		}
 		m_bShow = true;
 	}

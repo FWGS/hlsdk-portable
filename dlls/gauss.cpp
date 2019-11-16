@@ -52,10 +52,10 @@ float CGauss::GetFullChargeTime( void )
 	if( g_pGameRules->IsMultiplayer() )
 #endif
 	{
-		return 1.5;
+		return 1.5f;
 	}
 
-	return 4;
+	return 4.0f;
 }
 
 #ifdef CLIENT_DLL
@@ -138,7 +138,7 @@ BOOL CGauss::Deploy()
 
 void CGauss::Holster( int skiplocal /* = 0 */ )
 {
-	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
+	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5f;
 
 	SendWeaponAnim( GAUSS_HOLSTER );
 	m_fInAttack = 0;
@@ -151,14 +151,14 @@ void CGauss::PrimaryAttack()
 	if( m_pPlayer->pev->waterlevel == 3 )
 	{
 		PlayEmptySound();
-		m_flNextSecondaryAttack = m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.15;
+		m_flNextSecondaryAttack = m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.15f;
 		return;
 	}
 
 	if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] < 2 )
 	{
 		PlayEmptySound();
-		m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
+		m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5f;
 		return;
 	}
 
@@ -169,8 +169,8 @@ void CGauss::PrimaryAttack()
 
 	StartFire();
 	m_fInAttack = 0;
-	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.0;
-	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.2;
+	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.0f;
+	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.2f;
 }
 
 void CGauss::SecondaryAttack()
@@ -189,7 +189,7 @@ void CGauss::SecondaryAttack()
 			PlayEmptySound();
 		}
 
-		m_flNextSecondaryAttack = m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5;
+		m_flNextSecondaryAttack = m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5f;
 		return;
 	}
 
@@ -198,7 +198,7 @@ void CGauss::SecondaryAttack()
 		if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0 )
 		{
 			EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_WEAPON, "weapons/357_cock1.wav", 0.8, ATTN_NORM );
-			m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
+			m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5f;
 			return;
 		}
 
@@ -212,7 +212,7 @@ void CGauss::SecondaryAttack()
 
 		SendWeaponAnim( GAUSS_SPINUP );
 		m_fInAttack = 1;
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.5;
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.5f;
 		m_pPlayer->m_flStartCharge = gpGlobals->time;
 		m_pPlayer->m_flAmmoStartCharge = UTIL_WeaponTimeBase() + GetFullChargeTime();
 
@@ -241,7 +241,7 @@ void CGauss::SecondaryAttack()
                         // out of ammo! force the gun to fire
                         StartFire();
                         m_fInAttack = 0;
-                        m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.0;
+                        m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.0f;
                         m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 1;
                         return;
                 }
@@ -256,12 +256,12 @@ void CGauss::SecondaryAttack()
 #endif
 			{
 				m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]--;
-				m_pPlayer->m_flNextAmmoBurn = UTIL_WeaponTimeBase() + 0.1;
+				m_pPlayer->m_flNextAmmoBurn = UTIL_WeaponTimeBase() + 0.1f;
 			}
 			else
 			{
 				m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]--;
-				m_pPlayer->m_flNextAmmoBurn = UTIL_WeaponTimeBase() + 0.3;
+				m_pPlayer->m_flNextAmmoBurn = UTIL_WeaponTimeBase() + 0.3f;
 			}
 		}
 
@@ -286,19 +286,19 @@ void CGauss::SecondaryAttack()
 
 		m_pPlayer->m_iWeaponVolume = GAUSS_PRIMARY_CHARGE_VOLUME;
 
-		// m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.1;
-		if( m_pPlayer->m_flStartCharge < gpGlobals->time - 10 )
+		// m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.1f;
+		if( m_pPlayer->m_flStartCharge < gpGlobals->time - 10.0f )
 		{
 			// Player charged up too long. Zap him.
-			EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_WEAPON, "weapons/electro4.wav", 1.0, ATTN_NORM, 0, 80 + RANDOM_LONG( 0, 0x3f ) );
-			EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/electro6.wav", 1.0, ATTN_NORM, 0, 75 + RANDOM_LONG( 0, 0x3f ) );
+			EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_WEAPON, "weapons/electro4.wav", 1.0f, ATTN_NORM, 0, 80 + RANDOM_LONG( 0, 0x3f ) );
+			EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/electro6.wav", 1.0f, ATTN_NORM, 0, 75 + RANDOM_LONG( 0, 0x3f ) );
 
 			m_fInAttack = 0;
-			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.0;
-			m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 1.0;
+			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.0f;
+			m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 1.0f;
 #ifndef CLIENT_DLL
 			m_pPlayer->TakeDamage( VARS( eoNullEntity ), VARS( eoNullEntity ), 50, DMG_SHOCK );
-			UTIL_ScreenFade( m_pPlayer, Vector( 255, 128, 0 ), 2, 0.5, 128, FFADE_IN );
+			UTIL_ScreenFade( m_pPlayer, Vector( 255, 128, 0 ), 2, 0.5f, 128, FFADE_IN );
 #endif
 			SendWeaponAnim( GAUSS_IDLE );
 
@@ -324,18 +324,18 @@ void CGauss::StartFire( void )
 
 	if( gpGlobals->time - m_pPlayer->m_flStartCharge > GetFullChargeTime() )
 	{
-		flDamage = 200;
+		flDamage = 200.0f;
 	}
 	else
 	{
-		flDamage = 200 * ( ( gpGlobals->time - m_pPlayer->m_flStartCharge ) / GetFullChargeTime() );
+		flDamage = 200.0f * ( ( gpGlobals->time - m_pPlayer->m_flStartCharge ) / GetFullChargeTime() );
 	}
 
 	if( m_fPrimaryFire )
 	{
 		// fixed damage on primary attack
 #ifdef CLIENT_DLL
-		flDamage = 20;
+		flDamage = 20.0f;
 #else 
 		flDamage = gSkillData.plrDmgGauss;
 #endif
@@ -349,7 +349,7 @@ void CGauss::StartFire( void )
 
 		if( !m_fPrimaryFire )
 		{
-			m_pPlayer->pev->velocity = m_pPlayer->pev->velocity - gpGlobals->v_forward * flDamage * 5;
+			m_pPlayer->pev->velocity = m_pPlayer->pev->velocity - gpGlobals->v_forward * flDamage * 5.0f;
 		}
 
 		if( !g_pGameRules->IsMultiplayer() )
@@ -363,7 +363,7 @@ void CGauss::StartFire( void )
 	}
 
 	// time until aftershock 'static discharge' sound
-	m_pPlayer->m_flPlayAftershock = gpGlobals->time + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 0.3, 0.8 );
+	m_pPlayer->m_flPlayAftershock = gpGlobals->time + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 0.3f, 0.8f );
 
 	Fire( vecSrc, vecAiming, flDamage );
 }
@@ -374,9 +374,9 @@ void CGauss::Fire( Vector vecOrigSrc, Vector vecDir, float flDamage )
 	TraceResult tr, beam_tr;
 #ifndef CLIENT_DLL
 	Vector vecSrc = vecOrigSrc;
-	Vector vecDest = vecSrc + vecDir * 8192;
+	Vector vecDest = vecSrc + vecDir * 8192.0f;
 	edict_t	*pentIgnore;
-	float flMaxFrac = 1.0;
+	float flMaxFrac = 1.0f;
 	int nTotal = 0;
 	int fHasPunched = 0;
 	int fFirstBeam = 1;
@@ -441,7 +441,7 @@ void CGauss::Fire( Vector vecOrigSrc, Vector vecDir, float flDamage )
 
 			n = -DotProduct( tr.vecPlaneNormal, vecDir );
 
-			if( n < 0.5 ) // 60 degrees
+			if( n < 0.5f ) // 60 degrees
 			{
 				// ALERT( at_console, "reflect %f\n", n );
 				// reflect
@@ -450,8 +450,8 @@ void CGauss::Fire( Vector vecOrigSrc, Vector vecDir, float flDamage )
 				r = 2.0 * tr.vecPlaneNormal * n + vecDir;
 				flMaxFrac = flMaxFrac - tr.flFraction;
 				vecDir = r;
-				vecSrc = tr.vecEndPos + vecDir * 8;
-				vecDest = vecSrc + vecDir * 8192;
+				vecSrc = tr.vecEndPos + vecDir * 8.0f;
+				vecDest = vecSrc + vecDir * 8192.0f;
 
 				// explode a bit
 				m_pPlayer->RadiusDamage( tr.vecEndPos, pev, m_pPlayer->pev, flDamage * n, CLASS_NONE, DMG_BLAST );
@@ -459,8 +459,8 @@ void CGauss::Fire( Vector vecOrigSrc, Vector vecDir, float flDamage )
 				nTotal += 34;
 
 				// lose energy
-				if( n == 0 ) n = 0.1;
-				flDamage = flDamage * ( 1 - n );
+				if( n == 0.0f ) n = 0.1f;
+				flDamage = flDamage * ( 1.0f - n );
 			}
 			else
 			{
@@ -484,8 +484,8 @@ void CGauss::Fire( Vector vecOrigSrc, Vector vecDir, float flDamage )
 
 						if( n < flDamage )
 						{
-							if( n == 0 )
-								n = 1;
+							if( n == 0.0f )
+								n = 1.0f;
 							flDamage -= n;
 
 							// ALERT( at_console, "punch %f\n", n );
@@ -497,16 +497,16 @@ void CGauss::Fire( Vector vecOrigSrc, Vector vecDir, float flDamage )
 
 							if( g_pGameRules->IsMultiplayer() )
 							{
-								damage_radius = flDamage * 1.75;  // Old code == 2.5
+								damage_radius = flDamage * 1.75f;  // Old code == 2.5
 							}
 							else
 							{
-								damage_radius = flDamage * 2.5;
+								damage_radius = flDamage * 2.5f;
 							}
 
 							::RadiusDamage( beam_tr.vecEndPos + vecDir * 8, pev, m_pPlayer->pev, flDamage, damage_radius, CLASS_NONE, DMG_BLAST );
 
-							CSoundEnt::InsertSound( bits_SOUND_COMBAT, pev->origin, NORMAL_EXPLOSION_VOLUME, 3.0 );
+							CSoundEnt::InsertSound( bits_SOUND_COMBAT, pev->origin, NORMAL_EXPLOSION_VOLUME, 3.0f );
 
 							nTotal += 53;
 
@@ -552,18 +552,18 @@ void CGauss::WeaponIdle( void )
 		switch( RANDOM_LONG( 0, 3 ) )
 		{
 		case 0:
-			EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_WEAPON, "weapons/electro4.wav", RANDOM_FLOAT( 0.7, 0.8 ), ATTN_NORM );
+			EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_WEAPON, "weapons/electro4.wav", RANDOM_FLOAT( 0.7f, 0.8f ), ATTN_NORM );
 			break;
 		case 1:
-			EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_WEAPON, "weapons/electro5.wav", RANDOM_FLOAT( 0.7, 0.8 ), ATTN_NORM );
+			EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_WEAPON, "weapons/electro5.wav", RANDOM_FLOAT( 0.7f, 0.8f ), ATTN_NORM );
 			break;
 		case 2:
-			EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_WEAPON, "weapons/electro6.wav", RANDOM_FLOAT( 0.7, 0.8 ), ATTN_NORM );
+			EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_WEAPON, "weapons/electro6.wav", RANDOM_FLOAT( 0.7f, 0.8f ), ATTN_NORM );
 			break;
 		case 3:
 			break; // no sound
 		}
-		m_pPlayer->m_flPlayAftershock = 0.0;
+		m_pPlayer->m_flPlayAftershock = 0.0f;
 	}
 
 	if( m_flTimeWeaponIdle > UTIL_WeaponTimeBase() )
@@ -573,30 +573,30 @@ void CGauss::WeaponIdle( void )
 	{
 		StartFire();
 		m_fInAttack = 0;
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 2.0;
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 2.0f;
 
 		// Need to set m_flNextPrimaryAttack so the weapon gets a chance to complete its secondary fire animation. - Solokiller
 		if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0 )
-			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5;
+			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5f;
 	}
 	else
 	{
 		int iAnim;
-		float flRand = RANDOM_FLOAT( 0, 1 );
-		if( flRand <= 0.5 )
+		float flRand = RANDOM_FLOAT( 0.0f, 1.0f );
+		if( flRand <= 0.5f )
 		{
 			iAnim = GAUSS_IDLE;
-			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
+			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10.0f, 15.0f );
 		}
-		else if( flRand <= 0.75 )
+		else if( flRand <= 0.75f )
 		{
 			iAnim = GAUSS_IDLE2;
-			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
+			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10.0f, 15.0f );
 		}
 		else
 		{
 			iAnim = GAUSS_FIDGET;
-			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 3;
+			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 3.0f;
 		}
 #ifndef CLIENT_DLL
 		SendWeaponAnim( iAnim );

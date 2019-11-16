@@ -33,8 +33,8 @@
 #define EGON_SOUND_RUN			"weapons/egon_run3.wav"
 #define EGON_SOUND_STARTUP		"weapons/egon_windup2.wav"
 
-#define EGON_SWITCH_NARROW_TIME			0.75			// Time it takes to switch fire modes
-#define EGON_SWITCH_WIDE_TIME			1.5
+#define EGON_SWITCH_NARROW_TIME			0.75f			// Time it takes to switch fire modes
+#define EGON_SWITCH_WIDE_TIME			1.5f
 
 enum egon_e {
 	EGON_IDLE1 = 0,
@@ -105,7 +105,7 @@ int CEgon::AddToPlayer( CBasePlayer *pPlayer )
 
 void CEgon::Holster( int skiplocal /* = 0 */ )
 {
-	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
+	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5f;
 	SendWeaponAnim( EGON_HOLSTER );
 
 	EndAttack();
@@ -150,16 +150,16 @@ void CEgon::PrimaryAttack( void )
 	if( m_pPlayer->pev->waterlevel == 3 )
 	{
 		PlayEmptySound();
-		m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.2;
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 5.0;
+		m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.2f;
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 5.0f;
 		return;
 	}
 
 	if( !HasAmmo() )
 	{
-		m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.2;
+		m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.2f;
 		PlayEmptySound();
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 5.0;
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 5.0f;
 		return;
 	}
 
@@ -207,17 +207,17 @@ void CEgon::WeaponIdle( void )
 
 	int iAnim;
 
-	float flRand = RANDOM_FLOAT( 0, 1 );
+	float flRand = RANDOM_FLOAT( 0.0f, 1.0f );
 
-	if( flRand <= 0.5 )
+	if( flRand <= 0.5f )
 	{
 		iAnim = EGON_IDLE1;
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10.0f, 15.0f );
 	}
 	else 
 	{
 		iAnim = EGON_FIDGET1;
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 3;
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 3.0f;
 	}
 
 	SendWeaponAnim( iAnim );
@@ -228,8 +228,8 @@ void CEgon::EndAttack( void )
 	EMIT_SOUND_DYN( ENT( pev ), CHAN_STATIC, "weapons/egon_run3.wav", 0, 0, SND_STOP, PITCH_NORM );
 	EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, "weapons/egon_off1.wav", 1.0, ATTN_NORM, 0, PITCH_NORM );
 
-	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 2.0;
-	m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5;
+	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 2.0f;
+	m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5f;
 }
 
 class CEgonAmmo : public CBasePlayerAmmo
