@@ -414,7 +414,7 @@ void CBaseMonster::RunTask( Task_t *pTask )
 				distance = ( m_vecMoveGoal - pev->origin ).Length2D();
 
 				// Re-evaluate when you think your finished, or the target has moved too far
-				if( ( distance < pTask->flData ) || ( m_vecMoveGoal - m_hTargetEnt->pev->origin ).Length() > pTask->flData * 0.5 )
+				if( ( distance < pTask->flData ) || ( m_vecMoveGoal - m_hTargetEnt->pev->origin ).Length() > pTask->flData * 0.5f )
 				{
 					m_vecMoveGoal = m_hTargetEnt->pev->origin;
 					distance = ( m_vecMoveGoal - pev->origin ).Length2D();
@@ -1378,7 +1378,7 @@ Schedule_t *CBaseMonster::GetSchedule( void )
 
 			if( HasConditions( bits_COND_LIGHT_DAMAGE | bits_COND_HEAVY_DAMAGE ) )
 			{
-				if( fabs( FlYawDiff() ) < ( 1.0 - m_flFieldOfView ) * 60 ) // roughly in the correct direction
+				if( fabs( FlYawDiff() ) < ( 1.0f - m_flFieldOfView ) * 60.0f ) // roughly in the correct direction
 				{
 					return GetScheduleOfType( SCHED_TAKE_COVER_FROM_ORIGIN );
 				}
