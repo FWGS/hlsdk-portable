@@ -18,9 +18,9 @@
 // implementation of class-less helper functions
 //
 
-#include "stdio.h"
-#include "stdlib.h"
-#include "math.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <cmath>
 
 #include "hud.h"
 #include "cl_util.h"
@@ -30,20 +30,22 @@
 #define M_PI		3.14159265358979323846	// matches value in gcc v2 math.h
 #endif
 
+#ifndef M_PI_F
+#define M_PI_F		(float)M_PI
+#endif
+
 extern vec3_t vec3_origin;
 
 #ifdef _MSC_VER
 vec3_t vec3_origin;
 #endif
 
-double sqrt( double x );
-
 float Length( const float *v )
 {
 	int	i;
 	float	length;
 
-	length = 0;
+	length = 0.0f;
 	for( i = 0; i < 3; i++ )
 		length += v[i] * v[i];
 	length = sqrt( length );		// FIXME
@@ -55,29 +57,29 @@ void VectorAngles( const float *forward, float *angles )
 {
 	float tmp, yaw, pitch;
 
-	if( forward[1] == 0 && forward[0] == 0 )
+	if( forward[1] == 0.0f && forward[0] == 0.0f )
 	{
-		yaw = 0;
-		if( forward[2] > 0 )
-			pitch = 90;
+		yaw = 0.0f;
+		if( forward[2] > 0.0f )
+			pitch = 90.0f;
 		else
-			pitch = 270;
+			pitch = 270.0f;
 	}
 	else
 	{
-		yaw = ( atan2( forward[1], forward[0]) * 180 / M_PI );
-		if( yaw < 0 )
-			yaw += 360;
+		yaw = ( atan2( forward[1], forward[0]) * 180.0f / M_PI_F );
+		if( yaw < 0.0f )
+			yaw += 360.0f;
 
 		tmp = sqrt( forward[0] * forward[0] + forward[1] * forward[1] );
-		pitch = ( atan2( forward[2], tmp ) * 180 / M_PI );
-		if( pitch < 0 )
-			pitch += 360;
+		pitch = ( atan2( forward[2], tmp ) * 180.0f / M_PI_F );
+		if( pitch < 0.0f )
+			pitch += 360.0f;
 	}
 
 	angles[0] = pitch;
 	angles[1] = yaw;
-	angles[2] = 0;
+	angles[2] = 0.0f;
 }
 
 float VectorNormalize( float *v )
@@ -89,7 +91,7 @@ float VectorNormalize( float *v )
 
 	if( length )
 	{
-		ilength = 1 / length;
+		ilength = 1.0f / length;
 		v[0] *= ilength;
 		v[1] *= ilength;
 		v[2] *= ilength;

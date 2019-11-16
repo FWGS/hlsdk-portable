@@ -16,20 +16,29 @@
 #pragma once
 #ifndef MATHLIB_H
 #define MATHLIB_H
+#ifndef __cplusplus
 #include <math.h>
+#ifdef HAVE_TGMATH_H
+#include <tgmath.h>
+#endif // HAVE_TGMATH_H
+#else // __cplusplus
+#include <cmath>
+#endif // __cplusplus
 
 typedef float vec_t;
-typedef vec_t vec2_t[2];
 
-#ifndef DID_VEC3_T_DEFINE
+#if !defined DID_VEC3_T_DEFINE
 #define DID_VEC3_T_DEFINE
 typedef vec_t vec3_t[3];
 #endif
 
-typedef vec_t vec4_t[4];	// x,y,z,w
 
 #ifndef M_PI
 #define M_PI		3.14159265358979323846	// matches value in gcc v2 math.h
+#endif
+
+#ifndef M_PI_F
+#define M_PI_F		(float)M_PI
 #endif
 
 struct mplane_s;

@@ -169,7 +169,7 @@ int KB_ConvertString( char *in, char **ppout )
 			*pEnd = '\0';
 
 			pBinding = NULL;
-			if( strlen( binding + 1 ) > 0 )
+			if( binding[1] != '\0' )
 			{
 				// See if there is a binding for binding?
 				pBinding = gEngfuncs.Key_LookupBinding( binding + 1 );
@@ -819,7 +819,7 @@ void DLLEXPORT CL_CreateMove( float frametime, struct usercmd_s *cmd, int active
 
 		// clip to maxspeed
 		spd = gEngfuncs.GetClientMaxspeed();
-		if( spd != 0.0 )
+		if( spd != 0.0f )
 		{
 			// scale the 3 speeds so that the total velocity is not > cl.maxspeed
 			float fmov = sqrt( ( cmd->forwardmove * cmd->forwardmove ) + ( cmd->sidemove * cmd->sidemove ) + ( cmd->upmove * cmd->upmove ) );
