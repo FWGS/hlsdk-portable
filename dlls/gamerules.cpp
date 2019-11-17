@@ -134,6 +134,11 @@ void CGameRules::RefreshSkillData ( void )
 	gSkillData.iSkillLevel = iSkill;
 }
 
+void CGameRules::ClientUserInfoChanged( CBasePlayer *pPlayer, char *infobuffer )
+{
+	pPlayer->SetPrefsFromUserinfo( infobuffer );
+}
+
 //=========================================================
 // instantiate the proper game rules object
 //=========================================================

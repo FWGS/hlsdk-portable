@@ -34,7 +34,7 @@
 float UTIL_WeaponTimeBase( void )
 {
 #if defined( CLIENT_WEAPONS )
-	return 0.0;
+	return 0.0f;
 #else
 	return gpGlobals->time;
 #endif
@@ -130,7 +130,7 @@ float UTIL_SharedRandomFloat( unsigned int seed, float low, float high )
 
 		tensixrand = U_Random() & 65535;
 
-		offset = (float)tensixrand / 65536.0;
+		offset = (float)tensixrand / 65536.0f;
 
 		return ( low + offset * range );
 	}
@@ -147,8 +147,8 @@ void UTIL_ParametricRocket( entvars_t *pev, Vector vecOrigin, Vector vecAngles, 
 
 	// Now compute how long it will take based on current velocity
 	Vector vecTravel = pev->endpos - pev->startpos;
-	float travelTime = 0.0;
-	if( pev->velocity.Length() > 0 )
+	float travelTime = 0.0f;
+	if( pev->velocity.Length() > 0.0f )
 	{
 		travelTime = vecTravel.Length() / pev->velocity.Length();
 	}
@@ -614,7 +614,7 @@ int UTIL_MonstersInSphere( CBaseEntity **pList, int listMax, const Vector &cente
 
 		// Use origin for X & Y since they are centered for all monsters
 		// Now X
-		delta = center.x - pEdict->v.origin.x;//( pEdict->v.absmin.x + pEdict->v.absmax.x ) * 0.5;
+		delta = center.x - pEdict->v.origin.x;//( pEdict->v.absmin.x + pEdict->v.absmax.x ) * 0.5f;
 		delta *= delta;
 
 		if( delta > radiusSquared )
@@ -622,7 +622,7 @@ int UTIL_MonstersInSphere( CBaseEntity **pList, int listMax, const Vector &cente
 		distance = delta;
 
 		// Now Y
-		delta = center.y - pEdict->v.origin.y;//( pEdict->v.absmin.y + pEdict->v.absmax.y )*0.5;
+		delta = center.y - pEdict->v.origin.y;//( pEdict->v.absmin.y + pEdict->v.absmax.y ) * 0.5f;
 		delta *= delta;
 
 		distance += delta;
@@ -630,7 +630,7 @@ int UTIL_MonstersInSphere( CBaseEntity **pList, int listMax, const Vector &cente
 			continue;
 
 		// Now Z
-		delta = center.z - ( pEdict->v.absmin.z + pEdict->v.absmax.z ) * 0.5;
+		delta = center.z - ( pEdict->v.absmin.z + pEdict->v.absmax.z ) * 0.5f;
 		delta *= delta;
 
 		distance += delta;
@@ -1340,7 +1340,7 @@ void UTIL_DecalTrace( TraceResult *pTrace, int decalNumber )
 	if( index < 0 )
 		return;
 
-	if( pTrace->flFraction == 1.0 )
+	if( pTrace->flFraction == 1.0f )
 		return;
 
 	// Only decal BSP models
@@ -1409,7 +1409,7 @@ void UTIL_PlayerDecalTrace( TraceResult *pTrace, int playernum, int decalNumber,
 	else
 		index = decalNumber;
 
-	if( pTrace->flFraction == 1.0 )
+	if( pTrace->flFraction == 1.0f )
 		return;
 
 	MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
@@ -1432,7 +1432,7 @@ void UTIL_GunshotDecalTrace( TraceResult *pTrace, int decalNumber )
 	if( index < 0 )
 		return;
 
-	if( pTrace->flFraction == 1.0 )
+	if( pTrace->flFraction == 1.0f )
 		return;
 
 	MESSAGE_BEGIN( MSG_PAS, SVC_TEMPENTITY, pTrace->vecEndPos );
@@ -1462,7 +1462,7 @@ void UTIL_Ricochet( const Vector &position, float scale )
 		WRITE_COORD( position.x );
 		WRITE_COORD( position.y );
 		WRITE_COORD( position.z );
-		WRITE_BYTE( (int)( scale * 10 ) );
+		WRITE_BYTE( (int)( scale * 10.0f ) );
 	MESSAGE_END();
 }
 
@@ -1579,9 +1579,9 @@ float UTIL_WaterLevel( const Vector &position, float minz, float maxz )
 		return maxz;
 
 	float diff = maxz - minz;
-	while( diff > 1.0 )
+	while( diff > 1.0f )
 	{
-		midUp.z = minz + diff / 2.0;
+		midUp.z = minz + diff / 2.0f;
 		if( UTIL_PointContents( midUp ) == CONTENTS_WATER )
 		{
 			minz = midUp.z;
@@ -1600,7 +1600,7 @@ extern DLL_GLOBAL short g_sModelIndexBubbles;// holds the index for the bubbles 
 
 void UTIL_Bubbles( Vector mins, Vector maxs, int count )
 {
-	Vector mid = ( mins + maxs ) * 0.5;
+	Vector mid = ( mins + maxs ) * 0.5f;
 
 	float flHeight = UTIL_WaterLevel( mid, mid.z, mid.z + 1024 );
 	flHeight = flHeight - mins.z;
@@ -2352,7 +2352,7 @@ int CRestore::ReadField( void *pBaseData, TYPEDESCRIPTION *pFields, int fieldCou
 							pString++;
 						}
 						pInputData = pString;
-						if( strlen( (char *)pInputData ) == 0 )
+						if( ( (char *)pInputData )[0] == '\0' )
 							*( (string_t *)pOutputData ) = 0;
 						else
 						{
@@ -2447,7 +2447,7 @@ int CRestore::ReadField( void *pBaseData, TYPEDESCRIPTION *pFields, int fieldCou
 						*( (void**)pOutputData ) = *(void **)pInputData;
 						break;
 					case FIELD_FUNCTION:
-						if( strlen( (char *)pInputData ) == 0 )
+						if( ( (char *)pInputData )[0] == '\0' )
 							*( (void**)pOutputData ) = 0;
 						else
 							*( (void**)pOutputData ) = (void*)FUNCTION_FROM_NAME( (char *)pInputData );

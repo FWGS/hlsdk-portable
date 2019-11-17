@@ -69,10 +69,10 @@ void SpectatorSpray( void )
 	VectorScale( forward, 128, forward );
 	VectorAdd( forward, v_origin, forward );
 	pmtrace_t * trace = gEngfuncs.PM_TraceLine( v_origin, forward, PM_TRACELINE_PHYSENTSONLY, 2, -1 );
-	if( trace->fraction != 1.0 )
+	if( trace->fraction != 1.0f )
 	{
 		sprintf( string, "drc_spray %.2f %.2f %.2f %i",
-			trace->endpos[0], trace->endpos[1], trace->endpos[2], trace->ent );
+			(double)trace->endpos[0], (double)trace->endpos[1], (double)trace->endpos[2], trace->ent );
 		gEngfuncs.pfnServerCmd( string );
 	}
 }
@@ -342,7 +342,7 @@ int CHudSpectator::Draw( float flTime )
 	int lx;
 
 	char string[256];
-	float * color;
+	float *color;
 
 	// draw only in spectator mode
 	if( !g_iUser1 )
@@ -796,8 +796,8 @@ bool CHudSpectator::IsActivePlayer( cl_entity_t *ent )
 
 bool CHudSpectator::ParseOverviewFile()
 {
-	char filename[255] = { 0 };
-	char levelname[255] = { 0 };
+	char filename[512] = { 0 };
+	char levelname[256] = { 0 };
 	char token[1024] = { 0 };
 	float height;
 
@@ -818,7 +818,7 @@ bool CHudSpectator::ParseOverviewFile()
 	m_OverviewData.layersHeights[0] = 0.0f;
 	strcpy( m_OverviewData.map, gEngfuncs.pfnGetLevelName() );
 
-	if( strlen( m_OverviewData.map ) == 0 )
+	if( m_OverviewData.map[0] == '\0' )
 		return false; // not active yet
 
 	strcpy( levelname, m_OverviewData.map + 5 );
@@ -963,15 +963,15 @@ void CHudSpectator::DrawOverviewLayer()
 	float screenaspect, xs, ys, xStep, yStep, x, y, z;
 	int ix, iy, i, xTiles, yTiles, frame;
 
-	qboolean	hasMapImage = m_MapSprite?TRUE:FALSE;
-	model_t *   dummySprite = (struct model_s *)gEngfuncs.GetSpritePointer( m_hsprUnkownMap);
+	qboolean	 hasMapImage = m_MapSprite ? TRUE : FALSE;
+	model_t		*dummySprite = (struct model_s *)gEngfuncs.GetSpritePointer( m_hsprUnkownMap );
 
-	if ( hasMapImage)
+	if( hasMapImage )
 	{
-		i = m_MapSprite->numframes / (4*3);
-		i = sqrt(float(i));
-		xTiles = i*4;
-		yTiles = i*3;
+		i = m_MapSprite->numframes / ( 4 * 3 );
+		i = sqrt( float( i ) );
+		xTiles = i * 4;
+		yTiles = i * 3;
 	}
 	else
 	{
@@ -990,7 +990,7 @@ void CHudSpectator::DrawOverviewLayer()
 
 	gEngfuncs.pTriAPI->RenderMode( kRenderTransTexture );
 	gEngfuncs.pTriAPI->CullFace( TRI_NONE );
-	gEngfuncs.pTriAPI->Color4f( 1.0, 1.0, 1.0, 1.0 );
+	gEngfuncs.pTriAPI->Color4f( 1.0f, 1.0f, 1.0f, 1.0f );
 
 	frame = 0;
 
@@ -1119,7 +1119,7 @@ void CHudSpectator::DrawOverviewEntities()
 
 		gEngfuncs.pTriAPI->Begin( TRI_QUADS );
 
-		gEngfuncs.pTriAPI->Color4f( 1.0, 1.0, 1.0, 1.0 );
+		gEngfuncs.pTriAPI->Color4f( 1.0f, 1.0f, 1.0f, 1.0f );
 
 		gEngfuncs.pTriAPI->TexCoord2f(1, 0);
 		VectorMA( origin, 16.0f * sizeScale, up, point );
@@ -1159,28 +1159,28 @@ void CHudSpectator::DrawOverviewEntities()
 		hSpriteModel = (struct model_s *)gEngfuncs.GetSpritePointer( m_hsprBeam );
 		gEngfuncs.pTriAPI->SpriteTexture( hSpriteModel, 0 );
 
-		gEngfuncs.pTriAPI->Color4f( r, g, b, 0.3 );
+		gEngfuncs.pTriAPI->Color4f( r, g, b, 0.3f );
 
 		gEngfuncs.pTriAPI->Begin( TRI_QUADS );
-		gEngfuncs.pTriAPI->TexCoord2f( 1, 0 );
-		gEngfuncs.pTriAPI->Vertex3f( origin[0] + 4, origin[1] + 4, origin[2] - zScale );
-		gEngfuncs.pTriAPI->TexCoord2f( 0, 0 );
-		gEngfuncs.pTriAPI->Vertex3f( origin[0] - 4, origin[1] - 4, origin[2] - zScale );
-		gEngfuncs.pTriAPI->TexCoord2f( 0, 1 );
-		gEngfuncs.pTriAPI->Vertex3f( origin[0] - 4, origin[1] - 4, z );
-		gEngfuncs.pTriAPI->TexCoord2f( 1, 1 );
-		gEngfuncs.pTriAPI->Vertex3f( origin[0] + 4, origin[1] + 4, z );
+		gEngfuncs.pTriAPI->TexCoord2f( 1.0f, 0.0f );
+		gEngfuncs.pTriAPI->Vertex3f( origin[0] + 4.0f, origin[1] + 4.0f, origin[2] - zScale );
+		gEngfuncs.pTriAPI->TexCoord2f( 0.0f, 0.0f );
+		gEngfuncs.pTriAPI->Vertex3f( origin[0] - 4.0f, origin[1] - 4.0f, origin[2] - zScale );
+		gEngfuncs.pTriAPI->TexCoord2f( 0.0f, 1.0f );
+		gEngfuncs.pTriAPI->Vertex3f( origin[0] - 4.0f, origin[1] - 4.0f, z );
+		gEngfuncs.pTriAPI->TexCoord2f( 1.0f, 1.0f );
+		gEngfuncs.pTriAPI->Vertex3f( origin[0] + 4.0f, origin[1] + 4.0f, z );
 		gEngfuncs.pTriAPI->End();
 
 		gEngfuncs.pTriAPI->Begin( TRI_QUADS );
-		gEngfuncs.pTriAPI->TexCoord2f( 1, 0 );
-		gEngfuncs.pTriAPI->Vertex3f( origin[0] - 4, origin[1] + 4, origin[2] - zScale );
-		gEngfuncs.pTriAPI->TexCoord2f( 0, 0 );
-		gEngfuncs.pTriAPI->Vertex3f( origin[0] + 4, origin[1] - 4, origin[2] - zScale );
-		gEngfuncs.pTriAPI->TexCoord2f( 0, 1 );
-		gEngfuncs.pTriAPI->Vertex3f( origin[0] + 4, origin[1] - 4, z );
-		gEngfuncs.pTriAPI->TexCoord2f( 1, 1 );
-		gEngfuncs.pTriAPI->Vertex3f( origin[0] - 4, origin[1] + 4, z );
+		gEngfuncs.pTriAPI->TexCoord2f( 1.0f, 0.0f );
+		gEngfuncs.pTriAPI->Vertex3f( origin[0] - 4.0f, origin[1] + 4.0f, origin[2] - zScale );
+		gEngfuncs.pTriAPI->TexCoord2f( 0.0f, 0.0f );
+		gEngfuncs.pTriAPI->Vertex3f( origin[0] + 4.0f, origin[1] - 4.0f, origin[2] - zScale );
+		gEngfuncs.pTriAPI->TexCoord2f( 0.0f, 1.0f );
+		gEngfuncs.pTriAPI->Vertex3f( origin[0] + 4.0f, origin[1] - 4.0f, z );
+		gEngfuncs.pTriAPI->TexCoord2f( 1.0f, 1.0f );
+		gEngfuncs.pTriAPI->Vertex3f( origin[0] - 4.0f, origin[1] + 4.0f, z );
 		gEngfuncs.pTriAPI->End();
 
 		// calculate screen position for name and infromation in hud::draw()
@@ -1241,7 +1241,7 @@ void CHudSpectator::DrawOverviewEntities()
 	gEngfuncs.pTriAPI->RenderMode( kRenderTransAdd );
 	gEngfuncs.pTriAPI->SpriteTexture( hSpriteModel, 0 );
 
-	gEngfuncs.pTriAPI->Color4f( r, g, b, 1.0 );
+	gEngfuncs.pTriAPI->Color4f( r, g, b, 1.0f );
 
 	AngleVectors( angles, forward, NULL, NULL );
 	VectorScale( forward, 512.0f, forward );
@@ -1258,13 +1258,13 @@ void CHudSpectator::DrawOverviewEntities()
 	VectorTransform( forward, rmatrix , left );
 
 	gEngfuncs.pTriAPI->Begin( TRI_TRIANGLES );
-		gEngfuncs.pTriAPI->TexCoord2f( 0, 0 );
+		gEngfuncs.pTriAPI->TexCoord2f( 0.0f, 0.0f );
 		gEngfuncs.pTriAPI->Vertex3f( x + right[0], y + right[1], ( z + right[2] ) * zScale);
 
-		gEngfuncs.pTriAPI->TexCoord2f( 0, 1 );
+		gEngfuncs.pTriAPI->TexCoord2f( 0.0f, 1.0f );
 		gEngfuncs.pTriAPI->Vertex3f( x, y, z * zScale );
 
-		gEngfuncs.pTriAPI->TexCoord2f( 1, 1 );
+		gEngfuncs.pTriAPI->TexCoord2f( 1.0f, 1.0f );
 		gEngfuncs.pTriAPI->Vertex3f( x + left[0], y + left[1], ( z + left[2] ) * zScale );
 	gEngfuncs.pTriAPI->End ();
 }
@@ -1305,7 +1305,7 @@ void CHudSpectator::CheckOverviewEntities()
 bool CHudSpectator::AddOverviewEntity( int type, struct cl_entity_s *ent, const char *modelname)
 {
 	HSPRITE	hSprite = 0;
-	double  duration = -1.0f;	// duration -1 means show it only this frame;
+	double  duration = -1.0;	// duration -1 means show it only this frame;
 
 	if( !ent )
 		return false;

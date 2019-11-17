@@ -383,7 +383,7 @@ void CBasePlayerItem::FallInit( void )
 	SetTouch( &CBasePlayerItem::DefaultTouch );
 	SetThink( &CBasePlayerItem::FallThink );
 
-	pev->nextthink = gpGlobals->time + 0.1;
+	pev->nextthink = gpGlobals->time + 0.1f;
 }
 
 //=========================================================
@@ -395,7 +395,7 @@ void CBasePlayerItem::FallInit( void )
 //=========================================================
 void CBasePlayerItem::FallThink( void )
 {
-	pev->nextthink = gpGlobals->time + 0.1;
+	pev->nextthink = gpGlobals->time + 0.1f;
 
 	if( pev->flags & FL_ONGROUND )
 	{
@@ -538,7 +538,7 @@ BOOL CanAttack( float attack_time, float curtime, BOOL isPredicted )
 	}
 	else
 	{
-		return ( attack_time <= 0.0 ) ? TRUE : FALSE;
+		return ( attack_time <= 0.0f ) ? TRUE : FALSE;
 	}
 }
 
@@ -637,14 +637,14 @@ void CBasePlayerItem::Drop( void )
 {
 	SetTouch( NULL );
 	SetThink( &CBaseEntity::SUB_Remove );
-	pev->nextthink = gpGlobals->time + .1;
+	pev->nextthink = gpGlobals->time + 0.1f;
 }
 
 void CBasePlayerItem::Kill( void )
 {
 	SetTouch( NULL );
 	SetThink( &CBaseEntity::SUB_Remove );
-	pev->nextthink = gpGlobals->time + .1;
+	pev->nextthink = gpGlobals->time + 0.1f;
 }
 
 void CBasePlayerItem::Holster( int skiplocal /* = 0 */ )
@@ -909,8 +909,8 @@ BOOL CBasePlayerWeapon::DefaultDeploy( const char *szViewModel, const char *szWe
 	m_pPlayer->m_pszAnimExtention = szAnimExt;
 	SendWeaponAnim( iAnim, skiplocal );
 
-	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
-	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.0;
+	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5f;
+	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.0f;
 	//m_flLastFireTime = 0.0f;
 
 	return TRUE;
@@ -933,7 +933,7 @@ BOOL CBasePlayerWeapon::DefaultReload( int iClipSize, int iAnim, float fDelay )
 
 	m_fInReload = TRUE;
 
-	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 3;
+	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 3.0f;
 	return TRUE;
 }
 
@@ -1028,7 +1028,7 @@ void CBasePlayerAmmo::DefaultTouch( CBaseEntity *pOther )
 		{
 			SetTouch( NULL );
 			SetThink( &CBaseEntity::SUB_Remove );
-			pev->nextthink = gpGlobals->time + .1;
+			pev->nextthink = gpGlobals->time + 0.1f;
 		}
 	}
 	else if( gEvilImpulse101 )
@@ -1036,7 +1036,7 @@ void CBasePlayerAmmo::DefaultTouch( CBaseEntity *pOther )
 		// evil impulse 101 hack, kill always
 		SetTouch( NULL );
 		SetThink( &CBaseEntity::SUB_Remove );
-		pev->nextthink = gpGlobals->time + .1;
+		pev->nextthink = gpGlobals->time + 0.1f;
 	}
 }
 
@@ -1115,7 +1115,7 @@ void CBasePlayerWeapon::RetireWeapon( void )
 //=========================================================================
 /*float CBasePlayerWeapon::GetNextAttackDelay( float delay )
 {
-	if( m_flLastFireTime == 0 || m_flNextPrimaryAttack == -1 )
+	if( m_flLastFireTime == 0 || m_flNextPrimaryAttack == -1.0f )
 	{
 		// At this point, we are assuming that the client has stopped firing
 		// and we are going to reset our book keeping variables.
@@ -1213,7 +1213,7 @@ void CWeaponBox::Kill( void )
 		while( pWeapon )
 		{
 			pWeapon->SetThink( &CBaseEntity::SUB_Remove );
-			pWeapon->pev->nextthink = gpGlobals->time + 0.1;
+			pWeapon->pev->nextthink = gpGlobals->time + 0.1f;
 			pWeapon = pWeapon->m_pNext;
 		}
 	}

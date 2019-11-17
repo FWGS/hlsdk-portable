@@ -14,18 +14,22 @@
 ****/
 
 #include <assert.h>
+//#include <stdio.h>  // NULL
+#include <math.h>   // sqrt
+#include <string.h> // strcpy
+#include <stdlib.h> // atoi
+#include <ctype.h>  // isspace
 #include "mathlib.h"
+#ifdef HAVE_TGMATH_H
+#include <tgmath.h>
+#endif
+
 #include "const.h"
 #include "usercmd.h"
 #include "pm_defs.h"
 #include "pm_shared.h"
 #include "pm_movevars.h"
 #include "pm_debug.h"
-//#include <stdio.h>  // NULL
-#include <math.h>   // sqrt
-#include <string.h> // strcpy
-#include <stdlib.h> // atoi
-#include <ctype.h>  // isspace
 
 int g_bhopcap = 1;
 
@@ -48,7 +52,7 @@ static int pm_shared_initialized = 0;
 playermove_t *pmove = NULL;
 
 // Ducking time
-#define TIME_TO_DUCK		0.4
+#define TIME_TO_DUCK		0.4f
 #define VEC_DUCK_HULL_MIN	-18
 #define VEC_DUCK_HULL_MAX	18
 #define VEC_DUCK_VIEW		12
@@ -59,7 +63,7 @@ playermove_t *pmove = NULL;
 #define VEC_HULL_MIN		-36
 #define VEC_HULL_MAX		36
 #define VEC_VIEW		28
-#define	STOP_EPSILON		0.1
+#define	STOP_EPSILON		0.1f
 
 #define CTEXTURESMAX		512			// max number of textures loaded
 #define CBTEXTURENAMEMAX	13			// only load first n chars of name
@@ -94,7 +98,7 @@ playermove_t *pmove = NULL;
 
 #define PLAYER_LONGJUMP_SPEED		350 // how fast we longjump
 
-#define PLAYER_DUCKING_MULTIPLIER	0.333
+#define PLAYER_DUCKING_MULTIPLIER	0.333f
 
 // double to float warning
 #ifdef _MSC_VER
@@ -375,7 +379,7 @@ void PM_UpdateStepSound( void )
 	// If we're on a ladder or on the ground, and we're moving fast enough,
 	//  play step sound.  Also, if pmove->flTimeStepSound is zero, get the new
 	//  sound right away - we just started moving in new level.
-	if( ( fLadder || ( pmove->onground != -1 ) ) && ( Length( pmove->velocity ) > 0.0 ) && ( speed >= velwalk || !pmove->flTimeStepSound ) )
+	if( ( fLadder || ( pmove->onground != -1 ) ) && ( Length( pmove->velocity ) > 0.0f ) && ( speed >= velwalk || !pmove->flTimeStepSound ) )
 	{
 		fWalking = speed < velrun;		
 
@@ -385,19 +389,19 @@ void PM_UpdateStepSound( void )
 
 		height = pmove->player_maxs[pmove->usehull][2] - pmove->player_mins[pmove->usehull][2];
 
-		knee[2] = pmove->origin[2] - 0.3 * height;
-		feet[2] = pmove->origin[2] - 0.5 * height;
+		knee[2] = pmove->origin[2] - 0.3f * height;
+		feet[2] = pmove->origin[2] - 0.5f * height;
 
 		if( pmove->PM_PointContents( knee, NULL ) == CONTENTS_WATER )
 		{
 			step = STEP_WADE;
-			fvol = 0.65;
+			fvol = 0.65f;
 			pmove->flTimeStepSound = 600;
 		}
 		else if( pmove->PM_PointContents( feet, NULL ) == CONTENTS_WATER )
 		{
 			step = STEP_SLOSH;
-			fvol = fWalking ? 0.2 : 0.5;
+			fvol = fWalking ? 0.2f : 0.5f;
 			pmove->flTimeStepSound = fWalking ? 400 : 300;		
 		}
 		else
@@ -410,31 +414,31 @@ void PM_UpdateStepSound( void )
 			{
 			default:
 			case CHAR_TEX_CONCRETE:						
-				fvol = fWalking ? 0.2 : 0.5;
+				fvol = fWalking ? 0.2f : 0.5f;
 				pmove->flTimeStepSound = fWalking ? 400 : 300;
 				break;
 			case CHAR_TEX_METAL:	
-				fvol = fWalking ? 0.2 : 0.5;
+				fvol = fWalking ? 0.2f : 0.5f;
 				pmove->flTimeStepSound = fWalking ? 400 : 300;
 				break;
 			case CHAR_TEX_DIRT:	
-				fvol = fWalking ? 0.25 : 0.55;
+				fvol = fWalking ? 0.25f : 0.55f;
 				pmove->flTimeStepSound = fWalking ? 400 : 300;
 				break;
 			case CHAR_TEX_VENT:	
-				fvol = fWalking ? 0.4 : 0.7;
+				fvol = fWalking ? 0.4f : 0.7f;
 				pmove->flTimeStepSound = fWalking ? 400 : 300;
 				break;
 			case CHAR_TEX_GRATE:
-				fvol = fWalking ? 0.2 : 0.5;
+				fvol = fWalking ? 0.2f : 0.5f;
 				pmove->flTimeStepSound = fWalking ? 400 : 300;
 				break;
 			case CHAR_TEX_TILE:	
-				fvol = fWalking ? 0.2 : 0.5;
+				fvol = fWalking ? 0.2f : 0.5f;
 				pmove->flTimeStepSound = fWalking ? 400 : 300;
 				break;
 			case CHAR_TEX_SLOSH:
-				fvol = fWalking ? 0.2 : 0.5;
+				fvol = fWalking ? 0.2f : 0.5f;
 				pmove->flTimeStepSound = fWalking ? 400 : 300;
 				break;
 			}
@@ -566,11 +570,11 @@ void PM_AddCorrectGravity()
 	if( pmove->gravity )
 		ent_gravity = pmove->gravity;
 	else
-		ent_gravity = 1.0;
+		ent_gravity = 1.0f;
 
 	// Add gravity so they'll be in the correct position during movement
 	// yes, this 0.5 looks wrong, but it's not.  
-	pmove->velocity[2] -= ( ent_gravity * pmove->movevars->gravity * 0.5 * pmove->frametime );
+	pmove->velocity[2] -= ( ent_gravity * pmove->movevars->gravity * 0.5f * pmove->frametime );
 	pmove->velocity[2] += pmove->basevelocity[2] * pmove->frametime;
 	pmove->basevelocity[2] = 0;
 
@@ -587,10 +591,10 @@ void PM_FixupGravityVelocity()
 	if( pmove->gravity )
 		ent_gravity = pmove->gravity;
 	else
-		ent_gravity = 1.0;
+		ent_gravity = 1.0f;
 
 	// Get the correct velocity for the end of the dt 
-  	pmove->velocity[2] -= ( ent_gravity * pmove->movevars->gravity * pmove->frametime * 0.5 );
+  	pmove->velocity[2] -= ( ent_gravity * pmove->movevars->gravity * pmove->frametime * 0.5f );
 
 	PM_CheckVelocity();
 }
@@ -676,7 +680,7 @@ int PM_FlyMove( void )
 
 		// If the plane we hit has a high z component in the normal, then
 		//  it's probably a floor
-		if( trace.plane.normal[2] > 0.7 )
+		if( trace.plane.normal[2] > 0.7f )
 		{
 			blocked |= 1; // floor
 		}
@@ -711,14 +715,14 @@ int PM_FlyMove( void )
 		{
 			for( i = 0; i < numplanes; i++ )
 			{
-				if( planes[i][2] > 0.7 )
+				if( planes[i][2] > 0.7f )
 				{
 					// floor or slope
 					PM_ClipVelocity( original_velocity, planes[i], new_velocity, 1 );
 					VectorCopy( new_velocity, original_velocity );
 				}
 				else												
-					PM_ClipVelocity( original_velocity, planes[i], new_velocity, 1.0 + pmove->movevars->bounce * ( 1 - pmove->friction ) );
+					PM_ClipVelocity( original_velocity, planes[i], new_velocity, 1.0f + pmove->movevars->bounce * ( 1 - pmove->friction ) );
 			}
 
 			VectorCopy( new_velocity, pmove->velocity );
@@ -967,8 +971,9 @@ void PM_WalkMove()
 
 	// If we are not on the ground any more then
 	//  use the original movement attempt
-	if( trace.plane.normal[2] < 0.7 )
+	if( trace.plane.normal[2] < 0.7f )
 		goto usedown;
+
 	// If the trace ended up in empty space, copy the end
 	//  over to the origin.
 	if( !trace.startsolid && !trace.allsolid )
@@ -1039,7 +1044,7 @@ void PM_Friction( void )
 
 		trace = pmove->PM_PlayerTrace( start, stop, PM_NORMAL, -1 );
 
-		if( trace.fraction == 1.0 )
+		if( trace.fraction == 1.0f )
 			friction = pmove->movevars->friction*pmove->movevars->edgefriction;
 		else
 			friction = pmove->movevars->friction;
@@ -1154,8 +1159,8 @@ void PM_WaterMove( void )
 		wishspeed = pmove->maxspeed;
 	}
 	// Slow us down a bit.
-	// QUAKECLASSIC: wishspeed *= 0.8;
-	wishspeed *= 0.7;
+	// QUAKECLASSIC: wishspeed *= 0.8f;
+	wishspeed *= 0.7f;
 
 	VectorAdd( pmove->velocity, pmove->basevelocity, pmove->velocity );
 
@@ -1283,8 +1288,8 @@ qboolean PM_CheckWater()
 	float heightover2;
 
 	// Pick a spot just above the players feet.
-	point[0] = pmove->origin[0] + ( pmove->player_mins[pmove->usehull][0] + pmove->player_maxs[pmove->usehull][0] ) * 0.5;
-	point[1] = pmove->origin[1] + ( pmove->player_mins[pmove->usehull][1] + pmove->player_maxs[pmove->usehull][1] ) * 0.5;
+	point[0] = pmove->origin[0] + ( pmove->player_mins[pmove->usehull][0] + pmove->player_maxs[pmove->usehull][0] ) * 0.5f;
+	point[1] = pmove->origin[1] + ( pmove->player_mins[pmove->usehull][1] + pmove->player_maxs[pmove->usehull][1] ) * 0.5f;
 	point[2] = pmove->origin[2] + pmove->player_mins[pmove->usehull][2] + 1;
 
 	// Assume that we are not in water at all.
@@ -1303,7 +1308,7 @@ qboolean PM_CheckWater()
 		pmove->waterlevel = 1;
 
 		height = ( pmove->player_mins[pmove->usehull][2] + pmove->player_maxs[pmove->usehull][2] );
-		heightover2 = height * 0.5;
+		heightover2 = height * 0.5f;
 
 		// Now check a point that is at the player hull midpoint.
 		point[2] = pmove->origin[2] + heightover2;
@@ -1378,7 +1383,7 @@ void PM_CatagorizePosition( void )
 		// Try and move down.
 		tr = pmove->PM_PlayerTrace( pmove->origin, point, PM_NORMAL, -1 );
 		// If we hit a steep plane, we are not on ground
-		if( tr.plane.normal[2] < 0.7 )
+		if( tr.plane.normal[2] < 0.7f )
 			pmove->onground = -1;	// too steep
 		else
 			pmove->onground = tr.ent;  // Otherwise, point to index of ent under us.
@@ -1436,7 +1441,7 @@ try nudging slightly on all axis to
 allow for the cut precision of the net coordinates
 =================
 */
-#define PM_CHECKSTUCK_MINTIME 0.05  // Don't check again too quickly.
+#define PM_CHECKSTUCK_MINTIME 0.05f  // Don't check again too quickly.
 
 int PM_CheckStuck( void )
 {
@@ -1522,8 +1527,8 @@ int PM_CheckStuck( void )
 	if( pmove->cmd.buttons & ( IN_JUMP | IN_DUCK | IN_ATTACK ) && ( pmove->physents[hitent].player != 0 ) )
 	{
 		float x, y, z;
-		float xystep = 8.0;
-		float zstep = 18.0;
+		float xystep = 8.0f;
+		float zstep = 18.0f;
 		float xyminmax = xystep;
 		float zminmax = 4 * zstep;
 
@@ -1596,7 +1601,7 @@ void PM_SpectatorMove( void )
 		{
 			drop = 0;
 
-			friction = pmove->movevars->friction * 1.5;	// extra friction
+			friction = pmove->movevars->friction * 1.5f;	// extra friction
 			control = speed < pmove->movevars->stopspeed ? pmove->movevars->stopspeed : speed;
 			drop += control * friction*pmove->frametime;
 
@@ -1753,7 +1758,7 @@ void PM_AddGravity()
 	if( pmove->gravity )
 		ent_gravity = pmove->gravity;
 	else
-		ent_gravity = 1.0;
+		ent_gravity = 1.0f;
 
 	// Add gravity incorrectly
 	pmove->velocity[2] -= ( ent_gravity * pmove->movevars->gravity * pmove->frametime );
@@ -1781,7 +1786,7 @@ pmtrace_t PM_PushEntity( vec3_t push )
 	VectorCopy( trace.endpos, pmove->origin );
 
 	// So we can run impact function afterwards.
-	if( trace.fraction < 1.0 && !trace.allsolid )
+	if( trace.fraction < 1.0f && !trace.allsolid )
 	{
 		PM_AddToTouched( trace, pmove->velocity );
 	}
@@ -1848,17 +1853,17 @@ void PM_Physics_Toss()
 	}
 
 	if( pmove->movetype == MOVETYPE_BOUNCE )
-		// QUAKECLASSIC: backoff = 2.0 - pmove->friction;
-		backoff = 1.5;
+		// QUAKECLASSIC: backoff = 2.0f - pmove->friction;
+		backoff = 1.5f;
 	// QUAKECLASSIC: else if (pmove->movetype == MOVETYPE_BOUNCEMISSILE)
-		// QUAKECLASSIC: backoff = 2.0;
+		// QUAKECLASSIC: backoff = 2.0f;
 	else
-		backoff = 1;
+		backoff = 1.0f;
 
 	PM_ClipVelocity( pmove->velocity, trace.plane.normal, pmove->velocity, backoff );
 
 	// stop if on ground
-	if( trace.plane.normal[2] > 0.7 )
+	if( trace.plane.normal[2] > 0.7f )
 	{
 		float vel;
 		vec3_t base;
@@ -1950,7 +1955,7 @@ void PM_PreventMegaBunnyJumping( void )
 	if( spd <= maxscaledspeed )
 		return;
 
-	fraction = ( maxscaledspeed / spd ) * 0.65; //Returns the modifier for the velocity
+	fraction = ( maxscaledspeed / spd ) * 0.65f; //Returns the modifier for the velocity
 	
 	VectorScale( pmove->velocity, fraction, pmove->velocity ); //Crop it down!.
 }
@@ -2089,7 +2094,7 @@ void PM_CheckWaterJump( void )
 	VectorNormalize( flatforward );
 
 	// Are we backing into water from steps or something?  If so, don't pop forward
-	if( curspeed != 0.0 && ( DotProduct( flatvelocity, flatforward ) < 0.0 ) )
+	if( curspeed != 0.0f && ( DotProduct( flatvelocity, flatforward ) < 0.0f ) )
 		return;
 
 	VectorCopy( pmove->origin, vecStart );
@@ -2101,14 +2106,14 @@ void PM_CheckWaterJump( void )
 	savehull = pmove->usehull;
 	pmove->usehull = 2;
 	tr = pmove->PM_PlayerTrace( vecStart, vecEnd, PM_NORMAL, -1 );
-	if( tr.fraction < 1.0 && fabs( tr.plane.normal[2] ) < 0.1f )  // Facing a near vertical wall?
+	if( tr.fraction < 1.0f && fabs( tr.plane.normal[2] ) < 0.1f )  // Facing a near vertical wall?
 	{
 		vecStart[2] += pmove->player_maxs[savehull][2] - WJ_HEIGHT;
 		VectorMA( vecStart, 24, flatforward, vecEnd );
 		VectorMA( vec3_origin, -50, tr.plane.normal, pmove->movedir );
 
 		tr = pmove->PM_PlayerTrace( vecStart, vecEnd, PM_NORMAL, -1 );
-		if( tr.fraction == 1.0 )
+		if( tr.fraction == 1.0f )
 		{
 			pmove->waterjumptime = 2000;
 			pmove->velocity[2] = 225;
@@ -2125,7 +2130,7 @@ void PM_CheckFalling( void )
 {
 	if( pmove->onground != -1 && !pmove->dead && pmove->flFallVelocity >= PLAYER_FALL_PUNCH_THRESHHOLD )
 	{
-		float fvol = 0.5;
+		float fvol = 0.5f;
 
 		if( pmove->waterlevel > 0 )
 		{
@@ -2143,7 +2148,7 @@ void PM_CheckFalling( void )
 				pmove->PM_PlaySound( CHAN_VOICE, "player/pl_fallpain3.wav", 1, ATTN_NORM, 0, PITCH_NORM );
 			//	break;
 			//}
-			fvol = 1.0;
+			fvol = 1.0f;
 		}
 		else if( pmove->flFallVelocity > PLAYER_MAX_SAFE_FALL_SPEED / 2 )
 		{
@@ -2154,7 +2159,7 @@ void PM_CheckFalling( void )
 			fvol = 0;
 		}
 
-		if( fvol > 0.0 )
+		if( fvol > 0.0f )
 		{
 			// Play landing step right away
 			pmove->flTimeStepSound = 0;
@@ -2162,7 +2167,7 @@ void PM_CheckFalling( void )
 			PM_UpdateStepSound();
 
 			// Knock the screen around a little bit, temporary effect
-			pmove->punchangle[2] = pmove->flFallVelocity * 0.013;	// punch z axis
+			pmove->punchangle[2] = pmove->flFallVelocity * 0.013f;	// punch z axis
 
 			if( pmove->punchangle[0] > 8 )
 			{
@@ -2252,8 +2257,8 @@ void PM_DropPunchAngle( vec3_t punchangle )
 	float len;
 	
 	len = VectorNormalize( punchangle );
-	len -= ( 10.0 + len * 0.5 ) * pmove->frametime;
-	len = max( len, 0.0 );
+	len -= ( 10.0f + len * 0.5f ) * pmove->frametime;
+	len = max( len, 0.0f );
 	VectorScale( punchangle, len, punchangle );
 }
 
@@ -2274,12 +2279,12 @@ void PM_CheckParamters( void )
 	spd = sqrt( spd );
 
 	maxspeed = pmove->clientmaxspeed; //atof( pmove->PM_Info_ValueForKey( pmove->physinfo, "maxspd" ) );
-	if( maxspeed != 0.0 )
+	if( maxspeed != 0.0f )
 	{
 		pmove->maxspeed = min( maxspeed, pmove->maxspeed );
 	}
 
-	if( ( spd != 0.0 ) && ( spd > pmove->maxspeed ) )
+	if( ( spd != 0.0f ) && ( spd > pmove->maxspeed ) )
 	{
 		float fRatio = pmove->maxspeed / spd;
 		pmove->cmd.forwardmove *= fRatio;
@@ -2377,7 +2382,7 @@ void PM_PlayerMove( qboolean server )
 	pmove->numtouch = 0;                    
 
 	// # of msec to apply movement
-	pmove->frametime = pmove->cmd.msec * 0.001;    
+	pmove->frametime = pmove->cmd.msec * 0.001f;
 
 	PM_ReduceTimers();
 
@@ -2544,7 +2549,7 @@ void PM_PlayerMove( qboolean server )
 			//  we don't slow when standing still, relative to the conveyor.
 			if( pmove->onground != -1 )
 			{
-				pmove->velocity[2] = 0.0;
+				pmove->velocity[2] = 0.0f;
 				PM_Friction();
 			}
 
@@ -2608,7 +2613,7 @@ void PM_CreateStuckTable( void )
 	// Little Moves.
 	x = y = 0;
 	// Z moves
-	for( z = -0.125; z <= 0.125; z += 0.125 )
+	for( z = -0.125f; z <= 0.125f; z += 0.125f )
 	{
 		rgv3tStuckTable[idx][0] = x;
 		rgv3tStuckTable[idx][1] = y;
@@ -2617,7 +2622,7 @@ void PM_CreateStuckTable( void )
 	}
 	x = z = 0;
 	// Y moves
-	for( y = -0.125; y <= 0.125; y += 0.125 )
+	for( y = -0.125f; y <= 0.125f; y += 0.125f )
 	{
 		rgv3tStuckTable[idx][0] = x;
 		rgv3tStuckTable[idx][1] = y;
@@ -2626,7 +2631,7 @@ void PM_CreateStuckTable( void )
 	}
 	y = z = 0;
 	// X moves
-	for( x = -0.125; x <= 0.125; x += 0.125 )
+	for( x = -0.125f; x <= 0.125f; x += 0.125f )
 	{
 		rgv3tStuckTable[idx][0] = x;
 		rgv3tStuckTable[idx][1] = y;
@@ -2635,11 +2640,11 @@ void PM_CreateStuckTable( void )
 	}
 
 	// Remaining multi axis nudges.
-	for( x = - 0.125; x <= 0.125; x += 0.250 )
+	for( x = - 0.125f; x <= 0.125f; x += 0.250f )
 	{
-		for( y = - 0.125; y <= 0.125; y += 0.250 )
+		for( y = - 0.125f; y <= 0.125f; y += 0.250f )
 		{
-			for( z = - 0.125; z <= 0.125; z += 0.250 )
+			for( z = - 0.125f; z <= 0.125f; z += 0.250f )
 			{
 				rgv3tStuckTable[idx][0] = x;
 				rgv3tStuckTable[idx][1] = y;
@@ -2668,7 +2673,7 @@ void PM_CreateStuckTable( void )
 	x = z = 0;
 
 	// Y moves
-	for( y = -2.0f ; y <= 2.0f ; y += 2.0 )
+	for( y = -2.0f; y <= 2.0f; y += 2.0f )
 	{
 		rgv3tStuckTable[idx][0] = x;
 		rgv3tStuckTable[idx][1] = y;
@@ -2677,7 +2682,7 @@ void PM_CreateStuckTable( void )
 	}
 	y = z = 0;
 	// X moves
-	for( x = -2.0f ; x <= 2.0f ; x += 2.0f )
+	for( x = -2.0f; x <= 2.0f; x += 2.0f )
 	{
 		rgv3tStuckTable[idx][0] = x;
 		rgv3tStuckTable[idx][1] = y;
@@ -2692,7 +2697,7 @@ void PM_CreateStuckTable( void )
 
 		for( x = -2.0f; x <= 2.0f; x += 2.0f )
 		{
-			for( y = -2.0f; y <= 2.0f; y += 2.0 )
+			for( y = -2.0f; y <= 2.0f; y += 2.0f )
 			{
 				rgv3tStuckTable[idx][0] = x;
 				rgv3tStuckTable[idx][1] = y;

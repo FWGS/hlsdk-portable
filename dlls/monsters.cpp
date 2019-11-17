@@ -131,4 +131,3 @@ int CBaseMonster :: TakeHealth (float flHealth, int bitsDamageType) { return 0; 
 int CBaseMonster::Restore( class CRestore & ) { return 1; }
 int CBaseMonster::Save( class CSave & ) { return 1; }
 
-
