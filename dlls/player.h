@@ -359,7 +359,7 @@ public:
 	float m_flPlayAftershock;
 	float m_flNextAmmoBurn;// while charging, when to absorb another unit of player's ammo?
 
-	//Player ID
+	// Player ID
 	void InitStatusBar( void );
 	void UpdateStatusBar( void );
 	int m_izSBarState[SBAR_END];
@@ -368,9 +368,14 @@ public:
 	char m_SbarString0[SBAR_STRING_SIZE];
 	char m_SbarString1[SBAR_STRING_SIZE];
 
+	void SetPrefsFromUserinfo( char *infobuffer );
+
 	float m_flNextChatTime;
 
+	int m_iAutoWepSwitch;
+
 	int m_iNextTeam;
+
 	Vector m_vecLastViewAngles;
 
 	bool m_bSentBhopcap; // If false, the player just joined and needs a bhopcap message.
