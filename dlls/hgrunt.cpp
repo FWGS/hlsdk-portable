@@ -370,7 +370,7 @@ BOOL CHGrunt::FOkToSpeak( void )
 //=========================================================
 void CHGrunt::JustSpoke( void )
 {
-	CTalkMonster::g_talkWaitTime = gpGlobals->time + RANDOM_FLOAT( 1.5, 2.0 );
+	CTalkMonster::g_talkWaitTime = gpGlobals->time + RANDOM_FLOAT( 1.5f, 2.0f );
 	m_iSentence = HGRUNT_SENT_NONE;
 }
 
@@ -389,7 +389,7 @@ void CHGrunt::PrescheduleThink( void )
 		}
 		else
 		{
-			if( gpGlobals->time - MySquadLeader()->m_flLastEnemySightTime > 5 )
+			if( gpGlobals->time - MySquadLeader()->m_flLastEnemySightTime > 5.0f )
 			{
 				// been a while since we've seen the enemy
 				MySquadLeader()->m_fEnemyEluded = TRUE;
@@ -439,7 +439,7 @@ BOOL CHGrunt::CheckMeleeAttack1( float flDot, float flDist )
 		}
 	}
 
-	if( flDist <= 64 && flDot >= 0.7 && 
+	if( flDist <= 64.0f && flDot >= 0.7f && 
 		 pEnemy->Classify() != CLASS_ALIEN_BIOWEAPON &&
 		 pEnemy->Classify() != CLASS_PLAYER_BIOWEAPON )
 	{
@@ -461,7 +461,7 @@ BOOL CHGrunt::CheckRangeAttack1( float flDot, float flDist )
 	// Scarecrows; werewolves; white Ladies; hell minions;
 	// cannot use range attacks.
 	return FALSE;
-	if( !HasConditions( bits_COND_ENEMY_OCCLUDED ) && flDist <= 2048 && flDot >= 0.5 && NoFriendlyFire() )
+	if( !HasConditions( bits_COND_ENEMY_OCCLUDED ) && flDist <= 2048.0f && flDot >= 0.5f && NoFriendlyFire() )
 	{
 		TraceResult tr;
 
@@ -476,7 +476,7 @@ BOOL CHGrunt::CheckRangeAttack1( float flDot, float flDist )
 		// verify that a bullet fired from the gun will hit the enemy before the world.
 		UTIL_TraceLine( vecSrc, m_hEnemy->BodyTarget( vecSrc ), ignore_monsters, ignore_glass, ENT( pev ), &tr );
 
-		if( tr.flFraction == 1.0 )
+		if( tr.flFraction == 1.0f )
 		{
 			return TRUE;
 		}
@@ -561,7 +561,7 @@ BOOL CHGrunt::CheckRangeAttack2( float flDot, float flDist )
 		}
 	}
 
-	if( ( vecTarget - pev->origin ).Length2D() <= 256 )
+	if( ( vecTarget - pev->origin ).Length2D() <= 256.0f )
 	{
 		// crap, I don't want to blow myself up
 		m_flNextGrenadeCheck = gpGlobals->time + 1; // one full second.
@@ -587,7 +587,7 @@ BOOL CHGrunt::CheckRangeAttack2( float flDot, float flDist )
 			// don't throw
 			m_fThrowGrenade = FALSE;
 			// don't check again for a while.
-			m_flNextGrenadeCheck = gpGlobals->time + 1; // one full second.
+			m_flNextGrenadeCheck = gpGlobals->time + 1.0f; // one full second.
 		}
 	}
 	else
@@ -601,14 +601,14 @@ BOOL CHGrunt::CheckRangeAttack2( float flDot, float flDist )
 			// throw a hand grenade
 			m_fThrowGrenade = TRUE;
 			// don't check again for a while.
-			m_flNextGrenadeCheck = gpGlobals->time + 0.3; // 1/3 second.
+			m_flNextGrenadeCheck = gpGlobals->time + 0.3f; // 1/3 second.
 		}
 		else
 		{
 			// don't throw
 			m_fThrowGrenade = FALSE;
 			// don't check again for a while.
-			m_flNextGrenadeCheck = gpGlobals->time + 1; // one full second.
+			m_flNextGrenadeCheck = gpGlobals->time + 1.0f; // one full second.
 		}
 	}
 
@@ -757,7 +757,7 @@ CBaseEntity *CHGrunt::Kick( void )
 
 	UTIL_MakeVectors( pev->angles );
 	Vector vecStart = pev->origin;
-	vecStart.z += pev->size.z * 0.5;
+	vecStart.z += pev->size.z * 0.5f;
 	Vector vecEnd = vecStart + ( gpGlobals->v_forward * 70 );
 
 	UTIL_TraceHull( vecStart, vecEnd, dont_ignore_monsters, head_hull, ENT( pev ), &tr );
@@ -935,9 +935,9 @@ void CHGrunt::HandleAnimEvent( MonsterEvent_t *pEvent )
 			CGrenade::ShootContact( pev, GetGunPosition(), m_vecTossVelocity );
 			m_fThrowGrenade = FALSE;
 			if( g_iSkillLevel == SKILL_HARD )
-				m_flNextGrenadeCheck = gpGlobals->time + RANDOM_FLOAT( 2, 5 );// wait a random amount of time before shooting again
+				m_flNextGrenadeCheck = gpGlobals->time + RANDOM_FLOAT( 2.0f, 5.0f );// wait a random amount of time before shooting again
 			else
-				m_flNextGrenadeCheck = gpGlobals->time + 6;// wait six seconds before even looking again to see if a grenade can be thrown.
+				m_flNextGrenadeCheck = gpGlobals->time + 6.0f;// wait six seconds before even looking again to see if a grenade can be thrown.
 		}
 			break;
 		case HGRUNT_AE_GREN_DROP:
@@ -2274,8 +2274,8 @@ void CHGruntRepel::RepelUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_
 	pBeam->PointEntInit( pev->origin + Vector( 0, 0, 112 ), pGrunt->entindex() );
 	pBeam->SetFlags( BEAM_FSOLID );
 	pBeam->SetColor( 255, 255, 255 );
-	pBeam->SetThink(&CBeam:: SUB_Remove );
-	pBeam->SetNextThink( -4096.0 * tr.flFraction / pGrunt->pev->velocity.z + 0.5 );
+	pBeam->SetThink( &CBeam::SUB_Remove );
+	pBeam->SetNextThink( -4096.0f * tr.flFraction / pGrunt->pev->velocity.z + 0.5f );
 
 	UTIL_Remove( this );
 }

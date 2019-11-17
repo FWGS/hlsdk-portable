@@ -138,8 +138,8 @@ int DispatchSpawn( edict_t *pent )
 	if( pEntity )
 	{
 		// Initialize these or entities who don't link to the world won't have anything in here
-		pEntity->pev->absmin = pEntity->pev->origin - Vector( 1, 1, 1 );
-		pEntity->pev->absmax = pEntity->pev->origin + Vector( 1, 1, 1 );
+		pEntity->pev->absmin = pEntity->pev->origin - Vector( 1.0f, 1.0f, 1.0f );
+		pEntity->pev->absmax = pEntity->pev->origin + Vector( 1.0f, 1.0f, 1.0f );
 
 //		pEntity->InitMoveWith(); //LRC
 		pEntity->Spawn();
@@ -726,13 +726,13 @@ int CBaseEntity::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 	// figure momentum add (don't let hurt brushes or other triggers move player)
 	if( ( !FNullEnt( pevInflictor ) ) && (pev->movetype == MOVETYPE_WALK || pev->movetype == MOVETYPE_STEP ) && ( pevAttacker->solid != SOLID_TRIGGER ) )
 	{
-		Vector vecDir = pev->origin - ( pevInflictor->absmin + pevInflictor->absmax ) * 0.5;
+		Vector vecDir = pev->origin - ( pevInflictor->absmin + pevInflictor->absmax ) * 0.5f;
 		vecDir = vecDir.Normalize();
 
-		float flForce = flDamage * ( ( 32 * 32 * 72.0 ) / ( pev->size.x * pev->size.y * pev->size.z ) ) * 5;
+		float flForce = flDamage * ( ( 32.0f * 32.0f * 72.0f ) / ( pev->size.x * pev->size.y * pev->size.z ) ) * 5.0f;
 
-		if( flForce > 1000.0 )
-			flForce = 1000.0;
+		if( flForce > 1000.0f )
+			flForce = 1000.0f;
 		pev->velocity = pev->velocity + vecDir * flForce;
 	}
 
@@ -906,30 +906,30 @@ int CBaseEntity::IsDormant( void )
 BOOL CBaseEntity::IsInWorld( void )
 {
 	// position 
-	if( pev->origin.x >= 4096 )
+	if( pev->origin.x >= 4096.0f )
 		return FALSE;
-	if( pev->origin.y >= 4096 )
+	if( pev->origin.y >= 4096.0f )
 		return FALSE;
-	if( pev->origin.z >= 4096 )
+	if( pev->origin.z >= 4096.0f )
 		return FALSE;
-	if( pev->origin.x <= -4096 )
+	if( pev->origin.x <= -4096.0f )
 		return FALSE;
-	if( pev->origin.y <= -4096 )
+	if( pev->origin.y <= -4096.0f )
 		return FALSE;
-	if( pev->origin.z <= -4096 )
+	if( pev->origin.z <= -4096.0f )
 		return FALSE;
 	// speed
-	if( pev->velocity.x >= 2000 )
+	if( pev->velocity.x >= 2000.0f )
 		return FALSE;
-	if( pev->velocity.y >= 2000 )
+	if( pev->velocity.y >= 2000.0f )
 		return FALSE;
-	if( pev->velocity.z >= 2000 )
+	if( pev->velocity.z >= 2000.0f )
 		return FALSE;
-	if( pev->velocity.x <= -2000 )
+	if( pev->velocity.x <= -2000.0f )
 		return FALSE;
-	if( pev->velocity.y <= -2000 )
+	if( pev->velocity.y <= -2000.0f )
 		return FALSE;
-	if( pev->velocity.z <= -2000 )
+	if( pev->velocity.z <= -2000.0f )
 		return FALSE;
 
 	return TRUE;

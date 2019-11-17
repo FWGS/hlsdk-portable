@@ -86,6 +86,11 @@ if(${CMAKE_VERSION} VERSION_LESS "3.0.2")
 	endmacro()
 endif()
 
+if(NOT MSVC)
+	add_compile_options(-Wempty-body) # GCC/Clang flag
+	add_compile_options(-Wreturn-type) # GCC/Clang flag
+endif()
+
 if(BUILD_CLIENT)
 	add_subdirectory(cl_dll)
 endif()

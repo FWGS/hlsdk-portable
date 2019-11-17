@@ -192,12 +192,12 @@ void CAmbientGeneric::Spawn( void )
 
 	const char *szSoundFile = STRING( pev->message );
 
-	if( FStringNull( pev->message ) || strlen( szSoundFile ) < 1 )
+	if( FStringNull( pev->message ) || szSoundFile[0] == '\0' )
 	{
 		ALERT( at_error, "ambient_generic \"%s\" at (%f, %f, %f) has no sound file\n",
 				STRING(pev->targetname), pev->origin.x, pev->origin.y, pev->origin.z );
-		SetNextThink( 0.1 );
-		SetThink(&CAmbientGeneric :: SUB_Remove );
+		SetNextThink( 0.1f );
+		SetThink( &CAmbientGeneric::SUB_Remove );
 		return;
 	}
 	pev->solid = SOLID_NOT;
@@ -229,7 +229,7 @@ void CAmbientGeneric::Precache( void )
 {
 	const char *szSoundFile = STRING( pev->message );
 
-	if( !FStringNull( pev->message ) && strlen( szSoundFile ) > 1 )
+	if( !FStringNull( pev->message ) && szSoundFile[0] != '\0' )
 	{
 		if( *szSoundFile != '!' )
 			PRECACHE_SOUND( szSoundFile );
@@ -269,10 +269,10 @@ void CAmbientGeneric::Precache( void )
 		}
 		else
 		{
-		UTIL_EmitAmbientSound( ENT( pev ), pev->origin, szSoundFile, 
-				( m_dpv.vol * 0.01 ), m_flAttenuation, SND_SPAWNING, m_dpv.pitch );
+			UTIL_EmitAmbientSound( ENT( pev ), pev->origin, szSoundFile, 
+				( m_dpv.vol * 0.01f ), m_flAttenuation, SND_SPAWNING, m_dpv.pitch );
 		}
-		SetNextThink( 0.1 );
+		SetNextThink( 0.1f );
 	}
 }
 
@@ -501,12 +501,12 @@ void CAmbientGeneric::RampThink( void )
 		else
 		{
 		UTIL_EmitAmbientSound( ENT( pev ), pev->origin, szSoundFile,
-				( vol * 0.01 ), m_flAttenuation, flags, pitch );
+				( vol * 0.01f ), m_flAttenuation, flags, pitch );
 	}
 	}
 
 	// update ramps at 5hz
-	SetNextThink( 0.2 );
+	SetNextThink( 0.2f );
 	return;
 }
 
@@ -617,10 +617,10 @@ void CAmbientGeneric::ToggleUse( CBaseEntity *pActivator, CBaseEntity *pCaller, 
 
 		fraction = value;
 
-		if( fraction > 1.0 )
-			fraction = 1.0;
-		if( fraction < 0.0 )
-			fraction = 0.01;
+		if( fraction > 1.0f )
+			fraction = 1.0f;
+		if( fraction < 0.0f )
+			fraction = 0.01f;
 
 		m_dpv.pitch = (int)(fraction * 255);
 
@@ -662,7 +662,7 @@ void CAmbientGeneric::ToggleUse( CBaseEntity *pActivator, CBaseEntity *pCaller, 
 				if( m_dpv.pitchrun > 255 )
 					m_dpv.pitchrun = 255;
 
-				SetNextThink( 0.1 );
+				SetNextThink( 0.1f );
 			}
 		}
 		else
@@ -680,7 +680,7 @@ void CAmbientGeneric::ToggleUse( CBaseEntity *pActivator, CBaseEntity *pCaller, 
 
 				m_dpv.fadeout = m_dpv.fadeoutsav;
 				m_dpv.fadein = 0;
-				SetNextThink( 0.1 );
+				SetNextThink( 0.1f );
 			}
 			else if (m_pPlayFrom)
 			{
@@ -722,15 +722,15 @@ void CAmbientGeneric::ToggleUse( CBaseEntity *pActivator, CBaseEntity *pCaller, 
 		if (m_pPlayFrom)
 		{
 			EMIT_SOUND_DYN( m_pPlayFrom, m_iChannel, szSoundFile, //LRC
-					(m_dpv.vol * 0.01), m_flAttenuation, 0, m_dpv.pitch);
+					(m_dpv.vol * 0.01f), m_flAttenuation, 0, m_dpv.pitch);
 		}
 		else
 		{
-			UTIL_EmitAmbientSound(ENT(pev), pev->origin, szSoundFile, 
-					(m_dpv.vol * 0.01), m_flAttenuation, 0, m_dpv.pitch);
+			UTIL_EmitAmbientSound( ENT( pev ), pev->origin, szSoundFile, 
+					(m_dpv.vol * 0.01f), m_flAttenuation, 0, m_dpv.pitch);
 		}
 
-		SetNextThink( 0.1 );
+		SetNextThink( 0.1f );
 	} 
 }
 
@@ -1072,10 +1072,10 @@ void CEnvSound::Think( void )
 	// not in range. do nothing, fall through to think_fast...
 
 env_sound_Think_fast:
-	SetNextThink( 0.25 );
+	SetNextThink( 0.25f );
 	return;
 env_sound_Think_slow:
-	SetNextThink( 0.75 );
+	SetNextThink( 0.75f );
 	return;
 }
 
@@ -1087,7 +1087,7 @@ env_sound_Think_slow:
 void CEnvSound::Spawn()
 {
 	// spread think times
-	SetNextThink( RANDOM_FLOAT(0.0, 0.5) );
+	SetNextThink( RANDOM_FLOAT( 0.0f, 0.5f ) );
 }
 
 //=====================
@@ -1465,9 +1465,9 @@ void SENTENCEG_Init()
 		if( !buffer[j] )
 			continue;
 
-		if( gcallsentences > CVOXFILESENTENCEMAX )
+		if( gcallsentences >= CVOXFILESENTENCEMAX )
 		{
-			ALERT( at_error, "Too many sentences in sentences.txt!\n" );
+			ALERT( at_error, "Too many sentences in sentences.txt! >%d\n", gcallsentences );
 			break;
 		}
 
@@ -1584,7 +1584,7 @@ void EMIT_SOUND_SUIT( edict_t *entity, const char *sample )
 	if( RANDOM_LONG( 0, 1 ) )
 		pitch = RANDOM_LONG( 0, 6 ) + 98;
 
-	if( fvol > 0.05 )
+	if( fvol > 0.05f )
 		EMIT_SOUND_DYN( entity, CHAN_STATIC, sample, fvol, ATTN_NORM, 0, pitch );
 }
 
@@ -1599,7 +1599,7 @@ void EMIT_GROUPID_SUIT( edict_t *entity, int isentenceg )
 	if( RANDOM_LONG( 0, 1 ) )
 		pitch = RANDOM_LONG( 0, 6 ) + 98;
 
-	if( fvol > 0.05 )
+	if( fvol > 0.05f )
 		SENTENCEG_PlayRndI( entity, isentenceg, fvol, ATTN_NORM, 0, pitch );
 }
 
@@ -1614,7 +1614,7 @@ void EMIT_GROUPNAME_SUIT( edict_t *entity, const char *groupname )
 	if( RANDOM_LONG( 0, 1 ) )
 		pitch = RANDOM_LONG( 0, 6 ) + 98;
 
-	if( fvol > 0.05 )
+	if( fvol > 0.05f )
 		SENTENCEG_PlayRndSz( entity, groupname, fvol, ATTN_NORM, 0, pitch );
 }
 
@@ -1708,7 +1708,7 @@ float TEXTURETYPE_PlaySound( TraceResult *ptr,  Vector vecSrc, Vector vecEnd, in
 	float fattn = ATTN_NORM;
 
 	if( !g_pGameRules->PlayTextureSounds() )
-		return 0.0;
+		return 0.0f;
 
 	CBaseEntity *pEntity = CBaseEntity::Instance( ptr->pHit );
 
@@ -1757,44 +1757,44 @@ float TEXTURETYPE_PlaySound( TraceResult *ptr,  Vector vecSrc, Vector vecEnd, in
 	{
 	default:
 	case CHAR_TEX_CONCRETE:
-		fvol = 0.9;
-		fvolbar = 0.6;
+		fvol = 0.9f;
+		fvolbar = 0.6f;
 		rgsz[0] = "player/pl_step1.wav";
 		rgsz[1] = "player/pl_step2.wav";
 		cnt = 2;
 		break;
 	case CHAR_TEX_METAL:
-		fvol = 0.9;
-		fvolbar = 0.3;
+		fvol = 0.9f;
+		fvolbar = 0.3f;
 		rgsz[0] = "player/pl_metal1.wav";
 		rgsz[1] = "player/pl_metal2.wav";
 		cnt = 2;
 		break;
 	case CHAR_TEX_DIRT:
-		fvol = 0.9;
-		fvolbar = 0.1;
+		fvol = 0.9f;
+		fvolbar = 0.1f;
 		rgsz[0] = "player/pl_dirt1.wav";
 		rgsz[1] = "player/pl_dirt2.wav";
 		rgsz[2] = "player/pl_dirt3.wav";
 		cnt = 3;
 		break;
 	case CHAR_TEX_VENT:
-		fvol = 0.5;
-		fvolbar = 0.3;
+		fvol = 0.5f;
+		fvolbar = 0.3f;
 		rgsz[0] = "player/pl_duct1.wav";
 		rgsz[1] = "player/pl_duct1.wav";
 		cnt = 2;
 		break;
 	case CHAR_TEX_GRATE:
-		fvol = 0.9;
-		fvolbar = 0.5;
+		fvol = 0.9f;
+		fvolbar = 0.5f;
 		rgsz[0] = "player/pl_grate1.wav";
 		rgsz[1] = "player/pl_grate4.wav";
 		cnt = 2;
 		break;
 	case CHAR_TEX_TILE:
-		fvol = 0.8;
-		fvolbar = 0.2;
+		fvol = 0.8f;
+		fvolbar = 0.2f;
 		rgsz[0] = "player/pl_tile1.wav";
 		rgsz[1] = "player/pl_tile3.wav";
 		rgsz[2] = "player/pl_tile2.wav";
@@ -1802,8 +1802,8 @@ float TEXTURETYPE_PlaySound( TraceResult *ptr,  Vector vecSrc, Vector vecEnd, in
 		cnt = 4;
 		break;
 	case CHAR_TEX_SLOSH:
-		fvol = 0.9;
-		fvolbar = 0.0;
+		fvol = 0.9f;
+		fvolbar = 0.0f;
 		rgsz[0] = "player/pl_slosh1.wav";
 		rgsz[1] = "player/pl_slosh3.wav";
 		rgsz[2] = "player/pl_slosh2.wav";
@@ -1811,8 +1811,8 @@ float TEXTURETYPE_PlaySound( TraceResult *ptr,  Vector vecSrc, Vector vecEnd, in
 		cnt = 4;
 		break;
 	case CHAR_TEX_WOOD:
-		fvol = 0.9;
-		fvolbar = 0.2;
+		fvol = 0.9f;
+		fvolbar = 0.2f;
 		rgsz[0] = "debris/wood1.wav";
 		rgsz[1] = "debris/wood2.wav";
 		rgsz[2] = "debris/wood3.wav";
@@ -1820,8 +1820,8 @@ float TEXTURETYPE_PlaySound( TraceResult *ptr,  Vector vecSrc, Vector vecEnd, in
 		break;
 	case CHAR_TEX_GLASS:
 	case CHAR_TEX_COMPUTER:
-		fvol = 0.8;
-		fvolbar = 0.2;
+		fvol = 0.8f;
+		fvolbar = 0.2f;
 		rgsz[0] = "debris/glass1.wav";
 		rgsz[1] = "debris/glass2.wav";
 		rgsz[2] = "debris/glass3.wav";
@@ -1829,12 +1829,12 @@ float TEXTURETYPE_PlaySound( TraceResult *ptr,  Vector vecSrc, Vector vecEnd, in
 		break;
 	case CHAR_TEX_FLESH:
 		if( iBulletType == BULLET_PLAYER_CROWBAR )
-			return 0.0; // crowbar already makes this sound
-		fvol = 1.0;
-		fvolbar = 0.2;
+			return 0.0f; // crowbar already makes this sound
+		fvol = 1.0f;
+		fvolbar = 0.2f;
 		rgsz[0] = "weapons/bullet_hit1.wav";
 		rgsz[1] = "weapons/bullet_hit2.wav";
-		fattn = 1.0;
+		fattn = 1.0f;
 		cnt = 2;
 		break;
 	}
@@ -1843,17 +1843,17 @@ float TEXTURETYPE_PlaySound( TraceResult *ptr,  Vector vecSrc, Vector vecEnd, in
 	if( pEntity && FClassnameIs( pEntity->pev, "func_breakable" ) )
 	{
 		// drop volumes, the object will already play a damaged sound
-		fvol /= 1.5;
-		fvolbar /= 2.0;
+		fvol /= 1.5f;
+		fvolbar /= 2.0f;
 	}
 	else if( chTextureType == CHAR_TEX_COMPUTER )
 	{
 		// play random spark if computer
-		if( ptr->flFraction != 1.0 && RANDOM_LONG( 0, 1 ) )
+		if( ptr->flFraction != 1.0f && RANDOM_LONG( 0, 1 ) )
 		{
 			UTIL_Sparks( ptr->vecEndPos );
 
-			float flVolume = RANDOM_FLOAT( 0.7, 1.0 );//random volume range
+			float flVolume = RANDOM_FLOAT( 0.7f, 1.0f );//random volume range
 			switch( RANDOM_LONG( 0, 1 ) )
 			{
 				case 0:
@@ -1917,11 +1917,11 @@ void CSpeaker::Spawn( void )
 {
 	const char *szSoundFile = STRING( pev->message );
 
-	if( !m_preset && ( FStringNull( pev->message ) || strlen( szSoundFile ) < 1 ) )
+	if( !m_preset && ( FStringNull( pev->message ) || szSoundFile[0] == '\0' ) )
 	{
 		ALERT( at_error, "SPEAKER with no Level/Sentence! at: %f, %f, %f\n", pev->origin.x, pev->origin.y, pev->origin.z );
-		SetNextThink( 0.1 );
-		SetThink(&CSpeaker :: SUB_Remove );
+		SetNextThink( 0.1f );
+		SetThink( &CSpeaker::SUB_Remove );
 		return;
 	}
 	pev->solid = SOLID_NOT;
@@ -1936,27 +1936,28 @@ void CSpeaker::Spawn( void )
 	Precache();
 }
 
-#define ANNOUNCE_MINUTES_MIN	0.25	 
-#define ANNOUNCE_MINUTES_MAX	2.25
+#define ANNOUNCE_MINUTES_MIN	0.25f
+#define ANNOUNCE_MINUTES_MAX	2.25f
 
 void CSpeaker::Precache( void )
 {
 	if( !FBitSet( pev->spawnflags, SPEAKER_START_SILENT ) )
 		// set first announcement time for random n second
-		SetNextThink( RANDOM_FLOAT(5.0, 15.0) );
+		SetNextThink( RANDOM_FLOAT(5.0f, 15.0f) );
 }
+
 void CSpeaker::SpeakerThink( void )
 {
 	const char* szSoundFile = NULL;
-	float flvolume = pev->health * 0.1;
-	float flattenuation = 0.3;
+	float flvolume = pev->health * 0.1f;
+	float flattenuation = 0.3f;
 	int flags = 0;
 	int pitch = 100;
 
 	// Wait for the talkmonster to finish first.
 	if( gpGlobals->time <= CTalkMonster::g_talkWaitTime )
 	{
-		AbsoluteNextThink( CTalkMonster::g_talkWaitTime + RANDOM_FLOAT( 5, 10 ) );
+		AbsoluteNextThink( CTalkMonster::g_talkWaitTime + RANDOM_FLOAT( 5.0f, 10.0f ) );
 		return;
 	}
 
@@ -2022,9 +2023,9 @@ void CSpeaker::SpeakerThink( void )
 			ALERT( at_console, "Level Design Error!\nSPEAKER has bad sentence group name: %s\n",szSoundFile ); 
 
 		// set next announcement time for random 5 to 10 minute delay
-		SetNextThink( RANDOM_FLOAT(ANNOUNCE_MINUTES_MIN * 60.0, ANNOUNCE_MINUTES_MAX * 60.0) );
+		SetNextThink( RANDOM_FLOAT(ANNOUNCE_MINUTES_MIN * 60.0f, ANNOUNCE_MINUTES_MAX * 60.0f) );
 
-		CTalkMonster::g_talkWaitTime = gpGlobals->time + 5;		// time delay until it's ok to speak: used so that two NPCs don't talk at once
+		CTalkMonster::g_talkWaitTime = gpGlobals->time + 5.0f;		// time delay until it's ok to speak: used so that two NPCs don't talk at once
 	}
 
 	return;
@@ -2035,7 +2036,7 @@ void CSpeaker::SpeakerThink( void )
 //
 void CSpeaker::ToggleUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
-	int fActive = (m_fNextThink > 0.0);
+	int fActive = ( m_fNextThink > 0.0f );
 
 	// fActive is TRUE only if an announcement is pending
 
@@ -2050,7 +2051,7 @@ void CSpeaker::ToggleUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYP
 	if( useType == USE_ON )
 	{
 		// turn on announcements
-		SetNextThink( 0.1 );
+		SetNextThink( 0.1f );
 		return;
 	}
 
