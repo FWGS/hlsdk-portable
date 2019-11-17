@@ -171,12 +171,12 @@ int CHudScoreboard::Draw( float fTime )
 		DrawUtfString( PL_RANGE_MAX + xpos_rel - 35, ypos, ScreenWidth, "pkt loss", 255, 140, 0 );
 	}
 
-	list_slot += 1.2;
+	list_slot += 1.2f;
 	ypos = ROW_RANGE_MIN + ( list_slot * ROW_GAP );
 	// xpos = NAME_RANGE_MIN + xpos_rel;
 	FillRGBA( xpos - 4, ypos, FAR_RIGHT -2, 1, 255, 140, 0, 255 );  // draw the seperator line
 
-	list_slot += 0.8;
+	list_slot += 0.8f;
 
 	if( !gHUD.m_Teamplay )
 	{
@@ -328,7 +328,7 @@ int CHudScoreboard::Draw( float fTime )
 	}
 
 	// draw all the players who are not in a team
-	list_slot += 0.5;
+	list_slot += 0.5f;
 	DrawPlayers( xpos_rel, list_slot, 0, "" );
 
 	return 1;
@@ -561,7 +561,7 @@ int CHudScoreboard::MsgFunc_TeamInfo( const char *pszName, int iSize, void *pbuf
 				if( g_TeamInfo[j].name[0] == '\0' )
 					break;
 			}
-			m_iNumTeams = max( j, m_iNumTeams );
+			m_iNumTeams = Q_max( j, m_iNumTeams );
 
 			strncpy( g_TeamInfo[j].name, g_PlayerExtraInfo[i].teamname, MAX_TEAM_NAME );
 			g_TeamInfo[j].players = 0;

@@ -667,7 +667,7 @@ int CGraph::FindShortestPath( int *piPath, int iStart, int iDest, int iHull, int
 		//
 		for ( i = 0; i < m_cNodes; i++)
 		{
-			m_pNodes[i].m_flClosestSoFar = -1.0;
+			m_pNodes[i].m_flClosestSoFar = -1.0f;
 		}
 
 		m_pNodes[iStart].m_flClosestSoFar = 0.0;
@@ -709,8 +709,8 @@ int CGraph::FindShortestPath( int *piPath, int iStart, int iDest, int iHull, int
 					}
 				}
 				float flOurDistance = flCurrentDistance + m_pLinkPool[m_pNodes[iCurrentNode].m_iFirstLink + i].m_flWeight;
-				if(  m_pNodes[iVisitNode].m_flClosestSoFar < -0.5
-				   || flOurDistance < m_pNodes[iVisitNode].m_flClosestSoFar - 0.001 )
+				if(  m_pNodes[iVisitNode].m_flClosestSoFar < -0.5f
+				   || flOurDistance < m_pNodes[iVisitNode].m_flClosestSoFar - 0.001f )
 				{
 					m_pNodes[iVisitNode].m_flClosestSoFar = flOurDistance;
 					m_pNodes[iVisitNode].m_iPreviousNode = iCurrentNode;
@@ -719,7 +719,7 @@ int CGraph::FindShortestPath( int *piPath, int iStart, int iDest, int iHull, int
 				}
 			}
 		}
-		if( m_pNodes[iDest].m_flClosestSoFar < -0.5 )
+		if( m_pNodes[iDest].m_flClosestSoFar < -0.5f )
 		{
 			// Destination is unreachable, no path found.
 			return 0;
@@ -837,7 +837,7 @@ void CGraph::CheckNode( Vector vecOrigin, int iNode )
 		// make sure that vecOrigin can trace to this node!
 		UTIL_TraceLine( vecOrigin, m_pNodes[iNode].m_vecOriginPeek, ignore_monsters, 0, &tr );
 
-		if( tr.flFraction == 1.0 )
+		if( tr.flFraction == 1.0f )
 		{
 			m_iNearest = iNode;
 			m_flShortest = flDist;
@@ -907,7 +907,7 @@ int CGraph::FindNearestNode( const Vector &vecOrigin, int afNodeTypes )
 	}
 
 	m_iNearest = -1;
-	m_flShortest = 999999.0; // just a big number.
+	m_flShortest = 999999.0f; // just a big number.
 
 	// If we can find a visible point, then let CalcBounds set the limits, but if
 	// we have no visible point at all to start with, then don't restrict the limits.
@@ -1276,7 +1276,7 @@ int CGraph::LinkVisibleNodes( CLink *pLinkPool, FILE *file, int *piBadNode )
 			if( tr.fStartSolid )
 				continue;
 
-			if( tr.flFraction != 1.0 )
+			if( tr.flFraction != 1.0f )
 			{
 				// trace hit a brush ent, trace backwards to make sure that this ent is the only thing in the way.
 				pTraceEnt = tr.pHit;// store the ent that the trace hit, for comparison
@@ -1442,14 +1442,14 @@ int CGraph::RejectInlineLinks( CLink *pLinkPool, FILE *file )
 				flDistToTestNode = vec2DirToTestNode.Length();
 				vec2DirToTestNode = vec2DirToTestNode.Normalize();
 
-				if( DotProduct( vec2DirToCheckNode, vec2DirToTestNode ) >= 0.998 )
+				if( DotProduct( vec2DirToCheckNode, vec2DirToTestNode ) >= 0.998f )
 				{
 					// there's a chance that TestNode intersects the line to CheckNode. If so, we should disconnect the link to CheckNode. 
 					if( flDistToTestNode < flDistToCheckNode )
 					{
 						if( file )
 						{
-							fprintf( file, "REJECTED NODE %3d through Node %3d, Dot = %8f\n", pLinkPool[pSrcNode->m_iFirstLink + j].m_iDestNode, pLinkPool[pSrcNode->m_iFirstLink + k].m_iDestNode, DotProduct( vec2DirToCheckNode, vec2DirToTestNode ) );
+							fprintf( file, "REJECTED NODE %3d through Node %3d, Dot = %8f\n", pLinkPool[pSrcNode->m_iFirstLink + j].m_iDestNode, pLinkPool[pSrcNode->m_iFirstLink + k].m_iDestNode, (double)DotProduct( vec2DirToCheckNode, vec2DirToTestNode ) );
 						}
 
 						pLinkPool[pSrcNode->m_iFirstLink + j] = pLinkPool[pSrcNode->m_iFirstLink + ( pSrcNode->m_cNumLinks - 1 )];
@@ -1516,7 +1516,7 @@ void CTestHull::Spawn( entvars_t *pevMasterNode )
 	else
 	{
 		SetThink( &CTestHull::DropDelay );
-		pev->nextthink = gpGlobals->time + 1;
+		pev->nextthink = gpGlobals->time + 1.0f;
 	}
 
 	// Make this invisible
@@ -1537,7 +1537,7 @@ void CTestHull::DropDelay( void )
 
 	SetThink( &CTestHull::CallBuildNodeGraph );
 
-	pev->nextthink = gpGlobals->time + 1;
+	pev->nextthink = gpGlobals->time + 1.0f;
 }
 
 //=========================================================
@@ -1623,7 +1623,7 @@ void CTestHull::ShowBadNode( void )
 	UTIL_ParticleEffect( pev->origin + gpGlobals->v_right * 64, g_vecZero, 255, 25 );
 	UTIL_ParticleEffect( pev->origin - gpGlobals->v_right * 64, g_vecZero, 255, 25 );
 
-	pev->nextthink = gpGlobals->time + 0.1;
+	pev->nextthink = gpGlobals->time + 0.1f;
 }
 
 extern BOOL gTouchDisabled;
@@ -1737,7 +1737,7 @@ void CTestHull::BuildNodeGraph( void )
 		fprintf( file, "Location      %4d,%4d,%4d\n",(int)WorldGraph.m_pNodes[i].m_vecOrigin.x, (int)WorldGraph.m_pNodes[i].m_vecOrigin.y, (int)WorldGraph.m_pNodes[i].m_vecOrigin.z );
 		fprintf( file, "HintType:     %4d\n", WorldGraph.m_pNodes[i].m_sHintType );
 		fprintf( file, "HintActivity: %4d\n", WorldGraph.m_pNodes[i].m_sHintActivity );
-		fprintf( file, "HintYaw:      %4f\n", WorldGraph.m_pNodes[i].m_flHintYaw );
+		fprintf( file, "HintYaw:      %4f\n", (double)WorldGraph.m_pNodes[i].m_flHintYaw );
 		fprintf( file, "-------------------------------------------------------------------------------\n" );
 	}
 	fprintf( file, "\n\n" );
@@ -1959,7 +1959,7 @@ void CTestHull::BuildNodeGraph( void )
 					TraceResult tr;
 
 					UTIL_TraceHull( pSrcNode->m_vecOrigin + Vector( 0, 0, 32 ), pDestNode->m_vecOriginPeek + Vector( 0, 0, 32 ), ignore_monsters, large_hull, ENT( pev ), &tr );
-					if( tr.fStartSolid || tr.flFraction < 1.0 )
+					if( tr.fStartSolid || tr.flFraction < 1.0f )
 					{
 						pTempPool[pSrcNode->m_iFirstLink + j].m_afLinkInfo &= ~bits_LINK_FLY_HULL;
 					}
@@ -2533,7 +2533,7 @@ int CGraph::FLoadGraph( const char *szMapName )
 		if( length < 0 )
 			goto ShortFile;
 		memcpy( m_pHashLinks, pMemFile, sizeof(short) * m_nHashLinks );
-		pMemFile += sizeof(short) * m_nHashLinks;
+		// pMemFile += sizeof(short) * m_nHashLinks;
 
 		// Set the graph present flag, clear the pointers set flag
 		//
@@ -3517,7 +3517,7 @@ void CGraph::TestRoutingTables( void )
 								ALERT( at_aiconsole, "No link.\n" );
 							}
 						}
-						if( fabs( flDistance1 - flDistance2 ) > 0.10 )
+						if( fabs( flDistance1 - flDistance2 ) > 0.1f )
 						{
 #else
 						if( cPathSize1 != cPathSize2 || memcmp( pMyPath, pMyPath2, sizeof(int) * cPathSize1 ) != 0 )
@@ -3641,7 +3641,7 @@ void CNodeViewer::Spawn()
 		int start = 0;
 		int end;
 		do{
-			end = m_nVisited;
+			// end = m_nVisited;
 			// ALERT( at_console, "%d :", m_nVisited );
 			for( end = m_nVisited; start < end; start++ )
 			{
