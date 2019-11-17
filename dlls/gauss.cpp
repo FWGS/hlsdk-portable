@@ -54,10 +54,10 @@ float CXS::GetFullChargeTime( void )
 	if( g_pGameRules->IsMultiplayer() )
 #endif
 	{
-		return 1.5;
+		return 1.5f;
 	}
 
-	return 4;
+	return 4.0f;
 }
 
 
@@ -137,7 +137,7 @@ BOOL CXS::Deploy()
 
 void CXS::Holster( int skiplocal /* = 0 */ )
 {
-	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
+	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5f;
 
 	SendWeaponAnim( XS_HOLSTER );
 	m_fInAttack = 0;
@@ -150,14 +150,14 @@ void CXS::PrimaryAttack()
 	if( m_pPlayer->pev->waterlevel == 3 )
 	{
 		PlayEmptySound();
-		m_flNextSecondaryAttack = m_flNextPrimaryAttack = UTIL_WeaponTimeBase() +  0.15;
+		m_flNextSecondaryAttack = m_flNextPrimaryAttack = UTIL_WeaponTimeBase() +  0.15f;
 		return;
 	}
 
 	if( m_iClip <= 0 )
 	{
 		PlayEmptySound();
-		m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
+		m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5f;
 		return;
 	}
 
@@ -168,8 +168,8 @@ void CXS::PrimaryAttack()
 
 	StartFire();
 	m_fInAttack = 0;
-	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 2.2;
-	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.4;
+	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 2.2f;
+	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.4f;
 }
 
 void CXS::SecondaryAttack()
@@ -188,7 +188,7 @@ void CXS::SecondaryAttack()
 			PlayEmptySound();
 		}
 
-		m_flNextSecondaryAttack = m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5;
+		m_flNextSecondaryAttack = m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5f;
 		return;
 	}
 
@@ -197,7 +197,7 @@ void CXS::SecondaryAttack()
 		if( m_iClip <= 0 )
 		{
 			EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_WEAPON, "weapons/357_cock1.wav", 0.8, ATTN_NORM );
-			m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
+			m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5f;
 			return;
 		}
 
@@ -211,7 +211,7 @@ void CXS::SecondaryAttack()
 
 		SendWeaponAnim( XS_SPINUP );
 		m_fInAttack = 1;
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.5;
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.5f;
 		m_pPlayer->m_flStartCharge = gpGlobals->time;
 		m_pPlayer->m_flAmmoStartCharge = UTIL_WeaponTimeBase() + GetFullChargeTime();
 
@@ -240,7 +240,7 @@ void CXS::SecondaryAttack()
                         // out of ammo! force the gun to fire
                         StartFire();
                         m_fInAttack = 0;
-                        m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 2.2;
+                        m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 2.2f;
                         m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 1;
                         return;
                 }
@@ -255,12 +255,12 @@ void CXS::SecondaryAttack()
 #endif
 			{
 				--m_iClip;
-				m_pPlayer->m_flNextAmmoBurn = UTIL_WeaponTimeBase() + 0.1;
+				m_pPlayer->m_flNextAmmoBurn = UTIL_WeaponTimeBase() + 0.1f;
 			}
 			else
 			{
 				--m_iClip;
-				m_pPlayer->m_flNextAmmoBurn = UTIL_WeaponTimeBase() + 0.3;
+				m_pPlayer->m_flNextAmmoBurn = UTIL_WeaponTimeBase() + 0.3f;
 			}
 		}
 
@@ -279,14 +279,14 @@ void CXS::SecondaryAttack()
 		if( m_iSoundState == 0 )
 			ALERT( at_console, "sound state %d\n", m_iSoundState );
 
-		PLAYBACK_EVENT_FULL( 0, m_pPlayer->edict(), m_usXSSpin, 0.0, g_vecZero, g_vecZero, 0.0, 0.0, pitch, 0, ( m_iSoundState == SND_CHANGE_PITCH ) ? 1 : 0, 0 );
+		PLAYBACK_EVENT_FULL( 0, m_pPlayer->edict(), m_usXSSpin, 0.0f, g_vecZero, g_vecZero, 0.0f, 0.0f, pitch, 0, ( m_iSoundState == SND_CHANGE_PITCH ) ? 1 : 0, 0 );
 
 		m_iSoundState = SND_CHANGE_PITCH; // hack for going through level transitions
 
 		m_pPlayer->m_iWeaponVolume = XS_PRIMARY_CHARGE_VOLUME;
 
-		// m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.1;
-		if( m_pPlayer->m_flStartCharge < gpGlobals->time - 10 )
+		// m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.1f;
+		if( m_pPlayer->m_flStartCharge < gpGlobals->time - 10.0f )
 		{
 			// Player charged up too long. Zap him.
 			EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_WEAPON, "weapons/xs_moan1.wav", 1.0, ATTN_NORM, 0, 80 + RANDOM_LONG( 0, 0x3f ) );
@@ -323,18 +323,18 @@ void CXS::StartFire( void )
 
 	if( gpGlobals->time - m_pPlayer->m_flStartCharge > GetFullChargeTime() )
 	{
-		flDamage = 200;
+		flDamage = 200.0f;
 	}
 	else
 	{
-		flDamage = 200 * ( ( gpGlobals->time - m_pPlayer->m_flStartCharge ) / GetFullChargeTime() );
+		flDamage = 200.0f * ( ( gpGlobals->time - m_pPlayer->m_flStartCharge ) / GetFullChargeTime() );
 	}
 
 	if( m_fPrimaryFire )
 	{
 		// fixed damage on primary attack
 #ifdef CLIENT_DLL
-		flDamage = 20;
+		flDamage = 20.0f;
 #else 
 		flDamage = gSkillData.plrDmgGauss;
 #endif
@@ -348,7 +348,7 @@ void CXS::StartFire( void )
 
 		if( !m_fPrimaryFire )
 		{
-			m_pPlayer->pev->velocity = m_pPlayer->pev->velocity - gpGlobals->v_forward * flDamage * 5;
+			m_pPlayer->pev->velocity = m_pPlayer->pev->velocity - gpGlobals->v_forward * flDamage * 5.0f;
 		}
 
 		if( !g_pGameRules->IsMultiplayer() )
@@ -362,7 +362,7 @@ void CXS::StartFire( void )
 	}
 
 	// time until aftershock 'static discharge' sound
-	m_pPlayer->m_flPlayAftershock = gpGlobals->time + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 0.3, 0.8 );
+	m_pPlayer->m_flPlayAftershock = gpGlobals->time + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 0.3f, 0.8f );
 
 	Fire( vecSrc, vecAiming, flDamage );
 }
@@ -422,7 +422,7 @@ void CXS::WeaponIdle( void )
 		case 3:
 			break; // no sound
 		}
-		m_pPlayer->m_flPlayAftershock = 0.0;
+		m_pPlayer->m_flPlayAftershock = 0.0f;
 	}
 
 	if( m_flTimeWeaponIdle > UTIL_WeaponTimeBase() )
@@ -441,13 +441,13 @@ void CXS::WeaponIdle( void )
 	else
 	{
 		int iAnim;
-		float flRand = RANDOM_FLOAT( 0, 1 );
-		if( flRand <= 0.5 )
+		float flRand = RANDOM_FLOAT( 0.0f, 1.0f );
+		if( flRand <= 0.5f )
 		{
 			iAnim = XS_IDLE;
 			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
 		}
-		else if( flRand <= 0.75 )
+		else if( flRand <= 0.75f )
 		{
 			iAnim = XS_IDLE2;
 			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );

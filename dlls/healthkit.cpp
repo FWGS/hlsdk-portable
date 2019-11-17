@@ -192,13 +192,13 @@ void CWallHealth::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE u
 	{
 		if( m_flSoundTime <= gpGlobals->time )
 		{
-			m_flSoundTime = gpGlobals->time + 0.62;
+			m_flSoundTime = gpGlobals->time + 0.62f;
 			EMIT_SOUND( ENT( pev ), CHAN_ITEM, "items/medshotno1.wav", 1.0, ATTN_NORM );
 		}
 		return;
 	}
 
-	pev->nextthink = pev->ltime + 0.25;
+	pev->nextthink = pev->ltime + 0.25f;
 	SetThink( &CWallHealth::Off );
 
 	// Time to recharge yet?
@@ -210,7 +210,7 @@ void CWallHealth::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE u
 	{
 		m_iOn++;
 		EMIT_SOUND( ENT( pev ), CHAN_ITEM, "items/medshot4.wav", 1.0, ATTN_NORM );
-		m_flSoundTime = 0.56 + gpGlobals->time;
+		m_flSoundTime = 0.56f + gpGlobals->time;
 	}
 	if( ( m_iOn == 1 ) && ( m_flSoundTime <= gpGlobals->time ) )
 	{
@@ -225,7 +225,7 @@ void CWallHealth::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE u
 	}
 
 	// govern the rate of charge
-	m_flNextCharge = gpGlobals->time + 0.1;
+	m_flNextCharge = gpGlobals->time + 0.1f;
 }
 
 void CWallHealth::Recharge( void )

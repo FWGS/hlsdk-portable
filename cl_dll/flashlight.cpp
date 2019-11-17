@@ -50,7 +50,7 @@ void CHudFlashlight::Reset( void )
 	m_fFade = 0;
 	m_fOn = 0;
 	m_iBat = 100;
-	m_flBat = 1.0;
+	m_flBat = 1.0f;
 }
 
 int CHudFlashlight::VidInit( void )
@@ -75,7 +75,7 @@ int CHudFlashlight::MsgFunc_FlashBat( const char *pszName,  int iSize, void *pbu
 	BEGIN_READ( pbuf, iSize );
 	int x = READ_BYTE();
 	m_iBat = x;
-	m_flBat = ( (float)x ) / 100.0;
+	m_flBat = ( (float)x ) / 100.0f;
 
 	return 1;
 }
@@ -86,7 +86,7 @@ int CHudFlashlight::MsgFunc_Flashlight( const char *pszName,  int iSize, void *p
 	m_fOn = READ_BYTE();
 	int x = READ_BYTE();
 	m_iBat = x;
-	m_flBat = ( (float)x ) / 100.0;
+	m_flBat = ( (float)x ) / 100.0f;
 
 	return 1;
 }

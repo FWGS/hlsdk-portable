@@ -111,14 +111,14 @@ void CMP5::PrimaryAttack()
 	if( m_pPlayer->pev->waterlevel == 3 )
 	{
 		PlayEmptySound();
-		m_flNextPrimaryAttack = 0.3;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.3f;
 		return;
 	}
 
 	if( m_iClip <= 0 )
 	{
 		PlayEmptySound();
-		m_flNextPrimaryAttack = 0.3;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.3f;
 		return;
 	}
 
@@ -174,7 +174,7 @@ void CMP5::Reload( void )
 	if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0 || m_iClip == MP5_MAX_CLIP )
 		return;
 
-	DefaultReload( MP5_MAX_CLIP, MP5_RELOAD, 1.5 );
+	DefaultReload( MP5_MAX_CLIP, MP5_RELOAD, 1.5f );
 }
 
 void CMP5::WeaponIdle( void )

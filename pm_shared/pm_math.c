@@ -13,10 +13,12 @@
 *
 ****/
 // pm_math.c -- math primitives
-
-#include "mathlib.h"
-#include "const.h"
 #include <math.h>
+#include "mathlib.h"
+#ifdef HAVE_TGMATH_H
+#include <tgmath.h>
+#endif
+#include "const.h"
 
 // up / down
 #define	PITCH	0
@@ -29,12 +31,12 @@
 #pragma warning(disable : 4244)
 #endif
 
-vec3_t vec3_origin = { 0,0,0 };
+vec3_t vec3_origin = { 0, 0, 0 };
 int nanmask = 255 << 23;
 
 float anglemod( float a )
 {
-	a = ( 360.0 / 65536 ) * ( (int)( a * ( 65536 / 360.0 ) ) & 65535 );
+	a = ( 360.0f / 65536.0f ) * ( (int)( a * ( 65536.0f / 360.0f ) ) & 65535 );
 	return a;
 }
 
@@ -43,13 +45,13 @@ void AngleVectors( const vec3_t angles, vec3_t forward, vec3_t right, vec3_t up 
 	float angle;
 	float sr, sp, sy, cr, cp, cy;
 
-	angle = angles[YAW] * ( M_PI * 2 / 360 );
+	angle = angles[YAW] * ( M_PI_F * 2.0f / 360.0f );
 	sy = sin( angle );
 	cy = cos( angle );
-	angle = angles[PITCH] * ( M_PI*2 / 360 );
+	angle = angles[PITCH] * ( M_PI_F * 2.0f / 360.0f );
 	sp = sin( angle );
 	cp = cos( angle );
-	angle = angles[ROLL] * ( M_PI*2 / 360 );
+	angle = angles[ROLL] * ( M_PI_F * 2.0f / 360.0f );
 	sr = sin( angle );
 	cr = cos( angle );
 
@@ -78,13 +80,13 @@ void AngleVectorsTranspose( const vec3_t angles, vec3_t forward, vec3_t right, v
 	float angle;
 	float sr, sp, sy, cr, cp, cy;
 	
-	angle = angles[YAW] * ( M_PI * 2 / 360 );
+	angle = angles[YAW] * ( M_PI_F * 2.0f / 360.0f );
 	sy = sin( angle );
 	cy = cos( angle );
-	angle = angles[PITCH] * ( M_PI * 2 / 360 );
+	angle = angles[PITCH] * ( M_PI_F * 2.0f / 360.0f );
 	sp = sin( angle );
 	cp = cos( angle );
-	angle = angles[ROLL] * ( M_PI * 2 / 360 );
+	angle = angles[ROLL] * ( M_PI_F * 2.0f / 360.0f );
 	sr = sin( angle );
 	cr = cos( angle );
 
@@ -113,13 +115,13 @@ void AngleMatrix( const vec3_t angles, float (*matrix)[4] )
 	float angle;
 	float sr, sp, sy, cr, cp, cy;
 
-	angle = angles[YAW] * ( M_PI * 2 / 360 );
+	angle = angles[YAW] * ( M_PI_F * 2.0f / 360.0f );
 	sy = sin( angle );
 	cy = cos( angle );
-	angle = angles[PITCH] * ( M_PI * 2 / 360 );
+	angle = angles[PITCH] * ( M_PI_F * 2.0f / 360.0f );
 	sp = sin( angle );
 	cp = cos( angle );
-	angle = angles[ROLL] * ( M_PI * 2 / 360 );
+	angle = angles[ROLL] * ( M_PI_F * 2.0f / 360.0f );
 	sr = sin( angle );
 	cr = cos( angle );
 
@@ -133,9 +135,9 @@ void AngleMatrix( const vec3_t angles, float (*matrix)[4] )
 	matrix[0][2] = ( cr * sp * cy + -sr * -sy );
 	matrix[1][2] = ( cr * sp * sy + -sr * cy );
 	matrix[2][2] = cr * cp;
-	matrix[0][3] = 0.0;
-	matrix[1][3] = 0.0;
-	matrix[2][3] = 0.0;
+	matrix[0][3] = 0.0f;
+	matrix[1][3] = 0.0f;
+	matrix[2][3] = 0.0f;
 }
 
 void AngleIMatrix( const vec3_t angles, float matrix[3][4] )
@@ -143,13 +145,13 @@ void AngleIMatrix( const vec3_t angles, float matrix[3][4] )
 	float angle;
 	float sr, sp, sy, cr, cp, cy;
 
-	angle = angles[YAW] * ( M_PI * 2 / 360 );
+	angle = angles[YAW] * ( M_PI_F * 2.0f / 360.0f );
 	sy = sin( angle );
 	cy = cos( angle );
-	angle = angles[PITCH] * ( M_PI * 2 / 360 );
+	angle = angles[PITCH] * ( M_PI_F * 2.0f / 360.0f );
 	sp = sin( angle );
 	cp = cos( angle );
-	angle = angles[ROLL] * ( M_PI * 2 / 360 );
+	angle = angles[ROLL] * ( M_PI_F * 2.0f / 360.0f );
 	sr = sin( angle );
 	cr = cos( angle );
 
@@ -174,13 +176,13 @@ void NormalizeAngles( float *angles )
 	// Normalize angles
 	for( i = 0; i < 3; i++ )
 	{
-		if( angles[i] > 180.0 )
+		if( angles[i] > 180.0f )
 		{
-			angles[i] -= 360.0;
+			angles[i] -= 360.0f;
 		}
-		else if( angles[i] < -180.0 )
+		else if( angles[i] < -180.0f )
 		{
-			angles[i] += 360.0;
+			angles[i] += 360.0f;
 		}
 	}
 }
@@ -209,13 +211,13 @@ void InterpolateAngles( float *start, float *end, float *output, float frac )
 		ang2 = end[i];
 
 		d = ang2 - ang1;
-		if( d > 180 )
+		if( d > 180.0f )
 		{
-			d -= 360;
+			d -= 360.0f;
 		}
-		else if( d < -180 )
+		else if( d < -180.0f )
 		{	
-			d += 360;
+			d += 360.0f;
 		}
 
 		output[i] = ang1 + d * frac;
@@ -240,7 +242,7 @@ float AngleBetweenVectors( const vec3_t v1, const vec3_t v2 )
 		return 0.0f;
 
 	angle = acos( DotProduct( v1, v2 ) / ( l1 * l2 ) );
-	angle = ( angle  * 180.0f ) / M_PI;
+	angle = ( angle  * 180.0f ) / M_PI_F;
 
 	return angle;
 }
@@ -303,8 +305,6 @@ void CrossProduct( const vec3_t v1, const vec3_t v2, vec3_t cross )
 	cross[2] = v1[0] * v2[1] - v1[1] * v2[0];
 }
 
-double sqrt( double x );
-
 float Length( const vec3_t v )
 {
 	int i;
@@ -333,7 +333,7 @@ float VectorNormalize( vec3_t v )
 
 	if( length )
 	{
-		ilength = 1 / length;
+		ilength = 1.0f / length;
 		v[0] *= ilength;
 		v[1] *= ilength;
 		v[2] *= ilength;
@@ -368,18 +368,18 @@ void VectorMatrix( vec3_t forward, vec3_t right, vec3_t up )
 {
 	vec3_t tmp;
 
-	if( forward[0] == 0 && forward[1] == 0 )
+	if( forward[0] == 0.0f && forward[1] == 0.0f )
 	{
-		right[0] = 1;	
-		right[1] = 0; 
-		right[2] = 0;
+		right[0] = 1.0f;
+		right[1] = 0.0f;
+		right[2] = 0.0f;
 		up[0] = -forward[2]; 
-		up[1] = 0; 
-		up[2] = 0;
+		up[1] = 0.0f;
+		up[2] = 0.0f;
 		return;
 	}
 
-	tmp[0] = 0; tmp[1] = 0; tmp[2] = 1.0;
+	tmp[0] = 0.0f; tmp[1] = 0.0f; tmp[2] = 1.0f;
 	CrossProduct( forward, tmp, right );
 	VectorNormalize( right );
 	CrossProduct( right, forward, up );
@@ -390,27 +390,27 @@ void VectorAngles( const vec3_t forward, vec3_t angles )
 {
 	float tmp, yaw, pitch;
 
-	if( forward[1] == 0 && forward[0] == 0 )
+	if( forward[1] == 0.0f && forward[0] == 0.0f )
 	{
-		yaw = 0;
-		if( forward[2] > 0 )
-			pitch = 90;
+		yaw = 0.0f;
+		if( forward[2] > 0.0f )
+			pitch = 90.0f;
 		else
-			pitch = 270;
+			pitch = 270.0f;
 	}
 	else
 	{
-		yaw = ( atan2( forward[1], forward[0] ) * 180 / M_PI );
-		if( yaw < 0 )
-			yaw += 360;
+		yaw = ( atan2( forward[1], forward[0] ) * 180.0f / M_PI_F );
+		if( yaw < 0.0f )
+			yaw += 360.0f;
 
 		tmp = sqrt( forward[0] * forward[0] + forward[1] * forward[1] );
-		pitch = ( atan2( forward[2], tmp ) * 180 / M_PI );
-		if( pitch < 0 )
-			pitch += 360;
+		pitch = ( atan2( forward[2], tmp ) * 180.0f / M_PI_F );
+		if( pitch < 0.0f )
+			pitch += 360.0f;
 	}
 
 	angles[0] = pitch;
 	angles[1] = yaw;
-	angles[2] = 0;
+	angles[2] = 0.0f;
 }
