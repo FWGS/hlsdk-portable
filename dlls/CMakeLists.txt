@@ -25,6 +25,12 @@ project (SVDLL)
 
 set (SVDLL_LIBRARY server)
 
+include(CheckIncludeFile)
+check_include_file("tgmath.h" HAVE_TGMATH_H)
+if(HAVE_TGMATH_H)
+	add_definitions(-DHAVE_TGMATH_H)
+endif()
+
 add_definitions(-DCLIENT_WEAPONS)
 
 if(NOT MSVC)
@@ -159,9 +165,6 @@ set_target_properties (${SVDLL_LIBRARY} PROPERTIES
 
 if(APPLE OR WIN32 OR ${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
 	set(SVDLL_NAME "${SERVER_LIBRARY_NAME}")
-	if(64BIT)
-		set(SVDLL_NAME "${SERVER_LIBRARY_NAME}64")
-	endif()
 
 	set_target_properties(${SVDLL_LIBRARY} PROPERTIES
 		OUTPUT_NAME ${SVDLL_NAME}

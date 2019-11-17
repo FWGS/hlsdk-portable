@@ -82,42 +82,42 @@ void IN_ToggleButtons( float forwardmove, float sidemove )
 		}
 	}
 
-	if( forwardmove > 0.7 && !( moveflags & F ) )
+	if( forwardmove > 0.7f && !( moveflags & F ) )
 	{
 		moveflags |= F;
 		in_forward.state |= BUTTON_DOWN;
 	}
-	if( forwardmove < 0.7 && ( moveflags & F ) )
+	if( forwardmove < 0.7f && ( moveflags & F ) )
 	{
 		moveflags &= ~F;
 		in_forward.state &= ~BUTTON_DOWN;
 	}
-	if( forwardmove < -0.7 && !( moveflags & B ) )
+	if( forwardmove < -0.7f && !( moveflags & B ) )
 	{
 		moveflags |= B;
 		in_back.state |= BUTTON_DOWN;
 	}
-	if( forwardmove > -0.7 && ( moveflags & B ) )
+	if( forwardmove > -0.7f && ( moveflags & B ) )
 	{
 		moveflags &= ~B;
 		in_back.state &= ~BUTTON_DOWN;
 	}
-	if( sidemove > 0.9 && !( moveflags & R ) )
+	if( sidemove > 0.9f && !( moveflags & R ) )
 	{
 		moveflags |= R;
 		in_moveright.state |= BUTTON_DOWN;
 	}
-	if( sidemove < 0.9 && ( moveflags & R ) )
+	if( sidemove < 0.9f && ( moveflags & R ) )
 	{
 		moveflags &= ~R;
 		in_moveright.state &= ~BUTTON_DOWN;
 	}
-	if( sidemove < -0.9 && !( moveflags & L ) )
+	if( sidemove < -0.9f && !( moveflags & L ) )
 	{
 		moveflags |= L;
 		in_moveleft.state |= BUTTON_DOWN;
 	}
-	if( sidemove > -0.9 && ( moveflags & L ) )
+	if( sidemove > -0.9f && ( moveflags & L ) )
 	{
 		moveflags &= ~L;
 		in_moveleft.state &= ~BUTTON_DOWN;

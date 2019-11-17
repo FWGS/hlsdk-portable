@@ -96,7 +96,7 @@ void CItem::Spawn( void )
 
 	if( DROP_TO_FLOOR(ENT( pev ) ) == 0 )
 	{
-		ALERT(at_error, "Item %s fell out of level at %f,%f,%f\n", STRING( pev->classname ), pev->origin.x, pev->origin.y, pev->origin.z);
+		ALERT(at_error, "Item %s fell out of level at %f,%f,%f\n", STRING( pev->classname ), (double)pev->origin.x, (double)pev->origin.y, (double)pev->origin.z);
 		UTIL_Remove( this );
 		return;
 	}
@@ -237,7 +237,7 @@ class CItemBattery : public CItem
 
 			// Suit reports new power level
 			// For some reason this wasn't working in release build -- round it.
-			pct = (int)( (float)( pPlayer->pev->armorvalue * 100.0 ) * ( 1.0 / MAX_NORMAL_BATTERY ) + 0.5 );
+			pct = (int)( (float)( pPlayer->pev->armorvalue * 100.0f ) * ( 1.0f / MAX_NORMAL_BATTERY ) + 0.5f );
 			pct = ( pct / 5 );
 			if( pct > 0 )
 				pct--;
