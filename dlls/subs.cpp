@@ -172,13 +172,6 @@ void CBaseEntity::UpdateOnRemove( void )
 
 	if( pev->globalname )
 		gGlobalState.EntitySetState( pev->globalname, GLOBAL_DEAD );
-
-	// tell owner ( if any ) that we're dead.This is mostly for MonsterMaker functionality.
-	//Killtarget didn't do this before, so the counter broke. - Solokiller
-	if( CBaseEntity* pOwner = pev->owner ? Instance( pev->owner ) : 0 )
-	{
-		pOwner->DeathNotice( pev );
-	}
 }
 
 // Convenient way to delay removing oneself
@@ -373,7 +366,7 @@ void CBaseDelay::SUB_UseTargets( CBaseEntity *pActivator, USE_TYPE useType, floa
 		// Save the useType
 		pTemp->pev->button = (int)useType;
 		pTemp->m_iszKillTarget = m_iszKillTarget;
-		pTemp->m_flDelay = 0; // prevent "recursion"
+		pTemp->m_flDelay = 0.0f; // prevent "recursion"
 		pTemp->pev->target = pev->target;
 
 		//LRC - Valve had a hacked thing here to avoid breaking
@@ -573,7 +566,7 @@ void CBaseToggle :: LinearMoveNow( void )
 	// divide vector length by speed to get time to reach dest
 	float flTravelTime = vecDestDelta.Length() / m_flLinearMoveSpeed;
 
-	if( flTravelTime < 0.05 )
+	if( flTravelTime < 0.05f )
 	{
 		UTIL_SetOrigin( this, m_vecFinalDest );
 		LinearMoveDone();
@@ -603,7 +596,7 @@ After moving, set origin to exact final destination, call "move done" function
 		vecDiff = (m_vecFinalDest + m_pMoveWith->pev->origin) - pev->origin;
 	else
 		vecDiff = m_vecFinalDest - pev->origin;
-	if (vecDiff.Length() > 0.05) //pev->velocity.Length())
+	if( vecDiff.Length() > 0.05f ) //pev->velocity.Length())
 	{
 		// HACK: not there yet, try waiting one more frame.
 		ALERT(at_console,"Rejecting difference %f\n",vecDiff.Length());

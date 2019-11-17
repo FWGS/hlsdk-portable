@@ -25,6 +25,11 @@ project (CLDLL)
 
 set (CLDLL_LIBRARY client)
 
+include(CheckIncludeFile)
+check_include_file("tgmath.h" HAVE_TGMATH_H)
+if(HAVE_TGMATH_H)
+	add_definitions(-DHAVE_TGMATH_H)
+endif()
 
 add_definitions(-DCLIENT_WEAPONS -DCLIENT_DLL)
 
@@ -126,6 +131,10 @@ endif()
 add_library (${CLDLL_LIBRARY} SHARED ${CLDLL_SOURCES})
 if (GOLDSOURCE_SUPPORT)
 	target_link_libraries( ${CLDLL_LIBRARY} ${CMAKE_DL_LIBS} )
+endif()
+
+if(WIN32)
+	target_link_libraries( ${CLDLL_LIBRARY} user32.lib )
 endif()
 
 set_target_properties (${CLDLL_LIBRARY} PROPERTIES

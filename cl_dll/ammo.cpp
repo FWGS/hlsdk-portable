@@ -77,7 +77,7 @@ void WeaponsResource::LoadWeaponSprites( WEAPON *pWeapon )
 	else
 		iRes = 640;
 
-	char sz[128];
+	char sz[256];
 
 	if( !pWeapon )
 		return;
@@ -882,7 +882,7 @@ int CHudAmmo::Draw( float flTime )
 	a = (int)Q_max( MIN_ALPHA, m_fFade );
 
 	if( m_fFade > 0 )
-		m_fFade -= ( gHUD.m_flTimeDelta * 20 );
+		m_fFade -= ( (float)gHUD.m_flTimeDelta * 20.0f );
 
 	UnpackRGB(r,g,b, gHUD.m_iHUDColor);
 
