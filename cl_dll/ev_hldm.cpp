@@ -59,18 +59,18 @@ void EV_TrainPitchAdjust( struct event_args_s *args );
 void EV_SpinXS(struct event_args_s *args);
 }
 
-#define VECTOR_CONE_1DEGREES Vector( 0.00873, 0.00873, 0.00873 )
-#define VECTOR_CONE_2DEGREES Vector( 0.01745, 0.01745, 0.01745 )
-#define VECTOR_CONE_3DEGREES Vector( 0.02618, 0.02618, 0.02618 )
-#define VECTOR_CONE_4DEGREES Vector( 0.03490, 0.03490, 0.03490 )
-#define VECTOR_CONE_5DEGREES Vector( 0.04362, 0.04362, 0.04362 )
-#define VECTOR_CONE_6DEGREES Vector( 0.05234, 0.05234, 0.05234 )
-#define VECTOR_CONE_7DEGREES Vector( 0.06105, 0.06105, 0.06105 )	
-#define VECTOR_CONE_8DEGREES Vector( 0.06976, 0.06976, 0.06976 )
-#define VECTOR_CONE_9DEGREES Vector( 0.07846, 0.07846, 0.07846 )
-#define VECTOR_CONE_10DEGREES Vector( 0.08716, 0.08716, 0.08716 )
-#define VECTOR_CONE_15DEGREES Vector( 0.13053, 0.13053, 0.13053 )
-#define VECTOR_CONE_20DEGREES Vector( 0.17365, 0.17365, 0.17365 )
+#define VECTOR_CONE_1DEGREES Vector( 0.00873f, 0.00873f, 0.00873f )
+#define VECTOR_CONE_2DEGREES Vector( 0.01745f, 0.01745f, 0.01745f )
+#define VECTOR_CONE_3DEGREES Vector( 0.02618f, 0.02618f, 0.02618f )
+#define VECTOR_CONE_4DEGREES Vector( 0.03490f, 0.03490f, 0.03490f )
+#define VECTOR_CONE_5DEGREES Vector( 0.04362f, 0.04362f, 0.04362f )
+#define VECTOR_CONE_6DEGREES Vector( 0.05234f, 0.05234f, 0.05234f )
+#define VECTOR_CONE_7DEGREES Vector( 0.06105f, 0.06105f, 0.06105f )	
+#define VECTOR_CONE_8DEGREES Vector( 0.06976f, 0.06976f, 0.06976f )
+#define VECTOR_CONE_9DEGREES Vector( 0.07846f, 0.07846f, 0.07846f )
+#define VECTOR_CONE_10DEGREES Vector( 0.08716f, 0.08716f, 0.08716f )
+#define VECTOR_CONE_15DEGREES Vector( 0.13053f, 0.13053f, 0.13053f )
+#define VECTOR_CONE_20DEGREES Vector( 0.17365f, 0.17365f, 0.17365f )
 
 // play a strike sound based on the texture that was hit by the attack traceline.  VecSrc/VecEnd are the
 // original traceline endpoints used by the attacker, iBulletType is the type of bullet that hit the texture.
@@ -530,7 +530,7 @@ void EV_HLDM_FireBullets( int idx, float *forward, float *right, float *up, int 
 		tracer = EV_HLDM_CheckTracer( idx, vecSrc, tr.endpos, forward, right, iBulletType, iTracerFreq, tracerCount );
 
 		// do damage, paint decals
-		if( tr.fraction != 1.0 )
+		if( tr.fraction != 1.0f )
 		{
 			switch( iBulletType )
 			{

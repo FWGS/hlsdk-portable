@@ -98,7 +98,7 @@ public:
 
 	virtual BOOL AllowAutoTargetCrosshair( void ) { return TRUE; };
 	virtual BOOL ClientCommand( CBasePlayer *pPlayer, const char *pcmd ) { return FALSE; };  // handles the user commands;  returns TRUE if command handled properly
-	virtual void ClientUserInfoChanged( CBasePlayer *pPlayer, char *infobuffer ) {}		// the player has changed userinfo;  can change it now
+	virtual void ClientUserInfoChanged( CBasePlayer *pPlayer, char *infobuffer );		// the player has changed userinfo;  can change it now
 
 	// Client kills/scoring
 	virtual int IPointsForKill( CBasePlayer *pAttacker, CBasePlayer *pKilled ) = 0;// how many points do I award whoever kills this player?

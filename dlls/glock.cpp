@@ -103,12 +103,12 @@ BOOL CGlock::Deploy()
 
 void CGlock::SecondaryAttack( void )
 {
-	GlockFire( 0.2, FALSE );
+	GlockFire( 0.2f, FALSE );
 }
 
 void CGlock::PrimaryAttack( void )
 {
-	GlockFire( 0.3, TRUE );
+	GlockFire( 0.3f, TRUE );
 }
 
 void CGlock::GlockFire( float flCycleTime, BOOL fUseAutoAim )
@@ -117,7 +117,7 @@ void CGlock::GlockFire( float flCycleTime, BOOL fUseAutoAim )
 	if( m_pPlayer->pev->waterlevel == 3 )
 	{
 		PlayEmptySound();
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.15;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.15f;
 		return;
 	}
 
@@ -126,7 +126,7 @@ void CGlock::GlockFire( float flCycleTime, BOOL fUseAutoAim )
 		if( m_fFireOnEmpty )
 		{
 			PlayEmptySound();
-			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.15;
+			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.15f;
 		}
 		return;
 	}
@@ -231,7 +231,7 @@ void CGlock::Reload( void )
 			SendWeaponAnim( GLOCK_TILT_TO_UPRIGHT );
 
 			SetThink( &CGlock::ReloadWait );
-			pev->nextthink = gpGlobals->time + 0.4;
+			pev->nextthink = gpGlobals->time + 0.4f;
 			m_fInSpecialReload = 1;
 		}
 	}
@@ -266,20 +266,20 @@ void CGlock::WeaponIdle( void )
 		int iAnim;
 		float flRand = UTIL_SharedRandomFloat( m_pPlayer->random_seed, 0.0, 1.0 );
 
-		if( flRand <= 0.3 + 0 * 0.75 )
+		if( flRand <= 0.3f + 0 * 0.75f )
 		{
 			iAnim = GLOCK_IDLE3;
-			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 49.0 / 16;
+			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 49.0f / 16.0f;
 		}
-		else if( flRand <= 0.6 + 0 * 0.875 )
+		else if( flRand <= 0.6f + 0 * 0.875f )
 		{
 			iAnim = GLOCK_IDLE1;
-			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 60.0 / 16.0;
+			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 60.0f / 16.0f;
 		}
 		else
 		{
 			iAnim = GLOCK_IDLE2;
-			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 40.0 / 16.0;
+			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 40.0f / 16.0f;
 		}
 		SendWeaponAnim( iAnim, 1 );
 	}

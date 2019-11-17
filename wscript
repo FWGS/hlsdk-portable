@@ -3,14 +3,21 @@
 # a1batross, mittorn, 2018
 
 from __future__ import print_function
-from waflib import Logs
+from waflib import Logs, Context, Configure
 import sys
 import os
-sys.path.append(os.path.realpath('scripts/waflib'))
 
 VERSION = '2.4'
 APPNAME = 'hlsdk-xash3d'
 top = '.'
+
+Context.Context.line_just = 55 # should fit for everything on 80x26
+
+@Configure.conf
+def get_taskgen_count(self):
+	try: idx = self.tg_idx_count
+	except: idx = 0 # don't set tg_idx_count to not increase counter
+	return idx
 
 def options(opt):
 	grp = opt.add_option_group('Common options')
@@ -19,21 +26,30 @@ def options(opt):
 		help = 'build type: debug, release or none(custom flags)')
 
 	grp.add_option('-8', '--64bits', action = 'store_true', dest = 'ALLOW64', default = False,
-		help = 'allow targetting 64-bit game dlls')
+		help = 'allow targetting 64-bit engine(Linux/Windows/OSX x86 only) [default: %default]')
 
 	grp.add_option('--enable-voicemgr', action = 'store_true', dest = 'VOICEMGR', default = False,
-		help = 'enable voice manager')
+		help = 'enable voice manager [default: %default]')
 
 	grp.add_option('--enable-goldsrc-support', action = 'store_true', dest = 'GOLDSRC', default = False,
-		help = 'enable GoldSource engine support')
+		help = 'enable GoldSource engine support [default: %default]')
 
-	opt.recurse('cl_dll dlls')
+	grp.add_option('--enable-lto', action = 'store_true', dest = 'LTO', default = False,
+		help = 'enable Link Time Optimization [default: %default]')
 
-	opt.load('xcompile compiler_cxx compiler_c')
+	grp.add_option('--enable-poly-opt', action = 'store_true', dest = 'POLLY', default = False,
+		help = 'enable polyhedral optimization if possible [default: %default]')
+
+	grp.add_option('--enable-magx', action = 'store_true', dest = 'MAGX', default = False,
+		help = 'enable targetting for MotoMAGX phones [default: %default]')
+
+	opt.load('xcompile compiler_cxx compiler_c clang_compilation_database strip_on_install')
+
 	if sys.platform == 'win32':
-		opt.load('msvc msdev')
-	opt.load('reconfigure')
+		opt.load('msvc msdev msvs')
 
+	opt.load('reconfigure subproject')
+	opt.add_subproject(["cl_dll", "dlls"])
 
 def configure(conf):
 	# Configuration
@@ -43,20 +59,23 @@ def configure(conf):
 	conf.env.SERVER_NAME = 'hl'
 	conf.env.PREFIX = ''
 
-	conf.load('reconfigure')
+	conf.load('fwgslib reconfigure')
 
+	enforce_pic = True # modern defaults
+	valid_build_types = ['fastnative', 'fast', 'release', 'debug', 'nooptimize', 'sanitize', 'none']
+	conf.load('fwgslib reconfigure')
 	conf.start_msg('Build type')
 	if conf.options.BUILD_TYPE == None:
 		conf.end_msg('not set', color='RED')
 		conf.fatal('Please set a build type, for example "-T release"')
-	elif not conf.options.BUILD_TYPE in ['fast', 'release', 'debug', 'nooptimize', 'sanitize', 'none']:
+	elif not conf.options.BUILD_TYPE in valid_build_types:
 		conf.end_msg(conf.options.BUILD_TYPE, color='RED')
-		conf.fatal('Invalid build type. Valid are "debug", "release" or "none"')
+		conf.fatal('Invalid build type. Valid are: %s' % valid_build_types.join(', '))
 	conf.end_msg(conf.options.BUILD_TYPE)
 
 	# -march=native should not be used
 	if conf.options.BUILD_TYPE == 'fast':
-	    Logs.warn('WARNING: \'fast\' build type should not be used in release builds')
+		Logs.warn('WARNING: \'fast\' build type should not be used in release builds')
 
 	conf.env.VOICEMGR    = conf.options.VOICEMGR
 	conf.env.GOLDSRC     = conf.options.GOLDSRC
@@ -68,93 +87,186 @@ def configure(conf):
 	conf.env.MSVC_TARGETS = ['x86'] # explicitly request x86 target for MSVC
 	if sys.platform == 'win32':
 		conf.load('msvc msdev')
-	conf.load('xcompile compiler_c compiler_cxx')
+	conf.load('xcompile compiler_c compiler_cxx strip_on_install')
 
-	if conf.env.DEST_OS2 == 'android':
-		conf.options.ALLOW64 = True
+	try:
+		conf.env.CC_VERSION[0]
+	except IndexError:
+		conf.env.CC_VERSION = (0, )
+
+	if conf.env.DEST_OS == 'android':
 		conf.options.GOLDSRC = False
 		conf.env.SERVER_NAME = 'server' # can't be any other name, until specified
-
-	# print(conf.options.ALLOW64)
-
-	conf.env.BIT32_MANDATORY = not conf.options.ALLOW64
-	conf.env.BIT32_ALLOW64 = conf.options.ALLOW64
-	conf.load('force_32bit')
-
-	if conf.env.DEST_SIZEOF_VOID_P == 4:
-		Logs.info('NOTE: will build game dlls for 32-bit target')
+	
+	conf.env.MAGX = conf.options.MAGX
+	if conf.options.MAGX:
+		enforce_pic = False
+	
+	if enforce_pic:
+		# Every static library must have fPIC
+		if conf.env.DEST_OS != 'win32' and '-fPIC' in conf.env.CFLAGS_cshlib:
+			conf.env.append_unique('CFLAGS_cstlib', '-fPIC')
+			conf.env.append_unique('CXXFLAGS_cxxstlib', '-fPIC')
 	else:
-		Logs.warn('WARNING: 64-bit game dlls may be unstable')
+		conf.env.CFLAGS_cshlib.remove('-fPIC')
+		conf.env.CXXFLAGS_cxxshlib.remove('-fPIC')
+		conf.env.CFLAGS_MACBUNDLE.remove('-fPIC')
+		conf.env.CXXFLAGS_MACBUNDLE.remove('-fPIC')
+
+	# We restrict 64-bit builds ONLY for Win/Linux/OSX running on Intel architecture
+	# Because compatibility with original GoldSrc
+	if conf.env.DEST_OS in ['win32', 'linux', 'darwin'] and conf.env.DEST_CPU in ['x86_64']:
+		conf.env.BIT32_ALLOW64 = conf.options.ALLOW64
+		if not conf.env.BIT32_ALLOW64:
+			Logs.info('WARNING: will build engine for 32-bit target')
+	else:
+		conf.env.BIT32_ALLOW64 = True
+	conf.env.BIT32_MANDATORY = not conf.env.BIT32_ALLOW64
+	conf.load('force_32bit library_naming')
 
 	linker_flags = {
 		'common': {
-			'msvc':	   ['/DEBUG'], # always create PDB, doesn't affect result binaries
-			'gcc':	   ['-Wl,--no-undefined']
+			'msvc':  ['/DEBUG'], # always create PDB, doesn't affect result binaries
+			'gcc':   ['-Wl,--no-undefined']
 		},
 		'sanitize': {
-			'gcc':	   ['-fsanitize=undefined', '-fsanitize=address'],
+			'clang': ['-fsanitize=undefined', '-fsanitize=address'],
+			'gcc':   ['-fsanitize=undefined', '-fsanitize=address'],
 		}
 	}
 
 	compiler_c_cxx_flags = {
 		'common': {
-			'msvc':	   ['/D_USING_V110_SDK71_', '/Zi', '/FS'],
-			'clang':   ['-g', '-gdwarf-2'],
-			'gcc':	   ['-g', '-Werror=implicit-function-declaration', '-fdiagnostics-color=always']
+			# disable thread-safe local static initialization for C++11 code, as it cause crashes on Windows XP
+			'msvc':    ['/D_USING_V110_SDK71_', '/Zi', '/FS', '/Zc:threadSafeInit-', '/MT'],
+			'clang':   ['-g', '-gdwarf-2', '-fvisibility=hidden'],
+			'gcc':     ['-g']
 		},
 		'fast': {
-			'msvc':	   ['/O2', '/Oy'], #todo: check /GL /LTCG
-			'gcc':	   ['-Ofast', '-march=native', '-funsafe-math-optimizations', '-funsafe-loop-optimizations', '-fomit-frame-pointer'],
+			'msvc':    ['/O2', '/Oy'],
+			'gcc': {
+				'3':       ['-O3', '-Os', '-funsafe-math-optimizations', '-fomit-frame-pointer'],
+				'default': ['-Ofast', '-funsafe-math-optimizations', '-funsafe-loop-optimizations', '-fomit-frame-pointer']
+			},
+			'clang':   ['-Ofast'],
+			'default': ['-O3']
+		},
+		'fastnative': {
+			'msvc':    ['/O2', '/Oy'],
+			'gcc':     ['-Ofast', '-march=native', '-funsafe-math-optimizations', '-funsafe-loop-optimizations', '-fomit-frame-pointer'],
+			'clang':   ['-Ofast', '-march=native'],
 			'default': ['-O3']
 		},
 		'release': {
-			'msvc':	   ['/O2'],
+			'msvc':    ['/O2'],
 			'default': ['-O3']
 		},
 		'debug': {
-			'msvc':	   ['/O1'],
-			'gcc':	   ['-Og'],
+			'msvc':    ['/O1'],
+			'gcc':     ['-Og'],
 			'default': ['-O1']
 		},
 		'sanitize': {
-			'msvc':	   ['/Od', '/RTC1'],
-			'gcc':	   ['-Og', '-fsanitize=undefined', '-fsanitize=address'],
-			'default': ['-O1']
+			'msvc':    ['/Od', '/RTC1'],
+			'gcc':     ['-Og', '-fsanitize=undefined', '-fsanitize=address'],
+			'clang':   ['-O0', '-fsanitize=undefined', '-fsanitize=address'],
+			'default': ['-O0']
 		},
 		'nooptimize': {
-			'msvc':	   ['/Od'],
+			'msvc':    ['/Od'],
 			'default': ['-O0']
 		}
 	}
 
-	conf.env.append_unique('CFLAGS', conf.get_flags_by_type(
-	    compiler_c_cxx_flags, conf.options.BUILD_TYPE, conf.env.COMPILER_CC))
-	conf.env.append_unique('CXXFLAGS', conf.get_flags_by_type(
-	    compiler_c_cxx_flags, conf.options.BUILD_TYPE, conf.env.COMPILER_CC))
-	conf.env.append_unique('LINKFLAGS', conf.get_flags_by_type(
-	    linker_flags, conf.options.BUILD_TYPE, conf.env.COMPILER_CC))
+	compiler_optional_flags = [
+		'-fdiagnostics-color=always',
+		'-Werror=implicit-function-declaration',
+		'-Werror=int-conversion',
+		'-Werror=return-type',
+		'-Werror=parentheses',
+		'-Werror=vla',
+		'-Werror=tautological-compare',
+		'-Werror=duplicated-cond',
+		'-Werror=bool-compare',
+		'-Werror=bool-operation',
+		'-Wstrict-aliasing',
+	]
+
+	c_compiler_optional_flags = [
+		'-Werror=implicit-int',
+		'-Werror=declaration-after-statement'
+	]
+
+	linkflags = conf.get_flags_by_type(linker_flags, conf.options.BUILD_TYPE, conf.env.COMPILER_CC, conf.env.CC_VERSION[0])
+	cflags    = conf.get_flags_by_type(compiler_c_cxx_flags, conf.options.BUILD_TYPE, conf.env.COMPILER_CC, conf.env.CC_VERSION[0])
+
+	# Here we don't differentiate C or C++ flags
+	if conf.options.LTO:
+		lto_cflags = {
+			'msvc':  ['/GL'],
+			'gcc':   ['-flto'],
+			'clang': ['-flto']
+		}
+
+		lto_linkflags = {
+			'msvc':  ['/LTCG'],
+			'gcc':   ['-flto'],
+			'clang': ['-flto']
+		}
+		cflags    += conf.get_flags_by_compiler(lto_cflags, conf.env.COMPILER_CC)
+		linkflags += conf.get_flags_by_compiler(lto_linkflags, conf.env.COMPILER_CC)
+
+	if conf.options.POLLY:
+		polly_cflags = {
+			'gcc':   ['-fgraphite-identity'],
+			'clang': ['-mllvm', '-polly']
+			# msvc sosat :(
+		}
+
+		cflags   += conf.get_flags_by_compiler(polly_cflags, conf.env.COMPILER_CC)
+
+	# And here C++ flags starts to be treated separately
+	cxxflags = list(cflags)
+	if conf.env.COMPILER_CC != 'msvc':
+		conf.check_cc(cflags=cflags, msg= 'Checking for required C flags')
+		conf.check_cxx(cxxflags=cflags, msg= 'Checking for required C++ flags')
+
+		cflags += conf.filter_cflags(compiler_optional_flags + c_compiler_optional_flags, cflags)
+		cxxflags += conf.filter_cxxflags(compiler_optional_flags, cflags)
+
+	conf.env.append_unique('CFLAGS', cflags)
+	conf.env.append_unique('CXXFLAGS', cxxflags)
+	conf.env.append_unique('LINKFLAGS', linkflags)
+
+	# check if we can use C99 tgmath
+	if conf.check_cc(header_name='tgmath.h', mandatory=False):
+		tgmath_usable = conf.check_cc(fragment='''#include<tgmath.h>
+			int main(void){ return (int)sin(2.0f); }''',
+			msg='Checking if tgmath.h is usable', mandatory=False)
+		conf.define_cond('HAVE_TGMATH_H', tgmath_usable)
+	else:
+		conf.undefine('HAVE_TGMATH_H')
 
 	if conf.env.COMPILER_CC == 'msvc':
-		conf.env.append_unique('DEFINES', ['_CRT_SECURE_NO_WARNINGS','_CRT_NONSTDC_NO_DEPRECATE'])
+		conf.define('_CRT_SECURE_NO_WARNINGS', 1)
+		conf.define('_CRT_NONSTDC_NO_DEPRECATE', 1)
 	else:
-		conf.env.append_unique('DEFINES', ['stricmp=strcasecmp','strnicmp=strncasecmp','_LINUX','LINUX','_snprintf=snprintf','_vsnprintf=vsnprintf'])
-		cflags = ['-fvisibility=hidden','-Wno-write-strings']
-		conf.env.append_unique('CFLAGS', cflags)
-		conf.env.append_unique('CXXFLAGS', cflags + ['-Wno-invalid-offsetof', '-fno-rtti', '-fno-exceptions'])
+		conf.env.append_unique('DEFINES', ['stricmp=strcasecmp', 'strnicmp=strncasecmp', '_snprintf=snprintf', '_vsnprintf=vsnprintf', '_LINUX', 'LINUX'])
+		conf.env.append_unique('CXXFLAGS', ['-Wno-invalid-offsetof', '-fno-rtti', '-fno-exceptions'])
 
 	# strip lib from pattern
-	if conf.env.DEST_OS in ['linux', 'darwin'] and conf.env.DEST_OS2 not in ['android']:
+	if conf.env.DEST_OS in ['linux', 'darwin']:
 		if conf.env.cshlib_PATTERN.startswith('lib'):
 			conf.env.cshlib_PATTERN = conf.env.cshlib_PATTERN[3:]
 		if conf.env.cxxshlib_PATTERN.startswith('lib'):
 			conf.env.cxxshlib_PATTERN = conf.env.cxxshlib_PATTERN[3:]
 
-	conf.env.append_unique('DEFINES', 'CLIENT_WEAPONS')
+	conf.define('CLIENT_WEAPONS', '1')
 
-	conf.recurse('cl_dll dlls')
+	conf.add_subproject(["cl_dll", "dlls"])
 
 def build(bld):
-	bld.recurse('cl_dll dlls')
-		
-		
-	
+	bld.add_subproject(["cl_dll", "dlls"])
+
+
+

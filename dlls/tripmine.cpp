@@ -105,22 +105,22 @@ void CTripmineGrenade::Spawn( void )
 	ResetSequenceInfo();
 	pev->framerate = 0;
 	
-	UTIL_SetSize( pev, Vector( -8, -8, -8 ), Vector( 8, 8, 8 ) );
+	UTIL_SetSize( pev, Vector( -8.0f, -8.0f, -8.0f ), Vector( 8.0f, 8.0f, 8.0f ) );
 	UTIL_SetOrigin( pev, pev->origin );
 
 	if( pev->spawnflags & 1 )
 	{
 		// power up quickly
-		m_flPowerUp = gpGlobals->time + 1.0;
+		m_flPowerUp = gpGlobals->time + 1.0f;
 	}
 	else
 	{
 		// power up in 2.5 seconds
-		m_flPowerUp = gpGlobals->time + 2.5;
+		m_flPowerUp = gpGlobals->time + 2.5f;
 	}
 
 	SetThink( &CTripmineGrenade::PowerupThink );
-	pev->nextthink = gpGlobals->time + 0.2;
+	pev->nextthink = gpGlobals->time + 0.2f;
 
 	pev->takedamage = DAMAGE_YES;
 	pev->dmg = gSkillData.plrDmgTripmine;
@@ -138,7 +138,7 @@ void CTripmineGrenade::Spawn( void )
 	UTIL_MakeAimVectors( pev->angles );
 
 	m_vecDir = gpGlobals->v_forward;
-	m_vecEnd = pev->origin + m_vecDir * 2048;
+	m_vecEnd = pev->origin + m_vecDir * 2048.0f;
 }
 
 void CTripmineGrenade::Precache( void )
@@ -163,7 +163,7 @@ void CTripmineGrenade::WarningThink( void )
 
 	// set to power up
 	SetThink( &CTripmineGrenade::PowerupThink );
-	pev->nextthink = gpGlobals->time + 1.0;
+	pev->nextthink = gpGlobals->time + 1.0f;
 }
 
 void CTripmineGrenade::PowerupThink( void )
@@ -175,15 +175,15 @@ void CTripmineGrenade::PowerupThink( void )
 		// find an owner
 		edict_t *oldowner = pev->owner;
 		pev->owner = NULL;
-		UTIL_TraceLine( pev->origin + m_vecDir * 8, pev->origin - m_vecDir * 32, dont_ignore_monsters, ENT( pev ), &tr );
+		UTIL_TraceLine( pev->origin + m_vecDir * 8.0f, pev->origin - m_vecDir * 32.0f, dont_ignore_monsters, ENT( pev ), &tr );
 		if( tr.fStartSolid || ( oldowner && tr.pHit == oldowner ) )
 		{
 			pev->owner = oldowner;
-			m_flPowerUp += 0.1;
-			pev->nextthink = gpGlobals->time + 0.1;
+			m_flPowerUp += 0.1f;
+			pev->nextthink = gpGlobals->time + 0.1f;
 			return;
 		}
-		if( tr.flFraction < 1.0 )
+		if( tr.flFraction < 1.0f )
 		{
 			pev->owner = tr.pHit;
 			m_hOwner = CBaseEntity::Instance( pev->owner );
@@ -195,8 +195,8 @@ void CTripmineGrenade::PowerupThink( void )
 			STOP_SOUND( ENT( pev ), CHAN_VOICE, "weapons/mine_deploy.wav" );
 			STOP_SOUND( ENT( pev ), CHAN_BODY, "weapons/mine_charge.wav" );
 			SetThink( &CBaseEntity::SUB_Remove );
-			pev->nextthink = gpGlobals->time + 0.1;
-			ALERT( at_console, "WARNING:Tripmine at %.0f, %.0f, %.0f removed\n", pev->origin.x, pev->origin.y, pev->origin.z );
+			pev->nextthink = gpGlobals->time + 0.1f;
+			ALERT( at_console, "WARNING:Tripmine at %.0f, %.0f, %.0f removed\n", (double)pev->origin.x, (double)pev->origin.y, (double)pev->origin.z );
 			KillBeam();
 			return;
 		}
@@ -206,12 +206,12 @@ void CTripmineGrenade::PowerupThink( void )
 		// disable
 		STOP_SOUND( ENT( pev ), CHAN_VOICE, "weapons/mine_deploy.wav" );
 		STOP_SOUND( ENT( pev ), CHAN_BODY, "weapons/mine_charge.wav" );
-		CBaseEntity *pMine = Create( "weapon_tripmine", pev->origin + m_vecDir * 24, pev->angles );
+		CBaseEntity *pMine = Create( "weapon_tripmine", pev->origin + m_vecDir * 24.0f, pev->angles );
 		pMine->pev->spawnflags |= SF_NORESPAWN;
 
 		SetThink( &CBaseEntity::SUB_Remove );
 		KillBeam();
-		pev->nextthink = gpGlobals->time + 0.1;
+		pev->nextthink = gpGlobals->time + 0.1f;
 		return;
 	}
 	// ALERT( at_console, "%d %.0f %.0f %0.f\n", pev->owner, m_pOwner->pev->origin.x, m_pOwner->pev->origin.y, m_pOwner->pev->origin.z );
@@ -227,7 +227,7 @@ void CTripmineGrenade::PowerupThink( void )
 		// play enabled sound
 		EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, "weapons/mine_activate.wav", 0.5, ATTN_NORM, 1, 75 );
 	}
-	pev->nextthink = gpGlobals->time + 0.1;
+	pev->nextthink = gpGlobals->time + 0.1f;
 }
 
 void CTripmineGrenade::KillBeam( void )
@@ -251,9 +251,9 @@ void CTripmineGrenade::MakeBeam( void )
 
 	// set to follow laser spot
 	SetThink( &CTripmineGrenade::BeamBreakThink );
-	pev->nextthink = gpGlobals->time + 0.1;
+	pev->nextthink = gpGlobals->time + 0.1f;
 
-	Vector vecTmpEnd = pev->origin + m_vecDir * 2048 * m_flBeamLength;
+	Vector vecTmpEnd = pev->origin + m_vecDir * 2048.0f * m_flBeamLength;
 
 	m_pBeam = CBeam::BeamCreate( g_pModelNameLaser, 10 );
 	m_pBeam->PointEntInit( vecTmpEnd, entindex() );
@@ -282,7 +282,7 @@ void CTripmineGrenade::BeamBreakThink( void )
 			m_hOwner = CBaseEntity::Instance( tr.pHit );	// reset owner too
 	}
 
-	if( fabs( m_flBeamLength - tr.flFraction ) > 0.001 )
+	if( fabs( m_flBeamLength - tr.flFraction ) > 0.001f )
 	{
 		bBlowup = 1;
 	}
@@ -308,7 +308,7 @@ void CTripmineGrenade::BeamBreakThink( void )
 		return;
 	}
 
-	pev->nextthink = gpGlobals->time + 0.1;
+	pev->nextthink = gpGlobals->time + 0.1f;
 }
 
 int CTripmineGrenade::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )
@@ -316,9 +316,9 @@ int CTripmineGrenade::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacke
 	if( gpGlobals->time < m_flPowerUp && flDamage < pev->health )
 	{
 		// disable
-		// Create( "weapon_tripmine", pev->origin + m_vecDir * 24, pev->angles );
+		// Create( "weapon_tripmine", pev->origin + m_vecDir * 24.0f, pev->angles );
 		SetThink( &CBaseEntity::SUB_Remove );
-		pev->nextthink = gpGlobals->time + 0.1;
+		pev->nextthink = gpGlobals->time + 0.1f;
 		KillBeam();
 		return FALSE;
 	}
@@ -336,18 +336,19 @@ void CTripmineGrenade::Killed( entvars_t *pevAttacker, int iGib )
 	}
 
 	SetThink( &CTripmineGrenade::DelayDeathThink );
-	pev->nextthink = gpGlobals->time + RANDOM_FLOAT( 0.1, 0.3 );
+	pev->nextthink = gpGlobals->time + RANDOM_FLOAT( 0.1f, 0.3f );
 
-	EMIT_SOUND( ENT( pev ), CHAN_BODY, "common/null.wav", 0.5, ATTN_NORM ); // shut off chargeup
+	EMIT_SOUND( ENT( pev ), CHAN_BODY, "common/null.wav", 0.5f, ATTN_NORM ); // shut off chargeup
 }
 
 void CTripmineGrenade::DelayDeathThink( void )
 {
 	KillBeam();
 	TraceResult tr;
-	UTIL_TraceLine( pev->origin + m_vecDir * 8, pev->origin - m_vecDir * 64,  dont_ignore_monsters, ENT( pev ), &tr );
+	UTIL_TraceLine( pev->origin + m_vecDir * 8, pev->origin - m_vecDir * 64.0f,  dont_ignore_monsters, ENT( pev ), &tr );
 
 	Explode( &tr, DMG_BLAST );
 }
 #endif
+
 

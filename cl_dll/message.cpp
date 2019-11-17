@@ -66,22 +66,22 @@ float CHudMessage::FadeBlend( float fadein, float fadeout, float hold, float loc
 	float fadeTime = fadein + hold;
 	float fadeBlend;
 
-	if( localTime < 0 )
+	if( localTime < 0.0f )
 		return 0;
 
 	if( localTime < fadein )
 	{
-		fadeBlend = 1 - ( ( fadein - localTime ) / fadein );
+		fadeBlend = 1.0f - ( ( fadein - localTime ) / fadein );
 	}
 	else if( localTime > fadeTime )
 	{
-		if( fadeout > 0 )
-			fadeBlend = 1 - ( ( localTime - fadeTime ) / fadeout );
+		if( fadeout > 0.0f )
+			fadeBlend = 1.0f - ( ( localTime - fadeTime ) / fadeout );
 		else
-			fadeBlend = 0;
+			fadeBlend = 0.0f;
 	}
 	else
-		fadeBlend = 1;
+		fadeBlend = 1.0f;
 
 	return fadeBlend;
 }
@@ -91,14 +91,14 @@ int CHudMessage::XPosition( float x, int width, int totalWidth )
 {
 	int xPos;
 
-	if( x == -1 )
+	if( x == -1.0f )
 	{
 		xPos = ( ScreenWidth - width ) / 2;
 	}
 	else
 	{
-		if( x < 0 )
-			xPos = ( 1.0 + x ) * ScreenWidth - totalWidth;	// Alight right
+		if( x < 0.0f )
+			xPos = ( 1.0f + x ) * ScreenWidth - totalWidth;	// Alight right
 		else
 			xPos = x * ScreenWidth;
 	}
@@ -116,12 +116,12 @@ int CHudMessage::YPosition( float y, int height )
 	int yPos;
 
 	if( y == -1 )	// Centered?
-		yPos = ( ScreenHeight - height ) * 0.5;
+		yPos = ( ScreenHeight - height ) * 0.5f;
 	else
 	{
 		// Alight bottom?
 		if ( y < 0 )
-			yPos = ( 1.0 + y ) * ScreenHeight - height;	// Alight bottom
+			yPos = ( 1.0f + y ) * ScreenHeight - height;	// Alight bottom
 		else // align top
 			yPos = y * ScreenHeight;
 	}
@@ -164,18 +164,20 @@ void CHudMessage::MessageScanNextChar( void )
 			float deltaTime = m_parms.time - m_parms.charTime;
 
 			destRed = destGreen = destBlue = 0;
-			if ( m_parms.time > m_parms.fadeTime )
+			if( m_parms.time > m_parms.fadeTime )
 			{
 				blend = m_parms.fadeBlend;
 			}
-			else if ( deltaTime > m_parms.pMessage->fxtime )
+			else if( deltaTime > m_parms.pMessage->fxtime )
+			{
 				blend = 0;	// pure dest
+			}
 			else
 			{
 				destRed = m_parms.pMessage->r2;
 				destGreen = m_parms.pMessage->g2;
 				destBlue = m_parms.pMessage->b2;
-				blend = 255 - (deltaTime * (1.0/m_parms.pMessage->fxtime) * 255.0 + 0.5);
+				blend = 255 - ( deltaTime * ( 1.0f / m_parms.pMessage->fxtime) * 255.0f + 0.5f );
 			}
 		}
 		break;
@@ -208,7 +210,7 @@ void CHudMessage::MessageScanStart( void )
 
 		if( m_parms.time < m_parms.pMessage->fadein )
 		{
-			m_parms.fadeBlend = ( ( m_parms.pMessage->fadein - m_parms.time ) * ( 1.0 / m_parms.pMessage->fadein ) * 255 );
+			m_parms.fadeBlend = ( ( m_parms.pMessage->fadein - m_parms.time ) * ( 1.0f / m_parms.pMessage->fadein ) * 255 );
 		}
 		else if( m_parms.time > m_parms.fadeTime )
 		{
@@ -350,9 +352,9 @@ int CHudMessage::Draw( float fTime )
 		// Assume m_parms.time contains last time
 		if( m_pMessages[i] )
 		{
-			pMessage = m_pMessages[i];
+			// pMessage = m_pMessages[i];
 			if( m_startTime[i] > gHUD.m_flTime )
-				m_startTime[i] = gHUD.m_flTime + m_parms.time - m_startTime[i] + 0.2;	// Server takes 0.2 seconds to spawn, adjust for this
+				m_startTime[i] = gHUD.m_flTime + m_parms.time - m_startTime[i] + 0.2f;	// Server takes 0.2 seconds to spawn, adjust for this
 		}
 	}
 
@@ -428,11 +430,11 @@ void CHudMessage::MessageAdd( const char *pName, float time )
 				g_pCustomMessage.g2 = 110;
 				g_pCustomMessage.b2 = 0;
 				g_pCustomMessage.a2 = 0;
-				g_pCustomMessage.x = -1;		// Centered
-				g_pCustomMessage.y = 0.7;
-				g_pCustomMessage.fadein = 0.01;
-				g_pCustomMessage.fadeout = 1.5;
-				g_pCustomMessage.fxtime = 0.25;
+				g_pCustomMessage.x = -1.0f;		// Centered
+				g_pCustomMessage.y = 0.7f;
+				g_pCustomMessage.fadein = 0.01f;
+				g_pCustomMessage.fadeout = 1.5f;
+				g_pCustomMessage.fxtime = 0.25f;
 				g_pCustomMessage.holdtime = 5;
 				g_pCustomMessage.pName = g_pCustomName;
 				strcpy( g_pCustomText, pName );
@@ -452,9 +454,9 @@ void CHudMessage::MessageAdd( const char *pName, float time )
 					}
 
 					// get rid of any other messages in same location (only one displays at a time)
-					if( fabs( tempMessage->y - m_pMessages[j]->y ) < 0.0001 )
+					if( fabs( tempMessage->y - m_pMessages[j]->y ) < 0.0001f )
 					{
-						if ( fabs( tempMessage->x - m_pMessages[j]->x ) < 0.0001 )
+						if( fabs( tempMessage->x - m_pMessages[j]->x ) < 0.0001f )
 						{
 							m_pMessages[j] = NULL;
 						}
