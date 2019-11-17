@@ -1293,7 +1293,7 @@ void CWatcherCount :: Think ( void )
 		pCurrent = UTIL_FindEntityByTargetname( pCurrent, STRING(pev->noise) );
 	}
 
-	if (pev->spawnflags & SF_WRCOUNT_STARTED)
+	if( pev->spawnflags & SF_WRCOUNT_STARTED )
 	{
 		if (iCount > pev->frags)
 		{
@@ -1472,24 +1472,24 @@ void CRenderFxManager::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_T
 		}
 	}
 
-	if (pev->spawnflags & SF_RENDER_ONLYONCE)
+	if( pev->spawnflags & SF_RENDER_ONLYONCE )
 	{
-		SetThink(&CRenderFxManager ::SUB_Remove);
-		SetNextThink(0.1);
+		SetThink( &CRenderFxManager::SUB_Remove );
+		SetNextThink( 0.1f );
 	}
 }
 
 void CRenderFxManager::Affect( CBaseEntity *pTarget, BOOL bIsFirst, CBaseEntity *pActivator )
-		{
+{
 	entvars_t *pevTarget = pTarget->pev;
 
 	float fAmtFactor = 1;
 	if ( pev->message && !FBitSet( pev->spawnflags, SF_RENDER_MASKAMT ) )
 		fAmtFactor = CalcLocus_Ratio(pActivator, STRING(pev->message));
 
-			if( !FBitSet( pev->spawnflags, SF_RENDER_MASKFX ) )
-				pevTarget->renderfx = pev->renderfx;
-			if( !FBitSet( pev->spawnflags, SF_RENDER_MASKMODE ) )
+	if( !FBitSet( pev->spawnflags, SF_RENDER_MASKFX ) )
+		pevTarget->renderfx = pev->renderfx;
+	if( !FBitSet( pev->spawnflags, SF_RENDER_MASKMODE ) )
 	{
 		//LRC - amt is often 0 when mode is normal. Set it to be fully visible, for fade purposes.
 		if (pev->frags && pevTarget->renderamt == 0 && pevTarget->rendermode == kRenderNormal)
@@ -5291,8 +5291,8 @@ void CTriggerCamera::FollowTarget()
 
 	if( !( FBitSet( pev->spawnflags, SF_CAMERA_PLAYER_TAKECONTROL ) ) )
 	{
-		pev->velocity = pev->velocity * 0.8;
-		if (pev->velocity.Length( ) < 10.0) //LRC- whyyyyyy???
+		pev->velocity = pev->velocity * 0.8f;
+		if( pev->velocity.Length() < 10.0f ) //LRC- whyyyyyy???
 			pev->velocity = g_vecZero;
 	}
 

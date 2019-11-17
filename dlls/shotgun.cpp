@@ -123,7 +123,7 @@ void CShotgun::PrimaryAttack()
 	if (m_pPlayer->pev->waterlevel == 3 && m_pPlayer->pev->watertype > CONTENT_FLYFIELD)
 	{
 		PlayEmptySound( );
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.15;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.15f;
 		return;
 	}
 
@@ -162,13 +162,14 @@ void CShotgun::PrimaryAttack()
 	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usSingleFire, 0.0, g_vecZero, g_vecZero, vecDir.x, vecDir.y, 0, 0, 0, 0 );
 
 	if (m_iClip != 0)
-		m_flPumpTime = gpGlobals->time + 0.5;
+		m_flPumpTime = gpGlobals->time + 0.5f;
 
-	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 1.3;
+	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 1.3f;
 	if (m_iClip != 0)
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 5.0;
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 5.0f;
 	else
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.3;
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.3f;
+
 	m_fInSpecialReload = 0;
 }
 
@@ -198,9 +199,9 @@ void CShotgun::Reload( void )
 	{
 		SendWeaponAnim( SHOTGUN_RELOAD_START );
 		m_fInSpecialReload = 1;
-		m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.6;
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.6;
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 1.0;
+		m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.6f;
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.6f;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 1.0f;
 		return;
 	}
 	else if (m_fInSpecialReload == 1)
@@ -214,8 +215,8 @@ void CShotgun::Reload( void )
 
 		SendWeaponAnim( SHOTGUN_RELOAD_INS );
 
-		m_flNextReload = UTIL_WeaponTimeBase() + 0.5;
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.5;
+		m_flNextReload = UTIL_WeaponTimeBase() + 0.5f;
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.5f;
 	}
 	else
 	{
@@ -259,13 +260,13 @@ void CShotgun::WeaponIdle( void )
 				// play cocking sound
 				EMIT_SOUND_DYN(ENT(m_pPlayer->pev), CHAN_ITEM, "weapons/shotgun_pump.wav", 1, ATTN_NORM, 0, 95 + RANDOM_LONG(0,0x1f));
 				m_fInSpecialReload = 0;
-				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.5;
+				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.5f;
 			}
 		}
 		else
 		{
 			SendWeaponAnim( SHOTGUN_IDLE );
-			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + (20.0/9.0);
+			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + (20.0f/9.0f);
 		}
 	}
 }

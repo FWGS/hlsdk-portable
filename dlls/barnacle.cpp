@@ -60,8 +60,8 @@ public:
 #ifdef BARNACLE_FIX_VISIBILITY
 	void SetObjectCollisionBox( void )
 	{
-		pev->absmin = pev->origin + Vector( -16, -16, -m_flCachedLength );
-		pev->absmax = pev->origin + Vector( 16, 16, 0 );
+		pev->absmin = pev->origin + Vector( -16.0f, -16.0f, -m_flCachedLength );
+		pev->absmax = pev->origin + Vector( 16.0f, 16.0f, 0.0f );
 	}
 #endif
 };
@@ -116,11 +116,11 @@ void CBarnacle::Spawn()
 {
 	Precache();
 
-	if (pev->model)
-		SET_MODEL(ENT(pev), STRING(pev->model)); //LRC
+	if( pev->model )
+		SET_MODEL( ENT( pev ), STRING( pev->model ) ); //LRC
 	else
 		SET_MODEL( ENT( pev ), "models/mouth_monster.mdl" );
-	UTIL_SetSize( pev, Vector( -16, -16, -32 ), Vector( 16, 16, 0 ) );
+	UTIL_SetSize( pev, Vector( -16.0f, -16.0f, -32.0f ), Vector( 16.0f, 16.0f, 0.0f ) );
 
 	pev->solid = SOLID_SLIDEBOX;
 	pev->movetype = MOVETYPE_NONE;
@@ -128,20 +128,20 @@ void CBarnacle::Spawn()
 	m_bloodColor = DONT_BLEED;
 	pev->effects = EF_INVLIGHT; // take light from the ceiling 
 	pev->health = 25;
-	m_flFieldOfView = 0.5;// indicates the width of this monster's forward view cone ( as a dotproduct result )
+	m_flFieldOfView = 0.5f;// indicates the width of this monster's forward view cone ( as a dotproduct result )
 	m_MonsterState = MONSTERSTATE_NONE;
-	m_flKillVictimTime = 0;
-	m_flCachedLength = 32;	// mins.z
+	m_flKillVictimTime = 0.0f;
+	m_flCachedLength = 32.0f;	// mins.z
 	m_cGibs = 0;
 	m_fLiftingPrey = FALSE;
-	m_flTongueAdj = -100;
+	m_flTongueAdj = -100.0f;
 
 	InitBoneControllers();
 
 	SetActivity( ACT_IDLE );
 
 	SetThink( &CBarnacle::BarnacleThink );
-	SetNextThink( 0.5 );
+	SetNextThink( 0.5f );
 
 	UTIL_SetOrigin ( this, pev->origin );
 }
@@ -171,7 +171,7 @@ void CBarnacle::BarnacleThink( void )
 		UTIL_SetOrigin( pev, pev->origin );
 	}
 #endif
-	SetNextThink( 0.1 );
+	SetNextThink( 0.1f );
 
 	if( m_hEnemy != 0 )
 	{
@@ -200,8 +200,8 @@ void CBarnacle::BarnacleThink( void )
 			vecNewEnemyOrigin.y = pev->origin.y;
 
 			// guess as to where their neck is
-			vecNewEnemyOrigin.x -= 6 * cos( m_hEnemy->pev->angles.y * M_PI / 180.0 );	
-			vecNewEnemyOrigin.y -= 6 * sin( m_hEnemy->pev->angles.y * M_PI / 180.0 );
+			vecNewEnemyOrigin.x -= 6.0f * cos( m_hEnemy->pev->angles.y * M_PI_F / 180.0f );	
+			vecNewEnemyOrigin.y -= 6.0f * sin( m_hEnemy->pev->angles.y * M_PI_F / 180.0f );
 
 			m_flAltitude -= BARNACLE_PULL_SPEED;
 			vecNewEnemyOrigin.z += BARNACLE_PULL_SPEED;
@@ -215,7 +215,7 @@ void CBarnacle::BarnacleThink( void )
 
 				pVictim = m_hEnemy->MyMonsterPointer();
 
-				m_flKillVictimTime = gpGlobals->time + 10;// now that the victim is in place, the killing bite will be administered in 10 seconds.
+				m_flKillVictimTime = gpGlobals->time + 10.0f;// now that the victim is in place, the killing bite will be administered in 10 seconds.
 
 				if( pVictim )
 				{
@@ -231,7 +231,7 @@ void CBarnacle::BarnacleThink( void )
 			// prey is lifted fully into feeding position and is dangling there.
 			pVictim = m_hEnemy->MyMonsterPointer();
 
-			if( m_flKillVictimTime != -1 && gpGlobals->time > m_flKillVictimTime )
+			if( m_flKillVictimTime != -1.0f && gpGlobals->time > m_flKillVictimTime )
 			{
 				// kill!
 				if( pVictim )
@@ -268,7 +268,7 @@ void CBarnacle::BarnacleThink( void )
 		// barnacle has no prey right now, so just idle and check to see if anything is touching the tongue.
 		// If idle and no nearby client, don't think so often
 		if( FNullEnt( FIND_CLIENT_IN_PVS( edict() ) ) )
-			SetNextThink(  RANDOM_FLOAT(1,1.5) );	// Stagger a bit to keep barnacles from thinking on the same frame
+			SetNextThink( RANDOM_FLOAT( 1.0f, 1.5f ) );	// Stagger a bit to keep barnacles from thinking on the same frame
 
 		if( m_fSequenceFinished )
 		{
@@ -307,7 +307,7 @@ void CBarnacle::BarnacleThink( void )
 				EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "barnacle/bcl_alert2.wav", 1, ATTN_NORM );
 
 				SetSequenceByName( "attack1" );
-				m_flTongueAdj = -20;
+				m_flTongueAdj = -20.0f;
 
 				m_hEnemy = pTouchEnt;
 
@@ -342,7 +342,7 @@ void CBarnacle::BarnacleThink( void )
 
 	// ALERT( at_console, "tounge %f\n", m_flAltitude + m_flTongueAdj );
 	SetBoneController( 0, -( m_flAltitude + m_flTongueAdj ) );
-	StudioFrameAdvance( 0.1 );
+	StudioFrameAdvance( 0.1f );
 }
 
 //=========================================================
@@ -380,9 +380,9 @@ void CBarnacle::Killed( entvars_t *pevAttacker, int iGib )
 	SetActivity( ACT_DIESIMPLE );
 	SetBoneController( 0, 0 );
 
-	StudioFrameAdvance( 0.1 );
+	StudioFrameAdvance( 0.1f );
 
-	SetNextThink( 0.1 );
+	SetNextThink( 0.1f );
 	SetThink( &CBarnacle::WaitTillDead );
 }
 
@@ -390,9 +390,9 @@ void CBarnacle::Killed( entvars_t *pevAttacker, int iGib )
 //=========================================================
 void CBarnacle::WaitTillDead( void )
 {
-	SetNextThink( 0.1 );
+	SetNextThink( 0.1f );
 
-	float flInterval = StudioFrameAdvance( 0.1 );
+	float flInterval = StudioFrameAdvance( 0.1f );
 	DispatchAnimEvents( flInterval );
 
 	if( m_fSequenceFinished )
@@ -427,21 +427,21 @@ void CBarnacle::Precache()
 // to see if any entity is touching it. Also stores the length
 // of the trace in the int pointer provided.
 //=========================================================
-#define BARNACLE_CHECK_SPACING	8
+#define BARNACLE_CHECK_SPACING	8.0f
 CBaseEntity *CBarnacle::TongueTouchEnt( float *pflLength )
 {
 	TraceResult tr;
 	float length;
 
 	// trace once to hit architecture and see if the tongue needs to change position.
-	UTIL_TraceLine( pev->origin, pev->origin - Vector ( 0, 0, 2048 ), ignore_monsters, ENT( pev ), &tr );
+	UTIL_TraceLine( pev->origin, pev->origin - Vector ( 0.0f, 0.0f, 2048.0f ), ignore_monsters, ENT( pev ), &tr );
 	length = fabs( pev->origin.z - tr.vecEndPos.z );
 	if( pflLength )
 	{
 		*pflLength = length;
 	}
 
-	Vector delta = Vector( BARNACLE_CHECK_SPACING, BARNACLE_CHECK_SPACING, 0 );
+	Vector delta = Vector( BARNACLE_CHECK_SPACING, BARNACLE_CHECK_SPACING, 0.0f );
 	Vector mins = pev->origin - delta;
 	Vector maxs = pev->origin + delta;
 	maxs.z = pev->origin.z;

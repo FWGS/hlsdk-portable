@@ -15,7 +15,8 @@
 //
 // hud_redraw.cpp
 //
-#include <math.h>
+#include <cmath>
+
 #include "hud.h"
 #include "cl_util.h"
 #include "triangleapi.h"
@@ -93,8 +94,8 @@ int CHud::Redraw( float flTime, int intermission )
 {
 	m_fOldTime = m_flTime;	// save time of previous redraw
 	m_flTime = flTime;
-	m_flTimeDelta = (double)m_flTime - m_fOldTime;
-	static int m_flShotTime = 0;
+	m_flTimeDelta = (double)(m_flTime - m_fOldTime);
+	static float m_flShotTime = 0;
 
 	//LRC - handle fog fading effects. (is this the right place for it?)
 	if (g_fFadeDuration)
@@ -138,7 +139,7 @@ int CHud::Redraw( float flTime, int intermission )
 
 		// Take a screenshot if the client's got the cvar set
 		if( CVAR_GET_FLOAT( "hud_takesshots" ) != 0 )
-			m_flShotTime = flTime + 1.0;	// Take a screenshot in a second
+			m_flShotTime = flTime + 1.0f;	// Take a screenshot in a second
 	}
 	}*/
 

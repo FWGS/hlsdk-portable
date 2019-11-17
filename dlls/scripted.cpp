@@ -186,15 +186,15 @@ void CCineMonster::Spawn( void )
 
 	m_iState = STATE_OFF; //LRC
 
-	if ( FStringNull(m_iszIdle) && FStringNull(pev->targetname) ) // if no targetname, start now
+	if( FStringNull(m_iszIdle) && FStringNull(pev->targetname) ) // if no targetname, start now
 	{
 		SetThink( &CCineMonster::CineThink );
-		SetNextThink( 1.0 );
+		SetNextThink( 1.0f );
 	}
-	else if ( m_iszIdle )
+	else if( m_iszIdle )
 	{
-		SetThink(&CCineMonster :: InitIdleThink );
-		SetNextThink( 1.0 );
+		SetThink( &CCineMonster::InitIdleThink );
+		SetNextThink( 1.0f );
 	}
 	if( pev->spawnflags & SF_SCRIPT_NOINTERRUPT )
 		m_interruptable = FALSE;
@@ -202,10 +202,10 @@ void CCineMonster::Spawn( void )
 		m_interruptable = TRUE;
 
 	//LRC - the only difference between AI and normal sequences
-	if ( FClassnameIs(pev, "aiscripted_sequence") || pev->spawnflags & SF_SCRIPT_OVERRIDESTATE )
-{
+	if( FClassnameIs(pev, "aiscripted_sequence") || pev->spawnflags & SF_SCRIPT_OVERRIDESTATE )
+	{
 		m_iPriority |= SS_INTERRUPT_ANYSTATE;
-}
+	}
 }
 
 //
@@ -226,7 +226,7 @@ void CCineMonster::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE 
 		if( pTarget->m_scriptState == SCRIPT_PLAYING )
 			return;
 
-		m_startTime = gpGlobals->time + 0.05; //why the delay? -- LRC
+		m_startTime = gpGlobals->time + 0.05f; //why the delay? -- LRC
 	}
 	else
 	{
@@ -487,7 +487,7 @@ void CCineMonster::CineThink( void )
 	{
 		CancelScript();
 		ALERT( at_aiconsole, "script \"%s\" can't find monster \"%s\"\n", STRING( pev->targetname ), STRING( m_iszEntity ) );
-		SetNextThink( 1.0 );
+		SetNextThink( 1.0f );
 	}
 }
 
@@ -538,7 +538,7 @@ void CCineMonster::SequenceDone( CBaseMonster *pMonster )
 	if( !( pev->spawnflags & SF_SCRIPT_REPEATABLE ) )
 	{
 		SetThink(&CCineMonster :: SUB_Remove );
-		SetNextThink( 0.1 );
+		SetNextThink( 0.1f );
 	}
 
 	// This is done so that another sequence can take over the monster when triggered by the first
@@ -834,7 +834,7 @@ BOOL CBaseMonster::CineCleanup()
 			// UNDONE: ugly hack.  Don't move monster if they don't "seem" to move
 			// this really needs to be done with the AX,AY,etc. flags, but that aren't consistantly
 			// being set, so animations that really do move won't be caught.
-			if( ( oldOrigin - new_origin).Length2D() < 8.0 )
+			if( ( oldOrigin - new_origin).Length2D() < 8.0f )
 				new_origin = oldOrigin;
 
 			pev->origin.x = new_origin.x;
@@ -977,7 +977,7 @@ void CScriptedSentence::KeyValue( KeyValueData *pkvd )
 	}
 	else if( FStrEq( pkvd->szKeyName, "volume" ) )
 	{
-		m_flVolume = atof( pkvd->szValue ) * 0.1;
+		m_flVolume = atof( pkvd->szValue ) * 0.1f;
 		pkvd->fHandled = TRUE;
 	}
 	else if( FStrEq( pkvd->szKeyName, "listener" ) )
@@ -1009,7 +1009,7 @@ void CScriptedSentence::Spawn( void )
 	if( !pev->targetname )
 	{
 		SetThink( &CScriptedSentence::FindThink );
-		SetNextThink( 1.0 );
+		SetNextThink( 1.0f );
 	}
 
 	switch( pev->impulse )
@@ -1035,8 +1035,8 @@ void CScriptedSentence::Spawn( void )
 	pev->impulse = 0;
 
 	// No volume, use normal
-	if( m_flVolume <= 0 )
-		m_flVolume = 1.0;
+	if( m_flVolume <= 0.0f )
+		m_flVolume = 1.0f;
 }
 
 void CScriptedSentence::FindThink( void )
@@ -1077,7 +1077,7 @@ void CScriptedSentence::FindThink( void )
 	else
 	{
 		//ALERT( at_console, "%s: can't find monster %s\n", STRING( m_iszSentence ), STRING( m_iszEntity ) );
-		SetNextThink( m_flRepeat + 0.5 );
+		SetNextThink( m_flRepeat + 0.5f );
 	}
 }
 
@@ -1093,7 +1093,7 @@ void CScriptedSentence::DelayThink( void )
 {
 	m_active = TRUE;
 	if( !pev->targetname )
-		SetNextThink( 0.1 );
+		SetNextThink( 0.1f );
 	SetThink( &CScriptedSentence::FindThink );
 }
 
@@ -1103,14 +1103,17 @@ BOOL CScriptedSentence::AcceptableSpeaker( CBaseMonster *pMonster )
 	{
 		if( pev->spawnflags & SF_SENTENCE_FOLLOWERS )
 		{
-			if( pMonster->m_hTargetEnt == 0 || !FClassnameIs( pMonster->m_hTargetEnt->pev, "player" ) )
+			if( pMonster->m_hTargetEnt == 0 || !pMonster->m_hTargetEnt->IsPlayer() )
 				return FALSE;
 		}
+
 		BOOL override;
+
 		if( pev->spawnflags & SF_SENTENCE_INTERRUPT )
 			override = TRUE;
 		else
 			override = FALSE;
+
 		if( pMonster->CanPlaySentence( override ) )
 			return TRUE;
 	}
@@ -1180,7 +1183,7 @@ BOOL CScriptedSentence::StartSentence( CBaseMonster *pTarget )
 	}
 
 	pTarget->PlayScriptedSentence( STRING( m_iszSentence ), m_flDuration,  m_flVolume, m_flAttenuation, bConcurrent, pListener );
-	ALERT( at_aiconsole, "Playing sentence %s (%.1f)\n", STRING( m_iszSentence ), m_flDuration );
+	ALERT( at_aiconsole, "Playing sentence %s (%.1f)\n", STRING( m_iszSentence ), (double)m_flDuration );
 	SUB_UseTargets( NULL, USE_TOGGLE, 0 );
 	return TRUE;
 }
@@ -1226,7 +1229,7 @@ void CFurniture::Spawn()
 	pev->sequence = 0;
 	pev->frame = 0;
 
-	//pev->nextthink += 1.0;
+	//pev->nextthink += 1.0f;
 	//SetThink( &WalkMonsterDelay );
 
 	ResetSequenceInfo();
