@@ -13,6 +13,9 @@ FWGSInput fwgsInput;
 #ifdef SUPPORT_GOLDSOURCE_INPUT
 GoldSourceInput goldSourceInput;
 AbstractInput* currentInput = &goldSourceInput;
+#elif defined(XASH_WINRT)
+WinRTInput winrtInput;
+AbstractInput* currentInput = &winrtInput;
 #else
 AbstractInput* currentInput = &fwgsInput;
 #endif
@@ -76,6 +79,8 @@ void IN_Init( void )
 		gEngfuncs.Con_Printf( "GoldSource input is in use\n" );
 		currentInput = &goldSourceInput;
 	}
+#elif defined(XASH_WINRT)
+	currentInput = &winrtInput;
 #else
 	currentInput = &fwgsInput;
 #endif

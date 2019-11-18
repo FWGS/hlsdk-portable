@@ -16,7 +16,19 @@
 // fall over
 #define	ROLL	2 
 
-#ifdef _WIN32
+#ifdef WINAPI_FAMILY
+#if (!WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP) && WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP))
+#define XASH_WINRT
+#endif
+#endif
+
+#if defined(XASH_WINRT)
+#define HSPRITE HSPRITE_win32
+#include <windows.h>
+#undef HSPRITE
+#define GetCursorPos(x)
+#define SetCursorPos(x,y)
+#elif defined(_WIN32)
 #define HSPRITE HSPRITE_win32
 #include <windows.h>
 #undef HSPRITE

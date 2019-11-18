@@ -44,6 +44,31 @@ protected:
 	float rel_pitch;
 };
 
+#ifdef XASH_WINRT
+class WinRTInput : public AbstractInput
+{
+public:
+	virtual void IN_ClientMoveEvent(float forwardmove, float sidemove) {}
+	virtual void IN_ClientLookEvent(float relyaw, float relpitch) {}
+	virtual void IN_Move(float frametime, usercmd_t* cmd);
+	virtual void IN_MouseEvent(int mstate);
+	virtual void IN_ClearStates(void);
+	virtual void IN_ActivateMouse(void);
+	virtual void IN_DeactivateMouse(void);
+	virtual void IN_Accumulate(void);
+	virtual void IN_Commands(void);
+	virtual void IN_Shutdown(void);
+	virtual void IN_Init(void);
+
+protected:
+	void IN_MouseMove(float frametime, usercmd_t* cmd);
+	void IN_StartupMouse(void);
+	void IN_ResetMouse(void);
+	void WinRT_RestrictMouse();
+	void WinRT_ReleaseMouse();
+};
+#endif
+
 // No need for goldsource input support on the platforms that are not supported by GoldSource.
 #if defined(GOLDSOURCE_SUPPORT) && (defined(_WIN32) || defined(__linux__) || defined(__APPLE__)) && (defined(__i386) || defined(_M_IX86))
 #define SUPPORT_GOLDSOURCE_INPUT
