@@ -35,6 +35,7 @@ enum w_squeak_e
 enum squeak_e
 {
 	SQUEAK_IDLE1 = 0,
+	SQUEAK_IDLE2,
 	SQUEAK_FIDGETFIT,
 	SQUEAK_FIDGETNIP,
 	SQUEAK_DOWN,
@@ -565,9 +566,14 @@ void CSqueak::WeaponIdle( void )
 
 	int iAnim;
 	float flRand = UTIL_SharedRandomFloat( m_pPlayer->random_seed, 0, 1 );
-	if( flRand <= 0.75f )
+	if( flRand <= 0.625f )
 	{
 		iAnim = SQUEAK_IDLE1;
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 30.0f / 16.0f * 2.0f;
+	}
+	else if( flRand <= 0.75f )
+	{
+		iAnim = SQUEAK_IDLE2;
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 30.0f / 16.0f * 2.0f;
 	}
 	else if( flRand <= 0.875f )
