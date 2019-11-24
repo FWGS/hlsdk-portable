@@ -81,6 +81,7 @@ public:
 
 #define WEAPON_ALLWEAPONS		(~(1<<WEAPON_SUIT))
 
+#define WEAPON_FLASHLIGHT			30
 #define WEAPON_SUIT				31	// ?????
 
 #define MAX_WEAPONS			32
