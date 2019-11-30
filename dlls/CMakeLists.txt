@@ -143,6 +143,7 @@ set (SVDLL_SOURCES
 	world.cpp
 	xen.cpp
 	zombie.cpp
+	redempt/roy.cpp
 	../pm_shared/pm_debug.c
 	../pm_shared/pm_math.c
 	../pm_shared/pm_shared.c

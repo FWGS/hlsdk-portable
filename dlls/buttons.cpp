@@ -1021,6 +1021,8 @@ void CMomentaryRotButton::KeyValue( KeyValueData *pkvd )
 	if( FStrEq( pkvd->szKeyName, "returnspeed" ) )
 	{
 		m_returnSpeed = atof( pkvd->szValue );
+		if( m_returnSpeed > 45.0f )
+			m_returnSpeed = 45.0f;
 		pkvd->fHandled = TRUE;
 	}
 	else if( FStrEq( pkvd->szKeyName, "sounds" ) )
