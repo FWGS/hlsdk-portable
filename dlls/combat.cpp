@@ -459,10 +459,10 @@ Activity CBaseMonster::GetDeathActivity( void )
 Activity CBaseMonster::GetSmallFlinchActivity( void )
 {
 	Activity	flinchActivity;
-	BOOL		fTriedDirection;
+	// BOOL		fTriedDirection;
 	//float		flDot;
 
-	fTriedDirection = FALSE;
+	// fTriedDirection = FALSE;
 	UTIL_MakeVectors( pev->angles );
 	//flDot = DotProduct( gpGlobals->v_forward, g_vecAttackDir * -1.0f );
 

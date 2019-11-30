@@ -122,7 +122,7 @@ def configure(conf):
 	else:
 		conf.env.BIT32_ALLOW64 = True
 	conf.env.BIT32_MANDATORY = not conf.env.BIT32_ALLOW64
-	conf.load('force_32bit')
+	conf.load('force_32bit library_naming')
 
 	linker_flags = {
 		'common': {
