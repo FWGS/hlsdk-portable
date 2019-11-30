@@ -1750,7 +1750,7 @@ void CFuncTrackChange::Find( void )
 			else
 			{
 				ALERT( at_error, "Can't find train for track change! %s\n", STRING( m_trainName ) );
-				target = FIND_ENTITY_BY_TARGETNAME( NULL, STRING( m_trainName ) );
+				// target = FIND_ENTITY_BY_TARGETNAME( NULL, STRING( m_trainName ) );
 			}
 		}
 		else

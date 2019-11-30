@@ -266,9 +266,9 @@ void CSqueakGrenade::HuntThink( void )
 	}
 
 	// higher pitch as squeeker gets closer to detonation time
-	float flpitch = 155.0f - 60.0f * ( ( m_flDie - gpGlobals->time ) / SQUEEK_DETONATE_DELAY );
+	/*float flpitch = 155.0f - 60.0f * ( ( m_flDie - gpGlobals->time ) / SQUEEK_DETONATE_DELAY );
 	if( flpitch < 80.0f )
-		flpitch = 80.0f;
+		flpitch = 80.0f;*/
 
 	if( m_hEnemy != 0 )
 	{
