@@ -494,18 +494,21 @@ void CTalkMonster::RunTask( Task_t *pTask )
 
 		if( pTask->iTask == TASK_TLK_CLIENT_STARE )
 		{
-			// fail out if the player looks away or moves away.
-			if( ( pPlayer->v.origin - pev->origin ).Length2D() > TLK_STARE_DIST )
+			if( pPlayer )
 			{
-				// player moved away.
-				TaskFail();
-			}
+				// fail out if the player looks away or moves away.
+				if( ( pPlayer->v.origin - pev->origin ).Length2D() > TLK_STARE_DIST )
+				{
+					// player moved away.
+					TaskFail();
+				}
 
-			UTIL_MakeVectors( pPlayer->v.angles );
-			if( UTIL_DotPoints( pPlayer->v.origin, pev->origin, gpGlobals->v_forward ) < m_flFieldOfView )
-			{
-				// player looked away
-				TaskFail();
+				UTIL_MakeVectors( pPlayer->v.angles );
+				if( UTIL_DotPoints( pPlayer->v.origin, pev->origin, gpGlobals->v_forward ) < m_flFieldOfView )
+				{
+					// player looked away
+					TaskFail();
+				}
 			}
 		}
 
