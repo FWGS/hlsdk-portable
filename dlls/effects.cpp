@@ -365,7 +365,9 @@ public:
 	void Zap( const Vector &vecSrc, const Vector &vecDest );
 	void EXPORT StrikeUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
 	void EXPORT ToggleUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+#if 0
 	static CLightning *LightningCreate( const char *pSpriteName, int width );	
+#endif
 	inline BOOL ServerSide( void )
 	{
 		if( m_life == 0 && !( pev->spawnflags & SF_BEAM_RING ) )
@@ -912,6 +914,7 @@ void CLightning::BeamUpdateVars( void )
 		SetFlags( BEAM_FSHADEOUT );
 }
 
+#if 0
 CLightning *CLightning::LightningCreate( const char *pSpriteName, int width )
 {
 	// Create a new entity with CLightning private data
@@ -924,6 +927,7 @@ CLightning *CLightning::LightningCreate( const char *pSpriteName, int width )
 
 	return pBeam;
 }
+#endif
 
 LINK_ENTITY_TO_CLASS( env_laser, CLaser )
 
@@ -2247,6 +2251,7 @@ void CItemSoda::CanTouch( CBaseEntity *pOther )
 	pev->nextthink = gpGlobals->time;
 }
 
+#ifdef MOBILE_HACKS
 //=========================================================
 // env_warpball
 //=========================================================
@@ -2476,3 +2481,4 @@ CWarpBall *CWarpBall::CreateWarpBall( const Vector &p_VecOrigin )
 	UTIL_SetOrigin( pWarpBall->pev, p_VecOrigin );
         return pWarpBall;
 }
+#endif // MOBILE_HACKS

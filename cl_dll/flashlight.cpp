@@ -111,7 +111,11 @@ int CHudFlashlight::Draw( float flTime )
 	if( gEngfuncs.IsSpectateOnly() )
 		return 1;
 
+#ifdef MOBILE_HACKS
 	if( !( gHUD.m_iWeaponBits & ( 1 << ( WEAPON_FLASHLIGHT ) ) ) )
+#else // MOBILE_HACKS
+	if( !( gHUD.m_iWeaponBits & ( 1 << ( WEAPON_SUIT ) ) ) )
+#endif // MOBILE_HACKS
 		return 1;
 
 	if( m_fOn )

@@ -78,7 +78,10 @@ struct skilldata_t
 	float nihilanthHealth;
 	float nihilanthZap;
 
+#ifdef MOBILE_HACKS
+	// Absolute Redemption
 	float royHealth;
+#endif // MOBILE_HACKS
 
 	float scientistHealth;
 

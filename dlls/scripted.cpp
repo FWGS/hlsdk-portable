@@ -373,6 +373,7 @@ void CCineMonster::PossessEntity( void )
 			}
 		}
 
+#ifdef MOBILE_HACKS
 		//
 		// Fix a bug where barney would not run to the osprey on map 7.
 		//
@@ -398,6 +399,7 @@ void CCineMonster::PossessEntity( void )
 				}
 			}
 		}
+#endif // MOBILE_HACKS
 	}
 }
 

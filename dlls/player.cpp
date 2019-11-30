@@ -3295,7 +3295,11 @@ void CBasePlayer::FlashlightTurnOn( void )
 		return;
 	}
 
+#ifdef MOBILE_HACKS
 	if( (pev->weapons & ( 1 << WEAPON_FLASHLIGHT ) ) )
+#else // MOBILE_HACKS
+	if( (pev->weapons & ( 1 << WEAPON_SUIT ) ) )
+#endif // MOBILE_HACKS
 	{
 		EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, SOUND_FLASHLIGHT_ON, 1.0, ATTN_NORM, 0, PITCH_NORM );
 		SetBits( pev->effects, EF_DIMLIGHT );
@@ -3458,9 +3462,13 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 	case 101:
 		gEvilImpulse101 = TRUE;
 		GiveNamedItem( "item_suit" );
+#ifdef MOBILE_HACKS
 		GiveNamedItem( "item_armorvest" );
 		GiveNamedItem( "item_helmet" );
-		// GiveNamedItem( "item_battery" );
+		GiveNamedItem( "item_battery" );
+#else // MOBILE_HACKS
+		GiveNamedItem( "item_battery" );
+#endif // MOBILE_HACKS
 		GiveNamedItem( "weapon_crowbar" );
 		GiveNamedItem( "weapon_9mmhandgun" );
 		GiveNamedItem( "ammo_9mmclip" );

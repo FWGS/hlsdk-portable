@@ -60,7 +60,9 @@ enum
 // Scientist
 //=======================================================
 LINK_ENTITY_TO_CLASS( monster_scientist, CScientist )
+#ifdef MOBILE_HACKS
 LINK_ENTITY_TO_CLASS( monster_rosenberg, CScientist )
+#endif // MOBILE_HACKS
 
 TYPEDESCRIPTION	CScientist::m_SaveData[] =
 {
@@ -361,9 +363,11 @@ void CScientist::DeclineFollowing( void )
 {
 	Talk( 10 );
 	m_hTalkTarget = m_hEnemy;
+#ifdef MOBILE_HACKS
 	if( FClassnameIs( pev, "monster_rosenberg" ) )
 		PlaySentence( "RO_POK", 2, VOL_NORM, ATTN_NORM );
 	else
+#endif // MOBILE_HACKS
 		PlaySentence( "SC_POK", 2, VOL_NORM, ATTN_NORM );
 }
 
@@ -373,9 +377,11 @@ void CScientist::Scream( void )
 	{
 		Talk( 10 );
 		m_hTalkTarget = m_hEnemy;
+#ifdef MOBILE_HACKS
 		if( FClassnameIs( pev, "monster_rosenberg" ) )
 			PlaySentence( "RO_SCREAM", RANDOM_FLOAT( 3.0f, 6.0f ), VOL_NORM, ATTN_NORM );
 		else
+#endif // MOBILE_HACKS
 			PlaySentence( "SC_SCREAM", RANDOM_FLOAT( 3.0f, 6.0f ), VOL_NORM, ATTN_NORM );
 	}
 }
@@ -416,11 +422,13 @@ void CScientist::StartTask( Task_t *pTask )
 			Talk( 2 );
 			m_hTalkTarget = m_hEnemy;
 
+#ifdef MOBILE_HACKS
 			if( FClassnameIs( pev, "monster_rosenberg" ) )
 			{
 				PlaySentence( "RO_FEAR", 5, VOL_NORM, ATTN_NORM );
 			}
 			else
+#endif // MOBILE_HACKS
 			{
 				//The enemy can be null here. - Solokiller
 				//Discovered while testing the barnacle grapple on headcrabs with scientists in view.
@@ -605,9 +613,12 @@ void CScientist::Spawn( void )
 	pev->solid = SOLID_SLIDEBOX;
 	pev->movetype = MOVETYPE_STEP;
 	m_bloodColor = BLOOD_COLOR_RED;
+
+#ifdef MOBILE_HACKS
 	if( FClassnameIs( pev, "monster_rosenberg" ) )
 		pev->health = gSkillData.scientistHealth * 2;
 	else
+#endif // MOBILE_HACKS
 		pev->health = gSkillData.scientistHealth;
 	pev->view_ofs = Vector( 0, 0, 50 );// position of the eyes relative to monster's origin.
 	m_flFieldOfView = VIEW_FIELD_WIDE; // NOTE: we need a wide field of view so scientists will notice player and say hello
@@ -640,7 +651,9 @@ void CScientist::Spawn( void )
 void CScientist::Precache( void )
 {
 	PRECACHE_MODEL( "models/scientist.mdl" );
+#ifdef MOBILE_HACKS
 	if( !FClassnameIs( pev, "monster_rosenberg" ) )
+#endif // MOBILE_HACKS
 	{
 		PRECACHE_SOUND( "scientist/sci_pain1.wav" );
 		PRECACHE_SOUND( "scientist/sci_pain2.wav" );
@@ -648,6 +661,7 @@ void CScientist::Precache( void )
 		PRECACHE_SOUND( "scientist/sci_pain4.wav" );
 		PRECACHE_SOUND( "scientist/sci_pain5.wav" );
 	}
+#ifdef MOBILE_HACKS
 	else
 	{
 		PRECACHE_SOUND( "rosenberg/ro_pain0.wav" );
@@ -660,6 +674,7 @@ void CScientist::Precache( void )
 		PRECACHE_SOUND( "rosenberg/ro_pain7.wav" );
 		PRECACHE_SOUND( "rosenberg/ro_pain8.wav" );
 	}
+#endif // MOBILE_HACKS
 
 	// every new scientist must call this, otherwise
 	// when a level is loaded, nobody will talk (time is reset to 0)
@@ -674,6 +689,7 @@ void CScientist::TalkInit()
 	CTalkMonster::TalkInit();
 
 	// scientists speach group names (group names are in sentences.txt)
+#ifdef MOBILE_HACKS
 	if( FClassnameIs( pev, "monster_rosenberg" ) )
 	{
 		m_szGrp[TLK_ANSWER] = "RO_ANSWER";
@@ -699,6 +715,7 @@ void CScientist::TalkInit()
 		m_szGrp[TLK_MORTAL] = "RO_MORTAL";
 	}
 	else
+#endif // MOBILE_HACKS
 	{
 		m_szGrp[TLK_ANSWER] = "SC_ANSWER";
 		m_szGrp[TLK_QUESTION] = "SC_QUESTION";
@@ -746,7 +763,9 @@ int CScientist::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, flo
 {
 	if( pevInflictor && pevInflictor->flags & FL_CLIENT )
 	{
+#ifdef MOBILE_HACKS
 		if( !FClassnameIs( pev, "monster_rosenberg" ) )
+#endif // MOBILE_HACKS
 		{
 			Remember( bits_MEMORY_PROVOKED );
 			StopFollowing( TRUE );
@@ -781,6 +800,7 @@ void CScientist::PainSound( void )
 
 	m_painTime = gpGlobals->time + RANDOM_FLOAT( 0.5f, 0.75f );
 
+#ifdef MOBILE_HACKS
 	if( FClassnameIs( pev, "monster_rosenberg" ) )
 		switch( RANDOM_LONG( 0, 8 ) )
 		{
@@ -813,6 +833,7 @@ void CScientist::PainSound( void )
 			break;
 		}
 	else
+#endif // MOBILE_HACKS
 		switch( RANDOM_LONG( 0, 4 ) )
 		{
 		case 0:
@@ -992,7 +1013,11 @@ Schedule_t *CScientist::GetSchedule( void )
 				}
 				return GetScheduleOfType( SCHED_TARGET_FACE );	// Just face and follow.
 			}
+#ifdef MOBILE_HACKS
 			else if( !FClassnameIs( pev, "monster_rosenberg" ) ) // UNDONE: When afraid, scientist won't move out of your way.  Keep This?  If not, write move away scared
+#else // MOBILE_HACKS
+			else
+#endif // MOBILE_HACKS
 			{
 				if( HasConditions( bits_COND_NEW_ENEMY ) ) // I just saw something new and scary, react
 					return GetScheduleOfType( SCHED_FEAR );					// React to something scary

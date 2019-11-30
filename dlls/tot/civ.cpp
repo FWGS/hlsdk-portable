@@ -13,6 +13,7 @@
 *
 ****/
 
+#ifdef MOBILE_HACKS
 #include	"extdll.h"
 #include	"util.h"
 #include	"cbase.h"
@@ -141,3 +142,4 @@ void CDeadCivScientist::Spawn()
 	//	pev->skin += 2; // use bloody skin -- UNDONE: Turn this back on when we have a bloody skin again!
 	MonsterInitDead();
 }
+#endif // MOBILE_HACKS

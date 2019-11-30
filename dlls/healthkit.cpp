@@ -116,7 +116,9 @@ public:
 	int m_iJuice;
 	int m_iOn;			// 0 = off, 1 = startup, 2 = going
 	float m_flSoundTime;
+#ifdef MOBILE_HACKS
 	BOOL m_bTriggerable;
+#endif // MOBILE_HACKS
 };
 
 TYPEDESCRIPTION CWallHealth::m_SaveData[] =
@@ -126,7 +128,9 @@ TYPEDESCRIPTION CWallHealth::m_SaveData[] =
 	DEFINE_FIELD( CWallHealth, m_iJuice, FIELD_INTEGER ),
 	DEFINE_FIELD( CWallHealth, m_iOn, FIELD_INTEGER ),
 	DEFINE_FIELD( CWallHealth, m_flSoundTime, FIELD_TIME ),
+#ifdef MOBILE_HACKS
 	DEFINE_FIELD( CWallHealth, m_bTriggerable, FIELD_BOOLEAN )
+#endif // MOBILE_HACKS
 };
 
 IMPLEMENT_SAVERESTORE( CWallHealth, CBaseEntity )
@@ -163,7 +167,9 @@ void CWallHealth::Spawn()
 	UTIL_SetSize( pev, pev->mins, pev->maxs );
 	SET_MODEL( ENT( pev ), STRING( pev->model ) );
 	m_iJuice = (int)gSkillData.healthchargerCapacity;
+#ifdef MOBILE_HACKS
 	m_bTriggerable = !FStringNull( pev->target );
+#endif // MOBILE_HACKS
 	pev->frame = 0;
 }
 
@@ -186,11 +192,13 @@ void CWallHealth::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE u
 	// if there is no juice left, turn it off
 	if( m_iJuice <= 0 )
 	{
+#ifdef MOBILE_HACKS
 		if( m_bTriggerable )
 		{
 			FireTargets( STRING( pev->target ), pActivator, this, USE_TOGGLE, 0 );
 			m_bTriggerable = FALSE;
 		}
+#endif // MOBILE_HACKS
 		pev->frame = 1;			
 		Off();
 	}
@@ -240,7 +248,9 @@ void CWallHealth::Recharge( void )
 {
 	EMIT_SOUND( ENT( pev ), CHAN_ITEM, "items/medshot4.wav", 1.0, ATTN_NORM );
 	m_iJuice = (int)gSkillData.healthchargerCapacity;
+#ifdef MOBILE_HACKS
 	m_bTriggerable = !FStringNull( pev->target );
+#endif // MOBILE_HACKS
 	pev->frame = 0;			
 	SetThink( &CBaseEntity::SUB_DoNothing );
 }

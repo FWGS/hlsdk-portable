@@ -23,7 +23,9 @@
 
 // For holograms, make them not solid so the player can walk through them
 #define	SF_GENERICMONSTER_NOTSOLID					4 
+#ifdef MOBILE_HACKS
 #define SF_HEAD_CONTROLLER						8
+#endif // MOBILE_HACKS
 
 //=========================================================
 // Monster's Anim Events Go Here
@@ -37,6 +39,7 @@ public:
 	int Classify( void );
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
 	int ISoundMask( void );
+#ifdef MOBILE_HACKS
 	void PlayScriptedSentence( const char *pszSentence, float duration, float volume, float attenuation, BOOL bConcurrent, CBaseEntity *pListener );
 	void IdleHeadTurn( Vector &vecFriend );
 	void EXPORT MonsterThink();
@@ -50,10 +53,12 @@ private:
 	EHANDLE m_hTalkTarget;
 	float m_flIdealYaw;
 	float m_flCurrentYaw;
+#endif // MOBILE_HACKS
 };
 
 LINK_ENTITY_TO_CLASS( monster_generic, CGenericMonster )
 
+#ifdef MOBILE_HACKS
 TYPEDESCRIPTION CGenericMonster::m_SaveData[] =
 {
 	DEFINE_FIELD( CGenericMonster, m_talkTime, FIELD_FLOAT ),
@@ -63,6 +68,7 @@ TYPEDESCRIPTION CGenericMonster::m_SaveData[] =
 };
 
 IMPLEMENT_SAVERESTORE( CGenericMonster, CBaseMonster )
+#endif // MOBILE_HACKS
 
 //=========================================================
 // Classify - indicates this monster's place in the 
@@ -142,13 +148,15 @@ void CGenericMonster::Spawn()
 
 	MonsterInit();
 
+#ifdef MOBILE_HACKS
 	if( pev->spawnflags & SF_HEAD_CONTROLLER )
 	{
 		m_afCapability = bits_CAP_TURN_HEAD;
 	}
 
 	m_flIdealYaw = m_flCurrentYaw = 0;
- 
+#endif // MOBILE_HACKS
+
 	if( pev->spawnflags & SF_GENERICMONSTER_NOTSOLID )
 	{
 		pev->solid = SOLID_NOT;
@@ -164,6 +172,7 @@ void CGenericMonster::Precache()
 	PRECACHE_MODEL( STRING( pev->model ) );
 }
 
+#ifdef MOBILE_HACKS
 void CGenericMonster::PlayScriptedSentence( const char *pszSentence, float duration, float volume, float attenuation, BOOL bConcurrent, CBaseEntity *pListener )
 {
 	m_talkTime = gpGlobals->time + duration;
@@ -221,6 +230,7 @@ void CGenericMonster::MonsterThink()
 
 	CBaseMonster::MonsterThink();
 }
+#endif // MOBILE_HACKS
 
 //=========================================================
 // AI Schedules Specific to this monster

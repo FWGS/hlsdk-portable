@@ -1021,8 +1021,10 @@ void CMomentaryRotButton::KeyValue( KeyValueData *pkvd )
 	if( FStrEq( pkvd->szKeyName, "returnspeed" ) )
 	{
 		m_returnSpeed = atof( pkvd->szValue );
+#ifdef MOBILE_HACKS
 		if( m_returnSpeed > 45.0f )
 			m_returnSpeed = 45.0f;
+#endif // MOBILE_HACKS
 		pkvd->fHandled = TRUE;
 	}
 	else if( FStrEq( pkvd->szKeyName, "sounds" ) )

@@ -70,9 +70,11 @@ void CWorldItem::Spawn( void )
 	case 45: // ITEM_SUIT:
 		pEntity = CBaseEntity::Create( "item_suit", pev->origin, pev->angles );
 		break;
+#ifdef MOBILE_HACKS
 	case 46: // ITEM_FLASHLIGHT:
 		pEntity = CBaseEntity::Create( "item_flashlight", pev->origin, pev->angles );
 		break;
+#endif // MOBILE_HACKS
 	}
 
 	if( !pEntity )
@@ -203,6 +205,7 @@ class CItemSuit : public CItem
 
 LINK_ENTITY_TO_CLASS( item_suit, CItemSuit )
 
+#ifdef MOBILE_HACKS
 class CItemArmorVest : public CItem
 {
 	void Spawn( void )
@@ -270,6 +273,7 @@ class CItemHelmet : public CItem
 };
 
 LINK_ENTITY_TO_CLASS( item_helmet, CItemHelmet )
+#endif // MOBILE_HACKS
 
 class CItemBattery : public CItem
 {
@@ -369,6 +373,7 @@ class CItemSecurity : public CItem
 
 LINK_ENTITY_TO_CLASS( item_security, CItemSecurity )
 
+#ifdef MOBILE_HACKS
 class CItemFlashlight : public CItem
 {
 	void Spawn( void )
@@ -395,6 +400,7 @@ class CItemFlashlight : public CItem
 };
 
 LINK_ENTITY_TO_CLASS( item_flashlight, CItemFlashlight )
+#endif // MOBILE_HACKS
 
 class CItemLongJump : public CItem
 {

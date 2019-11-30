@@ -12,6 +12,8 @@
 *   use or distribution of this code by or to any unlicensed person is illegal.
 *
 ****/
+
+#ifdef MOBILE_HACKS
 //=========================================================
 // monster template
 //=========================================================
@@ -469,3 +471,4 @@ void CDeadRoy::Spawn()
 
 	MonsterInitDead();
 }
+#endif // MOBILE_HACKS

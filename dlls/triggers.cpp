@@ -2039,6 +2039,7 @@ void CTriggerGravity::GravityTouch( CBaseEntity *pOther )
 	pOther->pev->gravity = pev->gravity;
 }
 
+#ifdef MOBILE_HACKS
 class CTriggerPlayerFreeze : public CBaseDelay
 {
 public:
@@ -2058,6 +2059,7 @@ void CTriggerPlayerFreeze::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, U
 	else
 		( (CBasePlayer*)( pActivator ) )->EnableControl( FALSE );
 };
+#endif // MOBILE_HACKS
 
 // this is a really bad idea.
 class CTriggerChangeTarget : public CBaseDelay

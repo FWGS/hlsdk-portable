@@ -200,8 +200,11 @@ void CGameRules::RefreshSkillData ( void )
 	gSkillData.nihilanthHealth = GetSkillCvar( "sk_nihilanth_health" );
 	gSkillData.nihilanthZap = GetSkillCvar( "sk_nihilanth_zap" );
 
+#ifdef MOBILE_HACKS
+	// Absolute Redeption
 	// Roy
 	gSkillData.royHealth = GetSkillCvar( "sk_roy_health" );
+#endif // MOBILE_HACKS
 
 	// Scientist
 	gSkillData.scientistHealth = GetSkillCvar( "sk_scientist_health" );

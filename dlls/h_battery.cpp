@@ -49,7 +49,9 @@ public:
 	int m_iJuice;
 	int m_iOn;			// 0 = off, 1 = startup, 2 = going
 	float m_flSoundTime;
+#ifdef MOBILE_HACKS
 	BOOL m_bTriggerable;
+#endif // MOBILE_HACKS
 };
 
 TYPEDESCRIPTION CRecharge::m_SaveData[] =
@@ -59,7 +61,9 @@ TYPEDESCRIPTION CRecharge::m_SaveData[] =
 	DEFINE_FIELD( CRecharge, m_iJuice, FIELD_INTEGER ),
 	DEFINE_FIELD( CRecharge, m_iOn, FIELD_INTEGER ),
 	DEFINE_FIELD( CRecharge, m_flSoundTime, FIELD_TIME ),
+#ifdef MOBILE_HACKS
 	DEFINE_FIELD( CRecharge, m_bTriggerable, FIELD_BOOLEAN )
+#endif // MOBILE_HACKS
 };
 
 IMPLEMENT_SAVERESTORE( CRecharge, CBaseEntity )
@@ -96,7 +100,9 @@ void CRecharge::Spawn()
 	UTIL_SetSize( pev, pev->mins, pev->maxs );
 	SET_MODEL( ENT( pev ), STRING( pev->model ) );
 	m_iJuice = (int)gSkillData.suitchargerCapacity;
+#ifdef MOBILE_HACKS
 	m_bTriggerable = !FStringNull( pev->target );
+#endif // MOBILE_HACKS
 	pev->frame = 0;			
 }
 
@@ -120,12 +126,14 @@ void CRecharge::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE use
 	// if there is no juice left, turn it off
 	if( m_iJuice <= 0 )
 	{
-		pev->frame = 1;			
+		pev->frame = 1;
+#ifdef MOBILE_HACKS
 		if( m_bTriggerable )
 		{
 			FireTargets( STRING( pev->target ), pActivator, this, USE_TOGGLE, 0 );
 			m_bTriggerable = FALSE;
 		}
+#endif // MOBILE_HACKS
 		Off();
 	}
 
@@ -180,7 +188,9 @@ void CRecharge::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE use
 void CRecharge::Recharge( void )
 {
 	m_iJuice = (int)gSkillData.suitchargerCapacity;
+#ifdef MOBILE_HACKS
 	m_bTriggerable = !FStringNull( pev->target );
+#endif // MOBILE_HACKS
 	pev->frame = 0;	
 	SetThink( &CBaseEntity::SUB_DoNothing );
 }
