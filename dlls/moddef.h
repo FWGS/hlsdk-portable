@@ -1,6 +1,6 @@
 #pragma once
-#ifndef _MODDEF
-#define _MODDEF
+#ifndef MODDEF
+#define MODDEF
 
 enum
 {
@@ -17,4 +17,4 @@ enum
 	MOD_TOT		// Times of Troubles
 };
 
-#endif // _MODDEF
+#endif // MODDEF
