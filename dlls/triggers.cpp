@@ -2039,6 +2039,26 @@ void CTriggerGravity::GravityTouch( CBaseEntity *pOther )
 	pOther->pev->gravity = pev->gravity;
 }
 
+class CTriggerPlayerFreeze : public CBaseDelay
+{
+public:
+	void Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+	int ObjectCaps( void ) { return CBaseDelay::ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
+};
+
+LINK_ENTITY_TO_CLASS( trigger_playerfreeze, CTriggerPlayerFreeze )
+
+void CTriggerPlayerFreeze::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
+{
+	if( !pActivator || !pActivator->IsPlayer() )
+		pActivator = CBaseEntity::Instance( g_engfuncs.pfnPEntityOfEntIndex( 1 ) );
+
+	if( pActivator->pev->flags & FL_FROZEN )
+		( (CBasePlayer*)( pActivator ) )->EnableControl( TRUE );
+	else
+		( (CBasePlayer*)( pActivator ) )->EnableControl( FALSE );
+};
+
 // this is a really bad idea.
 class CTriggerChangeTarget : public CBaseDelay
 {

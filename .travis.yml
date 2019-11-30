@@ -5,12 +5,20 @@ compiler:
 os:
   - linux
   - osx
-sudo: true
+addons:
+  apt:
+    packages:
+    - gcc-multilib
+    - g++-multilib
 before_script:
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install gcc-multilib g++-multilib; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" && "$CC" == "gcc" ]]; then sudo apt-get install mingw-w64-i686-dev binutils-mingw-w64-i686 gcc-mingw-w64-i686 g++-mingw-w64-i686; fi
+  - curl http://libsdl.org/release/SDL2-devel-2.0.7-mingw.tar.gz | tar xzf -
+  - mv SDL2-2.0.7/i686-w64-mingw32/include/SDL2 cl_dll/
 script:
   - mkdir -p build && cd build
-  - cmake ../ -DCMAKE_EXE_LINKER_FLAGS="-Wl,--no-undefined" -DUSE_VOICEMGR=0 && make -j3 && rm -rf *
-  - cmake ../ -DCMAKE_EXE_LINKER_FLAGS="-Wl,--no-undefined" -DUSE_VOICEMGR=1 && make -j3 && rm -rf *
-  - if [[ "$TRAVIS_OS_NAME" == "linux" && "$CC" == "gcc" ]]; then cd ..; mkdir build-mingw; cd build-mingw; cmake ../ -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_C_COMPILER=i686-w64-mingw32-gcc -DCMAKE_CXX_COMPILER=i686-w64-mingw32-g++ && make -j3; fi
+  - cmake ../ -DCMAKE_C_FLAGS="-O2 -pipe -DNDEBUG -fvisibility=hidden -fomit-frame-pointer" -DCMAKE_CXX_FLAGS="-fno-exceptions -fno-rtti" -DCMAKE_EXE_LINKER_FLAGS="-Wl,--no-undefined -Wl,--strip-all" -DGOLDSOURCE_SUPPORT=1 -DUSE_VOICEMGR=0 && make -j3
+  - mkdir -p $TRAVIS_BRANCH-$TRAVIS_OS_NAME-$CC/cl_dlls
+  - mkdir -p $TRAVIS_BRANCH-$TRAVIS_OS_NAME-$CC/dlls
+  - cp cl_dll/client.* $TRAVIS_BRANCH-$TRAVIS_OS_NAME-$CC/cl_dlls
+  - cp dlls/hl.* $TRAVIS_BRANCH-$TRAVIS_OS_NAME-$CC/dlls
+  - tar -J -cf $TRAVIS_BRANCH-$TRAVIS_OS_NAME-$CC.txz $TRAVIS_BRANCH-$TRAVIS_OS_NAME-$CC
+  - curl --upload-file $TRAVIS_BRANCH-$TRAVIS_OS_NAME-$CC.txz https://transfer.sh/$TRAVIS_BRANCH-$TRAVIS_OS_NAME-$CC.txz

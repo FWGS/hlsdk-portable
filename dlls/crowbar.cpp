@@ -337,7 +337,7 @@ int CCrowbar::Swing( int fFirst )
 		SetThink( &CCrowbar::Smack );
 		pev->nextthink = UTIL_WeaponTimeBase() + 0.2f;
 #endif
-#if CROWBAR_DELAY_FIX
+#ifdef CROWBAR_DELAY_FIX
 		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.25f;
 #else
 		m_flNextPrimaryAttack = GetNextAttackDelay( 0.25f );

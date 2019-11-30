@@ -119,6 +119,7 @@ private:
 };
 
 LINK_ENTITY_TO_CLASS( monster_scientist, CScientist )
+LINK_ENTITY_TO_CLASS( monster_rosenberg, CScientist )
 
 TYPEDESCRIPTION	CScientist::m_SaveData[] =
 {
@@ -419,7 +420,10 @@ void CScientist::DeclineFollowing( void )
 {
 	Talk( 10 );
 	m_hTalkTarget = m_hEnemy;
-	PlaySentence( "SC_POK", 2, VOL_NORM, ATTN_NORM );
+	if( FClassnameIs( pev, "monster_rosenberg" ) )
+		PlaySentence( "RO_POK", 2, VOL_NORM, ATTN_NORM );
+	else
+		PlaySentence( "SC_POK", 2, VOL_NORM, ATTN_NORM );
 }
 
 void CScientist::Scream( void )
@@ -428,7 +432,10 @@ void CScientist::Scream( void )
 	{
 		Talk( 10 );
 		m_hTalkTarget = m_hEnemy;
-		PlaySentence( "SC_SCREAM", RANDOM_FLOAT( 3.0f, 6.0f ), VOL_NORM, ATTN_NORM );
+		if( FClassnameIs( pev, "monster_rosenberg" ) )
+			PlaySentence( "RO_SCREAM", RANDOM_FLOAT( 3.0f, 6.0f ), VOL_NORM, ATTN_NORM );
+		else
+			PlaySentence( "SC_SCREAM", RANDOM_FLOAT( 3.0f, 6.0f ), VOL_NORM, ATTN_NORM );
 	}
 }
 
@@ -447,7 +454,10 @@ void CScientist::StartTask( Task_t *pTask )
 		//if( FOkToSpeak() )
 		Talk( 2 );
 		m_hTalkTarget = m_hTargetEnt;
-		PlaySentence( "SC_HEAL", 2, VOL_NORM, ATTN_IDLE );
+		if( FClassnameIs( pev, "monster_rosenberg" ) )
+			PlaySentence( "RO_HEAL", 2, VOL_NORM, ATTN_IDLE );
+		else
+			PlaySentence( "SC_HEAL", 2, VOL_NORM, ATTN_IDLE );
 		TaskComplete();
 		break;
 	case TASK_SCREAM:
@@ -465,12 +475,19 @@ void CScientist::StartTask( Task_t *pTask )
 			Talk( 2 );
 			m_hTalkTarget = m_hEnemy;
 
-			//The enemy can be null here. - Solokiller
-			//Discovered while testing the barnacle grapple on headcrabs with scientists in view.
-			if( m_hEnemy != 0 && m_hEnemy->IsPlayer() )
-				PlaySentence( "SC_PLFEAR", 5, VOL_NORM, ATTN_NORM );
+			if( FClassnameIs( pev, "monster_rosenberg" ) )
+			{
+				PlaySentence( "RO_FEAR", 5, VOL_NORM, ATTN_NORM );
+			}
 			else
-				PlaySentence( "SC_FEAR", 5, VOL_NORM, ATTN_NORM );
+			{
+				//The enemy can be null here. - Solokiller
+				//Discovered while testing the barnacle grapple on headcrabs with scientists in view.
+				if( m_hEnemy != 0 && m_hEnemy->IsPlayer() )
+					PlaySentence( "SC_PLFEAR", 5, VOL_NORM, ATTN_NORM );
+				else
+					PlaySentence( "SC_FEAR", 5, VOL_NORM, ATTN_NORM );
+			}
 		}
 		TaskComplete();
 		break;
@@ -647,7 +664,10 @@ void CScientist::Spawn( void )
 	pev->solid = SOLID_SLIDEBOX;
 	pev->movetype = MOVETYPE_STEP;
 	m_bloodColor = BLOOD_COLOR_RED;
-	pev->health = gSkillData.scientistHealth;
+	if( FClassnameIs( pev, "monster_rosenberg" ) )
+		pev->health = gSkillData.scientistHealth * 2;
+	else
+		pev->health = gSkillData.scientistHealth;
 	pev->view_ofs = Vector( 0, 0, 50 );// position of the eyes relative to monster's origin.
 	m_flFieldOfView = VIEW_FIELD_WIDE; // NOTE: we need a wide field of view so scientists will notice player and say hello
 	m_MonsterState = MONSTERSTATE_NONE;
@@ -679,11 +699,26 @@ void CScientist::Spawn( void )
 void CScientist::Precache( void )
 {
 	PRECACHE_MODEL( "models/scientist.mdl" );
-	PRECACHE_SOUND( "scientist/sci_pain1.wav" );
-	PRECACHE_SOUND( "scientist/sci_pain2.wav" );
-	PRECACHE_SOUND( "scientist/sci_pain3.wav" );
-	PRECACHE_SOUND( "scientist/sci_pain4.wav" );
-	PRECACHE_SOUND( "scientist/sci_pain5.wav" );
+	if( !FClassnameIs( pev, "monster_rosenberg" ) )
+	{
+		PRECACHE_SOUND( "scientist/sci_pain1.wav" );
+		PRECACHE_SOUND( "scientist/sci_pain2.wav" );
+		PRECACHE_SOUND( "scientist/sci_pain3.wav" );
+		PRECACHE_SOUND( "scientist/sci_pain4.wav" );
+		PRECACHE_SOUND( "scientist/sci_pain5.wav" );
+	}
+	else
+	{
+		PRECACHE_SOUND( "rosenberg/ro_pain0.wav" );
+		PRECACHE_SOUND( "rosenberg/ro_pain1.wav" );
+		PRECACHE_SOUND( "rosenberg/ro_pain2.wav" );
+		PRECACHE_SOUND( "rosenberg/ro_pain3.wav" );
+		PRECACHE_SOUND( "rosenberg/ro_pain4.wav" );
+		PRECACHE_SOUND( "rosenberg/ro_pain5.wav" );
+		PRECACHE_SOUND( "rosenberg/ro_pain6.wav" );
+		PRECACHE_SOUND( "rosenberg/ro_pain7.wav" );
+		PRECACHE_SOUND( "rosenberg/ro_pain8.wav" );
+	}
 
 	// every new scientist must call this, otherwise
 	// when a level is loaded, nobody will talk (time is reset to 0)
@@ -698,28 +733,54 @@ void CScientist::TalkInit()
 	CTalkMonster::TalkInit();
 
 	// scientists speach group names (group names are in sentences.txt)
+	if( FClassnameIs( pev, "monster_rosenberg" ) )
+	{
+		m_szGrp[TLK_ANSWER] = "RO_ANSWER";
+		m_szGrp[TLK_QUESTION] = "RO_QUESTION";
+		m_szGrp[TLK_IDLE] = "RO_IDLE";
+		m_szGrp[TLK_STARE] = "RO_STARE";
+		m_szGrp[TLK_USE] = "RO_OK";
+		m_szGrp[TLK_UNUSE] = "RO_WAIT";
+		m_szGrp[TLK_STOP] = "RO_STOP";
+		m_szGrp[TLK_NOSHOOT] = "RO_SCARED";
+		m_szGrp[TLK_HELLO] = "RO_HELLO";
 
-	m_szGrp[TLK_ANSWER] = "SC_ANSWER";
-	m_szGrp[TLK_QUESTION] = "SC_QUESTION";
-	m_szGrp[TLK_IDLE] = "SC_IDLE";
-	m_szGrp[TLK_STARE] = "SC_STARE";
-	m_szGrp[TLK_USE] = "SC_OK";
-	m_szGrp[TLK_UNUSE] = "SC_WAIT";
-	m_szGrp[TLK_STOP] = "SC_STOP";
-	m_szGrp[TLK_NOSHOOT] = "SC_SCARED";
-	m_szGrp[TLK_HELLO] = "SC_HELLO";
+		m_szGrp[TLK_PLHURT1] = "!RO_CUREA";
+		m_szGrp[TLK_PLHURT2] = "!RO_CUREB";
+		m_szGrp[TLK_PLHURT3] = "!RO_CUREC";
 
-	m_szGrp[TLK_PLHURT1] = "!SC_CUREA";
-	m_szGrp[TLK_PLHURT2] = "!SC_CUREB"; 
-	m_szGrp[TLK_PLHURT3] = "!SC_CUREC";
+		m_szGrp[TLK_PHELLO] = "RO_PHELLO";
+		m_szGrp[TLK_PIDLE] = "RO_PIDLE";
+		m_szGrp[TLK_PQUESTION] = "RO_PQUEST";
+		m_szGrp[TLK_SMELL] = "RO_SMELL";
 
-	m_szGrp[TLK_PHELLO] = "SC_PHELLO";
-	m_szGrp[TLK_PIDLE] = "SC_PIDLE";
-	m_szGrp[TLK_PQUESTION] = "SC_PQUEST";
-	m_szGrp[TLK_SMELL] = "SC_SMELL";
+		m_szGrp[TLK_WOUND] = "RO_WOUND";
+		m_szGrp[TLK_MORTAL] = "RO_MORTAL";
+	}
+	else
+	{
+		m_szGrp[TLK_ANSWER] = "SC_ANSWER";
+		m_szGrp[TLK_QUESTION] = "SC_QUESTION";
+		m_szGrp[TLK_IDLE] = "SC_IDLE";
+		m_szGrp[TLK_STARE] = "SC_STARE";
+		m_szGrp[TLK_USE] = "SC_OK";
+		m_szGrp[TLK_UNUSE] = "SC_WAIT";
+		m_szGrp[TLK_STOP] = "SC_STOP";
+		m_szGrp[TLK_NOSHOOT] = "SC_SCARED";
+		m_szGrp[TLK_HELLO] = "SC_HELLO";
 
-	m_szGrp[TLK_WOUND] = "SC_WOUND";
-	m_szGrp[TLK_MORTAL] = "SC_MORTAL";
+		m_szGrp[TLK_PLHURT1] = "!SC_CUREA";
+		m_szGrp[TLK_PLHURT2] = "!SC_CUREB"; 
+		m_szGrp[TLK_PLHURT3] = "!SC_CUREC";
+
+		m_szGrp[TLK_PHELLO] = "SC_PHELLO";
+		m_szGrp[TLK_PIDLE] = "SC_PIDLE";
+		m_szGrp[TLK_PQUESTION] = "SC_PQUEST";
+		m_szGrp[TLK_SMELL] = "SC_SMELL";
+
+		m_szGrp[TLK_WOUND] = "SC_WOUND";
+		m_szGrp[TLK_MORTAL] = "SC_MORTAL";
+	}
 
 	// get voice for head
 	switch( pev->body % 3 )
@@ -744,8 +805,11 @@ int CScientist::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, flo
 {
 	if( pevInflictor && pevInflictor->flags & FL_CLIENT )
 	{
-		Remember( bits_MEMORY_PROVOKED );
-		StopFollowing( TRUE );
+		if( !FClassnameIs( pev, "monster_rosenberg" ) )
+		{
+			Remember( bits_MEMORY_PROVOKED );
+			StopFollowing( TRUE );
+		}
 	}
 
 	// make sure friends talk about it if player hurts scientist...
@@ -770,29 +834,64 @@ int CScientist::ISoundMask( void )
 //=========================================================
 void CScientist::PainSound( void )
 {
+	const char *pszSound;
 	if( gpGlobals->time < m_painTime )
 		return;
 
 	m_painTime = gpGlobals->time + RANDOM_FLOAT( 0.5f, 0.75f );
 
-	switch( RANDOM_LONG( 0, 4 ) )
-	{
-	case 0:
-		EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, "scientist/sci_pain1.wav", 1, ATTN_NORM, 0, GetVoicePitch() );
-		break;
-	case 1:
-		EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, "scientist/sci_pain2.wav", 1, ATTN_NORM, 0, GetVoicePitch() );
-		break;
-	case 2:
-		EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, "scientist/sci_pain3.wav", 1, ATTN_NORM, 0, GetVoicePitch() );
-		break;
-	case 3:
-		EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, "scientist/sci_pain4.wav", 1, ATTN_NORM, 0, GetVoicePitch() );
-		break;
-	case 4:
-		EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, "scientist/sci_pain5.wav", 1, ATTN_NORM, 0, GetVoicePitch() );
-		break;
-	}
+	if( FClassnameIs( pev, "monster_rosenberg" ) )
+		switch( RANDOM_LONG( 0, 8 ) )
+		{
+		case 0:
+			pszSound = "rosenberg/ro_pain0.wav";
+			break;
+		case 1:
+                        pszSound = "rosenberg/ro_pain1.wav";
+                        break;
+		case 2:
+                        pszSound = "rosenberg/ro_pain2.wav";
+                        break;
+		case 3:
+                        pszSound = "rosenberg/ro_pain3.wav";
+                        break;
+		case 4:
+                        pszSound = "rosenberg/ro_pain4.wav";
+                        break;
+		case 5:
+                        pszSound = "rosenberg/ro_pain5.wav";
+                        break;
+		case 6:
+                        pszSound = "rosenberg/ro_pain6.wav";
+                        break;
+		case 7:
+			pszSound = "rosenberg/ro_pain7.wav";
+			break;
+		case 8:
+			pszSound = "rosenberg/ro_pain8.wav";
+			break;
+		}
+	else
+		switch( RANDOM_LONG( 0, 4 ) )
+		{
+		case 0:
+			pszSound = "scientist/sci_pain1.wav";
+			break;
+		case 1:
+			pszSound = "scientist/sci_pain2.wav";
+			break;
+		case 2:
+			pszSound = "scientist/sci_pain3.wav";
+			break;
+		case 3:
+			pszSound = "scientist/sci_pain4.wav";
+			break;
+		case 4:
+			pszSound = "scientist/sci_pain5.wav";
+			break;
+		}
+
+	EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pszSound, 1, ATTN_NORM, 0, GetVoicePitch() );
 }
 
 //=========================================================
@@ -952,7 +1051,7 @@ Schedule_t *CScientist::GetSchedule( void )
 				}
 				return GetScheduleOfType( SCHED_TARGET_FACE );	// Just face and follow.
 			}
-			else	// UNDONE: When afraid, scientist won't move out of your way.  Keep This?  If not, write move away scared
+			else if( !FClassnameIs( pev, "monster_rosenberg" ) ) // UNDONE: When afraid, scientist won't move out of your way.  Keep This?  If not, write move away scared
 			{
 				if( HasConditions( bits_COND_NEW_ENEMY ) ) // I just saw something new and scary, react
 					return GetScheduleOfType( SCHED_FEAR );					// React to something scary

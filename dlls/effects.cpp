@@ -365,7 +365,7 @@ public:
 	void Zap( const Vector &vecSrc, const Vector &vecDest );
 	void EXPORT StrikeUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
 	void EXPORT ToggleUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
-	
+	static CLightning *LightningCreate( const char *pSpriteName, int width );	
 	inline BOOL ServerSide( void )
 	{
 		if( m_life == 0 && !( pev->spawnflags & SF_BEAM_RING ) )
@@ -910,6 +910,19 @@ void CLightning::BeamUpdateVars( void )
 		SetFlags( BEAM_FSHADEIN );
 	else if( pev->spawnflags & SF_BEAM_SHADEOUT )
 		SetFlags( BEAM_FSHADEOUT );
+}
+
+CLightning *CLightning::LightningCreate( const char *pSpriteName, int width )
+{
+	// Create a new entity with CLightning private data
+	CLightning *pBeam = GetClassPtr( (CLightning *)NULL );
+
+	pBeam->BeamInit( pSpriteName, width );
+	pBeam->pev->classname = MAKE_STRING( "env_beam" );
+	pBeam->m_iszSpriteName = MAKE_STRING( pSpriteName );
+	pBeam->m_boltWidth = width;
+
+	return pBeam;
 }
 
 LINK_ENTITY_TO_CLASS( env_laser, CLaser )
@@ -2232,4 +2245,234 @@ void CItemSoda::CanTouch( CBaseEntity *pOther )
 	SetTouch( NULL );
 	SetThink( &CBaseEntity::SUB_Remove );
 	pev->nextthink = gpGlobals->time;
+}
+
+//=========================================================
+// env_warpball
+//=========================================================
+#define SF_REMOVE_ON_FIRE		0x0001
+#define SF_KILL_CENTER			0x0002
+
+class CWarpBall : public CBaseEntity
+{
+public:
+	void Precache();
+	void Spawn();
+	void EXPORT BallThink();
+	void KeyValue( KeyValueData *pkvd );
+	void EXPORT WarpBallUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+	static CWarpBall *CreateWarpBall( const Vector &p_VecOrigin );
+
+	int Save( CSave &save );
+	int Restore( CRestore &restore );
+	static TYPEDESCRIPTION m_SaveData[];
+// private:
+	CLightning *m_pBeams;
+	CSprite *m_pSprite;
+	// int m_iBeams;
+	float m_flLastTime;
+	float m_flMaxFrame;
+	float m_flBeamRadius;
+	string_t m_iszWarpTarget;
+	float m_flWarpStart;
+	float m_flDamageDelay;
+	// float m_flTargetDelay;
+	BOOL m_fPlaying;
+	BOOL m_fDamageApplied;
+	// BOOL m_fBeamsCleared;
+};
+
+LINK_ENTITY_TO_CLASS( env_warpball, CWarpBall )
+
+TYPEDESCRIPTION CWarpBall::m_SaveData[] =
+{
+        // DEFINE_FIELD( CWarpBall, m_iBeams, FIELD_INTEGER ),
+        DEFINE_FIELD( CWarpBall, m_flLastTime, FIELD_FLOAT ),
+        DEFINE_FIELD( CWarpBall, m_flMaxFrame, FIELD_FLOAT ),
+	DEFINE_FIELD( CWarpBall, m_flBeamRadius, FIELD_FLOAT ),
+	DEFINE_FIELD( CWarpBall, m_iszWarpTarget, FIELD_STRING ),
+	DEFINE_FIELD( CWarpBall, m_flWarpStart, FIELD_FLOAT ),
+	DEFINE_FIELD( CWarpBall, m_flDamageDelay, FIELD_FLOAT ),
+	// DEFINE_FIELD( CWarpBall, m_flTargetDelay, FIELD_FLOAT ),
+	DEFINE_FIELD( CWarpBall, m_fPlaying, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CWarpBall, m_fDamageApplied, FIELD_BOOLEAN ),
+	// DEFINE_FIELD( CWarpBall, m_fBeamsCleared, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CWarpBall, m_pBeams, FIELD_CLASSPTR ),
+	DEFINE_FIELD( CWarpBall, m_pSprite, FIELD_CLASSPTR ),
+};
+
+IMPLEMENT_SAVERESTORE( CWarpBall, CBaseEntity )
+
+void CWarpBall::KeyValue( KeyValueData *pkvd )
+{
+	if( FStrEq( pkvd->szKeyName, "radius" ) )
+	{
+		m_flBeamRadius = atof( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "warp_target" ) )
+	{
+		m_iszWarpTarget = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if( FStrEq( pkvd->szKeyName, "damage_delay" ) )
+	{
+		m_flDamageDelay = atof( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else
+		CBaseEntity::KeyValue( pkvd );
+}
+
+void CWarpBall::Spawn()
+{
+	Precache();
+	pev->movetype = MOVETYPE_NONE;
+	pev->solid = SOLID_NOT;
+	UTIL_SetOrigin( pev, pev->origin );
+	UTIL_SetSize( pev, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ) );
+	pev->rendermode = kRenderGlow;
+	pev->renderamt = 255;
+	pev->renderfx = kRenderFxNoDissipation;
+	pev->framerate = 10;
+	m_pSprite = CSprite::SpriteCreate( "sprites/Fexplo1.spr", pev->origin, 1 );
+	m_pSprite->TurnOff();
+	SetUse( &CWarpBall::WarpBallUse );
+}
+
+void CWarpBall::Precache()
+{
+	PRECACHE_MODEL( "sprites/lgtning.spr" );
+	PRECACHE_MODEL( "sprites/Fexplo1.spr" );
+	PRECACHE_MODEL( "sprites/XFlare1.spr" );
+	PRECACHE_SOUND( "debris/alien_teleport.wav" );
+}
+
+void CWarpBall::WarpBallUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
+{
+	CBaseEntity *pEntity;
+	int r = 77, g = 210, b = 130;
+
+	if( m_fPlaying )
+		return;
+
+	if( m_iszWarpTarget )
+	{
+		pEntity = UTIL_FindEntityByTargetname( NULL, STRING( m_iszWarpTarget ) );
+		if( pEntity )
+			UTIL_SetOrigin( pev, pEntity->pev->origin );
+	}
+
+	SET_MODEL( ENT( pev ), "sprites/XFlare1.spr" );
+	m_flMaxFrame = (float)MODEL_FRAMES( pev->modelindex ) - 1;
+
+	pev->rendercolor = Vector( r, g, b );
+	pev->scale = 1.2;
+	pev->frame = 0;
+
+	if( m_pSprite )
+	{
+		m_pSprite->SetTransparency( kRenderGlow, r, g, b, 255, kRenderFxNoDissipation );
+		m_pSprite->pev->scale = 1.0;
+		m_pSprite->TurnOn();
+	}
+
+	if( !m_pBeams )
+        {
+		m_pBeams = CLightning::LightningCreate( "sprites/lgtning.spr", 18 );
+
+		if( m_pBeams )
+		{
+			UTIL_SetOrigin( m_pBeams->pev, pev->origin );
+			m_pBeams->m_restrike = -0.5;
+			m_pBeams->SetColor( 0, 255, 0 );
+			m_pBeams->m_noiseAmplitude = 65;
+			m_pBeams->m_life = 0.5;
+			m_pBeams->m_radius = m_flBeamRadius;
+			m_pBeams->m_iszStartEntity = pev->targetname;
+			SetBits( m_pBeams->pev->spawnflags, SF_BEAM_TOGGLE | SF_BEAM_SPARKEND );
+			m_pBeams->BeamUpdateVars();
+		}
+	}
+
+	if( m_pBeams )
+	{
+		m_pBeams->Spawn();
+		m_pBeams->pev->solid = SOLID_NOT;
+		m_pBeams->SetThink( &CLightning::StrikeThink );
+		m_pBeams->pev->nextthink = gpGlobals->time + 0.1;
+	}
+
+	SetThink( &CWarpBall::BallThink );
+	pev->nextthink = gpGlobals->time + 0.1;
+
+	m_flLastTime = gpGlobals->time;
+	// m_fBeamsCleared = FALSE;
+	m_fPlaying = TRUE;
+
+	if( !m_flDamageDelay )
+	{
+		RadiusDamage( pev->origin, pev, pev, 300.0, 48.0, CLASS_NONE, DMG_SHOCK );
+		m_fDamageApplied = TRUE;
+	}
+	else
+	{
+		m_fDamageApplied = FALSE;
+	}
+
+	SUB_UseTargets( this, USE_TOGGLE, 0.0 );
+	UTIL_ScreenShake( pev->origin, 4.0, 100.0, 2.0, 1000.0 );
+	m_flWarpStart = gpGlobals->time;
+	EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, "debris/alien_teleport.wav", 1.0, ATTN_NORM, 0, PITCH_NORM );
+}
+
+void CWarpBall::BallThink( void )
+{
+	pev->frame = ( gpGlobals->time - m_flLastTime ) * pev->framerate + pev->frame;
+	if( pev->frame > m_flMaxFrame )
+	{
+		SET_MODEL( ENT( pev ), "" );
+		SetThink( NULL );
+		if( pev->spawnflags & SF_REMOVE_ON_FIRE )
+		{
+			UTIL_Remove( m_pSprite );
+			UTIL_Remove( m_pBeams );
+			UTIL_Remove( this );
+		}
+
+		if( m_pSprite )
+			m_pSprite->TurnOff();
+		m_fPlaying = 0;
+	}
+	else
+	{
+		if( ( pev->spawnflags & SF_KILL_CENTER ) && !m_fDamageApplied
+			&& gpGlobals->time - m_flWarpStart >= m_flDamageDelay )
+		{
+			RadiusDamage( pev->origin, pev, pev, 300.0, 48.0, CLASS_NONE, DMG_SHOCK );
+			m_fDamageApplied = TRUE;
+		}
+
+		if( m_pBeams )
+		{
+			if( pev->frame >= m_flMaxFrame - 4.0 )
+			{
+				m_pBeams->SetThink( NULL );
+				m_pBeams->pev->nextthink = gpGlobals->time;
+			}
+		}
+
+		pev->nextthink = gpGlobals->time + 0.1;
+		m_flLastTime = gpGlobals->time;
+	}	
+}
+
+CWarpBall *CWarpBall::CreateWarpBall( const Vector &p_VecOrigin )
+{
+        // Create a new entity with CWarpball private data
+        CWarpBall *pWarpBall = GetClassPtr( (CWarpBall *)NULL );
+        pWarpBall->pev->classname = MAKE_STRING( "env_warpball" );
+
+	UTIL_SetOrigin( pWarpBall->pev, p_VecOrigin );
+        return pWarpBall;
 }

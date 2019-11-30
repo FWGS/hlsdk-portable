@@ -882,6 +882,7 @@ int CTalkMonster::FOkToSpeak( void )
 	if( gpGlobals->time <= CTalkMonster::g_talkWaitTime )
 		return FALSE;
 
+	// monster generic can speak always
 	if( pev->spawnflags & SF_MONSTER_GAG )
 		return FALSE;
 
