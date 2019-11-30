@@ -32,18 +32,19 @@
 //=========================================================
 // Monster's Anim Events Go Here
 //=========================================================
-// first flag is barney dying for scripted sequences?
+// first flag is roy dying for scripted sequences?
+#define		ROY_AE_SHOOT		( 3 )
 
 class CRoy : public CBarney
 {
 public:
 	void Spawn( void );
 	void Precache( void );
-	void BarneyFirePistol( void );
+	void RoyFirePistol( void );
 	void AlertSound( void );
+	void HandleAnimEvent( MonsterEvent_t *pEvent );
 
 	int TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType );
-
 	void DeclineFollowing( void );
 
 	// Override these to set behavior
@@ -75,7 +76,7 @@ void CRoy::AlertSound( void )
 // BarneyFirePistol - shoots one round from the pistol at
 // the enemy barney is facing.
 //=========================================================
-void CRoy::BarneyFirePistol( void )
+void CRoy::RoyFirePistol( void )
 {
 	Vector vecShootOrigin;
 
@@ -102,6 +103,24 @@ void CRoy::BarneyFirePistol( void )
 
 	// UNDONE: Reload?
 	m_cAmmoLoaded--;// take away a bullet!
+}
+
+//=========================================================
+// HandleAnimEvent - catches the monster-specific messages
+// that occur when tagged animation frames are played.
+//
+// Returns number of events handled, 0 if none.
+//=========================================================
+void CRoy::HandleAnimEvent( MonsterEvent_t *pEvent )
+{
+	switch( pEvent->event )
+	{
+	case ROY_AE_SHOOT:
+		RoyFirePistol();
+		break;
+	default:
+		CBarney::HandleAnimEvent( pEvent );
+	}
 }
 
 //=========================================================

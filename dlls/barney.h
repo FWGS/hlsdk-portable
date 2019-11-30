@@ -32,7 +32,7 @@ public:
 	void Precache( void );
 	void SetYawSpeed( void );
 	int ISoundMask( void );
-	virtual void BarneyFirePistol( void );
+	void BarneyFirePistol( void );
 	void AlertSound( void );
 	int Classify( void );
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
