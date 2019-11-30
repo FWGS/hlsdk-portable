@@ -43,7 +43,8 @@ else()
 	add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_DEPRECATE)
 endif()
 
-set (SVDLL_SOURCES
+set (SVDLL_SOURCES 
+	tot/civ.cpp
 	agrunt.cpp
 	airtank.cpp
 	aflock.cpp

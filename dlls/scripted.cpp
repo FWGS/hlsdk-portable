@@ -372,6 +372,32 @@ void CCineMonster::PossessEntity( void )
 				pTarget->pev->framerate = 0;
 			}
 		}
+
+		//
+		// Fix a bug where barney would not run to the osprey on map 7.
+		//
+		if( FStrEq( STRING( gpGlobals->mapname ), "map7" ) )
+		{
+			if( FStrEq(STRING( pev->target ), "jan_osprey15" ) )
+			{
+				CCineMonster *pSeq = (CCineMonster*)UTIL_FindEntityByTargetname( NULL, "jan_osprey3" );
+				if( pSeq )
+				{
+					pTarget->m_pGoalEnt = pSeq;
+					pTarget->m_pCine = pSeq;
+					pTarget->m_hTargetEnt = pSeq;
+
+					UTIL_SetOrigin( pTarget->pev, pSeq->pev->origin );
+					pTarget->pev->ideal_yaw = pSeq->pev->angles.y;
+					pTarget->pev->avelocity = Vector( 0, 0, 0 );
+					pTarget->pev->velocity = Vector( 0, 0, 0 );
+					pTarget->pev->effects |= EF_NOINTERP;
+					pTarget->pev->angles.y = pSeq->pev->angles.y;
+					pTarget->m_scriptState = SCRIPT_WAIT;
+					m_startTime = gpGlobals->time + 1E6;
+				}
+			}
+		}
 	}
 }
 
