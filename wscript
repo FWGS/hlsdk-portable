@@ -43,6 +43,9 @@ def options(opt):
 	grp.add_option('--enable-magx', action = 'store_true', dest = 'MAGX', default = False,
 		help = 'enable targetting for MotoMAGX phones [default: %default]')
 
+	grp.add_option('--enable-simple-mod-hacks', action = 'store_true', dest = 'ENABLE_MOD_HACKS', default = False,
+		help = 'enable hacks for simple mods that mostly compatible with Half-Life but has little changes. Enforced for Android. [default: %default]')
+
 	opt.load('xcompile compiler_cxx compiler_c clang_compilation_database strip_on_install')
 
 	if sys.platform == 'win32':
@@ -180,8 +183,6 @@ def configure(conf):
 
 	compiler_optional_flags = [
 		'-fdiagnostics-color=always',
-		'-Werror=implicit-function-declaration',
-		'-Werror=int-conversion',
 		'-Werror=return-type',
 		'-Werror=parentheses',
 		'-Werror=vla',
@@ -193,6 +194,8 @@ def configure(conf):
 	]
 
 	c_compiler_optional_flags = [
+		'-Werror=implicit-function-declaration',
+		'-Werror=int-conversion',
 		'-Werror=implicit-int',
 		'-Werror=declaration-after-statement'
 	]
@@ -262,6 +265,9 @@ def configure(conf):
 			conf.env.cxxshlib_PATTERN = conf.env.cxxshlib_PATTERN[3:]
 
 	conf.define('CLIENT_WEAPONS', '1')
+
+	if conf.env.DEST_OS == 'android' or conf.options.ENABLE_MOD_HACKS:
+		conf.define('MOBILE_HACKS', '1')
 
 	conf.add_subproject(["cl_dll", "dlls"])
 
