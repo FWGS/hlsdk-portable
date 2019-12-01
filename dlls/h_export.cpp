@@ -78,7 +78,7 @@ extern "C" void DLLEXPORT EXPORT2 GiveFnptrsToDll( enginefuncs_t *pengfuncsFromE
 	{
 		g_iModType = MOD_HALFSECRET;
 	}
-	else if( FStrEq( szGameFolder, "borderlands" )
+	else if( FStrEq( szGameFolder, "bdlands" )
 	    || FStrEq( szGameFolder, "caseclosed" )
 	    || FStrEq( szGameFolder, "vendetta" ) )
 	{
