@@ -2286,9 +2286,9 @@ LINK_ENTITY_TO_CLASS( env_warpball, CWarpBall )
 
 TYPEDESCRIPTION CWarpBall::m_SaveData[] =
 {
-        // DEFINE_FIELD( CWarpBall, m_iBeams, FIELD_INTEGER ),
-        DEFINE_FIELD( CWarpBall, m_flLastTime, FIELD_FLOAT ),
-        DEFINE_FIELD( CWarpBall, m_flMaxFrame, FIELD_FLOAT ),
+	// DEFINE_FIELD( CWarpBall, m_iBeams, FIELD_INTEGER ),
+	DEFINE_FIELD( CWarpBall, m_flLastTime, FIELD_FLOAT ),
+	DEFINE_FIELD( CWarpBall, m_flMaxFrame, FIELD_FLOAT ),
 	DEFINE_FIELD( CWarpBall, m_flBeamRadius, FIELD_FLOAT ),
 	DEFINE_FIELD( CWarpBall, m_iszWarpTarget, FIELD_STRING ),
 	DEFINE_FIELD( CWarpBall, m_flWarpStart, FIELD_FLOAT ),
@@ -2469,10 +2469,10 @@ void CWarpBall::BallThink( void )
 
 CWarpBall *CWarpBall::CreateWarpBall( const Vector &p_VecOrigin )
 {
-        // Create a new entity with CWarpball private data
-        CWarpBall *pWarpBall = GetClassPtr( (CWarpBall *)NULL );
-        pWarpBall->pev->classname = MAKE_STRING( "env_warpball" );
+	// Create a new entity with CWarpball private data
+	CWarpBall *pWarpBall = GetClassPtr( (CWarpBall *)NULL );
+	pWarpBall->pev->classname = MAKE_STRING( "env_warpball" );
 
 	UTIL_SetOrigin( pWarpBall->pev, p_VecOrigin );
-        return pWarpBall;
+	return pWarpBall;
 }
