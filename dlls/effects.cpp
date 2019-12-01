@@ -365,9 +365,9 @@ public:
 	void Zap( const Vector &vecSrc, const Vector &vecDest );
 	void EXPORT StrikeUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
 	void EXPORT ToggleUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
-#if 0
+#ifdef MOBILE_HACKS
 	static CLightning *LightningCreate( const char *pSpriteName, int width );	
-#endif
+#endif // MOBILE_HACKS
 	inline BOOL ServerSide( void )
 	{
 		if( m_life == 0 && !( pev->spawnflags & SF_BEAM_RING ) )
@@ -914,7 +914,7 @@ void CLightning::BeamUpdateVars( void )
 		SetFlags( BEAM_FSHADEOUT );
 }
 
-#if 0
+#ifdef MOBILE_HACKS
 CLightning *CLightning::LightningCreate( const char *pSpriteName, int width )
 {
 	// Create a new entity with CLightning private data
@@ -927,7 +927,7 @@ CLightning *CLightning::LightningCreate( const char *pSpriteName, int width )
 
 	return pBeam;
 }
-#endif
+#endif // MOBILE_HACKS
 
 LINK_ENTITY_TO_CLASS( env_laser, CLaser )
 

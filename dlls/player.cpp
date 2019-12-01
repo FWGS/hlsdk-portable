@@ -3463,14 +3463,15 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		gEvilImpulse101 = TRUE;
 		GiveNamedItem( "item_suit" );
 #ifdef MOBILE_HACKS
-		if( g_iModType == BSHIFT )
+		if( g_iModType == MOD_BSHIFT )
 		{
 			GiveNamedItem( "item_armorvest" );
 			GiveNamedItem( "item_helmet" );
 		}
 		else
 			GiveNamedItem( "item_battery" );
-		if( g_iModType == INDUCTION )
+
+		if( g_iModType == MOD_INDUCTION )
 			GiveNamedItem( "item_flashlight" );
 #else // MOBILE_HACKS
 		GiveNamedItem( "item_battery" );

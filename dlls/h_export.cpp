@@ -79,10 +79,10 @@ extern "C" void DLLEXPORT EXPORT2 GiveFnptrsToDll( enginefuncs_t *pengfuncsFromE
 		g_iModType = MOD_HALFSECRET;
 	}
 	else if( FStrEq( szGameFolder, "borderlands" )
-	    || if( FStrEq( szGameFolder, "caseclosed" )
-	    || if( FStrEq( szGameFolder, "vendetta" ) )
+	    || FStrEq( szGameFolder, "caseclosed" )
+	    || FStrEq( szGameFolder, "vendetta" ) )
 	{
-		g_ModType = MOD_HEVSUIT;
+		g_iModType = MOD_HEVSUIT;
 	}
 	else if( FStrEq( szGameFolder, "induction" ) )
 	{
@@ -94,7 +94,7 @@ extern "C" void DLLEXPORT EXPORT2 GiveFnptrsToDll( enginefuncs_t *pengfuncsFromE
 	}
 	else if( FStrEq( szGameFolder, "sewerbeta" ) )
 	{
-		g_iModType = MOD_SEWERBETA;
+		g_iModType = MOD_SEWER_BETA;
 	}
 	else if( FStrEq( szGameFolder, "tot" ) )
 	{

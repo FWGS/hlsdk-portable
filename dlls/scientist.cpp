@@ -61,7 +61,7 @@ enum
 //=======================================================
 LINK_ENTITY_TO_CLASS( monster_scientist, CScientist )
 #ifdef MOBILE_HACKS
-LINK_ENTITY_TO_CLASS( monster_rosenberg, CScientist )
+// LINK_ENTITY_TO_CLASS( monster_rosenberg, CScientist )
 extern "C" EXPORT void monster_rosenberg( entvars_t *pev )
 {
 	if( g_iModType == MOD_BSHIFT )

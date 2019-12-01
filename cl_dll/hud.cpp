@@ -209,27 +209,27 @@ void CHud::Init( void )
 	if( HUD_IsGame( "biglolly" ) )
 	{
 		g_iModType = MOD_BIGLOLLY;
-		g_iHudColor = PINKISH;
+		g_iHudColor = RGB_PINKISH;
 	}
 	else if( HUD_IsGame( "bshift" ) )
 	{
 		g_iModType = MOD_BSHIFT;
-		g_iHudColor = BLUISH;
+		g_iHudColor = RGB_BLUISH;
 	}
 	else if( HUD_IsGame( "halfsecret" ) )
 	{
 		g_iModType = MOD_HALFSECRET;
-		g_iHudColor = YELLOWISH;
+		g_iHudColor = RGB_YELLOWISH;
 	}
 	else if( HUD_IsGame( "sewerbeta" ) )
 	{
-		g_iModType = MOD_SEWERBETA;
-		g_iHudColor = WHITISH;
+		g_iModType = MOD_SEWER_BETA;
+		g_iHudColor = RGB_WHITISH;
 	}
 	else
 	{
 		g_iModType = MOD_VALVE;
-		g_iHudColor = YELLOWISH;
+		g_iHudColor = RGB_YELLOWISH;
 	}
 #endif // MOBILE_HACKS
 

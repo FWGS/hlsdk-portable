@@ -686,4 +686,6 @@ extern int g_iUser2;
 extern int g_iUser3;
 
 extern int g_iHudColor;
+
+int HUD_IsGame( const char *game );
 #endif
