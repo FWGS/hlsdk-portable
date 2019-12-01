@@ -112,12 +112,20 @@ int CHudFlashlight::Draw( float flTime )
 		return 1;
 
 #ifdef MOBILE_HACKS
-	if( !( gHUD.m_iWeaponBits & ( 1 << ( WEAPON_SUIT ) ) )
-	    || ( g_iModType == MOD_INDUCTION && !( gHUD.m_iWeaponBits & ( 1 << ( WEAPON_FLASHLIGHT ) ) ) ) )
+	if( g_iModType == MOD_INDUCTION )
+	{
+		if( !( gHUD.m_iWeaponBits & ( 1 << ( WEAPON_FLASHLIGHT ) ) ) )
+			return 1;
+	}
+	else
+	{
+		if( !( gHUD.m_iWeaponBits & ( 1 << ( WEAPON_SUIT ) ) ) )
+			return 1;
+	}
 #else // MOBILE_HACKS
 	if( !( gHUD.m_iWeaponBits & ( 1 << ( WEAPON_SUIT ) ) ) )
-#endif // MOBILE_HACKS
 		return 1;
+#endif // MOBILE_HACKS
 
 	if( m_fOn )
 		a = 225;

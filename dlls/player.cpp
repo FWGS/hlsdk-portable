@@ -3296,7 +3296,8 @@ void CBasePlayer::FlashlightTurnOn( void )
 	}
 
 #ifdef MOBILE_HACKS
-	if( (pev->weapons & ( 1 << WEAPON_SUIT ) ) || ( g_iModType == MOD_INDUCTION && (pev->weapons & ( 1 << WEAPON_FLASHLIGHT ) ) ) )
+	if( (g_iModType != MOD_INDUCTION && (pev->weapons & ( 1 << WEAPON_SUIT ) ) )
+	    || ( g_iModType == MOD_INDUCTION && (pev->weapons & ( 1 << WEAPON_FLASHLIGHT ) ) ) )
 #else // MOBILE_HACKS
 	if( (pev->weapons & ( 1 << WEAPON_SUIT ) ) )
 #endif // MOBILE_HACKS
