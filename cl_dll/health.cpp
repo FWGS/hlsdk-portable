@@ -238,6 +238,7 @@ int CHudHealth::Draw( float flTime )
 		int iWidth = HealthWidth / 10;
 #ifdef MOBILE_HACKS
 		UnpackRGB( r, g, b, g_iHudColor );
+		if( g_iModType != MOD_SEWER_BETA )
 #else // MOBILE_HACKS
 		UnpackRGB( r, g, b, RGB_YELLOWISH );
 #endif // MOBILE_HACKS

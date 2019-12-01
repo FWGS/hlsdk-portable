@@ -3469,6 +3469,10 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 			GiveNamedItem( "item_armorvest" );
 			GiveNamedItem( "item_helmet" );
 		}
+		else if( g_iModType == MOD_SEWER_BETA )
+		{
+			// Nothing here
+		}
 		else
 			GiveNamedItem( "item_battery" );
 

@@ -306,6 +306,10 @@ class CItemBattery : public CItem
 	}
 	BOOL MyTouch( CBasePlayer *pPlayer )
 	{
+#ifdef MOBILE_HACKS
+		if( g_iModType == MOD_SEWER_BETA )
+			return FALSE;
+#endif // MOBILE_HACKS
 		if( pPlayer->pev->deadflag != DEAD_NO )
 		{
 			return FALSE;
