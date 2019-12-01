@@ -1629,9 +1629,3 @@ TYPEDESCRIPTION	CSatchel::m_SaveData[] =
 
 IMPLEMENT_SAVERESTORE( CSatchel, CBasePlayerWeapon )
 
-TYPEDESCRIPTION	CPython::m_SaveData[] =
-{
-	DEFINE_FIELD( CPython, m_flSoundDelay, FIELD_TIME ),
-};
-
-IMPLEMENT_SAVERESTORE( CPython, CBasePlayerWeapon )
