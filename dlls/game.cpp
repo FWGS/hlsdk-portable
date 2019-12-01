@@ -234,7 +234,7 @@ cvar_t	sk_nihilanth_zap3 = {"sk_nihilanth_zap3","0"};
 
 #ifdef MOBILE_HACKS
 // Absolute Redemption
-// Barney
+// Roy
 cvar_t  sk_roy_health1 = {"sk_roy_health1","0"};
 cvar_t  sk_roy_health2 = {"sk_roy_health2","0"};
 cvar_t  sk_roy_health3 = {"sk_roy_health3","0"};

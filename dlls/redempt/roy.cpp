@@ -74,7 +74,7 @@ void CRoy::AlertSound( void )
 	{
 		if( FOkToSpeak() )
 		{
-			PlaySentence( "RO_ATTACK", RANDOM_FLOAT( 2.8, 3.2 ), VOL_NORM, ATTN_IDLE );
+			PlaySentence( "RO_ATTACK", RANDOM_FLOAT( 2.8f, 3.2f ), VOL_NORM, ATTN_IDLE );
 		}
 	}
 }
@@ -106,7 +106,7 @@ void CRoy::RoyFirePistol( void )
 		pitchShift -= 5;
 	EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, "roy/ro_attack2.wav", 1, ATTN_NORM, 0, 100 + pitchShift );
 
-	CSoundEnt::InsertSound( bits_SOUND_COMBAT, pev->origin, 384, 0.3 );
+	CSoundEnt::InsertSound( bits_SOUND_COMBAT, pev->origin, 384, 0.3f );
 
 	// UNDONE: Reload?
 	m_cAmmoLoaded--;// take away a bullet!
@@ -227,7 +227,7 @@ static BOOL IsFacing( entvars_t *pevTest, const Vector &reference )
 	UTIL_MakeVectorsPrivate( angle, forward, NULL, NULL );
 
 	// He's facing me, he meant it
-	if( DotProduct( forward, vecDir ) > 0.96 )	// +/- 15 degrees or so
+	if( DotProduct( forward, vecDir ) > 0.96f )	// +/- 15 degrees or so
 	{
 		return TRUE;
 	}
@@ -284,7 +284,7 @@ void CRoy::PainSound( void )
 	if( gpGlobals->time < m_painTime )
 		return;
 
-	m_painTime = gpGlobals->time + RANDOM_FLOAT( 0.5, 0.75 );
+	m_painTime = gpGlobals->time + RANDOM_FLOAT( 0.5f, 0.75f );
 
 	switch( RANDOM_LONG( 0, 2 ) )
 	{
