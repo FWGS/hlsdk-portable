@@ -343,3 +343,77 @@ public:
 };
 
 LINK_ENTITY_TO_CLASS(monster_assassin_repel, CAssassinRepel)
+
+class CDeadMassn : public CBaseMonster
+{
+public:
+	void Spawn( void );
+	int Classify( void ) { return CLASS_HUMAN_MILITARY; }
+
+	void KeyValue( KeyValueData *pkvd );
+
+	int m_iPose;// which sequence to display	-- temporary, don't need to save
+	static const char *m_szPoses[3];
+};
+
+const char *CDeadMassn::m_szPoses[] = { "deadstomach", "deadside", "deadsitting" };
+
+void CDeadMassn::KeyValue( KeyValueData *pkvd )
+{
+	if( FStrEq( pkvd->szKeyName, "pose" ) )
+	{
+		m_iPose = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else
+		CBaseMonster::KeyValue( pkvd );
+}
+
+LINK_ENTITY_TO_CLASS( monster_massassin_dead, CDeadMassn )
+
+//=========================================================
+// ********** DeadHGrunt SPAWN **********
+//=========================================================
+void CDeadMassn::Spawn( void )
+{
+	PRECACHE_MODEL( "models/massn.mdl" );
+	SET_MODEL( ENT( pev ), "models/massn.mdl" );
+
+	pev->effects		= 0;
+	pev->yaw_speed		= 8;
+	pev->sequence		= 0;
+	m_bloodColor		= BLOOD_COLOR_RED;
+
+	pev->sequence = LookupSequence( m_szPoses[m_iPose] );
+
+	if( pev->sequence == -1 )
+	{
+		ALERT( at_console, "Dead massn with bad pose\n" );
+	}
+
+	// Corpses have less health
+	pev->health = 8;
+
+	// map old bodies onto new bodies
+	switch( pev->body )
+	{
+	case 0:
+		pev->body = 0;
+		pev->skin = 0;
+		break;
+	case 1:
+		pev->body = 2;
+		pev->skin = 0;
+		break;
+	case 2:
+		pev->body = 7;
+		pev->skin = 0;
+		break;
+	case 3:
+		pev->body = 8;
+		pev->skin = 0;
+		break;
+	}
+
+	MonsterInitDead();
+}
