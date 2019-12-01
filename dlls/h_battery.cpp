@@ -101,7 +101,8 @@ void CRecharge::Spawn()
 	SET_MODEL( ENT( pev ), STRING( pev->model ) );
 	m_iJuice = (int)gSkillData.suitchargerCapacity;
 #ifdef MOBILE_HACKS
-	m_bTriggerable = !FStringNull( pev->target );
+	if( g_iModType == MOD_TOT )
+		m_bTriggerable = !FStringNull( pev->target );
 #endif // MOBILE_HACKS
 	pev->frame = 0;			
 }
@@ -128,7 +129,7 @@ void CRecharge::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE use
 	{
 		pev->frame = 1;
 #ifdef MOBILE_HACKS
-		if( m_bTriggerable )
+		if( g_iModType == MOD_TOT && m_bTriggerable )
 		{
 			FireTargets( STRING( pev->target ), pActivator, this, USE_TOGGLE, 0 );
 			m_bTriggerable = FALSE;
@@ -189,7 +190,8 @@ void CRecharge::Recharge( void )
 {
 	m_iJuice = (int)gSkillData.suitchargerCapacity;
 #ifdef MOBILE_HACKS
-	m_bTriggerable = !FStringNull( pev->target );
+	if( g_iModType == MOD_TOT )
+		m_bTriggerable = !FStringNull( pev->target );
 #endif // MOBILE_HACKS
 	pev->frame = 0;	
 	SetThink( &CBaseEntity::SUB_DoNothing );

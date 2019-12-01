@@ -297,13 +297,19 @@ void W_Precache( void )
 	UTIL_PrecacheOther( "item_suit" );
 	UTIL_PrecacheOther( "item_healthkit" );
 #ifdef MOBILE_HACKS
-	UTIL_PrecacheOther( "item_armorvest" );
-	UTIL_PrecacheOther( "item_helmet" );
+	if( g_iModType == MOD_BSHIFT )
+	{
+		UTIL_PrecacheOther( "item_armorvest" );
+		UTIL_PrecacheOther( "item_helmet" );
+	}
 #endif // MOBILE_HACKS
 	UTIL_PrecacheOther( "item_battery" );
 	UTIL_PrecacheOther( "item_antidote" );
 	UTIL_PrecacheOther( "item_security" );
-	UTIL_PrecacheOther( "item_flashlight" );
+#ifdef MOBILE_HACKS
+	if( g_iModType == MOD_INDUCTION )
+		UTIL_PrecacheOther( "item_flashlight" );
+#endif // MOBILE_HACKS
 	UTIL_PrecacheOther( "item_longjump" );
 
 	// shotgun

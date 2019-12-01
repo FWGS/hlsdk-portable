@@ -406,9 +406,11 @@ void CScientist::StartTask( Task_t *pTask )
 		//if( FOkToSpeak() )
 		Talk( 2 );
 		m_hTalkTarget = m_hTargetEnt;
-		if( FClassnameIs( pev, "monster_rosenberg" ) )
+#ifdef MOBILE_HACKS
+		if( g_iModType == MOD_BSHIFT && FClassnameIs( pev, "monster_rosenberg" ) )
 			PlaySentence( "RO_HEAL", 2, VOL_NORM, ATTN_IDLE );
 		else
+#endif // MOBILE_HACKS
 			PlaySentence( "SC_HEAL", 2, VOL_NORM, ATTN_IDLE );
 		TaskComplete();
 		break;
@@ -428,7 +430,7 @@ void CScientist::StartTask( Task_t *pTask )
 			m_hTalkTarget = m_hEnemy;
 
 #ifdef MOBILE_HACKS
-			if( FClassnameIs( pev, "monster_rosenberg" ) )
+			if( g_iModType == MOD_BSHIFT && FClassnameIs( pev, "monster_rosenberg" ) )
 			{
 				PlaySentence( "RO_FEAR", 5, VOL_NORM, ATTN_NORM );
 			}
@@ -620,7 +622,7 @@ void CScientist::Spawn( void )
 	m_bloodColor = BLOOD_COLOR_RED;
 
 #ifdef MOBILE_HACKS
-	if( FClassnameIs( pev, "monster_rosenberg" ) )
+	if( g_iModType == MOD_BSHIFT && FClassnameIs( pev, "monster_rosenberg" ) )
 		pev->health = gSkillData.scientistHealth * 2;
 	else
 #endif // MOBILE_HACKS
@@ -657,7 +659,7 @@ void CScientist::Precache( void )
 {
 	PRECACHE_MODEL( "models/scientist.mdl" );
 #ifdef MOBILE_HACKS
-	if( !FClassnameIs( pev, "monster_rosenberg" ) )
+	if( g_iModType != MOD_BSHIFT || !FClassnameIs( pev, "monster_rosenberg" ) )
 #endif // MOBILE_HACKS
 	{
 		PRECACHE_SOUND( "scientist/sci_pain1.wav" );
@@ -695,7 +697,7 @@ void CScientist::TalkInit()
 
 	// scientists speach group names (group names are in sentences.txt)
 #ifdef MOBILE_HACKS
-	if( FClassnameIs( pev, "monster_rosenberg" ) )
+	if( g_iModType == MOD_BSHIFT && FClassnameIs( pev, "monster_rosenberg" ) )
 	{
 		m_szGrp[TLK_ANSWER] = "RO_ANSWER";
 		m_szGrp[TLK_QUESTION] = "RO_QUESTION";
@@ -769,7 +771,7 @@ int CScientist::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, flo
 	if( pevInflictor && pevInflictor->flags & FL_CLIENT )
 	{
 #ifdef MOBILE_HACKS
-		if( !FClassnameIs( pev, "monster_rosenberg" ) )
+		if( g_iModType != MOD_BSHIFT && !FClassnameIs( pev, "monster_rosenberg" ) )
 #endif // MOBILE_HACKS
 		{
 			Remember( bits_MEMORY_PROVOKED );
@@ -806,7 +808,7 @@ void CScientist::PainSound( void )
 	m_painTime = gpGlobals->time + RANDOM_FLOAT( 0.5f, 0.75f );
 
 #ifdef MOBILE_HACKS
-	if( FClassnameIs( pev, "monster_rosenberg" ) )
+	if( g_iModType == MOD_BSHIFT && FClassnameIs( pev, "monster_rosenberg" ) )
 		switch( RANDOM_LONG( 0, 8 ) )
 		{
 		case 0:
@@ -1019,7 +1021,7 @@ Schedule_t *CScientist::GetSchedule( void )
 				return GetScheduleOfType( SCHED_TARGET_FACE );	// Just face and follow.
 			}
 #ifdef MOBILE_HACKS
-			else if( !FClassnameIs( pev, "monster_rosenberg" ) ) // UNDONE: When afraid, scientist won't move out of your way.  Keep This?  If not, write move away scared
+			else if( g_iModType != MOD_BSHIFT || !FClassnameIs( pev, "monster_rosenberg" ) ) // UNDONE: When afraid, scientist won't move out of your way.  Keep This?  If not, write move away scared
 #else // MOBILE_HACKS
 			else
 #endif // MOBILE_HACKS

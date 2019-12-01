@@ -168,7 +168,8 @@ void CWallHealth::Spawn()
 	SET_MODEL( ENT( pev ), STRING( pev->model ) );
 	m_iJuice = (int)gSkillData.healthchargerCapacity;
 #ifdef MOBILE_HACKS
-	m_bTriggerable = !FStringNull( pev->target );
+	if( g_iModType == MOD_TOT )
+		m_bTriggerable = !FStringNull( pev->target );
 #endif // MOBILE_HACKS
 	pev->frame = 0;
 }
@@ -193,7 +194,7 @@ void CWallHealth::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE u
 	if( m_iJuice <= 0 )
 	{
 #ifdef MOBILE_HACKS
-		if( m_bTriggerable )
+		if( g_iModType == MOD_TOT && m_bTriggerable )
 		{
 			FireTargets( STRING( pev->target ), pActivator, this, USE_TOGGLE, 0 );
 			m_bTriggerable = FALSE;
@@ -249,7 +250,8 @@ void CWallHealth::Recharge( void )
 	EMIT_SOUND( ENT( pev ), CHAN_ITEM, "items/medshot4.wav", 1.0, ATTN_NORM );
 	m_iJuice = (int)gSkillData.healthchargerCapacity;
 #ifdef MOBILE_HACKS
-	m_bTriggerable = !FStringNull( pev->target );
+	if( g_iModType == MOD_TOT )
+		m_bTriggerable = !FStringNull( pev->target );
 #endif // MOBILE_HACKS
 	pev->frame = 0;			
 	SetThink( &CBaseEntity::SUB_DoNothing );

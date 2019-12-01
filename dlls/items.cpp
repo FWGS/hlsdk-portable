@@ -72,7 +72,8 @@ void CWorldItem::Spawn( void )
 		break;
 #ifdef MOBILE_HACKS
 	case 46: // ITEM_FLASHLIGHT:
-		pEntity = CBaseEntity::Create( "item_flashlight", pev->origin, pev->angles );
+		if( g_iModType == MOD_TOT )
+			pEntity = CBaseEntity::Create( "item_flashlight", pev->origin, pev->angles );
 		break;
 #endif // MOBILE_HACKS
 	}
