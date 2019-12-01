@@ -48,7 +48,7 @@ def build(bld):
 		'talkmonster.cpp', 'teamplay_gamerules.cpp', 'tempmonster.cpp', 'tentacle.cpp', 
 		'triggers.cpp', 'tripmine.cpp', 'turret.cpp', 
 		'util.cpp', 
-		'weapons.cpp', 'world.cpp', 'xen.cpp', 'zombie.cpp']
+		'weapons.cpp', 'world.cpp', 'xen.cpp', 'zombie.cpp', 'redempt/roy.cpp', 'tot/civ.cpp']
 
 	if bld.env.VOICEMGR:
 		source += bld.path.parent.ant_glob([
