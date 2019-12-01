@@ -3470,6 +3470,8 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		}
 		else
 			GiveNamedItem( "item_battery" );
+		if( g_iModType == INDUCTION )
+			GiveNamedItem( "item_flashlight" );
 #else // MOBILE_HACKS
 		GiveNamedItem( "item_battery" );
 #endif // MOBILE_HACKS
