@@ -92,7 +92,7 @@ extern "C" void DLLEXPORT EXPORT2 GiveFnptrsToDll( enginefuncs_t *pengfuncsFromE
 	{
 		g_iModType = MOD_REDEMPT;
 	}
-	else if( FStrEq( szGameFolder, "sewerbeta" ) )
+	else if( FStrEq( szGameFolder, "sewer_beta" ) )
 	{
 		g_iModType = MOD_SEWER_BETA;
 	}

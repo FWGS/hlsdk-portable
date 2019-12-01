@@ -221,7 +221,7 @@ void CHud::Init( void )
 		g_iModType = MOD_HALFSECRET;
 		g_iHudColor = RGB_YELLOWISH;
 	}
-	else if( HUD_IsGame( "sewerbeta" ) )
+	else if( HUD_IsGame( "sewer_beta" ) )
 	{
 		g_iModType = MOD_SEWER_BETA;
 		g_iHudColor = RGB_WHITISH;
