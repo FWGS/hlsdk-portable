@@ -53,7 +53,11 @@ int CHudTrain::Draw( float fTime )
 	{
 		int r, g, b, x, y;
 
+#ifdef MOBILE_HACKS
+		UnpackRGB( r, g, b, g_iHudColor );
+#else // MOBILE_HACKS
 		UnpackRGB( r, g, b, RGB_YELLOWISH );
+#endif // MOBILE_HACKS
 		SPR_Set( m_hSprite, r, g, b );
 
 		// This should show up to the right and part way up the armor number

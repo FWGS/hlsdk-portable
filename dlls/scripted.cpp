@@ -374,6 +374,9 @@ void CCineMonster::PossessEntity( void )
 		}
 
 #ifdef MOBILE_HACKS
+		if( g_iModType != MOD_TOT )
+			return;
+
 		//
 		// Fix a bug where barney would not run to the osprey on map 7.
 		//

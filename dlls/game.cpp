@@ -668,11 +668,14 @@ void GameDLLInit( void )
 
 #ifdef MOBILE_HACKS
 	// Absolute Redemption
-	// Roy
-	CVAR_REGISTER( &sk_roy_health1 );// {"sk_roy_health1","0"};
-	CVAR_REGISTER( &sk_roy_health2 );// {"sk_roy_health2","0"};
-	CVAR_REGISTER( &sk_roy_health3 );// {"sk_roy_health3","0"};
-#endif
+	if( g_iModType == MOD_REDEMPT )
+	{
+		// Roy
+		CVAR_REGISTER( &sk_roy_health1 );// {"sk_roy_health1","0"};
+		CVAR_REGISTER( &sk_roy_health2 );// {"sk_roy_health2","0"};
+		CVAR_REGISTER( &sk_roy_health3 );// {"sk_roy_health3","0"};
+	}
+#endif // MOBILE_HACKS
 
 	// Scientist
 	CVAR_REGISTER( &sk_scientist_health1 );// {"sk_scientist_health1","0"};

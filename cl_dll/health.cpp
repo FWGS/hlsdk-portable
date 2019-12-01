@@ -166,7 +166,11 @@ void CHudHealth::GetPainColor( int &r, int &g, int &b )
 #else
 	if( m_iHealth > 25 )
 	{
-		UnpackRGB( r, g, b, RGB_YELLOWISH );
+#ifdef MOBILE_HACKS
+	UnpackRGB( r, g, b, g_iHudColor );
+#else // MOBILE_HACKS
+	UnpackRGB( r, g, b, RGB_YELLOWISH );
+#endif // MOBILE_HACKS
 	}
 	else
 	{
@@ -232,7 +236,11 @@ int CHudHealth::Draw( float flTime )
 
 		int iHeight = gHUD.m_iFontHeight;
 		int iWidth = HealthWidth / 10;
+#ifdef MOBILE_HACKS
+		UnpackRGB( r, g, b, g_iHudColor );
+#else // MOBILE_HACKS
 		UnpackRGB( r, g, b, RGB_YELLOWISH );
+#endif // MOBILE_HACKS
 		FillRGBA( x, y, iWidth, iHeight, r, g, b, a );
 	}
 
@@ -381,7 +389,11 @@ int CHudHealth::DrawDamage( float flTime )
 	if( !m_bitsDamage )
 		return 1;
 
+#ifdef MOBILE_HACKS
+	UnpackRGB( r, g, b, g_iHudColor );
+#else // MOBILE_HACKS
 	UnpackRGB( r, g, b, RGB_YELLOWISH );
+#endif // MOBILE_HACKS
 
 	a = (int)( fabs( sin( flTime * 2.0f ) ) * 256.0f );
 

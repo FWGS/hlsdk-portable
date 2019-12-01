@@ -112,7 +112,8 @@ int CHudFlashlight::Draw( float flTime )
 		return 1;
 
 #ifdef MOBILE_HACKS
-	if( !( gHUD.m_iWeaponBits & ( 1 << ( WEAPON_FLASHLIGHT ) ) ) )
+	if( !( gHUD.m_iWeaponBits & ( 1 << ( WEAPON_SUIT ) ) )
+	    || ( g_iModType == MOD_INDUCTION && !( gHUD.m_iWeaponBits & ( 1 << ( WEAPON_FLASHLIGHT ) ) ) ) )
 #else // MOBILE_HACKS
 	if( !( gHUD.m_iWeaponBits & ( 1 << ( WEAPON_SUIT ) ) ) )
 #endif // MOBILE_HACKS
@@ -126,7 +127,11 @@ int CHudFlashlight::Draw( float flTime )
 	if( m_flBat < 0.20f )
 		UnpackRGB( r,g,b, RGB_REDISH );
 	else
-		UnpackRGB( r,g,b, RGB_YELLOWISH );
+#ifdef MOBILE_HACKS
+		UnpackRGB( r, g, b, g_iHudColor );
+#else // MOBILE_HACKS
+		UnpackRGB( r, g, b, RGB_YELLOWISH );
+#endif // MOBILE_HACKS
 
 	ScaleColors( r, g, b, a );
 

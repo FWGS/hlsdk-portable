@@ -19,6 +19,7 @@
 #define CL_UTIL_H
 #include "exportdef.h"
 #include "cvardef.h"
+#include "moddef.h"
 
 #ifndef TRUE
 #define TRUE 1

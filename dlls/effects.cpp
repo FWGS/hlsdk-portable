@@ -2287,7 +2287,12 @@ public:
 	// BOOL m_fBeamsCleared;
 };
 
-LINK_ENTITY_TO_CLASS( env_warpball, CWarpBall )
+// LINK_ENTITY_TO_CLASS( env_warpball, CWarpBall )
+extern "C" EXPORT void env_warpball( entvars_t *pev )
+{
+	if( g_iModType == MOD_BSHIFT )
+		GetClassPtr( (CWarpBall *)pev );
+}
 
 TYPEDESCRIPTION CWarpBall::m_SaveData[] =
 {

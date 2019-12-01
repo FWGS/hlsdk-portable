@@ -866,7 +866,11 @@ int CHudAmmo::Draw( float flTime )
 	if( m_fFade > 0 )
 		m_fFade -= ( (float)gHUD.m_flTimeDelta * 20.0f );
 
+#ifdef MOBILE_HACKS
+	UnpackRGB( r, g, b, g_iHudColor );
+#else // MOBILE_HACKS
 	UnpackRGB( r, g, b, RGB_YELLOWISH );
+#endif // MOBILE_HACKS
 
 	ScaleColors( r, g, b, a );
 
@@ -894,7 +898,11 @@ int CHudAmmo::Draw( float flTime )
 
 			x += AmmoWidth / 2;
 
-			UnpackRGB( r,g,b, RGB_YELLOWISH );
+#ifdef MOBILE_HACKS
+			UnpackRGB( r, g, b, g_iHudColor );
+#else // MOBILE_HACKS
+			UnpackRGB( r, g, b, RGB_YELLOWISH );
+#endif // MOBILE_HACKS
 
 			// draw the | bar
 			FillRGBA( x, y, iBarWidth, gHUD.m_iFontHeight, r, g, b, a );
@@ -964,7 +972,11 @@ int DrawBar( int x, int y, int width, int height, float f )
 		width -= w;
 	}
 
+#ifdef MOBILE_HACKS
+	UnpackRGB( r, g, b, g_iHudColor );
+#else // MOBILE_HACKS
 	UnpackRGB( r, g, b, RGB_YELLOWISH );
+#endif // MOBILE_HACKS
 
 	FillRGBA( x, y, width, height, r, g, b, 128 );
 
@@ -1032,7 +1044,11 @@ int CHudAmmo::DrawWList( float flTime )
 	{
 		int iWidth;
 
+#ifdef MOBILE_HACKS
+		UnpackRGB( r, g, b, g_iHudColor );
+#else // MOBILE_HACKS
 		UnpackRGB( r, g, b, RGB_YELLOWISH );
+#endif // MOBILE_HACKS
 
 		if( iActiveSlot == i )
 			a = 255;
@@ -1083,7 +1099,11 @@ int CHudAmmo::DrawWList( float flTime )
 				if( !p || !p->iId )
 					continue;
 
+#ifdef MOBILE_HACKS
+				UnpackRGB( r, g, b, g_iHudColor );
+#else // MOBILE_HACKS
 				UnpackRGB( r, g, b, RGB_YELLOWISH );
+#endif // MOBILE_HACKS
 
 				// if active, then we must have ammo.
 				if( gpActiveSel == p )
@@ -1120,7 +1140,11 @@ int CHudAmmo::DrawWList( float flTime )
 		else
 		{
 			// Draw Row of weapons.
+#ifdef MOBILE_HACKS
+			UnpackRGB( r, g, b, g_iHudColor );
+#else // MOBILE_HACKS
 			UnpackRGB( r, g, b, RGB_YELLOWISH );
+#endif // MOBILE_HACKS
 
 			for( int iPos = 0; iPos < MAX_WEAPON_POSITIONS; iPos++ )
 			{
@@ -1131,7 +1155,11 @@ int CHudAmmo::DrawWList( float flTime )
 
 				if( gWR.HasAmmo( p ) )
 				{
+#ifdef MOBILE_HACKS
+					UnpackRGB( r, g, b, g_iHudColor );
+#else // MOBILE_HACKS
 					UnpackRGB( r, g, b, RGB_YELLOWISH );
+#endif // MOBILE_HACKS
 					a = 128;
 				}
 				else

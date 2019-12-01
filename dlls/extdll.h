@@ -95,6 +95,10 @@ typedef float vec_t;				// needed before including progdefs.h
 // Shared header describing protocol between engine and DLLs
 #include "eiface.h"
 
+#ifdef MOBILE_HACKS
+#include "moddef.h"
+#endif // MOBILE_HACKS
+
 // Shared header between the client DLL and the game DLLs
 #include "cdll_dll.h"
 #ifndef Q_min

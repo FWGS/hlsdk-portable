@@ -2047,7 +2047,12 @@ public:
 	int ObjectCaps( void ) { return CBaseDelay::ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
 };
 
-LINK_ENTITY_TO_CLASS( trigger_playerfreeze, CTriggerPlayerFreeze )
+// LINK_ENTITY_TO_CLASS( trigger_playerfreeze, CTriggerPlayerFreeze )
+extern "C" EXPORT void trigger_playerfreeze( entvars_t *pev )
+{
+	if( g_iModType == MOD_BSHIFT || g_iModType == MOD_INDUCTION )
+		GetClassPtr( (CTriggerPlayerFreeze *)pev );
+}
 
 void CTriggerPlayerFreeze::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {

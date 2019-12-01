@@ -29,6 +29,9 @@
 enginefuncs_t g_engfuncs;
 globalvars_t *gpGlobals;
 server_physics_api_t g_physfuncs;
+#ifdef MOBILE_HACKS 
+int g_iModType;
+#endif // MOBILE_HACKS
 
 #ifdef _WIN32
 
@@ -54,4 +57,52 @@ extern "C" void DLLEXPORT EXPORT2 GiveFnptrsToDll( enginefuncs_t *pengfuncsFromE
 {
 	memcpy( &g_engfuncs, pengfuncsFromEngine, sizeof(enginefuncs_t) );
 	gpGlobals = pGlobals;
+#ifdef MOBILE_HACKS
+	char szGameFolder[64];
+
+	(*g_engfuncs.pfnGetGameDir)( szGameFolder );
+
+	if( FStrEq( szGameFolder, "aom" ) )
+	{
+		g_iModType = MOD_AOM;
+	}
+	else if( FStrEq( szGameFolder, "biglolly" ) )
+	{
+		g_iModType = MOD_BIGLOLLY;
+	}
+	else if( FStrEq( szGameFolder, "bshift" ) )
+	{
+		g_iModType = MOD_BSHIFT;
+	}
+	else if( FStrEq( szGameFolder, "halfsecret" ) )
+	{
+		g_iModType = MOD_HALFSECRET;
+	}
+	else if( FStrEq( szGameFolder, "borderlands" )
+	    || if( FStrEq( szGameFolder, "caseclosed" )
+	    || if( FStrEq( szGameFolder, "vendetta" ) )
+	{
+		g_ModType = MOD_HEVSUIT;
+	}
+	else if( FStrEq( szGameFolder, "induction" ) )
+	{
+		g_iModType = MOD_INDUCTION;
+	}
+	else if( FStrEq( szGameFolder, "redempt" ) )
+	{
+		g_iModType = MOD_REDEMPT;
+	}
+	else if( FStrEq( szGameFolder, "sewerbeta" ) )
+	{
+		g_iModType = MOD_SEWERBETA;
+	}
+	else if( FStrEq( szGameFolder, "tot" ) )
+	{
+		g_iModType = MOD_TOT;
+	}
+	else
+	{
+		g_iModType = MOD_VALVE;
+	}
+#endif // MOBILE_HACKS
 }

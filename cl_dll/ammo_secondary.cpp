@@ -60,7 +60,11 @@ int CHudAmmoSecondary::Draw( float flTime )
 
 	// draw secondary ammo icons above normal ammo readout
 	int a, x, y, r, g, b, AmmoWidth;
+#ifdef MOBILE_HACKS
+	UnpackRGB( r, g, b, g_iHudColor );
+#else // MOBILE_HACKS
 	UnpackRGB( r, g, b, RGB_YELLOWISH );
+#endif // MOBILE_HACKS
 	a = (int)Q_max( MIN_ALPHA, m_fFade );
 	if( m_fFade > 0 )
 		m_fFade -= ( (float)gHUD.m_flTimeDelta * 20.0f );  // slowly lower alpha to fade out icons

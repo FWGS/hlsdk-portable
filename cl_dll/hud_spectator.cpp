@@ -1113,7 +1113,11 @@ void CHudSpectator::DrawOverviewEntities()
 
 	z = m_OverviewData.layersHeights[0] * zScale;
 	// get yellow/brown HUD color
+#ifdef MOBILE_HACKS
+	UnpackRGB( ir, ig, ib, g_iHudColor );
+#else // MOBILE_HACKS
 	UnpackRGB( ir, ig, ib, RGB_YELLOWISH );
+#endif // MOBILE_HACKS
 	r = (float)ir / 255.0f;
 	g = (float)ig / 255.0f;
 	b = (float)ib / 255.0f;

@@ -127,7 +127,9 @@ float CHalfLifeRules::FlPlayerFallDamage( CBasePlayer *pPlayer )
 void CHalfLifeRules::PlayerSpawn( CBasePlayer *pPlayer )
 {
 #ifdef MOBILE_HACKS
-	pPlayer->GiveNamedItem( "item_suit" );
+	if( g_iModType == HEVSUIT
+	    || g_iModType == SEWERBETA )
+		pPlayer->GiveNamedItem( "item_suit" );
 #endif // MOBILE_HACKS
 }
 

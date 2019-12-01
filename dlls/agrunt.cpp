@@ -909,6 +909,11 @@ BOOL CAGrunt::FCanCheckAttacks( void )
 //=========================================================
 BOOL CAGrunt::CheckMeleeAttack1( float flDot, float flDist )
 {
+#ifdef MOBILE_HACKS
+	if( g_iModType == MOD_AOM )
+		return FALSE;
+#endif // MOBILE_HACKS
+
 	if( HasConditions( bits_COND_SEE_ENEMY ) && flDist <= AGRUNT_MELEE_DIST && flDot >= 0.6f && m_hEnemy != 0 )
 	{
 		return TRUE;
@@ -1108,7 +1113,11 @@ Schedule_t *CAGrunt::GetSchedule( void )
 				return GetScheduleOfType( SCHED_RANGE_ATTACK1 );
 			}
 
+#ifdef MOBILE_HACKS
+			if( g_iModType != MOD_AOM && OccupySlot ( bits_SLOT_AGRUNT_CHASE ) )
+#else
 			if( OccupySlot ( bits_SLOT_AGRUNT_CHASE ) )
+#endif
 			{
 				return GetScheduleOfType( SCHED_CHASE_ENEMY );
 			}

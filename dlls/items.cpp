@@ -238,7 +238,13 @@ class CItemArmorVest : public CItem
 	}
 };
 
-LINK_ENTITY_TO_CLASS( item_armorvest, CItemArmorVest )
+// LINK_ENTITY_TO_CLASS( item_armorvest, CItemArmorVest )
+extern "C" EXPORT void item_armorvest( entvars_t *pev )
+{
+	if( g_iModType == MOD_BSHIFT )
+		GetClassPtr( (CItemArmorVest *)pev );
+}
+
 
 class CItemHelmet : public CItem
 {
@@ -272,7 +278,12 @@ class CItemHelmet : public CItem
 	}
 };
 
-LINK_ENTITY_TO_CLASS( item_helmet, CItemHelmet )
+// LINK_ENTITY_TO_CLASS( item_helmet, CItemHelmet )
+extern "C" EXPORT void item_helmet( entvars_t *pev )
+{
+        if( g_iModType == MOD_BSHIFT )
+                GetClassPtr( (CItemHelmet *)pev );
+}
 #endif // MOBILE_HACKS
 
 class CItemBattery : public CItem
@@ -286,7 +297,12 @@ class CItemBattery : public CItem
 	void Precache( void )
 	{
 		PRECACHE_MODEL( "models/w_battery.mdl" );
-		PRECACHE_SOUND( "items/gunpickup2.wav" );
+#ifdef MOBILE_HACKS
+		if( g_iModType == MOD_BIGLOLLY )
+			PRECACHE_SOUND( "items/smallmedkit1.wav" );
+		else
+#endif // MOBILE_HACKS
+			PRECACHE_SOUND( "items/gunpickup2.wav" );
 	}
 	BOOL MyTouch( CBasePlayer *pPlayer )
 	{
@@ -304,7 +320,13 @@ class CItemBattery : public CItem
 			pPlayer->pev->armorvalue += gSkillData.batteryCapacity;
 			pPlayer->pev->armorvalue = Q_min( pPlayer->pev->armorvalue, MAX_NORMAL_BATTERY );
 
-			EMIT_SOUND( pPlayer->edict(), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM );
+#ifdef MOBILE_HACKS
+			if( g_iModType == MOD_BIGLOLLY )
+				EMIT_SOUND( pPlayer->edict(), CHAN_ITEM, "items/smallmedkit1.wav", 1, ATTN_NORM );
+			else
+#endif // MOBILE_HACKS
+				EMIT_SOUND( pPlayer->edict(), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM );
+
 
 			MESSAGE_BEGIN( MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev );
 				WRITE_STRING( STRING( pev->classname ) );
@@ -399,7 +421,12 @@ class CItemFlashlight : public CItem
 	}
 };
 
-LINK_ENTITY_TO_CLASS( item_flashlight, CItemFlashlight )
+// LINK_ENTITY_TO_CLASS( item_flashlight, CItemFlashlight )
+extern "C" EXPORT void item_flashlight( entvars_t *pev )
+{
+	if( g_iModType == MOD_INDUCTION )
+		GetClassPtr( (CItemFlashlight *)pev );
+}
 #endif // MOBILE_HACKS
 
 class CItemLongJump : public CItem

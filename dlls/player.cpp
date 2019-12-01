@@ -3296,7 +3296,7 @@ void CBasePlayer::FlashlightTurnOn( void )
 	}
 
 #ifdef MOBILE_HACKS
-	if( (pev->weapons & ( 1 << WEAPON_FLASHLIGHT ) ) )
+	if( (pev->weapons & ( 1 << WEAPON_SUIT ) ) || ( g_iModType == MOD_INDUCTION && (pev->weapons & ( 1 << WEAPON_FLASHLIGHT ) ) ) )
 #else // MOBILE_HACKS
 	if( (pev->weapons & ( 1 << WEAPON_SUIT ) ) )
 #endif // MOBILE_HACKS
@@ -3463,9 +3463,13 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		gEvilImpulse101 = TRUE;
 		GiveNamedItem( "item_suit" );
 #ifdef MOBILE_HACKS
-		GiveNamedItem( "item_armorvest" );
-		GiveNamedItem( "item_helmet" );
-		GiveNamedItem( "item_battery" );
+		if( g_iModType == BSHIFT )
+		{
+			GiveNamedItem( "item_armorvest" );
+			GiveNamedItem( "item_helmet" );
+		}
+		else
+			GiveNamedItem( "item_battery" );
 #else // MOBILE_HACKS
 		GiveNamedItem( "item_battery" );
 #endif // MOBILE_HACKS

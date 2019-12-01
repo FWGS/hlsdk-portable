@@ -522,6 +522,11 @@ void CBaseMonster::BecomeDead( void )
 
 BOOL CBaseMonster::ShouldGibMonster( int iGib )
 {
+#ifdef MOBILE_HACKS
+	if( g_iModType == MOD_AOM )
+		return FALSE;
+#endif // MOBILE_HACKS
+
 	if( ( iGib == GIB_NORMAL && pev->health < GIB_HEALTH_VALUE ) || ( iGib == GIB_ALWAYS ) )
 		return TRUE;
 

@@ -58,7 +58,12 @@ public:
 	void TalkInit( void );
 };
 
-LINK_ENTITY_TO_CLASS( monster_roy, CRoy )
+// LINK_ENTITY_TO_CLASS( monster_roy, CRoy )
+extern "C" EXPORT void monster_roy( entvars_t *pev )
+{
+	if( g_iModType == MOD_REDEMPT )
+		GetClassPtr( (CRoy *)pev );
+}
 
 //=========================================================
 // ALertSound - barney says "Freeze!"
@@ -446,7 +451,12 @@ void CDeadRoy::KeyValue( KeyValueData *pkvd )
 		CBaseMonster::KeyValue( pkvd );
 }
 
-LINK_ENTITY_TO_CLASS( monster_roy_dead, CDeadRoy )
+// LINK_ENTITY_TO_CLASS( monster_roy_dead, CDeadRoy )
+extern "C" EXPORT void monster_roy_dead( entvars_t *pev )
+{
+	if( g_iModType == MOD_REDEMPT )
+		GetClassPtr( (CDeadRoy *)pev );
+}
 
 //=========================================================
 // ********** DeadRoy SPAWN **********

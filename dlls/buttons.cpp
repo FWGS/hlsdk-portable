@@ -1022,7 +1022,7 @@ void CMomentaryRotButton::KeyValue( KeyValueData *pkvd )
 	{
 		m_returnSpeed = atof( pkvd->szValue );
 #ifdef MOBILE_HACKS
-		if( m_returnSpeed > 45.0f )
+		if( g_iModType == MOD_REDEMPT && m_returnSpeed > 45.0f )
 			m_returnSpeed = 45.0f;
 #endif // MOBILE_HACKS
 		pkvd->fHandled = TRUE;

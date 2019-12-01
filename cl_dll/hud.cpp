@@ -28,6 +28,11 @@
 #include "demo.h"
 #include "demo_api.h"
 
+#ifdef MOBILE_HACKS
+int g_iModType;
+int g_iHudColor;
+#endif // MOBILE_HACKS
+
 cvar_t *hud_textmode;
 float g_hud_text_color[3];
 
@@ -199,6 +204,34 @@ void CHud::Init( void )
 	cl_viewbob = CVAR_CREATE( "cl_viewbob", "0", FCVAR_ARCHIVE );
 
 	m_pSpriteList = NULL;
+
+#ifdef MOBILE_HACKS
+	if( HUD_IsGame( "biglolly" ) )
+	{
+		g_iModType = MOD_BIGLOLLY;
+		g_iHudColor = PINKISH;
+	}
+	else if( HUD_IsGame( "bshift" ) )
+	{
+		g_iModType = MOD_BSHIFT;
+		g_iHudColor = BLUISH;
+	}
+	else if( HUD_IsGame( "halfsecret" ) )
+	{
+		g_iModType = MOD_HALFSECRET;
+		g_iHudColor = YELLOWISH;
+	}
+	else if( HUD_IsGame( "sewerbeta" ) )
+	{
+		g_iModType = MOD_SEWERBETA;
+		g_iHudColor = WHITISH;
+	}
+	else
+	{
+		g_iModType = MOD_VALVE;
+		g_iHudColor = YELLOWISH;
+	}
+#endif // MOBILE_HACKS
 
 	// Clear any old HUD list
 	if( m_pHudList )

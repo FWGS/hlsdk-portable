@@ -35,8 +35,12 @@ public:
 	BOOL CanHeal(void);
 };
 
-LINK_ENTITY_TO_CLASS(monster_civ, CCivScientist);
-
+// LINK_ENTITY_TO_CLASS(monster_civ, CCivScientist);
+extern "C" EXPORT void monster_civ( entvars_t *pev )
+{
+	if( g_iModType == MOD_TOT )
+		GetClassPtr( (CCivScientist *)pev );
+}
 
 //=========================================================
 // Spawn

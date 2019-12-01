@@ -202,8 +202,11 @@ void CGameRules::RefreshSkillData ( void )
 
 #ifdef MOBILE_HACKS
 	// Absolute Redeption
-	// Roy
-	gSkillData.royHealth = GetSkillCvar( "sk_roy_health" );
+	if( g_iModType == MOD_REDEMPT )
+	{
+		// Roy
+		gSkillData.royHealth = GetSkillCvar( "sk_roy_health" );
+	}
 #endif // MOBILE_HACKS
 
 	// Scientist
