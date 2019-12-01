@@ -75,6 +75,10 @@ else()
 	message(STATUS "Building for 32 Bit")
 endif()
 
+if(XASH_ANDROID)
+	add_definitions(-DMOBILE_HACKS)
+endif()
+
 if (MINGW)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libstdc++ -static-libgcc")
 	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--add-stdcall-alias")
@@ -94,7 +98,6 @@ if(NOT MSVC)
 	#add_compile_options(-Wempty-body) # GCC/Clang flag
 	add_compile_options(-Wreturn-type) # GCC/Clang flag
 endif()
-
 
 if(BUILD_CLIENT)
 	add_subdirectory(cl_dll)

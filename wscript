@@ -263,6 +263,9 @@ def configure(conf):
 
 	conf.define('CLIENT_WEAPONS', '1')
 
+	if conf.env.DEST_OS == 'android':
+		conf.define('MOBILE_HACKS', '1')
+
 	conf.add_subproject(["cl_dll", "dlls"])
 
 def build(bld):
