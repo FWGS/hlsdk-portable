@@ -530,11 +530,6 @@ private:
 class CPython : public CBasePlayerWeapon
 {
 public:
-#ifndef CLIENT_DLL
-	int Save( CSave &save );
-	int Restore( CRestore &restore );
-	static TYPEDESCRIPTION m_SaveData[];
-#endif
 	void Spawn( void );
 	void Precache( void );
 	int iItemSlot( void ) { return 2; }

@@ -111,8 +111,6 @@ BOOL CPython::Deploy()
 		pev->body = 0;
 	}
 
-	m_flSoundDelay = 0;
-
 	return DefaultDeploy( "models/v_357.mdl", "models/p_357.mdl", PYTHON_DRAW, "python", UseDecrement(), pev->body );
 }
 
@@ -128,8 +126,6 @@ void CPython::Holster( int skiplocal /* = 0 */ )
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 1.0f;
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10.0f, 15.0f );
 	SendWeaponAnim( PYTHON_HOLSTER );
-
-	m_flSoundDelay = 0;
 }
 
 void CPython::SecondaryAttack( void )
