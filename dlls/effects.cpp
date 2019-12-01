@@ -2296,9 +2296,9 @@ extern "C" EXPORT void env_warpball( entvars_t *pev )
 
 TYPEDESCRIPTION CWarpBall::m_SaveData[] =
 {
-        // DEFINE_FIELD( CWarpBall, m_iBeams, FIELD_INTEGER ),
-        DEFINE_FIELD( CWarpBall, m_flLastTime, FIELD_FLOAT ),
-        DEFINE_FIELD( CWarpBall, m_flMaxFrame, FIELD_FLOAT ),
+	// DEFINE_FIELD( CWarpBall, m_iBeams, FIELD_INTEGER ),
+	DEFINE_FIELD( CWarpBall, m_flLastTime, FIELD_FLOAT ),
+	DEFINE_FIELD( CWarpBall, m_flMaxFrame, FIELD_FLOAT ),
 	DEFINE_FIELD( CWarpBall, m_flBeamRadius, FIELD_FLOAT ),
 	DEFINE_FIELD( CWarpBall, m_iszWarpTarget, FIELD_STRING ),
 	DEFINE_FIELD( CWarpBall, m_flWarpStart, FIELD_FLOAT ),
@@ -2377,13 +2377,13 @@ void CWarpBall::WarpBallUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_
 	m_flMaxFrame = (float)MODEL_FRAMES( pev->modelindex ) - 1;
 
 	pev->rendercolor = Vector( r, g, b );
-	pev->scale = 1.2;
+	pev->scale = 1.2f;
 	pev->frame = 0;
 
 	if( m_pSprite )
 	{
 		m_pSprite->SetTransparency( kRenderGlow, r, g, b, 255, kRenderFxNoDissipation );
-		m_pSprite->pev->scale = 1.0;
+		m_pSprite->pev->scale = 1.0f;
 		m_pSprite->TurnOn();
 	}
 
@@ -2394,7 +2394,7 @@ void CWarpBall::WarpBallUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_
 		if( m_pBeams )
 		{
 			UTIL_SetOrigin( m_pBeams->pev, pev->origin );
-			m_pBeams->m_restrike = -0.5;
+			m_pBeams->m_restrike = -0.5f;
 			m_pBeams->SetColor( 0, 255, 0 );
 			m_pBeams->m_noiseAmplitude = 65;
 			m_pBeams->m_life = 0.5;
@@ -2410,11 +2410,11 @@ void CWarpBall::WarpBallUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_
 		m_pBeams->Spawn();
 		m_pBeams->pev->solid = SOLID_NOT;
 		m_pBeams->SetThink( &CLightning::StrikeThink );
-		m_pBeams->pev->nextthink = gpGlobals->time + 0.1;
+		m_pBeams->pev->nextthink = gpGlobals->time + 0.1f;
 	}
 
 	SetThink( &CWarpBall::BallThink );
-	pev->nextthink = gpGlobals->time + 0.1;
+	pev->nextthink = gpGlobals->time + 0.1f;
 
 	m_flLastTime = gpGlobals->time;
 	// m_fBeamsCleared = FALSE;
@@ -2422,7 +2422,7 @@ void CWarpBall::WarpBallUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_
 
 	if( !m_flDamageDelay )
 	{
-		RadiusDamage( pev->origin, pev, pev, 300.0, 48.0, CLASS_NONE, DMG_SHOCK );
+		RadiusDamage( pev->origin, pev, pev, 300.0f, 48.0f, CLASS_NONE, DMG_SHOCK );
 		m_fDamageApplied = TRUE;
 	}
 	else
@@ -2430,8 +2430,8 @@ void CWarpBall::WarpBallUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_
 		m_fDamageApplied = FALSE;
 	}
 
-	SUB_UseTargets( this, USE_TOGGLE, 0.0 );
-	UTIL_ScreenShake( pev->origin, 4.0, 100.0, 2.0, 1000.0 );
+	SUB_UseTargets( this, USE_TOGGLE, 0.0f );
+	UTIL_ScreenShake( pev->origin, 4.0f, 100.0f, 2.0f, 1000.0f );
 	m_flWarpStart = gpGlobals->time;
 	EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, "debris/alien_teleport.wav", 1.0, ATTN_NORM, 0, PITCH_NORM );
 }
@@ -2465,25 +2465,25 @@ void CWarpBall::BallThink( void )
 
 		if( m_pBeams )
 		{
-			if( pev->frame >= m_flMaxFrame - 4.0 )
+			if( pev->frame >= m_flMaxFrame - 4.0f )
 			{
 				m_pBeams->SetThink( NULL );
 				m_pBeams->pev->nextthink = gpGlobals->time;
 			}
 		}
 
-		pev->nextthink = gpGlobals->time + 0.1;
+		pev->nextthink = gpGlobals->time + 0.1f;
 		m_flLastTime = gpGlobals->time;
 	}	
 }
 
 CWarpBall *CWarpBall::CreateWarpBall( const Vector &p_VecOrigin )
 {
-        // Create a new entity with CWarpball private data
-        CWarpBall *pWarpBall = GetClassPtr( (CWarpBall *)NULL );
-        pWarpBall->pev->classname = MAKE_STRING( "env_warpball" );
+	// Create a new entity with CWarpball private data
+	CWarpBall *pWarpBall = GetClassPtr( (CWarpBall *)NULL );
+	pWarpBall->pev->classname = MAKE_STRING( "env_warpball" );
 
 	UTIL_SetOrigin( pWarpBall->pev, p_VecOrigin );
-        return pWarpBall;
+	return pWarpBall;
 }
 #endif // MOBILE_HACKS
