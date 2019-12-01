@@ -216,7 +216,7 @@ void CHud::Init( void )
 		g_iModType = MOD_BSHIFT;
 		g_iHudColor = RGB_BLUISH;
 	}
-	else if( HUD_IsGame( "halfsecret" ) )
+	else if( HUD_IsGame( "secret" ) )
 	{
 		g_iModType = MOD_HALFSECRET;
 		g_iHudColor = RGB_YELLOWISH;
@@ -227,10 +227,10 @@ void CHud::Init( void )
 		g_iHudColor = RGB_WHITISH;
 	}
 	else if( HUD_IsGame( "induction" ) )
-	{
-		g_iModType = MOD_INDUCTION;
-		g_iHudColor = RGB_YELLOWISH;
-	}
+        {
+                g_iModType = MOD_INDUCTION;
+                g_iHudColor = RGB_YELLOWISH;
+        }
 	else
 	{
 		g_iModType = MOD_VALVE;

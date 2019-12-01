@@ -1692,6 +1692,16 @@ enum squeak_e
 	SQUEAK_THROW
 };
 
+enum toad_e {
+	TOAD_IDLE1 = 0,
+	TOAD_IDLE2,
+	TOAD_FIDGETFIT,
+	TOAD_FIDGETNIP,
+	TOAD_DOWN,
+	TOAD_UP,
+	TOAD_THROW
+};
+
 #define VEC_HULL_MIN		Vector( -16, -16, -36 )
 #define VEC_DUCK_HULL_MIN	Vector( -16, -16, -18 )
 
@@ -1723,7 +1733,12 @@ void EV_SnarkFire( event_args_t *args )
 
 	//Find space to drop the thing.
 	if( tr.allsolid == 0 && tr.startsolid == 0 && tr.fraction > 0.25f )
-		 gEngfuncs.pEventAPI->EV_WeaponAnimation( SQUEAK_THROW, 0 );
+	{
+		if( g_iModType == MOD_HALFSECRET )
+			gEngfuncs.pEventAPI->EV_WeaponAnimation( TOAD_THROW, 0 );
+		else
+			gEngfuncs.pEventAPI->EV_WeaponAnimation( SQUEAK_THROW, 0 );
+	}
 
 	gEngfuncs.pEventAPI->EV_PopPMStates();
 }

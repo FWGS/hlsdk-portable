@@ -42,6 +42,16 @@ enum squeak_e
 	SQUEAK_THROW
 };
 
+enum toad_e {
+	TOAD_IDLE1 = 0,
+	TOAD_IDLE2,
+	TOAD_FIDGETFIT,
+	TOAD_FIDGETNIP,
+	TOAD_DOWN,
+	TOAD_UP,
+	TOAD_THROW
+};
+
 #ifndef CLIENT_DLL
 class CSqueakGrenade : public CGrenade
 {
@@ -479,7 +489,10 @@ void CSqueak::Holster( int skiplocal /* = 0 */ )
 		return;
 	}
 
-	SendWeaponAnim( SQUEAK_DOWN );
+	if( g_iModType == MOD_HALFSECRET )
+		SendWeaponAnim( SQUEAK_DOWN );
+	else
+		SendWeaponAnim( TOAD_DOWN );
 	EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_WEAPON, "common/null.wav", 1.0f, ATTN_NORM );
 }
 
@@ -558,27 +571,56 @@ void CSqueak::WeaponIdle( void )
 			return;
 		}
 
-		SendWeaponAnim( SQUEAK_UP );
+		if( g_iModType == MOD_HALFSECRET )
+			SendWeaponAnim( TOAD_UP );
+		else
+			SendWeaponAnim( SQUEAK_UP );
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
 		return;
 	}
 
 	int iAnim;
 	float flRand = UTIL_SharedRandomFloat( m_pPlayer->random_seed, 0, 1 );
-	if( flRand <= 0.75f )
+	if( g_iModType == MOD_HALFSECRET )
 	{
-		iAnim = SQUEAK_IDLE1;
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 30.0f / 16.0f * 2.0f;
-	}
-	else if( flRand <= 0.875f )
-	{
-		iAnim = SQUEAK_FIDGETFIT;
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 70.0f / 16.0f;
+		if( flRand <= 0.625f )
+		{
+			iAnim = TOAD_IDLE1;
+			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 30.0f / 16.0f * 2.0f;
+		}
+		else if( flRand <= 0.75f )
+		{
+			iAnim = TOAD_IDLE2;
+			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 30.0f / 16.0f * 2.0f;
+		}
+		else if( flRand <= 0.875f )
+		{
+			iAnim = TOAD_FIDGETFIT;
+			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 70.0f / 16.0f;
+		}
+		else
+		{
+			iAnim = TOAD_FIDGETNIP;
+			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 80.0f / 16.0f;
+		}
 	}
 	else
 	{
-		iAnim = SQUEAK_FIDGETNIP;
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 80.0f / 16.0f;
+		if( flRand <= 0.75f )
+		{
+			iAnim = SQUEAK_IDLE1;
+			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 30.0f / 16.0f * 2.0f;
+		}
+		else if( flRand <= 0.875f )
+		{
+			iAnim = SQUEAK_FIDGETFIT;
+			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 70.0f / 16.0f;
+		}
+		else
+		{
+			iAnim = SQUEAK_FIDGETNIP;
+			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 80.0f / 16.0f;
+		}
 	}
 	SendWeaponAnim( iAnim );
 }
