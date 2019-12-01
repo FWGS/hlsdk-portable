@@ -1692,6 +1692,7 @@ enum squeak_e
 	SQUEAK_THROW
 };
 
+#ifdef MOBILE_HACKS
 enum toad_e {
 	TOAD_IDLE1 = 0,
 	TOAD_IDLE2,
@@ -1701,6 +1702,7 @@ enum toad_e {
 	TOAD_UP,
 	TOAD_THROW
 };
+#endif // MOBILE_HACKS
 
 #define VEC_HULL_MIN		Vector( -16, -16, -36 )
 #define VEC_DUCK_HULL_MIN	Vector( -16, -16, -18 )
@@ -1734,9 +1736,11 @@ void EV_SnarkFire( event_args_t *args )
 	//Find space to drop the thing.
 	if( tr.allsolid == 0 && tr.startsolid == 0 && tr.fraction > 0.25f )
 	{
+#ifdef MOBILE_HACKS
 		if( g_iModType == MOD_HALFSECRET )
 			gEngfuncs.pEventAPI->EV_WeaponAnimation( TOAD_THROW, 0 );
 		else
+#endif // MOBILE_HACKS
 			gEngfuncs.pEventAPI->EV_WeaponAnimation( SQUEAK_THROW, 0 );
 	}
 

@@ -42,6 +42,7 @@ enum squeak_e
 	SQUEAK_THROW
 };
 
+#ifdef MOBILE_HACKS
 enum toad_e {
 	TOAD_IDLE1 = 0,
 	TOAD_IDLE2,
@@ -51,6 +52,7 @@ enum toad_e {
 	TOAD_UP,
 	TOAD_THROW
 };
+#endif // MOBILE_HACKS
 
 #ifndef CLIENT_DLL
 class CSqueakGrenade : public CGrenade
@@ -489,10 +491,12 @@ void CSqueak::Holster( int skiplocal /* = 0 */ )
 		return;
 	}
 
+#ifdef MOBILE_HACKS
 	if( g_iModType == MOD_HALFSECRET )
-		SendWeaponAnim( SQUEAK_DOWN );
-	else
 		SendWeaponAnim( TOAD_DOWN );
+	else
+#endif // MOBILE_HACKS
+		SendWeaponAnim( SQUEAK_DOWN );
 	EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_WEAPON, "common/null.wav", 1.0f, ATTN_NORM );
 }
 
@@ -571,9 +575,11 @@ void CSqueak::WeaponIdle( void )
 			return;
 		}
 
+#ifdef MOBILE_HACKS
 		if( g_iModType == MOD_HALFSECRET )
 			SendWeaponAnim( TOAD_UP );
 		else
+#endif
 			SendWeaponAnim( SQUEAK_UP );
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
 		return;
@@ -581,6 +587,7 @@ void CSqueak::WeaponIdle( void )
 
 	int iAnim;
 	float flRand = UTIL_SharedRandomFloat( m_pPlayer->random_seed, 0, 1 );
+#ifdef MOBILE_HACKS
 	if( g_iModType == MOD_HALFSECRET )
 	{
 		if( flRand <= 0.625f )
@@ -605,6 +612,7 @@ void CSqueak::WeaponIdle( void )
 		}
 	}
 	else
+#endif // MOBILE_HACKS
 	{
 		if( flRand <= 0.75f )
 		{
