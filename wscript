@@ -43,6 +43,9 @@ def options(opt):
 	grp.add_option('--enable-magx', action = 'store_true', dest = 'MAGX', default = False,
 		help = 'enable targetting for MotoMAGX phones [default: %default]')
 
+	grp.add_option('--enable-simple-mod-hacks', action = 'store_true', dest = 'SIMPLE_MOD_HACKS', default = False,
+		help = 'enable hacks for simple mods that don\'t touch HL game logic so much but still require small patches. Enforced for Android. [default: %default]')
+
 	opt.load('xcompile compiler_cxx compiler_c clang_compilation_database strip_on_install')
 
 	if sys.platform == 'win32':
@@ -263,7 +266,7 @@ def configure(conf):
 
 	conf.define('CLIENT_WEAPONS', '1')
 
-	if conf.env.DEST_OS == 'android':
+	if conf.env.DEST_OS == 'android' or conf.options.SIMPLE_MOD_HACKS:
 		conf.define('MOBILE_HACKS', '1')
 
 	conf.add_subproject(["cl_dll", "dlls"])
