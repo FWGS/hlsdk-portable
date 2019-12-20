@@ -1685,6 +1685,7 @@ void EV_TripmineFire( event_args_t *args )
 enum squeak_e
 {
 	SQUEAK_IDLE1 = 0,
+	SQUEAK_IDLE2,
 	SQUEAK_FIDGETFIT,
 	SQUEAK_FIDGETNIP,
 	SQUEAK_DOWN,
