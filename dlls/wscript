@@ -68,7 +68,7 @@ def build(bld):
 
 	bld.shlib(
 		source   = source,
-		target   = bld.env.SERVER_NAME,
+		target   = bld.env.SERVER_NAME + bld.env.POSTFIX,
 		features = 'c cxx',
 		includes = includes,
 		defines  = defines,
