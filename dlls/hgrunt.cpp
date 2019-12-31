@@ -427,13 +427,13 @@ BOOL CHGrunt::CheckMeleeAttack1( float flDot, float flDist )
 		{
 			return FALSE;
 		}
-	}
 
-	if( flDist <= 64.0f && flDot >= 0.7f && 
-		 pEnemy->Classify() != CLASS_ALIEN_BIOWEAPON &&
-		 pEnemy->Classify() != CLASS_PLAYER_BIOWEAPON )
-	{
-		return TRUE;
+		if( flDist <= 64.0f && flDot >= 0.7f && 
+			 pEnemy->Classify() != CLASS_ALIEN_BIOWEAPON &&
+			 pEnemy->Classify() != CLASS_PLAYER_BIOWEAPON )
+		{
+			return TRUE;
+		}
 	}
 	return FALSE;
 }
