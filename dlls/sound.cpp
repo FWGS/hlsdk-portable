@@ -280,7 +280,7 @@ void CAmbientGeneric::RampThink( void )
 
 		if( pitch < m_dpv.pitchstart )
 		{
-			pitch = m_dpv.pitchstart;
+			// pitch = m_dpv.pitchstart;
 			m_dpv.spindown = 0;				// done with ramp down
 
 			// shut sound off
@@ -324,7 +324,7 @@ void CAmbientGeneric::RampThink( void )
 
 		if( vol < m_dpv.volstart )
 		{
-			vol = m_dpv.volstart;
+			// vol = m_dpv.volstart;
 			m_dpv.fadeout = 0;				// done with ramp down
 
 			// shut sound off
@@ -1762,7 +1762,7 @@ void CSpeaker::Precache( void )
 }
 void CSpeaker::SpeakerThink( void )
 {
-	const char* szSoundFile = NULL;
+	const char* szSoundFile = "";
 	float flvolume = pev->health * 0.1f;
 	float flattenuation = 0.3f;
 	int flags = 0;
