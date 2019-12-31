@@ -944,10 +944,10 @@ void CNihilanth::Flight( void )
 	m_velocity.y += gpGlobals->v_up.y * m_flForce;
 	m_velocity.z += gpGlobals->v_up.z * m_flForce;
 
-	float flSpeed = m_velocity.Length();
+	/*float flSpeed = m_velocity.Length();
 	float flDir = DotProduct( Vector( gpGlobals->v_forward.x, gpGlobals->v_forward.y, 0 ), Vector( m_velocity.x, m_velocity.y, 0 ) );
 	if( flDir < 0 )
-		flSpeed = -flSpeed;
+		flSpeed = -flSpeed;*/
 
 	//float flDist = DotProduct( m_posDesired - vecEst, gpGlobals->v_forward );
 
