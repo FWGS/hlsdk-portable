@@ -95,9 +95,9 @@ void CHornet::Spawn( void )
 	SetTouch( &CHornet::DieTouch );
 	SetThink( &CHornet::StartTrack );
 
-	edict_t *pSoundEnt = pev->owner;
+	/*edict_t *pSoundEnt = pev->owner;
 	if( !pSoundEnt )
-		pSoundEnt = edict();
+		pSoundEnt = edict();*/
 
 	if( !FNullEnt( pev->owner ) && ( pev->owner->v.flags & FL_CLIENT ) )
 	{
