@@ -60,7 +60,7 @@ def build(bld):
 
 	bld.shlib(
 		source   = source,
-		target   = 'client',
+		target   = 'client' + bld.env.POSTFIX,
 		features = 'c cxx',
 		includes = includes,
 		defines  = defines,
