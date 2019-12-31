@@ -352,7 +352,7 @@ int CHudMessage::Draw( float fTime )
 		// Assume m_parms.time contains last time
 		if( m_pMessages[i] )
 		{
-			pMessage = m_pMessages[i];
+			// pMessage = m_pMessages[i];
 			if( m_startTime[i] > gHUD.m_flTime )
 				m_startTime[i] = gHUD.m_flTime + m_parms.time - m_startTime[i] + 0.2f;	// Server takes 0.2 seconds to spawn, adjust for this
 		}
