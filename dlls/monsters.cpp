@@ -269,7 +269,8 @@ void CBaseMonster::Listen( void )
 		}
 
 		//iSound = g_pSoundEnt->m_SoundPool[iSound].m_iNext;
-		iSound = pCurrentSound->m_iNext;
+		if( pCurrentSound )
+			iSound = pCurrentSound->m_iNext;
 	}
 }
 
@@ -439,18 +440,21 @@ CSound *CBaseMonster::PBestSound( void )
 	{
 		pSound = CSoundEnt::SoundPointerForIndex( iThisSound );
 
-		if( pSound && pSound->FIsSound() )
+		if( pSound )
 		{
-			flDist = ( pSound->m_vecOrigin - EarPosition() ).Length();
-
-			if( flDist < flBestDist )
+			if( pSound->FIsSound() )
 			{
-				iBestSound = iThisSound;
-				flBestDist = flDist;
-			}
-		}
+				flDist = ( pSound->m_vecOrigin - EarPosition() ).Length();
 
-		iThisSound = pSound->m_iNextAudible;
+				if( flDist < flBestDist )
+				{
+					iBestSound = iThisSound;
+					flBestDist = flDist;
+				}
+			}
+
+			iThisSound = pSound->m_iNextAudible;
+		}
 	}
 	if( iBestSound >= 0 )
 	{
@@ -2387,7 +2391,7 @@ BOOL CBaseMonster::BuildNearestRoute( Vector vecThreat, Vector vecViewOffset, fl
 					// try to actually get there
 					if( BuildRoute( node.m_vecOrigin, bits_MF_TO_LOCATION, NULL ) )
 					{
-						flMaxDist = flDist;
+						// flMaxDist = flDist;
 						m_vecMoveGoal = node.m_vecOrigin;
 						return TRUE; // UNDONE: keep looking for something closer!
 					}
@@ -3337,7 +3341,7 @@ BOOL CBaseMonster::BBoxFlat( void )
 	{
 		return FALSE;
 	}
-	flLength = flLength2;
+	// flLength = flLength2;
 
 	return TRUE;
 }

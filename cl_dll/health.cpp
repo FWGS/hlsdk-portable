@@ -152,13 +152,14 @@ int CHudHealth::MsgFunc_Damage( const char *pszName, int iSize, void *pbuf )
 // Green <-> Yellow <-> Red ramp
 void CHudHealth::GetPainColor( int &r, int &g, int &b )
 {
+#if 0
 	int iHealth = m_iHealth;
 
 	if( iHealth > 25 )
 		iHealth -= 25;
 	else if( iHealth < 0 )
 		iHealth = 0;
-#if 0
+
 	g = iHealth * 255 / 100;
 	r = 255 - g;
 	b = 0;
@@ -454,7 +455,7 @@ void CHudHealth::UpdateTiles( float flTime, long bitsDamage )
 				if( pdmg->y )
 					pdmg->y -= giDmgHeight;
 			}
-			pdmg = &m_dmg[i];
+			// pdmg = &m_dmg[i];
 		}
 	}
 

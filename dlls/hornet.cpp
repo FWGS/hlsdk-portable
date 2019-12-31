@@ -95,9 +95,9 @@ void CHornet::Spawn( void )
 	SetTouch( &CHornet::DieTouch );
 	SetThink( &CHornet::StartTrack );
 
-	edict_t *pSoundEnt = pev->owner;
+	/*edict_t *pSoundEnt = pev->owner;
 	if( !pSoundEnt )
-		pSoundEnt = edict();
+		pSoundEnt = edict();*/
 
 	// no real owner, or owner isn't a client. 
 	pev->dmg = gSkillData.monDmgHornet;

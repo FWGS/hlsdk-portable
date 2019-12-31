@@ -403,15 +403,19 @@ void COsprey::FlyThink( void )
 
 	if( gpGlobals->time > m_startTime + m_dTime )
 	{
-		if( m_pGoalEnt->pev->speed == 0 )
+		if( m_pGoalEnt )
 		{
-			SetThink( &COsprey::DeployThink );
+			if( m_pGoalEnt->pev->speed == 0 )
+			{
+				SetThink( &COsprey::DeployThink );
+			}
+
+			int loopbreaker = 100; //LRC - <slap> don't loop indefinitely!
+			do{
+				m_pGoalEnt = UTIL_FindEntityByTargetname( NULL, STRING( m_pGoalEnt->pev->target ) );
+				loopbreaker--; //LRC
+			} while ( m_pGoalEnt && m_pGoalEnt->pev->speed < 400 && !HasDead() && loopbreaker > 0);
 		}
-		int loopbreaker = 100; //LRC - <slap> don't loop indefinitely!
-		do{
-			m_pGoalEnt = UTIL_FindEntityByTargetname( NULL, STRING( m_pGoalEnt->pev->target ) );
-			loopbreaker--; //LRC
-		} while (m_pGoalEnt->pev->speed < 400 && !HasDead() && loopbreaker > 0);
 		UpdateGoal();
 	}
 

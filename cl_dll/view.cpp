@@ -519,7 +519,7 @@ void V_CalcNormalRefdef( struct ref_params_s *pparams )
 		}
 		else
 		{
-			waterEntity = 0;	// Don't need this in software
+			// waterEntity = 0;	// Don't need this in software
 		}
 	
 		VectorCopy( pparams->vieworg, point );
