@@ -43,7 +43,7 @@ if (!bm_snarks_mod.value || m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] < 5)
 
         UTIL_TraceLine( vecSrc, vecSrc + vecAiming * 128, dont_ignore_monsters, ENT( m_pPlayer->pev ), &tr );
 
-        if (tr.flFraction < 1.0)
+        if (tr.flFraction < 1.0f)
         {
                 // ALERT( at_console, "hit %f\n", tr.flFraction );
 
@@ -82,7 +82,7 @@ if (!bm_snarks_mod.value || m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] < 5)
 
         }
 
-        m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.3;
+        m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.3f;
         m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + RANDOM_FLOAT ( 10, 15 );
 }
 

@@ -113,7 +113,7 @@ void BMODSquidSpit:: Spawn( void )
 
 void BMODSquidSpit::Animate( void )
 {
-        pev->nextthink = gpGlobals->time + 0.1;
+        pev->nextthink = gpGlobals->time + 0.1f;
 
         if( pev->frame++ )
         {
@@ -135,7 +135,7 @@ void BMODSquidSpit::Shoot( entvars_t *Owner, Vector vecStart, Vector vecVelocity
 	pSpit->pevOwner = Owner;
 
 	pSpit->SetThink( &BMODSquidSpit::Animate );
-	pSpit->pev->nextthink = gpGlobals->time + 0.1;
+	pSpit->pev->nextthink = gpGlobals->time + 0.1f;
 }
 
 void BMODSquidSpit::Touch( CBaseEntity *pOther )
@@ -238,7 +238,7 @@ void CHgun::ArmBeam( Vector color )
         }
 
         // Couldn't find anything close enough
-        if( flDist == 1.0 )
+        if( flDist == 1.0f )
                 return;
 
         // DecalGunshot( &tr, BULLET_PLAYER_CROWBAR );
@@ -412,7 +412,7 @@ void CHgun::FreezeRay( void )
 
 		pPlayer->pev->renderamt = 60;  // glow shell distance from entity
 
-		float freezetime = Q_max (.6, bm_freezetime.value);
+		float freezetime = Q_max (0.6f, bm_freezetime.value);
 
 		// freeze the player and set the "unfreeze" time...
 		pPlayer->EnableControl(FALSE);
@@ -421,16 +421,16 @@ void CHgun::FreezeRay( void )
 
 		pPlayer->m_flFreezeTime = gpGlobals->time + freezetime;
 		//RuneMsg( pPlayer, "YOU ARE FROZEN!!!", Vector(100,100,255), freezetime - .5);
-		PrintMessage( pPlayer, BMOD_CHAN_RUNE, Vector(100,100,255), Vector (.1, freezetime - .5, .1), "YOU ARE FROZEN!!!");
+		PrintMessage( pPlayer, BMOD_CHAN_RUNE, Vector(100,100,255), Vector (.1, freezetime - 0.5f, .1), "YOU ARE FROZEN!!!");
 
 	}
 
 	UTIL_EmitAmbientSound( ENT(m_pPlayer->pev), tr.vecEndPos, "weapons/electro4.wav", 0.5, ATTN_NORM, 0, RANDOM_LONG( 140, 160 ));
 
 	m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] = 0;
-	m_flNextPrimaryAttack = gpGlobals->time + .25;
+	m_flNextPrimaryAttack = gpGlobals->time + 0.25f;
 
-	m_flRechargeTime = gpGlobals->time + 0.5;
+	m_flRechargeTime = gpGlobals->time + 0.5f;
 
 	m_pPlayer->m_iWeaponVolume = NORMAL_GUN_VOLUME;
 	m_pPlayer->m_iWeaponFlash = DIM_GUN_FLASH;
@@ -599,7 +599,7 @@ void CHgun::SecondaryAttack()
 	}
 
 	EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_WEAPON, "leech/leech_bite1.wav", 1, ATTN_NORM );
-	m_flNextSecondaryAttack = gpGlobals->time + .5;
+	m_flNextSecondaryAttack = gpGlobals->time + 0.5f;
 }
 
 void CHgun::ZapGun()
@@ -622,7 +622,7 @@ void CHgun::ZapGun()
 
 		m_pPlayer->TakeDamage( m_pPlayer->pev, m_pPlayer->pev, 100, DMG_SHOCK );
 		EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_WEAPON, "debris/zap4.wav", 1, ATTN_NORM, 0, 100 + m_iBeams * 10 );
-		m_flNextPrimaryAttack = m_flNextPrimaryAttack + 1.5;
+		m_flNextPrimaryAttack = m_flNextPrimaryAttack + 1.5f;
 		return;
 	}
 
@@ -647,7 +647,7 @@ void CHgun::ZapGun()
                                 else
 				{
                                         m_iFirePhase = HGUN_ZAP;
-                                        m_fNextPhaseTime = gpGlobals->time + .1;
+                                        m_fNextPhaseTime = gpGlobals->time + 0.1f;
 				}
 			}
 			break;
@@ -663,13 +663,13 @@ void CHgun::ZapGun()
 			m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
 
 			m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] -= 4;
-			m_flRechargeTime = gpGlobals->time + 0.5;
+			m_flRechargeTime = gpGlobals->time + 0.5f;
 			m_pPlayer->pev->punchangle.x = RANDOM_FLOAT( 0, 2 );
 			break;
                 case HGUN_ZAP_DONE:
 			ClearBeams();
-			m_flNextPrimaryAttack = gpGlobals->time + .25;
-			m_flTimeWeaponIdle = gpGlobals->time + .1;
+			m_flNextPrimaryAttack = gpGlobals->time + 0.25f;
+			m_flTimeWeaponIdle = gpGlobals->time + 0.1f;
 			break;
 	}
 }
@@ -691,7 +691,7 @@ void CHgun::MultiZapGun()
 		UTIL_ScreenFade( this, Vector( 180, 255, 96 ), 2, 0.5, 128, FFADE_IN ); 
 		m_pPlayer->TakeDamage( m_pPlayer->pev, m_pPlayer->pev, 100, DMG_SHOCK );
 		EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_WEAPON, "debris/zap4.wav", 1, ATTN_NORM, 0, 100 + m_iBeams * 10 );
-		m_flNextPrimaryAttack = m_flNextPrimaryAttack + 1.5;
+		m_flNextPrimaryAttack = m_flNextPrimaryAttack + 1.5f;
 		return;
 	}
 
@@ -715,7 +715,7 @@ void CHgun::MultiZapGun()
 				}
 				else
 					m_iFirePhase = HGUN_ZAP;
-					m_fNextPhaseTime = gpGlobals->time + .1;
+					m_fNextPhaseTime = gpGlobals->time + 0.1f;
 			}
 			break;
                 case HGUN_ZAP:
@@ -740,13 +740,13 @@ void CHgun::MultiZapGun()
                         m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
 
                         m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] -= 12;
-                        m_flRechargeTime = gpGlobals->time + 0.5;
+                        m_flRechargeTime = gpGlobals->time + 0.5f;
 			m_pPlayer->pev->punchangle.x = RANDOM_FLOAT( 0, 2 );
                         break;
                 case HGUN_ZAP_DONE:
                         ClearBeams();
-                        m_flNextPrimaryAttack = gpGlobals->time + .25;
-                        m_flTimeWeaponIdle = gpGlobals->time + .1;
+                        m_flNextPrimaryAttack = gpGlobals->time + 0.25f;
+                        m_flTimeWeaponIdle = gpGlobals->time + 0.1f;
                         break;
         }
 }
@@ -819,7 +819,7 @@ void CHgun::SquidSpit( void )
 		iSpitSpeed = 80;
 	}
 
-	m_flNextPrimaryAttack = gpGlobals->time + .25;
+	m_flNextPrimaryAttack = gpGlobals->time + 0.25f;
 
 	// spew the spittle temporary ents.
 	MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, vecSrc );
@@ -847,7 +847,7 @@ void CHgun::SquidSpit( void )
         }
 
 	m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] -= 3;	
-	m_flRechargeTime = gpGlobals->time + 0.5;
+	m_flRechargeTime = gpGlobals->time + 0.5f;
 
 	m_pPlayer->m_iWeaponVolume = NORMAL_GUN_VOLUME;
 	m_pPlayer->m_iWeaponFlash = DIM_GUN_FLASH;
@@ -896,7 +896,7 @@ void CHgun::LaunchSnark( void )
 		iSpitSpeed = 80;
 	}
 
-	m_flNextPrimaryAttack = gpGlobals->time + .4;
+	m_flNextPrimaryAttack = gpGlobals->time + 0.4f;
 
 	// spew the spittle temporary ents.
 	MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, vecSrc );
@@ -924,7 +924,7 @@ void CHgun::LaunchSnark( void )
 	}
 
 	m_pPlayer->m_rgAmmo[m_pPlayer->GetAmmoIndex( "Snarks" )] -= 1;	
-	m_flRechargeTime = gpGlobals->time + 0.5;
+	m_flRechargeTime = gpGlobals->time + 0.5f;
 
 	m_pPlayer->m_iWeaponVolume = NORMAL_GUN_VOLUME;
 	m_pPlayer->m_iWeaponFlash = DIM_GUN_FLASH;

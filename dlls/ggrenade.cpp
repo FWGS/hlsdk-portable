@@ -162,7 +162,7 @@ void CGrenade::MegaSmoke( void )
 			WRITE_COORD( pev->origin.z - 50 );
 			WRITE_COORD( pev->origin.x );
 			WRITE_COORD( pev->origin.y );
-			WRITE_COORD( pev->origin.z - 50 + ( pev->dmg * 2.5 ) );
+			WRITE_COORD( pev->origin.z - 50 + ( pev->dmg * 2.5f ) );
 			WRITE_SHORT( g_sModelIndexLaser );
 			WRITE_BYTE( 0 );	// start frame?	
 			WRITE_BYTE( 10 );	// rame rate?
@@ -199,12 +199,12 @@ void CGrenade::MegaSmoke( void )
 			WRITE_COORD( pev->origin.y );
 			WRITE_COORD( pev->origin.z );
 			WRITE_SHORT( g_sModelIndexSmoke );
-			WRITE_BYTE( ( pev->dmg - 50 ) * 0.80 ); // scale * 10
+			WRITE_BYTE( ( pev->dmg - 50 ) * 0.8f ); // scale * 10
 			WRITE_BYTE( 12 ); // framerate
 		MESSAGE_END();
 	}
 
-	pev->dmg *= .80;
+	pev->dmg *= 0.8f;
 	pev->origin.z += pev->dmg / 2;
 
 	if( m_iMegaSmokeFrame < 4 )
@@ -225,7 +225,7 @@ void CGrenade::MegaSmoke( void )
 			{
 				WRITE_SHORT( g_sModelIndexWExplosion );
 			}
-			WRITE_BYTE( ( pev->dmg - 50 ) * .60 ); // scale * 10
+			WRITE_BYTE( ( pev->dmg - 50 ) * 0.6f ); // scale * 10
 			WRITE_BYTE( 15 ); // framerate
 			WRITE_BYTE( TE_EXPLFLAG_NONE );
 		MESSAGE_END();
@@ -252,7 +252,7 @@ void CGrenade::MegaSmoke( void )
 				Create( "spark_shower", pev->origin, Vector( 0, 0, 1 ), NULL );
 		}
 	}
-	pev->nextthink = gpGlobals->time + 0.1;
+	pev->nextthink = gpGlobals->time + 0.1f;
 
 	if( m_iMegaSmokeFrame == 4 )
 		UTIL_Remove( this );

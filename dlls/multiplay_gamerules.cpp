@@ -655,7 +655,7 @@ void CHalfLifeMultiplay::PlayerSpawn( CBasePlayer *pPlayer )
 	}
 
 	// BMOD Edit - spawn kills
-	pPlayer->m_fSpawnTimeStamp = gpGlobals->time + .1;
+	pPlayer->m_fSpawnTimeStamp = gpGlobals->time + 0.1f;
 	pPlayer->pev->rendermode = kRenderTransAdd;
 	pPlayer->pev->renderfx = kRenderFxHologram;
 	pPlayer->pev->renderamt = 255;
@@ -967,7 +967,7 @@ void CHalfLifeMultiplay::DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, 
 					g_engfuncs.pfnInfoKeyValue( g_engfuncs.pfnGetInfoKeyBuffer( ENT( pKiller ) ), "model" ),
 					(int)bm_bantime.value );
 				( (CBasePlayer *)Killer )->m_bBanMe = TRUE;
-				( (CBasePlayer *)Killer )->m_fMessageTimer = gpGlobals->time + .1;
+				( (CBasePlayer *)Killer )->m_fMessageTimer = gpGlobals->time + 0.1f;
 			}	
 		}
 		// BMOD End - Spawn kills
@@ -1005,7 +1005,7 @@ void CHalfLifeMultiplay::DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, 
 					g_engfuncs.pfnInfoKeyValue( g_engfuncs.pfnGetInfoKeyBuffer( ENT( pKiller ) ), "model" ),
 					(int)bm_bantime.value );
 				( (CBasePlayer *)Killer )->m_bBanMe = TRUE;
-				( (CBasePlayer *)Killer )->m_fMessageTimer = gpGlobals->time + .1;
+				( (CBasePlayer *)Killer )->m_fMessageTimer = gpGlobals->time + 0.1f;
 			}
 		}
 		// BMOD End - Type kills

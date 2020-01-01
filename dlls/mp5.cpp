@@ -249,7 +249,7 @@ void CMP5::SecondaryAttack( void )
 
 	// BMOD Begin - mp5 mod
 	if( bm_mp5_mod.value )
-		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1.5.0f;
+		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1.5f;
 	else
 		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1.0f;
 	// BMOD End - mp5 mod

@@ -91,16 +91,16 @@ void CTripSnarkGrenade :: Spawn( void )
 	if (pev->spawnflags & 1)
 	{
 		// power up quickly
-		m_flPowerUp = gpGlobals->time + 1.0;
+		m_flPowerUp = gpGlobals->time + 1.0f;
 	}
 	else
 	{
 		// power up in 2.5 seconds
-		m_flPowerUp = gpGlobals->time + 2.5;
+		m_flPowerUp = gpGlobals->time + 2.5f;
 	}
 
 	SetThink( &CTripSnarkGrenade::PowerupThink );
-	pev->nextthink = gpGlobals->time + 0.2;
+	pev->nextthink = gpGlobals->time + 0.2f;
 
 	pev->takedamage = DAMAGE_YES;
 	// pev->dmg = gSkillData.plrDmgTripmine;
@@ -141,7 +141,7 @@ void CTripSnarkGrenade :: WarningThink( void  )
 
 	// set to power up
 	SetThink( &CTripSnarkGrenade::PowerupThink );
-	pev->nextthink = gpGlobals->time + 1.0;
+	pev->nextthink = gpGlobals->time + 1.0f;
 }
 
 
@@ -158,11 +158,11 @@ void CTripSnarkGrenade :: PowerupThink( void  )
 		if (tr.fStartSolid || (oldowner && tr.pHit == oldowner))
 		{
 			pev->owner = oldowner;
-			m_flPowerUp += 0.1;
-			pev->nextthink = gpGlobals->time + 0.1;
+			m_flPowerUp += 0.1f;
+			pev->nextthink = gpGlobals->time + 0.1f;
 			return;
 		}
-		if (tr.flFraction < 1.0)
+		if (tr.flFraction < 1.0f)
 		{
 			pev->owner = tr.pHit;
 			m_hOwner = CBaseEntity::Instance( pev->owner );
@@ -174,8 +174,8 @@ void CTripSnarkGrenade :: PowerupThink( void  )
 			STOP_SOUND( ENT(pev), CHAN_VOICE, "weapons/mine_deploy.wav" );
 			STOP_SOUND( ENT(pev), CHAN_BODY, "weapons/mine_charge.wav" );
 			SetThink( &CBaseEntity::SUB_Remove );
-			pev->nextthink = gpGlobals->time + 0.1;
-			ALERT( at_console, "WARNING:Tripmine at %.0f, %.0f, %.0f removed\n", pev->origin.x, pev->origin.y, pev->origin.z );
+			pev->nextthink = gpGlobals->time + 0.1f;
+			ALERT( at_console, "WARNING:Tripmine at %.0f, %.0f, %.0f removed\n", (double)pev->origin.x, (double)pev->origin.y, (double)pev->origin.z );
 			KillBeam();
 			return;
 		}
@@ -189,7 +189,7 @@ void CTripSnarkGrenade :: PowerupThink( void  )
 		pMine->pev->spawnflags |= SF_NORESPAWN;
 		SetThink( &CBaseEntity::SUB_Remove );
 		KillBeam();
-		pev->nextthink = gpGlobals->time + 0.1;
+		pev->nextthink = gpGlobals->time + 0.1f;
 		return;
 
 		/*
@@ -213,7 +213,7 @@ void CTripSnarkGrenade :: PowerupThink( void  )
 		// play enabled sound
         	EMIT_SOUND_DYN( ENT(pev), CHAN_VOICE, "squeek/sqk_deploy1.wav", 0.5, ATTN_NORM, 1.0, 75 );
 	}
-	pev->nextthink = gpGlobals->time + 0.1;
+	pev->nextthink = gpGlobals->time + 0.1f;
 }
 
 
@@ -239,7 +239,7 @@ void CTripSnarkGrenade :: MakeBeam( void )
 
 	// set to follow laser spot
 	SetThink( &CTripSnarkGrenade::BeamBreakThink );
-	pev->nextthink = gpGlobals->time + 0.1;
+	pev->nextthink = gpGlobals->time + 0.1f;
 
 	Vector vecTmpEnd = pev->origin + m_vecDir * 2048 * m_flBeamLength;
 
@@ -283,7 +283,7 @@ void CTripSnarkGrenade :: BeamBreakThink( void  )
 			m_hOwner = CBaseEntity::Instance( tr.pHit );	// reset owner too
 	}
 
-	if (fabs( m_flBeamLength - tr.flFraction ) > 0.001)
+	if (fabs( m_flBeamLength - tr.flFraction ) > 0.001f)
 	{
 		bBlowup = 1;
 	}
@@ -309,7 +309,7 @@ void CTripSnarkGrenade :: BeamBreakThink( void  )
 		return;
 	}
 
-	pev->nextthink = gpGlobals->time + 0.1;
+	pev->nextthink = gpGlobals->time + 0.1f;
 }
 
 int CTripSnarkGrenade :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )
@@ -319,7 +319,7 @@ int CTripSnarkGrenade :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAtta
 		// disable
 		// Create( "weapon_tripsnark", pev->origin + m_vecDir * 24, pev->angles );
 		SetThink( &CBaseEntity::SUB_Remove );
-		pev->nextthink = gpGlobals->time + 0.1;
+		pev->nextthink = gpGlobals->time + 0.1f;
 		KillBeam();
 		return FALSE;
 	}
@@ -337,7 +337,7 @@ void CTripSnarkGrenade::Killed( entvars_t *pevAttacker, int iGib )
 	}
 
 	SetThink( &CTripSnarkGrenade::DelayDeathThink );
-	pev->nextthink = gpGlobals->time + RANDOM_FLOAT( 0.1, 0.3 );
+	pev->nextthink = gpGlobals->time + RANDOM_FLOAT( 0.1f, 0.3f );
 
 	EMIT_SOUND( ENT(pev), CHAN_BODY, "common/null.wav", 0.5, ATTN_NORM ); // shut off chargeup
 }
@@ -352,7 +352,7 @@ void CTripSnarkGrenade::Explode( TraceResult *pTrace )
         pev->takedamage = DAMAGE_NO;
 
         // Pull out of the wall a bit
-        if ( pTrace->flFraction != 1.0 )
+        if ( pTrace->flFraction != 1.0f )
         {
                 pev->origin = pTrace->vecEndPos + (pTrace->vecPlaneNormal * 20);
         }
@@ -381,14 +381,14 @@ void CTripSnarkGrenade::Explode( TraceResult *pTrace )
 
 	// Tell the mine what do do for the next little while.
 	SetThink( &CTripSnarkGrenade::RiftThink );
-	pev->nextthink = gpGlobals->time + 0.1;
-	m_RiftTime = gpGlobals->time + 3;
+	pev->nextthink = gpGlobals->time + 0.1f;
+	m_RiftTime = gpGlobals->time + 3.0f;
 }
 
 void CTripSnarkGrenade::RiftThink( void )
 {
 	// Setup next think time
-	pev->nextthink = gpGlobals->time + 0.1;
+	pev->nextthink = gpGlobals->time + 0.1f;
 
 	// Make a lightning strike
 	Vector vecEnd;
@@ -478,9 +478,9 @@ BOOL CTripSnarkGrenade::IsSpawnMine()
 
 			UTIL_TraceLine( pEntity->pev->origin, pEntity->pev->origin - Vector(0,0,1024), ignore_monsters, ENT(pev), &tr);
 			Vector vecTop = pEntity->pev->origin + Vector(0,0,36);
-			float height = fabs(vecTop.z - tr.vecEndPos.z) / 2;
+			float height = fabs(vecTop.z - tr.vecEndPos.z) * 0.5f;
 
-			if (UTIL_OBB_LineTest(vecSrc, vecSpot, Vector(vecTop.x, vecTop.y, (vecTop.z + tr.vecEndPos.z) / 2), Vector(16,16,height) ))
+			if (UTIL_OBB_LineTest(vecSrc, vecSpot, Vector(vecTop.x, vecTop.y, (vecTop.z + tr.vecEndPos.z) * 0.5f), Vector(16,16,height) ))
 				result = TRUE;
 		}
 	}

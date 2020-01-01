@@ -51,7 +51,7 @@ void CCamPoint::Spawn( void )
 	pev->rendermode = kRenderTransTexture;
 
 	SetThink( &CCamPoint::Think );
-	pev->nextthink = gpGlobals->time + 0.1;
+	pev->nextthink = gpGlobals->time + 0.1f;
 }
 
 void CCamPoint::Think( void )
@@ -68,7 +68,7 @@ void CCamPoint::Think( void )
 		) {
 		// UTIL_ClientPrintAll( HUD_PRINTTALK, "<SERVER> Camera point destroyed.\n");
 		UTIL_Remove( this );
-		pev->nextthink = gpGlobals->time + .1;
+		pev->nextthink = gpGlobals->time + 0.1f;
 		return;
 	}
 
@@ -78,5 +78,5 @@ void CCamPoint::Think( void )
 						0), 
 
 	// Wait until it's time to think again.
-	pev->nextthink = gpGlobals->time + 0.01;
+	pev->nextthink = gpGlobals->time + 0.01f;
 }

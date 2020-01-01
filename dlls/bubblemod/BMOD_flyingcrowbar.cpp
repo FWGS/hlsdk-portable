@@ -62,7 +62,7 @@ void CFlyingCrowbar::Spawn( )
 
    // Set the think funtion. 
    SetThink( &CFlyingCrowbar::BubbleThink );
-   pev->nextthink = gpGlobals->time + 0.25;
+   pev->nextthink = gpGlobals->time + 0.25f;
 
    // Set the touch function.
    SetTouch( &CFlyingCrowbar::SpinTouch );
@@ -146,7 +146,7 @@ void CFlyingCrowbar::SpinTouch( CBaseEntity *pOther )
    //
    // REMOVE THIS IF YOU ARE NOT USING THE RUNE CODE
    if (m_pPlayer->m_RuneFlags == RUNE_CROWBAR)
-      pWeaponBox->pev->nextthink = gpGlobals->time + 3;
+      pWeaponBox->pev->nextthink = gpGlobals->time + 3.0f;
    // *** End BubbleMod Rune Code ***
 
    // Get the unit vector in the direction of motion.
@@ -164,7 +164,7 @@ void CFlyingCrowbar::SpinTouch( CBaseEntity *pOther )
 
    // Remove this flying_crowbar from the world.
    SetThink( &CBaseEntity::SUB_Remove );
-   pev->nextthink = gpGlobals->time + .1;
+   pev->nextthink = gpGlobals->time + 0.1f;
 }
 
 void CFlyingCrowbar::BubbleThink( void )
@@ -175,7 +175,7 @@ void CFlyingCrowbar::BubbleThink( void )
    pev->owner = NULL;
 
    // Only think every .25 seconds. 
-   pev->nextthink = gpGlobals->time + 0.25;
+   pev->nextthink = gpGlobals->time + 0.25f;
 
    // Make a whooshy sound. 
    EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "weapons/cbar_miss1.wav", 
@@ -183,5 +183,5 @@ void CFlyingCrowbar::BubbleThink( void )
 
    // If the crowbar enters water, make some bubbles. 
    if (pev->waterlevel)
-	   UTIL_BubbleTrail( pev->origin - pev->velocity * 0.1, pev->origin, 1 );
+	   UTIL_BubbleTrail( pev->origin - pev->velocity * 0.1f, pev->origin, 1 );
 }

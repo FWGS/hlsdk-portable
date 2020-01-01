@@ -404,7 +404,7 @@ void CCrowbar::SecondaryAttack()
 
 		// Control the speed of the next crowbar toss if
 		// this is a rune.
-		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + .5;
+		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5f;
 
 		// Crowbar Rune?
 		if( m_pPlayer->m_RuneFlags != RUNE_CROWBAR )

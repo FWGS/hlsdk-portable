@@ -44,7 +44,7 @@ BOOL CTripmineGrenade::BMOD_IsSpawnMine()
 	TraceResult	tr;
 	Vector vecSpot;
 	Vector vecSrc = pev->origin;
-	float flRadius = pev->dmg * 2.5;
+	float flRadius = pev->dmg * 2.5f;
 
 	int bInWater = (UTIL_PointContents ( vecSrc ) == CONTENTS_WATER);
 
@@ -69,9 +69,9 @@ BOOL CTripmineGrenade::BMOD_IsSpawnMine()
 
 			UTIL_TraceLine( pEntity->pev->origin, pEntity->pev->origin - Vector(0,0,1024), ignore_monsters, ENT(pev), &tr);
 			Vector vecTop = pEntity->pev->origin + Vector(0,0,36);
-			float height = fabs(vecTop.z - tr.vecEndPos.z) / 2;
+			float height = fabs(vecTop.z - tr.vecEndPos.z) * 0.5f;
 
-			if (UTIL_OBB_LineTest(vecSrc, vecSpot, Vector(vecTop.x, vecTop.y, (vecTop.z + tr.vecEndPos.z) / 2), Vector(16,16,height) ))
+			if (UTIL_OBB_LineTest(vecSrc, vecSpot, Vector(vecTop.x, vecTop.y, (vecTop.z + tr.vecEndPos.z) * 0.5f), Vector(16,16,height) ))
 				result = TRUE;
 		}
 	}
@@ -81,7 +81,7 @@ BOOL CTripmineGrenade::BMOD_IsSpawnMine()
 void CTripmineGrenade::FlashBang( void )
 {
 #define FLASH_RANGE 600
-	pev->nextthink = gpGlobals->time + 0.3;
+	pev->nextthink = gpGlobals->time + 0.3f;
 	SetThink( &CTripmineGrenade::Smoke );
 
 	// Find all players in range
@@ -101,7 +101,7 @@ void CTripmineGrenade::FlashBang( void )
 
 			// Trace a small line from the trip out to the player.
 			UTIL_TraceLine ( pev->origin, vecSpot, dont_ignore_monsters, ENT(pev), &tr );
-			if (tr.flFraction == 1.0 || tr.pHit == pEntity->edict())
+			if (tr.flFraction == 1.0f || tr.pHit == pEntity->edict())
 			{
 				range = (vecSpot - pev->origin).Length();
 				amount = range 

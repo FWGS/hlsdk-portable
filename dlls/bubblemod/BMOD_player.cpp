@@ -132,7 +132,7 @@ void CBasePlayer::StartObserver( Vector vecPosition, Vector vecViewAngle )
 	 //  WRITE_STRING( "" );
 	 //MESSAGE_END();
 
-	 m_fMsgTimer = gpGlobals->time + .5;
+	 m_fMsgTimer = gpGlobals->time + 0.5f;
 	 m_bSentMsg = FALSE;
 }
 
@@ -246,14 +246,14 @@ void CBasePlayer::Observer_HandleButtons()
 				Observer_SetMode( OBS_CHASE_FREE );
 			else
 				Observer_SetMode( OBS_ROAMING );
-			m_fMsgTimer = gpGlobals->time + 0.2;
+			m_fMsgTimer = gpGlobals->time + 0.2f;
 		}
 
 		// Attack2 cycles player targets
 		if ( pev->button & IN_ATTACK2 && pev->iuser1 != OBS_ROAMING )
 		{
 			Observer_FindNextPlayer( false );
-			m_fMsgTimer = gpGlobals->time + 0.2;
+			m_fMsgTimer = gpGlobals->time + 0.2f;
 		}
 
 		// Attack Spawns
@@ -262,7 +262,7 @@ void CBasePlayer::Observer_HandleButtons()
 		{
 //			g_engfuncs.pfnServerPrint( "Player spawned from Obs!\n" );
 			StopObserver();
-			m_fMsgTimer = gpGlobals->time + 0.2;
+			m_fMsgTimer = gpGlobals->time + 0.2f;
 		}		
 	}
 
@@ -431,8 +431,8 @@ void CBasePlayer::BMOD_PreThink(void)
 				WRITE_BYTE( 255  ); // alpha
 			MESSAGE_END();
 		}
-		float fCos = cos( gpGlobals->time * 4.00) * 8;
-		float fSin = sin( gpGlobals->time * 4.00) * 8;
+		float fCos = cos( gpGlobals->time * 4.0f) * 8;
+		float fSin = sin( gpGlobals->time * 4.0f) * 8;
         MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, pev->origin );
                 WRITE_BYTE( TE_BUBBLES );
                 WRITE_COORD( pev->origin.x + fCos);  
@@ -484,7 +484,7 @@ void CBasePlayer::BMOD_Think( void )
 	// counts tenths of seconds. 
 	if (m_fMessageTimer < gpGlobals->time) 
 	{
-		m_fMessageTimer = gpGlobals->time + .1;
+		m_fMessageTimer = gpGlobals->time + 0.1f;
 		m_iMessageCounter++;
 		m_iMessageFire = TRUE;
 	}
@@ -611,7 +611,7 @@ void CBasePlayer::BMOD_Identify( void )
 					szExtra
 					) );
 
-		timer = gpGlobals->time + .5;
+		timer = gpGlobals->time + 0.5f;
 		LastIdentPlayer = (CBasePlayer *)pOther;
 	}
 	else if (!pOther->IsPlayer()) {
@@ -697,7 +697,7 @@ void CBasePlayer::BMOD_ResetTypeKill( void )
 		}
 		m_bTypeMode = FALSE;
 		// EnableControl(TRUE);
-		m_flTypeKillStamp = gpGlobals->time + 4;
+		m_flTypeKillStamp = gpGlobals->time + 4.0f;
 	}
 	return;
 }

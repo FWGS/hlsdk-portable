@@ -265,26 +265,21 @@ void CShotgun::SecondaryAttack( void )
 	//if( m_iClip != 0 )
 		m_flPumpTime = gpGlobals->time + 0.95f;
 
-<<<<<<< HEAD
-	m_flNextPrimaryAttack = GetNextAttackDelay( 1.5 );
-	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1.5;
+	m_flNextPrimaryAttack = GetNextAttackDelay( 1.5f );
+	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1.5f;
 
 	if( bm_shotty_mod.value )
 	{
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + .9;
-		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + .9;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.9f;
+		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.9f;
 	}
 
 	if( m_pPlayer->m_RuneFlags == RUNE_SHOTGUN )
 	{
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5;
-		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5f;
+		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5f;
 	}
 
-=======
-	m_flNextPrimaryAttack = GetNextAttackDelay( 1.5f );
-	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1.5f;
->>>>>>> master
 	if( m_iClip != 0 )
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 6.0f;
 	else

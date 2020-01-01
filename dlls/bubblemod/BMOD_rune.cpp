@@ -65,7 +65,7 @@ void CRune::Spawn( void )
 
 	if (DROP_TO_FLOOR(ENT(pev)) == 0)
 	{
-		ALERT(at_error, "Item %s fell out of level at %f,%f,%f", STRING( pev->classname ), pev->origin.x, pev->origin.y, pev->origin.z);
+		ALERT(at_error, "Item %s fell out of level at %f,%f,%f", STRING( pev->classname ), (double)pev->origin.x, (double)pev->origin.y, (double)pev->origin.z);
 		UTIL_Remove( this );
 		return;
 	}
@@ -84,10 +84,10 @@ void CRune::RuneTouch( CBaseEntity *pOther )
 		TraceResult tr;
 		UTIL_TraceLine( pev->origin, pev->origin - Vector(0,0,10), ignore_monsters, edict(), &tr );
 
-		if ( tr.flFraction < 1.0 )
+		if ( tr.flFraction < 1.0f )
 		{
 			// add a bit of static friction
-			pev->velocity = pev->velocity * 0.5;
+			pev->velocity = pev->velocity * 0.5f;
 		}
 		return;
 	}
@@ -206,7 +206,7 @@ void CRune::Materialize( void )
 		SetTouch( &CRune::RuneTouch );
 	}
 	// EMIT_SOUND_DYN( ENT(pev), CHAN_WEAPON, "buttons/blip2.wav", 1, ATTN_NORM, 0, 150 );
-	pev->nextthink = gpGlobals->time + 2;
+	pev->nextthink = gpGlobals->time + 2.0f;
 }
 
 void CRune::Precache( void )
@@ -243,7 +243,7 @@ class CCrowbarRune : public CRune
 			float respawn = Q_max(1, CVAR_GET_FLOAT("bm_rune_cbar_r"));
 
 			//RuneMsg( pPlayer, MSG_RUNE_CROWBAR, m_vRuneColor, time - .5);
-			PrintMessage( pPlayer, BMOD_CHAN_RUNE, m_vRuneColor, Vector (.1, time - .5, .1), "SUPER CROWBAR\nIncreased crowbar damage / infinite throws.");
+			PrintMessage( pPlayer, BMOD_CHAN_RUNE, m_vRuneColor, Vector (0.1f, time - 0.5f, 0.1f), "SUPER CROWBAR\nIncreased crowbar damage / infinite throws.");
 
 			EMIT_SOUND( pPlayer->edict(), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM ); 
 			pPlayer->m_RuneFlags = RUNE_CROWBAR;
@@ -281,7 +281,7 @@ class CGrenadeRune : public CRune
 			float time = Q_max(1, CVAR_GET_FLOAT("bm_rune_gren_t"));
 			float respawn = Q_max(1, CVAR_GET_FLOAT("bm_rune_gren_r"));
 
-			PrintMessage( pPlayer, BMOD_CHAN_RUNE, m_vRuneColor, Vector (.1, time - .5, .1), "MEGA GRENADE\nIncreased hand grenade damage.");
+			PrintMessage( pPlayer, BMOD_CHAN_RUNE, m_vRuneColor, Vector (0.1f, time - 0.5f, 0.1f), "MEGA GRENADE\nIncreased hand grenade damage.");
 			EMIT_SOUND( pPlayer->edict(), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM ); 
 			pPlayer->m_RuneFlags = RUNE_GRENADE;
 			pPlayer->m_RuneTime = gpGlobals->time + time;
@@ -318,7 +318,7 @@ class CHealthRune : public CRune
 		{
 			float time = Q_max(1, CVAR_GET_FLOAT("bm_rune_health_t"));
 			float respawn = Q_max(1, CVAR_GET_FLOAT("bm_rune_health_r"));
-			PrintMessage( pPlayer, BMOD_CHAN_RUNE, m_vRuneColor, Vector (.1, time - .5, .1), "DOUBLE HEALTH PICKUPS\nMed packs / machines give 2X health. Fast Heal on Bubble Gun.");
+			PrintMessage( pPlayer, BMOD_CHAN_RUNE, m_vRuneColor, Vector (0.1f, time - 0.5f, 0.1f), "DOUBLE HEALTH PICKUPS\nMed packs / machines give 2X health. Fast Heal on Bubble Gun.");
 
 			EMIT_SOUND( pPlayer->edict(), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM ); 
 			pPlayer->m_RuneFlags = RUNE_HEALTH;
@@ -356,7 +356,7 @@ class CBatteryRune : public CRune
 			float time = Q_max(1, CVAR_GET_FLOAT("bm_rune_armor_t"));
 			float respawn = Q_max(1, CVAR_GET_FLOAT("bm_rune_armor_r"));
 
-			PrintMessage( pPlayer, BMOD_CHAN_RUNE, m_vRuneColor, Vector (.1, time - .5, .1), "DOUBLE ARMOR PICKUPS\nArmor batteries / machines give 2X armor. Bubble Gun gives armor.");
+			PrintMessage( pPlayer, BMOD_CHAN_RUNE, m_vRuneColor, Vector (0.1f, time - 0.5f, 0.1f), "DOUBLE ARMOR PICKUPS\nArmor batteries / machines give 2X armor. Bubble Gun gives armor.");
 			EMIT_SOUND( pPlayer->edict(), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM ); 
 			pPlayer->m_RuneFlags = RUNE_BATTERY;
 			pPlayer->m_RuneTime = gpGlobals->time + time;
@@ -393,7 +393,7 @@ class C357Rune : public CRune
 			float time = Q_max(1, CVAR_GET_FLOAT("bm_rune_357_t"));
 			float respawn = Q_max(1, CVAR_GET_FLOAT("bm_rune_357_r"));
 
-			PrintMessage( pPlayer, BMOD_CHAN_RUNE, m_vRuneColor, Vector (.1, time - .5, .1), "SUPER MAGNUM\nIncreased magnum damage.");
+			PrintMessage( pPlayer, BMOD_CHAN_RUNE, m_vRuneColor, Vector (0.1f, time - 0.5f, 0.1f), "SUPER MAGNUM\nIncreased magnum damage.");
 			EMIT_SOUND( pPlayer->edict(), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM ); 
 			pPlayer->m_RuneFlags = RUNE_357;
 			pPlayer->m_RuneTime = gpGlobals->time + time;
@@ -430,7 +430,7 @@ class CShotgunRune : public CRune
 			float time = Q_max(1, CVAR_GET_FLOAT("bm_rune_shotty_t"));
 			float respawn = Q_max(1, CVAR_GET_FLOAT("bm_rune_shotty_r"));
 
-			PrintMessage( pPlayer, BMOD_CHAN_RUNE, m_vRuneColor, Vector (.1, time - .5, .1), "SUPER SHOTGUN\nIncreased shotgun speed / fast reload.");
+			PrintMessage( pPlayer, BMOD_CHAN_RUNE, m_vRuneColor, Vector (0.1f, time - 0.5f, 0.1f), "SUPER SHOTGUN\nIncreased shotgun speed / fast reload.");
 			EMIT_SOUND( pPlayer->edict(), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM ); 
 			pPlayer->m_RuneFlags = RUNE_SHOTGUN;
 			pPlayer->m_RuneTime = gpGlobals->time + time;

@@ -77,16 +77,16 @@ void CZapRift::Spawn( void )
         m_pSprite->pev->spawnflags |= SF_SPRITE_TEMPORARY;
 
         SetThink( &CZapRift::Animate );
-        pev->nextthink = gpGlobals->time + 0.1;
-        m_fLifeSpan = gpGlobals->time + 3;
-        m_fNextElectrify = gpGlobals->time + 0.1;
+        pev->nextthink = gpGlobals->time + 0.1f;
+        m_fLifeSpan = gpGlobals->time + 3.0f;
+        m_fNextElectrify = gpGlobals->time + 0.1f;
 
         EMIT_SOUND_DYN( ENT(pev), CHAN_WEAPON, "debris/zap4.wav", 1, ATTN_NORM, 0,100 );
 }
 
 void CZapRift::Animate( void )
 {
-        pev->nextthink = gpGlobals->time + 0.1;
+        pev->nextthink = gpGlobals->time + 0.1f;
 
 
 
@@ -105,7 +105,7 @@ void CZapRift::Animate( void )
 			pev->effects |= EF_NODRAW;
             m_pSprite->Expand( 10, 100 );        
             SetThink( &CBaseEntity::SUB_Remove );
-			pev->nextthink = gpGlobals->time + 5;
+			pev->nextthink = gpGlobals->time + 5.0f;
         }
 
         if ( m_fNextElectrify < gpGlobals->time )
@@ -164,7 +164,7 @@ void CZapRift::Animate( void )
 
 						// Trace to the target
 						UTIL_TraceLine( pev->origin, pEntity->BodyTarget( pev->origin ) , dont_ignore_monsters, ENT(pev), &tr);
-						if (tr.flFraction == 1.0 || tr.pHit == pEntity->edict())
+						if (tr.flFraction == 1.0f || tr.pHit == pEntity->edict())
 						{
 							ClearMultiDamage( );
 							pEntity->TraceAttack( VARS( pev->owner ), 30, Vector(0,0,1), &tr, DMG_SHOCK | DMG_ALWAYSGIB );
@@ -209,7 +209,7 @@ Vector CZapRift::FindBeam( void )
 		Vector vecMid;
 		float diff = fDist;
 
-		while (diff > 1.0)
+		while (diff > 1.0f)
 		{
 			vecMid = vecMin + (vecMax - vecMin).Normalize() * diff / 2;
 			if 	(UTIL_PointContents(vecMid) == CONTENTS_WATER)	
@@ -256,7 +256,7 @@ void CZapBounce::Spawn( void )
 		m_bFirstZap = TRUE;
 
         SetThink( &CZapBounce::BounceThink );
-        pev->nextthink = gpGlobals->time + 0.2;       
+        pev->nextthink = gpGlobals->time + 0.2f;
 
         EMIT_SOUND_DYN( ENT(pev), CHAN_WEAPON, "debris/zap4.wav", 1, ATTN_NORM, 0,100 );
 }
@@ -266,7 +266,7 @@ void CZapBounce::BounceThink( void )
 		TraceResult tr;
         CBaseEntity *pEntity;
 
-        pev->nextthink = gpGlobals->time + 0.05;       
+        pev->nextthink = gpGlobals->time + 0.05f;
 		
 		// Zap Forward with some randomness.
 		if (!m_bFirstZap) 
@@ -332,7 +332,7 @@ void CZapBounce::BounceThink( void )
 				n = -DotProduct(tr.vecPlaneNormal, m_vecDir);
 
 				Vector r;	
-				r = 2.0 * tr.vecPlaneNormal * n + m_vecDir;
+				r = 2.0f * tr.vecPlaneNormal * n + m_vecDir;
 				m_vecDir = r;
 			}
 			pentIgnore = ENT(pEntity->pev);
@@ -347,14 +347,14 @@ void CZapBounce::BounceThink( void )
 		{
 			// UTIL_ClientPrintAll( HUD_PRINTTALK, "<SERVER> Zap bounce point destroyed.\n");
 			SetThink( &CBaseEntity::SUB_Remove );
-			pev->nextthink = gpGlobals->time + .1;
+			pev->nextthink = gpGlobals->time + 0.1f;
 			return;
 		}
 
 		// split beam?
 		if (RANDOM_LONG(0,100) < 80) 
 		{
-			m_fDamage *= .75;
+			m_fDamage *= 0.75f;
 
 			CZapBounce* pRift = (CZapBounce*)CBaseEntity::Create( "zapbounce", 
 				m_vecStart, 

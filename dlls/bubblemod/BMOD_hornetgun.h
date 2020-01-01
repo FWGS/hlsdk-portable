@@ -17,8 +17,8 @@
 extern cvar_t bm_hornet_mod;
 
 #define 	HGUN_MAX_BEAMS 		6
-#define		HGUN_CHARGE_TIME	.8 / HGUN_MAX_BEAMS
-#define		HGUN_ZAP_TIME		1 
+#define		HGUN_CHARGE_TIME	0.8f / HGUN_MAX_BEAMS
+#define		HGUN_ZAP_TIME		1.0f
 
 class CHgun : public CBasePlayerWeapon
 {
