@@ -144,14 +144,14 @@ void CMP5::PrimaryAttack()
 	if( m_pPlayer->pev->waterlevel == 3 )
 	{
 		PlayEmptySound();
-		m_flNextPrimaryAttack = 0.15;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.15f;
 		return;
 	}
 
 	if( m_iClip <= 0 )
 	{
 		PlayEmptySound();
-		m_flNextPrimaryAttack = 0.15;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.15f;
 		return;
 	}
 
@@ -169,9 +169,9 @@ void CMP5::PrimaryAttack()
 	Vector vecAiming = m_pPlayer->GetAutoaimVector( AUTOAIM_5DEGREES );
 	Vector vecDir;
 #ifdef CLIENT_DLL
-	if( !bIsMultiplayer() )
+	if( bIsMultiplayer() )
 #else
-	if( !g_pGameRules->IsMultiplayer() )
+	if( g_pGameRules->IsMultiplayer() )
 #endif
 	{
 		// optimized multiplayer. Widened to make it easier to hit a moving player
@@ -189,16 +189,16 @@ void CMP5::PrimaryAttack()
 #else
 	flags = 0;
 #endif
-	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usMP5, 0.0, g_vecZero, g_vecZero, vecDir.x, vecDir.y, 0, 0, 0, 0 );
+	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usMP5, 0.0f, g_vecZero, g_vecZero, vecDir.x, vecDir.y, 0, 0, 0, 0 );
 
 	if( !m_iClip && m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0 )
 		// HEV suit - indicate out of ammo condition
 		m_pPlayer->SetSuitUpdate( "!HEV_AMO0", FALSE, 0 );
 
-	m_flNextPrimaryAttack = GetNextAttackDelay( 0.1 );
+	m_flNextPrimaryAttack = GetNextAttackDelay( 0.1f );
 
 	if( m_flNextPrimaryAttack < UTIL_WeaponTimeBase() )
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.1;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.1f;
 
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
 }
@@ -209,7 +209,7 @@ void CMP5::SecondaryAttack( void )
 	if( m_pPlayer->pev->waterlevel == 3 )
 	{
 		PlayEmptySound( );
-		m_flNextPrimaryAttack = 0.15;
+		m_flNextPrimaryAttack = 0.15f;
 		return;
 	}
 
@@ -223,7 +223,7 @@ void CMP5::SecondaryAttack( void )
 	m_pPlayer->m_iWeaponFlash = BRIGHT_GUN_FLASH;
 
 	m_pPlayer->m_iExtraSoundTypes = bits_SOUND_DANGER;
-	m_pPlayer->m_flStopExtraSoundTime = UTIL_WeaponTimeBase() + 0.2;
+	m_pPlayer->m_flStopExtraSoundTime = UTIL_WeaponTimeBase() + 0.2f;
 
 	m_pPlayer->m_rgAmmo[m_iSecondaryAmmoType]--;
 
@@ -234,8 +234,8 @@ void CMP5::SecondaryAttack( void )
 
 	// we don't add in player velocity anymore.
 	CGrenade::ShootContact( m_pPlayer->pev,
-					m_pPlayer->pev->origin + m_pPlayer->pev->view_ofs + gpGlobals->v_forward * 16, 
-					gpGlobals->v_forward * 800 );
+					m_pPlayer->pev->origin + m_pPlayer->pev->view_ofs + gpGlobals->v_forward * 16.0f,
+					gpGlobals->v_forward * 800.0f );
 
 	int flags;
 #if defined( CLIENT_WEAPONS )
@@ -245,16 +245,16 @@ void CMP5::SecondaryAttack( void )
 #endif
 	PLAYBACK_EVENT( flags, m_pPlayer->edict(), m_usMP52 );
 
-	m_flNextPrimaryAttack = GetNextAttackDelay( 1 );
+	m_flNextPrimaryAttack = GetNextAttackDelay( 1.0f );
 
 	// BMOD Begin - mp5 mod
 	if( bm_mp5_mod.value )
-		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1.5;
+		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1.5.0f;
 	else
-		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1;
+		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1.0f;
 	// BMOD End - mp5 mod
 
-	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 5;// idle pretty soon after shooting.
+	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 5.0f;// idle pretty soon after shooting.
 
 	if( !m_pPlayer->m_rgAmmo[m_iSecondaryAmmoType] )
 		// HEV suit - indicate out of ammo condition
@@ -266,7 +266,7 @@ void CMP5::Reload( void )
 	if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0 || m_iClip == MP5_MAX_CLIP )
 		return;
 
-	DefaultReload( MP5_MAX_CLIP, MP5_RELOAD, 1.5 );
+	DefaultReload( MP5_MAX_CLIP, MP5_RELOAD, 1.5f );
 }
 
 void CMP5::WeaponIdle( void )

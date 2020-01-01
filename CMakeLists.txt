@@ -65,6 +65,10 @@ if(64BIT AND CMAKE_SIZEOF_VOID_P EQUAL 4)
 	message(FATAL_ERROR "You enabled XASH_64BIT, but compiler can't create 64 bit code!")
 endif()
 
+# Xash3D FWGS Library Naming Scheme compliance
+# see documentation: https://github.com/FWGS/xash3d-fwgs/blob/master/Documentation/library-naming.md
+include(LibraryNaming)
+
 if(64BIT)
 	message(STATUS "Building for 64 Bit")
 else()
@@ -85,6 +89,12 @@ if(${CMAKE_VERSION} VERSION_LESS "3.0.2")
 		endforeach()
 	endmacro()
 endif()
+
+if(NOT MSVC)
+	#add_compile_options(-Wempty-body) # GCC/Clang flag
+	add_compile_options(-Wreturn-type) # GCC/Clang flag
+endif()
+
 
 if(BUILD_CLIENT)
 	add_subdirectory(cl_dll)

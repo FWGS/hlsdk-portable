@@ -314,7 +314,7 @@ public:
 	float m_flPlayAftershock;
 	float m_flNextAmmoBurn;// while charging, when to absorb another unit of player's ammo?
 
-	//Player ID
+	// Player ID
 	void InitStatusBar( void );
 	void UpdateStatusBar( void );
 	int m_izSBarState[SBAR_END];
@@ -322,6 +322,8 @@ public:
 	float m_flStatusBarDisappearDelay;
 	char m_SbarString0[SBAR_STRING_SIZE];
 	char m_SbarString1[SBAR_STRING_SIZE];
+
+	void SetPrefsFromUserinfo( char *infobuffer );
 
 	float m_flNextChatTime;
 
@@ -374,6 +376,8 @@ public:
 	float m_RuneTime;			// Time at which this rune wears off. 
 
 	// BMOD End - extra player functions
+	int m_iAutoWepSwitch;
+
 	Vector m_vecLastViewAngles;
 
 	bool m_bSentBhopcap; // If false, the player just joined and needs a bhopcap message.

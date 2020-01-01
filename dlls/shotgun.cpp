@@ -125,7 +125,7 @@ void CShotgun::PrimaryAttack()
 	if( m_pPlayer->pev->waterlevel == 3 )
 	{
 		PlayEmptySound();
-		m_flNextPrimaryAttack = GetNextAttackDelay( 0.15 );
+		m_flNextPrimaryAttack = GetNextAttackDelay( 0.15f );
 		return;
 	}
 
@@ -179,27 +179,27 @@ void CShotgun::PrimaryAttack()
 		m_pPlayer->SetSuitUpdate( "!HEV_AMO0", FALSE, 0 );
 
 	//if( m_iClip != 0 )
-		m_flPumpTime = gpGlobals->time + 0.5;
+		m_flPumpTime = gpGlobals->time + 0.5f;
 
-	m_flNextPrimaryAttack = GetNextAttackDelay( 0.75 );
-	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.75;
+	m_flNextPrimaryAttack = GetNextAttackDelay( 0.75f );
+	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.75f;
 
 	if( bm_shotty_mod.value )
 	{
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.6;
-		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.6;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.6f;
+		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.6f;
 	}
 
 	if( m_pPlayer->m_RuneFlags == RUNE_SHOTGUN )
 	{
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.25;
-		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.25;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.25f;
+		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.25f;
 	}
 
 	if( m_iClip != 0 )
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 5.0;
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 5.0f;
 	else
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.75;
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.75f;
 	m_fInSpecialReload = 0;
 }
 
@@ -209,7 +209,7 @@ void CShotgun::SecondaryAttack( void )
 	if( m_pPlayer->pev->waterlevel == 3 )
 	{
 		PlayEmptySound();
-		m_flNextPrimaryAttack = GetNextAttackDelay( 0.15 );
+		m_flNextPrimaryAttack = GetNextAttackDelay( 0.15f );
 		return;
 	}
 
@@ -256,15 +256,16 @@ void CShotgun::SecondaryAttack( void )
 		vecDir = m_pPlayer->FireBulletsPlayer( 12, vecSrc, vecAiming, VECTOR_CONE_10DEGREES, 2048, BULLET_PLAYER_BUCKSHOT, 1, 0, m_pPlayer->pev, m_pPlayer->random_seed );
 	}
 
-	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usDoubleFire, 0.0, g_vecZero, g_vecZero, vecDir.x, vecDir.y, 0, 0, 0, 0 );
+	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usDoubleFire, 0.0f, g_vecZero, g_vecZero, vecDir.x, vecDir.y, 0, 0, 0, 0 );
 
 	if( !m_iClip && m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0 )
 		// HEV suit - indicate out of ammo condition
 		m_pPlayer->SetSuitUpdate( "!HEV_AMO0", FALSE, 0 );
 
 	//if( m_iClip != 0 )
-		m_flPumpTime = gpGlobals->time + 0.95;
+		m_flPumpTime = gpGlobals->time + 0.95f;
 
+<<<<<<< HEAD
 	m_flNextPrimaryAttack = GetNextAttackDelay( 1.5 );
 	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1.5;
 
@@ -280,8 +281,12 @@ void CShotgun::SecondaryAttack( void )
 		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5;
 	}
 
+=======
+	m_flNextPrimaryAttack = GetNextAttackDelay( 1.5f );
+	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1.5f;
+>>>>>>> master
 	if( m_iClip != 0 )
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 6.0;
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 6.0f;
 	else
 		m_flTimeWeaponIdle = 1.5;
 
@@ -302,10 +307,10 @@ void CShotgun::Reload( void )
 	{
 		SendWeaponAnim( SHOTGUN_START_RELOAD );
 		m_fInSpecialReload = 1;
-		m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.6;
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.6;
-		m_flNextPrimaryAttack = GetNextAttackDelay( 1.0 );
-		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1.0;
+		m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.6f;
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.6f;
+		m_flNextPrimaryAttack = GetNextAttackDelay( 1.0f );
+		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1.0f;
 		return;
 	}
 	else if( m_fInSpecialReload == 1 )
@@ -322,8 +327,8 @@ void CShotgun::Reload( void )
 
 		SendWeaponAnim( SHOTGUN_RELOAD );
 
-		m_flNextReload = UTIL_WeaponTimeBase() + 0.5;
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.5;
+		m_flNextReload = UTIL_WeaponTimeBase() + 0.5f;
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.5f;
 	}
 	else
 	{
@@ -379,27 +384,27 @@ void CShotgun::WeaponIdle( void )
 				// play cocking sound
 				EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/scock1.wav", 1, ATTN_NORM, 0, 95 + RANDOM_LONG( 0, 0x1f ) );
 				m_fInSpecialReload = 0;
-				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.5;
+				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.5f;
 			}
 		}
 		else
 		{
 			int iAnim;
 			float flRand = UTIL_SharedRandomFloat( m_pPlayer->random_seed, 0, 1 );
-			if( flRand <= 0.8 )
+			if( flRand <= 0.8f )
 			{
 				iAnim = SHOTGUN_IDLE_DEEP;
-				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + ( 60.0 / 12.0 );// * RANDOM_LONG( 2, 5 );
+				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + ( 60.0f / 12.0f );// * RANDOM_LONG( 2, 5 );
 			}
-			else if( flRand <= 0.95 )
+			else if( flRand <= 0.95f )
 			{
 				iAnim = SHOTGUN_IDLE;
-				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + ( 20.0 / 9.0 );
+				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + ( 20.0f / 9.0f );
 			}
 			else
 			{
 				iAnim = SHOTGUN_IDLE4;
-				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + ( 20.0 / 9.0 );
+				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + ( 20.0f / 9.0f );
 			}
 			SendWeaponAnim( iAnim );
 		}

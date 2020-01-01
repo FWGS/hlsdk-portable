@@ -123,8 +123,8 @@ void CPython::Holster( int skiplocal /* = 0 */ )
 		SecondaryAttack();
 	}
 
-	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 1.0;
-	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
+	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 1.0f;
+	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10.0f, 15.0f );
 	SendWeaponAnim( PYTHON_HOLSTER );
 }
 
@@ -150,7 +150,7 @@ void CPython::SecondaryAttack( void )
 		m_pPlayer->pev->fov = m_pPlayer->m_iFOV = 40;
 	}
 
-	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5;
+	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5f;
 }
 
 void CPython::PrimaryAttack()
@@ -159,7 +159,7 @@ void CPython::PrimaryAttack()
 	if( m_pPlayer->pev->waterlevel == 3 )
 	{
 		PlayEmptySound();
-		m_flNextPrimaryAttack = 0.15;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.15f;
 		return;
 	}
 
@@ -170,7 +170,7 @@ void CPython::PrimaryAttack()
 		else
 		{
 			PlayEmptySound();
-			m_flNextPrimaryAttack = 0.15;
+			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.15f;
 		}
 
 		return;
@@ -206,8 +206,8 @@ void CPython::PrimaryAttack()
 		// HEV suit - indicate out of ammo condition
 		m_pPlayer->SetSuitUpdate( "!HEV_AMO0", FALSE, 0 );
 
-	m_flNextPrimaryAttack = 0.75;
-	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
+	m_flNextPrimaryAttack = 0.75f;
+	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10.0f, 15.0f );
 }
 
 void CPython::Reload( void )
@@ -227,9 +227,9 @@ void CPython::Reload( void )
 #else
 	bUseScope = g_pGameRules->IsMultiplayer();
 #endif
-	if( DefaultReload( PYTHON_MAX_CLIP, PYTHON_RELOAD, 2.0, bUseScope ) )
+	if( DefaultReload( PYTHON_MAX_CLIP, PYTHON_RELOAD, 2.0f, bUseScope ) )
 	{
-		m_flSoundDelay = 1.5;
+		m_flSoundDelay = 1.5f;
 	}
 }
 
@@ -242,8 +242,8 @@ void CPython::WeaponIdle( void )
 	// ALERT( at_console, "%.2f\n", gpGlobals->time - m_flSoundDelay );
 	if( m_flSoundDelay != 0 && m_flSoundDelay <= UTIL_WeaponTimeBase() )
 	{
-		EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_WEAPON, "weapons/357_reload1.wav", RANDOM_FLOAT( 0.8, 0.9 ), ATTN_NORM );
-		m_flSoundDelay = 0;
+		EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_WEAPON, "weapons/357_reload1.wav", RANDOM_FLOAT( 0.8f, 0.9f ), ATTN_NORM );
+		m_flSoundDelay = 0.0f;
 	}
 
 	if( m_flTimeWeaponIdle > UTIL_WeaponTimeBase() )
@@ -251,25 +251,25 @@ void CPython::WeaponIdle( void )
 
 	int iAnim;
 	float flRand = UTIL_SharedRandomFloat( m_pPlayer->random_seed, 0.0f, 1.0f );
-	if( flRand <= 0.5 )
+	if( flRand <= 0.5f )
 	{
 		iAnim = PYTHON_IDLE1;
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + ( 70.0 / 30.0 );
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + ( 70.0f / 30.0f );
 	}
-	else if( flRand <= 0.7 )
+	else if( flRand <= 0.7f )
 	{
 		iAnim = PYTHON_IDLE2;
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + ( 60.0 / 30.0 );
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + ( 60.0f / 30.0f );
 	}
-	else if( flRand <= 0.9 )
+	else if( flRand <= 0.9f )
 	{
 		iAnim = PYTHON_IDLE3;
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + ( 88.0 / 30.0 );
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + ( 88.0f / 30.0f );
 	}
 	else
 	{
 		iAnim = PYTHON_FIDGET;
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + ( 170.0 / 30.0 );
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + ( 170.0f / 30.0f );
 	}
 	
 	int bUseScope = FALSE;
