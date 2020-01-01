@@ -43,19 +43,12 @@ There're dsp projects for Visual Studio 6 in `cl_dll` and `dlls` directories, bu
 
 TODO
 
-### Linux
+### Unix-like
 
-    (cd dlls && make)
-    (cd cl_dll && make)
+To use waf, you need to install python (2.7 minimum)
 
-### OS X
-
-Nothing here.
-
-### FreeBSD
-
-    (cd dlls && gmake CXX=clang++ CC=clang)
-    (cd cl_dll && gmake CXX=clang++ CC=clang)
+    (./waf configure -T release)
+    (./waf)
 
 ### Android
 
@@ -68,9 +61,9 @@ To enable building the goldsource compatible client library add GOLDSOURCE_SUPPO
 
     cmake .. -DGOLDSOURCE_SUPPORT=ON
 
-or when using make without cmake:
+or when using waf:
 
-    make GOLDSOURCE_SUPPORT=1
+     ./waf configure -T release --enable-goldsrc-support
 
 Unlike original client by Valve the resulting client library will not depend on vgui or SDL2 just like the one that's used in FWGS Xash3d.
 
