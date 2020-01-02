@@ -237,7 +237,7 @@ class CItemBattery : public CItem
 			char szcharge[64];
 
 			if( FClassnameIs( pev, "item_armor" ) )
-				pPlayer->pev->armorvalue += gSkillData.batteryCapacity * 1.5;
+				pPlayer->pev->armorvalue += gSkillData.batteryCapacity * 1.5f;
 			else
 				pPlayer->pev->armorvalue += gSkillData.batteryCapacity;
 			pPlayer->pev->armorvalue = Q_min( pPlayer->pev->armorvalue, MAX_NORMAL_BATTERY );

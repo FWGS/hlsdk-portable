@@ -143,18 +143,18 @@ void CZombie::Killed( entvars_t *pevAttacker, int iGib )
 			float height = ( m_hEnemy->pev->origin.z + m_hEnemy->pev->view_ofs.z - pCrab->pev->origin.z );
 			if( height < 4 )
 				height = 4;
-			float speed = sqrt( 1.5 * gravity * height );
+			float speed = sqrt( 1.5f * gravity * height );
 			float time = speed / gravity;
 
 			vecJumpDir = ( m_hEnemy->pev->origin + m_hEnemy->pev->view_ofs - pCrab->pev->origin );
-			vecJumpDir = vecJumpDir * ( 1.0 / time );
+			vecJumpDir = vecJumpDir * ( 1.0f / time );
 
 			vecJumpDir.z = speed;
 
 			float distance = vecJumpDir.Length();
 				
 			if( distance > 100 )
-				vecJumpDir = vecJumpDir * ( 100.0 / distance );
+				vecJumpDir = vecJumpDir * ( 100.0f / distance );
 		}
 		else
 			vecJumpDir = Vector( gpGlobals->v_forward.x, gpGlobals->v_forward.y, gpGlobals->v_up.z ) * 20;

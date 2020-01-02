@@ -34,8 +34,8 @@
 #define		GONOME_TOLERANCE_MELEE1_RANGE	85
 #define		GONOME_TOLERANCE_MELEE2_RANGE	48
 
-#define		GONOME_TOLERANCE_MELEE1_DOT		0.7
-#define		GONOME_TOLERANCE_MELEE2_DOT		0.7
+#define		GONOME_TOLERANCE_MELEE1_DOT		0.7f
+#define		GONOME_TOLERANCE_MELEE2_DOT		0.7f
 
 #define		GONOME_MELEE_ATTACK_RADIUS		70
 
@@ -97,7 +97,7 @@ void CGonomeGuts::Shoot( entvars_t *pevOwner, Vector vecStart, Vector vecVelocit
 	pSpit->pev->owner = ENT( pevOwner );
 
 	pSpit->SetThink( &CSquidSpit::Animate );
-	pSpit->pev->nextthink = gpGlobals->time + 0.1;
+	pSpit->pev->nextthink = gpGlobals->time + 0.1f;
 }
 
 void CGonomeGuts::Touch( CBaseEntity *pOther )
@@ -315,11 +315,11 @@ int CGonome::TakeDamage(entvars_t *pevInflictor, entvars_t *pevAttacker, float f
 	// Take 15% damage from bullets
 	if( bitsDamageType == DMG_BULLET )
 	{
-		Vector vecDir = pev->origin - (pevInflictor->absmin + pevInflictor->absmax) * 0.5;
+		Vector vecDir = pev->origin - (pevInflictor->absmin + pevInflictor->absmax) * 0.5f;
 		vecDir = vecDir.Normalize();
 		float flForce = DamageForce( flDamage );
 		pev->velocity = pev->velocity + vecDir * flForce;
-		flDamage *= 0.15;
+		flDamage *= 0.15f;
 	}
 
 	// HACK HACK -- until we fix this.
@@ -340,7 +340,7 @@ BOOL CGonome::CheckRangeAttack1(float flDot, float flDist)
 		return FALSE;
 	}
 
-	if (flDist > 64 && flDist <= 784 && flDot >= 0.5 && gpGlobals->time >= m_flNextSpitTime)
+	if (flDist > 64 && flDist <= 784 && flDot >= 0.5f && gpGlobals->time >= m_flNextSpitTime)
 	{
 		if (m_hEnemy != 0)
 		{
@@ -354,12 +354,12 @@ BOOL CGonome::CheckRangeAttack1(float flDot, float flDist)
 		if (IsMoving())
 		{
 			// don't spit again for a long time, resume chasing enemy.
-			m_flNextSpitTime = gpGlobals->time + 5;
+			m_flNextSpitTime = gpGlobals->time + 5.0f;
 		}
 		else
 		{
 			// not moving, so spit again pretty soon.
-			m_flNextSpitTime = gpGlobals->time + 0.5;
+			m_flNextSpitTime = gpGlobals->time + 0.5f;
 		}
 
 		return TRUE;
@@ -508,7 +508,7 @@ void CGonome::Spawn()
 	pev->movetype = MOVETYPE_STEP;
 	m_bloodColor = BLOOD_COLOR_GREEN;
 	pev->effects = 0;
-	pev->health = gSkillData.bullsquidHealth * 2;
+	pev->health = gSkillData.bullsquidHealth * 2.0f;
 	m_flFieldOfView = 0.2;// indicates the width of this monster's forward view cone ( as a dotproduct result )
 	m_MonsterState = MONSTERSTATE_NONE;
 

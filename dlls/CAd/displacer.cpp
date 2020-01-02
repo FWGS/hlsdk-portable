@@ -87,7 +87,7 @@ void CDisplacerBall::Spawn(void)
 
 	SetTouch( &CDisplacerBall::Touch );
 	SetThink( &CDisplacerBall::FlyThink );
-	pev->nextthink = gpGlobals->time + 0.2;
+	pev->nextthink = gpGlobals->time + 0.2f;
 	UTIL_SetSize(pev, Vector(0, 0, 0), Vector(0, 0, 0));
 
 	m_iBeams = 0;
@@ -97,7 +97,7 @@ void CDisplacerBall::FlyThink()
 {
 	ArmBeam( -1 );
 	ArmBeam( 1 );
-	pev->nextthink = gpGlobals->time + 0.05;
+	pev->nextthink = gpGlobals->time + 0.05f;
 }
 
 void CDisplacerBall::ArmBeam( int iSide )
@@ -110,16 +110,16 @@ void CDisplacerBall::ArmBeam( int iSide )
 	float flDist = 1.0;
 
 	UTIL_MakeAimVectors( pev->angles );
-	Vector vecSrc = gpGlobals->v_forward * 32.0 + iSide * gpGlobals->v_right * 16.0 + gpGlobals->v_up * 36.0 + pev->origin;
+	Vector vecSrc = gpGlobals->v_forward * 32.0f + iSide * gpGlobals->v_right * 16.0f + gpGlobals->v_up * 36.0f + pev->origin;
 	Vector vecAim = gpGlobals->v_up * RANDOM_FLOAT( -1.0, 1.0 );
-	Vector vecEnd = (iSide * gpGlobals->v_right * RANDOM_FLOAT( 0.0, 1.0 ) + vecAim) * 512.0 + vecSrc;
+	Vector vecEnd = (iSide * gpGlobals->v_right * RANDOM_FLOAT( 0.0, 1.0 ) + vecAim) * 512.0f + vecSrc;
 	UTIL_TraceLine( &vecSrc.x, &vecEnd.x, dont_ignore_monsters, ENT( pev ), &tr );
 
 	if( flDist > tr.flFraction )
 		flDist = tr.flFraction;
 
 	// Couldn't find anything close enough
-	if( flDist == 1.0 )
+	if( flDist == 1.0f )
 		return;
 
 	// The beam might already exist if we've created all beams before.
@@ -458,7 +458,7 @@ void CDisplacer::SecondaryAttack(void)
 
 	SetThink (&CDisplacer::SpinUp);
 
-	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 4.0;
+	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 4.0f;
 	pev->nextthink = gpGlobals->time;
 }
 
@@ -476,7 +476,7 @@ void CDisplacer::PrimaryAttack()
 	m_iFireMode = FIREMODE_FORWARD;
 
 	SetThink (&CDisplacer::SpinUp);
-	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 1.6;
+	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 1.6f;
 	pev->nextthink = gpGlobals->time;
 }
 
@@ -494,7 +494,7 @@ void CDisplacer::WeaponIdle(void)
 
 	int iAnim;
 	float flRand = UTIL_SharedRandomFloat(m_pPlayer->random_seed, 0, 1);
-	if (flRand <= 0.5)
+	if (flRand <= 0.5f)
 	{
 		iAnim = DISPLACER_IDLE1;
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 3.0f;
@@ -544,8 +544,8 @@ void CDisplacer::SpinUp( void )
 		EMIT_SOUND( edict(), CHAN_WEAPON, "weapons/displacer_spin2.wav", 1, ATTN_NORM );
 		SetThink (&CDisplacer::Teleport);
 	}
-	pev->nextthink = gpGlobals->time + 0.9;
-	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.3;
+	pev->nextthink = gpGlobals->time + 0.9f;
+	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.3f;
 }
 
 //=========================================================
@@ -639,16 +639,16 @@ void CDisplacer::Teleport( void )
 		{
 			m_pPlayer->m_fInXen = !m_pPlayer->m_fInXen;
 			/*if (m_pPlayer->m_fInXen)
-				m_pPlayer->pev->gravity = 0.5;
+				m_pPlayer->pev->gravity = 0.5f;
 			else
-				m_pPlayer->pev->gravity = 1.0;*/
+				m_pPlayer->pev->gravity = 1.0f;*/
 		}
 	}
 	else
 	{
 		EMIT_SOUND( edict(), CHAN_BODY, "buttons/button10.wav", 1, ATTN_NORM );
-		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 3.0;
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.9;
+		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 3.0f;
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.9f;
 	}
 
 	SetThink( NULL );

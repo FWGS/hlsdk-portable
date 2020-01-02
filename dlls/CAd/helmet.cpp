@@ -245,7 +245,7 @@ static BOOL IsFacing( entvars_t *pevTest, const Vector &reference )
 	UTIL_MakeVectorsPrivate( angle, forward, NULL, NULL );
 
 	// He's facing me, he meant it
-	if( DotProduct( forward, vecDir ) > 0.96 )	// +/- 15 degrees or so
+	if( DotProduct( forward, vecDir ) > 0.96f )	// +/- 15 degrees or so
 	{
 		return TRUE;
 	}
@@ -353,7 +353,7 @@ void CHelmet::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir
 			if( flDamage <= 0 )
 			{
 				UTIL_Ricochet( ptr->vecEndPos, 1.0 );
-				flDamage = 0.01;
+				flDamage = 0.01f;
 			}
 		}
 

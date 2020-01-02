@@ -1,9 +1,9 @@
-//========= Copyright (c) 2004-2008, Raven City Team, All rights reserved. ============//
-//																					 //
-// Purpose:																			 //
-//																					 //
-// $NoKeywords: $																	 //
-//===================================================================================//
+//========= Copyright (c) 2004-2008, Raven City Team, All rights reserved. =========//
+//										    //
+// Purpose:									    //
+//										    //
+// $NoKeywords: $								    //
+//==================================================================================//
 //Modifided by Lost_Gamer_
 
 #include "extdll.h"
@@ -100,7 +100,7 @@ BOOL CEagle::Deploy( )
 void CEagle::Holster( int skiplocal /* = 0 */ )
 {
 	m_fInReload = FALSE;// cancel any reload in progress.
-	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
+	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5f;
 	SendWeaponAnim( DEAGLE_HOLSTER );
 
 	if (m_pEagleLaser)
@@ -123,7 +123,7 @@ void CEagle::SecondaryAttack()
 	{
 		EMIT_SOUND_DYN(ENT(m_pPlayer->pev), CHAN_ITEM, "weapons/desert_eagle_sight.wav", 1.0, ATTN_NORM, 0, PITCH_NORM);
 	}
-	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5;
+	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5f;
 }
 
 void CEagle::PrimaryAttack()
@@ -133,7 +133,7 @@ void CEagle::PrimaryAttack()
 		if (m_fFireOnEmpty)
 		{
 			PlayEmptySound();
-			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.2;
+			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.2f;
 		}
 		return;
 	}
@@ -141,9 +141,9 @@ void CEagle::PrimaryAttack()
 	// don't fire underwater
 	if (m_pPlayer->pev->waterlevel == 3)
 	{
-		UpdateSpot( );
-		PlayEmptySound( );
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase()+ 0.15;
+		UpdateSpot();
+		PlayEmptySound();
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.15f;
 		return;
 	}
 
@@ -177,7 +177,7 @@ void CEagle::PrimaryAttack()
 	if (m_pEagleLaser)
 	{
 		vecDir = m_pPlayer->FireBulletsPlayer( 1, vecSrc, vecAiming, Vector( flSpread, flSpread, flSpread ), 8192, BULLET_PLAYER_357, 0, 0, m_pPlayer->pev, m_pPlayer->random_seed );
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase()+ 0.5;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5f;
 #ifndef CLIENT_DLL
 		m_pEagleLaser->Suspend( 0.6 );
 #endif
@@ -187,7 +187,7 @@ void CEagle::PrimaryAttack()
 	{
 		flSpread = 0.1;
 		vecDir = m_pPlayer->FireBulletsPlayer( 1, vecSrc, vecAiming, VECTOR_CONE_10DEGREES, 8192, BULLET_PLAYER_357, 0, 0, m_pPlayer->pev, m_pPlayer->random_seed );
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase()+ 0.22;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.22f;
 		m_fLaserOn = FALSE;
 	}
 
@@ -209,9 +209,9 @@ void CEagle::Reload( void )
 	if ( m_pEagleLaser && m_fEagleLaserActive )
 	{
 #ifndef CLIENT_DLL
-		m_pEagleLaser->Suspend( 1.6 );
+		m_pEagleLaser->Suspend( 1.6f );
 #endif
-		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1.5;
+		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1.5f;
 	}
 
 	int iResult;
@@ -251,14 +251,13 @@ void CEagle::UpdateSpot( void )
 #endif
 }
 
-
 void CEagle::WeaponIdle( void )
 {
-	UpdateSpot( );
+	UpdateSpot();
 
-	if (m_flTimeWeaponIdle <  UTIL_WeaponTimeBase() )
+	if (m_flTimeWeaponIdle < UTIL_WeaponTimeBase() )
 	{
-		ResetEmptySound( );
+		ResetEmptySound();
 		m_pPlayer->GetAutoaimVector( AUTOAIM_10DEGREES );
 
 		// only idle if the slid isn't back
@@ -269,7 +268,7 @@ void CEagle::WeaponIdle( void )
 
 			if (m_pEagleLaser)
 			{
-				if (flRand > 0.5 )
+				if (flRand > 0.5f )
 				{
 					iAnim = DEAGLE_IDLE5;//Done
 					m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 2.0f;
@@ -282,12 +281,12 @@ void CEagle::WeaponIdle( void )
 			}
 			else
 			{
-				if (flRand <= 0.3 )
+				if (flRand <= 0.3f )
 				{
 					iAnim = DEAGLE_IDLE1;//Done
 					m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 2.5f;
 				}
-				else if (flRand <= 0.6 )
+				else if (flRand <= 0.6f )
 				{
 					iAnim = DEAGLE_IDLE2;
 					m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 2.5f;
