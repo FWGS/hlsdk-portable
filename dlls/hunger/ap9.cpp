@@ -103,13 +103,13 @@ BOOL CWeaponEinarAP9::Deploy()
 void CWeaponEinarAP9::SecondaryAttack()
 {
 	m_iBurstShots += 2;
-	AP9Fire( 0.035, 0.6, FALSE );
-	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.04;
+	AP9Fire( 0.035f, 0.6f, FALSE );
+	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.04f;
 }
 
 void CWeaponEinarAP9::PrimaryAttack()
 {
-	AP9Fire( 0.07, 0.125, TRUE );
+	AP9Fire( 0.07f, 0.125f, TRUE );
 }
 
 void CWeaponEinarAP9::AP9Fire( float flSpread, float flCycleTime, BOOL fUseAutoAim )
@@ -121,7 +121,7 @@ void CWeaponEinarAP9::AP9Fire( float flSpread, float flCycleTime, BOOL fUseAutoA
 		if( m_fFireOnEmpty )
 		{
 			PlayEmptySound();
-			m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.2;
+			m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.2f;
 		}
 		return;
 	}
@@ -189,7 +189,7 @@ void CWeaponEinarAP9::Reload()
 #else
 		if( !g_pGameRules->IsMultiplayer() )
 #endif
-			m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 2.9;
+			m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 2.9f;
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
 	}
 }
@@ -216,7 +216,7 @@ void CWeaponEinarAP9::WeaponIdle()
 	{
 		SendWeaponAnim( AP9_IDLE );
 
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 20.0; // how long till we do this again.
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 20.0f; // how long till we do this again.
 	}
 }
 

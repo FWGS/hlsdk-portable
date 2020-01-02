@@ -120,7 +120,7 @@ void CEinarCyberFranklin::PainSound()
 	if( m_flNextPainTime > gpGlobals->time )
 		return;
 
-	m_flNextPainTime = gpGlobals->time + 2.0;
+	m_flNextPainTime = gpGlobals->time + 2.0f;
 
 	EMIT_SOUND( ENT( pev ), CHAN_VOICE, RANDOM_SOUND_ARRAY( pPainSounds ), 1.0, ATTN_NORM );
 }

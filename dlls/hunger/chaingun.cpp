@@ -100,7 +100,7 @@ void CWeaponEinarChaingun::Holster( int skiplocal /*= 0*/ )
 		SpinDown();
 	else
 		SendWeaponAnim( CHAINGUN_HOLSTER );
-	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
+	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5f;
 }
 
 void CWeaponEinarChaingun::PrimaryAttack()
@@ -116,7 +116,7 @@ void CWeaponEinarChaingun::PrimaryAttack()
 		else
 		{
 			PlayEmptySound();
-			m_flNextSecondaryAttack = m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.2;
+			m_flNextSecondaryAttack = m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.2f;
 		}
 		return;
 	}
@@ -163,8 +163,8 @@ void CWeaponEinarChaingun::SpinUp()
 	PLAYBACK_EVENT_FULL( 0, m_pPlayer->edict(), m_usFireChaingun1, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, 0, 0, TRUE, 0 );
 
 	m_fInAttack = 1;
-	m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.4;
-	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.5;
+	m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.4f;
+	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.5f;
 
 }
 
@@ -173,10 +173,10 @@ void CWeaponEinarChaingun::SpinDown()
 	// Restore player speed.
 	PLAYBACK_EVENT_FULL( 0, m_pPlayer->edict(), m_usFireChaingun1, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, 0, 0, FALSE, 0 );
 
-	m_flNextPrimaryAttack = m_flNextSecondaryAttack = m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 1.2;
+	m_flNextPrimaryAttack = m_flNextSecondaryAttack = m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 1.2f;
 
 	m_fInAttack = 0;
-	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 2.0;
+	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 2.0f;
 }
 
 void CWeaponEinarChaingun::Fire( float flSpread, float flCycleTime, BOOL fUseAutoAim )
@@ -208,7 +208,7 @@ void CWeaponEinarChaingun::Fire( float flSpread, float flCycleTime, BOOL fUseAut
 		// HEV suit - indicate out of ammo condition
 		m_pPlayer->SetSuitUpdate( "!HEV_AMO0", FALSE, 0 );
 
-	m_flTimeWeaponIdle = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.1;
+	m_flTimeWeaponIdle = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.1f;
 }
 
 void CWeaponEinarChaingun::Reload()
@@ -225,7 +225,7 @@ void CWeaponEinarChaingun::Reload()
 	{
 		m_fInSpecialReload = 2;
 
-		m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 2.0;
+		m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 2.0f;
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 5, 10 );
 	}
 }
@@ -244,7 +244,7 @@ void CWeaponEinarChaingun::WeaponIdle()
 		else if( m_fInSpecialReload == 2 )
 		{
 			EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/reload3.wav", 1, ATTN_NORM, 0, 93 + RANDOM_LONG( 0, 0x1f ) );
-			m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 1.0;
+			m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 1.0f;
 			m_fInSpecialReload = 3;
 		}
 	}
@@ -261,7 +261,7 @@ void CWeaponEinarChaingun::WeaponIdle()
 	{
 		int iAnim;
 		float flRand = UTIL_SharedRandomFloat( m_pPlayer->random_seed, 0, 1 );
-		if( flRand <= 0.5 )
+		if( flRand <= 0.5f )
 		{
 			iAnim = CHAINGUN_IDLE;
 		}

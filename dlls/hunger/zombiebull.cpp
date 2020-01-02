@@ -173,7 +173,7 @@ int CEinarZombieBull::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacke
 		{
 			flDist = ( pev->origin - m_Route[m_iRouteIndex].vecLocation ).Length2D();// reusing flDist.
 
-			if( FTriangulate( pev->origin, m_Route[m_iRouteIndex].vecLocation, flDist * 0.5, m_hEnemy, &vecApex ) )
+			if( FTriangulate( pev->origin, m_Route[m_iRouteIndex].vecLocation, flDist * 0.5f, m_hEnemy, &vecApex ) )
 			{
 				InsertWaypoint( vecApex, bits_MF_TO_DETOUR | bits_MF_DONT_SIMPLIFY );
 			}
@@ -191,7 +191,7 @@ int CEinarZombieBull::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacke
 //=========================================================
 BOOL CEinarZombieBull::CheckMeleeAttack1( float flDot, float flDist )
 {
-	if( m_hEnemy->pev->health <= gSkillData.bullsquidDmgWhip && flDist <= 110 && flDot >= 0.7 )
+	if( m_hEnemy->pev->health <= gSkillData.bullsquidDmgWhip && flDist <= 110 && flDot >= 0.7f )
 	{
 		return TRUE;
 	}
@@ -206,7 +206,7 @@ BOOL CEinarZombieBull::CheckMeleeAttack1( float flDot, float flDist )
 //=========================================================
 BOOL CEinarZombieBull::CheckMeleeAttack2( float flDot, float flDist )
 {
-	if( flDist <= 110 && flDot >= 0.7 && !HasConditions( bits_COND_CAN_MELEE_ATTACK1 ) )
+	if( flDist <= 110 && flDot >= 0.7f && !HasConditions( bits_COND_CAN_MELEE_ATTACK1 ) )
 	{									
 		return TRUE;
 	}

@@ -42,7 +42,7 @@ void CEinarBoss::Spawn()
 		pev->model = MAKE_STRING( "models/boss.mdl" );
 
 	if( !pev->health )
-		pev->health = gSkillData.apacheHealth * 2;
+		pev->health = gSkillData.apacheHealth * 2.0f;
 
 	CApache::Spawn();
 }
@@ -98,7 +98,7 @@ BOOL CEinarBoss::FireGun()
 	GetAttachment( 0, posBarrel, angBarrel );
 	Vector vecGun = (posBarrel - posGun).Normalize();
 
-	if( DotProduct( vecGun, vecTarget ) > 0.98 && !( ( ++m_iShots ) % 3 ) )
+	if( DotProduct( vecGun, vecTarget ) > 0.98f && !( ( ++m_iShots ) % 3 ) )
 	{
 		FireBullets( 1, posGun, vecGun, VECTOR_CONE_4DEGREES, 8192, BULLET_MONSTER_9MM, 1 );
 		EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "turret/tu_fire1.wav", 1, 0.3 );

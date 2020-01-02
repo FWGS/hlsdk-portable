@@ -51,7 +51,7 @@ void CWeaponEinarSniper::Holster( int skiplocal /* = 0 */ )
 	if( m_fInZoom )
 		SecondaryAttack();
 
-	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
+	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5f;
 }
 
 int CWeaponEinarSniper::GetItemInfo( ItemInfo *p )
@@ -122,8 +122,8 @@ void CWeaponEinarSniper::SecondaryAttack()
 #ifndef CLIENT_DLL
 	UTIL_ScreenFade( m_pPlayer, Vector( 0, 255, 0 ), 0.0, 0.0, 70, iFadeFlags );
 #endif
-	pev->nextthink = UTIL_WeaponTimeBase() + 0.11;
-	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.75;
+	pev->nextthink = UTIL_WeaponTimeBase() + 0.11f;
+	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.75f;
 }
 
 void CWeaponEinarSniper::PrimaryAttack()
@@ -137,7 +137,7 @@ void CWeaponEinarSniper::PrimaryAttack()
 		if( m_fFireOnEmpty )
 		{
 			PlayEmptySound();
-			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.25;
+			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.25f;
 		}
 		if( m_flTimeWeaponIdle > UTIL_WeaponTimeBase() )
 			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 15, 20 );
@@ -167,12 +167,12 @@ void CWeaponEinarSniper::PrimaryAttack()
 	{
 		if( m_fInZoom )
 		{
-			flSpread = 0.002;
+			flSpread = 0.002f;
 			iDmg = 80;
 		}
 		else
 		{
-			flSpread = 0.07846;
+			flSpread = 0.07846f;
 			iDmg = 40;
 		}
 	}
@@ -180,11 +180,11 @@ void CWeaponEinarSniper::PrimaryAttack()
 	{
 		if( m_fInZoom )
 		{
-			flSpread = 0.004;
+			flSpread = 0.004f;
 		}
 		else
 		{
-			flSpread = 0.08716;
+			flSpread = 0.08716f;
 		}
 		iDmg = 0;
 	}
@@ -206,13 +206,13 @@ void CWeaponEinarSniper::PrimaryAttack()
 
 	if( m_fInZoom )	
 	{
-		m_flNextPrimaryAttack = m_flNextSecondaryAttack = m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.75;
+		m_flNextPrimaryAttack = m_flNextSecondaryAttack = m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.75f;
 	}
 	else
 	{
-		m_flNextPrimaryAttack = m_flNextSecondaryAttack = m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.11;
-		m_pPlayer->pev->punchangle.x -= ( RANDOM_FLOAT( 0, 2.0 ) + 4.0 );
-		m_pPlayer->pev->punchangle.y -= ( 1.0 - RANDOM_FLOAT( 0, 2.0 ) );
+		m_flNextPrimaryAttack = m_flNextSecondaryAttack = m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.11f;
+		m_pPlayer->pev->punchangle.x -= ( RANDOM_FLOAT( 0.0f, 2.0f ) + 4.0f );
+		m_pPlayer->pev->punchangle.y -= ( 1.0f - RANDOM_FLOAT( 0.0f, 2.0f ) );
 	}
 }
 
@@ -224,13 +224,13 @@ void CWeaponEinarSniper::Reload()
 	if( m_fInZoom )
 		SecondaryAttack();
 
-	int iResult = DefaultReload( SNIPER_MAX_CLIP, SNIPER_RELOAD, 3.3 );
+	int iResult = DefaultReload( SNIPER_MAX_CLIP, SNIPER_RELOAD, 3.3f );
 }
 
 void CWeaponEinarSniper::WeaponIdle()
 {
 	ResetEmptySound();
-	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 20.0;
+	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 20.0f;
 }
 
 class CSniperAmmo : public CBasePlayerAmmo

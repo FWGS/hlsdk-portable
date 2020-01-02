@@ -80,7 +80,7 @@ BOOL CWeaponEinarMedkit::Deploy()
 void CWeaponEinarMedkit::Holster(int skiplocal /*= 0*/)
 {
 	m_fInAttack = 0;
-	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
+	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5f;
 	SendWeaponAnim( MEDKIT_HOLSTER );
 }
 
@@ -92,10 +92,10 @@ void CWeaponEinarMedkit::PrimaryAttack()
 		if( m_fFireOnEmpty )
 		{
 			PlayEmptySound();
-			m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1.0;
+			m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1.0f;
 		}
 		return;
-	}	
+	}
 
 	if( m_fInAttack )
 	{
@@ -117,7 +117,7 @@ void CWeaponEinarMedkit::Use()
 {
 	SendWeaponAnim( MEDKIT_LONGUSE, 0 );
 	m_fInAttack = 1;
-	m_flNextPrimaryAttack = m_flNextSecondaryAttack = m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.2;
+	m_flNextPrimaryAttack = m_flNextSecondaryAttack = m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.2f;
 }
 
 void CWeaponEinarMedkit::Heal()
@@ -134,7 +134,7 @@ void CWeaponEinarMedkit::Heal()
 		m_pPlayer->SetSuitUpdate( "!HEV_AMO0", FALSE, 0 );
 
 	m_fInAttack = 0;
-	m_flNextPrimaryAttack = m_flNextSecondaryAttack = m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.2;
+	m_flNextPrimaryAttack = m_flNextSecondaryAttack = m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.2f;
 }
 
 void CWeaponEinarMedkit::Reload()
@@ -156,7 +156,7 @@ void CWeaponEinarMedkit::WeaponIdle()
 	}
 
 	SendWeaponAnim( MEDKIT_IDLE, 0 );
-	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 20.0;
+	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 20.0f;
 }
 
 BOOL CWeaponEinarMedkit::PlayEmptySound()

@@ -60,7 +60,7 @@ void CEinarFlameRocket::Spawn()
 
 	SetTouch( &CEinarFlameRocket::FlameTouch );
 	SetThink( &CBaseEntity::SUB_Remove );
-	pev->nextthink = gpGlobals->time + 1.1;
+	pev->nextthink = gpGlobals->time + 1.1f;
 
 	UTIL_MakeVectors( pev->angles );
 	pev->velocity = gpGlobals->v_forward * pev->speed;
@@ -97,8 +97,8 @@ void CEinarFlameRocket::FlameTouch( CBaseEntity *pOther )
 			pevOwner = 0;
 		}
  
-		pev->dmg = g_pGameRules->IsMultiplayer() ? gSkillData.plrDmgEgonWide : ( gSkillData.plrDmgEgonNarrow * 1.5 );
-		pev->dmg *= 2;
+		pev->dmg = g_pGameRules->IsMultiplayer() ? gSkillData.plrDmgEgonWide : ( gSkillData.plrDmgEgonNarrow * 1.5f );
+		pev->dmg *= 2.0f;
 
 		ClearMultiDamage();
 		pOther->TraceAttack(pevOwner, pev->dmg, pev->velocity.Normalize(), &tr, DMG_BURN );

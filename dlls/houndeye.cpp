@@ -421,7 +421,7 @@ void CHoundeye::WarmUpSound( void )
 	{
 		Vector vecMouthPos, vecMouthAng;
 		CBaseEntity *pHurt = 0;
-		pHurt = CheckTraceHullAttack( 80, gSkillData.houndeyeDmgBlast * 0.4, DMG_SLASH );
+		pHurt = CheckTraceHullAttack( 80, gSkillData.houndeyeDmgBlast * 0.4f, DMG_SLASH );
 
 		if( pHurt )
 		{

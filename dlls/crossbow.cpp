@@ -420,7 +420,7 @@ void CCrossbow::FireSniperBolt()
 		if( FClassnameIs( tr.pHit, "worldspawn" ) )
 		{
 			// let the bolt sit around for a while if it hit static architecture
-			pBolt->pev->nextthink = gpGlobals->time + 5.0;
+			pBolt->pev->nextthink = gpGlobals->time + 5.0f;
 		}
 		else
 		{

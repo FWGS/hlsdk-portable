@@ -245,8 +245,8 @@ CGrenade *CHandGrenade::ShootTimed( entvars_t *pevOwner, Vector vecStart, Vector
 
 	pGrenade->pev->dmgtime = gpGlobals->time + time;
 	pGrenade->SetThink( &CGrenade::TumbleThink );
-	pGrenade->pev->nextthink = gpGlobals->time + 0.1;
-	if( time < 0.1 )
+	pGrenade->pev->nextthink = gpGlobals->time + 0.1f;
+	if( time < 0.1f )
 	{
 		pGrenade->pev->nextthink = gpGlobals->time;
 		pGrenade->pev->velocity = Vector( 0, 0, 0 );

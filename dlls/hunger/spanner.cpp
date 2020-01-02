@@ -102,7 +102,7 @@ BOOL CWeaponEinarSpanner::Deploy()
 
 void CWeaponEinarSpanner::Holster(int skiplocal /* = 0 */)
 {
-	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
+	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5f;
 	SendWeaponAnim( SPANNER_HOLSTER );
 }
 
@@ -111,7 +111,7 @@ void CWeaponEinarSpanner::PrimaryAttack()
 	if( !Swing( 1 ) )
 	{
 		SetThink( &CWeaponEinarSpanner::SwingAgain );
-		pev->nextthink = gpGlobals->time + 0.1;
+		pev->nextthink = gpGlobals->time + 0.1f;
 	}
 }
 
@@ -138,10 +138,10 @@ int CWeaponEinarSpanner::Swing( int fFirst )
 	UTIL_TraceLine( vecSrc, vecEnd, dont_ignore_monsters, ENT( m_pPlayer->pev ), &tr );
 
 #ifndef CLIENT_DLL
-	if( tr.flFraction >= 1.0 )
+	if( tr.flFraction >= 1.0f )
 	{
 		UTIL_TraceHull( vecSrc, vecEnd, dont_ignore_monsters, head_hull, ENT( m_pPlayer->pev ), &tr );
-		if( tr.flFraction < 1.0 )
+		if( tr.flFraction < 1.0f )
 		{
 			// Calculate the point of intersection of the line (or hull) and the object we hit
 			// This is and approximation of the "best" intersection
@@ -152,12 +152,12 @@ int CWeaponEinarSpanner::Swing( int fFirst )
 		}
 	}
 #endif
-	if( tr.flFraction >= 1.0 )
+	if( tr.flFraction >= 1.0f )
 	{
 		if( fFirst )
 		{
 			// miss
-			if( RANDOM_FLOAT( 0.0, 1.0 ) <= 0.25 )
+			if( RANDOM_FLOAT( 0.0f, 1.0f ) <= 0.25f )
 				++m_iSwing;
 			switch( ( m_iSwing++ ) % 2 )
 			{
@@ -168,7 +168,7 @@ int CWeaponEinarSpanner::Swing( int fFirst )
 				SendWeaponAnim( SPANNER_ATTACK2 );
 				break;
 			}
-			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.4;
+			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.4f;
 
 			EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_WEAPON, "weapons/cbar_miss1.wav", 1, ATTN_NORM, 0, 94 + RANDOM_LONG( 0, 0xF ) );
 #ifdef CROWBAR_IDLE_ANIM
@@ -209,17 +209,17 @@ int CWeaponEinarSpanner::Swing( int fFirst )
 			if( g_pGameRules->IsMultiplayer() )
 			{
 				// more damage in multiplayer
-				flDmg = gSkillData.plrDmgCrowbar * 1.2;
+				flDmg = gSkillData.plrDmgCrowbar * 1.2f;
 			}
-			else if( m_flNextPrimaryAttack + 1 < UTIL_WeaponTimeBase() )
+			else if( m_flNextPrimaryAttack + 1.0f < UTIL_WeaponTimeBase() )
 			{
 				// first swing does full damage
-				flDmg = gSkillData.plrDmgCrowbar * 0.8;
+				flDmg = gSkillData.plrDmgCrowbar * 0.8f;
 			}
 			else
 			{
 				// subsequent swings do half
-				flDmg = gSkillData.plrDmgCrowbar * 0.4;
+				flDmg = gSkillData.plrDmgCrowbar * 0.4f;
 			}
 			pEntity->TraceAttack( m_pPlayer->pev, flDmg, gpGlobals->v_forward, &tr, DMG_CLUB );
 			ApplyMultiDamage( m_pPlayer->pev, m_pPlayer->pev );
@@ -301,10 +301,10 @@ int CWeaponEinarSpanner::Swing( int fFirst )
 
 		m_pPlayer->m_iWeaponVolume = flVol * SPANNER_WALLHIT_VOLUME;
 #endif
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.2;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.2f;
 
 		SetThink( &CWeaponEinarSpanner::Smack );
-		pev->nextthink = UTIL_WeaponTimeBase() + 0.2;
+		pev->nextthink = UTIL_WeaponTimeBase() + 0.2f;
 	}
 #ifdef CROWBAR_IDLE_ANIM
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );

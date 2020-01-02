@@ -104,7 +104,7 @@ void CWeaponEinarTFCSniper::Holster( int skiplocal /* = 0 */ )
 		SecondaryAttack();
 	}
 
-	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
+	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5f;
 }
 
 void CWeaponEinarTFCSniper::PrimaryAttack()
@@ -118,7 +118,7 @@ void CWeaponEinarTFCSniper::PrimaryAttack()
 		if( m_fFireOnEmpty )
 		{
 			PlayEmptySound();
-			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.25;
+			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.25f;
 		}
 		if( m_flTimeWeaponIdle > UTIL_WeaponTimeBase() )
 		{
@@ -151,12 +151,12 @@ void CWeaponEinarTFCSniper::PrimaryAttack()
 	{
 		if( m_fInZoom )
 		{
-			flSpread = 0.002;
+			flSpread = 0.002f;
 			iDmg = 80;
 		}
 		else
 		{
-			flSpread = 0.07846;
+			flSpread = 0.07846f;
 			iDmg = 40;
 		}
 	}
@@ -164,11 +164,11 @@ void CWeaponEinarTFCSniper::PrimaryAttack()
 	{
 		if( m_fInZoom )
 		{
-			flSpread = 0.004;
+			flSpread = 0.004f;
 		}
 		else
 		{
-			flSpread = 0.08716;
+			flSpread = 0.08716f;
 		}
 		iDmg = 0;
 	}
@@ -190,13 +190,13 @@ void CWeaponEinarTFCSniper::PrimaryAttack()
 
 	if( m_fInZoom )	
 	{
-		m_flNextPrimaryAttack = m_flNextSecondaryAttack = m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.75;
+		m_flNextPrimaryAttack = m_flNextSecondaryAttack = m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.75f;
 	}
 	else
 	{
-		m_flNextPrimaryAttack = m_flNextSecondaryAttack = m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.11;
-		m_pPlayer->pev->punchangle.x -= ( RANDOM_FLOAT( 0, 2.0 ) + 4.0 );
-		m_pPlayer->pev->punchangle.y -= ( 1.0 - RANDOM_FLOAT( 0, 2.0 ) );
+		m_flNextPrimaryAttack = m_flNextSecondaryAttack = m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.11f;
+		m_pPlayer->pev->punchangle.x -= ( RANDOM_FLOAT( 0.0f, 2.0f ) + 4.0f );
+		m_pPlayer->pev->punchangle.y -= ( 1.0f - RANDOM_FLOAT( 0.0f, 2.0f ) );
 	}
 }
 
@@ -218,8 +218,8 @@ void CWeaponEinarTFCSniper::SecondaryAttack()
 #ifndef CLIENT_DLL
 	UTIL_ScreenFade( m_pPlayer, Vector( 0, 255, 0 ), 0.0, 0.0, 70, iFadeFlags );
 #endif
-	pev->nextthink = UTIL_WeaponTimeBase() + 0.11;
-	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.75;
+	pev->nextthink = UTIL_WeaponTimeBase() + 0.11f;
+	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.75f;
 }
 
 void CWeaponEinarTFCSniper::Reload()
@@ -233,7 +233,7 @@ void CWeaponEinarTFCSniper::Reload()
 	if( DefaultReload( SNIPER_MAX_CLIP, TFCSNIPER_AUTOHOLSTER, 0.5 ) )
 	{
 		m_fInSpecialReload = 2;
-		m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 2.0;
+		m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 2.0f;
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 5, 10 );		
 	}
 }
@@ -251,7 +251,7 @@ void CWeaponEinarTFCSniper::WeaponIdle()
 		if( m_fInSpecialReload == 2 )
 		{
 			EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/reload3.wav", RANDOM_FLOAT( 0.8, 0.9 ), ATTN_NORM, 0, 93 + RANDOM_LONG( 0, 0x1f ) );
-			m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 1.0;
+			m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 1.0f;
 			m_fInSpecialReload = 3;
 		}
 		if( m_flTimeWeaponIdle <= UTIL_WeaponTimeBase() )

@@ -195,7 +195,7 @@ void CEgon::PrimaryAttack( void )
 		m_pPlayer->SetSuitUpdate( "!HEV_AMO0", FALSE, 0 );
 
 	m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.2f;
-	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.5;
+	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.5f;
 }
 
 void CEgon::WeaponIdle( void )
