@@ -37,7 +37,7 @@ enum m41a_e
 };
 
 
-LINK_ENTITY_TO_CLASS( weapon_9mmm41a, CM41A );
+LINK_ENTITY_TO_CLASS( weapon_9mmm41a, CM41A )
 
 //=========================================================
 //=========================================================
@@ -163,9 +163,9 @@ void CM41A::PrimaryAttack()
 	Vector vecDir;
 
 #ifdef CLIENT_DLL
-	if ( bIsMultiplayer() )
+	if( bIsMultiplayer() )
 #else
-	if ( g_pGameRules->IsMultiplayer() )
+	if( g_pGameRules->IsMultiplayer() )
 #endif
 	{
 		// optimized multiplayer. Widened to make it easier to hit a moving player
@@ -184,15 +184,15 @@ void CM41A::PrimaryAttack()
 	flags = 0;
 #endif
 
-	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usM41A, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, vecDir.x, vecDir.y, 0, 0, 0, 0 );
+	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usM41A, 0.0, g_vecZero, g_vecZero, vecDir.x, vecDir.y, 0, 0, 0, 0 );
 
-	if (!m_iClip && m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0)
+	if(!m_iClip && m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0)
 		// HEV suit - indicate out of ammo condition
 		m_pPlayer->SetSuitUpdate("!HEV_AMO0", FALSE, 0);
 
 	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.1f;
 
-	if ( m_flNextPrimaryAttack < UTIL_WeaponTimeBase() )
+	if( m_flNextPrimaryAttack < UTIL_WeaponTimeBase() )
 		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.1f;
 
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
