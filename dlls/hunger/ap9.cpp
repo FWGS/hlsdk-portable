@@ -166,7 +166,7 @@ void CWeaponEinarAP9::AP9Fire( float flSpread, float flCycleTime, BOOL fUseAutoA
 		iBulletType = BULLET_PLAYER_MP5;
 	Vector vecDir = m_pPlayer->FireBulletsPlayer( 1, vecSrc, vecAiming, Vector( flSpread, flSpread, flSpread ), 8192, iBulletType, 0, 0, m_pPlayer->pev, m_pPlayer->random_seed );
 
-	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usFireAP9, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, vecDir.x, vecDir.y, 0, 0, fUseAutoAim, 0 );
+	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usFireAP9, 0.0, g_vecZero, g_vecZero, vecDir.x, vecDir.y, 0, 0, fUseAutoAim, 0 );
 
 	if( !m_iClip && m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0 )
 		// HEV suit - indicate out of ammo condition

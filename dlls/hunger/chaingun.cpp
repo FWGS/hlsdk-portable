@@ -160,7 +160,7 @@ void CWeaponEinarChaingun::SpinUp()
 	m_pPlayer->m_iWeaponVolume = LOUD_GUN_VOLUME;
 
 	// Slowdown player.
-	PLAYBACK_EVENT_FULL( 0, m_pPlayer->edict(), m_usFireChaingun1, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, 0, 0, TRUE, 0 );
+	PLAYBACK_EVENT_FULL( 0, m_pPlayer->edict(), m_usFireChaingun1, 0.0, g_vecZero, g_vecZero, 0.0, 0.0, 0, 0, TRUE, 0 );
 
 	m_fInAttack = 1;
 	m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.4f;
@@ -171,7 +171,7 @@ void CWeaponEinarChaingun::SpinUp()
 void CWeaponEinarChaingun::SpinDown()
 {
 	// Restore player speed.
-	PLAYBACK_EVENT_FULL( 0, m_pPlayer->edict(), m_usFireChaingun1, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, 0, 0, FALSE, 0 );
+	PLAYBACK_EVENT_FULL( 0, m_pPlayer->edict(), m_usFireChaingun1, 0.0, g_vecZero, g_vecZero, 0.0, 0.0, 0, 0, FALSE, 0 );
 
 	m_flNextPrimaryAttack = m_flNextSecondaryAttack = m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 1.2f;
 
@@ -200,7 +200,7 @@ void CWeaponEinarChaingun::Fire( float flSpread, float flCycleTime, BOOL fUseAut
 	Vector vecAiming = gpGlobals->v_forward;
 	Vector vecDir = m_pPlayer->FireBulletsPlayer( iClipNotEmpty ? 4 : 2, vecSrc, vecAiming, Vector( flSpread, flSpread, flSpread ), 8192, BULLET_PLAYER_MP5, 0, 0, m_pPlayer->pev, m_pPlayer->random_seed );
 
-	PLAYBACK_EVENT_FULL( 0, m_pPlayer->edict(), m_usFireChaingun2, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, vecDir.x, vecDir.y, 0, 0, iClipNotEmpty, 0 );
+	PLAYBACK_EVENT_FULL( 0, m_pPlayer->edict(), m_usFireChaingun2, 0.0, g_vecZero, g_vecZero, vecDir.x, vecDir.y, 0, 0, iClipNotEmpty, 0 );
 
 	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + flCycleTime;
 
