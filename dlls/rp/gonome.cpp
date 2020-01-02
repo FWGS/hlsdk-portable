@@ -95,7 +95,7 @@ void CGonomeGuts::Shoot( entvars_t *pevOwner, Vector vecStart, Vector vecVelocit
 	pSpit->pev->owner = ENT( pevOwner );
 
 	pSpit->SetThink( &CSquidSpit::Animate );
-	pSpit->pev->nextthink = gpGlobals->time + 0.1;
+	pSpit->pev->nextthink = gpGlobals->time + 0.1f;
 }
 
 void CGonomeGuts::Touch( CBaseEntity *pOther )
@@ -333,7 +333,7 @@ BOOL CGonome::CheckRangeAttack1(float flDot, float flDist)
 		return FALSE;
 	}
 
-	if (flDist > 64 && flDist <= 784 && flDot >= 0.5 && gpGlobals->time >= m_flNextSpitTime)
+	if (flDist > 64 && flDist <= 784 && flDot >= 0.5f && gpGlobals->time >= m_flNextSpitTime)
 	{
 		if (m_hEnemy != 0)
 		{
@@ -347,12 +347,12 @@ BOOL CGonome::CheckRangeAttack1(float flDot, float flDist)
 		if (IsMoving())
 		{
 			// don't spit again for a long time, resume chasing enemy.
-			m_flNextSpitTime = gpGlobals->time + 5;
+			m_flNextSpitTime = gpGlobals->time + 5.0f;
 		}
 		else
 		{
 			// not moving, so spit again pretty soon.
-			m_flNextSpitTime = gpGlobals->time + 0.5;
+			m_flNextSpitTime = gpGlobals->time + 0.5f;
 		}
 
 		return TRUE;
@@ -367,7 +367,7 @@ BOOL CGonome::CheckRangeAttack1(float flDot, float flDist)
 //=========================================================
 BOOL CGonome::CheckMeleeAttack1(float flDot, float flDist)
 {
-	if( m_hEnemy->pev->health <= gSkillData.gonomeDmgOneSlash && flDist <= 85 && flDot >= 0.7 )
+	if( m_hEnemy->pev->health <= gSkillData.gonomeDmgOneSlash && flDist <= 85 && flDot >= 0.7f )
 	{
 		return TRUE;
 	}
@@ -379,7 +379,7 @@ BOOL CGonome::CheckMeleeAttack1(float flDot, float flDist)
 //=========================================================
 BOOL CGonome::CheckMeleeAttack2(float flDot, float flDist)
 {
-	if( flDist <= 85 && flDot >= 0.7 && !HasConditions( bits_COND_CAN_MELEE_ATTACK1 ) )             // The player & bullsquid can be as much as their bboxes
+	if( flDist <= 85 && flDot >= 0.7f && !HasConditions( bits_COND_CAN_MELEE_ATTACK1 ) )             // The player & bullsquid can be as much as their bboxes
         {                                                                               // apart (48 * sqrt(3)) and he can still attack (85 is a little more than 48*sqrt(3))
                 return TRUE;
         }

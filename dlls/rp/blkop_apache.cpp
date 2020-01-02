@@ -68,7 +68,7 @@ void CBlkopApache::Spawn(void)
 	{
 		SetThink(&CApache::HuntThink);
 		SetTouch(&CApache::FlyTouch);
-		pev->nextthink = gpGlobals->time + 1.0;
+		pev->nextthink = gpGlobals->time + 1.0f;
 	}
 
 	m_iRockets = 10;

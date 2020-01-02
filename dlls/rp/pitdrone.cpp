@@ -89,7 +89,7 @@ void CPitDroneSpit::Touch(CBaseEntity *pOther)
 			pev->velocity = Vector(0, 0, 0);
 			pev->avelocity.z = 0;
 			pev->angles.z = RANDOM_LONG(0, 360);
-			pev->nextthink = gpGlobals->time + 10.0;
+			pev->nextthink = gpGlobals->time + 10.0f;
 		}
 	}
 	else
@@ -311,7 +311,7 @@ int CPitDrone::TakeDamage(entvars_t *pevInflictor, entvars_t *pevAttacker, float
 		{
 			flDist = (pev->origin - m_Route[m_iRouteIndex].vecLocation).Length2D();// reusing flDist. 
 
-			if (FTriangulate(pev->origin, m_Route[m_iRouteIndex].vecLocation, flDist * 0.5, m_hEnemy, &vecApex))
+			if (FTriangulate(pev->origin, m_Route[m_iRouteIndex].vecLocation, flDist * 0.5f, m_hEnemy, &vecApex))
 			{
 				InsertWaypoint(vecApex, bits_MF_TO_DETOUR | bits_MF_DONT_SIMPLIFY);
 			}
@@ -349,18 +349,18 @@ BOOL CPitDrone::CheckRangeAttack1(float flDot, float flDist)
 		return FALSE;
 	}
 
-	if (flDist > 64 && flDist <= 784 && flDot >= 0.5 && gpGlobals->time >= m_flNextSpitTime)
+	if (flDist > 64 && flDist <= 784 && flDot >= 0.5f && gpGlobals->time >= m_flNextSpitTime)
 	{
 
 		if (IsMoving())
 		{
 			// don't spit again for a long time, resume chasing enemy.
-			m_flNextSpitTime = gpGlobals->time + 5;
+			m_flNextSpitTime = gpGlobals->time + 5.0f;
 		}
 		else
 		{
 			// not moving, so spit again pretty soon.
-			m_flNextSpitTime = gpGlobals->time + 0.5;
+			m_flNextSpitTime = gpGlobals->time + 0.5f;
 		}
 
 		return TRUE;
@@ -490,8 +490,8 @@ void CPitDrone::HandleAnimEvent(MonsterEvent_t *pEvent)
 		}
 
 		// jump into air for 0.8 (24/30) seconds
-		//pev->velocity.z += ( 0.875 * flGravity ) * 0.5;
-		pev->velocity.z += ( 0.625 * flGravity ) * 0.5;
+		//pev->velocity.z += ( 0.875f * flGravity ) * 0.5f;
+		pev->velocity.z += ( 0.625f * flGravity ) * 0.5f;
 	}
 	break;
 

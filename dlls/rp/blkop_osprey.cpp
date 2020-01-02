@@ -67,7 +67,7 @@ void CBlkopOsprey::Spawn(void)
 
 	if (!(pev->spawnflags & SF_WAITFORTRIGGER))
 	{
-		pev->nextthink = gpGlobals->time + 1.0;
+		pev->nextthink = gpGlobals->time + 1.0f;
 	}
 
 	m_pos2 = pev->origin;
