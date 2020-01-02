@@ -529,7 +529,7 @@ void ClientCommand( edict_t *pEntity )
 	}
 	else if( FStrEq( pcmd, "imacheater" ) )
 	{
-		if( g_flWeaponCheat != 0.0 )
+		if( g_flWeaponCheat != 0.0f )
 		{
 			CBasePlayer *pPlayer = GetClassPtr( (CBasePlayer *)pev );
 			gEvilImpulse101 = TRUE;

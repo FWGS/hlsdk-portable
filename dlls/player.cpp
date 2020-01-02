@@ -415,7 +415,7 @@ void CBasePlayer::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector ve
 		TraceBleed( flDamage, vecDir, ptr, bitsDamageType );
 		AddMultiDamage( pevAttacker, this, flDamage, bitsDamageType );
 
-		if( flDamage >= pev->health * 0.333 )
+		if( flDamage >= pev->health * 0.333f )
 		{
 			switch( ptr->iHitgroup )
 			{
@@ -2630,37 +2630,37 @@ pt_end:
 
 	if( pev->flags & FL_DUCKING )
 	{
-		if( gpGlobals->frametime > m_flNextBulletSpreadRandTime + 0.44 )
+		if( gpGlobals->frametime > m_flNextBulletSpreadRandTime + 0.44f )
 		{
 			m_flNextBulletSpreadRandTime = gpGlobals->frametime;
-			m_flBulletSpreadCoefficient -= 0.0025;
+			m_flBulletSpreadCoefficient -= 0.0025f;
 			if( !( m_afButtonPressed | m_afButtonReleased ) )
-				m_flBulletSpreadCoefficient -= 0.015;
+				m_flBulletSpreadCoefficient -= 0.015f;
 		}
 	}
 	else
 	{                       
 		if( pev->button & IN_JUMP )
 		{
-			if( gpGlobals->frametime > m_flNextBulletSpreadRandTime + 0.6 )
+			if( gpGlobals->frametime > m_flNextBulletSpreadRandTime + 0.6f )
 			{
 				m_flNextBulletSpreadRandTime = gpGlobals->frametime;
-				m_flBulletSpreadCoefficient -= 0.0015;
+				m_flBulletSpreadCoefficient -= 0.0015f;
 				if( !( m_afButtonPressed | m_afButtonReleased ) )
-					m_flBulletSpreadCoefficient -= 0.004;
+					m_flBulletSpreadCoefficient -= 0.004f;
 			}
 		}
-		else if( gpGlobals->frametime > m_flNextBulletSpreadRandTime + 0.47 )
+		else if( gpGlobals->frametime > m_flNextBulletSpreadRandTime + 0.47f )
 		{
 			m_flNextBulletSpreadRandTime = gpGlobals->frametime;
-			m_flBulletSpreadCoefficient -= 0.001;
+			m_flBulletSpreadCoefficient -= 0.001f;
 			if( !( m_afButtonPressed | m_afButtonReleased ) )
-				m_flBulletSpreadCoefficient -= 0.012;
+				m_flBulletSpreadCoefficient -= 0.012f;
 		}
 	}
 
-	if( m_flBulletSpreadCoefficient < 0.001 )
-		m_flBulletSpreadCoefficient = 0.001;
+	if( m_flBulletSpreadCoefficient < 0.001f )
+		m_flBulletSpreadCoefficient = 0.001f;
 #else
 	return;
 #endif

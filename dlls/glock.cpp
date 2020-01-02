@@ -107,7 +107,7 @@ void CGlock::Holster(int skiplocal /*= 0*/)
 {
 	m_fInReload = FALSE;// cancel any reload in progress.
 
-	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
+	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5f;
 	SendWeaponAnim( GLOCK_HOLSTER );
 }
 
@@ -183,23 +183,23 @@ void CGlock::GlockFire( float flSpread, float flCycleTime, BOOL fUseAutoAim )
 	// Allow for higher accuracy when the player is crouching.
 	if( m_pPlayer->pev->flags & FL_DUCKING )
 	{
-		vecSpread = Vector( m_pPlayer->m_flBulletSpreadCoefficient * 2.3 + 0.012, m_pPlayer->m_flBulletSpreadCoefficient * 1.5 + 0.01, 0 );
-		if( m_pPlayer->m_flBulletSpreadCoefficient < 0.05 )
-		m_pPlayer->m_flBulletSpreadCoefficient += 0.003;
+		vecSpread = Vector( m_pPlayer->m_flBulletSpreadCoefficient * 2.3f + 0.012f, m_pPlayer->m_flBulletSpreadCoefficient * 1.5f + 0.01f, 0 );
+		if( m_pPlayer->m_flBulletSpreadCoefficient < 0.05f )
+		m_pPlayer->m_flBulletSpreadCoefficient += 0.003f;
 	}
 	else
 	{
 		if( m_pPlayer->pev->button & IN_JUMP )
 		{
-			vecSpread = Vector( m_pPlayer->m_flBulletSpreadCoefficient * 8.0 + 0.1, m_pPlayer->m_flBulletSpreadCoefficient * 5.0 + 0.1, 0 );
-			if( m_pPlayer->m_flBulletSpreadCoefficient < 0.8 )
-				m_pPlayer->m_flBulletSpreadCoefficient += 0.009;
+			vecSpread = Vector( m_pPlayer->m_flBulletSpreadCoefficient * 8.0f + 0.1f, m_pPlayer->m_flBulletSpreadCoefficient * 5.0f + 0.1f, 0 );
+			if( m_pPlayer->m_flBulletSpreadCoefficient < 0.8f )
+				m_pPlayer->m_flBulletSpreadCoefficient += 0.009f;
 		}
 		else
 		{
-			vecSpread = Vector( m_pPlayer->m_flBulletSpreadCoefficient * 3.0 + 0.065, m_pPlayer->m_flBulletSpreadCoefficient * 2.0 + 0.055, 0 );
-			if( m_pPlayer->m_flBulletSpreadCoefficient < 0.06 )
-				m_pPlayer->m_flBulletSpreadCoefficient += 0.0045;
+			vecSpread = Vector( m_pPlayer->m_flBulletSpreadCoefficient * 3.0f + 0.065f, m_pPlayer->m_flBulletSpreadCoefficient * 2.0f + 0.055f, 0 );
+			if( m_pPlayer->m_flBulletSpreadCoefficient < 0.06f )
+				m_pPlayer->m_flBulletSpreadCoefficient += 0.0045f;
 		}
 	}
 

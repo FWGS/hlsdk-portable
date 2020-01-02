@@ -240,7 +240,7 @@ void CDiablo::HandleAnimEvent(MonsterEvent_t *pEvent)
 	case DIABLO_AE_ATTACK_BOTH:
 	{
 		// do stuff for this event.
-		CBaseEntity *pHurt = CheckTraceHullAttack(70, gSkillData.diabloDmgBothSlash * 2.2 + RANDOM_LONG( 0, 9 ), DMG_SLASH );
+		CBaseEntity *pHurt = CheckTraceHullAttack(70, gSkillData.diabloDmgBothSlash * 2.2f + RANDOM_LONG( 0, 9 ), DMG_SLASH );
 		if (pHurt)
 		{
 			if (pHurt->pev->flags & (FL_MONSTER | FL_CLIENT))

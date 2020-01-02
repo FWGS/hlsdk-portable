@@ -113,14 +113,14 @@ void CMac10::PrimaryAttack()
 	if (m_pPlayer->pev->waterlevel == 3)
 	{
 		PlayEmptySound();
-		m_flNextPrimaryAttack = 0.15;
+		m_flNextPrimaryAttack = 0.15f;
 		return;
 	}
 
 	if (m_iClip <= 0)
 	{
 		PlayEmptySound();
-		m_flNextPrimaryAttack = 0.15;
+		m_flNextPrimaryAttack = 0.15f;
 		return;
 	}
 
@@ -140,13 +140,13 @@ void CMac10::PrimaryAttack()
 	Vector vecDir;
 	Vector vecSpread;
 
-	vecSpread = Vector( m_pPlayer->m_flBulletSpreadCoefficient * 1.2 + 0.03, m_pPlayer->m_flBulletSpreadCoefficient * 0.9 + 0.02, 0 );
+	vecSpread = Vector( m_pPlayer->m_flBulletSpreadCoefficient * 1.2f + 0.03f, m_pPlayer->m_flBulletSpreadCoefficient * 0.9f + 0.02f, 0 );
 
-	if( m_pPlayer->m_flBulletSpreadCoefficient < 0.06 )
-		m_pPlayer->m_flBulletSpreadCoefficient += 0.0027;
+	if( m_pPlayer->m_flBulletSpreadCoefficient < 0.06f )
+		m_pPlayer->m_flBulletSpreadCoefficient += 0.0027f;
 
-	if( m_pPlayer->m_flBulletSpreadCoefficient < 0.1 )
-		m_pPlayer->m_flBulletSpreadCoefficient += 0.002;
+	if( m_pPlayer->m_flBulletSpreadCoefficient < 0.1f )
+		m_pPlayer->m_flBulletSpreadCoefficient += 0.002f;
 
 	// single player spread
 	vecDir = m_pPlayer->FireBulletsPlayer(1, vecSrc, vecAiming, vecSpread, 8192, BULLET_PLAYER_MAC10, 2, 0, m_pPlayer->pev, m_pPlayer->random_seed);
@@ -160,10 +160,10 @@ void CMac10::PrimaryAttack()
 
 	PLAYBACK_EVENT_FULL(flags, m_pPlayer->edict(), m_usMac10, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, vecDir.x, vecDir.y, 0, 0, 0, 0);
 
-	m_flNextPrimaryAttack = GetNextAttackDelay(0.075);
+	m_flNextPrimaryAttack = GetNextAttackDelay(0.075f);
 
 	if (m_flNextPrimaryAttack < UTIL_WeaponTimeBase())
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.075;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.075f;
 
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat(m_pPlayer->random_seed, 10, 15);
 }

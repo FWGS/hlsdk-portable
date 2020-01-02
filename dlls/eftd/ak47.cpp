@@ -113,14 +113,14 @@ void CAK47::PrimaryAttack()
 	if (m_pPlayer->pev->waterlevel == 3)
 	{
 		PlayEmptySound();
-		m_flNextPrimaryAttack = 0.15;
+		m_flNextPrimaryAttack = 0.15f;
 		return;
 	}
 
 	if (m_iClip <= 0)
 	{
 		PlayEmptySound();
-		m_flNextPrimaryAttack = 0.15;
+		m_flNextPrimaryAttack = 0.15f;
 		return;
 	}
 
@@ -143,23 +143,23 @@ void CAK47::PrimaryAttack()
 	// Allow for higher accuracy when the player is crouching.
 	if( m_pPlayer->pev->flags & FL_DUCKING )
 	{
-		vecSpread = Vector( m_pPlayer->m_flBulletSpreadCoefficient * 1.6 + 0.01, m_pPlayer->m_flBulletSpreadCoefficient * 1.4 + 0.01, 0 );
-		if( m_pPlayer->m_flBulletSpreadCoefficient < 0.045 )
-			m_pPlayer->m_flBulletSpreadCoefficient += 0.006;
+		vecSpread = Vector( m_pPlayer->m_flBulletSpreadCoefficient * 1.6f + 0.01f, m_pPlayer->m_flBulletSpreadCoefficient * 1.4f + 0.01f, 0 );
+		if( m_pPlayer->m_flBulletSpreadCoefficient < 0.045f )
+			m_pPlayer->m_flBulletSpreadCoefficient += 0.006f;
 	}
 	else
 	{
 		if( m_pPlayer->pev->button & IN_JUMP )
 		{
-			vecSpread = Vector( m_pPlayer->m_flBulletSpreadCoefficient * 8.0 + 0.3, m_pPlayer->m_flBulletSpreadCoefficient * 6.0 + 0.2, 0 );
-			if( m_pPlayer->m_flBulletSpreadCoefficient < 0.1 )
-				m_pPlayer->m_flBulletSpreadCoefficient += 0.012;
+			vecSpread = Vector( m_pPlayer->m_flBulletSpreadCoefficient * 8.0f + 0.3f, m_pPlayer->m_flBulletSpreadCoefficient * 6.0f + 0.2f, 0 );
+			if( m_pPlayer->m_flBulletSpreadCoefficient < 0.1f )
+				m_pPlayer->m_flBulletSpreadCoefficient += 0.012f;
 		}
 		else
 		{
-			vecSpread = Vector( m_pPlayer->m_flBulletSpreadCoefficient * 2.4 + 0.065, m_pPlayer->m_flBulletSpreadCoefficient * 2.1 + 0.05, 0 );
-			if( m_pPlayer->m_flBulletSpreadCoefficient < 0.08 )
-				m_pPlayer->m_flBulletSpreadCoefficient += 0.009;
+			vecSpread = Vector( m_pPlayer->m_flBulletSpreadCoefficient * 2.4f + 0.065f, m_pPlayer->m_flBulletSpreadCoefficient * 2.1f + 0.05f, 0 );
+			if( m_pPlayer->m_flBulletSpreadCoefficient < 0.08f )
+				m_pPlayer->m_flBulletSpreadCoefficient += 0.009f;
 		}
 	}
 
@@ -175,10 +175,10 @@ void CAK47::PrimaryAttack()
 
 	PLAYBACK_EVENT_FULL(flags, m_pPlayer->edict(), m_usAK47, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, vecDir.x, vecDir.y, 0, 0, 0, 0);
 
-	m_flNextPrimaryAttack = GetNextAttackDelay(0.1);
+	m_flNextPrimaryAttack = GetNextAttackDelay(0.1f);
 
 	if (m_flNextPrimaryAttack < UTIL_WeaponTimeBase())
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.1;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.1f;
 
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat(m_pPlayer->random_seed, 10, 15);
 }
