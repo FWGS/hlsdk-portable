@@ -28,7 +28,7 @@ static int HUD_IsWidescreen(int iWidth, int iHeight)
 {
 	float ratio = iWidth / iHeight;
 
-	return (ratio >= 1.77) ? 1 : 0;
+	return (ratio >= 1.77f) ? 1 : 0;
 }
 
 DECLARE_MESSAGE(m_Scope, Scope)
