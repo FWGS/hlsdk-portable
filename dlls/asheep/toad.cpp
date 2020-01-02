@@ -86,7 +86,7 @@ TYPEDESCRIPTION	CToadGrenade::m_SaveData[] =
 
 IMPLEMENT_SAVERESTORE( CToadGrenade, CGrenade );
 
-#define TOAD_DETONATE_DELAY	15.0
+#define TOAD_DETONATE_DELAY	15.0f
 
 int CToadGrenade :: Classify ( void )
 {
@@ -123,14 +123,14 @@ void CToadGrenade :: Spawn( void )
 
 	SetTouch( &CToadGrenade::SuperBounceTouch );
 	SetThink( &CToadGrenade::HuntThink );
-	pev->nextthink = gpGlobals->time + 0.1;
-	m_flNextHunt = gpGlobals->time + 1E6;
+	pev->nextthink = gpGlobals->time + 0.1f;
+	m_flNextHunt = gpGlobals->time + (float)1E6;
 
 	pev->flags |= FL_MONSTER;
 	pev->takedamage		= DAMAGE_AIM;
 	pev->health			= gSkillData.toadHealth;
-	pev->gravity		= 0.5;
-	pev->friction		= 0.5;
+	pev->gravity		= 0.5f;
+	pev->friction		= 0.5f;
 
 	pev->dmg = gSkillData.toadDmgPop;
 
@@ -166,7 +166,7 @@ void CToadGrenade :: Killed( entvars_t *pevAttacker, int iGib )
 	SetThink( &CToadGrenade::SUB_Remove );
 //	ResetTouch( );
 	SetTouch( NULL );
-	pev->nextthink = gpGlobals->time + 0.1;
+	pev->nextthink = gpGlobals->time + 0.1f;
 
 	// since toad grenades never leave a body behind, clear out their takedamage now.
 	// Squeaks do a bit of radius damage when they pop, and that radius damage will
@@ -197,8 +197,6 @@ void CToadGrenade :: GibMonster( void )
 	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "common/bodysplat.wav", 0.75, ATTN_NORM, 0, 200);		
 }
 
-
-
 void CToadGrenade::HuntThink( void )
 {
 	// ALERT( at_console, "think\n" );
@@ -212,7 +210,7 @@ void CToadGrenade::HuntThink( void )
 	}
 	
 	StudioFrameAdvance( );
-	pev->nextthink = gpGlobals->time + 0.1;
+	pev->nextthink = gpGlobals->time + 0.1f;
 
 	// explode when ready
 	if (gpGlobals->time >= m_flDie)
@@ -230,8 +228,8 @@ void CToadGrenade::HuntThink( void )
 		{
 			pev->movetype = MOVETYPE_FLY;
 		}
-		pev->velocity = pev->velocity * 0.9;
-		pev->velocity.z += 8.0;
+		pev->velocity = pev->velocity * 0.9f;
+		pev->velocity.z += 8.0f;
 	}
 	else if (pev->movetype == MOVETYPE_FLY)
 	{
@@ -242,8 +240,8 @@ void CToadGrenade::HuntThink( void )
 	if (m_flNextHunt > gpGlobals->time)
 		return;
 
-	m_flNextHunt = gpGlobals->time + 2.0;
-	
+	m_flNextHunt = gpGlobals->time + 2.0f;
+
 	CBaseEntity *pOther = 0;
 	Vector vecDir;
 	TraceResult tr;
@@ -262,14 +260,14 @@ void CToadGrenade::HuntThink( void )
 	}
 
 	// squeek if it's about time blow up
-	if ((m_flDie - gpGlobals->time <= 0.5) && (m_flDie - gpGlobals->time >= 0.3))
+	if ((m_flDie - gpGlobals->time <= 0.5f) && (m_flDie - gpGlobals->time >= 0.3f))
 	{
 		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "toad/toad_die1.wav", 1, ATTN_NORM, 0, 100 + RANDOM_LONG(0,0x3F));
 		CSoundEnt::InsertSound ( bits_SOUND_COMBAT, pev->origin, 256, 0.25 );
 	}
 
 	// higher pitch as squeeker gets closer to detonation time
-	float flpitch = 155.0 - 60.0 * ((m_flDie - gpGlobals->time) / TOAD_DETONATE_DELAY);
+	float flpitch = 155.0f - 60.0f * ((m_flDie - gpGlobals->time) / TOAD_DETONATE_DELAY);
 	if (flpitch < 80)
 		flpitch = 80;
 
@@ -282,10 +280,10 @@ void CToadGrenade::HuntThink( void )
 		}
 
 		float flVel = pev->velocity.Length();
-		float flAdj = 50.0 / (flVel + 10.0);
+		float flAdj = 50.0f / (flVel + 10.0f);
 
-		if (flAdj > 1.2)
-			flAdj = 1.2;
+		if (flAdj > 1.2f)
+			flAdj = 1.2f;
 		
 		// ALERT( at_console, "think : enemy\n");
 
@@ -307,7 +305,7 @@ void CToadGrenade::HuntThink( void )
 		}
 	}
 
-	if ((pev->origin - m_posPrev).Length() < 1.0)
+	if ((pev->origin - m_posPrev).Length() < 1.0f)
 	{
 		pev->velocity.x = RANDOM_FLOAT( -100, 100 );
 		pev->velocity.y = RANDOM_FLOAT( -100, 100 );
@@ -341,7 +339,7 @@ void CToadGrenade::SuperBounceTouch( CBaseEntity *pOther )
 		return;
 
 	// higher pitch as squeeker gets closer to detonation time
-	flpitch = 155.0 - 60.0 * ((m_flDie - gpGlobals->time) / TOAD_DETONATE_DELAY);
+	flpitch = 155.0f - 60.0f * ((m_flDie - gpGlobals->time) / TOAD_DETONATE_DELAY);
 
 	if ( pOther->pev->takedamage && m_flNextAttack < gpGlobals->time )
 	{
@@ -366,7 +364,7 @@ void CToadGrenade::SuperBounceTouch( CBaseEntity *pOther )
 
 				// make bite sound
 				EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "toad/toad_deploy1.wav", 1.0, ATTN_NORM, 0, (int)flpitch);
-				m_flNextAttack = gpGlobals->time + 0.5;
+				m_flNextAttack = gpGlobals->time + 0.5f;
 			}
 		}
 		else
@@ -375,7 +373,7 @@ void CToadGrenade::SuperBounceTouch( CBaseEntity *pOther )
 		}
 	}
 
-	m_flNextHit = gpGlobals->time + 0.1;
+	m_flNextHit = gpGlobals->time + 0.1f;
 	m_flNextHunt = gpGlobals->time;
 
 	if ( g_pGameRules->IsMultiplayer() )
@@ -393,9 +391,9 @@ void CToadGrenade::SuperBounceTouch( CBaseEntity *pOther )
 		// play bounce sound
 		float flRndSound = RANDOM_FLOAT ( 0 , 1 );
 
-		if ( flRndSound <= 0.33 )
+		if ( flRndSound <= 0.33f )
 			EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "toad/toad_hunt1.wav", 1, ATTN_NORM, 0, (int)flpitch);		
-		else if (flRndSound <= 0.66)
+		else if (flRndSound <= 0.66f)
 			EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "toad/toad_hunt2.wav", 1, ATTN_NORM, 0, (int)flpitch);
 		else 
 			EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "toad/toad_hunt3.wav", 1, ATTN_NORM, 0, (int)flpitch);
@@ -407,7 +405,7 @@ void CToadGrenade::SuperBounceTouch( CBaseEntity *pOther )
 		CSoundEnt::InsertSound ( bits_SOUND_COMBAT, pev->origin, 100, 0.1 );
 	}
 
-	m_flNextBounceSoundTime = gpGlobals->time + 0.5;// half second.
+	m_flNextBounceSoundTime = gpGlobals->time + 0.5f;// half second.
 }
 
 #endif
@@ -427,7 +425,7 @@ void CToad::Spawn( )
 		
 	pev->sequence = 1;
 	pev->animtime = gpGlobals->time;
-	pev->framerate = 1.0;
+	pev->framerate = 1.0f;
 
 	SetThink( &CToad::ToadIdle );
 	pev->nextthink = gpGlobals->time + 0.2f;
@@ -474,7 +472,7 @@ BOOL CToad::Deploy( )
 		// play hunt sound
 		float flRndSound = RANDOM_FLOAT( 0, 1 );
 
-		if ( flRndSound <= 0.5 )
+		if( flRndSound <= 0.5f )
 			EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "toad/toad_hunt2.wav", 1, ATTN_NORM, 0, 100);
 		else 
 			EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "toad/toad_hunt3.wav", 1, ATTN_NORM, 0, 100);
@@ -482,20 +480,20 @@ BOOL CToad::Deploy( )
 		m_pPlayer->m_iWeaponVolume = QUIET_GUN_VOLUME;
 	}
 
-	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.1;
+	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.1f;
 	return DefaultDeploy( "models/v_toad.mdl", "models/p_toad.mdl", TOAD_UP, "toad" );
 }
 
 
 void CToad::Holster( int skiplocal /* = 0 */ )
 {
-	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
-	
-	if ( !m_pPlayer->m_rgAmmo[ m_iPrimaryAmmoType ] )
+	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5f;
+
+	if( !m_pPlayer->m_rgAmmo[ m_iPrimaryAmmoType ] )
 	{
 		m_pPlayer->pev->weapons &= ~(1<<WEAPON_TOAD);
 		SetThink( &CToad::DestroyItem );
-		pev->nextthink = gpGlobals->time + 0.1;
+		pev->nextthink = gpGlobals->time + 0.1f;
 		return;
 	}
 	
@@ -512,7 +510,7 @@ void CToad::PrimaryAttack()
                 return;
         }
 
-	if ( m_pPlayer->m_rgAmmo[ m_iPrimaryAmmoType ] )
+	if( m_pPlayer->m_rgAmmo[ m_iPrimaryAmmoType ] )
 	{
 		UTIL_MakeVectors( m_pPlayer->pev->v_angle );
 		TraceResult tr;
@@ -521,7 +519,7 @@ void CToad::PrimaryAttack()
 		// HACK HACK:  Ugly hacks to handle change in origin based on new physics code for players
 		// Move origin up if crouched and start trace a bit outside of body ( 20 units instead of 16 )
 		trace_origin = m_pPlayer->pev->origin;
-		if ( m_pPlayer->pev->flags & FL_DUCKING )
+		if( m_pPlayer->pev->flags & FL_DUCKING )
 		{
 			trace_origin = trace_origin - ( VEC_HULL_MIN - VEC_DUCK_HULL_MIN );
 		}
@@ -529,7 +527,7 @@ void CToad::PrimaryAttack()
 		// find place to toss monster
 		UTIL_TraceLine( trace_origin + gpGlobals->v_forward * 20, trace_origin + gpGlobals->v_forward * 64, dont_ignore_monsters, NULL, &tr );
 
-		if ( tr.fAllSolid == 0 && tr.fStartSolid == 0 && tr.flFraction > 0.25 )
+		if( tr.fAllSolid == 0 && tr.fStartSolid == 0 && tr.flFraction > 0.25f )
 		{
 			SendWeaponAnim( TOAD_THROW );
 
@@ -542,9 +540,9 @@ void CToad::PrimaryAttack()
 #endif
 
 			// play hunt sound
-			float flRndSound = RANDOM_FLOAT ( 0 , 1 );
+			float flRndSound = RANDOM_FLOAT( 0 , 1 );
 
-			if ( flRndSound <= 0.5 )
+			if( flRndSound <= 0.5f )
 				EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "toad/toad_hunt2.wav", 1, ATTN_NORM, 0, 105);
 			else 
 				EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "toad/toad_hunt3.wav", 1, ATTN_NORM, 0, 105);
@@ -555,8 +553,8 @@ void CToad::PrimaryAttack()
 
 			m_fJustThrown = 1;
 
-			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.3;
-			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.0;
+			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.3f;
+			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.0f;
 		}
 	}
 }

@@ -227,7 +227,7 @@ void CHgun::SecondaryAttack( void )
 	m_pPlayer->m_iWeaponVolume = NORMAL_GUN_VOLUME;
 	m_pPlayer->m_iWeaponFlash = DIM_GUN_FLASH;
 
-	m_flRechargeTime = gpGlobals->time + 0.5;
+	m_flRechargeTime = gpGlobals->time + 0.5f;
 
 	SendWeaponAnim( HGUN_SHOOT );
 

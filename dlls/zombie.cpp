@@ -276,7 +276,7 @@ void CZombie::Spawn()
 	if( FClassnameIs( pev, "monster_zombie" ) )
 		pev->health	= gSkillData.zombieHealth;
 	else
-		pev->health	= gSkillData.zombieHealth * 1.25;
+		pev->health	= gSkillData.zombieHealth * 1.25f;
 	pev->view_ofs		= VEC_VIEW;// position of the eyes relative to monster's origin.
 	m_flFieldOfView		= 0.5;// indicates the width of this monster's forward view cone ( as a dotproduct result )
 	m_MonsterState		= MONSTERSTATE_NONE;

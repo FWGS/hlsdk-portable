@@ -119,7 +119,7 @@ extern void FindHullIntersection( const Vector &vecSrc, TraceResult &tr, float *
 
 	vecHullEnd = vecSrc + ((vecHullEnd - vecSrc)*2);
 	UTIL_TraceLine( vecSrc, vecHullEnd, dont_ignore_monsters, pEntity, &tmpTrace );
-	if ( tmpTrace.flFraction < 1.0 )
+	if ( tmpTrace.flFraction < 1.0f )
 	{
 		tr = tmpTrace;
 		return;
@@ -136,7 +136,7 @@ extern void FindHullIntersection( const Vector &vecSrc, TraceResult &tr, float *
 				vecEnd.z = vecHullEnd.z + minmaxs[k][2];
 
 				UTIL_TraceLine( vecSrc, vecEnd, dont_ignore_monsters, pEntity, &tmpTrace );
-				if ( tmpTrace.flFraction < 1.0 )
+				if ( tmpTrace.flFraction < 1.0f )
 				{
 					float thisDistance = (tmpTrace.vecEndPos - vecSrc).Length();
 					if ( thisDistance < distance )
@@ -162,7 +162,7 @@ void CPoolstick::PrimaryAttack()
 	if (! Swing( 1 ))
 	{
 		SetThink( &CPoolstick::SwingAgain );
-		pev->nextthink = gpGlobals->time + 0.1;
+		pev->nextthink = gpGlobals->time + 0.1f;
 	}
 }
 
@@ -192,10 +192,10 @@ int CPoolstick::Swing( int fFirst )
 	UTIL_TraceLine( vecSrc, vecEnd, dont_ignore_monsters, ENT( m_pPlayer->pev ), &tr );
 
 #ifndef CLIENT_DLL
-	if ( tr.flFraction >= 1.0 )
+	if ( tr.flFraction >= 1.0f )
 	{
 		UTIL_TraceHull( vecSrc, vecEnd, dont_ignore_monsters, head_hull, ENT( m_pPlayer->pev ), &tr );
-		if ( tr.flFraction < 1.0 )
+		if ( tr.flFraction < 1.0f )
 		{
 			// Calculate the point of intersection of the line (or hull) and the object we hit
 			// This is and approximation of the "best" intersection
@@ -207,7 +207,7 @@ int CPoolstick::Swing( int fFirst )
 	}
 #endif
 
-	if ( tr.flFraction >= 1.0 )
+	if ( tr.flFraction >= 1.0f )
 	{
 		if (fFirst)
 		{
@@ -224,7 +224,7 @@ int CPoolstick::Swing( int fFirst )
 				SendWeaponAnim( POOLSTICK_ATTACK3MISS );
 				break;
 			}
-			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5;
+			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5f;
 			EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_WEAPON, "weapons/pstk_miss1.wav", 1, ATTN_NORM, 0, 94 + RANDOM_LONG( 0, 0xF ) );
 			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
 
@@ -325,10 +325,10 @@ int CPoolstick::Swing( int fFirst )
 		}
 
 		m_pPlayer->m_iWeaponVolume = flVol * POOLSTICK_WALLHIT_VOLUME;
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.25;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.25f;
 		
 		SetThink( &CPoolstick::Smack );
-		pev->nextthink = UTIL_WeaponTimeBase() + 0.2;
+		pev->nextthink = UTIL_WeaponTimeBase() + 0.2f;
 	}
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
 	return fDidHit;
@@ -350,22 +350,22 @@ void CPoolstick::WeaponIdle()
 	{
 		int iAnim;
 		float flRand = UTIL_SharedRandomFloat( m_pPlayer->random_seed, 0, 1 );
-		if( flRand > 0.9 )
+		if( flRand > 0.9f )
 		{
 			iAnim = POOLSTICK_IDLE2;
-			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 160.0 / 30.0;
+			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 160.0f / 30.0f;
 		}
 		else
 		{
-			if( flRand > 0.5 )
+			if( flRand > 0.5f )
 			{
 				iAnim = POOLSTICK_IDLE;
-				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 70.0 / 30.0;
+				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 70.0f / 30.0f;
 			}
 			else
 			{
 				iAnim = POOLSTICK_IDLE3;
-				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 160.0 / 30.0;
+				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 160.0f / 30.0f;
 			}
 		}
 		SendWeaponAnim( iAnim );

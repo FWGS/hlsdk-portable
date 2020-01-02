@@ -98,7 +98,7 @@ CBaseEntity* CGordon::AdrianCheckTraceHullAttack( float flDist, int iDamage, int
 	UTIL_MakeVectors( pev->angles );
 
         Vector vecStart = pev->origin;
-        vecStart.z += pev->size.z * 0.5;
+        vecStart.z += pev->size.z * 0.5f;
         Vector vecEnd = vecStart + ( gpGlobals->v_forward * flDist );
 
         UTIL_TraceHull( vecStart, vecEnd, dont_ignore_monsters, head_hull, ENT( pev ), &tr );
@@ -123,7 +123,7 @@ BOOL CGordon::CheckMeleeAttack1( float flDot, float flDist )
                 }
         }
 
-        if( flDist <= 64 && flDot >= 0.7 &&
+        if( flDist <= 64 && flDot >= 0.7f &&
                  pEnemy->Classify() != CLASS_ALIEN_BIOWEAPON &&
                  pEnemy->Classify() != CLASS_PLAYER_BIOWEAPON )
         {
@@ -307,7 +307,7 @@ static BOOL IsFacing( entvars_t *pevTest, const Vector &reference )
 	UTIL_MakeVectorsPrivate( angle, forward, NULL, NULL );
 
 	// He's facing me, he meant it
-	if( DotProduct( forward, vecDir ) > 0.96 )	// +/- 15 degrees or so
+	if( DotProduct( forward, vecDir ) > 0.96f )	// +/- 15 degrees or so
 	{
 		return TRUE;
 	}

@@ -291,7 +291,7 @@ class CItemBattery : public CItem
 		{
 			EMIT_SOUND( pPlayer->edict(), CHAN_ITEM, "barney/nope.wav", 1, ATTN_NORM );
 			UTIL_ShowMessageAll( "NOHEVBATTERY" );
-			NextMessageTime = gpGlobals->time + 4.0;
+			NextMessageTime = gpGlobals->time + 4.0f;
 		}
 		return FALSE;
 	}

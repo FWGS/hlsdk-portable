@@ -78,7 +78,7 @@ void UTIL_CreateWarpball( edict_t *ent, Vector vecSrc, float spawnVol, float spa
 		UTIL_TraceLine( vecSrc, vecSrc + vecDir * 1024, ignore_monsters, ent, &tr );
 
 		vecEnd = tr.vecEndPos;
-		if( ( vecEnd - vecSrc ).Length() >= ( 1024 * 0.1f ) && tr.flFraction != 1.0 )
+		if( ( vecEnd - vecSrc ).Length() >= ( 1024 * 0.1f ) && tr.flFraction != 1.0f )
 		{
 			MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
 				WRITE_BYTE( TE_BEAMPOINTS );

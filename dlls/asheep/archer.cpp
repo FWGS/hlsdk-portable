@@ -182,13 +182,13 @@ void CArcher::HandleAnimEvent( MonsterEvent_t *pEvent )
 			{
 				CBaseEntity *pHurt = m_hEnemy;
 
-				if( m_flEnemyTouched < gpGlobals->time - 0.2 && ( m_hEnemy->BodyTarget( pev->origin ) - pev->origin).Length() > ( 32 + 16 + 32 ) )
+				if( ( m_flEnemyTouched < gpGlobals->time - 0.2f ) && ( m_hEnemy->BodyTarget( pev->origin ) - pev->origin).Length() > ( 32 + 16 + 32 ) )
 					break;
 
 				Vector vecShootDir = ShootAtEnemy( pev->origin );
 				UTIL_MakeAimVectors( pev->angles );
 
-				if( DotProduct( vecShootDir, gpGlobals->v_forward ) > 0.707 )
+				if( DotProduct( vecShootDir, gpGlobals->v_forward ) > 0.707f )
 				{
 					m_bOnAttack = TRUE;
 					pHurt->pev->punchangle.z = -18;
@@ -356,7 +356,7 @@ void CArcher::MonsterThink( void )
 void CArcher::Stop( void ) 
 {
 	if( !m_bOnAttack )
-		m_flightSpeed = 40.0;
+		m_flightSpeed = 40.0f;
 }
 
 void CArcher::Swim()
@@ -391,7 +391,7 @@ void CArcher::Swim()
 		if( m_IdealActivity == ACT_RUN )
 			SetActivity( ACT_WALK );
 		if( m_IdealActivity == ACT_WALK )
-			pev->framerate = m_flightSpeed / 150.0;
+			pev->framerate = m_flightSpeed / 150.0f;
 		// ALERT( at_console, "walk %.2f\n", pev->framerate );
 	}
 	else
@@ -399,7 +399,7 @@ void CArcher::Swim()
 		if( m_IdealActivity == ACT_WALK )
 			SetActivity( ACT_RUN );
 		if( m_IdealActivity == ACT_RUN)
-			pev->framerate = m_flightSpeed / 75.0;
+			pev->framerate = m_flightSpeed / 75.0f;
 		// ALERT( at_console, "run  %.2f\n", pev->framerate );
 	}
 /*
@@ -432,10 +432,10 @@ void CArcher::Swim()
 	// ALERT( at_console, "%f : %f\n", Angles.x, Forward.z );
 
 	float flDot = DotProduct( Forward, m_SaveVelocity );
-	if( flDot > 0.5 )
+	if( flDot > 0.5f )
 		pev->velocity = m_SaveVelocity = m_SaveVelocity * m_flightSpeed;
-	else if( flDot > 0 )
-		pev->velocity = m_SaveVelocity = m_SaveVelocity * m_flightSpeed * ( flDot + 0.5 );
+	else if( flDot > 0.0f )
+		pev->velocity = m_SaveVelocity = m_SaveVelocity * m_flightSpeed * ( flDot + 0.5f );
 	else
 		pev->velocity = m_SaveVelocity = m_SaveVelocity * 40;
 
@@ -454,7 +454,7 @@ void CArcher::Swim()
 	//
 	if( Angles.x > 180 )
 		Angles.x = Angles.x - 360;
-	pev->angles.x = UTIL_Approach( Angles.x, pev->angles.x, 50 * 0.1 );
+	pev->angles.x = UTIL_Approach( Angles.x, pev->angles.x, 50 * 0.1f );
 	if( pev->angles.x < -180 )
 		pev->angles.x = -180;
 	if( pev->angles.x > 180 )
@@ -478,12 +478,12 @@ void CArcher::Swim()
 		turn = Angles.y - pev->angles.y - 360;
 	}
 
-	float speed = m_flightSpeed * 0.1;
+	float speed = m_flightSpeed * 0.1f;
 
 	// ALERT( at_console, "speed %.0f %f\n", turn, speed );
 	if( fabs( turn ) > speed )
 	{
-		if( turn < 0.0 )
+		if( turn < 0.0f )
 		{
 			turn = -speed;
 		}
@@ -494,15 +494,15 @@ void CArcher::Swim()
 	}
 	pev->angles.y += turn;
 	pev->angles.z -= turn;
-	pev->angles.y = fmod( ( pev->angles.y + 360.0 ), 360.0 );
+	pev->angles.y = fmod( ( pev->angles.y + 360.0f ), 360.0f );
 
 	static float yaw_adj;
 
-	yaw_adj = yaw_adj * 0.8 + turn;
+	yaw_adj = yaw_adj * 0.8f + turn;
 
 	// ALERT( at_console, "yaw %f : %f\n", turn, yaw_adj );
 
-	SetBoneController( 0, -yaw_adj / 4.0 );
+	SetBoneController( 0, -yaw_adj * 0.25f );
 
 	// Roll Smoothing
 	//
@@ -519,7 +519,7 @@ void CArcher::Swim()
 	{
 		turn = Angles.z - pev->angles.z - 360;
 	}
-	speed = m_flightSpeed / 2 * 0.1;
+	speed = m_flightSpeed / 2 * 0.1f;
 
 	if( fabs( turn ) < speed )
 	{
@@ -527,7 +527,7 @@ void CArcher::Swim()
 	}
 	else
 	{
-		if( turn < 0.0 )
+		if( turn < 0.0f )
 		{
 			pev->angles.z -= speed;
 		}

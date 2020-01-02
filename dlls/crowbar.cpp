@@ -217,7 +217,7 @@ int CCrowbar::Swing( int fFirst )
 				SendWeaponAnim( CROWBAR_ATTACK3MISS );
 				break;
 			}
-			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5;
+			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5f;
 			EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_WEAPON, "weapons/cbar_miss1.wav", 1, ATTN_NORM, 0, 94 + RANDOM_LONG( 0, 0xF ) );
 			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
 			// player "shoot" animation
@@ -339,11 +339,6 @@ int CCrowbar::Swing( int fFirst )
 
 		SetThink( &CCrowbar::Smack );
 		pev->nextthink = UTIL_WeaponTimeBase() + 0.2f;
-#endif
-#if CROWBAR_DELAY_FIX
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.25f;
-#else
-		m_flNextPrimaryAttack = GetNextAttackDelay( 0.25f );
 #endif
 		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.25f;
 	}

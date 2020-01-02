@@ -165,7 +165,7 @@ void CRat::HandleAnimEvent( MonsterEvent_t *pEvent )
 
 				// Scale the sideways velocity to get there at the right time
 				vecJumpDir = m_hEnemy->pev->origin + m_hEnemy->pev->view_ofs - pev->origin;
-				vecJumpDir = vecJumpDir * ( 1.0 / time );
+				vecJumpDir = vecJumpDir * ( 1.0f / time );
 
 				// Speed to offset gravity at the desired height
 				vecJumpDir.z = speed;
@@ -173,9 +173,9 @@ void CRat::HandleAnimEvent( MonsterEvent_t *pEvent )
 				// Don't jump too far/fast
 				float distance = vecJumpDir.Length();
 
-				if( distance > 650 )
+				if( distance > 650.0f )
 				{
-					vecJumpDir = vecJumpDir * ( 650.0 / distance );
+					vecJumpDir = vecJumpDir * ( 650.0f / distance );
 				}
 			}
 			else
@@ -188,7 +188,7 @@ void CRat::HandleAnimEvent( MonsterEvent_t *pEvent )
 				EMIT_SOUND_DYN( edict(), CHAN_VOICE, pAttackSounds[0], GetSoundVolue(), ATTN_IDLE, 0, GetVoicePitch() );
 
 			pev->velocity = vecJumpDir;
-			m_flNextAttack = gpGlobals->time + 2;
+			m_flNextAttack = gpGlobals->time + 2.0f;
 		}
 		break;
 		default:

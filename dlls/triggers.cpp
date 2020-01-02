@@ -2502,9 +2502,9 @@ void CTriggerKateHealth::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE
         CBaseEntity *pEntity = UTIL_FindEntityByTargetname( 0, STRING( m_szKateName ) );
         if( pEntity )
 	{
-		ALERT( at_console, "trigger_katehealth: Kate health before: %f\n", pEntity->pev->health );
+		ALERT( at_console, "trigger_katehealth: Kate health before: %f\n", (double)pEntity->pev->health );
 		pEntity->pev->health = gSkillData.kateHealth;
-		ALERT( at_console, "trigger_katehealth: Kate health after: %f\n", pEntity->pev->health );
+		ALERT( at_console, "trigger_katehealth: Kate health after: %f\n", (double)pEntity->pev->health );
 	}
 	else
 	{

@@ -244,20 +244,20 @@ void CBeretta::WeaponIdle( void )
 		int iAnim;
 		float flRand = UTIL_SharedRandomFloat( m_pPlayer->random_seed, 0.0, 1.0 );
 
-		if (flRand <= 0.3 + 0 * 0.75)
+		if (flRand <= 0.3f)
 		{
 			iAnim = BERETTA_IDLE3;
-			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 49.0 / 16;
+			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 49.0f / 16.0f;
 		}
-		else if (flRand <= 0.6 + 0 * 0.875)
+		else if (flRand <= 0.6f)
 		{
 			iAnim = BERETTA_IDLE1;
-			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 60.0 / 16.0;
+			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 60.0f / 16.0f;
 		}
 		else
 		{
 			iAnim = BERETTA_IDLE2;
-			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 40.0 / 16.0;
+			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 40.0f / 16.0f;
 		}
 		SendWeaponAnim( iAnim, 1 );
 	}

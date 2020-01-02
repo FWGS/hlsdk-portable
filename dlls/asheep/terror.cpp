@@ -989,7 +989,7 @@ void CTerrorRepel::RepelUse ( CBaseEntity *pActivator, CBaseEntity *pCaller, USE
 	pBeam->SetFlags( BEAM_FSOLID );
 	pBeam->SetColor( 255, 255, 255 );
 	pBeam->SetThink( &CBeam::SUB_Remove );
-	pBeam->pev->nextthink = gpGlobals->time + -4096.0 * tr.flFraction / pTerror->pev->velocity.z + 0.5;
+	pBeam->pev->nextthink = gpGlobals->time + -4096.0f * tr.flFraction / pTerror->pev->velocity.z + 0.5f;
 
 	UTIL_Remove( this );
 }
