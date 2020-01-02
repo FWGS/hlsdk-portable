@@ -104,7 +104,7 @@ int CM41A::GetItemInfo(ItemInfo *p)
 
 int CM41A::AddToPlayer( CBasePlayer *pPlayer )
 {
-	if ( CBasePlayerWeapon::AddToPlayer( pPlayer ) )
+	if( CBasePlayerWeapon::AddToPlayer( pPlayer ) )
 	{
 		MESSAGE_BEGIN( MSG_ONE, gmsgWeapPickup, NULL, pPlayer->pev );
 			WRITE_BYTE( m_iId );
@@ -163,9 +163,9 @@ void CM41A::PrimaryAttack()
 	Vector vecDir;
 
 #ifdef CLIENT_DLL
-	if ( !bIsMultiplayer() )
+	if ( bIsMultiplayer() )
 #else
-	if ( !g_pGameRules->IsMultiplayer() )
+	if ( g_pGameRules->IsMultiplayer() )
 #endif
 	{
 		// optimized multiplayer. Widened to make it easier to hit a moving player
