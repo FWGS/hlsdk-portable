@@ -109,7 +109,7 @@ BOOL CPipe::Deploy()
 
 void CPipe::Holster(int skiplocal /* = 0 */)
 {
-	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
+	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5f;
 	SendWeaponAnim(PIPE_HOLSTER);
 }
 
@@ -147,10 +147,10 @@ int CPipe::Swing(int fFirst)
 	UTIL_TraceLine(vecSrc, vecEnd, dont_ignore_monsters, ENT(m_pPlayer->pev), &tr);
 
 #ifndef CLIENT_DLL
-	if (tr.flFraction >= 1.0)
+	if (tr.flFraction >= 1.0f)
 	{
 		UTIL_TraceHull(vecSrc, vecEnd, dont_ignore_monsters, head_hull, ENT(m_pPlayer->pev), &tr);
-		if (tr.flFraction < 1.0)
+		if (tr.flFraction < 1.0f)
 		{
 			// Calculate the point of intersection of the line (or hull) and the object we hit
 			// This is and approximation of the "best" intersection
@@ -167,7 +167,7 @@ int CPipe::Swing(int fFirst)
 		0.0, 0, 0.0);
 
 
-	if (tr.flFraction >= 1.0)
+	if (tr.flFraction >= 1.0f)
 	{
 		if (fFirst)
 		{
@@ -284,7 +284,7 @@ int CPipe::Swing(int fFirst)
 		m_pPlayer->m_iWeaponVolume = flVol * PIPE_WALLHIT_VOLUME;
 
 		SetThink(&CPipe::Smack);
-		pev->nextthink = UTIL_WeaponTimeBase() + 0.48;
+		pev->nextthink = UTIL_WeaponTimeBase() + 0.48f;
 #endif
 		m_flNextPrimaryAttack = GetNextAttackDelay(0.5f); // 0.25f
 	}
@@ -301,22 +301,22 @@ void CPipe::WeaponIdle()
 	{
 		int iAnim;
 		float flRand = UTIL_SharedRandomFloat( m_pPlayer->random_seed, 0, 1 );
-		if( flRand > 0.9 )
+		if( flRand > 0.9f )
 		{
 			iAnim = PIPE_IDLE2;
-			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 160.0 / 30.0;
+			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 160.0f / 30.0f;
 		}
 		else
 		{
-			if( flRand > 0.5 )
+			if( flRand > 0.5f )
 			{
 				iAnim = PIPE_IDLE1;
-				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 70.0 / 30.0;
+				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 70.0f / 30.0f;
 			}
 			else
 			{
 				iAnim = PIPE_IDLE3;
-				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 160.0 / 30.0;
+				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 160.0f / 30.0f;
 			}
 		}
 		SendWeaponAnim( iAnim );

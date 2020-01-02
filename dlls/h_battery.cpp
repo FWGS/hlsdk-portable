@@ -126,7 +126,7 @@ void CRecharge::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE use
 	//
 	if( m_flSoundTime <= gpGlobals->time )
 	{
-		m_flSoundTime = gpGlobals->time + 0.62;
+		m_flSoundTime = gpGlobals->time + 0.62f;
 		EMIT_SOUND( ENT( pev ), CHAN_ITEM, "items/suitchargeno1.wav", 0.85, ATTN_NORM );
 	}
 	return;

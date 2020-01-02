@@ -512,7 +512,7 @@ int CBasePlayer::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 
 			UTIL_TraceLine( pev->origin, pev->origin + Vector( 0, 0, 100 ), dont_ignore_monsters, edict(), &tr );
 
-			if( tr.flFraction == 1.0 )
+			if( tr.flFraction == 1.0f )
 				pDeathCam->pev->origin.z += 100;
 			else
 				pDeathCam->pev->origin.z += fabs( pev->origin.z - tr.vecEndPos.z );
