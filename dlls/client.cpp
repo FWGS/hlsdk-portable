@@ -111,7 +111,7 @@ BOOL ClientConnect( edict_t *pEntity, const char *pszName, const char *pszAddres
 	if( strcmp( pszAddress, "127.0.0.1" ) != 0 )
 	{
 		// don't try to add bots for 30 seconds, give client time to get added
-		bot_check_time = gpGlobals->time + 30.0;
+		bot_check_time = gpGlobals->time + 30.0f;
 
 		for( i = 0; i < 32; i++ )
 		{
@@ -1083,10 +1083,10 @@ void StartFrame( void )
 	// END BOT
 
 	// START BOT
-	if( ( g_fGameOver ) && ( respawn_time < 1.0 ) )
+	if( ( g_fGameOver ) && ( respawn_time < 1.0f ) )
 	{
 		// if the game is over (time/frag limit) set the respawn time...
-		respawn_time = 5.0;
+		respawn_time = 5.0f;
 
 		// check if any players are using the botcam...
 		for( i = 1; i <= gpGlobals->maxClients; i++ )
@@ -1105,7 +1105,7 @@ void StartFrame( void )
 	// check if a map was changed via "map" without kicking bots...
 	if( previous_time > gpGlobals->time )
 	{
-		bot_check_time = gpGlobals->time + 10.0;
+		bot_check_time = gpGlobals->time + 10.0f;
 
 		for( index = 0; index < 32; index++ )
 		{
@@ -1122,12 +1122,12 @@ void StartFrame( void )
 	}
 
 	// is new game started and time to respawn bots yet?
-	if( ( !g_fGameOver ) && ( respawn_time > 1.0 ) &&
+	if( ( !g_fGameOver ) && ( respawn_time > 1.0f ) &&
 		( gpGlobals->time >= respawn_time ) )
 	{
 		int index = 0;
 
-		bot_check_time = gpGlobals->time + 5.0;
+		bot_check_time = gpGlobals->time + 5.0f;
 
 		// find bot needing to be respawned...
 		while( ( index < 32 ) && ( bot_respawn[index].state != BOT_NEED_TO_RESPAWN ) )
@@ -1142,7 +1142,7 @@ void StartFrame( void )
 			BotCreate( bot_respawn[index].skin, bot_respawn[index].name,
 			bot_respawn[index].skill );
 
-			respawn_time = gpGlobals->time + 1.0;  // set next respawn time
+			respawn_time = gpGlobals->time + 1.0f;  // set next respawn time
 		}
 		else
 		{
@@ -1320,7 +1320,7 @@ void StartFrame( void )
 	// if time to check for server commands then do so...
 	if( check_server_cmd <= gpGlobals->time )
 	{
-		check_server_cmd = gpGlobals->time + 1.0;
+		check_server_cmd = gpGlobals->time + 1.0f;
 		char *cvar_bot = (char *)CVAR_GET_STRING( "bot" );
 
 		if( cvar_bot && cvar_bot[0] )
@@ -1412,7 +1412,7 @@ void StartFrame( void )
 	{
 		int count = 0;
 
-		bot_check_time = gpGlobals->time + 5.0;
+		bot_check_time = gpGlobals->time + 5.0f;
 
 		for( i = 1; i <= gpGlobals->maxClients; i++ )
 		{

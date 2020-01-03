@@ -73,7 +73,7 @@ void CBowBolt::Spawn( )
 
 	SetTouch( &CBowBolt::BoltTouch );
 	SetThink( &CBowBolt::BubbleThink );
-	pev->nextthink = gpGlobals->time + 0.2;
+	pev->nextthink = gpGlobals->time + 0.2f;
 }
 
 
@@ -149,7 +149,7 @@ void CBowBolt::BoltTouch( CBaseEntity *pOther )
 			pev->velocity = Vector( 0, 0, 0 );
 			pev->avelocity.z = 0;
 			pev->angles.z = RANDOM_LONG(0,360);
-			pev->nextthink = gpGlobals->time + 10.0;
+			pev->nextthink = gpGlobals->time + 10.0f;
 		}
 
 		if (UTIL_PointContents(pev->origin) != CONTENTS_WATER)
@@ -161,12 +161,12 @@ void CBowBolt::BoltTouch( CBaseEntity *pOther )
 
 void CBowBolt::BubbleThink( void )
 {
-	pev->nextthink = gpGlobals->time + 0.1;
+	pev->nextthink = gpGlobals->time + 0.1f;
 
 	if (pev->waterlevel == 0)
 		return;
 
-	UTIL_BubbleTrail( pev->origin - pev->velocity * 0.1, pev->origin, 20 );
+	UTIL_BubbleTrail( pev->origin - pev->velocity * 0.1f, pev->origin, 20 );
 }
 
 void CBowBolt::ExplodeThink( void )
@@ -299,7 +299,7 @@ void CBow::Holster( int skiplocal /* = 0 */ )
 		SecondaryAttack( );
 	}*/
 
-	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
+	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5f;
 	if (m_iClip)
 		SendWeaponAnim( BOW_HOLSTER1 );
 	else
@@ -314,7 +314,7 @@ void CBow::PrimaryAttack( void )
 // this function only gets called in multiplayer
 /*void CCrossbow::FireSniperBolt()
 {
-	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.75;
+	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.75f;
 
 	if (m_iClip == 0)
 	{
@@ -413,14 +413,14 @@ void CBow::FireBolt()
 		// HEV suit - indicate out of ammo condition
 		m_pPlayer->SetSuitUpdate("!HEV_AMO0", FALSE, 0);
 
-	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.75;
+	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.75f;
 
-	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.75;
+	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.75f;
 
 	if (m_iClip != 0)
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 5.0;
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 5.0f;
 	else
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.75;
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.75f;
 }
 
 
@@ -437,8 +437,8 @@ void CBow::FireBolt()
 		m_fInZoom = 1;
 	}
 	
-	pev->nextthink = UTIL_WeaponTimeBase() + 0.1;
-	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1.0;
+	pev->nextthink = UTIL_WeaponTimeBase() + 0.1f;
+	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1.0f;
 }*/
 
 
@@ -463,7 +463,7 @@ void CBow::WeaponIdle( void )
 	if ( m_flTimeWeaponIdle < UTIL_WeaponTimeBase() )
 	{
 		float flRand = UTIL_SharedRandomFloat( m_pPlayer->random_seed, 0, 1 );
-		if (flRand <= 0.75)
+		if (flRand <= 0.75f)
 		{
 			if (m_iClip)
 			{
@@ -480,12 +480,12 @@ void CBow::WeaponIdle( void )
 			if (m_iClip)
 			{
 				SendWeaponAnim( BOW_FIDGET1 );
-				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 90.0 / 30.0;
+				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 90.0f / 30.0f;
 			}
 			else
 			{
 				SendWeaponAnim( BOW_FIDGET2 );
-				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 80.0 / 30.0;
+				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 80.0f / 30.0f;
 			}
 		}
 	}

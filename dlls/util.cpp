@@ -1306,7 +1306,7 @@ void UTIL_PaintballDecalTrace( TraceResult *pTrace, int decalNumber )
 	if( index < 0 )
 		return;
 
-	if( pTrace->flFraction == 1.0 )
+	if( pTrace->flFraction == 1.0f )
 		return;
 
 	MESSAGE_BEGIN( MSG_PAS, SVC_TEMPENTITY, pTrace->vecEndPos );

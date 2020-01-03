@@ -64,7 +64,7 @@ void CHSModel :: GeneriCHSModelSpawn(const char *szModel, Vector vecMin, Vector 
 {
 	if (!szModel || !*szModel)
 	{
-		ALERT(at_error, "cycler at %.0f %.0f %0.f missing modelname", pev->origin.x, pev->origin.y, pev->origin.z );
+		ALERT(at_error, "cycler at %.0f %.0f %0.f missing modelname", (double)pev->origin.x, (double)pev->origin.y, (double)pev->origin.z );
 		REMOVE_ENTITY(ENT(pev));
 		return;
 	}
@@ -94,7 +94,7 @@ void CHSModel :: Spawn( )
 	m_flFrameRate		= 75;
 	m_flGroundSpeed		= 0;
 
-	pev->nextthink		+= 1.0;
+	pev->nextthink		+= 1.0f;
 
 	ResetSequenceInfo( );
 
@@ -117,7 +117,7 @@ void CHSModel :: Spawn( )
 //
 void CHSModel :: Think( void )
 {
-	pev->nextthink = gpGlobals->time + 0.1;
+	pev->nextthink = gpGlobals->time + 0.1f;
 
 	if (m_animate)
 	{
@@ -154,7 +154,7 @@ public:
 	virtual int		Restore( CRestore &restore );
 	static	TYPEDESCRIPTION m_SaveData[];
 
-	inline int		ShouldAnimate( void ) { return m_animate && m_maxFrame > 1.0; }
+	inline int		ShouldAnimate( void ) { return m_animate && m_maxFrame > 1.0f; }
 	int			m_animate;
 	float		m_lastTime;
 	float		m_maxFrame;
@@ -180,7 +180,7 @@ void CHSModelSprite::Spawn( void )
 	pev->effects		= 0;
 
 	pev->frame			= 0;
-	pev->nextthink		= gpGlobals->time + 0.1;
+	pev->nextthink		= gpGlobals->time + 0.1f;
 	m_animate			= 1;
 	m_lastTime			= gpGlobals->time;
 
@@ -196,7 +196,7 @@ void CHSModelSprite::Think( void )
 	if ( ShouldAnimate() )
 		Animate( pev->framerate * (gpGlobals->time - m_lastTime) );
 
-	pev->nextthink		= gpGlobals->time + 0.1;
+	pev->nextthink		= gpGlobals->time + 0.1f;
 	m_lastTime = gpGlobals->time;
 }
 
@@ -210,7 +210,7 @@ void CHSModelSprite::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYP
 
 int	CHSModelSprite::TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType )
 {
-	if ( m_maxFrame > 1.0 )
+	if ( m_maxFrame > 1.0f )
 	{
 		Animate( 1.0 );
 	}

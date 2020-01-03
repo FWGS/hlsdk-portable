@@ -101,7 +101,7 @@ BOOL CBeamKatana::Deploy( )
 
 void CBeamKatana::Holster( int skiplocal /* = 0 */ )
 {
-	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
+	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5f;
 	SendWeaponAnim( BEAMKATANA_HOLSTER );
 }
 
@@ -119,7 +119,7 @@ void FindBullIntersection( const Vector &vecSrc, TraceResult &tr, float *mins, f
 
 	vecHullEnd = vecSrc + ((vecHullEnd - vecSrc)*2);
 	UTIL_TraceLine( vecSrc, vecHullEnd, dont_ignore_monsters, pEntity, &tmpTrace );
-	if ( tmpTrace.flFraction < 1.0 )
+	if ( tmpTrace.flFraction < 1.0f )
 	{
 		tr = tmpTrace;
 		return;
@@ -136,7 +136,7 @@ void FindBullIntersection( const Vector &vecSrc, TraceResult &tr, float *mins, f
 				vecEnd.z = vecHullEnd.z + minmaxs[k][2];
 
 				UTIL_TraceLine( vecSrc, vecEnd, dont_ignore_monsters, pEntity, &tmpTrace );
-				if ( tmpTrace.flFraction < 1.0 )
+				if ( tmpTrace.flFraction < 1.0f )
 				{
 					float thisDistance = (tmpTrace.vecEndPos - vecSrc).Length();
 					if ( thisDistance < distance )
@@ -150,19 +150,18 @@ void FindBullIntersection( const Vector &vecSrc, TraceResult &tr, float *mins, f
 	}
 }
 
-
 void CBeamKatana::PrimaryAttack()
 {
 	if (! Swing( 1 ))
 	{
 		SetThink( &CBeamKatana::SwingAgain );
-		pev->nextthink = gpGlobals->time + 0.1;
+		pev->nextthink = gpGlobals->time + 0.1f;
 	}
 }
 
 void CBeamKatana::SecondaryAttack()
 {
-Fuckhead();
+	Fuckhead();
 }
 
 void CBeamKatana::Fuckhead()
@@ -181,8 +180,7 @@ void CBeamKatana::Fuckhead()
 					EMIT_SOUND(ENT(m_pPlayer->pev), CHAN_ITEM, "taunts/bk_6.wav", 1, ATTN_NORM); break;
 				}
 
-	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 2;	
-
+	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 2.0f;
 }
 
 void CBeamKatana::Smack( )
@@ -210,10 +208,10 @@ int CBeamKatana::Swing( int fFirst )
 	UTIL_TraceLine( vecSrc, vecEnd, dont_ignore_monsters, ENT( m_pPlayer->pev ), &tr );
 
 #ifndef CLIENT_DLL
-	if ( tr.flFraction >= 1.0 )
+	if ( tr.flFraction >= 1.0f )
 	{
 		UTIL_TraceHull( vecSrc, vecEnd, dont_ignore_monsters, head_hull, ENT( m_pPlayer->pev ), &tr );
-		if ( tr.flFraction < 1.0 )
+		if ( tr.flFraction < 1.0f )
 		{
 			// Calculate the point of intersection of the line (or hull) and the object we hit
 			// This is and approximation of the "best" intersection
@@ -230,13 +228,13 @@ int CBeamKatana::Swing( int fFirst )
 	0.0, 0, 0.0 );
 
 
-	if ( tr.flFraction >= 1.0 )
+	if ( tr.flFraction >= 1.0f )
 	{
 		if (fFirst)
 		{
 			// miss
-			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5;
-			
+			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5f;
+
 			// player "shoot" animation
 			m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
 		}
@@ -336,15 +334,11 @@ int CBeamKatana::Swing( int fFirst )
 
 		m_pPlayer->m_iWeaponVolume = flVol * BEAMKATANA_WALLHIT_VOLUME;
 #endif
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.25;
-		
-		SetThink( &CBeamKatana::Smack );
-		pev->nextthink = UTIL_WeaponTimeBase() + 0.2;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.25f;
 
-		
+		SetThink( &CBeamKatana::Smack );
+		pev->nextthink = UTIL_WeaponTimeBase() + 0.2f;		
 	}
 	return fDidHit;
 }
-
-
 

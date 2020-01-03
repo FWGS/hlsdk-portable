@@ -79,7 +79,7 @@ void CSciPGBolt::Spawn( )
 
 	SetTouch( &CSciPGBolt::BoltTouch );
 	SetThink( &CSciPGBolt::BubbleThink );
-	pev->nextthink = gpGlobals->time + 0.2;
+	pev->nextthink = gpGlobals->time + 0.2f;
 }
 
 
@@ -172,12 +172,12 @@ void CSciPGBolt::SprayTest( const Vector &position, const Vector &direction, int
 
 void CSciPGBolt::BubbleThink( void )
 {
-	pev->nextthink = gpGlobals->time + 0.1;
+	pev->nextthink = gpGlobals->time + 0.1f;
 
 	if (pev->waterlevel == 0)
 		return;
 
-	UTIL_BubbleTrail( pev->origin - pev->velocity * 0.1, pev->origin, 20 );
+	UTIL_BubbleTrail( pev->origin - pev->velocity * 0.1f, pev->origin, 20 );
 }
 
 void CSciPGBolt::ExplodeThink( void )
@@ -300,7 +300,7 @@ void CSciPG::Holster( int skiplocal /* = 0 */ )
 {
 	m_fInReload = FALSE;// cancel any reload in progress.
 
-	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
+	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5f;
 	if (m_iClip)
 		SendWeaponAnim( RPG_HOLSTER1 );
 	else
@@ -377,14 +377,14 @@ void CSciPG::FireBolt()
 		// HEV suit - indicate out of ammo condition
 		m_pPlayer->SetSuitUpdate("!HEV_AMO0", FALSE, 0);
 
-	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.75;
+	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.75f;
 
-	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.75;
+	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.75f;
 
 	if (m_iClip != 0)
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 5.0;
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 5.0f;
 	else
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.75;
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.75f;
 }
 
 void CSciPG::WeaponIdle( void )
@@ -396,7 +396,7 @@ void CSciPG::WeaponIdle( void )
 	if ( m_flTimeWeaponIdle < UTIL_WeaponTimeBase() )
 	{
 		float flRand = UTIL_SharedRandomFloat( m_pPlayer->random_seed, 0, 1 );
-		if (flRand <= 0.75)
+		if (flRand <= 0.75f)
 		{
 			if (m_iClip)
 			{
@@ -413,12 +413,12 @@ void CSciPG::WeaponIdle( void )
 			if (m_iClip)
 			{
 				SendWeaponAnim( RPG_FIDGET );
-				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 90.0 / 30.0;
+				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 90.0f / 30.0f;
 			}
 			else
 			{
 				SendWeaponAnim( RPG_FIDGET_UL );
-				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 80.0 / 30.0;
+				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 80.0f / 30.0f;
 			}
 		}
 	}

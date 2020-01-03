@@ -26,7 +26,7 @@
 #define	FOTN_BODYHIT_VOLUME 128
 #define	FOTN_WALLHIT_VOLUME 512
 
-#define FOTN_DELAY			0.5 //1.5 Seconds
+#define FOTN_DELAY			0.5f //1.5 Seconds
 
 LINK_ENTITY_TO_CLASS( weapon_fotn, CFOTN );
 
@@ -103,7 +103,7 @@ BOOL CFOTN::Deploy( )
 
 void CFOTN::Holster( int skiplocal /* = 0 */ )
 {
-	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
+	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5f;
 	SendWeaponAnim( FOTN_HOLSTER );
 }
 
@@ -121,7 +121,7 @@ void FindGullIntersection( const Vector &vecSrc, TraceResult &tr, float *mins, f
 
 	vecHullEnd = vecSrc + ((vecHullEnd - vecSrc)*2);
 	UTIL_TraceLine( vecSrc, vecHullEnd, dont_ignore_monsters, pEntity, &tmpTrace );
-	if ( tmpTrace.flFraction < 1.0 )
+	if ( tmpTrace.flFraction < 1.0f )
 	{
 		tr = tmpTrace;
 		return;
@@ -138,7 +138,7 @@ void FindGullIntersection( const Vector &vecSrc, TraceResult &tr, float *mins, f
 				vecEnd.z = vecHullEnd.z + minmaxs[k][2];
 
 				UTIL_TraceLine( vecSrc, vecEnd, dont_ignore_monsters, pEntity, &tmpTrace );
-				if ( tmpTrace.flFraction < 1.0 )
+				if ( tmpTrace.flFraction < 1.0f )
 				{
 					float thisDistance = (tmpTrace.vecEndPos - vecSrc).Length();
 					if ( thisDistance < distance )
@@ -175,7 +175,7 @@ void CFOTN::PrimaryAttack()
 	if (flAhDelay < gpGlobals->time)
 	{
 		EMIT_SOUND(ENT(m_pPlayer->pev), CHAN_ITEM, "weapons/fotn_start.wav", 1, ATTN_NORM);
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.3;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.3f;
 		flAhDelay = gpGlobals->time + FOTN_DELAY;
 		return;
 	}
@@ -195,7 +195,7 @@ void CFOTN::PrimaryAttack()
 	if (! Swing( 1 ))
 	{
 		SetThink( &CFOTN::SwingAgain );
-		pev->nextthink = gpGlobals->time + 0.12;
+		pev->nextthink = gpGlobals->time + 0.12f;
 	}
 }
 
@@ -203,8 +203,8 @@ void CFOTN::SecondaryAttack()
 {
 	EMIT_SOUND(ENT(m_pPlayer->pev), CHAN_ITEM, "weapons/fotn_omae.wav", 1, ATTN_NORM);
 	SendWeaponAnim( FOTN_IDLELONG );
-	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 2.5;
-	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 2.5;
+	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 2.5f;
+	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 2.5f;
 }
 
 
@@ -233,10 +233,10 @@ int CFOTN::Swing( int fFirst )
 	UTIL_TraceLine( vecSrc, vecEnd, dont_ignore_monsters, ENT( m_pPlayer->pev ), &tr );
 
 #ifndef CLIENT_DLL
-	if ( tr.flFraction >= 1.0 )
+	if ( tr.flFraction >= 1.0f )
 	{
 		UTIL_TraceHull( vecSrc, vecEnd, dont_ignore_monsters, head_hull, ENT( m_pPlayer->pev ), &tr );
-		if ( tr.flFraction < 1.0 )
+		if ( tr.flFraction < 1.0f )
 		{
 			// Calculate the point of intersection of the line (or hull) and the object we hit
 			// This is and approximation of the "best" intersection
@@ -253,13 +253,13 @@ int CFOTN::Swing( int fFirst )
 	0.0, 0, 0.0 );
 
 
-	if ( tr.flFraction >= 1.0 )
+	if ( tr.flFraction >= 1.0f )
 	{
 		if (fFirst)
 		{
 			// miss
-			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.12;
-			
+			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.12f;
+
 			// player "shoot" animation
 			m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
 		}
@@ -351,15 +351,11 @@ int CFOTN::Swing( int fFirst )
 
 		m_pPlayer->m_iWeaponVolume = flVol * FOTN_WALLHIT_VOLUME;
 #endif
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.12;
-		
-		SetThink( &CFOTN::Smack );
-		pev->nextthink = UTIL_WeaponTimeBase() + 0.18;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.12f;
 
-		
+		SetThink( &CFOTN::Smack );
+		pev->nextthink = UTIL_WeaponTimeBase() + 0.18f;
 	}
 	return fDidHit;
 }
-
-
 

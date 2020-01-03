@@ -1849,7 +1849,7 @@ void CBasePlayer::UpdateStatusBar()
 					// newSBarState[SBAR_ID_TARGETARMOR] = pEntity->pev->armorvalue; // No need to get it % based since 100 it's the max.
 				}
 
-				m_flStatusBarDisappearDelay = gpGlobals->time + 1.0;
+				m_flStatusBarDisappearDelay = gpGlobals->time + 1.0f;
 			}
 		}
 		else if( m_flStatusBarDisappearDelay > gpGlobals->time )

@@ -82,7 +82,7 @@ void CDoshRocket :: Spawn( void )
 	pev->velocity = gpGlobals->v_forward * 250;
 	pev->gravity = 0.5;
 
-	pev->nextthink = gpGlobals->time + 0.4;
+	pev->nextthink = gpGlobals->time + 0.4f;
 
 	pev->dmg = gSkillData.plrDmgDosh;
 }
@@ -134,7 +134,7 @@ void CDoshRocket::DoshTouch( CBaseEntity *pOther )
 			pev->velocity = Vector( 0, 0, 0 );
 			pev->avelocity.z = 0;
 			//pev->angles.x = RANDOM_LONG(0,360);
-			pev->nextthink = gpGlobals->time + 10.0;
+			pev->nextthink = gpGlobals->time + 10.0f;
 		}
 	}
 }
@@ -248,7 +248,7 @@ void CDosh::Holster( int skiplocal /* = 0 */ )
 {
 	m_fInReload = FALSE;// cancel any reload in progress.
 
-	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
+	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5f;
 	
 	SendWeaponAnim( DOSH_THROW3 );
 
@@ -295,11 +295,11 @@ void CDosh::WeaponIdle( void )
 	{
 		int iAnim;
 		float flRand = UTIL_SharedRandomFloat( m_pPlayer->random_seed, 0, 1 );
-		if (flRand <= 0.75 || m_fSpotActive)
+		if (flRand <= 0.75f || m_fSpotActive)
 		{
 				iAnim = DOSH_IDLE;
 
-			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 90.0 / 15.0;
+			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 90.0f / 15.0f;
 		}
 		else
 		{

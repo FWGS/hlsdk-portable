@@ -84,7 +84,7 @@ void CZAPPER::ZAPPERFire( float flSpread , float flCycleTime, BOOL fUseAutoAim )
     if (m_fFireOnEmpty)
     {
       PlayEmptySound();
-      m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.2;
+      m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.2f;
     }
     return;
   }
@@ -130,7 +130,7 @@ void CZAPPER::ZAPPERFire( float flSpread , float flCycleTime, BOOL fUseAutoAim )
  	 case 1: m_pPlayer->pev->punchangle.y += 1; break;
     }
   }
-  else if (m_pPlayer->pev->velocity.Length() > .01)
+  else if (m_pPlayer->pev->velocity.Length() > 0.01f)
   {
     switch (RANDOM_LONG(0,1))
     {
@@ -182,12 +182,12 @@ void CZAPPER::WeaponIdle( void )
     int iAnim;
     float flRand = UTIL_SharedRandomFloat( m_pPlayer->random_seed, 0.0, 1.0 );
 
-    if (flRand <= 0.3 + 0 * 0.75)
+    if (flRand <= 0.3f)
     {
       iAnim = ZAPPER_IDLE1;
       m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 61 / 16;
     }
-    else if (flRand <= 0.6 + 0 * 0.875)
+    else if (flRand <= 0.6f)
     {
       iAnim = ZAPPER_IDLE2;
       m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 41 / 16;

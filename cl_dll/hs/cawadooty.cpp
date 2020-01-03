@@ -29,7 +29,7 @@
 
 DECLARE_MESSAGE(m_COD, COD )
 
-#define RANK_DELAY 8.0
+#define RANK_DELAY 8.0f
 
 int CHudCOD::Init(void)
 {

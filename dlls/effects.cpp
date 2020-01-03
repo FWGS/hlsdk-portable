@@ -2289,7 +2289,7 @@ void CEnvELight::Spawn( void )
 	if( m_fLightActive )
 	{
 		SetThink( &CEnvELight::LightFrame );
-		pev->nextthink = gpGlobals->time + 0.1;
+		pev->nextthink = gpGlobals->time + 0.1f;
 	}
 }
 
@@ -2340,7 +2340,7 @@ void CEnvELight::SendData( void )
 
 	if( m_fLightActive )
 	{
-		pev->nextthink = pev->ltime + 0.1;
+		pev->nextthink = pev->ltime + 0.1f;
 		SetThink( &CEnvELight::LightFrame );
 	}
 	else
@@ -2385,7 +2385,7 @@ void CEnvELight::LightFrame( void )
 		SendData();
 
 	edict_t *pTarget = edict();
-	pev->nextthink = gpGlobals->time + 0.1;
+	pev->nextthink = gpGlobals->time + 0.1f;
 
 	if( m_fParentedElight )
 	{

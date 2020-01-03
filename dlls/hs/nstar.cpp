@@ -73,7 +73,7 @@ void CNinjaStar::Spawn( )
 
 	SetTouch( &CNinjaStar::StarTouch );
 	SetThink( &CNinjaStar::BubbleThink );
-	pev->nextthink = gpGlobals->time + 0.2;
+	pev->nextthink = gpGlobals->time + 0.2f;
 }
 
 
@@ -149,7 +149,7 @@ void CNinjaStar::StarTouch( CBaseEntity *pOther )
 			pev->velocity = Vector( 0, 0, 0 );
 			pev->avelocity.z = 0;
 			pev->angles.z = RANDOM_LONG(0,360);
-			pev->nextthink = gpGlobals->time + 10.0;
+			pev->nextthink = gpGlobals->time + 10.0f;
 		}
 
 		if (UTIL_PointContents(pev->origin) != CONTENTS_WATER)
@@ -161,12 +161,12 @@ void CNinjaStar::StarTouch( CBaseEntity *pOther )
 
 void CNinjaStar::BubbleThink( void )
 {
-	pev->nextthink = gpGlobals->time + 0.1;
+	pev->nextthink = gpGlobals->time + 0.1f;
 
 	if (pev->waterlevel == 0)
 		return;
 
-	UTIL_BubbleTrail( pev->origin - pev->velocity * 0.1, pev->origin, 20 );
+	UTIL_BubbleTrail( pev->origin - pev->velocity * 0.1f, pev->origin, 20 );
 }
 
 void CNinjaStar::ExplodeThink( void )
@@ -278,7 +278,7 @@ BOOL CNStar::Deploy( )
 void CNStar::Holster( int skiplocal /* = 0 */ )
 {
 	m_fInReload = FALSE;// cancel any reload in progress.
-	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
+	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5f;
 }
 
 void CNStar::PrimaryAttack( void )
@@ -346,14 +346,14 @@ void CNStar::FireStar()
 		// HEV suit - indicate out of ammo condition
 		m_pPlayer->SetSuitUpdate("!HEV_AMO0", FALSE, 0);
 
-	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.3;
+	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.3f;
 
-	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.75;
+	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.75f;
 
 	if (m_iClip != 0)
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 5.0;
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 5.0f;
 	else
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.75;
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.75f;
 }
 
 void CNStar::WeaponIdle( void )
@@ -362,8 +362,8 @@ void CNStar::WeaponIdle( void )
 
 	ResetEmptySound( );
 	
-				SendWeaponAnim( NSTAR_IDLE );
-				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 80.0 / 30.0;
+	SendWeaponAnim( NSTAR_IDLE );
+	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 80.0f / 30.0f;
 }
 
 

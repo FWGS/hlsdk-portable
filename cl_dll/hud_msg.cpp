@@ -167,7 +167,7 @@ int CHud::MsgFunc_AddELight( const char *pszName, int iSize, void *pbuf )
 	}
 	else
 	{
-		dl->die = gEngfuncs.GetClientTime() + 1E6;
+		dl->die = gEngfuncs.GetClientTime() + (float)1E6;
 
 		dl->origin[0] = READ_COORD();
 		dl->origin[1] = READ_COORD();

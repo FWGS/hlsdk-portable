@@ -1463,7 +1463,7 @@ void EV_FireModman2( event_args_t *args )
 	gEngfuncs.pEventAPI->EV_PlayerTrace( vecSrc, vecEnd, PM_STUDIO_BOX, -1, &tr );
 	
 	//We hit something
-	if( tr.fraction < 1.0 )
+	if( tr.fraction < 1.0f )
 	{
 		physent_t *pe = gEngfuncs.pEventAPI->EV_GetPhysent( tr.ent ); 
 

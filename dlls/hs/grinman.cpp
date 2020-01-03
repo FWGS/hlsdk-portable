@@ -111,7 +111,7 @@ void CGrinman :: HandleAnimEvent( MonsterEvent_t *pEvent )
 //=========================================================
 int CGrinman :: ISoundMask ( void )
 {
-	return	NULL;
+	return 0;
 }
 
 //=========================================================

@@ -71,7 +71,7 @@ int CHudBattery::MsgFunc_Battery( const char *pszName,  int iSize, void *pbuf )
 	{
 		m_fFade = FADE_TIME;
 		m_iBat = x;
-		m_flBat = ( (float) x ) / 100.0;		// 100.0 divided by 100.0 = 1
+		m_flBat = ( (float) x ) / 100.0f;		// 100.0 divided by 100.0 = 1
 	}
 
 	return 1;
@@ -94,7 +94,7 @@ int CHudBattery::Draw( float flTime )
 
 	int MGSX = ( gHUD.GetSpriteRect( m_HUD_mgs3suitbar ).right - gHUD.GetSpriteRect( m_HUD_mgs3suitbar ).left ) / 10; //Needs 20. It's 104
 	int MGSY = ScreenHeight - 45;
-	int iOffset2 = m_iWidth * ( 1.0 - m_flBat );	//32 * ( 1 - 1 ) = 0
+	int iOffset2 = m_iWidth * ( 1.0f - m_flBat );	//32 * ( 1 - 1 ) = 0
 
 	if( iOffset2 < m_iWidth )
 	{

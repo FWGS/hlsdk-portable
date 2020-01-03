@@ -73,7 +73,7 @@ void CModmanHorn::Spawn( )
 
 	SetTouch( &CModmanHorn::HornTouch );
 	SetThink( &CModmanHorn::BubbleThink );
-	pev->nextthink = gpGlobals->time + 0.2;
+	pev->nextthink = gpGlobals->time + 0.2f;
 }
 
 
@@ -153,7 +153,7 @@ void CModmanHorn::HornTouch( CBaseEntity *pOther )
 			pev->velocity = Vector( 0, 0, 0 );
 			pev->avelocity.z = 0;
 			pev->angles.z = RANDOM_LONG(0,360);
-			pev->nextthink = gpGlobals->time + 10.0;
+			pev->nextthink = gpGlobals->time + 10.0f;
 		}
 
 		if (UTIL_PointContents(pev->origin) != CONTENTS_WATER)
@@ -165,18 +165,18 @@ void CModmanHorn::HornTouch( CBaseEntity *pOther )
 	if ( g_pGameRules->IsMultiplayer() )
 	{
 		SetThink( &CModmanHorn::ExplodeThink );
-		pev->nextthink = gpGlobals->time + 0.1;
+		pev->nextthink = gpGlobals->time + 0.1f;
 	}
 }
 
 void CModmanHorn::BubbleThink( void )
 {
-	pev->nextthink = gpGlobals->time + 0.1;
+	pev->nextthink = gpGlobals->time + 0.1f;
 
 	if (pev->waterlevel == 0)
 		return;
 
-	UTIL_BubbleTrail( pev->origin - pev->velocity * 0.1, pev->origin, 1 );
+	UTIL_BubbleTrail( pev->origin - pev->velocity * 0.1f, pev->origin, 1 );
 }
 
 void CModmanHorn::ExplodeThink( void )
@@ -306,7 +306,7 @@ void CModman::Holster( int skiplocal /* = 0 */ )
 {
 	m_fInReload = FALSE;// cancel any reload in progress.
 
-	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
+	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5f;
 	if (m_iClip)
 		SendWeaponAnim( CROSSBOW_HOLSTER1 );
 	else
@@ -332,7 +332,7 @@ void CModman::PrimaryAttack( void )
 // this function only gets called in multiplayer
 void CModman::FireSniperHorn()
 {
-	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.75;
+	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.75f;
 
 	if (m_iClip == 0)
 	{
@@ -430,14 +430,14 @@ void CModman::FireHorn()
 		// HEV suit - indicate out of ammo condition
 		m_pPlayer->SetSuitUpdate("!HEV_AMO0", FALSE, 0);
 
-	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.75;
+	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.75f;
 
-	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.75;
+	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.75f;
 
 	if (m_iClip != 0)
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 5.0;
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 5.0f;
 	else
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.75;
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.75f;
 }
 
 void CModman::Reload( void )
@@ -459,7 +459,7 @@ void CModman::WeaponIdle( void )
 	if ( m_flTimeWeaponIdle < UTIL_WeaponTimeBase() )
 	{
 		float flRand = UTIL_SharedRandomFloat( m_pPlayer->random_seed, 0, 1 );
-		if (flRand <= 0.75)
+		if (flRand <= 0.75f)
 		{
 			if (m_iClip)
 			{
@@ -476,12 +476,12 @@ void CModman::WeaponIdle( void )
 			if (m_iClip)
 			{
 				SendWeaponAnim( CROSSBOW_FIDGET1 );
-				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 90.0 / 30.0;
+				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 90.0f / 30.0f;
 			}
 			else
 			{
 				SendWeaponAnim( CROSSBOW_FIDGET2 );
-				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 80.0 / 30.0;
+				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 80.0f / 30.0f;
 			}
 		}
 	}

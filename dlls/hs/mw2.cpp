@@ -38,9 +38,9 @@ enum mw2_e
 
 
 
-LINK_ENTITY_TO_CLASS( weapon_mw2, CMW2 );
-LINK_ENTITY_TO_CLASS( weapon_gauss, CMW2 );
-LINK_ENTITY_TO_CLASS( ammo_gaussclip, CMW2 );
+LINK_ENTITY_TO_CLASS( weapon_mw2, CMW2 )
+LINK_ENTITY_TO_CLASS( weapon_gauss, CMW2 )
+LINK_ENTITY_TO_CLASS( ammo_gaussclip, CMW2 )
 
 //=========================================================
 //=========================================================
@@ -117,14 +117,14 @@ void CMW2::PrimaryAttack()
 	if (m_pPlayer->pev->waterlevel == 3)
 	{
 		PlayEmptySound( );
-		m_flNextPrimaryAttack = 0.15;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.15f;
 		return;
 	}
 
 	if (m_iClip <= 0)
 	{
 		PlayEmptySound();
-		m_flNextPrimaryAttack = 0.15;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.15f;
 		return;
 	}
 
@@ -175,10 +175,10 @@ void CMW2::PrimaryAttack()
 		// HEV suit - indicate out of ammo condition
 		m_pPlayer->SetSuitUpdate("!HEV_AMO0", FALSE, 0);
 
-	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.1;
+	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.1f;
 
 	if ( m_flNextPrimaryAttack < UTIL_WeaponTimeBase() )
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.1;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.1f;
 
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
 }
@@ -231,4 +231,4 @@ class CMW2AmmoClip : public CBasePlayerAmmo
 		return bResult;
 	}
 };
-LINK_ENTITY_TO_CLASS( ammo_mw2, CMW2AmmoClip );
+LINK_ENTITY_TO_CLASS( ammo_mw2, CMW2AmmoClip )

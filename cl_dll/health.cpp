@@ -141,7 +141,7 @@ int CHudHealth::MsgFunc_Health( const char *pszName, int iSize, void *pbuf )
 	{
 		m_fFade = FADE_TIME;
 		m_iHealth = x;
-		m_flHealth = ( (float)x ) / 100.0;		// 100.0 divided by 100.0 = 1
+		m_flHealth = ( (float)x ) / 100.0f;		// 100.0 divided by 100.0 = 1
 	}
 
 	return 1;
@@ -223,13 +223,13 @@ int CHudHealth::Draw( float flTime )
 	if( gHUD.m_iWeaponBits & ( 1 << ( WEAPON_SUIT ) ) )
 	{
 		int MGSX = ( gHUD.GetSpriteRect( m_HUD_mgs3life ).right - gHUD.GetSpriteRect( m_HUD_mgs3life ).left ) / 5; // Needs 20. It's 104
-		int MGSY = ScreenHeight - ( ( gHUD.GetSpriteRect( m_HUD_mgs3name ).bottom - gHUD.GetSpriteRect( m_HUD_mgs3name ).top ) * 2.5 ); // needs ScreenHeight-40. It's
+		int MGSY = ScreenHeight - ( ( gHUD.GetSpriteRect( m_HUD_mgs3name ).bottom - gHUD.GetSpriteRect( m_HUD_mgs3name ).top ) * 2.5f ); // needs ScreenHeight-40. It's
 
 		//Kojima would be proud
 		SPR_Set( gHUD.GetSprite( m_HUD_mgs3name ), 255, 255, 255 );
 		SPR_DrawHoles( 0, MGSX, MGSY, &gHUD.GetSpriteRect( m_HUD_mgs3name ) ); // Draw the name
 
-		int iOffset = m_iWidth * ( 1.0 - m_flHealth ); // 32 * ( 1 - 1 ) = 0
+		int iOffset = m_iWidth * ( 1.0f - m_flHealth ); // 32 * ( 1 - 1 ) = 0
 		if( iOffset < m_iWidth )
 		{
 			rc = *m_prc2;

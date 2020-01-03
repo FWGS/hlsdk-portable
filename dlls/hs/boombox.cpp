@@ -96,7 +96,7 @@ BOOL CBoombox::Deploy( )
 void CBoombox::Holster( int skiplocal /* = 0 */ )
 {
 	int i;
-	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
+	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5f;
 	SendWeaponAnim( BOOMBOX_HOLSTER );
 	for ( i = 0; i < ARRAYSIZE( pBoomboxSongs ); i++ )
 	{
@@ -109,11 +109,11 @@ void CBoombox::PrimaryAttack()
 	if( IsChristmas( true ) )
 	{
 		EMIT_SOUND(ENT(m_pPlayer->pev), CHAN_WEAPON, "bbox/xmassong.wav", 1, ATTN_NORM);
-		m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
+		m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5f;
 		return;
 	}
 	EMIT_SOUND(ENT(m_pPlayer->pev), CHAN_WEAPON, pBoomboxSongs[ RANDOM_LONG(0,ARRAYSIZE(pBoomboxSongs)-1) ], 1, ATTN_NORM);
-	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
+	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5f;
 }
 
 void CBoombox::SecondaryAttack()
@@ -123,5 +123,5 @@ void CBoombox::SecondaryAttack()
 		UTIL_ScreenShake( m_pPlayer->pev->origin, 25.0, 200.0, 2, 750 );
 #endif
 		RadiusDamage( m_pPlayer->pev->origin, pev, m_pPlayer->pev, 10, 750, CLASS_NONE, DMG_BILLNYE | DMG_ALWAYSGIB );
-		m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 1.75;
+		m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 1.75f;
 }

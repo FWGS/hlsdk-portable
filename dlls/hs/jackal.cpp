@@ -87,7 +87,7 @@ void CJackal::JackalFire( float flSpread , float flCycleTime, BOOL fUseAutoAim )
     if (m_fFireOnEmpty)
     {
       PlayEmptySound();
-      m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.2;
+      m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.2f;
     }
     return;
   }
@@ -118,7 +118,7 @@ void CJackal::JackalFire( float flSpread , float flCycleTime, BOOL fUseAutoAim )
   }
 
   m_pPlayer->FireBullets( 1, vecSrc, vecAiming, VECTOR_CONE_3DEGREES, 8192, BULLET_PLAYER_JACKAL, 2 );
-  m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 1.0;
+  m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 1.0f;
 
   if (!m_iClip && m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0)
   m_pPlayer->SetSuitUpdate("!HEV_AMO0", FALSE, 0);
@@ -167,12 +167,12 @@ void CJackal::WeaponIdle( void )
     int iAnim;
     float flRand = UTIL_SharedRandomFloat( m_pPlayer->random_seed, 0.0, 1.0 );
 
-    if (flRand <= 0.3 + 0 * 0.75)
+    if (flRand <= 0.3f)
     {
       iAnim = Jackal_IDLE1;
       m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1 / 16;
     }
-    else if (flRand <= 0.6 + 0 * 0.875)
+    else if (flRand <= 0.6f)
     {
       iAnim = Jackal_LONGIDLE;
       m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1 / 16;

@@ -145,9 +145,9 @@ void CGrenade::Explode2( TraceResult *pTrace, int bitsDamageType )
 	pev->takedamage = DAMAGE_NO;
 
 	// Pull out of the wall a bit
-	if( pTrace->flFraction != 1.0 )
+	if( pTrace->flFraction != 1.0f )
 	{
-		pev->origin = pTrace->vecEndPos + (pTrace->vecPlaneNormal * (pev->dmg - 24) * 0.6);
+		pev->origin = pTrace->vecEndPos + (pTrace->vecPlaneNormal * (pev->dmg - 24) * 0.6f);
 	}
 
 	int iContents = UTIL_PointContents ( pev->origin );
@@ -158,7 +158,7 @@ void CGrenade::Explode2( TraceResult *pTrace, int bitsDamageType )
 		WRITE_COORD( pev->origin.y );
 		WRITE_COORD( pev->origin.z );
 		WRITE_SHORT( g_sModelIndexSMB );
-		WRITE_BYTE( ( pev->dmg - 50 ) * .60  ); // scale * 10
+		WRITE_BYTE( ( pev->dmg - 50 ) * 0.6f  ); // scale * 10
 		WRITE_BYTE( 4 ); // framerate
 		WRITE_BYTE( TE_EXPLFLAG_NONE );
 	MESSAGE_END();
@@ -174,7 +174,7 @@ void CGrenade::Explode2( TraceResult *pTrace, int bitsDamageType )
 
 	RadiusDamage( pev, pevOwner, pev->dmg, CLASS_NONE, bitsDamageType );
 
-	if( RANDOM_FLOAT( 0, 1 ) < 0.5 )
+	if( RANDOM_FLOAT( 0, 1 ) < 0.5f )
 	{
 		UTIL_DecalTrace( pTrace, DECAL_SCORCH1 );
 	}
@@ -201,7 +201,7 @@ void CGrenade::Explode2( TraceResult *pTrace, int bitsDamageType )
 	pev->effects |= EF_NODRAW;
 	SetThink( &CGrenade::Smoke );
 	pev->velocity = g_vecZero;
-	pev->nextthink = gpGlobals->time + 0.3;
+	pev->nextthink = gpGlobals->time + 0.3f;
 }
 
 void CGrenade::Smoke( void )
@@ -475,7 +475,7 @@ void CGrenade::TumbleThink2( void )
 	}
 
 	StudioFrameAdvance();
-	pev->nextthink = gpGlobals->time + 0.1;
+	pev->nextthink = gpGlobals->time + 0.1f;
 
 	if( pev->dmgtime - 1 < gpGlobals->time )
 	{
@@ -489,8 +489,8 @@ void CGrenade::TumbleThink2( void )
 
 	if( pev->waterlevel != 0 )
 	{
-		pev->velocity = pev->velocity * 0.5;
-		pev->framerate = 0.2;
+		pev->velocity = pev->velocity * 0.5f;
+		pev->framerate = 0.2f;
 	}
 }
 
@@ -631,9 +631,9 @@ CGrenade *CGrenade::ShootJihad( entvars_t *pevOwner, Vector vecStart, Vector vec
 
 	pGrenade->pev->dmgtime = gpGlobals->time + time;
 	pGrenade->SetThink( &CGrenade::TumbleThink2 );
-	pGrenade->pev->nextthink = gpGlobals->time + 0.1;
+	pGrenade->pev->nextthink = gpGlobals->time + 0.1f;
 
-	if( time < 0.1 )
+	if( time < 0.1f )
 	{
 		pGrenade->pev->nextthink = gpGlobals->time;
 		pGrenade->pev->velocity = Vector( 0, 0, 0 );
@@ -714,3 +714,4 @@ void CGrenade::UseSatchelCharges( entvars_t *pevOwner, SATCHELCODE code )
 }
 
 //======================end grenade
+

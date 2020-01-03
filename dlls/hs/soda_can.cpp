@@ -109,7 +109,7 @@ BOOL CSodaCan::Deploy( )
 
 void CSodaCan::Holster( int skiplocal /* = 0 */ )
 {
-	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
+	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5f;
 	SendWeaponAnim( SODA_IDLE1 );
 }
 
@@ -142,7 +142,7 @@ void CSodaCan::PrimaryAttack()
 		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 3;
 	}
 
-	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 105.0 / 30.0;
+	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 105.0f / 30.0f;
 }
 
 void CSodaCan::WeaponIdle( void )
@@ -153,20 +153,20 @@ void CSodaCan::WeaponIdle( void )
 		int iAnim;
 		float flRand = UTIL_SharedRandomFloat( m_pPlayer->random_seed, 0.0, 1.0 );
 
-		if (flRand <= 0.3 + 0 * 0.75)
+		if (flRand <= 0.3f)
 		{
 			iAnim = SODA_IDLE1;
-			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 30.0 / 20.0;
+			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 30.0f / 20.0f;
 		}
-		else if (flRand <= 0.6 + 0 * 0.875)
+		else if (flRand <= 0.6f)
 		{
 			iAnim = SODA_FIDGET;
-			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 61.0 / 30.0;
+			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 61.0f / 30.0f;
 		}
 		else
 		{
 			iAnim = SODA_IDLE1;
-			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 30.0 / 20.0;
+			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 30.0f / 20.0f;
 		}
 		SendWeaponAnim( iAnim, 1 );
 }
