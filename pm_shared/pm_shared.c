@@ -1090,8 +1090,8 @@ void PM_WalkMove()
 	pmtrace_t trace;
 
 	// Copy movement amounts
-	fmove = ( pmove->cmd.forwardmove * ( cos( pmove->cmd.viewangles[YAW] * ( M_PI / 180 ) ) ) ) - ( pmove->cmd.sidemove * ( sin( pmove->cmd.viewangles[YAW] * ( M_PI / 180 ) ) ) );
-	smove = ( pmove->cmd.forwardmove * ( sin( pmove->cmd.viewangles[YAW] * ( M_PI / 180 ) ) ) ) + ( pmove->cmd.sidemove * ( cos( pmove->cmd.viewangles[YAW] * ( M_PI / 180 ) ) ) );
+	fmove = ( pmove->cmd.forwardmove * ( cos( pmove->cmd.viewangles[YAW] * ( M_PI_F / 180.0f ) ) ) ) - ( pmove->cmd.sidemove * ( sin( pmove->cmd.viewangles[YAW] * ( M_PI_F / 180.0f ) ) ) );
+	smove = ( pmove->cmd.forwardmove * ( sin( pmove->cmd.viewangles[YAW] * ( M_PI_F / 180.0f ) ) ) ) + ( pmove->cmd.sidemove * ( cos( pmove->cmd.viewangles[YAW] * ( M_PI_F / 180.0f ) ) ) );
 
 	// Zero out z components of movement vectors
 	pmove->forward[2] = 0;
@@ -1370,8 +1370,8 @@ void PM_WaterMove( void )
 
 	float speed, newspeed, addspeed, accelspeed, fmove, smove;
 
-	fmove = ( pmove->cmd.forwardmove * ( cos( pmove->cmd.viewangles[YAW] * ( M_PI / 180 ) ) ) ) - ( pmove->cmd.sidemove * ( sin( pmove->cmd.viewangles[YAW] * ( M_PI / 180 ) ) ) );
-	smove = ( pmove->cmd.forwardmove * ( sin( pmove->cmd.viewangles[YAW] * ( M_PI / 180 ) ) ) ) + ( pmove->cmd.sidemove * ( cos( pmove->cmd.viewangles[YAW] * ( M_PI / 180 ) ) ) );
+	fmove = ( pmove->cmd.forwardmove * ( cos( pmove->cmd.viewangles[YAW] * ( M_PI_F / 180.0f ) ) ) ) - ( pmove->cmd.sidemove * ( sin( pmove->cmd.viewangles[YAW] * ( M_PI_F / 180.0f ) ) ) );
+	smove = ( pmove->cmd.forwardmove * ( sin( pmove->cmd.viewangles[YAW] * ( M_PI_F / 180.0f ) ) ) ) + ( pmove->cmd.sidemove * ( cos( pmove->cmd.viewangles[YAW] * ( M_PI_F / 180.0f ) ) ) );
 
 //
 // user intentions
@@ -1465,8 +1465,8 @@ void PM_AirMove( void )
 	float wishspeed;
 
 	// Copy movement amounts
-	fmove = ( pmove->cmd.forwardmove * ( cos( pmove->cmd.viewangles[YAW] * ( M_PI / 180 ) ) ) ) - ( pmove->cmd.sidemove * ( sin( pmove->cmd.viewangles[YAW] * ( M_PI / 180 ) ) ) );
-	smove = ( pmove->cmd.forwardmove * ( sin( pmove->cmd.viewangles[YAW] * ( M_PI / 180 ) ) ) ) + ( pmove->cmd.sidemove * ( cos( pmove->cmd.viewangles[YAW] * ( M_PI / 180 ) ) ) );
+	fmove = ( pmove->cmd.forwardmove * ( cos( pmove->cmd.viewangles[YAW] * ( M_PI_F / 180.0f ) ) ) ) - ( pmove->cmd.sidemove * ( sin( pmove->cmd.viewangles[YAW] * ( M_PI_F / 180.0f ) ) ) );
+	smove = ( pmove->cmd.forwardmove * ( sin( pmove->cmd.viewangles[YAW] * ( M_PI_F / 180.0f ) ) ) ) + ( pmove->cmd.sidemove * ( cos( pmove->cmd.viewangles[YAW] * ( M_PI_F / 180.0f ) ) ) );
 
 	// Zero out z components of movement vectors
 	pmove->forward[2] = 0;
@@ -2150,8 +2150,8 @@ void PM_LadderMove( physent_t *pLadder )
 		if( pmove->cmd.buttons & IN_MOVERIGHT )
 			smove += flSpeed;
 
-		forward = ( fmove * ( cos( pmove->cmd.viewangles[YAW] * ( M_PI / 180 ) ) ) ) - ( smove * ( sin( pmove->cmd.viewangles[YAW] * ( M_PI / 180 ) ) ) );
-		right = ( fmove * ( sin( pmove->cmd.viewangles[YAW] * ( M_PI / 180 ) ) ) ) + ( smove * ( cos( pmove->cmd.viewangles[YAW] * ( M_PI / 180 ) ) ) );
+		forward = ( fmove * ( cos( pmove->cmd.viewangles[YAW] * ( M_PI_F / 180.0f ) ) ) ) - ( smove * ( sin( pmove->cmd.viewangles[YAW] * ( M_PI_F / 180.0f ) ) ) );
+		right = ( fmove * ( sin( pmove->cmd.viewangles[YAW] * ( M_PI_F / 180.0f ) ) ) ) + ( smove * ( cos( pmove->cmd.viewangles[YAW] * ( M_PI_F / 180.0f ) ) ) );
 
 		if( pmove->cmd.buttons & IN_JUMP )
 		{
