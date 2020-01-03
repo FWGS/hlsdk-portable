@@ -160,9 +160,9 @@ void CAK47::PrimaryAttack()
 	Vector vecDir;
 
 #ifdef CLIENT_DLL
-	if ( !bIsMultiplayer() )
+	if ( bIsMultiplayer() )
 #else
-	if ( !g_pGameRules->IsMultiplayer() )
+	if ( g_pGameRules->IsMultiplayer() )
 #endif
 	{
 		// optimized multiplayer. Widened to make it easier to hit a moving player
