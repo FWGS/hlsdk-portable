@@ -102,7 +102,7 @@ void CJackal::JackalFire( float flSpread , float flCycleTime, BOOL fUseAutoAim )
   flags = 0;
 #endif
 
-  PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), fUseAutoAim ? m_usFireJackal : m_usFireJackal, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, 0, 0, ( m_iClip == 0 ) ? 1 : 0, 0 );
+  PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), fUseAutoAim ? m_usFireJackal : m_usFireJackal, 0.0, g_vecZero, g_vecZero, 0.0, 0.0, 0, 0, ( m_iClip == 0 ) ? 1 : 0, 0 );
 
   m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
   Vector vecSrc	 = m_pPlayer->GetGunPosition( );

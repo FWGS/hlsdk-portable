@@ -86,7 +86,7 @@ void CObjectFlag :: Touch(CBaseEntity *pOther)
     pPlayer->m_fHasObject = true;
 
     // Set the client attachment using an event
-    PLAYBACK_EVENT_FULL(0, pPlayer->edict(), g_usObject, 0, (float *)&g_vecZero, (float *)&g_vecZero, 0, 0, FLAG_STOLEN, 0, 0, 0);
+    PLAYBACK_EVENT_FULL(0, pPlayer->edict(), g_usObject, 0, g_vecZero, g_vecZero, 0, 0, FLAG_STOLEN, 0, 0, 0);
 
     m_fIsInPlay = true;
 
@@ -167,7 +167,7 @@ void CDroppedFlag :: Touch(CBaseEntity *pOther)
     pPlayer->m_fHasObject = true;
 
     // Set the client attachment using an event
-    PLAYBACK_EVENT_FULL(0, pPlayer->edict(), g_usObject, 0, (float *)&g_vecZero, (float *)&g_vecZero, 0, 0, FLAG_STOLEN, 0, 0, 0);
+    PLAYBACK_EVENT_FULL(0, pPlayer->edict(), g_usObject, 0, g_vecZero, g_vecZero, 0, 0, FLAG_STOLEN, 0, 0, 0);
 
     // remove this item
     SetThink(SUB_Remove);
@@ -265,8 +265,8 @@ void CCaptureTeam1 :: Touch( CBaseEntity* pOther )
                  // Remove the flag
                  pPlayer->m_fHasObject = false;
 
-                 PLAYBACK_EVENT_FULL(0, pPlayer->edict(), g_usObject, 0, (float *)&g_vecZero,
-                 (float *)&g_vecZero, 0, 0, FLAG_CAPTURE, 0, 0, 0);
+                 PLAYBACK_EVENT_FULL(0, pPlayer->edict(), g_usObject, 0, g_vecZero,
+                 g_vecZero, 0, 0, FLAG_CAPTURE, 0, 0, 0);
 
                 
                  // Reset the flag
@@ -379,8 +379,8 @@ void CCaptureTeam2 :: Touch( CBaseEntity* pOther )
               // Remove the object
               pPlayer->m_fHasObject = false;
 
-              PLAYBACK_EVENT_FULL(0, pPlayer->edict(), g_usObject, 0, (float *)&g_vecZero,
-              (float *)&g_vecZero, 0, 0, FLAG_CAPTURE, 0, 0, 0);
+              PLAYBACK_EVENT_FULL(0, pPlayer->edict(), g_usObject, 0, g_vecZero,
+              g_vecZero, 0, 0, FLAG_CAPTURE, 0, 0, 0);
 
               // Reset the object
               CObjectFlag *pFlag = (CObjectFlag *)UTIL_FindEntityByClassname(NULL, "object_flag");
