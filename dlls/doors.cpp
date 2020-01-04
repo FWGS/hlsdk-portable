@@ -626,8 +626,8 @@ void CBaseDoor::DoorGoUp( void )
 		if( m_fNextSoundPlay < gpGlobals->time )
 		{
 			Vector vecCenter( Center() );
-			float *pCenter = (float *)&vecCenter;
-			PLAYBACK_EVENT_FULL( FEV_RELIABLE, NULL, m_usDoorGoUp, 0.0, pCenter, (float *)&g_vecZero, 0.0, 0.0, ( m_bMoveSnd << 8 ) | ( m_bStopSnd & 0xff ), 0, 0, 0 );
+
+			PLAYBACK_EVENT_FULL( FEV_RELIABLE, NULL, m_usDoorGoUp, 0.0, vecCenter, g_vecZero, 0.0, 0.0, ( m_bMoveSnd << 8 ) | ( m_bStopSnd & 0xff ), 0, 0, 0 );
 #if defined ( OLD_SOUNDS )
 			STOP_SOUND( ENT( pev ), CHAN_STATIC, (char*)STRING( pev->noiseMoving ) );
 			if( m_toggle_state != TS_GOING_UP && m_toggle_state != TS_GOING_DOWN )
@@ -678,8 +678,8 @@ void CBaseDoor::DoorHitTop( void )
 		{
 			m_bStoppedOpenSound = true;
 			Vector vecCenter( Center() );
-			float *pCenter = (float *)&vecCenter; 
-			PLAYBACK_EVENT_FULL( FEV_RELIABLE, NULL, m_usDoorHitTop, 0.0, pCenter, (float *)&g_vecZero, 0.0, 0.0, ( m_bMoveSnd << 8 ) | ( m_bStopSnd & 0xff ), 0, 0, 0 );
+
+			PLAYBACK_EVENT_FULL( FEV_RELIABLE, NULL, m_usDoorHitTop, 0.0, vecCenter, g_vecZero, 0.0, 0.0, ( m_bMoveSnd << 8 ) | ( m_bStopSnd & 0xff ), 0, 0, 0 );
 
 #if defined ( OLD_SOUNDS )
 			STOP_SOUND( ENT( pev ), CHAN_STATIC, (char*)STRING( pev->noiseMoving ) );
@@ -729,8 +729,8 @@ void CBaseDoor::DoorGoDown( void )
 		if( m_fNextSoundPlay < gpGlobals->time )
 		{
 			Vector vecCenter( Center() );
-			float *pCenter = (float *)&vecCenter;
-			PLAYBACK_EVENT_FULL( FEV_RELIABLE, NULL, m_usDoorGoDown, 0.0, pCenter, (float *)&g_vecZero, 0.0, 0.0, ( m_bMoveSnd << 8 ) | ( m_bStopSnd & 0xff ), 0, 0, 0 );
+
+			PLAYBACK_EVENT_FULL( FEV_RELIABLE, NULL, m_usDoorGoDown, 0.0, vecCenter, g_vecZero, 0.0, 0.0, ( m_bMoveSnd << 8 ) | ( m_bStopSnd & 0xff ), 0, 0, 0 );
 #if defined ( OLD_SOUNDS )
 			STOP_SOUND( ENT( pev ), CHAN_STATIC, (char*)STRING( pev->noiseMoving ) );
 			if( m_toggle_state != TS_GOING_UP && m_toggle_state != TS_GOING_DOWN )
@@ -761,8 +761,8 @@ void CBaseDoor::DoorHitBottom( void )
 		if( m_fNextSoundPlay < gpGlobals->time )
 		{
 			Vector vecCenter( Center() );
-			float *pCenter = (float *)&vecCenter;
-			PLAYBACK_EVENT_FULL( FEV_RELIABLE, NULL, m_usDoorHitBottom, 0.0, pCenter, (float *)&g_vecZero, 0.0, 0.0, ( m_bMoveSnd << 8 ) | ( m_bStopSnd & 0xff ), 0, 0, 0 );
+
+			PLAYBACK_EVENT_FULL( FEV_RELIABLE, NULL, m_usDoorHitBottom, 0.0, vecCenter, g_vecZero, 0.0, 0.0, ( m_bMoveSnd << 8 ) | ( m_bStopSnd & 0xff ), 0, 0, 0 );
 #if defined ( OLD_SOUNDS )
 			STOP_SOUND( ENT( pev ), CHAN_STATIC, (char*)STRING( pev->noiseMoving ) );
 			EMIT_SOUND( ENT( pev ), CHAN_STATIC, (char*)STRING( pev->noiseArrived ), 1, ATTN_NORM );

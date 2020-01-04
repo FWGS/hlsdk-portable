@@ -597,7 +597,7 @@ void CBasePlayerWeapon::ItemPostFrame( void )
 
 			if( m_pPlayer->m_iQuakeWeapon == IT_LIGHTNING )
 			{
-				PLAYBACK_EVENT_FULL( FEV_NOTHOST, m_pPlayer->edict(), m_pPlayer->m_usLightning, 0, (float *)&m_pPlayer->pev->origin, (float *)&m_pPlayer->pev->angles, 0.0, 0.0, 0, 1, 0, 0 );
+				PLAYBACK_EVENT_FULL( FEV_NOTHOST, m_pPlayer->edict(), m_pPlayer->m_usLightning, 0, m_pPlayer->pev->origin, m_pPlayer->pev->angles, 0.0, 0.0, 0, 1, 0, 0 );
 
 				if( m_pPlayer->m_pActiveItem )
 					( (CQuakeGun*)m_pPlayer->m_pActiveItem )->DestroyEffect();

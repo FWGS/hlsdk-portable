@@ -337,7 +337,7 @@ void CBasePlayerWeapon::ItemPostFrame( void )
 			m_bPlayedIdleAnim = TRUE;
 		
 			if ( m_pPlayer->m_iQuakeWeapon == IT_LIGHTNING )
-				 PLAYBACK_EVENT_FULL( FEV_NOTHOST, m_pPlayer->edict(), m_pPlayer->m_usLightning, 0, (float *)&m_pPlayer->pev->origin, (float *)&m_pPlayer->pev->angles, 0.0, 0.0, 0, 1, 0, 0 );
+				 PLAYBACK_EVENT_FULL( FEV_NOTHOST, m_pPlayer->edict(), m_pPlayer->m_usLightning, 0, m_pPlayer->pev->origin, m_pPlayer->pev->angles, 0.0, 0.0, 0, 1, 0, 0 );
 		}
 
 		WeaponIdle( );
@@ -421,7 +421,7 @@ void CBasePlayer::Killed( entvars_t *pevAttacker, int iGib )
 {
 	if ( m_iQuakeWeapon == IT_LIGHTNING )
 	{
-		 PLAYBACK_EVENT_FULL( FEV_NOTHOST, edict(), m_usLightning, 0, (float *)&pev->origin, (float *)&pev->angles, 0.0, 0.0, 0, 1, 0, 0 );
+		 PLAYBACK_EVENT_FULL( FEV_NOTHOST, edict(), m_usLightning, 0, pev->origin, pev->angles, 0.0, 0.0, 0, 1, 0, 0 );
 	}
 
 	// Holster weapon immediately, to allow it to cleanup

@@ -2066,7 +2066,7 @@ void CTeleDeath::DeathTouch( CBaseEntity *pOther )
 void CBaseEntity::Spawn_Telefog( Vector vecOrg, CBaseEntity *pOther )
 {
 	//Moved to the client
-	PLAYBACK_EVENT_FULL( FEV_GLOBAL | FEV_NOTHOST, pOther->edict(), g_sTeleport, 0.0, (float *)&vecOrg, (float *)&g_vecZero, 0.0, 0.0, 0, 0, 0, 0 );
+	PLAYBACK_EVENT_FULL( FEV_GLOBAL | FEV_NOTHOST, pOther->edict(), g_sTeleport, 0.0, vecOrg, g_vecZero, 0.0, 0.0, 0, 0, 0, 0 );
 }
 
 //-----------------------------------------------------------------------------

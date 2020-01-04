@@ -36,7 +36,7 @@ void CGrapple::Reset_Grapple()
 	pOwner->m_bHook_Out = FALSE;
 
 	PLAYBACK_EVENT_FULL( FEV_GLOBAL | FEV_RELIABLE, 
-	pOwner->edict(), g_usCable, 0, (float*)&g_vecZero, (float*)&g_vecZero, 
+	pOwner->edict(), g_usCable, 0, g_vecZero, g_vecZero, 
 	0.0, 0.0, entindex(), pev->team, 1, 0 );
 
 	STOP_SOUND( edict(), CHAN_WEAPON, "weapons/grhang.wav" );
@@ -261,7 +261,7 @@ void CBasePlayer::Service_Grapple()
 			m_ppHook->m_flNextIdleTime = gpGlobals->time + RANDOM_LONG( 1, 3 );
 
 			PLAYBACK_EVENT_FULL( FEV_GLOBAL | FEV_RELIABLE, 
-			edict(), g_usCable, 0, (float *)&g_vecZero, (float *)&g_vecZero, 
+			edict(), g_usCable, 0, g_vecZero, g_vecZero, 
 			0.0, 0.0, m_ppHook->entindex(), pev->team, 1, 0 );
 		}
 		else if( m_ppHook->m_flNextIdleTime <= gpGlobals->time )
@@ -343,7 +343,7 @@ void CBasePlayer::Throw_Grapple()
 		m_ppHook->pev->fixangle = TRUE;
 
 		PLAYBACK_EVENT_FULL( FEV_GLOBAL | FEV_RELIABLE, 
-		edict(), g_usCable, 0, (float*)&g_vecZero, (float*)&g_vecZero, 
+		edict(), g_usCable, 0, g_vecZero, g_vecZero, 
 		0.0, 0.0, m_ppHook->entindex(), pev->team, 0, 0 );
 		
 		m_bHook_Out = TRUE;

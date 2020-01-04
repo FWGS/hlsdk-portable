@@ -663,7 +663,7 @@ void CThreeWave::ClientDisconnected( edict_t *pClient )
 				pFlag->m_flDroppedTime = gpGlobals->time + TEAM_CAPTURE_FLAG_RETURN_TIME;
 
 				PLAYBACK_EVENT_FULL( FEV_GLOBAL | FEV_RELIABLE, 
-				pPlayer->edict(), g_usCarried, 0, (float*)&g_vecZero, (float*)&g_vecZero, 
+				pPlayer->edict(), g_usCarried, 0, g_vecZero, g_vecZero, 
 				0.0, 0.0, pPlayer->entindex(), pPlayer->pev->team, 1, 0 );
 
 				MESSAGE_BEGIN( MSG_ALL, gmsgCTFMsgs, NULL );
@@ -902,7 +902,7 @@ void CThreeWave::PlayerKilled( CBasePlayer *pVictim, entvars_t *pKiller, entvars
 		pFlag->Dropped = TRUE; 
 
 		PLAYBACK_EVENT_FULL( FEV_GLOBAL | FEV_RELIABLE, 
-		pVictim->edict(), g_usCarried, 0, (float *)&g_vecZero, (float *)&g_vecZero, 
+		pVictim->edict(), g_usCarried, 0, g_vecZero, g_vecZero, 
 		0.0, 0.0, pVictim->entindex(), pVictim->pev->team, 1, 0 );
 
 		pFlag->m_flDroppedTime = gpGlobals->time + TEAM_CAPTURE_FLAG_RETURN_TIME;

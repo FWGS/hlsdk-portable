@@ -319,7 +319,7 @@ BOOL CBasePlayer::W_CheckNoAmmo()
 
 	if ( m_iQuakeWeapon == IT_LIGHTNING )
 	{
-		 PLAYBACK_EVENT_FULL( FEV_NOTHOST, edict(), m_usLightning, 0, (float *)&pev->origin, (float *)&pev->angles, 0.0, 0.0, 0, 1, 0, 0 );
+		 PLAYBACK_EVENT_FULL( FEV_NOTHOST, edict(), m_usLightning, 0, pev->origin, pev->angles, 0.0, 0.0, 0, 1, 0, 0 );
 
 		 if ( m_pActiveItem )
 			  ((CQuakeGun*)m_pActiveItem)->DestroyEffect();
@@ -335,7 +335,7 @@ void CBasePlayer::W_ChangeWeapon( int iWeaponNumber )
 {
 	if ( m_iQuakeWeapon == IT_LIGHTNING )
 	{
-		 PLAYBACK_EVENT_FULL( FEV_NOTHOST, edict(), m_usLightning, 0, (float *)&pev->origin, (float *)&pev->angles, 0.0, 0.0, 0, 1, 0, 0 );
+		 PLAYBACK_EVENT_FULL( FEV_NOTHOST, edict(), m_usLightning, 0, pev->origin, pev->angles, 0.0, 0.0, 0, 1, 0, 0 );
 
 		 if ( m_pActiveItem )
 			  ((CQuakeGun*)m_pActiveItem)->DestroyEffect();
@@ -759,7 +759,7 @@ void CBasePlayer::W_FireAxe()
 // Single barrel shotgun
 void CBasePlayer::W_FireShotgun( int iQuadSound )
 {
-	PLAYBACK_EVENT_FULL( FEV_NOTHOST, edict(), m_usShotgunSingle, 0, (float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, iQuadSound, 0, 0, 0 );
+	PLAYBACK_EVENT_FULL( FEV_NOTHOST, edict(), m_usShotgunSingle, 0, g_vecZero, g_vecZero, 0.0, 0.0, iQuadSound, 0, 0, 0 );
 
 	if (gpGlobals->deathmatch != 4 )
 		*m_pCurrentAmmo -= 1;
@@ -770,7 +770,7 @@ void CBasePlayer::W_FireShotgun( int iQuadSound )
 
 void CBasePlayer::W_FireHook( void )
 {
-	PLAYBACK_EVENT_FULL( FEV_NOTHOST | FEV_GLOBAL, edict(), g_usHook, 0, (float *)&pev->origin, (float *)&pev->angles, 0.0, 0.0, 0, 0, 0, 0 );
+	PLAYBACK_EVENT_FULL( FEV_NOTHOST | FEV_GLOBAL, edict(), g_usHook, 0, pev->origin, pev->angles, 0.0, 0.0, 0, 0, 0, 0 );
 
 	Throw_Grapple();
 }
@@ -794,7 +794,7 @@ void CBasePlayer::W_FireSuperShotgun( int iQuadSound )
 		return;
 	}
 
-	PLAYBACK_EVENT_FULL( FEV_NOTHOST, edict(), m_usShotgunDouble, 0, (float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, iQuadSound, 0, 0, 0 );
+	PLAYBACK_EVENT_FULL( FEV_NOTHOST, edict(), m_usShotgunDouble, 0, g_vecZero, g_vecZero, 0.0, 0.0, iQuadSound, 0, 0, 0 );
 
 	if (gpGlobals->deathmatch != 4 )
 		*m_pCurrentAmmo -= 2;
@@ -805,7 +805,7 @@ void CBasePlayer::W_FireSuperShotgun( int iQuadSound )
 // Rocket launcher
 void CBasePlayer::W_FireRocket( int iQuadSound )
 {
-	PLAYBACK_EVENT_FULL( FEV_NOTHOST, edict(), m_usRocket, 0, (float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, iQuadSound, 0, 0, 0 );
+	PLAYBACK_EVENT_FULL( FEV_NOTHOST, edict(), m_usRocket, 0, g_vecZero, g_vecZero, 0.0, 0.0, iQuadSound, 0, 0, 0 );
 
 	if (gpGlobals->deathmatch != 4 )
 		*m_pCurrentAmmo -= 1;
@@ -820,7 +820,7 @@ void CBasePlayer::W_FireRocket( int iQuadSound )
 // Grenade launcher
 void CBasePlayer::W_FireGrenade( int iQuadSound )
 {       
-	PLAYBACK_EVENT_FULL( FEV_NOTHOST, edict(), m_usGrenade, 0, (float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, iQuadSound, 0, 0, 0 );
+	PLAYBACK_EVENT_FULL( FEV_NOTHOST, edict(), m_usGrenade, 0, g_vecZero, g_vecZero, 0.0, 0.0, iQuadSound, 0, 0, 0 );
 
 	if (gpGlobals->deathmatch != 4 )
 		*m_pCurrentAmmo -= 1;
@@ -851,7 +851,7 @@ void CBasePlayer::W_FireLightning( int iQuadSound )
 		//This should already be IT_LIGHTNING but what the heck.
 		if ( m_iQuakeWeapon == IT_LIGHTNING )
 		{
-			 PLAYBACK_EVENT_FULL( FEV_NOTHOST, edict(), m_usLightning, 0, (float *)&pev->origin, (float *)&pev->angles, 0.0, 0.0, 0, 1, 0, 0 );
+			 PLAYBACK_EVENT_FULL( FEV_NOTHOST, edict(), m_usLightning, 0, pev->origin, pev->angles, 0.0, 0.0, 0, 1, 0, 0 );
 
 			 if ( m_pActiveItem )
 				  ((CQuakeGun*)m_pActiveItem)->DestroyEffect();
@@ -891,7 +891,7 @@ void CBasePlayer::W_FireLightning( int iQuadSound )
 		}
 	}
 
-	PLAYBACK_EVENT_FULL( FEV_NOTHOST, edict(), m_usLightning, 0, (float *)&pev->origin, (float *)&pev->angles, 0.0, 0.0, iQuadSound, 0, playsound, 0 );
+	PLAYBACK_EVENT_FULL( FEV_NOTHOST, edict(), m_usLightning, 0, pev->origin, pev->angles, 0.0, 0.0, iQuadSound, 0, playsound, 0 );
 
 #if !defined( CLIENT_DLL )
 	
@@ -914,7 +914,7 @@ void CBasePlayer::W_FireLightning( int iQuadSound )
 // Super Nailgun
 void CBasePlayer::W_FireSuperSpikes( int iQuadSound )
 {
-	PLAYBACK_EVENT_FULL( FEV_NOTHOST, edict(), m_usSuperSpike, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, iQuadSound, 0, m_iNailOffset > 0.0 ? 1 : 0, 0 );
+	PLAYBACK_EVENT_FULL( FEV_NOTHOST, edict(), m_usSuperSpike, 0.0, g_vecZero, g_vecZero, 0.0, 0.0, iQuadSound, 0, m_iNailOffset > 0.0 ? 1 : 0, 0 );
 
 	if (gpGlobals->deathmatch != 4 )
 		*m_pCurrentAmmo -= 2;
@@ -943,7 +943,7 @@ void CBasePlayer::W_FireSpikes( int iQuadSound )
 		return;
 	}
 
-	PLAYBACK_EVENT_FULL( FEV_NOTHOST, edict(), m_usSpike, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, iQuadSound, 0, m_iNailOffset > 0.0f ? 1 : 0, 0 );
+	PLAYBACK_EVENT_FULL( FEV_NOTHOST, edict(), m_usSpike, 0.0, g_vecZero, g_vecZero, 0.0, 0.0, iQuadSound, 0, m_iNailOffset > 0.0f ? 1 : 0, 0 );
 
 	// Fire left then right
 	if (m_iNailOffset == 2)
@@ -980,13 +980,12 @@ void CBasePlayer::W_Attack( int iQuadSound )
 		else
 			m_flNextAttack = UTIL_WeaponTimeBase() + 0.5f;
 
-		PLAYBACK_EVENT_FULL( FEV_NOTHOST, edict(), m_usAxeSwing, 0, (float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, iQuadSound, 0, 0, 0 );
+		PLAYBACK_EVENT_FULL( FEV_NOTHOST, edict(), m_usAxeSwing, 0, g_vecZero, g_vecZero, 0.0, 0.0, iQuadSound, 0, 0, 0 );
 
 		// Delay attack for 0.3
 		m_flAxeFire = gpGlobals->time + 0.3f;
 
-		PLAYBACK_EVENT_FULL( FEV_NOTHOST, edict(), m_usAxe, 0.3, (float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, iQuadSound, 0, 0, 0 );
-
+		PLAYBACK_EVENT_FULL( FEV_NOTHOST, edict(), m_usAxe, 0.3, g_vecZero, g_vecZero, 0.0, 0.0, iQuadSound, 0, 0, 0 );
 	}
 	else if (m_iQuakeWeapon == IT_SHOTGUN)
 	{

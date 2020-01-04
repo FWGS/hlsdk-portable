@@ -1161,8 +1161,8 @@ BOOL CItemPowerup::MyTouch( CBasePlayer *pPlayer )
 
 	pPlayer->W_SetCurrentAmmo();
 
-	PLAYBACK_EVENT_FULL( FEV_GLOBAL | FEV_RELIABLE, 
-	pPlayer->edict(), g_usPowerUp, 0, (float *)&g_vecZero, (float *)&g_vecZero, 
+	PLAYBACK_EVENT_FULL( FEV_GLOBAL | FEV_RELIABLE,
+	pPlayer->edict(), g_usPowerUp, 0, g_vecZero, g_vecZero,
 	(float)iPowerUp, 0.0, pPlayer->entindex(), pPlayer->pev->team, 0, 0 );
 
 	return TRUE;

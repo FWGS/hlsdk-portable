@@ -599,7 +599,7 @@ void CBasePlayer::Killed( entvars_t *pevAttacker, int iGib )
 	ClearBits( pev->flags, FL_ONGROUND );
 	if( m_iQuakeWeapon == IT_LIGHTNING )
 	{
-		PLAYBACK_EVENT_FULL( FEV_NOTHOST, edict(), m_usLightning, 0, (float *)&pev->origin, (float *)&pev->angles, 0.0, 0.0, 0, 1, 0, 0 );
+		PLAYBACK_EVENT_FULL( FEV_NOTHOST, edict(), m_usLightning, 0, pev->origin, pev->angles, 0.0, 0.0, 0, 1, 0, 0 );
 
 		if( m_pActiveItem )
 			( (CQuakeGun*)m_pActiveItem )->DestroyEffect();
@@ -1640,7 +1640,7 @@ void CBasePlayer::PowerUpThink( void )
 		W_SetCurrentAmmo();
 
 		PLAYBACK_EVENT_FULL( FEV_GLOBAL | FEV_RELIABLE, 
-		edict(), g_usPowerUp, 0, (float *)&g_vecZero, (float *)&g_vecZero, 
+		edict(), g_usPowerUp, 0, g_vecZero, g_vecZero, 
 		(float)iPowerUp, 0.0, entindex(), pev->team, 1, 0 );
 	}
 }
@@ -2653,7 +2653,7 @@ void CBasePlayer::Spawn( void )
 //++ BulliT
 		Spectate_UpdatePosition();
 //-- Martin Webrant
-		PLAYBACK_EVENT_FULL( FEV_GLOBAL, edict(), g_sTeleport, 0.0, (float *)&pev->origin, (float *)&g_vecZero, 0.0, 0.0, 0, 0, 0, 0 );
+		PLAYBACK_EVENT_FULL( FEV_GLOBAL, edict(), g_sTeleport, 0.0, pev->origin, g_vecZero, 0.0, 0.0, 0, 0, 0, 0 );
 
 		m_fKnownItem = false;
 	}

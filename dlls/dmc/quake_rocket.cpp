@@ -59,7 +59,7 @@ CQuakeRocket *CQuakeRocket::CreateRocket( Vector vecOrigin, Vector vecAngles, CB
 //	pRocket->pev->effects |= EF_LIGHT;
 
 	PLAYBACK_EVENT_FULL (FEV_GLOBAL, pRocket->edict(), g_sTrail, 0.0, 
-	(float *)&pRocket->pev->origin, (float *)&pRocket->pev->angles, 0.7, 0.0, pRocket->entindex(), ROCKET_TRAIL, 0, 0);
+	pRocket->pev->origin, pRocket->pev->angles, 0.7, 0.0, pRocket->entindex(), ROCKET_TRAIL, 0, 0);
 
 	return pRocket;
 } 
@@ -101,8 +101,7 @@ CQuakeRocket *CQuakeRocket::CreateGrenade( Vector vecOrigin, Vector vecVelocity,
 	pRocket->SetThink( &CQuakeRocket::GrenadeExplode );
 
 	PLAYBACK_EVENT_FULL (FEV_GLOBAL, pRocket->edict(), g_sTrail, 0.0, 
-	(float *)&g_vecZero, (float *)&g_vecZero, 0.7, 0.0, pRocket->entindex(), GRENADE_TRAIL, 0, 0);
-
+	g_vecZero, g_vecZero, 0.7, 0.0, pRocket->entindex(), GRENADE_TRAIL, 0, 0);
 
 	return pRocket;
 }
@@ -184,7 +183,7 @@ void CQuakeRocket::GrenadeExplode()
 void CQuakeRocket::Explode()
 {
 	//We use the angles field to send the rocket velocity.
-	PLAYBACK_EVENT_FULL( FEV_GLOBAL, edict(), g_sExplosion, 0.0, (float *)&pev->origin, (float *)&pev->velocity, 0.0, 0.0, 0, 0, 0, 0 );
+	PLAYBACK_EVENT_FULL( FEV_GLOBAL, edict(), g_sExplosion, 0.0, pev->origin, pev->velocity, 0.0, 0.0, 0, 0, 0, 0 );
 
 	UTIL_Remove( this );
 }

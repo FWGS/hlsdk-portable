@@ -270,7 +270,7 @@ void CBaseMonster::GibMonster( void )
 	if( CVAR_GET_FLOAT( "violence_hgibs" ) != 0 )	// Only the player will ever get here
 	{
 		if( IsPlayer() )
-			PLAYBACK_EVENT_FULL ( FEV_GLOBAL, edict(), g_sGibbed, 0.0, (float *)&pev->origin, (float *)&g_vecAttackDir, 0.0, 0.0, 0, 0, 0, 0 );
+			PLAYBACK_EVENT_FULL ( FEV_GLOBAL, edict(), g_sGibbed, 0.0, pev->origin, g_vecAttackDir, 0.0, 0.0, 0, 0, 0, 0 );
 
 		/*CGib::SpawnHeadGib( pev );
 		CGib::SpawnRandomGibs( pev, 4, 1 );// throw some human gibs.*/

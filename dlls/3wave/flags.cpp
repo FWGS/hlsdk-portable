@@ -176,7 +176,7 @@ void CItemFlag::FlagTouch( CBaseEntity *pToucher )
 					Capture( pPlayer, RED );
 
 				PLAYBACK_EVENT_FULL( FEV_GLOBAL | FEV_RELIABLE, 
-				pPlayer->edict(), g_usCarried, 0, (float*)&g_vecZero, (float*)&g_vecZero, 
+				pPlayer->edict(), g_usCarried, 0, g_vecZero, g_vecZero, 
 				0.0, 0.0, pPlayer->entindex(), pPlayer->pev->team, 1, 0 );
 				return;
 			}
@@ -223,7 +223,7 @@ void CItemFlag::FlagTouch( CBaseEntity *pToucher )
 			pCarriedFlag->Owner = pPlayer;
 
 			PLAYBACK_EVENT_FULL( FEV_GLOBAL | FEV_RELIABLE, 
-			pPlayer->edict(), g_usCarried, 0, (float*)&g_vecZero, (float*)&g_vecZero, 
+			pPlayer->edict(), g_usCarried, 0, g_vecZero, g_vecZero, 
 			0.0, 0.0, pPlayer->entindex(), pPlayer->pev->team, 0, 0 );
 
 			UTIL_Remove( this );
@@ -269,7 +269,7 @@ void CItemFlag::FlagTouch( CBaseEntity *pToucher )
 			pCarriedFlag->Owner = pPlayer;
 
 			PLAYBACK_EVENT_FULL( FEV_GLOBAL | FEV_RELIABLE, 
-			pPlayer->edict(), g_usCarried, 0, (float*)&g_vecZero, (float*)&g_vecZero, 
+			pPlayer->edict(), g_usCarried, 0, g_vecZero, g_vecZero, 
 			0.0, 0.0, pPlayer->entindex(), pPlayer->pev->team, 0, 0 );
 		}
 		
@@ -382,7 +382,7 @@ void CItemFlag::Materialize()
 	}
 
 	PLAYBACK_EVENT_FULL( FEV_GLOBAL | FEV_RELIABLE, 
-	edict(), g_usFlagSpawn, 0, (float*)&g_vecZero, (float*)&g_vecZero, 
+	edict(), g_usFlagSpawn, 0, g_vecZero, g_vecZero, 
 	0.0, 0.0, pev->team, 0, 0, 0 );
 
 	Dropped = FALSE;
