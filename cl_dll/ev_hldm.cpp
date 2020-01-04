@@ -460,7 +460,7 @@ void EV_Quake_FireBullets( int idx, float *forward, float *right, float *up, int
 		for( i = 0; i < 3; i++ )
 		{
 			vecDir[i] = vecDirShooting[i] + spread[0] * vecSpread[0] * vecRight[i] + spread[1] * vecSpread[1] * up [i];
-			vecEnd[i] = vecSrc[i] + 2048.0 * vecDir[i];
+			vecEnd[i] = vecSrc[i] + 2048.0f * vecDir[i];
 		}
 
 		gEngfuncs.pEventAPI->EV_SetUpPlayerPrediction( false, true );
@@ -640,7 +640,7 @@ void EV_FireAxe( event_args_t *args )
 	gEngfuncs.pEventAPI->EV_SetTraceHull( 2 );
 	gEngfuncs.pEventAPI->EV_PlayerTrace( vecSrc, vecEnd, PM_NORMAL, -1, &tr );
 
-	if( tr.fraction < 1.0 )
+	if( tr.fraction < 1.0f )
 	{
 		ent = gEngfuncs.pEventAPI->EV_IndexFromTrace( &tr );
 
@@ -733,7 +733,7 @@ void EV_TrailCallback( struct tempent_s *ent, float frametime, float currenttime
 	VectorCopy( player->origin, dl->origin );
 
 	dl->radius = 240;
-	dl->die = gEngfuncs.GetClientTime() + 0.001; // Kill it right away
+	dl->die = gEngfuncs.GetClientTime() + 0.001f; // Kill it right away
 
 	if( ent->entity.baseline.movetype == 2 )
 	{
@@ -774,11 +774,11 @@ void EV_TrailCallback( struct tempent_s *ent, float frametime, float currenttime
 				bPart->color = 43;
 
 			bPart->type = pt_slowgrav;
-			bPart->die = gEngfuncs.GetClientTime() + 0.5;
+			bPart->die = gEngfuncs.GetClientTime() + 0.5f;
 		}
 	}
 
-	ent->entity.baseline.animtime = gEngfuncs.GetClientTime() + 0.3;
+	ent->entity.baseline.animtime = gEngfuncs.GetClientTime() + 0.3f;
 }
 
 
@@ -819,7 +819,7 @@ void EV_FollowCarrier( event_args_t *args )
 			pTrailSpawner->clientIndex = iEntIndex;  
 
 			pTrailSpawner->entity.baseline.movetype = iTeam; // Hack to store the team number on this temp ent.
-			pTrailSpawner->entity.baseline.animtime = gEngfuncs.GetClientTime() + 0.3;
+			pTrailSpawner->entity.baseline.animtime = gEngfuncs.GetClientTime() + 0.3f;
 			pTrailSpawner->callback = EV_TrailCallback;
 		}
 	}
@@ -875,7 +875,7 @@ void EV_PowerupCallback( struct tempent_s *ent, float frametime, float currentti
 
 	dl->radius = 270;
 	dl->dark = true;
-	dl->die = gEngfuncs.GetClientTime() + 0.001; //Kill it right away
+	dl->die = gEngfuncs.GetClientTime() + 0.001f; //Kill it right away
 
 	if( ent->entity.baseline.iuser2 == 1 )
 	{
@@ -988,7 +988,7 @@ void EV_FireLightning( event_args_t *args )
 		if ( g_flLightTime <= gEngfuncs.GetClientTime() )
 		{
 			gEngfuncs.pfnWeaponAnim( 1, 0 );
-			g_flLightTime = gEngfuncs.GetClientTime() + 0.5;
+			g_flLightTime = gEngfuncs.GetClientTime() + 0.5f;
 		}
 
 		V_PunchAxis( 0, Q_SMALL_PUNCHANGLE_KICK );
@@ -1017,7 +1017,7 @@ void EV_FireLightning( event_args_t *args )
 		if( pl )
 		{
 			VectorCopy( gHUD.m_vecAngles, angles );
-			
+
 			AngleVectors( angles, forward, right, up );
 
 			EV_GetGunPosition( args, vecSrc, pl->origin );
@@ -1111,7 +1111,7 @@ void EV_FireSpike( event_args_t *args )
 	vec3_t angles;
 	vec3_t up, right, forward;
 	vec3_t vecVelocity;
-	float offset = args->bparam1 ? 2.0 : -2.0;
+	float offset = args->bparam1 ? 2.0f : -2.0f;
 
 	int shell;
 
@@ -1189,9 +1189,9 @@ void EV_TrainPitchAdjust( event_args_t *args )
 	us_params = (unsigned short)args->iparam1;
 	stop	  = args->bparam1;
 
-	m_flVolume	= (float)(us_params & 0x003f)/40.0;
+	m_flVolume	= (float)(us_params & 0x003f)/40.0f;
 	noise		= (int)(((us_params) >> 12 ) & 0x0007);
-	pitch		= (int)( 10.0 * (float)( ( us_params >> 6 ) & 0x003f ) );
+	pitch		= (int)( 10.0f * (float)( ( us_params >> 6 ) & 0x003f ) );
 
 	switch( noise )
 	{
@@ -1415,7 +1415,7 @@ void EV_RocketTrailCallback( struct tempent_s *ent, float frametime, float curre
 
 		dl->radius = 160;
 		dl->dark = true;
-		dl->die = gEngfuncs.GetClientTime() + 0.001; //Kill it right away
+		dl->die = gEngfuncs.GetClientTime() + 0.001f; //Kill it right away
 													 
 		dl->color.r = 255;
 		dl->color.g = 255;
@@ -1445,7 +1445,7 @@ void EV_Trail( event_args_t *args )
 			pTrailSpawner->entity.baseline.sequence = 70;
 
 		pTrailSpawner->die = gEngfuncs.GetClientTime() + 10; // Just in case
-		pTrailSpawner->entity.baseline.fuser1 = gEngfuncs.GetClientTime() + 0.5; // Don't try to die till 500ms ahead
+		pTrailSpawner->entity.baseline.fuser1 = gEngfuncs.GetClientTime() + 0.5f; // Don't try to die till 500ms ahead
 	}
 }
 

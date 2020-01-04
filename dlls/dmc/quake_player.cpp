@@ -57,7 +57,7 @@ void CBasePlayer::UpdateStatusBar()
 	Vector vecEnd = vecSrc + (gpGlobals->v_forward * MAX_ID_RANGE);
 	UTIL_TraceLine( vecSrc, vecEnd, dont_ignore_monsters, edict(), &tr);
 
-	if (tr.flFraction != 1.0)
+	if (tr.flFraction != 1.0f)
 	{
 		if ( !FNullEnt( tr.pHit ) )
 		{
@@ -68,7 +68,7 @@ void CBasePlayer::UpdateStatusBar()
 				newSBarState[ SBAR_ID_TARGETNAME ] = ENTINDEX( pEntity->edict() );
 				newSBarState[ SBAR_ID_TARGETTEAM ] = FALSE;
 					
-				m_flStatusBarDisappearDelay = gpGlobals->time + 1.0;
+				m_flStatusBarDisappearDelay = gpGlobals->time + 1.0f;
 			}
 		}
 		else if ( m_flStatusBarDisappearDelay > gpGlobals->time )

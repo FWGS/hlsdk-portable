@@ -56,7 +56,7 @@ void AgSay(CBasePlayer* pPlayer,const AgString& sText, float* pfFloodProtected, 
   hText.r2 = hText.g2 = hText.b2 = 0;
   hText.a2 = 0;
   
-  hText.holdTime = fHoldTime - 0.30;
+  hText.holdTime = fHoldTime - 0.30f;
   
   hText.effect = 2;    // Fade in/out
   hText.fadeinTime = 0.01;

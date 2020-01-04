@@ -820,7 +820,7 @@ void CBaseDoor::Blocked( CBaseEntity *pOther )
 	// Don't play blocked sounds too often
 	if( m_fNextSoundPlay <= gpGlobals->time )
 	{
-		m_fNextSoundPlay = gpGlobals->time + 0.3;
+		m_fNextSoundPlay = gpGlobals->time + 0.3f;
 		STOP_SOUND( ENT( pev ), CHAN_STATIC, STRING( pev->noiseMoving ) );
 	}
 

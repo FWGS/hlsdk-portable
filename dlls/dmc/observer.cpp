@@ -88,7 +88,7 @@ void CBasePlayer::Observer_HandleButtons()
 		else
 			Observer_SetMode( OBS_CHASE_FREE );	// don't use OBS_CHASE_LOCKED anymore
 
-		m_flNextObserverInput = gpGlobals->time + 0.2;
+		m_flNextObserverInput = gpGlobals->time + 0.2f;
 	}
 
 	// Attack moves to the next player
@@ -96,7 +96,7 @@ void CBasePlayer::Observer_HandleButtons()
 	{
 		Observer_FindNextPlayer();
 
-		m_flNextObserverInput = gpGlobals->time + 0.2;
+		m_flNextObserverInput = gpGlobals->time + 0.2f;
 	}
  
 }

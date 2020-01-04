@@ -64,7 +64,7 @@ void UpdateBeams ( void )
 	gEngfuncs.pEventAPI->EV_PopPMStates();
 
 	pBeam->target = tr.endpos;
-	pBeam->die	  = gEngfuncs.GetClientTime() + 0.1; // We keep it alive just a little bit forward in the future, just in case.
+	pBeam->die	  = gEngfuncs.GetClientTime() + 0.1f; // We keep it alive just a little bit forward in the future, just in case.
 }
 
 /*

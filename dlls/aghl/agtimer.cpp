@@ -15,7 +15,7 @@
 
 AgTimer::AgTimer()
 {
-	m_fNextTimerUpdate = gpGlobals->time + 5.0; //Dont start timer directly.
+	m_fNextTimerUpdate = gpGlobals->time + 5.0f; //Dont start timer directly.
 	m_fLastTimeCheck = gpGlobals->time;
 	m_fEffectiveTime = 0.0;
 	m_pmp_timelimit = CVAR_GET_POINTER("mp_timelimit");

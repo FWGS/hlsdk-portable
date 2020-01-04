@@ -134,7 +134,7 @@ void CGrapple::GrappleTouch( CBaseEntity *pOther )
 	pev->enemy = pOther->edict();// remember this guy!
 	SetThink( &CGrapple::Grapple_Track );
 	pev->nextthink = gpGlobals->time;
-	m_flNextIdleTime = gpGlobals->time + 0.1;
+	m_flNextIdleTime = gpGlobals->time + 0.1f;
 	pev->solid = SOLID_NOT;
 	SetTouch( NULL );
 }
@@ -216,7 +216,7 @@ void CGrapple::Grapple_Track()
 	else
 		pev->velocity = pEnemy->pev->velocity;
 
-	pev->nextthink = gpGlobals->time + 0.1;
+	pev->nextthink = gpGlobals->time + 0.1f;
 }
 
 void CBasePlayer::Service_Grapple()
@@ -291,13 +291,13 @@ void CGrapple::OnAirThink()
 
 	UTIL_TraceLine( pev->origin, pOwner->pev->origin, ignore_monsters, ENT( pev ), &tr );
 
-	if( tr.flFraction < 1.0 )
+	if( tr.flFraction < 1.0f )
 	{
 		Reset_Grapple();
 		return;
 	}
 
-	pev->nextthink = gpGlobals->time + 0.5;
+	pev->nextthink = gpGlobals->time + 0.5f;
 }
 
 void CGrapple::Spawn()
@@ -310,7 +310,7 @@ void CGrapple::Spawn()
 	SetTouch( &CGrapple::GrappleTouch );
 	SetThink( &CGrapple::OnAirThink );
 
-	pev->nextthink = gpGlobals->time + 0.1;
+	pev->nextthink = gpGlobals->time + 0.1f;
 }
 
 LINK_ENTITY_TO_CLASS( hook, CGrapple ); 

@@ -143,7 +143,7 @@ void CBasePlayer::Spectate_Start()
   }
   
   
-  pev->nextthink = gpGlobals->time + 0.1;
+  pev->nextthink = gpGlobals->time + 0.1f;
   
   //Tell clients
   UTIL_ClientPrintAll(HUD_PRINTNOTIFY, UTIL_VarArgs("%s entered spectator mode\n",GetName()));

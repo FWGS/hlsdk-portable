@@ -92,12 +92,12 @@ CQuakeRocket *CQuakeRocket::CreateGrenade( Vector vecOrigin, Vector vecVelocity,
 	// set newmis duration
 	if ( gpGlobals->deathmatch == 4 )
 	{
-		pRocket->m_flAttackFinished = gpGlobals->time + 1.1;	// What's this used for?
+		pRocket->m_flAttackFinished = gpGlobals->time + 1.1f;	// What's this used for?
 		if (pOwner)
 			pOwner->TakeDamage( pOwner->pev, pOwner->pev, 10, DMG_GENERIC );
 	}
 
-	pRocket->pev->nextthink = gpGlobals->time + 2.5;
+	pRocket->pev->nextthink = gpGlobals->time + 2.5f;
 	pRocket->SetThink( &CQuakeRocket::GrenadeExplode );
 
 	PLAYBACK_EVENT_FULL (FEV_GLOBAL, pRocket->edict(), g_sTrail, 0.0, 

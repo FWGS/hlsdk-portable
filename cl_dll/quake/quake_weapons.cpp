@@ -287,7 +287,7 @@ Handles weapon firing, reloading, etc.
 */
 void CBasePlayerWeapon::ItemPostFrame( void )
 {
-	if ((m_fInReload) && (m_pPlayer->m_flNextAttack <= 0.0))
+	if ((m_fInReload) && (m_pPlayer->m_flNextAttack <= 0.0f))
 	{
 #if 0 // FIXME, need ammo on client to make this work right
 		// complete the reload. 
@@ -302,7 +302,7 @@ void CBasePlayerWeapon::ItemPostFrame( void )
 		m_fInReload = FALSE;
 	}
 
-	if ((m_pPlayer->pev->button & IN_ATTACK2) && (m_flNextSecondaryAttack <= 0.0))
+	if ((m_pPlayer->pev->button & IN_ATTACK2) && (m_flNextSecondaryAttack <= 0.0f))
 	{
 		if ( pszAmmo2() && !m_pPlayer->m_rgAmmo[SecondaryAmmoIndex()] )
 		{
@@ -312,7 +312,7 @@ void CBasePlayerWeapon::ItemPostFrame( void )
 		SecondaryAttack();
 		m_pPlayer->pev->button &= ~IN_ATTACK2;
 	}
-	else if ((m_pPlayer->pev->button & IN_ATTACK) && (m_flNextPrimaryAttack <= 0.0))
+	else if ((m_pPlayer->pev->button & IN_ATTACK) && (m_flNextPrimaryAttack <= 0.0f))
 	{
 		if ( (m_iClip == 0 && pszAmmo1()) || (iMaxClip() == -1 && !m_pPlayer->m_rgAmmo[PrimaryAmmoIndex()] ) )
 		{
@@ -789,7 +789,7 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 	player.m_iAmmoRockets = from->client.ammo_rockets;
 	player.m_iAmmoNails = from->client.ammo_nails;
 
-	player.m_iNailOffset = (int)from->client.fuser2 != 0.0 ? 4.0 : -4.0;
+	player.m_iNailOffset = (int)from->client.fuser2 != 0.0f ? 4.0f : -4.0f;
 
 
 	
@@ -868,7 +868,7 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 	to->client.maxspeed					= player.pev->maxspeed;
 	to->client.iuser3					= player.m_iQuakeItems;
 	to->client.fuser1					= (float)player.m_iQuakeWeapon;
-	to->client.fuser2					= (float)player.m_iNailOffset > 0.0 ? 1.0 : 0.0;
+	to->client.fuser2					= (float)player.m_iNailOffset > 0.0f ? 1.0f : 0.0f;
 	
 	to->client.ammo_shells				= player.m_iAmmoShells;
 	to->client.ammo_cells				= player.m_iAmmoCells;
@@ -903,50 +903,50 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 		pto->m_flTimeWeaponIdle			= pCurrent->m_flTimeWeaponIdle;
 
 		// Decrement weapon counters, server does this at same time ( during post think, after doing everything else )
-		pto->m_flNextReload				-= cmd->msec / 1000.0;
-		pto->m_fNextAimBonus			-= cmd->msec / 1000.0;
-		pto->m_flNextPrimaryAttack		-= cmd->msec / 1000.0;
-		pto->m_flNextSecondaryAttack	-= cmd->msec / 1000.0;
-		pto->m_flTimeWeaponIdle			-= cmd->msec / 1000.0;
+		pto->m_flNextReload				-= cmd->msec / 1000.0f;
+		pto->m_fNextAimBonus			-= cmd->msec / 1000.0f;
+		pto->m_flNextPrimaryAttack		-= cmd->msec / 1000.0f;
+		pto->m_flNextSecondaryAttack	-= cmd->msec / 1000.0f;
+		pto->m_flTimeWeaponIdle			-= cmd->msec / 1000.0f;
 
 		if ( pto->m_flPumpTime != -9999 )
 		{
-			pto->m_flPumpTime -= cmd->msec / 1000.0;
-			if ( pto->m_flPumpTime < -0.001 )
-				pto->m_flPumpTime = -0.001;
+			pto->m_flPumpTime -= cmd->msec / 1000.0f;
+			if ( pto->m_flPumpTime < -0.001f )
+				pto->m_flPumpTime = -0.001f;
 		}
 
-		if ( pto->m_fNextAimBonus < -1.0 )
+		if ( pto->m_fNextAimBonus < -1.0f )
 		{
-			pto->m_fNextAimBonus = -1.0;
+			pto->m_fNextAimBonus = -1.0f;
 		}
 
-		if ( pto->m_flNextPrimaryAttack < -1.0 )
+		if ( pto->m_flNextPrimaryAttack < -1.0f )
 		{
-			pto->m_flNextPrimaryAttack = -1.0;
+			pto->m_flNextPrimaryAttack = -1.0f;
 		}
 
-		if ( pto->m_flNextSecondaryAttack < -0.001 )
+		if ( pto->m_flNextSecondaryAttack < -0.001f )
 		{
-			pto->m_flNextSecondaryAttack = -0.001;
+			pto->m_flNextSecondaryAttack = -0.001f;
 		}
 
-		if ( pto->m_flTimeWeaponIdle < -0.001 )
+		if ( pto->m_flTimeWeaponIdle < -0.001f )
 		{
-			pto->m_flTimeWeaponIdle = -0.001;
+			pto->m_flTimeWeaponIdle = -0.001f;
 		}
 
-		if ( pto->m_flNextReload < -0.001 )
+		if ( pto->m_flNextReload < -0.001f )
 		{
-			pto->m_flNextReload = -0.001;
+			pto->m_flNextReload = -0.001f;
 		}
 	}
 
 	// m_flNextAttack is now part of the weapons, but is part of the player instead
-	to->client.m_flNextAttack -= cmd->msec / 1000.0;
-	if ( to->client.m_flNextAttack < -0.001 )
+	to->client.m_flNextAttack -= cmd->msec / 1000.0f;
+	if ( to->client.m_flNextAttack < -0.001f )
 	{
-		to->client.m_flNextAttack = -0.001;
+		to->client.m_flNextAttack = -0.001f;
 	}
 
 	// Store off the last position from the predicted state.

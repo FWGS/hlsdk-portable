@@ -465,8 +465,8 @@ void Dmc_TouchTeleporters (  struct local_state_s *player, dmc_tele_t *pTeles, i
 		{
 			for( j = 0; j < 3; j++ )
 			{
-				pTele->absmin[ j ] = g_vecTeleMins[ iTeleNum ][ j ] - 1.0;
-				pTele->absmax[ j ] = g_vecTeleMaxs[ iTeleNum ][ j ] + 1.0;
+				pTele->absmin[ j ] = g_vecTeleMins[ iTeleNum ][ j ] - 1.0f;
+				pTele->absmax[ j ] = g_vecTeleMaxs[ iTeleNum ][ j ] + 1.0f;
 			}
 			iTeleNum++;
 			

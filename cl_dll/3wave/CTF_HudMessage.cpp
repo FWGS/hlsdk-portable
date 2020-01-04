@@ -107,7 +107,7 @@ int CHudBonus ::Draw(float flTime )
 		//Just activated
 		if ( g_PlayerBonus[ index ].bActive && !g_PlayerBonus[ index ].flBonusTime )
 		{
-			g_PlayerBonus[ index ].flBonusTime = flTime + 5.0;
+			g_PlayerBonus[ index ].flBonusTime = flTime + 5.0f;
 
 			for ( int i = 1; i < MAX_BONUS + 1; i++ )
 			{

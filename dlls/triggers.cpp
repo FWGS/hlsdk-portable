@@ -880,7 +880,7 @@ void CBaseTrigger::EnvTouch( CBaseEntity *pOther )
 		pev->dmg = 4; //Default damage of 4
 		fldmg = (float)( pev->dmg * pOther->pev->waterlevel ); // pev->damage plus our current waterlevel
 
-		pev->dmgtime = gpGlobals->time + 1.0; //Next damage in 1 second
+		pev->dmgtime = gpGlobals->time + 1.0f; //Next damage in 1 second
 	}
 	//We are in lava
 	else if( m_bitsDamageInflict & DMG_BURN )
@@ -891,12 +891,12 @@ void CBaseTrigger::EnvTouch( CBaseEntity *pOther )
 		if( pOther->IsPlayer() )
 		{
 			if( ( (CBasePlayer *)pOther )->m_iQuakeItems & IT_SUIT ) // Wearing the suit slows down the next damage time
-				pev->dmgtime = gpGlobals->time + 1.0;
+				pev->dmgtime = gpGlobals->time + 1.0f;
 			else
-				pev->dmgtime = gpGlobals->time + 0.2;
+				pev->dmgtime = gpGlobals->time + 0.2f;
 		}
 		else
-			pev->dmgtime = gpGlobals->time + 0.2;
+			pev->dmgtime = gpGlobals->time + 0.2f;
 	}
 
 	if( fldmg < 0 )
@@ -2016,7 +2016,7 @@ void CTeleDeath::Spawn( void )
 	UTIL_SetOrigin( pev, pev->origin );
 
 	SetTouch( &CTeleDeath::DeathTouch );
-	pev->nextthink = gpGlobals->time + 0.2;
+	pev->nextthink = gpGlobals->time + 0.2f;
 	SetThink( &CBaseEntity::SUB_Remove );
 
 	// Touch still players
@@ -2124,7 +2124,7 @@ void CBaseTrigger::TeleportTouch( CBaseEntity *pOther )
 		//pOther->pev->fixangle = 1;		// turn this way immediately
 		
 		//Err, why is this here?
-		pOther->pev->fuser4 = gpGlobals->time + 0.7;
+		pOther->pev->fuser4 = gpGlobals->time + 0.7f;
 		pOther->pev->velocity = gpGlobals->v_forward * 300;
 	}
 	pOther->pev->flags &= ~FL_ONGROUND;
@@ -2152,7 +2152,7 @@ void CTriggerTeleport::Spawn( void )
 	if( !( pev->spawnflags & TELE_SILENT ) )
 	{
 		PRECACHE_SOUND( "ambience/hum1.wav" );
-		UTIL_EmitAmbientSound( ENT( pev ), ( pev->mins + pev->maxs ) * 0.5, "ambience/hum1.wav", 0.5, ATTN_STATIC, 0, 100 );
+		UTIL_EmitAmbientSound( ENT( pev ), ( pev->mins + pev->maxs ) * 0.5f, "ambience/hum1.wav", 0.5, ATTN_STATIC, 0, 100 );
 	}
 }
 

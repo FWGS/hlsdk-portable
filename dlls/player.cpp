@@ -291,7 +291,7 @@ void CBasePlayer::Pain( CBaseEntity *pAttacker )
 	if( pev->watertype == CONTENT_WATER && pev->waterlevel == 3 )
 	{
 		UTIL_Bubbles( pev->mins, pev->maxs, 3 );
-		if( RANDOM_FLOAT( 0, 1 ) > 0.5 )
+		if( RANDOM_FLOAT( 0, 1 ) > 0.5f )
 			EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/drown1.wav", 1, ATTN_NORM );
 		else
 			EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/drown2.wav", 1, ATTN_NORM );
@@ -301,7 +301,7 @@ void CBasePlayer::Pain( CBaseEntity *pAttacker )
 	// slime pain sounds
 	if( pev->watertype == CONTENT_SLIME )
 	{
-		if( RANDOM_FLOAT( 0, 1 ) > 0.5 )
+		if( RANDOM_FLOAT( 0, 1 ) > 0.5f )
 			EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/lburn1.wav", 1, ATTN_NORM );
 		else
 			EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/lburn2.wav", 1, ATTN_NORM );
@@ -311,7 +311,7 @@ void CBasePlayer::Pain( CBaseEntity *pAttacker )
 	// lava pain sounds
 	if( pev->watertype == CONTENT_LAVA )
 	{
-		if( RANDOM_FLOAT( 0, 1 ) > 0.5 )
+		if( RANDOM_FLOAT( 0, 1 ) > 0.5f )
 			EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/lburn1.wav", 1, ATTN_NORM );
 		else
 			EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/lburn2.wav", 1, ATTN_NORM );
@@ -324,7 +324,7 @@ void CBasePlayer::Pain( CBaseEntity *pAttacker )
 		m_bAxHitMe = 0;
 		return;
 	}
-	m_flPainSoundFinished = gpGlobals->time + 0.5;
+	m_flPainSoundFinished = gpGlobals->time + 0.5f;
 
 	// ax pain sound
 	if( m_bAxHitMe == 1 )
@@ -929,9 +929,9 @@ void CBasePlayer::WaterMove()
 		if( pev->dmgtime < gpGlobals->time )
 		{
 			if( m_iQuakeItems & IT_SUIT )
-				pev->dmgtime = gpGlobals->time + 1.0;
+				pev->dmgtime = gpGlobals->time + 1.0f;
 			else
-				pev->dmgtime = gpGlobals->time + 0.2;
+				pev->dmgtime = gpGlobals->time + 0.2f;
 			TakeDamage( VARS( eoNullEntity ), VARS( eoNullEntity ), 10 * pev->waterlevel, DMG_BURN );
 		}
 	}
@@ -939,7 +939,7 @@ void CBasePlayer::WaterMove()
 	{
 		if( pev->dmgtime < gpGlobals->time )
 		{
-			pev->dmgtime = gpGlobals->time + 1.0;
+			pev->dmgtime = gpGlobals->time + 1.0f;
 			TakeDamage( VARS( eoNullEntity ), VARS( eoNullEntity ), 4 * pev->waterlevel, DMG_ACID );
 		}
 	}
@@ -1001,7 +1001,7 @@ void CBasePlayer::PlayerDeathThink( void )
 	StopAnimation();
 
 	pev->effects |= EF_NOINTERP;
-	pev->framerate = 0.0;
+	pev->framerate = 0.0f;
 
 //++ BulliT
 	//Remove sticky dead models.

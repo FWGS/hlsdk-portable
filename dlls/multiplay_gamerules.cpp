@@ -258,10 +258,10 @@ void CHalfLifeMultiplay::Think( void )
 		m_Arena.Think();
 //-- Martin Webrant
 
-	if( m_flGameEndTime != 0.0 && m_flGameEndTime <= gpGlobals->time )
+	if( m_flGameEndTime != 0.0f && m_flGameEndTime <= gpGlobals->time )
 	{
 		GoToIntermission();
-		m_flGameEndTime = 0.0;
+		m_flGameEndTime = 0.0f;
 		return;
 	}
 
@@ -279,13 +279,13 @@ void CHalfLifeMultiplay::Think( void )
 	//time_remaining = (int)( flTimeLimit ? ( flTimeLimit - gpGlobals->time ) : 0 );
 	time_remaining = (int)( flTimeLimit ? ( flTimeLimit - gpGlobals->time + m_fGameStart ) : 0 );
 //-- Martin Webrant
-	if( flTimeLimit != 0 && gpGlobals->time >= flTimeLimit && m_flGameEndTime == 0.0 )
+	if( flTimeLimit != 0 && gpGlobals->time >= flTimeLimit && m_flGameEndTime == 0.0f )
 	{
 		GoToIntermission();
 		return;
 	}
 
-	if( flFragLimit && m_flGameEndTime == 0.0 )
+	if( flFragLimit && m_flGameEndTime == 0.0f )
 	{
 		int bestfrags = 9999;
 		int remain;
@@ -297,7 +297,7 @@ void CHalfLifeMultiplay::Think( void )
 
 			if( pPlayer && pPlayer->pev->frags >= flFragLimit )
 			{
-				m_flGameEndTime = gpGlobals->time + 1.5;
+				m_flGameEndTime = gpGlobals->time + 1.5f;
 				return;
 			}
 
