@@ -1135,7 +1135,7 @@ void CPushable::Move( CBaseEntity *pOther, int push )
 		factor = 0.25f;
 
 	if (!push)
-		factor = factor*0.5;
+		factor *= 0.5f;
 
 	pev->velocity.x += pevToucher->velocity.x * factor;
 	pev->velocity.y += pevToucher->velocity.y * factor;

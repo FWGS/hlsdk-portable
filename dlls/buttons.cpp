@@ -218,7 +218,7 @@ void CEnvState::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE use
 			m_iState = STATE_TURN_OFF;
 			if (pev->spawnflags & SF_ENVSTATE_DEBUG)
 			{
-				ALERT(at_console,"DEBUG: env_state \"%s\" triggered; will turn off in %f seconds.\n", STRING(pev->targetname), m_fTurnOffTime);
+				ALERT(at_console,"DEBUG: env_state \"%s\" triggered; will turn off in %f seconds.\n", STRING(pev->targetname), (float)m_fTurnOffTime);
 			}
 			SetNextThink( m_fTurnOffTime );
 		}

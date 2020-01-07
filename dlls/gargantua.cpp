@@ -1089,7 +1089,7 @@ void CGargantua::StartTask( Task_t *pTask )
 		if ( m_pCine->IsAction() && m_pCine->m_fAction == 3)
 		{
 			FlameCreate();
-			m_flWaitFinished = gpGlobals->time + 4.5;
+			m_flWaitFinished = gpGlobals->time + 4.5f;
 			m_flameTime = gpGlobals->time + 6;
 			m_flameX = 0;
 			m_flameY = 0;
