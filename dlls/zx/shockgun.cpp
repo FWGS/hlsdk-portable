@@ -156,7 +156,7 @@ void CShockRifle::PrimaryAttack()
 //		SendWeaponAnim( SHOCK_FIRE );
 			//shock event
 	flags = 0;
-		PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usShockFire, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, 0, m_iBeam, 0, 0);	
+		PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usShockFire, 0.0, g_vecZero, g_vecZero, 0.0, 0.0, 0, m_iBeam, 0, 0);
 
 		EMIT_SOUND_DYN(ENT(m_pPlayer->pev), CHAN_ITEM, "weapons/shock_fire.wav", RANDOM_FLOAT(0.95, 1.0), ATTN_NORM, 0, 93 + RANDOM_LONG(0,0xF));
 
