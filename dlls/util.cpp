@@ -442,8 +442,8 @@ Vector UTIL_AxisRotationToAngles( const Vector &vecAxis, float flDegs )
 	Vector vecTemp = UTIL_AxisRotationToVec( vecAxis, flDegs );
 	float rgflVecOut[3];
 	//ugh, mathsy.
-	rgflVecOut[0] = asin(vecTemp.z) * (-180.0 / M_PI);
-	rgflVecOut[1] = acos(vecTemp.x) * (180.0 / M_PI);
+	rgflVecOut[0] = asin(vecTemp.z) * (-180.0f / M_PI_F);
+	rgflVecOut[1] = acos(vecTemp.x) * (180.0f / M_PI_F);
 	if (vecTemp.y < 0)
 		rgflVecOut[1] = -rgflVecOut[1];
 	rgflVecOut[2] = 0; //for now
@@ -454,7 +454,7 @@ Vector UTIL_AxisRotationToAngles( const Vector &vecAxis, float flDegs )
 Vector UTIL_AxisRotationToVec( const Vector &vecAxis, float flDegs )
 {
 	float rgflVecOut[3];
-	float flRads = flDegs * (M_PI / 180.0);
+	float flRads = flDegs * (M_PI_F / 180.0f);
 	float c = cos(flRads);
 	float s = sin(flRads);
 	float v = vecAxis.x * (1-c);
@@ -1727,7 +1727,7 @@ BOOL UTIL_IsFacing( entvars_t *pevTest, const Vector &reference )
 	angle.x = 0;
 	UTIL_MakeVectorsPrivate( angle, forward, NULL, NULL );
 	// He's facing me, he meant it
-	if ( DotProduct( forward, vecDir ) > 0.96 )	// +/- 15 degrees or so
+	if( DotProduct( forward, vecDir ) > 0.96f )	// +/- 15 degrees or so
 	{
 		return TRUE;
 	}

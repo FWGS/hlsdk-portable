@@ -142,7 +142,7 @@ void CGenericMonster::Spawn()
 		if (pev->targetname)
 			ALERT(at_error, "No model specified for monster_generic \"%s\"\n", STRING(pev->targetname));
 		else
-			ALERT(at_error, "No model specified for monster_generic at %.2f %.2f %.2f\n", pev->origin.x, pev->origin.y, pev->origin.z);
+			ALERT(at_error, "No model specified for monster_generic at %.2f %.2f %.2f\n", (double)pev->origin.x, (double)pev->origin.y, (double)pev->origin.z);
 		pev->model = MAKE_STRING("models/player.mdl");
 	}
 
