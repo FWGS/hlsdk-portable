@@ -781,7 +781,7 @@ CBaseEntity* CBeam::GetTripEntity( TraceResult *ptr )
 {
 	CBaseEntity* pTrip;
 
-	if (ptr->flFraction == 1.0 || ptr->pHit == NULL)
+	if (ptr->flFraction == 1.0f || ptr->pHit == NULL)
 		return NULL;
 
 	pTrip = CBaseEntity::Instance(ptr->pHit);
@@ -2143,7 +2143,7 @@ void CShot :: Touch ( CBaseEntity *pOther )
 		return;
 	// don't fire too often in collisions!
 	// teleport_time is the soonest this can be touched again.
-	pev->teleport_time = gpGlobals->time + 0.1;
+	pev->teleport_time = gpGlobals->time + 0.1f;
 
 	if (pev->netname)
 		FireTargets( STRING(pev->netname), this, this, USE_TOGGLE, 0 );
@@ -2343,7 +2343,7 @@ CBaseEntity *CEnvShooter :: CreateGib ( Vector vecPos, Vector vecVel )
 	if (pShot->pev->framerate)
 	{
 		pShot->m_maxFrame = (float) MODEL_FRAMES( pShot->pev->modelindex ) - 1;
-		if (pShot->m_maxFrame > 1.0)
+		if (pShot->m_maxFrame > 1.0f)
 		{
 			if (m_flGibLife)
 			{
@@ -3534,12 +3534,12 @@ void CEnvRain::Think( void )
 			break;
 		case EXTENT_ARCING:
 			UTIL_TraceLine( vecSrc, vecDest, ignore_monsters, NULL, &tr);
-			if (tr.flFraction == 1.0) bDraw = FALSE;
+			if (tr.flFraction == 1.0f) bDraw = FALSE;
 			vecDest = tr.vecEndPos;
 			break;
 		case EXTENT_ARCING_REVERSE:
 			UTIL_TraceLine( vecDest, vecSrc, ignore_monsters, NULL, &tr);
-			if (tr.flFraction == 1.0) bDraw = FALSE;
+			if (tr.flFraction == 1.0f) bDraw = FALSE;
 			vecSrc = tr.vecEndPos;
 			break;
 		}
@@ -3620,7 +3620,7 @@ void CEnvWarpBall::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE 
 	{
 		vecDest = pev->health * (Vector(RANDOM_FLOAT(-1,1), RANDOM_FLOAT(-1,1), RANDOM_FLOAT(-1,1)).Normalize());
 		UTIL_TraceLine( pev->origin, pev->origin + vecDest, ignore_monsters, NULL, &tr);
-		if (tr.flFraction != 1.0)
+		if (tr.flFraction != 1.0f)
 		{
 			// we hit something.
 			iDrawn++;
@@ -4063,7 +4063,7 @@ void CEnvDecal::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE use
 
 	UTIL_TraceLine( vecPos, vecPos+vecOffs, ignore_monsters, NULL, &trace );
 
-	if (trace.flFraction == 1.0)
+	if (trace.flFraction == 1.0f)
 		return; // didn't hit anything, oh well
 	
 	entityIndex = (short)ENTINDEX(trace.pHit);
@@ -4485,7 +4485,7 @@ public:
 void CEnvSky :: Activate ( void )
 {
 	pev->effects |= EF_NODRAW;
-	pev->nextthink = gpGlobals->time + 1.0;
+	pev->nextthink = gpGlobals->time + 1.0f;
 }
 
 extern int gmsgSetSky;

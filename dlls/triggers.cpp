@@ -432,7 +432,7 @@ void CTriggerRotTest::Think( void )
 //		ALERT(at_console, "vecTemp = %.2f %.2f %.2f\n", vecTemp.x, vecTemp.y, vecTemp.z);
 //		ALERT(at_console, "Set Marker = %.2f %.2f %.2f\n", m_pMarker->pev->origin.x, m_pMarker->pev->origin.y, m_pMarker->pev->origin.z);
 	}
-	pev->armorvalue += pev->armortype * 0.1;
+	pev->armorvalue += pev->armortype * 0.1f;
 	SetNextThink( 0.1 );
 }
 
@@ -2333,7 +2333,7 @@ void CTriggerHurt :: HurtTouch ( CBaseEntity *pOther )
 	// while touching the trigger.  Player continues taking damage for a while after
 	// leaving the trigger
 
-	fldmg = pev->dmg * 0.5;	// 0.5 seconds worth of damage, pev->dmg is damage/second
+	fldmg = pev->dmg * 0.5f;	// 0.5 seconds worth of damage, pev->dmg is damage/second
 
 
 	// JAY: Cut this because it wasn't fully realized.  Damage is simpler now.
@@ -2360,7 +2360,7 @@ void CTriggerHurt :: HurtTouch ( CBaseEntity *pOther )
 	pev->pain_finished = gpGlobals->time;
 
 	// Apply damage every half second
-	pev->dmgtime = gpGlobals->time + 0.5;// half second delay until this trigger can hurt toucher again
+	pev->dmgtime = gpGlobals->time + 0.5f;// half second delay until this trigger can hurt toucher again
 
   
 	
@@ -2406,8 +2406,8 @@ void CTriggerHurt :: RadiationThink( void )
 	origin = pev->origin;
 	view_ofs = pev->view_ofs;
 
-	pev->origin = (pev->absmin + pev->absmax) * 0.5;
-	pev->view_ofs = pev->view_ofs * 0.0;
+	pev->origin = (pev->absmin + pev->absmax) * 0.5f;
+	pev->view_ofs = pev->view_ofs * 0.0f;
 
 	pentPlayer = FIND_CLIENT_IN_PVS(edict());
 
@@ -2425,9 +2425,9 @@ void CTriggerHurt :: RadiationThink( void )
 
 		// get range to player;
 
-		vecSpot1 = (pev->absmin + pev->absmax) * 0.5;
-		vecSpot2 = (pevTarget->absmin + pevTarget->absmax) * 0.5;
-		
+		vecSpot1 = (pev->absmin + pev->absmax) * 0.5f;
+		vecSpot2 = (pevTarget->absmin + pevTarget->absmax) * 0.5f;
+
 		vecRange = vecSpot1 - vecSpot2;
 		flRange = vecRange.Length();
 
@@ -2439,7 +2439,7 @@ void CTriggerHurt :: RadiationThink( void )
 			pPlayer->m_flgeigerRange = flRange;
 	}
 
-	SetNextThink( 0.25 );
+	SetNextThink( 0.25f );
 }
 
 //=====================================
@@ -2492,7 +2492,7 @@ void CTriggerHevCharge :: ChargeTouch ( CBaseEntity *pOther )
 	//FIXME: add in the multiplayer fix, from trigger_hurt?
 	if ( pev->dmgtime > gpGlobals->time )
 		return;
-	pev->dmgtime = gpGlobals->time + 0.5;// half second delay until this trigger can hurt toucher again
+	pev->dmgtime = gpGlobals->time + 0.5f;// half second delay until this trigger can hurt toucher again
 
 	int iNewArmor = pOther->pev->armorvalue + pev->frags;
 	if (iNewArmor > MAX_NORMAL_BATTERY) iNewArmor = MAX_NORMAL_BATTERY;
@@ -2535,7 +2535,7 @@ void CTriggerHevCharge :: AnnounceThink ( )
 
 	// Suit reports new power level
 	// For some reason this wasn't working in release build -- round it.
-	pct = (int)( (float)(pPlayer->pev->armorvalue * 100.0) * (1.0/MAX_NORMAL_BATTERY) + 0.5);
+	pct = (int)( (float)(pPlayer->pev->armorvalue * 100.0f) * (1.0f/MAX_NORMAL_BATTERY) + 0.5f);
 	pct = (pct / 5);
 	if (pct > 0)
 	pct--;
@@ -3893,7 +3893,7 @@ void CTriggerOnSight :: Spawn( void )
 
 	if (pev->max_health > 0)
 		{
-		pev->health = cos(pev->max_health/2 * M_PI/180.0);
+		pev->health = cos(pev->max_health/2 * M_PI_F/180.0f);
 //		ALERT(at_console, "Cosine is %f\n", pev->health);
 	}
 		}
@@ -4029,7 +4029,7 @@ BOOL CTriggerOnSight :: CanSee(CBaseEntity *pLooker, CBaseEntity *pSeen)
 			UTIL_TraceLine( pLooker->EyePosition(), pSeen->pev->origin, ignore_monsters, ignore_glass, pLooker->edict(), &tr );
 		else
 			UTIL_TraceLine( pLooker->EyePosition(), pSeen->pev->origin, ignore_monsters, dont_ignore_glass, pLooker->edict(), &tr );
-		if (tr.flFraction < 1.0 && tr.pHit != pSeen->edict())
+		if (tr.flFraction < 1.0f && tr.pHit != pSeen->edict())
 			return FALSE;
 	}
 

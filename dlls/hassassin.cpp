@@ -296,7 +296,7 @@ void CHAssassin::HandleAnimEvent( MonsterEvent_t *pEvent )
 				{ // just jump, it doesn't matter where to.
 					//ALERT(at_console,"Nonprecise jump for assassin %s\n",STRING(pev->targetname));
 					float flGravity = g_psv_gravity->value;
-					float time = sqrt( 160 / (0.5 * flGravity));
+					float time = sqrt( 160 / (0.5f * flGravity));
 					float speed = flGravity * time / 160;
 					UTIL_MakeVectors(pev->angles);
 					Vector vecDest = pev->origin + (gpGlobals->v_forward * 32);

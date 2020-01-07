@@ -196,7 +196,7 @@ void CAmbientGeneric::Spawn( void )
 	if( FStringNull( pev->message ) || szSoundFile[0] == '\0' )
 	{
 		ALERT( at_error, "ambient_generic \"%s\" at (%f, %f, %f) has no sound file\n",
-				STRING(pev->targetname), pev->origin.x, pev->origin.y, pev->origin.z );
+				STRING(pev->targetname), (double)pev->origin.x, (double)pev->origin.y, (double)pev->origin.z );
 		SetNextThink( 0.1f );
 		SetThink( &CAmbientGeneric::SUB_Remove );
 		return;
@@ -1924,7 +1924,7 @@ void CSpeaker::Spawn( void )
 
 	if( !m_preset && ( FStringNull( pev->message ) || szSoundFile[0] == '\0' ) )
 	{
-		ALERT( at_error, "SPEAKER with no Level/Sentence! at: %f, %f, %f\n", pev->origin.x, pev->origin.y, pev->origin.z );
+		ALERT( at_error, "SPEAKER with no Level/Sentence! at: %f, %f, %f\n", (double)pev->origin.x, (double)pev->origin.y, (double)pev->origin.z );
 		SetNextThink( 0.1f );
 		SetThink( &CSpeaker::SUB_Remove );
 		return;
