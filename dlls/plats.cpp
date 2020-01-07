@@ -971,11 +971,11 @@ void CFuncTrain::Next( void )
 			{
 			case PATHSPEED_SET:
 				pev->speed = m_pevCurrentTarget->speed;
-				ALERT( at_aiconsole, "Train %s speed set to %4.2f\n", STRING(pev->targetname), pev->speed );
+				ALERT( at_aiconsole, "Train %s speed set to %4.2f\n", STRING(pev->targetname), (double)pev->speed );
 				break;
 			case PATHSPEED_ACCEL:
 				pev->speed += m_pevCurrentTarget->speed;
-				ALERT( at_aiconsole, "Train %s speed accel to %4.2f\n", STRING(pev->targetname), pev->speed );
+				ALERT( at_aiconsole, "Train %s speed accel to %4.2f\n", STRING(pev->targetname), (double)pev->speed );
 				break;
 			case PATHSPEED_TIME:
 				float distance;
@@ -985,7 +985,7 @@ void CFuncTrain::Next( void )
 					distance = (pev->origin - (pTarg->pev->origin - (pev->mins + pev->maxs) * 0.5f)).Length();
 
 				pev->speed = distance / m_pevCurrentTarget->speed;
-				ALERT( at_aiconsole, "Train %s speed to %4.2f (timed)\n", STRING(pev->targetname), pev->speed );
+				ALERT( at_aiconsole, "Train %s speed to %4.2f (timed)\n", STRING(pev->targetname), (double)pev->speed );
 				break;
 			}
 		}
@@ -1020,7 +1020,7 @@ void CFuncTrain::Next( void )
 		}
 		else
 		{
-			if (pev->spawnflags & SF_TRAIN_SETORIGIN)		
+			if (pev->spawnflags & SF_TRAIN_SETORIGIN)
 				UTIL_AssignOrigin(this, pTarg->pev->origin );
 			else
 				UTIL_AssignOrigin(this, pTarg->pev->origin - (pev->mins + pev->maxs) * 0.5f );
@@ -1125,11 +1125,11 @@ void CFuncTrain :: PostSpawn( void )
 	}
 	else
 	{
-		m_vecSpawnOffset = m_vecSpawnOffset + (pevTarg->origin - (pev->mins + pev->maxs) * 0.5) - pev->origin;
+		m_vecSpawnOffset = m_vecSpawnOffset + (pevTarg->origin - (pev->mins + pev->maxs) * 0.5f) - pev->origin;
 		if (m_pMoveWith)
-			UTIL_AssignOrigin (this, pevTarg->origin - (pev->mins + pev->maxs) * 0.5 - m_pMoveWith->pev->origin );
+			UTIL_AssignOrigin (this, pevTarg->origin - (pev->mins + pev->maxs) * 0.5f - m_pMoveWith->pev->origin );
 		else
-			UTIL_AssignOrigin (this, pevTarg->origin - (pev->mins + pev->maxs) * 0.5 );
+			UTIL_AssignOrigin (this, pevTarg->origin - (pev->mins + pev->maxs) * 0.5f );
 	}
 
 	if( FStringNull( pev->targetname ) || pev->spawnflags & SF_TRAIN_START_ON )
@@ -1149,9 +1149,9 @@ void CFuncTrain :: PostSpawn( void )
 
 void CFuncTrain :: ThinkDoNext( void )
 {
-	SetNextThink( 0.1 );
+	SetNextThink( 0.1f );
 //	ALERT(at_console, "TDN ");
-	if (gpGlobals->time != 1.0) // only go on if the game has properly started yet
+	if (gpGlobals->time != 1.0f) // only go on if the game has properly started yet
 		SetThink(&CFuncTrain :: Next );
 }
 
@@ -1364,8 +1364,8 @@ void CFuncTrackTrain :: Spawn( void )
 
 void CFuncTrackTrain :: Precache( void )
 {
-	if (m_flVolume == 0.0)
-		m_flVolume = 1.0;
+	if (m_flVolume == 0.0f)
+		m_flVolume = 1.0f;
 
 	switch (m_sounds)
 	{
@@ -1554,7 +1554,7 @@ void CFuncTrackTrain::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TY
 		}
 
 		PostponeNext();	
-		ALERT( at_aiconsole, "TRAIN(%s), speed to %.2f\n", STRING(pev->targetname), pev->speed );
+		ALERT( at_aiconsole, "TRAIN(%s), speed to %.2f\n", STRING(pev->targetname), (double)pev->speed );
 	}
 }
 
@@ -1820,19 +1820,19 @@ void CFuncTrackTrain :: DesiredAction( void ) // Next( void )
 					// Don't override speed if under user control
 					if (pev->spawnflags & SF_TRACKTRAIN_NOCONTROL)
 					pev->speed = pFire->pev->speed;
-					ALERT( at_aiconsole, "TrackTrain %s speed set to %4.2f\n", STRING(pev->targetname), pev->speed );
+					ALERT( at_aiconsole, "TrackTrain %s speed set to %4.2f\n", STRING(pev->targetname), (double)pev->speed );
 					break;
 				case PATHSPEED_SET_MASTER:
 					m_speed = pFire->pev->speed;
 					pev->impulse = m_speed;
 					pev->speed = setting * m_speed;
-					ALERT( at_aiconsole, "TrackTrain %s master speed set to %4.2f\n", STRING(pev->targetname), pev->speed );
+					ALERT( at_aiconsole, "TrackTrain %s master speed set to %4.2f\n", STRING(pev->targetname), (double)pev->speed );
 					break;
 				case PATHSPEED_ACCEL:
 					m_speed += pFire->pev->speed;
 					pev->impulse = m_speed;
 					pev->speed = setting * m_speed;
-					ALERT( at_aiconsole, "TrackTrain %s speed accel to %4.2f\n", STRING(pev->targetname), pev->speed );
+					ALERT( at_aiconsole, "TrackTrain %s speed accel to %4.2f\n", STRING(pev->targetname), (double)pev->speed );
 					break;
 				case PATHSPEED_TIME:
 					float distance = (pev->origin - pDest->pev->origin).Length();
@@ -1840,7 +1840,7 @@ void CFuncTrackTrain :: DesiredAction( void ) // Next( void )
 					m_speed = distance / pFire->pev->speed;
 					pev->impulse = m_speed;
 					pev->speed = setting * m_speed;
-					ALERT( at_aiconsole, "TrackTrain %s speed to %4.2f (timed)\n", STRING(pev->targetname), pev->speed );
+					ALERT( at_aiconsole, "TrackTrain %s speed to %4.2f (timed)\n", STRING(pev->targetname), (double)pev->speed );
 					break;
 				}
 			}

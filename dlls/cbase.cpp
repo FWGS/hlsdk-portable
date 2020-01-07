@@ -599,7 +599,7 @@ void CBaseEntity :: SetEternalThink( void )
 		// record m_fPevNextThink as well, because we want to be able to
 		// tell when the bloody engine CHANGES IT!
 //		pev->nextthink = 1E9;
-		pev->nextthink = pev->ltime + 1E6;
+		pev->nextthink = pev->ltime + (float)1E6;
 		m_fPevNextThink = pev->nextthink;
 	}
 

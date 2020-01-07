@@ -449,14 +449,14 @@ void CCineMonster :: InitIdleThink( void )
 	if ((m_hTargetEnt = FindEntity(STRING(m_iszEntity), NULL)) != NULL)
 			{
 		PossessEntity( );
-		m_startTime = gpGlobals->time + 1E6;
+		m_startTime = gpGlobals->time + (float)1E6;
 		ALERT( at_aiconsole, "script \"%s\" using monster \"%s\"\n", STRING( pev->targetname ), STRING( m_iszEntity ) );
 			}
 	else
 		{
 		CancelScript( );
 		ALERT( at_aiconsole, "script \"%s\" can't find monster \"%s\"\n", STRING( pev->targetname ), STRING( m_iszEntity ) );
-		SetNextThink( 1.0 );
+		SetNextThink( 1.0f );
 	}
 }
 
@@ -690,7 +690,7 @@ void CCineMonster::DelayStart( int state )
 				{
 					pTarget->m_iState = STATE_ON; //LRC
 					FireTargets(STRING(m_iszFireOnBegin), this, this, USE_TOGGLE, 0); //LRC
-					pTarget->m_startTime = gpGlobals->time + 0.05; // why the delay? -- LRC
+					pTarget->m_startTime = gpGlobals->time + 0.05f; // why the delay? -- LRC
 				}
 			}
 		}

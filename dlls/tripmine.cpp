@@ -196,7 +196,7 @@ void CTripmineGrenade::PowerupThink( void )
 			STOP_SOUND( ENT( pev ), CHAN_BODY, "weapons/mine_charge.wav" );
 			SetThink( &CTripmineGrenade::SUB_Remove );
 			SetNextThink( 0.1f );
-			ALERT( at_console, "WARNING:Tripmine at %.0f, %.0f, %.0f removed\n", pev->origin.x, pev->origin.y, pev->origin.z );
+			ALERT( at_console, "WARNING:Tripmine at %.0f, %.0f, %.0f removed\n", (double)pev->origin.x, (double)pev->origin.y, (double)pev->origin.z );
 			KillBeam();
 			return;
 		}

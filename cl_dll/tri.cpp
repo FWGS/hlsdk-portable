@@ -114,13 +114,13 @@ void CShinySurface::Draw(const vec3_t &org)
 //	gEngfuncs.pTriAPI->Color4f( 1.0, 1.0, 1.0, m_fAlpha );
 	gEngfuncs.pTriAPI->Begin( TRI_QUADS );
 		gEngfuncs.pTriAPI->TexCoord2f(	fMinTX,		fMinTY					);
-		gEngfuncs.pTriAPI->Vertex3f  (	m_fMinX,	m_fMinY,	m_fZ+0.02	); // add 0.02 to avoid z-buffer problems
+		gEngfuncs.pTriAPI->Vertex3f  (	m_fMinX,	m_fMinY,	m_fZ+0.02f	); // add 0.02 to avoid z-buffer problems
 		gEngfuncs.pTriAPI->TexCoord2f(	fMinTX,		fMaxTY					);
-		gEngfuncs.pTriAPI->Vertex3f  (	m_fMinX,	m_fMaxY,	m_fZ+0.02	);
+		gEngfuncs.pTriAPI->Vertex3f  (	m_fMinX,	m_fMaxY,	m_fZ+0.02f	);
 		gEngfuncs.pTriAPI->TexCoord2f(	fMaxTX,		fMaxTY					);
-		gEngfuncs.pTriAPI->Vertex3f  (	m_fMaxX,	m_fMaxY,	m_fZ+0.02	);
+		gEngfuncs.pTriAPI->Vertex3f  (	m_fMaxX,	m_fMaxY,	m_fZ+0.02f	);
 		gEngfuncs.pTriAPI->TexCoord2f(	fMaxTX,		fMinTY					);
-		gEngfuncs.pTriAPI->Vertex3f  (	m_fMaxX,	m_fMinY,	m_fZ+0.02	);
+		gEngfuncs.pTriAPI->Vertex3f  (	m_fMaxX,	m_fMinY,	m_fZ+0.02f	);
 	gEngfuncs.pTriAPI->End();
 }
 
