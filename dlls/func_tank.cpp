@@ -1056,7 +1056,7 @@ void CFuncTank::TrackTarget( void )
 	UTIL_SetAvelocity(this, setAVel);
 
 	// notify the TankSequence if we're (pretty close to) facing the target
-	if( m_pSequence && fabs( distY ) < 0.1 && fabs( distX ) < 0.1 )
+	if( m_pSequence && fabs( distY ) < 0.1f && fabs( distX ) < 0.1f )
 		m_pSequence->FacingNotify();
 
 	// firing in tanksequences:
@@ -1070,7 +1070,7 @@ void CFuncTank::TrackTarget( void )
 			UTIL_MakeVectorsPrivate( pev->angles, forward, NULL, NULL );
 
 			// to make sure the gun doesn't fire too many bullets
-			m_fireLast = gpGlobals->time - (1/m_fireRate) - 0.01;
+			m_fireLast = gpGlobals->time - (1/m_fireRate) - 0.01f;
 
 			TryFire( BarrelPosition(), forward, pev );
 
@@ -1093,7 +1093,7 @@ void CFuncTank::TrackTarget( void )
 			UTIL_MakeVectorsPrivate( pev->angles, forward, NULL, NULL );
 
 			// to make sure the gun doesn't fire too many bullets
-			m_fireLast = gpGlobals->time - (1/m_fireRate) - 0.01;
+			m_fireLast = gpGlobals->time - (1/m_fireRate) - 0.01f;
 
 			TryFire( BarrelPosition(), forward, pController->pev );
 		

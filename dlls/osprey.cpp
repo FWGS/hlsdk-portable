@@ -414,7 +414,7 @@ void COsprey::FlyThink( void )
 			do{
 				m_pGoalEnt = UTIL_FindEntityByTargetname( NULL, STRING( m_pGoalEnt->pev->target ) );
 				loopbreaker--; //LRC
-			} while ( m_pGoalEnt && m_pGoalEnt->pev->speed < 400 && !HasDead() && loopbreaker > 0);
+			} while ( m_pGoalEnt && m_pGoalEnt->pev->speed < 400 && !HasDead() && loopbreaker > 0 );
 		}
 		UpdateGoal();
 	}
