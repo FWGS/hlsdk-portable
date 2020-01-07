@@ -198,7 +198,7 @@ void CSpear::BigSpearStab()
 #endif
 
 	PLAYBACK_EVENT_FULL( 0, m_pPlayer->edict(), m_usSpear, 
-	0.0, (float *)&g_vecZero, (float *)&g_vecZero, 0, 0, 0,
+	0.0, g_vecZero, g_vecZero, 0, 0, 0,
 	0.0, 0, 0.0 );
 
 	if ( tr.flFraction < 1.0 )
