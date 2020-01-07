@@ -575,7 +575,7 @@ void AgGameRules::ClientDisconnected( edict_t *pClient )
 
       UTIL_LogPrintf("\"%s<%d><%s><%s>\" disconnected (score \"%.0f\")\n", 
                      pPlayer->GetName(), GETPLAYERUSERID( pPlayer->edict() ), GETPLAYERAUTHID( pPlayer->edict() ), pPlayer->TeamID(), 
-                     pPlayer->pev->frags );
+                     (double)pPlayer->pev->frags );
       
       // Tell all clients this player isn't a spectator anymore
       MESSAGE_BEGIN( MSG_ALL, gmsgSpectator );  
@@ -589,7 +589,7 @@ void AgGameRules::ClientDisconnected( edict_t *pClient )
         if (pPlayerLoop && pPlayer != pPlayerLoop )
         {
           //Send score to others.
-          ClientPrint(pPlayerLoop->pev, HUD_PRINTNOTIFY, UTIL_VarArgs("%s left with score %.0f\n",pPlayer->GetName(),pPlayer->pev->frags));
+          ClientPrint(pPlayerLoop->pev, HUD_PRINTNOTIFY, UTIL_VarArgs("%s left with score %.0f\n", pPlayer->GetName(), (double)pPlayer->pev->frags));
 
           if ((CBaseEntity*)pPlayerLoop->m_hSpectateTarget == pPlayer)
           {

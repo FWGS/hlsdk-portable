@@ -30,7 +30,7 @@ AgSettings::AgSettings()
   m_bCheckNextMap = true;
   m_bCalcNextMap = true;
 
-  m_fNextCheck = gpGlobals->time + 10.0;
+  m_fNextCheck = gpGlobals->time + 10.0f;
 }
 
 AgSettings::~AgSettings()
@@ -71,7 +71,7 @@ bool AgSettings::Think()
   if (m_bCalcNextMap)
     CalcNextMap();
 
-  m_fNextCheck = gpGlobals->time + 5.0; //Every 5 seconds.
+  m_fNextCheck = gpGlobals->time + 5.0f; //Every 5 seconds.
 
   //Check if to display next map.
   if( ( m_bCheckNextMap && timelimit.value ) || ( m_bCheckNextMap && fraglimit.value ) )

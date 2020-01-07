@@ -238,15 +238,15 @@ void AgCTF::RoundBasedThink()
   //We only update status once every second.
   if (m_fNextCountdown > gpGlobals->time)
     return;
-  m_fNextCountdown = gpGlobals->time + 1.0; 
+  m_fNextCountdown = gpGlobals->time + 1.0f; 
 
   //Handle the status
   if (Waiting == m_Status)
   {
     g_bPaused = true;
     m_Status = Countdown;
-    m_fMatchStart = gpGlobals->time + 8.0;
-    m_fNextCountdown = gpGlobals->time + 3.0; 
+    m_fMatchStart = gpGlobals->time + 8.0f;
+    m_fNextCountdown = gpGlobals->time + 3.0f; 
 
     //Write waiting message
     MESSAGE_BEGIN( MSG_ALL, gmsgCountdown);
@@ -468,13 +468,13 @@ void AgCTF::PlayerDropFlag(CBasePlayer* pPlayer, bool bPlayerDrop)
  			pEnt->pev->angles.z = 0;
     }
     else
-		  pEnt->pev->velocity = pPlayer->pev->velocity * 1.2;
+		  pEnt->pev->velocity = pPlayer->pev->velocity * 1.2f;
 		pEnt->pev->angles.x = 0;
 
 		AgCTFFlag *pFlag = (AgCTFFlag *)pEnt;
 
     if (bPlayerDrop)
-      pFlag->m_fNextTouch = gpGlobals->time + 0.5; //Gotta give the flag a bit of time to fly away from player before it can be picked up again.
+      pFlag->m_fNextTouch = gpGlobals->time + 0.5f; //Gotta give the flag a bit of time to fly away from player before it can be picked up again.
 		pFlag->m_bDropped = true;
 
 	  pFlag->m_fNextReset = gpGlobals->time + ag_ctf_flag_resettime.value;
@@ -498,7 +498,7 @@ enum Flag_Animations
 
 void AgCTFFlag::Spawn ( void )
 {
-  m_fNextTouch = 0;
+	m_fNextTouch = 0;
 
 	Precache( );
 	SET_MODEL(ENT(pev), "models/flag.mdl");
@@ -511,7 +511,7 @@ void AgCTFFlag::Spawn ( void )
 	SetThink( &AgCTFFlag::Think );
 	SetTouch( &AgCTFFlag::FlagTouch );
 
-	pev->nextthink = gpGlobals->time + 0.1;
+	pev->nextthink = gpGlobals->time + 0.1f;
 		
 	if (FStrEq(CTF_TEAM1_NAME, m_szTeamName))
 		pev->skin = 1;
@@ -935,11 +935,11 @@ void AgCTFFlag::Think( void )
 		return;
 	}
 	pev->frame += pev->framerate;
-	if (pev->frame < 0.0 || pev->frame >= 256.0) 
+	if (pev->frame < 0.0f || pev->frame >= 256.0f)
 	{
-		pev->frame -= (int)(pev->frame / 256.0) * 256.0;
+		pev->frame -= (int)(pev->frame / 256.0f) * 256.0f;
 	}
-	pev->nextthink = gpGlobals->time + 0.1;
+	pev->nextthink = gpGlobals->time + 0.1f;
 }
 
 class AgCTFFlagTeam1 : public AgCTFFlag
@@ -1050,7 +1050,7 @@ void AgCTFPlayerFlag ::Spawn( )
 		pev->skin = 2;
 
   SetThink( &AgCTFPlayerFlag::Think );
-	pev->nextthink = gpGlobals->time + 0.1;
+	pev->nextthink = gpGlobals->time + 0.1f;
 }
 
 void AgCTFPlayerFlag::UpdateOnRemove( void )
@@ -1098,11 +1098,11 @@ void AgCTFPlayerFlag::Think( )
 			pev->sequence = CARRIED;
 		}
 		pev->frame += pev->framerate;
-		if (pev->frame < 0.0 || pev->frame >= 256.0) 
+		if (pev->frame < 0.0f || pev->frame >= 256.0f)
 		{
-			pev->frame -= (int)(pev->frame / 256.0) * 256.0;
+			pev->frame -= (int)(pev->frame / 256.0f) * 256.0f;
 		}
-		pev->nextthink = gpGlobals->time + 0.1;
+		pev->nextthink = gpGlobals->time + 0.1f;
 	}
 }
 
@@ -1482,7 +1482,8 @@ void AgCTFFileItemCache::Save(CBasePlayer* pPlayer)
   {
     //Append.
     AgCTFFileItem* pFileItem = *itrFileItems;
-    fprintf(pFile,"%s %f %f %f %f %f %f\n",pFileItem->m_szName,pFileItem->m_vOrigin.x,pFileItem->m_vOrigin.y,pFileItem->m_vOrigin.z,pFileItem->m_vAngles.x,pFileItem->m_vAngles.y,pFileItem->m_vAngles.z);
+    fprintf(pFile, "%s %f %f %f %f %f %f\n", pFileItem->m_szName, (double)pFileItem->m_vOrigin.x, (double)pFileItem->m_vOrigin.y, (double)pFileItem->m_vOrigin.z,
+								(double)pFileItem->m_vAngles.x, (double)pFileItem->m_vAngles.y, (double)pFileItem->m_vAngles.z);
   }
   
   fflush(pFile);

@@ -5275,7 +5275,7 @@ CBasePlayer* FindPlayerForward( CBasePlayer* pMe )
 
 	UTIL_MakeVectors( pMe->pev->v_angle );
 	UTIL_TraceLine( pMe->pev->origin + pMe->pev->view_ofs,pMe->pev->origin + pMe->pev->view_ofs + gpGlobals->v_forward * 2048,dont_ignore_monsters, pMe->edict(), &tr );
-	if( tr.flFraction != 1.0 && !FNullEnt( tr.pHit ) )
+	if( tr.flFraction != 1.0f && !FNullEnt( tr.pHit ) )
 	{
 		CBaseEntity *pHit = CBaseEntity::Instance( tr.pHit );
 		if( pHit->IsPlayer() )
@@ -5294,7 +5294,7 @@ void CBasePlayer::UpdatePlayerId()
 		// If we should test
 		if( m_fPlayerIdCheck < gpGlobals->time )
 		{
-			m_fPlayerIdCheck = gpGlobals->time + 0.5;
+			m_fPlayerIdCheck = gpGlobals->time + 0.5f;
 
 			CBasePlayer *pPlayer = FindPlayerForward( this );
 			if( !pPlayer )

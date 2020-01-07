@@ -56,7 +56,7 @@ void AgHudCustomTimer::UserCmd_CustomTimer()
 {
   if (2 == gEngfuncs.Cmd_Argc())
   {
-    m_flTurnoff = gHUD.m_flTime + atof(gEngfuncs.Cmd_Argv(1));
+    m_flTurnoff = gHUD.m_flTime + (float)atof(gEngfuncs.Cmd_Argv(1));
     m_iFlags |= HUD_ACTIVE;
   }
 }

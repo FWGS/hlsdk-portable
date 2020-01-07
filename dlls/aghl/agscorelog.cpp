@@ -37,7 +37,7 @@ void AgScoreLog::Think()
     
     Score();
     
-    m_fNextLogUpdate = gpGlobals->time + 30.0;
+    m_fNextLogUpdate = gpGlobals->time + 30.0f;
   }
 }
 

@@ -39,7 +39,7 @@ void AgLMS::Think()
   {
     if (m_fNextCountdown > gpGlobals->time)
       return;
-    m_fNextCountdown = gpGlobals->time + 0.5; 
+    m_fNextCountdown = gpGlobals->time + 0.5f;
     
     if (g_pGameRules->IsTeamplay())
     {
@@ -134,7 +134,7 @@ void AgLMS::Think()
     //We only update status once every second.
     if (m_fNextCountdown > gpGlobals->time)
       return;
-    m_fNextCountdown = gpGlobals->time + 1.0; 
+    m_fNextCountdown = gpGlobals->time + 1.0f; 
 
     //Handle the status
     if (Waiting == m_Status)
@@ -155,8 +155,8 @@ void AgLMS::Think()
         if (setTeams.size() > 1)
         {
           m_Status = Countdown;
-          m_fMatchStart = gpGlobals->time + 8.0;
-          m_fNextCountdown = gpGlobals->time + 3.0; 
+          m_fMatchStart = gpGlobals->time + 8.0f;
+          m_fNextCountdown = gpGlobals->time + 3.0f; 
         }
       }
       else
@@ -173,8 +173,8 @@ void AgLMS::Think()
         if (iPlayers > 1)
         {
           m_Status = Countdown;
-          m_fMatchStart = gpGlobals->time + 8.0;
-          m_fNextCountdown = gpGlobals->time + 3.0; 
+          m_fMatchStart = gpGlobals->time + 8.0f;
+          m_fNextCountdown = gpGlobals->time + 3.0f; 
         }
      }
  

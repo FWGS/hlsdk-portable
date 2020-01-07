@@ -157,7 +157,7 @@ void CGauss::PrimaryAttack()
 	if( SGBOW == AgGametype() )
 	{
 		PlayEmptySound();
-		m_flNextSecondaryAttack = m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.15;
+		m_flNextSecondaryAttack = m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.15f;
 		return;
 	}
 	else if( INSTAGIB == AgGametype() )
@@ -177,7 +177,7 @@ void CGauss::PrimaryAttack()
 
 		StartFire();
 		m_fInAttack = 0;
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 2.0;
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 2.0f;
 		m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 1;
 		return;
 	}

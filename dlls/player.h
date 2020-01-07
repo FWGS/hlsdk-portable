@@ -476,7 +476,7 @@ inline void CBasePlayer::Init()
 	m_bIngame = 1 > ag_match_running.value;
 	m_bDoneFirstSpawn = false;
 
-	m_fPlayerIdCheck = gpGlobals->time + 5.0;
+	m_fPlayerIdCheck = gpGlobals->time + 5.0f;
 
 	m_fDisplayGamemode = 0.0;
 

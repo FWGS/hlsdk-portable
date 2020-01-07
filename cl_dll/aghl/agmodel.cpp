@@ -268,7 +268,7 @@ bool AgModel::CheckModel(const char* szModelName)
 	if (vBounds.x > vMaxBounds.x || vBounds.y > vMaxBounds.y || vBounds.z > vMaxBounds.z)
   {
     char szMessage[256];
-    sprintf(szMessage,"Server enforces model check and %s is not valid. Your model got these ranges: %.4f,%.4f,%.4f\n",szModelName,vBounds.x, vBounds.y, vBounds.z);
+    sprintf(szMessage,"Server enforces model check and %s is not valid. Your model got these ranges: %.4f,%.4f,%.4f\n",szModelName, (double)vBounds.x, (double)vBounds.y, (double)vBounds.z);
     AgLog(szMessage);
     sprintf(szMessage,"Server enforces model check and %s is not valid.\n",szModelName);
     ConsolePrint(szMessage);

@@ -190,7 +190,7 @@ void AgHudLocation::InitDistances()
   
   //Now calculate when you are at/near a location or at atleast when its closest.
   m_fAt = fMinDistance / 2; //You are at a location if you are one fourth between to locations.
-  m_fNear = fMinDistance / 1.1; //Over halfway of the mindistance you are at the "side".
+  m_fNear = fMinDistance / 1.1f; //Over halfway of the mindistance you are at the "side".
 }
 
 bool AgHudLocation::NearestLocation(const Vector& vPosition, AgLocation*& pLocation, float& fNearestdistance)
@@ -342,7 +342,7 @@ void AgHudLocation::Save()
   {
     //Append.
     AgLocation* pLocation = *itrLocations;
-    fprintf(pFile,"%s#%f#%f#%f#",(const char*)pLocation->m_sLocation.c_str(),pLocation->m_vPosition.x,pLocation->m_vPosition.y,pLocation->m_vPosition.z);
+    fprintf(pFile,"%s#%f#%f#%f#",(const char*)pLocation->m_sLocation.c_str(), (double)pLocation->m_vPosition.x, (double)pLocation->m_vPosition.y, (double)pLocation->m_vPosition.z);
   }
   
   fflush(pFile);

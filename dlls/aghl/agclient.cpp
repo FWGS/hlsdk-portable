@@ -162,7 +162,7 @@ bool AgClient::HandleCommand(CBasePlayer* pPlayer)
   else if (FStrEq(CMD_ARGV(0), "timeleft" ))
   {
     if (timelimit.value && timeleft.value)
-      AgConsole(UTIL_VarArgs("timeleft = %.0f",timeleft.value),pPlayer);
+      AgConsole(UTIL_VarArgs("timeleft = %.0f", (double)timeleft.value), pPlayer);
     return true;
   }
   else if (FStrEq(CMD_ARGV(0), "timeout" ))
@@ -414,7 +414,7 @@ CBaseEntity* FindEntityForward( CBasePlayer* pMe )
 	TraceResult tr;
 	UTIL_MakeVectors(pMe->pev->v_angle);
 	UTIL_TraceLine(pMe->pev->origin + pMe->pev->view_ofs,pMe->pev->origin + pMe->pev->view_ofs + gpGlobals->v_forward * 2048,missile, pMe->edict(), &tr );
-	if ( tr.flFraction != 1.0 && !FNullEnt( tr.pHit) )
+	if( tr.flFraction != 1.0f && !FNullEnt( tr.pHit ) )
 	{
 		CBaseEntity* pHit = CBaseEntity::Instance( tr.pHit );
 		return pHit;
@@ -470,7 +470,7 @@ void AgClient::Say(CBasePlayer* pPlayer, say_type Type )
       {
         //Health.
         if (pPlayer && pPlayer->IsAlive() && !pPlayer->IsSpectator())
-          pText = pText + sprintf(pText,"%.0f",pPlayer->pev->health);
+          pText = pText + sprintf(pText,"%.0f", (double)pPlayer->pev->health);
         pSayText++;
         continue;
       }
@@ -556,7 +556,7 @@ void AgClient::Say(CBasePlayer* pPlayer, say_type Type )
       {
         //Score
         if (pPlayer && pPlayer->IsAlive() && !pPlayer->IsSpectator())
-          pText = pText + sprintf(pText,"%.0f/%d",pPlayer->pev->frags,pPlayer->m_iDeaths);
+          pText = pText + sprintf(pText,"%.0f/%d", (double)pPlayer->pev->frags, pPlayer->m_iDeaths);
         pSayText++;
         continue;
       }

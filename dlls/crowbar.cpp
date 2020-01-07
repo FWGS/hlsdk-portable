@@ -304,7 +304,7 @@ int CCrowbar::Swing( int fFirst )
 //++ BulliT
 				//return TRUE;
 				{
-					m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.25;
+					m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.25f;
 					return TRUE;
 				}
 //-- Martin Webrant

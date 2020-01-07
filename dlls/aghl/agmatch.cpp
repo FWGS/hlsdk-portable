@@ -63,7 +63,7 @@ void AgMatch::Think()
           WRITE_STRING( "" );
           WRITE_STRING( "" );
         MESSAGE_END();
-        m_fNextSay = gpGlobals->time + 1.0;
+        m_fNextSay = gpGlobals->time + 1.0f;
 #endif
       }
     }
@@ -83,7 +83,7 @@ void AgMatch::Think()
   if (m_fNextHLTV < gpGlobals->time)
   {
     //Send again in one minute.
-    m_fNextHLTV = gpGlobals->time + 60.0; 
+    m_fNextHLTV = gpGlobals->time + 60.0f;
     //Spectator scoreboards
     g_pGameRules->HLTV_ResendScoreBoard();
   }
@@ -117,7 +117,7 @@ void AgMatch::Start(const AgString& sSpawn)
   CVAR_SET_FLOAT("sv_ag_show_gibs",0);
 
   //Set match start time.
-  m_fMatchStart = gpGlobals->time + 10.0;
+  m_fMatchStart = gpGlobals->time + 10.0f;
 
   m_sSpawnFlag = sSpawn;
 

@@ -46,7 +46,7 @@ void AgArena::Think()
     if( !pPlayer1 || ( pPlayer1 && !pPlayer1->IsAlive() ) || !pPlayer2 || ( pPlayer2 && !pPlayer2->IsAlive() ) )
     {
       m_Status = PlayerDied;
-      m_fNextCountdown = gpGlobals->time + 3.0;  //Let the effect of him dying play for 3 seconds
+      m_fNextCountdown = gpGlobals->time + 3.0f;  //Let the effect of him dying play for 3 seconds
 
       if (pPlayer1)
         pPlayer1->SetIngame(false); //Cant respawn
@@ -59,7 +59,7 @@ void AgArena::Think()
     //We only update status once every second.
     if (m_fNextCountdown > gpGlobals->time)
       return;
-    m_fNextCountdown = gpGlobals->time + 1.0; 
+    m_fNextCountdown = gpGlobals->time + 1.0f;
 
     //Handle the status
     if (Waiting == m_Status)
@@ -88,8 +88,8 @@ void AgArena::Think()
       if (GetPlayer1() && GetPlayer2())
       {
         m_Status = Countdown;
-        m_fMatchStart = gpGlobals->time + 5.0;
-        m_fNextCountdown = gpGlobals->time + 2.0; 
+        m_fMatchStart = gpGlobals->time + 5.0f;
+        m_fNextCountdown = gpGlobals->time + 2.0f; 
       }
 
 

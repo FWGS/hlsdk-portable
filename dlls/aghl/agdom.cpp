@@ -321,7 +321,7 @@ void AgDOMControlPoint::Spawn ( void )
 	SetThink( &AgDOMControlPoint::Think );
 	SetTouch( &AgDOMControlPoint::Touch );
 
-	pev->nextthink = gpGlobals->time + 0.1;
+	pev->nextthink = gpGlobals->time + 0.1f;
 	
   // spawn by default under no teams control
   ChangeControllingTeam( DOM_NEUTRAL_NAME );
@@ -387,11 +387,11 @@ void AgDOMControlPoint::Think( void )
 
   // animate the control point
 	pev->frame += pev->framerate;
-	if (pev->frame < 0.0 || pev->frame >= 256.0) 
+	if (pev->frame < 0.0f || pev->frame >= 256.0f) 
 	{
-		pev->frame -= (int)(pev->frame / 256.0) * 256.0;
+		pev->frame -= (int)(pev->frame / 256.0f) * 256.0f;
 	}
-	pev->nextthink = gpGlobals->time + 0.1;
+	pev->nextthink = gpGlobals->time + 0.1f;
 
 }
 
@@ -400,7 +400,7 @@ void AgDOMControlPoint::Touch( CBaseEntity *pOther )
   // prevent CP changing owner too quickly
   if (m_fNextTouch > gpGlobals->time)
     return;
-  else m_fNextTouch = gpGlobals->time + 0.5;
+  else m_fNextTouch = gpGlobals->time + 0.5f;
 
 	// if it's not a player, ignore
 	if ( !pOther->IsPlayer() )
@@ -601,8 +601,8 @@ void AgDOMFileItemCache::Save(CBasePlayer* pPlayer)
   {
     //Append.
     AgDOMFileItem* pFileItem = *itrFileItems;
-    fprintf(pFile,"%s %f %f %f %f %f %f %s\n",pFileItem->m_szName,pFileItem->m_vOrigin.x,pFileItem->m_vOrigin.y,pFileItem->m_vOrigin.z,
-                                              pFileItem->m_vAngles.x,pFileItem->m_vAngles.y,pFileItem->m_vAngles.z,
+    fprintf(pFile,"%s %f %f %f %f %f %f %s\n",pFileItem->m_szName, (double)pFileItem->m_vOrigin.x, (double)pFileItem->m_vOrigin.y, (double)pFileItem->m_vOrigin.z,
+                                              (double)pFileItem->m_vAngles.x, (double)pFileItem->m_vAngles.y, (double)pFileItem->m_vAngles.z,
                                               pFileItem->m_szData1);
   }
   

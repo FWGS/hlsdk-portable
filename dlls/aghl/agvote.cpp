@@ -398,7 +398,7 @@ void AgVote::Think()
     }
 
     //Check if enough.
-    if (((float)iFor / (float)iPlayers > 0.5))
+    if (((float)iFor / (float)iPlayers > 0.5f))
     {
 #ifdef AG_NO_CLIENT_DLL
 			UTIL_ClientPrintAll(HUD_PRINTCENTER, UTIL_VarArgs("Vote: %s %s\nCalled by: %s\nAccepted!",m_sVote.c_str(),m_sValue.c_str(),m_sCalled.c_str()));
