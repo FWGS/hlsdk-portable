@@ -145,9 +145,9 @@ void CMinigun::PrimaryAttack()
 
 
 #ifdef CLIENT_DLL
-	if ( !bIsMultiplayer() )
+	if( bIsMultiplayer() )
 #else
-	if ( !g_pGameRules->IsMultiplayer() )
+	if( g_pGameRules->IsMultiplayer() )
 #endif
 	{
 		// optimized multiplayer. Widened to make it easier to hit a moving player
@@ -219,9 +219,9 @@ void CMinigun::SecondaryAttack( void )
 
 
 #ifdef CLIENT_DLL
-	if ( !bIsMultiplayer() )
+	if( bIsMultiplayer() )
 #else
-	if ( !g_pGameRules->IsMultiplayer() )
+	if( g_pGameRules->IsMultiplayer() )
 #endif
 	{
 		// optimized multiplayer. Widened to make it easier to hit a moving player
