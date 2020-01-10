@@ -117,14 +117,14 @@ void CMP5K::PrimaryAttack()
 	if (m_pPlayer->pev->waterlevel == 3 && m_pPlayer->pev->watertype > CONTENT_FLYFIELD)
 	{
 		PlayEmptySound( );
-		m_flNextPrimaryAttack = 0.15;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.15f;
 		return;
 	}
 
 	if (m_iClip <= 0)
 	{
 		PlayEmptySound();
-		m_flNextPrimaryAttack = 0.15;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.15f;
 		return;
 	}
 
@@ -143,7 +143,7 @@ void CMP5K::PrimaryAttack()
 	Vector vecAiming = m_pPlayer->GetAutoaimVector( AUTOAIM_5DEGREES );
 	Vector vecDir = m_pPlayer->FireBulletsPlayer( 1, vecSrc, vecAiming, VECTOR_CONE_3DEGREES, 8192, BULLET_PLAYER_MP5, 2, gSkillData.plrDmgMP5K, m_pPlayer->pev, m_pPlayer->random_seed );
 
-  int flags;
+	int flags;
 #if defined( CLIENT_WEAPONS )
 	flags = FEV_NOTHOST;
 #else
@@ -152,10 +152,10 @@ void CMP5K::PrimaryAttack()
 
 	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usMP5k, 0.0, g_vecZero, g_vecZero, vecDir.x, vecDir.y, 0, 0, 0, 0 );
 
-	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.06;
+	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.06f;
 
 	if ( m_flNextPrimaryAttack < UTIL_WeaponTimeBase() )
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.06;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.06f;
 
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
 }
@@ -165,7 +165,7 @@ void CMP5K::Reload( void )
 	if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0 || m_iClip == MP5K_MAX_CLIP )
 		return;
 
-	DefaultReload( MP5K_MAX_CLIP, MP5K_RELOAD, 3.6 );
+	DefaultReload( MP5K_MAX_CLIP, MP5K_RELOAD, 3.6f );
 }
 
 

@@ -107,7 +107,7 @@ void FindHullIntersection( const Vector &vecSrc, TraceResult &tr, float *mins, f
 
 	vecHullEnd = vecSrc + ((vecHullEnd - vecSrc)*2);
 	UTIL_TraceLine( vecSrc, vecHullEnd, dont_ignore_monsters, pEntity, &tmpTrace );
-	if ( tmpTrace.flFraction < 1.0 )
+	if ( tmpTrace.flFraction < 1.0f )
 	{
 		tr = tmpTrace;
 		return;
@@ -124,7 +124,7 @@ void FindHullIntersection( const Vector &vecSrc, TraceResult &tr, float *mins, f
 				vecEnd.z = vecHullEnd.z + minmaxs[k][2];
 
 				UTIL_TraceLine( vecSrc, vecEnd, dont_ignore_monsters, pEntity, &tmpTrace );
-				if ( tmpTrace.flFraction < 1.0 )
+				if ( tmpTrace.flFraction < 1.0f )
 				{
 					float thisDistance = (tmpTrace.vecEndPos - vecSrc).Length();
 					if ( thisDistance < distance )
@@ -176,10 +176,10 @@ int CAxe::Swing( int fFirst )
 	UTIL_TraceLine( vecSrc, vecEnd, dont_ignore_monsters, ENT( m_pPlayer->pev ), &tr );
 
 #ifndef CLIENT_DLL
-	if ( tr.flFraction >= 1.0 )
+	if ( tr.flFraction >= 1.0f )
 	{
 		UTIL_TraceHull( vecSrc, vecEnd, dont_ignore_monsters, head_hull, ENT( m_pPlayer->pev ), &tr );
-		if ( tr.flFraction < 1.0 )
+		if ( tr.flFraction < 1.0f )
 		{
 			// Calculate the point of intersection of the line (or hull) and the object we hit
 			// This is and approximation of the "best" intersection
@@ -196,13 +196,13 @@ int CAxe::Swing( int fFirst )
 	0.0, 0, 0.0 );
 
 
-	if ( tr.flFraction >= 1.0 )
+	if ( tr.flFraction >= 1.0f )
 	{
 		if (fFirst)
 		{
 			// miss
-			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.9;
-			
+			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.9f;
+
 			// player "shoot" animation
 			m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
 		}
@@ -269,7 +269,7 @@ int CAxe::Swing( int fFirst )
 
 		m_pPlayer->m_iWeaponVolume = flVol * CROWBAR_WALLHIT_VOLUME;
 
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.9;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.9f;
 		
 		SetThink(&CAxe:: Smack );
 		SetNextThink( 0.2 );		

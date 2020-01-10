@@ -176,7 +176,7 @@ void CFuncLol::Spawn()
 {
 	CFuncWall::Spawn();
 	SetThink( &CFuncLol::Lol );
-	pev->nextthink = gpGlobals->time + 1.0;
+	pev->nextthink = gpGlobals->time + 1.0f;
 }
 
 void CFuncLol::Lol()
@@ -196,7 +196,7 @@ void CFuncLol::Lol()
 				ClearBits( pev->effects, EF_NODRAW );
 			}
 
-			pev->nextthink = gpGlobals->time + 1.0;
+			pev->nextthink = gpGlobals->time + 1.0f;
 			return;
 		}
 	}

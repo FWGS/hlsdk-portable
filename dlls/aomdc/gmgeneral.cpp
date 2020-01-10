@@ -117,7 +117,7 @@ void CGMGeneral::PrimaryAttack()
 	if (m_pPlayer->pev->waterlevel == 3 && m_pPlayer->pev->watertype > CONTENT_FLYFIELD)
 	{
 		PlayEmptySound( );
-		m_flNextPrimaryAttack = 0.15;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.15f;
 		return;
 	}
 
@@ -142,10 +142,10 @@ void CGMGeneral::PrimaryAttack()
 
 	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usGMGeneral, 0.0, g_vecZero, g_vecZero, vecDir.x, vecDir.y, 0, 0, 0, 0 );
 
-	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.07;
+	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.07f;
 
 	if ( m_flNextPrimaryAttack < UTIL_WeaponTimeBase() )
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.07;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.07f;
 
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
 }
@@ -164,7 +164,7 @@ void CGMGeneral::SecondaryAttack()
         }
 
 	EMIT_SOUND(ENT(pev), CHAN_ITEM, "gmgeneral/gm_fov.wav", 1, ATTN_NORM);
-	m_flNextPrimaryAttack = m_flNextSecondaryAttack = 0.4;
+	m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.4f;
 }
 
 void CGMGeneral::Reload( void )

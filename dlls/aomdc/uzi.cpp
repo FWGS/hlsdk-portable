@@ -114,14 +114,14 @@ void CUzi::PrimaryAttack()
 	if (m_pPlayer->pev->waterlevel == 3 && m_pPlayer->pev->watertype > CONTENT_FLYFIELD)
 	{
 		PlayEmptySound( );
-		m_flNextPrimaryAttack = 0.15;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.15f;
 		return;
 	}
 
 	if (m_iClip <= 0)
 	{
 		PlayEmptySound();
-		m_flNextPrimaryAttack = 0.15;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.15f;
 		return;
 	}
 
@@ -140,7 +140,7 @@ void CUzi::PrimaryAttack()
 	Vector vecAiming = m_pPlayer->GetAutoaimVector( AUTOAIM_5DEGREES );
 	Vector vecDir = m_pPlayer->FireBulletsPlayer( 1, vecSrc, vecAiming, VECTOR_CONE_3DEGREES, 8192, BULLET_PLAYER_MP5, 2, gSkillData.plrDmgUzi, m_pPlayer->pev, m_pPlayer->random_seed );
 
-  int flags;
+	int flags;
 #if defined( CLIENT_WEAPONS )
 	flags = FEV_NOTHOST;
 #else
@@ -149,10 +149,10 @@ void CUzi::PrimaryAttack()
 
 	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usUzi, 0.0, g_vecZero, g_vecZero, vecDir.x, vecDir.y, 0, 0, 0, 0 );
 
-	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.08;
+	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.08f;
 
 	if ( m_flNextPrimaryAttack < UTIL_WeaponTimeBase() )
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.08;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.08f;
 
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
 }

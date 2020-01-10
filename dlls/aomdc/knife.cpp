@@ -100,7 +100,7 @@ BOOL CKnife::Deploy( )
 
 void CKnife::Holster( int skiplocal /* = 0 */ )
 {
-	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
+	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5f;
 	SendWeaponAnim( KNIFE_HOLSTER );
 }
 
@@ -118,7 +118,7 @@ void FindHullIntersection( const Vector &vecSrc, TraceResult &tr, float *mins, f
 
 	vecHullEnd = vecSrc + ((vecHullEnd - vecSrc)*2);
 	UTIL_TraceLine( vecSrc, vecHullEnd, dont_ignore_monsters, pEntity, &tmpTrace );
-	if ( tmpTrace.flFraction < 1.0 )
+	if ( tmpTrace.flFraction < 1.0f )
 	{
 		tr = tmpTrace;
 		return;
@@ -135,7 +135,7 @@ void FindHullIntersection( const Vector &vecSrc, TraceResult &tr, float *mins, f
 				vecEnd.z = vecHullEnd.z + minmaxs[k][2];
 
 				UTIL_TraceLine( vecSrc, vecEnd, dont_ignore_monsters, pEntity, &tmpTrace );
-				if ( tmpTrace.flFraction < 1.0 )
+				if ( tmpTrace.flFraction < 1.0f )
 				{
 					float thisDistance = (tmpTrace.vecEndPos - vecSrc).Length();
 					if ( thisDistance < distance )
@@ -187,10 +187,10 @@ int CKnife::Swing( int fFirst )
 	UTIL_TraceLine( vecSrc, vecEnd, dont_ignore_monsters, ENT( m_pPlayer->pev ), &tr );
 
 #ifndef CLIENT_DLL
-	if ( tr.flFraction >= 1.0 )
+	if ( tr.flFraction >= 1.0f )
 	{
 		UTIL_TraceHull( vecSrc, vecEnd, dont_ignore_monsters, head_hull, ENT( m_pPlayer->pev ), &tr );
-		if ( tr.flFraction < 1.0 )
+		if ( tr.flFraction < 1.0f )
 		{
 			// Calculate the point of intersection of the line (or hull) and the object we hit
 			// This is and approximation of the "best" intersection
@@ -207,13 +207,13 @@ int CKnife::Swing( int fFirst )
 	0.0, 0, 0.0 );
 
 
-	if ( tr.flFraction >= 1.0 )
+	if ( tr.flFraction >= 1.0f )
 	{
 		if (fFirst)
 		{
 			// miss
-			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5;
-			
+			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5f;
+
 			// player "shoot" animation
 			m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
 		}
@@ -262,7 +262,7 @@ int CKnife::Swing( int fFirst )
 				m_pPlayer->m_iWeaponVolume = CROWBAR_BODYHIT_VOLUME;
 				if ( !pEntity->IsAlive() )
 				{
-					m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.25; //LRC: corrected half-life bug
+					m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.25f; //LRC: corrected half-life bug
 					return TRUE;
 				}
 				else
@@ -304,8 +304,8 @@ int CKnife::Swing( int fFirst )
 
 		m_pPlayer->m_iWeaponVolume = flVol * CROWBAR_WALLHIT_VOLUME;
 
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5;
-		
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5f;
+
 		SetThink(&CKnife:: Smack );
 		SetNextThink( 0.2 );
 #endif

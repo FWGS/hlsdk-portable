@@ -21,7 +21,7 @@
 #define WHEELCHAIR_AE_BLOODSQUIRT		1
 #define WHEELCHAIR_AE_WALK			1011
 
-#define WHEELCHAIR_FLINCH_DELAY			5.0
+#define WHEELCHAIR_FLINCH_DELAY			5.0f
 
 class CWheelchair : public CZombie
 {

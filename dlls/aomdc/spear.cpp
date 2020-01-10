@@ -113,7 +113,7 @@ void FindHullIntersection( const Vector &vecSrc, TraceResult &tr, float *mins, f
 
 	vecHullEnd = vecSrc + ((vecHullEnd - vecSrc)*2);
 	UTIL_TraceLine( vecSrc, vecHullEnd, dont_ignore_monsters, pEntity, &tmpTrace );
-	if ( tmpTrace.flFraction < 1.0 )
+	if ( tmpTrace.flFraction < 1.0f )
 	{
 		tr = tmpTrace;
 		return;
@@ -130,7 +130,7 @@ void FindHullIntersection( const Vector &vecSrc, TraceResult &tr, float *mins, f
 				vecEnd.z = vecHullEnd.z + minmaxs[k][2];
 
 				UTIL_TraceLine( vecSrc, vecEnd, dont_ignore_monsters, pEntity, &tmpTrace );
-				if ( tmpTrace.flFraction < 1.0 )
+				if ( tmpTrace.flFraction < 1.0f )
 				{
 					float thisDistance = (tmpTrace.vecEndPos - vecSrc).Length();
 					if ( thisDistance < distance )
@@ -150,7 +150,7 @@ void CSpear::PrimaryAttack()
 	if( FBitSet( m_pPlayer->pev->flags, FL_INWATER ) )
 	{
 		SendWeaponAnim( SPEAR_ELECTROCUTE );
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 2.34;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 2.34f;
 #ifndef CLIENT_DLL
 		UTIL_ScreenFade( m_pPlayer, Vector( 255, 255, 255 ), 0.5, 0.0, 100, FFADE_IN );
 		m_pPlayer->TakeDamage(m_pPlayer->pev, m_pPlayer->pev, DAMAGE_AIM, DMG_GENERIC );
@@ -160,10 +160,10 @@ void CSpear::PrimaryAttack()
 	else
 	{
 		SendWeaponAnim( SPEAR_STAB_START );
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 1.0;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 1.0f;
 
 		SetThink( &CSpear::BigSpearStab );
-		pev->nextthink = gpGlobals->time + 0.3;
+		pev->nextthink = gpGlobals->time + 0.3f;
 	}
 }
 
@@ -182,10 +182,10 @@ void CSpear::BigSpearStab()
 	UTIL_TraceLine( vecSrc, vecEnd, dont_ignore_monsters, ENT( m_pPlayer->pev ), &tr );
 
 #ifndef CLIENT_DLL
-	if ( tr.flFraction >= 1.0 )
+	if ( tr.flFraction >= 1.0f )
 	{
 		UTIL_TraceHull( vecSrc, vecEnd, dont_ignore_monsters, head_hull, ENT( m_pPlayer->pev ), &tr );
-		if ( tr.flFraction < 1.0 )
+		if ( tr.flFraction < 1.0f )
 		{
 			// Calculate the point of intersection of the line (or hull) and the object we hit
 			// This is and approximation of the "best" intersection
@@ -201,7 +201,7 @@ void CSpear::BigSpearStab()
 	0.0, g_vecZero, g_vecZero, 0, 0, 0,
 	0.0, 0, 0.0 );
 
-	if ( tr.flFraction < 1.0 )
+	if ( tr.flFraction < 1.0f )
 	{
 		SendWeaponAnim( SPEAR_STAB );
 
@@ -220,12 +220,12 @@ void CSpear::BigSpearStab()
 
 		m_pPlayer->EnableControl(FALSE);
 		SetThink( &CSpear::UnStab );
-		pev->nextthink = gpGlobals->time + 0.4;
+		pev->nextthink = gpGlobals->time + 0.4f;
 
 		if (pEntity)
 		{
 			ClearMultiDamage( );     
-			pEntity->TraceAttack(m_pPlayer->pev, gSkillData.plrDmgKnife * 2.2, gpGlobals->v_forward, &tr, DMG_SPEAR );
+			pEntity->TraceAttack(m_pPlayer->pev, gSkillData.plrDmgKnife * 2.2f, gpGlobals->v_forward, &tr, DMG_SPEAR );
 			ApplyMultiDamage( m_pPlayer->pev, m_pPlayer->pev );
 
 			if ( pEntity->Classify() != CLASS_NONE && pEntity->Classify() != CLASS_MACHINE )

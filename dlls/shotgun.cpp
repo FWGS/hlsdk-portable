@@ -140,7 +140,7 @@ void CShotgun::PrimaryAttack()
 
 #ifndef CLIENT_DLL
 	SetThink( &CShotgun::LolShell );
-	pev->nextthink = gpGlobals->time + 0.6;
+	pev->nextthink = gpGlobals->time + 0.6f;
 #endif
 	m_iClip--;
 

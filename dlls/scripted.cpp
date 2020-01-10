@@ -432,7 +432,7 @@ void CCineMonster::PossessEntity( void )
 			pTarget->pev->effects |= EF_NOINTERP;
 			pTarget->pev->angles.y = pev->angles.y;
 			pTarget->m_scriptState = SCRIPT_WAIT;
-			m_startTime = gpGlobals->time + 1E6;
+			m_startTime = gpGlobals->time + (float)1E6;
 			// UNDONE: Add a flag to do this so people can fixup physics after teleporting monsters
 			pTarget->pev->flags &= ~FL_ONGROUND;
 			break;

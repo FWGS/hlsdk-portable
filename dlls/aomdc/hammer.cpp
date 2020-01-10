@@ -107,7 +107,7 @@ void FindHullIntersection( const Vector &vecSrc, TraceResult &tr, float *mins, f
 
 	vecHullEnd = vecSrc + ((vecHullEnd - vecSrc)*2);
 	UTIL_TraceLine( vecSrc, vecHullEnd, dont_ignore_monsters, pEntity, &tmpTrace );
-	if ( tmpTrace.flFraction < 1.0 )
+	if ( tmpTrace.flFraction < 1.0f )
 	{
 		tr = tmpTrace;
 		return;
@@ -124,7 +124,7 @@ void FindHullIntersection( const Vector &vecSrc, TraceResult &tr, float *mins, f
 				vecEnd.z = vecHullEnd.z + minmaxs[k][2];
 
 				UTIL_TraceLine( vecSrc, vecEnd, dont_ignore_monsters, pEntity, &tmpTrace );
-				if ( tmpTrace.flFraction < 1.0 )
+				if ( tmpTrace.flFraction < 1.0f )
 				{
 					float thisDistance = (tmpTrace.vecEndPos - vecSrc).Length();
 					if ( thisDistance < distance )
@@ -145,7 +145,7 @@ void CHammer::PrimaryAttack()
 	SendWeaponAnim( HAMMER_WHACK );
 #ifndef CLIENT_DLL
 	SetThink( &CHammer::BigWhackThink );
-	pev->nextthink = gpGlobals->time + 0.45;
+	pev->nextthink = gpGlobals->time + 0.45f;
 #endif
 }
 
@@ -160,10 +160,10 @@ void CHammer::BigWhackThink()
 	UTIL_TraceLine( vecSrc, vecEnd, dont_ignore_monsters, ENT( m_pPlayer->pev ), &tr );
 
 #ifndef CLIENT_DLL
-	if ( tr.flFraction >= 1.0 )
+	if ( tr.flFraction >= 1.0f )
 	{
 		UTIL_TraceHull( vecSrc, vecEnd, dont_ignore_monsters, head_hull, ENT( m_pPlayer->pev ), &tr );
-		if ( tr.flFraction < 1.0 )
+		if ( tr.flFraction < 1.0f )
 		{
 			// Calculate the point of intersection of the line (or hull) and the object we hit
 			// This is and approximation of the "best" intersection
@@ -178,7 +178,7 @@ void CHammer::BigWhackThink()
 	0.0, g_vecZero, g_vecZero, 0, 0, 0,
 	0.0, 0, 0.0 );
 
-	if ( tr.flFraction < 1.0 )
+	if ( tr.flFraction < 1.0f )
 	{
 		// player "shoot" animation
 		m_pPlayer->SetAnimation( PLAYER_ATTACK1 );

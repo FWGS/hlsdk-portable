@@ -24,7 +24,7 @@
 #define BADDAVID_AE_ATTACK			1
 #define BADDAVID_AE_FLINCH			1013
 
-#define BADDAVID_FLINCH_DELAY			15.0
+#define BADDAVID_FLINCH_DELAY			15.0f
 #define BADDAVID_HEALTH				1800
 
 #define SF_NOELECTROCUTE			( 1 << 5 )
@@ -428,7 +428,7 @@ LINK_ENTITY_TO_CLASS( lightning_effect_boss, CLightningEffect )
 void CLightningEffect::Spawn()
 {
 	SetThink( &CLightningEffect::ElectricityAttack2 );
-	pev->nextthink = gpGlobals->time + 1.0;
+	pev->nextthink = gpGlobals->time + 1.0f;
 }
 
 void CLightningEffect::ElectricityAttack2()
