@@ -312,7 +312,7 @@ void CBarney_suit :: SetYawSpeed ( void )
 //=========================================================
 BOOL CBarney_suit :: CheckRangeAttack1 ( float flDot, float flDist )
 {
-	if ( flDist <= 1024 && flDot >= 0.5 )
+	if ( flDist <= 1024 && flDot >= 0.5f )
 	{
 		if ( gpGlobals->time > m_checkAttackTime )
 		{
@@ -323,11 +323,11 @@ BOOL CBarney_suit :: CheckRangeAttack1 ( float flDot, float flDist )
 			Vector shootTarget = ( (pEnemy->BodyTarget( shootOrigin ) - pEnemy->pev->origin) + m_vecEnemyLKP );
 			UTIL_TraceLine( shootOrigin, shootTarget, dont_ignore_monsters, ENT(pev), &tr );
 			m_checkAttackTime = gpGlobals->time + 1;
-			if ( tr.flFraction == 1.0 || (tr.pHit != NULL && CBaseEntity::Instance(tr.pHit) == pEnemy) )
+			if ( tr.flFraction == 1.0f || (tr.pHit != NULL && CBaseEntity::Instance(tr.pHit) == pEnemy) )
 				m_lastAttackCheck = TRUE;
 			else
 				m_lastAttackCheck = FALSE;
-			m_checkAttackTime = gpGlobals->time + 1.5;
+			m_checkAttackTime = gpGlobals->time + 1.5f;
 		}
 		return m_lastAttackCheck;
 	}
@@ -545,7 +545,7 @@ static BOOL IsFacing( entvars_t *pevTest, const Vector &reference )
 	angle.x = 0;
 	UTIL_MakeVectorsPrivate( angle, forward, NULL, NULL );
 	// He's facing me, he meant it
-	if ( DotProduct( forward, vecDir ) > 0.96 )	// +/- 15 degrees or so
+	if ( DotProduct( forward, vecDir ) > 0.96f )	// +/- 15 degrees or so
 	{
 		return TRUE;
 	}

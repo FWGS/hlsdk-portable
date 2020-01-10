@@ -258,7 +258,7 @@ Vector CBot::BotBodyTarget( CBaseEntity *pBotEnemy )
    if (f_distance > 1000)
       f_scale = 1.0;
    else if (f_distance > 100)
-      f_scale = f_distance / 1000.0;
+      f_scale = f_distance / 1000.0f;
    else
       f_scale = 0.1;
 
@@ -399,7 +399,7 @@ BOOL CBot::BotFireWeapon( Vector v_enemy_origin, int weapon_choice, BOOL primary
    {
       // check weapon and ammo inventory then update check time...
       BotWeaponInventory();
-      f_weapon_inventory_time = gpGlobals->time + 1.0;
+      f_weapon_inventory_time = gpGlobals->time + 1.0f;
    }
 
    Vector v_enemy = v_enemy_origin - GetGunPosition( );
@@ -428,7 +428,7 @@ BOOL CBot::BotFireWeapon( Vector v_enemy_origin, int weapon_choice, BOOL primary
          pev->button |= IN_ATTACK;  // use primary attack (whack! whack!)
 
          // set next time to "shoot"
-         f_shoot_time = gpGlobals->time + 0.3 + 
+         f_shoot_time = gpGlobals->time + 0.3f + 
             RANDOM_FLOAT(primary_fire_delay[WEAPON_CROWBAR][bot_skill][0],
                          primary_fire_delay[WEAPON_CROWBAR][bot_skill][1]);
          return TRUE;
@@ -455,7 +455,7 @@ BOOL CBot::BotFireWeapon( Vector v_enemy_origin, int weapon_choice, BOOL primary
          pev->button |= IN_ATTACK;  // use primary attack (boom!)
 
          // set next time to "shoot"
-         f_shoot_time = gpGlobals->time + 0.1 + 
+         f_shoot_time = gpGlobals->time + 0.1f + 
             RANDOM_FLOAT(primary_fire_delay[WEAPON_HANDGRENADE][bot_skill][0],
                          primary_fire_delay[WEAPON_HANDGRENADE][bot_skill][1]);
          return TRUE;
@@ -484,7 +484,7 @@ BOOL CBot::BotFireWeapon( Vector v_enemy_origin, int weapon_choice, BOOL primary
          pev->button |= IN_ATTACK;  // use primary attack (eek! eek!)
 
          // set next time to "shoot"
-         f_shoot_time = gpGlobals->time + 0.1 + 
+         f_shoot_time = gpGlobals->time + 0.1f + 
             RANDOM_FLOAT(primary_fire_delay[WEAPON_SNARK][bot_skill][0],
                          primary_fire_delay[WEAPON_SNARK][bot_skill][1]);
          return TRUE;
@@ -544,7 +544,7 @@ BOOL CBot::BotFireWeapon( Vector v_enemy_origin, int weapon_choice, BOOL primary
                   f_fire_gauss = -1;  // -1 means not charging gauss gun
 
                   // set next time to shoot
-                  f_shoot_time = gpGlobals->time + 1.0 +
+                  f_shoot_time = gpGlobals->time + 1.0f +
                      RANDOM_FLOAT(secondary_fire_delay[WEAPON_GAUSS][bot_skill][0],
                                   secondary_fire_delay[WEAPON_GAUSS][bot_skill][1]);
                }
@@ -558,7 +558,7 @@ BOOL CBot::BotFireWeapon( Vector v_enemy_origin, int weapon_choice, BOOL primary
                      (primary_ammo[WEAPON_GAUSS] >= 10))
             {
                // release secondary fire in 0.5 seconds...
-               f_fire_gauss = gpGlobals->time + 0.5;
+               f_fire_gauss = gpGlobals->time + 0.5f;
 
                pev->button |= IN_ATTACK2;  // charge the gauss gun
                f_shoot_time = gpGlobals->time; // keep charging
@@ -568,7 +568,7 @@ BOOL CBot::BotFireWeapon( Vector v_enemy_origin, int weapon_choice, BOOL primary
                pev->button |= IN_ATTACK;  // use primary attack (bang! bang!)
 
                // set next time to shoot
-               f_shoot_time = gpGlobals->time + 0.2 +
+               f_shoot_time = gpGlobals->time + 0.2f +
                   RANDOM_FLOAT(primary_fire_delay[WEAPON_GAUSS][bot_skill][0],
                                primary_fire_delay[WEAPON_GAUSS][bot_skill][1]);
             }
@@ -603,7 +603,7 @@ BOOL CBot::BotFireWeapon( Vector v_enemy_origin, int weapon_choice, BOOL primary
                pev->button |= IN_ATTACK2;  // use secondary attack (bang! bang!)
 
                // set next time to shoot
-               f_shoot_time = gpGlobals->time + 1.5 +
+               f_shoot_time = gpGlobals->time + 1.5f +
                   RANDOM_FLOAT(secondary_fire_delay[WEAPON_SHOTGUN][bot_skill][0],
                                secondary_fire_delay[WEAPON_SHOTGUN][bot_skill][1]);
             }
@@ -613,7 +613,7 @@ BOOL CBot::BotFireWeapon( Vector v_enemy_origin, int weapon_choice, BOOL primary
                pev->button |= IN_ATTACK;  // use primary attack (bang! bang!)
 
                // set next time to shoot
-               f_shoot_time = gpGlobals->time + 0.75 +
+               f_shoot_time = gpGlobals->time + 0.75f +
                   RANDOM_FLOAT(primary_fire_delay[WEAPON_SHOTGUN][bot_skill][0],
                                primary_fire_delay[WEAPON_SHOTGUN][bot_skill][1]);
             }
@@ -642,7 +642,7 @@ BOOL CBot::BotFireWeapon( Vector v_enemy_origin, int weapon_choice, BOOL primary
             pev->button |= IN_ATTACK;  // use primary attack (bang! bang!)
 
             // set next time to shoot
-            f_shoot_time = gpGlobals->time + 0.75 +
+            f_shoot_time = gpGlobals->time + 0.75f +
                RANDOM_FLOAT(primary_fire_delay[WEAPON_PYTHON][bot_skill][0],
                             primary_fire_delay[WEAPON_PYTHON][bot_skill][1]);
 
@@ -677,7 +677,7 @@ BOOL CBot::BotFireWeapon( Vector v_enemy_origin, int weapon_choice, BOOL primary
                pev->button |= IN_ATTACK2;  // use secondary attack (buzz! buzz!)
 
                // set next time to shoot
-               f_shoot_time = gpGlobals->time + 0.1 +
+               f_shoot_time = gpGlobals->time + 0.1f +
                   RANDOM_FLOAT(secondary_fire_delay[WEAPON_HORNETGUN][bot_skill][0],
                                secondary_fire_delay[WEAPON_HORNETGUN][bot_skill][1]);
 // BigGuy - END
@@ -687,7 +687,7 @@ BOOL CBot::BotFireWeapon( Vector v_enemy_origin, int weapon_choice, BOOL primary
                pev->button |= IN_ATTACK;  // use primary attack (buzz! buzz!)
 
                // set next time to shoot
-               f_shoot_time = gpGlobals->time + 0.25 +
+               f_shoot_time = gpGlobals->time + 0.25f +
                   RANDOM_FLOAT(primary_fire_delay[WEAPON_HORNETGUN][bot_skill][0],
                                primary_fire_delay[WEAPON_HORNETGUN][bot_skill][1]);
             }
@@ -724,7 +724,7 @@ BOOL CBot::BotFireWeapon( Vector v_enemy_origin, int weapon_choice, BOOL primary
             pev->button |= IN_ATTACK2;  // use secodnary attack (boom!)
 
             // set next time to shoot
-            f_shoot_time = gpGlobals->time + 1.0 +
+            f_shoot_time = gpGlobals->time + 1.0f +
                RANDOM_FLOAT(secondary_fire_delay[WEAPON_MP5][bot_skill][0],
                             secondary_fire_delay[WEAPON_MP5][bot_skill][1]);
 
@@ -749,7 +749,7 @@ BOOL CBot::BotFireWeapon( Vector v_enemy_origin, int weapon_choice, BOOL primary
             pev->button |= IN_ATTACK;  // use primary attack (bang! bang!)
 
             // set next time to shoot
-            f_shoot_time = gpGlobals->time + 0.1 +
+            f_shoot_time = gpGlobals->time + 0.1f +
                RANDOM_FLOAT(primary_fire_delay[WEAPON_MP5][bot_skill][0],
                             primary_fire_delay[WEAPON_MP5][bot_skill][1]);
 
@@ -785,7 +785,7 @@ BOOL CBot::BotFireWeapon( Vector v_enemy_origin, int weapon_choice, BOOL primary
             pev->button |= IN_ATTACK2;  // use secodnary attack (boom!)
 
             // set next time to shoot
-            f_shoot_time = gpGlobals->time + 1.0 +
+            f_shoot_time = gpGlobals->time + 1.0f +
                RANDOM_FLOAT(secondary_fire_delay[WEAPON_MP41A][bot_skill][0],
                             secondary_fire_delay[WEAPON_MP41A][bot_skill][1]);
 
@@ -810,7 +810,7 @@ BOOL CBot::BotFireWeapon( Vector v_enemy_origin, int weapon_choice, BOOL primary
             pev->button |= IN_ATTACK;  // use primary attack (bang! bang!)
 
             // set next time to shoot
-            f_shoot_time = gpGlobals->time + 0.1 +
+            f_shoot_time = gpGlobals->time + 0.1f +
                RANDOM_FLOAT(primary_fire_delay[WEAPON_MP41A][bot_skill][0],
                             primary_fire_delay[WEAPON_MP41A][bot_skill][1]);
 
@@ -845,7 +845,7 @@ BOOL CBot::BotFireWeapon( Vector v_enemy_origin, int weapon_choice, BOOL primary
             pev->button |= IN_ATTACK2;  // use secodnary attack (boom!)
 
             // set next time to shoot
-            f_shoot_time = gpGlobals->time + 1.0 +
+            f_shoot_time = gpGlobals->time + 1.0f +
                RANDOM_FLOAT(secondary_fire_delay[WEAPON_MINIGUN][bot_skill][0],
                             secondary_fire_delay[WEAPON_MINIGUN][bot_skill][1]);
 
@@ -870,7 +870,7 @@ BOOL CBot::BotFireWeapon( Vector v_enemy_origin, int weapon_choice, BOOL primary
             pev->button |= IN_ATTACK;  // use primary attack (bang! bang!)
 
             // set next time to shoot
-            f_shoot_time = gpGlobals->time + 0.1 +
+            f_shoot_time = gpGlobals->time + 0.1f +
                RANDOM_FLOAT(primary_fire_delay[WEAPON_MINIGUN][bot_skill][0],
                             primary_fire_delay[WEAPON_MINIGUN][bot_skill][1]);
 
@@ -898,7 +898,7 @@ BOOL CBot::BotFireWeapon( Vector v_enemy_origin, int weapon_choice, BOOL primary
             pev->button |= IN_ATTACK;  // use primary attack (bang! bang!)
 
             // set next time to shoot
-            f_shoot_time = gpGlobals->time + 0.75 +
+            f_shoot_time = gpGlobals->time + 0.75f +
                RANDOM_FLOAT(primary_fire_delay[WEAPON_CROSSBOW][bot_skill][0],
                             primary_fire_delay[WEAPON_CROSSBOW][bot_skill][1]);
 
@@ -926,7 +926,7 @@ BOOL CBot::BotFireWeapon( Vector v_enemy_origin, int weapon_choice, BOOL primary
             pev->button |= IN_ATTACK;  // use primary attack (bang! bang!)
 
             // set next time to shoot
-            f_shoot_time = gpGlobals->time + 1.5 +
+            f_shoot_time = gpGlobals->time + 1.5f +
                RANDOM_FLOAT(primary_fire_delay[WEAPON_RPG][bot_skill][0],
                             primary_fire_delay[WEAPON_RPG][bot_skill][1]);
 
@@ -960,7 +960,7 @@ BOOL CBot::BotFireWeapon( Vector v_enemy_origin, int weapon_choice, BOOL primary
                pev->button |= IN_ATTACK2;  // use secondary attack (bang! bang!)
 
                // set next time to shoot
-               f_shoot_time = gpGlobals->time + 0.2 +
+               f_shoot_time = gpGlobals->time + 0.2f +
                   RANDOM_FLOAT(secondary_fire_delay[WEAPON_GLOCK][bot_skill][0],
                                secondary_fire_delay[WEAPON_GLOCK][bot_skill][1]);
 // BigGuy - END
@@ -970,7 +970,7 @@ BOOL CBot::BotFireWeapon( Vector v_enemy_origin, int weapon_choice, BOOL primary
                pev->button |= IN_ATTACK;  // use primary attack (bang! bang!)
 
                // set next time to shoot
-               f_shoot_time = gpGlobals->time + 0.3 +
+               f_shoot_time = gpGlobals->time + 0.3f +
                   RANDOM_FLOAT(primary_fire_delay[WEAPON_GLOCK][bot_skill][0],
                                primary_fire_delay[WEAPON_GLOCK][bot_skill][1]);
             }
@@ -1005,7 +1005,7 @@ BOOL CBot::BotFireWeapon( Vector v_enemy_origin, int weapon_choice, BOOL primary
                pev->button |= IN_ATTACK2;  // use secondary attack (bang! bang!)
 
                // set next time to shoot
-               f_shoot_time = gpGlobals->time + 0.2 +
+               f_shoot_time = gpGlobals->time + 0.2f +
                   RANDOM_FLOAT(secondary_fire_delay[WEAPON_EAGEL][bot_skill][0],
                                secondary_fire_delay[WEAPON_EAGEL][bot_skill][1]);
 // BigGuy - END
@@ -1015,7 +1015,7 @@ BOOL CBot::BotFireWeapon( Vector v_enemy_origin, int weapon_choice, BOOL primary
                pev->button |= IN_ATTACK;  // use primary attack (bang! bang!)
 
                // set next time to shoot
-               f_shoot_time = gpGlobals->time + 0.3 +
+               f_shoot_time = gpGlobals->time + 0.3f +
                   RANDOM_FLOAT(primary_fire_delay[WEAPON_EAGEL][bot_skill][0],
                                primary_fire_delay[WEAPON_EAGEL][bot_skill][1]);
             }

@@ -638,7 +638,7 @@ void EV_HLDM_FireBullets( int idx, float *forward, float *right, float *up, int 
 			tracer = EV_HLDM_CheckTracer( idx, vecSrc, tr.endpos, forward, right, iBulletType, iTracerFreq, tracerCount );
 
 			// do damage, paint decals
-			if( tr.fraction != 1.0 )
+			if( tr.fraction != 1.0f )
 			{
 				switch( iBulletType )
 				{

@@ -416,7 +416,7 @@ BOOL CHTorch :: CheckMeleeAttack1 ( float flDot, float flDist )
 		}
 	}
 
-	if ( flDist <= 64 && flDot >= 0.7	&& 
+	if ( flDist <= 64 && flDot >= 0.7f	&& 
 		 pEnemy->Classify() != CLASS_ALIEN_BIOWEAPON &&
 		 pEnemy->Classify() != CLASS_PLAYER_BIOWEAPON )
 	{
@@ -435,7 +435,7 @@ BOOL CHTorch :: CheckMeleeAttack1 ( float flDot, float flDist )
 //=========================================================
 BOOL CHTorch :: CheckRangeAttack1 ( float flDot, float flDist )
 {
-	if ( !HasConditions( bits_COND_ENEMY_OCCLUDED ) && flDist <= 2048 && flDot >= 0.5 && NoFriendlyFire() )
+	if ( !HasConditions( bits_COND_ENEMY_OCCLUDED ) && flDist <= 2048 && flDot >= 0.5f && NoFriendlyFire() )
 	{
 		TraceResult	tr;
 
@@ -450,7 +450,7 @@ BOOL CHTorch :: CheckRangeAttack1 ( float flDot, float flDist )
 		// verify that a bullet fired from the gun will hit the enemy before the world.
 		UTIL_TraceLine( vecSrc, m_hEnemy->BodyTarget(vecSrc), ignore_monsters, ignore_glass, ENT(pev), &tr);
 
-		if ( tr.flFraction == 1.0 )
+		if ( tr.flFraction == 1.0f )
 		{
 			return TRUE;
 		}
@@ -495,7 +495,7 @@ static BOOL IsFacing( entvars_t *pevTest, const Vector &reference )
 	angle.x = 0;
 	UTIL_MakeVectorsPrivate( angle, forward, NULL, NULL );
 	// He's facing me, he meant it
-	if ( DotProduct( forward, vecDir ) > 0.96 )	// +/- 15 degrees or so
+	if ( DotProduct( forward, vecDir ) > 0.96f )	// +/- 15 degrees or so
 	{
 		return TRUE;
 	}
@@ -660,7 +660,7 @@ CBaseEntity *CHTorch :: Kick( void )
 
 	UTIL_MakeVectors( pev->angles );
 	Vector vecStart = pev->origin;
-	vecStart.z += pev->size.z * 0.5;
+	vecStart.z += pev->size.z * 0.5f;
 	Vector vecEnd = vecStart + (gpGlobals->v_forward * 70);
 
 	UTIL_TraceHull( vecStart, vecEnd, dont_ignore_monsters, head_hull, ENT(pev), &tr );
@@ -737,7 +737,7 @@ void CHTorch::UpdateGas( void )
 			Vector vecEnd = (gpGlobals->v_forward * 5) + posGun;
 			UTIL_TraceLine( posGun, vecEnd, dont_ignore_monsters, edict(), &tr );
 
-			if ( tr.flFraction != 1.0 )
+			if ( tr.flFraction != 1.0f )
 			{
 				m_pBeam->DoSparks( tr.vecEndPos, posGun );
 				UTIL_DecalTrace(&tr, DECAL_BIGSHOT1 + RANDOM_LONG(0,4));
@@ -788,9 +788,8 @@ void CHTorch::UpdateGas( void )
 			
 
 
-	pev->nextthink = gpGlobals->time + 0.1;
+	pev->nextthink = gpGlobals->time + 0.1f;
 		}
-
 }
 
 void CHTorch::MakeGas( void )
@@ -2363,7 +2362,7 @@ void CHTorchRepel::RepelUse ( CBaseEntity *pActivator, CBaseEntity *pCaller, USE
 	pBeam->SetFlags( BEAM_FSOLID );
 	pBeam->SetColor( 255, 255, 255 );
 	pBeam->SetThink( &CBaseEntity::SUB_Remove );
-	pBeam->pev->nextthink = gpGlobals->time + -4096.0 * tr.flFraction / pTorch->pev->velocity.z + 0.5;
+	pBeam->pev->nextthink = gpGlobals->time + -4096.0f * tr.flFraction / pTorch->pev->velocity.z + 0.5f;
 
 	UTIL_Remove( this );
 }

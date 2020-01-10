@@ -124,7 +124,7 @@ void CShotgunA::Holster( int skiplocal /* = 0 */ )
 		SecondaryAttack();
 	}
 
-	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 1.0;
+	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 1.0f;
 	m_flTimeWeaponIdle = UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
 	SendWeaponAnim( SHOTGUNA_HOLSTER );
 }
@@ -135,7 +135,7 @@ void CShotgunA::PrimaryAttack()
 	if (m_pPlayer->pev->waterlevel == 3 && m_pPlayer->pev->watertype > CONTENT_FLYFIELD)
 	{
 		PlayEmptySound( );
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.05;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.05f;
 		return;
 	}
 
@@ -189,14 +189,14 @@ void CShotgunA::PrimaryAttack()
 		m_pPlayer->SetSuitUpdate("!HEV_AMO0", FALSE, 0);
 
 	if (m_iClip != 0)
-		m_flPumpTime = gpGlobals->time + 0.5;
+		m_flPumpTime = gpGlobals->time + 0.5f;
 
-	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.35;
-	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.65;
+	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.35f;
+	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.65f;
 	if (m_iClip != 0)
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 5.0;
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 5.0f;
 	else
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.75;
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.75f;
 	m_fInSpecialReload = 0;
 }
 
@@ -214,7 +214,7 @@ void CShotgunA::SecondaryAttack( void )
 		m_pPlayer->pev->fov = m_pPlayer->m_iFOV = 40;
 	}
 
-	m_flNextSecondaryAttack = 0.5;
+	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5f;
 }
 
 
@@ -233,10 +233,10 @@ void CShotgunA::Reload( void )
 		SendWeaponAnim( SHOTGUNA_START_RELOAD );
 		m_fInZoom = FALSE;
 		m_fInSpecialReload = 1;
-		m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.6;
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.6;
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 1.0;
-		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1.0;
+		m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.6f;
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.6f;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 1.0f;
+		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1.0f;
 		return;
 	}
 	else if (m_fInSpecialReload == 1)
@@ -253,8 +253,8 @@ void CShotgunA::Reload( void )
 
 		SendWeaponAnim( SHOTGUNA_RELOAD );
 
-		m_flNextReload = UTIL_WeaponTimeBase() + 0.5;
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.5;
+		m_flNextReload = UTIL_WeaponTimeBase() + 0.5f;
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.5f;
 	}
 	else
 	{
@@ -296,27 +296,27 @@ void CShotgunA::WeaponIdle( void )
 				// play cocking sound
 				EMIT_SOUND_DYN(ENT(m_pPlayer->pev), CHAN_ITEM, "weapons/scock1.wav", 1, ATTN_NORM, 0, 95 + RANDOM_LONG(0,0x1f));
 				m_fInSpecialReload = 0;
-				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.5;
+				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.5f;
 			}
 		}
 		else
 		{
 			int iAnim;
 			float flRand = UTIL_SharedRandomFloat( m_pPlayer->random_seed, 0, 1 );
-			if (flRand <= 0.8)
+			if (flRand <= 0.8f)
 			{
 				iAnim = SHOTGUNA_IDLE;
-				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + (60.0/12.0);// * RANDOM_LONG(2, 5);
+				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + (60.0f/12.0f);// * RANDOM_LONG(2, 5);
 			}
-			else if (flRand <= 0.95)
+			else if (flRand <= 0.95f)
 			{
 				iAnim = SHOTGUNA_IDLE2;
-				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + (20.0/9.0);
+				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + (20.0f/9.0f);
 			}
 			else
 			{
 				iAnim = SHOTGUNA_IDLE3;
-				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + (20.0/9.0);
+				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + (20.0f/9.0f);
 			}
 			SendWeaponAnim( iAnim );
 		}

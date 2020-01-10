@@ -74,7 +74,7 @@ void CBotCam::Spawn( void )
 
    SetThink( &CBotCam::IdleThink );
 
-   pev->nextthink = gpGlobals->time + 0.1;
+   pev->nextthink = gpGlobals->time + 0.1f;
 }
 
 

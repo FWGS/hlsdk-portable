@@ -319,7 +319,7 @@ BOOL CCrossbow::Deploy()
 	return DefaultDeploy( "models/v_crossbow.mdl", "models/p_crossbow.mdl", CROSSBOW_DRAW, "bow" );
 
 	SetThink(&CCrossbow::ZoomThink);
-	pev->nextthink = gpGlobals->time + 0.1;
+	pev->nextthink = gpGlobals->time + 0.1f;
 }
 
 void CCrossbow::Holster( int skiplocal /* = 0 */ )
@@ -538,7 +538,7 @@ void CCrossbow::ZoomThink()
 			m_pPlayer->m_iFOV = 90;
 			NowZooming = false;
 			ZoomStopped = false;
-			pev->nextthink = gpGlobals->time + 0.25;
+			pev->nextthink = gpGlobals->time + 0.25f;
 			return;
 		}
 	}
@@ -563,7 +563,7 @@ void CCrossbow::ZoomThink()
 	}
 
 	// Stell den n hsten Durchlauf ein
-	pev->nextthink = gpGlobals->time + 0.05;
+	pev->nextthink = gpGlobals->time + 0.05f;
 }
 
 void CCrossbow::WeaponIdle( void )

@@ -438,7 +438,7 @@ BOOL CHGrunt_bo :: CheckMeleeAttack1 ( float flDot, float flDist )
 		}
 	}
 
-	if ( flDist <= 64 && flDot >= 0.7	&& 
+	if ( flDist <= 64 && flDot >= 0.7f	&& 
 		 pEnemy->Classify() != CLASS_ALIEN_BIOWEAPON &&
 		 pEnemy->Classify() != CLASS_PLAYER_BIOWEAPON )
 	{
@@ -457,7 +457,7 @@ BOOL CHGrunt_bo :: CheckMeleeAttack1 ( float flDot, float flDist )
 //=========================================================
 BOOL CHGrunt_bo :: CheckRangeAttack1 ( float flDot, float flDist )
 {
-	if ( !HasConditions( bits_COND_ENEMY_OCCLUDED ) && flDist <= 2048 && flDot >= 0.5 && NoFriendlyFire() )
+	if ( !HasConditions( bits_COND_ENEMY_OCCLUDED ) && flDist <= 2048 && flDot >= 0.5f && NoFriendlyFire() )
 	{
 		TraceResult	tr;
 
@@ -472,7 +472,7 @@ BOOL CHGrunt_bo :: CheckRangeAttack1 ( float flDot, float flDist )
 		// verify that a bullet fired from the gun will hit the enemy before the world.
 		UTIL_TraceLine( vecSrc, m_hEnemy->BodyTarget(vecSrc), ignore_monsters, ignore_glass, ENT(pev), &tr);
 
-		if ( tr.flFraction == 1.0 )
+		if ( tr.flFraction == 1.0f )
 		{
 			return TRUE;
 		}
@@ -595,7 +595,7 @@ BOOL CHGrunt_bo :: CheckRangeAttack2 ( float flDot, float flDist )
 			// throw a hand grenade
 			m_fThrowGrenade = TRUE;
 			// don't check again for a while.
-			m_flNextGrenadeCheck = gpGlobals->time + 0.3; // 1/3 second.
+			m_flNextGrenadeCheck = gpGlobals->time + 0.3f; // 1/3 second.
 		}
 		else
 		{
@@ -765,7 +765,7 @@ CBaseEntity *CHGrunt_bo :: Kick( void )
 
 	UTIL_MakeVectors( pev->angles );
 	Vector vecStart = pev->origin;
-	vecStart.z += pev->size.z * 0.5;
+	vecStart.z += pev->size.z * 0.5f;
 	Vector vecEnd = vecStart + (gpGlobals->v_forward * 70);
 
 	UTIL_TraceHull( vecStart, vecEnd, dont_ignore_monsters, head_hull, ENT(pev), &tr );
@@ -2497,7 +2497,7 @@ void CHGruntRepel_bo::RepelUse ( CBaseEntity *pActivator, CBaseEntity *pCaller, 
 	pBeam->SetFlags( BEAM_FSOLID );
 	pBeam->SetColor( 255, 255, 255 );
 	pBeam->SetThink(&CBeam:: SUB_Remove );
-	pBeam->SetNextThink( -4096.0 * tr.flFraction / pGrunt->pev->velocity.z + 0.5 );
+	pBeam->SetNextThink( -4096.0f * tr.flFraction / pGrunt->pev->velocity.z + 0.5f );
 
 	UTIL_Remove( this );
 }

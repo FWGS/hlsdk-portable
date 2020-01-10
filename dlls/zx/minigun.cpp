@@ -116,15 +116,15 @@ void CMinigun::PrimaryAttack()
 	// don't fire underwater
 	if (m_pPlayer->pev->waterlevel == 3 && m_pPlayer->pev->watertype > CONTENT_FLYFIELD)
 	{
-		PlayEmptySound( );
-		m_flNextPrimaryAttack = 0.15;
+		PlayEmptySound();
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.15f;
 		return;
 	}
 
 	if (m_iClip <= 0)
 	{
 		PlayEmptySound();
-		m_flNextPrimaryAttack = 0.15;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.15f;
 		return;
 	}
 
@@ -172,10 +172,10 @@ void CMinigun::PrimaryAttack()
 		// HEV suit - indicate out of ammo condition
 		m_pPlayer->SetSuitUpdate("!HEV_AMO0", FALSE, 0);
 
-	m_flNextPrimaryAttack = GetNextAttackDelay( 0.05 );
+	m_flNextPrimaryAttack = GetNextAttackDelay( 0.05f );
 
 	if ( m_flNextPrimaryAttack < UTIL_WeaponTimeBase() )
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.05;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.05f;
 
 	#ifndef CLIENT_DLL
 	UTIL_ScreenShake( pev->origin, 5.0, 150.0, 0.75, 250.0 );
@@ -190,15 +190,15 @@ void CMinigun::SecondaryAttack( void )
 	// don't fire underwater
 	if (m_pPlayer->pev->waterlevel == 3 && m_pPlayer->pev->watertype > CONTENT_FLYFIELD)
 	{
-		PlayEmptySound( );
-		m_flNextSecondaryAttack = 0.15;
+		PlayEmptySound();
+		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.15f;
 		return;
 	}
 
 	if (m_iClip <= 0)
 	{
 		PlayEmptySound();
-		m_flNextSecondaryAttack = 0.15;
+		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.15f;
 		return;
 	}
 
@@ -246,10 +246,10 @@ void CMinigun::SecondaryAttack( void )
 		// HEV suit - indicate out of ammo condition
 		m_pPlayer->SetSuitUpdate("!HEV_AMO0", FALSE, 0);
 
-	m_flNextSecondaryAttack = GetNextAttackDelay( 0.01 );
+	m_flNextSecondaryAttack = GetNextAttackDelay( 0.01f );
 
 	if ( m_flNextSecondaryAttack < UTIL_WeaponTimeBase() )
-		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.01;
+		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.01f;
 
 #ifndef CLIENT_DLL
 	UTIL_ScreenShake( pev->origin, 5.0, 150.0, 0.75, 250.0 );

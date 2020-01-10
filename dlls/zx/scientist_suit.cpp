@@ -541,7 +541,7 @@ void CScientist_suit :: RunTask( Task_t *pTask )
 
 				distance = ( m_vecMoveGoal - pev->origin ).Length2D();
 				// Re-evaluate when you think your finished, or the target has moved too far
-				if ( (distance < pTask->flData) || (m_vecMoveGoal - m_hTargetEnt->pev->origin).Length() > pTask->flData * 0.5 )
+				if ( (distance < pTask->flData) || (m_vecMoveGoal - m_hTargetEnt->pev->origin).Length() > pTask->flData * 0.5f )
 				{
 					m_vecMoveGoal = m_hTargetEnt->pev->origin;
 					distance = ( m_vecMoveGoal - pev->origin ).Length2D();
@@ -1095,7 +1095,7 @@ MONSTERSTATE CScientist_suit :: GetIdealState ( void )
 
 BOOL CScientist_suit::CanHeal( void )
 { 
-	if ( (m_healTime > gpGlobals->time) || (m_hTargetEnt == 0) || (m_hTargetEnt->pev->health > (m_hTargetEnt->pev->max_health * 0.5)) )
+	if ( (m_healTime > gpGlobals->time) || (m_hTargetEnt == 0) || (m_hTargetEnt->pev->health > (m_hTargetEnt->pev->max_health * 0.5f)) )
 		return FALSE;
 
 	return TRUE;

@@ -251,7 +251,7 @@ void CRpgRocket::RocketTouch( CBaseEntity *pOther )
 	pev->effects |= EF_NODRAW;	// stop showing the model!!
 	pev->velocity = g_vecZero;	// set velocity to "0"
 	SetThink( &CRpgRocket::AfterGlow );
-	pev->nextthink = gpGlobals->time +.7;	// set next think into future
+	pev->nextthink = gpGlobals->time + 0.7f;	// set next think into future
 }
 
 void CRpgRocket::AfterGlow( void )

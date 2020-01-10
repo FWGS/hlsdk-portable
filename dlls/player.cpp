@@ -2039,7 +2039,7 @@ void CBasePlayer::PreThink( void )
 		UTIL_MakeVectors( pev->v_angle );
 		UTIL_TraceLine( pev->origin + pev->view_ofs,pev->origin + pev->view_ofs + gpGlobals->v_forward * 1300,dont_ignore_monsters, edict(), &tr );
 
-		if( tr.flFraction != 1.0 && !FNullEnt( tr.pHit ) )
+		if( tr.flFraction != 1.0f && !FNullEnt( tr.pHit ) )
 		{
 			// if we hit something, get an instance of it
 			pEnemy = CBaseEntity::Instance( tr.pHit );
@@ -2078,7 +2078,7 @@ void CBasePlayer::PreThink( void )
 			}
 
 			UTIL_HudMessage(this, hText, szEnemy); // diplay message
-			m_flNextNameDisplay = gpGlobals->time + 0.5; // show next name in 0.5 sec
+			m_flNextNameDisplay = gpGlobals->time + 0.5f; // show next name in 0.5 sec
 		}
 	}
 	int buttonsChanged = ( m_afButtonLast ^ pev->button );	// These buttons have changed this frame

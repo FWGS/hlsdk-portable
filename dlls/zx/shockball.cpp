@@ -51,7 +51,7 @@ void CShockball::Spawn( )
 	
 	SetThink( &CShockball::FlyThink );
 	SetTouch( &CShockball::ShockballTouch );
-	pev->nextthink = gpGlobals->time + 0.1;
+	pev->nextthink = gpGlobals->time + 0.1f;
 	ResetSequenceInfo( );
 }
 
@@ -72,7 +72,7 @@ void CShockball::FlyThink( void )
 {
 	StudioFrameAdvance( );
 	BlastOn();
-	pev->nextthink = gpGlobals->time + 0.1;
+	pev->nextthink = gpGlobals->time + 0.1f;
 }
 
 void CShockball::ShockballTouch( CBaseEntity *pOther )
@@ -190,7 +190,7 @@ void CShockball::BlastOn ( void )
 			pBeam->SetScrollRate( 35 );
 			pBeam->LiveForTime( 1 );
 
-			pev->nextthink = gpGlobals->time + 0.1;
+			pev->nextthink = gpGlobals->time + 0.1f;
 
 
 		if(!m_pSprite)

@@ -36,7 +36,7 @@ void CShockRifle::Spawn( )
 	m_iId = WEAPON_SHOCKRIFLE;
 	SET_MODEL(ENT(pev), "models/w_shock_rifle.mdl");
 	pev->sequence		= 0;
-	pev->animtime		= gpGlobals->time + 0.1;
+	pev->animtime		= gpGlobals->time + 0.1f;
 	pev->framerate		= 1.0;
 
 	m_iDefaultAmmo = SHOCK_DEFAULT_GIVE;
@@ -112,7 +112,7 @@ BOOL CShockRifle::Deploy( )
 
 void CShockRifle::Holster( int skiplocal /* = 0 */ )
 {
-	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
+	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5f;
 	SendWeaponAnim( SHOCK_HOLSTER );
 
 	//!!!HACKHACK - can't select hornetgun if it's empty! no way to get ammo for it, either.
@@ -171,7 +171,7 @@ void CShockRifle::PrimaryAttack()
 	CBaseEntity *pShock = CBaseEntity::Create( "shock", vecSrc, anglesAim, m_pPlayer->edict() );
 	pShock->pev->velocity = gpGlobals->v_forward * 1500;
 
-	m_flRechargeTime = gpGlobals->time + 0.5;
+	m_flRechargeTime = gpGlobals->time + 0.5f;
 #endif
 	
 	m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]--;
@@ -181,14 +181,14 @@ void CShockRifle::PrimaryAttack()
 	m_pPlayer->m_iWeaponFlash = DIM_GUN_FLASH;
 
 
-	m_flNextPrimaryAttack = m_flNextPrimaryAttack + 0.25;
+	m_flNextPrimaryAttack = m_flNextPrimaryAttack + 0.25f;
 
 	if (m_flNextPrimaryAttack < UTIL_WeaponTimeBase() )
 	{
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.25;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.25f;
 	}
 
-	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.5;
+	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.5f;
 }
 
 
@@ -201,7 +201,7 @@ void CShockRifle::Reload( void )
 	{
 	EMIT_SOUND_DYN(ENT(m_pPlayer->pev), CHAN_WEAPON, "weapons/shock_recharge.wav", 1.0, ATTN_NORM, 0, 100);
 		m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]++;
-		m_flRechargeTime += 0.7;
+		m_flRechargeTime += 0.7f;
 	}
 
 }
@@ -216,7 +216,7 @@ void CShockRifle::WeaponIdle( void )
 
 	int iAnim;
 	float flRand = UTIL_SharedRandomFloat( m_pPlayer->random_seed, 0, 1 );
-	if (flRand <= 0.75)
+	if (flRand <= 0.75f)
 	{
 		iAnim = SHOCK_IDLE1;
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 5;

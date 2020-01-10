@@ -1044,7 +1044,7 @@ void StartFrame( void )
 	// END BOT
 
 	// START BOT
-	if( ( g_fGameOver ) && ( respawn_time < 1.0 ) )
+	if( ( g_fGameOver ) && ( respawn_time < 1.0f ) )
 	{
 		// if the game is over (time/frag limit) set the respawn time...
 		respawn_time = 5.0;
@@ -1067,7 +1067,7 @@ void StartFrame( void )
 	// check if a map was changed via "map" without kicking bots...
 	if( previous_time > gpGlobals->time )
 	{
-		bot_check_time = gpGlobals->time + 10.0;
+		bot_check_time = gpGlobals->time + 10.0f;
 
 		for( index = 0; index < 32; index++ )
 		{
@@ -1078,18 +1078,18 @@ void StartFrame( void )
 				bot_respawn[index].state = BOT_NEED_TO_RESPAWN;
 
 				// if the map was changed set the respawn time...
-				respawn_time = 5.0;
+				respawn_time = 5.0f;
 			}
 		}
 	}
 
 	// is new game started and time to respawn bots yet?
-	if( ( !g_fGameOver ) && ( respawn_time > 1.0 ) &&
+	if( ( !g_fGameOver ) && ( respawn_time > 1.0f ) &&
 		( gpGlobals->time >= respawn_time ) )
 	{
 		index = 0;
 
-		bot_check_time = gpGlobals->time + 5.0;
+		bot_check_time = gpGlobals->time + 5.0f;
 		// find bot needing to be respawned...
 		while( ( index < 32 ) &&
 			( bot_respawn[index].state != BOT_NEED_TO_RESPAWN ) )
@@ -1105,11 +1105,11 @@ void StartFrame( void )
 			bot_respawn[index].name,
 			bot_respawn[index].skill);
 
-			respawn_time = gpGlobals->time + 1.0;  // set next respawn time
+			respawn_time = gpGlobals->time + 1.0f;  // set next respawn time
 		}
 		else
 		{
-			respawn_time = 0.0;
+			respawn_time = 0.0f;
 		}
 	}
 	// END BOT
@@ -1282,7 +1282,7 @@ void StartFrame( void )
 	// if time to check for server commands then do so...
 	if( check_server_cmd <= gpGlobals->time )
 	{
-		check_server_cmd = gpGlobals->time + 1.0;
+		check_server_cmd = gpGlobals->time + 1.0f;
 
 		const char *cvar_bot = CVAR_GET_STRING( "bot" );
 
@@ -1377,7 +1377,7 @@ void StartFrame( void )
 	if( bot_check_time < gpGlobals->time )
 	{
 		int count = 0;
-		bot_check_time = gpGlobals->time + 5.0;
+		bot_check_time = gpGlobals->time + 5.0f;
 
 		for( i = 1; i <= gpGlobals->maxClients; i++ )
 		{

@@ -355,7 +355,7 @@ void CBot::Spawn( )
 
    f_max_speed = CVAR_GET_FLOAT("sv_maxspeed");
 
-   f_speed_check_time = gpGlobals->time + 2.0;
+   f_speed_check_time = gpGlobals->time + 2.0f;
 
    ladder_dir = 0;
 
@@ -392,7 +392,7 @@ void CBot::Spawn( )
       bot_model = MODEL_SCIENTIST;
    }
 
-   f_pain_time = gpGlobals->time + 5.0;
+   f_pain_time = gpGlobals->time + 5.0f;
 
    b_use_health_station = FALSE;
    b_use_HEV_station = FALSE;
@@ -466,7 +466,7 @@ int CBot::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker,
          // speak pain sounds about 50% of the time
          if (RANDOM_LONG(1, 100) <= 50)
          {
-            f_pain_time = gpGlobals->time + 5.0;
+            f_pain_time = gpGlobals->time + 5.0f;
 
             if (bot_model == MODEL_HGRUNT)
                strcpy( sound, hgrunt_sounds[RANDOM_LONG(0,4)] );
@@ -561,7 +561,7 @@ BOOL CBot::BotEntityIsVisible( Vector dest )
                    ENT(pev), &tr );
 
    // check if line of sight to object is not blocked (i.e. visible)
-   if (tr.flFraction >= 1.0)
+   if (tr.flFraction >= 1.0f)
       return TRUE;
    else
       return FALSE;
@@ -717,7 +717,7 @@ void CBot::BotUnderWater( void )
    UTIL_TraceLine( v_src, v_forward, dont_ignore_monsters, ENT(pev), &tr);
 
    // check if the trace didn't hit anything (i.e. nothing in the way)...
-   if (tr.flFraction >= 1.0)
+   if (tr.flFraction >= 1.0f)
    {
       // find out what the contents is of the end of the trace...
       contents = UTIL_PointContents( tr.vecEndPos );
@@ -736,7 +736,7 @@ void CBot::BotUnderWater( void )
                          ENT(pev), &tr);
 
          // check if the trace hit something...
-         if (tr.flFraction < 1.0)
+         if (tr.flFraction < 1.0f)
          {
             contents = UTIL_PointContents( tr.vecEndPos );
 
@@ -768,7 +768,7 @@ void CBot::BotFindItem( void )
 
    pBotPickupItem = NULL;
 
-   min_distance = radius + 1.0;
+   min_distance = radius + 1.0f;
 
    while ((pEntity = UTIL_FindEntityInSphere( pEntity, pev->origin, radius )) != NULL)
    {
@@ -806,7 +806,7 @@ void CBot::BotFindItem( void )
             UTIL_TraceLine( vecStart, vecEnd, dont_ignore_monsters, ENT(pev), &tr);
 
             // check if traced all the way up to the entity (didn't hit wall)
-            if (tr.flFraction >= 1.0)
+            if (tr.flFraction >= 1.0f)
             {
                // find distance to item for later use...
                float distance = (vecEnd - vecStart).Length( );
@@ -820,7 +820,7 @@ void CBot::BotFindItem( void )
                   if (distance < 100)
                   {
                      // don't avoid walls for a while
-                     f_dont_avoid_wall_time = gpGlobals->time + 5.0;
+                     f_dont_avoid_wall_time = gpGlobals->time + 5.0f;
                   }
 
                   can_pickup = TRUE;
@@ -860,7 +860,7 @@ void CBot::BotFindItem( void )
                         if (distance < 100)
                         {
                            // don't avoid walls for a while
-                           f_dont_avoid_wall_time = gpGlobals->time + 5.0;
+                           f_dont_avoid_wall_time = gpGlobals->time + 5.0f;
                         }
 
                         can_pickup = TRUE;
@@ -897,7 +897,7 @@ void CBot::BotFindItem( void )
                         if (distance < 100)
                         {
                            // don't avoid walls for a while
-                           f_dont_avoid_wall_time = gpGlobals->time + 5.0;
+                           f_dont_avoid_wall_time = gpGlobals->time + 5.0f;
                         }
 
                         can_pickup = TRUE;
@@ -934,7 +934,7 @@ void CBot::BotFindItem( void )
                         if (distance < 100)
                         {
                            // don't avoid walls for a while
-                           f_dont_avoid_wall_time = gpGlobals->time + 5.0;
+                           f_dont_avoid_wall_time = gpGlobals->time + 5.0f;
                         }
 
                         can_pickup = TRUE;
@@ -1183,7 +1183,7 @@ void CBot::BotUseLift( float moved_distance )
    }
 
    // check if the bot has waited too long for the lift to move...
-   if (((f_use_button_time + 2.0) < gpGlobals->time) &&
+   if (((f_use_button_time + 2.0f) < gpGlobals->time) &&
        (!b_lift_moving))
    {
       // clear use button flag
@@ -1233,21 +1233,21 @@ void CBot::BotUseLift( float moved_distance )
       UTIL_TraceLine( v_src, v_forward_down, dont_ignore_monsters, ENT(pev), &tr2);
 
       // check if we hit a wall or didn't find a floor...
-      if ((tr1.flFraction < 1.0) || (tr2.flFraction >= 1.0))
+      if ((tr1.flFraction < 1.0f) || (tr2.flFraction >= 1.0f))
       {
          // try tracing to the RIGHT side next...
          UTIL_TraceLine( v_src, v_right, dont_ignore_monsters, ENT(pev), &tr1);
          UTIL_TraceLine( v_src, v_right_down, dont_ignore_monsters, ENT(pev), &tr2);
 
          // check if we hit a wall or didn't find a floor...
-         if ((tr1.flFraction < 1.0) || (tr2.flFraction >= 1.0))
+         if ((tr1.flFraction < 1.0f) || (tr2.flFraction >= 1.0f))
          {
             // try tracing to the LEFT side next...
             UTIL_TraceLine( v_src, v_left, dont_ignore_monsters, ENT(pev), &tr1);
             UTIL_TraceLine( v_src, v_left_down, dont_ignore_monsters, ENT(pev), &tr2);
 
             // check if we hit a wall or didn't find a floor...
-            if ((tr1.flFraction < 1.0) || (tr2.flFraction >= 1.0))
+            if ((tr1.flFraction < 1.0f) || (tr2.flFraction >= 1.0f))
             {
                // only thing to do is turn around...
                pev->ideal_yaw += 180;  // turn all the way around
@@ -1379,7 +1379,7 @@ BOOL CBot::BotCantMoveForward( TraceResult *tr )
    UTIL_TraceLine( v_src, v_forward, dont_ignore_monsters, ENT(pev), tr);
 
    // check if the trace hit something...
-   if (tr->flFraction < 1.0)
+   if (tr->flFraction < 1.0f)
    {
       return TRUE;  // bot's head will hit something
    }
@@ -1393,7 +1393,7 @@ BOOL CBot::BotCantMoveForward( TraceResult *tr )
    UTIL_TraceLine( v_src, v_forward, dont_ignore_monsters, ENT(pev), tr);
 
    // check if the trace hit something...
-   if (tr->flFraction < 1.0)
+   if (tr->flFraction < 1.0f)
    {
       return TRUE;  // bot's body will hit something
    }
@@ -1436,7 +1436,7 @@ BOOL CBot::BotCanJumpUp( void )
    UTIL_TraceLine( v_source, v_dest, dont_ignore_monsters, ENT(pev), &tr);
 
    // if trace hit something, return FALSE
-   if (tr.flFraction < 1.0)
+   if (tr.flFraction < 1.0f)
       return FALSE;
 
    // now check same height to one side of the bot...
@@ -1447,7 +1447,7 @@ BOOL CBot::BotCanJumpUp( void )
    UTIL_TraceLine( v_source, v_dest, dont_ignore_monsters, ENT(pev), &tr);
 
    // if trace hit something, return FALSE
-   if (tr.flFraction < 1.0)
+   if (tr.flFraction < 1.0f)
       return FALSE;
 
    // now check same height on the other side of the bot...
@@ -1458,7 +1458,7 @@ BOOL CBot::BotCanJumpUp( void )
    UTIL_TraceLine( v_source, v_dest, dont_ignore_monsters, ENT(pev), &tr);
 
    // if trace hit something, return FALSE
-   if (tr.flFraction < 1.0)
+   if (tr.flFraction < 1.0f)
       return FALSE;
 
    // now trace from head level downward to check for obstructions...
@@ -1477,7 +1477,7 @@ BOOL CBot::BotCanJumpUp( void )
    UTIL_TraceLine( v_source, v_dest, dont_ignore_monsters, ENT(pev), &tr);
 
    // if trace hit something, return FALSE
-   if (tr.flFraction < 1.0)
+   if (tr.flFraction < 1.0f)
       return FALSE;
 
    // now check same height to one side of the bot...
@@ -1489,7 +1489,7 @@ BOOL CBot::BotCanJumpUp( void )
    UTIL_TraceLine( v_source, v_dest, dont_ignore_monsters, ENT(pev), &tr);
 
    // if trace hit something, return FALSE
-   if (tr.flFraction < 1.0)
+   if (tr.flFraction < 1.0f)
       return FALSE;
 
    // now check same height on the other side of the bot...
@@ -1501,7 +1501,7 @@ BOOL CBot::BotCanJumpUp( void )
    UTIL_TraceLine( v_source, v_dest, dont_ignore_monsters, ENT(pev), &tr);
 
    // if trace hit something, return FALSE
-   if (tr.flFraction < 1.0)
+   if (tr.flFraction < 1.0f)
       return FALSE;
 
    return TRUE;
@@ -1539,7 +1539,7 @@ BOOL CBot::BotCanDuckUnder( void )
    UTIL_TraceLine( v_source, v_dest, dont_ignore_monsters, ENT(pev), &tr);
 
    // if trace hit something, return FALSE
-   if (tr.flFraction < 1.0)
+   if (tr.flFraction < 1.0f)
       return FALSE;
 
    // now check same height to one side of the bot...
@@ -1550,7 +1550,7 @@ BOOL CBot::BotCanDuckUnder( void )
    UTIL_TraceLine( v_source, v_dest, dont_ignore_monsters, ENT(pev), &tr);
 
    // if trace hit something, return FALSE
-   if (tr.flFraction < 1.0)
+   if (tr.flFraction < 1.0f)
       return FALSE;
 
    // now check same height on the other side of the bot...
@@ -1561,7 +1561,7 @@ BOOL CBot::BotCanDuckUnder( void )
    UTIL_TraceLine( v_source, v_dest, dont_ignore_monsters, ENT(pev), &tr);
 
    // if trace hit something, return FALSE
-   if (tr.flFraction < 1.0)
+   if (tr.flFraction < 1.0f)
       return FALSE;
 
    // now trace from the ground up to check for object to duck under...
@@ -1577,7 +1577,7 @@ BOOL CBot::BotCanDuckUnder( void )
    UTIL_TraceLine( v_source, v_dest, dont_ignore_monsters, ENT(pev), &tr);
 
    // if trace didn't hit something, return FALSE
-   if (tr.flFraction >= 1.0)
+   if (tr.flFraction >= 1.0f)
       return FALSE;
 
    // now check same height to one side of the bot...
@@ -1589,7 +1589,7 @@ BOOL CBot::BotCanDuckUnder( void )
    UTIL_TraceLine( v_source, v_dest, dont_ignore_monsters, ENT(pev), &tr);
 
    // if trace didn't hit something, return FALSE
-   if (tr.flFraction >= 1.0)
+   if (tr.flFraction >= 1.0f)
       return FALSE;
 
    // now check same height on the other side of the bot...
@@ -1601,7 +1601,7 @@ BOOL CBot::BotCanDuckUnder( void )
    UTIL_TraceLine( v_source, v_dest, dont_ignore_monsters, ENT(pev), &tr);
 
    // if trace didn't hit something, return FALSE
-   if (tr.flFraction >= 1.0)
+   if (tr.flFraction >= 1.0f)
       return FALSE;
 
    return TRUE;
@@ -1716,7 +1716,7 @@ BOOL CBot::BotCheckWallOnLeft( void )
    UTIL_TraceLine( v_src, v_left, dont_ignore_monsters, ENT(pev), &tr);
 
    // check if the trace hit something...
-   if (tr.flFraction < 1.0)
+   if (tr.flFraction < 1.0f)
    {
       if (f_wall_on_left == 0)
          f_wall_on_left = gpGlobals->time;
@@ -1743,7 +1743,7 @@ BOOL CBot::BotCheckWallOnRight( void )
    UTIL_TraceLine( v_src, v_right, dont_ignore_monsters, ENT(pev), &tr);
 
    // check if the trace hit something...
-   if (tr.flFraction < 1.0)
+   if (tr.flFraction < 1.0f)
    {
       if (f_wall_on_right == 0)
          f_wall_on_right = gpGlobals->time;
@@ -1810,7 +1810,7 @@ void CBot::BotThink( void )
       f_max_speed = CVAR_GET_FLOAT("sv_maxspeed");
 
       // set next check time to 2 seconds from now
-      f_speed_check_time = gpGlobals->time + 2.0;
+      f_speed_check_time = gpGlobals->time + 2.0f;
    }
 
    // see how far bot has moved since the previous position...
@@ -1899,7 +1899,7 @@ void CBot::BotThink( void )
                b_see_tripmine = FALSE;
 
                // pause for a while to allow tripmine to explode...
-               f_pause_time = gpGlobals->time + 0.5;
+               f_pause_time = gpGlobals->time + 0.5f;
             }
             else  // run away!!!
             {
@@ -1925,7 +1925,7 @@ void CBot::BotThink( void )
          // check if should use wall mounted health station...
          else if (b_use_health_station)
          {
-            if ((f_use_health_time + 10.0) > gpGlobals->time)
+            if ((f_use_health_time + 10.0f) > gpGlobals->time)
             {
                f_move_speed = 0;  // don't move while using health station
 
@@ -1939,14 +1939,14 @@ void CBot::BotThink( void )
 
                // don't look for items for a while since the bot
                // could be stuck trying to get to an item
-               f_find_item = gpGlobals->time + 0.5;
+               f_find_item = gpGlobals->time + 0.5f;
             }
          }
 
          // check if should use wall mounted HEV station...
          else if (b_use_HEV_station)
          {
-            if ((f_use_HEV_time + 10.0) > gpGlobals->time)
+            if ((f_use_HEV_time + 10.0f) > gpGlobals->time)
             {
                f_move_speed = 0;  // don't move while using HEV station
 
@@ -1960,7 +1960,7 @@ void CBot::BotThink( void )
 
                // don't look for items for a while since the bot
                // could be stuck trying to get to an item
-               f_find_item = gpGlobals->time + 0.5;
+               f_find_item = gpGlobals->time + 0.5f;
             }
          }
 
@@ -1987,7 +1987,7 @@ void CBot::BotThink( void )
                // 20% of the time randomly turn between 45 and 60 degrees
            
                if ((f_wall_on_left != 0) &&
-                   (f_wall_on_left <= gpGlobals->time - 0.5) &&
+                   (f_wall_on_left <= gpGlobals->time - 0.5f) &&
                    (RANDOM_LONG(1, 100) <= 20))
                {
                   pev->ideal_yaw += RANDOM_LONG(45, 60);
@@ -1999,7 +1999,7 @@ void CBot::BotThink( void )
                      pev->ideal_yaw += 360;
 
                   f_move_speed = 0;  // don't move while turning
-                  f_dont_avoid_wall_time = gpGlobals->time + 1.0;
+                  f_dont_avoid_wall_time = gpGlobals->time + 1.0f;
                }
 
                f_wall_on_left = 0;  // reset wall detect time
@@ -2012,7 +2012,7 @@ void CBot::BotThink( void )
                // 20% of the time randomly turn between 45 and 60 degrees
 
                if ((f_wall_on_right != 0) &&
-                   (f_wall_on_right <= gpGlobals->time - 0.5) &&
+                   (f_wall_on_right <= gpGlobals->time - 0.5f) &&
                    (RANDOM_LONG(1, 100) <= 20))
                {
                   pev->ideal_yaw -= RANDOM_LONG(45, 60);
@@ -2024,7 +2024,7 @@ void CBot::BotThink( void )
                      pev->ideal_yaw += 360;
 
                   f_move_speed = 0;  // don't move while turning
-                  f_dont_avoid_wall_time = gpGlobals->time + 1.0;
+                  f_dont_avoid_wall_time = gpGlobals->time + 1.0f;
                }
 
                f_wall_on_right = 0;  // reset wall detect time
@@ -2075,7 +2075,7 @@ void CBot::BotThink( void )
                   {
                      // don't look for items for a while since the bot
                      // could be stuck trying to get to an item
-                     f_find_item = gpGlobals->time + 0.5;
+                     f_find_item = gpGlobals->time + 0.5f;
                   }
                }
             }
