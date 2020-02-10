@@ -163,9 +163,7 @@ void CShockRoach::MonsterThink(void)
 	}
 	if (lifeTime >= gSkillData.sroachLifespan)
 	{
-		pev->health = -1;
-		Killed(pev, 0);
-		return;
+		TakeDamage(pev, pev, pev->health, DMG_NEVERGIB);
 	}
 
 	CHeadCrab::MonsterThink();
