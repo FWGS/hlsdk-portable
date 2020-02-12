@@ -249,10 +249,16 @@ def configure(conf):
 		conf.define_cond('HAVE_TGMATH_H', tgmath_usable)
 	else:
 		conf.undefine('HAVE_TGMATH_H')
+	cmath_usable = conf.check_cxx(fragment='''#include<cmath>
+			int main(void){ return (int)sqrt(2.0f); }''',
+			msg='Checking if cmath is usable', mandatory = False)
+	conf.define_cond('HAVE_CMATH', cmath_usable)
 
 	if conf.env.COMPILER_CC == 'msvc':
 		conf.define('_CRT_SECURE_NO_WARNINGS', 1)
 		conf.define('_CRT_NONSTDC_NO_DEPRECATE', 1)
+	elif conf.env.COMPILER_CC == 'owcc':
+		pass
 	else:
 		conf.env.append_unique('DEFINES', ['stricmp=strcasecmp', 'strnicmp=strncasecmp', '_snprintf=snprintf', '_vsnprintf=vsnprintf', '_LINUX', 'LINUX'])
 		conf.env.append_unique('CXXFLAGS', ['-Wno-invalid-offsetof', '-fno-rtti', '-fno-exceptions'])
