@@ -61,7 +61,7 @@ def build(bld):
 
 	libs = []
 
-	if bld.env.DEST_OS not in ['android']:
+	if bld.env.DEST_OS not in ['android', 'dos']:
 		install_path = os.path.join(bld.env.GAMEDIR, bld.env.SERVER_DIR)
 	else:
 		install_path = bld.env.PREFIX
@@ -69,6 +69,7 @@ def build(bld):
 	bld.shlib(
 		source   = source,
 		target   = bld.env.SERVER_NAME + bld.env.POSTFIX,
+		name     = 'server',
 		features = 'c cxx',
 		includes = includes,
 		defines  = defines,
