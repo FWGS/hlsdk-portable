@@ -13,6 +13,10 @@
 *
 ****/
 
+/* all this mess was here to use quake mathlib instead of hlsdk vectors
+* it may break debug info or even build because global symbols types differ
+*  it's better to define VectorCopy macro for Vector class */
+#if 0
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -50,7 +54,17 @@ typedef unsigned char byte;
 #include "enginecallback.h"
 #endif
 
-extern globalvars_t				*gpGlobals;
+//extern globalvars_t				*gpGlobals;
+#else
+#include "extdll.h"
+#include "util.h"
+#include "activity.h"
+#include "activitymap.h"
+#include "animation.h"
+#include "scriptevent.h"
+#include "studio.h"
+#define VectorCopy(x,y) (y = x)
+#endif
 
 #pragma warning( disable : 4244 )
 
