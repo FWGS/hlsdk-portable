@@ -63,7 +63,7 @@ typedef unsigned char byte;
 #include "animation.h"
 #include "scriptevent.h"
 #include "studio.h"
-#define VectorCopy(x,y) (y = x)
+#define VectorCopy(a,b) {(b)[0]=(a)[0];(b)[1]=(a)[1];(b)[2]=(a)[2];}
 #endif
 
 #pragma warning( disable : 4244 )
