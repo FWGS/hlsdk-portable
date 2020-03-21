@@ -42,7 +42,7 @@
 #define NOMCX
 #define NOIME
 #define HSPRITE HSPRITE_win32
-#include "windows.h"
+#include <windows.h>
 #undef HSPRITE
 #else // _WIN32
 #ifndef FALSE
