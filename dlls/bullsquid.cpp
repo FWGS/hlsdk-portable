@@ -536,6 +536,9 @@ void CBullsquid::HandleAnimEvent( MonsterEvent_t *pEvent )
 	{
 		case BSQUID_AE_SPIT:
 			{
+				if( m_hEnemy == 0 )
+					return;
+
 				Vector vecSpitOffset;
 				Vector vecSpitDir;
 
