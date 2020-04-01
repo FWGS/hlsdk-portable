@@ -32,6 +32,10 @@ if(HAVE_TGMATH_H)
 endif()
 
 add_definitions(-DCLIENT_WEAPONS)
+add_definitions(-DCROWBAR_IDLE_ANIM)
+add_definitions(-DCROWBAR_DELAY_FIX)
+add_definitions(-DCROWBAR_FIX_RAPID_CROWBAR)
+add_definitions(-DGAUSS_OVERCHARGE_FIX)
 
 if(NOT MSVC)
 	add_compile_options(-fno-exceptions) # GCC/Clang flag
