@@ -11,7 +11,9 @@ include $(XASH3D_CONFIG)
 
 LOCAL_CFLAGS += -D_LINUX -DCLIENT_WEAPONS \
 	-Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf \
-	-Wno-write-strings -Wno-invalid-offsetof -Wno-conversion-null -DNO_VOICEGAMEMGR
+	-Wno-write-strings -Wno-invalid-offsetof -Wno-conversion-null -DNO_VOICEGAMEMGR \
+	-DCROWBAR_IDLE_ANIM -DCROWBAR_DELAY_FIX -DCROWBAR_FIX_RAPID_CROWBAR -DGAUSS_OVERCHARGE_FIX
+
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/. \
 		    $(LOCAL_PATH)/../common \

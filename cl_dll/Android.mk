@@ -95,7 +95,8 @@ SRCS+=./input_xash3d.cpp
 SRCS+=./scoreboard.cpp
 SRCS+=./MOTD.cpp
 INCLUDES =  -I../common -I. -I../game_shared -I../pm_shared -I../engine -I../dlls -I../utils/false_vgui/include
-DEFINES = -Wno-write-strings -DLINUX -D_LINUX -Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -DCLIENT_WEAPONS -DCLIENT_DLL -w -D_snprintf=snprintf
+DEFINES = -Wno-write-strings -DLINUX -D_LINUX -Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -DCLIENT_WEAPONS -DCLIENT_DLL -w -D_snprintf=snprintf \
+	  -DCROWBAR_IDLE_ANIM -DCROWBAR_DELAY_FIX -DCROWBAR_FIX_RAPID_CROWBAR -DGAUSS_OVERCHARGE_FIX
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/. \
 		 $(LOCAL_PATH)/../common \
