@@ -772,7 +772,7 @@ void CRoboCop::RunTask( Task_t *pTask )
 		break;
 
 	case TASK_DIE:
-		if( m_flWaitFinished > gpGlobals->time )
+		if( m_flWaitFinished <= gpGlobals->time )
 		{
 			if( m_fSequenceFinished && pev->frame >= 255.0f )
 			{
