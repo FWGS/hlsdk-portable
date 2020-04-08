@@ -567,9 +567,12 @@ class CHudScope
 {
 public:
 	int DrawScope( void );
+	int DrawText( void );
 
 private:
-	HSPRITE m_hSprite;
+	struct model_s	*m_hSpriteModel;
+	HSPRITE		 m_hSprite;
+	char		 m_szDist[16];
 };
 
 //

@@ -178,6 +178,8 @@ int CHud::Redraw( float flTime, int intermission )
 	}
 	*/
 
+	gHUD.m_Scope.DrawText();
+
 	return 1;
 }
 
