@@ -407,7 +407,7 @@ void CCrossbow::ZoomOut()
 	m_fInZoom = 0;
 	m_pPlayer->pev->iuser4 = m_fInZoom;
 	m_pPlayer->pev->viewmodel = MAKE_STRING( "models/v_cmlwbr.mdl" );
-	UTIL_ScreenFade( m_pPlayer, g_vecZero, 0.2, 0.1, 255, FFADE_IN );
+	UTIL_ScreenFade( m_pPlayer, g_vecZero, 0.2f, 0.1f, 255, FFADE_IN );
 }
 
 void CCrossbow::SecondaryAttack()
@@ -415,7 +415,7 @@ void CCrossbow::SecondaryAttack()
 	if( m_fInZoom == 2 )	
 	{
 		ZoomOut();
-		m_flNextPrimaryAttack = m_flNextSecondaryAttack = m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.7;
+		m_flNextPrimaryAttack = m_flNextSecondaryAttack = m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.7f;
 	}
 	else
 	{
@@ -423,10 +423,11 @@ void CCrossbow::SecondaryAttack()
 		++m_fInZoom;
 		m_pPlayer->pev->iuser4 = m_fInZoom;
 		m_pPlayer->pev->viewmodel = 0;
-		UTIL_ScreenFade( m_pPlayer, g_vecZero, 0.1, 0.1, 255, FFADE_IN );
-		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5;
+		UTIL_ScreenFade( m_pPlayer, g_vecZero, 0.1f, 0.1f, 255, FFADE_IN );
+		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5f;
 	}
-	EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/cmlwbr_zoom.wav", RANDOM_FLOAT( 0.95, 1.0 ), ATTN_NORM, 0, 93 + RANDOM_LONG( 0, 0xF ) );	
+
+	EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/cmlwbr_zoom.wav", RANDOM_FLOAT( 0.95f, 1.0f ), ATTN_NORM, 0, 93 + RANDOM_LONG( 0, 0xF ) );
 }
 
 void CCrossbow::ToggleDrawn()
@@ -479,10 +480,11 @@ void CCrossbow::WeaponIdle( void )
 	if( m_flTimeWeaponIdle < UTIL_WeaponTimeBase() )
 	{
 		int iAnim;
+
 		if( m_fInAttack || !m_iClip )
 		{
 			float flRand = UTIL_SharedRandomFloat( m_pPlayer->random_seed, 0, 1 );
-			if( flRand <= 0.75 || m_fInZoom )
+			if( flRand <= 0.75f || m_fInZoom )
 			{
 				iAnim = m_fInAttack ? CROSSBOW_IDLE1 : CROSSBOW_IDLE2;
 				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 3.1f;
@@ -496,7 +498,7 @@ void CCrossbow::WeaponIdle( void )
 		else
 		{
 			iAnim = CROSSBOW_DRAWBACK;
-			EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/cmlwbr_drawback.wav", RANDOM_FLOAT( 0.9, 1.0 ), ATTN_NORM, 0, 93 + RANDOM_LONG( 0, 0xF ) );
+			EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/cmlwbr_drawback.wav", RANDOM_FLOAT( 0.9f, 1.0f ), ATTN_NORM, 0, 93 + RANDOM_LONG( 0, 0xF ) );
 			m_flNextSecondaryAttack = m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.3f;
 			SetThink( &CCrossbow::ToggleDrawn );
 			pev->nextthink = gpGlobals->time + 1.2f;

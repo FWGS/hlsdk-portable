@@ -180,7 +180,7 @@ void CHudHealth::GetPainColor( int &r, int &g, int &b )
 	else
 	{
 		UnpackRGB( r, g, b, RGB_YELLOWISH );
-		float f = ( sin( ( 16 - gHUD.m_flTime ) * m_iHealth ) + 1.0 ) * 0.5;
+		float f = ( sin( ( 16 - gHUD.m_flTime ) * m_iHealth ) + 1.0f ) * 0.5f;
 		r = (int)( r * f * 58.0f );
 		g = (int)( g * f );
 		b = (int)( b * f );

@@ -26,271 +26,179 @@
 #include "pm_shared.h"
 #include "pm_defs.h"
 #include "pmtrace.h"
+
 extern bool bDrawScope;
 extern vec3_t v_origin;		// last view origin
 extern vec3_t v_angles;		// last view angle
 extern vec3_t v_cl_angles;	// last client/mouse angle
 extern vec3_t v_sim_org;	// last sim origin
+extern cvar_t *adjust_fov;
 
 int CHudScope::DrawScope()
 {
+	vec3_t		 angles, forward, right, up;
+	vec3_t		 dir, delta, vert;
+	int		 frame;
+	float		 flDist, x, y;
+	pmtrace_t	*trace;
+
 	if( !bDrawScope )
 		return 1;
 
-	if (!m_hSprite)
-		m_hSprite = SPR_Load("sprites/scopeborder.spr");
-
-	int halfScopeHeight = ScreenHeight / 2;
-	int halfScopeWidth = halfScopeHeight;
-	int x, y;
-
-	struct model_s* hSpriteModel = (struct model_s *)gEngfuncs.GetSpritePointer(m_hSprite);
-
-	gEngfuncs.pTriAPI->RenderMode(kRenderTransTexture); //additive
-
-
-	//
-	// Top left Half scope.
-	//
-
-	x = ScreenWidth / 2 - halfScopeWidth;
-	y = 0;
-
-	gEngfuncs.pTriAPI->SpriteTexture(hSpriteModel, 0);
-	gEngfuncs.pTriAPI->Color4f( 1.0, 1.0, 1.0, 1.0 );
-
-	gEngfuncs.pTriAPI->CullFace(TRI_NONE);
-	gEngfuncs.pTriAPI->Begin(TRI_QUADS);
-
-	//top left
-	gEngfuncs.pTriAPI->TexCoord2f(0.3f, 0.3f); // 0 0
-	gEngfuncs.pTriAPI->Vertex3f(x, y, 0);
-
-	//bottom left
-	gEngfuncs.pTriAPI->TexCoord2f(0.3f, 1.0f); // 0 1
-	gEngfuncs.pTriAPI->Vertex3f(x, y + halfScopeHeight, 0);
-
-	//bottom right
-	gEngfuncs.pTriAPI->TexCoord2f(1.0f, 1.0f); // 1 1
-	gEngfuncs.pTriAPI->Vertex3f(x + halfScopeWidth, y + halfScopeHeight, 0);
-
-	//top right
-	gEngfuncs.pTriAPI->TexCoord2f(1.0f, 0.3f); // 1 0
-	gEngfuncs.pTriAPI->Vertex3f(x + halfScopeWidth, y, 0);
-
-	gEngfuncs.pTriAPI->End();
-
-
-	//
-	// Top right Half scope.
-	//
-
-	x = ScreenWidth / 2;
-	y = 0;
-
-	gEngfuncs.pTriAPI->SpriteTexture(hSpriteModel, 1);
-
-	gEngfuncs.pTriAPI->CullFace(TRI_NONE);
-	gEngfuncs.pTriAPI->Begin(TRI_QUADS);
-
-	//top left
-	gEngfuncs.pTriAPI->TexCoord2f(0.0f, 0.3f);
-	gEngfuncs.pTriAPI->Vertex3f(x, y, 0);
-
-	//bottom left
-	gEngfuncs.pTriAPI->TexCoord2f(0.0f, 1.0f);
-	gEngfuncs.pTriAPI->Vertex3f(x, y + halfScopeHeight, 0);
-
-	//bottom right
-	gEngfuncs.pTriAPI->TexCoord2f(0.7f, 1.0f);
-	gEngfuncs.pTriAPI->Vertex3f(x + halfScopeWidth, y + halfScopeHeight, 0);
-
-	//top right
-	gEngfuncs.pTriAPI->TexCoord2f(0.7f, 0.3f);
-	gEngfuncs.pTriAPI->Vertex3f(x + halfScopeWidth, y, 0);
-
-	gEngfuncs.pTriAPI->End();
-
-	//
-	// Bottom left Half scope.
-	//
-
-	x = ScreenWidth / 2 - halfScopeWidth;
-	y = ScreenHeight / 2;
-
-	gEngfuncs.pTriAPI->SpriteTexture(hSpriteModel, 2);
-
-	gEngfuncs.pTriAPI->CullFace(TRI_NONE);
-	gEngfuncs.pTriAPI->Begin(TRI_QUADS);
-
-	//top left
-	gEngfuncs.pTriAPI->TexCoord2f(0.3f, 0.0f);
-	gEngfuncs.pTriAPI->Vertex3f(x, y, 0);
-
-	//bottom left
-	gEngfuncs.pTriAPI->TexCoord2f(0.3f, 0.7f);
-	gEngfuncs.pTriAPI->Vertex3f(x, y + halfScopeHeight, 0);
-
-	//bottom right
-	gEngfuncs.pTriAPI->TexCoord2f(1.0f, 0.7f);
-	gEngfuncs.pTriAPI->Vertex3f(x + halfScopeWidth, y + halfScopeHeight, 0);
-
-	//top right
-	gEngfuncs.pTriAPI->TexCoord2f(1.0f, 0.0f);
-	gEngfuncs.pTriAPI->Vertex3f(x + halfScopeWidth, y, 0);
-
-	gEngfuncs.pTriAPI->End();
-
-
-	//
-	// Bottom right Half scope.
-	//
-
-
-	x = ScreenWidth / 2;
-	y = ScreenHeight / 2;
-
-	gEngfuncs.pTriAPI->SpriteTexture(hSpriteModel, 3);
-
-	gEngfuncs.pTriAPI->CullFace(TRI_NONE);
-	gEngfuncs.pTriAPI->Begin(TRI_QUADS);
-
-	//top left
-	gEngfuncs.pTriAPI->TexCoord2f(0.0f, 0.0f);
-	gEngfuncs.pTriAPI->Vertex3f(x, y, 0);
-
-	//bottom left
-	gEngfuncs.pTriAPI->TexCoord2f(0.0f, 0.7f);
-	gEngfuncs.pTriAPI->Vertex3f(x, y + halfScopeHeight, 0);
-
-	//bottom right
-	gEngfuncs.pTriAPI->TexCoord2f(0.7f, 0.7f);
-	gEngfuncs.pTriAPI->Vertex3f(x + halfScopeWidth, y + halfScopeHeight, 0);
-
-	//top right
-	gEngfuncs.pTriAPI->TexCoord2f(0.7f, 0.0f);
-	gEngfuncs.pTriAPI->Vertex3f(x + halfScopeWidth, y, 0);
-
-	gEngfuncs.pTriAPI->End();
-
-
-
-
-
-	gEngfuncs.pTriAPI->RenderMode(kRenderNormal); // normal
-	gEngfuncs.pTriAPI->Color4f(1.0, 0.0, 0.0, 1.0);
-
-	int w = ScreenWidth / 2 - halfScopeWidth + 5;
-
-	//
-	// Left black bar
-	//
-
-	gEngfuncs.pTriAPI->SpriteTexture(hSpriteModel, 0);
-
-	gEngfuncs.pTriAPI->CullFace(TRI_NONE);
-	gEngfuncs.pTriAPI->Begin(TRI_QUADS);
-
-	//top left
-	gEngfuncs.pTriAPI->TexCoord2f(0.0f, 0.0f);
-	gEngfuncs.pTriAPI->Vertex3f(0, 0, 0);
-
-	//bottom left
-	gEngfuncs.pTriAPI->TexCoord2f(0.0f, 1.0f);
-	gEngfuncs.pTriAPI->Vertex3f(0, ScreenHeight, 0);
-
-	//bottom right
-	gEngfuncs.pTriAPI->TexCoord2f(1.0f, 1.0f);
-	gEngfuncs.pTriAPI->Vertex3f(w, ScreenHeight, 0);
-
-	//top right
-	gEngfuncs.pTriAPI->TexCoord2f(1.0f, 0.0f);
-	gEngfuncs.pTriAPI->Vertex3f(w, 0, 0);
-
-	gEngfuncs.pTriAPI->End();
-
-
-	x = ScreenWidth / 2 + halfScopeWidth - 5;
-
-	//
-	// Right black bar
-	//
-
-	gEngfuncs.pTriAPI->CullFace(TRI_NONE);
-	gEngfuncs.pTriAPI->Begin(TRI_QUADS);
-	gEngfuncs.pTriAPI->Color4f(0.0, 1.0, 0.0, 1.0);
-
-	//top left
-	gEngfuncs.pTriAPI->TexCoord2f(0.0f, 0.0f);
-	gEngfuncs.pTriAPI->Vertex3f(x, 0, 0);
-
-	//bottom left
-	gEngfuncs.pTriAPI->TexCoord2f(0.0f, 1.0f);
-	gEngfuncs.pTriAPI->Vertex3f(x, ScreenHeight, 0);
-
-	//bottom right
-	gEngfuncs.pTriAPI->TexCoord2f(1.0f, 1.0f);
-	gEngfuncs.pTriAPI->Vertex3f(ScreenWidth, ScreenHeight, 0);
-
-	//top right
-	gEngfuncs.pTriAPI->TexCoord2f(1.0f, 0.0f);
-	gEngfuncs.pTriAPI->Vertex3f(ScreenWidth, 0, 0);
-
-	gEngfuncs.pTriAPI->End();
-
-
-
-	gEngfuncs.pTriAPI->RenderMode(kRenderNormal); //return to normal
-
-
-	vec3_t forward;
-	AngleVectors(v_angles, forward, NULL, NULL);
-	VectorScale(forward, 1024, forward);
-	VectorAdd(forward, v_origin, forward);
-	pmtrace_t * trace = gEngfuncs.PM_TraceLine(v_origin, forward, PM_TRACELINE_PHYSENTSONLY, 2, -1);
-
-	float dist = (trace->endpos - v_origin).Length();
-	float meters = dist * 0.021527f; // Convert hammer units to meters.
-
-
-	char szDistance[16];
-	sprintf(szDistance, "%.2f m", meters);
-
-	int len = strlen(szDistance);
-
-	int x1, y1;
-	x = ScreenWidth / 2 + ((float)halfScopeWidth * 0.7f);
-	y = ScreenHeight / 2 - ((float)halfScopeHeight * 0.0625f);
-
-	x1 = x + 1;
-	y1 = y + 1;
-
-	char c;
-	int i;
-	int r, g, b;
-
-	r = g = b = 15;
-
-	for (i = 0; i < len; i++)
+	if( !m_hSprite )
 	{
-		TextMessageDrawChar(x1, y1, szDistance[i], r, g, b);
-
-		c = szDistance[i];
-		x1 += gHUD.m_scrinfo.charWidths[c];
+		m_hSprite = SPR_Load( "sprites/scopeborder.spr" );
+		m_hSpriteModel = (struct model_s *)gEngfuncs.GetSpritePointer( m_hSprite );
 	}
 
-	r = 255;
-	g = b = 0;
+	gEngfuncs.GetViewAngles( angles );
+	AngleVectors( angles, forward, right, up );
 
-	for (i = 0; i < len; i++)
+	VectorMA( v_origin, 8192.0f, forward, dir );
+
+	trace = gEngfuncs.PM_TraceLine( v_origin, dir, PM_TRACELINE_PHYSENTSONLY, 2, -1 );
+	VectorSubtract( trace->endpos, v_origin, delta );
+
+	flDist = Length( delta );
+
+	if( flDist >= 118.0f )
+		sprintf( m_szDist, "%.2f m", flDist * 0.0254f );
+	else
+		strcpy( m_szDist, "-.-- m" );
+
+	x = tan( gHUD.m_iFOV * 0.008726646259971648 ) * 11.0;
+	y = x * 0.00390625;
+
+	gEngfuncs.pTriAPI->RenderMode( kRenderTransTexture ); //additive
+	gEngfuncs.pTriAPI->CullFace( TRI_NONE );
+
+	if( adjust_fov && adjust_fov->value )
+		VectorMA( v_origin, 8.0f, forward, dir );
+	else
+		VectorMA( v_origin, 10.0f, forward, dir );
+
+	frame = 0;
+
+	while( true )
 	{
-		TextMessageDrawChar(x, y, szDistance[i], r, g, b);
+		if( !gEngfuncs.pTriAPI->SpriteTexture( m_hSpriteModel, frame ) )
+			break;
 
-		c = szDistance[i];
-		x += gHUD.m_scrinfo.charWidths[c];
+		gEngfuncs.pTriAPI->Color4f( 1.0f, 1.0f, 1.0f, 1.0f );
+
+		gEngfuncs.pTriAPI->Begin( TRI_QUADS );
+		gEngfuncs.pTriAPI->Brightness( 1.0f );
+		gEngfuncs.pTriAPI->TexCoord2f( 0.0f, 1.0f );
+
+		switch( frame )
+		{
+		case 0:
+			VectorMA( dir, -x, right, vert );
+			break;
+		case 1:
+			VectorCopy( dir, vert );
+			break;
+		case 2:
+			VectorMA( dir, -x, up, vert );
+			VectorMA( vert, -x, right, vert );
+			break;
+		case 3:
+			VectorMA( dir, -x, up, vert );
+			break;
+		}
+
+		gEngfuncs.pTriAPI->Vertex3fv( vert );
+		gEngfuncs.pTriAPI->Brightness( 1.0f );
+		gEngfuncs.pTriAPI->TexCoord2f( 0.0f, 0.0f );
+
+		switch( frame )
+		{
+		case 0:
+			VectorMA( dir, x, up, vert );
+			VectorMA( vert, -x, right, vert );
+			break;
+		case 1:
+			VectorMA( dir, x, up, vert );
+			break;
+		case 2:
+			VectorMA( dir, y, up, vert );
+			VectorMA( vert, -x, right, vert );
+			break;
+		case 3:
+			VectorCopy( dir, vert );
+			break;
+		}
+
+		gEngfuncs.pTriAPI->Vertex3fv( vert );
+		gEngfuncs.pTriAPI->Brightness( 1.0f );
+		gEngfuncs.pTriAPI->TexCoord2f( 1.0f, 0.0f );
+
+		switch( frame )
+		{
+		case 0:
+			VectorMA( dir, x, up, vert );
+			break;
+		case 1:
+			VectorMA( dir, x, up, vert );
+			VectorMA( vert, x, right, vert );
+			break;
+		case 2:
+			VectorCopy( dir, vert );
+			break;
+		case 3:
+			VectorMA( dir, y, up, vert );
+			VectorMA( vert, x, right, vert );
+			break;
+		}
+
+		gEngfuncs.pTriAPI->Vertex3fv( vert );
+		gEngfuncs.pTriAPI->Brightness( 1.0f );
+		gEngfuncs.pTriAPI->TexCoord2f( 1.0f, 1.0f );
+
+		switch( frame )
+		{
+		case 0:
+			VectorCopy( dir, vert );
+			break;
+		case 1:
+			VectorMA( dir, x, right, vert );
+			break;
+		case 2:
+			VectorMA( dir, -x, up, vert );
+			break;
+		case 3:
+			VectorMA( dir, -x, up, vert );
+			VectorMA( vert, x, right, vert );
+			break;
+		}
+
+		gEngfuncs.pTriAPI->Vertex3fv( vert );
+		gEngfuncs.pTriAPI->End();
+
+		if( ++frame >= 4 )
+		{
+			gEngfuncs.pTriAPI->RenderMode( kRenderNormal );
+			cl_entity_t *viewmodel = gEngfuncs.GetViewModel();
+			viewmodel->curstate.rendermode = kRenderGlow;
+			viewmodel->curstate.renderamt = 5;
+			break;
+		}
 	}
 
-	// gEngfuncs.Con_Printf("CMLWBR trace distance: %.3f\n", meters);
+	return 1;
+}
+
+int CHudScope::DrawText()
+{
+	int w, h;
+
+	if( !bDrawScope )
+		return 1;
+
+	GetConsoleStringSize( m_szDist, &w, &h );
+
+	DrawSetTextColor( 1.0f, 0.25f, 0.25f );
+	DrawConsoleString( ScreenWidth * 0.82f - w, ScreenHeight * 0.49f - h, m_szDist );
 
 	return 1;
 }

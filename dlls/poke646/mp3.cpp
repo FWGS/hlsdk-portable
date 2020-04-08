@@ -46,7 +46,7 @@ void CAmbientMP3::Spawn( void )
 	}
 	else
 	{
-		ALERT( at_console, "ambient_mp3 without soundfile at: %f, %f, %f, removing self...\n", pev->origin.x, pev->origin.y, pev->origin.z );
+		ALERT( at_console, "ambient_mp3 without soundfile at: %f, %f, %f, removing self...\n", (double)pev->origin.x, (double)pev->origin.y, (double)pev->origin.z );
 		UTIL_Remove( this );
 	}
 }

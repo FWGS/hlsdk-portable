@@ -487,7 +487,7 @@ void CPipebomb::PipebombReload()
 
 	if( i < 2 )
 	{
-		m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5;
+		m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5f;
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase();
 		m_chargeReady = SATCHEL_RELOAD;
 	}

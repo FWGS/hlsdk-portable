@@ -36,6 +36,7 @@ extern client_sprite_t *GetSpriteList( client_sprite_t *pList, const char *psz, 
 extern cvar_t *sensitivity;
 cvar_t *cl_lw = NULL;
 cvar_t *cl_viewbob = NULL;
+cvar_t *adjust_fov = NULL;
 
 void ShutdownInput( void );
 
@@ -220,6 +221,7 @@ void CHud::Init( void )
 	m_pCvarDraw = CVAR_CREATE( "hud_draw", "1", FCVAR_ARCHIVE );
 	cl_lw = gEngfuncs.pfnGetCvarPointer( "cl_lw" );
 	cl_viewbob = CVAR_CREATE( "cl_viewbob", "0", FCVAR_ARCHIVE );
+	adjust_fov = gEngfuncs.pfnGetCvarPointer( "r_adjust_fov" ); // Xash3D widescreen fix
 
 	m_pSpriteList = NULL;
 
