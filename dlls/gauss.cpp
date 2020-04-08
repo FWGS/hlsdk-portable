@@ -60,7 +60,6 @@ float CXS::GetFullChargeTime( void )
 	return 4.0f;
 }
 
-
 void CXS::Spawn()
 {
 	Precache();
@@ -289,15 +288,15 @@ void CXS::SecondaryAttack()
 		if( m_pPlayer->m_flStartCharge < gpGlobals->time - 10.0f )
 		{
 			// Player charged up too long. Zap him.
-			EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_WEAPON, "weapons/xs_moan1.wav", 1.0, ATTN_NORM, 0, 80 + RANDOM_LONG( 0, 0x3f ) );
-			EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/xs_moan3.wav", 1.0, ATTN_NORM, 0, 75 + RANDOM_LONG( 0, 0x3f ) );
+			EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_WEAPON, "weapons/xs_moan1.wav", 1.0f, ATTN_NORM, 0, 80 + RANDOM_LONG( 0, 0x3f ) );
+			EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/xs_moan3.wav", 1.0f, ATTN_NORM, 0, 75 + RANDOM_LONG( 0, 0x3f ) );
 
 			m_fInAttack = 0;
-			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 2.2;
-			m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 1.0;
+			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 2.2f;
+			m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 1.0f;
 #ifndef CLIENT_DLL
 			m_pPlayer->TakeDamage( VARS( eoNullEntity ), VARS( eoNullEntity ), 50, DMG_POISON );
-			UTIL_ScreenFade( m_pPlayer, Vector( 192, 224, 0 ), 2, 0.5, 128, FFADE_IN );
+			UTIL_ScreenFade( m_pPlayer, Vector( 192, 224, 0 ), 2, 0.5f, 128, FFADE_IN );
 #endif
 			SendWeaponAnim( XS_IDLE );
 
@@ -380,12 +379,12 @@ void CXS::Fire( Vector vecOrigSrc, Vector vecDir, float flDamage )
 	pXSBeam->pev->owner = m_pPlayer->edict();
 	pXSBeam->Init();
 
-	EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_WEAPON, "weapons/xs_shot.wav", flDamage * 0.0025 + 0.5, ATTN_NORM, 0, 85 + RANDOM_LONG( 0, 16 ) );
+	EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_WEAPON, "weapons/xs_shot.wav", flDamage * 0.0025f + 0.5f, ATTN_NORM, 0, 85 + RANDOM_LONG( 0, 16 ) );
 
 	// This reliable event is used to stop the spinning sound
 	// It's delayed by a fraction of second to make sure it is delayed by 1 frame on the client
 	// It's sent reliably anyway, which could lead to other delays
-	PLAYBACK_EVENT_FULL( FEV_RELIABLE, m_pPlayer->edict(), m_usXSSpin, 0.01, (float *)&m_pPlayer->pev->origin, (float *)&m_pPlayer->pev->angles, 0.0, 0.0, 0, 0, 0, 1 );
+	PLAYBACK_EVENT_FULL( FEV_RELIABLE, m_pPlayer->edict(), m_usXSSpin, 0.01f, (float *)&m_pPlayer->pev->origin, (float *)&m_pPlayer->pev->angles, 0.0f, 0.0f, 0, 0, 0, 1 );
 
 	pev->effects |= EF_MUZZLEFLASH;
 }
@@ -395,9 +394,9 @@ void CXS::Reload()
 	if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0 || m_iClip == XS_MAX_CLIP )
 		return;
 
-	if( !m_fInAttack && DefaultReload( XS_MAX_CLIP, XS_RELOAD, 3.5 ) )
+	if( !m_fInAttack && DefaultReload( XS_MAX_CLIP, XS_RELOAD, 3.5f ) )
 	{
-		EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_WEAPON, "weapons/xs_reload.wav", 0.8, ATTN_NORM, 0, ATTN_NORM );
+		EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_WEAPON, "weapons/xs_reload.wav", 0.8f, ATTN_NORM, 0, ATTN_NORM );
 	}
 }
 
@@ -432,11 +431,11 @@ void CXS::WeaponIdle( void )
 	{
 		StartFire();
 		m_fInAttack = 0;
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 2.2;
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 2.2f;
 
 		// Need to set m_flNextPrimaryAttack so the weapon gets a chance to complete its secondary fire animation. - Solokiller
 		if( m_iClip <= 0 )
-			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5;
+			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5f;
 	}
 	else
 	{
@@ -465,7 +464,7 @@ class CXSAmmo : public CBasePlayerAmmo
 {
 	void EXPORT FallThink()
 	{
-		pev->nextthink = gpGlobals->time + 0.1;
+		pev->nextthink = gpGlobals->time + 0.1f;
 
 		if( pev->flags & FL_ONGROUND )
 		{
@@ -491,7 +490,7 @@ class CXSAmmo : public CBasePlayerAmmo
 		CBasePlayerAmmo::Spawn();
 
 		SetThink( &CXSAmmo::FallThink );
-		pev->nextthink = gpGlobals->time + 0.1;
+		pev->nextthink = gpGlobals->time + 0.1f;
 	}
 	void Precache( void )
 	{

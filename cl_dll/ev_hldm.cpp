@@ -731,9 +731,9 @@ void EV_TrainPitchAdjust( event_args_t *args )
 	us_params = (unsigned short)args->iparam1;
 	stop = args->bparam1;
 
-	m_flVolume = (float)( us_params & 0x003f ) / 40.0;
+	m_flVolume = (float)( us_params & 0x003f ) / 40.0f;
 	noise = (int)( ( ( us_params ) >> 12 ) & 0x0007 );
-	pitch = (int)( 10.0 * (float)( ( us_params >> 6 ) & 0x003f ) );
+	pitch = (int)( 10.0f * (float)( ( us_params >> 6 ) & 0x003f ) );
 
 	switch( noise )
 	{

@@ -256,7 +256,7 @@ void CMortar::MortarExplode( void )
 		WRITE_COORD( pev->origin.z + 32 );
 		WRITE_COORD( pev->origin.x );
 		WRITE_COORD( pev->origin.y );
-		WRITE_COORD( pev->origin.z + 32 + pev->dmg * 2 / .2 ); // reach damage radius over .3 seconds
+		WRITE_COORD( pev->origin.z + 32 + pev->dmg * 2 / 0.2f ); // reach damage radius over .3 seconds
 		WRITE_SHORT( m_blastwave );
 		WRITE_BYTE( 0 ); // startframe
 		WRITE_BYTE( 0 ); // framerate

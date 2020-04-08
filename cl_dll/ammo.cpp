@@ -533,7 +533,7 @@ int CHudAmmo::MsgFunc_HideWeapon( const char *pszName, int iSize, void *pbuf )
 		return 1;
 
 	if( !( gHUD.m_iHideHUDDisplay & HIDEHUD_WEAPONS ) )
-		gHUD.m_flScaleColorTime = gHUD.m_flTime + 2.0;
+		gHUD.m_flScaleColorTime = gHUD.m_flTime + 2.0f;
 
 	if( gHUD.m_iHideHUDDisplay & ( HIDEHUD_WEAPONS | HIDEHUD_ALL ) )
 	{

@@ -98,12 +98,14 @@ CXSBeam* CXSBeam::CXSBeamCreate( float flDamage )
 void CXSBeam::Init()
 {
 	int i;
+
 	for( i = 0; i < m_iBeamCount; i++ )
 	{
 		m_pBeam[i] = CSprite::SpriteCreate( "sprites/hotglow.spr", pev->origin, FALSE );
+
 		if( m_pBeam[i] )
 		{
-			m_pBeam[i]->pev->scale = 0.5;
+			m_pBeam[i]->pev->scale = 0.5f;
 			m_pBeam[i]->SetTransparency( kRenderGlow, 255, 255, 255, 255, kRenderFxNoDissipation );
 			UTIL_SetOrigin( m_pBeam[i]->pev, pev->origin );
 
@@ -148,7 +150,7 @@ void CXSBeam::BeamTouch( CBaseEntity *pOther )
 
 	UTIL_DecalTrace( &tr, DECAL_SMALLSCORCH1 + RANDOM_LONG( 0, 2 ) );
 
-	float flRadius = m_flDmg * 0.08 + 8;
+	float flRadius = m_flDmg * 0.08f + 8;
 
 	MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, pev->origin );
 		WRITE_BYTE( TE_DLIGHT );
@@ -175,7 +177,7 @@ void CXSBeam::BeamTouch( CBaseEntity *pOther )
 		m_pBeam[0]->pev->origin = tr.vecEndPos;
 
 		float flQuarterRadius = flRadius / 4.0f;
-		m_pBeam[0]->Expand(0, 255.0f / flQuarterRadius );
+		m_pBeam[0]->Expand( 0, 255.0f / flQuarterRadius );
 
 		SetThink( &CXSBeam::RemoveThink );
 		pev->nextthink = gpGlobals->time + flQuarterRadius;
@@ -198,11 +200,12 @@ void CXSBeam::FlyThink()
 
 	for( i = 0; i < m_iBeamCount; i++ )
 	{
-		float flDist = m_flDeflectionDot[i] * 360.0f * ( M_PI / 180.0f ) + flCenter;
+		float flDist = m_flDeflectionDot[i] * 360.0f * ( M_PI_F / 180.0f ) + flCenter;
 		Vector vecSin = sin( flDist ) * m_flDeflectionDist * gpGlobals->v_up;
 		Vector vecCos = cos( flDist ) * m_flDeflectionDist * gpGlobals->v_right;
 		m_pBeam[i]->pev->origin = pev->origin + vecSin + vecCos;
 	}
+
 	pev->nextthink = gpGlobals->time + 0.05f;
 }
 

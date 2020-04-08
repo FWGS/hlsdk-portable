@@ -24,17 +24,16 @@
 #include	"game.h"
 #include	"nail.h"
 
-
 LINK_ENTITY_TO_CLASS( nailgun_nail, CNailGunNail )
 
 CNailGunNail *CNailGunNail::NailCreate( BOOL bIsBradnailer )
 {
 	// Create a new entity with CCrossbowBolt private data
-	CNailGunNail *pNail = GetClassPtr((CNailGunNail *)NULL);
-	pNail->pev->classname = MAKE_STRING("nailgun_nail");
+	CNailGunNail *pNail = GetClassPtr( (CNailGunNail *)NULL );
+	pNail->pev->classname = MAKE_STRING( "nailgun_nail" );
 	pNail->m_bIsBradnailer = bIsBradnailer;
 	pNail->Spawn();
-	
+
 	return pNail;
 }
 
@@ -44,24 +43,24 @@ void CNailGunNail::Spawn()
 	pev->movetype = MOVETYPE_FLY;
 	pev->solid = SOLID_BBOX;
 
-	pev->gravity = 0.5;
+	pev->gravity = 0.5f;
 
-	SET_MODEL(ENT(pev), "models/nail.mdl");
+	SET_MODEL( ENT( pev ), "models/nail.mdl" );
 
-	UTIL_SetOrigin(pev, pev->origin);
-	UTIL_SetSize(pev, g_vecZero, g_vecZero);
+	UTIL_SetOrigin( pev, pev->origin );
+	UTIL_SetSize( pev, g_vecZero, g_vecZero );
 
-	SetTouch(&CNailGunNail::NailTouch);
-	SetThink(&CNailGunNail::BubbleThink);
-	pev->nextthink = gpGlobals->time + 0.2;
+	SetTouch( &CNailGunNail::NailTouch );
+	SetThink( &CNailGunNail::BubbleThink );
+	pev->nextthink = gpGlobals->time + 0.2f;
 }
 
 
 void CNailGunNail::Precache()
 {
-	PRECACHE_MODEL("models/nail.mdl");
-	PRECACHE_SOUND("weapons/brad_hit1.wav");
-	PRECACHE_SOUND("weapons/brad_hit2.wav");
+	PRECACHE_MODEL( "models/nail.mdl" );
+	PRECACHE_SOUND( "weapons/brad_hit1.wav" );
+	PRECACHE_SOUND( "weapons/brad_hit2.wav" );
 }
 
 int CNailGunNail::Classify()
@@ -87,6 +86,7 @@ void CNailGunNail::NailTouch( CBaseEntity *pOther )
 		ApplyMultiDamage( pev, pevOwner );
 
 		pev->velocity = g_vecZero;
+
 		// play body "thwack" sound
 		switch( RANDOM_LONG( 0, 1 ) )
 		{
@@ -106,7 +106,7 @@ void CNailGunNail::NailTouch( CBaseEntity *pOther )
 		// EMIT_SOUND_DYN(ENT(pev), CHAN_BODY, "weapons/brad_hit1.wav", RANDOM_FLOAT(0.95, 1.0), ATTN_NORM, 0, 98 + RANDOM_LONG(0, 7));
 
 		SetThink( &CBaseEntity::SUB_Remove );
-		pev->nextthink = gpGlobals->time;// this will get changed below if the bolt is allowed to stick in what it hit.
+		pev->nextthink = gpGlobals->time; // this will get changed below if the bolt is allowed to stick in what it hit.
 
 		if( FClassnameIs( pOther->pev, "worldspawn" ) )
 		{
@@ -119,7 +119,7 @@ void CNailGunNail::NailTouch( CBaseEntity *pOther )
 			pev->velocity = g_vecZero;
 			pev->avelocity.z = 0;
 			pev->angles.z = RANDOM_LONG( 0, 360 );
-			pev->nextthink = gpGlobals->time + 2.0;
+			pev->nextthink = gpGlobals->time + 2.0f;
 		}
 
 		if( UTIL_PointContents( pev->origin ) != CONTENTS_WATER && RANDOM_LONG( 0, 4 ) == 4 )
@@ -131,10 +131,10 @@ void CNailGunNail::NailTouch( CBaseEntity *pOther )
 
 void CNailGunNail::BubbleThink()
 {
-	pev->nextthink = gpGlobals->time + 0.1;
+	pev->nextthink = gpGlobals->time + 0.1f;
 
 	if( pev->waterlevel == 0 )
 		return;
                         
-	UTIL_BubbleTrail( pev->origin - pev->velocity * 0.1, pev->origin, 1 );
+	UTIL_BubbleTrail( pev->origin - pev->velocity * 0.1f, pev->origin, 1 );
 }

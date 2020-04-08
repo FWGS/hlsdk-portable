@@ -24,9 +24,9 @@
 class CFireTrail : public CBaseEntity
 {
 public:
-	void Spawn(void);
-	void Think(void);
-	void Touch(CBaseEntity *pOther);
+	void Spawn( void );
+	void Think( void );
+	void Touch( CBaseEntity *pOther );
 	int ObjectCaps(void) { return FCAP_DONT_SAVE; }
 
 	int Save( CSave &save );
@@ -36,7 +36,7 @@ private:
 	int m_spriteScale; // what's the exact fireball sprite scale?
 };
 
-LINK_ENTITY_TO_CLASS( fire_trail, CFireTrail );
+LINK_ENTITY_TO_CLASS( fire_trail, CFireTrail )
 
 TYPEDESCRIPTION CFireTrail::m_SaveData[] =
 {
@@ -47,37 +47,37 @@ IMPLEMENT_SAVERESTORE( CFireTrail, CBaseEntity )
 
 void CFireTrail::Spawn( void )
 {
-	pev->velocity = RANDOM_FLOAT(100.0f, 150.0f) * pev->angles;
+	pev->velocity = RANDOM_FLOAT( 100.0f, 150.0f ) * pev->angles;
 	if( RANDOM_LONG( 0, 1 ) )
-		pev->velocity.x += RANDOM_FLOAT(-300.f, -100.f);
+		pev->velocity.x += RANDOM_FLOAT(-300.0f, -100.0f);
 	else
-		pev->velocity.x += RANDOM_FLOAT(100.f, 300.f);
+		pev->velocity.x += RANDOM_FLOAT(100.0f, 300.0f);
 
 	if( RANDOM_LONG( 0, 1 ) )
-		pev->velocity.y += RANDOM_FLOAT(-300.f, -100.f);
+		pev->velocity.y += RANDOM_FLOAT(-300.0f, -100.0f);
 	else
-		pev->velocity.y += RANDOM_FLOAT(100.f, 300.f);
+		pev->velocity.y += RANDOM_FLOAT(100.0f, 300.0f);
 
 	if( pev->velocity.z >= 0 )
-		pev->velocity.z += 200;
+		pev->velocity.z += 200.0f;
 	else
-		pev->velocity.z -= 200;
+		pev->velocity.z -= 200.0f;
 
 	m_spriteScale = RANDOM_LONG( 7, 13 );
 	pev->movetype = MOVETYPE_BOUNCE;
-	pev->gravity = 0.5;
-	pev->nextthink = gpGlobals->time + 0.1;
+	pev->gravity = 0.5f;
+	pev->nextthink = gpGlobals->time + 0.1f;
 	pev->solid = SOLID_NOT;
-	SET_MODEL(edict(), "models/grenade.mdl");	// Need a model, just use the grenade, we don't draw it anyway
-	UTIL_SetSize(pev, g_vecZero, g_vecZero);
+	SET_MODEL( edict(), "models/grenade.mdl" );	// Need a model, just use the grenade, we don't draw it anyway
+	UTIL_SetSize( pev, g_vecZero, g_vecZero );
 	pev->effects |= EF_NODRAW;
-	pev->speed = RANDOM_FLOAT(0.5, 1.5);
+	pev->speed = RANDOM_FLOAT( 0.5f, 1.5f );
 	pev->maxspeed = pev->speed;
 
 	pev->angles = g_vecZero;
 }
 
-void CFireTrail::Think(void)
+void CFireTrail::Think( void )
 {
 	MESSAGE_BEGIN( MSG_PAS, SVC_TEMPENTITY, pev->origin );
 		WRITE_BYTE( TE_EXPLOSION);
@@ -90,22 +90,23 @@ void CFireTrail::Think(void)
 		WRITE_BYTE( TE_EXPLFLAG_NOSOUND );
 	MESSAGE_END();
 
-	pev->speed -= 0.1;
-	if (pev->speed > 0)
-		pev->nextthink = gpGlobals->time + 0.1;
+	pev->speed -= 0.1f;
+
+	if( pev->speed > 0 )
+		pev->nextthink = gpGlobals->time + 0.1f;
 	else
-		UTIL_Remove(this);
+		UTIL_Remove( this );
 
 	pev->flags &= ~FL_ONGROUND;
 }
 
-void CFireTrail::Touch(CBaseEntity *pOther)
+void CFireTrail::Touch( CBaseEntity *pOther )
 {
-	if (pev->flags & FL_ONGROUND)
-		pev->velocity = pev->velocity * 0.1;
+	if( pev->flags & FL_ONGROUND )
+		pev->velocity = pev->velocity * 0.1f;
 	else
-		pev->velocity = pev->velocity * 0.6;
+		pev->velocity = pev->velocity * 0.6f;
 
-	if ((pev->velocity.x*pev->velocity.x + pev->velocity.y*pev->velocity.y) < 10.0)
+	if( ( pev->velocity.x * pev->velocity.x + pev->velocity.y * pev->velocity.y ) < 10.0f )
 		pev->speed = 0;
 }
