@@ -1,9 +1,9 @@
 /***
 *
-*	Copyright (c) 1996-2001, Valve LLC. All rights reserved.
-*
-*	This product contains software technology licensed from Id
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
+*	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
+*	
+*	This product contains software technology licensed from Id 
+*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
 *	All Rights Reserved.
 *
 *   Use, distribution, and modification of this source code and/or resulting
@@ -16,43 +16,45 @@
 #include "extdll.h"
 #include "util.h"
 #include "cbase.h"
+#include "monsters.h"
 #include "weapons.h"
+#include "nodes.h"
 #include "player.h"
 #include "gamerules.h"
-#include "flashlightspot.h"
 
-LINK_ENTITY_TO_CLASS(flashlight_spot, CFlashlightSpot);
+LINK_ENTITY_TO_CLASS( wall_spot, CWallSpot )
 
 //=========================================================
 //=========================================================
-CFlashlightSpot *CFlashlightSpot::CreateSpot(void)
+CWallSpot *CWallSpot::CreateSpot( void )
 {
-	CFlashlightSpot *pSpot = GetClassPtr((CFlashlightSpot *)NULL);
+	CWallSpot *pSpot = GetClassPtr( (CWallSpot *)NULL );
 	pSpot->Spawn();
 
-	pSpot->pev->classname = MAKE_STRING("flashlight_spot");
+	pSpot->pev->classname = MAKE_STRING( "wall_spot" );
 
 	return pSpot;
 }
 
 //=========================================================
 //=========================================================
-void CFlashlightSpot::Spawn(void)
+void CWallSpot::Spawn( void )
 {
 	Precache();
 	pev->movetype = MOVETYPE_NONE;
 	pev->solid = SOLID_NOT;
 
-	pev->rendermode = kRenderGlow; // kRenderGlow
+	pev->rendermode = kRenderGlow;
 	pev->renderfx = kRenderFxNoDissipation;
-	pev->renderamt = 128;
-	pev->scale = 4;
+	pev->scale = 4.0f;
+	pev->renderamt = 90;
 
-	SET_MODEL(ENT(pev), "sprites/beam2.spr");
-	UTIL_SetOrigin(pev, pev->origin);
-};
+	SET_MODEL( ENT( pev ), "sprites/beam2.spr" );
+	UTIL_SetOrigin( pev, pev->origin );
+}
 
-void CFlashlightSpot::Precache(void)
+void CWallSpot::Precache( void )
 {
-	PRECACHE_MODEL("sprites/beam2.spr");
-};
+	PRECACHE_MODEL( "sprites/beam2.spr" );
+}
+

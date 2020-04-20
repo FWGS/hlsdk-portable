@@ -45,20 +45,7 @@ void CGlock::Spawn()
 	m_iId = WEAPON_GLOCK;
 	SET_MODEL( ENT( pev ), "models/w_9mmhandgun.mdl" );
 
-	SetClipModel( "models/w_9mmclip.mdl" );
-
-	// ==========================================
-	// Code changes for- Night at the Office:
-	// ==========================================
-	//
-	// -Randomised Ammo. Picking up a gun from a fallen terrorist 
-	//  will not give you a pre-defined amount of bullets. The exact 
-	//  number is random (depending on the gun and clip size), which 
-	//  means the player will constantly need to keep a check on the 
-	//  ammo as it will no longer be 'comfortable' for the player to 
-	//  waste ammo.
- 
-	m_iDefaultAmmo = DefaultAmmoBySkill( GLOCK_MAX_CLIP, gSkillData.iSkillLevel );
+	m_iDefaultAmmo = GLOCK_MAX_CLIP;
 
 	FallInit();// get ready to fall down.
 }
@@ -69,7 +56,8 @@ void CGlock::Precache( void )
 	PRECACHE_MODEL( "models/w_9mmhandgun.mdl" );
 	PRECACHE_MODEL( "models/p_9mmhandgun.mdl" );
 
-	m_iShell = PRECACHE_MODEL( "models/shell.mdl" );// brass shell
+	m_iShell	= PRECACHE_MODEL( "models/shell.mdl" );// brass shell
+	m_iClipModel	= PRECACHE_MODEL( "models/w_9mmclip.mdl" );
 
 	PRECACHE_SOUND( "items/9mmclip1.wav" );
 	PRECACHE_SOUND( "items/9mmclip2.wav" );
@@ -223,17 +211,31 @@ void CGlock::Reload( void )
 
 	int iResult;
 
-	if( m_iClip == 0 )
-		iResult = DefaultReload( GLOCK_MAX_CLIP, GLOCK_RELOAD, 1.5f );
-	else
-		iResult = DefaultReload( GLOCK_MAX_CLIP, GLOCK_RELOAD_NOT_EMPTY, 1.5f );
-
-	if( iResult )
+	if( m_iClip != GLOCK_MAX_CLIP && m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] > 0 )
 	{
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
+		UTIL_MakeVectors( m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle );
 
-		// Unblock primary attack.
-		m_fInAttack = 0;
+		Vector vecShellVelocity = m_pPlayer->pev->velocity
+						+ gpGlobals->v_right * RANDOM_FLOAT( -10, 10 )
+						+ gpGlobals->v_forward * 23;
+
+		EjectClip( pev->origin + m_pPlayer->pev->view_ofs
+				+ gpGlobals->v_up * -22
+				+ gpGlobals->v_forward * 10
+				+ gpGlobals->v_right * 2, vecShellVelocity, pev->angles.y, m_iClipModel, TE_BOUNCE_SHELL );
+
+		if( m_iClip == 0 )
+			iResult = DefaultReload( GLOCK_MAX_CLIP, GLOCK_RELOAD, 1.5f );
+		else
+			iResult = DefaultReload( GLOCK_MAX_CLIP, GLOCK_RELOAD_NOT_EMPTY, 1.5f );
+
+		if( iResult )
+		{
+			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
+
+			// Unblock primary attack.
+			m_fInAttack = 0;
+		}
 	}
 }
 

@@ -40,17 +40,12 @@ LINK_ENTITY_TO_CLASS( weapon_9mmAR, CMP5 )
 
 //=========================================================
 //=========================================================
-int CMP5::SecondaryAmmoIndex( void )
-{
-	return m_iSecondaryAmmoType;
-}
 
 void CMP5::Spawn()
 {
 	pev->classname = MAKE_STRING( "weapon_9mmAR" ); // hack to allow for old names
 	Precache();
 	SET_MODEL( ENT( pev ), "models/w_AK47.mdl" );
-	SetClipModel( "models/w_akclip.mdl" );
 
 	m_iId = WEAPON_MP5;
 
@@ -65,7 +60,7 @@ void CMP5::Spawn()
 	//  ammo as it will no longer be 'comfortable' for the player to 
 	//  waste ammo.
 
-	m_iDefaultAmmo = DefaultAmmoBySkill( MP5_MAX_CLIP, gSkillData.iSkillLevel );
+	m_iDefaultAmmo = RANDOM_LONG( 1, 37 );
 
 	FallInit();// get ready to fall down.
 }
@@ -76,11 +71,11 @@ void CMP5::Precache( void )
 	PRECACHE_MODEL( "models/w_AK47.mdl" );
 	PRECACHE_MODEL( "models/p_AK47.mdl" );
 
-	m_iShell = PRECACHE_MODEL( "models/shell.mdl" );// brass shellTE_MODEL
+	m_iShell	= PRECACHE_MODEL( "models/shell.mdl" );// brass shellTE_MODEL
+	m_iClipModel	= PRECACHE_MODEL( "models/w_akclip.mdl" );
 
 	PRECACHE_MODEL( "models/grenade.mdl" );	// grenade
 
-	PRECACHE_MODEL( "models/w_akclip.mdl" );
 	PRECACHE_SOUND( "items/9mmclip1.wav" );
 
 	PRECACHE_SOUND( "items/clipinsert1.wav" );
@@ -96,7 +91,7 @@ void CMP5::Precache( void )
 	PRECACHE_SOUND( "weapons/357_cock1.wav" );
 
 	m_usMP5 = PRECACHE_EVENT( 1, "events/mp5.sc" );
-	m_usMP52 = PRECACHE_EVENT( 1, "events/mp52.sc" );
+	// m_usMP52 = PRECACHE_EVENT( 1, "events/mp52.sc" );
 }
 
 int CMP5::GetItemInfo( ItemInfo *p )
@@ -208,6 +203,20 @@ void CMP5::Reload( void )
 		return;
 
 	DefaultReload( MP5_MAX_CLIP, MP5_RELOAD, 1.5f );
+
+	if( m_iClip != MP5_MAX_CLIP && m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] > 0)
+	{
+		UTIL_MakeVectors( m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle );
+
+		Vector vecShellVelocity = m_pPlayer->pev->velocity
+						+ gpGlobals->v_right * RANDOM_FLOAT( -10, 10 )
+						+ gpGlobals->v_forward * 23;
+
+		EjectClip( pev->origin + m_pPlayer->pev->view_ofs
+				+ gpGlobals->v_up * -22
+				+ gpGlobals->v_forward * 10
+				+ gpGlobals->v_right * 2, vecShellVelocity, pev->angles.y, m_iClipModel, TE_BOUNCE_SHELL );
+	}
 }
 
 void CMP5::WeaponIdle( void )
@@ -234,12 +243,6 @@ void CMP5::WeaponIdle( void )
 	SendWeaponAnim( iAnim );
 
 	m_flTimeWeaponIdle = UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 ); // how long till we do this again.
-}
-
-BOOL CMP5::IsUseable()
-{
-	//Can be used if the player has AR grenades. - Solokiller
-	return CBasePlayerWeapon::IsUseable() || m_pPlayer->m_rgAmmo[m_iSecondaryAmmoType] > 0;
 }
 
 class CMP5AmmoClip : public CBasePlayerAmmo

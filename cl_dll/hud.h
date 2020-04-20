@@ -581,23 +581,6 @@ private:
 //
 //-----------------------------------------------------
 //
-class CHudGlow : public CHudBase
-{
-public:
-	int Init( void );
-	int VidInit( void );
-	int Draw( float flTime );
-	int MsgFunc_Glow( const char *pszName, int iSize, void *pbuf );
-
-	void DrawGlow( void );
-private:
-
-	HSPRITE m_hSprite;
-};
-
-//
-//-----------------------------------------------------
-//
 class CHudDeathVision : public CHudBase
 {
 public:
@@ -690,7 +673,6 @@ public:
 	CHudTextMessage m_TextMessage;
 	CHudStatusIcons m_StatusIcons;
 	CHudCinematic	m_Cinematic;
-	CHudGlow	m_Glow;
 	CHudDeathVision	m_DeathVision;
 	CHudScoreboard	m_Scoreboard;
 	CHudMOTD	m_MOTD;

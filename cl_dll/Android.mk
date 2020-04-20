@@ -24,7 +24,6 @@ LOCAL_CFLAGS += -DCLIENT_DLL=1
 
 SRCS=
 SRCS_C=
-SRCS+=./noffice/glow.cpp
 SRCS+=./noffice/pain.cpp
 SRCS+=./noffice/cinematic.cpp
 SRCS+=./noffice/deathvision.cpp

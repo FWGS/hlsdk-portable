@@ -193,7 +193,6 @@ int gmsgStatusText = 0;
 int gmsgStatusValue = 0;
 
 int gmsgCinematic = 0;
-int gmsgGlow = 0;
 int gmsgDeathVision = 0;
 
 void LinkUserMessages( void )
@@ -244,7 +243,6 @@ void LinkUserMessages( void )
 	gmsgStatusValue = REG_USER_MSG( "StatusValue", 3 );
 
 	gmsgCinematic = REG_USER_MSG( "Cinematic", 1 );
-	gmsgGlow = REG_USER_MSG( "Glow", 1 );
 	gmsgDeathVision = REG_USER_MSG( "DeathVision", 1 );
 }
 
@@ -3223,10 +3221,34 @@ BOOL CBasePlayer::FlashlightIsOn( void )
 
 void CBasePlayer::FlashlightTurnOn( void )
 {
+	if( !g_pGameRules->FAllowFlashlight() )
+	{
+		return;
+	}
+
+	if( (pev->weapons & ( 1 << WEAPON_SUIT ) ) )
+	{
+		EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, SOUND_FLASHLIGHT_ON, 1.0, ATTN_NORM, 0, PITCH_NORM );
+		SetBits( pev->effects, EF_DIMLIGHT );
+		MESSAGE_BEGIN( MSG_ONE, gmsgFlashlight, NULL, pev );
+			WRITE_BYTE( 1 );
+			WRITE_BYTE( m_iFlashBattery );
+		MESSAGE_END();
+
+		m_flFlashLightTime = FLASH_DRAIN_TIME + gpGlobals->time;
+	}
 }
 
 void CBasePlayer::FlashlightTurnOff( void )
 {
+	EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, SOUND_FLASHLIGHT_OFF, 1.0, ATTN_NORM, 0, PITCH_NORM );
+	ClearBits( pev->effects, EF_DIMLIGHT );
+	MESSAGE_BEGIN( MSG_ONE, gmsgFlashlight, NULL, pev );
+		WRITE_BYTE( 0 );
+		WRITE_BYTE( m_iFlashBattery );
+	MESSAGE_END();
+
+	m_flFlashLightTime = FLASH_CHARGE_TIME + gpGlobals->time;
 }
 
 /*
@@ -3299,15 +3321,6 @@ void CBasePlayer::ImpulseCommands()
 			gmsgLogo = 0;
 		break;
 	case 100:
-	{
-		// If the player has the torch and is not using it,
-		// requested to turn on the flashlight,
-		// change weapon to flashlight.
-		if( ( pev->weapons & ( 1 << WEAPON_TORCH ) ) && m_pActiveItem && !FClassnameIs( m_pActiveItem->pev, "weapon_torch" ) )
-		{
-			SwitchToFlashlight();
-		}
-	}
 	case 201:
 		// paint decal
 		if( gpGlobals->time < m_flNextDecalTime )
@@ -3676,16 +3689,6 @@ void CBasePlayer::ItemPostFrame()
 	// check if the player is using a tank
 	if( m_pTank != 0 )
 		return;
-
-	if( m_pActiveItem )
-	{
-		CBasePlayerWeapon*pWeapon = (CBasePlayerWeapon*)m_pActiveItem;
-
-		// This function always gets called to update the current weapon,
-		// regardless of next attack time.
-		if( pWeapon )
-			pWeapon->ItemPostFrame_Always();
-	}
 
 #if defined( CLIENT_WEAPONS )
 	if( m_flNextAttack > 0 )
@@ -4591,27 +4594,6 @@ void CBasePlayer::UpdateStamina( void )
 	}
 
 	// ALERT( at_console, "Player stamina level: %d\n", m_iStaminaLevel );
-}
-
-void CBasePlayer::SwitchToFlashlight( void )
-{
-	// go through all of the weapons and find the torch weapon.
-	for( int i = 0; i < MAX_ITEM_TYPES; i++ )
-	{
-		CBasePlayerItem *pPlayerItem = m_rgpPlayerItems[i];
-
-		while( pPlayerItem )
-		{
-			if( pPlayerItem && pPlayerItem->m_iId == WEAPON_TORCH )
-			{
-				// Switch to torch.
-				SwitchWeapon( pPlayerItem );
-				return;
-			}
-
-			pPlayerItem = pPlayerItem->m_pNext;
-		}
-	}
 }
 
 //=========================================================

@@ -326,8 +326,6 @@ public:
 
 	int m_iAutoWepSwitch;
 
-	void SwitchToFlashlight( void );
-
 	void UpdateStamina( void );
 	int m_iStaminaLevel;
 	float m_flStaminaStart;

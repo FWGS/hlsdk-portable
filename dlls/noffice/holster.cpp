@@ -34,15 +34,15 @@ enum holster_e {
 	HOLSTER_ATTACK3MISS,
 	HOLSTER_ATTACK3HIT,
 	HOLSTER_IDLE2,
-	HOLSTER_IDLE3,
+	HOLSTER_IDLE3
 };
 
-LINK_ENTITY_TO_CLASS(weapon_holster, CHolster);
+LINK_ENTITY_TO_CLASS( weapon_holster, CHolster )
 
 void CHolster::Spawn()
 {
 	Precache();
-	SET_MODEL(ENT(pev), "models/w_holster.mdl");
+	SET_MODEL( ENT( pev ), "models/w_holster.mdl" );
 	m_iId = WEAPON_HOLSTER;
 	m_iClip = -1;
 
@@ -50,16 +50,16 @@ void CHolster::Spawn()
 }
 
 
-void CHolster::Precache(void)
+void CHolster::Precache()
 {
-	PRECACHE_MODEL("models/v_holster.mdl");
-	PRECACHE_MODEL("models/w_holster.mdl");
-	PRECACHE_MODEL("models/p_holster.mdl");
+	PRECACHE_MODEL( "models/v_holster.mdl" );
+	PRECACHE_MODEL( "models/w_holster.mdl" );
+	PRECACHE_MODEL( "models/p_holster.mdl" );
 }
 
-int CHolster::GetItemInfo(ItemInfo *p)
+int CHolster::GetItemInfo( ItemInfo *p )
 {
-	p->pszName = STRING(pev->classname);
+	p->pszName = STRING( pev->classname );
 	p->pszAmmo1 = NULL;
 	p->iMaxAmmo1 = -1;
 	p->pszAmmo2 = NULL;
@@ -73,12 +73,12 @@ int CHolster::GetItemInfo(ItemInfo *p)
 	return 1;
 }
 
-int CHolster::AddToPlayer(CBasePlayer *pPlayer)
+int CHolster::AddToPlayer( CBasePlayer *pPlayer )
 {
-	if (CBasePlayerWeapon::AddToPlayer(pPlayer))
+	if( CBasePlayerWeapon::AddToPlayer( pPlayer ) )
 	{
-		MESSAGE_BEGIN(MSG_ONE, gmsgWeapPickup, NULL, pPlayer->pev);
-		WRITE_BYTE(m_iId);
+		MESSAGE_BEGIN( MSG_ONE, gmsgWeapPickup, NULL, pPlayer->pev );
+			WRITE_BYTE( m_iId );
 		MESSAGE_END();
 		return TRUE;
 	}
@@ -87,20 +87,13 @@ int CHolster::AddToPlayer(CBasePlayer *pPlayer)
 
 BOOL CHolster::Deploy()
 {
-	return DefaultDeploy("models/v_holster.mdl", "models/p_holster.mdl", HOLSTER_DRAW, "holster");
+	return DefaultDeploy( "models/v_holster.mdl", "models/p_holster.mdl", HOLSTER_DRAW, "holster" );
 }
 
-void CHolster::Holster(int skiplocal /*= 0*/)
+void CHolster::Holster( int skiplocal /*= 0*/ )
 {
+	SendWeaponAnim( HOLSTER_HOLSTER );
+
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5f;
 }
 
-void CHolster::WeaponIdle(void)
-{
-	if (m_flTimeWeaponIdle > UTIL_WeaponTimeBase())
-		return;
-
-	SendWeaponAnim(HOLSTER_IDLE);
-
-	m_flTimeWeaponIdle = UTIL_SharedRandomFloat(m_pPlayer->random_seed, 10, 15); // how long till we do this again.
-}

@@ -112,7 +112,6 @@ Render any triangles with transparent rendermode needs here
 */
 void DLLEXPORT HUD_DrawTransparentTriangles( void )
 {
-	gHUD.m_Glow.DrawGlow();
 #if defined( TEST_IT )
 //	Draw_Triangles();
 #endif

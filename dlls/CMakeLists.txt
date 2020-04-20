@@ -48,7 +48,8 @@ set (SVDLL_SOURCES
 	noffice/dave.cpp
 	noffice/female.cpp
 	noffice/clip.cpp
-	noffice/flashlightspot.cpp
+	noffice/lightspot.cpp
+	noffice/wallspot.cpp
 	noffice/furniture_passable.cpp
 	noffice/holster.cpp
 	noffice/news.cpp

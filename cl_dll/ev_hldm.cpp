@@ -54,25 +54,13 @@ void EV_FireGlock1( struct event_args_s *args );
 void EV_FireGlock2( struct event_args_s *args );
 void EV_FireShotGunSingle( struct event_args_s *args );
 void EV_FireShotGunDouble( struct event_args_s *args );
+void EV_FireShotGunX( struct event_args_s *args );
 void EV_FireMP5( struct event_args_s *args );
-void EV_FireMP52( struct event_args_s *args );
 void EV_FirePython( struct event_args_s *args );
 void EV_FireGauss( struct event_args_s *args );
 void EV_SpinGauss( struct event_args_s *args );
-void EV_Crowbar( struct event_args_s *args );
-void EV_FireCrossbow( struct event_args_s *args );
-void EV_FireCrossbow2( struct event_args_s *args );
-void EV_FireRpg( struct event_args_s *args );
-void EV_EgonFire( struct event_args_s *args );
-void EV_EgonStop( struct event_args_s *args );
-void EV_HornetGunFire( struct event_args_s *args );
-void EV_TripmineFire( struct event_args_s *args );
-void EV_SnarkFire( struct event_args_s *args );
 
 void EV_TrainPitchAdjust( struct event_args_s *args );
-
-void EV_Torch( struct event_args_s *args );
-void EV_FireShotGunX( struct event_args_s *args );
 }
 
 #define VECTOR_CONE_1DEGREES Vector( 0.00873f, 0.00873f, 0.00873f )
@@ -493,7 +481,7 @@ void EV_FireGlock1( event_args_t *args )
 		V_PunchAxis( 0, -2.0 );
 	}
 
-	EV_GetDefaultShellInfo( args, origin, velocity, ShellVelocity, ShellOrigin, forward, right, up, 20, -12, 4 );
+	EV_GetDefaultShellInfo( args, origin, velocity, ShellVelocity, ShellOrigin, forward, right, up, 13, -8, 6 );
 
 	EV_EjectBrass( ShellOrigin, ShellVelocity, angles[YAW], shell, TE_BOUNCE_SHELL );
 
@@ -685,7 +673,7 @@ void EV_FireMP5( event_args_t *args )
 		V_PunchAxis( 0, gEngfuncs.pfnRandomFloat( -2, 2 ) );
 	}
 
-	EV_GetDefaultShellInfo( args, origin, velocity, ShellVelocity, ShellOrigin, forward, right, up, 20, -12, 4 );
+	EV_GetDefaultShellInfo( args, origin, velocity, ShellVelocity, ShellOrigin, forward, right, up, 15, -10, 5 );
 
 	EV_EjectBrass ( ShellOrigin, ShellVelocity, angles[YAW], shell, TE_BOUNCE_SHELL ); 
 
@@ -711,36 +699,6 @@ void EV_FireMP5( event_args_t *args )
 		EV_HLDM_FireBullets( idx, forward, right, up, 1, vecSrc, vecAiming, 8192, BULLET_PLAYER_MP5, 2, &g_tracerCount[idx - 1], args->fparam1, args->fparam2 );
 	}
 }
-
-// We only predict the animation and sound
-// The grenade is still launched from the server.
-void EV_FireMP52( event_args_t *args )
-{
-	int idx;
-	vec3_t origin;
-
-	idx = args->entindex;
-	VectorCopy( args->origin, origin );
-
-	if( EV_IsLocal( idx ) )
-	{
-		gEngfuncs.pEventAPI->EV_WeaponAnimation( MP5_LAUNCH, 2 );
-		V_PunchAxis( 0, -10 );
-	}
-
-	switch( gEngfuncs.pfnRandomLong( 0, 1 ) )
-	{
-	case 0:
-		gEngfuncs.pEventAPI->EV_PlaySound( idx, origin, CHAN_WEAPON, "weapons/glauncher.wav", 1, ATTN_NORM, 0, 94 + gEngfuncs.pfnRandomLong( 0, 0xf ) );
-		break;
-	case 1:
-		gEngfuncs.pEventAPI->EV_PlaySound( idx, origin, CHAN_WEAPON, "weapons/glauncher2.wav", 1, ATTN_NORM, 0, 94 + gEngfuncs.pfnRandomLong( 0, 0xf ) );
-		break;
-	}
-}
-//======================
-//		 MP5 END
-//======================
 
 //======================
 //	   PHYTON START 
@@ -1760,56 +1718,6 @@ int EV_TFC_IsAllyTeam( int iTeam1, int iTeam2 )
 {
 	return 0;
 }
-
-//======================
-//	   TORCH START
-//======================
-#define	SOUND_FLASHLIGHT_ON	"items/flashlight1.wav"
-#define	SOUND_FLASHLIGHT_OFF	"items/flashlight1.wav"
-
-enum torch_e
-{
-	TORCH_IDLE_OFF = 0,
-	TORCH_DRAW,
-	TORCH_IDLE_ON,
-	TORCH_SWITCH,
-	TORCH_HOLSTER_OFF,
-	TORCH_HOLSTER_ON
-};
-
-void EV_Torch( struct event_args_s *args )
-{
-	int idx;
-	vec3_t origin;
-
-	int flashlightOn;
-
-	idx = args->entindex;
-
-	VectorCopy( args->origin, origin );
-
-	flashlightOn = args->bparam1;
-
-	//Only play the weapon anims if I shot it.
-	if( EV_IsLocal( idx ) )
-	{
-		gEngfuncs.pEventAPI->EV_WeaponAnimation( TORCH_SWITCH, 1 );
-	}
-
-	if( flashlightOn )
-	{
-		// Play flashlight on sound.
-		gEngfuncs.pEventAPI->EV_PlaySound( idx, origin, CHAN_WEAPON, SOUND_FLASHLIGHT_ON, 1, ATTN_NORM, 0, 100 );
-	}
-	else
-	{
-		// Play flashlight off sound.
-		gEngfuncs.pEventAPI->EV_PlaySound( idx, origin, CHAN_WEAPON, SOUND_FLASHLIGHT_OFF, 1, ATTN_NORM, 0, 100 );
-	}
-}
-//======================
-//	   TORCH END
-//======================
 
 //======================
 //	  SHOTGUNX START

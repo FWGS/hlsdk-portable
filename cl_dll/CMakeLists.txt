@@ -52,7 +52,6 @@ endif()
 
 
 set (CLDLL_SOURCES 
-	noffice/glow.cpp
 	noffice/pain.cpp
 	noffice/cinematic.cpp
 	noffice/deathvision.cpp

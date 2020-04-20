@@ -206,6 +206,24 @@ void EjectBrass( const Vector &vecOrigin, const Vector &vecVelocity, float rotat
 	MESSAGE_END();
 }
 
+void EjectClip( const Vector &vecOrigin, const Vector &vecVelocity, float rotation, int model, int soundtype )
+{
+        // FIX: when the player shoots, their gun isn't in the same position as it is on the model other players see.
+        MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, vecOrigin );
+                WRITE_BYTE( TE_MODEL );
+                WRITE_COORD( vecOrigin.x );
+                WRITE_COORD( vecOrigin.y );
+                WRITE_COORD( vecOrigin.z );
+                WRITE_COORD( vecVelocity.x );
+                WRITE_COORD( vecVelocity.y );
+                WRITE_COORD( vecVelocity.z );
+                WRITE_ANGLE( rotation );
+                WRITE_SHORT( model );
+                WRITE_BYTE( soundtype );
+                WRITE_BYTE( 405 );// 40.5 seconds
+        MESSAGE_END();
+}
+
 #if 0
 // UNDONE: This is no longer used?
 void ExplodeModel( const Vector &vecOrigin, float speed, int model, int count )
@@ -391,8 +409,6 @@ TYPEDESCRIPTION	CBasePlayerWeapon::m_SaveData[] =
 	DEFINE_FIELD( CBasePlayerWeapon, m_iDefaultAmmo, FIELD_INTEGER ),
 	//DEFINE_FIELD( CBasePlayerWeapon, m_iClientClip, FIELD_INTEGER ), reset to zero on load so hud gets updated correctly
 	//DEFINE_FIELD( CBasePlayerWeapon, m_iClientWeaponState, FIELD_INTEGER ), reset to zero on load so hud gets updated correctly
-	DEFINE_FIELD( CBasePlayerWeapon, m_iszClipModel, FIELD_STRING ),
-	DEFINE_FIELD( CBasePlayerWeapon, m_flDropClipTime, FIELD_TIME ),
 };
 
 IMPLEMENT_SAVERESTORE( CBasePlayerWeapon, CBasePlayerItem )
@@ -966,12 +982,6 @@ BOOL CBasePlayerWeapon::DefaultReload( int iClipSize, int iAnim, float fDelay, i
 
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 3.0f;
 
-	// Drop an instance of current weapon clip on the ground.
-	if( !FStringNull( GetClipModel() ) )
-	{
-		m_flDropClipTime = gpGlobals->time + GetDropClipDelay();
-	}
-
 	return TRUE;
 }
 
@@ -1146,80 +1156,6 @@ void CBasePlayerWeapon::RetireWeapon( void )
 			m_pPlayer->m_pActiveItem = NULL;
 		}
 	}
-}
-
-void CBasePlayerWeapon::ItemPostFrame_Always( void )
-{
-	// Check if it is time to drop the clip.
-	if( m_fInReload && m_flDropClipTime != 0 && m_flDropClipTime <= gpGlobals->time )
-	{
-		DropClip();
-		m_flDropClipTime = 0;
-	}
-}
-
-// ==========================================
-// Code changes for- Night at the Office:
-// ==========================================
-//
-// -Randomised Ammo. Picking up a gun from a fallen terrorist 
-//  will not give you a pre-defined amount of bullets. The exact 
-//  number is random (depending on the gun and clip size), which 
-//  means the player will constantly need to keep a check on the 
-//  ammo as it will no longer be 'comfortable' for the player to 
-//  waste ammo.
-
-int CBasePlayerWeapon::DefaultAmmoBySkill(int iMaxClip, int iSkillLevel)
-{
-	int iDefaultAmmo = 0;
-
-	switch( iSkillLevel )
-	{
-	default:
-	case SKILL_EASY:
-		// Random ammunition equal or superior to 75% clip capacity.
-		iDefaultAmmo = RANDOM_LONG( (int)( ceilf( iMaxClip * 0.75f ) ), iMaxClip );
-		break;
-	case SKILL_MEDIUM:
-		// Random ammunition equal or superior to 50% clip capacity.
-		iDefaultAmmo = RANDOM_LONG( (int)( ceilf( iMaxClip * 0.5f ) ), iMaxClip );
-		break;
-	case SKILL_HARD:
-		// Random ammunition equal or superior to 25% clip capacity.
-		iDefaultAmmo = RANDOM_LONG( (int)( ceilf( iMaxClip * 0.25f ) ), iMaxClip );
-		break;
-	}
-
-	return iDefaultAmmo;
-}
-
-string_t CBasePlayerWeapon::GetClipModel() const
-{
-	return m_iszClipModel;
-}
-
-void CBasePlayerWeapon::SetClipModel( const char* szModel )
-{
-	m_iszClipModel = ALLOC_STRING( szModel );
-}
-
-// ==========================================
-// Code changes for- Night at the Office:
-// ==========================================
-//
-// -Clip Dropping. An extension of the realistic reloading. 
-//  Whenever a gun with a weapon clip is reloaded, a clip 
-//  model is 'ejected' onto the floor.
-
-void CBasePlayerWeapon::DropClip( void )
-{
-	UTIL_MakeVectors( m_pPlayer->pev->angles );
-	CWeaponClip *pClip = GetClassPtr( (CWeaponClip *)NULL );
-	pClip->pev->angles.x = pClip->pev->angles.z = 0;
-	pClip->pev->origin = pev->origin + gpGlobals->v_forward * -16;
-	pClip->Spawn( STRING( GetClipModel() ) );
-	pClip->pev->owner = edict();
-	pClip->pev->avelocity = Vector( RANDOM_FLOAT( 200, 400 ), RANDOM_FLOAT( 200, 400 ), 0.0f );
 }
 
 float CBasePlayerWeapon::GetNextAttackDelay( float delay )
@@ -1696,3 +1632,12 @@ TYPEDESCRIPTION	CSatchel::m_SaveData[] =
 };
 
 IMPLEMENT_SAVERESTORE( CSatchel, CBasePlayerWeapon )*/
+
+TYPEDESCRIPTION CTorch::m_SaveData[] =
+{
+        DEFINE_FIELD( CTorch, m_pLightSpot, FIELD_CLASSPTR ),
+        DEFINE_FIELD( CTorch, m_pWallSpot, FIELD_CLASSPTR ),
+        DEFINE_FIELD( CTorch, m_fIsOn, FIELD_BOOLEAN )
+};
+
+IMPLEMENT_SAVERESTORE( CTorch, CBasePlayerWeapon )

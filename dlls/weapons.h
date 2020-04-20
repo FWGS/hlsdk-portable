@@ -296,18 +296,6 @@ public:
 	// hle time creep vars
 	float m_flPrevPrimaryAttack;
 	float m_flLastFireTime;
-
-	virtual void ItemPostFrame_Always( void );
-
-	virtual int DefaultAmmoBySkill( int iMaxClip, int iSkillLevel );
-
-	virtual string_t GetClipModel() const;
-	void SetClipModel( const char* szModel );
-	void DropClip( void );
-	virtual float GetDropClipDelay( void ) const { return 0.0f; }
-
-	string_t m_iszClipModel;
-	float m_flDropClipTime;	
 };
 
 class CBasePlayerAmmo : public CBaseEntity
@@ -440,9 +428,9 @@ public:
 #endif
 	}
 
-	float GetDropClipDelay() const { return  0.72f; }
 private:
 	int m_iShell;
+	int m_iClipModel;
 
 	int m_fInAttack;
 	unsigned short m_usFireGlock1;
@@ -470,8 +458,7 @@ public:
 	int m_iSwing;
 	TraceResult m_trHit;
 
-	float m_flReleaseThrow;
-	float m_flStartThrow;
+	int m_fInAttack;
 	virtual BOOL UseDecrement( void )
 	{ 
 #if defined( CLIENT_WEAPONS )
@@ -481,7 +468,6 @@ public:
 #endif
 	}
 
-	BOOL CanHolster( void );
 	void WeaponIdle( void );
 
 private:
@@ -530,13 +516,12 @@ public:
 
 	void PrimaryAttack( void );
 	void SecondaryAttack( void );
-	int SecondaryAmmoIndex( void );
 	BOOL Deploy( void );
 	void Reload( void );
 	void WeaponIdle( void );
-	BOOL IsUseable();
 	float m_flNextAnimTime;
 	int m_iShell;
+	int m_iClipModel;
 
 	virtual BOOL UseDecrement( void )
 	{ 
@@ -546,8 +531,6 @@ public:
 		return FALSE;
 #endif
 	}
-
-	float GetDropClipDelay() const { return 0.4f; }
 
 private:
 	unsigned short m_usMP5;
@@ -639,6 +622,22 @@ public:
 	void EXPORT Revive( void );
 
 	static CLaserSpot *CreateSpot( void );
+};
+
+class CLightSpot : public CLaserSpot
+{
+	void Spawn( void );
+	void Precache( void );
+public:
+	static CLightSpot *CreateSpot( void );
+};
+
+class CWallSpot : public CLaserSpot
+{
+	void Spawn( void );
+	void Precache( void );
+public:
+	static CWallSpot *CreateSpot( void );
 };
 
 class CRpg : public CBasePlayerWeapon
@@ -983,7 +982,6 @@ public:
 
 	BOOL Deploy( void );
 	void Holster( int skiplocal = 0 );
-	void WeaponIdle( void );
 
 	virtual BOOL UseDecrement( void )
 	{
@@ -1025,19 +1023,11 @@ public:
 #endif
 	}
 
-	void TurnOn( void );
-	void TurnOff( void );
-	void ToggleFlashlight( void );
-
 	void UpdateSpot( void );
 
-	CLaserSpot* m_pSpot;
-	CSprite* m_pGlow;
+	CLightSpot	*m_pLightSpot;
+	CWallSpot	*m_pWallSpot;
 	BOOL m_fIsOn;
-	BOOL m_fUpdate;
-
-private:
-	unsigned short m_usTorch;
 };
 
 #endif // WEAPONS_H
