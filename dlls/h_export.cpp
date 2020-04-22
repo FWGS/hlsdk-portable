@@ -26,9 +26,9 @@
 #include "cbase.h"
 
 // Holds engine functionality callbacks
-enginefuncs_t g_engfuncs;
-globalvars_t *gpGlobals;
-server_physics_api_t g_physfuncs;
+enginefuncs_t	 g_engfuncs;
+globalvars_t	*gpGlobals;
+BOOL		 g_fIsXash3D;
 
 #ifdef _WIN32
 
@@ -54,4 +54,7 @@ extern "C" void DLLEXPORT EXPORT2 GiveFnptrsToDll( enginefuncs_t *pengfuncsFromE
 {
 	memcpy( &g_engfuncs, pengfuncsFromEngine, sizeof(enginefuncs_t) );
 	gpGlobals = pGlobals;
+
+	if( CVAR_GET_POINTER( "build" ) )
+		g_fIsXash3D = TRUE;
 }
