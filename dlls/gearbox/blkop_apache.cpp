@@ -44,14 +44,14 @@ void CBlkopApache::Spawn(void)
 	pev->solid = SOLID_BBOX;
 
 	SET_MODEL(ENT(pev), "models/blkop_apache.mdl");
-	UTIL_SetSize(pev, Vector(-32, -32, -64), Vector(32, 32, 0));
+	UTIL_SetSize( pev, Vector( -32.0f, -32.0f, -64.0f ), Vector( 32.0f, 32.0f, 0.0f ) );
 	UTIL_SetOrigin(pev, pev->origin);
 
 	pev->flags |= FL_MONSTER;
 	pev->takedamage = DAMAGE_AIM;
 	pev->health = gSkillData.apacheHealth;
 
-	m_flFieldOfView = -0.707; // 270 degrees
+	m_flFieldOfView = -0.707f; // 270 degrees
 
 	pev->sequence = 0;
 	ResetSequenceInfo();
@@ -67,7 +67,7 @@ void CBlkopApache::Spawn(void)
 	{
 		SetThink(&CApache::HuntThink);
 		SetTouch(&CApache::FlyTouch);
-		pev->nextthink = gpGlobals->time + 1.0;
+		pev->nextthink = gpGlobals->time + 1.0f;
 	}
 
 	m_iRockets = 10;

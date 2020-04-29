@@ -17,7 +17,6 @@
 #include "cl_util.h"
 #include "demo.h"
 #include "demo_api.h"
-#include <memory.h>
 
 int g_demosniper = 0;
 int g_demosniperdamage = 0;
@@ -88,12 +87,12 @@ void DLLEXPORT Demo_ReadBuffer( int size, unsigned char *buffer )
 			g_demosniperorg[1] = *(float *)&buffer[i];
 			i += sizeof(float);
 			g_demosniperorg[2] = *(float *)&buffer[i];
-			i += sizeof(float);
+			// i += sizeof(float);
 		}
 		break;
 	case TYPE_ZOOM:
 		g_demozoom = *(float *)&buffer[i];
-		i += sizeof(float);
+		// i += sizeof(float);
 		break;
 	default:
 		gEngfuncs.Con_DPrintf( "Unknown demo buffer type, skipping.\n" );
