@@ -414,6 +414,11 @@ void CGameRules::RefreshSkillData ( void )
 	gSkillData.displacerDmgRadius = GetSkillCvar( "sk_plr_displacer_radius" );
 }
 
+void CGameRules::ClientUserInfoChanged( CBasePlayer *pPlayer, char *infobuffer )
+{
+	pPlayer->SetPrefsFromUserinfo( infobuffer );
+}
+
 //=========================================================
 // instantiate the proper game rules object
 //=========================================================
