@@ -232,7 +232,6 @@ void CHud::Init( void )
 	m_AmmoSecondary.Init();
 	m_TextMessage.Init();
 	m_StatusIcons.Init();
-	m_Cinematic.Init();
 	m_DeathVision.Init();
 	m_MOTD.Init();
 	m_Scoreboard.Init();
@@ -415,7 +414,6 @@ void CHud::VidInit( void )
 	m_AmmoSecondary.VidInit();
 	m_TextMessage.VidInit();
 	m_StatusIcons.VidInit();
-	m_Cinematic.VidInit();
 	m_DeathVision.VidInit();
 	m_Scoreboard.VidInit();
 	m_MOTD.VidInit();

@@ -329,7 +329,6 @@ public:
 	void UpdateStamina( void );
 	int m_iStaminaLevel;
 	float m_flStaminaStart;
-	BOOL m_bCinematicCompleted;
 
 	Vector m_vecLastViewAngles;
 

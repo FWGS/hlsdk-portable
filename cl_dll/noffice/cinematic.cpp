@@ -13,9 +13,9 @@
 *
 ****/
 //
-// Geiger.cpp
+// cinematic.cpp
 //
-// implementation of CHudAmmo class
+// implementation of CHudCinematic class
 //
 
 #include "hud.h"
@@ -30,110 +30,37 @@
 
 #include "parsemsg.h"
 
-
-DECLARE_MESSAGE(m_Cinematic, Cinematic)
-
-int CHudCinematic::Init(void)
+void CHudMessage::DrawCinematic()
 {
-	HOOK_MESSAGE(Cinematic);
-
-	m_iFlags = 0;
-
-	m_hSprite = 0;
-	m_flCineTime = 0;
-
-	gHUD.AddHudElem(this);
-
-	return 1;
-};
-
-int CHudCinematic::VidInit(void)
-{
-	m_flCineTime = 0;
-	m_iFlags = 0;
-
-	m_hSprite = SPR_Load( "sprites/wide_bar.spr" );
-
-	return 1;
-};
-
-int CHudCinematic::MsgFunc_Cinematic(const char *pszName, int iSize, void *pbuf)
-{
-	m_iFlags |= HUD_ACTIVE;
-
-	BEGIN_READ(pbuf, iSize);
-	m_flCineTime = READ_BYTE();
-	m_flCineTime = m_flCineTime + gEngfuncs.GetClientTime();
-
-	return 1;
-}
-
-int CHudCinematic::Draw(float flTime)
-{
-	if (gHUD.m_iHideHUDDisplay & HIDEHUD_ALL)
-		return 1;
-
-	if (!(m_iFlags & HUD_ACTIVE))
-		return 1;
-
-#if 0
-	// Height for a single bar.
-	int barHeight = ScreenHeight / 6;
-
-	// Draw upper dark bar.
-	gEngfuncs.pfnFillRGBA(0, 0, ScreenWidth, barHeight, 40, 40, 40, 255);
-
-	// Draw lower dark bar.
-	gEngfuncs.pfnFillRGBABlend(0, ScreenHeight - barHeight, ScreenWidth, barHeight, 0, 0, 0, 225);
-#endif
-
-	return 1;
-}
-
-void CHudCinematic::DrawCinematic(void)
-{
-	if (gHUD.m_iHideHUDDisplay & HIDEHUD_ALL)
-		return;
-
-	if (!(m_iFlags & HUD_ACTIVE))
-		return;
-
-	if (m_flCineTime <= gEngfuncs.GetClientTime())
+	if( !m_hSprite )
 	{
-		m_iFlags &= ~HUD_ACTIVE;
-		m_flCineTime = 0;
-
-		return;
+		m_hSprite = SPR_Load( "sprites/wide_bar.spr" );
+		m_hSpriteModel = (struct model_s *)gEngfuncs.GetSpritePointer( m_hSprite );
 	}
 
-	if (!m_hSprite)
-		m_hSprite = SPR_Load("sprites/wide_bar.spr");
+	gEngfuncs.pTriAPI->RenderMode( kRenderTransAlpha );
+	gEngfuncs.pTriAPI->SpriteTexture( m_hSpriteModel, 0 );
+	gEngfuncs.pTriAPI->Color4f( 1.0f, 1.0f, 1.0f, 1.0f );
+	gEngfuncs.pTriAPI->CullFace( TRI_NONE );
+	gEngfuncs.pTriAPI->Begin( TRI_QUADS );
 
-	struct model_s * hSpriteModel = (struct model_s *)gEngfuncs.GetSpritePointer(m_hSprite);
+		// top right
+		gEngfuncs.pTriAPI->TexCoord2f( 0.0f, 1.0f );
+		gEngfuncs.pTriAPI->Vertex3f( 0, 0, 0 );
 
-	gEngfuncs.pTriAPI->RenderMode(kRenderTransAlpha);
-	gEngfuncs.pTriAPI->CullFace(TRI_NONE);
-	gEngfuncs.pTriAPI->SpriteTexture(hSpriteModel, 0);
-	gEngfuncs.pTriAPI->Begin(TRI_QUADS);
+		// top left
+		gEngfuncs.pTriAPI->TexCoord2f( 0.0f, 0.0f );
+		gEngfuncs.pTriAPI->Vertex3f( 0, ScreenHeight, 0 );
 
-		//top left
-		gEngfuncs.pTriAPI->TexCoord2f(0.0f, 0.0f);
-		gEngfuncs.pTriAPI->Vertex3f(0, 0, 0);
+		// bottom left
+		gEngfuncs.pTriAPI->TexCoord2f( 1.0f, 0.0f );
+		gEngfuncs.pTriAPI->Vertex3f( ScreenWidth, ScreenHeight, 0 );
 
-		//bottom left
-		gEngfuncs.pTriAPI->TexCoord2f(0.0f, 1.0f);
-		gEngfuncs.pTriAPI->Vertex3f(0, ScreenHeight, 0);
-
-		//bottom right
-		gEngfuncs.pTriAPI->TexCoord2f(1.0f, 1.0f);
-		gEngfuncs.pTriAPI->Vertex3f(ScreenWidth, ScreenHeight, 0);
-
-		//top right
-		gEngfuncs.pTriAPI->TexCoord2f(1.0f, 0.0f);
-		gEngfuncs.pTriAPI->Vertex3f(ScreenWidth, 0, 0);
+		// bottom right
+		gEngfuncs.pTriAPI->TexCoord2f( 1.0f, 1.0f );
+		gEngfuncs.pTriAPI->Vertex3f( ScreenWidth, 0, 0 );
 
 	gEngfuncs.pTriAPI->End(); //end our list of vertexes
-	gEngfuncs.pTriAPI->RenderMode(kRenderNormal); //return to normal
-
-	return;
+	gEngfuncs.pTriAPI->RenderMode( kRenderNormal ); //return to normal
 }
+

@@ -121,7 +121,6 @@ TYPEDESCRIPTION	CBasePlayer::m_playerSaveData[] =
 
 	DEFINE_FIELD( CBasePlayer, m_flStaminaStart, FIELD_TIME ),
 	DEFINE_FIELD( CBasePlayer, m_iStaminaLevel, FIELD_INTEGER ),
-	DEFINE_FIELD( CBasePlayer, m_bCinematicCompleted, FIELD_BOOLEAN ),
 
 	//DEFINE_FIELD( CBasePlayer, m_fDeadTime, FIELD_FLOAT ), // only used in multiplayer games
 	//DEFINE_FIELD( CBasePlayer, m_fGameHUDInitialized, FIELD_INTEGER ), // only used in multiplayer games
@@ -192,7 +191,6 @@ int gmsgBhopcap = 0;
 int gmsgStatusText = 0;
 int gmsgStatusValue = 0;
 
-int gmsgCinematic = 0;
 int gmsgDeathVision = 0;
 
 void LinkUserMessages( void )
@@ -242,7 +240,6 @@ void LinkUserMessages( void )
 	gmsgStatusText = REG_USER_MSG( "StatusText", -1 );
 	gmsgStatusValue = REG_USER_MSG( "StatusValue", 3 );
 
-	gmsgCinematic = REG_USER_MSG( "Cinematic", 1 );
 	gmsgDeathVision = REG_USER_MSG( "DeathVision", 1 );
 }
 
@@ -2804,7 +2801,6 @@ void CBasePlayer::Spawn( void )
 	m_iAutoWepSwitch = 1;
 	m_flStaminaStart = 0;
 	m_iStaminaLevel = 100;
-	m_bCinematicCompleted = FALSE;
 
 	g_pGameRules->PlayerSpawn( this );
 }
@@ -2931,8 +2927,6 @@ int CBasePlayer::Restore( CRestore &restore )
 	//			Barring that, we clear it out here instead of using the incorrect restored time value.
 	m_flNextAttack = UTIL_WeaponTimeBase();
 #endif
-	// Do not draw cinematic after loading.
-	m_bCinematicCompleted = TRUE;
 
 	return status;
 }
@@ -3833,38 +3827,10 @@ void CBasePlayer::UpdateClientData( void )
 	// HACKHACK -- send the message to display the game title
 	if( gDisplayTitle )
 	{
-		if( !m_bCinematicCompleted )
-		{
-			// ==========================================
-			// Code changes for- Night at the Office:
-			// ==========================================
-			//
-			// -Cinematic bars. Changed the game title code to display widescreen bars,
-			//  used in the opening of the main game. The bars are active while player
-			//  is stuck into position, to give a cinematic feel to the opening sequence.
-			//  So the player wont think he is genuinely stuck into the environment.
+		MESSAGE_BEGIN( MSG_ONE, gmsgShowGameTitle, NULL, pev );
+			WRITE_BYTE( 0 );
+		MESSAGE_END();
 
-			int duration = 0;
-
-			// training level.
-			if( FStrEq( STRING( gpGlobals->mapname ), "trn1" ) )
-			{
-				duration = 34;
-			}
-			// start level.
-			else if( FStrEq( STRING( gpGlobals->mapname ), "f14" ) )
-			{
-				duration = 41;
-			}
-
-			// Tell client to show cinematic bars.
-			MESSAGE_BEGIN( MSG_ONE, gmsgCinematic, NULL, pev );
-				WRITE_BYTE( duration );
-			MESSAGE_END();
-
-			// Only do this once.
-			m_bCinematicCompleted = TRUE;
-		}
 		gDisplayTitle = 0;
 	}
 

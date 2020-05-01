@@ -52,9 +52,9 @@ endif()
 
 
 set (CLDLL_SOURCES 
-	noffice/pain.cpp
 	noffice/cinematic.cpp
 	noffice/deathvision.cpp
+	noffice/pain.cpp
 	ev_hldm.cpp
 	hl/hl_baseentity.cpp
 	hl/hl_events.cpp

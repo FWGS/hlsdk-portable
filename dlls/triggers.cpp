@@ -37,8 +37,6 @@
 
 extern DLL_GLOBAL BOOL		g_fGameOver;
 
-extern int gmsgCinematic;
-
 extern void SetMovedir(entvars_t* pev);
 extern Vector VecBModelOrigin( entvars_t* pevBModel );
 

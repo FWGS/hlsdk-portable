@@ -134,5 +134,4 @@ void HUD_DrawOrthoTriangles( void )
 {
 	gHUD.m_Health.DrawPain2();
 	gHUD.m_DeathVision.DrawDeathVision();
-	gHUD.m_Cinematic.DrawCinematic();
 }

@@ -205,8 +205,6 @@ void CGameEnd::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useT
 //	Flag: All players					SF_ENVTEXT_ALLPLAYERS
 //
 
-extern int gmsgCinematic;
-
 #define SF_ENVTEXT_ALLPLAYERS			0x0001
 
 class CGameText : public CRulePointEntity
@@ -309,13 +307,6 @@ void CGameText::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE use
 {
 	if( !CanFireForActivator( pActivator ) )
 		return;
-
-	if( ( FStrEq( STRING( gpGlobals->mapname ), "trn1" ) && FStrEq( STRING( pev->targetname ), "6months" ) ) || // training level.
-		 ( FStrEq( STRING( gpGlobals->mapname ), "f14" ) && FStrEq( STRING( pev->targetname ), "present" ) ) )  // start level.
-	{
-		// Center text on cinematics.
-		m_textParms.x = m_textParms.y = -1;
-	}
 
 	if( MessageToAll() )
 	{

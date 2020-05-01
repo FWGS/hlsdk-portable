@@ -510,6 +510,7 @@ public:
 	void MessageScanStart( void );
 	void MessageScanNextChar( void );
 	void Reset( void );
+	void DrawCinematic( void );
 
 private:
 	client_textmessage_t		*m_pMessages[maxHUDMessages];
@@ -520,6 +521,8 @@ private:
 
 	int m_HUD_title_life;
 	int m_HUD_title_half;
+	HSPRITE m_hSprite;
+	struct model_s *m_hSpriteModel;
 };
 
 //
@@ -557,25 +560,6 @@ private:
 	} icon_sprite_t;
 
 	icon_sprite_t m_IconList[MAX_ICONSPRITES];
-};
-
-//
-//-----------------------------------------------------
-//
-class CHudCinematic : public CHudBase
-{
-public:
-	int Init( void );
-	int VidInit( void );
-	int Draw( float flTime );
-	int MsgFunc_Cinematic( const char *pszName, int iSize, void *pbuf );
-
-	void DrawCinematic( void );
-
-private:
-	HSPRITE m_hSprite;
-
-	float m_flCineTime;
 };
 
 //
@@ -672,7 +656,6 @@ public:
 	CHudAmmoSecondary	m_AmmoSecondary;
 	CHudTextMessage m_TextMessage;
 	CHudStatusIcons m_StatusIcons;
-	CHudCinematic	m_Cinematic;
 	CHudDeathVision	m_DeathVision;
 	CHudScoreboard	m_Scoreboard;
 	CHudMOTD	m_MOTD;
