@@ -565,23 +565,6 @@ private:
 //
 //-----------------------------------------------------
 //
-class CHudDeathVision : public CHudBase
-{
-public:
-	int Init( void );
-	int VidInit( void );
-	int Draw( float flTime );
-	int MsgFunc_DeathVision( const char *pszName, int iSize, void *pbuf );
-
-	void DrawDeathVision( void );
-
-private:
-	HSPRITE m_hSprite;
-};
-
-//
-//-----------------------------------------------------
-//
 class CHud
 {
 private:
@@ -656,7 +639,6 @@ public:
 	CHudAmmoSecondary	m_AmmoSecondary;
 	CHudTextMessage m_TextMessage;
 	CHudStatusIcons m_StatusIcons;
-	CHudDeathVision	m_DeathVision;
 	CHudScoreboard	m_Scoreboard;
 	CHudMOTD	m_MOTD;
 
@@ -703,4 +685,8 @@ extern int g_iTeamNumber;
 extern int g_iUser1;
 extern int g_iUser2;
 extern int g_iUser3;
+
+void HUD_DrawRectangle( struct model_s *hSpriteModel, int mode );
+
 #endif
+

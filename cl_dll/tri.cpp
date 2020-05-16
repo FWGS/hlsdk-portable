@@ -123,15 +123,31 @@ void DLLEXPORT HUD_DrawTransparentTriangles( void )
 // http://twhl.info/articulator.php?art=114
 //
 
-/*
-=================
-HUD_DrawOrthoTriangles
-Orthogonal Triangles -- (relative to resolution,
-smackdab on the screen) add them here
-=================
-*/
-void HUD_DrawOrthoTriangles( void )
+void HUD_DrawRectangle( struct model_s *hSpriteModel, int mode )
 {
-	gHUD.m_Health.DrawPain2();
-	gHUD.m_DeathVision.DrawDeathVision();
+	gEngfuncs.pTriAPI->RenderMode( mode );
+	gEngfuncs.pTriAPI->SpriteTexture( hSpriteModel, 0 );
+	gEngfuncs.pTriAPI->Color4f( 1.0f, 1.0f, 1.0f, 1.0f );
+	gEngfuncs.pTriAPI->CullFace( TRI_NONE );
+	gEngfuncs.pTriAPI->Begin( TRI_QUADS );
+
+		// top right
+		gEngfuncs.pTriAPI->TexCoord2f( 0.0f, 1.0f );
+		gEngfuncs.pTriAPI->Vertex3f( 0, 0, 0 );
+
+		// top left
+		gEngfuncs.pTriAPI->TexCoord2f( 0.0f, 0.0f );
+		gEngfuncs.pTriAPI->Vertex3f( 0, ScreenHeight, 0 );
+
+		// bottom left
+		gEngfuncs.pTriAPI->TexCoord2f( 1.0f, 0.0f );
+		gEngfuncs.pTriAPI->Vertex3f( ScreenWidth, ScreenHeight, 0 );
+
+		// bottom right
+		gEngfuncs.pTriAPI->TexCoord2f( 1.0f, 1.0f );
+		gEngfuncs.pTriAPI->Vertex3f( ScreenWidth, 0, 0 );
+
+	gEngfuncs.pTriAPI->End(); //end our list of vertexes
+	gEngfuncs.pTriAPI->RenderMode( kRenderNormal ); //return to normal
 }
+

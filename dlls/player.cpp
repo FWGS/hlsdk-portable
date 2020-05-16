@@ -191,8 +191,6 @@ int gmsgBhopcap = 0;
 int gmsgStatusText = 0;
 int gmsgStatusValue = 0;
 
-int gmsgDeathVision = 0;
-
 void LinkUserMessages( void )
 {
 	// Already taken care of?
@@ -239,8 +237,6 @@ void LinkUserMessages( void )
 
 	gmsgStatusText = REG_USER_MSG( "StatusText", -1 );
 	gmsgStatusValue = REG_USER_MSG( "StatusValue", 3 );
-
-	gmsgDeathVision = REG_USER_MSG( "DeathVision", 1 );
 }
 
 LINK_ENTITY_TO_CLASS( player, CBasePlayer )
@@ -922,11 +918,6 @@ void CBasePlayer::Killed( entvars_t *pevAttacker, int iGib )
 
 	// Fade screen to white.
 	UTIL_ScreenFade( this, Vector( 255, 255, 255 ), 6, 15, 255, FFADE_OUT );
-
-	// Tell client to draw death vision.
-	MESSAGE_BEGIN( MSG_ONE, gmsgDeathVision, NULL, pev );
-		WRITE_BYTE( 0 );
-	MESSAGE_END();
 
 	if( ( pev->health < -40 && iGib != GIB_NEVER ) || iGib == GIB_ALWAYS )
 	{

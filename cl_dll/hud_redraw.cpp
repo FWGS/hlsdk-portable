@@ -80,8 +80,6 @@ void CHud::Think( void )
 	}
 }
 
-void HUD_DrawOrthoTriangles( void );
-
 // Redraw
 // step through the local data,  placing the appropriate graphics & text as appropriate
 // returns 1 if they've changed, 0 otherwise
@@ -135,9 +133,6 @@ int CHud::Redraw( float flTime, int intermission )
 			pList = pList->pNext;
 		}
 	}
-
-	//omega;draw orthogonal triangles
-	HUD_DrawOrthoTriangles();
 
 	// are we in demo mode? do we need to draw the logo in the top corner?
 	if( m_iLogo )

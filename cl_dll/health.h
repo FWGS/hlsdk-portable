@@ -113,18 +113,22 @@ public:
 	float m_fAttackFront, m_fAttackRear, m_fAttackLeft, m_fAttackRight;
 	void GetPainColor( int &r, int &g, int &b );
 	float m_fFade;
-	void DrawPain2( void );
 
 private:
 	HSPRITE m_hSprite;
 	HSPRITE m_hDamage;
-	
+
 	DAMAGE_IMAGE m_dmg[NUM_DMG_TYPES];
 	int m_bitsDamage;
 	int DrawPain( float fTime );
 	int DrawDamage( float fTime );
 	void CalcDamageDirection( vec3_t vecFrom );
 	void UpdateTiles( float fTime, long bits );
+	void DrawPainFront();
+	void DrawPainRear();
+	void DrawPainLeft();
+	void DrawPainRight();
+	void DrawDeathVision();
 
 	HSPRITE m_hSprite1;
 	HSPRITE m_hSprite2;
@@ -136,5 +140,12 @@ private:
 	HSPRITE m_hPainLeft;
 	HSPRITE m_hPainRight;
 	HSPRITE m_hPainRear;
+	HSPRITE m_hDeathVision;
+	struct model_s *m_hPainFrontModel;
+	struct model_s *m_hPainRearModel;
+	struct model_s *m_hPainLeftModel;
+	struct model_s *m_hPainRightModel;
+	struct model_s *m_hDeathVisionModel;
 };
 #endif // HEALTH_H
+

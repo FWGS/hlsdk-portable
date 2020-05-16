@@ -28,8 +28,6 @@
 #include "event_args.h"
 #include "triangleapi.h"
 
-#include "parsemsg.h"
-
 void CHudMessage::DrawCinematic()
 {
 	if( !m_hSprite )
@@ -38,29 +36,6 @@ void CHudMessage::DrawCinematic()
 		m_hSpriteModel = (struct model_s *)gEngfuncs.GetSpritePointer( m_hSprite );
 	}
 
-	gEngfuncs.pTriAPI->RenderMode( kRenderTransAlpha );
-	gEngfuncs.pTriAPI->SpriteTexture( m_hSpriteModel, 0 );
-	gEngfuncs.pTriAPI->Color4f( 1.0f, 1.0f, 1.0f, 1.0f );
-	gEngfuncs.pTriAPI->CullFace( TRI_NONE );
-	gEngfuncs.pTriAPI->Begin( TRI_QUADS );
-
-		// top right
-		gEngfuncs.pTriAPI->TexCoord2f( 0.0f, 1.0f );
-		gEngfuncs.pTriAPI->Vertex3f( 0, 0, 0 );
-
-		// top left
-		gEngfuncs.pTriAPI->TexCoord2f( 0.0f, 0.0f );
-		gEngfuncs.pTriAPI->Vertex3f( 0, ScreenHeight, 0 );
-
-		// bottom left
-		gEngfuncs.pTriAPI->TexCoord2f( 1.0f, 0.0f );
-		gEngfuncs.pTriAPI->Vertex3f( ScreenWidth, ScreenHeight, 0 );
-
-		// bottom right
-		gEngfuncs.pTriAPI->TexCoord2f( 1.0f, 1.0f );
-		gEngfuncs.pTriAPI->Vertex3f( ScreenWidth, 0, 0 );
-
-	gEngfuncs.pTriAPI->End(); //end our list of vertexes
-	gEngfuncs.pTriAPI->RenderMode( kRenderNormal ); //return to normal
+	HUD_DrawRectangle( m_hSpriteModel, kRenderTransAlpha );
 }
 
