@@ -31,8 +31,6 @@ if(HAVE_TGMATH_H)
 	add_definitions(-DHAVE_TGMATH_H)
 endif()
 
-add_definitions(-DCLIENT_WEAPONS)
-
 if(NOT MSVC)
 	add_compile_options(-fno-exceptions) # GCC/Clang flag
 	add_compile_options(-Wno-invalid-offsetof) # GCC/Clang flag

@@ -103,7 +103,7 @@ int CMP5::GetItemInfo( ItemInfo *p )
 	p->iMaxAmmo2 = -1;
 	p->iMaxClip = MP5_MAX_CLIP;
 	p->iSlot = 0;
-	p->iPosition = 4;
+	p->iPosition = 5;
 	p->iFlags = 0;
 	p->iId = m_iId = WEAPON_MP5;
 	p->iWeight = MP5_WEIGHT;

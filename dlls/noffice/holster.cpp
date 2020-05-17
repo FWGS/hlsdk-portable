@@ -66,7 +66,7 @@ int CHolster::GetItemInfo( ItemInfo *p )
 	p->iMaxAmmo2 = -1;
 	p->iMaxClip = WEAPON_NOCLIP;
 	p->iSlot = 0;
-	p->iPosition = 0;
+	p->iPosition = 1;
 	p->iId = WEAPON_HOLSTER;
 	p->iWeight = HOLSTER_WEIGHT;
 

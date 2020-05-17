@@ -53,7 +53,7 @@ void CTorch::Precache()
 	PRECACHE_SOUND( "items/flashlight1.wav" );
 
 	UTIL_PrecacheOther( "light_spot2" );
-	UTIL_PrecacheOther( "wall_spot2" );
+	UTIL_PrecacheOther( "wall_spot" );
 }
 
 int CTorch::GetItemInfo( ItemInfo *p )
@@ -65,7 +65,7 @@ int CTorch::GetItemInfo( ItemInfo *p )
 	p->iMaxAmmo2 = -1;
 	p->iMaxClip = WEAPON_NOCLIP;
 	p->iSlot = 0;
-	p->iPosition = 1;
+	p->iPosition = 2;
 	p->iId = WEAPON_TORCH;
 	p->iWeight = TORCH_WEIGHT;
 

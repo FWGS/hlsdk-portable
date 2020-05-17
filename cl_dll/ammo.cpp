@@ -267,15 +267,15 @@ int CHudAmmo::Init( void )
 	HOOK_MESSAGE( AmmoX );
 
 	HOOK_COMMAND( "slot1", Slot1 );
-	HOOK_COMMAND( "slot2", Slot1 );
-	HOOK_COMMAND( "slot3", Slot1 );
-	HOOK_COMMAND( "slot4", Slot1 );
-	HOOK_COMMAND( "slot5", Slot1 );
-	HOOK_COMMAND( "slot6", Slot1 );
-	HOOK_COMMAND( "slot7", Slot1 );
-	HOOK_COMMAND( "slot8", Slot1 );
-	HOOK_COMMAND( "slot9", Slot1 );
-	HOOK_COMMAND( "slot10", Slot1 );
+	HOOK_COMMAND( "slot2", Slot2 );
+	HOOK_COMMAND( "slot3", Slot3 );
+	HOOK_COMMAND( "slot4", Slot4 );
+	HOOK_COMMAND( "slot5", Slot5 );
+	HOOK_COMMAND( "slot6", Slot6 );
+	HOOK_COMMAND( "slot7", Slot7 );
+	HOOK_COMMAND( "slot8", Slot8 );
+	HOOK_COMMAND( "slot9", Slot9 );
+	HOOK_COMMAND( "slot10", Slot10 );
 	HOOK_COMMAND( "cancelselect", Close );
 	HOOK_COMMAND( "invnext", NextWeapon );
 	HOOK_COMMAND( "invprev", PrevWeapon );

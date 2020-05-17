@@ -72,7 +72,7 @@ int CCrowbar::GetItemInfo( ItemInfo *p )
 	p->iMaxAmmo2 = -1;
 	p->iMaxClip = WEAPON_NOCLIP;
 	p->iSlot = 0;
-	p->iPosition = 2;
+	p->iPosition = 3;
 	p->iId = WEAPON_CROWBAR;
 	p->iWeight = CROWBAR_WEIGHT;
 	return 1;
@@ -203,7 +203,7 @@ int CCrowbar::Swing( int fFirst )
 
 	if( tr.flFraction >= 1.0f )
 	{
-		if( fFirst )
+		// if( fFirst )
 		{
 			// miss
 			SendWeaponAnim( CROWBAR_RELEASEMISS );
