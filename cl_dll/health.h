@@ -110,6 +110,8 @@ public:
 	int m_iHealth;
 	int m_HUD_dmg_bio;
 	int m_HUD_cross;
+	int m_HUD_health1;
+	int m_HUD_health2;
 	float m_fAttackFront, m_fAttackRear, m_fAttackLeft, m_fAttackRight;
 	void GetPainColor( int &r, int &g, int &b );
 	float m_fFade;
@@ -129,12 +131,6 @@ private:
 	void DrawPainLeft();
 	void DrawPainRight();
 	void DrawDeathVision();
-
-	HSPRITE m_hSprite1;
-	HSPRITE m_hSprite2;
-	wrect_t *m_prc1;
-	wrect_t *m_prc2;
-	int m_iHeight;		// width of the health innards
 
 	HSPRITE m_hPainFront;
 	HSPRITE m_hPainLeft;
