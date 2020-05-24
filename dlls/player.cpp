@@ -119,9 +119,6 @@ TYPEDESCRIPTION	CBasePlayer::m_playerSaveData[] =
 	DEFINE_FIELD( CBasePlayer, m_iHideHUD, FIELD_INTEGER ),
 	DEFINE_FIELD( CBasePlayer, m_iFOV, FIELD_INTEGER ),
 
-	DEFINE_FIELD( CBasePlayer, m_flStaminaStart, FIELD_TIME ),
-	DEFINE_FIELD( CBasePlayer, m_iStaminaLevel, FIELD_INTEGER ),
-
 	//DEFINE_FIELD( CBasePlayer, m_fDeadTime, FIELD_FLOAT ), // only used in multiplayer games
 	//DEFINE_FIELD( CBasePlayer, m_fGameHUDInitialized, FIELD_INTEGER ), // only used in multiplayer games
 	//DEFINE_FIELD( CBasePlayer, m_flStopExtraSoundTime, FIELD_TIME ),
@@ -1905,6 +1902,56 @@ void CBasePlayer::PreThink( void )
 	else if( m_iTrain & TRAIN_ACTIVE )
 		m_iTrain = TRAIN_NEW; // turn off train
 
+	m_fIsTired = FALSE;
+
+	if( FBitSet( pev->button, IN_FORWARD | IN_MOVELEFT | IN_MOVERIGHT ) )
+	{
+		if( m_flStaminaTime <= gpGlobals->time
+		    && m_flNoStaminaTime <= gpGlobals->time )
+		{
+			m_iStaminaLevel -= 4;
+
+			if( m_iStaminaLevel > 0 )
+			{
+				m_flStaminaTime = gpGlobals->time + 1.0f;
+			}
+			else
+			{
+				m_iStaminaLevel = 32;
+
+				if( m_flNoStaminaTime <= gpGlobals->time )
+				{
+					m_flNoStaminaTime = gpGlobals->time + 1.0f;
+
+					EMIT_GROUPNAME_SUIT( ENT( pev ), "HEV_BREATHE" );
+					m_fIsTired = TRUE;
+
+					if( m_flStaminaTime <= gpGlobals->time )
+					{
+						m_iStaminaLevel = 16;
+						m_fIsTired = FALSE;
+
+						m_flStaminaTime = gpGlobals->time + 1.0f;
+					}
+				}
+			}
+		}
+		return;
+	}
+
+	if( !FBitSet( pev->button, IN_JUMP | IN_BACK | IN_MOVELEFT | IN_MOVERIGHT ) )
+	{
+		if( m_flStaminaTime <= gpGlobals->time
+		    || m_flNoStaminaTime <= gpGlobals->time )
+			return;
+
+		m_iStaminaLevel += 8;
+
+		m_iStaminaLevel = Q_min( 100, m_iStaminaLevel );
+
+		m_flStaminaTime = gpGlobals->time + 1.0f;
+	}
+
 	if( pev->button & IN_JUMP )
 	{
 		// If on a ladder, jump off the ladder
@@ -1930,8 +1977,6 @@ void CBasePlayer::PreThink( void )
 	{
 		pev->velocity = g_vecZero;
 	}
-
-	UpdateStamina();
 }
 /* Time based Damage works as follows: 
 	1) There are several types of timebased damage:
@@ -2790,8 +2835,6 @@ void CBasePlayer::Spawn( void )
 	m_flNextChatTime = gpGlobals->time;
 
 	m_iAutoWepSwitch = 1;
-	m_flStaminaStart = 0;
-	m_iStaminaLevel = 100;
 
 	g_pGameRules->PlayerSpawn( this );
 }
@@ -2816,6 +2859,9 @@ void CBasePlayer::Precache( void )
 
 	// SOUNDS / MODELS ARE PRECACHED in ClientPrecache() (game specific)
 	// because they need to precache before any clients have connected
+
+	m_iStaminaLevel = 100;
+	m_fIsTired = FALSE;
 
 	// init geiger counter vars during spawn and each time
 	// we cross a level transition
@@ -4485,72 +4531,6 @@ BOOL CBasePlayer::SwitchWeapon( CBasePlayerItem *pWeapon )
 	pWeapon->Deploy();
 
 	return TRUE;
-}
-
-// ==========================================
-// Code changes for- Night at the Office:
-// ==========================================
-//
-// -Stamina. Stamina running in background, if player runs 
-//  for a continued amount of time, he gets tired and begins
-//  to breathe heavily. Recover stamina by standing still, 
-//  or walking slowly.
-
-//
-// Player stamina.
-//
-
-#define STAMINA_LEVEL_MIN			0
-#define STAMINA_LEVEL_MAX			100
-#define STAMINA_LEVEL_LOW			25
-#define STAMINA_DRAIN_DELAY			0.5f
-
-void CBasePlayer::UpdateStamina( void )
-{
-	int speed = pev->velocity.Length2D();
-
-	// Ensure that player is on ground.
-	if( ( pev->flags & FL_ONGROUND ) )
-	{
-		float nextDrain = STAMINA_DRAIN_DELAY;
-
-		if( pev->flags & FL_DUCKING )
-			nextDrain *= 2; // When ducking, drain twice less faster.
-
-		if( speed > 0 )
-		{
-			// ALERT( at_console, "DRAINING STAMINA\n" );
-
-			// Player is moving, drain stamina level.
-			if( ( gpGlobals->time - m_flStaminaStart ) > nextDrain )
-			{
-				if( m_iStaminaLevel > STAMINA_LEVEL_MIN )
-					m_iStaminaLevel--;
-
-				m_flStaminaStart = gpGlobals->time;
-			}
-		}
-		else
-		{
-			// ALERT( at_console, "RECOVERING STAMINA\n" );
-
-			// Player is immobile, regen stamina level.
-			if( ( gpGlobals->time - m_flStaminaStart ) > nextDrain )
-			{
-				if( m_iStaminaLevel < STAMINA_LEVEL_MAX )
-					m_iStaminaLevel++;
-
-				m_flStaminaStart = gpGlobals->time;
-			}
-		}
-
-		if( m_iStaminaLevel < STAMINA_LEVEL_LOW )
-			EMIT_SOUND_DYN( ENT( pev ), CHAN_STATIC, "player/breathe2.wav", 0.15f, ATTN_NORM, SND_CHANGE_VOL | SND_CHANGE_PITCH, PITCH_NORM );
-		else
-			STOP_SOUND( ENT( pev ), CHAN_STATIC, "player/breathe2.wav" );
-	}
-
-	// ALERT( at_console, "Player stamina level: %d\n", m_iStaminaLevel );
 }
 
 //=========================================================

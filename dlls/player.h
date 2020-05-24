@@ -326,9 +326,10 @@ public:
 
 	int m_iAutoWepSwitch;
 
-	void UpdateStamina( void );
 	int m_iStaminaLevel;
-	float m_flStaminaStart;
+	float m_flStaminaTime;
+	float m_flNoStaminaTime;
+	BOOL m_fIsTired;
 
 	Vector m_vecLastViewAngles;
 
