@@ -935,10 +935,6 @@ void ClientPrecache( void )
 
 	if( giPrecacheGrunt )
 		UTIL_PrecacheOther( "monster_human_grunt" );
-
-	PRECACHE_SOUND( "player/breathe2.wav" );
-
-	UTIL_PrecacheOther( "weapon_clip" );
 }
 
 /*
