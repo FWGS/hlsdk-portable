@@ -23,17 +23,16 @@
 #include "func_break.h"
 #include "shake.h"
 
-#define RANDOM_SHAKE_REFIRE_MIN	8
-#define RANDOM_SHAKE_REFIRE_MAX	15
+// pev->scale is amplitude
+// pev->dmg_save is frequency
+// pev->dmg_take is duration
+// pev->dmg is radius
+// radius of 0 means all players
+// NOTE: UTIL_ScreenShake() will only shake players who are on the ground
 
-enum
-{
-	SHAKE_TYPE_SMALL = 0,
-	SHAKE_TYPE_MEDIUM,
-	SHAKE_TYPE_HUGE,
-
-	SHAKE_TYPE_COUNT,
-};
+#define SF_SHAKE_TYPE_SMALL	0x0001
+#define SF_SHAKE_TYPE_MEDIUM	0x0002
+#define SF_SHAKE_TYPE_HUGE	0x0004
 
 // ==========================================
 // Code changes for- Night at the Office:
@@ -46,64 +45,97 @@ enum
 //  the duration is random and the delay between fires is also
 //  random.
 
-class CRandomShake : public CShake
+class CRandomShake : public CBaseDelay
 {
 public:
-	void	Spawn(void);
-	void	Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value);
+	void	Spawn();
+	void	Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+	void	KeyValue( KeyValueData *pkvd );
 
-	void	EXPORT RandomThink(void);
+	void	Shake();
 
-	virtual int		ObjectCaps(void) { return CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
+	inline	float	Amplitude() { return pev->scale; }
+	inline	float	Frequency() { return pev->dmg_save; }
+	inline	float	Duration() { return pev->dmg_take; }
+	inline	float	Radius() { return pev->dmg; }
+
+	inline	void	SetAmplitude( float amplitude ) { pev->scale = amplitude; }
+	inline	void	SetFrequency( float frequency ) { pev->dmg_save = frequency; }
+	inline	void	SetDuration( float duration ) { pev->dmg_take = duration; }
+	inline	void	SetRadius( float radius ) { pev->dmg = radius; }
+
+	void	EXPORT ShootThink();
+
+	int	m_iShakeCount;
 };
 
-LINK_ENTITY_TO_CLASS(env_random_shake, CRandomShake);
+LINK_ENTITY_TO_CLASS( env_random_shake, CRandomShake )
 
-void CRandomShake::Spawn(void)
+void CRandomShake::Spawn()
 {
-	CShake::Spawn();
+	pev->solid = SOLID_NOT;
+	pev->movetype = MOVETYPE_NONE;
+	pev->effects = 0;
+	pev->frame = 0;
 
-	SetThink(NULL);
+	SetRadius( 0 );
+	SetDuration( RANDOM_LONG( 2, 8 ) );
+
+	m_iShakeCount = 10;
+
+	if( m_flDelay == 0.0f )
+		m_flDelay = 0.1f;
+
+	SetAmplitude( 4.0f );
+
+	if( pev->spawnflags & SF_SHAKE_TYPE_SMALL )
+		SetAmplitude( RANDOM_FLOAT( 1.0f, 5.0f ) );
+
+	if( pev->spawnflags & SF_SHAKE_TYPE_MEDIUM )
+		SetAmplitude( RANDOM_FLOAT( 4.0f, 10.0f ) );
+
+	if( pev->spawnflags & SF_SHAKE_TYPE_HUGE )
+		SetAmplitude( RANDOM_FLOAT( 8.0f, 16.0f ) );
 }
 
-void CRandomShake::Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value)
+void CRandomShake::KeyValue( KeyValueData *pkvd )
 {
-	SetThink(&CRandomShake::RandomThink);
-
-	pev->nextthink = gpGlobals->time + RANDOM_FLOAT(RANDOM_SHAKE_REFIRE_MIN, RANDOM_SHAKE_REFIRE_MAX);
-}
-
-void CRandomShake::RandomThink(void)
-{
-	pev->nextthink = gpGlobals->time + RANDOM_FLOAT(RANDOM_SHAKE_REFIRE_MIN, RANDOM_SHAKE_REFIRE_MAX);
-
-	int amplitude, frequency, duration;
-
-	switch (RANDOM_LONG(0, SHAKE_TYPE_COUNT - 1))
+	if( FStrEq( pkvd->szKeyName, "frequency" ) )
 	{
-	default:
-	case SHAKE_TYPE_SMALL:
-		amplitude = RANDOM_LONG(2, 3);
-		frequency = RANDOM_LONG(20, 40);
-		duration = RANDOM_FLOAT(2, 4);
-		break;
-
-	case SHAKE_TYPE_MEDIUM:
-		amplitude = RANDOM_LONG(3, 5);
-		frequency = RANDOM_LONG(40, 80);
-		duration = RANDOM_FLOAT(4, 6);
-		break;
-
-	case SHAKE_TYPE_HUGE:
-		amplitude = RANDOM_LONG(5, 10);
-		frequency = RANDOM_LONG(80, 100);
-		duration  = RANDOM_FLOAT(6, 8);
-		break;
+		SetFrequency( atof( pkvd->szValue ) );
+		pkvd->fHandled = TRUE;
 	}
-
-	SetAmplitude(amplitude);
-	SetFrequency(frequency);
-	SetDuration(duration);
-
-	UTIL_ScreenShake(pev->origin, Amplitude(), Frequency(), Duration(), 0);
+	else
+		CBaseDelay::KeyValue( pkvd );
 }
+
+void CRandomShake::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
+{
+	SetThink( &CRandomShake::ShootThink );
+
+	pev->nextthink = gpGlobals->time;
+}
+
+void CRandomShake::Shake()
+{
+	UTIL_ScreenShake( pev->origin, Amplitude(), Frequency(), Duration(), Radius() );
+
+	EMIT_GROUPNAME_SUIT( ENT( pev ), "FRAGILE" );
+}
+
+void CRandomShake::ShootThink()
+{
+	m_flDelay = RANDOM_FLOAT( 9.0f, 24.0f );
+
+	pev->nextthink = gpGlobals->time + m_flDelay;
+
+	Shake();
+
+	if( --m_iShakeCount <= 0 )
+	{
+		m_iShakeCount += 10;
+
+		pev->nextthink = gpGlobals->time;
+	}
+}
+
