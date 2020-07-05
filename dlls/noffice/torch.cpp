@@ -101,6 +101,9 @@ void CTorch::Holster( int skiplocal /*= 0*/ )
 
 void CTorch::PrimaryAttack()
 {
+	if( FBitSet( m_pPlayer->m_afButtonLast, IN_ATTACK ) )
+		return;
+
 	SendWeaponAnim( TORCH_SWITCH );
 
 	EMIT_SOUND( ENT( pev ), CHAN_VOICE, "items/flashlight1.wav", VOL_NORM, ATTN_NORM );

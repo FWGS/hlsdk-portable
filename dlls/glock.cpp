@@ -127,6 +127,9 @@ void CGlock::SecondaryAttack( void )
 
 void CGlock::PrimaryAttack( void )
 {
+	if( FBitSet( m_pPlayer->m_afButtonLast, IN_ATTACK ) )
+		return;
+
 	GlockFire( 0.01, 0.2, TRUE );
 }
 
