@@ -158,14 +158,6 @@ public:
 	float m_lifeTime;
 };
 
-class CWeaponClip : public CGib
-{
-public:
-	void Spawn( const char *szModel );
-	void EXPORT WaitTillLand( void );
-	void EXPORT ClipTouch( CBaseEntity *pOther );
-};
-
 #define CUSTOM_SCHEDULES\
 		virtual Schedule_t *ScheduleFromName( const char *pName );\
 		static Schedule_t *m_scheduleList[];
