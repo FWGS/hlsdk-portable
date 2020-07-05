@@ -634,43 +634,46 @@ void CTriggerMonsterJump::Touch( CBaseEntity *pOther )
 //
 // -Mp3 support.
 
+extern int gmsgPlayMP3;
+extern int gmsgStopMP3;
 class CTargetFMODAudio : public CBaseTrigger
 {
 public:
 	void Spawn( void );
-	void PlaySong( CBaseEntity *pActivator, char* song );
-	void Touch( CBaseEntity *pOther );
+	void Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
 };
 
-LINK_ENTITY_TO_CLASS( trigger_mp3audio, CTargetFMODAudio );
+LINK_ENTITY_TO_CLASS( trigger_mp3audio, CTargetFMODAudio )
 
 void CTargetFMODAudio::Spawn( void )
 {
 	InitTrigger();
 }
 
-void CTargetFMODAudio::Touch( CBaseEntity *pOther )
+void CTargetFMODAudio::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
-	if( !pOther || !pOther->IsPlayer() ) // activator should be a player
-		return;
+	edict_t *pClient;
 
-	if( FStringNull( pev->target ) )
+	// manually find the single player.
+	pClient = g_engfuncs.pfnPEntityOfEntIndex( 1 );
+
+	// Can't play if the client is not connected!
+	if( !pClient )
+		return;	
+
+	const char *pStr = STRING( pev->target );
+
+	if( !strcmp( pStr, "stop" ) )
 	{
-		UTIL_Remove( this );
-		return;
+		MESSAGE_BEGIN( MSG_ONE, gmsgStopMP3, NULL, ENT( pev ) );
+		MESSAGE_END();
 	}
-
-	PlaySong( pOther, (char*)STRING( pev->target ) );
-}
-
-void CTargetFMODAudio::PlaySong( CBaseEntity *pActivator, char* song )
-{
-	char command[64];
-
-	// Format new file name and path.
-	sprintf( command, "play sound/mp3/%s\n", song );
-
-	CLIENT_COMMAND( pActivator->edict(), command );
+	else
+	{
+		MESSAGE_BEGIN( MSG_ONE, gmsgPlayMP3, NULL, ENT( pev ) );
+			WRITE_STRING( pStr );
+		MESSAGE_END();
+	}
 
 	SetTouch( NULL );
 	UTIL_Remove( this );

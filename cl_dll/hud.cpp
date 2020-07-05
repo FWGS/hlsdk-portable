@@ -78,6 +78,16 @@ int __MsgFunc_GameMode( const char *pszName, int iSize, void *pbuf )
 	return gHUD.MsgFunc_GameMode( pszName, iSize, pbuf );
 }
 
+int __MsgFunc_PlayMP3( const char *pszName, int iSize, void *pbuf )
+{
+	return gHUD.MsgFunc_PlayMP3( pszName, iSize, pbuf );
+}
+
+int __MsgFunc_StopMP3( const char *pszName, int iSize, void *pbuf )
+{
+	return gHUD.MsgFunc_StopMP3( pszName, iSize, pbuf );
+}
+
 // TFFree Command Menu
 void __CmdFunc_OpenCommandMenu( void )
 {
@@ -161,6 +171,9 @@ void CHud::Init( void )
 	HOOK_MESSAGE( ViewMode );
 	HOOK_MESSAGE( SetFOV );
 	HOOK_MESSAGE( Concuss );
+
+	HOOK_MESSAGE( PlayMP3 );
+	HOOK_MESSAGE( StopMP3 );
 
 	// TFFree CommandMenu
 	HOOK_COMMAND( "+commandmenu", OpenCommandMenu );

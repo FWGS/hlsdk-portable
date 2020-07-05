@@ -659,6 +659,9 @@ public:
 	int _cdecl MsgFunc_SetFOV( const char *pszName,  int iSize, void *pbuf );
 	int  _cdecl MsgFunc_Concuss( const char *pszName, int iSize, void *pbuf );
 
+	int MsgFunc_PlayMP3( const char *pszName, int iSize, void *pbuf );
+	int MsgFunc_StopMP3( const char *pszName, int iSize, void *pbuf );
+
 	// Screen information
 	SCREENINFO	m_scrinfo;
 

@@ -183,6 +183,8 @@ int gmsgSetFOV = 0;
 int gmsgShowMenu = 0;
 int gmsgGeigerRange = 0;
 int gmsgTeamNames = 0;
+int gmsgPlayMP3 = 0;
+int gmsgStopMP3 = 0;
 int gmsgBhopcap = 0;
 
 int gmsgStatusText = 0;
@@ -230,6 +232,8 @@ void LinkUserMessages( void )
 	gmsgFade = REG_USER_MSG( "ScreenFade", sizeof(ScreenFade) );
 	gmsgAmmoX = REG_USER_MSG( "AmmoX", 2 );
 	gmsgTeamNames = REG_USER_MSG( "TeamNames", -1 );
+	gmsgPlayMP3 = REG_USER_MSG( "PlayMP3", -1 );
+	gmsgStopMP3 = REG_USER_MSG( "StopMP3", 0 );
 	gmsgBhopcap = REG_USER_MSG( "Bhopcap", 1 );
 
 	gmsgStatusText = REG_USER_MSG( "StatusText", -1 );

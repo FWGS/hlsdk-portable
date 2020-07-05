@@ -127,3 +127,33 @@ int CHud::MsgFunc_Concuss( const char *pszName, int iSize, void *pbuf )
 		this->m_StatusIcons.DisableIcon( "dmg_concuss" );
 	return 1;
 }
+
+int CHud::MsgFunc_PlayMP3( const char *pszName, int iSize, void *pbuf ) //AJH -Killar MP3
+{
+	const char *pszSound;
+	char cmd[64];
+
+	BEGIN_READ( pbuf, iSize );
+
+	pszSound = READ_STRING();
+
+	if( !IsXashFWGS() && gEngfuncs.pfnGetCvarPointer( "gl_overbright" ) )
+	{
+		sprintf( cmd, "mp3 play %s\n", pszSound );
+		gEngfuncs.pfnClientCmd( cmd );
+	}
+	else
+		gEngfuncs.pfnPrimeMusicStream( pszSound, 1 );
+
+	return 1;
+}
+
+int CHud::MsgFunc_StopMP3( const char *pszName, int iSize, void *pbuf )
+{
+	if( !IsXashFWGS() && gEngfuncs.pfnGetCvarPointer( "gl_overbright" ) )
+		gEngfuncs.pfnClientCmd( "mp3 stop\n" );
+	else
+		gEngfuncs.pfnPrimeMusicStream( 0, 0 );
+
+	return 1;
+}

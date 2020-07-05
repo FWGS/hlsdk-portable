@@ -47,6 +47,7 @@ extern DLL_GLOBAL ULONG		g_ulFrameCount;
 
 extern void CopyToBodyQue( entvars_t* pev );
 extern int giPrecacheGrunt;
+extern int gmsgPlayMP3;
 extern int gmsgSayText;
 extern int gmsgBhopcap;
 
@@ -492,6 +493,12 @@ void ClientCommand( edict_t *pEntity )
 	else if( FStrEq( pcmd, "fullupdate" ) )
 	{
 		GetClassPtr( (CBasePlayer *)pev )->ForceClientDllUpdate(); 
+	}
+	else if( FStrEq( pcmd, "playmp3" ) )
+	{
+		MESSAGE_BEGIN( MSG_ONE, gmsgPlayMP3, NULL, ENT( pev ) );
+			WRITE_STRING( CMD_ARGV( 1 ) );
+		MESSAGE_END();
 	}
 	else if( FStrEq(pcmd, "give" ) )
 	{
