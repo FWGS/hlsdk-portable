@@ -177,7 +177,7 @@ void CShotgun::PrimaryAttack()
 		// HEV suit - indicate out of ammo condition
 		m_pPlayer->SetSuitUpdate( "!HEV_AMO0", FALSE, 0 );
 
-	m_flPumpTime = gpGlobals->time + 0.5;
+	m_flPumpTime = gpGlobals->time + 0.5f;
 
 	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.75f;
 	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.75f;

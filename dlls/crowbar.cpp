@@ -210,7 +210,7 @@ int CCrowbar::Swing( int fFirst )
 
 			EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_WEAPON, "weapons/cbar_miss1.wav", 1, ATTN_NORM, 0, 94 + RANDOM_LONG( 0, 0xF ) );
 
-			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5;
+			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5f;
 
 			// player "shoot" animation
 			m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
