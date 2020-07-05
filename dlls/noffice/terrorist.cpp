@@ -176,9 +176,8 @@ const char *CTerrorist::pDeathSounds[] =
 
 const char *CTerrorist::pBurstSounds[] =
 {
-	"weapons/hks1.wav",
-	"weapons/hks2.wav",
-	"weapons/hks3.wav",
+	"hgrunt/gr_mgun1.wav",
+	"hgrunt/gr_mgun2.wav",
 };
 
 
@@ -214,7 +213,7 @@ void CTerrorist::Shoot(Vector vecSpread, int iBulletType)
 //=========================================================
 void CTerrorist::ShootAK47(Vector vecSpread)
 {
-	Shoot(VECTOR_CONE_10DEGREES, BULLET_MONSTER_MP5);
+	Shoot(vecSpread, BULLET_MONSTER_MP5);
 
 	EMIT_SOUND(ENT(pev), CHAN_WEAPON, RANDOM_SOUND_ARRAY(pBurstSounds), 1, ATTN_NORM);
 }
@@ -307,7 +306,7 @@ void CTerrorist::Spawn()
 	if (pev->weapons == 0)
 	{
 		// initialize to original values
-		pev->weapons = TERROR_AK47 | TERROR_HANDGRENADE;
+		pev->weapons = TERROR_AK47;
 	}
 	
 	// Prevent terrorist from using grenade launchers.
@@ -322,6 +321,10 @@ void CTerrorist::Spawn()
 	{
 		m_cClipSize = TERRORIST_CLIP_SIZE;
 	}
+
+	if( pev->body == -1 )
+		pev->body = RANDOM_LONG( 0, 3 );
+ 
 	m_cAmmoLoaded = m_cClipSize;
 
 	m_iTerrorFlags = 0;
@@ -355,7 +358,7 @@ void CTerrorist::Precache()
 
 	// get voice pitch
 	if (RANDOM_LONG(0, 1))
-		m_voicePitch = 109 + RANDOM_LONG(0, 7);
+		m_voicePitch = 100 + RANDOM_LONG(0, 7);
 	else
 		m_voicePitch = 100;
 
@@ -407,11 +410,18 @@ void CTerrorist::TraceAttack(entvars_t *pevAttacker, float flDamage, Vector vecD
 {
 	if (pev->takedamage)
 	{
-		// Human sentries are not allowed to drop weapons.
 		if (!IsHumanSentry())
 		{
+			if( FBitSet( bitsDamageType, DMG_CLUB ) )
+				flDamage *= 2.0f;
+
 			if (ptr->iHitgroup == HITGROUP_RIGHTARM)
 			{
+				flDamage -= 20.0f;
+
+				if( flDamage <= 0.0f )
+					flDamage = 10.0f;
+
 				// ==========================================
 				// Code changes for- Night at the Office:
 				// ==========================================
@@ -423,8 +433,8 @@ void CTerrorist::TraceAttack(entvars_t *pevAttacker, float flDamage, Vector vecD
 
 				if (HasWeapon())
 				{
-					Vector velocity = Vector(RANDOM_FLOAT(-10, 10), RANDOM_FLOAT(-10, 10), RANDOM_FLOAT(30, 40));
-					Vector angVelocity = Vector(0, RANDOM_FLOAT(10, 20), 0);
+					Vector velocity = Vector( RANDOM_FLOAT( -5, 5 ), RANDOM_FLOAT( -5, 5 ), RANDOM_FLOAT( -5, 5 ) );
+					Vector angVelocity = Vector(0, RANDOM_FLOAT(1, 10), 0);
 
 					DropWeapon(velocity, angVelocity);
 
@@ -432,14 +442,15 @@ void CTerrorist::TraceAttack(entvars_t *pevAttacker, float flDamage, Vector vecD
 					m_afCapability &= ~bits_CAP_RANGE_ATTACK1;
 				}
 			}
-		}
-		// check for helmet shot
-		else if (ptr->iHitgroup == 11)
-		{
-			// it's head shot anyways
-			ptr->iHitgroup = HITGROUP_HEAD;
-		}
+			// check for helmet shot
+			else if (ptr->iHitgroup == 11)
+                	{
+                        	// it's head shot anyways
+				ptr->iHitgroup = HITGROUP_HEAD;
 
+				flDamage *= 5.0f;
+			}
+		}
 	}
 
 	CSquadMonster::TraceAttack(pevAttacker, flDamage, vecDir, ptr, bitsDamageType);
