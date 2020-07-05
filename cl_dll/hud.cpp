@@ -195,8 +195,6 @@ void CHud::Init( void )
 	default_fov = CVAR_CREATE( "default_fov", "90", FCVAR_ARCHIVE );
 	m_pCvarStealMouse = CVAR_CREATE( "hud_capturemouse", "1", FCVAR_ARCHIVE );
 	m_pCvarDraw = CVAR_CREATE( "hud_draw", "1", FCVAR_ARCHIVE );
-	m_pCvarNewHud = CVAR_CREATE( "hud_newhud", "1", FCVAR_ARCHIVE );
-	m_pCvarShowCrosshair = CVAR_CREATE( "hud_showcrosshair", "0", FCVAR_ARCHIVE );
 	cl_lw = gEngfuncs.pfnGetCvarPointer( "cl_lw" );
 	cl_viewbob = CVAR_CREATE( "cl_viewbob", "0", FCVAR_ARCHIVE );
 
