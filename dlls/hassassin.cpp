@@ -185,7 +185,7 @@ void CHAssassin::SetYawSpeed( void )
 //=========================================================
 void CHAssassin::Shoot( void )
 {
-	if( m_hEnemy == NULL )
+	if( m_hEnemy == 0 )
 	{
 		return;
 	}
@@ -193,15 +193,15 @@ void CHAssassin::Shoot( void )
 	Vector vecShootOrigin = GetGunPosition();
 	Vector vecShootDir = ShootAtEnemy( vecShootOrigin );
 
-	if( m_flLastShot + 2 < gpGlobals->time )
+	if( m_flLastShot + 2.0f < gpGlobals->time )
 	{
-		m_flDiviation = 0.10;
+		m_flDiviation = 0.10f;
 	}
 	else
 	{
-		m_flDiviation -= 0.01;
-		if( m_flDiviation < 0.02 )
-			m_flDiviation = 0.02;
+		m_flDiviation -= 0.01f;
+		if( m_flDiviation < 0.02f )
+			m_flDiviation = 0.02f;
 	}
 	m_flLastShot = gpGlobals->time;
 
@@ -214,10 +214,10 @@ void CHAssassin::Shoot( void )
 	switch( RANDOM_LONG( 0, 1 ) )
 	{
 	case 0:
-		EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "weapons/pl_gun1.wav", RANDOM_FLOAT( 0.6, 0.8 ), ATTN_NORM );
+		EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "weapons/pl_gun1.wav", RANDOM_FLOAT( 0.6f, 0.8f ), ATTN_NORM );
 		break;
 	case 1:
-		EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "weapons/pl_gun2.wav", RANDOM_FLOAT( 0.6, 0.8 ), ATTN_NORM );
+		EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "weapons/pl_gun2.wav", RANDOM_FLOAT( 0.6f, 0.8f ), ATTN_NORM );
 		break;
 	}
 
@@ -247,7 +247,7 @@ void CHAssassin::HandleAnimEvent( MonsterEvent_t *pEvent )
 			UTIL_MakeVectors( pev->angles );
 			CGrenade::ShootTimed( pev, pev->origin + gpGlobals->v_forward * 34 + Vector( 0, 0, 32 ), m_vecTossVelocity, 2.0 );
 
-			m_flNextGrenadeCheck = gpGlobals->time + 6;// wait six seconds before even looking again to see if a grenade can be thrown.
+			m_flNextGrenadeCheck = gpGlobals->time + 6.0f;// wait six seconds before even looking again to see if a grenade can be thrown.
 			m_fThrowGrenade = FALSE;
 			// !!!LATER - when in a group, only try to throw grenade if ordered.
 		}
@@ -259,7 +259,7 @@ void CHAssassin::HandleAnimEvent( MonsterEvent_t *pEvent )
 			pev->movetype = MOVETYPE_TOSS;
 			pev->flags &= ~FL_ONGROUND;
 			pev->velocity = m_vecJumpVelocity;
-			m_flNextJump = gpGlobals->time + 3.0;
+			m_flNextJump = gpGlobals->time + 3.0f;
 		}
 		return;
 	default:
@@ -597,7 +597,7 @@ IMPLEMENT_CUSTOM_SCHEDULES( CHAssassin, CBaseMonster )
 //=========================================================
 BOOL CHAssassin::CheckMeleeAttack1( float flDot, float flDist )
 {
-	if( m_flNextJump < gpGlobals->time && ( flDist <= 128 || HasMemory( bits_MEMORY_BADJUMP ) ) && m_hEnemy != NULL )
+	if( m_flNextJump < gpGlobals->time && ( flDist <= 128.0f || HasMemory( bits_MEMORY_BADJUMP ) ) && m_hEnemy != 0 )
 	{
 		TraceResult tr;
 
@@ -605,15 +605,15 @@ BOOL CHAssassin::CheckMeleeAttack1( float flDot, float flDist )
 
 		UTIL_TraceHull( pev->origin + Vector( 0, 0, 36 ), vecDest + Vector( 0, 0, 36 ), dont_ignore_monsters, human_hull, ENT( pev ), &tr );
 
-		if( tr.fStartSolid || tr.flFraction < 1.0 )
+		if( tr.fStartSolid || tr.flFraction < 1.0f )
 		{
 			return FALSE;
 		}
 
 		float flGravity = g_psv_gravity->value;
 
-		float time = sqrt( 160 / ( 0.5 * flGravity ) );
-		float speed = flGravity * time / 160;
+		float time = sqrt( 160.0f / ( 0.5f * flGravity ) );
+		float speed = flGravity * time / 160.0f;
 		m_vecJumpVelocity = ( vecDest - pev->origin ) * speed;
 
 		return TRUE;
@@ -687,7 +687,7 @@ void CHAssassin::RunAI( void )
 
 	// always visible if moving
 	// always visible is not on hard
-	if( g_iSkillLevel != SKILL_HARD || m_hEnemy == NULL || pev->deadflag != DEAD_NO || m_Activity == ACT_RUN || m_Activity == ACT_WALK || !( pev->flags & FL_ONGROUND ) )
+	if( g_iSkillLevel != SKILL_HARD || m_hEnemy == 0 || pev->deadflag != DEAD_NO || m_Activity == ACT_RUN || m_Activity == ACT_WALK || !( pev->flags & FL_ONGROUND ) )
 		m_iTargetRanderamt = 255;
 	else
 		m_iTargetRanderamt = 20;
@@ -699,12 +699,12 @@ void CHAssassin::RunAI( void )
 			EMIT_SOUND( ENT( pev ), CHAN_BODY, "debris/beamstart1.wav", 0.2, ATTN_NORM );
 		}
 
-		pev->renderamt = max( pev->renderamt - 50, m_iTargetRanderamt );
+		pev->renderamt = Q_max( pev->renderamt - 50, m_iTargetRanderamt );
 		pev->rendermode = kRenderTransTexture;
 	}
 	else if( pev->renderamt < m_iTargetRanderamt )
 	{
-		pev->renderamt = min( pev->renderamt + 50, m_iTargetRanderamt );
+		pev->renderamt = Q_min( pev->renderamt + 50, m_iTargetRanderamt );
 		if( pev->renderamt == 255 )
 			pev->rendermode = kRenderNormal;
 	}

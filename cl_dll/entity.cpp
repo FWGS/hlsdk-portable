@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2002, Valve LLC, All rights reserved. ============
+//========= Copyright (c) 1996-2002, Valve LLC, All rights reserved. ============
 //
 // Purpose: 
 //
@@ -6,8 +6,6 @@
 //=============================================================================
 
 // Client side entity management functions
-
-#include <memory.h>
 
 #include "hud.h"
 #include "cl_util.h"
@@ -319,12 +317,12 @@ void Particles( void )
 
 	curtime = gEngfuncs.GetClientTime();
 
-	if( ( curtime - lasttime ) < 2.0 )
+	if( ( curtime - lasttime ) < 2.0f )
 		return;
 
 	if( !color )
 	{
-		color = gEngfuncs.pfnRegisterVariable ( "color","255 0 0", 0 );
+		color = gEngfuncs.pfnRegisterVariable( "color", "255 0 0", 0 );
 	}
 
 	lasttime = curtime;
@@ -342,8 +340,8 @@ void Particles( void )
 
 		for( j = 0; j < 3; j++ )
 		{
-			p->org[j] = v_origin[j] + gEngfuncs.pfnRandomFloat( -32.0, 32.0 );
-			p->vel[j] = gEngfuncs.pfnRandomFloat( -100.0, 100.0 );
+			p->org[j] = v_origin[j] + gEngfuncs.pfnRandomFloat( -32.0f, 32.0f );
+			p->vel[j] = gEngfuncs.pfnRandomFloat( -100.0f, 100.0f );
 		}
 
 		if( color )
@@ -361,7 +359,7 @@ void Particles( void )
 		gEngfuncs.pEfxAPI->R_GetPackedColor( &p->packedColor, p->color );
 
 		// p->die is set to current time so all you have to do is add an additional time to it
-		p->die += 3.0;
+		p->die += 3.0f;
 	}
 }
 */
@@ -384,7 +382,7 @@ void TempEnts( void )
 
 	curtime = gEngfuncs.GetClientTime();
 
-	if( ( curtime - lasttime ) < 10.0 )
+	if( ( curtime - lasttime ) < 10.0f )
 		return;
 
 	lasttime = curtime;
@@ -417,11 +415,11 @@ void TempEnts( void )
 			p->entity.curstate.origin[j] = origin[j];
 
 			// Store velocity in baseline origin
-			p->entity.baseline.origin[j] = gEngfuncs.pfnRandomFloat( -100, 100 );
+			p->entity.baseline.origin[j] = gEngfuncs.pfnRandomFloat( -100.0f, 100.0f );
 		}
 
 		// p->die is set to current time so all you have to do is add an additional time to it
-		p->die += 10.0;
+		p->die += 10.0f;
 	}
 }
 */
@@ -585,10 +583,10 @@ void DLLEXPORT HUD_TempEntUpdate (
 	static int gTempEntFrame = 0;
 	int			i;
 	TEMPENTITY	*pTemp, *pnext, *pprev;
-	float		freq, gravity, gravitySlow, life, fastFreq;
+	float		/*freq,*/ gravity, gravitySlow, life, fastFreq;
 
 	// Nothing to simulate
-	if ( !*ppTempEntActive )		
+	if( !*ppTempEntActive )	
 		return;
 
 	// in order to have tents collide with players, we have to run the player prediction code so
@@ -601,7 +599,7 @@ void DLLEXPORT HUD_TempEntUpdate (
 	gEngfuncs.pEventAPI->EV_PushPMStates();
 
 	// Now add in all of the players.
-	gEngfuncs.pEventAPI->EV_SetSolidPlayers( -1 );	
+	gEngfuncs.pEventAPI->EV_SetSolidPlayers( -1 );
 
 	// !!!BUGBUG	-- This needs to be time based
 	gTempEntFrame = ( gTempEntFrame + 1 ) & 31;
@@ -623,10 +621,10 @@ void DLLEXPORT HUD_TempEntUpdate (
 	}
 
 	pprev = NULL;
-	freq = client_time * 0.01;
+	//freq = client_time * 0.01;
 	fastFreq = client_time * 5.5;
 	gravity = -frametime * cl_gravity;
-	gravitySlow = gravity * 0.5;
+	gravitySlow = gravity * 0.5f;
 
 	while( pTemp )
 	{
@@ -634,7 +632,7 @@ void DLLEXPORT HUD_TempEntUpdate (
 
 		active = 1;
 
-		life = pTemp->die - client_time;
+		life = pTemp->die - (float)client_time;
 		pnext = pTemp->next;
 		if( life < 0 )
 		{
@@ -674,9 +672,9 @@ void DLLEXPORT HUD_TempEntUpdate (
 					gEngfuncs.pEfxAPI->R_SparkEffect( pTemp->entity.origin, 8, -200, 200 );
 
 					// Reduce life
-					pTemp->entity.baseline.framerate -= 0.1;
+					pTemp->entity.baseline.framerate -= 0.1f;
 
-					if( pTemp->entity.baseline.framerate <= 0.0 )
+					if( pTemp->entity.baseline.framerate <= 0.0f )
 					{
 						pTemp->die = client_time;
 					}
@@ -700,32 +698,32 @@ void DLLEXPORT HUD_TempEntUpdate (
 			}
 			else if( pTemp->flags & FTENT_SINEWAVE )
 			{
-				pTemp->x += pTemp->entity.baseline.origin[0] * frametime;
-				pTemp->y += pTemp->entity.baseline.origin[1] * frametime;
+				pTemp->x += pTemp->entity.baseline.origin[0] * (float)frametime;
+				pTemp->y += pTemp->entity.baseline.origin[1] * (float)frametime;
 
 				pTemp->entity.origin[0] = pTemp->x + sin( pTemp->entity.baseline.origin[2] + client_time * pTemp->entity.prevstate.frame ) * ( 10 * pTemp->entity.curstate.framerate );
-				pTemp->entity.origin[1] = pTemp->y + sin( pTemp->entity.baseline.origin[2] + fastFreq + 0.7 ) * ( 8 * pTemp->entity.curstate.framerate );
+				pTemp->entity.origin[1] = pTemp->y + sin( pTemp->entity.baseline.origin[2] + fastFreq + 0.7f ) * ( 8 * pTemp->entity.curstate.framerate );
 				pTemp->entity.origin[2] += pTemp->entity.baseline.origin[2] * frametime;
 			}
 			else if( pTemp->flags & FTENT_SPIRAL )
 			{
-				float s, c;
+				/*float s, c;
 				s = sin( pTemp->entity.baseline.origin[2] + fastFreq );
-				c = cos( pTemp->entity.baseline.origin[2] + fastFreq );
+				c = cos( pTemp->entity.baseline.origin[2] + fastFreq );*/
 
-				pTemp->entity.origin[0] += pTemp->entity.baseline.origin[0] * frametime + 8 * sin( client_time * 20 + (int)(size_t)pTemp );
-				pTemp->entity.origin[1] += pTemp->entity.baseline.origin[1] * frametime + 4 * sin( client_time * 30 + (int)(size_t)pTemp );
-				pTemp->entity.origin[2] += pTemp->entity.baseline.origin[2] * frametime;
+				pTemp->entity.origin[0] += pTemp->entity.baseline.origin[0] * (float)frametime + 8 * sin( client_time * 20 + (size_t)pTemp );
+				pTemp->entity.origin[1] += pTemp->entity.baseline.origin[1] * (float)frametime + 4 * sin( client_time * 30 + (size_t)pTemp );
+				pTemp->entity.origin[2] += pTemp->entity.baseline.origin[2] * (float)frametime;
 			}
 			else 
 			{
 				for( i = 0; i < 3; i++ )
-					pTemp->entity.origin[i] += pTemp->entity.baseline.origin[i] * frametime;
+					pTemp->entity.origin[i] += pTemp->entity.baseline.origin[i] * (float)frametime;
 			}
 			
 			if( pTemp->flags & FTENT_SPRANIMATE )
 			{
-				pTemp->entity.curstate.frame += frametime * pTemp->entity.curstate.framerate;
+				pTemp->entity.curstate.frame += (float)frametime * pTemp->entity.curstate.framerate;
 				if( pTemp->entity.curstate.frame >= pTemp->frameMax )
 				{
 					pTemp->entity.curstate.frame = pTemp->entity.curstate.frame - (int)( pTemp->entity.curstate.frame );
@@ -755,9 +753,9 @@ void DLLEXPORT HUD_TempEntUpdate (
 
 			if( pTemp->flags & FTENT_ROTATE )
 			{
-				pTemp->entity.angles[0] += pTemp->entity.baseline.angles[0] * frametime;
-				pTemp->entity.angles[1] += pTemp->entity.baseline.angles[1] * frametime;
-				pTemp->entity.angles[2] += pTemp->entity.baseline.angles[2] * frametime;
+				pTemp->entity.angles[0] += pTemp->entity.baseline.angles[0] * (float)frametime;
+				pTemp->entity.angles[1] += pTemp->entity.baseline.angles[1] * (float)frametime;
+				pTemp->entity.angles[2] += pTemp->entity.baseline.angles[2] * (float)frametime;
 
 				VectorCopy( pTemp->entity.angles, pTemp->entity.latched.prevangles );
 			}
@@ -809,7 +807,7 @@ void DLLEXPORT HUD_TempEntUpdate (
 						{
 							// Chop spark speeds a bit more
 							//
-							VectorScale( pTemp->entity.baseline.origin, 0.6, pTemp->entity.baseline.origin );
+							VectorScale( pTemp->entity.baseline.origin, 0.6f, pTemp->entity.baseline.origin );
 
 							if( Length( pTemp->entity.baseline.origin ) < 10 )
 							{
@@ -829,13 +827,13 @@ void DLLEXPORT HUD_TempEntUpdate (
 					float  proj, damp;
 
 					// Place at contact point
-					VectorMA( pTemp->entity.prevstate.origin, traceFraction * frametime, pTemp->entity.baseline.origin, pTemp->entity.origin );
+					VectorMA( pTemp->entity.prevstate.origin, traceFraction * (float)frametime, pTemp->entity.baseline.origin, pTemp->entity.origin );
 					// Damp velocity
 					damp = pTemp->bounceFactor;
 					if( pTemp->flags & ( FTENT_GRAVITY | FTENT_SLOWGRAVITY ) )
 					{
-						damp *= 0.5;
-						if( traceNormal[2] > 0.9 )		// Hit floor?
+						damp *= 0.5f;
+						if( traceNormal[2] > 0.9f )		// Hit floor?
 						{
 							if( pTemp->entity.baseline.origin[2] <= 0 && pTemp->entity.baseline.origin[2] >= gravity*3 )
 							{

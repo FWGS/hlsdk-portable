@@ -92,7 +92,7 @@ CHalfLifeMultiplay::CHalfLifeMultiplay()
 	if( IS_DEDICATED_SERVER() )
 	{
 		// dedicated server
-		char *servercfgfile = (char *)CVAR_GET_STRING( "servercfgfile" );
+		/*const char *servercfgfile = CVAR_GET_STRING( "servercfgfile" );
 
 		if( servercfgfile && servercfgfile[0] )
 		{
@@ -102,11 +102,13 @@ CHalfLifeMultiplay::CHalfLifeMultiplay()
 			sprintf( szCommand, "exec %s\n", servercfgfile );
 			SERVER_COMMAND( szCommand );
 		}
+		*/
+		// this code has been moved into engine, to only run server.cfg once
 	}
 	else
 	{
 		// listen server
-		char *lservercfgfile = (char *)CVAR_GET_STRING( "lservercfgfile" );
+		const char *lservercfgfile = CVAR_GET_STRING( "lservercfgfile" );
 
 		if( lservercfgfile && lservercfgfile[0] )
 		{
@@ -254,7 +256,7 @@ void CHalfLifeMultiplay::Think( void )
 
 			if( pPlayer )
 			{
-				remain = flFragLimit - pPlayer->pev->frags;
+				remain = (int)( flFragLimit - pPlayer->pev->frags );
 				if( remain < bestfrags )
 				{
 					bestfrags = remain;
@@ -298,7 +300,7 @@ BOOL CHalfLifeMultiplay::IsDeathmatch( void )
 //=========================================================
 BOOL CHalfLifeMultiplay::IsCoOp( void )
 {
-	return gpGlobals->coop;
+	return gpGlobals->coop ? TRUE : FALSE;
 }
 
 //=========================================================
@@ -315,6 +317,11 @@ BOOL CHalfLifeMultiplay::FShouldSwitchWeapon( CBasePlayer *pPlayer, CBasePlayerI
 	{
 		// player doesn't have an active item!
 		return TRUE;
+	}
+
+	if( !pPlayer->m_iAutoWepSwitch )
+	{
+		return FALSE;
 	}
 
 	if( !pPlayer->m_pActiveItem->CanHolster() )
@@ -421,7 +428,7 @@ void CHalfLifeMultiplay::InitHUD( CBasePlayer *pl )
 {
 	// notify other clients of player joining the game
 	UTIL_ClientPrintAll( HUD_PRINTNOTIFY, UTIL_VarArgs( "%s has joined the game\n", 
-		( pl->pev->netname && STRING( pl->pev->netname )[0] != 0 ) ? STRING( pl->pev->netname ) : "unconnected" ) );
+		( pl->pev->netname && ( STRING( pl->pev->netname ) )[0] != 0 ) ? STRING( pl->pev->netname ) : "unconnected" ) );
 
 	// team match?
 	if( g_teamplay )
@@ -465,7 +472,7 @@ void CHalfLifeMultiplay::InitHUD( CBasePlayer *pl )
 		{
 			MESSAGE_BEGIN( MSG_ONE, gmsgScoreInfo, NULL, pl->edict() );
 				WRITE_BYTE( i );	// client number
-				WRITE_SHORT( plr->pev->frags );
+				WRITE_SHORT( (int)plr->pev->frags );
 				WRITE_SHORT( plr->m_iDeaths );
 				WRITE_SHORT( 0 );
 				WRITE_SHORT( GetTeamIndex( plr->m_szTeamName ) + 1 );
@@ -651,7 +658,7 @@ void CHalfLifeMultiplay::PlayerKilled( CBasePlayer *pVictim, entvars_t *pKiller,
 	// killed scores
 	MESSAGE_BEGIN( MSG_ALL, gmsgScoreInfo );
 		WRITE_BYTE( ENTINDEX(pVictim->edict()) );
-		WRITE_SHORT( pVictim->pev->frags );
+		WRITE_SHORT( (int)pVictim->pev->frags );
 		WRITE_SHORT( pVictim->m_iDeaths );
 		WRITE_SHORT( 0 );
 		WRITE_SHORT( GetTeamIndex( pVictim->m_szTeamName ) + 1 );
@@ -665,7 +672,7 @@ void CHalfLifeMultiplay::PlayerKilled( CBasePlayer *pVictim, entvars_t *pKiller,
 
 		MESSAGE_BEGIN( MSG_ALL, gmsgScoreInfo );
 			WRITE_BYTE( ENTINDEX( PK->edict() ) );
-			WRITE_SHORT( PK->pev->frags );
+			WRITE_SHORT( (int)PK->pev->frags );
 			WRITE_SHORT( PK->m_iDeaths );
 			WRITE_SHORT( 0 );
 			WRITE_SHORT( GetTeamIndex( PK->m_szTeamName ) + 1 );
@@ -674,12 +681,6 @@ void CHalfLifeMultiplay::PlayerKilled( CBasePlayer *pVictim, entvars_t *pKiller,
 		// let the killer paint another decal as soon as he'd like.
 		PK->m_flNextDecalTime = gpGlobals->time;
 	}
-#ifndef HLDEMO_BUILD
-	if( pVictim->HasNamedPlayerItem( "weapon_satchel" ) )
-	{
-		DeactivateSatchels( pVictim );
-	}
-#endif
 }
 
 //=========================================================
@@ -688,14 +689,14 @@ void CHalfLifeMultiplay::PlayerKilled( CBasePlayer *pVictim, entvars_t *pKiller,
 void CHalfLifeMultiplay::DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, entvars_t *pevInflictor )
 {
 	// Work out what killed the player, and send a message to all clients about it
-	CBaseEntity *Killer = CBaseEntity::Instance( pKiller );
+	CBaseEntity::Instance( pKiller );
 
 	const char *killer_weapon_name = "world";		// by default, the player is killed by the world
 	int killer_index = 0;
 
 	// Hack to fix name change
-	char *tau = "tau_cannon";
-	char *gluon = "gluon gun";
+	const char *tau = "tau_cannon";
+	const char *gluon = "gluon gun";
 
 	if( pKiller->flags & FL_CLIENT )
 	{
@@ -1219,7 +1220,7 @@ COM_Parse
 Parse a token out of a string
 ==============
 */
-char *COM_Parse( char *data )
+const char *COM_Parse( const char *data )
 {
 	int c;
 	int len;
@@ -1295,9 +1296,9 @@ COM_TokenWaiting
 Returns 1 if additional data is waiting to be processed on this line
 ==============
 */
-int COM_TokenWaiting( char *buffer )
+int COM_TokenWaiting( const char *buffer )
 {
-	char *p;
+	const char *p;
 
 	p = buffer;
 	while( *p && *p!='\n')
@@ -1318,12 +1319,12 @@ ReloadMapCycleFile
 Parses mapcycle.txt file into mapcycle_t structure
 ==============
 */
-int ReloadMapCycleFile( char *filename, mapcycle_t *cycle )
+int ReloadMapCycleFile( const char *filename, mapcycle_t *cycle )
 {
 	char szMap[32];
 	int length;
-	char *pFileList;
-	char *aFileList = pFileList = (char*)LOAD_FILE_FOR_ME( filename, &length );
+	const char *pFileList;
+	const char *aFileList = pFileList = (const char *)LOAD_FILE_FOR_ME( filename, &length );
 	int hasbuffer;
 	mapcycle_item_s *item, *newlist = NULL, *next;
 
@@ -1336,7 +1337,8 @@ int ReloadMapCycleFile( char *filename, mapcycle_t *cycle )
 			hasbuffer = 0;
 
 			pFileList = COM_Parse( pFileList );
-			if( strlen( com_token ) <= 0 )
+
+			if( com_token[0] == '\0' )
 				break;
 
 			strcpy( szMap, com_token );
@@ -1345,7 +1347,8 @@ int ReloadMapCycleFile( char *filename, mapcycle_t *cycle )
 			if( COM_TokenWaiting( pFileList ) )
 			{
 				pFileList = COM_Parse( pFileList );
-				if( strlen( com_token ) > 0 )
+
+				if( com_token[0] != '\0' )
 				{
 					hasbuffer = 1;
 					strcpy( szBuffer, com_token );
@@ -1373,15 +1376,15 @@ int ReloadMapCycleFile( char *filename, mapcycle_t *cycle )
 					if( s && s[0] )
 					{
 						item->minplayers = atoi( s );
-						item->minplayers = max( item->minplayers, 0 );
-						item->minplayers = min( item->minplayers, gpGlobals->maxClients );
+						item->minplayers = Q_max( item->minplayers, 0 );
+						item->minplayers = Q_min( item->minplayers, gpGlobals->maxClients );
 					}
 					s = g_engfuncs.pfnInfoKeyValue( szBuffer, "maxplayers" );
 					if( s && s[0] )
 					{
 						item->maxplayers = atoi( s );
-						item->maxplayers = max( item->maxplayers, 0 );
-						item->maxplayers = min( item->maxplayers, gpGlobals->maxClients );
+						item->maxplayers = Q_max( item->maxplayers, 0 );
+						item->maxplayers = Q_min( item->maxplayers, gpGlobals->maxClients );
 					}
 
 					// Remove keys
@@ -1401,7 +1404,7 @@ int ReloadMapCycleFile( char *filename, mapcycle_t *cycle )
 			}
 		}
 
-		FREE_FILE( aFileList );
+		FREE_FILE( (void*)aFileList );
 	}
 
 	// Fixup circular list pointer
@@ -1501,7 +1504,8 @@ void ExtractCommandString( char *s, char *szCommand )
 		*o = 0;
 
 		strcat( szCommand, pkey );
-		if( strlen( value ) > 0 )
+
+		if( value[0] != '\0' )
 		{
 			strcat( szCommand, " " );
 			strcat( szCommand, value );
@@ -1537,7 +1541,7 @@ void CHalfLifeMultiplay::ChangeLevel( void )
 	BOOL do_cycle = TRUE;
 
 	// find the map to change to
-	char *mapcfile = (char*)CVAR_GET_STRING( "mapcyclefile" );
+	const char *mapcfile = CVAR_GET_STRING( "mapcyclefile" );
 	ASSERT( mapcfile != NULL );
 
 	szCommands[0] = '\0';
@@ -1636,13 +1640,15 @@ void CHalfLifeMultiplay::ChangeLevel( void )
 	{
 		ALERT( at_console, "PLAYER COUNT:  min %i max %i current %i\n", minplayers, maxplayers, curplayers );
 	}
-	if( strlen( szRules ) > 0 )
+
+	if( szRules[0] != '\0' )
 	{
 		ALERT( at_console, "RULES:  %s\n", szRules );
 	}
 
 	CHANGE_LEVEL( szNextMap, NULL );
-	if( strlen( szCommands ) > 0 )
+
+	if( szCommands[0] != '\0' )
 	{
 		SERVER_COMMAND( szCommands );
 	}
@@ -1656,7 +1662,7 @@ void CHalfLifeMultiplay::SendMOTDToClient( edict_t *client )
 	// read from the MOTD.txt file
 	int length, char_count = 0;
 	char *pFileList;
-	char *aFileList = pFileList = (char*)LOAD_FILE_FOR_ME( (char *)CVAR_GET_STRING( "motdfile" ), &length );
+	char *aFileList = pFileList = (char*)LOAD_FILE_FOR_ME( CVAR_GET_STRING( "motdfile" ), &length );
 
 	// send the server name
 	MESSAGE_BEGIN( MSG_ONE, gmsgServerName, NULL, client );
@@ -1692,5 +1698,5 @@ void CHalfLifeMultiplay::SendMOTDToClient( edict_t *client )
 		MESSAGE_END();
 	}
 
-	FREE_FILE( aFileList );
+	FREE_FILE( (void*)aFileList );
 }

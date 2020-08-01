@@ -22,6 +22,7 @@
 #include "player.h"
 #include "items.h"
 #include "gamerules.h"
+#include "game.h"
 
 extern int gmsgItemPickup;
 
@@ -159,7 +160,7 @@ void CWallHealth::Spawn()
 	UTIL_SetOrigin( pev, pev->origin );		// set size and link into world
 	UTIL_SetSize( pev, pev->mins, pev->maxs );
 	SET_MODEL( ENT( pev ), STRING( pev->model ) );
-	m_iJuice = gSkillData.healthchargerCapacity;
+	m_iJuice = (int)gSkillData.healthchargerCapacity;
 	pev->frame = 0;
 }
 
@@ -187,17 +188,17 @@ void CWallHealth::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE u
 	}
 
 	// if the player doesn't have the suit, or there is no juice left, make the deny noise
-	if( ( m_iJuice <= 0 ) || ( !( pActivator->pev->weapons & ( 1 << WEAPON_SUIT ) ) ) )
+	if( ( m_iJuice <= 0 ) || ( !( pActivator->pev->weapons & ( 1 << WEAPON_SUIT ) ) ) || ( ( chargerfix.value ) && ( pActivator->pev->health >= pActivator->pev->max_health ) ) )
 	{
 		if( m_flSoundTime <= gpGlobals->time )
 		{
-			m_flSoundTime = gpGlobals->time + 0.62;
+			m_flSoundTime = gpGlobals->time + 0.62f;
 			EMIT_SOUND( ENT( pev ), CHAN_ITEM, "items/medshotno1.wav", 1.0, ATTN_NORM );
 		}
 		return;
 	}
 
-	pev->nextthink = pev->ltime + 0.25;
+	pev->nextthink = pev->ltime + 0.25f;
 	SetThink( &CWallHealth::Off );
 
 	// Time to recharge yet?
@@ -209,7 +210,7 @@ void CWallHealth::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE u
 	{
 		m_iOn++;
 		EMIT_SOUND( ENT( pev ), CHAN_ITEM, "items/medshot4.wav", 1.0, ATTN_NORM );
-		m_flSoundTime = 0.56 + gpGlobals->time;
+		m_flSoundTime = 0.56f + gpGlobals->time;
 	}
 	if( ( m_iOn == 1 ) && ( m_flSoundTime <= gpGlobals->time ) )
 	{
@@ -224,13 +225,13 @@ void CWallHealth::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE u
 	}
 
 	// govern the rate of charge
-	m_flNextCharge = gpGlobals->time + 0.1;
+	m_flNextCharge = gpGlobals->time + 0.1f;
 }
 
 void CWallHealth::Recharge( void )
 {
 	EMIT_SOUND( ENT( pev ), CHAN_ITEM, "items/medshot4.wav", 1.0, ATTN_NORM );
-	m_iJuice = gSkillData.healthchargerCapacity;
+	m_iJuice = (int)gSkillData.healthchargerCapacity;
 	pev->frame = 0;			
 	SetThink( &CBaseEntity::SUB_DoNothing );
 }
@@ -243,7 +244,7 @@ void CWallHealth::Off( void )
 
 	m_iOn = 0;
 
-	if( ( !m_iJuice ) && ( ( m_iReactivate = g_pGameRules->FlHealthChargerRechargeTime() ) > 0 ) )
+	if( ( !m_iJuice ) && ( ( m_iReactivate = (int)g_pGameRules->FlHealthChargerRechargeTime() ) > 0 ) )
 	{
 		pev->nextthink = pev->ltime + m_iReactivate;
 		SetThink( &CWallHealth::Recharge );

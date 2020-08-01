@@ -12,6 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
+#pragma once
 #ifndef PLAYER_H
 #define PLAYER_H
 
@@ -86,6 +87,18 @@ enum sbar_data
 class CBasePlayer : public CBaseMonster
 {
 public:
+	// Spectator camera
+	void	Observer_FindNextPlayer( bool bReverse );
+	void	Observer_HandleButtons();
+	void	Observer_SetMode( int iMode );
+	void	Observer_CheckTarget();
+	void	Observer_CheckProperties();
+	EHANDLE	m_hObserverTarget;
+	float	m_flNextObserverInput;
+	int		m_iObserverWeapon;	// weapon of current tracked target
+	int		m_iObserverLastMode;// last used observer mode
+	int		IsObserver() { return pev->iuser1; };
+
 	int					random_seed;    // See that is shared between client & server for shared weapons code
 
 	int					m_iPlayerSound;// the index of the sound list slot reserved for this player
@@ -243,11 +256,12 @@ public:
 
 	void StartDeathCam( void );
 	void StartObserver( Vector vecPosition, Vector vecViewAngle );
+	void StopObserver();
 
 	void AddPoints( int score, BOOL bAllowNegativeScore );
 	void AddPointsToTeam( int score, BOOL bAllowNegativeScore );
 	BOOL AddPlayerItem( CBasePlayerItem *pItem );
-	BOOL RemovePlayerItem( CBasePlayerItem *pItem );
+	BOOL RemovePlayerItem( CBasePlayerItem *pItem, bool bCallHoster );
 	void DropPlayerItem ( char *pszItemName );
 	BOOL HasPlayerItem( CBasePlayerItem *pCheckItem );
 	BOOL HasNamedPlayerItem( const char *pszItemName );
@@ -261,7 +275,7 @@ public:
 	void GiveNamedItem( const char *szName );
 	void EnableControl(BOOL fControl);
 
-	int  GiveAmmo( int iAmount, char *szName, int iMax );
+	int  GiveAmmo( int iAmount, const char *szName, int iMax );
 	void SendAmmoUpdate(void);
 
 	void WaterMove( void );
@@ -269,7 +283,7 @@ public:
 	void PlayerUse( void );
 
 	void CheckSuitUpdate();
-	void SetSuitUpdate(char *name, int fgroup, int iNoRepeat);
+	void SetSuitUpdate( const char *name, int fgroup, int iNoRepeat );
 	void UpdateGeigerCounter( void );
 	void CheckTimeBasedDamage( void );
 
@@ -298,16 +312,24 @@ public:
 	float m_flPlayAftershock;
 	float m_flNextAmmoBurn;// while charging, when to absorb another unit of player's ammo?
 
-	//Player ID
+	// Player ID
 	void InitStatusBar( void );
 	void UpdateStatusBar( void );
-	int m_izSBarState[ SBAR_END ];
+	int m_izSBarState[SBAR_END];
 	float m_flNextSBarUpdateTime;
 	float m_flStatusBarDisappearDelay;
-	char m_SbarString0[ SBAR_STRING_SIZE ];
-	char m_SbarString1[ SBAR_STRING_SIZE ];
+	char m_SbarString0[SBAR_STRING_SIZE];
+	char m_SbarString1[SBAR_STRING_SIZE];
+
+	void SetPrefsFromUserinfo( char *infobuffer );
 
 	float m_flNextChatTime;
+
+	int m_iAutoWepSwitch;
+
+	Vector m_vecLastViewAngles;
+
+	bool m_bSentBhopcap; // If false, the player just joined and needs a bhopcap message.
 };
 
 #define AUTOAIM_2DEGREES  0.0348994967025
@@ -315,7 +337,7 @@ public:
 #define AUTOAIM_8DEGREES  0.1391731009601
 #define AUTOAIM_10DEGREES 0.1736481776669
 
-extern int	gmsgHudText;
+extern int gmsgHudText;
 extern BOOL gInitHUD;
 
 #endif // PLAYER_H

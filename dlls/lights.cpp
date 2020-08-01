@@ -38,7 +38,7 @@ public:
 
 private:
 	int m_iStyle;
-	int m_iszPattern;
+	string_t m_iszPattern;
 };
 
 LINK_ENTITY_TO_CLASS( light, CLight )
@@ -99,7 +99,7 @@ void CLight::Spawn( void )
 		if( FBitSet( pev->spawnflags, SF_LIGHT_START_OFF ) )
 			LIGHT_STYLE( m_iStyle, "a" );
 		else if( m_iszPattern )
-			LIGHT_STYLE( m_iStyle, (char *)STRING( m_iszPattern ) );
+			LIGHT_STYLE( m_iStyle, STRING( m_iszPattern ) );
 		else
 			LIGHT_STYLE( m_iStyle, "m" );
 	}
@@ -115,7 +115,7 @@ void CLight::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useTyp
 		if( FBitSet( pev->spawnflags, SF_LIGHT_START_OFF ) )
 		{
 			if( m_iszPattern )
-				LIGHT_STYLE( m_iStyle, (char *)STRING( m_iszPattern ) );
+				LIGHT_STYLE( m_iStyle, STRING( m_iszPattern ) );
 			else
 				LIGHT_STYLE( m_iStyle, "m" );
 			ClearBits( pev->spawnflags, SF_LIGHT_START_OFF );
@@ -155,15 +155,16 @@ void CEnvLight::KeyValue( KeyValueData* pkvd )
 		}
 		else if( j == 4 )
 		{
-			r = r * ( v / 255.0 );
-			g = g * ( v / 255.0 );
-			b = b * ( v / 255.0 );
+			float vf = v / 255.0f;
+			r *= vf;
+			g *= vf;
+			b *= vf;
 		}
 
 		// simulate qrad direct, ambient,and gamma adjustments, as well as engine scaling
-		r = pow( r / 114.0, 0.6 ) * 264;
-		g = pow( g / 114.0, 0.6 ) * 264;
-		b = pow( b / 114.0, 0.6 ) * 264;
+		r = (int)( pow( r / 114.0f, 0.6f ) * 264.0f );
+		g = (int)( pow( g / 114.0f, 0.6f ) * 264.0f );
+		b = (int)( pow( b / 114.0f, 0.6f ) * 264.0f );
 
 		pkvd->fHandled = TRUE;
 		sprintf( szColor, "%d", r );
@@ -184,11 +185,11 @@ void CEnvLight::Spawn( void )
 	char szVector[64];
 	UTIL_MakeAimVectors( pev->angles );
 
-	sprintf( szVector, "%f", gpGlobals->v_forward.x );
+	sprintf( szVector, "%f", (double)gpGlobals->v_forward.x );
 	CVAR_SET_STRING( "sv_skyvec_x", szVector );
-	sprintf( szVector, "%f", gpGlobals->v_forward.y );
+	sprintf( szVector, "%f", (double)gpGlobals->v_forward.y );
 	CVAR_SET_STRING( "sv_skyvec_y", szVector );
-	sprintf( szVector, "%f", gpGlobals->v_forward.z );
+	sprintf( szVector, "%f", (double)gpGlobals->v_forward.z );
 	CVAR_SET_STRING( "sv_skyvec_z", szVector );
 
 	CLight::Spawn();

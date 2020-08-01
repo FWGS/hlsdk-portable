@@ -17,6 +17,8 @@
 #include "util.h"
 #include "game.h"
 
+BOOL		g_fIsXash3D;
+
 cvar_t displaysoundlist = {"displaysoundlist","0"};
 
 // multiplayer server rules
@@ -25,11 +27,14 @@ cvar_t timeleft		= { "mp_timeleft","0" , FCVAR_SERVER | FCVAR_UNLOGGED };	  // "
 
 // multiplayer server rules
 cvar_t teamplay		= { "mp_teamplay","0", FCVAR_SERVER };
-cvar_t fraglimit	= {"mp_fraglimit","0", FCVAR_SERVER };
+cvar_t fraglimit	= { "mp_fraglimit","0", FCVAR_SERVER };
 cvar_t timelimit	= { "mp_timelimit","0", FCVAR_SERVER };
 cvar_t friendlyfire	= { "mp_friendlyfire","0", FCVAR_SERVER };
 cvar_t falldamage	= { "mp_falldamage","0", FCVAR_SERVER };
 cvar_t weaponstay	= { "mp_weaponstay","0", FCVAR_SERVER };
+cvar_t selfgauss	= { "mp_selfgauss", "1", FCVAR_SERVER };
+cvar_t chargerfix	= { "mp_chargerfix", "0", FCVAR_SERVER };
+cvar_t satchelfix	= { "mp_satchelfix", "0", FCVAR_SERVER };
 cvar_t forcerespawn	= { "mp_forcerespawn","1", FCVAR_SERVER };
 cvar_t flashlight	= { "mp_flashlight","0", FCVAR_SERVER };
 cvar_t aimcrosshair	= { "mp_autocrosshair","1", FCVAR_SERVER };
@@ -38,6 +43,10 @@ cvar_t teamlist		= { "mp_teamlist","hgrunt;scientist", FCVAR_SERVER };
 cvar_t teamoverride	= { "mp_teamoverride","1" };
 cvar_t defaultteam	= { "mp_defaultteam","0" };
 cvar_t allowmonsters	= { "mp_allowmonsters","0", FCVAR_SERVER };
+cvar_t bhopcap		= { "mp_bhopcap", "1", FCVAR_SERVER };
+
+cvar_t allow_spectators = { "allow_spectators", "0", FCVAR_SERVER };	// 0 prevents players from being spectators
+cvar_t multibyte_only = { "mp_multibyte_only", "0", FCVAR_SERVER };
 
 cvar_t mp_chattime	= { "mp_chattime","10", FCVAR_SERVER };
 
@@ -45,6 +54,8 @@ cvar_t mp_chattime	= { "mp_chattime","10", FCVAR_SERVER };
 cvar_t *g_psv_gravity = NULL;
 cvar_t *g_psv_aim = NULL;
 cvar_t *g_footsteps = NULL;
+
+cvar_t *g_psv_developer;
 
 //CVARS FOR SKILL LEVEL SETTINGS
 // Agrunt
@@ -446,12 +457,17 @@ cvar_t	sk_player_leg3	= { "sk_player_leg3","1" };
 void GameDLLInit( void )
 {
 	// Register cvars here:
+	if( CVAR_GET_POINTER( "build" ) )
+		g_fIsXash3D = TRUE;
 
 	g_psv_gravity = CVAR_GET_POINTER( "sv_gravity" );
 	g_psv_aim = CVAR_GET_POINTER( "sv_aim" );
 	g_footsteps = CVAR_GET_POINTER( "mp_footsteps" );
 
+	g_psv_developer = CVAR_GET_POINTER( "developer" );
+
 	CVAR_REGISTER( &displaysoundlist );
+	CVAR_REGISTER( &allow_spectators );
 
 	CVAR_REGISTER( &teamplay );
 	CVAR_REGISTER( &fraglimit );
@@ -463,6 +479,9 @@ void GameDLLInit( void )
 	CVAR_REGISTER( &friendlyfire );
 	CVAR_REGISTER( &falldamage );
 	CVAR_REGISTER( &weaponstay );
+	CVAR_REGISTER( &selfgauss );
+	CVAR_REGISTER( &chargerfix );
+	CVAR_REGISTER( &satchelfix );
 	CVAR_REGISTER( &forcerespawn );
 	CVAR_REGISTER( &flashlight );
 	CVAR_REGISTER( &aimcrosshair );
@@ -471,6 +490,8 @@ void GameDLLInit( void )
 	CVAR_REGISTER( &teamoverride );
 	CVAR_REGISTER( &defaultteam );
 	CVAR_REGISTER( &allowmonsters );
+	CVAR_REGISTER( &bhopcap );
+	CVAR_REGISTER( &multibyte_only );
 
 	CVAR_REGISTER( &mp_chattime );
 

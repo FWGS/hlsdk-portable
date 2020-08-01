@@ -230,7 +230,7 @@ void CBaseDelay::SUB_UseTargets( CBaseEntity *pActivator, USE_TYPE useType, floa
 		// Save the useType
 		pTemp->pev->button = (int)useType;
 		pTemp->m_iszKillTarget = m_iszKillTarget;
-		pTemp->m_flDelay = 0; // prevent "recursion"
+		pTemp->m_flDelay = 0.0f; // prevent "recursion"
 		pTemp->pev->target = pev->target;
 
 		// HACKHACK
@@ -400,6 +400,13 @@ void CBaseToggle::LinearMove( Vector vecDest, float flSpeed )
 	// divide vector length by speed to get time to reach dest
 	float flTravelTime = vecDestDelta.Length() / flSpeed;
 
+	if( flTravelTime < 0.05f )
+	{
+		UTIL_SetOrigin( pev, m_vecFinalDest );
+		LinearMoveDone();
+		return;
+	}
+
 	// set nextthink to trigger a call to LinearMoveDone when dest is reached
 	pev->nextthink = pev->ltime + flTravelTime;
 	SetThink( &CBaseToggle::LinearMoveDone );
@@ -415,6 +422,14 @@ After moving, set origin to exact final destination, call "move done" function
 */
 void CBaseToggle::LinearMoveDone( void )
 {
+	Vector delta = m_vecFinalDest - pev->origin;
+	float error = delta.Length();
+	if( error > 0.03125f )
+	{
+		LinearMove( m_vecFinalDest, 100 );
+		return;
+	}
+
 	UTIL_SetOrigin( pev, m_vecFinalDest );
 	pev->velocity = g_vecZero;
 	pev->nextthink = -1;

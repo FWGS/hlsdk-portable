@@ -34,6 +34,7 @@
 #include "decals.h"
 #include "gamerules.h"
 #include "game.h"
+#include "pm_shared.h"
 #include "hltv.h"
 
 // #define DUCKFIX
@@ -43,6 +44,8 @@ extern DLL_GLOBAL BOOL g_fGameOver;
 extern DLL_GLOBAL BOOL g_fDrawLines;
 int gEvilImpulse101;
 extern DLL_GLOBAL int g_iSkillLevel, gDisplayTitle;
+
+extern "C" int g_bhopcap;
 
 BOOL gInitHUD = TRUE;
 
@@ -63,8 +66,8 @@ extern CGraph WorldGraph;
 #define TRAIN_FAST		0x04
 #define TRAIN_BACK		0x05
 
-#define	FLASH_DRAIN_TIME	 1.2 //100 units/3 minutes
-#define	FLASH_CHARGE_TIME	 0.2 // 100 units/20 seconds  (seconds per unit)
+#define	FLASH_DRAIN_TIME	 1.2f //100 units/3 minutes
+#define	FLASH_CHARGE_TIME	 0.2f // 100 units/20 seconds  (seconds per unit)
 
 // Global Savedata for player
 TYPEDESCRIPTION	CBasePlayer::m_playerSaveData[] =
@@ -180,6 +183,7 @@ int gmsgSetFOV = 0;
 int gmsgShowMenu = 0;
 int gmsgGeigerRange = 0;
 int gmsgTeamNames = 0;
+int gmsgBhopcap = 0;
 
 int gmsgStatusText = 0;
 int gmsgStatusValue = 0;
@@ -201,7 +205,8 @@ void LinkUserMessages( void )
 	gmsgDamage = REG_USER_MSG( "Damage", 12 );
 	gmsgBattery = REG_USER_MSG( "Battery", 2);
 	gmsgTrain = REG_USER_MSG( "Train", 1 );
-	gmsgHudText = REG_USER_MSG( "HudText", -1 );
+	//gmsgHudText = REG_USER_MSG( "HudTextPro", -1 );
+	gmsgHudText = REG_USER_MSG( "HudText", -1 ); // we don't use the message but 3rd party addons may!
 	gmsgSayText = REG_USER_MSG( "SayText", -1 );
 	gmsgTextMsg = REG_USER_MSG( "TextMsg", -1 );
 	gmsgWeaponList = REG_USER_MSG( "WeaponList", -1 );
@@ -225,6 +230,7 @@ void LinkUserMessages( void )
 	gmsgFade = REG_USER_MSG( "ScreenFade", sizeof(ScreenFade) );
 	gmsgAmmoX = REG_USER_MSG( "AmmoX", 2 );
 	gmsgTeamNames = REG_USER_MSG( "TeamNames", -1 );
+	gmsgBhopcap = REG_USER_MSG( "Bhopcap", 1 );
 
 	gmsgStatusText = REG_USER_MSG( "StatusText", -1 );
 	gmsgStatusValue = REG_USER_MSG( "StatusValue", 3 );
@@ -236,11 +242,11 @@ void CBasePlayer::Pain( void )
 {
 	float flRndSound;//sound randomizer
 
-	flRndSound = RANDOM_FLOAT( 0, 1 ); 
+	flRndSound = RANDOM_FLOAT( 0.0f, 1.0f ); 
 
-	if( flRndSound <= 0.33 )
+	if( flRndSound <= 0.33f )
 		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/pl_pain5.wav", 1, ATTN_NORM );
-	else if( flRndSound <= 0.66 )	
+	else if( flRndSound <= 0.66f )	
 		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/pl_pain6.wav", 1, ATTN_NORM );
 	else
 		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/pl_pain7.wav", 1, ATTN_NORM );
@@ -251,7 +257,7 @@ Vector VecVelocityForDamage( float flDamage )
 	Vector vec( RANDOM_FLOAT( -100, 100 ), RANDOM_FLOAT( -100, 100 ), RANDOM_FLOAT( 200, 300 ) );
 
 	if( flDamage > -50 )
-		vec = vec * 0.7;
+		vec = vec * 0.7f;
 	else if( flDamage > -200 )
 		vec = vec * 2;
 	else
@@ -308,15 +314,15 @@ int TrainSpeed( int iSpeed, int iMax )
 	fMax = (float)iMax;
 	fSpeed = iSpeed;
 
-	fSpeed = fSpeed/fMax;
+	fSpeed = fSpeed / fMax;
 
 	if( iSpeed < 0 )
 		iRet = TRAIN_BACK;
-	else if( iSpeed == 0 )
+	else if( iSpeed == 0.0f )
 		iRet = TRAIN_NEUTRAL;
-	else if( fSpeed < 0.33 )
+	else if( fSpeed < 0.33f )
 		iRet = TRAIN_SLOW;
-	else if( fSpeed < 0.66 )
+	else if( fSpeed < 0.66f )
 		iRet = TRAIN_MEDIUM;
 	else
 		iRet = TRAIN_FAST;
@@ -457,10 +463,10 @@ int CBasePlayer::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 	}
 
 	// keep track of amount of damage last sustained
-	m_lastDamageAmount = flDamage;
+	m_lastDamageAmount = (int)flDamage;
 
 	// Armor. 
-	if( pev->armorvalue && !( bitsDamageType & ( DMG_FALL | DMG_DROWN ) ) )// armor doesn't protect against fall or drown damage!
+	if( !( pev->flags & FL_GODMODE ) && pev->armorvalue && !( bitsDamageType & ( DMG_FALL | DMG_DROWN ) ) )// armor doesn't protect against fall or drown damage!
 	{
 		float flNew = flDamage * flRatio;
 
@@ -660,8 +666,8 @@ void CBasePlayer::PackDeadPlayerItems( void )
 	int iWeaponRules;
 	int iAmmoRules;
 	int i;
-	CBasePlayerWeapon *rgpPackWeapons[20] = {0};// 20 hardcoded for now. How to determine exactly how many weapons we have?
-	int iPackAmmo[MAX_AMMO_SLOTS + 1];
+	CBasePlayerWeapon *rgpPackWeapons[MAX_WEAPONS] = {0,};
+	int iPackAmmo[MAX_AMMO_SLOTS];
 	int iPW = 0;// index into packweapons array
 	int iPA = 0;// index into packammo array
 
@@ -669,7 +675,7 @@ void CBasePlayer::PackDeadPlayerItems( void )
 
 	// get the game rules
 	iWeaponRules = g_pGameRules->DeadPlayerWeapons( this );
- 	iAmmoRules = g_pGameRules->DeadPlayerAmmo( this );
+	iAmmoRules = g_pGameRules->DeadPlayerAmmo( this );
 
 	if( iWeaponRules == GR_PLR_DROP_GUN_NO && iAmmoRules == GR_PLR_DROP_AMMO_NO )
 	{
@@ -679,14 +685,14 @@ void CBasePlayer::PackDeadPlayerItems( void )
 	}
 
 	// go through all of the weapons and make a list of the ones to pack
-	for( i = 0; i < MAX_ITEM_TYPES; i++ )
+	for( i = 0; i < MAX_ITEM_TYPES && iPW < MAX_WEAPONS; i++ )
 	{
 		if( m_rgpPlayerItems[i] )
 		{
 			// there's a weapon here. Should I pack it?
 			CBasePlayerItem *pPlayerItem = m_rgpPlayerItems[i];
 
-			while( pPlayerItem )
+			while( pPlayerItem && iPW < MAX_WEAPONS )
 			{
 				switch( iWeaponRules )
 				{
@@ -776,6 +782,9 @@ void CBasePlayer::PackDeadPlayerItems( void )
 
 void CBasePlayer::RemoveAllItems( BOOL removeSuit )
 {
+	int i;
+	CBasePlayerItem *pPendingItem;
+
 	if( m_pActiveItem )
 	{
 		ResetAutoaim();
@@ -785,18 +794,21 @@ void CBasePlayer::RemoveAllItems( BOOL removeSuit )
 
 	m_pLastItem = NULL;
 
-	int i;
-	CBasePlayerItem *pPendingItem;
+	if( m_pTank != 0 )
+		m_pTank->Use( this, this, USE_OFF, 0 );
+
+	m_iTrain = TRAIN_NEW; // turn off train
+
 	for( i = 0; i < MAX_ITEM_TYPES; i++ )
 	{
 		m_pActiveItem = m_rgpPlayerItems[i];
+		m_rgpPlayerItems[i] = NULL;
 		while( m_pActiveItem )
 		{
 			pPendingItem = m_pActiveItem->m_pNext; 
 			m_pActiveItem->Drop();
 			m_pActiveItem = pPendingItem;
 		}
-		m_rgpPlayerItems[i] = NULL;
 	}
 	m_pActiveItem = NULL;
 
@@ -808,8 +820,14 @@ void CBasePlayer::RemoveAllItems( BOOL removeSuit )
 	else
 		pev->weapons &= ~WEAPON_ALLWEAPONS;
 
+	// Turn off flashlight
+	ClearBits( pev->effects, EF_DIMLIGHT );
+
 	for( i = 0; i < MAX_AMMO_SLOTS; i++ )
 		m_rgAmmo[i] = 0;
+
+	if( satchelfix.value )
+		DeactivateSatchels( this );
 
 	UpdateClientData();
 
@@ -839,11 +857,8 @@ void CBasePlayer::Killed( entvars_t *pevAttacker, int iGib )
 
 	g_pGameRules->PlayerKilled( this, pevAttacker, g_pevLastInflictor );
 
-	if( m_pTank != NULL )
-	{
+	if( m_pTank != 0 )
 		m_pTank->Use( this, this, USE_OFF, 0 );
-		m_pTank = NULL;
-	}
 
 	// this client isn't going to be thinking for a while, so reset the sound until they respawn
 	pSound = CSoundEnt::SoundPointerForIndex( CSoundEnt::ClientSoundIndex( edict() ) );
@@ -906,7 +921,7 @@ void CBasePlayer::Killed( entvars_t *pevAttacker, int iGib )
 	pev->angles.z = 0;
 
 	SetThink( &CBasePlayer::PlayerDeathThink );
-	pev->nextthink = gpGlobals->time + 0.1;
+	pev->nextthink = gpGlobals->time + 0.1f;
 }
 
 // Set the activity based on an event or current state
@@ -1164,7 +1179,7 @@ void CBasePlayer::WaterMove()
 				// track drowning damage, give it back when
 				// player finally takes a breath
 
-				m_idrowndmg += pev->dmg;
+				m_idrowndmg += (int)pev->dmg;
 			} 
 		}
 		else
@@ -1297,6 +1312,9 @@ void CBasePlayer::PlayerDeathThink( void )
 		StartDeathCam();
 	}
 
+	if( pev->iuser1 )	// player is in spectator mode
+		return;
+
 	// wait for any button down,  or mp_forcerespawn is set and the respawn time is up
 	if( !fAnyButtonDown && !( g_pGameRules->IsMultiplayer() && forcerespawn.value > 0 && ( gpGlobals->time > ( m_fDeadTime + 5 ) ) ) )
 		return;
@@ -1345,7 +1363,9 @@ void CBasePlayer::StartDeathCam( void )
 		}
 
 		CopyToBodyQue( pev );
-		StartObserver( pSpot->v.origin, pSpot->v.v_angle );
+
+		UTIL_SetOrigin( pev, pSpot->v.origin );
+		pev->angles = pev->v_angle = pSpot->v.v_angle;
 	}
 	else
 	{
@@ -1353,23 +1373,86 @@ void CBasePlayer::StartDeathCam( void )
 		TraceResult tr;
 		CopyToBodyQue( pev );
 		UTIL_TraceLine( pev->origin, pev->origin + Vector( 0, 0, 128 ), ignore_monsters, edict(), &tr );
-		StartObserver( tr.vecEndPos, UTIL_VecToAngles( tr.vecEndPos - pev->origin ) );
-		return;
+
+		UTIL_SetOrigin( pev, tr.vecEndPos );
+		pev->angles = pev->v_angle = UTIL_VecToAngles( tr.vecEndPos - pev->origin );
 	}
+
+	// start death cam
+	m_afPhysicsFlags |= PFLAG_OBSERVER;
+	pev->view_ofs = g_vecZero;
+	pev->fixangle = TRUE;
+	pev->solid = SOLID_NOT;
+	pev->takedamage = DAMAGE_NO;
+	pev->movetype = MOVETYPE_NONE;
+	pev->modelindex = 0;
 }
 
 void CBasePlayer::StartObserver( Vector vecPosition, Vector vecViewAngle )
 {
-	m_afPhysicsFlags |= PFLAG_OBSERVER;
+	// clear any clientside entities attached to this player
+	MESSAGE_BEGIN( MSG_PAS, SVC_TEMPENTITY, pev->origin );
+		WRITE_BYTE( TE_KILLPLAYERATTACHMENTS );
+		WRITE_BYTE( (BYTE)entindex() );
+	MESSAGE_END();
 
+	// Holster weapon immediately, to allow it to cleanup
+	if( m_pActiveItem )
+		m_pActiveItem->Holster();
+
+	if( m_pTank != 0 )
+		m_pTank->Use( this, this, USE_OFF, 0 );
+
+	// clear out the suit message cache so we don't keep chattering
+	SetSuitUpdate( NULL, FALSE, 0 );
+
+	// Tell Ammo Hud that the player is dead
+	MESSAGE_BEGIN( MSG_ONE, gmsgCurWeapon, NULL, pev );
+		WRITE_BYTE( 0 );
+		WRITE_BYTE( 0XFF );
+		WRITE_BYTE( 0xFF );
+	MESSAGE_END();
+
+	// reset FOV
+	m_iFOV = m_iClientFOV = 0;
+	pev->fov = m_iFOV;
+	MESSAGE_BEGIN( MSG_ONE, gmsgSetFOV, NULL, pev );
+		WRITE_BYTE( 0 );
+	MESSAGE_END();
+
+	// Setup flags
+	m_iHideHUD = ( HIDEHUD_HEALTH | HIDEHUD_FLASHLIGHT | HIDEHUD_WEAPONS );
+	m_afPhysicsFlags |= PFLAG_OBSERVER;
+	pev->effects = EF_NODRAW;
 	pev->view_ofs = g_vecZero;
 	pev->angles = pev->v_angle = vecViewAngle;
 	pev->fixangle = TRUE;
 	pev->solid = SOLID_NOT;
 	pev->takedamage = DAMAGE_NO;
 	pev->movetype = MOVETYPE_NONE;
-	pev->modelindex = 0;
+	ClearBits( m_afPhysicsFlags, PFLAG_DUCKING );
+	ClearBits( pev->flags, FL_DUCKING );
+	pev->deadflag = DEAD_RESPAWNABLE;
+	pev->health = 1;
+
+	// Clear out the status bar
+	m_fInitHUD = TRUE;
+
+	pev->team = 0;
+	MESSAGE_BEGIN( MSG_ALL, gmsgTeamInfo );
+		WRITE_BYTE( ENTINDEX(edict()) );
+		WRITE_STRING( "" );
+	MESSAGE_END();
+
+	// Remove all the player's stuff
+	RemoveAllItems( FALSE );
+
+	// Move them to the new position
 	UTIL_SetOrigin( pev, vecPosition );
+
+	// Find a player to watch
+	m_flNextObserverInput = 0;
+	Observer_SetMode( m_iObserverLastMode );
 }
 
 //
@@ -1379,6 +1462,9 @@ void CBasePlayer::StartObserver( Vector vecPosition, Vector vecViewAngle )
 
 void CBasePlayer::PlayerUse( void )
 {
+	if( IsObserver() )
+		return;
+
 	// Was use pressed or released?
 	if( !( ( pev->button | m_afButtonPressed | m_afButtonReleased) & IN_USE ) )
 		return;
@@ -1386,12 +1472,11 @@ void CBasePlayer::PlayerUse( void )
 	// Hit Use on a train?
 	if( m_afButtonPressed & IN_USE )
 	{
-		if( m_pTank != NULL )
+		if( m_pTank != 0 )
 		{
 			// Stop controlling the tank
 			// TODO: Send HUD Update
 			m_pTank->Use( this, this, USE_OFF, 0 );
-			m_pTank = NULL;
 			return;
 		}
 		else
@@ -1409,7 +1494,7 @@ void CBasePlayer::PlayerUse( void )
 				if( pTrain && !( pev->button & IN_JUMP ) && FBitSet( pev->flags, FL_ONGROUND ) && (pTrain->ObjectCaps() & FCAP_DIRECTIONAL_USE ) && pTrain->OnControls( pev ) )
 				{
 					m_afPhysicsFlags |= PFLAG_ONTRAIN;
-					m_iTrain = TrainSpeed( pTrain->pev->speed, pTrain->pev->impulse );
+					m_iTrain = TrainSpeed( (int)pTrain->pev->speed, pTrain->pev->impulse );
 					m_iTrain |= TRAIN_NEW;
 					EMIT_SOUND( ENT( pev ), CHAN_ITEM, "plats/train_use1.wav", 0.8, ATTN_NORM );
 					return;
@@ -1580,7 +1665,7 @@ void CBasePlayer::AddPoints( int score, BOOL bAllowNegativeScore )
 
 			if( -score > pev->frags )	// Will this go negative?
 			{
-				score = -pev->frags;		// Sum will be 0
+				score = (int)( -pev->frags );		// Sum will be 0
 			}
 		}
 	}
@@ -1589,7 +1674,7 @@ void CBasePlayer::AddPoints( int score, BOOL bAllowNegativeScore )
 
 	MESSAGE_BEGIN( MSG_ALL, gmsgScoreInfo );
 		WRITE_BYTE( ENTINDEX( edict() ) );
-		WRITE_SHORT( pev->frags );
+		WRITE_SHORT( (int)pev->frags );
 		WRITE_SHORT( m_iDeaths );
 		WRITE_SHORT( 0 );
 		WRITE_SHORT( g_pGameRules->GetTeamIndex( m_szTeamName ) + 1 );
@@ -1637,7 +1722,7 @@ void CBasePlayer::UpdateStatusBar()
 	Vector vecEnd = vecSrc + ( gpGlobals->v_forward * MAX_ID_RANGE );
 	UTIL_TraceLine( vecSrc, vecEnd, dont_ignore_monsters, edict(), &tr );
 
-	if( tr.flFraction != 1.0 )
+	if( tr.flFraction != 1.0f )
 	{
 		if( !FNullEnt( tr.pHit ) )
 		{
@@ -1651,11 +1736,11 @@ void CBasePlayer::UpdateStatusBar()
 				// allies and medics get to see the targets health
 				if( g_pGameRules->PlayerRelationship( this, pEntity ) == GR_TEAMMATE )
 				{
-					newSBarState[SBAR_ID_TARGETHEALTH] = 100 * ( pEntity->pev->health / pEntity->pev->max_health );
-					newSBarState[SBAR_ID_TARGETARMOR] = pEntity->pev->armorvalue; //No need to get it % based since 100 it's the max.
+					newSBarState[SBAR_ID_TARGETHEALTH] = (int)( 100 * ( pEntity->pev->health / pEntity->pev->max_health ) );
+					newSBarState[SBAR_ID_TARGETARMOR] = (int)pEntity->pev->armorvalue; //No need to get it % based since 100 it's the max.
 				}
 
-				m_flStatusBarDisappearDelay = gpGlobals->time + 1.0;
+				m_flStatusBarDisappearDelay = gpGlobals->time + 1.0f;
 			}
 		}
 		else if( m_flStatusBarDisappearDelay > gpGlobals->time )
@@ -1747,6 +1832,16 @@ void CBasePlayer::PreThink( void )
 
 	CheckSuitUpdate();
 
+	// Observer Button Handling
+	if( IsObserver() )
+	{
+		Observer_HandleButtons();
+		Observer_CheckTarget();
+		Observer_CheckProperties();
+		pev->impulse = 0;
+		return;
+	}
+
 	if( pev->deadflag >= DEAD_DYING )
 	{
 		PlayerDeathThink();
@@ -1765,6 +1860,7 @@ void CBasePlayer::PreThink( void )
 	{
 		CBaseEntity *pTrain = CBaseEntity::Instance( pev->groundentity );
 		float vel;
+		int iGearId;	// Vit_amiN: keeps the train control HUD in sync
 
 		if( !pTrain )
 		{
@@ -1773,7 +1869,7 @@ void CBasePlayer::PreThink( void )
 			UTIL_TraceLine( pev->origin, pev->origin + Vector( 0, 0, -38 ), ignore_monsters, ENT( pev ), &trainTrace );
 
 			// HACKHACK - Just look for the func_tracktrain classname
-			if( trainTrace.flFraction != 1.0 && trainTrace.pHit )
+			if( trainTrace.flFraction != 1.0f && trainTrace.pHit )
 			pTrain = CBaseEntity::Instance( trainTrace.pHit );
 
 			if( !pTrain || !( pTrain->ObjectCaps() & FCAP_DIRECTIONAL_USE ) || !pTrain->OnControls( pev ) )
@@ -1805,10 +1901,12 @@ void CBasePlayer::PreThink( void )
 			pTrain->Use( this, this, USE_SET, (float)vel );
 		}
 
-		if( vel )
+		iGearId = TrainSpeed( pTrain->pev->speed, pTrain->pev->impulse );
+
+		if( iGearId != ( m_iTrain & 0x0F ) )	// Vit_amiN: speed changed
 		{
-			m_iTrain = TrainSpeed( pTrain->pev->speed, pTrain->pev->impulse );
-			m_iTrain |= TRAIN_ACTIVE|TRAIN_NEW;
+			m_iTrain = iGearId;
+			m_iTrain |= TRAIN_ACTIVE | TRAIN_NEW;
 		}
 	}
 	else if( m_iTrain & TRAIN_ACTIVE )
@@ -1918,13 +2016,13 @@ void CBasePlayer::CheckTimeBasedDamage()
 	int i;
 	BYTE bDuration = 0;
 
-	static float gtbdPrev = 0.0;
+	//static float gtbdPrev = 0.0;
 
 	if( !( m_bitsDamageType & DMG_TIMEBASED ) )
 		return;
 
 	// only check for time based damage approx. every 2 seconds
-	if( fabs( gpGlobals->time - m_tbdPrev ) < 2.0 )
+	if( fabs( gpGlobals->time - m_tbdPrev ) < 2.0f )
 		return;
 
 	m_tbdPrev = gpGlobals->time;
@@ -1957,7 +2055,7 @@ void CBasePlayer::CheckTimeBasedDamage()
 				// after the player has been drowning and finally takes a breath
 				if( m_idrowndmg > m_idrownrestored )
 				{
-					int idif = min( m_idrowndmg - m_idrownrestored, 10 );
+					int idif = Q_min( m_idrowndmg - m_idrownrestored, 10 );
 
 					TakeHealth( idif, DMG_GENERIC );
 					m_idrownrestored += idif;
@@ -2078,7 +2176,7 @@ Things powered by the battery
 
 // if in range of radiation source, ping geiger counter
 
-#define GEIGERDELAY 0.25
+#define GEIGERDELAY 0.25f
 
 void CBasePlayer::UpdateGeigerCounter( void )
 {
@@ -2115,8 +2213,8 @@ Play suit update if it's time
 ================
 */
 
-#define SUITUPDATETIME		3.5
-#define SUITFIRSTUPDATETIME	0.1
+#define SUITUPDATETIME		3.5f
+#define SUITFIRSTUPDATETIME	0.1f
 
 void CBasePlayer::CheckSuitUpdate()
 {
@@ -2179,7 +2277,7 @@ void CBasePlayer::CheckSuitUpdate()
 // seconds, then we won't repeat playback of this word or sentence
 // for at least that number of seconds.
 
-void CBasePlayer::SetSuitUpdate( char *name, int fgroup, int iNoRepeatTime )
+void CBasePlayer::SetSuitUpdate( const char *name, int fgroup, int iNoRepeatTime )
 {
 	int i;
 	int isentence;
@@ -2307,7 +2405,7 @@ void CBasePlayer::UpdatePlayerSound( void )
 	// is louder than his body/movement, use the weapon volume, else, use the body volume.
 	if( FBitSet( pev->flags, FL_ONGROUND ) )
 	{
-		iBodyVolume = pev->velocity.Length(); 
+		iBodyVolume = (int)pev->velocity.Length(); 
 
 		// clamp the noise that can be made by the body, in case a push trigger,
 		// weapon recoil, or anything shoves the player abnormally fast. 
@@ -2340,7 +2438,7 @@ void CBasePlayer::UpdatePlayerSound( void )
 	}
 
 	// decay weapon volume over time so bits_SOUND_COMBAT stays set for a while
-	m_iWeaponVolume -= 250 * gpGlobals->frametime;
+	m_iWeaponVolume -= (int)( 250 * gpGlobals->frametime );
 	if( m_iWeaponVolume < 0 )
 	{
 		iVolume = 0;
@@ -2358,7 +2456,7 @@ void CBasePlayer::UpdatePlayerSound( void )
 	}
 	else if( iVolume > m_iTargetVolume )
 	{
-		iVolume -= 250 * gpGlobals->frametime;
+		iVolume -= (int)( 250 * gpGlobals->frametime );
 
 		if( iVolume < m_iTargetVolume )
 		{
@@ -2387,7 +2485,7 @@ void CBasePlayer::UpdatePlayerSound( void )
 	}
 
 	// keep track of virtual muzzle flash
-	m_iWeaponFlash -= 256 * gpGlobals->frametime;
+	m_iWeaponFlash -= (int)( 256 * gpGlobals->frametime );
 	if( m_iWeaponFlash < 0 )
 		m_iWeaponFlash = 0;
 
@@ -2409,7 +2507,7 @@ void CBasePlayer::PostThink()
 		goto pt_end;
 
 	// Handle Tank controlling
-	if( m_pTank != NULL )
+	if( m_pTank != 0 )
 	{
 		// if they've moved too far from the gun,  or selected a weapon, unuse the gun
 		if( m_pTank->OnControls( pev ) && !pev->weaponmodel )
@@ -2420,7 +2518,6 @@ void CBasePlayer::PostThink()
 		{
 			// they've moved off the platform
 			m_pTank->Use( this, this, USE_OFF, 0 );
-			m_pTank = NULL;
 		}
 	}
 
@@ -2473,7 +2570,7 @@ void CBasePlayer::PostThink()
 	{
 		if( m_flFallVelocity > 64 && !g_pGameRules->IsMultiplayer() )
 		{
-			CSoundEnt::InsertSound( bits_SOUND_PLAYER, pev->origin, m_flFallVelocity, 0.2 );
+			CSoundEnt::InsertSound( bits_SOUND_PLAYER, pev->origin, (int)m_flFallVelocity, 0.2 );
 			// ALERT( at_console, "fall %f\n", m_flFallVelocity );
 		}
 		m_flFallVelocity = 0;
@@ -2494,11 +2591,15 @@ void CBasePlayer::PostThink()
 	CheckPowerups( pev );
 
 	UpdatePlayerSound();
+pt_end:
+	if( pev->deadflag == DEAD_NO )
+		m_vecLastViewAngles = pev->angles;
+	else
+		pev->angles = m_vecLastViewAngles;
 
 	// Track button info so we can detect 'pressed' and 'released' buttons next frame
 	m_afButtonLast = pev->button;
 
-pt_end:
 #if defined( CLIENT_WEAPONS )
 	// Decay timers on weapons
 	// go through all of the weapons and make a list of the ones to pack
@@ -2516,23 +2617,23 @@ pt_end:
 
 				if( gun && gun->UseDecrement() )
 				{
-					gun->m_flNextPrimaryAttack = max( gun->m_flNextPrimaryAttack - gpGlobals->frametime, -1.0 );
-					gun->m_flNextSecondaryAttack = max( gun->m_flNextSecondaryAttack - gpGlobals->frametime, -0.001 );
+					gun->m_flNextPrimaryAttack = Q_max( gun->m_flNextPrimaryAttack - gpGlobals->frametime, -1.0f );
+					gun->m_flNextSecondaryAttack = Q_max( gun->m_flNextSecondaryAttack - gpGlobals->frametime, -0.001f );
 
-					if( gun->m_flTimeWeaponIdle != 1000 )
+					if( gun->m_flTimeWeaponIdle != 1000.0f )
 					{
-						gun->m_flTimeWeaponIdle = max( gun->m_flTimeWeaponIdle - gpGlobals->frametime, -0.001 );
+						gun->m_flTimeWeaponIdle = Q_max( gun->m_flTimeWeaponIdle - gpGlobals->frametime, -0.001f );
 					}
 
-					if( gun->pev->fuser1 != 1000 )
+					if( gun->pev->fuser1 != 1000.0f )
 					{
-						gun->pev->fuser1 = max( gun->pev->fuser1 - gpGlobals->frametime, -0.001 );
+						gun->pev->fuser1 = Q_max( gun->pev->fuser1 - gpGlobals->frametime, -0.001f );
 					}
 
 					// Only decrement if not flagged as NO_DECREMENT
-					/*if( gun->m_flPumpTime != 1000 )
+					/*if( gun->m_flPumpTime != 1000.0f )
 					{
-						gun->m_flPumpTime = max( gun->m_flPumpTime - gpGlobals->frametime, -0.001 );
+						gun->m_flPumpTime = Q_max( gun->m_flPumpTime - gpGlobals->frametime, -0.001f );
 					}*/
 				}
 
@@ -2542,23 +2643,23 @@ pt_end:
 	}
 
 	m_flNextAttack -= gpGlobals->frametime;
-	if( m_flNextAttack < -0.001 )
-		m_flNextAttack = -0.001;
+	if( m_flNextAttack < -0.001f )
+		m_flNextAttack = -0.001f;
 	
-	if( m_flNextAmmoBurn != 1000 )
+	if( m_flNextAmmoBurn != 1000.0f )
 	{
 		m_flNextAmmoBurn -= gpGlobals->frametime;
 
-		if( m_flNextAmmoBurn < -0.001 )
-			m_flNextAmmoBurn = -0.001;
+		if( m_flNextAmmoBurn < -0.001f )
+			m_flNextAmmoBurn = -0.001f;
 	}
 
-	if( m_flAmmoStartCharge != 1000 )
+	if( m_flAmmoStartCharge != 1000.0f )
 	{
 		m_flAmmoStartCharge -= gpGlobals->frametime;
 
-		if( m_flAmmoStartCharge < -0.001 )
-			m_flAmmoStartCharge = -0.001;
+		if( m_flAmmoStartCharge < -0.001f )
+			m_flAmmoStartCharge = -0.001f;
 	}
 #else
 	return;
@@ -2661,7 +2762,7 @@ edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer )
 	}
 
 	// If startspot is set, (re)spawn there.
-	if( FStringNull( gpGlobals->startspot ) || !strlen(STRING( gpGlobals->startspot ) ) )
+	if( FStringNull( gpGlobals->startspot ) || (STRING( gpGlobals->startspot ) )[0] == '\0')
 	{
 		pSpot = UTIL_FindEntityByClassname( NULL, "info_player_start" );
 		if( !FNullEnt( pSpot ) )
@@ -2705,8 +2806,8 @@ void CBasePlayer::Spawn( void )
 	pev->deadflag = DEAD_NO;
 	pev->dmg_take = 0;
 	pev->dmg_save = 0;
-	pev->friction = 1.0;
-	pev->gravity = 1.0;
+	pev->friction = 1.0f;
+	pev->gravity = 1.0f;
 	m_bitsHUDDamage = -1;
 	m_bitsDamageType = 0;
 	m_afPhysicsFlags = 0;
@@ -2720,12 +2821,12 @@ void CBasePlayer::Spawn( void )
 
 	m_flNextDecalTime = 0;// let this player decal as soon as he spawns.
 
-	m_flgeigerDelay = gpGlobals->time + 2.0;	// wait a few seconds until user-defined message registrations
+	m_flgeigerDelay = gpGlobals->time + 2.0f;	// wait a few seconds until user-defined message registrations
 							// are recieved by all clients
 
 	m_flTimeStepSound = 0;
 	m_iStepLeft = 0;
-	m_flFieldOfView = 0.5;// some monsters use this to determine whether or not the player is looking at them.
+	m_flFieldOfView = 0.5f;// some monsters use this to determine whether or not the player is looking at them.
 
 	m_bloodColor = BLOOD_COLOR_RED;
 	m_flNextAttack = UTIL_WeaponTimeBase();
@@ -2780,6 +2881,8 @@ void CBasePlayer::Spawn( void )
 
 	m_flNextChatTime = gpGlobals->time;
 
+	m_iAutoWepSwitch = 1;
+
 	g_pGameRules->PlayerSpawn( this );
 }
 
@@ -2826,6 +2929,8 @@ void CBasePlayer::Precache( void )
 
 	if( gInitHUD )
 		m_fInitHUD = TRUE;
+
+	pev->fov = m_iFOV;	// Vit_amiN: restore the FOV on level change or map/saved game load
 }
 
 int CBasePlayer::Save( CSave &save )
@@ -3075,7 +3180,7 @@ void CSprayCan::Spawn( entvars_t *pevOwner )
 	pev->owner = ENT( pevOwner );
 	pev->frame = 0;
 
-	pev->nextthink = gpGlobals->time + 0.1;
+	pev->nextthink = gpGlobals->time + 0.1f;
 	EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/sprayer.wav", 1, ATTN_NORM );
 }
 
@@ -3108,13 +3213,13 @@ void CSprayCan::Think( void )
 	}
 	else
 	{
-		UTIL_PlayerDecalTrace( &tr, playernum, pev->frame, TRUE );
+		UTIL_PlayerDecalTrace( &tr, playernum, (int)pev->frame, TRUE );
 		// Just painted last custom frame.
 		if( pev->frame++ >= ( nFrames - 1 ) )
 			UTIL_Remove( this );
 	}
 
-	pev->nextthink = gpGlobals->time + 0.1;
+	pev->nextthink = gpGlobals->time + 0.1f;
 }
 
 class CBloodSplat : public CBaseEntity
@@ -3131,7 +3236,7 @@ void CBloodSplat::Spawn( entvars_t *pevOwner )
 	pev->owner = ENT( pevOwner );
 
 	SetThink( &CBloodSplat::Spray );
-	pev->nextthink = gpGlobals->time + 0.1;
+	pev->nextthink = gpGlobals->time + 0.1f;
 }
 
 void CBloodSplat::Spray( void )
@@ -3146,7 +3251,7 @@ void CBloodSplat::Spray( void )
 		UTIL_BloodDecalTrace( &tr, BLOOD_COLOR_RED );
 	}
 	SetThink( &CBaseEntity::SUB_Remove );
-	pev->nextthink = gpGlobals->time + 0.1;
+	pev->nextthink = gpGlobals->time + 0.1f;
 }
 
 //==============================================
@@ -3175,7 +3280,7 @@ CBaseEntity *FindEntityForward( CBaseEntity *pMe )
 
 	UTIL_MakeVectors( pMe->pev->v_angle );
 	UTIL_TraceLine( pMe->pev->origin + pMe->pev->view_ofs,pMe->pev->origin + pMe->pev->view_ofs + gpGlobals->v_forward * 8192,dont_ignore_monsters, pMe->edict(), &tr );
-	if( tr.flFraction != 1.0 && !FNullEnt( tr.pHit ) )
+	if( tr.flFraction != 1.0f && !FNullEnt( tr.pHit ) )
 	{
 		CBaseEntity *pHit = CBaseEntity::Instance( tr.pHit );
 		return pHit;
@@ -3233,10 +3338,16 @@ void CBasePlayer::ForceClientDllUpdate( void )
 {
 	m_iClientHealth = -1;
 	m_iClientBattery = -1;
+	m_iClientHideHUD = -1;	// Vit_amiN: forcing to update
+	m_iClientFOV = -1;	// Vit_amiN: force client weapons to be sent
 	m_iTrain |= TRAIN_NEW;  // Force new train message.
 	m_fWeapon = FALSE;          // Force weapon send
 	m_fKnownItem = FALSE;    // Force weaponinit messages.
 	m_fInitHUD = TRUE;		// Force HUD gmsgResetHUD message
+	m_bSentBhopcap = true; // a1ba: Update bhopcap state
+	memset( m_rgAmmoLast, 0, sizeof( m_rgAmmoLast )); // a1ba: Force update AmmoX
+
+
 
 	// Now force all the necessary messages
 	//  to be sent.
@@ -3305,7 +3416,7 @@ void CBasePlayer::ImpulseCommands()
 		UTIL_MakeVectors( pev->v_angle );
 		UTIL_TraceLine( pev->origin + pev->view_ofs, pev->origin + pev->view_ofs + gpGlobals->v_forward * 128, ignore_monsters, ENT( pev ), &tr );
 
-		if( tr.flFraction != 1.0 )
+		if( tr.flFraction != 1.0f )
 		{
 			// line hit something, so paint a decal
 			m_flNextDecalTime = gpGlobals->time + decalfrequency.value;
@@ -3327,7 +3438,7 @@ void CBasePlayer::ImpulseCommands()
 void CBasePlayer::CheatImpulseCommands( int iImpulse )
 {
 #if !defined( HLDEMO_BUILD )
-	if( g_flWeaponCheat == 0.0 )
+	if( g_flWeaponCheat == 0.0f )
 	{
 		return;
 	}
@@ -3476,7 +3587,7 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		UTIL_MakeVectors( pev->v_angle );
 		UTIL_TraceLine( pev->origin + pev->view_ofs, pev->origin + pev->view_ofs + gpGlobals->v_forward * 128, ignore_monsters, ENT( pev ), &tr );
 
-		if( tr.flFraction != 1.0 )
+		if( tr.flFraction != 1.0f )
 		{
 			// line hit something, so paint a decal
 			CBloodSplat *pBlood = GetClassPtr( (CBloodSplat *)NULL );
@@ -3555,19 +3666,23 @@ int CBasePlayer::AddPlayerItem( CBasePlayerItem *pItem )
 	return FALSE;
 }
 
-int CBasePlayer::RemovePlayerItem( CBasePlayerItem *pItem )
+int CBasePlayer::RemovePlayerItem( CBasePlayerItem *pItem, bool bCallHolster )
 {
+	pItem->pev->nextthink = 0;// crowbar may be trying to swing again, etc.
+	pItem->SetThink( NULL );
+
 	if( m_pActiveItem == pItem )
 	{
 		ResetAutoaim();
-		pItem->Holster();
-		pItem->pev->nextthink = 0;// crowbar may be trying to swing again, etc.
-		pItem->SetThink( NULL );
+		if( bCallHolster )
+			pItem->Holster();
 		m_pActiveItem = NULL;
 		pev->viewmodel = 0;
 		pev->weaponmodel = 0;
 	}
-	else if( m_pLastItem == pItem )
+
+	// In some cases an item can be both the active and last item, like for instance dropping all weapons and only having an exhaustible weapon left. - Solokiller
+	if( m_pLastItem == pItem )
 		m_pLastItem = NULL;
 
 	CBasePlayerItem *pPrev = m_rgpPlayerItems[pItem->iItemSlot()];
@@ -3595,7 +3710,7 @@ int CBasePlayer::RemovePlayerItem( CBasePlayerItem *pItem )
 //
 // Returns the unique ID for the ammo, or -1 if error
 //
-int CBasePlayer::GiveAmmo( int iCount, char *szName, int iMax )
+int CBasePlayer::GiveAmmo( int iCount, const char *szName, int iMax )
 {
 	if( !szName )
 	{
@@ -3616,7 +3731,7 @@ int CBasePlayer::GiveAmmo( int iCount, char *szName, int iMax )
 	if( i < 0 || i >= MAX_AMMO_SLOTS )
 		return -1;
 
-	int iAdd = min( iCount, iMax - m_rgAmmo[i] );
+	int iAdd = Q_min( iCount, iMax - m_rgAmmo[i] );
 	if( iAdd < 1 )
 		return i;
 
@@ -3669,10 +3784,10 @@ Called every frame by the player PostThink
 */
 void CBasePlayer::ItemPostFrame()
 {
-	static int fInSelect = FALSE;
+	//static int fInSelect = FALSE;
 
 	// check if the player is using a tank
-	if( m_pTank != NULL )
+	if( m_pTank != 0 )
 		return;
 
 #if defined( CLIENT_WEAPONS )
@@ -3737,7 +3852,7 @@ void CBasePlayer::SendAmmoUpdate( void )
 			// send "Ammo" update message
 			MESSAGE_BEGIN( MSG_ONE, gmsgAmmoX, NULL, pev );
 				WRITE_BYTE( i );
-				WRITE_BYTE( max( min( m_rgAmmo[i], 254 ), 0 ) );  // clamp the value to one byte
+				WRITE_BYTE( Q_max( Q_min( m_rgAmmo[i], 254 ), 0 ) );  // clamp the value to one byte
 			MESSAGE_END();
 		}
 	}
@@ -3772,6 +3887,9 @@ void CBasePlayer::UpdateClientData( void )
 
 			g_pGameRules->InitHUD( this );
 			m_fGameHUDInitialized = TRUE;
+
+			m_iObserverLastMode = OBS_ROAMING;
+
 			if( g_pGameRules->IsMultiplayer() )
 			{
 				FireTargets( "game_playerjoin", this, this, USE_TOGGLE, 0 );
@@ -3779,6 +3897,17 @@ void CBasePlayer::UpdateClientData( void )
 		}
 
 		FireTargets( "game_playerspawn", this, this, USE_TOGGLE, 0 );
+
+		// Send flashlight status
+		MESSAGE_BEGIN( MSG_ONE, gmsgFlashlight, NULL, pev );
+			WRITE_BYTE( FlashlightIsOn() ? 1 : 0 );
+			WRITE_BYTE( m_iFlashBattery );
+		MESSAGE_END();
+
+		// Vit_amiN: the geiger state could run out of sync, too
+		MESSAGE_BEGIN( MSG_ONE, gmsgGeigerRange, NULL, pev );
+			WRITE_BYTE( 0 );
+		MESSAGE_END();
 
 		InitStatusBar();
 	}
@@ -3812,19 +3941,22 @@ void CBasePlayer::UpdateClientData( void )
 
 	if( pev->health != m_iClientHealth )
 	{
-		int iHealth = max( pev->health, 0 );  // make sure that no negative health values are sent
+#define clamp( val, min, max ) ( ((val) > (max)) ? (max) : ( ((val) < (min)) ? (min) : (val) ) )
+		int iHealth = clamp( pev->health, 0, 255 ); // make sure that no negative health values are sent
+		if( pev->health > 0.0f && pev->health <= 1.0f )
+			iHealth = 1;
 
 		// send "health" update message
 		MESSAGE_BEGIN( MSG_ONE, gmsgHealth, NULL, pev );
 			WRITE_BYTE( iHealth );
 		MESSAGE_END();
 
-		m_iClientHealth = pev->health;
+		m_iClientHealth = (int)pev->health;
 	}
 
-	if( pev->armorvalue != m_iClientBattery )
+	if( (int)pev->armorvalue != m_iClientBattery )
 	{
-		m_iClientBattery = pev->armorvalue;
+		m_iClientBattery = (int)pev->armorvalue;
 
 		ASSERT( gmsgBattery > 0 );
 
@@ -3852,8 +3984,8 @@ void CBasePlayer::UpdateClientData( void )
 		int visibleDamageBits = m_bitsDamageType & DMG_SHOWNHUD;
 
 		MESSAGE_BEGIN( MSG_ONE, gmsgDamage, NULL, pev );
-			WRITE_BYTE( pev->dmg_save );
-			WRITE_BYTE( pev->dmg_take );
+			WRITE_BYTE( (int)pev->dmg_save );
+			WRITE_BYTE( (int)pev->dmg_take );
 			WRITE_LONG( visibleDamageBits );
 			WRITE_COORD( damageOrigin.x );
 			WRITE_COORD( damageOrigin.y );
@@ -3977,7 +4109,16 @@ void CBasePlayer::UpdateClientData( void )
 	if( m_flNextSBarUpdateTime < gpGlobals->time )
 	{
 		UpdateStatusBar();
-		m_flNextSBarUpdateTime = gpGlobals->time + 0.2;
+		m_flNextSBarUpdateTime = gpGlobals->time + 0.2f;
+	}
+
+	// Send the current bhopcap state.
+	if( !m_bSentBhopcap )
+	{
+		m_bSentBhopcap = true;
+		MESSAGE_BEGIN( MSG_ONE, gmsgBhopcap, NULL, pev );
+			WRITE_BYTE( g_bhopcap );
+		MESSAGE_END();
 	}
 }
 
@@ -4024,6 +4165,18 @@ int CBasePlayer::Illumination( void )
 	return iIllum;
 }
 
+void CBasePlayer::SetPrefsFromUserinfo( char *infobuffer )
+{
+	const char *pszKeyVal;
+
+	pszKeyVal = g_engfuncs.pfnInfoKeyValue( infobuffer, "cl_autowepswitch" );
+
+	if( pszKeyVal[0] != '\0' )
+		m_iAutoWepSwitch = atoi( pszKeyVal );
+	else
+		m_iAutoWepSwitch = 1;
+}
+
 void CBasePlayer::EnableControl( BOOL fControl )
 {
 	if( !fControl )
@@ -4059,7 +4212,7 @@ Vector CBasePlayer::GetAutoaimVector( float flDelta )
 	}
 
 	Vector vecSrc = GetGunPosition();
-	float flDist = 8192;
+	float flDist = 8192.0f;
 
 	// always use non-sticky autoaim
 	// UNDONE: use sever variable to chose!
@@ -4102,11 +4255,11 @@ Vector CBasePlayer::GetAutoaimVector( float flDelta )
 	// UNDONE: use sever variable to chose!
 	if( 0 || g_iSkillLevel == SKILL_EASY )
 	{
-		m_vecAutoAim = m_vecAutoAim * 0.67 + angles * 0.33;
+		m_vecAutoAim = m_vecAutoAim * 0.67f + angles * 0.33f;
 	}
 	else
 	{
-		m_vecAutoAim = angles * 0.9;
+		m_vecAutoAim = angles * 0.9f;
 	}
 
 	// m_vecAutoAim = m_vecAutoAim * 0.99;
@@ -4118,8 +4271,8 @@ Vector CBasePlayer::GetAutoaimVector( float flDelta )
 		{
 			SET_CROSSHAIRANGLE( edict(), -m_vecAutoAim.x, m_vecAutoAim.y );
 
-			m_lastx = m_vecAutoAim.x;
-			m_lasty = m_vecAutoAim.y;
+			m_lastx = (int)m_vecAutoAim.x;
+			m_lasty = (int)m_vecAutoAim.y;
 		}
 	}
 
@@ -4204,16 +4357,16 @@ Vector CBasePlayer::AutoaimDeflection( Vector &vecSrc, float flDist, float flDel
 		if( DotProduct( dir, gpGlobals->v_forward ) < 0 )
 			continue;
 
-		dot = fabs( DotProduct( dir, gpGlobals->v_right ) ) + fabs( DotProduct( dir, gpGlobals->v_up ) ) * 0.5;
+		dot = fabs( DotProduct( dir, gpGlobals->v_right ) ) + fabs( DotProduct( dir, gpGlobals->v_up ) ) * 0.5f;
 
 		// tweek for distance
-		dot *= 1.0 + 0.2 * ( ( center - vecSrc ).Length() / flDist );
+		dot *= 1.0f + 0.2f * ( ( center - vecSrc ).Length() / flDist );
 
 		if( dot > bestdot )
 			continue;	// to far to turn
 
 		UTIL_TraceLine( vecSrc, center, dont_ignore_monsters, edict(), &tr );
-		if( tr.flFraction != 1.0 && tr.pHit != pEdict )
+		if( tr.flFraction != 1.0f && tr.pHit != pEdict )
 		{
 			// ALERT( at_console, "hit %s, can't see %s\n", STRING( tr.pHit->v.classname ), STRING( pEdict->v.classname ) );
 			continue;
@@ -4298,7 +4451,7 @@ void CBasePlayer::DropPlayerItem( char *pszItemName )
 		return;
 	}
 
-	if( !strlen( pszItemName ) )
+	if( pszItemName[0] == '\0' )
 	{
 		// if this string has no length, the client didn't type a name!
 		// assume player wants to drop the active item.
@@ -4341,7 +4494,8 @@ void CBasePlayer::DropPlayerItem( char *pszItemName )
 		// item we want to drop and hit a BREAK;  pWeapon is the item.
 		if( pWeapon )
 		{
-			g_pGameRules->GetNextBestWeapon( this, pWeapon );
+			if( !g_pGameRules->GetNextBestWeapon( this, pWeapon ) )
+				return; // can't drop the item they asked for, may be our last item or something we can't holster
 
 			UTIL_MakeVectors( pev->angles ); 
 
@@ -4462,10 +4616,10 @@ public:
 	void KeyValue( KeyValueData *pkvd );
 
 	int m_iPose;// which sequence to display	-- temporary, don't need to save
-	static char *m_szPoses[4];
+	static const char *m_szPoses[4];
 };
 
-char *CDeadHEV::m_szPoses[] =
+const char *CDeadHEV::m_szPoses[] =
 {
 	"deadback",
 	"deadsitting",
@@ -4607,7 +4761,7 @@ void CRevertSaved::KeyValue( KeyValueData *pkvd )
 
 void CRevertSaved::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
-	UTIL_ScreenFadeAll( pev->rendercolor, Duration(), HoldTime(), pev->renderamt, FFADE_OUT );
+	UTIL_ScreenFadeAll( pev->rendercolor, Duration(), HoldTime(), (int)pev->renderamt, FFADE_OUT );
 	pev->nextthink = gpGlobals->time + MessageTime();
 	SetThink( &CRevertSaved::MessageThink );
 }
@@ -4649,7 +4803,7 @@ void CInfoIntermission::Spawn( void )
 	pev->effects = EF_NODRAW;
 	pev->v_angle = g_vecZero;
 
-	pev->nextthink = gpGlobals->time + 2;// let targets spawn!
+	pev->nextthink = gpGlobals->time + 2.0f;// let targets spawn!
 }
 
 void CInfoIntermission::Think( void )

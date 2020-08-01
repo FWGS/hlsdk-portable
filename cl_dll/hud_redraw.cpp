@@ -15,7 +15,8 @@
 //
 // hud_redraw.cpp
 //
-#include <math.h>
+#include <cmath>
+
 #include "hud.h"
 #include "cl_util.h"
 //#include "triangleapi.h"
@@ -75,7 +76,7 @@ void CHud::Think( void )
 	if( m_iFOV == 0 )
 	{
 		// only let players adjust up in fov,  and only if they are not overriden by something else
-		m_iFOV = max( default_fov->value, 90 );  
+		m_iFOV = Q_max( default_fov->value, 90 );  
 	}
 }
 
@@ -86,12 +87,19 @@ int CHud::Redraw( float flTime, int intermission )
 {
 	m_fOldTime = m_flTime;	// save time of previous redraw
 	m_flTime = flTime;
-	m_flTimeDelta = (double)m_flTime - m_fOldTime;
+	m_flTimeDelta = (double)( m_flTime - m_fOldTime );
 	static float m_flShotTime = 0;
 
 	// Clock was reset, reset delta
 	if( m_flTimeDelta < 0 )
 		m_flTimeDelta = 0;
+
+	if( !m_iIntermission && intermission )
+	{
+		// Take a screenshot if the client's got the cvar set
+		if( CVAR_GET_FLOAT( "hud_takesshots" ) != 0 )
+			m_flShotTime = flTime + 1.0f;	// Take a screenshot in a second
+	}
 
 	if( m_flShotTime && m_flShotTime < flTime )
 	{
@@ -192,7 +200,7 @@ const unsigned char colors[8][3] =
 {240, 180,  24}
 };
 
-int CHud::DrawHudString( int xpos, int ypos, int iMaxX, char *szIt, int r, int g, int b )
+int CHud::DrawHudString( int xpos, int ypos, int iMaxX, const char *szIt, int r, int g, int b )
 {
 	if( hud_textmode->value == 2 )
 	{
@@ -226,7 +234,40 @@ int CHud::DrawHudString( int xpos, int ypos, int iMaxX, char *szIt, int r, int g
 	return xpos;
 }
 
-int CHud::DrawHudStringLen( char *szIt )
+int DrawUtfString( int xpos, int ypos, int iMaxX, const char *szIt, int r, int g, int b )
+{
+	if (IsXashFWGS())
+	{
+		// xash3d: reset unicode state
+		gEngfuncs.pfnVGUI2DrawCharacterAdditive( 0, 0, 0, 0, 0, 0, 0 );
+
+		// draw the string until we hit the null character or a newline character
+		for( ; *szIt != 0 && *szIt != '\n'; szIt++ )
+		{
+			int w = gHUD.m_scrinfo.charWidths['M'];
+			if( xpos + w  > iMaxX )
+				return xpos;
+			if( ( *szIt == '^' ) && ( *( szIt + 1 ) >= '0') && ( *( szIt + 1 ) <= '7') )
+			{
+				szIt++;
+				r = colors[*szIt - '0'][0];
+				g = colors[*szIt - '0'][1];
+				b = colors[*szIt - '0'][2];
+				if( !*(++szIt) )
+					return xpos;
+			}
+			int c = (unsigned int)(unsigned char)*szIt;
+			xpos += gEngfuncs.pfnVGUI2DrawCharacterAdditive( xpos, ypos, c, r, g, b, 0 );
+		}
+		return xpos;
+	}
+	else
+	{
+		return gHUD.DrawHudString(xpos, ypos, iMaxX, szIt, r, g, b);
+	}
+}
+
+int CHud::DrawHudStringLen( const char *szIt )
 {
 	int l = 0;
 	for( ; *szIt != 0 && *szIt != '\n'; szIt++ )
@@ -244,10 +285,10 @@ int CHud::DrawHudNumberString( int xpos, int ypos, int iMinX, int iNumber, int r
 }
 
 // draws a string from right to left (right-aligned)
-int CHud::DrawHudStringReverse( int xpos, int ypos, int iMinX, char *szString, int r, int g, int b )
+int CHud::DrawHudStringReverse( int xpos, int ypos, int iMinX, const char *szString, int r, int g, int b )
 {
 	// find the end of the string
-	for( char *szIt = szString; *szIt != 0; szIt++ )
+	for( const char *szIt = szString; *szIt != 0; szIt++ )
 		xpos -= gHUD.m_scrinfo.charWidths[(unsigned char)*szIt];
 	if( xpos < iMinX )
 		xpos = iMinX;

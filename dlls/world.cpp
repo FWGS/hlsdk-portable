@@ -33,7 +33,6 @@
 #include "weapons.h"
 #include "gamerules.h"
 #include "teamplay_gamerules.h"
-#include "physcallback.h"
 
 extern CGraph WorldGraph;
 extern CSoundEnt *pSoundEnt;
@@ -159,7 +158,7 @@ void CDecal::TriggerDecal( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TY
 	MESSAGE_END();
 
 	SetThink( &CBaseEntity::SUB_Remove );
-	pev->nextthink = gpGlobals->time + 0.1;
+	pev->nextthink = gpGlobals->time + 0.1f;
 }
 
 void CDecal::StaticDecal( void )
@@ -292,7 +291,7 @@ globalentity_t *CGlobalState::Find( string_t globalname )
 //#ifdef _DEBUG
 void CGlobalState::DumpGlobals( void )
 {
-	static char *estates[] = { "Off", "On", "Dead" };
+	static const char *estates[] = { "Off", "On", "Dead" };
 	globalentity_t *pTest;
 
 	ALERT( at_console, "-- Globals --\n" );
@@ -484,9 +483,12 @@ void CWorld::Precache( void )
 	///!!!LATER - do we want a sound ent in deathmatch? (sjb)
 	//pSoundEnt = CBaseEntity::Create( "soundent", g_vecZero, g_vecZero, edict() );
 	pSoundEnt = GetClassPtr( ( CSoundEnt *)NULL );
-	pSoundEnt->Spawn();
 
-	if( !pSoundEnt )
+	if( pSoundEnt )
+	{
+		pSoundEnt->Spawn();
+	}
+	else
 	{
 		ALERT ( at_console, "**COULD NOT CREATE SOUNDENT**\n" );
 	}
@@ -496,9 +498,6 @@ void CWorld::Precache( void )
 	// init sentence group playback stuff from sentences.txt.
 	// ok to call this multiple times, calls after first are ignored.
 	SENTENCEG_Init();
-
-	// init texture type array from materials.txt
-	TEXTURETYPE_Init();
 
 	// the area based ambient sounds MUST be the first precache_sounds
 	// player precaches
@@ -582,14 +581,14 @@ void CWorld::Precache( void )
 	// 63 testing
 	LIGHT_STYLE( 63, "a" );
 
-	for( int i = 0; i < ARRAYSIZE( gDecals ); i++ )
+	for( int i = 0; i < (int)ARRAYSIZE( gDecals ); i++ )
 		gDecals[i].index = DECAL_INDEX( gDecals[i].name );
 
 	// init the WorldGraph.
 	WorldGraph.InitGraph();
 
 	// make sure the .NOD file is newer than the .BSP file.
-	if( !WorldGraph.CheckNODFile( ( char * )STRING( gpGlobals->mapname ) ) )
+	if( !WorldGraph.CheckNODFile( STRING( gpGlobals->mapname ) ) )
 	{
 		// NOD file is not present, or is older than the BSP file.
 		WorldGraph.AllocNodes();
@@ -597,7 +596,7 @@ void CWorld::Precache( void )
 	else
 	{
 		// Load the node graph for this level
-		if( !WorldGraph.FLoadGraph ( (char *)STRING( gpGlobals->mapname ) ) )
+		if( !WorldGraph.FLoadGraph( STRING( gpGlobals->mapname ) ) )
 		{
 			// couldn't load, so alloc and prepare to build a graph.
 			ALERT( at_console, "*Error opening .NOD file\n" );
@@ -626,15 +625,15 @@ void CWorld::Precache( void )
 			pEntity->SetThink( &CBaseEntity::SUB_CallUseToggle );
 			pEntity->pev->message = pev->netname;
 			pev->netname = 0;
-			pEntity->pev->nextthink = gpGlobals->time + 0.3;
+			pEntity->pev->nextthink = gpGlobals->time + 0.3f;
 			pEntity->pev->spawnflags = SF_MESSAGE_ONCE;
 		}
 	}
 
 	if( pev->spawnflags & SF_WORLD_DARK )
-		CVAR_SET_FLOAT( "v_dark", 1.0 );
+		CVAR_SET_FLOAT( "v_dark", 1.0f );
 	else
-		CVAR_SET_FLOAT( "v_dark", 0.0 );
+		CVAR_SET_FLOAT( "v_dark", 0.0f );
 
 	pev->spawnflags &= ~SF_WORLD_DARK;		// g-cont. don't apply fade after save\restore
 
@@ -647,11 +646,11 @@ void CWorld::Precache( void )
 
 	if( pev->spawnflags & SF_WORLD_FORCETEAM )
 	{
-		CVAR_SET_FLOAT( "mp_defaultteam", 1 );
+		CVAR_SET_FLOAT( "mp_defaultteam", 1.0f );
 	}
 	else
 	{
-		CVAR_SET_FLOAT( "mp_defaultteam", 0 );
+		CVAR_SET_FLOAT( "mp_defaultteam", 0.0f );
 	}
 
 	// g-cont. moved here so cheats will working on restore level
@@ -677,7 +676,7 @@ void CWorld::KeyValue( KeyValueData *pkvd )
 	else if( FStrEq(pkvd->szKeyName, "WaveHeight" ) )
 	{
 		// Sent over net now.
-		pev->scale = atof( pkvd->szValue ) * ( 1.0 / 8.0 );
+		pev->scale = atof( pkvd->szValue ) * ( 1.0f / 8.0f );
 		pkvd->fHandled = TRUE;
 	}
 	else if( FStrEq( pkvd->szKeyName, "MaxRange" ) )
@@ -730,110 +729,3 @@ void CWorld::KeyValue( KeyValueData *pkvd )
 		CBaseEntity::KeyValue( pkvd );
 }
 
-//
-// Xash3D physics interface
-//
-
-typedef void (*LINK_ENTITY_FN)( entvars_t *pev );
-
-//
-// attempt to create custom entity when default method is failed
-// 0 - attempt to create, -1 - reject to create
-//
-int DispatchCreateEntity( edict_t *pent, const char *szName )
-{
-/*
-#ifdef CREATE_ENTITY_TEST
-	// quake armor entities. we just replaced it with item_battery...
-	if( !strcmp( szName, "item_armor1" ) || !strcmp( szName, "item_armor2" ) )
-	{
-		LINK_ENTITY_FN	SpawnEdict;
-
-		// ugly method to get acess with himself exports
-		SpawnEdict = (LINK_ENTITY_FN)GetProcAddress( GetModuleHandle( "hl" ), "item_battery" );
-
-		if( SpawnEdict != NULL )	// found the valid spawn
-		{
-			// BUGBUG: old classname hanging in memory
-			pent->v.classname = ALLOC_STRING( "item_battery" );
-
-			//ALERT( at_console, "DispatchCreateEntity: replace %s with %s\n", szName, STRING( pent->v.classname ) );
-
-			SpawnEdict( &pent->v );
-			return 0;	// handled
-		}
-	}
-#endif
-*/
-	return -1;
-}
-
-//
-// run custom physics for each entity
-// return 0 to use built-in engine physic
-//
-int DispatchPhysicsEntity( edict_t *pEdict )
-{
-	CBaseEntity *pEntity = (CBaseEntity *)GET_PRIVATE( pEdict );
-
-	if( !pEntity )
-	{
-		//ALERT( at_console, "skip %s [%i] without private data\n", STRING( pEdict->v.classname ), ENTINDEX( pEdict ) ); 
-		return 0;	// not initialized
-	}
-
-	// NOTE: at this point pEntity assume to be valid
-/*
-#ifdef CUSTOM_PHYSICS_TEST
-	// test alien controller without physics, thinking only
-	if( FClassnameIs( pEntity->pev, "monster_alien_controller" ) )
-	{
-		float thinktime;
-
-		thinktime = pEntity->pev->nextthink;
-		if( thinktime <= 0.0f || thinktime > PHYSICS_TIME() + gpGlobals->frametime )
-			return 1;
-
-		if( thinktime < PHYSICS_TIME() )
-			thinktime = PHYSICS_TIME();	// don't let things stay in the past.
-							// it is possible to start that way
-							// by a trigger with a local time.
-		pEntity->pev->nextthink = 0.0f;
-		gpGlobals->time = thinktime;
-
-		DispatchThink( pEdict );
-
-#ifdef GRAVITY_TEST
-		// stupid fake gravity test
-		pEntity->pev->origin.z -= 1;
-		LINK_ENTITY( pEdict, true );
-#endif
-		return 1;	// handled
-	}
-#endif
-*/
-	return 0;
-}
-
-static physics_interface_t gPhysicsInterface =
-{
-	SV_PHYSICS_INTERFACE_VERSION,
-	DispatchCreateEntity,
-	DispatchPhysicsEntity,
-};
-
-int Server_GetPhysicsInterface( int iVersion, server_physics_api_t *pfuncsFromEngine, physics_interface_t *pFunctionTable )
-{
-	if( !pFunctionTable || !pfuncsFromEngine || iVersion != SV_PHYSICS_INTERFACE_VERSION )
-	{
-		return FALSE;
-	}
-
-	// copy new physics interface
-	memcpy( &g_physfuncs, pfuncsFromEngine, sizeof(server_physics_api_t) );
-
-	// fill engine callbacks
-	memcpy( pFunctionTable, &gPhysicsInterface, sizeof(physics_interface_t) );
-
-	return TRUE;
-}

@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2002, Valve LLC, All rights reserved. ============
+//========= Copyright (c) 1996-2002, Valve LLC, All rights reserved. ============
 //
 // Purpose: New version of the slider bar
 //
@@ -82,7 +82,7 @@ void CPlayerMonster :: HandleAnimEvent( MonsterEvent_t *pEvent )
 //=========================================================
 int CPlayerMonster::ISoundMask( void )
 {
-	return NULL;
+	return 0;
 }
 
 //=========================================================

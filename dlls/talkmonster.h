@@ -12,6 +12,7 @@
 *   use or distribution of this code by or to any unlicensed person is illegal.
 *
 ****/
+#pragma once
 #ifndef TALKMONSTER_H
 #define TALKMONSTER_H
 
@@ -24,7 +25,7 @@
 // Used for scientists and barneys
 //=========================================================
 
-#define TALKRANGE_MIN 500.0				// don't talk to anyone farther away than this
+#define TALKRANGE_MIN 500.0f				// don't talk to anyone farther away than this
 
 #define TLK_STARE_DIST	128				// anyone closer than this and looking at me is probably staring at me.
 
@@ -138,7 +139,7 @@ public:
 
 	// For following
 	BOOL			CanFollow( void );
-	BOOL			IsFollowing( void ) { return m_hTargetEnt != NULL && m_hTargetEnt->IsPlayer(); }
+	BOOL			IsFollowing( void ) { return m_hTargetEnt != 0 && m_hTargetEnt->IsPlayer(); }
 	void			StopFollowing( BOOL clearSchedule );
 	void			StartFollowing( CBaseEntity *pLeader );
 	virtual void	DeclineFollowing( void ) {}
@@ -154,7 +155,7 @@ public:
 	static	TYPEDESCRIPTION m_SaveData[];
 
 	
-	static char *m_szFriends[TLK_CFRIENDS];		// array of friend names
+	static const char *m_szFriends[TLK_CFRIENDS];		// array of friend names
 	static float g_talkWaitTime;
 	
 	int			m_bitsSaid;						// set bits for sentences we don't want repeated
@@ -162,8 +163,8 @@ public:
 	int			m_voicePitch;					// pitch of voice for this head
 	const char	*m_szGrp[TLK_CGROUPS];			// sentence group names
 	float		m_useTime;						// Don't allow +USE until this time
-	int			m_iszUse;						// Custom +USE sentence group (follow)
-	int			m_iszUnUse;						// Custom +USE sentence group (stop following)
+	string_t			m_iszUse;						// Custom +USE sentence group (follow)
+	string_t			m_iszUnUse;						// Custom +USE sentence group (stop following)
 
 	float		m_flLastSaidSmelled;// last time we talked about something that stinks
 	float		m_flStopTalkTime;// when in the future that I'll be done saying this sentence.

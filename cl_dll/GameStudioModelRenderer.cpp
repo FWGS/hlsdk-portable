@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2002, Valve LLC, All rights reserved. ============
+//========= Copyright (c) 1996-2002, Valve LLC, All rights reserved. ============
 //
 // Purpose: 
 //
@@ -18,8 +18,6 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <memory.h>
-#include <math.h>
 
 #include "studio_util.h"
 #include "r_studioint.h"

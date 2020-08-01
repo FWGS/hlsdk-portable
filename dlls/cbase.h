@@ -12,6 +12,9 @@
 *   without written permission from Valve LLC.
 *
 ****/
+#pragma once
+#ifndef CBASE_H
+#define CBASE_H
 /*
 
 Class Hierachy
@@ -55,7 +58,6 @@ CBaseEntity
 
 extern "C" EXPORT int GetEntityAPI( DLL_FUNCTIONS *pFunctionTable, int interfaceVersion );
 extern "C" EXPORT int GetEntityAPI2( DLL_FUNCTIONS *pFunctionTable, int *interfaceVersion );
-extern "C" EXPORT int Server_GetPhysicsInterface( int iVersion, server_physics_api_t *pfuncsFromEngine, physics_interface_t *pFunctionTable );
 
 extern int DispatchSpawn( edict_t *pent );
 extern void DispatchKeyValue( edict_t *pentKeyvalue, KeyValueData *pkvd );
@@ -177,7 +179,7 @@ public:
 	virtual void AddPointsToTeam( int score, BOOL bAllowNegativeScore ) {}
 	virtual BOOL AddPlayerItem( CBasePlayerItem *pItem ) { return 0; }
 	virtual BOOL RemovePlayerItem( CBasePlayerItem *pItem ) { return 0; }
-	virtual int GiveAmmo( int iAmount, char *szName, int iMax ) { return -1; };
+	virtual int GiveAmmo( int iAmount, const char *szName, int iMax ) { return -1; };
 	virtual float GetDelay( void ) { return 0; }
 	virtual int IsMoving( void ) { return pev->velocity != g_vecZero; }
 	virtual void OverrideReset( void ) {}
@@ -229,7 +231,7 @@ public:
 	};
 #endif
 
-	void UpdateOnRemove( void );
+	virtual void UpdateOnRemove( void );
 
 	// common member functions
 	void EXPORT SUB_Remove( void );
@@ -280,8 +282,8 @@ public:
 #ifdef _DEBUG
 	void FunctionCheck( void *pFunction, char *name ) 
 	{ 
-		if( pFunction && !NAME_FOR_FUNCTION( (unsigned long)( pFunction ) ) )
-			ALERT( at_error, "No EXPORT: %s:%s (%08lx)\n", STRING( pev->classname ), name, (unsigned long)pFunction );
+		if( pFunction && !NAME_FOR_FUNCTION( pFunction ) )
+			ALERT( at_error, "No EXPORT: %s:%s (%08lx)\n", STRING( pev->classname ), name, (size_t)pFunction );
 	}
 
 	BASEPTR	ThinkSet( BASEPTR func, char *name ) 
@@ -314,7 +316,7 @@ public:
 	// used by monsters that are created by the MonsterMaker
 	virtual	void UpdateOwner( void ) { return; };
 
-	static CBaseEntity *Create( char *szName, const Vector &vecOrigin, const Vector &vecAngles, edict_t *pentOwner = NULL );
+	static CBaseEntity *Create( const char *szName, const Vector &vecOrigin, const Vector &vecAngles, edict_t *pentOwner = NULL );
 
 	virtual BOOL FBecomeProne( void ) {return FALSE;};
 	edict_t *edict() { return ENT( pev ); };
@@ -360,6 +362,7 @@ public:
 #define SetTouch( a ) TouchSet( static_cast <void (CBaseEntity::*)(CBaseEntity *)> (a), #a )
 #define SetUse( a ) UseSet( static_cast <void (CBaseEntity::*)(	CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )> (a), #a )
 #define SetBlocked( a ) BlockedSet( static_cast <void (CBaseEntity::*)(CBaseEntity *)> (a), #a )
+#define ResetThink() SetThink(NULL)
 
 #else
 
@@ -436,7 +439,7 @@ class CBaseDelay : public CBaseEntity
 {
 public:
 	float m_flDelay;
-	int m_iszKillTarget;
+	string_t m_iszKillTarget;
 
 	virtual void KeyValue( KeyValueData *pkvd );
 	virtual int Save( CSave &save );
@@ -655,8 +658,7 @@ class CSound;
 
 #include "basemonster.h"
 
-
-char *ButtonSound( int sound );				// get string of button sound number
+const char *ButtonSound( int sound );				// get string of button sound number
 
 //
 // Generic Button
@@ -781,3 +783,4 @@ public:
 	void Precache( void );
 	void KeyValue( KeyValueData *pkvd );
 };
+#endif

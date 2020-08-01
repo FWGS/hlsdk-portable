@@ -192,7 +192,7 @@ BOOL CSquadMonster::SquadAdd( CSquadMonster *pAdd )
 
 	for( int i = 0; i < MAX_SQUAD_MEMBERS - 1; i++ )
 	{
-		if( m_hSquadMember[i] == NULL )
+		if( m_hSquadMember[i] == 0 )
 		{
 			m_hSquadMember[i] = pAdd;
 			pAdd->m_hSquadLeader = this;
@@ -258,7 +258,7 @@ void CSquadMonster::SquadMakeEnemy( CBaseEntity *pEnemy )
 			// reset members who aren't activly engaged in fighting
 			if( pMember->m_hEnemy != pEnemy && !pMember->HasConditions( bits_COND_SEE_ENEMY ) )
 			{
-				if( pMember->m_hEnemy != NULL )
+				if( pMember->m_hEnemy != 0 )
 				{
 					// remember their current enemy
 					pMember->PushEnemy( pMember->m_hEnemy, pMember->m_vecEnemyLKP );
@@ -355,7 +355,7 @@ int CSquadMonster::SquadRecruit( int searchRadius, int maxMembers )
 				{
 					TraceResult tr;
 					UTIL_TraceLine( pev->origin + pev->view_ofs, pRecruit->pev->origin + pev->view_ofs, ignore_monsters, pRecruit->edict(), &tr );// try to hit recruit with a traceline.
-					if( tr.flFraction == 1.0 )
+					if( tr.flFraction == 1.0f )
 					{
 						if( !SquadAdd( pRecruit ) )
 							break;
@@ -457,9 +457,10 @@ BOOL CSquadMonster::NoFriendlyFire( void )
 	Vector vecLeftSide;
 	Vector vecRightSide;
 	Vector v_left;
+	Vector v_dir;
 
 	//!!!BUGBUG - to fix this, the planes must be aligned to where the monster will be firing its gun, not the direction it is facing!!!
-	if( m_hEnemy != NULL )
+	if( m_hEnemy != 0 )
 	{
 		UTIL_MakeVectors( UTIL_VecToAngles( m_hEnemy->Center() - pev->origin ) );
 	}
@@ -471,9 +472,13 @@ BOOL CSquadMonster::NoFriendlyFire( void )
 
 	//UTIL_MakeVectors( pev->angles );
 
-	vecLeftSide = pev->origin - ( gpGlobals->v_right * ( pev->size.x * 1.5 ) );
-	vecRightSide = pev->origin + ( gpGlobals->v_right * ( pev->size.x * 1.5 ) );
-	v_left = gpGlobals->v_right * -1;
+	// vecLeftSide = pev->origin - ( gpGlobals->v_right * ( pev->size.x * 1.5f ) );
+	// vecRightSide = pev->origin + ( gpGlobals->v_right * ( pev->size.x * 1.5f ) );
+	v_dir = gpGlobals->v_right * ( pev->size.x * 1.5f );
+	vecLeftSide = pev->origin - v_dir;
+        vecRightSide = pev->origin + v_dir;
+
+	v_left = gpGlobals->v_right * -1.0f;
 
 	leftPlane.InitializePlane( gpGlobals->v_right, vecLeftSide );
 	rightPlane.InitializePlane( v_left, vecRightSide );
@@ -508,9 +513,7 @@ BOOL CSquadMonster::NoFriendlyFire( void )
 //=========================================================
 MONSTERSTATE CSquadMonster::GetIdealState ( void )
 {
-	int iConditions;
-
-	iConditions = IScheduleFlags();
+	IScheduleFlags();
 
 	// If no schedule conditions, the new ideal state is probably the reason we're in here.
 	switch( m_MonsterState )
@@ -565,7 +568,7 @@ BOOL CSquadMonster::SquadEnemySplit( void )
 	for( int i = 0; i < MAX_SQUAD_MEMBERS; i++ )
 	{
 		CSquadMonster *pMember = pSquadLeader->MySquadMember( i );
-		if( pMember != NULL && pMember->m_hEnemy != NULL && pMember->m_hEnemy != pEnemy )
+		if( pMember != NULL && pMember->m_hEnemy != 0 && pMember->m_hEnemy != pEnemy )
 		{
 			return TRUE;
 		}
