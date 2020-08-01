@@ -20,6 +20,7 @@
 //++ BulliT
 #include "agglobal.h"
 //-- Martin Webrant
+BOOL		g_fIsXash3D;
 
 cvar_t displaysoundlist = {"displaysoundlist","0"};
 
@@ -55,6 +56,8 @@ cvar_t mp_chattime	= { "mp_chattime","10", FCVAR_SERVER };
 cvar_t *g_psv_gravity = NULL;
 cvar_t *g_psv_aim = NULL;
 cvar_t *g_footsteps = NULL;
+
+cvar_t *g_psv_developer;
 
 //CVARS FOR SKILL LEVEL SETTINGS
 // Agrunt
@@ -456,10 +459,14 @@ cvar_t	sk_player_leg3	= { "sk_player_leg3","1" };
 void GameDLLInit( void )
 {
 	// Register cvars here:
+	if( CVAR_GET_POINTER( "build" ) )
+		g_fIsXash3D = TRUE;
 
 	g_psv_gravity = CVAR_GET_POINTER( "sv_gravity" );
 	g_psv_aim = CVAR_GET_POINTER( "sv_aim" );
 	g_footsteps = CVAR_GET_POINTER( "mp_footsteps" );
+
+	g_psv_developer = CVAR_GET_POINTER( "developer" );
 
 	CVAR_REGISTER( &displaysoundlist );
 	CVAR_REGISTER( &allow_spectators );
