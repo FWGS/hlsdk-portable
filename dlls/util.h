@@ -26,10 +26,6 @@
 #include "enginecallback.h"
 #endif
 
-#ifndef PHYSCALLBACK_H
-#include "physcallback.h"
-#endif
-
 #include <string.h>
 #include <ctype.h>
 
