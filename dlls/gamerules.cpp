@@ -28,7 +28,7 @@
 
 extern edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer );
 
-extern BOOL gPhysicsInterfaceInitialized;
+extern BOOL g_fIsXash3D;
 
 //++ BulliT
 DLL_GLOBAL AgGameRules *g_pGameRules = NULL;
@@ -320,7 +320,7 @@ void CGameRules::ClientUserInfoChanged( CBasePlayer *pPlayer, char *infobuffer )
 AgGameRules *InstallGameRules( void )
 //-- Martin Webrant
 {
-	if( !gPhysicsInterfaceInitialized )
+	if( !g_fIsXash3D )
 	{
 		SERVER_COMMAND( "exec game.cfg\n" );
 		SERVER_EXECUTE();
