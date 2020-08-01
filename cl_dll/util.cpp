@@ -33,10 +33,10 @@
 #ifndef M_PI_F
 #define M_PI_F		(float)M_PI
 #endif
-
 extern vec3_t vec3_origin;
 
-#ifdef _MSC_VER
+// if C++ mangling differs from C symbol name
+#if defined _MSC_VER || defined __WATCOMC__
 vec3_t vec3_origin;
 #endif
 

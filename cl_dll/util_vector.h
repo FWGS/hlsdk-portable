@@ -22,8 +22,11 @@
 // Misc C-runtime library headers
 #include <stdio.h>
 #include <stdlib.h>
+#if HAVE_CMATH
 #include <cmath>
-
+#else
+#include <math.h>
+#endif
 // Header file containing definition of globalvars_t and entvars_t
 typedef unsigned int func_t;					//
 typedef int string_t;				// from engine's pr_comp.h;
