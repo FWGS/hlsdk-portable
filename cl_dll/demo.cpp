@@ -17,7 +17,6 @@
 #include "cl_util.h"
 #include "demo.h"
 #include "demo_api.h"
-#include <memory.h>
 
 // FIXME:  There should be buffer helper functions to avoid all of the *(int *)& crap.
 

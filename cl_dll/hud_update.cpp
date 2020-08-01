@@ -20,7 +20,6 @@
 #include "hud.h"
 #include "cl_util.h"
 #include <stdlib.h>
-#include <memory.h>
 
 int CL_ButtonBits( int );
 void CL_ResetButtonBits( int bits );
