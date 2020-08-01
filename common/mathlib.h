@@ -22,7 +22,11 @@
 #include <tgmath.h>
 #endif // HAVE_TGMATH_H
 #else // __cplusplus
+#if HAVE_CMATH
 #include <cmath>
+#else
+#include <math.h>
+#endif
 #endif // __cplusplus
 
 typedef float vec_t;
