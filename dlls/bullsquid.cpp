@@ -96,7 +96,7 @@ void CSquidSpit::Spawn( void )
 
 	UTIL_SetSize( pev, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ) );
 
-	m_maxFrame = (float)MODEL_FRAMES( pev->modelindex ) - 1;
+	m_maxFrame = MODEL_FRAMES( pev->modelindex ) - 1;
 }
 
 void CSquidSpit::Animate( void )
@@ -539,6 +539,9 @@ void CBullsquid::HandleAnimEvent( MonsterEvent_t *pEvent )
 	{
 		case BSQUID_AE_SPIT:
 			{
+				if( m_hEnemy == 0 )
+					return;
+
 				Vector vecSpitOffset;
 				Vector vecSpitDir;
 
