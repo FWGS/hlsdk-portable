@@ -710,8 +710,8 @@ void EV_FireShotGunSingle( event_args_t *args )
 //	   SHOTGUN END
 //======================
 
-#define SND_CHANGE_PITCH	(1 << 7)		// duplicated in protocol.h change sound pitch
-
+#define SND_STOP		(1 << 5)
+#define SND_CHANGE_PITCH	(1 << 7)	// duplicated in protocol.h change sound pitch
 void EV_TrainPitchAdjust( event_args_t *args )
 {
 	int idx;
