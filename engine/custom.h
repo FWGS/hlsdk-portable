@@ -18,6 +18,8 @@
 
 #include "const.h"
 
+#define MAX_QPATH 64    // Must match value in quakedefs.h
+
 /////////////////
 // Customization
 // passed to pfnPlayerCustomization
