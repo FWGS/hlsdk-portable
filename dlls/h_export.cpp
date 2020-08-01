@@ -28,7 +28,6 @@
 // Holds engine functionality callbacks
 enginefuncs_t g_engfuncs;
 globalvars_t *gpGlobals;
-server_physics_api_t g_physfuncs;
 #ifdef MOBILE_HACKS 
 int g_iModType;
 #endif // MOBILE_HACKS
