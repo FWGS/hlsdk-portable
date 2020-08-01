@@ -55,6 +55,8 @@ cvar_t *g_psv_gravity = NULL;
 cvar_t *g_psv_aim = NULL;
 cvar_t *g_footsteps = NULL;
 
+cvar_t *g_psv_developer;
+
 //CVARS FOR SKILL LEVEL SETTINGS
 // Agrunt
 cvar_t	sk_agrunt_health1 = {"sk_agrunt_health1","0"};
@@ -461,6 +463,8 @@ void GameDLLInit( void )
 	g_psv_gravity = CVAR_GET_POINTER( "sv_gravity" );
 	g_psv_aim = CVAR_GET_POINTER( "sv_aim" );
 	g_footsteps = CVAR_GET_POINTER( "mp_footsteps" );
+
+	g_psv_developer = CVAR_GET_POINTER( "developer" );
 
 	CVAR_REGISTER( &displaysoundlist );
 	CVAR_REGISTER( &allow_spectators );
