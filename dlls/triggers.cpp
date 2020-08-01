@@ -36,6 +36,7 @@
 #define SF_TRIGGER_HURT_CLIENTONLYTOUCH 32// only clients may touch this trigger.
 
 extern DLL_GLOBAL BOOL		g_fGameOver;
+extern BOOL			g_fIsXash3D;
 
 extern void SetMovedir(entvars_t* pev);
 extern Vector VecBModelOrigin( entvars_t* pevBModel );
@@ -2100,8 +2101,6 @@ void CTriggerChangeTarget::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, U
 #define SF_CAMERA_PLAYER_TARGET		2
 #define SF_CAMERA_PLAYER_TAKECONTROL 4
 
-extern BOOL gPhysicsInterfaceInitialized;
-
 class CTriggerCamera : public CBaseDelay
 {
 public:
@@ -2282,7 +2281,7 @@ void CTriggerCamera::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYP
 
 	if( FStrEq( STRING( pev->targetname ), "cam1" )
 		&& FStrEq( STRING( gpGlobals->mapname ), "ops_intro" )
-		&& !gPhysicsInterfaceInitialized
+		&& !g_fIsXash3D
 		&& CVAR_GET_POINTER( "gl_overbright" )
 		&& !m_bPlaying ) // if we're not playing, start playing!
 	{
