@@ -49,7 +49,9 @@ DEFINES = [
 'XASH_OPENBSD',
 'XASH_WIN32',
 'XASH_WIN64',
-'XASH_X86'
+'XASH_X86',
+'XASH_DOS4GW',
+'XASH_POSIX'
 ]
 
 def configure(conf):
@@ -75,8 +77,11 @@ def configure(conf):
 		buildos = "openbsd"
 	elif conf.env.XASH_EMSCRIPTEN:
 		buildos = "emscripten"
+	elif conf.env.XASH_DOS4GW:
+		buildos = "dos4gw" # unused, just in case
 	else:
-		conf.fatal("Place your operating system name here! If this is a mistake, try to fix conditions above and report a bug")
+		conf.fatal("Place your operating system name in build.h and library_naming.py!\n"
+			"If this is a mistake, try to fix conditions above and report a bug")
 
 	if conf.env.XASH_AMD64:
 		buildarch = "amd64"
@@ -110,7 +115,8 @@ def configure(conf):
 	elif conf.env.XASH_E2K:
 		buildarch = "e2k"
 	else:
-		raise conf.fatal("Place your architecture name here! If this is a mistake, try to fix conditions above and report a bug")
+		raise conf.fatal("Place your architecture name in build.h and library_naming.py!\n"
+			"If this is a mistake, try to fix conditions above and report a bug")
 	
 	conf.env.revert()
 	
