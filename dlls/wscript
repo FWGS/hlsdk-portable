@@ -25,7 +25,7 @@ def build(bld):
 	source = bld.path.parent.ant_glob([
 		'pm_shared/*.c',
 	])
-	source += bld.path.parent.ant_glob([
+	source += bld.path.ant_glob([
 		'redempt/roy.cpp',
 		'tot/civ.cpp'		
 	])
