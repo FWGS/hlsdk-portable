@@ -25,7 +25,9 @@ def build(bld):
 	source = bld.path.parent.ant_glob([
 		'pm_shared/*.c',
 	])
-
+	source += bld.path.ant_glob([
+		'poke646/*.cpp',
+	])
 	source += [
 		'agrunt.cpp',
 		'airtank.cpp',
@@ -49,7 +51,7 @@ def build(bld):
 		'defaultai.cpp',
 		'doors.cpp', 
 		'effects.cpp',
-		'egon.cpp',
+#		'egon.cpp',
 		'explode.cpp', 
 		'flyingmonster.cpp',
 		'func_break.cpp',
@@ -68,13 +70,13 @@ def build(bld):
 		'h_cine.cpp',
 		'h_cycler.cpp',
 		'h_export.cpp',
-		'handgrenade.cpp',
+#		'handgrenade.cpp',
 		'hassassin.cpp',
 		'headcrab.cpp', 
 		'healthkit.cpp',
 		'hgrunt.cpp',
 		'hornet.cpp',
-		'hornetgun.cpp',
+#		'hornetgun.cpp',
 		'houndeye.cpp', 
 		'ichthyosaur.cpp',
 		'islave.cpp',
@@ -97,7 +99,7 @@ def build(bld):
 		'plats.cpp',
 		'player.cpp',
 		'playermonster.cpp',
-		'python.cpp', 
+#		'python.cpp',
 		'rat.cpp',
 		'roach.cpp',
 		'rpg.cpp', 
