@@ -270,7 +270,7 @@ def configure(conf):
 		if conf.env.cxxshlib_PATTERN.startswith('lib'):
 			conf.env.cxxshlib_PATTERN = conf.env.cxxshlib_PATTERN[3:]
 
-	conf.define('CLIENT_WEAPONS', '1')
+	conf.define('CLIENT_WEAPONS', '0')
 	conf.define('CROWBAR_IDLE_ANIM', '0')
 	conf.define('CROWBAR_DELAY_FIX', '0')
 	conf.define('CROWBAR_FIX_RAPID_CROWBAR', '0')
