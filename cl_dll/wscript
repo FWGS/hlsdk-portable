@@ -88,7 +88,6 @@ def build(bld):
 		'.',
 		'hl/',
 		'../dlls',
-		'../dlls/wpn_shared',
 		'../common',
 		'../engine',
 		'../pm_shared',
@@ -125,3 +124,4 @@ def build(bld):
 		subsystem = bld.env.MSVC_SUBSYSTEM,
 		idx      = bld.get_taskgen_count()
 	)
+
