@@ -26,6 +26,9 @@ def build(bld):
 		'pm_shared/*.c',
 	])
 	source += bld.path.ant_glob([
+		'vendetta/par21.cpp',
+	])
+	source += bld.path.ant_glob([
 		'poke646/*.cpp',
 	])
 	source += [
