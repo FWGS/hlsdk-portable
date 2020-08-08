@@ -21,7 +21,6 @@ def configure(conf):
 			conf.fatal("Could not find hl.def")
 
 def build(bld):
-	defines = []
 	source = bld.path.parent.ant_glob([
 		'pm_shared/*.c',
 	])
@@ -130,16 +129,8 @@ def build(bld):
 		'zombie.cpp'
 	]
 
-	if bld.env.VOICEMGR:
-		source += bld.path.parent.ant_glob([
-			'game_shared/voice_gamemgr.cpp',
-		])
-	else:
-		defines += ['NO_VOICEGAMEMGR']
-
 	includes = [
 		'.',
-		'wpn_shared',
 		'../common',
 		'../engine',
 		'../pm_shared',
@@ -147,6 +138,15 @@ def build(bld):
 		'../public',
 		'hunger'
 	]
+
+	defines = []
+
+	if bld.env.VOICEMGR:
+		source += bld.path.parent.ant_glob([
+		'game_shared/voice_gamemgr.cpp',
+		])
+	else:
+		defines += ['NO_VOICEGAMEMGR']
 
 	libs = []
 
@@ -167,3 +167,4 @@ def build(bld):
 		subsystem = bld.env.MSVC_SUBSYSTEM,
 		idx      = bld.get_taskgen_count()
 	)
+
