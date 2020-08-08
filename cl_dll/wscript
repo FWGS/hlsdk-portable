@@ -75,13 +75,13 @@ def build(bld):
 		'.',
 		'hl/',
 		'../dlls',
-		'../dlls/wpn_shared',
 		'../common',
 		'../engine',
 		'../pm_shared',
 		'../game_shared',
 		'../public',
-		'../utils/false_vgui/include'
+		'../utils/false_vgui/include',
+		'../dlls/poke646'
 	]
 
 	defines = ['CLIENT_DLL']
@@ -112,3 +112,4 @@ def build(bld):
 		subsystem = bld.env.MSVC_SUBSYSTEM,
 		idx      = bld.get_taskgen_count()
 	)
+
