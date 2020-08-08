@@ -23,7 +23,7 @@ def build(bld):
 	source += bld.path.ant_glob([
 		'hl/*.cpp'
 	])
-	source += bld.path.ant_glob([
+	source += bld.path.parent.ant_glob([
 		'dlls/crossbow.cpp',
 		'dlls/crowbar.cpp',
 		'dlls/egon.cpp',
