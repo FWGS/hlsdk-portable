@@ -23,22 +23,6 @@ def build(bld):
 	source += bld.path.ant_glob([
 		'hl/*.cpp'
 	])
-	source += bld.path.parent.ant_glob([
-		'dlls/crossbow.cpp',
-		'dlls/crowbar.cpp',
-		'dlls/egon.cpp',
-		'dlls/gauss.cpp',
-		'dlls/glock.cpp',
-		'dlls/handgrenade.cpp',
-		'dlls/hornetgun.cpp',
-		'dlls/mp5.cpp',
-		'dlls/python.cpp',
-		'dlls/rpg.cpp',
-		'dlls/satchel.cpp',
-		'dlls/shotgun.cpp',
-		'dlls/squeakgrenade.cpp',
-		'dlls/tripmine.cpp'
-	])
 	source += [
 		'GameStudioModelRenderer.cpp',
 		'MOTD.cpp',
@@ -94,7 +78,8 @@ def build(bld):
 		'../pm_shared',
 		'../game_shared',
 		'../public',
-		'../utils/false_vgui/include'
+		'../utils/false_vgui/include',
+		'../dlls/hunger'
 	]
 
 	defines = ['CLIENT_DLL']
