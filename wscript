@@ -275,6 +275,7 @@ def configure(conf):
 	conf.define('CROWBAR_DELAY_FIX', False)
 	conf.define('CROWBAR_FIX_RAPID_CROWBAR', False)
 	conf.define('GAUSS_OVERCHARGE_FIX', False)
+	conf.define('MONSTER_YAWSPEED_FIX', False)
 
 	if conf.env.DEST_OS == 'android' or conf.options.ENABLE_MOD_HACKS:
 		conf.define('MOBILE_HACKS', '1')
