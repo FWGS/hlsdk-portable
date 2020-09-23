@@ -21,7 +21,11 @@ def build(bld):
 		'pm_shared/*.c',
 		'dlls/crossbow.cpp', 'dlls/crowbar.cpp', 'dlls/egon.cpp', 'dlls/gauss.cpp', 'dlls/handgrenade.cpp',
 		'dlls/hornetgun.cpp', 'dlls/mp5.cpp', 'dlls/python.cpp', 'dlls/rpg.cpp', 'dlls/satchel.cpp',
-		'dlls/shotgun.cpp',	'dlls/squeakgrenade.cpp', 'dlls/tripmine.cpp', 'dlls/glock.cpp'
+		'dlls/shotgun.cpp',	'dlls/squeakgrenade.cpp', 'dlls/tripmine.cpp', 'dlls/glock.cpp',
+		'dlls/gearbox/displacer.cpp', 'dlls/gearbox/knife.cpp', 'dlls/gearbox/eagle.cpp',
+		'dlls/gearbox/grapple.cpp', 'dlls/gearbox/m249.cpp', 'dlls/gearbox/penguin.cpp',
+		'dlls/gearbox/pipewrench.cpp', 'dlls/gearbox/shockrifle.cpp', 'dlls/gearbox/sniperrifle.cpp',
+		'dlls/gearbox/sporelauncher.cpp'
 	])
 
 	source += bld.path.ant_glob(['hl/*.cpp'])
@@ -37,10 +41,11 @@ def build(bld):
 		'overview.cpp', 'parsemsg.cpp', 'saytext.cpp',
 		'status_icons.cpp', 'statusbar.cpp', 'studio_util.cpp',
 		'StudioModelRenderer.cpp', 'text_message.cpp', 'train.cpp',
-		'tri.cpp', 'util.cpp', 'view.cpp', 'scoreboard.cpp', 'MOTD.cpp'
+		'tri.cpp', 'util.cpp', 'view.cpp', 'scoreboard.cpp', 'MOTD.cpp',
+		'gearbox/hud_nightvision.cpp'
 	]
 
-	includes = Utils.to_list('. hl/ ../dlls ../dlls/wpn_shared ../common ../engine ../pm_shared ../game_shared ../public ../utils/false_vgui/include')
+	includes = Utils.to_list('. hl/ ../dlls ../dlls/wpn_shared ../dlls/gearbox ../common ../engine ../pm_shared ../game_shared ../public ../utils/false_vgui/include')
 
 	defines = ['CLIENT_DLL']
 	if bld.env.GOLDSRC:

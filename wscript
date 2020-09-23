@@ -56,10 +56,10 @@ def options(opt):
 
 def configure(conf):
 	# Configuration
-	conf.env.GAMEDIR     = 'valve'
+	conf.env.GAMEDIR     = 'gearbox'
 	conf.env.CLIENT_DIR  = 'cl_dlls'
 	conf.env.SERVER_DIR  = 'dlls'
-	conf.env.SERVER_NAME = 'hl'
+	conf.env.SERVER_NAME = 'opfor'
 	conf.env.PREFIX = ''
 
 	conf.load('fwgslib reconfigure')
@@ -184,7 +184,7 @@ def configure(conf):
 	compiler_optional_flags = [
 		'-fdiagnostics-color=always',
 		'-Werror=return-type',
-		'-Werror=parentheses',
+		#'-Werror=parentheses',
 		'-Werror=vla',
 		'-Werror=tautological-compare',
 		'-Werror=duplicated-cond',
