@@ -329,8 +329,6 @@ public:
 
 	CBaseEntity* DropItem( const char *pszItemName, const Vector &vecPos, const Vector &vecAng );// drop an item.
 
-#ifdef MONSTER_YAWSPEED_FIX
 	float m_flLastYawTime;
-#endif
 };
 #endif // BASEMONSTER_H
