@@ -1248,6 +1248,7 @@ public:
 	void Spawn();
 	void Precache();
 	int iItemSlot() { return 5; }
+	int AddToPlayer( CBasePlayer *pPlayer );
 	int GetItemInfo( ItemInfo *p );
 
 	void PrimaryAttack();

@@ -72,6 +72,18 @@ int CWeaponEinarMedkit::GetItemInfo( ItemInfo *p )
 	return 1;
 }
 
+int CWeaponEinarMedkit::AddToPlayer( CBasePlayer *pPlayer )
+{
+	if( CBasePlayerWeapon::AddToPlayer( pPlayer ) )
+	{
+		MESSAGE_BEGIN( MSG_ONE, gmsgWeapPickup, NULL, pPlayer->pev );
+			WRITE_BYTE( m_iId );
+		MESSAGE_END();
+		return TRUE;
+	}
+	return FALSE;
+}
+
 BOOL CWeaponEinarMedkit::Deploy()
 {
 	return DefaultDeploy( "models/v_tfc_medkit.mdl", "models/p_tfc_medkit.mdl", MEDKIT_DRAW, "trip" );
