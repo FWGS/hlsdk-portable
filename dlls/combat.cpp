@@ -273,7 +273,8 @@ BOOL CBaseMonster::HasAlienGibs( void )
 		myClass == CLASS_ALIEN_PASSIVE ||
 		myClass == CLASS_INSECT ||
 		myClass == CLASS_ALIEN_PREDATOR ||
-		myClass == CLASS_ALIEN_PREY )
+		myClass == CLASS_ALIEN_PREY ||
+		myClass == CLASS_SKELETON )
 
 		return TRUE;
 
