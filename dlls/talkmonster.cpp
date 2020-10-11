@@ -623,11 +623,13 @@ CBaseEntity *CTalkMonster::EnumFriends( CBaseEntity *pPrevious, int listNumber, 
 	pszFriend = m_szFriends[FriendNumber( listNumber )];
 	while( ( pFriend = UTIL_FindEntityByClassname( pFriend, pszFriend ) ) )
 	{
+		// don't talk to self or dead people
 		if( pFriend == this || !pFriend->IsAlive()
-			|| ( FBitSet( !pev->spawnflags, SF_MONSTER_ZOMBIECOP )
-                        && FBitSet( pFriend->pev->spawnflags, SF_MONSTER_ZOMBIECOP ) ) )
-			// don't talk to self or dead people
+		    // Skip if a zombie cop has been killed and the the target friend is a normal cop.
+		    || ( FBitSet( pev->spawnflags, SF_MONSTER_ZOMBIECOP )
+		    && !FBitSet( pFriend->pev->spawnflags, SF_MONSTER_ZOMBIECOP ) ) )
 			continue;
+
 		if( bTrace )
 		{
 			vecCheck = pFriend->pev->origin;
