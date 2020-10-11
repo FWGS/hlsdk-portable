@@ -88,6 +88,18 @@ int CWeaponEinarChaingun::GetItemInfo( ItemInfo *p )
 	return 1;
 }
 
+int CWeaponEinarChaingun::AddToPlayer( CBasePlayer *pPlayer )
+{
+	if( CBasePlayerWeapon::AddToPlayer( pPlayer ) )
+	{
+		MESSAGE_BEGIN( MSG_ONE, gmsgWeapPickup, NULL, pPlayer->pev );
+			WRITE_BYTE( m_iId );
+		MESSAGE_END();
+		return TRUE;
+	}
+	return FALSE;
+}
+
 BOOL CWeaponEinarChaingun::Deploy()
 {
 	return DefaultDeploy( "models/v_tfac.mdl", "models/p_tfac.mdl", CHAINGUN_DRAW, "egon" );
