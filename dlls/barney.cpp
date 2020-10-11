@@ -809,7 +809,7 @@ void CDeadBarney::Spawn()
 	if( FClassnameIs( pev, "monster_adrian_dead" ) )
 		pev->model = MAKE_STRING( "models/adrian.mdl" );
 	else if( FClassnameIs( pev, "monster_gordon_dead" ) )
-		pev->model = MAKE_STRING( "models/gordon.mdl" );
+		pev->model = MAKE_STRING( "models/freeman.mdl" );
 	else if( FClassnameIs( pev, "monster_barniel_dead" ) )
 		pev->model = MAKE_STRING( "models/barniel.mdl" );
 	else if( FClassnameIs( pev, "monster_kate_dead" ) )
