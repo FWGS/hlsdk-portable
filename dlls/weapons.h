@@ -1360,7 +1360,7 @@ public:
 	void Reload(void);
 	void WeaponIdle(void);
 	void CreateChargeEffect(void);
-	void ClearBeams(void);
+	void EXPORT ClearBeams(void);
 	
 	virtual BOOL UseDecrement(void)
 	{
