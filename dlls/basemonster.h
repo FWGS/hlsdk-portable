@@ -328,5 +328,7 @@ public:
 	BOOL CineCleanup();
 
 	CBaseEntity* DropItem( const char *pszItemName, const Vector &vecPos, const Vector &vecAng );// drop an item.
+
+	float m_flLastYawTime;
 };
 #endif // BASEMONSTER_H

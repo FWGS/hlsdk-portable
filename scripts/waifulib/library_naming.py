@@ -25,13 +25,13 @@ DEFINES = [
 'XASH_ANDROID',
 'XASH_APPLE',
 'XASH_ARM',
-'XASH_ARM64',
 'XASH_ARM_HARDFP',
 'XASH_ARM_SOFTFP',
 'XASH_ARMv4',
 'XASH_ARMv5',
 'XASH_ARMv6',
 'XASH_ARMv7',
+'XASH_ARMv8',
 'XASH_BIG_ENDIAN',
 'XASH_BSD',
 'XASH_E2K',
@@ -61,9 +61,9 @@ def configure(conf):
 		'fragment': CHECK_SYMBOL_EXISTS_FRAGMENT % (x, x),
 		'includes': [conf.path.find_node('public/').abspath()],
 		'define_name': x }, DEFINES )
-	
+
 	conf.multicheck(*tests, msg = '', mandatory = False, quiet = True)
-	
+
 	# engine/common/build.c
 	if conf.env.XASH_ANDROID:
 		buildos = "android"
@@ -87,11 +87,13 @@ def configure(conf):
 		buildarch = "amd64"
 	elif conf.env.XASH_X86:
 		buildarch = ""
-	elif conf.env.XASH_ARM64:
+	elif conf.env.XASH_ARM and conf.env.XASH_64BIT:
 		buildarch = "arm64"
 	elif conf.env.XASH_ARM:
 		buildarch = "armv"
-		if conf.env.XASH_ARMv7:
+		if conf.env.XASH_ARMv8:
+			buildarch += "8_32"
+		elif conf.env.XASH_ARMv7:
 			buildarch += "7"
 		elif conf.env.XASH_ARMv6:
 			buildarch += "6"
