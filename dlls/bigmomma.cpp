@@ -933,7 +933,7 @@ void CBigMomma::StartTask( Task_t *pTask )
 		TaskComplete();
 		break;
 	case TASK_WAIT_NODE:
-		m_flWait = gpGlobals->time + GetNodeDelay();
+		m_flWaitFinished = gpGlobals->time + GetNodeDelay();
 		if( m_hTargetEnt->pev->spawnflags & SF_INFOBM_WAIT )
 			ALERT( at_aiconsole, "BM: Wait at node %s forever\n", STRING( pev->netname ) );
 		else
@@ -1009,8 +1009,10 @@ void CBigMomma::RunTask( Task_t *pTask )
 			return;
 
 		if( gpGlobals->time > m_flWaitFinished )
+		{
 			TaskComplete();
-		ALERT( at_aiconsole, "BM: The WAIT is over!\n" );
+			ALERT( at_aiconsole, "BM: The WAIT is over!\n" );
+		}
 		break;
 	case TASK_PLAY_NODE_PRESEQUENCE:
 	case TASK_PLAY_NODE_SEQUENCE:
@@ -1106,7 +1108,7 @@ void CBMortar::Spawn( void )
 
 	UTIL_SetSize( pev, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ) );
 
-	m_maxFrame = (float) MODEL_FRAMES( pev->modelindex ) - 1;
+	m_maxFrame = MODEL_FRAMES( pev->modelindex ) - 1;
 	pev->dmgtime = gpGlobals->time + 0.4f;
 }
 

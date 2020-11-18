@@ -32,9 +32,10 @@ cvar_t timelimit	= { "mp_timelimit","0", FCVAR_SERVER };
 cvar_t friendlyfire	= { "mp_friendlyfire","0", FCVAR_SERVER };
 cvar_t falldamage	= { "mp_falldamage","0", FCVAR_SERVER };
 cvar_t weaponstay	= { "mp_weaponstay","0", FCVAR_SERVER };
-cvar_t selfgauss	= { "mp_selfgauss", "1", FCVAR_SERVER };
-cvar_t chargerfix	= { "mp_chargerfix", "0", FCVAR_SERVER };
-cvar_t satchelfix	= { "mp_satchelfix", "0", FCVAR_SERVER };
+cvar_t selfgauss	= { "selfgauss", "1", FCVAR_SERVER };
+cvar_t chargerfix	= { "chargerfix", "0", FCVAR_SERVER };
+cvar_t satchelfix	= { "satchelfix", "0", FCVAR_SERVER };
+cvar_t monsteryawspeedfix	= { "monsteryawspeedfix", "0", FCVAR_SERVER };
 cvar_t forcerespawn	= { "mp_forcerespawn","1", FCVAR_SERVER };
 cvar_t flashlight	= { "mp_flashlight","0", FCVAR_SERVER };
 cvar_t aimcrosshair	= { "mp_autocrosshair","1", FCVAR_SERVER };
@@ -54,6 +55,8 @@ cvar_t mp_chattime	= { "mp_chattime","10", FCVAR_SERVER };
 cvar_t *g_psv_gravity = NULL;
 cvar_t *g_psv_aim = NULL;
 cvar_t *g_footsteps = NULL;
+
+cvar_t *g_psv_developer;
 
 //CVARS FOR SKILL LEVEL SETTINGS
 // Agrunt
@@ -726,6 +729,8 @@ void GameDLLInit( void )
 	g_psv_aim = CVAR_GET_POINTER( "sv_aim" );
 	g_footsteps = CVAR_GET_POINTER( "mp_footsteps" );
 
+	g_psv_developer = CVAR_GET_POINTER( "developer" );
+
 	CVAR_REGISTER( &displaysoundlist );
 	CVAR_REGISTER( &allow_spectators );
 
@@ -742,6 +747,7 @@ void GameDLLInit( void )
 	CVAR_REGISTER( &selfgauss );
 	CVAR_REGISTER( &chargerfix );
 	CVAR_REGISTER( &satchelfix );
+	CVAR_REGISTER( &monsteryawspeedfix );
 	CVAR_REGISTER( &forcerespawn );
 	CVAR_REGISTER( &flashlight );
 	CVAR_REGISTER( &aimcrosshair );

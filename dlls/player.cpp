@@ -3080,8 +3080,6 @@ void CBasePlayer::Spawn( void )
 
 	m_fInXen = FALSE;
 
-	m_iAutoWepSwitch = 1;
-
 	g_pGameRules->PlayerSpawn( this );
 }
 

@@ -330,6 +330,8 @@ public:
 
 	CBaseEntity* DropItem ( const char *pszItemName, const Vector &vecPos, const Vector &vecAng );// drop an item.
 
+	float m_flLastYawTime; // TODO: check valid offset
+
 	//
 	// Glowshell effects
 	//
