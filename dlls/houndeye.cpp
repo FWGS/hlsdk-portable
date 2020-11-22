@@ -100,6 +100,7 @@ public:
 	Schedule_t *GetScheduleOfType( int Type );
 	Schedule_t *GetSchedule( void );
 	int IRelationship(CBaseEntity *pTarget);
+	BOOL HasHumanGibs( void );
 
 	int Save( CSave &save );
 	int Restore( CRestore &restore );
@@ -1230,3 +1231,9 @@ int CHoundeye::IRelationship( CBaseEntity *pTarget )
 
 	return CSquadMonster::IRelationship( pTarget );
 }
+
+BOOL CHoundeye::HasHumanGibs( void )
+{
+	return TRUE;
+}
+
