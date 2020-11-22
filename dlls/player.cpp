@@ -3034,8 +3034,6 @@ void CBasePlayer::Spawn( void )
 	}
 
 	// BMOD End - Extra Player Spawn
-	m_iAutoWepSwitch = 1;
-
 	g_pGameRules->PlayerSpawn( this );
 }
 
