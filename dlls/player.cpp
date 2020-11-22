@@ -2889,7 +2889,6 @@ void CBasePlayer::Spawn( void )
 	m_flNextChatTime = gpGlobals->time;
 
 	m_bUpdatePlayerModel = FALSE;
-	m_iAutoWepSwitch = 1;
 
 	g_pGameRules->PlayerSpawn( this );
 }
