@@ -2879,7 +2879,6 @@ void CBasePlayer::Spawn( void )
 	// START BOT
 	pBotCam = NULL;
 	// END BOT
-	m_iAutoWepSwitch = 1;
 
 	g_pGameRules->PlayerSpawn( this );
 }
