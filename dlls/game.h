@@ -29,6 +29,7 @@ extern cvar_t falldamage;
 extern cvar_t weaponstay;
 extern cvar_t selfgauss;
 extern cvar_t chargerfix;
+extern cvar_t monsteryawspeedfix;
 extern cvar_t forcerespawn;
 extern cvar_t flashlight;
 extern cvar_t aimcrosshair;
