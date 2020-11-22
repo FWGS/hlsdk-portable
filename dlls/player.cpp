@@ -3288,8 +3288,6 @@ void CBasePlayer::Spawn( void )
 	pBotCam = NULL;
 	// END BOT
 
-	m_iAutoWepSwitch = 1;
-
 	g_pGameRules->PlayerSpawn( this );
 }
 

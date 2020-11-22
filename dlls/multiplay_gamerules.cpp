@@ -358,6 +358,12 @@ BOOL CHalfLifeMultiplay::FShouldSwitchWeapon( CBasePlayer *pPlayer, CBasePlayerI
 		return FALSE;
 	}
 
+	if( pPlayer->m_iAutoWepSwitch == 2
+	    && pPlayer->m_afButtonLast & ( IN_ATTACK | IN_ATTACK2 ) )
+	{
+		return FALSE;
+	}
+
 	if( !pPlayer->m_pActiveItem->CanHolster() )
 	{
 		// can't put away the active item.
@@ -637,6 +643,11 @@ void CHalfLifeMultiplay::PlayerSpawn( CBasePlayer *pPlayer )
 {
 	BOOL		addDefault;
 	CBaseEntity	*pWeaponEntity = NULL;
+	int 		iOldAutoWepSwitch;
+
+	iOldAutoWepSwitch = pPlayer->m_iAutoWepSwitch;
+
+	pPlayer->m_iAutoWepSwitch = 1;
 
 	MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
 		WRITE_BYTE( TE_TELEPORT );
@@ -683,6 +694,8 @@ void CHalfLifeMultiplay::PlayerSpawn( CBasePlayer *pPlayer )
 			g_engfuncs.pfnSetClientKeyValue( pPlayer->entindex(), g_engfuncs.pfnGetInfoKeyBuffer( pPlayer->edict() ), "model", "gordon" );
 		}
 	}
+
+	pPlayer->m_iAutoWepSwitch = iOldAutoWepSwitch;
 }
 
 //=========================================================
