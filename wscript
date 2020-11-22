@@ -272,7 +272,7 @@ def configure(conf):
 
 	conf.define('CLIENT_WEAPONS', '1')
 	conf.define('CROWBAR_IDLE_ANIM', '1')
-	conf.define('CROWBAR_DELAY_FIX', '0')
+	conf.define('CROWBAR_DELAY_FIX', False)
 	conf.define('CROWBAR_FIX_RAPID_CROWBAR', '1')
 	conf.define('GAUSS_OVERCHARGE_FIX', '1')
 
