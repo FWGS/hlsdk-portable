@@ -172,6 +172,9 @@ endif()
 
 if(WIN32)
 	target_link_libraries( ${CLDLL_LIBRARY} user32.lib )
+	if (GOLDSOURCE_SUPPORT)
+		target_link_libraries( ${CLDLL_LIBRARY} winmm.lib )
+	endif()
 endif()
 
 set_target_properties (${CLDLL_LIBRARY} PROPERTIES
