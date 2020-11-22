@@ -270,11 +270,11 @@ def configure(conf):
 		if conf.env.cxxshlib_PATTERN.startswith('lib'):
 			conf.env.cxxshlib_PATTERN = conf.env.cxxshlib_PATTERN[3:]
 
-	conf.define('CLIENT_WEAPONS', '0')
-	conf.define('CROWBAR_IDLE_ANIM', '0')
-	conf.define('CROWBAR_DELAY_FIX', '0')
-	conf.define('CROWBAR_FIX_RAPID_CROWBAR', '0')
-	conf.define('GAUSS_OVERCHARGE_FIX', '0')
+	conf.define('CLIENT_WEAPONS', False)
+	conf.define('CROWBAR_IDLE_ANIM', '1')
+	conf.define('CROWBAR_DELAY_FIX', False)
+	conf.define('CROWBAR_FIX_RAPID_CROWBAR', False)
+	conf.define('GAUSS_OVERCHARGE_FIX', False)
 
 	if conf.env.DEST_OS == 'android' or conf.options.ENABLE_MOD_HACKS:
 		conf.define('MOBILE_HACKS', '1')
