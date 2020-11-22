@@ -337,7 +337,7 @@ public:
 
 	void StartPatrol( CBaseEntity *path );
 
-	CBaseEntity* DropItem ( const char *pszItemName, const Vector &vecPos, const Vector &vecAng );// drop an item.
+	CBaseEntity* DropItem( const char *pszItemName, const Vector &vecPos, const Vector &vecAng );// drop an item.
 
 	//LRC
 	float	CalcRatio( CBaseEntity *pLocus )
@@ -345,5 +345,7 @@ public:
 		/*ALERT(at_console, "monster CR: %f/%f = %f\n", pev->health, pev->max_health, pev->health / pev->max_health);*/
 		return pev->health / pev->max_health;
 	}
+
+	float m_flLastYawTime;
 };
 #endif // BASEMONSTER_H
