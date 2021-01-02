@@ -223,7 +223,7 @@ public:
 	void PainSound(void);
 	void AlertSound(void);
 	void DeathSound(void);
-	void BodyChange(float spikes);
+	void BodyChange(int spikes);
 	int TakeDamage(entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType);
 	int IgnoreConditions(void);
 	Schedule_t* GetSchedule(void);
@@ -595,7 +595,7 @@ int	CPitdrone::Classify(void)
 	return	CLASS_RACEX_PREDATOR;
 }
 
-void CPitdrone::BodyChange(float horns)
+void CPitdrone::BodyChange(int horns)
 {
 	if (horns <= 0)
 		SetBodygroup(HORNGROUP, PITDRONE_HORNS0);
