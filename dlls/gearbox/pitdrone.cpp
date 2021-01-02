@@ -90,20 +90,20 @@ void CPitdroneSpike::SpikeTouch(CBaseEntity *pOther)
 	// splat sound
 	iPitch = RANDOM_FLOAT(115, 125);
 
+	SetTouch(NULL);
+	SetThink(&CBaseEntity::SUB_Remove);
+	pev->nextthink = gpGlobals->time;
+
 	if (!pOther->pev->takedamage)
 	{
 		EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "weapons/xbow_hit1.wav", 1, ATTN_NORM, 0, iPitch);
 		// make a horn in the wall
-		UTIL_TraceLine(pev->origin, pev->origin + pev->velocity * 10, dont_ignore_monsters, ENT(pev), &tr);
-
-		SetThink(&CBaseEntity::SUB_Remove);
-		pev->nextthink = gpGlobals->time;
 
 		if (FClassnameIs(pOther->pev, "worldspawn"))
 		{
 			// if what we hit is static architecture, can stay around for a while.
 			Vector vecDir = pev->velocity.Normalize();
-			UTIL_SetOrigin(pev, pev->origin - vecDir * 12);
+			UTIL_SetOrigin(pev, pev->origin - vecDir * 6.0f);
 			pev->angles = UTIL_VecToAngles(vecDir);
 			pev->solid = SOLID_NOT;
 			pev->movetype = MOVETYPE_FLY;
@@ -111,6 +111,7 @@ void CPitdroneSpike::SpikeTouch(CBaseEntity *pOther)
 			pev->avelocity.z = 0;
 			pev->angles.z = RANDOM_LONG(0, 360);
 			pev->nextthink = gpGlobals->time + 10.0;
+			SetThink(&CBaseEntity::SUB_FadeOut);
 		}
 	}
 	else
@@ -121,9 +122,6 @@ void CPitdroneSpike::SpikeTouch(CBaseEntity *pOther)
 			EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "weapons/xbow_hitbod1.wav", 1, ATTN_NORM, 0, iPitch);
 		else
 			EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "weapons/xbow_hitbod2.wav", 1, ATTN_NORM, 0, iPitch);
-
-		SetThink( &CBaseEntity::SUB_Remove );
-		pev->nextthink = gpGlobals->time;
 	}
 }
 
@@ -156,7 +154,7 @@ void CPitdroneSpike::Shoot(entvars_t *pevOwner, Vector vecStart, Vector vecVeloc
 	pSpit->pev->owner = ENT( pevOwner );
 
 	pSpit->SetThink(&CPitdroneSpike::StartTrail);
-	pSpit->pev->nextthink = gpGlobals->time + 0.1;
+	pSpit->pev->nextthink = gpGlobals->time;
 }
 
 //
