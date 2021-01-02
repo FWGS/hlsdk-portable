@@ -1005,22 +1005,6 @@ Schedule_t *CPitdrone::GetSchedule(void)
 			return GetScheduleOfType(SCHED_WAKE_ANGRY);
 		}
 
-		if (HasConditions(bits_COND_SMELL_FOOD))
-		{
-			CSound		*pSound;
-
-			pSound = PBestScent();
-
-			if (pSound && (!FInViewCone(&pSound->m_vecOrigin) || !FVisible(pSound->m_vecOrigin)))
-			{
-				// scent is behind or occluded
-				return GetScheduleOfType(SCHED_PDRONE_SNIFF_AND_EAT);
-			}
-
-			// food is right out in the open. Just go get it.
-			return GetScheduleOfType(SCHED_PDRONE_EAT);
-		}
-
 		if( HasConditions( bits_COND_NO_AMMO_LOADED ) && (m_iInitialAmmo >= 0) )
 		{
 			return GetScheduleOfType( SCHED_PDRONE_COVER_AND_RELOAD );
