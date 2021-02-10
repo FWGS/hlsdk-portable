@@ -325,9 +325,13 @@ void CBasePlayerWeapon::ItemPostFrame( void )
 {
 	if( ( m_fInReload ) && ( m_pPlayer->m_flNextAttack <= 0.0f ) )
 	{
-#if 0 // FIXME, need ammo on client to make this work right
+#if 1
 		// complete the reload. 
-		int j = min( iMaxClip() - m_iClip, m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] );
+		ItemInfo itemInfo;
+		memset( &itemInfo, 0, sizeof( itemInfo ) );
+		GetItemInfo( &itemInfo );
+
+		int j = Q_min( itemInfo.iMaxClip - m_iClip, m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] );
 
 		// Add them to the clip
 		m_iClip += j;
