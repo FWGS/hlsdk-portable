@@ -948,13 +948,13 @@ void EV_FireGauss( event_args_t *args )
 				0.1f,
 				m_fPrimaryFire ? 1.0f : 2.5f,
 				0.0f,
-				m_fPrimaryFire ? 128.0f : flDamage,
+				(m_fPrimaryFire ? 128.0f : flDamage) / 255.0f,
 				0,
 				0,
 				0,
-				m_fPrimaryFire ? 255 : 255,
-				m_fPrimaryFire ? 128 : 255,
-				m_fPrimaryFire ? 0 : 255
+				(m_fPrimaryFire ? 255 : 255) / 255.0f,
+				(m_fPrimaryFire ? 128 : 255) / 255.0f,
+				(m_fPrimaryFire ? 0 : 255) / 255.0f
 			);
 		}
 		else
@@ -965,13 +965,13 @@ void EV_FireGauss( event_args_t *args )
 				0.1f,
 				m_fPrimaryFire ? 1.0f : 2.5f,
 				0.0f,
-				m_fPrimaryFire ? 128.0f : flDamage,
+				(m_fPrimaryFire ? 128.0f : flDamage) / 255.0f,
 				0,
 				0,
 				0,
-				m_fPrimaryFire ? 255 : 255,
-				m_fPrimaryFire ? 128 : 255,
-				m_fPrimaryFire ? 0 : 255
+				(m_fPrimaryFire ? 255 : 255) / 255.0f,
+				(m_fPrimaryFire ? 128 : 255) / 255.0f,
+				(m_fPrimaryFire ? 0 : 255) / 255.0f
 			);
 		}
 
