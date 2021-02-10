@@ -598,7 +598,7 @@ BOOL CanAttack( float attack_time, float curtime, BOOL isPredicted )
 	}
 	else
 	{
-		return ( attack_time <= 0.0f ) ? TRUE : FALSE;
+		return ( (static_cast<int>(::floor(attack_time * 1000.0f)) * 1000.0f) <= 0.0f) ? TRUE : FALSE;
 	}
 }
 
