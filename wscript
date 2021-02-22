@@ -87,7 +87,7 @@ def configure(conf):
 	# subsystem=bld.env.MSVC_SUBSYSTEM
 	# TODO: wrapper around bld.stlib, bld.shlib and so on?
 	conf.env.MSVC_SUBSYSTEM = 'WINDOWS,5.01'
-	conf.env.MSVC_TARGETS = ['x86'] # explicitly request x86 target for MSVC
+	conf.env.MSVC_TARGETS = ['x86' if not conf.options.ALLOW64 else 'x64']
 	if sys.platform == 'win32':
 		conf.load('msvc msdev')
 	conf.load('xcompile compiler_c compiler_cxx strip_on_install')
