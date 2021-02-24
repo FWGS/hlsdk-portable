@@ -27,9 +27,9 @@ float	CTalkMonster::g_talkWaitTime = 0;		// time delay until it's ok to speak: u
 
 CGraph WorldGraph;
 void CGraph::InitGraph( void ) { }
-int CGraph::FLoadGraph( char *szMapName ) { return FALSE; }
+int CGraph::FLoadGraph(const char *szMapName ) { return FALSE; }
 int CGraph::AllocNodes( void ) { return FALSE; }
-int CGraph::CheckNODFile( char *szMapName ) { return FALSE; }
+int CGraph::CheckNODFile(const char *szMapName ) { return FALSE; }
 int CGraph::FSetGraphPointers( void ) { return 0; }
 void CGraph::ShowNodeConnections( int iNode ) { }
 int CGraph::FindNearestNode( const Vector &vecOrigin, int afNodeTypes ) { return 0; }
