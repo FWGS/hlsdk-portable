@@ -16,6 +16,7 @@
 // $NoKeywords: $
 //=============================================================================
 
+#ifndef LINUX
 #include <windows.h>
 #include <dsound.h>
 #include <mmsystem.h>
@@ -161,3 +162,4 @@ void ShutdownSoundAPIs( void )
 	lpDSBuf = 0;
 	lpHW = 0;
 }
+#endif

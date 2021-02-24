@@ -5,6 +5,7 @@
 // $NoKeywords: $
 //=============================================================================
 
+#ifndef LINUX
 // hud_servers.cpp
 #include "hud.h"
 #include "cl_util.h"
@@ -1224,3 +1225,4 @@ void ServerPlayers( int server )
 		g_pServers->ServerPlayers( server );
 	}
 }
+#endif

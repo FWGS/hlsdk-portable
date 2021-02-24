@@ -22,6 +22,7 @@
 // the module specific types and m_dwLevel is set to the greater of the global
 // and the module specific settings.
 
+#ifndef LINUX
 #include <stdarg.h>
 #include <stdio.h>
 
@@ -392,4 +393,4 @@ void WINAPI DbgKernelAssert(const TCHAR *pCondition, const TCHAR *pFileName, INT
 
 #endif // _DEBUG
 
-
+#endif

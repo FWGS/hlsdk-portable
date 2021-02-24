@@ -5,6 +5,7 @@
 // $NoKeywords: $
 //=============================================================================
 
+#ifndef LINUX
 #include <assert.h>
 #include "hud.h"
 #include "cl_util.h"
@@ -988,3 +989,4 @@ extern "C" int DLLEXPORT HUD_GetStudioModelInterface( int version, struct r_stud
 	// Success
 	return 1;
 }
+#endif
