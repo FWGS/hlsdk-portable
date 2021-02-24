@@ -15,7 +15,6 @@ let package = Package(
             type: libraryType,
             targets: [
                 "HalfLifeServer",
-                "HalfLifePlayerMove"
             ]
         ),
         .library(
@@ -23,19 +22,21 @@ let package = Package(
             type: libraryType,
             targets: [
                 "HalfLifeClient",
-                "HalfLifePlayerMove"
             ]
-        )
+        ),
+        .library(
+            name: "HalfLifePlayerMove",
+            type: libraryType,
+            targets: [
+                "HalfLifePlayerMove",
+            ]
+        ),
     ],
     targets: [
         .target(
             name: "HalfLifeServer",
-            dependencies: [],
             path: "./dlls",
-            exclude: [
-                "./build",
-                "./cmake"
-            ],
+            publicHeadersPath: "./",
             cSettings: [
                 .define("GOLDSOURCE_SUPPORT"),
                 .define("LINUX"),
@@ -60,12 +61,8 @@ let package = Package(
         ),
         .target(
             name: "HalfLifeClient",
-            dependencies: [],
             path: "./cl_dll",
-            exclude: [
-                "./build",
-                "./cmake"
-            ],
+            publicHeadersPath: "./",
             cSettings: [
                 .define("GOLDSOURCE_SUPPORT"),
                 .define("LINUX"),
@@ -91,8 +88,8 @@ let package = Package(
         ),
         .target(
             name: "HalfLifePlayerMove",
-            dependencies: [],
             path: "./pm_shared",
+            publicHeadersPath: "./",
             cSettings: [
                 .define("GOLDSOURCE_SUPPORT"),
                 .define("LINUX"),
