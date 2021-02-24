@@ -24,3 +24,6 @@ waf3-*
 .lock*
 *.pyc
 .vscode/
+.swiftpm/
+.build
+Package.resolved
