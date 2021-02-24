@@ -13,6 +13,7 @@
 *
 ****/
 
+#ifndef LINUX
 #include	"extdll.h"
 #include	"util.h"
 #include	"cbase.h"
@@ -254,3 +255,4 @@ CBaseEntity *CBaseMonster::BestVisibleEnemy( void )
 
 	return pReturn;
 }
+#endif

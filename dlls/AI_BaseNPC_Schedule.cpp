@@ -16,6 +16,7 @@
 // schedule.cpp - functions and data pertaining to the 
 // monsters' AI scheduling system.
 //=========================================================
+#ifndef LINUX
 #include "extdll.h"
 #include "util.h"
 #include "cbase.h"
@@ -1512,3 +1513,4 @@ Schedule_t *CBaseMonster :: GetSchedule ( void )
 
 	return &slError[ 0 ];
 }
+#endif
