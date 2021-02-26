@@ -24,7 +24,8 @@ def build(bld):
 		'pm_shared/*.c'
 	])
 	source += bld.path.ant_glob([
-		'hl/*.cpp'
+		'hl/*.cpp',
+		'gearbox/*.cpp'
 	])
 	source += bld.path.parent.ant_glob([
 		'dlls/crossbow.cpp',
@@ -40,7 +41,17 @@ def build(bld):
 		'dlls/satchel.cpp',
 		'dlls/shotgun.cpp',
 		'dlls/squeakgrenade.cpp',
-		'dlls/tripmine.cpp'
+		'dlls/tripmine.cpp',
+		'dlls/gearbox/displacer.cpp',
+		'dlls/gearbox/knife.cpp',
+		'dlls/gearbox/eagle.cpp',
+		'dlls/gearbox/grapple.cpp',
+		'dlls/gearbox/m249.cpp',
+		'dlls/gearbox/penguin.cpp',
+		'dlls/gearbox/pipewrench.cpp',
+		'dlls/gearbox/shockrifle.cpp',
+		'dlls/gearbox/sniperrifle.cpp',
+		'dlls/gearbox/sporelauncher.cpp'
 	])
 	source += [
 		'GameStudioModelRenderer.cpp',
@@ -91,6 +102,7 @@ def build(bld):
 		'.',
 		'hl/',
 		'../dlls',
+		'../dlls/gearbox',
 		'../common',
 		'../engine',
 		'../pm_shared',
