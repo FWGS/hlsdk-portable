@@ -56,10 +56,10 @@ def options(opt):
 
 def configure(conf):
 	# Configuration
-	conf.env.GAMEDIR     = 'valve'
+	conf.env.GAMEDIR     = 'bshift'
 	conf.env.CLIENT_DIR  = 'cl_dlls'
 	conf.env.SERVER_DIR  = 'dlls'
-	conf.env.SERVER_NAME = 'hl'
+	conf.env.SERVER_NAME = 'bshift'
 	conf.env.PREFIX = ''
 
 	conf.load('fwgslib reconfigure')
