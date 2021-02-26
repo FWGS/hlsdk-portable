@@ -39,10 +39,10 @@ option(BUILD_CLIENT "Build client dll" ON)
 option(BUILD_SERVER "Build server dll" ON)
 option(GOLDSOURCE_SUPPORT "Build goldsource compatible client library" OFF)
 option(64BIT "Disable auto -m32 appending to compiler flags" OFF)
-set(GAMEDIR "valve" CACHE STRING "Gamedir path")
+set(GAMEDIR "gearbox" CACHE STRING "Gamedir path")
 set(SERVER_INSTALL_DIR "dlls" CACHE STRING "Where put server dll")
 set(CLIENT_INSTALL_DIR "cl_dlls" CACHE STRING "Where put client dll")
-set(SERVER_LIBRARY_NAME "hl" CACHE STRING "Library name for Linux/MacOS/Windows")
+set(SERVER_LIBRARY_NAME "opfor" CACHE STRING "Library name for Linux/MacOS/Windows")
 
 #-----------------
 # MAIN BUILD CODE \
