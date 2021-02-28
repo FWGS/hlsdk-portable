@@ -46,13 +46,14 @@ def options(opt):
 	grp.add_option('--enable-simple-mod-hacks', action = 'store_true', dest = 'ENABLE_MOD_HACKS', default = False,
 		help = 'enable hacks for simple mods that mostly compatible with Half-Life but has little changes. Enforced for Android. [default: %default]')
 
-	opt.load('xcompile compiler_cxx compiler_c clang_compilation_database strip_on_install')
+	opt.load('subproject')
 
+	opt.add_subproject(['cl_dll', 'dlls'])
+
+	opt.load('xcompile compiler_cxx compiler_c clang_compilation_database strip_on_install msdev msvs')
 	if sys.platform == 'win32':
-		opt.load('msvc msdev msvs')
-
-	opt.load('reconfigure subproject')
-	opt.add_subproject(["cl_dll", "dlls"])
+		opt.load('msvc')
+	opt.load('reconfigure')
 
 def configure(conf):
 	# Configuration
@@ -88,9 +89,18 @@ def configure(conf):
 	# TODO: wrapper around bld.stlib, bld.shlib and so on?
 	conf.env.MSVC_SUBSYSTEM = 'WINDOWS,5.01'
 	conf.env.MSVC_TARGETS = ['x86' if not conf.options.ALLOW64 else 'x64']
-	if sys.platform == 'win32':
-		conf.load('msvc msdev')
-	conf.load('xcompile compiler_c compiler_cxx strip_on_install')
+
+	# Load compilers early
+	conf.load('xcompile compiler_c compiler_cxx')
+
+	# HACKHACK: override msvc DEST_CPU value by something that we understand
+	if conf.env.DEST_CPU == 'amd64':
+		conf.env.DEST_CPU = 'x86_64'
+
+	if conf.env.COMPILER_CC == 'msvc':
+		conf.load('msvc_pdb')
+
+	conf.load('msvs msdev strip_on_install')
 
 	try:
 		conf.env.CC_VERSION[0]
