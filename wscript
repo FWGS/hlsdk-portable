@@ -63,7 +63,7 @@ def configure(conf):
 	conf.env.SERVER_NAME = 'hl'
 	conf.env.PREFIX = ''
 
-	conf.load('fwgslib reconfigure')
+	conf.load('fwgslib reconfigure enforce_pic')
 
 	enforce_pic = True # modern defaults
 	valid_build_types = ['fastnative', 'fast', 'release', 'debug', 'nooptimize', 'sanitize', 'none']
@@ -114,17 +114,8 @@ def configure(conf):
 	conf.env.MAGX = conf.options.MAGX
 	if conf.options.MAGX:
 		enforce_pic = False
-	
-	if enforce_pic:
-		# Every static library must have fPIC
-		if conf.env.DEST_OS != 'win32' and '-fPIC' in conf.env.CFLAGS_cshlib:
-			conf.env.append_unique('CFLAGS_cstlib', '-fPIC')
-			conf.env.append_unique('CXXFLAGS_cxxstlib', '-fPIC')
-	else:
-		conf.env.CFLAGS_cshlib.remove('-fPIC')
-		conf.env.CXXFLAGS_cxxshlib.remove('-fPIC')
-		conf.env.CFLAGS_MACBUNDLE.remove('-fPIC')
-		conf.env.CXXFLAGS_MACBUNDLE.remove('-fPIC')
+
+	conf.check_pic(enforce_pic)
 
 	# We restrict 64-bit builds ONLY for Win/Linux/OSX running on Intel architecture
 	# Because compatibility with original GoldSrc
