@@ -34,4 +34,5 @@
 #define CHAR_TEX_ROCK		'I'
 #define CHAR_TEX_WOOD2		'B'
 #define CHAR_TEX_SMOKE		'R'
+#define CHAR_TEX_FLUID		'H'
 #endif//PM_MATERIALS_H
