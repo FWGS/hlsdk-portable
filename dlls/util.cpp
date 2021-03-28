@@ -31,6 +31,56 @@
 #include "weapons.h"
 #include "gamerules.h"
 
+void UTIL_MuzzleLight( const Vector &vecSrc, float flRadius, const Vector &color, float flTime, float flDecay )
+{
+	MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
+		WRITE_BYTE( TE_DLIGHT );
+		WRITE_COORD( vecSrc.x );	// X
+		WRITE_COORD( vecSrc.y );	// Y
+		WRITE_COORD( vecSrc.z );	// Z
+		WRITE_BYTE( flRadius );		// radius * 0.1
+		WRITE_BYTE( color.x );		// r
+		WRITE_BYTE( color.y );		// g
+		WRITE_BYTE( color.z );		// b
+		WRITE_BYTE( flTime );	// time * 10
+		WRITE_BYTE( flDecay);	// decay * 0.1
+	MESSAGE_END();
+}
+
+void UTIL_Smoke( const Vector &origin, byte framerate, byte scale, short modelIndex )
+{
+	MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, origin );
+		WRITE_BYTE( TE_SMOKE );
+		WRITE_COORD( origin.x );
+		WRITE_COORD( origin.y );
+		WRITE_COORD( origin.z );
+		WRITE_SHORT( modelIndex == -1 ? g_sModelIndexSmoke : modelIndex );
+		WRITE_BYTE( scale ); // scale * 10
+		WRITE_BYTE( framerate ); // framerate
+	MESSAGE_END();
+}
+
+void UTIL_BreakModel( const Vector &origin, const Vector &size, const Vector &velocity, byte random, short modelIndex, byte shardNum, byte duration, byte flags )
+{
+	MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, origin );
+		WRITE_BYTE( TE_BREAKMODEL );
+		WRITE_COORD( origin.x );
+		WRITE_COORD( origin.y );
+		WRITE_COORD( origin.z );
+		WRITE_COORD( size.x );
+		WRITE_COORD( size.y );
+		WRITE_COORD( size.z );
+		WRITE_COORD( velocity.x );
+		WRITE_COORD( velocity.y );
+		WRITE_COORD( velocity.z );
+		WRITE_BYTE( random );
+		WRITE_SHORT( modelIndex );
+		WRITE_BYTE( shardNum );
+		WRITE_BYTE( duration );
+		WRITE_BYTE( flags );
+	MESSAGE_END();
+}
+
 float UTIL_WeaponTimeBase( void )
 {
 #if defined( CLIENT_WEAPONS )

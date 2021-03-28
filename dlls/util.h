@@ -578,4 +578,7 @@ int UTIL_SharedRandomLong( unsigned int seed, int low, int high );
 float UTIL_SharedRandomFloat( unsigned int seed, float low, float high );
 
 float UTIL_WeaponTimeBase( void );
+void UTIL_MuzzleLight( const Vector &vecSrc, float flRadius, const Vector &color, float flTime, float flDecay );
+void UTIL_Smoke( const Vector &origin, byte framerate, byte scale, short modelIndex );
+void UTIL_BreakModel( const Vector &origin, const Vector &size, const Vector &velocity, byte random, short modelIndex, byte shardNum, byte duration, byte flags );
 #endif // UTIL_H

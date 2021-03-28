@@ -91,7 +91,7 @@ void EV_FireSniper( struct event_args_s *args );
 // play a strike sound based on the texture that was hit by the attack traceline.  VecSrc/VecEnd are the
 // original traceline endpoints used by the attacker, iBulletType is the type of bullet that hit the texture.
 // returns volume of strike instrument (crowbar) to play
-float EV_HLDM_PlayTextureSound( int idx, pmtrace_t *ptr, float *vecSrc, float *vecEnd, int iBulletType )
+float EV_HLDM_PlayTextureSound( int idx, pmtrace_t *ptr, float *vecSrc, float *vecEnd, float *forward, int iBulletType )
 {
 	// hit the world, try to play sound based on texture material type
 	char chTextureType = CHAR_TEX_CONCRETE;
@@ -104,6 +104,8 @@ float EV_HLDM_PlayTextureSound( int idx, pmtrace_t *ptr, float *vecSrc, float *v
 	char *pTextureName;
 	char texname[64];
 	char szbuffer[64];
+	int flags = 0;
+	int iGibs = -1;
 
 	entity = gEngfuncs.pEventAPI->EV_IndexFromTrace( ptr );
 
@@ -146,16 +148,19 @@ float EV_HLDM_PlayTextureSound( int idx, pmtrace_t *ptr, float *vecSrc, float *v
 			chTextureType = PM_FindTextureType( szbuffer );
 		}
 	}
-	
+
 	switch (chTextureType)
 	{
 	default:
 	case CHAR_TEX_CONCRETE:
+	case CHAR_TEX_CONCRETE2:
 		fvol = 0.9;
 		fvolbar = 0.6;
 		rgsz[0] = "player/pl_step1.wav";
 		rgsz[1] = "player/pl_step2.wav";
 		cnt = 2;
+		if( iBulletType != BULLET_PLAYER_CROWBAR && chTextureType == CHAR_TEX_CONCRETE2 )
+			iGibs = gEngfuncs.pEventAPI->EV_FindModelIndex( "models/concretegibs.mdl" );
 		break;
 	case CHAR_TEX_METAL:
 		fvol = 0.9;
@@ -165,12 +170,23 @@ float EV_HLDM_PlayTextureSound( int idx, pmtrace_t *ptr, float *vecSrc, float *v
 		cnt = 2;
 		break;
 	case CHAR_TEX_DIRT:
+	case CHAR_TEX_ROCK:
+	case CHAR_TEX_SMOKE:
 		fvol = 0.9;
 		fvolbar = 0.1;
 		rgsz[0] = "player/pl_dirt1.wav";
 		rgsz[1] = "player/pl_dirt2.wav";
 		rgsz[2] = "player/pl_dirt3.wav";
 		cnt = 3;
+		if( iBulletType == BULLET_PLAYER_CROWBAR )
+			break;
+		if( chTextureType == CHAR_TEX_SMOKE && iBulletType != BULLET_PLAYER_CROWBAR )
+			gEngfuncs.pEfxAPI->R_Sprite_Smoke( gEngfuncs.pEfxAPI->R_DefaultSprite( ptr->endpos, gEngfuncs.pEventAPI->EV_FindModelIndex( "sprites/steam1.spr" ), 25 ), 12 * 0.1f );
+		else if( chTextureType == CHAR_TEX_ROCK )
+		{
+			iGibs = gEngfuncs.pEventAPI->EV_FindModelIndex( "models/rockgibs.mdl" );
+			flags = BREAK_CONCRETE;
+		}
 		break;
 	case CHAR_TEX_VENT:
 		fvol = 0.5;
@@ -195,6 +211,7 @@ float EV_HLDM_PlayTextureSound( int idx, pmtrace_t *ptr, float *vecSrc, float *v
 		rgsz[3] = "player/pl_tile4.wav";
 		cnt = 4;
 		break;
+	case CHAR_TEX_FLUID:
 	case CHAR_TEX_SLOSH:
 		fvol = 0.9;
 		fvolbar = 0.0;
@@ -205,12 +222,15 @@ float EV_HLDM_PlayTextureSound( int idx, pmtrace_t *ptr, float *vecSrc, float *v
 		cnt = 4;
 		break;
 	case CHAR_TEX_WOOD:
+	case CHAR_TEX_WOOD2:
 		fvol = 0.9;
 		fvolbar = 0.2;
 		rgsz[0] = "debris/wood1.wav";
 		rgsz[1] = "debris/wood2.wav";
 		rgsz[2] = "debris/wood3.wav";
 		cnt = 3;
+		if( iBulletType != BULLET_PLAYER_CROWBAR && chTextureType == CHAR_TEX_WOOD2 )
+			iGibs = gEngfuncs.pEventAPI->EV_FindModelIndex( "models/woodgibs.mdl" );
 		break;
 	case CHAR_TEX_GLASS:
 	case CHAR_TEX_COMPUTER:
@@ -231,6 +251,17 @@ float EV_HLDM_PlayTextureSound( int idx, pmtrace_t *ptr, float *vecSrc, float *v
 		fattn = 1.0;
 		cnt = 2;
 		break;
+	}
+
+	if( iGibs != -1 )
+	{
+		vec3_t size = {25, 25, 8};
+		vec3_t dir;
+
+		VectorCopy( forward, dir );
+		VectorScale( dir, -100.0f, dir );
+
+		gEngfuncs.pEfxAPI->R_BreakModel( ptr->endpos, size, dir, 10, 50, 1, iGibs, flags );
 	}
 
 	// play material hit sound
@@ -435,22 +466,23 @@ void EV_HLDM_FireBullets( int idx, float *forward, float *right, float *up, int 
 			{
 			default:
 			case BULLET_PLAYER_9MM:
-				EV_HLDM_PlayTextureSound( idx, &tr, vecSrc, vecEnd, iBulletType );
+				EV_HLDM_PlayTextureSound( idx, &tr, vecSrc, vecEnd, forward, iBulletType );
 				EV_HLDM_DecalGunshot( &tr, iBulletType );
 				break;
 			case BULLET_PLAYER_MP5:
 				if( !tracer )
 				{
-					EV_HLDM_PlayTextureSound( idx, &tr, vecSrc, vecEnd, iBulletType );
+					EV_HLDM_PlayTextureSound( idx, &tr, vecSrc, vecEnd, forward, iBulletType );
 					EV_HLDM_DecalGunshot( &tr, iBulletType );
 				}
 				break;
 			case BULLET_PLAYER_BUCKSHOT:
+				EV_HLDM_PlayTextureSound( idx, &tr, vecSrc, vecEnd, forward, iBulletType );
 				EV_HLDM_DecalGunshot( &tr, iBulletType );
 				break;
 			case BULLET_PLAYER_357:
 			case BULLET_PLAYER_SNIPER:
-				EV_HLDM_PlayTextureSound( idx, &tr, vecSrc, vecEnd, iBulletType );
+				EV_HLDM_PlayTextureSound( idx, &tr, vecSrc, vecEnd, forward, iBulletType );
 				EV_HLDM_DecalGunshot( &tr, iBulletType );
 				break;
 			}

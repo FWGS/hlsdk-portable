@@ -1521,6 +1521,8 @@ float TEXTURETYPE_PlaySound( TraceResult *ptr,  Vector vecSrc, Vector vecEnd, in
 	const char *rgsz[4];
 	int cnt;
 	float fattn = ATTN_NORM;
+	short sModelIndex = -1;
+	byte flags = 0;
 
 	if( !g_pGameRules->PlayTextureSounds() )
 		return 0.0f;
@@ -1572,11 +1574,14 @@ float TEXTURETYPE_PlaySound( TraceResult *ptr,  Vector vecSrc, Vector vecEnd, in
 	{
 	default:
 	case CHAR_TEX_CONCRETE:
+	case CHAR_TEX_CONCRETE2:
 		fvol = 0.9f;
 		fvolbar = 0.6f;
 		rgsz[0] = "player/pl_step1.wav";
 		rgsz[1] = "player/pl_step2.wav";
 		cnt = 2;
+		if( chTextureType == CHAR_TEX_CONCRETE2 )
+			sModelIndex = g_sModelIndexConcreteGibs;
 		break;
 	case CHAR_TEX_METAL:
 		fvol = 0.9f;
@@ -1586,12 +1591,21 @@ float TEXTURETYPE_PlaySound( TraceResult *ptr,  Vector vecSrc, Vector vecEnd, in
 		cnt = 2;
 		break;
 	case CHAR_TEX_DIRT:
+	case CHAR_TEX_ROCK:
+	case CHAR_TEX_SMOKE:
 		fvol = 0.9f;
 		fvolbar = 0.1f;
 		rgsz[0] = "player/pl_dirt1.wav";
 		rgsz[1] = "player/pl_dirt2.wav";
 		rgsz[2] = "player/pl_dirt3.wav";
 		cnt = 3;
+		if( chTextureType == CHAR_TEX_SMOKE && iBulletType != BULLET_PLAYER_CROWBAR )
+			UTIL_Smoke( ptr->vecEndPos, 25, 12, sModelIndex );
+		else if( chTextureType == CHAR_TEX_ROCK )
+		{
+			sModelIndex = g_sModelIndexRockGibs;
+			flags = BREAK_CONCRETE;
+		}
 		break;
 	case CHAR_TEX_VENT:
 		fvol = 0.5f;
@@ -1616,6 +1630,7 @@ float TEXTURETYPE_PlaySound( TraceResult *ptr,  Vector vecSrc, Vector vecEnd, in
 		rgsz[3] = "player/pl_tile4.wav";
 		cnt = 4;
 		break;
+	case CHAR_TEX_FLUID:
 	case CHAR_TEX_SLOSH:
 		fvol = 0.9f;
 		fvolbar = 0.0f;
@@ -1626,12 +1641,15 @@ float TEXTURETYPE_PlaySound( TraceResult *ptr,  Vector vecSrc, Vector vecEnd, in
 		cnt = 4;
 		break;
 	case CHAR_TEX_WOOD:
+	case CHAR_TEX_WOOD2:
 		fvol = 0.9f;
 		fvolbar = 0.2f;
 		rgsz[0] = "debris/wood1.wav";
 		rgsz[1] = "debris/wood2.wav";
 		rgsz[2] = "debris/wood3.wav";
 		cnt = 3;
+		if( chTextureType == CHAR_TEX_WOOD2 )
+			sModelIndex = g_sModelIndexWoodGibs;			
 		break;
 	case CHAR_TEX_GLASS:
 	case CHAR_TEX_COMPUTER:
@@ -1686,6 +1704,9 @@ float TEXTURETYPE_PlaySound( TraceResult *ptr,  Vector vecSrc, Vector vecEnd, in
 			}
 		}
 	}
+
+	if( iBulletType != BULLET_PLAYER_CROWBAR && sModelIndex != -1 )
+		UTIL_BreakModel( ptr->vecEndPos, Vector( 25, 25, 8 ), gpGlobals->v_forward * -100.0f, 10, sModelIndex, 1, 50, flags );
 
 	// play material hit sound
 	UTIL_EmitAmbientSound( ENT( 0 ), ptr->vecEndPos, rgsz[RANDOM_LONG( 0, cnt - 1 )], fvol, fattn, 0, 96 + RANDOM_LONG( 0, 0xf ) );

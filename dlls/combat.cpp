@@ -1466,6 +1466,8 @@ void CBaseEntity::FireBullets( ULONG cShots, Vector vecSrc, Vector vecDirShootin
 		UTIL_BubbleTrail( vecSrc, tr.vecEndPos, (int)( ( flDistance * tr.flFraction ) / 64.0f ) );
 	}
 	ApplyMultiDamage( pev, pevAttacker );
+
+	UTIL_MuzzleLight( vecSrc, 15, Vector( 255, 255, 128 ), 1, 0 );
 }
 
 /*
@@ -1555,6 +1557,8 @@ Vector CBaseEntity::FireBulletsPlayer( ULONG cShots, Vector vecSrc, Vector vecDi
 		UTIL_BubbleTrail( vecSrc, tr.vecEndPos, (int)( ( flDistance * tr.flFraction ) / 64.0f ) );
 	}
 	ApplyMultiDamage( pev, pevAttacker );
+
+	UTIL_MuzzleLight( vecSrc, 15, Vector( 255, 255, 128 ), 1, 0 );
 
 	return Vector( x * vecSpread.x, y * vecSpread.y, 0.0 );
 }
