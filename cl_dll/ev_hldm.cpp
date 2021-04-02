@@ -255,7 +255,7 @@ float EV_HLDM_PlayTextureSound( int idx, pmtrace_t *ptr, float *vecSrc, float *v
 
 	if( iGibs != -1 )
 	{
-		vec3_t size = {25, 25, 8};
+		vec3_t size(25, 25, 8);
 		vec3_t dir;
 
 		VectorCopy( forward, dir );
