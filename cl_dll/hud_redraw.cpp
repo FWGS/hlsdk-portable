@@ -93,7 +93,17 @@ int CHud::Redraw( float flTime, int intermission )
 
 	// Clock was reset, reset delta
 	if( m_flTimeDelta < 0 )
+	{
 		m_flTimeDelta = 0;
+		m_flScaleColorTime = 0.0f;
+	}
+
+	if( m_flScaleColorTime != 0.0f )
+	{
+		float flTimeDiff = m_flScaleColorTime - m_flTime;
+		if( flTimeDiff <= 0.0f )
+			m_flScaleColorTime = 0.0f;
+	}
 
 	if( !m_iIntermission && intermission )
 	{
@@ -199,7 +209,7 @@ void ScaleColors( int &r, int &g, int &b, int a )
 		}
 		f = 1.0f - flTimeDiff; 
 	}
-	float x = f * (float)a / 255;
+	float x = f * ((float)a / 255.0f);
 	r = (int)( r * x );
 	g = (int)( g * x );
 	b = (int)( b * x );

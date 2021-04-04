@@ -240,6 +240,7 @@ void CHud::Init( void )
 
 	// In case we get messages before the first update -- time will be valid
 	m_flTime = 1.0;
+	m_flScaleColorTime = 3.0f;
 
 	m_Ammo.Init();
 	m_Health.Init();
