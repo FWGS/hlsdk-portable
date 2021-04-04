@@ -34,6 +34,20 @@ extern vec3_t v_cl_angles;	// last client/mouse angle
 extern vec3_t v_sim_org;	// last sim origin
 extern cvar_t *adjust_fov;
 
+int CHudScope::Init( void )
+{
+	gHUD.AddHudElem( this );
+
+	return 1;
+}
+
+int CHudScope::VidInit( void )
+{
+	m_hSprite = 0;
+
+	return 1;
+}
+
 int CHudScope::DrawScope()
 {
 	vec3_t		 angles, forward, right, up;
@@ -62,12 +76,12 @@ int CHudScope::DrawScope()
 	flDist = Length( delta );
 
 	if( flDist >= 118.0f )
-		sprintf( m_szDist, "%.2f m", flDist * 0.0254f );
+		sprintf( m_szDist, "%.2f m", (double)(flDist / 39.37f) );
 	else
 		strcpy( m_szDist, "-.-- m" );
 
-	x = tan( gHUD.m_iFOV * 0.008726646259971648 ) * 11.0;
-	y = x * 0.00390625;
+	x = tan( gHUD.m_iFOV / 114.6f ) * 11.0f;
+	y = x * / 255.0f;
 
 	gEngfuncs.pTriAPI->RenderMode( kRenderTransTexture ); //additive
 	gEngfuncs.pTriAPI->CullFace( TRI_NONE );
