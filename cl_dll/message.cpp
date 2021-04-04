@@ -49,6 +49,8 @@ int CHudMessage::VidInit( void )
 	m_HUD_title_half = gHUD.GetSpriteIndex( "wide_bar_a" );
 	m_HUD_title_life = gHUD.GetSpriteIndex( "wide_bar_b" );
 
+	m_hSprite = 0;
+
 	return 1;
 }
 

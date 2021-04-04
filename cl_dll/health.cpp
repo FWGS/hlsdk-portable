@@ -62,6 +62,8 @@ int CHudHealth::Init( void )
 	m_iFlags = 0;
 	m_bitsDamage = 0;
 	m_fAttackFront = m_fAttackRear = m_fAttackRight = m_fAttackLeft = 0;
+	m_hDeathVision = 0;
+	m_hPainFront = m_hPainRight = m_hPainLeft = m_hPainRear = 0;
 	giDmgHeight = 0;
 	giDmgWidth = 0;
 
