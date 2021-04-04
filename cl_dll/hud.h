@@ -563,9 +563,11 @@ private:
 //
 //-----------------------------------------------------
 //
-class CHudScope
+class CHudScope : public CHudBase
 {
 public:
+	int Init( void );
+	int VidInit( void );
 	int DrawScope( void );
 	int DrawText( void );
 

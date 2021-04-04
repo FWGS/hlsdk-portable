@@ -240,6 +240,7 @@ void CHud::Init( void )
 
 	// In case we get messages before the first update -- time will be valid
 	m_flTime = 1.0;
+	m_flScaleColorTime = 3.0f;
 
 	m_Ammo.Init();
 	m_Health.Init();
@@ -259,6 +260,7 @@ void CHud::Init( void )
 	m_Scoreboard.Init();
 
 	m_Menu.Init();
+	m_Scope.Init();
 	
 	MsgFunc_ResetHUD( 0, 0, NULL );
 }
@@ -438,6 +440,7 @@ void CHud::VidInit( void )
 	m_StatusIcons.VidInit();
 	m_Scoreboard.VidInit();
 	m_MOTD.VidInit();
+	m_Scope.VidInit();
 }
 
 int CHud::MsgFunc_Logo( const char *pszName,  int iSize, void *pbuf )
