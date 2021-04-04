@@ -81,7 +81,7 @@ int CHudScope::DrawScope()
 		strcpy( m_szDist, "-.-- m" );
 
 	x = tan( gHUD.m_iFOV / 114.6f ) * 11.0f;
-	y = x * / 255.0f;
+	y = x / 255.0f;
 
 	gEngfuncs.pTriAPI->RenderMode( kRenderTransTexture ); //additive
 	gEngfuncs.pTriAPI->CullFace( TRI_NONE );
