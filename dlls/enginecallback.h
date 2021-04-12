@@ -28,7 +28,11 @@ extern enginefuncs_t g_engfuncs;
 // The actual engine callbacks
 #define GETPLAYERUSERID (*g_engfuncs.pfnGetPlayerUserId)
 #define PRECACHE_MODEL	(*g_engfuncs.pfnPrecacheModel)
+#ifdef GOLDSOURCE_SUPPORT
 #define PRECACHE_SOUND	(*g_engfuncs.pfnPrecacheSound)
+#else
+#define PRECACHE_SOUND(x)
+#endif
 #define PRECACHE_GENERIC	(*g_engfuncs.pfnPrecacheGeneric)
 #define SET_MODEL		(*g_engfuncs.pfnSetModel)
 #define MODEL_INDEX		(*g_engfuncs.pfnModelIndex)
