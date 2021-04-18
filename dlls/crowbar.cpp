@@ -322,7 +322,7 @@ void CCrowbar::Swing()
 		m_pPlayer->m_iWeaponVolume = (int)( flVol * CROWBAR_WALLHIT_VOLUME );
 
 		SetThink( &CCrowbar::Smack );
-		pev->nextthink = UTIL_WeaponTimeBase() + 0.1f;
+		pev->nextthink = gpGlobals->time + 0.1f;
 #endif
 	}
 #ifdef CROWBAR_IDLE_ANIM
