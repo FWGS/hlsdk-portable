@@ -2838,6 +2838,7 @@ void CBasePlayer::Spawn( void )
 
 	m_flNextChatTime = gpGlobals->time;
 
+	SET_CLIENT_MAX_SPEED( edict(), PLAYER_MAX_SPEED );
 	g_pGameRules->PlayerSpawn( this );
 }
 
