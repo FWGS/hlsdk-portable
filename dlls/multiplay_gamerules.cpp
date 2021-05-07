@@ -601,7 +601,6 @@ void CHalfLifeMultiplay::PlayerSpawn( CBasePlayer *pPlayer )
 		pPlayer->GiveAmmo( 68, "9mm", _9MM_MAX_CARRY );// 4 full reloads
 	}
 
-	SET_CLIENT_MAX_SPEED( edict(), PLAYER_MAX_SPEED );
 	pPlayer->m_iAutoWepSwitch = iOldAutoWepSwitch;
 }
 
