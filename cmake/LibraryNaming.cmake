@@ -92,7 +92,7 @@ endif()
 
 if(BUILDOS STREQUAL "android")
 	set(POSTFIX "") # force disable for Android, as Android ports aren't distributed in normal way and doesn't follow library naming
-elif(BUILDOS AND BUILDARCH)
+elseif(BUILDOS AND BUILDARCH)
 	set(POSTFIX "_${BUILDOS}_${BUILDARCH}")
 elseif(BUILDARCH)
 	set(POSTFIX "_${BUILDARCH}")
