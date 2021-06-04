@@ -592,7 +592,7 @@ void CTentacle::Cycle( void )
 				if( m_flNextSong < gpGlobals->time )
 				{
 					// play "I hear new something" sound
-					const char *sound;	
+					const char *sound = NULL;	
 
 					switch( RANDOM_LONG( 0, 1 ) )
 					{
@@ -792,7 +792,7 @@ void CTentacle::DieThink( void )
 
 void CTentacle::HandleAnimEvent( MonsterEvent_t *pEvent )
 {
-	const char *sound;
+	const char *sound = NULL;
 
 	switch( pEvent->event )
 	{

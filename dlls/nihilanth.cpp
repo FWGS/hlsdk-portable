@@ -1024,7 +1024,7 @@ BOOL CNihilanth::EmitSphere( void )
 void CNihilanth::TargetSphere( USE_TYPE useType, float value )
 {
 	int i;
-	CBaseMonster *pSphere;
+	CBaseMonster *pSphere = NULL;
 
 	for( i = 0; i < N_SPHERES; i++ )
 	{
