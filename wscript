@@ -46,13 +46,14 @@ def options(opt):
 	grp.add_option('--enable-simple-mod-hacks', action = 'store_true', dest = 'ENABLE_MOD_HACKS', default = False,
 		help = 'enable hacks for simple mods that mostly compatible with Half-Life but has little changes. Enforced for Android. [default: %default]')
 
-	opt.load('xcompile compiler_cxx compiler_c clang_compilation_database strip_on_install')
+	opt.load('subproject')
 
+	opt.add_subproject(['cl_dll', 'dlls'])
+
+	opt.load('xcompile compiler_cxx compiler_c clang_compilation_database strip_on_install msdev msvs')
 	if sys.platform == 'win32':
-		opt.load('msvc msdev msvs')
-
-	opt.load('reconfigure subproject')
-	opt.add_subproject(["cl_dll", "dlls"])
+		opt.load('msvc')
+	opt.load('reconfigure')
 
 def configure(conf):
 	# Configuration
@@ -62,7 +63,7 @@ def configure(conf):
 	conf.env.SERVER_NAME = 'hl'
 	conf.env.PREFIX = ''
 
-	conf.load('fwgslib reconfigure')
+	conf.load('fwgslib reconfigure enforce_pic')
 
 	enforce_pic = True # modern defaults
 	valid_build_types = ['fastnative', 'fast', 'release', 'debug', 'nooptimize', 'sanitize', 'none']
@@ -87,10 +88,19 @@ def configure(conf):
 	# subsystem=bld.env.MSVC_SUBSYSTEM
 	# TODO: wrapper around bld.stlib, bld.shlib and so on?
 	conf.env.MSVC_SUBSYSTEM = 'WINDOWS,5.01'
-	conf.env.MSVC_TARGETS = ['x86'] # explicitly request x86 target for MSVC
-	if sys.platform == 'win32':
-		conf.load('msvc msdev')
-	conf.load('xcompile compiler_c compiler_cxx strip_on_install')
+	conf.env.MSVC_TARGETS = ['x86' if not conf.options.ALLOW64 else 'x64']
+
+	# Load compilers early
+	conf.load('xcompile compiler_c compiler_cxx')
+
+	# HACKHACK: override msvc DEST_CPU value by something that we understand
+	if conf.env.DEST_CPU == 'amd64':
+		conf.env.DEST_CPU = 'x86_64'
+
+	if conf.env.COMPILER_CC == 'msvc':
+		conf.load('msvc_pdb')
+
+	conf.load('msvs msdev strip_on_install')
 
 	try:
 		conf.env.CC_VERSION[0]
@@ -104,17 +114,8 @@ def configure(conf):
 	conf.env.MAGX = conf.options.MAGX
 	if conf.options.MAGX:
 		enforce_pic = False
-	
-	if enforce_pic:
-		# Every static library must have fPIC
-		if conf.env.DEST_OS != 'win32' and '-fPIC' in conf.env.CFLAGS_cshlib:
-			conf.env.append_unique('CFLAGS_cstlib', '-fPIC')
-			conf.env.append_unique('CXXFLAGS_cxxstlib', '-fPIC')
-	else:
-		conf.env.CFLAGS_cshlib.remove('-fPIC')
-		conf.env.CXXFLAGS_cxxshlib.remove('-fPIC')
-		conf.env.CFLAGS_MACBUNDLE.remove('-fPIC')
-		conf.env.CXXFLAGS_MACBUNDLE.remove('-fPIC')
+
+	conf.check_pic(enforce_pic)
 
 	# We restrict 64-bit builds ONLY for Win/Linux/OSX running on Intel architecture
 	# Because compatibility with original GoldSrc

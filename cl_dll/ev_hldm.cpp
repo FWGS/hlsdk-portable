@@ -830,3 +830,4 @@ void EV_SpinXS( event_args_t *args )
 
 	gEngfuncs.pEventAPI->EV_PlaySound( idx, origin, CHAN_WEAPON, "weapons/xs_windup.wav", 1.0, ATTN_NORM, iSoundState, pitch );
 }
+
