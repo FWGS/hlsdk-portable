@@ -255,6 +255,8 @@ void DispatchSave( edict_t *pent, SAVERESTOREDATA *pSaveData )
 	{
 		ENTITYTABLE *pTable = &pSaveData->pTable[pSaveData->currentIndex];
 
+		gpGlobals->time = pSaveData->time;
+
 		if( pTable->pent != pent )
 			ALERT( at_error, "ENTITY TABLE OR INDEX IS WRONG!!!!\n" );
 
@@ -307,6 +309,9 @@ int DispatchRestore( edict_t *pent, SAVERESTOREDATA *pSaveData, int globalEntity
 		Vector oldOffset;
 
 		CRestore restoreHelper( pSaveData );
+
+		gpGlobals->time = pSaveData->time;
+
 		if( globalEntity )
 		{
 			CRestore tmpRestore( pSaveData );
