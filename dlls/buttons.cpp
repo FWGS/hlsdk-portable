@@ -637,7 +637,7 @@ void DoSpark( entvars_t *pev, const Vector &location )
 void CBaseButton::ButtonSpark( void )
 {
 	SetThink( &CBaseButton::ButtonSpark );
-	pev->nextthink = gpGlobals->time + 0.1f + RANDOM_FLOAT( 0.0f, 1.5f );// spark again at random interval
+	pev->nextthink = pev->ltime + 0.1f + RANDOM_FLOAT( 0.0f, 1.5f );// spark again at random interval
 
 	DoSpark( pev, pev->mins );
 }
