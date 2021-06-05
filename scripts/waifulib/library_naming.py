@@ -47,6 +47,7 @@ DEFINES = [
 'XASH_MSVC',
 'XASH_NETBSD',
 'XASH_OPENBSD',
+'XASH_HAIKU',
 'XASH_WIN32',
 'XASH_WIN64',
 'XASH_X86',
@@ -79,6 +80,8 @@ def configure(conf):
 		buildos = "emscripten"
 	elif conf.env.XASH_DOS4GW:
 		buildos = "dos4gw" # unused, just in case
+	elif conf.env.XASH_HAIKU:
+		buildos = "haiku"
 	else:
 		conf.fatal("Place your operating system name in build.h and library_naming.py!\n"
 			"If this is a mistake, try to fix conditions above and report a bug")
