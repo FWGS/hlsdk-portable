@@ -123,12 +123,6 @@ int CXS::GetItemInfo( ItemInfo *p )
 	return 1;
 }
 
-BOOL CXS::IsUseable()
-{
-	// Currently charging, allow the player to fire it first. - Solokiller
-	return CBasePlayerWeapon::IsUseable() || m_fInAttack != 0;
-}
-
 BOOL CXS::Deploy()
 {
 	return DefaultDeploy( "models/v_xs.mdl", "models/p_gauss.mdl", XS_DRAW, "gauss" );
@@ -228,22 +222,6 @@ void CXS::SecondaryAttack()
 	}
 	else
 	{
-		// Moved to before the ammo burn.
-		// Because we drained 1 when m_InAttack == 0, then 1 again now before checking if we're out of ammo,
-		// this resuled in the player having -1 ammo, which in turn caused CanDeploy to think it could be deployed.
-		// This will need to be fixed further down the line by preventing negative ammo unless explicitly required (infinite ammo?),
-		// But this check will prevent the problem for now. - Solokiller
-		// TODO: investigate further.
-		if( m_iClip <= 0 )
-                {
-                        // out of ammo! force the gun to fire
-                        StartFire();
-                        m_fInAttack = 0;
-                        m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 2.2f;
-                        m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 1;
-                        return;
-                }
-
 		// during the charging process, eat one bit of ammo every once in a while
 		if( UTIL_WeaponTimeBase() >= m_pPlayer->m_flNextAmmoBurn && m_pPlayer->m_flNextAmmoBurn != 1000 )
 		{
@@ -261,6 +239,16 @@ void CXS::SecondaryAttack()
 				--m_iClip;
 				m_pPlayer->m_flNextAmmoBurn = UTIL_WeaponTimeBase() + 0.3f;
 			}
+		}
+
+		if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0 )
+		{
+			// out of ammo! force the gun to fire
+			StartFire();
+			m_fInAttack = 0;
+			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.0f;
+			m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 1;
+			return;
 		}
 
 		if( UTIL_WeaponTimeBase() >= m_pPlayer->m_flAmmoStartCharge )
@@ -440,10 +428,6 @@ void CXS::WeaponIdle( void )
 		StartFire();
 		m_fInAttack = 0;
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 2.2f;
-
-		// Need to set m_flNextPrimaryAttack so the weapon gets a chance to complete its secondary fire animation. - Solokiller
-		if( m_iClip <= 0 )
-			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5f;
 	}
 	else
 	{

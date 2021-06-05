@@ -776,7 +776,6 @@ int EV_TFC_IsAllyTeam( int iTeam1, int iTeam2 )
 	return 0;
 }
 
-
 //======================
 //	 PAR21 START 
 //======================
