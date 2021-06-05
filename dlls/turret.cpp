@@ -1150,6 +1150,9 @@ void CSentry::Precache()
 {
 	CBaseTurret::Precache();
 	PRECACHE_MODEL( "models/sentry.mdl" );
+	PRECACHE_SOUND( "weapons/hks1.wav" );
+	PRECACHE_SOUND( "weapons/hks2.wav" );
+	PRECACHE_SOUND( "weapons/hks3.wav" );
 }
 
 void CSentry::Spawn()
