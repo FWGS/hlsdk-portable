@@ -602,8 +602,6 @@ BOOL CanAttack( float attack_time, float curtime, BOOL isPredicted )
 
 void CBasePlayerWeapon::ItemPostFrame( void )
 {
-	WeaponTick();
-
 	if( ( m_fInReload ) && ( m_pPlayer->m_flNextAttack <= UTIL_WeaponTimeBase() ) )
 	{
 		// complete the reload. 
