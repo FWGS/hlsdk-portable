@@ -249,7 +249,7 @@ void CGauss::SecondaryAttack()
 			// out of ammo! force the gun to fire
 			StartFire();
 			m_fInAttack = 0;
-			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.0;
+			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.0f;
 			m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 1;
 			return;
 		}
