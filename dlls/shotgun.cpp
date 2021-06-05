@@ -304,7 +304,7 @@ void CShotgun::Reload( void )
 	}
 }
 
-void CShotgun::WeaponTick()
+void CShotgun::ItemPostFrame( void )
 {
 	if( m_flPumpTime && m_flPumpTime < gpGlobals->time )
 	{
@@ -312,6 +312,8 @@ void CShotgun::WeaponTick()
 		EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/scock1.wav", 1, ATTN_NORM, 0, 95 + RANDOM_LONG( 0, 0x1f ) );
 		m_flPumpTime = 0;
 	}
+
+	CBasePlayerWeapon::ItemPostFrame();
 }
 
 void CShotgun::WeaponIdle( void )

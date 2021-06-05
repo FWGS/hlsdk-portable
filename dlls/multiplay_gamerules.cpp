@@ -709,12 +709,12 @@ void CHalfLifeMultiplay::DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, 
 	const char *tau = "tau_cannon";
 	const char *gluon = "gluon gun";
 
-	if( pKiller->flags & FL_CLIENT )
+	if( pevInflictor )
 	{
-		killer_index = ENTINDEX( ENT( pKiller ) );
-
-		if( pevInflictor )
+		if( pKiller->flags & FL_CLIENT )
 		{
+			killer_index = ENTINDEX( ENT( pKiller ) );
+
 			if( pevInflictor == pKiller )
 			{
 				// If the inflictor is the killer,  then it must be their current weapon doing the damage
@@ -730,10 +730,10 @@ void CHalfLifeMultiplay::DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, 
 				killer_weapon_name = STRING( pevInflictor->classname );  // it's just that easy
 			}
 		}
-	}
-	else
-	{
-		killer_weapon_name = STRING( pevInflictor->classname );
+		else
+		{
+			killer_weapon_name = STRING( pevInflictor->classname );
+		}
 	}
 
 	// strip the monster_* or weapon_* from the inflictor's classname
