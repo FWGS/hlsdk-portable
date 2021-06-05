@@ -45,7 +45,12 @@ void CGlock::Spawn()
 	m_iId = WEAPON_GLOCK;
 	SET_MODEL( ENT( pev ), "models/w_9mmhandgun.mdl" );
 
-	m_iDefaultAmmo = GLOCK_DEFAULT_GIVE;
+#ifdef MOBILE_HACKS
+	if( g_iModType == MOD_BIGLOLLY )
+		m_iDefaultAmmo = BIGLOLLY_GLOCK_DEFAULT_GIVE;
+	else
+#endif
+		m_iDefaultAmmo = GLOCK_DEFAULT_GIVE;
 
 	FallInit();// get ready to fall down.
 }
@@ -76,7 +81,12 @@ int CGlock::GetItemInfo( ItemInfo *p )
 	p->iMaxAmmo1 = _9MM_MAX_CARRY;
 	p->pszAmmo2 = NULL;
 	p->iMaxAmmo2 = -1;
-	p->iMaxClip = GLOCK_MAX_CLIP;
+#ifdef MOBILE_HACKS
+	if( g_iModType == MOD_BIGLOLLY )
+		p->iMaxClip = BIGLOLLY_GLOCK_MAX_CLIP;
+	else
+#endif
+		p->iMaxClip = GLOCK_MAX_CLIP;
 	p->iSlot = 1;
 	p->iPosition = 0;
 	p->iFlags = 0;

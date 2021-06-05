@@ -115,9 +115,11 @@ public:
 #define BOLT_MAX_CARRY			50
 #define ROCKET_MAX_CARRY		5
 #define HANDGRENADE_MAX_CARRY	10
+#define BIGLOLLY_HANDGRENADE_MAX_CARRY	6
 #define SATCHEL_MAX_CARRY		5
 #define TRIPMINE_MAX_CARRY		5
 #define SNARK_MAX_CARRY			15
+#define BIGLOLLY_SNARK_MAX_CARRY	12
 #define HORNET_MAX_CARRY		8
 #define M203_GRENADE_MAX_CARRY	10
 
@@ -126,6 +128,7 @@ public:
 
 //#define CROWBAR_MAX_CLIP		WEAPON_NOCLIP
 #define GLOCK_MAX_CLIP			17
+#define BIGLOLLY_GLOCK_MAX_CLIP		15
 #define PYTHON_MAX_CLIP			6
 #define MP5_MAX_CLIP			50
 #define MP5_DEFAULT_AMMO		25
@@ -142,6 +145,7 @@ public:
 
 // the default amount of ammo that comes with each gun when it spawns
 #define GLOCK_DEFAULT_GIVE			17
+#define BIGLOLLY_GLOCK_DEFAULT_GIVE		30
 #define PYTHON_DEFAULT_GIVE			6
 #define MP5_DEFAULT_GIVE			25
 #define MP5_DEFAULT_AMMO			25
@@ -152,9 +156,11 @@ public:
 #define GAUSS_DEFAULT_GIVE			20
 #define EGON_DEFAULT_GIVE			20
 #define HANDGRENADE_DEFAULT_GIVE	5
+#define BIGLOLLY_HANDGRENADE_DEFAULT_GIVE	2
 #define SATCHEL_DEFAULT_GIVE		1
 #define TRIPMINE_DEFAULT_GIVE		1
 #define SNARK_DEFAULT_GIVE			5
+#define BIGLOLLY_SNARK_DEFAULT_GIVE		3
 #define HIVEHAND_DEFAULT_GIVE		8
 
 // The amount of ammo given to a player by an ammo item.

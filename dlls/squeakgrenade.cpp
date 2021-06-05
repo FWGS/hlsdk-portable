@@ -429,7 +429,12 @@ void CSqueak::Spawn()
 
 	FallInit();//get ready to fall down.
 
-	m_iDefaultAmmo = SNARK_DEFAULT_GIVE;
+#ifdef MOBILE_HACKS
+	if( g_iModType == MOD_BIGLOLLY )
+		m_iDefaultAmmo = BIGLOLLY_SNARK_DEFAULT_GIVE;
+	else
+#endif
+		m_iDefaultAmmo = SNARK_DEFAULT_GIVE;
 
 	pev->sequence = 1;
 	pev->animtime = gpGlobals->time;
@@ -452,7 +457,12 @@ int CSqueak::GetItemInfo( ItemInfo *p )
 {
 	p->pszName = STRING( pev->classname );
 	p->pszAmmo1 = "Snarks";
-	p->iMaxAmmo1 = SNARK_MAX_CARRY;
+#ifdef MOBILE_HACKS
+	if( g_iModType == MOD_BIGLOLLY )
+		p->iMaxAmmo1 = BIGLOLLY_SNARK_MAX_CARRY;
+	else
+#endif
+		p->iMaxAmmo1 = SNARK_MAX_CARRY;
 	p->pszAmmo2 = NULL;
 	p->iMaxAmmo2 = -1;
 	p->iMaxClip = WEAPON_NOCLIP;

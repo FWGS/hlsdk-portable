@@ -46,7 +46,12 @@ void CHandGrenade::Spawn()
 #ifndef CLIENT_DLL
 	pev->dmg = gSkillData.plrDmgHandGrenade;
 #endif
-	m_iDefaultAmmo = HANDGRENADE_DEFAULT_GIVE;
+#ifdef MOBILE_HACKS
+	if( g_iModType == MOD_BIGLOLLY )
+		m_iDefaultAmmo = BIGLOLLY_HANDGRENADE_DEFAULT_GIVE;
+	else
+#endif
+		m_iDefaultAmmo = HANDGRENADE_DEFAULT_GIVE;
 
 	FallInit();// get ready to fall down.
 }
@@ -62,7 +67,12 @@ int CHandGrenade::GetItemInfo( ItemInfo *p )
 {
 	p->pszName = STRING( pev->classname );
 	p->pszAmmo1 = "Hand Grenade";
-	p->iMaxAmmo1 = HANDGRENADE_MAX_CARRY;
+#ifdef MOBILE_HACKS
+	if( g_iModType == MOD_BIGLOLLY )
+		p->iMaxAmmo1 = BIGLOLLY_HANDGRENADE_MAX_CARRY;
+	else
+#endif
+		p->iMaxAmmo1 = HANDGRENADE_MAX_CARRY;
 	p->pszAmmo2 = NULL;
 	p->iMaxAmmo2 = -1;
 	p->iMaxClip = WEAPON_NOCLIP;
