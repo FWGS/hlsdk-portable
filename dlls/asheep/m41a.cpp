@@ -308,8 +308,3 @@ void CM41A::WeaponIdle( void )
 	m_flTimeWeaponIdle = UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 ); // how long till we do this again.
 }
 
-BOOL CM41A::IsUseable()
-{
-	//Can be used if the player has AR grenades. - Solokiller
-	return CBasePlayerWeapon::IsUseable() || m_pPlayer->m_rgAmmo[m_iSecondaryAmmoType] > 0;
-}
