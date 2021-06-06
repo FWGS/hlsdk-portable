@@ -167,7 +167,7 @@ void CSquadMonster::SquadRemove( CSquadMonster *pRemove )
 		{
 			for( int i = 0; i < MAX_SQUAD_MEMBERS - 1; i++ )
 			{
-				if( pSquadLeader->m_hSquadMember[i] == this )
+				if( pSquadLeader->m_hSquadMember[i] == pRemove )
 				{
 					pSquadLeader->m_hSquadMember[i] = NULL;
 					break;
@@ -256,7 +256,10 @@ void CSquadMonster::SquadMakeEnemy( CBaseEntity *pEnemy )
 		if( pMember )
 		{
 			// reset members who aren't activly engaged in fighting
-			if( pMember->m_hEnemy != pEnemy && !pMember->HasConditions( bits_COND_SEE_ENEMY ) )
+			if( pMember->m_hEnemy != pEnemy && !pMember->HasConditions( bits_COND_SEE_ENEMY )
+					&& ( pMember->m_pSchedule && (pMember->m_pSchedule->iInterruptMask & bits_COND_NEW_ENEMY) )
+					// My enemy might be not an enemy for member of my squad, e.g. if I was provoked by player.
+					&& pMember->IRelationship(pEnemy) >= R_DL )
 			{
 				if( pMember->m_hEnemy != 0 )
 				{
