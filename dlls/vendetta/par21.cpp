@@ -231,12 +231,6 @@ void CPar21::Reload(void)
         DefaultReload( PAR21_MAX_CLIP, PAR21_RELOAD, 1.6 );
 }
 
-BOOL CPar21::IsUseable()
-{
-	//Can be used if the player has AR grenades. - Solokiller
-	return CBasePlayerWeapon::IsUseable() || m_pPlayer->m_rgAmmo[m_iSecondaryAmmoType] > 0;
-}
-
 void CPar21::WeaponIdle(void)
 {
 	ResetEmptySound();

@@ -844,7 +844,6 @@ public:
 	int SecondaryAmmoIndex( void );
 	BOOL Deploy( void );
 	void Reload( void );
-	BOOL IsUseable();
 	void WeaponIdle( void );
 	int m_iShell;
 
