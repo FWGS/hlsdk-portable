@@ -55,3 +55,4 @@ void CBaseMonster::SetState( MONSTERSTATE State )
 	m_MonsterState = State;
 	m_IdealMonsterState = State;
 }
+

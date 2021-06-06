@@ -800,6 +800,7 @@ bool CHudSpectator::ParseOverviewFile()
 	char levelname[256] = { 0 };
 	char token[1024] = { 0 };
 	float height;
+	bool ret = false;
 
 	char *afile = NULL, *pfile = NULL;
 
@@ -819,7 +820,7 @@ bool CHudSpectator::ParseOverviewFile()
 	strcpy( m_OverviewData.map, gEngfuncs.pfnGetLevelName() );
 
 	if( m_OverviewData.map[0] == '\0' )
-		return false; // not active yet
+		return ret; // not active yet
 
 	strcpy( levelname, m_OverviewData.map + 5 );
 	levelname[strlen( levelname ) - 4] = 0;
@@ -831,7 +832,7 @@ bool CHudSpectator::ParseOverviewFile()
 	if( !pfile )
 	{
 		gEngfuncs.Con_DPrintf( "Couldn't open file %s. Using default values for overiew mode.\n", filename );
-		return false;
+		return ret;
 	}
 
 	while( true )
@@ -848,7 +849,7 @@ bool CHudSpectator::ParseOverviewFile()
 			if( stricmp( token, "{" ) ) 
 			{
 				gEngfuncs.Con_Printf( "Error parsing overview file %s. (expected { )\n", filename );
-				return false;
+				goto end;
 			}
 
 			pfile = gEngfuncs.COM_ParseFile( pfile, token );
@@ -888,7 +889,7 @@ bool CHudSpectator::ParseOverviewFile()
 				else
 				{
 					gEngfuncs.Con_Printf( "Error parsing overview file %s. (%s unkown)\n", filename, token );
-					return false;
+					goto end;
 				}
 
 				pfile = gEngfuncs.COM_ParseFile( pfile, token ); // parse next token
@@ -900,7 +901,7 @@ bool CHudSpectator::ParseOverviewFile()
 			if( m_OverviewData.layers == OVERVIEW_MAX_LAYERS )
 			{
 				gEngfuncs.Con_Printf( "Error parsing overview file %s. ( too many layers )\n", filename );
-				return false;
+				goto end;
 			}
 
 			pfile = gEngfuncs.COM_ParseFile( pfile, token );
@@ -908,7 +909,7 @@ bool CHudSpectator::ParseOverviewFile()
 			if( stricmp( token, "{" ) ) 
 			{
 				gEngfuncs.Con_Printf( "Error parsing overview file %s. (expected { )\n", filename );
-				return false;
+				goto end;
 			}
 
 			pfile = gEngfuncs.COM_ParseFile( pfile, token );
@@ -929,7 +930,7 @@ bool CHudSpectator::ParseOverviewFile()
 				else
 				{
 					gEngfuncs.Con_Printf( "Error parsing overview file %s. (%s unkown)\n", filename, token );
-					return false;
+					goto end;
 				}
 
 				pfile = gEngfuncs.COM_ParseFile( pfile, token ); // parse next token
@@ -939,12 +940,14 @@ bool CHudSpectator::ParseOverviewFile()
 		}
 	}
 
-	gEngfuncs.COM_FreeFile( afile );
-
 	m_mapZoom = m_OverviewData.zoom;
 	m_mapOrigin = m_OverviewData.origin;
 
-	return true;
+	ret = true;
+end:
+	gEngfuncs.COM_FreeFile( afile );
+
+	return ret;
 }
 
 void CHudSpectator::LoadMapSprites()

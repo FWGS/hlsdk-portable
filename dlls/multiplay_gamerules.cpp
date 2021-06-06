@@ -817,19 +817,19 @@ void CHalfLifeMultiplay::DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, 
 	}
 	else
 	{
-	if( pKiller->flags & FL_CLIENT )
-	{
-		killer_index = ENTINDEX( ENT( pKiller ) );
-
 		if( pevInflictor )
 		{
-			if( pevInflictor == pKiller )
+			if( pKiller->flags & FL_CLIENT )
 			{
-				// If the inflictor is the killer,  then it must be their current weapon doing the damage
-				CBasePlayer *pPlayer = (CBasePlayer*)CBaseEntity::Instance( pKiller );
+				killer_index = ENTINDEX( ENT( pKiller ) );
 
-				switch( pPlayer->m_iQuakeWeapon )
-                                {
+				if( pevInflictor == pKiller )
+				{
+					// If the inflictor is the killer,  then it must be their current weapon doing the damage
+					CBasePlayer *pPlayer = (CBasePlayer*)CBaseEntity::Instance( pKiller );
+
+					switch( pPlayer->m_iQuakeWeapon )
+					{
 						case IT_AXE:
 							killer_weapon_name = "weapon_axe";
 							break;
