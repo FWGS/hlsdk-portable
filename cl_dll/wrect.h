@@ -4,7 +4,6 @@
 //
 // $NoKeywords: $
 //=============================================================================
-
 #pragma once
 #if !defined( WRECTH )
 #define WRECTH

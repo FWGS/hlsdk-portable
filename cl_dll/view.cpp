@@ -764,6 +764,10 @@ void V_CalcNormalRefdef( struct ref_params_s *pparams )
 	if( CL_IsThirdPerson() )
 	{
 		VectorCopy( camAngles, pparams->viewangles );
+	}
+
+	// Apply this at all times
+	{
 		float pitch = camAngles[0];
 
 		// Normalize angles

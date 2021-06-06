@@ -161,7 +161,7 @@ void CShotgun::PrimaryAttack()
 
 	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usSingleFire, 0.0, g_vecZero, g_vecZero, vecDir.x, vecDir.y, 0, 0, 0, 0 );
 
-	if (m_iClip != 0)
+	// if (m_iClip != 0)
 		m_flPumpTime = gpGlobals->time + 0.5f;
 
 	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 1.3f;
@@ -227,19 +227,23 @@ void CShotgun::Reload( void )
 	}
 }
 
+void CShotgun::ItemPostFrame( void )
+{
+	if( m_flPumpTime && m_flPumpTime < gpGlobals->time )
+	{
+		// play pumping sound
+		EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/shotgun_pump.wav", 1, ATTN_NORM, 0, 95 + RANDOM_LONG( 0, 0x1f ) );
+		m_flPumpTime = 0;
+	}
+
+	CBasePlayerWeapon::ItemPostFrame();
+}
 
 void CShotgun::WeaponIdle( void )
 {
 	ResetEmptySound( );
 
 	m_pPlayer->GetAutoaimVector( AUTOAIM_5DEGREES );
-
-	if ( m_flPumpTime && m_flPumpTime < gpGlobals->time )
-	{
-		// play pumping sound
-		EMIT_SOUND_DYN(ENT(m_pPlayer->pev), CHAN_ITEM, "weapons/shotgun_pump.wav", 1, ATTN_NORM, 0, 95 + RANDOM_LONG(0,0x1f));
-		m_flPumpTime = 0;
-	}
 
 	if (m_flTimeWeaponIdle <  UTIL_WeaponTimeBase() )
 	{
