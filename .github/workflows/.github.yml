@@ -1,0 +1,27 @@
+name: build
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        compiler: [gcc, clang]
+        include:
+          - compiler: gcc
+            cpp-compiler: g++
+          - compiler: clang
+            cpp-compiler: clang++
+    env:
+      CC: ${{ matrix.compiler }}
+      CXX: ${{ matrix.cpp-compiler }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Install dependencies
+      run: sudo apt-get -y install gcc-multilib g++-multilib libgl1-mesa-dev
+    - name: Build client and server on ${{ matrix.os }} with ${{ matrix.compiler }}
+      run: |
+        cmake -B build -S . -DCMAKE_EXE_LINKER_FLAGS="-Wl,--no-undefined" && cmake --build build --target all
