@@ -76,7 +76,7 @@ def build(bld):
 		'hornetgun.cpp',
 		'houndeye.cpp', 
 		'ichthyosaur.cpp',
-		'islave.cpp',
+		'islave_deamon.cpp',
 		'items.cpp', 
 		'leech.cpp',
 		'lights.cpp', 
