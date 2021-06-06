@@ -809,7 +809,6 @@ public:
 	BOOL Deploy( void );
 	void Reload( void );
 	void WeaponIdle( void );
-	BOOL IsUseable();
 	float m_flNextAnimTime;
 	int m_iShell;
 
