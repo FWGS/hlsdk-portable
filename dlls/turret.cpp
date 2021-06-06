@@ -1176,6 +1176,9 @@ void CSentry::Precache()
 		PRECACHE_MODEL(STRING(pev->model)); //LRC
 	else
 		PRECACHE_MODEL( "models/sentry.mdl" );
+	PRECACHE_SOUND( "weapons/hks1.wav" );
+	PRECACHE_SOUND( "weapons/hks2.wav" );
+	PRECACHE_SOUND( "weapons/hks3.wav" );
 }
 
 void CSentry::Spawn()
