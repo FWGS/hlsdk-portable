@@ -807,7 +807,6 @@ public:
 	void StartFire( void );
 	void Fire( Vector vecOrigSrc, Vector vecDirShooting, float flDamage );
 	float GetFullChargeTime( void );
-	BOOL IsUseable();
 
 	int m_iSoundState; // don't save this
 
