@@ -54,8 +54,8 @@ int CHudScoreboard::Init( void )
 	gHUD.AddHudElem( this );
 
 	// Hook messages & commands here
-	HOOK_COMMAND( "+showscores", ShowScores );
-	HOOK_COMMAND( "-showscores", HideScores );
+	// HOOK_COMMAND( "+showscores", ShowScores );
+	// HOOK_COMMAND( "-showscores", HideScores );
 
 	HOOK_MESSAGE( ScoreInfo );
 	HOOK_MESSAGE( TeamScore );
