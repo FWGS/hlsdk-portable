@@ -12,7 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
-#if !defined( OEM_BUILD )
+#if !OEM_BUILD
 
 #include "extdll.h"
 #include "util.h"
@@ -454,7 +454,7 @@ void CRpg::PrimaryAttack()
 		// Ken signed up for this as a global change (sjb)
 
 		int flags;
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 	flags = FEV_NOTHOST;
 #else
 	flags = 0;

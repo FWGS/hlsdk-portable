@@ -12,7 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
-#if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
+#if !OEM_BUILD && !HLDEMO_BUILD
 
 #include "extdll.h"
 #include "util.h"
@@ -178,7 +178,7 @@ void CEgon::Attack( void )
 	Vector vecSrc = m_pPlayer->GetGunPosition();
 
 	int flags;
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 	flags = FEV_NOTHOST;
 #else
 	flags = 0;

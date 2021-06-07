@@ -33,7 +33,7 @@
 
 float UTIL_WeaponTimeBase( void )
 {
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 	return 0.0f;
 #else
 	return gpGlobals->time;

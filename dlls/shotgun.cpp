@@ -137,7 +137,7 @@ void CShotgun::PrimaryAttack()
 	m_iClip--;
 
 	int flags;
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 	flags = FEV_NOTHOST;
 #else
 	flags = 0;
@@ -207,7 +207,7 @@ void CShotgun::SecondaryAttack( void )
 	m_iClip -= 2;
 
 	int flags;
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 	flags = FEV_NOTHOST;
 #else
 	flags = 0;

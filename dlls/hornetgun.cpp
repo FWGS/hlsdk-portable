@@ -12,7 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
-#if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
+#if !OEM_BUILD && !HLDEMO_BUILD
 
 #include "extdll.h"
 #include "util.h"
@@ -145,7 +145,7 @@ void CHgun::PrimaryAttack()
 	m_pPlayer->m_iWeaponFlash = DIM_GUN_FLASH;
 
 	int flags;
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 	flags = FEV_NOTHOST;
 #else
 	flags = 0;
@@ -226,7 +226,7 @@ void CHgun::SecondaryAttack( void )
 	m_flRechargeTime = gpGlobals->time + 0.5f;
 #endif
 	int flags;
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 	flags = FEV_NOTHOST;
 #else
 	flags = 0;
