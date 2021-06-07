@@ -49,7 +49,7 @@ void UTIL_MuzzleLight( Vector vecSrc, float flRadius, byte r, byte g, byte b, fl
 
 float UTIL_WeaponTimeBase( void )
 {
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 	return 0.0f;
 #else
 	return gpGlobals->time;
@@ -325,7 +325,7 @@ TYPEDESCRIPTION	gEntvarsDescription[] =
 
 #define ENTVARS_COUNT		( sizeof(gEntvarsDescription) / sizeof(gEntvarsDescription[0]) )
 
-#ifdef	DEBUG
+#if	DEBUG
 edict_t *DBG_EntOfVars( const entvars_t *pev )
 {
 	if( pev->pContainingEntity != NULL )
@@ -1619,7 +1619,7 @@ static int gSizes[FIELD_TYPECOUNT] =
 	sizeof(float) * 3,	// FIELD_POSITION_VECTOR
 	sizeof(void *),		// FIELD_POINTER
 	sizeof(int),		// FIELD_INTEGER
-#ifdef GNUC
+#if GNUC
 	sizeof(void *) * 2,	// FIELD_FUNCTION
 #else
 	sizeof(void *),		// FIELD_FUNCTION	
@@ -1646,7 +1646,7 @@ static int gInputSizes[FIELD_TYPECOUNT] =
 	sizeof(float) * 3,	// FIELD_POSITION_VECTOR
 	sizeof(void *),		// FIELD_POINTER
 	sizeof(int),		// FIELD_INTEGER
-#ifdef GNUC
+#if GNUC
 	sizeof(void *) * 2,	// FIELD_FUNCTION
 #else
 	sizeof(void *),		// FIELD_FUNCTION
@@ -1863,7 +1863,7 @@ void CSave::WriteTime( const char *pname, const float *data, int count )
 
 void CSave::WriteString( const char *pname, const char *pdata )
 {
-#ifdef TOKENIZE
+#if TOKENIZE
 	short token = (short)TokenHash( pdata );
 	WriteShort( pname, &token, 1 );
 #else
@@ -1874,7 +1874,7 @@ void CSave::WriteString( const char *pname, const char *pdata )
 void CSave::WriteString( const char *pname, const int *stringId, int count )
 {
 	int i, size;
-#ifdef TOKENIZE
+#if TOKENIZE
 	short token = (short)TokenHash( STRING( *stringId ) );
 	WriteShort( pname, &token, 1 );
 #else
@@ -2192,7 +2192,7 @@ int CRestore::ReadField( void *pBaseData, TYPEDESCRIPTION *pFields, int fieldCou
 					switch( pTest->fieldType )
 					{
 					case FIELD_TIME:
-					#ifdef __VFP_FP__
+					#if __VFP_FP__
 						memcpy( &timeData, pInputData, 4 );
 						// Re-base time variables
 						timeData += time;
@@ -2278,7 +2278,7 @@ int CRestore::ReadField( void *pBaseData, TYPEDESCRIPTION *pFields, int fieldCou
 							*( (EOFFSET *)pOutputData ) = 0;
 						break;
 					case FIELD_VECTOR:
-						#ifdef __VFP_FP__
+						#if __VFP_FP__
 						memcpy( pOutputData, pInputData, sizeof( Vector ) );
 						#else
 						( (float *)pOutputData )[0] = ( (float *)pInputData )[0];
@@ -2287,7 +2287,7 @@ int CRestore::ReadField( void *pBaseData, TYPEDESCRIPTION *pFields, int fieldCou
 						#endif
 						break;
 					case FIELD_POSITION_VECTOR:
-						#ifdef  __VFP_FP__
+						#if  __VFP_FP__
 						{
 							Vector tmp;
 							memcpy( &tmp, pInputData, sizeof( Vector ) );
@@ -2424,7 +2424,7 @@ char *CRestore::ReadNamedString( const char *pName )
 	HEADER header;
 
 	BufferReadHeader( &header );
-#ifdef TOKENIZE
+#if TOKENIZE
 	return (char *)( m_pdata->pTokens[*(short *)header.pData] );
 #else
 	return (char *)header.pData;

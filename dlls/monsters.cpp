@@ -739,7 +739,7 @@ BOOL CBaseMonster::MoveToNode( Activity movementAct, float waitTime, const Vecto
 	return FRefreshRoute();
 }
 
-#ifdef _DEBUG
+#if _DEBUG
 void DrawRoute( entvars_t *pev, WayPoint_t *m_Route, int m_iRouteIndex, int r, int g, int b )
 {
 	int i;

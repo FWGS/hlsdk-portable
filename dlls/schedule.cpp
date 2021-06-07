@@ -183,7 +183,7 @@ BOOL CBaseMonster::FScheduleValid( void )
 
 	if( HasConditions( m_pSchedule->iInterruptMask | bits_COND_SCHEDULE_DONE | bits_COND_TASK_FAILED ) )
 	{
-#ifdef DEBUG
+#if DEBUG
 		if( HasConditions( bits_COND_TASK_FAILED ) && m_failSchedule == SCHED_NONE )
 		{
 			// fail! Send a visual indicator.
