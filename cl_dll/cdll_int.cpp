@@ -183,7 +183,7 @@ int *HUD_GetRect( void )
 	return extent;
 }
 
-#if USE_VGUI_FOR_GOLDSOURCE_SUPPORT
+#ifdef USE_VGUI_FOR_GOLDSOURCE_SUPPORT
 class TeamFortressViewport : public vgui::Panel
 {
 public:
@@ -238,7 +238,7 @@ so the HUD can reinitialize itself.
 int DLLEXPORT HUD_VidInit( void )
 {
 	gHUD.VidInit();
-#if USE_VGUI_FOR_GOLDSOURCE_SUPPORT
+#ifdef USE_VGUI_FOR_GOLDSOURCE_SUPPORT
 	vgui::Panel* root=(vgui::Panel*)gEngfuncs.VGui_GetPanel();
 	if (root) {
 		gEngfuncs.Con_Printf( "Root VGUI panel exists\n" );
@@ -337,7 +337,7 @@ Called by engine every frame that client .dll is loaded
 
 void DLLEXPORT HUD_Frame( double time )
 {
-#if USE_VGUI_FOR_GOLDSOURCE_SUPPORT
+#ifdef USE_VGUI_FOR_GOLDSOURCE_SUPPORT
 	if (!gViewPort)
 		gEngfuncs.VGui_ViewportPaintBackground(HUD_GetRect());
 #else

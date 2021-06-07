@@ -10,7 +10,7 @@ cvar_t  *in_joystick;
 
 FWGSInput fwgsInput;
 
-#if SUPPORT_GOLDSOURCE_INPUT
+#ifdef SUPPORT_GOLDSOURCE_INPUT
 GoldSourceInput goldSourceInput;
 AbstractInput* currentInput = &goldSourceInput;
 #else
@@ -68,7 +68,7 @@ void IN_Shutdown( void )
 
 void IN_Init( void )
 {
-#if SUPPORT_GOLDSOURCE_INPUT
+#ifdef SUPPORT_GOLDSOURCE_INPUT
 	if (IsXashFWGS()) {
 		gEngfuncs.Con_Printf( "FWGS Xash3D input is in use\n" );
 		currentInput = &fwgsInput;

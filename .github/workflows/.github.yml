@@ -7,21 +7,39 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest]
-        compiler: [gcc, clang]
         include:
-          - compiler: gcc
-            cpp-compiler: g++
-          - compiler: clang
-            cpp-compiler: clang++
+          - os: ubuntu-latest
+            cc: gcc
+            cxx: g++
+          - os: ubuntu-latest
+            cc: clang
+            cxx: clang++
     env:
-      CC: ${{ matrix.compiler }}
-      CXX: ${{ matrix.cpp-compiler }}
+      CC: ${{ matrix.cc }}
+      CXX: ${{ matrix.cxx }}
     steps:
     - name: Checkout
       uses: actions/checkout@v2
+
+    - name: Get SDL2 headers
+      uses: actions/checkout@v2
+      with:
+        repository: libsdl-org/SDL
+        ref: release-2.0.9
+        path: SDL2
+    - name: Link SDL2 headers into system path
+      run: |
+        sudo ln -s "$GITHUB_WORKSPACE/SDL2/include" /usr/local/include/SDL2
+
     - name: Install dependencies
-      run: sudo apt-get -y install gcc-multilib g++-multilib libgl1-mesa-dev
-    - name: Build client and server on ${{ matrix.os }} with ${{ matrix.compiler }}
+      if: startsWith(matrix.os, 'ubuntu')
+      run: |
+        sudo apt-get -y install gcc-multilib g++-multilib
+
+    - name: Build with xash3d-fwgs input
       run: |
         cmake -B build -S . -DCMAKE_EXE_LINKER_FLAGS="-Wl,--no-undefined" && cmake --build build --target all
+    - name: Build with goldsource input
+      run: |
+        cmake -B build-gs -S . -DCMAKE_EXE_LINKER_FLAGS="-Wl,--no-undefined" -DGOLDSOURCE_SUPPORT=ON && cmake --build build-gs --target all
+
