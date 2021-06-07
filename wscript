@@ -278,6 +278,7 @@ def configure(conf):
 	conf.define('CROWBAR_FIX_RAPID_CROWBAR', False)
 	conf.define('GAUSS_OVERCHARGE_FIX', False)
 	conf.define('OEM_BUILD', False)
+	conf.define('HLDEMO_BUILD', False)
 
 	conf.add_subproject(["cl_dll", "dlls"])
 
