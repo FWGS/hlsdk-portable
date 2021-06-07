@@ -10,7 +10,7 @@
 
 #include "input_mouse.h"
 
-#if SUPPORT_GOLDSOURCE_INPUT
+#ifdef SUPPORT_GOLDSOURCE_INPUT
 
 #include "hud.h"
 #include "cl_util.h"
@@ -27,7 +27,7 @@
 #define USE_SDL2
 #endif
 
-#if USE_SDL2
+#ifdef USE_SDL2
 #define ARRAYSIZE(p)		( sizeof(p) /sizeof(p[0]) )
 #include <dlfcn.h>
 #include <SDL2/SDL_mouse.h>
@@ -242,7 +242,7 @@ DWORD joy_oldbuttonstate, joy_oldpovstate;
 int joy_id;
 DWORD joy_numbuttons;
 
-#if USE_SDL2
+#ifdef USE_SDL2
 SDL_GameController *s_pJoystick = NULL;
 #elif defined(_WIN32)
 DWORD		joy_flags;
@@ -566,7 +566,7 @@ void GoldSourceInput::IN_Shutdown (void)
 	}
 #endif
 
-#if USE_SDL2
+#ifdef USE_SDL2
 	for (int j=0; j<ARRAYSIZE(sdlFunctions); ++j) {
 		*(sdlFunctions[j].ppfnFunc) = NULL;
 	}
@@ -735,7 +735,7 @@ void GoldSourceInput::IN_GetMouseDelta( int *pOutX, int *pOutY)
 		else
 #endif
 		{
-#if USE_SDL2
+#ifdef USE_SDL2
 			safe_pfnSDL_GetRelativeMouseState( &deltaX, &deltaY );
 			current_pos.x = deltaX;
 			current_pos.y = deltaY;
@@ -942,7 +942,7 @@ void GoldSourceInput::IN_Accumulate (void)
 			else
 #endif
 			{
-#if USE_SDL2
+#ifdef USE_SDL2
 				int deltaX, deltaY;
 				safe_pfnSDL_GetRelativeMouseState( &deltaX, &deltaY );
 				mx_accum += deltaX;
@@ -997,7 +997,7 @@ void IN_StartupJoystick (void)
 
 	// assume no joystick
 	joy_avail = 0;
-#if USE_SDL2
+#ifdef USE_SDL2
 	int nJoysticks = safe_pfnSDL_NumJoysticks();
 	if ( nJoysticks > 0 )
 	{
@@ -1084,7 +1084,7 @@ void IN_StartupJoystick (void)
 #endif
 }
 
-#if USE_SDL2
+#ifdef USE_SDL2
 int RawValuePointer (int axis)
 {
 	switch (axis)
@@ -1216,7 +1216,7 @@ void GoldSourceInput::IN_Commands (void)
 
 	// loop through the joystick buttons
 	// key a joystick event or auxillary event for higher number buttons for each state change
-#if USE_SDL2
+#ifdef USE_SDL2
 	buttonstate = 0;
 	for ( i = 0; i < SDL_CONTROLLER_BUTTON_MAX; i++ )
 	{
@@ -1294,7 +1294,7 @@ IN_ReadJoystick
 */
 int IN_ReadJoystick (void)
 {
-#if USE_SDL2
+#ifdef USE_SDL2
 	safe_pfnSDL_JoystickUpdate();
 	return 1;
 #elif defined(_WIN32)
@@ -1374,7 +1374,7 @@ void IN_JoyMove ( float frametime, usercmd_t *cmd )
 	for (i = 0; i < JOY_MAX_AXES; i++)
 	{
 		// get the floating point zero-centered, potentially-inverted data for the current axis
-#if USE_SDL2
+#ifdef USE_SDL2
 		fAxisValue = (float)pdwRawValue[i];
 #elif defined(_WIN32)
 		fAxisValue = (float) *pdwRawValue[i];
@@ -1600,7 +1600,7 @@ void GoldSourceInput::IN_Init (void)
 	}
 #endif
 
-#if USE_SDL2
+#ifdef USE_SDL2
 #if __APPLE__
 #define SDL2_FULL_LIBNAME "libsdl2-2.0.0.dylib"
 #else
