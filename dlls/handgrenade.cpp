@@ -43,7 +43,7 @@ void CHandGrenade::Spawn()
 	m_iId = WEAPON_HANDGRENADE;
 	SET_MODEL( ENT( pev ), "models/w_grenade.mdl" );
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	pev->dmg = gSkillData.plrDmgHandGrenade;
 #endif
 #ifdef MOBILE_HACKS

@@ -21,12 +21,12 @@
 //
 
 // Allow "DEBUG" in addition to default "_DEBUG"
-#ifdef _DEBUG
+#if _DEBUG
 #define DEBUG 1
 #endif
 
 // Silence certain warnings
-#ifdef _MSC_VER
+#if _MSC_VER
 #pragma warning(disable : 4244)		// int or float down-conversion
 #pragma warning(disable : 4305)		// int or float data truncation
 #pragma warning(disable : 4201)		// nameless struct/union
@@ -35,7 +35,7 @@
 #endif
 
 // Prevent tons of unused windows definitions
-#ifdef _WIN32
+#if _WIN32
 #define WIN32_LEAN_AND_MEAN
 #define NOWINRES
 #define NOSERVICE

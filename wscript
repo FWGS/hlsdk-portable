@@ -256,8 +256,8 @@ def configure(conf):
 	conf.define_cond('HAVE_CMATH', cmath_usable)
 
 	if conf.env.COMPILER_CC == 'msvc':
-		conf.define('_CRT_SECURE_NO_WARNINGS', 1)
-		conf.define('_CRT_NONSTDC_NO_DEPRECATE', 1)
+		conf.define('_CRT_SECURE_NO_WARNINGS', True)
+		conf.define('_CRT_NONSTDC_NO_DEPRECATE', True)
 	elif conf.env.COMPILER_CC == 'owcc':
 		pass
 	else:
@@ -271,11 +271,14 @@ def configure(conf):
 		if conf.env.cxxshlib_PATTERN.startswith('lib'):
 			conf.env.cxxshlib_PATTERN = conf.env.cxxshlib_PATTERN[3:]
 
-	conf.define('CLIENT_WEAPONS', '1')
+	conf.define('BARNACLE_FIX_VISIBILITY', False)
+	conf.define('CLIENT_WEAPONS', True)
 	conf.define('CROWBAR_IDLE_ANIM', False)
 	conf.define('CROWBAR_DELAY_FIX', False)
 	conf.define('CROWBAR_FIX_RAPID_CROWBAR', False)
 	conf.define('GAUSS_OVERCHARGE_FIX', False)
+	conf.define('OEM_BUILD', False)
+	conf.define('HLDEMO_BUILD', False)
 
 	if conf.env.DEST_OS == 'android' or conf.options.SIMPLE_MOD_HACKS:
 		conf.define('MOBILE_HACKS', '1')

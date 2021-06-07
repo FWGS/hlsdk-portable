@@ -32,7 +32,7 @@ globalvars_t *gpGlobals;
 int g_iModType;
 #endif // MOBILE_HACKS
 
-#ifdef _WIN32
+#if _WIN32
 
 // Required DLL entry point
 BOOL WINAPI DllMain( HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved )
