@@ -23,7 +23,7 @@
 #include "player.h"
 #include "gamerules.h"
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 #define BOLT_AIR_VELOCITY	2000
 #define BOLT_WATER_VELOCITY	1000
 
@@ -338,7 +338,7 @@ void CCrossbow::Holster( int skiplocal /* = 0 */ )
 
 void CCrossbow::PrimaryAttack( void )
 {
-#ifdef CLIENT_DLL
+#if CLIENT_DLL
 	if( m_fInZoom && bIsMultiplayer() )
 #else
 	if( m_fInZoom && g_pGameRules->IsMultiplayer() )
@@ -386,7 +386,7 @@ void CCrossbow::FireSniperBolt()
 
 	UTIL_TraceLine( vecSrc, vecSrc + vecDir * 8192, dont_ignore_monsters, m_pPlayer->edict(), &tr );
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	if( tr.pHit->v.takedamage )
 	{
 		ClearMultiDamage();
@@ -427,7 +427,7 @@ void CCrossbow::FireBolt()
 
 	anglesAim.x	= -anglesAim.x;
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	Vector vecSrc	= m_pPlayer->GetGunPosition() - gpGlobals->v_up * 2.0f;
 	Vector vecDir	= gpGlobals->v_forward;
 

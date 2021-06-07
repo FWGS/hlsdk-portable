@@ -452,7 +452,7 @@ public:
 	int m_cAmmoTypes;// how many ammo types packed into this box (if packed by a level designer)
 };
 
-#ifdef CLIENT_DLL
+#if CLIENT_DLL
 bool bIsMultiplayer ( void );
 void LoadVModel ( const char *szViewModel, CBasePlayer *m_pPlayer );
 #endif
@@ -504,7 +504,7 @@ public:
 	int Swing( int fFirst );
 	BOOL Deploy( void );
 	void Holster( int skiplocal = 0 );
-#ifdef CROWBAR_IDLE_ANIM
+#if CROWBAR_IDLE_ANIM
 	void WeaponIdle();
 #endif
 	int m_iSwing;
@@ -622,7 +622,7 @@ private:
 class CShotgun : public CBasePlayerWeapon
 {
 public:
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	int		Save( CSave &save );
 	int		Restore( CRestore &restore );
 	static	TYPEDESCRIPTION m_SaveData[];
@@ -674,7 +674,7 @@ public:
 class CRpg : public CBasePlayerWeapon
 {
 public:
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	int		Save( CSave &save );
 	int		Restore( CRestore &restore );
 	static	TYPEDESCRIPTION m_SaveData[];
@@ -735,7 +735,7 @@ public:
 class CGauss : public CBasePlayerWeapon
 {
 public:
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	int		Save( CSave &save );
 	int		Restore( CRestore &restore );
 	static	TYPEDESCRIPTION m_SaveData[];
@@ -782,7 +782,7 @@ private:
 class CEgon : public CBasePlayerWeapon
 {
 public:
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	int		Save( CSave &save );
 	int		Restore( CRestore &restore );
 	static	TYPEDESCRIPTION m_SaveData[];
@@ -835,7 +835,7 @@ public:
 	unsigned short m_usEgonStop;
 
 private:
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	float				m_shootTime;
 #endif
 	EGON_FIREMODE		m_fireMode;
@@ -848,7 +848,7 @@ private:
 class CHgun : public CBasePlayerWeapon
 {
 public:
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	int		Save( CSave &save );
 	int		Restore( CRestore &restore );
 	static	TYPEDESCRIPTION m_SaveData[];
@@ -911,7 +911,7 @@ public:
 class CSatchel : public CBasePlayerWeapon
 {
 public:
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	int		Save( CSave &save );
 	int		Restore( CRestore &restore );
 	static	TYPEDESCRIPTION m_SaveData[];

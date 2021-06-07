@@ -10,7 +10,7 @@
 
 #include "input_mouse.h"
 
-#ifdef SUPPORT_GOLDSOURCE_INPUT
+#if SUPPORT_GOLDSOURCE_INPUT
 
 #include "hud.h"
 #include "cl_util.h"
@@ -23,11 +23,11 @@
 #include "keydefs.h"
 #include "view.h"
 
-#ifndef _WIN32
+#if !_WIN32
 #define USE_SDL2
 #endif
 
-#ifdef USE_SDL2
+#if USE_SDL2
 #define ARRAYSIZE(p)		( sizeof(p) /sizeof(p[0]) )
 #include <dlfcn.h>
 #include <SDL2/SDL_mouse.h>
@@ -114,7 +114,7 @@ static SDLFunction sdlFunctions[] = {
 };
 #endif
 
-#ifdef _WIN32
+#if _WIN32
 #include <process.h>
 #else
 typedef unsigned int DWORD;
@@ -149,14 +149,14 @@ extern cvar_t *cl_forwardspeed;
 extern cvar_t *cl_pitchspeed;
 extern cvar_t *cl_movespeedkey;
 
-#ifdef _WIN32
+#if _WIN32
 static double s_flRawInputUpdateTime = 0.0f;
 static bool m_bRawInput = false;
 static bool m_bMouseThread = false;
 bool isMouseRelative = false;
 #endif
 
-#ifdef _WIN32
+#if _WIN32
 #include "progdefs.h"
 extern globalvars_t *gpGlobals;
 #endif
@@ -184,7 +184,7 @@ static cvar_t *m_customaccel_max;
 //Mouse move is raised to this power before being scaled by scale factor
 static cvar_t *m_customaccel_exponent;
 
-#ifdef _WIN32
+#if _WIN32
 // if threaded mouse is enabled then the time to sleep between polls
 static cvar_t *m_mousethread_sleep;
 #endif
@@ -242,7 +242,7 @@ DWORD joy_oldbuttonstate, joy_oldpovstate;
 int joy_id;
 DWORD joy_numbuttons;
 
-#ifdef USE_SDL2
+#if USE_SDL2
 SDL_GameController *s_pJoystick = NULL;
 #elif defined(_WIN32)
 DWORD		joy_flags;
@@ -276,7 +276,7 @@ cvar_t  *joy_wwhack2;
 
 int joy_avail, joy_advancedinit, joy_haspov;
 
-#ifdef _WIN32
+#if _WIN32
 unsigned int s_hMouseThreadId = 0;
 HANDLE s_hMouseThread = 0;
 HANDLE s_hMouseQuitEvent = 0;
@@ -300,7 +300,7 @@ void Force_CenterView_f (void)
 	}
 }
 
-#ifdef _WIN32
+#if _WIN32
 
 LONG mouseThreadActive = 0;
 LONG mouseThreadCenterX = 0;
@@ -382,14 +382,14 @@ void IN_SetMouseMode(bool enable)
 
 	if(enable)
 	{
-#ifdef _WIN32
+#if _WIN32
 		if (mouseparmsvalid)
 			restore_spi = SystemParametersInfo (SPI_SETMOUSE, 0, newmouseparms, 0);
 
 		m_bRawInput = CVAR_GET_FLOAT( "m_rawinput" ) != 0;
 		if(m_bRawInput)
 		{
-#ifdef USE_SDL2
+#if USE_SDL2
 			safe_pfnSDL_SetRelativeMouseMode(SDL_TRUE);
 #endif
 			isMouseRelative = true;
@@ -402,10 +402,10 @@ void IN_SetMouseMode(bool enable)
 	}
 	else
 	{
-#ifdef _WIN32
+#if _WIN32
 		if(isMouseRelative)
 		{
-#ifdef USE_SDL2
+#if USE_SDL2
 			safe_pfnSDL_SetRelativeMouseMode(SDL_FALSE);
 #endif
 			isMouseRelative = false;
@@ -423,7 +423,7 @@ void IN_SetMouseMode(bool enable)
 
 void IN_SetVisibleMouse(bool visible)
 {
-#ifdef _WIN32
+#if _WIN32
 	bool lockEntered = MouseThread_ActiveLock_Enter();
 #endif
 
@@ -431,7 +431,7 @@ void IN_SetVisibleMouse(bool visible)
 
 	IN_SetMouseMode(!visible);
 
-#ifdef _WIN32
+#if _WIN32
 	UpdateMouseThreadActive();
 	if(lockEntered) MouseThread_ActiveLock_Exit();
 #endif
@@ -448,7 +448,7 @@ void GoldSourceInput::IN_ActivateMouse (void)
 {
 	if (mouseinitialized)
 	{
-#ifdef _WIN32
+#if _WIN32
 		bool lockEntered = MouseThread_ActiveLock_Enter();
 #endif
 
@@ -456,7 +456,7 @@ void GoldSourceInput::IN_ActivateMouse (void)
 
 		mouseactive = 1;
 
-#ifdef _WIN32
+#if _WIN32
 		UpdateMouseThreadActive();
 		if(lockEntered) MouseThread_ActiveLock_Exit();
 #endif
@@ -476,7 +476,7 @@ void GoldSourceInput::IN_DeactivateMouse (void)
 {
 	if (mouseinitialized)
 	{
-#ifdef _WIN32
+#if _WIN32
 		bool lockEntered = MouseThread_ActiveLock_Enter();
 #endif
 
@@ -484,7 +484,7 @@ void GoldSourceInput::IN_DeactivateMouse (void)
 
 		mouseactive = 0;
 
-#ifdef _WIN32
+#if _WIN32
 		UpdateMouseThreadActive();
 		if(lockEntered) MouseThread_ActiveLock_Exit();
 #endif
@@ -502,7 +502,7 @@ void GoldSourceInput::IN_StartupMouse (void)
 		return;
 
 	mouseinitialized = 1;
-#ifdef _WIN32
+#if _WIN32
 	mouseparmsvalid = SystemParametersInfo (SPI_GETMOUSE, 0, originalmouseparms, 0);
 
 	if (mouseparmsvalid)
@@ -537,7 +537,7 @@ void GoldSourceInput::IN_Shutdown (void)
 {
 	IN_DeactivateMouse ();
 
-#ifdef _WIN32
+#if _WIN32
 	if ( s_hMouseQuitEvent )
 	{
 		SetEvent( s_hMouseQuitEvent );
@@ -566,7 +566,7 @@ void GoldSourceInput::IN_Shutdown (void)
 	}
 #endif
 
-#ifdef USE_SDL2
+#if USE_SDL2
 	for (int j=0; j<ARRAYSIZE(sdlFunctions); ++j) {
 		*(sdlFunctions[j].ppfnFunc) = NULL;
 	}
@@ -597,7 +597,7 @@ FIXME: Call through to engine?
 void IN_ResetMouse( void )
 {
 	// no work to do in SDL
-#ifdef _WIN32
+#if _WIN32
 	// reset only if mouse is active and not in visible mode:
 	if(mouseactive && !iVisibleMouse && gEngfuncs.GetWindowCenterX && gEngfuncs.GetWindowCenterY)
 	{
@@ -712,7 +712,7 @@ void GoldSourceInput::IN_GetMouseDelta( int *pOutX, int *pOutY)
 	if(active)
 	{
 		int deltaX, deltaY;
-#ifdef _WIN32
+#if _WIN32
 		if ( !m_bRawInput )
 		{
 			if ( m_bMouseThread )
@@ -735,7 +735,7 @@ void GoldSourceInput::IN_GetMouseDelta( int *pOutX, int *pOutY)
 		else
 #endif
 		{
-#ifdef USE_SDL2
+#if USE_SDL2
 			safe_pfnSDL_GetRelativeMouseState( &deltaX, &deltaY );
 			current_pos.x = deltaX;
 			current_pos.y = deltaY;
@@ -746,7 +746,7 @@ void GoldSourceInput::IN_GetMouseDelta( int *pOutX, int *pOutY)
 #endif
 		}
 
-#ifdef _WIN32
+#if _WIN32
 		if ( !m_bRawInput )
 		{
 			if ( m_bMouseThread )
@@ -771,7 +771,7 @@ void GoldSourceInput::IN_GetMouseDelta( int *pOutX, int *pOutY)
 		my_accum = 0;
 
 		// reset mouse position if required, so there is room to move:
-#ifdef _WIN32
+#if _WIN32
 		// do not reset if mousethread would do it:
 		if ( m_bRawInput || !m_bMouseThread )
 #else
@@ -779,7 +779,7 @@ void GoldSourceInput::IN_GetMouseDelta( int *pOutX, int *pOutY)
 #endif
 			IN_ResetMouse();
 
-#ifdef _WIN32
+#if _WIN32
 		// update m_bRawInput occasionally:
 		if ( gpGlobals && gpGlobals->time - s_flRawInputUpdateTime > 1.0f )
 		{
@@ -791,14 +791,14 @@ void GoldSourceInput::IN_GetMouseDelta( int *pOutX, int *pOutY)
 
 			if(m_bRawInput && !isMouseRelative)
 			{
-#ifdef USE_SDL2
+#if USE_SDL2
 				safe_pfnSDL_SetRelativeMouseMode(SDL_TRUE);
 #endif
 				isMouseRelative = true;
 			}
 			else if(!m_bRawInput && isMouseRelative)
 			{
-#ifdef USE_SDL2
+#if USE_SDL2
 				safe_pfnSDL_SetRelativeMouseMode(SDL_FALSE);
 #endif
 				isMouseRelative = false;
@@ -928,7 +928,7 @@ void GoldSourceInput::IN_Accumulate (void)
 	{
 		if (mouseactive)
 		{
-#ifdef _WIN32
+#if _WIN32
 			if ( !m_bRawInput )
 			{
 				if ( !m_bMouseThread )
@@ -942,7 +942,7 @@ void GoldSourceInput::IN_Accumulate (void)
 			else
 #endif
 			{
-#ifdef USE_SDL2
+#if USE_SDL2
 				int deltaX, deltaY;
 				safe_pfnSDL_GetRelativeMouseState( &deltaX, &deltaY );
 				mx_accum += deltaX;
@@ -956,7 +956,7 @@ void GoldSourceInput::IN_Accumulate (void)
 			}
 
 			// force the mouse to the center, so there's room to move
-#ifdef _WIN32
+#if _WIN32
 			// do not reset if mousethread would do it:
 			if ( m_bRawInput || !m_bMouseThread )
 #else
@@ -997,7 +997,7 @@ void IN_StartupJoystick (void)
 
 	// assume no joystick
 	joy_avail = 0;
-#ifdef USE_SDL2
+#if USE_SDL2
 	int nJoysticks = safe_pfnSDL_NumJoysticks();
 	if ( nJoysticks > 0 )
 	{
@@ -1084,7 +1084,7 @@ void IN_StartupJoystick (void)
 #endif
 }
 
-#ifdef USE_SDL2
+#if USE_SDL2
 int RawValuePointer (int axis)
 {
 	switch (axis)
@@ -1216,7 +1216,7 @@ void GoldSourceInput::IN_Commands (void)
 
 	// loop through the joystick buttons
 	// key a joystick event or auxillary event for higher number buttons for each state change
-#ifdef USE_SDL2
+#if USE_SDL2
 	buttonstate = 0;
 	for ( i = 0; i < SDL_CONTROLLER_BUTTON_MAX; i++ )
 	{
@@ -1294,7 +1294,7 @@ IN_ReadJoystick
 */
 int IN_ReadJoystick (void)
 {
-#ifdef USE_SDL2
+#if USE_SDL2
 	safe_pfnSDL_JoystickUpdate();
 	return 1;
 #elif defined(_WIN32)
@@ -1374,7 +1374,7 @@ void IN_JoyMove ( float frametime, usercmd_t *cmd )
 	for (i = 0; i < JOY_MAX_AXES; i++)
 	{
 		// get the floating point zero-centered, potentially-inverted data for the current axis
-#ifdef USE_SDL2
+#if USE_SDL2
 		fAxisValue = (float)pdwRawValue[i];
 #elif defined(_WIN32)
 		fAxisValue = (float) *pdwRawValue[i];
@@ -1570,7 +1570,7 @@ void GoldSourceInput::IN_Init (void)
 	m_customaccel_max		= gEngfuncs.pfnRegisterVariable ( "m_customaccel_max", "0", FCVAR_ARCHIVE );
 	m_customaccel_exponent	= gEngfuncs.pfnRegisterVariable ( "m_customaccel_exponent", "1", FCVAR_ARCHIVE );
 
-#ifdef _WIN32
+#if _WIN32
 	m_bRawInput			 = CVAR_GET_FLOAT( "m_rawinput" ) != 0;
 	m_bMouseThread		  = gEngfuncs.CheckParm ("-mousethread", NULL ) != NULL;
 	m_mousethread_sleep	 = gEngfuncs.pfnRegisterVariable ( "m_mousethread_sleep", "1", FCVAR_ARCHIVE ); // default to less than 1000 Hz
@@ -1600,8 +1600,8 @@ void GoldSourceInput::IN_Init (void)
 	}
 #endif
 
-#ifdef USE_SDL2
-#ifdef __APPLE__
+#if USE_SDL2
+#if __APPLE__
 #define SDL2_FULL_LIBNAME "libsdl2-2.0.0.dylib"
 #else
 #define SDL2_FULL_LIBNAME "libSDL2-2.0.so.0"
