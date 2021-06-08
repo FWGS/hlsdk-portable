@@ -152,7 +152,7 @@ UTIL_PrintActivity
 */
 void UTIL_PrintActivity(struct entvars_s* pev, const ALERT_TYPE alert_type)
 {
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	ALERT(alert_type, "ALERT: entity %s with classname %s is using animation %s\n",
 		STRING(pev->targetname), 
 		STRING(pev->classname), 

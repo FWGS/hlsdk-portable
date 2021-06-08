@@ -118,7 +118,7 @@ void CPipeWrench::PrimaryAttack()
 {
 	if (!m_iSwingMode && !Swing(1))
 	{
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 		SetThink(&CPipeWrench::SwingAgain);
 		pev->nextthink = gpGlobals->time + 0.1;
 #endif
@@ -160,7 +160,7 @@ int CPipeWrench::Swing(int fFirst)
 
 	UTIL_TraceLine( vecSrc, vecEnd, dont_ignore_monsters, ENT( m_pPlayer->pev ), &tr );
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	if ( tr.flFraction >= 1.0 )
 	{
 		UTIL_TraceHull( vecSrc, vecEnd, dont_ignore_monsters, head_hull, ENT( m_pPlayer->pev ), &tr );
@@ -211,7 +211,7 @@ int CPipeWrench::Swing(int fFirst)
 		// player "shoot" animation
 		m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 
 		// hit
 		fDidHit = TRUE;
@@ -225,7 +225,7 @@ int CPipeWrench::Swing(int fFirst)
 		{
 			ClearMultiDamage();
 			float flDamage;
-#ifdef CLIENT_WEAPONS
+#if CLIENT_WEAPONS
 			if( ( m_flNextPrimaryAttack + 1 == UTIL_WeaponTimeBase() ) || g_pGameRules->IsMultiplayer() )
 #else
 			if( ( m_flNextPrimaryAttack + 1 < UTIL_WeaponTimeBase() ) || g_pGameRules->IsMultiplayer() )
@@ -321,7 +321,7 @@ void CPipeWrench::BigSwing(void)
 
 	UTIL_TraceLine( vecSrc, vecEnd, dont_ignore_monsters, ENT( m_pPlayer->pev ), &tr );
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	if ( tr.flFraction >= 1.0 )
 	{
 		UTIL_TraceHull( vecSrc, vecEnd, dont_ignore_monsters, head_hull, ENT( m_pPlayer->pev ), &tr );
@@ -358,7 +358,7 @@ void CPipeWrench::BigSwing(void)
 		// player "shoot" animation
 		m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 
 		// hit
 		CBaseEntity *pEntity = CBaseEntity::Instance(tr.pHit);

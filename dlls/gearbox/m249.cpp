@@ -155,7 +155,7 @@ void CM249::PrimaryAttack()
 	Vector vecAiming = m_pPlayer->GetAutoaimVector(AUTOAIM_5DEGREES);
 	Vector vecDir;
 
-#ifdef CLIENT_DLL
+#if CLIENT_DLL
 	if (!bIsMultiplayer())
 #else
 	if (!g_pGameRules->IsMultiplayer())
@@ -171,7 +171,7 @@ void CM249::PrimaryAttack()
 	}
 
 	int flags;
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 	flags = FEV_NOTHOST;
 #else
 	flags = 0;
@@ -180,7 +180,7 @@ void CM249::PrimaryAttack()
 	PLAYBACK_EVENT_FULL(flags, m_pPlayer->edict(), m_usM249, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, vecDir.x, vecDir.y, 0, pev->body, 0, 0);
 
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	// Add inverse impulse, but only if we are on the ground.
 	// This is mainly to avoid too-high air velocity.
 	if (m_pPlayer->pev->flags & FL_ONGROUND)

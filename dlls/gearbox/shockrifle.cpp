@@ -12,7 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
-#if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
+#if !OEM_BUILD && !HLDEMO_BUILD
 
 #include "extdll.h"
 #include "util.h"
@@ -22,7 +22,7 @@
 #include "nodes.h"
 #include "player.h"
 #include "gamerules.h"
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 #include "shock.h"
 #endif
 
@@ -74,7 +74,7 @@ int CShockrifle::AddToPlayer(CBasePlayer *pPlayer)
 	if (CBasePlayerWeapon::AddToPlayer(pPlayer))
 	{
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 		if (g_pGameRules->IsMultiplayer())
 		{
 			// in multiplayer, all hivehands come full. 
@@ -110,7 +110,7 @@ int CShockrifle::GetItemInfo(ItemInfo *p)
 
 BOOL CShockrifle::Deploy()
 {
-#ifdef CLIENT_DLL
+#if CLIENT_DLL
 	if( bIsMultiplayer() )
 #else
 	if( g_pGameRules->IsMultiplayer() )
@@ -141,7 +141,7 @@ void CShockrifle::PrimaryAttack()
 
 	if (m_pPlayer->pev->waterlevel == 3)
 	{
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 		int attenuation = 150 * m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType];
 		int dmg = 100 * m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType];
 		EMIT_SOUND(ENT(pev), CHAN_WEAPON, "weapons/shock_discharge.wav", VOL_NORM, ATTN_NORM);
@@ -153,7 +153,7 @@ void CShockrifle::PrimaryAttack()
 
 	CreateChargeEffect();
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	Vector anglesAim = m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle;
 	anglesAim.x = -anglesAim.x;
 	UTIL_MakeVectors(m_pPlayer->pev->v_angle);
@@ -172,7 +172,7 @@ void CShockrifle::PrimaryAttack()
 	m_pPlayer->m_iWeaponFlash = DIM_GUN_FLASH;
 
 	int flags;
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 	flags = FEV_NOTHOST;
 #else
 	flags = 0;
@@ -182,7 +182,7 @@ void CShockrifle::PrimaryAttack()
 
 	// player "shoot" animation
 	m_pPlayer->SetAnimation(PLAYER_ATTACK1);
-#ifdef CLIENT_DLL
+#if CLIENT_DLL
 	if( bIsMultiplayer() )
 #else
 	if( g_pGameRules->IsMultiplayer() )
@@ -211,7 +211,7 @@ void CShockrifle::Reload(void)
 		EMIT_SOUND(ENT(m_pPlayer->pev), CHAN_ITEM, "weapons/shock_recharge.wav", 1, ATTN_NORM);
 
 		m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]++;
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 		if( g_pGameRules->IsMultiplayer() )
 			m_flRechargeTime += 0.25;
 		else
@@ -239,7 +239,7 @@ void CShockrifle::WeaponIdle(void)
 
 void CShockrifle::CreateChargeEffect( void )
 {
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	if( g_pGameRules->IsMultiplayer())
 		return;
 	int iBeam = 0;
@@ -263,7 +263,7 @@ void CShockrifle::CreateChargeEffect( void )
 
 void CShockrifle::ClearBeams( void )
 {
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	if( g_pGameRules->IsMultiplayer())
 		return;
 

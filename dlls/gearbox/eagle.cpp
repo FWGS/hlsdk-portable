@@ -29,7 +29,7 @@ enum deagle_e {
 };
 LINK_ENTITY_TO_CLASS( weapon_eagle, CEagle )
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 LINK_ENTITY_TO_CLASS( eagle_laser, CLaserSpot )
 #endif
 
@@ -105,7 +105,7 @@ void CEagle::SecondaryAttack()
 	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5;
 	if (wasActive)
 	{
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 		if (m_pEagleLaser)
 		{
 			EMIT_SOUND_DYN(ENT(m_pPlayer->pev), CHAN_ITEM, "weapons/desert_eagle_sight2.wav", 1.0, ATTN_NORM, 0, PITCH_NORM);
@@ -147,7 +147,7 @@ void CEagle::PrimaryAttack()
 
 	int flags;
 
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 	flags = FEV_NOTHOST;
 #else
 	flags = 0;
@@ -166,7 +166,7 @@ void CEagle::PrimaryAttack()
 	{
 		vecDir = m_pPlayer->FireBulletsPlayer( 1, vecSrc, vecAiming, Vector( flSpread, flSpread, flSpread ), 8192, BULLET_PLAYER_EAGLE, 0, 0, m_pPlayer->pev, m_pPlayer->random_seed );
 		m_flNextPrimaryAttack = UTIL_WeaponTimeBase()+ 0.5;
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 		m_pEagleLaser->Suspend( 0.6 );
 #endif
 	}
@@ -197,7 +197,7 @@ void CEagle::Reload( void )
 
 	if ( m_pEagleLaser && m_fEagleLaserActive )
 	{
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 		m_pEagleLaser->Suspend( 1.6 );
 #endif
 		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1.5;
@@ -218,7 +218,7 @@ void CEagle::Reload( void )
 
 void CEagle::UpdateSpot( void )
 {
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	if (m_fEagleLaserActive)
 	{
 		if (m_pPlayer->pev->viewmodel == 0)

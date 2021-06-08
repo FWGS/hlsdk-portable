@@ -1718,7 +1718,7 @@ void RegisterEncoders( void )
 
 int GetWeaponData( struct edict_s *player, struct weapon_data_s *info )
 {
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 	int i;
 	weapon_data_t *item;
 	entvars_t *pev = &player->v;
@@ -1865,7 +1865,7 @@ void UpdateClientData ( const edict_t *ent, int sendweapons, struct clientdata_s
 
 	
 
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 	if ( sendweapons )
 	{
 		if ( pl )

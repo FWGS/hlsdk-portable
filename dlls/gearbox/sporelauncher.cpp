@@ -21,7 +21,7 @@
 #include "nodes.h"
 #include "player.h"
 #include "gamerules.h"
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 #include "sporegrenade.h"
 #endif
 
@@ -125,7 +125,7 @@ void CSporelauncher::PrimaryAttack()
 	m_iClip--;
 
 	int flags;
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 	flags = FEV_NOTHOST;
 #else
 	flags = 0;
@@ -137,7 +137,7 @@ void CSporelauncher::PrimaryAttack()
 	UTIL_MakeVectors( m_pPlayer->pev->v_angle );
 	Vector vecSrc = m_pPlayer->GetGunPosition( ) + gpGlobals->v_forward * 16 + gpGlobals->v_right * 8 + gpGlobals->v_up * -8;
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 		UTIL_MakeVectors( m_pPlayer->pev->v_angle );
 		CSporeGrenade::ShootContact( m_pPlayer->pev, vecSrc, gpGlobals->v_forward * 1500 );
 #endif
@@ -188,7 +188,7 @@ void CSporelauncher::SecondaryAttack(void)
 
 
 	int flags;
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 	flags = FEV_NOTHOST;
 #else
 	flags = 0;
@@ -201,7 +201,7 @@ void CSporelauncher::SecondaryAttack(void)
 	UTIL_MakeVectors( m_pPlayer->pev->v_angle );
 	Vector vecSrc = m_pPlayer->GetGunPosition( ) + gpGlobals->v_forward * 16 + gpGlobals->v_right * 8 + gpGlobals->v_up * -8;
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 		UTIL_MakeVectors( m_pPlayer->pev->v_angle );
 		CSporeGrenade::ShootTimed(m_pPlayer->pev, vecSrc, gpGlobals->v_forward * 1000, false);
 #endif

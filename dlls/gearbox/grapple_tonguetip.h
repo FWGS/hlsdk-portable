@@ -42,7 +42,7 @@ public:
 	bool IsStuck() const { return m_bIsStuck; }
 
 	bool HasMissed() const { return m_bMissed; }
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	EHANDLE& GetGrappleTarget() { return m_hGrappleTarget; }
 	void SetGrappleTarget( CBaseEntity* pTarget )
 	{
@@ -53,7 +53,7 @@ private:
 	int m_GrappleType;
 	bool m_bIsStuck;
 	bool m_bMissed;
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	EHANDLE m_hGrappleTarget;
 #endif
 	Vector m_vecOriginOffset;

@@ -74,7 +74,7 @@ edict_t *EntSelectSpawnPoint(CBaseEntity *pPlayer, bool bCheckDM)
 #endif
 extern edict_t *RuneSelectSpawnPoint(void);
 
-#ifndef NO_VOICEGAMEMGR
+#if !NO_VOICEGAMEMGR
 class CCTFGameMgrHelper : public IVoiceGameMgrHelper
 {
 public:
@@ -98,7 +98,7 @@ const char* GetTeamName(int team)
 
 CCTFMultiplay::CCTFMultiplay()
 {
-#ifndef NO_VOICEGAMEMGR
+#if !NO_VOICEGAMEMGR
 	// CHalfLifeMultiplay already initialized it - just override its helper callback.
 	m_VoiceGameMgr.SetHelper(&g_GameMgrHelper);
 #endif
@@ -150,7 +150,7 @@ extern cvar_t timeleft, fragsleft;
 
 void CCTFMultiplay::Think(void)
 {
-#ifndef NO_VOICEGAMEMGR
+#if !NO_VOICEGAMEMGR
 	m_VoiceGameMgr.Update(gpGlobals->frametime);
 #endif
 	///// Check game rules /////
@@ -312,7 +312,7 @@ void DropRune(CBasePlayer *pPlayer);
 //=========================================================
 BOOL CCTFMultiplay::ClientCommand(CBasePlayer *pPlayer, const char *pcmd)
 {
-#ifndef NO_VOICEGAMEMGR
+#if !NO_VOICEGAMEMGR
 	if (m_VoiceGameMgr.ClientCommand(pPlayer, pcmd))
 		return TRUE;
 #endif

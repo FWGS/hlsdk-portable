@@ -23,7 +23,7 @@
 #include "effects.h"
 #include "customentity.h"
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 #include "grapple_tonguetip.h"
 #endif
 
@@ -170,7 +170,7 @@ void CBarnacleGrapple::PrimaryAttack( void )
 	}
 
 	UTIL_MakeVectors( m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle );
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	if( m_pTip )
 	{
 		if( m_pTip->IsStuck() )
@@ -298,7 +298,7 @@ void CBarnacleGrapple::PrimaryAttack( void )
 		m_pPlayer->m_iWeaponVolume = 450;
 
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.1;
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 		if( g_pGameRules->IsMultiplayer() )
 		{
 			m_flShootTime = gpGlobals->time;
@@ -318,7 +318,7 @@ void CBarnacleGrapple::PrimaryAttack( void )
 		return;
 	}
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	if( m_pTip->GetGrappleType() != GRAPPLE_FIXED && m_pTip->IsStuck() )
 	{
 		UTIL_MakeVectors( m_pPlayer->pev->v_angle );
@@ -363,7 +363,7 @@ void CBarnacleGrapple::PrimaryAttack( void )
 				if( m_pTip )
 				{
 					bool bValidTarget = FALSE;
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 					if( pHit->IsPlayer() )
 					{
 						m_pTip->SetGrappleTarget( pHit );
@@ -378,7 +378,7 @@ void CBarnacleGrapple::PrimaryAttack( void )
 					{
 						if( m_flDamageTime + 0.5 < gpGlobals->time )
 						{
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 							ClearMultiDamage();
 
 							float flDamage = gSkillData.plrDmgGrapple;
@@ -428,7 +428,7 @@ void CBarnacleGrapple::PrimaryAttack( void )
 
 void CBarnacleGrapple::Fire( Vector vecOrigin, Vector vecDir )
 {
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	Vector vecSrc = vecOrigin;
 
 	Vector vecEnd = vecSrc + vecDir * 2048.0;
@@ -481,7 +481,7 @@ void CBarnacleGrapple::EndAttack( void )
 
 void CBarnacleGrapple::CreateEffect( void )
 {
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	DestroyEffect();
 
 	m_pTip = GetClassPtr((CBarnacleGrappleTip *)NULL);
@@ -520,7 +520,7 @@ void CBarnacleGrapple::CreateEffect( void )
 
 void CBarnacleGrapple::UpdateEffect( void )
 {
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	if( !m_pBeam || !m_pTip )
 		CreateEffect();
 #endif
@@ -533,7 +533,7 @@ void CBarnacleGrapple::DestroyEffect( void )
 		UTIL_Remove( m_pBeam );
 		m_pBeam = NULL;
 	}
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	if( m_pTip )
 	{
 		m_pTip->Killed( NULL, GIB_NEVER );
