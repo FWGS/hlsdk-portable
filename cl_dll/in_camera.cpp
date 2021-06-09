@@ -148,7 +148,7 @@ void DLLEXPORT CAM_Think( void )
 	float dist;
 	vec3_t camAngles;
 	float flSensitivity;
-#ifdef LATER
+#if LATER
 	int i;
 #endif
 	vec3_t viewangles;
@@ -168,7 +168,7 @@ void DLLEXPORT CAM_Think( void )
 
 	if( !cam_thirdperson )
 		return;
-#ifdef LATER
+#if LATER
 	if( cam_contain->value )
 	{
 		gEngfuncs.GetClientOrigin( origin );
@@ -315,7 +315,7 @@ void DLLEXPORT CAM_Think( void )
 		cam_old_mouse_y = cam_mouse.y * gHUD.GetSensitivity();
 		SetCursorPos( gEngfuncs.GetWindowCenterX(), gEngfuncs.GetWindowCenterY() );
 	}
-#ifdef LATER
+#if LATER
 	if( cam_contain->value )
 	{
 		// check new ideal
@@ -368,7 +368,7 @@ void DLLEXPORT CAM_Think( void )
 		else
 			camAngles[2] += ( cam_idealdist->value - camAngles[2] ) * 0.25f;
 	}
-#ifdef LATER
+#if LATER
 	if( cam_contain->value )
 	{
 		// Test new position
