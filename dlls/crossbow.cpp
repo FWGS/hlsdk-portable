@@ -12,7 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
-#if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
+#if !OEM_BUILD && !HLDEMO_BUILD
 
 #include "extdll.h"
 #include "util.h"
@@ -23,7 +23,7 @@
 #include "player.h"
 #include "gamerules.h"
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 #define BOLT_AIR_VELOCITY	2000
 #define BOLT_WATER_VELOCITY	1000
 
@@ -362,7 +362,7 @@ void CCrossbow::PrimaryAttack( void )
 	m_iClip--;
 
 	int flags;
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 	flags = FEV_NOTHOST;
 #else
 	flags = 0;

@@ -208,7 +208,7 @@ void ClientPutInServer( edict_t *pEntity )
 	pPlayer->pev->iuser2 = 0;
 }
 
-#ifndef NO_VOICEGAMEMGR
+#if !NO_VOICEGAMEMGR
 #include "voice_gamemgr.h"
 extern CVoiceGameMgr g_VoiceGameMgr;
 #endif
@@ -404,7 +404,7 @@ void Host_Say( edict_t *pEntity, int teamonly )
 
 		if( !( client->IsNetClient() ) )	// Not a client ? (should never be true)
 			continue;
-#ifndef NO_VOICEGAMEMGR
+#if !NO_VOICEGAMEMGR
 		// can the receiver hear the sender? or has he muted him?
 		if( g_VoiceGameMgr.PlayerHasBlockedPlayer( client, player ) )
 			continue;
@@ -1626,7 +1626,7 @@ void RegisterEncoders( void )
 
 int GetWeaponData( struct edict_s *player, struct weapon_data_s *info )
 {
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 	int i;
 	weapon_data_t *item;
 	entvars_t *pev = &player->v;
@@ -1755,7 +1755,7 @@ void UpdateClientData( const struct edict_s *ent, int sendweapons, struct client
 		cd->iuser1		= pev->iuser1;
 		cd->iuser2		= pev->iuser2;
 	}
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 	if( sendweapons )
 	{
 		if( pl )
