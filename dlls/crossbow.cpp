@@ -463,13 +463,13 @@ void CCrossbow::FireBolt()
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.75f;
 }
 
-#ifdef CLIENT_DLL
+#if CLIENT_DLL
 extern float offSetFactor;
 #endif
 
 void CCrossbow::SecondaryAttack()
 {
-#ifdef CLIENT_DLL
+#if CLIENT_DLL
 	if( offSetFactor != 1 )
 	{
 		offSetFactor = 1;
