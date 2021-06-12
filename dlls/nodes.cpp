@@ -42,7 +42,7 @@ CGraph WorldGraph;
 LINK_ENTITY_TO_CLASS( info_node, CNodeEnt )
 LINK_ENTITY_TO_CLASS( info_node_air, CNodeEnt )
 
-#ifdef __DOS__
+#if __DOS__
 #include <direct.h>
 #define CreateDirectoryA(p, n) mkdir(p)
 #elif !defined _WIN32
@@ -2060,7 +2060,7 @@ void CTestHull::BuildNodeGraph( void )
 		fprintf( file, "\nAll Connections are Paired!\n" );
 	}
 
-#ifdef _MSC_VER
+#if _MSC_VER
 #define SIZET_FMT "%Iu"
 #else
 #define SIZET_FMT "%zu"
