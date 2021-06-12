@@ -100,7 +100,7 @@ int CHgun::GetItemInfo( ItemInfo *p )
 
 BOOL CHgun::Deploy()
 {
-#ifdef CLIENT_DLL
+#if CLIENT_DLL
 	if( !bIsMultiplayer() )
 #else
 	if( !g_pGameRules->IsMultiplayer() )
@@ -140,7 +140,7 @@ void CHgun::PrimaryAttack()
 	Vector vecSrc = m_pPlayer->GetGunPosition();
 	Vector vecAiming = m_pPlayer->GetAutoaimVector( AUTOAIM_5DEGREES );
 	Vector vecDir;
-#ifdef CLIENT_DLL
+#if CLIENT_DLL
 	if( bIsMultiplayer() )
 #else
 	if( g_pGameRules->IsMultiplayer() )

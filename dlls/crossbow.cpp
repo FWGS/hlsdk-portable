@@ -311,7 +311,7 @@ int CCrossbow::GetItemInfo( ItemInfo *p )
 
 BOOL CCrossbow::Deploy()
 {
-#ifdef CLIENT_DLL
+#if CLIENT_DLL
 	if( !bIsMultiplayer() )
 #else
 	if( !g_pGameRules->IsMultiplayer() )
