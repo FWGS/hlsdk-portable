@@ -12,7 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
-#if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
+#if !OEM_BUILD && !HLDEMO_BUILD
 
 #include "extdll.h"
 #include "util.h"
@@ -74,7 +74,7 @@ int CHgun::AddToPlayer( CBasePlayer *pPlayer )
 {
 	if( CBasePlayerWeapon::AddToPlayer( pPlayer ) )
 	{
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 		if( g_pGameRules->IsMultiplayer() )
 		{
 			// in multiplayer, all hivehands come full. 
@@ -131,7 +131,7 @@ void CHgun::PrimaryAttack()
 	{
 		return;
 	}
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	UTIL_MakeVectors( m_pPlayer->pev->v_angle );
 
 	CBaseEntity *pHornet = CBaseEntity::Create( "hornet", m_pPlayer->GetGunPosition() + gpGlobals->v_forward * 16.0f + gpGlobals->v_right * 8.0f + gpGlobals->v_up * -12.0f, m_pPlayer->pev->v_angle, m_pPlayer->edict() );
@@ -145,7 +145,7 @@ void CHgun::PrimaryAttack()
 	m_pPlayer->m_iWeaponFlash = DIM_GUN_FLASH;
 
 	int flags;
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 	flags = FEV_NOTHOST;
 #else
 	flags = 0;
@@ -175,7 +175,7 @@ void CHgun::SecondaryAttack( void )
 	}
 
 	//Wouldn't be a bad idea to completely predict these, since they fly so fast...
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	CBaseEntity *pHornet;
 	Vector vecSrc;
 
@@ -226,7 +226,7 @@ void CHgun::SecondaryAttack( void )
 	m_flRechargeTime = gpGlobals->time + 0.5f;
 #endif
 	int flags;
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 	flags = FEV_NOTHOST;
 #else
 	flags = 0;

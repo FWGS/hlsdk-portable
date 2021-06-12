@@ -15,7 +15,7 @@
 // pm_math.c -- math primitives
 #include <math.h>
 #include "mathlib.h"
-#ifdef HAVE_TGMATH_H
+#if HAVE_TGMATH_H
 #include <tgmath.h>
 #endif
 #include "const.h"
@@ -27,7 +27,7 @@
 // fall over
 #define	ROLL	2 
 
-#ifdef _MSC_VER
+#if _MSC_VER
 #pragma warning(disable : 4244)
 #endif
 
