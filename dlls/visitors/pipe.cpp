@@ -38,7 +38,7 @@ enum pipe_e {
 	PIPE_ATTACK2MISS,
 	PIPE_ATTACK2HIT,
 	PIPE_ATTACK3MISS,
-#ifndef CROWBAR_IDLE_ANIM
+#if !CROWBAR_IDLE_ANIM
 	PIPE_ATTACK3HIT
 #else
 	PIPE_ATTACK3HIT,
@@ -117,7 +117,7 @@ void CPipe::PrimaryAttack()
 {
 	if (!Swing(1))
 	{
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 		SetThink(&CPipe::SwingAgain);
 		pev->nextthink = gpGlobals->time + 0.5f;
 #endif
@@ -146,7 +146,7 @@ int CPipe::Swing(int fFirst)
 
 	UTIL_TraceLine(vecSrc, vecEnd, dont_ignore_monsters, ENT(m_pPlayer->pev), &tr);
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	if (tr.flFraction >= 1.0f)
 	{
 		UTIL_TraceHull(vecSrc, vecEnd, dont_ignore_monsters, head_hull, ENT(m_pPlayer->pev), &tr);
@@ -174,7 +174,7 @@ int CPipe::Swing(int fFirst)
 			// miss
 			m_flNextPrimaryAttack = GetNextAttackDelay(0.5);
 
-#ifdef CROWBAR_IDLE_ANIM
+#if CROWBAR_IDLE_ANIM
 			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
 #endif
 			// player "shoot" animation
@@ -196,7 +196,7 @@ int CPipe::Swing(int fFirst)
 		// player "shoot" animation
 		m_pPlayer->SetAnimation(PLAYER_ATTACK1);
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 
 		// hit
 		fDidHit = TRUE;
@@ -207,7 +207,7 @@ int CPipe::Swing(int fFirst)
 			// If building with the clientside weapon prediction system,
 			// UTIL_WeaponTimeBase() is always 0 and m_flNextPrimaryAttack is >= -1.0f, thus making
 			// m_flNextPrimaryAttack + 1 < UTIL_WeaponTimeBase() always evaluate to false.
-#ifdef CLIENT_WEAPONS
+#if CLIENT_WEAPONS
 			if( ( m_flNextPrimaryAttack + 1 == UTIL_WeaponTimeBase() ) || g_pGameRules->IsMultiplayer() )
 #else
 			if( ( m_flNextPrimaryAttack + 1 < UTIL_WeaponTimeBase() ) || g_pGameRules->IsMultiplayer() )
@@ -288,13 +288,13 @@ int CPipe::Swing(int fFirst)
 #endif
 		m_flNextPrimaryAttack = GetNextAttackDelay(0.5f); // 0.25f
 	}
-#ifdef CROWBAR_IDLE_ANIM
+#if CROWBAR_IDLE_ANIM
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
 #endif
 	return fDidHit;
 }
 
-#ifdef CROWBAR_IDLE_ANIM
+#if CROWBAR_IDLE_ANIM
 void CPipe::WeaponIdle()
 {
 	if( m_flTimeWeaponIdle < UTIL_WeaponTimeBase() )

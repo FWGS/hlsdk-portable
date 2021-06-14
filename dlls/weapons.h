@@ -535,7 +535,7 @@ private:
 class CPython : public CBasePlayerWeapon
 {
 public:
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	int Save( CSave &save );
 	int Restore( CRestore &restore );
 	static TYPEDESCRIPTION m_SaveData[];
@@ -1033,7 +1033,7 @@ public:
 	int Swing( int fFirst );
 	BOOL Deploy( void );
 	void Holster( int skiplocal = 0 );
-#ifdef CROWBAR_IDLE_ANIM
+#if CROWBAR_IDLE_ANIM
 	void WeaponIdle();
 #endif
 	int m_iSwing;
@@ -1041,7 +1041,7 @@ public:
 
 	virtual BOOL UseDecrement( void )
 	{
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 		return TRUE;
 #else
 		return FALSE;
@@ -1070,7 +1070,7 @@ public:
 
 	virtual BOOL UseDecrement(void)
 	{
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 		return TRUE;
 #else
 		return FALSE;
