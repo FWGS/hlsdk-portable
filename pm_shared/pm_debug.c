@@ -14,7 +14,7 @@
 ****/
 #include <math.h>
 #include "mathlib.h"
-#ifdef HAVE_TGMATH_H
+#if HAVE_TGMATH_H
 #include <tgmath.h>
 #endif
 
@@ -27,7 +27,7 @@
 
 #include <string.h>
 
-#ifdef _MSC_VER
+#if _MSC_VER
 #pragma warning(disable : 4244)
 #pragma warning(disable : 4305)
 #endif
@@ -268,7 +268,7 @@ void PM_DrawBBox(vec3_t mins, vec3_t maxs, vec3_t origin, int pcolor, float life
 }
 
 
-#ifndef DEDICATED
+#if !DEDICATED
 
 /*
 ================
