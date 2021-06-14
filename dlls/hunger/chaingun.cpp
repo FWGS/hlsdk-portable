@@ -142,7 +142,7 @@ void CWeaponEinarChaingun::PrimaryAttack()
 	{
 		if( m_flNextPrimaryAttack <= UTIL_WeaponTimeBase() )
 		{	
-#ifdef CLIENT_DLL
+#if CLIENT_DLL
 			if( !bIsMultiplayer() )
 #else
 			if( !g_pGameRules->IsMultiplayer() )

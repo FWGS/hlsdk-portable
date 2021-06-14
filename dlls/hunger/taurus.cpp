@@ -124,7 +124,7 @@ void CWeaponEinarTaurus::TaurusFire( float flSpread, float flCycleTime, BOOL fUs
 	m_pPlayer->pev->effects = (int)( m_pPlayer->pev->effects ) | EF_MUZZLEFLASH;
 
 	int flags;
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 	flags = FEV_NOTHOST;
 #else
 	flags = 0;

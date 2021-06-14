@@ -54,7 +54,7 @@ void CGlock::Spawn()
 	Precache();
 	m_iId = WEAPON_GLOCK;
 
-#ifdef CLIENT_DLL
+#if CLIENT_DLL
         if( bIsMultiplayer() )
 #else
         if( g_pGameRules->IsMultiplayer() )
@@ -137,7 +137,7 @@ void CGlock::Holster( int skiplocal /*= 0*/ )
 
 void CGlock::SecondaryAttack()
 {
-#ifdef CLIENT_DLL
+#if CLIENT_DLL
         if( bIsMultiplayer() )
 #else
         if( g_pGameRules->IsMultiplayer() )

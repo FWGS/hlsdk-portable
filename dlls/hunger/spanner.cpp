@@ -137,7 +137,7 @@ int CWeaponEinarSpanner::Swing( int fFirst )
 
 	UTIL_TraceLine( vecSrc, vecEnd, dont_ignore_monsters, ENT( m_pPlayer->pev ), &tr );
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	if( tr.flFraction >= 1.0f )
 	{
 		UTIL_TraceHull( vecSrc, vecEnd, dont_ignore_monsters, head_hull, ENT( m_pPlayer->pev ), &tr );
@@ -171,7 +171,7 @@ int CWeaponEinarSpanner::Swing( int fFirst )
 			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.4f;
 
 			EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_WEAPON, "weapons/cbar_miss1.wav", 1, ATTN_NORM, 0, 94 + RANDOM_LONG( 0, 0xF ) );
-#ifdef CROWBAR_IDLE_ANIM
+#if CROWBAR_IDLE_ANIM
 			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
 #endif
 			// player "shoot" animation
@@ -192,7 +192,7 @@ int CWeaponEinarSpanner::Swing( int fFirst )
 
 		// player "shoot" animation
 		m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 		// hit
 		fDidHit = TRUE;
 		CBaseEntity *pEntity = CBaseEntity::Instance( tr.pHit );
@@ -306,13 +306,13 @@ int CWeaponEinarSpanner::Swing( int fFirst )
 		SetThink( &CWeaponEinarSpanner::Smack );
 		pev->nextthink = UTIL_WeaponTimeBase() + 0.2f;
 	}
-#ifdef CROWBAR_IDLE_ANIM
+#if CROWBAR_IDLE_ANIM
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
 #endif
 	return fDidHit;
 }
 
-#ifdef CROWBAR_IDLE_ANIM
+#if CROWBAR_IDLE_ANIM
 void CWeaponEinarSpanner::WeaponIdle()
 {
 	if( m_flTimeWeaponIdle < UTIL_WeaponTimeBase() )

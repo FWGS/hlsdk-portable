@@ -142,7 +142,7 @@ int CWeaponEinarShovel::Swing( int fFirst )
 
 	UTIL_TraceLine( vecSrc, vecEnd, dont_ignore_monsters, ENT( m_pPlayer->pev ), &tr );
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	if( tr.flFraction >= 1.0f )
 	{
 		UTIL_TraceHull( vecSrc, vecEnd, dont_ignore_monsters, head_hull, ENT( m_pPlayer->pev ), &tr );
@@ -180,7 +180,7 @@ int CWeaponEinarShovel::Swing( int fFirst )
 
 			// player "shoot" animation
 			m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
-#ifdef CROWBAR_IDLE_ANIM
+#if CROWBAR_IDLE_ANIM
 			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
 #endif
 			EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_WEAPON, "weapons/cbar_miss1.wav", 1, ATTN_NORM, 0, 94 + RANDOM_LONG( 0, 0xF ) );
@@ -204,7 +204,7 @@ int CWeaponEinarShovel::Swing( int fFirst )
 
 		// player "shoot" animation
 		m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 
 		// hit
 		fDidHit = TRUE;
@@ -320,13 +320,13 @@ int CWeaponEinarShovel::Swing( int fFirst )
 		SetThink( &CWeaponEinarShovel::Smack );
 		pev->nextthink = UTIL_WeaponTimeBase() + 0.2f;
 	}
-#ifdef CROWBAR_IDLE_ANIM
+#if CROWBAR_IDLE_ANIM
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
 #endif
 	return fDidHit;
 }
 
-#ifdef CROWBAR_IDLE_ANIM
+#if CROWBAR_IDLE_ANIM
 void CWeaponEinarShovel::WeaponIdle( void )
 {
 	if( m_flTimeWeaponIdle < UTIL_WeaponTimeBase() )

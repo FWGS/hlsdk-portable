@@ -381,7 +381,7 @@ void W_Precache( void )
 	UTIL_PrecacheOtherWeapon( "weapon_th_taurus" );
 	UTIL_PrecacheOther( "ammo_th_taurus" );
 
-#if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
+#if !OEM_BUILD && !HLDEMO_BUILD
 	if( g_pGameRules->IsDeathmatch() )
 	{
 		UTIL_PrecacheOther( "weaponbox" );// container for dropped deathmatch weapons

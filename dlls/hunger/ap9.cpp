@@ -132,7 +132,7 @@ void CWeaponEinarAP9::AP9Fire( float flSpread, float flCycleTime, BOOL fUseAutoA
 
 	int flags;
 
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 	flags = FEV_NOTHOST;
 #else
 	flags = 0;
@@ -156,7 +156,7 @@ void CWeaponEinarAP9::AP9Fire( float flSpread, float flCycleTime, BOOL fUseAutoA
 		vecAiming = gpGlobals->v_forward;
 	}
 
-#ifdef CLIENT_DLL
+#if CLIENT_DLL
 	if( bIsMultiplayer() )
 #else
 	if( g_pGameRules->IsMultiplayer() )
@@ -184,7 +184,7 @@ void CWeaponEinarAP9::Reload()
 
 	if( DefaultReload( AP9_MAX_CLIP, AP9_RELOAD, 1.8 ) )
 	{
-#ifdef CLIENT_DLL
+#if CLIENT_DLL
 		if( !bIsMultiplayer() )
 #else
 		if( !g_pGameRules->IsMultiplayer() )

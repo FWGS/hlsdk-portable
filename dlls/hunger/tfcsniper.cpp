@@ -143,7 +143,7 @@ void CWeaponEinarTFCSniper::PrimaryAttack()
 	Vector vecSrc = m_pPlayer->GetGunPosition();
 	Vector vecAiming = gpGlobals->v_forward;
 
-#ifdef CLIENT_DLL
+#if CLIENT_DLL
 	if( bIsMultiplayer() )
 #else   
 	if( g_pGameRules->IsMultiplayer() )
@@ -176,7 +176,7 @@ void CWeaponEinarTFCSniper::PrimaryAttack()
 	Vector vecDir = m_pPlayer->FireBulletsPlayer( 1, vecSrc, vecAiming, Vector( flSpread, flSpread, flSpread ), 8192, BULLET_PLAYER_357, 0, 0, m_pPlayer->pev, m_pPlayer->random_seed );
 
         int flags;
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 	flags = FEV_NOTHOST;
 #else
 	flags = 0;
@@ -215,7 +215,7 @@ void CWeaponEinarTFCSniper::SecondaryAttack()
 		m_fInZoom = 1;
 		SetBits( iFadeFlags, FFADE_OUT | FFADE_STAYOUT );
 	}
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	UTIL_ScreenFade( m_pPlayer, Vector( 0, 255, 0 ), 0.0, 0.0, 70, iFadeFlags );
 #endif
 	pev->nextthink = UTIL_WeaponTimeBase() + 0.11f;
