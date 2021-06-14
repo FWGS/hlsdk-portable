@@ -582,7 +582,7 @@ public:
 #endif
 	}
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	int Save( CSave &save );
 	int Restore( CRestore &restore );
 	static TYPEDESCRIPTION m_SaveData[];
@@ -1032,7 +1032,7 @@ public:
 
 	BOOL UseDecrement( void )
 	{
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 		return TRUE;
 #else
 		return FALSE;
@@ -1059,7 +1059,7 @@ public:
 
 	BOOL UseDecrement( void )
 	{
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 		return TRUE;
 #else
 		return FALSE;
