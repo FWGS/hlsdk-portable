@@ -12,7 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
-#if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
+#if !OEM_BUILD && !HLDEMO_BUILD
 
 #include "extdll.h"
 #include "util.h"
@@ -24,7 +24,7 @@
 #include "gamerules.h"
 #include "shake.h"
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 #define BOLT_AIR_VELOCITY	2000
 #define BOLT_WATER_VELOCITY	1000
 
@@ -369,7 +369,7 @@ void CCrossbow::FireBolt()
 
 	anglesAim.x	= -anglesAim.x;
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	Vector vecSrc	= m_pPlayer->GetGunPosition() - gpGlobals->v_up * 2.0f;
 	Vector vecDir	= gpGlobals->v_forward;
 
