@@ -38,7 +38,7 @@ enum tripmine_e
 	TRIPMINE_GROUND
 };
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 class CTripmineGrenade : public CGrenade
 {
 	void Spawn( void );
@@ -368,7 +368,7 @@ void CTripmine::Spawn()
 
 	m_iDefaultAmmo = TRIPMINE_DEFAULT_GIVE;
 
-#ifdef CLIENT_DLL
+#if CLIENT_DLL
 	if( !bIsMultiplayer() )
 #else
 	if( !g_pGameRules->IsDeathmatch() )

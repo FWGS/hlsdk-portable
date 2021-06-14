@@ -29,7 +29,7 @@
 enginefuncs_t	 g_engfuncs;
 globalvars_t	*gpGlobals;
 
-#ifdef _WIN32
+#if _WIN32
 
 // Required DLL entry point
 BOOL WINAPI DllMain( HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved )
@@ -43,8 +43,8 @@ BOOL WINAPI DllMain( HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved )
 	return TRUE;
 }
 
-// stdcall for win32
-#define EXPORT2 WINAPI
+// cdecl for win32
+#define EXPORT2 WINAPIV
 #else
 #define EXPORT2
 #endif

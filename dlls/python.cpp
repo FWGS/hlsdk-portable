@@ -12,7 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
-#if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
+#if !OEM_BUILD && !HLDEMO_BUILD
 
 #include "extdll.h"
 #include "util.h"
@@ -99,7 +99,7 @@ void CPython::Precache( void )
 
 BOOL CPython::Deploy()
 {
-#ifdef CLIENT_DLL
+#if CLIENT_DLL
 	if( bIsMultiplayer() )
 #else
 	if( g_pGameRules->IsMultiplayer() )
@@ -132,7 +132,7 @@ void CPython::Holster( int skiplocal /* = 0 */ )
 
 void CPython::SecondaryAttack( void )
 {
-#ifdef CLIENT_DLL
+#if CLIENT_DLL
 	if( !bIsMultiplayer() )
 #else
 	if( !g_pGameRules->IsMultiplayer() )
@@ -197,7 +197,7 @@ void CPython::PrimaryAttack()
 	vecDir = m_pPlayer->FireBulletsPlayer( 1, vecSrc, vecAiming, VECTOR_CONE_1DEGREES, 8192, BULLET_PLAYER_357, 0, 0, m_pPlayer->pev, m_pPlayer->random_seed );
 
 	int flags;
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 	flags = FEV_NOTHOST;
 #else
 	flags = 0;
@@ -224,7 +224,7 @@ void CPython::Reload( void )
 	}
 
 	int bUseScope = FALSE;
-#ifdef CLIENT_DLL
+#if CLIENT_DLL
 	bUseScope = bIsMultiplayer();
 #else
 	bUseScope = g_pGameRules->IsMultiplayer();
@@ -275,7 +275,7 @@ void CPython::WeaponIdle( void )
 	}
 	
 	int bUseScope = FALSE;
-#ifdef CLIENT_DLL
+#if CLIENT_DLL
 	bUseScope = bIsMultiplayer();
 #else
 	bUseScope = g_pGameRules->IsMultiplayer();
