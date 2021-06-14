@@ -22,7 +22,7 @@
 #include "gamerules.h"
 #include "shake.h"
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 
 extern edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer );
 
@@ -305,7 +305,7 @@ void CDisplacerBall::ClearBeams( void )
 }
 
 
-#endif // !defined ( CLIENT_DLL )
+#endif // !CLIENT_DLL
 
 enum displacer_e {
 	DISPLACER_IDLE1 = 0,
@@ -407,7 +407,7 @@ void CDisplacer::Precache(void)
 
 	PRECACHE_MODEL("sprites/lgtning.spr");
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	iPortalSprite = PRECACHE_MODEL("sprites/exit1.spr");
 	iRingSprite = PRECACHE_MODEL("sprites/displacer_ring.spr");
 #endif
@@ -563,7 +563,7 @@ void CDisplacer::Displace( void )
         m_pPlayer->SetAnimation( PLAYER_ATTACK1 );	
 
 	m_pPlayer->pev->punchangle.x -= 2;
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	Vector vecSrc;
 	UseAmmo(DISPLACER_PRIMARY_USAGE);
 
@@ -588,7 +588,7 @@ void CDisplacer::Teleport( void )
 	const char *pszName;
 	ClearBeams();
 	ClearSpin();
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	CBaseEntity *pTarget = NULL;
 	Vector tmp( 0, 0, 0 );
 
@@ -657,7 +657,7 @@ void CDisplacer::Teleport( void )
 
 void CDisplacer::LightningEffect( void )
 {
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	int m_iBeams = 0;
 
 	for( int i = 2; i < 5; ++i )
@@ -679,7 +679,7 @@ void CDisplacer::LightningEffect( void )
 
 void CDisplacer::ClearBeams( void )
 {
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
         for( int i = 0; i < 3; i++ )
         {
                 if( m_pBeam[i] )

@@ -29,7 +29,7 @@ enum deagle_e {
 };
 LINK_ENTITY_TO_CLASS( weapon_eagle, CEagle )
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 LINK_ENTITY_TO_CLASS( eagle_laser, CLaserSpot )
 #endif
 
@@ -158,7 +158,7 @@ void CEagle::PrimaryAttack()
 	int flags;
 	BOOL m_fLaserOn;
 
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 	flags = FEV_NOTHOST;
 #else
 	flags = 0;
@@ -178,7 +178,7 @@ void CEagle::PrimaryAttack()
 	{
 		vecDir = m_pPlayer->FireBulletsPlayer( 1, vecSrc, vecAiming, Vector( flSpread, flSpread, flSpread ), 8192, BULLET_PLAYER_357, 0, 0, m_pPlayer->pev, m_pPlayer->random_seed );
 		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5f;
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 		m_pEagleLaser->Suspend( 0.6 );
 #endif
 		m_fLaserOn = TRUE;
@@ -208,7 +208,7 @@ void CEagle::Reload( void )
 
 	if ( m_pEagleLaser && m_fEagleLaserActive )
 	{
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 		m_pEagleLaser->Suspend( 1.6f );
 #endif
 		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1.5f;
@@ -229,7 +229,7 @@ void CEagle::Reload( void )
 
 void CEagle::UpdateSpot( void )
 {
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	if (m_fEagleLaserActive)
 	{
 		if (!m_pEagleLaser)

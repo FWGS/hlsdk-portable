@@ -1013,7 +1013,7 @@ class CDisplacer : public CBasePlayerWeapon
 {
 public:
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	int		Save(CSave &save);
 	int		Restore(CRestore &restore);
 	static	TYPEDESCRIPTION m_SaveData[];
@@ -1033,7 +1033,7 @@ public:
 
 	virtual BOOL UseDecrement(void)
 	{
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 		return TRUE;
 #else
 		return FALSE;
@@ -1061,7 +1061,7 @@ class CEagle : public CBasePlayerWeapon
 {
 public:
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	int		Save( CSave &save );
 	int		Restore( CRestore &restore );
 	static	TYPEDESCRIPTION m_SaveData[];
@@ -1085,7 +1085,7 @@ public:
 	int m_fEagleLaserActive;
 	virtual BOOL UseDecrement( void )
 	{ 
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 		return TRUE;
 #else
 		return FALSE;
