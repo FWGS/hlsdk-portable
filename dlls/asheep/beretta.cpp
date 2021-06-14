@@ -146,7 +146,7 @@ void CBeretta::BerettaFire( float flSpread , float flCycleTime, BOOL fUseAutoAim
 
 	int flags;
 
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 	flags = FEV_NOTHOST;
 #else
 	flags = 0;
