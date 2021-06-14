@@ -12,7 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
-#if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
+#if !OEM_BUILD && !HLDEMO_BUILD
 
 #include "extdll.h"
 #include "util.h"
@@ -48,7 +48,7 @@ LINK_ENTITY_TO_CLASS( weapon_xs, CXS )
 
 float CXS::GetFullChargeTime( void )
 {
-#ifdef CLIENT_DLL
+#if CLIENT_DLL
 	if( bIsMultiplayer() )
 #else
 	if( g_pGameRules->IsMultiplayer() )
@@ -225,7 +225,7 @@ void CXS::SecondaryAttack()
 		// during the charging process, eat one bit of ammo every once in a while
 		if( UTIL_WeaponTimeBase() >= m_pPlayer->m_flNextAmmoBurn && m_pPlayer->m_flNextAmmoBurn != 1000 )
 		{
-#ifdef CLIENT_DLL
+#if CLIENT_DLL
 			if( bIsMultiplayer() )
 #else
 			if( g_pGameRules->IsMultiplayer() )
@@ -268,7 +268,7 @@ void CXS::SecondaryAttack()
 		if( m_iSoundState == 0 )
 			ALERT( at_console, "sound state %d\n", m_iSoundState );
 
-#ifdef GAUSS_OVERCHARGE_FIX
+#if GAUSS_OVERCHARGE_FIX
 		if (!overcharge)
 #endif
 			PLAYBACK_EVENT_FULL( 0, m_pPlayer->edict(), m_usXSSpin, 0.0f, g_vecZero, g_vecZero, 0.0f, 0.0f, pitch, 0, ( m_iSoundState == SND_CHANGE_PITCH ) ? 1 : 0, 0 );
@@ -281,7 +281,7 @@ void CXS::SecondaryAttack()
 		if( overcharge )
 		{
 			// Player charged up too long. Zap him.
-#ifdef GAUSS_OVERCHARGE_FIX
+#if GAUSS_OVERCHARGE_FIX
 			PLAYBACK_EVENT_FULL( FEV_NOTHOST, m_pPlayer->edict(), m_usGaussSpin, 0.0, g_vecZero, g_vecZero, 0.0, 0.0, pitch, 0, 0, 1 );
 #endif
 			EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_WEAPON, "weapons/xs_moan1.wav", 1.0f, ATTN_NORM, 0, 80 + RANDOM_LONG( 0, 0x3f ) );
@@ -290,7 +290,7 @@ void CXS::SecondaryAttack()
 			m_fInAttack = 0;
 			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 2.2f;
 			m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 1.0f;
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 			m_pPlayer->TakeDamage( VARS( eoNullEntity ), VARS( eoNullEntity ), 50, DMG_POISON );
 			UTIL_ScreenFade( m_pPlayer, Vector( 192, 224, 0 ), 2, 0.5f, 128, FFADE_IN );
 #endif
@@ -328,7 +328,7 @@ void CXS::StartFire( void )
 	if( m_fPrimaryFire )
 	{
 		// fixed damage on primary attack
-#ifdef CLIENT_DLL
+#if CLIENT_DLL
 		flDamage = 20.0f;
 #else 
 		flDamage = gSkillData.plrDmgGauss;
@@ -338,7 +338,7 @@ void CXS::StartFire( void )
 	if( m_fInAttack != 3 )
 	{
 		//ALERT( at_console, "Time:%f Damage:%f\n", gpGlobals->time - m_pPlayer->m_flStartCharge, flDamage );
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 		float flZVel = m_pPlayer->pev->velocity.z;
 
 		if( !m_fPrimaryFire )

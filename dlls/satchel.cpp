@@ -12,7 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
-#if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
+#if !OEM_BUILD && !HLDEMO_BUILD
 
 #include "extdll.h"
 #include "util.h"
@@ -206,7 +206,7 @@ int CPipebomb::AddDuplicate( CBasePlayerItem *pOriginal )
 {
 	CPipebomb *pPipebomb;
 
-#ifdef CLIENT_DLL
+#if CLIENT_DLL
 	if( bIsMultiplayer() )
 #else
 	if( g_pGameRules->IsMultiplayer() )
@@ -390,7 +390,7 @@ void CPipebomb::Throw( void )
 {
 	if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] )
 	{
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 		Vector vecSrc = m_pPlayer->pev->origin;
 
 		Vector vecThrow = gpGlobals->v_forward * 274 + m_pPlayer->pev->velocity;
@@ -446,7 +446,7 @@ void CPipebomb::WeaponIdle( void )
 			return;
 		}
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 		m_pPlayer->pev->viewmodel = MAKE_STRING( "models/v_pipebomb.mdl" );
 		m_pPlayer->pev->weaponmodel = MAKE_STRING( "models/p_pipebomb.mdl" );
 #else

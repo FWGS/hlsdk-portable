@@ -322,7 +322,7 @@ void W_Precache( void )
 	UTIL_PrecacheOther( "ammo_par21_grenade" );
 	UTIL_PrecacheOther( "ammo_m203grenade" );
 
-#if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
+#if !OEM_BUILD && !HLDEMO_BUILD
 	if( g_pGameRules->IsDeathmatch() )
 	{
 		UTIL_PrecacheOther( "weaponbox" );// container for dropped deathmatch weapons
@@ -372,7 +372,7 @@ IMPLEMENT_SAVERESTORE( CBasePlayerItem, CBaseAnimating )
 
 TYPEDESCRIPTION	CBasePlayerWeapon::m_SaveData[] =
 {
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 	DEFINE_FIELD( CBasePlayerWeapon, m_flNextPrimaryAttack, FIELD_FLOAT ),
 	DEFINE_FIELD( CBasePlayerWeapon, m_flNextSecondaryAttack, FIELD_FLOAT ),
 	DEFINE_FIELD( CBasePlayerWeapon, m_flTimeWeaponIdle, FIELD_FLOAT ),
@@ -556,7 +556,7 @@ void CBasePlayerItem::DefaultTouch( CBaseEntity *pOther )
 
 BOOL CanAttack( float attack_time, float curtime, BOOL isPredicted )
 {
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 	if( !isPredicted )
 #else
 	if( 1 )
@@ -792,7 +792,7 @@ void CBasePlayerWeapon::SendWeaponAnim( int iAnim, int skiplocal, int body )
 
 	m_pPlayer->pev->weaponanim = iAnim;
 
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 	if( skiplocal && ENGINE_CANSKIP( m_pPlayer->edict() ) )
 		return;
 #endif

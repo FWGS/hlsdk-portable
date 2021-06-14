@@ -37,7 +37,7 @@ enum crowbar_e
 	CROWBAR_ATTACK2MISS,
 	CROWBAR_ATTACK2HIT,
 	CROWBAR_ATTACK3MISS,
-#ifndef CROWBAR_IDLE_ANIM	
+#if !CROWBAR_IDLE_ANIM	
 	CROWBAR_ATTACK3HIT
 #else
 	CROWBAR_ATTACK3HIT,
@@ -180,7 +180,7 @@ void CCrowbar::Swing()
 
 	UTIL_TraceLine( vecSrc, vecEnd, dont_ignore_monsters, ENT( m_pPlayer->pev ), &tr );
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	if( tr.flFraction >= 1.0f )
 	{
 		UTIL_TraceHull( vecSrc, vecEnd, dont_ignore_monsters, head_hull, ENT( m_pPlayer->pev ), &tr );
@@ -219,7 +219,7 @@ void CCrowbar::Swing()
 		}
 		m_flNextPrimaryAttack = ( static_cast<float>( m_iSwing ) * 0.03f ) + UTIL_WeaponTimeBase() + 0.5f;
 		EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_WEAPON, "weapons/pipe_miss.wav", 1, ATTN_NORM, 0, 94 + RANDOM_LONG( 0, 0xF ) );
-#ifdef CROWBAR_IDLE_ANIM
+#if CROWBAR_IDLE_ANIM
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
 #endif
 		// player "shoot" animation
@@ -243,7 +243,7 @@ void CCrowbar::Swing()
 		// player "shoot" animation
 		m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 		// hit
 		CBaseEntity *pEntity = CBaseEntity::Instance( tr.pHit );
 
@@ -326,12 +326,12 @@ void CCrowbar::Swing()
 		pev->nextthink = gpGlobals->time + 0.2f;
 #endif
 	}
-#ifdef CROWBAR_IDLE_ANIM
+#if CROWBAR_IDLE_ANIM
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
 #endif
 }
 
-#ifdef CROWBAR_IDLE_ANIM
+#if CROWBAR_IDLE_ANIM
 void CCrowbar::WeaponIdle( void )
 {
 	if( m_flTimeWeaponIdle < UTIL_WeaponTimeBase() )
