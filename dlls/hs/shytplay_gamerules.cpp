@@ -75,7 +75,7 @@ CHalfLifeShytplay :: CHalfLifeShytplay()
 
 extern cvar_t timeleft, fragsleft;
 
-#ifndef NO_VOICEGAMEMGR
+#if !NO_VOICEGAMEMGR
 #include "voice_gamemgr.h"
 extern CVoiceGameMgr	g_VoiceGameMgr;
 #endif
@@ -88,7 +88,7 @@ void CHalfLifeShytplay :: Think ( void )
 
 	int frags_remaining = 0;
 	int time_remaining = 0;
-#ifndef NO_VOICEGAMEMGR
+#if !NO_VOICEGAMEMGR
 	g_VoiceGameMgr.Update(gpGlobals->frametime);
 #endif
 	if ( g_fGameOver )   // someone else quit the game already
@@ -154,7 +154,7 @@ void CHalfLifeShytplay :: Think ( void )
 //=========================================================
 BOOL CHalfLifeShytplay :: ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 {
-#ifndef NO_VOICEGAMEMGR
+#if !NO_VOICEGAMEMGR
 	if(g_VoiceGameMgr.ClientCommand(pPlayer, pcmd))
 		return TRUE;
 #endif

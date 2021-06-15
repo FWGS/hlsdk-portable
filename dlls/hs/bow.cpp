@@ -12,7 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
-#if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
+#if !OEM_BUILD && !HLDEMO_BUILD
 
 #include "extdll.h"
 #include "util.h"
@@ -23,7 +23,7 @@
 #include "player.h"
 #include "gamerules.h"
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 #define BOLT_AIR_VELOCITY	150
 #define BOLT_WATER_VELOCITY	50
 
@@ -328,7 +328,7 @@ void CBow::PrimaryAttack( void )
 	m_iClip--;
 
 	int flags;
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 	flags = FEV_NOTHOST;
 #else
 	flags = 0;
@@ -346,7 +346,7 @@ void CBow::PrimaryAttack( void )
 
 	UTIL_TraceLine(vecSrc, vecSrc + vecDir * 8192, dont_ignore_monsters, m_pPlayer->edict(), &tr);
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	if ( tr.pHit->v.takedamage )
 	{
 		ClearMultiDamage( );
@@ -372,7 +372,7 @@ void CBow::FireBolt()
 	m_pPlayer->m_rgAmmo[ m_iPrimaryAmmoType ]--;
 
 	int flags;
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 	flags = FEV_NOTHOST;
 #else
 	flags = 0;
@@ -390,7 +390,7 @@ void CBow::FireBolt()
 	Vector vecSrc	 = m_pPlayer->GetGunPosition( ) - gpGlobals->v_up * 2;
 	Vector vecDir	 = gpGlobals->v_forward;
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	CBowBolt *pBolt = CBowBolt::BoltCreate();
 	pBolt->pev->origin = vecSrc;
 	pBolt->pev->angles = anglesAim;

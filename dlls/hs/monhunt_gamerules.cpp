@@ -21,7 +21,7 @@
 #include	"player.h"
 #include	"weapons.h"
 #include	"gamerules.h"
-#ifndef NO_VOICEGAMEMGR
+#if !NO_VOICEGAMEMGR
 #include	"voice_gamemgr.h"
 #endif
 #include	"monhunt_gamerules.h"
@@ -41,11 +41,11 @@ void CMonsterplay::Think( void )
 {
 	// longest the intermission can last, in seconds
 	#define MAX_INTERMISSION_TIME		120
-#ifndef NO_VOICEGAMEMGR
+#if !NO_VOICEGAMEMGR
 	CVoiceGameMgr	g_VoiceGameMgr;
 #endif
 	float g_flIntermissionStartTime = 0;
-#ifndef NO_VOICEGAMEMGR
+#if !NO_VOICEGAMEMGR
 	g_VoiceGameMgr.Update(gpGlobals->frametime);
 #endif
 	///// Check game rules /////

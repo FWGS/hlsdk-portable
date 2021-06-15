@@ -12,7 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
-#if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
+#if !OEM_BUILD && !HLDEMO_BUILD
 
 #include "extdll.h"
 #include "util.h"
@@ -23,7 +23,7 @@
 #include "player.h"
 #include "gamerules.h"
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 #define BOLT_AIR_VELOCITY	800
 #define BOLT_WATER_VELOCITY	450
 
@@ -328,7 +328,7 @@ void CSciPG::FireBolt()
 	m_pPlayer->m_rgAmmo[ m_iPrimaryAmmoType ]--;
 
 	int flags;
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 	flags = FEV_NOTHOST;
 #else
 	flags = 0;
@@ -346,7 +346,7 @@ void CSciPG::FireBolt()
 	Vector vecSrc	 = m_pPlayer->GetGunPosition( ) - gpGlobals->v_up * 2;
 	Vector vecDir	 = gpGlobals->v_forward;
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	CSciPGBolt *pBolt = CSciPGBolt::BoltCreate();
 	pBolt->pev->origin = vecSrc;
 	pBolt->pev->angles = anglesAim;

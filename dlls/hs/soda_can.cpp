@@ -67,7 +67,7 @@ int CSodaCan::AddToPlayer( CBasePlayer *pPlayer )
 	if ( CBasePlayerWeapon::AddToPlayer( pPlayer ) )
 	{
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 		if ( g_pGameRules->IsMultiplayer() )
 		{
 			// in multiplayer, all hivehands come full. 
@@ -124,7 +124,7 @@ void CSodaCan::PrimaryAttack()
 	m_pPlayer->m_iWeaponVolume = NORMAL_GUN_VOLUME;
 
 	int flags;
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 	flags = FEV_NOTHOST;
 #else
 	flags = 0;

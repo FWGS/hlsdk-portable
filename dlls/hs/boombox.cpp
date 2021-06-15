@@ -119,7 +119,7 @@ void CBoombox::PrimaryAttack()
 void CBoombox::SecondaryAttack()
 {	
 		EMIT_SOUND(ENT(m_pPlayer->pev), CHAN_WEAPON, "bbox/songrc.wav", 1, ATTN_NORM); //1.83
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 		UTIL_ScreenShake( m_pPlayer->pev->origin, 25.0, 200.0, 2, 750 );
 #endif
 		RadiusDamage( m_pPlayer->pev->origin, pev, m_pPlayer->pev, 10, 750, CLASS_NONE, DMG_BILLNYE | DMG_ALWAYSGIB );

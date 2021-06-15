@@ -12,7 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
-#if !defined( OEM_BUILD )
+#if !OEM_BUILD
 
 #include "extdll.h"
 #include "util.h"
@@ -37,7 +37,7 @@ enum dosh_e {
 
 LINK_ENTITY_TO_CLASS( weapon_dosh, CDosh );
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 LINK_ENTITY_TO_CLASS( dosh_rocket, CDoshRocket );
 
 //=========================================================
@@ -252,7 +252,7 @@ void CDosh::Holster( int skiplocal /* = 0 */ )
 	
 	SendWeaponAnim( DOSH_THROW3 );
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	
 #endif
 
@@ -270,7 +270,7 @@ void CDosh::PrimaryAttack()
 							gpGlobals->v_forward * 512 );
 
 	int flags;
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 	flags = FEV_NOTHOST;
 #else
 	flags = 0;

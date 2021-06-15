@@ -207,7 +207,7 @@ int CBeamKatana::Swing( int fFirst )
 
 	UTIL_TraceLine( vecSrc, vecEnd, dont_ignore_monsters, ENT( m_pPlayer->pev ), &tr );
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	if ( tr.flFraction >= 1.0f )
 	{
 		UTIL_TraceHull( vecSrc, vecEnd, dont_ignore_monsters, head_hull, ENT( m_pPlayer->pev ), &tr );
@@ -254,7 +254,7 @@ int CBeamKatana::Swing( int fFirst )
 		// player "shoot" animation
 		m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
 		
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 
 		// hit
 		fDidHit = TRUE;

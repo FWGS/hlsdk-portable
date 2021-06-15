@@ -12,7 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
-#if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
+#if !OEM_BUILD && !HLDEMO_BUILD
 
 #include "extdll.h"
 #include "util.h"
@@ -23,7 +23,7 @@
 #include "player.h"
 #include "gamerules.h"
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 #define STAR_AIR_VELOCITY	1500
 #define STAR_WATER_VELOCITY	150
 
@@ -305,7 +305,7 @@ void CNStar::FireStar()
 	m_pPlayer->m_rgAmmo[ m_iPrimaryAmmoType ]--;
 
 	int flags;
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 	flags = FEV_NOTHOST;
 #else
 	flags = 0;
@@ -323,7 +323,7 @@ void CNStar::FireStar()
 	Vector vecSrc	 = m_pPlayer->GetGunPosition( ) - gpGlobals->v_up * 2;
 	Vector vecDir	 = gpGlobals->v_forward;
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	CNinjaStar *pStar = CNinjaStar::StarCreate();
 	pStar->pev->origin = vecSrc;
 	pStar->pev->angles = anglesAim;

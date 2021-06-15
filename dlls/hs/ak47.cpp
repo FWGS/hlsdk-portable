@@ -159,7 +159,7 @@ void CAK47::PrimaryAttack()
 	Vector vecAiming = m_pPlayer->GetAutoaimVector( AUTOAIM_5DEGREES );
 	Vector vecDir;
 
-#ifdef CLIENT_DLL
+#if CLIENT_DLL
 	if ( bIsMultiplayer() )
 #else
 	if ( g_pGameRules->IsMultiplayer() )
@@ -175,7 +175,7 @@ void CAK47::PrimaryAttack()
 	}
 
 	int flags;
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 	flags = FEV_NOTHOST;
 #else
 	flags = 0;

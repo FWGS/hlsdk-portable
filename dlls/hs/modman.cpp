@@ -12,7 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
-#if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
+#if !OEM_BUILD && !HLDEMO_BUILD
 
 #include "extdll.h"
 #include "util.h"
@@ -23,7 +23,7 @@
 #include "player.h"
 #include "gamerules.h"
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 #define HORN_AIR_VELOCITY	1800
 #define HORN_WATER_VELOCITY	1600
 
@@ -316,7 +316,7 @@ void CModman::Holster( int skiplocal /* = 0 */ )
 void CModman::PrimaryAttack( void )
 {
 
-/*#ifdef CLIENT_DLL
+/*#if CLIENT_DLL
 	if ( bIsMultiplayer() )
 #else
 	if (g_pGameRules->IsMultiplayer())
@@ -346,7 +346,7 @@ void CModman::FireSniperHorn()
 	m_iClip--;
 
 	int flags;
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 	flags = FEV_NOTHOST;
 #else
 	flags = 0;
@@ -364,7 +364,7 @@ void CModman::FireSniperHorn()
 
 	UTIL_TraceLine(vecSrc, vecSrc + vecDir * 8192, dont_ignore_monsters, m_pPlayer->edict(), &tr);
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	if ( tr.pHit->v.takedamage )
 	{
 		ClearMultiDamage( );
@@ -389,7 +389,7 @@ void CModman::FireHorn()
 	m_iClip--;
 
 	int flags;
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 	flags = FEV_NOTHOST;
 #else
 	flags = 0;
@@ -407,7 +407,7 @@ void CModman::FireHorn()
 	Vector vecSrc	 = m_pPlayer->GetGunPosition( ) - gpGlobals->v_up * 2;
 	Vector vecDir	 = gpGlobals->v_forward;
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	CModmanHorn *pHorn = CModmanHorn::HornCreate();
 	pHorn->pev->origin = vecSrc;
 	pHorn->pev->angles = anglesAim;

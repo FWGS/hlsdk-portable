@@ -143,7 +143,7 @@ void CMW2::PrimaryAttack()
 	Vector vecAiming = m_pPlayer->GetAutoaimVector( AUTOAIM_5DEGREES );
 	Vector vecDir;
 
-#ifdef CLIENT_DLL
+#if CLIENT_DLL
 	if ( bIsMultiplayer() )
 #else
 	if ( g_pGameRules->IsMultiplayer() )
@@ -159,13 +159,13 @@ void CMW2::PrimaryAttack()
 	}
 
   int flags;
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 	flags = FEV_NOTHOST;
 #else
 	flags = 0;
 #endif
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 		UTIL_ScreenShake( m_pPlayer->pev->origin, 250.0, 200.0, 2.5, 1 );
 #endif
 

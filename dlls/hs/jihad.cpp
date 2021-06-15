@@ -45,7 +45,7 @@ void CJihad::Spawn( )
 	m_iId = WEAPON_JIHAD;
 	SET_MODEL(ENT(pev), "models/w_jihad.mdl");
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	pev->dmg = gSkillData.plrDmgJihad;
 #endif
 
@@ -112,7 +112,7 @@ void CJihad::PrimaryAttack()
 		SendWeaponAnim( JIHAD_SHOOT3 );
 		lolalo = FALSE;
 		m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 2;
-		#ifdef CLIENT_DLL
+		#if CLIENT_DLL
 		//Genuflect
 		#else
 		ExplosionCreate( m_pPlayer->Center(), m_pPlayer->pev->angles, m_pPlayer->edict(), 1080, TRUE ); // BOOM!
