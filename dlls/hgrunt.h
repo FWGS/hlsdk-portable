@@ -75,13 +75,8 @@ public:
 	int Restore( CRestore &restore );
 	
 	CBaseEntity	*Kick( void );
-#if defined ( NOFFICE_DLL )
-	virtual Schedule_t	*GetSchedule(void);
-	virtual Schedule_t  *GetScheduleOfType ( int Type );
-#else
 	Schedule_t	*GetSchedule( void );
 	Schedule_t  *GetScheduleOfType ( int Type );
-#endif // defined ( NOFFICE_DLL )
 	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType);
 	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
 
