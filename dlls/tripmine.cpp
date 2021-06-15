@@ -38,7 +38,7 @@ enum tripmine_e
 	TRIPMINE_GROUND
 };
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 class CTripmineGrenade : public CGrenade
 {
 	void Spawn( void );
