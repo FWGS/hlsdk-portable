@@ -137,7 +137,7 @@ void CShotgun::PrimaryAttack()
 	m_iClip--;
 
 	int flags;
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 	flags = FEV_NOTHOST;
 #else
 	flags = 0;
@@ -152,7 +152,7 @@ void CShotgun::PrimaryAttack()
 
 	Vector vecDir;
 
-#ifdef CLIENT_DLL
+#if CLIENT_DLL
 	if( bIsMultiplayer() )
 #else
 	if( g_pGameRules->IsMultiplayer() )
