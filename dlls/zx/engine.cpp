@@ -859,7 +859,7 @@ int pfnRegUserMsg(const char *pszName, int iSize)
 
    if (gpGlobals->deathmatch)
    {
-#ifdef _DEBUG
+#if _DEBUG
       fp=fopen("HPB_bot.txt","a"); fprintf(fp,"pfnRegUserMsg: pszName=%s msg=%d\n",pszName,msg); fclose(fp);
 #endif
 

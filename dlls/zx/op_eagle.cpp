@@ -101,7 +101,7 @@ void CEagle::SecondaryAttack( void )
 {
 	m_fDotActive = ! m_fDotActive;
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	if (!m_fDotActive && m_pDot)
 	{
 		m_pDot->Killed( NULL, GIB_NORMAL );
@@ -125,7 +125,7 @@ void CEagle::Holster( int skiplocal /* = 0 */ )
 {
 	m_fInReload = FALSE;// cancel any reload in progress.
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	if (m_pDot)
 	{
 		m_pDot->Killed( NULL, GIB_NEVER );
@@ -166,45 +166,44 @@ void CEagle::EagleFire( float flCycleTime, BOOL fUseAutoAim )
 
 	m_pPlayer->pev->effects = (int)(m_pPlayer->pev->effects) | EF_MUZZLEFLASH;
 
-#if defined ( OLD_WEAPONS )
-if (m_iClip != 0)
-SendWeaponAnim( EAGLE_FIRE );
-else
-SendWeaponAnim( EAGLE_FIRE_EMPTY );
+#if OLD_WEAPONS
+	if (m_iClip != 0)
+		SendWeaponAnim( EAGLE_FIRE );
+	else
+		SendWeaponAnim( EAGLE_FIRE_EMPTY );
 #endif
 
 int flags;
 
-#if defined( CLIENT_WEAPONS )
-flags = FEV_NOTHOST;
+#if CLIENT_WEAPONS
+	flags = FEV_NOTHOST;
 #else
-flags = 0;
+	flags = 0;
 #endif
 PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), fUseAutoAim ? m_usFireEagle : m_usFireEagle, 0.0, g_vecZero, g_vecZero, 0.0, 0.0, 0, 0, ( m_iClip == 0 ) ? 1 : 0, 0 );
 
 // player "shoot" animation
 m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
 
-#if defined ( OLD_WEAPONS )
-UTIL_MakeVectors( m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle );
-UTIL_Ricochet( ptr->vecStartPos, 1.0 );
-UTIL_Ricochet( ptr->vecEndPos, 2.0 ); // ADDED RICHOSHET MODE
-+ gpGlobals->v_right * RANDOM_FLOAT(9999,100) 
-Vector vecShellVelocity = m_pPlayer->pev->velocity 
-+ gpGlobals->v_right * RANDOM_FLOAT(999,300) 
-+ gpGlobals->v_up * RANDOM_FLOAT(450,150) 
-+ gpGlobals->v_forward * 9999;
+#if OLD_WEAPONS
+	UTIL_MakeVectors( m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle );
+	UTIL_Ricochet( ptr->vecStartPos, 1.0 );
+	UTIL_Ricochet( ptr->vecEndPos, 2.0 ); // ADDED RICHOSHET MODE
+	+ gpGlobals->v_right * RANDOM_FLOAT(9999,100) 
+	Vector vecShellVelocity = m_pPlayer->pev->velocity 
+	+ gpGlobals->v_right * RANDOM_FLOAT(999,300) 
+	+ gpGlobals->v_up * RANDOM_FLOAT(450,150) 
+	+ gpGlobals->v_forward * 9999;
 #endif
 
-if (pev->body == 0)
-{
-m_pPlayer->m_iWeaponVolume = QUIET_GUN_VOLUME;
-m_pPlayer->m_iWeaponFlash = DIM_GUN_FLASH;
-#if defined ( OLD_WEAPONS )
-
-EMIT_SOUND(ENT(m_pPlayer->pev), CHAN_WEAPON, "weapons/desert_eagle_fire.wav", RANDOM_FLOAT(0.9, 1.0), ATTN_NORM);
+	if (pev->body == 0)
+	{
+		m_pPlayer->m_iWeaponVolume = QUIET_GUN_VOLUME;
+		m_pPlayer->m_iWeaponFlash = DIM_GUN_FLASH;
+#if OLD_WEAPONS
+		EMIT_SOUND(ENT(m_pPlayer->pev), CHAN_WEAPON, "weapons/desert_eagle_fire.wav", RANDOM_FLOAT(0.9, 1.0), ATTN_NORM);
 #endif
-}
+	}
 
 Vector vecSrc = m_pPlayer->GetGunPosition( );
 Vector vecAiming;
@@ -236,7 +235,7 @@ m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->
 
 	UpdateDot( );
 
-#if defined ( OLD_WEAPONS )
+#if OLD_WEAPONS
 m_pPlayer->pev->punchangle.x -= 2;
 #endif
 }
@@ -316,7 +315,7 @@ void CEagle::WeaponIdle( void )
 void CEagle::UpdateDot( void )
 {
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	if (m_fDotActive)
 	{
 		if (!m_pDot)

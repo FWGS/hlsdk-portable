@@ -91,7 +91,7 @@ void WaypointFree(void)
             free(p);
             p = p_next;
 
-#ifdef _DEBUG
+#if _DEBUG
             count++;
             if (count > 1000) WaypointDebug();
 #endif
@@ -174,7 +174,7 @@ void WaypointAddPath(short int add_index, short int path_index)
       prev = p;     // save the previous node in linked list
       p = p->next;  // go to next node in linked list
 
-#ifdef _DEBUG
+#if _DEBUG
       count++;
       if (count > 100) WaypointDebug();
 #endif
@@ -230,7 +230,7 @@ void WaypointDeletePath(short int del_index)
 
          p = p->next;  // go to next node in linked list
 
-#ifdef _DEBUG
+#if _DEBUG
          count++;
          if (count > 100) WaypointDebug();
 #endif
@@ -264,7 +264,7 @@ void WaypointDeletePath(short int path_index, short int del_index)
 
       p = p->next;  // go to next node in linked list
 
-#ifdef _DEBUG
+#if _DEBUG
       count++;
       if (count > 100) WaypointDebug();
 #endif
@@ -322,7 +322,7 @@ int WaypointFindPath(PATH **pPath, int *path_index, int waypoint_index, int team
 
       *pPath = (*pPath)->next;  // go to next node in linked list
 
-#ifdef _DEBUG
+#if _DEBUG
       count++;
       if (count > 100) WaypointDebug();
 #endif
@@ -1135,7 +1135,7 @@ void WaypointDelete(edict_t *pEntity)
          free(p);
          p = p_next;
 
-#ifdef _DEBUG
+#if _DEBUG
          count++;
          if (count > 100) WaypointDebug();
 #endif

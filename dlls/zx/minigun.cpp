@@ -144,7 +144,7 @@ void CMinigun::PrimaryAttack()
 	Vector vecDir;
 
 
-#ifdef CLIENT_DLL
+#if CLIENT_DLL
 	if( bIsMultiplayer() )
 #else
 	if( g_pGameRules->IsMultiplayer() )
@@ -160,7 +160,7 @@ void CMinigun::PrimaryAttack()
 	}
 
   int flags;
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 	flags = FEV_NOTHOST;
 #else
 	flags = 0;
@@ -177,9 +177,9 @@ void CMinigun::PrimaryAttack()
 	if ( m_flNextPrimaryAttack < UTIL_WeaponTimeBase() )
 		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.05f;
 
-	#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	UTIL_ScreenShake( pev->origin, 5.0, 150.0, 0.75, 250.0 );
-	#endif
+#endif
 
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
 
@@ -218,7 +218,7 @@ void CMinigun::SecondaryAttack( void )
 	Vector vecDir;
 
 
-#ifdef CLIENT_DLL
+#if CLIENT_DLL
 	if( bIsMultiplayer() )
 #else
 	if( g_pGameRules->IsMultiplayer() )
@@ -233,8 +233,8 @@ void CMinigun::SecondaryAttack( void )
 		vecDir = m_pPlayer->FireBulletsPlayer( 1, vecSrc, vecAiming, VECTOR_CONE_20DEGREES, 8192, BULLET_PLAYER_50CAL, 2, 0, m_pPlayer->pev, m_pPlayer->random_seed );
 	}
 
-  int flags;
-#if defined( CLIENT_WEAPONS )
+	int flags;
+#if CLIENT_WEAPONS
 	flags = FEV_NOTHOST;
 #else
 	flags = 0;
@@ -251,7 +251,7 @@ void CMinigun::SecondaryAttack( void )
 	if ( m_flNextSecondaryAttack < UTIL_WeaponTimeBase() )
 		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.01f;
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	UTIL_ScreenShake( pev->origin, 5.0, 150.0, 0.75, 250.0 );
 #endif
 

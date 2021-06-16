@@ -88,7 +88,7 @@ int CShockRifle::AddToPlayer( CBasePlayer *pPlayer )
 	if ( CBasePlayerWeapon::AddToPlayer( pPlayer ) )
 	{
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 		if ( g_pGameRules->IsMultiplayer() )
 		{
 			// in multiplayer, all shockroaches come full. 
@@ -132,7 +132,7 @@ void CShockRifle::PrimaryAttack()
 	if (m_pPlayer->pev->waterlevel == 3)
 	{
 		TraceResult	tr;
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 		m_pPlayer->TakeDamage( VARS(eoNullEntity), VARS(eoNullEntity), 255, DMG_SHOCK );
 		UTIL_ScreenFade( m_pPlayer, Vector(201,236,255), 2, 0.5, 128, FFADE_IN );
 #endif
@@ -144,7 +144,7 @@ void CShockRifle::PrimaryAttack()
 		return;
 	}
 	int flags;
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 	flags = FEV_NOTHOST;
 #else
 	flags = 0;
@@ -166,7 +166,7 @@ void CShockRifle::PrimaryAttack()
 	
 		Vector vecSrc	 = m_pPlayer->GetGunPosition( )+ gpGlobals->v_forward * 16 + gpGlobals->v_right * 16 + gpGlobals->v_up * -12;
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 
 	CBaseEntity *pShock = CBaseEntity::Create( "shock", vecSrc, anglesAim, m_pPlayer->edict() );
 	pShock->pev->velocity = gpGlobals->v_forward * 1500;

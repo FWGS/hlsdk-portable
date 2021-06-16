@@ -100,7 +100,7 @@ int CEagel::AddToPlayer( CBasePlayer *pPlayer )
 
 BOOL CEagel::Deploy( )
 {
-#ifdef CLIENT_DLL
+#if CLIENT_DLL
 	if ( bIsMultiplayer() )
 #else
 	if ( g_pGameRules->IsMultiplayer() )
@@ -172,7 +172,7 @@ void CEagel::EagelFire( float flSpread, float flCycleTime, BOOL fUseAutoAim )
 
 	int flags;
 
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 	flags = FEV_NOTHOST;
 #else
 	flags = 0;
