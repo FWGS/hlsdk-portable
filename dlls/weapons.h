@@ -217,7 +217,7 @@ class CBasePlayerItem : public CBaseAnimating
 public:
 	virtual void SetObjectCollisionBox( void );
 
-#ifndef CLIENT_DLL // AJH for lockable weapons
+#if !CLIENT_DLL // AJH for lockable weapons
 	virtual void	KeyValue( KeyValueData* pkvd);
 #endif
 	virtual int		Save( CSave &save );
@@ -267,7 +267,7 @@ public:
 	CBasePlayerItem *m_pNext;
 	int		m_iId;												// WEAPON_???
 
-#ifndef CLIENT_DLL//AJH Test Debug
+#if !CLIENT_DLL//AJH Test Debug
 	virtual void Spawn();
 #endif//AJH
 	virtual int iItemSlot( void )
