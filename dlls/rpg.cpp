@@ -12,7 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
-#if !defined( OEM_BUILD )
+#if !OEM_BUILD
 
 #include "extdll.h"
 #include "util.h"
@@ -23,7 +23,7 @@
 #include "player.h"
 #include "gamerules.h"
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 
 LINK_ENTITY_TO_CLASS( laser_spot, CLaserSpot )
 

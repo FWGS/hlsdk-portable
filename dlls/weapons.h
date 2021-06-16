@@ -475,7 +475,7 @@ public:
 	int m_cAmmoTypes;// how many ammo types packed into this box (if packed by a level designer)
 };
 
-#ifdef CLIENT_DLL
+#if CLIENT_DLL
 bool bIsMultiplayer ( void );
 void LoadVModel ( const char *szViewModel, CBasePlayer *m_pPlayer );
 #endif
@@ -506,23 +506,23 @@ public:
         int GetItemInfo(ItemInfo *p);
 	int AddToPlayer( CBasePlayer *pPlayer );
 
-        void PrimaryAttack( void );
-        int Swing( int fFirst );
-        BOOL Deploy( void );
-        void Holster( int skiplocal = 0 );
-        int m_iSwing;
-        TraceResult m_trHit;
+	void PrimaryAttack( void );
+	int Swing( int fFirst );
+	BOOL Deploy( void );
+	void Holster( int skiplocal = 0 );
+	int m_iSwing;
+	TraceResult m_trHit;
 
-        virtual BOOL UseDecrement( void )
-        {
-#if defined( CLIENT_WEAPONS )
-                return TRUE;
+	virtual BOOL UseDecrement( void )
+	{
+#if CLIENT_WEAPONS
+		return TRUE;
 #else
-                return FALSE;
+		return FALSE;
 #endif
-        }
+	}
 private:
-        unsigned short m_usKnife;
+	unsigned short m_usKnife;
 };
 
 class CHammer : public CBasePlayerWeapon
@@ -534,78 +534,78 @@ public:
         void EXPORT BigWhackThink( void );
         int GetItemInfo(ItemInfo *p);
 	int AddToPlayer( CBasePlayer *pPlayer );
-        
-        void PrimaryAttack( void );
-        BOOL Deploy( void );
-        int m_iSwing;
-        TraceResult m_trHit;
-        
-        virtual BOOL UseDecrement( void )
-        {
-#if defined( CLIENT_WEAPONS )
-                return TRUE;
+
+	void PrimaryAttack( void );
+	BOOL Deploy( void );
+	int m_iSwing;
+	TraceResult m_trHit;
+
+	virtual BOOL UseDecrement( void )
+	{
+#if CLIENT_WEAPONS
+		return TRUE;
 #else
-                return FALSE;
+		return FALSE;
 #endif
-        }
+	}
 private:
-        unsigned short m_usHammer;
+	unsigned short m_usHammer;
 };
 
 class CAxe : public CBasePlayerWeapon
 {
 public:
-        void Spawn( void );
-        void Precache( void );
-        int iItemSlot( void ) { return 1; }
-        void EXPORT SwingAgain( void );
-        void EXPORT Smack( void );
-        int GetItemInfo(ItemInfo *p);
+	void Spawn( void );
+	void Precache( void );
+	int iItemSlot( void ) { return 1; }
+	void EXPORT SwingAgain( void );
+	void EXPORT Smack( void );
+	int GetItemInfo(ItemInfo *p);
 	int AddToPlayer( CBasePlayer *pPlayer );
-        void PrimaryAttack( void );
-        int Swing( int fFirst );
-        BOOL Deploy( void );
-        int m_iSwing;
-        TraceResult m_trHit;
+	void PrimaryAttack( void );
+	int Swing( int fFirst );
+	BOOL Deploy( void );
+	int m_iSwing;
+	TraceResult m_trHit;
 
-        virtual BOOL UseDecrement( void )
-        {
-#if defined( CLIENT_WEAPONS )
-                return TRUE;
+	virtual BOOL UseDecrement( void )
+	{
+#if CLIENT_WEAPONS
+		return TRUE;
 #else
-                return FALSE;
+		return FALSE;
 #endif
-        }
+	}
 private:
-        unsigned short m_usAxe;
+	unsigned short m_usAxe;
 };
 
 class CSpear : public CBasePlayerWeapon
 {
 public:
-        void Spawn( void );
-        void Precache( void );
-        int iItemSlot( void ) { return 1; }
-        void EXPORT UnStab( void );
-        void EXPORT BigSpearStab( void );
-        int GetItemInfo(ItemInfo *p);
+	void Spawn( void );
+	void Precache( void );
+	int iItemSlot( void ) { return 1; }
+	void EXPORT UnStab( void );
+	void EXPORT BigSpearStab( void );
+	int GetItemInfo(ItemInfo *p);
 	int AddToPlayer( CBasePlayer *pPlayer );
-        
-        void PrimaryAttack( void );
-        BOOL Deploy( void );
-        int m_iSwing;
-        TraceResult m_trHit;
-        
-        virtual BOOL UseDecrement( void )
-        {
-#if defined( CLIENT_WEAPONS )
-                return TRUE;
+
+	void PrimaryAttack( void );
+	BOOL Deploy( void );
+	int m_iSwing;
+	TraceResult m_trHit;
+
+	virtual BOOL UseDecrement( void )
+	{
+#if CLIENT_WEAPONS
+		return TRUE;
 #else
-                return FALSE;
+		return FALSE;
 #endif
-        }
+	}
 private:
-        unsigned short m_usSpear;
+	unsigned short m_usSpear;
 };
 
 class CGlock : public CBasePlayerWeapon
@@ -626,7 +626,7 @@ public:
 
 	virtual BOOL UseDecrement( void )
 	{ 
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 		return TRUE;
 #else
 		return FALSE;
@@ -635,7 +635,6 @@ public:
 
 private:
 	int m_iShell;
-	
 
 	unsigned short m_usFireGlock1;
 	unsigned short m_usFireGlock2;
@@ -657,7 +656,7 @@ public:
 
 	virtual BOOL UseDecrement( void )
 	{ 
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 		return TRUE;
 #else
 		return FALSE;
@@ -685,7 +684,7 @@ public:
 
 	virtual BOOL UseDecrement( void )
 	{ 
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 		return TRUE;
 #else
 		return FALSE;
@@ -714,7 +713,7 @@ public:
 
 	virtual BOOL UseDecrement( void )
 	{ 
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 		return TRUE;
 #else
 		return FALSE;
@@ -743,7 +742,7 @@ public:
 
 	virtual BOOL UseDecrement( void )
 	{ 
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 		return TRUE;
 #else
 		return FALSE;
@@ -782,7 +781,7 @@ public:
 
 	virtual BOOL UseDecrement( void )
 	{ 
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 		return TRUE;
 #else
 		return FALSE;
@@ -811,7 +810,7 @@ public:
 
 	virtual BOOL UseDecrement( void )
 	{ 
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 		return TRUE;
 #else
 		return FALSE;
@@ -840,7 +839,7 @@ public:
 
 	virtual BOOL UseDecrement( void )
 	{ 
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 		return TRUE;
 #else
 		return FALSE;
@@ -873,7 +872,7 @@ public:
 
 	virtual BOOL UseDecrement( void )
 	{ 
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 		return TRUE;
 #else
 		return FALSE;

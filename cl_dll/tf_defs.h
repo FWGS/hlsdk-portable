@@ -46,7 +46,7 @@
 // Debug Options
 //#define MAP_DEBUG                     // Debug for Map code. I suggest running in a hi-res
 										// mode and/or piping the output from the server to a file.
-#ifdef MAP_DEBUG
+#if MAP_DEBUG
 	#define MDEBUG(x) x
 #else
 	#define MDEBUG(x)

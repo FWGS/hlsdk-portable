@@ -12,7 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
-#if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
+#if !OEM_BUILD && !HLDEMO_BUILD
 
 #include "extdll.h"
 #include "util.h"
@@ -42,7 +42,7 @@ enum squeak_e
 	SQUEAK_THROW
 };
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 class CSqueakGrenade : public CGrenade
 {
 	void Spawn( void );
