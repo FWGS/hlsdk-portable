@@ -12,7 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
-#if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
+#if !OEM_BUILD && !HLDEMO_BUILD
 
 #include "extdll.h"
 #include "util.h"
@@ -182,7 +182,7 @@ void CEgon::Attack( void )
 	Vector vecSrc = m_pPlayer->GetGunPosition();
 
 	int flags;
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 	flags = FEV_NOTHOST;
 #else
 	flags = 0;
@@ -259,7 +259,7 @@ void CEgon::Fire( const Vector &vecOrigSrc, const Vector &vecDir )
 	if( tr.fAllSolid )
 		return;
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	CBaseEntity *pEntity = CBaseEntity::Instance( tr.pHit );
 
 	if( pEntity == NULL )
@@ -282,7 +282,7 @@ void CEgon::Fire( const Vector &vecOrigSrc, const Vector &vecDir )
 	switch( m_fireMode )
 	{
 	case FIRE_NARROW:
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 		if( pev->dmgtime < gpGlobals->time )
 		{
 			// Narrow mode only does damage to the entity it hits
@@ -319,7 +319,7 @@ void CEgon::Fire( const Vector &vecOrigSrc, const Vector &vecDir )
 		break;
 	case FIRE_WIDE:
 		m_pPlayer->m_iWeaponFlash = BRIGHT_GUN_FLASH;
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 		if( pev->dmgtime < gpGlobals->time )
 		{
 			// wide mode does damage to the ent, and radius damage
@@ -381,7 +381,7 @@ void CEgon::Fire( const Vector &vecOrigSrc, const Vector &vecDir )
 
 void CEgon::UpdateEffect( const Vector &startPoint, const Vector &endPoint, float timeBlend )
 {
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	if( !m_pBeam )
 	{
 		CreateEffect();
@@ -409,7 +409,7 @@ void CEgon::UpdateEffect( const Vector &startPoint, const Vector &endPoint, floa
 
 void CEgon::CreateEffect( void )
 {
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	DestroyEffect();
 
 	m_pBeam = CBeam::BeamCreate( EGON_BEAM_SPRITE, 40 );
@@ -455,7 +455,7 @@ void CEgon::CreateEffect( void )
 
 void CEgon::DestroyEffect( void )
 {
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	if( m_pBeam )
 	{
 		UTIL_Remove( m_pBeam );

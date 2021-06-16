@@ -367,7 +367,7 @@ int CSoundEnt::ClientSoundIndex( edict_t *pClient )
 {
 	int iReturn = ENTINDEX( pClient ) - 1;
 
-#ifdef _DEBUG
+#if _DEBUG
 	if( iReturn < 0 || iReturn > gpGlobals->maxClients )
 	{
 		ALERT( at_console, "** ClientSoundIndex returning a bogus value! **\n" );
