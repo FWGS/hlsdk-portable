@@ -157,7 +157,7 @@ void CMP5::PrimaryAttack()
 	Vector vecSrc = m_pPlayer->GetGunPosition();
 	Vector vecAiming = m_pPlayer->GetAutoaimVector( AUTOAIM_5DEGREES );
 	Vector vecDir;
-#ifdef CLIENT_DLL
+#if CLIENT_DLL
 	if( bIsMultiplayer() )
 #else
 	if( g_pGameRules->IsMultiplayer() )
@@ -173,7 +173,7 @@ void CMP5::PrimaryAttack()
 	}
 
 	int flags;
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 	flags = FEV_NOTHOST;
 #else
 	flags = 0;
@@ -227,7 +227,7 @@ void CMP5::SecondaryAttack( void )
 					gpGlobals->v_forward * 800.0f );
 
 	int flags;
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 	flags = FEV_NOTHOST;
 #else
 	flags = 0;
