@@ -14,6 +14,9 @@ jobs:
           - os: ubuntu-latest
             cc: clang
             cxx: clang++
+          - os: windows-2016
+            cc: cl
+            cxx: cl
     env:
       CC: ${{ matrix.cc }}
       CXX: ${{ matrix.cxx }}
@@ -60,4 +63,13 @@ jobs:
         sudo apt-get install -y mingw-w64-i686-dev binutils-mingw-w64-i686 gcc-mingw-w64-i686 g++-mingw-w64-i686
         cmake -B build-mingw -S . -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_C_COMPILER=i686-w64-mingw32-gcc -DCMAKE_CXX_COMPILER=i686-w64-mingw32-g++
         cmake --build build-mingw --target all
+
+    - name: Add msbuild to PATH
+      if: startsWith(matrix.os, 'windows')
+      uses: microsoft/setup-msbuild@v1.0.2
+    - name: Build on windows
+      if: startsWith(matrix.os, 'windows')
+      run: |
+        cmake -G "Visual Studio 15 2017" -DGOLDSOURCE_SUPPORT=ON
+        msbuild INSTALL.vcxproj
 
