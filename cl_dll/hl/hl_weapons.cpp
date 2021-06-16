@@ -1031,7 +1031,7 @@ void _DLLEXPORT HUD_PostRunCmd( struct local_state_s *from, struct local_state_s
 {
 	g_runfuncs = runfuncs;
 
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 	if( cl_lw && cl_lw->value )
 	{
 		HUD_WeaponsPostThink( from, to, cmd, time, random_seed );

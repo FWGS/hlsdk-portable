@@ -143,7 +143,7 @@ void CHammer::PrimaryAttack()
 {
 	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 1.7f;
 	SendWeaponAnim( HAMMER_WHACK );
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	SetThink( &CHammer::BigWhackThink );
 	pev->nextthink = gpGlobals->time + 0.45f;
 #endif
@@ -159,7 +159,7 @@ void CHammer::BigWhackThink()
 
 	UTIL_TraceLine( vecSrc, vecEnd, dont_ignore_monsters, ENT( m_pPlayer->pev ), &tr );
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	if ( tr.flFraction >= 1.0f )
 	{
 		UTIL_TraceHull( vecSrc, vecEnd, dont_ignore_monsters, head_hull, ENT( m_pPlayer->pev ), &tr );
@@ -183,7 +183,7 @@ void CHammer::BigWhackThink()
 		// player "shoot" animation
 		m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
 		
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 		// hit
 		CBaseEntity *pEntity = CBaseEntity::Instance(tr.pHit);
 

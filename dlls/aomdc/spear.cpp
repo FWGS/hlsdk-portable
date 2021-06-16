@@ -151,7 +151,7 @@ void CSpear::PrimaryAttack()
 	{
 		SendWeaponAnim( SPEAR_ELECTROCUTE );
 		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 2.34f;
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 		UTIL_ScreenFade( m_pPlayer, Vector( 255, 255, 255 ), 0.5, 0.0, 100, FFADE_IN );
 		m_pPlayer->TakeDamage(m_pPlayer->pev, m_pPlayer->pev, DAMAGE_AIM, DMG_GENERIC );
 		EMIT_SOUND(ENT(m_pPlayer->pev), CHAN_ITEM, "weapons/spear_electrocute.wav", 1, ATTN_NORM);
@@ -181,7 +181,7 @@ void CSpear::BigSpearStab()
 	Vector vecEnd	= vecSrc + gpGlobals->v_forward * 72;
 	UTIL_TraceLine( vecSrc, vecEnd, dont_ignore_monsters, ENT( m_pPlayer->pev ), &tr );
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	if ( tr.flFraction >= 1.0f )
 	{
 		UTIL_TraceHull( vecSrc, vecEnd, dont_ignore_monsters, head_hull, ENT( m_pPlayer->pev ), &tr );
@@ -207,7 +207,7 @@ void CSpear::BigSpearStab()
 
 		// player "shoot" animation
 		m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 
 		// hit
 		CBaseEntity *pEntity = CBaseEntity::Instance(tr.pHit);

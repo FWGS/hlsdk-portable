@@ -756,8 +756,7 @@ private:
 class CShotgun : public CBasePlayerWeapon
 {
 public:
-
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	int		Save( CSave &save );
 	int		Restore( CRestore &restore );
 	static	TYPEDESCRIPTION m_SaveData[];
