@@ -19,7 +19,7 @@
 #define BLUE 2
 #define RED 1
 
-#ifndef NO_VOICEGAMEMGR
+#if !NO_VOICEGAMEMGR
 #include "voice_gamemgr.h"
 #endif
 

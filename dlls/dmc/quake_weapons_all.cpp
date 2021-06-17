@@ -37,7 +37,7 @@ extern unsigned short g_usCarried;
 
 extern bool g_bIsThreeWave;
 
-#ifdef CLIENT_DLL
+#if CLIENT_DLL
 #include "cl_entity.h"
 struct cl_entity_s *GetViewEntity( void );
 extern float g_flLightTime;
@@ -229,13 +229,11 @@ void CBasePlayer::W_SetCurrentAmmo( int sendanim /* = 1 */ )
 		m_pCurrentAmmo = NULL;
 	}
 
-#if !defined( CLIENT_DLL )
-
+#if !CLIENT_DLL
 	pev->viewmodel = iszViewModel;
 
 	pev->weaponmodel = iszWeaponModel;
 	m_pszAnimExtention = szAnimExt;
-
 #else
 	{
 
@@ -414,7 +412,7 @@ void CBasePlayer::W_ChangeWeapon( int iWeaponNumber )
 	m_iQuakeWeapon = iWeapon;
 	W_SetCurrentAmmo();
 
-#ifdef CLIENT_DLL
+#if CLIENT_DLL
 	g_flLightTime = 0.0;
 #endif
 }
@@ -632,7 +630,7 @@ void CBasePlayer::Q_FireBullets(int iShots, Vector vecDir, Vector vecSpread)
 	ApplyMultiDamage( pev, pev );
 }
 
-#if !defined( CLIENT_DLL )
+#if !CLIENT_DLL
 // Quake Radius damage
 void Q_RadiusDamage( CBaseEntity *pInflictor, CBaseEntity *pAttacker, float flDamage, CBaseEntity *pIgnore )
 {
@@ -667,7 +665,7 @@ void Q_RadiusDamage( CBaseEntity *pInflictor, CBaseEntity *pAttacker, float flDa
 void LightningHit(CBaseEntity *pTarget, CBaseEntity *pAttacker, Vector vecHitPos, float flDamage, TraceResult *ptr, Vector vecDir ) 
 {
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	SpawnBlood( vecHitPos, BLOOD_COLOR_RED, flDamage * 1.5f );
 
 	if ( g_pGameRules->PlayerRelationship( pTarget, pAttacker ) != GR_TEAMMATE )
@@ -683,7 +681,7 @@ void LightningHit(CBaseEntity *pTarget, CBaseEntity *pAttacker, Vector vecHitPos
 // Lightning Damage
 void CBasePlayer::LightningDamage( Vector p1, Vector p2, CBaseEntity *pAttacker, float flDamage, Vector vecDir)
 {
-#if !defined( CLIENT_DLL )
+#if !CLIENT_DLL
 	TraceResult trace;
 	Vector vecThru = (p2 - p1).Normalize();
 	vecThru.x = 0 - vecThru.y;
@@ -749,7 +747,7 @@ void CBasePlayer::W_FireAxe()
 
 		pEntity->TakeDamage( pev, pev, iDmg, DMG_GENERIC );
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 		if ( g_pGameRules->PlayerRelationship( this, pEntity ) != GR_TEAMMATE )
 			 SpawnBlood( vecOrg, BLOOD_COLOR_RED, iDmg * 4 ); // Make a lot of Blood!
 #endif
@@ -775,7 +773,7 @@ void CBasePlayer::W_FireHook( void )
 	Throw_Grapple();
 }
 
-#ifdef CLIENT_DLL
+#if CLIENT_DLL
 unsigned short g_usCable;
 unsigned short g_usHook;
 unsigned short g_usCarried;
@@ -884,7 +882,7 @@ void CBasePlayer::W_FireLightning( int iQuadSound )
 			float flCellsBurnt = *m_pCurrentAmmo;
 			*m_pCurrentAmmo = 0;
 			W_SetCurrentAmmo();
-#if !defined( CLIENT_DLL )
+#if !CLIENT_DLL
 			Q_RadiusDamage( this, this, 35 * flCellsBurnt, NULL );
 #endif
 			return;
@@ -893,8 +891,7 @@ void CBasePlayer::W_FireLightning( int iQuadSound )
 
 	PLAYBACK_EVENT_FULL( FEV_NOTHOST, edict(), m_usLightning, 0, pev->origin, pev->angles, 0.0, 0.0, iQuadSound, 0, playsound, 0 );
 
-#if !defined( CLIENT_DLL )
-	
+#if !CLIENT_DLL
 	if (gpGlobals->deathmatch != 4 )
 		*m_pCurrentAmmo -= 1;
 

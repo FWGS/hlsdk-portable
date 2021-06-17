@@ -65,7 +65,7 @@ int CQuakeGun::GetItemInfo(ItemInfo *p)
 
 void CQuakeGun::DestroyEffect( void )
 {
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	if ( m_pBeam )
 	{
 		UTIL_Remove( m_pBeam );
@@ -76,7 +76,7 @@ void CQuakeGun::DestroyEffect( void )
 
 void CQuakeGun::CreateEffect( void )
 {
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	DestroyEffect();
 
 	m_pBeam = CBeam::BeamCreate( "sprites/laserbeam.spr", 40 );
@@ -94,7 +94,7 @@ void CQuakeGun::CreateEffect( void )
 
 void CQuakeGun::UpdateEffect( void )
 {
-#if !defined( CLIENT_DLL )
+#if !CLIENT_DLL
 	UTIL_MakeVectors( m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle );
 	Vector vecAiming = gpGlobals->v_forward;
 	Vector vecSrc	 = m_pPlayer->GetGunPosition( );
@@ -123,14 +123,14 @@ void CQuakeGun::UpdateEffect( void )
 
 }
 
-#if !defined( CLIENT_DLL )
+#if !CLIENT_DLL
 BOOL CQuakeGun::Deploy( )
 {
 	m_pPlayer->pev->viewmodel = MAKE_STRING("models/v_crowbar.mdl");
 	m_pPlayer->pev->weaponmodel = MAKE_STRING("models/p_9mmhandgun.mdl");
 	m_pPlayer->m_pszAnimExtention = "onehanded";
 
-#ifdef CLIENT_DLL
+#if CLIENT_DLL
 	g_flLightTime = 0.0;
 #endif
 
@@ -170,7 +170,7 @@ void CQuakeGun::PrimaryAttack( void )
 	iQuadSound = SuperDamageSound();
 	m_pPlayer->W_Attack( iQuadSound );
 
-#if !defined( CLIENT_DLL )
+#if !CLIENT_DLL
 	if ( m_pPlayer->m_iQuakeWeapon == IT_LIGHTNING && m_pPlayer->pev->deadflag == DEAD_NO )
 		 UpdateEffect();
 #endif

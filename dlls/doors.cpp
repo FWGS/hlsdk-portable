@@ -628,7 +628,7 @@ void CBaseDoor::DoorGoUp( void )
 			Vector vecCenter( Center() );
 
 			PLAYBACK_EVENT_FULL( FEV_RELIABLE, NULL, m_usDoorGoUp, 0.0, vecCenter, g_vecZero, 0.0, 0.0, ( m_bMoveSnd << 8 ) | ( m_bStopSnd & 0xff ), 0, 0, 0 );
-#if defined ( OLD_SOUNDS )
+#if OLD_SOUNDS
 			STOP_SOUND( ENT( pev ), CHAN_STATIC, (char*)STRING( pev->noiseMoving ) );
 			if( m_toggle_state != TS_GOING_UP && m_toggle_state != TS_GOING_DOWN )
 				EMIT_SOUND( ENT( pev ), CHAN_STATIC, (char*)STRING( pev->noiseMoving ), 1, ATTN_NORM );
@@ -681,7 +681,7 @@ void CBaseDoor::DoorHitTop( void )
 
 			PLAYBACK_EVENT_FULL( FEV_RELIABLE, NULL, m_usDoorHitTop, 0.0, vecCenter, g_vecZero, 0.0, 0.0, ( m_bMoveSnd << 8 ) | ( m_bStopSnd & 0xff ), 0, 0, 0 );
 
-#if defined ( OLD_SOUNDS )
+#if OLD_SOUNDS
 			STOP_SOUND( ENT( pev ), CHAN_STATIC, (char*)STRING( pev->noiseMoving ) );
 			EMIT_SOUND( ENT( pev ), CHAN_STATIC, (char*)STRING( pev->noiseArrived ), 1, ATTN_NORM );
 #endif
@@ -731,7 +731,7 @@ void CBaseDoor::DoorGoDown( void )
 			Vector vecCenter( Center() );
 
 			PLAYBACK_EVENT_FULL( FEV_RELIABLE, NULL, m_usDoorGoDown, 0.0, vecCenter, g_vecZero, 0.0, 0.0, ( m_bMoveSnd << 8 ) | ( m_bStopSnd & 0xff ), 0, 0, 0 );
-#if defined ( OLD_SOUNDS )
+#if OLD_SOUNDS
 			STOP_SOUND( ENT( pev ), CHAN_STATIC, (char*)STRING( pev->noiseMoving ) );
 			if( m_toggle_state != TS_GOING_UP && m_toggle_state != TS_GOING_DOWN )
 				EMIT_SOUND( ENT( pev ), CHAN_STATIC, (char*)STRING( pev->noiseMoving ), 1, ATTN_NORM );	
@@ -763,7 +763,7 @@ void CBaseDoor::DoorHitBottom( void )
 			Vector vecCenter( Center() );
 
 			PLAYBACK_EVENT_FULL( FEV_RELIABLE, NULL, m_usDoorHitBottom, 0.0, vecCenter, g_vecZero, 0.0, 0.0, ( m_bMoveSnd << 8 ) | ( m_bStopSnd & 0xff ), 0, 0, 0 );
-#if defined ( OLD_SOUNDS )
+#if OLD_SOUNDS
 			STOP_SOUND( ENT( pev ), CHAN_STATIC, (char*)STRING( pev->noiseMoving ) );
 			EMIT_SOUND( ENT( pev ), CHAN_STATIC, (char*)STRING( pev->noiseArrived ), 1, ATTN_NORM );
 #endif

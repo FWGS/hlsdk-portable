@@ -56,7 +56,7 @@ extern unsigned short g_usCarried;
 extern edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer, bool bCheckDM );
 extern edict_t *RuneSelectSpawnPoint( void );
 
-#ifndef NO_VOICEGAMEMGR
+#if !NO_VOICEGAMEMGR
 class CThreeWaveGameMgrHelper : public IVoiceGameMgrHelper
 {
 public:
@@ -80,7 +80,7 @@ const char *GetTeamName( int team )
 
 CThreeWave::CThreeWave()
 {
-#ifndef NO_VOICEGAMEMGR
+#if !NO_VOICEGAMEMGR
 	// CHalfLifeMultiplay already initialized it - just override its helper callback.
 	m_VoiceGameMgr.SetHelper( &g_GameMgrHelper );
 #endif
@@ -130,7 +130,7 @@ extern cvar_t timeleft, fragsleft;
 
 void CThreeWave::Think( void )
 {
-#ifndef NO_VOICEGAMEMGR
+#if !NO_VOICEGAMEMGR
 	m_VoiceGameMgr.Update( gpGlobals->frametime );
 #endif
 	///// Check game rules /////
@@ -271,7 +271,7 @@ extern void DropRune( CBasePlayer *pPlayer );
 //=========================================================
 BOOL CThreeWave::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 {
-#ifndef NO_VOICEGAMEMGR
+#if !NO_VOICEGAMEMGR
 	if( m_VoiceGameMgr.ClientCommand( pPlayer, pcmd ) )
 		return TRUE;
 #endif
