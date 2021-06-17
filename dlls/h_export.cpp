@@ -43,8 +43,8 @@ BOOL WINAPI DllMain( HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved )
 	return TRUE;
 }
 
-// stdcall for win32
-#define EXPORT2 WINAPI
+// cdecl for win32
+#define EXPORT2 WINAPIV
 #else
 #define EXPORT2
 #endif
