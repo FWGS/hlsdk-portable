@@ -1,0 +1,6 @@
+.idea
+.gradle
+.externalNativeBuild
+.cxx
+build/
+local.properties

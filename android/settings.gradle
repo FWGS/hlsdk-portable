@@ -1,0 +1,2 @@
+rootProject.name = "hlsdk-xash3d"
+include ':app'

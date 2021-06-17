@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name" translatable="false">hlsdk-xash3d</string>
+    <string name="launch">Launch %1$s!</string>
+</resources>

@@ -49,4 +49,19 @@ jobs:
         sudo apt-get install -y mingw-w64-i686-dev binutils-mingw-w64-i686 gcc-mingw-w64-i686 g++-mingw-w64-i686
         cmake -B build-mingw -S . -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_C_COMPILER=i686-w64-mingw32-gcc -DCMAKE_CXX_COMPILER=i686-w64-mingw32-g++
         cmake --build build-mingw --target all
+    
+    - name: Setup Java
+      if: startsWith(matrix.os, 'ubuntu') && startsWith(matrix.cc, 'clang')
+      uses: actions/setup-java@v1
+      with:
+        java-version: 1.8
+    
+    - name: Setup Android
+      if: startsWith(matrix.os, 'ubuntu') && startsWith(matrix.cc, 'clang')
+      uses: android-actions/setup-android@v2
+    
+    - name: Build for Android
+      if: startsWith(matrix.os, 'ubuntu') && startsWith(matrix.cc, 'clang')
+      run: ./gradlew assembleRelease
+      working-directory: android
 
