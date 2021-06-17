@@ -159,7 +159,7 @@ set LIBS=user32.lib
 set OUTNAME=hl.dll
 set DEBUG=/debug
 
-cl %DEFINES% %LIBS% %SOURCES% %INCLUDES% -o %OUTNAME% /link /dll /out:%OUTNAME% %DEBUG% /def:".\hl.def"
+cl %DEFINES% %LIBS% %SOURCES% %INCLUDES% -o %OUTNAME% /link /dll /out:%OUTNAME% %DEBUG%
 
 echo -- Compile done. Cleaning...
 
