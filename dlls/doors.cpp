@@ -738,7 +738,7 @@ void CBaseDoor::DoorGoDown( void )
 #endif
 		}
 	}
-#ifdef DOOR_ASSERT
+#if DOOR_ASSERT
 	ASSERT( m_toggle_state == TS_AT_TOP );
 #endif // DOOR_ASSERT
 	m_toggle_state = TS_GOING_DOWN;

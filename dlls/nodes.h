@@ -45,7 +45,6 @@ public:
 	void	ShowNodeConnections ( int iNode );
 	int		FindNearestNode ( const Vector &vecOrigin, CBaseEntity *pEntity );
 	int		FindNearestNode ( const Vector &vecOrigin, int afNodeTypes );
-
 };
 
 extern CGraph WorldGraph;

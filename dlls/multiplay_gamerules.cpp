@@ -26,7 +26,7 @@
 #include	"skill.h"
 #include	"game.h"
 #include	"items.h"
-#ifndef NO_VOICEGAMEMGR
+#if !NO_VOICEGAMEMGR
 #include	"voice_gamemgr.h"
 #endif
 #include	"hltv.h"
@@ -53,7 +53,7 @@ const char *GetTeamName( int team );
 const char *g_szDeathType;
 float g_flIntermissionStartTime = 0;
 
-#ifndef NO_VOICEGAMEMGR
+#if !NO_VOICEGAMEMGR
 CVoiceGameMgr	g_VoiceGameMgr;
 
 class CMultiplayGameMgrHelper : public IVoiceGameMgrHelper
@@ -85,7 +85,7 @@ CHalfLifeMultiplay::CHalfLifeMultiplay()
 	m_fGameStart = gpGlobals->time;
 //-- Martin Webrant
 
-#ifndef NO_VOICEGAMEMGR
+#if !NO_VOICEGAMEMGR
 	g_VoiceGameMgr.Init( &g_GameMgrHelper, gpGlobals->maxClients );
 #endif
 	int length;
@@ -145,7 +145,7 @@ CHalfLifeMultiplay::CHalfLifeMultiplay()
 
 BOOL CHalfLifeMultiplay::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 {
-#ifndef NO_VOICEGAMEMGR
+#if !NO_VOICEGAMEMGR
 	if( g_VoiceGameMgr.ClientCommand( pPlayer, pcmd ) )
 		return TRUE;
 #endif
@@ -216,7 +216,7 @@ extern cvar_t mp_chattime;
 //=========================================================
 void CHalfLifeMultiplay::Think( void )
 {
-#ifndef NO_VOICEGAMEMGR
+#if !NO_VOICEGAMEMGR
 	g_VoiceGameMgr.Update( gpGlobals->frametime );
 #endif
 
@@ -461,7 +461,7 @@ BOOL CHalfLifeMultiplay::GetNextBestWeapon( CBasePlayer *pPlayer, CBasePlayerIte
 //=========================================================
 BOOL CHalfLifeMultiplay::ClientConnected( edict_t *pEntity, const char *pszName, const char *pszAddress, char szRejectReason[128] )
 {
-#ifndef NO_VOICEGAMEMGR
+#if !NO_VOICEGAMEMGR
 	g_VoiceGameMgr.ClientConnected( pEntity );
 #endif
 	return TRUE;

@@ -2341,7 +2341,7 @@ pt_end:
 	else
 		pev->angles = m_vecLastViewAngles;
 
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 	// Decay timers on weapons
 	// go through all of the weapons and make a list of the ones to pack
 	for( int i = 0; i < MAX_ITEM_TYPES; i++ )
@@ -2776,7 +2776,7 @@ int CBasePlayer::Restore( CRestore &restore )
 
 	RenewItems();
 
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 	// HACK:	This variable is saved/restored in CBaseMonster as a time variable, but we're using it
 	//			as just a counter.  Ideally, this needs its own variable that's saved as a plain float.
 	//			Barring that, we clear it out here instead of using the incorrect restored time value.
@@ -3229,7 +3229,7 @@ void CBasePlayer::ImpulseCommands()
 //=========================================================
 void CBasePlayer::CheatImpulseCommands( int iImpulse )
 {
-#if !defined( HLDEMO_BUILD )
+#if !HLDEMO_BUILD
 	if( g_flWeaponCheat == 0.0f )
 	{
 		return;
@@ -3531,7 +3531,7 @@ Called every frame by the player PreThink
 */
 void CBasePlayer::ItemPreFrame()
 {
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 	if( m_flNextAttack > 0 )
 #else
 	if( gpGlobals->time < m_flNextAttack )
@@ -3561,7 +3561,7 @@ void CBasePlayer::ItemPostFrame()
 	if( m_pTank != 0 )
 		return;
 
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 	// HACKHACK: To make the axe fire 0.3 sec after fire is pressed
 	// See if the axe should fire now
 	if( m_flAxeFire && m_flAxeFire <= gpGlobals->time )

@@ -20,7 +20,7 @@
 #include <stdlib.h> // atoi
 #include <ctype.h>  // isspace
 #include "mathlib.h"
-#ifdef HAVE_TGMATH_H
+#if HAVE_TGMATH_H
 #include <tgmath.h>
 #endif
 
@@ -33,7 +33,7 @@
 
 int g_bhopcap = 1;
 
-#ifdef CLIENT_DLL
+#if CLIENT_DLL
 // Spectator Mode
 int iJumpSpectator;
 extern float vJumpOrigin[3];
@@ -45,7 +45,7 @@ extern int g_walking;
 
 static int pm_shared_initialized = 0;
 
-#ifdef _MSC_VER
+#if _MSC_VER
 #pragma warning( disable : 4305 )
 #endif
 
@@ -89,7 +89,7 @@ playermove_t *pmove = NULL;
 #define PLAYER_DUCKING_MULTIPLIER	0.333f
 
 // double to float warning
-#ifdef _MSC_VER
+#if _MSC_VER
 #pragma warning(disable : 4244)
 #endif
 
@@ -1566,7 +1566,7 @@ void PM_SpectatorMove( void )
 	// doesn't need excate track position, only to generate PVS, so just copy
 	// targets position and real view position is calculated on client (saves server CPU)
 	
-#ifdef CLIENT_DLL
+#if CLIENT_DLL
 		// execute all jumps
 		if( iJumpSpectator )
 		{
