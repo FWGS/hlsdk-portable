@@ -42,7 +42,7 @@ enum tripmine_e
 	TRIPMINE_GROUND
 };
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 LINK_ENTITY_TO_CLASS( monster_tripmine, CTripmineGrenade )
 
 TYPEDESCRIPTION	CTripmineGrenade::m_SaveData[] =
@@ -365,7 +365,7 @@ void CTripmine::Spawn()
 
 	m_iDefaultAmmo = TRIPMINE_DEFAULT_GIVE;
 
-#ifdef CLIENT_DLL
+#if CLIENT_DLL
 	if( !bIsMultiplayer() )
 #else
 	if( !g_pGameRules->IsDeathmatch() )
@@ -451,7 +451,7 @@ void CTripmine::BModAttack( BOOL flashbang )
 	UTIL_TraceLine( vecSrc, vecSrc + vecAiming * 128.0f, dont_ignore_monsters, ENT( m_pPlayer->pev ), &tr );
 
 	int flags;
-#ifdef CLIENT_WEAPONS
+#if CLIENT_WEAPONS
 	flags = FEV_NOTHOST;
 #else
 	flags = 0;
