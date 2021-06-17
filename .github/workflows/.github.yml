@@ -43,3 +43,10 @@ jobs:
       run: |
         cmake -B build-gs -S . -DCMAKE_EXE_LINKER_FLAGS="-Wl,--no-undefined" -DGOLDSOURCE_SUPPORT=ON && cmake --build build-gs --target all
 
+    - name: Build with mingw
+      if: startsWith(matrix.os, 'ubuntu') && startsWith(matrix.cc, 'gcc')
+      run: |
+        sudo apt-get install -y mingw-w64-i686-dev binutils-mingw-w64-i686 gcc-mingw-w64-i686 g++-mingw-w64-i686
+        cmake -B build-mingw -S . -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_C_COMPILER=i686-w64-mingw32-gcc -DCMAKE_CXX_COMPILER=i686-w64-mingw32-g++
+        cmake --build build-mingw --target all
+
