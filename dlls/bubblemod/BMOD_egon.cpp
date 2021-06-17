@@ -12,7 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
-#if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
+#if !OEM_BUILD && !HLDEMO_BUILD
 
 #include "extdll.h"
 #include "util.h"
@@ -701,7 +701,7 @@ void CEgon::Attack( void )
 	Vector vecSrc	 = m_pPlayer->GetGunPosition( );
 
 	int flags;
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 	flags = FEV_NOTHOST;
 #else
 	flags = 0;
@@ -788,7 +788,7 @@ void CEgon::Fire( const Vector &vecOrigSrc, const Vector &vecDir )
 	if (tr.fAllSolid)
 		return;
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	CBaseEntity *pEntity = CBaseEntity::Instance(tr.pHit);
 
 	if (pEntity == NULL)
@@ -814,7 +814,7 @@ void CEgon::Fire( const Vector &vecOrigSrc, const Vector &vecDir )
 	switch ( m_fireMode )
 	{
 	case FIRE_NARROW:
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 		if ( pev->dmgtime < gpGlobals->time )
 		{
 			// Narrow mode only does damage to the entity it hits
@@ -851,7 +851,7 @@ void CEgon::Fire( const Vector &vecOrigSrc, const Vector &vecDir )
 		break;
 	
 	case FIRE_WIDE:
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 		if ( pev->dmgtime < gpGlobals->time )
 		{
 			// wide mode does damage to the ent, and radius damage
