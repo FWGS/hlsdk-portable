@@ -7,7 +7,7 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#ifdef AG_USE_CHEATPROTECTION
+#if AG_USE_CHEATPROTECTION
 
 #include "agglobal.h"
 

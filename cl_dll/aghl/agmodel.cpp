@@ -11,7 +11,7 @@
 #include "com_weapons.h"
 #include "agmodel.h"
 
-#ifdef AG_USE_CHEATPROTECTION
+#if AG_USE_CHEATPROTECTION
 
 void CalcBonePosition(int frame, mstudiobone_t *pbone, mstudioanim_t *panim, float *pos);
 extern int g_iPure;
@@ -240,7 +240,7 @@ bool AgModel::CheckModel(const char* szModelName)
     sprintf(szMessage,"Server enforces model check and %s seems to be corrupt.\n",szModelName);
     AgLog(szMessage);
     ConsolePrint(szMessage);
-#ifdef _DEBUG
+#if _DEBUG
 		return true;
 #else
     return false;
@@ -272,7 +272,7 @@ bool AgModel::CheckModel(const char* szModelName)
     AgLog(szMessage);
     sprintf(szMessage,"Server enforces model check and %s is not valid.\n",szModelName);
     ConsolePrint(szMessage);
-#ifdef _DEBUG
+#if _DEBUG
 		return true;
 #else
     return false;

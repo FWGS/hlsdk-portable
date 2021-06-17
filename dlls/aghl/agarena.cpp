@@ -94,7 +94,7 @@ void AgArena::Think()
 
 
       //Write waiting message
-#ifdef AG_NO_CLIENT_DLL
+#if AG_NO_CLIENT_DLL
       if (0 != m_sWinner.size())
       {
         AgString s;
@@ -163,7 +163,7 @@ void AgArena::Think()
       else
       {
         //Write countdown message.
-#ifdef AG_NO_CLIENT_DLL
+#if AG_NO_CLIENT_DLL
         char szMatchStart[128];
         sprintf(szMatchStart,"Match %s vs %s in %d seconds!\n",GetPlayer1()->GetName(),GetPlayer2()->GetName(),(int)(m_fMatchStart - gpGlobals->time));
         AgSay(NULL,szMatchStart,&m_fNextSay,1,0.3,0.5);

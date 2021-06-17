@@ -3,7 +3,7 @@
 #if !defined(_AG_LOCATION_HUD_)
 #define _AG_LOCATION_HUD_
 
-#ifdef AG_NO_CLIENT_DLL
+#if AG_NO_CLIENT_DLL
 
 #include "aglocation.h"
 

@@ -85,7 +85,7 @@ bool AgCRC32EnforceFiles()
 		  sprintf(szMessage,"File check enforced and %s is either damaged or changed. Run scandisk and reinstall file.\n", s_Files[i].pszFile);
 		  AgLog(szMessage);
 		  ConsolePrint(szMessage);
-#ifndef _DEBUG
+#if !_DEBUG
 		  bPassed = false;
 #endif
     }
@@ -111,7 +111,7 @@ bool AgCRC32EnforceFiles()
 			  sprintf(szMessage,"File check enforced and %s is either damaged or changed. Run scandisk and reinstall file.\n", "models/player/blue/blue.mdl");
 			  AgLog(szMessage);
 			  ConsolePrint(szMessage);
-	  #ifndef _DEBUG
+	  #if !_DEBUG
 			  bPassed = false;
 	  #endif
     }
@@ -122,7 +122,7 @@ bool AgCRC32EnforceFiles()
 			  sprintf(szMessage,"File check enforced and %s is either damaged or changed. Run scandisk and reinstall file.\n", "models/player/red/red.mdl");
 			  AgLog(szMessage);
 			  ConsolePrint(szMessage);
-	  #ifndef _DEBUG
+	  #if !_DEBUG
 			  bPassed = false;
 	  #endif
     }

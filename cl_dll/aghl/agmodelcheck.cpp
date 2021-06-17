@@ -19,7 +19,7 @@
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-#ifdef AG_USE_CHEATPROTECTION
+#if AG_USE_CHEATPROTECTION
 
 
 AgModelCheck g_ModelCheck;
@@ -97,7 +97,7 @@ bool AgModelCheck::CheckOne(const char* pszModel)
   if (0 != m_setChecked.size() && m_setChecked.end() != m_setChecked.find(szModel))
     return true;
 
-#ifdef _DEBUG
+#if _DEBUG
 	char szMessage[256];
     sprintf(szMessage,"Checking %s\n",szModel);
     ConsolePrint(szMessage);

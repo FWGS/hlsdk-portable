@@ -24,7 +24,7 @@
 #include "gamerules.h"
 
 //++ BulliT
-#ifdef AGSTATS
+#if AGSTATS
 #include "agstats.h"
 #endif
 //-- Martin Webrant
@@ -374,7 +374,7 @@ void CCrossbow::FireSniperBolt()
 	m_iClip--;
 
 //++ BulliT
-#ifdef AGSTATS
+#if AGSTATS
 	Stats.FireShot( m_pPlayer, STRING( pev->classname ) );
 #endif
 //-- Martin Webrant
@@ -423,7 +423,7 @@ void CCrossbow::FireBolt()
 	m_iClip--;
 
 //++ BulliT
-#ifdef AGSTATS
+#if AGSTATS
 	Stats.FireShot( m_pPlayer, STRING( pev->classname ) );
 #endif
 //-- Martin Webrant

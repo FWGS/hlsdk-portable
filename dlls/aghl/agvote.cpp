@@ -352,7 +352,7 @@ bool AgVote::CallVote(CBasePlayer* pPlayer)
   m_fMaxTime = AgTime() + 30.0;  //30 seconds is enough.
   m_fNextCount = AgTime();       //Next count directly
   pPlayer->m_iVote = 1;          //Voter voted yes
-#ifdef _DEBUG
+#if _DEBUG
   pPlayer->m_iVote = 0;
 #endif
   m_sCalled = pPlayer->GetName();
@@ -400,7 +400,7 @@ void AgVote::Think()
     //Check if enough.
     if (((float)iFor / (float)iPlayers > 0.5f))
     {
-#ifdef AG_NO_CLIENT_DLL
+#if AG_NO_CLIENT_DLL
 			UTIL_ClientPrintAll(HUD_PRINTCENTER, UTIL_VarArgs("Vote: %s %s\nCalled by: %s\nAccepted!",m_sVote.c_str(),m_sValue.c_str(),m_sCalled.c_str()));
 #else
 			MESSAGE_BEGIN( MSG_BROADCAST, gmsgVote, NULL );
@@ -474,7 +474,7 @@ void AgVote::Think()
     {
       if (m_fMaxTime < AgTime())
       {
-#ifdef AG_NO_CLIENT_DLL
+#if AG_NO_CLIENT_DLL
 				UTIL_ClientPrintAll(HUD_PRINTCENTER, UTIL_VarArgs("Vote: %s %s\nCalled by: %s\nDenied!",m_sVote.c_str(),m_sValue.c_str(),m_sCalled.c_str()));
 #else
 		    MESSAGE_BEGIN( MSG_BROADCAST, gmsgVote, NULL );
@@ -493,7 +493,7 @@ void AgVote::Think()
       }
       else
       {
-#ifdef AG_NO_CLIENT_DLL
+#if AG_NO_CLIENT_DLL
 				UTIL_ClientPrintAll(HUD_PRINTCENTER, UTIL_VarArgs("Vote: %s %s\nCalled by: %s\nFor: %d\nAgainst: %d\nUndecided: %d",m_sVote.c_str(),m_sValue.c_str(),m_sCalled.c_str(), iFor, iAgainst, iUndecided));
 #else
 		    MESSAGE_BEGIN( MSG_BROADCAST, gmsgVote, NULL );

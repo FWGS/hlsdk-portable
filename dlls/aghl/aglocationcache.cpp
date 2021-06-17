@@ -6,7 +6,7 @@
 #include	"player.h"
 #include	"gamerules.h"
 
-#ifdef AG_NO_CLIENT_DLL
+#if AG_NO_CLIENT_DLL
 
 #include	"aglocationcache.h"
 

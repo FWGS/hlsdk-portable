@@ -5,7 +5,7 @@
 
 #include "agglobal.h"
 
-#ifdef AG_NO_CLIENT_DLL
+#if AG_NO_CLIENT_DLL
 
 class AgLocation  
 {

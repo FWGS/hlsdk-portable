@@ -74,7 +74,7 @@ int arrHudColor[3] =
 extern int iTeamColors[5][3];
 extern float g_ColorConsole[3];
 //-- Martin Webrant
-#ifdef _DEBUG
+#if _DEBUG
 void AgTest();
 #endif
 

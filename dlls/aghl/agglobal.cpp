@@ -24,7 +24,7 @@
 
 void AgInitTimer();
 
-#ifdef AG_NO_CLIENT_DLL
+#if AG_NO_CLIENT_DLL
 DLL_GLOBAL cvar_t	ag_version        = {"sv_ag_version","6.6mini", FCVAR_SERVER }; 
 #else
 DLL_GLOBAL cvar_t	ag_version        = {"sv_ag_version","6.6", FCVAR_SERVER }; 
@@ -610,7 +610,7 @@ void AgLog(const char* pszLog)
 /*
 float AgTime()
 {
-#ifdef WIN32
+#if WIN32
   return ((float)clock()) / ((float)CLOCKS_PER_SEC);
 #else
   static tms t;
@@ -621,7 +621,7 @@ float AgTime()
 
 void AgDirList(const AgString& sDir, AgStringSet& setFiles)
 {
-#ifdef _WIN32		
+#if _WIN32		
   WIN32_FIND_DATA FindData;
   char szSearchDirectory[_MAX_PATH];
   sprintf(szSearchDirectory,"%s/*.*",sDir.c_str());
@@ -732,7 +732,7 @@ void AgGetPlayerInfo(char* pszDetails, int iMaxSize, int* piSize)
 
 char* AgOSVersion()
 {
-#ifdef _WIN32
+#if _WIN32
     static char verbuf[256];
 #else
 #ifndef SYS_NMLN
@@ -741,7 +741,7 @@ char* AgOSVersion()
     static char verbuf[4*SYS_NMLN + 4];
 #endif
 
-#ifdef _WIN32
+#if _WIN32
     OSVERSIONINFO VersionInfo;
 
     VersionInfo.dwOSVersionInfoSize = sizeof(VersionInfo);
@@ -780,7 +780,7 @@ char* AgOSVersion()
 }
 
 
-#ifdef _WIN32
+#if _WIN32
 static LARGE_INTEGER liTimerFreq;
 void AgInitTimer()
 {

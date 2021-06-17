@@ -1,7 +1,7 @@
 #ifndef __AG_VERSION_INFO_H__
 #define __AG_VERSION_INFO_H__
 
-#ifdef AG_USE_CHEATPROTECTION
+#if AG_USE_CHEATPROTECTION
 
 class AgVersionInfo 
 {

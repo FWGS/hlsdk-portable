@@ -4,7 +4,7 @@
 #include	"util.h"
 #include "aglocation.h"
 
-#ifdef AG_NO_CLIENT_DLL
+#if AG_NO_CLIENT_DLL
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction

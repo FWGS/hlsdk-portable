@@ -27,7 +27,7 @@
 #include "game.h"
 
 //++ BulliT
-#ifdef AGSTATS
+#if AGSTATS
 #include "agstats.h"
 #endif
 //-- Martin Webrant
@@ -440,7 +440,7 @@ void CGauss::Fire( Vector vecOrigSrc, Vector vecDir, float flDamage )
 	if( SGBOW == AgGametype() )
 		return;
 
-#ifdef AGSTATS
+#if AGSTATS
 	Stats.FireShot( m_pPlayer, STRING( pev->classname ) );
 #endif
 //-- Martin Webrant

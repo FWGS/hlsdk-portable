@@ -47,7 +47,7 @@ void AgTimer::Think()
         CVAR_SET_FLOAT("mp_timelimit",2880); //Max two days.
 
       //Write the time. (negative turns off timer on client)
-#ifdef AG_NO_CLIENT_DLL
+#if AG_NO_CLIENT_DLL
 			long lTime = (m_pmp_timelimit->value * 60) - m_fEffectiveTime;
 
 			if (lTime > 0)

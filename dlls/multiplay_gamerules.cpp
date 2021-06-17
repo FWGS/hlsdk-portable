@@ -410,7 +410,7 @@ void CHalfLifeMultiplay::InitHUD( CBasePlayer *pl )
 				WRITE_BYTE( plr->IsSpectator() ? 1 : 0 );
 			MESSAGE_END();
 
-#ifndef AG_NO_CLIENT_DLL
+#if !AG_NO_CLIENT_DLL
 			MESSAGE_BEGIN( MSG_ONE, gmsgAuthID, NULL, pl->edict() );
 				WRITE_BYTE( plr->entindex() );
 				WRITE_STRING( plr->GetAuthID() );

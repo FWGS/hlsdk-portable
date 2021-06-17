@@ -179,7 +179,7 @@ void AgLMS::Think()
      }
  
       //Write waiting message
-#ifdef AG_NO_CLIENT_DLL
+#if AG_NO_CLIENT_DLL
       if (0 != m_sWinner.size())
       {
         AgString s;
@@ -249,7 +249,7 @@ void AgLMS::Think()
       else
       {
         //Write countdown message.
-#ifdef AG_NO_CLIENT_DLL
+#if AG_NO_CLIENT_DLL
         char szMatchStart[128];
         sprintf(szMatchStart,"Match will begin in %d seconds!\n",(int)(m_fMatchStart - gpGlobals->time));
         AgSay(NULL,szMatchStart,&m_fNextSay,1,0.3,0.5);

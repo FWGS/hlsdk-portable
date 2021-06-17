@@ -22,7 +22,7 @@
 #include "player.h"
 #include "gamerules.h"
 
-#ifdef AGSTATS
+#if AGSTATS
 #include "agstats.h"
 #endif
 
@@ -184,7 +184,7 @@ void CPython::PrimaryAttack()
 	m_pPlayer->m_iWeaponFlash = BRIGHT_GUN_FLASH;
 
 	m_iClip--;
-#ifdef AGSTATS
+#if AGSTATS
 	Stats.FireShot( m_pPlayer, STRING( pev->classname ) );
 #endif
 	m_pPlayer->pev->effects = (int)( m_pPlayer->pev->effects ) | EF_MUZZLEFLASH;

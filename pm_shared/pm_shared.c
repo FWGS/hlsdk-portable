@@ -3319,7 +3319,7 @@ void PM_Move( struct playermove_s *ppmove, int server )
 		pmove->friction = 1.0f;
 	}
 
-#ifdef CLIENT_DLL
+#if CLIENT_DLL
 	g_onground = ( pmove->onground != -1 );
 	g_inwater = ( pmove->waterlevel > 1 );
 	g_walking = ( pmove->movetype == MOVETYPE_WALK );

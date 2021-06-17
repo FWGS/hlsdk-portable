@@ -25,7 +25,7 @@
 #include "agsuddendeath.h"
 #include "agtimeout.h"
 #include "aggamemode.h"
-#ifdef AG_NO_CLIENT_DLL
+#if AG_NO_CLIENT_DLL
 #include "aglocationcache.h"
 #endif
 
@@ -99,7 +99,7 @@ public:
   AgInfoIntermission  m_InfoInterMission;
   AgSuddenDeath       m_SuddenDeath;
   AgTimeout           m_Timeout;
-#ifdef AG_NO_CLIENT_DLL
+#if AG_NO_CLIENT_DLL
   AgLocationCache	  m_LocationCache;
 #endif
 };

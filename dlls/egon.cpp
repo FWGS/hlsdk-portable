@@ -26,7 +26,7 @@
 #include "gamerules.h"
 
 //++ BulliT
-#ifdef AGSTATS
+#if AGSTATS
 #include "agstats.h"
 #endif
 //-- Martin Webrant
@@ -60,7 +60,7 @@ LINK_ENTITY_TO_CLASS( weapon_egon, CEgon )
 void CEgon::Spawn()
 {
 //++ BulliT
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	if( SGBOW == AgGametype() )
 	{
 		//Spawn shotgun instead.
@@ -528,7 +528,7 @@ void CEgon::EndAttack( void )
 	m_fireState = FIRE_OFF;
 
 //++ BulliT
-#ifdef AGSTATS
+#if AGSTATS
 	Stats.FireShot( m_pPlayer, STRING( pev->classname ) );
 #endif
 //-- Martin Webrant

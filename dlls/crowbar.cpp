@@ -23,7 +23,7 @@
 #include "gamerules.h"
 
 //++ BulliT
-#ifdef AGSTATS
+#if AGSTATS
 #include "agstats.h"
 #endif
 //-- Martin Webrant
@@ -183,7 +183,7 @@ void CCrowbar::SwingAgain( void )
 int CCrowbar::Swing( int fFirst )
 {
 //++ BulliT
-#ifdef AGSTATS
+#if AGSTATS
 	Stats.FireShot( m_pPlayer, STRING( pev->classname ) );
 #endif
 //-- Martin Webrant

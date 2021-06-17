@@ -299,7 +299,7 @@ void AgIRC::OnIrcDisconnected()
 
 void AgIRC::SilentMode()
 {
-#ifndef AG_TESTCHEAT  
+#if !AG_TESTCHEAT  
   m_bSilent = true;
 #endif
 }

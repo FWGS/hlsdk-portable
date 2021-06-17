@@ -17,7 +17,7 @@
 extern CVoiceGameMgr g_VoiceGameMgr;
 #endif
 
-#ifdef AGMSGSTAT
+#if AGMSGSTAT
 #include "agmsgstat.h"
 #endif 
 
@@ -282,7 +282,7 @@ bool AgClient::HandleCommand(CBasePlayer* pPlayer)
     g_pGameRules->m_CTF.PlayerDropFlag(pPlayer,true);
     return true;
   }
-#ifdef _DEBUG
+#if _DEBUG
   else if (FStrEq(CMD_ARGV(0), "addctfitem"))
 #else
   else if (FStrEq(CMD_ARGV(0), "addctfitem") && g_bLangame)
@@ -294,7 +294,7 @@ bool AgClient::HandleCommand(CBasePlayer* pPlayer)
     }
     return true;
   }
-#ifdef _DEBUG
+#if _DEBUG
   else if (FStrEq(CMD_ARGV(0), "dellastctfitem"))
 #else
   else if (FStrEq(CMD_ARGV(0), "dellastctfitem") && g_bLangame)
@@ -306,7 +306,7 @@ bool AgClient::HandleCommand(CBasePlayer* pPlayer)
     }
     return true;
   }
-#ifdef _DEBUG
+#if _DEBUG
   else if (FStrEq(CMD_ARGV(0), "listctfitem"))
 #else
   else if (FStrEq(CMD_ARGV(0), "listctfitem") && g_bLangame)
@@ -319,7 +319,7 @@ bool AgClient::HandleCommand(CBasePlayer* pPlayer)
     return true;
   }
 //++ muphicks
-#ifdef _DEBUG
+#if _DEBUG
   else if (FStrEq(CMD_ARGV(0), "adddomitem"))
 #else
   else if (FStrEq(CMD_ARGV(0), "adddomitem") && g_bLangame)
@@ -331,7 +331,7 @@ bool AgClient::HandleCommand(CBasePlayer* pPlayer)
     }
     return true;
   }
-#ifdef _DEBUG
+#if _DEBUG
   else if (FStrEq(CMD_ARGV(0), "dellastdomitem"))
 #else
   else if (FStrEq(CMD_ARGV(0), "dellastdomitem") && g_bLangame)
@@ -343,7 +343,7 @@ bool AgClient::HandleCommand(CBasePlayer* pPlayer)
     }
     return true;
   }
-#ifdef _DEBUG
+#if _DEBUG
   else if (FStrEq(CMD_ARGV(0), "listdomitem"))
 #else
   else if (FStrEq(CMD_ARGV(0), "listdomitem") && g_bLangame)
@@ -380,7 +380,7 @@ bool AgClient::HandleCommand(CBasePlayer* pPlayer)
     return true;
   }
 #endif
-#ifdef AGMSGSTAT
+#if AGMSGSTAT
   else if (FStrEq(CMD_ARGV(0), "agmsgstat"))
   {
 	  g_MsgStat.DumpStats();
@@ -575,7 +575,7 @@ void AgClient::Say(CBasePlayer* pPlayer, say_type Type )
       }
       else if ('l' == *pSayText || 'L' == *pSayText)
       {
-#ifdef AG_NO_CLIENT_DLL
+#if AG_NO_CLIENT_DLL
 		pText = pText + sprintf(pText,g_pGameRules->m_LocationCache.Location(pPlayer->pev->origin).c_str());
         pSayText++;
         continue;
@@ -587,7 +587,7 @@ void AgClient::Say(CBasePlayer* pPlayer, say_type Type )
       }
       else if ('d' == *pSayText || 'D' == *pSayText)
       {
-#ifdef AG_NO_CLIENT_DLL
+#if AG_NO_CLIENT_DLL
 		pText = pText + sprintf(pText,g_pGameRules->m_LocationCache.Location(pPlayer->GetKilledPosition()).c_str());
         pSayText++;
         continue;
@@ -610,7 +610,7 @@ void AgClient::Say(CBasePlayer* pPlayer, say_type Type )
     pSayText++;
   }
   *pText = '\0';
-#ifdef AG_NO_CLIENT_DLL
+#if AG_NO_CLIENT_DLL
 	AgStripColors(szText);
 #endif
   
@@ -782,7 +782,7 @@ void AgClient::Play(CBasePlayer* pPlayer, say_type Type, const char* pszWave)
 		if ( (Team == Type || Close == Type ) && pPlayerLoop->IsSpectator())
 			continue;
   		
-#ifdef AG_NO_CLIENT_DLL
+#if AG_NO_CLIENT_DLL
 		AgSound(pPlayerLoop, pszWave);
 #else
 		MESSAGE_BEGIN( MSG_ONE_UNRELIABLE, gmsgPlaySound, NULL, pPlayerLoop->pev );

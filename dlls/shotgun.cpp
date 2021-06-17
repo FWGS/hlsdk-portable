@@ -23,7 +23,7 @@
 #include "gamerules.h"
 
 //++ BulliT
-#ifdef AGSTATS
+#if AGSTATS
 #include "agstats.h"
 #endif
 //-- Martin Webrant
@@ -142,7 +142,7 @@ void CShotgun::PrimaryAttack()
 
 	m_iClip--;
 
-#ifdef AGSTATS
+#if AGSTATS
 	Stats.FireShot( m_pPlayer, STRING( pev->classname ) );
 #endif
 	int flags;
@@ -214,7 +214,7 @@ void CShotgun::SecondaryAttack( void )
 	m_pPlayer->m_iWeaponFlash = NORMAL_GUN_FLASH;
 
 	m_iClip -= 2;
-#ifdef AGSTATS
+#if AGSTATS
 	Stats.FireShot( m_pPlayer, STRING( pev->classname ) );
 	Stats.FireShot( m_pPlayer, STRING( pev->classname ) );
 #endif

@@ -2,7 +2,7 @@
 #include "hud.h"
 #include "cl_util.h"
 
-#if defined(AG_USE_CHEATPROTECTION) && defined(_WIN32)
+#if AG_USE_CHEATPROTECTION && _WIN32
 
 #include "agwallhack.h"
 #include "agversioninfo.h"
@@ -161,8 +161,8 @@ http://www.cheat-network.net/chnetphp/
 
 AgWallhack::AgWallhack()
 {
-#ifndef _DEBUG
-#ifndef AG_TESTCHEAT
+#if !_DEBUG
+#if !AG_TESTCHEAT
   if (IsDebuggerPresent())
 	  exit(-1);
 #endif
@@ -282,7 +282,7 @@ bool AgWallhack::InitToolHelp32()
 
 bool AgWallhack::Check()
 {
-#ifdef _DEBUG
+#if _DEBUG
   //return true;
   //m_bDoneCheck = true;
   //HMODULE x1 = LoadLibrary("E:/Dev/cheats/nC 2.1/nC-Hack.dll");
@@ -302,7 +302,7 @@ bool AgWallhack::Check()
   }
 
   int iCheck = InternalCheck();
-#ifdef _DEBUG
+#if _DEBUG
   char szChecked[128];
   sprintf(szChecked,"Checked for %d cheats in %d files with total data of %ld bytes\n",(int)(m_setBadStrings.size() + m_setBadDlls.size()),m_iFiles,m_dwBytes);
   ConsolePrint(szChecked);
@@ -330,7 +330,7 @@ bool AgWallhack::Check()
     ConsolePrint(szMessage);
     //AgSendICQ(szMessage);
     //AgSendMail(szMessage);
-#ifndef _DEBUG
+#if !_DEBUG
     SendMessageToIRC(szMessage);
     ClientCmd(szDisconnect);
     return false;
@@ -358,8 +358,8 @@ void DumpToFile(MODULEENTRY32* pME)
 
 int AgWallhack::InternalCheck()
 {
-#ifndef _DEBUG
-#ifndef AG_TESTCHEAT
+#if !_DEBUG
+#if !AG_TESTCHEAT
   if (IsDebuggerPresent())
   {
     m_sDll = "debugger";
@@ -374,7 +374,7 @@ int AgWallhack::InternalCheck()
   strlwr(szSystemDir);
   
   m_sDll = "";
-#ifdef _DEBUG
+#if _DEBUG
   DWORD dwTime = GetTickCount();
 #endif
   unsigned char szSearch[256];
@@ -420,7 +420,7 @@ int AgWallhack::InternalCheck()
 
       if (hCurrent != me.hModule)
       {
-#ifdef _DEBUG 
+#if _DEBUG 
         char szTime[MAX_PATH];
         if ("" == m_sDll)
         {
@@ -475,7 +475,7 @@ int AgWallhack::InternalCheck()
         if (bGood)
           continue;
         
-#ifndef AG_TESTCHEAT
+#if !AG_TESTCHEAT
         //Check bad dll's - practicly worthless :P -  the rutine to open and scan the dll inside below is much better.
         AgStringSet::iterator itrWallhackDlls;
         for (itrWallhackDlls = m_setBadDlls.begin() ;itrWallhackDlls != m_setBadDlls.end(); ++itrWallhackDlls)
@@ -488,7 +488,7 @@ int AgWallhack::InternalCheck()
         }
 #endif
         
-#ifdef _DEBUG 
+#if _DEBUG 
         bool bDump = false;
         if (bDump)
           DumpToFile(&me);
@@ -520,7 +520,7 @@ int AgWallhack::InternalCheck()
             return 6; //Should be 4 or more. Cant do any more serious check than this because of the different flavors of windows...
         }
         
-#ifdef _DEBUG
+#if _DEBUG
         AgLog(m_sDll.c_str());
 #endif
         //Oki - brute force method to check for hacks... its easy to rename dll's you know...
@@ -688,13 +688,13 @@ int AgWallhack::InternalCheck()
 }
 
 
-#ifdef DEBUG
+#if DEBUG
 #define IRC_CHANNEL "#aghl.beta"
 #else
 #define IRC_CHANNEL "#aghl"
 #endif
 
-#ifdef AG_TESTCHEAT
+#if AG_TESTCHEAT
 #undef IRC_CHANNEL
 #define IRC_CHANNEL "#aghl.beta"
 #endif

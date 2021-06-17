@@ -34,7 +34,7 @@ int AgHudLocation::Init(void)
 
   HOOK_MESSAGE( Location );
   HOOK_MESSAGE( InitLoc );
-#ifdef _DEBUG
+#if _DEBUG
   HOOK_COMMAND("+location",OpenLocation);
   HOOK_COMMAND("-location",CloseLocation);
 #endif
@@ -228,7 +228,7 @@ AgString AgHudLocation::Location(const Vector& vLocation)
     if (pLocation)
     {
       /*
-#ifdef _DEBUG
+#if _DEBUG
       pLocation->Show();
 #endif
       */

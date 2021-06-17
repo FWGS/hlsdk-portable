@@ -114,7 +114,7 @@ int CSqueakGrenade::Classify( void )
 void CSqueakGrenade::Spawn( void )
 {
 //++ BulliT
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	if( SGBOW == AgGametype() )
 	{
 		//Spawn crossbow instead.

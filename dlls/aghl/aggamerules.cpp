@@ -12,7 +12,7 @@
 #include "agvote.h"
 #include "agclient.h"
 #include "aggamerules.h"
-#ifdef AGSTATS
+#if AGSTATS
 #include "agstats.h"
 #endif
 
@@ -37,10 +37,10 @@ AgGameRules::AgGameRules()
   g_bUseTeamColors = CVAR_GET_FLOAT( "mp_teamplay" ) > 0;
   m_sHostname = CVAR_GET_STRING("hostname");
   AdminCache.Load();
-#ifdef AG_NO_CLIENT_DLL
+#if AG_NO_CLIENT_DLL
   m_LocationCache.Load();
 #endif
-#ifdef AGSTATS
+#if AGSTATS
   Stats.Reset();
 #endif
 }
@@ -125,7 +125,7 @@ BOOL AgGameRules::ClientCommand(CBasePlayer* pPlayer, const char *pcmd)
   if (m_Vote.HandleCommand(pPlayer))
     return TRUE;
 
-#ifdef AGSTATS
+#if AGSTATS
   if (Stats.HandleCommand(pPlayer))
     return TRUE;
 #endif
@@ -686,7 +686,7 @@ void AgGameRules::PlayerKilled( CBasePlayer *pVictim, entvars_t *pKiller, entvar
   if (pKillerBE && CLASS_PLAYER == pKillerBE->Classify())
     pKillerPlayer = ((CBasePlayer*)pKillerBE);
 
-#ifdef AGSTATS
+#if AGSTATS
   if (pKillerPlayer && pVictim)
     Stats.PlayerKilled(pKillerPlayer, pVictim);
 #endif
@@ -841,7 +841,7 @@ void AgGameRules::DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, entvars
 
 void AgGameRules::ClientUserInfoChanged(CBasePlayer *pPlayer, char *infobuffer )
 {
-#ifdef AG_USE_CHEATPROTECTION
+#if AG_USE_CHEATPROTECTION
   const char* pszModel = g_engfuncs.pfnInfoKeyValue( infobuffer, "model" );
   if (pszModel && strlen(pszModel) && 0 != strcmp(pPlayer->m_szModel,pszModel))
   {
@@ -894,7 +894,7 @@ void AgGameRules::InitHUD( CBasePlayer *pPlayer )
 	MESSAGE_END();
 #endif
 
-#ifdef AG_USE_CHEATPROTECTION
+#if AG_USE_CHEATPROTECTION
   const char* pszModel = g_engfuncs.pfnInfoKeyValue( g_engfuncs.pfnGetInfoKeyBuffer( pPlayer->edict() ), "model" );
   if (pszModel && strlen(pszModel))
   {

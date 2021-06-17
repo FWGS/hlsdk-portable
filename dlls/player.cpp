@@ -214,7 +214,7 @@ int gmsgCTFFlag = 0;
 int gmsgCRC32 = 0;
 
 extern int g_teamplay;
-#ifdef AGSTATS
+#if AGSTATS
 #include "agstats.h"
 #endif
 //-- Martin Webrant
@@ -294,7 +294,7 @@ void LinkUserMessages( void )
 	gmsgCTFFlag = REG_USER_MSG( "CTFFlag", 2 );	//Who is carrying the flags.
 	gmsgCRC32 = REG_USER_MSG( "CRC32", -1 );	//Checksum, file
 //-- Martin Webrant
-#ifdef AG_NO_CLIENT_DLL
+#if AG_NO_CLIENT_DLL
 	gmsgStatusText = REG_USER_MSG( "StatusText", -1 );
 	gmsgStatusValue = REG_USER_MSG( "StatusValue", 3 );
 #endif
@@ -479,7 +479,7 @@ void CBasePlayer::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector ve
 		TraceBleed( flDamage, vecDir, ptr, bitsDamageType );
 		AddMultiDamage( pevAttacker, this, flDamage, bitsDamageType );
 
-#ifdef AGSTATS
+#if AGSTATS
 	Stats.FireHit( this, flDamage, pevAttacker );
 #endif
 	}
@@ -1921,7 +1921,7 @@ void CBasePlayer::PreThink( void )
 
 	if( m_fDisplayGamemode > 0 && m_fDisplayGamemode < gpGlobals->time )
 	{
-#ifdef AG_NO_CLIENT_DLL
+#if AG_NO_CLIENT_DLL
 		//Print gameinfo text.
 		AgSay( this, "www.planethalflife.com/agmod", NULL, 10, 0.03, 0.10, 2 );
 		if( 0 < ag_match_running.value )
@@ -3551,7 +3551,7 @@ void CBasePlayer::ForceClientDllUpdate( void )
 	m_iFlagStatus1Last = -1;
 	m_iFlagStatus2Last = -1;
 
-#ifndef AG_NO_CLIENT_DLL
+#if !AG_NO_CLIENT_DLL
 	MESSAGE_BEGIN( MSG_ONE, gmsgGametype, NULL, edict() );
 		WRITE_BYTE( AgGametype());
 	MESSAGE_END();
@@ -3605,7 +3605,7 @@ void CBasePlayer::ForceClientDllUpdate( void )
 				WRITE_BYTE( plr->IsSpectator() ? 1 : 0 );
 			MESSAGE_END();
 
-#ifndef AG_NO_CLIENT_DLL
+#if !AG_NO_CLIENT_DLL
 			MESSAGE_BEGIN( MSG_ONE, gmsgAuthID, NULL, edict() );
 				WRITE_BYTE( plr->entindex() );
 				WRITE_STRING( plr->GetAuthID() );
@@ -4194,7 +4194,7 @@ void CBasePlayer::UpdateClientData( void )
 			WRITE_BYTE( 0 );
 		MESSAGE_END();
 
-#ifdef AG_NO_CLIENT_DLL
+#if AG_NO_CLIENT_DLL
 		InitStatusBar();
 #endif
 	}
@@ -4213,7 +4213,7 @@ void CBasePlayer::UpdateClientData( void )
 	if( m_hSpectateTarget != 0 && m_hSpectateTarget->pev != 0 )
 		pPlayerTarget = (CBasePlayer*)CBasePlayer::Instance( m_hSpectateTarget->pev );
 
-#ifndef AG_NO_CLIENT_DLL
+#if !AG_NO_CLIENT_DLL
 	UpdateFlagStatus( pPlayerTarget ? pPlayerTarget : this );
 
 	if( m_bInitLocation )
@@ -4535,15 +4535,15 @@ void CBasePlayer::UpdateClientData( void )
 		m_iClientFOV = m_iFOV;
 	}
 
-#ifndef AG_NO_CLIENT_DLL
+#if !AG_NO_CLIENT_DLL
 	if( -1 != m_iMapListSent )
 		g_pGameRules->SendMapListToClient( this, false );
 
 	if( !m_bSentCheatCheck )
 	{
 		m_bSentCheatCheck = true;
-#ifndef _DEBUG
-#ifndef AG_TESTCHEAT
+#if !_DEBUG
+#if !AG_TESTCHEAT
 		if( !AgIsLocalServer() )
 #endif
 #endif
@@ -5465,7 +5465,7 @@ void CBasePlayer::OnPickupLongjump()
 	m_fLongjumpTimer = gpGlobals->time + ag_lj_timer.value;
 	if( 0 < ag_lj_timer.value )
 	{
-#ifdef AG_NO_CLIENT_DLL
+#if AG_NO_CLIENT_DLL
 		char szLongJump[128];
 		sprintf( szLongJump, "Longjump will turnoff in %d seconds", (int)ag_lj_timer.value );
 		AgSay( this, szLongJump, NULL, 5, 0.5, 0.3 );

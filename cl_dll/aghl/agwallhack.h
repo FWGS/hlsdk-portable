@@ -6,7 +6,7 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#if defined(AG_USE_CHEATPROTECTION) && defined(_WIN32) 
+#if AG_USE_CHEATPROTECTION && _WIN32 
 
 // ToolHelp Function Pointers so that it will work on NT4
 #include <tlhelp32.h>

@@ -24,7 +24,7 @@
 #include "gamerules.h"
 
 //++ BulliT
-#ifdef AGSTATS
+#if AGSTATS
 #include "agstats.h"
 #endif
 //-- Martin Webrant
@@ -54,7 +54,7 @@ int CMP5::SecondaryAmmoIndex( void )
 void CMP5::Spawn()
 {
 //++ BulliT
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	if( SGBOW == AgGametype() )
 	{
 		//Spawn shotgun instead.
@@ -70,7 +70,7 @@ void CMP5::Spawn()
 
 	m_iDefaultAmmo = MP5_DEFAULT_GIVE;
 //++ BulliT
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	if( ARENA == AgGametype() || ARCADE == AgGametype() || LMS == AgGametype() )
 		m_iDefaultAmmo = MP5_MAX_CLIP;
 #endif
@@ -163,7 +163,7 @@ void CMP5::PrimaryAttack()
 
 	m_iClip--;
 
-#ifdef AGSTATS
+#if AGSTATS
 	Stats.FireShot( m_pPlayer,STRING( pev->classname ) );
 #endif
 	m_pPlayer->pev->effects = (int)( m_pPlayer->pev->effects ) | EF_MUZZLEFLASH;

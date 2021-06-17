@@ -25,7 +25,7 @@
 #include "gamerules.h"
 
 //++ BulliT
-#ifdef AGSTATS
+#if AGSTATS
 #include "agstats.h"
 #endif
 //-- Martin Webrant
@@ -56,7 +56,7 @@ BOOL CHgun::IsUseable( void )
 void CHgun::Spawn()
 {
 //++ BulliT
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	if( SGBOW == AgGametype() )
 	{
 		//Spawn shotgun instead.
@@ -158,7 +158,7 @@ void CHgun::PrimaryAttack()
 	m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]--;
 	
 //++ BulliT
-#ifdef AGSTATS
+#if AGSTATS
 	Stats.FireShot( m_pPlayer, STRING( pev->classname ) );
 #endif
 //-- Martin Webrant
@@ -256,7 +256,7 @@ void CHgun::SecondaryAttack( void )
 	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usHornetFire, 0.0f, g_vecZero, g_vecZero, 0.0f, 0.0f, FIREMODE_FAST, 0, 0, 0 );
 
 //++ BulliT
-#ifdef AGSTATS
+#if AGSTATS
 	Stats.FireShot( m_pPlayer, STRING( pev->classname ) );
 #endif
 //-- Martin Webrant

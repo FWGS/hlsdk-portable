@@ -1,8 +1,8 @@
 //++ BulliT
 
-#ifdef AG_USE_MINIDUMP
+#if AG_USE_MINIDUMP
 
-#ifdef CLIENT_DLL //Only check problems on client...
+#if CLIENT_DLL //Only check problems on client...
 #define DUMPNAME "agclient.dmp"
 #include "hud.h"
 #include "cl_util.h"

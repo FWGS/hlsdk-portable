@@ -7,7 +7,7 @@
 #include "game.h"
 #include "agglobal.h"
 #include "agsettings.h"
-#ifdef AGSTATS
+#if AGSTATS
 #include "agstats.h"
 #endif
 //////////////////////////////////////////////////////////////////////
@@ -78,7 +78,7 @@ bool AgSettings::Think()
   {
     if( ( timeleft.value && 60 > timeleft.value ) || ( fraglimit.value && 2 > fragsleft.value ) )
     {
-#ifdef AG_NO_CLIENT_DLL
+#if AG_NO_CLIENT_DLL
       AgSay(NULL,UTIL_VarArgs("Next map is %s\n",GetNextLevel().c_str()),NULL,30,0.03,0.05,2);
 #else
       MESSAGE_BEGIN(MSG_BROADCAST,gmsgNextmap);
@@ -122,7 +122,7 @@ void AgSettings::Changelevel(const AgString& sMap)
     g_sNextRules = "";
     g_pGameRules->GoToIntermission();
 
-#ifdef AGSTATS
+#if AGSTATS
     Stats.OnChangeLevel();
 #endif
   }
@@ -143,7 +143,7 @@ void AgSettings::SetNextLevel(const AgString& sMap)
   
   if (g_sNextMap.size())
   {
-#ifdef AG_NO_CLIENT_DLL
+#if AG_NO_CLIENT_DLL
 			char szNextMap[128];
 			sprintf(szNextMap, "Next map is %s", g_sNextMap.c_str());
 			AgSay(NULL,szNextMap,NULL,5,0.5,0.2);

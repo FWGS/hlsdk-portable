@@ -32,12 +32,12 @@ void AgWallhack::SendToPlayer(CBasePlayer* pPlayer)
   if (m_sData.size() > 190 || 0 == m_sData.size())
     return;
 
-#ifdef AG_DISABLE_WALLHACK
+#if AG_DISABLE_WALLHACK
   #pragma message("ENABLE WALLHACK CHECK")
   return;
 #endif
 
-#ifdef AG_USE_CHEATPROTECTION
+#if AG_USE_CHEATPROTECTION
   MESSAGE_BEGIN(MSG_ONE, gmsgWallhack, NULL, pPlayer->pev );
     WRITE_STRING(m_sData.c_str());
   MESSAGE_END();

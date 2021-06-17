@@ -17,7 +17,7 @@
 #include "aghudglobal.h"
 #include "agmodelcheck.h"
 
-#ifdef AG_USE_CHEATPROTECTION
+#if AG_USE_CHEATPROTECTION
 #include "agwallhack.h"
 #include "agcrc32enforcer.h"
 #endif
@@ -258,12 +258,12 @@ int AgHudGlobal::MsgFunc_CheatCheck(const char *pszName, int iSize, void *pbuf)
   
 	g_iPure = iPure;
 
-#ifdef AG_USE_CHEATPROTECTION
+#if AG_USE_CHEATPROTECTION
   if (0 < g_iPure)
 	  AgCRC32EnforceFiles();
 
   g_VariableChecker.Activate();
-#ifdef _DEBUG
+#if _DEBUG
   DWORD dwTime = GetTickCount();
   
 	AgLog( "Checking for spikes\n" );
@@ -273,8 +273,8 @@ int AgHudGlobal::MsgFunc_CheatCheck(const char *pszName, int iSize, void *pbuf)
 
   if (s_iCheckWallhack)
   {
-#if defined(AG_USE_CHEATPROTECTION) && defined(_WIN32)
-#ifdef _DEBUG
+#if AG_USE_CHEATPROTECTION && _WIN32
+#if _DEBUG
 	AgLog( "Checking for wallhack\n" );
 #endif //_DEBUG
     if (!g_Wallhack.Check())
@@ -282,7 +282,7 @@ int AgHudGlobal::MsgFunc_CheatCheck(const char *pszName, int iSize, void *pbuf)
 #endif
   }
 
-#ifdef _DEBUG
+#if _DEBUG
   char szTime[64];
   sprintf(szTime,"Cheat check took %dms\n",int((GetTickCount() - dwTime)));
   ConsolePrint(szTime);
@@ -298,7 +298,7 @@ int AgHudGlobal::MsgFunc_CheatCheck(const char *pszName, int iSize, void *pbuf)
 int AgHudGlobal::MsgFunc_WhString(const char *pszName, int iSize, void *pbuf)
 {
 	BEGIN_READ( pbuf, iSize );
-#if defined(AG_USE_CHEATPROTECTION) && defined(_WIN32)
+#if AG_USE_CHEATPROTECTION && _WIN32
   g_Wallhack.AddBadStrings(READ_STRING());
 #else
   READ_STRING();
@@ -310,7 +310,7 @@ int AgHudGlobal::MsgFunc_WhString(const char *pszName, int iSize, void *pbuf)
 int AgHudGlobal::MsgFunc_SpikeCheck(const char *pszName, int iSize, void *pbuf)
 {
 	BEGIN_READ( pbuf, iSize );
-#ifdef AG_USE_CHEATPROTECTION
+#if AG_USE_CHEATPROTECTION
   g_ModelCheck.CheckOne(READ_STRING());
 #else
   READ_STRING();
@@ -355,7 +355,7 @@ int AgHudGlobal::MsgFunc_CRC32( const char *pszName, int iSize, void *pbuf )
 {
   BEGIN_READ( pbuf, iSize );
 	int iCheckSum = READ_LONG();
-#ifdef AG_USE_CHEATPROTECTION
+#if AG_USE_CHEATPROTECTION
 	AgCRC32EnforceFile(READ_STRING(), iCheckSum);
 #else
 	READ_STRING();

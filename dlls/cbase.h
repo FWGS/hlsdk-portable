@@ -232,7 +232,7 @@ public:
 #endif
 
 //++ BulliT
-#ifdef CLIENT_DLL
+#if CLIENT_DLL
 	void UpdateOnRemove( void );
 #else
 	virtual void UpdateOnRemove( void );

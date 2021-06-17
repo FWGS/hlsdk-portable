@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#if defined(AG_USE_CHEATPROTECTION) && defined(_WIN32)
+#if AG_USE_CHEATPROTECTION && _WIN32
 
 #include "agglobal.h"
 #include "agversioninfo.h"

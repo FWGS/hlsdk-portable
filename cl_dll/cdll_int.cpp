@@ -295,7 +295,7 @@ void DLLEXPORT HUD_Init( void )
 {
 	InitInput();
 	gHUD.Init();
-#ifdef AG_USE_CHEATPROTECTION
+#if AG_USE_CHEATPROTECTION
 	g_VariableChecker.Activate();
 #endif //AG_USE_CHEATPROTECTION
 
@@ -361,7 +361,7 @@ Called by engine every frame that client .dll is loaded
 void DLLEXPORT HUD_Frame( double time )
 {
 	gEngfuncs.VGui_ViewportPaintBackground(HUD_GetRect());
-#ifdef AG_USE_CHEATPROTECTION
+#if AG_USE_CHEATPROTECTION
 	g_VariableChecker.Check();
 #endif //AG_USE_CHEATPROTECTION
 #ifdef USE_VGUI_FOR_GOLDSOURCE_SUPPORT

@@ -43,11 +43,11 @@ Revision History:
 
 
 
-#ifdef __cplusplus
+#if __cplusplus
 extern "C" {
 #endif
 
-#ifdef _IMAGEHLP_SOURCE_
+#if _IMAGEHLP_SOURCE_
 #define IMAGEAPI __stdcall
 #define DBHLP_DEPRECIATED
 #else
@@ -62,7 +62,7 @@ typedef struct _LOADED_IMAGE {
     PSTR                  ModuleName;
     HANDLE                hFile;
     PUCHAR                MappedAddress;
-#ifdef _IMAGEHLP64
+#if _IMAGEHLP64
     PIMAGE_NT_HEADERS64   FileHeader;
 #else
     PIMAGE_NT_HEADERS32   FileHeader;
@@ -359,7 +359,7 @@ typedef struct _tagADDRESS64 {
     ADDRESS_MODE  Mode;
 } ADDRESS64, *LPADDRESS64;
 
-#if !defined(_IMAGEHLP_SOURCE_) && defined(_IMAGEHLP64)
+#if !_IMAGEHLP_SOURCE_ && _IMAGEHLP64
 #define ADDRESS ADDRESS64
 #define LPADDRESS LPADDRESS64
 #else
@@ -454,7 +454,7 @@ typedef struct _KDHELP64 {
 
 } KDHELP64, *PKDHELP64;
 
-#if !defined(_IMAGEHLP_SOURCE_) && defined(_IMAGEHLP64)
+#if !_IMAGEHLP_SOURCE_ && _IMAGEHLP64
 #define KDHELP KDHELP64
 #define PKDHELP PKDHELP64
 #else
@@ -537,7 +537,7 @@ typedef struct _tagSTACKFRAME64 {
     KDHELP64    KdHelp;
 } STACKFRAME64, *LPSTACKFRAME64;
 
-#if !defined(_IMAGEHLP_SOURCE_) && defined(_IMAGEHLP64)
+#if !_IMAGEHLP_SOURCE_ && _IMAGEHLP64
 #define STACKFRAME STACKFRAME64
 #define LPSTACKFRAME LPSTACKFRAME64
 #else
@@ -603,7 +603,7 @@ StackWalk64(
     PTRANSLATE_ADDRESS_ROUTINE64      TranslateAddress
     );
 
-#if !defined(_IMAGEHLP_SOURCE_) && defined(_IMAGEHLP64)
+#if !_IMAGEHLP_SOURCE_ && _IMAGEHLP64
 
 #define PREAD_PROCESS_MEMORY_ROUTINE PREAD_PROCESS_MEMORY_ROUTINE64
 #define PFUNCTION_TABLE_ACCESS_ROUTINE PFUNCTION_TABLE_ACCESS_ROUTINE64
@@ -748,7 +748,7 @@ PVOID
     ULONG64 UserContext
     );
 
-#if !defined(_IMAGEHLP_SOURCE_) && defined(_IMAGEHLP64)
+#if !_IMAGEHLP_SOURCE_ && _IMAGEHLP64
 
 #define PSYM_ENUMMODULES_CALLBACK PSYM_ENUMMODULES_CALLBACK64
 #define PSYM_ENUMSYMBOLS_CALLBACK PSYM_ENUMSYMBOLS_CALLBACK64
@@ -848,7 +848,7 @@ typedef struct _IMAGEHLP_SYMBOL64 {
     CHAR                        Name[1];                // symbol name (null terminated string)
 } IMAGEHLP_SYMBOL64, *PIMAGEHLP_SYMBOL64;
 
-#if !defined(_IMAGEHLP_SOURCE_) && defined(_IMAGEHLP64)
+#if !_IMAGEHLP_SOURCE_ && _IMAGEHLP64
 #define IMAGEHLP_SYMBOL IMAGEHLP_SYMBOL64
 #define PIMAGEHLP_SYMBOL PIMAGEHLP_SYMBOL64
 #else
@@ -892,7 +892,7 @@ typedef struct _IMAGEHLP_MODULE64W {
     WCHAR                       LoadedImageName[256];   // symbol file name
 } IMAGEHLP_MODULEW64, *PIMAGEHLP_MODULEW64;
 
-#if !defined(_IMAGEHLP_SOURCE_) && defined(_IMAGEHLP64)
+#if !_IMAGEHLP_SOURCE_ && _IMAGEHLP64
 #define IMAGEHLP_MODULE IMAGEHLP_MODULE64
 #define PIMAGEHLP_MODULE PIMAGEHLP_MODULE64
 #define IMAGEHLP_MODULEW IMAGEHLP_MODULEW64
@@ -937,7 +937,7 @@ typedef struct _IMAGEHLP_LINE64 {
     DWORD64                     Address;                // first instruction of line
 } IMAGEHLP_LINE64, *PIMAGEHLP_LINE64;
 
-#if !defined(_IMAGEHLP_SOURCE_) && defined(_IMAGEHLP64)
+#if !_IMAGEHLP_SOURCE_ && _IMAGEHLP64
 #define IMAGEHLP_LINE IMAGEHLP_LINE64
 #define PIMAGEHLP_LINE PIMAGEHLP_LINE64
 #else
@@ -1005,7 +1005,7 @@ typedef struct _IMAGEHLP_DEFERRED_SYMBOL_LOAD64 {
     BOOLEAN                     Reparse;                // load failure reparse
 } IMAGEHLP_DEFERRED_SYMBOL_LOAD64, *PIMAGEHLP_DEFERRED_SYMBOL_LOAD64;
 
-#if !defined(_IMAGEHLP_SOURCE_) && defined(_IMAGEHLP64)
+#if !_IMAGEHLP_SOURCE_ && _IMAGEHLP64
 #define IMAGEHLP_DEFERRED_SYMBOL_LOAD IMAGEHLP_DEFERRED_SYMBOL_LOAD64
 #define PIMAGEHLP_DEFERRED_SYMBOL_LOAD PIMAGEHLP_DEFERRED_SYMBOL_LOAD64
 #else
@@ -1026,7 +1026,7 @@ typedef struct _IMAGEHLP_DUPLICATE_SYMBOL64 {
     DWORD                       SelectedSymbol;         // symbol selected (-1 to start)
 } IMAGEHLP_DUPLICATE_SYMBOL64, *PIMAGEHLP_DUPLICATE_SYMBOL64;
 
-#if !defined(_IMAGEHLP_SOURCE_) && defined(_IMAGEHLP64)
+#if !_IMAGEHLP_SOURCE_ && _IMAGEHLP64
 #define IMAGEHLP_DUPLICATE_SYMBOL IMAGEHLP_DUPLICATE_SYMBOL64
 #define PIMAGEHLP_DUPLICATE_SYMBOL PIMAGEHLP_DUPLICATE_SYMBOL64
 #else
@@ -1114,7 +1114,7 @@ SymEnumerateModules64(
     IN PVOID                        UserContext
     );
 
-#if !defined(_IMAGEHLP_SOURCE_) && defined(_IMAGEHLP64)
+#if !_IMAGEHLP_SOURCE_ && _IMAGEHLP64
 #define SymEnumerateModules SymEnumerateModules64
 #else
 BOOL
@@ -1144,7 +1144,7 @@ SymEnumerateSymbolsW64(
     IN PVOID                        UserContext
     );
 
-#if !defined(_IMAGEHLP_SOURCE_) && defined(_IMAGEHLP64)
+#if !_IMAGEHLP_SOURCE_ && _IMAGEHLP64
 #define SymEnumerateSymbols SymEnumerateSymbols64
 #define SymEnumerateSymbolsW SymEnumerateSymbolsW64
 #else
@@ -1175,7 +1175,7 @@ EnumerateLoadedModules64(
     IN PVOID                            UserContext
     );
 
-#if !defined(_IMAGEHLP_SOURCE_) && defined(_IMAGEHLP64)
+#if !_IMAGEHLP_SOURCE_ && _IMAGEHLP64
 #define EnumerateLoadedModules EnumerateLoadedModules64
 #else
 BOOL
@@ -1194,7 +1194,7 @@ SymFunctionTableAccess64(
     DWORD64 AddrBase
     );
 
-#if !defined(_IMAGEHLP_SOURCE_) && defined(_IMAGEHLP64)
+#if !_IMAGEHLP_SOURCE_ && _IMAGEHLP64
 #define SymFunctionTableAccess SymFunctionTableAccess64
 #else
 PVOID
@@ -1221,7 +1221,7 @@ SymGetModuleInfoW64(
     OUT PIMAGEHLP_MODULEW64     ModuleInfo
     );
 
-#if !defined(_IMAGEHLP_SOURCE_) && defined(_IMAGEHLP64)
+#if !_IMAGEHLP_SOURCE_ && _IMAGEHLP64
 #define SymGetModuleInfo   SymGetModuleInfo64
 #define SymGetModuleInfoW  SymGetModuleInfoW64
 #else
@@ -1249,7 +1249,7 @@ SymGetModuleBase64(
     IN  DWORD64             qwAddr
     );
 
-#if !defined(_IMAGEHLP_SOURCE_) && defined(_IMAGEHLP64)
+#if !_IMAGEHLP_SOURCE_ && _IMAGEHLP64
 #define SymGetModuleBase SymGetModuleBase64
 #else
 DWORD
@@ -1267,7 +1267,7 @@ SymGetSymNext64(
     IN OUT PIMAGEHLP_SYMBOL64  Symbol
     );
 
-#if !defined(_IMAGEHLP_SOURCE_) && defined(_IMAGEHLP64)
+#if !_IMAGEHLP_SOURCE_ && _IMAGEHLP64
 #define SymGetSymNext SymGetSymNext64
 #else
 BOOL
@@ -1285,7 +1285,7 @@ SymGetSymPrev64(
     IN OUT PIMAGEHLP_SYMBOL64  Symbol
     );
 
-#if !defined(_IMAGEHLP_SOURCE_) && defined(_IMAGEHLP64)
+#if !_IMAGEHLP_SOURCE_ && _IMAGEHLP64
 #define SymGetSymPrev SymGetSymPrev64
 #else
 BOOL
@@ -1305,7 +1305,7 @@ SymGetLineFromAddr64(
     OUT PIMAGEHLP_LINE64        Line
     );
 
-#if !defined(_IMAGEHLP_SOURCE_) && defined(_IMAGEHLP64)
+#if !_IMAGEHLP_SOURCE_ && _IMAGEHLP64
 #define SymGetLineFromAddr SymGetLineFromAddr64
 #else
 BOOL
@@ -1329,7 +1329,7 @@ SymGetLineFromName64(
     IN OUT PIMAGEHLP_LINE64     Line
     );
 
-#if !defined(_IMAGEHLP_SOURCE_) && defined(_IMAGEHLP64)
+#if !_IMAGEHLP_SOURCE_ && _IMAGEHLP64
 #define SymGetLineFromName SymGetLineFromName64
 #else
 BOOL
@@ -1351,7 +1351,7 @@ SymGetLineNext64(
     IN OUT PIMAGEHLP_LINE64     Line
     );
 
-#if !defined(_IMAGEHLP_SOURCE_) && defined(_IMAGEHLP64)
+#if !_IMAGEHLP_SOURCE_ && _IMAGEHLP64
 #define SymGetLineNext SymGetLineNext64
 #else
 BOOL
@@ -1369,7 +1369,7 @@ SymGetLinePrev64(
     IN OUT PIMAGEHLP_LINE64     Line
     );
 
-#if !defined(_IMAGEHLP_SOURCE_) && defined(_IMAGEHLP64)
+#if !_IMAGEHLP_SOURCE_ && _IMAGEHLP64
 #define SymGetLinePrev SymGetLinePrev64
 #else
 BOOL
@@ -1438,7 +1438,7 @@ SymLoadModuleEx(
     IN  DWORD          Flags
     );
 
-#if !defined(_IMAGEHLP_SOURCE_) && defined(_IMAGEHLP64)
+#if !_IMAGEHLP_SOURCE_ && _IMAGEHLP64
 #define SymLoadModule SymLoadModule64
 #else
 DWORD
@@ -1460,7 +1460,7 @@ SymUnloadModule64(
     IN  DWORD64         BaseOfDll
     );
 
-#if !defined(_IMAGEHLP_SOURCE_) && defined(_IMAGEHLP64)
+#if !_IMAGEHLP_SOURCE_ && _IMAGEHLP64
 #define SymUnloadModule SymUnloadModule64
 #else
 BOOL
@@ -1479,7 +1479,7 @@ SymUnDName64(
     IN  DWORD              UnDecNameLength    // Size of the buffer
     );
 
-#if !defined(_IMAGEHLP_SOURCE_) && defined(_IMAGEHLP64)
+#if !_IMAGEHLP_SOURCE_ && _IMAGEHLP64
 #define SymUnDName SymUnDName64
 #else
 BOOL
@@ -1507,7 +1507,7 @@ SymRegisterFunctionEntryCallback64(
     IN ULONG64                      UserContext
     );
 
-#if !defined(_IMAGEHLP_SOURCE_) && defined(_IMAGEHLP64)
+#if !_IMAGEHLP_SOURCE_ && _IMAGEHLP64
 #define SymRegisterCallback SymRegisterCallback64
 #define SymRegisterFunctionEntryCallback SymRegisterFunctionEntryCallback64
 #else
@@ -1757,7 +1757,7 @@ SymGetSymFromAddr64(
     OUT PIMAGEHLP_SYMBOL64  Symbol
     );
 
-#if !defined(_IMAGEHLP_SOURCE_) && defined(_IMAGEHLP64)
+#if !_IMAGEHLP_SOURCE_ && _IMAGEHLP64
 #define SymGetSymFromAddr SymGetSymFromAddr64
 #else
 BOOL
@@ -1784,7 +1784,7 @@ SymGetSymFromName64(
     OUT PIMAGEHLP_SYMBOL64  Symbol
     );
 
-#if !defined(_IMAGEHLP_SOURCE_) && defined(_IMAGEHLP64)
+#if !_IMAGEHLP_SOURCE_ && _IMAGEHLP64
 #define SymGetSymFromName SymGetSymFromName64
 #else
 BOOL
@@ -2463,7 +2463,7 @@ MiniDumpReadDumpStream(
 
 #include <poppack.h>
 
-#ifdef __cplusplus
+#if __cplusplus
 }
 #endif
 

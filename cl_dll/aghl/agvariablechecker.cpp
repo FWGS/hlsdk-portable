@@ -19,7 +19,7 @@
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-#ifdef AG_USE_CHEATPROTECTION
+#if AG_USE_CHEATPROTECTION
 
 extern engine_studio_api_t IEngineStudio;
 
@@ -69,7 +69,7 @@ static VARIABLES s_VariablesFast[]=
   "cl_updaterate",15,100,30,false,true,
   "cl_cmdrate",15,100,30,false,true,
   "ex_extrapmax",1.2,1.2,1.2,false,true,
-#ifdef CLIENT_WEAPONS
+#if CLIENT_WEAPONS
   "ex_interp",0.05,0.1,0.1,false,true,
 #else
   "ex_interp",0.1,0.1,0.1,false,true,

@@ -686,7 +686,7 @@ void ClientUserInfoChanged( edict_t *pEntity, char *infobuffer )
 				*pApersand = ' ';
 		}
 //++ BulliT
-#ifdef AG_NO_CLIENT_DLL
+#if AG_NO_CLIENT_DLL
 		AgStripColors( sName );
 #endif
 //-- Martin Webrant
@@ -985,7 +985,7 @@ void Sys_Error( const char *error_string )
 	// Default case, do nothing.  MOD AUTHORS:  Add code ( e.g., _asm { int 3 }; here to cause a breakpoint for debugging your game .dlls
 //++ BulliT
 	AgLog( error_string );
-#ifdef _DEBUG
+#if _DEBUG
 	_asm { int 3 };
 #endif
 //-- Martin Webrant
@@ -2102,7 +2102,7 @@ int AllowLagCompensation( void )
 	//Since this is called when server is pause I use this one to handle timeout... ugly aint it? :P
 	if( g_pGameRules )
 	{
-#ifndef AG_NO_CLIENT_DLL
+#if !AG_NO_CLIENT_DLL
 		g_pGameRules->m_Timeout.Think();
 #endif
 		g_pGameRules->m_Vote.Think();

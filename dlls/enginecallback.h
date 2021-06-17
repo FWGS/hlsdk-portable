@@ -74,7 +74,7 @@ extern enginefuncs_t g_engfuncs;
 #define GETPLAYERAUTHID	(*g_engfuncs.pfnGetPlayerAuthId)
 
 //++ BulliT
-#ifndef AGMSGSTAT
+#if !AGMSGSTAT
 //-- Martin Webrant
 inline void MESSAGE_BEGIN( int msg_dest, int msg_type, const float *pOrigin = NULL, edict_t *ed = NULL )
 {

@@ -44,7 +44,7 @@ void AgMatch::Think()
       //Countdown
       if (m_fNextSay < gpGlobals->time)
       {
-#ifdef AG_NO_CLIENT_DLL
+#if AG_NO_CLIENT_DLL
         //Play countdown beeb
         for ( int i = 1; i <= gpGlobals->maxClients; i++ )
         {

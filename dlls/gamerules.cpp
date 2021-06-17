@@ -337,7 +337,7 @@ AgGameRules *InstallGameRules( void )
 		SERVER_COMMAND( szCommand );
 	}
 
-#ifndef AG_NO_CLIENT_DLL
+#if !AG_NO_CLIENT_DLL
 	//Detect CTF maps.
 	if( AgIsCTFMap( STRING( gpGlobals->mapname ) ) )
 	{

@@ -24,7 +24,7 @@
 #include "gamerules.h"
 
 //++ BulliT
-#ifdef AGSTATS
+#if AGSTATS
 #include "agstats.h"
 #endif
 //-- Martin Webrant
@@ -333,7 +333,7 @@ void CRpg::Reload( void )
 void CRpg::Spawn()
 {
 //++ BulliT
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	if( SGBOW == AgGametype() )
 	{
 		//Spawn crossbow instead.
@@ -493,7 +493,7 @@ void CRpg::PrimaryAttack()
 
 		m_iClip--; 
 //++ BulliT
-#ifdef AGSTATS
+#if AGSTATS
 	Stats.FireShot( m_pPlayer,STRING( pev->classname ) );
 #endif
 //-- Martin Webrant
