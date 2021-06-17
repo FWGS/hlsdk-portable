@@ -12,7 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
-#if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
+#if !OEM_BUILD && !HLDEMO_BUILD
 
 #include "extdll.h"
 #include "util.h"
@@ -29,7 +29,7 @@
 #endif
 //-- Martin Webrant
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 #define BOLT_AIR_VELOCITY	2000
 #define BOLT_WATER_VELOCITY	1000
 
@@ -344,7 +344,7 @@ void CCrossbow::Holster( int skiplocal /* = 0 */ )
 
 void CCrossbow::PrimaryAttack( void )
 {
-#ifdef CLIENT_DLL
+#if CLIENT_DLL
 	if( m_fInZoom && bIsMultiplayer() )
 #else
 	if( m_fInZoom && g_pGameRules->IsMultiplayer() )
@@ -380,7 +380,7 @@ void CCrossbow::FireSniperBolt()
 //-- Martin Webrant
 
 	int flags;
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 	flags = FEV_NOTHOST;
 #else
 	flags = 0;
@@ -398,7 +398,7 @@ void CCrossbow::FireSniperBolt()
 
 	UTIL_TraceLine( vecSrc, vecSrc + vecDir * 8192, dont_ignore_monsters, m_pPlayer->edict(), &tr );
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	if( tr.pHit->v.takedamage )
 	{
 		ClearMultiDamage();
@@ -429,7 +429,7 @@ void CCrossbow::FireBolt()
 //-- Martin Webrant
 
 	int flags;
-#if defined( CLIENT_WEAPONS )
+#if CLIENT_WEAPONS
 	flags = FEV_NOTHOST;
 #else
 	flags = 0;
@@ -445,7 +445,7 @@ void CCrossbow::FireBolt()
 
 	anglesAim.x	= -anglesAim.x;
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 	Vector vecSrc	= m_pPlayer->GetGunPosition() - gpGlobals->v_up * 2.0f;
 	Vector vecDir	= gpGlobals->v_forward;
 
