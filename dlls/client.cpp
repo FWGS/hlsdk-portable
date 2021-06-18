@@ -270,8 +270,8 @@ decodeError:
 	uValueOut = '?';
 	bErrorOut = true;
 	return nBytes;
-
-//decodeFinishedMaybeCESU8:
+#if 0
+decodeFinishedMaybeCESU8:
 	// Do we have a full UTF-16 surrogate pair that's been UTF-8 encoded afterwards?
 	// That is, do we have 0xD800-0xDBFF followed by 0xDC00-0xDFFF? If so, decode it all.
 	if( ( uValue - 0xD800u ) < 0x400u && pUTF8[3] == 0xED && (unsigned char)( pUTF8[4] - 0xB0 ) < 0x10 && ( pUTF8[5] & 0xC0 ) == 0x80 )
@@ -281,6 +281,7 @@ decodeError:
 		uMinValue = 0x10000;
 	}
 	goto decodeFinished;
+#endif
 }
 
 //-----------------------------------------------------------------------------
