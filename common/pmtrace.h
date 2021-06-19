@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef PM_TRACE_H
+#if !defined(PM_TRACE_H)
 #define PM_TRACE_H
 
 typedef struct
