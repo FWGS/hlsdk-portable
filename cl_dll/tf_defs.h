@@ -7,8 +7,7 @@
 *	All Rights Reserved.
 *
 ****/
-
-#ifndef __TF_DEFS_H
+#if !defined(__TF_DEFS_H)
 #define __TF_DEFS_H
 
 //===========================================================================
@@ -1155,7 +1154,7 @@ float already_chosen_map;
 #define TS_PRINT_LONG				2
 #define TS_PRINT_LONG_TO_ALL		3
 
-#ifndef TF_DEFS_ONLY
+#if !defined(TF_DEFS_ONLY)
 
 typedef struct
 {

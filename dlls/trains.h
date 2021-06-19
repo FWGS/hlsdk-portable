@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef TRAINS_H
+#if !defined(TRAINS_H)
 #define TRAINS_H
 
 // Tracktrain spawn flags
