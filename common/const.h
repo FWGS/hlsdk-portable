@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef CONST_H
+#if !defined(CONST_H)
 #define CONST_H
 //
 // Constants shared by the engine and dlls
@@ -742,7 +742,7 @@ typedef unsigned short	word;
 #undef true
 #undef false
 
-#ifndef __cplusplus
+#if !__cplusplus
 typedef enum { false, true }	qboolean;
 #else 
 typedef int qboolean;

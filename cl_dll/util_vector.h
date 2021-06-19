@@ -16,7 +16,7 @@
 // A subset of the extdll.h in the project HL Entity DLL
 //
 #pragma once
-#ifndef UTIL_VECTOR_H
+#if !defined(UTIL_VECTOR_H)
 #define UTIL_VECTOR_H
 
 // Misc C-runtime library headers

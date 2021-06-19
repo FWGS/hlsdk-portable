@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef PM_DEBUG_H
+#if !defined(PM_DEBUG_H)
 #define PM_DEBUG_H
 
 void PM_ViewEntity( void );

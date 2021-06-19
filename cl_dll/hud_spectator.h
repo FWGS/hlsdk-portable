@@ -6,7 +6,7 @@
 //=============================================================================
 
 #pragma once
-#ifndef HUD_SPECTATOR_H
+#if !defined(HUD_SPECTATOR_H)
 #define HUD_SPECTATOR_H
 
 #include "cl_entity.h"

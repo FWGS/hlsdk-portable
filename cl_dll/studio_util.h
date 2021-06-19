@@ -4,20 +4,19 @@
 //
 // $NoKeywords: $
 //=============================================================================
-
 #pragma once
-#if !defined( STUDIO_UTIL_H )
+#if !defined(STUDIO_UTIL_H)
 #define STUDIO_UTIL_H
 
-#ifndef M_PI
+#if !defined(M_PI)
 #define M_PI		3.14159265358979323846	// matches value in gcc v2 math.h
 #endif
 
-#ifndef M_PI_F
+#if !defined(M_PI_F)
 #define M_PI_F          (float)M_PI
 #endif
 
-#ifndef PITCH
+#if !defined(PITCH)
 // MOVEMENT INFO
 // up / down
 #define	PITCH	0
