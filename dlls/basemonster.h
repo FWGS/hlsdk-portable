@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef BASEMONSTER_H
+#if !defined(BASEMONSTER_H)
 #define BASEMONSTER_H
 
 //

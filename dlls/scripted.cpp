@@ -24,11 +24,11 @@
 #include "cbase.h"
 #include "monsters.h"
 
-#ifndef ANIMATION_H
+#if !defined(ANIMATION_H)
 #include "animation.h"
 #endif
 
-#ifndef SAVERESTORE_H
+#if !defined(SAVERESTORE_H)
 #include "saverestore.h"
 #endif
 
