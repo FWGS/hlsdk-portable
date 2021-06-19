@@ -270,7 +270,7 @@ decodeError:
 	uValueOut = '?';
 	bErrorOut = true;
 	return nBytes;
-
+#if 0
 decodeFinishedMaybeCESU8:
 	// Do we have a full UTF-16 surrogate pair that's been UTF-8 encoded afterwards?
 	// That is, do we have 0xD800-0xDBFF followed by 0xDC00-0xDFFF? If so, decode it all.
@@ -281,6 +281,7 @@ decodeFinishedMaybeCESU8:
 		uMinValue = 0x10000;
 	}
 	goto decodeFinished;
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -317,7 +318,7 @@ void Host_Say( edict_t *pEntity, int teamonly )
 {
 	CBasePlayer *client;
 	int		j;
-	char	*p, *pc;
+	char	*p; //, *pc;
 	char	text[128];
 	char    szTemp[256];
 	const char *cpSay = "say";

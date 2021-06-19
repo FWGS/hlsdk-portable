@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef CVARDEF_H
+#if !defined(CVARDEF_H)
 #define CVARDEF_H
 
 #define FCVAR_ARCHIVE	(1<<0)	// set to cause it to be saved to vars.rc
