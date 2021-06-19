@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef PM_DEFS_H
+#if !defined(PM_DEFS_H)
 #define PM_DEFS_H
 
 #define MAX_PHYSENTS	600		// Must have room for all entities in the world.

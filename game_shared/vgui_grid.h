@@ -4,13 +4,9 @@
 //
 // $NoKeywords: $
 //=============================================================================
-
-#ifndef VGUI_GRID_H
-#define VGUI_GRID_H
-#ifdef _WIN32
 #pragma once
-#endif
-
+#if !defined(VGUI_GRID_H)
+#define VGUI_GRID_H
 
 #include "vgui_panel.h"
 
@@ -117,6 +113,4 @@ protected:
 };
 
 };
-
-
 #endif // VGUI_GRID_H
