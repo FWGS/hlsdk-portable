@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef PLAYER_H
+#if !defined(PLAYER_H)
 #define PLAYER_H
 
 #include "pm_materials.h"

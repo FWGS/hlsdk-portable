@@ -1,7 +1,7 @@
 #pragma once
-#ifndef EXPORTDEF_H
+#if !defined(EXPORTDEF_H)
 #define EXPORTDEF_H
-#if defined _WIN32 || defined __CYGWIN__
+#if _WIN32 || __CYGWIN__
 	#if __GNUC__
 		#define EXPORT __attribute__ ((dllexport))
 	#else
