@@ -16,7 +16,7 @@
 // GameRules
 //=========================================================
 #pragma once
-#ifndef GAMERULES_H
+#if !defined(GAMERULES_H)
 #define GAMERULES_H
 //#include "weapons.h"
 //#include "items.h"

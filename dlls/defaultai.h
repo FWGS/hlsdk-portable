@@ -12,7 +12,7 @@
 *   use or distribution of this code by or to any unlicensed person is illegal.
 *
 ****/
-#ifndef DEFAULTAI_H
+#if !defined(DEFAULTAI_H)
 #define DEFAULTAI_H
 
 //=========================================================

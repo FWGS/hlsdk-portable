@@ -49,7 +49,7 @@ static int PM_boxpnt[6][4] =
 
 void PM_ShowClipBox( void )
 {
-#if defined( _DEBUG )
+#if _DEBUG
 	vec3_t org;
 	vec3_t offset = { 0, 0, 0 };
 

@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef PROGDEFS_H
+#if !defined(PROGDEFS_H)
 #define PROGDEFS_H
 
 typedef struct

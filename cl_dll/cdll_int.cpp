@@ -24,8 +24,8 @@
 //#include "mp3.h"
 #include "parsemsg.h"
 
-#if defined(GOLDSOURCE_SUPPORT) && (defined(_WIN32) || defined(__linux__) || defined(__APPLE__)) && (defined(__i386) || defined(_M_IX86))
-#define USE_VGUI_FOR_GOLDSOURCE_SUPPORT
+#if GOLDSOURCE_SUPPORT && (_WIN32 || __linux__ || __APPLE__) && (__i386 || _M_IX86)
+#define USE_VGUI_FOR_GOLDSOURCE_SUPPORT	1
 #include "VGUI_Panel.h"
 #include "VGUI_App.h"
 #endif
@@ -185,7 +185,7 @@ int *HUD_GetRect( void )
 	return extent;
 }
 
-#ifdef USE_VGUI_FOR_GOLDSOURCE_SUPPORT
+#if USE_VGUI_FOR_GOLDSOURCE_SUPPORT
 class TeamFortressViewport : public vgui::Panel
 {
 public:
@@ -240,7 +240,7 @@ so the HUD can reinitialize itself.
 int DLLEXPORT HUD_VidInit( void )
 {
 	gHUD.VidInit();
-#ifdef USE_VGUI_FOR_GOLDSOURCE_SUPPORT
+#if USE_VGUI_FOR_GOLDSOURCE_SUPPORT
 	vgui::Panel* root=(vgui::Panel*)gEngfuncs.VGui_GetPanel();
 	if (root) {
 		gEngfuncs.Con_Printf( "Root VGUI panel exists\n" );
@@ -339,7 +339,7 @@ Called by engine every frame that client .dll is loaded
 
 void DLLEXPORT HUD_Frame( double time )
 {
-#ifdef USE_VGUI_FOR_GOLDSOURCE_SUPPORT
+#if USE_VGUI_FOR_GOLDSOURCE_SUPPORT
 	if (!gViewPort)
 		gEngfuncs.VGui_ViewportPaintBackground(HUD_GetRect());
 #else

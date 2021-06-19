@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef MONSTERS_H
+#if !defined(MONSTERS_H)
 #include "skill.h"
 #define MONSTERS_H
 

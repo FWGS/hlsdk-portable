@@ -26,17 +26,17 @@
 #include "cl_util.h"
 #include <string.h>
 
-#ifndef M_PI
+#if !defined(M_PI)
 #define M_PI		3.14159265358979323846	// matches value in gcc v2 math.h
 #endif
 
-#ifndef M_PI_F
+#if !defined(M_PI_F)
 #define M_PI_F		(float)M_PI
 #endif
 extern vec3_t vec3_origin;
 
 // if C++ mangling differs from C symbol name
-#if defined _MSC_VER || defined __WATCOMC__
+#if _MSC_VER || __WATCOMC__
 vec3_t vec3_origin;
 #endif
 
