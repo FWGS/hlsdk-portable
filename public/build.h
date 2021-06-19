@@ -27,7 +27,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 */
 #pragma once
-#ifndef BUILD_H
+#if !defined(BUILD_H)
 #define BUILD_H
 
 // All XASH_* macros set by this header are guaranteed to have positive value otherwise not defined

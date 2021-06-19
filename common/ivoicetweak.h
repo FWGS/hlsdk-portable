@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef IVOICETWEAK_H
+#if !defined(IVOICETWEAK_H)
 #define IVOICETWEAK_H
 
 // These provide access to the voice controls.

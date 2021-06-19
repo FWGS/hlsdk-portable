@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef WEAPONS_H
+#if !defined(WEAPONS_H)
 #define WEAPONS_H
 
 #include "effects.h"

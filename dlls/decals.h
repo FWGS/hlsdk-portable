@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef DECALS_H
+#if !defined(DECALS_H)
 #define DECALS_H
 
 //

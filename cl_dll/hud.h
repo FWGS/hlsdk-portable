@@ -20,7 +20,7 @@
 // CHud handles the message, calculation, and drawing the HUD
 //
 #pragma once
-#ifndef HUD_H
+#if !defined(HUD_H)
 #define HUD_H
 #define RGB_YELLOWISH 0x00C1CFCB //193,207,203
 #define RGB_WHITEISH 0x00FAFAFA //250,250,250
