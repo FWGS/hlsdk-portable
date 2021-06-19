@@ -45,7 +45,7 @@ LINK_ENTITY_TO_CLASS( info_node_air, CNodeEnt )
 #if __DOS__
 #include <direct.h>
 #define CreateDirectoryA(p, n) mkdir(p)
-#elif !defined _WIN32
+#elif !_WIN32
 #include <unistd.h>
 #include <sys/stat.h>
 #define CreateDirectoryA(p, n) mkdir(p,777)
