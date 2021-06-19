@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef PM_INFO_H
+#if !defined(PM_INFO_H)
 #define PM_INFO_H
 
 #define MAX_PHYSINFO_STRING		256
