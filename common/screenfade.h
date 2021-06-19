@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef SCREENFADE_H
+#if !defined(SCREENFADE_H)
 #define SCREENFADE_H
 
 typedef struct screenfade_s
