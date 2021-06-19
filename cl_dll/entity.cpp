@@ -227,8 +227,8 @@ void DLLEXPORT HUD_TxferPredictionData( struct entity_state_s *ps, const struct 
 }
 
 /*
-//#define TEST_IT
-#if defined( TEST_IT )
+//#define TEST_IT	1
+#if TEST_IT
 
 cl_entity_t mymodel[9];
 
@@ -270,8 +270,8 @@ void MoveModel( void )
 }
 #endif
 
-//#define TRACE_TEST
-#if defined( TRACE_TEST )
+//#define TRACE_TEST	1
+#if TRACE_TEST
 
 extern int hitent;
 
@@ -427,7 +427,7 @@ void TempEnts( void )
 }
 */
 
-#if defined( BEAM_TEST )
+#if BEAM_TEST
 // Note can't index beam[0] in Beam callback, so don't use that index
 // Room for 1 beam ( 0 can't be used )
 static cl_entity_t beams[2];
@@ -511,10 +511,10 @@ void DLLEXPORT HUD_CreateEntities( void )
 	// Load an appropriate model into it ( gEngfuncs.CL_LoadModel )
 	// Call gEngfuncs.CL_CreateVisibleEntity to add it to the visedicts list
 /*
-#if defined( TEST_IT )
+#if TEST_IT
 	MoveModel();
 #endif
-#if defined( TRACE_TEST )
+#if TRACE_TEST
 	TraceModel();
 #endif
 */
@@ -524,7 +524,7 @@ void DLLEXPORT HUD_CreateEntities( void )
 /*
 	TempEnts();
 */
-#if defined( BEAM_TEST )
+#if BEAM_TEST
 	Beams();
 #endif
 	// Add in any game specific objects
@@ -943,7 +943,7 @@ Indices must start at 1, not zero.
 */
 cl_entity_t DLLEXPORT *HUD_GetUserEntity( int index )
 {
-#if defined( BEAM_TEST )
+#if BEAM_TEST
 	// None by default, you would return a valic pointer if you create a client side
 	//  beam and attach it to a client side entity.
 	if( index > 0 && index <= 1 )

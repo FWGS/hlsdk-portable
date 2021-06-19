@@ -12,11 +12,10 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
-
 #pragma once
-#ifndef MOBILITY_INT_H
+#if !defined(MOBILITY_INT_H)
 #define MOBILITY_INT_H
-#ifdef __cplusplus
+#if __cplusplus
 extern "C" {
 #endif
 
@@ -84,7 +83,7 @@ typedef struct mobile_engfuncs_s
 // returns 0 on no error otherwise error
 typedef int (*pfnMobilityInterface)( mobile_engfuncs_t *gMobileEngfuncs );
 
-#ifdef __cplusplus
+#if __cplusplus
 }
 #endif
 #endif

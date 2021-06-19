@@ -1,13 +1,7 @@
 version: 1.0.{build}
 
-branches:
-  only:
-    - master
-
 environment:
   matrix:
-    - os: Visual Studio 2013
-      GENERATOR_NAME: "Visual Studio 12 2013"
     - os: Visual Studio 2015
       GENERATOR_NAME: "Visual Studio 14 2015"
 # TODO: Uncomment when AppVeyor will provide XP toolchain for VS2017
@@ -17,7 +11,7 @@ environment:
 clone_folder: c:\projects\xash\hlsdk-xash3d
 
 build:
-  project: INSTALL.vcxproj
+  project: build/INSTALL.vcxproj
   verbosity: normal
 
 configuration:
@@ -25,4 +19,9 @@ configuration:
 
 before_build:
   - git submodule update --init --recursive
-  - cmake -G "%GENERATOR_NAME%"
+  - cmake -G "%GENERATOR_NAME%" -B build -DGOLDSOURCE_SUPPORT=ON -DCMAKE_INSTALL_PREFIX="dist"
+
+artifacts:
+  - path: dist
+    name: hlsdk-msvc
+    type: zip
