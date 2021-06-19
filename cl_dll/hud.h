@@ -20,7 +20,7 @@
 // CHud handles the message, calculation, and drawing the HUD
 //
 #pragma once
-#ifndef HUD_H
+#if !defined(HUD_H)
 #define HUD_H
 #define RGB_YELLOWISH 0x00FFA000 //255,160,0
 #ifdef MOBILE_HACKS

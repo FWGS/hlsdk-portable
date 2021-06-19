@@ -10,8 +10,15 @@ def options(opt):
 	return
 
 def configure(conf):
-	# stub
-	return
+	if conf.env.COMPILER_CC == 'msvc':
+		# hl.def removes MSVC function name decoration from GiveFnptrsToDll on Windows.
+		# Without this, the lookup for this function fails.
+		hlDefNode = conf.path.find_resource("./hl.def")
+
+		if hlDefNode is not None:
+			conf.env.append_unique('LINKFLAGS', '/def:%s' % hlDefNode.abspath())
+		else:
+			conf.fatal("Could not find hl.def")
 
 def build(bld):
 	source = bld.path.parent.ant_glob([

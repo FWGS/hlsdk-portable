@@ -4,10 +4,9 @@
 //
 // $NoKeywords: $
 //=============================================================================
-
-#ifndef VOICE_GAMEMGR_H
-#define VOICE_GAMEMGR_H
 #pragma once
+#if !defined(VOICE_GAMEMGR_H)
+#define VOICE_GAMEMGR_H
 
 #include "voice_common.h"
 
