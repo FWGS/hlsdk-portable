@@ -4,12 +4,9 @@
 //
 // $NoKeywords: $
 //=============================================================================
-
-#ifndef BITVEC_H
-#define BITVEC_H
-#ifdef _WIN32
 #pragma once
-#endif
+#if !defined(BITVEC_H)
+#define BITVEC_H
 
 #include <assert.h>
 #include <string.h>

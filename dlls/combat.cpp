@@ -1486,7 +1486,7 @@ Vector CBaseEntity::FireBulletsPlayer( ULONG cShots, Vector vecSrc, Vector vecDi
 	Vector vecUp = gpGlobals->v_up;
 	int tracer;
 	float x = 0.0f, y = 0.0f;
-	float z;
+	//float z;
 
 	if( pevAttacker == NULL )
 		pevAttacker = pev;  // the default attacker is ourselves

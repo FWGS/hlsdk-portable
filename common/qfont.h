@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef QFONT_H
+#if !defined(QFONT_H)
 #define QFONT_H
 
 // Font stuff
