@@ -1569,7 +1569,7 @@ Vector CBaseEntity::FireBulletsPlayer( ULONG cShots, Vector vecSrc, Vector vecDi
 	Vector vecRight = gpGlobals->v_right;
 	Vector vecUp = gpGlobals->v_up;
 	float x = 0.0f, y = 0.0f;
-	float z;
+	//float z;
 
 	UTIL_MuzzleLight( vecSrc, 160, 255, 255, 128, 0, 0 );
 

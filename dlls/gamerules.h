@@ -16,7 +16,7 @@
 // GameRules
 //=========================================================
 #pragma once
-#ifndef GAMERULES_H
+#if !defined(GAMERULES_H)
 #define GAMERULES_H
 //LRC
 #define GAME_NAME "Spirit of Half-Life"
