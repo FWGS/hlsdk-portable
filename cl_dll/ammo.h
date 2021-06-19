@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef __AMMO_H__
+#if !defined(__AMMO_H__)
 #define __AMMO_H__
 
 #define MAX_WEAPON_NAME 128

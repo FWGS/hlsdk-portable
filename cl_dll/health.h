@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef HEALTH_H
+#if !defined(HEALTH_H)
 #define HEALTH_H
 
 #define DMG_IMAGE_LIFE		2	// seconds that image is up

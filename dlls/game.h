@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef GAME_H
+#if !defined(GAME_H)
 #define GAME_H
 
 extern void GameDLLInit( void );

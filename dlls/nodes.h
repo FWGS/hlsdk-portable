@@ -16,7 +16,7 @@
 // nodes.h
 //=========================================================
 #pragma once
-#ifndef	NODES_H
+#if !defined(NODES_H)
 #define	NODES_H
 #define NO_NODE			-1
 #define	bits_NODE_GROUP_REALM	1
@@ -50,3 +50,4 @@ public:
 extern CGraph WorldGraph;
 
 #endif // NODES_H
+
