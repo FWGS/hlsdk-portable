@@ -13,16 +13,16 @@
 *
 ****/
 #pragma once
-#ifndef UTIL_H
+#if !defined(UTIL_H)
 #define UTIL_H
 //
 // Misc utility code
 //
-#ifndef ACTIVITY_H
+#if !defined(ACTIVITY_H)
 #include "activity.h"
 #endif
 
-#ifndef ENGINECALLBACK_H
+#if !defined(ENGINECALLBACK_H)
 #include "enginecallback.h"
 #endif
 
@@ -35,7 +35,7 @@ extern globalvars_t				*gpGlobals;
 // Use this instead of ALLOC_STRING on constant strings
 #define STRING(offset)		(const char *)(gpGlobals->pStringBase + (int)offset)
 
-#if !defined(XASH_64BIT) || CLIENT_DLL
+#if !XASH_64BIT || CLIENT_DLL
 #define MAKE_STRING(str)	((int)(long int)str - (int)(long int)STRING(0))
 #else
 static inline int MAKE_STRING(const char *szValue)
@@ -93,7 +93,7 @@ typedef int EOFFSET;
 typedef int BOOL;
 
 // In case this ever changes
-#ifndef M_PI
+#if !defined(M_PI)
 #define M_PI			3.14159265358979323846
 #endif
 // Keeps clutter down a bit, when declaring external entity/global method prototypes

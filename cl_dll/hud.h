@@ -20,7 +20,7 @@
 // CHud handles the message, calculation, and drawing the HUD
 //
 #pragma once
-#ifndef HUD_H
+#if !defined(HUD_H)
 #define HUD_H
 #define RGB_YELLOWISH 0x004040FF //64,64,255 Blue Azure Sheep hud
 #define RGB_REDISH 0x00FF1010 //255,160,0

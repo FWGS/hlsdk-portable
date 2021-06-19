@@ -10,7 +10,7 @@
 
 #include "input_mouse.h"
 
-#ifdef SUPPORT_GOLDSOURCE_INPUT
+#if SUPPORT_GOLDSOURCE_INPUT
 
 #include "hud.h"
 #include "cl_util.h"
@@ -24,10 +24,10 @@
 #include "view.h"
 
 #if !_WIN32
-#define USE_SDL2
+#define USE_SDL2	1
 #endif
 
-#ifdef USE_SDL2
+#if USE_SDL2
 #define ARRAYSIZE(p)		( sizeof(p) /sizeof(p[0]) )
 #include <dlfcn.h>
 #include <SDL2/SDL_mouse.h>
@@ -218,7 +218,7 @@ enum _ControlList
 	AxisTurn
 };
 
-#if !defined(USE_SDL2) && defined(_WIN32)
+#if !USE_SDL2 && _WIN32
 DWORD dwAxisFlags[JOY_MAX_AXES] =
 {
 	JOY_RETURNX,
@@ -232,9 +232,9 @@ DWORD dwAxisFlags[JOY_MAX_AXES] =
 
 DWORD   dwAxisMap[ JOY_MAX_AXES ];
 DWORD   dwControlMap[ JOY_MAX_AXES ];
-#if defined(USE_SDL2)
+#if USE_SDL2
 int pdwRawValue[ JOY_MAX_AXES ];
-#elif defined(_WIN32)
+#elif _WIN32
 PDWORD pdwRawValue[ JOY_MAX_AXES ];
 #endif
 DWORD joy_oldbuttonstate, joy_oldpovstate;
@@ -242,9 +242,9 @@ DWORD joy_oldbuttonstate, joy_oldpovstate;
 int joy_id;
 DWORD joy_numbuttons;
 
-#ifdef USE_SDL2
+#if USE_SDL2
 SDL_GameController *s_pJoystick = NULL;
-#elif defined(_WIN32)
+#elif _WIN32
 DWORD		joy_flags;
 static JOYINFOEX	ji;
 #endif
@@ -566,7 +566,7 @@ void GoldSourceInput::IN_Shutdown (void)
 	}
 #endif
 
-#ifdef USE_SDL2
+#if USE_SDL2
 	for (int j=0; j<ARRAYSIZE(sdlFunctions); ++j) {
 		*(sdlFunctions[j].ppfnFunc) = NULL;
 	}
@@ -735,7 +735,7 @@ void GoldSourceInput::IN_GetMouseDelta( int *pOutX, int *pOutY)
 		else
 #endif
 		{
-#ifdef USE_SDL2
+#if USE_SDL2
 			safe_pfnSDL_GetRelativeMouseState( &deltaX, &deltaY );
 			current_pos.x = deltaX;
 			current_pos.y = deltaY;
@@ -904,8 +904,8 @@ void GoldSourceInput::IN_MouseMove ( float frametime, usercmd_t *cmd)
 
 	dead_viewangles = viewangles; // keep them actual
 /*
-//#define TRACE_TEST
-#if defined( TRACE_TEST )
+//#define TRACE_TEST	1
+#if TRACE_TEST
 	{
 		int mx, my;
 		void V_Move( int mx, int my );
@@ -942,7 +942,7 @@ void GoldSourceInput::IN_Accumulate (void)
 			else
 #endif
 			{
-#ifdef USE_SDL2
+#if USE_SDL2
 				int deltaX, deltaY;
 				safe_pfnSDL_GetRelativeMouseState( &deltaX, &deltaY );
 				mx_accum += deltaX;
@@ -997,7 +997,7 @@ void IN_StartupJoystick (void)
 
 	// assume no joystick
 	joy_avail = 0;
-#ifdef USE_SDL2
+#if USE_SDL2
 	int nJoysticks = safe_pfnSDL_NumJoysticks();
 	if ( nJoysticks > 0 )
 	{
@@ -1029,7 +1029,7 @@ void IN_StartupJoystick (void)
 	{
 		gEngfuncs.Con_DPrintf ("joystick not found -- driver not present\n\n");
 	}
-#elif defined(_WIN32)
+#elif _WIN32
 	int numdevs;
 	JOYCAPS jc;
 	MMRESULT mmr;
@@ -1084,7 +1084,7 @@ void IN_StartupJoystick (void)
 #endif
 }
 
-#ifdef USE_SDL2
+#if USE_SDL2
 int RawValuePointer (int axis)
 {
 	switch (axis)
@@ -1101,7 +1101,7 @@ int RawValuePointer (int axis)
 
 	}
 }
-#elif defined(_WIN32)
+#elif _WIN32
 PDWORD RawValuePointer (int axis)
 {
 	switch (axis)
@@ -1184,7 +1184,7 @@ void Joy_AdvancedUpdate_f (void)
 		dwControlMap[JOY_AXIS_V] = dwTemp & JOY_RELATIVE_AXIS;
 	}
 
-#if !defined(USE_SDL2) && defined(_WIN32)
+#if !USE_SDL2 && _WIN32
 	// compute the axes to collect from DirectInput
 	joy_flags = JOY_RETURNCENTERED | JOY_RETURNBUTTONS | JOY_RETURNPOV;
 	for (i = 0; i < JOY_MAX_AXES; i++)
@@ -1216,7 +1216,7 @@ void GoldSourceInput::IN_Commands (void)
 
 	// loop through the joystick buttons
 	// key a joystick event or auxillary event for higher number buttons for each state change
-#ifdef USE_SDL2
+#if USE_SDL2
 	buttonstate = 0;
 	for ( i = 0; i < SDL_CONTROLLER_BUTTON_MAX; i++ )
 	{
@@ -1230,7 +1230,7 @@ void GoldSourceInput::IN_Commands (void)
 	{
 		pdwRawValue[i] = RawValuePointer(i);
 	}
-#elif defined(_WIN32)
+#elif _WIN32
 	buttonstate = ji.dwButtons;
 #endif
 
@@ -1256,7 +1256,7 @@ void GoldSourceInput::IN_Commands (void)
 		// this avoids any potential problems related to moving from one
 		// direction to another without going through the center position
 		povstate = 0;
-#if !defined(USE_SDL2) && defined(_WIN32)
+#if !USE_SDL2 && _WIN32
 		if(ji.dwPOV != JOY_POVCENTERED)
 		{
 			if (ji.dwPOV == JOY_POVFORWARD)
@@ -1294,10 +1294,10 @@ IN_ReadJoystick
 */
 int IN_ReadJoystick (void)
 {
-#ifdef USE_SDL2
+#if USE_SDL2
 	safe_pfnSDL_JoystickUpdate();
 	return 1;
-#elif defined(_WIN32)
+#elif _WIN32
 	memset (&ji, 0, sizeof(ji));
 	ji.dwSize = sizeof(ji);
 	ji.dwFlags = joy_flags;
@@ -1374,9 +1374,9 @@ void IN_JoyMove ( float frametime, usercmd_t *cmd )
 	for (i = 0; i < JOY_MAX_AXES; i++)
 	{
 		// get the floating point zero-centered, potentially-inverted data for the current axis
-#ifdef USE_SDL2
+#if USE_SDL2
 		fAxisValue = (float)pdwRawValue[i];
-#elif defined(_WIN32)
+#elif _WIN32
 		fAxisValue = (float) *pdwRawValue[i];
 		fAxisValue -= 32768.0;
 #endif
@@ -1600,7 +1600,7 @@ void GoldSourceInput::IN_Init (void)
 	}
 #endif
 
-#ifdef USE_SDL2
+#if USE_SDL2
 #if __APPLE__
 #define SDL2_FULL_LIBNAME "libsdl2-2.0.0.dylib"
 #else

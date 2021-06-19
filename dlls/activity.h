@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef	ACTIVITY_H
+#if !defined(ACTIVITY_H)
 #define	ACTIVITY_H
 
 typedef enum {
