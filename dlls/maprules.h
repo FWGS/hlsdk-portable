@@ -12,8 +12,8 @@
 *   without written permission from Valve LLC.
 *
 ****/
-
-#ifndef MAPRULES_H
+#pragma once
+#if !defined(MAPRULES_H)
 #define MAPRULES_H
 #endif //MAPRULES_H
 

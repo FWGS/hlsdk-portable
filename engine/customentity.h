@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef CUSTOMENTITY_H
+#if !defined(CUSTOMENTITY_H)
 #define CUSTOMENTITY_H
 
 // Custom Entities

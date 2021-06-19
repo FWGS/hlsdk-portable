@@ -4,12 +4,9 @@
 //
 // $NoKeywords: $
 //=============================================================================
-
-#ifndef VGUI_SCROLLBAR2_H
-#define VGUI_SCROLLBAR2_H
-#ifdef _WIN32
 #pragma once
-#endif
+#if !defined(VGUI_SCROLLBAR2_H)
+#define VGUI_SCROLLBAR2_H
 
 #include<VGUI.h>
 #include<VGUI_Panel.h>
@@ -58,5 +55,4 @@ protected:
 };
 
 }
-
 #endif // VGUI_SCROLLBAR2_H
