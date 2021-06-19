@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef TRIANGLEAPI_H
+#if !defined(TRIANGLEAPI_H)
 #define TRIANGLEAPI_H
 
 typedef enum 

@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef EXTDLL_H
+#if !defined(EXTDLL_H)
 #define EXTDLL_H
 
 //
@@ -45,10 +45,10 @@
 #include <windows.h>
 #undef HSPRITE
 #else // _WIN32
-#ifndef FALSE
+#if !defined(FALSE)
 #define FALSE 0
 #endif
-#ifndef TRUE
+#if !defined(TRUE)
 #define TRUE (!FALSE)
 #endif
 #include <limits.h>
@@ -57,7 +57,7 @@ typedef unsigned int ULONG;
 typedef unsigned char BYTE;
 typedef int BOOL;
 #define MAX_PATH PATH_MAX
-#ifndef PATH_MAX
+#if !defined(PATH_MAX)
 #define PATH_MAX 4096
 #endif
 #endif //_WIN32
@@ -72,12 +72,12 @@ typedef int BOOL;
 #include <math.h>
 #endif
 
-#ifndef M_PI_F
+#if !defined(M_PI_F)
 #define M_PI_F          (float)M_PI
 #endif
 
-#if defined(__LP64__) || defined(__LLP64__) || defined(_WIN64) || (defined(__x86_64__) && !defined(__ILP32__) ) || defined(_M_X64) || defined(__ia64) || defined (_M_IA64) || defined(__aarch64__) || defined(__powerpc64__)
-  #define XASH_64BIT
+#if __LP64__ || __LLP64__ || _WIN64 || (__x86_64__ && !__ILP32__) || _M_X64 || __ia64 || _M_IA64 || __aarch64__ || __powerpc64__
+  #define XASH_64BIT	1
 #endif
 
 // Header file containing definition of globalvars_t and entvars_t
@@ -101,10 +101,10 @@ typedef float vec_t;				// needed before including progdefs.h
 
 // Shared header between the client DLL and the game DLLs
 #include "cdll_dll.h"
-#ifndef Q_min
+#if !defined(Q_min)
 #define Q_min(a,b)  (((a) < (b)) ? (a) : (b))
 #endif
-#ifndef Q_max
+#if !defined(Q_max)
 #define Q_max(a,b)  (((a) > (b)) ? (a) : (b))
 #endif
 
