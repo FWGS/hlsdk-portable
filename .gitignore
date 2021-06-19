@@ -24,3 +24,5 @@ waf3-*
 .lock*
 *.pyc
 .vscode/
+.vs/
+CMakeSettings.json
