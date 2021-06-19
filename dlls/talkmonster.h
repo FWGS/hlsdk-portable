@@ -12,10 +12,11 @@
 *   use or distribution of this code by or to any unlicensed person is illegal.
 *
 ****/
-#ifndef TALKMONSTER_H
+#pragma once
+#if !defined(TALKMONSTER_H)
 #define TALKMONSTER_H
 
-#ifndef MONSTERS_H
+#if !defined(MONSTERS_H)
 #include "monsters.h"
 #endif
 
