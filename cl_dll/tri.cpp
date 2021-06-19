@@ -234,7 +234,6 @@ extern ParticleSystemManager* g_pParticleSystems; // LRC
 
 void DLLEXPORT HUD_DrawTransparentTriangles( void )
 {
-<<<<<<< HEAD
 	BlackFog();
 
    	//22/03/03 LRC: shiny surfaces
@@ -249,10 +248,7 @@ void DLLEXPORT HUD_DrawTransparentTriangles( void )
 	// LRC: draw and update particle systems
 	g_pParticleSystems->UpdateSystems(fTime - fOldTime);
 
-#if defined( TEST_IT )
-=======
 #if TEST_IT
->>>>>>> master
 //	Draw_Triangles();
 #endif
 }
