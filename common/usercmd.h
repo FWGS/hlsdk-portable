@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef USERCMD_H
+#if !defined(USERCMD_H)
 #define USERCMD_H
 
 typedef struct usercmd_s

@@ -130,8 +130,8 @@ void CShinySurface::Draw(const vec3_t &org)
 
 
 //LRCT
-//#define TEST_IT
-#if defined( TEST_IT )
+//#define TEST_IT	1
+#if TEST_IT
 
 /*
 =================
@@ -227,7 +227,7 @@ Non-transparent triangles-- add them here
 void DLLEXPORT HUD_DrawNormalTriangles( void )
 {
 	gHUD.m_Spectator.DrawOverview();
-#if defined( TEST_IT )
+#if TEST_IT
 //	Draw_Triangles();
 #endif
 }
@@ -243,6 +243,7 @@ extern ParticleSystemManager* g_pParticleSystems; // LRC
 
 void DLLEXPORT HUD_DrawTransparentTriangles( void )
 {
+<<<<<<< HEAD
 	BlackFog();
 
    	//22/03/03 LRC: shiny surfaces
@@ -258,6 +259,9 @@ void DLLEXPORT HUD_DrawTransparentTriangles( void )
 	g_pParticleSystems->UpdateSystems(fTime - fOldTime);
 
 #if defined( TEST_IT )
+=======
+#if TEST_IT
+>>>>>>> master
 //	Draw_Triangles();
 #endif
 }

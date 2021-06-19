@@ -28,8 +28,8 @@
 #include "weapons.h"
 #include "player.h"
 
-#define TEMP_FOR_SCREEN_SHOTS
-#if defined(TEMP_FOR_SCREEN_SHOTS) //===================================================
+#define TEMP_FOR_SCREEN_SHOTS	1
+#if TEMP_FOR_SCREEN_SHOTS //===================================================
 
 class CCycler : public CBaseMonster
 {

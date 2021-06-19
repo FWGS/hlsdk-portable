@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef SHAKE_H
+#if !defined(SHAKE_H)
 #define SHAKE_H
 
 // Screen / View effects

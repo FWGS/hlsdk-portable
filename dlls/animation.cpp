@@ -36,21 +36,21 @@ typedef unsigned char byte;
 
 #include "studio.h"
 
-#ifndef ACTIVITY_H
+#if !defined(ACTIVITY_H)
 #include "activity.h"
 #endif
 
 #include "activitymap.h"
 
-#ifndef ANIMATION_H
+#if !defined(ANIMATION_H)
 #include "animation.h"
 #endif
 
-#ifndef SCRIPTEVENT_H
+#if !defined(SCRIPTEVENT_H)
 #include "scriptevent.h"
 #endif
 
-#ifndef ENGINECALLBACK_H
+#if !defined(ENGINECALLBACK_H)
 #include "enginecallback.h"
 #endif
 

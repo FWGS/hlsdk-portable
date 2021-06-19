@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef CUSTOM_H
+#if !defined(CUSTOM_H)
 #define CUSTOM_H
 
 #include "const.h"
