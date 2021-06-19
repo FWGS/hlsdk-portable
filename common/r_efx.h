@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef R_EFX_H
+#if !defined(R_EFX_H)
 #define R_EFX_H
 
 // particle_t

@@ -14,6 +14,9 @@ jobs:
           - os: ubuntu-latest
             cc: clang
             cxx: clang++
+          - os: windows-2016
+            cc: cl
+            cxx: cl
     env:
       CC: ${{ matrix.cc }}
       CXX: ${{ matrix.cxx }}
@@ -21,27 +24,39 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
 
-    - name: Get SDL2 headers
+    - name: Checkout steam-runtime
+      if: startsWith(matrix.os, 'ubuntu')
       uses: actions/checkout@v2
       with:
-        repository: libsdl-org/SDL
-        ref: release-2.0.9
-        path: SDL2
-    - name: Link SDL2 headers into system path
-      run: |
-        sudo ln -s "$GITHUB_WORKSPACE/SDL2/include" /usr/local/include/SDL2
-
-    - name: Install dependencies
+        repository: ValveSoftware/steam-runtime
+        path: steam-runtime
+    - name: Cache steam-runtime
+      if: startsWith(matrix.os, 'ubuntu')
+      id: cache-steam-runtime
+      uses: actions/cache@v2
+      with:
+        path: com.valvesoftware.SteamRuntime.Sdk-i386-scout-sysroot.tar.gz
+        key: ${{ runner.os }}-steam-runtime
+    - name: Download steam-runtime
+      if: startsWith(matrix.os, 'ubuntu') && steps.cache-steam-runtime.outputs.cache-hit != 'true'
+      run: wget --no-verbose https://repo.steampowered.com/steamrt-images-scout/snapshots/0.20210610.0/com.valvesoftware.SteamRuntime.Sdk-i386-scout-sysroot.tar.gz
+    - name: Install steam runtime
       if: startsWith(matrix.os, 'ubuntu')
       run: |
-        sudo apt-get -y install gcc-multilib g++-multilib
+        ./steam-runtime/setup_chroot.sh --i386 --tarball ./com.valvesoftware.SteamRuntime.Sdk-i386-scout-sysroot.tar.gz
+        sudo sed -i 's/groups=sudo/groups=adm/g' /etc/schroot/chroot.d/steamrt_scout_i386.conf
 
     - name: Build with xash3d-fwgs input
+      if: startsWith(matrix.os, 'ubuntu')
       run: |
-        cmake -B build -S . -DCMAKE_EXE_LINKER_FLAGS="-Wl,--no-undefined" && cmake --build build --target all
+        schroot --chroot steamrt_scout_i386 -- cmake -B build-fwgs -S . -DCMAKE_EXE_LINKER_FLAGS="-Wl,--no-undefined"
+        schroot --chroot steamrt_scout_i386 -- cmake --build build-fwgs --target all
     - name: Build with goldsource input
+      if: startsWith(matrix.os, 'ubuntu')
       run: |
-        cmake -B build-gs -S . -DCMAKE_EXE_LINKER_FLAGS="-Wl,--no-undefined" -DGOLDSOURCE_SUPPORT=ON && cmake --build build-gs --target all
+        schroot --chroot steamrt_scout_i386 -- cmake -B build -S . -DCMAKE_EXE_LINKER_FLAGS="-Wl,--no-undefined" -DGOLDSOURCE_SUPPORT=ON -DCMAKE_INSTALL_PREFIX="$PWD/dist"
+        schroot --chroot steamrt_scout_i386 -- cmake --build build --target all
+        schroot --chroot steamrt_scout_i386 -- cmake --build build --target install
 
     - name: Build with mingw
       if: startsWith(matrix.os, 'ubuntu') && startsWith(matrix.cc, 'gcc')
@@ -49,4 +64,34 @@ jobs:
         sudo apt-get install -y mingw-w64-i686-dev binutils-mingw-w64-i686 gcc-mingw-w64-i686 g++-mingw-w64-i686
         cmake -B build-mingw -S . -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_C_COMPILER=i686-w64-mingw32-gcc -DCMAKE_CXX_COMPILER=i686-w64-mingw32-g++
         cmake --build build-mingw --target all
+
+    - name: Add msbuild to PATH
+      if: startsWith(matrix.os, 'windows')
+      uses: microsoft/setup-msbuild@v1.0.2
+    - name: Build with msvc
+      if: startsWith(matrix.os, 'windows')
+      run: |
+        cmake -G "Visual Studio 15 2017" -B build -DGOLDSOURCE_SUPPORT=ON -DCMAKE_INSTALL_PREFIX="dist"
+        msbuild build/INSTALL.vcxproj
+
+    - name: Extract branch name
+      shell: bash
+      run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/} | tr '/' '_')"
+      id: extract_branch
+    - name: Extract gamedir
+      shell: bash
+      run: echo "##[set-output name=gamedir;]$(grep build/CMakeCache.txt -Ee 'GAMEDIR:STRING=[a-z]+' | cut -d '=' -f 2)"
+      id: extract_gamedir
+    - name: Upload linux artifact
+      if: startsWith(matrix.os, 'ubuntu') && matrix.cc == 'gcc'
+      uses: actions/upload-artifact@v2
+      with:
+        name: hlsdk-${{ steps.extract_branch.outputs.branch }}-linux
+        path: dist/${{ steps.extract_gamedir.outputs.gamedir }}
+    - name: Upload windows artifact
+      if: startsWith(matrix.os, 'windows')
+      uses: actions/upload-artifact@v2
+      with:
+        name: hlsdk-${{ steps.extract_branch.outputs.branch }}-windows
+        path: dist/${{ steps.extract_gamedir.outputs.gamedir }}
 
