@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef WEAPONINFO_H
+#if !defined(WEAPONINFO_H)
 #define WEAPONINFO_H
 
 // Info about weapons player might have in his/her possession
