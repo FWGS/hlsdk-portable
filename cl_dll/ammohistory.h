@@ -16,7 +16,7 @@
 // ammohistory.h
 //
 #pragma once
-#ifndef AMMOHISTORY_H
+#if !defined(AMMOHISTORY_H)
 #define AMMOHISTORY_H
 
 // this is the max number of items in each bucket

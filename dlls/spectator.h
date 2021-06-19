@@ -14,7 +14,7 @@
 ****/
 // Spectator.h
 #pragma once
-#ifndef SPECTATOR_H
+#if !defined(SPECTATOR_H)
 #define SPECTATOR_H
 
 class CBaseSpectator : public CBaseEntity 
