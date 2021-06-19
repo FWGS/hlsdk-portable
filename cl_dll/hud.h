@@ -21,7 +21,7 @@
 //
 
 #pragma once
-#ifndef HUD_H
+#if !defined(HUD_H)
 #define HUD_H
 #define RGB_YELLOWISH 0x00FFFFFF //255,255,255
 #define RGB_REDISH 0x00FF1010 //255,160,0

@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef REF_PARAMS_H
+#if !defined(REF_PARAMS_H)
 #define REF_PARAMS_H
 
 typedef struct ref_params_s
