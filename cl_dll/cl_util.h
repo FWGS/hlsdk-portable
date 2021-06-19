@@ -15,12 +15,12 @@
 //
 // cl_util.h
 //
-#ifndef CL_UTIL_H
+#if !defined(CL_UTIL_H)
 #define CL_UTIL_H
 #include "exportdef.h"
 #include "cvardef.h"
 
-#ifndef TRUE
+#if !defined(TRUE)
 #define TRUE 1
 #define FALSE 0
 #endif
