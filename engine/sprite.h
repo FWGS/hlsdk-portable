@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef SPRITE_H
+#if !defined(SPRITE_H)
 #define SPRITE_H
 
 /*

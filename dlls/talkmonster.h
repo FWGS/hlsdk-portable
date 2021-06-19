@@ -13,10 +13,10 @@
 *
 ****/
 #pragma once
-#ifndef TALKMONSTER_H
+#if !defined(TALKMONSTER_H)
 #define TALKMONSTER_H
 
-#ifndef MONSTERS_H
+#if !defined(MONSTERS_H)
 #include "monsters.h"
 #endif
 #include "squadmonster.h"

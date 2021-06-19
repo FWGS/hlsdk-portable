@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef KEYDEFS_H
+#if !defined(KEYDEFS_H)
 #define KEYDEFS_H
 
 //

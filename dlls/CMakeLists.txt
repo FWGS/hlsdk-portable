@@ -20,7 +20,7 @@
 # SOFTWARE.
 #
 
-cmake_minimum_required(VERSION 2.6.0)
+cmake_minimum_required(VERSION 2.8.12)
 project (SVDLL)
 
 set (SVDLL_LIBRARY server)
@@ -200,6 +200,12 @@ if(NOT MSVC)
 endif()
 	
 include_directories (. wpn_shared ../common ../engine ../pm_shared ../game_shared ../public gearbox)
+
+if(MSVC)
+	set(SVDLL_SOURCES
+		${SVDLL_SOURCES}
+		hl.def)
+endif()
 
 if(USE_VOICEMGR)
 	set(SVDLL_SOURCES

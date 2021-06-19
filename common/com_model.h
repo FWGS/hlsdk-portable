@@ -4,7 +4,6 @@
 //
 // $NoKeywords: $
 //=============================================================================
-
 // com_model.h
 #pragma once
 #if !defined( COM_MODEL_H )
@@ -45,7 +44,7 @@ typedef enum
 } modtype_t;
 
 // must match definition in modelgen.h
-#ifndef SYNCTYPE_T
+#if !defined(SYNCTYPE_T)
 #define SYNCTYPE_T
 
 typedef enum
