@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef CON_NPRINT_H
+#if !defined(CON_NPRINT_H)
 #define CON_NPRINT_H
 
 typedef struct con_nprint_s

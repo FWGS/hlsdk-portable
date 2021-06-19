@@ -1,6 +1,6 @@
 
 #pragma once
-#ifndef NODES_32BIT_COMPAT
+#if !defined(NODES_32BIT_COMPAT)
 #define NODES_32BIT_COMPAT
 
 //#include "nodes.h"
