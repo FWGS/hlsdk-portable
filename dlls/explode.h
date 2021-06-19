@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef EXPLODE_H
+#if !defined(EXPLODE_H)
 #define EXPLODE_H
 
 #define	SF_ENVEXPLOSION_NODAMAGE	( 1 << 0 ) // when set, ENV_EXPLOSION will not actually inflict damage

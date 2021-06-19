@@ -4,11 +4,9 @@
 //
 // $NoKeywords: $
 //=============================================================================
-
-#ifndef VOICE_STATUS_H
-#define VOICE_STATUS_H
 #pragma once
-
+#if !defined(VOICE_STATUS_H)
+#define VOICE_STATUS_H
 
 #include "VGUI_Label.h"
 #include "VGUI_LineBorder.h"
@@ -223,6 +221,4 @@ public:
 
 // Get the (global) voice manager. 
 CVoiceStatus* GetClientVoiceMgr();
-
-
 #endif // VOICE_STATUS_H

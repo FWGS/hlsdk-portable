@@ -4,13 +4,9 @@
 //
 // $NoKeywords: $
 //=============================================================================
-
-#ifndef VGUI_CHECKBUTTON2_H
-#define VGUI_CHECKBUTTON2_H
-#ifdef _WIN32
 #pragma once
-#endif
-
+#if !defined(VGUI_CHECKBUTTON2_H)
+#define VGUI_CHECKBUTTON2_H
 
 #include "vgui_label.h"
 #include "vgui_imagepanel.h"
