@@ -19,10 +19,10 @@
 // JOHN:  client dll interface declarations
 //
 #pragma once
-#ifndef CDLL_INT_H
+#if !defined(CDLL_INT_H)
 #define CDLL_INT_H
 
-#ifdef __cplusplus
+#if __cplusplus
 extern "C" {
 #endif
 
@@ -307,7 +307,7 @@ typedef struct cl_enginefuncs_s
 
 #define CLDLL_INTERFACE_VERSION	7
 
-#ifdef __cplusplus
+#if __cplusplus
 }
 #endif
 
