@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef SCRIPTEVENT_H
+#if !defined(SCRIPTEVENT_H)
 #define SCRIPTEVENT_H
 
 #define SCRIPT_EVENT_DEAD			1000		// character is now dead
