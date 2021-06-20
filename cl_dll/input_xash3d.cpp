@@ -5,6 +5,7 @@
 #include "keydefs.h"
 #include "cl_util.h"
 #include "input_mouse.h"
+#include "view.h"
 
 extern cvar_t		*sensitivity;
 extern cvar_t		*in_joystick;

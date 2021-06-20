@@ -883,7 +883,7 @@ void GoldSourceInput::IN_MouseMove ( float frametime, usercmd_t *cmd)
 
 		// GetCursorPos( &mouse_pos );
 
-		IN_GetMousePos( &mouse_pos.x, &mouse_pos.y );
+		IN_GetMousePos( (int*)&mouse_pos.x, (int*)&mouse_pos.y );
 
 		mouse_pos_extern[0] = mouse_pos.x;
 		mouse_pos_extern[1] = mouse_pos.y;
