@@ -285,7 +285,7 @@ class Cak47AmmoClip : public CBasePlayerAmmo
 	void Spawn( void )
 	{ 
 		Precache( );
-		SET_MODEL(ENT(pev), "models/w_9mmARclip.mdl");
+		SET_MODEL(ENT(pev), "models/w_ak47clip.mdl");
 		CBasePlayerAmmo::Spawn( );
 	}
 	void Precache( void )
