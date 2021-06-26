@@ -635,6 +635,8 @@ void EV_HLDM_FireBullets( int idx, float *forward, float *right, float *up, int 
 			gEngfuncs.pEventAPI->EV_SetTraceHull( 2 );
 			gEngfuncs.pEventAPI->EV_PlayerTrace( vecSrc, vecEnd, PM_STUDIO_BOX, -1, &tr );
 
+			EV_HLDM_BulletFlyBySound(idx, vecSrc, vecEnd);
+
 			tracer = EV_HLDM_CheckTracer( idx, vecSrc, tr.endpos, forward, right, iBulletType, iTracerFreq, tracerCount );
 
 			// do damage, paint decals
