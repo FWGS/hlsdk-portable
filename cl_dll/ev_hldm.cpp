@@ -1331,7 +1331,7 @@ void EV_FireAK47( event_args_t *args )
 
 	AngleVectors( angles, forward, right, up );
 
-	shell = gEngfuncs.pEventAPI->EV_FindModelIndex( "models/shell.mdl" );// brass shell
+	shell = gEngfuncs.pEventAPI->EV_FindModelIndex( "models/ak47_shell.mdl" );// brass shell
 
 	if( EV_IsLocal( idx ) )
 	{
