@@ -40,7 +40,7 @@ def options(opt):
 	grp.add_option('--enable-poly-opt', action = 'store_true', dest = 'POLLY', default = False,
 		help = 'enable polyhedral optimization if possible [default: %default]')
 
-	grp.add_option('--enable-simple-mod-hacks', action = 'store_true', dest = 'ENABLE_MOD_HACKS', default = False,
+	grp.add_option('--enable-simple-mod-hacks', action = 'store_true', dest = 'SIMPLE_MOD_HACKS', default = False,
 		help = 'enable hacks for simple mods that mostly compatible with Half-Life but has little changes. Enforced for Android. [default: %default]')
 
 	opt.load('subproject')
