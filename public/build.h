@@ -71,6 +71,7 @@ For more information, please refer to <http://unlicense.org/>
 #undef XASH_WIN32
 #undef XASH_WIN64
 #undef XASH_X86
+#undef XASH_RISCV
 
 //================================================================
 //
