@@ -207,6 +207,13 @@ For more information, please refer to <http://unlicense.org/>
 #elif defined __e2k__
 	#define XASH_64BIT 1
 	#define XASH_E2K 1
+#elif defined(__riscv)
+	#define XASH_RISCV 1
+	#if __riscv_xlen == 64
+		#define XASH_64BIT 1
+	#else
+		#error "Unknown RISC-V architecture with bit length of " STRING(__riscv_xlen)
+	#endif
 #else
 	#error "Place your architecture name here! If this is a mistake, try to fix conditions above and report a bug"
 #endif
