@@ -120,7 +120,7 @@ def configure(conf):
 		buildarch = "javascript"
 	elif conf.env.XASH_E2K:
 		buildarch = "e2k"
-	elif conf.env.RISCV and conf.env.XASH_64BIT:
+	elif conf.env.XASH_RISCV and conf.env.XASH_64BIT:
 		buildarch = "riscv64"
 	else:
 		raise conf.fatal("Place your architecture name in build.h and library_naming.py!\n"
