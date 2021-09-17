@@ -152,6 +152,8 @@ class Android:
 	def gen_host_toolchain(self):
 		# With host toolchain we don't care about OS
 		# so just download NDK for Linux x86_64
+		if 'HOST_TOOLCHAIN' in self.ctx.environ:
+			return self.ctx.environ['HOST_TOOLCHAIN']
 		if self.is_host():
 			return 'linux-x86_64'
 
@@ -198,16 +200,32 @@ class Android:
 
 	def cc(self):
 		if self.is_host():
-			return 'clang --target=%s%d' % (self.ndk_triplet(), self.api)
+			s = 'clang'
+			environ = getattr(self.ctx, 'environ', os.environ)
+
+			if 'CC' in environ:
+				s = environ['CC']
+
+			return '%s --target=%s%d' % (s, self.ndk_triplet(), self.api)
 		return self.gen_toolchain_path() + ('clang' if self.is_clang() else 'gcc')
 
 	def cxx(self):
 		if self.is_host():
-			return 'clang++ --target=%s%d' % (self.ndk_triplet(), self.api)
+			s = 'clang++'
+			environ = getattr(self.ctx, 'environ', os.environ)
+
+			if 'CXX' in environ:
+				s = environ['CXX']
+
+			return '%s --target=%s%d' % (s, self.ndk_triplet(), self.api)
 		return self.gen_toolchain_path() + ('clang++' if self.is_clang() else 'g++')
 
 	def strip(self):
 		if self.is_host():
+			environ = getattr(self.ctx, 'environ', os.environ)
+
+			if 'STRIP' in environ:
+				return environ['STRIP']
 			return 'llvm-strip'
 		return os.path.join(self.gen_binutils_path(), 'strip')
 
@@ -281,7 +299,7 @@ class Android:
 					cflags += fixup_host_clang_with_old_ndk()
 
 				# ARMv5 support
-				cflags += ['-march=armv5te', '-mtune=xscale', '-msoft-float']
+				cflags += ['-march=armv5te', '-msoft-float']
 		elif self.is_x86():
 			cflags += ['-mtune=atom', '-march=atom', '-mssse3', '-mfpmath=sse', '-DVECTORIZE_SINCOS', '-DHAVE_EFFICIENT_UNALIGNED_ACCESS']
 		return cflags
@@ -300,7 +318,7 @@ class Android:
 		if self.is_clang() or self.is_host():
 			linkflags += ['-fuse-ld=lld']
 
-		linkflags += ['-Wl,--hash-style=both','-Wl,--no-undefined']
+		linkflags += ['-Wl,--hash-style=sysv', '-Wl,--no-undefined', '-no-canonical-prefixes']
 		return linkflags
 
 	def ldflags(self):
@@ -324,6 +342,10 @@ def options(opt):
 	android = opt.add_option_group('Android options')
 	android.add_option('--android', action='store', dest='ANDROID_OPTS', default=None,
 		help='enable building for android, format: --android=<arch>,<toolchain>,<api>, example: --android=armeabi-v7a-hard,4.9,9')
+
+	magx = opt.add_option_group('MotoMAGX options')
+	magx.add_option('--enable-magx', action = 'store_true', dest = 'MAGX', default = False,
+		help = 'enable targetting for MotoMAGX phones [default: %default]')
 
 def configure(conf):
 	if conf.options.ANDROID_OPTS:
@@ -360,7 +382,14 @@ def configure(conf):
 
 		# conf.env.ANDROID_OPTS = android
 		conf.env.DEST_OS2 = 'android'
+	elif conf.options.MAGX:
+		# useless to change toolchain path, as toolchain meant to be placed in this path
+		toolchain_path = '/opt/toolchains/motomagx/arm-eabi2/lib/'
+		conf.env.INCLUDES_MAGX = [toolchain_path + i for i in ['ezx-z6/include', 'qt-2.3.8/include']]
+		conf.env.LIBPATH_MAGX  = [toolchain_path + i for i in ['ezx-z6/lib', 'qt-2.3.8/lib']]
+		conf.env.LINKFLAGS_MAGX = ['-Wl,-rpath-link=' + i for i in conf.env.LIBPATH_MAGX]
 
+	conf.env.MAGX = conf.options.MAGX
 	MACRO_TO_DESTOS = OrderedDict({ '__ANDROID__' : 'android' })
 	for k in c_config.MACRO_TO_DESTOS:
 		MACRO_TO_DESTOS[k] = c_config.MACRO_TO_DESTOS[k] # ordering is important
@@ -375,6 +404,10 @@ def post_compiler_cxx_configure(conf):
 		if conf.android.ndk_rev == 19:
 			conf.env.CXXFLAGS_cxxshlib += ['-static-libstdc++']
 			conf.env.LDFLAGS_cxxshlib += ['-static-libstdc++']
+	elif conf.options.MAGX:
+		for lib in ['qte-mt', 'ezxappbase', 'ezxpm', 'log_util']:
+			conf.check_cc(lib=lib, use='MAGX', uselib_store='MAGX')
+
 	return
 
 def post_compiler_c_configure(conf):
