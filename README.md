@@ -37,8 +37,6 @@ These scripts also can be ran via wine:
 
 The libraries built this way are always GoldSource compatible.
 
-There're dsp projects for Visual Studio 6 in `cl_dll` and `dlls` directories, but we don't keep them up-to-date. You're free to adapt them for yourself and try to import into the newer Visual Studio versions.
-
 #### Using mingw
 
 TODO
