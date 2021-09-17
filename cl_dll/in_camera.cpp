@@ -153,8 +153,8 @@ void DLLEXPORT CAM_Think( void )
 #endif
 	vec3_t viewangles;
 
-	if( gEngfuncs.GetMaxClients() > 1 && CL_IsThirdPerson() )
-		CAM_ToFirstPerson();
+	// if( gEngfuncs.GetMaxClients() > 1 && CL_IsThirdPerson() )
+	// 	CAM_ToFirstPerson();
 
 	switch( (int)cam_command->value )
 	{
