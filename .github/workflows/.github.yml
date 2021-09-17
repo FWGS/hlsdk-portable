@@ -72,7 +72,7 @@ jobs:
       if: startsWith(matrix.os, 'windows')
       run: |
         cmake -G "Visual Studio 15 2017" -B build -DGOLDSOURCE_SUPPORT=ON -DCMAKE_INSTALL_PREFIX="dist"
-        msbuild build/INSTALL.vcxproj
+        msbuild -verbosity:normal /property:Configuration=Release build/INSTALL.vcxproj
 
     - name: Extract branch name
       shell: bash
