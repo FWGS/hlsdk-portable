@@ -25,6 +25,7 @@
 #include "screenfade.h"
 #include "shake.h"
 #include "hltv.h"
+#include "view.h"
 
 // Spectator Mode
 extern "C" 
@@ -35,14 +36,6 @@ extern "C"
 	int iHasNewViewOrigin;
 	int iIsSpectator;
 }
-
-#if !defined(M_PI)
-#define M_PI		3.14159265358979323846	// matches value in gcc v2 math.h
-#endif
-
-#if !defined(M_PI_F)
-#define M_PI_F		(float)M_PI
-#endif
 
 extern "C" 
 {
