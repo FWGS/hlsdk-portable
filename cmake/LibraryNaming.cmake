@@ -1,7 +1,7 @@
 include(CheckSymbolExists)
 
 # generated(see comments in public/build.h)
-set(CMAKE_REQUIRED_INCLUDES "${CMAKE_SOURCE_DIR}/public/")
+set(CMAKE_REQUIRED_INCLUDES "${PROJECT_SOURCE_DIR}/public/")
 check_symbol_exists(XASH_64BIT "build.h" XASH_64BIT)
 check_symbol_exists(XASH_AMD64 "build.h" XASH_AMD64)
 check_symbol_exists(XASH_ANDROID "build.h" XASH_ANDROID)
