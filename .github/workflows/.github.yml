@@ -43,6 +43,7 @@ jobs:
     - name: Install steam runtime
       if: startsWith(matrix.os, 'ubuntu')
       run: |
+        sudo apt update
         ./steam-runtime/setup_chroot.sh --i386 --tarball ./com.valvesoftware.SteamRuntime.Sdk-i386-scout-sysroot.tar.gz
         sudo sed -i 's/groups=sudo/groups=adm/g' /etc/schroot/chroot.d/steamrt_scout_i386.conf
 
