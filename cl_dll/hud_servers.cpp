@@ -12,7 +12,14 @@
 #include "hud_servers.h"
 #include "net_api.h"
 #include <string.h>
+#ifdef _WIN32
+#include "winsani_in.h"
 #include <winsock.h>
+#include "winsani_out.h"
+#else
+#define __cdecl
+#include <arpa/inet.h>
+#endif
 
 static int	context_id;
 
@@ -22,7 +29,7 @@ static int	context_id;
 #define PORT_SERVER  27015
 
 // File where we really should look for master servers
-#define MASTER_PARSE_FILE "woncomm.lst"
+#define MASTER_PARSE_FILE "valvecomm.lst"
 
 #define MAX_QUERIES 20
 
@@ -601,7 +608,7 @@ int CompareField( CHudServers::server_t *p1, CHudServers::server_t *p2, const ch
 	return stricmp( sz1, sz2 );
 }
 
-int CALLBACK ServerListCompareFunc( CHudServers::server_t *p1, CHudServers::server_t *p2, const char *fieldname )
+int ServerListCompareFunc( CHudServers::server_t *p1, CHudServers::server_t *p2, const char *fieldname )
 {
 	if(!p1 || !p2)  // No meaningful comparison
 		return 0;  
@@ -752,7 +759,7 @@ int CHudServers::LoadMasterAddresses( int maxservers, int *count, netadr_t *padr
 	char		szMaster[256];
 	char		szMasterFile[256];
 	char		*pbuffer = NULL;
-	char		*pstart = NULL ;
+	const char	*pstart = NULL ;
 	netadr_t	adr;
 	char		szAdr[64];
 	int		nPort;
@@ -914,7 +921,8 @@ void CHudServers::RequestBroadcastList( int clearpending )
 	m_nDone = 0;
 	m_dStarted = m_fElapsed;
 
-	netadr_t adr = {0};
+	netadr_t adr;
+	memset( &adr, 0, sizeof( adr ) );
 
 	if( clearpending )
 	{

@@ -73,6 +73,9 @@ public:
 	void HandleButtonsDown( int ButtonPressed );
 	void HandleButtonsUp( int ButtonPressed );
 	void FindNextPlayer( bool bReverse );
+#if USE_VGUI
+	void FindPlayer(const char *name);
+#endif
 	void DirectorMessage( int iSize, void *pbuf );
 	void SetSpectatorStartPosition();
 	int Init();

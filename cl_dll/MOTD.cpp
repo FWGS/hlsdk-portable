@@ -26,13 +26,17 @@
 #include <string.h>
 #include <stdio.h>
 
+#if !USE_VGUI
 DECLARE_MESSAGE( m_MOTD, MOTD )
+#endif
 
 int CHudMOTD::Init( void )
 {
 	gHUD.AddHudElem( this );
 
+#if !USE_VGUI
 	HOOK_MESSAGE( MOTD );
+#endif
 
 	m_bShow = false;
 

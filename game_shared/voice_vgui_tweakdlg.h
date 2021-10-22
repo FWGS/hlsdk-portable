@@ -4,9 +4,13 @@
 //
 // $NoKeywords: $
 //=============================================================================
-#pragma once
-#if !defined(VOICE_VGUI_TWEAKDLG_H)
+
+#ifndef VOICE_VGUI_TWEAKDLG_H
 #define VOICE_VGUI_TWEAKDLG_H
+#ifdef _WIN32
+#pragma once
+#endif
+
 
 class CMenuPanel;
 

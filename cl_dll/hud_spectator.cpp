@@ -9,6 +9,10 @@
 #include "cl_util.h"
 #include "cl_entity.h"
 #include "triangleapi.h"
+#if USE_VGUI
+#include "vgui_TeamFortressViewport.h"
+#include "vgui_SpectatorPanel.h"
+#endif
 #include "hltv.h"
 
 #include "pm_shared.h"
@@ -392,8 +396,11 @@ int CHudSpectator::Draw( float flTime )
 		return 1;
 
 	// make sure we have player info
-	//gViewPort->GetAllPlayersInfo();
+#if USE_VGUI
+	gViewPort->GetAllPlayersInfo();
+#else
 	gHUD.m_Scoreboard.GetAllPlayersInfo();
+#endif
 
 	// loop through all the players and draw additional infos to their sprites on the map
 	for( int i = 0; i < MAX_PLAYERS; i++ )
@@ -573,8 +580,11 @@ void CHudSpectator::FindNextPlayer( bool bReverse )
 	int iDir = bReverse ? -1 : 1; 
 
 	// make sure we have player info
-	//gViewPort->GetAllPlayersInfo();
+#if USE_VGUI
+	gViewPort->GetAllPlayersInfo();
+#else
 	gHUD.m_Scoreboard.GetAllPlayersInfo();
+#endif
 
 	do
 	{
@@ -612,6 +622,65 @@ void CHudSpectator::FindNextPlayer( bool bReverse )
 	}
 	iJumpSpectator = 1;
 }
+
+#if USE_VGUI
+void CHudSpectator::FindPlayer(const char *name)
+{
+	// MOD AUTHORS: Modify the logic of this function if you want to restrict the observer to watching
+	//				only a subset of the players. e.g. Make it check the target's team.
+
+	// if we are NOT in HLTV mode, spectator targets are set on server
+	if ( !gEngfuncs.IsSpectateOnly() )
+	{
+		char cmdstring[32];
+		// forward command to server
+		sprintf(cmdstring,"follow %s",name);
+		gEngfuncs.pfnServerCmd(cmdstring);
+		return;
+	}
+
+	g_iUser2 = 0;
+
+	// make sure we have player info
+	gViewPort->GetAllPlayersInfo();
+
+	cl_entity_t * pEnt = NULL;
+
+	for (int i = 1; i < MAX_PLAYERS; i++ )
+	{
+
+		pEnt = gEngfuncs.GetEntityByIndex( i );
+
+		if ( !IsActivePlayer( pEnt ) )
+		continue;
+
+		if(!stricmp(g_PlayerInfoList[pEnt->index].name,name))
+		{
+			g_iUser2 = i;
+			break;
+		}
+
+	}
+
+	// Did we find a target?
+	if ( !g_iUser2 )
+	{
+		gEngfuncs.Con_DPrintf( "No observer targets.\n" );
+		// take save camera position
+		VectorCopy(m_cameraOrigin, vJumpOrigin);
+		VectorCopy(m_cameraAngles, vJumpAngles);
+	}
+	else
+	{
+		// use new entity position for roaming
+		VectorCopy ( pEnt->origin, vJumpOrigin );
+		VectorCopy ( pEnt->angles, vJumpAngles );
+	}
+
+	iJumpSpectator = 1;
+	gViewPort->MsgFunc_ResetFade( NULL, 0, NULL );
+}
+#endif
 
 void CHudSpectator::HandleButtonsDown( int ButtonPressed )
 {

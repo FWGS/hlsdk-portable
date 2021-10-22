@@ -6,8 +6,8 @@
 //=============================================================================
 
 
-#include "VGUI_ScrollBar2.h"
-#include "VGUI_Slider2.h"
+#include "vgui_scrollbar2.h"
+#include "vgui_slider2.h"
 #include "vgui_loadtga.h"
 
 #include<VGUI_IntChangeSignal.h>

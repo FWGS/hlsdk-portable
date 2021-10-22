@@ -28,6 +28,11 @@
 
 cvar_t *cl_scoreboard_bg;
 cvar_t *cl_showpacketloss;
+
+
+#if USE_VGUI
+#include "vgui_TeamFortressViewport.h"
+#else
 hud_player_info_t	g_PlayerInfoList[MAX_PLAYERS + 1];	// player info from the engine
 extra_player_info_t	g_PlayerExtraInfo[MAX_PLAYERS + 1];	// additional player info sent directly to the client dll
 team_info_t		g_TeamInfo[MAX_TEAMS + 1];
@@ -36,6 +41,7 @@ int g_iUser2;
 int g_iUser3;
 int g_iTeamNumber;
 int g_iPlayerClass;
+#endif
 
 //#include "vgui_TeamFortressViewport.h"
 
@@ -502,7 +508,9 @@ int CHudScoreboard::MsgFunc_ScoreInfo( const char *pszName, int iSize, void *pbu
 		g_PlayerExtraInfo[cl].playerclass = playerclass;
 		g_PlayerExtraInfo[cl].teamnumber = teamnumber;
 
-		//gViewPort->UpdateOnPlayerInfo();
+#if USE_VGUI
+		gViewPort->UpdateOnPlayerInfo();
+#endif
 	}
 
 	return 1;

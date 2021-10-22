@@ -63,6 +63,9 @@ typedef struct cvar_s cvar_t;
 
 #define	MAX_MOTD_LENGTH				1536
 
+#define MAX_SERVERNAME_LENGTH	64
+#define MAX_TEAMNAME_SIZE 32
+
 //
 //-----------------------------------------------------
 //
@@ -89,6 +92,9 @@ struct HUDLIST
 
 //
 //-----------------------------------------------------
+#if USE_VGUI
+#include "voice_status.h" // base voice handling class
+#endif
 #include "hud_spectator.h"
 
 //
@@ -223,6 +229,7 @@ protected:
 	int m_iMaxLength;
 };
 
+#if !USE_VGUI
 class CHudScoreboard : public CHudBase
 {
 public:
@@ -249,6 +256,7 @@ public:
 
 	void GetAllPlayersInfo( void );
 };
+#endif
 
 //
 //-----------------------------------------------------
@@ -633,8 +641,10 @@ public:
 	CHudAmmoSecondary	m_AmmoSecondary;
 	CHudTextMessage m_TextMessage;
 	CHudStatusIcons m_StatusIcons;
+#if !USE_VGUI
 	CHudScoreboard	m_Scoreboard;
 	CHudMOTD	m_MOTD;
+#endif
 
 	void Init( void );
 	void VidInit( void );

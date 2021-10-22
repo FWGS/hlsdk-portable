@@ -23,8 +23,14 @@
 #include "netadr.h"
 #include "parsemsg.h"
 
+#if USE_VGUI
+#include "hud_servers.h"
+#include "vgui_int.h"
+#include "vgui_TeamFortressViewport.h"
+#endif
+
 #if GOLDSOURCE_SUPPORT && (_WIN32 || __linux__ || __APPLE__) && (__i386 || _M_IX86)
-#define USE_VGUI_FOR_GOLDSOURCE_SUPPORT	1
+#define USE_FAKE_VGUI	!USE_VGUI
 #include "VGUI_Panel.h"
 #include "VGUI_App.h"
 #endif
@@ -38,6 +44,9 @@ extern "C"
 
 cl_enginefunc_t gEngfuncs;
 CHud gHUD;
+#if USE_VGUI
+TeamFortressViewport *gViewPort = NULL;
+#endif
 mobile_engfuncs_t *gMobileEngfuncs = NULL;
 
 extern "C" int g_bhopcap;
@@ -183,7 +192,7 @@ int *HUD_GetRect( void )
 	return extent;
 }
 
-#if USE_VGUI_FOR_GOLDSOURCE_SUPPORT
+#if USE_FAKE_VGUI
 class TeamFortressViewport : public vgui::Panel
 {
 public:
@@ -238,7 +247,7 @@ so the HUD can reinitialize itself.
 int DLLEXPORT HUD_VidInit( void )
 {
 	gHUD.VidInit();
-#if USE_VGUI_FOR_GOLDSOURCE_SUPPORT
+#if USE_FAKE_VGUI
 	vgui::Panel* root=(vgui::Panel*)gEngfuncs.VGui_GetPanel();
 	if (root) {
 		gEngfuncs.Con_Printf( "Root VGUI panel exists\n" );
@@ -257,6 +266,10 @@ int DLLEXPORT HUD_VidInit( void )
 		gEngfuncs.Con_Printf( "Root VGUI panel does not exist\n" );
 	}
 #endif
+
+#if USE_VGUI
+	VGui_Startup();
+#endif
 	return 1;
 }
 
@@ -274,6 +287,10 @@ void DLLEXPORT HUD_Init( void )
 {
 	InitInput();
 	gHUD.Init();
+
+#if USE_VGUI
+	Scheme_Init();
+#endif
 
 	gEngfuncs.pfnHookUserMsg( "Bhopcap", __MsgFunc_Bhopcap );
 }
@@ -337,7 +354,10 @@ Called by engine every frame that client .dll is loaded
 
 void DLLEXPORT HUD_Frame( double time )
 {
-#if USE_VGUI_FOR_GOLDSOURCE_SUPPORT
+#if USE_VGUI
+	ServersThink( time );
+	GetClientVoiceMgr()->Frame(time);
+#elif USE_FAKE_VGUI
 	if (!gViewPort)
 		gEngfuncs.VGui_ViewportPaintBackground(HUD_GetRect());
 #else
@@ -355,7 +375,9 @@ Called when a player starts or stops talking.
 
 void DLLEXPORT HUD_VoiceStatus( int entindex, qboolean bTalking )
 {
-
+#if USE_VGUI
+	GetClientVoiceMgr()->UpdateSpeakerStatus(entindex, bTalking);
+#endif
 }
 
 /*

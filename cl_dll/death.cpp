@@ -23,6 +23,10 @@
 #include <string.h>
 #include <stdio.h>
 
+#if USE_VGUI
+#include "vgui_TeamFortressViewport.h"
+#endif
+
 DECLARE_MESSAGE( m_DeathNotice, DeathMsg )
 
 struct DeathNoticeItem {
@@ -182,9 +186,12 @@ int CHudDeathNotice::MsgFunc_DeathMsg( const char *pszName, int iSize, void *pbu
 		i = MAX_DEATHNOTICES - 1;
 	}
 
-	//if(gViewPort)
-	//	gViewPort->GetAllPlayersInfo();
+#if USE_VGUI
+	if(gViewPort)
+		gViewPort->GetAllPlayersInfo();
+#else
 	gHUD.m_Scoreboard.GetAllPlayersInfo();
+#endif
 
 	// Get the Killer's name
 	const char *killer_name = "";

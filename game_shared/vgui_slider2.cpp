@@ -5,7 +5,7 @@
 // $NoKeywords: $
 //=============================================================================
 
-#include "VGUI_Slider2.h"
+#include "vgui_slider2.h"
 
 #include<VGUI_InputSignal.h>
 #include<VGUI_App.h>
