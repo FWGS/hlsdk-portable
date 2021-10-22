@@ -135,6 +135,7 @@ int CHud::Redraw( float flTime, int intermission )
 		if( CVAR_GET_FLOAT( "hud_takesshots" ) != 0 )
 			m_flShotTime = flTime + 1.0f;	// Take a screenshot in a second
 	}
+#endif
 
 	if( m_flShotTime && m_flShotTime < flTime )
 	{
@@ -143,7 +144,6 @@ int CHud::Redraw( float flTime, int intermission )
 	}
 
 	m_iIntermission = intermission;
-#endif
 
 	// if no redrawing is necessary
 	// return 0;

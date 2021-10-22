@@ -82,6 +82,13 @@ void SpectatorSpray( void )
 }
 void SpectatorHelp( void )
 {
+#if USE_VGUI
+	if( gViewPort )
+	{
+		gViewPort->ShowVGUIMenu( MENU_SPECHELP );
+	}
+	else
+#endif
 	{
   		char *text = CHudTextMessage::BufferedLocaliseTextString( "#Spec_Help_Text" );
 
@@ -104,10 +111,27 @@ void SpectatorMenu( void )
 		gEngfuncs.Con_Printf( "usage:  spec_menu <0|1>\n" );
 		return;
 	}
+
+#if USE_VGUI
+	gViewPort->m_pSpectatorPanel->ShowMenu( atoi( gEngfuncs.Cmd_Argv( 1 ) ) != 0 );
+#endif
 }
 
 void ToggleScores( void )
 {
+#if defined(USE_VGUI)
+	if( gViewPort )
+	{
+		if( gViewPort->IsScoreBoardVisible() )
+		{
+			gViewPort->HideScoreBoard();
+		}
+		else
+		{
+			gViewPort->ShowScoreBoard();
+		}
+	}
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -539,6 +563,10 @@ void CHudSpectator::DirectorMessage( int iSize, void *pbuf )
 			break;
 		case DRC_CMD_BANNER:
 			// gEngfuncs.Con_DPrintf( "GUI: Banner %s\n",READ_STRING() ); // name of banner tga eg gfx/temp/7454562234563475.tga
+#if USE_VGUI
+			gViewPort->m_pSpectatorPanel->m_TopBanner->LoadImage( READ_STRING() );
+			gViewPort->UpdateSpectatorPanel();
+#endif
 			break;
 		case DRC_CMD_FADE:
 			break;
@@ -691,6 +719,11 @@ void CHudSpectator::HandleButtonsDown( int ButtonPressed )
 
 	// gEngfuncs.Con_Printf( " HandleButtons:%i\n", ButtonPressed );
 
+#if USE_VGUI
+	if( !gViewPort )
+		return;
+#endif
+
 	//Not in intermission.
 	if( gHUD.m_iIntermission )
 		 return;
@@ -706,8 +739,10 @@ void CHudSpectator::HandleButtonsDown( int ButtonPressed )
 		return;
 
 	// enable spectator screen
-	//if( ButtonPressed & IN_DUCK )
-	//	gViewPort->m_pSpectatorPanel->ShowMenu( !gViewPort->m_pSpectatorPanel->m_menuVisible );
+#if USE_VGUI
+	if( ButtonPressed & IN_DUCK )
+		gViewPort->m_pSpectatorPanel->ShowMenu( !gViewPort->m_pSpectatorPanel->m_menuVisible );
+#endif
 
 	//  'Use' changes inset window mode
 	if( ButtonPressed & IN_USE )
@@ -774,6 +809,14 @@ void CHudSpectator::HandleButtonsDown( int ButtonPressed )
 
 void CHudSpectator::HandleButtonsUp( int ButtonPressed )
 {
+#if USE_VGUI
+	if( !gViewPort )
+		return;
+
+	if( !gViewPort->m_pSpectatorPanel->isVisible() )
+		return; // dont do anything if not in spectator mode
+#endif
+
 	if( ButtonPressed & ( IN_FORWARD | IN_BACK ) )
 		m_zoomDelta = 0.0f;
 
@@ -875,6 +918,9 @@ void CHudSpectator::SetModes( int iNewMainMode, int iNewInsetMode )
 		gHUD.m_TextMessage.MsgFunc_TextMsg( NULL, strlen( string ) + 1, string );
 	}
 
+#if USE_VGUI
+	gViewPort->UpdateSpectatorPanel();
+#endif
 }
 
 bool CHudSpectator::IsActivePlayer( cl_entity_t *ent )
@@ -1523,6 +1569,9 @@ void CHudSpectator::CheckSettings()
 		m_pip->value = INSET_OFF;
 
 	// draw small border around inset view, adjust upper black bar
+#if USE_VGUI
+	gViewPort->m_pSpectatorPanel->EnableInsetView( m_pip->value != INSET_OFF );
+#endif
 }
 
 int CHudSpectator::ToggleInset( bool allowOff )

@@ -114,7 +114,9 @@ int CHudDeathNotice::Draw( float flTime )
 
 		// Only draw if the viewport will let me
 		// vgui dropped out
-		//if( gViewPort && gViewPort->AllowedToPrintText() )
+#if USE_VGUI
+		if( gViewPort && gViewPort->AllowedToPrintText() )
+#endif
 		{
 			// Draw the death notice
 			y = YRES( DEATHNOTICE_TOP ) + 2 + ( 20 * i );  //!!!
@@ -171,6 +173,11 @@ int CHudDeathNotice::MsgFunc_DeathMsg( const char *pszName, int iSize, void *pbu
 	char killedwith[32];
 	strcpy( killedwith, "d_" );
 	strncat( killedwith, READ_STRING(), sizeof(killedwith) - strlen(killedwith) - 1 );
+
+#if USE_VGUI
+	if (gViewPort)
+		gViewPort->DeathMsg( killer, victim );
+#endif
 
 	gHUD.m_Spectator.DeathMessage( victim );
 
