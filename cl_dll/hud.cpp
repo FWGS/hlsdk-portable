@@ -311,6 +311,7 @@ int __MsgFunc_ResetFade(const char *pszName, int iSize, void *pbuf)
 	if (gViewPort)
 		return gViewPort->MsgFunc_ResetFade( pszName, iSize, pbuf );
 	return 0;
+
 }
 #endif
 

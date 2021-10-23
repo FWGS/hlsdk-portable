@@ -681,7 +681,6 @@ void CHudAmmo::SlotInput( int iSlot )
 	if( gViewPort && gViewPort->SlotInput( iSlot ) )
 		return;
 #endif
-
 	gWR.SelectSlot(iSlot, FALSE, 1);
 }
 

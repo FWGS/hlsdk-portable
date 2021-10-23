@@ -80,6 +80,7 @@ void SpectatorSpray( void )
 		gEngfuncs.pfnServerCmd( string );
 	}
 }
+
 void SpectatorHelp( void )
 {
 #if USE_VGUI
@@ -119,7 +120,7 @@ void SpectatorMenu( void )
 
 void ToggleScores( void )
 {
-#if defined(USE_VGUI)
+#if USE_VGUI
 	if( gViewPort )
 	{
 		if( gViewPort->IsScoreBoardVisible() )
@@ -560,6 +561,9 @@ void CHudSpectator::DirectorMessage( int iSize, void *pbuf )
 			READ_LONG(); // total number of spectator slots
 			m_iSpectatorNumber = READ_LONG(); // total number of spectator
 			READ_WORD(); // total number of relay proxies
+#if USE_VGUI
+			gViewPort->UpdateSpectatorPanel();
+#endif
 			break;
 		case DRC_CMD_BANNER:
 			// gEngfuncs.Con_DPrintf( "GUI: Banner %s\n",READ_STRING() ); // name of banner tga eg gfx/temp/7454562234563475.tga

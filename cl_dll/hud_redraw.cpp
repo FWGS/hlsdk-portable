@@ -107,7 +107,7 @@ int CHud::Redraw( float flTime, int intermission )
 	// Bring up the scoreboard during intermission
 	if (gViewPort)
 	{
-		if ( m_iIntermission && !intermission )
+		if( m_iIntermission && !intermission )
 		{
 			// Have to do this here so the scoreboard goes away
 			m_iIntermission = intermission;
@@ -115,16 +115,15 @@ int CHud::Redraw( float flTime, int intermission )
 			gViewPort->HideScoreBoard();
 			gViewPort->UpdateSpectatorPanel();
 		}
-		else if ( !m_iIntermission && intermission )
+		else if( !m_iIntermission && intermission )
 		{
 			m_iIntermission = intermission;
 			gViewPort->HideCommandMenu();
 			gViewPort->HideVGUIMenu();
 			gViewPort->ShowScoreBoard();
 			gViewPort->UpdateSpectatorPanel();
-
 			// Take a screenshot if the client's got the cvar set
-			if ( CVAR_GET_FLOAT( "hud_takesshots" ) != 0 )
+			if( CVAR_GET_FLOAT( "hud_takesshots" ) != 0 )
 				m_flShotTime = flTime + 1.0;	// Take a screenshot in a second
 		}
 	}
@@ -136,7 +135,6 @@ int CHud::Redraw( float flTime, int intermission )
 			m_flShotTime = flTime + 1.0f;	// Take a screenshot in a second
 	}
 #endif
-
 	if( m_flShotTime && m_flShotTime < flTime )
 	{
 		gEngfuncs.pfnClientCmd( "snapshot\n" );

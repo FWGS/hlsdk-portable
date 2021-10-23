@@ -265,9 +265,7 @@ int DLLEXPORT HUD_VidInit( void )
 	} else {
 		gEngfuncs.Con_Printf( "Root VGUI panel does not exist\n" );
 	}
-#endif
-
-#if USE_VGUI
+#elif USE_VGUI
 	VGui_Startup();
 #endif
 	return 1;
@@ -287,7 +285,6 @@ void DLLEXPORT HUD_Init( void )
 {
 	InitInput();
 	gHUD.Init();
-
 #if USE_VGUI
 	Scheme_Init();
 #endif

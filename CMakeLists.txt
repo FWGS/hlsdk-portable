@@ -102,6 +102,9 @@ endif()
 
 if(BUILD_CLIENT)
 	add_subdirectory(cl_dll)
+	if(USE_VGUI)
+		add_definitions(-DUSE_VGUI)
+	endif()
 endif()
 
 if(BUILD_SERVER)

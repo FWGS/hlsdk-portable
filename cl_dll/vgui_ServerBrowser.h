@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2002, Valve LLC, All rights reserved. ============
+//========= Copyright (c) 1996-2002, Valve LLC, All rights reserved. ============
 //
 // Purpose: 
 //
@@ -8,13 +8,13 @@
 #ifndef ServerBrowser_H
 #define ServerBrowser_H
 
-#include<VGUI_Panel.h>
+#include <VGUI_Panel.h>
 
 namespace vgui
 {
-class Button;
-class TablePanel;
-class HeaderPanel;
+	class Button;
+	class TablePanel;
+	class HeaderPanel;
 }
 
 class CTransparentPanel;
@@ -27,24 +27,20 @@ class CommandButton;
 class ServerBrowser : public CTransparentPanel
 {
 private:
-	HeaderPanel * _headerPanel;
-	TablePanel*  _tablePanel;
+	HeaderPanel	*_headerPanel;
+	TablePanel	*_tablePanel;
 
-	CommandButton*	   _connectButton;
-	CommandButton*	   _refreshButton;
-	CommandButton*	   _broadcastRefreshButton;
-	CommandButton*	   _stopButton;
-	CommandButton*	   _sortButton;
-	CommandButton*	   _cancelButton;
+	CommandButton	*_connectButton;
+	CommandButton	*_refreshButton;
+	CommandButton	*_broadcastRefreshButton;
+	CommandButton	*_stopButton;
+	CommandButton	*_sortButton;
+	CommandButton	*_cancelButton;
 
-	CommandButton*		_pingButton;
+	CommandButton	*_pingButton;
 
 public:
-	ServerBrowser(int x,int y,int wide,int tall);
-public:
-	virtual void setSize(int wide,int tall);
+	ServerBrowser( int x, int y, int wide, int tall );
+	virtual void setSize( int wide, int tall );
 };
-
-
-
 #endif

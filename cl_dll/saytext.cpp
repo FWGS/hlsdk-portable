@@ -104,6 +104,7 @@ int CHudSayText::Draw( float flTime )
 		return 1;
 #endif
 
+
 	// make sure the scrolltime is within reasonable bounds,  to guard against the clock being reset
 	flScrollTime = Q_min( flScrollTime, flTime + m_HUD_saytext_time->value );
 
@@ -172,11 +173,11 @@ void CHudSayText::SayTextPrint( const char *pszBuf, int iBufSize, int clientInde
 		ConsolePrint( pszBuf );
 		return;
 	}
+#else
+	ConsolePrint( pszBuf );
 #endif
 
 	int i;
-	ConsolePrint( pszBuf );
-
 	// find an empty string slot
 	for( i = 0; i < MAX_LINES; i++ )
 	{

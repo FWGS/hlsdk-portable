@@ -35,15 +35,15 @@
 #include "vgui_ServerBrowser.h"
 
 // Class Menu Dimensions
-#define CLASSMENU_TITLE_X				XRES(40)
-#define CLASSMENU_TITLE_Y				YRES(32)
+#define CLASSMENU_TITLE_X			XRES(40)
+#define CLASSMENU_TITLE_Y			YRES(32)
 #define CLASSMENU_TOPLEFT_BUTTON_X		XRES(40)
 #define CLASSMENU_TOPLEFT_BUTTON_Y		YRES(80)
 #define CLASSMENU_BUTTON_SIZE_X			XRES(124)
 #define CLASSMENU_BUTTON_SIZE_Y			YRES(24)
 #define CLASSMENU_BUTTON_SPACER_Y		YRES(8)
-#define CLASSMENU_WINDOW_X				XRES(176)
-#define CLASSMENU_WINDOW_Y				YRES(80)
+#define CLASSMENU_WINDOW_X			XRES(176)
+#define CLASSMENU_WINDOW_Y			YRES(80)
 #define CLASSMENU_WINDOW_SIZE_X			XRES(424)
 #define CLASSMENU_WINDOW_SIZE_Y			YRES(312)
 #define CLASSMENU_WINDOW_TEXT_X			XRES(150)
@@ -53,11 +53,11 @@
 #define CLASSMENU_WINDOW_PLAYERS_Y		YRES(42)
 
 // Creation
-CClassMenuPanel::CClassMenuPanel(int iTrans, int iRemoveMe, int x,int y,int wide,int tall) : CMenuPanel(iTrans, iRemoveMe, x,y,wide,tall)
+CClassMenuPanel::CClassMenuPanel( int iTrans, int iRemoveMe, int x, int y, int wide, int tall ) : CMenuPanel( iTrans, iRemoveMe, x, y, wide, tall )
 {
 	// don't show class graphics at below 640x480 resolution
 	bool bShowClassGraphic = true;
-	if ( ScreenWidth < 640 )
+	if( ScreenWidth < 640 )
 	{
 		bShowClassGraphic = false;
 	}
@@ -77,50 +77,51 @@ CClassMenuPanel::CClassMenuPanel(int iTrans, int iRemoveMe, int x,int y,int wide
 	// Create the title
 	Label *pLabel = new Label( "", CLASSMENU_TITLE_X, CLASSMENU_TITLE_Y );
 	pLabel->setParent( this );
-	pLabel->setFont( pSchemes->getFont(hTitleScheme) );
+	pLabel->setFont( pSchemes->getFont( hTitleScheme ) );
 	pSchemes->getFgColor( hTitleScheme, r, g, b, a );
 	pLabel->setFgColor( r, g, b, a );
 	pSchemes->getBgColor( hTitleScheme, r, g, b, a );
 	pLabel->setBgColor( r, g, b, a );
 	pLabel->setContentAlignment( vgui::Label::a_west );
-	pLabel->setText(gHUD.m_TextMessage.BufferedLocaliseTextString("#Title_SelectYourClass"));
+	pLabel->setText(gHUD.m_TextMessage.BufferedLocaliseTextString( "#Title_SelectYourClass" ) );
 
 	// Create the Scroll panel
 	m_pScrollPanel = new CTFScrollPanel( CLASSMENU_WINDOW_X, CLASSMENU_WINDOW_Y, CLASSMENU_WINDOW_SIZE_X, CLASSMENU_WINDOW_SIZE_Y );
-	m_pScrollPanel->setParent(this);
+	m_pScrollPanel->setParent( this );
 	//force the scrollbars on, so after the validate clientClip will be smaller
-	m_pScrollPanel->setScrollBarAutoVisible(false, false);
-	m_pScrollPanel->setScrollBarVisible(true, true);
-	m_pScrollPanel->setBorder( new LineBorder( Color(255 * 0.7,170 * 0.7,0,0) ) );
+	m_pScrollPanel->setScrollBarAutoVisible( false, false );
+	m_pScrollPanel->setScrollBarVisible( true, true );
+	m_pScrollPanel->setBorder( new LineBorder( Color( 255 * 0.7, 170 * 0.7, 0, 0 ) ) );
 	m_pScrollPanel->validate();
 
 	int clientWide=m_pScrollPanel->getClient()->getWide();
 
 	//turn scrollpanel back into auto show scrollbar mode and validate
-	m_pScrollPanel->setScrollBarAutoVisible(false,true);
-	m_pScrollPanel->setScrollBarVisible(false,false);
+	m_pScrollPanel->setScrollBarAutoVisible( false, true );
+	m_pScrollPanel->setScrollBarVisible( false, false );
 	m_pScrollPanel->validate();
 
 	// Create the Class buttons
 #ifdef _TFC
-	for (int i = 0; i <= PC_RANDOM; i++)
+	for( int i = 0; i <= PC_RANDOM; i++ )
 	{
 		char sz[256]; 
-		int iYPos = CLASSMENU_TOPLEFT_BUTTON_Y + ( (CLASSMENU_BUTTON_SIZE_Y + CLASSMENU_BUTTON_SPACER_Y) * i );
+		int iYPos = CLASSMENU_TOPLEFT_BUTTON_Y + ( ( CLASSMENU_BUTTON_SIZE_Y + CLASSMENU_BUTTON_SPACER_Y ) * i );
 
 		ActionSignal *pASignal = new CMenuHandler_StringCommandClassSelect( sTFClassSelection[i], true );
 
 		// Class button
-		sprintf(sz, "%s", CHudTextMessage::BufferedLocaliseTextString( sLocalisedClasses[i] ) );
-		m_pButtons[i] = new ClassButton( i, sz, CLASSMENU_TOPLEFT_BUTTON_X, iYPos, CLASSMENU_BUTTON_SIZE_X, CLASSMENU_BUTTON_SIZE_Y, true);
+		sprintf( sz, "%s", CHudTextMessage::BufferedLocaliseTextString( sLocalisedClasses[i] ) );
+		m_pButtons[i] = new ClassButton( i, sz, CLASSMENU_TOPLEFT_BUTTON_X, iYPos, CLASSMENU_BUTTON_SIZE_X, CLASSMENU_BUTTON_SIZE_Y, true );
+
 		// RandomPC uses '0'
-		if ( i >= 1 && i <= 9 )
+		if( i >= 1 && i <= 9 )
 		{
-			sprintf(sz,"%d",i);
+			sprintf( sz, "%d", i );
 		}
 		else
 		{
-			sprintf(sz,"0");
+			strcpy( sz, "0" );
 		}
 		m_pButtons[i]->setBoundKey( sz[0] );
 		m_pButtons[i]->setContentAlignment( vgui::Label::a_west );
@@ -129,39 +130,39 @@ CClassMenuPanel::CClassMenuPanel(int iTrans, int iRemoveMe, int x,int y,int wide
 		m_pButtons[i]->setParent( this );
 
 		// Create the Class Info Window
-		//m_pClassInfoPanel[i] = new CTransparentPanel( 255, CLASSMENU_WINDOW_X, CLASSMENU_WINDOW_Y, CLASSMENU_WINDOW_SIZE_X, CLASSMENU_WINDOW_SIZE_Y );
+		// m_pClassInfoPanel[i] = new CTransparentPanel( 255, CLASSMENU_WINDOW_X, CLASSMENU_WINDOW_Y, CLASSMENU_WINDOW_SIZE_X, CLASSMENU_WINDOW_SIZE_Y );
 		m_pClassInfoPanel[i] = new CTransparentPanel( 255, 0, 0, clientWide, CLASSMENU_WINDOW_SIZE_Y );
 		m_pClassInfoPanel[i]->setParent( m_pScrollPanel->getClient() );
-		//m_pClassInfoPanel[i]->setVisible( false );
+		// m_pClassInfoPanel[i]->setVisible( false );
 
 		// don't show class pic in lower resolutions
-		int textOffs = XRES(8);
+		int textOffs = XRES( 8 );
 
-		if ( bShowClassGraphic )
+		if( bShowClassGraphic )
 		{
 			textOffs = CLASSMENU_WINDOW_NAME_X;
 		}
 
 		// Create the Class Name Label
-		sprintf(sz, "#Title_%s", sTFClassSelection[i]);
-		char* localName=CHudTextMessage::BufferedLocaliseTextString( sz );
+		sprintf( sz, "#Title_%s", sTFClassSelection[i] );
+		char *localName=CHudTextMessage::BufferedLocaliseTextString( sz );
 		Label *pNameLabel = new Label( "", textOffs, CLASSMENU_WINDOW_NAME_Y );
-		pNameLabel->setFont( pSchemes->getFont(hTitleScheme) ); 
+		pNameLabel->setFont( pSchemes->getFont( hTitleScheme ) ); 
 		pNameLabel->setParent( m_pClassInfoPanel[i] );
 		pSchemes->getFgColor( hTitleScheme, r, g, b, a );
 		pNameLabel->setFgColor( r, g, b, a );
 		pSchemes->getBgColor( hTitleScheme, r, g, b, a );
 		pNameLabel->setBgColor( r, g, b, a );
 		pNameLabel->setContentAlignment( vgui::Label::a_west );
-		//pNameLabel->setBorder(new LineBorder());
+		// pNameLabel->setBorder( new LineBorder() );
 		pNameLabel->setText( "%s", localName);
 
 		// Create the Class Image
-		if ( bShowClassGraphic )
+		if( bShowClassGraphic )
 		{
-			for ( int team = 0; team < 2; team++ )
+			for( int team = 0; team < 2; team++ )
 			{
-				if ( team == 1 )
+				if( team == 1 )
 				{
 					sprintf( sz, "%sred", sTFClassSelection[i] );
 				}
@@ -174,17 +175,17 @@ CClassMenuPanel::CClassMenuPanel(int iTrans, int iRemoveMe, int x,int y,int wide
 
 				CImageLabel *pLabel = m_pClassImages[team][i];
 				pLabel->setParent( m_pClassInfoPanel[i] );
-				//pLabel->setBorder(new LineBorder());
+				// pLabel->setBorder( new LineBorder() );
 
-				if ( team != 1 )
+				if( team != 1 )
 				{
 					pLabel->setVisible( false );
 				}
-				
+
 				// Reposition it based upon it's size
 				int xOut, yOut;
 				pNameLabel->getTextSize( xOut, yOut );
-				pLabel->setPos( (CLASSMENU_WINDOW_TEXT_X - pLabel->getWide()) / 2, yOut /2 );
+				pLabel->setPos( ( CLASSMENU_WINDOW_TEXT_X - pLabel->getWide() ) / 2, yOut / 2 );
 			}
 		}
 
@@ -194,21 +195,21 @@ CClassMenuPanel::CClassMenuPanel(int iTrans, int iRemoveMe, int x,int y,int wide
 		m_pPlayers[i]->setParent( m_pClassInfoPanel[i] );
 		m_pPlayers[i]->setBgColor( 0, 0, 0, 255 );
 		m_pPlayers[i]->setContentAlignment( vgui::Label::a_west );
-		m_pPlayers[i]->setFont( pSchemes->getFont(hClassWindowText) );
+		m_pPlayers[i]->setFont( pSchemes->getFont( hClassWindowText ) );
 
 		// Open up the Class Briefing File
 		sprintf(sz, "classes/short_%s.txt", sTFClassSelection[i]);
 		char *cText = "Class Description not available.";
 		char *pfile = (char *)gEngfuncs.COM_LoadFile( sz, 5, NULL );
-		if (pfile)
+		if( pfile )
 		{
 			cText = pfile;
 		}
-		
+
 		// Create the Text info window
-		TextPanel *pTextWindow = new TextPanel(cText, textOffs, CLASSMENU_WINDOW_TEXT_Y, (CLASSMENU_WINDOW_SIZE_X - textOffs)-5, CLASSMENU_WINDOW_SIZE_Y - CLASSMENU_WINDOW_TEXT_Y);
+		TextPanel *pTextWindow = new TextPanel( cText, textOffs, CLASSMENU_WINDOW_TEXT_Y, ( CLASSMENU_WINDOW_SIZE_X - textOffs ) - 5, CLASSMENU_WINDOW_SIZE_Y - CLASSMENU_WINDOW_TEXT_Y );
 		pTextWindow->setParent( m_pClassInfoPanel[i] );
-		pTextWindow->setFont( pSchemes->getFont(hClassWindowText) );
+		pTextWindow->setFont( pSchemes->getFont( hClassWindowText ) );
 		pSchemes->getFgColor( hClassWindowText, r, g, b, a );
 		pTextWindow->setFgColor( r, g, b, a );
 		pSchemes->getBgColor( hClassWindowText, r, g, b, a );
@@ -216,60 +217,58 @@ CClassMenuPanel::CClassMenuPanel(int iTrans, int iRemoveMe, int x,int y,int wide
 
 		// Resize the Info panel to fit it all
 		int wide,tall;
-		pTextWindow->getTextImage()->getTextSizeWrapped( wide,tall);
-		pTextWindow->setSize(wide,tall);
+		pTextWindow->getTextImage()->getTextSizeWrapped( wide, tall );
+		pTextWindow->setSize( wide, tall );
 
-		int xx,yy;
-		pTextWindow->getPos(xx,yy);
-		int maxX=xx+wide;
-		int maxY=yy+tall;
+		int xx, yy;
+		pTextWindow->getPos( xx, yy );
+		int maxX = xx + wide;
+		int maxY = yy + tall;
 
 		//check to see if the image goes lower than the text
 		//just use the red teams [0] images
-		if(m_pClassImages[0][i]!=null)
+		if( m_pClassImages[0][i] != null )
 		{
-			m_pClassImages[0][i]->getPos(xx,yy);
-			if((yy+m_pClassImages[0][i]->getTall())>maxY)
+			m_pClassImages[0][i]->getPos( xx, yy );
+			if( ( yy + m_pClassImages[0][i]->getTall() ) > maxY )
 			{
-				maxY=yy+m_pClassImages[0][i]->getTall();
+				maxY = yy + m_pClassImages[0][i]->getTall();
 			}
 		}
 
 		m_pClassInfoPanel[i]->setSize( maxX , maxY );
-		if (pfile) gEngfuncs.COM_FreeFile( pfile );
-		//m_pClassInfoPanel[i]->setBorder(new LineBorder());
-
+		if( pfile )
+			gEngfuncs.COM_FreeFile( pfile );
+		// m_pClassInfoPanel[i]->setBorder( new LineBorder() );
 	}
 #endif
 	// Create the Cancel button
-	m_pCancelButton = new CommandButton( gHUD.m_TextMessage.BufferedLocaliseTextString( "#Menu_Cancel" ), CLASSMENU_TOPLEFT_BUTTON_X, 0, CLASSMENU_BUTTON_SIZE_X, CLASSMENU_BUTTON_SIZE_Y);
+	m_pCancelButton = new CommandButton( gHUD.m_TextMessage.BufferedLocaliseTextString( "#Menu_Cancel" ), CLASSMENU_TOPLEFT_BUTTON_X, 0, CLASSMENU_BUTTON_SIZE_X, CLASSMENU_BUTTON_SIZE_Y );
 	m_pCancelButton->setParent( this );
-	m_pCancelButton->addActionSignal( new CMenuHandler_TextWindow(HIDE_TEXTWINDOW) );
+	m_pCancelButton->addActionSignal( new CMenuHandler_TextWindow( HIDE_TEXTWINDOW ) );
 
 	m_iCurrentInfo = 0;
-
 }
-
 
 // Update
 void CClassMenuPanel::Update()
 {
 	// Don't allow the player to join a team if they're not in a team
-	if (!g_iTeamNumber)
+	if( !g_iTeamNumber )
 		return;
 
 	int	 iYPos = CLASSMENU_TOPLEFT_BUTTON_Y;
 
 	// Cycle through the rest of the buttons
 #ifdef _TFC
-	for (int i = 0; i <= PC_RANDOM; i++)
+	for( int i = 0; i <= PC_RANDOM; i++ )
 	{
-		bool bCivilian = (gViewPort->GetValidClasses(g_iTeamNumber) == -1);
+		bool bCivilian = ( gViewPort->GetValidClasses( g_iTeamNumber ) == -1 );
 
-		if ( bCivilian )
+		if( bCivilian )
 		{
 			// If this team can only be civilians, only the civilian button's visible
-			if (i == 0)
+			if( i == 0 )
 			{
 				m_pButtons[0]->setVisible( true );
 				SetActiveInfo( 0 );
@@ -282,7 +281,7 @@ void CClassMenuPanel::Update()
 		}
 		else 
 		{
-			if ( m_pButtons[i]->IsNotValid() || i == 0 )
+			if( m_pButtons[i]->IsNotValid() || i == 0 )
 			{
 				m_pButtons[i]->setVisible( false );
 			}
@@ -293,56 +292,56 @@ void CClassMenuPanel::Update()
 				iYPos += CLASSMENU_BUTTON_SIZE_Y + CLASSMENU_BUTTON_SPACER_Y;
 
 				// Start with the first option up
-				if (!m_iCurrentInfo)
+				if( !m_iCurrentInfo )
 					SetActiveInfo( i );
 			}
 		}
 
 		// Now count the number of teammembers of this class
 		int iTotal = 0;
-		for ( int j = 1; j < MAX_PLAYERS; j++ )
+		for( int j = 1; j < MAX_PLAYERS; j++ )
 		{
-			if ( g_PlayerInfoList[j].name == NULL )
+			if( g_PlayerInfoList[j].name == 0 )
 				continue; // empty player slot, skip
-			if ( g_PlayerExtraInfo[j].teamname[0] == 0 )
+			if( g_PlayerExtraInfo[j].teamname[0] == 0 )
 				continue; // skip over players who are not in a team
-			if ( g_PlayerInfoList[j].thisplayer )
+			if( g_PlayerInfoList[j].thisplayer )
 				continue; // skip this player
-			if ( g_PlayerExtraInfo[j].teamnumber != g_iTeamNumber )
+			if( g_PlayerExtraInfo[j].teamnumber != g_iTeamNumber )
 				continue; // skip over players in other teams
 
 			// If this team is forced to be civilians, just count the number of teammates
-			if ( g_PlayerExtraInfo[j].playerclass != i && !bCivilian )
+			if( g_PlayerExtraInfo[j].playerclass != i && !bCivilian )
 				continue;
 
 			iTotal++;
 		}
 
 		char sz[256]; 
-		sprintf(sz, m_sPlayersOnTeamString, iTotal);
+		sprintf( sz, m_sPlayersOnTeamString, iTotal );
 		m_pPlayers[i]->setText( "%s", sz );
 
 		// Set the text color to the teamcolor
-		m_pPlayers[i]->setFgColor(	iTeamColors[g_iTeamNumber % iNumberOfTeamColors][0],
+		m_pPlayers[i]->setFgColor( iTeamColors[g_iTeamNumber % iNumberOfTeamColors][0],
 									iTeamColors[g_iTeamNumber % iNumberOfTeamColors][1],
 									iTeamColors[g_iTeamNumber % iNumberOfTeamColors][2],
 									0 );
 
 		// set the graphic to be the team pick
-		for ( int team = 0; team < MAX_TEAMS; team++ )
+		for( int team = 0; team < MAX_TEAMS; team++ )
 		{
 			// unset all the other images
-			if ( m_pClassImages[team][i] )
+			if( m_pClassImages[team][i] )
 			{
 				m_pClassImages[team][i]->setVisible( false );
 			}
 
 			// set the current team image
-			if ( m_pClassImages[g_iTeamNumber-1][i] != NULL )
+			if( m_pClassImages[g_iTeamNumber - 1][i] != 0 )
 			{
-				m_pClassImages[g_iTeamNumber-1][i]->setVisible( true );
+				m_pClassImages[g_iTeamNumber - 1][i]->setVisible( true );
 			}
-			else if ( m_pClassImages[0][i] )
+			else if( m_pClassImages[0][i] )
 			{
 				m_pClassImages[0][i]->setVisible( true );
 			}
@@ -351,7 +350,7 @@ void CClassMenuPanel::Update()
 #endif
 
 	// If the player already has a class, make the cancel button visible
-	if ( g_iPlayerClass )
+	if( g_iPlayerClass )
 	{
 		m_pCancelButton->setPos( CLASSMENU_TOPLEFT_BUTTON_X, iYPos );
 		m_pCancelButton->setVisible( true );
@@ -366,18 +365,19 @@ void CClassMenuPanel::Update()
 // Key inputs for the Class Menu
 bool CClassMenuPanel::SlotInput( int iSlot )
 {
-	if ( (iSlot < 0) || (iSlot > 9) )
+	if( ( iSlot < 0 ) || ( iSlot > 9 ) )
 		return false;
-	if ( !m_pButtons[ iSlot ] )
+
+	if( !m_pButtons[iSlot] )
 		return false;
 
 	// Is the button pushable? (0 is special case)
-	if (iSlot == 0)
+	if( iSlot == 0 )
 	{
 		// Selects Civilian and RandomPC
-		if ( gViewPort->GetValidClasses(g_iTeamNumber) == -1 )
+		if( gViewPort->GetValidClasses( g_iTeamNumber ) == -1 )
 		{
-			m_pButtons[ 0 ]->fireActionSignal();
+			m_pButtons[0]->fireActionSignal();
 			return true;
 		}
 
@@ -385,9 +385,9 @@ bool CClassMenuPanel::SlotInput( int iSlot )
 		iSlot = 10;
 	}
 
-	if ( !(m_pButtons[ iSlot ]->IsNotValid()) )
+	if( !( m_pButtons[iSlot]->IsNotValid() ) )
 	{
-		m_pButtons[ iSlot ]->fireActionSignal();
+		m_pButtons[iSlot]->fireActionSignal();
 		return true;
 	}
 
@@ -417,13 +417,13 @@ void CClassMenuPanel::SetActiveInfo( int iInput )
 {
 	// Remove all the Info panels and bring up the specified one
 #ifdef _TFC
-	for (int i = 0; i <= PC_RANDOM; i++)
+	for( int i = 0; i <= PC_RANDOM; i++ )
 	{
 		m_pButtons[i]->setArmed( false );
 		m_pClassInfoPanel[i]->setVisible( false );
 	}
 
-	if ( iInput > PC_RANDOM || iInput < 0 )
+	if( iInput > PC_RANDOM || iInput < 0 )
 #endif
 		iInput = 0;
 
@@ -431,7 +431,7 @@ void CClassMenuPanel::SetActiveInfo( int iInput )
 	m_pClassInfoPanel[iInput]->setVisible( true );
 	m_iCurrentInfo = iInput;
 
-	m_pScrollPanel->setScrollValue(0,0);
+	m_pScrollPanel->setScrollValue( 0, 0 );
 	m_pScrollPanel->validate();
 }
 
