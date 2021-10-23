@@ -564,7 +564,10 @@ void CHudSpectator::DirectorMessage( int iSize, void *pbuf )
 		case DRC_CMD_BANNER:
 			// gEngfuncs.Con_DPrintf( "GUI: Banner %s\n",READ_STRING() ); // name of banner tga eg gfx/temp/7454562234563475.tga
 #if USE_VGUI
+#if !WIN32
+			//TODO: find out why it's unresolved symbol on windows
 			gViewPort->m_pSpectatorPanel->m_TopBanner->LoadImage( READ_STRING() );
+#endif
 			gViewPort->UpdateSpectatorPanel();
 #endif
 			break;
