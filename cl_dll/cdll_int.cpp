@@ -31,8 +31,10 @@
 
 #if GOLDSOURCE_SUPPORT && (_WIN32 || __linux__ || __APPLE__) && (__i386 || _M_IX86)
 #define USE_FAKE_VGUI	!USE_VGUI
+#if USE_FAKE_VGUI
 #include "VGUI_Panel.h"
 #include "VGUI_App.h"
+#endif
 #endif
 
 extern "C"
