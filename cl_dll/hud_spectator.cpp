@@ -560,6 +560,9 @@ void CHudSpectator::DirectorMessage( int iSize, void *pbuf )
 			READ_LONG(); // total number of spectator slots
 			m_iSpectatorNumber = READ_LONG(); // total number of spectator
 			READ_WORD(); // total number of relay proxies
+#if USE_VGUI
+			gViewPort->UpdateSpectatorPanel();
+#endif
 			break;
 		case DRC_CMD_BANNER:
 			// gEngfuncs.Con_DPrintf( "GUI: Banner %s\n",READ_STRING() ); // name of banner tga eg gfx/temp/7454562234563475.tga
@@ -649,9 +652,11 @@ void CHudSpectator::FindNextPlayer( bool bReverse )
 		VectorCopy( pEnt->angles, vJumpAngles );
 	}
 	iJumpSpectator = 1;
+#if USE_VGUI
+	gViewPort->MsgFunc_ResetFade( NULL, 0, NULL );
+#endif
 }
 
-#if USE_VGUI
 void CHudSpectator::FindPlayer(const char *name)
 {
 	// MOD AUTHORS: Modify the logic of this function if you want to restrict the observer to watching
@@ -670,7 +675,11 @@ void CHudSpectator::FindPlayer(const char *name)
 	g_iUser2 = 0;
 
 	// make sure we have player info
+#if USE_VGUI
 	gViewPort->GetAllPlayersInfo();
+#else
+	gHUD.m_Scoreboard.GetAllPlayersInfo();
+#endif
 
 	cl_entity_t * pEnt = NULL;
 
@@ -706,9 +715,10 @@ void CHudSpectator::FindPlayer(const char *name)
 	}
 
 	iJumpSpectator = 1;
+#if USE_VGUI
 	gViewPort->MsgFunc_ResetFade( NULL, 0, NULL );
-}
 #endif
+}
 
 void CHudSpectator::HandleButtonsDown( int ButtonPressed )
 {
@@ -911,6 +921,10 @@ void CHudSpectator::SetModes( int iNewMainMode, int iNewInsetMode )
 			memset( &m_crosshairRect, 0, sizeof(m_crosshairRect) );
 			SetCrosshair( 0, m_crosshairRect, 0, 0, 0 );
 		}
+
+#if USE_VGUI
+		gViewPort->MsgFunc_ResetFade( NULL, 0, NULL );
+#endif
 
 		char string[128];
 		sprintf( string, "#Spec_Mode%d", g_iUser1 );
