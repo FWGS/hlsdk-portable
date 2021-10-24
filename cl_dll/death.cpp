@@ -193,12 +193,7 @@ int CHudDeathNotice::MsgFunc_DeathMsg( const char *pszName, int iSize, void *pbu
 		i = MAX_DEATHNOTICES - 1;
 	}
 
-#if USE_VGUI
-	if(gViewPort)
-		gViewPort->GetAllPlayersInfo();
-#else
-	gHUD.m_Scoreboard.GetAllPlayersInfo();
-#endif
+	gHUD.GetAllPlayersInfo();
 
 	// Get the Killer's name
 	const char *killer_name = "";

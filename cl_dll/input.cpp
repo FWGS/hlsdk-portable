@@ -649,7 +649,7 @@ void IN_Impulse( void )
 void IN_ScoreDown( void )
 {
 	KeyDown( &in_score );
-#if USE_VGUI
+#if USE_VGUI && !USE_NOVGUI_SCOREBOARD
 	if ( gViewPort )
 	{
 		gViewPort->ShowScoreBoard();
@@ -662,7 +662,7 @@ void IN_ScoreDown( void )
 void IN_ScoreUp( void )
 {
 	KeyUp( &in_score );
-#if USE_VGUI
+#if USE_VGUI && !USE_NOVGUI_SCOREBOARD
 	if ( gViewPort )
 	{
 		gViewPort->HideScoreBoard();
@@ -927,7 +927,7 @@ int CL_ButtonBits( int bResetState )
 
 	if( in_attack.state & 3 )
 	{
-#if !USE_VGUI
+#if !USE_VGUI || USE_NOVGUI_MOTD
 		if( gHUD.m_MOTD.m_bShow )
 			gHUD.m_MOTD.Reset();
 		else

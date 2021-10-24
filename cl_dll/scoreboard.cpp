@@ -37,9 +37,11 @@ cvar_t *cl_showpacketloss;
 DECLARE_COMMAND( m_Scoreboard, ShowScores )
 DECLARE_COMMAND( m_Scoreboard, HideScores )
 
+#if !USE_VGUI || USE_NOVGUI_SCOREBOARD
 DECLARE_MESSAGE( m_Scoreboard, ScoreInfo )
 DECLARE_MESSAGE( m_Scoreboard, TeamInfo )
 DECLARE_MESSAGE( m_Scoreboard, TeamScore )
+#endif
 
 int CHudScoreboard::Init( void )
 {
@@ -49,9 +51,11 @@ int CHudScoreboard::Init( void )
 	// HOOK_COMMAND( "+showscores", ShowScores );
 	// HOOK_COMMAND( "-showscores", HideScores );
 
+#if !USE_VGUI || USE_NOVGUI_SCOREBOARD
 	HOOK_MESSAGE( ScoreInfo );
 	HOOK_MESSAGE( TeamScore );
 	HOOK_MESSAGE( TeamInfo );
+#endif
 
 	InitHUDData();
 

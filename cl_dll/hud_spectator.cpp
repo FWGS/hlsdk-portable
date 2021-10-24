@@ -120,7 +120,7 @@ void SpectatorMenu( void )
 
 void ToggleScores( void )
 {
-#if USE_VGUI
+#if USE_VGUI && !USE_NOVGUI_SCOREBOARD
 	if( gViewPort )
 	{
 		if( gViewPort->IsScoreBoardVisible() )
@@ -131,6 +131,12 @@ void ToggleScores( void )
 		{
 			gViewPort->ShowScoreBoard();
 		}
+	}
+#else
+	if (gHUD.m_Scoreboard.m_iShowscoresHeld) {
+		gHUD.m_Scoreboard.UserCmd_HideScores();
+	} else {
+		gHUD.m_Scoreboard.UserCmd_ShowScores();
 	}
 #endif
 }
@@ -421,11 +427,7 @@ int CHudSpectator::Draw( float flTime )
 		return 1;
 
 	// make sure we have player info
-#if USE_VGUI
-	gViewPort->GetAllPlayersInfo();
-#else
-	gHUD.m_Scoreboard.GetAllPlayersInfo();
-#endif
+	gHUD.GetAllPlayersInfo();
 
 	// loop through all the players and draw additional infos to their sprites on the map
 	for( int i = 0; i < MAX_PLAYERS; i++ )
@@ -612,11 +614,7 @@ void CHudSpectator::FindNextPlayer( bool bReverse )
 	int iDir = bReverse ? -1 : 1; 
 
 	// make sure we have player info
-#if USE_VGUI
-	gViewPort->GetAllPlayersInfo();
-#else
-	gHUD.m_Scoreboard.GetAllPlayersInfo();
-#endif
+	gHUD.GetAllPlayersInfo();
 
 	do
 	{
@@ -676,11 +674,7 @@ void CHudSpectator::FindPlayer(const char *name)
 	g_iUser2 = 0;
 
 	// make sure we have player info
-#if USE_VGUI
-	gViewPort->GetAllPlayersInfo();
-#else
-	gHUD.m_Scoreboard.GetAllPlayersInfo();
-#endif
+	gHUD.GetAllPlayersInfo();
 
 	cl_entity_t * pEnt = NULL;
 

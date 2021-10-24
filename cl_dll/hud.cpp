@@ -238,7 +238,7 @@ int __MsgFunc_VGUIMenu( const char *pszName, int iSize, void *pbuf )
 	return 0;
 }
 
-#if USE_VGUI
+#if USE_VGUI && !USE_NOVGUI_MOTD
 int __MsgFunc_MOTD(const char *pszName, int iSize, void *pbuf)
 {
 	if (gViewPort)
@@ -274,7 +274,7 @@ int __MsgFunc_ServerName( const char *pszName, int iSize, void *pbuf )
 	return 0;
 }
 
-#if USE_VGUI
+#if USE_VGUI && !USE_NOVGUI_SCOREBOARD
 int __MsgFunc_ScoreInfo(const char *pszName, int iSize, void *pbuf)
 {
 	if (gViewPort)
@@ -358,8 +358,11 @@ void CHud::Init( void )
 	HOOK_MESSAGE( RandomPC );
 	HOOK_MESSAGE( ServerName );
 
-#if USE_VGUI
+#if USE_VGUI && !USE_NOVGUI_MOTD
 	HOOK_MESSAGE( MOTD );
+#endif
+
+#if USE_VGUI && !USE_NOVGUI_SCOREBOARD
 	HOOK_MESSAGE( ScoreInfo );
 	HOOK_MESSAGE( TeamScore );
 	HOOK_MESSAGE( TeamInfo );
@@ -425,8 +428,12 @@ void CHud::Init( void )
 	m_StatusIcons.Init();
 #if USE_VGUI
 	GetClientVoiceMgr()->Init(&g_VoiceStatusHelper, (vgui::Panel**)&gViewPort);
-#else
+#endif
+
+#if !USE_VGUI || USE_NOVGUI_MOTD
 	m_MOTD.Init();
+#endif
+#if !USE_VGUI || USE_NOVGUI_SCOREBOARD
 	m_Scoreboard.Init();
 #endif
 
@@ -618,9 +625,12 @@ void CHud::VidInit( void )
 	m_StatusIcons.VidInit();
 #if USE_VGUI
 	GetClientVoiceMgr()->VidInit();
-#else
-	m_Scoreboard.VidInit();
+#endif
+#if !USE_VGUI || USE_NOVGUI_MOTD
 	m_MOTD.VidInit();
+#endif
+#if !USE_VGUI || USE_NOVGUI_SCOREBOARD
+	m_Scoreboard.VidInit();
 #endif
 }
 
@@ -796,4 +806,23 @@ void CHud::AddHudElem( CHudBase *phudelem )
 float CHud::GetSensitivity( void )
 {
 	return m_flMouseSensitivity;
+}
+
+void CHud::GetAllPlayersInfo()
+{
+	for( int i = 1; i < MAX_PLAYERS; i++ )
+	{
+		GetPlayerInfo( i, &g_PlayerInfoList[i] );
+
+		if( g_PlayerInfoList[i].thisplayer )
+		{
+#if USE_VGUI
+			if(gViewPort)
+				gViewPort->m_pScoreBoard->m_iPlayerNum = i;
+#endif
+#if !USE_VGUI || USE_NOVGUI_SCOREBOARD
+			gHUD.m_Scoreboard.m_iPlayerNum = i;  // !!!HACK: this should be initialized elsewhere... maybe gotten from the engine
+#endif
+		}
+	}
 }
