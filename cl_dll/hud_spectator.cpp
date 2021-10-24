@@ -80,6 +80,7 @@ void SpectatorSpray( void )
 		gEngfuncs.pfnServerCmd( string );
 	}
 }
+
 void SpectatorHelp( void )
 {
 #if USE_VGUI
@@ -119,7 +120,7 @@ void SpectatorMenu( void )
 
 void ToggleScores( void )
 {
-#if defined(USE_VGUI)
+#if USE_VGUI
 	if( gViewPort )
 	{
 		if( gViewPort->IsScoreBoardVisible() )

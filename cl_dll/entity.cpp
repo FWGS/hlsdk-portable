@@ -7,6 +7,8 @@
 
 // Client side entity management functions
 
+#include <memory.h>
+
 #include "hud.h"
 #include "cl_util.h"
 #include "const.h"

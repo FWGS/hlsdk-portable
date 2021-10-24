@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2001, Valve LLC, All rights reserved. ============
+//========= Copyright (c) 1996-2002, Valve LLC, All rights reserved. ============
 //
 // Purpose: 
 //
@@ -194,7 +194,7 @@ bool CVoiceGameMgr::ClientCommand(CBasePlayer *pPlayer, const char *cmd)
 		}
 
 		// Force it to update the masks now.
-		//UpdateMasks();		
+		// UpdateMasks();		
 		return true;
 	}
 	else if(stricmp(cmd, "VModEnable") == 0 && CMD_ARGC() >= 2)
@@ -202,7 +202,7 @@ bool CVoiceGameMgr::ClientCommand(CBasePlayer *pPlayer, const char *cmd)
 		VoiceServerDebug( "CVoiceGameMgr::ClientCommand: VModEnable (%d)\n", !!atoi(CMD_ARGV(1)) );
 		g_PlayerModEnable[playerClientIndex] = !!atoi(CMD_ARGV(1));
 		g_bWantModEnable[playerClientIndex] = false;
-		//UpdateMasks();		
+		// UpdateMasks();
 		return true;
 	}
 	else
