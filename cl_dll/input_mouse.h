@@ -49,9 +49,9 @@ protected:
 #define SUPPORT_GOLDSOURCE_INPUT	1
 
 #if _WIN32
-#include "winsani_in.h"
+#define HSPRITE WINDOWS_HSPRITE
 #include <windows.h>
-#include "winsani_out.h"
+#undef HSPRITE
 #else
 typedef struct point_s
 {
