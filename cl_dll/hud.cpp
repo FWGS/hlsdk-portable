@@ -31,11 +31,19 @@
 
 #include "demo.h"
 #include "demo_api.h"
-#if USE_VGUI
-#include "vgui_ScorePanel.h"
 
 hud_player_info_t	 g_PlayerInfoList[MAX_PLAYERS+1];	   // player info from the engine
 extra_player_info_t  g_PlayerExtraInfo[MAX_PLAYERS+1];   // additional player info sent directly to the client dll
+team_info_t		g_TeamInfo[MAX_TEAMS + 1];
+int		g_IsSpectator[MAX_PLAYERS+1];
+int g_iPlayerClass;
+int g_iTeamNumber;
+int g_iUser1 = 0;
+int g_iUser2 = 0;
+int g_iUser3 = 0;
+
+#if USE_VGUI
+#include "vgui_ScorePanel.h"
 
 class CHLVoiceStatusHelper : public IVoiceStatusHelper
 {

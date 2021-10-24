@@ -60,11 +60,6 @@
 
 void IN_SetVisibleMouse(bool visible);
 class CCommandMenu;
-int g_iPlayerClass;
-int g_iTeamNumber;
-int g_iUser1 = 0;
-int g_iUser2 = 0;
-int g_iUser3 = 0;
 
 // Scoreboard positions
 #define SBOARD_INDENT_X			XRES( 104 )
