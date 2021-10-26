@@ -451,6 +451,23 @@ cvar_t	sk_player_leg1	= { "sk_player_leg1","1" };
 cvar_t	sk_player_leg2	= { "sk_player_leg2","1" };
 cvar_t	sk_player_leg3	= { "sk_player_leg3","1" };
 
+// multiplayer override overrides.
+cvar_t sk_mp_suitcharger = {"sk_mp_suitcharger","0"};
+cvar_t sk_mp_plr_crowbar = {"sk_mp_plr_crowbar","0"};
+cvar_t sk_mp_plr_9mm_bullet = {"sk_mp_plr_9mm_bullet","0"};
+cvar_t sk_mp_plr_357_bullet = {"sk_mp_plr_357_bullet","0"};
+cvar_t sk_mp_plr_9mmAR_bullet = {"sk_mp_plr_9mmAR_bullet","0"};
+cvar_t sk_mp_plr_9mmAR_grenade = {"sk_mp_plr_9mmAR_grenade","0"};
+cvar_t sk_mp_plr_buckshot = {"sk_mp_plr_buckshot","0"};
+cvar_t sk_mp_plr_xbow_bolt_client = {"sk_mp_plr_xbow_bolt_client","0"};
+cvar_t sk_mp_plr_rpg = {"sk_mp_plr_rpg","0"};
+cvar_t sk_mp_plr_egon_wide = {"sk_mp_plr_egon_wide","0"};
+cvar_t sk_mp_plr_egon_narrow = {"sk_mp_plr_egon_narrow","0"};
+cvar_t sk_mp_plr_hand_grenade = {"sk_mp_plr_hand_grenade","0"};
+cvar_t sk_mp_plr_satchel = {"sk_mp_plr_satchel","0"};
+cvar_t sk_mp_plr_tripmine = {"sk_mp_plr_tripmine","0"};
+cvar_t sk_mp_plr_hornet = {"sk_mp_plr_hornet","0"};
+
 // END Cvars for Skill Level settings
 
 // Register your console variables here
@@ -870,6 +887,26 @@ void GameDLLInit( void )
 	CVAR_REGISTER( &sk_player_leg1 );
 	CVAR_REGISTER( &sk_player_leg2 );
 	CVAR_REGISTER( &sk_player_leg3 );
+
+
+	// multiplayer override overrides
+
+	CVAR_REGISTER( &sk_mp_suitcharger );
+	CVAR_REGISTER( &sk_mp_plr_crowbar );
+	CVAR_REGISTER( &sk_mp_plr_9mm_bullet );
+	CVAR_REGISTER( &sk_mp_plr_357_bullet );
+	CVAR_REGISTER( &sk_mp_plr_9mmAR_bullet );
+	CVAR_REGISTER( &sk_mp_plr_9mmAR_grenade );
+	CVAR_REGISTER( &sk_mp_plr_buckshot );
+	CVAR_REGISTER( &sk_mp_plr_xbow_bolt_client );
+	CVAR_REGISTER( &sk_mp_plr_rpg );
+	CVAR_REGISTER( &sk_mp_plr_egon_wide );
+	CVAR_REGISTER( &sk_mp_plr_egon_narrow );
+	CVAR_REGISTER( &sk_mp_plr_hand_grenade );
+	CVAR_REGISTER( &sk_mp_plr_satchel );
+	CVAR_REGISTER( &sk_mp_plr_tripmine );
+	CVAR_REGISTER( &sk_mp_plr_hornet );
+
 // END REGISTER CVARS FOR SKILL LEVEL STUFF
 
 	SERVER_COMMAND( "exec skill.cfg\n" );
