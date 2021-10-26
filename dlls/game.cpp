@@ -51,6 +51,8 @@ cvar_t multibyte_only = { "mp_multibyte_only", "0", FCVAR_SERVER };
 
 cvar_t mp_chattime	= { "mp_chattime","10", FCVAR_SERVER };
 
+cvar_t mp_disable_longjump = {"mp_disable_longjump", "0", FCVAR_SERVER};
+
 cvar_t sv_cheats = {"sv_cheats", "0", FCVAR_SERVER};
 
 // Engine Cvars
@@ -518,6 +520,8 @@ void GameDLLInit( void )
 	CVAR_REGISTER( &multibyte_only );
 
 	CVAR_REGISTER( &mp_chattime );
+
+	CVAR_REGISTER( &mp_disable_longjump );
 
 	CVAR_REGISTER( &sv_cheats );
 
