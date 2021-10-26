@@ -51,10 +51,13 @@ cvar_t multibyte_only = { "mp_multibyte_only", "0", FCVAR_SERVER };
 
 cvar_t mp_chattime	= { "mp_chattime","10", FCVAR_SERVER };
 
+cvar_t sv_cheats = {"sv_cheats", "0", FCVAR_SERVER};
+
 // Engine Cvars
 cvar_t *g_psv_gravity = NULL;
 cvar_t *g_psv_aim = NULL;
 cvar_t *g_footsteps = NULL;
+cvar_t *g_enable_cheats = NULL;
 
 cvar_t *g_psv_developer;
 
@@ -467,6 +470,8 @@ void GameDLLInit( void )
 
 	g_psv_developer = CVAR_GET_POINTER( "developer" );
 
+	g_enable_cheats = CVAR_GET_POINTER( "sv_cheats" );
+
 	CVAR_REGISTER( &displaysoundlist );
 	CVAR_REGISTER( &allow_spectators );
 
@@ -496,6 +501,8 @@ void GameDLLInit( void )
 	CVAR_REGISTER( &multibyte_only );
 
 	CVAR_REGISTER( &mp_chattime );
+
+	CVAR_REGISTER( &sv_cheats );
 
 // REGISTER CVARS FOR SKILL LEVEL STUFF
 	// Agrunt
