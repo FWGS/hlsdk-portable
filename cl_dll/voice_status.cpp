@@ -534,9 +534,9 @@ void CVoiceStatus::UpdateServerState(bool bForce)
 
 	for(unsigned long dw=0; dw < VOICE_MAX_PLAYERS_DW; dw++)
 	{	
-		unsigned long serverBanMask = 0;
-		unsigned long banMask = 0;
-		for(unsigned long i=0; i < 32; i++)
+		unsigned int serverBanMask = 0;
+		unsigned int banMask = 0;
+		for(unsigned int i=0; i < 32; i++)
 		{
 			char playerID[16];
 			if(!gEngfuncs.GetPlayerUniqueID(i+1, playerID))
@@ -637,7 +637,7 @@ void CVoiceStatus::HandleVoiceMaskMsg(int iSize, void *pbuf)
 {
 	BEGIN_READ( pbuf, iSize );
 
-	unsigned long dw;
+	unsigned int dw;
 	for(dw=0; dw < VOICE_MAX_PLAYERS_DW; dw++)
 	{
 		m_AudiblePlayers.SetDWord(dw, (unsigned long)READ_LONG());
