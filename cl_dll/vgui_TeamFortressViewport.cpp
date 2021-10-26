@@ -809,7 +809,7 @@ int TeamFortressViewport::CreateCommandMenu( const char *menuFile, int direction
 
 				// Get the button text
 				pfile = gEngfuncs.COM_ParseFile( pfile, token );
-				strncpy( cText, token, 31 );
+				strncpy( cText, CHudTextMessage::BufferedLocaliseTextString( token ), 31 );	// Vit_amiN: localize button text
 				cText[31] = '\0';
 
 				// save off the last button text we've come across (for error reporting)
