@@ -502,7 +502,7 @@ void GameDLLInit( void )
 
 	CVAR_REGISTER( &mp_chattime );
 
-	CVAR_REGISTER( &sv_cheats );
+
 
 // REGISTER CVARS FOR SKILL LEVEL STUFF
 	// Agrunt
