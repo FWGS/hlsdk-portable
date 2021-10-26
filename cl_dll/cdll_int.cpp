@@ -24,7 +24,6 @@
 #include "parsemsg.h"
 
 #if USE_VGUI
-#include "hud_servers.h"
 #include "vgui_int.h"
 #include "vgui_TeamFortressViewport.h"
 #endif
@@ -354,7 +353,6 @@ Called by engine every frame that client .dll is loaded
 void DLLEXPORT HUD_Frame( double time )
 {
 #if USE_VGUI
-	ServersThink( time );
 	GetClientVoiceMgr()->Frame(time);
 #elif USE_FAKE_VGUI
 	if (!gViewPort)

@@ -125,7 +125,6 @@ set (CLDLL_SOURCES
 
 if (USE_VGUI)
 	list(APPEND CLDLL_SOURCES
-		hud_servers.cpp
 		vgui_int.cpp
 		vgui_ClassMenu.cpp
 		vgui_ConsolePanel.cpp
@@ -134,7 +133,6 @@ if (USE_VGUI)
 		vgui_MOTDWindow.cpp
 		vgui_SchemeManager.cpp
 		vgui_ScorePanel.cpp
-		vgui_ServerBrowser.cpp
 		vgui_TeamFortressViewport.cpp
 		vgui_SpectatorPanel.cpp
 		vgui_teammenu.cpp

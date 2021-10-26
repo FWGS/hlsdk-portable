@@ -23,7 +23,6 @@
 #include <string.h>
 #include <stdio.h>
 #include "parsemsg.h"
-#include "hud_servers.h"
 #if USE_VGUI
 #include "vgui_int.h"
 #include "vgui_TeamFortressViewport.h"
@@ -178,16 +177,6 @@ void __CmdFunc_ForceCloseCommandMenu( void )
 	if ( gViewPort )
 	{
 		gViewPort->HideCommandMenu();
-	}
-#endif
-}
-
-void __CmdFunc_ToggleServerBrowser( void )
-{
-#if USE_VGUI
-	if ( gViewPort )
-	{
-		gViewPort->ToggleServerBrowser();
 	}
 #endif
 }
@@ -348,7 +337,6 @@ void CHud::Init( void )
 	HOOK_COMMAND( "-commandmenu", CloseCommandMenu );
 	HOOK_COMMAND( "ForceCloseCommandMenu", ForceCloseCommandMenu );
 	HOOK_COMMAND( "special", InputPlayerSpecial );
-	HOOK_COMMAND( "togglebrowser", ToggleServerBrowser );
 
 	HOOK_MESSAGE( ValClass );
 	HOOK_MESSAGE( TeamNames );
@@ -439,10 +427,6 @@ void CHud::Init( void )
 
 	m_Menu.Init();
 
-#if USE_VGUI
-	ServersInit();
-#endif
-	
 	MsgFunc_ResetHUD( 0, 0, NULL );
 }
 
@@ -465,10 +449,6 @@ CHud::~CHud()
 		}
 		m_pHudList = NULL;
 	}
-
-#if USE_VGUI
-	ServersShutdown();
-#endif
 }
 
 // GetSpriteIndex()
