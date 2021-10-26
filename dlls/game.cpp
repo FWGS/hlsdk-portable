@@ -53,8 +53,6 @@ cvar_t mp_chattime	= { "mp_chattime","10", FCVAR_SERVER };
 
 cvar_t mp_disable_longjump = {"mp_disable_longjump", "0", FCVAR_SERVER};
 
-cvar_t sv_cheats = {"sv_cheats", "0", FCVAR_SERVER};
-
 // Engine Cvars
 cvar_t *g_psv_gravity = NULL;
 cvar_t *g_psv_aim = NULL;
