@@ -523,8 +523,6 @@ void GameDLLInit( void )
 
 	CVAR_REGISTER( &mp_disable_longjump );
 
-	CVAR_REGISTER( &sv_cheats );
-
 // REGISTER CVARS FOR SKILL LEVEL STUFF
 	// Agrunt
 	CVAR_REGISTER( &sk_agrunt_health1 );// {"sk_agrunt_health1","0"};
