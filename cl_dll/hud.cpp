@@ -821,7 +821,7 @@ void CHud::GetAllPlayersInfo()
 				gViewPort->m_pScoreBoard->m_iPlayerNum = i;
 #endif
 #if !USE_VGUI || USE_NOVGUI_SCOREBOARD
-			gHUD.m_Scoreboard.m_iPlayerNum = i;  // !!!HACK: this should be initialized elsewhere... maybe gotten from the engine
+			m_Scoreboard.m_iPlayerNum = i;  // !!!HACK: this should be initialized elsewhere... maybe gotten from the engine
 #endif
 		}
 	}
