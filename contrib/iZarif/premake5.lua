@@ -1,3 +1,5 @@
+local xash = require("xash")
+
 workspace("hlsdk-xash3d")
 configurations{"Debug", "Release"}
 language("C++")
@@ -40,28 +42,75 @@ defines{"BARNACLE_FIX_VISIBILITY=0",
 "OEM_BUILD=0",
 "HLDEMO_BUILD=0"}
 
+newoption{trigger = "toolset-prefix", description = "Prefix for crosscompiler (should contain the final dash)"}
+
+xash.prefix = _OPTIONS["toolset-prefix"]
+xash.find_cxx_compiler()
+
 newoption{trigger = "64bits", description = "Allow targetting 64-bit engine", default = false}
-newoption{trigger = "voicemgr", description = "Eable voice manager", default = false}
+newoption{trigger = "voicemgr", description = "Enable voice manager", default = false}
 newoption{trigger = "goldsrc", description = "Enable GoldSource engine support", default = false}
 newoption{trigger = "lto", description = "Enable Link Time Optimization", default = false}
 
-if _OPTIONS["64bits"] then
-  architecture("x86_64")
-else
-  architecture("x86")
-end
+newoption{trigger = "arch", description = "Destination arch", default = xash.get_arch(), allowed = {
+  {"amd64", ""},
+  {"x86", ""},
+  {"arm64", ""},
+  {"armv8_32l", ""},
+  {"armv7l", ""},
+  {"armv6l", ""},
+  {"armv5l", ""},
+  {"armv4l", ""},
+  {"armv8_32hf", ""},
+  {"armv7hf", ""},
+  {"armv6hf", ""},
+  {"armv5hf", ""},
+  {"armv4hf", ""},
+  {"mips64", ""},
+  {"mipsel", ""},
+  {"riscv32d", ""},
+  {"riscv32f", ""},
+  {"riscv64d", ""},
+  {"riscv64f", ""},
+  {"javascript", ""},
+  {"e2k", ""}
+}}
 
-if _OPTIONS["lto"] then
-  flags{"LinkTimeOptimization"}
-end
+newoption{trigger = "bsd-flavour", description = "BSD flavour", allowed = {
+  {"freebsd", ""},
+  {"openbsd", ""},
+  {"netbsd", ""}
+}}
 
-if os.findheader("tgmath.h") then
+newoption{trigger = "vgui", description = "Enable VGUI1", default = false}
+newoption{trigger = "novgui-motd", description = "Prefer non-VGUI MOTD when VGUI is enabled", default = false}
+newoption{trigger = "novgui-scoreboard", description = "Prefer non-VGUI scoreboard when VGUI is enabled", default = false}
+
+xash.bsd_flavour = _OPTIONS["bsd-flavour"]
+
+if xash.is_cxx_header_exist("tgmath.h") then
   defines{"HAVE_TGMATH_H"}
 end
 
-if os.findheader("cmath") then
+if xash.is_cxx_header_exist("cmath") then
   defines{"HAVE_CMATH"}
 end
+
+if xash.prefix then
+  gccprefix(xash.prefix)
+end
+
+if _OPTIONS["arch"] == "amd64" then
+  if not _OPTIONS["64bits"] then
+    xash.arch = "x86"
+    architecture(xash.arch)
+  end
+end
+
+targetsuffix(xash.get_lib_suffix())
+
+filter("options:lto")
+flags{"LinkTimeOptimization"}
 
 filter("configurations:Release")
 optimize("Full")
@@ -77,7 +126,7 @@ filter("toolset:msc")
 buildoptions{"/D_USING_V110_SDK71_", "/Zc:threadSafeInit-"}
 defines{"_CRT_SECURE_NO_WARNINGS=1", "_CRT_NONSTDC_NO_DEPRECATE=1"}
 
-filter("toolset:gcc or clang")
+filter("toolset:not msc")
 visibility("Hidden")
 defines{"stricmp=strcasecmp",
 "strnicmp=strncasecmp",
@@ -177,11 +226,11 @@ files{"dlls/agrunt.cpp",
 
 includedirs{"public"}
 
-if _OPTIONS["voicemgr"] then
-  files{"game_shared/voice_gamemgr.cpp"}
-else
-  defines{"NO_VOICEGAMEMGR"}
-end
+filter("options:voicemgr")
+files{"game_shared/voice_gamemgr.cpp"}
+
+filter("options:not voicemgr")
+defines{"NO_VOICEGAMEMGR"}
 
 filter("toolset:msc")
 buildoptions{"/def:" .. path.getabsolute("dlls/hl.def")}
@@ -194,7 +243,6 @@ files{"cl_dll/hl/hl_baseentity.cpp",
 "cl_dll/hl/hl_objects.cpp",
 "cl_dll/hl/hl_weapons.cpp",
 "cl_dll/GameStudioModelRenderer.cpp",
-"cl_dll/MOTD.cpp",
 "cl_dll/StudioModelRenderer.cpp",
 "cl_dll/ammo.cpp",
 "cl_dll/ammo_secondary.cpp",
@@ -226,7 +274,6 @@ files{"cl_dll/hl/hl_baseentity.cpp",
 "cl_dll/overview.cpp",
 "cl_dll/parsemsg.cpp",
 "cl_dll/saytext.cpp",
-"cl_dll/scoreboard.cpp",
 "cl_dll/status_icons.cpp",
 "cl_dll/statusbar.cpp",
 "cl_dll/studio_util.cpp",
@@ -237,18 +284,64 @@ files{"cl_dll/hl/hl_baseentity.cpp",
 "cl_dll/view.cpp"}
 
 includedirs{"cl_dll",
-"cl_dll/hl",
-"utils/false_vgui/include"}
+"cl_dll/hl"}
 
 defines{"CLIENT_DLL"}
 
-if _OPTIONS["goldsrc"] then
-  defines{"GOLDSOURCE_SUPPORT"}
-end
+filter("options:goldsrc")
+defines{"GOLDSOURCE_SUPPORT"}
 
-filter("system:Windows")
+filter("options:vgui")
+files{"cl_dll/vgui_int.cpp",
+"cl_dll/vgui_ClassMenu.cpp",
+"cl_dll/vgui_ConsolePanel.cpp",
+"cl_dll/vgui_ControlConfigPanel.cpp",
+"cl_dll/vgui_CustomObjects.cpp",
+"cl_dll/vgui_MOTDWindow.cpp",
+"cl_dll/vgui_SchemeManager.cpp",
+"cl_dll/vgui_ScorePanel.cpp",
+"cl_dll/vgui_TeamFortressViewport.cpp",
+"cl_dll/vgui_SpectatorPanel.cpp",
+"cl_dll/vgui_teammenu.cpp",
+"cl_dll/voice_status.cpp",
+"game_shared/vgui_checkbutton2.cpp",
+"game_shared/vgui_grid.cpp",
+"game_shared/vgui_helpers.cpp",
+"game_shared/vgui_listbox.cpp",
+"game_shared/vgui_loadtga.cpp",
+"game_shared/vgui_scrollbar2.cpp",
+"game_shared/vgui_slider2.cpp",
+"game_shared/voice_banmgr.cpp"}
+includedirs{"vgui-dev/include"}
+defines{"USE_VGUI"}
+
+filter{"options:vgui", "system:windows"}
+libdirs{"vgui-dev/lib/win32_vc6/"}
+
+filter{"options:vgui", "system:macosx"}
+libdirs{"vgui-dev/lib"}
+
+filter{"options:vgui", "system:windows or macosx"}
+links{"vgui"}
+
+filter{"options:vgui", "system:not windows or not macosx"}
+linkoptions{path.getabsolute("vgui-dev/lib/vgui.so")}
+
+filter{"options:vgui", "options:novgui-motd"}
+defines{"USE_NOVGUI_MOTD"}
+files{"cl_dll/MOTD.cpp"}
+
+filter{"options:vgui", "options:novgui-scoreboard"}
+defines{"USE_NOVGUI_SCOREBOARD"}
+files{"cl_dll/scoreboard.cpp"}
+
+filter("options:not vgui")
+files{"cl_dll/MOTD.cpp",
+"cl_dll/scoreboard.cpp"}
+includedirs{"utils/false_vgui/include"}
+
+filter("system:windows")
 links{"user32", "winmm"}
 
 filter("system:not windows")
 links{"dl"}
-
