@@ -449,7 +449,6 @@ LINK_ENTITY_TO_CLASS( worldspawn, CWorld )
 #define SF_WORLD_FORCETEAM	0x0004		// Force teams
 
 extern DLL_GLOBAL BOOL		g_fGameOver;
-float g_flWeaponCheat; 
 
 void CWorld::Spawn( void )
 {
@@ -652,9 +651,6 @@ void CWorld::Precache( void )
 	{
 		CVAR_SET_FLOAT( "mp_defaultteam", 0.0f );
 	}
-
-	// g-cont. moved here so cheats will working on restore level
-	g_flWeaponCheat = CVAR_GET_FLOAT( "sv_cheats" );  // Is the impulse 101 command allowed?
 }
 
 //
