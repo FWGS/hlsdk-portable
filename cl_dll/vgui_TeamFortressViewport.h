@@ -658,14 +658,14 @@ protected:
 	char	m_pszCommand[MAX_COMMAND_SIZE];
 	int	m_iCloseVGUIMenu;
 public:
-	CMenuHandler_StringCommand( char *pszCommand )
+	CMenuHandler_StringCommand( const char *pszCommand )
 	{
 		strncpy( m_pszCommand, pszCommand, MAX_COMMAND_SIZE - 1 );
 		m_pszCommand[MAX_COMMAND_SIZE - 1] = '\0';
 		m_iCloseVGUIMenu = false;
 	}
 
-	CMenuHandler_StringCommand( char *pszCommand, int iClose )
+	CMenuHandler_StringCommand( const char *pszCommand, int iClose )
 	{
 		strncpy( m_pszCommand, pszCommand, MAX_COMMAND_SIZE - 1 );
 		m_pszCommand[MAX_COMMAND_SIZE - 1] = '\0';
@@ -689,11 +689,11 @@ class CMenuHandler_StringCommandWatch : public CMenuHandler_StringCommand
 {
 private:
 public:
-	CMenuHandler_StringCommandWatch( char *pszCommand ) : CMenuHandler_StringCommand( pszCommand )
+	CMenuHandler_StringCommandWatch( const char *pszCommand ) : CMenuHandler_StringCommand( pszCommand )
 	{
 	}
 
-	CMenuHandler_StringCommandWatch( char *pszCommand, int iClose ) : CMenuHandler_StringCommand( pszCommand, iClose )
+	CMenuHandler_StringCommandWatch( const char *pszCommand, int iClose ) : CMenuHandler_StringCommand( pszCommand, iClose )
 	{
 	}
 
