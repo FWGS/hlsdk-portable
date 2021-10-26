@@ -130,18 +130,6 @@ BOOL CHalfLifeMultiplay::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 	return CGameRules::ClientCommand( pPlayer, pcmd );
 }
 
-
-float GetMPSkillCvarOrElse(const char *skill_name, const float otherwise)
-{
-	float skill_value = CVAR_GET_FLOAT( skill_name );
-	if( skill_value <= 0 )
-	{
-		skill_value = otherwise;
-	}
-	return skill_value;
-}
-
-
 //=========================================================
 //=========================================================
 void CHalfLifeMultiplay::RefreshSkillData( void )
@@ -152,47 +140,47 @@ void CHalfLifeMultiplay::RefreshSkillData( void )
 	// override some values for multiplay.
 
 	// suitcharger
-	gSkillData.suitchargerCapacity = GetMPSkillCvarOrElse( "sk_mp_suitcharger", 30 );
+	gSkillData.suitchargerCapacity = CVAR_GET_FLOAT( "sk_mp_suitcharger" );
 
 	// Crowbar whack
-	gSkillData.plrDmgCrowbar =  GetMPSkillCvarOrElse( "sk_mp_plr_crowbar", 25 );
+	gSkillData.plrDmgCrowbar =  CVAR_GET_FLOAT( "sk_mp_plr_crowbar" );
 
 	// Glock Round
-	gSkillData.plrDmg9MM = GetMPSkillCvarOrElse( "sk_mp_plr_9mm_bullet", 12 );
+	gSkillData.plrDmg9MM = CVAR_GET_FLOAT( "sk_mp_plr_9mm_bullet" );
 
 	// 357 Round
-	gSkillData.plrDmg357 = GetMPSkillCvarOrElse( "sk_mp_plr_357_bullet", 40 );
+	gSkillData.plrDmg357 = CVAR_GET_FLOAT( "sk_mp_plr_357_bullet" );
 
 	// MP5 Round
-	gSkillData.plrDmgMP5 = GetMPSkillCvarOrElse( "sk_mp_plr_9mmAR_bullet", 12 );
+	gSkillData.plrDmgMP5 = CVAR_GET_FLOAT( "sk_mp_plr_9mmAR_bullet" );
 
 	// M203 grenade
-	gSkillData.plrDmgM203Grenade = GetMPSkillCvarOrElse( "sk_mp_plr_9mmAR_grenade", 100 );
+	gSkillData.plrDmgM203Grenade = CVAR_GET_FLOAT( "sk_mp_plr_9mmAR_grenade" );
 
 	// Shotgun buckshot
-	gSkillData.plrDmgBuckshot = GetMPSkillCvarOrElse( "sk_mp_plr_buckshot", 20 );// fewer pellets in deathmatch
+	gSkillData.plrDmgBuckshot = CVAR_GET_FLOAT( "sk_mp_plr_buckshot" );
 
 	// Crossbow
-	gSkillData.plrDmgCrossbowClient = GetMPSkillCvarOrElse( "sk_mp_plr_xbow_bolt_client", 20 );
+	gSkillData.plrDmgCrossbowClient = CVAR_GET_FLOAT( "sk_mp_plr_xbow_bolt_client" );
 
 	// RPG
-	gSkillData.plrDmgRPG = GetMPSkillCvarOrElse( "sk_mp_plr_rpg", 120 );
+	gSkillData.plrDmgRPG = CVAR_GET_FLOAT( "sk_mp_plr_rpg" );
 
 	// Egon
-	gSkillData.plrDmgEgonWide = GetMPSkillCvarOrElse( "sk_mp_plr_egon_wide" , 20 );
-	gSkillData.plrDmgEgonNarrow = GetMPSkillCvarOrElse( "sk_mp_plr_egon_narrow", 10 );
+	gSkillData.plrDmgEgonWide = CVAR_GET_FLOAT( "sk_mp_plr_egon_wide" );
+	gSkillData.plrDmgEgonNarrow = CVAR_GET_FLOAT( "sk_mp_plr_egon_narrow" );
 
 	// Hand Grendade
-	gSkillData.plrDmgHandGrenade = GetMPSkillCvarOrElse( "sk_mp_plr_hand_grenade", 100 );
+	gSkillData.plrDmgHandGrenade = CVAR_GET_FLOAT( "sk_mp_plr_hand_grenade" );
 
 	// Satchel Charge
-	gSkillData.plrDmgSatchel = GetMPSkillCvarOrElse( "sk_mp_plr_satchel", 120 );
+	gSkillData.plrDmgSatchel = CVAR_GET_FLOAT( "sk_mp_plr_satchel" );
 
 	// Tripmine
-	gSkillData.plrDmgTripmine = GetMPSkillCvarOrElse( "sk_mp_plr_tripmine" , 150 );
+	gSkillData.plrDmgTripmine = CVAR_GET_FLOAT( "sk_mp_plr_tripmine" );
 
 	// hornet
-	gSkillData.plrDmgHornet = GetMPSkillCvarOrElse( "sk_mp_plr_hornet" , 10 );
+	gSkillData.plrDmgHornet = CVAR_GET_FLOAT( "sk_mp_plr_hornet" );
 }
 
 // longest the intermission can last, in seconds
