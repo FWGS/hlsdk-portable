@@ -694,8 +694,8 @@ int TeamFortressViewport::CreateCommandMenu( const char *menuFile, int direction
 
 	// Read Command Menu from the txt file
 	char token[1024];
-	char *pfile = (char*)gEngfuncs.COM_LoadFile( menuFile, 5, NULL );
-	if( !pfile )
+	char *pFileStart = (char*)gEngfuncs.COM_LoadFile( menuFile, 5, NULL );
+	if( !pFileStart )
 	{
 		gEngfuncs.Con_DPrintf( "Unable to open %s\n", menuFile);
 		SetCurrentCommandMenu( NULL );
@@ -716,7 +716,7 @@ int TeamFortressViewport::CreateCommandMenu( const char *menuFile, int direction
 		// Now start parsing the menu structure
 		m_pCurrentCommandMenu = m_pCommandMenus[newIndex];
 		char szLastButtonText[32] = "file start";
-		pfile = gEngfuncs.COM_ParseFile( pfile, token );
+		char* pfile = gEngfuncs.COM_ParseFile( pFileStart, token );
 		while( ( strlen ( token ) > 0 ) && ( m_iNumMenus < MAX_MENUS ) )
 		{
 			// Keep looping until we hit the end of this menu
@@ -740,6 +740,7 @@ int TeamFortressViewport::CreateCommandMenu( const char *menuFile, int direction
 				if( !m_pCurrentCommandMenu )
 				{
 					gEngfuncs.Con_Printf( "Error in %s file after '%s'.\n", menuFile, szLastButtonText );
+					gEngfuncs.COM_FreeFile( pFileStart );	// Vit_amiN: prevent the memory leak
 					m_iInitialized = false;
 
 					return newIndex;
@@ -922,6 +923,7 @@ int TeamFortressViewport::CreateCommandMenu( const char *menuFile, int direction
 		e;
 		//e->Delete();
 		e = NULL;
+		gEngfuncs.COM_FreeFile( pFileStart );	// Vit_amiN: prevent the memory leak
 		m_iInitialized = false;
 		return newIndex;
 	}
@@ -929,7 +931,7 @@ int TeamFortressViewport::CreateCommandMenu( const char *menuFile, int direction
 
 	SetCurrentMenu( NULL );
 	SetCurrentCommandMenu( NULL );
-	gEngfuncs.COM_FreeFile( pfile );
+	gEngfuncs.COM_FreeFile( pFileStart );
 
 	m_iInitialized = true;
 
