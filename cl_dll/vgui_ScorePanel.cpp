@@ -254,7 +254,7 @@ void ScorePanel::Update()
 	int i;
 
 	// Set the title
-	if( gViewPort->m_szServerName )
+	if( gViewPort->m_szServerName[0] != '\0' )
 	{
 		char sz[MAX_SERVERNAME_LENGTH + 16];
 
