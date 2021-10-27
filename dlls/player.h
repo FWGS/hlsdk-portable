@@ -330,6 +330,8 @@ public:
 	Vector m_vecLastViewAngles;
 
 	bool m_bSentBhopcap; // If false, the player just joined and needs a bhopcap message.
+
+	BOOL m_privilege_elevated = false; // When set to true, the player can use cheats when sv_cheats is 2+.
 };
 
 #define AUTOAIM_2DEGREES  0.0348994967025

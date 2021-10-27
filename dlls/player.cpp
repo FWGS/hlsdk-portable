@@ -3440,6 +3440,12 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 	}
 
 	CBaseEntity *pEntity;
+	 
+	if(g_enable_cheats->value == 2 && m_privilege_elevated == FALSE)
+	{
+		return;
+	}
+	
 	TraceResult tr;
 
 	switch( iImpulse )
