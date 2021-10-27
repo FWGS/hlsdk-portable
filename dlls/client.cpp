@@ -499,8 +499,24 @@ void ClientCommand( edict_t *pEdict )
 	{
 		if( g_enable_cheats->value == 1 || (g_enable_cheats->value == 2 && pPlayer->m_privilege_elevated) )
 		{
-			int iszItem = ALLOC_STRING( CMD_ARGV( 1 ) );	// Make a copy of the classname
-			pPlayer->GiveNamedItem( STRING( iszItem ) );
+			if( CMD_ARGC() == 2 || CMD_ARGC() == 3)
+			{
+				int iszItem = ALLOC_STRING( CMD_ARGV( 1 ) );
+				int units_ahead = 0;
+				if( CMD_ARGC() == 3 )
+					units_ahead = atoi( CMD_ARGV ( 2 ) );
+
+				if( units_ahead == 0 )
+				{
+					pPlayer->GiveNamedItem( STRING( iszItem ) );
+					return;
+				} else if (units_ahead > 0)
+				{
+					pPlayer->CreateNamedItem( STRING( iszItem ) , units_ahead );
+					return;
+				}
+			}
+			ClientPrint(&pEdict->v, HUD_PRINTCONSOLE, "Usage: give <entity_name> optional: <units_ahead>. <units_ahead> must be > 0.\n");
 		}
 	}
 	else if( FStrEq( pcmd, "fire" ) )

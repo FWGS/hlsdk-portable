@@ -273,6 +273,7 @@ public:
 	void ItemPreFrame( void );
 	void ItemPostFrame( void );
 	void GiveNamedItem( const char *szName );
+	void CreateNamedItem( const char *szName , int units_ahead );
 	void EnableControl(BOOL fControl);
 
 	int  GiveAmmo( int iAmount, const char *szName, int iMax );

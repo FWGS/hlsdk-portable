@@ -3270,6 +3270,12 @@ void CBasePlayer::GiveNamedItem( const char *pszName )
 	DispatchTouch( pent, ENT( pev ) );
 }
 
+void CBasePlayer::CreateNamedItem ( const char *pEntName, int units_ahead )
+{
+	UTIL_MakeVectors( Vector( 0, pev->v_angle.y, 0 ) );
+	Create( pEntName, pev->origin + gpGlobals->v_forward * units_ahead, pev->v_angle );
+}
+
 CBaseEntity *FindEntityForward( CBaseEntity *pMe )
 {
 	TraceResult tr;
