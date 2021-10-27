@@ -802,7 +802,7 @@ int TeamFortressViewport::CreateCommandMenu( const char *menuFile, int direction
 
 				// Get the button bound key
 				strncpy( cBoundKey, token, 31 );
-				cText[31] = '\0';
+				cBoundKey[31] = '\0';
 
 				// Get the button text
 				pfile = gEngfuncs.COM_ParseFile( pfile, token );
