@@ -380,7 +380,11 @@ Return 1 to allow engine to process the key, otherwise, act on it as needed
 ============
 */
 int DLLEXPORT HUD_Key_Event( int down, int keynum, const char *pszCurrentBinding )
-{	
+{
+#if USE_VGUI
+	if (gViewPort)
+		return gViewPort->KeyInput(down, keynum, pszCurrentBinding);
+#endif
 	return 1;
 }
 
