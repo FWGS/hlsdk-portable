@@ -165,6 +165,8 @@ public:
 };
 
 extern CGameRules *InstallGameRules( void );
+extern void SV_PromotePlayer_f ( void );
+extern void SV_DemotePlayer_f ( void );
 
 
 //=========================================================

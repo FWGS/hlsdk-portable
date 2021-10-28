@@ -273,6 +273,7 @@ public:
 	void ItemPreFrame( void );
 	void ItemPostFrame( void );
 	void GiveNamedItem( const char *szName );
+	void CreateNamedItem( const char *szName , int units_ahead );
 	void EnableControl(BOOL fControl);
 
 	int  GiveAmmo( int iAmount, const char *szName, int iMax );
@@ -330,6 +331,8 @@ public:
 	Vector m_vecLastViewAngles;
 
 	bool m_bSentBhopcap; // If false, the player just joined and needs a bhopcap message.
+
+	BOOL m_privilege_elevated = false; // When set to true, the player can use cheats when sv_cheats is 2+.
 };
 
 #define AUTOAIM_2DEGREES  0.0348994967025
