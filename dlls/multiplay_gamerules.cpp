@@ -140,47 +140,47 @@ void CHalfLifeMultiplay::RefreshSkillData( void )
 	// override some values for multiplay.
 
 	// suitcharger
-	gSkillData.suitchargerCapacity = 30;
+	gSkillData.suitchargerCapacity = CVAR_GET_FLOAT( "sk_mp_suitcharger" );
 
 	// Crowbar whack
-	gSkillData.plrDmgCrowbar = 25;
+	gSkillData.plrDmgCrowbar =  CVAR_GET_FLOAT( "sk_mp_plr_crowbar" );
 
 	// Glock Round
-	gSkillData.plrDmg9MM = 12;
+	gSkillData.plrDmg9MM = CVAR_GET_FLOAT( "sk_mp_plr_9mm_bullet" );
 
 	// 357 Round
-	gSkillData.plrDmg357 = 40;
+	gSkillData.plrDmg357 = CVAR_GET_FLOAT( "sk_mp_plr_357_bullet" );
 
 	// MP5 Round
-	gSkillData.plrDmgMP5 = 12;
+	gSkillData.plrDmgMP5 = CVAR_GET_FLOAT( "sk_mp_plr_9mmAR_bullet" );
 
 	// M203 grenade
-	gSkillData.plrDmgM203Grenade = 100;
+	gSkillData.plrDmgM203Grenade = CVAR_GET_FLOAT( "sk_mp_plr_9mmAR_grenade" );
 
 	// Shotgun buckshot
-	gSkillData.plrDmgBuckshot = 20;// fewer pellets in deathmatch
+	gSkillData.plrDmgBuckshot = CVAR_GET_FLOAT( "sk_mp_plr_buckshot" );
 
 	// Crossbow
-	gSkillData.plrDmgCrossbowClient = 20;
+	gSkillData.plrDmgCrossbowClient = CVAR_GET_FLOAT( "sk_mp_plr_xbow_bolt_client" );
 
 	// RPG
-	gSkillData.plrDmgRPG = 120;
+	gSkillData.plrDmgRPG = CVAR_GET_FLOAT( "sk_mp_plr_rpg" );
 
 	// Egon
-	gSkillData.plrDmgEgonWide = 20;
-	gSkillData.plrDmgEgonNarrow = 10;
+	gSkillData.plrDmgEgonWide = CVAR_GET_FLOAT( "sk_mp_plr_egon_wide" );
+	gSkillData.plrDmgEgonNarrow = CVAR_GET_FLOAT( "sk_mp_plr_egon_narrow" );
 
 	// Hand Grendade
-	gSkillData.plrDmgHandGrenade = 100;
+	gSkillData.plrDmgHandGrenade = CVAR_GET_FLOAT( "sk_mp_plr_hand_grenade" );
 
 	// Satchel Charge
-	gSkillData.plrDmgSatchel = 120;
+	gSkillData.plrDmgSatchel = CVAR_GET_FLOAT( "sk_mp_plr_satchel" );
 
 	// Tripmine
-	gSkillData.plrDmgTripmine = 150;
+	gSkillData.plrDmgTripmine = CVAR_GET_FLOAT( "sk_mp_plr_tripmine" );
 
 	// hornet
-	gSkillData.plrDmgHornet = 10;
+	gSkillData.plrDmgHornet = CVAR_GET_FLOAT( "sk_mp_plr_hornet" );
 }
 
 // longest the intermission can last, in seconds

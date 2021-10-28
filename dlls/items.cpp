@@ -30,6 +30,7 @@
 #include "gamerules.h"
 
 extern int gmsgItemPickup;
+extern cvar_t mp_disable_longjump;
 
 class CWorldItem : public CBaseEntity
 {
@@ -312,7 +313,7 @@ class CItemLongJump : public CItem
 	}
 	BOOL MyTouch( CBasePlayer *pPlayer )
 	{
-		if( pPlayer->m_fLongJump )
+		if( pPlayer->m_fLongJump || (g_pGameRules->IsMultiplayer() && mp_disable_longjump.value > 0) )
 		{
 			return FALSE;
 		}

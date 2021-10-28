@@ -325,6 +325,11 @@ CGameRules *InstallGameRules( void )
 	}
 	else
 	{
+		// Add new Deathmatch Commands
+		g_engfuncs.pfnAddServerCommand( "promote", SV_PromotePlayer_f );
+		g_engfuncs.pfnAddServerCommand( "demote", SV_DemotePlayer_f );
+
+
 		if( teamplay.value > 0 )
 		{
 			// teamplay
@@ -344,4 +349,65 @@ CGameRules *InstallGameRules( void )
 			return new CHalfLifeMultiplay;
 		}
 	}
+}
+
+
+//=========================================================
+// New Server Commands
+//=========================================================
+
+void SV_PromotePlayer_f ( void )
+{
+	if( g_engfuncs.pfnCmd_Argc() != 2 )
+	{
+		g_engfuncs.pfnServerPrint("Usage:  promote <name>\n" );
+		return;
+	}
+
+	const char* p_user_search = g_engfuncs.pfnCmd_Argv( 1 );	
+	
+	CBasePlayer* p_plyr = UTIL_FindPlayerByName(p_user_search);
+
+	if(p_plyr != NULL)
+	{
+		UTIL_LogPrintf("Promote: \"%s<%i><%s>\"\n"
+		, STRING(p_plyr->pev->netname)
+		, GETPLAYERUSERID( p_plyr->edict() )
+		, GETPLAYERAUTHID( p_plyr->edict() ));
+
+		p_plyr->m_privilege_elevated = TRUE;
+	}
+	else
+	{
+		g_engfuncs.pfnServerPrint("Player not found!\n" );
+	}
+
+}
+
+void SV_DemotePlayer_f ( void )
+{
+	if( g_engfuncs.pfnCmd_Argc() != 2 )
+	{
+		g_engfuncs.pfnServerPrint("Usage:  demote <name>\n" );
+		return;
+	}
+
+	const char* p_user_search = g_engfuncs.pfnCmd_Argv( 1 );	
+	
+	CBasePlayer* p_plyr = UTIL_FindPlayerByName(p_user_search);
+
+	if(p_plyr != NULL)
+	{
+		UTIL_LogPrintf("Demote: \"%s<%i><%s>\"\n"
+		, STRING(p_plyr->pev->netname)
+		, GETPLAYERUSERID( p_plyr->edict() )
+		, GETPLAYERAUTHID( p_plyr->edict() ));
+
+		p_plyr->m_privilege_elevated = FALSE;
+	}
+	else
+	{
+		g_engfuncs.pfnServerPrint("Player not found!\n" );
+	}
+
 }
