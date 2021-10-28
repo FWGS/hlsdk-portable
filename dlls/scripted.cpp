@@ -370,6 +370,9 @@ void CCineMonster::PossessEntity( void )
 			if( FStrEq( STRING( m_iszIdle ), STRING( m_iszPlay ) ) )
 			{
 				pTarget->pev->framerate = 0;
+			} else if ( m_fMoveTo == 4 && !m_iszPlay ) // Nothing else to do, so start an empty sequence so that the sequence completions can be fired off.
+			{
+				StartSequence( pTarget, 0, TRUE );
 			}
 		}
 	}
