@@ -520,6 +520,7 @@ void GameDLLInit( void )
 
 	CVAR_REGISTER( &mp_chattime );
 
+
 	CVAR_REGISTER( &mp_disable_longjump );
 
 // REGISTER CVARS FOR SKILL LEVEL STUFF
