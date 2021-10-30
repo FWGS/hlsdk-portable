@@ -482,6 +482,7 @@ void ClientCommand( edict_t *pEdict )
 
 	entvars_t *pev = &pEdict->v;
 	CBasePlayer *pPlayer = GetClassPtr( (CBasePlayer *)pev );
+	const bool p_can_cheat = g_enable_cheats->value == 1 || pPlayer->m_privilege_elevated;
 
 	if( FStrEq( pcmd, "say" ) )
 	{
@@ -497,7 +498,7 @@ void ClientCommand( edict_t *pEdict )
 	}
 	else if( FStrEq(pcmd, "give" ) )
 	{
-		if( g_enable_cheats->value == 1 || (g_enable_cheats->value == 2 && pPlayer->m_privilege_elevated) )
+		if( p_can_cheat )
 		{
 			if( CMD_ARGC() == 2 || CMD_ARGC() == 3)
 			{
@@ -519,9 +520,44 @@ void ClientCommand( edict_t *pEdict )
 			ClientPrint(&pEdict->v, HUD_PRINTCONSOLE, "Usage: give <entity_name> optional: <units_ahead>. <units_ahead> must be > 0.\n");
 		}
 	}
+	else if( FStrEq( pcmd, "fly" ) )
+	{
+		if( pPlayer->m_privilege_elevated == FALSE ) return;
+		
+		if( pPlayer->pev->movetype != MOVETYPE_NOCLIP )
+		{
+			ClientPrint(&pEdict->v, HUD_PRINTCONSOLE, "FLY ON.\n");
+			pPlayer->pev->movetype = MOVETYPE_NOCLIP;
+		}
+		else
+		{
+			ClientPrint(&pEdict->v, HUD_PRINTCONSOLE, "FLY OFF.\n");
+			pPlayer->pev->movetype = MOVETYPE_WALK;
+		}
+		return;
+	}
+	else if( FStrEq( pcmd, "nodamage" ) )
+	{
+		if( pPlayer->m_privilege_elevated == FALSE ) return;
+
+		pPlayer->pev->flags = pPlayer->pev->flags ^ FL_GODMODE;
+
+		if( !FBitSet( pPlayer->pev->flags, FL_GODMODE  ) )
+			ClientPrint(&pEdict->v, HUD_PRINTCONSOLE, "NO DAMAGE OFF.\n");
+		else ClientPrint(&pEdict->v, HUD_PRINTCONSOLE, "NO DAMAGE ON.\n");
+	}
+	else if( FStrEq( pcmd, "noattack" ) )
+	{
+		if( pPlayer->m_privilege_elevated == FALSE ) return;
+		pPlayer->pev->flags = pPlayer->pev->flags ^ FL_NOTARGET;
+
+		if( !FBitSet( pPlayer->pev->flags, FL_NOTARGET  ) )
+			ClientPrint(&pEdict->v, HUD_PRINTCONSOLE, "NO ATTACK OFF.\n");
+		else ClientPrint(&pEdict->v, HUD_PRINTCONSOLE, "NO ATTACK ON.\n");
+	}
 	else if( FStrEq( pcmd, "fire" ) )
 	{
-		if( g_enable_cheats->value == 1 || (g_enable_cheats->value == 2 && pPlayer->m_privilege_elevated) )
+		if( p_can_cheat )
 		{
 			CBaseEntity *pPlayer = CBaseEntity::Instance( pEdict );
 			if( CMD_ARGC() > 1 )
@@ -557,7 +593,7 @@ void ClientCommand( edict_t *pEdict )
 	}
 	else if( FStrEq( pcmd, "fov" ) )
 	{
-		if( (g_enable_cheats->value == 1 || (g_enable_cheats->value == 2 && pPlayer->m_privilege_elevated) ) && CMD_ARGC() > 1 )
+		if( p_can_cheat  && CMD_ARGC() > 1 )
 		{
 			pPlayer->m_iFOV = atoi( CMD_ARGV( 1 ) );
 		}

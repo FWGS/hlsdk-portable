@@ -3440,17 +3440,12 @@ void CBasePlayer::ImpulseCommands()
 void CBasePlayer::CheatImpulseCommands( int iImpulse )
 {
 #if !HLDEMO_BUILD
-	if( g_enable_cheats->value == 0 )
+	if( g_enable_cheats->value == 0 && m_privilege_elevated == FALSE )
 	{
 		return;
 	}
 
 	CBaseEntity *pEntity;
-	 
-	if(g_enable_cheats->value == 2 && m_privilege_elevated == FALSE)
-	{
-		return;
-	}
 	
 	TraceResult tr;
 
