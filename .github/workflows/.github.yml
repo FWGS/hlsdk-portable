@@ -23,6 +23,8 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v2
+      with:
+        submodules: true
 
     - name: Checkout steam-runtime
       if: startsWith(matrix.os, 'ubuntu')
@@ -43,6 +45,7 @@ jobs:
     - name: Install steam runtime
       if: startsWith(matrix.os, 'ubuntu')
       run: |
+        sudo apt update
         ./steam-runtime/setup_chroot.sh --i386 --tarball ./com.valvesoftware.SteamRuntime.Sdk-i386-scout-sysroot.tar.gz
         sudo sed -i 's/groups=sudo/groups=adm/g' /etc/schroot/chroot.d/steamrt_scout_i386.conf
 
@@ -57,6 +60,13 @@ jobs:
         schroot --chroot steamrt_scout_i386 -- cmake -B build -S . -DCMAKE_EXE_LINKER_FLAGS="-Wl,--no-undefined" -DGOLDSOURCE_SUPPORT=ON -DCMAKE_INSTALL_PREFIX="$PWD/dist"
         schroot --chroot steamrt_scout_i386 -- cmake --build build --target all
         schroot --chroot steamrt_scout_i386 -- cmake --build build --target install
+    - name: Build with goldsource input and vgui
+      if: startsWith(matrix.os, 'ubuntu') && startsWith(matrix.cc, 'gcc')
+      run: |
+        schroot --chroot steamrt_scout_i386 -- cmake -B build-vgui -S . -DCMAKE_EXE_LINKER_FLAGS="-Wl,--no-undefined" -DGOLDSOURCE_SUPPORT=ON -DUSE_VGUI=ON -DCMAKE_INSTALL_PREFIX="$PWD/dist-vgui"
+        cp vgui-dev/lib/vgui.so build-vgui/cl_dll
+        schroot --chroot steamrt_scout_i386 -- cmake --build build-vgui --target all
+        schroot --chroot steamrt_scout_i386 -- cmake --build build-vgui --target install
 
     - name: Build with mingw
       if: startsWith(matrix.os, 'ubuntu') && startsWith(matrix.cc, 'gcc')
@@ -73,6 +83,11 @@ jobs:
       run: |
         cmake -G "Visual Studio 15 2017" -B build -DGOLDSOURCE_SUPPORT=ON -DCMAKE_INSTALL_PREFIX="dist"
         msbuild -verbosity:normal /property:Configuration=Release build/INSTALL.vcxproj
+    - name: Build with msvc and vgui
+      if: startsWith(matrix.os, 'windows')
+      run: |
+        cmake -G "Visual Studio 15 2017" -B build -DGOLDSOURCE_SUPPORT=ON -DUSE_VGUI=ON -DCMAKE_INSTALL_PREFIX="dist-vgui"
+        msbuild -verbosity:normal /property:Configuration=Release build/INSTALL.vcxproj
 
     - name: Extract branch name
       shell: bash
@@ -88,10 +103,22 @@ jobs:
       with:
         name: hlsdk-${{ steps.extract_branch.outputs.branch }}-linux
         path: dist/${{ steps.extract_gamedir.outputs.gamedir }}
+    - name: Upload linux artifact with vgui
+      if: startsWith(matrix.os, 'ubuntu') && matrix.cc == 'gcc'
+      uses: actions/upload-artifact@v2
+      with:
+        name: hlsdk-${{ steps.extract_branch.outputs.branch }}-linux-vgui
+        path: dist-vgui/${{ steps.extract_gamedir.outputs.gamedir }}
     - name: Upload windows artifact
       if: startsWith(matrix.os, 'windows')
       uses: actions/upload-artifact@v2
       with:
         name: hlsdk-${{ steps.extract_branch.outputs.branch }}-windows
         path: dist/${{ steps.extract_gamedir.outputs.gamedir }}
+    - name: Upload windows artifact with vgui
+      if: startsWith(matrix.os, 'windows')
+      uses: actions/upload-artifact@v2
+      with:
+        name: hlsdk-${{ steps.extract_branch.outputs.branch }}-windows-vgui
+        path: dist-vgui/${{ steps.extract_gamedir.outputs.gamedir }}
 
