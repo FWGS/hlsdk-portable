@@ -250,9 +250,9 @@ void CPowerupCTFBase::RuneTouch(CBaseEntity *pOther)
 #endif
 
 	if (RANDOM_LONG(0, 1) == 1)
-		EMIT_SOUND(ENT(pev), CHAN_ITEM, "weapons/ammopickup1.wav", 1, ATTN_NORM);
+		EMIT_SOUND(ENT(pev), CHAN_ITEM, "items/ammopickup1.wav", 1, ATTN_NORM);
 	else
-		EMIT_SOUND(ENT(pev), CHAN_ITEM, "weapons/ammopickup2.wav", 1, ATTN_NORM);
+		EMIT_SOUND(ENT(pev), CHAN_ITEM, "items/ammopickup2.wav", 1, ATTN_NORM);
 
 	//Update my client side rune hud thingy.
 /*	MESSAGE_BEGIN(MSG_ONE, gmsgRuneStatus, NULL, pOther->pev);
