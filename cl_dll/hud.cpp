@@ -605,7 +605,6 @@ void CHud::VidInit( void )
 	m_TextMessage.VidInit();
 	m_StatusIcons.VidInit();
 	m_Nightvision.VidInit();
-	m_Scoreboard.VidInit();
 #if USE_VGUI
 	GetClientVoiceMgr()->VidInit();
 #endif
