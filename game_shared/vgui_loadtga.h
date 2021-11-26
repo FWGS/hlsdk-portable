@@ -5,12 +5,12 @@
 // $NoKeywords: $
 //=============================================================================
 #pragma once
-#if !defined(VGUI_LOADTGA_H)
+#ifndef VGUI_LOADTGA_H
 #define VGUI_LOADTGA_H
 
-#include "vgui_bitmaptga.h"
+#include "VGUI_BitmapTGA.h"
 
-
-vgui::BitmapTGA* vgui_LoadTGA(char const *pFilename);
-vgui::BitmapTGA* vgui_LoadTGANoInvertAlpha(char const *pFilename);
+vgui::BitmapTGA *vgui_LoadTGA( char const *pFilename );
+vgui::BitmapTGA *vgui_LoadTGANoInvertAlpha( char const *pFilename );
 #endif // VGUI_LOADTGA_H
+

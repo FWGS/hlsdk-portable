@@ -28,23 +28,20 @@
 
 cvar_t *cl_scoreboard_bg;
 cvar_t *cl_showpacketloss;
-hud_player_info_t	g_PlayerInfoList[MAX_PLAYERS + 1];	// player info from the engine
-extra_player_info_t	g_PlayerExtraInfo[MAX_PLAYERS + 1];	// additional player info sent directly to the client dll
-team_info_t		g_TeamInfo[MAX_TEAMS + 1];
-int g_iUser1;
-int g_iUser2;
-int g_iUser3;
-int g_iTeamNumber;
-int g_iPlayerClass;
 
-//#include "vgui_TeamFortressViewport.h"
+
+#if USE_VGUI
+#include "vgui_TeamFortressViewport.h"
+#endif
 
 DECLARE_COMMAND( m_Scoreboard, ShowScores )
 DECLARE_COMMAND( m_Scoreboard, HideScores )
 
+#if !USE_VGUI || USE_NOVGUI_SCOREBOARD
 DECLARE_MESSAGE( m_Scoreboard, ScoreInfo )
 DECLARE_MESSAGE( m_Scoreboard, TeamInfo )
 DECLARE_MESSAGE( m_Scoreboard, TeamScore )
+#endif
 
 int CHudScoreboard::Init( void )
 {
@@ -54,9 +51,11 @@ int CHudScoreboard::Init( void )
 	// HOOK_COMMAND( "+showscores", ShowScores );
 	// HOOK_COMMAND( "-showscores", HideScores );
 
+#if !USE_VGUI || USE_NOVGUI_SCOREBOARD
 	HOOK_MESSAGE( ScoreInfo );
 	HOOK_MESSAGE( TeamScore );
 	HOOK_MESSAGE( TeamInfo );
+#endif
 
 	InitHUDData();
 
@@ -502,7 +501,9 @@ int CHudScoreboard::MsgFunc_ScoreInfo( const char *pszName, int iSize, void *pbu
 		g_PlayerExtraInfo[cl].playerclass = playerclass;
 		g_PlayerExtraInfo[cl].teamnumber = teamnumber;
 
-		//gViewPort->UpdateOnPlayerInfo();
+#if USE_VGUI
+		gViewPort->UpdateOnPlayerInfo();
+#endif
 	}
 
 	return 1;

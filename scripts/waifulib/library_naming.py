@@ -19,6 +19,8 @@ int main(int argc, char** argv)
 }
 '''
 
+# generated(see comments in public/build.h)
+# cat build.h | grep '^#undef XASH' | awk '{ print "'\''" $2 "'\''," }'
 DEFINES = [
 'XASH_64BIT',
 'XASH_AMD64',
@@ -34,9 +36,11 @@ DEFINES = [
 'XASH_ARMv8',
 'XASH_BIG_ENDIAN',
 'XASH_BSD',
+'XASH_DOS4GW',
 'XASH_E2K',
 'XASH_EMSCRIPTEN',
 'XASH_FREEBSD',
+'XASH_HAIKU',
 'XASH_IOS',
 'XASH_JS',
 'XASH_LINUX',
@@ -47,12 +51,14 @@ DEFINES = [
 'XASH_MSVC',
 'XASH_NETBSD',
 'XASH_OPENBSD',
-'XASH_HAIKU',
+'XASH_POSIX',
+'XASH_RISCV',
+'XASH_RISCV_DOUBLEFP',
+'XASH_RISCV_SINGLEFP',
+'XASH_RISCV_SOFTFP',
 'XASH_WIN32',
 'XASH_WIN64',
 'XASH_X86',
-'XASH_DOS4GW',
-'XASH_POSIX'
 ]
 
 def configure(conf):
@@ -111,10 +117,23 @@ def configure(conf):
 			buildarch += "hf"
 		else:
 			buildarch += "l"
-	elif conf.env.XASH_MIPS and conf.env.XASH_BIG_ENDIAN:
+	elif conf.env.XASH_MIPS:
 		buildarch = "mips"
-	elif conf.env.XASH_MIPS and conf.env.XASH_LITTLE_ENDIAN:
-		buildarch = "mipsel"
+		if conf.env.XASH_64BIT:
+			buildarch += "64"
+		if conf.env.XASH_LITTLE_ENDIAN:
+			buildarch += "el"
+	elif conf.env.XASH_RISCV:
+		buildarch = "riscv"
+		if conf.env.XASH_64BIT:
+			buildarch += "64"
+		else:
+			buildarch += "32"
+		
+		if conf.env.XASH_RISCV_DOUBLEFP:
+			buildarch += "d"
+		elif conf.env.XASH_RISCV_SINGLEFP:
+			buildarch += "f"
 	elif conf.env.XASH_JS:
 		buildarch = "javascript"
 	elif conf.env.XASH_E2K:
