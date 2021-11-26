@@ -22,12 +22,12 @@
 
 cmake_minimum_required(VERSION 2.8.12)
 
-if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.15.0")
-    cmake_policy(SET CMP0091 NEW)
+if(NOT ${CMAKE_VERSION} VERSION_LESS "3.15.0")
+	cmake_policy(SET CMP0091 NEW)
 endif()
 
 # Install custom module path
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 
 include(VSForceXPToolchain) # Force XP toolchain for Visual Studio
 
@@ -36,8 +36,10 @@ project (HLSDK-XASH3D)
 #--------------
 # USER DEFINES \
 ################\
-option(USE_VGUI "Enable VGUI1. UNDONE" OFF)
+option(USE_VGUI "Enable VGUI1." OFF)
 option(USE_VGUI2 "Enable VGUI2. UNDONE" OFF)
+option(USE_NOVGUI_MOTD "Prefer non-VGUI MOTD when USE_VGUI is enabled" OFF)
+option(USE_NOVGUI_SCOREBOARD "Prefer non-VGUI Scoreboard when USE_VGUI is enabled" OFF)
 option(USE_VOICEMGR "Enable VOICE MANAGER." OFF)
 option(BUILD_CLIENT "Build client dll" ON)
 option(BUILD_SERVER "Build server dll" ON)
@@ -52,14 +54,12 @@ set(SERVER_LIBRARY_NAME "hl" CACHE STRING "Library name for Linux/MacOS/Windows"
 # MAIN BUILD CODE \
 ###################\
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
-
 if(CMAKE_SIZEOF_VOID_P EQUAL 8 AND NOT 64BIT)
 	if(MSVC)
 		error("UNDONE: set 32 build flags")
 	else()
 		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32")
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_C_FLAGS}")
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32")
 		set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -m32")
 	endif()
 	set(CMAKE_SIZEOF_VOID_P 4)
@@ -73,7 +73,7 @@ endif()
 # see documentation: https://github.com/FWGS/xash3d-fwgs/blob/master/Documentation/library-naming.md
 include(LibraryNaming)
 
-if(64BIT)
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
 	message(STATUS "Building for 64 Bit")
 else()
 	message(STATUS "Building for 32 Bit")
