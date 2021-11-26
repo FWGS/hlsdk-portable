@@ -9,6 +9,10 @@
 #include "cl_util.h"
 #include "cl_entity.h"
 #include "triangleapi.h"
+#if USE_VGUI
+#include "vgui_TeamFortressViewport.h"
+#include "vgui_SpectatorPanel.h"
+#endif
 #include "hltv.h"
 
 #include "pm_shared.h"
@@ -76,8 +80,16 @@ void SpectatorSpray( void )
 		gEngfuncs.pfnServerCmd( string );
 	}
 }
+
 void SpectatorHelp( void )
 {
+#if USE_VGUI
+	if( gViewPort )
+	{
+		gViewPort->ShowVGUIMenu( MENU_SPECHELP );
+	}
+	else
+#endif
 	{
   		char *text = CHudTextMessage::BufferedLocaliseTextString( "#Spec_Help_Text" );
 
@@ -100,10 +112,33 @@ void SpectatorMenu( void )
 		gEngfuncs.Con_Printf( "usage:  spec_menu <0|1>\n" );
 		return;
 	}
+
+#if USE_VGUI
+	gViewPort->m_pSpectatorPanel->ShowMenu( atoi( gEngfuncs.Cmd_Argv( 1 ) ) != 0 );
+#endif
 }
 
 void ToggleScores( void )
 {
+#if USE_VGUI && !USE_NOVGUI_SCOREBOARD
+	if( gViewPort )
+	{
+		if( gViewPort->IsScoreBoardVisible() )
+		{
+			gViewPort->HideScoreBoard();
+		}
+		else
+		{
+			gViewPort->ShowScoreBoard();
+		}
+	}
+#else
+	if (gHUD.m_Scoreboard.m_iShowscoresHeld) {
+		gHUD.m_Scoreboard.UserCmd_HideScores();
+	} else {
+		gHUD.m_Scoreboard.UserCmd_ShowScores();
+	}
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -392,8 +427,7 @@ int CHudSpectator::Draw( float flTime )
 		return 1;
 
 	// make sure we have player info
-	//gViewPort->GetAllPlayersInfo();
-	gHUD.m_Scoreboard.GetAllPlayersInfo();
+	gHUD.GetAllPlayersInfo();
 
 	// loop through all the players and draw additional infos to their sprites on the map
 	for( int i = 0; i < MAX_PLAYERS; i++ )
@@ -529,9 +563,16 @@ void CHudSpectator::DirectorMessage( int iSize, void *pbuf )
 			READ_LONG(); // total number of spectator slots
 			m_iSpectatorNumber = READ_LONG(); // total number of spectator
 			READ_WORD(); // total number of relay proxies
+#if USE_VGUI
+			gViewPort->UpdateSpectatorPanel();
+#endif
 			break;
 		case DRC_CMD_BANNER:
 			// gEngfuncs.Con_DPrintf( "GUI: Banner %s\n",READ_STRING() ); // name of banner tga eg gfx/temp/7454562234563475.tga
+#if USE_VGUI
+			gViewPort->m_pSpectatorPanel->m_TopBanner->LoadImage( READ_STRING() );
+			gViewPort->UpdateSpectatorPanel();
+#endif
 			break;
 		case DRC_CMD_FADE:
 			break;
@@ -573,8 +614,7 @@ void CHudSpectator::FindNextPlayer( bool bReverse )
 	int iDir = bReverse ? -1 : 1; 
 
 	// make sure we have player info
-	//gViewPort->GetAllPlayersInfo();
-	gHUD.m_Scoreboard.GetAllPlayersInfo();
+	gHUD.GetAllPlayersInfo();
 
 	do
 	{
@@ -611,6 +651,68 @@ void CHudSpectator::FindNextPlayer( bool bReverse )
 		VectorCopy( pEnt->angles, vJumpAngles );
 	}
 	iJumpSpectator = 1;
+#if USE_VGUI
+	gViewPort->MsgFunc_ResetFade( NULL, 0, NULL );
+#endif
+}
+
+void CHudSpectator::FindPlayer(const char *name)
+{
+	// MOD AUTHORS: Modify the logic of this function if you want to restrict the observer to watching
+	//				only a subset of the players. e.g. Make it check the target's team.
+
+	// if we are NOT in HLTV mode, spectator targets are set on server
+	if ( !gEngfuncs.IsSpectateOnly() )
+	{
+		char cmdstring[32];
+		// forward command to server
+		sprintf(cmdstring,"follow %s",name);
+		gEngfuncs.pfnServerCmd(cmdstring);
+		return;
+	}
+
+	g_iUser2 = 0;
+
+	// make sure we have player info
+	gHUD.GetAllPlayersInfo();
+
+	cl_entity_t * pEnt = NULL;
+
+	for (int i = 1; i < MAX_PLAYERS; i++ )
+	{
+
+		pEnt = gEngfuncs.GetEntityByIndex( i );
+
+		if ( !IsActivePlayer( pEnt ) )
+		continue;
+
+		if(!stricmp(g_PlayerInfoList[pEnt->index].name,name))
+		{
+			g_iUser2 = i;
+			break;
+		}
+
+	}
+
+	// Did we find a target?
+	if ( !g_iUser2 )
+	{
+		gEngfuncs.Con_DPrintf( "No observer targets.\n" );
+		// take save camera position
+		VectorCopy(m_cameraOrigin, vJumpOrigin);
+		VectorCopy(m_cameraAngles, vJumpAngles);
+	}
+	else
+	{
+		// use new entity position for roaming
+		VectorCopy ( pEnt->origin, vJumpOrigin );
+		VectorCopy ( pEnt->angles, vJumpAngles );
+	}
+
+	iJumpSpectator = 1;
+#if USE_VGUI
+	gViewPort->MsgFunc_ResetFade( NULL, 0, NULL );
+#endif
 }
 
 void CHudSpectator::HandleButtonsDown( int ButtonPressed )
@@ -621,6 +723,11 @@ void CHudSpectator::HandleButtonsDown( int ButtonPressed )
 	int newInsetMode = m_pip->value;
 
 	// gEngfuncs.Con_Printf( " HandleButtons:%i\n", ButtonPressed );
+
+#if USE_VGUI
+	if( !gViewPort )
+		return;
+#endif
 
 	//Not in intermission.
 	if( gHUD.m_iIntermission )
@@ -637,8 +744,10 @@ void CHudSpectator::HandleButtonsDown( int ButtonPressed )
 		return;
 
 	// enable spectator screen
-	//if( ButtonPressed & IN_DUCK )
-	//	gViewPort->m_pSpectatorPanel->ShowMenu( !gViewPort->m_pSpectatorPanel->m_menuVisible );
+#if USE_VGUI
+	if( ButtonPressed & IN_DUCK )
+		gViewPort->m_pSpectatorPanel->ShowMenu( !gViewPort->m_pSpectatorPanel->m_menuVisible );
+#endif
 
 	//  'Use' changes inset window mode
 	if( ButtonPressed & IN_USE )
@@ -705,6 +814,14 @@ void CHudSpectator::HandleButtonsDown( int ButtonPressed )
 
 void CHudSpectator::HandleButtonsUp( int ButtonPressed )
 {
+#if USE_VGUI
+	if( !gViewPort )
+		return;
+
+	if( !gViewPort->m_pSpectatorPanel->isVisible() )
+		return; // dont do anything if not in spectator mode
+#endif
+
 	if( ButtonPressed & ( IN_FORWARD | IN_BACK ) )
 		m_zoomDelta = 0.0f;
 
@@ -800,12 +917,19 @@ void CHudSpectator::SetModes( int iNewMainMode, int iNewInsetMode )
 			SetCrosshair( 0, m_crosshairRect, 0, 0, 0 );
 		}
 
+#if USE_VGUI
+		gViewPort->MsgFunc_ResetFade( NULL, 0, NULL );
+#endif
+
 		char string[128];
 		sprintf( string, "#Spec_Mode%d", g_iUser1 );
 		sprintf( string, "%c%s", HUD_PRINTCENTER, CHudTextMessage::BufferedLocaliseTextString( string ) );
 		gHUD.m_TextMessage.MsgFunc_TextMsg( NULL, strlen( string ) + 1, string );
 	}
 
+#if USE_VGUI
+	gViewPort->UpdateSpectatorPanel();
+#endif
 }
 
 bool CHudSpectator::IsActivePlayer( cl_entity_t *ent )
@@ -1454,6 +1578,9 @@ void CHudSpectator::CheckSettings()
 		m_pip->value = INSET_OFF;
 
 	// draw small border around inset view, adjust upper black bar
+#if USE_VGUI
+	gViewPort->m_pSpectatorPanel->EnableInsetView( m_pip->value != INSET_OFF );
+#endif
 }
 
 int CHudSpectator::ToggleInset( bool allowOff )
