@@ -14,7 +14,7 @@ jobs:
           - os: ubuntu-latest
             cc: clang
             cxx: clang++
-          - os: windows-2016
+          - os: windows-2019
             cc: cl
             cxx: cl
     env:
@@ -81,12 +81,12 @@ jobs:
     - name: Build with msvc
       if: startsWith(matrix.os, 'windows')
       run: |
-        cmake -G "Visual Studio 15 2017" -B build -DGOLDSOURCE_SUPPORT=ON -DCMAKE_INSTALL_PREFIX="dist"
+        cmake -G "Visual Studio 16 2019" -A Win32 -B build -DGOLDSOURCE_SUPPORT=ON -DCMAKE_INSTALL_PREFIX="dist"
         msbuild -verbosity:normal /property:Configuration=Release build/INSTALL.vcxproj
     - name: Build with msvc and vgui
       if: startsWith(matrix.os, 'windows')
       run: |
-        cmake -G "Visual Studio 15 2017" -B build -DGOLDSOURCE_SUPPORT=ON -DUSE_VGUI=ON -DCMAKE_INSTALL_PREFIX="dist-vgui"
+        cmake -G "Visual Studio 16 2019" -A Win32 -B build -DGOLDSOURCE_SUPPORT=ON -DUSE_VGUI=ON -DCMAKE_INSTALL_PREFIX="dist-vgui"
         msbuild -verbosity:normal /property:Configuration=Release build/INSTALL.vcxproj
 
     - name: Extract branch name
