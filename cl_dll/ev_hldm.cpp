@@ -514,7 +514,7 @@ void EV_FireGlock2( event_args_t *args )
 	vec3_t ShellOrigin;
 	int shell;
 	vec3_t vecSrc, vecAiming;
-	vec3_t vecSpread;
+	//vec3_t vecSpread;
 	vec3_t up, right, forward;
 
 	idx = args->entindex;
@@ -567,7 +567,7 @@ void EV_FireShotGunDouble( event_args_t *args )
 	vec3_t ShellOrigin;
 	int shell;
 	vec3_t vecSrc, vecAiming;
-	vec3_t vecSpread;
+	//vec3_t vecSpread;
 	vec3_t up, right, forward;
 	//float flSpread = 0.01;
 
@@ -621,7 +621,7 @@ void EV_FireShotGunSingle( event_args_t *args )
 	vec3_t ShellOrigin;
 	int shell;
 	vec3_t vecSrc, vecAiming;
-	vec3_t vecSpread;
+	//vec3_t vecSpread;
 	vec3_t up, right, forward;
 	//float flSpread = 0.01;
 
@@ -1150,8 +1150,8 @@ void EV_Crowbar( event_args_t *args )
 {
 	int idx;
 	vec3_t origin;
-	vec3_t angles;
-	vec3_t velocity;
+	//vec3_t angles;
+	//vec3_t velocity;
 
 	idx = args->entindex;
 	VectorCopy( args->origin, origin );
@@ -1588,7 +1588,7 @@ enum hgun_e
 void EV_HornetGunFire( event_args_t *args )
 {
 	int idx; //, iFireMode;
-	vec3_t origin, angles, vecSrc, forward, right, up;
+	vec3_t origin, angles; //, vecSrc, forward, right, up;
 
 	idx = args->entindex;
 	VectorCopy( args->origin, origin );
@@ -1694,7 +1694,7 @@ enum squeak_e
 void EV_SnarkFire( event_args_t *args )
 {
 	int idx;
-	vec3_t vecSrc, angles, view_ofs, forward;
+	vec3_t vecSrc, angles, /*view_ofs,*/ forward;
 	pmtrace_t tr;
 
 	idx = args->entindex;
