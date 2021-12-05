@@ -65,6 +65,7 @@ For more information, please refer to <http://unlicense.org/>
 #undef XASH_LITTLE_ENDIAN
 #undef XASH_MINGW
 #undef XASH_MIPS
+#undef XASH_PPC
 #undef XASH_MOBILE_PLATFORM
 #undef XASH_MSVC
 #undef XASH_NETBSD
@@ -212,6 +213,11 @@ For more information, please refer to <http://unlicense.org/>
 	#endif // __SOFTFP__
 #elif defined __mips__
 	#define XASH_MIPS 1
+#elif defined __powerpc__
+	#define XASH_PPC 1
+	#if defined __powerpc64__
+		#define XASH_64BIT 1
+	#endif
 #elif defined __EMSCRIPTEN__
 	#define XASH_JS 1
 #elif defined __e2k__
