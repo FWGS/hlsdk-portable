@@ -1251,7 +1251,7 @@ public:
 	BOOL Deploy(void);
 	void Holster(int skiplocal = 0);
 	void Reload(void);
-	void WeaponTick();
+	void ItemPostFrame();
 	void WeaponIdle(void);
 	virtual BOOL ShouldWeaponIdle(void) { return TRUE; }
 	float m_flNextAnimTime;
