@@ -313,7 +313,7 @@ void CStrooper::HandleAnimEvent(MonsterEvent_t *pEvent)
 	{
 		UTIL_MakeVectors(pev->angles);
 		// CGrenade::ShootTimed( pev, pev->origin + gpGlobals->v_forward * 34 + Vector (0, 0, 32), m_vecTossVelocity, 3.5 );
-		CSporeGrenade::ShootTimed(pev, pev->origin + Vector(0,0,98), m_vecTossVelocity, 3.5);
+		CSpore::CreateSpore(pev->origin + Vector(0, 0, 98), m_vecTossVelocity, this, CSpore::GRENADE, true, false);
 
 		m_fThrowGrenade = FALSE;
 		m_flNextGrenadeCheck = gpGlobals->time + 6;// wait six seconds before even looking again to see if a grenade can be thrown.
