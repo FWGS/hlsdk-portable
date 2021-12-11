@@ -427,9 +427,6 @@ extern DLL_GLOBAL	short	g_sModelIndexSpore1;
 extern DLL_GLOBAL	short	g_sModelIndexSpore2;
 extern DLL_GLOBAL	short	g_sModelIndexSpore3;
 
-extern DLL_GLOBAL  	short	g_sModelIndexBigSpit;
-extern DLL_GLOBAL  	short	g_sModelIndexTinySpit;
-
 extern void ClearMultiDamage(void);
 extern void ApplyMultiDamage(entvars_t* pevInflictor, entvars_t* pevAttacker );
 extern void AddMultiDamage( entvars_t *pevInflictor, CBaseEntity *pEntity, float flDamage, int bitsDamageType);

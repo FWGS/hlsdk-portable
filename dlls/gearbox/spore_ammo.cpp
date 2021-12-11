@@ -28,20 +28,13 @@ class CSporeAmmo : public CBaseEntity
 public:
 	void Spawn( void );
 	void Precache( void );
-	void EXPORT BornThink ( void );
 	void EXPORT IdleThink ( void );
 	void EXPORT AmmoTouch ( CBaseEntity *pOther );
 	int  TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType );
 
-	int	Save( CSave &save );
-	int Restore( CRestore &restore );
-	static TYPEDESCRIPTION m_SaveData[];
-
 	virtual int SizeForGrapple() { return GRAPPLE_FIXED; }
 
 	int m_iExplode;
-	BOOL borntime;
-	float m_flTimeSporeIdle;
 };
 
 
@@ -57,13 +50,6 @@ typedef enum
 } SPOREAMMO;
 
 LINK_ENTITY_TO_CLASS( ammo_spore, CSporeAmmo )
-
-TYPEDESCRIPTION	CSporeAmmo::m_SaveData[] =
-{
-	DEFINE_FIELD( CSporeAmmo, m_flTimeSporeIdle, FIELD_TIME ),
-	DEFINE_FIELD( CSporeAmmo, borntime, FIELD_BOOLEAN ),
-};
-IMPLEMENT_SAVERESTORE( CSporeAmmo, CBaseEntity )
 
 void CSporeAmmo :: Precache( void )
 {
@@ -83,23 +69,22 @@ void CSporeAmmo :: Spawn( void )
 	pev->takedamage = DAMAGE_YES;
 	pev->solid			= SOLID_BBOX;
 	pev->movetype		= MOVETYPE_NONE;
-	pev->framerate		= 1.0;
-	pev->animtime		= gpGlobals->time + 0.1;
+	pev->framerate		= 1.0f;
+	pev->health			= 1.0f;
+	pev->animtime		= gpGlobals->time;
 
-	pev->sequence = SPOREAMMO_IDLE1;
+	pev->sequence = SPOREAMMO_SPAWNDOWN;
 	pev->body = 1;
 
-	Vector vecOrigin = pev->origin;
-	vecOrigin.z += 16;
-	UTIL_SetOrigin( pev, vecOrigin );
+	pev->origin.z += 16;
+	UTIL_SetOrigin( pev, pev->origin );
 
 	pev->angles.x -= 90;// :3
 
 	SetThink (&CSporeAmmo::IdleThink);
 	SetTouch (&CSporeAmmo::AmmoTouch);
 
-	m_flTimeSporeIdle = gpGlobals->time + 20;
-	pev->nextthink = gpGlobals->time + 0.1;
+	pev->nextthink = gpGlobals->time + 4;
 }
 
 //=========================================================
@@ -107,7 +92,7 @@ void CSporeAmmo :: Spawn( void )
 //=========================================================
 int CSporeAmmo::TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType )
 {
-	if (!borntime) // rigth '!borntime'  // blast in anytime 'borntime || !borntime'
+	if (pev->body != 0)
 	{
 		Vector vecSrc = pev->origin + gpGlobals->v_forward * -32;
 
@@ -135,68 +120,57 @@ int CSporeAmmo::TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, flo
 		vecLaunchDir.y += RANDOM_FLOAT( -20, 20 );
 		vecLaunchDir.z += RANDOM_FLOAT( -20, 20 );
 
+		CSpore* pSpore = CSpore::CreateSpore(pev->origin, vecLaunchDir, this, CSpore::GRENADE, false, true);
 		UTIL_MakeVectors( vecLaunchDir );
-		CSporeGrenade::ShootTimed(pevAttacker, vecSrc, gpGlobals->v_forward * 800, false);
+		pSpore->pev->velocity = gpGlobals->v_forward * 800;
 
-		pev->framerate		= 1.0;
+		pev->frame = 0;
 		pev->animtime		= gpGlobals->time + 0.1;
 		pev->sequence		= SPOREAMMO_SNATCHDOWN;
 		pev->body			= 0;
-		borntime			= 1;
-		m_flTimeSporeIdle = gpGlobals->time + 1;
+		pev->nextthink = gpGlobals->time + 0.66f;
 		SetThink (&CSporeAmmo::IdleThink);
 		return 1;
 	}
 	return 0;
 }
 
-//=========================================================
-// Thinking begin
-//=========================================================
-void CSporeAmmo :: BornThink ( void )
-{
-	pev->nextthink = gpGlobals->time + 0.1;
-
-	if ( m_flTimeSporeIdle > gpGlobals->time )
-		return;
-
-	pev->sequence = SPOREAMMO_SPAWNDOWN;
-	pev->framerate		= 1.0;
-	pev->animtime		= gpGlobals->time + 0.1;
-	pev->body = 1;
-	borntime = 0;
-	SetThink (&CSporeAmmo::IdleThink);
-
-	m_flTimeSporeIdle = gpGlobals->time + 16;
-}
-
 void CSporeAmmo :: IdleThink ( void )
 {
-
-	pev->nextthink = gpGlobals->time + 0.1;
-	if ( m_flTimeSporeIdle > gpGlobals->time )
-		return;
-
-	if (borntime)
+	switch (pev->sequence)
 	{
-		pev->sequence = SPOREAMMO_IDLE;
-
-		m_flTimeSporeIdle = gpGlobals->time + 10;
-		SetThink(&CSporeAmmo::BornThink);
-		return;
-	}
-	else
+	case SPOREAMMO_SPAWNDOWN:
 	{
 		pev->sequence = SPOREAMMO_IDLE1;
+		pev->animtime = gpGlobals->time;
+		pev->frame = 0;
+		break;
+	}
+	case SPOREAMMO_SNATCHDOWN:
+	{
+		pev->sequence = SPOREAMMO_IDLE;
+		pev->animtime = gpGlobals->time;
+		pev->frame = 0;
+		pev->nextthink = gpGlobals->time + 10.0f;
+		break;
+	}
+	case SPOREAMMO_IDLE:
+	{
+		pev->body = 1;
+		pev->sequence = SPOREAMMO_SPAWNDOWN;
+		pev->animtime = gpGlobals->time;
+		pev->frame = 0;
+		pev->nextthink = gpGlobals->time + 4.0f;
+		break;
+	}
+	default:
+		break;
 	}
 }
 
 void CSporeAmmo :: AmmoTouch ( CBaseEntity *pOther )
 {
-	if ( !pOther->IsPlayer() )
-		return;
-
-	if (borntime)
+	if ( !pOther->IsPlayer() || pev->body == 0 )
 		return;
 
 	int bResult = (pOther->GiveAmmo( AMMO_SPORE_GIVE, "spores", SPORE_MAX_CARRY ) != -1);
@@ -204,12 +178,10 @@ void CSporeAmmo :: AmmoTouch ( CBaseEntity *pOther )
 	{
 		EMIT_SOUND(ENT(pev), CHAN_ITEM, "weapons/spore_ammo.wav", 1, ATTN_NORM);
 
-		pev->framerate		= 1.0;
-		pev->animtime		= gpGlobals->time + 0.1;
+		pev->frame = 0;
+		pev->animtime		= gpGlobals->time;
 		pev->sequence = SPOREAMMO_SNATCHDOWN;
 		pev->body = 0;
-		borntime = 1;
-		m_flTimeSporeIdle = gpGlobals->time + 1;
-		SetThink (&CSporeAmmo::IdleThink);
+		pev->nextthink = gpGlobals->time + 0.66f;
 	}
 }

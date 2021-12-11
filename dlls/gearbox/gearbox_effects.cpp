@@ -18,6 +18,10 @@
 #include "cbase.h"
 #include "monsters.h"
 #include "effects.h"
+#include "weapons.h"
+#include "displacerball.h"
+#include "shock.h"
+#include "sporegrenade.h"
 
 //=========================================================
 // CPitwormGibShooter
@@ -176,10 +180,6 @@ void CPitwormGibShooter::ShootThink()
 	pev->nextthink = gpGlobals->time + 0.1;
 }
 
-#include "displacerball.h"
-#include "shock.h"
-#include "sporegrenade.h"
-
 enum
 {
 	BLOWERCANNON_SPOREROCKET = 1,
@@ -298,10 +298,10 @@ void CBlowerCannon::BlowerCannonThink( void )
 		switch (m_iWeapType)
 		{
 		case BLOWERCANNON_SPOREROCKET:
-			CSporeGrenade::ShootContact(pev, pev->origin, gpGlobals->v_forward * 1500);
+			CSpore::CreateSpore(pev->origin, angles, this, CSpore::ROCKET, false, false);
 			break;
 		case BLOWERCANNON_SPOREGRENADE:
-			CSporeGrenade::ShootTimed(pev, pev->origin, gpGlobals->v_forward * 700, false);
+			CSpore::CreateSpore(pev->origin, angles, this, CSpore::GRENADE, false, false);
 			break;
 		case BLOWERCANNON_SHOCKBEAM:
 			CShock::Shoot(pev, pev->angles, pev->origin, gpGlobals->v_forward * 2000);
