@@ -219,20 +219,19 @@ void CM249::Reload(void)
 	}
 }
 
-void CM249::WeaponTick()
+void CM249::ItemPostFrame()
 {
 	if ( m_fInSpecialReload )
 	{
 		if (m_pPlayer->m_flNextAttack <= UTIL_WeaponTimeBase())
 		{
-			UpdateTape();
 			m_fInSpecialReload = FALSE;
 			SendWeaponAnim( M249_RELOAD1, UseDecrement(), pev->body );
 			m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 2.4;
 		}
-
-		return;
 	}
+
+	CBasePlayerWeapon::ItemPostFrame();
 }
 
 void CM249::WeaponIdle(void)
