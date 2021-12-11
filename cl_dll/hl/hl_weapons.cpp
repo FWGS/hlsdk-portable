@@ -895,6 +895,7 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 	else if( player.m_pActiveItem->m_iId == WEAPON_M249 )
 	{
 		player.ammo_556 = (int)from->client.vuser2[1];
+		( (CM249 *)player.m_pActiveItem )->m_iVisibleClip = (int)from->client.vuser2[2];
 	}
 	else if( player.m_pActiveItem->m_iId == WEAPON_SHOCKRIFLE )
 	{
@@ -1015,10 +1016,10 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 			 body = 1;
 
 		if (pWeapon == &g_M249) {
-			if (g_M249.m_iClip == 0) {
+			if (g_M249.m_iVisibleClip == 0) {
 				body = 8;
-			} else if (g_M249.m_iClip > 0 && g_M249.m_iClip < 8) {
-				body = 9 - g_M249.m_iClip;
+			} else if (g_M249.m_iVisibleClip > 0 && g_M249.m_iVisibleClip < 8) {
+				body = 9 - g_M249.m_iVisibleClip;
 			} else {
 				body = 0;
 			}
