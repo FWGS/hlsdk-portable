@@ -1837,6 +1837,7 @@ void UpdateClientData( const struct edict_s *ent, int sendweapons, struct client
 					else if( pl->m_pActiveItem->m_iId == WEAPON_M249 )
 					{
 						cd->vuser2.y = pl->ammo_556;
+						cd->vuser2.z = ( (CM249 *)pl->m_pActiveItem )->m_iVisibleClip;
 					}
 					else if( pl->m_pActiveItem->m_iId == WEAPON_SHOCKRIFLE )
 					{

@@ -1264,6 +1264,9 @@ public:
 	}
 
 	void UpdateTape();
+	void UpdateTape(int clip);
+
+	int m_iVisibleClip;
 
 private:
 	unsigned short m_usM249;

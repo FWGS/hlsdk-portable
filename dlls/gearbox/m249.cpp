@@ -221,10 +221,25 @@ void CM249::Reload(void)
 
 void CM249::ItemPostFrame()
 {
+	if (!m_fInReload)
+	{
+		m_iVisibleClip = m_iClip;
+	}
 	if ( m_fInSpecialReload )
 	{
 		if (m_pPlayer->m_flNextAttack <= UTIL_WeaponTimeBase())
 		{
+			int maxClip;
+	#ifndef CLIENT_DLL
+			maxClip = iMaxClip();
+	#else
+			ItemInfo itemInfo;
+			GetItemInfo( &itemInfo );
+			maxClip = itemInfo.iMaxClip;
+	#endif
+			m_iVisibleClip = m_iClip + Q_min( maxClip - m_iClip, m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] );
+
+			UpdateTape(m_iVisibleClip);
 			m_fInSpecialReload = FALSE;
 			SendWeaponAnim( M249_RELOAD1, UseDecrement(), pev->body );
 			m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 2.4;
@@ -240,6 +255,8 @@ void CM249::WeaponIdle(void)
 
 	m_pPlayer->GetAutoaimVector(AUTOAIM_5DEGREES);
 
+	UpdateTape(m_iVisibleClip);
+
 	if (m_flTimeWeaponIdle > UTIL_WeaponTimeBase())
 		return;
 
@@ -253,17 +270,23 @@ void CM249::WeaponIdle(void)
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 155.0/25.0;
 	}
 
-	SendWeaponAnim(iAnim);
+	SendWeaponAnim(iAnim, UseDecrement(), pev->body);
 
 	m_flTimeWeaponIdle = UTIL_SharedRandomFloat(m_pPlayer->random_seed, 10, 15); // how long till we do this again.
 }
 
 void CM249::UpdateTape()
 {
-	if (m_iClip == 0) {
+	UpdateTape(m_iClip);
+	m_iVisibleClip = m_iClip;
+}
+
+void CM249::UpdateTape(int clip)
+{
+	if (clip == 0) {
 		pev->body = 8;
-	} else if (m_iClip > 0 && m_iClip < 8) {
-		pev->body = 9 - m_iClip;
+	} else if (m_iClip > 0 && clip < 8) {
+		pev->body = 9 - clip;
 	} else {
 		pev->body = 0;
 	}
