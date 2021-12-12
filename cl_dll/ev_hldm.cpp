@@ -458,7 +458,8 @@ void EV_HLDM_FireBullets( int idx, float *forward, float *right, float *up, int 
 //======================
 //	    GLOCK START
 //======================
-void EV_FireGlock1( event_args_t *args )
+// Shared Glock fire implementation for EV_FireGlock1 and EV_FireGlock2.
+static void EV_FireGlock_Impl( event_args_t *args )
 {
 	int idx;
 	vec3_t origin;
@@ -503,9 +504,14 @@ void EV_FireGlock1( event_args_t *args )
 	EV_HLDM_FireBullets( idx, forward, right, up, 1, vecSrc, vecAiming, 8192, BULLET_PLAYER_9MM, 0, &g_tracerCount[idx - 1], args->fparam1, args->fparam2 );
 }
 
+void EV_FireGlock1( event_args_t *args )
+{
+	EV_FireGlock_Impl( args );
+}
+
 void EV_FireGlock2( event_args_t *args )
 {
-	EV_FireGlock1( args );
+	EV_FireGlock_Impl( args );
 }
 //======================
 //	   GLOCK END
