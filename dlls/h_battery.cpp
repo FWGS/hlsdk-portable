@@ -66,7 +66,7 @@ TYPEDESCRIPTION CRecharge::m_SaveData[] =
 #endif // MOBILE_HACKS
 };
 
-IMPLEMENT_SAVERESTORE( CRecharge, CBaseEntity )
+IMPLEMENT_SAVERESTORE( CRecharge, CBaseToggle )
 
 LINK_ENTITY_TO_CLASS( func_recharge, CRecharge )
 

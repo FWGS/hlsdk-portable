@@ -133,7 +133,7 @@ TYPEDESCRIPTION CWallHealth::m_SaveData[] =
 #endif // MOBILE_HACKS
 };
 
-IMPLEMENT_SAVERESTORE( CWallHealth, CBaseEntity )
+IMPLEMENT_SAVERESTORE( CWallHealth, CBaseToggle )
 
 LINK_ENTITY_TO_CLASS( func_healthcharger, CWallHealth )
 
