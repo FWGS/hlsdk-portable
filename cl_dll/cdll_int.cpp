@@ -169,6 +169,11 @@ int DLLEXPORT Initialize( cl_enginefunc_t *pEnginefuncs, int iVersion )
 
 	memcpy( &gEngfuncs, pEnginefuncs, sizeof(cl_enginefunc_t) );
 
+	if( gEngfuncs.pfnGetCvarPointer( "cl_filterstuffcmd" ) != 0 )
+	{
+		gEngfuncs.pfnFilteredClientCmd = gEngfuncs.pfnClientCmd;
+	}
+
 	EV_HookEvents();
 
 	return 1;
