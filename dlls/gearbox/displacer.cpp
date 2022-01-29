@@ -154,9 +154,7 @@ void CDisplacerBall::SelfCreate(entvars_t *pevOwner,Vector vecStart)
 
 void CDisplacerBall::Touch(CBaseEntity *pOther)
 {
-	// Do not collide with the owner.
-	if (ENT(pOther->pev) == pev->owner || (ENT(pOther->pev) == VARS(pev->owner)->owner))
-		return;
+	pev->velocity = g_vecZero;
 
 	TraceResult tr;
 	Vector vecSpot;
@@ -164,11 +162,7 @@ void CDisplacerBall::Touch(CBaseEntity *pOther)
 	pev->enemy = pOther->edict();
 	CBaseEntity *pTarget = NULL;
 
-	if (!pOther->pev->takedamage)
-	{
-		EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "weapons/displacer_impact.wav", 1, ATTN_NORM, 0, 100);
-		UTIL_MuzzleLight( pOther->pev->origin, 160.0f, 255, 180, 96, 1.0f, 100.0f );
-	}
+	EMIT_SOUND(ENT(pev), CHAN_WEAPON, "weapons/displacer_impact.wav", 0.9f, ATTN_NORM);
 
 	if( ( g_pGameRules->IsMultiplayer() && !g_pGameRules->IsCoOp() ) && pOther->IsPlayer() )
 	{
@@ -219,7 +213,7 @@ void CDisplacerBall::Circle( void )
 		WRITE_COORD(pev->origin.z);
 		WRITE_COORD(pev->origin.x);
 		WRITE_COORD(pev->origin.y);
-		WRITE_COORD(pev->origin.z + 800); // reach damage radius over .2 seconds
+		WRITE_COORD(pev->origin.z + 800.0f); // reach damage radius over .2 seconds
 		WRITE_SHORT(iRingSprite);
 		WRITE_BYTE(0); // startframe
 		WRITE_BYTE(0); // framerate
@@ -237,8 +231,6 @@ void CDisplacerBall::Circle( void )
 
 void CDisplacerBall::KillThink( void )
 {
-	if( pRemoveEnt )
-		UTIL_Remove( pRemoveEnt );
 	SetThink( &CDisplacerBall::ExplodeThink );
 	pev->nextthink = gpGlobals->time + 0.2f;
 }
@@ -335,7 +327,7 @@ BOOL CDisplacer::PlayEmptySound(void)
 {
 	if (m_iPlayEmptySound)
 	{
-		EMIT_SOUND(ENT(m_pPlayer->pev), CHAN_WEAPON, "buttons/button11.wav", 1, ATTN_NORM);
+		EMIT_SOUND(m_pPlayer->edict(), CHAN_WEAPON, "buttons/button11.wav", 0.9f, ATTN_NORM);
 		m_iPlayEmptySound = 0;
 		return 0;
 	}
@@ -395,7 +387,7 @@ void CDisplacer::Precache(void)
 //=========================================================
 BOOL CDisplacer::Deploy()
 {
-	return DefaultDeploy("models/v_displacer.mdl", "models/p_displacer.mdl", DISPLACER_DRAW, "displacer", UseDecrement());
+	return DefaultDeploy("models/v_displacer.mdl", "models/p_displacer.mdl", DISPLACER_DRAW, "egon", UseDecrement());
 }
 
 //=========================================================
@@ -421,7 +413,7 @@ void CDisplacer::SecondaryAttack(void)
 	if (m_fFireOnEmpty || !CanFireDisplacer(DISPLACER_SECONDARY_USAGE))
 	{
 		PlayEmptySound();
-		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.3f;
+		m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5f;
 		return;
 	}
 
@@ -443,7 +435,7 @@ void CDisplacer::PrimaryAttack()
 	if ( m_fFireOnEmpty || !CanFireDisplacer(DISPLACER_PRIMARY_USAGE))
 	{
 		PlayEmptySound();
-		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.3f;
+		m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5f;
 		return;
 	}
 	m_iFireMode = FIREMODE_FORWARD;
@@ -490,10 +482,10 @@ void CDisplacer::ClearSpin( void )
 	switch (m_iFireMode)
 	{
 	case FIREMODE_FORWARD:
-		STOP_SOUND(ENT(pev), CHAN_WEAPON, "weapons/displacer_spin.wav");
+		STOP_SOUND(m_pPlayer->edict(), CHAN_WEAPON, "weapons/displacer_spin.wav");
 		break;
 	case FIREMODE_BACKWARD:
-		STOP_SOUND(ENT(pev), CHAN_WEAPON, "weapons/displacer_spin2.wav");
+		STOP_SOUND(m_pPlayer->edict(), CHAN_WEAPON, "weapons/displacer_spin2.wav");
 		break;
 	}
 }
@@ -509,12 +501,12 @@ void CDisplacer::SpinUp( void )
 
 	if( m_iFireMode == FIREMODE_FORWARD )
 	{
-		EMIT_SOUND( edict(), CHAN_WEAPON, "weapons/displacer_spin.wav", 1, ATTN_NORM );
+		EMIT_SOUND( m_pPlayer->edict(), CHAN_WEAPON, "weapons/displacer_spin.wav", 1, ATTN_NORM );
 		SetThink (&CDisplacer::Displace);
 	}
 	else
 	{
-		EMIT_SOUND( edict(), CHAN_WEAPON, "weapons/displacer_spin2.wav", 1, ATTN_NORM );
+		EMIT_SOUND( m_pPlayer->edict(), CHAN_WEAPON, "weapons/displacer_spin2.wav", 1, ATTN_NORM );
 		SetThink (&CDisplacer::Teleport);
 	}
 	pev->nextthink = gpGlobals->time + 0.9;
@@ -619,7 +611,7 @@ void CDisplacer::Teleport( void )
 	}
 	else
 	{
-		EMIT_SOUND( edict(), CHAN_BODY, "buttons/button11.wav", 1, ATTN_NORM );
+		EMIT_SOUND( m_pPlayer->edict(), CHAN_WEAPON, "buttons/button11.wav", 0.9f, ATTN_NORM );
 		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 3.0;
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.9;
 	}

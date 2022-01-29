@@ -28,7 +28,5 @@ public:
 	void ArmBeam( int iSide );
 
 	int m_iBeams;
-
-	CBaseEntity *pRemoveEnt;
 };
 #endif
