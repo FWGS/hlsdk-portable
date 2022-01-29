@@ -403,6 +403,8 @@ public:
 
 	}
 	CRope* GetRope() { return m_pRope; }
+
+	void LetGoRope();
 };
 
 #define AUTOAIM_2DEGREES  0.0348994967025
