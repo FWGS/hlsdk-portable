@@ -56,7 +56,6 @@ void CDisplacerBall::Spawn(void)
 	pev->frame = 0;
 	pev->scale = 0.75;
 
-	SetTouch( &CDisplacerBall::Touch );
 	SetThink( &CDisplacerBall::FlyThink );
 	pev->nextthink = gpGlobals->time + 0.2;
 	UTIL_SetSize(pev, Vector(0, 0, 0), Vector(0, 0, 0));
