@@ -1931,13 +1931,7 @@ void CBasePlayer::PreThink( void )
 							if( !m_pRope->MoveDown( flDelta ) )
 							{
 								//Let go of the rope, detach. - Solokiller
-								pev->movetype = MOVETYPE_WALK;
-								pev->solid = SOLID_SLIDEBOX;
-
-								m_afPhysicsFlags &= ~PFLAG_ONROPE;
-								m_pRope->DetachObject();
-								m_pRope = NULL;
-								m_bIsClimbing = false;
+								LetGoRope();
 							}
 						}
 						else
@@ -1954,12 +1948,7 @@ void CBasePlayer::PreThink( void )
 						else if( !m_pRope->MoveDown( flDelta ) )
 						{
 							//Let go of the rope, detach. - Solokiller
-							pev->movetype = MOVETYPE_WALK;
-							pev->solid = SOLID_SLIDEBOX;
-							m_afPhysicsFlags &= ~PFLAG_ONROPE;
-							m_pRope->DetachObject();
-							m_pRope = NULL;
-							m_bIsClimbing = false;
+							LetGoRope();
 						}
 					}
 				}
@@ -1992,23 +1981,18 @@ void CBasePlayer::PreThink( void )
 		if( m_afButtonPressed & IN_JUMP )
 		{
 			//We've jumped off the rope, give us some momentum - Solokiller
-			pev->movetype = MOVETYPE_WALK;
-			pev->solid = SOLID_SLIDEBOX;
-			this->m_afPhysicsFlags &= ~PFLAG_ONROPE;
+			CRope* rope = m_pRope;
+			LetGoRope();
 
 			Vector vecDir = gpGlobals->v_up * 165.0 + gpGlobals->v_forward * 150.0;
 
-			Vector vecVelocity = m_pRope->GetAttachedObjectsVelocity() * 2;
+			Vector vecVelocity = rope->GetAttachedObjectsVelocity() * 2;
 
 			vecVelocity = vecVelocity.Normalize();
 
 			vecVelocity = vecVelocity * 200;
 
 			pev->velocity = vecVelocity + vecDir;
-
-			m_pRope->DetachObject();
-			m_pRope = NULL;
-			m_bIsClimbing = false;
 		}
 		return;
 	}
@@ -2096,6 +2080,21 @@ void CBasePlayer::PreThink( void )
 		pev->velocity = g_vecZero;
 	}
 }
+
+void CBasePlayer::LetGoRope()
+{
+	//Let go of the rope, detach. - Solokiller
+	pev->movetype = MOVETYPE_WALK;
+	pev->solid = SOLID_SLIDEBOX;
+	m_afPhysicsFlags &= ~PFLAG_ONROPE;
+	if (m_pRope)
+	{
+		m_pRope->DetachObject();
+		m_pRope = NULL;
+	}
+	m_bIsClimbing = false;
+}
+
 /* Time based Damage works as follows: 
 	1) There are several types of timebased damage:
 
@@ -4355,17 +4354,7 @@ BOOL CBasePlayer::FBecomeProne( void )
 
 	if( (m_afPhysicsFlags & PFLAG_ONROPE) )
 	{
-		pev->movetype = MOVETYPE_WALK;
-		pev->solid = SOLID_SLIDEBOX;
-		this->m_afPhysicsFlags &= ~PFLAG_ONROPE;
-
-		if (m_pRope)
-		{
-			m_pRope->DetachObject();
-			m_pRope = NULL;
-		}
-
-		m_bIsClimbing = false;
+		LetGoRope();
 	}
 
 	return TRUE;

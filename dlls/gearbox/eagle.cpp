@@ -91,11 +91,13 @@ void CEagle::Holster( int skiplocal /* = 0 */ )
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
 	SendWeaponAnim( DEAGLE_HOLSTER );
 
+#if !CLIENT_DLL
 	if (m_pEagleLaser)
 	{
 		m_pEagleLaser->Killed( NULL, GIB_NEVER );
 		m_pEagleLaser = NULL;
 	}
+#endif
 }
 
 void CEagle::SecondaryAttack()
@@ -167,7 +169,8 @@ void CEagle::PrimaryAttack()
 		vecDir = m_pPlayer->FireBulletsPlayer( 1, vecSrc, vecAiming, Vector( flSpread, flSpread, flSpread ), 8192, BULLET_PLAYER_EAGLE, 0, 0, m_pPlayer->pev, m_pPlayer->random_seed );
 		m_flNextPrimaryAttack = UTIL_WeaponTimeBase()+ 0.5;
 #if !CLIENT_DLL
-		m_pEagleLaser->Suspend( 0.6 );
+		if (m_pEagleLaser)
+			m_pEagleLaser->Suspend( 0.6f );
 #endif
 	}
 	else
