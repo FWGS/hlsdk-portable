@@ -59,8 +59,6 @@ int CHudNightvision::VidInit(void)
 	m_hSprite3 = LoadSprite(NIGHTVISION_SPRITE3_NAME);
 	m_hSprite4 = LoadSprite(NIGHTVISION_SPRITE4_NAME);
 
-	m_prc = &gHUD.GetSpriteRect(m_hSprite2);
-
 	// Get the number of frames available in this sprite.
 	m_nFrameCount = SPR_Frames(m_hSprite2);
 
@@ -116,6 +114,12 @@ int CHudNightvision::Draw(float flTime)
 	if (m_iFrame >= m_nFrameCount)
 		m_iFrame = 0;
 
+	const int nvgSpriteWidth = SPR_Width(m_hSprite2, 0);
+	const int nvgSpriteHeight = SPR_Height(m_hSprite2, 0);
+
+	const int colCount = (int)ceil(ScreenWidth / (float)nvgSpriteWidth);
+	const int rowCount = (int)ceil(ScreenHeight / (float)nvgSpriteHeight);
+
 	if (m_fOn)
 	{  
 		//
@@ -124,15 +128,11 @@ int CHudNightvision::Draw(float flTime)
 		SPR_Set(m_hSprite2, r, g, b);
 
 		int i, j;
-		for (i = 0; i < 8; ++i) // height
+		for (i = 0; i < rowCount; ++i) // height
 		{
-			for (j = 0; j < 16; ++j) // width
+			for (j = 0; j < colCount; ++j) // width
 			{
-				// Nightvision sprites are 256 x 256. So draw 128 -> (8 * 16) instances to cover
-				// the entire screen. It's cheap but does the work.
-				//
-				// Keep in mind this is used until we find a better solution.
-				SPR_DrawAdditive(m_iFrame, x + (j * 256), y + (i * 256), NULL);
+				SPR_DrawAdditive(m_iFrame, x + (j * nvgSpriteWidth), y + (i * nvgSpriteHeight), NULL);
 			}
 		}
 	}

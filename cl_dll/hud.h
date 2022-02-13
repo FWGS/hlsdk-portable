@@ -410,7 +410,6 @@ public:
 private:
 	HSPRITE m_hSprite1, m_hSprite2, m_hSprite3, m_hSprite4;
 
-	wrect_t *m_prc;
 	int m_fOn;
 	int m_iFrame, m_nFrameCount;
 };
