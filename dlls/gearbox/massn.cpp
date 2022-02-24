@@ -72,6 +72,7 @@ class CMassn : public CHGrunt
 public:
 	int  Classify(void);
 	void HandleAnimEvent(MonsterEvent_t *pEvent);
+	void GibMonster(void);
 	void Sniperrifle(void);
 
 	BOOL FOkToSpeak(void);
@@ -227,6 +228,47 @@ void CMassn::HandleAnimEvent(MonsterEvent_t *pEvent)
 		CHGrunt::HandleAnimEvent(pEvent);
 		break;
 	}
+}
+
+void CMassn::GibMonster()
+{
+	Vector vecGunPos;
+	Vector vecGunAngles;
+
+	if( GetBodygroup( GUN_GROUP ) != GUN_NONE )
+	{
+		// throw a gun if the grunt has one
+		GetAttachment( 0, vecGunPos, vecGunAngles );
+
+		CBaseEntity *pGun;
+
+		if( FBitSet( pev->weapons, MASSN_SNIPERRIFLE ) )
+		{
+			pGun = DropItem( "weapon_sniperrifle", vecGunPos, vecGunAngles );
+		}
+		else
+		{
+			pGun = DropItem( "weapon_9mmAR", vecGunPos, vecGunAngles );
+		}
+
+		if( pGun )
+		{
+			pGun->pev->velocity = Vector( RANDOM_FLOAT( -100, 100 ), RANDOM_FLOAT( -100, 100 ), RANDOM_FLOAT( 200, 300 ) );
+			pGun->pev->avelocity = Vector( 0, RANDOM_FLOAT( 200, 400 ), 0 );
+		}
+
+		if( FBitSet( pev->weapons, MASSN_GRENADELAUNCHER ) )
+		{
+			pGun = DropItem( "ammo_ARgrenades", vecGunPos, vecGunAngles );
+			if ( pGun )
+			{
+				pGun->pev->velocity = Vector( RANDOM_FLOAT( -100, 100 ), RANDOM_FLOAT( -100, 100 ), RANDOM_FLOAT( 200, 300 ) );
+				pGun->pev->avelocity = Vector( 0, RANDOM_FLOAT( 200, 400 ), 0 );
+			}
+		}
+	}
+
+	CBaseMonster::GibMonster();
 }
 
 //=========================================================
