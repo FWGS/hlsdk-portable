@@ -54,7 +54,11 @@ set(SERVER_LIBRARY_NAME "hl" CACHE STRING "Library name for Linux/MacOS/Windows"
 # MAIN BUILD CODE \
 ###################\
 
-if(CMAKE_SIZEOF_VOID_P EQUAL 8 AND NOT 64BIT)
+# Only append -m32 on x86 targetting 64-bit mode, when not cross compiling
+if(NOT 64BIT AND
+	NOT CMAKE_CROSSCOMPILING AND
+	CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" AND
+	CMAKE_SIZEOF_VOID_P EQUAL 8)
 	if(MSVC)
 		error("UNDONE: set 32 build flags")
 	else()
@@ -62,7 +66,9 @@ if(CMAKE_SIZEOF_VOID_P EQUAL 8 AND NOT 64BIT)
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32")
 		set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -m32")
 	endif()
+
 	set(CMAKE_SIZEOF_VOID_P 4)
+
 endif()
 
 if(64BIT AND CMAKE_SIZEOF_VOID_P EQUAL 4)
