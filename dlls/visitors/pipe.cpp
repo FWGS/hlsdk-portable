@@ -104,7 +104,7 @@ int CPipe::AddToPlayer( CBasePlayer *pPlayer )
 
 BOOL CPipe::Deploy()
 {
-	return DefaultDeploy("models/v_pipe.mdl", "models/p_pipe.mdl", PIPE_DRAW, "pipe");
+	return DefaultDeploy("models/v_pipe.mdl", "models/p_pipe.mdl", PIPE_DRAW, "crowbar");
 }
 
 void CPipe::Holster(int skiplocal /* = 0 */)
