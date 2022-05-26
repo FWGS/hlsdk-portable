@@ -95,7 +95,7 @@ void CSniper::Precache(void)
 
 BOOL CSniper::Deploy()
 {
-	return DefaultDeploy("models/v_sniper.mdl", "models/p_sniper.mdl", SNIPER_DRAW, "sniper", UseDecrement());
+	return DefaultDeploy("models/v_sniper.mdl", "models/p_sniper.mdl", SNIPER_DRAW, "bow", UseDecrement());
 }
 
 void CSniper::Holster(int skiplocal /* = 0 */)
