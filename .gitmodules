@@ -1,0 +1,3 @@
+[submodule "vgui-dev"]
+	path = vgui-dev
+	url = https://github.com/FWGS/vgui-dev
