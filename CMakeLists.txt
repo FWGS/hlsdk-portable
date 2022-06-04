@@ -46,10 +46,10 @@ option(BUILD_SERVER "Build server dll" ON)
 option(GOLDSOURCE_SUPPORT "Build goldsource compatible client library" OFF)
 
 if (CMAKE_SIZEOF_VOID_P EQUAL 4 OR
-	(WIN32 OR ${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+	((WIN32 OR ${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
 	AND (CMAKE_SYSTEM_PROCESSOR STREQUAL "x64"
 	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64"
-	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "amd64"))
+	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "amd64")))
 	option(64BIT "Disable auto -m32 appending to compiler flags" OFF)
 else()
 	option(64BIT "Disable auto -m32 appending to compiler flags" ON)
