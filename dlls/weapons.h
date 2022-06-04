@@ -870,7 +870,7 @@ public:
 
 	float m_flRechargeTime;
 
-	int m_iFirePhase;// don't save me.
+	int m_iFirePhase;
 
 	virtual BOOL UseDecrement( void )
 	{ 
