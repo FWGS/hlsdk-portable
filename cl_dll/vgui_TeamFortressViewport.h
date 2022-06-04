@@ -667,7 +667,7 @@ public:
 
 	virtual void actionPerformed(Panel *panel)
 	{
-		gEngfuncs.pfnClientCmd( m_pszCommand );
+		gEngfuncs.pfnFilteredClientCmd( m_pszCommand );
 
 		if( m_iCloseVGUIMenu )
 			gViewPort->HideTopMenu();
