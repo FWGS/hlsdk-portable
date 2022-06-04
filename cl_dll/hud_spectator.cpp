@@ -577,7 +577,7 @@ void CHudSpectator::DirectorMessage( int iSize, void *pbuf )
 		case DRC_CMD_FADE:
 			break;
 		case DRC_CMD_STUFFTEXT:
-			ClientCmd( READ_STRING() );
+			gEngfuncs.pfnFilteredClientCmd( READ_STRING() );
 			break;
 		default:
 			gEngfuncs.Con_DPrintf( "CHudSpectator::DirectorMessage: unknown command %i.\n", cmd );
