@@ -62,7 +62,7 @@ TYPEDESCRIPTION CRecharge::m_SaveData[] =
 	DEFINE_FIELD( CRecharge, m_bTriggerable, FIELD_BOOLEAN )
 };
 
-IMPLEMENT_SAVERESTORE( CRecharge, CBaseEntity )
+IMPLEMENT_SAVERESTORE( CRecharge, CBaseToggle )
 
 LINK_ENTITY_TO_CLASS( func_recharge, CRecharge )
 

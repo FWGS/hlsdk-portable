@@ -129,7 +129,7 @@ TYPEDESCRIPTION CWallHealth::m_SaveData[] =
 	DEFINE_FIELD( CWallHealth, m_bTriggerable, FIELD_BOOLEAN )
 };
 
-IMPLEMENT_SAVERESTORE( CWallHealth, CBaseEntity )
+IMPLEMENT_SAVERESTORE( CWallHealth, CBaseToggle )
 
 LINK_ENTITY_TO_CLASS( func_healthcharger, CWallHealth )
 

@@ -47,6 +47,7 @@ DEFINES = [
 'XASH_LITTLE_ENDIAN',
 'XASH_MINGW',
 'XASH_MIPS',
+'XASH_PPC',
 'XASH_MOBILE_PLATFORM',
 'XASH_MSVC',
 'XASH_NETBSD',
@@ -123,6 +124,12 @@ def configure(conf):
 			buildarch += "64"
 		if conf.env.XASH_LITTLE_ENDIAN:
 			buildarch += "el"
+	elif conf.env.XASH_PPC:
+		buildarch = "powerpc"
+		if conf.env.XASH_64BIT:
+			buildarch += "64"
+		if conf.env.XASH_LITTLE_ENDIAN:
+			buildarch += "le"
 	elif conf.env.XASH_RISCV:
 		buildarch = "riscv"
 		if conf.env.XASH_64BIT:
