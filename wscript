@@ -22,9 +22,6 @@ def get_taskgen_count(self):
 def options(opt):
 	grp = opt.add_option_group('Common options')
 
-	grp.add_option('-T', '--build-type', action='store', dest='BUILD_TYPE', default = None,
-		help = 'build type: debug, release or none(custom flags)')
-
 	grp.add_option('-8', '--64bits', action = 'store_true', dest = 'ALLOW64', default = False,
 		help = 'allow targetting 64-bit engine(Linux/Windows/OSX x86 only) [default: %default]')
 
@@ -34,13 +31,7 @@ def options(opt):
 	grp.add_option('--enable-goldsrc-support', action = 'store_true', dest = 'GOLDSRC', default = False,
 		help = 'enable GoldSource engine support [default: %default]')
 
-	grp.add_option('--enable-lto', action = 'store_true', dest = 'LTO', default = False,
-		help = 'enable Link Time Optimization [default: %default]')
-
-	grp.add_option('--enable-poly-opt', action = 'store_true', dest = 'POLLY', default = False,
-		help = 'enable polyhedral optimization if possible [default: %default]')
-
-	opt.load('subproject')
+	opt.load('compiler_optimizations subproject')
 
 	opt.add_subproject(['cl_dll', 'dlls'])
 
@@ -57,23 +48,9 @@ def configure(conf):
 	conf.env.SERVER_NAME = 'opfor'
 	conf.env.PREFIX = ''
 
-	conf.load('fwgslib reconfigure enforce_pic')
+	conf.load('fwgslib reconfigure compiler_optimizations enforce_pic')
 
 	enforce_pic = True # modern defaults
-	valid_build_types = ['fastnative', 'fast', 'release', 'debug', 'nooptimize', 'sanitize', 'none']
-	conf.load('fwgslib reconfigure')
-	conf.start_msg('Build type')
-	if conf.options.BUILD_TYPE == None:
-		conf.end_msg('not set', color='RED')
-		conf.fatal('Please set a build type, for example "-T release"')
-	elif not conf.options.BUILD_TYPE in valid_build_types:
-		conf.end_msg(conf.options.BUILD_TYPE, color='RED')
-		conf.fatal('Invalid build type. Valid are: %s' % ', '.join(valid_build_types))
-	conf.end_msg(conf.options.BUILD_TYPE)
-
-	# -march=native should not be used
-	if conf.options.BUILD_TYPE == 'fast':
-		Logs.warn('WARNING: \'fast\' build type should not be used in release builds')
 
 	conf.env.VOICEMGR    = conf.options.VOICEMGR
 	conf.env.GOLDSRC     = conf.options.GOLDSRC
@@ -96,11 +73,6 @@ def configure(conf):
 
 	conf.load('msvs msdev strip_on_install')
 
-	try:
-		conf.env.CC_VERSION[0]
-	except IndexError:
-		conf.env.CC_VERSION = (0, )
-
 	if conf.env.DEST_OS == 'android':
 		conf.options.GOLDSRC = False
 		conf.env.SERVER_NAME = 'server' # can't be any other name, until specified
@@ -121,60 +93,6 @@ def configure(conf):
 	conf.env.BIT32_MANDATORY = not conf.env.BIT32_ALLOW64
 	conf.load('force_32bit library_naming')
 
-	linker_flags = {
-		'common': {
-			'msvc':  ['/DEBUG'], # always create PDB, doesn't affect result binaries
-			'gcc':   ['-Wl,--no-undefined']
-		},
-		'sanitize': {
-			'clang': ['-fsanitize=undefined', '-fsanitize=address'],
-			'gcc':   ['-fsanitize=undefined', '-fsanitize=address'],
-		}
-	}
-
-	compiler_c_cxx_flags = {
-		'common': {
-			# disable thread-safe local static initialization for C++11 code, as it cause crashes on Windows XP
-			'msvc':    ['/D_USING_V110_SDK71_', '/Zi', '/FS', '/Zc:threadSafeInit-', '/MT'],
-			'clang':   ['-g', '-gdwarf-2', '-fvisibility=hidden'],
-			'gcc':     ['-g']
-		},
-		'fast': {
-			'msvc':    ['/O2', '/Oy'],
-			'gcc': {
-				'3':       ['-O3', '-Os', '-funsafe-math-optimizations', '-fomit-frame-pointer'],
-				'default': ['-Ofast', '-funsafe-math-optimizations', '-funsafe-loop-optimizations', '-fomit-frame-pointer']
-			},
-			'clang':   ['-Ofast'],
-			'default': ['-O3']
-		},
-		'fastnative': {
-			'msvc':    ['/O2', '/Oy'],
-			'gcc':     ['-Ofast', '-march=native', '-funsafe-math-optimizations', '-funsafe-loop-optimizations', '-fomit-frame-pointer'],
-			'clang':   ['-Ofast', '-march=native'],
-			'default': ['-O3']
-		},
-		'release': {
-			'msvc':    ['/O2'],
-			'default': ['-O3']
-		},
-		'debug': {
-			'msvc':    ['/O1'],
-			'gcc':     ['-Og'],
-			'default': ['-O1']
-		},
-		'sanitize': {
-			'msvc':    ['/Od', '/RTC1'],
-			'gcc':     ['-Og', '-fsanitize=undefined', '-fsanitize=address'],
-			'clang':   ['-O0', '-fsanitize=undefined', '-fsanitize=address'],
-			'default': ['-O0']
-		},
-		'nooptimize': {
-			'msvc':    ['/Od'],
-			'default': ['-O0']
-		}
-	}
-
 	compiler_optional_flags = [
 		'-fdiagnostics-color=always',
 		'-Werror=return-type',
@@ -194,8 +112,7 @@ def configure(conf):
 		'-Werror=declaration-after-statement'
 	]
 
-	linkflags = conf.get_flags_by_type(linker_flags, conf.options.BUILD_TYPE, conf.env.COMPILER_CC, conf.env.CC_VERSION[0])
-	cflags    = conf.get_flags_by_type(compiler_c_cxx_flags, conf.options.BUILD_TYPE, conf.env.COMPILER_CC, conf.env.CC_VERSION[0])
+	cflags, linkflags = conf.get_optimization_flags()
 
 	# Here we don't differentiate C or C++ flags
 	if conf.options.LTO:

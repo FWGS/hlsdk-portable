@@ -167,7 +167,17 @@ int DLLEXPORT Initialize( cl_enginefunc_t *pEnginefuncs, int iVersion )
 	if( iVersion != CLDLL_INTERFACE_VERSION )
 		return 0;
 
-	memcpy( &gEngfuncs, pEnginefuncs, sizeof(cl_enginefunc_t) );
+	// for now filterstuffcmd is last in the engine interface
+	memcpy( &gEngfuncs, pEnginefuncs, sizeof(cl_enginefunc_t) - sizeof( void * ) );
+
+	if( gEngfuncs.pfnGetCvarPointer( "cl_filterstuffcmd" ) == 0 )
+	{
+		gEngfuncs.pfnFilteredClientCmd = gEngfuncs.pfnClientCmd;
+	}
+	else
+	{
+		gEngfuncs.pfnFilteredClientCmd = pEnginefuncs->pfnFilteredClientCmd;
+	}
 
 	EV_HookEvents();
 
