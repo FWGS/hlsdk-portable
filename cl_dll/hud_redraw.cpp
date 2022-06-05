@@ -21,6 +21,10 @@
 #include "cl_util.h"
 //#include "triangleapi.h"
 
+#if USE_VGUI
+#include "vgui_TeamFortressViewport.h"
+#endif
+
 #define MAX_LOGO_FRAMES 56
 
 int grgLogoFrame[MAX_LOGO_FRAMES] =
@@ -39,6 +43,11 @@ extern cvar_t *sensitivity;
 // Think
 void CHud::Think( void )
 {
+#if USE_VGUI
+	m_scrinfo.iSize = sizeof(m_scrinfo);
+	GetScreenInfo(&m_scrinfo);
+#endif
+
 	int newfov;
 	HUDLIST *pList = m_pHudList;
 
@@ -94,13 +103,40 @@ int CHud::Redraw( float flTime, int intermission )
 	if( m_flTimeDelta < 0 )
 		m_flTimeDelta = 0;
 
+#if USE_VGUI
+	// Bring up the scoreboard during intermission
+	if (gViewPort)
+	{
+		if( m_iIntermission && !intermission )
+		{
+			// Have to do this here so the scoreboard goes away
+			m_iIntermission = intermission;
+			gViewPort->HideCommandMenu();
+			gViewPort->HideScoreBoard();
+			gViewPort->UpdateSpectatorPanel();
+		}
+		else if( !m_iIntermission && intermission )
+		{
+			m_iIntermission = intermission;
+			gViewPort->HideCommandMenu();
+			gViewPort->HideVGUIMenu();
+#if !USE_NOVGUI_SCOREBOARD
+			gViewPort->ShowScoreBoard();
+#endif
+			gViewPort->UpdateSpectatorPanel();
+			// Take a screenshot if the client's got the cvar set
+			if( CVAR_GET_FLOAT( "hud_takesshots" ) != 0 )
+				m_flShotTime = flTime + 1.0;	// Take a screenshot in a second
+		}
+	}
+#else
 	if( !m_iIntermission && intermission )
 	{
 		// Take a screenshot if the client's got the cvar set
 		if( CVAR_GET_FLOAT( "hud_takesshots" ) != 0 )
 			m_flShotTime = flTime + 1.0f;	// Take a screenshot in a second
 	}
-
+#endif
 	if( m_flShotTime && m_flShotTime < flTime )
 	{
 		gEngfuncs.pfnClientCmd( "snapshot\n" );

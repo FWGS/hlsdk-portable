@@ -64,6 +64,9 @@ typedef struct cvar_s cvar_t;
 
 #define	MAX_MOTD_LENGTH				1536
 
+#define MAX_SERVERNAME_LENGTH	64
+#define MAX_TEAMNAME_SIZE 32
+
 //
 //-----------------------------------------------------
 //
@@ -90,6 +93,9 @@ struct HUDLIST
 
 //
 //-----------------------------------------------------
+#if USE_VGUI
+#include "voice_status.h" // base voice handling class
+#endif
 #include "hud_spectator.h"
 
 //
@@ -197,11 +203,7 @@ private:
 	int m_iPos;
 };
 
-//
-//-----------------------------------------------------
-//
-// REMOVED: Vgui has replaced this.
-//
+#if !USE_VGUI || USE_NOVGUI_MOTD
 class CHudMOTD : public CHudBase
 {
 public:
@@ -223,7 +225,9 @@ protected:
 	int m_iLines;
 	int m_iMaxLength;
 };
+#endif
 
+#if !USE_VGUI || USE_NOVGUI_SCOREBOARD
 class CHudScoreboard : public CHudBase
 {
 public:
@@ -250,6 +254,7 @@ public:
 
 	void GetAllPlayersInfo( void );
 };
+#endif
 
 //
 //-----------------------------------------------------
@@ -283,41 +288,6 @@ protected:
 	// an array of colors...one color for each line
 	float *m_pflNameColors[MAX_STATUSBAR_LINES];
 };
-
-//
-//-----------------------------------------------------
-//
-// REMOVED: Vgui has replaced this.
-//
-/*
-class CHudScoreboard : public CHudBase
-{
-public:
-	int Init( void );
-	void InitHUDData( void );
-	int VidInit( void );
-	int Draw( float flTime );
-	int DrawPlayers( int xoffset, float listslot, int nameoffset = 0, char *team = NULL ); // returns the ypos where it finishes drawing
-	void UserCmd_ShowScores( void );
-	void UserCmd_HideScores( void );
-	int MsgFunc_ScoreInfo( const char *pszName, int iSize, void *pbuf );
-	int MsgFunc_TeamInfo( const char *pszName, int iSize, void *pbuf );
-	int MsgFunc_TeamScore( const char *pszName, int iSize, void *pbuf );
-	void DeathMsg( int killer, int victim );
-
-	int m_iNumTeams;
-
-	int m_iLastKilledBy;
-	int m_fLastKillTime;
-	int m_iPlayerNum;
-	int m_iShowscoresHeld;
-
-	void GetAllPlayersInfo( void );
-
-private:
-	struct cvar_s *cl_showpacketloss;
-};
-*/
 
 struct extra_player_info_t
 {
@@ -637,8 +607,12 @@ public:
 	CHudAmmoSecondary	m_AmmoSecondary;
 	CHudTextMessage m_TextMessage;
 	CHudStatusIcons m_StatusIcons;
+#if !USE_VGUI || USE_NOVGUI_SCOREBOARD
 	CHudScoreboard	m_Scoreboard;
+#endif
+#if !USE_VGUI || USE_NOVGUI_MOTD
 	CHudMOTD	m_MOTD;
+#endif
 
 	void Init( void );
 	void VidInit( void );
@@ -677,6 +651,8 @@ public:
 	void AddHudElem( CHudBase *p );
 
 	float GetSensitivity();
+
+	void GetAllPlayersInfo( void );
 };
 
 extern CHud gHUD;
