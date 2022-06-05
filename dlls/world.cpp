@@ -458,7 +458,6 @@ void CWorld::Spawn( void )
 {
 	g_fGameOver = FALSE;
 	Precache();
-	g_flWeaponCheat = CVAR_GET_FLOAT( "sv_cheats" );  // Is the impulse 101 command allowed?
 }
 
 void CWorld::Precache( void )

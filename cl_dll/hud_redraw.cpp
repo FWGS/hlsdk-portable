@@ -159,7 +159,6 @@ int CHud::Redraw( float flTime, int intermission )
 		// Take a screenshot if the client's got the cvar set
 		if( CVAR_GET_FLOAT( "hud_takesshots" ) != 0 )
 			m_flShotTime = flTime + 1.0f;	// Take a screenshot in a second
-		}
 	}
 #endif
 	if( m_flShotTime && m_flShotTime < flTime )

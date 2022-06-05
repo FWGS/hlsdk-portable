@@ -305,11 +305,6 @@ int __MsgFunc_ServerName( const char *pszName, int iSize, void *pbuf )
 #endif
 	return 0;
 }
-/*
-int __MsgFunc_ScoreInfo(const char *pszName, int iSize, void *pbuf)
-{
-	return 0;
-}
 
 #if USE_VGUI && !USE_NOVGUI_SCOREBOARD
 int __MsgFunc_ScoreInfo(const char *pszName, int iSize, void *pbuf)
@@ -332,6 +327,7 @@ int __MsgFunc_TeamInfo(const char *pszName, int iSize, void *pbuf)
 		return gViewPort->MsgFunc_TeamInfo( pszName, iSize, pbuf );
 	return 0;
 }
+#endif
 
 int __MsgFunc_Spectator( const char *pszName, int iSize, void *pbuf )
 {
