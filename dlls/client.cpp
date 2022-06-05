@@ -680,7 +680,7 @@ void ClientCommand( edict_t *pEntity )
 	}
 	else if( FStrEq( pcmd, "make" ) )
 	{
-		if( g_pGameRules->IsMonster() && !g_flWeaponCheat )
+		if( g_pGameRules->IsMonster() && !g_enable_cheats->value )
 			return;
 
 		int iszItem = ALLOC_STRING( CMD_ARGV( 1 ) ); // Make a copy of the classname
