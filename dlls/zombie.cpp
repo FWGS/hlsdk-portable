@@ -29,7 +29,7 @@
 //
 #define SF_ZOMBIE_FASTMODE	1024
 
-#define ZOMBIE_WORD_LENGTH	6
+#define ZOMBIE_WORD_LENGTH	(sizeof("zombie")-1)
 
 //=========================================================
 // Monster's Anim Events Go Here
@@ -246,10 +246,10 @@ void CZombie::HandleAnimEvent( MonsterEvent_t *pEvent )
 					pHurt->pev->velocity = pHurt->pev->velocity - gpGlobals->v_right * 100;
 				}
 				// Play a random attack hit sound
-				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, pAttackHitSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackHitSounds ) - 1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5 , 5 ) );
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pAttackHitSounds ), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5 , 5 ) );
 			}
 			else // Play a random attack miss sound
-				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, pAttackMissSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackMissSounds ) - 1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pAttackMissSounds ), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
 
 			if( RANDOM_LONG( 0, 1 ) )
 				AttackSound();
@@ -268,10 +268,10 @@ void CZombie::HandleAnimEvent( MonsterEvent_t *pEvent )
 					pHurt->pev->punchangle.x = 5;
 					pHurt->pev->velocity = pHurt->pev->velocity + gpGlobals->v_right * 100;
 				}
-				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, pAttackHitSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackHitSounds ) - 1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pAttackHitSounds ), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
 			}
 			else
-				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, pAttackMissSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackMissSounds ) - 1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pAttackMissSounds ), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
 
 			if( RANDOM_LONG( 0, 1 ) )
 				AttackSound();
@@ -288,10 +288,10 @@ void CZombie::HandleAnimEvent( MonsterEvent_t *pEvent )
 					pHurt->pev->punchangle.x = 5;
 					pHurt->pev->velocity = pHurt->pev->velocity + gpGlobals->v_forward * -100;
 				}
-				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, pAttackHitSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackHitSounds ) - 1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pAttackHitSounds ), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
 			}
 			else
-				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, pAttackMissSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackMissSounds ) - 1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pAttackMissSounds ), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
 
 			if( RANDOM_LONG( 0, 1 ) )
 				AttackSound();
@@ -341,63 +341,51 @@ void CZombie::Precache()
 	// Mapper can customize zombie's models and sounds
 	PRECACHE_MODEL( pev->model ? STRING( pev->model ) : "models/zombie.mdl" );
 
-	for( i = 0; i < ARRAYSIZE( pAttackHitSounds ); i++ )
-		PRECACHE_SOUND( pAttackHitSounds[i] );
-
-	for( i = 0; i < ARRAYSIZE( pAttackMissSounds ); i++ )
-		PRECACHE_SOUND( pAttackMissSounds[i] );
+	PRECACHE_SOUND_ARRAY( pAttackHitSounds );
+        PRECACHE_SOUND_ARRAY( pAttackMissSounds );
 
 	if( pev->message )
 	{
-		char szSound[32];
+		char szSound[256];
+		size_t i, len;
 
 		strcpy( szSound, STRING( pev->message ) );
+		len = strlen(szSound);
 
 		for( i = 0; i < ARRAYSIZE( pAttackSounds ); i++ )
 		{
-			strcat( szSound, pAttackSounds[i] + ZOMBIE_WORD_LENGTH );
+			strcpy( &szSound[len], pAttackSounds[i] + ZOMBIE_WORD_LENGTH );
 			szCustomAttackSounds[i] = ALLOC_STRING( szSound );
 			PRECACHE_SOUND( STRING( szCustomAttackSounds[i] ) );
-			szSound[strlen( STRING( pev->message ) )] = 0;
 		}
 
 		for( i = 0; i < ARRAYSIZE( pIdleSounds ); i++ )
 		{
-			strcat( szSound, pIdleSounds[i] + ZOMBIE_WORD_LENGTH );
+			strcpy( &szSound[len], pIdleSounds[i] + ZOMBIE_WORD_LENGTH );
 			szCustomIdleSounds[i] = ALLOC_STRING( szSound );
 			PRECACHE_SOUND( STRING( szCustomIdleSounds[i] ) );
-			szSound[strlen( STRING( pev->message ) )] = 0;
 		}
 
 		for( i = 0; i < ARRAYSIZE( pAlertSounds ); i++ )
 		{
-			strcat( szSound, pAlertSounds[i] + ZOMBIE_WORD_LENGTH );
+			strcpy( &szSound[len], pAlertSounds[i] + ZOMBIE_WORD_LENGTH );
 			szCustomAlertSounds[i] = ALLOC_STRING( szSound );
 			PRECACHE_SOUND( STRING( szCustomAlertSounds[i] ) );
-			szSound[strlen( STRING( pev->message ) )] = 0;
 		}
 
 		for( i = 0; i < ARRAYSIZE( pPainSounds ); i++ )
 		{
-			strcat( szSound, pPainSounds[i] + ZOMBIE_WORD_LENGTH );
+			strcpy( &szSound[len], pPainSounds[i] + ZOMBIE_WORD_LENGTH );
 			szCustomPainSounds[i] = ALLOC_STRING( szSound );
 			PRECACHE_SOUND( STRING( szCustomPainSounds[i] ) );
-			szSound[strlen( STRING( pev->message ) )] = 0;
 		}
 	}
 	else
 	{
-		for( i = 0; i < ARRAYSIZE( pAttackSounds ); i++ )
-			PRECACHE_SOUND( pAttackSounds[i] );
-
-		for( i = 0; i < ARRAYSIZE( pIdleSounds ); i++ )
-			PRECACHE_SOUND( pIdleSounds[i] );
-
-		for( i = 0; i < ARRAYSIZE( pAlertSounds ); i++ )
-			PRECACHE_SOUND( pAlertSounds[i] );
-
-		for( i = 0; i < ARRAYSIZE( pPainSounds ); i++ )
-			PRECACHE_SOUND( pPainSounds[i] );
+		PRECACHE_SOUND_ARRAY( pAttackSounds );
+		PRECACHE_SOUND_ARRAY( pIdleSounds );
+		PRECACHE_SOUND_ARRAY( pAlertSounds );
+		PRECACHE_SOUND_ARRAY( pPainSounds );
 	}
 }
 

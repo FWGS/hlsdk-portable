@@ -58,7 +58,7 @@ int iAgruntMuzzleFlash;
 
 #define		AGRUNT_MELEE_DIST	100.0f
 
-#define		AGRUNT_WORD_LENGTH	6
+#define		AGRUNT_WORD_LENGTH	(sizeof("agrunt")-1)
 
 LINK_ENTITY_TO_CLASS( monster_alien_grunt, CAGrunt )
 
@@ -283,7 +283,7 @@ void CAGrunt::DeathSound( void )
 	else
 		pszSound = pDieSounds[iRand];
 
-	EMIT_SOUND( ENT( pev ), CHAN_VOICE, pszSound, 1.0, ATTN_NORM );
+	EMIT_SOUND( ENT( pev ), CHAN_VOICE, pszSound, 1.0f, ATTN_NORM );
 }
 
 //=========================================================
@@ -301,7 +301,7 @@ void CAGrunt::AlertSound( void )
 	else
 		pszSound = pAlertSounds[iRand];
 
-	EMIT_SOUND( ENT( pev ), CHAN_VOICE, pszSound, 1.0, ATTN_NORM );
+	EMIT_SOUND( ENT( pev ), CHAN_VOICE, pszSound, 1.0f, ATTN_NORM );
 }
 
 //=========================================================
@@ -319,7 +319,7 @@ void CAGrunt::AttackSound( void )
 	else
 		pszSound = pAttackSounds[iRand];
 
-	EMIT_SOUND( ENT( pev ), CHAN_VOICE, pszSound, 1.0, ATTN_NORM );
+	EMIT_SOUND( ENT( pev ), CHAN_VOICE, pszSound, 1.0f, ATTN_NORM );
 }
 
 //=========================================================
@@ -500,7 +500,7 @@ void CAGrunt::HandleAnimEvent( MonsterEvent_t *pEvent )
 					pHurt->pev->velocity = pHurt->pev->velocity + gpGlobals->v_right * 250.0f;
 				}
 
-				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, pAttackHitSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackHitSounds ) - 1 )], 1.0f, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pAttackHitSounds ), 1.0f, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
 
 				Vector vecArmPos, vecArmAng;
 				GetAttachment( 0, vecArmPos, vecArmAng );
@@ -509,7 +509,7 @@ void CAGrunt::HandleAnimEvent( MonsterEvent_t *pEvent )
 			else
 			{
 				// Play a random attack miss sound
-				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, pAttackMissSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackMissSounds ) - 1 )], 1.0f, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pAttackMissSounds ), 1.0f, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
 			}
 		}
 		break;
@@ -529,7 +529,7 @@ void CAGrunt::HandleAnimEvent( MonsterEvent_t *pEvent )
 					pHurt->pev->velocity = pHurt->pev->velocity + gpGlobals->v_right * -250.0f;
 				}
 
-				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, pAttackHitSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackHitSounds ) - 1 )], 1.0f, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pAttackHitSounds ), 1.0f, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
 
 				Vector vecArmPos, vecArmAng;
 				GetAttachment( 0, vecArmPos, vecArmAng );
@@ -538,7 +538,7 @@ void CAGrunt::HandleAnimEvent( MonsterEvent_t *pEvent )
 			else
 			{
 				// Play a random attack miss sound
-				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, pAttackMissSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackMissSounds ) - 1 )], 1.0f, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pAttackMissSounds ), 1.0f, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
 			}
 		}
 		break;
@@ -583,78 +583,61 @@ void CAGrunt::Spawn()
 //=========================================================
 void CAGrunt::Precache()
 {
-	size_t i;
-
 	PRECACHE_MODEL( "models/agrunt.mdl" );
 
-	for( i = 0; i < ARRAYSIZE( pAttackHitSounds ); i++ )
-		PRECACHE_SOUND( pAttackHitSounds[i] );
-
-	for( i = 0; i < ARRAYSIZE( pAttackMissSounds ); i++ )
-		PRECACHE_SOUND( pAttackMissSounds[i] );
+	PRECACHE_SOUND_ARRAY( pAttackHitSounds );
+        PRECACHE_SOUND_ARRAY( pAttackMissSounds );
 
 	if( pev->message )
 	{
-		char szSound[32];
+		char szSound[256];
+		size_t i, len;
 
 		strcpy( szSound, STRING( pev->message ) );
+		len = strlen(szSound);
 
 		for( i = 0; i < ARRAYSIZE( pAttackSounds ); i++ )
 		{
-			strcat( szSound, pAttackSounds[i] + AGRUNT_WORD_LENGTH );
+			strcpy( &szSound[len], pAttackSounds[i] + AGRUNT_WORD_LENGTH );
 			szCustomAttackSounds[i] = ALLOC_STRING( szSound );
 			PRECACHE_SOUND( STRING( szCustomAttackSounds[i] ) );
-			szSound[strlen( STRING( pev->message ) )] = 0;
 		}
 
 		for( i = 0; i < ARRAYSIZE( pIdleSounds ); i++ )
 		{
-			strcat( szSound, pIdleSounds[i] + AGRUNT_WORD_LENGTH );
+			strcpy( &szSound[len], pIdleSounds[i] + AGRUNT_WORD_LENGTH );
 			szCustomIdleSounds[i] = ALLOC_STRING( szSound );
 			PRECACHE_SOUND( STRING( szCustomIdleSounds[i] ) );
-			szSound[strlen( STRING( pev->message ) )] = 0;
 		}
 
 		for( i = 0; i < ARRAYSIZE( pAlertSounds ); i++ )
 		{
-			strcat( szSound, pAlertSounds[i] + AGRUNT_WORD_LENGTH );
+			strcpy( &szSound[len], pAlertSounds[i] + AGRUNT_WORD_LENGTH );
 			szCustomAlertSounds[i] = ALLOC_STRING( szSound );
 			PRECACHE_SOUND( STRING( szCustomAlertSounds[i] ) );
-			szSound[strlen( STRING( pev->message ) )] = 0;
 		}
 
 		for( i = 0; i < ARRAYSIZE( pPainSounds ); i++ )
 		{
-			strcat( szSound, pPainSounds[i] + AGRUNT_WORD_LENGTH );
+			strcpy( &szSound[len], pPainSounds[i] + AGRUNT_WORD_LENGTH );
 			szCustomPainSounds[i] = ALLOC_STRING( szSound );
 			PRECACHE_SOUND( STRING( szCustomPainSounds[i] ) );
-			szSound[strlen( STRING( pev->message ) )] = 0;
 		}
 
 		for( i = 0; i < ARRAYSIZE( pDieSounds ); i++ )
 		{
-			strcat( szSound, pDieSounds[i] + AGRUNT_WORD_LENGTH );
+			strcpy( &szSound[len], pDieSounds[i] + AGRUNT_WORD_LENGTH );
 			szCustomDieSounds[i] = ALLOC_STRING( szSound );
 			PRECACHE_SOUND( STRING( szCustomDieSounds[i] ) );
-			szSound[strlen( STRING( pev->message ) )] = 0;
 		}
 	}
 	else
 	{
-		for( i = 0; i < ARRAYSIZE( pAttackSounds ); i++ )
-			PRECACHE_SOUND( pAttackSounds[i] );
-
-		for( i = 0; i < ARRAYSIZE( pIdleSounds ); i++ )
-			PRECACHE_SOUND( pIdleSounds[i] );
-
-		for( i = 0; i < ARRAYSIZE( pAlertSounds ); i++ )
-			PRECACHE_SOUND( pAlertSounds[i] );
-
-		for( i = 0; i < ARRAYSIZE( pPainSounds ); i++ )
-			PRECACHE_SOUND( pPainSounds[i] );
-
-		for( i = 0; i < ARRAYSIZE( pDieSounds ); i++ )
-			PRECACHE_SOUND( pDieSounds[i] );
+		PRECACHE_SOUND_ARRAY( pIdleSounds );
+		PRECACHE_SOUND_ARRAY( pDieSounds );
+		PRECACHE_SOUND_ARRAY( pPainSounds );
+		PRECACHE_SOUND_ARRAY( pAttackSounds );
+		PRECACHE_SOUND_ARRAY( pAlertSounds );
 	}
 
 	PRECACHE_SOUND( "hassault/hw_shoot1.wav" );
