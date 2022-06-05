@@ -7,6 +7,8 @@
 
 // Client side entity management functions
 
+#include <memory.h>
+
 #include "hud.h"
 #include "cl_util.h"
 #include "const.h"
@@ -529,6 +531,10 @@ void DLLEXPORT HUD_CreateEntities( void )
 #endif
 	// Add in any game specific objects
 	Game_AddObjects();
+
+#if USE_VGUI
+	GetClientVoiceMgr()->CreateEntities();
+#endif
 }
 
 /*

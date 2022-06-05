@@ -1,10 +1,9 @@
-//========= Copyright © 1996-2002, Valve LLC, All rights reserved. ============
+//========= Copyright ï¿½ 1996-2002, Valve LLC, All rights reserved. ============
 //
 // Purpose: 
 //
 // $NoKeywords: $
 //=============================================================================
-#pragma once
 #if !defined(BITVEC_H)
 #define BITVEC_H
 
@@ -155,3 +154,4 @@ inline void CBitVec<NUM_BITS>::SetDWord( int i, unsigned long val )
 	m_DWords[i] = val;
 }
 #endif // BITVEC_H
+
