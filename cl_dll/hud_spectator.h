@@ -73,6 +73,7 @@ public:
 	void HandleButtonsDown( int ButtonPressed );
 	void HandleButtonsUp( int ButtonPressed );
 	void FindNextPlayer( bool bReverse );
+	void FindPlayer(const char *name);
 	void DirectorMessage( int iSize, void *pbuf );
 	void SetSpectatorStartPosition();
 	int Init();
