@@ -651,12 +651,8 @@ void CAGrunt::Precache()
 	PRECACHE_SOUND_ARRAY( pPainSounds );
 	PRECACHE_SOUND_ARRAY( pAttackSounds );
 	PRECACHE_SOUND_ARRAY( pAlertSounds );
-
-	for( i = 0; i < ARRAYSIZE( pFireSounds ); i++ )
-		PRECACHE_SOUND( pFireSounds[i] );
-		
-	for( i = 0; i < ARRAYSIZE( pStepSounds ); i++ )
-		PRECACHE_SOUND( pStepSounds[i] );
+	PRECACHE_SOUND_ARRAY( pFireSounds );
+	PRECACHE_SOUND_ARRAY( pStepSounds );
 
 	PRECACHE_SOUND( "hassault/hw_shoot1.wav" );
 
