@@ -600,7 +600,8 @@ void EV_HLDM_FireBullets( int idx, float *forward, float *right, float *up, int 
 //======================
 //	    GLOCK START
 //======================
-void EV_FireGlock1( event_args_t *args )
+// Shared Glock fire implementation for EV_FireGlock1 and EV_FireGlock2.
+static void EV_FireGlock_Impl( event_args_t *args )
 {
 	int idx;
 	vec3_t origin;
@@ -643,7 +644,12 @@ void EV_FireGlock1( event_args_t *args )
 
 	VectorCopy( forward, vecAiming );
 
-	EV_HLDM_FireBullets( idx, forward, right, up, 1, vecSrc, vecAiming, 8192, BULLET_PLAYER_9MM, 0, 0, args->fparam1, args->fparam2 );
+	EV_HLDM_FireBullets( idx, forward, right, up, 1, vecSrc, vecAiming, 8192, BULLET_PLAYER_9MM, 0, &g_tracerCount[idx - 1], args->fparam1, args->fparam2 );
+}
+
+void EV_FireGlock1( event_args_t *args )
+{
+	EV_FireGlock_Impl( args );
 }
 //======================
 //	   GLOCK END
@@ -663,7 +669,7 @@ void EV_FireShotGunSingle( event_args_t *args )
 	vec3_t ShellOrigin;
 	int shell;
 	vec3_t vecSrc, vecAiming;
-	vec3_t vecSpread;
+	//vec3_t vecSpread;
 	vec3_t up, right, forward;
 	//float flSpread = 0.01;
 
@@ -817,8 +823,8 @@ void EV_Crowbar( event_args_t *args )
 {
 	int idx;
 	vec3_t origin;
-	vec3_t angles;
-	vec3_t velocity;
+	//vec3_t angles;
+	//vec3_t velocity;
 
 	idx = args->entindex;
 	VectorCopy( args->origin, origin );
@@ -906,7 +912,7 @@ void EV_FireCrossbow2( event_args_t *args )
 	{
 		if( args->iparam1 )
 			gEngfuncs.pEventAPI->EV_WeaponAnimation( CROSSBOW_FIRE1, 1 );
-		else if( args->iparam2 )
+		else
 			gEngfuncs.pEventAPI->EV_WeaponAnimation( CROSSBOW_FIRE3, 1 );
 	}
 
@@ -990,7 +996,7 @@ void EV_FireCrossbow( event_args_t *args )
 
 		if( args->iparam1 )
 			gEngfuncs.pEventAPI->EV_WeaponAnimation( CROSSBOW_FIRE1, 1 );
-		else if( args->iparam2 )
+		else
 			gEngfuncs.pEventAPI->EV_WeaponAnimation( CROSSBOW_FIRE3, 1 );
 
 		V_PunchAxis( 0.0f, -2.0f );
@@ -1123,7 +1129,7 @@ enum squeak_e
 void EV_SnarkFire( event_args_t *args )
 {
 	int idx;
-	vec3_t vecSrc, angles, view_ofs, forward;
+	vec3_t vecSrc, angles, /*view_ofs,*/ forward;
 	pmtrace_t tr;
 
 	idx = args->entindex;
