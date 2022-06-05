@@ -847,7 +847,8 @@ void CTalkMonster::Touch( CBaseEntity *pOther )
 		if( speed > 50.0f )
 		{
 			SetConditions( bits_COND_CLIENT_PUSH );
-			MakeIdealYaw( pOther->pev->origin );
+			if ( m_MonsterState != MONSTERSTATE_SCRIPT )
+				MakeIdealYaw( pOther->pev->origin );
 		}
 	}
 }
