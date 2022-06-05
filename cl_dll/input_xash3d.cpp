@@ -220,10 +220,12 @@ void FWGSInput::IN_Move( float frametime, usercmd_t *cmd )
 		mouse_pos_extern[1] *= 27;
 	}
 
+#if !USE_VGUI || USE_NOVGUI_MOTD
 	if( gHUD.m_MOTD.m_bShow )
 		gHUD.m_MOTD.scroll += rel_pitch;
-	/*else
-		viewangles[PITCH] += rel_pitch;
+	// else
+#endif
+	/*	viewangles[PITCH] += rel_pitch;
 
 	if( viewangles[PITCH] > cl_pitchdown->value )
 		viewangles[PITCH] = cl_pitchdown->value;

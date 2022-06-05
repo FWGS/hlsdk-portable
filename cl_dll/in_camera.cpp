@@ -14,9 +14,24 @@
 #include "const.h"
 #include "camera.h"
 #include "in_defs.h"
-
 #include "eiface.h"
 #include "pmtrace.h"
+
+#if _WIN32
+#define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
+#define WIN32_EXTRA_LEAN
+#define HSPRITE WINDOWS_HSPRITE
+#include <windows.h>
+#undef HSPRITE
+#else
+typedef struct point_s
+{
+	int x;
+	int y;
+} POINT;
+#define GetCursorPos(x)
+#define SetCursorPos(x,y)
+#endif
 
 float CL_KeyState( kbutton_t *key );
 
@@ -549,10 +564,16 @@ void CAM_Init( void )
 	cam_command			= gEngfuncs.pfnRegisterVariable( "cam_command", "1", 0 );	 // tells camera to go to thirdperson
 	cam_snapto			= gEngfuncs.pfnRegisterVariable( "cam_snapto", "0", 0 );	 // snap to thirdperson view
 	cam_idealyaw			= gEngfuncs.pfnRegisterVariable( "cam_idealyaw", "0", 0 );	 // thirdperson yaw
+<<<<<<< HEAD
 	cam_idealpitch			= gEngfuncs.pfnRegisterVariable( "cam_idealpitch", "90", 0 );	 // thirperson pitch
 	cam_idealdist			= gEngfuncs.pfnRegisterVariable( "cam_idealdist", "100", 0 );	 // thirdperson distance
 
 	cam_contain			= gEngfuncs.pfnRegisterVariable( "cam_contain", "1", FCVAR_ARCHIVE );	// contain camera to world(previously unused/broken, repurposed for top-down stuff)
+=======
+	cam_idealpitch			= gEngfuncs.pfnRegisterVariable( "cam_idealpitch", "0", 0 );	 // thirperson pitch
+	cam_idealdist			= gEngfuncs.pfnRegisterVariable( "cam_idealdist", "128", 0 );	 // thirdperson distance
+	cam_contain			= gEngfuncs.pfnRegisterVariable( "cam_contain", "0", 0 );	// contain camera to world
+>>>>>>> master
 
 	c_maxpitch			= gEngfuncs.pfnRegisterVariable( "c_maxpitch", "90.0", 0 );
 	c_minpitch			= gEngfuncs.pfnRegisterVariable( "c_minpitch", "0.0", 0 );
