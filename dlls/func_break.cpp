@@ -163,7 +163,7 @@ TYPEDESCRIPTION CBreakable::m_SaveData[] =
 	DEFINE_FIELD( CBreakable, m_pHitProxy, FIELD_CLASSPTR ),
 };
 
-IMPLEMENT_SAVERESTORE( CBreakable, CBaseEntity )
+IMPLEMENT_SAVERESTORE( CBreakable, CBaseDelay )
 
 void CBreakable::Spawn( void )
 {
