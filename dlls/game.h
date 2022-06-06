@@ -32,6 +32,7 @@ extern cvar_t chargerfix;
 extern cvar_t satchelfix;
 extern cvar_t explosionfix;
 extern cvar_t monsteryawspeedfix;
+extern cvar_t corpsephysics;
 extern cvar_t forcerespawn;
 extern cvar_t flashlight;
 extern cvar_t aimcrosshair;
