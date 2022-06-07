@@ -497,8 +497,6 @@ extern DLL_GLOBAL int		g_VoteStatus;
 extern DLL_GLOBAL BOOL		g_runes_exist;
 extern DLL_GLOBAL BOOL		g_runes_learn;
 
-float g_flWeaponCheat; 
-
 void CWorld::Spawn( void )
 {
 	g_fGameOver = FALSE;
@@ -709,9 +707,6 @@ void CWorld::Precache( void )
 	{
 		CVAR_SET_FLOAT( "mp_defaultteam", 0.0f );
 	}
-
-	// g-cont. moved here so cheats will working on restore level
-	g_flWeaponCheat = CVAR_GET_FLOAT( "sv_cheats" );  // Is the impulse 101 command allowed?
 }
 
 //

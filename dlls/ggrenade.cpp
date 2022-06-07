@@ -27,8 +27,8 @@
 #include "soundent.h"
 #include "decals.h"
 #include "player.h"
+#include "game.h"
 
-// BMOD Edit - mp5 mod
 extern cvar_t bm_mp5_mod;
 
 //===================grenade
@@ -80,7 +80,10 @@ void CGrenade::Explode( TraceResult *pTrace, int bitsDamageType )
 	// Pull out of the wall a bit
 	if( pTrace->flFraction != 1.0f )
 	{
-		pev->origin = pTrace->vecEndPos + ( pTrace->vecPlaneNormal * ( pev->dmg - 24 ) * 0.6f );
+		if (explosionfix.value)
+			pev->origin = pTrace->vecEndPos + ( pTrace->vecPlaneNormal * 0.6f );
+		else
+			pev->origin = pTrace->vecEndPos + ( pTrace->vecPlaneNormal * ( pev->dmg - 24 ) * 0.6f );
 	}
 
 	int iContents = UTIL_PointContents( pev->origin );
