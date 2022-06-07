@@ -25,6 +25,10 @@
 #include <string.h>
 #include <stdio.h>
 
+#if USE_VGUI
+#include "vgui_TeamFortressViewport.h"
+#endif
+
 //++ BulliT
 extern cvar_t *g_pcl_playtalk;
 //-- Martin Webrant
@@ -99,6 +103,12 @@ int CHudSayText::Draw( float flTime )
 {
 	int y = Y_START;
 
+#if USE_VGUI
+	if( ( gViewPort && gViewPort->AllowedToPrintText() == FALSE ) || !m_HUD_saytext->value )
+		return 1;
+#endif
+
+
 	// make sure the scrolltime is within reasonable bounds,  to guard against the clock being reset
 	flScrollTime = Q_min( flScrollTime, flTime + m_HUD_saytext_time->value );
 
@@ -162,8 +172,16 @@ int CHudSayText::MsgFunc_SayText( const char *pszName, int iSize, void *pbuf )
 
 void CHudSayText::SayTextPrint( const char *pszBuf, int iBufSize, int clientIndex )
 {
-	int i;
+#if USE_VGUI
+	if( gViewPort && gViewPort->AllowedToPrintText() == FALSE )
+	{
+		// Print it straight to the console
+		ConsolePrint( pszBuf );
+		return;
+	}
+#else
 	ConsolePrint( pszBuf );
+#endif
 
 //++ BulliT
 	if( CVAR_GET_FLOAT( "cl_only_team_talk" ) == 1 )
@@ -175,6 +193,8 @@ void CHudSayText::SayTextPrint( const char *pszBuf, int iBufSize, int clientInde
 		}
 	}
 //-- Martin Webrant
+
+	int i;
 	// find an empty string slot
 	for( i = 0; i < MAX_LINES; i++ )
 	{
