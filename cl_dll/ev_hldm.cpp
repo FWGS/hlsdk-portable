@@ -507,7 +507,7 @@ void EV_FireShotGunDouble( event_args_t *args )
 	
 	int i;
 	vec3_t vecSrc, vecAiming;
-	vec3_t vecSpread;
+	//vec3_t vecSpread;
 	vec3_t up, right, forward;
 	float flSpread = 0.01;
 
@@ -546,7 +546,7 @@ void EV_FireShotGunSingle( event_args_t *args )
 	
 	int i;
 	vec3_t vecSrc, vecAiming;
-	vec3_t vecSpread;
+	//vec3_t vecSpread;
 	vec3_t up, right, forward;
 	float flSpread = 0.01;
 

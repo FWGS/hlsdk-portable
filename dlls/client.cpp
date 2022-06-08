@@ -498,7 +498,7 @@ ClientCommand
 called each time a player uses a "cmd" command
 ============
 */
-extern float g_flWeaponCheat;
+extern cvar_t *g_enable_cheats;
 
 // Use CMD_ARGV,  CMD_ARGV, and CMD_ARGC to get pointers the character string command.
 void ClientCommand( edict_t *pEntity )
@@ -526,7 +526,7 @@ void ClientCommand( edict_t *pEntity )
 	}
 	else if( FStrEq(pcmd, "give" ) )
 	{
-		if( g_flWeaponCheat != 0.0f )
+		if( g_enable_cheats->value != 0 )
 		{
 			int iszItem = ALLOC_STRING( CMD_ARGV( 1 ) );	// Make a copy of the classname
 			GetClassPtr( (CBasePlayer *)pev )->GiveNamedItem( STRING( iszItem ) );
@@ -534,7 +534,7 @@ void ClientCommand( edict_t *pEntity )
 	}
 	else if( FStrEq( pcmd, "fire" ) )
 	{
-		if( g_flWeaponCheat != 0.0f )
+		if( g_enable_cheats->value != 0 )
 		{
 			CBaseEntity *pPlayer = CBaseEntity::Instance( pEntity );
 			if( CMD_ARGC() > 1 )

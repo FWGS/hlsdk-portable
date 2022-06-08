@@ -40,6 +40,7 @@ cvar_t timelimit	= { "mp_timelimit","0", FCVAR_SERVER };
 cvar_t friendlyfire	= { "mp_friendlyfire","0", FCVAR_SERVER };
 cvar_t falldamage	= { "mp_falldamage","0", FCVAR_SERVER };
 cvar_t weaponstay	= { "mp_weaponstay","1", FCVAR_SERVER };
+cvar_t explosionfix	= { "explosionfix", "0", FCVAR_SERVER };
 cvar_t forcerespawn	= { "mp_forcerespawn","1", FCVAR_SERVER };
 cvar_t flashlight	= { "mp_flashlight","0", FCVAR_SERVER };
 cvar_t aimcrosshair	= { "mp_autocrosshair","1", FCVAR_SERVER };
@@ -62,6 +63,7 @@ cvar_t mp_chattime	= { "mp_chattime","10", FCVAR_SERVER };
 cvar_t *g_psv_gravity = NULL;
 cvar_t *g_psv_aim = NULL;
 cvar_t *g_footsteps = NULL;
+cvar_t *g_enable_cheats = NULL;
 
 cvar_t *g_psv_developer;
 
@@ -474,6 +476,8 @@ void GameDLLInit( void )
 
 	g_psv_developer = CVAR_GET_POINTER( "developer" );
 
+	g_enable_cheats = CVAR_GET_POINTER( "sv_cheats" );
+
 	if( g_bIsThreeWave )
 		teamplay.string = "3";
 
@@ -493,6 +497,7 @@ void GameDLLInit( void )
 	CVAR_REGISTER( &friendlyfire );
 	CVAR_REGISTER( &falldamage );
 	CVAR_REGISTER( &weaponstay );
+	CVAR_REGISTER( &explosionfix );
 	CVAR_REGISTER( &forcerespawn );
 	CVAR_REGISTER( &flashlight );
 	CVAR_REGISTER( &aimcrosshair );
@@ -508,6 +513,8 @@ void GameDLLInit( void )
 	CVAR_REGISTER( &multibyte_only );
 
 	CVAR_REGISTER( &mp_chattime );
+
+
 
 // REGISTER CVARS FOR SKILL LEVEL STUFF
 	// Agrunt
