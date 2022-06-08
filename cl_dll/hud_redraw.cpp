@@ -21,16 +21,14 @@
 #include "cl_util.h"
 //#include "triangleapi.h"
 
-<<<<<<< HEAD
+#if USE_VGUI
+#include "vgui_TeamFortressViewport.h"
+#endif
+
 //++ BulliT
 #include <demo_api.h>
 #include "agmatchreport.h"
 //-- Martin Webrant
-=======
-#if USE_VGUI
-#include "vgui_TeamFortressViewport.h"
-#endif
->>>>>>> master
 
 #define MAX_LOGO_FRAMES 56
 
@@ -110,9 +108,6 @@ int CHud::Redraw( float flTime, int intermission )
 	if( m_flTimeDelta < 0 )
 		m_flTimeDelta = 0;
 
-<<<<<<< HEAD
-	if( m_iIntermission && !intermission )
-=======
 #if USE_VGUI
 	// Bring up the scoreboard during intermission
 	if (gViewPort)
@@ -141,7 +136,6 @@ int CHud::Redraw( float flTime, int intermission )
 	}
 #else
 	if( !m_iIntermission && intermission )
->>>>>>> master
 	{
 //++ BulliT
 		//Stop recording the demo.

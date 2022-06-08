@@ -388,7 +388,6 @@ void DLLEXPORT HUD_Frame( double time )
 #if AG_USE_CHEATPROTECTION
 	g_VariableChecker.Check();
 #endif //AG_USE_CHEATPROTECTION
-#if USE_VGUI_FOR_GOLDSOURCE_SUPPORT
 #if USE_VGUI
 	GetClientVoiceMgr()->Frame(time);
 #elif USE_FAKE_VGUI

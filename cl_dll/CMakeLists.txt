@@ -198,7 +198,7 @@ else()
 		scoreboard.cpp)
 endif()
 
-include_directories (. hl/ ../dlls ../dlls/wpn_shared ../common ../engine ../pm_shared ../game_shared ../public  aghl ../dlls/aghl)
+include_directories (. hl/ ../dlls ../dlls/wpn_shared ../common ../engine ../pm_shared ../game_shared ../public  aghl ../dlls/aghl ..)
 
 if (USE_VGUI)
 	SET(CMAKE_SKIP_RPATH TRUE)
