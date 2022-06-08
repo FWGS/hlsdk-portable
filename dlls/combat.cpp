@@ -29,6 +29,7 @@
 #include "animation.h"
 #include "weapons.h"
 #include "func_break.h"
+#include "game.h"
 
 extern DLL_GLOBAL Vector		g_vecAttackDir;
 extern DLL_GLOBAL int			g_iSkillLevel;
@@ -514,10 +515,16 @@ void CBaseMonster::BecomeDead( void )
 
 	// make the corpse fly away from the attack vector
 	pev->movetype = MOVETYPE_TOSS;
-	//pev->flags &= ~FL_ONGROUND;
-	//pev->origin.z += 2.0f;
-	//pev->velocity = g_vecAttackDir * -1.0f;
-	//pev->velocity = pev->velocity * RANDOM_FLOAT( 300.0f, 400.0f );
+	if (corpsephysics.value &&
+			// affect only dying monsters, not initially dead ones
+			m_IdealMonsterState == MONSTERSTATE_DEAD)
+	{
+		pev->flags &= ~FL_ONGROUND;
+		pev->origin.z += 2.0f;
+		pev->velocity = g_vecAttackDir * -1.0f;
+		pev->velocity = pev->velocity * RANDOM_FLOAT( 300.0f, 400.0f );
+	}
+
 }
 
 BOOL CBaseMonster::ShouldGibMonster( int iGib )
