@@ -324,14 +324,6 @@ int __MsgFunc_AllowSpec( const char *pszName, int iSize, void *pbuf )
 	return 0;
 }
                 
-void __CmdFunc_CloseCommandMenu(void)
-{
-}
-        
-void __CmdFunc_ForceCloseCommandMenu( void )
-{
-}
-
 // This is called every time the DLL is loaded
 void CHud::Init( void )
 {
@@ -341,8 +333,6 @@ void CHud::Init( void )
 	HOOK_MESSAGE( InitHUD );
 	HOOK_MESSAGE( SetFOV );
 	HOOK_MESSAGE( Concuss );
-
-	HOOK_COMMAND( "togglebrowser", ToggleServerBrowser );
 
 	HOOK_MESSAGE( ServerName );
 
@@ -439,6 +429,8 @@ void CHud::Init( void )
 	m_AmmoSecondary.Init();
 	m_TextMessage.Init();
 	m_StatusIcons.Init();
+	m_FlagStat.Init();
+	m_Bonus.Init();
 #if USE_VGUI
 	GetClientVoiceMgr()->Init(&g_VoiceStatusHelper, (vgui::Panel**)&gViewPort);
 #endif
@@ -448,12 +440,7 @@ void CHud::Init( void )
 #endif
 #if !USE_VGUI || USE_NOVGUI_SCOREBOARD
 	m_Scoreboard.Init();
-<<<<<<< HEAD
-	m_FlagStat.Init();
-	m_Bonus.Init();
-=======
 #endif
->>>>>>> master
 
 	m_Menu.Init();
 
@@ -633,13 +620,9 @@ void CHud::VidInit( void )
 	m_AmmoSecondary.VidInit();
 	m_TextMessage.VidInit();
 	m_StatusIcons.VidInit();
-<<<<<<< HEAD
 	m_Spectator.VidInit();
-	m_Scoreboard.VidInit();
-	m_MOTD.VidInit();
 	m_FlagStat.VidInit();
 	m_Bonus.VidInit();
-=======
 #if USE_VGUI
 	GetClientVoiceMgr()->VidInit();
 #endif
@@ -649,7 +632,6 @@ void CHud::VidInit( void )
 #if !USE_VGUI || USE_NOVGUI_SCOREBOARD
 	m_Scoreboard.VidInit();
 #endif
->>>>>>> master
 }
 
 int CHud::MsgFunc_Logo( const char *pszName,  int iSize, void *pbuf )
