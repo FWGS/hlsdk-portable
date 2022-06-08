@@ -29,6 +29,7 @@
 #include "player.h"
 #include "items.h"
 #include "gamerules.h"
+#include "game.h"
 
 //===================grenade
 
@@ -63,7 +64,10 @@ void CGrenade::Explode( TraceResult *pTrace, int bitsDamageType )
 	// Pull out of the wall a bit
 	if( pTrace->flFraction != 1.0f )
 	{
-		pev->origin = pTrace->vecEndPos + ( pTrace->vecPlaneNormal * ( pev->dmg - 24 ) * 0.6f );
+		if (explosionfix.value)
+			pev->origin = pTrace->vecEndPos + ( pTrace->vecPlaneNormal * 0.6f );
+		else
+			pev->origin = pTrace->vecEndPos + ( pTrace->vecPlaneNormal * ( pev->dmg - 24 ) * 0.6f );
 	}
 
 	int iContents = UTIL_PointContents( pev->origin );
