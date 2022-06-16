@@ -25,7 +25,7 @@ project (CLDLL)
 
 set (CLDLL_LIBRARY client)
 
-add_definitions(-DCLIENT_WEAPONS -DCLIENT_DLL)
+add_definitions(-DCLIENT_DLL)
 
 if(NOT MSVC)
 	add_compile_options(-fno-exceptions) # GCC/Clang flag
