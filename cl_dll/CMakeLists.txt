@@ -25,13 +25,7 @@ project (CLDLL)
 
 set (CLDLL_LIBRARY client)
 
-include(CheckIncludeFile)
-check_include_file("tgmath.h" HAVE_TGMATH_H)
-if(HAVE_TGMATH_H)
-	add_definitions(-DHAVE_TGMATH_H)
-endif()
-
-add_definitions(-DCLIENT_WEAPONS -DCLIENT_DLL -DCROWBAR_IDLE_ANIM -DCROWBAR_FIX_RAPID_CROWBAR -DCROWBAR_DELAY_FIX)
+add_definitions(-DCLIENT_DLL)
 
 if(NOT MSVC)
 	add_compile_options(-fno-exceptions) # GCC/Clang flag
@@ -204,7 +198,7 @@ endif()
 set_target_properties (${CLDLL_LIBRARY} PROPERTIES
 	POSITION_INDEPENDENT_CODE 1)
 
-if(APPLE OR WIN32 OR ${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+if(NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Android")
 	set(CLDLL_NAME "client")
 	set_target_properties(${CLDLL_LIBRARY} PROPERTIES
 		OUTPUT_NAME ${CLDLL_NAME}
