@@ -25,12 +25,6 @@ project (CLDLL)
 
 set (CLDLL_LIBRARY client)
 
-include(CheckIncludeFile)
-check_include_file("tgmath.h" HAVE_TGMATH_H)
-if(HAVE_TGMATH_H)
-	add_definitions(-DHAVE_TGMATH_H)
-endif()
-
 add_definitions(-DCLIENT_WEAPONS -DCLIENT_DLL)
 
 if(NOT MSVC)

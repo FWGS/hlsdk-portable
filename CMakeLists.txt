@@ -29,6 +29,8 @@ endif()
 # Install custom module path
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 
+include(CheckIncludeFile)
+include(CheckCSourceCompiles)
 include(VSForceXPToolchain) # Force XP toolchain for Visual Studio
 
 project (HLSDK-XASH3D)
@@ -111,6 +113,15 @@ else()
 	add_definitions(-D_CRT_SILENCE_NONCONFORMING_TGMATH_H)
 endif()
 
+check_include_file("tgmath.h" HAVE_TGMATH_H)
+if(HAVE_TGMATH_H)
+	check_c_source_compiles("#include <tgmath.h>
+	const float val = 2, val2 = 3;
+	int main(){ return (int)(-asin(val) + cos(val2));" HAVE_VALID_TGMATH_H )
+	if(${HAVE_VALID_TGMATH_H})
+		add_definitions(-DHAVE_TGMATH_H)
+	endif()
+endif()
 
 if(BUILD_CLIENT)
 	add_subdirectory(cl_dll)
