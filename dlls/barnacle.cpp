@@ -168,7 +168,7 @@ void CBarnacle::BarnacleThink( void )
 	{
 		// recalc collision box here to avoid barnacle disappears bug
 		m_flCachedLength = m_flAltitude + m_flTongueAdj;
-		UTIL_SetOrigin( pev, pev->origin );
+		UTIL_SetOrigin( this, pev->origin );
 	}
 #endif
 	SetNextThink( 0.1f );
