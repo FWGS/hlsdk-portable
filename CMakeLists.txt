@@ -114,31 +114,6 @@ if(CLIENT_WEAPONS)
 	add_definitions(-DCLIENT_WEAPONS)
 endif()
 
-if(BARNACLE_FIX_VISIBILITY)
-	message(STATUS "Barnacle tongue fix enabled")
-	add_definitions(-DBARNACLE_FIX_VISIBILITY)
-endif()
-
-if(CROWBAR_IDLE_ANIM)
-	message(STATUS "Crowbar idle animation enabled")
-	add_definitions(-DCROWBAR_IDLE_ANIM)
-endif()
-
-if(CROWBAR_DELAY_FIX)
-	message(STATUS "Crowbar attack delay fix enabled")
-	add_definitions(-DCROWBAR_DELAY_FIX)
-endif()
-
-if(CROWBAR_FIX_RAPID_CROWBAR)
-	message(STATUS "Rapid crowbar fix enabled")
-	add_definitions(-DCROWBAR_FIX_RAPID_CROWBAR)
-endif()
-
-if(GAUSS_OVERCHARGE_FIX)
-	message(STATUS "Gauss overcharge fix enabled")
-	add_definitions(-DGAUSS_OVERCHARGE_FIX)
-endif()
-
 if(OEM_BUILD)
 	message(STATUS "OEM build enabled")
 	add_definitions(-DOEM_BUILD)
