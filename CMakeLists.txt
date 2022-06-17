@@ -69,8 +69,8 @@ option(HLDEMO_BUILD "Enable Demo Build" OFF)
 set(GAMEDIR "valve" CACHE STRING "Gamedir path")
 set(SERVER_INSTALL_DIR "dlls" CACHE STRING "Where put server dll")
 set(CLIENT_INSTALL_DIR "cl_dlls" CACHE STRING "Where put client dll")
-set(SERVER_LIBRARY_NAME "hl" CACHE STRING "Library name for PC platforms")
-message(STATUS "Half-Life")
+set(SERVER_LIBRARY_NAME "bot" CACHE STRING "Library name for PC platforms")
+message(STATUS "Botman's bot #10")
 
 #-----------------
 # MAIN BUILD CODE \
