@@ -57,6 +57,7 @@ DEFINES = [
 'XASH_RISCV_DOUBLEFP',
 'XASH_RISCV_SINGLEFP',
 'XASH_RISCV_SOFTFP',
+'XASH_SERENITY',
 'XASH_WIN32',
 'XASH_WIN64',
 'XASH_X86',
@@ -89,6 +90,8 @@ def configure(conf):
 		buildos = "dos4gw" # unused, just in case
 	elif conf.env.XASH_HAIKU:
 		buildos = "haiku"
+	elif conf.env.XASH_SERENITY:
+		buildos = "serenityos"
 	else:
 		conf.fatal("Place your operating system name in build.h and library_naming.py!\n"
 			"If this is a mistake, try to fix conditions above and report a bug")
