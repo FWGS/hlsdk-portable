@@ -104,7 +104,7 @@ if(64BIT AND CMAKE_SIZEOF_VOID_P EQUAL 4)
 endif()
 
 # Xash3D FWGS Library Naming Scheme compliance
-# see documentation: https://github.com/FWGS/xash3d-fwgs/blob/master/Documentation/library-naming.md
+# see documentation: https://github.com/FWGS/xash3d-fwgs/blob/master/Documentation/extensions/library-naming.md
 include(LibraryNaming)
 
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
