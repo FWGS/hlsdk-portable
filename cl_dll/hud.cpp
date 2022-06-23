@@ -410,10 +410,15 @@ void CHud::Init( void )
 		g_iHudColor = RGB_WHITISH;
 	}
 	else if( HUD_IsGame( "induction" ) )
-        {
-                g_iModType = MOD_INDUCTION;
-                g_iHudColor = RGB_YELLOWISH;
-        }
+	{
+		g_iModType = MOD_INDUCTION;
+		g_iHudColor = RGB_YELLOWISH;
+	}
+	else if( HUD_IsGame( "hl_urbicide" ) )
+	{
+		g_iModType = MOD_URBICIDE;
+		g_iHudColor = RGB_WHITISH;
+	}
 	else
 	{
 		g_iModType = MOD_VALVE;

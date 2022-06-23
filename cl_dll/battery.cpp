@@ -72,7 +72,8 @@ int CHudBattery::MsgFunc_Battery( const char *pszName,  int iSize, void *pbuf )
 int CHudBattery::Draw( float flTime )
 {
 #ifdef MOBILE_HACKS
-	if( g_iModType == MOD_SEWER_BETA )
+	if( g_iModType == MOD_SEWER_BETA
+	    || g_iModType == MOD_URBICIDE )
 		return 1;
 #endif // MOBILE_HACKS
 	if( gHUD.m_iHideHUDDisplay & HIDEHUD_HEALTH )

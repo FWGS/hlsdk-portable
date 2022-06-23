@@ -15,7 +15,8 @@ enum
 	MOD_INDUCTION,	// Half-Life: Induction
 	MOD_REDEMPT,	// Redemption/Absolute Redemption
 	MOD_SEWER_BETA,	// Sewer Beta
-	MOD_TOT		// Times of Troubles
+	MOD_TOT,	// Times of Troubles
+	MOD_URBICIDE	// Half-Life: Urbicide
 };
 
 #endif // MODDEF
