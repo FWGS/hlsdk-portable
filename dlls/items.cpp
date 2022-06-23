@@ -215,39 +215,6 @@ class CItemBattery : public CItem
 	}
 	BOOL MyTouch( CBasePlayer *pPlayer )
 	{
-		if( pPlayer->pev->deadflag != DEAD_NO )
-		{
-			return FALSE;
-		}
-
-		if( ( pPlayer->pev->armorvalue < MAX_NORMAL_BATTERY ) &&
-			( pPlayer->pev->weapons & ( 1 << WEAPON_SUIT ) ) )
-		{
-			int pct;
-			char szcharge[64];
-
-			pPlayer->pev->armorvalue += gSkillData.batteryCapacity;
-			pPlayer->pev->armorvalue = Q_min( pPlayer->pev->armorvalue, MAX_NORMAL_BATTERY );
-
-			EMIT_SOUND( pPlayer->edict(), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM );
-
-			MESSAGE_BEGIN( MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev );
-				WRITE_STRING( STRING( pev->classname ) );
-			MESSAGE_END();
-
-			// Suit reports new power level
-			// For some reason this wasn't working in release build -- round it.
-			pct = (int)( (float)( pPlayer->pev->armorvalue * 100.0f ) * ( 1.0f / MAX_NORMAL_BATTERY ) + 0.5f );
-			pct = ( pct / 5 );
-			if( pct > 0 )
-				pct--;
-
-			sprintf( szcharge,"!HEV_%1dP", pct );
-
-			//EMIT_SOUND_SUIT( ENT( pev ), szcharge );
-			pPlayer->SetSuitUpdate( szcharge, FALSE, SUIT_NEXT_IN_30SEC);
-			return TRUE;
-		}
 		return FALSE;
 	}
 };
