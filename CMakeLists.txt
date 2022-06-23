@@ -66,11 +66,11 @@ option(GAUSS_OVERCHARGE_FIX "Enable gauss overcharge fix" ON)
 option(OEM_BUILD "Enable OEM Build" OFF)
 option(HLDEMO_BUILD "Enable Demo Build" OFF)
 
-set(GAMEDIR "valve" CACHE STRING "Gamedir path")
+set(GAMEDIR "hl_urbicide" CACHE STRING "Gamedir path")
 set(SERVER_INSTALL_DIR "dlls" CACHE STRING "Where put server dll")
 set(CLIENT_INSTALL_DIR "cl_dlls" CACHE STRING "Where put client dll")
 set(SERVER_LIBRARY_NAME "hl" CACHE STRING "Library name for PC platforms")
-message(STATUS "Half-Life")
+message(STATUS "Half-Life: Urbicide")
 
 #-----------------
 # MAIN BUILD CODE \
