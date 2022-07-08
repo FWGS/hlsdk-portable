@@ -27,6 +27,13 @@
 #include "StudioModelRenderer.h"
 #include "GameStudioModelRenderer.h"
 
+// modif de Julien
+#include "pm_defs.h"
+#include "event_api.h"
+extern vec3_t v_angles, v_origin;
+
+int g_modif = 0;	// horreur pour que les models ne se dessinent que deux fois
+
 // Global engine <-> studio model rendering code interface
 engine_studio_api_t IEngineStudio;
 
@@ -701,6 +708,31 @@ void CStudioModelRenderer::StudioFxTransform( cl_entity_t *ent, float transform[
 			transform[2][1] *= scale;
 		}
 	break;
+	}
+
+	// -------------------------------
+	// modif de Julien
+	// vision infrarouge
+	// -------------------------------
+
+	if ( g_modif == 1 )	
+	{
+		vec3_t src ( transform[0][3], transform[1][3], transform[2][3] );// origine bizaro
+		vec3_t offset = ( v_origin - src );
+
+		float rayon = 10;				// distance oeil - 2e model
+		float dist = offset.Length();		// distance oeil - 1e model
+		float scale = ( rayon / dist );
+
+		offset = offset.Normalize() * ( dist - rayon );
+
+		transform[0][3] += offset.x;
+		transform[1][3] += offset.y;
+		transform[2][3] += offset.z;
+
+		VectorScale( transform[0], scale, transform[0] );
+		VectorScale( transform[1], scale, transform[1] );
+		VectorScale( transform[2], scale, transform[2] );
 	}
 }
 
@@ -1652,6 +1684,58 @@ void CStudioModelRenderer::StudioRenderFinal_Hardware( void )
 			IEngineStudio.GL_SetRenderMode( rendermode );
 			IEngineStudio.StudioDrawPoints();
 			IEngineStudio.GL_StudioDrawShadow();
+		}
+
+		//modifs de julien
+
+		nvg_ennemy_t *p = gHUD.m_NVG.IsEnnemy(m_pCurrentEntity->index);
+		
+		if ( p != NULL )
+		{
+			// modification de la position
+
+			g_modif = 1;
+
+			StudioSetupBones( );
+			StudioSaveBones( );
+
+			g_modif = 0;
+
+			// modification de l'eclairage
+
+			alight_t lighting;
+			lighting.plightvec = Vector(0,0,0);
+			IEngineStudio.StudioDynamicLight(gEngfuncs.GetLocalPlayer(), &lighting );
+
+			if ( p->color.x == 0 && p->color.y == 0 && p->color.z == 0 )
+				p->color = Vector (1,0,0);
+
+			lighting.color = Vector(p->color.x , p->color.y, p->color.z);
+
+			IEngineStudio.StudioEntityLight( &lighting );
+			IEngineStudio.StudioSetupLighting (&lighting);
+
+			m_nTopColor = m_pCurrentEntity->curstate.colormap & 0xFF;
+			m_nBottomColor = (m_pCurrentEntity->curstate.colormap & 0xFF00) >> 8;
+			IEngineStudio.StudioSetRemapColors( m_nTopColor, m_nBottomColor );
+
+			// affichage
+
+			/*
+			gEngfuncs.pTriAPI->RenderMode( kRenderTransAdd );
+			IEngineStudio.StudioDrawPoints();
+			gEngfuncs.pTriAPI->RenderMode( kRenderNormal );
+			*/
+
+			for ( int z = 0 ; z < m_pStudioHeader->numbodyparts ; z++)
+			{
+				IEngineStudio.StudioSetupModel( z, (void **)&m_pBodyPart, (void **)&m_pSubModel );
+
+				IEngineStudio.GL_SetRenderMode( kRenderTransAdd );
+				IEngineStudio.StudioDrawPoints();
+				IEngineStudio.GL_StudioDrawShadow();
+
+			}
 		}
 	}
 
