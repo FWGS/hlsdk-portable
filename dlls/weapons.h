@@ -571,21 +571,33 @@ public:
 	int iItemSlot( void ) { return 1; }
 	void EXPORT SwingAgain( void );
 	void EXPORT Smack( void );
-	int GetItemInfo(ItemInfo *p);
+	int GetItemInfo( ItemInfo *p );
+	int AddToPlayer( CBasePlayer *pPlayer );
+	void SendWeaponAnim( int iAnim, int skiplocal = 1, int body = 0 );  // skiplocal is 1 if client is predicting weapon animations
 
 	void PrimaryAttack( void );
 	int Swing( int fFirst );
 	BOOL Deploy( void );
 	void Holster( int skiplocal = 0 );
+#if CROWBAR_IDLE_ANIM
+	void WeaponIdle();
+#endif
 	int m_iSwing;
 	TraceResult m_trHit;
 
-	Vector m_vecDecalSrc;
+	Vector m_vecDecalSrc; //modif de Roy
 	Vector m_vecDecalEnd;
 
-	// modif de julien
-	int AddToPlayer( CBasePlayer *pPlayer );
-
+	virtual BOOL UseDecrement( void )
+	{ 
+#if CLIENT_WEAPONS
+		return TRUE;
+#else
+		return FALSE;
+#endif
+	}
+private:
+	unsigned short m_usCrowbar;
 };
 
 class CPython : public CBasePlayerWeapon
