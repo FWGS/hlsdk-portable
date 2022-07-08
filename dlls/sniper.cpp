@@ -195,7 +195,7 @@ void CSniper :: Precache()
 
 void CSniper :: Shoot ( void )
 {
-	if (m_hEnemy == NULL)
+	if (m_hEnemy == 0)
 	{
 		return;
 	}
@@ -421,7 +421,7 @@ BOOL CSniper :: CheckMeleeAttack1 ( float flDot, float flDist )
 {
 	CBaseMonster *pEnemy;
 
-	if ( m_hEnemy != NULL )
+	if ( m_hEnemy != 0 )
 	{
 		pEnemy = m_hEnemy->MyMonsterPointer();
 
@@ -497,7 +497,7 @@ void CSniper :: RunTask ( Task_t *pTask )
 	{
 		case TASK_RANGE_ATTACK1:
 		{
-			if (m_hEnemy != NULL)
+			if (m_hEnemy != 0)
 			{
 				Vector vecShootDir = m_hEnemy->Center() - Center();
 				Vector angDir = UTIL_VecToAngles( vecShootDir );
@@ -623,12 +623,13 @@ IMPLEMENT_CUSTOM_SCHEDULES( CSniper, CBaseMonster );
 //	Gestion des comportements
 //----------------------------------------------------
 
-
+#define NEER_GONNA_HAPPEN 677 //Just some obnoxiously high value, see below, modif de Roy
 Schedule_t *CSniper :: GetSchedule( void )
 {
 	switch	( m_MonsterState )
 	{
 	
+	case NEER_GONNA_HAPPEN: //Since MONSTERSTATE is an enum, this will never be executed (and so it wasn't in the original Julien's code), but we will satisfy the compiler, and it will hopefully not be angry at us, modif de Roy
 	if ( HasConditions(bits_COND_HEAR_SOUND) )
 	{
 		CSound *pSound = PBestSound();

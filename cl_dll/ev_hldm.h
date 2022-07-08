@@ -149,7 +149,7 @@ void EV_HLDM_GunshotDecalTrace( pmtrace_t *pTrace, char *decalName );
 void EV_HLDM_DecalGunshot( pmtrace_t *pTrace, int iBulletType );
 int EV_HLDM_CheckTracer( int idx, float *vecSrc, float *end, float *forward, float *right, int iBulletType, int iTracerFreq, int *tracerCount );
 void EV_HLDM_FireBullets( int idx, float *forward, float *right, float *up, int cShots, float *vecSrc, float *vecDirShooting, float flDistance, int iBulletType, int iTracerFreq, int *tracerCount, float flSpreadX, float flSpreadY, int iTraverseMur = 0 );
-void EV_HLDM_FireBulletsOld( int idx, float *forward, float *right, float *up, int cShots, float *vecSrc, float *vecDirShooting, float *vecSpread, float flDistance, int iBulletType, int iTracerFreq, int *tracerCount, int iTraverseMur = 0 ){ //Julien's code uses old version of this function that was like this, we need to convert the Vector vec3_t into floats.
+void EV_HLDM_FireBulletsVect( int idx, float *forward, float *right, float *up, int cShots, float *vecSrc, float *vecDirShooting, float *vecSpread, float flDistance, int iBulletType, int iTracerFreq, int *tracerCount, int iTraverseMur = 0 ){ //Julien's code uses old version of this function that took vector definitions like this, so we need to convert the Vector vec3_t into floats. This way we can keep using definitions, modif de Roy
 	float flSpreadX = vecSpread[0];
 	float flSpreadY = vecSpread[1];
 	return EV_HLDM_FireBullets(idx,forward,right,up,cShots,vecSrc,vecDirShooting,flDistance,iBulletType,iTracerFreq,tracerCount,flSpreadX,flSpreadY,iTraverseMur);

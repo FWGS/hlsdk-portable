@@ -1335,7 +1335,7 @@ void CTank :: Fire ( int canon )
 	::RadiusDamage( tr.vecEndPos, pev, pev, 300, 300, CLASS_NONE, DMG_BLAST );
 	
 	//effet de fum
-	EnvSmokeCreate( tr.vecEndPos, 4, 10, 2, NULL );
+	EnvSmokeCreate( tr.vecEndPos, 4, 10, 2, 0 );
 
 /*	// sprites de feu
 

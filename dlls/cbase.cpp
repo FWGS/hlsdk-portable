@@ -772,15 +772,21 @@ CBaseEntity *CBaseEntity::Create( const char *szName, const Vector &vecOrigin, c
 	return pEntity;
 }
 
-//modif de Roy, we need to solve firing in Gaz non-virtual conundrum
+//modif de Julien
+//=========================================
+//	pour les trigger_gaz
+//=========================================
+//modif de Roy, we need to solve firing in Gaz non-virtual conundrum, so we move this function from CBasePlayer here, it will be inherited anyway.
 BOOL CBaseEntity::IsInGaz ( void )
 {
 	if( !IsPlayer()) return FALSE; //Quit immediately. This will always be true. CBaseEntity doesn't have an IsPlayer returning TRUE at all.
 	//Oh, but... CBasePlayer has!
-	//However, when combat.cpp calls this function, it calls this version, not the players, since the base function
-	//is for CBaseEntity, it simply asks it if it's the player (which is true in that case). Since it gets called without an actual pointer, it
-	//doesn't know which function to fire and does this one, not the player's (which inherits and overrides this function).
-	//So, if this one gets called in this context, IsPlayer is going to return TRUE, and then this fires up.
+	//So, since when combat.cpp calls this function, it calls this version, not the player's anyway, as the base function
+	//is for CBaseEntity, it simply asks it if it's the player (which is true in that case, as when the caller is actually
+	//CBasePlayer it will return TRUE for IsPlayer), but as it doesn't use pointers, it will call the CBaseEntity version.
+	//And we get FALSE, since the previous version only had actual code for the player, and always returned FALSE for 
+	//CBaseEntity. So, instead we put all the code in CBaseEntity, make it always FALSE on IsPlayer call and let CBasePlayer
+	//simply inherit it and override IsPlayer with an always TRUE call.
 
 	Vector vecPlayer = Center ();
 

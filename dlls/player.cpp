@@ -5412,42 +5412,6 @@ void CInfoIntermission::Think( void )
 }
 
 LINK_ENTITY_TO_CLASS( info_intermission, CInfoIntermission )
- 
-
-
-//modif de Julien
-//=========================================
-//	pour les trigger_gaz
-//=========================================
-
-/*BOOL CBasePlayer::IsInGaz ( void )
-{
-
-	Vector vecPlayer = Center ();
-
-	CBaseEntity *pFind = NULL;
-	edict_t *pTrigger = NULL;
-	pTrigger = FIND_ENTITY_BY_CLASSNAME( NULL, "trigger_gaz" );
-
-	while ( !FNullEnt ( pTrigger ) )
-	{
-		pFind = CBaseEntity::Instance ( pTrigger );
-
-
-		if ( vecPlayer.x > pFind->pev->absmin.x && vecPlayer.x < pFind->pev->absmax.x &&
-			 vecPlayer.y > pFind->pev->absmin.y && vecPlayer.y < pFind->pev->absmax.y &&
-			 vecPlayer.z > pFind->pev->absmin.z && vecPlayer.z < pFind->pev->absmax.z )		// Player est ds le trigger
-		{
-			return TRUE;
-		}
-		else
-		{
-			pTrigger = FIND_ENTITY_BY_CLASSNAME( pTrigger, "trigger_gaz" );
-		}
-
-	}
-	return FALSE;
-}*/
 
 //modif de Julien
 //=====================================

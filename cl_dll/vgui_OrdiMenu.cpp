@@ -569,7 +569,8 @@ void GetOrdiText ( const char *textname, char *messagename, Font *pRadioFont, in
 
 		fseek ( myfile, startoffset, SEEK_SET );
 
-		int i = 0; //Loop iterator fix. Must be outside of the loop to still be accessible afterwards.
+		int i = 0;  //We need to declare this variable outside of the loop to keep it usable and visible, modif de Roy
+
 		for ( i=0; i<(int)(stopoffset-startoffset); i++ )
 		{
 			char copie = getc ( myfile );

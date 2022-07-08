@@ -20,6 +20,8 @@
 #include "player.h"
 #include "gamerules.h"
 
+#include "../cl_dll/crutches.h" //Needed to treat radio messages being one symbol too short modif de Roy
+
 
 extern int gmsgRadioMsg;
 
@@ -84,8 +86,12 @@ int	GetRadiomsgText ( int iszMessage )
 
 		fseek ( myfile, startoffset, SEEK_SET );
 
-		int i = 0;  //Loop iterator fix. Must be outside of the loop to still be accessible afterwards.
+		int i = 0;  //We need to declare this variable outside of the loop to keep it usable and visible, modif de Roy
+#ifndef RADIOMSGCUTSHORTFIX_INVASION_DLL
+		for ( i=0; i<(int)(stopoffset-startoffset); i++ )
+#else
 		for ( i=0; i<(int)(stopoffset-startoffset)+1; i++ ) //Added +1, stopoffset seems to be too low.
+#endif
 		{
 			messagetext [i] = getc ( myfile );
 		}

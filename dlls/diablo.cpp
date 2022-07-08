@@ -15,7 +15,7 @@
 
 //=====================================================
 // Monster's anim events
-// Constantes associées à plusieurs animations
+// Constantes associ
 //=====================================================
 
 #define DIABLO_AE_KICK_NORMAL			( 1 )
@@ -26,7 +26,7 @@
 
 //=====================================================
 //  Schedule types :
-//	Attitudes à adopter spécifiques au Sniper
+//	Attitudes 
 //=====================================================
 enum
 {
@@ -37,7 +37,7 @@ enum
 
 
 //=====================================================
-//Définition de la classe
+//D
 //=====================================================
 
 
@@ -45,7 +45,7 @@ class CDiablo : public CBaseMonster
 {
 public:
 	void Spawn( void );					// initialisation
-	void Precache( void );				// on précache les sonds et les models
+	void Precache( void );				// on pr
 	void SetYawSpeed( void );			// vitesse de rotation
 	int  Classify ( void );				// "camp" du monstre : alien ou humain
 
@@ -66,7 +66,7 @@ public:
 
 	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType);
 
-	CUSTOM_SCHEDULES;										// définit tous les array de comportements
+	CUSTOM_SCHEDULES;										// d
 
 	//===
 };
@@ -99,7 +99,7 @@ void CDiablo :: SetYawSpeed ( void )
 	}
 
 	pev->yaw_speed = ys;*/
-	pev->yaw_speed = 64;	// rotation en degrés par seconde
+	pev->yaw_speed = 64;	// rotation en degr
 }
 
 
@@ -120,13 +120,13 @@ void CDiablo :: Spawn()
 	m_bloodColor		= BLOOD_COLOR_YELLOW;	// couleur du sang
 	pev->health			= 200;				// vie (plus tard avec le skill.cfg)
 //	pev->view_ofs		= Vector ( 0, 0, 6 );// position of the eyes relative to monster's origin.
-	m_flFieldOfView		= VIEW_FIELD_FULL;  // cône de vision. full = max du max
+	m_flFieldOfView		= VIEW_FIELD_FULL;  // c
 	m_MonsterState		= MONSTERSTATE_NONE;// ?
 
 	//=========
 	m_afCapability		= bits_CAP_HEAR |
 						  bits_CAP_RANGE_ATTACK1 |	// capable d'entendre, et deux attaques
-						  //bits_CAP_RANGE_ATTACK2 |	// plus une de proximité
+						  //bits_CAP_RANGE_ATTACK2 |	// plus une de proximit
 						  bits_CAP_MELEE_ATTACK1 |
 						  bits_CAP_MELEE_ATTACK2 ;
 	pev->effects		= 0;				// pour le muzzleflash ?
@@ -179,7 +179,7 @@ BOOL CDiablo :: CheckRangeAttack2 ( float flDot , float flDist )
 
 BOOL CDiablo :: CheckMeleeAttack1 ( float flDot, float flDist )
 {
-	if ( flDist <= 64 && flDot >= 0.7 && m_hEnemy != NULL && FBitSet ( m_hEnemy->pev->flags, FL_ONGROUND ) )
+	if ( flDist <= 64 && flDot >= 0.7 && m_hEnemy != 0 && FBitSet ( m_hEnemy->pev->flags, FL_ONGROUND ) )
 	{
 		return TRUE;
 	}
@@ -189,7 +189,7 @@ BOOL CDiablo :: CheckMeleeAttack1 ( float flDot, float flDist )
 
 BOOL CDiablo :: CheckMeleeAttack2 ( float flDot, float flDist )
 {
-	if ( flDist <= 92 && flDot >= 0.7 && m_hEnemy != NULL && FBitSet ( m_hEnemy->pev->flags, FL_ONGROUND ) )
+	if ( flDist <= 92 && flDot >= 0.7 && m_hEnemy != 0 && FBitSet ( m_hEnemy->pev->flags, FL_ONGROUND ) )
 	{
 		return TRUE;
 	}
@@ -204,21 +204,21 @@ CBaseEntity *CDiablo :: KickNormal( void )
 {
 	TraceResult tr;
 
-	UTIL_MakeVectors( pev->angles );		// == démarrage du traçage du vecteur ==
+	UTIL_MakeVectors( pev->angles );		// == d
 	Vector vecStart = pev->origin;							// le vecteur part de l'origine
-	vecStart.z += 42;									// du monstre + 42 unités
+	vecStart.z += 42;									// du monstre + 42 unit
 															// de haut
-	Vector vecEnd = vecStart + (gpGlobals->v_forward * 64); // jusqu'à 70 unités vers l'avant
+	Vector vecEnd = vecStart + (gpGlobals->v_forward * 64); // jusqu'
 
 	UTIL_TraceHull( vecStart, vecEnd, dont_ignore_monsters, head_hull, ENT(pev), &tr );  // on trace ce vecteur
 	
-	if ( tr.pHit )		// ça touche quelqu'un ? un pointeur vers l'entité, svp !!
+	if ( tr.pHit )		// 
 	{
 		CBaseEntity *pEntity = CBaseEntity::Instance( tr.pHit );
 		return pEntity;
 	}
 
-	return NULL;		// si c'est un coup à côté, on en tient pas compte
+	return NULL;		// si c'est un coup 
 }
 
 
@@ -248,11 +248,11 @@ CBaseEntity *CDiablo :: KickLoin( void )
 {
 	TraceResult tr;
 
-	UTIL_MakeVectors( pev->angles );		// == démarrage du traçage du vecteur ==
+	UTIL_MakeVectors( pev->angles );		// == d
 	Vector vecStart = pev->origin;							// le vecteur part de l'origine
-	vecStart.z += 42;									// du monstre + 42 unités
+	vecStart.z += 42;									// du monstre + 42 unit
 															// de haut
-	Vector vecEnd = vecStart + (gpGlobals->v_forward * 92); // jusqu'à 70 unités vers l'avant
+	Vector vecEnd = vecStart + (gpGlobals->v_forward * 92); // jusqu'
 
 	UTIL_TraceHull( vecStart, vecEnd, dont_ignore_monsters, head_hull, ENT(pev), &tr );  // on trace ce vecteur
 	
@@ -310,14 +310,14 @@ void CDiablo :: TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecD
 	if ( ptr->iHitgroup != 2 )			// le tir n'est pas dans l'oeil
 	{
 		flDamage -= 30;					// absorbe les dommages
-		if (flDamage <= 0)				// aucun dégat si le tir est de - de 20 pts
+		if (flDamage <= 0)				// aucun d
 		{
 			UTIL_Ricochet( ptr->vecEndPos, 1.0 );
 			flDamage = 0;
 		}
 	}
 	else
-	{ 		ALERT ( at_console , "DANS L'OEIL !!!!\n" ); }	// à virer
+	{ 		ALERT ( at_console , "DANS L'OEIL !!!!\n" ); }	// 
 
 	CBaseMonster::TraceAttack( pevAttacker, flDamage, vecDir, ptr, bitsDamageType );
 }
@@ -328,7 +328,7 @@ void CDiablo :: TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecD
 
 //================================================
 // Handle Anim Event :
-// évènements durant les anims
+// 
 //================================================
 
 void CDiablo :: HandleAnimEvent( MonsterEvent_t *pEvent )
@@ -413,7 +413,7 @@ Task_t	tlDiabloRangeAttack1[] =
 {
 	{ TASK_SET_FAIL_SCHEDULE,	(float)SCHED_TAKE_COVER_FROM_ENEMY	},// S'il ne peut pas aller vers le joueur
 	{ TASK_GET_PATH_TO_ENEMY,	(float)0	},	// localise l'ennemi, trace un chemin,
-	{ TASK_RUN_PATH,			(float)0	},	// se prépare à courir
+	{ TASK_RUN_PATH,			(float)0	},	// se pr
 	{ TASK_WAIT_FOR_MOVEMENT,	(float)0	},	// et se lance
 
 };

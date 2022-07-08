@@ -912,7 +912,7 @@ void EV_HLDM_FireBullets( int idx, float *forward, float *right, float *up, int 
 					vecSpread[0] = flSpreadX; //modif de modif de Julien, compatibility fix.
 					vecSpread[1] = flSpreadY;
 					vecSpread[2] = flSpreadX; //Just in case, won't be read.
-					EV_HLDM_FireBulletsOld( idx, forward, right, up, 1, vecSource, forward, vecSpread, 8192, iBulletType, 0, &tracerCount[idx-1], 1 );
+					EV_HLDM_FireBulletsVect( idx, forward, right, up, 1, vecSource, forward, vecSpread, 8192, iBulletType, 0, &tracerCount[idx-1], 1 );
 				}
 			}
 
@@ -1049,7 +1049,7 @@ void EV_FireShotGunDouble( event_args_t *args )
 	else
 	{
 		//EV_HLDM_FireBullets( idx, forward, right, up, 12, vecSrc, vecAiming, 2048, BULLET_PLAYER_BUCKSHOT_DOUBLE, 0, &g_tracerCount[idx - 1], 0.08716, 0.08716 );
-		EV_HLDM_FireBulletsOld( idx, forward, right, up, 12, vecSrc, vecAiming, VECTOR_CONE_10DEGREES, 2048, BULLET_PLAYER_BUCKSHOT_DOUBLE, 0, &g_tracerCount[idx-1] );
+		EV_HLDM_FireBulletsVect( idx, forward, right, up, 12, vecSrc, vecAiming, VECTOR_CONE_10DEGREES, 2048, BULLET_PLAYER_BUCKSHOT_DOUBLE, 0, &g_tracerCount[idx-1] );
 	}
 }
 
@@ -1165,11 +1165,11 @@ void EV_FireMP5( event_args_t *args )
 	//Julien's code uses old Vector for vecSpread which is vec3_t, needs conversion.
  	if ( gEngfuncs.GetMaxClients() > 1 )
  	{
-		EV_HLDM_FireBulletsOld( idx, forward, right, up, 1, vecSrc, vecAiming, VECTOR_CONE_7DEGREES, 8192, BULLET_PLAYER_MP5, 2, &g_tracerCount[idx-1] );
+		EV_HLDM_FireBulletsVect( idx, forward, right, up, 1, vecSrc, vecAiming, VECTOR_CONE_7DEGREES, 8192, BULLET_PLAYER_MP5, 2, &g_tracerCount[idx-1] );
  	}
  	else
  	{
-		EV_HLDM_FireBulletsOld( idx, forward, right, up, 1, vecSrc, vecAiming, VECTOR_CONE_7DEGREES, 8192, BULLET_PLAYER_MP5, 2, &g_tracerCount[idx-1] );
+		EV_HLDM_FireBulletsVect( idx, forward, right, up, 1, vecSrc, vecAiming, VECTOR_CONE_7DEGREES, 8192, BULLET_PLAYER_MP5, 2, &g_tracerCount[idx-1] );
  	}
 }
 
@@ -1299,7 +1299,7 @@ void EV_FireM16( event_args_t *args )
 	EV_GetGunPosition( args, vecSrc, origin );
 	VectorCopy( forward, vecAiming );
 
-	EV_HLDM_FireBulletsOld( idx, forward, right, up, 1, vecSrc, vecAiming, VECTOR_CONE_4DEGREES, 8192, BULLET_PLAYER_M16, 2, &g_tracerCount[idx-1] );
+	EV_HLDM_FireBulletsVect( idx, forward, right, up, 1, vecSrc, vecAiming, VECTOR_CONE_4DEGREES, 8192, BULLET_PLAYER_M16, 2, &g_tracerCount[idx-1] );
 
 	if ( EV_IsLocal( idx ) )
 	{
@@ -1366,7 +1366,7 @@ void EV_FireFSniper( event_args_t *args )
 	EV_GetGunPosition( args, vecSrc, origin );
 	VectorCopy( forward, vecAiming );
 
-	EV_HLDM_FireBulletsOld( idx, forward, right, up, 1, vecSrc, vecAiming, Vector(0,0,0)/*VECTOR_CONE_1DEGREES*/, 8192, BULLET_PLAYER_SNIPER, 1, &g_tracerCount[idx-1] );
+	EV_HLDM_FireBulletsVect( idx, forward, right, up, 1, vecSrc, vecAiming, Vector(0,0,0)/*VECTOR_CONE_1DEGREES*/, 8192, BULLET_PLAYER_SNIPER, 1, &g_tracerCount[idx-1] );
 
 	if ( EV_IsLocal( idx ) )
 	{
@@ -1436,7 +1436,7 @@ void EV_FireIRgun( event_args_t *args )
 	
 	VectorCopy( forward, vecAiming );
 
-	EV_HLDM_FireBulletsOld( idx, forward, right, up, 1, vecSrc, vecAiming, VECTOR_CONE_1DEGREES, 8192, BULLET_PLAYER_IRGUN, 0, &g_tracerCount[idx-1] );
+	EV_HLDM_FireBulletsVect( idx, forward, right, up, 1, vecSrc, vecAiming, VECTOR_CONE_1DEGREES, 8192, BULLET_PLAYER_IRGUN, 0, &g_tracerCount[idx-1] );
 
 	if ( EV_IsLocal( idx ) )
 	{

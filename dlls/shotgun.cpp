@@ -37,46 +37,7 @@ enum shotgun_e {
 	SHOTGUN_PUMP
 };
 
-/*class CShotgun : public CBasePlayerWeapon
-{
-public:
-	int		Save( CSave &save );
-	int		Restore( CRestore &restore );
-	static	TYPEDESCRIPTION m_SaveData[];
-
-	void Spawn( void );
-	void Precache( void );
-	int iItemSlot( ) { return 3; }
-	int GetItemInfo(ItemInfo *p);
-	int AddToPlayer( CBasePlayer *pPlayer );
-
-	void PrimaryAttack( void );
-	void SecondaryAttack( void );
-	BOOL Deploy( );
-	void Reload( void );
-	void WeaponIdle( void );
-	int m_fInReload;
-	float m_flNextReload;
-	int m_iShell;
-	float m_flPumpTime;
-private:
-	unsigned short m_usDoubleFire;
-	unsigned short m_usSingleFire;
-};*/
 LINK_ENTITY_TO_CLASS( weapon_shotgun, CShotgun );
-
-
-/*TYPEDESCRIPTION	CShotgun::m_SaveData[] = 
-{
-	DEFINE_FIELD( CShotgun, m_flNextReload, FIELD_TIME ),
-	DEFINE_FIELD( CShotgun, m_fInReload, FIELD_INTEGER ),
-	DEFINE_FIELD( CShotgun, m_flNextReload, FIELD_TIME ),
-	// DEFINE_FIELD( CShotgun, m_iShell, FIELD_INTEGER ),
-	DEFINE_FIELD( CShotgun, m_flPumpTime, FIELD_TIME ),
-};
-IMPLEMENT_SAVERESTORE( CShotgun, CBasePlayerWeapon );*/
-
-
 
 void CShotgun::Spawn( )
 {

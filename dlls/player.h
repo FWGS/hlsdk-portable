@@ -353,7 +353,6 @@ public:
 
 	// Night Vision Google
 	
-	//BOOL IsInGaz ( void ); //Must NOT be virtual, causes "unimplemented symbol" error in game.
 	void ShowVGUIordiMenu(  int iparam1, int iparam2, int iparam3 );
 
 	void ThinkNVG	( void );

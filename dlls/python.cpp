@@ -43,28 +43,6 @@ enum python_e {
 	PYTHON_RELOAD
 };
 
-class CPython : public CBasePlayerWeapon
-{
-public:
-	void Spawn( void );
-	void Precache( void );
-	int iItemSlot( void ) { return 2; }
-	int GetItemInfo(ItemInfo *p);
-	int AddToPlayer( CBasePlayer *pPlayer );
-	void PrimaryAttack( void );
-//	void SecondaryAttack( void );
-	BOOL Deploy( void );
-	void Holster( int skiplocal = 0 );
-	void Reload( void );
-	void WeaponIdle( void );
-	float m_flSoundDelay;
-
-//	BOOL m_fInZoom;// don't save this. 
-private:
-	unsigned short m_usFirePython;
-	int m_iShell;
-
-};
 LINK_ENTITY_TO_CLASS( weapon_python, CPython );
 LINK_ENTITY_TO_CLASS( weapon_357, CPython );
 
@@ -188,7 +166,7 @@ void CPython::PrimaryAttack()
 
 	m_iClip--;
 
-//	PLAYBACK_EVENT( 0, m_pPlayer->edict(), m_usFirePython );	// le full permet de préciser le param1
+//	PLAYBACK_EVENT( 0, m_pPlayer->edict(), m_usFirePython );	// le full permet de pr
 	PLAYBACK_EVENT_FULL( 0, m_pPlayer->edict(), m_usFirePython, 0, (float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, 0, 0, ( m_iClip == 0 ) ? 1 : 0, 0 );
 
 	m_pPlayer->m_iWeaponVolume = LOUD_GUN_VOLUME;

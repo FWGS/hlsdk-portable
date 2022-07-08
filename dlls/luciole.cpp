@@ -415,7 +415,7 @@ void CLuciole :: StartTask ( Task_t *pTask )
 	{
 		entvars_t *pevCover;
 
-		if ( m_hEnemy == NULL )
+		if ( m_hEnemy == 0 )
 		{
 			// Find cover from self if no enemy available
 			pevCover = pev;
@@ -484,7 +484,7 @@ void CLuciole :: RunTask ( Task_t *pTask )
 	
 	// position de tir
 
-	if ( m_hEnemy != NULL &&  (Center()-m_hEnemy->Center()).Length() < ATTACK_DIST && gpGlobals->time - m_flLastAttack > ATTACK_DELAY )
+	if ( m_hEnemy != 0 &&  (Center()-m_hEnemy->Center()).Length() < ATTACK_DIST && gpGlobals->time - m_flLastAttack > ATTACK_DELAY )
 	{
 		m_flLastAttack = gpGlobals->time;
 
@@ -551,7 +551,7 @@ void CLuciole :: RunTask ( Task_t *pTask )
 
 			// actualise la position ennemie
 
-			if ( m_hEnemy == NULL )
+			if ( m_hEnemy == 0 )
 			{
 				TaskComplete ();
 				break;
@@ -1066,7 +1066,7 @@ void CLuciole :: ReorganiseSquad ( void )
 	UTIL_ParticleEffect ( pev->origin, Vector(90,0,0), 0x0000FF, 128 );
 #endif
 
-	if ( m_hEnemy == NULL )
+	if ( m_hEnemy == 0 )
 	{
 #if defined DEBUG_ALERTS
 		ALERT ( at_console, "pas d'ennemi pour la reorganisation\n" );

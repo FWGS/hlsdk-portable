@@ -1136,7 +1136,7 @@ void CMomentaryDoor :: Blocked( CBaseEntity *pOther )
 			if ( FClassnameIs( pentCherche, "momentary_rot_button" ) ) //"momentary_door" ) )
 			{
 				CBaseEntity* pDoor = CBaseEntity :: Instance ( pentCherche );
-				pDoor->pev->target = NULL;			
+				pDoor->pev->target = 0;			
 			}
 		}
 

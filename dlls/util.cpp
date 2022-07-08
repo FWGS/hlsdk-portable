@@ -1515,13 +1515,15 @@ void UTIL_BubbleTrail( Vector from, Vector to, int count )
 extern DLL_GLOBAL	short	g_sModelIndexBlastCircle; // sprite de l'onde de choc
 
 
-void UTIL_WaterWave ( Vector origin  )
+void UTIL_WaterWave ( Vector origin  ) //modif de Roy
 {
-return; //Remove this until we can f-ix it.
+//ifdef WATERWAVENONFIX_INVASION_DLL
+		return; //Remove this until we can solve this. Just quit-out for now.
+//endif
 //		ALERT( at_console, "Emitting waves CLIENT %f %f %f \n", origin.x, origin.y, origin.z );
 //		MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, NULL ); //This doesn't work, the origin seems almost random.
 //		MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY ); //This works, but the actual sprite is an ugly triangle.
-		MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, origin );     //This works, but the actual sprite is f-ed.
+		MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, origin );     //This works, but the actual sprite is screwed (an ugly semi-triangle).
 			WRITE_BYTE( TE_BEAMTORUS/*TE_BEAMCYLINDER*/ );
 			WRITE_COORD( origin.x);
 			WRITE_COORD( origin.y);

@@ -162,7 +162,7 @@ COrdiControlPanel :: COrdiControlPanel(int iTrans, int iRemoveMe, int x,int y,in
 #ifndef CRASHFIXPATH_INVASION_VGUI
 		m_pFleche[i] = new CImageLabel( "boutR",  XRES ( 500 ), posY );
 #else
-		m_pFleche[i] = new CommandButton( "R", XRES( 500 ), posY, XRES(20), YRES(20) );
+		m_pFleche[i] = new CommandButton( ">", XRES( 500 ), posY, XRES(20), YRES(20) );
 #endif
 		m_pFleche[i]->setParent( m_pWindow );
 #ifndef CRASHFIXPATH_INVASION_VGUI
@@ -229,7 +229,7 @@ void COrdiControlPanel::Initialize( void )
 			m_pFleche[i]->m_pTGA = LoadTGA("boutR");
 			m_pFleche[i]->setImage( m_pFleche[i]->m_pTGA );
 #else
-			m_pFleche[i]->setText("R");
+			m_pFleche[i]->setText(">");
 #endif
 		}
 		else
@@ -238,7 +238,7 @@ void COrdiControlPanel::Initialize( void )
 			m_pFleche[i]->m_pTGA = LoadTGA("boutL");
 			m_pFleche[i]->setImage( m_pFleche[i]->m_pTGA );
 #else
-			m_pFleche[i]->setText("L");
+			m_pFleche[i]->setText("<");
 #endif
 		}
 	}

@@ -563,7 +563,7 @@ private:
 	unsigned short m_usFireGlock2;
 };
 
-/*class CCrowbar : public CBasePlayerWeapon //Restored to old version to fix animation modif de Roy
+class CCrowbar : public CBasePlayerWeapon
 {
 public:
 	void Spawn( void );
@@ -571,16 +571,12 @@ public:
 	int iItemSlot( void ) { return 1; }
 	void EXPORT SwingAgain( void );
 	void EXPORT Smack( void );
-	int GetItemInfo( ItemInfo *p );
-	//int AddToPlayer( CBasePlayer *pPlayer );
+	int GetItemInfo(ItemInfo *p);
 
 	void PrimaryAttack( void );
 	int Swing( int fFirst );
 	BOOL Deploy( void );
 	void Holster( int skiplocal = 0 );
-#if CROWBAR_IDLE_ANIM
-	void WeaponIdle();
-#endif
 	int m_iSwing;
 	TraceResult m_trHit;
 
@@ -590,20 +586,9 @@ public:
 	// modif de julien
 	int AddToPlayer( CBasePlayer *pPlayer );
 
+};
 
-	virtual BOOL UseDecrement( void )
-	{ 
-#if CLIENT_WEAPONS
-		return TRUE;
-#else
-		return FALSE;
-#endif
-	}
-private:
-	unsigned short m_usCrowbar;
-};*/
-
-/*class CPython : public CBasePlayerWeapon //Restored to old version to fix animation modif de Roy
+class CPython : public CBasePlayerWeapon
 {
 public:
 	void Spawn( void );
@@ -620,22 +605,13 @@ public:
 	float m_flSoundDelay;
 
 //	BOOL m_fInZoom;// don't save this. 
-	int m_iShell;
-
-	virtual BOOL UseDecrement( void )
-	{
-#if CLIENT_WEAPONS
-		return TRUE;
-#else
-		return FALSE;
-#endif
-	}
-
 private:
 	unsigned short m_usFirePython;
-};*/
+	int m_iShell;
 
-/*class CMP5 : public CBasePlayerWeapon //Restored to old version to fix animation modif de Roy
+};
+
+class CMP5 : public CBasePlayerWeapon
 {
 public:
 	void Spawn( void );
@@ -652,20 +628,9 @@ public:
 	void WeaponIdle( void );
 	float m_flNextAnimTime;
 	int m_iShell;
-
-	virtual BOOL UseDecrement( void )
-	{ 
-#if CLIENT_WEAPONS
-		return TRUE;
-#else
-		return FALSE;
-#endif
-	}
-
 private:
 	unsigned short m_usMP5;
-	unsigned short m_usMP52;
-};*/
+};
 
 class CCrossbow : public CBasePlayerWeapon
 {
@@ -700,44 +665,6 @@ private:
 	unsigned short m_usCrossbow;
 	unsigned short m_usCrossbow2;
 };
-
-/*class CShotgun : public CBasePlayerWeapon //Restored to old version to fix animation modif de Roy
-{
-public:
-#if !CLIENT_DLL
-	int		Save( CSave &save );
-	int		Restore( CRestore &restore );
-	static	TYPEDESCRIPTION m_SaveData[];
-#endif
-	void Spawn( void );
-	void Precache( void );
-	int iItemSlot( ) { return 3; }
-	int GetItemInfo(ItemInfo *p);
-	int AddToPlayer( CBasePlayer *pPlayer );
-
-	void PrimaryAttack( void );
-	void SecondaryAttack( void );
-	BOOL Deploy( );
-	void Reload( void );
-	void WeaponIdle( void );
-	void ItemPostFrame( void );
-	int m_fInReload;
-	float m_flNextReload;
-	int m_iShell;
-
-	virtual BOOL UseDecrement( void )
-	{
-#if CLIENT_WEAPONS
-		return TRUE;
-#else
-		return FALSE;
-#endif
-	}
-
-private:
-	unsigned short m_usDoubleFire;
-	unsigned short m_usSingleFire;
-};*/
 
 class CShotgun : public CBasePlayerWeapon
 {
@@ -994,7 +921,7 @@ private:
 	unsigned short m_usHornetFire;
 };
 
-/*class CHandGrenade : public CBasePlayerWeapon //Restored to old version to fix animation modif de Roy
+class CHandGrenade : public CBasePlayerWeapon
 {
 public:
 	void Spawn( void );
@@ -1007,19 +934,13 @@ public:
 	BOOL CanHolster( void );
 	void Holster( int skiplocal = 0 );
 	void WeaponIdle( void );
-
-	virtual BOOL UseDecrement( void )
-	{ 
-#if CLIENT_WEAPONS
-		return TRUE;
-#else
-		return FALSE;
-#endif
-	}
+	float m_flStartThrow;
+	float m_flReleaseThrow;
 
 	// modif de julien
-	int AddToPlayer( CBasePlayer *pPlayer ); //added by Roy
-};*/
+	int AddToPlayer( CBasePlayer *pPlayer );
+
+};
 
 class CSatchel : public CBasePlayerWeapon
 {

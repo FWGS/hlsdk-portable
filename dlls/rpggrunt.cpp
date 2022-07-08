@@ -493,7 +493,7 @@ void CRpggrunt :: HandleAnimEvent( MonsterEvent_t *pEvent )
 
 void CRpggrunt :: Shoot ( void )
 {
-	if (m_hEnemy == NULL)
+	if (m_hEnemy == 0)
 	{
 		return;
 	}
@@ -834,7 +834,7 @@ void CRpggrunt :: RunTask ( Task_t *pTask )
 		}
 	case TASK_RPG_FIRE:
 		{
-			if (m_hEnemy != NULL)
+			if (m_hEnemy != 0)
 			{
 				Vector vecShootDir = m_hEnemy->Center() - Center();
 				Vector angDir = UTIL_VecToAngles( vecShootDir );
@@ -1172,7 +1172,7 @@ Schedule_t *CRpggrunt :: GetSchedule( void )
 			{
 				int iPercent = RANDOM_LONG(0,99);
 
-				if ( iPercent <= 75 && m_hEnemy != NULL )
+				if ( iPercent <= 75 && m_hEnemy != 0 )
 				{
 					ClearConditions( bits_COND_LIGHT_DAMAGE );
 

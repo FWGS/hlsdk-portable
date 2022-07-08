@@ -210,28 +210,28 @@ int CHudSniper :: Init( void )
 	if ( ScreenWidth >= 1024 )
 	{
 		
-		m_sprHG	= SPR_Load("sprites/fsniper/fsniper_1024_up_l.SPR");
+		m_sprHG	= SPR_Load("sprites/fsniper/fsniper_1024_up_l.spr");
 		if(!m_sprHG) m_sprHG	= SPR_Load("sprites/fsniper/fsniper_1024_up_l.SPR");
-		m_sprH	= SPR_Load("sprites/fsniper/fsniper_1024_up.SPR");
+		m_sprH	= SPR_Load("sprites/fsniper/fsniper_1024_up.spr");
 		if(!m_sprH) m_sprH	= SPR_Load("sprites/fsniper/fsniper_1024_up.SPR");
-		m_sprHD = SPR_Load("sprites/fsniper/fsniper_1024_up_r.SPR");
+		m_sprHD = SPR_Load("sprites/fsniper/fsniper_1024_up_r.spr");
 		if(!m_sprHD) m_sprHD = SPR_Load("sprites/fsniper/fsniper_1024_up_r.SPR");
 
-		m_sprBD = SPR_Load("sprites/fsniper/fsniper_1024_down_r.SPR");
+		m_sprBD = SPR_Load("sprites/fsniper/fsniper_1024_down_r.spr");
 		if(!m_sprBD) m_sprBD = SPR_Load("sprites/fsniper/fsniper_1024_down_r.SPR");
-		m_sprB	= SPR_Load("sprites/fsniper/fsniper_1024_down.SPR");
+		m_sprB	= SPR_Load("sprites/fsniper/fsniper_1024_down.spr");
 		if(!m_sprB) m_sprB	= SPR_Load("sprites/fsniper/fsniper_1024_down.SPR");
-		m_sprBG = SPR_Load("sprites/fsniper/fsniper_1024_down_l.SPR");
+		m_sprBG = SPR_Load("sprites/fsniper/fsniper_1024_down_l.spr");
 		if(!m_sprBG) m_sprBG = SPR_Load("sprites/fsniper/fsniper_1024_down_l.SPR");
 
-		m_sprG	= SPR_Load("sprites/fsniper/fsniper_1024_left.SPR");
+		m_sprG	= SPR_Load("sprites/fsniper/fsniper_1024_left.spr");
 		if(!m_sprG) m_sprG	= SPR_Load("sprites/fsniper/fsniper_1024_left.SPR");
-		m_sprD	= SPR_Load("sprites/fsniper/fsniper_1024_right.SPR");
+		m_sprD	= SPR_Load("sprites/fsniper/fsniper_1024_right.spr");
 		if(!m_sprD) m_sprD	= SPR_Load("sprites/fsniper/fsniper_1024_right.SPR");
 
-		m_sprViseur	= SPR_Load("sprites/fsniper/fsniper_1024_cross.SPR");
+		m_sprViseur	= SPR_Load("sprites/fsniper/fsniper_1024_cross.spr");
 		if(!m_sprViseur) m_sprViseur	= SPR_Load("sprites/fsniper/fsniper_1024_cross.SPR");
-		m_sprBlack	= SPR_Load("sprites/fsniper/fsniper_black.SPR");
+		m_sprBlack	= SPR_Load("sprites/fsniper/fsniper_black.spr");
 		if(!m_sprBlack) m_sprBlack	= SPR_Load("sprites/fsniper/fsniper_black.SPR");
 
 
@@ -245,13 +245,18 @@ int CHudSniper :: Init( void )
 	else /* if ( ScreenWidth <= 640 )*/
 	{
 
-		m_sprHG	= SPR_Load("sprites/fsniper/fsniper_640_up_l.SPR");
-		m_sprHD = SPR_Load("sprites/fsniper/fsniper_640_up_r.SPR");
-		m_sprBD = SPR_Load("sprites/fsniper/fsniper_640_down_r.SPR");
-		m_sprBG = SPR_Load("sprites/fsniper/fsniper_640_down_l.SPR");
+		m_sprHG	= SPR_Load("sprites/fsniper/fsniper_640_up_l.spr");
+		if(!m_sprHG) m_sprHG = SPR_Load("sprites/fsniper/fsniper_640_up_l.SPR");
+		m_sprHD = SPR_Load("sprites/fsniper/fsniper_640_up_r.spr");
+		if(!m_sprHD) m_sprHD = SPR_Load("sprites/fsniper/fsniper_640_up_r.SPR");
+		m_sprBD = SPR_Load("sprites/fsniper/fsniper_640_down_r.spr");
+		if(!m_sprBD) m_sprBD = SPR_Load("sprites/fsniper/fsniper_640_down_r.SPR");
+		m_sprBG = SPR_Load("sprites/fsniper/fsniper_640_down_l.spr");
+		if(!m_sprBG) m_sprBG = SPR_Load("sprites/fsniper/fsniper_640_down_l.SPR");
 
-		m_sprViseur	= SPR_Load("sprites/fsniper/fsniper_640_cross.SPR");
-		m_sprBlack	= SPR_Load("sprites/fsniper/fsniper_black.SPR");
+		m_sprViseur	= SPR_Load("sprites/fsniper/fsniper_640_cross.spr");
+		if(!m_sprViseur) m_sprViseur = SPR_Load("sprites/fsniper/fsniper_640_cross.SPR");
+		m_sprBlack	= SPR_Load("sprites/fsniper/fsniper_black.spr");
 
 
 
@@ -282,28 +287,28 @@ int CHudSniper :: VidInit( void )
 	if ( ScreenWidth >= 1024 )
 	{
 		
-		m_sprHG	= SPR_Load("sprites/fsniper/fsniper_1024_up_l.SPR");
+		m_sprHG	= SPR_Load("sprites/fsniper/fsniper_1024_up_l.spr");
 		if(!m_sprHG) m_sprHG	= SPR_Load("sprites/fsniper/fsniper_1024_up_l.SPR");
-		m_sprH	= SPR_Load("sprites/fsniper/fsniper_1024_up.SPR");
+		m_sprH	= SPR_Load("sprites/fsniper/fsniper_1024_up.spr");
 		if(!m_sprH) m_sprH	= SPR_Load("sprites/fsniper/fsniper_1024_up.SPR");
-		m_sprHD = SPR_Load("sprites/fsniper/fsniper_1024_up_r.SPR");
+		m_sprHD = SPR_Load("sprites/fsniper/fsniper_1024_up_r.spr");
 		if(!m_sprHD) m_sprHD = SPR_Load("sprites/fsniper/fsniper_1024_up_r.SPR");
 
-		m_sprBD = SPR_Load("sprites/fsniper/fsniper_1024_down_r.SPR");
+		m_sprBD = SPR_Load("sprites/fsniper/fsniper_1024_down_r.spr");
 		if(!m_sprBD) m_sprBD = SPR_Load("sprites/fsniper/fsniper_1024_down_r.SPR");
-		m_sprB	= SPR_Load("sprites/fsniper/fsniper_1024_down.SPR");
+		m_sprB	= SPR_Load("sprites/fsniper/fsniper_1024_down.spr");
 		if(!m_sprB) m_sprB	= SPR_Load("sprites/fsniper/fsniper_1024_down.SPR");
-		m_sprBG = SPR_Load("sprites/fsniper/fsniper_1024_down_l.SPR");
+		m_sprBG = SPR_Load("sprites/fsniper/fsniper_1024_down_l.spr");
 		if(!m_sprBG) m_sprBG = SPR_Load("sprites/fsniper/fsniper_1024_down_l.SPR");
 
-		m_sprG	= SPR_Load("sprites/fsniper/fsniper_1024_left.SPR");
+		m_sprG	= SPR_Load("sprites/fsniper/fsniper_1024_left.spr");
 		if(!m_sprG) m_sprG	= SPR_Load("sprites/fsniper/fsniper_1024_left.SPR");
-		m_sprD	= SPR_Load("sprites/fsniper/fsniper_1024_right.SPR");
+		m_sprD	= SPR_Load("sprites/fsniper/fsniper_1024_right.spr");
 		if(!m_sprD) m_sprD	= SPR_Load("sprites/fsniper/fsniper_1024_right.SPR");
 
-		m_sprViseur	= SPR_Load("sprites/fsniper/fsniper_1024_cross.SPR");
+		m_sprViseur	= SPR_Load("sprites/fsniper/fsniper_1024_cross.spr");
 		if(!m_sprViseur) m_sprViseur	= SPR_Load("sprites/fsniper/fsniper_1024_cross.SPR");
-		m_sprBlack	= SPR_Load("sprites/fsniper/fsniper_black.SPR");
+		m_sprBlack	= SPR_Load("sprites/fsniper/fsniper_black.spr");
 		if(!m_sprBlack) m_sprBlack	= SPR_Load("sprites/fsniper/fsniper_black.SPR");
 
 
@@ -317,13 +322,18 @@ int CHudSniper :: VidInit( void )
 	else /*if ( ScreenWidth <= 640 )*/
 	{
 
-		m_sprHG	= SPR_Load("sprites/fsniper/fsniper_640_up_l.SPR");
-		m_sprHD = SPR_Load("sprites/fsniper/fsniper_640_up_r.SPR");
-		m_sprBD = SPR_Load("sprites/fsniper/fsniper_640_down_r.SPR");
-		m_sprBG = SPR_Load("sprites/fsniper/fsniper_640_down_l.SPR");
+		m_sprHG	= SPR_Load("sprites/fsniper/fsniper_640_up_l.spr");
+		if(!m_sprHG) m_sprHG = SPR_Load("sprites/fsniper/fsniper_640_up_l.SPR");
+		m_sprHD = SPR_Load("sprites/fsniper/fsniper_640_up_r.spr");
+		if(!m_sprHD) m_sprHD = SPR_Load("sprites/fsniper/fsniper_640_up_r.SPR");
+		m_sprBD = SPR_Load("sprites/fsniper/fsniper_640_down_r.spr");
+		if(!m_sprBD) m_sprBD = SPR_Load("sprites/fsniper/fsniper_640_down_r.SPR");
+		m_sprBG = SPR_Load("sprites/fsniper/fsniper_640_down_l.spr");
+		if(!m_sprBG) m_sprBG = SPR_Load("sprites/fsniper/fsniper_640_down_l.SPR");
 
-		m_sprViseur	= SPR_Load("sprites/fsniper/fsniper_640_cross.SPR");
-		m_sprBlack	= SPR_Load("sprites/fsniper/fsniper_black.SPR");
+		m_sprViseur	= SPR_Load("sprites/fsniper/fsniper_640_cross.spr");
+		if(!m_sprViseur) m_sprViseur = SPR_Load("sprites/fsniper/fsniper_640_cross.SPR");
+		m_sprBlack	= SPR_Load("sprites/fsniper/fsniper_black.spr");
 
 
 

@@ -844,7 +844,7 @@ void CFlybee :: RunTask ( Task_t *pTask )
 	switch ( pTask->iTask )
 	{
 	case TASK_FLYBEE_CIRCLE_ENEMY:
-		if (m_hEnemy == NULL)
+		if (m_hEnemy == 0)
 		{
 			TaskComplete( );
 		}
@@ -1333,7 +1333,7 @@ Vector CFlybee::DoProbe(const Vector &Probe)
 		}
 	}
 
-	if (bBumpedSomething && (m_hEnemy == NULL || tr.pHit != m_hEnemy->edict()))
+	if (bBumpedSomething && (m_hEnemy == 0 || tr.pHit != m_hEnemy->edict()))
 	{
 		Vector ProbeDir = Probe - pev->origin;
 
@@ -1420,7 +1420,7 @@ void CFlyBall :: Spawn( void )
 	pev->velocity = gpGlobals->v_forward * 1000;
 
 	m_flFieldOfView = -1;
-	m_hEnemy = NULL;
+	m_hEnemy = 0;
 }
 
 int CFlyBall::Classify ( void )

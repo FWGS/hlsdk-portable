@@ -28,33 +28,7 @@ extern void ClientDecal ( TraceResult *pTrace, Vector vecSrc, Vector vecEnd, int
 #define	CROWBAR_BODYHIT_VOLUME 128
 #define	CROWBAR_WALLHIT_VOLUME 512
 
-class CCrowbar : public CBasePlayerWeapon
-{
-public:
-	void Spawn( void );
-	void Precache( void );
-	int iItemSlot( void ) { return 1; }
-	void EXPORT SwingAgain( void );
-	void EXPORT Smack( void );
-	int GetItemInfo(ItemInfo *p);
-
-	void PrimaryAttack( void );
-	int Swing( int fFirst );
-	BOOL Deploy( void );
-	void Holster( int skiplocal = 0 );
-	int m_iSwing;
-	TraceResult m_trHit;
-
-	Vector m_vecDecalSrc;
-	Vector m_vecDecalEnd;
-
-	// modif de julien
-	int AddToPlayer( CBasePlayer *pPlayer );
-
-};
 LINK_ENTITY_TO_CLASS( weapon_crowbar, CCrowbar );
-
-
 
 enum gauss_e {
 /*	CROWBAR_IDLE = 0,

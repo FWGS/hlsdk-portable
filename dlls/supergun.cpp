@@ -156,7 +156,7 @@ void CSGBall :: Spawn( void )
 	pev->velocity = gpGlobals->v_forward * 1700;
 
 	m_flFieldOfView = -1;
-	m_hEnemy = NULL;
+	m_hEnemy = 0;
 }
 
 int CSGBall::Classify ( void )
@@ -207,13 +207,13 @@ void CSGBall :: AnimateThink( void  )
 
 	// ennemi
 
-	if ( m_hEnemy == NULL )
+	if ( m_hEnemy == 0 )
 	{
 		Look( 600 );
 		m_hEnemy = BestVisibleEnemy( );
 	}
 	
-	if ( m_hEnemy != NULL && FVisible( m_hEnemy ))
+	if ( m_hEnemy != 0 && FVisible( m_hEnemy ))
 	{
 		Vector vecDirToEnemy = ( m_hEnemy->BodyTarget( pev->origin ) - pev->origin ).Normalize();
 
@@ -230,7 +230,7 @@ void CSGBall :: AnimateThink( void  )
 	}
 	else
 	{
-		m_hEnemy = NULL;
+		m_hEnemy = 0;
 	}
 
 

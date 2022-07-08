@@ -497,7 +497,8 @@ int CHudHealth::DrawDamage(float flTime)
 		}
 	}
 
-	int i = 0; //Loop iterator fix.
+	int i = 0;  //We need to declare this variable outside of the loop, modif de Roy
+
 	// check for bits that should be expired
 	for ( i = 0; i < NUM_DMG_TYPES; i++ )
 	{
