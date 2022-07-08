@@ -56,8 +56,14 @@
 
 #include "shake.h"
 #include "screenfade.h"
+#include "crutches.h" //Load some code crutches for HLINVASION, modif de Roy
+#ifdef NOATTACKFIXPATH_INVASION_VGUI
+extern bool hlinv_isAttackSuspended; //We need to prevent attacks while VGUI is active, modif de Roy
+#endif
 
+#if GOLDSOURCE_SUPPORT
 void IN_SetVisibleMouse(bool visible);
+#endif
 class CCommandMenu;
 
 // Scoreboard positions
@@ -71,7 +77,9 @@ class CCommandMenu;
 #define SBOARD_INDENT_X_400		0
 #define SBOARD_INDENT_Y_400		20
 
+#if GOLDSOURCE_SUPPORT
 void IN_ResetMouse( void );
+#endif
 extern CMenuPanel *CMessageWindowPanel_Create( const char *szMOTD, const char *szTitle, int iShadeFullscreen, int iRemoveMe, int x, int y, int wide, int tall );
 extern float *GetClientColor( int clientIndex );
 
@@ -164,7 +172,7 @@ int sTFValidClassInts[] =
 #endif
 
 // Get the name of TGA file, based on GameDir
-char *GetVGUITGAName( const char *pszName )
+char *GetVGUITGAName( const char *pszName, bool allCapitalsVGUI )
 {
 	int i;
 	char sz[256]; 
@@ -179,7 +187,10 @@ char *GetVGUITGAName( const char *pszName )
 	sprintf( sz, pszName, i );
 
 	gamedir = gEngfuncs.pfnGetGameDirectory();
-	sprintf( gd, "%s/gfx/vgui/%s.tga", gamedir, sz );
+	if(!allCapitalsVGUI)
+		sprintf( gd, "%s/gfx/vgui/%s.tga", gamedir, sz );
+	else
+		sprintf( gd, "%s/gfx/VGUI/%s.tga", gamedir, sz );
 
 	return gd;
 }
@@ -539,6 +550,12 @@ TeamFortressViewport::TeamFortressViewport( int x, int y, int wide, int tall ) :
 	m_pSpectatorPanel = NULL;
 	m_pCurrentMenu = NULL;
 	m_pCurrentCommandMenu = NULL;
+	//modif de Julien
+	m_pOrdiMenu = NULL;
+	m_pOrdiControl = NULL;
+	m_pKeypad = NULL;
+	m_pSoin = NULL;
+	m_pRadio = NULL;
 
 	Initialize();
 	addInputSignal( new CViewPortInputHandler );
@@ -597,6 +614,12 @@ TeamFortressViewport::TeamFortressViewport( int x, int y, int wide, int tall ) :
 	CreateClassMenu();
 	CreateSpectatorMenu();
 	CreateScoreBoard();
+	CreateOrdiMenu();		//modif de Julien
+	CreateOrdiControl();	//modif de Julien
+	CreateKeypad();	//modif de Julien
+	CreateSoin();	//modif de Julien
+	CreateRadio();	//modif de Julien
+
 	// Init command menus
 	m_iNumMenus = 0;
 	m_iCurrentTeamNumber = m_iUser1 = m_iUser2 = m_iUser3 = 0;
@@ -633,6 +656,31 @@ void TeamFortressViewport::Initialize( void )
 	if( m_pClassMenu )
 	{
 		m_pClassMenu->Initialize();
+	}
+	//modif de JUlien
+	if (m_pOrdiMenu)
+	{
+		m_pOrdiMenu->Initialize();
+	}
+	//modif de JUlien
+	if (m_pOrdiControl)
+	{
+		m_pOrdiControl->Initialize();
+	}
+	//modif de JUlien
+	if (m_pKeypad)
+	{
+		m_pKeypad->Initialize();
+	}
+	//modif de JUlien
+	if (m_pSoin)
+	{
+		m_pSoin->Initialize();
+	}
+	//modif de JUlien
+	if (m_pRadio)
+	{
+		m_pRadio->Initialize();
 	}
 	if( m_pScoreBoard )
 	{
@@ -1888,6 +1936,30 @@ void TeamFortressViewport::ShowVGUIMenu( int iMenu )
 	case MENU_CLASS:
 		pNewMenu = ShowClassMenu();
 		break;
+	//modif de Julien
+	case MENU_ORDIMENU:
+		pNewMenu = ShowOrdiMenu();
+		break;
+
+	//modif de Julien
+	case MENU_ORDICONTROL:
+		pNewMenu = ShowOrdiControl();
+		break;
+
+	//modif de Julien
+	case MENU_KEYPAD:
+		pNewMenu = ShowKeypad();
+		break;
+
+	//modif de Julien
+	case MENU_SOIN:
+		pNewMenu = ShowSoin();
+		break;
+
+		//modif de Julien
+	case MENU_RADIO:
+		pNewMenu = ShowRadio();
+		break;
 
 	default:
 		break;
@@ -1940,6 +2012,10 @@ void TeamFortressViewport::HideVGUIMenu()
 // Remove the top VGUI menu, and bring up the next one
 void TeamFortressViewport::HideTopMenu()
 {
+#ifdef NOATTACKFIXPATH_INVASION_VGUI
+	hlinv_isAttackSuspended = false; //We need to resume attacks when VGUI shuts down, modif de Roy
+	gEngfuncs.Con_Printf ( "client.dll : hlinv_isAttackSuspended SETTING FALSE :  > %i\n", hlinv_isAttackSuspended );	//alertatconsole
+#endif
 	if( m_pCurrentMenu )
 	{
 		// Close the top one
@@ -1986,6 +2062,65 @@ void TeamFortressViewport::CreateTeamMenu()
 	m_pTeamMenu = new CTeamMenuPanel( 100, false, 0, 0, ScreenWidth, ScreenHeight );
 	m_pTeamMenu->setParent( this );
 	m_pTeamMenu->setVisible( false );
+}
+
+//modif de Julien
+
+void TeamFortressViewport::CreateOrdiMenu()
+{
+	m_pOrdiMenu = new COrdiMenuPanel(100, false, 0, 0, ScreenWidth, ScreenHeight);
+	m_pOrdiMenu->setParent(this);
+	m_pOrdiMenu->setVisible(false);
+}
+
+CMenuPanel* TeamFortressViewport :: ShowOrdiMenu()
+{
+#ifdef NOATTACKFIXPATH_INVASION_VGUI
+		hlinv_isAttackSuspended = true; //We need to prevent attacks while VGUI is active, modif de Roy
+		gEngfuncs.Con_Printf ( "client.dll : hlinv_isAttackSuspended SETTING TRUE :  > %i\n", hlinv_isAttackSuspended );	//alertatconsole
+#endif
+    m_pOrdiMenu->Reset();
+    return m_pOrdiMenu;
+}
+
+
+//modif de Julien
+
+void TeamFortressViewport::CreateOrdiControl()
+{
+	//return;
+	m_pOrdiControl = new COrdiControlPanel(100, false, 0, 0, ScreenWidth, ScreenHeight); //This causes VGUI crash. CRASHFIXPATH
+	m_pOrdiControl->setParent(this);
+	m_pOrdiControl->setVisible(false);
+}
+
+CMenuPanel* TeamFortressViewport :: ShowOrdiControl()
+{
+#ifdef NOATTACKFIXPATH_INVASION_VGUI
+		hlinv_isAttackSuspended = true; //We need to prevent attacks while VGUI is active, modif de Roy
+		gEngfuncs.Con_Printf ( "client.dll : hlinv_isAttackSuspended SETTING TRUE :  > %i\n", hlinv_isAttackSuspended );	//alertatconsole
+#endif
+    m_pOrdiControl->Reset();
+    return m_pOrdiControl;
+}
+
+//modif de Julien
+
+void TeamFortressViewport::CreateKeypad()
+{
+	m_pKeypad = new CKeypad(100, false, 0, 0, ScreenWidth, ScreenHeight);
+	m_pKeypad->setParent(this);
+	m_pKeypad->setVisible(false);
+}
+
+CMenuPanel* TeamFortressViewport :: ShowKeypad()
+{
+#ifdef NOATTACKFIXPATH_INVASION_VGUI
+		hlinv_isAttackSuspended = true; //We need to prevent attacks while VGUI is active, modif de Roy
+		gEngfuncs.Con_Printf ( "client.dll : hlinv_isAttackSuspended SETTING TRUE :  > %i\n", hlinv_isAttackSuspended );	//alertatconsole
+#endif
+    m_pKeypad->Reset();
+    return m_pKeypad;
 }
 
 //======================================================================================
@@ -2046,7 +2181,9 @@ void TeamFortressViewport::UpdateCursorState()
 	// Need cursor if any VGUI window is up
 	if( m_pSpectatorPanel->m_menuVisible || m_pCurrentMenu || m_pTeamMenu->isVisible() || GetClientVoiceMgr()->IsInSquelchMode() )
 	{
+#if GOLDSOURCE_SUPPORT
 		IN_SetVisibleMouse(true);
+#endif	
 		App::getInstance()->setCursorOveride( App::getInstance()->getScheme()->getCursor(Scheme::scu_arrow) );
 		return;
 	}
@@ -2055,19 +2192,25 @@ void TeamFortressViewport::UpdateCursorState()
 		// commandmenu doesn't have cursor if hud_capturemouse is turned off
 		if( gHUD.m_pCvarStealMouse->value != 0.0f )
 		{
+#if GOLDSOURCE_SUPPORT
 			IN_SetVisibleMouse(true);
+#endif
 			App::getInstance()->setCursorOveride( App::getInstance()->getScheme()->getCursor(Scheme::scu_arrow) );
 			return;
 		}
 	}
 
 	App::getInstance()->setCursorOveride( App::getInstance()->getScheme()->getCursor(Scheme::scu_none) );
+#if GOLDSOURCE_SUPPORT
 	IN_SetVisibleMouse(false);
+#endif
 
 	// Don't reset mouse in demo playback
 	if( !gEngfuncs.pDemoAPI->IsPlayingback() )
 	{
+#if GOLDSOURCE_SUPPORT
 		IN_ResetMouse();
+#endif
 	}
 }
 
@@ -2361,6 +2504,242 @@ int TeamFortressViewport::MsgFunc_VGUIMenu( const char *pszName, int iSize, void
 
 	// Bring up the menu6
 	ShowVGUIMenu( iMenu );
+
+	return 1;
+}
+
+//modif de Julien
+//permet de passer trois param
+
+int TeamFortressViewport::MsgFunc_VGUIordi(const char *pszName, int iSize, void *pbuf )
+{
+	BEGIN_READ( pbuf, iSize );
+
+	int iparam1 = READ_BYTE();
+	int iparam2 = READ_BYTE();
+	int iparam3 = READ_BYTE();
+
+	// COrdiMenuPanel - l3m3
+
+	if ( iparam1 == 1 )
+	{
+
+		CMenuPanel *pNewMenu = NULL;
+
+		if ( iparam3 == 1 )
+		{
+			
+			// annule si d
+			if (m_pCurrentMenu)
+			{
+				CMenuPanel *pMenu = m_pCurrentMenu;
+				while (pMenu != NULL)
+				{
+					if (pMenu->GetMenuID() == MENU_ORDIMENU)
+						return 1;
+					pMenu = pMenu->GetNextMenu();
+				}
+			}
+		
+
+			pNewMenu = ShowOrdiMenu();
+			COrdiMenuPanel *pOrdiMenu = (COrdiMenuPanel*)pNewMenu;
+			pOrdiMenu->m_iID = iparam2;
+
+
+			// Close the Command Menu if it's open
+			HideCommandMenu();
+
+			pNewMenu->SetMenuID( 9 );
+			pNewMenu->SetActive( true );
+
+			// See if another menu is visible, and if so, cache this one for display once the other one's finished
+			if (m_pCurrentMenu)
+			{
+				m_pCurrentMenu->SetNextMenu( pNewMenu );
+			}
+			else
+			{
+				m_pCurrentMenu = pNewMenu;
+				m_pCurrentMenu->Open();
+				UpdateCursorState();
+			}
+		}
+		else if ( iparam3 == 0 )
+		{
+			//ferme le menu
+			HideTopMenu();
+		}
+	}
+
+	
+	// COrdiMenuPanel - l4mx
+
+	
+	else if ( iparam1 == 2 )
+	{
+		CMenuPanel *pNewMenu = NULL;
+
+		//ouverture
+		
+		if ( iparam3 == 1 )
+		{
+			// annule si d
+			if (m_pCurrentMenu)
+			{
+				CMenuPanel *pMenu = m_pCurrentMenu;
+				while (pMenu != NULL)
+				{
+					if (pMenu->GetMenuID() == MENU_ORDICONTROL)
+						return 1;
+					pMenu = pMenu->GetNextMenu();
+				}
+			}
+
+			pNewMenu = ShowOrdiControl();
+
+			// Close the Command Menu if it's open
+			HideCommandMenu();
+
+			pNewMenu->SetMenuID( MENU_ORDICONTROL );
+			pNewMenu->SetActive( true );
+
+			// See if another menu is visible, and if so, cache this one for display once the other one's finished
+			if (m_pCurrentMenu)
+			{
+				m_pCurrentMenu->SetNextMenu( pNewMenu );
+			}
+			else
+			{
+				m_pCurrentMenu = pNewMenu;
+				m_pCurrentMenu->Open();
+				UpdateCursorState();
+			}
+		}
+
+		//fermeture
+		else if ( iparam3 == 0 )
+		{
+			HideTopMenu();
+		}
+	}
+
+	return 1;
+}
+
+//modif de Julien
+//permet de passer trois param
+
+int TeamFortressViewport::MsgFunc_Conveyor(const char *pszName, int iSize, void *pbuf )
+{
+	BEGIN_READ( pbuf, iSize );
+
+	int OnOff = READ_BYTE();
+
+	if ( OnOff == 0 )
+	{
+		HideTopMenu();
+	}
+
+	else
+	{
+		CMenuPanel *pNewMenu = NULL;
+
+		// annule si d
+		if (m_pCurrentMenu)
+		{
+			CMenuPanel *pMenu = m_pCurrentMenu;
+			while (pMenu != NULL)
+			{
+				if (pMenu->GetMenuID() == MENU_ORDICONTROL)
+					return 1;
+				pMenu = pMenu->GetNextMenu();
+			}
+		}
+
+		pNewMenu = ShowOrdiControl();
+
+		COrdiControlPanel *pConveyor = (COrdiControlPanel*)pNewMenu;
+		pConveyor->m_ibitConveyor = READ_BYTE ();
+		pConveyor->Initialize ();
+
+		// Close the Command Menu if it's open
+		HideCommandMenu();
+
+		pNewMenu->SetMenuID( MENU_ORDICONTROL );
+		pNewMenu->SetActive( true );
+
+		// See if another menu is visible, and if so, cache this one for display once the other one's finished
+		if (m_pCurrentMenu)
+		{
+			m_pCurrentMenu->SetNextMenu( pNewMenu );
+		}
+		else
+		{
+			m_pCurrentMenu = pNewMenu;
+			m_pCurrentMenu->Open();
+			UpdateCursorState();
+		}
+	}
+
+
+	return 1;
+}
+
+//modif de Julien
+
+int TeamFortressViewport::MsgFunc_Keypad(const char *pszName, int iSize, void *pbuf )
+{
+	BEGIN_READ( pbuf, iSize );
+
+	int OnOff = READ_BYTE();
+
+	if ( OnOff == 0 )
+	{
+		HideTopMenu();
+	}
+
+	else
+	{
+		CMenuPanel *pNewMenu = NULL;
+
+		// annule si d
+		if (m_pCurrentMenu)
+		{
+			CMenuPanel *pMenu = m_pCurrentMenu;
+			while (pMenu != NULL)
+			{
+				if (pMenu->GetMenuID() == MENU_KEYPAD)
+					return 1;
+				pMenu = pMenu->GetNextMenu();
+			}
+		}
+	
+
+		pNewMenu = ShowKeypad();
+		CKeypad *pKeypad = (CKeypad*)pNewMenu;
+		pKeypad->m_iCode = READ_LONG ();
+		pKeypad->m_iEnt = READ_LONG ();
+
+
+		// Close the Command Menu if it's open
+		HideCommandMenu();
+
+		pNewMenu->SetMenuID( MENU_KEYPAD );
+		pNewMenu->SetActive( true );
+
+		// See if another menu is visible, and if so, cache this one for display once the other one's finished
+		if (m_pCurrentMenu)
+		{
+			m_pCurrentMenu->SetNextMenu( pNewMenu );
+		}
+		else
+		{
+			m_pCurrentMenu = pNewMenu;
+			m_pCurrentMenu->Open();
+			UpdateCursorState();
+		}
+	}
 
 	return 1;
 }

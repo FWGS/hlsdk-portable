@@ -93,6 +93,11 @@ int CHudFlashlight::MsgFunc_Flashlight( const char *pszName,  int iSize, void *p
 
 int CHudFlashlight::Draw( float flTime )
 {
+	// modif de Julien
+
+	m_iFlags &= ~HUD_ACTIVE;
+
+/*
 	static bool show = ( gHUD.m_iHideHUDDisplay & ( HIDEHUD_FLASHLIGHT | HIDEHUD_ALL ) );
 	if( show != !( gHUD.m_iHideHUDDisplay & ( HIDEHUD_FLASHLIGHT | HIDEHUD_ALL ) ) )
 	{
@@ -152,7 +157,7 @@ int CHudFlashlight::Draw( float flTime )
 
 		SPR_Set( m_hSprite2, r, g, b );
 		SPR_DrawAdditive( 0, x + iOffset, y, &rc );
-	}
+	}*/
 
 	return 1;
 }

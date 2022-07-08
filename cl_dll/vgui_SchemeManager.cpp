@@ -395,7 +395,9 @@ buildDefaultFont:
 
 			if(g_CV_BitmapFonts && g_CV_BitmapFonts->value)
 			{
-				int fontRes = 640;
+				int fontRes = 5;
+				bool bFontFailed = false;
+				/*int fontRes = 640;
 				if ( m_xRes >= 1600 )
 					fontRes = 1600;
 				else if ( m_xRes >= 1280 )
@@ -405,12 +407,36 @@ buildDefaultFont:
 				else if ( m_xRes >= 1024 )
 					fontRes = 1024;
 				else if ( m_xRes >= 800 )
-					fontRes = 800;
+					fontRes = 800;*/
 
-				sprintf(fontFilename, "gfx\\vgui\\fonts\\%d_%s.tga", fontRes, m_pSchemeList[i].schemeName);
+				int screenRes[6] = { 1600, 1280, 1152, 1024, 800, 640 };
+				for(int j = 5; j >= 0; j--){
+					if(m_xRes >= screenRes[j]) fontRes = j;
+				}
+
+				//sprintf(fontFilename, "gfx\\vgui\\fonts\\%d_%s.tga", fontRes, m_pSchemeList[i].schemeName);
+				/*sprintf(fontFilename, "gfx/vgui/fonts/%d_%s.tga", fontRes, m_pSchemeList[i].schemeName);
 				pFontData = gEngfuncs.COM_LoadFile( fontFilename, 5, &fontFileLength );
 				if(!pFontData)
-					gEngfuncs.Con_Printf("Missing bitmap font: %s\n", fontFilename);
+					gEngfuncs.Con_Printf("Missing bitmap font: %s\n", fontFilename);*/
+
+				for(int j = fontRes; j < 6; j++){
+					sprintf(fontFilename, "gfx/vgui/fonts/%d_%s.tga", screenRes[j], m_pSchemeList[i].schemeName);
+					if(bFontFailed) gEngfuncs.Con_Printf("Trying bitmap font instead: %s\n", fontFilename);
+					pFontData = gEngfuncs.COM_LoadFile( fontFilename, 5, &fontFileLength );
+					if(pFontData){
+						break;
+					}else{
+						sprintf(fontFilename, "gfx/VGUI/fonts/%d_%s.tga", screenRes[j], m_pSchemeList[i].schemeName); //Try all-capitals.
+						pFontData = gEngfuncs.COM_LoadFile( fontFilename, 5, &fontFileLength );
+						if(pFontData)
+							break;
+						else{
+							gEngfuncs.Con_Printf("Missing bitmap font: %s\n", fontFilename);
+							bFontFailed = true;
+						}
+					}
+				}
 			}
 
 			m_pSchemeList[i].font = new vgui::Font(

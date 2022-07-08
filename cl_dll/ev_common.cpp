@@ -140,7 +140,7 @@ void EV_EjectBrass( float *origin, float *velocity, float rotation, int model, i
 	vec3_t endpos;
 	VectorClear( endpos );
 	endpos[1] = rotation;
-	gEngfuncs.pEfxAPI->R_TempModel( origin, velocity, endpos, 2.5, model, soundtype );
+	gEngfuncs.pEfxAPI->R_TempModel( origin, velocity, endpos, 10, model, soundtype );//modif de Julien ( 2.5 )
 }
 
 /*

@@ -194,7 +194,7 @@ void CBaseAnimating::SetBodygroup( int iGroup, int iValue ) { }
 int CBaseAnimating::GetBodygroup( int iGroup ) { return 0; }
 Vector CBaseMonster::GetGunPosition( void ) { return g_vecZero; }
 void CBaseEntity::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType ) { }
-void CBaseEntity::FireBullets( ULONG cShots, Vector vecSrc, Vector vecDirShooting, Vector vecSpread, float flDistance, int iBulletType, int iTracerFreq, int iDamage, entvars_t *pevAttacker ) { }
+void CBaseEntity::FireBullets( ULONG cShots, Vector vecSrc, Vector vecDirShooting, Vector vecSpread, float flDistance, int iBulletType, int iTracerFreq, int iDamage, entvars_t *pevAttacker, int TraverseMur) { } //modif de Julien (TraverseMur)
 void CBaseEntity::TraceBleed( float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType ) { }
 void CBaseMonster::MakeDamageBloodDecal( int cCount, float flNoise, TraceResult *ptr, const Vector &vecDir ) { }
 BOOL CBaseMonster::FGetNodeRoute( Vector vecDest ) { return TRUE; }
@@ -237,6 +237,11 @@ int CBaseMonster::TakeHealth(float flHealth, int bitsDamageType) { return 0; }
 int CBaseMonster::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType ) { return 0; }
 int CBaseMonster::Restore( class CRestore & ) { return 1; }
 int CBaseMonster::Save( class CSave & ) { return 1; }
+// modif de Julien
+void CBaseMonster :: Gunflash ( void ) {};
+void CBasePlayer :: TextAmmo ( TEXT_AMMMO ta_text ) {};
+
+
 
 int TrainSpeed( int iSpeed, int iMax ) { return 0; }
 void CBasePlayer::DeathSound( void ) { }
@@ -275,6 +280,8 @@ void CBasePlayer::FlashlightTurnOn( void ) { }
 void CBasePlayer::FlashlightTurnOff( void ) { }
 void CBasePlayer::ForceClientDllUpdate( void ) { }
 void CBasePlayer::ImpulseCommands() { }
+//modif de Julien 7/7/01
+BOOL CBasePlayer::IsInGaz( ) { return FALSE; } //Here
 void CBasePlayer::CheatImpulseCommands( int iImpulse ) { }
 int CBasePlayer::AddPlayerItem( CBasePlayerItem *pItem ) { return FALSE; }
 int CBasePlayer::RemovePlayerItem( CBasePlayerItem *pItem, bool bCallHoster ) { return FALSE; }

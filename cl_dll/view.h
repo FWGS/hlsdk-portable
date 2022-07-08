@@ -17,6 +17,11 @@
 #define M_PI_F		(float)M_PI
 #endif
 
+// Spectator flags
+#define SPEC_IS_SPECTATOR		(1<<0)
+#define SPEC_SMOOTH_ANGLES		(1<<1)
+#define SPEC_SMOOTH_ORIGIN		(1<<2)
+
 void V_StartPitchDrift( void );
 void V_StopPitchDrift( void );
 #endif // !VIEWH

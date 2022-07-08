@@ -112,6 +112,7 @@ int CHud::Redraw( float flTime, int intermission )
 			// Have to do this here so the scoreboard goes away
 			m_iIntermission = intermission;
 			gViewPort->HideCommandMenu();
+			gViewPort->HideVGUIMenu();
 			gViewPort->HideScoreBoard();
 			gViewPort->UpdateSpectatorPanel();
 		}
@@ -156,8 +157,10 @@ int CHud::Redraw( float flTime, int intermission )
 		{
 			if( !intermission )
 			{
-				if ( ( pList->p->m_iFlags & HUD_ACTIVE ) && !( m_iHideHUDDisplay & HIDEHUD_ALL ) )
-					pList->p->Draw( flTime );
+				//if ( ( pList->p->m_iFlags & HUD_ACTIVE ) && !( m_iHideHUDDisplay & HIDEHUD_ALL ) )
+				if (   ( (pList->p->m_iFlags & HUD_ACTIVE) && !(m_iHideHUDDisplay & HIDEHUD_ALL) ) 
+					|| ( (pList->p->m_iFlags & HUD_ACTIVE) &&  (m_iHideHUDDisplay & HIDEHUD_ALL) && pList->p->m_iFlags & HUD_ALWAYSDRAW) )	// modif de Julien
+						pList->p->Draw( flTime );
 			}
 			else
 			{

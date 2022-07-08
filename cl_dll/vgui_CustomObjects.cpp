@@ -43,7 +43,7 @@ const char *sArrowFilenames[] =
 };
 
 // Get the name of TGA file, without a gamedir
-char *GetTGANameForRes( const char *pszName )
+char *GetTGANameForRes( const char *pszName, bool allCapitalsVGUI = false )
 {
 	int i;
 	char sz[256]; 
@@ -55,7 +55,10 @@ char *GetTGANameForRes( const char *pszName )
 		i = 640;
 
 	sprintf( sz, pszName, i );
-	sprintf( gd, "gfx/vgui/%s.tga", sz );
+	if(!allCapitalsVGUI)
+		sprintf( gd, "gfx/vgui/%s.tga", sz );
+	else
+		sprintf( gd, "gfx/VGUI/%s.tga", sz );
 	return gd;
 }
 
@@ -69,6 +72,8 @@ BitmapTGA *LoadTGAForRes( const char* pImageName )
 
 	sprintf( sz, "%%d_%s", pImageName );
 	pTGA = vgui_LoadTGA( GetTGANameForRes( sz ) );
+	if(!pTGA) 
+		pTGA = vgui_LoadTGA( GetTGANameForRes( sz, true ) ); //Try all-captials
 
 	return pTGA;
 }

@@ -18,6 +18,9 @@
 #include "event_api.h"
 #include "pm_defs.h"
 #include "pmtrace.h"	
+
+//modif de Julien
+#include "eventscripts.h"	
 #include "pm_shared.h"
 
 void Game_AddObjects( void );
@@ -268,8 +271,9 @@ void MoveModel( void )
 	}
 }
 #endif
-
-//#define TRACE_TEST	1
+*/
+/*
+#define TRACE_TEST
 #if TRACE_TEST
 
 extern int hitent;
@@ -299,8 +303,8 @@ void TraceModel( void )
 }
 #endif
 */
-
 /*
+
 void ParticleCallback( struct particle_s *particle, float frametime )
 {
 	int i;
@@ -364,8 +368,8 @@ void Particles( void )
 		p->die += 3.0f;
 	}
 }
-*/
 
+*/
 /*
 void TempEntCallback( struct tempent_s *ent, float frametime, float currenttime )
 {
@@ -426,6 +430,7 @@ void TempEnts( void )
 }
 */
 
+//#define BEAM_TEST
 #if BEAM_TEST
 // Note can't index beam[0] in Beam callback, so don't use that index
 // Room for 1 beam ( 0 can't be used )
@@ -565,6 +570,7 @@ void DLLEXPORT HUD_StudioEvent( const struct mstudioevent_s *event, const struct
 	case 5004:		
 		gEngfuncs.pfnPlaySoundByNameAtLocation( (char *)event->options, 1.0, (float *)&entity->attachment[0] );
 		break;
+
 	default:
 		break;
 	}

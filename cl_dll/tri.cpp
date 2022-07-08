@@ -98,6 +98,9 @@ Non-transparent triangles-- add them here
 void DLLEXPORT HUD_DrawNormalTriangles( void )
 {
 	gHUD.m_Spectator.DrawOverview();
+	// dessin du brouillard
+	gHUD.m_Fog.DrawFog ();
+
 #if TEST_IT
 //	Draw_Triangles();
 #endif
@@ -112,6 +115,12 @@ Render any triangles with transparent rendermode needs here
 */
 void DLLEXPORT HUD_DrawTransparentTriangles( void )
 {
+	gHUD.m_Particules.DrawAll();	// affichage des particules et des decals
+	gHUD.m_LFlammes.DrawFlammes();	// lance flammes
+	gHUD.m_Briquet.DrawFlamme();	// briquet
+	gHUD.m_LensFlare.DrawLight();	// lensflare
+
+
 #if TEST_IT
 //	Draw_Triangles();
 #endif

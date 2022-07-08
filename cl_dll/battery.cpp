@@ -37,6 +37,18 @@ int CHudBattery::Init( void )
 
 	gHUD.AddHudElem( this );
 
+	// modif de Julien
+	m_sprCorps = SPR_Load("sprites/hud_health_body.spr");
+	m_wrcCorps = CreateWrect ( 0, 0, 144, 152 );
+
+	for ( int i=0; i<MAX_ARMOR_GROUP; i++ )
+	{
+		m_flArmor [i] [0] = 0;
+		m_flArmor [i] [1] = 0;
+		m_flArmor [i] [2] = 0;
+	}
+
+
 	return 1;
 }
 
@@ -50,6 +62,18 @@ int CHudBattery::VidInit( void )
 	m_prc2 = &gHUD.GetSpriteRect( HUD_suit_full );
 	m_iHeight = m_prc2->bottom - m_prc1->top;
 	m_fFade = 0;
+
+	// modif de Julien
+	m_sprCorps = SPR_Load("sprites/hud_health_body.spr");
+	m_wrcCorps = CreateWrect ( 0, 0, 144, 152 );
+
+	for ( int i=0; i<MAX_ARMOR_GROUP; i++ )
+	{
+		m_flArmor [i] [0] = 0;
+		m_flArmor [i] [1] = 0;
+		m_flArmor [i] [2] = 0;
+	}
+
 	return 1;
 }
 
@@ -66,6 +90,41 @@ int CHudBattery::MsgFunc_Battery( const char *pszName,  int iSize, void *pbuf )
 		m_iBat = x;
 	}
 
+	// modif de Julien
+
+	float unTiers =		( (float)MAX_MEMBER_ARMOR		/ 3 );
+	float deuxTiers =	( (float)MAX_MEMBER_ARMOR * 2	/ 3 );
+
+	for ( int i=0; i<MAX_ARMOR_GROUP; i++ )
+	{
+		// lecture
+		float value = READ_COORD();
+
+		// dommages
+
+		if ( value > m_flArmorvalue[i] )
+			m_flPain[i] = ARMOR_PAIN_TIME;
+
+		else if ( value < m_flArmorvalue[i] )
+			m_flPain[i] = -ARMOR_PAIN_TIME;
+
+		m_flArmorvalue [i] = value;
+
+		// couleurs
+
+		/* horreur pour simplifier les couleurs :
+			blanc	255	255	255
+			jaune	255	255	0
+			orange	255	128	0
+			rouge	255	0	0
+		*/
+
+		m_flArmor [i] [0] = (int)( value > unTiers ? 255 : ( value / unTiers ) * ( 255 - 150 ) + 150 );
+		m_flArmor [i] [1] = (int)( value > deuxTiers ? 255 : ( value / deuxTiers ) * 255 );
+		m_flArmor [i] [2] = (int)( value < deuxTiers ? 0 : ( (value - deuxTiers) / unTiers ) * 255 );
+
+	}
+
 	return 1;
 }
 
@@ -74,6 +133,11 @@ int CHudBattery::Draw( float flTime )
 	if( gHUD.m_iHideHUDDisplay & HIDEHUD_HEALTH )
 		return 1;
 
+	// modif de jUlien
+	if ( !(gHUD.m_iWeaponBits & (1<<(WEAPON_SUIT)))  )
+		return 1;
+
+/*
 	int r, g, b, x, y, a;
 	wrect_t rc;
 
@@ -128,6 +192,45 @@ int CHudBattery::Draw( float flTime )
 
 	x += ( m_prc1->right - m_prc1->left );
 	x = gHUD.DrawHudNumber( x, y, DHN_3DIGITS | DHN_DRAWZERO, m_iBat, r, g, b );
+*/
+
+
+	// modif de Julien
+	// affichage du nouveau hud
+	
+	for ( int i = 0; i < 7; i++ )
+	{
+		// couleurs pr
+		int r = m_flArmor[i][0], g = m_flArmor[i][1], b = m_flArmor[i][2];
+
+		// brillance pour les dommages
+		if ( m_flPain[i] > 0 )
+		{
+			// blanc
+			r = r + ( m_flPain[i] / ARMOR_PAIN_TIME ) * ( 255 - r );
+			g = g + ( m_flPain[i] / ARMOR_PAIN_TIME ) * ( 255 - g );
+			b = b + ( m_flPain[i] / ARMOR_PAIN_TIME ) * ( 255 - b );
+
+			m_flPain[i] = Q_max ( 0, m_flPain[i] - gHUD.m_flTimeDelta );
+		}
+
+		if ( m_flPain[i] < 0 )
+		{
+			// rouge
+			r = r + ( -m_flPain[i] / ARMOR_PAIN_TIME ) * ( 255 - r );
+			g = g + ( -m_flPain[i] / ARMOR_PAIN_TIME ) * ( 0 - g );
+			b = b + ( -m_flPain[i] / ARMOR_PAIN_TIME ) * ( 0 - b );
+
+			m_flPain[i] = Q_min ( 0, m_flPain[i] + gHUD.m_flTimeDelta );
+		}
+
+		ScaleColors ( r,g,b, 200 );
+
+		SPR_Set( m_sprCorps, r, g, b );
+		SPR_DrawAdditive(i, 0, 0, &m_wrcCorps);
+	}
+
+	//-----------------------
 
 	return 1;
 }

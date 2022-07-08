@@ -31,6 +31,7 @@
 #include "../hud_iface.h"
 #include "../com_weapons.h"
 #include "../demo.h"
+extern bool m_iPlayerInTankExternal; //For client weapons (glock, specifically) modif de Roy
 
 extern globalvars_t *gpGlobals;
 extern int g_iUser1;
@@ -54,7 +55,7 @@ vec3_t previousorigin;
 
 // HLDM Weapon placeholder entities.
 CGlock g_Glock;
-CCrowbar g_Crowbar;
+/*CCrowbar g_Crowbar; //modif de Julien o para Julien, those cause compile-time errors and were not present here at the time.
 CPython g_Python;
 CMP5 g_Mp5;
 CCrossbow g_Crossbow;
@@ -66,7 +67,7 @@ CHgun g_HGun;
 CHandGrenade g_HandGren;
 CSatchel g_Satchel;
 CTripmine g_Tripmine;
-CSqueak g_Snark;
+CSqueak g_Snark;*/
 
 /*
 ======================
@@ -342,7 +343,7 @@ void CBasePlayerWeapon::ItemPostFrame( void )
 		m_fInReload = FALSE;
 	}
 
-	if( ( m_pPlayer->pev->button & IN_ATTACK2 ) && ( m_flNextSecondaryAttack <= 0.0f ) )
+	if( ( m_pPlayer->pev->button & IN_ATTACK2 ) && ( m_flNextSecondaryAttack <= 0.0f ) && !m_iPlayerInTankExternal ) //Do not activate while in the tank modif de Roy
 	{
 		if( pszAmmo2() && !m_pPlayer->m_rgAmmo[SecondaryAmmoIndex()] )
 		{
@@ -352,7 +353,7 @@ void CBasePlayerWeapon::ItemPostFrame( void )
 		SecondaryAttack();
 		m_pPlayer->pev->button &= ~IN_ATTACK2;
 	}
-	else if( ( m_pPlayer->pev->button & IN_ATTACK ) && ( m_flNextPrimaryAttack <= 0.0f ) )
+	else if( ( m_pPlayer->pev->button & IN_ATTACK ) && ( m_flNextPrimaryAttack <= 0.0f ) && !m_iPlayerInTankExternal ) //Do not activate while in the tank modif de Roy
 	{
 		if( ( m_iClip == 0 && pszAmmo1() ) || ( iMaxClip() == -1 && !m_pPlayer->m_rgAmmo[PrimaryAmmoIndex()] ) )
 		{
@@ -607,7 +608,7 @@ void HUD_InitClientWeapons( void )
 
 	// Allocate slot(s) for each weapon that we are going to be predicting
 	HUD_PrepEntity( &g_Glock, &player );
-	HUD_PrepEntity( &g_Crowbar, &player );
+	/*HUD_PrepEntity( &g_Crowbar, &player ); //modif de Julien o para Julien, those cause compile-time errors and were not present here at the time.
 	HUD_PrepEntity( &g_Python, &player );
 	HUD_PrepEntity( &g_Mp5, &player );
 	HUD_PrepEntity( &g_Crossbow, &player );
@@ -619,7 +620,7 @@ void HUD_InitClientWeapons( void )
 	HUD_PrepEntity( &g_HandGren, &player );
 	HUD_PrepEntity( &g_Satchel, &player );
 	HUD_PrepEntity( &g_Tripmine, &player );
-	HUD_PrepEntity( &g_Snark, &player );
+	HUD_PrepEntity( &g_Snark, &player );*/
 }
 
 /*
@@ -676,6 +677,10 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 
 	HUD_InitClientWeapons();
 
+	/*if ( m_iPlayerInTankExternal == true ){ //Do not activate while in the tank modif de Roy
+		return; //For client weapons (glock, specifically) modif de Roy
+	}*/
+
 	// Get current clock
 	gpGlobals->time = time;
 
@@ -683,13 +688,13 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 	// FIXME, make this a method in each weapon?  where you pass in an entity_state_t *?
 	switch( from->client.m_iId )
 	{
-		case WEAPON_CROWBAR:
+		/*case WEAPON_CROWBAR: //modif de Julien o para Julien, those cause compile-time errors and were not present here at the time.
 			pWeapon = &g_Crowbar;
-			break;
-		case WEAPON_GLOCK:
+			break;*/
+		case WEAPON_GLOCK: //Only glock was here.
 			pWeapon = &g_Glock;
 			break;
-		case WEAPON_PYTHON:
+		/*case WEAPON_PYTHON:
 			pWeapon = &g_Python;
 			break;
 		case WEAPON_MP5:
@@ -724,7 +729,7 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 			break;
 		case WEAPON_SNARK:
 			pWeapon = &g_Snark;
-			break;
+			break;*/
 	}
 
 	// Store pointer to our destination entity_state_t so we can get our origin, etc. from it
@@ -829,11 +834,11 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 		player.m_pActiveItem = g_pWpns[from->client.m_iId];
 	}
 
-	if( player.m_pActiveItem->m_iId == WEAPON_RPG )
+	/*if( player.m_pActiveItem->m_iId == WEAPON_RPG ) //modif de Julien o para Julien, those cause compile-time errors and were not present here at the time.
 	{
 		( (CRpg *)player.m_pActiveItem )->m_fSpotActive = (int)from->client.vuser2[1];
 		( (CRpg *)player.m_pActiveItem )->m_cActiveRockets = (int)from->client.vuser2[2];
-	}
+	}*/
 
 	// Don't go firing anything if we have died.
 	// Or if we don't have a weapon model deployed
@@ -897,11 +902,11 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 	to->client.vuser2[0] = player.ammo_hornets;
 	to->client.ammo_rockets = player.ammo_rockets;
 
-	if( player.m_pActiveItem->m_iId == WEAPON_RPG )
+	/*if( player.m_pActiveItem->m_iId == WEAPON_RPG ) //modif de Julien o para Julien, those cause compile-time errors and were not present here at the time.
 	{
 		to->client.vuser2[1] = ( (CRpg *)player.m_pActiveItem)->m_fSpotActive;
 		to->client.vuser2[2] = ( (CRpg *)player.m_pActiveItem)->m_cActiveRockets;
-	}
+	}*/
 
 	// Make sure that weapon animation matches what the game .dll is telling us
 	//  over the wire ( fixes some animation glitches )
@@ -909,6 +914,7 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 	{
 		int body = 2;
 
+		/* //modif de Julien o para Julien, those cause compile-time errors and were not present here at the time.
 		//Pop the model to body 0.
 		if( pWeapon == &g_Tripmine )
 			 body = 0;
@@ -916,6 +922,7 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 		//Show laser sight/scope combo
 		if( pWeapon == &g_Python && bIsMultiplayer() )
 			 body = 1;
+		*/
 
 		// Force a fixed anim down to viewmodel
 		HUD_SendWeaponAnim( to->client.weaponanim, body, 1 );

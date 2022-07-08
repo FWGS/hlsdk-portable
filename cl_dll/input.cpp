@@ -32,6 +32,11 @@ extern "C"
 #include "vgui_TeamFortressViewport.h"
 #endif
 
+#include "crutches.h" //Load some code crutches for HLINVASION, modif de Roy
+#ifdef NOATTACKFIXPATH_INVASION_VGUI
+bool hlinv_isAttackSuspended = false; //We need to prevent attacks while VGUI is active, modif de Roy
+#endif
+
 extern "C" 
 {
 	struct kbutton_s DLLEXPORT *KB_Find( const char *name );
@@ -681,6 +686,68 @@ void IN_MLookUp( void )
 	KeyUp( &in_mlook );
 }
 
+// modif de Julien
+
+void IN_BatteryDown ( void )
+{}
+
+void IN_BatteryUp ( void )
+{
+	if ( gHUD.m_flTimeDelta > 0 )
+		gEngfuncs.pfnClientCmd("battery" );
+}
+
+
+void IN_MedkitDown ( void )
+{}
+
+void IN_MedkitUp ( void )
+{
+	if ( gHUD.m_flTimeDelta > 0 )
+		gEngfuncs.pfnClientCmd("medkit" );
+}
+
+
+// modif de julien
+
+void IN_SoinDown ( void )
+{
+#if USE_VGUI
+
+	if ( gViewPort->m_pCurrentMenu && gViewPort->m_pCurrentMenu->GetMenuID() == MENU_RADIO )
+	{
+		gViewPort->m_pCurrentMenu->Close ();
+
+	}
+	if ( gViewPort && gHUD.m_iWeaponBits & (1<<(WEAPON_SUIT)) )
+	{
+		CMenuPanel *pNewMenu = NULL;
+
+		pNewMenu = gViewPort->OpenSoinMenu();
+
+		gViewPort->HideCommandMenu();
+
+		pNewMenu->SetMenuID( MENU_SOIN );
+		pNewMenu->SetActive( true );
+
+		gViewPort->m_pCurrentMenu = pNewMenu;
+		gViewPort->m_pCurrentMenu->Open();
+		gViewPort->UpdateCursorState();	
+
+	}
+#endif
+}
+void IN_SoinUp ( void )
+{
+#if USE_VGUI
+	if ( gViewPort )
+	{
+		gViewPort->HideTopMenu();
+	}
+#endif
+}
+
+
 /*
 ===============
 CL_KeyState
@@ -875,6 +942,11 @@ void DLLEXPORT CL_CreateMove( float frametime, struct usercmd_s *cmd, int active
 	// If they're in a modal dialog, ignore the attack button.
 	if(GetClientVoiceMgr()->IsInSquelchMode())
 		cmd->buttons &= ~IN_ATTACK;
+#ifdef NOATTACKFIXPATH_INVASION_VGUI
+	//gEngfuncs.Con_Printf ( "client.dll : hlinv_isAttackSuspended :  > %i\n", hlinv_isAttackSuspended );	//alertatconsole
+	if(hlinv_isAttackSuspended) //We need to prevent attacks while VGUI is active, modif de Roy
+		cmd->buttons &= ~IN_ATTACK;
+#endif
 #endif
 
 	// Using joystick?
@@ -1031,6 +1103,7 @@ int CL_ButtonBits( int bResetState )
 		in_reload.state &= ~2;
 		in_alt1.state &= ~2;
 		in_score.state &= ~2;
+
 	}
 
 	return bits;
@@ -1122,6 +1195,15 @@ void InitInput( void )
 	gEngfuncs.pfnAddCommand( "-graph", IN_GraphUp );
 	gEngfuncs.pfnAddCommand( "+break", IN_BreakDown );
 	gEngfuncs.pfnAddCommand( "-break", IN_BreakUp );
+
+	// modif de Julien
+
+	gEngfuncs.pfnAddCommand ("+medkit",IN_MedkitDown );
+	gEngfuncs.pfnAddCommand ("-medkit",IN_MedkitUp );
+	gEngfuncs.pfnAddCommand ("+battery",IN_BatteryDown );
+	gEngfuncs.pfnAddCommand ("-battery",IN_BatteryUp );
+	gEngfuncs.pfnAddCommand ("+soin",IN_SoinDown );
+	gEngfuncs.pfnAddCommand ("-soin",IN_SoinUp );
 
 	lookstrafe		= gEngfuncs.pfnRegisterVariable( "lookstrafe", "0", FCVAR_ARCHIVE );
 	lookspring		= gEngfuncs.pfnRegisterVariable( "lookspring", "0", FCVAR_ARCHIVE );

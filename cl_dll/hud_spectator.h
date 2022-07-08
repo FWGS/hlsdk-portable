@@ -17,6 +17,12 @@
 #define	INSET_MAP_FREE			3
 #define	INSET_MAP_CHASE			4
 
+#define MAIN_CHASE_LOCKED		1 //modif de Julien o para Julien, old map definitions.
+#define MAIN_CHASE_FREE			2
+#define MAIN_ROAMING			3
+#define MAIN_IN_EYE			4
+#define MAIN_MAP_FREE			5
+
 #define MAX_SPEC_HUD_MESSAGES		8
 
 #define OVERVIEW_TILE_SIZE		128		// don't change this
@@ -80,6 +86,11 @@ public:
 	int VidInit();
 
 	int Draw( float flTime );
+
+	int m_iMainMode; //modif de Julien o para Julien
+	int m_iInsetMode; //old stuff HLINVASION TODO Check what this stuff actually does
+	int m_iObserverTarget; //and more old stuff. (Not observerFlags!)
+	vec3_t m_mapAngles;	// cuurent map view angles (cameraAngles?)
 
 	int m_iDrawCycle;
 	client_textmessage_t	m_HUDMessages[MAX_SPEC_HUD_MESSAGES];

@@ -1,6 +1,8 @@
 #
 # Copyright (c) 2016 Alibek Omarov
 #
+# Edited by Roy for HL:Invasion
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
@@ -25,7 +27,13 @@ project (CLDLL)
 
 set (CLDLL_LIBRARY client)
 
-add_definitions(-DCLIENT_DLL)
+include(CheckIncludeFile)
+check_include_file("tgmath.h" HAVE_TGMATH_H)
+if(HAVE_TGMATH_H)
+	add_definitions(-DHAVE_TGMATH_H)
+endif()
+
+add_definitions(-DCLIENT_WEAPONS -DCLIENT_DLL)
 
 if(NOT MSVC)
 	add_compile_options(-fno-exceptions) # GCC/Clang flag
@@ -55,25 +63,25 @@ if (USE_VGUI)
 endif()
 
 set (CLDLL_SOURCES
-	../dlls/crossbow.cpp
-	../dlls/crowbar.cpp
-	../dlls/egon.cpp
-	../dlls/gauss.cpp
-	../dlls/handgrenade.cpp
-	../dlls/hornetgun.cpp
-	../dlls/mp5.cpp
-	../dlls/python.cpp
-	../dlls/rpg.cpp
-	../dlls/satchel.cpp
-	../dlls/shotgun.cpp
-	../dlls/squeakgrenade.cpp
-	../dlls/tripmine.cpp
-	../dlls/glock.cpp
+	clientbriquet.cpp
+	clientfog.cpp
+	clientlflammes.cpp
 	ev_hldm.cpp
+	GameStudioModelRenderer.cpp
 	hl/hl_baseentity.cpp
 	hl/hl_events.cpp
 	hl/hl_objects.cpp
 	hl/hl_weapons.cpp
+	../dlls/glock.cpp
+	hud_tank.cpp
+	hudradio.cpp
+	hudrpg.cpp
+	hudzoom.cpp
+	lensflare.cpp
+	nvg.cpp
+	particules.cpp
+	studio_util.cpp
+	StudioModelRenderer.cpp
 	ammo.cpp
 	ammo_secondary.cpp
 	ammohistory.cpp
@@ -86,7 +94,6 @@ set (CLDLL_SOURCES
 	ev_common.cpp
 	events.cpp
 	flashlight.cpp
-	GameStudioModelRenderer.cpp
 	geiger.cpp
 	health.cpp
 	hud.cpp
@@ -96,21 +103,20 @@ set (CLDLL_SOURCES
 	hud_update.cpp
 	in_camera.cpp
 	input.cpp
-	input_goldsource.cpp
+	input_goldsource.cpp #those three are needed for in_joystick and modern input
 	input_mouse.cpp
 	input_xash3d.cpp
 	menu.cpp
 	message.cpp
 	overview.cpp
 	parsemsg.cpp
+	parsemsg.h
 	../pm_shared/pm_debug.c
 	../pm_shared/pm_math.c
 	../pm_shared/pm_shared.c
 	saytext.cpp
 	status_icons.cpp
 	statusbar.cpp
-	studio_util.cpp
-	StudioModelRenderer.cpp
 	text_message.cpp
 	train.cpp
 	tri.cpp
@@ -139,6 +145,13 @@ if (USE_VGUI)
 		../game_shared/vgui_scrollbar2.cpp
 		../game_shared/vgui_slider2.cpp
 		../game_shared/voice_banmgr.cpp
+		#modif de Roy
+		vgui_keypad.cpp
+		vgui_OrdiControl.cpp
+		vgui_OrdiMenu.cpp
+		vgui_radio.cpp
+		vgui_soin.cpp
+		#fin de modif de Roy
 		)
 	if (USE_NOVGUI_MOTD)
 		list(APPEND CLDLL_SOURCES MOTD.cpp)
@@ -198,7 +211,7 @@ endif()
 set_target_properties (${CLDLL_LIBRARY} PROPERTIES
 	POSITION_INDEPENDENT_CODE 1)
 
-if(NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Android")
+if(APPLE OR WIN32 OR ${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
 	set(CLDLL_NAME "client")
 	set_target_properties(${CLDLL_LIBRARY} PROPERTIES
 		OUTPUT_NAME ${CLDLL_NAME}
