@@ -771,3 +771,39 @@ CBaseEntity *CBaseEntity::Create( const char *szName, const Vector &vecOrigin, c
 	DispatchSpawn( pEntity->edict() );
 	return pEntity;
 }
+
+//modif de Roy, we need to solve firing in Gaz non-virtual conundrum
+BOOL CBaseEntity::IsInGaz ( void )
+{
+	if( !IsPlayer()) return FALSE; //Quit immediately. This will always be true. CBaseEntity doesn't have an IsPlayer returning TRUE at all.
+	//Oh, but... CBasePlayer has!
+	//However, when combat.cpp calls this function, it calls this version, not the players, since the base function
+	//is for CBaseEntity, it simply asks it if it's the player (which is true in that case). Since it gets called without an actual pointer, it
+	//doesn't know which function to fire and does this one, not the player's (which inherits and overrides this function).
+	//So, if this one gets called in this context, IsPlayer is going to return TRUE, and then this fires up.
+
+	Vector vecPlayer = Center ();
+
+	CBaseEntity *pFind = NULL;
+	edict_t *pTrigger = NULL;
+	pTrigger = FIND_ENTITY_BY_CLASSNAME( NULL, "trigger_gaz" );
+
+	while ( !FNullEnt ( pTrigger ) )
+	{
+		pFind = CBaseEntity::Instance ( pTrigger );
+
+
+		if ( vecPlayer.x > pFind->pev->absmin.x && vecPlayer.x < pFind->pev->absmax.x &&
+			 vecPlayer.y > pFind->pev->absmin.y && vecPlayer.y < pFind->pev->absmax.y &&
+			 vecPlayer.z > pFind->pev->absmin.z && vecPlayer.z < pFind->pev->absmax.z )		// Player est ds le trigger
+		{
+			return TRUE;
+		}
+		else
+		{
+			pTrigger = FIND_ENTITY_BY_CLASSNAME( pTrigger, "trigger_gaz" );
+		}
+
+	}
+	return FALSE;
+}

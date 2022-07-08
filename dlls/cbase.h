@@ -334,7 +334,7 @@ public:
 	virtual	BOOL FVisible( const Vector &vecOrigin );
 
 	//modif de Julien
-	BOOL IsInGaz ( void ) { return FALSE; }; //Must NOT be virtual, causes "unimplemented symbol" error in game.
+	BOOL IsInGaz ( void ); //Must NOT be virtual, causes "unimplemented symbol" error in game.
 	BOOL m_bFireInGaz;
 
 
