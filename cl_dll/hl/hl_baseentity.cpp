@@ -281,7 +281,7 @@ void CBasePlayer::FlashlightTurnOff( void ) { }
 void CBasePlayer::ForceClientDllUpdate( void ) { }
 void CBasePlayer::ImpulseCommands() { }
 //modif de Julien 7/7/01
-BOOL CBasePlayer::IsInGaz( ) { return FALSE; } //Here
+//BOOL CBasePlayer::IsInGaz( ) { return FALSE; } //Here
 void CBasePlayer::CheatImpulseCommands( int iImpulse ) { }
 int CBasePlayer::AddPlayerItem( CBasePlayerItem *pItem ) { return FALSE; }
 int CBasePlayer::RemovePlayerItem( CBasePlayerItem *pItem, bool bCallHoster ) { return FALSE; }

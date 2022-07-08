@@ -5420,7 +5420,7 @@ LINK_ENTITY_TO_CLASS( info_intermission, CInfoIntermission )
 //	pour les trigger_gaz
 //=========================================
 
-BOOL CBasePlayer::IsInGaz ( void )
+/*BOOL CBasePlayer::IsInGaz ( void )
 {
 
 	Vector vecPlayer = Center ();
@@ -5447,7 +5447,7 @@ BOOL CBasePlayer::IsInGaz ( void )
 
 	}
 	return FALSE;
-}
+}*/
 
 //modif de Julien
 //=====================================
