@@ -1,6 +1,8 @@
 #
 # Copyright (c) 2016 Alibek Omarov
 #
+# Edited by Roy for HL:Invasion
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
@@ -38,7 +40,7 @@ project (HLSDK-XASH3D)
 #--------------
 # USER DEFINES \
 ################\
-option(USE_VGUI "Enable VGUI1." OFF)
+option(USE_VGUI "Enable VGUI1." ON)
 option(USE_VGUI2 "Enable VGUI2. UNDONE" OFF)
 option(USE_NOVGUI_MOTD "Prefer non-VGUI MOTD when USE_VGUI is enabled" OFF)
 option(USE_NOVGUI_SCOREBOARD "Prefer non-VGUI Scoreboard when USE_VGUI is enabled" OFF)
@@ -46,6 +48,8 @@ option(USE_VOICEMGR "Enable VOICE MANAGER." OFF)
 option(BUILD_CLIENT "Build client dll" ON)
 option(BUILD_SERVER "Build server dll" ON)
 option(GOLDSOURCE_SUPPORT "Build goldsource compatible client library" OFF)
+option(USE_GSTREAMER "Enable GStreamer." OFF)
+option(USE_FMOD "Enable FMOD." OFF)
 
 if (CMAKE_SIZEOF_VOID_P EQUAL 4 OR
 	((WIN32 OR ${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
@@ -69,7 +73,7 @@ option(HLDEMO_BUILD "Enable Demo Build" OFF)
 set(GAMEDIR "valve" CACHE STRING "Gamedir path")
 set(SERVER_INSTALL_DIR "dlls" CACHE STRING "Where put server dll")
 set(CLIENT_INSTALL_DIR "cl_dlls" CACHE STRING "Where put client dll")
-set(SERVER_LIBRARY_NAME "hl" CACHE STRING "Library name for PC platforms")
+set(SERVER_LIBRARY_NAME "invasion" CACHE STRING "Library name for PC platforms")
 message(STATUS "Half-Life")
 
 #-----------------

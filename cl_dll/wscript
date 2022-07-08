@@ -1,6 +1,9 @@
 #! /usr/bin/env python
 # encoding: utf-8
 # a1batross, mittorn, 2018
+# Edited by Roy for HL:Invasion
+# Warning: Completely UNTESTED!
+# Warning: Won't work properly as this mod requires TRUE VGUI! (If you can edit it in - you're more than welcome!)
 
 from waflib import Utils
 import os
@@ -27,24 +30,26 @@ def build(bld):
 		'hl/*.cpp'
 	])
 	source += bld.path.parent.ant_glob([
-		'dlls/crossbow.cpp',
-		'dlls/crowbar.cpp',
-		'dlls/egon.cpp',
-		'dlls/gauss.cpp',
-		'dlls/glock.cpp',
-		'dlls/handgrenade.cpp',
-		'dlls/hornetgun.cpp',
-		'dlls/mp5.cpp',
-		'dlls/python.cpp',
-		'dlls/rpg.cpp',
-		'dlls/satchel.cpp',
-		'dlls/shotgun.cpp',
-		'dlls/squeakgrenade.cpp',
-		'dlls/tripmine.cpp'
+		'dlls/glock.cpp'
 	])
 	source += [
+		'clientbriquet.cpp',
+		'clientfog.cpp',
+		'clientlflammes.cpp',
+		'ev_hldm.cpp',
 		'GameStudioModelRenderer.cpp',
-		'MOTD.cpp',
+		'hl/hl_baseentity.cpp',
+		'hl/hl_events.cpp',
+		'hl/hl_objects.cpp',
+		'hl/hl_weapons.cpp',
+		'hud_tank.cpp',
+		'hudradio.cpp',
+		'hudrpg.cpp',
+		'hudzoom.cpp',
+		'lensflare.cpp',
+		'nvg.cpp',
+		'particules.cpp',
+		'studio_util.cpp',
 		'StudioModelRenderer.cpp',
 		'ammo.cpp',
 		'ammo_secondary.cpp',
@@ -55,7 +60,6 @@ def build(bld):
 		'death.cpp',
 		'demo.cpp',
 		'entity.cpp',
-		'ev_hldm.cpp',
 		'ev_common.cpp',
 		'events.cpp',
 		'flashlight.cpp',
@@ -75,11 +79,10 @@ def build(bld):
 		'message.cpp',
 		'overview.cpp',
 		'parsemsg.cpp',
+		'parsemsg.h',
 		'saytext.cpp',
-		'scoreboard.cpp',
 		'status_icons.cpp',
 		'statusbar.cpp',
-		'studio_util.cpp',
 		'text_message.cpp',
 		'train.cpp',
 		'tri.cpp',

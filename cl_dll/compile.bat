@@ -1,4 +1,7 @@
 @echo off
+@rem "Edited by Roy for HL:Invasion"
+@rem "Warning: Completely UNTESTED!"
+@rem "Warning: Won't work properly as this mod requires TRUE VGUI! (If you can edit it in - you're more than welcome!)"
 echo Setting environment for minimal Visual C++ 6
 set INCLUDE=%MSVCDir%\VC98\Include
 set LIB=%MSVCDir%\VC98\Lib
@@ -8,25 +11,25 @@ echo -- Compiler is MSVC6
 
 set XASH3DSRC=..\..\Xash3D_original
 set INCLUDES=-I../common -I../engine -I../pm_shared -I../game_shared -I../public -I../external -I../dlls -I../utils/false_vgui/include
-set SOURCES=../dlls/crossbow.cpp ^
-	../dlls/crowbar.cpp ^
-	../dlls/egon.cpp ^
-	../dlls/gauss.cpp ^
-	../dlls/handgrenade.cpp ^
-	../dlls/hornetgun.cpp ^
-	../dlls/mp5.cpp ^
-	../dlls/python.cpp ^
-	../dlls/rpg.cpp ^
-	../dlls/satchel.cpp ^
-	../dlls/shotgun.cpp ^
-	../dlls/squeakgrenade.cpp ^
-	../dlls/tripmine.cpp ^
-	../dlls/glock.cpp ^
+set SOURCES=clientbriquet.cpp ^
+	clientfog.cpp ^
+	clientlflammes.cpp ^
 	ev_hldm.cpp ^
+	GameStudioModelRenderer.cpp ^
 	hl/hl_baseentity.cpp ^
 	hl/hl_events.cpp ^
 	hl/hl_objects.cpp ^
 	hl/hl_weapons.cpp ^
+	../dlls/glock.cpp ^
+	hud_tank.cpp ^
+	hudradio.cpp ^
+	hudrpg.cpp ^
+	hudzoom.cpp ^
+	lensflare.cpp ^
+	nvg.cpp ^
+	particules.cpp ^
+	studio_util.cpp ^
+	StudioModelRenderer.cpp ^
 	ammo.cpp ^
 	ammo_secondary.cpp ^
 	ammohistory.cpp ^
@@ -39,7 +42,6 @@ set SOURCES=../dlls/crossbow.cpp ^
 	ev_common.cpp ^
 	events.cpp ^
 	flashlight.cpp ^
-	GameStudioModelRenderer.cpp ^
 	geiger.cpp ^
 	health.cpp ^
 	hud.cpp ^
@@ -56,21 +58,18 @@ set SOURCES=../dlls/crossbow.cpp ^
 	message.cpp ^
 	overview.cpp ^
 	parsemsg.cpp ^
+	parsemsg.h ^
 	../pm_shared/pm_debug.c ^
 	../pm_shared/pm_math.c ^
 	../pm_shared/pm_shared.c ^
 	saytext.cpp ^
 	status_icons.cpp ^
 	statusbar.cpp ^
-	studio_util.cpp ^
-	StudioModelRenderer.cpp ^
 	text_message.cpp ^
 	train.cpp ^
 	tri.cpp ^
 	util.cpp ^
-	view.cpp ^
-	scoreboard.cpp ^
-	MOTD.cpp
+	view.cpp
 set DEFINES=/DCLIENT_DLL /DCLIENT_WEAPONS /Dsnprintf=_snprintf /DNO_VOICEGAMEMGR /DGOLDSOURCE_SUPPORT
 set LIBS=user32.lib Winmm.lib
 set OUTNAME=client.dll
