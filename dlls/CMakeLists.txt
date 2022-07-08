@@ -27,14 +27,6 @@ project (SVDLL)
 
 set (SVDLL_LIBRARY server)
 
-include(CheckIncludeFile)
-check_include_file("tgmath.h" HAVE_TGMATH_H)
-if(HAVE_TGMATH_H)
-	add_definitions(-DHAVE_TGMATH_H)
-endif()
-
-add_definitions(-DCLIENT_WEAPONS)
-
 if(NOT MSVC)
 	add_compile_options(-fno-exceptions) # GCC/Clang flag
 	add_compile_options(-Wno-invalid-offsetof) # GCC/Clang flag
@@ -43,16 +35,6 @@ if(NOT MSVC)
 	add_definitions(-Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf -D_vsnprintf=vsnprintf )
 else()
 	add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_DEPRECATE)
-endif()
-
-if (USE_VGUI)
-	add_definitions(-DUSE_VGUI)
-	if (USE_NOVGUI_MOTD)
-		add_definitions(-DUSE_NOVGUI_MOTD)
-	endif()
-	if (USE_NOVGUI_SCOREBOARD)
-		add_definitions(-DUSE_NOVGUI_SCOREBOARD)
-	endif()
 endif()
 
 if (USE_GSTREAMER AND (${CMAKE_SYSTEM_NAME} STREQUAL "Linux"))
