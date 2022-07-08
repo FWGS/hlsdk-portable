@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2002, Valve LLC, All rights reserved. ============
+//========= Copyright 
 //
 // Purpose: 
 //
@@ -26,7 +26,9 @@
 #include "VGUI_TextImage.h"
 #include "vgui_loadtga.h"
 #include "vgui_helpers.h"
-#include "vgui_mousecode.h"
+//#include "vgui_mousecode.h"
+#include "../vgui_support/vgui-dev/include/VGUI_MouseCode.h"
+
 
 using namespace vgui;
 
@@ -83,7 +85,7 @@ void ForEachBannedPlayer( char id[16] )
 		id[12], id[13], id[14], id[15]
 		);
 
-	strupr( str );
+	/*strupr( str );*/ //modif de Julien - don't freaking CARE!!!
 
 	gEngfuncs.pfnConsolePrint(str);
 }
@@ -703,7 +705,7 @@ void CVoiceStatus::RepositionLabels()
 		// Setup the background label to fit everything in.
 		int border = 2;
 		int bgWide = textWide + iconWide + border * 3;
-		int bgTall = max( textTall, iconTall ) + border * 2;
+		int bgTall = Q_max( textTall, iconTall ) + border * 2; //modif de Julien - fix that!
 		pLabel->m_pBackground->setBounds( ScreenWidth - bgWide - 8, y, bgWide, bgTall );
 
 		// Put the text at the left.
