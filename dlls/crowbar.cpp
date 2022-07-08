@@ -188,7 +188,7 @@ void CCrowbar::SwingAgain( void )
 	Swing( 0 );
 }
 
-/*void CCrowbar::SendWeaponAnim( int iAnim, int skiplocal, int body ) //Fix???
+void CCrowbar::SendWeaponAnim( int iAnim, int skiplocal, int body ) //Fix???
 {
 	skiplocal = 0;
 
@@ -202,7 +202,7 @@ void CCrowbar::SwingAgain( void )
 		WRITE_BYTE( iAnim );		// sequence number
 		WRITE_BYTE( pev->body );	// weaponmodel bodygroup.
 	MESSAGE_END();
-}*/
+}
 
 int CCrowbar::Swing( int fFirst )
 {
@@ -296,11 +296,11 @@ int CCrowbar::Swing( int fFirst )
 			// If building with the clientside weapon prediction system,
 			// UTIL_WeaponTimeBase() is always 0 and m_flNextPrimaryAttack is >= -1.0f, thus making
 			// m_flNextPrimaryAttack + 1 < UTIL_WeaponTimeBase() always evaluate to false.
-//#if CLIENT_WEAPONS
-//			if( ( m_flNextPrimaryAttack + 1.0f == UTIL_WeaponTimeBase() ) || g_pGameRules->IsMultiplayer() )
-//#else
+#if CLIENT_WEAPONS
+			if( ( m_flNextPrimaryAttack + 1.0f == UTIL_WeaponTimeBase() ) || g_pGameRules->IsMultiplayer() )
+#else
 			if( ( m_flNextPrimaryAttack + 1.0f < UTIL_WeaponTimeBase() ) || g_pGameRules->IsMultiplayer() )
-//#endif
+#endif
 			{
 				// first swing does full damage
 				pEntity->TraceAttack( m_pPlayer->pev, gSkillData.plrDmgCrowbar, gpGlobals->v_forward, &tr, DMG_CLUB ); 
