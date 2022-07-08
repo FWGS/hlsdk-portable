@@ -5,7 +5,7 @@
 //-														---
 //---------------------------------------------------------
 //---------------------------------------------------------
-//- header du soin sélectif								---
+//- header du soin s
 //---------------------------------------------------------
 //---------------------------------------------------------
 
@@ -25,7 +25,7 @@ public:
 
 
 	CSoin(int iTrans, int iRemoveMe, int x,int y,int wide,int tall);	//constructeur
-	virtual void Initialize( void );	//aucun intéret
+	virtual void Initialize( void );	//aucun int
 	virtual void Reset( void );			//idem
 };
 

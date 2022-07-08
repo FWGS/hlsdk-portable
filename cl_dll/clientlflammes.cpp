@@ -61,7 +61,7 @@ extern vec3_t v_angles, v_origin;			// angles de la vue du joueur
 
 //------------------------------------
 //
-// déclaration du message :
+// d
 // gmsgLFlammes
 
 DECLARE_MESSAGE(m_LFlammes, LFlammes );
@@ -88,7 +88,7 @@ int CHudLFlammes::MsgFunc_LFlammes( const char *pszName, int iSize, void *pbuf )
 		flammes_t *p = NULL;
 		p = new flammes_t;
 
-		// paramètres
+		// param
 
 		p->index = idx;
 		p->flBirthTime = time;
@@ -129,7 +129,7 @@ int CHudLFlammes::MsgFunc_LFlammes( const char *pszName, int iSize, void *pbuf )
 			{
 				if ( q == NULL )
 				{
-					// première de la liste
+					// premi
 
 					m_pFlammes = p->pNext,
 
@@ -275,12 +275,12 @@ void CHudLFlammes :: DrawFlammes ( void )
 		flTrans = flTrans / (float)255;
 
 
-		// tracé
+		// trac
 
 		gEngfuncs.pTriAPI->Brightness( flTrans );						
 		gEngfuncs.pTriAPI->Color4f( 1.0, 1.0, 1.0, flTrans );
 		gEngfuncs.pTriAPI->SpriteTexture( (struct model_s *)mod, frame );	
-		gEngfuncs.pTriAPI->Begin( TRI_QUADS );							//démarrage du tracé, en mode quads - carrés .
+		gEngfuncs.pTriAPI->Begin( TRI_QUADS );							//d
 
 			gEngfuncs.pTriAPI->TexCoord2f( 0, 0 );						//premier vertex
 			vertex = vecPos - right + up;
@@ -298,7 +298,7 @@ void CHudLFlammes :: DrawFlammes ( void )
 			vertex = vecPos - right - up;
 			gEngfuncs.pTriAPI->Vertex3f( vertex.x, vertex.y, vertex.z );
 
-		gEngfuncs.pTriAPI->End();									//fin du tracé
+		gEngfuncs.pTriAPI->End();									//fin du trac
 
 
 		p = p->pNext;
@@ -335,7 +335,7 @@ void CHudLFlammes :: DrawFlammes ( void )
 				{
 					if ( q == NULL )
 					{
-						// première de la liste
+						// premi
 
 						m_pFlammes = p->pNext,
 
@@ -402,12 +402,12 @@ void CHudLFlammes :: DrawFlammes ( void )
 
 				for ( int i=0; i<2; i++ )
 				{
-					// génération d'une flamme
+					// g
 
 					flammes_t *Q = NULL;
 					Q = new flammes_t;
 
-					// paramètres
+					// param
 
 					Q->index = p->index;
 					Q->flBirthTime = gEngfuncs.GetClientTime ();
@@ -542,12 +542,12 @@ void CHudLFlammes :: DrawFlammes ( void )
 		flTrans = flTrans / (float)255;
 
 
-		// tracé
+		// trac
 
 		gEngfuncs.pTriAPI->Brightness( flTrans );						
 		gEngfuncs.pTriAPI->Color4f( 1.0, 1.0, 1.0, flTrans );
 		gEngfuncs.pTriAPI->SpriteTexture( (struct model_s *)mod, frame );	
-		gEngfuncs.pTriAPI->Begin( TRI_QUADS );							//démarrage du tracé, en mode quads - carrés .
+		gEngfuncs.pTriAPI->Begin( TRI_QUADS );							//d
 
 			gEngfuncs.pTriAPI->TexCoord2f( 0, 0 );						//premier vertex
 			vertex = vecPos - right + up;
@@ -565,7 +565,7 @@ void CHudLFlammes :: DrawFlammes ( void )
 			vertex = vecPos - right - up;
 			gEngfuncs.pTriAPI->Vertex3f( vertex.x, vertex.y, vertex.z );
 
-		gEngfuncs.pTriAPI->End();									//fin du tracé
+		gEngfuncs.pTriAPI->End();									//fin du trac
 
 
 
@@ -596,7 +596,7 @@ int CHudLFlammes :: Init( void )
 
 //------------------------------------
 //
-// initialisation après le chargement
+// initialisation apr
 
 
 int CHudLFlammes :: VidInit( void )

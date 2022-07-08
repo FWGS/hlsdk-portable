@@ -160,7 +160,7 @@ void CIRgun::PrimaryAttack()
 
 	m_iClip--;
 
-//	PLAYBACK_EVENT( 0, m_pPlayer->edict(), m_usFireIRgun );	// le full permet de préciser le param1
+//	PLAYBACK_EVENT( 0, m_pPlayer->edict(), m_usFireIRgun );	// le full permet de pr
 	PLAYBACK_EVENT_FULL( 0, m_pPlayer->edict(), m_usFireIRgun, 0, (float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, 0, 0, ( m_iClip == 0 ) ? 1 : 0, 0 );
 
 	m_pPlayer->m_iWeaponVolume = LOUD_GUN_VOLUME;

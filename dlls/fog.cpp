@@ -23,7 +23,7 @@ int	g_bFogUpdate;
 
 
 //---------------------------------------------------------
-// classe de l'entité dans les maps bsp
+// classe de l'entit
 
 
 

@@ -35,7 +35,7 @@ extern vec3_t v_angles;			// angles de la vue du joueur
 
 //------------------------------------
 //
-// déclaration du message :
+// d
 // gmsgLFlammes
 
 DECLARE_MESSAGE(m_Briquet, Briquet );
@@ -80,7 +80,7 @@ int CHudBriquet :: Draw	( float flTime )
 
 void CHudBriquet :: DrawFlamme ( void )
 {
-	// hud éteint
+	// hud 
 	if ( ! (m_iFlags & HUD_ACTIVE))
 		return;
 
@@ -112,7 +112,7 @@ void CHudBriquet :: DrawFlamme ( void )
 	gEngfuncs.pTriAPI->Brightness( 0.8 );						
 	gEngfuncs.pTriAPI->Color4f( 1.0, 1.0, 1.0, 1.0 );
 	
-	gEngfuncs.pTriAPI->Begin( TRI_QUADS );							//démarrage du tracé, en mode quads - carrés .
+	gEngfuncs.pTriAPI->Begin( TRI_QUADS );							//d
 
 		gEngfuncs.pTriAPI->TexCoord2f( 0, 0 );						//premier vertex
 		vertex = vecPos - right + up;
@@ -130,7 +130,7 @@ void CHudBriquet :: DrawFlamme ( void )
 		vertex = vecPos - right;
 		gEngfuncs.pTriAPI->Vertex3f( vertex.x, vertex.y, vertex.z );
 
-	gEngfuncs.pTriAPI->End();									//fin du tracé
+	gEngfuncs.pTriAPI->End();									//fin du trac
 }
 
 
@@ -152,7 +152,7 @@ int CHudBriquet :: Init( void )
 
 //------------------------------------
 //
-// initialisation après le chargement
+// initialisation apr
 
 
 int CHudBriquet :: VidInit( void )

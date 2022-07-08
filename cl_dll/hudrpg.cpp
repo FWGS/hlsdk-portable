@@ -206,7 +206,7 @@ int CHudRPG :: Draw	( float flTime )
 
 //------------------------------------
 //
-// déclaration des messages du serveur :
+// d
 
 DECLARE_MESSAGE(m_RPG, RpgViseur);
 DECLARE_MESSAGE(m_RPG, MenuRpg);
@@ -243,7 +243,7 @@ int CHudRPG :: Init( void )
 
 //------------------------------------
 //
-// initialisation après le chargement
+// initialisation apr
 
 
 int CHudRPG :: VidInit( void )

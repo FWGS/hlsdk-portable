@@ -3,7 +3,7 @@
 *	Fichier m16 par Julien				  *
 *                                         *
 ******************************************/
-//10/03/01 création de l'arme
+//10/03/01 cr
 //11/03/01 force de recul et ralentissement / retrait du lance-grenades / ajout dans le hud
 
 
@@ -140,7 +140,7 @@ int CM16::AddToPlayer( CBasePlayer *pPlayer )
 
 BOOL CM16::Deploy( )
 {
-	//modifié par Julien
+	//modifi
 	BOOL bResult = DefaultDeploy( "models/v_m16.mdl", "models/p_9mmAR.mdl", M16_DEPLOY, "m16" );
 	
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 60 / 70.0;

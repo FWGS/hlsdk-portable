@@ -67,7 +67,7 @@ int CHudNVG :: Draw	( float flTime )
 
 //------------------------------------
 //
-// numéro de la frame à afficher
+// num
 
 int CHudNVG :: Frame( void )
 {
@@ -88,7 +88,7 @@ int CHudNVG :: Frame( void )
 
 //------------------------------------
 //
-// déclaration du message :
+// d
 // gmsgSwitchNVG
 // gmsgInfosNVG
 
@@ -120,7 +120,7 @@ int CHudNVG :: Init( void )
 
 //------------------------------------
 //
-// initialisation après le chargement
+// initialisation apr
 
 
 int CHudNVG :: VidInit( void )
@@ -200,7 +200,7 @@ int CHudNVG::MsgFunc_InfosNVG ( const char *pszName, int iSize, void *pbuf )
 //------------------------------------
 //
 // destruction du registre des
-// entités visibles
+// entit
 
 void CHudNVG :: ClearEnnemies ( void )
 {
@@ -215,7 +215,7 @@ void CHudNVG :: ClearEnnemies ( void )
 }
 
 //------------------------------------
-// cherche si l'entité est visible
+// cherche si l'entit
 
 nvg_ennemy_t *CHudNVG :: IsEnnemy ( int index )
 {
@@ -233,7 +233,7 @@ nvg_ennemy_t *CHudNVG :: IsEnnemy ( int index )
 	}
 	while ( p != NULL );
 
-	// sort de la boucle : aucune entité trouvée
+	// sort de la boucle : aucune entit
 
 	return NULL;
 }

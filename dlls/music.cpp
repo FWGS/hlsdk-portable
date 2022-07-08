@@ -5,16 +5,14 @@
 //-														---
 //---------------------------------------------------------
 //---------------------------------------------------------
-//-	by Roy, based on the code by									-----------
-//-	by JujU									-----------
-//-		julien.lecorre@free.fr					-----------
+//-	by Roy, based on the code by JujU									-----------
 //---------------------------------------------------------
 //- fake and null mp3 player code for HL mod				-----------
 //---------------------------------------------------------
 
 /*//---------------
 
-This code is a placeholder for system that support neither gstreamer nor fmod.
+This code is a placeholder for systems that support neither gstreamer nor fmod.
 
 *///---------------
 
