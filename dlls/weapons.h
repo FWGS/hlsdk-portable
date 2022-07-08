@@ -21,6 +21,7 @@
 class CBasePlayer;
 extern int gmsgWeapPickup;
 
+
 void DeactivateSatchels( CBasePlayer *pOwner );
 
 // Contact Grenade / Timed grenade / Satchel Charge
@@ -35,6 +36,8 @@ public:
 	static CGrenade *ShootContact( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity );
 	static CGrenade *ShootSatchelCharge( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity );
 	static void UseSatchelCharges( entvars_t *pevOwner, SATCHELCODE code );
+	static CGrenade *ShootFrag( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity, int mode );	//modif de Julien
+
 
 	void Explode( Vector vecSrc, Vector vecAim );
 	void Explode( TraceResult *pTrace, int bitsDamageType );
@@ -48,12 +51,20 @@ public:
 	void EXPORT Detonate( void );
 	void EXPORT DetonateUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
 	void EXPORT TumbleThink( void );
+	void EXPORT FragThink( void );	//modif de Julien
+	void EXPORT FragTouch( CBaseEntity *pOther );	//modif de Julien
+
 
 	virtual void BounceSound( void );
 	virtual int	BloodColor( void ) { return DONT_BLEED; }
 	virtual void Killed( entvars_t *pevAttacker, int iGib );
 
 	BOOL m_fRegisteredSound;// whether or not this grenade has issued its DANGER sound to the world sound list yet.
+
+	//modif de Julien
+	BOOL IsInGaz ( void ); //Must NOT be virtual, causes "unimplemented symbol" error in game.
+	int m_iSpriteTexture;
+
 };
 
 // constant items
@@ -67,17 +78,26 @@ public:
 #define	WEAPON_GLOCK			2
 #define WEAPON_PYTHON			3
 #define WEAPON_MP5				4
-#define WEAPON_CHAINGUN			5
-#define WEAPON_CROSSBOW			6
+//#define WEAPON_CHAINGUN			5
+//#define WEAPON_CROSSBOW			6
 #define WEAPON_SHOTGUN			7
 #define WEAPON_RPG				8
 #define WEAPON_GAUSS			9
-#define WEAPON_EGON				10
-#define WEAPON_HORNETGUN		11
+//#define WEAPON_EGON				10
+//#define WEAPON_HORNETGUN		11
 #define WEAPON_HANDGRENADE		12
 #define WEAPON_TRIPMINE			13
 #define	WEAPON_SATCHEL			14
 #define	WEAPON_SNARK			15
+// modif. de Julien
+#define WEAPON_M16				16
+#define WEAPON_FSNIPER			17
+#define WEAPON_IRGUN			18
+#define WEAPON_FGRENADE			20
+#define WEAPON_LFLAMMES			21
+#define WEAPON_BRIQUET			22
+#define WEAPON_SUPERGUN			5
+// fin modif.
 
 #define WEAPON_ALLWEAPONS		(~(1<<WEAPON_SUIT))
 
@@ -102,11 +122,20 @@ public:
 #define SNARK_WEIGHT		5
 #define SATCHEL_WEIGHT		-10
 #define TRIPMINE_WEIGHT		-10
+// modif. de Julien
+#define M16_WEIGHT			20
+#define FSNIPER_WEIGHT		20
+#define IRGUN_WEIGHT		20
+#define FGRENADE_WEIGHT		20
+#define LFLAMMES_WEIGHT		20
+#define BRIQUET_WEIGHT		20
+#define SUPERGUN_WEIGHT		20
+//fin modif.
 
 // weapon clip/carry ammo capacities
 #define URANIUM_MAX_CARRY		100
 #define	_9MM_MAX_CARRY			250
-#define _357_MAX_CARRY			36
+#define _357_MAX_CARRY			120
 #define BUCKSHOT_MAX_CARRY		125
 #define BOLT_MAX_CARRY			50
 #define ROCKET_MAX_CARRY		5
@@ -116,13 +145,21 @@ public:
 #define SNARK_MAX_CARRY			15
 #define HORNET_MAX_CARRY		8
 #define M203_GRENADE_MAX_CARRY	10
+// modif. de Julien
+#define M16_MAX_CARRY			200
+#define FSNIPER_MAX_CARRY		50
+#define IRGUN_MAX_CARRY			150
+#define FGRENADE_MAX_CARRY		10
+#define LFLAMMES_MAX_CARRY		200
+#define SUPERGUN_MAX_CARRY		100
+//fin modif.
 
 // the maximum amount of ammo each weapon's clip can hold
 #define WEAPON_NOCLIP			-1
 
 //#define CROWBAR_MAX_CLIP		WEAPON_NOCLIP
 #define GLOCK_MAX_CLIP			17
-#define PYTHON_MAX_CLIP			6
+#define PYTHON_MAX_CLIP			12
 #define MP5_MAX_CLIP			50
 #define MP5_DEFAULT_AMMO		25
 #define SHOTGUN_MAX_CLIP		8
@@ -135,10 +172,18 @@ public:
 #define SATCHEL_MAX_CLIP		WEAPON_NOCLIP
 #define TRIPMINE_MAX_CLIP		WEAPON_NOCLIP
 #define SNARK_MAX_CLIP			WEAPON_NOCLIP
+// modif. de Julien
+#define M16_MAX_CLIP			50
+#define FSNIPER_MAX_CLIP		5
+#define IRGUN_MAX_CLIP			10
+#define FGRENADE_MAX_CLIP		WEAPON_NOCLIP
+#define LFLAMMES_MAX_CLIP		WEAPON_NOCLIP
+#define SUPERGUN_MAX_CLIP		25
+//fin modif.
 
 // the default amount of ammo that comes with each gun when it spawns
 #define GLOCK_DEFAULT_GIVE			17
-#define PYTHON_DEFAULT_GIVE			6
+#define PYTHON_DEFAULT_GIVE			12
 #define MP5_DEFAULT_GIVE			25
 #define MP5_DEFAULT_AMMO			25
 #define MP5_M203_DEFAULT_GIVE		0
@@ -152,6 +197,14 @@ public:
 #define TRIPMINE_DEFAULT_GIVE		1
 #define SNARK_DEFAULT_GIVE			5
 #define HIVEHAND_DEFAULT_GIVE		8
+// modif. de Julien
+#define M16_DEFAULT_GIVE			25
+#define FSNIPER_DEFAULT_GIVE		3
+#define IRGUN_DEFAULT_GIVE			10
+#define FGRENADE_DEFAULT_GIVE		5
+#define LFLAMMES_DEFAULT_GIVE		30
+#define	SUPERGUN_DEFAULT_GIVE		40
+// fin modif.
 
 // The amount of ammo given to a player by an ammo item.
 #define AMMO_URANIUMBOX_GIVE	20
@@ -165,6 +218,13 @@ public:
 #define AMMO_RPGCLIP_GIVE		RPG_MAX_CLIP
 #define AMMO_URANIUMBOX_GIVE	20
 #define AMMO_SNARKBOX_GIVE		5
+// modif. de Julien
+#define AMMO_M16CLIP_GIVE		50
+#define AMMO_FSNIPERCLIP_GIVE	5
+#define AMMO_IRGUNCLIPGIVE		10
+#define AMMO_LFLAMMESCLIPGIVE	30
+#define AMMO_SUPERGUNCLIPGIVE	20
+//fin modif
 
 // bullet types
 typedef	enum
@@ -174,7 +234,13 @@ typedef	enum
 	BULLET_PLAYER_MP5, // mp5
 	BULLET_PLAYER_357, // python
 	BULLET_PLAYER_BUCKSHOT, // shotgun
+	BULLET_PLAYER_BUCKSHOT_DOUBLE, // modif de Julien
 	BULLET_PLAYER_CROWBAR, // crowbar swipe
+	// modif. de Julien
+	BULLET_PLAYER_M16,
+	BULLET_PLAYER_SNIPER,
+	BULLET_PLAYER_IRGUN,
+	// fin modif.
 
 	BULLET_MONSTER_9MM,
 	BULLET_MONSTER_MP5,
@@ -224,7 +290,11 @@ public:
 	virtual int AddToPlayer( CBasePlayer *pPlayer );	// return TRUE if the item you want the item added to the player inventory
 	virtual int AddDuplicate( CBasePlayerItem *pItem ) { return FALSE; }	// return TRUE if you want your duplicate removed from world
 	void EXPORT DestroyItem( void );
+
+	// modif de Julien
 	void EXPORT DefaultTouch( CBaseEntity *pOther );	// default weapon touch
+	virtual void ItemTouch ( CBaseEntity *pOther ) {};
+
 	void EXPORT FallThink ( void );// when an item is first spawned, this think is run to determine when the object has hit the ground.
 	void EXPORT Materialize( void );// make a weapon visible and tangible
 	void EXPORT AttemptToMaterialize( void );  // the weapon desires to become visible and tangible, if the game rules allow for it
@@ -464,7 +534,7 @@ public:
 	void Precache( void );
 	int iItemSlot( void ) { return 2; }
 	int GetItemInfo( ItemInfo *p );
-	int AddToPlayer( CBasePlayer *pPlayer );
+	//int AddToPlayer( CBasePlayer *pPlayer );
 
 	void PrimaryAttack( void );
 	void SecondaryAttack( void );
@@ -482,6 +552,10 @@ public:
 #endif
 	}
 
+	// modif de julien
+	int AddToPlayer( CBasePlayer *pPlayer );
+
+
 private:
 	int m_iShell;
 
@@ -489,7 +563,7 @@ private:
 	unsigned short m_usFireGlock2;
 };
 
-class CCrowbar : public CBasePlayerWeapon
+/*class CCrowbar : public CBasePlayerWeapon //Restored to old version to fix animation modif de Roy
 {
 public:
 	void Spawn( void );
@@ -498,7 +572,7 @@ public:
 	void EXPORT SwingAgain( void );
 	void EXPORT Smack( void );
 	int GetItemInfo( ItemInfo *p );
-	int AddToPlayer( CBasePlayer *pPlayer );
+	//int AddToPlayer( CBasePlayer *pPlayer );
 
 	void PrimaryAttack( void );
 	int Swing( int fFirst );
@@ -510,6 +584,13 @@ public:
 	int m_iSwing;
 	TraceResult m_trHit;
 
+	Vector m_vecDecalSrc;
+	Vector m_vecDecalEnd;
+
+	// modif de julien
+	int AddToPlayer( CBasePlayer *pPlayer );
+
+
 	virtual BOOL UseDecrement( void )
 	{ 
 #if CLIENT_WEAPONS
@@ -520,9 +601,9 @@ public:
 	}
 private:
 	unsigned short m_usCrowbar;
-};
+};*/
 
-class CPython : public CBasePlayerWeapon
+/*class CPython : public CBasePlayerWeapon //Restored to old version to fix animation modif de Roy
 {
 public:
 	void Spawn( void );
@@ -531,14 +612,15 @@ public:
 	int GetItemInfo(ItemInfo *p);
 	int AddToPlayer( CBasePlayer *pPlayer );
 	void PrimaryAttack( void );
-	void SecondaryAttack( void );
+//	void SecondaryAttack( void );
 	BOOL Deploy( void );
 	void Holster( int skiplocal = 0 );
 	void Reload( void );
 	void WeaponIdle( void );
 	float m_flSoundDelay;
 
-	BOOL m_fInZoom;// don't save this. 
+//	BOOL m_fInZoom;// don't save this. 
+	int m_iShell;
 
 	virtual BOOL UseDecrement( void )
 	{
@@ -551,9 +633,9 @@ public:
 
 private:
 	unsigned short m_usFirePython;
-};
+};*/
 
-class CMP5 : public CBasePlayerWeapon
+/*class CMP5 : public CBasePlayerWeapon //Restored to old version to fix animation modif de Roy
 {
 public:
 	void Spawn( void );
@@ -563,8 +645,8 @@ public:
 	int AddToPlayer( CBasePlayer *pPlayer );
 
 	void PrimaryAttack( void );
-	void SecondaryAttack( void );
-	int SecondaryAmmoIndex( void );
+//	void SecondaryAttack( void );	//dans le M16
+//	int SecondaryAmmoIndex( void );
 	BOOL Deploy( void );
 	void Reload( void );
 	void WeaponIdle( void );
@@ -583,7 +665,7 @@ public:
 private:
 	unsigned short m_usMP5;
 	unsigned short m_usMP52;
-};
+};*/
 
 class CCrossbow : public CBasePlayerWeapon
 {
@@ -619,7 +701,7 @@ private:
 	unsigned short m_usCrossbow2;
 };
 
-class CShotgun : public CBasePlayerWeapon
+/*class CShotgun : public CBasePlayerWeapon //Restored to old version to fix animation modif de Roy
 {
 public:
 #if !CLIENT_DLL
@@ -655,6 +737,34 @@ public:
 private:
 	unsigned short m_usDoubleFire;
 	unsigned short m_usSingleFire;
+};*/
+
+class CShotgun : public CBasePlayerWeapon
+{
+public:
+#if !CLIENT_DLL
+	int		Save( CSave &save );
+	int		Restore( CRestore &restore );
+	static	TYPEDESCRIPTION m_SaveData[];
+#endif
+	void Spawn( void );
+	void Precache( void );
+	int iItemSlot( ) { return 3; }
+	int GetItemInfo(ItemInfo *p);
+	int AddToPlayer( CBasePlayer *pPlayer );
+
+	void PrimaryAttack( void );
+	void SecondaryAttack( void );
+	BOOL Deploy( );
+	void Reload( void );
+	void WeaponIdle( void );
+	int m_fInReload;
+	float m_flNextReload;
+	int m_iShell;
+	float m_flPumpTime;
+private:
+	unsigned short m_usDoubleFire;
+	unsigned short m_usSingleFire;
 };
 
 class CLaserSpot : public CBaseEntity
@@ -671,7 +781,7 @@ public:
 	static CLaserSpot *CreateSpot( void );
 };
 
-class CRpg : public CBasePlayerWeapon
+/*class CRpg : public CBasePlayerWeapon //declared in rpg.h by Julien
 {
 public:
 #if !CLIENT_DLL
@@ -712,9 +822,9 @@ public:
 
 private:
 	unsigned short m_usRpg;
-};
+};*/
 
-class CRpgRocket : public CGrenade
+/*class CRpgRocket : public CGrenade //also declared in rpg.h by Julien
 {
 public:
 	int		Save( CSave &save );
@@ -730,7 +840,7 @@ public:
 	int m_iTrail;
 	float m_flIgniteTime;
 	EHANDLE m_hLauncher; // handle back to the launcher that fired me. 
-};
+};*/
 
 class CGauss : public CBasePlayerWeapon
 {
@@ -884,7 +994,7 @@ private:
 	unsigned short m_usHornetFire;
 };
 
-class CHandGrenade : public CBasePlayerWeapon
+/*class CHandGrenade : public CBasePlayerWeapon //Restored to old version to fix animation modif de Roy
 {
 public:
 	void Spawn( void );
@@ -906,7 +1016,10 @@ public:
 		return FALSE;
 #endif
 	}
-};
+
+	// modif de julien
+	int AddToPlayer( CBasePlayer *pPlayer ); //added by Roy
+};*/
 
 class CSatchel : public CBasePlayerWeapon
 {
@@ -970,11 +1083,14 @@ public:
 #endif
 	}
 
+	// modif de julien
+	int AddToPlayer( CBasePlayer *pPlayer );
+
 private:
 	unsigned short m_usTripFire;
 };
 
-class CSqueak : public CBasePlayerWeapon
+/*class CSqueak : public CBasePlayerWeapon //commented out by Julien
 {
 public:
 	void Spawn( void );
@@ -1000,5 +1116,5 @@ public:
 
 private:
 	unsigned short m_usSnarkFire;
-};
+};*/
 #endif // WEAPONS_H

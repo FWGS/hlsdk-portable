@@ -36,6 +36,9 @@ extern DLL_GLOBAL int			g_iSkillLevel;
 
 extern Vector VecBModelOrigin( entvars_t *pevBModel );
 extern entvars_t *g_pevLastInflictor;
+//modif de Julien
+extern void ClientDecal ( TraceResult *pTrace, Vector vecSrc, Vector vecEnd, int crowbar = 0 );
+
 
 #define GERMAN_GIB_COUNT		4
 #define	HUMAN_GIB_COUNT			6
@@ -343,6 +346,7 @@ void CBaseMonster::GibMonster( void )
 //=========================================================
 Activity CBaseMonster::GetDeathActivity( void )
 {
+
 	Activity	deathActivity;
 	BOOL		fTriedDirection;
 	float		flDot;
@@ -585,6 +589,13 @@ void CBaseMonster::Killed( entvars_t *pevAttacker, int iGib )
 {
 	//unsigned int	cCount = 0;
 	//BOOL		fDone = FALSE;
+	// modif de Julien - lance flammes
+
+	if ( pev->renderfx == kRenderFxGlowShell )
+		pev->renderfx = kRenderFxNone;
+	
+	//----
+
 
 	if( HasMemory( bits_MEMORY_KILLED ) )
 	{
@@ -628,6 +639,9 @@ void CBaseMonster::Killed( entvars_t *pevAttacker, int iGib )
 	//pev->enemy = ENT( pevAttacker );//why? (sjb)
 
 	m_IdealMonsterState = MONSTERSTATE_DEAD;
+
+	// modif de Julien
+	pev->solid = SOLID_BBOX;	// ne pas bloquer les gibs
 }
 
 //
@@ -681,6 +695,13 @@ void CGib::WaitTillLand( void )
 
 	if( pev->velocity == g_vecZero )
 	{
+		if ( m_instant == 1 ) //modif de Julien
+		{
+			pev->nextthink = gpGlobals->time + m_lifeTime;
+			SetThink ( &CBaseEntity::SUB_Remove ); //added &CBaseEntity::
+			return;
+		}
+
 		SetThink( &CBaseEntity::SUB_StartFadeOut );
 		pev->nextthink = gpGlobals->time + m_lifeTime;
 
@@ -900,11 +921,13 @@ int CBaseMonster::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, f
 	{
 		g_pevLastInflictor = pevInflictor;
 
-		if( bitsDamageType & DMG_ALWAYSGIB )
+//		if( bitsDamageType & DMG_ALWAYSGIB )
+		if ( bitsDamageType & DMG_ALWAYSGIB && !(bitsDamageType & DMG_BULLET) )	// modif de Julien
 		{
 			Killed( pevAttacker, GIB_ALWAYS );
 		}
-		else if( bitsDamageType & DMG_NEVERGIB )
+//		else if( bitsDamageType & DMG_NEVERGIB )
+		else if ( bitsDamageType & DMG_NEVERGIB || bitsDamageType & DMG_BULLET )	// modif de Julien
 		{
 			Killed( pevAttacker, GIB_NEVER );
 		}
@@ -1061,9 +1084,13 @@ void RadiusDamage( Vector vecSrc, entvars_t *pevInflictor, entvars_t *pevAttacke
 
 			UTIL_TraceLine( vecSrc, vecSpot, dont_ignore_monsters, ENT( pevInflictor ), &tr );
 
-			if( tr.flFraction == 1.0f || tr.pHit == pEntity->edict() )
+//			if( tr.flFraction == 1.0f || tr.pHit == pEntity->edict() )
+//			{
+			if ( tr.flFraction == 1.0 || tr.pHit == pEntity->edict() || FClassnameIs(tr.pHit, "info_tank_model") )	// modif de Julien
 			{
+						
 				// the explosion can 'see' this entity, so hurt them!
+//				// the explosion can 'see' this entity, so hurt them!
 				if( tr.fStartSolid )
 				{
 					// if we're stuck inside them, fixup the position and distance
@@ -1226,6 +1253,12 @@ BOOL CBaseEntity::FVisible( CBaseEntity *pEntity )
 
 	UTIL_TraceLine( vecLookerOrigin, vecTargetOrigin, ignore_monsters, ignore_glass, ENT( pev )/*pentIgnore*/, &tr );
 
+	
+	//modif de Julien pour le tank
+	if ( FClassnameIs ( pEntity->pev , "vehicle_tank" ) )
+		UTIL_TraceLine(vecLookerOrigin, vecTargetOrigin, ignore_monsters, ignore_glass, ENT(pEntity->pev), &tr);
+
+
 	if( tr.flFraction != 1.0f )
 	{
 		return FALSE;// Line of sight is not established
@@ -1355,7 +1388,8 @@ Go to the trouble of combining multiple pellets into a single damage call.
 This version is used by Monsters.
 ================
 */
-void CBaseEntity::FireBullets( ULONG cShots, Vector vecSrc, Vector vecDirShooting, Vector vecSpread, float flDistance, int iBulletType, int iTracerFreq, int iDamage, entvars_t *pevAttacker )
+//void CBaseEntity::FireBullets(ULONG cShots, Vector vecSrc, Vector vecDirShooting, Vector vecSpread, float flDistance, int iBulletType, int iTracerFreq, int iDamage, entvars_t *pevAttacker )
+void CBaseEntity::FireBullets(ULONG cShots, Vector vecSrc, Vector vecDirShooting, Vector vecSpread, float flDistance, int iBulletType, int iTracerFreq, int iDamage, entvars_t *pevAttacker, int iTraverseMur )
 {
 	static int tracerCount;
 	int tracer;
@@ -1406,6 +1440,10 @@ void CBaseEntity::FireBullets( ULONG cShots, Vector vecSrc, Vector vecDirShootin
 				tracer = 1;
 			switch( iBulletType )
 			{
+ 			case BULLET_PLAYER_MP5:			// ??? HLINVASION modif de Julien Wasn't there originally. Re-added.
+			case BULLET_PLAYER_M16:			// modif. de Julien            
+			case BULLET_PLAYER_SNIPER:		// modif. de Julien   
+			case BULLET_PLAYER_IRGUN:		// modif. de Julien   
 			case BULLET_MONSTER_MP5:
 			case BULLET_MONSTER_9MM:
 			case BULLET_MONSTER_12MM:
@@ -1432,29 +1470,77 @@ void CBaseEntity::FireBullets( ULONG cShots, Vector vecSrc, Vector vecDirShootin
 				pEntity->TraceAttack( pevAttacker, iDamage, vecDir, &tr, DMG_BULLET | ( ( iDamage > 16 ) ? DMG_ALWAYSGIB : DMG_NEVERGIB ) );
 
 				TEXTURETYPE_PlaySound( &tr, vecSrc, vecEnd, iBulletType );
-				DecalGunshot( &tr, iBulletType );
+				//DecalGunshot( &tr, iBulletType ); //modif de Julien
+				ClientDecal ( &tr, vecSrc, vecEnd );
 			} 
 			else switch( iBulletType )
 			{
-			default:
+			//default:
+			case BULLET_PLAYER_9MM: //HLINVASION modif de Julien, Julien's original code clearly expects these to be here, so copy them here.
+				//pEntity->TraceAttack( pevAttacker, gSkillData.plrDmg9MM, vecDir, &tr, DMG_BULLET );
+				pEntity->TraceAttack(pevAttacker, gSkillData.plrDmg9MM, vecDir, &tr, DMG_BULLET | DMG_NEVERGIB ); // modif de Julien HLINVASION copied here from the block above, due to obvious discrepancy, likely due to API / SDK versions.
+				break;
+			case BULLET_PLAYER_MP5:
+				pEntity->TraceAttack( pevAttacker, gSkillData.plrDmgMP5, vecDir, &tr, DMG_BULLET );
+				break;
+			case BULLET_PLAYER_BUCKSHOT:
+				 // make distance based!
+				pEntity->TraceAttack( pevAttacker, gSkillData.plrDmgBuckshot, vecDir, &tr, DMG_BULLET );
+				break;
+			case BULLET_PLAYER_357:
+				pEntity->TraceAttack( pevAttacker, gSkillData.plrDmg357, vecDir, &tr, DMG_BULLET );
+				break;
+			//end Julien legacy code block copy
+			// modif. de Julien //also see player function below for BULLET_PLAYER_9MM section, moved it there (seems more appropriate), left these here, as it's likely Julien's code will expect them here.
+		        case BULLET_PLAYER_M16:		
+				pEntity->TraceAttack(pevAttacker, gSkillData.plrDmgM16, vecDir, &tr, DMG_BULLET); 
+				break;
+
+			case BULLET_PLAYER_SNIPER:
+				{
+					// pour ne pas d
+
+					float damage = gSkillData.plrDmgSniper;
+
+					if ( pEntity->MyMonsterPointer() == NULL || FClassnameIs ( pEntity->edict(), "monster_apache" ) ) //was MyMonsterPointer (sans braces), probably obsolete
+						damage *= 0.3;
+
+					pEntity->TraceAttack(pevAttacker, damage, vecDir, &tr, DMG_BULLET); 
+					break;
+				}
+
+			case BULLET_PLAYER_IRGUN:		
+				pEntity->TraceAttack(pevAttacker, gSkillData.plrDmgIRgun, vecDir, &tr, DMG_BULLET); 
+				break;
+
+			//fin modif.
+
+			case BULLET_PLAYER_BUCKSHOT_DOUBLE:	//modif de Julien - pour le demembrage du grunt
+				pEntity->TraceAttack(pevAttacker, gSkillData.plrDmgBuckshot, vecDir, &tr, DMG_BULLET | DMG_NEVERGIB ); 
+				break;
+
+			default: //HLINVASION -- re-added here, because something is definitely off here. modif de Julien
 			case BULLET_MONSTER_9MM:
 				pEntity->TraceAttack( pevAttacker, gSkillData.monDmg9MM, vecDir, &tr, DMG_BULLET );
 
 				TEXTURETYPE_PlaySound( &tr, vecSrc, vecEnd, iBulletType );
-				DecalGunshot( &tr, iBulletType );
+//				DecalGunshot( &tr, iBulletType ); //modif de Julien
+				ClientDecal ( &tr, vecSrc, vecEnd );
 				break;
 			case BULLET_MONSTER_MP5:
 				pEntity->TraceAttack( pevAttacker, gSkillData.monDmgMP5, vecDir, &tr, DMG_BULLET );
 
 				TEXTURETYPE_PlaySound( &tr, vecSrc, vecEnd, iBulletType );
-				DecalGunshot( &tr, iBulletType );
+//				DecalGunshot( &tr, iBulletType ); //modif de Julien
+				ClientDecal ( &tr, vecSrc, vecEnd );
 				break;
 			case BULLET_MONSTER_12MM:
 				pEntity->TraceAttack( pevAttacker, gSkillData.monDmg12MM, vecDir, &tr, DMG_BULLET );
 				if( !tracer )
 				{
 					TEXTURETYPE_PlaySound( &tr, vecSrc, vecEnd, iBulletType );
-					DecalGunshot( &tr, iBulletType );
+//					DecalGunshot( &tr, iBulletType ); //modif de Julien
+					ClientDecal ( &tr, vecSrc, vecEnd );
 				}
 				break;
 			case BULLET_NONE: // FIX
@@ -1468,11 +1554,57 @@ void CBaseEntity::FireBullets( ULONG cShots, Vector vecSrc, Vector vecDirShootin
 
 				break;
 			}
+
+			// tir a travers les murs //modif de Julien
+
+			if ( iTraverseMur == 0 )
+			{
+				float distance;
+
+				switch(iBulletType)
+				{
+					default:
+					case BULLET_PLAYER_9MM:		
+					case BULLET_PLAYER_MP5:		
+					case BULLET_PLAYER_SNIPER :
+					case BULLET_PLAYER_M16 :
+					case BULLET_PLAYER_BUCKSHOT_DOUBLE:
+					case BULLET_PLAYER_BUCKSHOT:
+					case BULLET_PLAYER_357:
+						distance = 16;
+						break;
+					case BULLET_PLAYER_IRGUN :
+						distance = 32;
+						break;
+				}
+
+				// 
+
+				vec3_t vecSource = vecSrc;
+				vec3_t vecTraceDir = (tr.vecEndPos - vecSource).Normalize();
+				vecSource = tr.vecEndPos + vecTraceDir * distance;
+				TraceResult trTir;
+
+				UTIL_TraceLine(vecSource, vecSource + vecTraceDir, dont_ignore_monsters, ENT(pev), &trTir);
+
+				if ( trTir.fStartSolid != 1 )
+				{
+					ApplyMultiDamage(pev, pevAttacker);
+					FireBullets ( 1, vecSource, vecTraceDir, vecSpread, flDistance, iBulletType, 0, 0, pev, 1 );
+				}
+			} //fin modif de Julien
 		}
 		// make bullet trails
 		UTIL_BubbleTrail( vecSrc, tr.vecEndPos, (int)( ( flDistance * tr.flFraction ) / 64.0f ) );
 	}
 	ApplyMultiDamage( pev, pevAttacker );
+
+	//modif de Julien
+	if ( IsPlayer() )
+	{
+		if ( IsInGaz() == TRUE )
+			m_bFireInGaz = TRUE;
+	}
 }
 
 /*
@@ -1487,6 +1619,7 @@ This version is used by Players, uses the random seed generator to sync client a
 Vector CBaseEntity::FireBulletsPlayer( ULONG cShots, Vector vecSrc, Vector vecDirShooting, Vector vecSpread, float flDistance, int iBulletType, int iTracerFreq, int iDamage, entvars_t *pevAttacker, int shared_rand )
 {
 	static int tracerCount;
+	int iTraverseMur = 0; //HLINVASION modif de Julien, Julien's default, this function is unlikely to be called from Julien's code.
 	TraceResult tr;
 	Vector vecRight = gpGlobals->v_right;
 	Vector vecUp = gpGlobals->v_up;
@@ -1531,11 +1664,41 @@ Vector CBaseEntity::FireBulletsPlayer( ULONG cShots, Vector vecSrc, Vector vecDi
 			{
 			default:
 			case BULLET_PLAYER_9MM:
-				pEntity->TraceAttack( pevAttacker, gSkillData.plrDmg9MM, vecDir, &tr, DMG_BULLET );
+				//pEntity->TraceAttack( pevAttacker, gSkillData.plrDmg9MM, vecDir, &tr, DMG_BULLET );
+				pEntity->TraceAttack(pevAttacker, gSkillData.plrDmg9MM, vecDir, &tr, DMG_BULLET | DMG_NEVERGIB ); // modif de Julien HLINVASION copied here from the block above, due to obvious discrepancy, likely due to API / SDK versions.
 				break;
 			case BULLET_PLAYER_MP5:
 				pEntity->TraceAttack( pevAttacker, gSkillData.plrDmgMP5, vecDir, &tr, DMG_BULLET );
 				break;
+			// HLINVASION modif de Julien legacy copy for compatibility
+			// modif. de Julien //also see monster function above. This is a compatibility copy.
+		        case BULLET_PLAYER_M16:		
+				pEntity->TraceAttack(pevAttacker, gSkillData.plrDmgM16, vecDir, &tr, DMG_BULLET); 
+				break;
+
+			case BULLET_PLAYER_SNIPER:
+				{
+					// pour ne pas d
+
+					float damage = gSkillData.plrDmgSniper;
+
+					if ( pEntity->MyMonsterPointer() == NULL || FClassnameIs ( pEntity->edict(), "monster_apache" ) ) //was MyMonsterPointer (sans braces), probably obsolete
+						damage *= 0.3;
+
+					pEntity->TraceAttack(pevAttacker, damage, vecDir, &tr, DMG_BULLET); 
+					break;
+				}
+
+			case BULLET_PLAYER_IRGUN:		
+				pEntity->TraceAttack(pevAttacker, gSkillData.plrDmgIRgun, vecDir, &tr, DMG_BULLET); 
+				break;
+
+			//fin modif.
+			case BULLET_PLAYER_BUCKSHOT_DOUBLE:	//modif de Julien - pour le demembrage du grunt
+				pEntity->TraceAttack(pevAttacker, gSkillData.plrDmgBuckshot, vecDir, &tr, DMG_BULLET | DMG_NEVERGIB ); 
+				break;
+			// HLINVASION modif de Julien fin de legacy copy for compatibility
+
 			case BULLET_PLAYER_BUCKSHOT:
 				 // make distance based!
 				pEntity->TraceAttack( pevAttacker, gSkillData.plrDmgBuckshot, vecDir, &tr, DMG_BULLET );
@@ -1554,11 +1717,56 @@ Vector CBaseEntity::FireBulletsPlayer( ULONG cShots, Vector vecSrc, Vector vecDi
 
 				break;
 			}
+			// tir a travers les murs //modif de Julien HLINVASION copied from the monster version above for compatibility.
+
+			if ( iTraverseMur == 0 ) //This is always zero here, since this function will likely not be called from Julien's code, which uses this var. Thus, we assume it to be zero, since it's Julien's default. See above.
+			{
+				float distance;
+
+				switch(iBulletType)
+				{
+					default:
+					case BULLET_PLAYER_9MM:		
+					case BULLET_PLAYER_MP5:		
+					case BULLET_PLAYER_SNIPER :
+					case BULLET_PLAYER_M16 :
+					case BULLET_PLAYER_BUCKSHOT_DOUBLE:
+					case BULLET_PLAYER_BUCKSHOT:
+					case BULLET_PLAYER_357:
+						distance = 16;
+						break;
+					case BULLET_PLAYER_IRGUN :
+						distance = 32;
+						break;
+				}
+
+				// 
+
+				vec3_t vecSource = vecSrc;
+				vec3_t vecTraceDir = (tr.vecEndPos - vecSource).Normalize();
+				vecSource = tr.vecEndPos + vecTraceDir * distance;
+				TraceResult trTir;
+
+				UTIL_TraceLine(vecSource, vecSource + vecTraceDir, dont_ignore_monsters, ENT(pev), &trTir);
+
+				if ( trTir.fStartSolid != 1 )
+				{
+					ApplyMultiDamage(pev, pevAttacker);
+					FireBullets ( 1, vecSource, vecTraceDir, vecSpread, flDistance, iBulletType, 0, 0, pev, 1 );
+				}
+			} //fin modif de Julien
 		}
 		// make bullet trails
 		UTIL_BubbleTrail( vecSrc, tr.vecEndPos, (int)( ( flDistance * tr.flFraction ) / 64.0f ) );
 	}
 	ApplyMultiDamage( pev, pevAttacker );
+
+	//modif de Julien HLINVASION copied from monster version above for compatibility.
+	if ( IsPlayer() )
+	{
+		if ( IsInGaz() == TRUE )
+			m_bFireInGaz = TRUE;
+	}
 
 	return Vector( x * vecSpread.x, y * vecSpread.y, 0.0 );
 }

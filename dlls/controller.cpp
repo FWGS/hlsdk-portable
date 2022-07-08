@@ -38,6 +38,14 @@
 
 #define CONTROLLER_FLINCH_DELAY			2		// at most one flinch every n secs
 
+
+// modif de julien
+enum 
+{
+	TASK_FLYBEE_WAIT_FOR_MOVEMENT = LAST_COMMON_TASK + 1,
+};
+
+
 class CController : public CSquadMonster
 {
 public:
@@ -481,6 +489,24 @@ Schedule_t slControllerFail[] =
 		"ControllerFail"
 	},
 };
+// modif de julien
+
+Task_t	tlControllerBurn[] =
+{
+	{ TASK_FIND_COVER_FROM_ENEMY,			(float)0		},
+	{ TASK_FLYBEE_WAIT_FOR_MOVEMENT,		(float)0		},
+};
+
+Schedule_t	slControllerBurn[] =
+{
+	{
+		tlControllerBurn,
+		ARRAYSIZE ( tlControllerBurn ),
+		0,
+		0,
+		"ControllerBurn"
+	},
+};
 
 DEFINE_CUSTOM_SCHEDULES( CController )
 {
@@ -488,6 +514,7 @@ DEFINE_CUSTOM_SCHEDULES( CController )
 	slControllerStrafe,
 	slControllerTakeCover,
 	slControllerFail,
+	slControllerBurn,	// modif de julien
 };
 
 IMPLEMENT_CUSTOM_SCHEDULES( CController, CSquadMonster )
@@ -538,6 +565,20 @@ void CController::StartTask( Task_t *pTask )
 			}
 			break;
 		}
+
+	// modif de julien
+
+	case TASK_FLYBEE_WAIT_FOR_MOVEMENT:
+		{
+			if (FRouteClear())
+			{
+				TaskComplete();
+			}
+			break;
+		}
+
+
+
 	default:
 		CSquadMonster::StartTask( pTask );
 		break;
@@ -707,6 +748,20 @@ void CController::RunTask( Task_t *pTask )
 			}
 		}
 		break;
+
+	// modif de julien
+
+	case TASK_FLYBEE_WAIT_FOR_MOVEMENT:
+		{
+			if (MovementIsComplete())
+			{
+				TaskComplete();
+				RouteClear();		// Stop moving
+			}
+			break;
+		}
+
+
 	default: 
 		CSquadMonster::RunTask( pTask );
 		break;
@@ -766,6 +821,10 @@ Schedule_t *CController::GetScheduleOfType( int Type )
 		return slControllerTakeCover;
 	case SCHED_FAIL:
 		return slControllerFail;
+
+	// modif de julien
+	case SCHED_BURNT:
+		return slControllerBurn;
 	}
 
 	return CBaseMonster::GetScheduleOfType( Type );

@@ -50,6 +50,10 @@ public:
 	EHANDLE m_hPlayer;
 	EHANDLE m_hTalkTarget;
 	float m_flTalkTime;
+
+	// modif de julien
+	int CanPlaySequence( BOOL fDisregardMonsterState, int interruptLevel );
+
 };
 
 LINK_ENTITY_TO_CLASS( monster_gman, CGMan )
@@ -61,6 +65,16 @@ TYPEDESCRIPTION	CGMan::m_SaveData[] =
 };
 
 IMPLEMENT_SAVERESTORE( CGMan, CBaseMonster )
+
+//---------------------
+// modif de Julien
+
+int CGMan :: CanPlaySequence( BOOL fDisregardMonsterState, int interruptLevel )
+{
+	return TRUE;
+}
+
+
 
 //=========================================================
 // Classify - indicates this monster's place in the 
@@ -122,7 +136,8 @@ void CGMan::Spawn()
 	SET_MODEL( ENT( pev ), "models/gman.mdl" );
 	UTIL_SetSize( pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX );
 
-	pev->solid		= SOLID_SLIDEBOX;
+//	pev->solid			= SOLID_SLIDEBOX;
+	pev->solid			= SOLID_NOT;	// modif de Julien
 	pev->movetype		= MOVETYPE_STEP;
 	m_bloodColor		= DONT_BLEED;
 	pev->health		= 100;

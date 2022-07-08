@@ -31,6 +31,12 @@
 #include	"explode.h"
 #include	"func_break.h"
 
+// modif de julien
+
+#include	"lflammes.h"
+
+//#define		GARG_LFLAMMES
+
 //=========================================================
 // Gargantua Monster
 //=========================================================
@@ -556,6 +562,17 @@ void CGargantua::FlameUpdate( void )
 			GetAttachment( i + 1, vecStart, angleGun );
 			Vector vecEnd = vecStart + ( gpGlobals->v_forward * GARG_FLAME_LENGTH ); //  - offset[i] * gpGlobals->v_right;
 
+#if defined GARG_LFLAMMES
+
+			// modif de Julien
+
+			Vector flamang = UTIL_VecToAngles((vecEnd-vecStart).Normalize());
+			flamang.x = -flamang.x ;
+
+			CFlamme :: CreateFlamme ( vecStart, flamang );
+
+#else
+
 			UTIL_TraceLine( vecStart, vecEnd, dont_ignore_monsters, edict(), &trace );
 
 			m_pFlame[i]->SetStartPos( trace.vecEndPos );
@@ -570,6 +587,7 @@ void CGargantua::FlameUpdate( void )
 
 			// RadiusDamage( trace.vecEndPos, pev, pev, gSkillData.gargantuaDmgFire, CLASS_ALIEN_MONSTER, DMG_BURN );
 			FlameDamage( vecStart, trace.vecEndPos, pev, pev, gSkillData.gargantuaDmgFire, CLASS_ALIEN_MONSTER, DMG_BURN );
+#endif
 
 			MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
 				WRITE_BYTE( TE_ELIGHT );
@@ -842,7 +860,10 @@ int CGargantua::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, flo
 			SetConditions( bits_COND_LIGHT_DAMAGE );
 	}
 
-	return CBaseMonster::TakeDamage( pevInflictor, pevAttacker, flDamage, bitsDamageType );
+	// modif de Julien
+	return 0;
+
+//	 return CBaseMonster::TakeDamage( pevInflictor, pevAttacker, flDamage, bitsDamageType );
 }
 
 void CGargantua::DeathEffect( void )
@@ -974,6 +995,16 @@ void CGargantua::HandleAnimEvent( MonsterEvent_t *pEvent )
 	case GARG_AE_BREATHE:
 		EMIT_SOUND_DYN( edict(), CHAN_VOICE, RANDOM_SOUND_ARRAY( pBreatheSounds ), 1.0, ATTN_GARG, 0, PITCH_NORM + RANDOM_LONG( -10, 10 ) );
 		break;
+	// modif de Julien
+	case 1000:	// SCRIPT_EVENT_DEAD:
+
+		EyeOff();
+		UTIL_Remove( m_pEyeGlow );
+		m_pEyeGlow = NULL;
+
+		CBaseMonster::HandleAnimEvent(pEvent);
+		break;
+
 	default:
 		CBaseMonster::HandleAnimEvent( pEvent );
 		break;

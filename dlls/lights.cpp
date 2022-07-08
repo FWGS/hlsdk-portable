@@ -194,3 +194,68 @@ void CEnvLight::Spawn( void )
 
 	CLight::Spawn();
 }
+
+
+
+
+//-------------------------------------------------------------
+// modif de Julien
+
+// lumi
+
+
+
+
+class CLightEnt : public CPointEntity
+{
+public:
+	void	Spawn		( void );
+	void	EXPORT	LightThink ( void );
+
+	virtual int		ObjectCaps( void ) { return ( FCAP_ACROSS_TRANSITION | FCAP_MUST_SPAWN ); }
+
+	int		startlight;
+};
+
+LINK_ENTITY_TO_CLASS( light_ent, CLightEnt );
+
+void CLightEnt :: Spawn( void )
+{
+	pev->solid = SOLID_NOT;
+	pev->effects = EF_NODRAW;
+
+	SetThink ( &CLightEnt::LightThink );
+	pev->nextthink = 0.1;
+
+	startlight = 0;
+
+}
+
+
+void CLightEnt :: LightThink ( void )
+{
+	if ( startlight == 0 )
+	{
+		pev->nextthink = gpGlobals->time + 1;
+		startlight ++;
+	}
+
+	else
+		pev->nextthink = gpGlobals->time + 25.5;
+
+	Vector vecSrc = pev->origin;
+
+	MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, vecSrc );
+		WRITE_BYTE(TE_DLIGHT);
+		WRITE_COORD(vecSrc.x);	// X
+		WRITE_COORD(vecSrc.y);	// Y
+		WRITE_COORD(vecSrc.z);	// Z
+		WRITE_BYTE( pev->speed / 10 );		// le rayon est enregistr
+		WRITE_BYTE( pev->rendercolor.x );		// r
+		WRITE_BYTE( pev->rendercolor.y );		// g
+		WRITE_BYTE( pev->rendercolor.z );		// b
+		WRITE_BYTE( 255 );		// time * 10
+		WRITE_BYTE( 0 );		// decay * 0.1
+	MESSAGE_END( );
+}
+

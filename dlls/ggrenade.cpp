@@ -30,6 +30,8 @@
 
 //===================grenade
 
+extern int iFgTrail;
+
 
 LINK_ENTITY_TO_CLASS( grenade, CGrenade )
 
@@ -121,6 +123,12 @@ void CGrenade::Explode( TraceResult *pTrace, int bitsDamageType )
 			break;
 	}
 
+	//modif de Julien
+
+	UTIL_ScreenShake( pev->origin, 100, 85, 1.0, 500 );
+
+	//====================
+
 	pev->effects |= EF_NODRAW;
 	SetThink( &CGrenade::Smoke );
 	pev->velocity = g_vecZero;
@@ -131,6 +139,13 @@ void CGrenade::Explode( TraceResult *pTrace, int bitsDamageType )
 		int sparkCount = RANDOM_LONG( 0, 3 );
 		for( int i = 0; i < sparkCount; i++ )
 			Create( "spark_shower", pev->origin, pTrace->vecPlaneNormal, NULL );
+	}
+
+	if ( IsInGaz () )
+	{
+		edict_t *pFind = FIND_ENTITY_BY_CLASSNAME( NULL, "player" );
+		CBaseEntity *pPlayer = CBaseEntity::Instance ( pFind );
+		pPlayer->m_bFireInGaz = TRUE;
 	}
 }
 
@@ -186,6 +201,107 @@ void CGrenade::Detonate( void )
 	Explode( &tr, DMG_BLAST );
 }
 
+//modif de Julien
+//grenade 
+
+CGrenade * CGrenade :: ShootFrag( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity, int mode )
+{
+	CGrenade *pGrenade = GetClassPtr( (CGrenade *)NULL );
+	pGrenade->Spawn();
+	UTIL_SetOrigin( pGrenade->pev, vecStart );
+	pGrenade->pev->velocity = vecVelocity;
+	pGrenade->pev->angles = UTIL_VecToAngles(pGrenade->pev->velocity);
+	pGrenade->pev->owner = ENT(pevOwner);
+
+	pGrenade->pev->solid = SOLID_BBOX;
+	
+	if ( mode == 1 )
+	{
+		SET_MODEL(ENT(pGrenade->pev), "models/w_fgrenade.mdl");
+		pGrenade->SetTouch( &CGrenade::FragTouch );
+		pGrenade->SetThink( &CGrenade::FragThink );
+		pGrenade->pev->nextthink = gpGlobals->time + 0.1;
+	}
+	else
+	{
+		SET_MODEL(ENT(pGrenade->pev), "models/w_frag.mdl");
+		pGrenade->SetThink( &CGrenade::Detonate );
+		pGrenade->pev->nextthink = gpGlobals->time + RANDOM_FLOAT( 2,3 );
+		pGrenade->pev->solid = SOLID_NOT;
+
+	}
+
+	MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
+		WRITE_BYTE( TE_BEAMFOLLOW );
+		WRITE_SHORT(pGrenade->entindex());	// entity
+		WRITE_SHORT(iFgTrail );	// model
+		WRITE_BYTE( 10 ); // life
+		WRITE_BYTE( 1.5 );  // width
+		WRITE_BYTE( 240 );   // r, g, b
+		WRITE_BYTE( 215 );   // r, g, b
+		WRITE_BYTE( 80  );   // r, g, b
+		WRITE_BYTE( 200 );	// brightness
+	MESSAGE_END();
+
+
+		
+	pGrenade->pev->sequence = 4;
+	pGrenade->pev->framerate = 6;
+
+	pGrenade->pev->gravity = 0.35;
+	pGrenade->pev->friction = 0.9;
+
+	pGrenade->pev->dmg = 100;
+
+	return pGrenade;
+
+}
+
+void CGrenade :: FragTouch( CBaseEntity *pOther )
+{
+	for ( int i = 0 ; i < 7 ; i++ )
+	{
+		Vector ang;
+		ang.x = RANDOM_LONG( -90,-30 );
+		ang.y = RANDOM_LONG( -180, 180 );
+
+		float flVel = fabs ( (ang.x / 90) * 300 ) + 100;
+
+		UTIL_MakeVectors ( ang );
+
+		CGrenade :: ShootFrag( pev, pev->origin, gpGlobals->v_forward * flVel , 0 );
+	}
+
+	SetTouch( NULL );
+	SetThink( &CGrenade::Detonate );
+	pev->nextthink = gpGlobals->time + 0.1;
+
+}
+
+
+
+void CGrenade :: FragThink( void )
+{
+	if (!IsInWorld())
+	{
+		UTIL_Remove( this );
+		return;
+	}
+
+	StudioFrameAdvance( );
+	pev->nextthink = gpGlobals->time + 0.1;
+
+
+	CSoundEnt::InsertSound ( bits_SOUND_DANGER, pev->origin + pev->velocity * (pev->dmgtime - gpGlobals->time), 400, 0.1 );
+
+	if (pev->waterlevel != 0)
+	{
+		pev->velocity = pev->velocity * 0.5;
+		pev->framerate = 0.2;
+	}
+}
+
+//=============================
 
 //
 // Contact grenade, explode when it touches something
@@ -485,3 +601,40 @@ void CGrenade::UseSatchelCharges( entvars_t *pevOwner, SATCHELCODE code )
 }
 
 //======================end grenade
+
+
+//modif de Julien
+//=========================================
+//	pour les trigger_gaz
+//=========================================
+
+BOOL CGrenade::IsInGaz ( void )
+{
+	Vector vecPlayer = Center ();
+
+	CBaseEntity *pFind = NULL;
+	edict_t *pTrigger = NULL;
+	pTrigger = FIND_ENTITY_BY_CLASSNAME( NULL, "trigger_gaz" );
+
+	while ( !FNullEnt ( pTrigger ) )
+	{
+		pFind = CBaseEntity::Instance ( pTrigger );
+
+		if ( vecPlayer.x > pFind->pev->absmin.x && vecPlayer.x < pFind->pev->absmax.x &&
+			 vecPlayer.y > pFind->pev->absmin.y && vecPlayer.y < pFind->pev->absmax.y &&
+			 vecPlayer.z > pFind->pev->absmin.z && vecPlayer.z < pFind->pev->absmax.z )		// Player est ds le trigger
+		{
+			return TRUE;
+		}
+		else
+		{
+			pTrigger = FIND_ENTITY_BY_CLASSNAME( pTrigger, "trigger_gaz" );
+		}
+
+	}
+	return FALSE;
+}
+
+
+
+

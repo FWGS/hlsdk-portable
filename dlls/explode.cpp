@@ -28,6 +28,7 @@
 // Spark Shower
 class CShower : public CBaseEntity
 {
+public:
 	void Spawn( void );
 	void Think( void );
 	void Touch( CBaseEntity *pOther );
@@ -94,6 +95,12 @@ public:
 
 	int m_iMagnitude;// how large is the fireball? how much damage?
 	int m_spriteScale; // what's the exact fireball sprite scale? 
+
+
+	//modif de Julien
+	virtual BOOL IsInGaz ( void );
+	void	EXPORT ExplodeDelay ( void );
+
 };
 
 TYPEDESCRIPTION	CEnvExplosion::m_SaveData[] =
@@ -118,6 +125,15 @@ void CEnvExplosion::KeyValue( KeyValueData *pkvd )
 
 void CEnvExplosion::Spawn( void )
 { 
+
+	// modif de Julien
+	if ( FStrEq(STRING(gpGlobals->mapname), "l3m2") || FStrEq(STRING(gpGlobals->mapname), "L3M2") )
+	{
+		SetThink ( &CBaseEntity::SUB_Remove );
+		pev->nextthink = gpGlobals->time +0.1;
+		return;
+	}
+
 	pev->solid = SOLID_NOT;
 	pev->effects = EF_NODRAW;
 
@@ -182,6 +198,7 @@ void CEnvExplosion::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE
 		}
 	}
 
+
 	// draw fireball
 	if( !( pev->spawnflags & SF_ENVEXPLOSION_NOFIREBALL ) )
 	{
@@ -213,7 +230,11 @@ void CEnvExplosion::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE
 	// do damage
 	if( !( pev->spawnflags & SF_ENVEXPLOSION_NODAMAGE ) )
 	{
-		RadiusDamage( pev, pev, m_iMagnitude, CLASS_NONE, DMG_BLAST );
+		// modif de Julien
+		if ( pev->owner != NULL )
+			RadiusDamage ( pev, VARS(pev->owner), m_iMagnitude, CLASS_NONE, DMG_BLAST );
+		else
+			RadiusDamage ( pev, pev, m_iMagnitude, CLASS_NONE, DMG_BLAST );
 	}
 
 	SetThink( &CEnvExplosion::Smoke );
@@ -229,6 +250,15 @@ void CEnvExplosion::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE
 			Create( "spark_shower", pev->origin, tr.vecPlaneNormal, NULL );
 		}
 	}
+
+	//modif de Julien
+	if ( IsInGaz () )
+	{
+		edict_t *pFind = FIND_ENTITY_BY_CLASSNAME( NULL, "player" );
+		CBaseEntity *pPlayer = CBaseEntity::Instance ( pFind );
+		pPlayer->m_bFireInGaz = TRUE;
+	}
+
 }
 
 void CEnvExplosion::Smoke( void )
@@ -252,8 +282,45 @@ void CEnvExplosion::Smoke( void )
 	}
 }
 
+
+//modif de Julien
+//=========================================
+//	pour les trigger_gaz
+//=========================================
+
+BOOL CEnvExplosion::IsInGaz ( void )
+{
+	Vector vecPlayer = Center ();
+
+	CBaseEntity *pFind = NULL;
+	edict_t *pTrigger = NULL;
+	pTrigger = FIND_ENTITY_BY_CLASSNAME( NULL, "trigger_gaz" );
+
+	while ( !FNullEnt ( pTrigger ) )
+	{
+		pFind = CBaseEntity::Instance ( pTrigger );
+
+		if ( vecPlayer.x > pFind->pev->absmin.x && vecPlayer.x < pFind->pev->absmax.x &&
+			 vecPlayer.y > pFind->pev->absmin.y && vecPlayer.y < pFind->pev->absmax.y &&
+			 vecPlayer.z > pFind->pev->absmin.z && vecPlayer.z < pFind->pev->absmax.z )		// Player est ds le trigger
+		{
+			return TRUE;
+		}
+		else
+		{
+			pTrigger = FIND_ENTITY_BY_CLASSNAME( pTrigger, "trigger_gaz" );
+		}
+
+	}
+	return FALSE;
+}
+
+
+
+
+
 // HACKHACK -- create one of these and fake a keyvalue to get the right explosion setup
-void ExplosionCreate( const Vector &center, const Vector &angles, edict_t *pOwner, int magnitude, BOOL doDamage )
+void ExplosionCreate( const Vector &center, const Vector &angles, edict_t *pOwner, int magnitude, BOOL doDamage, float flDelay )
 {
 	KeyValueData kvd;
 	char buf[128];
@@ -267,5 +334,61 @@ void ExplosionCreate( const Vector &center, const Vector &angles, edict_t *pOwne
 		pExplosion->pev->spawnflags |= SF_ENVEXPLOSION_NODAMAGE;
 
 	pExplosion->Spawn();
-	pExplosion->Use( NULL, NULL, USE_TOGGLE, 0 );
+
+
+	// modif de Julien
+
+	CEnvExplosion *pExp = (CEnvExplosion*) pExplosion; //blah-blah-blah ISO forbids...
+
+	pExp->SetThink ( &CEnvExplosion::ExplodeDelay ); //instead of pExp->ExplodeDelay
+	pExp->pev->nextthink = gpGlobals->time + flDelay;
+
+
+	// modif de julien // pExplosion->Use( NULL, NULL, USE_TOGGLE, 0 );
+}
+
+
+// modif de julien
+void CEnvExplosion :: ExplodeDelay ( void )
+{
+	Use( NULL, NULL, USE_TOGGLE, 0 );
+}
+
+
+//---------------------------------------------------------
+// modif de julien
+
+
+class CEnvShower : public CBaseEntity
+{
+	void Spawn( void );
+	void EXPORT UseShower ( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+};
+
+LINK_ENTITY_TO_CLASS( env_sparkshower, CEnvShower );
+
+
+void CEnvShower::Spawn( void )
+{
+	pev->movetype = MOVETYPE_NOCLIP;
+	pev->solid = SOLID_NOT;
+	pev->effects |= EF_NODRAW;
+
+	SetUse ( &CEnvShower::UseShower ); //lacked &CEnvShower:: part
+}
+
+void CEnvShower :: UseShower ( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
+{
+	CBaseEntity *pEntity = UTIL_FindEntityByTargetname ( NULL, STRING(pev->target) );
+
+	if ( pEntity == NULL )
+		return;
+
+	int sparkCount = RANDOM_LONG(3,6);
+
+	for ( int i = 0; i < sparkCount; i++ )
+	{
+		CBaseEntity *pSpark = Create( "spark_shower", pev->origin, (pEntity->pev->origin - pev->origin).Normalize(), NULL );
+	}
+
 }

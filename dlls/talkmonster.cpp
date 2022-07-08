@@ -23,6 +23,7 @@
 #include	"scripted.h"
 #include	"soundent.h"
 #include	"animation.h"
+#include	"radiomsg.h"
 
 //=========================================================
 // Talking monster base class
@@ -46,6 +47,11 @@ TYPEDESCRIPTION	CTalkMonster::m_SaveData[] =
 	DEFINE_FIELD( CTalkMonster, m_flLastSaidSmelled, FIELD_TIME ),
 	DEFINE_FIELD( CTalkMonster, m_flStopTalkTime, FIELD_TIME ),
 	DEFINE_FIELD( CTalkMonster, m_hTalkTarget, FIELD_EHANDLE ),
+
+	// modif de julien
+	DEFINE_FIELD( CTalkMonster, m_iszIdleSentence, FIELD_STRING ),
+	DEFINE_FIELD( CTalkMonster, m_bIdleSentState, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CTalkMonster, m_iszIdleRadio, FIELD_STRING ),
 };
 
 IMPLEMENT_SAVERESTORE( CTalkMonster, CBaseMonster )
@@ -360,6 +366,7 @@ void CTalkMonster::SetActivity( Activity newActivity )
 
 void CTalkMonster::StartTask( Task_t *pTask )
 {
+
 	switch( pTask->iTask )
 	{
 	case TASK_TLK_SPEAK:
@@ -1107,7 +1114,10 @@ void CTalkMonster::PlaySentence( const char *pszSentence, float duration, float 
 	if( !pszSentence )
 		return;
 
-	Talk( duration );
+//	modif de Julien
+//	Talk ( duration );
+
+	Talk ( 15 );
 
 	CTalkMonster::g_talkWaitTime = gpGlobals->time + duration + 2.0f;
 	if( pszSentence[0] == '!' )
@@ -1183,39 +1193,37 @@ Schedule_t *CTalkMonster::GetScheduleOfType( int Type )
 			return slIdleStand;
 	case SCHED_IDLE_STAND:
 		{	
+			// modifs de Julien
 			// if never seen player, try to greet him
-			if( !FBitSet( m_bitsSaid, bit_saidHelloPlayer ) )
+/*			if( !FBitSet( m_bitsSaid, bit_saidHelloPlayer ) )
 			{
 				return slIdleHello;
 			}
+*/
 
 			// sustained light wounds?
 			if( !FBitSet( m_bitsSaid, bit_saidWoundLight ) && ( pev->health <= ( pev->max_health * 0.75f ) ) )
 			{
-				//SENTENCEG_PlayRndSz( ENT( pev ), m_szGrp[TLK_WOUND], 1.0, ATTN_IDLE, 0, GetVoicePitch() );
-				//CTalkMonster::g_talkWaitTime = gpGlobals->time + RANDOM_FLOAT( 2.8f, 3.2f );
-				PlaySentence( m_szGrp[TLK_WOUND], RANDOM_FLOAT( 2.8f, 3.2f ), VOL_NORM, ATTN_IDLE );
+/*				PlaySentence( m_szGrp[TLK_WOUND], RANDOM_FLOAT(2.8, 3.2), VOL_NORM, ATTN_IDLE );
 				SetBits( m_bitsSaid, bit_saidWoundLight );
-				return slIdleStand;
++*/				return slIdleStand;
 			}
 			// sustained heavy wounds?
 			else if( !FBitSet( m_bitsSaid, bit_saidWoundHeavy ) && ( pev->health <= ( pev->max_health * 0.5f ) ) )
 			{
-				//SENTENCEG_PlayRndSz( ENT( pev ), m_szGrp[TLK_MORTAL], 1.0, ATTN_IDLE, 0, GetVoicePitch() );
-				//CTalkMonster::g_talkWaitTime = gpGlobals->time + RANDOM_FLOAT( 2.8f, 3.2f );
-				PlaySentence( m_szGrp[TLK_MORTAL], RANDOM_FLOAT( 2.8f, 3.2f ), VOL_NORM, ATTN_IDLE );
-				SetBits( m_bitsSaid, bit_saidWoundHeavy );
-				return slIdleStand;
+/*				PlaySentence( m_szGrp[TLK_MORTAL], RANDOM_FLOAT(2.8, 3.2), VOL_NORM, ATTN_IDLE );
+ 				SetBits(m_bitsSaid, bit_saidWoundHeavy);
+*/				return slIdleStand;
 			}
 
-			// talk about world
+/*			// talk about world
 			if( FOkToSpeak() && RANDOM_LONG( 0, m_nSpeak * 2 ) == 0 )
 			{
 				//ALERT ( at_console, "standing idle speak\n" );
 				return slIdleSpeak;
 			}
-			
-			if( !IsTalking() && HasConditions( bits_COND_SEE_CLIENT ) && RANDOM_LONG( 0, 6 ) == 0 )
+*/			
+/*			if ( !IsTalking() && HasConditions ( bits_COND_SEE_CLIENT ) && RANDOM_LONG( 0, 6 ) == 0 )
 			{
 				edict_t *pPlayer = g_engfuncs.pfnPEntityOfEntIndex( 1 );
 
@@ -1234,7 +1242,7 @@ Schedule_t *CTalkMonster::GetScheduleOfType( int Type )
 				}
 			}
 			else
-			{
+*/			{
 				if( IsTalking() )
 					// look at who we're talking to
 					return slTlkIdleEyecontact;
@@ -1360,7 +1368,7 @@ BOOL CTalkMonster::CanFollow( void )
 
 void CTalkMonster::FollowerUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
-	// Don't allow use during a scripted_sentence
+/*	// Don't allow use during a scripted_sentence
 	if( m_useTime > gpGlobals->time )
 		return;
 
@@ -1387,7 +1395,34 @@ void CTalkMonster::FollowerUse( CBaseEntity *pActivator, CBaseEntity *pCaller, U
 		{
 			StopFollowing( TRUE );
 		}
+	}*/
+
+	//  modif de Julien
+
+	if ( m_bIdleSentState == TRUE )
+	{
+		PlaySentence( STRING(m_iszIdleSentence), RANDOM_FLOAT(2.8, 3.2), VOL_NORM, ATTN_IDLE );
+
+		if ( !FStringNull(m_iszIdleRadio) )
+		{		
+			CRadiomsg *pRadio = GetClassPtr ( (CRadiomsg*)NULL );
+
+			pRadio->pev->solid = SOLID_NOT;
+			pRadio->pev->effects = EF_NODRAW;
+
+			pRadio->m_iszText = m_iszIdleRadio;
+			pRadio->m_iszSentence = 0;
+
+			pRadio->m_iHead = VOCAL;
+
+			pRadio->SetThink ( &CBaseEntity::SUB_Remove );
+			pRadio->pev->nextthink = gpGlobals->time + 0.1;
+
+			pRadio->Use ( this, this, USE_ON, 0 );
+		}
+
 	}
+
 }
 
 void CTalkMonster::KeyValue( KeyValueData *pkvd )
@@ -1412,4 +1447,109 @@ void CTalkMonster::Precache( void )
 		m_szGrp[TLK_USE] = STRING( m_iszUse );
 	if( m_iszUnUse )
 		m_szGrp[TLK_UNUSE] = STRING( m_iszUnUse );
+
+	// modif de Julien
+	UTIL_PrecacheOther ( "trigger_radio_message" );
+}
+
+
+
+
+//-------------------------------------------------------------------------------------
+// modif de Julien
+//
+// idle sentence pour scientists et barneys
+//
+
+
+class CIdleSent : public CPointEntity
+{
+public:
+	void	Spawn		( void );
+
+	void	Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+	void	KeyValue( KeyValueData *pkvd );
+
+	int		m_iszSentence;
+	int		m_iszMonster;
+	int		m_iszMessage;
+	int		m_iszText;
+
+	virtual int		Save( CSave &save );
+	virtual int		Restore( CRestore &restore );
+	static	TYPEDESCRIPTION m_SaveData[];
+
+};
+
+LINK_ENTITY_TO_CLASS( scripted_idlesentence, CIdleSent );
+
+
+TYPEDESCRIPTION	CIdleSent::m_SaveData[] = 
+{
+	DEFINE_FIELD( CIdleSent, m_iszMonster, FIELD_STRING ),
+	DEFINE_FIELD( CIdleSent, m_iszSentence, FIELD_STRING ),
+	DEFINE_FIELD( CIdleSent, m_iszMessage, FIELD_STRING ),
+	DEFINE_FIELD( CIdleSent, m_iszText, FIELD_STRING ),
+};
+
+IMPLEMENT_SAVERESTORE( CIdleSent, CPointEntity );
+
+
+
+void CIdleSent::KeyValue( KeyValueData *pkvd )
+{
+	if (FStrEq(pkvd->szKeyName, "monster"))
+	{
+		m_iszMonster = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "sentence"))
+	{
+		m_iszSentence = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "radiomsg"))
+	{
+		m_iszMessage = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+
+
+	else
+		CPointEntity::KeyValue( pkvd );
+}
+ 
+
+void CIdleSent :: Spawn( void )
+{
+	pev->solid = SOLID_NOT;
+	pev->effects = EF_NODRAW;
+
+	if ( !FStringNull(m_iszMessage) )
+		m_iszText = GetRadiomsgText ( m_iszMessage );
+
+}
+
+
+void CIdleSent :: Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
+{
+
+	CBaseEntity *pMonster = UTIL_FindEntityByTargetname ( NULL, STRING(m_iszMonster) );
+
+	while ( pMonster != NULL )
+	{
+		if ( FClassnameIs ( pMonster->pev, "monster_scientist" ) || FClassnameIs ( pMonster->pev, "monster_barney" ) ) 
+		{
+			CTalkMonster *pTalk = (CTalkMonster*)pMonster;
+
+			pTalk->m_bIdleSentState = TRUE;
+			pTalk->m_iszIdleSentence = m_iszSentence;
+
+			if ( !FStringNull(m_iszText) )
+				pTalk->m_iszIdleRadio = m_iszText;
+		}
+
+		pMonster = UTIL_FindEntityByTargetname ( pMonster, STRING(m_iszMonster) );
+	}
+
 }

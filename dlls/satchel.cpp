@@ -219,6 +219,9 @@ int CSatchel::AddToPlayer( CBasePlayer *pPlayer )
 
 	pPlayer->pev->weapons |= ( 1 << m_iId );
 	m_chargeReady = SATCHEL_IDLE;// this satchel charge weapon now forgets that any satchels are deployed by it.
+	// modif de Julien
+	m_pPlayer->TextAmmo( TA_SATCHEL );
+
 
 	if( bResult )
 	{
@@ -258,7 +261,7 @@ int CSatchel::GetItemInfo( ItemInfo *p )
 	p->iMaxAmmo2 = -1;
 	p->iMaxClip = WEAPON_NOCLIP;
 	p->iSlot = 4;
-	p->iPosition = 1;
+	p->iPosition = 2;
 	p->iFlags = ITEM_FLAG_SELECTONEMPTY | ITEM_FLAG_LIMITINWORLD | ITEM_FLAG_EXHAUSTIBLE;
 	p->iId = m_iId = WEAPON_SATCHEL;
 	p->iWeight = SATCHEL_WEIGHT;

@@ -116,6 +116,8 @@ void CHalfLifeRules::InitHUD( CBasePlayer *pl )
 //=========================================================
 void CHalfLifeRules::ClientDisconnected( edict_t *pClient )
 {
+	// modif de julien
+	// donne la lampe torche
 }
 
 //=========================================================

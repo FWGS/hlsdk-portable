@@ -28,6 +28,18 @@
 
 extern DLL_GLOBAL int		g_iSkillLevel;
 
+
+// modif de Julien
+
+#define NO_MEMBRE					1
+
+#define HEAD_GROUP					1
+#define ARM_R_GROUP					2
+#define ARM_L_GROUP					3
+#define LEG_R_GROUP					4
+#define LEG_L_GROUP					5
+
+
 //=========================================================
 // Monster's Anim Events Go Here
 //=========================================================
@@ -93,6 +105,10 @@ public:
 	static const char *pAttackMissSounds[];
 	static const char *pPainSounds[];
 	static const char *pDeathSounds[];
+
+
+	//modif de Julien
+	void MakeGib ( int body, entvars_t *pevAttacker );
 };
 
 LINK_ENTITY_TO_CLASS( monster_alien_slave, CISlave )
@@ -541,6 +557,8 @@ void CISlave::Precache()
 	PRECACHE_SOUND( "headcrab/hc_headbite.wav" );
 	PRECACHE_SOUND( "weapons/cbar_miss1.wav" );
 
+	PRECACHE_MODEL("models/islave_gibs.mdl"); //modif de Julien
+
 	PRECACHE_SOUND_ARRAY( pAttackHitSounds );
 	PRECACHE_SOUND_ARRAY( pAttackMissSounds );
 	PRECACHE_SOUND_ARRAY( pPainSounds );
@@ -576,8 +594,64 @@ void CISlave::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir
 		return;
 
 	CSquadMonster::TraceAttack( pevAttacker, flDamage, vecDir, ptr, bitsDamageType );
+
+	
+	// modif de Julien
+	
+	//demembrage
+
+	if ( gMultiDamage.pEntity != this )
+		return;
+	
+	if ( ( pev->health - ( gMultiDamage.amount ) <= 0 )  && IsAlive() && m_iHasGibbed == 0 )
+	{
+		switch ( ptr->iHitgroup )
+		{
+		case HITGROUP_RIGHTARM:
+			SetBodygroup( ARM_R_GROUP, NO_MEMBRE);
+			MakeGib ( 2, pevAttacker );
+			break;
+		case HITGROUP_LEFTARM:
+			SetBodygroup( ARM_L_GROUP, NO_MEMBRE);
+			MakeGib ( 2, pevAttacker );
+			break;
+		case HITGROUP_RIGHTLEG:
+			SetBodygroup( LEG_R_GROUP, NO_MEMBRE);
+			MakeGib ( 1, pevAttacker );
+			break;
+		case HITGROUP_LEFTLEG:
+			SetBodygroup( LEG_L_GROUP, NO_MEMBRE);
+			MakeGib ( 1, pevAttacker );
+			break;
+		case HITGROUP_HEAD:
+			SetBodygroup( HEAD_GROUP, NO_MEMBRE);
+			MakeGib ( 0, pevAttacker );
+			break;
+		}
+	}
+
 }
 
+// modif de julien
+
+void CISlave :: MakeGib ( int body, entvars_t *pevAttacker )
+{
+	if ( m_iHasGibbed == 1 )
+		return;
+	m_iHasGibbed = 1;
+
+	CGib *pGib = GetClassPtr( (CGib *)NULL );
+	pGib->Spawn( "models/islave_gibs.mdl" );
+	pGib->m_bloodColor = BLOOD_COLOR_YELLOW;
+	pGib->pev->body = body;
+
+	pGib->pev->origin = pev->origin + Vector ( 0, 0, 40 );
+	pGib->pev->velocity = ( Center() - pevAttacker->origin).Normalize() * 300;
+	
+	pGib->pev->avelocity.x = RANDOM_FLOAT ( 100, 200 );
+	pGib->pev->avelocity.y = RANDOM_FLOAT ( 100, 300 );
+
+}
 //=========================================================
 // AI Schedules Specific to this monster
 //=========================================================

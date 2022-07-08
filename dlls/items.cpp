@@ -182,17 +182,25 @@ class CItemSuit : public CItem
 	void Precache( void )
 	{
 		PRECACHE_MODEL( "models/w_suit.mdl" );
+		PRECACHE_SOUND ("sentences/bell.wav");
 	}
 	BOOL MyTouch( CBasePlayer *pPlayer )
 	{
 		if( pPlayer->pev->weapons & ( 1<<WEAPON_SUIT ) )
 			return FALSE;
 
-		if( pev->spawnflags & SF_SUIT_SHORTLOGON )
-			EMIT_SOUND_SUIT( pPlayer->edict(), "!HEV_A0" );		// short version of suit logon,
+		/*if ( pev->spawnflags & SF_SUIT_SHORTLOGON )
+ 			EMIT_SOUND_SUIT(pPlayer->edict(), "!HEV_A0");		// short version of suit logon,
 		else
-			EMIT_SOUND_SUIT( pPlayer->edict(), "!HEV_AAx" );	// long version of suit logon
+			EMIT_SOUND_SUIT(pPlayer->edict(), "!HEV_AAx");	// long version of suit logon*/ // modif de Julien 01/04/01
 
+
+		// modif de julien
+		pPlayer->SetArmor ( MAX_NORMAL_BATTERY, 0 );
+		pPlayer->TextAmmo( TA_SUIT );
+		EMIT_SOUND_SUIT(pPlayer->edict(), "sentences/bell.wav");
+
+		
 		pPlayer->pev->weapons |= ( 1 << WEAPON_SUIT );
 		return TRUE;
 	}
@@ -220,14 +228,41 @@ class CItemBattery : public CItem
 			return FALSE;
 		}
 
+
+		// modif de Julien
+
+		if ( pPlayer->m_iBattery == 9 )
+			return FALSE;
+
+		else
+		{
+			pPlayer->m_iBattery ++;
+			EMIT_SOUND( pPlayer->edict(), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM );
+		
+			MESSAGE_BEGIN( MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev );
+				WRITE_STRING( STRING(pev->classname) );
+			MESSAGE_END();
+
+			// modif de julien
+			pPlayer->TextAmmo( TA_BATTERY );
+
+			return TRUE;
+		}
+
+		/* HLINVASION modif de Julien -- it is actually unknown where this comment is supposed to end, currenlty assuming this whole block, based on known in-game activity of the batteries in the mod.
+		// Correction to the above, it IS the whole block + return FALSE at the end, and the comment-end symbol combo just ended up at end of file, fixed that. Roy.
 		if( ( pPlayer->pev->armorvalue < MAX_NORMAL_BATTERY ) &&
 			( pPlayer->pev->weapons & ( 1 << WEAPON_SUIT ) ) )
 		{
 			int pct;
 			char szcharge[64];
 
-			pPlayer->pev->armorvalue += gSkillData.batteryCapacity;
-			pPlayer->pev->armorvalue = Q_min( pPlayer->pev->armorvalue, MAX_NORMAL_BATTERY );
+			// modif de Julien
+
+			pPlayer->SetArmor ( gSkillData.batteryCapacity );
+
+		//	pPlayer->pev->armorvalue += gSkillData.batteryCapacity;
+		//	pPlayer->pev->armorvalue = min(pPlayer->pev->armorvalue, MAX_NORMAL_BATTERY);
 
 			EMIT_SOUND( pPlayer->edict(), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM );
 
@@ -249,6 +284,7 @@ class CItemBattery : public CItem
 			return TRUE;
 		}
 		return FALSE;
+		*/
 	}
 };
 

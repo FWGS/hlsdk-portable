@@ -104,7 +104,7 @@ void CBaseMonster::ChangeSchedule( Schedule_t *pNewSchedule )
 // this is very useful code if you can isolate a test case in a level with a single monster. It will notify
 // you of every schedule selection the monster makes.
 #if 0
-	if( FClassnameIs( pev, "monster_human_grunt" ) )
+	if( FClassnameIs( pev, "monster_rpg_grunt" ) )
 	{
 		Task_t *pTask = GetTask();
 
@@ -126,7 +126,7 @@ void CBaseMonster::ChangeSchedule( Schedule_t *pNewSchedule )
 				pName = "Unknown";
 			}
 
-			ALERT( at_aiconsole, "%s: picked schedule %s\n", STRING( pev->classname ), pName );
+			ALERT( at_console, "%s: picked schedule %s\n", STRING( pev->classname ), pName );
 		}
 	}
 #endif// 0
@@ -755,6 +755,7 @@ void CBaseMonster::StartTask( Task_t *pTask )
 			}
 			else if( FindCover( pevCover->origin, pevCover->view_ofs, 0, CoverRadius() ) )
 			{
+
 				// then try for plain ole cover
 				m_flMoveWaitFinished = gpGlobals->time + pTask->flData;
 				TaskComplete();
@@ -781,6 +782,47 @@ void CBaseMonster::StartTask( Task_t *pTask )
 			}
 		}
 		break;
+
+	// modif de Julien
+	case TASK_GET_BURNT_COVER:
+		{
+			int ifail = 0;
+
+			// plusieurs essais
+
+			for ( int boucle = 0; boucle < 10; boucle ++ )
+			{
+				// coordonn
+
+				Vector vecDest = pev->origin;
+				vecDest.x += RANDOM_FLOAT ( -256, 256 );
+				vecDest.y += RANDOM_FLOAT ( -256, 256 );
+
+				if ( !MoveToLocation( ACT_RUN, 0.1, vecDest ) == TRUE )
+				{
+					ifail = 1;
+				}
+				else
+				{
+					ifail = 0;
+					break;
+				}
+			}
+
+			// bilan
+
+			if ( ifail == 1 )
+			{
+				TaskFail();
+			}
+
+			else
+			{
+				TaskComplete();
+			}
+		}
+		break;
+
 	case TASK_FIND_COVER_FROM_BEST_SOUND:
 		{
 			CSound *pBestSound;
@@ -1491,6 +1533,10 @@ Schedule_t *CBaseMonster::GetSchedule( void )
 			}
 
 			return GetScheduleOfType( SCHED_AISCRIPT );
+		}
+	case MONSTERSTATE_HUNT:
+		{
+			return GetScheduleOfType( SCHED_BURNT );
 		}
 	default:
 		{

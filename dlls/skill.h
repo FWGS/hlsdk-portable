@@ -99,16 +99,30 @@ struct skilldata_t
 	float plrDmgMP5;
 	float plrDmgM203Grenade;
 	float plrDmgBuckshot;
-	float plrDmgCrossbowClient;
-	float plrDmgCrossbowMonster;
+//	float plrDmgCrossbowClient;
+//	float plrDmgCrossbowMonster;
 	float plrDmgRPG;
 	float plrDmgGauss;
-	float plrDmgEgonNarrow;
-	float plrDmgEgonWide;
+//	float plrDmgEgonNarrow;
+//	float plrDmgEgonWide;
 	float plrDmgHornet;
 	float plrDmgHandGrenade;
 	float plrDmgSatchel;
 	float plrDmgTripmine;
+
+	//modif. de Julien
+	float plrDmgM16;
+	float plrDmgSniper;
+	float plrDmgSupergun;
+	float plrDmgIRgun;
+
+	float SniperHealth;
+	float RpggruntHealth;
+	float FlybeeHealth;
+	float LucioleHealth;
+	float LucioleDamage;
+
+	//fin modif
 	
 	// weapons shared by monsters
 	float monDmg9MM;

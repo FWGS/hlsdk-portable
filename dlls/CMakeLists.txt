@@ -1,6 +1,8 @@
 #
 # Copyright (c) 2015 Pavlo Lavrenenko
 #
+# Edited by Roy for HL:Invasion
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
@@ -25,6 +27,14 @@ project (SVDLL)
 
 set (SVDLL_LIBRARY server)
 
+include(CheckIncludeFile)
+check_include_file("tgmath.h" HAVE_TGMATH_H)
+if(HAVE_TGMATH_H)
+	add_definitions(-DHAVE_TGMATH_H)
+endif()
+
+add_definitions(-DCLIENT_WEAPONS)
+
 if(NOT MSVC)
 	add_compile_options(-fno-exceptions) # GCC/Clang flag
 	add_compile_options(-Wno-invalid-offsetof) # GCC/Clang flag
@@ -35,10 +45,28 @@ else()
 	add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_DEPRECATE)
 endif()
 
+if (USE_VGUI)
+	add_definitions(-DUSE_VGUI)
+	if (USE_NOVGUI_MOTD)
+		add_definitions(-DUSE_NOVGUI_MOTD)
+	endif()
+	if (USE_NOVGUI_SCOREBOARD)
+		add_definitions(-DUSE_NOVGUI_SCOREBOARD)
+	endif()
+endif()
+
+if (USE_GSTREAMER AND (${CMAKE_SYSTEM_NAME} STREQUAL "Linux"))
+	add_definitions(-DUSE_GSTREAMER)
+endif()
+
+if (USE_FMOD AND (WIN32 OR NOT (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")))
+	add_definitions(-DUSE_FMOD)
+endif()
+
 set (SVDLL_SOURCES
+	aflock.cpp
 	agrunt.cpp
 	airtank.cpp
-	aflock.cpp
 	animating.cpp
 	animation.cpp
 	apache.cpp
@@ -47,22 +75,27 @@ set (SVDLL_SOURCES
 	bigmomma.cpp
 	bloater.cpp
 	bmodels.cpp
+	briquet.cpp
 	bullsquid.cpp
 	buttons.cpp
 	cbase.cpp
 	client.cpp
 	combat.cpp
 	controller.cpp
-	crossbow.cpp
 	crowbar.cpp
 	defaultai.cpp
+	diablo.cpp
 	doors.cpp
 	effects.cpp
-	egon.cpp
 	explode.cpp
+	fgrenade.cpp
+	flybee.cpp
 	flyingmonster.cpp
+	fog.cpp
+	fsniper.cpp
 	func_break.cpp
 	func_tank.cpp
+	func_vgui.cpp
 	game.cpp
 	gamerules.cpp
 	gargantua.cpp
@@ -70,7 +103,6 @@ set (SVDLL_SOURCES
 	genericmonster.cpp
 	ggrenade.cpp
 	globals.cpp
-	glock.cpp
 	gman.cpp
 	h_ai.cpp
 	h_battery.cpp
@@ -82,34 +114,44 @@ set (SVDLL_SOURCES
 	headcrab.cpp
 	healthkit.cpp
 	hgrunt.cpp
+	glock.cpp
 	hornet.cpp
-	hornetgun.cpp
 	houndeye.cpp
 	ichthyosaur.cpp
+	irgun.cpp
 	islave.cpp
 	items.cpp
 	leech.cpp
+	lflammes.cpp
 	lights.cpp
+	luciole.cpp
+	m16.cpp
 	maprules.cpp
+	miroir.cpp
 	monstermaker.cpp
 	monsters.cpp
+	monsters.h
 	monsterstate.cpp
 	mortar.cpp
 	mp5.cpp
 	multiplay_gamerules.cpp
+	music.cpp
 	nihilanth.cpp
 	nodes.cpp
-	observer.cpp
 	osprey.cpp
 	pathcorner.cpp
 	plane.cpp
 	plats.cpp
 	player.cpp
-	playermonster.cpp
+	../pm_shared/pm_debug.c
+	../pm_shared/pm_math.c
+	../pm_shared/pm_shared.c
 	python.cpp
+	radiomsg.cpp
 	rat.cpp
 	roach.cpp
 	rpg.cpp
+	rpggrunt.cpp
 	satchel.cpp
 	schedule.cpp
 	scientist.cpp
@@ -117,13 +159,17 @@ set (SVDLL_SOURCES
 	shotgun.cpp
 	singleplay_gamerules.cpp
 	skill.cpp
+	sniper.cpp
 	sound.cpp
 	soundent.cpp
 	spectator.cpp
 	squadmonster.cpp
 	squeakgrenade.cpp
 	subs.cpp
+	supergun.cpp
+	t_sub.cpp
 	talkmonster.cpp
+	tank.cpp
 	teamplay_gamerules.cpp
 	tempmonster.cpp
 	tentacle.cpp
@@ -131,16 +177,47 @@ set (SVDLL_SOURCES
 	tripmine.cpp
 	turret.cpp
 	util.cpp
+	util.h
 	weapons.cpp
 	world.cpp
 	xen.cpp
 	zombie.cpp
-	../pm_shared/pm_debug.c
-	../pm_shared/pm_math.c
-	../pm_shared/pm_shared.c
 )
 
-include_directories (. wpn_shared ../common ../engine ../pm_shared ../game_shared ../public)
+if (USE_GSTREAMER AND (${CMAKE_SYSTEM_NAME} STREQUAL "Linux"))
+	#if we're using gstreamer music
+	if (NOT 64BIT)
+		set(ENV{PKG_CONFIG_PATH} "/usr/lib/i386-linux-gnu/pkgconfig")
+	endif()
+	find_package(PkgConfig REQUIRED)
+	pkg_check_modules(GLIB REQUIRED glib-2.0)
+
+	set(GSTREAMER_MINIMUM_VERSION 1.0.5)
+	pkg_check_modules(GST1_TEST gstreamer-1.0)
+	if ( GST1_TEST_FOUND AND NOT ${GST1_TEST_VERSION} VERSION_LESS ${GSTREAMER_MINIMUM_VERSION} )
+	    pkg_check_modules(GSTREAMER REQUIRED gstreamer-1.0)
+	    add_definitions(-DGST_API_VERSION_1=1)
+	endif()
+                 
+	link_directories(
+	  ${GSTREAMER_LIBRARY_DIRS}
+	  ${GLIB_LIBRARY_DIRS}
+	)
+	set(GST_LIBRARIES
+	  ${GSTREAMER_LIBRARIES}
+	  ${GSTREAMER-APP_LIBRARIES}
+	  ${GSTREAMER-AUDIO_LIBRARIES}
+	  ${GSTREAMER-PBUTILS_LIBRARIES}
+	  ${GSTREAMER-FFT_LIBRARIES}
+	    
+	  pthread
+	  ${GLIB_LIBRARIES}
+	  ${GLIB_GIO_LIBRARIES}
+	  ${GLIB_GOBJECT_LIBRARIES}
+	)
+endif()
+
+include_directories (. wpn_shared ../common ../engine ../pm_shared ../game_shared ../public ${GLIB_INCLUDE_DIRS} ${GSTREAMER_INCLUDE_DIRS})
 
 if(MSVC)
 	set(SVDLL_SOURCES
@@ -157,6 +234,9 @@ else()
 endif()
 
 add_library (${SVDLL_LIBRARY} SHARED ${SVDLL_SOURCES})
+if (USE_GSTREAMER AND (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")) #More gstreamer linkage stuff
+	target_link_libraries(${SVDLL_LIBRARY} ${GST_LIBRARIES})
+endif()
 
 set_target_properties (${SVDLL_LIBRARY} PROPERTIES
 	POSITION_INDEPENDENT_CODE 1)

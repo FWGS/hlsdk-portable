@@ -916,6 +916,11 @@ private:
 	float m_flVolume;
 	BOOL m_active;
 	string_t m_iszListener; // name of entity to look at while talking
+
+	// modif de Julien
+	int		m_iszMessage;
+	int		m_iHead;
+	CBaseEntity *m_pRadio;
 };
 
 #define SF_SENTENCE_ONCE	0x0001
@@ -934,6 +939,9 @@ TYPEDESCRIPTION	CScriptedSentence::m_SaveData[] =
 	DEFINE_FIELD( CScriptedSentence, m_flVolume, FIELD_FLOAT ),
 	DEFINE_FIELD( CScriptedSentence, m_active, FIELD_BOOLEAN ),
 	DEFINE_FIELD( CScriptedSentence, m_iszListener, FIELD_STRING ),
+	DEFINE_FIELD( CScriptedSentence, m_iszMessage, FIELD_STRING ),	// modif de Julien
+	DEFINE_FIELD( CScriptedSentence, m_pRadio, FIELD_CLASSPTR ),	// modif de Julien
+	DEFINE_FIELD( CScriptedSentence, m_iHead, FIELD_INTEGER ),	// modif de Julien
 };
 
 IMPLEMENT_SAVERESTORE( CScriptedSentence, CBaseToggle )
@@ -982,6 +990,21 @@ void CScriptedSentence::KeyValue( KeyValueData *pkvd )
 		m_iszListener = ALLOC_STRING( pkvd->szValue );
 		pkvd->fHandled = TRUE;
 	}
+
+	// modif de Julien
+
+	else if (FStrEq(pkvd->szKeyName, "radiomsg"))
+	{
+		m_iszMessage = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "head"))
+	{
+		m_iHead = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+
+
 	else
 		CBaseToggle::KeyValue( pkvd );
 }
@@ -1032,6 +1055,30 @@ void CScriptedSentence::Spawn( void )
 	// No volume, use normal
 	if( m_flVolume <= 0.0f )
 		m_flVolume = 1.0f;
+
+	// modif de julien
+	
+	if ( !FStringNull ( m_iszMessage ) )
+	{
+		KeyValueData	kvd;
+		char			buf[128];
+
+		m_pRadio = CBaseEntity::Create( "trigger_radio_message", Vector(0,0,0), Vector(0,0,0), NULL );
+
+		sprintf( buf, "%s", STRING(m_iszMessage) );
+		kvd.szKeyName = "radiomsg";
+		kvd.szValue = buf;
+		m_pRadio->KeyValue( &kvd );
+
+		sprintf( buf, "%i", m_iHead );
+		kvd.szKeyName = "head";
+		kvd.szValue = buf;
+		m_pRadio->KeyValue( &kvd );
+
+		m_pRadio->Spawn();
+	}
+	
+	else m_pRadio = NULL;
 }
 
 void CScriptedSentence::FindThink( void )
@@ -1046,6 +1093,10 @@ void CScriptedSentence::FindThink( void )
 		pev->nextthink = gpGlobals->time + m_flDuration + m_flRepeat;
 		m_active = FALSE;
 		//ALERT( at_console, "%s: found monster %s\n", STRING( m_iszSentence ), STRING( m_iszEntity ) );
+
+		// modif de Julien
+		if ( m_pRadio != NULL )
+			m_pRadio->Use( this,this,USE_ON,0 );
 	}
 	else
 	{

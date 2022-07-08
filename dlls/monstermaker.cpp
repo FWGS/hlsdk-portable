@@ -27,6 +27,16 @@
 #define	SF_MONSTERMAKER_START_ON	1 // start active ( if has targetname )
 #define	SF_MONSTERMAKER_CYCLIC		4 // drop one monster every time fired.
 #define SF_MONSTERMAKER_MONSTERCLIP	8 // Children are blocked by monsterclip
+//=============modif de Julien
+#define SF_MONSTERMAKER_GAG				32
+#define SF_MONSTERMAKER_PRISONER		64
+#define SF_MONSTERMAKER_SQUADLEADER		128
+#define SF_MONSTERMAKER_PREDISASTER		256
+#define SF_MONSTERMAKER_WAITFORSCRIPT	512
+#define SF_MONSTERMAKER_SENTRY			1024
+#define SF_MONSTERMAKER_L3M3			2048
+#define SF_MONSTERMAKER_FLASHLIGHT		16
+//=========
 
 //=========================================================
 // MonsterMaker - this ent creates monsters during the game.
@@ -59,6 +69,15 @@ public:
 
 	BOOL m_fActive;
 	BOOL m_fFadeChildren;// should we make the children fadeout?
+
+	//======== modifs de Julien
+	int m_iMBody;			// permet de choisir la t
+	int m_iMWeapon;			// et l'arme du grunt
+
+	int			m_iTriggerCondition;
+	string_t	m_iszTriggerTarget;// name of target that should be fired. 
+
+	//=================
 };
 
 LINK_ENTITY_TO_CLASS( monstermaker, CMonsterMaker )
@@ -72,6 +91,14 @@ TYPEDESCRIPTION	CMonsterMaker::m_SaveData[] =
 	DEFINE_FIELD( CMonsterMaker, m_iMaxLiveChildren, FIELD_INTEGER ),
 	DEFINE_FIELD( CMonsterMaker, m_fActive, FIELD_BOOLEAN ),
 	DEFINE_FIELD( CMonsterMaker, m_fFadeChildren, FIELD_BOOLEAN ),
+
+	// modifs de Julien
+	DEFINE_FIELD( CMonsterMaker, m_iMBody, FIELD_INTEGER ),
+	DEFINE_FIELD( CMonsterMaker, m_iMWeapon, FIELD_INTEGER ),
+	DEFINE_FIELD( CMonsterMaker, m_iTriggerCondition, FIELD_INTEGER ),
+	DEFINE_FIELD( CMonsterMaker, m_iszTriggerTarget, FIELD_STRING ),
+
+	//=============
 };
 
 IMPLEMENT_SAVERESTORE( CMonsterMaker, CBaseMonster )
@@ -93,6 +120,29 @@ void CMonsterMaker::KeyValue( KeyValueData *pkvd )
 		m_iszMonsterClassname = ALLOC_STRING( pkvd->szValue );
 		pkvd->fHandled = TRUE;
 	}
+	//===========modifs de Julien
+	else if ( FStrEq(pkvd->szKeyName, "m_imbody") )
+	{
+		m_iMBody = atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if ( FStrEq(pkvd->szKeyName, "m_imweapon") )
+	{
+		m_iMWeapon = atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "TriggerTarget"))
+	{
+		m_iszTriggerTarget = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "TriggerCondition") )
+	{
+		m_iTriggerCondition = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+
+	//==============
 	else
 		CBaseMonster::KeyValue( pkvd );
 }
@@ -214,6 +264,51 @@ void CMonsterMaker::MakeMonster( void )
 	if( pev->spawnflags & SF_MONSTERMAKER_MONSTERCLIP )
 		SetBits( pevCreate->spawnflags, SF_MONSTER_HITMONSTERCLIP );
 
+
+	//============
+	/* modifs de Julien  */
+	//============
+
+	if ( m_iMBody != -2 )			// s
+	{
+		pevCreate->body = m_iMBody;
+	}
+	if ( m_iMWeapon != 0 )			// s
+	{
+		pevCreate->weapons = m_iMWeapon;
+	}
+	if ( FClassnameIs( pevCreate, STRING(m_iszMonsterClassname) ) && m_iMWeapon == 0 )
+	{
+		pevCreate->weapons = 1;
+	}
+
+	CBaseMonster* pCreate = ( CBaseMonster* ) CBaseEntity::Instance( pevCreate );
+	pCreate->m_iTriggerCondition = m_iTriggerCondition;
+	pCreate->m_iszTriggerTarget = m_iszTriggerTarget;
+
+	if ( pev->spawnflags & SF_MONSTERMAKER_GAG )
+		SetBits( pevCreate->spawnflags, SF_MONSTER_GAG );
+
+	if ( pev->spawnflags & SF_MONSTERMAKER_PRISONER )
+		SetBits( pevCreate->spawnflags, SF_MONSTER_PRISONER );
+
+	if ( pev->spawnflags & SF_MONSTERMAKER_SQUADLEADER )
+		SetBits( pevCreate->spawnflags, 32 );				// 32 == SF_SQUADMONSTER_LEADER, inconnu ici
+
+	if ( pev->spawnflags & SF_MONSTERMAKER_PREDISASTER )
+		SetBits( pevCreate->spawnflags, SF_MONSTER_PREDISASTER );
+
+	if ( pev->spawnflags & SF_MONSTERMAKER_WAITFORSCRIPT )
+		SetBits( pevCreate->spawnflags, SF_MONSTER_WAIT_FOR_SCRIPT );
+
+
+
+
+
+	//=============
+	//=============
+	
+
 	DispatchSpawn( ENT( pevCreate ) );
 	pevCreate->owner = edict();
 
@@ -222,6 +317,34 @@ void CMonsterMaker::MakeMonster( void )
 		// if I have a netname (overloaded), give the child monster that name as a targetname
 		pevCreate->targetname = pev->netname;
 	}
+
+	//modif de Julien
+
+	if ( pev->spawnflags & SF_MONSTERMAKER_L3M3 )
+	{
+		CBaseMonster *pMonster = NULL;
+		pMonster = (CBaseMonster*)(CBaseEntity::Instance( pevCreate ));
+		pMonster->m_hEnemy = CBaseEntity :: Instance ( FIND_ENTITY_BY_CLASSNAME( NULL, "player" ) );
+		pMonster->SetState ( MONSTERSTATE_COMBAT );
+		
+	}
+
+	// modif de Julien
+
+	if ( pev->spawnflags & SF_MONSTERMAKER_SENTRY && FClassnameIs ( pevCreate, "monster_sentry" ) )
+	{
+		pevCreate->spawnflags |= 1024;		// SF_MONSTER_TURRET_INVINCIBLE	= 1024
+	}
+	if ( pev->spawnflags & SF_MONSTERMAKER_SENTRY && FClassnameIs ( pevCreate, "monster_human_grunt" ) )
+	{
+		pevCreate->spawnflags |= 256;		// SF_GRUNT_INVINCIBLE	= 256
+	}
+	if ( pev->spawnflags & SF_MONSTERMAKER_FLASHLIGHT && FClassnameIs ( pevCreate, "monster_human_grunt" ) )
+	{
+		pevCreate->spawnflags |= 64;		// SF_GRUNT_FLASHLIGHT	= 64
+	}
+
+
 
 	m_cLiveChildren++;// count this monster
 	m_cNumMonsters--;

@@ -329,6 +329,11 @@ public:
 
 	CBaseEntity* DropItem( const char *pszItemName, const Vector &vecPos, const Vector &vecAng );// drop an item.
 
+	// modif de Julien
+
+	void	Gunflash ( void );
+	int		m_iHasGibbed;		// pour le d
+
 	float m_flLastYawTime;
 };
 #endif // BASEMONSTER_H

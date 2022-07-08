@@ -27,6 +27,11 @@
 #include "saverestore.h"
 #include "trains.h"			// trigger_camera has train functionality
 #include "gamerules.h"
+#include "triggers.h"		//modif de Julien 10/7/01 : def du trigger camera ds le trigger.h
+
+// modif de julien
+#include "weapons.h"
+#include "../cl_dll/crutches.h" //Needed for l2m3 multi-manager modif de Roy
 
 #define	SF_TRIGGER_PUSH_START_OFF	2//spawnflag that makes trigger_push spawn turned OFF
 #define SF_TRIGGER_HURT_TARGETONCE	1// Only fire hurt target once
@@ -34,6 +39,9 @@
 #define	SF_TRIGGER_HURT_NO_CLIENTS	8//spawnflag that makes trigger_push spawn turned OFF
 #define SF_TRIGGER_HURT_CLIENTONLYFIRE	16// trigger hurt will only fire its target if it is hurting a client
 #define SF_TRIGGER_HURT_CLIENTONLYTOUCH 32// only clients may touch this trigger.
+
+// modif de Julien
+#define SF_TRIGGER_ONCE_L4M2		8
 
 extern DLL_GLOBAL BOOL		g_fGameOver;
 
@@ -333,6 +341,16 @@ void CMultiManager::Spawn( void )
 	SetUse( &CMultiManager::ManagerUse );
 	SetThink( &CMultiManager::ManagerThink );
 
+	// modif de Julien
+#ifdef L2M3CRASHFIXPATH_INVASION_DLL
+	for( int i = 1; i < m_cTargets; i++ ) //modif de Roy l2m3 tremble_1 and tremble_2 must not be activated, or we'll get a SegFault.
+	{
+		if ( (FStrEq(STRING(gpGlobals->mapname), "l2m3") || FStrEq(STRING(gpGlobals->mapname), "L2M3")) && ( FStrEq ( STRING(m_iTargetName[i]), "tremble_1") || FStrEq ( STRING(m_iTargetName[i]), "tremble_2" ))  ){
+			m_iTargetName[i] = ALLOC_STRING( "zremble_x" ); //Just put in some garbage instead.
+		}
+	}
+#endif
+
 	// Sort targets
 	// Quick and dirty bubble sort
 	int swapped = 1;
@@ -555,6 +573,9 @@ void CBaseTrigger::KeyValue( KeyValueData *pkvd )
 	else
 		CBaseToggle::KeyValue( pkvd );
 }
+
+//modif de Julien
+#define SF_TRIGGER_HURT_L2M3	128
 
 class CTriggerHurt : public CBaseTrigger
 {
@@ -779,6 +800,14 @@ void CTargetCDAudio::Play( void )
 
 void CTriggerHurt::Spawn( void )
 {
+	// modif de Julien
+	if ( (FStrEq(STRING(gpGlobals->mapname), "l3m2") || FStrEq(STRING(gpGlobals->mapname), "L3M2")) && FStrEq ( STRING(pev->targetname), "pan")  )
+	{
+		SetThink ( &CBaseEntity::SUB_Remove );
+		pev->nextthink = gpGlobals->time +0.1;
+		return;
+	}
+
 	InitTrigger();
 	SetTouch( &CBaseTrigger::HurtTouch );
 
@@ -791,7 +820,9 @@ void CTriggerHurt::Spawn( void )
 		SetUse( NULL );
 	}
 
-	if( m_bitsDamageInflict & DMG_RADIATION )
+	//if( m_bitsDamageInflict & DMG_RADIATION )
+	//modif de Julien
+	if ( (m_bitsDamageInflict & DMG_RADIATION) && !( pev->spawnflags & SF_TRIGGER_HURT_L2M3 ) )
 	{
 		SetThink( &CTriggerHurt::RadiationThink );
 		pev->nextthink = gpGlobals->time + RANDOM_FLOAT( 0.0, 0.5 );
@@ -1098,7 +1129,8 @@ void CBaseTrigger::MultiTouch( CBaseEntity *pOther )
 	// Only touch clients, monsters, or pushables (depending on flags)
 	if( ( ( pevToucher->flags & FL_CLIENT ) && !( pev->spawnflags & SF_TRIGGER_NOCLIENTS ) ) ||
 		 ( ( pevToucher->flags & FL_MONSTER ) && (pev->spawnflags & SF_TRIGGER_ALLOWMONSTERS ) ) ||
-		 ( ( pev->spawnflags & SF_TRIGGER_PUSHABLES ) && FClassnameIs( pevToucher,"func_pushable" ) ) )
+		 (pev->spawnflags & SF_TRIGGER_PUSHABLES) && FClassnameIs(pevToucher,"func_pushable") ||
+		 /*(pev->spawnflags & SF_TRIGGER_TANK) &&*/ FClassnameIs(pevToucher, "info_tank_model" ) )	// modif de Julien
 	{
 
 #if 0
@@ -1499,7 +1531,8 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 //
 void CChangeLevel::TouchChangeLevel( CBaseEntity *pOther )
 {
-	if( !pOther->IsPlayer() )
+	//pOther->IsPlayer() was FClassnameIs(pOther->pev, "player")
+	if( !pOther->IsPlayer() && !FClassnameIs(pOther->pev, "info_tank_model") )	// modif de Julien
 		return;
 
 	ChangeLevelNow( pOther );
@@ -1565,6 +1598,7 @@ int CChangeLevel::InTransitionVolume( CBaseEntity *pEntity, char *pVolumeName )
 
 	return inVolume;
 }
+
 
 // We can only ever move 512 entities across a transition
 #define MAX_ENTITY 512
@@ -1653,7 +1687,70 @@ int CChangeLevel::ChangeList( LEVELLIST *pLevelList, int maxList )
 				}
 				pent = pent->v.chain;
 			}
+			//
+			// modif de Julien
 
+			CBasePlayer *pPlayer = ( CBasePlayer* )UTIL_FindEntityByClassname ( NULL, "player" );
+
+			if ( !pPlayer )
+			{
+				ALERT ( at_console, "Ne peut pas trouver le joueur\n" );
+			}
+
+			else
+			{
+				// m_rgpPlayerItems
+
+				for ( int compteur = 0; compteur < MAX_ITEM_TYPES; compteur ++ )
+				{
+
+					CBasePlayerItem *pEntity = pPlayer->m_rgpPlayerItems[compteur];
+
+					while (pEntity)
+					{
+//						ALERT( at_console, "essaie categorie %i\n", compteur );
+
+						if ( pEntity == NULL || !UTIL_IsValidEntity(pEntity->edict()) )
+							continue;
+
+//						ALERT( at_console, "Trying %s\n", STRING(pEntity->pev->classname) );
+						int caps = pEntity->ObjectCaps();
+						if ( !(caps & FCAP_DONT_SAVE) )
+						{
+							int flags = 0;
+
+							// If this entity can be moved or is global, mark it
+							if ( caps & FCAP_ACROSS_TRANSITION )
+								flags |= FENTTABLE_MOVEABLE;
+							if ( pEntity->pev->globalname && !pEntity->IsDormant() )
+								flags |= FENTTABLE_GLOBAL;
+							if ( flags )
+							{
+//								ALERT ( at_console, "JULIEN : transfere %s\n", STRING(pEntity->pev->classname) );
+
+								pEntList[ entityCount ] = pEntity;
+								entityFlags[ entityCount ] = flags;
+								entityCount++;
+								if ( entityCount > MAX_ENTITY )
+									ALERT( at_error, "Too many entities across a transition!" );
+							}
+//							else
+//								ALERT( at_console, "Failed %s\n", STRING(pEntity->pev->classname) );
+						}
+//						else
+//							ALERT( at_console, "DON'T SAVE %s\n", STRING(pEntity->pev->classname) );
+						
+					
+						// suivant dans la liste
+						
+						pEntity = pEntity->m_pNext;
+					}
+				}
+			}
+
+
+			// fin modif
+			//
 			for( j = 0; j < entityCount; j++ )
 			{
 				// Check to make sure the entity isn't screened out by a trigger_transition
@@ -1665,8 +1762,8 @@ int CChangeLevel::ChangeList( LEVELLIST *pLevelList, int maxList )
 					// Flag it with the level number
 					saveHelper.EntityFlagsSet( index, entityFlags[j] | ( 1 << i ) );
 				}
-				//else
-				//	ALERT( at_console, "Screened out %s\n", STRING( pEntList[j]->pev->classname ) );
+				else
+					ALERT( at_console, "Screened out %s\n", STRING( pEntList[j]->pev->classname ) );
 			}
 		}
 	}
@@ -1934,7 +2031,7 @@ void CTriggerSave::SaveTouch( CBaseEntity *pOther )
 		return;
 
 	// Only save on clients
-	if( !pOther->IsPlayer() )
+	if ( !pOther->IsPlayer() && !FClassnameIs(pOther->edict(), "info_tank_model") )	// modif de Julien
 		return;
 
 	SetTouch( NULL );
@@ -2099,7 +2196,11 @@ void CTriggerChangeTarget::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, U
 #define SF_CAMERA_PLAYER_POSITION	1
 #define SF_CAMERA_PLAYER_TARGET		2
 #define SF_CAMERA_PLAYER_TAKECONTROL 4
-
+//modif de Julien
+#define SF_CAMERA_PLAYER_MAP_L2M1	16
+#define SF_CAMERA_PLAYER_INTRO		32
+//===============
+/*
 class CTriggerCamera : public CBaseDelay
 {
 public:
@@ -2127,7 +2228,7 @@ public:
 	float m_acceleration;
 	float m_deceleration;
 	int m_state;
-};
+};*/
 
 LINK_ENTITY_TO_CLASS( trigger_camera, CTriggerCamera )
 
@@ -2297,6 +2398,13 @@ void CTriggerCamera::FollowTarget()
 	}
 
 	Vector vecGoal = UTIL_VecToAngles( m_hTarget->pev->origin - pev->origin );
+
+	//modif de Julien
+	if (pev->spawnflags & SF_CAMERA_PLAYER_MAP_L2M1 )
+	{
+		vecGoal = UTIL_VecToAngles( m_hTarget->pev->vuser1  - pev->origin );	// vuser1 est les coordonn
+	}
+	//===============
 	vecGoal.x = -vecGoal.x;
 
 	if( pev->angles.y > 360 )
@@ -2318,8 +2426,19 @@ void CTriggerCamera::FollowTarget()
 	if( dy > 180 ) 
 		dy = dy - 360;
 
-	pev->avelocity.x = dx * 40 * 0.01f;
-	pev->avelocity.y = dy * 40 * 0.01f;
+	//pev->avelocity.x = dx * 40 * 0.01f;
+	//pev->avelocity.y = dy * 40 * 0.01f;
+	if ( pev->spawnflags & SF_CAMERA_PLAYER_INTRO ) //modif de Julien
+	{
+		pev->avelocity.x = dx / gpGlobals->frametime;
+		pev->avelocity.y = dy / gpGlobals->frametime;
+	}
+	else
+	{
+		// ancien code //modif de modif de Julien
+		pev->avelocity.x = dx * 40 * 0.01f; //gpGlobals->frametime;
+		pev->avelocity.y = dy * 40 * 0.01f; //gpGlobals->frametime;
+	}
 
 	if( !( FBitSet( pev->spawnflags, SF_CAMERA_PLAYER_TAKECONTROL ) ) )
 	{
@@ -2381,3 +2500,266 @@ void CTriggerCamera::Move()
 	float fraction = 2 * gpGlobals->frametime;
 	pev->velocity = ( ( pev->movedir * pev->speed ) * fraction ) + ( pev->velocity * ( 1 - fraction ) );
 }
+
+
+/************************************************************
+*		trigger_gaz, de Julien								*
+************************************************************/
+
+
+// trigger_gaz : em
+
+
+class CTriggerGaz : public CBaseTrigger
+{
+public:
+	void Spawn( void );
+	void EXPORT TriggerTouch ( CBaseEntity *pOther );
+	void Fire ( void );
+
+	BOOL	m_bAlreadyFired;
+
+	static TYPEDESCRIPTION m_SaveData[];
+	int	Save( CSave &save ); 
+	int Restore( CRestore &restore );
+
+
+};
+
+LINK_ENTITY_TO_CLASS( trigger_gaz, CTriggerGaz );
+
+
+TYPEDESCRIPTION	CTriggerGaz::m_SaveData[] = 
+{
+	DEFINE_FIELD( CTriggerGaz, m_bAlreadyFired, FIELD_BOOLEAN ),
+};
+IMPLEMENT_SAVERESTORE( CTriggerGaz, CBaseTrigger );
+
+
+
+
+void CTriggerGaz :: Spawn( void )
+{
+	InitTrigger();				// initialise le trigger, rien d'interessant
+	SetTouch ( &CTriggerGaz::TriggerTouch );		// d
+	
+	// si pas de targetname, on ne pourra pas l'arreter
+	if ( FStringNull ( pev->targetname ) )
+		ALERT ( at_console , "ATTENTION : trigger_gaz sans targetname : disfonctionnement\n" );
+	if ( FStringNull ( pev->target ) )
+		ALERT ( at_console , "ATTENTION : trigger_gaz sans target : disfonctionnement\n" );
+
+	SetUse ( &CBaseTrigger::ToggleUse );		// setuse permet de le (des)activer
+
+	if ( FBitSet (pev->spawnflags, SF_TRIGGER_HURT_START_OFF) )// if flagged to Start Turned Off, make trigger nonsolid.
+		pev->solid = SOLID_NOT;
+
+	pev->classname		= MAKE_STRING ( "trigger_gaz" );
+	m_bAlreadyFired		= FALSE;
+
+	UTIL_SetOrigin( pev, pev->origin );		// Link into the list	// ??
+}
+
+
+
+void CTriggerGaz :: TriggerTouch ( CBaseEntity *pOther )
+{
+	if ( pOther->IsPlayer() )
+	{
+		if ( pOther->m_bFireInGaz && m_bAlreadyFired == FALSE )
+		{
+			m_bAlreadyFired = TRUE;
+			Fire ();
+		}
+	}
+}
+
+void CTriggerGaz :: Fire ( void )
+{
+	SUB_UseTargets( this, USE_TOGGLE, 0 );
+	pev->target = 0;
+}
+
+
+
+
+//================================================================
+// Trigger_tank
+// trigger temporaire pour le tank
+//
+
+
+
+class CTriggerTank : public CBaseTrigger
+{
+public:
+	void Spawn( void );
+	void EXPORT TankThink( void );
+	void EXPORT TankTouch( CBaseEntity *pOther );
+};
+
+LINK_ENTITY_TO_CLASS( trigger_tank, CTriggerTank );
+
+
+void CTriggerTank :: Spawn( void )
+{
+	if (m_flWait == 0)
+		m_flWait = 0.2;
+
+	InitTrigger();
+
+	ASSERTSZ(pev->health == 0, "trigger_tank_aaa");	// ?
+
+	pev->spawnflags |= SF_TRIGGER_ALLOWMONSTERS;	// pour le multitouch ()
+
+	SetTouch( NULL );
+	SetThink( &CTriggerTank::TankThink );
+	pev->nextthink = gpGlobals->time + 0.1;
+}
+
+
+void CTriggerTank :: TankThink( void )
+{
+
+	CBaseEntity *pFind = NULL;
+	edict_t *pTrigger = NULL;
+
+	pTrigger = FIND_ENTITY_BY_CLASSNAME( NULL, "vehicle_tank" );
+
+	if ( FNullEnt ( pTrigger ) )
+		return;
+
+	pFind = CBaseEntity::Instance ( pTrigger );
+
+
+	if ( pFind->pev->origin.x > pev->absmin.x && pFind->pev->origin.x < pev->absmax.x &&
+		 pFind->pev->origin.y > pev->absmin.y && pFind->pev->origin.y < pev->absmax.y &&
+		 pFind->pev->origin.z > pev->absmin.z && pFind->pev->origin.z < pev->absmax.z )
+	{
+		MultiTouch ( pFind );
+
+		if (m_flWait > 0)
+		{
+			pev->nextthink = gpGlobals->time + m_flWait;
+		}
+		else
+		{
+			pev->nextthink = gpGlobals->time + 0.1;
+			SetThink( &CBaseEntity::SUB_Remove );
+		}
+	}
+
+	else
+		pev->nextthink = gpGlobals->time + 0.1;
+
+}
+
+void CTriggerTank :: TankTouch ( CBaseEntity *pOther )
+{
+
+//	ALERT ( at_console, "TANK_TOUCH, %s\n", STRING(pOther->pev->classname) );
+	ALERT ( at_console, "TANK_TOUCH, \n");
+
+
+}
+
+
+
+//-------------------------------------------
+//trigger caisse
+
+class CTriggerCaisse : public CBaseTrigger
+{
+public:
+	void Spawn( void );
+	void EXPORT UseTrigger ( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+	void EXPORT CaisseThink ( void );
+
+	BOOL m_bCaisseDedans;
+
+	static TYPEDESCRIPTION m_SaveData[];
+	int	Save( CSave &save ); 
+	int Restore( CRestore &restore );
+
+};
+
+LINK_ENTITY_TO_CLASS( trigger_caisse, CTriggerCaisse );
+
+TYPEDESCRIPTION	CTriggerCaisse::m_SaveData[] = 
+{
+	DEFINE_FIELD( CTriggerCaisse, m_bCaisseDedans, FIELD_BOOLEAN ),
+};
+IMPLEMENT_SAVERESTORE( CTriggerCaisse, CBaseTrigger );
+
+
+
+void CTriggerCaisse :: Spawn ( void )
+{
+	InitTrigger();
+
+	SetUse ( &CTriggerCaisse::UseTrigger );
+	SetThink ( &CTriggerCaisse::CaisseThink );
+
+	pev->nextthink = gpGlobals->time + 0.1;
+
+	m_bCaisseDedans = FALSE;
+}
+
+
+void CTriggerCaisse :: UseTrigger ( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
+{
+	if ( m_bCaisseDedans == TRUE )
+	{
+		FireTargets( STRING(pev->target), this, this, USE_ON, 0 );
+	}
+
+}
+
+void CTriggerCaisse :: CaisseThink ( void )
+{
+	pev->nextthink = gpGlobals->time + 0.1;
+
+	if ( m_bCaisseDedans == TRUE )
+		return;
+
+	CBaseEntity *pList[64];
+	int count = UTIL_EntitiesInBox( pList, 64, pev->absmin, pev->absmax, 0 );
+
+	for ( int i=0; i<count; i++ )
+	{
+		if ( FClassnameIs ( pList[i]->edict(), "func_pushable" ) )
+		{
+			if ( pList[i]->pev->spawnflags & 1024 )
+			{
+				m_bCaisseDedans = TRUE;
+				break;
+			}
+		}
+	}
+
+
+}
+
+
+
+//--------------------------------------
+// trigger_nuclear
+
+class CTriggerNuclear : public CBaseTrigger
+{
+public:
+	void Spawn( void );
+};
+
+LINK_ENTITY_TO_CLASS( trigger_nuclear, CTriggerNuclear );
+
+
+void CTriggerNuclear :: Spawn ( void )
+{
+	InitTrigger();
+}
+
+
+
+
+

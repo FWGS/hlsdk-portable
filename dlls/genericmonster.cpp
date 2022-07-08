@@ -21,6 +21,9 @@
 #include	"monsters.h"
 #include	"schedule.h"
 
+// modif de Julien
+extern int gmsgClientDecal;
+
 // For holograms, make them not solid so the player can walk through them
 #define	SF_GENERICMONSTER_NOTSOLID					4 
 
@@ -47,6 +50,10 @@ LINK_ENTITY_TO_CLASS( monster_generic, CGenericMonster )
 //=========================================================
 int CGenericMonster::Classify( void )
 {
+	//modif de Julien
+	if ( pev->spawnflags & SF_GENERICMONSTER_NOTSOLID )
+		return CLASS_NONE;
+
 	return CLASS_PLAYER_ALLY;
 }
 
@@ -80,6 +87,29 @@ void CGenericMonster::HandleAnimEvent( MonsterEvent_t *pEvent )
 	default:
 		CBaseMonster::HandleAnimEvent( pEvent );
 		break;
+
+	// modif de Julien
+	case 1444:
+		Vector vecBout;
+		Vector vZero0(0,0,0); //Just init a couple of Vectors to shut down some weird compiler errors.
+		Vector vZero1(0,0,0);
+		GetAttachment( 1, vecBout, vZero0 ); //put vector outside 
+		Vector vecDir;
+		GetAttachment( 0, vecDir, vZero1 ); //same
+
+		MESSAGE_BEGIN( MSG_ALL, gmsgClientDecal );
+
+			WRITE_COORD( vecBout.x );			// xyz source
+			WRITE_COORD( vecBout.y );
+			WRITE_COORD( vecBout.z );
+			WRITE_COORD( vecDir.x );						// xyz norme
+			WRITE_COORD( vecDir.y );
+			WRITE_COORD( vecDir.z );
+			WRITE_CHAR ( 'a' );						// type de texture
+			WRITE_BYTE ( 6 );						//  6 == outromuzzle
+
+		MESSAGE_END();
+		break;
 	}
 }
 
@@ -107,6 +137,9 @@ void CGenericMonster::Spawn()
 */
 	if( FStrEq( STRING( pev->model ), "models/player.mdl" ) || FStrEq( STRING( pev->model ), "models/holo.mdl" ) )
 		UTIL_SetSize( pev, VEC_HULL_MIN, VEC_HULL_MAX );
+	//modif de Julien
+	else if ( pev->spawnflags & SF_GENERICMONSTER_NOTSOLID )
+		UTIL_SetSize(pev, Vector(0,0,0),Vector(0,0,0) );
 	else
 		UTIL_SetSize( pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX );
 
@@ -116,6 +149,13 @@ void CGenericMonster::Spawn()
 	pev->health = 8;
 	m_flFieldOfView = 0.5;// indicates the width of this monster's forward view cone ( as a dotproduct result )
 	m_MonsterState = MONSTERSTATE_NONE;
+
+	// modif de Julien
+	if ( pev->spawnflags & SF_GENERICMONSTER_NOTSOLID )
+	{
+		pev->solid			= SOLID_NOT;
+		pev->movetype		= MOVETYPE_NOCLIP;
+	}
 
 	MonsterInit();
 
@@ -132,6 +172,7 @@ void CGenericMonster::Spawn()
 void CGenericMonster::Precache()
 {
 	PRECACHE_MODEL( STRING( pev->model ) );
+	PRECACHE_MODEL( "sprites/outro_muzzle.spr" );
 }
 
 //=========================================================

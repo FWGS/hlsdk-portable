@@ -240,7 +240,7 @@ public:
 	void EXPORT SUB_FadeOut( void );
 	void EXPORT SUB_CallUseToggle( void ) { this->Use( this, this, USE_TOGGLE, 0 ); }
 	int ShouldToggle( USE_TYPE useType, BOOL currentState );
-	void FireBullets( ULONG cShots, Vector  vecSrc, Vector	vecDirShooting,	Vector	vecSpread, float flDistance, int iBulletType, int iTracerFreq = 4, int iDamage = 0, entvars_t *pevAttacker = NULL  );
+	void FireBullets( ULONG	cShots, Vector  vecSrc, Vector	vecDirShooting,	Vector	vecSpread, float flDistance, int iBulletType, int iTracerFreq = 4, int iDamage = 0, entvars_t *pevAttacker = NULL, int iTraverseMur = 0 );
 	Vector FireBulletsPlayer( ULONG cShots, Vector  vecSrc, Vector	vecDirShooting,	Vector	vecSpread, float flDistance, int iBulletType, int iTracerFreq = 4, int iDamage = 0, entvars_t *pevAttacker = NULL, int shared_rand = 0 );
 
 	virtual CBaseEntity *Respawn( void ) { return NULL; }
@@ -333,6 +333,11 @@ public:
 	virtual	BOOL FVisible( CBaseEntity *pEntity );
 	virtual	BOOL FVisible( const Vector &vecOrigin );
 
+	//modif de Julien
+	BOOL IsInGaz ( void ) { return FALSE; }; //Must NOT be virtual, causes "unimplemented symbol" error in game.
+	BOOL m_bFireInGaz;
+
+
 	//We use this variables to store each ammo count.
 	int ammo_9mm;
 	int ammo_357;
@@ -345,6 +350,10 @@ public:
 	//Special stuff for grenades and satchels.
 	float m_flStartThrow;
 	float m_flReleaseThrow;
+
+	// modif de julien
+	int AddToPlayer( CBasePlayer *pPlayer );
+
 	int m_chargeReady;
 	int m_fInAttack;
 

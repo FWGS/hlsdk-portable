@@ -647,6 +647,15 @@ void CBaseButton::ButtonSpark( void )
 //
 void CBaseButton::ButtonUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
+
+	// modif de Julien
+	if ( FClassnameIs (ENT(pev),"func_rot_button") && ( FStrEq(STRING(gpGlobals->mapname), "l4m2") || FStrEq(STRING(gpGlobals->mapname), "L4M2") ) )
+	{
+		if ( pActivator != NULL && pActivator->pev->origin.y > pev->origin.y )
+			return;
+	}
+
+
 	// Ignore touches if button is moving, or pushed-in and waiting to auto-come-out.
 	// UNDONE: Should this use ButtonResponseToTouch() too?
 	if( m_toggle_state == TS_GOING_UP || m_toggle_state == TS_GOING_DOWN )
@@ -1158,6 +1167,24 @@ void CMomentaryRotButton::Return( void )
 
 void CMomentaryRotButton::UpdateSelfReturn( float value )
 {
+
+	// modif de Julien
+	if ( FStrEq(STRING(gpGlobals->mapname), "l4m4") || FStrEq(STRING(gpGlobals->mapname), "L4M4") )
+	{
+		CBaseEntity *pGarg = UTIL_FindEntityByClassname ( NULL, "monster_gargantua" );
+
+		if ( pGarg == NULL )
+		{
+			m_returnSpeed = 15;
+		}
+
+		else
+		{
+			m_returnSpeed = 70;
+		}
+	}
+	// fin de modif de Julien
+
 	if( value <= 0.0f )
 	{
 		pev->avelocity = g_vecZero;

@@ -86,22 +86,26 @@ int CGlock::GetItemInfo( ItemInfo *p )
 	return 1;
 }
 
-int CGlock::AddToPlayer( CBasePlayer *pPlayer )
-{
-	if( CBasePlayerWeapon::AddToPlayer( pPlayer ) )
-	{
-		MESSAGE_BEGIN( MSG_ONE, gmsgWeapPickup, NULL, pPlayer->pev );
-			WRITE_BYTE( m_iId );
-		MESSAGE_END();
-		return TRUE;
-	}
-	return FALSE;
-}
-
 BOOL CGlock::Deploy()
 {
 	// pev->body = 1;
 	return DefaultDeploy( "models/v_9mmhandgun.mdl", "models/p_9mmhandgun.mdl", GLOCK_DRAW, "onehanded", /*UseDecrement() ? 1 : 0*/ 0 );
+}
+
+// modif de Julien
+int CGlock::AddToPlayer( CBasePlayer *pPlayer )
+{
+	if ( CBasePlayerWeapon::AddToPlayer( pPlayer ) )
+	{
+		MESSAGE_BEGIN( MSG_ONE, gmsgWeapPickup, NULL, pPlayer->pev );
+			WRITE_BYTE( m_iId );
+		MESSAGE_END();
+
+		m_pPlayer->TextAmmo( TA_HANDGUN );
+
+		return TRUE;
+	}
+	return FALSE;
 }
 
 void CGlock::SecondaryAttack( void )
@@ -150,7 +154,7 @@ void CGlock::GlockFire( float flSpread, float flCycleTime, BOOL fUseAutoAim )
 	{
 		// non-silenced
 		m_pPlayer->m_iWeaponVolume = NORMAL_GUN_VOLUME;
-		m_pPlayer->m_iWeaponFlash = NORMAL_GUN_FLASH;
+		m_pPlayer->Gunflash ();
 	}
 
 	Vector vecSrc = m_pPlayer->GetGunPosition();
@@ -169,6 +173,9 @@ void CGlock::GlockFire( float flSpread, float flCycleTime, BOOL fUseAutoAim )
 	vecDir = m_pPlayer->FireBulletsPlayer( 1, vecSrc, vecAiming, Vector( flSpread, flSpread, flSpread ), 8192, BULLET_PLAYER_9MM, 0, 0, m_pPlayer->pev, m_pPlayer->random_seed );
 
 	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), fUseAutoAim ? m_usFireGlock1 : m_usFireGlock2, 0.0, g_vecZero, g_vecZero, vecDir.x, vecDir.y, 0, 0, ( m_iClip == 0 ) ? 1 : 0, 0 );
+
+	/*SendWeaponAnim( GLOCK_SHOOT );
+	EMIT_SOUND(ENT(m_pPlayer->pev), CHAN_WEAPON, "weapons/pl_gun3.wav", 0.8, ATTN_NORM);*/
 
 	m_flNextPrimaryAttack = m_flNextSecondaryAttack = GetNextAttackDelay( flCycleTime );
 
@@ -189,7 +196,7 @@ void CGlock::Reload( void )
 	if( m_iClip == 0 )
 		iResult = DefaultReload( GLOCK_MAX_CLIP, GLOCK_RELOAD, 1.5f );
 	else
-		iResult = DefaultReload( GLOCK_MAX_CLIP, GLOCK_RELOAD_NOT_EMPTY, 1.5f );
+		iResult = DefaultReload( GLOCK_MAX_CLIP, GLOCK_RELOAD_NOT_EMPTY, 1.5f );	// modif de julien - remplace 18 par 17
 
 	if( iResult )
 	{
@@ -209,24 +216,28 @@ void CGlock::WeaponIdle( void )
 	// only idle if the slid isn't back
 	if( m_iClip != 0 )
 	{
-		int iAnim;
-		float flRand = UTIL_SharedRandomFloat( m_pPlayer->random_seed, 0.0, 1.0 );
+		if (m_flTimeWeaponIdle > gpGlobals->time)
+		return;
 
-		if( flRand <= 0.3f + 0 * 0.75f )
+		int iAnim;
+		switch ( RANDOM_LONG( 0, 4 ) )
 		{
-			iAnim = GLOCK_IDLE3;
-			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 49.0f / 16.0f;
-		}
-		else if( flRand <= 0.6f + 0 * 0.875f )
-		{
+		case 0 :
 			iAnim = GLOCK_IDLE1;
-			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 60.0f / 16.0f;
-		}
-		else
-		{
+			break;
+
+		case 1 :
 			iAnim = GLOCK_IDLE2;
-			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 40.0f / 16.0f;
+			break;
+
+		case 3 :
+		default :
+			iAnim = GLOCK_IDLE3;
+			break;
 		}
+
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + RANDOM_FLOAT( 6, 15 );
+
 		SendWeaponAnim( iAnim, 1 );
 	}
 }

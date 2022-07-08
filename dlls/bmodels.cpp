@@ -71,6 +71,7 @@ void CFuncWall::Spawn( void )
 
 	// If it can't move/go away, it's really part of the world
 	pev->flags |= FL_WORLDBRUSH;
+
 }
 
 void CFuncWall::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
@@ -136,6 +137,7 @@ void CFuncWallToggle::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TY
 
 #define SF_CONVEYOR_VISUAL	0x0001
 #define SF_CONVEYOR_NOTSOLID	0x0002
+#define SF_CONVEYOR_ONOFF		8
 
 class CFuncConveyor : public CFuncWall
 {
@@ -149,6 +151,15 @@ LINK_ENTITY_TO_CLASS( func_conveyor, CFuncConveyor )
 
 void CFuncConveyor::Spawn( void )
 {
+	pev->v_angle = pev->angles;	//modif de julien - permet de garder une trace de l'angle du conveyor
+								//dans v_angle.y
+								//
+								//je d
+								//si la vitesse est dans pev->speed tout changement de cette variable
+								//interdit le changement de direction de la pouss
+								//pev->speed ne doit PAS  etre modifi
+								//sa valeur modifiable est stock
+
 	SetMovedir( pev );
 	CFuncWall::Spawn();
 
@@ -165,7 +176,10 @@ void CFuncConveyor::Spawn( void )
 	if( pev->speed == 0.0f )
 		pev->speed = 100.0f;
 
-	UpdateSpeed( pev->speed );
+	//UpdateSpeed( pev->speed );
+	pev->v_angle.z = pev->speed; //modif de Julien
+
+	UpdateSpeed( pev->v_angle.z );
 }
 
 // HACKHACK -- This is ugly, but encode the speed in the rendercolor to avoid adding more data to the network stream
@@ -185,8 +199,24 @@ void CFuncConveyor::UpdateSpeed( float speed )
 
 void CFuncConveyor::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
-    pev->speed = -pev->speed;
-	UpdateSpeed( pev->speed );
+	//modif de Julien
+	//change la direction de pouss
+	//le conveyor met son angle a 0 avec setmovedir
+	//il est auparavant stock
+	//ce code fait un demi tour a l'angle de poussee
+
+	float flNewYAngle = pev->v_angle.y < 180 ? 180 : -180;
+
+	pev->angles = Vector( 0, pev->v_angle.y + flNewYAngle, pev->v_angle.z );
+	pev->v_angle = pev->angles;
+	SetMovedir( pev );
+
+	//celui ci modifie pev->v_angle.z equivalent a pev->speed
+	//qui determine le sens du mouvement de la texture
+
+	pev->v_angle.z = - pev->v_angle.z;
+	UpdateSpeed( pev->v_angle.z );
+
 }
 
 // =================== FUNC_ILLUSIONARY ==============================================

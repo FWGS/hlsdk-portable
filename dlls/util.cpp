@@ -1065,7 +1065,8 @@ int UTIL_IsMasterTriggered( string_t sMaster, CBaseEntity *pActivator )
 				return pMaster->IsTriggered( pActivator );
 		}
 
-		ALERT( at_console, "Master was null or not a master!\n" );
+		//ALERT( at_console, "Master was null or not a master!\n" );
+		ALERT(at_console, "entite %s : Master was null or not a master!\n", STRING ( pActivator->pev->classname) );	// modif de julien
 	}
 
 	// if this isn't a master entity, just say yes.
@@ -1466,13 +1467,16 @@ void UTIL_Bubbles( Vector mins, Vector maxs, int count )
 
 void UTIL_BubbleTrail( Vector from, Vector to, int count )
 {
+	//modif de Julien
+	float hfrom, hto;
+
 	float flHeight = UTIL_WaterLevel( from, from.z, from.z + 256 );
-	flHeight = flHeight - from.z;
+	flHeight = hfrom = flHeight - from.z;
 
 	if( flHeight < 8 )
 	{
 		flHeight = UTIL_WaterLevel( to, to.z, to.z + 256 );
-		flHeight = flHeight - to.z;
+		flHeight = hto = flHeight - to.z;
 		if( flHeight < 8 )
 			return;
 
@@ -1496,7 +1500,52 @@ void UTIL_BubbleTrail( Vector from, Vector to, int count )
 		WRITE_BYTE( count ); // count
 		WRITE_COORD( 8 ); // speed
 	MESSAGE_END();
+
+	//modif de Julien
+	if ( hto > 0 && hfrom == 0 )
+	{
+		float flen = (from - to).Length2D() * hto / fabs(to.z - from.z);
+
+		Vector vecWavePos = to + ( from - to ).Normalize() * sqrt( hto*hto + flen*flen );
+		UTIL_WaterWave ( vecWavePos  );
+	}
 }
+//modif de Julien
+
+extern DLL_GLOBAL	short	g_sModelIndexBlastCircle; // sprite de l'onde de choc
+
+
+void UTIL_WaterWave ( Vector origin  )
+{
+return; //Remove this until we can f-ix it.
+//		ALERT( at_console, "Emitting waves CLIENT %f %f %f \n", origin.x, origin.y, origin.z );
+//		MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, NULL ); //This doesn't work, the origin seems almost random.
+//		MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY ); //This works, but the actual sprite is an ugly triangle.
+		MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, origin );     //This works, but the actual sprite is f-ed.
+			WRITE_BYTE( TE_BEAMTORUS/*TE_BEAMCYLINDER*/ );
+			WRITE_COORD( origin.x);
+			WRITE_COORD( origin.y);
+			WRITE_COORD( origin.z);
+			WRITE_COORD( origin.x);
+			WRITE_COORD( origin.y); //tested with 20, works, but draws un ugly triangle instead of cool circle
+			WRITE_COORD( origin.z + 200 ); // reach damage radius over .2 seconds
+			WRITE_SHORT( g_sModelIndexBlastCircle );
+			WRITE_BYTE( 0 ); // startframe
+			WRITE_BYTE( 0 ); // framerate
+			WRITE_BYTE( 4 ); // life
+			WRITE_BYTE( 1 );  // width
+			WRITE_BYTE( 0 );   // noise
+			WRITE_BYTE( 215 );   // r, g, b
+			WRITE_BYTE( 225 );   // r, g, b
+			WRITE_BYTE( 255 );   // r, g, b
+			WRITE_BYTE( 30 ); // brightness
+			WRITE_BYTE( 1 );		// speed
+		MESSAGE_END();
+
+
+}
+
+//================================
 
 void UTIL_Remove( CBaseEntity *pEntity )
 {

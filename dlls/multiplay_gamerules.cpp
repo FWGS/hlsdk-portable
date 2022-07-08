@@ -159,17 +159,17 @@ void CHalfLifeMultiplay::RefreshSkillData( void )
 
 	// Shotgun buckshot
 	gSkillData.plrDmgBuckshot = 20;// fewer pellets in deathmatch
-
+/*
 	// Crossbow
 	gSkillData.plrDmgCrossbowClient = 20;
-
+*/
 	// RPG
 	gSkillData.plrDmgRPG = 120;
 
-	// Egon
+/*	// Egon
 	gSkillData.plrDmgEgonWide = 20;
 	gSkillData.plrDmgEgonNarrow = 10;
-
+*/
 	// Hand Grendade
 	gSkillData.plrDmgHandGrenade = 100;
 

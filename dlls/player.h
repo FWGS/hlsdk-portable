@@ -61,6 +61,50 @@
 
 #define TEAM_NAME_LENGTH	16
 
+
+// modif de Julien
+
+#define MAX_ARMOR_GROUP		7
+#define MAX_MEMBER_ARMOR	MAX_NORMAL_BATTERY / MAX_ARMOR_GROUP
+
+#define ARMOR_GLOBAL		0
+#define ARMOR_HEAD			(1<<0)
+#define ARMOR_CHEST			(1<<1)
+#define ARMOR_STOMACH		(1<<2)
+#define ARMOR_ARM_L			(1<<3)
+#define ARMOR_ARM_R			(1<<4)
+#define ARMOR_LEG_L			(1<<5)
+#define ARMOR_LEG_R			(1<<6)
+
+// modif de julien
+typedef enum
+{
+	TA_SUIT = 0,
+	TA_MEDKIT,
+	TA_BATTERY,
+	TA_CROWBAR,
+	TA_BRIQUET,
+	TA_HANDGUN,
+	TA_BERETTA,
+	TA_IRGUN,
+	TA_MP5,
+	TA_SHOTGUN,
+	TA_M16,
+	TA_SNIPER,
+	TA_RPG,
+	TA_ELECTROROCKET,
+	TA_NUCLEARROCKET,
+	TA_SUPERGUN,
+	TA_LFLAMMES,
+	TA_GRENADE,
+	TA_FRAG,
+	TA_SATCHEL,
+	TA_TRIPMINE
+
+} TEXT_AMMMO;
+
+//--------------------
+
 typedef enum
 {
 	PLAYER_IDLE,
@@ -304,6 +348,53 @@ public:
 
 	void SetCustomDecalFrames( int nFrames );
 	int GetCustomDecalFrames( void );
+
+	// modifs de Julien
+
+	// Night Vision Google
+	
+	BOOL IsInGaz ( void ); //Must NOT be virtual, causes "unimplemented symbol" error in game.
+	void ShowVGUIordiMenu(  int iparam1, int iparam2, int iparam3 );
+
+	void ThinkNVG	( void );
+	void NVGTurnOn	( void );
+	void NVGTurnOff	( void );
+	BOOL bNvgOn;
+	BOOL bNvgUpdate;
+
+	// armor
+
+	int		m_iLastHitGroups;
+	float	m_flArmor		[MAX_ARMOR_GROUP];
+
+	float	SetArmor		( float flValue, int repartition = 0 );
+
+	// health
+
+	int		m_iMedkit;
+	int		m_iBattery;
+	int		m_iClientHudMedkit;
+	int		m_iClientHudBattery;
+
+	void	UseMedkit ( void );
+	void	UseBattery ( int repartition );
+
+	// ronds
+
+	float m_flNextWade;
+
+	// tank
+
+	BOOL m_iDrivingTank;
+
+	// textammo
+
+	long	m_bitsTextAmmo;
+
+	int		m_iszAmmoSentence [32];		// textes
+
+	void	TextAmmo	( TEXT_AMMMO ta_text );
+
 
 	void TabulateAmmo( void );
 

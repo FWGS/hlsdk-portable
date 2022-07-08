@@ -910,6 +910,32 @@ Schedule_t slTakeCoverFromOrigin[] =
 	},
 };
 
+
+// modif de Julien
+//=========================================================
+// slBurnt - monstre victime du lance-flammes 
+//=========================================================
+Task_t	tlBurnt[] =
+{
+	{ TASK_SET_FAIL_SCHEDULE,			(float)SCHED_TAKE_COVER_FROM_ORIGIN	},
+	{ TASK_STOP_MOVING,					(float)0					},
+	{ TASK_GET_BURNT_COVER,				(float)0					},
+	{ TASK_RUN_PATH,					(float)0					},
+	{ TASK_WAIT_FOR_MOVEMENT,			(float)0					},
+};
+
+Schedule_t	slBurnt[] =
+{
+	{ 
+		tlBurnt,
+		ARRAYSIZE ( tlBurnt ), 
+		0,
+		0,
+		"Monster burnt"
+	},
+};
+
+
 //=========================================================
 // hide from the loudest sound source
 //=========================================================
@@ -999,6 +1025,9 @@ Schedule_t *CBaseMonster::m_scheduleList[] =
 	slFaceScript,
 	slCower,
 	slTakeCoverFromOrigin,
+	// modif de Julien
+	slBurnt,
+
 	slTakeCoverFromBestSound,
 	slTakeCoverFromEnemy,
 	slFail
@@ -1200,6 +1229,12 @@ Schedule_t* CBaseMonster::GetScheduleOfType( int Type )
 	case SCHED_FAIL:
 		{
 			return slFail;
+		}
+
+	// modif de Julien
+	case SCHED_BURNT:
+		{
+			return &slBurnt[ 0 ];
 		}
 	default:
 		{

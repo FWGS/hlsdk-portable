@@ -350,6 +350,7 @@ void CBeam::DoSparks( const Vector &start, const Vector &end )
 	}
 }
 
+/*
 class CLightning : public CBeam
 {
 public:
@@ -394,6 +395,7 @@ public:
 
 	float	m_radius;
 };
+*/
 
 LINK_ENTITY_TO_CLASS( env_lightning, CLightning )
 LINK_ENTITY_TO_CLASS( env_beam, CLightning )
@@ -1463,6 +1465,13 @@ void CGibShooter::ShootThink( void )
 	}
 }
 
+//================================================
+//================= Env Shooter ==================
+//================================================
+
+#define	SF_GIBSHOOTER_INSTANT	4 // disparition instantan
+
+
 class CEnvShooter : public CGibShooter
 {
 	void Precache( void );
@@ -1540,6 +1549,12 @@ CGib *CEnvShooter::CreateGib( void )
 	pGib->pev->renderfx = pev->renderfx;
 	pGib->pev->scale = pev->scale;
 	pGib->pev->skin = pev->skin;
+
+	// modif de Julien
+	if ( pev->spawnflags & SF_GIBSHOOTER_INSTANT )
+	{
+		pGib->m_instant = 1;			// pGib vaut 0 ou 1 si disparait instantan
+	}
 
 	return pGib;
 }
@@ -2233,3 +2248,161 @@ void CItemSoda::CanTouch( CBaseEntity *pOther )
 	SetThink( &CBaseEntity::SUB_Remove );
 	pev->nextthink = gpGlobals->time;
 }
+
+
+
+
+//-----------------------------------------------------
+//	Modif de Julien
+//	Env_smoke
+//-----------------------------------------------------
+
+// entit
+
+
+class CEnvSmoke : public CBaseDelay
+{
+public:
+	void	Spawn( void );
+	void	KeyValue( KeyValueData *pkvd );
+	void EXPORT SmokeThink( void );
+	void Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+
+	virtual int		Save( CSave &save );
+	virtual int		Restore( CRestore &restore );
+	static	TYPEDESCRIPTION m_SaveData[];
+
+	int	m_iScale;
+	float m_fFrameRate;
+	int m_iTime;
+	int m_iEndTime;
+};
+
+TYPEDESCRIPTION CEnvSmoke::m_SaveData[] =
+{
+	DEFINE_FIELD( CEnvSmoke, m_iScale, FIELD_INTEGER ),
+	DEFINE_FIELD( CEnvSmoke, m_fFrameRate, FIELD_FLOAT ),
+	DEFINE_FIELD( CEnvSmoke, m_iTime, FIELD_INTEGER ),
+	DEFINE_FIELD( CEnvSmoke, m_iEndTime, FIELD_TIME ),
+};
+
+IMPLEMENT_SAVERESTORE( CEnvSmoke, CBaseDelay );
+LINK_ENTITY_TO_CLASS( env_smoke, CEnvSmoke );
+
+
+void CEnvSmoke::KeyValue( KeyValueData *pkvd )
+{
+	if (FStrEq(pkvd->szKeyName, "m_iScale"))
+	{
+		m_iScale = atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "m_iFrameRate"))
+	{
+		m_fFrameRate = atof(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "m_iTime"))
+	{
+		m_iTime = atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else
+		CBaseDelay::KeyValue( pkvd );
+}
+
+
+
+void CEnvSmoke::Spawn( void )
+{
+	pev->solid = SOLID_NOT;
+	pev->effects = EF_NODRAW;
+}
+
+
+
+void CEnvSmoke::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
+{
+	m_iEndTime = gpGlobals->time + m_iTime;
+
+	SetThink( &CEnvSmoke::SmokeThink );
+	pev->nextthink = gpGlobals->time + 0.1;
+}
+
+
+void CEnvSmoke::SmokeThink( void )
+{
+	pev->nextthink = gpGlobals->time + 0.5;
+
+	if ( gpGlobals->time > m_iEndTime )
+		SetThink ( &CBaseEntity::SUB_Remove );
+
+	
+	MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, pev->origin );
+		WRITE_BYTE( TE_SMOKE );
+		WRITE_COORD( pev->origin.x );
+		WRITE_COORD( pev->origin.y );
+		WRITE_COORD( pev->origin.z );
+		WRITE_SHORT( g_sModelIndexSmoke );
+		WRITE_BYTE( m_iScale * 10 ); // scale * 10
+		WRITE_BYTE( RANDOM_FLOAT ( m_fFrameRate + 5, m_fFrameRate ) ); // framerate
+	MESSAGE_END();
+
+}
+
+
+
+
+//============================================================
+// EnvSmokeCreate
+//
+// fonction globale
+// permet d'
+
+
+
+void EnvSmokeCreate( const Vector &center, int m_iScale, float m_fFrameRate, int m_iTime, int m_iEndTime )
+{
+
+	// imite un keyvalue
+
+	KeyValueData	kvd;
+	char			buf[128];
+
+	CBaseEntity *pSmoke = CBaseEntity::Create( "env_smoke", center, Vector(0,0,0), NULL );
+
+	sprintf( buf, "%3d", m_iScale );
+	kvd.szKeyName = "m_iScale";
+	kvd.szValue = buf;
+	pSmoke->KeyValue( &kvd );
+
+	sprintf( buf, "%3d", m_fFrameRate );
+	kvd.szKeyName = "m_fFrameRate";
+	kvd.szValue = buf;
+	pSmoke->KeyValue( &kvd );
+
+	sprintf( buf, "%3d", m_iTime );
+	kvd.szKeyName = "m_iTime";
+	kvd.szValue = buf;
+	pSmoke->KeyValue( &kvd );
+
+	sprintf( buf, "%3d", m_iEndTime );
+	kvd.szKeyName = "m_iEndTime";
+	kvd.szValue = buf;
+	pSmoke->KeyValue( &kvd );
+
+	// active la fum
+
+	pSmoke->Spawn();
+	pSmoke->Use( NULL, NULL, USE_TOGGLE, 0 );
+}
+
+
+
+
+
+
+
+
+
+

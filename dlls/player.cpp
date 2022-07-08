@@ -37,6 +37,14 @@
 #include "pm_shared.h"
 #include "hltv.h"
 
+// modif de Julien
+#include "radiomsg.h"
+
+extern int	g_bFogUpdate;
+int			g_testmode;
+
+
+
 // #define DUCKFIX
 
 extern DLL_GLOBAL ULONG g_ulModelIndexPlayer;
@@ -119,6 +127,28 @@ TYPEDESCRIPTION	CBasePlayer::m_playerSaveData[] =
 	DEFINE_FIELD( CBasePlayer, m_iHideHUD, FIELD_INTEGER ),
 	DEFINE_FIELD( CBasePlayer, m_iFOV, FIELD_INTEGER ),
 
+	//modif de Julien
+	DEFINE_FIELD( CBasePlayer, m_flNextWade, FIELD_FLOAT ),
+	DEFINE_FIELD( CBasePlayer, bNvgOn, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CBasePlayer, bNvgUpdate, FIELD_BOOLEAN ),
+
+	DEFINE_FIELD( CBasePlayer, m_flArmor[0], FIELD_FLOAT ),
+	DEFINE_FIELD( CBasePlayer, m_flArmor[1], FIELD_FLOAT ),
+	DEFINE_FIELD( CBasePlayer, m_flArmor[2], FIELD_FLOAT ),
+	DEFINE_FIELD( CBasePlayer, m_flArmor[3], FIELD_FLOAT ),
+	DEFINE_FIELD( CBasePlayer, m_flArmor[4], FIELD_FLOAT ),
+	DEFINE_FIELD( CBasePlayer, m_flArmor[5], FIELD_FLOAT ),
+	DEFINE_FIELD( CBasePlayer, m_flArmor[6], FIELD_FLOAT ),
+
+	DEFINE_FIELD( CBasePlayer, m_iMedkit, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_iBattery, FIELD_INTEGER ),
+
+	DEFINE_FIELD( CBasePlayer, m_iDrivingTank, FIELD_BOOLEAN ),
+
+	DEFINE_FIELD( CBasePlayer, m_bitsTextAmmo, FIELD_FLOAT ),
+	DEFINE_ARRAY( CBasePlayer, m_iszAmmoSentence, FIELD_STRING, 32 ),
+
+
 	//DEFINE_FIELD( CBasePlayer, m_fDeadTime, FIELD_FLOAT ), // only used in multiplayer games
 	//DEFINE_FIELD( CBasePlayer, m_fGameHUDInitialized, FIELD_INTEGER ), // only used in multiplayer games
 	//DEFINE_FIELD( CBasePlayer, m_flStopExtraSoundTime, FIELD_TIME ),
@@ -188,6 +218,24 @@ int gmsgBhopcap = 0;
 int gmsgStatusText = 0;
 int gmsgStatusValue = 0;
 
+// modifs de Julien
+int gmsgRpgViseur = 0;
+int gmsgRpgMenu = 0;
+int gmsgVGUIordi = 0;
+int gmsgClientDecal = 0;
+int gmsgSwitchNVG = 0;
+int gmsgInfosNVG = 0;
+int gmsgFog = 0;
+int gmsgLFlammes = 0;
+int gmsgBriquetSwitch = 0;
+int gmsgMedkit = 0;
+int gmsgLensFlare = 0;
+int gmsgTankView = 0;
+int gmsgRadioMsg = 0;
+int gmsgKeypad = 0;
+int gmsgConveyor = 0;
+
+
 void LinkUserMessages( void )
 {
 	// Already taken care of?
@@ -201,7 +249,7 @@ void LinkUserMessages( void )
 	gmsgGeigerRange = REG_USER_MSG( "Geiger", 1 );
 	gmsgFlashlight = REG_USER_MSG( "Flashlight", 2 );
 	gmsgFlashBattery = REG_USER_MSG( "FlashBat", 1 );
-	gmsgHealth = REG_USER_MSG( "Health", 1 );
+	/*gmsgHealth = REG_USER_MSG( "Health", 1 );
 	gmsgDamage = REG_USER_MSG( "Damage", 12 );
 	gmsgBattery = REG_USER_MSG( "Battery", 2);
 	gmsgTrain = REG_USER_MSG( "Train", 1 );
@@ -211,9 +259,19 @@ void LinkUserMessages( void )
 	gmsgTextMsg = REG_USER_MSG( "TextMsg", -1 );
 	gmsgWeaponList = REG_USER_MSG( "WeaponList", -1 );
 	gmsgResetHUD = REG_USER_MSG( "ResetHUD", 1 );		// called every respawn
-	gmsgInitHUD = REG_USER_MSG( "InitHUD", 0 );		// called every time a new player joins the server
+	gmsgInitHUD = REG_USER_MSG( "InitHUD", 0 );		// called every time a new player joins the server*/
+	gmsgHealth		= REG_USER_MSG( "Health", 1 );
+	gmsgDamage		= REG_USER_MSG( "Damage", 12 );
+	gmsgBattery		= REG_USER_MSG( "Battery", -1);
+	gmsgTrain		= REG_USER_MSG( "Train", 1);
+	gmsgHudText		= REG_USER_MSG( "HudText", -1 );
+	gmsgSayText		= REG_USER_MSG( "SayText", -1 );
+	gmsgTextMsg		= REG_USER_MSG( "TextMsg", -1 );
+	gmsgWeaponList	= REG_USER_MSG("WeaponList", -1);
+	gmsgResetHUD	= REG_USER_MSG("ResetHUD", 1);		// called every respawn
+	gmsgInitHUD		= REG_USER_MSG("InitHUD", 0 );		// called every time a new player joins the server
 	gmsgShowGameTitle = REG_USER_MSG( "GameTitle", 1 );
-	gmsgDeathMsg = REG_USER_MSG( "DeathMsg", -1 );
+	/*gmsgDeathMsg = REG_USER_MSG( "DeathMsg", -1 );
 	gmsgScoreInfo = REG_USER_MSG( "ScoreInfo", 9 );
 	gmsgTeamInfo = REG_USER_MSG( "TeamInfo", -1 );  // sets the name of a player's team
 	gmsgTeamScore = REG_USER_MSG( "TeamScore", -1 );  // sets the score of a team on the scoreboard
@@ -228,7 +286,42 @@ void LinkUserMessages( void )
 	gmsgShowMenu = REG_USER_MSG( "ShowMenu", -1 );
 	gmsgShake = REG_USER_MSG( "ScreenShake", sizeof(ScreenShake) );
 	gmsgFade = REG_USER_MSG( "ScreenFade", sizeof(ScreenFade) );
-	gmsgAmmoX = REG_USER_MSG( "AmmoX", 2 );
+	gmsgAmmoX = REG_USER_MSG( "AmmoX", 2 );*/
+	gmsgDeathMsg	= REG_USER_MSG( "DeathMsg", -1 );
+	gmsgScoreInfo	= REG_USER_MSG( "ScoreInfo", 5 );
+	gmsgTeamInfo	= REG_USER_MSG( "TeamInfo", -1 );  // sets the name of a player's team
+	gmsgTeamScore	= REG_USER_MSG( "TeamScore", -1 );  // sets the score of a team on the scoreboard
+	gmsgGameMode	= REG_USER_MSG( "GameMode", 1 );
+	gmsgMOTD		= REG_USER_MSG( "MOTD", -1 );
+	gmsgAmmoPickup	= REG_USER_MSG( "AmmoPickup", 2 );
+	gmsgWeapPickup	= REG_USER_MSG( "WeapPickup", 1 );
+	gmsgItemPickup	= REG_USER_MSG( "ItemPickup", -1 );
+	gmsgHideWeapon	= REG_USER_MSG( "HideWeapon", 1 );
+	gmsgSetFOV		= REG_USER_MSG( "SetFOV", 1 );
+	gmsgShowMenu	= REG_USER_MSG( "ShowMenu", -1 );
+	gmsgShake		= REG_USER_MSG( "ScreenShake", sizeof(ScreenShake));
+	gmsgFade		= REG_USER_MSG( "ScreenFade", sizeof(ScreenFade));
+	gmsgAmmoX		= REG_USER_MSG( "AmmoX", 2);
+
+	// modifs de Julien
+
+	gmsgRpgViseur	= REG_USER_MSG( "RpgViseur",	1 );
+	gmsgRpgMenu		= REG_USER_MSG( "MenuRpg",		4 );
+	gmsgVGUIordi	= REG_USER_MSG( "VGUIordi",		3 );
+	gmsgClientDecal = REG_USER_MSG( "ClientDecal",	-1);
+	gmsgSwitchNVG	= REG_USER_MSG( "SwitchNVG",	-1);
+	gmsgInfosNVG	= REG_USER_MSG( "InfosNVG",		-1);
+	gmsgFog			= REG_USER_MSG( "Fog",			-1);
+	gmsgLFlammes	= REG_USER_MSG( "LFlammes",		-1);
+	gmsgBriquetSwitch = REG_USER_MSG( "Briquet",	-1);
+	gmsgMedkit		= REG_USER_MSG( "Medkit",		-1);
+	gmsgLensFlare	= REG_USER_MSG( "LensFlare",	-1);
+	gmsgTankView	= REG_USER_MSG( "TankView",		-1);
+	gmsgRadioMsg	= REG_USER_MSG( "RadioMsg",		-1);
+	gmsgKeypad		= REG_USER_MSG( "Keypad",		-1);
+	gmsgConveyor	= REG_USER_MSG( "Conveyor",		-1);
+	//fin de modifs de Julien
+
 	gmsgTeamNames = REG_USER_MSG( "TeamNames", -1 );
 	gmsgBhopcap = REG_USER_MSG( "Bhopcap", 1 );
 
@@ -282,7 +375,7 @@ static void ThrowGib( entvars_t *pev, char *szGibModel, float flDamage )
 	pevNew->avelocity.x = RANDOM_FLOAT( 0, 600 );
 	pevNew->avelocity.y = RANDOM_FLOAT( 0, 600 );
 	pevNew->avelocity.z = RANDOM_FLOAT( 0, 600 );
-	CHANGE_METHOD( ENT( pevNew ), em_think, SUB_Remove );
+	CHANGE_METHOD( ENT( pevNew ), em_think, &CBaseEntity::SUB_Remove );
 	pevNew->ltime = gpGlobals->time;
 	pevNew->nextthink = gpGlobals->time + RANDOM_FLOAT( 10, 20 );
 	pevNew->frame = 0;
@@ -389,33 +482,252 @@ void CBasePlayer::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector ve
 		switch( ptr->iHitgroup )
 		{
 		case HITGROUP_GENERIC:
+			m_iLastHitGroups = ARMOR_GLOBAL;	//modifs de Julien
 			break;
 		case HITGROUP_HEAD:
+			m_iLastHitGroups |= ARMOR_HEAD;
 			flDamage *= gSkillData.plrHead;
 			break;
 		case HITGROUP_CHEST:
+			m_iLastHitGroups |= ARMOR_CHEST;
 			flDamage *= gSkillData.plrChest;
 			break;
 		case HITGROUP_STOMACH:
+			m_iLastHitGroups |= ARMOR_STOMACH;
 			flDamage *= gSkillData.plrStomach;
 			break;
 		case HITGROUP_LEFTARM:
+			m_iLastHitGroups |= ARMOR_ARM_L;
+			flDamage *= gSkillData.plrArm;
+			break;
 		case HITGROUP_RIGHTARM:
+			m_iLastHitGroups |= ARMOR_ARM_R;
 			flDamage *= gSkillData.plrArm;
 			break;
 		case HITGROUP_LEFTLEG:
+			m_iLastHitGroups |= ARMOR_LEG_L;
+			flDamage *= gSkillData.plrLeg;
+			break;
 		case HITGROUP_RIGHTLEG:
+			m_iLastHitGroups |= ARMOR_LEG_R;
 			flDamage *= gSkillData.plrLeg;
 			break;
 		default:
 			break;
 		}
+		// modif de Julien
+
+		if ( bitsDamageType & DMG_BLAST )
+			m_iLastHitGroups = ARMOR_GLOBAL;
+
 
 		SpawnBlood( ptr->vecEndPos, BloodColor(), flDamage );// a little surface blood.
 		TraceBleed( flDamage, vecDir, ptr, bitsDamageType );
 		AddMultiDamage( pevAttacker, this, flDamage, bitsDamageType );
 	}
 }
+
+// /give item_battery
+//---------------------------------------------
+//
+// Set Armor - localisation des dommages
+//----------------------------------------------
+
+float	CBasePlayer :: SetArmor	( float flValue, int repartition )
+{
+	// valeur positive pour ajouter, n
+	// retourne la quantit
+
+	if ( flValue >= 0 )
+	{
+		// ajoute de la vie
+
+		float	flDistribue = 0;				// quantit
+		int		iLibres		= MAX_ARMOR_GROUP;	// zones non encore pleines
+
+		// boucle tant que tout n'est pas r
+
+		int antiplantage = 0;
+
+		while ( flDistribue < flValue && iLibres > 0 )
+		{
+			// bugbug
+			antiplantage ++;
+			if ( antiplantage > 100 )
+			{
+				ALERT ( at_console, "\n\nplantage!!\n\n" );
+				break;
+			}
+
+			// d
+
+			int imin = 0;
+			float flmin = (float)MAX_MEMBER_ARMOR;
+
+			for ( int i=0; i<MAX_ARMOR_GROUP; i++ )
+			{
+				// si le membre n'est pas s
+				if ( repartition != 0 && !(repartition & (1<<i) ) )
+					continue;
+
+				if ( m_flArmor [i] < flmin )
+				{
+					imin = i;
+					flmin = m_flArmor [i];
+				}
+			}
+
+			iLibres = 0;		// r
+
+			for ( int j=0; j<MAX_ARMOR_GROUP; j++ )
+			{
+				// si le membre n'est pas s
+				if ( repartition != 0 && !(repartition & (1<<j) ) )
+					continue;
+
+				// recharge le membre
+
+				if ( m_flArmor [j] == flmin && flDistribue < flValue )
+				{
+					float flDonne = Q_min ( 1, (flValue - flDistribue) );
+					flDonne = Q_min ( flDonne, (float)MAX_MEMBER_ARMOR - m_flArmor [j] );
+
+					// donne !
+
+					m_flArmor [j] += flDonne;
+					flDistribue += flDonne;
+				}
+
+				// compte combien ne sont pas encore pleins
+
+				if ( m_flArmor [j] < (float)MAX_MEMBER_ARMOR )
+					iLibres ++;
+			}
+		}
+
+		// actualise armorvalue avec la somme de la combinaison des membres
+
+		float flsomme = 0;
+		for ( int k = 0; k < MAX_ARMOR_GROUP; k++ )
+			flsomme += m_flArmor [k];
+
+		pev->armorvalue = flsomme;
+
+		// notifie le client de la modification
+
+		m_iClientBattery = -1;
+
+		return 0;
+	}
+	else
+	{
+
+		// retire la vie
+
+		short sGroupesTouches [MAX_ARMOR_GROUP];
+		short sNombreTouches = 0;
+
+		// localisation des d
+
+		if ( m_iLastHitGroups == ARMOR_GLOBAL )
+		{
+			for ( int z=0; z<MAX_ARMOR_GROUP; z++ )
+				sGroupesTouches [z] = z;
+
+			sNombreTouches = 7;
+		}
+
+		else
+		{
+			if ( m_iLastHitGroups & ARMOR_HEAD )
+			{
+				sGroupesTouches [sNombreTouches] = 0;
+				sNombreTouches ++;
+			}
+			if ( m_iLastHitGroups & ARMOR_CHEST )
+			{
+				sGroupesTouches [sNombreTouches] = 1;
+				sNombreTouches ++;
+			}
+			if ( m_iLastHitGroups & ARMOR_STOMACH )
+			{
+				sGroupesTouches [sNombreTouches] = 2;
+				sNombreTouches ++;
+			}
+			if ( m_iLastHitGroups & ARMOR_ARM_L )
+			{
+				sGroupesTouches [sNombreTouches] = 4;
+				sNombreTouches ++;
+			}
+			if ( m_iLastHitGroups & ARMOR_ARM_R )
+			{
+				sGroupesTouches [sNombreTouches] = 3;
+				sNombreTouches ++;
+			}
+			if ( m_iLastHitGroups & ARMOR_LEG_L )
+			{
+				sGroupesTouches [sNombreTouches] = 6;
+				sNombreTouches ++;
+			}
+			if ( m_iLastHitGroups & ARMOR_LEG_R )
+			{
+				sGroupesTouches [sNombreTouches] = 5;
+				sNombreTouches ++;
+			}
+		}
+
+		// inflige les d
+
+		float flInflige = 0;
+		float flMoyenne = flValue / sNombreTouches;
+
+		for ( int i=0; i<sNombreTouches; i++ )
+		{
+			float flDegats = Q_min ( m_flArmor [sGroupesTouches[i]], -flMoyenne );	// flValue n
+
+			m_flArmor [sGroupesTouches[i]] -= flDegats;
+			flInflige += flDegats;
+		}
+
+		// actualise armorvalue avec la somme de la combinaison des membres
+
+		float flsomme = 0;
+		for ( int k = 0; k < MAX_ARMOR_GROUP; k++ )
+			flsomme += m_flArmor [k];
+
+		pev->armorvalue = flsomme;
+
+		// r
+		m_iLastHitGroups = ARMOR_GLOBAL;
+
+		// avertit le client du changement
+		m_iClientBattery = -1;
+
+		// retourne les dommages absorb
+		return flInflige;
+	}
+}
+
+
+/*
+
+  #define ARMOR_GLOBAL		0
+#define ARMOR_HEAD			1
+#define ARMOR_CHEST			2
+#define ARMOR_STOMACH		4
+#define ARMOR_ARM_L			6
+#define ARMOR_ARM_R			8
+#define ARMOR_LEG_L			16
+#define ARMOR_LEG_R			32
+*/
+
+
+
+//---------------------------------------------
+//
+// TakeDamage
+//----------------------------------------------
+
 
 /*
 	Take some damage.  
@@ -462,6 +774,7 @@ int CBasePlayer::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 		return 0;
 	}
 
+
 	// keep track of amount of damage last sustained
 	m_lastDamageAmount = (int)flDamage;
 
@@ -474,6 +787,8 @@ int CBasePlayer::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 
 		flArmor = ( flDamage - flNew ) * flBonus;
 
+		//modif de Julien
+		/*
 		// Does this use more armor than we have?
 		if( flArmor > pev->armorvalue )
 		{
@@ -484,6 +799,30 @@ int CBasePlayer::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 		}
 		else
 			pev->armorvalue -= flArmor;
+
+		*/
+		/*
+			flArmor est la quantit
+			la totalit
+			SetArmor retourne la quantit
+			des d
+		*/
+
+		// applique les dommages 
+		float flDommagesAppliques = SetArmor ( -flArmor );
+
+		// totalit
+
+		if ( flArmor > flDommagesAppliques )
+		{
+			// clacule le trop plein en trouvant l'
+
+			flDommagesAppliques *= (1/flBonus);
+			flNew = flDamage - flDommagesAppliques;
+		}
+
+		// fin modif
+
 
 		flDamage = flNew;
 	}
@@ -650,6 +989,7 @@ int CBasePlayer::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 		else
 			SetSuitUpdate( "!HEV_HLTH1", FALSE, SUIT_NEXT_IN_10MIN );	// health dropping
 	}
+
 
 	return fTookDamage;
 }
@@ -1237,6 +1577,14 @@ void CBasePlayer::WaterMove()
 		SetBits( pev->flags, FL_INWATER );
 		pev->dmgtime = 0;
 	}
+
+	//modif de Julien
+	if ( pev->waterlevel == 1 && m_flNextWade < gpGlobals->time )
+	{
+		UTIL_WaterWave ( pev->origin );
+		m_flNextWade = gpGlobals->time + 1;
+	}
+
 }
 
 // TRUE if the player is attached to a ladder
@@ -1940,6 +2288,7 @@ void CBasePlayer::PreThink( void )
 	{
 		pev->velocity = g_vecZero;
 	}
+
 }
 /* Time based Damage works as follows: 
 	1) There are several types of timebased damage:
@@ -2600,6 +2949,14 @@ pt_end:
 	else
 		pev->angles = m_vecLastViewAngles;
 
+	//modif de Julien - annuler le zoom si le joueur bouge brusquement
+	if ( pev->velocity.Length() > 128 )
+		m_iFOV = 90;
+
+	//modif de Julien - update la nvg
+	ThinkNVG ();
+
+
 	// Track button info so we can detect 'pressed' and 'released' buttons next frame
 	m_afButtonLast = pev->button;
 
@@ -2794,6 +3151,24 @@ void CBasePlayer::Spawn( void )
 	pev->classname = MAKE_STRING( "player" );
 	pev->health = 100;
 	pev->armorvalue = 0;
+
+	// modif de Julien
+
+	for ( int j=0; j<MAX_ARMOR_GROUP; j++ )
+		m_flArmor [j] = 0;
+
+	m_iDrivingTank		= FALSE;
+
+	m_bitsTextAmmo		= 0;
+
+	m_iMedkit = 0;
+	m_iBattery = 0;
+	m_iClientHudMedkit = -1;
+	m_iClientHudBattery = -1;
+
+
+	//-----
+
 	pev->takedamage = DAMAGE_AIM;
 	pev->solid = SOLID_SLIDEBOX;
 	pev->movetype = MOVETYPE_WALK;
@@ -2880,6 +3255,7 @@ void CBasePlayer::Spawn( void )
 	m_flNextChatTime = gpGlobals->time;
 
 	g_pGameRules->PlayerSpawn( this );
+
 }
 
 void CBasePlayer::Precache( void )
@@ -2899,6 +3275,7 @@ void CBasePlayer::Precache( void )
 			ALERT( at_console, "**Graph Pointers Set!\n" );
 		}
 	}
+
 
 	// SOUNDS / MODELS ARE PRECACHED in ClientPrecache() (game specific)
 	// because they need to precache before any clients have connected
@@ -2925,6 +3302,36 @@ void CBasePlayer::Precache( void )
 
 	if( gInitHUD )
 		m_fInitHUD = TRUE;
+
+
+	// modif de Julien
+
+	m_iszAmmoSentence [TA_SUIT] = GetRadiomsgText (MAKE_STRING("GIVESUIT") );
+	m_iszAmmoSentence [TA_MEDKIT] = GetRadiomsgText (MAKE_STRING("GIVEMEDKIT") );
+	m_iszAmmoSentence [TA_BATTERY] = GetRadiomsgText (MAKE_STRING("GIVEBATTERY") );
+	m_iszAmmoSentence [TA_CROWBAR] = GetRadiomsgText (MAKE_STRING("GIVECROWBAR") );
+	m_iszAmmoSentence [TA_BRIQUET] = GetRadiomsgText (MAKE_STRING("GIVEBRIQUET") );
+	m_iszAmmoSentence [TA_HANDGUN] = GetRadiomsgText (MAKE_STRING("GIVE9MMANDGUN") );
+	m_iszAmmoSentence [TA_BERETTA] = GetRadiomsgText (MAKE_STRING("GIVEBERETTA") );
+	m_iszAmmoSentence [TA_IRGUN] = GetRadiomsgText (MAKE_STRING("GIVEIRGUN") );
+	m_iszAmmoSentence [TA_MP5] = GetRadiomsgText (MAKE_STRING("GIVE9MMAR") );
+	m_iszAmmoSentence [TA_SHOTGUN] = GetRadiomsgText (MAKE_STRING("GIVESHOTGUN") );
+	m_iszAmmoSentence [TA_M16] = GetRadiomsgText (MAKE_STRING("GIVEM16") );
+	m_iszAmmoSentence [TA_SNIPER] = GetRadiomsgText (MAKE_STRING("GIVESNIPER") );
+	m_iszAmmoSentence [TA_RPG] = GetRadiomsgText (MAKE_STRING("GIVERPG") );
+	m_iszAmmoSentence [TA_ELECTROROCKET] = GetRadiomsgText (MAKE_STRING("GIVEELECTROROCKET") );
+	m_iszAmmoSentence [TA_NUCLEARROCKET] = GetRadiomsgText (MAKE_STRING("GIVENUCLEARROCKET") );
+	m_iszAmmoSentence [TA_SUPERGUN] = GetRadiomsgText (MAKE_STRING("GIVESUPERGUN") );
+	m_iszAmmoSentence [TA_LFLAMMES] = GetRadiomsgText (MAKE_STRING("GIVELFLAMMES") );
+	m_iszAmmoSentence [TA_GRENADE] = GetRadiomsgText (MAKE_STRING("GIVEGRENADE") );
+	m_iszAmmoSentence [TA_FRAG] = GetRadiomsgText (MAKE_STRING("GIVEFRAG") );
+	m_iszAmmoSentence [TA_SATCHEL] = GetRadiomsgText (MAKE_STRING("GIVESATCHEL") );
+	m_iszAmmoSentence [TA_TRIPMINE] = GetRadiomsgText (MAKE_STRING("GIVETRIPMINE") );
+
+	// modif de Julien
+	UTIL_PrecacheOther ( "trigger_radio_message" );
+
+
 
 	pev->fov = m_iFOV;	// Vit_amiN: restore the FOV on level change or map/saved game load
 }
@@ -2970,6 +3377,14 @@ int CBasePlayer::Restore( CRestore &restore )
 
 	// Copied from spawn() for now
 	m_bloodColor = BLOOD_COLOR_RED;
+
+	//-------------------------------------
+	//modif de Julien - reset fov
+	m_iFOV = 90;
+	bNvgUpdate = 1;	// force l'envoi des infos au client
+
+	//-------------------------------------
+
 
 	g_ulModelIndexPlayer = pev->modelindex;
 
@@ -3345,6 +3760,11 @@ void CBasePlayer::ForceClientDllUpdate( void )
 
 
 
+	// modif de Julien
+
+	m_iClientHudMedkit = -1;
+	m_iClientHudBattery = -1;
+
 	// Now force all the necessary messages
 	//  to be sent.
 	UpdateClientData();
@@ -3392,13 +3812,20 @@ void CBasePlayer::ImpulseCommands()
 		break;
 	case 100:
         // temporary flashlight for level designers
-		if( FlashlightIsOn() )
+		if ( m_pActiveItem == NULL )
+			break;
+
+	        if ( (FClassnameIs(m_pActiveItem->pev, "weapon_briquet")) /*FlashlightIsOn()*/ )
 		{
-			FlashlightTurnOff();
+			SelectLastItem ();
+		//	FlashlightTurnOff();
 		}
 		else 
 		{
-			FlashlightTurnOn();
+			if ( pev->weapons & (1<<WEAPON_SUIT))
+				SelectItem ( "weapon_briquet" );
+
+			//	FlashlightTurnOn();
 		}
 		break;
 	case 201:
@@ -3439,6 +3866,13 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		return;
 	}
 
+	// modif de Julien
+
+	if ( g_testmode == 0 )
+	{
+		return;
+	}
+
 	CBaseEntity *pEntity;
 	TraceResult tr;
 
@@ -3458,32 +3892,65 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		break;
 	case 101:
 		gEvilImpulse101 = TRUE;
+
+// items
 		GiveNamedItem( "item_suit" );
 		GiveNamedItem( "item_battery" );
-		GiveNamedItem( "weapon_crowbar" );
-		GiveNamedItem( "weapon_9mmhandgun" );
+		GiveNamedItem( "item_healthkit" );
+
+// munitions
+// 2
 		GiveNamedItem( "ammo_9mmclip" );
-		GiveNamedItem( "weapon_shotgun" );
-		GiveNamedItem( "ammo_buckshot" );
-		GiveNamedItem( "weapon_9mmAR" );
-		GiveNamedItem( "ammo_9mmAR" );
-		GiveNamedItem( "ammo_ARgrenades" );
-		GiveNamedItem( "weapon_handgrenade" );
-		GiveNamedItem( "weapon_tripmine" );
-#if !OEM_BUILD
-		GiveNamedItem( "weapon_357" );
 		GiveNamedItem( "ammo_357" );
-		GiveNamedItem( "weapon_crossbow" );
-		GiveNamedItem( "ammo_crossbow" );
-		GiveNamedItem( "weapon_egon" );
-		GiveNamedItem( "weapon_gauss" );
-		GiveNamedItem( "ammo_gaussclip" );
-		GiveNamedItem( "weapon_rpg" );
+	        GiveNamedItem( "ammo_irgun");
+// 3
+ 		GiveNamedItem( "ammo_9mmAR" );
+ 		GiveNamedItem( "ammo_ARgrenades" );
+		GiveNamedItem( "ammo_buckshot" );
+		GiveNamedItem( "ammo_m16");
+// 4
 		GiveNamedItem( "ammo_rpgclip" );
+		GiveNamedItem( "ammo_rpgelectroclip" );
+		GiveNamedItem( "ammo_rpgnuclearclip" );
+		GiveNamedItem( "ammo_fsniper");
+		GiveNamedItem( "ammo_supergun");
+		GiveNamedItem( "ammo_lflammes");
+
+// armes
+// 1
+		GiveNamedItem( "weapon_crowbar" );
+		GiveNamedItem( "weapon_briquet" );
+// 2
+		GiveNamedItem( "weapon_9mmhandgun" );
+		GiveNamedItem( "weapon_357" );
+		GiveNamedItem( "weapon_irgun" );
+// 3
+		GiveNamedItem( "weapon_shotgun" );
+		GiveNamedItem( "weapon_m16" );
+// 4
+		GiveNamedItem( "weapon_rpg" );
+		GiveNamedItem( "weapon_fsniper" );
+		GiveNamedItem( "weapon_supergun" );
+		GiveNamedItem( "weapon_lflammes" );
+// 5
+		GiveNamedItem( "weapon_handgrenade" );
+		GiveNamedItem( "weapon_fgrenade" );
 		GiveNamedItem( "weapon_satchel" );
-		GiveNamedItem( "weapon_snark" );
-		GiveNamedItem( "weapon_hornetgun" );
-#endif
+		GiveNamedItem( "weapon_tripmine" );
+
+		GiveNamedItem( "weapon_9mmAR" );
+
+		
+
+//		GiveNamedItem( "weapon_crossbow" );
+//		GiveNamedItem( "ammo_crossbow" );
+//		GiveNamedItem( "weapon_egon" );
+//		GiveNamedItem( "weapon_gauss" );
+//		GiveNamedItem( "ammo_gaussclip" );
+//		GiveNamedItem( "weapon_snark" );
+//		GiveNamedItem( "weapon_hornetgun" );
+
+
 		gEvilImpulse101 = FALSE;
 		break;
 	case 102:
@@ -3950,17 +4417,51 @@ void CBasePlayer::UpdateClientData( void )
 		m_iClientHealth = (int)pev->health;
 	}
 
-	if( (int)pev->armorvalue != m_iClientBattery )
+	if (pev->armorvalue != m_iClientBattery)
 	{
-		m_iClientBattery = (int)pev->armorvalue;
+		m_iClientBattery = pev->armorvalue;
 
 		ASSERT( gmsgBattery > 0 );
-
 		// send "health" update message
+
+		//modif de Julien
+
 		MESSAGE_BEGIN( MSG_ONE, gmsgBattery, NULL, pev );
-			WRITE_SHORT( (int)pev->armorvalue );
+
+			WRITE_SHORT( (int)pev->armorvalue);
+
+			for ( int z=0; z<MAX_ARMOR_GROUP; z++ )
+				WRITE_COORD ( m_flArmor[z] );
+
 		MESSAGE_END();
 	}
+
+	// modif de Julien
+
+	if ( m_iMedkit != m_iClientHudMedkit )
+	{
+		m_iClientHudMedkit = m_iMedkit;
+		
+		MESSAGE_BEGIN( MSG_ONE, gmsgMedkit, NULL, pev );
+
+			WRITE_BYTE( m_iMedkit );
+			WRITE_BYTE( m_iBattery );
+
+		MESSAGE_END();
+	}
+
+	if ( m_iBattery != m_iClientHudBattery )
+	{
+		m_iClientHudBattery = m_iBattery;
+
+		MESSAGE_BEGIN( MSG_ONE, gmsgMedkit, NULL, pev );
+
+			WRITE_BYTE( m_iMedkit );
+			WRITE_BYTE( m_iBattery );
+
+		MESSAGE_END();
+
+	} //fin de modif de Julien
 
 	if( pev->dmg_take || pev->dmg_save || m_bitsHUDDamage != m_bitsDamageType )
 	{
@@ -4100,6 +4601,44 @@ void CBasePlayer::UpdateClientData( void )
 	// Cache and client weapon change
 	m_pClientActiveItem = m_pActiveItem;
 	m_iClientFOV = m_iFOV;
+
+	// modif de Julien - update nvg state ...
+
+	if ( bNvgUpdate == 1 )
+	{
+		if ( bNvgOn == 1 )
+		{
+			NVGTurnOn ();
+		}
+		else
+			NVGTurnOff ();
+
+		bNvgUpdate = 0;
+
+		// ferme le hud rpg ( ensuite rouvert si le rpg est actif )
+
+		int Entier = ( 1 << 7 );		// menu_close
+
+		MESSAGE_BEGIN( MSG_ONE, gmsgRpgMenu, NULL, pev );
+			WRITE_BYTE( Entier );
+			WRITE_BYTE( 0 );		// munitions, obsol
+			WRITE_BYTE( 0 );
+			WRITE_BYTE( 0 );
+		MESSAGE_END();
+
+	}
+
+	// modif de Julien - update fog
+
+	if ( g_bFogUpdate == 1 )
+	{
+		g_bFogUpdate = 0;
+
+		CBaseEntity *pFog = NULL;
+		pFog = UTIL_FindEntityByClassname( NULL, "trigger_fog" );
+		pFog->Use ( this, this, USE_ON, 18686 );
+	}
+	//fin de modif de Julien
 
 	// Update Status Bar
 	if( m_flNextSBarUpdateTime < gpGlobals->time )
@@ -4692,6 +5231,62 @@ void CStripWeapons::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE
 		pPlayer->RemoveAllItems( FALSE );
 }
 
+//------------------------------------------------------------
+// modif de Julien
+
+// CGiveWeapon
+
+class CGiveWeapon : public CPointEntity
+{
+public:
+	void	Use			( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+	void	KeyValue	( KeyValueData *pkvd );
+
+	virtual int		Save( CSave &save );
+	virtual int		Restore( CRestore &restore );
+	static	TYPEDESCRIPTION m_SaveData[];
+
+	int		m_iszWeapon;
+};
+
+LINK_ENTITY_TO_CLASS( player_weapongive, CGiveWeapon );
+
+TYPEDESCRIPTION	CGiveWeapon::m_SaveData[] = 
+{
+	DEFINE_FIELD( CGiveWeapon, m_iszWeapon, FIELD_STRING ),
+};
+
+IMPLEMENT_SAVERESTORE( CGiveWeapon, CPointEntity );
+
+
+void CGiveWeapon :: KeyValue( KeyValueData *pkvd )
+{
+	if (FStrEq(pkvd->szKeyName, "weaponname"))
+	{
+		m_iszWeapon = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else
+	{
+		CPointEntity :: KeyValue( pkvd );
+	}
+}
+
+void CGiveWeapon :: Use ( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
+{
+	CBasePlayer *pPlayer = (CBasePlayer *)CBaseEntity::Instance( g_engfuncs.pfnPEntityOfEntIndex( 1 ) );
+
+	pPlayer->GiveNamedItem ( STRING(m_iszWeapon) );
+}
+
+
+
+
+//--------------------------------------------
+
+
+
+
 class CRevertSaved : public CPointEntity
 {
 public:
@@ -4817,3 +5412,259 @@ void CInfoIntermission::Think( void )
 }
 
 LINK_ENTITY_TO_CLASS( info_intermission, CInfoIntermission )
+ 
+
+
+//modif de Julien
+//=========================================
+//	pour les trigger_gaz
+//=========================================
+
+BOOL CBasePlayer::IsInGaz ( void )
+{
+
+	Vector vecPlayer = Center ();
+
+	CBaseEntity *pFind = NULL;
+	edict_t *pTrigger = NULL;
+	pTrigger = FIND_ENTITY_BY_CLASSNAME( NULL, "trigger_gaz" );
+
+	while ( !FNullEnt ( pTrigger ) )
+	{
+		pFind = CBaseEntity::Instance ( pTrigger );
+
+
+		if ( vecPlayer.x > pFind->pev->absmin.x && vecPlayer.x < pFind->pev->absmax.x &&
+			 vecPlayer.y > pFind->pev->absmin.y && vecPlayer.y < pFind->pev->absmax.y &&
+			 vecPlayer.z > pFind->pev->absmin.z && vecPlayer.z < pFind->pev->absmax.z )		// Player est ds le trigger
+		{
+			return TRUE;
+		}
+		else
+		{
+			pTrigger = FIND_ENTITY_BY_CLASSNAME( pTrigger, "trigger_gaz" );
+		}
+
+	}
+	return FALSE;
+}
+
+//modif de Julien
+//=====================================
+// pour afficher un VGUI
+//=====================================
+
+void CBasePlayer::ShowVGUIordiMenu(  int iparam1, int iparam2, int iparam3 )
+{
+	MESSAGE_BEGIN( MSG_ONE, gmsgVGUIordi, NULL, pev );
+	WRITE_BYTE( iparam1 );
+	WRITE_BYTE( iparam2 );
+	WRITE_BYTE( iparam3 );
+	MESSAGE_END();
+}
+
+
+//--------------------------------------------
+// mise 
+//--------------------------------------------
+
+void CBasePlayer :: ThinkNVG ( void )
+{
+	if ( bNvgOn == 0 )
+		return;
+
+	Vector vecSrc = Center();
+
+	// lumi
+
+	MESSAGE_BEGIN( MSG_ONE, SVC_TEMPENTITY, vecSrc, pev );
+		WRITE_BYTE( TE_DLIGHT );
+		WRITE_COORD( vecSrc.x ); // Position
+		WRITE_COORD( vecSrc.y );
+		WRITE_COORD( vecSrc.z );
+		WRITE_BYTE( 30 ); // Radius 
+		WRITE_BYTE( 10 ); // R
+		WRITE_BYTE( 100 ); // G
+		WRITE_BYTE( 10 ); // B
+		WRITE_BYTE( 1 ); // life
+		WRITE_BYTE( 1 ); // Decay
+	MESSAGE_END();
+
+	// ennemis visibles
+
+	CBaseEntity *pEntity = NULL;
+	int		pTargetEnt	[16];
+	Vector	pColorEnt	[16];
+	int		nument		= 0;
+	float	radius		= 512;
+
+
+	while ( (pEntity = UTIL_FindEntityInSphere( pEntity, vecSrc, radius )) != NULL && nument < 16 )
+	{
+		// seulement les monstres
+		if ( pEntity->MyMonsterPointer() == NULL || pEntity->IsPlayer() )
+			continue;
+
+		// angle de 2 * 30
+
+		UTIL_MakeVectors ( pev->v_angle );
+		Vector angPlayer = UTIL_VecToAngles ( gpGlobals->v_forward.Normalize() );		
+		Vector vecDir	= pEntity->Center() - vecSrc;
+		Vector angDir	= UTIL_VecToAngles ( vecDir.Normalize() );
+
+		float flDiffX	= UTIL_AngleDiff ( angDir.x, angPlayer.x );
+		float flDiffY	= UTIL_AngleDiff ( angDir.y, angPlayer.y );
+
+		if ( fabs(flDiffX) > 45 || fabs(flDiffY) > 45 )
+			continue;
+
+		Vector vecColor = pEntity->IsAlive() ? Vector ( 255, 0, 0 ) : Vector ( 190, 0, 190 );
+			
+		// affichage
+
+
+		pTargetEnt	[nument] = ENTINDEX ( pEntity->edict() );
+		pColorEnt	[nument] = vecColor;
+		nument ++;
+
+	}
+
+//	if ( nument == 0 )
+//		return;
+
+	//-----------------
+
+	MESSAGE_BEGIN( MSG_ONE, gmsgInfosNVG, NULL, pev );
+	WRITE_BYTE ( nument );		// nombre d'ennemis
+
+	if ( nument != 0 )
+	{	
+		for ( int i = 0; i < nument; i++ )
+		{
+			WRITE_BYTE ( pTargetEnt[i] );		// index
+			WRITE_COORD ( (int) pColorEnt[i].x );			// rgb
+			WRITE_COORD ( (int) pColorEnt[i].y );
+			WRITE_COORD ( (int) pColorEnt[i].z );
+		}
+	}
+
+	MESSAGE_END();
+
+	//------------------
+
+}
+
+
+void CBasePlayer :: NVGTurnOn	( void )
+{
+	bNvgOn = 1;
+
+	MESSAGE_BEGIN( MSG_ONE, gmsgSwitchNVG, NULL, pev );
+		WRITE_BYTE ( 1 );						// 0 == off, 1 == on
+	MESSAGE_END();
+
+	UTIL_ScreenFade( this, Vector(10, 128, 10 ), 1, 0.5, 128, FFADE_OUT | FFADE_STAYOUT);  
+}
+
+void CBasePlayer :: NVGTurnOff	( void )
+{
+	bNvgOn = 0;
+
+	MESSAGE_BEGIN( MSG_ONE, gmsgSwitchNVG, NULL, pev );
+		WRITE_BYTE ( 0 );						// 0 == off, 1 == on
+	MESSAGE_END();
+
+	if ( bNvgUpdate == 0 )
+		UTIL_ScreenFade( this, Vector( 10, 128, 10 ), 0.2, 0, 128, FFADE_IN);
+}
+
+
+//----------------------------------
+// gestion des soins
+//----------------------------------
+
+void	CBasePlayer :: UseMedkit ( void )
+{
+	if ( !IsAlive() )
+		return;
+
+	if ( m_iMedkit == 0 )
+		return;
+
+	if ( TakeHealth( gSkillData.healthkitCapacity, DMG_GENERIC ) )
+	{
+		m_iMedkit --;
+
+		EMIT_SOUND(ENT(pev), CHAN_ITEM, "items/smallmedkit2.wav", 1, ATTN_NORM);
+	}
+}
+
+
+void	CBasePlayer :: UseBattery ( int repartition )
+{
+	if ( m_iBattery == 0 )
+		return;
+
+	if ((pev->armorvalue < MAX_NORMAL_BATTERY) &&
+		(pev->weapons & (1<<WEAPON_SUIT)))
+	{
+		int pct;
+		char szcharge[64];
+
+		// modif de Julien
+
+		SetArmor ( gSkillData.batteryCapacity, repartition );
+
+		EMIT_SOUND(ENT(pev), CHAN_ITEM, "items/smallmedkit2.wav", 1, ATTN_NORM);
+
+		pct = (int)( (float)(pev->armorvalue * 100.0) * (1.0/MAX_NORMAL_BATTERY) + 0.5);
+		pct = (pct / 5);
+		if (pct > 0)
+			pct--;
+	
+		sprintf( szcharge,"!HEV_%1dP", pct );
+		SetSuitUpdate(szcharge, FALSE, SUIT_NEXT_IN_30SEC);
+
+		m_iBattery --;
+	}
+}
+
+
+
+
+//-------------------------------------------------------------------------
+// textes d'info pour armes, munitions, items ...
+//-------------------------------------------------------------------------
+
+
+void	CBasePlayer :: TextAmmo	( TEXT_AMMMO ta_text )
+{
+	if ( gEvilImpulse101 )
+		return;
+
+	if ( m_bitsTextAmmo & (1<<ta_text) )
+	{
+		// d
+		return;
+	}
+
+	else
+	{
+		m_bitsTextAmmo |= (1<<ta_text);
+
+		CRadiomsg *pRadio = GetClassPtr ( (CRadiomsg*)NULL );
+
+		pRadio->pev->solid = SOLID_NOT;
+		pRadio->pev->effects = EF_NODRAW;
+
+		pRadio->m_iszText = m_iszAmmoSentence [ta_text];
+		pRadio->m_iszSentence = 0;
+
+		pRadio->m_iHead = INFOCOMBI;
+
+		pRadio->SetThink ( &CBaseEntity::SUB_Remove );
+		pRadio->pev->nextthink = gpGlobals->time + 0.1;
+
+		pRadio->Use ( this, this, USE_ON, 0 );
+	}
+}

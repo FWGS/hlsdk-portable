@@ -25,6 +25,7 @@
 #include	"nodes.h"
 #include	"squadmonster.h"
 #include	"soundent.h"
+#include	"weapons.h"
 #include	"game.h"
 
 extern CGraph WorldGraph;
@@ -38,6 +39,18 @@ extern CGraph WorldGraph;
 #define HOUNDEYE_EYE_FRAMES 3 // how many different switchable maps for the eye
 
 #define HOUNDEYE_SOUND_STARTLE_VOLUME	128 // how loud a sound has to be to badly scare a sleeping houndeye
+
+
+// modif de Julien
+#define HITGROUP_MIDLEG				8
+
+#define NO_MEMBRE					1
+
+#define EYE_GROUP					1
+#define LEG_L_GROUP					2
+#define LEG_M_GROUP					3
+#define LEG_R_GROUP					4
+
 
 //=========================================================
 // monster-specific tasks
@@ -109,6 +122,11 @@ public:
 	BOOL m_fAsleep;// some houndeyes sleep in idle mode if this is set, the houndeye is lying down
 	BOOL m_fDontBlink;// don't try to open/close eye if this bit is set!
 	Vector	m_vecPackCenter; // the center of the pack. The leader maintains this by averaging the origins of all pack members.
+
+	//modif de Julien
+	void MakeGib ( int body, entvars_t *pevAttacker );
+	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType);
+
 };
 
 LINK_ENTITY_TO_CLASS( monster_houndeye, CHoundeye )
@@ -342,6 +360,7 @@ void CHoundeye::Spawn()
 void CHoundeye::Precache()
 {
 	PRECACHE_MODEL( "models/houndeye.mdl" );
+	PRECACHE_MODEL("models/houndeye_gibs.mdl");	// d
 
 	PRECACHE_SOUND( "houndeye/he_alert1.wav" );
 	PRECACHE_SOUND( "houndeye/he_alert2.wav" );
@@ -489,6 +508,64 @@ void CHoundeye::PainSound( void )
 		break;
 	}
 }
+
+
+// modif de julien
+
+void CHoundeye :: TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType)
+{
+	CSquadMonster :: TraceAttack( pevAttacker, flDamage, vecDir, ptr, bitsDamageType);
+
+	//demembrage
+
+	if ( gMultiDamage.pEntity != this )
+		return;
+	
+	if ( ( pev->health - ( gMultiDamage.amount ) <= 0 )  && IsAlive() && m_iHasGibbed == 0 )
+	{
+		switch ( ptr->iHitgroup )
+		{
+		case HITGROUP_RIGHTLEG:
+			SetBodygroup( LEG_R_GROUP, NO_MEMBRE);
+			MakeGib ( 0, pevAttacker );
+			break;
+		case HITGROUP_LEFTLEG:
+			SetBodygroup( LEG_L_GROUP, NO_MEMBRE);
+			MakeGib ( 0, pevAttacker );
+			break;
+		case HITGROUP_HEAD:
+			SetBodygroup( EYE_GROUP, NO_MEMBRE);
+			break;
+		case HITGROUP_MIDLEG:
+			SetBodygroup( LEG_M_GROUP, NO_MEMBRE);
+			MakeGib ( 0, pevAttacker );
+			break;
+
+		}
+	}
+
+}
+
+void CHoundeye :: MakeGib ( int body, entvars_t *pevAttacker )
+{
+
+	if ( m_iHasGibbed == 1 )
+		return;
+	m_iHasGibbed = 1;
+
+	CGib *pGib = GetClassPtr( (CGib *)NULL );
+	pGib->Spawn( "models/houndeye_gibs.mdl" );
+	pGib->m_bloodColor = BLOOD_COLOR_YELLOW;
+	pGib->pev->body = body;
+
+	pGib->pev->origin = pev->origin + Vector ( 0, 0, 40 );
+	pGib->pev->velocity = ( Center() - pevAttacker->origin).Normalize() * 300;
+	
+	pGib->pev->avelocity.x = RANDOM_FLOAT ( 100, 200 );
+	pGib->pev->avelocity.y = RANDOM_FLOAT ( 100, 300 );
+
+}
+
 
 //=========================================================
 // WriteBeamColor - writes a color vector to the network 

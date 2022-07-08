@@ -29,6 +29,14 @@
 
 extern DLL_GLOBAL Vector	g_vecAttackDir;
 
+
+// modif de Julien
+#define SF_BREAKABLE_L2M6	512
+#define SF_BREAKABLE_L4M2	1024
+
+
+
+
 // =================== FUNC_Breakable ==============================================
 
 // Just add more items to the bottom of this array and they will automagically be supported
@@ -46,8 +54,8 @@ const char *CBreakable::pSpawnObjects[] =
 	"ammo_ARgrenades",	// 7
 	"weapon_shotgun",	// 8
 	"ammo_buckshot",	// 9
-	"weapon_crossbow",	// 10
-	"ammo_crossbow",	// 11
+	"weapon_fsniper",	// 10	//modif de Julien
+	"ammo_fsniper",		// 11	//modif de Julien
 	"weapon_357",		// 12
 	"ammo_357",		// 13
 	"weapon_rpg",		// 14
@@ -56,8 +64,8 @@ const char *CBreakable::pSpawnObjects[] =
 	"weapon_handgrenade",	// 17
 	"weapon_tripmine",	// 18
 	"weapon_satchel",	// 19
-	"weapon_snark",		// 20
-	"weapon_hornetgun",	// 21
+	"weapon_satchel",		// 20
+	"weapon_satchel",	// 21
 };
 
 void CBreakable::KeyValue( KeyValueData* pkvd )
@@ -115,6 +123,15 @@ void CBreakable::KeyValue( KeyValueData* pkvd )
 	}
 	else if( FStrEq( pkvd->szKeyName, "lip" ) )
 		pkvd->fHandled = TRUE;
+
+	// modif de Julien
+	else if (FStrEq(pkvd->szKeyName, "tankprev") )
+	{
+		m_iszTankPrev = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	//--------------
+	
 	else
 		CBaseDelay::KeyValue( pkvd );
 }
@@ -135,6 +152,9 @@ TYPEDESCRIPTION CBreakable::m_SaveData[] =
 	DEFINE_FIELD( CBreakable, m_angle, FIELD_FLOAT ),
 	DEFINE_FIELD( CBreakable, m_iszGibModel, FIELD_STRING ),
 	DEFINE_FIELD( CBreakable, m_iszSpawnObject, FIELD_STRING ),
+
+	// modif de Julien
+	DEFINE_FIELD( CBreakable, m_iszTankPrev, FIELD_STRING ),
 
 	// Explosion magnitude is stored in pev->impulse
 };
@@ -521,6 +541,42 @@ void CBreakable::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vec
 //=========================================================
 int CBreakable::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )
 {
+
+	//modif de julien
+
+	if ( !CheckTankPrev() )
+		return 0;
+
+	if ( pev->spawnflags & SF_BREAK_L2M2 )
+	{
+		if ( !CBaseEntity::Instance( pevAttacker )->IsPlayer() )
+			return 0;
+
+		if  ( bitsDamageType & DMG_BULLET )
+			return 0;
+	}
+
+	if ( pev->spawnflags & SF_BREAK_TANKTOUCH )
+		return 0;
+
+	if ( pev->spawnflags & SF_BREAK_TANKDAMAGE && !(bitsDamageType & DMG_BULLET) )
+	{
+		if ( FClassnameIs ( pevInflictor, "info_tank_model" ) )
+		{
+			flDamage = pev->health;
+		}
+
+		else return 0;		
+	}
+
+
+	// modif de Julien
+
+	if ( pev->spawnflags & SF_BREAKABLE_L4M2 && !(bitsDamageType & DMG_CRUSH) )
+		return 0;
+
+	//----------
+
 	Vector vecTemp;
 
 	// if Attacker == Inflictor, the attack was a melee or other instant-hit attack.
@@ -670,9 +726,18 @@ void CBreakable::Die( void )
 		vecVelocity = g_vecAttackDir * 200.0f;
 	else
 	{
-		vecVelocity.x = 0;
-		vecVelocity.y = 0;
-		vecVelocity.z = 0;
+		// modif de julien
+
+		if ( pev->spawnflags & SF_BREAK_INTRO )
+		{
+			vecVelocity = Vector ( 150,0,0 );
+		}
+		else
+		{
+			vecVelocity.x = 0;
+			vecVelocity.y = 0;
+			vecVelocity.z = 0;
+		}
 	}
 
 	vecSpot = pev->origin + ( pev->mins + pev->maxs ) * 0.5f;
@@ -740,7 +805,37 @@ void CBreakable::Die( void )
 
 	pev->solid = SOLID_NOT;
 
-	// Fire targets on break
+
+	// modif de Julien
+
+	if ( pev->spawnflags & SF_BREAKABLE_L2M6 )
+	{
+		CBaseEntity *pPorte1, *pPorte2;
+
+		pPorte1 = CBaseEntity::Instance ( FIND_ENTITY_BY_TARGETNAME( NULL, STRING(pev->netname) ) );
+		pPorte2 = CBaseEntity::Instance ( FIND_ENTITY_BY_TARGETNAME( NULL, STRING(pev->message) ) );
+		
+		float flLength1 = ( pPorte1->Center() - Center() ).Length2D();
+		float flLength2 = ( pPorte2->Center() - Center() ).Length2D();
+
+		if ( flLength1 < 256 )
+		{
+			pev->target = pev->netname;		// si la caisse est assez pres, le nom de la porte est plac
+			ALERT ( at_console , "Porte 1 detruite. Distance : %.0f\n" , flLength1 );
+		}
+		else if ( flLength2 < 256 )
+		{
+			pev->target = pev->message;
+			ALERT ( at_console , "Porte 2 detruite. Distance : %.0f\n" , flLength2 );
+		}
+		else
+			ALERT ( at_console , "Caisse trop loin. Distance porte 1 : %.0f porte 2 : %.0f\n" , flLength1, flLength2 );
+			ALERT ( at_console , "target : %s\n" , STRING(pev->target) );
+
+	}
+
+
+ 	// Fire targets on break
 	SUB_UseTargets( NULL, USE_TOGGLE, 0 );
 
 	SetThink( &CBaseEntity::SUB_Remove );
@@ -769,6 +864,26 @@ int CBreakable::DamageDecal( int bitsDamageType )
 
 	return CBaseEntity::DamageDecal( bitsDamageType );
 }
+
+// modif de Julien
+// return true if it can be destroyed
+
+BOOL CBreakable :: CheckTankPrev ( void )
+{
+	if ( FStringNull ( m_iszTankPrev ) )
+		return TRUE;
+
+	edict_t *pentCherche = FIND_ENTITY_BY_TARGETNAME ( NULL, STRING(m_iszTankPrev) );
+
+	if (FNullEnt(pentCherche))
+		return TRUE;
+
+	else return FALSE;
+}
+
+
+//-----------------------------
+
 
 class CPushable : public CBreakable
 {
@@ -950,6 +1065,7 @@ void CPushable::Move( CBaseEntity *pOther, int push )
 	}
 	else 
 		factor = 0.25f;
+
 
 	pev->velocity.x += pevToucher->velocity.x * factor;
 	pev->velocity.y += pevToucher->velocity.y * factor;

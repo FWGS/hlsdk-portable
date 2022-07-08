@@ -32,7 +32,8 @@ enum w_squeak_e
 	WSQUEAK_RUN
 };
 
-enum squeak_e
+
+/*enum squeak_e //HLINVASION Modif de Julien, the "CBasePlayerWeapon" class and this enum were commented out. Commented out the entire rest of the file for now.
 {
 	SQUEAK_IDLE1 = 0,
 	SQUEAK_FIDGETFIT,
@@ -40,7 +41,8 @@ enum squeak_e
 	SQUEAK_DOWN,
 	SQUEAK_UP,
 	SQUEAK_THROW
-};
+};*/
+
 
 #if !CLIENT_DLL
 class CSqueakGrenade : public CGrenade
@@ -266,9 +268,9 @@ void CSqueakGrenade::HuntThink( void )
 	}
 
 	// higher pitch as squeeker gets closer to detonation time
-	/*float flpitch = 155.0f - 60.0f * ( ( m_flDie - gpGlobals->time ) / SQUEEK_DETONATE_DELAY );
+	float flpitch = 155.0f - 60.0f * ( ( m_flDie - gpGlobals->time ) / SQUEEK_DETONATE_DELAY ); //modif de Julien o para Julien - this was commented out causing a compile time error. Roy.
 	if( flpitch < 80.0f )
-		flpitch = 80.0f;*/
+		flpitch = 80.0f;//
 
 	if( m_hEnemy != 0 )
 	{
@@ -407,7 +409,7 @@ void CSqueakGrenade::SuperBounceTouch( CBaseEntity *pOther )
 }
 #endif
 
-LINK_ENTITY_TO_CLASS( weapon_snark, CSqueak )
+/*LINK_ENTITY_TO_CLASS( weapon_snark, CSqueak ) //commented out by Julien
 
 void CSqueak::Spawn()
 {
@@ -445,7 +447,7 @@ int CSqueak::GetItemInfo( ItemInfo *p )
 	p->iMaxAmmo2 = -1;
 	p->iMaxClip = WEAPON_NOCLIP;
 	p->iSlot = 4;
-	p->iPosition = 3;
+	p->iPosition = 4;
 	p->iId = m_iId = WEAPON_SNARK;
 	p->iWeight = SNARK_WEIGHT;
 	p->iFlags = ITEM_FLAG_LIMITINWORLD | ITEM_FLAG_EXHAUSTIBLE;
@@ -468,7 +470,7 @@ BOOL CSqueak::Deploy()
 	return DefaultDeploy( "models/v_squeak.mdl", "models/p_squeak.mdl", SQUEAK_UP, "squeak" );
 }
 
-void CSqueak::Holster( int skiplocal /* = 0 */ )
+void CSqueak::Holster( int skiplocal  )
 {
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5f;
 
@@ -582,4 +584,5 @@ void CSqueak::WeaponIdle( void )
 	}
 	SendWeaponAnim( iAnim );
 }
+*/
 #endif

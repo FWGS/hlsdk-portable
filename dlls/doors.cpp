@@ -553,6 +553,7 @@ void CBaseDoor::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE use
 	// if not ready to be used, ignore "use" command.
 	if( m_toggle_state == TS_AT_BOTTOM || ( FBitSet( pev->spawnflags, SF_DOOR_NO_AUTO_RETURN ) && m_toggle_state == TS_AT_TOP ) )
 		DoorActivate();
+
 }
 
 //
@@ -917,6 +918,8 @@ void CRotDoor::SetToggleState( int state )
 
 	UTIL_SetOrigin( pev, pev->origin );
 }
+//modif de Julien
+#define	SF_MOMENT_DOOR_BLOCK					1024 // no idle noises from this monster
 
 class CMomentaryDoor : public CBaseToggle
 {
@@ -933,6 +936,10 @@ public:
 	virtual int Save( CSave &save );
 	virtual int Restore( CRestore &restore );
 	static TYPEDESCRIPTION m_SaveData[];
+
+	//modif de Julien
+	virtual void Blocked( CBaseEntity *pOther );
+
 
 	BYTE m_bMoveSnd;			// sound a door makes while moving	
 	BYTE m_bStopSnd;			// sound a door makes when it stops
@@ -1112,6 +1119,30 @@ void CMomentaryDoor::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYP
 
 		LinearMove( move, speed );
 		SetMoveDone( &CMomentaryDoor::MomentaryMoveDone );
+	}
+}
+
+//modif de Julien
+void CMomentaryDoor :: Blocked( CBaseEntity *pOther )
+{
+	if ( FBitSet ( pev->spawnflags, SF_MOMENT_DOOR_BLOCK ) )
+	{
+		edict_t *pentCherche = NULL;
+
+		for ( int i = 0 ; i < 5 ; i++ )
+		{
+			pentCherche = FIND_ENTITY_BY_TARGETNAME ( pentCherche, STRING( pev->target ));
+
+			if ( FClassnameIs( pentCherche, "momentary_rot_button" ) ) //"momentary_door" ) )
+			{
+				CBaseEntity* pDoor = CBaseEntity :: Instance ( pentCherche );
+				pDoor->pev->target = NULL;			
+			}
+		}
+
+		ClearBits ( pev->spawnflags, SF_MOMENT_DOOR_BLOCK );
+
+		FireTargets ( STRING(pev->netname), this, this, USE_ON, 0 );
 	}
 }
 

@@ -29,6 +29,10 @@
 #include "weapons.h"
 #include "game.h"
 
+// modif de Julien
+#include "weapons.h"
+#include "player.h"
+
 class CRecharge : public CBaseToggle
 {
 public:
@@ -156,13 +160,26 @@ void CRecharge::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE use
 	}
 
 	// charge the player
-	if( m_hActivator->pev->armorvalue < 100 )
+	//if( m_hActivator->pev->armorvalue < 100 )
+	if (m_hActivator->pev->armorvalue < MAX_NORMAL_BATTERY/*100*/ )
 	{
 		m_iJuice--;
-		m_hActivator->pev->armorvalue += 1;
+//		m_hActivator->pev->armorvalue += 1; //modif de Julien
 
-		if( m_hActivator->pev->armorvalue > 100 )
-			m_hActivator->pev->armorvalue = 100;
+//		if( m_hActivator->pev->armorvalue > 100 )
+//			m_hActivator->pev->armorvalue = 100;
+		//modif de Julien
+		if ( m_hActivator->IsPlayer() )
+		{
+			CBasePlayer *pPlay = (CBasePlayer*)(CBaseEntity*)m_hActivator;
+			pPlay->SetArmor ( 1 );
+			/*
+			m_hActivator->pev->armorvalue += 1;
+
+			if (m_hActivator->pev->armorvalue > 100)
+				m_hActivator->pev->armorvalue = 100;
+			*/
+		}
 	}
 
 	// govern the rate of charge

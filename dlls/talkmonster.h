@@ -171,6 +171,12 @@ public:
 
 	EHANDLE		m_hTalkTarget;	// who to look at while talking
 	CUSTOM_SCHEDULES
+
+	// modif de julien
+
+	int			m_iszIdleSentence;
+	int			m_iszIdleRadio;
+	BOOL		m_bIdleSentState;
 };
 
 // Clients can push talkmonsters out of their way

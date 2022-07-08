@@ -45,6 +45,8 @@ int g_fGruntQuestion;				// true if an idle grunt asked a question. Cleared when
 
 extern DLL_GLOBAL int		g_iSkillLevel;
 
+extern int gmsgLensFlare;
+
 //=========================================================
 // monster-specific DEFINE's
 //=========================================================
@@ -63,14 +65,59 @@ extern DLL_GLOBAL int		g_iSkillLevel;
 #define HGRUNT_SHOTGUN				( 1 << 3)
 
 #define HEAD_GROUP					1
+#define ARM_R_GROUP					3 //modif de Julien
+#define ARM_L_GROUP					4
+#define LEG_R_GROUP					5
+#define LEG_L_GROUP					6
+#define PACK_GROUP					7 //fin modif de Julien
+
 #define HEAD_GRUNT					0
 #define HEAD_COMMANDER					1
 #define HEAD_SHOTGUN					2
 #define HEAD_M203					3
+
+
+//Heads de YANNICK !!!!!!!  (http://hlmodsperso.free.fr)
+
+#define HEAD_LEON					4
+#define HEAD_TERROR					5
+#define HEAD_HELMET					6
+#define HEAD_LIGHT1					7
+#define HEAD_BLOOD					8
+
+//fin
+
 #define GUN_GROUP					2
 #define GUN_MP5						0
 #define GUN_SHOTGUN					1
 #define GUN_NONE					2
+
+//modif de Julien (y probablemente de Yannick)
+#define NO_MEMBRE					1
+
+#define HBOX_CHEST					2
+#define HBOX_ARM_R					5
+#define HBOX_ARM_L					4
+#define HBOX_LEG_R					7
+#define HBOX_LEG_L					6
+#define HBOX_HEAD					1
+#define HBOX_HELMET					11
+
+
+// lampe
+
+#define SF_GRUNT_FLASHLIGHT			64
+#define SF_GRUNT_WEAPONORIGIN		8
+#define SF_GRUNT_INVINCIBLE			256
+#define SF_GRUNT_TIRDEBOUT			1024
+
+//typedef enum { matGlass = 0, matWood, matMetal, matFlesh, matCinderBlock, matCeilingTile, matComputer, matUnbreakableGlass, matRocks, matNone, matLastMaterial } Materials;
+
+// blastjump
+
+#define BLAST_NODIRECTION			1	// pas encore de direction fix
+#define BLAST_FORWARDS				2
+#define BLAST_BACKWARDS				3
 
 //=========================================================
 // Monster's Anim Events Go Here
@@ -183,7 +230,17 @@ public:
 
 	int m_iSentence;
 
+	//modif de Julien
+	void MakeGib ( int body, entvars_t *pevAttacker );
+
 	static const char *pGruntSentences[];
+
+	// modif de Julien
+
+	BOOL	m_bFlashLightOn;
+	void	Killed		( entvars_t *pevAttacker, int iGib );
+	int		m_iBlastJump;
+	virtual Activity GetDeathActivity ( void );
 };
 
 LINK_ENTITY_TO_CLASS( monster_human_grunt, CHGrunt )
@@ -202,9 +259,12 @@ TYPEDESCRIPTION	CHGrunt::m_SaveData[] =
 	//DEFINE_FIELD( CShotgun, m_iBrassShell, FIELD_INTEGER ),
 	//DEFINE_FIELD( CShotgun, m_iShotgunShell, FIELD_INTEGER ),
 	DEFINE_FIELD( CHGrunt, m_iSentence, FIELD_INTEGER ),
+	DEFINE_FIELD( CHGrunt, m_iHasGibbed, FIELD_INTEGER ),// modif de Julien
+	DEFINE_FIELD( CHGrunt, m_bFlashLightOn, FIELD_BOOLEAN ),// modif de Julien
+	DEFINE_FIELD( CHGrunt, m_iBlastJump, FIELD_INTEGER ),// modif de Julien
 };
 
-IMPLEMENT_SAVERESTORE( CHGrunt, CSquadMonster )
+//IMPLEMENT_SAVERESTORE( CHGrunt, CSquadMonster );	// fonctions d
 
 const char *CHGrunt::pGruntSentences[] =
 {
@@ -267,6 +327,16 @@ int CHGrunt::IRelationship( CBaseEntity *pTarget )
 		return R_NM;
 	}
 
+	//modif de Julien
+	if ( FClassnameIs( pTarget->pev, "vehicle_tank" ) )
+	{
+		if ( pTarget->Classify() == CLASS_NONE )
+			return R_NO;
+		return R_HT;
+	}
+	//==========
+
+
 	return CSquadMonster::IRelationship( pTarget );
 }
 
@@ -283,6 +353,12 @@ void CHGrunt::GibMonster( void )
 		// throw a gun if the grunt has one
 		GetAttachment( 0, vecGunPos, vecGunAngles );
 
+		// modif de Julien
+		if ( pev->spawnflags & SF_GRUNT_WEAPONORIGIN )
+		{
+			vecGunPos = pev->origin;
+		}//fin
+
 		CBaseEntity *pGun;
 
 		if( FBitSet( pev->weapons, HGRUNT_SHOTGUN ) )
@@ -292,11 +368,26 @@ void CHGrunt::GibMonster( void )
 		else
 		{
 			pGun = DropItem( "weapon_9mmAR", vecGunPos, vecGunAngles );
+
+			// modif de julien
+			CBasePlayerWeapon *pMp5 = (CBasePlayerWeapon*) pGun;
+			pMp5->m_iDefaultAmmo = m_cAmmoLoaded == 0 ? 1 : m_cAmmoLoaded;
+
 		}
 
 		if( pGun )
 		{
-			pGun->pev->velocity = Vector( RANDOM_FLOAT( -100, 100 ), RANDOM_FLOAT( -100, 100 ), RANDOM_FLOAT( 200, 300 ) );
+//			pGun->pev->velocity = Vector( RANDOM_FLOAT( -100, 100 ), RANDOM_FLOAT( -100, 100 ), RANDOM_FLOAT( 200, 300 ) );
+			// modif de Julien
+			if ( pev->spawnflags & SF_GRUNT_WEAPONORIGIN )
+			{
+				pGun->pev->velocity = Vector (0,0,0);
+			}
+			else
+			{
+				pGun->pev->velocity = Vector (RANDOM_FLOAT(-100,100), RANDOM_FLOAT(-100,100), RANDOM_FLOAT(200,300));
+			}
+			
 			pGun->pev->avelocity = Vector( 0, RANDOM_FLOAT( 200, 400 ), 0 );
 		}
 
@@ -313,6 +404,58 @@ void CHGrunt::GibMonster( void )
 
 	CBaseMonster::GibMonster();
 }
+
+//===========================================================
+// modif de Julien
+// 
+
+void	CHGrunt :: Killed ( entvars_t *pevAttacker, int iGib )
+{
+
+	if ( pev->spawnflags & SF_GRUNT_FLASHLIGHT && m_bFlashLightOn == TRUE )
+	{
+		CBaseEntity *player = NULL;
+		player = UTIL_FindEntityByClassname( NULL, "player" );
+
+		if ( player != NULL )
+		{
+			m_bFlashLightOn = FALSE;
+
+			MESSAGE_BEGIN( MSG_ONE, gmsgLensFlare, NULL, player->pev );
+
+				WRITE_BYTE ( 0 );	// 
+				WRITE_BYTE ( ENTINDEX ( edict() ) );
+
+			MESSAGE_END();
+		}
+	}
+
+
+	CSquadMonster :: Killed ( pevAttacker, iGib );
+}
+
+
+int CHGrunt::Save( CSave &save )
+{
+	if ( !CSquadMonster::Save(save) )
+		return 0;
+	return save.WriteFields( "CHGrunt", this, m_SaveData, ARRAYSIZE(m_SaveData) );
+}
+
+int CHGrunt::Restore( CRestore &restore )
+{
+	if ( !CSquadMonster::Restore(restore) )
+		return 0;
+	int status = restore.ReadFields( "CHGrunt", this, m_SaveData, ARRAYSIZE(m_SaveData) );
+	
+	// lampe
+	if ( pev->spawnflags & SF_GRUNT_FLASHLIGHT )
+		m_bFlashLightOn = FALSE;
+
+	return status;
+}
+
+
 
 //=========================================================
 // ISoundMask - Overidden for human grunts because they 
@@ -444,7 +587,8 @@ BOOL CHGrunt::CheckMeleeAttack1( float flDot, float flDist )
 //=========================================================
 BOOL CHGrunt::CheckRangeAttack1( float flDot, float flDist )
 {
-	if( !HasConditions( bits_COND_ENEMY_OCCLUDED ) && flDist <= 2048.0f && flDot >= 0.5f && NoFriendlyFire() )
+	//if( !HasConditions( bits_COND_ENEMY_OCCLUDED ) && flDist <= 2048.0f && flDot >= 0.5f && NoFriendlyFire() )
+	if ( !HasConditions( bits_COND_ENEMY_OCCLUDED ) && flDist <= 4096 /*&& flDot >= 0.5 */&& NoFriendlyFire() ) //modif de Julien
 	{
 		TraceResult tr;
 
@@ -604,7 +748,8 @@ void CHGrunt::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir
 	if( ptr->iHitgroup == 11 )
 	{
 		// make sure we're wearing one
-		if( GetBodygroup( 1 ) == HEAD_GRUNT && ( bitsDamageType & (DMG_BULLET | DMG_SLASH | DMG_BLAST | DMG_CLUB ) ) )
+//		if( GetBodygroup( 1 ) == HEAD_GRUNT && ( bitsDamageType & (DMG_BULLET | DMG_SLASH | DMG_BLAST | DMG_CLUB ) ) )
+		if ( ( GetBodygroup( 1 ) == HEAD_GRUNT || GetBodygroup( 1 ) == HEAD_HELMET ) && (bitsDamageType & (DMG_BULLET | DMG_SLASH | DMG_BLAST | DMG_CLUB))) //modif de Julien
 		{
 			// absorb damage
 			flDamage -= 20;
@@ -618,6 +763,79 @@ void CHGrunt::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir
 		ptr->iHitgroup = HITGROUP_HEAD;
 	}
 	CSquadMonster::TraceAttack( pevAttacker, flDamage, vecDir, ptr, bitsDamageType );
+
+
+
+	//demembrage
+	//modif de julien
+
+	if ( pev->spawnflags & SF_GRUNT_INVINCIBLE )
+		return;
+
+
+	if ( gMultiDamage.pEntity != this )
+		return;
+	
+	if ( ( pev->health - ( gMultiDamage.amount ) <= 0 )  && IsAlive() && m_iHasGibbed == 0 )
+	{
+		if ( ptr->iHitgroup == HBOX_CHEST )
+		{
+			ptr->iHitgroup = RANDOM_LONG ( 1,3 );
+			ptr->iHitgroup = ptr->iHitgroup == 2 ? 4 : ptr->iHitgroup;
+			ptr->iHitgroup = ptr->iHitgroup == 3 ? 5 : ptr->iHitgroup;
+		}
+
+		switch ( ptr->iHitgroup )
+		{
+		case HBOX_ARM_R:
+			SetBodygroup( ARM_R_GROUP, NO_MEMBRE);
+			MakeGib ( 3, pevAttacker );
+			break;
+		case HBOX_ARM_L:
+			SetBodygroup( ARM_L_GROUP, NO_MEMBRE);
+			MakeGib ( 3, pevAttacker );
+			break;
+		case HBOX_LEG_R:
+			SetBodygroup( LEG_R_GROUP, NO_MEMBRE);
+			MakeGib ( 2, pevAttacker );
+			break;
+		case HBOX_LEG_L:
+			SetBodygroup( LEG_L_GROUP, NO_MEMBRE);
+			MakeGib ( 2, pevAttacker );
+			break;
+		case HBOX_HEAD:
+		case HBOX_HELMET:
+			SetBodygroup( HEAD_GROUP, HEAD_BLOOD);
+			MakeGib ( 1, pevAttacker );
+			break;
+
+		}
+	}
+
+
+}
+
+
+//modif de Julien
+void CHGrunt :: MakeGib ( int body, entvars_t *pevAttacker )
+{
+
+	if ( m_iHasGibbed == 1 )
+		return;
+
+	m_iHasGibbed = 1;
+	CGib *pGib = GetClassPtr( (CGib *)NULL );
+	pGib->Spawn( "models/hg_gibs.mdl" );
+	pGib->m_bloodColor = BLOOD_COLOR_RED;
+	pGib->pev->body = body;
+	pGib->pev->skin = pev->skin;
+
+	pGib->pev->origin = pev->origin + Vector ( 0, 0, 40 );
+	pGib->pev->velocity = ( Center() - pevAttacker->origin).Normalize() * 300;
+	
+	pGib->pev->avelocity.x = RANDOM_FLOAT ( 100, 200 );
+	pGib->pev->avelocity.y = RANDOM_FLOAT ( 100, 300 );
+
 }
 
 //=========================================================
@@ -628,9 +846,62 @@ void CHGrunt::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir
 int CHGrunt::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )
 {
 	Forget( bits_MEMORY_INCOVER );
+//	ALERT ( at_console, "GRUNT : take damage %.0f\n", (pev->health - flDamage) );
+
+	//modif de Julien
+
+	if ( pev->spawnflags & SF_GRUNT_INVINCIBLE )
+		return 1;
+
+	if ( 
+		((pev->health - flDamage) < GIB_HEALTH_VALUE) &&
+		(bitsDamageType & DMG_BLAST) && IsAlive() &&
+		pev->deadflag != DEAD_DYING && 
+		RANDOM_LONG(0,1)
+		)
+
+	{
+		pev->velocity = gpGlobals->v_up * 300 + (Center() - pevInflictor->origin).Normalize() * 100;
+		bitsDamageType &= ~DMG_ALWAYSGIB;
+		bitsDamageType |= DMG_NEVERGIB;
+
+		m_iBlastJump = BLAST_NODIRECTION;
+
+		// lache la mitrailleuse
+
+		MonsterEvent_t Event;
+
+		Event.event = HGRUNT_AE_DROP_GUN;
+
+		HandleAnimEvent ( &Event );
+	}
+
+	//------------------------
+
 
 	return CSquadMonster::TakeDamage( pevInflictor, pevAttacker, flDamage, bitsDamageType );
 }
+
+// modif de Julien
+
+Activity CHGrunt :: GetDeathActivity ( void )
+{
+	if ( m_iBlastJump == BLAST_NODIRECTION )
+	{
+		// choisit une des deux anims de saut
+
+		UTIL_MakeVectors ( pev->angles );
+		float flDot = DotProduct ( gpGlobals->v_forward, g_vecAttackDir * -1 );
+
+		if ( flDot > 0 )
+			m_iBlastJump = BLAST_BACKWARDS;		
+		else
+			m_iBlastJump = BLAST_FORWARDS;
+	}
+	
+	return CSquadMonster::GetDeathActivity();
+}
+
 
 //=========================================================
 // SetYawSpeed - allows each sequence to have a different
@@ -799,9 +1070,13 @@ void CHGrunt::Shoot( void )
 
 	Vector vecShellVelocity = gpGlobals->v_right * RANDOM_FLOAT( 40, 90 ) + gpGlobals->v_up * RANDOM_FLOAT( 75, 200 ) + gpGlobals->v_forward * RANDOM_FLOAT( -40, 40 );
 	EjectBrass( vecShootOrigin - vecShootDir * 24, vecShellVelocity, pev->angles.y, m_iBrassShell, TE_BOUNCE_SHELL );
-	FireBullets( 1, vecShootOrigin, vecShootDir, VECTOR_CONE_10DEGREES, 2048, BULLET_MONSTER_MP5 ); // shoot +-5 degrees
-
-	pev->effects |= EF_MUZZLEFLASH;
+//	FireBullets( 1, vecShootOrigin, vecShootDir, VECTOR_CONE_10DEGREES, 2048, BULLET_MONSTER_MP5 ); // shoot +-5 degrees
+	FireBullets(1, vecShootOrigin, vecShootDir, VECTOR_CONE_5DEGREES , 2048, BULLET_MONSTER_MP5 ); // shoot +-2.5 degrees //modif de Julien
+	// avant : VECTOR_CONE_10DEGREES
+	// modifi
+ 
+ 	pev->effects |= EF_MUZZLEFLASH;
+	Gunflash (); //modif de Julien
 
 	m_cAmmoLoaded--;// take away a bullet!
 
@@ -853,6 +1128,12 @@ void CHGrunt::HandleAnimEvent( MonsterEvent_t *pEvent )
 			Vector vecGunAngles;
 
 			GetAttachment( 0, vecGunPos, vecGunAngles );
+			// modif de Julien
+			if ( pev->spawnflags & SF_GRUNT_WEAPONORIGIN )
+			{
+				vecGunPos = pev->origin;
+			}
+
 
 			// switch to body group with no gun.
 			SetBodygroup( GUN_GROUP, GUN_NONE );
@@ -860,11 +1141,23 @@ void CHGrunt::HandleAnimEvent( MonsterEvent_t *pEvent )
 			// now spawn a gun.
 			if( FBitSet( pev->weapons, HGRUNT_SHOTGUN ) )
 			{
-				 DropItem( "weapon_shotgun", vecGunPos, vecGunAngles );
+				 CBaseEntity *pGun = DropItem( "weapon_shotgun", vecGunPos, vecGunAngles );
+
+				// modif de Julien
+				if ( pev->spawnflags & SF_GRUNT_WEAPONORIGIN )
+					pGun->pev->velocity = Vector (0,0,0);
+
 			}
 			else
-			{
-				 DropItem( "weapon_9mmAR", vecGunPos, vecGunAngles );
+			{	
+				// modif de julien
+				CBasePlayerWeapon *pMp5 = (CBasePlayerWeapon*) DropItem( "weapon_9mmAR", vecGunPos, vecGunAngles );
+				pMp5->m_iDefaultAmmo = m_cAmmoLoaded == 0 ? 1 : m_cAmmoLoaded;
+
+				// modif de Julien
+				if ( pev->spawnflags & SF_GRUNT_WEAPONORIGIN )
+					pMp5->pev->velocity = Vector (0,0,0);
+
 			}
 
 			if( FBitSet( pev->weapons, HGRUNT_GRENADELAUNCHER ) )
@@ -1013,11 +1306,55 @@ void CHGrunt::Spawn()
 	}
 	m_cAmmoLoaded = m_cClipSize;
 
-	if( RANDOM_LONG( 0, 99 ) < 80 )
+	if (RANDOM_LONG( 0, 99 ) < 70) //modif de Julien
 		pev->skin = 0;	// light skin
 	else
 		pev->skin = 1;	// dark skin
 
+	//modif de Julien et de Yannick
+
+	if ( pev->spawnflags & SF_GRUNT_FLASHLIGHT  )
+	{
+		SetBodygroup( HEAD_GROUP, HEAD_LIGHT1);
+	}
+
+	else
+	{
+		switch ( RANDOM_LONG( 0, 7 ) )
+		{
+		case 0: 
+		case 1:
+			SetBodygroup( HEAD_GROUP, HEAD_GRUNT);
+			break;
+		case 2:
+			SetBodygroup( HEAD_GROUP, HEAD_COMMANDER);
+			pev->skin = 0;
+			break;
+		case 3:
+			SetBodygroup( HEAD_GROUP, HEAD_LEON);
+			pev->skin = 0;
+			break;
+		case 4:
+			SetBodygroup( HEAD_GROUP, HEAD_TERROR);
+			pev->skin = 0;
+			break;
+		case 5:
+			SetBodygroup( HEAD_GROUP, HEAD_HELMET);
+			pev->skin = 0;
+			break;
+		case 6:
+			SetBodygroup( HEAD_GROUP, HEAD_SHOTGUN);
+			break;
+		case 7:
+			SetBodygroup( HEAD_GROUP, HEAD_M203);
+			pev->skin = 1;
+			break;
+		}
+	}
+
+
+
+	/*
 	if( FBitSet( pev->weapons, HGRUNT_SHOTGUN ) )
 	{
 		SetBodygroup( HEAD_GROUP, HEAD_SHOTGUN );
@@ -1027,11 +1364,27 @@ void CHGrunt::Spawn()
 		SetBodygroup( HEAD_GROUP, HEAD_M203 );
 		pev->skin = 1; // alway dark skin
 	}
+	*/
+
+	m_bFlashLightOn = FALSE;
+	m_iBlastJump	= 0;
+
+	// modif de Julien
+	// pas de GL
+
+	ClearBits ( pev->weapons, HGRUNT_GRENADELAUNCHER );
+	//------
+
 
 	CTalkMonster::g_talkWaitTime = 0;
 
 	MonsterInit();
+
+	// modif de Julien
+	m_flDistLook = 4096;
 }
+
+
 
 //=========================================================
 // Precache - precaches all resources this monster needs
@@ -1039,6 +1392,15 @@ void CHGrunt::Spawn()
 void CHGrunt::Precache()
 {
 	PRECACHE_MODEL( "models/hgrunt.mdl" );
+
+	//modif de Julien
+	PRECACHE_MODEL("models/hg_gibs.mdl");
+	PRECACHE_MODEL("sprites/spot01.spr");
+	PRECACHE_MODEL("sprites/lensflare01.spr");
+	PRECACHE_MODEL("sprites/lensflare02.spr");
+	PRECACHE_MODEL("sprites/lensflare03.spr");
+	PRECACHE_MODEL("sprites/lensflare04.spr");
+	PRECACHE_MODEL("sprites/lensflare05.spr");
 
 	PRECACHE_SOUND( "hgrunt/gr_mgun1.wav" );
 	PRECACHE_SOUND( "hgrunt/gr_mgun2.wav" );
@@ -1216,7 +1578,8 @@ Task_t tlGruntFail[] =
 	{ TASK_STOP_MOVING, 0 },
 	{ TASK_SET_ACTIVITY, (float)ACT_IDLE },
 	{ TASK_WAIT, (float)2 },
-	{ TASK_WAIT_PVS, (float)0 },
+	{ TASK_WAIT,				(float)1		},	
+//	{ TASK_WAIT_PVS,			(float)0		},	// modif de Julien TASK_WAIT
 };
 
 Schedule_t slGruntFail[] =
@@ -1843,7 +2206,7 @@ void CHGrunt::SetActivity( Activity NewActivity )
 		// grunt is either shooting standing or shooting crouched
 		if( FBitSet( pev->weapons, HGRUNT_9MMAR ) )
 		{
-			if( m_fStanding )
+			if ( m_fStanding || pev->spawnflags & SF_GRUNT_TIRDEBOUT )	// modif de julien
 			{
 				// get aimable sequence
 				iSequence = LookupSequence( "standing_mp5" );
@@ -1856,7 +2219,7 @@ void CHGrunt::SetActivity( Activity NewActivity )
 		}
 		else
 		{
-			if( m_fStanding )
+			if ( m_fStanding || pev->spawnflags & SF_GRUNT_TIRDEBOUT )	// modif de julien
 			{
 				// get aimable sequence
 				iSequence = LookupSequence( "standing_shotgun" );
@@ -1914,6 +2277,29 @@ void CHGrunt::SetActivity( Activity NewActivity )
 	default:
 		iSequence = LookupActivity( NewActivity );
 		break;
+
+	// modif de jUlien
+	case ACT_DIESIMPLE:
+	case ACT_DIEBACKWARD:
+	case ACT_DIEFORWARD:
+	case ACT_DIEVIOLENT:
+	case ACT_DIE_HEADSHOT:
+	case ACT_DIE_CHESTSHOT:
+	case ACT_DIE_GUTSHOT:
+	case ACT_DIE_BACKSHOT:
+		{
+			if ( m_iBlastJump == BLAST_FORWARDS )
+				iSequence = LookupSequence( "jump_explosion2" );
+
+			else if ( m_iBlastJump == BLAST_BACKWARDS )
+				iSequence = LookupSequence( "jump_explosion1" );
+
+			else
+				iSequence = LookupActivity ( NewActivity );
+
+			break;
+		}
+
 	}
 
 	m_Activity = NewActivity; // Go ahead and set this so it doesn't keep trying when the anim is not present
@@ -1943,6 +2329,26 @@ void CHGrunt::SetActivity( Activity NewActivity )
 //=========================================================
 Schedule_t *CHGrunt::GetSchedule( void )
 {
+	// lampe
+
+	if ( pev->spawnflags & SF_GRUNT_FLASHLIGHT && m_bFlashLightOn == FALSE )
+	{
+		CBaseEntity *player = NULL;
+		player = UTIL_FindEntityByClassname( NULL, "player" );
+
+		if ( player != NULL )
+		{
+			m_bFlashLightOn = TRUE;
+
+			MESSAGE_BEGIN( MSG_ONE, gmsgLensFlare, NULL, player->pev );
+
+				WRITE_BYTE ( 1 );	// allume*/
+				WRITE_BYTE ( ENTINDEX ( edict() ) );
+
+			MESSAGE_END();
+		}
+	}
+
 
 	// clear old sentence
 	m_iSentence = HGRUNT_SENT_NONE;
@@ -2197,7 +2603,8 @@ Schedule_t *CHGrunt::GetScheduleOfType( int Type )
 		{
 			if( InSquad() )
 			{
-				if( g_iSkillLevel == SKILL_HARD && HasConditions( bits_COND_CAN_RANGE_ATTACK2 ) && OccupySlot( bits_SLOTS_HGRUNT_GRENADE ) )
+//				if( g_iSkillLevel == SKILL_HARD && HasConditions( bits_COND_CAN_RANGE_ATTACK2 ) && OccupySlot( bits_SLOTS_HGRUNT_GRENADE ) )
+				if ( g_iSkillLevel == SKILL_HARD && HasConditions( bits_COND_CAN_RANGE_ATTACK2 ) && OccupySlot( bits_SLOTS_HGRUNT_GRENADE ) && pev->weapons & HGRUNT_HANDGRENADE ) //modif de Julien
 				{
 					if( FOkToSpeak() )
 					{
@@ -2386,6 +2793,25 @@ void CHGruntRepel::RepelUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_
 	pGrunt->SetActivity( ACT_GLIDE );
 	// UNDONE: position?
 	pGrunt->m_vecLastPosition = tr.vecEndPos;
+
+		// modif de Julien - --- - ---
+/*
+	KeyValueData	kvd;
+	char			buf[128];
+
+	sprintf( buf, "%s", STRING(pev->netname) );
+	kvd.szKeyName = "targetname";
+	kvd.szValue = buf;
+	pEntity->KeyValue( &kvd );
+*/
+
+	pGrunt->pev->targetname = MAKE_STRING ( STRING(pev->netname) );
+
+	pGrunt->m_iTriggerCondition = m_iTriggerCondition;
+	pGrunt->m_iszTriggerTarget = m_iszTriggerTarget;
+
+	// --- - --- - --- - --- -
+
 
 	CBeam *pBeam = CBeam::BeamCreate( "sprites/rope.spr", 10 );
 	pBeam->PointEntInit( pev->origin + Vector( 0, 0, 112 ), pGrunt->entindex() );

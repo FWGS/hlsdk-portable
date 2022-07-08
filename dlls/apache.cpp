@@ -27,6 +27,12 @@ extern DLL_GLOBAL int		g_iSkillLevel;
 #define SF_WAITFORTRIGGER	(0x04 | 0x40) // UNDONE: Fix!
 #define SF_NOWRECKAGE		0x08
 
+// modif de Julien
+#define SF_APACHE_LENSFLARE		32
+extern int gmsgLensFlare;
+
+
+
 class CApache : public CBaseMonster
 {
 	int Save( CSave &save );
@@ -87,6 +93,9 @@ class CApache : public CBaseMonster
 
 	int m_iDoSmokePuff;
 	CBeam *m_pBeam;
+
+	// modif de Julien
+	BOOL	m_bFlashLightOn;
 };
 
 LINK_ENTITY_TO_CLASS( monster_apache, CApache )
@@ -111,15 +120,40 @@ TYPEDESCRIPTION	CApache::m_SaveData[] =
 	DEFINE_FIELD( CApache, m_pBeam, FIELD_CLASSPTR ),
 	DEFINE_FIELD( CApache, m_flGoalSpeed, FIELD_FLOAT ),
 	DEFINE_FIELD( CApache, m_iDoSmokePuff, FIELD_INTEGER ),
+	DEFINE_FIELD( CApache, m_bFlashLightOn, FIELD_BOOLEAN ),
 };
 
-IMPLEMENT_SAVERESTORE( CApache, CBaseMonster )
+
+
+// modif de Julien
+
+//IMPLEMENT_SAVERESTORE( CApache, CBaseMonster );
+
+int CApache::Save( CSave &save )
+{
+	if ( !CBaseMonster::Save(save) )
+		return 0;
+	return save.WriteFields( "CApache", this, m_SaveData, ARRAYSIZE(m_SaveData) );
+}
+
+int CApache::Restore( CRestore &restore )
+{
+	if ( !CBaseMonster::Restore(restore) )
+		return 0;
+	int status = restore.ReadFields( "CApache", this, m_SaveData, ARRAYSIZE(m_SaveData) );
+	
+	// lampe
+	if ( pev->spawnflags & SF_APACHE_LENSFLARE )
+		m_bFlashLightOn = FALSE;
+
+	return status;
+}
 
 void CApache::Spawn( void )
 {
 	Precache();
 	// motor
-	pev->movetype = MOVETYPE_FLY;
+	pev->movetype = MOVETYPE_FLYMISSILE;
 	pev->solid = SOLID_BBOX;
 
 	SET_MODEL( ENT( pev ), "models/apache.mdl" );
@@ -150,6 +184,9 @@ void CApache::Spawn( void )
 	}
 
 	m_iRockets = 10;
+
+	// modif de Julien
+	m_bFlashLightOn = FALSE;
 }
 
 void CApache::Precache( void )
@@ -173,6 +210,16 @@ void CApache::Precache( void )
 	m_iBodyGibs = PRECACHE_MODEL( "models/metalplategibs_green.mdl" );
 
 	UTIL_PrecacheOther( "hvr_rocket" );
+
+	//modif de Julien
+	PRECACHE_MODEL("models/hg_gibs.mdl");
+	PRECACHE_MODEL("sprites/spot01.spr");
+	PRECACHE_MODEL("sprites/lensflare01.spr");
+	PRECACHE_MODEL("sprites/lensflare02.spr");
+	PRECACHE_MODEL("sprites/lensflare03.spr");
+	PRECACHE_MODEL("sprites/lensflare04.spr");
+	PRECACHE_MODEL("sprites/lensflare05.spr");
+
 }
 
 void CApache::NullThink( void )
@@ -211,6 +258,20 @@ void CApache::Killed( entvars_t *pevAttacker, int iGib )
 	{
 		m_flNextRocket = gpGlobals->time + 15.0f;
 	}
+
+	// modif de Julien
+	if ( pev->spawnflags & SF_APACHE_LENSFLARE && m_bFlashLightOn == TRUE )
+	{
+		m_bFlashLightOn = FALSE;
+
+		MESSAGE_BEGIN( MSG_ALL, gmsgLensFlare, NULL );
+
+			WRITE_BYTE ( 0 );	// 
+			WRITE_BYTE ( ENTINDEX ( edict() ) );
+
+		MESSAGE_END();
+	}
+
 }
 
 void CApache::DyingThink( void )
@@ -396,6 +457,11 @@ void CApache::DyingThink( void )
 			// flags
 			WRITE_BYTE( BREAK_METAL );
 		MESSAGE_END();
+
+		//modif de jULIEN
+		pev->deadflag = DEAD_DEAD;
+		FCheckAITrigger();
+		//=========
 
 		SetThink( &CBaseEntity::SUB_Remove );
 		pev->nextthink = gpGlobals->time + 0.1f;
@@ -727,6 +793,23 @@ void CApache::Flight( void )
 	
 		// ALERT( at_console, "%.0f %.2f\n", pitch, flVol );
 	}
+
+
+	// modif de Julien
+	// lampe
+
+	if ( pev->spawnflags & SF_APACHE_LENSFLARE && m_bFlashLightOn == FALSE )
+	{
+		m_bFlashLightOn = TRUE;
+
+		MESSAGE_BEGIN( MSG_ALL, gmsgLensFlare, NULL );
+
+			WRITE_BYTE ( 1 );	// allume*/
+			WRITE_BYTE ( ENTINDEX ( edict() ) );
+
+		MESSAGE_END();
+	}
+
 }
 
 void CApache::FireRocket( void )
@@ -902,6 +985,12 @@ int CApache::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float 
 void CApache::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType )
 {
 	// ALERT( at_console, "%d %.0f\n", ptr->iHitgroup, flDamage );
+
+	//modif de Julien
+	if ( FClassnameIs( ENT( pevAttacker ), "hvr_rocket" ) )
+	{
+		return;
+	}
 
 	// ignore blades
 	if( ptr->iHitgroup == 6 && ( bitsDamageType & ( DMG_ENERGYBEAM | DMG_BULLET | DMG_CLUB ) ) )

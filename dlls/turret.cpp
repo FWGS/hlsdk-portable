@@ -41,6 +41,9 @@ extern Vector VecBModelOrigin( entvars_t* pevBModel );
 #define TURRET_MAXSPIN	5		// seconds turret barrel will spin w/o a target
 #define TURRET_MACHINE_VOLUME	0.5
 
+// modif de julien
+#define SF_MONSTER_TURRET_INVINCIBLE	1024
+
 typedef enum
 {
 	TURRET_ANIM_NONE = 0,
@@ -183,6 +186,10 @@ public:
 	// other functions
 	void Shoot( Vector &vecSrc, Vector &vecDirToEnemy );
 
+	// modif de Julien
+	virtual int	 TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
+
+
 private:
 	int m_iStartSpin;
 };
@@ -318,6 +325,19 @@ void CTurret::Spawn()
 
 	pev->nextthink = gpGlobals->time + 0.3f; 
 }
+
+// modif de Julien
+
+int CTurret :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )
+{
+
+	// modif de Julien
+	if ( FStrEq(STRING(gpGlobals->mapname), "l3m2") || FStrEq(STRING(gpGlobals->mapname), "L3M2") )
+		return 0;
+
+	return CBaseTurret :: TakeDamage ( pevInflictor, pevAttacker, flDamage, bitsDamageType );
+}
+
 
 void CTurret::Precache()
 {
@@ -616,7 +636,14 @@ void CBaseTurret::ActiveThink( void )
 
 void CTurret::Shoot( Vector &vecSrc, Vector &vecDirToEnemy )
 {
-	FireBullets( 1, vecSrc, vecDirToEnemy, TURRET_SPREAD, TURRET_RANGE, BULLET_MONSTER_12MM, 1 );
+	// modif de Julien
+	if ( FStrEq(STRING(gpGlobals->mapname), "l3m2") || FStrEq(STRING(gpGlobals->mapname), "L3M2") )
+		FireBullets( 1, vecSrc, vecDirToEnemy, TURRET_SPREAD, TURRET_RANGE, 0, 1, gSkillData.monDmg12MM * 2 );
+
+	else
+		FireBullets( 1, vecSrc, vecDirToEnemy, TURRET_SPREAD, TURRET_RANGE, BULLET_MONSTER_12MM, 1 );
+
+	
 	EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "turret/tu_fire1.wav", 1, 0.6 );
 	pev->effects = pev->effects | EF_MUZZLEFLASH;
 }
@@ -766,6 +793,12 @@ void CTurret::SpinUpCall( void )
 
 void CTurret::SpinDownCall( void )
 {
+
+	// modif de Julien
+	if ( FStrEq(STRING(gpGlobals->mapname), "l3m2") || FStrEq(STRING(gpGlobals->mapname), "L3M2") )
+		return;
+
+
 	if( m_iSpin )
 	{
 		SetTurretAnim( TURRET_ANIM_SPIN );
@@ -1206,6 +1239,10 @@ int CSentry::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float 
 		SetUse( NULL );
 		pev->nextthink = gpGlobals->time + 0.1f;
 	}
+
+	// modif de julien
+	if ( pev->spawnflags & SF_MONSTER_TURRET_INVINCIBLE )
+		return 1;
 
 	pev->health -= flDamage;
 	if( pev->health <= 0 )

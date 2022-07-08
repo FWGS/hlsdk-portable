@@ -25,11 +25,23 @@
 #include	"effects.h"
 #include	"decals.h"
 #include	"soundent.h"
+#include	"weapons.h"
 #include	"game.h"
 
 #define		SQUID_SPRINT_DIST	256.0f // how close the squid has to get before starting to sprint and refusing to swerve
 
 int iSquidSpitSprite;
+
+// modif de Julien
+#define HITGROUP_QUEUE				8
+
+#define NO_MEMBRE					1
+
+#define MOUTH_GROUP					1
+#define QUEUE_GROUP					2
+#define LEG_R_GROUP					3
+#define LEG_L_GROUP					4
+
 	
 //=========================================================
 // monster-specific schedule types
@@ -222,6 +234,11 @@ public:
 
 	float m_flLastHurtTime;// we keep track of this, because if something hurts a squid, it will forget about its love of headcrabs for a while.
 	float m_flNextSpitTime;// last time the bullsquid used the spit attack.
+
+	//modif de Julien
+	void MakeGib ( int body, entvars_t *pevAttacker );
+	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType);
+
 };
 
 LINK_ENTITY_TO_CLASS( monster_bullchicken, CBullsquid )
@@ -310,6 +327,80 @@ int CBullsquid::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, flo
 
 	return CBaseMonster::TakeDamage( pevInflictor, pevAttacker, flDamage, bitsDamageType );
 }
+
+
+// modif de julien
+void CBullsquid :: TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType)
+{
+	CBaseMonster :: TraceAttack( pevAttacker, flDamage, vecDir, ptr, bitsDamageType);
+
+	//demembrage
+
+	if ( gMultiDamage.pEntity != this )
+		return;
+	
+	if ( ( pev->health - ( gMultiDamage.amount ) <= 0 )  && IsAlive() && m_iHasGibbed == 0 )
+	{
+/*		if ( ptr->iHitgroup == HITGROUP_CHEST )
+		{
+			ptr->iHitgroup = RANDOM_LONG ( 1,3 );
+			ptr->iHitgroup = ptr->iHitgroup == 2 ? HITGROUP_LEFTARM : ptr->iHitgroup;
+			ptr->iHitgroup = ptr->iHitgroup == 3 ? HITGROUP_RIGHTARM : ptr->iHitgroup;
+		}*/
+
+		switch ( ptr->iHitgroup )
+		{
+/*		case HITGROUP_RIGHTARM:
+			SetBodygroup( ARM_R_GROUP, NO_MEMBRE);
+			MakeGib ( 3, pevAttacker );
+			break;
+		case HITGROUP_LEFTARM:
+			SetBodygroup( ARM_L_GROUP, NO_MEMBRE);
+			MakeGib ( 3, pevAttacker );
+			break;
+*/		case HITGROUP_RIGHTLEG:
+			SetBodygroup( LEG_R_GROUP, NO_MEMBRE);
+			MakeGib ( 0, pevAttacker );
+			break;
+		case HITGROUP_LEFTLEG:
+			SetBodygroup( LEG_L_GROUP, NO_MEMBRE);
+			MakeGib ( 0, pevAttacker );
+			break;
+		case HITGROUP_HEAD:
+			SetBodygroup( MOUTH_GROUP, NO_MEMBRE);
+			MakeGib ( 2, pevAttacker );
+			break;
+		case HITGROUP_QUEUE:
+			SetBodygroup( QUEUE_GROUP, NO_MEMBRE);
+			MakeGib ( 1, pevAttacker );
+			break;
+
+		}
+	}
+
+}
+
+void CBullsquid :: MakeGib ( int body, entvars_t *pevAttacker )
+{
+
+	if ( m_iHasGibbed == 1 )
+		return;
+	m_iHasGibbed = 1;
+
+	CGib *pGib = GetClassPtr( (CGib *)NULL );
+	pGib->Spawn( "models/bullsquid_gibs.mdl" );
+	pGib->m_bloodColor = BLOOD_COLOR_YELLOW;
+	pGib->pev->body = body;
+
+	pGib->pev->origin = pev->origin + Vector ( 0, 0, 40 );
+	pGib->pev->velocity = ( Center() - pevAttacker->origin).Normalize() * 300;
+	
+	pGib->pev->avelocity.x = RANDOM_FLOAT ( 100, 200 );
+	pGib->pev->avelocity.y = RANDOM_FLOAT ( 100, 300 );
+
+}
+
+
 
 //=========================================================
 // CheckRangeAttack1
@@ -694,6 +785,8 @@ void CBullsquid::Spawn()
 void CBullsquid::Precache()
 {
 	PRECACHE_MODEL( "models/bullsquid.mdl" );
+
+	PRECACHE_MODEL("models/bullsquid_gibs.mdl"); //modif de Julien
 
 	PRECACHE_MODEL( "sprites/bigspit.spr" );// spit projectile.
 

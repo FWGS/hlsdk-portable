@@ -73,6 +73,10 @@ typedef enum
 		SCHED_AISCRIPT,
 		SCHED_FAIL,
 
+		// modif de Julien
+
+		SCHED_BURNT,
+
 		LAST_COMMON_SCHEDULE			// Leave this at the bottom
 } SCHEDULE_TYPE;
 
@@ -171,6 +175,10 @@ typedef enum
 		TASK_REMEMBER,
 		TASK_FORGET,
 		TASK_WAIT_FOR_MOVEMENT,			// wait until MovementIsComplete()
+
+		// modif de Julien
+		TASK_GET_BURNT_COVER,
+
 		LAST_COMMON_TASK // LEAVE THIS AT THE BOTTOM!! (sjb)
 } SHARED_TASKS;
 

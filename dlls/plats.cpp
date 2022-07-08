@@ -773,6 +773,19 @@ void CFuncTrain::Next( void )
 		ClearBits( pev->effects, EF_NOINTERP );
 		SetMoveDone( &CFuncTrain::Wait );
 		LinearMove( pTarg->pev->origin - ( pev->mins + pev->maxs ) * 0.5f, pev->speed );
+
+		//modif de Julien
+	/*	if ( (pev->spawnflags & 2) && ( pTarg->pev->angles != Vector ( 0, 0, 0 ) ) )
+		{
+			ALERT ( at_console, " TOTOTOTOTOTOTOTOT\n" );
+			Vector vecDestDelta = pTarg->pev->angles;
+
+			float time = (pTarg->pev->origin - (pev->mins + pev->maxs)* 0.5).Length() / pev->speed;
+
+			pev->avelocity = Vector ( 200, 0, 0 );//vecDestDelta / time;
+		}*/
+
+		
 	}
 }
 
