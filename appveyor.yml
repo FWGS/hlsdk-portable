@@ -20,7 +20,7 @@ configuration:
 
 before_build:
   - git submodule update --init --recursive
-  - cmake -G "%GENERATOR_NAME%" -B build -DGOLDSOURCE_SUPPORT=ON -DCMAKE_INSTALL_PREFIX="dist"
+  - cmake -G "%GENERATOR_NAME%" -B build -DCMAKE_INSTALL_PREFIX="dist"
 
 artifacts:
   - path: dist
