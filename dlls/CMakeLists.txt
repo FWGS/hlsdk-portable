@@ -41,6 +41,10 @@ if (USE_GSTREAMER AND (${CMAKE_SYSTEM_NAME} STREQUAL "Linux"))
 	add_definitions(-DUSE_GSTREAMER)
 endif()
 
+if (USE_MINIAUDIO)
+	add_definitions(-DUSE_MINIAUDIO)
+endif()
+
 if (USE_FMOD AND (WIN32 OR NOT (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")))
 	add_definitions(-DUSE_FMOD)
 endif()

@@ -47,7 +47,7 @@ Things fixed while transferring code:
 - Sniper rifle zoom states didn't work, m_pPlayer->pev->fov needed to be equalized to m_pPlayer->m_iFOV.
 - VGUI used to hard-crash, partially fixed: CImageLables in vgui_OrdiControl that caused the crash were replaced with CommandButtons, skipTime added to keypad, OrdiMenu and OrdiControl in order to fix double mouse key presses, +1 added to radiomsg.cpp to fix the butts of the text messages, HUD health display didn't work due to Health Msg system receieving Battery-related data, fixed by manually re-coping a part of old code and paritioning it properly.
 - Also fixed .txt files and fonts not loading due to backslashes, VGUI folder name being written in capitals and such.
-- Music not playing fixed by creating a GStreamer implementation.
+- Music not playing fixed by creating Miniaudio (thanks @nekonomicon) and GStreamer implementations.
 - l2m3 has a green exploding tank, which has func_door's named tremble_1 and tremble_2, when activated they cause SegFault on any non GoldSource-compatible build. Don't know why yet. Fixed by replacing a multi-manager target with garbage names if the map name and targetname match, see triggers.cpp.
 - Tank used to have a weird sound (glock event playback) when primary attack is activated, fixed with m_iPlayerInTankExternal see hud_tank.cpp and hl_weapons.cpp.
 - IR gun didn't actually Infra-Red anything, fixed by transferring changes to StudioModelRenderer.cpp.
@@ -78,25 +78,33 @@ systems - you're more than welcome to do so!
 
 	mkdir build
 	cd build
-	cmake ../ -DUSE_VGUI=1 -DUSE_GSTREAMER=1
+	cmake ../ -DUSE_VGUI=1 -DUSE_MINIAUDIO=1
 	make
 
-On Debian, the following is necessary to:
+Must be built with -DUSE_VGUI=1 to work properly, as this mod makes heavy use of true-VGUI, thus update the modules when clonning.
+
+To be able to hear music during gameplay, on the following three is necessary:
+-DUSE_MINIAUDIO=1 (this is the smallest and most compatible implementation as of now),
+-DUSE_GSTREAMER=1 (and have appropriate architechture (i386) gstreamer-1.0 and dev packages installed), or,
+-DUSE_FMOD=1 (untested, on Windows and will require fmod headers v 3.6.1 if you can still get them somewhere).
+
+If using MiniAudio, make sure the submodules are updated.
+As mentioned above, you have to do it anyway to get the VGUI headers.
+
+If GStreamer is preferred, on Debian, the following is necessary to:
 
 	sudo apt install libgstreamer1.0:i386 #to play with music (also install plugins)
-	sudo apt install libgstreamer1.0-dev:i386 #to compile with music (-DUSE_GSTREAMER=1)
+	sudo apt install libgstreamer1.0-dev:i386 #to compile with music 
 
-Also added -DUSE_FMOD option for cmake and tried my best to prevent it being used in Linux (uses windows.h include).
+So far GStreamer should only compile on Linux, as I haven't tested it (or linking it) on any other system.
+Also, dlls/CMakeLists.txt must have a system-appropriate path to i386 version of GStreamer headers.
+See set for ```ENV{PKG_CONFIG_PATH}```.
+
+The FMod option can be used on Windows instead (uses windows.h include),
+but requires and old and outdated FMod implementation v 3.6.1. Not recommended.
 
 The following will likely be necessary to compile a gold-source compatible (old xash, e.t.c) binaries:
 	
 	sudo apt install libsdl2-dev:i386
 
 (but this wants to install a ton of i386 dev packages)
-
-Must be built with -DUSE_VGUI=1 at least to work properly (thus, update the modules when clonning).
-Must be built with either -DUSE_FMOD=1 (untested, on Windows and will require fmod headers v 3.6.1 if you can still get them somewhere),
-or -DUSE_GSTREAMER=1 (and have appropriate architechture (i386) gstreamer-1.0 and dev packages installed) to be able to play with music.
-So far GStreamer should only compile on Linux, as I haven't tested it (or linking it) on any other system.
-Also, dlls/CMakeLists.txt must have a system-appropriate path to i386 version of GStreamer headers.
-See set for ```ENV{PKG_CONFIG_PATH}```.

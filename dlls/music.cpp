@@ -18,6 +18,8 @@ This code is a placeholder for systems that support neither gstreamer nor fmod.
 
 #ifdef USE_GSTREAMER
 #include "musicgstreamer.cpp"
+#elif defined(USE_MINIAUDIO)
+#include "musicminiaudio.cpp"
 #elif defined(USE_FMOD)
 #include "musicfmod.cpp"
 #else
