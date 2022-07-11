@@ -78,30 +78,15 @@ systems - you're more than welcome to do so!
 
 	mkdir build
 	cd build
-	cmake ../ -DUSE_VGUI=1 -DUSE_MINIAUDIO=1
+	cmake ../ -DUSE_VGUI=1
 	make
 
-Must be built with -DUSE_VGUI=1 to work properly, as this mod makes heavy use of true-VGUI, thus update the modules when clonning.
+Must be built with -DUSE_VGUI=1 to work properly, as this mod makes heavy use of true-VGUI,
+also it builds with miniaudio by default, thus update the modules when clonning.
 
-To be able to hear music during gameplay, on the following three is necessary:
--DUSE_MINIAUDIO=1 (this is the smallest and most compatible implementation as of now),
--DUSE_GSTREAMER=1 (and have appropriate architechture (i386) gstreamer-1.0 and dev packages installed), or,
--DUSE_FMOD=1 (untested, on Windows and will require fmod headers v 3.6.1 if you can still get them somewhere).
-
-If using MiniAudio, make sure the submodules are updated.
-As mentioned above, you have to do it anyway to get the VGUI headers.
-
-If GStreamer is preferred, on Debian, the following is necessary to:
-
-	sudo apt install libgstreamer1.0:i386 #to play with music (also install plugins)
-	sudo apt install libgstreamer1.0-dev:i386 #to compile with music 
-
-So far GStreamer should only compile on Linux, as I haven't tested it (or linking it) on any other system.
-Also, dlls/CMakeLists.txt must have a system-appropriate path to i386 version of GStreamer headers.
-See set for ```ENV{PKG_CONFIG_PATH}```.
-
-The FMod option can be used on Windows instead (uses windows.h include),
-but requires and old and outdated FMod implementation v 3.6.1. Not recommended.
+A miniaudio music player implementation is used to allow music during gameplay,
+if it can not be used in your environment, it can be disabled with the use of:
+-DDISABLE_MINIAUDIO=1 cmake option.
 
 The following will likely be necessary to compile a gold-source compatible (old xash, e.t.c) binaries:
 	

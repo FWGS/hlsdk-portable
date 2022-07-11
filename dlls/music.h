@@ -1,20 +1,26 @@
-//---------------------------------------------------------
-//---------------------------------------------------------
-//-														---
-//-					music.h							---
-//-														---
-//---------------------------------------------------------
-//---------------------------------------------------------
-//-	by Roy, based on the code by JujU									-----------
-//---------------------------------------------------------
-//- tee file for null player
-//---------------------------------------------------------
-
+//-------------------------------------------------------------
+//-------------------------------------------------------------
+//-
+//-				music.h
+//-
+//-------------------------------------------------------------
+//-------------------------------------------------------------
+//- by Roy at suggestion by nekonomicon, based on code by JujU
+//-------------------------------------------------------------
+//- mp3 player code for HL mod
+//-------------------------------------------------------------
+//-
+//- compatible with version 0.11.9 of Miniaudio
+//- https://github.com/mackron/miniaudio
+//-
+//-------------------------------------------------------------
 
 #ifndef MUSIC_H
 #define MUSIC_H
 
-//Temporary plug to have something to work with on Linux modif de Roy
+#define MINIAUDIO_IMPLEMENTATION
+#include "../miniaudio/miniaudio.h"
+
 //---------------------------------------------------------
 // defines
 
@@ -22,7 +28,7 @@
 #define MUSIC_LIST_FILE			0
 
 //---------------------------------------------------------
-// structure of the audio file entity
+// audio file structure
 
 struct audiofile_t
 {
@@ -32,41 +38,45 @@ struct audiofile_t
 };
 
 //---------------------------------------------------------
-// music class
+// reader class
 
 
 class CMusic
 {
 public:
 
-	// fonctions de lecture
+	// reading functions
 
-	void OpenFile			( const char *filename, int repeat );	// ouverture d'un simple fichier
-	void OpenList			( const char *filename );						// ouverture d'un fichier texte contenant les fichiers 
+	void OpenFile			( const char *filename, int repeat );	// open a single file
+	void OpenList			( const char *filename );						// opening a text file containing the files
 
-	void Init				( void );		// initialisation
+	void Init				( void );		// initialization
 
-	void Play				( void );		// lecture
-	void Stop				( void );		// arr
-	void Reset				( void );		// fermeture
+	void Play				( void );		// playback
+	void Stop				( void );		// stop
+	void Reset				( void );		// pause and switch to next track
+	void Terminate				( void );		// clean-up during termination
 
 	// variables
 
-	
-	int m_fsound; //We don't actually have FMOD, so just an int handle.
+	BOOL m_IsPlaying;						// monitors whether the music is played, used to pause the music
+	BOOL m_bInit;							// checks if the player is initialized
 
-	BOOL m_IsPlaying;						// t
-	BOOL m_bInit;							// t
+	audiofile_t *m_pTrack;					// playlist items
 
-	audiofile_t *m_pTrack;	//current track
-
-	// constructor & destructor
+	// constructor / destructor
 
 	CMusic	()	{ m_bInit = FALSE; m_IsPlaying = FALSE; m_pTrack = NULL; Reset(); };
-	~CMusic ()	{};
+	~CMusic ()	{ Terminate(); };
 
-	// functions import
-	// none, see window / Julien's code.
+	// object instances
+
+	ma_result result;
+	ma_decoder decoder;
+	ma_device_config deviceConfig;
+	ma_device device;
+
+	void songEnd();
 };
 
 extern CMusic g_MusicPlayer;

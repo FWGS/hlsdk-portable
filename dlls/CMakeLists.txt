@@ -37,16 +37,8 @@ else()
 	add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_DEPRECATE)
 endif()
 
-if (USE_GSTREAMER AND (${CMAKE_SYSTEM_NAME} STREQUAL "Linux"))
-	add_definitions(-DUSE_GSTREAMER)
-endif()
-
-if (USE_MINIAUDIO)
-	add_definitions(-DUSE_MINIAUDIO)
-endif()
-
-if (USE_FMOD AND (WIN32 OR NOT (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")))
-	add_definitions(-DUSE_FMOD)
+if (DISABLE_MINIAUDIO)
+	add_definitions(-DDISABLE_MINIAUDIO)
 endif()
 
 set (SVDLL_SOURCES
@@ -170,40 +162,7 @@ set (SVDLL_SOURCES
 	zombie.cpp
 )
 
-if (USE_GSTREAMER AND (${CMAKE_SYSTEM_NAME} STREQUAL "Linux"))
-	#if we're using gstreamer music
-	if (NOT 64BIT)
-		set(ENV{PKG_CONFIG_PATH} "/usr/lib/i386-linux-gnu/pkgconfig")
-	endif()
-	find_package(PkgConfig REQUIRED)
-	pkg_check_modules(GLIB REQUIRED glib-2.0)
-
-	set(GSTREAMER_MINIMUM_VERSION 1.0.5)
-	pkg_check_modules(GST1_TEST gstreamer-1.0)
-	if ( GST1_TEST_FOUND AND NOT ${GST1_TEST_VERSION} VERSION_LESS ${GSTREAMER_MINIMUM_VERSION} )
-	    pkg_check_modules(GSTREAMER REQUIRED gstreamer-1.0)
-	    add_definitions(-DGST_API_VERSION_1=1)
-	endif()
-                 
-	link_directories(
-	  ${GSTREAMER_LIBRARY_DIRS}
-	  ${GLIB_LIBRARY_DIRS}
-	)
-	set(GST_LIBRARIES
-	  ${GSTREAMER_LIBRARIES}
-	  ${GSTREAMER-APP_LIBRARIES}
-	  ${GSTREAMER-AUDIO_LIBRARIES}
-	  ${GSTREAMER-PBUTILS_LIBRARIES}
-	  ${GSTREAMER-FFT_LIBRARIES}
-	    
-	  pthread
-	  ${GLIB_LIBRARIES}
-	  ${GLIB_GIO_LIBRARIES}
-	  ${GLIB_GOBJECT_LIBRARIES}
-	)
-endif()
-
-include_directories (. wpn_shared ../common ../engine ../pm_shared ../game_shared ../public ${GLIB_INCLUDE_DIRS} ${GSTREAMER_INCLUDE_DIRS})
+include_directories (. wpn_shared ../common ../engine ../pm_shared ../game_shared ../public)
 
 if(MSVC)
 	set(SVDLL_SOURCES
@@ -220,9 +179,6 @@ else()
 endif()
 
 add_library (${SVDLL_LIBRARY} SHARED ${SVDLL_SOURCES})
-if (USE_GSTREAMER AND (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")) #More gstreamer linkage stuff
-	target_link_libraries(${SVDLL_LIBRARY} ${GST_LIBRARIES})
-endif()
 
 set_target_properties (${SVDLL_LIBRARY} PROPERTIES
 	POSITION_INDEPENDENT_CODE 1)
