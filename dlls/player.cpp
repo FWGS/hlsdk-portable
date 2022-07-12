@@ -234,6 +234,7 @@ int gmsgTankView = 0;
 int gmsgRadioMsg = 0;
 int gmsgKeypad = 0;
 int gmsgConveyor = 0;
+int gmsgCMusicMessage = 0; //modif de Roy, Used by the music player to send filenames to the client side.
 
 
 void LinkUserMessages( void )
@@ -321,6 +322,7 @@ void LinkUserMessages( void )
 	gmsgKeypad		= REG_USER_MSG( "Keypad",		-1);
 	gmsgConveyor	= REG_USER_MSG( "Conveyor",		-1);
 	//fin de modifs de Julien
+	gmsgCMusicMessage = REG_USER_MSG( "CMusicOpen", -1 ); //modif de Roy, Used by the music player to send filenames to the client side.
 
 	gmsgTeamNames = REG_USER_MSG( "TeamNames", -1 );
 	gmsgBhopcap = REG_USER_MSG( "Bhopcap", 1 );

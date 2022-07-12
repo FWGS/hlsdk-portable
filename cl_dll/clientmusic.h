@@ -1,7 +1,7 @@
 //-------------------------------------------------------------
 //-------------------------------------------------------------
 //-
-//-				music.h
+//-			clientmusic.h
 //-
 //-------------------------------------------------------------
 //-------------------------------------------------------------
@@ -15,8 +15,8 @@
 //-
 //-------------------------------------------------------------
 
-#ifndef MUSIC_H
-#define MUSIC_H
+#ifndef CLIENTMUSIC_H
+#define CLIENTMUSIC_H
 
 #define MINIAUDIO_IMPLEMENTATION
 #include "../miniaudio/miniaudio.h"
@@ -41,14 +41,14 @@ struct audiofile_t
 // reader class
 
 
-class CMusic
+class CMusic //: public CHudBase
 {
 public:
 
 	// reading functions
 
-	void OpenFile			( const char *filename, int repeat );	// open a single file
-	void OpenList			( const char *filename );						// opening a text file containing the files
+	void OpenFile			( char *filename, int repeat );	// open a single file
+	void OpenList			( char *filename );						// opening a text file containing the files
 
 	void Init				( void );		// initialization
 
@@ -59,14 +59,14 @@ public:
 
 	// variables
 
-	BOOL m_IsPlaying;						// monitors whether the music is played, used to pause the music
-	BOOL m_bInit;							// checks if the player is initialized
+	bool m_IsPlaying;						// monitors whether the music is played, used to pause the music
+	bool m_bInit;							// checks if the player is initialized
 
 	audiofile_t *m_pTrack;					// playlist items
 
 	// constructor / destructor
 
-	CMusic	()	{ m_bInit = FALSE; m_IsPlaying = FALSE; m_pTrack = NULL; Reset(); };
+	CMusic	()	{ m_bInit = false; m_IsPlaying = false; m_pTrack = NULL; Reset(); };
 	~CMusic ()	{ Terminate(); };
 
 	// object instances
@@ -76,8 +76,14 @@ public:
 	ma_device_config deviceConfig;
 	ma_device device;
 
+	// messages
+
+	int MsgFunc_CMusicOpen ( const char *pszName, int iSize, void *pbuf );
+
+	// monitoring functions
+
 	void songEnd();
 };
 
 extern CMusic g_MusicPlayer;
-#endif // MUSIC_H
+#endif // CLIENTMUSIC_H

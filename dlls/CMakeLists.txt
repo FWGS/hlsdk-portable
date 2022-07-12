@@ -37,10 +37,6 @@ else()
 	add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_DEPRECATE)
 endif()
 
-if (DISABLE_MINIAUDIO)
-	add_definitions(-DDISABLE_MINIAUDIO)
-endif()
-
 set (SVDLL_SOURCES
 	aflock.cpp
 	agrunt.cpp

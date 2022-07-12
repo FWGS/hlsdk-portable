@@ -801,7 +801,13 @@ public:
 };
 
 
-
+// modif de Roy
+class CHudMusic : public CHudBase // This class is simply a message receiver for the music player
+{
+public: //The methods are implemented in clientmusic.cpp
+	int Init( void ); //This gets called from hud.cpp
+	int MsgFunc_CMusicOpen ( const char *pszName, int iSize, void *pbuf );
+};
 
 // modif de Julien
 //
@@ -1078,6 +1084,7 @@ public:
 	CHudParticules m_Particules;
 	CHudSniper m_Sniper;
 	CHudNVG m_NVG;
+	CHudMusic m_MusicPlayer; //modif de Roy, we need an instance of the music player's message receiver
 	CHudRPG m_RPG;
 	CHudFog m_Fog;
 	CHudLFlammes m_LFlammes;
