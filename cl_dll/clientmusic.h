@@ -19,7 +19,15 @@
 #define CLIENTMUSIC_H
 
 #define MINIAUDIO_IMPLEMENTATION
+
+#if _WIN32
+#define HSPRITE WINDOWS_HSPRITE //Apparently miniaudio introduces a win32 conflict here.
+#endif
 #include "../miniaudio/miniaudio.h"
+#if _WIN32
+#undef HSPRITE
+#endif
+
 
 //---------------------------------------------------------
 // defines

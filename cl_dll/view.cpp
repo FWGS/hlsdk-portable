@@ -35,7 +35,6 @@
 // modif de Julien
 extern float in_fov;
 
-
 // Spectator Mode
 extern "C" 
 {
@@ -123,7 +122,6 @@ cvar_t	v_ipitch_level		= {"v_ipitch_level", "0.3", 0, 0.3};
 
 float	v_idlescale;  // used by TFC for concussion grenade effect
 
-/*
 //=============================================================================
 /*
 void V_NormalizeAngles( float *angles )
@@ -569,21 +567,9 @@ void V_CalcNormalRefdef( struct ref_params_s *pparams )
 
 		AngleVectors( camAngles, camForward, camRight, camUp );
 
-
-/*		// modif de Julien
-		if ( gHUD.m_HudTank.m_iPlayerInTank == true )
+		for( i = 0; i < 3; i++ )
 		{
-			VectorCopy( gEngfuncs.GetEntityByIndex( gHUD.m_HudTank.m_iCamEnt - 1 )->origin,	pparams->vieworg );
-
-			for ( i = 0; i < 3; i++ )
-				pparams->vieworg[ i ] += -ofs[2] * camForward[ i ];
-		}
-		else*/
-		{
-			for ( i = 0; i < 3; i++ )
-			{
-				pparams->vieworg[ i ] += -ofs[2] * camForward[ i ];
-			}
+			pparams->vieworg[i] += -ofs[2] * camForward[i];
 		}
 	}
 
@@ -753,7 +739,7 @@ void V_CalcNormalRefdef( struct ref_params_s *pparams )
 		VectorCopy( camAngles, pparams->viewangles );
 	}
 
-	// Apply this at all times //HLINVASION Julien --> This whole section was only in the ThirdPerson if block above in Julien's code.
+	// Apply this at all times
 	{
 		float pitch = camAngles[0];
 
@@ -803,286 +789,6 @@ void V_CalcNormalRefdef( struct ref_params_s *pparams )
 
 	if ( in_fov != 0 && in_fov != 90 )
 		view->model = NULL;
-
-}
-
-
-void V_GetInEyePos(int entity, float *origin, float * angles )
-{
-	cl_entity_t	 * ent = gEngfuncs.GetEntityByIndex( entity );
-
-	if ( !ent )
-		return;
-
-	if ( !ent->player || g_PlayerInfoList[entity].name == NULL )
-		return;
-
-	VectorCopy ( ent->origin, origin );
-	VectorCopy ( ent->angles, angles );
-
-	angles[0]*=-M_PI;
-
-	if ( ent->curstate.solid == SOLID_NOT )
-	{
-		angles[ROLL] = 80;	// dead view angle
-		origin[2]+= -8 ; // PM_DEAD_VIEWHEIGHT
-	}
-	else if (ent->curstate.usehull == 1 )
-		origin[2]+= 12; // VEC_DUCK_VIEW;
-	else
-		// exacty eye position can't be caluculated since it depends on
-		// client values like cl_bobcycle, this offset matches the default values
-		origin[2]+= 28; // DEFAULT_VIEWHEIGHT
-}
-
-/*
-==================
-V_CalcSpectatorRefdef
-
-==================
-*/
-void V_CalcSpectatorRefdef ( struct ref_params_s *pparams )
-{
-	cl_entity_t		*ent, *view;
-	vec3_t			angles;
-	static viewinterp_t		ViewInterp;
-
-	static float lasttime;
-
-	static float lastang[3];
-	static float lastorg[3];
-
-	vec3_t delta;
-
-	
-	// ent is the player model ( visible when out of body )
-	ent = gEngfuncs.GetLocalPlayer();
-	
-	// view is the weapon model (only visible from inside body )
-	view = gEngfuncs.GetViewModel();
-
-	
-	// refresh position
-	VectorCopy ( pparams->simorg, pparams->vieworg );
-
-	// done all the spectator smoothing only once in the first frame
-
-	// Observer angle capturing and smoothing
-	if ( iHasNewViewOrigin )
-	{
-		// Get the angles from the physics code
-		VectorCopy( vecNewViewOrigin, pparams->vieworg );
-	}
-	else
-	{
-		// otherwise copy normal vieworigin into vecNewViewOrigin
-		VectorCopy( pparams->vieworg, vecNewViewOrigin );
-	}
-
-	VectorCopy ( pparams->cl_viewangles, pparams->viewangles );
-
-	// Observer angle capturing and smoothing
-	if ( iHasNewViewAngles )
-	{
-		// Get the angles from the physics code
-		VectorCopy( vecNewViewAngles, pparams->viewangles );
-	}
-	else
-	{
-		// otherwise copy normal viewangle into vewNewViewAngles
-		VectorCopy( pparams->viewangles, vecNewViewAngles);
-	}
-
-	// do the smoothing only once per frame
-	if (pparams->nextView == 0)
-	{
-		// smooth angles
-
-		VectorSubtract( pparams->viewangles, lastang, delta );
-		if ( Length( delta ) != 0.0f )
-		{
-			VectorCopy( pparams->viewangles, ViewInterp.Angles[ ViewInterp.CurrentAngle & ORIGIN_MASK ] );
-			ViewInterp.AngleTime[ ViewInterp.CurrentAngle & ORIGIN_MASK ] = pparams->time;
-			ViewInterp.CurrentAngle++;
-			VectorCopy( pparams->viewangles, lastang );
-		}
-
-		if ( cl_vsmoothing && cl_vsmoothing->value && ( iIsSpectator & SPEC_SMOOTH_ANGLES ) )
-		{
-			int foundidx;
-			int i;
-			float t;
-
-			t = pparams->time - cl_vsmoothing->value;
-
-			for ( i = 1; i < ORIGIN_MASK; i++ )
-			{
-				foundidx = ViewInterp.CurrentAngle - 1 - i;
-				if ( ViewInterp.AngleTime[ foundidx & ORIGIN_MASK ] <= t )
-					break;
-			}
-			
-			if ( i < ORIGIN_MASK && ViewInterp.AngleTime[ foundidx & ORIGIN_MASK ] != 0.0 )
-			{
-				// Interpolate
-				double dt;
-				float  da;
-				vec3_t	v1,v2;
-
-				AngleVectors( ViewInterp.Angles[ foundidx & ORIGIN_MASK ], v1, NULL, NULL );
-				AngleVectors( ViewInterp.Angles[ (foundidx + 1) & ORIGIN_MASK ], v2, NULL, NULL );
-				da = AngleBetweenVectors( v1, v2 );
-
-				dt = ViewInterp.AngleTime[ (foundidx + 1) & ORIGIN_MASK ] - ViewInterp.AngleTime[ foundidx & ORIGIN_MASK ];
-					
-				if ( dt > 0.0 && ( da < 22.5f) )
-				{
-					double frac;
-
-					frac = ( t - ViewInterp.AngleTime[ foundidx & ORIGIN_MASK] ) / dt;
-					frac = Q_min( 1.0, frac );
-
-					// interpolate angles
-					InterpolateAngles( ViewInterp.Angles[ foundidx & ORIGIN_MASK ], ViewInterp.Angles[ (foundidx + 1) & ORIGIN_MASK ], vecNewViewAngles, frac );
-					VectorCopy( vecNewViewAngles, pparams->viewangles );
-				}
-			}
-		} 
-
-		// smooth origin
-		
-		VectorSubtract( pparams->vieworg, lastorg, delta );
-
-		if ( Length( delta ) != 0.0 )
-		{
-			VectorCopy( pparams->vieworg, ViewInterp.Origins[ ViewInterp.CurrentOrigin & ORIGIN_MASK ] );
-			ViewInterp.OriginTime[ ViewInterp.CurrentOrigin & ORIGIN_MASK ] = pparams->time;
-			ViewInterp.CurrentOrigin++;
-
-			VectorCopy( pparams->vieworg, lastorg );
-		}
-
-		if ( cl_vsmoothing && cl_vsmoothing->value && ( iIsSpectator & SPEC_SMOOTH_ORIGIN )  )
-		{
-			int foundidx;
-			int i;
-			float t;
-
-			t = pparams->time - cl_vsmoothing->value;
-
-			for ( i = 1; i < ORIGIN_MASK; i++ )
-			{
-				foundidx = ViewInterp.CurrentOrigin - 1 - i;
-				if ( ViewInterp.OriginTime[ foundidx & ORIGIN_MASK ] <= t )
-					break;
-			}
-
-			if ( i < ORIGIN_MASK &&  ViewInterp.OriginTime[ foundidx & ORIGIN_MASK ] != 0.0 )
-			{
-				// Interpolate
-				vec3_t delta;
-				double frac;
-				double dt;
-				vec3_t neworg;
-
-				dt = ViewInterp.OriginTime[ (foundidx + 1) & ORIGIN_MASK ] - ViewInterp.OriginTime[ foundidx & ORIGIN_MASK ];
-				if ( dt > 0.0 )
-				{
-					frac = ( t - ViewInterp.OriginTime[ foundidx & ORIGIN_MASK] ) / dt;
-					frac = Q_min( 1.0, frac );
-					VectorSubtract( ViewInterp.Origins[ ( foundidx + 1 ) & ORIGIN_MASK ], ViewInterp.Origins[ foundidx & ORIGIN_MASK ], delta );
-					VectorMA( ViewInterp.Origins[ foundidx & ORIGIN_MASK ], frac, delta, neworg );
-
-					// Dont interpolate large changes
-					if ( Length( delta ) < 64 )
-					{
-						VectorSubtract( neworg, pparams->simorg, delta );
-
-						VectorAdd( pparams->vieworg, delta, pparams->vieworg );
-						VectorCopy( pparams->vieworg, vecNewViewOrigin );
-					}
-				}
-			}
-		}
-	}	
-
-	
-
-	
-	lasttime = pparams->time;
-
-	view->model = NULL;
-
-	if ( pparams->nextView == 0 )
-	{
-		// first renderer cycle
-
-		switch (gHUD.m_Spectator.m_iMainMode)
-		{
-			case MAIN_MAP_FREE  :	pparams->onlyClientDraw = true;
-
-									angles = pparams->cl_viewangles;
-									angles[0] = 51.25f + 38.75f*(angles[0]/90.0f);
-									
-									VectorCopy ( angles, gHUD.m_Spectator.m_mapAngles );
-													
-									gHUD.m_Spectator.GetMapPosition( pparams->vieworg );
-									VectorCopy ( angles, pparams->viewangles );
-									break;
-					
-			case MAIN_IN_EYE	:   V_GetInEyePos( gHUD.m_Spectator.m_iObserverTarget,
-										pparams->vieworg, pparams->viewangles );
-				
-									break;
-
-			default				:	pparams->onlyClientDraw = false;
-									break;
-		}
-
-		if ( gHUD.m_Spectator.m_iInsetMode != INSET_OFF )
-			pparams->nextView = 1;	// force a second renderer view
-
-		gHUD.m_Spectator.m_iDrawCycle = 0;
-
-	}
-	else
-	{
-		// second renderer cycle
-
-		// set inset parameters
-		pparams->viewport[0] = XRES(gHUD.m_Spectator.m_OverviewData.insetWindowX);	// change viewport to inset window
-		pparams->viewport[1] = YRES(gHUD.m_Spectator.m_OverviewData.insetWindowY);
-		pparams->viewport[2] = XRES(gHUD.m_Spectator.m_OverviewData.insetWindowWidth);
-		pparams->viewport[3] = YRES(gHUD.m_Spectator.m_OverviewData.insetWindowHeight);
-		pparams->nextView	 = 0;	// on further view
-		pparams->onlyClientDraw = false;
-
-		// override some settings in certain modes
-		switch (gHUD.m_Spectator.m_iInsetMode)
-		{
-			case INSET_MAP_FREE  :	pparams->onlyClientDraw = true;
-									
-									angles = pparams->cl_viewangles;
-									angles[0] = 51.25f + 38.75f*(angles[0]/90.0f);
-									
-									VectorCopy ( angles, gHUD.m_Spectator.m_mapAngles );
-
-									gHUD.m_Spectator.GetMapPosition( pparams->vieworg );
-
-									VectorCopy ( angles, pparams->viewangles );
-									break;
-
-			case INSET_IN_EYE	 :	 V_GetInEyePos( gHUD.m_Spectator.m_iObserverTarget,
-										pparams->vieworg, pparams->viewangles );
-				
-									break;
-		}
-
-		gHUD.m_Spectator.m_iDrawCycle = 1;
-	}
-
-	v_angles = pparams->viewangles;
-	v_origin = pparams->vieworg;
 }
 
 void V_SmoothInterpolateAngles( float * startAngle, float * endAngle, float * finalAngle, float degreesPerSec )
@@ -1527,7 +1233,7 @@ void V_ResetChaseCam()
 	v_resetCamera = true;
 }
 
-/*void V_GetInEyePos( int target, float *origin, float *angles ) //Redefinition of the above //modif de Julien o para Julien
+void V_GetInEyePos( int target, float *origin, float *angles )
 {
 	if( !target )
 	{
@@ -1558,7 +1264,7 @@ void V_ResetChaseCam()
 		// exacty eye position can't be caluculated since it depends on
 		// client values like cl_bobcycle, this offset matches the default values
 		origin[2] += 28.0f; // DEFAULT_VIEWHEIGHT
-}*/
+}
 
 void V_GetMapFreePosition( float *cl_angles, float *origin, float *angles )
 {
@@ -1674,7 +1380,7 @@ V_CalcSpectatorRefdef
 
 ==================
 */
-/*void V_CalcSpectatorRefdef( struct ref_params_s * pparams ) //Redefinition of the above //modif de Julien o para Julien
+void V_CalcSpectatorRefdef( struct ref_params_s * pparams )
 {
 	static vec3_t velocity( 0.0f, 0.0f, 0.0f );
 
@@ -1832,7 +1538,7 @@ V_CalcSpectatorRefdef
 	VectorCopy( v_cl_angles, pparams->cl_viewangles );
 	VectorCopy( v_angles, pparams->viewangles )
 	VectorCopy( v_origin, pparams->vieworg );
-}*/
+}
 
 void DLLEXPORT V_CalcRefdef( struct ref_params_s *pparams )
 {
