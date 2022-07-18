@@ -1,4 +1,4 @@
-# Half-Life SDK for GoldSource and Xash3D [![Build Status](https://github.com/FWGS/hlsdk-xash3d/actions/workflows/.github.yml/badge.svg?branch=master)](https://github.com/FWGS/hlsdk-xash3d/actions/workflows/.github.yml) [![Windows Build Status](https://ci.appveyor.com/api/projects/status/github/FWGS/hlsdk-xash3d?svg=true)](https://ci.appveyor.com/project/a1batross/hlsdk-xash3d)
+# Half-Life SDK for GoldSource and Xash3D [![Build Status](https://github.com/FWGS/hlsdk-portable/actions/workflows/.github.yml/badge.svg?branch=master)](https://github.com/FWGS/hlsdk-portable/actions/workflows/.github.yml) [![Windows Build Status](https://ci.appveyor.com/api/projects/status/github/FWGS/hlsdk-xash3d?svg=true)](https://ci.appveyor.com/project/a1batross/hlsdk-xash3d)
 
 Half-Life SDK for GoldSource & Xash3D with some bugfixes.
 
@@ -9,58 +9,65 @@ Either clone the repository via [git](`https://git-scm.com/downloads`) or just d
 To clone the repository with git type in Git Bash (on Windows) or in terminal (on Unix-like operating systems):
 
 ```
-git clone --recursive https://github.com/FWGS/hlsdk-xash3d
+git clone --recursive https://github.com/FWGS/hlsdk-portable
 ```
 
 # Build Instructions
 
-## Windows. Using Developer Command Propmt for Visual Studio
+## Windows
 
 ### Prerequisites
 
-Install and run [Visual Studio Installer](https://visualstudio.microsoft.com/downloads/). The installer allows you to choose specific components. Select `Desktop development with C++`. You can untick everything you don't need in Installation details, but you must keep `MSVC` and `C++ CMake tools for Windows` ticked.
+Install and run [Visual Studio Installer](https://visualstudio.microsoft.com/downloads/). The installer allows you to choose specific components. Select `Desktop development with C++`. You can untick everything you don't need in Installation details, but you must keep `MSVC` ticked. You may also keep `C++ CMake tools for Windows` ticked as you'll need **cmake**. Alternatively you can install **cmake** from the [cmake.org](https://cmake.org/download/) and during installation tick *Add to the PATH...*.
+
+### Opening command prompt
+
+If **cmake** was installed with Visual Studio Installer, you'll need to run `Developer command prompt for VS` via Windows `Start` menu. If **cmake** was installed with cmake installer, you can run the regular Windows `cmd`.
+
+Inside the prompt navigate to the hlsdk directory, using `cd` command, e.g.
+```
+cd C:\Users\username\projects\hlsdk-portable
+```
+
+Note: if hlsdk-portable is unpacked on another disk, nagivate there first:
+```
+D:
+cd projects\hlsdk-portable
+```
 
 ### Building
 
-Run `Developer command prompt for VS` via Windows `Start` menu. Inside the prompt navigate to the hlsdk directory, using `cd` command, e.g.
-```
-cd C:\Users\username\projects\hlsdk-xash3d
-```
-
-Note: if hlsdk-xash3d is unpacked on another disk, nagivate there first:
-```
-D:
-cd projects\hlsdk-xash3d
-```
-
 Сonfigure the project:
 ```
-cmake -A Win32 -B build -DCMAKE_INSTALL_PREFIX="dist"
+cmake -A Win32 -B build
 ```
 Once you configure the project you don't need to call `cmake` anymore unless you modify `CMakeLists.txt` files or want to reconfigure the project with different parameters.
 
 The next step is to compile the libraries:
 ```
-msbuild -verbosity:normal /property:Configuration=Release build/INSTALL.vcxproj
+cmake --build build --config Release
 ```
-`hl.dll` and `client.dll` will appear in the directory configured via **CMAKE_INSTALL_PREFIX** option (**dist** in this example).
+`hl.dll` and `client.dll` will appear in the `build/dlls/Release` and `build/cl_dll/Release` directories.
 
 If you have a mod and want to automatically install libraries to the mod directory, set **GAMEDIR** variable to the directory name and **CMAKE_INSTALL_PREFIX** to your Half-Life or Xash3D installation path:
 ```
 cmake -A Win32 -B build -DGAMEDIR=mod -DCMAKE_INSTALL_PREFIX="C:\Program Files (x86)\Steam\steamapps\common\Half-Life"
 ```
-Then call `msbuild` as described above.
+Then call `cmake` with `--target install` parameter:
+```
+cmake --build build --config Release --target install
+```
 
 #### Choosing Visual Studio version
 
 You can explicitly choose a Visual Studio version on the configuration step by specifying cmake generator:
 ```
-cmake -G "Visual Studio 16 2019" -A Win32 -B build -DCMAKE_INSTALL_PREFIX="dist"
+cmake -G "Visual Studio 16 2019" -A Win32 -B build
 ```
 
 ### Editing code in Visual Studio
 
-After the configuration step, `HLSDK-XASH3D.sln` should appear in the `build` directory. You can open this solution in Visual Studio and continue developing there.
+After the configuration step, `HLSDK-PORTABLE.sln` should appear in the `build` directory. You can open this solution in Visual Studio and continue developing there.
 
 ## Windows. Using Microsoft Visual Studio 6
 
@@ -95,9 +102,8 @@ sudo ./setup_chroot.sh --i386 --tarball ./com.valvesoftware.SteamRuntime.Sdk-i38
 
 Now you can use cmake and make prepending the commands with `schroot --chroot steamrt_scout_i386 --`:
 ```
-mkdir build-in-steamrt && cd build-in-steamrt
-schroot --chroot steamrt_scout_i386 -- cmake ..
-schroot --chroot steamrt_scout_i386 -- make
+schroot --chroot steamrt_scout_i386 -- cmake -B build-in-steamrt -S .
+schroot --chroot steamrt_scout_i386 -- cmake --build build-in-steamrt
 ```
 
 ## Linux. Build without Steam Runtime
@@ -112,9 +118,8 @@ sudo apt install cmake build-essential gcc-multilib g++-multilib libsdl2-dev:i38
 ### Building
 
 ```
-mkdir build && cd build
-cmake ..
-make
+cmake -B build -S .
+cmake --build build
 ```
 
 Note that the libraries built this way might be not compatible with Steam Half-Life. If you have such issue you can configure it to build statically with c++ and gcc libraries:
@@ -162,9 +167,8 @@ Insert your actual user name in place of `yourusername`.
 
 Prepend any make or cmake call with `schroot -c jessie --`:
 ```
-mkdir build-in-chroot && cd build-in-chroot
-schroot --chroot jessie -- cmake ..
-schroot --chroot jessie -- make
+schroot --chroot jessie -- cmake -B build-in-chroot -S .
+schroot --chroot jessie -- cmake --build build-in-chroot
 ```
 
 ## Linux. Crosscompiling using mingw
@@ -203,9 +207,8 @@ Install C and C++ compilers (like gcc or clang), cmake and make (or gmake)
 ### Building
 
 ```
-mkdir build && cd build
-cmake ..
-make
+cmake -B build -S .
+cmake --build build
 ```
 
 ### Building with waf
