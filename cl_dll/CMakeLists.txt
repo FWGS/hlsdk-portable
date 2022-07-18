@@ -46,6 +46,10 @@ if (GOLDSOURCE_SUPPORT)
 	add_definitions(-DGOLDSOURCE_SUPPORT)
 endif()
 
+if (DISABLE_MINIAUDIO)
+	add_definitions(-DDISABLE_MINIAUDIO)
+endif()
+
 if (USE_VGUI)
 	add_definitions(-DUSE_VGUI)
 	if (USE_NOVGUI_MOTD)
@@ -73,6 +77,7 @@ set (CLDLL_SOURCES
 	hudzoom.cpp
 	lensflare.cpp
 	nvg.cpp
+	clientmusic.cpp
 	particules.cpp
 	studio_util.cpp
 	StudioModelRenderer.cpp

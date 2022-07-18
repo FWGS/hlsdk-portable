@@ -48,8 +48,7 @@ option(USE_VOICEMGR "Enable VOICE MANAGER." OFF)
 option(BUILD_CLIENT "Build client dll" ON)
 option(BUILD_SERVER "Build server dll" ON)
 option(GOLDSOURCE_SUPPORT "Build goldsource compatible client library" OFF)
-option(USE_GSTREAMER "Enable GStreamer." OFF)
-option(USE_FMOD "Enable FMOD." OFF)
+option(DISABLE_MINIAUDIO "Disable Miniaudio." OFF)
 
 if (CMAKE_SIZEOF_VOID_P EQUAL 4 OR
 	((WIN32 OR ${CMAKE_SYSTEM_NAME} STREQUAL "Linux")

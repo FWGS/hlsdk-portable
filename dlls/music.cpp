@@ -1,26 +1,22 @@
-//---------------------------------------------------------
-//---------------------------------------------------------
-//-														---
-//-					music.cpp							---
-//-														---
-//---------------------------------------------------------
-//---------------------------------------------------------
-//-	by Roy, based on the code by JujU									-----------
-//---------------------------------------------------------
-//- fake and null mp3 player code for HL mod				-----------
-//---------------------------------------------------------
-
-/*//---------------
-
-This code is a placeholder for systems that support neither gstreamer nor fmod.
-
-*///---------------
-
-#ifdef USE_GSTREAMER
-#include "musicgstreamer.cpp"
-#elif defined(USE_FMOD)
-#include "musicfmod.cpp"
-#else
+//-------------------------------------------------------------
+//-------------------------------------------------------------
+//-
+//-				music.cpp
+//-
+//-------------------------------------------------------------
+//-------------------------------------------------------------
+//- by Roy at suggestion by nekonomicon, based on code by JujU
+//-------------------------------------------------------------
+//- mp3 player code for HL mod; trigger_music implementation
+//-------------------------------------------------------------
+//-
+//- This is the server-side code.
+//- It implements trigger_music, which simply informs the
+//- client when and what music needs to be played.
+//- No actual playback happens here.
+//- We just send a message containing file type and filename.
+//-
+//-------------------------------------------------------------
 
 //---------------------------------------------------------
 // inclusions
@@ -29,27 +25,11 @@ This code is a placeholder for systems that support neither gstreamer nor fmod.
 #include "util.h"
 #include "cbase.h"
 
-#include "music.h"
+extern int gmsgCMusicMessage; //This is simply a "handle" for the message. It's defined in player.cpp, can be defined here, but we'll follow the conventions.
 
-CMusic g_MusicPlayer;
-
-
-//Fake functions to have something to work with on Linux
-//---------------------------------------------------------
-
-void CMusic :: Init ( void ){}
-void CMusic :: OpenFile ( const char *filename, int repeat ){}
-void CMusic :: OpenList ( const char *filename ){}
-signed char EndCallback ( void *stream, void *buff, int len, int param )
-{
-	return TRUE;
-}
-void CMusic :: Play	( void ){}
-void CMusic :: Stop ( void ){}
-void CMusic :: Reset ( void ){}
 
 //---------------------------------------------------------
-// The actual game entity
+// entity class
 
 
 
@@ -66,11 +46,12 @@ public:
 	virtual int	Save	( CSave &save );
 	virtual int	Restore	( CRestore &restore );
 
+
 	static	TYPEDESCRIPTION m_SaveData[];
 
 
-	string_t	m_iFileName;		// chemin du fichier
-	int			m_iFileType;		// fichier texte ( liste ) ou fichier audio
+	string_t	m_iFileName;		// file path
+	int			m_iFileType;		// text file (list) or audio file
 
 };
 
@@ -112,6 +93,24 @@ void CTriggerMusic :: KeyValue( KeyValueData *pkvd )
 
 void CTriggerMusic :: Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
-	return;
+	MESSAGE_BEGIN( MSG_ALL, gmsgCMusicMessage, NULL ); //Inform the client side, we have some music to play.
+		WRITE_BYTE( m_iFileType ); //Send file type.
+		WRITE_STRING( STRING(m_iFileName) ); //Send file name.
+	MESSAGE_END();
 }
-#endif
+
+/*
+FGD file entity code 
+
+
+@PointClass base( Targetname ) = trigger_music : "Trigger Music"
+[
+	filetype(choices) : "File type" : 0 = 
+	[
+		0: "File list (*.txt)"
+		1: "File wav mp2 mp3 ogg raw"
+	]
+	filename(string) : "Name (mod/folder/file.extension)"
+]
+
+*/

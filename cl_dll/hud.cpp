@@ -469,6 +469,7 @@ void CHud::Init( void )
 	m_Particules.Init();
 	m_Sniper.Init();
 	m_NVG.Init();
+	m_MusicPlayer.Init(); //modif de Roy, we need to initialize the music player's message receiver (see hud.h)
 	m_RPG.Init();
 	m_Fog.Init();
 	m_LFlammes.Init();
