@@ -63,13 +63,6 @@ jobs:
         schroot --chroot steamrt_scout_i386 -- cmake --build build-vgui --target all
         schroot --chroot steamrt_scout_i386 -- cmake --build build-vgui --target install
 
-    - name: Build with mingw
-      if: startsWith(matrix.os, 'ubuntu') && startsWith(matrix.cc, 'gcc')
-      run: |
-        sudo apt-get install -y mingw-w64-i686-dev binutils-mingw-w64-i686 gcc-mingw-w64-i686 g++-mingw-w64-i686
-        cmake -B build-mingw -S . -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_C_COMPILER=i686-w64-mingw32-gcc -DCMAKE_CXX_COMPILER=i686-w64-mingw32-g++
-        cmake --build build-mingw --target all
-
     - name: Add msbuild to PATH
       if: startsWith(matrix.os, 'windows')
       uses: microsoft/setup-msbuild@v1.0.2

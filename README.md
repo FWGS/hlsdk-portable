@@ -171,27 +171,6 @@ schroot --chroot jessie -- cmake -B build-in-chroot -S .
 schroot --chroot jessie -- cmake --build build-in-chroot
 ```
 
-## Linux. Crosscompiling using mingw
-
-Note that GoldSource won't work with libraries compiled with mingw.
-
-TODO: do we need this section at all? Is Xash3D-FWGS distributed with support for game libraries built with mingw?
-
-### Prerequisites
-
-Install mingw. On Ubuntu/Debian:
-```
-sudo apt-get install -y mingw-w64-i686-dev binutils-mingw-w64-i686 gcc-mingw-w64-i686 g++-mingw-w64-i686
-```
-
-### Building
-
-```
-mkdir build-mingw && cd build-mingw
-TOOLCHAIN_PREFIX=i686-w64-mingw32 # check up the actual mingw prefix of your mingw installation
-cmake .. -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_C_COMPILER="$TOOLCHAIN_PREFIX-gcc" -DCMAKE_CXX_COMPILER="$TOOLCHAIN_PREFIX-g++"
-```
-
 ## Android
 
 TODO
