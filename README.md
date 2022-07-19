@@ -1,4 +1,4 @@
-# Half-Life SDK for GoldSource and Xash3D [![Build Status](https://github.com/FWGS/hlsdk-portable/actions/workflows/.github.yml/badge.svg?branch=master)](https://github.com/FWGS/hlsdk-portable/actions/workflows/.github.yml) [![Windows Build Status](https://ci.appveyor.com/api/projects/status/github/FWGS/hlsdk-xash3d?svg=true)](https://ci.appveyor.com/project/a1batross/hlsdk-xash3d)
+# Half-Life SDK for GoldSource and Xash3D [![Build Status](https://github.com/FWGS/hlsdk-portable/actions/workflows/.github.yml/badge.svg?branch=master)](https://github.com/FWGS/hlsdk-portable/actions/workflows/.github.yml) [![Windows Build Status](https://ci.appveyor.com/api/projects/status/github/FWGS/hlsdk-portable?svg=true)](https://ci.appveyor.com/project/a1batross/hlsdk-portable)
 
 Half-Life SDK for GoldSource & Xash3D with some bugfixes.
 
