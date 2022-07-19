@@ -293,10 +293,6 @@ BOOL CSatchel::CanDeploy( void )
 BOOL CSatchel::Deploy()
 {
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 1.0f;
-#if !WEAPONS_ANIMATION_TIMES_FIX
-	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10.0f, 15.0f );
-#endif
-
 	BOOL result;
 
 	if( m_chargeReady )
@@ -310,7 +306,6 @@ BOOL CSatchel::Deploy()
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 2.0f;
 	}
 #endif
-
 	return result;
 }
 
