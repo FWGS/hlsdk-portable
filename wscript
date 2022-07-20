@@ -28,8 +28,8 @@ def options(opt):
 	grp.add_option('--enable-voicemgr', action = 'store_true', dest = 'VOICEMGR', default = False,
 		help = 'enable voice manager [default: %default]')
 
-	grp.add_option('--enable-goldsrc-support', action = 'store_true', dest = 'GOLDSRC', default = False,
-		help = 'enable GoldSource engine support [default: %default]')
+	grp.add_option('--disable-goldsrc-support', action = 'store_false', dest = 'GOLDSRC', default = True,
+		help = 'disable GoldSource engine support [default: %default]')
 
 	grp.add_option('--enable-simple-mod-hacks', action = 'store_true', dest = 'SIMPLE_MOD_HACKS', default = False,
 		help = 'enable hacks for simple mods that mostly compatible with Half-Life but has little changes. Enforced for Android. [default: %default]')
