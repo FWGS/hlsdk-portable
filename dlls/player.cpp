@@ -3095,7 +3095,15 @@ void CBasePlayer::SelectItem( const char *pstr )
 
 	if( m_pActiveItem )
 	{
+		CBasePlayerWeapon* weapon = (CBasePlayerWeapon*)(m_pActiveItem->GetWeaponPtr());
+		if (weapon)
+			weapon->m_ForceSendAnimations = true;
+
 		m_pActiveItem->Deploy();
+
+		if (weapon)
+			weapon->m_ForceSendAnimations = false;
+
 		m_pActiveItem->UpdateItemInfo();
 	}
 }
@@ -3121,7 +3129,16 @@ void CBasePlayer::SelectLastItem( void )
 	CBasePlayerItem *pTemp = m_pActiveItem;
 	m_pActiveItem = m_pLastItem;
 	m_pLastItem = pTemp;
+
+	CBasePlayerWeapon* weapon = (CBasePlayerWeapon*)(m_pActiveItem->GetWeaponPtr());
+	if (weapon)
+		weapon->m_ForceSendAnimations = true;
+
 	m_pActiveItem->Deploy();
+
+	if (weapon)
+		weapon->m_ForceSendAnimations = false;
+
 	m_pActiveItem->UpdateItemInfo();
 }
 
