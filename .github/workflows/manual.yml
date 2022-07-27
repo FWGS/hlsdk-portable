@@ -13,8 +13,8 @@ on:
         type: choice
         description: Use VGUI
         options:
-        - OFF
-        - ON
+        - 'OFF'
+        - 'ON'
 jobs:
   build:
     runs-on: ${{ matrix.os }}
