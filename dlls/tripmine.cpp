@@ -364,7 +364,12 @@ void CTripmine::Spawn()
 	m_iId = WEAPON_TRIPMINE;
 	SET_MODEL( ENT( pev ), "models/v_tripmine.mdl" );
 	pev->frame = 0;
+
+#ifdef CLIENT_DLL
+	pev->body = 0;
+#else
 	pev->body = 3;
+#endif
 	pev->sequence = TRIPMINE_GROUND;
 	// ResetSequenceInfo();
 	pev->framerate = 0;
@@ -449,7 +454,7 @@ void CTripmine::PrimaryAttack( void )
 #else
 	flags = 0;
 #endif
-	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usTripFire, 0.0f, g_vecZero, g_vecZero, 0.0f, 0.0f, 0, 0, 0, 0 );
+	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usTripFire, 0.0f, g_vecZero, g_vecZero, 0.0f, 0.0f, 0, 0, m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] == 1, 0 );
 
 	if( tr.flFraction < 1.0f )
 	{
