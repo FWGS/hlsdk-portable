@@ -364,7 +364,12 @@ void CTripmine::Spawn()
 	m_iId = WEAPON_TRIPMINE;
 	SET_MODEL( ENT( pev ), "models/v_tripmine.mdl" );
 	pev->frame = 0;
+
+#ifdef CLIENT_DLL
+	pev->body = 0;
+#else
 	pev->body = 3;
+#endif
 	pev->sequence = TRIPMINE_GROUND;
 	// ResetSequenceInfo();
 	pev->framerate = 0;
