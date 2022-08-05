@@ -83,8 +83,6 @@ public:
 
 #define WEAPON_SUIT				31	// ?????
 
-#define MAX_WEAPONS			32
-
 #define MAX_NORMAL_BATTERY	100
 
 // weapon weight factors (for auto-switching)   (-1 = noswitch)
@@ -351,6 +349,9 @@ public:
 	// hle time creep vars
 	float	m_flPrevPrimaryAttack;
 	float	m_flLastFireTime;
+
+	//Hack so deploy animations work when weapon prediction is enabled.
+	bool m_ForceSendAnimations;
 };
 
 class CBasePlayerAmmo : public CBaseEntity
