@@ -33,7 +33,7 @@ include(CheckIncludeFile)
 include(CheckCSourceCompiles)
 include(VSForceXPToolchain) # Force XP toolchain for Visual Studio
 
-project (HLSDK-XASH3D)
+project (HLSDK-PORTABLE)
 
 #--------------
 # USER DEFINES \
@@ -45,7 +45,6 @@ option(USE_NOVGUI_SCOREBOARD "Prefer non-VGUI Scoreboard when USE_VGUI is enable
 option(USE_VOICEMGR "Enable VOICE MANAGER." OFF)
 option(BUILD_CLIENT "Build client dll" ON)
 option(BUILD_SERVER "Build server dll" ON)
-option(GOLDSOURCE_SUPPORT "Build goldsource compatible client library" OFF)
 
 if (CMAKE_SIZEOF_VOID_P EQUAL 4 OR
 	((WIN32 OR ${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
@@ -53,8 +52,10 @@ if (CMAKE_SIZEOF_VOID_P EQUAL 4 OR
 	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64"
 	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "amd64")))
 	option(64BIT "Disable auto -m32 appending to compiler flags" OFF)
+	option(GOLDSOURCE_SUPPORT "Build goldsource compatible client library" ON)
 else()
 	option(64BIT "Disable auto -m32 appending to compiler flags" ON)
+	option(GOLDSOURCE_SUPPORT "Build goldsource compatible client library" OFF)
 endif()
 
 option(BARNACLE_FIX_VISIBILITY "Enable barnacle tongue length fix" ON)
@@ -63,6 +64,9 @@ option(CROWBAR_IDLE_ANIM "Enable crowbar idle animation" ON)
 option(CROWBAR_DELAY_FIX "Enable crowbar attack delay fix" ON)
 option(CROWBAR_FIX_RAPID_CROWBAR "Enable rapid crowbar fix" ON)
 option(GAUSS_OVERCHARGE_FIX "Enable gauss overcharge fix" OFF)
+option(TRIPMINE_BEAM_DUPLICATION_FIX "Enable fix of tripmine beam duplication on level transition" OFF)
+option(HANDGRENADE_DEPLOY_FIX "Enable handgrenade deploy animation fix after finishing a throw" OFF)
+option(WEAPONS_ANIMATION_TIMES_FIX "Enable animation times fix for some weapons" OFF)
 option(OEM_BUILD "Enable OEM Build" OFF)
 option(HLDEMO_BUILD "Enable Demo Build" OFF)
 
@@ -133,6 +137,21 @@ endif()
 if(GAUSS_OVERCHARGE_FIX)
 	message(STATUS "Gauss overcharge fix enabled")
 	add_definitions(-DGAUSS_OVERCHARGE_FIX)
+endif()
+
+if(TRIPMINE_BEAM_DUPLICATION_FIX)
+	message(STATUS "Tripmine beam duplication fix enabled")
+	add_definitions(-DTRIPMINE_BEAM_DUPLICATION_FIX)
+endif()
+
+if(HANDGRENADE_DEPLOY_FIX)
+	message(STATUS "Handgrenade deploy animation fix enabled")
+	add_definitions(-DHANDGRENADE_DEPLOY_FIX)
+endif()
+
+if(WEAPONS_ANIMATION_TIMES_FIX)
+	message(STATUS "Weapons animation times fix enabled")
+	add_definitions(-DWEAPONS_ANIMATION_TIMES_FIX)
 endif()
 
 if(OEM_BUILD)
