@@ -28,6 +28,7 @@
 #include	"weapons.h"
 #include	"soundent.h"
 #include	"barney.h"
+#include	"plane.h"
 
 //=========================================================
 // Monster's Anim Events Go Here
@@ -40,6 +41,13 @@
 #define	BARNEY_BODY_GUNHOLSTERED	0
 #define	BARNEY_BODY_GUNDRAWN		1
 #define BARNEY_BODY_GUNGONE		2
+
+#define bits_COND_BARNEY_NOFIRE	( bits_COND_SPECIAL1 )
+
+enum
+{
+	TASK_BARNEY_CHECK_FIRE = LAST_COMMON_TASK + 1,
+};
 
 LINK_ENTITY_TO_CLASS( monster_barney, CBarney )
 
@@ -154,19 +162,57 @@ Schedule_t slIdleBaStand[] =
 	},
 };
 
+// primary range attack
+Task_t tlBaRangeAttack1[] =
+{
+	{ TASK_STOP_MOVING, 0 },
+	{ TASK_FACE_ENEMY, (float)0 },
+	{ TASK_BARNEY_CHECK_FIRE, (float)0 },
+	{ TASK_RANGE_ATTACK1, (float)0 },
+};
+
+Schedule_t slBaRangeAttack1[] =
+{
+	{
+		tlBaRangeAttack1,
+		ARRAYSIZE( tlBaRangeAttack1 ),
+		bits_COND_NEW_ENEMY |
+		bits_COND_ENEMY_DEAD |
+		bits_COND_LIGHT_DAMAGE |
+		bits_COND_HEAVY_DAMAGE |
+		bits_COND_ENEMY_OCCLUDED |
+		bits_COND_NO_AMMO_LOADED |
+		bits_COND_BARNEY_NOFIRE |
+		bits_COND_HEAR_SOUND,
+		bits_SOUND_DANGER,
+		"Range Attack1"
+	},
+};
+
 DEFINE_CUSTOM_SCHEDULES( CBarney )
 {
 	slBaFollow,
 	slBarneyEnemyDraw,
 	slBaFaceTarget,
 	slIdleBaStand,
+	slBaRangeAttack1,
 };
 
 IMPLEMENT_CUSTOM_SCHEDULES( CBarney, CTalkMonster )
 
 void CBarney::StartTask( Task_t *pTask )
 {
-	CTalkMonster::StartTask( pTask );	
+	switch ( pTask->iTask ) {
+	case TASK_BARNEY_CHECK_FIRE:
+		if( !NoFriendlyFire() )
+		{
+			SetConditions( bits_COND_BARNEY_NOFIRE );
+		}
+		TaskComplete();
+		break;
+	default:
+		CTalkMonster::StartTask( pTask );
+	}
 }
 
 void CBarney::RunTask( Task_t *pTask )
@@ -617,6 +663,8 @@ Schedule_t *CBarney::GetScheduleOfType( int Type )
 		}
 		else
 			return psched;	
+	case SCHED_RANGE_ATTACK1:
+		return slBaRangeAttack1;
 	}
 
 	return CTalkMonster::GetScheduleOfType( Type );
@@ -716,6 +764,56 @@ MONSTERSTATE CBarney::GetIdealState( void )
 void CBarney::DeclineFollowing( void )
 {
 	PlaySentence( "BA_POK", 2, VOL_NORM, ATTN_NORM );
+}
+
+BOOL CBarney::NoFriendlyFire()
+{
+	if( m_hEnemy != 0 )
+	{
+		UTIL_MakeVectors( UTIL_VecToAngles( m_hEnemy->Center() - pev->origin ) );
+	}
+	else
+	{
+		// if there's no enemy, pretend there's a friendly in the way, so the grunt won't shoot.
+		return FALSE;
+	}
+
+	CPlane backPlane;
+	CPlane leftPlane;
+	CPlane rightPlane;
+
+	Vector vecLeftSide;
+	Vector vecRightSide;
+	Vector v_left;
+	Vector v_dir;
+
+	v_dir = gpGlobals->v_right * ( pev->size.x * 1.5f );
+	vecLeftSide = pev->origin - v_dir;
+	vecRightSide = pev->origin + v_dir;
+
+	v_left = gpGlobals->v_right * -1.0f;
+
+	leftPlane.InitializePlane( gpGlobals->v_right, vecLeftSide );
+	rightPlane.InitializePlane( v_left, vecRightSide );
+	backPlane.InitializePlane( gpGlobals->v_forward, pev->origin );
+
+	for( int k = 1; k <= gpGlobals->maxClients; k++ )
+	{
+		CBaseEntity* pPlayer = UTIL_PlayerByIndex(k);
+		if (pPlayer && pPlayer->IsPlayer() && IRelationship(pPlayer) == R_AL && pPlayer->IsAlive())
+		{
+			if( backPlane.PointInFront( pPlayer->pev->origin ) &&
+				leftPlane.PointInFront( pPlayer->pev->origin ) &&
+				rightPlane.PointInFront( pPlayer->pev->origin ) )
+			{
+				//ALERT(at_aiconsole, "%s: Ally player at fire plane!\n", STRING(pev->classname));
+				// player is in the check volume! Don't shoot!
+				return FALSE;
+			}
+		}
+	}
+
+	return TRUE;
 }
 
 //=========================================================
