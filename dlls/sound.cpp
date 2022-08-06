@@ -814,7 +814,7 @@ public:
 	static TYPEDESCRIPTION m_SaveData[];
 
 	float m_flRadius;
-	float m_flRoomtype;
+	int m_Roomtype;
 };
 
 LINK_ENTITY_TO_CLASS( env_sound, CEnvSound )
@@ -822,7 +822,7 @@ LINK_ENTITY_TO_CLASS( env_sound, CEnvSound )
 TYPEDESCRIPTION	CEnvSound::m_SaveData[] =
 {
 	DEFINE_FIELD( CEnvSound, m_flRadius, FIELD_FLOAT ),
-	DEFINE_FIELD( CEnvSound, m_flRoomtype, FIELD_FLOAT ),
+	DEFINE_FIELD( CEnvSound, m_Roomtype, FIELD_INTEGER ),
 };
 
 IMPLEMENT_SAVERESTORE( CEnvSound, CPointEntity )
@@ -836,7 +836,7 @@ void CEnvSound::KeyValue( KeyValueData *pkvd )
 	}
 	if( FStrEq( pkvd->szKeyName, "roomtype" ) )
 	{
-		m_flRoomtype = atof( pkvd->szValue );
+		m_Roomtype = atoi( pkvd->szValue );
 		pkvd->fHandled = TRUE;
 	}
 }
@@ -902,7 +902,7 @@ void CEnvSound::Think( void )
 	{
 		// this is the entity currently affecting player, check
 		// for validity
-		if( pPlayer->m_flSndRoomtype != 0 && pPlayer->m_flSndRange != 0 )
+		if( pPlayer->m_SndRoomtype != 0 && pPlayer->m_flSndRange != 0 )
 		{
 			// we're looking at a valid sound entity affecting
 			// player, make sure it's still valid, update range
@@ -914,11 +914,11 @@ void CEnvSound::Think( void )
 			else
 			{
 				// current sound entity affecting player is no longer valid,
-				// flag this state by clearing room_type and range.
+				// flag this state by clearing source handle and range.
 				// NOTE: we do not actually change the player's room_type
 				// NOTE: until we have a new valid room_type to change it to.
 				pPlayer->m_flSndRange = 0;
-				pPlayer->m_flSndRoomtype = 0;
+				pPlayer->m_pentSndLast = 0;
 				goto env_sound_Think_slow;
 			}
 		}
@@ -938,18 +938,10 @@ void CEnvSound::Think( void )
 		{
 			// new entity is closer to player, so it wins.
 			pPlayer->m_pentSndLast = ENT( pev );
-			pPlayer->m_flSndRoomtype = m_flRoomtype;
+			pPlayer->m_SndRoomtype = m_Roomtype;
 			pPlayer->m_flSndRange = flRange;
 
-			// send room_type command to player's server.
-			// this should be a rare event - once per change of room_type
-			// only!
-
-			//CLIENT_COMMAND( pentPlayer, "room_type %f", m_flRoomtype );
-
-			MESSAGE_BEGIN( MSG_ONE, SVC_ROOMTYPE, NULL, pentPlayer );		// use the magic #1 for "one client"
-				WRITE_SHORT( (short)m_flRoomtype );					// sequence number
-			MESSAGE_END();
+			// New room type is sent to player in CBasePlayer::UpdateClientData.
 
 			// crank up nextthink rate for new active sound entity
 			// by falling through to think_fast...
