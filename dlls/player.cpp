@@ -3095,15 +3095,9 @@ void CBasePlayer::SelectItem( const char *pstr )
 
 	if( m_pActiveItem )
 	{
-		CBasePlayerWeapon* weapon = (CBasePlayerWeapon*)(m_pActiveItem->GetWeaponPtr());
-		if (weapon)
-			weapon->m_ForceSendAnimations = true;
-
+		m_pActiveItem->pev->oldbuttons = 1;
 		m_pActiveItem->Deploy();
-
-		if (weapon)
-			weapon->m_ForceSendAnimations = false;
-
+		m_pActiveItem->pev->oldbuttons = 0;
 		m_pActiveItem->UpdateItemInfo();
 	}
 }
@@ -3130,14 +3124,9 @@ void CBasePlayer::SelectLastItem( void )
 	m_pActiveItem = m_pLastItem;
 	m_pLastItem = pTemp;
 
-	CBasePlayerWeapon* weapon = (CBasePlayerWeapon*)(m_pActiveItem->GetWeaponPtr());
-	if (weapon)
-		weapon->m_ForceSendAnimations = true;
-
+	m_pActiveItem->pev->oldbuttons = 1;
 	m_pActiveItem->Deploy();
-
-	if (weapon)
-		weapon->m_ForceSendAnimations = false;
+	m_pActiveItem->pev->oldbuttons = 0;
 
 	m_pActiveItem->UpdateItemInfo();
 }
@@ -4612,14 +4601,9 @@ BOOL CBasePlayer::SwitchWeapon( CBasePlayerItem *pWeapon )
 
 	m_pActiveItem = pWeapon;
 
-	CBasePlayerWeapon* weapon = (CBasePlayerWeapon*)(pWeapon->GetWeaponPtr());
-	if (weapon)
-		weapon->m_ForceSendAnimations = true;
-
+	pWeapon->pev->oldbuttons = 1;
 	pWeapon->Deploy();
-
-	if (weapon)
-		weapon->m_ForceSendAnimations = false;
+	pWeapon->pev->oldbuttons = 0;
 
 	return TRUE;
 }
