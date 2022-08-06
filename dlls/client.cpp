@@ -734,7 +734,7 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 			continue;
 
 		// Clients aren't necessarily initialized until ClientPutInServer()
-		if( i < clientMax || !pEdictList[i].pvPrivateData )
+		if( (i > 0 && i <= clientMax) || !pEdictList[i].pvPrivateData )
 			continue;
 
 		pClass = CBaseEntity::Instance( &pEdictList[i] );
@@ -1627,14 +1627,13 @@ void RegisterEncoders( void )
 
 int GetWeaponData( struct edict_s *player, struct weapon_data_s *info )
 {
+	memset( info, 0, MAX_WEAPONS * sizeof(weapon_data_t) );
 #if CLIENT_WEAPONS
 	int i;
 	weapon_data_t *item;
 	entvars_t *pev = &player->v;
 	CBasePlayer *pl = (CBasePlayer *)CBasePlayer::Instance( pev );
 	CBasePlayerWeapon *gun;
-
-	memset( info, 0, 32 * sizeof(weapon_data_t) );
 
 	if( !pl )
 		return 1;
@@ -1656,7 +1655,7 @@ int GetWeaponData( struct edict_s *player, struct weapon_data_s *info )
 					// Get The ID.
 					gun->GetItemInfo( &II );
 
-					if( II.iId >= 0 && II.iId < 32 )
+					if( II.iId >= 0 && II.iId < MAX_WEAPONS )
 					{
 						item = &info[II.iId];
 					 	
@@ -1682,8 +1681,6 @@ int GetWeaponData( struct edict_s *player, struct weapon_data_s *info )
 			}
 		}
 	}
-#else
-	memset( info, 0, 32 * sizeof(weapon_data_t) );
 #endif
 	return 1;
 }
