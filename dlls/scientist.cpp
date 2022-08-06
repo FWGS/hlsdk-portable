@@ -643,8 +643,8 @@ void CScientist::HandleAnimEvent( MonsterEvent_t *pEvent )
 void CScientist::Spawn( void )
 {
 	const char *pszModel;
-	Precache();
 
+	// We need to set it before precache so the right voice will be chosen
 	if( pev->body == -1 )
 	{
 		// -1 chooses a random head
@@ -661,6 +661,8 @@ void CScientist::Spawn( void )
 	{
 		pszModel = "models/scientist.mdl";
 	}
+
+	Precache();
 
 	SET_MODEL( ENT( pev ), pszModel );
 
@@ -739,7 +741,7 @@ void CScientist::TalkInit()
 	m_szGrp[TLK_MORTAL] = "SC_MORTAL";
 
 	// get voice for head
-	switch( pev->body % 6 )
+	switch( pev->body % NUM_SCIENTIST_HEADS )
 	{
 	default:
 	case HEAD_GLASSES:
