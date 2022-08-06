@@ -25,6 +25,7 @@
 #include <stdio.h>
 
 #include "parsemsg.h"
+#include "event_api.h"
 
 DECLARE_MESSAGE( m_Geiger, Geiger )
 
@@ -175,7 +176,10 @@ int CHudGeiger::Draw( float flTime )
 				j += rand() & 1;
 
 			sprintf( sz, "player/geiger%d.wav", j + 1 );
-			PlaySound( sz, flvol );
+			vec3_t view_ofs;
+			cl_entity_t *pthisplayer = gEngfuncs.GetLocalPlayer();
+			gEngfuncs.pEventAPI->EV_LocalPlayerViewheight( view_ofs );
+			gEngfuncs.pEventAPI->EV_PlaySound( pthisplayer->index, pthisplayer->origin + view_ofs, CHAN_STATIC, sz, flvol, ATTN_NORM, 0, PITCH_NORM );
 		}
 	}
 
