@@ -392,7 +392,7 @@ void COtis::KeyValue(KeyValueData *pkvd)
 		pkvd->fHandled = TRUE;
 	}
 	else
-		CBarney::KeyValue(pkvd);
+		CBaseMonster::KeyValue(pkvd);
 }
 
 
