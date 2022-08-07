@@ -177,7 +177,6 @@ void CShotgun::PrimaryAttack()
 
 	m_flNextPrimaryAttack = GetNextAttackDelay( 0.75f );
 	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.75f;
-	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.75;
 	if( m_iClip != 0 )
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 5.0f;
 	else
@@ -249,7 +248,6 @@ void CShotgun::SecondaryAttack( void )
 
 	m_flNextPrimaryAttack = GetNextAttackDelay( 1.5f );
 	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1.5f;
-	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 1.5;
 	if( m_iClip != 0 )
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 6.0f;
 	else
