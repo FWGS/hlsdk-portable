@@ -644,7 +644,7 @@ void CScientist::TalkInit()
 	m_szGrp[TLK_MORTAL] = "SC_MORTAL";
 
 	// get voice for head
-	switch( pev->body % NUM_SCIENTIST_HEADS )
+	switch( pev->body % NUM_SCIENTIST_HEADS_OPFOR )
 	{
 	default:
 	case HEAD_GLASSES:
