@@ -58,7 +58,7 @@ else()
 	option(GOLDSOURCE_SUPPORT "Build goldsource compatible client library" OFF)
 endif()
 
-option(BARNACLE_FIX_VISIBILITY "Enable barnacle tongue length fix" ON)
+option(BARNACLE_FIX_VISIBILITY "Enable barnacle tongue length fix" OFF)
 option(CLIENT_WEAPONS "Enable client local weapons prediction" ON)
 option(CROWBAR_IDLE_ANIM "Enable crowbar idle animation" ON)
 option(CROWBAR_DELAY_FIX "Enable crowbar attack delay fix" ON)
