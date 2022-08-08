@@ -1210,6 +1210,9 @@ public:
 	int Swing(int fFirst);
 	BOOL Deploy(void);
 	void Holster(int skiplocal = 0);
+#if CROWBAR_IDLE_ANIM
+	void WeaponIdle();
+#endif
 	int m_iSwing;
 	TraceResult m_trHit;
 

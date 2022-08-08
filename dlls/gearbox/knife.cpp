@@ -164,7 +164,9 @@ int CKnife::Swing(int fFirst)
 		{
 			// miss
 			m_flNextPrimaryAttack = GetNextAttackDelay(0.5);
-
+#if CROWBAR_IDLE_ANIM
+			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
+#endif
 			// player "shoot" animation
 			m_pPlayer->SetAnimation(PLAYER_ATTACK1);
 		}
@@ -276,7 +278,44 @@ int CKnife::Swing(int fFirst)
 		SetThink(&CKnife::Smack);
 		pev->nextthink = UTIL_WeaponTimeBase() + 0.2;
 #endif
-		m_flNextPrimaryAttack = GetNextAttackDelay(0.25);
+#if CROWBAR_DELAY_FIX
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.25f;
+#else
+		m_flNextPrimaryAttack = GetNextAttackDelay( 0.25f );
+#endif
 	}
+#if CROWBAR_IDLE_ANIM
+	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
+#endif
 	return fDidHit;
 }
+
+#if CROWBAR_IDLE_ANIM
+void CKnife::WeaponIdle( void )
+{
+	if( m_flTimeWeaponIdle < UTIL_WeaponTimeBase() )
+	{
+		int iAnim;
+		float flRand = UTIL_SharedRandomFloat( m_pPlayer->random_seed, 0, 1 );
+		if( flRand > 0.9f )
+		{
+			iAnim = KNIFE_IDLE2;
+			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 160.0f / 30.0f;
+		}
+		else
+		{
+			if( flRand > 0.5f )
+			{
+				iAnim = KNIFE_IDLE1;
+				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 70.0f / 25.0f;
+			}
+			else
+			{
+				iAnim = KNIFE_IDLE3;
+				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 160.0f / 30.0f;
+			}
+		}
+		SendWeaponAnim( iAnim );
+	}
+}
+#endif
