@@ -28,6 +28,7 @@
 #include	"customentity.h"
 #include	"decals.h"
 #include	"hgrunt.h"
+#include	"plane.h"
 
 //=========================================================
 //
@@ -184,6 +185,8 @@ public:
 	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType);
 	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
 	int IRelationship ( CBaseEntity *pTarget );
+
+	BOOL NoFriendlyFire( void );
 
 	virtual int		Save( CSave &save );
 	virtual int		Restore( CRestore &restore );
@@ -2907,6 +2910,81 @@ Schedule_t *CHFGrunt :: GetSchedule ( void )
 MONSTERSTATE CHFGrunt :: GetIdealState ( void )
 {
 	return CTalkMonster::GetIdealState();
+}
+
+BOOL CHFGrunt::NoFriendlyFire( void )
+{
+	CPlane backPlane;
+	CPlane leftPlane;
+	CPlane rightPlane;
+
+	Vector vecLeftSide;
+	Vector vecRightSide;
+	Vector v_left;
+	Vector v_dir;
+
+	//!!!BUGBUG - to fix this, the planes must be aligned to where the monster will be firing its gun, not the direction it is facing!!!
+	if( m_hEnemy != 0 )
+	{
+		UTIL_MakeVectors( UTIL_VecToAngles( m_hEnemy->Center() - pev->origin ) );
+	}
+	else
+	{
+		// if there's no enemy, pretend there's a friendly in the way, so the grunt won't shoot.
+		return FALSE;
+	}
+
+	v_dir = gpGlobals->v_right * ( pev->size.x * 1.5f );
+	vecLeftSide = pev->origin - v_dir;
+	vecRightSide = pev->origin + v_dir;
+
+	v_left = gpGlobals->v_right * -1.0f;
+
+	leftPlane.InitializePlane( gpGlobals->v_right, vecLeftSide );
+	rightPlane.InitializePlane( v_left, vecRightSide );
+	backPlane.InitializePlane( gpGlobals->v_forward, pev->origin );
+/*
+	ALERT( at_console, "LeftPlane: %f %f %f : %f\n", leftPlane.m_vecNormal.x, leftPlane.m_vecNormal.y, leftPlane.m_vecNormal.z, leftPlane.m_flDist );
+	ALERT( at_console, "RightPlane: %f %f %f : %f\n", rightPlane.m_vecNormal.x, rightPlane.m_vecNormal.y, rightPlane.m_vecNormal.z, rightPlane.m_flDist );
+	ALERT( at_console, "BackPlane: %f %f %f : %f\n", backPlane.m_vecNormal.x, backPlane.m_vecNormal.y, backPlane.m_vecNormal.z, backPlane.m_flDist );
+*/
+	for( int k = 1; k <= gpGlobals->maxClients; k++ )
+	{
+		CBaseEntity* pPlayer = UTIL_PlayerByIndex(k);
+		if (pPlayer && pPlayer->IsPlayer() && IRelationship(pPlayer) == R_AL && pPlayer->IsAlive())
+		{
+			if( backPlane.PointInFront( pPlayer->pev->origin ) &&
+				leftPlane.PointInFront( pPlayer->pev->origin ) &&
+				rightPlane.PointInFront( pPlayer->pev->origin ) )
+			{
+				ALERT(at_aiconsole, "%s: Ally player at fire plane!\n", STRING(pev->classname));
+				// player is in the check volume! Don't shoot!
+				return FALSE;
+			}
+		}
+	}
+
+	if( !InSquad() )
+	{
+		return TRUE;
+	}
+	CSquadMonster *pSquadLeader = MySquadLeader();
+	for( int i = 0; i < MAX_SQUAD_MEMBERS; i++ )
+	{
+		CSquadMonster *pMember = pSquadLeader->MySquadMember( i );
+		if( pMember && pMember != this )
+		{
+			if( backPlane.PointInFront( pMember->pev->origin ) &&
+				leftPlane.PointInFront( pMember->pev->origin ) &&
+				rightPlane.PointInFront( pMember->pev->origin ) )
+			{
+				// this guy is in the check volume! Don't shoot!
+				return FALSE;
+			}
+		}
+	}
+
+	return TRUE;
 }
 
 void CHFGrunt::DeclineFollowing( void )
