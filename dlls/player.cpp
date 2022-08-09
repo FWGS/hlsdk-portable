@@ -127,9 +127,9 @@ TYPEDESCRIPTION	CBasePlayer::m_playerSaveData[] =
 	//DEFINE_FIELD( CBasePlayer, m_flStopExtraSoundTime, FIELD_TIME ),
 	//DEFINE_FIELD( CBasePlayer, m_fKnownItem, FIELD_INTEGER ), // reset to zero on load
 	//DEFINE_FIELD( CBasePlayer, m_iPlayerSound, FIELD_INTEGER ),	// Don't restore, set in Precache()
-	//DEFINE_FIELD( CBasePlayer, m_pentSndLast, FIELD_EDICT ),	// Don't restore, client needs reset
-	//DEFINE_FIELD( CBasePlayer, m_flSndRoomtype, FIELD_FLOAT ),	// Don't restore, client needs reset
-	//DEFINE_FIELD( CBasePlayer, m_flSndRange, FIELD_FLOAT ),	// Don't restore, client needs reset
+	DEFINE_FIELD( CBasePlayer, m_pentSndLast, FIELD_EDICT ),
+	DEFINE_FIELD( CBasePlayer, m_SndRoomtype, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_flSndRange, FIELD_FLOAT ),
 	//DEFINE_FIELD( CBasePlayer, m_fNewAmmo, FIELD_INTEGER ), // Don't restore, client needs reset
 	//DEFINE_FIELD( CBasePlayer, m_flgeigerRange, FIELD_FLOAT ),	// Don't restore, reset in Precache()
 	//DEFINE_FIELD( CBasePlayer, m_flgeigerDelay, FIELD_FLOAT ),	// Don't restore, reset in Precache()
@@ -2333,7 +2333,7 @@ Things powered by the battery
 
 // if in range of radiation source, ping geiger counter
 
-#define GEIGERDELAY 0.25f
+#define GEIGERDELAY 0.28f
 
 void CBasePlayer::UpdateGeigerCounter( void )
 {
@@ -3019,6 +3019,7 @@ void CBasePlayer::Spawn( void )
 
 	pev->fov = m_iFOV = 0;// init field of view.
 	m_iClientFOV = -1; // make sure fov reset is sent
+	m_ClientSndRoomtype = -1;
 
 	m_flNextDecalTime = 0;// let this player decal as soon as he spawns.
 
@@ -3170,6 +3171,8 @@ int CBasePlayer::Restore( CRestore &restore )
 	pev->angles = pev->v_angle;
 
 	pev->fixangle = TRUE;           // turn this way immediately
+
+	m_ClientSndRoomtype = -1;
 
 	// Copied from spawn() for now
 	m_bloodColor = BLOOD_COLOR_RED;
@@ -3555,13 +3558,13 @@ void CBasePlayer::ForceClientDllUpdate( void )
 	m_iClientBattery = -1;
 	m_iClientHideHUD = -1;	// Vit_amiN: forcing to update
 	m_iClientFOV = -1;	// Vit_amiN: force client weapons to be sent
+	m_ClientSndRoomtype = -1;
 	m_iTrain |= TRAIN_NEW;  // Force new train message.
 	m_fWeapon = FALSE;          // Force weapon send
 	m_fKnownItem = FALSE;    // Force weaponinit messages.
 	m_fInitHUD = TRUE;		// Force HUD gmsgResetHUD message
 	m_bSentBhopcap = true; // a1ba: Update bhopcap state
 	memset( m_rgAmmoLast, 0, sizeof( m_rgAmmoLast )); // a1ba: Force update AmmoX
-
 
 
 	// Now force all the necessary messages
@@ -4338,6 +4341,16 @@ void CBasePlayer::UpdateClientData( void )
 	{
 		UpdateStatusBar();
 		m_flNextSBarUpdateTime = gpGlobals->time + 0.2f;
+	}
+
+	// Send new room type to client.
+	if (m_ClientSndRoomtype != m_SndRoomtype)
+	{
+		m_ClientSndRoomtype = m_SndRoomtype;
+
+		MESSAGE_BEGIN(MSG_ONE, SVC_ROOMTYPE, NULL, edict());
+		WRITE_SHORT((short)m_SndRoomtype); // sequence number
+		MESSAGE_END();
 	}
 
 	// Send the current bhopcap state.
