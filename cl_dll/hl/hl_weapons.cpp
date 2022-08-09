@@ -1012,13 +1012,7 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 			 body = 1;
 
 		if (pWeapon == &g_M249) {
-			if (g_M249.m_iVisibleClip == 0) {
-				body = 8;
-			} else if (g_M249.m_iVisibleClip > 0 && g_M249.m_iVisibleClip < 8) {
-				body = 9 - g_M249.m_iVisibleClip;
-			} else {
-				body = 0;
-			}
+			body = g_M249.BodyFromClip();
 		}
 
 		// Force a fixed anim down to viewmodel
