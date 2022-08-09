@@ -1263,6 +1263,8 @@ public:
 
 	void UpdateTape();
 	void UpdateTape(int clip);
+	int BodyFromClip();
+	int BodyFromClip(int clip);
 
 	int m_iVisibleClip;
 
