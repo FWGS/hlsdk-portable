@@ -96,7 +96,7 @@ def build(bld):
 		'../pm_shared',
 		'../game_shared',
 		'../public',
-		'../utils/false_vgui/include'
+		'../utils/fake_vgui/include'
 	]
 
 	defines = ['CLIENT_DLL']

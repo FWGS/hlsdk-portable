@@ -161,7 +161,7 @@ if (USE_VGUI)
 	link_directories(${CMAKE_SOURCE_DIR}/vgui_support/vgui-dev/lib)
 	include_directories(../vgui_support/vgui-dev/include)
 else()
-	include_directories(../utils/false_vgui/include)
+	include_directories(../utils/fake_vgui/include)
 endif()
 
 if(USE_VOICEMGR)
