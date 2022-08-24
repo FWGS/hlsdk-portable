@@ -3114,7 +3114,9 @@ void CBasePlayer::SelectItem( const char *pstr )
 
 	if( m_pActiveItem )
 	{
+		m_pActiveItem->pev->oldbuttons = 1;
 		m_pActiveItem->Deploy();
+		m_pActiveItem->pev->oldbuttons = 0;
 		m_pActiveItem->UpdateItemInfo();
 	}
 }
@@ -3140,7 +3142,11 @@ void CBasePlayer::SelectLastItem( void )
 	CBasePlayerItem *pTemp = m_pActiveItem;
 	m_pActiveItem = m_pLastItem;
 	m_pLastItem = pTemp;
+
+	m_pActiveItem->pev->oldbuttons = 1;
 	m_pActiveItem->Deploy();
+	m_pActiveItem->pev->oldbuttons = 0;
+
 	m_pActiveItem->UpdateItemInfo();
 }
 
@@ -4634,7 +4640,10 @@ BOOL CBasePlayer::SwitchWeapon( CBasePlayerItem *pWeapon )
 	}
 
 	m_pActiveItem = pWeapon;
+
+	pWeapon->pev->oldbuttons = 1;
 	pWeapon->Deploy();
+	pWeapon->pev->oldbuttons = 0;
 
 	return TRUE;
 }

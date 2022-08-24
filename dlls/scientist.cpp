@@ -598,6 +598,13 @@ void CScientist::HandleAnimEvent( MonsterEvent_t *pEvent )
 //=========================================================
 void CScientist::Spawn( void )
 {
+	// We need to set it before precache so the right voice will be chosen
+	if( pev->body == -1 )
+	{
+		// -1 chooses a random head
+		pev->body = RANDOM_LONG( 0, NUM_SCIENTIST_HEADS - 1 );// pick a head, any head
+	}
+
 	Precache();
 
 	SET_MODEL( ENT( pev ), "models/scientist.mdl" );
@@ -615,12 +622,6 @@ void CScientist::Spawn( void )
 	//m_flDistTooFar = 256.0;
 
 	m_afCapability = bits_CAP_HEAR | bits_CAP_TURN_HEAD | bits_CAP_OPEN_DOORS | bits_CAP_AUTO_DOORS | bits_CAP_USE;
-
-	if( pev->body == -1 )
-	{
-		// -1 chooses a random head
-		pev->body = RANDOM_LONG( 0, NUM_SCIENTIST_HEADS - 1 );// pick a head, any head
-	}
 
 	// Luther is black, make his hands black
 	if( pev->skin == SKIN_GLASSES && pev->body == HEAD_LUTHER )
@@ -679,7 +680,7 @@ void CScientist::TalkInit()
 	m_szGrp[TLK_MORTAL] = "SC_MORTAL";
 
 	// get voice for head
-	switch( pev->body % 3 )
+	switch( pev->body % NUM_SCIENTIST_HEADS )
 	{
 	default:
 	case HEAD_GLASSES:
