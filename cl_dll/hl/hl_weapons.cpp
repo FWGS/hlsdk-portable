@@ -45,9 +45,8 @@ static CBasePlayer player;
 // Local version of game .dll global variables ( time, etc. )
 static globalvars_t Globals; 
 
-static CBasePlayerWeapon *g_pWpns[32];
-int g_iWaterLevel; //LRC - for DMC fog
 static CBasePlayerWeapon *g_pWpns[MAX_WEAPONS];
+int g_iWaterLevel; //LRC - for DMC fog
 
 float g_flApplyVel = 0.0;
 int g_irunninggausspred = 0;
