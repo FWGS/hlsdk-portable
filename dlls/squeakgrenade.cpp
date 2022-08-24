@@ -463,7 +463,14 @@ BOOL CSqueak::Deploy()
 	if( bm_snarks_mod.value )
 		PrintMessage( m_pPlayer, BMOD_CHAN_WEAPON, Vector( 20, 250, 20 ), Vector( 1, 4, 2 ), "\nSNARKS\nSECONDAY FIRE: Place a snark mine." );
 
-	return DefaultDeploy( "models/v_squeak.mdl", "models/p_squeak.mdl", SQUEAK_UP, "squeak" );
+	const BOOL result = DefaultDeploy( "models/v_squeak.mdl", "models/p_squeak.mdl", SQUEAK_UP, "squeak" );
+#if WEAPONS_ANIMATION_TIMES_FIX
+	if ( result )
+	{
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.7f;
+	}
+#endif
+	return result;
 }
 
 void CSqueak::Holster( int skiplocal /* = 0 */ )
