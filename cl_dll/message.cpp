@@ -294,7 +294,7 @@ void CHudMessage::MessageDrawScan( client_textmessage_t *pMessage, float time )
 
 		for( j = 0; j < m_parms.lineLength; j++ )
 		{
-			m_parms.text = pLineStart[j];
+			m_parms.text = (unsigned char)pLineStart[j];
 			int next = m_parms.x + gHUD.m_scrinfo.charWidths[m_parms.text];
 			MessageScanNextChar();
 
