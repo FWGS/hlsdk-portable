@@ -28,8 +28,8 @@ def options(opt):
 	grp.add_option('--enable-voicemgr', action = 'store_true', dest = 'VOICEMGR', default = False,
 		help = 'enable voice manager [default: %default]')
 
-	grp.add_option('--enable-goldsrc-support', action = 'store_true', dest = 'GOLDSRC', default = False,
-		help = 'enable GoldSource engine support [default: %default]')
+	grp.add_option('--disable-goldsrc-support', action = 'store_false', dest = 'GOLDSRC', default = True,
+		help = 'disable GoldSource engine support [default: %default]')
 
 	opt.load('compiler_optimizations subproject')
 
