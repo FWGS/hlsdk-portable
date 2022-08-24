@@ -366,7 +366,7 @@ void CCrowbar::WeaponIdle( void )
 			if( flRand > 0.5f )
 			{
 				iAnim = CROWBAR_IDLE;
-				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 70.0f / 30.0f;
+				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 70.0f / 25.0f;
 			}
 			else
 			{
