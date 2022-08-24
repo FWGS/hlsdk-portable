@@ -647,7 +647,6 @@ void CScientist::HandleAnimEvent( MonsterEvent_t *pEvent )
 void CScientist::Spawn( void )
 {
 	int numHeads;
-	Precache();
 
 	if( FClassnameIs( pev, "monster_cleansuit_scientist" ) )
 	{
@@ -659,6 +658,21 @@ void CScientist::Spawn( void )
 		SET_MODEL( ENT( pev ), "models/scientist.mdl" );
 		numHeads = NUM_SCIENTIST_HEADS;
 	}
+
+	if( pev->body == -1 )
+	{
+		// -1 chooses a random head
+		pev->body = RANDOM_LONG( 0, numHeads - 1 );// pick a head, any h
+	}
+
+	if( !FClassnameIs( pev, "monster_cleansuit_scientist" ) )
+	{
+		// Luther is black, but scientist model in RP does not have blac
+		if( pev->body == HEAD_LUTHER )
+			pev->body = HEAD_4;
+	}
+
+	Precache();
 
 	UTIL_SetSize( pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX );
 
@@ -677,18 +691,6 @@ void CScientist::Spawn( void )
 	// White hands
 	pev->skin = 0;
 
-	if( pev->body == -1 )
-	{
-		// -1 chooses a random head
-		pev->body = RANDOM_LONG( 0, numHeads - 1 );// pick a head, any head
-	}
-
-	if( !FClassnameIs( pev, "monster_cleansuit_scientist" ) )
-	{
-		// Luther is black, but scientist model in RP does not have black hands skin, use another head instead.
-		if( pev->body == HEAD_LUTHER )
-			pev->body = HEAD_4;
-	}
 	MonsterInit();
 	SetUse( &CTalkMonster::FollowerUse );
 }
@@ -747,7 +749,7 @@ void CScientist::TalkInit()
 	m_szGrp[TLK_MORTAL] = "SC_MORTAL";
 
 	// get voice for head
-	switch( pev->body % ( numHeads - 1 ) )
+	switch( pev->body % numHeads )
 	{
 	default:
 	case HEAD_GLASSES:
