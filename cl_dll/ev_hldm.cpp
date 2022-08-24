@@ -485,7 +485,7 @@ static void EV_FireGlock_Impl( event_args_t *args )
 	if( EV_IsLocal( idx ) )
 	{
 		EV_MuzzleFlash();
-		gEngfuncs.pEventAPI->EV_WeaponAnimation( empty ? GLOCK_SHOOT_EMPTY : GLOCK_SHOOT, 2 );
+		gEngfuncs.pEventAPI->EV_WeaponAnimation( empty ? GLOCK_SHOOT_EMPTY : GLOCK_SHOOT, 0 );
 
 		V_PunchAxis( 0, -2.0 );
 	}
@@ -548,7 +548,7 @@ void EV_FireShotGunDouble( event_args_t *args )
 	{
 		// Add muzzle flash to current weapon model
 		EV_MuzzleFlash();
-		gEngfuncs.pEventAPI->EV_WeaponAnimation( SHOTGUN_FIRE2, 2 );
+		gEngfuncs.pEventAPI->EV_WeaponAnimation( SHOTGUN_FIRE2, 0 );
 		V_PunchAxis( 0, -10.0 );
 	}
 
@@ -602,7 +602,7 @@ void EV_FireShotGunSingle( event_args_t *args )
 	{
 		// Add muzzle flash to current weapon model
 		EV_MuzzleFlash();
-		gEngfuncs.pEventAPI->EV_WeaponAnimation( SHOTGUN_FIRE, 2 );
+		gEngfuncs.pEventAPI->EV_WeaponAnimation( SHOTGUN_FIRE, 0 );
 
 		V_PunchAxis( 0, -5.0 );
 	}
@@ -659,7 +659,7 @@ void EV_FireMP5( event_args_t *args )
 	{
 		// Add muzzle flash to current weapon model
 		EV_MuzzleFlash();
-		gEngfuncs.pEventAPI->EV_WeaponAnimation( MP5_FIRE1 + gEngfuncs.pfnRandomLong( 0, 2 ), 2 );
+		gEngfuncs.pEventAPI->EV_WeaponAnimation( MP5_FIRE1 + gEngfuncs.pfnRandomLong( 0, 2 ), 0 );
 
 		V_PunchAxis( 0, gEngfuncs.pfnRandomFloat( -2, 2 ) );
 	}
@@ -696,7 +696,7 @@ void EV_FireMP52( event_args_t *args )
 
 	if( EV_IsLocal( idx ) )
 	{
-		gEngfuncs.pEventAPI->EV_WeaponAnimation( MP5_LAUNCH, 2 );
+		gEngfuncs.pEventAPI->EV_WeaponAnimation( MP5_LAUNCH, 0 );
 		V_PunchAxis( 0, -10 );
 	}
 
@@ -861,7 +861,7 @@ void EV_FireGauss( event_args_t *args )
 	if( EV_IsLocal( idx ) )
 	{
 		V_PunchAxis( 0.0f, -2.0f );
-		gEngfuncs.pEventAPI->EV_WeaponAnimation( GAUSS_FIRE2, 2 );
+		gEngfuncs.pEventAPI->EV_WeaponAnimation( GAUSS_FIRE2, 0 );
 
 		if( m_fPrimaryFire == false )
 			 g_flApplyVel = flDamage; 
@@ -1143,9 +1143,9 @@ void EV_FireCrossbow2( event_args_t *args )
 	if( EV_IsLocal( idx ) )
 	{
 		if( args->iparam1 )
-			gEngfuncs.pEventAPI->EV_WeaponAnimation( CROSSBOW_FIRE1, 1 );
+			gEngfuncs.pEventAPI->EV_WeaponAnimation( CROSSBOW_FIRE1, 0 );
 		else
-			gEngfuncs.pEventAPI->EV_WeaponAnimation( CROSSBOW_FIRE3, 1 );
+			gEngfuncs.pEventAPI->EV_WeaponAnimation( CROSSBOW_FIRE3, 0 );
 	}
 
 	// Store off the old count
@@ -1219,9 +1219,9 @@ void EV_FireCrossbow( event_args_t *args )
 	if( EV_IsLocal( idx ) )
 	{
 		if( args->iparam1 )
-			gEngfuncs.pEventAPI->EV_WeaponAnimation( CROSSBOW_FIRE1, 1 );
+			gEngfuncs.pEventAPI->EV_WeaponAnimation( CROSSBOW_FIRE1, 0 );
 		else
-			gEngfuncs.pEventAPI->EV_WeaponAnimation( CROSSBOW_FIRE3, 1 );
+			gEngfuncs.pEventAPI->EV_WeaponAnimation( CROSSBOW_FIRE3, 0 );
 
 		V_PunchAxis( 0.0f, -2.0f );
 	}
@@ -1261,7 +1261,7 @@ void EV_FireRpg( event_args_t *args )
 	//Only play the weapon anims if I shot it. 
 	if( EV_IsLocal( idx ) )
 	{
-		gEngfuncs.pEventAPI->EV_WeaponAnimation( RPG_FIRE2, 1 );
+		gEngfuncs.pEventAPI->EV_WeaponAnimation( RPG_FIRE2, 0 );
 
 		V_PunchAxis( 0, -5.0 );
 	}
@@ -1362,7 +1362,7 @@ void EV_EgonFire( event_args_t *args )
 
 	//Only play the weapon anims if I shot it.
 	if( EV_IsLocal( idx ) )
-		gEngfuncs.pEventAPI->EV_WeaponAnimation( g_fireAnims1[gEngfuncs.pfnRandomLong( 0, 3 )], 1 );
+		gEngfuncs.pEventAPI->EV_WeaponAnimation( g_fireAnims1[gEngfuncs.pfnRandomLong( 0, 3 )], 0 );
 
 	if( iStartup == 1 && EV_IsLocal( idx ) && !( pBeam || pBeam2 || pFlare ) && cl_lw->value ) //Adrian: Added the cl_lw check for those lital people that hate weapon prediction.
 	{
@@ -1504,7 +1504,7 @@ void EV_HornetGunFire( event_args_t *args )
 	if( EV_IsLocal( idx ) )
 	{
 		V_PunchAxis( 0, gEngfuncs.pfnRandomLong( 0, 2 ) );
-		gEngfuncs.pEventAPI->EV_WeaponAnimation( HGUN_SHOOT, 1 );
+		gEngfuncs.pEventAPI->EV_WeaponAnimation( HGUN_SHOOT, 0 );
 	}
 
 	switch( gEngfuncs.pfnRandomLong( 0, 2 ) )
@@ -1549,6 +1549,7 @@ void EV_TripmineFire( event_args_t *args )
 	pmtrace_t tr;
 
 	idx = args->entindex;
+	const bool last = args->bparam1 != 0;
 	VectorCopy( args->origin, vecSrc );
 	VectorCopy( args->angles, angles );
 
@@ -1571,7 +1572,7 @@ void EV_TripmineFire( event_args_t *args )
 	gEngfuncs.pEventAPI->EV_PlayerTrace( vecSrc, vecSrc + forward * 128.0f, PM_NORMAL, -1, &tr );
 
 	//Hit something solid
-	if( tr.fraction < 1.0f )
+	if( tr.fraction < 1.0f && !last )
 		 gEngfuncs.pEventAPI->EV_WeaponAnimation ( TRIPMINE_DRAW, 0 );
 	
 	gEngfuncs.pEventAPI->EV_PopPMStates();
