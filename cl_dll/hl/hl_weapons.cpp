@@ -796,15 +796,7 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 	//  over the wire ( fixes some animation glitches )
 	if( g_runfuncs && ( HUD_GetWeaponAnim() != to->client.weaponanim ) )
 	{
-<<<<<<< HEAD
-		int body = 2;
-=======
 		int body = 0;
-
-		//Show laser sight/scope combo
-		if( pWeapon == &g_Python && bIsMultiplayer() )
-			 body = 1;
->>>>>>> master
 
 		// Force a fixed anim down to viewmodel
 		HUD_SendWeaponAnim( to->client.weaponanim, body, 1 );
