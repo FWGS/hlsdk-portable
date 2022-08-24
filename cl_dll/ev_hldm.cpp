@@ -592,7 +592,7 @@ void EV_FireShotGunSingle( event_args_t *args )
 	{
 		// Add muzzle flash to current weapon model
 		EV_MuzzleFlash();
-		gEngfuncs.pEventAPI->EV_WeaponAnimation( SHOTGUN_FIRE, 2 );
+		gEngfuncs.pEventAPI->EV_WeaponAnimation( SHOTGUN_FIRE, 0 );
 
 		V_PunchAxis( 0, -15.0 );
 	}
