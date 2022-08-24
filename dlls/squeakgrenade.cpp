@@ -465,7 +465,14 @@ BOOL CSqueak::Deploy()
 
 	m_pPlayer->m_iWeaponVolume = QUIET_GUN_VOLUME;
 
-	return DefaultDeploy( "models/v_squeak.mdl", "models/p_squeak.mdl", SQUEAK_UP, "squeak" );
+	const BOOL result = DefaultDeploy( "models/v_squeak.mdl", "models/p_squeak.mdl", SQUEAK_UP, "squeak" );
+#if WEAPONS_ANIMATION_TIMES_FIX
+	if ( result )
+	{
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.7f;
+	}
+#endif
+	return result;
 }
 
 void CSqueak::Holster( int skiplocal /* = 0 */ )
