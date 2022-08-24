@@ -187,7 +187,9 @@ void CHandGrenade::WeaponIdle( void )
 		// player "shoot" animation
 		m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
 
+#if !HANDGRENADE_DEPLOY_FIX
 		m_flReleaseThrow = 0.0f;
+#endif
 		m_flStartThrow = 0.0f;
 		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5f;
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.5f;
