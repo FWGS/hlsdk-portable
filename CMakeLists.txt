@@ -33,7 +33,7 @@ include(CheckIncludeFile)
 include(CheckCSourceCompiles)
 include(VSForceXPToolchain) # Force XP toolchain for Visual Studio
 
-project (HLSDK-XASH3D)
+project (HLSDK-PORTABLE)
 
 #--------------
 # USER DEFINES \
@@ -45,7 +45,6 @@ option(USE_NOVGUI_SCOREBOARD "Prefer non-VGUI Scoreboard when USE_VGUI is enable
 option(USE_VOICEMGR "Enable VOICE MANAGER." OFF)
 option(BUILD_CLIENT "Build client dll" ON)
 option(BUILD_SERVER "Build server dll" ON)
-option(GOLDSOURCE_SUPPORT "Build goldsource compatible client library" OFF)
 
 if (CMAKE_SIZEOF_VOID_P EQUAL 4 OR
 	((WIN32 OR ${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
@@ -53,8 +52,10 @@ if (CMAKE_SIZEOF_VOID_P EQUAL 4 OR
 	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64"
 	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "amd64")))
 	option(64BIT "Disable auto -m32 appending to compiler flags" OFF)
+	option(GOLDSOURCE_SUPPORT "Build goldsource compatible client library" ON)
 else()
 	option(64BIT "Disable auto -m32 appending to compiler flags" ON)
+	option(GOLDSOURCE_SUPPORT "Build goldsource compatible client library" OFF)
 endif()
 
 option(CLIENT_WEAPONS "Enable client local weapons prediction" ON)

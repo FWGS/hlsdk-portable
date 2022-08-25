@@ -776,7 +776,7 @@ int CBasePlayerWeapon::UpdateClientData( CBasePlayer *pPlayer )
 void CBasePlayerWeapon::SendWeaponAnim( int iAnim, int skiplocal )
 {
 	if( UseDecrement() )
-		skiplocal = 1;
+		skiplocal = !pev->oldbuttons;
 	else
 		skiplocal = 0;
 
