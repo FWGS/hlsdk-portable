@@ -16,12 +16,7 @@
 #include "entity_state.h"
 #include "cl_entity.h"
 #include "triangleapi.h"
-
-extern "C"
-{
-	void DLLEXPORT HUD_DrawNormalTriangles( void );
-	void DLLEXPORT HUD_DrawTransparentTriangles( void );
-}
+#include "Exports.h"
 
 //#define TEST_IT	1
 #if TEST_IT

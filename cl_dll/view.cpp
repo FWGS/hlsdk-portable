@@ -26,6 +26,7 @@
 #include "shake.h"
 #include "hltv.h"
 #include "view.h"
+#include "Exports.h"
 
 // Spectator Mode
 extern "C" 

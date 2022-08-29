@@ -2,6 +2,7 @@
 #include "exportdef.h"
 #include "hud.h"
 #include "cl_util.h"
+#include "Exports.h"
 
 // shared between backends
 Vector dead_viewangles(0, 0, 0);

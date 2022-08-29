@@ -17,6 +17,7 @@
 #include "cl_util.h"
 #include "demo.h"
 #include "demo_api.h"
+#include "Exports.h"
 
 int g_demosniper = 0;
 int g_demosniperdamage = 0;
@@ -25,11 +26,6 @@ float g_demosniperangles[3];
 float g_demozoom;
 
 // FIXME:  There should be buffer helper functions to avoid all of the *(int *)& crap.
-
-extern "C" 
-{
-	void DLLEXPORT Demo_ReadBuffer( int size, unsigned char *buffer );
-}
 
 /*
 =====================

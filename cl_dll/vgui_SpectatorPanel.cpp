@@ -19,7 +19,7 @@
 #include "vgui_SpectatorPanel.h"
 #include "vgui_ScorePanel.h"
 
-//#include "Exports.h"
+#include "Exports.h"
 
 /*
 ==========================

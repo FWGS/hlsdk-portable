@@ -14,6 +14,7 @@
 #include "const.h"
 #include "camera.h"
 #include "in_defs.h"
+#include "Exports.h"
 
 #if _WIN32
 #define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
@@ -32,13 +33,6 @@ typedef struct point_s
 #endif
 
 float CL_KeyState( kbutton_t *key );
-
-extern "C"
-{
-	void DLLEXPORT CAM_Think( void );
-	int DLLEXPORT CL_IsThirdPerson( void );
-	void DLLEXPORT CL_CameraOffset( float *ofs );
-}
 
 extern cl_enginefunc_t gEngfuncs;
 

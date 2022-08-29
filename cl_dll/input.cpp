@@ -27,18 +27,11 @@ extern "C"
 //#include "view.h"
 #include <string.h>
 #include <ctype.h>
+#include "Exports.h"
 
 #if USE_VGUI
 #include "vgui_TeamFortressViewport.h"
 #endif
-
-extern "C" 
-{
-	struct kbutton_s DLLEXPORT *KB_Find( const char *name );
-	void DLLEXPORT CL_CreateMove( float frametime, struct usercmd_s *cmd, int active );
-	void DLLEXPORT HUD_Shutdown( void );
-	int DLLEXPORT HUD_Key_Event( int eventcode, int keynum, const char *pszCurrentBinding );
-}
 
 extern int g_iAlive;
 
