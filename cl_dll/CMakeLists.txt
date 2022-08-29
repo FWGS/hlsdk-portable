@@ -62,6 +62,10 @@ if (USE_VGUI)
 	endif()
 endif()
 
+if (USE_PARTICLEMAN)
+	add_definitions(-DUSE_PARTICLEMAN)
+endif()
+
 set (CLDLL_SOURCES
 	../dlls/crossbow.cpp
 	../dlls/crowbar.cpp
@@ -158,6 +162,10 @@ else()
 	list(APPEND CLDLL_SOURCES
 		MOTD.cpp
 		scoreboard.cpp)
+endif()
+
+if (USE_PARTICLEMAN)
+	list(APPEND CLDLL_SOURCES ../public/interface.cpp)
 endif()
 
 include_directories (. hl/ ../dlls ../dlls/wpn_shared ../common ../engine ../pm_shared ../game_shared ../public)

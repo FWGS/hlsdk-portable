@@ -28,6 +28,17 @@
 #include "vgui_TeamFortressViewport.h"
 #endif
 
+#if USE_PARTICLEMAN
+#include "interface.h"
+#include "particleman.h"
+
+CSysModule *g_hParticleManModule = NULL;
+IParticleMan *g_pParticleMan = NULL;
+
+void CL_LoadParticleMan( void );
+void CL_UnloadParticleMan( void );
+#endif
+
 #if GOLDSOURCE_SUPPORT && (XASH_WIN32 || XASH_LINUX || XASH_APPLE) && XASH_X86
 #define USE_FAKE_VGUI	!USE_VGUI
 #if USE_FAKE_VGUI
@@ -170,6 +181,10 @@ int DLLEXPORT Initialize( cl_enginefunc_t *pEnginefuncs, int iVersion )
 	}
 
 	EV_HookEvents();
+
+#if USE_PARTICLEMAN
+	CL_LoadParticleMan();
+#endif
 
 	return 1;
 }
@@ -387,6 +402,48 @@ void DLLEXPORT HUD_DirectorMessage( int iSize, void *pbuf )
 {
 	 gHUD.m_Spectator.DirectorMessage( iSize, pbuf );
 }
+
+#if USE_PARTICLEMAN
+void CL_UnloadParticleMan( void )
+{
+	Sys_UnloadModule( g_hParticleManModule );
+
+	g_pParticleMan = NULL;
+	g_hParticleManModule = NULL;
+}
+
+void CL_LoadParticleMan( void )
+{
+	char szPDir[512];
+
+	if ( gEngfuncs.COM_ExpandFilename( PARTICLEMAN_DLLNAME, szPDir, sizeof( szPDir ) ) == FALSE )
+	{
+		g_pParticleMan = NULL;
+		g_hParticleManModule = NULL;
+		return;
+	}
+
+	g_hParticleManModule = Sys_LoadModule( szPDir );
+	CreateInterfaceFn particleManFactory = Sys_GetFactory( g_hParticleManModule );
+
+	if ( particleManFactory == NULL )
+	{
+		g_pParticleMan = NULL;
+		g_hParticleManModule = NULL;
+		return;
+	}
+
+	g_pParticleMan = (IParticleMan *)particleManFactory( PARTICLEMAN_INTERFACE, NULL);
+
+	if ( g_pParticleMan )
+	{
+		g_pParticleMan->SetUp( &gEngfuncs );
+
+		// Add custom particle classes here BEFORE calling anything else or you will die.
+		g_pParticleMan->AddCustomParticleClassSize ( sizeof ( CBaseParticle ) );
+	}
+}
+#endif
 
 void DLLEXPORT HUD_MobilityInterface( mobile_engfuncs_t *gpMobileEngfuncs )
 {
