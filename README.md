@@ -12,7 +12,7 @@ Half-Life SDK for GoldSource & Xash3D with some bugfixes.
 - Scientists now react to smells. [Patch](https://github.com/FWGS/hlsdk-portable/commit/2de4e7ab003d5b1674d12525f5aefb1e57a49fa3)
 - Tau-cannon (gauss) plays idle animations.
 - Tau-cannon (gauss) beam color depends on the charge as it was before the prediction code was introduced in Half-Life. [Patch](https://github.com/FWGS/hlsdk-portable/commit/0a29ec49c8183ebb8da22a6d2ef395eae9c3dffe)
-- Brought back gluon flare in singleplayer.
+- Brought back gluon flare in singleplayer. [Patch](https://github.com/FWGS/hlsdk-portable/commit/9d7ab6acf46a8b71ef119d9c252767865522d21d)
 - Hand grenades don't stay primed after holster, preventing detonation after weapon switch. [Patch](https://github.com/FWGS/hlsdk-portable/commit/6e1059026faa90c5bfe5e3b3f4f58fde398d4524)
 - Fixed flashlight battery appearing as depleted on restore.
 - Fixed a potential overflow when reading sentences.txt. [Patch](https://github.com/FWGS/hlsdk-xash3d/commit/cb51d2aa179f1eb622e08c1c07b053ccd49e40a5)
@@ -37,13 +37,29 @@ Bugfix-related server cvars:
 - **explosionfix**: if set to 1, explosion damage won't propagate through thin bruses.
 - **selfgauss**: if set to 0, players won't hurt themselves with secondary attack when shooting thick brushes.
 
-*Note*: the macros and cvars were adjusted in [hlfixed](https://github.com/FWGS/hlsdk-portable/tree/hlfixed) branch. The bugfix macros are kept turned off in master branch to maintain the compatibility with vanilla servers and clients.
+*Note*: the macros and cvars were adjusted in [hlfixed](https://github.com/FWGS/hlsdk-portable/tree/hlfixed) branch (for further information read [this](https://github.com/FWGS/hlsdk-portable/wiki/HL-Fixed)). The bugfix macros are kept turned off in `master` branch to maintain the compatibility with vanilla servers and clients.
 
 Other server cvars:
 
 - **mp_bhopcap**: if set to 1, enable bunny-hop.
 - **chargerfix**: if set to 1, wall-mounted health and battery chargers will play reject sounds if player has the full health or armor.
 - **corpsephysics**: if set to 1, corpses of killed monsters will fly a bit from an impact. It's a cut feature from Half-Life.
+
+</p>
+</details>
+
+<details><summary>Support for mods</summary>
+<p>
+
+This repository contains (re-)implementations of some mods as separate branches derived from `master`. The list of supported mods can be found [here](https://github.com/FWGS/hlsdk-portable/wiki/Mods). Note that some branches are unstable and incomplete.
+
+To get the mod branch locally run the following git command:
+
+```
+git fetch origin asheep:asheep
+```
+
+This is considering that you have set **FWGS/hlsdk-portable** as an `origin` remote and want to fetch `asheep` branch.
 
 </p>
 </details>
@@ -87,7 +103,7 @@ cd projects\hlsdk-portable
 ```
 cmake -A Win32 -B build
 ```
-Once you configure the project you don't need to call `cmake` anymore unless you modify `CMakeLists.txt` files or want to reconfigure the project with different parameters.
+Note that you must repeat the configuration step if you modify `CMakeLists.txt` files or want to reconfigure the project with different parameters.
 
 The next step is to compile the libraries:
 ```
