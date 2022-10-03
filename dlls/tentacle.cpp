@@ -32,6 +32,8 @@
 #define ACT_T_STRIKE		1030
 #define ACT_T_REARIDLE		1040
 
+#define SF_TENTACLE_USE_TENTACLE3 64
+
 class CTentacle : public CBaseMonster
 {
 public:
@@ -251,7 +253,10 @@ void CTentacle::Spawn()
 	pev->health = 75;
 	pev->sequence = 0;
 
-	SET_MODEL( ENT( pev ), "models/tentacle2.mdl" );
+	if (FBitSet(pev->spawnflags, SF_TENTACLE_USE_TENTACLE3))
+		SET_MODEL( ENT( pev ), "models/tentacle3.mdl" );
+	else
+		SET_MODEL( ENT( pev ), "models/tentacle2.mdl" );
 	UTIL_SetSize( pev, Vector( -32, -32, 0 ), Vector( 32, 32, 64 ) );
 
 	pev->takedamage = DAMAGE_AIM;
@@ -288,7 +293,10 @@ void CTentacle::Spawn()
 
 void CTentacle::Precache()
 {
-	PRECACHE_MODEL( "models/tentacle2.mdl" );
+	if (FBitSet(pev->spawnflags, SF_TENTACLE_USE_TENTACLE3))
+		PRECACHE_MODEL( "models/tentacle3.mdl" );
+	else
+		PRECACHE_MODEL( "models/tentacle2.mdl" );
 
 	PRECACHE_SOUND( "ambience/flies.wav" );
 	PRECACHE_SOUND( "ambience/squirm2.wav" );
