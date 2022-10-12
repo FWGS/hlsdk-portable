@@ -28,7 +28,7 @@
 //=========================================================
 // CFuncTankOF
 //=========================================================
-class CFuncTankOF : public CFuncTank
+class CFuncTankOF : public CFuncTankGun
 {
 public:
 
