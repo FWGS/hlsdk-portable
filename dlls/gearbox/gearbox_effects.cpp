@@ -304,7 +304,7 @@ void CBlowerCannon::BlowerCannonThink( void )
 			CSpore::CreateSpore(pev->origin, angles, this, CSpore::GRENADE, false, false);
 			break;
 		case BLOWERCANNON_SHOCKBEAM:
-			CShock::Shoot(pev, pev->angles, pev->origin, gpGlobals->v_forward * 2000);
+			CShock::Shoot(pev, angles, pev->origin, gpGlobals->v_forward * 2000);
 			break;
 		case BLOWERCANNON_DISPLACERBALL:
 			CDisplacerBall::Shoot(pev, pev->origin, gpGlobals->v_forward * 500, angles);
