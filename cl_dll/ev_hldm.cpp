@@ -471,7 +471,7 @@ static void EV_FireGlock_Impl( event_args_t *args )
 	if( EV_IsLocal( idx ) )
 	{
 		EV_MuzzleFlash();
-		gEngfuncs.pEventAPI->EV_WeaponAnimation( empty ? GLOCK_SHOOT_EMPTY : GLOCK_SHOOT, 0 );
+		gEngfuncs.pEventAPI->EV_WeaponAnimation( empty ? GLOCK_SHOOT_EMPTY : GLOCK_SHOOT, 1 );
 
 		V_PunchAxis( 0, -2.0 );
 	}
