@@ -32,20 +32,20 @@ jobs:
       CXX: ${{ matrix.cxx }}
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         submodules: recursive
 
     - name: Checkout steam-runtime
       if: startsWith(matrix.os, 'ubuntu')
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         repository: ValveSoftware/steam-runtime
         path: steam-runtime
     - name: Cache steam-runtime
       if: startsWith(matrix.os, 'ubuntu')
       id: cache-steam-runtime
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: com.valvesoftware.SteamRuntime.Sdk-i386-scout-sysroot.tar.gz
         key: ${{ runner.os }}-steam-runtime
@@ -73,7 +73,7 @@ jobs:
 
     - name: Add msbuild to PATH
       if: startsWith(matrix.os, 'windows')
-      uses: microsoft/setup-msbuild@v1.0.2
+      uses: microsoft/setup-msbuild@v1.1
     - name: Build on Windows
       if: startsWith(matrix.os, 'windows')
       run: |
@@ -82,11 +82,11 @@ jobs:
 
     - name: Extract branch name
       shell: bash
-      run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/} | tr '/' '_')"
+      run: echo "branch=$(echo ${GITHUB_REF#refs/heads/} | tr '/' '_')" >> $GITHUB_OUTPUT
       id: extract_branch
     - name: Extract gamedir
       shell: bash
-      run: echo "##[set-output name=gamedir;]$(grep build/CMakeCache.txt -Ee 'GAMEDIR:STRING=[a-z]+' | cut -d '=' -f 2)"
+      run: echo "gamedir=$(grep build/CMakeCache.txt -Ee 'GAMEDIR:STRING=[a-z]+' | cut -d '=' -f 2)" >> $GITHUB_OUTPUT
       id: extract_gamedir
     - name: Copy pdbs to dist dir
       if: ${{ startsWith(matrix.os, 'windows') && github.event.inputs.buildtype == 'Debug' }}
@@ -100,13 +100,13 @@ jobs:
         Remove-Item -Force -Path dist/${{ steps.extract_gamedir.outputs.gamedir }}/dlls/hl.lib
     - name: Upload linux artifact
       if: startsWith(matrix.os, 'ubuntu')
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: hlsdk-${{ steps.extract_branch.outputs.branch }}-linux
         path: dist/${{ steps.extract_gamedir.outputs.gamedir }}
     - name: Upload windows artifact
       if: startsWith(matrix.os, 'windows')
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: hlsdk-${{ steps.extract_branch.outputs.branch }}-windows
         path: dist/${{ steps.extract_gamedir.outputs.gamedir }}
