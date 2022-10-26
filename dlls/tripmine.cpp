@@ -282,9 +282,23 @@ void CTripmineGrenade::BeamBreakThink( void )
 	// respawn detect. 
 	if( !m_pBeam )
 	{
+#if TRIPMINE_BEAM_DUPLICATION_FIX
+		// Use the same trace parameters as the original trace above so the right entity is hit.
+		TraceResult tr2;
+		UTIL_TraceLine( pev->origin + m_vecDir * 8.0f, pev->origin - m_vecDir * 32.0f, dont_ignore_monsters, ENT( pev ), &tr2 );
+#endif
 		MakeBeam();
+#if TRIPMINE_BEAM_DUPLICATION_FIX
+		if( tr2.pHit )
+		{
+			// reset owner too
+			pev->owner = tr2.pHit;
+			m_hOwner = CBaseEntity::Instance( tr2.pHit );
+		}
+#else
 		if( tr.pHit )
 			m_hOwner = CBaseEntity::Instance( tr.pHit );	// reset owner too
+#endif
 	}
 
 	if( fabs( m_flBeamLength - tr.flFraction ) > 0.001f )
