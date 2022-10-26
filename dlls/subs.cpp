@@ -400,13 +400,6 @@ void CBaseToggle::LinearMove( Vector vecDest, float flSpeed )
 	// divide vector length by speed to get time to reach dest
 	float flTravelTime = vecDestDelta.Length() / flSpeed;
 
-	if( flTravelTime < 0.05f )
-	{
-		UTIL_SetOrigin( pev, m_vecFinalDest );
-		LinearMoveDone();
-		return;
-	}
-
 	// set nextthink to trigger a call to LinearMoveDone when dest is reached
 	pev->nextthink = pev->ltime + flTravelTime;
 	SetThink( &CBaseToggle::LinearMoveDone );
