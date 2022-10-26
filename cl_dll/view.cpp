@@ -794,7 +794,7 @@ void V_CalcNormalRefdef( struct ref_params_s *pparams )
 
 	// Apply this at all times
 	{
-		float pitch = camAngles[0];
+		float pitch = pparams->viewangles[0];
 
 		// Normalize angles
 		if( pitch > 180.0f )
