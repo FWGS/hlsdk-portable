@@ -898,8 +898,6 @@ void EV_FOTN( event_args_t *args )
 
 	if( EV_IsLocal( idx ) )
 	{
-		gEngfuncs.pEventAPI->EV_WeaponAnimation( FOTN_LPUNCH, 1 );
-
 		switch( ( g_iSwing2++ ) % 2 )
 		{
 			case 0:
@@ -1219,8 +1217,6 @@ void EV_BeamKatana( event_args_t *args )
 
 	if( EV_IsLocal( idx ) )
 	{
-		gEngfuncs.pEventAPI->EV_WeaponAnimation( BEAMKATANA_ATTACK1MISS, 1 );
-
 		switch( ( g_iSwing++ ) % 3 )
 		{
 			case 0:
