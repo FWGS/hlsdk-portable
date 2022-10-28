@@ -262,7 +262,14 @@ int CBeamKatana::Swing( int fFirst )
 
 		ClearMultiDamage( );
 
-		if ( (m_flNextPrimaryAttack + 1 < UTIL_WeaponTimeBase() ) || g_pGameRules->IsMultiplayer() )
+		// If building with the clientside weapon prediction system,
+		// UTIL_WeaponTimeBase() is always 0 and m_flNextPrimaryAttack is >= -1.0f, thus making
+		// m_flNextPrimaryAttack + 1 < UTIL_WeaponTimeBase() always evaluate to false.
+#ifdef CLIENT_WEAPONS
+		if( ( m_flNextPrimaryAttack + 1 == UTIL_WeaponTimeBase() ) || g_pGameRules->IsMultiplayer() )
+#else
+		if( ( m_flNextPrimaryAttack + 1 < UTIL_WeaponTimeBase() ) || g_pGameRules->IsMultiplayer() )
+#endif
 		{
 			// first swing does full damage
 			pEntity->TraceAttack(m_pPlayer->pev, gSkillData.plrDmgBeamKatana, gpGlobals->v_forward, &tr, DMG_CLUB ); 
