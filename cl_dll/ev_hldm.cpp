@@ -1334,7 +1334,7 @@ void EV_FireBow( event_args_t *args )
 	{
 		if( args->iparam1 )
 			gEngfuncs.pEventAPI->EV_WeaponAnimation( BOW_FIRE1, 0 );
-		else if( args->iparam2 )
+		else
 			gEngfuncs.pEventAPI->EV_WeaponAnimation( BOW_FIRE3, 0 );
 
 		V_PunchAxis( 0, -2.0 );
@@ -1404,7 +1404,7 @@ void EV_FireModman2( event_args_t *args )
 	{
 		if( args->iparam1 )
 			gEngfuncs.pEventAPI->EV_WeaponAnimation( CROSSBOW_FIRE1, 0 );
-		else if( args->iparam2 )
+		else
 			gEngfuncs.pEventAPI->EV_WeaponAnimation( CROSSBOW_FIRE3, 0 );
 	}
 
@@ -1481,7 +1481,7 @@ void EV_FireModman( event_args_t *args )
 	{
 		if( args->iparam1 )
 			gEngfuncs.pEventAPI->EV_WeaponAnimation( CROSSBOW_FIRE1, 0 );
-		else if( args->iparam2 )
+		else
 			gEngfuncs.pEventAPI->EV_WeaponAnimation( CROSSBOW_FIRE3, 0 );
 
 		V_PunchAxis( 0, -2.0 );
