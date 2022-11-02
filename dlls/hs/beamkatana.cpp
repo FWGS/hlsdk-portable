@@ -154,8 +154,10 @@ void CBeamKatana::PrimaryAttack()
 {
 	if (! Swing( 1 ))
 	{
+#if !CLIENT_DLL
 		SetThink( &CBeamKatana::SwingAgain );
 		pev->nextthink = gpGlobals->time + 0.1f;
+#endif
 	}
 }
 
@@ -223,10 +225,12 @@ int CBeamKatana::Swing( int fFirst )
 	}
 #endif
 
-	PLAYBACK_EVENT_FULL( FEV_NOTHOST, m_pPlayer->edict(), m_usBeamKatana, 
-	0.0, g_vecZero, g_vecZero, 0, 0, 0,
-	0.0, 0, 0.0 );
-
+	if( fFirst )
+	{
+		PLAYBACK_EVENT_FULL( FEV_NOTHOST, m_pPlayer->edict(), m_usBeamKatana, 
+		0.0, g_vecZero, g_vecZero, 0, 0, 0,
+		0.0, 0, 0.0 );
+	}
 
 	if ( tr.flFraction >= 1.0f )
 	{
@@ -260,33 +264,33 @@ int CBeamKatana::Swing( int fFirst )
 		fDidHit = TRUE;
 		CBaseEntity *pEntity = CBaseEntity::Instance(tr.pHit);
 
-		ClearMultiDamage( );
-
-		// If building with the clientside weapon prediction system,
-		// UTIL_WeaponTimeBase() is always 0 and m_flNextPrimaryAttack is >= -1.0f, thus making
-		// m_flNextPrimaryAttack + 1 < UTIL_WeaponTimeBase() always evaluate to false.
-#ifdef CLIENT_WEAPONS
-		if( ( m_flNextPrimaryAttack + 1 == UTIL_WeaponTimeBase() ) || g_pGameRules->IsMultiplayer() )
-#else
-		if( ( m_flNextPrimaryAttack + 1 < UTIL_WeaponTimeBase() ) || g_pGameRules->IsMultiplayer() )
-#endif
-		{
-			// first swing does full damage
-			pEntity->TraceAttack(m_pPlayer->pev, gSkillData.plrDmgBeamKatana, gpGlobals->v_forward, &tr, DMG_CLUB ); 
-		}
-		else
-		{
-			// subsequent swings do half
-			pEntity->TraceAttack(m_pPlayer->pev, gSkillData.plrDmgBeamKatana / 2, gpGlobals->v_forward, &tr, DMG_CLUB ); 
-		}	
-		ApplyMultiDamage( m_pPlayer->pev, m_pPlayer->pev );
-
 		// play thwack, smack, or dong sound
 		float flVol = 1.0;
 		int fHitWorld = TRUE;
 
 		if (pEntity)
 		{
+			ClearMultiDamage( );
+
+			// If building with the clientside weapon prediction system,
+			// UTIL_WeaponTimeBase() is always 0 and m_flNextPrimaryAttack is >= -1.0f, thus making
+			// m_flNextPrimaryAttack + 1 < UTIL_WeaponTimeBase() always evaluate to false.
+#ifdef CLIENT_WEAPONS
+			if( ( m_flNextPrimaryAttack + 1 == UTIL_WeaponTimeBase() ) || g_pGameRules->IsMultiplayer() )
+#else
+			if( ( m_flNextPrimaryAttack + 1 < UTIL_WeaponTimeBase() ) || g_pGameRules->IsMultiplayer() )
+#endif
+			{
+				// first swing does full damage
+				pEntity->TraceAttack(m_pPlayer->pev, gSkillData.plrDmgBeamKatana, gpGlobals->v_forward, &tr, DMG_CLUB ); 
+			}
+			else
+			{
+				// subsequent swings do half
+				pEntity->TraceAttack(m_pPlayer->pev, gSkillData.plrDmgBeamKatana / 2, gpGlobals->v_forward, &tr, DMG_CLUB ); 
+			}	
+			ApplyMultiDamage( m_pPlayer->pev, m_pPlayer->pev );
+
 			if ( pEntity->Classify() != CLASS_NONE && pEntity->Classify() != CLASS_MACHINE )
 			{
 				// play thwack or smack sound
@@ -301,7 +305,12 @@ int CBeamKatana::Swing( int fFirst )
 				}
 				m_pPlayer->m_iWeaponVolume = BEAMKATANA_BODYHIT_VOLUME;
 				if ( !pEntity->IsAlive() )
+				{
+#ifdef CROWBAR_FIX_RAPID_CROWBAR
+					m_flNextPrimaryAttack = GetNextAttackDelay(0.25);
+#endif
 					  return TRUE;
+				}
 				else
 					  flVol = 0.1;
 
@@ -340,11 +349,11 @@ int CBeamKatana::Swing( int fFirst )
 		}
 
 		m_pPlayer->m_iWeaponVolume = flVol * BEAMKATANA_WALLHIT_VOLUME;
-#endif
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.25f;
 
 		SetThink( &CBeamKatana::Smack );
-		pev->nextthink = UTIL_WeaponTimeBase() + 0.2f;		
+		pev->nextthink = gpGlobals->time + 0.2f;
+#endif
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.25f;
 	}
 	return fDidHit;
 }

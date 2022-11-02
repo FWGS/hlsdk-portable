@@ -194,8 +194,10 @@ void CFOTN::PrimaryAttack()
 	flWataDelay = flAhDelay;
 	if (! Swing( 1 ))
 	{
+#if !CLIENT_DLL
 		SetThink( &CFOTN::SwingAgain );
 		pev->nextthink = gpGlobals->time + 0.12f;
+#endif
 	}
 }
 
@@ -248,10 +250,12 @@ int CFOTN::Swing( int fFirst )
 	}
 #endif
 
-	PLAYBACK_EVENT_FULL( FEV_NOTHOST, m_pPlayer->edict(), m_usFOTN, 
-	0.0, g_vecZero, g_vecZero, 0, 0, 0,
-	0.0, 0, 0.0 );
-
+	if (fFirst)
+	{
+		PLAYBACK_EVENT_FULL( FEV_NOTHOST, m_pPlayer->edict(), m_usFOTN, 
+		0.0, g_vecZero, g_vecZero, 0, 0, 0,
+		0.0, 0, 0.0 );
+	}
 
 	if ( tr.flFraction >= 1.0f )
 	{
@@ -266,7 +270,7 @@ int CFOTN::Swing( int fFirst )
 	}
 	else
 	{
-			SendWeaponAnim( FOTN_LPUNCH );
+		SendWeaponAnim( FOTN_LPUNCH );
 
 		// player "shoot" animation
 		m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
@@ -277,33 +281,33 @@ int CFOTN::Swing( int fFirst )
 		fDidHit = TRUE;
 		CBaseEntity *pEntity = CBaseEntity::Instance(tr.pHit);
 
-		ClearMultiDamage( );
-
-		// If building with the clientside weapon prediction system,
-		// UTIL_WeaponTimeBase() is always 0 and m_flNextPrimaryAttack is >= -1.0f, thus making
-		// m_flNextPrimaryAttack + 1 < UTIL_WeaponTimeBase() always evaluate to false.
-#ifdef CLIENT_WEAPONS
-		if( ( m_flNextPrimaryAttack + 1 == UTIL_WeaponTimeBase() ) || g_pGameRules->IsMultiplayer() )
-#else
-		if( ( m_flNextPrimaryAttack + 1 < UTIL_WeaponTimeBase() ) || g_pGameRules->IsMultiplayer() )
-#endif
-		{
-			// first swing does full damage
-			pEntity->TraceAttack(m_pPlayer->pev, gSkillData.plrDmgFOTN, gpGlobals->v_forward, &tr, DMG_CLUB ); 
-		}
-		else
-		{
-			// subsequent swings do half
-			pEntity->TraceAttack(m_pPlayer->pev, gSkillData.plrDmgFOTN / 2, gpGlobals->v_forward, &tr, DMG_CLUB ); 
-		}	
-		ApplyMultiDamage( m_pPlayer->pev, m_pPlayer->pev );
-
 		// play thwack, smack, or dong sound
 		float flVol = 1.0;
 		int fHitWorld = TRUE;
 
-		if (pEntity)
+		if( pEntity )
 		{
+			ClearMultiDamage( );
+
+			// If building with the clientside weapon prediction system,
+			// UTIL_WeaponTimeBase() is always 0 and m_flNextPrimaryAttack is >= -1.0f, thus making
+			// m_flNextPrimaryAttack + 1 < UTIL_WeaponTimeBase() always evaluate to false.
+#ifdef CLIENT_WEAPONS
+			if( ( m_flNextPrimaryAttack + 1 == UTIL_WeaponTimeBase() ) || g_pGameRules->IsMultiplayer() )
+#else
+			if( ( m_flNextPrimaryAttack + 1 < UTIL_WeaponTimeBase() ) || g_pGameRules->IsMultiplayer() )
+#endif
+			{
+				// first swing does full damage
+				pEntity->TraceAttack(m_pPlayer->pev, gSkillData.plrDmgFOTN, gpGlobals->v_forward, &tr, DMG_CLUB ); 
+			}
+			else
+			{
+				// subsequent swings do half
+				pEntity->TraceAttack(m_pPlayer->pev, gSkillData.plrDmgFOTN / 2, gpGlobals->v_forward, &tr, DMG_CLUB ); 
+			}	
+			ApplyMultiDamage( m_pPlayer->pev, m_pPlayer->pev );
+
 			if ( pEntity->Classify() != CLASS_NONE && pEntity->Classify() != CLASS_MACHINE )
 			{
 				// play thwack or smack sound
@@ -318,7 +322,12 @@ int CFOTN::Swing( int fFirst )
 				}
 				m_pPlayer->m_iWeaponVolume = FOTN_BODYHIT_VOLUME;
 				if ( !pEntity->IsAlive() )
-					  return TRUE;
+				{
+#if CROWBAR_FIX_RAPID_CROWBAR
+					m_flNextPrimaryAttack = GetNextAttackDelay(0.12);
+#endif
+					return TRUE;
+				}
 				else
 					  flVol = 0.1;
 
@@ -357,11 +366,11 @@ int CFOTN::Swing( int fFirst )
 		}
 
 		m_pPlayer->m_iWeaponVolume = flVol * FOTN_WALLHIT_VOLUME;
-#endif
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.12f;
 
 		SetThink( &CFOTN::Smack );
-		pev->nextthink = UTIL_WeaponTimeBase() + 0.18f;
+		pev->nextthink = gpGlobals->time + 0.18f;
+#endif
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.12f;
 	}
 	return fDidHit;
 }
