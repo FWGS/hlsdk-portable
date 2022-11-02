@@ -63,6 +63,18 @@ int CJackal::GetItemInfo(ItemInfo *p)
   return 1;
 }
 
+int CJackal::AddToPlayer( CBasePlayer *pPlayer )
+{
+	if( CBasePlayerWeapon::AddToPlayer( pPlayer ) )
+	{
+		MESSAGE_BEGIN( MSG_ONE, gmsgWeapPickup, NULL, pPlayer->pev );
+			WRITE_BYTE( m_iId );
+		MESSAGE_END();
+		return TRUE;
+	}
+	return FALSE;
+}
+
 BOOL CJackal::Deploy( )
 {
   return DefaultDeploy( "models/v_jackal.mdl", "models/p_jackal.mdl", Jackal_DEPLOY, "jackal",  0 );

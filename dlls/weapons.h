@@ -617,6 +617,7 @@ public:
 	void EXPORT SwingAgain( void );
 	void EXPORT Smack( void );
 	int GetItemInfo(ItemInfo *p);
+	int AddToPlayer( CBasePlayer *pPlayer );
 
 	void EndAttack( void );
 	void PrimaryAttack( void );
@@ -652,6 +653,7 @@ public:
 	void Precache( void );
 	int iItemSlot( void ) { return 1; }
 	int GetItemInfo(ItemInfo *p);
+	int AddToPlayer( CBasePlayer *pPlayer );
 
 	void PrimaryAttack( void );
 	void SecondaryAttack( void );
@@ -903,6 +905,7 @@ public:
 	void Precache( void );
 	int iItemSlot( void ) { return 5; }
 	int GetItemInfo(ItemInfo *p);
+	int AddToPlayer( CBasePlayer *pPlayer );
 
 	void PrimaryAttack( void );
 	BOOL Deploy( void );
@@ -963,6 +966,7 @@ public:
 	void Precache( void );
 	int iItemSlot( void ) { return 5; }
 	int GetItemInfo(ItemInfo *p);
+	int AddToPlayer( CBasePlayer *pPlayer );
 	void SetObjectCollisionBox( void )
 	{
 		//!!!BUGBUG - fix the model!
@@ -996,6 +1000,7 @@ public:
 	void Precache( void );
 	int iItemSlot( void ) { return 3; }
 	int GetItemInfo(ItemInfo *p);
+	int AddToPlayer( CBasePlayer *pPlayer );
 
 	void PrimaryAttack( void );
 	void SecondaryAttack( void );
@@ -1092,6 +1097,7 @@ public:
 	void EXPORT SwingAgain( void );
 	void EXPORT Smack( void );
 	int GetItemInfo(ItemInfo *p);
+	int AddToPlayer( CBasePlayer *pPlayer );
 
 	BOOL Deploy( void );
 	void Holster( int skiplocal = 0 );
@@ -1120,6 +1126,7 @@ public:
 	void EXPORT SwingAgain( void );
 	void EXPORT Smack( void );
 	int GetItemInfo(ItemInfo *p);
+	int AddToPlayer( CBasePlayer *pPlayer );
 	//void FindHullIntersection( const Vector &vecSrc, TraceResult &tr, float *mins, float *maxs, edict_t *pEntity );
 
 	void PrimaryAttack( void );
@@ -1250,6 +1257,7 @@ public:
 	void Precache( void );
 	int iItemSlot( void ) { return 2; }
 	int GetItemInfo(ItemInfo *p);
+	int AddToPlayer( CBasePlayer *pPlayer );
 
 	void PrimaryAttack( void );
 	void SecondaryAttack( void );
@@ -1279,6 +1287,7 @@ public:
 	void Precache( void );
 	int iItemSlot( void ) { return 2; }
 	int GetItemInfo(ItemInfo *p);
+	int AddToPlayer( CBasePlayer *pPlayer );
 
 	void PrimaryAttack( void );
 	void SecondaryAttack( void );
@@ -1339,6 +1348,7 @@ public:
 	void Precache( void );
 	int iItemSlot( void ) { return 5; }
 	int GetItemInfo(ItemInfo *p);
+	int AddToPlayer( CBasePlayer *pPlayer );
 
 	void PrimaryAttack( void );
 	//void SecondaryAttack( void );
@@ -1434,6 +1444,7 @@ public:
 	void Precache( void );
 	int iItemSlot( void ) { return 2; }
 	int GetItemInfo(ItemInfo *p);
+	int AddToPlayer( CBasePlayer *pPlayer );
 
 	void PrimaryAttack( void );
 	void SecondaryAttack( void );

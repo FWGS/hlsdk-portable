@@ -93,6 +93,20 @@ int CBeamKatana::GetItemInfo(ItemInfo *p)
 
 
 
+int CBeamKatana::AddToPlayer( CBasePlayer *pPlayer )
+{
+	if( CBasePlayerWeapon::AddToPlayer( pPlayer ) )
+	{
+		MESSAGE_BEGIN( MSG_ONE, gmsgWeapPickup, NULL, pPlayer->pev );
+			WRITE_BYTE( m_iId );
+		MESSAGE_END();
+		return TRUE;
+	}
+	return FALSE;
+}
+
+
+
 BOOL CBeamKatana::Deploy( )
 {
 	return DefaultDeploy( "models/v_beamkatana.mdl", "models/p_beamkatana.mdl", BEAMKATANA_DRAW, "crowbar" );

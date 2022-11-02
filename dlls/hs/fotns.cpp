@@ -95,6 +95,20 @@ int CFOTN::GetItemInfo(ItemInfo *p)
 
 
 
+int CFOTN::AddToPlayer( CBasePlayer *pPlayer )
+{
+	if( CBasePlayerWeapon::AddToPlayer( pPlayer ) )
+	{
+		MESSAGE_BEGIN( MSG_ONE, gmsgWeapPickup, NULL, pPlayer->pev );
+			WRITE_BYTE( m_iId );
+		MESSAGE_END();
+		return TRUE;
+	}
+	return FALSE;
+}
+
+
+
 BOOL CFOTN::Deploy( )
 {
 	EMIT_SOUND(ENT(m_pPlayer->pev), CHAN_ITEM, "weapons/fotn_omae.wav", 1, ATTN_NORM);

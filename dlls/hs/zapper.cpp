@@ -60,6 +60,18 @@ int CZAPPER::GetItemInfo(ItemInfo *p)
   return 1;
 }
 
+int CZAPPER::AddToPlayer( CBasePlayer *pPlayer )
+{
+	if( CBasePlayerWeapon::AddToPlayer( pPlayer ) )
+	{
+		MESSAGE_BEGIN( MSG_ONE, gmsgWeapPickup, NULL, pPlayer->pev );
+			WRITE_BYTE( m_iId );
+		MESSAGE_END();
+		return TRUE;
+	}
+	return FALSE;
+}
+
 BOOL CZAPPER::Deploy( )
 {
   return DefaultDeploy( "models/v_zapper.mdl", "models/p_zapper.mdl", ZAPPER_DRAW, "onehanded",  0 );

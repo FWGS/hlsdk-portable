@@ -88,6 +88,20 @@ int CBoombox::GetItemInfo(ItemInfo *p)
 
 
 
+int CBoombox::AddToPlayer( CBasePlayer *pPlayer )
+{
+	if( CBasePlayerWeapon::AddToPlayer( pPlayer ) )
+	{
+		MESSAGE_BEGIN( MSG_ONE, gmsgWeapPickup, NULL, pPlayer->pev );
+			WRITE_BYTE( m_iId );
+		MESSAGE_END();
+		return TRUE;
+	}
+	return FALSE;
+}
+
+
+
 BOOL CBoombox::Deploy( )
 {
 	return DefaultDeploy( "models/v_boombox.mdl", "models/p_boombox.mdl", BOOMBOX_DRAW, "rpg" );

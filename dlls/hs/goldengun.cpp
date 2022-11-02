@@ -65,6 +65,18 @@ int CGOLDENGUN::GetItemInfo(ItemInfo *p)
   return 1;
 }
 
+int CGOLDENGUN::AddToPlayer( CBasePlayer *pPlayer )
+{
+	if( CBasePlayerWeapon::AddToPlayer( pPlayer ) )
+	{
+		MESSAGE_BEGIN( MSG_ONE, gmsgWeapPickup, NULL, pPlayer->pev );
+			WRITE_BYTE( m_iId );
+		MESSAGE_END();
+		return TRUE;
+	}
+	return FALSE;
+}
+
 BOOL CGOLDENGUN::Deploy( )
 {
   return DefaultDeploy( "models/v_goldengun.mdl", "models/p_goldengun.mdl", GOLDENGUN_DEPLOY, "goldengun",  0 );
