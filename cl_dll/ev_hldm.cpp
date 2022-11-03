@@ -1769,7 +1769,7 @@ void EV_FireEagle( event_args_t *args )
 	{
 		// Add muzzle flash to current weapon model
 		EV_MuzzleFlash();
-		gEngfuncs.pEventAPI->EV_WeaponAnimation( EAGLE_SHOOT, 1 );
+		gEngfuncs.pEventAPI->EV_WeaponAnimation( EAGLE_SHOOT, 0 );
 
 		V_PunchAxis( 0, -4.0 );
 	}
