@@ -497,6 +497,9 @@ void CPitDrone::HandleAnimEvent(MonsterEvent_t *pEvent)
 
 	case PIT_DRONE_AE_SPIT:
 	{
+		if( m_hEnemy == 0 )
+			return;
+
 		spikes--;
 		if( spikes < 0 )
 		{

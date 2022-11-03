@@ -400,6 +400,9 @@ void CGonome::HandleAnimEvent(MonsterEvent_t *pEvent)
 		break;
 	case GONOME_AE_SPIT:
 	{
+		if( m_hEnemy == 0 )
+			return;
+
 		Vector	vecSpitOffset;
 		Vector	vecSpitDir;
 
