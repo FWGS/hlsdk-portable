@@ -164,8 +164,8 @@ void CZAPPER::Reload( void )
 {
   int iResult;
 
-  if (m_iClip == ZAPPER_MAX_CLIP)
-  return;
+	if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0 || m_iClip == ZAPPER_MAX_CLIP )
+		return;
 
   if (m_iClip == 0)
   {
@@ -173,7 +173,7 @@ void CZAPPER::Reload( void )
   }
   else
   {
-    iResult = DefaultReload( ZAPPER_MAX_CLIP, ZAPPER_RELOAD, 1.5, 0 );
+    iResult = DefaultReload( ZAPPER_MAX_CLIP, ZAPPER_RELOAD_NOT_EMPTY, 1.5, 0 );
   }
   if (iResult)
   {

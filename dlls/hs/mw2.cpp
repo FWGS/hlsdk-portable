@@ -185,6 +185,8 @@ void CMW2::PrimaryAttack()
 
 void CMW2::Reload( void )
 {
+	if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0 || m_iClip == MW2_MAX_CLIP )
+		return;
 	DefaultReload( MW2_MAX_CLIP, MW2_RELOAD, 3.0 );
 }
 

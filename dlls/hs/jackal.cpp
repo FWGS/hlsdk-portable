@@ -149,12 +149,12 @@ void CJackal::Reload( void )
 {
   int iResult;
 
-  if (m_iClip == JACKAL_MAX_CLIP)
-  return;
+	if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0 || m_iClip == JACKAL_MAX_CLIP )
+		return;
 
   if (m_iClip == 0)
   {
-    iResult = DefaultReload( JACKAL_MAX_CLIP, Jackal_RELOAD2, 2.7, 0  );
+    iResult = DefaultReload( JACKAL_MAX_CLIP, Jackal_RELOAD, 2.7, 0  );
   }
   else
   {
