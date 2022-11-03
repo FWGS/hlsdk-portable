@@ -418,7 +418,7 @@ void CGonome::HandleAnimEvent(MonsterEvent_t *pEvent)
 
 		vecSpitOffset = vecArmPos;
 		UTIL_BloodDrips( vecSpitOffset, UTIL_RandomBloodVector(), BLOOD_COLOR_RED, 35 );
-		if( pEvent->event == GONOME_AE_THROW )
+		if( pEvent->event == GONOME_AE_THROW && m_hEnemy != 0 )
 		{
 			vecSpitDir = ((m_hEnemy->pev->origin + m_hEnemy->pev->view_ofs) - vecSpitOffset).Normalize();
 
