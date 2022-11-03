@@ -47,6 +47,12 @@ extern "C" EXPORT void monster_civ( entvars_t *pev )
 //=========================================================
 void CCivScientist::Spawn(void)
 {
+	// We need to set it before precache so the right voice will be chosen
+	if( pev->body == -1 )
+	{// -1 chooses a random head
+		pev->body = RANDOM_LONG( 0, NUM_SCIENTIST_HEADS - 1 );// pick a head, any he
+	}
+
 	Precache();
 
 	SET_MODEL(ENT(pev), "models/civ_sci.mdl");
@@ -66,11 +72,6 @@ void CCivScientist::Spawn(void)
 
 	// White hands
 	pev->skin = 0;
-
-	if (pev->body == -1)
-	{// -1 chooses a random head
-		pev->body = RANDOM_LONG(0, NUM_SCIENTIST_HEADS - 1);// pick a head, any head
-	}
 
 	// Luther is black, make his hands black
 	if (pev->body == HEAD_LUTHER)
