@@ -527,8 +527,7 @@ void CVoiceStatus::UpdateServerState(bool bForce)
 		}
 	}
 
-	char str[2048];
-	sprintf(str, "vban");
+	char str[2048] = "vban";
 	bool bChange = false;
 
 	for(unsigned long dw=0; dw < VOICE_MAX_PLAYERS_DW; dw++)
