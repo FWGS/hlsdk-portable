@@ -817,7 +817,7 @@ void StartFrame( void )
 	g_ulFrameCount++;
 
 	int oldBhopcap = g_bhopcap;
-	g_bhopcap = ( g_pGameRules->IsMultiplayer() && bhopcap.value != 0.0f ) ? 1 : 0;
+	g_bhopcap = ( g_pGameRules && g_pGameRules->IsMultiplayer() && bhopcap.value != 0.0f ) ? 1 : 0;
 	if( g_bhopcap != oldBhopcap )
 	{
 		MESSAGE_BEGIN( MSG_ALL, gmsgBhopcap, NULL );
