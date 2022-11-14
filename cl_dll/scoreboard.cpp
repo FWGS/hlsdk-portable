@@ -453,7 +453,7 @@ int CHudScoreboard::DrawPlayers( int xpos_rel, float list_slot, int nameoffset, 
 			if( g_PlayerInfoList[best_player].packetloss >= 63 )
 			{
 				UnpackRGB( r, g, b, RGB_REDISH );
-				sprintf( buf, " !!!!" );
+				strcpy( buf, " !!!!" );
 			}
 			else
 			{

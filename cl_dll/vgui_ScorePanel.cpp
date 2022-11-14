@@ -256,10 +256,7 @@ void ScorePanel::Update()
 	// Set the title
 	if( gViewPort->m_szServerName[0] != '\0' )
 	{
-		char sz[MAX_SERVERNAME_LENGTH + 16];
-
-		sprintf( sz, "%s", gViewPort->m_szServerName );
-		m_TitleLabel.setText( sz );
+		m_TitleLabel.setText( gViewPort->m_szServerName );
 	}
 
 	m_iRows = 0;
@@ -684,7 +681,7 @@ void ScorePanel::FillGrid()
 			}
 
 			// Fill out with the correct data
-			strcpy(sz, "");
+			sz[0] = '\0';
 			if ( m_iIsATeam[row] )
 			{
 				char sz2[128];
@@ -694,11 +691,11 @@ void ScorePanel::FillGrid()
 				case COLUMN_NAME:
 					if ( m_iIsATeam[row] == TEAM_SPECTATORS )
 					{
-						sprintf( sz2, "%s", CHudTextMessage::BufferedLocaliseTextString( "#Spectators" ) );
+						strcpy( sz2, CHudTextMessage::BufferedLocaliseTextString( "#Spectators" ) );
 					}
 					else
 					{
-						sprintf( sz2, "%s", gViewPort->GetTeamName(team_info->teamnumber) );
+						strcpy( sz2, gViewPort->GetTeamName(team_info->teamnumber) );
 					}
 
 					strcpy(sz, sz2);
@@ -790,7 +787,7 @@ void ScorePanel::FillGrid()
 						if (bNoClass)
 							sz[0] = '\0';
 						else
-							sprintf( sz, "%s", CHudTextMessage::BufferedLocaliseTextString( sLocalisedClasses[ g_PlayerExtraInfo[ m_iSortedRows[row] ].playerclass ] ) );
+							strcpy( sz, CHudTextMessage::BufferedLocaliseTextString( sLocalisedClasses[ g_PlayerExtraInfo[ m_iSortedRows[row] ].playerclass ] ) );
 					}
 					else
 					{
@@ -909,14 +906,12 @@ void ScorePanel::mousePressed(MouseCode code, Panel* panel)
 				else
 				{
 					char string1[1024];
-					char string2[1024];
 
 					// mute the player
 					GetClientVoiceMgr()->SetPlayerBlockedState(iPlayer, true);
 
 					sprintf( string1, CHudTextMessage::BufferedLocaliseTextString( "#Muted" ), pl_info->name );
-					sprintf( string2, "%s", CHudTextMessage::BufferedLocaliseTextString( "#No_longer_hear_that_player" ) );
-					sprintf( string, "%c** %s %s\n", HUD_PRINTTALK, string1, string2 );
+					sprintf( string, "%c** %s %s\n", HUD_PRINTTALK, string1, CHudTextMessage::BufferedLocaliseTextString( "#No_longer_hear_that_player" ) );
 
 					gHUD.m_TextMessage.MsgFunc_TextMsg(NULL, strlen(string)+1, string );
 				}
