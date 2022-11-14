@@ -391,7 +391,7 @@ void CVoiceStatus::UpdateSpeakerStatus( int entindex, qboolean bTalking )
 	if ( gEngfuncs.pfnGetCvarFloat( "voice_clientdebug" ) )
 	{
 		char msg[256];
-		_snprintf( msg, sizeof( msg ), "CVoiceStatus::UpdateSpeakerStatus: ent %d talking = %d\n", entindex, bTalking );
+		sprintf( msg, "CVoiceStatus::UpdateSpeakerStatus: ent %d talking = %d\n", entindex, bTalking );
 		gEngfuncs.pfnConsolePrint( msg );
 	}
 
@@ -446,7 +446,8 @@ void CVoiceStatus::UpdateSpeakerStatus( int entindex, qboolean bTalking )
 						gEngfuncs.pfnGetPlayerInfo( entindex, &info );
 
 						char paddedName[512];
-						_snprintf( paddedName, sizeof( paddedName ), "%s   ", info.name );
+						_snprintf( paddedName, sizeof( paddedName ) - 1, "%s   ", info.name );
+						paddedName[sizeof(paddedName) - 1] = '\0';
 
 						int color[3];
 						m_pHelper->GetPlayerTextColor( entindex, color );
@@ -507,7 +508,7 @@ void CVoiceStatus::UpdateServerState(bool bForce)
 		m_bServerModEnable = bCVarModEnable;
 
 		char str[256];
-		_snprintf(str, sizeof(str), "VModEnable %d", m_bServerModEnable);
+		sprintf(str, "VModEnable %d", m_bServerModEnable);
 		ServerCmd(str);
 
 		if(gEngfuncs.pfnGetCvarFloat("voice_clientdebug"))

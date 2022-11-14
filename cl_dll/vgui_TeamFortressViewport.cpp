@@ -1309,9 +1309,9 @@ void TeamFortressViewport::UpdateSpectatorPanel()
 		if( timer < 0 )
 			timer = 0;
 
-		_snprintf( szText, 63, "%d:%02d\n", ( timer / 60 ), ( timer % 60 ) );
+		_snprintf( szText, sizeof(szText) - 1, "%d:%02d\n", ( timer / 60 ), ( timer % 60 ) );
 
-		szText[63] = 0;
+		szText[sizeof(szText) - 1] = '\0';
 
 		m_pSpectatorPanel->m_CurrentTime->setText( szText ); */
 
