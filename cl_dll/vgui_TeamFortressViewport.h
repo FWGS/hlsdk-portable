@@ -846,7 +846,7 @@ protected:
 public:
 	CMenuHandler_SpectateFollow( char *player )
 	{
-		strncpy( m_szplayer, player, MAX_COMMAND_SIZE);
+		strncpy( m_szplayer, player, MAX_COMMAND_SIZE - 1 );
 		m_szplayer[MAX_COMMAND_SIZE-1] = '\0';
 	}
 
