@@ -173,6 +173,7 @@ int CHudDeathNotice::MsgFunc_DeathMsg( const char *pszName, int iSize, void *pbu
 	char killedwith[32];
 	strcpy( killedwith, "d_" );
 	strncat( killedwith, READ_STRING(), sizeof(killedwith) - strlen(killedwith) - 1 );
+	killedwith[sizeof(killedwith) - 1] = '\0';
 
 #if USE_VGUI
 	if (gViewPort)
