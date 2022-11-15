@@ -5,16 +5,7 @@
 // $NoKeywords: $
 //=============================================================================
 
-// There are hud.h's coming out of the woodwork so this ensures that we get the right one.
-#if defined(THREEWAVE) || defined(DMC_BUILD)
-	#include "../dmc/cl_dll/hud.h"
-#elif defined(CSTRIKE)
-	#include "../cstrike/cl_dll/hud.h"
-#elif defined(DOD)
-	#include "../dod/cl_dll/hud.h"
-#else
-	#include "hud.h"
-#endif
+#include "hud.h"
 
 #include "cl_util.h"
 #include <assert.h>
@@ -89,16 +80,14 @@ int g_BannedPlayerPrintCount;
 void ForEachBannedPlayer(char id[16])
 {
 	char str[256];
-	sprintf(str, "Ban %d: %2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x\n",
+	sprintf(str, "BAN %d: %2X%2X%2X%2X%2X%2X%2X%2X%2X%2X%2X%2X%2X%2X%2X%2X\n",
 		g_BannedPlayerPrintCount++,
 		id[0], id[1], id[2], id[3], 
 		id[4], id[5], id[6], id[7], 
 		id[8], id[9], id[10], id[11], 
 		id[12], id[13], id[14], id[15]
 		);
-#ifdef _WIN32
-	strupr(str);
-#endif
+
 	gEngfuncs.pfnConsolePrint(str);
 }
 
@@ -400,7 +389,7 @@ void CVoiceStatus::UpdateSpeakerStatus( int entindex, qboolean bTalking )
 	if ( gEngfuncs.pfnGetCvarFloat( "voice_clientdebug" ) )
 	{
 		char msg[256];
-		_snprintf( msg, sizeof( msg ), "CVoiceStatus::UpdateSpeakerStatus: ent %d talking = %d\n", entindex, bTalking );
+		sprintf( msg, "CVoiceStatus::UpdateSpeakerStatus: ent %d talking = %d\n", entindex, bTalking );
 		gEngfuncs.pfnConsolePrint( msg );
 	}
 
@@ -455,7 +444,8 @@ void CVoiceStatus::UpdateSpeakerStatus( int entindex, qboolean bTalking )
 						gEngfuncs.pfnGetPlayerInfo( entindex, &info );
 
 						char paddedName[512];
-						_snprintf( paddedName, sizeof( paddedName ), "%s   ", info.name );
+						_snprintf( paddedName, sizeof( paddedName ) - 1, "%s   ", info.name );
+						paddedName[sizeof(paddedName) - 1] = '\0';
 
 						int color[3];
 						m_pHelper->GetPlayerTextColor( entindex, color );
@@ -516,7 +506,7 @@ void CVoiceStatus::UpdateServerState(bool bForce)
 		m_bServerModEnable = bCVarModEnable;
 
 		char str[256];
-		_snprintf(str, sizeof(str), "VModEnable %d", m_bServerModEnable);
+		sprintf(str, "VModEnable %d", m_bServerModEnable);
 		ServerCmd(str);
 
 		if(gEngfuncs.pfnGetCvarFloat("voice_clientdebug"))
@@ -527,8 +517,7 @@ void CVoiceStatus::UpdateServerState(bool bForce)
 		}
 	}
 
-	char str[2048];
-	sprintf(str, "vban");
+	char str[2048] = "vban";
 	bool bChange = false;
 
 	for(unsigned long dw=0; dw < VOICE_MAX_PLAYERS_DW; dw++)
