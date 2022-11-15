@@ -60,7 +60,6 @@ def build(bld):
 		'input_xash3d.cpp',
 		'menu.cpp',
 		'message.cpp',
-		'overview.cpp',
 		'parsemsg.cpp',
 		'saytext.cpp',
 		'scoreboard.cpp',
