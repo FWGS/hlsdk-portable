@@ -137,7 +137,7 @@ int CHudSayText::Draw( float flTime )
 				static char buf[MAX_PLAYER_NAME_LENGTH + 32];
 
 				// draw the first x characters in the player color
-				strncpy( buf, g_szLineBuffer[i], Q_min(g_iNameLengths[i], MAX_PLAYER_NAME_LENGTH + 32 ) );
+				strncpy( buf, g_szLineBuffer[i], Q_min(g_iNameLengths[i], MAX_PLAYER_NAME_LENGTH + 31 ) );
 				buf[Q_min( g_iNameLengths[i], MAX_PLAYER_NAME_LENGTH + 31 )] = 0;
 //++ BulliT
 				int x = DrawConsoleString( LINE_START, y, buf, g_pflNameColors[i][0], g_pflNameColors[i][1], g_pflNameColors[i][2] );

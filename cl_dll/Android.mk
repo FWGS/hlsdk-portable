@@ -73,7 +73,6 @@ SRCS+=./input_mouse.cpp
 #SRCS+=./inputw32.cpp
 SRCS+=./menu.cpp
 SRCS+=./message.cpp
-SRCS+=./overview.cpp
 SRCS+=./parsemsg.cpp
 #SRCS+=./aghl/agbase64.cpp
 SRCS+=./aghl/agcrc32.cpp

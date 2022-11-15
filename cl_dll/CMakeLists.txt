@@ -101,7 +101,6 @@ set (CLDLL_SOURCES
 	input_xash3d.cpp
 	menu.cpp
 	message.cpp
-	overview.cpp
 	parsemsg.cpp
 	aghl/agbase64.cpp
 	aghl/agcrc32.cpp
