@@ -74,7 +74,6 @@ SRCS+=./input_mouse.cpp
 #SRCS+=./inputw32.cpp
 SRCS+=./menu.cpp
 SRCS+=./message.cpp
-SRCS+=./overview.cpp
 SRCS+=./parsemsg.cpp
 SRCS_C+=../pm_shared/pm_debug.c
 SRCS_C+=../pm_shared/pm_math.c
