@@ -109,7 +109,10 @@ void ClientDisconnect( edict_t *pEntity )
 
 	char text[256] = "";
 	if( pEntity->v.netname )
-		_snprintf( text, sizeof(text), "- %s has left the game\n", STRING( pEntity->v.netname ) );
+	{
+		_snprintf( text, sizeof(text) - 1, "- %s has left the game\n", STRING( pEntity->v.netname ) );
+		text[sizeof(text) - 1] = '\0';
+	}
 	MESSAGE_BEGIN( MSG_ALL, gmsgSayText, NULL );
 		WRITE_BYTE( ENTINDEX( pEntity ) );
 		WRITE_STRING( text );
@@ -622,8 +625,8 @@ void ClientCommand( edict_t *pEntity )
 
 		// check the length of the command (prevents crash)
 		// max total length is 192 ...and we're adding a string below ("Unknown command: %s\n")
-		strncpy( command, pcmd, 127 );
-		command[127] = '\0';
+		strncpy( command, pcmd, sizeof(command) - 1);
+		command[sizeof(command) - 1] = '\0';
 
 		// tell the user they entered an unknown command
 		ClientPrint( &pEntity->v, HUD_PRINTCONSOLE, UTIL_VarArgs( "Unknown command: %s\n", command ) );
@@ -667,7 +670,8 @@ void ClientUserInfoChanged( edict_t *pEntity, char *infobuffer )
 		if( gpGlobals->maxClients > 1 )
 		{
 			char text[256];
-			_snprintf( text, 256, "* %s changed name to %s\n", STRING( pEntity->v.netname ), g_engfuncs.pfnInfoKeyValue( infobuffer, "name" ) );
+			_snprintf( text, sizeof(text) - 1, "* %s changed name to %s\n", STRING( pEntity->v.netname ), g_engfuncs.pfnInfoKeyValue( infobuffer, "name" ) );
+			text[sizeof(text) - 1] = '\0';
 			MESSAGE_BEGIN( MSG_ALL, gmsgSayText, NULL );
 				WRITE_BYTE( ENTINDEX( pEntity ) );
 				WRITE_STRING( text );
@@ -817,7 +821,7 @@ void StartFrame( void )
 	g_ulFrameCount++;
 
 	int oldBhopcap = g_bhopcap;
-	g_bhopcap = ( g_pGameRules->IsMultiplayer() && bhopcap.value != 0.0f ) ? 1 : 0;
+	g_bhopcap = ( g_pGameRules && g_pGameRules->IsMultiplayer() && bhopcap.value != 0.0f ) ? 1 : 0;
 	if( g_bhopcap != oldBhopcap )
 	{
 		MESSAGE_BEGIN( MSG_ALL, gmsgBhopcap, NULL );
