@@ -205,7 +205,7 @@ CSchemeManager::CSchemeManager( int xRes, int yRes )
 		static const int tokenSize = 64;
 		char paramName[tokenSize], paramValue[tokenSize];
 
-		strncpy( paramName, token, tokenSize );
+		strncpy( paramName, token, tokenSize - 1 );
 		paramName[tokenSize-1] = 0; // ensure null termination
 
 		// get the '=' character
@@ -225,7 +225,7 @@ CSchemeManager::CSchemeManager( int xRes, int yRes )
 
 		// get paramValue
 		pFile = gEngfuncs.COM_ParseFile( pFile, token );
-		strncpy( paramValue, token, tokenSize );
+		strncpy( paramValue, token, tokenSize - 1 );
 		paramValue[tokenSize-1] = 0; // ensure null termination
 		
 		// is this a new scheme?
@@ -278,7 +278,7 @@ CSchemeManager::CSchemeManager( int xRes, int yRes )
 			pScheme = &tmpSchemes[currentScheme];
 			hasFgColor = hasBgColor = hasArmedFgColor = hasArmedBgColor = hasMouseDownFgColor = hasMouseDownBgColor = false;
 
-			strncpy( pScheme->schemeName, paramValue, CScheme::SCHEME_NAME_LENGTH );
+			strncpy( pScheme->schemeName, paramValue, CScheme::SCHEME_NAME_LENGTH - 1 );
 			pScheme->schemeName[CScheme::SCHEME_NAME_LENGTH-1] = '\0'; // ensure null termination of string
 		}
 
@@ -291,7 +291,7 @@ CSchemeManager::CSchemeManager( int xRes, int yRes )
 		// pull the data out into the scheme
 		if ( !stricmp(paramName, "FontName") )
 		{
-			strncpy( pScheme->fontName, paramValue, CScheme::FONT_NAME_LENGTH );
+			strncpy( pScheme->fontName, paramValue, CScheme::FONT_NAME_LENGTH - 1 );
 			pScheme->fontName[CScheme::FONT_NAME_LENGTH-1] = 0;
 		}
 		else if ( !stricmp(paramName, "FontSize") )
