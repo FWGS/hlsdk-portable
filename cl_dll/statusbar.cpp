@@ -226,7 +226,7 @@ int CHudStatusBar::MsgFunc_StatusText( const char *pszName, int iSize, void *pbu
 	if( line < 0 || line >= MAX_STATUSBAR_LINES )
 		return 1;
 
-	strncpy( m_szStatusText[line], READ_STRING(), MAX_STATUSTEXT_LENGTH );
+	strncpy( m_szStatusText[line], READ_STRING(), MAX_STATUSTEXT_LENGTH - 1 );
 	m_szStatusText[line][MAX_STATUSTEXT_LENGTH - 1] = 0;  // ensure it's null terminated ( strncpy() won't null terminate if read string too long)
 
 	if( m_szStatusText[0] == 0 )
