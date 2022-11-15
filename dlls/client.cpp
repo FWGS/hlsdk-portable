@@ -167,18 +167,19 @@ void ClientDisconnect( edict_t *pEntity )
 		switch( RANDOM_LONG( 0, 3 ) )
 		{
 			case 0:
-				snprintf( text, sizeof(text), "- %s has busted the fuck out\n", STRING( pEntity->v.netname ) );
+				_snprintf( text, sizeof(text) - 1, "- %s has busted the fuck out\n", STRING( pEntity->v.netname ) );
 				break;
 			case 1:
-				snprintf( text, sizeof(text),"- %s has ran away\n", STRING( pEntity->v.netname ) );
+				_snprintf( text, sizeof(text) - 1,"- %s has ran away\n", STRING( pEntity->v.netname ) );
 				break;
 			case 2:
-				snprintf( text, sizeof(text), "- %s ragequitted.\n", STRING( pEntity->v.netname ) );
+				_snprintf( text, sizeof(text) - 1, "- %s ragequitted.\n", STRING( pEntity->v.netname ) );
 				break;
 			case 3:
-				snprintf( text, sizeof(text), "- %s is out.\n", STRING( pEntity->v.netname ) );
+				_snprintf( text, sizeof(text) - 1, "- %s is out.\n", STRING( pEntity->v.netname ) );
 				break;
 		}
+		text[sizeof(text) - 1] = '\0';
 	}
 	MESSAGE_BEGIN( MSG_ALL, gmsgSayText, NULL );
 		WRITE_BYTE( ENTINDEX( pEntity ) );
@@ -909,7 +910,8 @@ void ClientUserInfoChanged( edict_t *pEntity, char *infobuffer )
 		if( gpGlobals->maxClients > 1 )
 		{
 			char text[256];
-			_snprintf( text, 256, "* %s changed name to %s\n", STRING( pEntity->v.netname ), g_engfuncs.pfnInfoKeyValue( infobuffer, "name" ) );
+			_snprintf( text, sizeof(text) - 1, "* %s changed name to %s\n", STRING( pEntity->v.netname ), g_engfuncs.pfnInfoKeyValue( infobuffer, "name" ) );
+			text[sizeof(text) - 1] = '\0';
 			MESSAGE_BEGIN( MSG_ALL, gmsgSayText, NULL );
 				WRITE_BYTE( ENTINDEX( pEntity ) );
 				WRITE_STRING( text );
@@ -1442,7 +1444,7 @@ void StartFrame( void )
 	// END BOT
 
 	int oldBhopcap = g_bhopcap;
-	g_bhopcap = ( g_pGameRules->IsMultiplayer() && bhopcap.value != 0.0f ) ? 1 : 0;
+	g_bhopcap = ( g_pGameRules && g_pGameRules->IsMultiplayer() && bhopcap.value != 0.0f ) ? 1 : 0;
 	if( g_bhopcap != oldBhopcap )
 	{
 		MESSAGE_BEGIN( MSG_ALL, gmsgBhopcap, NULL );
