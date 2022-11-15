@@ -148,10 +148,8 @@ void Draw_Triangles( void )
 
 	if( gHUD.m_hsprCursor == 0 )
 	{
-		char sz[256];
-//LRCT		sprintf( sz, "sprites/cursor.spr" );
-		sprintf( sz, "sprites/bubble.spr" ); //LRCT
-		gHUD.m_hsprCursor = SPR_Load( sz );
+//LRCT		gHUD.m_hsprCursor = SPR_Load( "sprites/cursor.spr" );
+		gHUD.m_hsprCursor = SPR_Load( "sprites/bubble.spr" ); //LRCT
 	}
 
 	if( !gEngfuncs.pTriAPI->SpriteTexture( (struct model_s *)gEngfuncs.GetSpritePointer( gHUD.m_hsprCursor ), 0 ) )
