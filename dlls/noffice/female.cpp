@@ -47,6 +47,11 @@ LINK_ENTITY_TO_CLASS(monster_female, CFemale);
 //=========================================================
 void CFemale::Spawn(void)
 {
+	if (pev->body == -1)
+	{// -1 chooses a random head
+		pev->body = RANDOM_LONG(0, NUM_FEMALE_HEADS - 1);// pick a head, any head
+	}
+
 	Precache();
 
 	SET_MODEL(ENT(pev), "models/female.mdl");
@@ -63,11 +68,6 @@ void CFemale::Spawn(void)
 	//	m_flDistTooFar		= 256.0;
 
 	m_afCapability = bits_CAP_HEAR | bits_CAP_TURN_HEAD | bits_CAP_OPEN_DOORS | bits_CAP_AUTO_DOORS;
-
-	if (pev->body == -1)
-	{// -1 chooses a random head
-		pev->body = RANDOM_LONG(0, NUM_FEMALE_HEADS - 1);// pick a head, any head
-	}
 
 	MonsterInit();
 	SetUse(NULL);
