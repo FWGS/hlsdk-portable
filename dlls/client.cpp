@@ -431,13 +431,15 @@ void Host_Say( edict_t *pEntity, int teamonly )
 	{
 		if( CMD_ARGC() >= 2 )
 		{
-			sprintf( szTemp, "%s %s", (char *)pcmd, (char *)CMD_ARGS() );
+			_snprintf( szTemp, sizeof(szTemp) - 1, "%s %s", (char *)pcmd, (char *)CMD_ARGS() );
 		}
 		else
 		{
 			// Just a one word command, use the first word...sigh
-			sprintf( szTemp, "%s", (char *)pcmd );
+			strncpy( szTemp, (char *)pcmd, sizeof(szTemp) - 1 );
 		}
+		szTemp[sizeof(szTemp) - 1] = '\0';
+
 		p = szTemp;
 	}
 
@@ -466,11 +468,12 @@ void Host_Say( edict_t *pEntity, int teamonly )
 
 	// turn on color set 2  (color on,  no sound)
 	if( player->IsObserver() && ( teamonly ) )
-		sprintf( text, "[%d:%d %s] %c(SPEC) %s: ", stTimeNow->tm_hour, stTimeNow->tm_min, dd, 2, STRING( pEntity->v.netname ) );
+		_snprintf( text, sizeof(text) - 1, "[%d:%d %s] %c(SPEC) %s: ", stTimeNow->tm_hour, stTimeNow->tm_min, dd, 2, STRING( pEntity->v.netname ) );
 	else if( teamonly )
-		sprintf( text, "[%d:%d %s] %c(TEAM) %s: ", stTimeNow->tm_hour, stTimeNow->tm_min, dd, 2, STRING( pEntity->v.netname ) );
+		_snprintf( text, sizeof(text) - 1, "[%d:%d %s] %c(TEAM) %s: ", stTimeNow->tm_hour, stTimeNow->tm_min, dd, 2, STRING( pEntity->v.netname ) );
 	else
-		sprintf( text, "[%d:%d %s] %c%s: ", stTimeNow->tm_hour, stTimeNow->tm_min, dd, 2, STRING( pEntity->v.netname ) );
+		_snprintf( text, sizeof(text) - 1, "[%d:%d %s] %c%s: ", stTimeNow->tm_hour, stTimeNow->tm_min, dd, 2, STRING( pEntity->v.netname ) );
+	text[sizeof(text) - 1] = '\0';
 
 	j = sizeof( text ) - 2 - strlen( text );  // -2 for /n and null terminator
 	if( (int)strlen( p ) > j )
