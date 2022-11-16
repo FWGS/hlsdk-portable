@@ -723,7 +723,7 @@ void EV_FirePar21( struct event_args_s *args )
 	{
 		// Add muzzle flash to current weapon model
 		EV_MuzzleFlash();
-		gEngfuncs.pEventAPI->EV_WeaponAnimation( PAR21_FIRE1 + gEngfuncs.pfnRandomLong( 0, 2 ), 2 );
+		gEngfuncs.pEventAPI->EV_WeaponAnimation( PAR21_FIRE1 + gEngfuncs.pfnRandomLong( 0, 2 ), 0 );
 
 		V_PunchAxis( 0, gEngfuncs.pfnRandomFloat( -2, 2 ) );
 	}
@@ -761,7 +761,7 @@ void EV_M203( struct event_args_s *args )
 
 	if( EV_IsLocal( idx ) )
 	{
-		gEngfuncs.pEventAPI->EV_WeaponAnimation( PAR21_LAUNCH, 2 );
+		gEngfuncs.pEventAPI->EV_WeaponAnimation( PAR21_LAUNCH, 0 );
 		V_PunchAxis( 0, -10 );
 	}
 
