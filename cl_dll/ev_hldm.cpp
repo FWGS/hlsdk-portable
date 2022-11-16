@@ -1195,7 +1195,7 @@ void EV_FireAP9( event_args_t *args )
 	{
 		// Add muzzle flash to current weapon model
 		EV_MuzzleFlash();
-		gEngfuncs.pEventAPI->EV_WeaponAnimation( AP9_SHOOT1 + gEngfuncs.pfnRandomLong( 0, 2 ), 1 );
+		gEngfuncs.pEventAPI->EV_WeaponAnimation( AP9_SHOOT1 + gEngfuncs.pfnRandomLong( 0, 2 ), 0 );
 
 		if( autoaim )
 		{
@@ -1273,7 +1273,7 @@ void EV_FireTaurus( event_args_t *args )
 	if( EV_IsLocal( idx ) )
 	{
 		EV_MuzzleFlash();
-		gEngfuncs.pEventAPI->EV_WeaponAnimation( empty ? TAURUS_SHOOT_EMPTY : ( TAURUS_SHOOT + gEngfuncs.pfnRandomLong( 0, 2 ) ), 1 );
+		gEngfuncs.pEventAPI->EV_WeaponAnimation( empty ? TAURUS_SHOOT_EMPTY : ( TAURUS_SHOOT + gEngfuncs.pfnRandomLong( 0, 2 ) ), 0 );
 
 		V_PunchAxis( 0, -3.0 );
 	}
