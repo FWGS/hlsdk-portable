@@ -1164,7 +1164,7 @@ void EV_FireBeretta1( event_args_t *args )
 	if( EV_IsLocal( idx ) )
 	{
 		EV_MuzzleFlash();
-		gEngfuncs.pEventAPI->EV_WeaponAnimation( empty ? BERETTA_SHOOT_EMPTY : BERETTA_SHOOT, 2 );
+		gEngfuncs.pEventAPI->EV_WeaponAnimation( empty ? BERETTA_SHOOT_EMPTY : BERETTA_SHOOT, 0 );
 
 		V_PunchAxis( 0, -2.0 );
 	}
@@ -1211,7 +1211,7 @@ void EV_FireBeretta2( event_args_t *args )
 	{
 		// Add muzzle flash to current weapon model
 		EV_MuzzleFlash();
-		gEngfuncs.pEventAPI->EV_WeaponAnimation( empty ? BERETTA_SHOOT_EMPTY : BERETTA_SHOOT, 2 );
+		gEngfuncs.pEventAPI->EV_WeaponAnimation( empty ? BERETTA_SHOOT_EMPTY : BERETTA_SHOOT, 0 );
 
 		V_PunchAxis( 0, -2.0 );
 	}
@@ -1277,7 +1277,7 @@ void EV_FireM41A( event_args_t *args )
 	{
 		// Add muzzle flash to current weapon model
 		EV_MuzzleFlash();
-		gEngfuncs.pEventAPI->EV_WeaponAnimation( M41A_FIRE1 + gEngfuncs.pfnRandomLong( 0, 2 ), 2 );
+		gEngfuncs.pEventAPI->EV_WeaponAnimation( M41A_FIRE1 + gEngfuncs.pfnRandomLong( 0, 2 ), 0 );
 
 		V_PunchAxis( 0, gEngfuncs.pfnRandomFloat( -2, 2 ) );
 	}
