@@ -1269,7 +1269,7 @@ void EV_FireAK47( struct event_args_s *args )
 	{
 		// Add muzzle flash to current weapon model
 		EV_MuzzleFlash();
-		gEngfuncs.pEventAPI->EV_WeaponAnimation( AK47_FIRE1 + gEngfuncs.pfnRandomLong( 0, 2 ), 2 );
+		gEngfuncs.pEventAPI->EV_WeaponAnimation( AK47_FIRE1 + gEngfuncs.pfnRandomLong( 0, 2 ), 0 );
 
 		V_PunchAxis( 0, gEngfuncs.pfnRandomFloat( -2.5, -3.2 ) );
 		V_PunchAxis( 1, gEngfuncs.pfnRandomFloat( -1.5, 1.5 ) );
@@ -1343,7 +1343,7 @@ void EV_FireMac10( struct event_args_s *args )
 	{
 		// Add muzzle flash to current weapon model
 		EV_MuzzleFlash();
-		gEngfuncs.pEventAPI->EV_WeaponAnimation( MAC10_FIRE1 + gEngfuncs.pfnRandomLong( 0, 2 ), 2 );
+		gEngfuncs.pEventAPI->EV_WeaponAnimation( MAC10_FIRE1 + gEngfuncs.pfnRandomLong( 0, 2 ), 0 );
 
 		V_PunchAxis( 0, gEngfuncs.pfnRandomFloat( -1.4, -2 ) );
 		V_PunchAxis( 1, gEngfuncs.pfnRandomFloat( -1.6, 1.6 ) );
