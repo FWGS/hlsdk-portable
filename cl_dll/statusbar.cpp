@@ -78,11 +78,12 @@ void CHudStatusBar::ParseStatusString( int line_num )
 	GetPlayerInfo( indexval, &g_PlayerInfoList[indexval] );
 	if( g_PlayerInfoList[indexval].name != NULL )
         {
-		strncpy( m_szName[line_num], g_PlayerInfoList[indexval].name, MAX_PLAYER_NAME_LENGTH );
+		strncpy( m_szName[line_num], g_PlayerInfoList[indexval].name, MAX_PLAYER_NAME_LENGTH - 1 );
+		m_szName[line_num][MAX_PLAYER_NAME_LENGTH - 1] = '\0';
 	}
 	else
 	{
-		strncpy( m_szName[line_num], "******", MAX_PLAYER_NAME_LENGTH );
+		strcpy( m_szName[line_num], "******" );
 	}
 	g_iNameColors = GetTeamIndex( indexval );
 
