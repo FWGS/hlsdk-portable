@@ -702,7 +702,7 @@ void EV_StopPreviousXS( int idx )
 	gEngfuncs.pEventAPI->EV_KillEvents( idx, "events/xsspin.sc" );
 	gEngfuncs.pEventAPI->EV_StopSound( idx, CHAN_WEAPON, "weapons/xs_windup.wav" );
 	if( EV_IsLocal( idx ) )
-                gEngfuncs.pEventAPI->EV_WeaponAnimation( XS_FIRE2, 2 );
+                gEngfuncs.pEventAPI->EV_WeaponAnimation( XS_FIRE2, 0 );
 }
 
 void EV_SpinXS( event_args_t *args )
