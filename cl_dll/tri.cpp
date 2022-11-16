@@ -34,9 +34,7 @@ int UseTexture(HSPRITE &hsprSpr, char * str)
 {
 	if (hsprSpr == 0)
 	{
-		char sz[256];
-		sprintf( sz, "%s", str );
-		hsprSpr = SPR_Load( sz );
+		hsprSpr = SPR_Load( str );
 	}
 
 	return gEngfuncs.pTriAPI->SpriteTexture( (struct model_s *)gEngfuncs.GetSpritePointer( hsprSpr ), 0 );
@@ -54,7 +52,7 @@ CShinySurface::CShinySurface( float fScale, float fAlpha, float fMinX, float fMa
 	m_fMaxX = fMaxX; m_fMaxY = fMaxY;
 	m_fZ = fZ;
 	m_hsprSprite = 0;
-	sprintf( m_szSprite, "%s", szSprite );
+	strcpy( m_szSprite, szSprite );
 	m_pNext = NULL;
 }
 
