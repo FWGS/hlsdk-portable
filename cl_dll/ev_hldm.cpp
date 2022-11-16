@@ -1707,7 +1707,7 @@ void EV_FireShotGunX( struct event_args_s *args )
 	//Only play the weapon anims if I shot it.
 	if( EV_IsLocal( idx ) )
 	{
-		gEngfuncs.pEventAPI->EV_WeaponAnimation( SHOTGUN_EJECT, 1 );
+		gEngfuncs.pEventAPI->EV_WeaponAnimation( SHOTGUN_EJECT, 0 );
 	}
 
 	shell = gEngfuncs.pEventAPI->EV_FindModelIndex( "models/shotgunshell.mdl" );// brass shell
