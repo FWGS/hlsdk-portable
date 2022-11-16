@@ -1839,13 +1839,13 @@ void EV_Pipe( event_args_t *args )
 		switch( ( g_iSwing++ ) % 3 )
 		{
 		case 0:
-			gEngfuncs.pEventAPI->EV_WeaponAnimation( PIPE_ATTACK1MISS, 1 );
+			gEngfuncs.pEventAPI->EV_WeaponAnimation( PIPE_ATTACK1MISS, 0 );
 			break;
 		case 1:
-			gEngfuncs.pEventAPI->EV_WeaponAnimation( PIPE_ATTACK2MISS, 1 );
+			gEngfuncs.pEventAPI->EV_WeaponAnimation( PIPE_ATTACK2MISS, 0 );
 			break;
 		case 2:
-			gEngfuncs.pEventAPI->EV_WeaponAnimation( PIPE_ATTACK3MISS, 1 );
+			gEngfuncs.pEventAPI->EV_WeaponAnimation( PIPE_ATTACK3MISS, 0 );
 			break;
 		}
 	}
