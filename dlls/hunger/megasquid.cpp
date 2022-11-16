@@ -164,6 +164,9 @@ void CEinarMegasquid::HandleAnimEvent( MonsterEvent_t *pEvent )
 	{
 	case MSQUID_AE_SPIT:
 	{
+		if( m_hEnemy == 0 )
+			return;
+
 		Vector vecSpitOffset;
 		Vector vecSpitDir;
 
