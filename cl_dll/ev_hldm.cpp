@@ -757,7 +757,7 @@ void EV_FireMiniMP5( event_args_t *args )
 	{
 		// Add muzzle flash to current weapon model
 		EV_MuzzleFlash();
-		gEngfuncs.pEventAPI->EV_WeaponAnimation( MINIMP5_FIRE1, 2 );
+		gEngfuncs.pEventAPI->EV_WeaponAnimation( MINIMP5_FIRE1, 0 );
 
 		V_PunchAxis( 0, gEngfuncs.pfnRandomFloat( -2, 2 ) );
 	}
