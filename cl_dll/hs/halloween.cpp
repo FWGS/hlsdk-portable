@@ -232,9 +232,8 @@ void CHudHalloween::MessageAdd( int type, float time, char *text )
       break;
    case MSG_HALLOWEEN:
 	  int youbet = atoi(text);
-      sprintf(tempBuffer, "%s", billymc[youbet]);
       m_pCustomMsgs[type] = new CCustomMessage(200, 200, 200, ScreenHeight / 2
-            + (ScreenHeight / 4.5), 1.5, 5, time, tempBuffer);
+            + (ScreenHeight / 4.5), 1.5, 5, time, billymc[youbet]);
       break;
    }
 }
