@@ -43,6 +43,11 @@ LINK_ENTITY_TO_CLASS(monster_scientist2, CScientist2);
 
 void CScientist2::Spawn(void)
 {
+	if (pev->body == -1)
+	{// -1 chooses a random head
+		pev->body = RANDOM_LONG(0, NUM_SCIENTIST_HEADS - 1);// pick a head, any head
+	}
+
 	Precache();
 
 	SET_MODEL(ENT(pev), "models/scientist2.mdl");
@@ -62,11 +67,6 @@ void CScientist2::Spawn(void)
 
 	// White hands
 	pev->skin = 0;
-
-	if (pev->body == -1)
-	{// -1 chooses a random head
-		pev->body = RANDOM_LONG(0, NUM_SCIENTIST_HEADS - 1);// pick a head, any head
-	}
 
 	MonsterInit();
 	SetUse(&CScientist2::FollowerUse);
