@@ -175,7 +175,7 @@ def configure(conf):
 		conf.env.append_unique('CXXFLAGS', ['-Wno-invalid-offsetof', '-fno-rtti', '-fno-exceptions'])
 
 	# strip lib from pattern
-	if conf.env.DEST_OS in ['linux', 'darwin']:
+	if conf.env.DEST_OS not in ['android']:
 		if conf.env.cshlib_PATTERN.startswith('lib'):
 			conf.env.cshlib_PATTERN = conf.env.cshlib_PATTERN[3:]
 		if conf.env.cxxshlib_PATTERN.startswith('lib'):
