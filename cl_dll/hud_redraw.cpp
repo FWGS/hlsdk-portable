@@ -225,9 +225,7 @@ int CHud::Redraw( float flTime, int intermission )
 
 		if( m_hsprCursor == 0 )
 		{
-			char sz[256];
-			sprintf( sz, "sprites/cursor.spr" );
-			m_hsprCursor = SPR_Load( sz );
+			m_hsprCursor = SPR_Load( "sprites/cursor.spr" );
 		}
 
 		SPR_Set( m_hsprCursor, 250, 250, 250 );

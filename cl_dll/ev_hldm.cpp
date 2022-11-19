@@ -246,7 +246,7 @@ char *EV_HLDM_DamageDecal( physent_t *pe )
 	}
 	else if( pe->rendermode != kRenderNormal )
 	{
-		sprintf( decalname, "{bproof1" );
+		strcpy( decalname, "{bproof1" );
 	}
 	else
 	{
