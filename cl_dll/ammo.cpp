@@ -586,7 +586,7 @@ int CHudAmmo::MsgFunc_CurWeapon( const char *pszName, int iSize, void *pbuf )
 	{
 		SetCrosshair( 0, nullrc, 0, 0, 0 );
 		// Clear out the weapon so we don't keep drawing the last active weapon's ammo. - Solokiller
-		m_pWeapon = 0;
+		m_pWeapon = 0; //LRC
 		return 0;
 	}
 

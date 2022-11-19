@@ -2218,13 +2218,13 @@ void PM_LadderMove( physent_t *pLadder )
 		if( pmove->flags & FL_DUCKING )
 			flSpeed *= PLAYER_DUCKING_MULTIPLIER;
 		if( pmove->cmd.buttons & IN_BACK )
-			forward -= MAX_CLIMB_SPEED;
+			forward -= flSpeed;
 		if( pmove->cmd.buttons & IN_FORWARD )
-			forward += MAX_CLIMB_SPEED;
+			forward += flSpeed;
 		if( pmove->cmd.buttons & IN_MOVELEFT )
-			right -= MAX_CLIMB_SPEED;
+			right -= flSpeed;
 		if( pmove->cmd.buttons & IN_MOVERIGHT )
-			right += MAX_CLIMB_SPEED;
+			right += flSpeed;
 
 		if( pmove->cmd.buttons & IN_JUMP )
 		{

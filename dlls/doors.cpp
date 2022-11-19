@@ -1360,7 +1360,7 @@ void CMomentaryDoor::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYP
 		Vector delta;
 		delta = move - pev->origin;
 
-		speed = delta.Length() * 10.0f;
+		speed = delta.Length() * 0.1f;
 	}
 
 	//FIXME: allow for it being told to move at the same speed in the _opposite_ direction!
