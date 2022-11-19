@@ -763,7 +763,7 @@ void EV_FireEagel1( event_args_t *args )
 
 	if( EV_IsLocal( idx ) )
 	{
-		gEngfuncs.pEventAPI->EV_WeaponAnimation( empty ? EAGEL_FIRE1 : EAGEL_FIRE1, 2 );
+		gEngfuncs.pEventAPI->EV_WeaponAnimation( empty ? EAGEL_FIRE1 : EAGEL_FIRE1, 0 );
 
 		V_PunchAxis( 0, -2.0 );
 	}
@@ -807,7 +807,7 @@ void EV_FireEagel2( event_args_t *args )
 	if( EV_IsLocal( idx ) )
 	{
 		// Add muzzle flash to current weapon model
-		gEngfuncs.pEventAPI->EV_WeaponAnimation( EAGEL_FIRE1, 2 );
+		gEngfuncs.pEventAPI->EV_WeaponAnimation( EAGEL_FIRE1, 0 );
 
 		V_PunchAxis( 0, -2.0 );
 	}
@@ -974,7 +974,7 @@ void EV_FireShotGunADouble( event_args_t *args )
 	{
 		// Add muzzle flash to current weapon model
 		EV_MuzzleFlash();
-		gEngfuncs.pEventAPI->EV_WeaponAnimation( SHOTGUNA_SHOOT, 2 );
+		gEngfuncs.pEventAPI->EV_WeaponAnimation( SHOTGUNA_SHOOT, 0 );
 		V_PunchAxis( 0, -10.0 );
 	}
 
@@ -1028,7 +1028,7 @@ void EV_FireShotGunASingle( event_args_t *args )
 	{
 		// Add muzzle flash to current weapon model
 		EV_MuzzleFlash();
-		gEngfuncs.pEventAPI->EV_WeaponAnimation( SHOTGUNA_SHOOT, 2 );
+		gEngfuncs.pEventAPI->EV_WeaponAnimation( SHOTGUNA_SHOOT, 0 );
 
 		V_PunchAxis( 0, -5.0 );
 	}
@@ -1072,7 +1072,7 @@ void EV_ShockFire( event_args_t *args )
 	int idx;
 	vec3_t origin;
 
-	gEngfuncs.pEventAPI->EV_WeaponAnimation( SHOCK_FIRE, 2 );
+	gEngfuncs.pEventAPI->EV_WeaponAnimation( SHOCK_FIRE, 0 );
 	cl_entity_t *view = gEngfuncs.GetViewModel();
 	if( view != NULL )
 	{
@@ -1093,7 +1093,7 @@ void EV_ShockFire( event_args_t *args )
 	if( EV_IsLocal( idx ) )
 	{
 		if( args->iparam1 )
-			gEngfuncs.pEventAPI->EV_WeaponAnimation( SHOCK_FIRE, 1 );
+			gEngfuncs.pEventAPI->EV_WeaponAnimation( SHOCK_FIRE, 0 );
 
 		V_PunchAxis( 0, -2.0 );
 	}
@@ -1136,7 +1136,7 @@ void EV_FireUZI( event_args_t *args )
 
 		// Add muzzle flash to current weapon model
 		EV_MuzzleFlash();
-		gEngfuncs.pEventAPI->EV_WeaponAnimation( UZI_FIRE1 + gEngfuncs.pfnRandomLong( 0, 2 ), 2 );
+		gEngfuncs.pEventAPI->EV_WeaponAnimation( UZI_FIRE1 + gEngfuncs.pfnRandomLong( 0, 2 ), 0 );
 
 		V_PunchAxis( 0, gEngfuncs.pfnRandomFloat( -2, 2 ) );
 	}
@@ -1299,7 +1299,7 @@ void EV_FireAK47( event_args_t *args )
 
 		// Add muzzle flash to current weapon model
 		EV_MuzzleFlash();
-		gEngfuncs.pEventAPI->EV_WeaponAnimation( AK47_SHOOT_1 + gEngfuncs.pfnRandomLong( 0, 2 ), 2 );
+		gEngfuncs.pEventAPI->EV_WeaponAnimation( AK47_SHOOT_1 + gEngfuncs.pfnRandomLong( 0, 2 ), 0 );
 
 		V_PunchAxis( 0, gEngfuncs.pfnRandomFloat( -2, 2 ) );
 	}
@@ -1365,7 +1365,7 @@ void EV_FireMinigun( event_args_t *args )
 	{
 		// Add muzzle flash to current weapon model
 		EV_MuzzleFlash();
-		gEngfuncs.pEventAPI->EV_WeaponAnimation( MINIGUN_FIRE1 + gEngfuncs.pfnRandomLong( 0, 2 ), 2 );
+		gEngfuncs.pEventAPI->EV_WeaponAnimation( MINIGUN_FIRE1 + gEngfuncs.pfnRandomLong( 0, 2 ), 0 );
 
 		V_PunchAxis( 0, gEngfuncs.pfnRandomFloat( -2, 2 ) );
 	}
@@ -1437,7 +1437,7 @@ void EV_FireMP41a( event_args_t *args )
 
 		// Add muzzle flash to current weapon model
 		EV_MuzzleFlash();
-		gEngfuncs.pEventAPI->EV_WeaponAnimation( MP41a_FIRE1 + gEngfuncs.pfnRandomLong(0,2), 2 );
+		gEngfuncs.pEventAPI->EV_WeaponAnimation( MP41a_FIRE1 + gEngfuncs.pfnRandomLong(0,2), 0 );
 
 		V_PunchAxis( 0, gEngfuncs.pfnRandomFloat( -2, 2 ) );
 	}
@@ -1480,7 +1480,7 @@ void EV_FireMP41a2( event_args_t *args )
 
 	if( EV_IsLocal( idx ) )
 	{
-		gEngfuncs.pEventAPI->EV_WeaponAnimation( MP41a_LAUNCH, 2 );
+		gEngfuncs.pEventAPI->EV_WeaponAnimation( MP41a_LAUNCH, 0 );
 		V_PunchAxis( 0, -10 );
 	}
 	
@@ -1972,13 +1972,13 @@ void EV_Swort( event_args_t *args )
 		switch( (g_iSwort++) % 3 )
 		{
 			case 0:
-				gEngfuncs.pEventAPI->EV_WeaponAnimation( SWORT_ATTACK1MISS, 1 );
+				gEngfuncs.pEventAPI->EV_WeaponAnimation( SWORT_ATTACK1MISS, 0 );
 				break;
 			case 1:
-				gEngfuncs.pEventAPI->EV_WeaponAnimation( SWORT_ATTACK2MISS, 1 );
+				gEngfuncs.pEventAPI->EV_WeaponAnimation( SWORT_ATTACK2MISS, 0 );
 				break;
 			case 2:
-				gEngfuncs.pEventAPI->EV_WeaponAnimation( SWORT_ATTACK3MISS, 1 );
+				gEngfuncs.pEventAPI->EV_WeaponAnimation( SWORT_ATTACK3MISS, 0 );
 				break;
 		}
 	}
