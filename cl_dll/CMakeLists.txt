@@ -109,7 +109,6 @@ set (CLDLL_SOURCES
 	input_xash3d.cpp
 	menu.cpp
 	message.cpp
-	overview.cpp
 	parsemsg.cpp
 	particlemgr.cpp
 	particlemsg.cpp

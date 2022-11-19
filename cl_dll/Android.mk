@@ -81,7 +81,6 @@ SRCS+=./input_mouse.cpp
 #SRCS+=./inputw32.cpp
 SRCS+=./menu.cpp
 SRCS+=./message.cpp
-SRCS+=./overview.cpp
 SRCS+=./parsemsg.cpp
 SRCS+=./particlemgr.cpp
 SRCS+=./particlemsg.cpp

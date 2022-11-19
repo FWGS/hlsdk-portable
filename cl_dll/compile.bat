@@ -54,7 +54,6 @@ set SOURCES=../dlls/crossbow.cpp ^
 	input_xash3d.cpp ^
 	menu.cpp ^
 	message.cpp ^
-	overview.cpp ^
 	parsemsg.cpp ^
 	../pm_shared/pm_debug.c ^
 	../pm_shared/pm_math.c ^
