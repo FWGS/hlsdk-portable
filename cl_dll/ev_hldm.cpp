@@ -1022,7 +1022,7 @@ void EV_FireShotGunASingle( event_args_t *args )
 
 	AngleVectors( angles, forward, right, up );
 
-	shell = gEngfuncs.pEventAPI->EV_FindModelIndex( "models/auto_shotgunshell.mdl" );// brass shell
+	shell = gEngfuncs.pEventAPI->EV_FindModelIndex( "models/autoshotgunshell.mdl" );// brass shell
 
 	if( EV_IsLocal( idx ) )
 	{
