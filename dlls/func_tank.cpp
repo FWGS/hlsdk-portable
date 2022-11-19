@@ -824,7 +824,7 @@ void CFuncTank::TrackTarget( void )
 	BOOL updateTime = FALSE, lineOfSight;
 	Vector angles, direction, targetPosition, barrelEnd;
 	Vector v_right, v_up;
-	CBaseEntity *pTarget;
+	CBaseEntity *pTarget = NULL;
 	CBasePlayer* pController = NULL;
 
 //	ALERT(at_console,"TrackTarget\n");
@@ -1111,7 +1111,7 @@ void CFuncTank::TrackTarget( void )
 		Vector forward;
 		UTIL_MakeVectorsPrivate( pev->angles, forward, NULL, NULL );
 
-		if( pev->spawnflags & SF_TANK_LINEOFSIGHT )
+		if( pTarget && pev->spawnflags & SF_TANK_LINEOFSIGHT )
 		{
 			float length = direction.Length();
 			UTIL_TraceLine( barrelEnd, barrelEnd + forward * length, dont_ignore_monsters, edict(), &tr );
