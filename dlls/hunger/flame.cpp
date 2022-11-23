@@ -35,8 +35,8 @@ CEinarFlameRocket *CEinarFlameRocket::FlameCreate( const Vector &pOrigin, const 
 	CEinarFlameRocket *pFlame = GetClassPtr( (CEinarFlameRocket *)NULL );
 	UTIL_SetOrigin( pFlame->pev, pOrigin );
 	pFlame->pev->angles = pAngles;
-	pFlame->Spawn();
 	pFlame->pev->owner = pevOwner;
+	pFlame->Spawn();
 
 	return pFlame;
 }
@@ -66,6 +66,12 @@ void CEinarFlameRocket::Spawn()
 	pev->velocity = gpGlobals->v_forward * pev->speed;
 	pev->gravity = 0;
 
+	int ownerIndex = 0;
+	if (pev->owner && (pev->owner->v.flags & FL_CLIENT))
+	{
+		ownerIndex = ENTINDEX(pev->owner);
+	}
+
 	MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
 		WRITE_BYTE( TE_PROJECTILE );
 		WRITE_COORD( pev->origin.x );
@@ -76,7 +82,7 @@ void CEinarFlameRocket::Spawn()
 		WRITE_COORD( pev->velocity.z );
 		WRITE_SHORT( pev->modelindex );
 		WRITE_BYTE( 1 );
-		WRITE_BYTE( 0 );
+		WRITE_BYTE( ownerIndex );
 	MESSAGE_END();	
 }
 
