@@ -29,7 +29,9 @@
 
 #if USE_SDL2
 #define ARRAYSIZE(p)		( sizeof(p) /sizeof(p[0]) )
+#if !_WIN32
 #include <dlfcn.h>
+#endif
 #include <SDL2/SDL_mouse.h>
 #include <SDL2/SDL_gamecontroller.h>
 int (*pfnSDL_SetRelativeMouseMode)(SDL_bool);
@@ -570,7 +572,11 @@ void GoldSourceInput::IN_Shutdown (void)
 	for (int j=0; j<ARRAYSIZE(sdlFunctions); ++j) {
 		*(sdlFunctions[j].ppfnFunc) = NULL;
 	}
+#if _WIN32
+	FreeLibrary((HMODULE)sdl2Lib);
+#else
 	dlclose(sdl2Lib);
+#endif
 	sdl2Lib = NULL;
 #endif
 }
@@ -603,7 +609,9 @@ void IN_ResetMouse( void )
 	{
 		if ( !m_bMouseThread && m_bRawInput )
 		{
+#if !USE_SDL2
 			SetCursorPos ( gEngfuncs.GetWindowCenterX(), gEngfuncs.GetWindowCenterY() );
+#endif
 		}
 		else if ( !m_bRawInput )
 		{
@@ -1582,7 +1590,7 @@ void GoldSourceInput::IN_Init (void)
 	if (m_bMouseThread)
 	{
 		// init mouseThreadSleep:
-#if 0 // _beginthreadex is not defined on VS 6?
+#if USE_SDL2 // _beginthreadex is not defined on VS 6?
 		InterlockedExchange(&mouseThreadSleep, (LONG)m_mousethread_sleep->value);
 
 		s_hMouseQuitEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
@@ -1605,19 +1613,37 @@ void GoldSourceInput::IN_Init (void)
 #if USE_SDL2
 #if XASH_APPLE
 #define SDL2_FULL_LIBNAME "libsdl2-2.0.0.dylib"
+#elif _WIN32
+#define SDL2_FULL_LIBNAME "SDL2.dll"
 #else
 #define SDL2_FULL_LIBNAME "libSDL2-2.0.so.0"
 #endif
+#if _WIN32
+	sdl2Lib = LoadLibrary(SDL2_FULL_LIBNAME);
+#else
 	sdl2Lib = dlopen(SDL2_FULL_LIBNAME, RTLD_NOW|RTLD_LOCAL);
+#endif
 	if (sdl2Lib) {
 		for (int j=0; j<ARRAYSIZE(sdlFunctions); ++j) {
+#if _WIN32
+			*(sdlFunctions[j].ppfnFunc) = GetProcAddress((HMODULE)sdl2Lib, sdlFunctions[j].name);
+#else
 			*(sdlFunctions[j].ppfnFunc) = dlsym(sdl2Lib, sdlFunctions[j].name);
+#endif
 			if (*sdlFunctions[j].ppfnFunc == NULL) {
+#if _WIN32
+				gEngfuncs.Con_Printf("Could not load SDL2 function %s\n", sdlFunctions[j].name);
+#else
 				gEngfuncs.Con_Printf("Could not load SDL2 function %s: %s\n", sdlFunctions[j].name, dlerror());
+#endif
 			}
 		}
 	} else {
+#if _WIN32
+		gEngfuncs.Con_Printf("Could not load SDL2\n");
+#else
 		gEngfuncs.Con_Printf("Could not load SDL2: %s\n", dlerror());
+#endif
 	}
 #endif
 	gEngfuncs.pfnAddCommand ("force_centerview", Force_CenterView_f);
