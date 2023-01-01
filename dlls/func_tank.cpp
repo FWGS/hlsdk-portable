@@ -276,6 +276,7 @@ TYPEDESCRIPTION	CFuncTank::m_SaveData[] =
 	DEFINE_FIELD( CFuncTank, m_iszFireMaster, FIELD_STRING ), //LRC
 	DEFINE_FIELD( CFuncTank, m_iszLocusFire, FIELD_STRING ), //LRC
 	DEFINE_FIELD( CFuncTank, m_pFireProxy, FIELD_CLASSPTR ), //LRC
+	DEFINE_FIELD( CFuncTank, m_iTankClass, FIELD_INTEGER ),
 };
 
 IMPLEMENT_SAVERESTORE( CFuncTank, CBaseEntity )
