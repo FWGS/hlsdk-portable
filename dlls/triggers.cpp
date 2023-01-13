@@ -1365,6 +1365,7 @@ public:
 
 	int m_iszAmtFactor;
 };
+LINK_ENTITY_TO_CLASS( render_fader, CRenderFxFader )
 
 TYPEDESCRIPTION	CRenderFxFader::m_SaveData[] = 
 {
@@ -1385,6 +1386,7 @@ IMPLEMENT_SAVERESTORE(CRenderFxFader,CBaseEntity);
 void CRenderFxFader :: Spawn( void )
 {
 	SetThink(&CRenderFxFader :: FadeThink );
+	pev->classname = MAKE_STRING("render_fader");
 }
 
 void CRenderFxFader :: FadeThink( void )
