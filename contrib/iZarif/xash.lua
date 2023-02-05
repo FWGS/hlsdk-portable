@@ -89,7 +89,7 @@ function m.get_arch()
       arch = "x86"
     elseif m.is_cxx_symbol_defined("XASH_ARM", {"build.h"}, {"public"}) then
       if m.is_cxx_symbol_defined("XASH_64BIT", {"build.h"}, {"public"}) then
-        arch = "arm64"
+        arch = "aarch64"
       else
         arch = "armv"
 

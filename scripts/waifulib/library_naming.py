@@ -61,6 +61,7 @@ DEFINES = [
 'XASH_WIN32',
 'XASH_WIN64',
 'XASH_X86',
+'XASH_NSWITCH',
 ]
 
 def configure(conf):
@@ -92,6 +93,8 @@ def configure(conf):
 		buildos = "haiku"
 	elif conf.env.XASH_SERENITY:
 		buildos = "serenityos"
+	elif conf.env.XASH_NSWITCH:
+		buildos = "nswitch"
 	else:
 		conf.fatal("Place your operating system name in build.h and library_naming.py!\n"
 			"If this is a mistake, try to fix conditions above and report a bug")
@@ -104,7 +107,7 @@ def configure(conf):
 		else:
 			buildarch = "i386"
 	elif conf.env.XASH_ARM and conf.env.XASH_64BIT:
-		buildarch = "arm64"
+		buildarch = "aarch64"
 	elif conf.env.XASH_ARM:
 		buildarch = "armv"
 		if conf.env.XASH_ARMv8:
