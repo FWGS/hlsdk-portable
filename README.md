@@ -237,6 +237,39 @@ schroot --chroot jessie -- cmake --build build-in-chroot
 
 TODO
 
+## Nintendo Switch
+
+### Prerequisites
+
+1. Set up [`dkp-pacman`](https://devkitpro.org/wiki/devkitPro_pacman).
+2. Install dependency packages:
+```
+sudo dkp-pacman -S switch-dev dkp-toolchain-vars switch-mesa switch-libdrm_nouveau switch-sdl2
+```
+3. Make sure the `DEVKITPRO` environment variable is set to the devkitPro SDK root:
+```
+export DEVKITPRO=/opt/devkitpro
+```
+4. Install libsolder:
+```
+source $DEVKITPRO/switchvars.sh
+git clone https://github.com/fgsfdsfgs/libsolder.git
+make -C libsolder install
+```
+
+### Building using CMake
+```
+mkdir build && cd build
+aarch64-none-elf-cmake -G"Unix Makefiles" -DCMAKE_PROJECT_HLSDK-PORTABLE_INCLUDE="$DEVKITPRO/portlibs/switch/share/SolderShim.cmake" ..
+make -j
+```
+
+### Building using waf
+```
+./waf configure -T release --nswitch
+./waf build
+```
+
 ## Other platforms
 
 Building on other Unix-like platforms (e.g. FreeBSD) is supported.
