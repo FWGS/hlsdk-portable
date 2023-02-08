@@ -55,7 +55,7 @@ newoption{trigger = "lto", description = "Enable Link Time Optimization", defaul
 newoption{trigger = "arch", description = "Destination arch", default = xash.get_arch(), allowed = {
   {"amd64", ""},
   {"x86", ""},
-  {"aarch64", ""},
+  {"arm64", ""},
   {"armv8_32l", ""},
   {"armv7l", ""},
   {"armv6l", ""},

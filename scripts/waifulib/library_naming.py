@@ -107,7 +107,7 @@ def configure(conf):
 		else:
 			buildarch = "i386"
 	elif conf.env.XASH_ARM and conf.env.XASH_64BIT:
-		buildarch = "aarch64"
+		buildarch = "arm64"
 	elif conf.env.XASH_ARM:
 		buildarch = "armv"
 		if conf.env.XASH_ARMv8:
