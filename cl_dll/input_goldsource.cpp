@@ -23,13 +23,13 @@
 #include "keydefs.h"
 #include "view.h"
 
-#if !XASH_WIN32
+#if !XASH_WIN32 || WIN32_USE_SDL2
 #define USE_SDL2	1
 #endif
 
 #if USE_SDL2
-#define ARRAYSIZE(p)		( sizeof(p) /sizeof(p[0]) )
 #if !_WIN32
+#define ARRAYSIZE(p)		( sizeof(p) /sizeof(p[0]) )
 #include <dlfcn.h>
 #endif
 #include <SDL2/SDL_mouse.h>
