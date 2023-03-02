@@ -386,7 +386,7 @@ void IN_SetMouseMode(bool enable)
 		if (mouseparmsvalid)
 			restore_spi = SystemParametersInfo (SPI_SETMOUSE, 0, newmouseparms, 0);
 
-		m_bRawInput = m_rawinput->value != 0;
+		m_bRawInput = m_rawinput && m_rawinput->value != 0;
 		if(m_bRawInput)
 		{
 #if USE_SDL2
@@ -788,7 +788,7 @@ void GoldSourceInput::IN_GetMouseDelta( int *pOutX, int *pOutY)
 
 			bool lockEntered = MouseThread_ActiveLock_Enter();
 
-			m_bRawInput = m_rawinput->value != 0;
+			m_bRawInput = m_rawinput && m_rawinput->value != 0;
 
 			if(m_bRawInput && !isMouseRelative)
 			{
@@ -1573,7 +1573,7 @@ void GoldSourceInput::IN_Init (void)
 
 #if _WIN32
 	m_rawinput = gEngfuncs.pfnGetCvarPointer("m_rawinput");
-	m_bRawInput			 = m_rawinput->value != 0;
+	m_bRawInput			 = m_rawinput && m_rawinput->value != 0;
 	m_bMouseThread		  = gEngfuncs.CheckParm ("-mousethread", NULL ) != NULL;
 	m_mousethread_sleep	 = gEngfuncs.pfnRegisterVariable ( "m_mousethread_sleep", "1", FCVAR_ARCHIVE ); // default to less than 1000 Hz
 
