@@ -40,19 +40,23 @@ void CShockrifle::Spawn()
 {
 	Precache();
 	m_iId = WEAPON_SHOCKRIFLE;
-	SET_MODEL(ENT(pev), "models/w_shock.mdl");
+	SET_MODEL(ENT(pev), "models/w_shock_rifle.mdl");
 
 	m_iDefaultAmmo = SHOCKRIFLE_DEFAULT_GIVE;
 	m_iFirePhase = 0;
 
 	FallInit();// get ready to fall down.
+
+	pev->sequence = 0;
+	pev->animtime = gpGlobals->time;
+	pev->framerate = 1.0f;
 }
 
 
 void CShockrifle::Precache(void)
 {
 	PRECACHE_MODEL("models/v_shock.mdl");
-	PRECACHE_MODEL("models/w_shock.mdl");
+	PRECACHE_MODEL("models/w_shock_rifle.mdl");
 	PRECACHE_MODEL("models/p_shock.mdl");
 
 	PRECACHE_SOUND("weapons/shock_discharge.wav");
