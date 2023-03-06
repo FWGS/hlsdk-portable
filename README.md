@@ -76,7 +76,7 @@ git clone --recursive https://github.com/FWGS/hlsdk-portable
 
 # Build Instructions
 
-## Windows
+## Windows x86.
 
 ### Prerequisites
 
@@ -131,7 +131,7 @@ cmake -G "Visual Studio 16 2019" -A Win32 -B build
 
 After the configuration step, `HLSDK-PORTABLE.sln` should appear in the `build` directory. You can open this solution in Visual Studio and continue developing there.
 
-## Windows. Using Microsoft Visual Studio 6
+## Windows x86. Using Microsoft Visual Studio 6
 
 Microsoft Visual Studio 6 is very old, but if you still have it installed, you can use it to build this hlsdk. There are no project files, but two `.bat` files, for server and client libraries. They require variable **MSVCDir** to be set to the installation path of Visual Studio:
 
@@ -142,7 +142,7 @@ cd dlls && compile.bat && cd ../cl_dll && compile.bat
 
 `hl.dll` and `client.dll` will appear in `dlls/` and `cl_dll/` diretories. The libraries built with msvc6 should be compatible with Windows XP.
 
-## Linux. Using Steam Runtime in chroot
+## Linux x86. Portable steam-compatible build using Steam Runtime in chroot
 
 ### Prerequisites
 
@@ -168,7 +168,7 @@ schroot --chroot steamrt_scout_i386 -- cmake -B build-in-steamrt -S .
 schroot --chroot steamrt_scout_i386 -- cmake --build build-in-steamrt
 ```
 
-## Linux. Build without Steam Runtime
+## Linux x86. Portable steam-compatible build without Steam Runtime
 
 ### Prerequisites
 
@@ -190,7 +190,7 @@ cmake .. -DCMAKE_C_FLAGS="-static-libstdc++ -static-libgcc"
 ```
 To ensure portability it's still better to build using Steam Runtime or another chroot of some older distro.
 
-## Linux. Build in your own chroot
+## Linux x86. Portable steam-compatible build in your own chroot
 
 ### Prerequisites
 
@@ -237,13 +237,46 @@ schroot --chroot jessie -- cmake --build build-in-chroot
 
 TODO
 
-## Other platforms
-
-Building on other Unix-like platforms (e.g. FreeBSD) is supported.
+## Nintendo Switch
 
 ### Prerequisites
 
-Install C and C++ compilers (like gcc or clang), cmake and make (or gmake)
+1. Set up [`dkp-pacman`](https://devkitpro.org/wiki/devkitPro_pacman).
+2. Install dependency packages:
+```
+sudo dkp-pacman -S switch-dev dkp-toolchain-vars switch-mesa switch-libdrm_nouveau switch-sdl2
+```
+3. Make sure the `DEVKITPRO` environment variable is set to the devkitPro SDK root:
+```
+export DEVKITPRO=/opt/devkitpro
+```
+4. Install libsolder:
+```
+source $DEVKITPRO/switchvars.sh
+git clone https://github.com/fgsfdsfgs/libsolder.git
+make -C libsolder install
+```
+
+### Building using CMake
+```
+mkdir build && cd build
+aarch64-none-elf-cmake -G"Unix Makefiles" -DCMAKE_PROJECT_HLSDK-PORTABLE_INCLUDE="$DEVKITPRO/portlibs/switch/share/SolderShim.cmake" ..
+make -j
+```
+
+### Building using waf
+```
+./waf configure -T release --nswitch
+./waf build
+```
+
+## Other platforms
+
+Building on other architectures (e.g x86_64 or arm) and POSIX-compliant OSes (e.g. FreeBSD) is supported.
+
+### Prerequisites
+
+Install C and C++ compilers (like gcc or clang), cmake and make.
 
 ### Building
 
