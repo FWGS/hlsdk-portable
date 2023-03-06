@@ -120,7 +120,6 @@ public:
 #define BERETTA_MAX_CLIP		15
 #define REVOLVER_MAX_CLIP		6
 #define MP5K_MAX_CLIP			30
-#define MP5K_DEFAULT_AMMO		30
 #define SHOTGUN_MAX_CLIP		8
 #define UZI_MAX_CLIP			25
 #define DEAGLE_MAX_CLIP			7
