@@ -28,6 +28,10 @@ extern "C"
 #include <string.h>
 #include <ctype.h>
 
+#if USE_VGUI
+#include "vgui_TeamFortressViewport.h"
+#endif
+
 extern "C" 
 {
 	struct kbutton_s DLLEXPORT *KB_Find( const char *name );
@@ -169,7 +173,7 @@ int KB_ConvertString( char *in, char **ppout )
 			*pEnd = '\0';
 
 			pBinding = NULL;
-			if( strlen( binding + 1 ) > 0 )
+			if( binding[1] != '\0' )
 			{
 				// See if there is a binding for binding?
 				pBinding = gEngfuncs.Key_LookupBinding( binding + 1 );
@@ -376,7 +380,11 @@ Return 1 to allow engine to process the key, otherwise, act on it as needed
 ============
 */
 int DLLEXPORT HUD_Key_Event( int down, int keynum, const char *pszCurrentBinding )
-{	
+{
+#if USE_VGUI
+	if (gViewPort)
+		return gViewPort->KeyInput(down, keynum, pszCurrentBinding);
+#endif
 	return 1;
 }
 
@@ -645,11 +653,27 @@ void IN_Impulse( void )
 void IN_ScoreDown( void )
 {
 	KeyDown( &in_score );
+#if USE_VGUI && !USE_NOVGUI_SCOREBOARD
+	if ( gViewPort )
+	{
+		gViewPort->ShowScoreBoard();
+	}
+#else
+	gHUD.m_Scoreboard.UserCmd_ShowScores();
+#endif
 }
 
 void IN_ScoreUp( void )
 {
 	KeyUp( &in_score );
+#if USE_VGUI && !USE_NOVGUI_SCOREBOARD
+	if ( gViewPort )
+	{
+		gViewPort->HideScoreBoard();
+	}
+#else
+	gHUD.m_Scoreboard.UserCmd_HideScores();
+#endif
 }
 
 void IN_MLookUp( void )
@@ -819,7 +843,7 @@ void DLLEXPORT CL_CreateMove( float frametime, struct usercmd_s *cmd, int active
 
 		// clip to maxspeed
 		spd = gEngfuncs.GetClientMaxspeed();
-		if( spd != 0.0 )
+		if( spd != 0.0f )
 		{
 			// scale the 3 speeds so that the total velocity is not > cl.maxspeed
 			float fmov = sqrt( ( cmd->forwardmove * cmd->forwardmove ) + ( cmd->sidemove * cmd->sidemove ) + ( cmd->upmove * cmd->upmove ) );
@@ -846,6 +870,12 @@ void DLLEXPORT CL_CreateMove( float frametime, struct usercmd_s *cmd, int active
 	// set button and flag bits
 	//
 	cmd->buttons = CL_ButtonBits( 1 );
+
+#if USE_VGUI
+	// If they're in a modal dialog, ignore the attack button.
+	if(GetClientVoiceMgr()->IsInSquelchMode())
+		cmd->buttons &= ~IN_ATTACK;
+#endif
 
 	// Using joystick?
 	if( in_joystick->value )
@@ -901,9 +931,11 @@ int CL_ButtonBits( int bResetState )
 
 	if( in_attack.state & 3 )
 	{
+#if !USE_VGUI || USE_NOVGUI_MOTD
 		if( gHUD.m_MOTD.m_bShow )
 			gHUD.m_MOTD.Reset();
 		else
+#endif
 			bits |= IN_ATTACK;
 	}
 
@@ -1082,6 +1114,10 @@ void InitInput( void )
 	gEngfuncs.pfnAddCommand( "-reload", IN_ReloadUp );
 	gEngfuncs.pfnAddCommand( "+alt1", IN_Alt1Down );
 	gEngfuncs.pfnAddCommand( "-alt1", IN_Alt1Up );
+	gEngfuncs.pfnAddCommand( "+score", IN_ScoreDown );
+	gEngfuncs.pfnAddCommand( "-score", IN_ScoreUp );
+	gEngfuncs.pfnAddCommand( "+showscores", IN_ScoreDown );
+	gEngfuncs.pfnAddCommand( "-showscores", IN_ScoreUp );
 	gEngfuncs.pfnAddCommand( "+graph", IN_GraphDown );
 	gEngfuncs.pfnAddCommand( "-graph", IN_GraphUp );
 	gEngfuncs.pfnAddCommand( "+break", IN_BreakDown );

@@ -23,8 +23,8 @@ extern "C"
 	void DLLEXPORT HUD_DrawTransparentTriangles( void );
 }
 
-//#define TEST_IT
-#if defined( TEST_IT )
+//#define TEST_IT	1
+#if TEST_IT
 
 /*
 =================
@@ -50,9 +50,7 @@ void Draw_Triangles( void )
 
 	if( gHUD.m_hsprCursor == 0 )
 	{
-		char sz[256];
-		sprintf( sz, "sprites/cursor.spr" );
-		gHUD.m_hsprCursor = SPR_Load( sz );
+		gHUD.m_hsprCursor = SPR_Load( "sprites/cursor.spr" );
 	}
 
 	if( !gEngfuncs.pTriAPI->SpriteTexture( (struct model_s *)gEngfuncs.GetSpritePointer( gHUD.m_hsprCursor ), 0 ) )
@@ -98,7 +96,7 @@ Non-transparent triangles-- add them here
 void DLLEXPORT HUD_DrawNormalTriangles( void )
 {
 	gHUD.m_Spectator.DrawOverview();
-#if defined( TEST_IT )
+#if TEST_IT
 //	Draw_Triangles();
 #endif
 }
@@ -112,7 +110,7 @@ Render any triangles with transparent rendermode needs here
 */
 void DLLEXPORT HUD_DrawTransparentTriangles( void )
 {
-#if defined( TEST_IT )
+#if TEST_IT
 //	Draw_Triangles();
 #endif
 }

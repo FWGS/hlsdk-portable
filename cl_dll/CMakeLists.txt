@@ -20,13 +20,12 @@
 # SOFTWARE.
 #
 
-cmake_minimum_required(VERSION 2.6.0)
+cmake_minimum_required(VERSION 2.8.12)
 project (CLDLL)
 
 set (CLDLL_LIBRARY client)
 
-
-add_definitions(-DCLIENT_WEAPONS -DCLIENT_DLL)
+add_definitions(-DCLIENT_DLL)
 
 if(NOT MSVC)
 	add_compile_options(-fno-exceptions) # GCC/Clang flag
@@ -45,6 +44,15 @@ if (GOLDSOURCE_SUPPORT)
 	add_definitions(-DGOLDSOURCE_SUPPORT)
 endif()
 
+if (USE_VGUI)
+	add_definitions(-DUSE_VGUI)
+	if (USE_NOVGUI_MOTD)
+		add_definitions(-DUSE_NOVGUI_MOTD)
+	endif()
+	if (USE_NOVGUI_SCOREBOARD)
+		add_definitions(-DUSE_NOVGUI_SCOREBOARD)
+	endif()
+endif()
 
 set (CLDLL_SOURCES
 	../dlls/crossbow.cpp
@@ -93,7 +101,6 @@ set (CLDLL_SOURCES
 	input_xash3d.cpp
 	menu.cpp
 	message.cpp
-	overview.cpp
 	parsemsg.cpp
 	../pm_shared/pm_debug.c
 	../pm_shared/pm_math.c
@@ -107,11 +114,52 @@ set (CLDLL_SOURCES
 	train.cpp
 	tri.cpp
 	util.cpp
-	view.cpp
-	scoreboard.cpp
-	MOTD.cpp)
+	view.cpp)
 
-include_directories (. hl/ ../dlls ../dlls/wpn_shared ../common ../engine ../pm_shared ../game_shared ../public ../utils/false_vgui/include)
+if (USE_VGUI)
+	list(APPEND CLDLL_SOURCES
+		vgui_int.cpp
+		vgui_ClassMenu.cpp
+		vgui_ConsolePanel.cpp
+		vgui_ControlConfigPanel.cpp
+		vgui_CustomObjects.cpp
+		vgui_MOTDWindow.cpp
+		vgui_SchemeManager.cpp
+		vgui_ScorePanel.cpp
+		vgui_TeamFortressViewport.cpp
+		vgui_SpectatorPanel.cpp
+		vgui_teammenu.cpp
+		voice_status.cpp
+		../game_shared/vgui_checkbutton2.cpp
+		../game_shared/vgui_grid.cpp
+		../game_shared/vgui_helpers.cpp
+		../game_shared/vgui_listbox.cpp
+		../game_shared/vgui_loadtga.cpp
+		../game_shared/vgui_scrollbar2.cpp
+		../game_shared/vgui_slider2.cpp
+		../game_shared/voice_banmgr.cpp
+		)
+	if (USE_NOVGUI_MOTD)
+		list(APPEND CLDLL_SOURCES MOTD.cpp)
+	endif()
+	if (USE_NOVGUI_SCOREBOARD)
+		list(APPEND CLDLL_SOURCES scoreboard.cpp)
+	endif()
+else()
+	list(APPEND CLDLL_SOURCES
+		MOTD.cpp
+		scoreboard.cpp)
+endif()
+
+include_directories (. hl/ ../dlls ../dlls/wpn_shared ../common ../engine ../pm_shared ../game_shared ../public)
+
+if (USE_VGUI)
+	SET(CMAKE_SKIP_RPATH TRUE)
+	link_directories(${CMAKE_SOURCE_DIR}/vgui_support/vgui-dev/lib)
+	include_directories(../vgui_support/vgui-dev/include)
+else()
+	include_directories(../utils/fake_vgui/include)
+endif()
 
 if(USE_VOICEMGR)
 	#set(CLDLL_SOURCES
@@ -121,22 +169,43 @@ if(USE_VOICEMGR)
 endif()
 
 add_library (${CLDLL_LIBRARY} SHARED ${CLDLL_SOURCES})
+
 if (GOLDSOURCE_SUPPORT)
 	target_link_libraries( ${CLDLL_LIBRARY} ${CMAKE_DL_LIBS} )
+endif()
+
+if (USE_VGUI)
+	if (WIN32)
+		add_library(vgui SHARED IMPORTED)
+		set_property(TARGET vgui PROPERTY IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/vgui_support/vgui-dev/lib/win32_vc6/vgui.dll")
+		set_property(TARGET vgui PROPERTY IMPORTED_IMPLIB "${CMAKE_SOURCE_DIR}/vgui_support/vgui-dev/lib/win32_vc6/vgui.lib")
+		target_link_libraries(${CLDLL_LIBRARY} vgui)
+	elseif(APPLE)
+		target_link_libraries(${CLDLL_LIBRARY} "-Wl,--no-undefined -L${CMAKE_SOURCE_DIR}/vgui_support/vgui-dev/lib vgui.dylib")
+	else()
+		target_link_libraries(${CLDLL_LIBRARY} :vgui.so)
+	endif()
+endif()
+
+if(WIN32)
+	target_link_libraries( ${CLDLL_LIBRARY} user32.lib )
+	if (GOLDSOURCE_SUPPORT)
+		target_link_libraries( ${CLDLL_LIBRARY} winmm.lib )
+	endif()
 endif()
 
 set_target_properties (${CLDLL_LIBRARY} PROPERTIES
 	POSITION_INDEPENDENT_CODE 1)
 
-if(APPLE OR WIN32 OR ${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+if(NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Android")
 	set(CLDLL_NAME "client")
-	if(64BIT)
-		set(CLDLL_NAME "client64")
-	endif()
-
 	set_target_properties(${CLDLL_LIBRARY} PROPERTIES
 		OUTPUT_NAME ${CLDLL_NAME}
 		PREFIX "")
+endif()
+
+if(MSVC)
+	set_property(TARGET ${CLDLL_LIBRARY} PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 endif()
 
 install( TARGETS ${CLDLL_LIBRARY}

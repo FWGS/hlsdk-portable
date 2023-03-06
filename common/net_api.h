@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef NET_API_H
+#if !defined(NET_API_H)
 #define NET_API_H
 
 #include "netadr.h"

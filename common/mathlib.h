@@ -14,22 +14,35 @@
 ****/
 // mathlib.h
 #pragma once
-#ifndef MATHLIB_H
+#if !defined(MATHLIB_H)
 #define MATHLIB_H
+#if !__cplusplus
 #include <math.h>
+#if HAVE_TGMATH_H
+#include <tgmath.h>
+#endif // HAVE_TGMATH_H
+#else // __cplusplus
+#if HAVE_CMATH
+#include <cmath>
+#else
+#include <math.h>
+#endif
+#endif // __cplusplus
 
 typedef float vec_t;
-typedef vec_t vec2_t[2];
 
-#ifndef DID_VEC3_T_DEFINE
+#if !defined(DID_VEC3_T_DEFINE)
 #define DID_VEC3_T_DEFINE
 typedef vec_t vec3_t[3];
 #endif
 
-typedef vec_t vec4_t[4];	// x,y,z,w
 
-#ifndef M_PI
+#if !defined(M_PI)
 #define M_PI		3.14159265358979323846	// matches value in gcc v2 math.h
+#endif
+
+#if !defined(M_PI_F)
+#define M_PI_F		(float)M_PI
 #endif
 
 struct mplane_s;
@@ -39,7 +52,7 @@ extern	int nanmask;
 
 #define	IS_NAN(x) (((*(int *)&x)&nanmask)==nanmask)
 
-#ifndef VECTOR_H
+#if !defined(VECTOR_H)
 	#define DotProduct(x,y) ((x)[0]*(y)[0]+(x)[1]*(y)[1]+(x)[2]*(y)[2])
 #endif
 

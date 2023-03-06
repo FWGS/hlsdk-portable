@@ -12,7 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
-#if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
+#if !OEM_BUILD && !HLDEMO_BUILD
 
 #include "extdll.h"
 #include "util.h"
@@ -88,10 +88,10 @@ void CSatchelCharge::Spawn( void )
 	SetTouch( &CSatchelCharge::SatchelSlide );
 	SetUse( &CGrenade::DetonateUse );
 	SetThink( &CSatchelCharge::SatchelThink );
-	pev->nextthink = gpGlobals->time + 0.1;
+	pev->nextthink = gpGlobals->time + 0.1f;
 
-	pev->gravity = 0.5;
-	pev->friction = 0.8;
+	pev->gravity = 0.5f;
+	pev->friction = 0.8f;
 
 	pev->dmg = gSkillData.plrDmgSatchel;
 	// ResetSequenceInfo();
@@ -113,14 +113,14 @@ void CSatchelCharge::SatchelSlide( CBaseEntity *pOther )
 	TraceResult tr;
 	UTIL_TraceLine( pev->origin, pev->origin - Vector( 0, 0, 10 ), ignore_monsters, edict(), &tr );
 
-	if( tr.flFraction < 1.0 )
+	if( tr.flFraction < 1.0f )
 	{
 		// add a bit of static friction
 		pev->velocity = pev->velocity * 0.95;
 		pev->avelocity = pev->avelocity * 0.9;
 		// play sliding sound, volume based on velocity
 	}
-	if( !( pev->flags & FL_ONGROUND ) && pev->velocity.Length2D() > 10 )
+	if( !( pev->flags & FL_ONGROUND ) && pev->velocity.Length2D() > 10.0f )
 	{
 		// Fix for a bug in engine: when object isn't moving, but its speed isn't 0 and on ground isn't set
 		if( pev->origin != m_lastBounceOrigin )
@@ -135,7 +135,7 @@ void CSatchelCharge::SatchelThink( void )
 {
 	// There is no model animation so commented this out to prevent net traffic
 	// StudioFrameAdvance();
-	pev->nextthink = gpGlobals->time + 0.1;
+	pev->nextthink = gpGlobals->time + 0.1f;
 
 	if( !IsInWorld() )
 	{
@@ -146,8 +146,8 @@ void CSatchelCharge::SatchelThink( void )
 	if( pev->waterlevel == 3 )
 	{
 		pev->movetype = MOVETYPE_FLY;
-		pev->velocity = pev->velocity * 0.8;
-		pev->avelocity = pev->avelocity * 0.9;
+		pev->velocity = pev->velocity * 0.8f;
+		pev->avelocity = pev->avelocity * 0.9f;
 		pev->velocity.z += 8;
 	}
 	else if( pev->waterlevel == 0 )
@@ -156,7 +156,7 @@ void CSatchelCharge::SatchelThink( void )
 	}
 	else
 	{
-		pev->velocity.z -= 8;
+		pev->velocity.z -= 8.0f;
 	}	
 }
 
@@ -193,7 +193,7 @@ int CSatchel::AddDuplicate( CBasePlayerItem *pOriginal )
 {
 	CSatchel *pSatchel;
 
-#ifdef CLIENT_DLL
+#if CLIENT_DLL
 	if( bIsMultiplayer() )
 #else
 	if( g_pGameRules->IsMultiplayer() )
@@ -292,20 +292,26 @@ BOOL CSatchel::CanDeploy( void )
 
 BOOL CSatchel::Deploy()
 {
-	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 1.0;
-	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
+	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 1.0f;
+	BOOL result;
 
 	if( m_chargeReady )
-		return DefaultDeploy( "models/v_satchel_radio.mdl", "models/p_satchel_radio.mdl", SATCHEL_RADIO_DRAW, "hive" );
+		result = DefaultDeploy( "models/v_satchel_radio.mdl", "models/p_satchel_radio.mdl", SATCHEL_RADIO_DRAW, "hive" );
 	else
-		return DefaultDeploy( "models/v_satchel.mdl", "models/p_satchel.mdl", SATCHEL_DRAW, "trip" );
+		result = DefaultDeploy( "models/v_satchel.mdl", "models/p_satchel.mdl", SATCHEL_DRAW, "trip" );
 	
-	return TRUE;
+#if WEAPONS_ANIMATION_TIMES_FIX
+	if ( result )
+	{
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 2.0f;
+	}
+#endif
+	return result;
 }
 
 void CSatchel::Holster( int skiplocal /* = 0 */ )
 {
-	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
+	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5f;
 
 	if( m_chargeReady )
 	{
@@ -315,7 +321,7 @@ void CSatchel::Holster( int skiplocal /* = 0 */ )
 	{
 		SendWeaponAnim( SATCHEL_DROP );
 	}
-	EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_WEAPON, "common/null.wav", 1.0, ATTN_NORM );
+	EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_WEAPON, "common/null.wav", 1.0f, ATTN_NORM );
 
 	if( !m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] && m_chargeReady != SATCHEL_READY )
 	{
@@ -353,9 +359,9 @@ void CSatchel::PrimaryAttack()
 			}
 
 			m_chargeReady = SATCHEL_RELOAD;
-			m_flNextPrimaryAttack = GetNextAttackDelay( 0.5 );
-			m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5;
-			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.5;
+			m_flNextPrimaryAttack = GetNextAttackDelay( 0.5f );
+			m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5f;
+			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.5f;
 			break;
 		}
 	case SATCHEL_RELOAD:
@@ -376,7 +382,7 @@ void CSatchel::Throw( void )
 {
 	if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] )
 	{
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 		Vector vecSrc = m_pPlayer->pev->origin;
 
 		Vector vecThrow = gpGlobals->v_forward * 274 + m_pPlayer->pev->velocity;
@@ -400,8 +406,8 @@ void CSatchel::Throw( void )
 
 		m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]--;
 
-		m_flNextPrimaryAttack = GetNextAttackDelay( 1.0 );
-		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5;
+		m_flNextPrimaryAttack = GetNextAttackDelay( 1.0f );
+		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5f;
 	}
 }
 
@@ -430,7 +436,7 @@ void CSatchel::WeaponIdle( void )
 			return;
 		}
 
-#ifndef CLIENT_DLL
+#if !CLIENT_DLL
 		m_pPlayer->pev->viewmodel = MAKE_STRING( "models/v_satchel.mdl" );
 		m_pPlayer->pev->weaponmodel = MAKE_STRING( "models/p_satchel.mdl" );
 #else
@@ -441,8 +447,8 @@ void CSatchel::WeaponIdle( void )
 		// use tripmine animations
 		strcpy( m_pPlayer->m_szAnimExtention, "trip" );
 
-		m_flNextPrimaryAttack = GetNextAttackDelay( 0.5 );
-		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5;
+		m_flNextPrimaryAttack = GetNextAttackDelay( 0.5f );
+		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5f;
 		m_chargeReady = SATCHEL_IDLE;
 		break;
 	}

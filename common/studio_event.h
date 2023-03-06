@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef STUDIO_EVENT_H
+#if !defined(STUDIO_EVENT_H)
 #define STUDIO_EVENT_H
 
 typedef struct mstudioevent_s

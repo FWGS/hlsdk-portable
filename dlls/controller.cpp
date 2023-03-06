@@ -12,7 +12,7 @@
 *   use or distribution of this code by or to any unlicensed person is illegal.
 *
 ****/
-#if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
+#if !OEM_BUILD && !HLDEMO_BUILD
 
 //=========================================================
 // CONTROLLER
@@ -190,9 +190,9 @@ void CController::Killed( entvars_t *pevAttacker, int iGib )
 	// shut off balls
 	/*
 	m_iBall[0] = 0;
-	m_iBallTime[0] = gpGlobals->time + 4.0;
+	m_iBallTime[0] = gpGlobals->time + 4.0f;
 	m_iBall[1] = 0;
-	m_iBallTime[1] = gpGlobals->time + 4.0;
+	m_iBallTime[1] = gpGlobals->time + 4.0f;
 	*/
 
 	// fade balls
@@ -281,9 +281,9 @@ void CController::HandleAnimEvent( MonsterEvent_t *pEvent )
 			MESSAGE_END();
 
 			m_iBall[0] = 192;
-			m_iBallTime[0] = gpGlobals->time + atoi( pEvent->options ) / 15.0;
+			m_iBallTime[0] = gpGlobals->time + atoi( pEvent->options ) / 15.0f;
 			m_iBall[1] = 255;
-			m_iBallTime[1] = gpGlobals->time + atoi( pEvent->options ) / 15.0;
+			m_iBallTime[1] = gpGlobals->time + atoi( pEvent->options ) / 15.0f;
 		}
 		break;
 		case CONTROLLER_AE_BALL_SHOOT:
@@ -308,7 +308,7 @@ void CController::HandleAnimEvent( MonsterEvent_t *pEvent )
 
 			CBaseMonster *pBall = (CBaseMonster*)Create( "controller_head_ball", vecStart, pev->angles, edict() );
 
-			pBall->pev->velocity = Vector( 0, 0, 32 );
+			pBall->pev->velocity = Vector( 0.0f, 0.0f, 32.0f );
 			pBall->m_hEnemy = m_hEnemy;
 
 			m_iBall[0] = 0;
@@ -319,23 +319,23 @@ void CController::HandleAnimEvent( MonsterEvent_t *pEvent )
 		{
 			AttackSound();
 			m_flShootTime = gpGlobals->time;
-			m_flShootEnd = m_flShootTime + atoi( pEvent->options ) / 15.0;
+			m_flShootEnd = m_flShootTime + atoi( pEvent->options ) / 15.0f;
 		}
 		break;
 		case CONTROLLER_AE_POWERUP_FULL:
 		{
 			m_iBall[0] = 255;
-			m_iBallTime[0] = gpGlobals->time + atoi( pEvent->options ) / 15.0;
+			m_iBallTime[0] = gpGlobals->time + atoi( pEvent->options ) / 15.0f;
 			m_iBall[1] = 255;
-			m_iBallTime[1] = gpGlobals->time + atoi( pEvent->options ) / 15.0;
+			m_iBallTime[1] = gpGlobals->time + atoi( pEvent->options ) / 15.0f;
 		}
 		break;
 		case CONTROLLER_AE_POWERUP_HALF:
 		{
 			m_iBall[0] = 192;
-			m_iBallTime[0] = gpGlobals->time + atoi( pEvent->options ) / 15.0;
+			m_iBallTime[0] = gpGlobals->time + atoi( pEvent->options ) / 15.0f;
 			m_iBall[1] = 192;
-			m_iBallTime[1] = gpGlobals->time + atoi( pEvent->options ) / 15.0;
+			m_iBallTime[1] = gpGlobals->time + atoi( pEvent->options ) / 15.0f;
 		}
 		break;
 		default:
@@ -352,14 +352,14 @@ void CController::Spawn()
 	Precache();
 
 	SET_MODEL( ENT( pev ), "models/controller.mdl" );
-	UTIL_SetSize( pev, Vector( -32, -32, 0 ), Vector( 32, 32, 64 ) );
+	UTIL_SetSize( pev, Vector( -32.0f, -32.0f, 0.0f ), Vector( 32.0f, 32.0f, 64.0f ) );
 
 	pev->solid		= SOLID_SLIDEBOX;
 	pev->movetype		= MOVETYPE_FLY;
 	pev->flags		|= FL_FLY;
 	m_bloodColor		= BLOOD_COLOR_GREEN;
 	pev->health		= gSkillData.controllerHealth;
-	pev->view_ofs		= Vector( 0, 0, -2 );// position of the eyes relative to monster's origin.
+	pev->view_ofs		= Vector( 0.0f, 0.0f, -2.0f );// position of the eyes relative to monster's origin.
 	m_flFieldOfView		= VIEW_FIELD_FULL;// indicates the width of this monster's forward view cone ( as a dotproduct result )
 	m_MonsterState		= MONSTERSTATE_NONE;
 
@@ -409,8 +409,8 @@ void CController::UpdateOnRemove()
 // Chase enemy schedule
 Task_t tlControllerChaseEnemy[] =
 {
-	{ TASK_GET_PATH_TO_ENEMY, (float)128 },
-	{ TASK_WAIT_FOR_MOVEMENT, (float)0 },
+	{ TASK_GET_PATH_TO_ENEMY, 128.0f },
+	{ TASK_WAIT_FOR_MOVEMENT, 0.0f },
 };
 
 Schedule_t slControllerChaseEnemy[] =
@@ -427,10 +427,10 @@ Schedule_t slControllerChaseEnemy[] =
 
 Task_t tlControllerStrafe[] =
 {
-	{ TASK_WAIT, (float)0.2 },
-	{ TASK_GET_PATH_TO_ENEMY, (float)128 },
-	{ TASK_WAIT_FOR_MOVEMENT, (float)0 },
-	{ TASK_WAIT, (float)1 },
+	{ TASK_WAIT, 0.2f },
+	{ TASK_GET_PATH_TO_ENEMY, 128.0f },
+	{ TASK_WAIT_FOR_MOVEMENT, 0.0f },
+	{ TASK_WAIT, 1.0f },
 };
 
 Schedule_t slControllerStrafe[] =
@@ -446,10 +446,10 @@ Schedule_t slControllerStrafe[] =
 
 Task_t tlControllerTakeCover[] =
 {
-	{ TASK_WAIT, (float)0.2 },
-	{ TASK_FIND_COVER_FROM_ENEMY, (float)0 },
-	{ TASK_WAIT_FOR_MOVEMENT, (float)0 },
-	{ TASK_WAIT, (float)1 },
+	{ TASK_WAIT, 0.2f },
+	{ TASK_FIND_COVER_FROM_ENEMY, 0.0f },
+	{ TASK_WAIT_FOR_MOVEMENT, 0.0f },
+	{ TASK_WAIT, 1.0f },
 };
 
 Schedule_t slControllerTakeCover[] =
@@ -504,7 +504,7 @@ void CController::StartTask( Task_t *pTask )
 		break;
 	case TASK_GET_PATH_TO_ENEMY_LKP:
 		{
-			if( BuildNearestRoute( m_vecEnemyLKP, pev->view_ofs, pTask->flData, (m_vecEnemyLKP - pev->origin).Length() + 1024 ) )
+			if( BuildNearestRoute( m_vecEnemyLKP, pev->view_ofs, pTask->flData, (m_vecEnemyLKP - pev->origin).Length() + 1024.0f ) )
 			{
 				TaskComplete();
 			}
@@ -526,7 +526,7 @@ void CController::StartTask( Task_t *pTask )
 				return;
 			}
 
-			if( BuildNearestRoute( pEnemy->pev->origin, pEnemy->pev->view_ofs, pTask->flData, ( pEnemy->pev->origin - pev->origin).Length() + 1024 ) )
+			if( BuildNearestRoute( pEnemy->pev->origin, pEnemy->pev->view_ofs, pTask->flData, ( pEnemy->pev->origin - pev->origin).Length() + 1024.0f ) )
 			{
 				TaskComplete();
 			}
@@ -559,8 +559,8 @@ Vector Intersect( Vector vecSrc, Vector vecDst, Vector vecMove, float flSpeed )
 	}
 	else
 	{
-		t = b * b - 4 * a * c;
-		t = sqrt( t ) / ( 2.0 * a );
+		t = b * b - 4.0f * a * c;
+		t = sqrt( t ) / ( 2.0f * a );
 		float t1 = -b +t;
 		float t2 = -b -t;
 
@@ -572,10 +572,10 @@ Vector Intersect( Vector vecSrc, Vector vecDst, Vector vecMove, float flSpeed )
 
 	// ALERT( at_console, "Intersect %f\n", t );
 
-	if( t < 0.1 )
-		t = 0.1;
-	if( t > 10.0 )
-		t = 10.0;
+	if( t < 0.1f )
+		t = 0.1f;
+	if( t > 10.0f )
+		t = 10.0f;
 
 	Vector vecHit = vecTo + vecMove * t;
 	return vecHit.Normalize() * flSpeed;
@@ -583,7 +583,7 @@ Vector Intersect( Vector vecSrc, Vector vecDst, Vector vecMove, float flSpeed )
 
 int CController::LookupFloat()
 {
-	if( m_velocity.Length() < 32.0 )
+	if( m_velocity.Length() < 32.0f )
 	{
 		return LookupSequence( "up" );
 	}
@@ -636,21 +636,21 @@ void CController::RunTask( Task_t *pTask )
 			{
 				if( HasConditions( bits_COND_SEE_ENEMY ) )
 				{
-					m_vecEstVelocity = m_vecEstVelocity * 0.5 + m_hEnemy->pev->velocity * 0.5;
+					m_vecEstVelocity = m_vecEstVelocity * 0.5f + m_hEnemy->pev->velocity * 0.5f;
 				}
 				else
 				{
-					m_vecEstVelocity = m_vecEstVelocity * 0.8;
+					m_vecEstVelocity = m_vecEstVelocity * 0.8f;
 				}
 				vecDir = Intersect( vecSrc, m_hEnemy->BodyTarget( pev->origin ), m_vecEstVelocity, gSkillData.controllerSpeedBall );
-				float delta = 0.03490; // +-2 degree
+				float delta = 0.03490f; // +-2 degree
 				vecDir = vecDir + Vector( RANDOM_FLOAT( -delta, delta ), RANDOM_FLOAT( -delta, delta ), RANDOM_FLOAT( -delta, delta ) ) * gSkillData.controllerSpeedBall;
 
 				vecSrc = vecSrc + vecDir * ( gpGlobals->time - m_flShootTime );
 				CBaseMonster *pBall = (CBaseMonster*)Create( "controller_energy_ball", vecSrc, pev->angles, edict() );
 				pBall->pev->velocity = vecDir;
 			}
-			m_flShootTime += 0.2;
+			m_flShootTime += 0.2f;
 		}
 
 		if( m_flShootTime > m_flShootEnd )
@@ -669,8 +669,11 @@ void CController::RunTask( Task_t *pTask )
 	case TASK_WAIT:
 	case TASK_WAIT_FACE_ENEMY:
 	case TASK_WAIT_PVS:
-		MakeIdealYaw( m_vecEnemyLKP );
-		ChangeYaw( pev->yaw_speed );
+		if (m_hEnemy != 0)
+		{
+			MakeIdealYaw( m_vecEnemyLKP );
+			ChangeYaw( pev->yaw_speed );
+		}
 
 		if( m_fSequenceFinished )
 		{
@@ -725,7 +728,7 @@ Schedule_t *CController::GetSchedule( void )
 	{
 	case MONSTERSTATE_COMBAT:
 		{
-			// Vector vecTmp = Intersect( Vector( 0, 0, 0 ), Vector( 100, 4, 7 ), Vector( 2, 10, -3 ), 20.0 );
+			// Vector vecTmp = Intersect( Vector( 0, 0, 0 ), Vector( 100, 4, 7 ), Vector( 2, 10, -3 ), 20.0f );
 
 			// dead enemy
 			if( HasConditions( bits_COND_LIGHT_DAMAGE ) )
@@ -777,7 +780,7 @@ Schedule_t *CController::GetScheduleOfType( int Type )
 //=========================================================
 BOOL CController::CheckRangeAttack1( float flDot, float flDist )
 {
-	if( flDot > 0.5 && flDist > 256 && flDist <= 2048 )
+	if( flDot > 0.5f && flDist > 256.0f && flDist <= 2048.0f )
 	{
 		return TRUE;
 	}
@@ -786,7 +789,7 @@ BOOL CController::CheckRangeAttack1( float flDot, float flDist )
 
 BOOL CController::CheckRangeAttack2( float flDot, float flDist )
 {
-	if( flDot > 0.5 && flDist > 64 && flDist <= 2048 )
+	if( flDot > 0.5f && flDist > 64.0f && flDist <= 2048.0f )
 	{
 		return TRUE;
 	}
@@ -805,10 +808,10 @@ void CController::SetActivity( Activity NewActivity )
 	switch( m_Activity )
 	{
 	case ACT_WALK:
-		m_flGroundSpeed = 100;
+		m_flGroundSpeed = 100.0f;
 		break;
 	default:
-		m_flGroundSpeed = 100;
+		m_flGroundSpeed = 100.0f;
 		break;
 	}
 }
@@ -831,14 +834,14 @@ void CController::RunAI( void )
 			m_pBall[i] = CSprite::SpriteCreate( "sprites/xspark4.spr", pev->origin, TRUE );
 			m_pBall[i]->SetTransparency( kRenderGlow, 255, 255, 255, 255, kRenderFxNoDissipation );
 			m_pBall[i]->SetAttachment( edict(), ( i + 3 ) );
-			m_pBall[i]->SetScale( 1.0 );
+			m_pBall[i]->SetScale( 1.0f );
 		}
 
 		float t = m_iBallTime[i] - gpGlobals->time;
-		if( t > 0.1 )
-			t = 0.1 / t;
+		if( t > 0.1f )
+			t = 0.1f / t;
 		else
-			t = 1.0;
+			t = 1.0f;
 
 		m_iBallCurrent[i] += ( m_iBall[i] - m_iBallCurrent[i] ) * t;
 
@@ -912,9 +915,9 @@ void CController::Move( float flInterval )
 	// to that entity for the CheckLocalMove and Triangulate functions.
 	pTargetEnt = NULL;
 
-	if( m_flGroundSpeed == 0 )
+	if( m_flGroundSpeed == 0.0f )
 	{
-		m_flGroundSpeed = 100;
+		m_flGroundSpeed = 100.0f;
 		// TaskFail();
 		// return;
 	}
@@ -966,7 +969,8 @@ void CController::Move( float flInterval )
 			{
 				DispatchBlocked( edict(), pBlocker->edict() );
 			}
-			if( pBlocker && m_moveWaitTime > 0 && pBlocker->IsMoving() && !pBlocker->IsPlayer() && (gpGlobals->time-m_flMoveWaitFinished) > 3.0 )
+
+			if( pBlocker && m_moveWaitTime > 0 && pBlocker->IsMoving() && !pBlocker->IsPlayer() && (gpGlobals->time-m_flMoveWaitFinished) > 3.0f )
 			{
 				// Can we still move toward our target?
 				if( flDist < m_flGroundSpeed )
@@ -992,7 +996,7 @@ void CController::Move( float flInterval )
 					if( m_moveWaitTime > 0 )
 					{
 						FRefreshRoute();
-						m_flMoveWaitFinished = gpGlobals->time + m_moveWaitTime * 0.5;
+						m_flMoveWaitFinished = gpGlobals->time + m_moveWaitTime * 0.5f;
 					}
 					else
 					{
@@ -1030,10 +1034,10 @@ void CController::Move( float flInterval )
 			Stop();
 			RouteClear();
 		}
-	} while( flMoveDist > 0 && flCheckDist > 0 );
+	} while( flMoveDist > 0.0f && flCheckDist > 0.0f );
 
 	// cut corner?
-	if( flWaypointDist < 128 )
+	if( flWaypointDist < 128.0f )
 	{
 		if( m_movementGoal == MOVEGOAL_ENEMY )
 			RouteSimplify( m_hEnemy );
@@ -1041,19 +1045,19 @@ void CController::Move( float flInterval )
 			RouteSimplify( m_hTargetEnt );
 		FRefreshRoute();
 
-		if( m_flGroundSpeed > 100 )
-			m_flGroundSpeed -= 40;
+		if( m_flGroundSpeed > 100.0f )
+			m_flGroundSpeed -= 40.0f;
 	}
 	else
 	{
-		if( m_flGroundSpeed < 400 )
-			m_flGroundSpeed += 10;
+		if( m_flGroundSpeed < 400.0f )
+			m_flGroundSpeed += 10.0f;
 	}
 }
 
 BOOL CController::ShouldAdvanceRoute( float flWaypointDist )
 {
-	if( flWaypointDist <= 32 )
+	if( flWaypointDist <= 32.0f )
 	{
 		return TRUE;
 	}
@@ -1076,7 +1080,7 @@ int CController::CheckLocalMove( const Vector &vecStart, const Vector &vecEnd, C
 	}
 
 	// ALERT( at_console, "check %d %d %f\n", tr.fStartSolid, tr.fAllSolid, tr.flFraction );
-	if( tr.fStartSolid || tr.flFraction < 1.0 )
+	if( tr.fStartSolid || tr.flFraction < 1.0f )
 	{
 		if( pTarget && pTarget->edict() == gpGlobals->trace_ent )
 			return LOCALMOVE_VALID;
@@ -1096,7 +1100,7 @@ void CController::MoveExecute( CBaseEntity *pTargetEnt, const Vector &vecDir, fl
 	// float flTotal = m_flGroundSpeed * pev->framerate * flInterval;
 	// UTIL_MoveToOrigin ( ENT( pev ), m_Route[m_iRouteIndex].vecLocation, flTotal, MOVE_STRAFE );
 
-	m_velocity = m_velocity * 0.8 + m_flGroundSpeed * vecDir * 0.2;
+	m_velocity = m_velocity * 0.8f + m_flGroundSpeed * vecDir * 0.2f;
 
 	UTIL_MoveToOrigin( ENT( pev ), pev->origin + m_velocity, m_velocity.Length() * flInterval, MOVE_STRAFE );	
 }
@@ -1133,7 +1137,7 @@ void CControllerHeadBall::Spawn( void )
 	pev->rendercolor.y = 255;
 	pev->rendercolor.z = 255;
 	pev->renderamt = 255;
-	pev->scale = 2.0;
+	pev->scale = 2.0f;
 
 	UTIL_SetSize(pev, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ) );
 	UTIL_SetOrigin( pev, pev->origin );
@@ -1143,7 +1147,7 @@ void CControllerHeadBall::Spawn( void )
 
 	m_vecIdeal = Vector( 0, 0, 0 );
 
-	pev->nextthink = gpGlobals->time + 0.1;
+	pev->nextthink = gpGlobals->time + 0.1f;
 
 	m_hOwner = Instance( pev->owner );
 	pev->dmgtime = gpGlobals->time;
@@ -1158,7 +1162,7 @@ void CControllerHeadBall::Precache( void )
 
 void CControllerHeadBall::HuntThink( void )
 {
-	pev->nextthink = gpGlobals->time + 0.1;
+	pev->nextthink = gpGlobals->time + 0.1f;
 
 	pev->renderamt -= 5;
 
@@ -1219,12 +1223,12 @@ void CControllerHeadBall::HuntThink( void )
 			WRITE_BYTE( 10 );		// speed
 		MESSAGE_END();
 
-		UTIL_EmitAmbientSound( ENT( pev ), tr.vecEndPos, "weapons/electro4.wav", 0.5, ATTN_NORM, 0, RANDOM_LONG( 140, 160 ) );
+		UTIL_EmitAmbientSound( ENT( pev ), tr.vecEndPos, "weapons/electro4.wav", 0.5f, ATTN_NORM, 0, RANDOM_LONG( 140, 160 ) );
 
-		m_flNextAttack = gpGlobals->time + 3.0;
+		m_flNextAttack = gpGlobals->time + 3.0f;
 
 		SetThink( &CControllerHeadBall::DieThink );
-		pev->nextthink = gpGlobals->time + 0.3;
+		pev->nextthink = gpGlobals->time + 0.3f;
 	}
 
 	//Crawl();
@@ -1239,31 +1243,31 @@ void CControllerHeadBall::MovetoTarget( Vector vecTarget )
 {
 	// accelerate
 	float flSpeed = m_vecIdeal.Length();
-	if( flSpeed == 0 )
+	if( flSpeed == 0.0f )
 	{
 		m_vecIdeal = pev->velocity;
 		flSpeed = m_vecIdeal.Length();
 	}
 
-	if( flSpeed > 400 )
+	if( flSpeed > 400.0f )
 	{
-		m_vecIdeal = m_vecIdeal.Normalize() * 400;
+		m_vecIdeal = m_vecIdeal.Normalize() * 400.0f;
 	}
-	m_vecIdeal = m_vecIdeal + ( vecTarget - pev->origin ).Normalize() * 100;
+	m_vecIdeal = m_vecIdeal + ( vecTarget - pev->origin ).Normalize() * 100.0f;
 	pev->velocity = m_vecIdeal;
 }
 
 void CControllerHeadBall::Crawl( void )
 {
-	Vector vecAim = Vector( RANDOM_FLOAT( -1, 1 ), RANDOM_FLOAT( -1, 1 ), RANDOM_FLOAT( -1, 1 ) ).Normalize();
-	Vector vecPnt = pev->origin + pev->velocity * 0.3 + vecAim * 64;
+	Vector vecAim = Vector( RANDOM_FLOAT( -1.0f, 1.0f ), RANDOM_FLOAT( -1.0f, 1.0f ), RANDOM_FLOAT( -1.0f, 1.0f ) ).Normalize();
+	Vector vecPnt = pev->origin + pev->velocity * 0.3f + vecAim * 64.0f;
 
 	MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
 		WRITE_BYTE( TE_BEAMENTPOINT );
 		WRITE_SHORT( entindex() );
-		WRITE_COORD( vecPnt.x);
-		WRITE_COORD( vecPnt.y);
-		WRITE_COORD( vecPnt.z);
+		WRITE_COORD( vecPnt.x );
+		WRITE_COORD( vecPnt.y );
+		WRITE_COORD( vecPnt.z );
 		WRITE_SHORT( g_sModelIndexLaser );
 		WRITE_BYTE( 0 ); // frame start
 		WRITE_BYTE( 10 ); // framerate
@@ -1286,7 +1290,7 @@ void CControllerHeadBall::BounceTouch( CBaseEntity *pOther )
 
 	float n = -DotProduct( tr.vecPlaneNormal, vecDir );
 
-	vecDir = 2.0 * tr.vecPlaneNormal * n + vecDir;
+	vecDir = 2.0f * tr.vecPlaneNormal * n + vecDir;
 
 	m_vecIdeal = vecDir * m_vecIdeal.Length();
 }
@@ -1316,7 +1320,7 @@ void CControllerZapBall::Spawn( void )
 	pev->rendercolor.y = 255;
 	pev->rendercolor.z = 255;
 	pev->renderamt = 255;
-	pev->scale = 0.5;
+	pev->scale = 0.5f;
 
 	UTIL_SetSize( pev, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ) );
 	UTIL_SetOrigin( pev, pev->origin );
@@ -1326,7 +1330,7 @@ void CControllerZapBall::Spawn( void )
 
 	m_hOwner = Instance( pev->owner );
 	pev->dmgtime = gpGlobals->time; // keep track of when ball spawned
-	pev->nextthink = gpGlobals->time + 0.1;
+	pev->nextthink = gpGlobals->time + 0.1f;
 }
 
 void CControllerZapBall::Precache( void )
@@ -1338,11 +1342,11 @@ void CControllerZapBall::Precache( void )
 
 void CControllerZapBall::AnimateThink( void )
 {
-	pev->nextthink = gpGlobals->time + 0.1;
+	pev->nextthink = gpGlobals->time + 0.1f;
 
 	pev->frame = ( (int)pev->frame + 1 ) % 11;
 
-	if( gpGlobals->time - pev->dmgtime > 5 || pev->velocity.Length() < 10 )
+	if( gpGlobals->time - pev->dmgtime > 5 || pev->velocity.Length() < 10.0f )
 	{
 		SetTouch( NULL );
 		UTIL_Remove( this );
@@ -1367,10 +1371,10 @@ void CControllerZapBall::ExplodeTouch( CBaseEntity *pOther )
 		}
 
 		ClearMultiDamage();
-		pOther->TraceAttack(pevOwner, gSkillData.controllerDmgBall, pev->velocity.Normalize(), &tr, DMG_ENERGYBEAM ); 
+		pOther->TraceAttack( pevOwner, gSkillData.controllerDmgBall, pev->velocity.Normalize(), &tr, DMG_ENERGYBEAM ); 
 		ApplyMultiDamage( pevOwner, pevOwner );
 
-		UTIL_EmitAmbientSound( ENT( pev ), tr.vecEndPos, "weapons/electro4.wav", 0.3, ATTN_NORM, 0, RANDOM_LONG( 90, 99 ) );
+		UTIL_EmitAmbientSound( ENT( pev ), tr.vecEndPos, "weapons/electro4.wav", 0.3f, ATTN_NORM, 0, RANDOM_LONG( 90, 99 ) );
 	}
 
 	UTIL_Remove( this );

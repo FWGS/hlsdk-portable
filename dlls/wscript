@@ -1,0 +1,167 @@
+#! /usr/bin/env python
+# encoding: utf-8
+# a1batross, mittorn, 2018
+
+from waflib import Utils
+import os
+
+def options(opt):
+	# stub
+	return
+
+def configure(conf):
+	if conf.env.COMPILER_CC == 'msvc':
+		# hl.def removes MSVC function name decoration from GiveFnptrsToDll on Windows.
+		# Without this, the lookup for this function fails.
+		hlDefNode = conf.path.find_resource("./hl.def")
+
+		if hlDefNode is not None:
+			conf.env.append_unique('LINKFLAGS', '/def:%s' % hlDefNode.abspath())
+		else:
+			conf.fatal("Could not find hl.def")
+
+def build(bld):
+	source = bld.path.parent.ant_glob([
+		'pm_shared/*.c',
+	])
+
+	source += [
+		'agrunt.cpp',
+		'airtank.cpp',
+		'aflock.cpp',
+		'animating.cpp',
+		'animation.cpp',
+		'apache.cpp', 
+		'barnacle.cpp',
+		'barney.cpp',
+		'bigmomma.cpp',
+		'bloater.cpp',
+		'bmodels.cpp',
+		'bullsquid.cpp',
+		'buttons.cpp', 
+		'cbase.cpp',
+		'client.cpp',
+		'combat.cpp',
+		'controller.cpp',
+		'crossbow.cpp',
+		'crowbar.cpp', 
+		'defaultai.cpp',
+		'doors.cpp', 
+		'effects.cpp',
+		'egon.cpp',
+		'explode.cpp', 
+		'flyingmonster.cpp',
+		'func_break.cpp',
+		'func_tank.cpp', 
+		'game.cpp',
+		'gamerules.cpp',
+		'gargantua.cpp',
+		'gauss.cpp',
+		'genericmonster.cpp',
+		'ggrenade.cpp',
+		'globals.cpp',
+		'glock.cpp',
+		'gman.cpp', 
+		'h_ai.cpp',
+		'h_battery.cpp',
+		'h_cine.cpp',
+		'h_cycler.cpp',
+		'h_export.cpp',
+		'handgrenade.cpp',
+		'hassassin.cpp',
+		'headcrab.cpp', 
+		'healthkit.cpp',
+		'hgrunt.cpp',
+		'hornet.cpp',
+		'hornetgun.cpp',
+		'houndeye.cpp', 
+		'ichthyosaur.cpp',
+		'islave.cpp',
+		'items.cpp', 
+		'leech.cpp',
+		'lights.cpp', 
+		'maprules.cpp',
+		'monstermaker.cpp',
+		'monsters.cpp',
+		'monsterstate.cpp',
+		'mortar.cpp',
+		'mp5.cpp',
+		'multiplay_gamerules.cpp', 
+		'nihilanth.cpp',
+		'nodes.cpp', 
+		'observer.cpp',
+		'osprey.cpp', 
+		'pathcorner.cpp',
+		'plane.cpp',
+		'plats.cpp',
+		'player.cpp',
+		'playermonster.cpp',
+		'python.cpp', 
+		'rat.cpp',
+		'roach.cpp',
+		'rpg.cpp', 
+		'satchel.cpp',
+		'schedule.cpp',
+		'scientist.cpp',
+		'scripted.cpp',
+		'shotgun.cpp',
+		'singleplay_gamerules.cpp',
+		'skill.cpp', 
+		'sound.cpp',
+		'soundent.cpp',
+		'spectator.cpp',
+		'squadmonster.cpp',
+		'squeakgrenade.cpp',
+		'subs.cpp', 
+		'talkmonster.cpp',
+		'teamplay_gamerules.cpp',
+		'tempmonster.cpp',
+		'tentacle.cpp', 
+		'triggers.cpp',
+		'tripmine.cpp',
+		'turret.cpp', 
+		'util.cpp', 
+		'weapons.cpp',
+		'world.cpp',
+		'xen.cpp',
+		'zombie.cpp'
+	]
+
+	includes = [
+		'.',
+		'../common',
+		'../engine',
+		'../pm_shared',
+		'../game_shared',
+		'../public'
+	]
+
+	defines = []
+
+	if bld.env.VOICEMGR:
+		source += bld.path.parent.ant_glob([
+		'game_shared/voice_gamemgr.cpp',
+		])
+	else:
+		defines += ['NO_VOICEGAMEMGR']
+
+	libs = []
+
+	if bld.env.DEST_OS not in ['android', 'dos']:
+		install_path = os.path.join(bld.env.GAMEDIR, bld.env.SERVER_DIR)
+	else:
+		install_path = bld.env.PREFIX
+
+	bld.shlib(
+		source   = source,
+		target   = bld.env.SERVER_NAME + bld.env.POSTFIX,
+		name     = 'server',
+		features = 'c cxx',
+		includes = includes,
+		defines  = defines,
+		use      = libs,
+		install_path = install_path,
+		subsystem = bld.env.MSVC_SUBSYSTEM,
+		idx      = bld.get_taskgen_count()
+	)
+

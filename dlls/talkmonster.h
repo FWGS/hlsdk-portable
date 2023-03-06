@@ -13,10 +13,10 @@
 *
 ****/
 #pragma once
-#ifndef TALKMONSTER_H
+#if !defined(TALKMONSTER_H)
 #define TALKMONSTER_H
 
-#ifndef MONSTERS_H
+#if !defined(MONSTERS_H)
 #include "monsters.h"
 #endif
 
@@ -25,7 +25,7 @@
 // Used for scientists and barneys
 //=========================================================
 
-#define TALKRANGE_MIN 500.0				// don't talk to anyone farther away than this
+#define TALKRANGE_MIN 500.0f				// don't talk to anyone farther away than this
 
 #define TLK_STARE_DIST	128				// anyone closer than this and looking at me is probably staring at me.
 

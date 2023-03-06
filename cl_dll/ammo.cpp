@@ -27,6 +27,9 @@
 #include <stdio.h>
 
 #include "ammohistory.h"
+#if USE_VGUI
+#include "vgui_TeamFortressViewport.h"
+#endif
 
 WEAPON *gpActiveSel;	// NULL means off, 1 means just the menu bar, otherwise
 						// this points to the active weapon menu item
@@ -77,7 +80,7 @@ void WeaponsResource::LoadWeaponSprites( WEAPON *pWeapon )
 	else
 		iRes = 640;
 
-	char sz[128];
+	char sz[256];
 
 	if( !pWeapon )
 		return;
@@ -152,7 +155,7 @@ void WeaponsResource::LoadWeaponSprites( WEAPON *pWeapon )
 		pWeapon->hInactive = SPR_Load( sz );
 		pWeapon->rcInactive = p->rc;
 
-		gHR.iHistoryGap = max( gHR.iHistoryGap, pWeapon->rcActive.bottom - pWeapon->rcActive.top );
+		gHR.iHistoryGap = Q_max( gHR.iHistoryGap, pWeapon->rcActive.bottom - pWeapon->rcActive.top );
 	}
 	else
 		pWeapon->hInactive = 0;
@@ -174,7 +177,7 @@ void WeaponsResource::LoadWeaponSprites( WEAPON *pWeapon )
 		pWeapon->hAmmo = SPR_Load( sz );
 		pWeapon->rcAmmo = p->rc;
 
-		gHR.iHistoryGap = max( gHR.iHistoryGap, pWeapon->rcActive.bottom - pWeapon->rcActive.top );
+		gHR.iHistoryGap = Q_max( gHR.iHistoryGap, pWeapon->rcActive.bottom - pWeapon->rcActive.top );
 	}
 	else
 		pWeapon->hAmmo = 0;
@@ -186,7 +189,7 @@ void WeaponsResource::LoadWeaponSprites( WEAPON *pWeapon )
 		pWeapon->hAmmo2 = SPR_Load( sz );
 		pWeapon->rcAmmo2 = p->rc;
 
-		gHR.iHistoryGap = max( gHR.iHistoryGap, pWeapon->rcActive.bottom - pWeapon->rcActive.top );
+		gHR.iHistoryGap = Q_max( gHR.iHistoryGap, pWeapon->rcActive.bottom - pWeapon->rcActive.top );
 	}
 	else
 		pWeapon->hAmmo2 = 0;
@@ -320,7 +323,7 @@ int CHudAmmo::VidInit( void )
 	giBucketWidth = gHUD.GetSpriteRect( m_HUD_bucket0 ).right - gHUD.GetSpriteRect( m_HUD_bucket0 ).left;
 	giBucketHeight = gHUD.GetSpriteRect( m_HUD_bucket0 ).bottom - gHUD.GetSpriteRect( m_HUD_bucket0 ).top;
 
-	gHR.iHistoryGap = max( gHR.iHistoryGap, gHUD.GetSpriteRect( m_HUD_bucket0 ).bottom - gHUD.GetSpriteRect( m_HUD_bucket0 ).top );
+	gHR.iHistoryGap = Q_max( gHR.iHistoryGap, gHUD.GetSpriteRect( m_HUD_bucket0 ).bottom - gHUD.GetSpriteRect( m_HUD_bucket0 ).top );
 
 	// If we've already loaded weapons, let's get new sprites
 	gWR.LoadAllWeaponSprites();
@@ -356,7 +359,7 @@ void CHudAmmo::Think( void )
 		{
 			WEAPON *p = gWR.GetWeapon( i );
 
-			if( p )
+			if( p && p->iId )
 			{
 				if( gHUD.m_iWeaponBits & ( 1 << p->iId ) )
 					gWR.PickupWeapon( p );
@@ -673,10 +676,11 @@ int CHudAmmo::MsgFunc_WeaponList( const char *pszName, int iSize, void *pbuf )
 // Slot button pressed
 void CHudAmmo::SlotInput( int iSlot )
 {
+#if USE_VGUI
 	// Let the Viewport use it first, for menus
-//	if( gViewPort && gViewPort->SlotInput( iSlot ) )
-//		return;
-
+	if( gViewPort && gViewPort->SlotInput( iSlot ) )
+		return;
+#endif
 	gWR.SelectSlot(iSlot, FALSE, 1);
 }
 
@@ -861,10 +865,10 @@ int CHudAmmo::Draw( float flTime )
 
 	AmmoWidth = gHUD.GetSpriteRect( gHUD.m_HUD_number_0 ).right - gHUD.GetSpriteRect( gHUD.m_HUD_number_0 ).left;
 
-	a = (int)max( MIN_ALPHA, m_fFade );
+	a = (int)Q_max( MIN_ALPHA, m_fFade );
 
 	if( m_fFade > 0 )
-		m_fFade -= ( gHUD.m_flTimeDelta * 20 );
+		m_fFade -= ( (float)gHUD.m_flTimeDelta * 20.0f );
 
 	UnpackRGB( r, g, b, RGB_YELLOWISH );
 

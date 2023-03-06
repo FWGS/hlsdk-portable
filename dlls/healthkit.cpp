@@ -22,6 +22,7 @@
 #include "player.h"
 #include "items.h"
 #include "gamerules.h"
+#include "game.h"
 
 extern int gmsgItemPickup;
 
@@ -126,7 +127,7 @@ TYPEDESCRIPTION CWallHealth::m_SaveData[] =
 	DEFINE_FIELD( CWallHealth, m_flSoundTime, FIELD_TIME ),
 };
 
-IMPLEMENT_SAVERESTORE( CWallHealth, CBaseEntity )
+IMPLEMENT_SAVERESTORE( CWallHealth, CBaseToggle )
 
 LINK_ENTITY_TO_CLASS( func_healthcharger, CWallHealth )
 
@@ -187,17 +188,17 @@ void CWallHealth::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE u
 	}
 
 	// if the player doesn't have the suit, or there is no juice left, make the deny noise
-	if( ( m_iJuice <= 0 ) || ( !( pActivator->pev->weapons & ( 1 << WEAPON_SUIT ) ) ) )
+	if( ( m_iJuice <= 0 ) || ( !( pActivator->pev->weapons & ( 1 << WEAPON_SUIT ) ) ) || ( ( chargerfix.value ) && ( pActivator->pev->health >= pActivator->pev->max_health ) ) )
 	{
 		if( m_flSoundTime <= gpGlobals->time )
 		{
-			m_flSoundTime = gpGlobals->time + 0.62;
+			m_flSoundTime = gpGlobals->time + 0.62f;
 			EMIT_SOUND( ENT( pev ), CHAN_ITEM, "items/medshotno1.wav", 1.0, ATTN_NORM );
 		}
 		return;
 	}
 
-	pev->nextthink = pev->ltime + 0.25;
+	pev->nextthink = pev->ltime + 0.25f;
 	SetThink( &CWallHealth::Off );
 
 	// Time to recharge yet?
@@ -209,7 +210,7 @@ void CWallHealth::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE u
 	{
 		m_iOn++;
 		EMIT_SOUND( ENT( pev ), CHAN_ITEM, "items/medshot4.wav", 1.0, ATTN_NORM );
-		m_flSoundTime = 0.56 + gpGlobals->time;
+		m_flSoundTime = 0.56f + gpGlobals->time;
 	}
 	if( ( m_iOn == 1 ) && ( m_flSoundTime <= gpGlobals->time ) )
 	{
@@ -224,7 +225,7 @@ void CWallHealth::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE u
 	}
 
 	// govern the rate of charge
-	m_flNextCharge = gpGlobals->time + 0.1;
+	m_flNextCharge = gpGlobals->time + 0.1f;
 }
 
 void CWallHealth::Recharge( void )

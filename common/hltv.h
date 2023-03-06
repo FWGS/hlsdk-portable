@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef HLTV_H
+#if !defined(HLTV_H)
 #define HLTV_H
 
 #define TYPE_CLIENT			0	// client is a normal HL client (default)

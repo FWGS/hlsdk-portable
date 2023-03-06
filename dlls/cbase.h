@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef CBASE_H
+#if !defined(CBASE_H)
 #define CBASE_H
 /*
 
@@ -48,7 +48,7 @@ CBaseEntity
 #include "saverestore.h"
 #include "schedule.h"
 
-#ifndef MONSTEREVENT_H
+#if !defined(MONSTEREVENT_H)
 #include "monsterevent.h"
 #endif
 
@@ -58,7 +58,6 @@ CBaseEntity
 
 extern "C" EXPORT int GetEntityAPI( DLL_FUNCTIONS *pFunctionTable, int interfaceVersion );
 extern "C" EXPORT int GetEntityAPI2( DLL_FUNCTIONS *pFunctionTable, int *interfaceVersion );
-extern "C" EXPORT int Server_GetPhysicsInterface( int iVersion, server_physics_api_t *pfuncsFromEngine, physics_interface_t *pFunctionTable );
 
 extern int DispatchSpawn( edict_t *pent );
 extern void DispatchKeyValue( edict_t *pentKeyvalue, KeyValueData *pkvd );
@@ -194,7 +193,7 @@ public:
 	virtual BOOL IsAlive( void ) { return (pev->deadflag == DEAD_NO) && pev->health > 0; }
 	virtual BOOL IsBSPModel( void ) { return pev->solid == SOLID_BSP || pev->movetype == MOVETYPE_PUSHSTEP; }
 	virtual BOOL ReflectGauss( void ) { return ( IsBSPModel() && !pev->takedamage ); }
-	virtual BOOL HasTarget( string_t targetname ) { return FStrEq(STRING(targetname), STRING(pev->targetname) ); }
+	virtual BOOL HasTarget( string_t targetname ) { return FStrEq(STRING(targetname), STRING(pev->target) ); }
 	virtual BOOL IsInWorld( void );
 	virtual	BOOL IsPlayer( void ) { return FALSE; }
 	virtual BOOL IsNetClient( void ) { return FALSE; }
@@ -280,7 +279,7 @@ public:
 	}
 
 	// Ugly code to lookup all functions to make sure they are exported when set.
-#ifdef _DEBUG
+#if _DEBUG
 	void FunctionCheck( void *pFunction, char *name ) 
 	{ 
 		if( pFunction && !NAME_FOR_FUNCTION( pFunction ) )
@@ -358,12 +357,13 @@ public:
 // Normally it's illegal to cast a pointer to a member function of a derived class to a pointer to a 
 // member function of a base class.  static_cast is a sleezy way around that problem.
 
-#ifdef _DEBUG
+#if _DEBUG
 
 #define SetThink( a ) ThinkSet( static_cast <void (CBaseEntity::*)(void)> (a), #a )
 #define SetTouch( a ) TouchSet( static_cast <void (CBaseEntity::*)(CBaseEntity *)> (a), #a )
 #define SetUse( a ) UseSet( static_cast <void (CBaseEntity::*)(	CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )> (a), #a )
 #define SetBlocked( a ) BlockedSet( static_cast <void (CBaseEntity::*)(CBaseEntity *)> (a), #a )
+#define ResetThink() SetThink(NULL)
 
 #else
 

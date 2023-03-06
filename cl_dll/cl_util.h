@@ -15,12 +15,12 @@
 //
 // cl_util.h
 //
-#ifndef CL_UTIL_H
+#if !defined(CL_UTIL_H)
 #define CL_UTIL_H
 #include "exportdef.h"
 #include "cvardef.h"
 
-#ifndef TRUE
+#if !defined(TRUE)
 #define TRUE 1
 #define FALSE 0
 #endif
@@ -108,7 +108,8 @@ inline int TextMessageDrawChar( int x, int y, int number, int r, int g, int b )
 inline int DrawConsoleString( int x, int y, const char *string )
 {
 	if( hud_textmode->value == 1 )
-		return gHUD.DrawHudString( x, y, 9999, (char*)string, 255 * g_hud_text_color[0], 255 * g_hud_text_color[1], 255 * g_hud_text_color[2] );
+		return gHUD.DrawHudString( x, y, 9999, (char*)string, (int)( (float)g_hud_text_color[0] * 255.0f ),
+			(int)( (float)g_hud_text_color[1] * 255.0f ), (int)( (float)g_hud_text_color[2] * 255.0f ) );
 	return gEngfuncs.pfnDrawConsoleString( x, y, (char*) string );
 }
 
@@ -148,8 +149,8 @@ inline void CenterPrint( const char *string )
 inline void PlaySound( const char *szSound, float vol ) { gEngfuncs.pfnPlaySoundByName( szSound, vol ); }
 inline void PlaySound( int iSound, float vol ) { gEngfuncs.pfnPlaySoundByIndex( iSound, vol ); }
 
-#define max(a, b)  (((a) > (b)) ? (a) : (b))
-#define min(a, b)  (((a) < (b)) ? (a) : (b))
+#define Q_max(a, b)  (((a) > (b)) ? (a) : (b))
+#define Q_min(a, b)  (((a) < (b)) ? (a) : (b))
 #define fabs(x)	   ((x) > 0 ? (x) : 0 - (x))
 
 void ScaleColors( int &r, int &g, int &b, int a );

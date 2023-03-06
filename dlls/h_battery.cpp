@@ -26,6 +26,8 @@
 #include "saverestore.h"
 #include "skill.h"
 #include "gamerules.h"
+#include "weapons.h"
+#include "game.h"
 
 class CRecharge : public CBaseToggle
 {
@@ -58,7 +60,7 @@ TYPEDESCRIPTION CRecharge::m_SaveData[] =
 	DEFINE_FIELD( CRecharge, m_flSoundTime, FIELD_TIME ),
 };
 
-IMPLEMENT_SAVERESTORE( CRecharge, CBaseEntity )
+IMPLEMENT_SAVERESTORE( CRecharge, CBaseToggle )
 
 LINK_ENTITY_TO_CLASS( func_recharge, CRecharge )
 
@@ -104,8 +106,12 @@ void CRecharge::Precache()
 
 void CRecharge::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 { 
+	// Make sure that we have a caller
+	if( !pActivator )
+		return;
+
 	// if it's not a player, ignore
-	if( !FClassnameIs( pActivator->pev, "player" ) )
+	if( !pActivator->IsPlayer() )
 		return;
 
 	// if there is no juice left, turn it off
@@ -116,40 +122,33 @@ void CRecharge::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE use
 	}
 
 	// if the player doesn't have the suit, or there is no juice left, make the deny noise
-	if( ( m_iJuice <= 0 ) || ( !( pActivator->pev->weapons & ( 1 << WEAPON_SUIT ) ) ) )
+	if( ( m_iJuice <= 0 ) || ( !( pActivator->pev->weapons & ( 1 << WEAPON_SUIT ) ) ) || ( ( chargerfix.value ) && ( pActivator->pev->armorvalue == MAX_NORMAL_BATTERY ) ) )
 	{
 		if( m_flSoundTime <= gpGlobals->time )
 		{
-			m_flSoundTime = gpGlobals->time + 0.62;
+			m_flSoundTime = gpGlobals->time + 0.62f;
 			EMIT_SOUND( ENT( pev ), CHAN_ITEM, "items/suitchargeno1.wav", 0.85, ATTN_NORM );
 		}
 		return;
 	}
 
-	pev->nextthink = pev->ltime + 0.25;
+	pev->nextthink = pev->ltime + 0.25f;
 	SetThink( &CRecharge::Off );
 
 	// Time to recharge yet?
 	if( m_flNextCharge >= gpGlobals->time )
 		return;
 
-	// Make sure that we have a caller
-	if( !pActivator )
-		return;
-
 	m_hActivator = pActivator;
 
-	//only recharge the player
-	if( !m_hActivator->IsPlayer() )
-		return;
-	
 	// Play the on sound or the looping charging sound
 	if( !m_iOn )
 	{
 		m_iOn++;
 		EMIT_SOUND( ENT( pev ), CHAN_ITEM, "items/suitchargeok1.wav", 0.85, ATTN_NORM );
-		m_flSoundTime = 0.56 + gpGlobals->time;
+		m_flSoundTime = 0.56f + gpGlobals->time;
 	}
+
 	if( ( m_iOn == 1 ) && ( m_flSoundTime <= gpGlobals->time ) )
 	{
 		m_iOn++;
@@ -167,7 +166,7 @@ void CRecharge::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE use
 	}
 
 	// govern the rate of charge
-	m_flNextCharge = gpGlobals->time + 0.1;
+	m_flNextCharge = gpGlobals->time + 0.1f;
 }
 
 void CRecharge::Recharge( void )

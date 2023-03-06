@@ -16,8 +16,8 @@
 // nodes.h
 //=========================================================
 #pragma once
-#ifndef		NODES_H
-#define		NODES_H
+#if !defined(NODES_H)
+#define NODES_H
 //=========================================================
 // DEFINE
 //=========================================================
@@ -105,11 +105,14 @@ typedef struct
 //=========================================================
 // CGraph 
 //=========================================================
-#ifdef XASH_64BIT
-#define	GRAPH_VERSION	(int)16 * 10
+#define _GRAPH_VERSION_RETAIL 16 // Retail Half-Life graph version. Don't increment this
+#if XASH_64BIT
+#define	_GRAPH_VERSION	(16 * 10)
 #else
-#define	GRAPH_VERSION	(int)16// !!!increment this whever graph/node/link classes change, to obsolesce older disk files.
+#define	_GRAPH_VERSION	(16) // !!!increment this whenever graph/node/link classes change, to obsolesce older disk files.
 #endif
+#define GRAPH_VERSION (int)_GRAPH_VERSION
+#define GRAPH_VERSION_RETAIL (int)_GRAPH_VERSION_RETAIL
 
 class CGraph
 {
@@ -212,7 +215,7 @@ public:
 
 	inline	CNode &Node( int i )
 	{
-#ifdef _DEBUG
+#if _DEBUG
 		if ( !m_pNodes || i < 0 || i > m_cNodes )
 			ALERT( at_error, "Bad Node!\n" );
 #endif
@@ -221,7 +224,7 @@ public:
 
 	inline	CLink &Link( int i )
 	{
-#ifdef _DEBUG
+#if _DEBUG
 		if ( !m_pLinkPool || i < 0 || i > m_cLinks )
 			ALERT( at_error, "Bad link!\n" );
 #endif

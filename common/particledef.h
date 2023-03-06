@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef PARTICLEDEF_H
+#if !defined(PARTICLEDEF_H)
 #define PARTICLEDEF_H
 
 typedef enum

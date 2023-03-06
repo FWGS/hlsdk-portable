@@ -1,0 +1,132 @@
+#! /usr/bin/env python
+# encoding: utf-8
+# a1batross, mittorn, 2018
+
+from waflib import Utils
+import os
+
+def options(opt):
+	# stub
+	return
+
+def configure(conf):
+	if conf.env.DEST_OS == 'win32':
+		conf.check_cxx(lib='user32')
+
+	if conf.env.GOLDSRC:
+		if conf.env.DEST_OS == 'win32':
+			conf.check_cxx(lib='winmm')
+		else:
+			conf.check_cc(lib='dl')
+
+def build(bld):
+	source = bld.path.parent.ant_glob([
+		'pm_shared/*.c'
+	])
+	source += bld.path.ant_glob([
+		'hl/*.cpp'
+	])
+	source += bld.path.parent.ant_glob([
+		'dlls/crossbow.cpp',
+		'dlls/crowbar.cpp',
+		'dlls/egon.cpp',
+		'dlls/gauss.cpp',
+		'dlls/glock.cpp',
+		'dlls/handgrenade.cpp',
+		'dlls/hornetgun.cpp',
+		'dlls/mp5.cpp',
+		'dlls/python.cpp',
+		'dlls/rpg.cpp',
+		'dlls/satchel.cpp',
+		'dlls/shotgun.cpp',
+		'dlls/squeakgrenade.cpp',
+		'dlls/tripmine.cpp'
+	])
+	source += [
+		'GameStudioModelRenderer.cpp',
+		'MOTD.cpp',
+		'StudioModelRenderer.cpp',
+		'ammo.cpp',
+		'ammo_secondary.cpp',
+		'ammohistory.cpp',
+		'battery.cpp',
+		'cdll_int.cpp',
+		'com_weapons.cpp',
+		'death.cpp',
+		'demo.cpp',
+		'entity.cpp',
+		'ev_hldm.cpp',
+		'ev_common.cpp',
+		'events.cpp',
+		'flashlight.cpp',
+		'geiger.cpp',
+		'health.cpp',
+		'hud.cpp',
+		'hud_msg.cpp',
+		'hud_redraw.cpp',
+		'hud_spectator.cpp',
+		'hud_update.cpp',
+		'in_camera.cpp',
+		'input.cpp',
+		'input_goldsource.cpp',
+		'input_mouse.cpp',
+		'input_xash3d.cpp',
+		'menu.cpp',
+		'message.cpp',
+		'parsemsg.cpp',
+		'saytext.cpp',
+		'scoreboard.cpp',
+		'status_icons.cpp',
+		'statusbar.cpp',
+		'studio_util.cpp',
+		'text_message.cpp',
+		'train.cpp',
+		'tri.cpp',
+		'util.cpp',
+		'view.cpp'
+	]
+
+	includes = [
+		'.',
+		'hl/',
+		'../dlls',
+		'../common',
+		'../engine',
+		'../pm_shared',
+		'../game_shared',
+		'../public',
+		'../utils/fake_vgui/include'
+	]
+
+	defines = ['CLIENT_DLL']
+	if bld.env.GOLDSRC:
+		defines += ['GOLDSOURCE_SUPPORT']
+
+	libs = []
+	if bld.env.DEST_OS == 'win32':
+		libs += ["USER32"]
+
+	if bld.env.GOLDSRC:
+		if bld.env.DEST_OS == 'win32':
+			libs += ["WINMM"]
+		else:
+			libs += ['DL']
+
+	if bld.env.DEST_OS not in ['android', 'dos']:
+		install_path = os.path.join(bld.env.GAMEDIR, bld.env.CLIENT_DIR)
+	else:
+		install_path = bld.env.PREFIX
+
+	bld.shlib(
+		source   = source,
+		target   = 'client' + bld.env.POSTFIX,
+		name     = 'client',
+		features = 'c cxx',
+		includes = includes,
+		defines  = defines,
+		use      = libs,
+		install_path = install_path,
+		subsystem = bld.env.MSVC_SUBSYSTEM,
+		idx      = bld.get_taskgen_count()
+	)
+

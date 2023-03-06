@@ -10,7 +10,7 @@
 *.dll
 *.pdb
 build/
-CMakeLists.txt.user
+CMakeLists.txt.*
 cmake_install.cmake
 *.orig
 *.cbp
@@ -18,3 +18,15 @@ cmake_install.cmake
 *.vsxproj
 *.vsproj
 *.sln
+.waf-*
+waf-*
+.waf3-*
+waf3-*
+.lock*
+*.pyc
+.vscode/
+.vs/
+CMakeSettings.json
+CMakeFiles
+CMakeCache.txt
+Makefile

@@ -44,7 +44,8 @@ CHalfLifeTeamplay::CHalfLifeTeamplay()
 	m_szTeamList[0] = 0;
 
 	// Cache this because the team code doesn't want to deal with changing this in the middle of a game
-	strncpy( m_szTeamList, teamlist.string, TEAMPLAY_TEAMLISTLENGTH );
+	strncpy( m_szTeamList, teamlist.string, TEAMPLAY_TEAMLISTLENGTH - 1 );
+	m_szTeamList[TEAMPLAY_TEAMLISTLENGTH - 1] = '\0';
 
 	edict_t *pWorld = INDEXENT( 0 );
 	if( pWorld && pWorld->v.team )
@@ -52,14 +53,15 @@ CHalfLifeTeamplay::CHalfLifeTeamplay()
 		if( teamoverride.value )
 		{
 			const char *pTeamList = STRING( pWorld->v.team );
-			if( pTeamList && strlen( pTeamList ) )
+			if( pTeamList && pTeamList[0] != '\0' )
 			{
-				strncpy( m_szTeamList, pTeamList, TEAMPLAY_TEAMLISTLENGTH );
+				strncpy( m_szTeamList, pTeamList, TEAMPLAY_TEAMLISTLENGTH - 1 );
+				m_szTeamList[TEAMPLAY_TEAMLISTLENGTH - 1] = '\0';
 			}
 		}
 	}
 	// Has the server set teams
-	if( strlen( m_szTeamList ) )
+	if( m_szTeamList[0] != '\0' )
 		m_teamLimit = TRUE;
 	else
 		m_teamLimit = FALSE;
@@ -69,7 +71,7 @@ CHalfLifeTeamplay::CHalfLifeTeamplay()
 
 extern cvar_t timeleft, fragsleft;
 
-#ifndef NO_VOICEGAMEMGR
+#if !NO_VOICEGAMEMGR
 #include "voice_gamemgr.h"
 extern CVoiceGameMgr g_VoiceGameMgr;
 #endif
@@ -82,7 +84,7 @@ void CHalfLifeTeamplay::Think( void )
 	int frags_remaining = 0;
 	int time_remaining = 0;
 
-#ifndef NO_VOICEGAMEMGR
+#if !NO_VOICEGAMEMGR
 	g_VoiceGameMgr.Update(gpGlobals->frametime);
 #endif
 	if( g_fGameOver )   // someone else quit the game already
@@ -148,7 +150,7 @@ void CHalfLifeTeamplay::Think( void )
 //=========================================================
 BOOL CHalfLifeTeamplay::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 {
-#ifndef NO_VOICEGAMEMGR
+#if !NO_VOICEGAMEMGR
 	if( g_VoiceGameMgr.ClientCommand( pPlayer, pcmd ) )
 		return TRUE;
 #endif
@@ -183,7 +185,8 @@ const char *CHalfLifeTeamplay::SetDefaultPlayerTeam( CBasePlayer *pPlayer )
 {
 	// copy out the team name from the model
 	char *mdls = g_engfuncs.pfnInfoKeyValue( g_engfuncs.pfnGetInfoKeyBuffer( pPlayer->edict() ), "model" );
-	strncpy( pPlayer->m_szTeamName, mdls, TEAM_NAME_LENGTH );
+	strncpy( pPlayer->m_szTeamName, mdls, TEAM_NAME_LENGTH - 1 );
+	pPlayer->m_szTeamName[TEAM_NAME_LENGTH - 1] = '\0';
 
 	RecountTeams();
 
@@ -200,7 +203,8 @@ const char *CHalfLifeTeamplay::SetDefaultPlayerTeam( CBasePlayer *pPlayer )
 		{
 			pTeamName = TeamWithFewestPlayers();
 		}
-		strncpy( pPlayer->m_szTeamName, pTeamName, TEAM_NAME_LENGTH );
+		strncpy( pPlayer->m_szTeamName, pTeamName, TEAM_NAME_LENGTH - 1 );
+		pPlayer->m_szTeamName[TEAM_NAME_LENGTH - 1] = '\0';
 	}
 
 	return pPlayer->m_szTeamName;
@@ -287,8 +291,10 @@ void CHalfLifeTeamplay::ChangePlayerTeam( CBasePlayer *pPlayer, const char *pTea
 
 	// copy out the team name from the model
 	if( pPlayer->m_szTeamName != pTeamName )
-		strncpy( pPlayer->m_szTeamName, pTeamName, TEAM_NAME_LENGTH );
-
+	{
+		strncpy( pPlayer->m_szTeamName, pTeamName, TEAM_NAME_LENGTH - 1 );
+		pPlayer->m_szTeamName[TEAM_NAME_LENGTH - 1] = '\0';
+	}
 	g_engfuncs.pfnSetClientKeyValue( clientIndex, g_engfuncs.pfnGetInfoKeyBuffer( pPlayer->edict() ), "model", pPlayer->m_szTeamName );
 	g_engfuncs.pfnSetClientKeyValue( clientIndex, g_engfuncs.pfnGetInfoKeyBuffer( pPlayer->edict() ), "team", pPlayer->m_szTeamName );
 
@@ -357,6 +363,8 @@ void CHalfLifeTeamplay::ClientUserInfoChanged( CBasePlayer *pPlayer, char *infob
 
 	// recound stuff
 	RecountTeams( TRUE );
+
+	pPlayer->SetPrefsFromUserinfo( infobuffer );
 }
 
 extern int gmsgDeathMsg;
@@ -601,7 +609,8 @@ void CHalfLifeTeamplay::RecountTeams( bool bResendInfo )
 					tm = num_teams;
 					num_teams++;
 					team_scores[tm] = 0;
-					strncpy( team_names[tm], pTeamName, MAX_TEAMNAME_LENGTH );
+					strncpy( team_names[tm], pTeamName, MAX_TEAMNAME_LENGTH - 1 );
+					team_names[tm][MAX_TEAMNAME_LENGTH - 1] = '\0';
 				}
 			}
 

@@ -9,6 +9,10 @@
 #include "cl_util.h"
 #include "cl_entity.h"
 #include "triangleapi.h"
+#if USE_VGUI
+#include "vgui_TeamFortressViewport.h"
+#include "vgui_SpectatorPanel.h"
+#endif
 #include "hltv.h"
 
 #include "pm_shared.h"
@@ -69,15 +73,23 @@ void SpectatorSpray( void )
 	VectorScale( forward, 128, forward );
 	VectorAdd( forward, v_origin, forward );
 	pmtrace_t * trace = gEngfuncs.PM_TraceLine( v_origin, forward, PM_TRACELINE_PHYSENTSONLY, 2, -1 );
-	if( trace->fraction != 1.0 )
+	if( trace->fraction != 1.0f )
 	{
 		sprintf( string, "drc_spray %.2f %.2f %.2f %i",
-			trace->endpos[0], trace->endpos[1], trace->endpos[2], trace->ent );
+			(double)trace->endpos[0], (double)trace->endpos[1], (double)trace->endpos[2], trace->ent );
 		gEngfuncs.pfnServerCmd( string );
 	}
 }
+
 void SpectatorHelp( void )
 {
+#if USE_VGUI
+	if( gViewPort )
+	{
+		gViewPort->ShowVGUIMenu( MENU_SPECHELP );
+	}
+	else
+#endif
 	{
   		char *text = CHudTextMessage::BufferedLocaliseTextString( "#Spec_Help_Text" );
 
@@ -100,10 +112,33 @@ void SpectatorMenu( void )
 		gEngfuncs.Con_Printf( "usage:  spec_menu <0|1>\n" );
 		return;
 	}
+
+#if USE_VGUI
+	gViewPort->m_pSpectatorPanel->ShowMenu( atoi( gEngfuncs.Cmd_Argv( 1 ) ) != 0 );
+#endif
 }
 
 void ToggleScores( void )
 {
+#if USE_VGUI && !USE_NOVGUI_SCOREBOARD
+	if( gViewPort )
+	{
+		if( gViewPort->IsScoreBoardVisible() )
+		{
+			gViewPort->HideScoreBoard();
+		}
+		else
+		{
+			gViewPort->ShowScoreBoard();
+		}
+	}
+#else
+	if (gHUD.m_Scoreboard.m_iShowscoresHeld) {
+		gHUD.m_Scoreboard.UserCmd_HideScores();
+	} else {
+		gHUD.m_Scoreboard.UserCmd_ShowScores();
+	}
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -355,7 +390,7 @@ int CHudSpectator::Draw( float flTime )
 	int lx;
 
 	char string[256];
-	float * color;
+	float *color;
 
 	// draw only in spectator mode
 	if( !g_iUser1 )
@@ -392,8 +427,7 @@ int CHudSpectator::Draw( float flTime )
 		return 1;
 
 	// make sure we have player info
-	//gViewPort->GetAllPlayersInfo();
-	gHUD.m_Scoreboard.GetAllPlayersInfo();
+	gHUD.GetAllPlayersInfo();
 
 	// loop through all the players and draw additional infos to their sprites on the map
 	for( int i = 0; i < MAX_PLAYERS; i++ )
@@ -414,12 +448,12 @@ int CHudSpectator::Draw( float flTime )
 		color = GetClientColor( i + 1 );
 
 		// draw the players name and health underneath
-		sprintf( string, "%s", g_PlayerInfoList[i + 1].name );
+		strcpy( string, g_PlayerInfoList[i + 1].name );
 
 		lx = strlen( string ) * 3; // 3 is avg. character length :)
 
 		DrawSetTextColor( color[0], color[1], color[2] );
-		DrawConsoleString( m_vPlayerPos[i][0] - lx,m_vPlayerPos[i][1], string );		
+		DrawConsoleString( m_vPlayerPos[i][0] - lx,m_vPlayerPos[i][1], string );
 	}
 
 	return 1;
@@ -503,7 +537,7 @@ void CHudSpectator::DirectorMessage( int iSize, void *pbuf )
 				msg->holdtime = READ_FLOAT();	// holdtime
 				msg->fxtime = READ_FLOAT();	// fxtime;
 
-				strncpy( m_HUDMessageText[m_lastHudMessage], READ_STRING(), 128 );
+				strncpy( m_HUDMessageText[m_lastHudMessage], READ_STRING(), 127 );
 				m_HUDMessageText[m_lastHudMessage][127] = 0;	// text 
 
 				msg->pMessage = m_HUDMessageText[m_lastHudMessage];
@@ -529,14 +563,21 @@ void CHudSpectator::DirectorMessage( int iSize, void *pbuf )
 			READ_LONG(); // total number of spectator slots
 			m_iSpectatorNumber = READ_LONG(); // total number of spectator
 			READ_WORD(); // total number of relay proxies
+#if USE_VGUI
+			gViewPort->UpdateSpectatorPanel();
+#endif
 			break;
 		case DRC_CMD_BANNER:
 			// gEngfuncs.Con_DPrintf( "GUI: Banner %s\n",READ_STRING() ); // name of banner tga eg gfx/temp/7454562234563475.tga
+#if USE_VGUI
+			gViewPort->m_pSpectatorPanel->m_TopBanner->LoadImage( READ_STRING() );
+			gViewPort->UpdateSpectatorPanel();
+#endif
 			break;
 		case DRC_CMD_FADE:
 			break;
 		case DRC_CMD_STUFFTEXT:
-			ClientCmd( READ_STRING() );
+			gEngfuncs.pfnFilteredClientCmd( READ_STRING() );
 			break;
 		default:
 			gEngfuncs.Con_DPrintf( "CHudSpectator::DirectorMessage: unknown command %i.\n", cmd );
@@ -573,8 +614,7 @@ void CHudSpectator::FindNextPlayer( bool bReverse )
 	int iDir = bReverse ? -1 : 1; 
 
 	// make sure we have player info
-	//gViewPort->GetAllPlayersInfo();
-	gHUD.m_Scoreboard.GetAllPlayersInfo();
+	gHUD.GetAllPlayersInfo();
 
 	do
 	{
@@ -611,6 +651,68 @@ void CHudSpectator::FindNextPlayer( bool bReverse )
 		VectorCopy( pEnt->angles, vJumpAngles );
 	}
 	iJumpSpectator = 1;
+#if USE_VGUI
+	gViewPort->MsgFunc_ResetFade( NULL, 0, NULL );
+#endif
+}
+
+void CHudSpectator::FindPlayer(const char *name)
+{
+	// MOD AUTHORS: Modify the logic of this function if you want to restrict the observer to watching
+	//				only a subset of the players. e.g. Make it check the target's team.
+
+	// if we are NOT in HLTV mode, spectator targets are set on server
+	if ( !gEngfuncs.IsSpectateOnly() )
+	{
+		char cmdstring[32];
+		// forward command to server
+		sprintf(cmdstring,"follow %s",name);
+		gEngfuncs.pfnServerCmd(cmdstring);
+		return;
+	}
+
+	g_iUser2 = 0;
+
+	// make sure we have player info
+	gHUD.GetAllPlayersInfo();
+
+	cl_entity_t * pEnt = NULL;
+
+	for (int i = 1; i < MAX_PLAYERS; i++ )
+	{
+
+		pEnt = gEngfuncs.GetEntityByIndex( i );
+
+		if ( !IsActivePlayer( pEnt ) )
+		continue;
+
+		if(!stricmp(g_PlayerInfoList[pEnt->index].name,name))
+		{
+			g_iUser2 = i;
+			break;
+		}
+
+	}
+
+	// Did we find a target?
+	if ( !g_iUser2 )
+	{
+		gEngfuncs.Con_DPrintf( "No observer targets.\n" );
+		// take save camera position
+		VectorCopy(m_cameraOrigin, vJumpOrigin);
+		VectorCopy(m_cameraAngles, vJumpAngles);
+	}
+	else
+	{
+		// use new entity position for roaming
+		VectorCopy ( pEnt->origin, vJumpOrigin );
+		VectorCopy ( pEnt->angles, vJumpAngles );
+	}
+
+	iJumpSpectator = 1;
+#if USE_VGUI
+	gViewPort->MsgFunc_ResetFade( NULL, 0, NULL );
+#endif
 }
 
 void CHudSpectator::HandleButtonsDown( int ButtonPressed )
@@ -621,6 +723,11 @@ void CHudSpectator::HandleButtonsDown( int ButtonPressed )
 	int newInsetMode = m_pip->value;
 
 	// gEngfuncs.Con_Printf( " HandleButtons:%i\n", ButtonPressed );
+
+#if USE_VGUI
+	if( !gViewPort )
+		return;
+#endif
 
 	//Not in intermission.
 	if( gHUD.m_iIntermission )
@@ -637,8 +744,10 @@ void CHudSpectator::HandleButtonsDown( int ButtonPressed )
 		return;
 
 	// enable spectator screen
-	//if( ButtonPressed & IN_DUCK )
-	//	gViewPort->m_pSpectatorPanel->ShowMenu( !gViewPort->m_pSpectatorPanel->m_menuVisible );
+#if USE_VGUI
+	if( ButtonPressed & IN_DUCK )
+		gViewPort->m_pSpectatorPanel->ShowMenu( !gViewPort->m_pSpectatorPanel->m_menuVisible );
+#endif
 
 	//  'Use' changes inset window mode
 	if( ButtonPressed & IN_USE )
@@ -705,6 +814,14 @@ void CHudSpectator::HandleButtonsDown( int ButtonPressed )
 
 void CHudSpectator::HandleButtonsUp( int ButtonPressed )
 {
+#if USE_VGUI
+	if( !gViewPort )
+		return;
+
+	if( !gViewPort->m_pSpectatorPanel->isVisible() )
+		return; // dont do anything if not in spectator mode
+#endif
+
 	if( ButtonPressed & ( IN_FORWARD | IN_BACK ) )
 		m_zoomDelta = 0.0f;
 
@@ -800,12 +917,19 @@ void CHudSpectator::SetModes( int iNewMainMode, int iNewInsetMode )
 			SetCrosshair( 0, m_crosshairRect, 0, 0, 0 );
 		}
 
+#if USE_VGUI
+		gViewPort->MsgFunc_ResetFade( NULL, 0, NULL );
+#endif
+
 		char string[128];
 		sprintf( string, "#Spec_Mode%d", g_iUser1 );
 		sprintf( string, "%c%s", HUD_PRINTCENTER, CHudTextMessage::BufferedLocaliseTextString( string ) );
 		gHUD.m_TextMessage.MsgFunc_TextMsg( NULL, strlen( string ) + 1, string );
 	}
 
+#if USE_VGUI
+	gViewPort->UpdateSpectatorPanel();
+#endif
 }
 
 bool CHudSpectator::IsActivePlayer( cl_entity_t *ent )
@@ -820,12 +944,13 @@ bool CHudSpectator::IsActivePlayer( cl_entity_t *ent )
 
 bool CHudSpectator::ParseOverviewFile()
 {
-	char filename[255] = { 0 };
-	char levelname[255] = { 0 };
+	char filename[512] = { 0 };
+	char levelname[256] = { 0 };
 	char token[1024] = { 0 };
 	float height;
+	bool ret = false;
 
-	char *pfile  = NULL;
+	char *afile = NULL, *pfile = NULL;
 
 	memset( &m_OverviewData, 0, sizeof(m_OverviewData) );
 
@@ -842,20 +967,20 @@ bool CHudSpectator::ParseOverviewFile()
 	m_OverviewData.layersHeights[0] = 0.0f;
 	strcpy( m_OverviewData.map, gEngfuncs.pfnGetLevelName() );
 
-	if( strlen( m_OverviewData.map ) == 0 )
-		return false; // not active yet
+	if( m_OverviewData.map[0] == '\0' )
+		return ret; // not active yet
 
 	strcpy( levelname, m_OverviewData.map + 5 );
 	levelname[strlen( levelname ) - 4] = 0;
 
 	sprintf( filename, "overviews/%s.txt", levelname );
 
-	pfile = (char *)gEngfuncs.COM_LoadFile( filename, 5, NULL );
+	afile = pfile = (char *)gEngfuncs.COM_LoadFile( filename, 5, NULL );
 
 	if( !pfile )
 	{
 		gEngfuncs.Con_DPrintf( "Couldn't open file %s. Using default values for overiew mode.\n", filename );
-		return false;
+		return ret;
 	}
 
 	while( true )
@@ -872,7 +997,7 @@ bool CHudSpectator::ParseOverviewFile()
 			if( stricmp( token, "{" ) ) 
 			{
 				gEngfuncs.Con_Printf( "Error parsing overview file %s. (expected { )\n", filename );
-				return false;
+				goto end;
 			}
 
 			pfile = gEngfuncs.COM_ParseFile( pfile, token );
@@ -912,7 +1037,7 @@ bool CHudSpectator::ParseOverviewFile()
 				else
 				{
 					gEngfuncs.Con_Printf( "Error parsing overview file %s. (%s unkown)\n", filename, token );
-					return false;
+					goto end;
 				}
 
 				pfile = gEngfuncs.COM_ParseFile( pfile, token ); // parse next token
@@ -924,7 +1049,7 @@ bool CHudSpectator::ParseOverviewFile()
 			if( m_OverviewData.layers == OVERVIEW_MAX_LAYERS )
 			{
 				gEngfuncs.Con_Printf( "Error parsing overview file %s. ( too many layers )\n", filename );
-				return false;
+				goto end;
 			}
 
 			pfile = gEngfuncs.COM_ParseFile( pfile, token );
@@ -932,7 +1057,7 @@ bool CHudSpectator::ParseOverviewFile()
 			if( stricmp( token, "{" ) ) 
 			{
 				gEngfuncs.Con_Printf( "Error parsing overview file %s. (expected { )\n", filename );
-				return false;
+				goto end;
 			}
 
 			pfile = gEngfuncs.COM_ParseFile( pfile, token );
@@ -953,7 +1078,7 @@ bool CHudSpectator::ParseOverviewFile()
 				else
 				{
 					gEngfuncs.Con_Printf( "Error parsing overview file %s. (%s unkown)\n", filename, token );
-					return false;
+					goto end;
 				}
 
 				pfile = gEngfuncs.COM_ParseFile( pfile, token ); // parse next token
@@ -963,12 +1088,14 @@ bool CHudSpectator::ParseOverviewFile()
 		}
 	}
 
-	gEngfuncs.COM_FreeFile( pfile );
-
 	m_mapZoom = m_OverviewData.zoom;
 	m_mapOrigin = m_OverviewData.origin;
 
-	return true;
+	ret = true;
+end:
+	gEngfuncs.COM_FreeFile( afile );
+
+	return ret;
 }
 
 void CHudSpectator::LoadMapSprites()
@@ -987,15 +1114,15 @@ void CHudSpectator::DrawOverviewLayer()
 	float screenaspect, xs, ys, xStep, yStep, x, y, z;
 	int ix, iy, i, xTiles, yTiles, frame;
 
-	qboolean	hasMapImage = m_MapSprite?TRUE:FALSE;
-	model_t *   dummySprite = (struct model_s *)gEngfuncs.GetSpritePointer( m_hsprUnkownMap);
+	qboolean	 hasMapImage = m_MapSprite ? TRUE : FALSE;
+	model_t		*dummySprite = (struct model_s *)gEngfuncs.GetSpritePointer( m_hsprUnkownMap );
 
-	if ( hasMapImage)
+	if( hasMapImage )
 	{
-		i = m_MapSprite->numframes / (4*3);
-		i = sqrt(float(i));
-		xTiles = i*4;
-		yTiles = i*3;
+		i = m_MapSprite->numframes / ( 4 * 3 );
+		i = sqrt( float( i ) );
+		xTiles = i * 4;
+		yTiles = i * 3;
 	}
 	else
 	{
@@ -1014,7 +1141,7 @@ void CHudSpectator::DrawOverviewLayer()
 
 	gEngfuncs.pTriAPI->RenderMode( kRenderTransTexture );
 	gEngfuncs.pTriAPI->CullFace( TRI_NONE );
-	gEngfuncs.pTriAPI->Color4f( 1.0, 1.0, 1.0, 1.0 );
+	gEngfuncs.pTriAPI->Color4f( 1.0f, 1.0f, 1.0f, 1.0f );
 
 	frame = 0;
 
@@ -1143,7 +1270,7 @@ void CHudSpectator::DrawOverviewEntities()
 
 		gEngfuncs.pTriAPI->Begin( TRI_QUADS );
 
-		gEngfuncs.pTriAPI->Color4f( 1.0, 1.0, 1.0, 1.0 );
+		gEngfuncs.pTriAPI->Color4f( 1.0f, 1.0f, 1.0f, 1.0f );
 
 		gEngfuncs.pTriAPI->TexCoord2f(1, 0);
 		VectorMA( origin, 16.0f * sizeScale, up, point );
@@ -1183,28 +1310,28 @@ void CHudSpectator::DrawOverviewEntities()
 		hSpriteModel = (struct model_s *)gEngfuncs.GetSpritePointer( m_hsprBeam );
 		gEngfuncs.pTriAPI->SpriteTexture( hSpriteModel, 0 );
 
-		gEngfuncs.pTriAPI->Color4f( r, g, b, 0.3 );
+		gEngfuncs.pTriAPI->Color4f( r, g, b, 0.3f );
 
 		gEngfuncs.pTriAPI->Begin( TRI_QUADS );
-		gEngfuncs.pTriAPI->TexCoord2f( 1, 0 );
-		gEngfuncs.pTriAPI->Vertex3f( origin[0] + 4, origin[1] + 4, origin[2] - zScale );
-		gEngfuncs.pTriAPI->TexCoord2f( 0, 0 );
-		gEngfuncs.pTriAPI->Vertex3f( origin[0] - 4, origin[1] - 4, origin[2] - zScale );
-		gEngfuncs.pTriAPI->TexCoord2f( 0, 1 );
-		gEngfuncs.pTriAPI->Vertex3f( origin[0] - 4, origin[1] - 4, z );
-		gEngfuncs.pTriAPI->TexCoord2f( 1, 1 );
-		gEngfuncs.pTriAPI->Vertex3f( origin[0] + 4, origin[1] + 4, z );
+		gEngfuncs.pTriAPI->TexCoord2f( 1.0f, 0.0f );
+		gEngfuncs.pTriAPI->Vertex3f( origin[0] + 4.0f, origin[1] + 4.0f, origin[2] - zScale );
+		gEngfuncs.pTriAPI->TexCoord2f( 0.0f, 0.0f );
+		gEngfuncs.pTriAPI->Vertex3f( origin[0] - 4.0f, origin[1] - 4.0f, origin[2] - zScale );
+		gEngfuncs.pTriAPI->TexCoord2f( 0.0f, 1.0f );
+		gEngfuncs.pTriAPI->Vertex3f( origin[0] - 4.0f, origin[1] - 4.0f, z );
+		gEngfuncs.pTriAPI->TexCoord2f( 1.0f, 1.0f );
+		gEngfuncs.pTriAPI->Vertex3f( origin[0] + 4.0f, origin[1] + 4.0f, z );
 		gEngfuncs.pTriAPI->End();
 
 		gEngfuncs.pTriAPI->Begin( TRI_QUADS );
-		gEngfuncs.pTriAPI->TexCoord2f( 1, 0 );
-		gEngfuncs.pTriAPI->Vertex3f( origin[0] - 4, origin[1] + 4, origin[2] - zScale );
-		gEngfuncs.pTriAPI->TexCoord2f( 0, 0 );
-		gEngfuncs.pTriAPI->Vertex3f( origin[0] + 4, origin[1] - 4, origin[2] - zScale );
-		gEngfuncs.pTriAPI->TexCoord2f( 0, 1 );
-		gEngfuncs.pTriAPI->Vertex3f( origin[0] + 4, origin[1] - 4, z );
-		gEngfuncs.pTriAPI->TexCoord2f( 1, 1 );
-		gEngfuncs.pTriAPI->Vertex3f( origin[0] - 4, origin[1] + 4, z );
+		gEngfuncs.pTriAPI->TexCoord2f( 1.0f, 0.0f );
+		gEngfuncs.pTriAPI->Vertex3f( origin[0] - 4.0f, origin[1] + 4.0f, origin[2] - zScale );
+		gEngfuncs.pTriAPI->TexCoord2f( 0.0f, 0.0f );
+		gEngfuncs.pTriAPI->Vertex3f( origin[0] + 4.0f, origin[1] - 4.0f, origin[2] - zScale );
+		gEngfuncs.pTriAPI->TexCoord2f( 0.0f, 1.0f );
+		gEngfuncs.pTriAPI->Vertex3f( origin[0] + 4.0f, origin[1] - 4.0f, z );
+		gEngfuncs.pTriAPI->TexCoord2f( 1.0f, 1.0f );
+		gEngfuncs.pTriAPI->Vertex3f( origin[0] - 4.0f, origin[1] + 4.0f, z );
 		gEngfuncs.pTriAPI->End();
 
 		// calculate screen position for name and infromation in hud::draw()
@@ -1265,7 +1392,7 @@ void CHudSpectator::DrawOverviewEntities()
 	gEngfuncs.pTriAPI->RenderMode( kRenderTransAdd );
 	gEngfuncs.pTriAPI->SpriteTexture( hSpriteModel, 0 );
 
-	gEngfuncs.pTriAPI->Color4f( r, g, b, 1.0 );
+	gEngfuncs.pTriAPI->Color4f( r, g, b, 1.0f );
 
 	AngleVectors( angles, forward, NULL, NULL );
 	VectorScale( forward, 512.0f, forward );
@@ -1282,13 +1409,13 @@ void CHudSpectator::DrawOverviewEntities()
 	VectorTransform( forward, rmatrix , left );
 
 	gEngfuncs.pTriAPI->Begin( TRI_TRIANGLES );
-		gEngfuncs.pTriAPI->TexCoord2f( 0, 0 );
+		gEngfuncs.pTriAPI->TexCoord2f( 0.0f, 0.0f );
 		gEngfuncs.pTriAPI->Vertex3f( x + right[0], y + right[1], ( z + right[2] ) * zScale);
 
-		gEngfuncs.pTriAPI->TexCoord2f( 0, 1 );
+		gEngfuncs.pTriAPI->TexCoord2f( 0.0f, 1.0f );
 		gEngfuncs.pTriAPI->Vertex3f( x, y, z * zScale );
 
-		gEngfuncs.pTriAPI->TexCoord2f( 1, 1 );
+		gEngfuncs.pTriAPI->TexCoord2f( 1.0f, 1.0f );
 		gEngfuncs.pTriAPI->Vertex3f( x + left[0], y + left[1], ( z + left[2] ) * zScale );
 	gEngfuncs.pTriAPI->End ();
 }
@@ -1329,7 +1456,7 @@ void CHudSpectator::CheckOverviewEntities()
 bool CHudSpectator::AddOverviewEntity( int type, struct cl_entity_s *ent, const char *modelname)
 {
 	HSPRITE	hSprite = 0;
-	double  duration = -1.0f;	// duration -1 means show it only this frame;
+	double  duration = -1.0;	// duration -1 means show it only this frame;
 
 	if( !ent )
 		return false;
@@ -1451,6 +1578,9 @@ void CHudSpectator::CheckSettings()
 		m_pip->value = INSET_OFF;
 
 	// draw small border around inset view, adjust upper black bar
+#if USE_VGUI
+	gViewPort->m_pSpectatorPanel->EnableInsetView( m_pip->value != INSET_OFF );
+#endif
 }
 
 int CHudSpectator::ToggleInset( bool allowOff )

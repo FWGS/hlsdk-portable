@@ -26,13 +26,17 @@
 #include <string.h>
 #include <stdio.h>
 
+#if !USE_VGUI || USE_NOVGUI_MOTD
 DECLARE_MESSAGE( m_MOTD, MOTD )
+#endif
 
 int CHudMOTD::Init( void )
 {
 	gHUD.AddHudElem( this );
 
+#if !USE_VGUI || USE_NOVGUI_MOTD
 	HOOK_MESSAGE( MOTD );
+#endif
 
 	m_bShow = false;
 
@@ -56,7 +60,7 @@ void CHudMOTD::Reset( void )
 	m_bShow = 0;
 }
 
-#define LINE_HEIGHT  13
+#define LINE_HEIGHT  (gHUD.m_scrinfo.iCharHeight)
 #define ROW_GAP  13
 #define ROW_RANGE_MIN 30
 #define ROW_RANGE_MAX ( ScreenHeight - 100 )
@@ -66,7 +70,7 @@ int CHudMOTD::Draw( float fTime )
 	if( !m_bShow )
 		return 1;
 	gHUD.m_iNoConsolePrint |= 1 << 1;
-	bool bScroll;
+	//bool bScroll;
 	// find the top of where the MOTD should be drawn,  so the whole thing is centered in the screen
 	int ypos = ( ScreenHeight - LINE_HEIGHT * m_iLines ) / 2; // shift it up slightly
 	char *ch = m_szMOTD;
@@ -80,13 +84,13 @@ int CHudMOTD::Draw( float fTime )
 	{
 		ypos = ROW_RANGE_MIN + 7 + scroll;
 		if( ypos  > ROW_RANGE_MIN + 4 )
-			scroll-= ( ypos - ( ROW_RANGE_MIN + 4 ) ) / 3.0;
+			scroll-= ( ypos - ( ROW_RANGE_MIN + 4 ) ) / 3.0f;
 		if( ypos + height < ROW_RANGE_MAX )
-			scroll+= ( ROW_RANGE_MAX - ( ypos + height ) ) / 3.0;
+			scroll+= ( ROW_RANGE_MAX - ( ypos + height ) ) / 3.0f;
 		ypos_r = ROW_RANGE_MIN;
 		height = ROW_RANGE_MAX;
 	}
-	int ymax = ypos + height;
+	// int ymax = ypos + height;
 	if( xmax > ScreenWidth - 30 ) xmax = ScreenWidth - 30;
 	gHUD.DrawDarkRectangle( xpos - 5, ypos_r - 5, xmax - xpos + 10, height + 10 );
 	while( *ch )
@@ -130,7 +134,8 @@ int CHudMOTD::MsgFunc_MOTD( const char *pszName, int iSize, void *pbuf )
 	BEGIN_READ( pbuf, iSize );
 
 	int is_finished = READ_BYTE();
-	strncat( m_szMOTD, READ_STRING(), sizeof(m_szMOTD) - 1 );
+	strncat( m_szMOTD, READ_STRING(), sizeof(m_szMOTD) - strlen(m_szMOTD) - 1 );
+	m_szMOTD[sizeof(m_szMOTD) - 1] = '\0';
 
 	if( is_finished )
 	{
@@ -157,7 +162,7 @@ int CHudMOTD::MsgFunc_MOTD( const char *pszName, int iSize, void *pbuf )
 		if( length > m_iMaxLength )
 		{
 			m_iMaxLength = length;
-			length = 0;
+			// length = 0;
 		}
 		m_bShow = true;
 	}
