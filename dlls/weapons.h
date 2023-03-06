@@ -119,7 +119,6 @@ public:
 //#define CROWBAR_MAX_CLIP		WEAPON_NOCLIP
 #define GLOCK_MAX_CLIP			7
 #define MP5_MAX_CLIP			30
-#define MP5_DEFAULT_AMMO		30
 #define SHOTGUN_MAX_CLIP		8
 #define CROSSBOW_MAX_CLIP		5
 #define RPG_MAX_CLIP			1
@@ -133,7 +132,6 @@ public:
 // the default amount of ammo that comes with each gun when it spawns
 #define GLOCK_DEFAULT_GIVE		7
 #define MP5_DEFAULT_GIVE		30
-#define MP5_DEFAULT_AMMO		30
 #define MP5_M203_DEFAULT_GIVE		0
 #define SHOTGUN_DEFAULT_GIVE		12
 #define CROSSBOW_DEFAULT_GIVE		5
