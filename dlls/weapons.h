@@ -123,7 +123,6 @@ public:
 #define GLOCK_MAX_CLIP			15
 #define PYTHON_MAX_CLIP			6
 #define MP5_MAX_CLIP			30
-#define MP5_DEFAULT_AMMO		30
 #define SHOTGUN_MAX_CLIP		6
 #define CROSSBOW_MAX_CLIP		5
 #define RPG_MAX_CLIP			1
@@ -139,7 +138,6 @@ public:
 #define GLOCK_DEFAULT_GIVE			15
 #define PYTHON_DEFAULT_GIVE			6
 #define MP5_DEFAULT_GIVE			30
-#define MP5_DEFAULT_AMMO			30
 #define MP5_M203_DEFAULT_GIVE		0
 #define SHOTGUN_DEFAULT_GIVE		6
 #define CROSSBOW_DEFAULT_GIVE		5

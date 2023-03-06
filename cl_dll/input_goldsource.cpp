@@ -150,6 +150,7 @@ extern cvar_t *cl_pitchspeed;
 extern cvar_t *cl_movespeedkey;
 
 #if _WIN32
+static cvar_t* m_rawinput = NULL;
 static double s_flRawInputUpdateTime = 0.0f;
 static bool m_bRawInput = false;
 static bool m_bMouseThread = false;
@@ -158,7 +159,6 @@ bool isMouseRelative = false;
 
 #if _WIN32
 #include "progdefs.h"
-extern globalvars_t *gpGlobals;
 #endif
 
 int CL_IsDead( void );
@@ -386,7 +386,7 @@ void IN_SetMouseMode(bool enable)
 		if (mouseparmsvalid)
 			restore_spi = SystemParametersInfo (SPI_SETMOUSE, 0, newmouseparms, 0);
 
-		m_bRawInput = CVAR_GET_FLOAT( "m_rawinput" ) != 0;
+		m_bRawInput = m_rawinput && m_rawinput->value != 0;
 		if(m_bRawInput)
 		{
 #if USE_SDL2
@@ -781,13 +781,14 @@ void GoldSourceInput::IN_GetMouseDelta( int *pOutX, int *pOutY)
 
 #if _WIN32
 		// update m_bRawInput occasionally:
-		if ( gpGlobals && gpGlobals->time - s_flRawInputUpdateTime > 1.0f )
+		const float currentTime = gEngfuncs.GetClientTime();
+		if ( currentTime  - s_flRawInputUpdateTime > 1.0f  || s_flRawInputUpdateTime == 0.0f )
 		{
-			s_flRawInputUpdateTime = gpGlobals->time;
+			s_flRawInputUpdateTime = currentTime;
 
 			bool lockEntered = MouseThread_ActiveLock_Enter();
 
-			m_bRawInput = CVAR_GET_FLOAT( "m_rawinput" ) != 0;
+			m_bRawInput = m_rawinput && m_rawinput->value != 0;
 
 			if(m_bRawInput && !isMouseRelative)
 			{
@@ -1571,7 +1572,8 @@ void GoldSourceInput::IN_Init (void)
 	m_customaccel_exponent	= gEngfuncs.pfnRegisterVariable ( "m_customaccel_exponent", "1", FCVAR_ARCHIVE );
 
 #if _WIN32
-	m_bRawInput			 = CVAR_GET_FLOAT( "m_rawinput" ) != 0;
+	m_rawinput = gEngfuncs.pfnGetCvarPointer("m_rawinput");
+	m_bRawInput			 = m_rawinput && m_rawinput->value != 0;
 	m_bMouseThread		  = gEngfuncs.CheckParm ("-mousethread", NULL ) != NULL;
 	m_mousethread_sleep	 = gEngfuncs.pfnRegisterVariable ( "m_mousethread_sleep", "1", FCVAR_ARCHIVE ); // default to less than 1000 Hz
 
