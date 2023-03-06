@@ -100,7 +100,6 @@ public:
 // the default amount of ammo that comes with each gun when it spawns
 #define GLOCK_DEFAULT_GIVE		17
 #define MP5_DEFAULT_GIVE		25
-#define MP5_DEFAULT_AMMO		25
 #define SHOTGUN_DEFAULT_GIVE		2
 
 // The amount of ammo given to a player by an ammo item.
