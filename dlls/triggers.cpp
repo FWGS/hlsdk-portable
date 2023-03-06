@@ -1365,6 +1365,7 @@ public:
 
 	int m_iszAmtFactor;
 };
+LINK_ENTITY_TO_CLASS( render_fader, CRenderFxFader )
 
 TYPEDESCRIPTION	CRenderFxFader::m_SaveData[] = 
 {
@@ -1385,6 +1386,7 @@ IMPLEMENT_SAVERESTORE(CRenderFxFader,CBaseEntity);
 void CRenderFxFader :: Spawn( void )
 {
 	SetThink(&CRenderFxFader :: FadeThink );
+	pev->classname = MAKE_STRING("render_fader");
 }
 
 void CRenderFxFader :: FadeThink( void )
@@ -4566,6 +4568,7 @@ void CTriggerMotion::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYP
 class CMotionThread : public CPointEntity
 {
 public:
+	void Spawn();
 	void Think( void );
 
 	virtual int		Save( CSave &save );
@@ -4579,7 +4582,7 @@ public:
 	EHANDLE m_hLocus;
 	EHANDLE m_hTarget;
 };
-LINK_ENTITY_TO_CLASS( motion_thread, CPointEntity );
+LINK_ENTITY_TO_CLASS( motion_thread, CMotionThread );
 
 TYPEDESCRIPTION	CMotionThread::m_SaveData[] = 
 {
@@ -4592,6 +4595,11 @@ TYPEDESCRIPTION	CMotionThread::m_SaveData[] =
 };
 
 IMPLEMENT_SAVERESTORE(CMotionThread,CPointEntity);
+
+void CMotionThread::Spawn() //AJH
+{
+	pev->classname = MAKE_STRING("motion_thread"); //We need this for save/restore to work
+}
 
 void CMotionThread::Think( void )
 {
@@ -4801,6 +4809,7 @@ void CMotionManager::Affect( CBaseEntity *pTarget, CBaseEntity *pActivator )
 
 	CMotionThread *pThread = GetClassPtr( (CMotionThread*)NULL );
 	if (pThread == NULL) return; //error?
+	pThread->Spawn();
 	pThread->m_hLocus = pActivator;
 	pThread->m_hTarget = pTarget;
 	pThread->m_iszPosition = m_iszPosition;
