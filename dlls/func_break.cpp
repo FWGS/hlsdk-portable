@@ -26,6 +26,7 @@
 #include "func_break.h"
 #include "decals.h"
 #include "explode.h"
+#include "game.h"
 
 extern DLL_GLOBAL Vector	g_vecAttackDir;
 
@@ -925,12 +926,24 @@ void CPushable::Move( CBaseEntity *pOther, int push )
 		return;
 	}
 
-	// g-cont. fix pushable acceleration bug (reverted as it used in mods)
 	if( pOther->IsPlayer() )
 	{
-		// Don't push unless the player is pushing forward and NOT use (pull)
-		if( push && !( pevToucher->button & ( IN_FORWARD | IN_USE ) ) )
-			return;
+		// g-cont. fix pushable acceleration bug (now implemented as cvar)
+		if (pushablemode.value == 1)
+		{
+			// Allow player push when moving right, left and back too
+			if ( push && !(pevToucher->button & (IN_FORWARD|IN_MOVERIGHT|IN_MOVELEFT|IN_BACK)) )
+				return;
+			// Require player walking back when applying '+use' on pushable
+			if ( !push && !(pevToucher->button & (IN_BACK)) )
+				return;
+		}
+		else
+		{
+			// Don't push unless the player is pushing forward and NOT use (pull)
+			if( push && !( pevToucher->button & ( IN_FORWARD | IN_USE ) ) )
+				return;
+		}
 		playerTouch = 1;
 	}
 
@@ -950,6 +963,13 @@ void CPushable::Move( CBaseEntity *pOther, int push )
 	}
 	else 
 		factor = 0.25f;
+
+	// Spirit fix for pushable acceleration
+	if (pushablemode.value == 2)
+	{
+		if (!push)
+			factor *= 0.5f;
+	}
 
 	pev->velocity.x += pevToucher->velocity.x * factor;
 	pev->velocity.y += pevToucher->velocity.y * factor;
