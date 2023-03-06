@@ -135,6 +135,25 @@ set (SVDLL_SOURCES
 	world.cpp
 	xen.cpp
 	zombie.cpp
+	clcampaign/bigsmoke.cpp
+	clcampaign/bonewheel.cpp
+	clcampaign/evilsci.cpp
+	clcampaign/hammer.cpp
+	clcampaign/katana.cpp
+	clcampaign/mariozombie.cpp
+	clcampaign/megachav.cpp
+	clcampaign/needle.cpp
+	clcampaign/pepsigun.cpp
+	clcampaign/pink_panthera.cpp
+	clcampaign/rock.cpp
+	clcampaign/sawnoff.cpp
+	clcampaign/shrek.cpp
+	clcampaign/skeleton.cpp
+	clcampaign/skrillex.cpp
+	clcampaign/sniper.cpp
+	clcampaign/superchav.cpp
+	clcampaign/terror.cpp
+	clcampaign/zombozo.cpp
 	../pm_shared/pm_debug.c
 	../pm_shared/pm_math.c
 	../pm_shared/pm_shared.c

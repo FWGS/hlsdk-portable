@@ -70,11 +70,11 @@ option(WEAPONS_ANIMATION_TIMES_FIX "Enable animation times fix for some weapons"
 option(OEM_BUILD "Enable OEM Build" OFF)
 option(HLDEMO_BUILD "Enable Demo Build" OFF)
 
-set(GAMEDIR "valve" CACHE STRING "Gamedir path")
+set(GAMEDIR "clcampaign" CACHE STRING "Gamedir path")
 set(SERVER_INSTALL_DIR "dlls" CACHE STRING "Where put server dll")
 set(CLIENT_INSTALL_DIR "cl_dlls" CACHE STRING "Where put client dll")
 set(SERVER_LIBRARY_NAME "hl" CACHE STRING "Library name for PC platforms")
-message(STATUS "Half-Life")
+message(STATUS "Crack-Life: Campaign Mode")
 
 #-----------------
 # MAIN BUILD CODE \
