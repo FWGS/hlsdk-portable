@@ -480,16 +480,11 @@ class PSVita:
 		# this optimization is broken in vitasdk
 		cflags += ['-fno-optimize-sibling-calls']
 		# disable some ARM bullshit
-		cflags += ['-fsigned-char', '-fno-short-enums', '-Wno-attributes']
+		cflags += ['-fno-short-enums', '-Wno-attributes']
 		# base include dir
 		cflags += ['-isystem %s/arm-vita-eabi/include' % self.vitasdk_dir]
 		# SDL include dir
 		cflags += ['-I%s/arm-vita-eabi/include/SDL2' % self.vitasdk_dir]
-		# the game wants GNU extensions
-		if cxx:
-			cflags += ['-std=gnu++17', '-D_GNU_SOURCE']
-		else:
-			cflags += ['-std=gnu11', '-D_GNU_SOURCE']
 		return cflags
 
 	# they go before object list
