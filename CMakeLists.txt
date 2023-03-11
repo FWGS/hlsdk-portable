@@ -43,7 +43,7 @@ option(USE_VGUI2 "Enable VGUI2. UNDONE" OFF)
 option(USE_NOVGUI_MOTD "Prefer non-VGUI MOTD when USE_VGUI is enabled" OFF)
 option(USE_NOVGUI_SCOREBOARD "Prefer non-VGUI Scoreboard when USE_VGUI is enabled" OFF)
 option(USE_VOICEMGR "Enable VOICE MANAGER." OFF)
-option(BUILD_CLIENT "Build client dll" ON)
+option(BUILD_CLIENT "Build client dll" OFF)
 option(BUILD_SERVER "Build server dll" ON)
 
 if (CMAKE_SIZEOF_VOID_P EQUAL 4 OR
@@ -70,11 +70,11 @@ option(WEAPONS_ANIMATION_TIMES_FIX "Enable animation times fix for some weapons"
 option(OEM_BUILD "Enable OEM Build" OFF)
 option(HLDEMO_BUILD "Enable Demo Build" OFF)
 
-set(GAMEDIR "valve" CACHE STRING "Gamedir path")
+set(GAMEDIR "gravgun" CACHE STRING "Gamedir path")
 set(SERVER_INSTALL_DIR "dlls" CACHE STRING "Where put server dll")
 set(CLIENT_INSTALL_DIR "cl_dlls" CACHE STRING "Where put client dll")
 set(SERVER_LIBRARY_NAME "hl" CACHE STRING "Library name for PC platforms")
-message(STATUS "Half-Life")
+message(STATUS "Half-Life: Gravgun")
 
 #-----------------
 # MAIN BUILD CODE \
