@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2002, Valve LLC, All rights reserved. ============
+//========= Copyright ï¿½ 1996-2002, Valve LLC, All rights reserved. ============
 //
 // Purpose: 
 //
@@ -11,9 +11,7 @@
 #pragma once
 #endif
 
-
-#include "vgui_inputsignal.h"
-
+#include "VGUI_InputSignal.h"
 
 namespace vgui
 {
@@ -21,8 +19,8 @@ namespace vgui
 	class CDefaultInputSignal : public vgui::InputSignal
 	{
 	public:
-		virtual void cursorMoved(int x,int y,Panel* panel)				{}
-		virtual void cursorEntered(Panel* panel)						{}
+		virtual void cursorMoved( int x, int y, Panel *panel ) {}
+		virtual void cursorEntered( Panel *panel )						{}
 		virtual void cursorExited(Panel* panel)							{}
 		virtual void mousePressed(MouseCode code,Panel* panel)			{}
 		virtual void mouseDoublePressed(MouseCode code,Panel* panel)	{}

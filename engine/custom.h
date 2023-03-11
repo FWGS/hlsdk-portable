@@ -13,10 +13,12 @@
 *
 ****/
 #pragma once
-#ifndef CUSTOM_H
+#if !defined(CUSTOM_H)
 #define CUSTOM_H
 
 #include "const.h"
+
+#define MAX_QPATH 64    // Must match value in quakedefs.h
 
 /////////////////
 // Customization

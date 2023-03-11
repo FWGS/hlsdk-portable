@@ -28,35 +28,34 @@
 
 cvar_t *cl_scoreboard_bg;
 cvar_t *cl_showpacketloss;
-hud_player_info_t	g_PlayerInfoList[MAX_PLAYERS + 1];	// player info from the engine
-extra_player_info_t	g_PlayerExtraInfo[MAX_PLAYERS + 1];	// additional player info sent directly to the client dll
-team_info_t		g_TeamInfo[MAX_TEAMS + 1];
-int g_iUser1;
-int g_iUser2;
-int g_iUser3;
-int g_iTeamNumber;
-int g_iPlayerClass;
 
-//#include "vgui_TeamFortressViewport.h"
+
+#if USE_VGUI
+#include "vgui_TeamFortressViewport.h"
+#endif
 
 DECLARE_COMMAND( m_Scoreboard, ShowScores )
 DECLARE_COMMAND( m_Scoreboard, HideScores )
 
+#if !USE_VGUI || USE_NOVGUI_SCOREBOARD
 DECLARE_MESSAGE( m_Scoreboard, ScoreInfo )
 DECLARE_MESSAGE( m_Scoreboard, TeamInfo )
 DECLARE_MESSAGE( m_Scoreboard, TeamScore )
+#endif
 
 int CHudScoreboard::Init( void )
 {
 	gHUD.AddHudElem( this );
 
 	// Hook messages & commands here
-	HOOK_COMMAND( "+showscores", ShowScores );
-	HOOK_COMMAND( "-showscores", HideScores );
+	// HOOK_COMMAND( "+showscores", ShowScores );
+	// HOOK_COMMAND( "-showscores", HideScores );
 
+#if !USE_VGUI || USE_NOVGUI_SCOREBOARD
 	HOOK_MESSAGE( ScoreInfo );
 	HOOK_MESSAGE( TeamScore );
 	HOOK_MESSAGE( TeamInfo );
+#endif
 
 	InitHUDData();
 
@@ -171,12 +170,12 @@ int CHudScoreboard::Draw( float fTime )
 		DrawUtfString( PL_RANGE_MAX + xpos_rel - 35, ypos, ScreenWidth, "pkt loss", 255, 140, 0 );
 	}
 
-	list_slot += 1.2;
+	list_slot += 1.2f;
 	ypos = ROW_RANGE_MIN + ( list_slot * ROW_GAP );
 	// xpos = NAME_RANGE_MIN + xpos_rel;
 	FillRGBA( xpos - 4, ypos, FAR_RIGHT -2, 1, 255, 140, 0, 255 );  // draw the seperator line
 
-	list_slot += 0.8;
+	list_slot += 0.8f;
 
 	if( !gHUD.m_Teamplay )
 	{
@@ -328,7 +327,7 @@ int CHudScoreboard::Draw( float fTime )
 	}
 
 	// draw all the players who are not in a team
-	list_slot += 0.5;
+	list_slot += 0.5f;
 	DrawPlayers( xpos_rel, list_slot, 0, "" );
 
 	return 1;
@@ -454,7 +453,7 @@ int CHudScoreboard::DrawPlayers( int xpos_rel, float list_slot, int nameoffset, 
 			if( g_PlayerInfoList[best_player].packetloss >= 63 )
 			{
 				UnpackRGB( r, g, b, RGB_REDISH );
-				sprintf( buf, " !!!!" );
+				strcpy( buf, " !!!!" );
 			}
 			else
 			{
@@ -502,7 +501,9 @@ int CHudScoreboard::MsgFunc_ScoreInfo( const char *pszName, int iSize, void *pbu
 		g_PlayerExtraInfo[cl].playerclass = playerclass;
 		g_PlayerExtraInfo[cl].teamnumber = teamnumber;
 
-		//gViewPort->UpdateOnPlayerInfo();
+#if USE_VGUI
+		gViewPort->UpdateOnPlayerInfo();
+#endif
 	}
 
 	return 1;
@@ -521,7 +522,7 @@ int CHudScoreboard::MsgFunc_TeamInfo( const char *pszName, int iSize, void *pbuf
 	if( cl > 0 && cl <= MAX_PLAYERS )
 	{
 		// set the players team
-		strncpy( g_PlayerExtraInfo[cl].teamname, READ_STRING(), MAX_TEAM_NAME );
+		strncpy( g_PlayerExtraInfo[cl].teamname, READ_STRING(), MAX_TEAM_NAME - 1 );
 	}
 
 	// rebuild the list of teams
@@ -563,7 +564,7 @@ int CHudScoreboard::MsgFunc_TeamInfo( const char *pszName, int iSize, void *pbuf
 			}
 			m_iNumTeams = Q_max( j, m_iNumTeams );
 
-			strncpy( g_TeamInfo[j].name, g_PlayerExtraInfo[i].teamname, MAX_TEAM_NAME );
+			strncpy( g_TeamInfo[j].name, g_PlayerExtraInfo[i].teamname, MAX_TEAM_NAME - 1 );
 			g_TeamInfo[j].players = 0;
 		}
 

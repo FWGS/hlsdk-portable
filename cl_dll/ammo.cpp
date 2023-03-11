@@ -27,6 +27,9 @@
 #include <stdio.h>
 
 #include "ammohistory.h"
+#if USE_VGUI
+#include "vgui_TeamFortressViewport.h"
+#endif
 
 WEAPON *gpActiveSel;	// NULL means off, 1 means just the menu bar, otherwise
 						// this points to the active weapon menu item
@@ -77,7 +80,7 @@ void WeaponsResource::LoadWeaponSprites( WEAPON *pWeapon )
 	else
 		iRes = 640;
 
-	char sz[128];
+	char sz[256];
 
 	if( !pWeapon )
 		return;
@@ -356,7 +359,7 @@ void CHudAmmo::Think( void )
 		{
 			WEAPON *p = gWR.GetWeapon( i );
 
-			if( p )
+			if( p && p->iId )
 			{
 				if( gHUD.m_iWeaponBits & ( 1 << p->iId ) )
 					gWR.PickupWeapon( p );
@@ -673,10 +676,11 @@ int CHudAmmo::MsgFunc_WeaponList( const char *pszName, int iSize, void *pbuf )
 // Slot button pressed
 void CHudAmmo::SlotInput( int iSlot )
 {
+#if USE_VGUI
 	// Let the Viewport use it first, for menus
-//	if( gViewPort && gViewPort->SlotInput( iSlot ) )
-//		return;
-
+	if( gViewPort && gViewPort->SlotInput( iSlot ) )
+		return;
+#endif
 	gWR.SelectSlot(iSlot, FALSE, 1);
 }
 
@@ -864,7 +868,7 @@ int CHudAmmo::Draw( float flTime )
 	a = (int)Q_max( MIN_ALPHA, m_fFade );
 
 	if( m_fFade > 0 )
-		m_fFade -= ( gHUD.m_flTimeDelta * 20 );
+		m_fFade -= ( (float)gHUD.m_flTimeDelta * 20.0f );
 
 	UnpackRGB( r, g, b, RGB_YELLOWISH );
 

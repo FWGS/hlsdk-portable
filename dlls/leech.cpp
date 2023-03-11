@@ -48,12 +48,12 @@
 
 #define LEECH_ACCELERATE	10
 #define LEECH_CHECK_DIST	45
-#define LEECH_SWIM_SPEED	50
-#define LEECH_SWIM_ACCEL	80
-#define LEECH_SWIM_DECEL	10
+#define LEECH_SWIM_SPEED	50.0f
+#define LEECH_SWIM_ACCEL	80.0f
+#define LEECH_SWIM_DECEL	10.0f
 #define LEECH_TURN_RATE		90
 #define LEECH_SIZEX		10
-#define LEECH_FRAMETIME		0.1
+#define LEECH_FRAMETIME		0.1f
 
 #define DEBUG_BEAMS		0
 
@@ -209,16 +209,16 @@ void CLeech::RecalculateWaterlevel( void )
 	TraceResult tr;
 
 	UTIL_TraceLine( pev->origin, vecTest, missile, edict(), &tr );
-	if( tr.flFraction != 1.0 )
-		m_bottom = tr.vecEndPos.z + 1;
+	if( tr.flFraction != 1.0f )
+		m_bottom = tr.vecEndPos.z + 1.0f;
 	else
 		m_bottom = vecTest.z;
 
 	m_top = UTIL_WaterLevel( pev->origin, pev->origin.z, pev->origin.z + 400 ) - 1;
 
 	// Chop off 20% of the outside range
-	float newBottom = m_bottom * 0.8 + m_top * 0.2;
-	m_top = m_bottom * 0.2 + m_top * 0.8;
+	float newBottom = m_bottom * 0.8f + m_top * 0.2f;
+	m_top = m_bottom * 0.2f + m_top * 0.8f;
 	m_bottom = newBottom;
 	m_height = RANDOM_FLOAT( m_bottom, m_top );
 	m_waterTime = gpGlobals->time + RANDOM_FLOAT( 5, 7 );
@@ -259,27 +259,23 @@ void CLeech::AttackSound( void )
 {
 	if( gpGlobals->time > m_attackSoundTime )
 	{
-		EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pAttackSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackSounds ) - 1 )], 1.0, ATTN_NORM, 0, PITCH_NORM );
-		m_attackSoundTime = gpGlobals->time + 0.5;
+		EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, RANDOM_SOUND_ARRAY( pAttackSounds ), 1.0f, ATTN_NORM, 0, PITCH_NORM );
+		m_attackSoundTime = gpGlobals->time + 0.5f;
 	}
 }
 
 void CLeech::AlertSound( void )
 {
-	EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pAlertSounds[RANDOM_LONG( 0, ARRAYSIZE( pAlertSounds ) - 1 )], 1.0, ATTN_NORM * 0.5, 0, PITCH_NORM );
+	EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, RANDOM_SOUND_ARRAY( pAlertSounds ), 1.0f, ATTN_NORM * 0.5f, 0, PITCH_NORM );
 }
 
 void CLeech::Precache( void )
 {
-	size_t i;
-
 	//PRECACHE_MODEL( "models/icky.mdl" );
 	PRECACHE_MODEL( "models/leech.mdl" );
 
-	for( i = 0; i < ARRAYSIZE( pAttackSounds ); i++ )
-		PRECACHE_SOUND( pAttackSounds[i] );
-	for( i = 0; i < ARRAYSIZE( pAlertSounds ); i++ )
-		PRECACHE_SOUND( pAlertSounds[i] );
+	PRECACHE_SOUND_ARRAY( pAttackSounds );
+	PRECACHE_SOUND_ARRAY( pAlertSounds );
 }
 
 int CLeech::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )
@@ -289,7 +285,7 @@ int CLeech::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float f
 	// Nudge the leech away from the damage
 	if( pevInflictor )
 	{
-		pev->velocity = ( pev->origin - pevInflictor->origin ).Normalize() * 25;
+		pev->velocity = ( pev->origin - pevInflictor->origin ).Normalize() * 25.0f;
 	}
 
 	return CBaseMonster::TakeDamage( pevInflictor, pevAttacker, flDamage, bitsDamageType );
@@ -315,7 +311,7 @@ void CLeech::HandleAnimEvent( MonsterEvent_t *pEvent )
 			dir = dir.Normalize();
 			face = face.Normalize();
 
-			if( DotProduct( dir, face ) > 0.9 )	// Only take damage if the leech is facing the prey
+			if( DotProduct( dir, face ) > 0.9f )	// Only take damage if the leech is facing the prey
 				pEnemy->TakeDamage( pev, pev, gSkillData.leechDmgBite, DMG_SLASH );
 		}
 		m_stateTime -= 2;
@@ -354,12 +350,12 @@ float CLeech::ObstacleDistance( CBaseEntity *pTarget )
 
 	if( tr.fStartSolid )
 	{
-		pev->speed = -LEECH_SWIM_SPEED * 0.5;
+		pev->speed = -LEECH_SWIM_SPEED * 0.5f;
 		//ALERT( at_console, "Stuck from (%f %f %f) to (%f %f %f)\n", pev->oldorigin.x, pev->oldorigin.y, pev->oldorigin.z, pev->origin.x, pev->origin.y, pev->origin.z );
 		//UTIL_SetOrigin( pev, pev->oldorigin );
 	}
 
-	if( tr.flFraction != 1.0 )
+	if( tr.flFraction != 1.0f )
 	{
 		if( ( pTarget == NULL || tr.pHit != pTarget->edict() ) )
 		{
@@ -377,16 +373,16 @@ float CLeech::ObstacleDistance( CBaseEntity *pTarget )
 		// extra wide checks
 		vecTest = pev->origin + gpGlobals->v_right * LEECH_SIZEX * 2 + gpGlobals->v_forward * LEECH_CHECK_DIST;
 		UTIL_TraceLine( pev->origin, vecTest, missile, edict(), &tr );
-		if( tr.flFraction != 1.0 )
+		if( tr.flFraction != 1.0f )
 			return tr.flFraction;
 
 		vecTest = pev->origin - gpGlobals->v_right * LEECH_SIZEX * 2 + gpGlobals->v_forward * LEECH_CHECK_DIST;
 		UTIL_TraceLine( pev->origin, vecTest, missile, edict(), &tr );
-		if( tr.flFraction != 1.0 )
+		if( tr.flFraction != 1.0f )
 			return tr.flFraction;
 
 		// Didn't hit either side, so stop testing for another 0.5 - 1 seconds
-		m_sideTime = gpGlobals->time + RANDOM_FLOAT( 0.5, 1 );
+		m_sideTime = gpGlobals->time + RANDOM_FLOAT( 0.5f, 1.0f );
 	}
 	return 1.0;
 }
@@ -408,7 +404,7 @@ void CLeech::DeadThink( void )
 		}
 	}
 	StudioFrameAdvance();
-	pev->nextthink = gpGlobals->time + 0.1;
+	pev->nextthink = gpGlobals->time + 0.1f;
 
 	// Apply damage velocity, but keep out of the walls
 	if( pev->velocity.x != 0 || pev->velocity.y != 0 )
@@ -416,11 +412,11 @@ void CLeech::DeadThink( void )
 		TraceResult tr;
 
 		// Look 0.5 seconds ahead
-		UTIL_TraceLine( pev->origin, pev->origin + pev->velocity * 0.5, missile, edict(), &tr );
-		if( tr.flFraction != 1.0 )
+		UTIL_TraceLine( pev->origin, pev->origin + pev->velocity * 0.5f, missile, edict(), &tr );
+		if( tr.flFraction != 1.0f )
 		{
-			pev->velocity.x = 0;
-			pev->velocity.y = 0;
+			pev->velocity.x = 0.0f;
+			pev->velocity.y = 0.0f;
 		}
 	}
 }
@@ -428,15 +424,15 @@ void CLeech::DeadThink( void )
 void CLeech::UpdateMotion( void )
 {
 	float flapspeed = ( pev->speed - m_flAccelerate ) / LEECH_ACCELERATE;
-	m_flAccelerate = m_flAccelerate * 0.8 + pev->speed * 0.2;
+	m_flAccelerate = m_flAccelerate * 0.8f + pev->speed * 0.2f;
 
 	if( flapspeed < 0 )
 		flapspeed = -flapspeed;
-	flapspeed += 1.0;
-	if( flapspeed < 0.5 )
-		flapspeed = 0.5;
-	if( flapspeed > 1.9 )
-		flapspeed = 1.9;
+	flapspeed += 1.0f;
+	if( flapspeed < 0.5f )
+		flapspeed = 0.5f;
+	if( flapspeed > 1.9f )
+		flapspeed = 1.9f;
 
 	pev->framerate = flapspeed;
 
@@ -445,9 +441,9 @@ void CLeech::UpdateMotion( void )
 	else
 		pev->avelocity.y = pev->ideal_yaw * m_obstacle;
 
-	if( pev->avelocity.y > 150 )
+	if( pev->avelocity.y > 150.0f )
 		m_IdealActivity = ACT_TURN_LEFT;
-	else if( pev->avelocity.y < -150 )
+	else if( pev->avelocity.y < -150.0f )
 		m_IdealActivity = ACT_TURN_RIGHT;
 	else
 		m_IdealActivity = ACT_SWIM;
@@ -463,10 +459,10 @@ void CLeech::UpdateMotion( void )
 	else
 		targetPitch = 0;
 
-	pev->angles.x = UTIL_Approach( targetPitch, pev->angles.x, 60 * LEECH_FRAMETIME );
+	pev->angles.x = UTIL_Approach( targetPitch, pev->angles.x, 60.0f * LEECH_FRAMETIME );
 
 	// bank
-	pev->avelocity.z = -( pev->angles.z + ( pev->avelocity.y * 0.25 ) );
+	pev->avelocity.z = -( pev->angles.z + ( pev->avelocity.y * 0.25f ) );
 
 	if( m_MonsterState == MONSTERSTATE_COMBAT && HasConditions( bits_COND_CAN_MELEE_ATTACK1 ) )
 		m_IdealActivity = ACT_MELEE_ATTACK1;
@@ -479,11 +475,11 @@ void CLeech::UpdateMotion( void )
 		pev->velocity = g_vecZero;
 
 		// Animation will intersect the floor if either of these is non-zero
-		pev->angles.z = 0;
-		pev->angles.x = 0;
+		pev->angles.z = 0.0f;
+		pev->angles.x = 0.0f;
 
-		if( pev->framerate < 1.0 )
-			pev->framerate = 1.0;
+		if( pev->framerate < 1.0f )
+			pev->framerate = 1.0f;
 	}
 	else if( pev->movetype == MOVETYPE_TOSS )
 	{
@@ -505,11 +501,11 @@ void CLeech::UpdateMotion( void )
 	if( !m_pt )
 		m_pt = CBeam::BeamCreate( "sprites/laserbeam.spr", 5 );
 	m_pb->PointsInit( pev->origin, pev->origin + gpGlobals->v_forward * LEECH_CHECK_DIST );
-	m_pt->PointsInit( pev->origin, pev->origin - gpGlobals->v_right * ( pev->avelocity.y * 0.25 ) );
+	m_pt->PointsInit( pev->origin, pev->origin - gpGlobals->v_right * ( pev->avelocity.y * 0.25f ) );
 	if( m_fPathBlocked )
 	{
 		float color = m_obstacle * 30;
-		if( m_obstacle == 1.0 )
+		if( m_obstacle == 1.0f )
 			color = 0;
 		if( color > 255 )
 			color = 255;
@@ -532,12 +528,12 @@ void CLeech::SwimThink( void )
 
 	if( FNullEnt( FIND_CLIENT_IN_PVS( edict() ) ) )
 	{
-		pev->nextthink = gpGlobals->time + RANDOM_FLOAT( 1, 1.5 );
+		pev->nextthink = gpGlobals->time + RANDOM_FLOAT( 1.0f, 1.5f );
 		pev->velocity = g_vecZero;
 		return;
 	}
 	else
-		pev->nextthink = gpGlobals->time + 0.1;
+		pev->nextthink = gpGlobals->time + 0.1f;
 
 	targetSpeed = LEECH_SWIM_SPEED;
 
@@ -572,10 +568,10 @@ void CLeech::SwimThink( void )
 
 			targetYaw = UTIL_AngleDiff( targetYaw, UTIL_AngleMod( pev->angles.y ) );
 
-			if( targetYaw < ( -LEECH_TURN_RATE * 0.75 ) )
-				targetYaw = ( -LEECH_TURN_RATE * 0.75 );
-			else if( targetYaw > ( LEECH_TURN_RATE * 0.75 ) )
-				targetYaw = ( LEECH_TURN_RATE * 0.75 );
+			if( targetYaw < ( -LEECH_TURN_RATE * 0.75f ) )
+				targetYaw = ( -LEECH_TURN_RATE * 0.75f );
+			else if( targetYaw > ( LEECH_TURN_RATE * 0.75f ) )
+				targetYaw = ( LEECH_TURN_RATE * 0.75f );
 			else
 				targetSpeed *= 2;
 		}
@@ -584,7 +580,7 @@ void CLeech::SwimThink( void )
 		if( m_zTime < gpGlobals->time )
 		{
 			float newHeight = RANDOM_FLOAT( m_bottom, m_top );
-			m_height = 0.5 * m_height + 0.5 * newHeight;
+			m_height = 0.5f * m_height + 0.5f * newHeight;
 			m_zTime = gpGlobals->time + RANDOM_FLOAT( 1, 4 );
 		}
 		if( RANDOM_LONG( 0, 100 ) < 10 )
@@ -602,11 +598,11 @@ void CLeech::SwimThink( void )
 
 	m_obstacle = ObstacleDistance( pTarget );
 	pev->oldorigin = pev->origin;
-	if( m_obstacle < 0.1 )
-		m_obstacle = 0.1;
+	if( m_obstacle < 0.1f )
+		m_obstacle = 0.1f;
 
 	// is the way ahead clear?
-	if( m_obstacle == 1.0 )
+	if( m_obstacle == 1.0f )
 	{
 		// if the leech is turning, stop the trend.
 		if( m_flTurning != 0 )
@@ -621,7 +617,7 @@ void CLeech::SwimThink( void )
 	}
 	else
 	{
-		m_obstacle = 1.0 / m_obstacle;
+		m_obstacle = 1.0f / m_obstacle;
 		// IF we get this far in the function, the leader's path is blocked!
 		m_fPathBlocked = TRUE;
 
@@ -639,12 +635,12 @@ void CLeech::SwimThink( void )
 
 			// turn left, right or random depending on clearance ratio
 			float delta = ( flRightSide - flLeftSide );
-			if( delta > 0.1 || ( delta > -0.1 && RANDOM_LONG( 0, 100 ) < 50 ) )
+			if( delta > 0.1f || ( delta > -0.1f && RANDOM_LONG( 0, 100 ) < 50 ) )
 				m_flTurning = -LEECH_TURN_RATE;
 			else
 				m_flTurning = LEECH_TURN_RATE;
 		}
-		pev->speed = UTIL_Approach( -( LEECH_SWIM_SPEED * 0.5 ), pev->speed, LEECH_SWIM_DECEL * LEECH_FRAMETIME * m_obstacle );
+		pev->speed = UTIL_Approach( -( LEECH_SWIM_SPEED * 0.5f ), pev->speed, LEECH_SWIM_DECEL * LEECH_FRAMETIME * m_obstacle );
 		pev->velocity = gpGlobals->v_forward * pev->speed;
 	}
 	pev->ideal_yaw = m_flTurning + targetYaw;

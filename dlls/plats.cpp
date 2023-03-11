@@ -359,8 +359,7 @@ void CPlatTrigger::SpawnInsideTrigger( CFuncPlat *pPlatform )
 void CPlatTrigger::Touch( CBaseEntity *pOther )
 {
 	// Ignore touches by non-players
-	entvars_t *pevToucher = pOther->pev;
-	if( !FClassnameIs( pevToucher, "player" ) )
+	if( !pOther->IsPlayer() )
 		return;
 
 	CFuncPlat *pPlatform = (CFuncPlat*)(CBaseEntity*)m_hPlatform;
@@ -587,7 +586,7 @@ void CFuncPlatRot::RotMove( Vector &destAngle, float time )
 	Vector vecDestDelta = destAngle - pev->angles;
 
 	// Travel time is so short, we're practically there already;  so make it so.
-	if( time >= 0.1 )
+	if( time >= 0.1f )
 		pev->avelocity = vecDestDelta / time;
 	else
 	{
@@ -649,7 +648,7 @@ void CFuncTrain::Blocked( CBaseEntity *pOther )
 	if( gpGlobals->time < m_flActivateFinished )
 		return;
 
-	m_flActivateFinished = gpGlobals->time + 0.5;
+	m_flActivateFinished = gpGlobals->time + 0.5f;
 
 	pOther->TakeDamage( pev, pev, pev->dmg, DMG_CRUSH );
 }
@@ -752,7 +751,7 @@ void CFuncTrain::Next( void )
 	{
 		// don't copy speed from target if it is 0 (uninitialized)
 		pev->speed = m_pevCurrentTarget->speed;
-		ALERT( at_aiconsole, "Train %s speed to %4.2f\n", STRING( pev->targetname ), pev->speed );
+		ALERT( at_aiconsole, "Train %s speed to %4.2f\n", STRING( pev->targetname ), (double)pev->speed );
 	}
 	m_pevCurrentTarget = pTarg->pev;// keep track of this since path corners change our target for us.
 
@@ -762,7 +761,7 @@ void CFuncTrain::Next( void )
 	{
 		// Path corner has indicated a teleport to the next corner.
 		SetBits( pev->effects, EF_NOINTERP );
-		UTIL_SetOrigin( pev, pTarg->pev->origin - ( pev->mins + pev->maxs ) * 0.5 );
+		UTIL_SetOrigin( pev, pTarg->pev->origin - ( pev->mins + pev->maxs ) * 0.5f );
 		Wait(); // Get on with doing the next path corner.
 		if( mp_coop.value )
 			pev->iuser1++; // Invalidate state for coop
@@ -782,7 +781,7 @@ void CFuncTrain::Next( void )
 
 		ClearBits( pev->effects, EF_NOINTERP );
 		SetMoveDone( &CFuncTrain::Wait );
-		LinearMove( pTarg->pev->origin - ( pev->mins + pev->maxs )* 0.5, pev->speed );
+		LinearMove( pTarg->pev->origin - ( pev->mins + pev->maxs ) * 0.5f, pev->speed );
 	}
 }
 
@@ -801,7 +800,7 @@ void CFuncTrain::Activate( void )
 
 		if( FStringNull( pev->targetname ) )
 		{	// not triggered, so start immediately
-			pev->nextthink = pev->ltime + 0.1;
+			pev->nextthink = pev->ltime + 0.1f;
 			SetThink( &CFuncTrain::Next );
 		}
 		else
@@ -845,7 +844,7 @@ void CFuncTrain::Spawn( void )
 	m_activated = FALSE;
 
 	if( m_volume == 0 )
-		m_volume = 0.85;
+		m_volume = 0.85f;
 }
 
 void CFuncTrain::Precache( void )
@@ -893,7 +892,7 @@ void CFuncTrain::OverrideReset( void )
 		else	// Keep moving for 0.1 secs, then find path_corner again and restart
 		{
 			SetThink( &CFuncTrain::Next );
-			pev->nextthink = pev->ltime + 0.1;
+			pev->nextthink = pev->ltime + 0.1f;
 		}
 	}
 }
@@ -948,7 +947,7 @@ void CFuncTrackTrain::KeyValue( KeyValueData *pkvd )
 	else if( FStrEq( pkvd->szKeyName, "volume" ) )
 	{
 		m_flVolume = (float)atoi( pkvd->szValue );
-		m_flVolume *= 0.1;
+		m_flVolume *= 0.1f;
 		pkvd->fHandled = TRUE;
 	}
 	else if( FStrEq( pkvd->szKeyName, "bank" ) )
@@ -987,7 +986,7 @@ void CFuncTrackTrain::Blocked( CBaseEntity *pOther )
 	else
 		pevOther->velocity = ( pevOther->origin - pev->origin ).Normalize() * pev->dmg;
 
-	ALERT( at_aiconsole, "TRAIN(%s): Blocked by %s (dmg:%.2f)\n", STRING( pev->targetname ), STRING( pOther->pev->classname ), pev->dmg );
+	ALERT( at_aiconsole, "TRAIN(%s): Blocked by %s (dmg:%.2f)\n", STRING( pev->targetname ), STRING( pOther->pev->classname ), (double)pev->dmg );
 	if( pev->dmg <= 0 )
 		return;
 	// we can't hurt this thing, so we're not concerned with it
@@ -1020,7 +1019,7 @@ void CFuncTrackTrain::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TY
 	{
 		float delta = value;
 
-		delta = ( (int)( pev->speed * 4 ) / (int)m_speed )*0.25 + 0.25 * delta;
+		delta = ( (int)( pev->speed * 4 ) / (int)m_speed ) * 0.25f + 0.25f * delta;
 		if( delta > 1 )
 			delta = 1;
 		else if ( delta < -1 )
@@ -1032,7 +1031,7 @@ void CFuncTrackTrain::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TY
 		}
 		pev->speed = m_speed * delta;
 		Next();	
-		ALERT( at_aiconsole, "TRAIN(%s), speed to %.2f\n", STRING( pev->targetname ), pev->speed );
+		ALERT( at_aiconsole, "TRAIN(%s), speed to %.2f\n", STRING( pev->targetname ), (double)pev->speed );
 	}
 }
 
@@ -1110,13 +1109,13 @@ void CFuncTrackTrain::UpdateSound( void )
 
 		unsigned short us_encode;
 		unsigned short us_sound  = ( ( unsigned short )( m_sounds ) & 0x0007 ) << 12;
-		unsigned short us_pitch  = ( ( unsigned short )( flpitch / 10.0 ) & 0x003f ) << 6;
-		unsigned short us_volume = ( ( unsigned short )( m_flVolume * 40.0 ) & 0x003f );
+		unsigned short us_pitch  = ( ( unsigned short )( flpitch / 10.0f ) & 0x003f ) << 6;
+		unsigned short us_volume = ( ( unsigned short )( m_flVolume * 40.0f ) & 0x003f );
 
 		us_encode = us_sound | us_pitch | us_volume;
 
-		PLAYBACK_EVENT_FULL( FEV_RELIABLE | FEV_UPDATE, edict(), m_usAdjustPitch, 0.0,
-			g_vecZero, g_vecZero, 0.0, 0.0, us_encode, 0, 0, 0 );
+		PLAYBACK_EVENT_FULL( FEV_RELIABLE | FEV_UPDATE, edict(), m_usAdjustPitch, 0.0f,
+			g_vecZero, g_vecZero, 0.0f, 0.0f, us_encode, 0, 0, 0 );
 	}
 }
 
@@ -1161,7 +1160,7 @@ void CFuncTrackTrain::Next( void )
 	Vector nextPos = pev->origin;
 
 	nextPos.z -= m_height;
-	CPathTrack *pnext = m_ppath->LookAhead( &nextPos, pev->speed * 0.1, 1 );
+	CPathTrack *pnext = m_ppath->LookAhead( &nextPos, pev->speed * 0.1f, 1 );
 	nextPos.z += m_height;
 
 	pev->velocity = ( nextPos - pev->origin ) * 10;
@@ -1235,7 +1234,7 @@ void CFuncTrackTrain::Next( void )
 				{
 					// don't copy speed from target if it is 0 (uninitialized)
 					pev->speed = pFire->pev->speed;
-					ALERT( at_aiconsole, "TrackTrain %s speed to %4.2f\n", STRING( pev->targetname ), pev->speed );
+					ALERT( at_aiconsole, "TrackTrain %s speed to %4.2f\n", STRING( pev->targetname ), (double)pev->speed );
 				}
 			}
 
@@ -1374,7 +1373,7 @@ void CFuncTrackTrain::Find( void )
 	if( pev->spawnflags & SF_TRACKTRAIN_NOPITCH )
 		pev->angles.x = 0;
 	UTIL_SetOrigin( pev, nextPos );
-	NextThink( pev->ltime + 0.1, FALSE );
+	NextThink( pev->ltime + 0.1f, FALSE );
 	SetThink( &CFuncTrackTrain::Next );
 	pev->speed = m_startSpeed;
 
@@ -1423,14 +1422,14 @@ void CFuncTrackTrain::NearestPath( void )
 
 	if( pev->speed != 0 )
 	{
-		NextThink( pev->ltime + 0.1, FALSE );
+		NextThink( pev->ltime + 0.1f, FALSE );
 		SetThink( &CFuncTrackTrain::Next );
 	}
 }
 
 void CFuncTrackTrain::OverrideReset( void )
 {
-	NextThink( pev->ltime + 0.1, FALSE );
+	NextThink( pev->ltime + 0.1f, FALSE );
 	SetThink( &CFuncTrackTrain::NearestPath );
 }
 
@@ -1489,7 +1488,7 @@ void CFuncTrackTrain::Spawn( void )
 
 	// start trains on the next frame, to make sure their targets have had
 	// a chance to spawn/activate
-	NextThink( pev->ltime + 0.1, FALSE );
+	NextThink( pev->ltime + 0.1f, FALSE );
 	SetThink( &CFuncTrackTrain::Find );
 	Precache();
 }
@@ -1498,8 +1497,8 @@ void CFuncTrackTrain::Precache( void )
 {
 	const char *pszSound;
 
-	if( m_flVolume == 0.0 )
-		m_flVolume = 1.0;
+	if( m_flVolume == 0.0f )
+		m_flVolume = 1.0f;
 
 	switch( m_sounds )
 	{
@@ -1693,7 +1692,7 @@ void CFuncTrackChange::Spawn( void )
 	}
 
 	EnableUse();
-	pev->nextthink = pev->ltime + 2.0;
+	pev->nextthink = pev->ltime + 2.0f;
 	SetThink( &CFuncTrackChange::Find );
 	Precache();
 }
@@ -1740,7 +1739,7 @@ void CFuncTrackChange::KeyValue( KeyValueData *pkvd )
 
 void CFuncTrackChange::OverrideReset( void )
 {
-	pev->nextthink = pev->ltime + 1.0;
+	pev->nextthink = pev->ltime + 1.0f;
 	SetThink( &CFuncTrackChange::Find );
 }
 
@@ -1766,7 +1765,7 @@ void CFuncTrackChange::Find( void )
 					ALERT( at_error, "Can't find train for track change! %s\n", STRING( m_trainName ) );
 					return;
 				}
-				Vector center = ( pev->absmin + pev->absmax ) * 0.5;
+				Vector center = ( pev->absmin + pev->absmax ) * 0.5f;
 				m_trackBottom = m_trackBottom->Nearest( center );
 				m_trackTop = m_trackTop->Nearest( center );
 				UpdateAutoTargets( m_toggle_state );
@@ -1776,7 +1775,7 @@ void CFuncTrackChange::Find( void )
 			else
 			{
 				ALERT( at_error, "Can't find train for track change! %s\n", STRING( m_trainName ) );
-				target = FIND_ENTITY_BY_TARGETNAME( NULL, STRING( m_trainName ) );
+				// target = FIND_ENTITY_BY_TARGETNAME( NULL, STRING( m_trainName ) );
 			}
 		}
 		else
@@ -1833,7 +1832,7 @@ void CFuncTrackChange::UpdateTrain( Vector &dest )
 	local.z = DotProduct( offset, gpGlobals->v_up );
 
 	local = local - offset;
-	m_train->pev->velocity = pev->velocity + ( local * ( 1.0 / time ) );
+	m_train->pev->velocity = pev->velocity + ( local * ( 1.0f / time ) );
 }
 
 void CFuncTrackChange::GoDown( void )
@@ -2134,7 +2133,7 @@ void CGunTarget::Spawn( void )
 	if( pev->spawnflags & FGUNTARGET_START_ON )
 	{
 		SetThink( &CGunTarget::Start );
-		pev->nextthink = pev->ltime + 0.3;
+		pev->nextthink = pev->ltime + 0.3f;
 	}
 }
 
@@ -2147,7 +2146,7 @@ void CGunTarget::Activate( void )
 	if( pTarg )
 	{
 		m_hTargetEnt = pTarg;
-		UTIL_SetOrigin( pev, pTarg->pev->origin - ( pev->mins + pev->maxs ) * 0.5 );
+		UTIL_SetOrigin( pev, pTarg->pev->origin - ( pev->mins + pev->maxs ) * 0.5f );
 	}
 }
 
@@ -2169,7 +2168,7 @@ void CGunTarget::Next( void )
 		return;
 	}
 	SetMoveDone( &CGunTarget::Wait );
-	LinearMove( pTarget->pev->origin - ( pev->mins + pev->maxs ) * 0.5, pev->speed );
+	LinearMove( pTarget->pev->origin - ( pev->mins + pev->maxs ) * 0.5f, pev->speed );
 }
 
 void CGunTarget::Wait( void )

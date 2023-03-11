@@ -160,7 +160,7 @@ void CDecal::TriggerDecal( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TY
 	MESSAGE_END();
 
 	SetThink( &CBaseEntity::SUB_Remove );
-	pev->nextthink = gpGlobals->time + 0.1;
+	pev->nextthink = gpGlobals->time + 0.1f;
 }
 
 void CDecal::StaticDecal( void )
@@ -293,7 +293,7 @@ globalentity_t *CGlobalState::Find( string_t globalname )
 }
 
 // This is available all the time now on impulse 104, remove later
-//#ifdef _DEBUG
+//#if _DEBUG
 void CGlobalState::DumpGlobals( void )
 {
 	static const char *estates[] = { "Off", "On", "Dead" };
@@ -454,7 +454,6 @@ LINK_ENTITY_TO_CLASS( worldspawn, CWorld )
 #define SF_WORLD_FORCETEAM	0x0004		// Force teams
 
 extern DLL_GLOBAL BOOL		g_fGameOver;
-float g_flWeaponCheat; 
 
 void CWorld::Spawn( void )
 {
@@ -630,15 +629,15 @@ void CWorld::Precache( void )
 			pEntity->SetThink( &CBaseEntity::SUB_CallUseToggle );
 			pEntity->pev->message = pev->netname;
 			pev->netname = 0;
-			pEntity->pev->nextthink = gpGlobals->time + 0.3;
+			pEntity->pev->nextthink = gpGlobals->time + 0.3f;
 			pEntity->pev->spawnflags = SF_MESSAGE_ONCE;
 		}
 	}
 
 	if( pev->spawnflags & SF_WORLD_DARK )
-		CVAR_SET_FLOAT( "v_dark", 1.0 );
+		CVAR_SET_FLOAT( "v_dark", 1.0f );
 	else
-		CVAR_SET_FLOAT( "v_dark", 0.0 );
+		CVAR_SET_FLOAT( "v_dark", 0.0f );
 
 	pev->spawnflags &= ~SF_WORLD_DARK;		// g-cont. don't apply fade after save\restore
 
@@ -651,15 +650,12 @@ void CWorld::Precache( void )
 
 	if( pev->spawnflags & SF_WORLD_FORCETEAM )
 	{
-		CVAR_SET_FLOAT( "mp_defaultteam", 1 );
+		CVAR_SET_FLOAT( "mp_defaultteam", 1.0f );
 	}
 	else
 	{
-		CVAR_SET_FLOAT( "mp_defaultteam", 0 );
+		CVAR_SET_FLOAT( "mp_defaultteam", 0.0f );
 	}
-
-	// g-cont. moved here so cheats will working on restore level
-	g_flWeaponCheat = CVAR_GET_FLOAT( "sv_cheats" );  // Is the impulse 101 command allowed?
 }
 
 //
@@ -681,7 +677,7 @@ void CWorld::KeyValue( KeyValueData *pkvd )
 	else if( FStrEq(pkvd->szKeyName, "WaveHeight" ) )
 	{
 		// Sent over net now.
-		pev->scale = atof( pkvd->szValue ) * ( 1.0 / 8.0 );
+		pev->scale = atof( pkvd->szValue ) * ( 1.0f / 8.0f );
 		pkvd->fHandled = TRUE;
 	}
 	else if( FStrEq( pkvd->szKeyName, "MaxRange" ) )
@@ -893,3 +889,4 @@ int Server_GetPhysicsInterface( int iVersion, server_physics_api_t *pfuncsFromEn
 	gPhysicsInterfaceInitialized = TRUE;
 	return TRUE;
 }
+

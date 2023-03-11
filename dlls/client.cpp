@@ -69,11 +69,11 @@ void set_suicide_frame(entvars_t* pev)
 	if (!FStrEq(STRING(pev->model), "models/player.mdl"))
 		return; // allready gibbed
 
-//	pev->frame		= $deatha11;
-	pev->solid		= SOLID_NOT;
-	pev->movetype	= MOVETYPE_TOSS;
-	pev->deadflag	= DEAD_DEAD;
-	pev->nextthink	= -1;
+	//pev->frame = $deatha11;
+	pev->solid = SOLID_NOT;
+	pev->movetype = MOVETYPE_TOSS;
+	pev->deadflag = DEAD_DEAD;
+	pev->nextthink = -1.0f;
 }
 
 
@@ -132,8 +132,10 @@ void ClientDisconnect( edict_t *pEntity )
 	char text[256] = "";
 
 	if( pEntity->v.netname )
-		_snprintf( text, sizeof(text), "- %s has left the game\n", STRING( pEntity->v.netname ) );
-
+	{
+		_snprintf( text, sizeof(text) - 1, "- %s has left the game\n", STRING( pEntity->v.netname ) );
+		text[sizeof(text) - 1] = '\0';
+	}
 	MESSAGE_BEGIN( MSG_ALL, gmsgSayText, NULL );
 		WRITE_BYTE( ENTINDEX(pEntity) );
 		WRITE_STRING( text );
@@ -206,7 +208,7 @@ void ClientKill( edict_t *pEntity )
 	if ( pl->m_fNextSuicideTime > gpGlobals->time )
 		return;  // prevent suiciding too ofter
 
-	pl->m_fNextSuicideTime = gpGlobals->time + 1;  // don't let them suicide for 5 seconds after suiciding
+	pl->m_fNextSuicideTime = gpGlobals->time + 1.0f;  // don't let them suicide for 5 seconds after suiciding
 
 	// have the player kill themself
 	pev->health = 0;
@@ -230,8 +232,9 @@ void ClientPutInServer( edict_t *pEntity )
 
 	entvars_t *pev = &pEntity->v;
 
-	pPlayer = GetClassPtr((CBasePlayer *)pev);
-	pPlayer->SetCustomDecalFrames(-1); // Assume none;
+	pPlayer = GetClassPtr( (CBasePlayer *)pev );
+	pPlayer->SetCustomDecalFrames( -1 ); // Assume none;
+	pPlayer->SetPrefsFromUserinfo( g_engfuncs.pfnGetInfoKeyBuffer( pEntity ) );
 
 	GGM_ClientPutinServer( pEntity, pPlayer );
 
@@ -248,7 +251,7 @@ void ClientPutInServer( edict_t *pEntity )
 
 }
 
-#ifndef NO_VOICEGAMEMGR
+#if !NO_VOICEGAMEMGR
 #include "voice_gamemgr.h"
 extern CVoiceGameMgr g_VoiceGameMgr;
 #endif
@@ -310,7 +313,7 @@ decodeError:
 	uValueOut = '?';
 	bErrorOut = true;
 	return nBytes;
-
+#if 0
 decodeFinishedMaybeCESU8:
 	// Do we have a full UTF-16 surrogate pair that's been UTF-8 encoded afterwards?
 	// That is, do we have 0xD800-0xDBFF followed by 0xDC00-0xDFFF? If so, decode it all.
@@ -321,6 +324,7 @@ decodeFinishedMaybeCESU8:
 		uMinValue = 0x10000;
 	}
 	goto decodeFinished;
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -357,7 +361,7 @@ void Host_Say( edict_t *pEntity, int teamonly )
 {
 	CBasePlayer *client;
 	int		j;
-	char	*p, *pc;
+	char	*p; //, *pc;
 	char	text[128];
 	char    szTemp[256];
 	const char *cpSay = "say";
@@ -391,13 +395,15 @@ void Host_Say( edict_t *pEntity, int teamonly )
 	{
 		if ( CMD_ARGC() >= 2 )
 		{
-			sprintf( szTemp, "%s %s", ( char * )pcmd, (char *)CMD_ARGS() );
+			_snprintf( szTemp, sizeof(szTemp) - 1, "%s %s", (char *)pcmd, (char *)CMD_ARGS() );
 		}
 		else
 		{
 			// Just a one word command, use the first word...sigh
-			sprintf( szTemp, "%s", ( char * )pcmd );
+			strncpy( szTemp, (char *)pcmd, sizeof(szTemp) - 1 );
 		}
+		szTemp[sizeof(szTemp) - 1] = '\0';
+
 		p = szTemp;
 	}
 
@@ -414,11 +420,12 @@ void Host_Say( edict_t *pEntity, int teamonly )
 
 	// turn on color set 2  (color on,  no sound)
 	if( player->IsObserver() && ( teamonly ) )
-		sprintf( text, "%c(SPEC) %s: ", 2, STRING( pEntity->v.netname ) );
+		_snprintf( text, sizeof(text) - 1, "%c(SPEC) %s: ", 2, STRING( pEntity->v.netname ) );
 	else if( teamonly )
-		sprintf( text, "%c(TEAM) %s: ", 2, STRING( pEntity->v.netname ) );
+		_snprintf( text, sizeof(text) - 1, "%c(TEAM) %s: ", 2, STRING( pEntity->v.netname ) );
 	else
-		sprintf( text, "%c%s: ", 2, STRING( pEntity->v.netname ) );
+		_snprintf( text, sizeof(text) - 1, "%c%s: ", 2, STRING( pEntity->v.netname ) );
+	text[sizeof(text) - 1] = '\0';
 
 	j = sizeof(text) - 2 - strlen(text);  // -2 for /n and null terminator
 	if ( (int)strlen(p) > j )
@@ -447,8 +454,10 @@ void Host_Say( edict_t *pEntity, int teamonly )
 		if ( !(client->IsNetClient()) )	// Not a client ? (should never be true)
 			continue;
 
+		if( !( client->IsNetClient() ) )	// Not a client ? (should never be true)
+			continue;
+#if !NO_VOICEGAMEMGR
 		// can the receiver hear the sender? or has he muted him?
-#ifndef NO_VOICEGAMEMGR
 		if ( g_VoiceGameMgr.PlayerHasBlockedPlayer( client, player ) )
 			continue;
 #endif
@@ -512,7 +521,7 @@ ClientCommand
 called each time a player uses a "cmd" command
 ============
 */
-extern float g_flWeaponCheat;
+extern cvar_t *g_enable_cheats;
 
 // Use CMD_ARGV,  CMD_ARGV, and CMD_ARGC to get pointers the character string command.
 void ClientCommand( edict_t *pEntity )
@@ -541,7 +550,7 @@ void ClientCommand( edict_t *pEntity )
 	}
 	else if ( FStrEq(pcmd, "give" ) )
 	{
-		if ( g_flWeaponCheat != 0.0)
+		if( g_enable_cheats->value != 0 )
 		{
 			int iszItem = ALLOC_STRING( CMD_ARGV(1) );	// Make a copy of the classname
 			GetClassPtr((CBasePlayer *)pev)->GiveNamedItem( STRING(iszItem) );
@@ -549,7 +558,7 @@ void ClientCommand( edict_t *pEntity )
 	}
 	else if ( FStrEq(pcmd, "fire") )
 	{
-		if ( g_flWeaponCheat != 0.0)
+		if( g_enable_cheats->value != 0 )
 		{
 			CBaseEntity *pPlayer = CBaseEntity::Instance(pEntity);
 			if (CMD_ARGC() > 1)
@@ -585,7 +594,7 @@ void ClientCommand( edict_t *pEntity )
 	}
 	else if ( FStrEq(pcmd, "fov" ) )
 	{
-		if ( g_flWeaponCheat && CMD_ARGC() > 1)
+		if( g_enable_cheats->value != 0 && CMD_ARGC() > 1 )
 		{
 			GetClassPtr((CBasePlayer *)pev)->m_iFOV = atoi( CMD_ARGV(1) );
 		}
@@ -670,8 +679,8 @@ void ClientCommand( edict_t *pEntity )
 
 		// check the length of the command (prevents crash)
 		// max total length is 192 ...and we're adding a string below ("Unknown command: %s\n")
-		strncpy( command, pcmd, 127 );
-		command[127] = '\0';
+		strncpy( command, pcmd, sizeof(command) - 1);
+		command[sizeof(command) - 1] = '\0';
 
 		// tell the user they entered an unknown command
 		ClientPrint( &pEntity->v, HUD_PRINTCONSOLE, UTIL_VarArgs( "Unknown command: %s\n", command ) );
@@ -745,7 +754,8 @@ void ClientUserInfoChanged( edict_t *pEntity, char *infobuffer )
 		if( gpGlobals->maxClients > 1 )
 		{
 			char text[256];
-			_snprintf( text, 256, "* %s changed name to %s\n", STRING( pEntity->v.netname ), g_engfuncs.pfnInfoKeyValue( infobuffer, "name" ) );
+			_snprintf( text, sizeof(text) - 1, "* %s changed name to %s\n", STRING( pEntity->v.netname ), g_engfuncs.pfnInfoKeyValue( infobuffer, "name" ) );
+			text[sizeof(text) - 1] = '\0';
 			MESSAGE_BEGIN( MSG_ALL, gmsgSayText, NULL );
 				WRITE_BYTE( ENTINDEX( pEntity ) );
 				WRITE_STRING( text );
@@ -812,7 +822,7 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 			continue;
 		
 		// Clients aren't necessarily initialized until ClientPutInServer()
-		if ( i < clientMax || !pEdictList[i].pvPrivateData )
+		if( (i > 0 && i <= clientMax) || !pEdictList[i].pvPrivateData )
 			continue;
 
 		pClass = CBaseEntity::Instance( &pEdictList[i] );
@@ -914,7 +924,7 @@ void StartFrame( void )
 	g_ulFrameCount++;
 
 	int oldBhopcap = g_bhopcap;
-	g_bhopcap = ( g_pGameRules->IsMultiplayer() && bhopcap.value != 0.0f ) ? 1 : 0;
+	g_bhopcap = ( g_pGameRules && g_pGameRules->IsMultiplayer() && bhopcap.value != 0.0f ) ? 1 : 0;
 	if( g_bhopcap != oldBhopcap )
 	{
 		MESSAGE_BEGIN( MSG_ALL, gmsgBhopcap, NULL );
@@ -1383,7 +1393,7 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 	//
 
 	// Round animtime to nearest millisecond
-	state->animtime   = (int)(1000.0 * ent->v.animtime ) / 1000.0;
+	state->animtime = (int)( 1000.0f * ent->v.animtime ) / 1000.0f;
 
 	memcpy( state->origin, ent->v.origin, 3 * sizeof( float ) );
 	memcpy( state->angles, ent->v.angles, 3 * sizeof( float ) );
@@ -1846,7 +1856,8 @@ void RegisterEncoders( void )
 
 int GetWeaponData( struct edict_s *player, struct weapon_data_s *info )
 {
-#if defined( CLIENT_WEAPONS )
+	memset( info, 0, MAX_WEAPONS * sizeof(weapon_data_t) );
+#if CLIENT_WEAPONS
 	int i;
 	weapon_data_t *item;
 	entvars_t *pev = &player->v;
@@ -1855,9 +1866,7 @@ int GetWeaponData( struct edict_s *player, struct weapon_data_s *info )
 	
 	ItemInfo II;
 
-	memset( info, 0, 32 * sizeof( weapon_data_t ) );
-
-	if ( !pl )
+	if( !pl )
 		return 1;
 
 	// go through all of the weapons and make a list of the ones to pack
@@ -1877,19 +1886,19 @@ int GetWeaponData( struct edict_s *player, struct weapon_data_s *info )
 					memset( &II, 0, sizeof( II ) );
 					gun->GetItemInfo( &II );
 
-					if ( II.iId >= 0 && II.iId < 32 )
+					if( II.iId >= 0 && II.iId < MAX_WEAPONS )
 					{
 						item = &info[ II.iId ];
 					 	
 						item->m_iId						= II.iId;
 						item->m_iClip					= gun->m_iClip;
 
-						item->m_flTimeWeaponIdle	= Q_max( gun->m_flTimeWeaponIdle, -0.001 );
-						item->m_flNextPrimaryAttack	= Q_max( gun->m_flNextPrimaryAttack, -0.001 );
-						item->m_flNextSecondaryAttack	= Q_max( gun->m_flNextSecondaryAttack, -0.001 );
+						item->m_flTimeWeaponIdle	= Q_max( gun->m_flTimeWeaponIdle, -0.001f );
+						item->m_flNextPrimaryAttack	= Q_max( gun->m_flNextPrimaryAttack, -0.001f );
+						item->m_flNextSecondaryAttack	= Q_max( gun->m_flNextSecondaryAttack, -0.001f );
 						item->m_fInReload		= gun->m_fInReload;
 						item->m_fInSpecialReload	= gun->m_fInSpecialReload;
-						item->fuser1			= Q_max( gun->pev->fuser1, -0.001 );
+						item->fuser1			= Q_max( gun->pev->fuser1, -0.001f );
 						item->fuser2			= gun->m_flStartThrow;
 						item->fuser3			= gun->m_flReleaseThrow;
 						item->iuser1			= gun->m_chargeReady;
@@ -1903,8 +1912,6 @@ int GetWeaponData( struct edict_s *player, struct weapon_data_s *info )
 			}
 		}
 	}
-#else
-	memset( info, 0, 32 * sizeof( weapon_data_t ) );
 #endif
 	return 1;
 }
@@ -1977,8 +1984,8 @@ void UpdateClientData ( const struct edict_s *ent, int sendweapons, struct clien
 		cd->iuser1		= pev->iuser1;
 		cd->iuser2		= pev->iuser2;
 	}
-#if defined( CLIENT_WEAPONS )
-	if ( sendweapons )
+#if CLIENT_WEAPONS
+	if( sendweapons )
 	{
 		if( pl )
 		{
@@ -2164,7 +2171,7 @@ One of the ENGINE_FORCE_UNMODIFIED files failed the consistency check for the sp
 int	InconsistentFile( const edict_t *player, const char *filename, char *disconnect_message )
 {
 	// Server doesn't care?
-	if ( CVAR_GET_FLOAT( "mp_consistency" ) != 1 )
+	if( CVAR_GET_FLOAT( "mp_consistency" ) != 1.0f )
 		return 0;
 
 	// Default behavior is to kick the player

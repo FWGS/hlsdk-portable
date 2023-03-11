@@ -6,7 +6,7 @@
 //=============================================================================
 
 #pragma once
-#ifndef HUD_SPECTATOR_H
+#if !defined(HUD_SPECTATOR_H)
 #define HUD_SPECTATOR_H
 
 #include "cl_entity.h"
@@ -73,6 +73,7 @@ public:
 	void HandleButtonsDown( int ButtonPressed );
 	void HandleButtonsUp( int ButtonPressed );
 	void FindNextPlayer( bool bReverse );
+	void FindPlayer(const char *name);
 	void DirectorMessage( int iSize, void *pbuf );
 	void SetSpectatorStartPosition();
 	int Init();

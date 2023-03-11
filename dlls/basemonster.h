@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef BASEMONSTER_H
+#if !defined(BASEMONSTER_H)
 #define BASEMONSTER_H
 
 //
@@ -334,5 +334,7 @@ public:
 	}
 
 	CBaseEntity* DropItem( const char *pszItemName, const Vector &vecPos, const Vector &vecAng );// drop an item.
+
+	float m_flLastYawTime;
 };
 #endif // BASEMONSTER_H

@@ -350,3 +350,4 @@ float CBasePlayer::TouchGravGun( CBaseEntity*e, int s ) { return 0; }
 void CBasePlayer::Touch( CBaseEntity * ) {}
 
 void RadiusDamage( Vector vecSrc, entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, float flRadius, int iClassIgnore, int bitsDamageType ){}
+void CSprite::AnimateUntilDead( void ) {}

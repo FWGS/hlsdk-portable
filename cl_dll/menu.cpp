@@ -24,6 +24,10 @@
 #include <string.h>
 #include <stdio.h>
 
+#if USE_VGUI
+#include "vgui_TeamFortressViewport.h"
+#endif
+
 #define MAX_MENU_STRING	512
 char g_szMenuString[MAX_MENU_STRING];
 char g_szPrelocalisedMenuString[MAX_MENU_STRING];
@@ -78,6 +82,11 @@ int CHudMenu::Draw( float flTime )
 	}
 
 	// don't draw the menu if the scoreboard is being shown
+#if USE_VGUI
+	if( gViewPort && gViewPort->IsScoreBoardVisible() )
+		return 1;
+#endif
+
 	// draw the menu, along the left-hand side of the screen
 	// count the number of newlines
 	int nlc = 0;
@@ -148,7 +157,7 @@ int CHudMenu::MsgFunc_ShowMenu( const char *pszName, int iSize, void *pbuf )
 	{
 		if( !m_fWaitingForMore ) // this is the start of a new menu
 		{
-			strncpy( g_szPrelocalisedMenuString, READ_STRING(), MAX_MENU_STRING );
+			strncpy( g_szPrelocalisedMenuString, READ_STRING(), MAX_MENU_STRING - 1 );
 		}
 		else
 		{
@@ -160,13 +169,13 @@ int CHudMenu::MsgFunc_ShowMenu( const char *pszName, int iSize, void *pbuf )
 		if( !NeedMore )
 		{
 			// we have the whole string, so we can localise it now
-			strncpy( g_szMenuString, gHUD.m_TextMessage.BufferedLocaliseTextString( g_szPrelocalisedMenuString ), MAX_MENU_STRING );
+			strncpy( g_szMenuString, gHUD.m_TextMessage.BufferedLocaliseTextString( g_szPrelocalisedMenuString ), MAX_MENU_STRING - 1 );
 			g_szMenuString[MAX_MENU_STRING - 1] = '\0';
 
 			// Swap in characters
 			if( KB_ConvertString( g_szMenuString, &temp ) )
 			{
-				strncpy( g_szMenuString, temp, MAX_MENU_STRING );
+				strncpy( g_szMenuString, temp, MAX_MENU_STRING - 1 );
 				g_szMenuString[MAX_MENU_STRING - 1] = '\0';
 				free( temp );
 			}

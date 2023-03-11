@@ -28,11 +28,11 @@
 
 TYPEDESCRIPTION	CBaseAnimating::m_SaveData[] =
 {
-	DEFINE_FIELD( CBaseMonster, m_flFrameRate, FIELD_FLOAT ),
-	DEFINE_FIELD( CBaseMonster, m_flGroundSpeed, FIELD_FLOAT ),
-	DEFINE_FIELD( CBaseMonster, m_flLastEventCheck, FIELD_TIME ),
-	DEFINE_FIELD( CBaseMonster, m_fSequenceFinished, FIELD_BOOLEAN ),
-	DEFINE_FIELD( CBaseMonster, m_fSequenceLoops, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CBaseAnimating, m_flFrameRate, FIELD_FLOAT ),
+	DEFINE_FIELD( CBaseAnimating, m_flGroundSpeed, FIELD_FLOAT ),
+	DEFINE_FIELD( CBaseAnimating, m_flLastEventCheck, FIELD_TIME ),
+	DEFINE_FIELD( CBaseAnimating, m_fSequenceFinished, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CBaseAnimating, m_fSequenceLoops, FIELD_BOOLEAN ),
 };
 
 IMPLEMENT_SAVERESTORE( CBaseAnimating, CBaseDelay )
@@ -43,27 +43,27 @@ IMPLEMENT_SAVERESTORE( CBaseAnimating, CBaseDelay )
 //=========================================================
 float CBaseAnimating::StudioFrameAdvance( float flInterval )
 {
-	if( flInterval == 0.0 )
+	if( flInterval == 0.0f )
 	{
 		flInterval = gpGlobals->time - pev->animtime;
-		if( flInterval <= 0.001 )
+		if( flInterval <= 0.001f )
 		{
 			pev->animtime = gpGlobals->time;
-			return 0.0;
+			return 0.0f;
 		}
 	}
 	if( !pev->animtime )
-		flInterval = 0.0;
+		flInterval = 0.0f;
 
 	pev->frame += flInterval * m_flFrameRate * pev->framerate;
 	pev->animtime = gpGlobals->time;
 
-	if( pev->frame < 0.0 || pev->frame >= 256.0 )
+	if( pev->frame < 0.0f || pev->frame >= 256.0f )
 	{
 		if( m_fSequenceLoops )
-			pev->frame -= (int)( pev->frame / 256.0 ) * 256.0;
+			pev->frame -= (int)( pev->frame / 256.0f ) * 256.0f;
 		else
-			pev->frame = ( pev->frame < 0.0 ) ? 0 : 255;
+			pev->frame = ( pev->frame < 0.0f ) ? 0.0f : 255.0f;
 		m_fSequenceFinished = TRUE;	// just in case it wasn't caught in GetEvents
 	}
 
@@ -142,7 +142,7 @@ void CBaseAnimating::DispatchAnimEvents( float flInterval )
 	}
 
 	// FIXME: I have to do this or some events get missed, and this is probably causing the problem below
-	flInterval = 0.1;
+	flInterval = 0.1f;
 
 	// FIX: this still sometimes hits events twice
 	float flStart = pev->frame + ( m_flLastEventCheck - pev->animtime ) * m_flFrameRate * pev->framerate;
@@ -150,7 +150,7 @@ void CBaseAnimating::DispatchAnimEvents( float flInterval )
 	m_flLastEventCheck = pev->animtime + flInterval;
 
 	m_fSequenceFinished = FALSE;
-	if( flEnd >= 256 || flEnd <= 0.0 )
+	if( flEnd >= 256.0f || flEnd <= 0.0f )
 		m_fSequenceFinished = TRUE;
 
 	int index = 0;
@@ -258,7 +258,7 @@ void CBaseAnimating::SetSequenceBox( void )
 	{
 		// expand box for rotation
 		// find min / max for rotations
-		float yaw = pev->angles.y * ( M_PI / 180.0 );
+		float yaw = pev->angles.y * ( M_PI_F / 180.0f );
 
 		Vector xvector, yvector;
 		xvector.x = cos( yaw );
@@ -270,8 +270,8 @@ void CBaseAnimating::SetSequenceBox( void )
 		bounds[0] = mins;
 		bounds[1] = maxs;
 
-		Vector rmin( 9999, 9999, 9999 );
-		Vector rmax( -9999, -9999, -9999 );
+		Vector rmin( 9999.0f, 9999.0f, 9999.0f );
+		Vector rmax( -9999.0f, -9999.0f, -9999.0f );
 		Vector base, transformed;
 
 		for( int i = 0; i <= 1; i++ )
@@ -304,8 +304,8 @@ void CBaseAnimating::SetSequenceBox( void )
 				}
 			}
 		}
-		rmin.z = 0;
-		rmax.z = rmin.z + 1;
+		rmin.z = 0.0f;
+		rmax.z = rmin.z + 1.0f;
 		UTIL_SetSize( pev, rmin, rmax );
 	}
 }

@@ -26,6 +26,10 @@
 #include <stdio.h>
 #include "parsemsg.h"
 
+#if USE_VGUI
+#include "vgui_TeamFortressViewport.h"
+#endif
+
 DECLARE_MESSAGE( m_TextMessage, TextMsg )
 
 int CHudTextMessage::Init( void )
@@ -178,23 +182,32 @@ int CHudTextMessage::MsgFunc_TextMsg( const char *pszName, int iSize, void *pbuf
 
 	char *psz = szBuf[5];
 
+#if USE_VGUI
+	if( gViewPort && gViewPort->AllowedToPrintText() == FALSE )
+		return 1;
+#endif
+
 	switch( msg_dest )
 	{
 	case HUD_PRINTCENTER:
 		_snprintf( psz, MSG_BUF_SIZE, szBuf[0], szBuf[1], szBuf[2], szBuf[3], szBuf[4] );
+		psz[MSG_BUF_SIZE - 1] = '\0';
 		CenterPrint( ConvertCRtoNL( psz ) );
 		break;
 	case HUD_PRINTNOTIFY:
 		psz[0] = 1;  // mark this message to go into the notify buffer
 		_snprintf( psz + 1, MSG_BUF_SIZE - 1, szBuf[0], szBuf[1], szBuf[2], szBuf[3], szBuf[4] );
+		psz[MSG_BUF_SIZE - 2] = '\0';
 		ConsolePrint( ConvertCRtoNL( psz ) );
 		break;
 	case HUD_PRINTTALK:
 		_snprintf( psz, MSG_BUF_SIZE, szBuf[0], szBuf[1], szBuf[2], szBuf[3], szBuf[4] );
+		psz[MSG_BUF_SIZE - 1] = '\0';
 		gHUD.m_SayText.SayTextPrint( ConvertCRtoNL( psz ), MSG_BUF_SIZE );
 		break;
 	case HUD_PRINTCONSOLE:
 		_snprintf( psz, MSG_BUF_SIZE, szBuf[0], szBuf[1], szBuf[2], szBuf[3], szBuf[4] );
+		psz[MSG_BUF_SIZE - 1] = '\0';
 		ConsolePrint( ConvertCRtoNL( psz ) );
 		break;
 	}

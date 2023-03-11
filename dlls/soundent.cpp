@@ -82,7 +82,7 @@ void CSoundEnt::Spawn( void )
 	pev->solid = SOLID_NOT;
 	Initialize();
 
-	pev->nextthink = gpGlobals->time + 1; 
+	pev->nextthink = gpGlobals->time + 1.0f;
 }
 
 //=========================================================
@@ -95,7 +95,7 @@ void CSoundEnt::Think( void )
 	int iSound;
 	int iPreviousSound;
 
-	pev->nextthink = gpGlobals->time + 0.3;// how often to check the sound list.
+	pev->nextthink = gpGlobals->time + 0.3f;// how often to check the sound list.
 
 	iPreviousSound = SOUNDLIST_EMPTY;
 	iSound = m_iActiveSound; 
@@ -367,7 +367,7 @@ int CSoundEnt::ClientSoundIndex( edict_t *pClient )
 {
 	int iReturn = ENTINDEX( pClient ) - 1;
 
-#ifdef _DEBUG
+#if _DEBUG
 	if( iReturn < 0 || iReturn > gpGlobals->maxClients )
 	{
 		ALERT( at_console, "** ClientSoundIndex returning a bogus value! **\n" );

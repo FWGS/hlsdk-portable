@@ -14,7 +14,7 @@
 ****/
 // Implementation in UTIL.CPP
 #pragma once
-#ifndef SAVERESTORE_H
+#if !defined(SAVERESTORE_H)
 #define SAVERESTORE_H
 
 class CBaseEntity;
@@ -157,7 +157,7 @@ public:
 	int				Restore( CRestore &restore );
 	static TYPEDESCRIPTION m_SaveData[];
 
-//#ifdef _DEBUG
+//#if _DEBUG
 	void			DumpGlobals( void );
 //#endif
 

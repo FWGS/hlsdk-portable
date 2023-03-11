@@ -19,10 +19,10 @@
 // JOHN:  client dll interface declarations
 //
 #pragma once
-#ifndef CDLL_INT_H
+#if !defined(CDLL_INT_H)
 #define CDLL_INT_H
 
-#ifdef __cplusplus
+#if __cplusplus
 extern "C" {
 #endif
 
@@ -303,11 +303,14 @@ typedef struct cl_enginefuncs_s
 	int		(*pfnGetAppID)( void );
 	cmdalias_t	*(*pfnGetAliases)( void );
 	void		(*pfnVguiWrap2_GetMouseDelta)( int *x, int *y );
+
+	// added in 2019 update, not documented yet
+	int             (*pfnFilteredClientCmd)( const char *cmd );
 } cl_enginefunc_t;
 
 #define CLDLL_INTERFACE_VERSION	7
 
-#ifdef __cplusplus
+#if __cplusplus
 }
 #endif
 

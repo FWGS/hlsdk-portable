@@ -121,13 +121,6 @@ void CBaseEntity::UpdateOnRemove( void )
 
 	if( pev->globalname )
 		gGlobalState.EntitySetState( pev->globalname, GLOBAL_DEAD );
-
-	// tell owner ( if any ) that we're dead.This is mostly for MonsterMaker functionality.
-	//Killtarget didn't do this before, so the counter broke. - Solokiller
-	if( CBaseEntity* pOwner = pev->owner ? Instance( pev->owner ) : 0 )
-	{
-		pOwner->DeathNotice( pev );
-	}
 }
 
 // Convenient way to delay removing oneself
@@ -251,7 +244,7 @@ void CBaseDelay::SUB_UseTargets( CBaseEntity *pActivator, USE_TYPE useType, floa
 		// Save the useType
 		pTemp->pev->button = (int)useType;
 		pTemp->m_iszKillTarget = m_iszKillTarget;
-		pTemp->m_flDelay = 0; // prevent "recursion"
+		pTemp->m_flDelay = 0.0f; // prevent "recursion"
 		pTemp->pev->target = pev->target;
 
 		// HACKHACK
@@ -421,13 +414,6 @@ void CBaseToggle::LinearMove( Vector vecDest, float flSpeed )
 	// divide vector length by speed to get time to reach dest
 	float flTravelTime = vecDestDelta.Length() / flSpeed;
 
-	if( flTravelTime < 0.05 )
-	{
-		UTIL_SetOrigin( pev, m_vecFinalDest );
-		LinearMoveDone();
-		return;
-	}
-
 	// set nextthink to trigger a call to LinearMoveDone when dest is reached
 	pev->nextthink = pev->ltime + flTravelTime;
 	SetThink( &CBaseToggle::LinearMoveDone );
@@ -461,7 +447,7 @@ void CBaseToggle::LinearMoveDone( void )
 #else
 	Vector delta = m_vecFinalDest - pev->origin;
 	float error = delta.Length();
-	if( error > 0.03125 )
+	if( error > 0.03125f )
 	{
 		LinearMove( m_vecFinalDest, 1000 );
 		return;
