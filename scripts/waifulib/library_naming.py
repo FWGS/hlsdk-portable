@@ -62,6 +62,7 @@ DEFINES = [
 'XASH_WIN64',
 'XASH_X86',
 'XASH_NSWITCH',
+'XASH_PSVITA',
 ]
 
 def configure(conf):
@@ -95,6 +96,8 @@ def configure(conf):
 		buildos = "serenityos"
 	elif conf.env.XASH_NSWITCH:
 		buildos = "nswitch"
+	elif conf.env.XASH_PSVITA:
+		buildos = "psvita"
 	else:
 		conf.fatal("Place your operating system name in build.h and library_naming.py!\n"
 			"If this is a mistake, try to fix conditions above and report a bug")
