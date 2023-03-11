@@ -27,7 +27,8 @@ LOCAL_C_INCLUDES := $(SDL_PATH)/include \
 		    $(LOCAL_PATH)/../engine \
 		    $(LOCAL_PATH)/../public \
 		    $(LOCAL_PATH)/../pm_shared \
-		    $(LOCAL_PATH)/../game_shared
+		    $(LOCAL_PATH)/../game_shared \
+		    $(LOCAL_PATH)/gravgun
 
 LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
            aflock.cpp \
@@ -129,16 +130,16 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
            xen.cpp \
            zombie.cpp \
            prop.cpp \
-           gravgun.cpp \
-           ar2.cpp \
-           big_cock.cpp \
-           unpredictedweapon.cpp \
+           gravgun/gravgun.cpp \
+           gravgun/ar2.cpp \
+           gravgun/big_cock.cpp \
+           gravgun/unpredictedweapon.cpp \
 	   ../pm_shared/pm_debug.c \
 	   ../pm_shared/pm_math.c \
 	   ../pm_shared/pm_shared.c \
-	   coop.cpp \
-	   gateofbabylon.cpp \
-	   gravgunmod.cpp \
+	   gravgun/coop.cpp \
+	   gravgun/gateofbabylon.cpp \
+	   gravgun/gravgunmod.cpp \
 #	   ../game_shared/voice_gamemgr.cpp
 
 LOCAL_LDLIBS := -llog
