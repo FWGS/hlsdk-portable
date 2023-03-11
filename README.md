@@ -270,6 +270,32 @@ make -j
 ./waf build
 ```
 
+## PlayStation Vita
+
+### Prerequisites
+
+1. Set up [VitaSDK](https://vitasdk.org/).
+2. Install [vita-rtld](https://github.com/fgsfdsfgs/vita-rtld):
+   ```
+   git clone https://github.com/fgsfdsfgs/vita-rtld.git && cd vita-rtld
+   mkdir build && cd build
+   cmake -DCMAKE_BUILD_TYPE=Release ..
+   make -j2 install
+   ```
+
+### Building with waf:
+```
+./waf configure -T release --psvita
+./waf build
+```
+
+### Building with CMake:
+```
+mkdir build && cd build
+cmake -G"Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE="$VITASDK/share/vita.toolchain.cmake" -DCMAKE_PROJECT_HLSDK-PORTABLE_INCLUDE="$VITASDK/share/vrtld_shim.cmake" ..
+make -j
+```
+
 ## Other platforms
 
 Building on other architectures (e.g x86_64 or arm) and POSIX-compliant OSes (e.g. FreeBSD) is supported.
