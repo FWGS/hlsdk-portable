@@ -147,6 +147,10 @@ else()
 	add_definitions(-D_CRT_SILENCE_NONCONFORMING_TGMATH_H)
 endif()
 
+if(VITA)
+	add_compile_options(-fno-use-cxa-atexit)
+endif()
+
 check_include_file("tgmath.h" HAVE_TGMATH_H)
 if(HAVE_TGMATH_H)
 	if(NOT MSVC)
