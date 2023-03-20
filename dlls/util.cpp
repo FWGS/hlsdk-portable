@@ -579,6 +579,27 @@ CBaseEntity *UTIL_PlayerByIndex( int playerIndex )
 	return pPlayer;
 }
 
+CBasePlayer* UTIL_FindPlayerByName (const char *p_search_name)
+{
+	for(int i=1; i<= gpGlobals->maxClients; i++)
+	{
+		edict_t *pEdict = g_engfuncs.pfnPEntityOfEntIndex(i);
+		if(pEdict)
+		{
+			CBaseEntity *pEnt = CBaseEntity::Instance( pEdict );
+			if(pEnt && pEnt->IsPlayer())
+			{
+				const char *p_net_name = STRING(pEnt->pev->netname);
+				if( strcmp(p_net_name, p_search_name) == 0 )
+				{
+					return (CBasePlayer*)pEnt;
+				}
+			}
+		}
+	}
+	return NULL;
+}
+
 void UTIL_MakeVectors( const Vector &vecAngles )
 {
 	MAKE_VECTORS( vecAngles );

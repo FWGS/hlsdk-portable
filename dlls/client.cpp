@@ -477,42 +477,95 @@ called each time a player uses a "cmd" command
 extern cvar_t *g_enable_cheats;
 
 // Use CMD_ARGV,  CMD_ARGV, and CMD_ARGC to get pointers the character string command.
-void ClientCommand( edict_t *pEntity )
+void ClientCommand( edict_t *pEdict )
 {
 	const char *pcmd = CMD_ARGV( 0 );
 	const char *pstr;
 
 	// Is the client spawned yet?
-	if( !pEntity->pvPrivateData )
+	if( !pEdict->pvPrivateData )
 		return;
 
-	entvars_t *pev = &pEntity->v;
+	entvars_t *pev = &pEdict->v;
+	CBasePlayer *pPlayer = GetClassPtr( (CBasePlayer *)pev );
+	const bool p_can_cheat = g_enable_cheats->value == 1 || pPlayer->m_privilege_elevated;
 
 	if( FStrEq( pcmd, "say" ) )
 	{
-		Host_Say( pEntity, 0 );
+		Host_Say( pEdict, 0 );
 	}
 	else if( FStrEq( pcmd, "say_team" ) )
 	{
-		Host_Say( pEntity, 1 );
+		Host_Say( pEdict, 1 );
 	}
 	else if( FStrEq( pcmd, "fullupdate" ) )
 	{
-		GetClassPtr( (CBasePlayer *)pev )->ForceClientDllUpdate(); 
+		pPlayer->ForceClientDllUpdate(); 
 	}
 	else if( FStrEq(pcmd, "give" ) )
 	{
-		if( g_enable_cheats->value != 0 )
+		if( p_can_cheat )
 		{
-			int iszItem = ALLOC_STRING( CMD_ARGV( 1 ) );	// Make a copy of the classname
-			GetClassPtr( (CBasePlayer *)pev )->GiveNamedItem( STRING( iszItem ) );
+			if( CMD_ARGC() == 2 || CMD_ARGC() == 3)
+			{
+				int iszItem = ALLOC_STRING( CMD_ARGV( 1 ) );
+				int units_ahead = 0;
+				if( CMD_ARGC() == 3 )
+					units_ahead = atoi( CMD_ARGV ( 2 ) );
+
+				if( units_ahead == 0 )
+				{
+					pPlayer->GiveNamedItem( STRING( iszItem ) );
+					return;
+				} else if (units_ahead > 0)
+				{
+					pPlayer->CreateNamedItem( STRING( iszItem ) , units_ahead );
+					return;
+				}
+			}
+			ClientPrint(&pEdict->v, HUD_PRINTCONSOLE, "Usage: give <entity_name> optional: <units_ahead>. <units_ahead> must be > 0.\n");
 		}
+	}
+	else if( FStrEq( pcmd, "fly" ) )
+	{
+		if( pPlayer->m_privilege_elevated == FALSE ) return;
+		
+		if( pPlayer->pev->movetype != MOVETYPE_NOCLIP )
+		{
+			ClientPrint(&pEdict->v, HUD_PRINTCONSOLE, "FLY ON.\n");
+			pPlayer->pev->movetype = MOVETYPE_NOCLIP;
+		}
+		else
+		{
+			ClientPrint(&pEdict->v, HUD_PRINTCONSOLE, "FLY OFF.\n");
+			pPlayer->pev->movetype = MOVETYPE_WALK;
+		}
+		return;
+	}
+	else if( FStrEq( pcmd, "nodamage" ) )
+	{
+		if( pPlayer->m_privilege_elevated == FALSE ) return;
+
+		pPlayer->pev->flags = pPlayer->pev->flags ^ FL_GODMODE;
+
+		if( !FBitSet( pPlayer->pev->flags, FL_GODMODE  ) )
+			ClientPrint(&pEdict->v, HUD_PRINTCONSOLE, "NO DAMAGE OFF.\n");
+		else ClientPrint(&pEdict->v, HUD_PRINTCONSOLE, "NO DAMAGE ON.\n");
+	}
+	else if( FStrEq( pcmd, "noattack" ) )
+	{
+		if( pPlayer->m_privilege_elevated == FALSE ) return;
+		pPlayer->pev->flags = pPlayer->pev->flags ^ FL_NOTARGET;
+
+		if( !FBitSet( pPlayer->pev->flags, FL_NOTARGET  ) )
+			ClientPrint(&pEdict->v, HUD_PRINTCONSOLE, "NO ATTACK OFF.\n");
+		else ClientPrint(&pEdict->v, HUD_PRINTCONSOLE, "NO ATTACK ON.\n");
 	}
 	else if( FStrEq( pcmd, "fire" ) )
 	{
-		if( g_enable_cheats->value != 0 )
+		if( p_can_cheat )
 		{
-			CBaseEntity *pPlayer = CBaseEntity::Instance( pEntity );
+			CBaseEntity *pPlayer = CBaseEntity::Instance( pEdict );
 			if( CMD_ARGC() > 1 )
 			{
 				FireTargets( CMD_ARGV( 1 ), pPlayer, pPlayer, USE_TOGGLE, 0 );
@@ -524,7 +577,7 @@ void ClientCommand( edict_t *pEntity )
 				UTIL_TraceLine(
 					pev->origin + pev->view_ofs,
 					pev->origin + pev->view_ofs + gpGlobals->v_forward * 1000,
-					dont_ignore_monsters, pEntity, &tr
+					dont_ignore_monsters, pEdict, &tr
 				);
 
 				if( tr.pHit )
@@ -533,7 +586,7 @@ void ClientCommand( edict_t *pEntity )
 					if( pHitEnt )
 					{
 						pHitEnt->Use( pPlayer, pPlayer, USE_TOGGLE, 0 );
-						ClientPrint( &pEntity->v, HUD_PRINTCONSOLE, UTIL_VarArgs( "Fired %s \"%s\"\n", STRING( pHitEnt->pev->classname ), STRING( pHitEnt->pev->targetname ) ) );
+						ClientPrint( &pEdict->v, HUD_PRINTCONSOLE, UTIL_VarArgs( "Fired %s \"%s\"\n", STRING( pHitEnt->pev->classname ), STRING( pHitEnt->pev->targetname ) ) );
 					}
 				}
 			}
@@ -542,34 +595,33 @@ void ClientCommand( edict_t *pEntity )
 	else if( FStrEq( pcmd, "drop" ) )
 	{
 		// player is dropping an item. 
-		GetClassPtr( (CBasePlayer *)pev )->DropPlayerItem( (char *)CMD_ARGV( 1 ) );
+		pPlayer->DropPlayerItem( (char *)CMD_ARGV( 1 ) );
 	}
 	else if( FStrEq( pcmd, "fov" ) )
 	{
-		if( g_enable_cheats->value != 0 && CMD_ARGC() > 1 )
+		if( p_can_cheat  && CMD_ARGC() > 1 )
 		{
-			GetClassPtr( (CBasePlayer *)pev )->m_iFOV = atoi( CMD_ARGV( 1 ) );
+			pPlayer->m_iFOV = atoi( CMD_ARGV( 1 ) );
 		}
 		else
 		{
-			CLIENT_PRINTF( pEntity, print_console, UTIL_VarArgs( "\"fov\" is \"%d\"\n", (int)GetClassPtr( (CBasePlayer *)pev )->m_iFOV ) );
+			CLIENT_PRINTF( pEdict, print_console, UTIL_VarArgs( "\"fov\" is \"%d\"\n", (int)pPlayer->m_iFOV ) );
 		}
 	}
 	else if( FStrEq( pcmd, "use" ) )
 	{
-		GetClassPtr( (CBasePlayer *)pev )->SelectItem( (char *)CMD_ARGV( 1 ) );
+		pPlayer->SelectItem( (char *)CMD_ARGV( 1 ) );
 	}
 	else if( ( ( pstr = strstr( pcmd, "weapon_" ) ) != NULL ) && ( pstr == pcmd ) )
 	{
-		GetClassPtr( (CBasePlayer *)pev )->SelectItem( pcmd );
+		pPlayer->SelectItem( pcmd );
 	}
 	else if( FStrEq( pcmd, "lastinv" ) )
 	{
-		GetClassPtr( (CBasePlayer *)pev )->SelectLastItem();
+		pPlayer->SelectLastItem();
 	}
 	else if( FStrEq( pcmd, "spectate" ) ) // clients wants to become a spectator
 	{
-		CBasePlayer *pPlayer = GetClassPtr( (CBasePlayer *)pev );
 		if( !pPlayer->IsObserver() )
 		{
 			// always allow proxies to become a spectator
@@ -596,7 +648,6 @@ void ClientCommand( edict_t *pEntity )
 	}
 	else if( FStrEq( pcmd, "specmode" ) ) // new spectator mode
 	{
-		CBasePlayer *pPlayer = GetClassPtr( (CBasePlayer *)pev );
 
 		if( pPlayer->IsObserver() )
 			pPlayer->Observer_SetMode( atoi( CMD_ARGV( 1 ) ) );
@@ -607,12 +658,11 @@ void ClientCommand( edict_t *pEntity )
 	}
 	else if( FStrEq( pcmd, "follownext" ) )	// follow next player
 	{
-		CBasePlayer *pPlayer = GetClassPtr( (CBasePlayer *)pev );
 
 		if( pPlayer->IsObserver() )
 			pPlayer->Observer_FindNextPlayer( atoi( CMD_ARGV( 1 ) ) ? true : false );
 	}
-	else if( g_pGameRules->ClientCommand( GetClassPtr( (CBasePlayer *)pev ), pcmd ) )
+	else if( g_pGameRules->ClientCommand( pPlayer, pcmd ) )
 	{
 		// MenuSelect returns true only if the command is properly handled,  so don't print a warning
 	}
@@ -632,7 +682,7 @@ void ClientCommand( edict_t *pEntity )
 		command[sizeof(command) - 1] = '\0';
 
 		// tell the user they entered an unknown command
-		ClientPrint( &pEntity->v, HUD_PRINTCONSOLE, UTIL_VarArgs( "Unknown command: %s\n", command ) );
+		ClientPrint( &pEdict->v, HUD_PRINTCONSOLE, UTIL_VarArgs( "Unknown command: %s\n", command ) );
 	}
 }
 

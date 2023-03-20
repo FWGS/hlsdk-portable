@@ -223,6 +223,7 @@ inline BOOL FClassnameIs(entvars_t* pev, const char* szClassname)
 }
 
 class CBaseEntity;
+class CBasePlayer;
 
 // Misc. Prototypes
 extern void			UTIL_SetSize			(entvars_t* pev, const Vector &vecMin, const Vector &vecMax);
@@ -241,6 +242,7 @@ extern CBaseEntity	*UTIL_FindEntityGeneric(const char *szName, Vector &vecSrc, f
 // otherwise returns NULL
 // Index is 1 based
 extern CBaseEntity	*UTIL_PlayerByIndex( int playerIndex );
+extern CBasePlayer	*UTIL_FindPlayerByName ( const char *p_search_name );
 
 #define UTIL_EntitiesInPVS(pent)			(*g_engfuncs.pfnEntitiesInPVS)(pent)
 extern void			UTIL_MakeVectors		(const Vector &vecAngles);

@@ -54,6 +54,8 @@ cvar_t multibyte_only = { "mp_multibyte_only", "0", FCVAR_SERVER };
 
 cvar_t mp_chattime	= { "mp_chattime","10", FCVAR_SERVER };
 
+cvar_t mp_disable_longjump = {"mp_disable_longjump", "0", FCVAR_SERVER};
+
 // Engine Cvars
 cvar_t *g_psv_gravity = NULL;
 cvar_t *g_psv_aim = NULL;
@@ -455,6 +457,24 @@ cvar_t	sk_player_leg1	= { "sk_player_leg1","1" };
 cvar_t	sk_player_leg2	= { "sk_player_leg2","1" };
 cvar_t	sk_player_leg3	= { "sk_player_leg3","1" };
 
+// multiplayer override overrides.
+// The default values are Valve's original overrides.
+cvar_t sk_mp_suitcharger = {"sk_mp_suitcharger","30"};
+cvar_t sk_mp_plr_crowbar = {"sk_mp_plr_crowbar","25"};
+cvar_t sk_mp_plr_9mm_bullet = {"sk_mp_plr_9mm_bullet","12"};
+cvar_t sk_mp_plr_357_bullet = {"sk_mp_plr_357_bullet","40"};
+cvar_t sk_mp_plr_9mmAR_bullet = {"sk_mp_plr_9mmAR_bullet","12"};
+cvar_t sk_mp_plr_9mmAR_grenade = {"sk_mp_plr_9mmAR_grenade","100"};
+cvar_t sk_mp_plr_buckshot = {"sk_mp_plr_buckshot","20"}; // fewer pellets in deathmatch
+cvar_t sk_mp_plr_xbow_bolt_client = {"sk_mp_plr_xbow_bolt_client","20"};
+cvar_t sk_mp_plr_rpg = {"sk_mp_plr_rpg","120"};
+cvar_t sk_mp_plr_egon_wide = {"sk_mp_plr_egon_wide","20"};
+cvar_t sk_mp_plr_egon_narrow = {"sk_mp_plr_egon_narrow","10"};
+cvar_t sk_mp_plr_hand_grenade = {"sk_mp_plr_hand_grenade","100"};
+cvar_t sk_mp_plr_satchel = {"sk_mp_plr_satchel","120"};
+cvar_t sk_mp_plr_tripmine = {"sk_mp_plr_tripmine","150"};
+cvar_t sk_mp_plr_hornet = {"sk_mp_plr_hornet","10"};
+
 // END Cvars for Skill Level settings
 
 // Register your console variables here
@@ -507,6 +527,7 @@ void GameDLLInit( void )
 	CVAR_REGISTER( &mp_chattime );
 
 
+	CVAR_REGISTER( &mp_disable_longjump );
 
 // REGISTER CVARS FOR SKILL LEVEL STUFF
 	// Agrunt
@@ -881,6 +902,26 @@ void GameDLLInit( void )
 	CVAR_REGISTER( &sk_player_leg1 );
 	CVAR_REGISTER( &sk_player_leg2 );
 	CVAR_REGISTER( &sk_player_leg3 );
+
+
+	// multiplayer override overrides
+
+	CVAR_REGISTER( &sk_mp_suitcharger );
+	CVAR_REGISTER( &sk_mp_plr_crowbar );
+	CVAR_REGISTER( &sk_mp_plr_9mm_bullet );
+	CVAR_REGISTER( &sk_mp_plr_357_bullet );
+	CVAR_REGISTER( &sk_mp_plr_9mmAR_bullet );
+	CVAR_REGISTER( &sk_mp_plr_9mmAR_grenade );
+	CVAR_REGISTER( &sk_mp_plr_buckshot );
+	CVAR_REGISTER( &sk_mp_plr_xbow_bolt_client );
+	CVAR_REGISTER( &sk_mp_plr_rpg );
+	CVAR_REGISTER( &sk_mp_plr_egon_wide );
+	CVAR_REGISTER( &sk_mp_plr_egon_narrow );
+	CVAR_REGISTER( &sk_mp_plr_hand_grenade );
+	CVAR_REGISTER( &sk_mp_plr_satchel );
+	CVAR_REGISTER( &sk_mp_plr_tripmine );
+	CVAR_REGISTER( &sk_mp_plr_hornet );
+
 // END REGISTER CVARS FOR SKILL LEVEL STUFF
 
 	SERVER_COMMAND( "exec skill.cfg\n" );

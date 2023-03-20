@@ -35,6 +35,7 @@ extern cvar_t monsteryawspeedfix;
 extern cvar_t corpsephysics;
 extern cvar_t pushablemode;
 extern cvar_t forcerespawn;
+extern cvar_t mp_disable_longjump;
 extern cvar_t flashlight;
 extern cvar_t aimcrosshair;
 extern cvar_t decalfrequency;
