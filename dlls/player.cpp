@@ -1458,6 +1458,17 @@ void CBasePlayer::StartObserver( Vector vecPosition, Vector vecViewAngle )
 	Observer_SetMode( m_iObserverLastMode );
 }
 
+void CBasePlayer::SendScoreInfo()
+{
+	MESSAGE_BEGIN(MSG_ALL, gmsgScoreInfo);
+	WRITE_BYTE(ENTINDEX(edict())); // Player index
+	WRITE_SHORT(pev->frags); // Score
+	WRITE_SHORT(m_iDeaths); // Deaths
+	WRITE_SHORT(0); // TFC class
+	WRITE_SHORT(g_pGameRules->GetTeamIndex(m_szTeamName) + 1); // Team index
+	MESSAGE_END();
+}
+
 //
 // PlayerUse - handles USE keypress
 //

@@ -330,6 +330,12 @@ public:
 	Vector m_vecLastViewAngles;
 
 	bool m_bSentBhopcap; // If false, the player just joined and needs a bhopcap message.
+
+	/**
+	 * Sends a message to all clients with score of this player.
+	 * Should be called any time kills/deaths are updated.
+	 */
+	void SendScoreInfo();
 };
 
 #define AUTOAIM_2DEGREES  0.0348994967025
