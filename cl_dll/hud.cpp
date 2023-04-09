@@ -95,8 +95,11 @@ float g_hud_text_color[3];
 extern client_sprite_t *GetSpriteList( client_sprite_t *pList, const char *psz, int iRes, int iCount );
 
 extern cvar_t *sensitivity;
+qboolean bIsXash;
 cvar_t *cl_lw = NULL;
 cvar_t *cl_viewbob = NULL;
+cvar_t *cl_rollspeed;
+cvar_t *cl_rollangle;
 
 void ShutdownInput( void );
 
@@ -381,7 +384,17 @@ void CHud::Init( void )
 	m_pCvarDraw = CVAR_CREATE( "hud_draw", "1", FCVAR_ARCHIVE );
 	cl_lw = gEngfuncs.pfnGetCvarPointer( "cl_lw" );
 	cl_viewbob = CVAR_CREATE( "cl_viewbob", "0", FCVAR_ARCHIVE );
-
+#if GOLDSOURCE_SUPPORT
+	if( gEngfuncs.pfnGetCvarPointer( "build" ))
+	{
+		bIsXash = true;
+	}
+	else
+	{
+		cl_rollangle = gEngfuncs.pfnRegisterVariable( "cl_rollangle", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE );
+		cl_rollspeed = gEngfuncs.pfnRegisterVariable( "cl_rollspeed", "200", FCVAR_CLIENTDLL | FCVAR_ARCHIVE );
+	}
+#endif
 	m_pSpriteList = NULL;
 
 	// Clear any old HUD list
