@@ -31,8 +31,6 @@
 #include "pm_movevars.h"
 #include "pm_debug.h"
 
-int g_bhopcap = 1;
-
 #if CLIENT_DLL
 // Spectator Mode
 int iJumpSpectator;
@@ -2481,6 +2479,8 @@ PM_Jump
 void PM_Jump( void )
 {
 	int i;
+	qboolean bunnyjump = false;
+
 	qboolean tfc = false;
 
 	qboolean cansuperjump = false;
@@ -2564,7 +2564,10 @@ void PM_Jump( void )
 	// In the air now.
 	pmove->onground = -1;
 
-	if( g_bhopcap )
+	if( pmove->multiplayer )
+		bunnyjump = atoi( pmove->PM_Info_ValueForKey( pmove->physinfo, "bj" ) ) ? true : false;
+
+	if( !bunnyjump )
 		PM_PreventMegaBunnyJumping();
 
 	if( tfc )
