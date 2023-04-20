@@ -101,7 +101,6 @@ set (CLDLL_SOURCES
 	input_xash3d.cpp
 	menu.cpp
 	message.cpp
-	overview.cpp
 	parsemsg.cpp
 	../pm_shared/pm_debug.c
 	../pm_shared/pm_math.c
@@ -159,7 +158,7 @@ if (USE_VGUI)
 	link_directories(${CMAKE_SOURCE_DIR}/vgui_support/vgui-dev/lib)
 	include_directories(../vgui_support/vgui-dev/include)
 else()
-	include_directories(../utils/false_vgui/include)
+	include_directories(../utils/fake_vgui/include)
 endif()
 
 if(USE_VOICEMGR)

@@ -1,4 +1,4 @@
-﻿/***
+/***
 *
 *	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
 *	
@@ -282,9 +282,23 @@ void CTripmineGrenade::BeamBreakThink( void )
 	// respawn detect. 
 	if( !m_pBeam )
 	{
+#if TRIPMINE_BEAM_DUPLICATION_FIX
+		// Use the same trace parameters as the original trace above so the right entity is hit.
+		TraceResult tr2;
+		UTIL_TraceLine( pev->origin + m_vecDir * 8.0f, pev->origin - m_vecDir * 32.0f, dont_ignore_monsters, ENT( pev ), &tr2 );
+#endif
 		MakeBeam();
+#if TRIPMINE_BEAM_DUPLICATION_FIX
+		if( tr2.pHit )
+		{
+			// reset owner too
+			pev->owner = tr2.pHit;
+			m_hOwner = CBaseEntity::Instance( tr2.pHit );
+		}
+#else
 		if( tr.pHit )
 			m_hOwner = CBaseEntity::Instance( tr.pHit );	// reset owner too
+#endif
 	}
 
 	if( fabs( m_flBeamLength - tr.flFraction ) > 0.001f )
@@ -364,7 +378,12 @@ void CTripmine::Spawn()
 	m_iId = WEAPON_TRIPMINE;
 	SET_MODEL( ENT( pev ), "models/v_tripmine.mdl" );
 	pev->frame = 0;
+
+#ifdef CLIENT_DLL
+	pev->body = 0;
+#else
 	pev->body = 3;
+#endif
 	pev->sequence = TRIPMINE_GROUND;
 	// ResetSequenceInfo();
 	pev->framerate = 0;
@@ -449,7 +468,7 @@ void CTripmine::PrimaryAttack( void )
 #else
 	flags = 0;
 #endif
-	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usTripFire, 0.0f, g_vecZero, g_vecZero, 0.0f, 0.0f, 0, 0, 0, 0 );
+	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usTripFire, 0.0f, g_vecZero, g_vecZero, 0.0f, 0.0f, 0, 0, m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] == 1, 0 );
 
 	if( tr.flFraction < 1.0f )
 	{

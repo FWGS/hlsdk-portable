@@ -79,6 +79,8 @@ For more information, please refer to <http://unlicense.org/>
 #undef XASH_WIN32
 #undef XASH_WIN64
 #undef XASH_X86
+#undef XASH_NSWITCH
+#undef XASH_PSVITA
 
 //================================================================
 //
@@ -96,6 +98,14 @@ For more information, please refer to <http://unlicense.org/>
 	#if defined(_WIN64)
 		#define XASH_WIN64 1
 	#endif
+#elif defined __SWITCH__
+	#define XASH_NSWITCH 1
+	#define XASH_LITTLE_ENDIAN 1
+	#define XASH_POSIX 1
+#elif defined __vita__
+	#define XASH_PSVITA 1
+	#define XASH_LITTLE_ENDIAN 1
+	#define XASH_POSIX 1
 #elif defined(__linux__)
 	#define XASH_LINUX 1
 	#if defined(__ANDROID__)
@@ -134,7 +144,7 @@ For more information, please refer to <http://unlicense.org/>
 #error "Place your operating system name here! If this is a mistake, try to fix conditions above and report a bug"
 #endif
 
-#if defined XASH_ANDROID || defined XASH_IOS
+#if defined XASH_ANDROID || defined XASH_IOS || defined XASH_NSWITCH || defined XASH_PSVITA
 	#define XASH_MOBILE_PLATFORM 1
 #endif
 

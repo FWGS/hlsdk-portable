@@ -33,7 +33,7 @@ include(CheckIncludeFile)
 include(CheckCSourceCompiles)
 include(VSForceXPToolchain) # Force XP toolchain for Visual Studio
 
-project (HLSDK-XASH3D)
+project (HLSDK-PORTABLE)
 
 #--------------
 # USER DEFINES \
@@ -65,6 +65,8 @@ option(CROWBAR_DELAY_FIX "Enable crowbar attack delay fix" OFF)
 option(CROWBAR_FIX_RAPID_CROWBAR "Enable rapid crowbar fix" OFF)
 option(GAUSS_OVERCHARGE_FIX "Enable gauss overcharge fix" OFF)
 option(TRIPMINE_BEAM_DUPLICATION_FIX "Enable fix of tripmine beam duplication on level transition" OFF)
+option(HANDGRENADE_DEPLOY_FIX "Enable handgrenade deploy animation fix after finishing a throw" OFF)
+option(WEAPONS_ANIMATION_TIMES_FIX "Enable animation times fix for some weapons" OFF)
 option(OEM_BUILD "Enable OEM Build" OFF)
 option(HLDEMO_BUILD "Enable Demo Build" OFF)
 
@@ -142,6 +144,16 @@ if(TRIPMINE_BEAM_DUPLICATION_FIX)
 	add_definitions(-DTRIPMINE_BEAM_DUPLICATION_FIX)
 endif()
 
+if(HANDGRENADE_DEPLOY_FIX)
+	message(STATUS "Handgrenade deploy animation fix enabled")
+	add_definitions(-DHANDGRENADE_DEPLOY_FIX)
+endif()
+
+if(WEAPONS_ANIMATION_TIMES_FIX)
+	message(STATUS "Weapons animation times fix enabled")
+	add_definitions(-DWEAPONS_ANIMATION_TIMES_FIX)
+endif()
+
 if(OEM_BUILD)
 	message(STATUS "OEM build enabled")
 	add_definitions(-DOEM_BUILD)
@@ -172,6 +184,10 @@ if(NOT MSVC)
 	add_compile_options(-Wreturn-type) # GCC/Clang flag
 else()
 	add_definitions(-D_CRT_SILENCE_NONCONFORMING_TGMATH_H)
+endif()
+
+if(VITA)
+	add_compile_options(-fno-use-cxa-atexit)
 endif()
 
 check_include_file("tgmath.h" HAVE_TGMATH_H)

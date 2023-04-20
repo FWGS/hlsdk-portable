@@ -61,6 +61,8 @@ DEFINES = [
 'XASH_WIN32',
 'XASH_WIN64',
 'XASH_X86',
+'XASH_NSWITCH',
+'XASH_PSVITA',
 ]
 
 def configure(conf):
@@ -92,6 +94,10 @@ def configure(conf):
 		buildos = "haiku"
 	elif conf.env.XASH_SERENITY:
 		buildos = "serenityos"
+	elif conf.env.XASH_NSWITCH:
+		buildos = "nswitch"
+	elif conf.env.XASH_PSVITA:
+		buildos = "psvita"
 	else:
 		conf.fatal("Place your operating system name in build.h and library_naming.py!\n"
 			"If this is a mistake, try to fix conditions above and report a bug")
@@ -99,7 +105,10 @@ def configure(conf):
 	if conf.env.XASH_AMD64:
 		buildarch = "amd64"
 	elif conf.env.XASH_X86:
-		buildarch = ""
+		if conf.env.XASH_WIN32 or conf.env.XASH_LINUX or conf.env.XASH_APPLE:
+			buildarch = ""
+		else:
+			buildarch = "i386"
 	elif conf.env.XASH_ARM and conf.env.XASH_64BIT:
 		buildarch = "arm64"
 	elif conf.env.XASH_ARM:
