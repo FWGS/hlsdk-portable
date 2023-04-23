@@ -20,7 +20,8 @@
 # SOFTWARE.
 #
 
-cmake_minimum_required(VERSION 2.8.12)
+# 3.9 added captures in if(MATCHES)
+cmake_minimum_required(VERSION 3.9)
 
 if(NOT ${CMAKE_VERSION} VERSION_LESS "3.15.0")
 	cmake_policy(SET CMP0091 NEW)
@@ -58,27 +59,32 @@ else()
 	option(GOLDSOURCE_SUPPORT "Build goldsource compatible client library" OFF)
 endif()
 
-option(BARNACLE_FIX_VISIBILITY "Enable barnacle tongue length fix" OFF)
-option(CLIENT_WEAPONS "Enable client local weapons prediction" ON)
-option(CROWBAR_IDLE_ANIM "Enable crowbar idle animation" OFF)
-option(CROWBAR_DELAY_FIX "Enable crowbar attack delay fix" OFF)
-option(CROWBAR_FIX_RAPID_CROWBAR "Enable rapid crowbar fix" OFF)
-option(GAUSS_OVERCHARGE_FIX "Enable gauss overcharge fix" OFF)
-option(TRIPMINE_BEAM_DUPLICATION_FIX "Enable fix of tripmine beam duplication on level transition" OFF)
-option(HANDGRENADE_DEPLOY_FIX "Enable handgrenade deploy animation fix after finishing a throw" OFF)
-option(WEAPONS_ANIMATION_TIMES_FIX "Enable animation times fix for some weapons" OFF)
-option(OEM_BUILD "Enable OEM Build" OFF)
-option(HLDEMO_BUILD "Enable Demo Build" OFF)
-
-set(GAMEDIR "valve" CACHE STRING "Gamedir path")
-set(SERVER_INSTALL_DIR "dlls" CACHE STRING "Where put server dll")
-set(CLIENT_INSTALL_DIR "cl_dlls" CACHE STRING "Where put client dll")
-set(SERVER_LIBRARY_NAME "hl" CACHE STRING "Library name for PC platforms")
-message(STATUS "Half-Life")
-
 #-----------------
 # MAIN BUILD CODE \
 ###################\
+
+file(STRINGS "mod_options.txt" MOD_OPTIONS_STRINGS REGEX "^([A-Za-z0-9_]+)=([A-Za-z0-9_]+)\ \#\ (.*)$")
+foreach(LINE IN LISTS MOD_OPTIONS_STRINGS)
+	# file() itself doesn't populate CMAKE_MATCH_<n>, so
+	# reparse the string
+
+	if(${LINE} MATCHES "^([A-Za-z0-9_]+)=([A-Za-z0-9_]+)\ \#\ (.*)$")
+		# detect boolean options
+		if(${CMAKE_MATCH_2} STREQUAL "ON" OR ${CMAKE_MATCH_2} STREQUAL "OFF")
+			option(${CMAKE_MATCH_1} "${CMAKE_MATCH_3}" ${CMAKE_MATCH_2})
+
+			# let's check it here as well
+			if(${CMAKE_MATCH_1})
+				message(STATUS ${CMAKE_MATCH_3} " is enabled")
+				add_definitions(-D${CMAKE_MATCH_1})
+			else()
+				message(STATUS ${CMAKE_MATCH_3} " is disabled")
+			endif()
+		else()
+			set(${CMAKE_MATCH_1} "${CMAKE_MATCH_2}" CACHE STRING "${CMAKE_MATCH_3}")
+		endif()
+	endif()
+endforeach()
 
 if(HLDEMO_BUILD AND OEM_BUILD)
 	message(FATAL_ERROR "Don't mix Demo and OEM builds!")
@@ -109,74 +115,9 @@ else()
 	message(STATUS "Building for 32 Bit")
 endif()
 
-if(CLIENT_WEAPONS)
-	message(STATUS "Client weapons enabled.")
-	add_definitions(-DCLIENT_WEAPONS)
-endif()
-
-if(BARNACLE_FIX_VISIBILITY)
-	message(STATUS "Barnacle tongue fix enabled")
-	add_definitions(-DBARNACLE_FIX_VISIBILITY)
-endif()
-
-if(CROWBAR_IDLE_ANIM)
-	message(STATUS "Crowbar idle animation enabled")
-	add_definitions(-DCROWBAR_IDLE_ANIM)
-endif()
-
-if(CROWBAR_DELAY_FIX)
-	message(STATUS "Crowbar attack delay fix enabled")
-	add_definitions(-DCROWBAR_DELAY_FIX)
-endif()
-
-if(CROWBAR_FIX_RAPID_CROWBAR)
-	message(STATUS "Rapid crowbar fix enabled")
-	add_definitions(-DCROWBAR_FIX_RAPID_CROWBAR)
-endif()
-
-if(GAUSS_OVERCHARGE_FIX)
-	message(STATUS "Gauss overcharge fix enabled")
-	add_definitions(-DGAUSS_OVERCHARGE_FIX)
-endif()
-
-if(TRIPMINE_BEAM_DUPLICATION_FIX)
-	message(STATUS "Tripmine beam duplication fix enabled")
-	add_definitions(-DTRIPMINE_BEAM_DUPLICATION_FIX)
-endif()
-
-if(HANDGRENADE_DEPLOY_FIX)
-	message(STATUS "Handgrenade deploy animation fix enabled")
-	add_definitions(-DHANDGRENADE_DEPLOY_FIX)
-endif()
-
-if(WEAPONS_ANIMATION_TIMES_FIX)
-	message(STATUS "Weapons animation times fix enabled")
-	add_definitions(-DWEAPONS_ANIMATION_TIMES_FIX)
-endif()
-
-if(OEM_BUILD)
-	message(STATUS "OEM build enabled")
-	add_definitions(-DOEM_BUILD)
-endif()
-
-if(HLDEMO_BUILD)
-	message(STATUS "Demo build enabled")
-	add_definitions(-DHLDEMO_BUILD)
-endif()
-
 if (MINGW)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libstdc++ -static-libgcc")
 	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--add-stdcall-alias")
-endif()
-
-# add_compile_options for older cmake versions
-if(${CMAKE_VERSION} VERSION_LESS "3.0.2")
-	macro(add_compile_options)
-		set(list_var "${ARGV}")
-		foreach(arg IN LISTS list_var)
-			set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${arg}")
-		endforeach()
-	endmacro()
 endif()
 
 if(NOT MSVC)
