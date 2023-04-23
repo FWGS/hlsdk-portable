@@ -31,8 +31,6 @@
 #include "pm_movevars.h"
 #include "pm_debug.h"
 
-int g_bhopcap = 1;
-
 #if CLIENT_DLL
 // Spectator Mode
 int iJumpSpectator;
@@ -2507,6 +2505,8 @@ PM_Jump
 void PM_Jump( void )
 {
 	int i;
+	qboolean bunnyjump = false;
+
 	qboolean tfc = false;
 
 	qboolean cansuperjump = false;
@@ -2590,7 +2590,10 @@ void PM_Jump( void )
 	// In the air now.
 	pmove->onground = -1;
 
-	if( g_bhopcap )
+	if( pmove->multiplayer )
+		bunnyjump = atoi( pmove->PM_Info_ValueForKey( pmove->physinfo, "bj" ) ) ? true : false;
+
+	if( !bunnyjump )
 		PM_PreventMegaBunnyJumping();
 
 	if( tfc )
@@ -3345,7 +3348,8 @@ void PM_Move( struct playermove_s *ppmove, int server )
 	}
 
 	// Reset friction after each movement to FrictionModifier Triggers work still.
-	if( pmove->movetype == MOVETYPE_WALK )
+	// Use movevar to avoid lags with different clients and servers.
+	if( !( pmove->multiplayer && atoi( pmove->PM_Info_ValueForKey( pmove->physinfo, "fr" )) == 0 ) && pmove->movetype == MOVETYPE_WALK )
 	{
 		pmove->friction = 1.0f;
 	}
