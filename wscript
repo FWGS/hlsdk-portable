@@ -10,6 +10,7 @@ import re
 VERSION = '2.4'
 APPNAME = 'hlsdk-portable'
 top = '.'
+default_prefix = '/'
 
 Context.Context.line_just = 60 # should fit for everything on 80x26
 
@@ -21,7 +22,7 @@ def get_taskgen_count(self):
 
 def options(opt):
 	opt.load('reconfigure compiler_optimizations xcompile compiler_cxx compiler_c clang_compilation_database strip_on_install msdev msvs msvc subproject')
-	
+
 	grp = opt.add_option_group('Common options')
 
 	grp.add_option('-8', '--64bits', action = 'store_true', dest = 'ALLOW64', default = False,
@@ -238,6 +239,9 @@ def configure(conf):
 	conf.add_subproject('cl_dll')
 
 def build(bld):
+	if bld.is_install and not bld.options.destdir:
+		bld.fatal('Set the install destination directory using --destdir option')
+
 	# don't clean QtCreator files and reconfigure saved options
 	bld.clean_files = bld.bldnode.ant_glob('**',
 		excl='*.user configuration.py .lock* *conf_check_*/** config.log %s/*' % Build.CACHE_DIR,
