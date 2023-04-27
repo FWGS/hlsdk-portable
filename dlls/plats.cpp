@@ -2330,7 +2330,7 @@ void CSpriteTrain::Activate( void )
 		if( FStringNull( pev->targetname ) )
 		{
 			m_nexting = TRUE;
-			m_nextTime = pev->ltime + 0.1;
+			pev->nextthink = pev->ltime + 0.1;
 		}
 		else
 			pev->spawnflags |= SF_TRAIN_WAIT_RETRIGGER;
@@ -2441,12 +2441,12 @@ void CSpriteTrain::Wait()
 			STOP_SOUND( edict(), CHAN_STATIC, STRING( pev->noiseMovement ) );
 		if( pev->noiseStopMoving )
 			EMIT_SOUND( ENT( pev ), CHAN_VOICE, STRING( pev->noiseStopMoving ), m_volume, ATTN_NORM );
-		pev->nextthink = 0;
 		return;
 	}
 
 	if( m_flWait != 0 )
 	{
+		pev->nextthink = pev->ltime + m_flWait;
 		if( pev->noiseMovement )
 			STOP_SOUND( edict(), CHAN_STATIC, STRING( pev->noiseMovement ) );
 		if( pev->noiseStopMoving )
@@ -2474,7 +2474,6 @@ void CSpriteTrain::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE 
 		// Pop back to last target if it's available
 		if( pev->enemy )
 			pev->target = pev->enemy->v.targetname;
-		pev->nextthink = 0;
 		pev->velocity = g_vecZero;
 		if( pev->noiseStopMoving )
 			EMIT_SOUND( ENT( pev ), CHAN_VOICE, STRING( pev->noiseStopMoving ), m_volume, ATTN_NORM );
