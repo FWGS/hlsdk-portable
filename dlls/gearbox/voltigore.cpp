@@ -1010,16 +1010,19 @@ void CVoltigore::StartTask(Task_t *pTask)
 		}
 		break;
 	case TASK_VOLTIGORE_GET_PATH_TO_ENEMY_CORPSE:
-		UTIL_MakeVectors( pev->angles );
-		if( BuildRoute( m_vecEnemyLKP - gpGlobals->v_forward * 50, bits_MF_TO_LOCATION, NULL ) )
 		{
-			TaskComplete();
+			UTIL_MakeVectors( pev->angles );
+			if( BuildRoute( m_vecEnemyLKP - gpGlobals->v_forward * 50, bits_MF_TO_LOCATION, NULL ) )
+			{
+				TaskComplete();
+			}
+			else
+			{
+				ALERT( at_aiconsole, "VoltigoreGetPathToEnemyCorpse failed!!\n" );
+				TaskFail();
+			}
 		}
-		else
-		{
-			ALERT( at_aiconsole, "VoltigoreGetPathToEnemyCorpse failed!!\n" );
-			TaskFail();
-		}
+		break;
 	default:
 		CBaseMonster::StartTask(pTask);
 		break;
