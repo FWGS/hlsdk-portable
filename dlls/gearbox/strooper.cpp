@@ -390,7 +390,7 @@ void CStrooper::HandleAnimEvent(MonsterEvent_t *pEvent)
 			SENTENCEG_PlayRndSz(ENT(pev), "ST_ALERT", STROOPER_SENTENCE_VOLUME, STROOPER_ATTN, 0, m_voicePitch);
 			JustSpoke();
 		}
-
+		break;
 	}
 
 	default:
