@@ -155,26 +155,28 @@ void CMassn::HandleAnimEvent(MonsterEvent_t *pEvent)
 		Vector	vecGunPos;
 		Vector	vecGunAngles;
 
-		GetAttachment(0, vecGunPos, vecGunAngles);
-
-		// switch to body group with no gun.
-		SetBodygroup(GUN_GROUP, GUN_NONE);
-
-		// now spawn a gun.
-		if (FBitSet(pev->weapons, MASSN_SNIPERRIFLE))
+		if(GetBodygroup(GUN_GROUP) != GUN_NONE)
 		{
-			DropItem("weapon_sniperrifle", vecGunPos, vecGunAngles);
-		}
-		else
-		{
-			DropItem("weapon_9mmAR", vecGunPos, vecGunAngles);
-		}
+			GetAttachment(0, vecGunPos, vecGunAngles);
 
-		if (FBitSet(pev->weapons, MASSN_GRENADELAUNCHER))
-		{
-			DropItem("ammo_ARgrenades", BodyTarget(pev->origin), vecGunAngles);
-		}
+			// switch to body group with no gun.
+			SetBodygroup(GUN_GROUP, GUN_NONE);
 
+			// now spawn a gun.
+			if (FBitSet(pev->weapons, MASSN_SNIPERRIFLE))
+			{
+				DropItem("weapon_sniperrifle", vecGunPos, vecGunAngles);
+			}
+			else
+			{
+				DropItem("weapon_9mmAR", vecGunPos, vecGunAngles);
+			}
+
+			if (FBitSet(pev->weapons, MASSN_GRENADELAUNCHER))
+			{
+				DropItem("ammo_ARgrenades", BodyTarget(pev->origin), vecGunAngles);
+			}
+		}
 	}
 	break;
 

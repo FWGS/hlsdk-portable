@@ -1846,7 +1846,8 @@ void CHFGrunt :: HandleAnimEvent( MonsterEvent_t *pEvent )
 	{
 		case HGRUNT_ALLY_AE_DROP_GUN:
 		{
-			DropMyItems(FALSE);
+			if (GetBodygroup(FG_GUN_GROUP) != FG_GUN_NONE)
+				DropMyItems(FALSE);
 			SetUse( NULL );
 		}
 		break;
@@ -3240,7 +3241,7 @@ void CTorch::HandleAnimEvent(MonsterEvent_t *pEvent)
 		KillGas ();
 		break;
 	case HGRUNT_ALLY_AE_DROP_GUN:
-		if ( FBitSet( pev->weapons, TORCH_EAGLE ) )
+		if ( FBitSet( pev->weapons, TORCH_EAGLE ) && pev->body != TORCH_GUN_NONE )
 		{
 			DropMyItems(FALSE);
 		}
@@ -3771,7 +3772,7 @@ void CMedic::HandleAnimEvent(MonsterEvent_t *pEvent)
 		break;
 
 	case HGRUNT_ALLY_AE_DROP_GUN:
-		if ( FBitSet( pev->weapons, MEDIC_EAGLE | MEDIC_HANDGUN ) )
+		if ( FBitSet( pev->weapons, MEDIC_EAGLE | MEDIC_HANDGUN ) && GetBodygroup(MEDIC_GUN_GROUP) != MEDIC_GUN_NONE )
 		{
 			DropMyItems(FALSE);
 		}
