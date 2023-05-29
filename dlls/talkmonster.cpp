@@ -1344,7 +1344,7 @@ void CTalkMonster::StartFollowing( CBaseEntity *pLeader )
 
 BOOL CTalkMonster::CanFollow( void )
 {
-	if( m_MonsterState == MONSTERSTATE_SCRIPT )
+	if( m_MonsterState == MONSTERSTATE_SCRIPT || m_IdealMonsterState == MONSTERSTATE_SCRIPT )
 	{
 		if( !m_pCine )
 			return FALSE;
