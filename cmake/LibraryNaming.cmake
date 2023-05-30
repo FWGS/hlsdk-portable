@@ -36,12 +36,14 @@ endmacro()
 # grep '^#undef XASH' build.h | grep "XASH_RISCV_" |  awk '{ print "check_build_target(" $2 ")"}'
 # echo "endif()"
 
+# NOTE: Android must have priority over Linux to work correctly!
+
 set(CMAKE_REQUIRED_INCLUDES "${PROJECT_SOURCE_DIR}/public/")
 check_build_target(XASH_64BIT)
 check_group_build_target(XASH_WIN32 XASH_PLATFORM)
+check_group_build_target(XASH_ANDROID XASH_PLATFORM)
 check_group_build_target(XASH_LINUX XASH_PLATFORM)
 check_group_build_target(XASH_FREEBSD XASH_PLATFORM)
-check_group_build_target(XASH_ANDROID XASH_PLATFORM)
 check_group_build_target(XASH_APPLE XASH_PLATFORM)
 check_group_build_target(XASH_NETBSD XASH_PLATFORM)
 check_group_build_target(XASH_OPENBSD XASH_PLATFORM)
