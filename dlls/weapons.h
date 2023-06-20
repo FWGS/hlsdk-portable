@@ -1252,6 +1252,8 @@ public:
 	virtual BOOL ShouldWeaponIdle(void) { return TRUE; }
 	float m_flNextAnimTime;
 	int m_iShell;
+	int m_iLink;
+	bool m_bAlternatingEject;
 
 	virtual BOOL UseDecrement(void)
 	{
