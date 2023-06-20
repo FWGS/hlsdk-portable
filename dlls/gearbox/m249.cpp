@@ -295,7 +295,7 @@ int CM249::BodyFromClip(int clip)
 {
 	if (clip == 0) {
 		return 8;
-	} else if (clip > 0 && clip < 8) {
+	} else if (clip > 0 && clip <= 8) {
 		return 9 - clip;
 	} else {
 		return 0;
