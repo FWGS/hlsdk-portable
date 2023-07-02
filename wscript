@@ -214,18 +214,19 @@ def configure(conf):
 	with open('mod_options.txt') as fd:
 		lines = fd.readlines()
 	for line in lines:
-		p = regex.match(line.strip())
-		if p:
-			conf.start_msg("* " + p[3])
-			if p[2] == 'ON':
-				conf.env[p[1]] = True
-				conf.define(p[1], 1)
-			elif p[2] == 'OFF':
-				conf.env[p[1]] = False
-				conf.undefine(p[1])
+		m = regex.match(line.strip())
+		if m:
+			p = m.groups()
+			conf.start_msg("* " + p[2])
+			if p[1] == 'ON':
+				conf.env[p[0]] = True
+				conf.define(p[0], 1)
+			elif p[1] == 'OFF':
+				conf.env[p[0]] = False
+				conf.undefine(p[0])
 			else:
-				conf.env[p[1]] = p[2]
-			conf.end_msg(p[2])
+				conf.env[p[0]] = p[1]
+			conf.end_msg(p[1])
 	if conf.env.HLDEMO_BUILD and conf.env.OEM_BUILD:
 		conf.fatal('Don\'t mix Demo and OEM builds!')
 
