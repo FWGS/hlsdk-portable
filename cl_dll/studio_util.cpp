@@ -149,7 +149,7 @@ void CrossProduct( const float *v1, const float *v2, float *cross )
 	float32x4_t zxyy_b = vextq_f32(yzxy_b, yzxy_b, 1); // [bk, ai, bj, bj]
 	float32x4_t cross_reg = vfmsq_f32(vmulq_f32(yzxy_a, zxyy_b), zxyy_a, yzxy_b); // [ajbk-akbj, akbi-aibk, aibj-ajbi, 0]
 
-	memcpy(cross, &v2_reg, sizeof(float) * 3);
+	memcpy(cross, &cross_reg, sizeof(float) * 3);
 #else
 	cross[0] = v1[1] * v2[2] - v1[2] * v2[1];
 	cross[1] = v1[2] * v2[0] - v1[0] * v2[2];
