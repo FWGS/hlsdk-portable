@@ -51,6 +51,7 @@ DEFINES = [
 'XASH_NETBSD',
 'XASH_OPENBSD',
 'XASH_POSIX',
+'XASH_PPC',
 'XASH_RISCV',
 'XASH_RISCV_DOUBLEFP',
 'XASH_RISCV_SINGLEFP',
@@ -126,7 +127,7 @@ def configure(conf):
 			buildarch += "4"
 		else:
 			raise conf.fatal('Unknown ARM')
-		
+
 		if conf.env.XASH_ARM_HARDFP:
 			buildarch += "hf"
 		else:
@@ -143,7 +144,7 @@ def configure(conf):
 			buildarch += "64"
 		else:
 			buildarch += "32"
-		
+
 		if conf.env.XASH_RISCV_DOUBLEFP:
 			buildarch += "d"
 		elif conf.env.XASH_RISCV_SINGLEFP:
@@ -152,12 +153,18 @@ def configure(conf):
 		buildarch = "javascript"
 	elif conf.env.XASH_E2K:
 		buildarch = "e2k"
+	elif conf.env.XASH_PPC:
+		buildarch = "ppc"
+		if conf.env.XASH_64BIT:
+			buildarch += "64"
+		if conf.env.XASH_LITTLE_ENDIAN:
+			buildarch += "el"
 	else:
 		raise conf.fatal("Place your architecture name in build.h and library_naming.py!\n"
 			"If this is a mistake, try to fix conditions above and report a bug")
-	
+
 	conf.env.revert()
-	
+
 	if buildos == 'android':
 		# force disable for Android, as Android ports aren't distributed in normal way and doesn't follow library naming
 		conf.env.POSTFIX = ''
@@ -167,5 +174,5 @@ def configure(conf):
 		conf.env.POSTFIX = '_%s' % buildarch
 	else:
 		conf.env.POSTFIX = ''
-	
+
 	conf.end_msg(conf.env.POSTFIX)
