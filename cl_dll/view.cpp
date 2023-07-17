@@ -313,6 +313,7 @@ void V_AddIdle( struct ref_params_s *pparams )
 	pparams->viewangles[YAW] += v_idlescale * sin( pparams->time * v_iyaw_cycle.value ) * v_iyaw_level.value;
 }
 
+extern qboolean bIsXash;
 extern cvar_t *cl_rollspeed;
 extern cvar_t *cl_rollangle;
 
@@ -331,9 +332,14 @@ void V_CalcViewRoll( struct ref_params_s *pparams )
 	viewentity = gEngfuncs.GetEntityByIndex( pparams->viewentity );
 	if( !viewentity )
 		return;
-
-	side = V_CalcRoll( viewentity->angles, pparams->simvel, cl_rollangle->value, cl_rollspeed->value );
-
+#if GOLDSOURCE_SUPPORT
+	if( bIsXash )
+		side = V_CalcRoll( viewentity->angles, pparams->simvel, pparams->movevars->rollangle, pparams->movevars->rollspeed );
+	else
+		side = V_CalcRoll( viewentity->angles, pparams->simvel, cl_rollangle->value, cl_rollspeed->value );
+#else
+	side = V_CalcRoll( viewentity->angles, pparams->simvel, pparams->movevars->rollangle, pparams->movevars->rollspeed );
+#endif
 	pparams->viewangles[ROLL] += side;
 
 	if( pparams->health <= 0 && ( pparams->viewheight[2] != 0 ) )
