@@ -313,9 +313,6 @@ void V_AddIdle( struct ref_params_s *pparams )
 	pparams->viewangles[YAW] += v_idlescale * sin( pparams->time * v_iyaw_cycle.value ) * v_iyaw_level.value;
 }
 
-extern cvar_t *cl_rollspeed;
-extern cvar_t *cl_rollangle;
-
 /*
 ==============
 V_CalcViewRoll
@@ -332,7 +329,7 @@ void V_CalcViewRoll( struct ref_params_s *pparams )
 	if( !viewentity )
 		return;
 
-	side = V_CalcRoll( viewentity->angles, pparams->simvel, cl_rollangle->value, cl_rollspeed->value );
+	side = V_CalcRoll( viewentity->angles, pparams->simvel, pparams->movevars->rollangle, pparams->movevars->rollspeed );
 
 	pparams->viewangles[ROLL] += side;
 
