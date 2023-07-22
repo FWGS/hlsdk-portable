@@ -272,7 +272,7 @@ void AngleQuaternion( float *angles, vec4_t quaternion )
 	float32x4_t sy_cr_cy_sr = vextq_f32(sr_sy_cr_cy_sp_0_cp_1.val[0], sr_sy_cr_cy_sp_0_cp_1.val[0], 1);
 	float32x4_t cr_cy_sr_sy = vextq_f32(sr_sy_cr_cy_sp_0_cp_1.val[0], sr_sy_cr_cy_sp_0_cp_1.val[0], 2);
 	float32x4_t cy_sr_sy_cr = vextq_f32(sr_sy_cr_cy_sp_0_cp_1.val[0], sr_sy_cr_cy_sp_0_cp_1.val[0], 3);
-	float32x4_t sp_sp_sp_sp_signed = veorq_u32(vreinterpretq_u32_f32(sp_sp_sp_sp), AngleQuaternion_sign2);
+	float32x4_t sp_sp_sp_sp_signed = vreinterpretq_f32_u32(veorq_u32(vreinterpretq_u32_f32(sp_sp_sp_sp), AngleQuaternion_sign2));
 
 	float32x4_t left = vmulq_f32(vmulq_f32(sr_sy_cr_cy, cp_cp_cp_cp), cy_sr_sy_cr);
 
