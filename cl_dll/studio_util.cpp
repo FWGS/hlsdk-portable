@@ -24,9 +24,9 @@ AngleMatrix
 ====================
 */
 #if XASH_SIMD_NEON
-const uint32x4_t AngleMatrix_sign0 = vreinterpretq_f32_u32(vsetq_lane_u32(0x80000000, vdupq_n_u32(0), 0));
-const uint32x4_t AngleMatrix_sign1 = vreinterpretq_f32_u32(vsetq_lane_u32(0x80000000, vdupq_n_u32(0), 1));
-const uint32x4_t AngleMatrix_sign2 = vreinterpretq_f32_u32(vsetq_lane_u32(0x80000000, vdupq_n_u32(0), 2));
+static const uint32x4_t AngleMatrix_sign0 = vsetq_lane_u32(0x80000000, vdupq_n_u32(0), 0);
+static const uint32x4_t AngleMatrix_sign1 = vsetq_lane_u32(0x80000000, vdupq_n_u32(0), 1);
+static const uint32x4_t AngleMatrix_sign2 = vsetq_lane_u32(0x80000000, vdupq_n_u32(0), 2);
 #endif
 void AngleMatrix( const float *angles, float (*matrix)[4] )
 {
@@ -216,7 +216,7 @@ void ConcatTransforms( float in1[3][4], float in2[3][4], float out[3][4] )
 	out_reg.val[2] = vfmaq_laneq_f32(out_reg.val[2], in2_reg.val[1], in1_reg.val[2], 1);
 	out_reg.val[2] = vfmaq_laneq_f32(out_reg.val[2], in2_reg.val[2], in1_reg.val[2], 2);
 
-	memcpy(&out, &out_reg, sizeof(out));
+	memcpy(out, &out_reg, sizeof(float) * 3 * 4);
 #else
 	out[0][0] = in1[0][0] * in2[0][0] + in1[0][1] * in2[1][0] +
 				in1[0][2] * in2[2][0];
@@ -254,7 +254,7 @@ AngleQuaternion
 ====================
 */
 #if XASH_SIMD_NEON
-const float32x4_t AngleQuaternion_sign2 = vzipq_f32(vdupq_n_u32(0x80000000), vdupq_n_u32(0x00000000)).val[0]; // { 0x80000000, 0x00000000, 0x80000000, 0x00000000 };
+static const uint32x4_t AngleQuaternion_sign2 =	vzipq_u32(vdupq_n_u32(0x80000000), vdupq_n_u32(0x00000000)).val[0]; // { 0x80000000, 0x00000000, 0x80000000, 0x00000000 };
 #endif
 void AngleQuaternion( float *angles, vec4_t quaternion )
 {
@@ -272,7 +272,7 @@ void AngleQuaternion( float *angles, vec4_t quaternion )
 	float32x4_t sy_cr_cy_sr = vextq_f32(sr_sy_cr_cy_sp_0_cp_1.val[0], sr_sy_cr_cy_sp_0_cp_1.val[0], 1);
 	float32x4_t cr_cy_sr_sy = vextq_f32(sr_sy_cr_cy_sp_0_cp_1.val[0], sr_sy_cr_cy_sp_0_cp_1.val[0], 2);
 	float32x4_t cy_sr_sy_cr = vextq_f32(sr_sy_cr_cy_sp_0_cp_1.val[0], sr_sy_cr_cy_sp_0_cp_1.val[0], 3);
-	float32x4_t sp_sp_sp_sp_signed = veorq_u32(sp_sp_sp_sp, AngleQuaternion_sign2);
+	float32x4_t sp_sp_sp_sp_signed = vreinterpretq_f32_u32(veorq_u32(vreinterpretq_u32_f32(sp_sp_sp_sp), AngleQuaternion_sign2));
 
 	float32x4_t left = vmulq_f32(vmulq_f32(sr_sy_cr_cy, cp_cp_cp_cp), cy_sr_sy_cr);
 
@@ -407,12 +407,12 @@ QuaternionMatrix
 ====================
 */
 #if XASH_SIMD_NEON
-const uint32x4_t QuaternionMatrix_sign1 = vsetq_lane_u32(0x80000000, vdupq_n_u32(0x00000000), 0); // { 0x80000000, 0x00000000, 0x00000000, 0x00000000 };
-const uint32x4_t QuaternionMatrix_sign2 = vsetq_lane_u32(0x80000000, vdupq_n_u32(0x00000000), 1); // { 0x00000000, 0x80000000, 0x00000000, 0x00000000 };
-const uint32x4_t QuaternionMatrix_sign3 = vsetq_lane_u32(0x00000000, vdupq_n_u32(0x80000000), 2); // { 0x80000000, 0x80000000, 0x00000000, 0x80000000 };
-const float32x4_t matrix3x4_identity_0 = vsetq_lane_f32(1, vdupq_n_f32(0), 0); // { 1, 0, 0, 0 }
-const float32x4_t matrix3x4_identity_1 = vsetq_lane_f32(1, vdupq_n_f32(0), 1); // { 0, 1, 0, 0 }
-const float32x4_t matrix3x4_identity_2 = vsetq_lane_f32(1, vdupq_n_f32(0), 2); // { 0, 0, 1, 0 }
+static const uint32x4_t QuaternionMatrix_sign1 = vsetq_lane_u32(0x80000000, vdupq_n_u32(0x00000000), 0); // { 0x80000000, 0x00000000, 0x00000000, 0x00000000 };
+static const uint32x4_t QuaternionMatrix_sign2 = vsetq_lane_u32(0x80000000, vdupq_n_u32(0x00000000), 1); // { 0x00000000, 0x80000000, 0x00000000, 0x00000000 };
+static const uint32x4_t QuaternionMatrix_sign3 = vsetq_lane_u32(0x00000000, vdupq_n_u32(0x80000000), 2); // { 0x80000000, 0x80000000, 0x00000000, 0x80000000 };
+static const float32x4_t matrix3x4_identity_0 = vsetq_lane_f32(1, vdupq_n_f32(0), 0); // { 1, 0, 0, 0 }
+static const float32x4_t matrix3x4_identity_1 = vsetq_lane_f32(1, vdupq_n_f32(0), 1); // { 0, 1, 0, 0 }
+static const float32x4_t matrix3x4_identity_2 = vsetq_lane_f32(1, vdupq_n_f32(0), 2); // { 0, 0, 1, 0 }
 #endif
 
 void QuaternionMatrix( vec4_t quaternion, float (*matrix)[4] )
