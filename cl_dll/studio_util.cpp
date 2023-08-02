@@ -143,8 +143,10 @@ void CrossProduct( const float *v1, const float *v2, float *cross )
 	memcpy(&v1_reg, v1, sizeof(float) * 3);
 	memcpy(&v2_reg, v2, sizeof(float) * 3);
 
-	float32x4_t yzxy_a = vextq_f32(vextq_f32(v1_reg, v1_reg, 3), v1_reg, 2); // [aj, ak, ai, aj]
-	float32x4_t yzxy_b = vextq_f32(vextq_f32(v2_reg, v2_reg, 3), v2_reg, 2); // [bj, bk, bi, bj]
+	float32x2_t xy_a = vget_low_f32(v1_reg);
+	float32x2_t xy_b = vget_low_f32(v2_reg);
+	float32x4_t yzxy_a = vcombine_f32(vext_f32(xy_a, vget_high_f32(v1_reg), 1), xy_a); // [aj, ak, ai, aj]
+	float32x4_t yzxy_b = vcombine_f32(vext_f32(xy_b, vget_high_f32(v2_reg), 1), xy_b); // [bj, bk, bi, bj]
 	float32x4_t zxyy_a = vextq_f32(yzxy_a, yzxy_a, 1); // [ak, ai, aj, aj]
 	float32x4_t zxyy_b = vextq_f32(yzxy_b, yzxy_b, 1); // [bk, ai, bj, bj]
 	float32x4_t cross_reg = vfmsq_f32(vmulq_f32(yzxy_a, zxyy_b), zxyy_a, yzxy_b); // [ajbk-akbj, akbi-aibk, aibj-ajbi, 0]
@@ -265,23 +267,23 @@ void AngleQuaternion( float *angles, vec4_t quaternion )
 	sincos_ps(vmulq_n_f32(angles_reg, 0.5), &sr_sp_sy_0_cr_cp_cy_1.val[0], &sr_sp_sy_0_cr_cp_cy_1.val[1]);
 
 	float32x4x2_t sr_sy_cr_cy_sp_0_cp_1 = vuzpq_f32(sr_sp_sy_0_cr_cp_cy_1.val[0], sr_sp_sy_0_cr_cp_cy_1.val[1]);
-	float32x4_t cp_cp_cp_cp = vdupq_laneq_f32(sr_sp_sy_0_cr_cp_cy_1.val[1], 1);
-	float32x4_t sp_sp_sp_sp = vdupq_laneq_f32(sr_sp_sy_0_cr_cp_cy_1.val[0], 1);
 
 	float32x4_t sr_sy_cr_cy = sr_sy_cr_cy_sp_0_cp_1.val[0];
 	float32x4_t sy_cr_cy_sr = vextq_f32(sr_sy_cr_cy_sp_0_cp_1.val[0], sr_sy_cr_cy_sp_0_cp_1.val[0], 1);
-	float32x4_t cr_cy_sr_sy = vextq_f32(sr_sy_cr_cy_sp_0_cp_1.val[0], sr_sy_cr_cy_sp_0_cp_1.val[0], 2);
-	float32x4_t cy_sr_sy_cr = vextq_f32(sr_sy_cr_cy_sp_0_cp_1.val[0], sr_sy_cr_cy_sp_0_cp_1.val[0], 3);
-	float32x4_t sp_sp_sp_sp_signed = vreinterpretq_f32_u32(veorq_u32(vreinterpretq_u32_f32(sp_sp_sp_sp), AngleQuaternion_sign2));
+	float32x4_t srsy_sycr_crcy_cysr = vmulq_f32(sr_sy_cr_cy, sy_cr_cy_sr);
+	float32x4_t sycr_crcy_cysr_srsy = vextq_f32(srsy_sycr_crcy_cysr, srsy_sycr_crcy_cysr, 1);
+	float32x4_t cysr_srsy_sycr_crcy = vextq_f32(srsy_sycr_crcy_cysr, srsy_sycr_crcy_cysr, 3);
+	float32x4_t sycr_crcy_cysr_srsy_signed = vreinterpretq_f32_u32(veorq_u32(vreinterpretq_u32_f32(sycr_crcy_cysr_srsy), AngleQuaternion_sign2));
 
-	float32x4_t left = vmulq_f32(vmulq_f32(sr_sy_cr_cy, cp_cp_cp_cp), cy_sr_sy_cr);
+	float32x4_t left = vmulq_laneq_f32(cysr_srsy_sycr_crcy, sr_sp_sy_0_cr_cp_cy_1.val[1], 1);
 
-	float32x4_t out_reg = vfmaq_f32(left, vmulq_f32(cr_cy_sr_sy, sp_sp_sp_sp_signed), sy_cr_cy_sr);
+	float32x4_t out_reg = vfmaq_laneq_f32(left, sycr_crcy_cysr_srsy_signed, sr_sp_sy_0_cr_cp_cy_1.val[0], 1);
 	memcpy(quaternion, &out_reg, sizeof(float) * 4);
-	//quaternion[0] =   sr * cp * cy - cr * sp * sy; // X
-	//quaternion[1] =   sy * cp * sr + cy * sp * cr; // Y
-	//quaternion[2] =   cr * cp * sy - sr * sp * cy; // Z
-	//quaternion[3] =   cy * cp * cr + sy * sp * sr; // W
+	// A = sr * sy, B = sy * cr, C = cr * cy, D = cy * sr
+	//quaternion[0] =   D * cp - B * sp; // X
+	//quaternion[1] =   A * cp + C * sp; // Y
+	//quaternion[2] =   B * cp - D * sp; // Z
+	//quaternion[3] =   C * cp + A * sp; // W
 #else
 	float angle;
 	float sr, sp, sy, cr, cp, cy;
@@ -397,6 +399,63 @@ void QuaternionSlerp( vec4_t p, vec4_t q, float t, vec4_t qt )
 			qt[i] = sclp * p[i] + sclq * qt[i];
 		}
 	}
+#endif
+}
+
+/*
+====================
+QuaternionSlerpX4
+
+====================
+*/
+void QuaternionSlerpX4( vec4_t p[4], vec4_t q[4], float t, vec4_t qt[4] )
+{
+#if XASH_SIMD_NEON
+	float32x4x4_t p_reg, q_reg;
+	memcpy(&p_reg, p, sizeof(float) * 4 * 4);
+	memcpy(&q_reg, q, sizeof(float) * 4 * 4);
+
+	//float32x4_t cosom = { DotProduct(p[0], q[0]), DotProduct(p[1], q[1]), DotProduct(p[2], q[2]), DotProduct(p[3], q[3]) };
+	float32x4x4_t p_t = vld4q_f32((const float*)&p_reg);
+	float32x4x4_t q_t = vld4q_f32((const float*)&q_reg);
+	float32x4_t cosom = vmulq_f32(p_t.val[0], q_t.val[0]);
+	cosom = vfmaq_f32(cosom, p_t.val[1], q_t.val[1]);
+	cosom = vfmaq_f32(cosom, p_t.val[2], q_t.val[2]);
+	cosom = vfmaq_f32(cosom, p_t.val[3], q_t.val[3]);
+
+	// if(cosom < 0) q=-q, cosom=-cosom
+	uint32x4_t sign = vandq_u32(vreinterpretq_u32_f32(cosom), vdupq_n_u32(0x80000000));
+	q_reg.val[0] = vreinterpretq_f32_u32(veorq_u32(vreinterpretq_u32_f32(q_reg.val[0]), vdupq_laneq_f32(sign, 0)));
+	q_reg.val[1] = vreinterpretq_f32_u32(veorq_u32(vreinterpretq_u32_f32(q_reg.val[1]), vdupq_laneq_f32(sign, 1)));
+	q_reg.val[2] = vreinterpretq_f32_u32(veorq_u32(vreinterpretq_u32_f32(q_reg.val[2]), vdupq_laneq_f32(sign, 2)));
+	q_reg.val[3] = vreinterpretq_f32_u32(veorq_u32(vreinterpretq_u32_f32(q_reg.val[3]), vdupq_laneq_f32(sign, 3)));
+	cosom = vabsq_f32(cosom);
+
+	float32x4_t sclp = vdupq_n_f32(1.0f - t);
+	float32x4_t sclq = vdupq_n_f32(t);
+	// if ((1.0 - cosom) > 0.000001) scl = sin(scl * omega) / sinom;
+	uint32x4_t cosom_less_then_one = vcltq_f32(cosom, vdupq_n_f32(1.0f - 0.00001f));
+	float32x4_t omega = acos_ps(cosom);
+	// 1/sinom = rsqrt(1-cosom*cosom)
+	float32x4_t sinom = sin_ps(omega);
+	float32x4_t sinom_reciprocal = vrecpeq_f32(sinom); // vdivq_f32(vdupq_n_f32(1), sin_ps(omega));
+	sinom_reciprocal = vmulq_f32(sinom_reciprocal, vrecpsq_f32(sinom, sinom_reciprocal));
+	sclp = vbslq_f32(cosom_less_then_one, sclp, vmulq_f32(sin_ps(vmulq_f32(sclp, omega)), sinom_reciprocal));
+	sclq = vbslq_f32(cosom_less_then_one, sclq, vmulq_f32(sin_ps(vmulq_f32(sclq, omega)), sinom_reciprocal));
+
+	// qt = (sclp * p + sclq * q);
+	float32x4x4_t qt_reg;
+	qt_reg.val[0] = vfmaq_laneq_f32(vmulq_laneq_f32(p_reg.val[0], sclp, 0), q_reg.val[0], sclq, 0);
+	qt_reg.val[1] = vfmaq_laneq_f32(vmulq_laneq_f32(p_reg.val[1], sclp, 1), q_reg.val[1], sclq, 1);
+	qt_reg.val[2] = vfmaq_laneq_f32(vmulq_laneq_f32(p_reg.val[2], sclp, 2), q_reg.val[2], sclq, 2);
+	qt_reg.val[3] = vfmaq_laneq_f32(vmulq_laneq_f32(p_reg.val[3], sclp, 3), q_reg.val[3], sclq, 3);
+
+	memcpy(qt, &qt_reg, sizeof(float) * 4 * 4);
+#else
+	QuaternionSlerp(p[0], q[0], t, qt[0]);
+	QuaternionSlerp(p[1], q[1], t, qt[1]);
+	QuaternionSlerp(p[2], q[2], t, qt[2]);
+	QuaternionSlerp(p[3], q[3], t, qt[3]);
 #endif
 }
 
