@@ -425,10 +425,10 @@ void QuaternionSlerpX4( vec4_t p[4], vec4_t q[4], float t, vec4_t qt[4] )
 
 	// if(cosom < 0) q=-q, cosom=-cosom
 	uint32x4_t sign = vandq_u32(vreinterpretq_u32_f32(cosom), vdupq_n_u32(0x80000000));
-	q_reg.val[0] = vreinterpretq_f32_u32(veorq_u32(vreinterpretq_u32_f32(q_reg.val[0]), vdupq_laneq_f32(sign, 0)));
-	q_reg.val[1] = vreinterpretq_f32_u32(veorq_u32(vreinterpretq_u32_f32(q_reg.val[1]), vdupq_laneq_f32(sign, 1)));
-	q_reg.val[2] = vreinterpretq_f32_u32(veorq_u32(vreinterpretq_u32_f32(q_reg.val[2]), vdupq_laneq_f32(sign, 2)));
-	q_reg.val[3] = vreinterpretq_f32_u32(veorq_u32(vreinterpretq_u32_f32(q_reg.val[3]), vdupq_laneq_f32(sign, 3)));
+	q_reg.val[0] = vreinterpretq_f32_u32(veorq_u32(vreinterpretq_u32_f32(q_reg.val[0]), vdupq_laneq_u32(sign, 0)));
+	q_reg.val[1] = vreinterpretq_f32_u32(veorq_u32(vreinterpretq_u32_f32(q_reg.val[1]), vdupq_laneq_u32(sign, 1)));
+	q_reg.val[2] = vreinterpretq_f32_u32(veorq_u32(vreinterpretq_u32_f32(q_reg.val[2]), vdupq_laneq_u32(sign, 2)));
+	q_reg.val[3] = vreinterpretq_f32_u32(veorq_u32(vreinterpretq_u32_f32(q_reg.val[3]), vdupq_laneq_u32(sign, 3)));
 	cosom = vabsq_f32(cosom);
 
 	float32x4_t sclp = vdupq_n_f32(1.0f - t);
