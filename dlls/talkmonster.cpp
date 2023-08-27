@@ -43,6 +43,8 @@ TYPEDESCRIPTION	CTalkMonster::m_SaveData[] =
 	DEFINE_FIELD( CTalkMonster, m_useTime, FIELD_TIME ),
 	DEFINE_FIELD( CTalkMonster, m_iszUse, FIELD_STRING ),
 	DEFINE_FIELD( CTalkMonster, m_iszUnUse, FIELD_STRING ),
+	DEFINE_FIELD( CTalkMonster, m_iszDecline, FIELD_STRING ), //LRC
+	DEFINE_FIELD( CTalkMonster, m_iszSpeakAs, FIELD_STRING ), //LRC
 	DEFINE_FIELD( CTalkMonster, m_flLastSaidSmelled, FIELD_TIME ),
 	DEFINE_FIELD( CTalkMonster, m_flStopTalkTime, FIELD_TIME ),
 	DEFINE_FIELD( CTalkMonster, m_hTalkTarget, FIELD_EHANDLE ),
