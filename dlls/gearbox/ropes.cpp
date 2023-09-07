@@ -31,16 +31,6 @@
 #define SPRING_DAMPING	0.1f
 #define ROPE_IGNORE_SAMPLES	4		// integrator may be hanging if less than
 
-//#define SetAbsOrigin(x) pev->origin = x;
-#define SetAbsAngles(x) pev->angles = x;
-#define SetAbsVelociy(x) pev->velocity = x;
-#define SetNextThink(x) pev->nextthink = x;
-#define SetEffects(x) pev->effects = x;
-#define SetSolidType(x) pev->solid = x;
-#define AddFlags(x) pev->flags |= x;
-#define SetMoveType(x) pev->movetype = x;
-#define AddEffectsFlags(x) pev->effects |= x;
-
 /**
 *	Data for a single rope joint.
 */
@@ -74,22 +64,32 @@ public:
 
 	static CRopeSample* CreateSample();
 
-	RopeSampleData* GetData() {
-		if (swapped)
-			return &data2;
-		else
-			return &data;
+	RopeSampleData& GetData()
+	{
+		return data;
 	}
-	RopeSampleData* GetData2() {
+
+	RopeSampleData& GetSourceData() {
 		if (swapped)
-			return &data;
+			return data2;
 		else
-			return &data2;
+			return data;
+	}
+	RopeSampleData& GetTargetData() {
+		if (swapped)
+			return data;
+		else
+			return data2;
 	}
 
 	void Swap()
 	{
 		swapped = !swapped;
+	}
+
+	void ResetSwap()
+	{
+		swapped = FALSE;
 	}
 
 private:
@@ -257,7 +257,7 @@ void CRope::Activate()
 
 void CRope::InitRope()
 {
-	AddFlags( FL_ALWAYSTHINK );
+	pev->flags |= FL_ALWAYSTHINK;
 
 	for( int uiSample = 0; uiSample < m_NumSamples; ++uiSample )
 	{
@@ -334,7 +334,7 @@ void CRope::InitRope()
 	InitializeRopeSim();
 
 	SetThink(&CRope::RopeThink);
-	SetNextThink( gpGlobals->time + 0.01 );
+	pev->nextthink = gpGlobals->time + 0.01;
 }
 
 void CRope::RopeThink()
@@ -364,7 +364,7 @@ void CRope::RopeThink()
 		Creak();
 	}
 
-	SetNextThink( gpGlobals->time + 0.001 );
+	pev->nextthink = gpGlobals->time + 0.001;
 }
 
 void CRope::InitializeRopeSim()
@@ -376,26 +376,26 @@ void CRope::InitializeRopeSim()
 		CRopeSegment* pSegment = seg[ uiSeg ];
 		CRopeSample* pSample = pSegment->GetSample();
 
-		RopeSampleData *data = pSample->GetData();
+		RopeSampleData& data = pSample->GetData();
 
-		data->mPosition = pSegment->pev->origin;
+		data.mPosition = pSegment->pev->origin;
 
-		data->mVelocity				= g_vecZero;
-		data->mForce					= g_vecZero;
-		data->mMassReciprocal		= 1;
-		data->mApplyExternalForce	= false;
-		data->mExternalForce			= g_vecZero;
+		data.mVelocity				= g_vecZero;
+		data.mForce					= g_vecZero;
+		data.mMassReciprocal		= 1;
+		data.mApplyExternalForce	= false;
+		data.mExternalForce			= g_vecZero;
 
 		Vector vecOrigin, vecAngles;
 		pSegment->GetAttachment( 0, vecOrigin, vecAngles );
-		data->restLength = ( pSegment->pev->origin - vecOrigin ).Length();
+		data.restLength = ( pSegment->pev->origin - vecOrigin ).Length();
 	}
 
 	{
 		//Zero out the anchored segment's mass so it stays in place.
 		CRopeSample *pSample = m_Samples[ 0 ];
 
-		pSample->GetData()->mMassReciprocal = 0;
+		pSample->GetData().mMassReciprocal = 0;
 	}
 
 	CRopeSegment* pSegment = seg[ m_iSegments - 1 ];
@@ -414,19 +414,19 @@ void CRope::InitializeRopeSim()
 
 	CRopeSample* pSample = m_Samples[ m_NumSamples - 1 ];
 
-	RopeSampleData *data = pSample->GetData();
+	RopeSampleData& data = pSample->GetData();
 
-	data->mPosition = vecOrigin;
+	data.mPosition = vecOrigin;
 
 	m_LastEndPos = vecOrigin;
 
-	data->mVelocity = g_vecZero;
+	data.mVelocity = g_vecZero;
 
-	data->mForce = g_vecZero;
+	data.mForce = g_vecZero;
 
-	data->mMassReciprocal = 0.2;
+	data.mMassReciprocal = 0.2;
 
-	data->mApplyExternalForce = false;
+	data.mApplyExternalForce = false;
 
 	int uiNumSegs = ROPE_IGNORE_SAMPLES;
 
@@ -453,6 +453,7 @@ void CRope::RunSimOnSamples()
 
 	int uiIndex = 0;
 
+	bool swapped = false;
 	while( true )
 	{
 		++uiIndex;
@@ -472,13 +473,15 @@ void CRope::RunSimOnSamples()
 		{
 			m_Samples[i]->Swap();
 		}
+		swapped = !swapped;
+	}
 
-		//CRopeSample **swap = ppSampleSource;
-		//ppSampleSource = ppSampleTarget;
-		//ppSampleTarget = swap;
-
-		//std::swap( ppSampleSource, ppSampleTarget );
-
+	if (swapped)
+	{
+		for (int i=0; i<m_NumSamples; ++i)
+		{
+			m_Samples[i]->ResetSwap();
+		}
 	}
 
 	mLastTime = gpGlobals->time;
@@ -503,12 +506,12 @@ void CRope::ComputeForces( CRopeSample** ppSystem )
 	int uiIndex;
 	for( uiIndex = 0; uiIndex < m_NumSamples; ++uiIndex )
 	{
-		ComputeSampleForce( *ppSystem[ uiIndex ]->GetData() );
+		ComputeSampleForce( ppSystem[ uiIndex ]->GetSourceData() );
 	}
 
 	for( uiIndex = 0; uiIndex < m_iSegments; ++uiIndex )
 	{
-		ComputeSpringForce( *ppSystem[ uiIndex ]->GetData(), *ppSystem[ uiIndex+1 ]->GetData() );
+		ComputeSpringForce( ppSystem[ uiIndex ]->GetSourceData(), ppSystem[ uiIndex+1 ]->GetSourceData() );
 	}
 }
 
@@ -576,16 +579,16 @@ void CRope::RK4Integrate( const float flDeltaTime )
 
 		for( int uiIndex = 0; uiIndex < m_NumSamples; ++uiIndex, ++pTemp1, ++pTemp2 )
 		{
-			RopeSampleData *data = m_Samples[ uiIndex ]->GetData();
+			RopeSampleData& data = m_Samples[ uiIndex ]->GetSourceData();
 
-			pTemp2->mForce = data->mMassReciprocal * data->mForce * flDeltas[ 0 ];
-			pTemp2->mVelocity = data->mVelocity * flDeltas[ 0 ];
-			pTemp2->restLength = data->restLength;
+			pTemp2->mForce = data.mMassReciprocal * data.mForce * flDeltas[ 0 ];
+			pTemp2->mVelocity = data.mVelocity * flDeltas[ 0 ];
+			pTemp2->restLength = data.restLength;
 
-			pTemp1->mMassReciprocal = data->mMassReciprocal;
-			pTemp1->mVelocity = data->mVelocity + pTemp2->mForce;
-			pTemp1->mPosition = data->mPosition + pTemp2->mVelocity;
-			pTemp1->restLength = data->restLength;
+			pTemp1->mMassReciprocal = data.mMassReciprocal;
+			pTemp1->mVelocity = data.mVelocity + pTemp2->mForce;
+			pTemp1->mPosition = data.mPosition + pTemp2->mVelocity;
+			pTemp1->restLength = data.restLength;
 		}
 
 		ComputeForces( g_pTempList[ 0 ] );
@@ -598,16 +601,16 @@ void CRope::RK4Integrate( const float flDeltaTime )
 
 		for( int uiIndex = 0; uiIndex < m_NumSamples; ++uiIndex, ++pTemp1, ++pTemp2 )
 		{
-			RopeSampleData *data = m_Samples[ uiIndex ]->GetData();
+			RopeSampleData& data = m_Samples[ uiIndex ]->GetSourceData();
 
-			pTemp2->mForce = data->mMassReciprocal * pTemp1->mForce * flDeltas[ uiStep - 1 ];
+			pTemp2->mForce = data.mMassReciprocal * pTemp1->mForce * flDeltas[ uiStep - 1 ];
 			pTemp2->mVelocity = pTemp1->mVelocity * flDeltas[ uiStep - 1 ];
-			pTemp2->restLength = data->restLength;
+			pTemp2->restLength = data.restLength;
 
-			pTemp1->mMassReciprocal = data->mMassReciprocal;
-			pTemp1->mVelocity = data->mVelocity + pTemp2->mForce;
-			pTemp1->mPosition = data->mPosition + pTemp2->mVelocity;
-			pTemp1->restLength = data->restLength;
+			pTemp1->mMassReciprocal = data.mMassReciprocal;
+			pTemp1->mVelocity = data.mVelocity + pTemp2->mForce;
+			pTemp1->mPosition = data.mPosition + pTemp2->mVelocity;
+			pTemp1->restLength = data.restLength;
 		}
 
 		ComputeForces( g_pTempList[ 0 ] );
@@ -619,9 +622,9 @@ void CRope::RK4Integrate( const float flDeltaTime )
 
 		for( int uiIndex = 0; uiIndex < m_NumSamples; ++uiIndex, ++pTemp1, ++pTemp2 )
 		{
-			RopeSampleData *data = m_Samples[ uiIndex ]->GetData();
+			RopeSampleData& data = m_Samples[ uiIndex ]->GetSourceData();
 
-			pTemp2->mForce = data->mMassReciprocal * pTemp1->mForce * flDeltas[ 3 ];
+			pTemp2->mForce = data.mMassReciprocal * pTemp1->mForce * flDeltas[ 3 ];
 
 			pTemp2->mVelocity = pTemp1->mVelocity * flDeltas[ 3 ];
 		}
@@ -634,16 +637,16 @@ void CRope::RK4Integrate( const float flDeltaTime )
 
 	for( int uiIndex = 0; uiIndex < m_NumSamples; ++uiIndex, ++pTemp1, ++pTemp2, ++pTemp3, ++pTemp4 )
 	{
-		RopeSampleData *pSource = m_Samples[ uiIndex ]->GetData();
-		RopeSampleData *pTarget = m_Samples[ uiIndex ]->GetData2();
+		RopeSampleData& pSource = m_Samples[ uiIndex ]->GetSourceData();
+		RopeSampleData& pTarget = m_Samples[ uiIndex ]->GetTargetData();
 
 		const Vector vecPosChange = 1.0f / 6.0f * ( pTemp1->mVelocity + ( pTemp2->mVelocity + pTemp3->mVelocity ) * 2 + pTemp4->mVelocity );
 
 		const Vector vecVelChange = 1.0f / 6.0f * ( pTemp1->mForce + ( pTemp2->mForce + pTemp3->mForce ) * 2 + pTemp4->mForce );
 
-		pTarget->mPosition = pSource->mPosition + ( vecPosChange );//* flDeltaTime );
+		pTarget.mPosition = pSource.mPosition + ( vecPosChange );//* flDeltaTime );
 
-		pTarget->mVelocity = pSource->mVelocity + ( vecVelChange );//* flDeltaTime );
+		pTarget.mVelocity = pSource.mVelocity + ( vecVelChange );//* flDeltaTime );
 	}
 }
 
@@ -686,30 +689,31 @@ void CRope::TraceModels( CRopeSegment** ppPrimarySegs, CRopeSegment** ppHiddenSe
 		Vector vecAngles;
 
 		GetAlignmentAngles(
-			m_Samples[ 0 ]->GetData()->mPosition,
-			m_Samples[ 1 ]->GetData()->mPosition,
+			m_Samples[ 0 ]->GetData().mPosition,
+			m_Samples[ 1 ]->GetData().mPosition,
 			vecAngles );
 
-		( *ppPrimarySegs )->SetAbsAngles( vecAngles );
+		( *ppPrimarySegs )->pev->angles = vecAngles;
 	}
 
 	TraceResult tr;
 
 	if( mObjectAttached )
 	{
-		for( int uiSeg = 1; uiSeg < m_iSegments; ++uiSeg )
+		for( unsigned int uiSeg = 1; uiSeg < m_iSegments; ++uiSeg )
 		{
 			CRopeSample* pSample = m_Samples[ uiSeg ];
 
-			Vector vecDist = pSample->GetData()->mPosition - ppHiddenSegs[ uiSeg ]->pev->origin;
+			Vector vecDist = pSample->GetData().mPosition - ppHiddenSegs[ uiSeg ]->pev->origin;
 
 			vecDist = vecDist.Normalize();
 
+			// HACK: this code relies on integer underflow. uiSeg must be unsigned!
 			const float flTraceDist = ( uiSeg - mAttachedObjectsSegment + 2 ) < 5 ? 50 : 10;
 
 			const Vector vecTraceDist = vecDist * flTraceDist;
 
-			const Vector vecEnd = pSample->GetData()->mPosition + vecTraceDist;
+			const Vector vecEnd = pSample->GetData().mPosition + vecTraceDist;
 
 			UTIL_TraceLine( ppHiddenSegs[ uiSeg ]->pev->origin, vecEnd, ignore_monsters, edict(), &tr );
 
@@ -728,17 +732,17 @@ void CRope::TraceModels( CRopeSegment** ppPrimarySegs, CRopeSegment** ppHiddenSe
 
 				Vector vecNormal = tr.vecPlaneNormal.Normalize() * 20000.0;
 
-				RopeSampleData *data = ppPrimarySegs[ uiSeg ]->GetSample()->GetData();
+				RopeSampleData& data = ppPrimarySegs[ uiSeg ]->GetSample()->GetData();
 
-				data->mApplyExternalForce = true;
+				data.mApplyExternalForce = true;
 
-				data->mExternalForce = vecNormal;
+				data.mExternalForce = vecNormal;
 
-				data->mVelocity = g_vecZero;
+				data.mVelocity = g_vecZero;
 			}
 			else
 			{
-				Vector vecOrigin = pSample->GetData()->mPosition;
+				Vector vecOrigin = pSample->GetData().mPosition;
 
 				TruncateEpsilon( vecOrigin );
 
@@ -748,16 +752,16 @@ void CRope::TraceModels( CRopeSegment** ppPrimarySegs, CRopeSegment** ppHiddenSe
 	}
 	else
 	{
-		for( int uiSeg = 1; uiSeg < m_iSegments; ++uiSeg )
+		for( unsigned int uiSeg = 1; uiSeg < m_iSegments; ++uiSeg )
 		{
 			UTIL_TraceLine(
 				ppHiddenSegs[ uiSeg ]->pev->origin,
-				m_Samples[ uiSeg ]->GetData()->mPosition,
+				m_Samples[ uiSeg ]->GetData().mPosition,
 				ignore_monsters, edict(), &tr );
 
 			if( tr.flFraction == 1.0 )
 			{
-				Vector vecOrigin = m_Samples[ uiSeg ]->GetData()->mPosition;
+				Vector vecOrigin = m_Samples[ uiSeg ]->GetData().mPosition;
 
 				TruncateEpsilon( vecOrigin );
 
@@ -774,9 +778,9 @@ void CRope::TraceModels( CRopeSegment** ppPrimarySegs, CRopeSegment** ppHiddenSe
 
 				ppPrimarySegs[ uiSeg ]->SetAbsOrigin( vecOrigin );
 
-				ppPrimarySegs[ uiSeg ]->GetSample()->GetData()->mApplyExternalForce = true;
+				ppPrimarySegs[ uiSeg ]->GetSample()->GetData().mApplyExternalForce = true;
 
-				ppPrimarySegs[ uiSeg ]->GetSample()->GetData()->mExternalForce = vecNormal * 40000.0;
+				ppPrimarySegs[ uiSeg ]->GetSample()->GetData().mExternalForce = vecNormal * 40000.0;
 			}
 		}
 	}
@@ -790,26 +794,26 @@ void CRope::TraceModels( CRopeSegment** ppPrimarySegs, CRopeSegment** ppHiddenSe
 
 		GetAlignmentAngles( pSegment->pev->origin, pSegment2->pev->origin, vecAngles );
 
-		pSegment->SetAbsAngles( vecAngles );
+		pSegment->pev->angles = vecAngles;
 	}
 
 	if( m_iSegments > 1 )
 	{
 		CRopeSample *pSample = m_Samples[ m_NumSamples - 1 ];
 
-		UTIL_TraceLine( m_LastEndPos, pSample->GetData()->mPosition, ignore_monsters, edict(), &tr );
+		UTIL_TraceLine( m_LastEndPos, pSample->GetData().mPosition, ignore_monsters, edict(), &tr );
 
 		if( tr.flFraction == 1.0 )
 		{
-			m_LastEndPos = pSample->GetData()->mPosition;
+			m_LastEndPos = pSample->GetData().mPosition;
 		}
 		else
 		{
 			m_LastEndPos = tr.vecEndPos;
 
-			pSample->GetData()->mApplyExternalForce = true;
+			pSample->GetData().mApplyExternalForce = true;
 
-			pSample->GetData()->mExternalForce = tr.vecPlaneNormal.Normalize() * 40000.0;
+			pSample->GetData().mExternalForce = tr.vecPlaneNormal.Normalize() * 40000.0;
 		}
 
 		CRopeSegment *pSegment = ppPrimarySegs[ m_NumSamples - 2 ];
@@ -818,7 +822,7 @@ void CRope::TraceModels( CRopeSegment** ppPrimarySegs, CRopeSegment** ppHiddenSe
 
 		GetAlignmentAngles( pSegment->pev->origin, m_LastEndPos, vecAngles );
 
-		pSegment->SetAbsAngles( vecAngles );
+		pSegment->pev->angles = vecAngles;
 	}
 }
 
@@ -829,22 +833,22 @@ void CRope::SetRopeSegments( const int uiNumSegments,
 	{
 		TraceModels( ppPrimarySegs, ppHiddenSegs );
 
-		ppPrimarySegs[ 0 ]->SetSolidType( SOLID_TRIGGER );
-		ppPrimarySegs[ 0 ]->SetEffects( 0 );
+		ppPrimarySegs[ 0 ]->pev->solid = SOLID_TRIGGER;
+		ppPrimarySegs[ 0 ]->pev->effects = 0;
 
-		ppHiddenSegs[ 0 ]->SetSolidType( SOLID_NOT );
-		ppHiddenSegs[ 0 ]->SetEffects( EF_NODRAW );
+		ppHiddenSegs[ 0 ]->pev->solid = SOLID_NOT;
+		ppHiddenSegs[ 0 ]->pev->effects = EF_NODRAW;
 
 		for( int uiIndex = 1; uiIndex < uiNumSegments; ++uiIndex )
 		{
 			CRopeSegment* pPrim = ppPrimarySegs[ uiIndex ];
 			CRopeSegment* pHidden = ppHiddenSegs[ uiIndex ];
 
-			pPrim->SetSolidType( SOLID_TRIGGER );
-			pPrim->SetEffects( 0 );
+			pPrim->pev->solid = SOLID_TRIGGER;
+			pPrim->pev->effects = 0;
 
-			pHidden->SetSolidType( SOLID_NOT );
-			pHidden->SetEffects( EF_NODRAW );
+			pHidden->pev->solid = SOLID_NOT;
+			pHidden->pev->effects = EF_NODRAW;
 
 			Vector vecOrigin = pPrim->pev->origin;
 
@@ -974,7 +978,7 @@ Vector CRope::GetAttachedObjectsVelocity() const
 	if( !mObjectAttached )
 		return g_vecZero;
 
-	return seg[ mAttachedObjectsSegment ]->GetSample()->GetData()->mVelocity;
+	return seg[ mAttachedObjectsSegment ]->GetSample()->GetData().mVelocity;
 }
 
 void CRope::ApplyForceFromPlayer( const Vector& vecForce )
@@ -1002,11 +1006,11 @@ void CRope::ApplyForceToSegment( const Vector& vecForce, const int uiSegment )
 	{
 		//Apply force to the last sample.
 
-		RopeSampleData *data = m_Samples[ uiSegment - 1 ]->GetData();
+		RopeSampleData& data = m_Samples[ uiSegment - 1 ]->GetData();
 
-		data->mExternalForce = data->mExternalForce + vecForce;
+		data.mExternalForce = data.mExternalForce + vecForce;
 
-		data->mApplyExternalForce = true;
+		data.mApplyExternalForce = true;
 	}
 }
 
@@ -1043,7 +1047,7 @@ bool CRope::ShouldCreak() const
 	{
 		CRopeSample* pSample = seg[ mAttachedObjectsSegment ]->GetSample();
 
-		if( pSample->GetData()->mVelocity.Length() > 20.0 )
+		if( pSample->GetData().mVelocity.Length() > 20.0 )
 			return RANDOM_LONG( 1, 5 ) == 1;
 	}
 
@@ -1093,7 +1097,7 @@ float CRope::GetRopeLength() const
 
 Vector CRope::GetRopeOrigin() const
 {
-	return m_Samples[ 0 ]->GetData()->mPosition;
+	return m_Samples[ 0 ]->GetData().mPosition;
 }
 
 bool CRope::IsValidSegmentIndex( const int uiSegment ) const
@@ -1106,7 +1110,7 @@ Vector CRope::GetSegmentOrigin( const int uiSegment ) const
 	if( !IsValidSegmentIndex( uiSegment ) )
 		return g_vecZero;
 
-	return m_Samples[ uiSegment ]->GetData()->mPosition;
+	return m_Samples[ uiSegment ]->GetData().mPosition;
 }
 
 Vector CRope::GetSegmentAttachmentPoint( const int uiSegment ) const
@@ -1142,8 +1146,8 @@ Vector CRope::GetSegmentDirFromOrigin( const int uiSegmentIndex ) const
 
 	//There is one more sample than there are segments, so this is fine.
 	const Vector vecResult =
-		m_Samples[ uiSegmentIndex + 1 ]->GetData()->mPosition -
-		m_Samples[ uiSegmentIndex ]->GetData()->mPosition;
+		m_Samples[ uiSegmentIndex + 1 ]->GetData().mPosition -
+		m_Samples[ uiSegmentIndex ]->GetData().mPosition;
 
 	return vecResult.Normalize();
 }
@@ -1156,7 +1160,7 @@ Vector CRope::GetAttachedObjectsPosition() const
 	Vector vecResult;
 
 	if( mAttachedObjectsSegment < m_iSegments )
-		vecResult = m_Samples[ mAttachedObjectsSegment ]->GetData()->mPosition;
+		vecResult = m_Samples[ mAttachedObjectsSegment ]->GetData().mPosition;
 
 	vecResult = vecResult +
 		( mAttachedObjectsOffset * GetSegmentDirFromOrigin( mAttachedObjectsSegment ) );
@@ -1194,7 +1198,7 @@ void CRopeSample::Spawn()
 {
 	pev->classname = MAKE_STRING( "rope_sample" );
 
-	AddEffectsFlags( EF_NODRAW );
+	pev->effects |= EF_NODRAW;
 }
 
 CRopeSample* CRopeSample::CreateSample()
@@ -1238,14 +1242,14 @@ void CRopeSegment::Spawn()
 
 	SET_MODEL( edict(), STRING( mModelName ) );
 
-	SetMoveType( MOVETYPE_NOCLIP );
-	SetSolidType( SOLID_TRIGGER );
-	SetEffects( EF_NODRAW );
+	pev->movetype = MOVETYPE_NOCLIP;
+	pev->solid = SOLID_TRIGGER;
+	pev->effects = EF_NODRAW;
 	SetAbsOrigin( pev->origin );
 
 	UTIL_SetSize( pev, Vector( -30, -30, -30 ), Vector( 30, 30, 30 ) );
 
-	SetNextThink( gpGlobals->time + 0.5 );
+	pev->nextthink = gpGlobals->time + 0.5;
 }
 
 void CRopeSegment::Touch( CBaseEntity* pOther )
@@ -1267,9 +1271,9 @@ void CRopeSegment::Touch( CBaseEntity* pOther )
 		{
 			if( mCanBeGrabbed )
 			{
-				RopeSampleData *data = m_Sample->GetData();
+				RopeSampleData& data = m_Sample->GetData();
 
-				pOther->pev->origin = data->mPosition;
+				pOther->pev->origin = data.mPosition;
 
 				pPlayer->SetOnRopeState( true );
 				pPlayer->SetRope( GetMasterRope() );
@@ -1280,9 +1284,9 @@ void CRopeSegment::Touch( CBaseEntity* pOther )
 				if( vecVelocity.Length() > 0.5 )
 				{
 					//Apply some external force to move the rope. - Solokiller
-					data->mApplyExternalForce = true;
+					data.mApplyExternalForce = true;
 
-					data->mExternalForce = data->mExternalForce + vecVelocity * 750;
+					data.mExternalForce = data.mExternalForce + vecVelocity * 750;
 				}
 
 				if( GetMasterRope()->IsSoundAllowed() )
@@ -1326,7 +1330,7 @@ CRopeSegment* CRopeSegment::CreateSegment( CRopeSample* pSample, string_t iszMod
 
 	pSegment->mCauseDamage = false;
 	pSegment->mCanBeGrabbed = true;
-	pSegment->mDefaultMass = pSample->GetData()->mMassReciprocal;
+	pSegment->mDefaultMass = pSample->GetData().mMassReciprocal;
 	pSegment->SetMasterRope(rope);
 
 	return pSegment;
@@ -1334,9 +1338,9 @@ CRopeSegment* CRopeSegment::CreateSegment( CRopeSample* pSample, string_t iszMod
 
 void CRopeSegment::ApplyExternalForce( const Vector& vecForce )
 {
-	m_Sample->GetData()->mApplyExternalForce = true;
+	m_Sample->GetData().mApplyExternalForce = true;
 
-	m_Sample->GetData()->mExternalForce = m_Sample->GetData()->mExternalForce + vecForce;
+	m_Sample->GetData().mExternalForce = m_Sample->GetData().mExternalForce + vecForce;
 }
 
 void CRopeSegment::SetCauseDamageOnTouch( const bool bCauseDamage )
