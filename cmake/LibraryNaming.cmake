@@ -115,6 +115,12 @@ endif()
 if(XASH_AMD64)
 	set(BUILDARCH "amd64")
 elseif(XASH_X86)
+	if(SERVER_USES_OLD_I386_POSTFIX AND XASH_LINUX)
+		set(APPEND_I386 YES)
+	else
+		set(APPEND_I386 NO)
+	endif()
+
 	if(XASH_WIN32 OR XASH_LINUX OR XASH_APPLE)
 		set(BUILDARCH "") # no prefix for default OS
 	else()
@@ -190,6 +196,12 @@ elseif(BUILDARCH)
 	set(POSTFIX "_${BUILDARCH}")
 else()
 	set(POSTFIX "")
+endif()
+
+if(APPEND_I386)
+	set(SERVER_POSTFIX "_i386")
+else()
+	set(SERVER_POSTFIX "${POSTFIX}")
 endif()
 
 message(STATUS "Library postfix: " ${POSTFIX})

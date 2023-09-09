@@ -9,6 +9,7 @@ HANDGRENADE_DEPLOY_FIX=OFF # Handgrenade deploy animation fix after finishing a 
 WEAPONS_ANIMATION_TIMES_FIX=OFF # Animation times fix for some weapons
 OEM_BUILD=OFF # OEM Build
 HLDEMO_BUILD=OFF # Demo Build
+SERVER_USES_OLD_I386_POSTFIX=OFF # Add _i386 on linux-i386 builds
 
 GAMEDIR=valve # Gamedir path
 SERVER_INSTALL_DIR=dlls # Where put server dll

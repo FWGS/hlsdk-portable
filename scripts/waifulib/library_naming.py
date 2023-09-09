@@ -73,6 +73,8 @@ def configure(conf):
 
 	conf.multicheck(*tests, msg = '', mandatory = False, quiet = True)
 
+	append_i386 = False
+
 	# engine/common/build.c
 	if conf.env.XASH_ANDROID:
 		buildos = "android"
@@ -107,6 +109,9 @@ def configure(conf):
 	if conf.env.XASH_AMD64:
 		buildarch = "amd64"
 	elif conf.env.XASH_X86:
+		if conf.env.SERVER_USES_OLD_I386_POSTFIX and conf.env.XASH_LINUX:
+			append_i386 = True
+
 		if conf.env.XASH_WIN32 or conf.env.XASH_LINUX or conf.env.XASH_APPLE:
 			buildarch = ""
 		else:
@@ -174,5 +179,10 @@ def configure(conf):
 		conf.env.POSTFIX = '_%s' % buildarch
 	else:
 		conf.env.POSTFIX = ''
+
+	if append_i386:
+		conf.env.SERVER_POSTFIX = '_i386'
+	else:
+		conf.env.SERVER_POSTFIX = conf.env.POSTFIX
 
 	conf.end_msg(conf.env.POSTFIX)
