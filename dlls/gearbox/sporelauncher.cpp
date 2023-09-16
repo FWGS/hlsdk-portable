@@ -280,7 +280,7 @@ void CSporelauncher::Reload(void)
 		m_fInSpecialReload = 2;
 
 		// Play reload sound.
-		EMIT_SOUND_DYN(ENT(m_pPlayer->pev), CHAN_ITEM, "weapons/splauncher_reload.wav", 1, ATTN_NORM, 0, 100);
+		EMIT_SOUND(m_pPlayer->edict(), CHAN_ITEM, "weapons/splauncher_reload.wav", 0.7f, ATTN_NORM);
 
 		SendWeaponAnim(SPLAUNCHER_RELOAD_LOAD);
 
@@ -328,12 +328,12 @@ void CSporelauncher::WeaponIdle(void)
 		{
 			int iAnim;
 			float flRand = UTIL_SharedRandomFloat(m_pPlayer->random_seed, 0, 1);
-			if (flRand <= 0.4)
+			if (flRand <= 0.75f)
 			{
 				iAnim = SPLAUNCHER_IDLE;
 				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 2.0f;
 			}
-			else if (flRand <= 0.8)
+			else if (flRand <= 0.95f)
 			{
 				iAnim = SPLAUNCHER_IDLE2;
 				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 4.0f;
@@ -342,6 +342,7 @@ void CSporelauncher::WeaponIdle(void)
 			{
 				iAnim = SPLAUNCHER_FIDGET;
 				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 4.0f;
+				EMIT_SOUND(m_pPlayer->edict(), CHAN_ITEM, "weapons/splauncher_pet.wav", 0.7f, ATTN_NORM);
 			}
 
 			SendWeaponAnim(iAnim);
