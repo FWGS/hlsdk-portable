@@ -7,18 +7,19 @@
 #include "monsters.h"
 #include "player.h"
 #include "soundent.h"
+#include "decals.h"
 
 class CMortarShell : public CGrenade
 {
 public:
 	void Precache();
-	void BurnThink();
-	void MortarExplodeTouch(CBaseEntity *pOther);
+	void EXPORT BurnThink();
+	void EXPORT MortarExplodeTouch(CBaseEntity *pOther);
 	void Spawn();
-	void FlyThink();
+	void EXPORT FlyThink();
 	int Save(CSave &save);
 	int Restore(CRestore &restore);
-	static CMortarShell *CreateMortarShell(Vector p_VecOrigin, Vector p_VecAngles, CBaseEntity *pOwner, int velocity);
+	static CMortarShell *CreateMortarShell(Vector vecOrigin, Vector vecAngles, CBaseEntity *pOwner, int velocity);
 
 	static TYPEDESCRIPTION m_SaveData[];
 	int m_iTrail;
@@ -48,114 +49,123 @@ void CMortarShell::Precache()
 void CMortarShell::Spawn()
 {
 	Precache();
-	SET_MODEL(ENT(pev), "models/mortarshell.mdl");
-	UTIL_SetSize(pev, g_vecZero, g_vecZero);
 
-	pev->solid = SOLID_BBOX;
 	pev->movetype = MOVETYPE_BOUNCE;
+	pev->solid = SOLID_BBOX;
+
+	SET_MODEL(edict(), "models/mortarshell.mdl");
+
+	UTIL_SetSize(pev, g_vecZero, g_vecZero);
+	UTIL_SetOrigin(pev, pev->origin);
 	pev->classname = MAKE_STRING("mortar_shell");
+
 	SetThink(&CMortarShell::BurnThink);
 	SetTouch(&CMortarShell::MortarExplodeTouch);
 
-	pev->dmg = gSkillData.plrDmgRPG*2;
-	pev->nextthink = gpGlobals->time + 0.1;
+	UTIL_MakeVectors(pev->angles);
+
+	pev->velocity = -(gpGlobals->v_forward * m_velocity);
+	pev->gravity = 1;
+
+	pev->dmg = gSkillData.plrDmgRPG * 2;
+
+	pev->nextthink = gpGlobals->time + 0.01;
 	m_flIgniteTime = gpGlobals->time;
 	m_iSoundedOff = FALSE;
 }
 
 void CMortarShell::MortarExplodeTouch(CBaseEntity *pOther)
 {
+	pev->enemy = pOther->edict();
+
+	const Vector direction = pev->velocity.Normalize();
+
+	const Vector vecSpot = pev->origin - direction * 32;
+
 	TraceResult tr;
-	Vector vecSpot;
+	UTIL_TraceLine(vecSpot, vecSpot + direction * 64, ignore_monsters, edict(), &tr);
 
-	pev->model = iStringNull;//invisible
-	pev->solid = SOLID_NOT;// intangible
+	pev->model = 0;
 
+	pev->solid = SOLID_NOT;
 	pev->takedamage = DAMAGE_NO;
 
-	vecSpot = pev->origin + Vector( 0, 0, 8 );
-	UTIL_TraceLine( vecSpot, vecSpot + Vector( 0, 0, -40 ), ignore_monsters, dont_ignore_glass, ENT(pev), &tr );
-
-	// Pull out of the wall a bit
-	if( tr.flFraction != 1.0 )
+	if (tr.flFraction != 1.0f)
 	{
-		pev->origin = tr.vecEndPos + ( tr.vecPlaneNormal * ( pev->dmg - 24 ) * 0.6 );
+		pev->origin = 0.6f * ((pev->dmg - 24.0f) * tr.vecPlaneNormal) + tr.vecEndPos;
 	}
 
-	int iContents = UTIL_PointContents( pev->origin );
+	const int contents = UTIL_PointContents(pev->origin);
 
-	MESSAGE_BEGIN( MSG_PAS, SVC_TEMPENTITY, pev->origin );
-	WRITE_BYTE( TE_EXPLOSION );		// This makes a dynamic light and the explosion sprites/sound
-	WRITE_COORD( pev->origin.x );	// Send to PAS because of the sound
-	WRITE_COORD( pev->origin.y );
-	WRITE_COORD( pev->origin.z );
-	if( iContents != CONTENTS_WATER )
-	{
-		WRITE_SHORT( g_sModelIndexFireball );
-	}
+	MESSAGE_BEGIN(MSG_PAS, SVC_TEMPENTITY, pev->origin);
+	WRITE_BYTE(TE_EXPLOSION);
+	WRITE_COORD(pev->origin.x);
+	WRITE_COORD(pev->origin.y);
+	WRITE_COORD(pev->origin.z);
+
+	if (contents == CONTENTS_WATER)
+		WRITE_SHORT(g_sModelIndexWExplosion);
 	else
-	{
-		WRITE_SHORT( g_sModelIndexWExplosion );
-	}
-	WRITE_BYTE( (pev->dmg - 50) * 5); // scale * 10
-	WRITE_BYTE( 10 ); // framerate
-	WRITE_BYTE( TE_EXPLFLAG_NONE );
+		WRITE_SHORT(g_sModelIndexFireball);
+
+	WRITE_BYTE(static_cast<int>((pev->dmg - 50.0) * 5.0));
+	WRITE_BYTE(10);
+	WRITE_BYTE(TE_EXPLFLAG_NONE);
 	MESSAGE_END();
 
-	CSoundEnt::InsertSound( bits_SOUND_COMBAT, pev->origin, NORMAL_EXPLOSION_VOLUME, 3.0 );
-	entvars_t *pevOwner;
-	if( pev->owner )
-		pevOwner = VARS( pev->owner );
+	CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, 1024, 3.0);
+
+	entvars_t* pOwner = VARS(pev->owner);
+	pev->owner = NULL;
+
+	RadiusDamage(pev, pOwner, pev->dmg, CLASS_NONE, 64);
+
+	if (RANDOM_FLOAT(0, 1) >= 0.5)
+		UTIL_DecalTrace(&tr, DECAL_SCORCH2);
 	else
-		pevOwner = NULL;
+		UTIL_DecalTrace(&tr, DECAL_SCORCH1);
 
-	pev->owner = NULL; // can't traceline attack owner if this is set
-
-	RadiusDamage( pev, pevOwner, pev->dmg, CLASS_NONE, DMG_BLAST );
-
-	if( RANDOM_FLOAT( 0, 1 ) < 0.5 )
-	{
-		UTIL_DecalTrace( &tr, 11 );
-	}
-	else
-	{
-		UTIL_DecalTrace( &tr, 12 );
-	}
-
-	switch( RANDOM_LONG( 0, 2 ) )
+	switch (RANDOM_LONG(0, 2))
 	{
 	case 0:
-		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "weapons/debris1.wav", 0.55, ATTN_NORM );
+		EMIT_SOUND(edict(), CHAN_VOICE, "weapons/debris1.wav", 0.55, ATTN_NORM);
 		break;
 	case 1:
-		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "weapons/debris2.wav", 0.55, ATTN_NORM );
+		EMIT_SOUND(edict(), CHAN_VOICE, "weapons/debris2.wav", 0.55, ATTN_NORM);
 		break;
 	case 2:
-		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "weapons/debris3.wav", 0.55, ATTN_NORM );
+		EMIT_SOUND(edict(), CHAN_VOICE, "weapons/debris3.wav", 0.55, ATTN_NORM);
 		break;
 	}
 
 	pev->effects |= EF_NODRAW;
-	SetThink( &CGrenade::Smoke );
+
+	SetThink(&CMortarShell::Smoke);
+
 	pev->velocity = g_vecZero;
+
 	pev->nextthink = gpGlobals->time + 0.3;
 
-	if( iContents != CONTENTS_WATER )
+	if (contents != CONTENTS_WATER)
 	{
-		int sparkCount = RANDOM_LONG( 0, 3 );
-		for( int i = 0; i < sparkCount; i++ )
-			Create( "spark_shower", pev->origin, tr.vecPlaneNormal, NULL );
+		const int sparkCount = RANDOM_LONG(0, 3);
+
+		for (int i = 0; i < sparkCount; ++i)
+		{
+			CBaseEntity::Create("spark_shower", pev->origin, tr.vecPlaneNormal);
+		}
 	}
 }
 
 
 void CMortarShell::BurnThink()
 {
-	UTIL_VecToAngles(pev->velocity);
-	pev->angles = pev->velocity;
+	pev->angles = UTIL_VecToAngles(pev->velocity);
+
+	pev->angles.x -= 90;
 
 	MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pev->origin);
-	WRITE_BYTE(110);
+	WRITE_BYTE(TE_SPRITE_SPRAY);
 	WRITE_COORD(pev->origin.x);
 	WRITE_COORD(pev->origin.y);
 	WRITE_COORD(pev->origin.z);
@@ -168,8 +178,10 @@ void CMortarShell::BurnThink()
 	WRITE_BYTE(120);
 	MESSAGE_END();
 
-	if(!((m_flIgniteTime + 0.2) >= gpGlobals->time))
+	if (gpGlobals->time > m_flIgniteTime + 0.2)
+	{
 		SetThink(&CMortarShell::FlyThink);
+	}
 
 	pev->nextthink = gpGlobals->time + 0.01;
 }
@@ -177,36 +189,35 @@ void CMortarShell::BurnThink()
 void CMortarShell::FlyThink()
 {
 	pev->angles = UTIL_VecToAngles(pev->velocity);
-	pev->angles.x -= 90;
+	pev->angles.x -= 90.0f;
 
-	if(pev->velocity.z < 20 && !m_iSoundedOff)
+	if(pev->velocity.z < 20.0f && !m_iSoundedOff)
 	{
 		m_iSoundedOff = TRUE;
-		EMIT_SOUND_DYN(ENT(pev), 2, "weapons/ofmortar.wav", 1, 0, 0, 100);
+		EMIT_SOUND(ENT(pev), CHAN_VOICE, "weapons/ofmortar.wav", RANDOM_FLOAT(0.8, 0.9), ATTN_NONE);
 	}
 
 	pev->nextthink = gpGlobals->time + 0.1;
 }
 
-CMortarShell *CMortarShell::CreateMortarShell(Vector p_VecOrigin, Vector p_VecAngles, CBaseEntity *pOwner, int velocity)
+CMortarShell *CMortarShell::CreateMortarShell(Vector vecOrigin, Vector vecAngles, CBaseEntity *pOwner, int velocity)
 {
-	CMortarShell *rocket = GetClassPtr( (CMortarShell *)NULL );
-	rocket->Spawn();
+	CMortarShell *pShell = GetClassPtr( (CMortarShell *)NULL );
+	UTIL_SetOrigin(pShell->pev, vecOrigin);
 
-	rocket->pev->gravity = 1;
-	UTIL_SetOrigin( rocket->pev, p_VecOrigin );
-	rocket->pev->angles = UTIL_VecToAngles(p_VecAngles);
-	UTIL_MakeVectors(p_VecAngles);
-	rocket->pev->velocity = rocket->pev->velocity - gpGlobals->v_forward * velocity;
-	if (pOwner)
-		rocket->pev->owner = ENT(pOwner->pev);
+	pShell->pev->angles = vecAngles;
+	pShell->m_velocity = velocity;
 
-	return rocket;
+	pShell->Spawn();
+
+	pShell->pev->owner = pOwner->edict();
+
+	return pShell;
 }
 
 #define SF_MORTAR_ACTIVE (1 << 0)
 #define SF_MORTAR_LINE_OF_SIGHT (1 << 4)
-#define SF_MORTAR_CAN_CONTROL (1 << 5)
+#define SF_MORTAR_CONTROLLABLE (1 << 5)
 
 class COp4Mortar : public CBaseMonster
 {
@@ -224,44 +235,56 @@ public:
 	void EXPORT MortarThink();
 	static TYPEDESCRIPTION m_SaveData[];
 	int ObjectCaps() { return 0; }
+	void PlaySound();
 
-	float m_FireDelay;
-	BOOL m_tracking;
-	float m_minRange;
-	float m_maxRange;
-	float m_lastupdate;
-	float m_zeroYaw;
-	float m_lastFire;
-	float m_trackDelay;
-	float m_flExplodeTime;
-	int m_hmax;
-	int m_hmin;
 	int d_x;
 	int d_y;
+	float m_lastupdate;
+	int m_direction;
+	Vector m_start;
+	Vector m_end;
 	int m_velocity;
+	int m_hmin;
+	int m_hmax;
+	float m_fireLast;
+	float m_maxRange;
+	float m_minRange;
 	int m_iEnemyType;
-	int m_iUpdateTime;
+	float m_fireDelay;
+	float m_trackDelay;
+	BOOL m_tracking;
+	float m_zeroYaw;
 	Vector m_vGunAngle;
 	Vector m_vIdealGunVector;
 	Vector m_vIdealGunAngle;
+
+	float m_lastTimePlayedSound;
 };
 
 LINK_ENTITY_TO_CLASS(op4mortar, COp4Mortar)
 
 TYPEDESCRIPTION	COp4Mortar::m_SaveData[] =
 {
-	DEFINE_FIELD( COp4Mortar, m_tracking, FIELD_BOOLEAN ),
-	DEFINE_FIELD( COp4Mortar, m_FireDelay, FIELD_FLOAT ),
-	DEFINE_FIELD( COp4Mortar, m_minRange, FIELD_FLOAT),
-	DEFINE_FIELD( COp4Mortar, m_maxRange, FIELD_FLOAT ),
-	DEFINE_FIELD( COp4Mortar, m_lastFire, FIELD_FLOAT),
-	DEFINE_FIELD( COp4Mortar, m_trackDelay, FIELD_FLOAT ),
-	DEFINE_FIELD( COp4Mortar, m_hmax, FIELD_INTEGER ),
-	DEFINE_FIELD( COp4Mortar, m_hmin, FIELD_INTEGER ),
-	DEFINE_FIELD( COp4Mortar, m_velocity, FIELD_INTEGER ),
-	DEFINE_FIELD( COp4Mortar, m_iEnemyType, FIELD_INTEGER ),
-	DEFINE_FIELD( COp4Mortar, m_vGunAngle, FIELD_VECTOR ),
+	DEFINE_FIELD(COp4Mortar, d_x, FIELD_INTEGER),
+	DEFINE_FIELD(COp4Mortar, d_y, FIELD_INTEGER),
 	DEFINE_FIELD(COp4Mortar, m_lastupdate, FIELD_FLOAT),
+	DEFINE_FIELD(COp4Mortar, m_direction, FIELD_INTEGER),
+	DEFINE_FIELD(COp4Mortar, m_start, FIELD_VECTOR),
+	DEFINE_FIELD(COp4Mortar, m_end, FIELD_VECTOR),
+	DEFINE_FIELD(COp4Mortar, m_velocity, FIELD_INTEGER),
+	DEFINE_FIELD(COp4Mortar, m_hmin, FIELD_INTEGER),
+	DEFINE_FIELD(COp4Mortar, m_hmax, FIELD_INTEGER),
+	DEFINE_FIELD(COp4Mortar, m_fireLast, FIELD_FLOAT),
+	DEFINE_FIELD(COp4Mortar, m_maxRange, FIELD_FLOAT),
+	DEFINE_FIELD(COp4Mortar, m_minRange, FIELD_FLOAT),
+	DEFINE_FIELD(COp4Mortar, m_iEnemyType, FIELD_INTEGER),
+	DEFINE_FIELD(COp4Mortar, m_fireDelay, FIELD_FLOAT),
+	DEFINE_FIELD(COp4Mortar, m_trackDelay, FIELD_FLOAT),
+	DEFINE_FIELD(COp4Mortar, m_tracking, FIELD_BOOLEAN),
+	DEFINE_FIELD(COp4Mortar, m_zeroYaw, FIELD_FLOAT),
+	DEFINE_FIELD(COp4Mortar, m_vGunAngle, FIELD_VECTOR),
+	DEFINE_FIELD(COp4Mortar, m_vIdealGunVector, FIELD_VECTOR),
+	DEFINE_FIELD(COp4Mortar, m_vIdealGunAngle, FIELD_VECTOR),
 };
 
 IMPLEMENT_SAVERESTORE( COp4Mortar, CBaseMonster )
@@ -277,85 +300,120 @@ void COp4Mortar::Precache()
 
 void COp4Mortar::Spawn()
 {
-	float angle;
-
 	Precache();
-	UTIL_SetOrigin(pev, pev->origin);
-	SET_MODEL(ENT(pev), "models/mortar.mdl");
 
+	UTIL_SetOrigin(pev, pev->origin);
+
+	SET_MODEL(edict(), "models/mortar.mdl");
+
+	pev->health = 1;
 	pev->sequence = LookupSequence("idle");
+
 	ResetSequenceInfo();
+
 	pev->frame = 0;
 	pev->framerate = 1;
+
 	m_tracking = FALSE;
-	m_lastupdate = gpGlobals->time + 0.5;
-	m_vGunAngle = Vector(0,0,0);
-	m_iUpdateTime = 0;
 
-	if(m_FireDelay < 0.5)
-		m_FireDelay = 5;
+	if (m_fireDelay < 0.5)
+		m_fireDelay = 5;
 
-	if(m_minRange == 0)
+	if (m_minRange == 0)
 		m_minRange = 128;
 
-	if(m_maxRange == 0)
-		m_maxRange = 3072;
+	if (m_maxRange == 0)
+		m_maxRange = 2048;
 
 	InitBoneControllers();
-	angle = pev->angles.y + 180;
 
-	m_zeroYaw = UTIL_AngleMod(angle);
+	m_vGunAngle = g_vecZero;
+
+	m_lastupdate = gpGlobals->time;
+
+	m_zeroYaw = UTIL_AngleMod(pev->angles.y + 180.0);
+
+	m_fireLast = gpGlobals->time;
+	m_trackDelay = gpGlobals->time;
+
 	m_hEnemy = NULL;
 
-	if (pev->spawnflags & SF_MORTAR_ACTIVE)
-		SetThink(&COp4Mortar::MortarThink);
-	else
-		SetThink(NULL);
+	pev->nextthink = gpGlobals->time + 0.01;
+	SetThink(&COp4Mortar::MortarThink);
+}
 
-	m_flExplodeTime = gpGlobals->time + 5;
-
-	pev->nextthink = gpGlobals->time + 0.1;
+void COp4Mortar::PlaySound()
+{
+	if (gpGlobals->time > m_lastTimePlayedSound + 0.12f)
+	{
+		EMIT_SOUND(ENT(pev), CHAN_VOICE, "player/pl_grate1.wav", 1.0f, ATTN_NORM);
+		m_lastTimePlayedSound = gpGlobals->time + 0.12f;
+	}
 }
 
 void COp4Mortar::UpdatePosition(float direction, int controller)
 {
-	if(m_vGunAngle.y > 90)
-		m_vGunAngle.y = 90;
-
-	if(m_vGunAngle.y < -90)
-		m_vGunAngle.y = -90;
-
-	if(m_vGunAngle.x > 90)
-		m_vGunAngle.x = 90;
-
-	if(m_vGunAngle.x < 0)
-		m_vGunAngle.x = 0;
-
-	if(controller == 1)
-		m_vGunAngle.y += direction/2;
-	else
-		m_vGunAngle.x += direction/2;
-
-	if(m_iUpdateTime >= 15)
+	if (gpGlobals->time - m_lastupdate >= 0.06)
 	{
-		EMIT_SOUND_DYN(ENT(pev), 2, "player/pl_grate1.wav", 1, 0.8, 0, 100);
-		m_iUpdateTime = 0;
+		switch (controller)
+		{
+		case 0:
+			d_x = 3 * direction;
+			break;
+
+		case 1:
+			d_y = 3 * direction;
+			break;
+		}
+
+		m_vGunAngle.x = d_x + m_vGunAngle.x;
+		m_vGunAngle.y = d_y + m_vGunAngle.y;
+
+		if (m_hmin > m_vGunAngle.y)
+		{
+			m_vGunAngle.y = m_hmin;
+			d_y = 0;
+		}
+
+		if (m_vGunAngle.y > m_hmax)
+		{
+			m_vGunAngle.y = m_hmax;
+			d_y = 0;
+		}
+
+		if (m_vGunAngle.x < 10)
+		{
+			m_vGunAngle.x = 10;
+			d_x = 0;
+		}
+		else if (m_vGunAngle.x > 90)
+		{
+			m_vGunAngle.x = 90;
+			d_x = 0;
+		}
+
+		if (0 != d_x || 0 != d_y)
+		{
+			PlaySound();
+		}
+
+		SetBoneController(0, m_vGunAngle.x);
+		SetBoneController(1, m_vGunAngle.y);
+
+		d_x = 0;
+		d_y = 0;
+
+		m_lastupdate = gpGlobals->time;
 	}
-
-	SetBoneController(1, m_vGunAngle.y);
-	SetBoneController(0, m_vGunAngle.x);
-
-	m_lastupdate = gpGlobals->time + 0.1;
-	m_iUpdateTime++;
 }
 
 void COp4Mortar::MortarThink()
 {
-	Vector pos, angle, vecTarget;
+	const float flInterval = StudioFrameAdvance();
 
-	if(m_fSequenceFinished)
+	if (m_fSequenceFinished)
 	{
-		if(pev->sequence != LookupSequence("idle"))
+		if (pev->sequence != LookupSequence("idle"))
 		{
 			pev->frame = 0;
 			pev->sequence = LookupSequence("idle");
@@ -363,55 +421,75 @@ void COp4Mortar::MortarThink()
 		}
 	}
 
-	DispatchAnimEvents();
-	StudioFrameAdvance();
+	DispatchAnimEvents(flInterval);
+
+	//GlowShellUpdate();
 
 	pev->nextthink = gpGlobals->time + 0.1;
 
-	if(pev->spawnflags & SF_MORTAR_ACTIVE)
+	if ((pev->spawnflags & SF_MORTAR_ACTIVE) != 0)
 	{
-		if(m_hEnemy == 0 || !m_hEnemy->IsAlive())
+		if (!m_hEnemy)
 		{
 			m_hEnemy = FindTarget();
 		}
-	}
 
-	if(m_hEnemy != 0)
-	{
-		vecTarget = Vector( m_hEnemy->pev->origin.x, m_hEnemy->pev->origin.y, m_hEnemy->pev->absmax.z);
+		CBaseEntity* pEnemy = m_hEnemy;
 
-		if((pev->origin - m_hEnemy->pev->origin).Length() <= m_maxRange)
+		if (pEnemy)
 		{
-			GetAttachment(0, pos, angle);
+			const float distance = (pEnemy->pev->origin - pev->origin).Length();
 
-			m_vIdealGunVector = VecCheckThrow(pev, pos, vecTarget, 700, 1);
-			m_vIdealGunVector.x =- m_vIdealGunVector.x;
-			m_vIdealGunVector.y =- m_vIdealGunVector.y;
-
-			m_vIdealGunAngle = UTIL_VecToAngles(m_vIdealGunVector);
-
-			m_trackDelay = gpGlobals->time;
-		}
-		AIUpdatePosition();
-	}
-
-	if(m_hEnemy != 0 && gpGlobals->time - m_lastFire > 5 && (m_hEnemy->pev->origin - pev->origin).Length() > 710)
-	{
-		EMIT_SOUND_DYN(ENT(pev), 2, "weapons/mortarhit.wav", 1, 0.8, 0, 100);
-		UTIL_ScreenShake(pev->origin, 12, 100, 2, 1000);
-
-		float speed = m_vIdealGunVector.Length();
-
-		angle = m_vIdealGunAngle;
-
-		if(speed > 0)
-		{
-			if(CMortarShell::CreateMortarShell(pev->origin, angle, this, floor(speed)))
+			if (pEnemy->IsAlive() && m_minRange <= distance && distance <= m_maxRange)
 			{
-				pev->frame = 0;
-				pev->sequence = LookupSequence("fire");
-				ResetSequenceInfo();
-				m_lastFire = gpGlobals->time;
+				if (gpGlobals->time - m_trackDelay > 0.5)
+				{
+					Vector vecPos, vecAngle;
+					GetAttachment(0, vecPos, vecAngle);
+
+					m_vIdealGunVector = VecCheckThrow(pev, vecPos, pEnemy->pev->origin, m_velocity / 2);
+
+					m_vIdealGunAngle = UTIL_VecToAngles(m_vIdealGunVector);
+
+					m_trackDelay = gpGlobals->time;
+				}
+
+				AIUpdatePosition();
+
+				const float idealDistance = m_vIdealGunVector.Length();
+
+				if (idealDistance > 1.0)
+				{
+					if (gpGlobals->time - m_fireLast > m_fireDelay)
+					{
+						EMIT_SOUND(edict(), CHAN_VOICE, "weapons/mortarhit.wav", VOL_NORM, ATTN_NORM);
+						UTIL_ScreenShake(pev->origin, 12.0, 100.0, 2.0, 1000.0);
+
+						Vector vecPos, vecAngle;
+						GetAttachment(0, vecPos, vecAngle);
+
+						vecAngle = m_vGunAngle;
+
+						vecAngle.y = UTIL_AngleMod(pev->angles.y + m_vGunAngle.y);
+
+						if (CMortarShell::CreateMortarShell(vecPos, vecAngle, this, idealDistance))
+						{
+							pev->sequence = LookupSequence("fire");
+							pev->frame = 0;
+							ResetSequenceInfo();
+						}
+
+						m_fireLast = gpGlobals->time;
+					}
+				}
+				else
+				{
+					m_fireLast = gpGlobals->time;
+				}
+			}
+			else
+			{
+				m_hEnemy = NULL;
 			}
 		}
 	}
@@ -419,32 +497,102 @@ void COp4Mortar::MortarThink()
 
 CBaseEntity *COp4Mortar::FindTarget()
 {
-	CBaseEntity *pPlayer;
-	Vector BarretEnd;
-	Vector BarretAngle;
-	Vector targetPosition;
-	TraceResult tr;
-	CBaseEntity *pIdealTarget = NULL;
+	CBaseEntity* pPlayerTarget = UTIL_FindEntityByClassname(NULL, "player");
 
-	if((pPlayer = UTIL_FindEntityByClassname(0, "player")) == NULL )
-		return NULL;
+	if (!pPlayerTarget)
+		return pPlayerTarget;
 
-	m_pLink = 0;
+	m_pLink = NULL;
 
-	GetAttachment(0, BarretEnd, BarretAngle);
+	CBaseEntity* pIdealTarget = NULL;
+	float flIdealDist = m_maxRange;
 
-	float dist = (pPlayer->pev->origin - pev->origin).Length();
+	Vector barrelEnd, barrelAngle;
+	GetAttachment(0, barrelEnd, barrelAngle);
 
-	if(pPlayer->IsAlive())
+	if (pPlayerTarget->IsAlive())
 	{
-		if(m_maxRange >= dist)
-		{
-			targetPosition = pPlayer->pev->origin + pev->view_ofs;
-			UTIL_TraceLine(BarretEnd, targetPosition, ignore_monsters, dont_ignore_glass, ENT(pev), &tr);
+		const float distance = (pPlayerTarget->pev->origin - pev->origin).Length();
 
-			if((!(pev->spawnflags & SF_MORTAR_LINE_OF_SIGHT) || tr.pHit == ENT(pPlayer->pev)) && !m_iEnemyType)
+		if (distance >= m_minRange && m_maxRange >= distance)
+		{
+			TraceResult tr;
+			UTIL_TraceLine(barrelEnd, pPlayerTarget->pev->origin + pPlayerTarget->pev->view_ofs, dont_ignore_monsters, edict(), &tr);
+
+			if ((pev->spawnflags & SF_MORTAR_LINE_OF_SIGHT) == 0 || tr.pHit == pPlayerTarget->pev->pContainingEntity)
 			{
-				pIdealTarget = pPlayer;
+				if (0 == m_iEnemyType)
+					return pPlayerTarget;
+
+				flIdealDist = distance;
+				pIdealTarget = pPlayerTarget;
+			}
+		}
+	}
+
+	const Vector maxRange(m_maxRange, m_maxRange, m_maxRange);
+
+	CBaseEntity* pList[100];
+	const int count = UTIL_EntitiesInBox(pList, ARRAYSIZE(pList), pev->origin - maxRange, pev->origin + maxRange, FL_MONSTER | FL_CLIENT);
+
+	for (int i = 0; i < count; ++i)
+	{
+		CBaseEntity* pEntity = pList[i];
+
+		if (this == pEntity)
+			continue;
+
+		if ((pEntity->pev->spawnflags & SF_MONSTER_PRISONER) != 0)
+			continue;
+
+		if (pEntity->pev->health <= 0)
+			continue;
+
+		CBaseMonster* pMonster = pEntity->MyMonsterPointer();
+
+		if (!pMonster)
+			continue;
+
+		if (pMonster->IRelationship(pPlayerTarget) != R_AL)
+			continue;
+
+		if ((pEntity->pev->flags & FL_NOTARGET) != 0)
+			continue;
+
+		if (!FVisible(pEntity))
+			continue;
+
+		if (pEntity->IsPlayer() && (pev->spawnflags & SF_MORTAR_ACTIVE) != 0)
+		{
+			if (pMonster->FInViewCone(this))
+			{
+				pev->spawnflags &= ~SF_MORTAR_ACTIVE;
+			}
+		}
+	}
+
+	for (CBaseEntity* pEntity = m_pLink; pEntity; pEntity = pEntity->m_pLink)
+	{
+		const float distance = (pEntity->pev->origin - pev->origin).Length();
+
+		if (distance >= m_minRange && m_maxRange >= distance && (!pIdealTarget || flIdealDist > distance))
+		{
+			TraceResult tr;
+			UTIL_TraceLine(barrelEnd, pEntity->pev->origin + pEntity->pev->view_ofs, dont_ignore_monsters, edict(), &tr);
+
+			if ((pev->spawnflags & SF_MORTAR_LINE_OF_SIGHT) != 0)
+			{
+				if (tr.pHit == pEntity->edict())
+				{
+					flIdealDist = distance;
+				}
+				if (tr.pHit == pEntity->edict())
+					pIdealTarget = pEntity;
+			}
+			else
+			{
+				flIdealDist = distance;
+				pIdealTarget = pEntity;
 			}
 		}
 	}
@@ -459,40 +607,40 @@ int COp4Mortar::TakeDamage(entvars_t *pevInflictor, entvars_t *pevAttacker, floa
 
 void COp4Mortar::KeyValue(KeyValueData *pvkd)
 {
-	if(strcmp(pvkd->szKeyName, "m_hmax"))
+	if(FStrEq(pvkd->szKeyName, "h_max"))
 	{
 		m_hmax = atoi(pvkd->szValue);
-		pvkd->fHandled = 1;
+		pvkd->fHandled = TRUE;
 	}
-	else if(strcmp(pvkd->szKeyName, "m_hmin"))
+	else if(FStrEq(pvkd->szKeyName, "h_min"))
 	{
 		m_hmin = atoi(pvkd->szValue);
-		pvkd->fHandled = 1;
+		pvkd->fHandled = TRUE;
 	}
-	else if(strcmp(pvkd->szKeyName, "mortar_velocity"))
+	else if(FStrEq(pvkd->szKeyName, "mortar_velocity"))
 	{
 		m_velocity = atoi(pvkd->szValue);
-		pvkd->fHandled = 1;
+		pvkd->fHandled = TRUE;
 	}
-	else if(strcmp(pvkd->szKeyName, "mindist"))
+	else if(FStrEq(pvkd->szKeyName, "mindist"))
 	{
 		m_minRange = atoi(pvkd->szValue);
-		pvkd->fHandled = 1;
+		pvkd->fHandled = TRUE;
 	}
-	else if(strcmp(pvkd->szKeyName, "maxdist"))
+	else if(FStrEq(pvkd->szKeyName, "maxdist"))
 	{
 		m_maxRange = atoi(pvkd->szValue);
-		pvkd->fHandled = 1;
+		pvkd->fHandled = TRUE;
 	}
-	else if(strcmp(pvkd->szKeyName, "enemytype"))
+	else if(FStrEq(pvkd->szKeyName, "enemytype"))
 	{
 		m_iEnemyType = atoi(pvkd->szValue);
-		pvkd->fHandled = 1;
+		pvkd->fHandled = TRUE;
 	}
-	else if(strcmp(pvkd->szKeyName, "firedelay"))
+	else if(FStrEq(pvkd->szKeyName, "firedelay"))
 	{
-		m_FireDelay = atoi(pvkd->szValue);
-		pvkd->fHandled = 1;
+		m_fireDelay = atoi(pvkd->szValue);
+		pvkd->fHandled = TRUE;
 	}
 	else
 	{
@@ -502,58 +650,109 @@ void COp4Mortar::KeyValue(KeyValueData *pvkd)
 
 void COp4Mortar::Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value)
 {
-	SetThink(NULL);
-
-	if((pev->spawnflags & SF_MORTAR_CAN_CONTROL)  && (pActivator->pev->origin - pev->origin).Length() < 170)
+	if (useType == USE_TOGGLE && (!pActivator || pActivator->IsPlayer()))
 	{
-		EMIT_SOUND_DYN(ENT(pev), 2, "weapons/mortarhit.wav", 1, 0, 0, 100);
-		UTIL_ScreenShake(pev->origin, 12, 100, 2, 1000);
-
-		Vector pos, angle;
-		GetAttachment(0, pos, angle);
-		angle = m_vGunAngle;
-		float anglemod = pev->angles.y + m_vGunAngle.y;
-
-		angle.y = UTIL_AngleMod(anglemod);
-
-		if((CMortarShell::CreateMortarShell(pos, angle, this, 2000 - (m_vGunAngle.x * 12.25))) != NULL)
+		if ((pev->spawnflags & SF_MORTAR_ACTIVE) == 0 && (pev->spawnflags & SF_MORTAR_CONTROLLABLE) != 0)
 		{
-			pev->frame = 0;
-			pev->sequence = LookupSequence("fire");
-			ResetSequenceInfo();
+			//Player fired a mortar
+			EMIT_SOUND(edict(), CHAN_VOICE, "weapons/mortarhit.wav", VOL_NORM, ATTN_NONE);
+			UTIL_ScreenShake(pev->origin, 12.0, 100.0, 2.0, 1000.0);
+
+			Vector pos, angle;
+			GetAttachment(0, pos, angle);
+
+			angle = m_vGunAngle;
+
+			angle.y = UTIL_AngleMod(pev->angles.y + m_vGunAngle.y);
+
+			if (CMortarShell::CreateMortarShell(pos, angle, pActivator ? pActivator : this, m_velocity))
+			{
+				pev->sequence = LookupSequence("fire");
+				pev->frame = 0;
+				ResetSequenceInfo();
+			}
+			return;
 		}
 	}
 
+	//Toggle AI active state
+	if (ShouldToggle(useType, (pev->spawnflags & SF_MORTAR_ACTIVE) != 0))
+	{
+		pev->spawnflags ^= SF_MORTAR_ACTIVE;
+
+		m_fireLast = 0;
+		m_hEnemy = NULL;
+	}
 }
 
 void COp4Mortar::AIUpdatePosition()
 {
-	if(m_hEnemy != 0 && (m_hEnemy->pev->origin - pev->origin).Length() < 710)
-		return;
-
-	if(m_vIdealGunAngle.x == 270 && m_vIdealGunAngle.y == 0)
+	if (fabs(m_vGunAngle.x - m_vIdealGunAngle.x) >= 3.0)
 	{
-		m_vIdealGunAngle.x = 0;
-		m_vIdealGunAngle.y = 0;
+		const float angle = UTIL_AngleDiff(m_vGunAngle.x, m_vIdealGunAngle.x);
+
+		if (angle != 0)
+		{
+			const float absolute = fabs(angle);
+			if (absolute <= 3.0)
+				d_x = static_cast<int>(-absolute);
+			else
+				d_x = angle > 0 ? -3 : 3;
+		}
 	}
 
-	if(m_vIdealGunAngle.x <= 0)
-		m_vIdealGunAngle.x = 0;
+	const float yawAngle = UTIL_AngleMod(m_zeroYaw + m_vGunAngle.y);
 
-	if(m_vIdealGunAngle.x > 90)
-		m_vIdealGunAngle.x = 90;
+	if (fabs(yawAngle - m_vIdealGunAngle.y) >= 3.0)
+	{
+		const float angle = UTIL_AngleDiff(yawAngle, m_vIdealGunAngle.y);
 
-	if(m_vIdealGunAngle.y > 165 && m_vIdealGunAngle.y < 270)
-		m_vIdealGunAngle.y = -90;
+		if (angle != 0)
+		{
+			const float absolute = fabs(angle);
+			if (absolute <= 3.0)
+				d_y = static_cast<int>(-absolute);
+			else
+				d_y = angle > 0 ? -3 : 3;
+		}
+	}
 
-	else if(m_vIdealGunAngle.y > 90 && m_vIdealGunAngle.y < 165)
-		m_vIdealGunAngle.y = 90;
+	m_vGunAngle.x += d_x;
+	m_vGunAngle.y += d_y;
 
+	if (m_hmin > m_vGunAngle.y)
+	{
+		m_vGunAngle.y = m_hmin;
+		d_y = 0;
+	}
 
-	SetBoneController(0, m_vIdealGunAngle.x);
-	SetBoneController(1, m_vIdealGunAngle.y);
+	if (m_vGunAngle.y > m_hmax)
+	{
+		m_vGunAngle.y = m_hmax;
+		d_y = 0;
+	}
 
-	m_vGunAngle = m_vIdealGunAngle;
+	if (m_vGunAngle.x < 10.0)
+	{
+		m_vGunAngle.x = 10.0;
+		d_x = 0;
+	}
+	else if (m_vGunAngle.x > 90.0)
+	{
+		m_vGunAngle.x = 90.0;
+		d_x = 0;
+	}
+
+	if (0 != d_x || 0 != d_y)
+	{
+		PlaySound();
+	}
+
+	SetBoneController(0, m_vGunAngle.x);
+	SetBoneController(1, m_vGunAngle.y);
+
+	d_y = 0;
+	d_x = 0;
 }
 
 //========================================================
@@ -571,9 +770,9 @@ public:
 	int ObjectCaps() { return FCAP_CONTINUOUS_USE; }
 
 	static TYPEDESCRIPTION m_SaveData[];
-	float m_direction;
-	float m_lastpush;
+	int m_direction;
 	int m_controller;
+	float m_lastpush;
 };
 
 LINK_ENTITY_TO_CLASS(func_op4mortarcontroller, COp4MortarController)
@@ -620,7 +819,7 @@ void COp4MortarController::KeyValue(KeyValueData *pvkd)
 	if(FStrEq(pvkd->szKeyName, "mortar_axis"))
 	{
 		m_controller = atoi(pvkd->szValue);
-		pvkd->fHandled = 1;
+		pvkd->fHandled = TRUE;
 	}
 	else
 		CBaseToggle::KeyValue(pvkd);
