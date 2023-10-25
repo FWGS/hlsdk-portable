@@ -286,7 +286,12 @@ int CPoolstick::Swing( int fFirst )
 				}
 				m_pPlayer->m_iWeaponVolume = POOLSTICK_BODYHIT_VOLUME;
 				if ( !pEntity->IsAlive() )
+				{
+#if CROWBAR_FIX_RAPID_CROWBAR
+					  m_flNextPrimaryAttack = GetNextAttackDelay(0.25);
+#endif
 					  return TRUE;
+				}
 				else
 					  flVol = 0.1;
 
