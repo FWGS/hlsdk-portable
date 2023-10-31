@@ -28,7 +28,7 @@
 #include "vgui_TeamFortressViewport.h"
 #endif
 
-#if GOLDSOURCE_SUPPORT && (_WIN32 || __linux__ || __APPLE__) && (__i386 || _M_IX86)
+#if GOLDSOURCE_SUPPORT && (XASH_WIN32 || XASH_LINUX || XASH_APPLE) && XASH_X86
 #define USE_FAKE_VGUI	!USE_VGUI
 #if USE_FAKE_VGUI
 #include "VGUI_Panel.h"

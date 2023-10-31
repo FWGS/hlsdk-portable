@@ -1729,7 +1729,7 @@ void CSaveRestoreBuffer::BufferRewind( int size )
 	m_pdata->size -= size;
 }
 
-#if !_WIN32 && !__WATCOMC__
+#if !XASH_WIN32 && !__WATCOMC__
 extern "C" {
 unsigned _rotr( unsigned val, int shift )
 {
