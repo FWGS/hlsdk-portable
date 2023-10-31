@@ -367,6 +367,7 @@ void CPitWorm::Precache()
 	PRECACHE_SOUND_ARRAY(pHitGroundSounds);
 	PRECACHE_SOUND_ARRAY(pAngrySounds);
 	PRECACHE_SOUND_ARRAY(pSwipeSounds);
+	PRECACHE_SOUND_ARRAY(pShootSounds);
 	PRECACHE_SOUND_ARRAY(pIdleSounds);
 	PRECACHE_SOUND_ARRAY(pPainSounds);
 	PRECACHE_SOUND_ARRAY(pAttackSounds);
@@ -949,7 +950,7 @@ void CPitWorm::EyeLight(const Vector &vecEyePos)
 {
 	MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
 		WRITE_BYTE( TE_ELIGHT );
-		WRITE_SHORT( entindex() );		// entity, attachment
+		WRITE_SHORT( entindex() | (1 << 12) );		// entity, attachment
 		WRITE_COORD( vecEyePos.x );		// origin
 		WRITE_COORD( vecEyePos.y );
 		WRITE_COORD( vecEyePos.z );
@@ -1188,7 +1189,7 @@ void CPitWorm::ShootBeam()
 			m_pSprite = CSprite::SpriteCreate("sprites/tele1.spr", vecEyePos, TRUE);
 			if ( m_pSprite )
 			{
-				m_pSprite->SetTransparency(kRenderGlow, 0, 255, 0, 0, kRenderFxNoDissipation);
+				m_pSprite->SetTransparency(kRenderGlow, 0, 255, 0, 255, kRenderFxNoDissipation);
 				m_pSprite->SetAttachment(edict(), 1);
 				m_pSprite->SetScale(0.75);
 				m_pSprite->pev->framerate = 10;
@@ -1211,7 +1212,7 @@ void CPitWorm::StrafeBeam()
 	m_vecBeam = gpGlobals->v_forward;
 	m_vecBeam.z = -m_vecBeam.z;
 
-	Vector vecEnd = m_vecBeam * m_offsetBeam + m_vecBeam * 1280 + vecEyePos;
+	Vector vecEnd = vecEyePos + gpGlobals->v_right * m_offsetBeam + m_vecBeam * 1280;
 
 	TraceResult tr;
 	UTIL_TraceLine(vecEyePos, vecEnd, dont_ignore_monsters, ENT(pev), &tr);
