@@ -109,7 +109,7 @@ int CHudMOTD::Draw( float fTime )
 
 		// find where to start drawing the line
 		if( ( ypos > ROW_RANGE_MIN ) && ( ypos + LINE_HEIGHT <= ypos_r + height ) )
-			DrawUtfString( xpos, ypos, xmax, ch, 255, 180, 0 );
+			DrawUtfString( xpos, ypos, xmax, (const char*)ch, 255, 180, 0 );
 
 		ypos += LINE_HEIGHT;
 
