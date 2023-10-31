@@ -1729,26 +1729,11 @@ void CSaveRestoreBuffer::BufferRewind( int size )
 	m_pdata->size -= size;
 }
 
-#if !_WIN32 && !__WATCOMC__
-extern "C" {
-unsigned _rotr( unsigned val, int shift )
+#if !XASH_WIN32 && !__WATCOMC__
+static unsigned _rotr( unsigned val, int shift )
 {
-	unsigned lobit;	/* non-zero means lo bit set */
-	unsigned num = val;	/* number to rotate */
-
-	shift &= 0x1f;			/* modulo 32 -- this will also make
-	                                   negative shifts work */
-
-	while( shift-- )
-	{
-		lobit = num & 1;	/* get high bit */
-		num >>= 1;		/* shift right one bit */
-		if( lobit )
-		num |= 0x80000000;	/* set hi bit if lo bit was set */
-	}
-
-	return num;
-}
+	// Any modern compiler will generate one single ror instruction for x86, arm and mips here.
+	return ( val >> shift ) | ( val << ( 32 - shift ));
 }
 #endif
 
