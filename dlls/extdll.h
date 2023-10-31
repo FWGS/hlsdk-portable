@@ -15,7 +15,7 @@
 #pragma once
 #if !defined(EXTDLL_H)
 #define EXTDLL_H
-
+#include "build.h"
 //
 // Global header file for extension DLLs
 //

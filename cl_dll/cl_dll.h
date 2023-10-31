@@ -28,6 +28,7 @@
 #pragma once
 #if !defined(CL_DLL_H)
 #define CL_DLL_H
+#include "build.h"
 typedef unsigned char byte;
 typedef unsigned short word;
 typedef float vec_t;
