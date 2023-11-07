@@ -1543,7 +1543,7 @@ BOOL CHFGrunt :: CheckRangeAttack1 ( float flDot, float flDist )
 		Vector vecSrc = GetGunPosition();
 
 		// verify that a bullet fired from the gun will hit the enemy before the world.
-		UTIL_TraceLine( vecSrc, m_hEnemy->BodyTarget(vecSrc), ignore_monsters, ignore_glass, ENT(pev), &tr);
+		UTIL_TraceLine( vecSrc, m_hEnemy->BodyTarget(vecSrc), ignore_monsters, ENT(pev), &tr);
 
 		if ( tr.flFraction == 1.0 )
 		{
