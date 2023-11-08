@@ -829,6 +829,7 @@ BOOL CBarney::NoFriendlyFire()
 	CPlane backPlane;
 	CPlane leftPlane;
 	CPlane rightPlane;
+	CPlane frontPlane;
 
 	Vector vecLeftSide;
 	Vector vecRightSide;
@@ -841,9 +842,13 @@ BOOL CBarney::NoFriendlyFire()
 
 	v_left = gpGlobals->v_right * -1.0f;
 
+	CBaseEntity* pEnemy = m_hEnemy;
+	const Vector enemyCenter = pEnemy->Center();
+
 	leftPlane.InitializePlane( gpGlobals->v_right, vecLeftSide );
 	rightPlane.InitializePlane( v_left, vecRightSide );
 	backPlane.InitializePlane( gpGlobals->v_forward, pev->origin );
+	frontPlane.InitializePlane( gpGlobals->v_forward * -1, enemyCenter + gpGlobals->v_forward * pEnemy->pev->size.Length2D() / 2 );
 
 	for( int k = 1; k <= gpGlobals->maxClients; k++ )
 	{
@@ -856,7 +861,10 @@ BOOL CBarney::NoFriendlyFire()
 			{
 				//ALERT(at_aiconsole, "%s: Ally player at fire plane!\n", STRING(pev->classname));
 				// player is in the check volume! Don't shoot!
-				return FALSE;
+				if (frontPlane.PointInFront( pPlayer->pev->origin ))
+					return FALSE;
+				else if (pEnemy->pev->deadflag == DEAD_DYING || pEnemy->pev->deadflag == DEAD_DEAD) // don't shoot when ally is behind the dying enemy
+					return FALSE;
 			}
 		}
 	}
