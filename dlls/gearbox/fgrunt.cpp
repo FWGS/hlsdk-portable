@@ -1364,7 +1364,7 @@ int CHFGrunt :: ISoundMask ( void)
 //=========================================================
 void CHFGrunt :: CheckAmmo ( void )
 {
-	if ( m_cAmmoLoaded <= 0 )
+	if ( pev->weapons != 0 && m_cAmmoLoaded <= 0 )
 	{
 		SetConditions(bits_COND_NO_AMMO_LOADED);
 	}
@@ -1533,7 +1533,7 @@ BOOL CHFGrunt :: CheckMeleeAttack1 ( float flDot, float flDist )
 //=========================================================
 BOOL CHFGrunt :: CheckRangeAttack1 ( float flDot, float flDist )
 {
-	if ( !HasConditions( bits_COND_ENEMY_OCCLUDED ) && flDist <= 2048 && flDot >= 0.5 && NoFriendlyFire() && ( GetBodygroup( 3 ) != 3 ) )
+	if ( !HasConditions( bits_COND_ENEMY_OCCLUDED ) && flDist <= 2048 && flDot >= 0.5 && NoFriendlyFire() && GetBodygroup( FG_GUN_GROUP ) != FG_GUN_NONE )
 	{
 		TraceResult	tr;
 
@@ -1546,7 +1546,7 @@ BOOL CHFGrunt :: CheckRangeAttack1 ( float flDot, float flDist )
 		Vector vecSrc = GetGunPosition();
 
 		// verify that a bullet fired from the gun will hit the enemy before the world.
-		UTIL_TraceLine( vecSrc, m_hEnemy->BodyTarget(vecSrc), ignore_monsters, ignore_glass, ENT(pev), &tr);
+		UTIL_TraceLine( vecSrc, m_hEnemy->BodyTarget(vecSrc), ignore_monsters, ENT(pev), &tr);
 
 		if ( tr.flFraction == 1.0 )
 		{
@@ -1994,32 +1994,37 @@ void CHFGrunt :: Spawn()
 		{
 			m_iHead = RANDOM_LONG(FG_HEAD_SAW, FG_HEAD_SAW_BLACK);
 		}
+		else if (pev->weapons == 0)
+		{
+			m_iHead = FG_HEAD_MP;
+		}
 		else
 			m_iHead = FG_HEAD_MASK;
 	}
 	else if ( m_iHead >= FG_HEAD_COUNT )
 		m_iHead = FG_HEAD_MASK;
 
-	if ( pev->weapons <= 0 )
-	{
-		pev->weapons = FGRUNT_9MMAR;
-	}
-	if (FBitSet( pev->weapons, FGRUNT_SHOTGUN ))
-	{
-		SetBodygroup( FG_GUN_GROUP, FG_GUN_SHOTGUN );
-		SetBodygroup( FG_TORSO_GROUP, FG_TORSO_SHOTGUN );
-		m_cClipSize		= 8;
-	}
 	if (FBitSet( pev->weapons, FGRUNT_9MMAR ))
 	{
 		SetBodygroup( FG_GUN_GROUP, FG_GUN_MP5 );
 		m_cClipSize	= FGRUNT_CLIP_SIZE;
 	}
-	if (FBitSet( pev->weapons, FGRUNT_M249 ))
+	else if (FBitSet( pev->weapons, FGRUNT_SHOTGUN ))
+	{
+		SetBodygroup( FG_GUN_GROUP, FG_GUN_SHOTGUN );
+		SetBodygroup( FG_TORSO_GROUP, FG_TORSO_SHOTGUN );
+		m_cClipSize		= 8;
+	}
+	else if (FBitSet( pev->weapons, FGRUNT_M249 ))
 	{
 		SetBodygroup( FG_GUN_GROUP, FG_GUN_SAW );
 		SetBodygroup( FG_TORSO_GROUP, FG_TORSO_M249 );
 		m_cClipSize	= FGRUNT_CLIP_SIZE;
+	}
+	else
+	{
+		SetBodygroup( FG_GUN_GROUP, FG_GUN_NONE );
+		m_cClipSize = 0;
 	}
 
 	SetBodygroup( FG_HEAD_GROUP, m_iHead );
@@ -2375,7 +2380,7 @@ Schedule_t* CHFGrunt :: GetScheduleOfType ( int Type )
 		break;
 	case SCHED_HGRUNT_ALLY_ELOF_FAIL:
 		{
-			return GetScheduleOfType( SCHED_RANGE_ATTACK1 );
+			return GetScheduleOfType( SCHED_TAKE_COVER_FROM_ENEMY );
 		}
 		break;
 	case SCHED_HGRUNT_ALLY_ESTABLISH_LINE_OF_FIRE:
