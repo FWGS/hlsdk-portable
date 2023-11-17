@@ -252,7 +252,7 @@ void CHgun::Reload( void )
 	while( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] < HORNET_MAX_CARRY && m_flRechargeTime < gpGlobals->time )
 	{
 		m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]++;
-		m_flRechargeTime += 0.5f;
+		m_flRechargeTime += 0.3f;
 	}
 }
 
