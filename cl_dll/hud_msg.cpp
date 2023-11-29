@@ -129,20 +129,45 @@ int CHud::MsgFunc_Concuss( const char *pszName, int iSize, void *pbuf )
 
 int CHud::MsgFunc_PlayMP3( const char *pszName, int iSize, void *pbuf ) //AJH -Killar MP3
 {
+	const char *pszSound;
+	char cmd[64];
+
 	BEGIN_READ( pbuf, iSize );
 
 	//gMP3.PlayMP3( READ_STRING() );
-	gEngfuncs.pfnPrimeMusicStream( READ_STRING(), 1 );
+	pszSound = READ_STRING();
+
+	if( !IsXashFWGS( ))
+	{
+		sprintf( cmd, "mp3 loop %s\n", pszSound );
+		gEngfuncs.pfnClientCmd( cmd );
+	}
+	else
+		gEngfuncs.pfnPrimeMusicStream( pszSound, 1 );
+
 	return 1;
 }
 
 int CHud::MsgFunc_PlayBGM( const char *pszName, int iSize, void *pbuf ) //AJH -Killar MP3
 {
+	const char *pszSound;
+	char cmd[64];
+
 	BEGIN_READ( pbuf, iSize );
 
 	if( CVAR_GET_FLOAT( "hud_bgm" ) > 0 )
+	{
 		//gMP3.PlayMP3( READ_STRING() );
-		gEngfuncs.pfnPrimeMusicStream( READ_STRING(), 1 );
+		pszSound = READ_STRING();
+
+		if( !IsXashFWGS( ))
+		{
+			sprintf( cmd, "mp3 loop %s\n", pszSound );
+			gEngfuncs.pfnClientCmd( cmd );
+		}
+		else
+			gEngfuncs.pfnPrimeMusicStream( pszSound, 1 );
+	}
 
 	return 1;
 }
@@ -150,7 +175,11 @@ int CHud::MsgFunc_PlayBGM( const char *pszName, int iSize, void *pbuf ) //AJH -K
 int CHud::MsgFunc_StopMP3( const char *pszName, int iSize, void *pbuf ) //AJH -Killar MP3
 {
 	//gMP3.StopMP3();
-	gEngfuncs.pfnPrimeMusicStream( 0, 0 );
+	if( !IsXashFWGS( ))
+		gEngfuncs.pfnClientCmd( "mp3 stop\n" );
+	else
+		gEngfuncs.pfnPrimeMusicStream( 0, 0 );
+
 	return 1;
 }
 
