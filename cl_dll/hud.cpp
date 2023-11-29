@@ -151,9 +151,9 @@ int __MsgFunc_PlayMP3( const char *pszName, int iSize, void *pbuf )
 	loop = READ_BYTE();
 
 	sprintf( path, "sound/%s", pszSound );
-	if( !IsXashFWGS() && gEngfuncs.pfnGetCvarPointer( "gl_overbright" ) )
+	if( !IsXashFWGS( ))
 	{
-		sprintf( cmd, "mp3 play %s\n", path );
+		sprintf( cmd, "mp3 %s %s\n", loop ? "loop" : "play", path );
 		gEngfuncs.pfnClientCmd( cmd );
 	}
 	else
