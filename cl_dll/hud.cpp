@@ -189,7 +189,7 @@ int __MsgFunc_PlayMP3( const char *pszName, int iSize, void *pbuf )
 	BEGIN_READ( pbuf, iSize );
 	pszSound = READ_STRING();
 
-	if( !IsXashFWGS() && gEngfuncs.pfnGetCvarPointer( "gl_overbright" ) )
+	if( !IsXashFWGS( ))
 	{
 		sprintf( cmd, "mp3 play media/%s\n", pszSound );
 		gEngfuncs.pfnClientCmd( cmd );
@@ -202,7 +202,7 @@ int __MsgFunc_PlayMP3( const char *pszName, int iSize, void *pbuf )
 
 void __CmdFunc_StopMP3( void )
 {
-	if( !IsXashFWGS() && gEngfuncs.pfnGetCvarPointer( "gl_overbright" ) )
+	if( !IsXashFWGS( ))
 		gEngfuncs.pfnClientCmd( "mp3 stop\n" );
 	else
 		gEngfuncs.pfnPrimeMusicStream( 0, 0 );
