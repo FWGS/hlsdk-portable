@@ -192,7 +192,7 @@ int __MsgFunc_PlayMP3( const char *pszName, int iSize, void *pbuf )
 
 	if( !IsXashFWGS() && gEngfuncs.pfnGetCvarPointer( "gl_overbright" ) )
 	{
-		sprintf( cmd, "mp3 play sound/mp3/%s\n", pszSound );
+		sprintf( cmd, "mp3 loop sound/mp3/%s\n", pszSound );
 		gEngfuncs.pfnClientCmd( cmd );
 	}
 	else
