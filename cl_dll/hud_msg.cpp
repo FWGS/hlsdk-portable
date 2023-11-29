@@ -265,7 +265,7 @@ int CHud::MsgFunc_PlayMP3( const char *pszName, int iSize, void *pbuf ) //AJH -K
 
 	pszSound = READ_STRING();
 
-	if( !IsXashFWGS() && gEngfuncs.pfnGetCvarPointer( "gl_overbright" ) )
+	if( !IsXashFWGS( ))
 	{
 		sprintf( cmd, "mp3 loop %s\n", pszSound );
 		gEngfuncs.pfnClientCmd( cmd );
