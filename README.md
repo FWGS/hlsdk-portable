@@ -186,7 +186,14 @@ cmake --build build
 
 Note that the libraries built this way might be not compatible with Steam Half-Life. If you have such issue you can configure it to build statically with c++ and gcc libraries:
 ```
-cmake .. -DCMAKE_C_FLAGS="-static-libstdc++ -static-libgcc"
+cd build
+cmake .. -DCMAKE_CXX_FLAGS="-static-libstdc++ -static-libgcc"
+```
+
+Alternatively, you can avoid libstdc++/libgcc_s linking using small libsupc++ library and optimization build flags instead:
+```
+cd build
+cmake .. -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=gcc -DCMAKE_C_FLAGS="-O3" -DCMAKE_CXX_FLAGS="-O3 -lsupc++"
 ```
 To ensure portability it's still better to build using Steam Runtime or another chroot of some older distro.
 
