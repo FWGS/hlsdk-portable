@@ -53,9 +53,13 @@ if (CMAKE_SIZEOF_VOID_P EQUAL 4 OR
 	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64"
 	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "amd64")))
 	option(64BIT "Disable auto -m32 appending to compiler flags" OFF)
-	option(GOLDSOURCE_SUPPORT "Build goldsource compatible client library" ON)
 else()
 	option(64BIT "Disable auto -m32 appending to compiler flags" ON)
+endif()
+
+if ((WIN32 OR ${CMAKE_SYSTEM_NAME} STREQUAL "Linux" OR APPLE) AND NOT 64BIT)
+	option(GOLDSOURCE_SUPPORT "Build goldsource compatible client library" ON)
+else()
 	option(GOLDSOURCE_SUPPORT "Build goldsource compatible client library" OFF)
 endif()
 
