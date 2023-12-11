@@ -175,19 +175,19 @@ if (GOLDSOURCE_SUPPORT)
 endif()
 
 if (USE_VGUI)
-	if (WIN32)
+	if (XASH_WIN32)
 		add_library(vgui SHARED IMPORTED)
 		set_property(TARGET vgui PROPERTY IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/vgui_support/vgui-dev/lib/win32_vc6/vgui.dll")
 		set_property(TARGET vgui PROPERTY IMPORTED_IMPLIB "${CMAKE_SOURCE_DIR}/vgui_support/vgui-dev/lib/win32_vc6/vgui.lib")
 		target_link_libraries(${CLDLL_LIBRARY} vgui)
-	elseif(APPLE)
+	elseif(XASH_APPLE)
 		target_link_libraries(${CLDLL_LIBRARY} "-Wl,--no-undefined -L${CMAKE_SOURCE_DIR}/vgui_support/vgui-dev/lib vgui.dylib")
 	else()
 		target_link_libraries(${CLDLL_LIBRARY} :vgui.so)
 	endif()
 endif()
 
-if(WIN32)
+if(XASH_WIN32)
 	target_link_libraries( ${CLDLL_LIBRARY} user32.lib )
 	if (GOLDSOURCE_SUPPORT)
 		target_link_libraries( ${CLDLL_LIBRARY} winmm.lib )
@@ -197,7 +197,7 @@ endif()
 set_target_properties (${CLDLL_LIBRARY} PROPERTIES
 	POSITION_INDEPENDENT_CODE 1)
 
-if(NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Android")
+if(NOT XASH_ANDROID)
 	set(CLDLL_NAME "client")
 	set_target_properties(${CLDLL_LIBRARY} PROPERTIES
 		OUTPUT_NAME ${CLDLL_NAME}
