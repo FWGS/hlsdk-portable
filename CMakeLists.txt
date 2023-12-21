@@ -36,10 +36,6 @@ include(VSForceXPToolchain) # Force XP toolchain for Visual Studio
 
 project (HLSDK-PORTABLE)
 
-# Xash3D FWGS Library Naming Scheme compliance
-# see documentation: https://github.com/FWGS/xash3d-fwgs/blob/master/Documentation/extensions/library-naming.md
-include(LibraryNaming)
-
 #--------------
 # USER DEFINES \
 ################\
@@ -51,13 +47,17 @@ option(USE_VOICEMGR "Enable VOICE MANAGER." OFF)
 option(BUILD_CLIENT "Build client dll" ON)
 option(BUILD_SERVER "Build server dll" ON)
 
-if (CMAKE_SIZEOF_VOID_P EQUAL 4 OR ((XASH_WIN32 OR XASH_LINUX) AND XASH_AMD64))
+if (CMAKE_SIZEOF_VOID_P EQUAL 4 OR
+	((WIN32 OR ${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+	AND (CMAKE_SYSTEM_PROCESSOR STREQUAL "x64"
+	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64"
+	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "amd64")))
 	option(64BIT "Disable auto -m32 appending to compiler flags" OFF)
 else()
 	option(64BIT "Disable auto -m32 appending to compiler flags" ON)
 endif()
 
-if ((XASH_WIN32 OR XASH_LINUX OR XASH_APPLE) AND ((XASH_AMD64 AND NOT 64BIT) OR XASH_X86))
+if ((WIN32 OR ${CMAKE_SYSTEM_NAME} STREQUAL "Linux" OR APPLE) AND NOT 64BIT)
 	option(GOLDSOURCE_SUPPORT "Build goldsource compatible client library" ON)
 else()
 	option(GOLDSOURCE_SUPPORT "Build goldsource compatible client library" OFF)
@@ -109,6 +109,10 @@ if(64BIT AND CMAKE_SIZEOF_VOID_P EQUAL 4)
 	message(FATAL_ERROR "You enabled XASH_64BIT, but compiler can't create 64 bit code!")
 endif()
 
+# Xash3D FWGS Library Naming Scheme compliance
+# see documentation: https://github.com/FWGS/xash3d-fwgs/blob/master/Documentation/extensions/library-naming.md
+include(LibraryNaming)
+
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
 	message(STATUS "Building for 64 Bit")
 else()
@@ -127,7 +131,7 @@ else()
 	add_definitions(-D_CRT_SILENCE_NONCONFORMING_TGMATH_H)
 endif()
 
-if(XASH_PSVITA)
+if(VITA)
 	add_compile_options(-fno-use-cxa-atexit)
 endif()
 
