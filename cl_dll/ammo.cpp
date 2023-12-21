@@ -75,10 +75,7 @@ void WeaponsResource::LoadWeaponSprites( WEAPON *pWeapon )
 {
 	int i, iRes;
 
-	if( ScreenWidth < 640 )
-		iRes = 320;
-	else
-		iRes = 640;
+	iRes = GetSpriteRes( ScreenWidth, ScreenHeight );
 
 	char sz[256];
 
