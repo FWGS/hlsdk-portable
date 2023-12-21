@@ -482,13 +482,28 @@ void CHud::VidInit( void )
 	m_hsprLogo = 0;	
 	m_hsprCursor = 0;
 
+	// a1ba: don't break the loading order here and
+	// don't cause memory leak but check
+	// maximum HUD sprite resolution we have
+	m_iMaxRes = 640;
+	client_sprite_t *pSpriteList = m_pSpriteList ? m_pSpriteList :
+		SPR_GetList( "sprites/hud.txt", &m_iSpriteCountAllRes );
+	if( pSpriteList )
+	{
+		for( int i = 0; i < m_iSpriteCountAllRes; i++ )
+		{
+			if( m_iMaxRes < pSpriteList[i].iRes )
+				m_iMaxRes = pSpriteList[i].iRes;
+		}
+	}
+
 	m_iRes = GetSpriteRes( ScreenWidth, ScreenHeight );
 
 	// Only load this once
 	if( !m_pSpriteList )
 	{
 		// we need to load the hud.txt, and all sprites within
-		m_pSpriteList = SPR_GetList( "sprites/hud.txt", &m_iSpriteCountAllRes );
+		m_pSpriteList = pSpriteList;
 
 		if( m_pSpriteList )
 		{

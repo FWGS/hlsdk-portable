@@ -171,7 +171,7 @@ inline int GetSpriteRes( int width, int height )
 			i = 2560;
 	}
 
-	return i;
+	return Q_min( i, gHUD.m_iMaxRes );
 }
 
 void ScaleColors( int &r, int &g, int &b, int a );
