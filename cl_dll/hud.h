@@ -555,6 +555,7 @@ public:
 	int		m_iFOV;
 	int		m_Teamplay;
 	int		m_iRes;
+	int		m_iMaxRes;
 	cvar_t  *m_pCvarStealMouse;
 	cvar_t	*m_pCvarDraw;
 	cvar_t  *m_pAllowHD;
