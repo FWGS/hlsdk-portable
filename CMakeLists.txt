@@ -47,7 +47,7 @@ option(USE_VOICEMGR "Enable VOICE MANAGER." OFF)
 option(BUILD_CLIENT "Build client dll" ON)
 option(BUILD_SERVER "Build server dll" ON)
 
-if (CMAKE_SIZEOF_VOID_P EQUAL 4 OR
+if(CMAKE_SIZEOF_VOID_P EQUAL 4 OR
 	((WIN32 OR ${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
 	AND (CMAKE_SYSTEM_PROCESSOR STREQUAL "x64"
 	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64"
@@ -57,7 +57,14 @@ else()
 	option(64BIT "Disable auto -m32 appending to compiler flags" ON)
 endif()
 
-if ((WIN32 OR ${CMAKE_SYSTEM_NAME} STREQUAL "Linux" OR APPLE) AND NOT 64BIT)
+# It seems CMAKE_SYSTEM_PROCESSOR parameter completely useless for APPLE platform,
+# so may need to set options here manually.
+if((WIN32 OR ${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+	AND (((CMAKE_SYSTEM_PROCESSOR STREQUAL "x64"
+	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64"
+	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "amd64") AND NOT 64BIT)
+	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "x86"
+	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "i386"))
 	option(GOLDSOURCE_SUPPORT "Build goldsource compatible client library" ON)
 else()
 	option(GOLDSOURCE_SUPPORT "Build goldsource compatible client library" OFF)
