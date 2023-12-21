@@ -873,6 +873,7 @@ int CHudAmmo::Draw( float flTime )
 
 	// Does this weapon have a clip?
 	y = ScreenHeight - gHUD.m_iFontHeight - gHUD.m_iFontHeight / 2;
+	y += gHUD.m_iHudNumbersYOffset; // a1ba: fix HL25 HUD vertical inconsistensy
 
 	// Does weapon have any ammo at all?
 	if( m_pWeapon->iAmmoType > 0 )
