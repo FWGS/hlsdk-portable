@@ -325,16 +325,19 @@ int CHudAmmo::VidInit( void )
 	// If we've already loaded weapons, let's get new sprites
 	gWR.LoadAllWeaponSprites();
 
-	if( ScreenWidth >= 640 )
-	{
-		giABWidth = 20;
-		giABHeight = 4;
-	}
+	const int res = GetSpriteRes( ScreenWidth, ScreenHeight );
+	int factor;
+	if( res >= 2560 )
+		factor = 4;
+	else if( res >= 1280 )
+		factor = 3;
+	else if( res >= 640 )
+		factor = 2;
 	else
-	{
-		giABWidth = 10;
-		giABHeight = 2;
-	}
+		factor = 1;
+
+	giABWidth = 10 * factor;
+	giABHeight = 2 * factor;
 
 	return 1;
 }
