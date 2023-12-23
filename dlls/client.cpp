@@ -941,28 +941,6 @@ void ClientPrecache( void )
 
 	// Teleport sounds. Used by trigger_xen_return
 	PRECACHE_SOUND( "debris/beamstart7.wav" );
-
-	PRECACHE_MODEL( "models/flag.mdl" );
-	PRECACHE_MODEL( "models/civ_stand.mdl" );
-	PRECACHE_MODEL( "models/mil_stand.mdl" );
-
-	PRECACHE_MODEL( "models/w_accelerator.mdl" );
-	PRECACHE_MODEL( "models/w_backpack.mdl" );
-	PRECACHE_MODEL( "models/w_fgrenade.mdl" );
-	PRECACHE_MODEL( "models/w_health.mdl" );
-	PRECACHE_MODEL( "models/w_icon.mdl" );
-	PRECACHE_MODEL( "models/w_jumppack.mdl" );
-	PRECACHE_MODEL( "models/w_porthev.mdl" );
-
-	PRECACHE_SOUND( "ctf/bm_flagtaken.wav" );
-	PRECACHE_SOUND( "ctf/civ_flag_capture.wav" );
-	PRECACHE_SOUND( "ctf/itemthrow.wav" );
-	PRECACHE_SOUND( "ctf/marine_flag_capture.wav" );
-	PRECACHE_SOUND( "ctf/pow_armor_charge.wav" );
-	PRECACHE_SOUND( "ctf/pow_backpack.wav" );
-	PRECACHE_SOUND( "ctf/pow_big_jump.wav" );
-	PRECACHE_SOUND( "ctf/pow_health_charge.wav" );
-	PRECACHE_SOUND( "ctf/soldier_flagtaken.wav" );
 }
 
 /*
