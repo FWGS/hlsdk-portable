@@ -200,8 +200,8 @@ void CCTFMultiplay::Think(void)
 		frags_remaining = bestfrags;
 	}
 
-	if (!g_bSpawnedRunes)
-		SpawnRunes();
+	//if (!g_bSpawnedRunes)
+	//	SpawnRunes();
 
 	if (m_flFlagStatusTime && m_flFlagStatusTime <= gpGlobals->time)
 		GetFlagStatus(NULL);

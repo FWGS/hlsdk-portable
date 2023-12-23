@@ -47,7 +47,6 @@ set (SVDLL_SOURCES
 	gearbox/eagle.cpp
 	gearbox/fgrunt.cpp
 	gearbox/func_tank_of.cpp
-#	gearbox/gearbox_client.cpp
 	gearbox/gearbox_effects.cpp
 	gearbox/gearbox_triggers.cpp
 	gearbox/gearbox_utils.cpp

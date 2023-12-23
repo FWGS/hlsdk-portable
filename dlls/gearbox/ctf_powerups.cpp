@@ -114,12 +114,18 @@ void CPowerupCTFBase::Spawn(void)
 			m_iszPrintName = ALLOC_STRING(printname);
 		}
 
-
-		SET_MODEL(ENT(pev), SelectRuneRandom(&m_iRuneFlag) );
+		PRECACHE_MODEL("models/w_accelerator.mdl");
+		PRECACHE_MODEL("models/w_backpack.mdl");
+		PRECACHE_MODEL("models/w_health.mdl");
+		PRECACHE_MODEL("models/w_jumppack.mdl");
+		PRECACHE_MODEL("models/w_porthev.mdl");
+		SET_MODEL(ENT(pev), modelname);
 	}
 	else
 	{
-		SET_MODEL(ENT(pev), GetRuneModel());
+		const char* modelname = GetRuneModel();
+		PRECACHE_MODEL(modelname);
+		SET_MODEL(ENT(pev), modelname);
 		m_iRuneFlag = GetRuneFlag();
 	}
 
