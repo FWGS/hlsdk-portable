@@ -12,7 +12,7 @@ android {
         applicationId 'com.example.hlsdk'
         versionName '1.0'
         versionCode getBuildNum()
-        minSdkVersion 19
+        minSdkVersion 3
         targetSdk 34
         compileSdk 34
     }
@@ -20,6 +20,7 @@ android {
     externalNativeBuild {
         cmake {
             version '3.22.1'
+            path file('../../CMakeLists.txt')
         }
     }
 
@@ -39,12 +40,6 @@ android {
             minifyEnabled false
             shrinkResources false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
-        }
-    }
-
-    externalNativeBuild {
-        cmake {
-            path file('../../CMakeLists.txt')
         }
     }
 

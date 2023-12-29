@@ -1,4 +1,4 @@
-package com.example.hlsdk;
+package su.xash.hlsdk;
 
 import android.app.Activity;
 import android.content.ComponentName;
