@@ -8,15 +8,9 @@ android {
     ndkVersion '26.1.10909125'
     namespace 'com.example.hlsdk'
 
-    packagingOptions {
-        jniLibs {
-            useLegacyPackaging = true
-        }
-    }
-
     defaultConfig {
         applicationId 'com.example.hlsdk'
-        versionName '1.35'
+        versionName '1.0'
         versionCode getBuildNum()
         minSdkVersion 19
         targetSdk 34
@@ -61,10 +55,12 @@ android {
     androidResources {
         noCompress += ''
     }
-}
 
-dependencies {
-    implementation 'androidx.appcompat:appcompat:1.6.1'
+    packagingOptions {
+        jniLibs {
+            useLegacyPackaging = true
+        }
+    }
 }
 
 static def getBuildNum() {
