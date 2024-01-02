@@ -113,7 +113,7 @@ BOOL CHgun::Deploy()
 
 void CHgun::Holster( int skiplocal /* = 0 */ )
 {
-	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.1f;
+	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.05f;
 	SendWeaponAnim( HGUN_DOWN );
 
 	//!!!HACKHACK - can't select hornetgun if it's empty! no way to get ammo for it, either.
@@ -137,7 +137,7 @@ void CHgun::PrimaryAttack()
 	CBaseEntity *pHornet = CBaseEntity::Create( "hornet", m_pPlayer->GetGunPosition() + gpGlobals->v_forward * 16.0f + gpGlobals->v_right * 8.0f + gpGlobals->v_up * -12.0f, m_pPlayer->pev->v_angle, m_pPlayer->edict() );
 	pHornet->pev->velocity = gpGlobals->v_forward * 300.0f;
 
-	m_flRechargeTime = gpGlobals->time + 0.1f;
+	m_flRechargeTime = gpGlobals->time + 0.05f;
 #endif
 	m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]--;
 	
@@ -155,11 +155,11 @@ void CHgun::PrimaryAttack()
 	// player "shoot" animation
 	m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
 
-	m_flNextPrimaryAttack = m_flNextPrimaryAttack + 0.1f;
+	m_flNextPrimaryAttack = m_flNextPrimaryAttack + 0.025f;
 
 	if( m_flNextPrimaryAttack < UTIL_WeaponTimeBase() )
 	{
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.1f;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.025f;
 	}
 
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
@@ -223,7 +223,7 @@ void CHgun::SecondaryAttack( void )
 
 	pHornet->SetThink( &CHornet::StartDart );
 
-	m_flRechargeTime = gpGlobals->time + 0.1f;
+	m_flRechargeTime = gpGlobals->time + 0.05f;
 #endif
 	int flags;
 #if CLIENT_WEAPONS
@@ -252,7 +252,7 @@ void CHgun::Reload( void )
 	while( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] < HORNET_MAX_CARRY && m_flRechargeTime < gpGlobals->time )
 	{
 		m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]++;
-		m_flRechargeTime += 0.1f;
+		m_flRechargeTime += 0.5f;
 	}
 }
 

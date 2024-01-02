@@ -22,33 +22,6 @@
 #include "player.h"
 #include "gamerules.h"
 
-#define	NEEDLE_BODYHIT_VOLUME 128
-#define	NEEDLE_WALLHIT_VOLUME 512
-
-class CNeedle : public CBasePlayerWeapon
-{
-public:
-	void Spawn( void );
-	void Precache( void );
-	int iItemSlot( void ) { return 1; }
-	int GetItemInfo(ItemInfo *p);
-
-	void PrimaryAttack( void );
-	BOOL Deploy( void );
-	void Holster( int skiplocal = 0 );
-
-	virtual BOOL UseDecrement( void )
-	{
-#if defined( CLIENT_WEAPONS )
-		return TRUE;
-#else
-		return FALSE;
-#endif
-	}
-private:
-};
-
-
 LINK_ENTITY_TO_CLASS( weapon_needle, CNeedle )
 
 enum needle_e
@@ -75,6 +48,8 @@ void CNeedle::Precache( void )
 	PRECACHE_MODEL( "models/w_needle.mdl" );
 	PRECACHE_MODEL( "models/p_needle.mdl" );
 	PRECACHE_SOUND( "weapons/needleshot.wav" );
+
+	m_usNeedle = PRECACHE_EVENT( 1, "events/needle.sc" );
 }
 
 int CNeedle::GetItemInfo( ItemInfo *p )
@@ -86,9 +61,9 @@ int CNeedle::GetItemInfo( ItemInfo *p )
 	p->iMaxAmmo2 = -1;
 	p->iMaxClip = WEAPON_NOCLIP;
 	p->iSlot = 0;
-	p->iPosition = 1;
+	p->iPosition = 3;
 	p->iId = WEAPON_NEEDLE;
-	p->iWeight = CROWBAR_WEIGHT;
+	p->iWeight = NEEDLE_WEIGHT;
 	return 1;
 }
 
@@ -99,15 +74,15 @@ BOOL CNeedle::Deploy()
 
 void CNeedle::Holster( int skiplocal /* = 0 */ )
 {
-	m_pPlayer->m_flNextAttack = gpGlobals->time + 1;
+	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5f;
 	SendWeaponAnim( NEEDLE_IDLE1 );
 }
 
 void CNeedle::PrimaryAttack()
 {
 	SendWeaponAnim( NEEDLE_GIVESHOT );
-EMIT_SOUND( ENT( pev ), CHAN_ITEM, "weapons/needleshot.wav", 1, ATTN_NORM );
- 
-	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 8;
+	EMIT_SOUND( ENT( pev ), CHAN_ITEM, "weapons/needleshot.wav", 1, ATTN_NORM );
+	m_pPlayer->TakeHealth( 25, DMG_GENERIC ); 
+	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 60.0f;
 }
 

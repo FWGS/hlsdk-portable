@@ -69,6 +69,13 @@ set (CLDLL_SOURCES
 	../dlls/squeakgrenade.cpp
 	../dlls/tripmine.cpp
 	../dlls/glock.cpp
+	../dlls/clcampaign/hammer.cpp
+	../dlls/clcampaign/katana.cpp
+	../dlls/clcampaign/needle.cpp
+	../dlls/clcampaign/pepsigun.cpp
+	../dlls/clcampaign/rock.cpp
+	../dlls/clcampaign/sawnoff.cpp
+	../dlls/clcampaign/sniper.cpp
 	ev_hldm.cpp
 	hl/hl_baseentity.cpp
 	hl/hl_events.cpp

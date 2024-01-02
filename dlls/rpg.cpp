@@ -142,7 +142,7 @@ void CRpgRocket::Spawn( void )
 	pev->velocity = gpGlobals->v_forward * 250.0f;
 	pev->gravity = 0.5f;
 
-	pev->nextthink = gpGlobals->time + 0.4f;
+	pev->nextthink = gpGlobals->time + 0.01f;
 
 	pev->dmg = gSkillData.plrDmgRPG;
 }
@@ -337,11 +337,11 @@ void CRpg::Spawn()
 #endif
 	{
 		// more default ammo in multiplay. 
-		m_iDefaultAmmo = 128 * 2;
+		m_iDefaultAmmo = RPG_DEFAULT_GIVE * 2;
 	}
 	else
 	{
-		m_iDefaultAmmo = 128;
+		m_iDefaultAmmo = RPG_DEFAULT_GIVE;
 	}
 
 	FallInit();// get ready to fall down.
@@ -368,10 +368,10 @@ int CRpg::GetItemInfo( ItemInfo *p )
 {
 	p->pszName = STRING( pev->classname );
 	p->pszAmmo1 = "rockets";
-	p->iMaxAmmo1 = 2560;
+	p->iMaxAmmo1 = ROCKET_MAX_CARRY;
 	p->pszAmmo2 = NULL;
 	p->iMaxAmmo2 = -1;
-	p->iMaxClip = -1;
+	p->iMaxClip = RPG_MAX_CLIP;
 	p->iSlot = 3;
 	p->iPosition = 0;
 	p->iId = m_iId = WEAPON_RPG;
@@ -418,7 +418,7 @@ void CRpg::Holster( int skiplocal /* = 0 */ )
 {
 	m_fInReload = FALSE;// cancel any reload in progress.
 
-	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.65f;
+	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5f;
 
 	SendWeaponAnim( RPG_HOLSTER1 );
 
@@ -469,16 +469,16 @@ void CRpg::PrimaryAttack()
 		EMIT_SOUND_DYN( edict(), CHAN_WEAPON, "weapons/rocketfire1.wav", 0.9, ATTN_NORM, 0, PITCH_NORM );
 		EMIT_SOUND_DYN( edict(), CHAN_ITEM, "weapons/glauncher.wav", 0.7, ATTN_NORM, 0, PITCH_NORM );
 		SendWeaponAnim( RPG_FIRE2 + 1 - gun );
-				m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]--;
+		m_iClip--;
 
 		gun = !gun;
-		m_flNextPrimaryAttack = GetNextAttackDelay( 0.45f );
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.45f;
+		m_flNextPrimaryAttack = GetNextAttackDelay( 0.4f );
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.5f;
 	}
 	else
 	{
 		PlayEmptySound();
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5f;
+		// m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5f;
 	}
 	UpdateSpot();
 }
@@ -588,14 +588,14 @@ class CRpgAmmo : public CBasePlayerAmmo
 #endif
 		{
 			// hand out more ammo per rocket in multiplayer.
-			iGive = 128 * 2;
+			iGive = AMMO_RPGCLIP_GIVE * 2;
 		}
 		else
 		{
-			iGive = 128;
+			iGive = AMMO_RPGCLIP_GIVE;
 		}
 
-		if( pOther->GiveAmmo( iGive, "rockets", 2560 ) != -1 )
+		if( pOther->GiveAmmo( iGive, "rockets", ROCKET_MAX_CARRY ) != -1 )
 		{
 			EMIT_SOUND( ENT( pev ), CHAN_ITEM, "items/9mmclip1.wav", 1, ATTN_NORM );
 			return TRUE;

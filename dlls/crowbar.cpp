@@ -62,11 +62,6 @@ void CCrowbar::Precache( void )
 	PRECACHE_SOUND( "weapons/cbar_hitbod2.wav" );
 	PRECACHE_SOUND( "weapons/cbar_hitbod3.wav" );
 	PRECACHE_SOUND( "weapons/cbar_miss1.wav" );
-	PRECACHE_SOUND( "taunts/taunt1.wav" );
-	PRECACHE_SOUND( "taunts/taunt2.wav" );
-	PRECACHE_SOUND( "taunts/taunt3.wav" );
-	PRECACHE_SOUND( "taunts/taunt4.wav" );
-
 
 	m_usCrowbar = PRECACHE_EVENT( 1, "events/crowbar.sc" );
 }
@@ -163,25 +158,14 @@ void CCrowbar::PrimaryAttack()
 #endif
 	}
 }
+
 void CCrowbar::SecondaryAttack( void )
 {
+#if !CLIENT_DLL
+	SENTENCEG_PlayRndSz( ENT( pev ), "PL_TAUNT", 1, ATTN_NORM, 0, PITCH_NORM );
+#endif
 	SendWeaponAnim( CROWBAR_TAUNT );
-	switch( RANDOM_LONG( 0, 3 ) )
-			{
-			case 0:
- 				EMIT_SOUND( ENT( pev ), CHAN_ITEM, "taunts/taunt3", 1, ATTN_NORM );
- 				break;
-			case 1:
-			 	EMIT_SOUND( ENT( pev ), CHAN_ITEM, "taunts/taunt2.wav", 1, ATTN_NORM );
- 				break;
-			case 2:
-			 	EMIT_SOUND( ENT( pev ), CHAN_ITEM, "taunts/taunt4.wav", 1, ATTN_NORM );
- 				break;
-			case 3:
- 				EMIT_SOUND( ENT( pev ), CHAN_ITEM, "taunts/taunt1.wav", 1, ATTN_NORM );
- 				break;
-			};
-	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 2.5;
+	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 3.0f;
 }
 
 void CCrowbar::Smack()

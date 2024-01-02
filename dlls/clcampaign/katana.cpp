@@ -22,45 +22,20 @@
 #include "player.h"
 #include "gamerules.h"
 
-#define	CROWBAR_BODYHIT_VOLUME 128
-#define	CROWBAR_WALLHIT_VOLUME 512
+#define	KATANA_BODYHIT_VOLUME 128
+#define	KATANA_WALLHIT_VOLUME 512
 
 enum katana_e
 {
-	CROWBAR_IDLE = 0,
-	CROWBAR_DRAW,
-	CROWBAR_HOLSTER,
-	CROWBAR_ATTACK1HIT,
-	CROWBAR_ATTACK1MISS,
-	CROWBAR_ATTACK2MISS,
-	CROWBAR_ATTACK2HIT,
-	CROWBAR_ATTACK3MISS,
-	CROWBAR_ATTACK3HIT
-};
-
-class CKatana : public CBasePlayerWeapon
-{
-public:
-	void Spawn( void );
-	void Precache( void );
-	int iItemSlot( void ) { return 1; }
-	void EXPORT SwingAgain( void );
-	void EXPORT Smack( void );
-	int GetItemInfo(ItemInfo *p);
-
-	void PrimaryAttack( void );
-	int Swing( int fFirst );
-	BOOL Deploy( void );
-	void Holster( int skiplocal = 0 );
-	int m_iSwing;
-	TraceResult m_trHit;
-
-	virtual BOOL UseDecrement( void )
-	{
-		return FALSE;
-	}
-private:
-	unsigned short m_usKatana;
+	KATANA_IDLE = 0,
+	KATANA_DRAW,
+	KATANA_HOLSTER,
+	KATANA_ATTACK1HIT,
+	KATANA_ATTACK1MISS,
+	KATANA_ATTACK2MISS,
+	KATANA_ATTACK2HIT,
+	KATANA_ATTACK3MISS,
+	KATANA_ATTACK3HIT
 };
 
 LINK_ENTITY_TO_CLASS( weapon_katana, CKatana )
@@ -77,19 +52,20 @@ void CKatana::Spawn( )
 
 void CKatana::Precache( void )
 {
+	PRECACHE_MODEL( "models/fedora.mdl" );
 	PRECACHE_MODEL( "models/v_katana.mdl" );
 	PRECACHE_MODEL( "models/w_katana.mdl" );
 	PRECACHE_MODEL( "models/p_katana.mdl" );
+	PRECACHE_SOUND( "weapons/katana_draw.wav" );
 	PRECACHE_SOUND( "weapons/katana_hit1.wav" );
 	PRECACHE_SOUND( "weapons/katana_hit2.wav" );
 	PRECACHE_SOUND( "weapons/katana_hitbod1.wav" );
 	PRECACHE_SOUND( "weapons/katana_hitbod2.wav" );
 	PRECACHE_SOUND( "weapons/katana_hitbod3.wav" );
+	PRECACHE_SOUND( "weapons/katana_tip.wav" );
 	PRECACHE_SOUND( "weapons/katana_miss1.wav" );
-	PRECACHE_SOUND( "weapons/katana_draw.wav" );
 
-
-	m_usKatana = PRECACHE_EVENT( 1, "events/crowbar.sc" );
+	m_usKatana = PRECACHE_EVENT( 1, "events/katana.sc" );
 }
 
 int CKatana::GetItemInfo( ItemInfo *p )
@@ -101,25 +77,39 @@ int CKatana::GetItemInfo( ItemInfo *p )
 	p->iMaxAmmo2 = -1;
 	p->iMaxClip = WEAPON_NOCLIP;
 	p->iSlot = 0;
-	p->iPosition = 2;
+	p->iPosition = 1;
 	p->iId = WEAPON_KATANA;
-	p->iWeight = CROWBAR_WEIGHT;
+	p->iWeight = KATANA_WEIGHT;
+
 	return 1;
+}
+
+int CKatana::AddToPlayer( CBasePlayer *pPlayer )
+{
+	if( CBasePlayerWeapon::AddToPlayer( pPlayer ) )
+	{
+		MESSAGE_BEGIN( MSG_ONE, gmsgWeapPickup, NULL, pPlayer->pev );
+			WRITE_BYTE( m_iId );
+		MESSAGE_END();
+		return TRUE;
+	}
+	return FALSE;
 }
 
 BOOL CKatana::Deploy()
 {
 	EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/katana_draw.wav", 1, ATTN_NORM );
-	return DefaultDeploy( "models/v_katana.mdl", "models/p_katana.mdl", CROWBAR_DRAW, "crowbar" );;
+	return DefaultDeploy( "models/v_katana.mdl", "models/p_katana.mdl", KATANA_DRAW, "katana" );
 }
  
 void CKatana::Holster( int skiplocal /* = 0 */ )
 {
-	m_pPlayer->m_flNextAttack = gpGlobals->time + 0.5;
-	SendWeaponAnim( CROWBAR_HOLSTER );
+	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5f;
+	SendWeaponAnim( KATANA_HOLSTER );
 }
 
-void FindHullIntersection3( const Vector &vecSrc, TraceResult &tr, float *mins, float *maxs, edict_t *pEntity )
+extern void FindHullIntersection( const Vector &vecSrc, TraceResult &tr, float *mins, float *maxs, edict_t *pEntity );
+/*void FindHullIntersection( const Vector &vecSrc, TraceResult &tr, float *mins, float *maxs, edict_t *pEntity )
 {
 	int		i, j, k;
 	float		distance;
@@ -132,7 +122,7 @@ void FindHullIntersection3( const Vector &vecSrc, TraceResult &tr, float *mins, 
 
 	vecHullEnd = vecSrc + ( ( vecHullEnd - vecSrc ) * 2 );
 	UTIL_TraceLine( vecSrc, vecHullEnd, dont_ignore_monsters, pEntity, &tmpTrace );
-	if( tmpTrace.flFraction < 1.0 )
+	if( tmpTrace.flFraction < 1.0f )
 	{
 		tr = tmpTrace;
 		return;
@@ -149,7 +139,7 @@ void FindHullIntersection3( const Vector &vecSrc, TraceResult &tr, float *mins, 
 				vecEnd.z = vecHullEnd.z + minmaxs[k][2];
 
 				UTIL_TraceLine( vecSrc, vecEnd, dont_ignore_monsters, pEntity, &tmpTrace );
-				if( tmpTrace.flFraction < 1.0 )
+				if( tmpTrace.flFraction < 1.0f )
 				{
 					float thisDistance = ( tmpTrace.vecEndPos - vecSrc ).Length();
 					if( thisDistance < distance )
@@ -161,14 +151,16 @@ void FindHullIntersection3( const Vector &vecSrc, TraceResult &tr, float *mins, 
 			}
 		}
 	}
-}
+}*/
 
 void CKatana::PrimaryAttack()
 {
 	if( !Swing( 1 ) )
 	{
+#if !CLIENT_DLL
 		SetThink( &CKatana::SwingAgain );
-		pev->nextthink = gpGlobals->time + 0.1;
+		pev->nextthink = UTIL_WeaponTimeBase() + 0.6f;
+#endif
 	}
 }
 
@@ -195,30 +187,33 @@ int CKatana::Swing( int fFirst )
 	UTIL_TraceLine( vecSrc, vecEnd, dont_ignore_monsters, ENT( m_pPlayer->pev ), &tr );
 
 #ifndef CLIENT_DLL
-	if( tr.flFraction >= 1.0 )
+	if( tr.flFraction >= 1.0f )
 	{
 		UTIL_TraceHull( vecSrc, vecEnd, dont_ignore_monsters, head_hull, ENT( m_pPlayer->pev ), &tr );
-		if( tr.flFraction < 1.0 )
+		if( tr.flFraction < 1.0f )
 		{
 			// Calculate the point of intersection of the line (or hull) and the object we hit
 			// This is and approximation of the "best" intersection
 			CBaseEntity *pHit = CBaseEntity::Instance( tr.pHit );
 			if( !pHit || pHit->IsBSPModel() )
-				FindHullIntersection3( vecSrc, tr, VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX, m_pPlayer->edict() );
+				FindHullIntersection( vecSrc, tr, VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX, m_pPlayer->edict() );
 			vecEnd = tr.vecEndPos;	// This is the point on the actual surface (the hull could have hit space)
 		}
 	}
 #endif
-	PLAYBACK_EVENT_FULL( FEV_NOTHOST, m_pPlayer->edict(), m_usKatana, 
-	0.0, (float *)&g_vecZero, (float *)&g_vecZero, 0, 0, 0,
-	0.0, 0, 0.0 );
+	if( fFirst )
+	{
+		PLAYBACK_EVENT_FULL( FEV_NOTHOST, m_pPlayer->edict(), m_usKatana, 
+		0.0, g_vecZero, g_vecZero, 0, 0, 0,
+		0.0, 0, 0.0 );
+	}
 
 	if( tr.flFraction >= 1.0 )
 	{
 		if( fFirst )
 		{
 			// miss
-			m_flNextPrimaryAttack = gpGlobals->time + 0.5;
+			m_flNextPrimaryAttack = GetNextAttackDelay( 0.6f );
 
 			// player "shoot" animation
 			m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
@@ -229,13 +224,13 @@ int CKatana::Swing( int fFirst )
 		switch( ( ( m_iSwing++ ) % 2 ) + 1 )
 		{
 		case 0:
-			SendWeaponAnim( CROWBAR_ATTACK1HIT );
+			SendWeaponAnim( KATANA_ATTACK1HIT );
 			break;
 		case 1:
-			SendWeaponAnim( CROWBAR_ATTACK2HIT );
+			SendWeaponAnim( KATANA_ATTACK2HIT );
 			break;
 		case 2:
-			SendWeaponAnim( CROWBAR_ATTACK3HIT );
+			SendWeaponAnim( KATANA_ATTACK3HIT );
 			break;
 		}
 
@@ -247,26 +242,18 @@ int CKatana::Swing( int fFirst )
 		fDidHit = TRUE;
 		CBaseEntity *pEntity = CBaseEntity::Instance( tr.pHit );
 
-		ClearMultiDamage();
-
-		if( ( m_flNextPrimaryAttack + 1 < gpGlobals->time ) || g_pGameRules->IsMultiplayer() )
-		{
-			// first swing does full damage
-			pEntity->TraceAttack( m_pPlayer->pev, gSkillData.plrDmgCrowbar, gpGlobals->v_forward, &tr, DMG_CLUB ); 
-		}
-		else
-		{
-			// subsequent swings do half
-			pEntity->TraceAttack( m_pPlayer->pev, 30, gpGlobals->v_forward, &tr, DMG_CLUB ); 
-		}
-		ApplyMultiDamage( m_pPlayer->pev, m_pPlayer->pev );
-
 		// play thwack, smack, or dong sound
 		float flVol = 1.0;
 		int fHitWorld = TRUE;
 
 		if( pEntity )
 		{
+			ClearMultiDamage();
+
+			// swing does full damage
+			pEntity->TraceAttack( m_pPlayer->pev, 85, gpGlobals->v_forward, &tr, DMG_CLUB );
+			ApplyMultiDamage( m_pPlayer->pev, m_pPlayer->pev );
+
 			if( pEntity->Classify() != CLASS_NONE && pEntity->Classify() != CLASS_MACHINE )
 			{
 				// play thwack or smack sound
@@ -282,9 +269,14 @@ int CKatana::Swing( int fFirst )
 					EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/katana_hitbod3.wav", 1, ATTN_NORM );
 					break;
 				}
-				m_pPlayer->m_iWeaponVolume = CROWBAR_BODYHIT_VOLUME;
+				m_pPlayer->m_iWeaponVolume = KATANA_BODYHIT_VOLUME;
 				if( !pEntity->IsAlive() )
+				{
+#if CROWBAR_FIX_RAPID_CROWBAR
+					m_flNextPrimaryAttack = GetNextAttackDelay( 0.6f );
+#endif
 					return TRUE;
+				}
 				else
 					flVol = 0.1;
 
@@ -322,12 +314,21 @@ int CKatana::Swing( int fFirst )
 			m_trHit = tr;
 		}
 
-		m_pPlayer->m_iWeaponVolume = flVol * CROWBAR_WALLHIT_VOLUME;
-#endif
-		m_flNextPrimaryAttack = gpGlobals->time + 0.25;
+		m_pPlayer->m_iWeaponVolume = flVol * KATANA_WALLHIT_VOLUME;
 
 		SetThink( &CKatana::Smack );
-		pev->nextthink = gpGlobals->time + 0.2;
+		pev->nextthink = UTIL_WeaponTimeBase() + 0.6f;
+#endif
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.6f;
 	}
 	return fDidHit;
+}
+
+void CKatana::SecondaryAttack( void )
+{
+	EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/katana_tip.wav", 1, ATTN_NORM );
+#if !CLIENT_DLL
+	CGrenadeFedora::ShootContact( m_pPlayer->pev, m_pPlayer->pev->origin + m_pPlayer->pev->view_ofs + gpGlobals->v_forward * 15, gpGlobals->v_forward * 512 );
+#endif
+	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 2.0f;
 }

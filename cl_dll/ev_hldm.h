@@ -92,6 +92,35 @@ enum gauss_e
 	GAUSS_DRAW
 };
 
+enum sniper_e
+{
+	SNIPARS_IDLE = 0,
+	SNIPARS_DRAW,
+	SNIPARS_FIRE,
+	SNIPARS_RELOAD
+};
+
+enum sawnoff_e
+{
+	SAWNOFF_IDLE = 0,
+	SAWNOFF_FIRE,
+	SAWNOFF_FIRE2,
+	SAWNOFF_RELOAD,
+	SAWNOFF_PUMP,
+	SAWNOFF_START_RELOAD,
+	SAWNOFF_DRAW,
+	SAWNOFF_HOLSTER,
+	SAWNOFF_IDLE4,
+	SAWNOFF_IDLE_DEEP
+};
+
+enum needle_e
+{
+	NEEDLE_IDLE1,
+	NEEDLE_GIVESHOT,
+	NEEDLE_DRAW
+};
+
 void EV_HLDM_GunshotDecalTrace( pmtrace_t *pTrace, char *decalName );
 void EV_HLDM_DecalGunshot( pmtrace_t *pTrace, int iBulletType );
 int EV_HLDM_CheckTracer( int idx, float *vecSrc, float *end, float *forward, float *right, int iBulletType, int iTracerFreq, int *tracerCount );

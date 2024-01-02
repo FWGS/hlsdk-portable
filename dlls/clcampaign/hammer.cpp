@@ -14,41 +14,13 @@ Dicks
 #define	CROWBAR_BODYHIT_VOLUME 128
 #define	CROWBAR_WALLHIT_VOLUME 512
 
-class CHammer : public CBasePlayerWeapon
-{
-public:
-	void Spawn( void );
-	void Precache( void );
-	int iItemSlot( void ) { return 1; }
-	void EXPORT SwingAgain( void );
-	void EXPORT Smack( void );
-	int GetItemInfo(ItemInfo *p);
-
-	void PrimaryAttack( void );
-	int Swing( int fFirst );
-	BOOL Deploy( void );
-	void Holster( int skiplocal = 0 );
-	int m_iSwing;
-	TraceResult m_trHit;
-
-	virtual BOOL UseDecrement( void )
-	{ 
-#if defined( CLIENT_WEAPONS )
-		return TRUE;
-#else
-		return FALSE;
-#endif
-	}
-private:
-};
-
 LINK_ENTITY_TO_CLASS( weapon_hammer, CHammer )
 
-enum crowbar_e
+enum hammer_e
 {
-	CROWBAR_IDLE = 0,
-	CROWBAR_DRAW,
-	CROWBAR_ATTACK	
+	HAMMER_IDLE = 0,
+	HAMMER_DRAW,
+	HAMMER_ATTACK	
 };
 
 
@@ -69,6 +41,9 @@ void CHammer::Precache( void )
 	PRECACHE_MODEL( "models/p_hammer.mdl" );
 	PRECACHE_SOUND( "weapons/hammer_hit.wav" );
 	PRECACHE_SOUND( "weapons/hammer_hitbod.wav" );
+	PRECACHE_SOUND( "weapons/cbar_miss1.wav" );
+
+	m_usHammer = PRECACHE_EVENT( 1, "events/hammer.sc" );
 }
 
 int CHammer::GetItemInfo( ItemInfo *p )
@@ -80,15 +55,27 @@ int CHammer::GetItemInfo( ItemInfo *p )
 	p->iMaxAmmo2 = -1;
 	p->iMaxClip = WEAPON_NOCLIP;
 	p->iSlot = 0;
-	p->iPosition = 3;
+	p->iPosition = 2;
 	p->iId = WEAPON_HAMMER;
-	p->iWeight = 10;
+	p->iWeight = HAMMER_WEIGHT;
 	return 1;
+}
+
+int CHammer::AddToPlayer( CBasePlayer *pPlayer )
+{
+	if( CBasePlayerWeapon::AddToPlayer( pPlayer ) )
+	{
+		MESSAGE_BEGIN( MSG_ONE, gmsgWeapPickup, NULL, pPlayer->pev );
+			WRITE_BYTE( m_iId );
+		MESSAGE_END();
+		return TRUE;
+	}
+	return FALSE;
 }
 
 BOOL CHammer::Deploy()
 {
-	return DefaultDeploy( "models/v_hammer.mdl", "models/p_hammer.mdl", CROWBAR_DRAW, "hammer" );
+	return DefaultDeploy( "models/v_hammer.mdl", "models/p_hammer.mdl", HAMMER_DRAW, "Hammer" );
 }
 
 void CHammer::Holster( int skiplocal /* = 0 */ )
@@ -96,7 +83,8 @@ void CHammer::Holster( int skiplocal /* = 0 */ )
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 1;
 }
 
-void FindHullIntersection69( const Vector &vecSrc, TraceResult &tr, float *mins, float *maxs, edict_t *pEntity )
+extern void FindHullIntersection( const Vector &vecSrc, TraceResult &tr, float *mins, float *maxs, edict_t *pEntity );
+/*void FindHullIntersection( const Vector &vecSrc, TraceResult &tr, float *mins, float *maxs, edict_t *pEntity )
 {
 	int		i, j, k;
 	float		distance;
@@ -138,14 +126,16 @@ void FindHullIntersection69( const Vector &vecSrc, TraceResult &tr, float *mins,
 			}
 		}
 	}
-}
+}*/
 
 void CHammer::PrimaryAttack()
 {
 	if( !Swing( 1 ) )
 	{
+#if !CLIENT_DLL
 		SetThink( &CCrowbar::SwingAgain );
-		pev->nextthink = gpGlobals->time + 1;
+		pev->nextthink = UTIL_WeaponTimeBase() + 0.1f;
+#endif
 	}
 }
 
@@ -181,23 +171,25 @@ int CHammer::Swing( int fFirst )
 			// This is and approximation of the "best" intersection
 			CBaseEntity *pHit = CBaseEntity::Instance( tr.pHit );
 			if( !pHit || pHit->IsBSPModel() )
-				FindHullIntersection69( vecSrc, tr, VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX, m_pPlayer->edict() );
+				FindHullIntersection( vecSrc, tr, VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX, m_pPlayer->edict() );
 			vecEnd = tr.vecEndPos;	// This is the point on the actual surface (the hull could have hit space)
 		}
 	}
 #endif
-//	PLAYBACK_EVENT_FULL( FEV_NOTHOST, m_pPlayer->edict(), m_usCrowbar, 
-//0.0, (float *)&g_vecZero, (float *)&g_vecZero, 0, 0, 0,
-//	0.0, 0, 0.0 );
-	SendWeaponAnim( CROWBAR_ATTACK );
-m_pPlayer->pev->effects = (int)(m_pPlayer->pev->effects) | EF_MUZZLEFLASH;
-pev->effects |= EF_MUZZLEFLASH;
+	if( fFirst )
+	{
+		PLAYBACK_EVENT_FULL( FEV_NOTHOST, m_pPlayer->edict(), m_usHammer,
+		0.0, g_vecZero, g_vecZero, 0, 0, 0,
+		0.0, 0, 0.0 );
+	}
+
+	m_pPlayer->pev->effects = (int)(m_pPlayer->pev->effects) | EF_MUZZLEFLASH;
 	if( tr.flFraction >= 1.0 )
 	{
 		if( fFirst )
 		{
 			// miss
-			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 1;
+			m_flNextPrimaryAttack = GetNextAttackDelay( 1.0f );
 
 			// player "shoot" animation
 			m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
@@ -205,7 +197,7 @@ pev->effects |= EF_MUZZLEFLASH;
 	}
 	else
 	{
-	SendWeaponAnim( CROWBAR_ATTACK);
+		SendWeaponAnim( HAMMER_ATTACK );
 
 		// player "shoot" animation
 		m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
@@ -215,33 +207,29 @@ pev->effects |= EF_MUZZLEFLASH;
 		fDidHit = TRUE;
 		CBaseEntity *pEntity = CBaseEntity::Instance( tr.pHit );
 
-		ClearMultiDamage();
-
-		if( ( m_flNextPrimaryAttack + 1 < UTIL_WeaponTimeBase() ) || g_pGameRules->IsMultiplayer() )
-		{
-			// first swing does full damage
-			pEntity->TraceAttack( m_pPlayer->pev, 50, gpGlobals->v_forward, &tr, DMG_CLUB | DMG_ALWAYSGIB ); 
-		}
-		else
-		{
-			// subsequent swings do half
-			pEntity->TraceAttack( m_pPlayer->pev, 50, gpGlobals->v_forward, &tr, DMG_CLUB | DMG_ALWAYSGIB ); 
-		}
-		ApplyMultiDamage( m_pPlayer->pev, m_pPlayer->pev );
-
 		// play thwack, smack, or dong sound
 		float flVol = 1.0;
 		int fHitWorld = TRUE;
 
 		if( pEntity )
 		{
+			ClearMultiDamage();
+			// swing does full damage
+			pEntity->TraceAttack( m_pPlayer->pev, 400, gpGlobals->v_forward, &tr, DMG_CLUB );
+			ApplyMultiDamage( m_pPlayer->pev, m_pPlayer->pev );
+
 			if( pEntity->Classify() != CLASS_NONE && pEntity->Classify() != CLASS_MACHINE )
 			{
 				// play thwack or smack sound
 					EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/hammer_hitbod.wav", 1, ATTN_NORM );
 				m_pPlayer->m_iWeaponVolume = CROWBAR_BODYHIT_VOLUME;
 				if( !pEntity->IsAlive() )
+				{
+#if CROWBAR_FIX_RAPID_CROWBAR
+					m_flNextPrimaryAttack = GetNextAttackDelay( 1.0f );
+#endif
 					return TRUE;
+				}
 				else
 					flVol = 0.1;
 
@@ -263,18 +251,18 @@ pev->effects |= EF_MUZZLEFLASH;
 
 				fvolbar = 1;
 			}
-				EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/hammer_hit.wav", fvolbar, ATTN_NORM, 0, 98 + RANDOM_LONG( 0, 3 ) ); 
+			EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/hammer_hit.wav", fvolbar, ATTN_NORM, 0, 98 + RANDOM_LONG( 0, 3 ) ); 
 
 			// delay the decal a bit
 			m_trHit = tr;
 		}
 
 		m_pPlayer->m_iWeaponVolume = flVol * CROWBAR_WALLHIT_VOLUME;
-#endif
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 1;
 
 		SetThink( &CCrowbar::Smack );
-		pev->nextthink = UTIL_WeaponTimeBase() + 0.3;
+		pev->nextthink = UTIL_WeaponTimeBase() + 1;
+#endif
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 1;
 	}
 	return fDidHit;
 }

@@ -67,6 +67,13 @@ CHandGrenade g_HandGren;
 CSatchel g_Satchel;
 CTripmine g_Tripmine;
 CSqueak g_Snark;
+CKatana g_Katana;
+CSnipars g_Snipars;
+CPepsigun g_Pepsigun;
+CHammer g_Hammer;
+CSawnoff g_Sawnoff;
+CRock g_Rock;
+CNeedle g_Needle;
 
 /*
 ======================
@@ -620,6 +627,13 @@ void HUD_InitClientWeapons( void )
 	HUD_PrepEntity( &g_Satchel, &player );
 	HUD_PrepEntity( &g_Tripmine, &player );
 	HUD_PrepEntity( &g_Snark, &player );
+	HUD_PrepEntity( &g_Katana, &player );
+	HUD_PrepEntity( &g_Snipars, &player );
+	HUD_PrepEntity( &g_Pepsigun, &player );
+	HUD_PrepEntity( &g_Hammer, &player );
+	HUD_PrepEntity( &g_Sawnoff, &player );
+	HUD_PrepEntity( &g_Rock, &player );
+	HUD_PrepEntity( &g_Needle, &player );
 }
 
 /*
@@ -724,6 +738,27 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 			break;
 		case WEAPON_SNARK:
 			pWeapon = &g_Snark;
+			break;
+		case WEAPON_KATANA:
+			pWeapon = &g_Katana;
+			break;
+		case WEAPON_SNIPARS:
+			pWeapon = &g_Snipars;
+			break;
+		case WEAPON_PEPSIGUN:
+			pWeapon = &g_Pepsigun;
+			break;
+		case WEAPON_HAMMER:
+			pWeapon = &g_Hammer;
+			break;
+		case WEAPON_SAWNOFF:
+			pWeapon = &g_Sawnoff;
+			break;
+		case WEAPON_ROCK:
+			pWeapon = &g_Rock;
+			break;
+		case WEAPON_NEEDLE:
+			pWeapon = &g_Needle;
 			break;
 	}
 

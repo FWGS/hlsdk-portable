@@ -303,33 +303,34 @@ void W_Precache( void )
 
 	// shotgun
 	UTIL_PrecacheOtherWeapon( "weapon_shotgun" );
-	UTIL_PrecacheOtherWeapon( "weapon_hammer");
-	UTIL_PrecacheOtherWeapon( "weapon_pepsigun" );
 	UTIL_PrecacheOther( "ammo_buckshot" );
 
-	//needle
-	UTIL_PrecacheOtherWeapon( "weapon_needle"); 
+	// sawnoff
+	UTIL_PrecacheOtherWeapon( "weapon_sawnoff");
+
 	// crowbar
 	UTIL_PrecacheOtherWeapon( "weapon_crowbar" );
 
-UTIL_PrecacheOtherWeapon( "weapon_snipars" ); 
-UTIL_PrecacheOther( "ammo_snipars" );
+	// rock
+	UTIL_PrecacheOtherWeapon( "weapon_rock" );
+
+	// hammer
+	UTIL_PrecacheOtherWeapon( "weapon_hammer" );
+
+	// needle
+	UTIL_PrecacheOtherWeapon( "weapon_needle" );
+
+	UTIL_PrecacheOtherWeapon( "weapon_snipars" );
+	UTIL_PrecacheOther( "ammo_snipars" );
 
 	// glock
 	UTIL_PrecacheOtherWeapon( "weapon_9mmhandgun" );
 	UTIL_PrecacheOther( "ammo_9mmclip" );
 
-
-	// sawnoff
-	UTIL_PrecacheOtherWeapon( "weapon_sawnoff" );
-            UTIL_PrecacheOther( "ammo_cockshot" );
 	// mp5
 	UTIL_PrecacheOtherWeapon( "weapon_9mmAR" );
 	UTIL_PrecacheOther( "ammo_9mmAR" );
 	UTIL_PrecacheOther( "ammo_ARgrenades" );
-
-	//Sawnoff
-	UTIL_PrecacheOtherWeapon( "weapon_sawnoff" );
 
 	// 9mm ammo box
 	UTIL_PrecacheOther( "ammo_9mmbox" );
@@ -337,9 +338,8 @@ UTIL_PrecacheOther( "ammo_snipars" );
 #if !OEM_BUILD && !HLDEMO_BUILD
 	// python
 	UTIL_PrecacheOtherWeapon( "weapon_357" );
-	UTIL_PrecacheOtherWeapon( "weapon_katana" );
 	UTIL_PrecacheOther( "ammo_357" );
-	UTIL_PrecacheOtherWeapon( "weapon_rock" );
+	UTIL_PrecacheOtherWeapon( "weapon_snipars" );
 
 	// gauss
 	UTIL_PrecacheOtherWeapon( "weapon_gauss" );
@@ -364,6 +364,9 @@ UTIL_PrecacheOther( "ammo_snipars" );
 #endif
 	// hand grenade
 	UTIL_PrecacheOtherWeapon("weapon_handgrenade");
+
+	// pepsigun
+	UTIL_PrecacheOtherWeapon("weapon_pepsigun");
 #if !OEM_BUILD && !HLDEMO_BUILD
 	// squeak grenade
 	UTIL_PrecacheOtherWeapon( "weapon_snark" );
@@ -371,6 +374,7 @@ UTIL_PrecacheOther( "ammo_snipars" );
 	// hornetgun
 	UTIL_PrecacheOtherWeapon( "weapon_hornetgun" );
 
+	UTIL_PrecacheOtherWeapon( "weapon_katana" );
 	if( g_pGameRules->IsDeathmatch() )
 	{
 		UTIL_PrecacheOther( "weaponbox" );// container for dropped deathmatch weapons
@@ -1664,3 +1668,11 @@ TYPEDESCRIPTION	CSatchel::m_SaveData[] =
 };
 
 IMPLEMENT_SAVERESTORE( CSatchel, CBasePlayerWeapon )
+
+TYPEDESCRIPTION CSnipars::m_SaveData[] =
+{
+	DEFINE_FIELD( CSnipars, m_flSoundDelay, FIELD_FLOAT ),
+	DEFINE_FIELD( CSnipars, m_fInZoom, FIELD_INTEGER ),
+};
+
+IMPLEMENT_SAVERESTORE( CSnipars, CBasePlayerWeapon )
