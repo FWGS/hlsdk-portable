@@ -1307,6 +1307,7 @@ enum rpg_e
 	RPG_FIDGET,
 	RPG_RELOAD,		// to reload
 	RPG_FIRE2,		// to empty
+	RPG_FIRE1,		// crack-life second fire
 	RPG_HOLSTER1,	// loaded
 	RPG_DRAW1,		// loaded
 	RPG_HOLSTER2,	// unloaded
@@ -1317,10 +1318,11 @@ enum rpg_e
 
 void EV_FireRpg( event_args_t *args )
 {
-	int idx;
+	int idx, hand;
 	vec3_t origin;
 
 	idx = args->entindex;
+	hand = args->bparam1;
 	VectorCopy( args->origin, origin );
 
 	gEngfuncs.pEventAPI->EV_PlaySound( idx, origin, CHAN_WEAPON, "weapons/rocketfire1.wav", 0.9, ATTN_NORM, 0, PITCH_NORM );
@@ -1329,7 +1331,7 @@ void EV_FireRpg( event_args_t *args )
 	//Only play the weapon anims if I shot it. 
 	if( EV_IsLocal( idx ) )
 	{
-		gEngfuncs.pEventAPI->EV_WeaponAnimation( RPG_FIRE2, 0 );
+		gEngfuncs.pEventAPI->EV_WeaponAnimation( RPG_FIRE2 + hand, 0 );
 
 		V_PunchAxis( 0, -5.0 );
 	}

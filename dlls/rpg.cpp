@@ -135,9 +135,9 @@ void CRpgRocket::Spawn( void )
 	SetThink( &CRpgRocket::IgniteThink );
 	SetTouch( &CGrenade::ExplodeTouch );
 
-	pev->angles.x -= 30.0f;
+	pev->angles.x -= 12.0f;
 	UTIL_MakeVectors( pev->angles );
-	pev->angles.x = -( pev->angles.x + 30.0f );
+	pev->angles.x = -( pev->angles.x + 12.0f );
 
 	pev->velocity = gpGlobals->v_forward * 250.0f;
 	pev->gravity = 0.5f;
@@ -280,48 +280,6 @@ void CRpgRocket::FollowThink( void )
 }
 #endif
 
-void CRpg::Reload( void )
-{
-	int iResult = 0;
-
-	// don't bother with any of this if don't need to reload.
-	if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0 || m_iClip == RPG_MAX_CLIP )
-		return;
-
-	// because the RPG waits to autoreload when no missiles are active while  the LTD is on, the
-	// weapons code is constantly calling into this function, but is often denied because 
-	// a) missiles are in flight, but the LTD is on
-	// or
-	// b) player is totally out of ammo and has nothing to switch to, and should be allowed to
-	//    shine the designator around
-	//
-	// Set the next attack time into the future so that WeaponIdle will get called more often
-	// than reload, allowing the RPG LTD to be updated
-
-	m_flNextPrimaryAttack = GetNextAttackDelay( 0.7f );
-
-	if( m_cActiveRockets && m_fSpotActive )
-	{
-		// no reloading when there are active missiles tracking the designator.
-		// ward off future autoreload attempts by setting next attack time into the future for a bit. 
-		return;
-	}
-
-#if !CLIENT_DLL
-	if( m_pSpot && m_fSpotActive )
-	{
-		m_pSpot->Suspend( 2.1f );
-		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 2.1f;
-	}
-#endif
-
-	if( m_iClip == 0 )
-		iResult = DefaultReload( RPG_MAX_CLIP, RPG_RELOAD, 2 );
-
-	if( iResult )
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
-}
-
 void CRpg::Spawn()
 {
 	Precache();
@@ -395,7 +353,7 @@ int CRpg::AddToPlayer( CBasePlayer *pPlayer )
 
 BOOL CRpg::Deploy()
 {
-	if( m_iClip == 0 )
+	if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] == 0 )
 	{
 		return DefaultDeploy( "models/v_rpg.mdl", "models/p_rpg.mdl", RPG_DRAW_UL, "rpg" );
 	}
@@ -433,9 +391,8 @@ void CRpg::Holster( int skiplocal /* = 0 */ )
 
 void CRpg::PrimaryAttack()
 {
-	if( m_iClip )
+	if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] )
 	{
-		static int gun = 0;
 		m_pPlayer->m_iWeaponVolume = LOUD_GUN_VOLUME;
 		m_pPlayer->m_iWeaponFlash = BRIGHT_GUN_FLASH;
 
@@ -445,10 +402,10 @@ void CRpg::PrimaryAttack()
 
 		UTIL_MakeVectors( m_pPlayer->pev->v_angle );
 		Vector vecSrc;
-		if( gun )
-			vecSrc = m_pPlayer->GetGunPosition() + gpGlobals->v_forward * 16 + gpGlobals->v_right * 8 + gpGlobals->v_up * -8;
-		else
+		if( m_fInAction )
 			vecSrc = m_pPlayer->GetGunPosition() + gpGlobals->v_forward * 16 + gpGlobals->v_right * -8 + gpGlobals->v_up * -8;
+		else
+			vecSrc = m_pPlayer->GetGunPosition() + gpGlobals->v_forward * 16 + gpGlobals->v_right * 8 + gpGlobals->v_up * -8;
 
 		CRpgRocket *pRocket = CRpgRocket::CreateRpgRocket( vecSrc, m_pPlayer->pev->v_angle, m_pPlayer, this );
 
@@ -465,13 +422,10 @@ void CRpg::PrimaryAttack()
 #else
 	flags = 0;
 #endif
-		//PLAYBACK_EVENT( flags, m_pPlayer->edict(), m_usRpg );
-		EMIT_SOUND_DYN( edict(), CHAN_WEAPON, "weapons/rocketfire1.wav", 0.9, ATTN_NORM, 0, PITCH_NORM );
-		EMIT_SOUND_DYN( edict(), CHAN_ITEM, "weapons/glauncher.wav", 0.7, ATTN_NORM, 0, PITCH_NORM );
-		SendWeaponAnim( RPG_FIRE2 + 1 - gun );
-		m_iClip--;
+		PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usRpg, 0.0, g_vecZero, g_vecZero, 0, 0, 0, 0, m_fInAction, 0 );
+		m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]--;
 
-		gun = !gun;
+		m_fInAction = !m_fInAction;
 		m_flNextPrimaryAttack = GetNextAttackDelay( 0.4f );
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.5f;
 	}
@@ -512,7 +466,7 @@ void CRpg::WeaponIdle( void )
 		float flRand = UTIL_SharedRandomFloat( m_pPlayer->random_seed, 0.0f, 1.0f );
 		if( flRand <= 0.75f || m_fSpotActive )
 		{
-			if( m_iClip == 0 )
+			if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] == 0 )
 				iAnim = RPG_IDLE_UL;
 			else
 				iAnim = RPG_IDLE;
@@ -521,7 +475,7 @@ void CRpg::WeaponIdle( void )
 		}
 		else
 		{
-			if( m_iClip == 0 )
+			if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] == 0 )
 				iAnim = RPG_FIDGET_UL;
 			else
 				iAnim = RPG_FIDGET;

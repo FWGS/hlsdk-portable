@@ -191,7 +191,7 @@ public:
 #define AMMO_M203BOX_GIVE		999
 #define AMMO_BUCKSHOTBOX_GIVE	12
 #define AMMO_CROSSBOWCLIP_GIVE		CROSSBOW_DEFAULT_GIVE
-#define AMMO_RPGCLIP_GIVE		RPG_DEFAULT_GIVE
+#define AMMO_RPGCLIP_GIVE		WEAPON_NOCLIP
 #define AMMO_URANIUMBOX_GIVE	999
 #define AMMO_SNARKBOX_GIVE		5
 #define AMMO_SNIPARSBOX_GIVE		10
@@ -712,7 +712,6 @@ public:
 #endif
 	void Spawn( void );
 	void Precache( void );
-	void Reload( void );
 	int iItemSlot( void ) { return 4; }
 	int GetItemInfo(ItemInfo *p);
 	int AddToPlayer( CBasePlayer *pPlayer );
@@ -731,7 +730,7 @@ public:
 	CLaserSpot *m_pSpot;
 	int m_fSpotActive;
 	int m_cActiveRockets;// how many missiles in flight from this launcher right now?
-
+	int m_fInAction;
 	virtual BOOL UseDecrement( void )
 	{ 
 #if CLIENT_WEAPONS
