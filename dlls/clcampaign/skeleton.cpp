@@ -24,11 +24,11 @@
 //=========================================================
 // Monster's Anim Events Go Here
 //=========================================================
-#define	ZOMBIE_AE_ATTACK_RIGHT		0x01
-#define	ZOMBIE_AE_ATTACK_LEFT		0x02
-#define	ZOMBIE_AE_ATTACK_BOTH		0x03
+#define	SKELETON_AE_ATTACK_RIGHT		0x01
+#define	SKELETON_AE_ATTACK_LEFT		0x02
+#define	SKELETON_AE_ATTACK_BOTH		0x03
 
-#define ZOMBIE_FLINCH_DELAY		2		// at most one flinch every n secs
+#define SKELETON_FLINCH_DELAY		2		// at most one flinch every n secs
 
 class CSkeleton : public CBaseMonster
 {
@@ -36,7 +36,6 @@ public:
 	void Spawn( void );
 	void Precache( void );
 	void SetYawSpeed( void );
-	void DeathSound( void );
 	int Classify( void );
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
 	int IgnoreConditions( void );
@@ -45,8 +44,9 @@ public:
 
 	void PainSound( void );
 
-
 	static const char *pPainSounds[];
+	static const char *pAttackHitSounds[];
+	static const char *pAttackMissSounds[];
 
 	// No range attacks
 	BOOL CheckRangeAttack1( float flDot, float flDist ) { return FALSE; }
@@ -59,9 +59,25 @@ LINK_ENTITY_TO_CLASS( monster_skeleton, CSkeleton )
 
 const char *CSkeleton::pPainSounds[] =
 {
-	"skeleton/s_pain1.wav",
-	"skeleton/s_pain2.wav",
-	"sleletons/s_pain3.wav"
+	"spooky/s_pain1.wav",
+	"spooky/s_pain2.wav",
+	"spooky/s_pain3.wav",
+	"spooky/s_die.wav",
+	"spooky/s_die2.wav",
+	"spooky/s_die3.wav",
+};
+
+const char *CSkeleton::pAttackHitSounds[] =
+{
+	"zombie/claw_strike1.wav",
+	"zombie/claw_strike2.wav",
+	"zombie/claw_strike3.wav",
+};
+
+const char *CSkeleton::pAttackMissSounds[] =
+{
+	"zombie/claw_miss1.wav",
+	"zombie/claw_miss2.wav",
 };
 
 //=========================================================
@@ -70,7 +86,7 @@ const char *CSkeleton::pPainSounds[] =
 //=========================================================
 int CSkeleton::Classify( void )
 {
-	return	CLASS_ALIEN_MONSTER;
+	return CLASS_ALIEN_MONSTER;
 }
 
 //=========================================================
@@ -95,16 +111,17 @@ int CSkeleton::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker,float
 	// Take 30% damage from bullets
 	if( bitsDamageType == DMG_BULLET )
 	{
-		Vector vecDir = pev->origin - (pevInflictor->absmin + pevInflictor->absmax) * 0.5;
+		Vector vecDir = pev->origin - (pevInflictor->absmin + pevInflictor->absmax) * 0.5f;
 		vecDir = vecDir.Normalize();
-		float flForce = DamageForce( 0 );
+		float flForce = DamageForce( flDamage );
 		pev->velocity = pev->velocity + vecDir * flForce;
+		flDamage *= 0.3f;
 	}
 
 	// HACK HACK -- until we fix this.
 	if( IsAlive() )
 		PainSound();
-	return CBaseMonster::TakeDamage( pevInflictor, pevAttacker,flDamage, bitsDamageType);
+	return CBaseMonster::TakeDamage( pevInflictor, pevAttacker,flDamage, bitsDamageType );
 }
 
 void CSkeleton::PainSound( void )
@@ -112,26 +129,8 @@ void CSkeleton::PainSound( void )
 	int pitch = 95 + RANDOM_LONG( 0, 9 );
 
 	if( RANDOM_LONG( 0, 5 ) < 2 )
-		EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pPainSounds[RANDOM_LONG( 0, ARRAYSIZE( pPainSounds ) - 1 )], 1.0, ATTN_NORM, 0, pitch );
+		EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, RANDOM_SOUND_ARRAY( pPainSounds ), 1.0, ATTN_NORM, 0, pitch );
 }
-void CSkeleton::DeathSound( void )
-{
-	switch( RANDOM_LONG( 0, 2 ) )
-	{
-	case 0:
-		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "spooky/s_die.wav", 1, ATTN_NORM );
-		break;
-	case 1:
-		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "spooky/s_die2.wav", 1, ATTN_NORM );
-		break;
-	case 2:
-		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "spooky/s_die3.wav", 1, ATTN_NORM );
-		break;
-	}
-}
-
-
-
 
 //=========================================================
 // HandleAnimEvent - catches the monster-specific messages
@@ -141,7 +140,7 @@ void CSkeleton::HandleAnimEvent( MonsterEvent_t *pEvent )
 {
 	switch( pEvent->event )
 	{
-		case ZOMBIE_AE_ATTACK_RIGHT:
+		case SKELETON_AE_ATTACK_RIGHT:
 		{
 			// do stuff for this event.
 			//ALERT( at_console, "Slash right!\n" );
@@ -154,10 +153,13 @@ void CSkeleton::HandleAnimEvent( MonsterEvent_t *pEvent )
 					pHurt->pev->punchangle.x = 5;
 					pHurt->pev->velocity = pHurt->pev->velocity - gpGlobals->v_right * 100;
 				}
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pAttackHitSounds ), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
 			}
+			else
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pAttackMissSounds ), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
 		}
 		break;
-		case ZOMBIE_AE_ATTACK_LEFT:
+		case SKELETON_AE_ATTACK_LEFT:
 		{
 			// do stuff for this event.
 			//ALERT( at_console, "Slash left!\n" );
@@ -170,10 +172,13 @@ void CSkeleton::HandleAnimEvent( MonsterEvent_t *pEvent )
 					pHurt->pev->punchangle.x = 5;
 					pHurt->pev->velocity = pHurt->pev->velocity + gpGlobals->v_right * 100;
 				}
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pAttackHitSounds ), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
 			}
+			else
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pAttackMissSounds ), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
 		}
 		break;
-		case ZOMBIE_AE_ATTACK_BOTH:
+		case SKELETON_AE_ATTACK_BOTH:
 		{
 			// do stuff for this event.
 			CBaseEntity *pHurt = CheckTraceHullAttack( 70, gSkillData.zombieDmgBothSlash, DMG_SLASH );
@@ -184,7 +189,10 @@ void CSkeleton::HandleAnimEvent( MonsterEvent_t *pEvent )
 					pHurt->pev->punchangle.x = 5;
 					pHurt->pev->velocity = pHurt->pev->velocity + gpGlobals->v_forward * -100;
 				}
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pAttackHitSounds ), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
 			}
+			else
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pAttackMissSounds ), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
 		}
 		break;
 		default:
@@ -205,10 +213,10 @@ void CSkeleton::Spawn()
 
 	pev->solid		= SOLID_SLIDEBOX;
 	pev->movetype		= MOVETYPE_STEP;
-	pev->health		= 80;
+	pev->health		= gSkillData.zombieHealth;
 	pev->view_ofs		= VEC_VIEW;// position of the eyes relative to monster's origin.
 	m_bloodColor		= DONT_BLEED;
-	m_flFieldOfView		= 0;// indicates the width of this monster's forward view cone ( as a dotproduct result )
+	m_flFieldOfView		= 0.5f;// indicates the width of this monster's forward view cone ( as a dotproduct result )
 	m_MonsterState		= MONSTERSTATE_NONE;
 	m_afCapability		= bits_CAP_DOORS_GROUP;	
 
@@ -220,15 +228,10 @@ void CSkeleton::Spawn()
 //=========================================================
 void CSkeleton::Precache()
 {
-	int i;
-
 	PRECACHE_MODEL( "models/skellington.mdl" );
-	PRECACHE_SOUND( "spooky/s_die.wav" );
-	PRECACHE_SOUND( "spooky/s_die2.wav" );
-	PRECACHE_SOUND( "spooky/s_die3.wav" );
-
-	for( i = 0; i < ARRAYSIZE( pPainSounds ); i++ )
-		PRECACHE_SOUND( (char *)pPainSounds[i] );
+	PRECACHE_SOUND_ARRAY( pPainSounds );
+	PRECACHE_SOUND_ARRAY( pAttackHitSounds );
+        PRECACHE_SOUND_ARRAY( pAttackMissSounds );
 }
 
 //=========================================================
@@ -253,7 +256,7 @@ int CSkeleton::IgnoreConditions( void )
 	if( ( m_Activity == ACT_SMALL_FLINCH ) || ( m_Activity == ACT_BIG_FLINCH ) )
 	{
 		if( m_flNextFlinch < gpGlobals->time )
-			m_flNextFlinch = gpGlobals->time + ZOMBIE_FLINCH_DELAY;
+			m_flNextFlinch = gpGlobals->time + SKELETON_FLINCH_DELAY;
 	}
 
 	return iIgnore;
