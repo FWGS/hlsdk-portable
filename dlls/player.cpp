@@ -332,31 +332,42 @@ int TrainSpeed( int iSpeed, int iMax )
 
 void CBasePlayer::DeathSound( void )
 {
-	// water death sounds
-	/*
-	if( pev->waterlevel == 3 )
-	{
-		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/h2odeath.wav", 1, ATTN_NONE );
-		return;
-	}
-	*/
+	const char *pszMessage;
 
-	// temporarily using pain sounds for death sounds
-	switch( RANDOM_LONG( 1, 5 ) )
+	EMIT_SOUND( ENT( pev ), CHAN_VOICE, "ambience/wind1.wav", 1, ATTN_NORM );
+
+	switch( RANDOM_LONG( 1, 9 ) - 1 )
 	{
-	case 1: 
-		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/pl_pain5.wav", 1, ATTN_NORM );
+	case 0:
+		pszMessage = "YOU DENSE FUCK";
 		break;
-	case 2: 
-		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/pl_pain6.wav", 1, ATTN_NORM );
+	case 1:
+		pszMessage = "YOU FUCKING RETARD!";
 		break;
-	case 3: 
-		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/pl_pain7.wav", 1, ATTN_NORM );
+	case 2:
+		pszMessage = "HOLY FUCKING SHIT SERIOUSLY";
+		break;
+	case 3:
+		pszMessage = "OH MY GOD YOU SUCK! AUTO-UNINSTALLING";
+		break;
+	case 4:
+		pszMessage = "YOU DIED! CONGRATS FUCKFACE";
+		break;
+	case 5:
+		pszMessage = "HOW DO YOU FUCK UP SO BADLY JESUS FUCKING CHRIST?";
+		break;
+	case 6:
+		pszMessage = "HOW THE HELL ARE YOU SO BAD AT THIS GAME?";
+		break;
+	case 7:
+		pszMessage = "GAME OVER MOTHERFUCKER! YOU SUCK!";
+		break;
+	case 8:
+		pszMessage = "YOU USELESS SHITSTAIN";
 		break;
 	}
 
-	// play one of the suit death alarms
-	EMIT_GROUPNAME_SUIT( ENT( pev ), "HEV_DEAD" );
+	UTIL_CenterPrintAll( pszMessage );
 }
 
 // override takehealth
