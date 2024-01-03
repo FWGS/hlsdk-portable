@@ -166,7 +166,7 @@ void CSawnoff::Reload( void )
 	if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0 || m_iClip == SAWNOFF_MAX_CLIP )
 		return;
 	DefaultReload( SAWNOFF_MAX_CLIP, SAWNOFF_RELOAD, 1.3 );
-	EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_ITEM, "sshotgun_reload.wav", 1, ATTN_NORM );
+	EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/sshotgun_reload.wav", 1, ATTN_NORM );
 }
 			
 
