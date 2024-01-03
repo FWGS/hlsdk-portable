@@ -18,16 +18,17 @@
 #include	"cbase.h"
 #include	"monsters.h"
 #include	"schedule.h"
-#include      "explode.h"
+#include	"explode.h"
+#include	"weapons.h"
 
 //=========================================================
 // Monster's Anim Events Go Here
 //=========================================================
-#define	ZOMBIE_AE_ATTACK_RIGHT		0x01
-#define	ZOMBIE_AE_ATTACK_LEFT		0x02
-#define	ZOMBIE_AE_ATTACK_BOTH		0x03
+#define	TERROR_AE_ATTACK_RIGHT		0x01
+#define	TERROR_AE_ATTACK_LEFT		0x02
+#define	TERROR_AE_ATTACK_BOTH		0x03
 
-#define ZOMBIE_FLINCH_DELAY		2		// at most one flinch every n secs
+#define TERROR_FLINCH_DELAY		5		// at most one flinch every n secs
 
 class CTerror : public CBaseMonster
 {
@@ -66,7 +67,7 @@ const char *CTerror::pIdleSounds[] =
 //=========================================================
 int CTerror::Classify( void )
 {
-	return	CLASS_ALIEN_MONSTER;
+	return CLASS_ALIEN_MONSTER;
 }
 
 //=========================================================
@@ -77,7 +78,7 @@ void CTerror::SetYawSpeed( void )
 {
 	int ys;
 
-	ys = 120;
+	ys = 160;
 #if 0
 	switch ( m_Activity )
 	{
@@ -91,15 +92,13 @@ int CTerror::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float 
 	// Take 30% damage from bullets
 	if( bitsDamageType == DMG_BULLET )
 	{
-		Vector vecDir = pev->origin - (pevInflictor->absmin + pevInflictor->absmax) * 0.5;
+		Vector vecDir = pev->origin - (pevInflictor->absmin + pevInflictor->absmax) * 0.5f;
 		vecDir = vecDir.Normalize();
 		float flForce = DamageForce( flDamage );
 		pev->velocity = pev->velocity + vecDir * flForce;
-		flDamage *= 0.3;
+		flDamage *= 0.3f;
 	}
 
-	// HACK HACK -- until we fix this.
-	if( IsAlive() )
 	return CBaseMonster::TakeDamage( pevInflictor, pevAttacker, flDamage, bitsDamageType );
 }
 
@@ -109,7 +108,7 @@ void CTerror::IdleSound( void )
 	int pitch = 95 + RANDOM_LONG( 0, 9 );
 
 	// Play a random idle sound
-	EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pIdleSounds[RANDOM_LONG( 0, ARRAYSIZE( pIdleSounds ) -1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
+	EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pIdleSounds[RANDOM_LONG( 0, ARRAYSIZE( pIdleSounds ) - 1 )], 1.0, ATTN_NORM, 0, pitch );
 }
 
 
@@ -117,21 +116,14 @@ void CTerror::HandleAnimEvent( MonsterEvent_t *pEvent )
 {
 	switch( pEvent->event )
 	{
-		case ZOMBIE_AE_ATTACK_RIGHT:
-		{
-			ExplosionCreate(pev->origin ,pev->origin ,edict() ,60 , true ); 
-		}
-		break;
-		case ZOMBIE_AE_ATTACK_LEFT:
-{
-			ExplosionCreate(pev->origin ,pev->origin,edict() ,60 , true ); 
-		}
-		break;
-		case ZOMBIE_AE_ATTACK_BOTH:
-		{
-			ExplosionCreate(pev->origin ,pev->origin,edict() ,60, true);
-		}
-		break;
+		case TERROR_AE_ATTACK_RIGHT:
+		case TERROR_AE_ATTACK_LEFT:
+		case TERROR_AE_ATTACK_BOTH:
+			{
+				for( int i = 0; i < 3; i++ )
+					CGrenade::ShootTimed( pev, pev->origin + gpGlobals->v_forward * 34 + Vector( 0, 0, 32 ), gpGlobals->v_forward, 0.0f );
+			}
+			break;
 		default:
 			CBaseMonster::HandleAnimEvent( pEvent );
 			break;
@@ -149,9 +141,9 @@ void CTerror::Spawn()
 	pev->solid		= SOLID_SLIDEBOX;
 	pev->movetype		= MOVETYPE_STEP;
 	m_bloodColor		= BLOOD_COLOR_RED;
-	pev->health		= 10;
+	pev->health		= gSkillData.zombieHealth;
 	pev->view_ofs		= VEC_VIEW;// position of the eyes relative to monster's origin.
-	m_flFieldOfView		= 0.5;// indicates the width of this monster's forward view cone ( as a dotproduct result )
+	m_flFieldOfView		= 0.5f;// indicates the width of this monster's forward view cone ( as a dotproduct result )
 	m_MonsterState		= MONSTERSTATE_NONE;
 	m_afCapability		= bits_CAP_DOORS_GROUP;
 
@@ -163,12 +155,9 @@ void CTerror::Spawn()
 //=========================================================
 void CTerror::Precache()
 {
-	int i;
 
 	PRECACHE_MODEL( "models/terror.mdl" );
-
-	for( i = 0; i < ARRAYSIZE( pIdleSounds ); i++ )
-		PRECACHE_SOUND( (char *)pIdleSounds[i] );
+	PRECACHE_SOUND_ARRAY( pIdleSounds );
 }
 
 //=========================================================
@@ -193,7 +182,7 @@ int CTerror::IgnoreConditions( void )
 	if( ( m_Activity == ACT_SMALL_FLINCH ) || ( m_Activity == ACT_BIG_FLINCH ) )
 	{
 		if( m_flNextFlinch < gpGlobals->time )
-			m_flNextFlinch = gpGlobals->time + ZOMBIE_FLINCH_DELAY;
+			m_flNextFlinch = gpGlobals->time + TERROR_FLINCH_DELAY;
 	}
 
 	return iIgnore;
