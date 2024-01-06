@@ -33,7 +33,7 @@
 
 #define ZOMBIE_FLINCH_DELAY		2		// at most one flinch every n secs
 
-class CSuperchar : public CBaseMonster
+class CSuperchav : public CBaseMonster
 {
 public:
 	void Spawn( void );
@@ -63,66 +63,66 @@ public:
 	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
 };
 
-LINK_ENTITY_TO_CLASS( monster_superchav, CSuperchar )
+LINK_ENTITY_TO_CLASS( monster_superchav, CSuperchav )
 
-const char *CSuperchar::pAttackHitSounds[] =
+const char *CSuperchav::pAttackHitSounds[] =
 {
 	"zombie/claw_strike1.wav",
 	"zombie/claw_strike2.wav",
 	"zombie/claw_strike3.wav",
 };
 
-const char *CSuperchar::pAttackMissSounds[] =
+const char *CSuperchav::pAttackMissSounds[] =
 {
 	"zombie/claw_miss1.wav",
 	"zombie/claw_miss2.wav",
 };
 
-const char *CSuperchar::pAttackSounds[] =
+const char *CSuperchav::pAttackSounds[] =
 {
-	"zombie/zo_attack1.wav",
-	"zombie/zo_attack2.wav",
+	"superchav/zo_attack1.wav",
+	"superchav/zo_attack2.wav",
 };
 
-const char *CSuperchar::pIdleSounds[] =
+const char *CSuperchav::pIdleSounds[] =
 {
-	"zombie/zo_idle1.wav",
-	"zombie/zo_idle2.wav",
-	"zombie/zo_idle3.wav",
-	"zombie/zo_idle4.wav",
+	"superchav/zo_idle1.wav",
+	"superchav/zo_idle2.wav",
+	"superchav/zo_idle3.wav",
+	"superchav/zo_idle4.wav",
 };
 
-const char *CSuperchar::pAlertSounds[] =
+const char *CSuperchav::pAlertSounds[] =
 {
-	"zombie/zo_alert10.wav",
-	"zombie/zo_alert20.wav",
-	"zombie/zo_alert30.wav",
+	"superchav/zo_alert10.wav",
+	"superchav/zo_alert20.wav",
+	"superchav/zo_alert30.wav",
 };
 
-const char *CSuperchar::pPainSounds[] =
+const char *CSuperchav::pPainSounds[] =
 {
-	"zombie/zo_pain1.wav",
-	"zombie/zo_pain2.wav",
+	"superchav/zo_pain1.wav",
+	"superchav/zo_pain2.wav",
 };
 
 //=========================================================
 // Classify - indicates this monster's place in the 
 // relationship table.
 //=========================================================
-int CSuperchar::Classify( void )
+int CSuperchav::Classify( void )
 {
-	return	CLASS_ALIEN_MONSTER;
+	return CLASS_ALIEN_MONSTER;
 }
 
 //=========================================================
 // SetYawSpeed - allows each sequence to have a different
 // turn rate associated with it.
 //=========================================================
-void CSuperchar::SetYawSpeed( void )
+void CSuperchav::SetYawSpeed( void )
 {
 	int ys;
 
-	ys = 150;
+	ys = 120;
 #if 0
 	switch ( m_Activity )
 	{
@@ -131,16 +131,16 @@ void CSuperchar::SetYawSpeed( void )
 	pev->yaw_speed = ys;
 }
 
-int CSuperchar::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )
+int CSuperchav::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )
 {
 	// Take 30% damage from bullets
 	if( bitsDamageType == DMG_BULLET )
 	{
-		Vector vecDir = pev->origin - (pevInflictor->absmin + pevInflictor->absmax) * 0.5;
+		Vector vecDir = pev->origin - (pevInflictor->absmin + pevInflictor->absmax) * 0.5f;
 		vecDir = vecDir.Normalize();
 		float flForce = DamageForce( flDamage );
 		pev->velocity = pev->velocity + vecDir * flForce;
-		flDamage *= 0.5;
+		flDamage *= 0.3f;
 	}
 
 	// HACK HACK -- until we fix this.
@@ -149,40 +149,40 @@ int CSuperchar::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, flo
 	return CBaseMonster::TakeDamage( pevInflictor, pevAttacker, flDamage, bitsDamageType );
 }
 
-void CSuperchar::PainSound( void )
+void CSuperchav::PainSound( void )
 {
 	int pitch = 95 + RANDOM_LONG( 0, 9 );
 
 	if( RANDOM_LONG( 0, 5 ) < 2 )
-		EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pPainSounds[RANDOM_LONG( 0, ARRAYSIZE( pPainSounds ) - 1 )], 1.0, ATTN_NORM, 0, pitch );
+		EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, RANDOM_SOUND_ARRAY( pPainSounds ), 1.0, ATTN_NORM, 0, pitch );
 }
 
-void CSuperchar::AlertSound( void )
+void CSuperchav::AlertSound( void )
 {
 	int pitch = 95 + RANDOM_LONG( 0, 9 );
 
-	EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pAlertSounds[ RANDOM_LONG( 0, ARRAYSIZE( pAlertSounds ) - 1 )], 1.0, ATTN_NORM, 0, pitch );
+	EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, RANDOM_SOUND_ARRAY( pAlertSounds ), 1.0, ATTN_NORM, 0, pitch );
 }
 
-void CSuperchar::IdleSound( void )
+void CSuperchav::IdleSound( void )
 {
 	int pitch = 95 + RANDOM_LONG( 0, 9 );
 
 	// Play a random idle sound
-	EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pIdleSounds[RANDOM_LONG( 0, ARRAYSIZE( pIdleSounds ) -1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
+	EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, RANDOM_SOUND_ARRAY( pIdleSounds ), 1.0, ATTN_NORM, 0, pitch );
 }
 
-void CSuperchar::AttackSound( void )
+void CSuperchav::AttackSound( void )
 {
 	// Play a random attack sound
-	EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pAttackSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackSounds ) - 1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
+	EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, RANDOM_SOUND_ARRAY( pAttackSounds ), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
 }
 
 //=========================================================
 // HandleAnimEvent - catches the monster-specific messages
 // that occur when tagged animation frames are played.
 //=========================================================
-void CSuperchar::HandleAnimEvent( MonsterEvent_t *pEvent )
+void CSuperchav::HandleAnimEvent( MonsterEvent_t *pEvent )
 {
 	switch( pEvent->event )
 	{
@@ -200,10 +200,10 @@ void CSuperchar::HandleAnimEvent( MonsterEvent_t *pEvent )
 					pHurt->pev->velocity = pHurt->pev->velocity - gpGlobals->v_right * 100;
 				}
 				// Play a random attack hit sound
-				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, pAttackHitSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackHitSounds ) - 1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5 , 5 ) );
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pAttackHitSounds ), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5 , 5 ) );
 			}
 			else // Play a random attack miss sound
-				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, pAttackMissSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackMissSounds ) - 1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pAttackMissSounds ), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
 
 			if( RANDOM_LONG( 0, 1 ) )
 				AttackSound();
@@ -222,10 +222,10 @@ void CSuperchar::HandleAnimEvent( MonsterEvent_t *pEvent )
 					pHurt->pev->punchangle.x = 5;
 					pHurt->pev->velocity = pHurt->pev->velocity + gpGlobals->v_right * 100;
 				}
-				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, pAttackHitSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackHitSounds ) - 1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pAttackHitSounds ), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
 			}
 			else
-				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, pAttackMissSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackMissSounds ) - 1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pAttackMissSounds ), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
 
 			if( RANDOM_LONG( 0, 1 ) )
 				AttackSound();
@@ -242,10 +242,10 @@ void CSuperchar::HandleAnimEvent( MonsterEvent_t *pEvent )
 					pHurt->pev->punchangle.x = 5;
 					pHurt->pev->velocity = pHurt->pev->velocity + gpGlobals->v_forward * -100;
 				}
-				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, pAttackHitSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackHitSounds ) - 1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pAttackHitSounds ), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
 			}
 			else
-				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, pAttackMissSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackMissSounds ) - 1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pAttackMissSounds ), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
 
 			if( RANDOM_LONG( 0, 1 ) )
 				AttackSound();
@@ -260,7 +260,7 @@ void CSuperchar::HandleAnimEvent( MonsterEvent_t *pEvent )
 //=========================================================
 // Spawn
 //=========================================================
-void CSuperchar::Spawn()
+void CSuperchav::Spawn()
 {
 	Precache();
 
@@ -269,10 +269,10 @@ void CSuperchar::Spawn()
 
 	pev->solid		= SOLID_SLIDEBOX;
 	pev->movetype		= MOVETYPE_STEP;
-	m_bloodColor		= BLOOD_COLOR_GREEN;
+	m_bloodColor		= BLOOD_COLOR_RED;
 	pev->health		= 200;
 	pev->view_ofs		= VEC_VIEW;// position of the eyes relative to monster's origin.
-	m_flFieldOfView		= 0.9;// indicates the width of this monster's forward view cone ( as a dotproduct result )
+	m_flFieldOfView		= 0.5f;// indicates the width of this monster's forward view cone ( as a dotproduct result )
 	m_MonsterState		= MONSTERSTATE_NONE;
 	m_afCapability		= bits_CAP_DOORS_GROUP;
 
@@ -282,36 +282,23 @@ void CSuperchar::Spawn()
 //=========================================================
 // Precache - precaches all resources this monster needs
 //=========================================================
-void CSuperchar::Precache()
+void CSuperchav::Precache()
 {
-	int i;
-
 	PRECACHE_MODEL( "models/superchav.mdl" );
 
-	for( i = 0; i < ARRAYSIZE( pAttackHitSounds ); i++ )
-		PRECACHE_SOUND( (char *)pAttackHitSounds[i] );
-
-	for( i = 0; i < ARRAYSIZE( pAttackMissSounds ); i++ )
-		PRECACHE_SOUND( (char *)pAttackMissSounds[i] );
-
-	for( i = 0; i < ARRAYSIZE( pAttackSounds ); i++ )
-		PRECACHE_SOUND( (char *)pAttackSounds[i] );
-
-	for( i = 0; i < ARRAYSIZE( pIdleSounds ); i++ )
-		PRECACHE_SOUND( (char *)pIdleSounds[i] );
-
-	for( i = 0; i < ARRAYSIZE( pAlertSounds ); i++ )
-		PRECACHE_SOUND( (char *)pAlertSounds[i] );
-
-	for( i = 0; i < ARRAYSIZE( pPainSounds ); i++ )
-		PRECACHE_SOUND( (char *)pPainSounds[i] );
+	PRECACHE_SOUND_ARRAY( pAttackHitSounds );
+	PRECACHE_SOUND_ARRAY( pAttackMissSounds );
+	PRECACHE_SOUND_ARRAY( pAttackSounds );
+	PRECACHE_SOUND_ARRAY( pIdleSounds );
+	PRECACHE_SOUND_ARRAY( pAlertSounds );
+	PRECACHE_SOUND_ARRAY( pPainSounds );
 }
 
 //=========================================================
 // AI Schedules Specific to this monster
 //=========================================================
 
-int CSuperchar::IgnoreConditions( void )
+int CSuperchav::IgnoreConditions( void )
 {
 	int iIgnore = CBaseMonster::IgnoreConditions();
 
