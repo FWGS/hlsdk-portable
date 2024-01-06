@@ -27,11 +27,11 @@
 //=========================================================
 // Monster's Anim Events Go Here
 //=========================================================
-#define	ZOMBIE_AE_ATTACK_RIGHT		0x01
-#define	ZOMBIE_AE_ATTACK_LEFT		0x02
-#define	ZOMBIE_AE_ATTACK_BOTH		0x03
+#define	MARIOZOMBIE_AE_ATTACK_RIGHT		0x01
+#define	MARIOZOMBIE_AE_ATTACK_LEFT		0x02
+#define	MARIOZOMBIE_AE_ATTACK_BOTH		0x03
 
-#define ZOMBIE_FLINCH_DELAY		2		// at most one flinch every n secs
+#define MARIOZOMBIE_FLINCH_DELAY		2		// at most one flinch every n secs
 
 class CMariozombie : public CBaseMonster
 {
@@ -47,11 +47,9 @@ public:
 
 	void PainSound( void );
 	void AlertSound( void );
-	void IdleSound( void );
 	void AttackSound( void );
 
 	static const char *pAttackSounds[];
-	static const char *pIdleSounds[];
 	static const char *pAlertSounds[];
 	static const char *pPainSounds[];
 	static const char *pAttackHitSounds[];
@@ -67,26 +65,21 @@ LINK_ENTITY_TO_CLASS( monster_mariozombie, CMariozombie )
 
 const char *CMariozombie::pAttackHitSounds[] =
 {
-	"mariozombie/alert1.wav",
-	"mariozombie/alert2.wav",
-	"mariozombie/alert3.wav",
+	"zombie/claw_strike1.wav",
+	"zombie/claw_strike2.wav",
+	"zombie/claw_strike3.wav",
 };
 
 const char *CMariozombie::pAttackMissSounds[] =
 {
-	"mariozombie/attack1.wav",
-	"mariozombie/attack2.wav",
+	"zombie/claw_miss1.wav",
+	"zombie/claw_miss2.wav",
 };
 
 const char *CMariozombie::pAttackSounds[] =
 {
 	"mariozombie/attack1.wav",
 	"mariozombie/attack2.wav",
-};
-
-const char *CMariozombie::pIdleSounds[] =
-{
-	"mariozombie/alert1.wav",
 };
 
 const char *CMariozombie::pAlertSounds[] =
@@ -98,9 +91,8 @@ const char *CMariozombie::pAlertSounds[] =
 
 const char *CMariozombie::pPainSounds[] =
 {
-	"zombie/pain1.wav",
-	"zombie/pain2.wav",
- 	"zombie/pain3.wav", 
+	"mariozombie/pain1.wav",
+	"mariozombie/pain2.wav",
 };
 
 //=========================================================
@@ -109,7 +101,7 @@ const char *CMariozombie::pPainSounds[] =
 //=========================================================
 int CMariozombie::Classify( void )
 {
-	return	CLASS_ALIEN_MONSTER;
+	return CLASS_ALIEN_MONSTER;
 }
 
 //=========================================================
@@ -134,11 +126,11 @@ int CMariozombie::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, f
 	// Take 30% damage from bullets
 	if( bitsDamageType == DMG_BULLET )
 	{
-		Vector vecDir = pev->origin - (pevInflictor->absmin + pevInflictor->absmax) * 0.5;
+		Vector vecDir = pev->origin - (pevInflictor->absmin + pevInflictor->absmax) * 0.5f;
 		vecDir = vecDir.Normalize();
 		float flForce = DamageForce( flDamage );
 		pev->velocity = pev->velocity + vecDir * flForce;
-		flDamage *= 0.3;
+		flDamage *= 0.3f;
 	}
 
 	// HACK HACK -- until we fix this.
@@ -152,28 +144,20 @@ void CMariozombie::PainSound( void )
 	int pitch = 95 + RANDOM_LONG( 0, 9 );
 
 	if( RANDOM_LONG( 0, 5 ) < 2 )
-		EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pPainSounds[RANDOM_LONG( 0, ARRAYSIZE( pPainSounds ) - 1 )], 1.0, ATTN_NORM, 0, pitch );
+		EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, RANDOM_SOUND_ARRAY( pPainSounds ), 1.0, ATTN_NORM, 0, pitch );
 }
 
 void CMariozombie::AlertSound( void )
 {
 	int pitch = 95 + RANDOM_LONG( 0, 9 );
 
-	EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pAlertSounds[ RANDOM_LONG( 0, ARRAYSIZE( pAlertSounds ) - 1 )], 1.0, ATTN_NORM, 0, pitch );
-}
-
-void CMariozombie::IdleSound( void )
-{
-	int pitch = 95 + RANDOM_LONG( 0, 9 );
-
-	// Play a random idle sound
-	EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pIdleSounds[RANDOM_LONG( 0, ARRAYSIZE( pIdleSounds ) -1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
+	EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, RANDOM_SOUND_ARRAY( pAlertSounds ), 1.0, ATTN_NORM, 0, pitch );
 }
 
 void CMariozombie::AttackSound( void )
 {
 	// Play a random attack sound
-	EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pAttackSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackSounds ) - 1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
+	EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, RANDOM_SOUND_ARRAY( pAttackSounds ), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
 }
 
 //=========================================================
@@ -184,7 +168,7 @@ void CMariozombie::HandleAnimEvent( MonsterEvent_t *pEvent )
 {
 	switch( pEvent->event )
 	{
-		case ZOMBIE_AE_ATTACK_RIGHT:
+		case MARIOZOMBIE_AE_ATTACK_RIGHT:
 		{
 			// do stuff for this event.
 			//ALERT( at_console, "Slash right!\n" );
@@ -198,16 +182,16 @@ void CMariozombie::HandleAnimEvent( MonsterEvent_t *pEvent )
 					pHurt->pev->velocity = pHurt->pev->velocity - gpGlobals->v_right * 100;
 				}
 				// Play a random attack hit sound
-				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, pAttackHitSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackHitSounds ) - 1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5 , 5 ) );
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pAttackHitSounds ), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5 , 5 ) );
 			}
 			else // Play a random attack miss sound
-				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, pAttackMissSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackMissSounds ) - 1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pAttackMissSounds ), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
 
 			if( RANDOM_LONG( 0, 1 ) )
 				AttackSound();
 		}
 		break;
-		case ZOMBIE_AE_ATTACK_LEFT:
+		case MARIOZOMBIE_AE_ATTACK_LEFT:
 		{
 			// do stuff for this event.
 			//ALERT( at_console, "Slash left!\n" );
@@ -220,16 +204,16 @@ void CMariozombie::HandleAnimEvent( MonsterEvent_t *pEvent )
 					pHurt->pev->punchangle.x = 5;
 					pHurt->pev->velocity = pHurt->pev->velocity + gpGlobals->v_right * 100;
 				}
-				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, pAttackHitSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackHitSounds ) - 1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pAttackHitSounds ), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
 			}
 			else
-				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, pAttackMissSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackMissSounds ) - 1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pAttackMissSounds ), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
 
 			if( RANDOM_LONG( 0, 1 ) )
 				AttackSound();
 		}
 		break;
-		case ZOMBIE_AE_ATTACK_BOTH:
+		case MARIOZOMBIE_AE_ATTACK_BOTH:
 		{
 			// do stuff for this event.
 			CBaseEntity *pHurt = CheckTraceHullAttack( 70, gSkillData.zombieDmgBothSlash, DMG_SLASH );
@@ -240,10 +224,10 @@ void CMariozombie::HandleAnimEvent( MonsterEvent_t *pEvent )
 					pHurt->pev->punchangle.x = 5;
 					pHurt->pev->velocity = pHurt->pev->velocity + gpGlobals->v_forward * -100;
 				}
-				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, pAttackHitSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackHitSounds ) - 1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pAttackHitSounds ), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
 			}
 			else
-				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, pAttackMissSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackMissSounds ) - 1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pAttackMissSounds ), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
 
 			if( RANDOM_LONG( 0, 1 ) )
 				AttackSound();
@@ -282,27 +266,13 @@ void CMariozombie::Spawn()
 //=========================================================
 void CMariozombie::Precache()
 {
-	int i;
-
 	PRECACHE_MODEL( "models/mariozombie.mdl" );
 
-	for( i = 0; i < ARRAYSIZE( pAttackHitSounds ); i++ )
-		PRECACHE_SOUND( (char *)pAttackHitSounds[i] );
-
-	for( i = 0; i < ARRAYSIZE( pAttackMissSounds ); i++ )
-		PRECACHE_SOUND( (char *)pAttackMissSounds[i] );
-
-	for( i = 0; i < ARRAYSIZE( pAttackSounds ); i++ )
-		PRECACHE_SOUND( (char *)pAttackSounds[i] );
-
-	for( i = 0; i < ARRAYSIZE( pIdleSounds ); i++ )
-		PRECACHE_SOUND( (char *)pIdleSounds[i] );
-
-	for( i = 0; i < ARRAYSIZE( pAlertSounds ); i++ )
-		PRECACHE_SOUND( (char *)pAlertSounds[i] );
-
-	for( i = 0; i < ARRAYSIZE( pPainSounds ); i++ )
-		PRECACHE_SOUND( (char *)pPainSounds[i] );
+	PRECACHE_SOUND_ARRAY( pAttackHitSounds );
+	PRECACHE_SOUND_ARRAY( pAttackMissSounds );
+	PRECACHE_SOUND_ARRAY( pAttackSounds );
+	PRECACHE_SOUND_ARRAY( pAlertSounds );
+	PRECACHE_SOUND_ARRAY( pPainSounds );
 }
 
 //=========================================================
@@ -327,7 +297,7 @@ int CMariozombie::IgnoreConditions( void )
 	if( ( m_Activity == ACT_SMALL_FLINCH ) || ( m_Activity == ACT_BIG_FLINCH ) )
 	{
 		if( m_flNextFlinch < gpGlobals->time )
-			m_flNextFlinch = gpGlobals->time + ZOMBIE_FLINCH_DELAY;
+			m_flNextFlinch = gpGlobals->time + MARIOZOMBIE_FLINCH_DELAY;
 	}
 
 	return iIgnore;
