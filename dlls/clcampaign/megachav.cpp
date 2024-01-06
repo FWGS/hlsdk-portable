@@ -27,13 +27,15 @@
 //=========================================================
 // Monster's Anim Events Go Here
 //=========================================================
-#define	ZOMBIE_AE_ATTACK_RIGHT		0x01
-#define	ZOMBIE_AE_ATTACK_LEFT		0x02
-#define	ZOMBIE_AE_ATTACK_BOTH		0x03
+#define	MEGACHAV_AE_ATTACK_RIGHT	0x01
+#define	MEGACHAV_AE_ATTACK_LEFT		0x02
+#define	MEGACHAV_AE_ATTACK_BOTH		0x03
 
-#define ZOMBIE_FLINCH_DELAY		2		// at most one flinch every n secs
+#define MEGACHAV_FLINCH_DELAY		2		// at most one flinch every n secs
 
-class CMegachar : public CBaseMonster
+#define MEGACHAV_DAMAGE			120
+
+class CMegachav : public CBaseMonster
 {
 public:
 	void Spawn( void );
@@ -54,6 +56,8 @@ public:
 	static const char *pIdleSounds[];
 	static const char *pAlertSounds[];
 	static const char *pPainSounds[];
+	static const char *pAttackHitSounds[];
+	static const char *pAttackMissSounds[];
 
 	// No range attacks
 	BOOL CheckRangeAttack1( float flDot, float flDist ) { return FALSE; }
@@ -61,16 +65,28 @@ public:
 	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
 };
 
-LINK_ENTITY_TO_CLASS( monster_megachav, CMegachar )
+LINK_ENTITY_TO_CLASS( monster_megachav, CMegachav )
 
+const char *CMegachav::pAttackHitSounds[] =
+{
+	"zombie/claw_strike1.wav",
+	"zombie/claw_strike2.wav",
+	"zombie/claw_strike3.wav",
+};
 
-const char *CMegachar::pAttackSounds[] =
+const char *CMegachav::pAttackMissSounds[] =
+{
+	"zombie/claw_miss1.wav",
+	"zombie/claw_miss2.wav",
+};
+
+const char *CMegachav::pAttackSounds[] =
 {
 	"megachav/zo_attack1.wav",
 	"megachav/zo_attack2.wav",
 };
 
-const char *CMegachar::pIdleSounds[] =
+const char *CMegachav::pIdleSounds[] =
 {
 	"megachav/zo_idle1.wav",
 	"megachav/zo_idle2.wav",
@@ -78,14 +94,14 @@ const char *CMegachar::pIdleSounds[] =
 	"megachav/zo_idle4.wav",
 };
 
-const char *CMegachar::pAlertSounds[] =
+const char *CMegachav::pAlertSounds[] =
 {
 	"megachav/zo_alert10.wav",
 	"megachav/zo_alert20.wav",
 	"megachav/zo_alert30.wav",
 };
 
-const char *CMegachar::pPainSounds[] =
+const char *CMegachav::pPainSounds[] =
 {
 	"megachav/zo_pain1.wav",
 	"megachav/zo_pain2.wav",
@@ -95,20 +111,20 @@ const char *CMegachar::pPainSounds[] =
 // Classify - indicates this monster's place in the 
 // relationship table.
 //=========================================================
-int CMegachar::Classify( void )
+int CMegachav::Classify( void )
 {
-	return	CLASS_ALIEN_MONSTER;
+	return CLASS_ALIEN_MONSTER;
 }
 
 //=========================================================
 // SetYawSpeed - allows each sequence to have a different
 // turn rate associated with it.
 //=========================================================
-void CMegachar::SetYawSpeed( void )
+void CMegachav::SetYawSpeed( void )
 {
 	int ys;
 
-	ys = 150;
+	ys = 120;
 #if 0
 	switch ( m_Activity )
 	{
@@ -117,16 +133,16 @@ void CMegachar::SetYawSpeed( void )
 	pev->yaw_speed = ys;
 }
 
-int CMegachar::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )
+int CMegachav::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )
 {
 	// Take 30% damage from bullets
 	if( bitsDamageType == DMG_BULLET )
 	{
-		Vector vecDir = pev->origin - (pevInflictor->absmin + pevInflictor->absmax) * 0.5;
+		Vector vecDir = pev->origin - (pevInflictor->absmin + pevInflictor->absmax) * 0.5f;
 		vecDir = vecDir.Normalize();
 		float flForce = DamageForce( flDamage );
 		pev->velocity = pev->velocity + vecDir * flForce;
-		flDamage *= 0.5;
+		flDamage *= 0.3f;
 	}
 
 	// HACK HACK -- until we fix this.
@@ -135,48 +151,48 @@ int CMegachar::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, floa
 	return CBaseMonster::TakeDamage( pevInflictor, pevAttacker, flDamage, bitsDamageType );
 }
 
-void CMegachar::PainSound( void )
+void CMegachav::PainSound( void )
 {
 	int pitch = 95 + RANDOM_LONG( 0, 9 );
 
 	if( RANDOM_LONG( 0, 5 ) < 2 )
-		EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pPainSounds[RANDOM_LONG( 0, ARRAYSIZE( pPainSounds ) - 1 )], 1.0, ATTN_NORM, 0, pitch );
+		EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, RANDOM_SOUND_ARRAY( pPainSounds ), 1.0, ATTN_NORM, 0, pitch );
 }
 
-void CMegachar::AlertSound( void )
+void CMegachav::AlertSound( void )
 {
 	int pitch = 95 + RANDOM_LONG( 0, 9 );
 
-	EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pAlertSounds[ RANDOM_LONG( 0, ARRAYSIZE( pAlertSounds ) - 1 )], 1.0, ATTN_NORM, 0, pitch );
+	EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, RANDOM_SOUND_ARRAY( pAlertSounds ), 1.0, ATTN_NORM, 0, pitch );
 }
 
-void CMegachar::IdleSound( void )
+void CMegachav::IdleSound( void )
 {
 	int pitch = 95 + RANDOM_LONG( 0, 9 );
 
 	// Play a random idle sound
-	EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pIdleSounds[RANDOM_LONG( 0, ARRAYSIZE( pIdleSounds ) -1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
+	EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, RANDOM_SOUND_ARRAY( pIdleSounds ), 1.0, ATTN_NORM, 0, pitch );
 }
 
-void CMegachar::AttackSound( void )
+void CMegachav::AttackSound( void )
 {
 	// Play a random attack sound
-	EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pAttackSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackSounds ) - 1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
+	EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, RANDOM_SOUND_ARRAY( pAttackSounds ), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
 }
 
 //=========================================================
 // HandleAnimEvent - catches the monster-specific messages
 // that occur when tagged animation frames are played.
 //=========================================================
-void CMegachar::HandleAnimEvent( MonsterEvent_t *pEvent )
+void CMegachav::HandleAnimEvent( MonsterEvent_t *pEvent )
 {
 	switch( pEvent->event )
 	{
-		case ZOMBIE_AE_ATTACK_RIGHT:
+		case MEGACHAV_AE_ATTACK_RIGHT:
 		{
 			// do stuff for this event.
 			//ALERT( at_console, "Slash right!\n" );
-			CBaseEntity *pHurt = CheckTraceHullAttack( 70, gSkillData.zombieDmgOneSlash, DMG_SLASH );
+			CBaseEntity *pHurt = CheckTraceHullAttack( 70, MEGACHAV_DAMAGE, DMG_SLASH );
 			if( pHurt )
 			{
 				if( pHurt->pev->flags & ( FL_MONSTER | FL_CLIENT ) )
@@ -186,18 +202,20 @@ void CMegachar::HandleAnimEvent( MonsterEvent_t *pEvent )
 					pHurt->pev->velocity = pHurt->pev->velocity - gpGlobals->v_right * 100;
 				}
 				// Play a random attack hit sound
-				}
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pAttackHitSounds ), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
+			}
 			else // Play a random attack miss sound
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pAttackMissSounds ), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
 
 			if( RANDOM_LONG( 0, 1 ) )
 				AttackSound();
 		}
 		break;
-		case ZOMBIE_AE_ATTACK_LEFT:
+		case MEGACHAV_AE_ATTACK_LEFT:
 		{
 			// do stuff for this event.
 			//ALERT( at_console, "Slash left!\n" );
-			CBaseEntity *pHurt = CheckTraceHullAttack( 70, gSkillData.zombieDmgOneSlash, DMG_SLASH );
+			CBaseEntity *pHurt = CheckTraceHullAttack( 70, MEGACHAV_DAMAGE, DMG_SLASH );
 			if( pHurt )
 			{
 				if( pHurt->pev->flags & ( FL_MONSTER | FL_CLIENT ) )
@@ -206,16 +224,19 @@ void CMegachar::HandleAnimEvent( MonsterEvent_t *pEvent )
 					pHurt->pev->punchangle.x = 5;
 					pHurt->pev->velocity = pHurt->pev->velocity + gpGlobals->v_right * 100;
 				}
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pAttackHitSounds ), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
 			}
 			else
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pAttackMissSounds ), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
+
 			if( RANDOM_LONG( 0, 1 ) )
 				AttackSound();
 		}
 		break;
-		case ZOMBIE_AE_ATTACK_BOTH:
+		case MEGACHAV_AE_ATTACK_BOTH:
 		{
 			// do stuff for this event.
-			CBaseEntity *pHurt = CheckTraceHullAttack( 70, gSkillData.zombieDmgBothSlash, DMG_SLASH );
+			CBaseEntity *pHurt = CheckTraceHullAttack( 70, MEGACHAV_DAMAGE, DMG_SLASH );
 			if( pHurt )
 			{
 				if( pHurt->pev->flags & ( FL_MONSTER | FL_CLIENT ) )
@@ -223,9 +244,11 @@ void CMegachar::HandleAnimEvent( MonsterEvent_t *pEvent )
 					pHurt->pev->punchangle.x = 5;
 					pHurt->pev->velocity = pHurt->pev->velocity + gpGlobals->v_forward * -100;
 				}
-					}
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pAttackHitSounds ), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
+			}
 			else
-	 
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pAttackMissSounds ), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
+
 			if( RANDOM_LONG( 0, 1 ) )
 				AttackSound();
 		}
@@ -239,7 +262,7 @@ void CMegachar::HandleAnimEvent( MonsterEvent_t *pEvent )
 //=========================================================
 // Spawn
 //=========================================================
-void CMegachar::Spawn()
+void CMegachav::Spawn()
 {
 	Precache();
 
@@ -248,10 +271,10 @@ void CMegachar::Spawn()
 
 	pev->solid		= SOLID_SLIDEBOX;
 	pev->movetype		= MOVETYPE_STEP;
-	m_bloodColor		= BLOOD_COLOR_GREEN;
+	m_bloodColor		= BLOOD_COLOR_RED;
 	pev->health		= 8000;
 	pev->view_ofs		= VEC_VIEW;// position of the eyes relative to monster's origin.
-	m_flFieldOfView		= 0.9;// indicates the width of this monster's forward view cone ( as a dotproduct result )
+	m_flFieldOfView		= 0.5f;// indicates the width of this monster's forward view cone ( as a dotproduct result )
 	m_MonsterState		= MONSTERSTATE_NONE;
 	m_afCapability		= bits_CAP_DOORS_GROUP;
 
@@ -261,30 +284,23 @@ void CMegachar::Spawn()
 //=========================================================
 // Precache - precaches all resources this monster needs
 //=========================================================
-void CMegachar::Precache()
+void CMegachav::Precache()
 {
-	int i;
-
 	PRECACHE_MODEL( "models/megachav.mdl" );
 
-	for( i = 0; i < ARRAYSIZE( pAttackSounds ); i++ )
-		PRECACHE_SOUND( (char *)pAttackSounds[i] );
-
-	for( i = 0; i < ARRAYSIZE( pIdleSounds ); i++ )
-		PRECACHE_SOUND( (char *)pIdleSounds[i] );
-
-	for( i = 0; i < ARRAYSIZE( pAlertSounds ); i++ )
-		PRECACHE_SOUND( (char *)pAlertSounds[i] );
-
-	for( i = 0; i < ARRAYSIZE( pPainSounds ); i++ )
-		PRECACHE_SOUND( (char *)pPainSounds[i] );
+	PRECACHE_SOUND_ARRAY( pAttackHitSounds );
+	PRECACHE_SOUND_ARRAY( pAttackMissSounds );
+	PRECACHE_SOUND_ARRAY( pAttackSounds );
+	PRECACHE_SOUND_ARRAY( pIdleSounds );
+	PRECACHE_SOUND_ARRAY( pAlertSounds );
+	PRECACHE_SOUND_ARRAY( pPainSounds );
 }
 
 //=========================================================
 // AI Schedules Specific to this monster
 //=========================================================
 
-int CMegachar::IgnoreConditions( void )
+int CMegachav::IgnoreConditions( void )
 {
 	int iIgnore = CBaseMonster::IgnoreConditions();
 
@@ -302,7 +318,7 @@ int CMegachar::IgnoreConditions( void )
 	if( ( m_Activity == ACT_SMALL_FLINCH ) || ( m_Activity == ACT_BIG_FLINCH ) )
 	{
 		if( m_flNextFlinch < gpGlobals->time )
-			m_flNextFlinch = gpGlobals->time + ZOMBIE_FLINCH_DELAY;
+			m_flNextFlinch = gpGlobals->time + MEGACHAV_FLINCH_DELAY;
 	}
 
 	return iIgnore;
