@@ -13,7 +13,7 @@
 *
 ****/
 //=========================================================
-// Zombie
+// Bonewheel
 //=========================================================
 
 // UNDONE: Don't flinch every time you get hit
@@ -27,11 +27,11 @@
 //=========================================================
 // Monster's Anim Events Go Here
 //=========================================================
-#define	ZOMBIE_AE_ATTACK_RIGHT		0x01
-#define	ZOMBIE_AE_ATTACK_LEFT		0x02
-#define	ZOMBIE_AE_ATTACK_BOTH		0x03
+#define	BONEWHEEL_AE_ATTACK_RIGHT		0x01
+#define	BONEWHEEL_AE_ATTACK_LEFT		0x02
+#define	BONEWHEEL_AE_ATTACK_BOTH		0x03
 
-#define ZOMBIE_FLINCH_DELAY		2		// at most one flinch every n secs
+#define BONEWHEEL_FLINCH_DELAY		2		// at most one flinch every n secs
 
 class CBonewheel : public CBaseMonster
 {
@@ -45,6 +45,12 @@ public:
 
 	float m_flNextFlinch;
 
+	void PainSound( void );
+
+	static const char *pPainSounds[];
+	static const char *pAttackHitSounds[];
+	static const char *pAttackMissSounds[];
+
 	// No range attacks
 	BOOL CheckRangeAttack1( float flDot, float flDist ) { return FALSE; }
 	BOOL CheckRangeAttack2( float flDot, float flDist ) { return FALSE; }
@@ -53,13 +59,37 @@ public:
 
 LINK_ENTITY_TO_CLASS( monster_bonewheel, CBonewheel )
 
+
+const char *CBonewheel::pPainSounds[] =
+{
+	"spooky/s_pain1.wav",
+	"spooky/s_pain2.wav",
+	"spooky/s_pain3.wav",
+	"spooky/s_die.wav",
+	"spooky/s_die2.wav",
+	"spooky/s_die3.wav",
+};
+
+const char *CBonewheel::pAttackHitSounds[] =
+{
+	"zombie/claw_strike1.wav",
+	"zombie/claw_strike2.wav",
+	"zombie/claw_strike3.wav",
+};
+
+const char *CBonewheel::pAttackMissSounds[] =
+{
+	"zombie/claw_miss1.wav",
+	"zombie/claw_miss2.wav",
+};
+
 //=========================================================
 // Classify - indicates this monster's place in the 
 // relationship table.
 //=========================================================
 int CBonewheel::Classify( void )
 {
-	return	CLASS_ALIEN_MONSTER;
+	return CLASS_ALIEN_MONSTER;
 }
 
 //=========================================================
@@ -84,18 +114,26 @@ int CBonewheel::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, flo
 	// Take 30% damage from bullets
 	if( bitsDamageType == DMG_BULLET )
 	{
-		Vector vecDir = pev->origin - (pevInflictor->absmin + pevInflictor->absmax) * 0.5;
+		Vector vecDir = pev->origin - (pevInflictor->absmin + pevInflictor->absmax) * 0.5f;
 		vecDir = vecDir.Normalize();
 		float flForce = DamageForce( flDamage );
 		pev->velocity = pev->velocity + vecDir * flForce;
-		flDamage *= 0.3;
+		flDamage *= 0.3f;
 	}
 
 	// HACK HACK -- until we fix this.
 	if( IsAlive() )
+		PainSound();
 	return CBaseMonster::TakeDamage( pevInflictor, pevAttacker, flDamage, bitsDamageType );
 }
 
+void CBonewheel::PainSound( void )
+{
+	int pitch = 95 + RANDOM_LONG( 0, 9 );
+
+	if( RANDOM_LONG( 0, 5 ) < 2 )
+		EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, RANDOM_SOUND_ARRAY( pPainSounds ), 1.0, ATTN_NORM, 0, pitch );
+}
 
 //=========================================================
 // HandleAnimEvent - catches the monster-specific messages
@@ -105,7 +143,7 @@ void CBonewheel::HandleAnimEvent( MonsterEvent_t *pEvent )
 {
 	switch( pEvent->event )
 	{
-		case ZOMBIE_AE_ATTACK_RIGHT:
+		case BONEWHEEL_AE_ATTACK_RIGHT:
 		{
 			// do stuff for this event.
 			//ALERT( at_console, "Slash right!\n" );
@@ -118,10 +156,13 @@ void CBonewheel::HandleAnimEvent( MonsterEvent_t *pEvent )
 					pHurt->pev->punchangle.x = 5;
 					pHurt->pev->velocity = pHurt->pev->velocity - gpGlobals->v_right * 100;
 				}
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pAttackHitSounds ), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
 			}
+			else
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pAttackMissSounds ), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
 		}
 		break;
-		case ZOMBIE_AE_ATTACK_LEFT:
+		case BONEWHEEL_AE_ATTACK_LEFT:
 		{
 			// do stuff for this event.
 			//ALERT( at_console, "Slash left!\n" );
@@ -134,10 +175,13 @@ void CBonewheel::HandleAnimEvent( MonsterEvent_t *pEvent )
 					pHurt->pev->punchangle.x = 5;
 					pHurt->pev->velocity = pHurt->pev->velocity + gpGlobals->v_right * 100;
 				}
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pAttackHitSounds ), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
 			}
+			else
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pAttackMissSounds ), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
 		}
 		break;
-		case ZOMBIE_AE_ATTACK_BOTH:
+		case BONEWHEEL_AE_ATTACK_BOTH:
 		{
 			// do stuff for this event.
 			CBaseEntity *pHurt = CheckTraceHullAttack( 70, gSkillData.zombieDmgBothSlash, DMG_SLASH );
@@ -148,7 +192,10 @@ void CBonewheel::HandleAnimEvent( MonsterEvent_t *pEvent )
 					pHurt->pev->punchangle.x = 5;
 					pHurt->pev->velocity = pHurt->pev->velocity + gpGlobals->v_forward * -100;
 				}
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pAttackHitSounds ), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
 			}
+			else
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pAttackMissSounds ), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
 		}
 		break;
 		default:
@@ -164,7 +211,7 @@ void CBonewheel::Spawn()
 {
 	Precache();
 
-	SET_MODEL( ENT(pev), "models/bonewheel.mdl" );
+	SET_MODEL( ENT( pev ), "models/bonewheel.mdl" );
 	UTIL_SetSize( pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX );
 
 	pev->solid		= SOLID_SLIDEBOX;
@@ -172,7 +219,7 @@ void CBonewheel::Spawn()
 	m_bloodColor		= DONT_BLEED;
 	pev->health		= 120;
 	pev->view_ofs		= VEC_VIEW;// position of the eyes relative to monster's origin.
-	m_flFieldOfView		= 0.5;// indicates the width of this monster's forward view cone ( as a dotproduct result )
+	m_flFieldOfView		= 0.8f;// indicates the width of this monster's forward view cone ( as a dotproduct result )
 	m_MonsterState		= MONSTERSTATE_NONE;
 	m_afCapability		= bits_CAP_DOORS_GROUP;
 
@@ -184,9 +231,10 @@ void CBonewheel::Spawn()
 //=========================================================
 void CBonewheel::Precache()
 {
-	int i;
-
 	PRECACHE_MODEL( "models/bonewheel.mdl" );
+	PRECACHE_SOUND_ARRAY( pPainSounds );
+	PRECACHE_SOUND_ARRAY( pAttackHitSounds );
+	PRECACHE_SOUND_ARRAY( pAttackMissSounds );
 }
 
 //=========================================================
@@ -211,7 +259,7 @@ int CBonewheel::IgnoreConditions( void )
 	if( ( m_Activity == ACT_SMALL_FLINCH ) || ( m_Activity == ACT_BIG_FLINCH ) )
 	{
 		if( m_flNextFlinch < gpGlobals->time )
-			m_flNextFlinch = gpGlobals->time + ZOMBIE_FLINCH_DELAY;
+			m_flNextFlinch = gpGlobals->time + BONEWHEEL_FLINCH_DELAY;
 	}
 
 	return iIgnore;
