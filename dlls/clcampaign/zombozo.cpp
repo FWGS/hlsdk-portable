@@ -29,13 +29,13 @@
 //=========================================================
 // Monster's Anim Events Go Here
 //=========================================================
-#define	ZOMBIE_AE_ATTACK_BOTH		0x03
-#define	ZOMBIE_AE_ATTACK_RIGHT		0x01
-#define	ZOMBIE_AE_ATTACK_LEFT		0x02
+#define	ZOMBOZO_AE_ATTACK_RIGHT		0x01
+#define	ZOMBOZO_AE_ATTACK_LEFT		0x02
+#define ZOMBOZO_AE_ATTACK_BOTH		0x03
 
-#define ZOMBIE_FLINCH_DELAY		2		// at most one flinch every n secs
+#define ZOMBOZO_FLINCH_DELAY		2		// at most one flinch every n secs
 
-class Czombozo : public CBaseMonster
+class CZombozo : public CBaseMonster
 {
 public:
 	void Spawn( void );
@@ -47,14 +47,18 @@ public:
 
 	float m_flNextFlinch;
 
+	static int GetPitch( entvars_t *pev );
 	void PainSound( void );
 	void AlertSound( void );
 	void IdleSound( void );
+	void AttackSound( void );
 
-
+	static const char *pAttackSounds[];
 	static const char *pIdleSounds[];
 	static const char *pAlertSounds[];
 	static const char *pPainSounds[];
+	static const char *pAttackHitSounds[];
+	static const char *pAttackMissSounds[];
 
 	// No range attacks
 	BOOL CheckRangeAttack1( float flDot, float flDist ) { return FALSE; }
@@ -62,22 +66,40 @@ public:
 	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
 };
 
-LINK_ENTITY_TO_CLASS( monster_zombozo,Czombozo )
+LINK_ENTITY_TO_CLASS( monster_zombozo, CZombozo )
 
 
-
-const char *Czombozo::pIdleSounds[] =
+const char *CZombozo::pAttackHitSounds[] =
 {
-	"zombozo/idle.wav"
+	"zombie/claw_strike1.wav",
+	"zombie/claw_strike2.wav",
+	"zombie/claw_strike3.wav",
 };
 
-const char *Czombozo::pAlertSounds[] =
+const char *CZombozo::pAttackMissSounds[] =
+{
+	"zombie/claw_miss1.wav",
+	"zombie/claw_miss2.wav",
+};
+
+const char *CZombozo::pAttackSounds[] =
 {
 	"zombozo/alert1.wav",
 	"zombozo/alert2.wav",
 };
 
-const char *Czombozo::pPainSounds[] =
+const char *CZombozo::pIdleSounds[] =
+{
+	"zombozo/idle.wav"
+};
+
+const char *CZombozo::pAlertSounds[] =
+{
+	"zombozo/alert1.wav",
+	"zombozo/alert2.wav",
+};
+
+const char *CZombozo::pPainSounds[] =
 {
 	"zombozo/death1.wav",
 	"zombozo/death2.wav",
@@ -88,20 +110,20 @@ const char *Czombozo::pPainSounds[] =
 // Classify - indicates this monster's place in the 
 // relationship table.
 //=========================================================
-int Czombozo::Classify( void )
+int CZombozo::Classify( void )
 {
-	return	CLASS_ALIEN_MONSTER;
+	return CLASS_ALIEN_MONSTER;
 }
 
 //=========================================================
 // SetYawSpeed - allows each sequence to have a different
 // turn rate associated with it.
 //=========================================================
-void Czombozo::SetYawSpeed( void )
+void CZombozo::SetYawSpeed( void )
 {
 	int ys;
 
-	ys = 120;
+	ys = 180;
 #if 0
 	switch ( m_Activity )
 	{
@@ -110,16 +132,16 @@ void Czombozo::SetYawSpeed( void )
 	pev->yaw_speed = ys;
 }
 
-int Czombozo::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )
+int CZombozo::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )
 {
 	// Take 30% damage from bullets
 	if( bitsDamageType == DMG_BULLET )
 	{
-		Vector vecDir = pev->origin - (pevInflictor->absmin + pevInflictor->absmax) * 0.5;
+		Vector vecDir = pev->origin - (pevInflictor->absmin + pevInflictor->absmax) * 0.5f;
 		vecDir = vecDir.Normalize();
 		float flForce = DamageForce( flDamage );
 		pev->velocity = pev->velocity + vecDir * flForce;
-		flDamage *= 0.3;
+		flDamage *= 0.3f;
 	}
 
 	// HACK HACK -- until we fix this.
@@ -128,114 +150,150 @@ int Czombozo::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float
 	return CBaseMonster::TakeDamage( pevInflictor, pevAttacker, flDamage, bitsDamageType );
 }
 
-void Czombozo::PainSound( void )
+int CZombozo::GetPitch( entvars_t *pev )
 {
-	int pitch = 95 + RANDOM_LONG( 0, 9 );
+	int pitch = 100;
 
+	if( pev->health > 0 && pev->health <= 100 )
+	{
+		pitch = 190;
+	}
+	else if( pev->health > 100 && pev->health <= 500 )
+	{
+		pitch = 180;
+	}
+	else if( pev->health > 500 && pev->health <= 600 )
+	{
+		pitch = 170;
+	}
+	else if( pev->health > 600 && pev->health <= 700 )
+	{
+		pitch = 160;
+	}
+	else if( pev->health > 700 && pev->health <= 800 )
+	{
+		pitch = 150;
+	}
+	else if( pev->health > 800 && pev->health <= 900 )
+	{
+		pitch = 140;
+	}
+	else if( pev->health > 900 && pev->health <= 1000 )
+	{
+		pitch = 130;
+	}
+	else if( pev->health > 1000 && pev->health <= 1500 )
+	{
+		pitch = 120;
+	}
+
+	return pitch;
+}
+
+void CZombozo::PainSound( void )
+{
 	if( RANDOM_LONG( 0, 5 ) < 2 )
-		EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pPainSounds[RANDOM_LONG( 0, ARRAYSIZE( pPainSounds ) - 1 )], 1.0, ATTN_NORM, 0, pitch );
+		EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, RANDOM_SOUND_ARRAY( pPainSounds ), 1.0, ATTN_NORM, 0, CZombozo::GetPitch( pev ));
 }
 
-void Czombozo::AlertSound( void )
+void CZombozo::AlertSound( void )
 {
-	int pitch = 95 + RANDOM_LONG( 0, 9 );
-
-	EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pAlertSounds[ RANDOM_LONG( 0, ARRAYSIZE( pAlertSounds ) - 1 )], 1.0, ATTN_NORM, 0, pitch );
+	CGrenade::ShootTimed( pev, pev->origin + gpGlobals->v_forward * 86 + Vector( 0, 0, 32 ), gpGlobals->v_forward * 1600, 2.5f );
+	EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, RANDOM_SOUND_ARRAY( pAlertSounds ), 1.0, ATTN_NORM, 0, CZombozo::GetPitch( pev ));
 }
 
-void Czombozo::IdleSound( void )
+void CZombozo::IdleSound( void )
 {
-	int pitch = 95 + RANDOM_LONG( 0, 9 );
-
 	// Play a random idle sound
-	EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pIdleSounds[RANDOM_LONG( 0, ARRAYSIZE( pIdleSounds ) -1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
+	EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, RANDOM_SOUND_ARRAY( pIdleSounds ), 1.0, ATTN_NORM, 0, CZombozo::GetPitch( pev ));
 }
 
-
+void CZombozo::AttackSound( void )
+{
+	// Play a random attack sound
+	EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, RANDOM_SOUND_ARRAY( pAttackSounds ), 1.0, ATTN_NORM, 0, CZombozo::GetPitch( pev ));
+}
 
 //=========================================================
 // HandleAnimEvent - catches the monster-specific messages
 // that occur when tagged animation frames are played.
 //=========================================================
-void Czombozo::HandleAnimEvent( MonsterEvent_t *pEvent )
+void CZombozo::HandleAnimEvent( MonsterEvent_t *pEvent )
 {
-	
 	switch( pEvent->event )
 	{
-		case ZOMBIE_AE_ATTACK_RIGHT:
+		case ZOMBOZO_AE_ATTACK_RIGHT:
 		{
-		Vector angThrow = gpGlobals->v_forward + gpGlobals->v_up * 0.5;
-		if( angThrow.x < 0 )
-			angThrow.x = -10 + angThrow.x * ( ( 90 - 10 ) / 90.0 );
-		else
-			angThrow.x = -10 + angThrow.x * ( ( 90 + 10 ) / 90.0 );
-
-		float flVel = ( 90 - angThrow.x ) * 4;
-		if( flVel > 500 )
-			flVel = 500;
-
-		Vector vecSrc = pev->origin + pev->view_ofs + gpGlobals->v_forward * 16;
-
-		Vector vecThrow = gpGlobals->v_forward * flVel + pev->velocity;
-		UTIL_MakeVectors( pev->angles );
-
-		CGrenade::ShootTimed( pev, vecSrc, vecThrow, 3 );
-
+			AttackSound();
+			CGrenade::ShootTimed( pev, pev->origin + gpGlobals->v_forward * 34 + Vector( 0, 0, 32 ), gpGlobals->v_forward * 800, 2.5f );
+			// do stuff for this event.
+			//ALERT( at_console, "Slash right!\n" );
+			CBaseEntity *pHurt = CheckTraceHullAttack( 70, gSkillData.zombieDmgOneSlash, DMG_SLASH );
+			if( pHurt )
+			{
+				if( pHurt->pev->flags & ( FL_MONSTER | FL_CLIENT ) )
+				{
+					pHurt->pev->punchangle.z = -18;
+					pHurt->pev->punchangle.x = 5;
+					pHurt->pev->velocity = pHurt->pev->velocity - gpGlobals->v_right * 100;
+				}
+				// Play a random attack hit sound
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pAttackHitSounds ), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
+			}
+			else // Play a random attack miss sound
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pAttackMissSounds ), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
 		}
 		break;
-		case ZOMBIE_AE_ATTACK_LEFT:
+		case ZOMBOZO_AE_ATTACK_LEFT:
 		{
-		
-		Vector angThrow = gpGlobals->v_forward + gpGlobals->v_up * 0.5;
-		if( angThrow.x < 0 )
-			angThrow.x = -10 + angThrow.x * ( ( 90 - 10 ) / 90.0 );
-		else
-			angThrow.x = -10 + angThrow.x * ( ( 90 + 10 ) / 90.0 );
-
-		float flVel = ( 90 - angThrow.x ) * 4;
-		if( flVel > 500 )
-			flVel = 500;
-
-		Vector vecSrc = pev->origin + pev->view_ofs + gpGlobals->v_forward * 16;
-
-		Vector vecThrow = gpGlobals->v_forward * flVel + pev->velocity;
-		UTIL_MakeVectors( pev->angles );
-		CGrenade::ShootTimed( pev, vecSrc, vecThrow, 3 );
-
+			CGrenade::ShootTimed( pev, pev->origin + gpGlobals->v_forward * 34 + Vector( 0, 0, 32 ), gpGlobals->v_forward * 800, 2.5f );
+			// do stuff for this event.
+			//ALERT( at_console, "Slash left!\n" );
+			CBaseEntity *pHurt = CheckTraceHullAttack( 70, gSkillData.zombieDmgOneSlash, DMG_SLASH );
+			AttackSound();
+			if( pHurt )
+			{
+				if( pHurt->pev->flags & ( FL_MONSTER | FL_CLIENT ) )
+				{
+					pHurt->pev->punchangle.z = 18;
+					pHurt->pev->punchangle.x = 5;
+					pHurt->pev->velocity = pHurt->pev->velocity + gpGlobals->v_right * 100;
+				}
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pAttackHitSounds ), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
+			}
+			else
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pAttackMissSounds ), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
 		}
 		break;
-		case ZOMBIE_AE_ATTACK_BOTH:
+		case ZOMBOZO_AE_ATTACK_BOTH:
 		{
-
-		Vector angThrow = gpGlobals->v_forward + gpGlobals->v_up * 0.5;
-		if( angThrow.x < 0 )
-			angThrow.x = -10 + angThrow.x * ( ( 90 - 10 ) / 90.0 );
-		else
-			angThrow.x = -10 + angThrow.x * ( ( 90 + 10 ) / 90.0 );
-
-		float flVel = ( 90 - angThrow.x ) * 4;
-		if( flVel > 500 )
-			flVel = 500;
-
-		Vector vecSrc = pev->origin + pev->view_ofs + gpGlobals->v_forward * 16;
-
-		Vector vecThrow = gpGlobals->v_forward * flVel + pev->velocity;
-		UTIL_MakeVectors( pev->angles );
-		CGrenade::ShootTimed( pev, vecSrc, vecThrow, 3 );
-
-
+			AttackSound();
+			CGrenade::ShootTimed( pev, pev->origin + gpGlobals->v_forward * 34 + Vector( 0, 0, 32 ), gpGlobals->v_forward * 800, 2.5f );
+			// do stuff for this event.
+			CBaseEntity *pHurt = CheckTraceHullAttack( 70, gSkillData.zombieDmgBothSlash, DMG_SLASH );
+			if( pHurt )
+			{
+				if( pHurt->pev->flags & ( FL_MONSTER | FL_CLIENT ) )
+				{
+					pHurt->pev->punchangle.x = 5;
+					pHurt->pev->velocity = pHurt->pev->velocity + gpGlobals->v_forward * -100;
+				}
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pAttackHitSounds ), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
+			}
+			else
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pAttackMissSounds ), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
 		}
 		break;
 		default:
 			CBaseMonster::HandleAnimEvent( pEvent );
-	break;
+			break;
 	}
 }
 
 //=========================================================
 // Spawn
 //=========================================================
-void Czombozo::Spawn()
+void CZombozo::Spawn()
 {
 	Precache();
 
@@ -244,10 +302,10 @@ void Czombozo::Spawn()
 
 	pev->solid		= SOLID_SLIDEBOX;
 	pev->movetype		= MOVETYPE_STEP;
-	m_bloodColor		= BLOOD_COLOR_GREEN;
+	m_bloodColor		= BLOOD_COLOR_RED;
 	pev->health		= 2000;
 	pev->view_ofs		= VEC_VIEW;// position of the eyes relative to monster's origin.
-	m_flFieldOfView		= 0.5;// indicates the width of this monster's forward view cone ( as a dotproduct result )
+	m_flFieldOfView		= 0.8f;// indicates the width of this monster's forward view cone ( as a dotproduct result )
 	m_MonsterState		= MONSTERSTATE_NONE;
 	m_afCapability		= bits_CAP_DOORS_GROUP;
 
@@ -257,27 +315,24 @@ void Czombozo::Spawn()
 //=========================================================
 // Precache - precaches all resources this monster needs
 //=========================================================
-void Czombozo::Precache()
+void CZombozo::Precache()
 {
-	int i;
-
 	PRECACHE_MODEL( "models/zombozo.mdl" );
+	PRECACHE_MODEL( "models/w_grenade.mdl" );
 
-	for( i = 0; i < ARRAYSIZE( pIdleSounds ); i++ )
-		PRECACHE_SOUND( (char *)pIdleSounds[i] );
-
-	for( i = 0; i < ARRAYSIZE( pAlertSounds ); i++ )
-		PRECACHE_SOUND( (char *)pAlertSounds[i] );
-
-	for( i = 0; i < ARRAYSIZE( pPainSounds ); i++ )
-		PRECACHE_SOUND( (char *)pPainSounds[i] );
+	PRECACHE_SOUND_ARRAY( pAttackHitSounds );
+	PRECACHE_SOUND_ARRAY( pAttackMissSounds );
+	PRECACHE_SOUND_ARRAY( pAttackSounds );
+	PRECACHE_SOUND_ARRAY( pIdleSounds );
+	PRECACHE_SOUND_ARRAY( pAlertSounds );
+	PRECACHE_SOUND_ARRAY( pPainSounds );
 }
 
 //=========================================================
 // AI Schedules Specific to this monster
 //=========================================================
 
-int Czombozo::IgnoreConditions( void )
+int CZombozo::IgnoreConditions( void )
 {
 	int iIgnore = CBaseMonster::IgnoreConditions();
 
@@ -295,7 +350,7 @@ int Czombozo::IgnoreConditions( void )
 	if( ( m_Activity == ACT_SMALL_FLINCH ) || ( m_Activity == ACT_BIG_FLINCH ) )
 	{
 		if( m_flNextFlinch < gpGlobals->time )
-			m_flNextFlinch = gpGlobals->time + ZOMBIE_FLINCH_DELAY;
+			m_flNextFlinch = gpGlobals->time + ZOMBOZO_FLINCH_DELAY;
 	}
 
 	return iIgnore;
