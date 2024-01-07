@@ -27,11 +27,11 @@
 //=========================================================
 // Monster's Anim Events Go Here
 //=========================================================
-#define	ZOMBIE_AE_ATTACK_RIGHT		0x01
-#define	ZOMBIE_AE_ATTACK_LEFT		0x02
-#define	ZOMBIE_AE_ATTACK_BOTH		0x03
+#define	PINKPANTHER_AE_ATTACK_RIGHT		0x01
+#define	PINKPANTHER_AE_ATTACK_LEFT		0x02
+#define	PINKPANTHER_AE_ATTACK_BOTH		0x03
 
-#define ZOMBIE_FLINCH_DELAY		2		// at most one flinch every n secs
+#define PINKPANTHER_FLINCH_DELAY		2		// at most one flinch every n secs
 
 class CPinkPanther : public CBaseMonster
 {
@@ -54,6 +54,8 @@ public:
 	static const char *pIdleSounds[];
 	static const char *pAlertSounds[];
 	static const char *pPainSounds[];
+	static const char *pAttackHitSounds[];
+	static const char *pAttackMissSounds[];
 
 	// No range attacks
 	BOOL CheckRangeAttack1( float flDot, float flDist ) { return FALSE; }
@@ -63,6 +65,19 @@ public:
 
 LINK_ENTITY_TO_CLASS( monster_pink_panther, CPinkPanther )
 
+
+const char *CPinkPanther::pAttackHitSounds[] =
+{
+	"zombie/claw_strike1.wav",
+	"zombie/claw_strike2.wav",
+	"zombie/claw_strike3.wav",
+};
+
+const char *CPinkPanther::pAttackMissSounds[] =
+{
+	"zombie/claw_miss1.wav",
+	"zombie/claw_miss2.wav",
+};
 
 const char *CPinkPanther::pAttackSounds[] =
 {
@@ -97,7 +112,7 @@ const char *CPinkPanther::pPainSounds[] =
 //=========================================================
 int CPinkPanther::Classify( void )
 {
-	return	CLASS_ALIEN_MONSTER;
+	return CLASS_ALIEN_MONSTER;
 }
 
 //=========================================================
@@ -108,7 +123,7 @@ void CPinkPanther::SetYawSpeed( void )
 {
 	int ys;
 
-	ys = 220;
+	ys = 120;
 #if 0
 	switch ( m_Activity )
 	{
@@ -122,11 +137,11 @@ int CPinkPanther::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, f
 	// Take 30% damage from bullets
 	if( bitsDamageType == DMG_BULLET )
 	{
-		Vector vecDir = pev->origin - (pevInflictor->absmin + pevInflictor->absmax) * 0.5;
+		Vector vecDir = pev->origin - (pevInflictor->absmin + pevInflictor->absmax) * 0.5f;
 		vecDir = vecDir.Normalize();
 		float flForce = DamageForce( flDamage );
 		pev->velocity = pev->velocity + vecDir * flForce;
-		flDamage *= 0.3;
+		flDamage *= 0.3f;
 	}
 
 	// HACK HACK -- until we fix this.
@@ -140,14 +155,14 @@ void CPinkPanther::PainSound( void )
 	int pitch = 95 + RANDOM_LONG( 0, 9 );
 
 	if( RANDOM_LONG( 0, 5 ) < 2 )
-		EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pPainSounds[RANDOM_LONG( 0, ARRAYSIZE( pPainSounds ) - 1 )], 1.0, ATTN_NORM, 0, pitch );
+		EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, RANDOM_SOUND_ARRAY( pPainSounds ), 1.0, ATTN_NORM, 0, pitch );
 }
 
 void CPinkPanther::AlertSound( void )
 {
 	int pitch = 95 + RANDOM_LONG( 0, 9 );
 
-	EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pAlertSounds[ RANDOM_LONG( 0, ARRAYSIZE( pAlertSounds ) - 1 )], 1.0, ATTN_NORM, 0, pitch );
+	EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, RANDOM_SOUND_ARRAY( pAlertSounds ), 1.0, ATTN_NORM, 0, pitch );
 }
 
 void CPinkPanther::IdleSound( void )
@@ -155,13 +170,13 @@ void CPinkPanther::IdleSound( void )
 	int pitch = 95 + RANDOM_LONG( 0, 9 );
 
 	// Play a random idle sound
-	EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pIdleSounds[RANDOM_LONG( 0, ARRAYSIZE( pIdleSounds ) -1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
+	EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, RANDOM_SOUND_ARRAY( pIdleSounds ), 1.0, ATTN_NORM, 0, pitch );
 }
 
 void CPinkPanther::AttackSound( void )
 {
 	// Play a random attack sound
-	EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pAttackSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackSounds ) - 1 )], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
+	EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, RANDOM_SOUND_ARRAY( pAttackSounds ), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
 }
 
 //=========================================================
@@ -172,7 +187,7 @@ void CPinkPanther::HandleAnimEvent( MonsterEvent_t *pEvent )
 {
 	switch( pEvent->event )
 	{
-		case ZOMBIE_AE_ATTACK_RIGHT:
+		case PINKPANTHER_AE_ATTACK_RIGHT:
 		{
 			// do stuff for this event.
 			//ALERT( at_console, "Slash right!\n" );
@@ -185,14 +200,17 @@ void CPinkPanther::HandleAnimEvent( MonsterEvent_t *pEvent )
 					pHurt->pev->punchangle.x = 5;
 					pHurt->pev->velocity = pHurt->pev->velocity - gpGlobals->v_right * 100;
 				}
+				// Play a random attack hit sound
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pAttackHitSounds ), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ));
 			}
 			else // Play a random attack miss sound
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pAttackMissSounds ), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
 
 			if( RANDOM_LONG( 0, 1 ) )
 				AttackSound();
 		}
 		break;
-		case ZOMBIE_AE_ATTACK_LEFT:
+		case PINKPANTHER_AE_ATTACK_LEFT:
 		{
 			// do stuff for this event.
 			//ALERT( at_console, "Slash left!\n" );
@@ -205,14 +223,16 @@ void CPinkPanther::HandleAnimEvent( MonsterEvent_t *pEvent )
 					pHurt->pev->punchangle.x = 5;
 					pHurt->pev->velocity = pHurt->pev->velocity + gpGlobals->v_right * 100;
 				}
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pAttackHitSounds ), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ));
 			}
 			else
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pAttackMissSounds ), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
 
 			if( RANDOM_LONG( 0, 1 ) )
 				AttackSound();
 		}
 		break;
-		case ZOMBIE_AE_ATTACK_BOTH:
+		case PINKPANTHER_AE_ATTACK_BOTH:
 		{
 			// do stuff for this event.
 			CBaseEntity *pHurt = CheckTraceHullAttack( 70, gSkillData.zombieDmgBothSlash, DMG_SLASH );
@@ -223,8 +243,10 @@ void CPinkPanther::HandleAnimEvent( MonsterEvent_t *pEvent )
 					pHurt->pev->punchangle.x = 5;
 					pHurt->pev->velocity = pHurt->pev->velocity + gpGlobals->v_forward * -100;
 				}
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pAttackHitSounds ), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ));
 			}
 			else
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pAttackMissSounds ), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
 
 			if( RANDOM_LONG( 0, 1 ) )
 				AttackSound();
@@ -263,21 +285,15 @@ void CPinkPanther::Spawn()
 //=========================================================
 void CPinkPanther::Precache()
 {
-	int i;
 
 	PRECACHE_MODEL( "models/pink_panther.mdl" );
 
-	for( i = 0; i < ARRAYSIZE( pAttackSounds ); i++ )
-		PRECACHE_SOUND( (char *)pAttackSounds[i] );
-
-	for( i = 0; i < ARRAYSIZE( pIdleSounds ); i++ )
-		PRECACHE_SOUND( (char *)pIdleSounds[i] );
-
-	for( i = 0; i < ARRAYSIZE( pAlertSounds ); i++ )
-		PRECACHE_SOUND( (char *)pAlertSounds[i] );
-
-	for( i = 0; i < ARRAYSIZE( pPainSounds ); i++ )
-		PRECACHE_SOUND( (char *)pPainSounds[i] );
+	PRECACHE_SOUND_ARRAY( pAttackHitSounds );
+	PRECACHE_SOUND_ARRAY( pAttackMissSounds );
+	PRECACHE_SOUND_ARRAY( pAttackSounds );
+	PRECACHE_SOUND_ARRAY( pIdleSounds );
+	PRECACHE_SOUND_ARRAY( pAlertSounds );
+	PRECACHE_SOUND_ARRAY( pPainSounds );
 }
 
 //=========================================================
@@ -302,7 +318,7 @@ int CPinkPanther::IgnoreConditions( void )
 	if( ( m_Activity == ACT_SMALL_FLINCH ) || ( m_Activity == ACT_BIG_FLINCH ) )
 	{
 		if( m_flNextFlinch < gpGlobals->time )
-			m_flNextFlinch = gpGlobals->time + ZOMBIE_FLINCH_DELAY;
+			m_flNextFlinch = gpGlobals->time + PINKPANTHER_FLINCH_DELAY;
 	}
 
 	return iIgnore;
