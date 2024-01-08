@@ -378,7 +378,7 @@ void CISlave::HandleAnimEvent( MonsterEvent_t *pEvent )
 				BeamGlow();
 			}
 
-			EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, "debris/zap4.wav", 1, ATTN_NORM, 0, 100 + m_iBeams * 10 );
+			EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, "aslave/disco.wav", 1, ATTN_NORM, 0, 100 + m_iBeams * 10 );
 			pev->skin = m_iBeams / 2;
 		}
 			break;
@@ -533,6 +533,7 @@ void CISlave::Precache()
 {
 	PRECACHE_MODEL( "models/islave.mdl" );
 	PRECACHE_MODEL( "sprites/lgtning.spr" );
+	PRECACHE_SOUND( "aslave/disco.wav" );
 	PRECACHE_SOUND( "debris/zap1.wav" );
 	PRECACHE_SOUND( "debris/zap4.wav" );
 	PRECACHE_SOUND( "weapons/electro4.wav" );
@@ -729,7 +730,7 @@ void CISlave::ArmBeam( int side )
 	m_pBeam[m_iBeams]->PointEntInit( tr.vecEndPos, entindex() );
 	m_pBeam[m_iBeams]->SetEndAttachment( side < 0 ? 2 : 1 );
 	// m_pBeam[m_iBeams]->SetColor( 180, 255, 96 );
-	m_pBeam[m_iBeams]->SetColor( 96, 128, 16 );
+	m_pBeam[m_iBeams]->SetColor( 197, 0, 202 );
 	m_pBeam[m_iBeams]->SetBrightness( 64 );
 	m_pBeam[m_iBeams]->SetNoise( 80 );
 	m_iBeams++;
@@ -773,7 +774,7 @@ void CISlave::WackBeam( int side, CBaseEntity *pEntity )
 
 	m_pBeam[m_iBeams]->PointEntInit( pEntity->Center(), entindex() );
 	m_pBeam[m_iBeams]->SetEndAttachment( side < 0 ? 2 : 1 );
-	m_pBeam[m_iBeams]->SetColor( 180, 255, 96 );
+	m_pBeam[m_iBeams]->SetColor( 197, 0, 202 );
 	m_pBeam[m_iBeams]->SetBrightness( 255 );
 	m_pBeam[m_iBeams]->SetNoise( 80 );
 	m_iBeams++;
@@ -803,7 +804,7 @@ void CISlave::ZapBeam( int side )
 
 	m_pBeam[m_iBeams]->PointEntInit( tr.vecEndPos, entindex() );
 	m_pBeam[m_iBeams]->SetEndAttachment( side < 0 ? 2 : 1 );
-	m_pBeam[m_iBeams]->SetColor( 180, 255, 96 );
+	m_pBeam[m_iBeams]->SetColor( 197, 0, 202 );
 	m_pBeam[m_iBeams]->SetBrightness( 255 );
 	m_pBeam[m_iBeams]->SetNoise( 20 );
 	m_iBeams++;
@@ -832,5 +833,5 @@ void CISlave::ClearBeams()
 	m_iBeams = 0;
 	pev->skin = 0;
 
-	STOP_SOUND( ENT( pev ), CHAN_WEAPON, "debris/zap4.wav" );
+	STOP_SOUND( ENT( pev ), CHAN_WEAPON, "aslave/disco.wav" );
 }
