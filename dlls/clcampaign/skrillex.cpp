@@ -31,19 +31,20 @@ extern DLL_GLOBAL int		g_iSkillLevel;
 //=========================================================
 // Monster's Anim Events Go Here
 //=========================================================
-#define		ISLAVE_AE_CLAW			( 1 )
-#define		ISLAVE_AE_CLAWRAKE		( 2 )
-#define		ISLAVE_AE_ZAP_POWERUP		( 3 )
-#define		ISLAVE_AE_ZAP_SHOOT		( 4 )
-#define		ISLAVE_AE_ZAP_DONE		( 5 )
+#define		SKRILLEX_AE_CLAW			( 1 )
+#define		SKRILLEX_AE_CLAWRAKE		( 2 )
+#define		SKRILLEX_AE_ZAP_POWERUP		( 3 )
+#define		SKRILLEX_AE_ZAP_SHOOT		( 4 )
+#define		SKRILLEX_AE_ZAP_DONE		( 5 )
 
-#define		ISLAVE_MAX_BEAMS		8
+#define		SKRILLEX_MAX_BEAMS		8
 
 class CSkrillex : public CSquadMonster
 {
 public:
 	void Spawn( void );
 	void Precache( void );
+	void UpdateOnRemove();
 	void SetYawSpeed( void );
 	int ISoundMask( void );
 	int Classify( void );
@@ -51,11 +52,8 @@ public:
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
 	BOOL CheckRangeAttack1( float flDot, float flDist );
 	BOOL CheckRangeAttack2( float flDot, float flDist );
-	void CallForHelp( char *szClassname, float flDist, EHANDLE hEnemy, Vector &vecLocation );
 	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType );
 	int TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType );
-
-	void IdleSound( void );
 
 	void Killed( entvars_t *pevAttacker, int iGib );
 
@@ -76,7 +74,7 @@ public:
 
 	int m_iBravery;
 
-	CBeam *m_pBeam[ISLAVE_MAX_BEAMS];
+	CBeam *m_pBeam[SKRILLEX_MAX_BEAMS];
 
 	int m_iBeams;
 	float m_flNextAttack;
@@ -84,11 +82,6 @@ public:
 	int m_voicePitch;
 
 	EHANDLE m_hDead;
-
-	static const char *pAttackHitSounds[];
-	static const char *pAttackMissSounds[];
-	static const char *pPainSounds[];
-	static const char *pDeathSounds[];
 };
 
 LINK_ENTITY_TO_CLASS( monster_skrillex, CSkrillex )
@@ -97,7 +90,7 @@ TYPEDESCRIPTION	CSkrillex::m_SaveData[] =
 {
 	DEFINE_FIELD( CSkrillex, m_iBravery, FIELD_INTEGER ),
 
-	DEFINE_ARRAY( CSkrillex, m_pBeam, FIELD_CLASSPTR, ISLAVE_MAX_BEAMS ),
+	DEFINE_ARRAY( CSkrillex, m_pBeam, FIELD_CLASSPTR, SKRILLEX_MAX_BEAMS ),
 	DEFINE_FIELD( CSkrillex, m_iBeams, FIELD_INTEGER ),
 	DEFINE_FIELD( CSkrillex, m_flNextAttack, FIELD_TIME ),
 
@@ -108,27 +101,6 @@ TYPEDESCRIPTION	CSkrillex::m_SaveData[] =
 };
 
 IMPLEMENT_SAVERESTORE( CSkrillex, CSquadMonster )
-
-const char *CSkrillex::pAttackHitSounds[] =
-{
-	"skrillex/charge.wav",
-};
-
-const char *CSkrillex::pAttackMissSounds[] =
-{
-	"skrillex/charge.wav",
-};
-
-const char *CSkrillex::pPainSounds[] =
-{
-	"aslave/slv_null.wav",
-};
-
-const char *CSkrillex::pDeathSounds[] =
-{
-	"aslave/slv_null.wav",
-	"aslave/slv_null.wav",
-};
 
 //=========================================================
 // Classify - indicates this monster's place in the 
@@ -145,63 +117,6 @@ int CSkrillex::IRelationship( CBaseEntity *pTarget )
 		if( ( pev->spawnflags & SF_MONSTER_WAIT_UNTIL_PROVOKED ) && ! ( m_afMemory & bits_MEMORY_PROVOKED ) )
 			return R_NO;
 	return CBaseMonster::IRelationship( pTarget );
-}
-
-void CSkrillex::CallForHelp( char *szClassname, float flDist, EHANDLE hEnemy, Vector &vecLocation )
-{
-	// ALERT( at_aiconsole, "help " );
-
-	// skip ones not on my netname
-	if( FStringNull( pev->netname ) )
-		return;
-
-	CBaseEntity *pEntity = NULL;
-
-	while( ( pEntity = UTIL_FindEntityByString( pEntity, "netname", STRING( pev->netname ) ) ) != NULL)
-	{
-		float d = ( pev->origin - pEntity->pev->origin ).Length();
-		if( d < flDist )
-		{
-			CBaseMonster *pMonster = pEntity->MyMonsterPointer();
-			if( pMonster )
-			{
-				pMonster->m_afMemory |= bits_MEMORY_PROVOKED;
-				pMonster->PushEnemy( hEnemy, vecLocation );
-			}
-		}
-	}
-}
-
-
-void CSkrillex::IdleSound( void )
-{
-	if( RANDOM_LONG( 0, 2 ) == 0 )
-	{
-		SENTENCEG_PlayRndSz( ENT( pev ), "SLV_IDLE", 0.85, ATTN_NORM, 0, m_voicePitch );
-	}
-#if 0
-	int side = RANDOM_LONG( 0, 1 ) * 2 - 1;
-
-	ClearBeams();
-	ArmBeam( side );
-
-	UTIL_MakeAimVectors( pev->angles );
-	Vector vecSrc = pev->origin + gpGlobals->v_right * 2 * side;
-	MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, vecSrc );
-		WRITE_BYTE( TE_DLIGHT );
-		WRITE_COORD( vecSrc.x );	// X
-		WRITE_COORD( vecSrc.y );	// Y
-		WRITE_COORD( vecSrc.z );	// Z
-		WRITE_BYTE( 8 );		// radius * 0.1
-		WRITE_BYTE( 255 );		// r
-		WRITE_BYTE( 180 );		// g
-		WRITE_BYTE( 96 );		// b
-		WRITE_BYTE( 10 );		// time * 10
-		WRITE_BYTE( 0 );		// decay * 0.1
-	MESSAGE_END();
-
-	EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, "debris/flesh1.wav", 1, ATTN_NORM, 0, 100 );
-#endif
 }
 
 
@@ -261,7 +176,7 @@ void CSkrillex::HandleAnimEvent( MonsterEvent_t *pEvent )
 	// ALERT( at_console, "event %d : %f\n", pEvent->event, pev->frame );
 	switch( pEvent->event )
 	{
-		case ISLAVE_AE_CLAW:
+		case SKRILLEX_AE_CLAW:
 		{
 			// SOUND HERE!
 			CBaseEntity *pHurt = CheckTraceHullAttack( 70, gSkillData.slaveDmgClaw, DMG_SLASH );
@@ -272,17 +187,10 @@ void CSkrillex::HandleAnimEvent( MonsterEvent_t *pEvent )
 					pHurt->pev->punchangle.z = -18;
 					pHurt->pev->punchangle.x = 5;
 				}
-				// Play a random attack hit sound
-				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, pAttackHitSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackHitSounds ) - 1 )], 1.0, ATTN_NORM, 0, m_voicePitch );
-			}
-			else
-			{
-				// Play a random attack miss sound
-				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, pAttackMissSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackMissSounds ) - 1 )], 1.0, ATTN_NORM, 0, m_voicePitch );
 			}
 		}
 			break;
-		case ISLAVE_AE_CLAWRAKE:
+		case SKRILLEX_AE_CLAWRAKE:
 		{
 			CBaseEntity *pHurt = CheckTraceHullAttack( 70, gSkillData.slaveDmgClawrake, DMG_SLASH );
 			if( pHurt )
@@ -292,15 +200,10 @@ void CSkrillex::HandleAnimEvent( MonsterEvent_t *pEvent )
 					pHurt->pev->punchangle.z = -18;
 					pHurt->pev->punchangle.x = 5;
 				}
-				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, pAttackHitSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackHitSounds ) - 1 )], 1.0, ATTN_NORM, 0, m_voicePitch );
-			}
-			else
-			{
-				EMIT_SOUND_DYN( ENT(pev), CHAN_WEAPON, pAttackMissSounds[RANDOM_LONG( 0, ARRAYSIZE( pAttackMissSounds ) - 1 )], 1.0, ATTN_NORM, 0, m_voicePitch );
 			}
 		}
 			break;
-		case ISLAVE_AE_ZAP_POWERUP:
+		case SKRILLEX_AE_ZAP_POWERUP:
 		{
 			// speed up attack when on hard
 			if( g_iSkillLevel == SKILL_HARD )
@@ -336,11 +239,11 @@ void CSkrillex::HandleAnimEvent( MonsterEvent_t *pEvent )
 				BeamGlow();
 			}
 
-			EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, "skrillex/fire.wav", 1, ATTN_NORM, 0, 100 + m_iBeams * 10 );
+			EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, "skrillex/charge.wav", 1, ATTN_NORM, 0, 100 + m_iBeams * 10 );
 			pev->skin = m_iBeams / 2;
 		}
 			break;
-		case ISLAVE_AE_ZAP_SHOOT:
+		case SKRILLEX_AE_ZAP_SHOOT:
 		{
 			ClearBeams();
 
@@ -372,13 +275,14 @@ void CSkrillex::HandleAnimEvent( MonsterEvent_t *pEvent )
 			ZapBeam( -1 );
 			ZapBeam( 1 );
 
+			EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, "hassault/hw_shoot1.wav", 1, ATTN_NORM, 0, RANDOM_LONG( 130, 160 ) );
 			// STOP_SOUND( ENT( pev ), CHAN_WEAPON, "debris/zap4.wav" );
 			ApplyMultiDamage( pev, pev );
 
 			m_flNextAttack = gpGlobals->time + RANDOM_FLOAT( 0.5, 4.0 );
 		}
 			break;
-		case ISLAVE_AE_ZAP_DONE:
+		case SKRILLEX_AE_ZAP_DONE:
 		{
 			ClearBeams();
 		}
@@ -490,23 +394,25 @@ void CSkrillex::Precache()
 	int i;
 
 	PRECACHE_MODEL( "models/skrillex.mdl" );
-	PRECACHE_MODEL( "sprites/shit.spr" );
+	PRECACHE_MODEL( "sprites/lgtning.spr" );
 	PRECACHE_SOUND( "skrillex/fire.wav" );
 	PRECACHE_SOUND( "skrillex/charge.wav" );
-
-	for( i = 0; i < ARRAYSIZE( pAttackHitSounds ); i++ )
-		PRECACHE_SOUND( (char *)pAttackHitSounds[i] );
-
-	for( i = 0; i < ARRAYSIZE( pAttackMissSounds ); i++ )
-		PRECACHE_SOUND( (char *)pAttackMissSounds[i] );
-
-	for( i = 0; i < ARRAYSIZE( pPainSounds ); i++ )
-		PRECACHE_SOUND((char *)pPainSounds[i] );
-
-	for( i = 0; i < ARRAYSIZE( pDeathSounds ); i++ )
-		PRECACHE_SOUND( (char *)pDeathSounds[i] );
+	PRECACHE_SOUND( "debris/zap1.wav" );
+	PRECACHE_SOUND( "debris/zap4.wav" );
+	PRECACHE_SOUND( "weapons/electro4.wav" );
+	PRECACHE_SOUND( "hassault/hw_shoot1.wav" );
+	PRECACHE_SOUND( "zombie/zo_pain2.wav" );
+	PRECACHE_SOUND( "headcrab/hc_headbite.wav" );
+	PRECACHE_SOUND( "weapons/cbar_miss1.wav" );
 
 	UTIL_PrecacheOther( "test_effect" );
+}
+
+void CSkrillex::UpdateOnRemove()
+{
+	CBaseEntity::UpdateOnRemove();
+
+	ClearBeams();
 }
 
 //=========================================================
@@ -648,7 +554,7 @@ void CSkrillex::ArmBeam( int side )
 	TraceResult tr;
 	float flDist = 1.0;
 
-	if( m_iBeams >= ISLAVE_MAX_BEAMS )
+	if( m_iBeams >= SKRILLEX_MAX_BEAMS )
 		return;
 
 	UTIL_MakeAimVectors( pev->angles );
@@ -672,15 +578,15 @@ void CSkrillex::ArmBeam( int side )
 
 	DecalGunshot( &tr, BULLET_PLAYER_CROWBAR );
 
-	m_pBeam[m_iBeams] = CBeam::BeamCreate( "sprites/shit.spr", 30 );
+	m_pBeam[m_iBeams] = CBeam::BeamCreate( "sprites/lgtning.spr", 30 );
 	if( !m_pBeam[m_iBeams] )
 		return;
 
 	m_pBeam[m_iBeams]->PointEntInit( tr.vecEndPos, entindex() );
 	m_pBeam[m_iBeams]->SetEndAttachment( side < 0 ? 2 : 1 );
 	// m_pBeam[m_iBeams]->SetColor( 180, 255, 96 );
-	m_pBeam[m_iBeams]->SetColor( 6, 0, 106 );
-	m_pBeam[m_iBeams]->SetBrightness( 64 );
+	m_pBeam[m_iBeams]->SetColor( 0, 255, 255 );
+	m_pBeam[m_iBeams]->SetBrightness( 82 );
 	m_pBeam[m_iBeams]->SetNoise( 80 );
 	m_iBeams++;
 }
@@ -711,20 +617,20 @@ void CSkrillex::WackBeam( int side, CBaseEntity *pEntity )
 	Vector vecDest;
 	float flDist = 1.0;
 
-	if( m_iBeams >= ISLAVE_MAX_BEAMS )
+	if( m_iBeams >= SKRILLEX_MAX_BEAMS )
 		return;
 
 	if( pEntity == NULL )
 		return;
 
-	m_pBeam[m_iBeams] = CBeam::BeamCreate( "sprites/shit.spr", 30 );
+	m_pBeam[m_iBeams] = CBeam::BeamCreate( "sprites/lgtning.spr", 30 );
 	if( !m_pBeam[m_iBeams] )
 		return;
 
 	m_pBeam[m_iBeams]->PointEntInit( pEntity->Center(), entindex() );
 	m_pBeam[m_iBeams]->SetEndAttachment( side < 0 ? 2 : 1 );
-	m_pBeam[m_iBeams]->SetColor( 0, 5, 196 );
-	m_pBeam[m_iBeams]->SetBrightness( 55 );
+	m_pBeam[m_iBeams]->SetColor( 0, 255, 255 );
+	m_pBeam[m_iBeams]->SetBrightness( 255 );
 	m_pBeam[m_iBeams]->SetNoise( 80 );
 	m_iBeams++;
 }
@@ -738,7 +644,7 @@ void CSkrillex::ZapBeam( int side )
 	TraceResult tr;
 	CBaseEntity *pEntity;
 
-	if( m_iBeams >= ISLAVE_MAX_BEAMS )
+	if( m_iBeams >= SKRILLEX_MAX_BEAMS )
 		return;
 
 	vecSrc = pev->origin + gpGlobals->v_up * 36;
@@ -747,14 +653,14 @@ void CSkrillex::ZapBeam( int side )
 	vecAim = vecAim + side * gpGlobals->v_right * RANDOM_FLOAT( 0, deflection ) + gpGlobals->v_up * RANDOM_FLOAT( -deflection, deflection );
 	UTIL_TraceLine( vecSrc, vecSrc + vecAim * 1024, dont_ignore_monsters, ENT( pev ), &tr );
 
-	m_pBeam[m_iBeams] = CBeam::BeamCreate( "sprites/shit.spr", 50 );
+	m_pBeam[m_iBeams] = CBeam::BeamCreate( "sprites/lgtning.spr", 50 );
 	if( !m_pBeam[m_iBeams] )
 		return;
 
 	m_pBeam[m_iBeams]->PointEntInit( tr.vecEndPos, entindex() );
 	m_pBeam[m_iBeams]->SetEndAttachment( side < 0 ? 2 : 1 );
-	m_pBeam[m_iBeams]->SetColor( 0, 0, 206 );
-	m_pBeam[m_iBeams]->SetBrightness( 55 );
+	m_pBeam[m_iBeams]->SetColor( 0, 255, 255 );
+	m_pBeam[m_iBeams]->SetBrightness( 255 );
 	m_pBeam[m_iBeams]->SetNoise( 20 );
 	m_iBeams++;
 
@@ -763,6 +669,7 @@ void CSkrillex::ZapBeam( int side )
 	{
 		pEntity->TraceAttack( pev, gSkillData.slaveDmgZap, vecAim, &tr, DMG_SHOCK );
 	}
+	UTIL_EmitAmbientSound( ENT( pev ), tr.vecEndPos, "skrillex/fire.wav", 0.5, ATTN_NORM, 0, PITCH_NORM );
 }
 
 //=========================================================
@@ -770,7 +677,7 @@ void CSkrillex::ZapBeam( int side )
 //=========================================================
 void CSkrillex::ClearBeams()
 {
-	for( int i = 0; i < ISLAVE_MAX_BEAMS; i++ )
+	for( int i = 0; i < SKRILLEX_MAX_BEAMS; i++ )
 	{
 		if( m_pBeam[i] )
 		{
@@ -780,4 +687,6 @@ void CSkrillex::ClearBeams()
 	}
 	m_iBeams = 0;
 	pev->skin = 0;
+
+	STOP_SOUND( ENT( pev ), CHAN_WEAPON, "skrillex/charge.wav" );
 }
