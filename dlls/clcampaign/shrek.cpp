@@ -168,7 +168,7 @@ void CShrekSpit::Touch( CBaseEntity *pOther )
 	}
 	else
 	{
-		pOther->TakeDamage( pev, pev, gSkillData.bullsquidDmgSpit, DMG_GENERIC );
+		pOther->TakeDamage( pev, pev, 45, DMG_GENERIC );
 	}
 
 	SetThink( &CBaseEntity::SUB_Remove );
@@ -342,7 +342,7 @@ BOOL CShrek::CheckRangeAttack1( float flDot, float flDist )
 		else
 		{
 			// not moving, so spit again pretty soon.
-			m_flNextSpitTime = gpGlobals->time + 0.5;
+			m_flNextSpitTime = gpGlobals->time + 0.5f;
 		}
 
 		return TRUE;
@@ -357,7 +357,7 @@ BOOL CShrek::CheckRangeAttack1( float flDot, float flDist )
 //=========================================================
 BOOL CShrek::CheckMeleeAttack1( float flDot, float flDist )
 {
-	if( m_hEnemy->pev->health <= gSkillData.bullsquidDmgWhip && flDist <= 85 && flDot >= 0.7 )
+	if( m_hEnemy->pev->health <= 80 && flDist <= 85 && flDot >= 0.7 )
 	{
 		return TRUE;
 	}
@@ -566,7 +566,7 @@ void CShrek::HandleAnimEvent( MonsterEvent_t *pEvent )
 					WRITE_COORD( vecSpitDir.z );	
 					WRITE_SHORT( iShrekSpitSprite );	// model
 					WRITE_BYTE( 15 );			// count
-					WRITE_BYTE( 130 );			// speed
+					WRITE_BYTE( 210 );			// speed
 					WRITE_BYTE( 25 );			// noise ( client will divide by 100 )
 				MESSAGE_END();
 
@@ -677,7 +677,7 @@ void CShrek::Spawn()
 	m_bloodColor = BLOOD_COLOR_GREEN;
 	pev->effects = 0;
 	pev->health = 18000;
-	m_flFieldOfView = 0.2;
+	m_flFieldOfView = 0.3f;
 	m_MonsterState = MONSTERSTATE_NONE;
 
 	m_fCanThreatDisplay = TRUE;
@@ -699,8 +699,8 @@ void CShrek::Precache()
 
 	PRECACHE_SOUND( "zombie/claw_miss2.wav" );// because we use the basemonster SWIPE animation event
 
-	PRECACHE_SOUND( "shrek/bc_attack2.wav" );
-
+	PRECACHE_SOUND( "bullchicken/bc_attack2.wav" );
+	PRECACHE_SOUND( "bullchicken/bc_attack3.wav" );
 	PRECACHE_SOUND( "shrek/bc_die1.wav" );
 	PRECACHE_SOUND( "shrek/bc_die2.wav" );
 	PRECACHE_SOUND( "shrek/bc_die3.wav" );
@@ -709,6 +709,7 @@ void CShrek::Precache()
 	PRECACHE_SOUND( "shrek/bc_idle2.wav" );
 	PRECACHE_SOUND( "shrek/bc_idle3.wav" );
 	PRECACHE_SOUND( "shrek/bc_idle4.wav" );
+	PRECACHE_SOUND( "shrek/bc_idle5.wav" );
 
 	PRECACHE_SOUND( "shrek/bc_pain1.wav" );
 	PRECACHE_SOUND( "shrek/bc_pain2.wav" );
@@ -716,15 +717,17 @@ void CShrek::Precache()
 	PRECACHE_SOUND( "shrek/bc_pain4.wav" );
 	
 	PRECACHE_SOUND( "shrek/bc_attackgrowl.wav" );
-	PRECACHE_SOUND( "shrek/bc_attackgrow2.wav" );
-	PRECACHE_SOUND( "shrek/bc_attackgrow3.wav" );
+	PRECACHE_SOUND( "shrek/bc_attackgrowl2.wav" );
+	PRECACHE_SOUND( "shrek/bc_attackgrowl3.wav" );
 
 
 	PRECACHE_SOUND( "bullchicken/bc_acid1.wav" );
 
 	PRECACHE_SOUND( "bullchicken/bc_bite2.wav" );
+	PRECACHE_SOUND( "bullchicken/bc_bite3.wav" );
 
 	PRECACHE_SOUND( "bullchicken/bc_spithit1.wav" );
+	PRECACHE_SOUND( "bullchicken/bc_spithit2.wav" );
 }
 
 //=========================================================
