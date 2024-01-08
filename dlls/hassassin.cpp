@@ -128,6 +128,21 @@ IMPLEMENT_SAVERESTORE( CHAssassin, CBaseMonster )
 //=========================================================
 void CHAssassin::DeathSound( void )
 {
+	switch( RANDOM_LONG( 0, 3 ))
+	{
+	case 0:
+		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "phat/fart1.wav", 1, ATTN_NORM );
+		break;
+	case 1:
+		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "phat/fart2.wav", 1, ATTN_NORM );
+		break;
+	case 2:
+		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "phat/fart3.wav", 1, ATTN_NORM );
+		break;
+	case 3:
+		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "phat/fart4.wav", 1, ATTN_NORM );
+		break;
+	}
 }
 
 //=========================================================
@@ -306,7 +321,10 @@ void CHAssassin::Precache()
 
 	PRECACHE_SOUND( "weapons/pl_gun1.wav" );
 	PRECACHE_SOUND( "weapons/pl_gun2.wav" );
-
+	PRECACHE_SOUND( "phat/fart1.wav" );
+	PRECACHE_SOUND( "phat/fart2.wav" );
+	PRECACHE_SOUND( "phat/fart3.wav" );
+	PRECACHE_SOUND( "phat/fart4.wav" );
 	PRECACHE_SOUND( "debris/beamstart1.wav" );
 
 	m_iShell = PRECACHE_MODEL( "models/shell.mdl" );// brass shell
