@@ -42,9 +42,9 @@ public:
 
 	float m_flNextFlinch;
 
-	void IdleSound( void );
+	void AlertSound( void );
 
-	static const char *pIdleSounds[];
+	static const char *pAlertSounds[];
 
 	// No range attacks
 	BOOL CheckRangeAttack1( float flDot, float flDist ) { return FALSE; }
@@ -54,7 +54,7 @@ public:
 
 LINK_ENTITY_TO_CLASS( monster_terror, CTerror )
 
-const char *CTerror::pIdleSounds[] =
+const char *CTerror::pAlertSounds[] =
 {
 	"terror/allahuakbar.wav",
 };
@@ -103,12 +103,12 @@ int CTerror::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float 
 }
 
 
-void CTerror::IdleSound( void )
+void CTerror::AlertSound( void )
 {
 	int pitch = 95 + RANDOM_LONG( 0, 9 );
 
 	// Play a random idle sound
-	EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, pIdleSounds[RANDOM_LONG( 0, ARRAYSIZE( pIdleSounds ) - 1 )], 1.0, ATTN_NORM, 0, pitch );
+	EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, RANDOM_SOUND_ARRAY( pAlertSounds ), 1.0, ATTN_NORM, 0, pitch );
 }
 
 
@@ -157,7 +157,7 @@ void CTerror::Precache()
 {
 
 	PRECACHE_MODEL( "models/terror.mdl" );
-	PRECACHE_SOUND_ARRAY( pIdleSounds );
+	PRECACHE_SOUND_ARRAY( pAlertSounds );
 }
 
 //=========================================================
