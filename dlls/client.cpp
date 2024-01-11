@@ -1370,7 +1370,14 @@ void StartFrame( void )
 		// then add another bot using the default skill level...
 		if( count < max_bots )
 		{
-			BotCreate( NULL, NULL, NULL );
+			for( i = 0; i < 32; i++ )
+			{
+				if( !bot_respawn[i].is_used && bot_respawn[i].state == BOT_IDLE)
+				{
+					BotCreate( bot_respawn[i].skin, bot_respawn[i].name, bot_respawn[i].skill );
+					break;
+				}
+			}
 		}
 	}
 
