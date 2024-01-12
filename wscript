@@ -230,6 +230,10 @@ def configure(conf):
 	if conf.env.HLDEMO_BUILD and conf.env.OEM_BUILD:
 		conf.fatal('Don\'t mix Demo and OEM builds!')
 
+	# force to use server library name
+	if conf.env.DEST_OS == 'android':
+		conf.env.SERVER_LIBRARY_NAME = 'server' # can't be any other name, until specified
+
 	# strip lib from pattern
 	if conf.env.DEST_OS not in ['android']:
 		if conf.env.cxxshlib_PATTERN.startswith('lib'):
