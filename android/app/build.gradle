@@ -15,6 +15,12 @@ android {
         minSdkVersion 3
         targetSdk 34
         compileSdk 34
+
+        externalNativeBuild {
+            cmake {
+                arguments '-DPOLLY=ON'
+            }
+        }
     }
 
     externalNativeBuild {
