@@ -211,7 +211,7 @@ def configure(conf):
 
 	conf.msg(msg='-> processing mod options', result='...', color='BLUE')
 	regex = re.compile('^([A-Za-z0-9_]+)=([A-Za-z0-9_]+)\ \#\ (.*)$')
-	with open('mod_options.txt') as fd:
+	with open(str(conf.path.make_node('mod_options.txt'))) as fd:
 		lines = fd.readlines()
 	for line in lines:
 		m = regex.match(line.strip())
