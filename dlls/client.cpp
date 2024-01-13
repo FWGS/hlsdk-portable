@@ -1368,13 +1368,15 @@ void StartFrame( void )
 
 		// if there are currently less than the maximum number of "players"
 		// then add another bot using the default skill level...
-		if( count < max_bots )
+		if( ( count < max_bots ) && ( gpGlobals->time >= respawn_time ) )
 		{
 			for( i = 0; i < 32; i++ )
 			{
 				if( !bot_respawn[i].is_used && bot_respawn[i].state == BOT_IDLE)
 				{
 					BotCreate( bot_respawn[i].skin, bot_respawn[i].name, bot_respawn[i].skill );
+
+					respawn_time = gpGlobals->time + 1.0;  // set next respawn time
 					break;
 				}
 			}
