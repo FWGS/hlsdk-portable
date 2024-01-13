@@ -1194,7 +1194,7 @@ void StartFrame( void )
 
 				// have to delay here or engine gives "Tried to write to
 				// uninitialized sizebuf_t" error and crashes...
-				pause_time = gpGlobals->time + 1;
+				pause_time = gpGlobals->time + 1.0;
 				break;
 			}
 			else if( strcmp( cmd, "botskill" ) == 0 )
