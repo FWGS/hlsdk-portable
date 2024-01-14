@@ -1024,6 +1024,9 @@ void StartFrame( void )
 	// END BOT
 
 	// START BOT
+	int count = 0;
+
+	// count total players
 	if( ( g_fGameOver ) && ( respawn_time < 1.0 ) )
 	{
 		// if the game is over (time/frag limit) set the respawn time...
@@ -1037,13 +1040,15 @@ void StartFrame( void )
 			if( !pPlayer )
 				continue;  // if invalid then continue with next index...
 
-			if( pPlayer->pBotCam )
+			if( pPlayer->pBotCam ) // check if any players are using the botcam...
 				pPlayer->pBotCam->Disconnect();
+
+			count++;  // count the number of bots and players
 		}
 	}
 
 	// check if a map was changed via "map" without kicking bots...
-	if( previous_time > gpGlobals->time )
+	if( ( count < max_bots ) && ( previous_time > gpGlobals->time ) )
 	{
 		bot_check_time = gpGlobals->time + 10.0;
 
