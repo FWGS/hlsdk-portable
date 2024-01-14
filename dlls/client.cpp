@@ -127,6 +127,7 @@ BOOL ClientConnect( edict_t *pEntity, const char *pszName, const char *pszAddres
 
 					sprintf( cmd, "kick \"%s\"\n", bot_respawn[i].name );
 
+					bot_respawn[i].is_used = FALSE;
 					bot_respawn[i].state = BOT_NEED_TO_RESPAWN;
 
 					SERVER_COMMAND( cmd );  // kick the bot using (kick "name")
@@ -1000,6 +1001,7 @@ void StartFrame( void )
 	static float respawn_time = 0;
 	static float previous_time = 0.0;
 	char msg[120];
+	int online = 0;
 	// END BOT
 
 	// START BOT - thanks Jehannum!
@@ -1012,6 +1014,9 @@ void StartFrame( void )
 		if( !pPlayer )  // if invalid then continue with next index...
 			continue;
 
+		if( pPlayer->pev->takedamage == DAMAGE_NO )
+			continue;  // solution to detect player not in the game
+
 		// check if this is a FAKECLIENT (i.e. is it a bot?)
 		if( FBitSet( pPlayer->pev->flags, FL_FAKECLIENT ) )
 		{
@@ -1020,19 +1025,20 @@ void StartFrame( void )
 			// call the think function for the bot...
 			pBot->BotThink();
 		}
+
+		// increase online of bots and players
+		online++;
 	}
 	// END BOT
 
 	// START BOT
-	int count = 0;
 
-	// count total players
+	// check if any players are using the botcam...
 	if( ( g_fGameOver ) && ( respawn_time < 1.0 ) )
 	{
 		// if the game is over (time/frag limit) set the respawn time...
 		respawn_time = 5.0;
 
-		// check if any players are using the botcam...
 		for( i = 1; i <= gpGlobals->maxClients; i++ )
 		{
 			CBasePlayer *pPlayer = (CBasePlayer *)UTIL_PlayerByIndex( i );
@@ -1040,15 +1046,13 @@ void StartFrame( void )
 			if( !pPlayer )
 				continue;  // if invalid then continue with next index...
 
-			if( pPlayer->pBotCam ) // check if any players are using the botcam...
+			if( pPlayer->pBotCam )
 				pPlayer->pBotCam->Disconnect();
-
-			count++;  // count the number of bots and players
 		}
 	}
 
 	// check if a map was changed via "map" without kicking bots...
-	if( ( count < max_bots ) && ( previous_time > gpGlobals->time ) )
+	if( previous_time > gpGlobals->time )
 	{
 		bot_check_time = gpGlobals->time + 10.0;
 
@@ -1065,38 +1069,6 @@ void StartFrame( void )
 			}
 		}
 	}
-
-	// is new game started and time to respawn bots yet?
-	if( ( !g_fGameOver ) && ( respawn_time > 1.0 ) &&
-		( gpGlobals->time >= respawn_time ) )
-	{
-		int index = 0;
-		bot_check_time = gpGlobals->time + 5.0;
-
-		 // find bot needing to be respawned...
-		while( ( index < 32 ) &&
-			( bot_respawn[index].state != BOT_NEED_TO_RESPAWN ) )
-			index++;
-
-		if( index < 32 )
-		{
-			bot_respawn[index].state = BOT_IS_RESPAWNING;
-			bot_respawn[index].is_used = FALSE;      // free up this slot
-
-			// respawn 1 bot then wait a while (otherwise engine crashes)
-			BotCreate( bot_respawn[index].skin,
-				bot_respawn[index].name,
-				bot_respawn[index].skill );
-
-			respawn_time = gpGlobals->time + 1.0;  // set next respawn time
-		}
-		else
-		{
-			respawn_time = 0.0;
-		}
-	}
-	// END BOT
-	//ALERT( at_console, "SV_Physics( %g, frametime %g )\n", gpGlobals->time, gpGlobals->frametime );
 
 	if( g_pGameRules )
 	{
@@ -1196,6 +1168,9 @@ void StartFrame( void )
 			else if( strcmp( cmd, "addbot" ) == 0 )
 			{
 				BotCreate( arg1, arg2, arg3 );
+
+				// increase online of bots and players
+				online++;
 
 				// have to delay here or engine gives "Tried to write to
 				// uninitialized sizebuf_t" error and crashes...
@@ -1314,6 +1289,9 @@ void StartFrame( void )
 					printf( "adding new bot...\n" );
 
 					BotCreate( arg1, arg2, arg3 );
+
+					// increase online of bots and players
+					online++;
 				}
 				else if( strcmp( cmd, "botskill" ) == 0 )
 				{
@@ -1354,43 +1332,31 @@ void StartFrame( void )
 	// check if time to see if a bot needs to be created...
 	if( bot_check_time < gpGlobals->time )
 	{
-		int count = 0;
-
-		bot_check_time = gpGlobals->time + 5.0;
-
-		for( i = 1; i <= gpGlobals->maxClients; i++ )
-		{
-			CBaseEntity *pPlayer = UTIL_PlayerByIndex( i );
-
-			if( !pPlayer )
-				continue;  // if invalid then continue with next index...
-
-			if( pPlayer->pev->takedamage == DAMAGE_NO )
-				continue;  // if bot was kicked, don't count as a player...
-
-			count++;  // count the number of bots and players
-		}
-
 		// if there are currently less than the maximum number of "players"
 		// then add another bot using the default skill level...
-		if( count < max_bots )
+		if ( online < max_bots )
 		{
 			for( i = 0; i < 32; i++ )
 			{
 				if( !bot_respawn[i].is_used &&
 						bot_respawn[i].state == BOT_NEED_TO_RESPAWN &&
-						gpGlobals->time >= respawn_time)
+						gpGlobals->time >= respawn_time )
 				{
+					bot_respawn[i].is_used = TRUE;
 					bot_respawn[i].state = BOT_IS_RESPAWNING;
-					bot_respawn[i].is_used = FALSE;      // free up this slot
 
 					BotCreate( bot_respawn[i].skin, bot_respawn[i].name, bot_respawn[i].skill );
 
+					online++; // increase online of bots and players
+
 					respawn_time = gpGlobals->time + 1.0;  // set next respawn time (to prevent server crash)
+
 					break;
 				}
 			}
 		}
+
+		bot_check_time = gpGlobals->time + 10.0;
 	}
 
 	previous_time = gpGlobals->time;  // keep track of last time in StartFrame()
