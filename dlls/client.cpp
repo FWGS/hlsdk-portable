@@ -1374,8 +1374,8 @@ void StartFrame( void )
 			{
 				if( !bot_respawn[i].is_used && bot_respawn[i].state == BOT_NEED_TO_RESPAWN)
 				{
-					bot_respawn[index].state = BOT_IS_RESPAWNING;
-					bot_respawn[index].is_used = FALSE;      // free up this slot
+					bot_respawn[i].state = BOT_IS_RESPAWNING;
+					bot_respawn[i].is_used = FALSE;      // free up this slot
 
 					BotCreate( bot_respawn[i].skin, bot_respawn[i].name, bot_respawn[i].skill );
 					break;
