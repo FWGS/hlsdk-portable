@@ -127,7 +127,7 @@ BOOL ClientConnect( edict_t *pEntity, const char *pszName, const char *pszAddres
 
 					sprintf( cmd, "kick \"%s\"\n", bot_respawn[i].name );
 
-					bot_respawn[i].state = BOT_IDLE;
+					bot_respawn[i].state = BOT_NEED_TO_RESPAWN;
 
 					SERVER_COMMAND( cmd );  // kick the bot using (kick "name")
 					break;
@@ -1372,8 +1372,11 @@ void StartFrame( void )
 		{
 			for( i = 0; i < 32; i++ )
 			{
-				if( !bot_respawn[i].is_used && bot_respawn[i].state == BOT_IDLE)
+				if( !bot_respawn[i].is_used && bot_respawn[i].state == BOT_NEED_TO_RESPAWN)
 				{
+					bot_respawn[index].state = BOT_IS_RESPAWNING;
+					bot_respawn[index].is_used = FALSE;      // free up this slot
+
 					BotCreate( bot_respawn[i].skin, bot_respawn[i].name, bot_respawn[i].skill );
 					break;
 				}
