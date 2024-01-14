@@ -1372,12 +1372,16 @@ void StartFrame( void )
 		{
 			for( i = 0; i < 32; i++ )
 			{
-				if( !bot_respawn[i].is_used && bot_respawn[i].state == BOT_NEED_TO_RESPAWN)
+				if( !bot_respawn[i].is_used &&
+						bot_respawn[i].state == BOT_NEED_TO_RESPAWN &&
+						gpGlobals->time >= respawn_time)
 				{
 					bot_respawn[i].state = BOT_IS_RESPAWNING;
 					bot_respawn[i].is_used = FALSE;      // free up this slot
 
 					BotCreate( bot_respawn[i].skin, bot_respawn[i].name, bot_respawn[i].skill );
+
+					respawn_time = gpGlobals->time + 1.0;  // set next respawn time (to prevent server crash)
 					break;
 				}
 			}
