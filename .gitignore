@@ -29,3 +29,13 @@ CMakeSettings.json
 CMakeFiles
 CMakeCache.txt
 Makefile
+
+# Android Studio/Gradle
+.gradle/
+.externalNativeBuild
+.cxx/
+.idea/
+local.properties
+.project
+.classpath
+.settings

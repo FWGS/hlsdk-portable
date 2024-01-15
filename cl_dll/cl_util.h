@@ -167,7 +167,8 @@ void VectorScale( const float *in, float scale, float *out );
 float VectorNormalize( float *v );
 void VectorInverse( float *v );
 
-extern vec3_t vec3_origin;
+// extern vec3_t vec3_origin;
+extern float vec3_origin[3];
 
 // disable 'possible loss of data converting float to int' warning message
 #pragma warning( disable: 4244 )
