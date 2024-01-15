@@ -37,7 +37,7 @@
 
 // if C++ mangling differs from C symbol name
 #if _MSC_VER || __WATCOMC__
-vec3_t vec3_origin;
+float vec3_origin[3];
 #endif
 
 float Length( const float *v )
