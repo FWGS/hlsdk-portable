@@ -164,7 +164,7 @@ sudo ./setup_chroot.sh --i386 --tarball ./com.valvesoftware.SteamRuntime.Sdk-i38
 
 Now you can use cmake and make prepending the commands with `schroot --chroot steamrt_scout_i386 --`:
 ```
-schroot --chroot steamrt_scout_i386 -- cmake -B build-in-steamrt -S .
+schroot --chroot steamrt_scout_i386 -- cmake -DCMAKE_BUILD_TYPE=Release -B build-in-steamrt -S .
 schroot --chroot steamrt_scout_i386 -- cmake --build build-in-steamrt
 ```
 
@@ -180,20 +180,20 @@ sudo apt install cmake build-essential gcc-multilib g++-multilib libsdl2-dev:i38
 ### Building
 
 ```
-cmake -B build -S .
+cmake -DCMAKE_BUILD_TYPE=Release -B build -S .
 cmake --build build
 ```
 
 Note that the libraries built this way might be not compatible with Steam Half-Life. If you have such issue you can configure it to build statically with c++ and gcc libraries:
 ```
-cd build
-cmake .. -DCMAKE_CXX_FLAGS="-static-libstdc++ -static-libgcc"
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -static-libstdc++ -static-libgcc" -B build -S .
+cmake --build build
 ```
 
-Alternatively, you can avoid libstdc++/libgcc_s linking using small libsupc++ library and optimization build flags instead:
+Alternatively, you can avoid libstdc++/libgcc_s linking using small libsupc++ library and optimization build flags instead(Really just set Release build type and set C compiler as C++ compiler):
 ```
-cd build
-cmake .. -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=gcc -DCMAKE_C_FLAGS="-O3" -DCMAKE_CXX_FLAGS="-O3 -lsupc++"
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=cc -B build -S .
+cmake --build build
 ```
 To ensure portability it's still better to build using Steam Runtime or another chroot of some older distro.
 
@@ -236,7 +236,7 @@ Insert your actual user name in place of `yourusername`.
 
 Prepend any make or cmake call with `schroot -c jessie --`:
 ```
-schroot --chroot jessie -- cmake -B build-in-chroot -S .
+schroot --chroot jessie -- cmake -DCMAKE_BUILD_TYPE=Release -B build-in-chroot -S .
 schroot --chroot jessie -- cmake --build build-in-chroot
 ```
 
@@ -337,13 +337,13 @@ Install C and C++ compilers (like gcc or clang), cmake and make.
 ### Building
 
 ```
-cmake -B build -S .
+cmake -DCMAKE_BUILD_TYPE=Release -B build -S .
 cmake --build build
 ```
 
 Force 64-bit build:
 ```
-cmake -D64BIT=1 -B build -S .
+cmake -DCMAKE_BUILD_TYPE=Release -D64BIT=1 -B build -S .
 cmake --build build
 ```
 
