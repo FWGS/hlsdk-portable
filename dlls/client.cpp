@@ -1054,18 +1054,17 @@ void StartFrame( void )
 	// check if a map was changed via "map" without kicking bots...
 	if( previous_time > gpGlobals->time )
 	{
+		respawn_time = 5.0;
+
 		bot_check_time = gpGlobals->time + 10.0;
 
-		for( index = 0; index < 32; index++ )
+		// find bots used in previous session and add them to respawn queue
+		for( i = 0; i < 32; i++ )
 		{
-			if( ( bot_respawn[index].is_used) &&  // is this slot used?
-				( bot_respawn[index].state != BOT_NEED_TO_RESPAWN ) )
+			if( bot_respawn[i].is_used )
 			{
-				// bot has already been "kicked" by server so just set flag
-				bot_respawn[index].state = BOT_NEED_TO_RESPAWN;
-
-				// if the map was changed set the respawn time...
-				respawn_time = 5.0;
+				bot_respawn[i].is_used = FALSE;
+				bot_respawn[i].state = BOT_NEED_TO_RESPAWN;
 			}
 		}
 	}
@@ -1330,29 +1329,19 @@ void StartFrame( void )
 
 	// START BOT
 	// check if time to see if a bot needs to be created...
-	if( bot_check_time < gpGlobals->time )
+	if( online < max_bots && bot_check_time < gpGlobals->time && respawn_time <= gpGlobals->time )
 	{
-		// if there are currently less than the maximum number of "players"
-		// then add another bot using the default skill level...
-		if ( online < max_bots )
+		for( i = 0; i < 32; i++ )
 		{
-			for( i = 0; i < 32; i++ )
+			if( !bot_respawn[i].is_used && bot_respawn[i].state == BOT_NEED_TO_RESPAWN )
 			{
-				if( !bot_respawn[i].is_used &&
-						bot_respawn[i].state == BOT_NEED_TO_RESPAWN &&
-						gpGlobals->time >= respawn_time )
-				{
-					bot_respawn[i].is_used = TRUE;
-					bot_respawn[i].state = BOT_IS_RESPAWNING;
+				BotCreate( bot_respawn[i].skin, bot_respawn[i].name, bot_respawn[i].skill );
 
-					BotCreate( bot_respawn[i].skin, bot_respawn[i].name, bot_respawn[i].skill );
+				online++; // increase online of bots and players
 
-					online++; // increase online of bots and players
+				respawn_time = gpGlobals->time + 1.0;  // set next respawn time (to prevent server crash)
 
-					respawn_time = gpGlobals->time + 1.0;  // set next respawn time (to prevent server crash)
-
-					break;
-				}
+				break;
 			}
 		}
 
