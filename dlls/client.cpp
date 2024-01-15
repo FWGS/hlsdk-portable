@@ -48,15 +48,11 @@ extern DLL_GLOBAL ULONG		g_ulFrameCount;
 extern void CopyToBodyQue( entvars_t* pev );
 extern int giPrecacheGrunt;
 extern int gmsgSayText;
-extern int gmsgBhopcap;
 
 extern cvar_t allow_spectators;
 extern cvar_t multibyte_only;
 
 extern int g_teamplay;
-
-extern cvar_t bhopcap;
-extern "C" int g_bhopcap;
 
 void LinkUserMessages( void );
 
@@ -130,6 +126,7 @@ void ClientDisconnect( edict_t *pEntity )
 	pEntity->v.takedamage = DAMAGE_NO;// don't attract autoaim
 	pEntity->v.solid = SOLID_NOT;// nonsolid
 	pEntity->v.effects = 0;// clear any effects
+	pEntity->v.flags = 0;// clear any flags
 	UTIL_SetOrigin( &pEntity->v, pEntity->v.origin );
 
 	g_pGameRules->ClientDisconnected( pEntity );
@@ -822,15 +819,6 @@ void StartFrame( void )
 
 	gpGlobals->teamplay = teamplay.value;
 	g_ulFrameCount++;
-
-	int oldBhopcap = g_bhopcap;
-	g_bhopcap = ( g_pGameRules && g_pGameRules->IsMultiplayer() && bhopcap.value != 0.0f ) ? 1 : 0;
-	if( g_bhopcap != oldBhopcap )
-	{
-		MESSAGE_BEGIN( MSG_ALL, gmsgBhopcap, NULL );
-			WRITE_BYTE( g_bhopcap );
-		MESSAGE_END();
-	}
 }
 
 void ClientPrecache( void )
