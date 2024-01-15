@@ -33,6 +33,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 include(CheckIncludeFile)
 include(CheckCSourceCompiles)
 include(VSForceXPToolchain) # Force XP toolchain for Visual Studio
+include(CheckIPOSupported)
 
 project (HLSDK-PORTABLE)
 
@@ -46,16 +47,37 @@ option(USE_NOVGUI_SCOREBOARD "Prefer non-VGUI Scoreboard when USE_VGUI is enable
 option(USE_VOICEMGR "Enable VOICE MANAGER." OFF)
 option(BUILD_CLIENT "Build client dll" ON)
 option(BUILD_SERVER "Build server dll" ON)
+option(POLLY "Enable pollyhedral optimization" OFF)
 
-if (CMAKE_SIZEOF_VOID_P EQUAL 4 OR
+if(CMAKE_SIZEOF_VOID_P EQUAL 4 OR
 	((WIN32 OR ${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
 	AND (CMAKE_SYSTEM_PROCESSOR STREQUAL "x64"
+	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "X64"
 	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64"
-	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "amd64")))
+	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "X86_64"
+	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "amd64"
+	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "AMD64"
+	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "EM64T")))
 	option(64BIT "Disable auto -m32 appending to compiler flags" OFF)
-	option(GOLDSOURCE_SUPPORT "Build goldsource compatible client library" ON)
 else()
 	option(64BIT "Disable auto -m32 appending to compiler flags" ON)
+endif()
+
+# It seems CMAKE_SYSTEM_PROCESSOR parameter completely useless for APPLE platform,
+# so may need to set options here manually.
+if((WIN32 OR ${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+	AND (((CMAKE_SYSTEM_PROCESSOR STREQUAL "x64"
+	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "X64"
+	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64"
+	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "X86_64"
+	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "amd64"
+	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "AMD64"
+	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "EM64T") AND NOT 64BIT)
+	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "x86"
+	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "X86"
+	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "i386"))
+	option(GOLDSOURCE_SUPPORT "Build goldsource compatible client library" ON)
+else()
 	option(GOLDSOURCE_SUPPORT "Build goldsource compatible client library" OFF)
 endif()
 
@@ -131,6 +153,13 @@ if(VITA)
 	add_compile_options(-fno-use-cxa-atexit)
 endif()
 
+check_ipo_supported(RESULT HAVE_LTO OUTPUT LTO_ERROR)
+if(HAVE_LTO)
+	message(STATUS "IPO / LTO enabled")
+else()
+	message(STATUS "IPO / LTO not supported: <${LTO_ERROR}>")
+endif()
+
 check_include_file("tgmath.h" HAVE_TGMATH_H)
 if(HAVE_TGMATH_H)
 	if(NOT MSVC)
@@ -156,4 +185,12 @@ endif()
 
 if(NOT BUILD_SERVER AND NOT BUILD_CLIENT)
 	message(FATAL_ERROR "Nothing to build")
+endif()
+
+if(POLLY)
+	if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+		add_compile_options(-mllvm -polly)
+	elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+		add_compile_options(-fgraphite-identity -floop-interchange -floop-block)
+	endif()
 endif()
