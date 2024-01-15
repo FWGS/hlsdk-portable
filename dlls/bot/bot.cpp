@@ -337,7 +337,8 @@ void CBot::Spawn( )
    // get the bot's name and save it in respawn array...
    strcpy(bot_respawn[respawn_index].name, STRING(pev->netname));
 
-   bot_respawn[respawn_index].state = BOT_IDLE;
+   bot_respawn[respawn_index].is_used = TRUE;
+   bot_respawn[respawn_index].state = BOT_IS_RESPAWNING;
 
    pev->ideal_yaw = pev->v_angle.y;
    pev->yaw_speed = BOT_YAW_SPEED;
