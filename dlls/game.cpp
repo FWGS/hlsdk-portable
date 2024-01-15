@@ -726,7 +726,7 @@ cvar_t	sk_plr_spore3 = { "sk_plr_spore3", "0" };
 void GameDLLInit( void )
 {
 	// Register cvars here:
-	if( CVAR_GET_POINTER( "build" ) )
+	if( !CVAR_GET_POINTER( "sv_language" ) )
 		g_fIsXash3D = TRUE;
 
 	g_psv_gravity = CVAR_GET_POINTER( "sv_gravity" );
