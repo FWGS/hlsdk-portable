@@ -931,7 +931,7 @@ void CBigMomma::StartTask( Task_t *pTask )
 		TaskComplete();
 		break;
 	case TASK_WAIT_NODE:
-		m_flWaitFinished = gpGlobals->time + GetNodeDelay();
+		m_flWait = gpGlobals->time + GetNodeDelay();
 		if( m_hTargetEnt->pev->spawnflags & SF_INFOBM_WAIT )
 			ALERT( at_aiconsole, "BM: Wait at node %s forever\n", STRING( pev->netname ) );
 		else

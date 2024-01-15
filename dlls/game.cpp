@@ -466,7 +466,7 @@ cvar_t	cvar_bot = { "bot", "" };
 void GameDLLInit( void )
 {
 	// Register cvars here:
-	if( CVAR_GET_POINTER( "build" ) )
+	if( !CVAR_GET_POINTER( "sv_language" ) )
 		g_fIsXash3D = TRUE;
 
 	g_psv_gravity = CVAR_GET_POINTER( "sv_gravity" );
