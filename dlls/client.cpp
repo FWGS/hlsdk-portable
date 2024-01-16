@@ -127,10 +127,11 @@ BOOL ClientConnect( edict_t *pEntity, const char *pszName, const char *pszAddres
 
 					sprintf( cmd, "kick \"%s\"\n", bot_respawn[i].name );
 
+					SERVER_COMMAND( cmd );  // kick the bot using (kick "name")
+
 					bot_respawn[i].is_used = FALSE;
 					bot_respawn[i].state = BOT_NEED_TO_RESPAWN;
 
-					SERVER_COMMAND( cmd );  // kick the bot using (kick "name")
 					break;
 				}
 			}
