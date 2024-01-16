@@ -294,6 +294,7 @@ void BotCreate(const char *skin, const char *name, const char *skill)
       sprintf(c_index, "%d", index);
 
       bot_respawn[index].is_used = TRUE;  // this slot is used
+      bot_respawn[index].state = BOT_IS_RESPAWNING;
 
       // don't store the name here, it might change if same as another
       strcpy(bot_respawn[index].skin, c_skin);
