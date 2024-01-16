@@ -1769,8 +1769,6 @@ void CBot::BotThink( void )
       pev->health = 0;
       pev->deadflag = DEAD_DEAD;  // make the kicked bot be dead
 
-      bot_respawn[respawn_index].is_used = FALSE;  // this slot is now free
-
       respawn_index = -1;  // indicate no slot used
 
       // fall through to next if statement (respawn_index will be -1)
