@@ -328,8 +328,6 @@ public:
 	int m_iAutoWepSwitch;
 
 	Vector m_vecLastViewAngles;
-
-	bool m_bSentBhopcap; // If false, the player just joined and needs a bhopcap message.
 };
 
 #define AUTOAIM_2DEGREES  0.0348994967025
