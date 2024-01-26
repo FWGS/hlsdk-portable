@@ -867,7 +867,7 @@ void CBasePlayer::Killed( entvars_t *pevAttacker, int iGib )
 
 	SetAnimation( PLAYER_DIE );
 
-	m_iRespawnFrames = 0;
+	m_flRespawnTimer = 0;
 
 	pev->modelindex = g_ulModelIndexPlayer;    // don't use eyes
 
@@ -1270,8 +1270,8 @@ void CBasePlayer::PlayerDeathThink( void )
 	{
 		StudioFrameAdvance();
 
-		m_iRespawnFrames++;				// Note, these aren't necessarily real "frames", so behavior is dependent on # of client movement commands
-		if( m_iRespawnFrames < 120 )   // Animations should be no longer than this
+		m_flRespawnTimer = gpGlobals->frametime + m_flRespawnTimer;	// Note, these aren't necessarily real "frames", so behavior is dependent on # of client movement commands
+		if( m_flRespawnTimer < 4.0f )   // Animations should be no longer than this
 			return;
 	}
 
@@ -1281,7 +1281,14 @@ void CBasePlayer::PlayerDeathThink( void )
 		pev->movetype = MOVETYPE_NONE;
 
 	if( pev->deadflag == DEAD_DYING )
+	{
+		if( g_pGameRules->IsMultiplayer() && pev->movetype == MOVETYPE_NONE )
+		{
+			CopyToBodyQue( pev );
+			pev->modelindex = 0;
+		}
 		pev->deadflag = DEAD_DEAD;
+	}
 
 	StopAnimation();
 
@@ -1322,7 +1329,7 @@ void CBasePlayer::PlayerDeathThink( void )
 		return;
 
 	pev->button = 0;
-	m_iRespawnFrames = 0;
+	m_flRespawnTimer = 0;
 
 	//ALERT( at_console, "Respawn\n" );
 
