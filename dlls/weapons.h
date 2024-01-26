@@ -37,7 +37,7 @@ public:
 	static void UseSatchelCharges( entvars_t *pevOwner, SATCHELCODE code );
 
 	void Explode( Vector vecSrc, Vector vecAim );
-	void Explode( TraceResult *pTrace, int bitsDamageType );
+	virtual void Explode( TraceResult *pTrace, int bitsDamageType );
 	void EXPORT Smoke( void );
 
 	void EXPORT BounceTouch( CBaseEntity *pOther );
@@ -723,6 +723,8 @@ public:
 	void EXPORT IgniteThink( void );
 	void EXPORT RocketTouch( CBaseEntity *pOther );
 	static CRpgRocket *CreateRpgRocket( Vector vecOrigin, Vector vecAngles, CBaseEntity *pOwner, CRpg *pLauncher );
+	void Explode( TraceResult *pTrace, int bitsDamageType );
+	inline CRpg *GetLauncher( void );
 
 	int m_iTrail;
 	float m_flIgniteTime;
