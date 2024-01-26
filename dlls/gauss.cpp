@@ -170,6 +170,8 @@ void CGauss::PrimaryAttack()
 
 void CGauss::SecondaryAttack()
 {
+	if( m_pPlayer->m_flStartCharge > gpGlobals->time )
+		m_pPlayer->m_flStartCharge = gpGlobals->time;
 	// don't fire underwater
 	if( m_pPlayer->pev->waterlevel == 3 )
 	{
@@ -315,6 +317,8 @@ void CGauss::StartFire( void )
 {
 	float flDamage;
 
+	if( m_pPlayer->m_flStartCharge > gpGlobals->time )
+		m_pPlayer->m_flStartCharge = gpGlobals->time;
 	UTIL_MakeVectors( m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle );
 	Vector vecAiming = gpGlobals->v_forward;
 	Vector vecSrc = m_pPlayer->GetGunPosition(); // + gpGlobals->v_up * -8 + gpGlobals->v_right * 8;
