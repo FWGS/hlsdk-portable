@@ -3012,6 +3012,9 @@ int CBasePlayer::Restore( CRestore &restore )
 	//			Barring that, we clear it out here instead of using the incorrect restored time value.
 	m_flNextAttack = UTIL_WeaponTimeBase();
 #endif
+	if( m_flFlashLightTime == 0.0f )
+		m_flFlashLightTime = 1.0f;
+
 	return status;
 }
 
