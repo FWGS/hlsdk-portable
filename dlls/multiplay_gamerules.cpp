@@ -30,6 +30,7 @@
 #include	"voice_gamemgr.h"
 #endif
 #include	"hltv.h"
+#include	"trains.h"
 
 extern DLL_GLOBAL CGameRules *g_pGameRules;
 extern DLL_GLOBAL BOOL	g_fGameOver;
@@ -647,6 +648,16 @@ void CHalfLifeMultiplay::PlayerKilled( CBasePlayer *pVictim, entvars_t *pKiller,
 	CBaseEntity *ktmp = CBaseEntity::Instance( pKiller );
 	if( ktmp && (ktmp->Classify() == CLASS_PLAYER ) )
 		peKiller = (CBasePlayer*)ktmp;
+	else if( ktmp && ktmp->Classify() == CLASS_VEHICLE )
+	{
+		CBasePlayer *pDriver = (CBasePlayer *)( (CFuncVehicle *)ktmp )->m_pDriver;
+
+		if( pDriver != NULL )
+		{
+			pKiller = pDriver->pev;
+			peKiller = (CBasePlayer *)pDriver;
+		}
+	}
 
 	if( pVictim->pev == pKiller )
 	{
