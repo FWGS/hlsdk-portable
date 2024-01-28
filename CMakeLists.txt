@@ -63,25 +63,6 @@ else()
 	option(64BIT "Disable auto -m32 appending to compiler flags" ON)
 endif()
 
-<<<<<<< HEAD
-option(BARNACLE_FIX_VISIBILITY "Enable barnacle tongue length fix" ON)
-option(CLIENT_WEAPONS "Enable client local weapons prediction" ON)
-option(CROWBAR_IDLE_ANIM "Enable crowbar idle animation" ON)
-option(CROWBAR_DELAY_FIX "Enable crowbar attack delay fix" ON)
-option(CROWBAR_FIX_RAPID_CROWBAR "Enable rapid crowbar fix" ON)
-option(GAUSS_OVERCHARGE_FIX "Enable gauss overcharge fix" ON)
-option(TRIPMINE_BEAM_DUPLICATION_FIX "Enable fix of tripmine beam duplication on level transition" ON)
-option(HANDGRENADE_DEPLOY_FIX "Enable handgrenade deploy animation fix after finishing a throw" ON)
-option(WEAPONS_ANIMATION_TIMES_FIX "Enable animation times fix for some weapons" ON)
-option(OEM_BUILD "Enable OEM Build" OFF)
-option(HLDEMO_BUILD "Enable Demo Build" OFF)
-
-set(GAMEDIR "blackops" CACHE STRING "Gamedir path")
-set(SERVER_INSTALL_DIR "dlls" CACHE STRING "Where put server dll")
-set(CLIENT_INSTALL_DIR "cl_dlls" CACHE STRING "Where put client dll")
-set(SERVER_LIBRARY_NAME "hl" CACHE STRING "Library name for PC platforms")
-message(STATUS "Black Ops")
-=======
 # It seems CMAKE_SYSTEM_PROCESSOR parameter completely useless for APPLE platform,
 # so may need to set options here manually.
 if((WIN32 OR ${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
@@ -99,7 +80,6 @@ if((WIN32 OR ${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
 else()
 	option(GOLDSOURCE_SUPPORT "Build goldsource compatible client library" OFF)
 endif()
->>>>>>> master
 
 #-----------------
 # MAIN BUILD CODE \
