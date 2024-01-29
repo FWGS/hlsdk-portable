@@ -1341,13 +1341,13 @@ void SENTENCEG_Init()
 
 	g_engfuncs.pfnFreeFile( pMemFile );
 
-	if( gcallsentences >= 2048 )
+	if( gcallsentences > CVOXFILESENTENCEMAX_GOLDSOURCE_ANNIVERSARY_25 )
 	{
-		ALERT( at_warning, "NOTE: this mod might not work properly under GoldSource (post-anniversary update) engine: more than 2048 sentences\n" );
+		ALERT( at_warning, "NOTE: this mod might not work properly under GoldSource (post-anniversary update) engine: more than %d sentences\n", CVOXFILESENTENCEMAX_GOLDSOURCE_ANNIVERSARY_25 );
 	}
-	else if( gcallsentences >= 1536 )
+	else if( gcallsentences > CVOXFILESENTENCEMAX_GOLDSOURCE_LEGACY )
 	{
-		ALERT( at_warning, "NOTE: this mod might not work properly under GoldSource (pre-anniversary update) engine: more than 1536 sentences\n" );
+		ALERT( at_warning, "NOTE: this mod might not work properly under GoldSource (pre-anniversary update) engine: more than %d sentences\n", CVOXFILESENTENCEMAX_GOLDSOURCE_LEGACY );
 	}
 
 	fSentencesInit = TRUE;
