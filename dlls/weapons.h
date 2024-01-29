@@ -793,13 +793,13 @@ public:
 	int AddToPlayer( CBasePlayer *pPlayer );
 
 	BOOL Deploy( void );
+	BOOL CanHolster( void );
 	void Holster( int skiplocal = 0 );
 
 	void UpdateEffect( const Vector &startPoint, const Vector &endPoint, float timeBlend );
 
 	void CreateEffect ( void );
 	void DestroyEffect ( void );
-
 	void EndAttack( void );
 	void Attack( void );
 	void PrimaryAttack( void );

@@ -265,6 +265,7 @@ public:
 	void DropPlayerItem ( char *pszItemName );
 	BOOL HasPlayerItem( CBasePlayerItem *pCheckItem );
 	BOOL HasNamedPlayerItem( const char *pszItemName );
+	BOOL HasPlayerItemFromID( int nID );
 	BOOL HasWeapons( void );// do I have ANY weapons?
 	void SelectPrevItem( int iItem );
 	void SelectNextItem( int iItem );
