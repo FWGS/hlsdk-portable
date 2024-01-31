@@ -35,6 +35,7 @@ extern int gmsgMOTD;
 //=========================================================
 CHalfLifeRules::CHalfLifeRules( void )
 {
+	SERVER_COMMAND( "exec spserver.cfg\n" );
 	RefreshSkillData();
 }
 
