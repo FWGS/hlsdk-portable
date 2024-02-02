@@ -1723,3 +1723,219 @@ void CHalfLifeMultiplay::SendMOTDToClient( edict_t *client )
 
 	FREE_FILE( (void*)aFileList );
 }
+
+int CMultiplayBusters::WeaponShouldRespawn( CBasePlayerItem *pWeapon )
+{
+	if( pWeapon->m_iId == WEAPON_EGON )
+		return GR_WEAPON_RESPAWN_NO;
+
+	return CHalfLifeMultiplay::WeaponShouldRespawn( pWeapon );
+}
+
+BOOL CMultiplayBusters::CanHaveItem( CBasePlayer *pPlayer, CItem *pItem )
+{
+	return BustingCanHaveItem( pPlayer, pItem );
+}
+
+BOOL CMultiplayBusters::CanHavePlayerItem( CBasePlayer *pPlayer, CBasePlayerItem *pItem )
+{
+	if( !BustingCanHaveItem( pPlayer, pItem ))
+		return FALSE;
+
+	return CHalfLifeMultiplay::CanHavePlayerItem( pPlayer, pItem );
+}
+
+int CMultiplayBusters::IPointsForKill( CBasePlayer *pAttacker, CBasePlayer *pKilled )
+{
+	if( IsPlayerBusting( pAttacker ))
+		return 1;
+
+	if( IsPlayerBusting( pKilled ))
+		return 2;
+
+	return 0;
+}
+void CMultiplayBusters::DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, entvars_t *pevInflictor )
+{
+	if( IsPlayerBusting( pVictim )
+	    || IsPlayerBusting( CBaseEntity::Instance( pKiller )))
+		CHalfLifeMultiplay::DeathNotice( pVictim, pKiller, pevInflictor );
+}
+
+void CMultiplayBusters::PlayerKilled( CBasePlayer *pVictim, entvars_t *pKiller, entvars_t *pInflictor )
+{
+	if( IsPlayerBusting( pVictim ))
+	{
+		UTIL_ClientPrintAll( HUD_PRINTCENTER, "The Buster is dead!!" );
+
+		m_flEgonBustingCheckTime = -1.0f;
+
+		CBasePlayer *peKiller = NULL;
+		CBaseEntity *ktmp = CBaseEntity::Instance( pKiller );
+		if( ktmp && ( ktmp->Classify() == CLASS_PLAYER ) )
+			peKiller = (CBasePlayer*)ktmp;
+		else if( ktmp && ktmp->Classify() == CLASS_VEHICLE )
+		{
+			CBasePlayer *pDriver = (CBasePlayer *)( (CFuncVehicle *)ktmp )->m_pDriver;
+
+			if( pDriver != NULL )
+			{
+				pKiller = pDriver->pev;
+				peKiller = (CBasePlayer *)pDriver;
+			}
+		}
+
+		if( peKiller && peKiller->IsPlayer() )
+		{
+			UTIL_ClientPrintAll( HUD_PRINTTALK, UTIL_VarArgs( "%s has killed the Buster!", STRING( peKiller->pev->netname )));
+		}
+
+		pVictim->pev->renderfx = 0;
+		pVictim->pev->rendercolor = g_vecZero;
+	}
+
+	CHalfLifeMultiplay::PlayerKilled( pVictim, pKiller, pInflictor );
+}
+
+void CMultiplayBusters::ClientUserInfoChanged( CBasePlayer *pPlayer, char *infobuffer )
+{
+	SetPlayerModel( pPlayer, FALSE );
+	CHalfLifeMultiplay::ClientUserInfoChanged( pPlayer, infobuffer );
+}
+
+void CMultiplayBusters::PlayerSpawn( CBasePlayer *pPlayer )
+{
+	CHalfLifeMultiplay::PlayerSpawn( pPlayer );
+	SetPlayerModel( pPlayer, FALSE );
+}
+
+bool IsPlayerBusting( CBaseEntity *pPlayer )
+{
+	if( g_pGameRules->IsBustingGame()
+	    && pPlayer && pPlayer->IsPlayer()
+	    && ((CBasePlayer*)pPlayer)->HasPlayerItemFromID( WEAPON_EGON ))
+		return true;
+
+	return false;
+}
+
+BOOL BustingCanHaveItem( CBasePlayer *pPlayer, CBaseEntity *pItem )
+{
+	if( IsPlayerBusting( pPlayer )
+	    && !( strncmp( STRING( pItem->pev->classname ), "weapon_", 7 )
+	    && strncmp( STRING( pItem->pev->classname ), "ammo_", 5 )))
+		return FALSE;
+
+	return TRUE;
+}
+
+CMultiplayBusters::CMultiplayBusters()
+{
+	CHalfLifeMultiplay();
+
+	m_flEgonBustingCheckTime = -1.0;
+}
+
+void CMultiplayBusters::CheckForEgons( void )
+{
+	CBaseEntity *pPlayer;
+	CWeaponBox *pWeaponBox = NULL;
+	CBasePlayerItem *pWeapon;
+	CBasePlayer *pNewBuster = NULL;
+	int i, bestfrags = 9999;
+
+	if( m_flEgonBustingCheckTime <= 0.0f )
+	{
+		m_flEgonBustingCheckTime = gpGlobals->time + 10.0f;
+		return;
+	}
+
+	if( gpGlobals->time < m_flEgonBustingCheckTime )
+		return;
+
+	m_flEgonBustingCheckTime = -1.0f;
+
+	for( i = 1; i <= gpGlobals->maxClients; i++ )
+	{
+		pPlayer = UTIL_PlayerByIndex( i );
+		if( IsPlayerBusting( pPlayer ))
+			return;
+	}
+
+	for( i = 1; i <= gpGlobals->maxClients; i++ )
+	{
+		pPlayer = UTIL_PlayerByIndex( i );
+
+		if( pPlayer && pPlayer->pev->frags < bestfrags )
+		{
+			pNewBuster = (CBasePlayer*)pPlayer;
+			bestfrags = pPlayer->pev->frags;
+		}
+	}
+
+	if( !pNewBuster )
+		return;
+
+	pNewBuster->GiveNamedItem( "weapon_egon" );
+
+	while( ( pWeaponBox = (CWeaponBox*)UTIL_FindEntityByClassname( pWeaponBox, "weaponbox" )))
+	{
+		// destroy weaponboxes with egons
+		for( i = 0; i < MAX_ITEM_TYPES; i++ )
+		{
+			pWeapon = pWeaponBox->m_rgpPlayerItems[i];
+
+			while( pWeapon )
+			{
+				if( pWeapon->m_iId != WEAPON_EGON )
+				{
+					pWeapon = pWeapon->m_pNext;
+					continue;
+				}
+
+				pWeaponBox->Kill();
+				pWeapon = 0;
+				i = MAX_ITEM_TYPES;
+			}
+		}
+	}
+}
+
+void CMultiplayBusters::Think( void )
+{
+	CheckForEgons();
+	CHalfLifeMultiplay::Think();
+}
+
+void CMultiplayBusters::SetPlayerModel( CBasePlayer *pPlayer, BOOL bKnownBuster )
+{
+	const char *pszModel = NULL;
+
+	if( bKnownBuster || IsPlayerBusting( pPlayer ))
+	{
+		pszModel = "ivan";
+	}
+	else
+	{
+		pszModel = "skeleton";
+	}
+
+	g_engfuncs.pfnSetClientKeyValue( ENTINDEX( pPlayer->edict()), g_engfuncs.pfnGetInfoKeyBuffer( pPlayer->edict()), "model", pszModel );
+}
+
+void CMultiplayBusters::PlayerGotWeapon( CBasePlayer *pPlayer, CBasePlayerItem *pWeapon )
+{
+	if( pWeapon->m_iId != WEAPON_EGON )
+		return;
+
+	pPlayer->RemoveAllItems( FALSE );
+	UTIL_ClientPrintAll( HUD_PRINTCENTER, "Long live the new Buster!" );
+	UTIL_ClientPrintAll( HUD_PRINTTALK, UTIL_VarArgs( "%s is busting!\n", STRING( pPlayer->pev->netname )));
+	SetPlayerModel( pPlayer, TRUE );
+	pPlayer->pev->health = pPlayer->pev->max_health;
+	pPlayer->pev->armorvalue = MAX_NORMAL_BATTERY;
+	pPlayer->pev->renderfx = kRenderFxGlowShell;
+	pPlayer->pev->renderamt = 25;
+	pPlayer->pev->rendercolor = Vector( 0, 75, 250 );
+	pPlayer->m_rgAmmo[pWeapon->PrimaryAmmoIndex()] = pPlayer->ammo_uranium = 100;
+}

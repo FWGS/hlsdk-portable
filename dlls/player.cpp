@@ -755,24 +755,44 @@ void CBasePlayer::PackDeadPlayerItems( void )
 	iPA = 0;
 	iPW = 0;
 
-	// pack the ammo
-	while( iPackAmmo[iPA] != -1 )
+	if( g_pGameRules->IsBustingGame())
 	{
-		pWeaponBox->PackAmmo( MAKE_STRING( CBasePlayerItem::AmmoInfoArray[iPackAmmo[iPA]].pszName ), m_rgAmmo[iPackAmmo[iPA]] );
-		iPA++;
+		while( rgpPackWeapons[iPW] )
+		{
+			// weapon unhooked from the player. Pack it into der box.
+			if( FClassnameIs( rgpPackWeapons[iPW]->pev, "weapon_egon" ))
+			{
+				pWeaponBox->PackWeapon( rgpPackWeapons[iPW] );
+				SET_MODEL( pWeaponBox->edict(), "models/w_egon.mdl" );
+				pWeaponBox->pev->velocity = g_vecZero;
+				pWeaponBox->pev->renderfx = kRenderFxGlowShell;
+				pWeaponBox->pev->renderamt = 25;
+				pWeaponBox->pev->rendercolor = Vector( 0, 75, 250 );
+				break;
+			}
+			iPW++;
+		}
 	}
-
-	// now pack all of the items in the lists
-	while( rgpPackWeapons[iPW] )
+	else
 	{
-		// weapon unhooked from the player. Pack it into der box.
-		pWeaponBox->PackWeapon( rgpPackWeapons[iPW] );
+		// pack the ammo
+		while( iPackAmmo[iPA] != -1 )
+		{
+			pWeaponBox->PackAmmo( MAKE_STRING( CBasePlayerItem::AmmoInfoArray[iPackAmmo[iPA]].pszName ), m_rgAmmo[iPackAmmo[iPA]] );
+			iPA++;
+		}
 
-		iPW++;
+		// now pack all of the items in the lists
+		while( rgpPackWeapons[iPW] )
+		{
+			// weapon unhooked from the player. Pack it into der box.
+			pWeaponBox->PackWeapon( rgpPackWeapons[iPW] );
+
+			iPW++;
+		}
+
+		pWeaponBox->pev->velocity = pev->velocity * 1.2;// weaponbox has player's velocity, then some.
 	}
-
-	pWeaponBox->pev->velocity = pev->velocity * 1.2;// weaponbox has player's velocity, then some.
-
 	RemoveAllItems( TRUE );// now strip off everything that wasn't handled by the code above.
 }
 
@@ -4625,6 +4645,31 @@ BOOL CBasePlayer::HasNamedPlayerItem( const char *pszItemName )
 		while( pItem )
 		{
 			if( !strcmp( pszItemName, STRING( pItem->pev->classname ) ) )
+			{
+				return TRUE;
+			}
+			pItem = pItem->m_pNext;
+		}
+	}
+
+	return FALSE;
+}
+
+//=========================================================
+// HasPlayerItemFromID
+//=========================================================
+BOOL CBasePlayer::HasPlayerItemFromID( int nID )
+{
+	CBasePlayerItem *pItem;
+	int i;
+
+	for( i = 0; i < MAX_ITEM_TYPES; i++ )
+	{
+		pItem = m_rgpPlayerItems[i];
+
+		while( pItem )
+		{
+			if( nID == pItem->m_iId )
 			{
 				return TRUE;
 			}
