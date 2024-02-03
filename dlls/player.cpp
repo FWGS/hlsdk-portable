@@ -661,7 +661,7 @@ void CBasePlayer::PackDeadPlayerItems( void )
 {
 	int iWeaponRules;
 	int iAmmoRules;
-	int i;
+	int i, j;
 	CBasePlayerWeapon *rgpPackWeapons[MAX_WEAPONS] = {0,};
 	int iPackAmmo[MAX_AMMO_SLOTS];
 	int iPW = 0;// index into packweapons array
@@ -696,16 +696,26 @@ void CBasePlayer::PackDeadPlayerItems( void )
 					if( m_pActiveItem && pPlayerItem == m_pActiveItem )
 					{
 						// this is the active item. Pack it.
-						rgpPackWeapons[iPW++] = (CBasePlayerWeapon *)pPlayerItem;
+						rgpPackWeapons[iPW] = (CBasePlayerWeapon *)pPlayerItem;
 					}
 					break;
 				case GR_PLR_DROP_GUN_ALL:
-					rgpPackWeapons[iPW++] = (CBasePlayerWeapon *)pPlayerItem;
+					rgpPackWeapons[iPW] = (CBasePlayerWeapon *)pPlayerItem;
 					break;
 				default:
 					break;
 				}
 
+				if( rgpPackWeapons[iPW] )
+				{
+					// complete the reload.
+					j = Q_min( rgpPackWeapons[iPW]->iMaxClip() - rgpPackWeapons[iPW]->m_iClip, m_rgAmmo[rgpPackWeapons[iPW]->m_iPrimaryAmmoType] );
+
+					// Add them to the clip
+					rgpPackWeapons[iPW]->m_iClip += j;
+					m_rgAmmo[rgpPackWeapons[iPW]->m_iPrimaryAmmoType] -= j;
+					iPW++;
+				}
 				pPlayerItem = pPlayerItem->m_pNext;
 			}
 		}
@@ -790,8 +800,8 @@ void CBasePlayer::PackDeadPlayerItems( void )
 
 			iPW++;
 		}
-
-		pWeaponBox->pev->velocity = pev->velocity * 1.2;// weaponbox has player's velocity, then some.
+end:
+		pWeaponBox->pev->velocity = pev->velocity * 1.2f;// weaponbox has player's velocity, then some.
 	}
 	RemoveAllItems( TRUE );// now strip off everything that wasn't handled by the code above.
 }
