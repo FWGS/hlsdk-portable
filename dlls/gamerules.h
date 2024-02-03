@@ -166,7 +166,7 @@ public:
 };
 
 extern CGameRules *InstallGameRules( void );
-
+BOOL HLGetNextBestWeapon( CBasePlayer *pPlayer, CBasePlayerItem *pCurrentWeapon );
 
 //=========================================================
 // CHalfLifeRules - rules for the single player Half-Life 
