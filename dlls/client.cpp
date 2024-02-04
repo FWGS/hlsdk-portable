@@ -1123,6 +1123,7 @@ we could also use the pas/ pvs that we set in SetupVisibility, if we wanted to. 
 int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *host, int hostflags, int player, unsigned char *pSet )
 {
 	int i;
+	CBaseEntity *Entity;
 
 	// don't send if flagged for NODRAW and it's not the host getting the message
 	if( ( ent->v.effects & EF_NODRAW ) && ( ent != host ) )
@@ -1306,6 +1307,17 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 
 		state->usehull		= ( ent->v.flags & FL_DUCKING ) ? 1 : 0;
 		state->health		= (int)ent->v.health;
+	}
+
+	if( ( Entity = CBaseEntity::Instance( ent ))
+	    && Entity->Classify() != CLASS_NONE
+	    && Entity->Classify() != CLASS_MACHINE )
+	{
+		SetBits( state->eflags, EFLAG_MONSTER );
+	}
+	else
+	{
+		ClearBits( state->eflags, EFLAG_SLERP | EFLAG_MONSTER );
 	}
 
 	return 1;
