@@ -157,7 +157,7 @@ check_ipo_supported(RESULT HAVE_LTO OUTPUT LTO_ERROR)
 if(HAVE_LTO)
 	message(STATUS "IPO / LTO enabled")
 else()
-	message(STATUS "IPO / LTO not supported: <${LTO_ERROR}>")
+	message(STATUS "IPO / LTO not supported: ${LTO_ERROR}")
 endif()
 
 check_include_file("tgmath.h" HAVE_TGMATH_H)

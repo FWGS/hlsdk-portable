@@ -1699,7 +1699,7 @@ int PM_CheckStuck( void )
 	//
 	// Deal with precision error in network.
 	//
-	if( !pmove->server )
+	if( !( pmove->server && pmove->multiplayer ))
 	{
 		// World or BSP model
 		if( ( hitent == 0 ) || ( pmove->physents[hitent].model != NULL ) )

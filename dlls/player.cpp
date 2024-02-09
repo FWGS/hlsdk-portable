@@ -661,7 +661,7 @@ void CBasePlayer::PackDeadPlayerItems( void )
 {
 	int iWeaponRules;
 	int iAmmoRules;
-	int i;
+	int i, j;
 	CBasePlayerWeapon *rgpPackWeapons[MAX_WEAPONS] = {0,};
 	int iPackAmmo[MAX_AMMO_SLOTS];
 	int iPW = 0;// index into packweapons array
@@ -696,16 +696,26 @@ void CBasePlayer::PackDeadPlayerItems( void )
 					if( m_pActiveItem && pPlayerItem == m_pActiveItem )
 					{
 						// this is the active item. Pack it.
-						rgpPackWeapons[iPW++] = (CBasePlayerWeapon *)pPlayerItem;
+						rgpPackWeapons[iPW] = (CBasePlayerWeapon *)pPlayerItem;
 					}
 					break;
 				case GR_PLR_DROP_GUN_ALL:
-					rgpPackWeapons[iPW++] = (CBasePlayerWeapon *)pPlayerItem;
+					rgpPackWeapons[iPW] = (CBasePlayerWeapon *)pPlayerItem;
 					break;
 				default:
 					break;
 				}
 
+				if( rgpPackWeapons[iPW] )
+				{
+					// complete the reload.
+					j = Q_min( rgpPackWeapons[iPW]->iMaxClip() - rgpPackWeapons[iPW]->m_iClip, m_rgAmmo[rgpPackWeapons[iPW]->m_iPrimaryAmmoType] );
+
+					// Add them to the clip
+					rgpPackWeapons[iPW]->m_iClip += j;
+					m_rgAmmo[rgpPackWeapons[iPW]->m_iPrimaryAmmoType] -= j;
+					iPW++;
+				}
 				pPlayerItem = pPlayerItem->m_pNext;
 			}
 		}
@@ -755,24 +765,44 @@ void CBasePlayer::PackDeadPlayerItems( void )
 	iPA = 0;
 	iPW = 0;
 
-	// pack the ammo
-	while( iPackAmmo[iPA] != -1 )
+	if( g_pGameRules->IsBustingGame())
 	{
-		pWeaponBox->PackAmmo( MAKE_STRING( CBasePlayerItem::AmmoInfoArray[iPackAmmo[iPA]].pszName ), m_rgAmmo[iPackAmmo[iPA]] );
-		iPA++;
+		while( rgpPackWeapons[iPW] )
+		{
+			// weapon unhooked from the player. Pack it into der box.
+			if( FClassnameIs( rgpPackWeapons[iPW]->pev, "weapon_egon" ))
+			{
+				pWeaponBox->PackWeapon( rgpPackWeapons[iPW] );
+				SET_MODEL( pWeaponBox->edict(), "models/w_egon.mdl" );
+				pWeaponBox->pev->velocity = g_vecZero;
+				pWeaponBox->pev->renderfx = kRenderFxGlowShell;
+				pWeaponBox->pev->renderamt = 25;
+				pWeaponBox->pev->rendercolor = Vector( 0, 75, 250 );
+				break;
+			}
+			iPW++;
+		}
 	}
-
-	// now pack all of the items in the lists
-	while( rgpPackWeapons[iPW] )
+	else
 	{
-		// weapon unhooked from the player. Pack it into der box.
-		pWeaponBox->PackWeapon( rgpPackWeapons[iPW] );
+		// pack the ammo
+		while( iPackAmmo[iPA] != -1 )
+		{
+			pWeaponBox->PackAmmo( MAKE_STRING( CBasePlayerItem::AmmoInfoArray[iPackAmmo[iPA]].pszName ), m_rgAmmo[iPackAmmo[iPA]] );
+			iPA++;
+		}
 
-		iPW++;
+		// now pack all of the items in the lists
+		while( rgpPackWeapons[iPW] )
+		{
+			// weapon unhooked from the player. Pack it into der box.
+			pWeaponBox->PackWeapon( rgpPackWeapons[iPW] );
+
+			iPW++;
+		}
+end:
+		pWeaponBox->pev->velocity = pev->velocity * 1.2f;// weaponbox has player's velocity, then some.
 	}
-
-	pWeaponBox->pev->velocity = pev->velocity * 1.2;// weaponbox has player's velocity, then some.
-
 	RemoveAllItems( TRUE );// now strip off everything that wasn't handled by the code above.
 }
 
@@ -867,7 +897,7 @@ void CBasePlayer::Killed( entvars_t *pevAttacker, int iGib )
 
 	SetAnimation( PLAYER_DIE );
 
-	m_iRespawnFrames = 0;
+	m_flRespawnTimer = 0;
 
 	pev->modelindex = g_ulModelIndexPlayer;    // don't use eyes
 
@@ -902,6 +932,9 @@ void CBasePlayer::Killed( entvars_t *pevAttacker, int iGib )
 
 	// UNDONE: Put this in, but add FFADE_PERMANENT and make fade time 8.8 instead of 4.12
 	// UTIL_ScreenFade( edict(), Vector( 128, 0, 0 ), 6, 15, 255, FFADE_OUT | FFADE_MODULATE );
+
+	if( g_pGameRules->IsMultiplayer())
+		pev->solid = SOLID_NOT;
 
 	if( ( pev->health < -40 && iGib != GIB_NEVER ) || iGib == GIB_ALWAYS )
 	{
@@ -1267,8 +1300,8 @@ void CBasePlayer::PlayerDeathThink( void )
 	{
 		StudioFrameAdvance();
 
-		m_iRespawnFrames++;				// Note, these aren't necessarily real "frames", so behavior is dependent on # of client movement commands
-		if( m_iRespawnFrames < 120 )   // Animations should be no longer than this
+		m_flRespawnTimer = gpGlobals->frametime + m_flRespawnTimer;	// Note, these aren't necessarily real "frames", so behavior is dependent on # of client movement commands
+		if( m_flRespawnTimer < 4.0f )   // Animations should be no longer than this
 			return;
 	}
 
@@ -1278,7 +1311,14 @@ void CBasePlayer::PlayerDeathThink( void )
 		pev->movetype = MOVETYPE_NONE;
 
 	if( pev->deadflag == DEAD_DYING )
+	{
+		if( g_pGameRules->IsMultiplayer() && pev->movetype == MOVETYPE_NONE )
+		{
+			CopyToBodyQue( pev );
+			pev->modelindex = 0;
+		}
 		pev->deadflag = DEAD_DEAD;
+	}
 
 	StopAnimation();
 
@@ -1319,7 +1359,7 @@ void CBasePlayer::PlayerDeathThink( void )
 		return;
 
 	pev->button = 0;
-	m_iRespawnFrames = 0;
+	m_flRespawnTimer = 0;
 
 	//ALERT( at_console, "Respawn\n" );
 
@@ -1484,18 +1524,31 @@ void CBasePlayer::PlayerUse( void )
 			{
 				m_afPhysicsFlags &= ~PFLAG_ONTRAIN;
 				m_iTrain = TRAIN_NEW|TRAIN_OFF;
+
+				CBaseEntity *pTrain = Instance( pev->groundentity );
+				if( pTrain && pTrain->Classify() == CLASS_VEHICLE )
+				{
+					( (CFuncVehicle *)pTrain )->m_pDriver = NULL;
+				}
 				return;
 			}
 			else
 			{	// Start controlling the train!
 				CBaseEntity *pTrain = CBaseEntity::Instance( pev->groundentity );
 
-				if( pTrain && !( pev->button & IN_JUMP ) && FBitSet( pev->flags, FL_ONGROUND ) && (pTrain->ObjectCaps() & FCAP_DIRECTIONAL_USE ) && pTrain->OnControls( pev ) )
+				if( pTrain && !( pev->button & IN_JUMP ) && FBitSet( pev->flags, FL_ONGROUND ) && ( pTrain->ObjectCaps() & FCAP_DIRECTIONAL_USE ) && pTrain->OnControls( pev ) )
 				{
 					m_afPhysicsFlags |= PFLAG_ONTRAIN;
 					m_iTrain = TrainSpeed( (int)pTrain->pev->speed, pTrain->pev->impulse );
 					m_iTrain |= TRAIN_NEW;
-					EMIT_SOUND( ENT( pev ), CHAN_ITEM, "plats/train_use1.wav", 0.8, ATTN_NORM );
+
+					if( pTrain->Classify() == CLASS_VEHICLE )
+					{
+						EMIT_SOUND( ENT( pev ), CHAN_ITEM, "plats/vehicle_ignition.wav", 0.8, ATTN_NORM );
+						( (CFuncVehicle *)pTrain )->m_pDriver = this;
+					}
+					else
+						EMIT_SOUND( ENT( pev ), CHAN_ITEM, "plats/train_use1.wav", 0.8, ATTN_NORM );
 					return;
 				}
 			}
@@ -1609,9 +1662,17 @@ void CBasePlayer::Jump()
 
 	// If you're standing on a conveyor, add it's velocity to yours (for momentum)
 	entvars_t *pevGround = VARS( pev->groundentity );
-	if( pevGround && ( pevGround->flags & FL_CONVEYOR ) )
+	if( pevGround )
 	{
-		pev->velocity = pev->velocity + pev->basevelocity;
+		if( pevGround->flags & FL_CONVEYOR )
+		{
+			pev->velocity = pev->velocity + pev->basevelocity;
+		}
+
+		if( FClassnameIs( pevGround, "func_vehicle" ))
+		{
+			pev->velocity = pevGround->velocity + pev->velocity;
+		}
 	}
 }
 
@@ -1876,30 +1937,62 @@ void CBasePlayer::PreThink( void )
 				//ALERT( at_error, "In train mode with no train!\n" );
 				m_afPhysicsFlags &= ~PFLAG_ONTRAIN;
 				m_iTrain = TRAIN_NEW|TRAIN_OFF;
+				if( pTrain )
+					( (CFuncVehicle *)pTrain )->m_pDriver = NULL;
 				return;
 			}
 		}
-		else if( !FBitSet( pev->flags, FL_ONGROUND ) || FBitSet( pTrain->pev->spawnflags, SF_TRACKTRAIN_NOCONTROL ) || ( pev->button & ( IN_MOVELEFT | IN_MOVERIGHT ) ) )
+		else if( !FBitSet( pev->flags, FL_ONGROUND ) || FBitSet( pTrain->pev->spawnflags, SF_TRACKTRAIN_NOCONTROL )
+			|| ( ( pev->button & ( IN_MOVELEFT | IN_MOVERIGHT )) && pTrain->Classify() != CLASS_VEHICLE ))
 		{
 			// Turn off the train if you jump, strafe, or the train controls go dead
 			m_afPhysicsFlags &= ~PFLAG_ONTRAIN;
 			m_iTrain = TRAIN_NEW | TRAIN_OFF;
+			( (CFuncVehicle *)pTrain )->m_pDriver = NULL;
 			return;
 		}
 
 		pev->velocity = g_vecZero;
 		vel = 0;
-		if( m_afButtonPressed & IN_FORWARD )
-		{
-			vel = 1;
-			pTrain->Use( this, this, USE_SET, (float)vel );
-		}
-		else if( m_afButtonPressed & IN_BACK )
-		{
-			vel = -1;
-			pTrain->Use( this, this, USE_SET, (float)vel );
-		}
 
+		if( pTrain->Classify() == CLASS_VEHICLE )
+		{
+			if( pev->button & IN_FORWARD )
+			{
+				vel = 1;
+				pTrain->Use( this, this, USE_SET, vel );
+			}
+
+			if( pev->button & IN_BACK )
+			{
+				vel = -1;
+				pTrain->Use( this, this, USE_SET, vel );
+			}
+
+			if( pev->button & IN_MOVELEFT )
+			{
+				vel = 20;
+				pTrain->Use( this, this, USE_SET, vel );
+			}
+			if( pev->button & IN_MOVERIGHT )
+			{
+				vel = 30;
+				pTrain->Use( this, this, USE_SET, vel );
+			}
+		}
+		else
+		{
+			if( m_afButtonPressed & IN_FORWARD )
+			{
+				vel = 1;
+				pTrain->Use( this, this, USE_SET, vel );
+			}
+			else if( m_afButtonPressed & IN_BACK )
+			{
+				vel = -1;
+				pTrain->Use( this, this, USE_SET, vel );
+			}
+		}
 		iGearId = TrainSpeed( pTrain->pev->speed, pTrain->pev->impulse );
 
 		if( iGearId != ( m_iTrain & 0x0F ) )	// Vit_amiN: speed changed
@@ -2718,7 +2811,7 @@ edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer )
 	{
 		pSpot = g_pLastSpawn;
 		// Randomize the start spot
-		for( int i = RANDOM_LONG( 1, 5 ); i > 0; i-- )
+		for( int i = RANDOM_LONG( 1, 9 ); i > 0; i-- )
 			pSpot = UTIL_FindEntityByClassname( pSpot, "info_player_deathmatch" );
 		if( FNullEnt( pSpot ) )  // skip over the null point
 			pSpot = UTIL_FindEntityByClassname( pSpot, "info_player_deathmatch" );
@@ -2787,6 +2880,7 @@ ReturnSpot:
 
 void CBasePlayer::Spawn( void )
 {
+	m_flStartCharge = gpGlobals->time;
 	pev->classname = MAKE_STRING( "player" );
 	pev->health = 100;
 	pev->armorvalue = 0;
@@ -3002,6 +3096,9 @@ int CBasePlayer::Restore( CRestore &restore )
 	//			Barring that, we clear it out here instead of using the incorrect restored time value.
 	m_flNextAttack = UTIL_WeaponTimeBase();
 #endif
+	if( m_flFlashLightTime == 0.0f )
+		m_flFlashLightTime = 1.0f;
+
 	return status;
 }
 
@@ -4580,6 +4677,31 @@ BOOL CBasePlayer::HasNamedPlayerItem( const char *pszItemName )
 		while( pItem )
 		{
 			if( !strcmp( pszItemName, STRING( pItem->pev->classname ) ) )
+			{
+				return TRUE;
+			}
+			pItem = pItem->m_pNext;
+		}
+	}
+
+	return FALSE;
+}
+
+//=========================================================
+// HasPlayerItemFromID
+//=========================================================
+BOOL CBasePlayer::HasPlayerItemFromID( int nID )
+{
+	CBasePlayerItem *pItem;
+	int i;
+
+	for( i = 0; i < MAX_ITEM_TYPES; i++ )
+	{
+		pItem = m_rgpPlayerItems[i];
+
+		while( pItem )
+		{
+			if( nID == pItem->m_iId )
 			{
 				return TRUE;
 			}
