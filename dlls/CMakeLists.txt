@@ -41,7 +41,6 @@ if(NOT MSVC)
 		add_compile_options(-funsafe-math-optimizations) # GCC/Clang flag
 		if(CMAKE_SYSTEM_NAME STREQUAL "Android")
 			add_compile_options(-O3 -DNDEBUG) # gradle compiles release builds with RelWithDebInfo(-O2 -g) and strips debug symbols.
-			target_link_options(${SVDLL_LIBRARY} PUBLIC "LINKER:-O3")
 		endif()
 	endif()
 else()
