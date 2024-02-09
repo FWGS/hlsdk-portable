@@ -39,9 +39,6 @@ if(NOT MSVC)
 		add_compile_options(-fomit-frame-pointer) # GCC/Clang flag
 		add_compile_options(-ftree-vectorize) # GCC/Clang flag
 		add_compile_options(-funsafe-math-optimizations) # GCC/Clang flag
-		if(CMAKE_SYSTEM_NAME STREQUAL "Android")
-			add_compile_options(-O3 -DNDEBUG) # gradle compiles release builds with RelWithDebInfo(-O2 -g) and strips debug symbols.
-		endif()
 	endif()
 else()
 	add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_DEPRECATE)
