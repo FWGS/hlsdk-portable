@@ -109,4 +109,37 @@ jobs:
       with:
         name: hlsdk-${{ steps.extract_branch.outputs.branch }}-windows-vgui
         path: dist-vgui/${{ steps.extract_gamedir.outputs.gamedir }}
+  build-android:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
 
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install gcc-multilib g++-multilib cmake ninja-build
+
+      - name: Setup Java
+        uses: actions/setup-java@v3.6.0
+        with:
+          distribution: 'microsoft'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v2
+
+      - name: Build
+        run: ./gradlew assembleDebug
+        working-directory: android
+        env:
+          ANDROID_NDK_ROOT: /usr/local/lib/android/sdk/ndk/26.1.10909125
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: hlsdk-${{ steps.extract_branch.outputs.branch }}-android
+          path: android/app/build/outputs/apk/debug/*
