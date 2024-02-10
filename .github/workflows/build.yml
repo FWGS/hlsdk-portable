@@ -147,4 +147,4 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: hlsdk-${{ steps.extract_branch.outputs.branch }}-android
-          path: android/app/build/outputs/apk/debug/*
+          path: android/app/build/outputs/apk/debug/*.apk
