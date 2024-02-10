@@ -138,6 +138,11 @@ jobs:
         env:
           ANDROID_NDK_ROOT: /usr/local/lib/android/sdk/ndk/26.1.10909125
 
+      - name: Extract branch name
+        shell: bash
+        run: echo "branch=$(echo ${GITHUB_REF#refs/heads/} | tr '/' '_')" >> $GITHUB_OUTPUT
+        id: extract_branch
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
