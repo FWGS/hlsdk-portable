@@ -111,7 +111,7 @@ float EV_HLDM_PlayTextureSound( int idx, pmtrace_t *ptr, float *vecSrc, float *v
 	chTextureType = 0;
 
 	// Player
-	if( entity >= 1 && entity <= gEngfuncs.GetMaxClients()
+	if( ( entity >= 1 && entity <= gEngfuncs.GetMaxClients() )
 	    || ( ( ent = gEngfuncs.GetEntityByIndex( entity )) && ( ent->curstate.eflags & EFLAG_MONSTER )))
 	{
 		// hit body
