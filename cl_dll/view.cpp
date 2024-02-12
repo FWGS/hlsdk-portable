@@ -1462,6 +1462,8 @@ void V_CalcSpectatorRefdef( struct ref_params_s * pparams )
 			case OBS_ROAMING:
 				VectorCopy( v_cl_angles, v_angles );
 				VectorCopy( v_sim_org, v_origin );
+				// override values if director is active
+				gHUD.m_Spectator.GetDirectorCamera(v_origin, v_angles);
 				break;
 			case OBS_IN_EYE:
 				V_CalcNormalRefdef( pparams );

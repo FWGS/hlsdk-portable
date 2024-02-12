@@ -87,6 +87,11 @@ void CHud::Think( void )
 		// only let players adjust up in fov,  and only if they are not overriden by something else
 		m_iFOV = Q_max( default_fov->value, 90 );  
 	}
+
+	if( gEngfuncs.IsSpectateOnly() )
+	{
+		m_iFOV = gHUD.m_Spectator.GetFOV(); // default_fov->value;
+	}
 }
 
 // Redraw
