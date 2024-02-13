@@ -144,7 +144,7 @@ jobs:
         id: sign_apk
         if: ${{ env.SIGNING_KEY != '' }}
         with:
-          releaseDirectory: app/build/outputs/apk/debug
+          releaseDirectory: app/build/outputs/apk/release
           signingKeyBase64: ${{ secrets.SIGNING_KEY }}
           alias: ${{ secrets.ALIAS }}
           keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
@@ -170,4 +170,4 @@ jobs:
         if: steps.sign_apk.outcome != 'success'
         with:
           name: hlsdk-${{ steps.extract_branch.outputs.branch }}-android
-          path: android/app/build/outputs/apk/debug/*.apk
+          path: android/app/build/outputs/apk/release/*.apk
