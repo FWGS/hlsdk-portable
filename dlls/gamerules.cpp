@@ -452,6 +452,17 @@ CGameRules *InstallGameRules( void )
 			g_teamplay = 1;
 			return new CHalfLifeTeamplay;
 		}
+		if( sv_busters.value > 0 )
+		{
+			g_teamplay = 0;
+			return new CMultiplayBusters;
+		}
+		if( (int)gpGlobals->deathmatch == 1 )
+		{
+			// vanilla deathmatch
+			g_teamplay = 0;
+			return new CHalfLifeMultiplay;
+		}
 		else
 		{
 			// vanilla deathmatch??

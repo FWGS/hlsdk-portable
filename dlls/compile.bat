@@ -149,6 +149,7 @@ set SOURCES=gearbox/blkop_apache.cpp ^
 	tripmine.cpp ^
 	turret.cpp ^
 	util.cpp ^
+	vehicle.cpp ^
 	weapons.cpp ^
 	world.cpp ^
 	xen.cpp ^
