@@ -63,6 +63,7 @@ set SOURCES=../dlls/crossbow.cpp ^
 	input_goldsource.cpp ^
 	input_mouse.cpp ^
 	input_xash3d.cpp ^
+	interpolation.cpp ^
 	menu.cpp ^
 	message.cpp ^
 	parsemsg.cpp ^

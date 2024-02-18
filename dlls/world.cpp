@@ -235,7 +235,7 @@ static void InitBodyQue( void )
 //
 void CopyToBodyQue( entvars_t *pev ) 
 {
-	if( pev->effects & EF_NODRAW )
+	if( ( pev->effects & EF_NODRAW ) || !pev->modelindex )
 		return;
 
 	entvars_t *pevHead = VARS( g_pBodyQueueHead );
