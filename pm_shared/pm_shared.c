@@ -2570,13 +2570,17 @@ void PM_Jump( void )
 	if( !bunnyjump )
 		PM_PreventMegaBunnyJumping();
 
-	if( tfc )
+	// Don't play jump sounds while frozen.
+	if( !( pmove->flags & FL_FROZEN ))
 	{
-		pmove->PM_PlaySound( CHAN_BODY, "player/plyrjmp8.wav", 0.5, ATTN_NORM, 0, PITCH_NORM );
-	}
-	else
-	{
-		PM_PlayStepSound( PM_MapTextureTypeStepType( pmove->chtexturetype ), 1.0f );
+		if( tfc )
+		{
+			pmove->PM_PlaySound( CHAN_BODY, "player/plyrjmp8.wav", 0.5, ATTN_NORM, 0, PITCH_NORM );
+		}
+		else
+		{
+			PM_PlayStepSound( PM_MapTextureTypeStepType( pmove->chtexturetype ), 1.0f );
+		}
 	}
 
 	// See if user can super long jump?
