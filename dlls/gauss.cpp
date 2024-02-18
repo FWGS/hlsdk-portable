@@ -430,6 +430,8 @@ void CGauss::Fire( Vector vecOrigSrc, Vector vecDir, float flDamage )
 		if( pEntity->pev->takedamage )
 		{
 			ClearMultiDamage();
+			if( pEntity->pev == m_pPlayer->pev )
+				tr.iHitgroup = 0;
 			pEntity->TraceAttack( m_pPlayer->pev, flDamage, vecDir, &tr, DMG_BULLET );
 			ApplyMultiDamage( m_pPlayer->pev, m_pPlayer->pev );
 		}

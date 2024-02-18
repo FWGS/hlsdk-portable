@@ -1296,7 +1296,7 @@ void CBasePlayer::PlayerDeathThink( void )
 		PackDeadPlayerItems();
 	}
 
-	if( pev->modelindex && ( !m_fSequenceFinished ) && ( pev->deadflag == DEAD_DYING ) )
+	if( pev->modelindex && ( !m_fSequenceFinished ) && ( pev->deadflag == DEAD_DYING ))
 	{
 		StudioFrameAdvance();
 
@@ -1305,20 +1305,20 @@ void CBasePlayer::PlayerDeathThink( void )
 			return;
 	}
 
-	// once we're done animating our death and we're on the ground, we want to set movetype to None so our dead body won't do collisions and stuff anymore
-	// this prevents a bug where the dead body would go to a player's head if he walked over it while the dead player was clicking their button to respawn
-	if( pev->movetype != MOVETYPE_NONE && FBitSet( pev->flags, FL_ONGROUND ) )
-		pev->movetype = MOVETYPE_NONE;
-
 	if( pev->deadflag == DEAD_DYING )
 	{
-		if( g_pGameRules->IsMultiplayer() && pev->movetype == MOVETYPE_NONE )
+		if( g_pGameRules->IsMultiplayer() && m_fSequenceFinished && pev->movetype == MOVETYPE_NONE )
 		{
 			CopyToBodyQue( pev );
 			pev->modelindex = 0;
 		}
 		pev->deadflag = DEAD_DEAD;
 	}
+
+	// once we're done animating our death and we're on the ground, we want to set movetype to None so our dead body won't do collisions and stuff anymore
+	// this prevents a bug where the dead body would go to a player's head if he walked over it while the dead player was clicking their button to respawn
+	if( pev->movetype != MOVETYPE_NONE && FBitSet( pev->flags, FL_ONGROUND ) )
+		pev->movetype = MOVETYPE_NONE;
 
 	StopAnimation();
 
