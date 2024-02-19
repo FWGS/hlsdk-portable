@@ -380,7 +380,7 @@ void CHud::Init( void )
 	m_pCvarStealMouse = CVAR_CREATE( "hud_capturemouse", "1", FCVAR_ARCHIVE );
 	m_pCvarDraw = CVAR_CREATE( "hud_draw", "1", FCVAR_ARCHIVE );
 	cl_lw = gEngfuncs.pfnGetCvarPointer( "cl_lw" );
-	cl_viewbob = CVAR_CREATE( "cl_viewbob", "0", FCVAR_ARCHIVE );
+	cl_viewbob = CVAR_CREATE( "cl_viewbob", "1", FCVAR_ARCHIVE );
 
 	m_pSpriteList = NULL;
 
@@ -428,6 +428,8 @@ void CHud::Init( void )
 	m_Menu.Init();
 
 	MsgFunc_ResetHUD( 0, 0, NULL );
+	ClientCmd( "richpresence_gamemode\n" );
+	ClientCmd( "richpresence_update\n" );
 }
 
 // CHud destructor

@@ -47,6 +47,7 @@ option(USE_NOVGUI_SCOREBOARD "Prefer non-VGUI Scoreboard when USE_VGUI is enable
 option(USE_VOICEMGR "Enable VOICE MANAGER." OFF)
 option(BUILD_CLIENT "Build client dll" ON)
 option(BUILD_SERVER "Build server dll" ON)
+option(LTO "Enable interprocedural optimization" OFF)
 option(POLLY "Enable pollyhedral optimization" OFF)
 
 if(CMAKE_SIZEOF_VOID_P EQUAL 4 OR
@@ -75,7 +76,10 @@ if((WIN32 OR ${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
 	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "EM64T") AND NOT 64BIT)
 	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "x86"
 	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "X86"
-	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "i386"))
+	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "i386"
+	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "i486"
+	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "i586"
+	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "i686"))
 	option(GOLDSOURCE_SUPPORT "Build goldsource compatible client library" ON)
 else()
 	option(GOLDSOURCE_SUPPORT "Build goldsource compatible client library" OFF)
@@ -153,11 +157,13 @@ if(VITA)
 	add_compile_options(-fno-use-cxa-atexit)
 endif()
 
-check_ipo_supported(RESULT HAVE_LTO OUTPUT LTO_ERROR)
-if(HAVE_LTO)
-	message(STATUS "IPO / LTO enabled")
-else()
-	message(STATUS "IPO / LTO not supported: <${LTO_ERROR}>")
+if(LTO)
+	check_ipo_supported(RESULT HAVE_LTO OUTPUT LTO_ERROR)
+	if(HAVE_LTO)
+		message(STATUS "IPO / LTO enabled")
+	else()
+		message(STATUS "IPO / LTO not supported: ${LTO_ERROR}")
+	endif()
 endif()
 
 check_include_file("tgmath.h" HAVE_TGMATH_H)
