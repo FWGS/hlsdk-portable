@@ -1,12 +1,13 @@
 BARNACLE_FIX_VISIBILITY=OFF # Barnacle tongue length fix
 CLIENT_WEAPONS=ON # Client local weapons prediction
-CROWBAR_IDLE_ANIM=ON # Crowbar idle animation
-CROWBAR_DELAY_FIX=ON # Crowbar attack delay fix
+CROWBAR_IDLE_ANIM=OFF # Crowbar idle animation
+CROWBAR_DELAY_FIX=OFF # Crowbar attack delay fix
 CROWBAR_FIX_RAPID_CROWBAR=ON # Rapid crowbar fix
-GAUSS_OVERCHARGE_FIX=ON # Gauss overcharge fix
-TRIPMINE_BEAM_DUPLICATION_FIX=ON # Fix of tripmine beam duplication on level transition
-HANDGRENADE_DEPLOY_FIX=ON # Handgrenade deploy animation fix after finishing a throw
-WEAPONS_ANIMATION_TIMES_FIX=ON # Animation times fix for some weapons
+GAUSS_OVERCHARGE_FIX=OFF # Gauss overcharge fix
+TRIPMINE_BEAM_DUPLICATION_FIX=OFF # Fix of tripmine beam duplication on level transition
+HANDGRENADE_DEPLOY_FIX=OFF # Handgrenade deploy animation fix after finishing a throw
+WEAPONS_ANIMATION_TIMES_FIX=OFF # Animation times fix for some weapons
+SATCHEL_OLD_BEHAVIOUR=ON # Old pre-HL 25th satchel's behaviour
 OEM_BUILD=OFF # OEM Build
 HLDEMO_BUILD=OFF # Demo Build
 
