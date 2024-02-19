@@ -44,7 +44,6 @@ DEFINES = [
 'XASH_IRIX',
 'XASH_JS',
 'XASH_LINUX',
-'XASH_LINUX_UNKNOWN',
 'XASH_LITTLE_ENDIAN',
 'XASH_MIPS',
 'XASH_MOBILE_PLATFORM',
@@ -76,8 +75,6 @@ def configure(conf):
 	# engine/common/build.c
 	if conf.env.XASH_ANDROID:
 		buildos = "android"
-	elif conf.env.XASH_LINUX_UNKNOWN:
-		buildos = "linuxunkabi"
 	elif conf.env.XASH_WIN32 or conf.env.XASH_LINUX or conf.env.XASH_APPLE:
 		buildos = "" # no prefix for default OS
 	elif conf.env.XASH_FREEBSD:
