@@ -34,7 +34,7 @@ cvar_t falldamage	= { "mp_falldamage","0", FCVAR_SERVER };
 cvar_t weaponstay	= { "mp_weaponstay","0", FCVAR_SERVER };
 cvar_t selfgauss	= { "selfgauss", "1", FCVAR_SERVER };
 cvar_t chargerfix	= { "chargerfix", "0", FCVAR_SERVER };
-cvar_t satchelfix	= { "satchelfix", "0", FCVAR_SERVER };
+cvar_t satchelfix	= { "satchelfix", "1", FCVAR_SERVER };
 cvar_t explosionfix	= { "explosionfix", "0", FCVAR_SERVER };
 cvar_t monsteryawspeedfix	= { "monsteryawspeedfix", "1", FCVAR_SERVER };
 cvar_t corpsephysics = { "corpsephysics", "0", FCVAR_SERVER };
@@ -457,6 +457,8 @@ cvar_t	sk_player_leg3	= { "sk_player_leg3","1" };
 
 // END Cvars for Skill Level settings
 
+cvar_t sv_pushable_fixed_tick_fudge = { "sv_pushable_fixed_tick_fudge", "15" };
+cvar_t sv_busters = { "sv_busters", "0" };
 //START BOT
 cvar_t	cvar_bot = { "bot", "" };
 //END BOT
@@ -509,7 +511,7 @@ void GameDLLInit( void )
 	CVAR_REGISTER( &multibyte_only );
 
 	CVAR_REGISTER( &mp_chattime );
-
+	CVAR_REGISTER( &sv_busters );
 
 
 // REGISTER CVARS FOR SKILL LEVEL STUFF
@@ -887,6 +889,7 @@ void GameDLLInit( void )
 	CVAR_REGISTER( &sk_player_leg3 );
 // END REGISTER CVARS FOR SKILL LEVEL STUFF
 
+	CVAR_REGISTER( &sv_pushable_fixed_tick_fudge );
 //START BOT
 	CVAR_REGISTER( &cvar_bot );
 //END BOT
