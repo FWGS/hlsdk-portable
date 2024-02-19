@@ -22,6 +22,7 @@
 #include "nodes.h"
 #include "player.h"
 #include "gamerules.h"
+#include "game.h"
 
 enum satchel_state
 {
@@ -191,23 +192,39 @@ LINK_ENTITY_TO_CLASS( weapon_satchel, CSatchel )
 //=========================================================
 int CSatchel::AddDuplicate( CBasePlayerItem *pOriginal )
 {
+#if !CLIENT_DLL
 	CSatchel *pSatchel;
+	int nNumSatchels, nSatchelsInPocket;
+	CBaseEntity *ent;
 
-#if CLIENT_DLL
-	if( bIsMultiplayer() )
-#else
 	if( g_pGameRules->IsMultiplayer() )
-#endif
 	{
+		if( satchelfix.value )
+		{
+			if( !pOriginal->m_pPlayer )
+				return TRUE;
+
+			nNumSatchels = 0;
+			nSatchelsInPocket = pOriginal->m_pPlayer->m_rgAmmo[pOriginal->PrimaryAmmoIndex()];
+			ent = NULL;
+
+			while( ( ent = UTIL_FindEntityInSphere( ent, pOriginal->m_pPlayer->pev->origin, 4096 )) != NULL )
+			{
+				if( FClassnameIs( ent->pev, "monster_satchel" ))
+					nNumSatchels += ent->pev->owner == pOriginal->m_pPlayer->edict();
+			}
+		}
+
 		pSatchel = (CSatchel *)pOriginal;
 
-		if( pSatchel->m_chargeReady != SATCHEL_IDLE )
+		if( pSatchel->m_chargeReady != SATCHEL_IDLE
+		    && ( satchelfix.value && nSatchelsInPocket + nNumSatchels > SATCHEL_MAX_CARRY - 1 ))
 		{
 			// player has some satchels deployed. Refuse to add more.
 			return FALSE;
 		}
 	}
-
+#endif
 	return CBasePlayerWeapon::AddDuplicate( pOriginal );
 }
 
@@ -330,8 +347,9 @@ void CSatchel::Holster( int skiplocal /* = 0 */ )
 	}
 }
 
-void CSatchel::PrimaryAttack()
+void CSatchel::PrimaryAttack( void )
 {
+#if SATCHEL_OLD_BEHAVIOUR
 	switch( m_chargeReady )
 	{
 	case SATCHEL_IDLE:
@@ -347,9 +365,9 @@ void CSatchel::PrimaryAttack()
 
 			CBaseEntity *pSatchel = NULL;
 
-			while( ( pSatchel = UTIL_FindEntityInSphere( pSatchel, m_pPlayer->pev->origin, 4096 ) ) != NULL )
+			while( ( pSatchel = UTIL_FindEntityInSphere( pSatchel, m_pPlayer->pev->origin, 4096 )) != NULL )
 			{
-				if( FClassnameIs( pSatchel->pev, "monster_satchel" ) )
+				if( FClassnameIs( pSatchel->pev, "monster_satchel" ))
 				{
 					if( pSatchel->pev->owner == pPlayer )
 					{
@@ -368,14 +386,56 @@ void CSatchel::PrimaryAttack()
 		// we're reloading, don't allow fire
 		break;
 	}
-}
-
-void CSatchel::SecondaryAttack( void )
-{
+#else
 	if( m_chargeReady != SATCHEL_RELOAD )
 	{
 		Throw();
 	}
+#endif
+}
+
+void CSatchel::SecondaryAttack( void )
+{
+#if SATCHEL_OLD_BEHAVIOUR
+	if( m_chargeReady != SATCHEL_RELOAD )
+	{
+		Throw();
+	}
+#else
+	switch( m_chargeReady )
+	{
+	case SATCHEL_IDLE:
+		break;
+	case SATCHEL_READY:
+		{
+			SendWeaponAnim( SATCHEL_RADIO_FIRE );
+
+			edict_t *pPlayer = m_pPlayer->edict();
+
+			CBaseEntity *pSatchel = NULL;
+
+			while( ( pSatchel = UTIL_FindEntityInSphere( pSatchel, m_pPlayer->pev->origin, 4096 )) != NULL )
+			{
+				if( FClassnameIs( pSatchel->pev, "monster_satchel" ))
+				{
+					if( pSatchel->pev->owner == pPlayer )
+					{
+						pSatchel->Use( m_pPlayer, m_pPlayer, USE_ON, 0 );
+					}
+				}
+			}
+
+			m_chargeReady = SATCHEL_RELOAD;
+			m_flNextPrimaryAttack = GetNextAttackDelay( 0.5f );
+			m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5f;
+			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.5f;
+			break;
+		}
+	case SATCHEL_RELOAD:
+		// we're reloading, don't allow fire
+		break;
+	}
+#endif
 }
 
 void CSatchel::Throw( void )
