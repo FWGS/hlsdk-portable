@@ -38,7 +38,13 @@ enum crowbar_e
 	CROWBAR_ATTACK2HIT,
 	CROWBAR_ATTACK3MISS,
 	CROWBAR_ATTACK3HIT,
+#if !CROWBAR_IDLE_ANIM
 	CROWBAR_TAUNT
+#else
+	CROWBAR_TAUNT,
+	CROWBAR_IDLE2,
+	CROWBAR_IDLE3
+#endif
 };
 
 void CCrowbar::Spawn()
@@ -218,7 +224,9 @@ int CCrowbar::Swing( int fFirst )
 		{
 			// miss
 			m_flNextPrimaryAttack = GetNextAttackDelay( 0.5 );
-
+#if CROWBAR_IDLE_ANIM
+			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
+#endif
 			// player "shoot" animation
 			m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
 		}
@@ -345,6 +353,38 @@ int CCrowbar::Swing( int fFirst )
 		m_flNextPrimaryAttack = GetNextAttackDelay( 0.25f );
 #endif
 	}
+#if CROWBAR_IDLE_ANIM
+	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
+#endif
 	return fDidHit;
 }
 
+#if CROWBAR_IDLE_ANIM
+void CCrowbar::WeaponIdle( void )
+{
+	if( m_flTimeWeaponIdle < UTIL_WeaponTimeBase() )
+	{
+		int iAnim;
+		float flRand = UTIL_SharedRandomFloat( m_pPlayer->random_seed, 0, 1 );
+		if( flRand > 0.9f )
+		{
+			iAnim = CROWBAR_IDLE2;
+			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 160.0f / 30.0f;
+		}
+		else
+		{
+			if( flRand > 0.5f )
+			{
+				iAnim = CROWBAR_IDLE;
+				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 70.0f / 25.0f;
+			}
+			else
+			{
+				iAnim = CROWBAR_IDLE3;
+				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 160.0f / 30.0f;
+			}
+		}
+		SendWeaponAnim( iAnim );
+	}
+}
+#endif
