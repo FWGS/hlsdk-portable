@@ -17,7 +17,7 @@
 #include "eiface.h"
 #include "pmtrace.h"
 
-#if _WIN32
+#if XASH_WIN32
 #define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
 #define WIN32_EXTRA_LEAN
 #define HSPRITE WINDOWS_HSPRITE
