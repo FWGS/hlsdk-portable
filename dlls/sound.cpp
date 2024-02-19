@@ -1341,6 +1341,15 @@ void SENTENCEG_Init()
 
 	g_engfuncs.pfnFreeFile( pMemFile );
 
+	if( gcallsentences > CVOXFILESENTENCEMAX_GOLDSOURCE_ANNIVERSARY_25 )
+	{
+		ALERT( at_warning, "NOTE: this mod might not work properly under GoldSource (post-anniversary update) engine: more than %d sentences\n", CVOXFILESENTENCEMAX_GOLDSOURCE_ANNIVERSARY_25 );
+	}
+	else if( gcallsentences > CVOXFILESENTENCEMAX_GOLDSOURCE_LEGACY )
+	{
+		ALERT( at_warning, "NOTE: this mod might not work properly under GoldSource (pre-anniversary update) engine: more than %d sentences\n", CVOXFILESENTENCEMAX_GOLDSOURCE_LEGACY );
+	}
+
 	fSentencesInit = TRUE;
 
 	// init lru lists
