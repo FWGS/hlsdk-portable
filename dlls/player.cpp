@@ -800,7 +800,6 @@ void CBasePlayer::PackDeadPlayerItems( void )
 
 			iPW++;
 		}
-end:
 		pWeaponBox->pev->velocity = pev->velocity * 1.2f;// weaponbox has player's velocity, then some.
 	}
 	RemoveAllItems( TRUE );// now strip off everything that wasn't handled by the code above.
