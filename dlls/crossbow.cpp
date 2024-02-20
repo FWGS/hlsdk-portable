@@ -319,7 +319,9 @@ BOOL CCrossbow::Deploy()
 
 void CCrossbow::Holster( int skiplocal /* = 0 */ )
 {
-	if( m_fInZoom )
+	m_fInReload = FALSE;// cancel any reload in progress.
+
+	if( m_pPlayer->pev->fov != 0 )
 	{
 		SecondaryAttack();
 	}

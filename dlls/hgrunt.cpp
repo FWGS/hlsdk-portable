@@ -233,7 +233,7 @@ void CHGrunt::GibMonster( void )
 	Vector vecGunPos;
 	Vector vecGunAngles;
 
-	if( GetBodygroup( 2 ) != 2 )
+	if( GetBodygroup( GUN_GROUP ) != GUN_NONE )
 	{
 		// throw a gun if the grunt has one
 		GetAttachment( 0, vecGunPos, vecGunAngles );
@@ -569,7 +569,7 @@ void CHGrunt::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir
 	if( ptr->iHitgroup == 11 )
 	{
 		// make sure we're wearing one
-		if( GetBodygroup( 1 ) == HEAD_GRUNT && ( bitsDamageType & (DMG_BULLET | DMG_SLASH | DMG_BLAST | DMG_CLUB ) ) )
+		if( GetBodygroup( HEAD_GROUP ) == HEAD_GRUNT && ( bitsDamageType & (DMG_BULLET | DMG_SLASH | DMG_BLAST | DMG_CLUB ) ) )
 		{
 			// absorb damage
 			flDamage -= 20;
@@ -823,37 +823,40 @@ void CHGrunt::HandleAnimEvent( MonsterEvent_t *pEvent )
 	{
 		case HGRUNT_AE_DROP_GUN:
 		{
-			Vector vecGunPos;
-			Vector vecGunAngles;
-			const char *pszWeapon;
-
-			GetAttachment( 0, vecGunPos, vecGunAngles );
-
-			// switch to body group with no gun.
-			SetBodygroup( GUN_GROUP, GUN_NONE );
-
-			// now spawn a gun.
-			if( FBitSet( pev->weapons, HGRUNT_SHOTGUN ) )
+			if( GetBodygroup( GUN_GROUP ) != GUN_NONE )
 			{
-				if( FBitSet( pev->spawnflags, SF_BARNEY_HAVESUIT ) )
-					pszWeapon = "weapon_shotgun";
+				Vector vecGunPos;
+				Vector vecGunAngles;
+				const char *pszWeapon;
+
+				GetAttachment( 0, vecGunPos, vecGunAngles );
+
+				// switch to body group with no gun.
+				SetBodygroup( GUN_GROUP, GUN_NONE );
+
+				// now spawn a gun.
+				if( FBitSet( pev->weapons, HGRUNT_SHOTGUN ) )
+				{
+					if( FBitSet( pev->spawnflags, SF_BARNEY_HAVESUIT ) )
+						pszWeapon = "weapon_shotgun";
+					else
+						pszWeapon = "weapon_barneyshotgun";
+				}
+				else if( FBitSet( pev->spawnflags, SF_BARNEY_HAVESUIT ) )
+				{
+					pszWeapon = "weapon_9mmAR";
+				}
 				else
-					pszWeapon = "weapon_barneyshotgun";
-			}
-			else if( FBitSet( pev->spawnflags, SF_BARNEY_HAVESUIT ) )
-			{
-				pszWeapon = "weapon_9mmAR";
-			}
-			else
-			{
-				pszWeapon = "weapon_barney9mmar";
-			}
+				{
+					pszWeapon = "weapon_barney9mmar";
+				}
 
-			DropItem( pszWeapon, vecGunPos, vecGunAngles );
+				DropItem( pszWeapon, vecGunPos, vecGunAngles );
 
-			if( FBitSet( pev->weapons, HGRUNT_GRENADELAUNCHER ) )
-			{
-				DropItem( "ammo_ARgrenades", BodyTarget( pev->origin ), vecGunAngles );
+				if( FBitSet( pev->weapons, HGRUNT_GRENADELAUNCHER ) )
+				{
+					DropItem( "ammo_ARgrenades", BodyTarget( pev->origin ), vecGunAngles );
+				}
 			}
 		}
 			break;

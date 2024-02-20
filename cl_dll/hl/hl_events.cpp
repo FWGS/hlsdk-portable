@@ -30,6 +30,7 @@ void EV_FireGauss( struct event_args_s *args  );
 void EV_SpinGauss( struct event_args_s *args  );
 
 void EV_TrainPitchAdjust( struct event_args_s *args );
+void EV_VehiclePitchAdjust( event_args_t *args );
 
 //Begin Alex
 void EV_FireM41A( struct event_args_s *args );
@@ -67,4 +68,5 @@ void Game_HookEvents( void )
 	gEngfuncs.pfnHookEvent( "events/beretta1.sc", EV_FireBeretta1 );
 	gEngfuncs.pfnHookEvent( "events/beretta2.sc", EV_FireBeretta2 );
 //end Alex
+	gEngfuncs.pfnHookEvent( "events/vehicle.sc", EV_VehiclePitchAdjust );
 }
