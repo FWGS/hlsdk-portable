@@ -49,6 +49,8 @@ public:
 	virtual int Restore( CRestore &restore );
 	static TYPEDESCRIPTION m_SaveData[];
 
+	BOOL IsAllowedToSpeak( void ) { return TRUE; }
+
 	int m_animate;
 };
 

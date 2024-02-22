@@ -100,7 +100,7 @@ static DLL_FUNCTIONS gFunctionTable =
 
 static void SetObjectCollisionBox( entvars_t *pev );
 
-#if !_WIN32
+#if !XASH_WIN32
 extern "C" {
 #endif
 int GetEntityAPI( DLL_FUNCTIONS *pFunctionTable, int interfaceVersion )
@@ -127,7 +127,7 @@ int GetEntityAPI2( DLL_FUNCTIONS *pFunctionTable, int *interfaceVersion )
 	return TRUE;
 }
 
-#if !_WIN32
+#if !XASH_WIN32
 }
 #endif
 

@@ -1,7 +1,4 @@
 #pragma once
-
-#include "build.h"
-
 #if !defined(INPUT_MOUSE_H)
 #define INPUT_MOUSE_H
 #include "cl_dll.h"
@@ -51,7 +48,7 @@ protected:
 #if GOLDSOURCE_SUPPORT && ( XASH_WIN32 || ( XASH_LINUX && !XASH_ANDROID ) || XASH_APPLE ) && XASH_X86
 #define SUPPORT_GOLDSOURCE_INPUT	1
 
-#if _WIN32
+#if XASH_WIN32
 #define HSPRITE WINDOWS_HSPRITE
 #include <windows.h>
 #undef HSPRITE

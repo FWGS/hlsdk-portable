@@ -28,6 +28,7 @@
 #pragma once
 #if !defined(CL_DLL_H)
 #define CL_DLL_H
+#include "build.h"
 typedef unsigned char byte;
 typedef unsigned short word;
 typedef float vec_t;
@@ -39,7 +40,7 @@ typedef float vec_t;
 #include "../engine/cdll_int.h"
 #include "../dlls/cdll_dll.h"
 
-#if !_WIN32
+#if !XASH_WIN32
 #define _cdecl
 #endif
 #include "exportdef.h"
@@ -48,9 +49,6 @@ typedef float vec_t;
 #include <cmath>
 #else
 #include <math.h>
-#endif
-#if __LP64__ || __LLP64__ || _WIN64 || (__x86_64__ && !__ILP32__) || _M_X64 || __ia64 || _M_IA64 || __aarch64__ || __powerpc64__
-  #define XASH_64BIT	1
 #endif
 
 extern cl_enginefunc_t gEngfuncs;
