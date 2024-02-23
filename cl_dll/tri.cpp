@@ -188,6 +188,10 @@ void BlackFog ( void )
 	//Not in water and we want fog.
 	static float fColorBlack[3] = {0,0,0};
 	bool bFog = g_iWaterLevel < 2 && g_fStartDist > 0 && g_fEndDist > 0;
+
+	if( g_fEndDist > 0 )
+		gEngfuncs.pTriAPI->FogParams( 0.0005f, true );
+
 	if (bFog)
 		gEngfuncs.pTriAPI->Fog ( fColorBlack, g_fStartDist, g_fEndDist, bFog );
 	else
