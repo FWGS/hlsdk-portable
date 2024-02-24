@@ -282,7 +282,7 @@ void CHGrunt::GibMonster( void )
 	Vector vecGunPos;
 	Vector vecGunAngles;
 
-	if( GetBodygroup( 2 ) != 2 )
+	if( GetBodygroup( GUN_GROUP ) != GUN_NONE )
 	{
 		// throw a gun if the grunt has one
 		GetAttachment( 0, vecGunPos, vecGunAngles );
@@ -859,27 +859,30 @@ void CHGrunt::HandleAnimEvent( MonsterEvent_t *pEvent )
 		{
 			if (pev->spawnflags & SF_MONSTER_NO_WPN_DROP) break; //LRC
 
-			Vector vecGunPos;
-			Vector vecGunAngles;
-
-			GetAttachment( 0, vecGunPos, vecGunAngles );
-
-			// switch to body group with no gun.
-			SetBodygroup( GUN_GROUP, GUN_NONE );
-
-			// now spawn a gun.
-			if( FBitSet( pev->weapons, HGRUNT_SHOTGUN ) )
+			if ( GetBodygroup( GUN_GROUP ) != GUN_NONE )
 			{
-				 DropItem( "weapon_shotgun", vecGunPos, vecGunAngles );
-			}
-			else
-			{
-				 DropItem( "weapon_9mmAR", vecGunPos, vecGunAngles );
-			}
+				Vector vecGunPos;
+				Vector vecGunAngles;
 
-			if( FBitSet( pev->weapons, HGRUNT_GRENADELAUNCHER ) )
-			{
-				DropItem( "ammo_ARgrenades", BodyTarget( pev->origin ), vecGunAngles );
+				GetAttachment( 0, vecGunPos, vecGunAngles );
+
+				// switch to body group with no gun.
+				SetBodygroup( GUN_GROUP, GUN_NONE );
+
+				// now spawn a gun.
+				if( FBitSet( pev->weapons, HGRUNT_SHOTGUN ) )
+				{
+					 DropItem( "weapon_shotgun", vecGunPos, vecGunAngles );
+				}
+				else
+				{
+					 DropItem( "weapon_9mmAR", vecGunPos, vecGunAngles );
+				}
+
+				if( FBitSet( pev->weapons, HGRUNT_GRENADELAUNCHER ) )
+				{
+					DropItem( "ammo_ARgrenades", BodyTarget( pev->origin ), vecGunAngles );
+				}
 			}
 		}
 			break;

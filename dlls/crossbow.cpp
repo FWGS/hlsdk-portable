@@ -27,8 +27,6 @@
 #define BOLT_AIR_VELOCITY	2000
 #define BOLT_WATER_VELOCITY	1000
 
-extern BOOL g_fIsXash3D;
-
 // UNDONE: Save/restore this?  Don't forget to set classname and LINK_ENTITY_TO_CLASS()
 // 
 // OVERLOADS SOME ENTVARS:
@@ -324,7 +322,7 @@ void CCrossbow::Holster( int skiplocal /* = 0 */ )
 {
 	m_fInReload = FALSE;// cancel any reload in progress.
 
-	if( m_fInZoom )
+	if( m_pPlayer->pev->fov != 0 )
 	{
 		SecondaryAttack();
 	}
