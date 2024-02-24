@@ -1100,9 +1100,6 @@ void UTIL_BloodStream( const Vector &origin, const Vector &direction, int color,
 	if( !UTIL_ShouldShowBlood( color ) )
 		return;
 
-	if( g_Language == LANGUAGE_GERMAN && color == BLOOD_COLOR_RED )
-		color = 0;
-
 	MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, origin );
 		WRITE_BYTE( TE_BLOODSTREAM );
 		WRITE_COORD( origin.x );
@@ -1123,9 +1120,6 @@ void UTIL_BloodDrips( const Vector &origin, const Vector &direction, int color, 
 
 	if( color == DONT_BLEED || amount == 0 )
 		return;
-
-	if( g_Language == LANGUAGE_GERMAN && color == BLOOD_COLOR_RED )
-		color = 0;
 
 	if( g_pGameRules->IsMultiplayer() )
 	{
