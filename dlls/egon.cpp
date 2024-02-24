@@ -306,7 +306,8 @@ void CEgon::Fire( const Vector &vecOrigSrc, const Vector &vecDir )
 				// multiplayer uses 1 ammo every 1/10th second
 				if( gpGlobals->time >= m_flAmmoUseTime )
 				{
-					UseAmmo( 1 );
+					if( !g_pGameRules->IsBustingGame())
+						UseAmmo( 1 );
 					m_flAmmoUseTime = gpGlobals->time + 0.1f;
 				}
 			}
@@ -351,7 +352,8 @@ void CEgon::Fire( const Vector &vecOrigSrc, const Vector &vecDir )
 				//multiplayer uses 5 ammo/second
 				if( gpGlobals->time >= m_flAmmoUseTime )
 				{
-					UseAmmo( 1 );
+					if( !g_pGameRules->IsBustingGame())
+						UseAmmo( 1 );
 					m_flAmmoUseTime = gpGlobals->time + 0.2f;
 				}
 			}
@@ -510,6 +512,15 @@ void CEgon::WeaponIdle( void )
 
 	SendWeaponAnim( iAnim );
 	m_deployed = TRUE;
+}
+
+BOOL CEgon::CanHolster( void )
+{
+#if CLIENT_DLL
+	return TRUE;
+#else
+	return !g_pGameRules->IsBustingGame();
+#endif
 }
 
 void CEgon::EndAttack( void )
