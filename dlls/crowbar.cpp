@@ -328,7 +328,7 @@ int CCrowbar::Swing( int fFirst )
 				if( !pEntity->IsAlive() )
 				{
 #if CROWBAR_FIX_RAPID_CROWBAR
-					m_flNextPrimaryAttack = GetNextAttackDelay(0.25);
+					m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.25f;
 #endif
 					return TRUE;
 				}

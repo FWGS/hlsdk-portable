@@ -166,7 +166,8 @@ void CEgon::PrimaryAttack( void )
 	// player "shoot" animation
 	m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
 
-	UseAmmo( 1 );
+	if( !g_pGameRules->IsBustingGame())
+		UseAmmo( 1 );
 
 	SendWeaponAnim( EGON_FIRE1 + RANDOM_LONG( 0, 3 ), 0 );
 	EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, "weapons/flmfire2.wav", 1.0, ATTN_NORM, 0, 93 + RANDOM_LONG( 0, 15 ) );
@@ -219,6 +220,15 @@ void CEgon::WeaponIdle( void )
 	}
 
 	SendWeaponAnim( iAnim );
+}
+
+BOOL CEgon::CanHolster( void )
+{
+#if CLIENT_DLL
+	return TRUE;
+#else
+	return !g_pGameRules->IsBustingGame();
+#endif
 }
 
 void CEgon::EndAttack( void )

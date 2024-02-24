@@ -30,6 +30,7 @@ void EV_FireGauss( struct event_args_s *args  );
 void EV_SpinGauss( struct event_args_s *args  );
 
 void EV_TrainPitchAdjust( struct event_args_s *args );
+void EV_VehiclePitchAdjust( event_args_t *args );
 
 void EV_FireAP9( struct event_args_s *args );
 void EV_FireChaingun1( struct event_args_s *args );
@@ -63,11 +64,11 @@ void Game_HookEvents( void )
 	gEngfuncs.pfnHookEvent( "events/gauss.sc", EV_FireGauss );
 	gEngfuncs.pfnHookEvent( "events/gaussspin.sc", EV_SpinGauss );
 	gEngfuncs.pfnHookEvent( "events/train.sc", EV_TrainPitchAdjust );
-
 	gEngfuncs.pfnHookEvent( "events/ap9.sc", EV_FireAP9 );
 	gEngfuncs.pfnHookEvent( "events/chaingun1.sc", EV_FireChaingun1 );
 	gEngfuncs.pfnHookEvent( "events/chaingun2.sc", EV_FireChaingun2 );
 	gEngfuncs.pfnHookEvent( "events/sniper.sc", EV_FireSniper );
 	gEngfuncs.pfnHookEvent( "events/sniper2.sc", EV_FireSniper2 );
 	gEngfuncs.pfnHookEvent( "events/taurus.sc", EV_FireTaurus );
+	gEngfuncs.pfnHookEvent( "events/vehicle.sc", EV_VehiclePitchAdjust );
 }

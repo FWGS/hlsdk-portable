@@ -64,6 +64,7 @@ public:
 	CUSTOM_SCHEDULES;
 
 private:	
+	const char *GetScientistModel( void );
 	float m_painTime;
 	float m_healTime;
 	float m_fearTime;
@@ -81,6 +82,9 @@ public:
 	void KeyValue(KeyValueData *pkvd);
 	int	m_iPose;// which sequence to display
 	static const char *m_szPoses[7];
+
+private:
+	const char *GetScientistModel( void );
 };
 
 //=========================================================

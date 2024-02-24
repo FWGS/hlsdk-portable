@@ -140,9 +140,9 @@ void CHandGrenade::WeaponIdle( void )
 		else
 			angThrow.x = -10.0f + angThrow.x * ( ( 90.0f + 10.0f ) / 90.0f );
 
-		float flVel = ( 90.0f - angThrow.x ) * 4.0f;
-		if( flVel > 500.0f )
-			flVel = 500.0f;
+		float flVel = ( 90.0f - angThrow.x ) * 6.5f;
+		if( flVel > 1000.0f )
+			flVel = 1000.0f;
 
 		UTIL_MakeVectors( angThrow );
 

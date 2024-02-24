@@ -116,6 +116,25 @@ CRpgRocket *CRpgRocket::CreateRpgRocket( Vector vecOrigin, Vector vecAngles, CBa
 	return pRocket;
 }
 
+void CRpgRocket::Explode( TraceResult *pTrace, int bitsDamageType )
+{
+	if( CRpg *pLauncher = GetLauncher())
+	{
+		// my launcher is still around, tell it I'm dead.
+		pLauncher->m_cActiveRockets--;
+		m_hLauncher = 0;
+	}
+
+	STOP_SOUND( edict(), CHAN_VOICE, "weapons/rocket1.wav" );
+
+	CGrenade::Explode( pTrace, bitsDamageType );
+}
+
+CRpg *CRpgRocket::GetLauncher( void )
+{
+	return (CRpg*)( (CBaseEntity*)m_hLauncher );
+}
+
 //=========================================================
 //=========================================================
 void CRpgRocket::Spawn( void )
@@ -150,10 +169,11 @@ void CRpgRocket::Spawn( void )
 //=========================================================
 void CRpgRocket::RocketTouch( CBaseEntity *pOther )
 {
-	if( CRpg* pLauncher = (CRpg*)( (CBaseEntity*)( m_hLauncher ) ) )
+	if( CRpg *pLauncher = GetLauncher())
 	{
 		// my launcher is still around, tell it I'm dead.
 		pLauncher->m_cActiveRockets--;
+		m_hLauncher = 0;
 	}
 
 	STOP_SOUND( edict(), CHAN_VOICE, "weapons/rocket1.wav" );
@@ -264,16 +284,22 @@ void CRpgRocket::FollowThink( void )
 		}
 		pev->velocity = pev->velocity * 0.2f + vecTarget * flSpeed * 0.798f;
 		if( pev->waterlevel == 0 && pev->velocity.Length() < 1500.0f )
-		{
-			if( CRpg *pLauncher = (CRpg*)( (CBaseEntity*)( m_hLauncher ) ) )
-			{
-				// my launcher is still around, tell it I'm dead.
-				pLauncher->m_cActiveRockets--;
-			}
 			Detonate();
-		}
 	}
 	// ALERT( at_console, "%.0f\n", flSpeed );
+
+	if( CRpg *pLauncher = GetLauncher())
+	{
+		if( ( pev->origin - pLauncher->pev->origin ).Length() > 8192 || gpGlobals->time - m_flIgniteTime > 6.0f )
+		{
+			// my launcher is still around, tell it I'm dead.
+			pLauncher->m_cActiveRockets--;
+			m_hLauncher = 0;
+		}
+	}
+
+	if( UTIL_PointContents( pev->origin ) == CONTENTS_SKY )
+		Detonate();
 
 	pev->nextthink = gpGlobals->time + 0.1f;
 }
@@ -374,7 +400,7 @@ int CRpg::GetItemInfo( ItemInfo *p )
 	p->iSlot = 3;
 	p->iPosition = 0;
 	p->iId = m_iId = WEAPON_RPG;
-	p->iFlags = 0;
+	p->iFlags = ITEM_FLAG_NOCHOICE;
 	p->iWeight = RPG_WEIGHT;
 
 	return 1;
