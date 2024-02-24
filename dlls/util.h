@@ -401,18 +401,6 @@ void DBG_AssertFunction(BOOL fExpr, const char* szExpr, const char* szFile, int 
 
 extern DLL_GLOBAL const Vector g_vecZero;
 
-//
-// Constants that were used only by QC (maybe not used at all now)
-//
-// Un-comment only as needed
-//
-#define LANGUAGE_ENGLISH				0
-#define LANGUAGE_GERMAN					1
-#define LANGUAGE_FRENCH					2
-#define LANGUAGE_BRITISH				3
-
-extern DLL_GLOBAL int			g_Language;
-
 #define AMBIENT_SOUND_STATIC			0	// medium radius attenuation
 #define AMBIENT_SOUND_EVERYWHERE		1
 #define AMBIENT_SOUND_SMALLRADIUS		2
