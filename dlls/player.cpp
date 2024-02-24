@@ -3540,13 +3540,11 @@ void CBloodSplat::Spray( void )
 {
 	TraceResult tr;	
 
-	if( g_Language != LANGUAGE_GERMAN )
-	{
-		UTIL_MakeVectors( pev->angles );
-		UTIL_TraceLine( pev->origin, pev->origin + gpGlobals->v_forward * 128, ignore_monsters, pev->owner, & tr );
+	UTIL_MakeVectors( pev->angles );
+	UTIL_TraceLine( pev->origin, pev->origin + gpGlobals->v_forward * 128, ignore_monsters, pev->owner, & tr );
 
-		UTIL_BloodDecalTrace( &tr, BLOOD_COLOR_RED );
-	}
+	UTIL_BloodDecalTrace( &tr, BLOOD_COLOR_RED );
+
 	SetThink( &CBloodSplat::SUB_Remove );
 	SetNextThink( 0.1f );
 }
