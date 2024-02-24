@@ -23,7 +23,7 @@
 extern int f_Observer;  // flag to indicate if player is in observer mode
 
 // weapon firing delay based on skill (min and max delay for each weapon)
-float primary_fire_delay[WEAPON_SNARK+1][5][2] = {
+float primary_fire_delay[MAX_WEAPONS][5][2] = {
    // WEAPON_NONE - NOT USED
    {{0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}},
    // WEAPON_CROWBAR
@@ -58,7 +58,7 @@ float primary_fire_delay[WEAPON_SNARK+1][5][2] = {
    {{0.0, 0.1}, {0.1, 0.2}, {0.2, 0.5}, {0.5, 0.7}, {0.6, 1.0}},
    };
 
-float secondary_fire_delay[WEAPON_SNARK+1][5][2] = {
+float secondary_fire_delay[MAX_WEAPONS][5][2] = {
    // WEAPON_NONE - NOT USED
    {{0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}},
    // WEAPON_CROWBAR - Not applicable
