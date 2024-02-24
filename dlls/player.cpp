@@ -798,7 +798,6 @@ void CBasePlayer::PackDeadPlayerItems( void )
 
 			iPW++;
 		}
-end:
 		pWeaponBox->pev->velocity = pev->velocity * 1.2f;// weaponbox has player's velocity, then some.
 	}
 	RemoveAllItems( TRUE );// now strip off everything that wasn't handled by the code above.
@@ -3409,13 +3408,11 @@ void CBloodSplat::Spray( void )
 {
 	TraceResult tr;	
 
-	if( g_Language != LANGUAGE_GERMAN )
-	{
-		UTIL_MakeVectors( pev->angles );
-		UTIL_TraceLine( pev->origin, pev->origin + gpGlobals->v_forward * 128, ignore_monsters, pev->owner, & tr );
+	UTIL_MakeVectors( pev->angles );
+	UTIL_TraceLine( pev->origin, pev->origin + gpGlobals->v_forward * 128, ignore_monsters, pev->owner, & tr );
 
-		UTIL_BloodDecalTrace( &tr, BLOOD_COLOR_RED );
-	}
+	UTIL_BloodDecalTrace( &tr, BLOOD_COLOR_RED );
+
 	SetThink( &CBaseEntity::SUB_Remove );
 	pev->nextthink = gpGlobals->time + 0.1f;
 }
