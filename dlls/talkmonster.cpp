@@ -43,6 +43,8 @@ TYPEDESCRIPTION	CTalkMonster::m_SaveData[] =
 	DEFINE_FIELD( CTalkMonster, m_useTime, FIELD_TIME ),
 	DEFINE_FIELD( CTalkMonster, m_iszUse, FIELD_STRING ),
 	DEFINE_FIELD( CTalkMonster, m_iszUnUse, FIELD_STRING ),
+	DEFINE_FIELD( CTalkMonster, m_iszDecline, FIELD_STRING ), //LRC
+	DEFINE_FIELD( CTalkMonster, m_iszSpeakAs, FIELD_STRING ), //LRC
 	DEFINE_FIELD( CTalkMonster, m_flLastSaidSmelled, FIELD_TIME ),
 	DEFINE_FIELD( CTalkMonster, m_flStopTalkTime, FIELD_TIME ),
 	DEFINE_FIELD( CTalkMonster, m_hTalkTarget, FIELD_EHANDLE ),
@@ -848,7 +850,7 @@ CBaseEntity *CTalkMonster::FindNearestFriend( BOOL fPlayer )
 		// for each friend in this bsp...
 		while( ( pFriend = UTIL_FindEntityByClassname( pFriend, pszFriend ) ) )
 		{
-			if( pFriend == this || !pFriend->IsAlive() )
+			if( pFriend == this || !pFriend->IsAlive() || pFriend->pev->deadflag != DEAD_NO )
 				// don't talk to self or dead people
 				continue;
 
@@ -1402,7 +1404,7 @@ void CTalkMonster::StartFollowing( CBaseEntity *pLeader )
 //LRC- redefined, now returns true if following would be physically possible
 BOOL CTalkMonster::CanFollow( void )
 {
-	if( m_MonsterState == MONSTERSTATE_SCRIPT )
+	if( m_MonsterState == MONSTERSTATE_SCRIPT || m_IdealMonsterState == MONSTERSTATE_SCRIPT )
 	{
 		if( !m_pCine )
 			return FALSE;
