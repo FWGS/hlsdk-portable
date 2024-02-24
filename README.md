@@ -80,7 +80,7 @@ git clone --recursive https://github.com/FWGS/hlsdk-portable
 
 ### Prerequisites
 
-Install and run [Visual Studio Installer](https://visualstudio.microsoft.com/downloads/). The installer allows you to choose specific components. Select `Desktop development with C++`. You can untick everything you don't need in Installation details, but you must keep `MSVC` ticked. You may also keep `C++ CMake tools for Windows` ticked as you'll need **cmake**. Alternatively you can install **cmake** from the [cmake.org](https://cmake.org/download/) and during installation tick *Add to the PATH...*.
+Install and run [Visual Studio Installer](https://visualstudio.microsoft.com/downloads/). The installer allows you to choose specific components. Select `Desktop development with C++`. You can untick everything you don't need in Installation details, but you must keep `MSVC` and corresponding Windows SDK (e.g. Windows 10 SDK or Windows 11 SDK) ticked. You may also keep `C++ CMake tools for Windows` ticked as you'll need **cmake**. Alternatively you can install **cmake** from the [cmake.org](https://cmake.org/download/) and during installation tick *Add to the PATH...*.
 
 ### Opening command prompt
 
@@ -164,7 +164,7 @@ sudo ./setup_chroot.sh --i386 --tarball ./com.valvesoftware.SteamRuntime.Sdk-i38
 
 Now you can use cmake and make prepending the commands with `schroot --chroot steamrt_scout_i386 --`:
 ```
-schroot --chroot steamrt_scout_i386 -- cmake -B build-in-steamrt -S .
+schroot --chroot steamrt_scout_i386 -- cmake -DCMAKE_BUILD_TYPE=Release -B build-in-steamrt -S .
 schroot --chroot steamrt_scout_i386 -- cmake --build build-in-steamrt
 ```
 
@@ -180,13 +180,20 @@ sudo apt install cmake build-essential gcc-multilib g++-multilib libsdl2-dev:i38
 ### Building
 
 ```
-cmake -B build -S .
+cmake -DCMAKE_BUILD_TYPE=Release -B build -S .
 cmake --build build
 ```
 
 Note that the libraries built this way might be not compatible with Steam Half-Life. If you have such issue you can configure it to build statically with c++ and gcc libraries:
 ```
-cmake .. -DCMAKE_C_FLAGS="-static-libstdc++ -static-libgcc"
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -static-libstdc++ -static-libgcc" -B build -S .
+cmake --build build
+```
+
+Alternatively, you can avoid libstdc++/libgcc_s linking using small libsupc++ library and optimization build flags instead(Really just set Release build type and set C compiler as C++ compiler):
+```
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=cc -B build -S .
+cmake --build build
 ```
 To ensure portability it's still better to build using Steam Runtime or another chroot of some older distro.
 
@@ -229,13 +236,36 @@ Insert your actual user name in place of `yourusername`.
 
 Prepend any make or cmake call with `schroot -c jessie --`:
 ```
-schroot --chroot jessie -- cmake -B build-in-chroot -S .
+schroot --chroot jessie -- cmake -DCMAKE_BUILD_TYPE=Release -B build-in-chroot -S .
 schroot --chroot jessie -- cmake --build build-in-chroot
 ```
 
 ## Android
+1. Set up [Android Studio/Android SDK](https://developer.android.com/studio).
 
-TODO
+### Android Studio
+Open the project located in the `android` folder and build.
+
+### Command-line
+```
+cd android
+./gradlew assembleRelease
+```
+
+### Customizing the build
+settings.gradle:
+* **rootProject.name** - project name displayed in Android Studio (optional).
+
+app/build.gradle:
+* **android->namespace** and **android->defaultConfig->applicationId** - set both to desired package name.
+* **getBuildNum** function - set **releaseDate** variable as desired.
+
+app/java/su/xash/hlsdk/MainActivity.java:
+* **.putExtra("gamedir", ...)** - set desired gamedir.
+
+src/main/AndroidManifest.xml:
+* **application->android:label** - set desired application name.
+* **su.xash.engine.gamedir** value - set to same as above.
 
 ## Nintendo Switch
 
@@ -307,7 +337,13 @@ Install C and C++ compilers (like gcc or clang), cmake and make.
 ### Building
 
 ```
-cmake -B build -S .
+cmake -DCMAKE_BUILD_TYPE=Release -B build -S .
+cmake --build build
+```
+
+Force 64-bit build:
+```
+cmake -DCMAKE_BUILD_TYPE=Release -D64BIT=1 -B build -S .
 cmake --build build
 ```
 
@@ -316,15 +352,22 @@ cmake --build build
 To use waf, you need to install python (2.7 minimum)
 
 ```
-(./waf configure -T release)
-(./waf)
+./waf configure -T release
+./waf
+```
+
+Force 64-bit build:
+```
+./waf configure -T release -8
+./waf
 ```
 
 ## Build options
 
 Some useful build options that can be set during the cmake step.
 
-* **GOLDSOURCE_SUPPORT** - allows to turn off/on the support for GoldSource input. Set to **ON** by default on Windows and Linux, **OFF** on other platforms.
+* **GOLDSOURCE_SUPPORT** - allows to turn off/on the support for GoldSource input. Set to **ON** by default on x86 Windows and x86 Linux, **OFF** on other platforms.
+* **64BIT** - allows to turn off/on 64-bit build. Set to **OFF** by default on x86_64 Windows, x86_64 Linux and 32-bit platforms, **ON** on other 64-bit platforms.
 * **USE_VGUI** - whether to use VGUI library. **OFF** by default. You need to init `vgui_support` submodule in order to build with VGUI.
 
 This list is incomplete. Look at `CMakeLists.txt` to see all available options.

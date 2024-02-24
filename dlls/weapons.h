@@ -37,7 +37,7 @@ public:
 	static void UseSatchelCharges( entvars_t *pevOwner, SATCHELCODE code );
 
 	void Explode( Vector vecSrc, Vector vecAim );
-	void Explode( TraceResult *pTrace, int bitsDamageType );
+	virtual void Explode( TraceResult *pTrace, int bitsDamageType );
 	void EXPORT Smoke( void );
 
 	void EXPORT BounceTouch( CBaseEntity *pOther );
@@ -171,6 +171,7 @@ public:
 #define EAGEL_DEFAULT_GIVE			12
 #define PYTHON_DEFAULT_GIVE			6
 #define MP5_DEFAULT_GIVE			25
+#define MP5_DEFAULT_GIVE_MP			MP5_MAX_CLIP
 #define MP5_M203_DEFAULT_GIVE		0
 #define SHOTGUN_DEFAULT_GIVE		12
 #define SHOTGUNA_DEFAULT_GIVE		12
@@ -231,6 +232,7 @@ typedef	enum
 #define ITEM_FLAG_NOAUTOSWITCHEMPTY	4
 #define ITEM_FLAG_LIMITINWORLD		8
 #define ITEM_FLAG_EXHAUSTIBLE		16 // A player can totally exhaust their ammo supply and lose this weapon
+#define ITEM_FLAG_NOCHOICE		32
 
 #define WEAPON_IS_ONTARGET 0x40
 
@@ -1009,6 +1011,8 @@ public:
 	void EXPORT RocketTouch( CBaseEntity *pOther );
 	void EXPORT AfterGlow( void ); // initiallize the afterglow
 	static CRpgRocket *CreateRpgRocket( Vector vecOrigin, Vector vecAngles, CBaseEntity *pOwner, CRpg *pLauncher );
+	void Explode( TraceResult *pTrace, int bitsDamageType );
+	inline CRpg *GetLauncher( void );
 
 	int m_iSpriteTexture;// initiallize the sprite for disc
 	int m_iExplode;// initiallize the sprite for explosion
@@ -1080,13 +1084,13 @@ public:
 	int AddToPlayer( CBasePlayer *pPlayer );
 
 	BOOL Deploy( void );
+	BOOL CanHolster( void );
 	void Holster( int skiplocal = 0 );
 
 	void UpdateEffect( const Vector &startPoint, const Vector &endPoint, float timeBlend );
 
 	void CreateEffect ( void );
 	void DestroyEffect ( void );
-
 	void EndAttack( void );
 	void Attack( void );
 	void PrimaryAttack( void );

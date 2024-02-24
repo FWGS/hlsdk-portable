@@ -100,6 +100,7 @@ extern client_sprite_t *GetSpriteList( client_sprite_t *pList, const char *psz, 
 
 extern cvar_t *sensitivity;
 cvar_t *cl_lw = NULL;
+cvar_t *cl_viewbob = NULL;
 cvar_t *cl_rollangle;
 cvar_t *cl_rollspeed;
 
@@ -540,6 +541,7 @@ void CHud::Init( void )
 	m_pCvarStealMouse = CVAR_CREATE( "hud_capturemouse", "1", FCVAR_ARCHIVE );
 	m_pCvarDraw = CVAR_CREATE( "hud_draw", "1", FCVAR_ARCHIVE );
 	cl_lw = gEngfuncs.pfnGetCvarPointer( "cl_lw" );
+	cl_viewbob = CVAR_CREATE( "cl_viewbob", "1", FCVAR_ARCHIVE );
 
 	m_pSpriteList = NULL;
 	m_pShinySurface = NULL; //LRC
@@ -597,6 +599,8 @@ void CHud::Init( void )
 	MsgFunc_ResetHUD( 0, 0, NULL );
 	cl_rollangle = gEngfuncs.pfnRegisterVariable ( "cl_rollangle", "0.65", FCVAR_CLIENTDLL | FCVAR_ARCHIVE );
 	cl_rollspeed = gEngfuncs.pfnRegisterVariable ( "cl_rollspeed", "300", FCVAR_CLIENTDLL | FCVAR_ARCHIVE );
+	ClientCmd( "richpresence_gamemode\n" );
+	ClientCmd( "richpresence_update\n" );
 }
 
 // CHud destructor

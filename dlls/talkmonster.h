@@ -166,8 +166,8 @@ public:
 	float		m_useTime;						// Don't allow +USE until this time
 	string_t		m_iszUse;						// Custom +USE sentence group (follow)
 	string_t		m_iszUnUse;						// Custom +USE sentence group (stop following)
-	int			m_iszDecline;					// Custom +USE sentence group (refuse to follow) LRC
-	int			m_iszSpeakAs;					// Change the prefix for all this monster's speeches LRC
+	string_t		m_iszDecline;					// Custom +USE sentence group (refuse to follow) LRC
+	string_t		m_iszSpeakAs;					// Change the prefix for all this monster's speeches LRC
 
 	float		m_flLastSaidSmelled;// last time we talked about something that stinks
 	float		m_flStopTalkTime;// when in the future that I'll be done saying this sentence.
