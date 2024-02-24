@@ -1330,14 +1330,7 @@ LINK_ENTITY_TO_CLASS( gibshooter, CGibShooter )
 
 void CGibShooter::Precache( void )
 {
-	if( g_Language == LANGUAGE_GERMAN )
-	{
-		m_iGibModelIndex = PRECACHE_MODEL( "models/germanygibs.mdl" );
-	}
-	else
-	{
-		m_iGibModelIndex = PRECACHE_MODEL( "models/hgibs.mdl" );
-	}
+	m_iGibModelIndex = PRECACHE_MODEL( "models/hgibs.mdl" );
 }
 
 void CGibShooter::KeyValue( KeyValueData *pkvd )
