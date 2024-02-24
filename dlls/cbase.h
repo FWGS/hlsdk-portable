@@ -58,6 +58,11 @@ CBaseEntity
 
 extern "C" EXPORT int GetEntityAPI( DLL_FUNCTIONS *pFunctionTable, int interfaceVersion );
 extern "C" EXPORT int GetEntityAPI2( DLL_FUNCTIONS *pFunctionTable, int *interfaceVersion );
+// TODO: replace this by actual definitions from physint.h
+typedef void *server_physics_api_t;
+typedef void *physics_interface_t;
+extern "C" EXPORT int Server_GetPhysicsInterface( int version, server_physics_api_t *api, physics_interface_t *interface );
+extern bool g_fIsXash3D;
 
 extern int DispatchSpawn( edict_t *pent );
 extern void DispatchKeyValue( edict_t *pentKeyvalue, KeyValueData *pkvd );
