@@ -17,8 +17,6 @@
 #include "util.h"
 #include "game.h"
 
-BOOL		g_fIsXash3D;
-
 cvar_t displaysoundlist = {"displaysoundlist","0"};
 
 // multiplayer server rules
@@ -464,10 +462,6 @@ cvar_t sv_busters = { "sv_busters", "0" };
 // This gets called one time when the game is initialied
 void GameDLLInit( void )
 {
-	// Register cvars here:
-	if( !CVAR_GET_POINTER( "sv_language" ) )
-		g_fIsXash3D = TRUE;
-
 	g_psv_gravity = CVAR_GET_POINTER( "sv_gravity" );
 	g_psv_aim = CVAR_GET_POINTER( "sv_aim" );
 	g_footsteps = CVAR_GET_POINTER( "mp_footsteps" );
