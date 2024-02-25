@@ -791,7 +791,7 @@ CBaseEntity *CTalkMonster::FindNearestFriend( BOOL fPlayer )
 		// for each friend in this bsp...
 		while( ( pFriend = UTIL_FindEntityByClassname( pFriend, pszFriend ) ) )
 		{
-			if( pFriend == this || !pFriend->IsAlive() )
+			if( pFriend == this || !pFriend->IsAlive() || pFriend->pev->deadflag != DEAD_NO )
 				// don't talk to self or dead people
 				continue;
 
@@ -1344,7 +1344,7 @@ void CTalkMonster::StartFollowing( CBaseEntity *pLeader )
 
 BOOL CTalkMonster::CanFollow( void )
 {
-	if( m_MonsterState == MONSTERSTATE_SCRIPT )
+	if( m_MonsterState == MONSTERSTATE_SCRIPT || m_IdealMonsterState == MONSTERSTATE_SCRIPT )
 	{
 		if( !m_pCine )
 			return FALSE;

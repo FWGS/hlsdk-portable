@@ -66,12 +66,6 @@ void CGib::SpawnStickyGibs( entvars_t *pevVictim, Vector vecOrigin, int cGibs )
 {
 	int i;
 
-	if( g_Language == LANGUAGE_GERMAN )
-	{
-		// no sticky gibs in germany right now!
-		return; 
-	}
-
 	for( i = 0; i < cGibs; i++ )
 	{
 		CGib *pGib = GetClassPtr( (CGib *)NULL );
@@ -134,16 +128,8 @@ void CGib::SpawnHeadGib( entvars_t *pevVictim )
 {
 	CGib *pGib = GetClassPtr( (CGib *)NULL );
 
-	if( g_Language == LANGUAGE_GERMAN )
-	{
-		pGib->Spawn( "models/germangibs.mdl" );// throw one head
-		pGib->pev->body = 0;
-	}
-	else
-	{
-		pGib->Spawn( "models/hgibs.mdl" );// throw one head
-		pGib->pev->body = 0;
-	}
+	pGib->Spawn( "models/hgibs.mdl" );// throw one head
+	pGib->pev->body = 0;
 
 	if( pevVictim )
 	{
@@ -195,53 +181,37 @@ void CGib::SpawnRandomGibs( entvars_t *pevVictim, int cGibs, int human )
 	{
 		CGib *pGib = GetClassPtr( (CGib *)NULL );
 
-		if( g_Language == LANGUAGE_GERMAN )
+		if( human )
 		{
-			if( IsChristmas( false ) || ( IsMarch31st() ) || (CVAR_GET_FLOAT( "mp_christmas" ) == 1 ) )
+			if( IsChristmas( false ) || ( IsMarch31st() ) || ( CVAR_GET_FLOAT( "mp_christmas" ) == 1 ) )
+			{
+				pGib->Spawn( "models/pgibs.mdl" );
+				pGib->pev->body = RANDOM_LONG( 0, PRESENT_GIB_COUNT - 1 );
+			}
+			else if( CVAR_GET_FLOAT( "mp_christmas" ) == 1 )
 			{
 				pGib->Spawn( "models/pgibs.mdl" );
 				pGib->pev->body = RANDOM_LONG( 0, PRESENT_GIB_COUNT - 1 );
 			}
 			else
 			{
-				pGib->Spawn( "models/germangibs.mdl" );
-				pGib->pev->body = RANDOM_LONG( 0, GERMAN_GIB_COUNT - 1 );
+				// human pieces
+				pGib->Spawn( "models/hgibs.mdl" );
+				pGib->pev->body = RANDOM_LONG( 1, HUMAN_GIB_COUNT - 1 ); // start at one to avoid throwing random amounts of skulls (0th gib)
 			}
 		}
 		else
 		{
-			if( human )
+			if( IsChristmas( false ) || ( IsMarch31st() ) || ( CVAR_GET_FLOAT( "mp_christmas" ) == 1 ) )
 			{
-				if( IsChristmas( false ) || ( IsMarch31st() ) || ( CVAR_GET_FLOAT( "mp_christmas" ) == 1 ) )
-				{
-					pGib->Spawn( "models/pgibs.mdl" );
-					pGib->pev->body = RANDOM_LONG( 0, PRESENT_GIB_COUNT - 1 );
-				}
-				else if( CVAR_GET_FLOAT( "mp_christmas" ) == 1 )
-				{
-					pGib->Spawn( "models/pgibs.mdl" );
-					pGib->pev->body = RANDOM_LONG( 0, PRESENT_GIB_COUNT - 1 );
-				}
-				else
-				{
-					// human pieces
-					pGib->Spawn( "models/hgibs.mdl" );
-					pGib->pev->body = RANDOM_LONG( 1, HUMAN_GIB_COUNT - 1 ); // start at one to avoid throwing random amounts of skulls (0th gib)
-				}
+				pGib->Spawn( "models/pgibs.mdl" );
+				pGib->pev->body = RANDOM_LONG( 0, PRESENT_GIB_COUNT - 1 );
 			}
 			else
 			{
-				if( IsChristmas( false ) || ( IsMarch31st() ) || ( CVAR_GET_FLOAT( "mp_christmas" ) == 1 ) )
-				{
-					pGib->Spawn( "models/pgibs.mdl" );
-					pGib->pev->body = RANDOM_LONG( 0, PRESENT_GIB_COUNT - 1 );
-				}
-				else
-				{
-					// aliens
-					pGib->Spawn( "models/agibs.mdl" );
-					pGib->pev->body = RANDOM_LONG( 0, ALIEN_GIB_COUNT - 1 );
-				}
+				// aliens
+				pGib->Spawn( "models/agibs.mdl" );
+				pGib->pev->body = RANDOM_LONG( 0, ALIEN_GIB_COUNT - 1 );
 			}
 		}
 
@@ -789,7 +759,7 @@ void CGib::BounceGibTouch( CBaseEntity *pOther )
 	}
 	else
 	{
-		if( g_Language != LANGUAGE_GERMAN && m_cBloodDecals > 0 && m_bloodColor != DONT_BLEED )
+		if( m_cBloodDecals > 0 && m_bloodColor != DONT_BLEED )
 		{
 			vecSpot = pev->origin + Vector( 0.0f, 0.0f, 8.0f );//move up a bit, and trace down.
 			UTIL_TraceLine( vecSpot, vecSpot + Vector( 0.0f, 0.0f, -24.0f ), ignore_monsters, ENT( pev ), &tr );

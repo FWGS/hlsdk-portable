@@ -40,7 +40,7 @@ public:
 	static void UseSatchelCharges( entvars_t *pevOwner, SATCHELCODE code );
 
 	void Explode( Vector vecSrc, Vector vecAim );
-	void Explode( TraceResult *pTrace, int bitsDamageType );
+	virtual void Explode( TraceResult *pTrace, int bitsDamageType );
 	void Explode2( TraceResult *pTrace, int bitsDamageType );
 	void EXPORT Smoke( void );
 
@@ -118,7 +118,7 @@ public:
 #define RPG_WEIGHT			20
 #define GAUSS_WEIGHT		20
 #define EGON_WEIGHT			20
-#define HORNETGUN_WEIGHT	10
+#define HORNETGUN_WEIGHT	15
 #define HANDGRENADE_WEIGHT	5
 #define SNARK_WEIGHT		5
 #define SATCHEL_WEIGHT		-10
@@ -183,6 +183,7 @@ public:
 #define GLOCK_DEFAULT_GIVE			17
 #define PYTHON_DEFAULT_GIVE			6
 #define MP5_DEFAULT_GIVE			25
+#define MP5_DEFAULT_GIVE_MP			MP5_MAX_CLIP
 #define MP5_M203_DEFAULT_GIVE		0
 #define SHOTGUN_DEFAULT_GIVE		150
 #define CROSSBOW_DEFAULT_GIVE		5
@@ -251,6 +252,7 @@ typedef	enum
 #define ITEM_FLAG_NOAUTOSWITCHEMPTY	4
 #define ITEM_FLAG_LIMITINWORLD		8
 #define ITEM_FLAG_EXHAUSTIBLE		16 // A player can totally exhaust their ammo supply and lose this weapon
+#define ITEM_FLAG_NOCHOICE		32
 
 #define	GOLDENGUN_WEIGHT		30
 #define	GOLDENGUN_MAX_CARRY		100
@@ -829,6 +831,8 @@ public:
 	void EXPORT IgniteThink( void );
 	void EXPORT RocketTouch( CBaseEntity *pOther );
 	static CRpgRocket *CreateRpgRocket( Vector vecOrigin, Vector vecAngles, int mode, CBaseEntity *pOwner, CRpg *pLauncher );
+	void Explode( TraceResult *pTrace, int bitsDamageType );
+	inline CRpg *GetLauncher( void );
 
 	int m_iTrail;
 	float m_flIgniteTime;

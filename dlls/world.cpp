@@ -229,7 +229,7 @@ static void InitBodyQue( void )
 //
 void CopyToBodyQue( entvars_t *pev ) 
 {
-	if( pev->effects & EF_NODRAW )
+	if( ( pev->effects & EF_NODRAW ) || !pev->modelindex )
 		return;
 
 	entvars_t *pevHead = VARS( g_pBodyQueueHead );
@@ -516,18 +516,9 @@ void CWorld::Precache( void )
 	PRECACHE_SOUND( "common/bodydrop3.wav" );// dead bodies hitting the ground (animation events)
 	PRECACHE_SOUND( "common/bodydrop4.wav" );
 	
-	g_Language = (int)CVAR_GET_FLOAT( "sv_language" );
-	if( g_Language == LANGUAGE_GERMAN )
-	{
-		PRECACHE_MODEL( "models/germangibs.mdl" );
-		PRECACHE_MODEL( "models/pgibs.mdl" ); //Present Gibs
-	}
-	else
-	{
-		PRECACHE_MODEL( "models/hgibs.mdl" );
-		PRECACHE_MODEL( "models/agibs.mdl" );
-		PRECACHE_MODEL( "models/pgibs.mdl" ); //Present Gibs
-	}
+	PRECACHE_MODEL( "models/hgibs.mdl" );
+	PRECACHE_MODEL( "models/agibs.mdl" );
+	PRECACHE_MODEL( "models/pgibs.mdl" ); //Present Gibs
 
 	PRECACHE_SOUND( "weapons/ric1.wav" );
 	PRECACHE_SOUND( "weapons/ric2.wav" );

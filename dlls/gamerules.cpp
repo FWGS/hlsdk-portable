@@ -362,6 +362,7 @@ CGameRules *InstallGameRules( void )
 	}
 	else
 	{
+		
 		if( gameplay.value == HL_TEAMPLAY )
 		{
 			// teamplay
@@ -373,7 +374,7 @@ CGameRules *InstallGameRules( void )
 			g_gameplay = HS_SHYTPLAY;
 			return new CHalfLifeShytplay;
 		}
-		if ( gameplay.value == HS_HEAVYRAIN )
+		if( gameplay.value == HS_HEAVYRAIN )
 		{
 			g_gameplay = HS_HEAVYRAIN;
 			return new CHeavyRainplay;
@@ -398,7 +399,13 @@ CGameRules *InstallGameRules( void )
 			g_gameplay = HS_TESTMODE;
 			return new CTestplay;
 		}
-		else
+
+		/*if( sv_busters.value > 0 )
+                {
+                        g_gameplay = 0;
+                        return new CMultiplayBusters;
+                }
+		else*/
 		{
 			// vanilla deathmatch??
 			g_gameplay = 0;
