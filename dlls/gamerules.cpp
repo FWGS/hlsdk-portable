@@ -28,8 +28,6 @@
 
 extern edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer );
 
-extern BOOL g_fIsXash3D;
-
 //++ BulliT
 DLL_GLOBAL AgGameRules *g_pGameRules = NULL;
 //-- Martin Webrant
@@ -379,6 +377,11 @@ AgGameRules *InstallGameRules( void )
 			// teamplay
 			g_teamplay = 1;
 			return new CHalfLifeTeamplay;
+		}
+		if( sv_busters.value > 0 )
+		{
+			g_teamplay = 0;
+			return new CMultiplayBusters;
 		}
 		if( (int)gpGlobals->deathmatch == 1 )
 		{

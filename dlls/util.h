@@ -407,18 +407,6 @@ void DBG_AssertFunction(BOOL fExpr, const char* szExpr, const char* szFile, int 
 
 extern DLL_GLOBAL const Vector g_vecZero;
 
-//
-// Constants that were used only by QC (maybe not used at all now)
-//
-// Un-comment only as needed
-//
-#define LANGUAGE_ENGLISH				0
-#define LANGUAGE_GERMAN					1
-#define LANGUAGE_FRENCH					2
-#define LANGUAGE_BRITISH				3
-
-extern DLL_GLOBAL int			g_Language;
-
 #define AMBIENT_SOUND_STATIC			0	// medium radius attenuation
 #define AMBIENT_SOUND_EVERYWHERE		1
 #define AMBIENT_SOUND_SMALLRADIUS		2
@@ -508,7 +496,11 @@ void UTIL_SendDirectorMessage( edict_t *ent1, edict_t *ent2, int priority_and_fl
 
 // sentence groups
 #define CBSENTENCENAME_MAX 16
-#define CVOXFILESENTENCEMAX		1536		// max number of sentences in game. NOTE: this must match
+
+#define CVOXFILESENTENCEMAX_GOLDSOURCE_LEGACY 1536
+#define CVOXFILESENTENCEMAX_GOLDSOURCE_ANNIVERSARY_25 2048
+#define CVOXFILESENTENCEMAX_XASH3D 4096
+#define CVOXFILESENTENCEMAX CVOXFILESENTENCEMAX_XASH3D // max number of sentences in game. NOTE: this must match
 							// CVOXFILESENTENCEMAX in engine\sound.h!!!
 
 extern char gszallsentencenames[CVOXFILESENTENCEMAX][CBSENTENCENAME_MAX];

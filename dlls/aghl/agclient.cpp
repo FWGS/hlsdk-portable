@@ -576,7 +576,7 @@ void AgClient::Say(CBasePlayer* pPlayer, say_type Type )
       else if ('l' == *pSayText || 'L' == *pSayText)
       {
 #if AG_NO_CLIENT_DLL
-		pText = pText + sprintf(pText,g_pGameRules->m_LocationCache.Location(pPlayer->pev->origin).c_str());
+		pText = pText + sprintf(pText, "%s", g_pGameRules->m_LocationCache.Location(pPlayer->pev->origin).c_str());
         pSayText++;
         continue;
 #else
@@ -588,7 +588,7 @@ void AgClient::Say(CBasePlayer* pPlayer, say_type Type )
       else if ('d' == *pSayText || 'D' == *pSayText)
       {
 #if AG_NO_CLIENT_DLL
-		pText = pText + sprintf(pText,g_pGameRules->m_LocationCache.Location(pPlayer->GetKilledPosition()).c_str());
+		pText = pText + sprintf(pText, "%s", g_pGameRules->m_LocationCache.Location(pPlayer->GetKilledPosition()).c_str());
         pSayText++;
         continue;
 #else

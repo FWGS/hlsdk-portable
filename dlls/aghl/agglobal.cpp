@@ -128,7 +128,7 @@ DLL_GLOBAL cvar_t	ag_start_health     = {"sv_ag_start_health","100"};
 
 DLL_GLOBAL cvar_t	ag_dmg_crowbar	  = {"sv_ag_dmg_crowbar","25"};
 DLL_GLOBAL cvar_t	ag_dmg_glock	    = {"sv_ag_dmg_glock","12"};
-DLL_GLOBAL cvar_t	ag_dmg_357		    = {"sv_ag_dmg_357","40"};
+DLL_GLOBAL cvar_t	ag_dmg_357		    = {"sv_ag_dmg_357","50"};
 DLL_GLOBAL cvar_t	ag_dmg_mp5	      = {"sv_ag_dmg_mp5","12"};
 DLL_GLOBAL cvar_t	ag_dmg_shotgun	  = {"sv_ag_dmg_shotgun", "20"};
 DLL_GLOBAL cvar_t	ag_dmg_crossbow	  = {"sv_ag_dmg_crossbow", "20"};

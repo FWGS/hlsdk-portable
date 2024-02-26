@@ -22,6 +22,8 @@
 #include	"gamerules.h"
 #include	"game.h"
 
+bool g_fIsXash3D = false;
+
 void EntvarsKeyvalue( entvars_t *pev, KeyValueData *pkvd );
 
 extern "C" void PM_Move ( struct playermove_s *ppmove, int server );
@@ -98,7 +100,7 @@ static DLL_FUNCTIONS gFunctionTable =
 
 static void SetObjectCollisionBox( entvars_t *pev );
 
-#if !_WIN32
+#if !XASH_WIN32
 extern "C" {
 #endif
 int GetEntityAPI( DLL_FUNCTIONS *pFunctionTable, int interfaceVersion )
@@ -125,7 +127,12 @@ int GetEntityAPI2( DLL_FUNCTIONS *pFunctionTable, int *interfaceVersion )
 	return TRUE;
 }
 
-#if !_WIN32
+int Server_GetPhysicsInterface( int version, server_physics_api_t *api, physics_interface_t *interface )
+{
+	g_fIsXash3D = true;
+	return FALSE; // do not tell engine to init physics interface, as we're not using it
+}
+#if !XASH_WIN32
 }
 #endif
 

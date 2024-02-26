@@ -30,6 +30,7 @@
 #include "soundent.h"
 #include "decals.h"
 #include "gamerules.h"
+#include "multi_gamerules.h"
 
 extern CGraph WorldGraph;
 extern int gEvilImpulse101;
@@ -500,6 +501,19 @@ void CBasePlayerItem::FallThink( void )
 		pev->angles.z = 0;
 
 		Materialize(); 
+	}
+	else if( m_pPlayer )
+	{
+		SetThink( NULL );
+	}
+
+	if( g_pGameRules->IsBustingGame())
+	{
+		if( !FNullEnt( pev->owner ))
+			return;
+
+		if( FClassnameIs( pev, "weapon_egon" ))
+			UTIL_Remove( this );
 	}
 }
 
@@ -1113,7 +1127,7 @@ void CBasePlayerAmmo::Materialize( void )
 
 void CBasePlayerAmmo::DefaultTouch( CBaseEntity *pOther )
 {
-	if( !pOther->IsPlayer() )
+	if( !pOther->IsPlayer() || IsPlayerBusting( pOther ))
 	{
 		return;
 	}

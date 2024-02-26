@@ -69,12 +69,14 @@ void CMP5::Spawn()
 	m_iId = WEAPON_MP5;
 
 	m_iDefaultAmmo = MP5_DEFAULT_GIVE;
-//++ BulliT
-#if !CLIENT_DLL
-	if( ARENA == AgGametype() || ARCADE == AgGametype() || LMS == AgGametype() )
-		m_iDefaultAmmo = MP5_MAX_CLIP;
+
+#if CLIENT_DLL
+	if( bIsMultiplayer() )
+#else
+	if( g_pGameRules->IsMultiplayer() )
 #endif
-//-- Martin Webrant
+		m_iDefaultAmmo = MP5_DEFAULT_GIVE_MP;
+
 	FallInit();// get ready to fall down.
 }
 

@@ -139,4 +139,28 @@ protected:
 	void SendMOTDToClient( edict_t *client );
 };
 
+bool IsPlayerBusting( CBaseEntity *pPlayer );
+BOOL BustingCanHaveItem( CBasePlayer *pPlayer, CBaseEntity *pItem );
+
+class CMultiplayBusters : public CHalfLifeMultiplay
+{
+public:
+	CMultiplayBusters();
+	void Think();
+	void PlayerSpawn( CBasePlayer *pPlayer );
+	void ClientUserInfoChanged( CBasePlayer *pPlayer, char *infobuffer );
+	int IPointsForKill( CBasePlayer *pAttacker, CBasePlayer *pKilled );
+	void PlayerKilled( CBasePlayer *pVictim, entvars_t *pKiller, entvars_t *pInflictor );
+	void DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, entvars_t *pevInflictor );
+	BOOL CanHavePlayerItem( CBasePlayer *pPlayer, CBasePlayerItem *pItem );
+	void PlayerGotWeapon( CBasePlayer *pPlayer, CBasePlayerItem *pWeapon );
+	int WeaponShouldRespawn( CBasePlayerItem *pWeapon );
+	BOOL CanHaveItem( CBasePlayer *pPlayer, CItem *pItem );
+	void CheckForEgons();
+	void SetPlayerModel( CBasePlayer *pPlayer, BOOL bKnownBuster );
+	BOOL IsBustingGame( void ){ return TRUE; };
+
+protected:
+	float m_flEgonBustingCheckTime;
+};
 #endif //_MULTIPLAY_H_

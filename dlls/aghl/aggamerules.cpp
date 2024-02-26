@@ -466,68 +466,7 @@ BOOL AgGameRules::GetNextBestWeapon( CBasePlayer *pPlayer, CBasePlayerItem *pCur
     return FALSE;
   
 
-	CBasePlayerItem *pCheck;
-	CBasePlayerItem *pBest;// this will be used in the event that we don't find a weapon in the same category.
-	int iBestWeight;
-	int i;
-
-	iBestWeight = -1;// no weapon lower than -1 can be autoswitched to
-	pBest = NULL;
-
-	if ( !pCurrentWeapon->CanHolster() )
-	{
-		// can't put this gun away right now, so can't switch.
-		return FALSE;
-	}
-
-	for ( i = 0 ; i < MAX_ITEM_TYPES ; i++ )
-	{
-		pCheck = pPlayer->m_rgpPlayerItems[ i ];
-
-		while ( pCheck )
-		{
-			if ( pPlayer->GetWeaponWeight(pCheck) > -1 && pPlayer->GetWeaponWeight(pCheck) == pPlayer->GetWeaponWeight(pCurrentWeapon) && pCheck != pCurrentWeapon )
-			{
-				// this weapon is from the same category. 
-				if ( pCheck->CanDeploy() )
-				{
-					if ( pPlayer->SwitchWeapon( pCheck ) )
-					{
-						return TRUE;
-					}
-				}
-			}
-			else if ( pPlayer->GetWeaponWeight(pCheck) > iBestWeight && pCheck != pCurrentWeapon )// don't reselect the weapon we're trying to get rid of
-			{
-				//ALERT ( at_console, "Considering %s\n", STRING( pCheck->pev->classname ) );
-				// we keep updating the 'best' weapon just in case we can't find a weapon of the same weight
-				// that the player was using. This will end up leaving the player with his heaviest-weighted 
-				// weapon. 
-				if ( pCheck->CanDeploy() )
-				{
-					// if this weapon is useable, flag it as the best
-					iBestWeight = pPlayer->GetWeaponWeight(pCheck);
-					pBest = pCheck;
-				}
-			}
-
-			pCheck = pCheck->m_pNext;
-		}
-	}
-
-	// if we make it here, we've checked all the weapons and found no useable 
-	// weapon in the same catagory as the current weapon. 
-	
-	// if pBest is null, we didn't find ANYTHING. Shouldn't be possible- should always 
-	// at least get the crowbar, but ya never know.
-	if ( !pBest )
-	{
-		return FALSE;
-	}
-
-	pPlayer->SwitchWeapon( pBest );
-
-	return TRUE;
+	return HLGetNextBestWeapon( pPlayer, pCurrentWeapon );
 }
 
 const char* AgGameRules::GetIPAddress(edict_t *pEntity)

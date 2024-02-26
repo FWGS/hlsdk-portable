@@ -168,11 +168,13 @@ public:
 
 	// Immediately end a multiplayer game
 	virtual void EndMultiplayerGame( void ) {}
+	virtual BOOL IsBustingGame( void ){ return FALSE; };
 };
 
 //++ BulliT
 //extern CGameRules *InstallGameRules( void );
 //-- Martin Webrant
+BOOL HLGetNextBestWeapon( CBasePlayer *pPlayer, CBasePlayerItem *pCurrentWeapon );
 
 //=========================================================
 // CHalfLifeRules - rules for the single player Half-Life 
@@ -259,7 +261,6 @@ public:
 	virtual const char *GetTeamID( CBaseEntity *pEntity ) {return "";};
 	virtual int PlayerRelationship( CBaseEntity *pPlayer, CBaseEntity *pTarget );
 };
-
 
 //++ BulliT
 #include "aggamerules.h"

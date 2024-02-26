@@ -130,6 +130,7 @@ void ClientDisconnect( edict_t *pEntity )
 	pEntity->v.takedamage = DAMAGE_NO;// don't attract autoaim
 	pEntity->v.solid = SOLID_NOT;// nonsolid
 	pEntity->v.effects = 0;// clear any effects
+	pEntity->v.flags = 0;// clear any flags
 	UTIL_SetOrigin( &pEntity->v, pEntity->v.origin );
 
 	g_pGameRules->ClientDisconnected( pEntity );
@@ -926,6 +927,8 @@ void ClientPrecache( void )
 
 	PRECACHE_SOUND( "plats/train_use1.wav" );		// use a train
 
+	PRECACHE_SOUND( "plats/vehicle_ignition.wav" );
+
 	PRECACHE_SOUND( "buttons/spark5.wav" );		// hit computer texture
 	PRECACHE_SOUND( "buttons/spark6.wav" );
 	PRECACHE_SOUND( "debris/glass1.wav" );
@@ -1160,6 +1163,7 @@ we could also use the pas/ pvs that we set in SetupVisibility, if we wanted to. 
 int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *host, int hostflags, int player, unsigned char *pSet )
 {
 	int i;
+	CBaseEntity *Entity;
 
 	// don't send if flagged for NODRAW and it's not the host getting the message
 	if( ( ent->v.effects & EF_NODRAW ) && ( ent != host ) )
@@ -1347,6 +1351,17 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 //-- Martin Webrant
 		state->usehull		= ( ent->v.flags & FL_DUCKING ) ? 1 : 0;
 		state->health		= (int)ent->v.health;
+	}
+
+	if( ( Entity = CBaseEntity::Instance( ent ))
+	    && Entity->Classify() != CLASS_NONE
+	    && Entity->Classify() != CLASS_MACHINE )
+	{
+		SetBits( state->eflags, EFLAG_MONSTER );
+	}
+	else
+	{
+		ClearBits( state->eflags, EFLAG_SLERP | EFLAG_MONSTER );
 	}
 
 	return 1;
