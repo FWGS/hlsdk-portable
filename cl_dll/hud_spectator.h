@@ -10,6 +10,7 @@
 #define HUD_SPECTATOR_H
 
 #include "cl_entity.h"
+#include "interpolation.h"
 
 #define INSET_OFF			0
 #define	INSET_CHASE_FREE		1
@@ -21,6 +22,9 @@
 
 #define OVERVIEW_TILE_SIZE		128		// don't change this
 #define OVERVIEW_MAX_LAYERS		1
+
+extern void VectorAngles( const float *forward, float *angles );
+extern "C" void NormalizeAngles( float *angles );
 
 //-----------------------------------------------------------------------------
 // Purpose: Handles the drawing of the spectator stuff (camera & top-down map and all the things on it )
@@ -49,7 +53,17 @@ typedef struct overviewEntity_s
 	double					killTime;
 } overviewEntity_t;
 
+typedef struct cameraWayPoint_s
+{
+	float	time;
+	vec3_t	position;
+	vec3_t	angle;
+	float	fov;
+	int	flags;
+} cameraWayPoint_t;
+
 #define	 MAX_OVERVIEW_ENTITIES		128
+#define	 MAX_CAM_WAYPOINTS		32
 
 class CHudSpectator : public CHudBase
 {
@@ -73,13 +87,20 @@ public:
 	void HandleButtonsDown( int ButtonPressed );
 	void HandleButtonsUp( int ButtonPressed );
 	void FindNextPlayer( bool bReverse );
-	void FindPlayer(const char *name);
+	void FindPlayer( const char *name );
 	void DirectorMessage( int iSize, void *pbuf );
 	void SetSpectatorStartPosition();
 	int Init();
 	int VidInit();
 
 	int Draw( float flTime );
+
+	void	AddWaypoint( float time, vec3_t pos, vec3_t angle, float fov, int flags );
+	void	SetCameraView( vec3_t pos, vec3_t angle, float fov );
+	float	GetFOV();
+	bool	GetDirectorCamera( vec3_t &position, vec3_t &angle );
+	void	SetWayInterpolation( cameraWayPoint_t *prev, cameraWayPoint_t *start, cameraWayPoint_t *end, cameraWayPoint_t *next );
+
 
 	int m_iDrawCycle;
 	client_textmessage_t	m_HUDMessages[MAX_SPEC_HUD_MESSAGES];
@@ -100,8 +121,13 @@ public:
 
 	qboolean			m_chatEnabled;
 
+	qboolean			m_IsInterpolating;
+	int				m_ChaseEntity;	// if != 0, follow this entity with viewangles
+	int				m_WayPoint;	// current waypoint 1
+	int				m_NumWayPoints;	// current number of waypoints
 	vec3_t				m_cameraOrigin;	// a help camera
 	vec3_t				m_cameraAngles;	// and it's angles
+	CInterpolation			m_WayInterpolation;
 
 private:
 	vec3_t		m_vPlayerPos[MAX_PLAYERS];
@@ -119,9 +145,11 @@ private:
 
 	struct model_s	*m_MapSprite;	// each layer image is saved in one sprite, where each tile is a sprite frame
 	float		m_flNextObserverInput;
+	float		m_FOV;
 	float		m_zoomDelta;
 	float		m_moveDelta;
 	int		m_lastPrimaryObject;
 	int		m_lastSecondaryObject;
+	cameraWayPoint_t	m_CamPath[MAX_CAM_WAYPOINTS];
 };
 #endif // SPECTATOR_H

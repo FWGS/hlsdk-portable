@@ -15,7 +15,7 @@
 #pragma once
 #if !defined(EXTDLL_H)
 #define EXTDLL_H
-
+#include "build.h"
 //
 // Global header file for extension DLLs
 //
@@ -35,7 +35,7 @@
 #endif
 
 // Prevent tons of unused windows definitions
-#if _WIN32
+#if XASH_WIN32
 #define WIN32_LEAN_AND_MEAN
 #define NOWINRES
 #define NOSERVICE
@@ -74,10 +74,6 @@ typedef int BOOL;
 
 #if !defined(M_PI_F)
 #define M_PI_F          (float)M_PI
-#endif
-
-#if __LP64__ || __LLP64__ || _WIN64 || (__x86_64__ && !__ILP32__) || _M_X64 || __ia64 || _M_IA64 || __aarch64__ || __powerpc64__
-  #define XASH_64BIT	1
 #endif
 
 // Header file containing definition of globalvars_t and entvars_t
