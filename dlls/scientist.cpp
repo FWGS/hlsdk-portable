@@ -30,6 +30,8 @@
 #define NUM_SCIENTIST_HEADS		7 // seven heads available for scientist model
 #define NUM_CLEANSUIT_SCIENTIST_HEADS	4 // seven heads available for cleansuit scientist model
 
+static cvar_t *g_psv_override_scientist_mdl;
+
 enum
 {
 	HEAD_GLASSES = 0,
@@ -116,7 +118,9 @@ public:
 
 	CUSTOM_SCHEDULES
 
-private:
+private:	
+	const char *GetScientistModel( void );
+
 	float m_painTime;
 	float m_healTime;
 	float m_fearTime;
@@ -427,6 +431,20 @@ void CScientist::DeclineFollowing( void )
 	PlaySentence( "SC_POK", 2, VOL_NORM, ATTN_NORM );
 }
 
+const char *CScientist::GetScientistModel( void )
+{
+	if( !g_psv_override_scientist_mdl )
+		g_psv_override_scientist_mdl = CVAR_GET_POINTER( "_sv_override_scientist_mdl" );
+
+	if( !( g_psv_override_scientist_mdl && g_psv_override_scientist_mdl->string ))
+		return "models/scientist.mdl";
+
+	if( strlen( g_psv_override_scientist_mdl->string ) < sizeof( "01.mdl" ) - 1 )
+		return "models/scientist.mdl";
+
+	return g_psv_override_scientist_mdl->string;
+}
+
 void CScientist::Scream( void )
 {
 	if( FOkToSpeak() )
@@ -649,15 +667,9 @@ void CScientist::Spawn( void )
 	int numHeads;
 
 	if( FClassnameIs( pev, "monster_cleansuit_scientist" ) )
-	{
-		SET_MODEL( ENT( pev ), "models/cleansuit_scientist.mdl" );
 		numHeads = NUM_CLEANSUIT_SCIENTIST_HEADS;
-	}
 	else
-	{
-		SET_MODEL( ENT( pev ), "models/scientist.mdl" );
 		numHeads = NUM_SCIENTIST_HEADS;
-	}
 
 	if( pev->body == -1 )
 	{
@@ -673,6 +685,11 @@ void CScientist::Spawn( void )
 	}
 
 	Precache();
+
+	if( FClassnameIs( pev, "monster_cleansuit_scientist" ) )
+		SET_MODEL( ENT( pev ), "models/cleansuit_scientist.mdl" );
+	else
+		SET_MODEL( ENT( pev ), GetScientistModel());
 
 	UTIL_SetSize( pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX );
 
@@ -703,7 +720,7 @@ void CScientist::Precache( void )
 	if( FClassnameIs( pev, "monster_cleansuit_scientist" ) )
 		PRECACHE_MODEL( "models/cleansuit_scientist.mdl" );
 	else
-		PRECACHE_MODEL( "models/scientist.mdl" );
+		PRECACHE_MODEL( GetScientistModel());
 
 	PRECACHE_SOUND( "scientist/sci_pain1.wav" );
 	PRECACHE_SOUND( "scientist/sci_pain2.wav" );
@@ -1129,6 +1146,9 @@ public:
 	void KeyValue( KeyValueData *pkvd );
 	int m_iPose;// which sequence to display
 	static const char *m_szPoses[7];
+
+private:
+	const char *GetScientistModel( void );
 };
 
 const char *CDeadScientist::m_szPoses[] =
@@ -1163,6 +1183,7 @@ LINK_ENTITY_TO_CLASS( monster_civ_scientist_dead, CDeadScientist )
 void CDeadScientist::Spawn()
 {
 	int numHeads;
+	const char *pszModel;
 
 	if( FClassnameIs( pev, "monster_cleansuit_scientist_dead" ) )
 	{
@@ -1173,13 +1194,14 @@ void CDeadScientist::Spawn()
 	else if( FClassnameIs( pev, "monster_civ_scientist_dead" ) )
 	{
 		PRECACHE_MODEL( "models/civ_scientist.mdl" );
-                SET_MODEL( ENT( pev ), "models/civ_scientist.mdl" );
+		SET_MODEL( ENT( pev ), "models/civ_scientist.mdl" );
 		numHeads = NUM_SCIENTIST_HEADS;
 	}
 	else
 	{
-		PRECACHE_MODEL( "models/scientist.mdl" );
-                SET_MODEL( ENT( pev ), "models/scientist.mdl" );
+		pszModel = GetScientistModel();
+		PRECACHE_MODEL( pszModel );
+		SET_MODEL( ENT( pev ), pszModel );
 		numHeads = NUM_SCIENTIST_HEADS;
 	}
 
@@ -1212,6 +1234,20 @@ void CDeadScientist::Spawn()
 
 	//	pev->skin += 2; // use bloody skin -- UNDONE: Turn this back on when we have a bloody skin again!
 	MonsterInitDead();
+}
+
+const char *CDeadScientist::GetScientistModel( void )
+{
+	if( !g_psv_override_scientist_mdl )
+		g_psv_override_scientist_mdl = CVAR_GET_POINTER( "_sv_override_scientist_mdl" );
+
+	if( !( g_psv_override_scientist_mdl && g_psv_override_scientist_mdl->string ))
+		return "models/scientist.mdl";
+
+	if( strlen( g_psv_override_scientist_mdl->string ) < sizeof( "01.mdl" ) - 1 )
+		return "models/scientist.mdl";
+
+	return g_psv_override_scientist_mdl->string;
 }
 
 //=========================================================
