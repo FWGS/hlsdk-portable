@@ -37,7 +37,7 @@ public:
 	static void UseSatchelCharges( entvars_t *pevOwner, SATCHELCODE code );
 
 	void Explode( Vector vecSrc, Vector vecAim );
-	void Explode( TraceResult *pTrace, int bitsDamageType );
+	virtual void Explode( TraceResult *pTrace, int bitsDamageType );
 	void EXPORT Smoke( void );
 
 	void EXPORT BounceTouch( CBaseEntity *pOther );
@@ -167,6 +167,7 @@ typedef	enum
 #define ITEM_FLAG_NOAUTOSWITCHEMPTY	4
 #define ITEM_FLAG_LIMITINWORLD		8
 #define ITEM_FLAG_EXHAUSTIBLE		16 // A player can totally exhaust their ammo supply and lose this weapon
+#define ITEM_FLAG_NOCHOICE		32
 
 #define WEAPON_IS_ONTARGET 0x40
 

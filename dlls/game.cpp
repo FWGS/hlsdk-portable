@@ -17,8 +17,6 @@
 #include "util.h"
 #include "game.h"
 
-BOOL		g_fIsXash3D;
-
 cvar_t displaysoundlist = {"displaysoundlist","0"};
 
 // multiplayer server rules
@@ -466,14 +464,13 @@ cvar_t	sk_player_leg3	= { "sk_player_leg3","1" };
 
 // END Cvars for Skill Level settings
 
+cvar_t sv_pushable_fixed_tick_fudge = { "sv_pushable_fixed_tick_fudge", "15" };
+// cvar_t sv_busters = { "sv_busters", "0" };
+
 // Register your console variables here
 // This gets called one time when the game is initialied
 void GameDLLInit( void )
 {
-	// Register cvars here:
-	if( CVAR_GET_POINTER( "build" ) )
-		g_fIsXash3D = TRUE;
-
 	g_psv_gravity = CVAR_GET_POINTER( "sv_gravity" );
 	g_psv_aim = CVAR_GET_POINTER( "sv_aim" );
 	g_footsteps = CVAR_GET_POINTER( "mp_footsteps" );
@@ -516,7 +513,7 @@ void GameDLLInit( void )
 	CVAR_REGISTER( &multibyte_only );
 
 	CVAR_REGISTER( &mp_chattime );
-
+	// CVAR_REGISTER( &sv_busters );
 
 
 // REGISTER CVARS FOR SKILL LEVEL STUFF
@@ -910,6 +907,8 @@ void GameDLLInit( void )
 	CVAR_REGISTER( &sk_player_leg2 );
 	CVAR_REGISTER( &sk_player_leg3 );
 // END REGISTER CVARS FOR SKILL LEVEL STUFF
+
+	CVAR_REGISTER( &sv_pushable_fixed_tick_fudge );
 
 	SERVER_COMMAND( "exec skill.cfg\n" );
 }

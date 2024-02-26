@@ -36,6 +36,7 @@ void EV_FireUzi( struct event_args_s *args );
 void EV_FireGMGeneral( struct event_args_s *args );
 
 void EV_TrainPitchAdjust( struct event_args_s *args );
+void EV_VehiclePitchAdjust( event_args_t *args );
 }
 
 /*
@@ -68,4 +69,5 @@ void Game_HookEvents( void )
 	gEngfuncs.pfnHookEvent( "events/mp5.sc",	EV_FireUzi );
 	gEngfuncs.pfnHookEvent( "events/mp5k2.sc",	EV_FireGMGeneral );
 	gEngfuncs.pfnHookEvent( "events/train.sc",	EV_TrainPitchAdjust );
+	gEngfuncs.pfnHookEvent( "events/vehicle.sc",	EV_VehiclePitchAdjust );
 }

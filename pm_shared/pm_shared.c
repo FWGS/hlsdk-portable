@@ -31,8 +31,6 @@
 #include "pm_movevars.h"
 #include "pm_debug.h"
 
-int g_bhopcap = 1;
-
 #if CLIENT_DLL
 // Spectator Mode
 int iJumpSpectator;
@@ -173,7 +171,7 @@ void PM_SortTextures( void )
 	}
 }
 
-void PM_InitTextureTypes()
+void PM_InitTextureTypes( void )
 {
 	char buffer[512];
 	int i, j;
@@ -799,7 +797,7 @@ PM_CheckVelocity
 See if the player has a bogus velocity value.
 ================
 */
-void PM_CheckVelocity()
+void PM_CheckVelocity( void )
 {
 	int i;
 
@@ -876,7 +874,7 @@ int PM_ClipVelocity( vec3_t in, vec3_t normal, vec3_t out, float overbounce )
 	return blocked;
 }
 
-void PM_AddCorrectGravity()
+void PM_AddCorrectGravity( void )
 {
 	float ent_gravity;
 
@@ -897,7 +895,7 @@ void PM_AddCorrectGravity()
 	PM_CheckVelocity();
 }
 
-void PM_FixupGravityVelocity()
+void PM_FixupGravityVelocity( void )
 {
 	float ent_gravity;
 
@@ -1151,7 +1149,7 @@ PM_WalkMove
 Only used by players.  Moves along the ground when player is a MOVETYPE_WALK.
 ======================
 */
-void PM_WalkMove()
+void PM_WalkMove( void )
 {
 	//int clip;
 	int oldonground;
@@ -1592,7 +1590,7 @@ PM_CheckWater
 Sets pmove->waterlevel and pmove->watertype values.
 =============
 */
-qboolean PM_CheckWater()
+qboolean PM_CheckWater( void )
 {
 	vec3_t point;
 	int cont;
@@ -1780,7 +1778,7 @@ int PM_CheckStuck( void )
 	//
 	// Deal with precision error in network.
 	//
-	if( !pmove->server )
+	if( !( pmove->server && pmove->multiplayer ))
 	{
 		// World or BSP model
 		if( ( hitent == 0 ) || ( pmove->physents[hitent].model != NULL ) )
@@ -2341,7 +2339,7 @@ PM_AddGravity
 
 ============
 */
-void PM_AddGravity()
+void PM_AddGravity( void )
 {
 	float ent_gravity;
 
@@ -2391,7 +2389,7 @@ PM_Physics_Toss()
 Dead player flying through air., e.g.
 ============
 */
-void PM_Physics_Toss()
+void PM_Physics_Toss( void )
 {
 	pmtrace_t trace;
 	vec3_t move;
@@ -2492,7 +2490,7 @@ PM_NoClip
 
 ====================
 */
-void PM_NoClip()
+void PM_NoClip( void )
 {
 	int i;
 	vec3_t wishvel;
@@ -2561,6 +2559,8 @@ PM_Jump
 void PM_Jump( void )
 {
 	int i;
+	qboolean bunnyjump = false;
+
 	qboolean tfc = false;
 
 	qboolean cansuperjump = false;
@@ -2643,16 +2643,23 @@ void PM_Jump( void )
 	// In the air now.
 	pmove->onground = -1;
 
-	if( g_bhopcap )
+	if( pmove->multiplayer )
+		bunnyjump = atoi( pmove->PM_Info_ValueForKey( pmove->physinfo, "bj" ) ) ? true : false;
+
+	if( !bunnyjump )
 		PM_PreventMegaBunnyJumping();
 
-	if( tfc )
+	// Don't play jump sounds while frozen.
+	if( !( pmove->flags & FL_FROZEN ))
 	{
-		pmove->PM_PlaySound( CHAN_BODY, "player/plyrjmp8.wav", 0.5, ATTN_NORM, 0, PITCH_NORM );
-	}
-	else
-	{
-		PM_PlayStepSound( PM_MapTextureTypeStepType( pmove->chtexturetype ), 1.0f );
+		if( tfc )
+		{
+			pmove->PM_PlaySound( CHAN_BODY, "player/plyrjmp8.wav", 0.5, ATTN_NORM, 0, PITCH_NORM );
+		}
+		else
+		{
+			PM_PlayStepSound( PM_MapTextureTypeStepType( pmove->chtexturetype ), 1.0f );
+		}
 	}
 
 	// See if user can super long jump?
@@ -3404,7 +3411,8 @@ void PM_Move( struct playermove_s *ppmove, int server )
 	}
 
 	// Reset friction after each movement to FrictionModifier Triggers work still.
-	if( pmove->movetype == MOVETYPE_WALK )
+	// Use movevar to avoid lags with different clients and servers.
+	if( !( pmove->multiplayer && atoi( pmove->PM_Info_ValueForKey( pmove->physinfo, "fr" )) == 0 ) && pmove->movetype == MOVETYPE_WALK )
 	{
 		pmove->friction = 1.0f;
 	}
