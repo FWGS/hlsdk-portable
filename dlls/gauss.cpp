@@ -167,6 +167,8 @@ void CXS::PrimaryAttack()
 
 void CXS::SecondaryAttack()
 {
+	if( m_pPlayer->m_flStartCharge > gpGlobals->time )
+		m_pPlayer->m_flStartCharge = gpGlobals->time;
 	// don't fire underwater
 	if( m_pPlayer->pev->waterlevel == 3 )
 	{
@@ -282,7 +284,7 @@ void CXS::SecondaryAttack()
 		{
 			// Player charged up too long. Zap him.
 #if GAUSS_OVERCHARGE_FIX
-			PLAYBACK_EVENT_FULL( FEV_NOTHOST, m_pPlayer->edict(), m_usGaussSpin, 0.0, g_vecZero, g_vecZero, 0.0, 0.0, pitch, 0, 0, 1 );
+			PLAYBACK_EVENT_FULL( FEV_NOTHOST, m_pPlayer->edict(), m_usXSSpin, 0.0, g_vecZero, g_vecZero, 0.0, 0.0, pitch, 0, 0, 1 );
 #endif
 			EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_WEAPON, "weapons/xs_moan1.wav", 1.0f, ATTN_NORM, 0, 80 + RANDOM_LONG( 0, 0x3f ) );
 			EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/xs_moan3.wav", 1.0f, ATTN_NORM, 0, 75 + RANDOM_LONG( 0, 0x3f ) );
@@ -312,6 +314,8 @@ void CXS::StartFire( void )
 {
 	float flDamage;
 
+	if( m_pPlayer->m_flStartCharge > gpGlobals->time )
+		m_pPlayer->m_flStartCharge = gpGlobals->time;
 	UTIL_MakeVectors( m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle );
 	Vector vecAiming = gpGlobals->v_forward;
 	Vector vecSrc = m_pPlayer->GetGunPosition() + gpGlobals->v_forward * 20 + gpGlobals->v_up * -6 + gpGlobals->v_right * 3;

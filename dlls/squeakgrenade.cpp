@@ -339,7 +339,8 @@ void CSqueakGrenade::SuperBounceTouch( CBaseEntity *pOther )
 	// higher pitch as squeeker gets closer to detonation time
 	flpitch = 155.0f - 60.0f * ( ( m_flDie - gpGlobals->time ) / SQUEEK_DETONATE_DELAY );
 
-	if( pOther->pev->takedamage && m_flNextAttack < gpGlobals->time )
+	if( !FBitSet( pOther->pev->flags, FL_WORLDBRUSH )
+	    && pOther->pev->takedamage && m_flNextAttack < gpGlobals->time )
 	{
 		// attack!
 
