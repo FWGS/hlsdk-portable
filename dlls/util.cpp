@@ -1116,9 +1116,6 @@ void UTIL_BloodStream( const Vector &origin, const Vector &direction, int color,
 	if( !UTIL_ShouldShowBlood( color ) )
 		return;
 
-	if( g_Language == LANGUAGE_GERMAN && color == BLOOD_COLOR_RED )
-		color = 0;
-
 	MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, origin );
 		WRITE_BYTE( TE_BLOODSTREAM );
 		WRITE_COORD( origin.x );
@@ -1139,9 +1136,6 @@ void UTIL_BloodDrips( const Vector &origin, const Vector &direction, int color, 
 
 	if( color == DONT_BLEED || amount == 0 )
 		return;
-
-	if( g_Language == LANGUAGE_GERMAN && color == BLOOD_COLOR_RED )
-		color = 0;
 
 	if( g_pGameRules->IsMultiplayer() )
 	{
@@ -1745,26 +1739,11 @@ void CSaveRestoreBuffer::BufferRewind( int size )
 	m_pdata->size -= size;
 }
 
-#if !_WIN32 && !__WATCOMC__
-extern "C" {
-unsigned _rotr( unsigned val, int shift )
+#if !XASH_WIN32 && !__WATCOMC__
+static unsigned _rotr( unsigned val, int shift )
 {
-	unsigned lobit;	/* non-zero means lo bit set */
-	unsigned num = val;	/* number to rotate */
-
-	shift &= 0x1f;			/* modulo 32 -- this will also make
-	                                   negative shifts work */
-
-	while( shift-- )
-	{
-		lobit = num & 1;	/* get high bit */
-		num >>= 1;		/* shift right one bit */
-		if( lobit )
-		num |= 0x80000000;	/* set hi bit if lo bit was set */
-	}
-
-	return num;
-}
+	// Any modern compiler will generate one single ror instruction for x86, arm and mips here.
+	return ( val >> shift ) | ( val << ( 32 - shift ));
 }
 #endif
 
@@ -2254,7 +2233,7 @@ int CRestore::ReadField( void *pBaseData, TYPEDESCRIPTION *pFields, int fieldCou
 						break;
 					case FIELD_EHANDLE:
 						// Input and Output sizes are different!
-						pOutputData = (char *)pOutputData + j * ( sizeof(EHANDLE) - gSizes[pTest->fieldType] );
+						pInputData = (char*)pData + j * gSizes[pTest->fieldType];
 						entityIndex = *(int *)pInputData;
 						pent = EntityFromIndex( entityIndex );
 						if( pent )

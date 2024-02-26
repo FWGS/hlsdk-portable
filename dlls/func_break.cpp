@@ -927,22 +927,25 @@ void CPushable::Move( CBaseEntity *pOther, int push )
 
 	if( pOther->IsPlayer() )
 	{
-		// g-cont. fix pushable acceleration bug (now implemented as cvar)
-		if (pushablemode.value == 1)
-		{
-			// Allow player push when moving right, left and back too
-			if ( push && !(pevToucher->button & (IN_FORWARD|IN_MOVERIGHT|IN_MOVELEFT|IN_BACK)) )
-				return;
-			// Require player walking back when applying '+use' on pushable
-			if ( !push && !(pevToucher->button & (IN_BACK)) )
-				return;
-		}
-		else
+		if( pushablemode.value == -1 )
 		{
 			// Don't push unless the player is pushing forward and NOT use (pull)
-			if( push && !( pevToucher->button & ( IN_FORWARD | IN_USE ) ) )
+			if( push && !( pevToucher->button & ( IN_FORWARD | IN_USE )))
 				return;
 		}
+		// g-cont. fix pushable acceleration bug (now implemented as cvar)
+		else if( pushablemode.value != 0 )
+		{
+			// Allow player push when moving right, left and back too
+			if( push && !( pevToucher->button & ( IN_FORWARD | IN_MOVERIGHT | IN_MOVELEFT | IN_BACK )))
+				return;
+			// Require player walking back when applying '+use' on pushable
+			if( !push && !( pevToucher->button & ( IN_BACK )))
+				return;
+		}
+		// Don't push when +use pressed
+		else if( push && ( pevToucher->button & ( IN_USE )))
+			return;
 		playerTouch = 1;
 	}
 
@@ -963,30 +966,55 @@ void CPushable::Move( CBaseEntity *pOther, int push )
 	else 
 		factor = 0.25f;
 
-	// Spirit fix for pushable acceleration
-	if (pushablemode.value == 2)
+	if( pushablemode.value != 0 )
 	{
-		if (!push)
-			factor *= 0.5f;
+		pev->velocity.x += pevToucher->velocity.x * factor;
+		pev->velocity.y += pevToucher->velocity.y * factor;
 	}
+	else
+	{ 
+		if( push )
+		{
+			factor = 0.25f;
+			pev->velocity.x += pevToucher->velocity.x * factor;
+			pev->velocity.y += pevToucher->velocity.y * factor;
+		}
+		else
+		{
+			// fix for pushable acceleration
+			if( sv_pushable_fixed_tick_fudge.value >= 0 )
+				factor *= ( sv_pushable_fixed_tick_fudge.value * gpGlobals->frametime );
 
-	pev->velocity.x += pevToucher->velocity.x * factor;
-	pev->velocity.y += pevToucher->velocity.y * factor;
+			if( fabs( pev->velocity.x ) < fabs( pevToucher->velocity.x - pevToucher->velocity.x * factor ))
+				pev->velocity.x += pevToucher->velocity.x * factor;
+			if( fabs( pev->velocity.y ) < fabs( pevToucher->velocity.y - pevToucher->velocity.y * factor ))
+				pev->velocity.y += pevToucher->velocity.y * factor;
+		}
+	}
 
 	float length = sqrt( pev->velocity.x * pev->velocity.x + pev->velocity.y * pev->velocity.y );
-	if( push && ( length > MaxSpeed() ) )
+	if( ( push && pushablemode.value != 0 )
+	    || pushablemode.value == 0 )
 	{
-		pev->velocity.x = (pev->velocity.x * MaxSpeed() / length );
-		pev->velocity.y = (pev->velocity.y * MaxSpeed() / length );
+		if( length > MaxSpeed())
+		{
+			pev->velocity.x = ( pev->velocity.x * MaxSpeed() / length );
+			pev->velocity.y = ( pev->velocity.y * MaxSpeed() / length );
+		}
 	}
+
 	if( playerTouch )
 	{
-		pevToucher->velocity.x = pev->velocity.x;
-		pevToucher->velocity.y = pev->velocity.y;
+		if( push || pushablemode.value != 0 )
+		{
+			pevToucher->velocity.x = pev->velocity.x;
+			pevToucher->velocity.y = pev->velocity.y;
+		}
+
 		if( ( gpGlobals->time - m_soundTime ) > 0.7f )
 		{
 			m_soundTime = gpGlobals->time;
-			if( length > 0 && FBitSet( pev->flags,FL_ONGROUND ) )
+			if( length > 0 && FBitSet( pev->flags, FL_ONGROUND ))
 			{
 				m_lastSound = RANDOM_LONG( 0, 2 );
 				EMIT_SOUND( ENT( pev ), CHAN_WEAPON, m_soundNames[m_lastSound], 0.5f, ATTN_NORM );

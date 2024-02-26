@@ -62,6 +62,13 @@ void CMP5::Spawn()
 
 	m_iDefaultAmmo = RANDOM_LONG( 1, 37 );
 
+#if CLIENT_DLL
+	if( bIsMultiplayer() )
+#else
+	if( g_pGameRules->IsMultiplayer() )
+#endif
+		m_iDefaultAmmo = MP5_DEFAULT_GIVE_MP;
+
 	FallInit();// get ready to fall down.
 }
 
