@@ -116,6 +116,7 @@ LOCAL_SRC_FILES := agrunt.cpp airtank.cpp \
            tripmine.cpp \
            turret.cpp \
            util.cpp \
+           vehicle.cpp \
            weapons.cpp \
            world.cpp \
            xen.cpp \

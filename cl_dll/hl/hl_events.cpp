@@ -25,6 +25,7 @@ extern "C"
 void EV_FireShotGunSingle( struct event_args_s *args  );
 
 void EV_TrainPitchAdjust( struct event_args_s *args );
+void EV_VehiclePitchAdjust( event_args_t *args );
 
 void EV_FirePar21( struct event_args_s *args );
 void EV_M203( struct event_args_s *args );
@@ -51,4 +52,5 @@ void Game_HookEvents( void )
 	gEngfuncs.pfnHookEvent( "events/par21.sc", EV_FirePar21 );
 	gEngfuncs.pfnHookEvent( "events/m203.sc", EV_M203 );
 	gEngfuncs.pfnHookEvent( "events/train.sc", EV_TrainPitchAdjust );
+	gEngfuncs.pfnHookEvent( "events/vehicle.sc", EV_VehiclePitchAdjust );
 }

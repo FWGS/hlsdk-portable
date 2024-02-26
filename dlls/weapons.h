@@ -37,7 +37,7 @@ public:
 	static void UseSatchelCharges( entvars_t *pevOwner, SATCHELCODE code );
 
 	void Explode( Vector vecSrc, Vector vecAim );
-	void Explode( TraceResult *pTrace, int bitsDamageType );
+	virtual void Explode( TraceResult *pTrace, int bitsDamageType );
 	void EXPORT Smoke( void );
 
 	void EXPORT BounceTouch( CBaseEntity *pOther );
@@ -113,6 +113,7 @@ public:
 // the default amount of ammo that comes with each gun when it spawns
 #define GLOCK_DEFAULT_GIVE		15
 #define MP5_DEFAULT_GIVE		50
+#define MP5_DEFAULT_GIVE_MP			MP5_MAX_CLIP
 #define SHOTGUN_DEFAULT_GIVE		12
 #define CROSSBOW_DEFAULT_GIVE		5
 #define XS_DEFAULT_GIVE			15
@@ -149,6 +150,7 @@ typedef	enum
 #define ITEM_FLAG_NOAUTOSWITCHEMPTY	4
 #define ITEM_FLAG_LIMITINWORLD		8
 #define ITEM_FLAG_EXHAUSTIBLE		16 // A player can totally exhaust their ammo supply and lose this weapon
+#define ITEM_FLAG_NOCHOICE		32
 
 #define WEAPON_IS_ONTARGET 0x40
 
@@ -654,6 +656,8 @@ public:
 	void EXPORT IgniteThink( void );
 	void EXPORT RocketTouch( CBaseEntity *pOther );
 	static CRpgRocket *CreateRpgRocket( Vector vecOrigin, Vector vecAngles, CBaseEntity *pOwner, CRpg *pLauncher );
+	void Explode( TraceResult *pTrace, int bitsDamageType );
+	inline CRpg *GetLauncher( void );
 
 	int m_iTrail;
 	float m_flIgniteTime;

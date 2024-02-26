@@ -55,6 +55,7 @@ extern "C"
 void EV_FireShotGunSingle( struct event_args_s *args );
 
 void EV_TrainPitchAdjust( struct event_args_s *args );
+void EV_VehiclePitchAdjust( event_args_t *args );
 
 void EV_FirePar21(struct event_args_s *args);
 void EV_M203(struct event_args_s *args);
@@ -86,6 +87,7 @@ float EV_HLDM_PlayTextureSound( int idx, pmtrace_t *ptr, float *vecSrc, float *v
 	int cnt;
 	float fattn = ATTN_NORM;
 	int entity;
+	cl_entity_t *ent;
 	char *pTextureName;
 	char texname[64];
 	char szbuffer[64];
@@ -97,7 +99,8 @@ float EV_HLDM_PlayTextureSound( int idx, pmtrace_t *ptr, float *vecSrc, float *v
 	chTextureType = 0;
 
 	// Player
-	if( entity >= 1 && entity <= gEngfuncs.GetMaxClients() )
+	if( ( entity >= 1 && entity <= gEngfuncs.GetMaxClients() )
+	    || ( ( ent = gEngfuncs.GetEntityByIndex( entity )) && ( ent->curstate.eflags & EFLAG_MONSTER )))
 	{
 		// hit body
 		chTextureType = CHAR_TEX_FLESH;
@@ -526,7 +529,7 @@ void EV_HLDM_FireBullets( int idx, float *forward, float *right, float *up, int 
 		gEngfuncs.pEventAPI->EV_SetSolidPlayers( idx - 1 );	
 
 		gEngfuncs.pEventAPI->EV_SetTraceHull( 2 );
-		gEngfuncs.pEventAPI->EV_PlayerTrace( vecSrc, vecEnd, PM_STUDIO_BOX, -1, &tr );
+		gEngfuncs.pEventAPI->EV_PlayerTrace( vecSrc, vecEnd, PM_NORMAL, -1, &tr );
 
 		tracer = EV_HLDM_CheckTracer( idx, vecSrc, tr.endpos, forward, right, iBulletType, iTracerFreq, tracerCount );
 
@@ -659,6 +662,65 @@ void EV_TrainPitchAdjust( event_args_t *args )
 		break;
 	case 6:
 		pszSound = "plats/ttrain7.wav";
+		break;
+	default:
+		// no sound
+		return;
+	}
+
+	if( stop )
+	{
+		gEngfuncs.pEventAPI->EV_StopSound( idx, CHAN_STATIC, pszSound );
+	}
+	else
+	{
+		gEngfuncs.pEventAPI->EV_PlaySound( idx, origin, CHAN_STATIC, pszSound, m_flVolume, ATTN_NORM, SND_CHANGE_PITCH, pitch );
+	}
+}
+
+void EV_VehiclePitchAdjust( event_args_t *args )
+{
+	int idx;
+	vec3_t origin;
+
+	unsigned short us_params;
+	int noise;
+	float m_flVolume;
+	int pitch;
+	int stop;
+
+	const char *pszSound;
+
+	idx = args->entindex;
+
+	VectorCopy( args->origin, origin );
+
+	us_params = (unsigned short)args->iparam1;
+	stop = args->bparam1;
+
+	m_flVolume = (float)( us_params & 0x003f ) / 40.0f;
+	noise = (int)( ( ( us_params ) >> 12 ) & 0x0007 );
+	pitch = (int)( 10.0f * (float)( ( us_params >> 6 ) & 0x003f ) );
+
+	switch( noise )
+	{
+	case 1:
+		pszSound = "plats/vehicle1.wav";
+		break;
+	case 2:
+		pszSound = "plats/vehicle2.wav";
+		break;
+	case 3:
+		pszSound = "plats/vehicle3.wav";
+		break;
+	case 4:
+		pszSound = "plats/vehicle4.wav";
+		break;
+	case 5:
+		pszSound = "plats/vehicle6.wav";
+		break;
+	case 6:
+		pszSound = "plats/vehicle7.wav";
 		break;
 	default:
 		// no sound
