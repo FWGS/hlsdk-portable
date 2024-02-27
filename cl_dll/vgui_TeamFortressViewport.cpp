@@ -59,6 +59,8 @@
 
 void IN_SetVisibleMouse(bool visible);
 class CCommandMenu;
+extern int g_iPlayerClass;
+extern int g_iTeamNumber;
 
 // Scoreboard positions
 #define SBOARD_INDENT_X			XRES( 104 )
@@ -82,10 +84,10 @@ int iNumberOfTeamColors = 5;
 int iTeamColors[5][3] =
 {
 	{ 255, 170, 0 },	// HL orange (default)
-	{ 125, 165, 210 },	// Blue
-	{ 200, 90, 70 },	// Red
-	{ 225, 205, 45 },	// Yellow
-	{ 145, 215, 140 },	// Green
+	{ 66, 115, 247 },
+	{ 220, 51, 38 },
+	{ 240, 135, 0 },
+	{ 115, 240, 115 },
 };
 
 // Used for Class specific buttons
@@ -507,8 +509,8 @@ TeamFortressViewport::TeamFortressViewport( int x, int y, int wide, int tall ) :
 {
 	gViewPort = this;
 	m_iInitialized = false;
-	m_pTeamMenu = NULL;
-	m_pClassMenu = NULL;
+	// m_pTeamMenu = NULL;
+	// m_pClassMenu = NULL;
 	m_pScoreBoard = NULL;
 	m_pSpectatorPanel = NULL;
 	m_pCurrentMenu = NULL;
@@ -600,14 +602,14 @@ TeamFortressViewport::TeamFortressViewport( int x, int y, int wide, int tall ) :
 void TeamFortressViewport::Initialize( void )
 {
 	// Force each menu to Initialize
-	if( m_pTeamMenu )
+	/*if( m_pTeamMenu )
 	{
 		m_pTeamMenu->Initialize();
 	}
 	if( m_pClassMenu )
 	{
 		m_pClassMenu->Initialize();
-	}
+	}*/
 	if( m_pScoreBoard )
 	{
 		m_pScoreBoard->Initialize();
@@ -954,7 +956,7 @@ CommandButton *TeamFortressViewport::CreateCustomButton( char *pButtonText, char
 		pMenu->AddButton( m_pTeamButtons[5] );
 	}
 	// ChangeClass
-	else if( !strcmp( pButtonName, "!CHANGECLASS" ) )
+	/*else if( !strcmp( pButtonName, "!CHANGECLASS" ) )
 	{
 		// Create the Change class menu
 		pButton = new ClassButton( -1, pButtonText, 0, BUTTON_SIZE_Y, CMENU_SIZE_X, BUTTON_SIZE_Y, false );
@@ -963,7 +965,7 @@ CommandButton *TeamFortressViewport::CreateCustomButton( char *pButtonText, char
 		pMenu = CreateSubMenu( pButton, m_pCurrentCommandMenu, iYOffset );
 		m_pCommandMenus[m_iNumMenus] = pMenu;
 		m_iNumMenus++;
-	}
+	}*/
 
 	return pButton;
 }
@@ -1601,16 +1603,18 @@ CMenuPanel* TeamFortressViewport::ShowTeamMenu()
 	if( gEngfuncs.pDemoAPI->IsPlayingback() )
 		return NULL;
 
-	m_pTeamMenu->Reset();
-	return m_pTeamMenu;
+	/*m_pTeamMenu->Reset();
+	return m_pTeamMenu;*/
+
+	return NULL;
 }
 
 void TeamFortressViewport::CreateTeamMenu()
 {
 	// Create the panel
-	m_pTeamMenu = new CTeamMenuPanel( 100, false, 0, 0, ScreenWidth, ScreenHeight );
+	/*m_pTeamMenu = new CTeamMenuPanel( 100, false, 0, 0, ScreenWidth, ScreenHeight );
 	m_pTeamMenu->setParent( this );
-	m_pTeamMenu->setVisible( false );
+	m_pTeamMenu->setVisible( false );*/
 }
 
 //======================================================================================
@@ -1623,16 +1627,18 @@ CMenuPanel* TeamFortressViewport::ShowClassMenu()
 	if( gEngfuncs.pDemoAPI->IsPlayingback() )
 		return NULL;
 
-	m_pClassMenu->Reset();
-	return m_pClassMenu;
+	/*m_pClassMenu->Reset();
+	return m_pClassMenu;*/
+
+	return NULL;
 }
 
 void TeamFortressViewport::CreateClassMenu()
 {
 	// Create the panel
-	m_pClassMenu = new CClassMenuPanel( 100, false, 0, 0, ScreenWidth, ScreenHeight );
+	/*m_pClassMenu = new CClassMenuPanel( 100, false, 0, 0, ScreenWidth, ScreenHeight );
 	m_pClassMenu->setParent( this );
-	m_pClassMenu->setVisible( false );
+	m_pClassMenu->setVisible( false );*/
 }
 
 //======================================================================================
@@ -1656,11 +1662,11 @@ void TeamFortressViewport::CreateSpectatorMenu()
 // Recalculate any menus that use it.
 void TeamFortressViewport::UpdateOnPlayerInfo()
 {
-	if( m_pTeamMenu )
+	/*if( m_pTeamMenu )
 		m_pTeamMenu->Update();
 
 	if( m_pClassMenu )
-		m_pClassMenu->Update();
+		m_pClassMenu->Update();*/
 
 	if( m_pScoreBoard )
 		m_pScoreBoard->Update();
@@ -1669,7 +1675,7 @@ void TeamFortressViewport::UpdateOnPlayerInfo()
 void TeamFortressViewport::UpdateCursorState()
 {
 	// Need cursor if any VGUI window is up
-	if( m_pSpectatorPanel->m_menuVisible || m_pCurrentMenu || m_pTeamMenu->isVisible() || GetClientVoiceMgr()->IsInSquelchMode() )
+	if( m_pSpectatorPanel->m_menuVisible || m_pCurrentMenu /*|| m_pTeamMenu->isVisible()*/ || GetClientVoiceMgr()->IsInSquelchMode() )
 	{
 		IN_SetVisibleMouse(true);
 		App::getInstance()->setCursorOveride( App::getInstance()->getScheme()->getCursor(Scheme::scu_arrow) );
@@ -1730,10 +1736,10 @@ void TeamFortressViewport::paintBackground()
 	{
 		UpdateCommandMenu( m_StandardMenu );
 
-		if( m_pClassMenu )
+		/*if( m_pClassMenu )
 		{
 			m_pClassMenu->Update();
-		}
+		}*/
 
 		m_iCurrentTeamNumber = g_iTeamNumber;
 	}
@@ -1867,7 +1873,7 @@ int TeamFortressViewport::KeyInput( int down, int keynum, const char *pszCurrent
 		{
 			if( iMenuID == MENU_TEAM )
 			{
-				m_pTeamMenu->SlotInput( 5 );
+				// m_pTeamMenu->SlotInput( 5 );
 				return 0;
 			}
 		}
@@ -1941,8 +1947,8 @@ int TeamFortressViewport::MsgFunc_TeamNames( const char *pszName, int iSize, voi
 	}
 
 	// Update the Team Menu
-	if( m_pTeamMenu )
-		m_pTeamMenu->Update();
+	/*if( m_pTeamMenu )
+		m_pTeamMenu->Update();*/
 
 	return 1;
 }
@@ -2017,7 +2023,7 @@ int TeamFortressViewport::MsgFunc_BuildSt( const char *pszName, int iSize, void 
 {
 	BEGIN_READ( pbuf, iSize );
 
-	m_iBuildState = READ_SHORT();
+	m_iBuildState = READ_BYTE();
 
 	// Force the menu to update
 	UpdateCommandMenu( m_StandardMenu );
@@ -2050,14 +2056,14 @@ int TeamFortressViewport::MsgFunc_ScoreInfo( const char *pszName, int iSize, voi
 	short cl = READ_BYTE();
 	short frags = READ_SHORT();
 	short deaths = READ_SHORT();
-	short playerclass = READ_SHORT();
+	// short playerclass = READ_SHORT();
 	short teamnumber = READ_SHORT();
 
 	if( cl > 0 && cl <= MAX_PLAYERS )
 	{
 		g_PlayerExtraInfo[cl].frags = frags;
 		g_PlayerExtraInfo[cl].deaths = deaths;
-		g_PlayerExtraInfo[cl].playerclass = playerclass;
+		// g_PlayerExtraInfo[cl].playerclass = playerclass;
 		g_PlayerExtraInfo[cl].teamnumber = teamnumber;
 
 		//Dont go bellow 0!
@@ -2153,8 +2159,8 @@ int TeamFortressViewport::MsgFunc_AllowSpec( const char *pszName, int iSize, voi
 	UpdateCommandMenu( m_StandardMenu );
 
 	// If the team menu is up, update it too
-	if( m_pTeamMenu )
-		m_pTeamMenu->Update();
+	/*if( m_pTeamMenu )
+		m_pTeamMenu->Update();*/
 
 	return 1;
 }

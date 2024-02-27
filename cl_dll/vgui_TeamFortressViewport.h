@@ -56,8 +56,8 @@ class ClassButton;
 class CMenuPanel;
 class DragNDropPanel;
 class CTransparentPanel;
-class CClassMenuPanel;
-class CTeamMenuPanel;
+// class CClassMenuPanel;
+// class CTeamMenuPanel;
 class TeamFortressViewport;
 
 char *GetVGUITGAName( const char *pszName );
@@ -626,12 +626,12 @@ public:
 public:
 	// VGUI Menus
 	CMenuPanel		*m_pCurrentMenu;
-	CTeamMenuPanel	*m_pTeamMenu;
+	// CTeamMenuPanel	*m_pTeamMenu;
 	int						m_StandardMenu;	// indexs in m_pCommandMenus
 	int						m_SpectatorOptionsMenu;
 	int						m_SpectatorCameraMenu;
 	int						m_PlayerMenu; // a list of current player
-	CClassMenuPanel	*m_pClassMenu;
+	// CClassMenuPanel	*m_pClassMenu;
 	ScorePanel		*m_pScoreBoard;
 	SpectatorPanel *m_pSpectatorPanel;
 	char			m_szServerName[ MAX_SERVERNAME_LENGTH ];
@@ -691,14 +691,14 @@ public:
 		CMenuHandler_StringCommand::actionPerformed( panel );
 
 		// Try to guess the player's new team (it'll be corrected if it's wrong)
-		if( !strcmp( m_pszCommand, "jointeam 1" ) )
+		/*if( !strcmp( m_pszCommand, "jointeam 1" ) )
 			g_iTeamNumber = 1;
 		else if( !strcmp( m_pszCommand, "jointeam 2" ) )
 			g_iTeamNumber = 2;
 		else if( !strcmp( m_pszCommand, "jointeam 3" ) )
 			g_iTeamNumber = 3;
 		else if( !strcmp( m_pszCommand, "jointeam 4" ) )
-			g_iTeamNumber = 4;
+			g_iTeamNumber = 4;*/
 	}
 };
 
@@ -1008,8 +1008,8 @@ public:
 		if( m_iTeamNumber == 5 )
 			return false;
 
-		if( iTeams >= m_iTeamNumber && m_iTeamNumber != g_iTeamNumber )
-			return false;
+		/*if( iTeams >= m_iTeamNumber && m_iTeamNumber != g_iTeamNumber )
+			return false;*/
 
 		return true;
 	}
@@ -1175,8 +1175,8 @@ public:
 
 	virtual int IsNotValid()
 	{
-		if( g_iTeamNumber != m_iTeamNum )
-			return true;
+		/*if( g_iTeamNumber != m_iTeamNum )
+			return true;*/
 
 		return CommandButton::IsNotValid();
 	}
@@ -1544,6 +1544,11 @@ public:
 		setVisible( false );
 		m_iIsActive = false;
 
+		if( m_iMenuID == MENU_INTRO )
+		{
+			gEngfuncs.pfnClientCmd( "_firstspawn\n" );
+		}
+
 		if ( m_iRemoveMe )
 			gViewPort->removeChild( this );
 
@@ -1596,7 +1601,7 @@ public:
 //================================================================
 // Menu Panels that take key input
 //============================================================
-class CClassMenuPanel : public CMenuPanel
+/*class CClassMenuPanel : public CMenuPanel
 {
 private:
 	CTransparentPanel	*m_pClassInfoPanel[PC_LASTCLASS];
@@ -1627,7 +1632,8 @@ public:
 		m_iCurrentInfo = 0;
 	}
 };
-
+*/
+/*
 class CTeamMenuPanel : public CMenuPanel
 {
 public:
@@ -1660,7 +1666,7 @@ public:
 		m_iCurrentInfo = 0;
 	}
 };
-
+*/
 //=========================================================
 // Specific Menus to handle old HUD sections
 class CHealthPanel : public DragNDropPanel

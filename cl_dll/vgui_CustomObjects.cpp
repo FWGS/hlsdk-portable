@@ -296,7 +296,7 @@ void CommandButton::setParentMenu( CCommandMenu *pParentMenu )
 int ClassButton::IsNotValid()
 {
 	// If this is the main ChangeClass button, remove it if the player's only able to be civilians
-	if( m_iPlayerClass == -1 )
+	/*if( m_iPlayerClass == -1 )
 	{
 		if( gViewPort->GetValidClasses( g_iTeamNumber ) == -1 )
 			return true;
@@ -312,7 +312,7 @@ int ClassButton::IsNotValid()
 		if ( 
 			(!gViewPort->IsRandomPC() && (m_iPlayerClass == g_iPlayerClass)) )
 			return true;
-	}
+	}*/
 
 	return false;
 }
@@ -533,8 +533,8 @@ void CMenuHandler_StringCommandClassSelect::actionPerformed( Panel *panel )
 	// THIS IS NOW BEING DONE ON THE TFC SERVER TO AVOID KILLING SOMEONE THEN
 	// HAVE THE SERVER SAY "SORRY...YOU CAN'T BE THAT CLASS".
 
-	bool bAutoKill = CVAR_GET_FLOAT( "hud_classautokill" ) != 0;
+	/*bool bAutoKill = CVAR_GET_FLOAT( "hud_classautokill" ) != 0;
 	if( bAutoKill && g_iPlayerClass != 0 )
-		gEngfuncs.pfnClientCmd( "kill" );
+		gEngfuncs.pfnClientCmd( "kill" );*/
 }
 

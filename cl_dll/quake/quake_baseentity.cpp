@@ -87,6 +87,9 @@ void ClientPrint( entvars_t *client, int msg_dest, const char *msg_name, const c
 int CBaseToggle::Restore( class CRestore & ) { return 1; }
 int CBaseToggle::Save( class CSave & ) { return 1; }
 void CBaseToggle :: KeyValue( struct KeyValueData_s * ) { }
+void CBaseToggle::PlaySentence( const char *pszSentence, float duration, float volume, float attenuation ) { }
+void CBaseToggle::PlayScriptedSentence( const char *pszSentence, float duration, float volume, float attenuation, BOOL bConcurrent, CBaseEntity *pListener ) { }
+void CBaseToggle::SentenceStop( void ) { }
 
 // CGrenade Stubs
 void CGrenade::BounceSound( void ) { }
