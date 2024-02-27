@@ -281,8 +281,11 @@ void V_CalcGunAngle( struct ref_params_s *pparams )
 	viewent->angles[PITCH] -= v_idlescale * sin( pparams->time * v_ipitch_cycle.value ) * ( v_ipitch_level.value * 0.5f );
 	viewent->angles[YAW] -= v_idlescale * sin( pparams->time * v_iyaw_cycle.value ) * v_iyaw_level.value;
 
-	VectorCopy( viewent->angles, viewent->curstate.angles );
-	VectorCopy( viewent->angles, viewent->latched.prevangles );
+	if( !( cl_viewbob && cl_viewbob->value ))
+	{
+		VectorCopy( viewent->angles, viewent->curstate.angles );
+		VectorCopy( viewent->angles, viewent->latched.prevangles );
+	}
 }
 
 /*
@@ -585,6 +588,7 @@ void V_CalcNormalRefdef( struct ref_params_s *pparams )
 	{
 		VectorCopy( pparams->cl_viewangles, view->angles );
 	}
+
 	// set up gun position
 	V_CalcGunAngle( pparams );
 
@@ -753,6 +757,14 @@ void V_CalcNormalRefdef( struct ref_params_s *pparams )
 			// Store off overridden viewangles
 			v_angles = pparams->viewangles;
 		}
+	}
+
+	if( cl_viewbob && cl_viewbob->value )
+	{
+		VectorCopy( view->origin, view->curstate.origin );
+		VectorCopy( view->origin, view->latched.prevorigin );
+		VectorCopy( view->angles, view->curstate.angles );
+		VectorCopy( view->angles, view->latched.prevangles );
 	}
 
 	lasttime = pparams->time;
@@ -1234,6 +1246,8 @@ void V_CalcSpectatorRefdef( struct ref_params_s *pparams )
 			case OBS_ROAMING:
 				VectorCopy( v_cl_angles, v_angles );
 				VectorCopy( v_sim_org, v_origin );
+				// override values if director is active
+				gHUD.m_Spectator.GetDirectorCamera(v_origin, v_angles);
 				break;
 			case OBS_IN_EYE:
 				V_GetInEyePos( g_iUser2, v_origin, v_angles );

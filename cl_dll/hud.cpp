@@ -381,14 +381,11 @@ void CHud::Init( void )
 	m_iFOV = 0;
 
 	CVAR_CREATE( "zoom_sensitivity_ratio", "1.2", FCVAR_ARCHIVE );
-	CVAR_CREATE( "cl_autowepswitch", "1", FCVAR_ARCHIVE | FCVAR_USERINFO );
 	default_fov = CVAR_CREATE( "default_fov", "90", FCVAR_ARCHIVE );
 	m_pCvarStealMouse = CVAR_CREATE( "hud_capturemouse", "1", FCVAR_ARCHIVE );
 	m_pCvarDraw = CVAR_CREATE( "hud_draw", "1", FCVAR_ARCHIVE );
 	cl_lw = gEngfuncs.pfnGetCvarPointer( "cl_lw" );
-
-	if( cl_lw && cl_lw->value == 0 )
-		gEngfuncs.Cvar_SetValue( "cl_lw", 1.0 );
+	cl_viewbob = CVAR_CREATE( "cl_viewbob", "1", FCVAR_ARCHIVE );
 
 	/************************ CLIENT CVAR DEFINITIONS ************************/
 	cl_autowepswitch = gEngfuncs.pfnRegisterVariable( "cl_autowepswitch", "2", FCVAR_USERINFO | FCVAR_ARCHIVE );
@@ -445,6 +442,8 @@ void CHud::Init( void )
 	m_Menu.Init();
 
 	MsgFunc_ResetHUD( 0, 0, NULL );
+	ClientCmd( "richpresence_gamemode\n" );
+	ClientCmd( "richpresence_update\n" );
 }
 
 // CHud destructor

@@ -54,8 +54,6 @@ int g_iTeleNum;
 int gEvilImpulse101;
 extern DLL_GLOBAL int g_iSkillLevel, gDisplayTitle;
 
-extern "C" int g_bhopcap;
-
 BOOL gInitHUD = TRUE;
 
 extern void CopyToBodyQue( entvars_t *pev);
@@ -193,7 +191,6 @@ int gmsgSetFOV = 0;
 int gmsgShowMenu = 0;
 int gmsgGeigerRange = 0;
 int gmsgTeamNames = 0;
-int gmsgBhopcap = 0;
 
 // QUAKECLASSIC
 int gmsgQItems = 0;
@@ -270,7 +267,6 @@ void LinkUserMessages( void )
 	gmsgAllowSpec = REG_USER_MSG( "AllowSpec", 1 );   //Allow spectator button message.
 	gmsgSpectator = REG_USER_MSG( "Spectator", 2 );   //Spectator message.
 //-- Martin Webrant
-	gmsgBhopcap = REG_USER_MSG( "Bhopcap", 1 );
 }
 
 LINK_ENTITY_TO_CLASS( player, CBasePlayer )
@@ -590,7 +586,7 @@ void CBasePlayer::Killed( entvars_t *pevAttacker, int iGib )
 	PowerUpThink();
 	SetAnimation( PLAYER_DIE );
 
-	m_iRespawnFrames = 0;
+	m_flRespawnTimer = 0;
 
 	pev->modelindex = g_ulModelIndexPlayer;    // don't use eyes
 
@@ -627,7 +623,10 @@ void CBasePlayer::Killed( entvars_t *pevAttacker, int iGib )
 	// UNDONE: Put this in, but add FFADE_PERMANENT and make fade time 8.8 instead of 4.12
 	// UTIL_ScreenFade( edict(), Vector( 128, 0, 0 ), 6, 15, 255, FFADE_OUT | FFADE_MODULATE );
 
-	//Quake Player always gibs
+	if( g_pGameRules->IsMultiplayer())
+		pev->solid = SOLID_NOT;
+
+	// Quake Player always gibs
 	if( pev->health < -40 )
 	{
 		pev->solid = SOLID_NOT;
@@ -978,13 +977,23 @@ void CBasePlayer::PlayerDeathThink( void )
 		DropBackpack();		
 	}
 
-	if( pev->modelindex && ( !m_fSequenceFinished ) && ( pev->deadflag == DEAD_DYING ) )
+	if( pev->modelindex && ( !m_fSequenceFinished ) && ( pev->deadflag == DEAD_DYING ))
 	{
 		StudioFrameAdvance();
 
-		m_iRespawnFrames++;				// Note, these aren't necessarily real "frames", so behavior is dependent on # of client movement commands
-		if( m_iRespawnFrames < 120 )   // Animations should be no longer than this
+		m_flRespawnTimer = gpGlobals->frametime + m_flRespawnTimer;	// Note, these aren't necessarily real "frames", so behavior is dependent on # of client movement commands
+		if( m_flRespawnTimer < 4.0f )   // Animations should be no longer than this
 			return;
+	}
+
+	if( pev->deadflag == DEAD_DYING )
+	{
+		if( g_pGameRules->IsMultiplayer() && m_fSequenceFinished && pev->movetype == MOVETYPE_NONE )
+		{
+			CopyToBodyQue( pev );
+			pev->modelindex = 0;
+		}
+		pev->deadflag = DEAD_DEAD;
 	}
 
 	// once we're done animating our death and we're on the ground, we want to set movetype to None so our dead body won't do collisions and stuff anymore
@@ -992,14 +1001,11 @@ void CBasePlayer::PlayerDeathThink( void )
 	if( pev->movetype != MOVETYPE_NONE && FBitSet( pev->flags, FL_ONGROUND ) )
 		pev->movetype = MOVETYPE_NONE;
 
-	if( m_fSequenceFinished == 0 )
+	/*if( m_fSequenceFinished == 0 )
 	{
 		StudioFrameAdvance();
 		return;
-	}
-
-	if( pev->deadflag == DEAD_DYING )
-		pev->deadflag = DEAD_DEAD;
+	}*/
 
 	StopAnimation();
 
@@ -1045,7 +1051,7 @@ void CBasePlayer::PlayerDeathThink( void )
 		return;
 
 	pev->button = 0;
-	m_iRespawnFrames = 0;
+	m_flRespawnTimer = 0;
 
 	//ALERT( at_console, "Respawn\n" );
 
@@ -1221,18 +1227,31 @@ void CBasePlayer::PlayerUse( void )
 			{
 				m_afPhysicsFlags &= ~PFLAG_ONTRAIN;
 				m_iTrain = TRAIN_NEW|TRAIN_OFF;
+
+				CBaseEntity *pTrain = Instance( pev->groundentity );
+				if( pTrain && pTrain->Classify() == CLASS_VEHICLE )
+				{
+					( (CFuncVehicle *)pTrain )->m_pDriver = NULL;
+				}
 				return;
 			}
 			else
 			{	// Start controlling the train!
 				CBaseEntity *pTrain = CBaseEntity::Instance( pev->groundentity );
 
-				if( pTrain && !( pev->button & IN_JUMP ) && FBitSet( pev->flags, FL_ONGROUND ) && (pTrain->ObjectCaps() & FCAP_DIRECTIONAL_USE ) && pTrain->OnControls( pev ) )
+				if( pTrain && !( pev->button & IN_JUMP ) && FBitSet( pev->flags, FL_ONGROUND ) && ( pTrain->ObjectCaps() & FCAP_DIRECTIONAL_USE ) && pTrain->OnControls( pev ) )
 				{
 					m_afPhysicsFlags |= PFLAG_ONTRAIN;
 					m_iTrain = TrainSpeed( (int)pTrain->pev->speed, pTrain->pev->impulse );
 					m_iTrain |= TRAIN_NEW;
-					EMIT_SOUND( ENT( pev ), CHAN_ITEM, "plats/train_use1.wav", 0.8, ATTN_NORM );
+
+					if( pTrain->Classify() == CLASS_VEHICLE )
+					{
+						EMIT_SOUND( ENT( pev ), CHAN_ITEM, "plats/vehicle_ignition.wav", 0.8, ATTN_NORM );
+						( (CFuncVehicle *)pTrain )->m_pDriver = this;
+					}
+					else
+						EMIT_SOUND( ENT( pev ), CHAN_ITEM, "plats/train_use1.wav", 0.8, ATTN_NORM );
 					return;
 				}
 			}
@@ -1347,9 +1366,17 @@ void CBasePlayer::Jump()
 
 	// If you're standing on a conveyor, add it's velocity to yours (for momentum)
 	entvars_t *pevGround = VARS( pev->groundentity );
-	if( pevGround && ( pevGround->flags & FL_CONVEYOR ) )
+	if( pevGround )
 	{
-		pev->velocity = pev->velocity + pev->basevelocity;
+		if( pevGround->flags & FL_CONVEYOR )
+		{
+			pev->velocity = pev->velocity + pev->basevelocity;
+		}
+
+		if( FClassnameIs( pevGround, "func_vehicle" ))
+		{
+			pev->velocity = pevGround->velocity + pev->velocity;
+		}
 	}
 }
 
@@ -1740,30 +1767,62 @@ void CBasePlayer::PreThink( void )
 				//ALERT( at_error, "In train mode with no train!\n" );
 				m_afPhysicsFlags &= ~PFLAG_ONTRAIN;
 				m_iTrain = TRAIN_NEW|TRAIN_OFF;
+				if( pTrain )
+					( (CFuncVehicle *)pTrain )->m_pDriver = NULL;
 				return;
 			}
 		}
-		else if( !FBitSet( pev->flags, FL_ONGROUND ) || FBitSet( pTrain->pev->spawnflags, SF_TRACKTRAIN_NOCONTROL ) || ( pev->button & ( IN_MOVELEFT | IN_MOVERIGHT ) ) )
+		else if( !FBitSet( pev->flags, FL_ONGROUND ) || FBitSet( pTrain->pev->spawnflags, SF_TRACKTRAIN_NOCONTROL )
+			|| ( ( pev->button & ( IN_MOVELEFT | IN_MOVERIGHT )) && pTrain->Classify() != CLASS_VEHICLE ))
 		{
 			// Turn off the train if you jump, strafe, or the train controls go dead
 			m_afPhysicsFlags &= ~PFLAG_ONTRAIN;
 			m_iTrain = TRAIN_NEW | TRAIN_OFF;
+			( (CFuncVehicle *)pTrain )->m_pDriver = NULL;
 			return;
 		}
 
 		pev->velocity = g_vecZero;
 		vel = 0;
-		if( m_afButtonPressed & IN_FORWARD )
-		{
-			vel = 1;
-			pTrain->Use( this, this, USE_SET, (float)vel );
-		}
-		else if( m_afButtonPressed & IN_BACK )
-		{
-			vel = -1;
-			pTrain->Use( this, this, USE_SET, (float)vel );
-		}
 
+		if( pTrain->Classify() == CLASS_VEHICLE )
+		{
+			if( pev->button & IN_FORWARD )
+			{
+				vel = 1;
+				pTrain->Use( this, this, USE_SET, vel );
+			}
+
+			if( pev->button & IN_BACK )
+			{
+				vel = -1;
+				pTrain->Use( this, this, USE_SET, vel );
+			}
+
+			if( pev->button & IN_MOVELEFT )
+			{
+				vel = 20;
+				pTrain->Use( this, this, USE_SET, vel );
+			}
+			if( pev->button & IN_MOVERIGHT )
+			{
+				vel = 30;
+				pTrain->Use( this, this, USE_SET, vel );
+			}
+		}
+		else
+		{
+			if( m_afButtonPressed & IN_FORWARD )
+			{
+				vel = 1;
+				pTrain->Use( this, this, USE_SET, vel );
+			}
+			else if( m_afButtonPressed & IN_BACK )
+			{
+				vel = -1;
+				pTrain->Use( this, this, USE_SET, vel );
+			}
+		}
 		iGearId = TrainSpeed( pTrain->pev->speed, pTrain->pev->impulse );
 
 		if( iGearId != ( m_iTrain & 0x0F ) )	// Vit_amiN: speed changed
@@ -2434,7 +2493,7 @@ edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer, bool bCheckDM )
 	{
 		pSpot = g_pLastSpawn;
 		// Randomize the start spot
-		for( int i = RANDOM_LONG( 1, 5 ); i > 0; i-- )
+		for( int i = RANDOM_LONG( 1, 9 ); i > 0; i-- )
 		{
 			if( !bCheckDM )
 			{
@@ -2552,6 +2611,7 @@ ReturnSpot:
 
 void CBasePlayer::Spawn( void )
 {
+	m_flStartCharge = gpGlobals->time;
 	pev->classname = MAKE_STRING( "player" );
 	pev->health = 100;
 	pev->armorvalue = 0;
@@ -2576,6 +2636,8 @@ void CBasePlayer::Spawn( void )
 
 	g_engfuncs.pfnSetPhysicsKeyValue( edict(), "slj", "0" );
 	g_engfuncs.pfnSetPhysicsKeyValue( edict(), "hl", "1" );
+	g_engfuncs.pfnSetPhysicsKeyValue( edict(), "fr", "1" );
+	g_engfuncs.pfnSetPhysicsKeyValue( edict(), "bj", bhopcap.value ? "0" : "1" );
 
 	m_flNextDecalTime = 0;// let this player decal as soon as he spawns.
 
@@ -2782,6 +2844,9 @@ int CBasePlayer::Restore( CRestore &restore )
 	//			Barring that, we clear it out here instead of using the incorrect restored time value.
 	m_flNextAttack = UTIL_WeaponTimeBase();
 #endif
+	if( m_flFlashLightTime == 0.0f )
+		m_flFlashLightTime = 1.0f;
+
 	return status;
 }
 
@@ -3023,13 +3088,11 @@ void CBloodSplat::Spray( void )
 {
 	TraceResult tr;	
 
-	if( g_Language != LANGUAGE_GERMAN )
-	{
-		UTIL_MakeVectors( pev->angles );
-		UTIL_TraceLine( pev->origin, pev->origin + gpGlobals->v_forward * 128, ignore_monsters, pev->owner, & tr );
+	UTIL_MakeVectors( pev->angles );
+	UTIL_TraceLine( pev->origin, pev->origin + gpGlobals->v_forward * 128, ignore_monsters, pev->owner, & tr );
 
-		UTIL_BloodDecalTrace( &tr, BLOOD_COLOR_RED );
-	}
+	UTIL_BloodDecalTrace( &tr, BLOOD_COLOR_RED );
+
 	SetThink( &CBaseEntity::SUB_Remove );
 	pev->nextthink = gpGlobals->time + 0.1f;
 }
@@ -3126,7 +3189,6 @@ void CBasePlayer::ForceClientDllUpdate( void )
 	m_fWeapon = FALSE;          // Force weapon send
 	m_fKnownItem = FALSE;    // Force weaponinit messages.
 	m_fInitHUD = TRUE;		// Force HUD gmsgResetHUD message
-	m_bSentBhopcap = true; // a1ba: Update bhopcap state
 	memset( m_rgAmmoLast, 0, sizeof( m_rgAmmoLast )); // a1ba: Force update AmmoX
 
 
@@ -4022,15 +4084,6 @@ void CBasePlayer::UpdateClientData( void )
 
 	// QUAKECLASSIC
 	m_iClientQuakeWeapon = m_iQuakeWeapon;
-
-	// Send the current bhopcap state.
-	if( !m_bSentBhopcap )
-	{
-		m_bSentBhopcap = true;
-		MESSAGE_BEGIN( MSG_ONE, gmsgBhopcap, NULL, pev );
-			WRITE_BYTE( g_bhopcap );
-		MESSAGE_END();
-	}
 }
 
 //=========================================================
@@ -4479,6 +4532,31 @@ BOOL CBasePlayer::HasNamedPlayerItem( const char *pszItemName )
 		while( pItem )
 		{
 			if( !strcmp( pszItemName, STRING( pItem->pev->classname ) ) )
+			{
+				return TRUE;
+			}
+			pItem = pItem->m_pNext;
+		}
+	}
+
+	return FALSE;
+}
+
+//=========================================================
+// HasPlayerItemFromID
+//=========================================================
+BOOL CBasePlayer::HasPlayerItemFromID( int nID )
+{
+	CBasePlayerItem *pItem;
+	int i;
+
+	for( i = 0; i < MAX_ITEM_TYPES; i++ )
+	{
+		pItem = m_rgpPlayerItems[i];
+
+		while( pItem )
+		{
+			if( nID == pItem->m_iId )
 			{
 				return TRUE;
 			}

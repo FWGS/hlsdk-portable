@@ -31,7 +31,7 @@ globalvars_t	*gpGlobals;
 
 bool g_bIsThreeWave;
 
-#if _WIN32
+#if XASH_WIN32
 
 // Required DLL entry point
 BOOL WINAPI DllMain( HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved )

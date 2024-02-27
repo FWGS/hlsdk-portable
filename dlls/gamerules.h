@@ -182,10 +182,11 @@ public:
 	int	m_iGameMode;
 	float	m_fGameStart;
 //-- Martin Webrant
+	// virtual BOOL IsBustingGame( void ){ return FALSE; };
 };
 
 extern CGameRules *InstallGameRules( void );
-
+BOOL HLGetNextBestWeapon( CBasePlayer *pPlayer, CBasePlayerItem *pCurrentWeapon );
 
 //=========================================================
 // CHalfLifeRules - rules for the single player Half-Life 
@@ -385,7 +386,32 @@ protected:
 	float m_flGameEndTime;
 	virtual void ClientUserInfoChanged( CBasePlayer *pPlayer, char *infobuffer );
 };
+/*
+bool IsPlayerBusting( CBaseEntity *pPlayer );
+BOOL BustingCanHaveItem( CBasePlayer *pPlayer, CBaseEntity *pItem );
 
+class CMultiplayBusters : public CHalfLifeMultiplay
+{
+public:
+	CMultiplayBusters();
+	void Think();
+	void PlayerSpawn( CBasePlayer *pPlayer );
+	void ClientUserInfoChanged( CBasePlayer *pPlayer, char *infobuffer );
+	int IPointsForKill( CBasePlayer *pAttacker, CBasePlayer *pKilled );
+	void PlayerKilled( CBasePlayer *pVictim, entvars_t *pKiller, entvars_t *pInflictor );
+	void DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, entvars_t *pevInflictor );
+	BOOL CanHavePlayerItem( CBasePlayer *pPlayer, CBasePlayerItem *pItem );
+	void PlayerGotWeapon( CBasePlayer *pPlayer, CBasePlayerItem *pWeapon );
+	int WeaponShouldRespawn( CBasePlayerItem *pWeapon );
+	BOOL CanHaveItem( CBasePlayer *pPlayer, CItem *pItem );
+	void CheckForEgons();
+	void SetPlayerModel( CBasePlayer *pPlayer, BOOL bKnownBuster );
+	BOOL IsBustingGame( void ){ return TRUE; };
+
+protected:
+	float m_flEgonBustingCheckTime;
+};
+*/
 extern DLL_GLOBAL CGameRules *g_pGameRules;
 
 #endif // GAMERULES_H

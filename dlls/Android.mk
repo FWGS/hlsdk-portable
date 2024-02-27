@@ -66,6 +66,7 @@ LOCAL_SRC_FILES := animating.cpp \
            teamplay_gamerules.cpp \
            triggers.cpp \
            util.cpp \
+           vehicle.cpp \
            weapons.cpp \
 	   world.cpp \
 	   3wave/flags.cpp \
