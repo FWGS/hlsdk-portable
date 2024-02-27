@@ -42,6 +42,9 @@ extern cvar_t teamlist;
 extern cvar_t teamoverride;
 extern cvar_t defaultteam;
 extern cvar_t allowmonsters;
+extern cvar_t bhopcap;
+extern cvar_t sv_pushable_fixed_tick_fudge;
+extern cvar_t sv_busters;
 
 #include "coop_util.h"
 #include "enttools.h"

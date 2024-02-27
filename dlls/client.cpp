@@ -48,15 +48,11 @@ extern DLL_GLOBAL ULONG		g_ulFrameCount;
 extern void CopyToBodyQue(entvars_t* pev);
 extern int giPrecacheGrunt;
 extern int gmsgSayText;
-extern int gmsgBhopcap;
 
 extern cvar_t allow_spectators;
 extern cvar_t multibyte_only;
 
 extern int g_teamplay;
-
-extern cvar_t bhopcap;
-extern "C" int g_bhopcap;
 
 void LinkUserMessages( void );
 void UTIL_BecomeSpectator( CBasePlayer *pPlayer );
@@ -154,6 +150,7 @@ void ClientDisconnect( edict_t *pEntity )
 	pEntity->v.takedamage = DAMAGE_NO;// don't attract autoaim
 	pEntity->v.solid = SOLID_NOT;// nonsolid
 	pEntity->v.effects = 0;// clear any effects
+	pEntity->v.flags = 0;// clear any flags
 	UTIL_SetOrigin( &pEntity->v, pEntity->v.origin );
 
 	g_pGameRules->ClientDisconnected( pEntity );
@@ -922,15 +919,6 @@ void StartFrame( void )
 
 	gpGlobals->teamplay = teamplay.value;
 	g_ulFrameCount++;
-
-	int oldBhopcap = g_bhopcap;
-	g_bhopcap = ( g_pGameRules && g_pGameRules->IsMultiplayer() && bhopcap.value != 0.0f ) ? 1 : 0;
-	if( g_bhopcap != oldBhopcap )
-	{
-		MESSAGE_BEGIN( MSG_ALL, gmsgBhopcap, NULL );
-			WRITE_BYTE( g_bhopcap );
-		MESSAGE_END();
-	}
 }
 
 void ClientPrecache( void )
@@ -1004,6 +992,8 @@ void ClientPrecache( void )
 	PRECACHE_SOUND("debris/wood3.wav");
 
 	PRECACHE_SOUND("plats/train_use1.wav");		// use a train
+
+	PRECACHE_SOUND( "plats/vehicle_ignition.wav" );
 
 	PRECACHE_SOUND("buttons/spark5.wav");		// hit computer texture
 	PRECACHE_SOUND("buttons/spark6.wav");
@@ -1236,6 +1226,7 @@ we could also use the pas/ pvs that we set in SetupVisibility, if we wanted to. 
 int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *host, int hostflags, int player, unsigned char *pSet )
 {
 	int					i;
+	CBaseEntity *Entity;
 	static int counter; // XASH3D MAX_VISIBLE_PACKET == 512
 	bool hide = false;
 
@@ -1538,6 +1529,16 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 		}
 	}
 
+	if( ( Entity = CBaseEntity::Instance( ent ))
+	    && Entity->Classify() != CLASS_NONE
+	    && Entity->Classify() != CLASS_MACHINE )
+	{
+		SetBits( state->eflags, EFLAG_MONSTER );
+	}
+	else
+	{
+		ClearBits( state->eflags, EFLAG_SLERP | EFLAG_MONSTER );
+	}
 	counter++;
 
 	return 1;

@@ -482,6 +482,19 @@ void CBasePlayerItem::FallThink( void )
 
 		Materialize(); 
 	}
+	else if( m_pPlayer )
+	{
+		SetThink( NULL );
+	}
+
+	if( g_pGameRules->IsBustingGame())
+	{
+		if( !FNullEnt( pev->owner ))
+			return;
+
+		if( FClassnameIs( pev, "weapon_egon" ))
+			UTIL_Remove( this );
+	}
 }
 
 //=========================================================
@@ -1224,7 +1237,7 @@ void CBasePlayerAmmo::DefaultTouch( CBaseEntity *pOther )
 	pev->avelocity = pev->avelocity / 3;
 
 
-	if( !pOther->IsPlayer() )
+	if( !pOther->IsPlayer() || IsPlayerBusting( pOther ))
 	{
 		if( pev->velocity.Length() < 5 )
 			pev->velocity = Vector( 0, 0 ,0 );
@@ -1337,8 +1350,8 @@ void CBasePlayerWeapon::RetireWeapon( void )
 		{
 			m_pPlayer->ResetAutoaim();
 			m_pPlayer->m_pActiveItem->Holster();
-			m_pPlayer->m_pLastItem = NULL;
-			m_pPlayer->m_pActiveItem = NULL;
+			m_pPlayer->m_pLastItem = 0;
+			m_pPlayer->m_pActiveItem = 0;
 		}
 	}
 }
@@ -1604,7 +1617,7 @@ BOOL CWeaponBox::PackWeapon( CBasePlayerItem *pWeapon )
 	{
 		// first weapon we have for this slot
 		m_rgpPlayerItems[iWeaponSlot] = pWeapon;
-		pWeapon->m_pNext = NULL;	
+		pWeapon->m_pNext = 0;
 	}
 
 	pWeapon->pev->spawnflags |= SF_NORESPAWN;// never respawn

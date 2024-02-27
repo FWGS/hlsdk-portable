@@ -510,7 +510,7 @@ void UTIL_SpawnPlayer( CBasePlayer *pPlayer )
 	if( pPlayer->m_ggm.iState == STATE_SPECTATOR )
 		pPlayer->m_ggm.iState = STATE_SPAWNED;
 
-	pPlayer->m_iRespawnFrames = 0;
+	pPlayer->m_flRespawnTimer = 0;
 	pPlayer->pev->effects &= ~EF_NODRAW;
 
 	pPlayer->pev->takedamage = DAMAGE_YES;

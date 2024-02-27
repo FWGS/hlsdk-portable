@@ -30,7 +30,7 @@ enginefuncs_t	 g_engfuncs;
 globalvars_t	*gpGlobals;
 server_physics_api_t g_physfuncs;
 
-#if _WIN32
+#if XASH_WIN32
 
 // Required DLL entry point
 BOOL WINAPI DllMain( HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved )

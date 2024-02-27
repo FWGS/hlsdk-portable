@@ -70,6 +70,7 @@ SRCS+=./in_camera.cpp
 SRCS+=./input.cpp
 SRCS+=./input_goldsource.cpp
 SRCS+=./input_mouse.cpp
+SRCS+=./interpolation.cpp
 #SRCS+=./inputw32.cpp
 SRCS+=./menu.cpp
 SRCS+=./message.cpp
