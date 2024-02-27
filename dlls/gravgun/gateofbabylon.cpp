@@ -283,7 +283,7 @@ void CGateOfBabylonBolt::BoltTouch( CBaseEntity *pOther )
 			pev->nextthink = gpGlobals->time + 10.0;
 
 			// g-cont. Setup movewith feature
-			if( gPhysicsInterfaceInitialized )
+			if( g_fIsXash3D )
 			{
 				pev->movetype = MOVETYPE_COMPOUND;	// set movewith type
 				pev->aiment = ENT( pOther->pev );	// set parent

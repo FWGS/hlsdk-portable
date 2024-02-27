@@ -2842,7 +2842,6 @@ bool GGM_TouchCommand( CBasePlayer *pPlayer, const char *pcmd )
 	return true;
 }
 
-extern float g_flWeaponCheat;
 
 void DumpProps(); // prop.cpp
 
@@ -2874,8 +2873,7 @@ bool GGM_ClientCommand( CBasePlayer *pPlayer, const char *pCmd )
 		return true;
 	else if( FStrEq(pCmd, "dumpprops") )
 	{
-		if ( g_flWeaponCheat != 0.0 )
-			DumpProps();
+		DumpProps();
 		return true;
 	}
 	else if( FStrEq(pCmd, "reg") )

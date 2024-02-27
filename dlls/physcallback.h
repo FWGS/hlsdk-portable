@@ -19,7 +19,6 @@
 #include "physint.h"
 
 // Must be provided by user of this code
-extern BOOL gPhysicsInterfaceInitialized;
 extern server_physics_api_t g_physfuncs;
 
 // The actual physic callbacks
