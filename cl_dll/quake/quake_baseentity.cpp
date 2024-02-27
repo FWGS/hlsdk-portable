@@ -192,9 +192,6 @@ BOOL CBaseMonster :: FindLateralCover ( const Vector &vecThreat, const Vector &v
 Vector CBaseMonster :: ShootAtEnemy( const Vector &shootOrigin ) { return g_vecZero; }
 BOOL CBaseMonster :: FacingIdeal( void ) { return FALSE; }
 BOOL CBaseMonster :: FCanActiveIdle ( void ) { return FALSE; }
-void CBaseMonster::PlaySentence( const char *pszSentence, float duration, float volume, float attenuation ) { }
-void CBaseMonster::PlayScriptedSentence( const char *pszSentence, float duration, float volume, float attenuation, BOOL bConcurrent, CBaseEntity *pListener ) { }
-void CBaseMonster::SentenceStop( void ) { }
 void CBaseMonster::CorpseFallThink( void ) { }
 void CBaseMonster :: MonsterInitDead( void ) { }
 BOOL CBaseMonster :: BBoxFlat ( void ) { return TRUE; }

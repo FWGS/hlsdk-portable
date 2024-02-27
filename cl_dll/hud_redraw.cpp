@@ -181,12 +181,12 @@ void ScaleColors( int &r, int &g, int &b, int a )
 
 /*
 ===========================
-int ReturnStringPixelLength ( char *Hihi )
+int ReturnStringPixelLength ( const char *Hihi )
 
 Returns a integer representing the length of the string passed
 ===========================
 */
-int CHud::ReturnStringPixelLength( char *Hihi )
+int CHud::ReturnStringPixelLength( const char *Hihi )
 {
 	int iNameLength = 0;
 

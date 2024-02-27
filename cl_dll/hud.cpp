@@ -96,6 +96,7 @@ extern client_sprite_t *GetSpriteList( client_sprite_t *pList, const char *psz, 
 
 extern cvar_t *sensitivity;
 cvar_t *cl_lw = NULL;
+cvar_t *cl_viewbob = NULL;
 cvar_t *cl_autowepswitch;
 cvar_t *cl_rollspeed;
 cvar_t *cl_rollangle;

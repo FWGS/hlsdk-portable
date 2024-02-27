@@ -69,6 +69,7 @@ when crossing a water boudnary.
 extern cvar_t	*cl_forwardspeed;
 extern cvar_t	*chase_active;
 extern cvar_t	*cl_vsmoothing;
+extern cvar_t	*cl_viewbob;
 extern Vector   dead_viewangles;
 
 vec3_t v_origin, v_angles, v_cl_angles, v_sim_org, v_lastAngles;
