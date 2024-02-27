@@ -237,7 +237,7 @@ if (USE_VGUI)
 endif()
 
 if(WIN32)
-	target_link_libraries( ${CLDLL_LIBRARY} user32.lib )
+	target_link_libraries( ${CLDLL_LIBRARY} user32.lib version.lib)
 	if (GOLDSOURCE_SUPPORT)
 		target_link_libraries( ${CLDLL_LIBRARY} winmm.lib )
 	endif()
