@@ -2373,7 +2373,7 @@ int CRestore::ReadField( void *pBaseData, TYPEDESCRIPTION *pFields, int fieldCou
 						break;
 					case FIELD_EHANDLE:
 						// Input and Output sizes are different!
-						pInputData = (char*)pData + j * gSizes[pTest->fieldType];
+						pInputData = (char*)pData + j * gInputSizes[pTest->fieldType];
 						entityIndex = *(int *)pInputData;
 						pent = EntityFromIndex( entityIndex );
 						if( pent )
