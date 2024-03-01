@@ -89,12 +89,12 @@ endif()
 # MAIN BUILD CODE \
 ###################\
 
-file(STRINGS "mod_options.txt" MOD_OPTIONS_STRINGS REGEX "^([A-Za-z0-9_]+)=([A-Za-z0-9_]+)\ \#\ (.*)$")
+file(STRINGS "mod_options.txt" MOD_OPTIONS_STRINGS REGEX "^([A-Za-z0-9_-]+)=([A-Za-z0-9_-]+)\ \#\ (.*)$")
 foreach(LINE IN LISTS MOD_OPTIONS_STRINGS)
 	# file() itself doesn't populate CMAKE_MATCH_<n>, so
 	# reparse the string
 
-	if(${LINE} MATCHES "^([A-Za-z0-9_]+)=([A-Za-z0-9_]+)\ \#\ (.*)$")
+	if(${LINE} MATCHES "^([A-Za-z0-9_-]+)=([A-Za-z0-9_-]+)\ \#\ (.*)$")
 		# detect boolean options
 		if(${CMAKE_MATCH_2} STREQUAL "ON" OR ${CMAKE_MATCH_2} STREQUAL "OFF")
 			option(${CMAKE_MATCH_1} "${CMAKE_MATCH_3}" ${CMAKE_MATCH_2})
