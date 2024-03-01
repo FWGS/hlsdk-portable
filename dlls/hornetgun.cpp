@@ -714,8 +714,10 @@ void CHgun::MultiZapGun()
 					EMIT_SOUND_DYN( ENT(m_pPlayer->pev), CHAN_WEAPON, "debris/zap4.wav", 1, ATTN_NORM, 0,100 + m_iBeams * 10 );
 				}
 				else
+				{
 					m_iFirePhase = HGUN_ZAP;
 					m_fNextPhaseTime = gpGlobals->time + 0.1f;
+				}
 			}
 			break;
                 case HGUN_ZAP:

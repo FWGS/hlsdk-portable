@@ -213,7 +213,7 @@ BOOL UTIL_OBB_PointTest(Vector vecSrc, Vector boxP, Vector boxE)
 		(vecSrc.z > (boxP.z + boxE.z) ))
 		return FALSE;
 
-		return TRUE;
+	return TRUE;
 }
 
 void UTIL_SpeakAll( const char *message )
