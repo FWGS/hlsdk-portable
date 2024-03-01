@@ -33,7 +33,7 @@ def options(opt):
 		help = 'Enable VOICE MANAGER')
 
 	opt.add_subproject('dlls')
-	opt.add_subproject('cl_dll')
+#	opt.add_subproject('cl_dll')
 
 def configure(conf):
 	conf.load('fwgslib reconfigure compiler_optimizations')
@@ -241,7 +241,7 @@ def configure(conf):
 
 	conf.load('library_naming')
 	conf.add_subproject('dlls')
-	conf.add_subproject('cl_dll')
+#	conf.add_subproject('cl_dll')
 
 def build(bld):
 	if bld.is_install and not bld.options.destdir:
@@ -253,4 +253,4 @@ def build(bld):
 		quiet=True, generator=True)
 
 	bld.add_subproject('dlls')
-	bld.add_subproject('cl_dll')
+#	bld.add_subproject('cl_dll')

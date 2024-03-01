@@ -20,7 +20,7 @@ def configure(conf):
 			conf.fatal("Could not find hl.def")
 
 def build(bld):
-	excluded_files = ['mpstubb.cpp', 'stats.cpp', 'Wxdebug.cpp']
+	excluded_files = ['mpstubb.cpp', 'stats.cpp', 'Wxdebug.cpp', 'egon.cpp', 'observer.cpp', 'bubblemod/BMOD_hornetgun.cpp']
 
 	source = bld.path.ant_glob('**/*.cpp', excl=excluded_files)
 	source += bld.path.parent.ant_glob('pm_shared/*.c')
@@ -33,6 +33,7 @@ def build(bld):
 
 	includes = [
 		'.',
+		'bubblemod',
 		'../common',
 		'../engine',
 		'../pm_shared',
