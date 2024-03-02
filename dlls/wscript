@@ -20,7 +20,29 @@ def configure(conf):
 			conf.fatal("Could not find hl.def")
 
 def build(bld):
-	excluded_files = ['mpstubb.cpp', 'stats.cpp', 'Wxdebug.cpp']
+	excluded_files = ['mpstubb.cpp',
+			'stats.cpp',
+			'Wxdebug.cpp',
+			'zx/bumplight.cpp',
+			'zx/debugger.cpp',
+			'zx/teamdm.cpp',
+			'zx/bot_chat.cpp',
+			'zx/bot_client.cpp',
+			'zx/bot_models.cpp',
+			'zx/bot_navigate.cpp',
+			'zx/bot_start.cpp',
+			'zx/op_eagle.cpp',
+			'zx/namefunc.cpp',
+			'zx/hgrunt_blackop.cpp',
+			'zx/linkfunc.cpp',
+			'zx/hands.cpp',
+			'zx/engine.cpp',
+			'zx/waypoint.cpp',
+			'zx/dll.cpp',
+			'zx/game_config.cpp',
+			'zx/nvg.cpp',
+			'zx/observer.cpp'
+			]
 
 	source = bld.path.ant_glob('**/*.cpp', excl=excluded_files)
 	source += bld.path.parent.ant_glob('pm_shared/*.c')
@@ -33,6 +55,7 @@ def build(bld):
 
 	includes = [
 		'.',
+		'zx',
 		'../common',
 		'../engine',
 		'../pm_shared',
