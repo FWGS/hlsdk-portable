@@ -83,7 +83,14 @@ def build(bld):
 		'dlls/satchel.cpp',
 		'dlls/shotgun.cpp',
 		'dlls/squeakgrenade.cpp',
-		'dlls/tripmine.cpp'
+		'dlls/tripmine.cpp',
+		'dlls/clcampaign/hammer.cpp',
+		'dlls/clcampaign/katana.cpp',
+		'dlls/clcampaign/needle.cpp',
+		'dlls/clcampaign/pepsigun.cpp',
+		'dlls/clcampaign/rock.cpp',
+		'dlls/clcampaign/sawnoff.cpp',
+		'dlls/clcampaign/sniper.cpp'
 	])
 
 
