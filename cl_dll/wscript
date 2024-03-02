@@ -64,26 +64,45 @@ def build(bld):
 		excluded_files += ['voice_status.cpp',
 			'vgui_*.cpp',
 			'game_shared/vgui_*.cpp',
-			'game_shared/voice_banmgr.cpp']
+			'game_shared/voice_banmgr.cpp',
+			'hs/mp3.cpp',
+			'hs/halloween.cpp',
+			'hs/test.cpp',
+			'hs/testext.cpp']
 	
 	source = bld.path.ant_glob('**/*.cpp', excl=excluded_files)
 	source += bld.path.parent.ant_glob('game_shared/*.cpp', excl=excluded_files)
 	source += bld.path.parent.ant_glob([
 		'pm_shared/*.c',
-		'dlls/crossbow.cpp',
+#		'dlls/crossbow.cpp',
 		'dlls/crowbar.cpp',
-		'dlls/egon.cpp',
-		'dlls/gauss.cpp',
+#		'dlls/egon.cpp',
+#		'dlls/gauss.cpp',
 		'dlls/glock.cpp',
 		'dlls/handgrenade.cpp',
-		'dlls/hornetgun.cpp',
+#		'dlls/hornetgun.cpp',
 		'dlls/mp5.cpp',
-		'dlls/python.cpp',
+#		'dlls/python.cpp',
 		'dlls/rpg.cpp',
 		'dlls/satchel.cpp',
 		'dlls/shotgun.cpp',
 		'dlls/squeakgrenade.cpp',
-		'dlls/tripmine.cpp'
+		'dlls/tripmine.cpp',
+		'dlls/hs/ak47.cpp',
+		'dlls/hs/beamkatana.cpp',
+		'dlls/hs/boombox.cpp',
+		'dlls/hs/bow.cpp',
+		'dlls/hs/dosh.cpp',
+		'dlls/hs/fotns.cpp',
+		'dlls/hs/goldengun.cpp',
+		'dlls/hs/jackal.cpp',
+		'dlls/hs/jihad.cpp',
+		'dlls/hs/modman.cpp',
+		'dlls/hs/mw2.cpp',
+		'dlls/hs/nstar.cpp',
+		'dlls/hs/scipg.cpp',
+		'dlls/hs/soda_can.cpp',
+		'dlls/hs/zapper.cpp'
 	])
 
 
