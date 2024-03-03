@@ -150,23 +150,23 @@ void CSodaCan::WeaponIdle( void )
 	if ( m_flTimeWeaponIdle > UTIL_WeaponTimeBase() )
 		return;
 
-		int iAnim;
-		float flRand = UTIL_SharedRandomFloat( m_pPlayer->random_seed, 0.0, 1.0 );
+	int iAnim;
+	float flRand = UTIL_SharedRandomFloat( m_pPlayer->random_seed, 0.0, 1.0 );
 
-		if (flRand <= 0.3f)
-		{
-			iAnim = SODA_IDLE1;
-			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 30.0f / 20.0f;
-		}
-		else if (flRand <= 0.6f)
-		{
-			iAnim = SODA_FIDGET;
-			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 61.0f / 30.0f;
-		}
-		else
-		{
-			iAnim = SODA_IDLE1;
-			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 30.0f / 20.0f;
-		}
-		SendWeaponAnim( iAnim, 1 );
+	if (flRand <= 0.3f)
+	{
+		iAnim = SODA_IDLE1;
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 30.0f / 20.0f;
+	}
+	else if (flRand <= 0.6f)
+	{
+		iAnim = SODA_FIDGET;
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 61.0f / 30.0f;
+	}
+	else
+	{
+		iAnim = SODA_IDLE1;
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 30.0f / 20.0f;
+	}
+	SendWeaponAnim( iAnim, 1 );
 }

@@ -982,10 +982,10 @@ BOOL CBot::BotFireWeapon( Vector v_enemy_origin, int weapon_choice, BOOL primary
             if (m_pActiveItem != new_weapon)
                SelectItem("weapon_goldengun");  // select the trusty 9mm glock
 
-               pev->button |= IN_ATTACK;  // use primary attack (bang! bang!)
+            pev->button |= IN_ATTACK;  // use primary attack (bang! bang!)
 
                // set next time to shoot
-               f_shoot_time = gpGlobals->time + 0.3f +
+            f_shoot_time = gpGlobals->time + 0.3f +
                   RANDOM_FLOAT(primary_fire_delay[WEAPON_GLOCK][bot_skill][0],
                                primary_fire_delay[WEAPON_GLOCK][bot_skill][1]);
 
@@ -1009,10 +1009,10 @@ BOOL CBot::BotFireWeapon( Vector v_enemy_origin, int weapon_choice, BOOL primary
             if (m_pActiveItem != new_weapon)
                SelectItem("weapon_9mmhandgun");  // select the trusty 9mm glock
 
-               pev->button |= IN_ATTACK;  // use primary attack (bang! bang!)
+            pev->button |= IN_ATTACK;  // use primary attack (bang! bang!)
 
                // set next time to shoot
-               f_shoot_time = gpGlobals->time + 0.3f +
+            f_shoot_time = gpGlobals->time + 0.3f +
                   RANDOM_FLOAT(primary_fire_delay[WEAPON_GLOCK][bot_skill][0],
                                primary_fire_delay[WEAPON_GLOCK][bot_skill][1]);
 
