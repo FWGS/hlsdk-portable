@@ -81,3 +81,8 @@ void IN_Init( void )
 #endif
 	currentInput->IN_Init();
 }
+
+void IN_ResetMouse()
+{
+	currentInput->IN_ResetMouse();
+}
