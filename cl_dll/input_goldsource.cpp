@@ -249,8 +249,10 @@ DWORD joy_numbuttons;
 
 SDL_GameController *s_pJoystick = NULL;
 
+#if XASH_WIN32
 DWORD		joy_flags;
 static JOYINFOEX	ji;
+#endif
 
 // none of these cvars are saved over a session
 // this means that advanced controller configuration needs to be executed
