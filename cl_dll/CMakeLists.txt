@@ -52,10 +52,6 @@ if (GOLDSOURCE_SUPPORT)
 	add_definitions(-DGOLDSOURCE_SUPPORT)
 endif()
 
-if (WIN32_USE_SDL2)
-	add_definitions(-DWIN32_USE_SDL2)
-endif()
-
 if (USE_VGUI)
 	add_definitions(-DUSE_VGUI)
 	if (USE_NOVGUI_MOTD)
@@ -166,7 +162,7 @@ endif()
 
 include_directories (. hl/ ../dlls ../dlls/wpn_shared ../common ../engine ../pm_shared ../game_shared ../public)
 
-if (WIN32_USE_SDL2)
+if (WIN32)
 	include_directories (../external/)
 endif()
 

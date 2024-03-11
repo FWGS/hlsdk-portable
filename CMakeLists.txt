@@ -84,10 +84,6 @@ else()
 	option(GOLDSOURCE_SUPPORT "Build goldsource compatible client library" OFF)
 endif()
 
-if (WIN32)
-	option(WIN32_USE_SDL2 "Force building client with SDL2 on Windows" ON)
-endif()
-
 #-----------------
 # MAIN BUILD CODE \
 ###################\
