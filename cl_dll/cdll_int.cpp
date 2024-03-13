@@ -285,6 +285,14 @@ int DLLEXPORT HUD_VidInit( void )
 #elif USE_VGUI
 	VGui_Startup();
 #endif
+
+#if USE_PARTICLEMAN
+	if (g_pParticleMan)
+	{
+		g_pParticleMan->ResetParticles();
+	}
+#endif
+
 	return 1;
 }
 

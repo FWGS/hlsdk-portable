@@ -81,11 +81,6 @@ void CHud::MsgFunc_InitHUD( const char *pszName, int iSize, void *pbuf )
 		pList = pList->pNext;
 	}
 
-#if USE_PARTICLEMAN
-	if ( g_pParticleMan )
-		g_pParticleMan->ResetParticles();
-#endif
-
 	//Probably not a good place to put this.
 	pBeam = pBeam2 = NULL;
 	pFlare = NULL;	// Vit_amiN: clear egon's beam flare
