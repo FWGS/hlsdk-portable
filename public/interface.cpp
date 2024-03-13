@@ -150,7 +150,9 @@ CSysModule	*Sys_LoadModule( const char *pModuleName )
 		char szCwd[1024];
 		char szAbsoluteModuleName[1024];
 
-		getcwd( szCwd, sizeof( szCwd ) );
+		const char* cwdResult = getcwd( szCwd, sizeof( szCwd ) );
+		if (!cwdResult)
+			return NULL;
 		if ( szCwd[ strlen( szCwd ) - 1 ] == '/' )
 			szCwd[ strlen( szCwd ) - 1 ] = 0;
 
