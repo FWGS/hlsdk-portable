@@ -23,6 +23,11 @@ extern "C"
 	void DLLEXPORT HUD_DrawTransparentTriangles( void );
 }
 
+#if USE_PARTICLEMAN
+#include "com_model.h"
+#include "particleman.h"
+#endif
+
 //#define TEST_IT	1
 #if TEST_IT
 
@@ -112,5 +117,10 @@ void DLLEXPORT HUD_DrawTransparentTriangles( void )
 {
 #if TEST_IT
 //	Draw_Triangles();
+#endif
+
+#if USE_PARTICLEMAN
+	if ( g_pParticleMan )
+		g_pParticleMan->Update();
 #endif
 }

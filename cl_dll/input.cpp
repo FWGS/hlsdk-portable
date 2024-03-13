@@ -1164,7 +1164,16 @@ void ShutdownInput( void )
 	KB_Shutdown();
 }
 
+#if USE_PARTICLEMAN
+#include "interface.h"
+void CL_UnloadParticleMan();
+#endif
+
 void DLLEXPORT HUD_Shutdown( void )
 {
 	ShutdownInput();
+
+#if USE_PARTICLEMAN
+	CL_UnloadParticleMan();
+#endif
 }
