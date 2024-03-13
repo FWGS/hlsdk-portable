@@ -19,6 +19,7 @@ public:
 	virtual void IN_Commands( void ) = 0;
 	virtual void IN_Shutdown( void ) = 0;
 	virtual void IN_Init( void ) = 0;
+	virtual void IN_ResetMouse( void ) = 0;
 };
 
 class FWGSInput : public AbstractInput
@@ -35,6 +36,7 @@ public:
 	virtual void IN_Commands( void );
 	virtual void IN_Shutdown( void );
 	virtual void IN_Init( void );
+	virtual void IN_ResetMouse( void ) {}
 
 protected:
 	float ac_forwardmove;
@@ -76,6 +78,7 @@ public:
 	virtual void IN_Commands( void );
 	virtual void IN_Shutdown( void );
 	virtual void IN_Init( void );
+	virtual void IN_ResetMouse( void );
 
 protected:
 	void IN_GetMouseDelta( int *pOutX, int *pOutY);
