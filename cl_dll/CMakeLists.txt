@@ -166,7 +166,7 @@ else()
 endif()
 
 if (USE_VGUI2)
-	list(APPEND CLDLL_SOURCES vgui2/CClientVGUI.cpp)
+	list(APPEND CLDLL_SOURCES vgui2/CClientVGUI.cpp vgui2/vgui2_utils.cpp)
 endif()
 
 include_directories (. hl/ ../dlls ../dlls/wpn_shared ../common ../engine ../pm_shared ../game_shared ../public)

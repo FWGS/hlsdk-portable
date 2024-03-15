@@ -38,6 +38,10 @@
 #endif
 #endif
 
+#if USE_VGUI2
+#include "vgui2/vgui2_utils.h"
+#endif
+
 extern "C"
 {
 #include "pm_shared.h"
@@ -290,6 +294,9 @@ void DLLEXPORT HUD_Init( void )
 	gHUD.Init();
 #if USE_VGUI
 	Scheme_Init();
+#endif
+#if USE_VGUI2
+	VGUI2_Init();
 #endif
 }
 
