@@ -165,6 +165,10 @@ else()
 		scoreboard.cpp)
 endif()
 
+if (USE_VGUI2)
+	list(APPEND CLDLL_SOURCES vgui2/CClientVGUI.cpp)
+endif()
+
 include_directories (. hl/ ../dlls ../dlls/wpn_shared ../common ../engine ../pm_shared ../game_shared ../public)
 
 if (USE_VGUI)
