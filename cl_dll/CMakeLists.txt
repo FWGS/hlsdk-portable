@@ -62,6 +62,11 @@ if (USE_VGUI)
 	endif()
 endif()
 
+if (USE_VGUI2)
+	add_definitions(-DUSE_VGUI2)
+	add_compile_definitions(${SOURCE_SDK_DEFINES})
+endif()
+
 set (CLDLL_SOURCES
 	../dlls/crossbow.cpp
 	../dlls/crowbar.cpp
@@ -170,6 +175,10 @@ else()
 	include_directories(../utils/fake_vgui/include)
 endif()
 
+if (USE_VGUI2)
+	include_directories(${SOURCE_SDK_INCLUDE_PATHS})
+endif()
+
 if(USE_VOICEMGR)
 	#set(CLDLL_SOURCES
 	#	${CLDLL_SOURCES}
@@ -194,6 +203,10 @@ if (USE_VGUI)
 	else()
 		target_link_libraries(${CLDLL_LIBRARY} :vgui.so)
 	endif()
+endif()
+
+if (USE_VGUI2)
+	target_link_libraries(${CLDLL_LIBRARY} ${SOURCE_SDK_LIBS})
 endif()
 
 if(WIN32)

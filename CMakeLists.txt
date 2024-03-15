@@ -20,6 +20,8 @@
 # SOFTWARE.
 #
 
+set (CMAKE_CXX_STANDARD 17)
+
 # 3.9 added captures in if(MATCHES)
 cmake_minimum_required(VERSION 3.9)
 
@@ -121,7 +123,7 @@ if(CMAKE_SIZEOF_VOID_P EQUAL 8 AND NOT 64BIT)
 		error("UNDONE: set 32 build flags")
 	else()
 		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32")
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32")
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32 -msse3")
 		set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -m32")
 	endif()
 	set(CMAKE_SIZEOF_VOID_P 4)
@@ -151,6 +153,19 @@ if(NOT MSVC)
 	add_compile_options(-Wreturn-type) # GCC/Clang flag
 else()
 	add_definitions(-D_CRT_SILENCE_NONCONFORMING_TGMATH_H)
+endif()
+
+if(USE_VGUI2)
+	add_definitions(-DUSE_VGUI2)
+	if(NOT MSVC)
+		add_compile_options(-msse3)
+	endif()
+
+	if(MSVC)
+		set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+	endif()
+
+	add_subdirectory(source_sdk)
 endif()
 
 if(VITA)

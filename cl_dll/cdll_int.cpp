@@ -414,7 +414,7 @@ bool HUD_MessageBox( const char *msg )
 
 #if USE_VGUI2
 extern "C" DLLEXPORT void *ClientFactory() {
-	return nullptr;
+	return NULL;
 }
 
 extern "C" void DLLEXPORT F(void *data) {
@@ -464,9 +464,9 @@ extern "C" void DLLEXPORT F(void *data) {
 #if USE_VGUI
 		HUD_ChatInputPosition,
 #else
-		nullptr,
+		NULL,
 #endif
-		nullptr,
+		NULL,
 		ClientFactory,
 #if !GOLDSOURCE_SUPPORT
 		// TODO: How many Xash3D-specific exports are there?
