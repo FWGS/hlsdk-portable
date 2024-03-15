@@ -41,6 +41,7 @@ project (HLSDK-PORTABLE)
 # USER DEFINES \
 ################\
 option(USE_VGUI "Enable VGUI1." OFF)
+option(USE_VGUI2 "Enable VGUI2. UNDONE" OFF)
 option(USE_NOVGUI_MOTD "Prefer non-VGUI MOTD when USE_VGUI is enabled" OFF)
 option(USE_NOVGUI_SCOREBOARD "Prefer non-VGUI Scoreboard when USE_VGUI is enabled" OFF)
 option(USE_VOICEMGR "Enable VOICE MANAGER." OFF)
