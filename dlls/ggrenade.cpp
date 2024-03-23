@@ -504,7 +504,9 @@ CGrenade *CGrenade::ShootRock( entvars_t *pevOwner, Vector vecStart, Vector vecV
 	// will insert a DANGER sound into the world sound list and delay detonation for one second so that
 	// the grenade explodes after the exact amount of time specified in the call to ShootTimed().
 
+	SET_MODEL( ENT( pGrenade->pev ), "models/w_rock.mdl" );
 	pGrenade->pev->sequence = RANDOM_LONG( 3, 6 );
+	pGrenade->ResetSequenceInfo();
 	pGrenade->pev->framerate = 1.0;
 
 	// Tumble through the air
@@ -512,8 +514,6 @@ CGrenade *CGrenade::ShootRock( entvars_t *pevOwner, Vector vecStart, Vector vecV
 
 	pGrenade->pev->gravity = 0.5;
 	pGrenade->pev->friction = 0.8;
-
-	SET_MODEL( ENT( pGrenade->pev ), "models/w_rock.mdl" );
 
 	return pGrenade;
 }
