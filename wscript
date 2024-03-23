@@ -175,8 +175,6 @@ def configure(conf):
 			for i in a:
 				conf.check_cc(lib = i)
 	else:
-		if conf.env.GOLDSOURCE_SUPPORT:
-			conf.check_cc(lib='dl')
 		conf.check_cc(lib='m')
 
 	# check if we can use C99 tgmath
