@@ -1417,7 +1417,7 @@ void EV_FireModman2( event_args_t *args )
 	// Now add in all of the players.
 	gEngfuncs.pEventAPI->EV_SetSolidPlayers( idx - 1 );	
 	gEngfuncs.pEventAPI->EV_SetTraceHull( 2 );
-	gEngfuncs.pEventAPI->EV_PlayerTrace( vecSrc, vecEnd, PM_STUDIO_BOX, -1, &tr );
+	gEngfuncs.pEventAPI->EV_PlayerTrace( vecSrc, vecEnd, PM_NORMAL, -1, &tr );
 	
 	//We hit something
 	if( tr.fraction < 1.0f )
