@@ -36,6 +36,9 @@ def build(bld):
 	libs = []
 	defines = ['CLIENT_DLL']
 	includes = ['.',
+		'..',
+		'aghl',
+		'../dlls/aghl',
 		'../dlls',
 		'../common',
 		'../engine',
@@ -64,7 +67,22 @@ def build(bld):
 		excluded_files += ['voice_status.cpp',
 			'vgui_*.cpp',
 			'game_shared/vgui_*.cpp',
-			'game_shared/voice_banmgr.cpp']
+			'game_shared/voice_banmgr.cpp',
+			'aghl/agdownload.cpp',
+			'aghl/aghudirc.cpp',
+			'aghl/aghudscoreboard.cpp',
+			'aghl/agicq.cpp',
+			'aghl/agirc.cpp',
+			'aghl/agmapi.cpp',
+			'aghl/agpak.cpp',
+			'aghl/agvguiirc.cpp',
+			'aghl/AgVGuiMapBrowser.cpp',
+			'aghl/AgVGUIPassword.cpp',
+			'aghl/agvguiwinamp.cpp',
+			'aghl/crossthreadsmessagingdevice.cpp',
+			'aghl/irc.cpp',
+			'aghl/socket.cpp']
+
 	
 	source = bld.path.ant_glob('**/*.cpp', excl=excluded_files)
 	source += bld.path.parent.ant_glob('game_shared/*.cpp', excl=excluded_files)

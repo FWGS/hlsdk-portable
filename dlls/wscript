@@ -33,6 +33,8 @@ def build(bld):
 
 	includes = [
 		'.',
+		'..',
+		'aghl',
 		'../common',
 		'../engine',
 		'../pm_shared',

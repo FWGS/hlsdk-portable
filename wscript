@@ -242,6 +242,7 @@ def configure(conf):
 	conf.load('library_naming')
 	conf.add_subproject('dlls')
 	conf.add_subproject('cl_dll')
+	conf.define('AG_USE_CHEATPROTECTION', True)
 
 def build(bld):
 	if bld.is_install and not bld.options.destdir:
