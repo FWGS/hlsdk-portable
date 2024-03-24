@@ -254,7 +254,9 @@ CGrenade *CHandGrenade::ShootTimed( entvars_t *pevOwner, Vector vecStart, Vector
 		pGrenade->pev->velocity = Vector( 0, 0, 0 );
 	}
 
+	SET_MODEL( ENT( pGrenade->pev ), "models/w_tnt.mdl" );
 	pGrenade->pev->sequence = RANDOM_LONG( 3, 6 );
+	pGrenade->ResetSequenceInfo();
 	pGrenade->pev->framerate = 1.0;
  
 	// Tumble through the air
@@ -263,7 +265,6 @@ CGrenade *CHandGrenade::ShootTimed( entvars_t *pevOwner, Vector vecStart, Vector
 	pGrenade->pev->gravity = 0.5;
 	pGrenade->pev->friction = 0.8;
 
-	SET_MODEL( ENT( pGrenade->pev ), "models/w_tnt.mdl" );
 	pGrenade->pev->dmg = 100;
 
 	return pGrenade;
