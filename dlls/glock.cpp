@@ -101,14 +101,7 @@ int CGlock::AddToPlayer( CBasePlayer *pPlayer )
 
 BOOL CGlock::Deploy()
 {
-	BOOL bResult = DefaultDeploy( "models/v_9mmhandgun.mdl", "models/p_9mmhandgun.mdl", GLOCK_DRAW, "onehanded", /*UseDecrement() ? 1 : 0*/ 0 );
-
-	if( bResult )
-	{
-		m_fInAttack = 0;
-	}
-
-	return bResult;
+	return DefaultDeploy( "models/v_9mmhandgun.mdl", "models/p_9mmhandgun.mdl", GLOCK_DRAW, "onehanded", /*UseDecrement() ? 1 : 0*/ 0 );
 }
 
 void CGlock::Holster( int skiplocal /*= 0*/ )
@@ -117,8 +110,6 @@ void CGlock::Holster( int skiplocal /*= 0*/ )
 
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5f;
 	SendWeaponAnim( GLOCK_HOLSTER );
-
-	m_fInAttack = 0;
 }
 
 void CGlock::SecondaryAttack( void )
@@ -135,10 +126,6 @@ void CGlock::PrimaryAttack( void )
 
 void CGlock::GlockFire( float flSpread, float flCycleTime, BOOL fUseAutoAim )
 {
-	// Do not allow attack unless primary attack key was released.
-	if( m_fInAttack )
-		return;
-
 	if( m_iClip <= 0 )
 	{
 		if( !m_fFireOnEmpty )
@@ -151,9 +138,6 @@ void CGlock::GlockFire( float flSpread, float flCycleTime, BOOL fUseAutoAim )
 
 		return;
 	}
-
-	// Prevent from continuously refire.
-	m_fInAttack = 1;
 
 	m_iClip--;
 
@@ -198,7 +182,7 @@ void CGlock::GlockFire( float flSpread, float flCycleTime, BOOL fUseAutoAim )
 
 	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), fUseAutoAim ? m_usFireGlock1 : m_usFireGlock2, 0.0, g_vecZero, g_vecZero, vecDir.x, vecDir.y, 0, 0, ( m_iClip == 0 ) ? 1 : 0, 0 );
 
-	m_flNextPrimaryAttack = m_flNextSecondaryAttack = GetNextAttackDelay( flCycleTime );
+	m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + flCycleTime;
 
 	if( !m_iClip && m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0 )
 		// HEV suit - indicate out of ammo condition
@@ -235,9 +219,6 @@ void CGlock::Reload( void )
 		if( iResult )
 		{
 			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
-
-			// Unblock primary attack.
-			m_fInAttack = 0;
 		}
 	}
 }
@@ -247,12 +228,6 @@ void CGlock::WeaponIdle( void )
 	ResetEmptySound();
 
 	m_pPlayer->GetAutoaimVector( AUTOAIM_10DEGREES );
-
-	//
-	// Unblock primary attack.
-	// This will only occur if players released primary attack key.
-	//
-	m_fInAttack = 0;
 
 	if( m_flTimeWeaponIdle > UTIL_WeaponTimeBase() )
 		return;

@@ -149,13 +149,7 @@ void CHgun::PrimaryAttack()
 	m_pPlayer->m_iWeaponVolume = QUIET_GUN_VOLUME;
 	m_pPlayer->m_iWeaponFlash = DIM_GUN_FLASH;
 
-	int flags;
-#if CLIENT_WEAPONS
-	flags = FEV_NOTHOST;
-#else
-	flags = 0;
-#endif
-	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usHornetFire, 0.0f, g_vecZero, g_vecZero, 0.0f, 0.0f, 0, 0, 0, 0 );
+	SendWeaponAnim( HGUN_SHOOT );
 
 	// player "shoot" animation
 	m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
@@ -228,6 +222,10 @@ void CHgun::SecondaryAttack( void )
 
 	pHornet->SetThink( &CHornet::StartDart );
 
+	m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]--;
+	m_pPlayer->m_iWeaponVolume = NORMAL_GUN_VOLUME;
+	m_pPlayer->m_iWeaponFlash = DIM_GUN_FLASH;
+	
 	float flRechargeTimePause = 0.5f;
 
 	if( g_pGameRules->IsMultiplayer() )
@@ -236,17 +234,7 @@ void CHgun::SecondaryAttack( void )
 	m_flRechargeTime = gpGlobals->time + flRechargeTimePause;
 #endif
 
-	int flags;
-#if CLIENT_WEAPONS
-	flags = FEV_NOTHOST;
-#else
-	flags = 0;
-#endif
-	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usHornetFire, 0.0f, g_vecZero, g_vecZero, 0.0f, 0.0f, 0, 0, 0, 0 );
-
-	m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]--;
-	m_pPlayer->m_iWeaponVolume = NORMAL_GUN_VOLUME;
-	m_pPlayer->m_iWeaponFlash = DIM_GUN_FLASH;
+	SendWeaponAnim( HGUN_SHOOT );
 
 	// player "shoot" animation
 	m_pPlayer->SetAnimation( PLAYER_ATTACK1 );

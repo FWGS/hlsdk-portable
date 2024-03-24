@@ -67,7 +67,18 @@ public:
 #define WEAPON_GLOCK			2
 #define WEAPON_TORCH			3
 #define WEAPON_MP5			4
+#define WEAPON_CHAINGUN			5
+#define WEAPON_CROSSBOW			6
 #define WEAPON_SHOTGUN			7
+#define WEAPON_RPG				8
+#define WEAPON_GAUSS			9
+#define WEAPON_EGON				10
+#define WEAPON_HORNETGUN		11
+#define WEAPON_HANDGRENADE		12
+#define WEAPON_TRIPMINE			13
+#define	WEAPON_SATCHEL			14
+#define	WEAPON_SNARK			15
+#define WEAPON_PYTHON			16
 #define WEAPON_HOLSTER			17
 
 #define WEAPON_ALLWEAPONS		(~(1<<WEAPON_SUIT))
@@ -81,32 +92,81 @@ public:
 #define TORCH_WEIGHT		1
 #define CROWBAR_WEIGHT		5
 #define GLOCK_WEIGHT		10
+#define PYTHON_WEIGHT		15
 #define MP5_WEIGHT		15
 #define SHOTGUN_WEIGHT		15
+#define CROSSBOW_WEIGHT		10
+#define RPG_WEIGHT			20
+#define GAUSS_WEIGHT		20
+#define EGON_WEIGHT			20
+#define HORNETGUN_WEIGHT	15
+#define HANDGRENADE_WEIGHT	5
+#define SNARK_WEIGHT		5
+#define SATCHEL_WEIGHT		-10
+#define TRIPMINE_WEIGHT		-10
 
 // weapon clip/carry ammo capacities
+#define URANIUM_MAX_CARRY		100
 #define	_9MM_MAX_CARRY			50
+#define _357_MAX_CARRY			36
 #define AK47_MAX_CARRY			150
 #define BUCKSHOT_MAX_CARRY		125
+#define BOLT_MAX_CARRY			50
+#define ROCKET_MAX_CARRY		5
+#define HANDGRENADE_MAX_CARRY	10
+#define SATCHEL_MAX_CARRY		5
+#define TRIPMINE_MAX_CARRY		5
+#define SNARK_MAX_CARRY			15
+#define HORNET_MAX_CARRY		8
+#define M203_GRENADE_MAX_CARRY	10
 
 // the maximum amount of ammo each weapon's clip can hold
 #define WEAPON_NOCLIP			-1
 
 //#define CROWBAR_MAX_CLIP		WEAPON_NOCLIP
 #define GLOCK_MAX_CLIP			17
+#define PYTHON_MAX_CLIP			6
 #define MP5_MAX_CLIP			40
 #define SHOTGUN_MAX_CLIP		2
+#define CROSSBOW_MAX_CLIP		5
+#define RPG_MAX_CLIP			1
+#define GAUSS_MAX_CLIP			WEAPON_NOCLIP
+#define EGON_MAX_CLIP			WEAPON_NOCLIP
+#define HORNETGUN_MAX_CLIP		WEAPON_NOCLIP
+#define HANDGRENADE_MAX_CLIP	WEAPON_NOCLIP
+#define SATCHEL_MAX_CLIP		WEAPON_NOCLIP
+#define TRIPMINE_MAX_CLIP		WEAPON_NOCLIP
+#define SNARK_MAX_CLIP			WEAPON_NOCLIP
 
 // the default amount of ammo that comes with each gun when it spawns
 #define GLOCK_DEFAULT_GIVE		17
+#define PYTHON_DEFAULT_GIVE			6
 #define MP5_DEFAULT_GIVE		25
 #define MP5_DEFAULT_GIVE_MP		MP5_MAX_CLIP
+#define MP5_M203_DEFAULT_GIVE		0
 #define SHOTGUN_DEFAULT_GIVE		2
+#define CROSSBOW_DEFAULT_GIVE		5
+#define RPG_DEFAULT_GIVE			1
+#define GAUSS_DEFAULT_GIVE			20
+#define EGON_DEFAULT_GIVE			20
+#define HANDGRENADE_DEFAULT_GIVE	5
+#define SATCHEL_DEFAULT_GIVE		1
+#define TRIPMINE_DEFAULT_GIVE		1
+#define SNARK_DEFAULT_GIVE			5
+#define HIVEHAND_DEFAULT_GIVE		8
 
 // The amount of ammo given to a player by an ammo item.
+#define AMMO_URANIUMBOX_GIVE	20
 #define AMMO_GLOCKCLIP_GIVE		GLOCK_MAX_CLIP
+#define AMMO_357BOX_GIVE		PYTHON_MAX_CLIP
 #define AMMO_MP5CLIP_GIVE		MP5_MAX_CLIP
+#define AMMO_CHAINBOX_GIVE		200
+#define AMMO_M203BOX_GIVE		2
 #define AMMO_BUCKSHOTBOX_GIVE		12
+#define AMMO_CROSSBOWCLIP_GIVE	CROSSBOW_MAX_CLIP
+#define AMMO_RPGCLIP_GIVE		RPG_MAX_CLIP
+#define AMMO_URANIUMBOX_GIVE	20
+#define AMMO_SNARKBOX_GIVE		5
 
 // bullet types
 typedef	enum
@@ -292,8 +352,8 @@ public:
 	int		m_iDefaultAmmo;// how much ammo you get when you pick up this weapon as placed by a level designer.
 
 	// hle time creep vars
-	float m_flPrevPrimaryAttack;
-	float m_flLastFireTime;
+	// float m_flPrevPrimaryAttack;
+	// float m_flLastFireTime;
 };
 
 class CBasePlayerAmmo : public CBaseEntity
@@ -430,7 +490,6 @@ private:
 	int m_iShell;
 	int m_iClipModel;
 
-	int m_fInAttack;
 	unsigned short m_usFireGlock1;
 	unsigned short m_usFireGlock2;
 };
@@ -466,7 +525,7 @@ public:
 	void WeaponIdle( void );
 
 private:
-	unsigned short m_usCrowbar;
+	//unsigned short m_usCrowbar;
 };
 
 class CPython : public CBasePlayerWeapon
@@ -529,7 +588,7 @@ public:
 
 private:
 	unsigned short m_usMP5;
-	unsigned short m_usMP52;
+	//unsigned short m_usMP52;
 };
 
 class CCrossbow : public CBasePlayerWeapon
@@ -562,8 +621,8 @@ public:
 	}
 
 private:
-	unsigned short m_usCrossbow;
-	unsigned short m_usCrossbow2;
+	//unsigned short m_usCrossbow;
+	//unsigned short m_usCrossbow2;
 };
 
 class CShotgun : public CBasePlayerWeapon
@@ -675,7 +734,7 @@ public:
 	}
 
 private:
-	unsigned short m_usRpg;
+	//unsigned short m_usRpg;
 };
 
 class CRpgRocket : public CGrenade
@@ -697,7 +756,7 @@ public:
 	float m_flIgniteTime;
 	EHANDLE m_hLauncher; // handle back to the launcher that fired me. 
 };
-/*
+
 class CGauss : public CBasePlayerWeapon
 {
 public:
@@ -722,6 +781,7 @@ public:
 	void StartFire( void );
 	void Fire( Vector vecOrigSrc, Vector vecDirShooting, float flDamage );
 	float GetFullChargeTime( void );
+	int m_fInAttack;
 	int m_iBalls;
 	int m_iGlow;
 	int m_iBeam;
@@ -783,6 +843,9 @@ public:
 
 	void UseAmmo( int count );
 
+	static int g_fireAnims1[];
+	static int g_fireAnims2[];
+	enum EGON_FIRESTATE { FIRE_OFF, FIRE_CHARGE };
 	enum EGON_FIREMODE { FIRE_NARROW, FIRE_WIDE};
 
 	CBeam				*m_pBeam;
@@ -798,17 +861,18 @@ public:
 #endif
 	}
 
-	unsigned short m_usEgonStop;
+	//unsigned short m_usEgonStop;
 
 private:
 #if !CLIENT_DLL
 	float				m_shootTime;
 #endif
+	EGON_FIRESTATE		m_fireState;
 	EGON_FIREMODE		m_fireMode;
 	float				m_shakeTime;
 	BOOL				m_deployed;
 
-	unsigned short m_usEgonFire;
+	//unsigned short m_usEgonFire;
 };
 
 class CHgun : public CBasePlayerWeapon
@@ -872,6 +936,8 @@ public:
 		return FALSE;
 #endif
 	}
+	float m_flStartThrow;
+	float m_flReleaseThrow;
 };
 
 class CSatchel : public CBasePlayerWeapon
@@ -906,8 +972,10 @@ public:
 		return FALSE;
 #endif
 	}
+private:
+	int m_chargeReady;
 };
-*/
+
 class CTripmine : public CBasePlayerWeapon
 {
 public:
@@ -965,7 +1033,7 @@ public:
 	}
 
 private:
-	unsigned short m_usSnarkFire;
+	//unsigned short m_usSnarkFire;
 };
 
 class CHolster : public CBasePlayerWeapon

@@ -377,7 +377,7 @@ void CSatchel::PrimaryAttack( void )
 			}
 
 			m_chargeReady = SATCHEL_RELOAD;
-			m_flNextPrimaryAttack = GetNextAttackDelay( 0.5f );
+			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5f;
 			m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5f;
 			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.5f;
 			break;
@@ -426,7 +426,7 @@ void CSatchel::SecondaryAttack( void )
 			}
 
 			m_chargeReady = SATCHEL_RELOAD;
-			m_flNextPrimaryAttack = GetNextAttackDelay( 0.5f );
+			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5f;
 			m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5f;
 			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.5f;
 			break;
@@ -466,7 +466,7 @@ void CSatchel::Throw( void )
 
 		m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]--;
 
-		m_flNextPrimaryAttack = GetNextAttackDelay( 1.0f );
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 1.0f;
 		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5f;
 	}
 }
@@ -507,7 +507,7 @@ void CSatchel::WeaponIdle( void )
 		// use tripmine animations
 		strcpy( m_pPlayer->m_szAnimExtention, "trip" );
 
-		m_flNextPrimaryAttack = GetNextAttackDelay( 0.5f );
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5f;
 		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5f;
 		m_chargeReady = SATCHEL_IDLE;
 		break;

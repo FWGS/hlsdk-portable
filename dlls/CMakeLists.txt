@@ -75,12 +75,12 @@ set (SVDLL_SOURCES
 	client.cpp
 	combat.cpp
 	controller.cpp
-#	crossbow.cpp
+	crossbow.cpp
 	crowbar.cpp
 	defaultai.cpp
 	doors.cpp
 	effects.cpp
-#	egon.cpp
+	egon.cpp
 	explode.cpp
 	flyingmonster.cpp
 	func_break.cpp
@@ -88,7 +88,7 @@ set (SVDLL_SOURCES
 	game.cpp
 	gamerules.cpp
 	gargantua.cpp
-#	gauss.cpp
+	gauss.cpp
 	genericmonster.cpp
 	ggrenade.cpp
 	globals.cpp
@@ -99,13 +99,13 @@ set (SVDLL_SOURCES
 	h_cine.cpp
 	h_cycler.cpp
 	h_export.cpp
-#	handgrenade.cpp
+	handgrenade.cpp
 	hassassin.cpp
 	headcrab.cpp
 	healthkit.cpp
 	hgrunt.cpp
 	hornet.cpp
-#	hornetgun.cpp
+	hornetgun.cpp
 	houndeye.cpp
 	ichthyosaur.cpp
 	islave.cpp
@@ -127,12 +127,12 @@ set (SVDLL_SOURCES
 	plane.cpp
 	plats.cpp
 	player.cpp
-#	python.cpp
+	python.cpp
 	playermonster.cpp
 	rat.cpp
 	roach.cpp
 	rpg.cpp
-#	satchel.cpp
+	satchel.cpp
 	schedule.cpp
 	scientist.cpp
 	scripted.cpp
@@ -143,7 +143,7 @@ set (SVDLL_SOURCES
 	soundent.cpp
 	spectator.cpp
 	squadmonster.cpp
-#	squeakgrenade.cpp
+	squeakgrenade.cpp
 	subs.cpp
 	talkmonster.cpp
 	teamplay_gamerules.cpp

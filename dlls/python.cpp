@@ -75,6 +75,8 @@ void CPython::Spawn()
 
 	m_iDefaultAmmo = PYTHON_DEFAULT_GIVE;
 
+	m_flSoundDelay = 0;
+
 	FallInit();// get ready to fall down.
 }
 
@@ -206,7 +208,7 @@ void CPython::PrimaryAttack()
 		// HEV suit - indicate out of ammo condition
 		m_pPlayer->SetSuitUpdate( "!HEV_AMO0", FALSE, 0 );
 
-	m_flNextPrimaryAttack = 0.75f;
+	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.75f;
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10.0f, 15.0f );
 }
 
@@ -229,7 +231,7 @@ void CPython::Reload( void )
 #endif
 	if( DefaultReload( PYTHON_MAX_CLIP, PYTHON_RELOAD, 2.0f, bUseScope ) )
 	{
-		m_flSoundDelay = 1.5f;
+		m_flSoundDelay = UTIL_WeaponTimeBase() + 1.5f;
 	}
 }
 

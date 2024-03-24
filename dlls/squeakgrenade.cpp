@@ -434,7 +434,7 @@ void CSqueak::Precache( void )
 	PRECACHE_SOUND( "squeek/sqk_hunt3.wav" );
 	UTIL_PrecacheOther( "monster_snark" );
 
-	m_usSnarkFire = PRECACHE_EVENT( 1, "events/snarkfire.sc" );
+	//m_usSnarkFire = PRECACHE_EVENT( 1, "events/snarkfire.sc" );
 }
 
 int CSqueak::GetItemInfo( ItemInfo *p )
@@ -525,16 +525,10 @@ void CSqueak::PrimaryAttack()
 		// find place to toss monster
 		UTIL_TraceLine( trace_origin + forward * 24.0f, trace_origin + gpGlobals->v_forward * 60.0f, dont_ignore_monsters, NULL, &tr );
 
-		int flags;
-#if CLIENT_WEAPONS
-		flags = FEV_NOTHOST;
-#else
-		flags = 0;
-#endif
-		PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usSnarkFire, 0.0f, g_vecZero, g_vecZero, 0.0f, 0.0f, 0, 0, 0, 0 );
-
 		if( tr.fAllSolid == 0 && tr.fStartSolid == 0 && tr.flFraction > 0 )
 		{
+			SendWeaponAnim( SQUEAK_THROW );
+
 			// player "shoot" animation
 			m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
 #if !CLIENT_DLL
@@ -555,7 +549,7 @@ void CSqueak::PrimaryAttack()
 
 			m_fJustThrown = 1;
 
-			m_flNextPrimaryAttack = GetNextAttackDelay( 0.3f );
+			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.3f;
 			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.0f;
 		}
 	}

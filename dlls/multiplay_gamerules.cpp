@@ -1664,7 +1664,7 @@ void CHalfLifeMultiplay::SendMOTDToClient( edict_t *client )
 
 	FREE_FILE( (void*)aFileList );
 }
-/*
+
 int CMultiplayBusters::WeaponShouldRespawn( CBasePlayerItem *pWeapon )
 {
 	if( pWeapon->m_iId == WEAPON_EGON )
@@ -1878,5 +1878,5 @@ void CMultiplayBusters::PlayerGotWeapon( CBasePlayer *pPlayer, CBasePlayerItem *
 	pPlayer->pev->renderfx = kRenderFxGlowShell;
 	pPlayer->pev->renderamt = 25;
 	pPlayer->pev->rendercolor = Vector( 0, 75, 250 );
-	pPlayer->m_rgAmmo[pWeapon->PrimaryAmmoIndex()] = pPlayer->ammo_uranium = 100;
-}*/
+	pPlayer->m_rgAmmo[pWeapon->PrimaryAmmoIndex()] = 100;
+}

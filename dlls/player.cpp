@@ -769,7 +769,7 @@ void CBasePlayer::PackDeadPlayerItems( void )
 	iPA = 0;
 	iPW = 0;
 
-	/*if( g_pGameRules->IsBustingGame())
+	if( g_pGameRules->IsBustingGame())
 	{
 		while( rgpPackWeapons[iPW] )
 		{
@@ -787,7 +787,7 @@ void CBasePlayer::PackDeadPlayerItems( void )
 			iPW++;
 		}
 	}
-	else*/
+	else
 	{
 		// pack the ammo
 		while( iPackAmmo[iPA] != -1 )
@@ -3526,8 +3526,25 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		gEvilImpulse101 = FALSE;
 		break;
 	case 102:
-		// Gibbage!!!
-		CGib::SpawnRandomGibs( pev, 1, 1 );
+		gEvilImpulse101 = TRUE;
+
+		GiveNamedItem( "item_suit" );
+		GiveNamedItem( "weapon_handgrenade" );
+		GiveNamedItem( "weapon_tripmine" );
+		GiveNamedItem( "weapon_357" );
+		GiveNamedItem( "ammo_357" );
+		GiveNamedItem( "weapon_crossbow" );
+		GiveNamedItem( "ammo_crossbow" );
+		GiveNamedItem( "weapon_egon" );
+		GiveNamedItem( "weapon_gauss" );
+		GiveNamedItem( "ammo_gaussclip" );
+		GiveNamedItem( "weapon_sillyrocket" );
+		GiveNamedItem( "ammo_rpgclip" );
+		GiveNamedItem( "weapon_satchel" );
+		GiveNamedItem( "weapon_snark" );
+		GiveNamedItem( "weapon_hornetgun" );
+		
+		gEvilImpulse101 = FALSE;
 		break;
 	case 103:
 		// What the hell are you doing?

@@ -319,15 +319,15 @@ void W_Precache( void )
 	UTIL_PrecacheOther( "item_security" );
 	UTIL_PrecacheOther( "item_longjump" );
 
-	// holster
-	UTIL_PrecacheOtherWeapon("weapon_holster");
-
-	// torch
-	UTIL_PrecacheOtherWeapon("weapon_torch");
-
 	// shotgun
 	UTIL_PrecacheOtherWeapon( "weapon_shotgun" );
 	UTIL_PrecacheOther( "ammo_buckshot" );
+
+	// holster
+	UTIL_PrecacheOtherWeapon( "weapon_holster" );
+
+	// torch
+	UTIL_PrecacheOtherWeapon( "weapon_torch" );
 
 	// crowbar
 	UTIL_PrecacheOtherWeapon( "weapon_crowbar" );
@@ -339,8 +339,50 @@ void W_Precache( void )
 	// mp5
 	UTIL_PrecacheOtherWeapon( "weapon_9mmAR" );
 	UTIL_PrecacheOther( "ammo_9mmAR" );
+	UTIL_PrecacheOther( "ammo_ARgrenades" );
+
+	// 9mm ammo box
+	UTIL_PrecacheOther( "ammo_9mmbox" );
 
 #if !OEM_BUILD && !HLDEMO_BUILD
+	// python
+	UTIL_PrecacheOtherWeapon( "weapon_357" );
+        UTIL_PrecacheOther( "ammo_357" );
+
+	// gauss
+	UTIL_PrecacheOtherWeapon( "weapon_gauss" );
+        UTIL_PrecacheOther( "ammo_gaussclip" );
+
+	// rpg
+	UTIL_PrecacheOtherWeapon( "weapon_sillyrocket" );
+        UTIL_PrecacheOther( "ammo_rpgclip" );
+
+	// crossbow
+	UTIL_PrecacheOtherWeapon( "weapon_crossbow" );
+        UTIL_PrecacheOther( "ammo_crossbow" );
+
+	// egon
+	UTIL_PrecacheOtherWeapon( "weapon_egon" );
+#endif
+
+	// tripmine
+	UTIL_PrecacheOtherWeapon( "weapon_tripmine" );
+
+#if !OEM_BUILD && !HLDEMO_BUILD
+	// satchel charge
+	UTIL_PrecacheOtherWeapon( "weapon_satchel" );
+#endif
+
+	// hand grenade
+	UTIL_PrecacheOtherWeapon( "weapon_handgrenade" );
+
+#if !OEM_BUILD && !HLDEMO_BUILD
+	// squeak grenade
+	UTIL_PrecacheOtherWeapon( "weapon_snark" );
+
+	// hornetgun
+	UTIL_PrecacheOtherWeapon( "weapon_hornetgun" );
+
 	if( g_pGameRules->IsDeathmatch() )
 	{
 		UTIL_PrecacheOther( "weaponbox" );// container for dropped deathmatch weapons
@@ -464,14 +506,14 @@ void CBasePlayerItem::FallThink( void )
 		SetThink( NULL );
 	}
 
-	/*if( g_pGameRules->IsBustingGame())
+	if( g_pGameRules->IsBustingGame())
 	{
 		if( !FNullEnt( pev->owner ))
 			return;
 
 		if( FClassnameIs( pev, "weapon_egon" ))
 			UTIL_Remove( this );
-	}*/
+	}
 }
 
 //=========================================================
@@ -634,7 +676,7 @@ void CBasePlayerWeapon::ItemPostFrame( void )
 
 	if( !( m_pPlayer->pev->button & IN_ATTACK ) )
 	{
-		m_flLastFireTime = 0.0f;
+		// m_flLastFireTime = 0.0f;
 	}
 
 	if( ( m_pPlayer->pev->button & IN_ATTACK2 ) && CanAttack( m_flNextSecondaryAttack, gpGlobals->time, UseDecrement() ) )
@@ -987,7 +1029,7 @@ BOOL CBasePlayerWeapon::DefaultDeploy( const char *szViewModel, const char *szWe
 
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5f;
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.0f;
-	m_flLastFireTime = 0.0f;
+	// m_flLastFireTime = 0.0f;
 
 	return TRUE;
 }
@@ -1090,7 +1132,7 @@ void CBasePlayerAmmo::Materialize( void )
 
 void CBasePlayerAmmo::DefaultTouch( CBaseEntity *pOther )
 {
-	if( !pOther->IsPlayer() /*|| IsPlayerBusting( pOther )*/)
+	if( !pOther->IsPlayer() || IsPlayerBusting( pOther ))
 	{
 		return;
 	}
@@ -1187,7 +1229,7 @@ void CBasePlayerWeapon::RetireWeapon( void )
 	}
 }
 
-float CBasePlayerWeapon::GetNextAttackDelay( float delay )
+/*float CBasePlayerWeapon::GetNextAttackDelay( float delay )
 {
 	if( m_flLastFireTime == 0 || m_flNextPrimaryAttack == -1.0f )
 	{
@@ -1214,7 +1256,7 @@ float CBasePlayerWeapon::GetNextAttackDelay( float delay )
 	//_snprintf( szMsg, sizeof(szMsg), "next attack time: %0.4f\n", gpGlobals->time + flNextAttack );
 	//OutputDebugString( szMsg );
 	return flNextAttack;
-}
+}*/
 
 //*********************************************************
 // weaponbox code:
@@ -1595,7 +1637,7 @@ void CBasePlayerWeapon::PrintState( void )
 
 	ALERT( at_console, "m_iclip:  %i\n", m_iClip );
 }
-/*
+
 TYPEDESCRIPTION	CRpg::m_SaveData[] =
 {
 	DEFINE_FIELD( CRpg, m_fSpotActive, FIELD_INTEGER ),
@@ -1603,7 +1645,7 @@ TYPEDESCRIPTION	CRpg::m_SaveData[] =
 };
 
 IMPLEMENT_SAVERESTORE( CRpg, CBasePlayerWeapon )
-*/
+
 TYPEDESCRIPTION	CRpgRocket::m_SaveData[] =
 {
 	DEFINE_FIELD( CRpgRocket, m_flIgniteTime, FIELD_TIME ),
@@ -1621,7 +1663,7 @@ TYPEDESCRIPTION	CShotgun::m_SaveData[] =
 };
 
 IMPLEMENT_SAVERESTORE( CShotgun, CBasePlayerWeapon )
-/*
+
 TYPEDESCRIPTION	CGauss::m_SaveData[] =
 {
 	DEFINE_FIELD( CGauss, m_fInAttack, FIELD_INTEGER ),
@@ -1660,7 +1702,7 @@ TYPEDESCRIPTION	CSatchel::m_SaveData[] =
 	DEFINE_FIELD( CSatchel, m_chargeReady, FIELD_INTEGER ),
 };
 
-IMPLEMENT_SAVERESTORE( CSatchel, CBasePlayerWeapon )*/
+IMPLEMENT_SAVERESTORE( CSatchel, CBasePlayerWeapon )
 
 TYPEDESCRIPTION CTorch::m_SaveData[] =
 {

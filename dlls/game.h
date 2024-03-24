@@ -44,7 +44,7 @@ extern cvar_t defaultteam;
 extern cvar_t allowmonsters;
 extern cvar_t bhopcap;
 extern cvar_t sv_pushable_fixed_tick_fudge;
-// extern cvar_t sv_busters;
+extern cvar_t sv_busters;
 
 // Engine Cvars
 extern cvar_t *g_psv_gravity;

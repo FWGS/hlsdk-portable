@@ -132,12 +132,11 @@ BOOL CGauss::Deploy()
 
 void CGauss::Holster( int skiplocal /* = 0 */ )
 {
-	PLAYBACK_EVENT_FULL( FEV_RELIABLE | FEV_GLOBAL, m_pPlayer->edict(), m_usGaussFire, 0.01f, m_pPlayer->pev->origin, m_pPlayer->pev->angles, 0.0, 0.0, 0, 0, 0, 1 );
-
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5f;
 
 	SendWeaponAnim( GAUSS_HOLSTER );
 	m_fInAttack = 0;
+	EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_WEAPON, "common/null.wav", 1.0, ATTN_NORM );
 }
 
 void CGauss::PrimaryAttack()
@@ -146,7 +145,7 @@ void CGauss::PrimaryAttack()
 	if( m_pPlayer->pev->waterlevel == 3 )
 	{
 		PlayEmptySound();
-		m_flNextSecondaryAttack = m_flNextPrimaryAttack = GetNextAttackDelay( 0.15f );
+		m_flNextSecondaryAttack = m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.15f;
 		return;
 	}
 
@@ -186,7 +185,7 @@ void CGauss::SecondaryAttack()
 			PlayEmptySound();
 		}
 
-		m_flNextSecondaryAttack = m_flNextPrimaryAttack = GetNextAttackDelay( 0.5f );
+		m_flNextSecondaryAttack = m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5f;
 		return;
 	}
 
@@ -213,7 +212,7 @@ void CGauss::SecondaryAttack()
 		m_pPlayer->m_flStartCharge = gpGlobals->time;
 		m_pPlayer->m_flAmmoStartCharge = UTIL_WeaponTimeBase() + GetFullChargeTime();
 
-		PLAYBACK_EVENT_FULL( FEV_NOTHOST, m_pPlayer->edict(), m_usGaussSpin, 0.0f, g_vecZero, g_vecZero, 0.0f, 0.0f, 110, 0, 0, 0 );
+		PLAYBACK_EVENT_FULL( 0, m_pPlayer->edict(), m_usGaussSpin, 0.0f, g_vecZero, g_vecZero, 0.0f, 0.0f, 110, 0, 0, 0 );
 
 		m_iSoundState = SND_CHANGE_PITCH;
 	}
@@ -276,7 +275,7 @@ void CGauss::SecondaryAttack()
 #if GAUSS_OVERCHARGE_FIX
 		if (!overcharge)
 #endif
-			PLAYBACK_EVENT_FULL( FEV_NOTHOST, m_pPlayer->edict(), m_usGaussSpin, 0.0f, g_vecZero, g_vecZero, 0.0f, 0.0f, pitch, 0, ( m_iSoundState == SND_CHANGE_PITCH ) ? 1 : 0, 0 );
+			PLAYBACK_EVENT_FULL( 0, m_pPlayer->edict(), m_usGaussSpin, 0.0f, g_vecZero, g_vecZero, 0.0f, 0.0f, pitch, 0, ( m_iSoundState == SND_CHANGE_PITCH ) ? 1 : 0, 0 );
 
 		m_iSoundState = SND_CHANGE_PITCH; // hack for going through level transitions
 
@@ -287,7 +286,7 @@ void CGauss::SecondaryAttack()
 		{
 			// Player charged up too long. Zap him.
 #if GAUSS_OVERCHARGE_FIX
-			PLAYBACK_EVENT_FULL( FEV_NOTHOST, m_pPlayer->edict(), m_usGaussSpin, 0.0, g_vecZero, g_vecZero, 0.0, 0.0, pitch, 0, 0, 1 );
+			PLAYBACK_EVENT_FULL( 0, m_pPlayer->edict(), m_usGaussSpin, 0.0, g_vecZero, g_vecZero, 0.0, 0.0, pitch, 0, 0, 1 );
 #endif
 			EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_WEAPON, "weapons/electro4.wav", 1.0f, ATTN_NORM, 0, 80 + RANDOM_LONG( 0, 0x3f ) );
 			EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/electro6.wav", 1.0f, ATTN_NORM, 0, 75 + RANDOM_LONG( 0, 0x3f ) );
@@ -389,13 +388,13 @@ void CGauss::Fire( Vector vecOrigSrc, Vector vecDir, float flDamage )
 		 g_irunninggausspred = true;
 #endif	
 	// The main firing event is sent unreliably so it won't be delayed.
-	PLAYBACK_EVENT_FULL( FEV_NOTHOST, m_pPlayer->edict(), m_usGaussFire, 0.0f, m_pPlayer->pev->origin, m_pPlayer->pev->angles, flDamage, 0.0, 0, 0, m_fPrimaryFire ? 1 : 0, 0 );
+	PLAYBACK_EVENT_FULL( 0, m_pPlayer->edict(), m_usGaussFire, 0.0f, m_pPlayer->pev->origin, m_pPlayer->pev->angles, flDamage, 0.0, 0, 0, m_fPrimaryFire ? 1 : 0, 0 );
 
 	// This reliable event is used to stop the spinning sound
 	// It's delayed by a fraction of second to make sure it is delayed by 1 frame on the client
 	// It's sent reliably anyway, which could lead to other delays
 
-	PLAYBACK_EVENT_FULL( FEV_NOTHOST | FEV_RELIABLE | FEV_GLOBAL, m_pPlayer->edict(), m_usGaussFire, 0.01f, m_pPlayer->pev->origin, m_pPlayer->pev->angles, 0.0, 0.0, 0, 0, 0, 1 );
+	PLAYBACK_EVENT_FULL( FEV_RELIABLE | FEV_GLOBAL, m_pPlayer->edict(), m_usGaussFire, 0.01f, m_pPlayer->pev->origin, m_pPlayer->pev->angles, 0.0, 0.0, 0, 0, 0, 1 );
 
 	/*ALERT( at_console, "%f %f %f\n%f %f %f\n", 
 		vecSrc.x, vecSrc.y, vecSrc.z, 

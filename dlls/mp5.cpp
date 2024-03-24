@@ -104,10 +104,10 @@ void CMP5::Precache( void )
 int CMP5::GetItemInfo( ItemInfo *p )
 {
 	p->pszName = STRING( pev->classname );
-	p->pszAmmo1 = "ak47";
+	p->pszAmmo1 = "akmm";
 	p->iMaxAmmo1 = AK47_MAX_CARRY;
-	p->pszAmmo2 = NULL;
-	p->iMaxAmmo2 = -1;
+	p->pszAmmo2 = "ARgrenades";
+	p->iMaxAmmo2 = M203_GRENADE_MAX_CARRY;
 	p->iMaxClip = MP5_MAX_CLIP;
 	p->iSlot = 0;
 	p->iPosition = 5;
@@ -267,7 +267,7 @@ class CMP5AmmoClip : public CBasePlayerAmmo
 	}
 	BOOL AddAmmo( CBaseEntity *pOther ) 
 	{ 
-		int bResult = ( pOther->GiveAmmo( AMMO_MP5CLIP_GIVE, "ak47", AK47_MAX_CARRY ) != -1 );
+		int bResult = ( pOther->GiveAmmo( AMMO_MP5CLIP_GIVE, "akmm", AK47_MAX_CARRY ) != -1 );
 		if( bResult )
 		{
 			EMIT_SOUND( ENT( pev ), CHAN_ITEM, "items/9mmclip1.wav", 1, ATTN_NORM );
@@ -278,3 +278,57 @@ class CMP5AmmoClip : public CBasePlayerAmmo
 
 LINK_ENTITY_TO_CLASS( ammo_mp5clip, CMP5AmmoClip )
 LINK_ENTITY_TO_CLASS( ammo_9mmAR, CMP5AmmoClip )
+
+class CMP5Chainammo : public CBasePlayerAmmo
+{
+	void Spawn( void )
+	{ 
+		Precache();
+		SET_MODEL( ENT( pev ), "models/w_chainammo.mdl" );
+		CBasePlayerAmmo::Spawn();
+	}
+	void Precache( void )
+	{
+		PRECACHE_MODEL( "models/w_chainammo.mdl" );
+		PRECACHE_SOUND( "items/9mmclip1.wav" );
+	}
+	BOOL AddAmmo( CBaseEntity *pOther ) 
+	{ 
+		int bResult = ( pOther->GiveAmmo( AMMO_CHAINBOX_GIVE, "akmm", _9MM_MAX_CARRY ) != -1 );
+		if( bResult )
+		{
+			EMIT_SOUND( ENT( pev ), CHAN_ITEM, "items/9mmclip1.wav", 1, ATTN_NORM );
+		}
+		return bResult;
+	}
+};
+
+LINK_ENTITY_TO_CLASS( ammo_9mmbox, CMP5Chainammo )
+
+class CMP5AmmoGrenade : public CBasePlayerAmmo
+{
+	void Spawn( void )
+	{
+		Precache();
+		SET_MODEL( ENT( pev ), "models/w_ARgrenade.mdl" );
+		CBasePlayerAmmo::Spawn();
+	}
+	void Precache( void )
+	{
+		PRECACHE_MODEL( "models/w_ARgrenade.mdl" );
+		PRECACHE_SOUND( "items/9mmclip1.wav" );
+	}
+	BOOL AddAmmo( CBaseEntity *pOther ) 
+	{ 
+		int bResult = ( pOther->GiveAmmo( AMMO_M203BOX_GIVE, "ARgrenades", M203_GRENADE_MAX_CARRY ) != -1 );
+
+		if( bResult )
+		{
+			EMIT_SOUND( ENT( pev ), CHAN_ITEM, "items/9mmclip1.wav", 1, ATTN_NORM );
+		}
+		return bResult;
+	}
+};
+
+LINK_ENTITY_TO_CLASS( ammo_mp5grenades, CMP5AmmoGrenade )
+LINK_ENTITY_TO_CLASS( ammo_ARgrenades, CMP5AmmoGrenade )

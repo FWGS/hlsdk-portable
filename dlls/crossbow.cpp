@@ -291,8 +291,8 @@ void CCrossbow::Precache( void )
 
 	UTIL_PrecacheOther( "crossbow_bolt" );
 
-	m_usCrossbow = PRECACHE_EVENT( 1, "events/crossbow1.sc" );
-	m_usCrossbow2 = PRECACHE_EVENT( 1, "events/crossbow2.sc" );
+	// m_usCrossbow = PRECACHE_EVENT( 1, "events/crossbow1.sc" );
+	// m_usCrossbow2 = PRECACHE_EVENT( 1, "events/crossbow2.sc" );
 }
 
 int CCrossbow::GetItemInfo( ItemInfo *p )
@@ -352,7 +352,7 @@ void CCrossbow::PrimaryAttack( void )
 // this function only gets called in multiplayer
 void CCrossbow::FireSniperBolt()
 {
-	m_flNextPrimaryAttack = GetNextAttackDelay( 0.75f );
+	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.75f;
 
 	if( m_iClip == 0 )
 	{
@@ -365,14 +365,16 @@ void CCrossbow::FireSniperBolt()
 	m_pPlayer->m_iWeaponVolume = QUIET_GUN_VOLUME;
 	m_iClip--;
 
-	int flags;
-#if CLIENT_WEAPONS
-	flags = FEV_NOTHOST;
-#else
-	flags = 0;
-#endif
-
-	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usCrossbow2, 0.0f, g_vecZero, g_vecZero, 0, 0, m_iClip, 0, 0, 0 );
+	EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_WEAPON, "weapons/xbow_fire1.wav", RANDOM_FLOAT( 0.95f, 1.0f ), ATTN_NORM, 0, 93 + RANDOM_LONG( 0, 0xF ) );
+	if( m_iClip )
+	{
+		EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/xbow_reload1.wav", RANDOM_FLOAT( 0.95f, 1.0f ), ATTN_NORM, 0, 93 + RANDOM_LONG( 0, 0xF ) );
+		SendWeaponAnim( CROSSBOW_FIRE1 );
+	}
+	else
+	{
+		SendWeaponAnim( CROSSBOW_FIRE3 );
+	}
 
 	// player "shoot" animation
 	m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
@@ -408,14 +410,15 @@ void CCrossbow::FireBolt()
 
 	m_iClip--;
 
-	int flags;
-#if CLIENT_WEAPONS
-	flags = FEV_NOTHOST;
-#else
-	flags = 0;
-#endif
-
-	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usCrossbow, 0.0f, g_vecZero, g_vecZero, 0, 0, m_iClip, 0, 0, 0 );
+	if( m_iClip )
+	{
+		EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_ITEM, "weapons/xbow_reload1.wav", RANDOM_FLOAT( 0.95f, 1.0f ), ATTN_NORM, 0, 93 + RANDOM_LONG( 0, 0xF ) );
+		SendWeaponAnim( CROSSBOW_FIRE1 );
+	}
+	else
+	{
+		SendWeaponAnim( CROSSBOW_FIRE3 );
+	}
 
 	// player "shoot" animation
 	m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
@@ -451,7 +454,7 @@ void CCrossbow::FireBolt()
 		// HEV suit - indicate out of ammo condition
 		m_pPlayer->SetSuitUpdate( "!HEV_AMO0", FALSE, 0 );
 
-	m_flNextPrimaryAttack = GetNextAttackDelay( 0.75f );
+	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.75f;
 
 	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.75f;
 
