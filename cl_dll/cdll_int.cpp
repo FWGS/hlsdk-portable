@@ -28,6 +28,18 @@
 #include "vgui_TeamFortressViewport.h"
 #endif
 
+#if USE_PARTICLEMAN
+#include "interface.h"
+#include "particleman.h"
+#include "com_model.h"
+
+CSysModule *g_hParticleManModule = NULL;
+IParticleMan *g_pParticleMan = NULL;
+
+void CL_LoadParticleMan( void );
+void CL_UnloadParticleMan( void );
+#endif
+
 #if GOLDSOURCE_SUPPORT && (XASH_WIN32 || XASH_LINUX || XASH_APPLE) && XASH_X86
 #define USE_FAKE_VGUI	!USE_VGUI
 #if USE_FAKE_VGUI
@@ -171,6 +183,10 @@ int DLLEXPORT Initialize( cl_enginefunc_t *pEnginefuncs, int iVersion )
 
 	EV_HookEvents();
 
+#if USE_PARTICLEMAN
+	CL_LoadParticleMan();
+#endif
+
 	return 1;
 }
 
@@ -269,6 +285,14 @@ int DLLEXPORT HUD_VidInit( void )
 #elif USE_VGUI
 	VGui_Startup();
 #endif
+
+#if USE_PARTICLEMAN
+	if (g_pParticleMan)
+	{
+		g_pParticleMan->ResetParticles();
+	}
+#endif
+
 	return 1;
 }
 
@@ -387,6 +411,93 @@ void DLLEXPORT HUD_DirectorMessage( int iSize, void *pbuf )
 {
 	 gHUD.m_Spectator.DirectorMessage( iSize, pbuf );
 }
+
+#if USE_PARTICLEMAN
+void TestParticlesCmd()
+{
+	static model_t* texture = 0;
+
+	if ( g_pParticleMan )
+	{
+		const float clTime = gEngfuncs.GetClientTime();
+
+		if (texture == 0)
+		{
+			texture = (model_t*)gEngfuncs.GetSpritePointer(SPR_Load("sprites/steam1.spr"));
+		}
+
+		if (!texture)
+			return;
+
+		cl_entity_t* player = gEngfuncs.GetLocalPlayer();
+		Vector origin = player->origin;
+		Vector forward;
+		AngleVectors(player->angles, forward, NULL, NULL);
+
+		for (int i = 0; i < 10; ++i)
+		{
+			Vector shift = forward * 64.0f + forward * 8.0f * i + Vector( 0.0f, 0.0f, i * 8.0f );
+
+			CBaseParticle *particle = g_pParticleMan->CreateParticle(origin + shift, Vector(0.0f, 0.0f, 0.0f), texture, 32.0f, 255.0f, "particle");
+
+			particle->SetLightFlag(LIGHT_NONE);
+			particle->SetCullFlag(CULL_PVS);
+			particle->SetRenderFlag(RENDER_FACEPLAYER);
+			particle->SetCollisionFlags(TRI_COLLIDEWORLD);
+			particle->m_iRendermode = kRenderTransAlpha;
+			particle->m_vColor = Vector(255, 255, 255);
+			particle->m_iFramerate = 10;
+			particle->m_iNumFrames = texture->numframes;
+			particle->m_flGravity = 0.01f;
+			particle->m_vVelocity = shift.Normalize() * 2;
+
+			particle->m_flDieTime = clTime + 5 + i;
+		}
+	}
+}
+
+void CL_UnloadParticleMan( void )
+{
+	Sys_UnloadModule( g_hParticleManModule );
+
+	g_pParticleMan = NULL;
+	g_hParticleManModule = NULL;
+}
+
+void CL_LoadParticleMan( void )
+{
+	char szPDir[512];
+
+	if ( gEngfuncs.COM_ExpandFilename( PARTICLEMAN_DLLNAME, szPDir, sizeof( szPDir ) ) == FALSE )
+	{
+		g_pParticleMan = NULL;
+		g_hParticleManModule = NULL;
+		return;
+	}
+
+	g_hParticleManModule = Sys_LoadModule( szPDir );
+	CreateInterfaceFn particleManFactory = Sys_GetFactory( g_hParticleManModule );
+
+	if ( particleManFactory == NULL )
+	{
+		g_pParticleMan = NULL;
+		g_hParticleManModule = NULL;
+		return;
+	}
+
+	g_pParticleMan = (IParticleMan *)particleManFactory( PARTICLEMAN_INTERFACE, NULL);
+
+	if ( g_pParticleMan )
+	{
+		g_pParticleMan->SetUp( &gEngfuncs );
+
+		// Add custom particle classes here BEFORE calling anything else or you will die.
+		g_pParticleMan->AddCustomParticleClassSize ( sizeof ( CBaseParticle ) );
+
+		gEngfuncs.pfnAddCommand("test_particles", &TestParticlesCmd);
+	}
+}
+#endif
 
 void DLLEXPORT HUD_MobilityInterface( mobile_engfuncs_t *gpMobileEngfuncs )
 {

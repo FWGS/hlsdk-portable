@@ -21,6 +21,10 @@
 #include "parsemsg.h"
 #include "r_efx.h"
 
+#if USE_PARTICLEMAN
+#include "particleman.h"
+#endif
+
 #define MAX_CLIENTS 32
 
 extern BEAM *pBeam;

@@ -20,6 +20,10 @@
 #include "pmtrace.h"	
 #include "pm_shared.h"
 
+#if USE_PARTICLEMAN
+#include "particleman.h"
+#endif
+
 void Game_AddObjects( void );
 
 extern vec3_t v_origin;
@@ -590,6 +594,15 @@ void DLLEXPORT HUD_TempEntUpdate (
 	int			i;
 	TEMPENTITY	*pTemp, *pnext, *pprev;
 	float		/*freq,*/ gravity, gravitySlow, life, fastFreq;
+
+#if USE_PARTICLEMAN
+	Vector		vAngles;
+
+	gEngfuncs.GetViewAngles( (float*)vAngles );
+
+	if ( g_pParticleMan )
+		 g_pParticleMan->SetVariables( cl_gravity, vAngles );
+#endif
 
 	// Nothing to simulate
 	if( !*ppTempEntActive )	
