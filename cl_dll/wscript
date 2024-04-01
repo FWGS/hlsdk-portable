@@ -15,7 +15,7 @@ def options(opt):
 	grp.add_option('--enable-novgui-scoreboard', action = 'store_true', dest = 'USE_NOVGUI_SCOREBOARD', default = False,
 		help = 'Prefer non-VGUI Scoreboard when USE_VGUI is enabled')
 	grp.add_option('--disable-goldsrc-support', action = 'store_false', dest = 'GOLDSOURCE_SUPPORT',
-		default=True, help = 'disable GoldSource compatibility')
+		default=True, help = 'disable GoldSource compatibility on i386 Win/Mac/Linux')
 
 	opt.load('vgui')
 
@@ -24,7 +24,11 @@ def configure(conf):
 	conf.env.USE_NOVGUI_MOTD = conf.options.USE_NOVGUI_MOTD
 	conf.env.USE_NOVGUI_SCOREBOARD = conf.options.USE_NOVGUI_SCOREBOARD
 	conf.env.USE_VOICEMGR = conf.options.USE_VOICEMGR
-	conf.env.GOLDSOURCE_SUPPORT = conf.options.GOLDSOURCE_SUPPORT
+
+	if (conf.env.DEST_CPU == 'x86' or (conf.env.DEST_CPU == 'x86_64' and not conf.options.ALLOW64)) and conf.env.DEST_OS in ['win32', 'linux', 'darwin']:
+		conf.env.GOLDSOURCE_SUPPORT = conf.options.GOLDSOURCE_SUPPORT
+	else:
+		conf.env.GOLDSOURCE_SUPPORT = False
 
 	if conf.env.GOLDSOURCE_SUPPORT:
 		conf.check_cc(lib='dl')
