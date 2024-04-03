@@ -35,6 +35,7 @@ extern int gmsgMOTD;
 //=========================================================
 CHalfLifeRules::CHalfLifeRules( void )
 {
+	ALERT( at_console, "Generic Half-Life singleplayer\n");
 	SERVER_COMMAND( "exec spserver.cfg\n" );
 	RefreshSkillData();
 }

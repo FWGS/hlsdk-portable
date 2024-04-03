@@ -609,6 +609,7 @@ void HUD_InitClientWeapons( void )
 	// Allocate slot(s) for each weapon that we are going to be predicting
 	HUD_PrepEntity( &g_Glock, &player );
 	HUD_PrepEntity( &g_Crowbar, &player );
+	HUD_PrepEntity( &g_VortiHands, &player );
 	HUD_PrepEntity( &g_Python, &player );
 	HUD_PrepEntity( &g_Mp5, &player );
 	HUD_PrepEntity( &g_Crossbow, &player );
@@ -686,6 +687,9 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 	{
 		case WEAPON_CROWBAR:
 			pWeapon = &g_Crowbar;
+			break;
+		case WEAPON_VORTI:
+			pWeapon = &g_VortiHands;
 			break;
 		case WEAPON_GLOCK:
 			pWeapon = &g_Glock;

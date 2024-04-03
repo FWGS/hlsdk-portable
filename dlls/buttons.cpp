@@ -186,7 +186,10 @@ void CMultiSource::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE 
 	}
 
 	// CONSIDER: a Use input to the multisource always toggles.  Could check useType for ON/OFF/TOGGLE
-	m_rgTriggered[i - 1] ^= 1;
+	if( !FBitSet( pev->spawnflags, SF_MULTI_NO_TOGGLE ))
+		m_rgTriggered[i - 1] ^= 1;
+	else
+		m_rgTriggered[i-1] = 1;
 
 	// 
 	if( IsTriggered( pActivator ) )
@@ -1166,6 +1169,13 @@ void CMomentaryRotButton::Off( void )
 {
 	pev->avelocity = g_vecZero;
 	m_lastUsed = 0;
+	if ( ( pev->angles == m_end ) && (!FStringNull( m_iszEndLockTarget )) )
+	{
+		FireTargets(STRING( m_iszEndLockTarget ), this, this, USE_TOGGLE, 0);
+		SetThink( NULL );
+		return;
+	}
+
 	if( FBitSet( pev->spawnflags, SF_PENDULUM_AUTO_RETURN ) && m_returnSpeed > 0 )
 	{
 		SetThink( &CMomentaryRotButton::Return );

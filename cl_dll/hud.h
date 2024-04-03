@@ -581,6 +581,8 @@ private:
 //
 //-----------------------------------------------------
 //
+#define CAM_OFF 0
+#define CAM_ON 1
 class CHud
 {
 private:
@@ -673,6 +675,8 @@ public:
 	CHudAmmoSecondary	m_AmmoSecondary;
 	CHudTextMessage m_TextMessage;
 	CHudStatusIcons m_StatusIcons;
+	CHudModeIcon m_ModeIcon;
+	CHudAlienCrosshair m_AlienCrosshair;
 #if !USE_VGUI || USE_NOVGUI_SCOREBOARD
 	CHudScoreboard	m_Scoreboard;
 #endif
@@ -692,12 +696,17 @@ public:
 	// user messages
 	int _cdecl MsgFunc_Damage( const char *pszName, int iSize, void *pbuf );
 	int _cdecl MsgFunc_GameMode( const char *pszName, int iSize, void *pbuf );
+	int _cdecl MsgFunc_DecayName( const char *pszName, int iSize, void *pbuf );
 	int _cdecl MsgFunc_Logo( const char *pszName,  int iSize, void *pbuf );
 	int _cdecl MsgFunc_ResetHUD( const char *pszName,  int iSize, void *pbuf );
 	void _cdecl MsgFunc_InitHUD( const char *pszName, int iSize, void *pbuf );
 	void _cdecl MsgFunc_ViewMode( const char *pszName, int iSize, void *pbuf );
 	int _cdecl MsgFunc_SetFOV( const char *pszName,  int iSize, void *pbuf );
 	int  _cdecl MsgFunc_Concuss( const char *pszName, int iSize, void *pbuf );
+	int  _cdecl MsgFunc_LensFlare( const char *pszName, int iSize, void *pbuf );
+	int  _cdecl MsgFunc_AimFrame( const char *pszName, int iSize, void *pbuf );
+	int  _cdecl MsgFunc_Camera( const char *pszName, int iSize, void *pbuf );
+	int  _cdecl MsgFunc_ChangePlayer( const char *pszName, int iSize, void *pbuf );
 
 	// Screen information
 	SCREENINFO	m_scrinfo;

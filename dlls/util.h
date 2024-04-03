@@ -567,8 +567,11 @@ private:
 void UTIL_SetGroupTrace( int groupmask, int op );
 void UTIL_UnsetGroupTrace( void );
 
+Vector UTIL_Intersect( Vector vecSrc, Vector vecDst, Vector vecMove, float flSpeed );
 int UTIL_SharedRandomLong( unsigned int seed, int low, int high );
 float UTIL_SharedRandomFloat( unsigned int seed, float low, float high );
 
 float UTIL_WeaponTimeBase( void );
+
+void FindHullIntersection( const Vector &vecSrc, TraceResult &tr, float *mins, float *maxs, edict_t *pEntity );
 #endif // UTIL_H

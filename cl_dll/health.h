@@ -105,11 +105,13 @@ public:
 	virtual int VidInit( void );
 	virtual int Draw( float fTime );
 	virtual void Reset( void );
+	void DrawAlienHealthBar( void );
 	int MsgFunc_Health( const char *pszName,  int iSize, void *pbuf );
 	int MsgFunc_Damage( const char *pszName,  int iSize, void *pbuf );
 	int m_iHealth;
 	int m_HUD_dmg_bio;
 	int m_HUD_cross;
+	int m_HUD_alien;
 	float m_fAttackFront, m_fAttackRear, m_fAttackLeft, m_fAttackRight;
 	void GetPainColor( int &r, int &g, int &b );
 	float m_fFade;

@@ -22,46 +22,15 @@
 #include "cbase.h"
 #include "monsters.h"
 #include "saverestore.h"
-
-// Monstermaker spawnflags
-#define	SF_MONSTERMAKER_START_ON	1 // start active ( if has targetname )
-#define	SF_MONSTERMAKER_CYCLIC		4 // drop one monster every time fired.
-#define SF_MONSTERMAKER_MONSTERCLIP	8 // Children are blocked by monsterclip
+#include "monstermaker.h"
+#include "effects.h"
 
 //=========================================================
 // MonsterMaker - this ent creates monsters during the game.
 //=========================================================
-class CMonsterMaker : public CBaseMonster
-{
-public:
-	void Spawn( void );
-	void Precache( void );
-	void KeyValue( KeyValueData* pkvd);
-	void EXPORT ToggleUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
-	void EXPORT CyclicUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
-	void EXPORT MakerThink( void );
-	void DeathNotice( entvars_t *pevChild );// monster maker children use this to tell the monster maker that they have died.
-	void MakeMonster( void );
-
-	virtual int Save( CSave &save );
-	virtual int Restore( CRestore &restore );
-
-	static TYPEDESCRIPTION m_SaveData[];
-	
-	string_t m_iszMonsterClassname;// classname of the monster(s) that will be created.
-	
-	int m_cNumMonsters;// max number of monsters this ent can create
-	
-	int m_cLiveChildren;// how many monsters made by this monster maker that are currently alive
-	int m_iMaxLiveChildren;// max number of monsters that this maker may have out at one time.
-
-	float m_flGround; // z coord of the ground under me, used to make sure no monsters are under the maker when it drops a new child
-
-	BOOL m_fActive;
-	BOOL m_fFadeChildren;// should we make the children fadeout?
-};
 
 LINK_ENTITY_TO_CLASS( monstermaker, CMonsterMaker )
+LINK_ENTITY_TO_CLASS( env_warpball, CMonsterMaker )
 
 TYPEDESCRIPTION	CMonsterMaker::m_SaveData[] =
 {
@@ -83,9 +52,10 @@ void CMonsterMaker::KeyValue( KeyValueData *pkvd )
 	if( FStrEq( pkvd->szKeyName, "monstercount" ) )
 	{
 		m_cNumMonsters = atoi( pkvd->szValue );
+		m_cTotalMonstersCount = m_cNumMonsters;
 		pkvd->fHandled = TRUE;
 	}
-	else if( FStrEq( pkvd->szKeyName, "m_imaxlivechildren" ) )
+	else if ( FStrEq(pkvd->szKeyName, "m_imaxlivechildren") || FStrEq(pkvd->szKeyName, "maxlivechildren"))
 	{
 		m_iMaxLiveChildren = atoi( pkvd->szValue );
 		pkvd->fHandled = TRUE;
@@ -135,7 +105,7 @@ void CMonsterMaker::Spawn()
 			SetUse( &CMonsterMaker::ToggleUse );// so can be turned on/off
 		}
 
-		if( FBitSet( pev->spawnflags, SF_MONSTERMAKER_START_ON ) )
+		if( !m_fIsWarpBall && FBitSet( pev->spawnflags, SF_MONSTERMAKER_START_ON ))
 		{
 			// start making monsters as soon as monstermaker spawns
 			m_fActive = TRUE;
@@ -200,18 +170,38 @@ void CMonsterMaker::MakeMonster( void )
 		return;
 	}
 
+	bool bFoundTarget = false;
+	Vector DesiredOrigin;
+	Vector DesiredAngles;
+	if (!FStringNull( m_iszWarpTarget ))
+	{
+		m_pGoalEnt = UTIL_FindEntityByTargetname( NULL, STRING( m_iszWarpTarget ) );
+		if (m_pGoalEnt)
+		{
+			DesiredOrigin = m_pGoalEnt->pev->origin;
+			DesiredAngles = m_pGoalEnt->pev->angles;
+			bFoundTarget = true;
+		}
+	}
+
+	if (!bFoundTarget)
+	{
+		DesiredOrigin = pev->origin;
+		DesiredAngles = pev->angles;
+	}
+
 	if( !m_flGround )
 	{
 		// set altitude. Now that I'm activated, any breakables, etc should be out from under me. 
 		TraceResult tr;
 
-		UTIL_TraceLine( pev->origin, pev->origin - Vector( 0, 0, 2048 ), ignore_monsters, ENT( pev ), &tr );
+		UTIL_TraceLine( DesiredOrigin, DesiredOrigin - Vector ( 0, 0, 2048 ), ignore_monsters, ENT(pev), &tr );
 		m_flGround = tr.vecEndPos.z;
 	}
 
-	Vector mins = pev->origin - Vector( 34, 34, 0 );
-	Vector maxs = pev->origin + Vector( 34, 34, 0 );
-	maxs.z = pev->origin.z;
+	Vector mins = DesiredOrigin - Vector( 34, 34, 0 );
+	Vector maxs = DesiredOrigin + Vector( 34, 34, 0 );
+	maxs.z = DesiredOrigin.z;
 	mins.z = m_flGround;
 
 	CBaseEntity *pList[2];
@@ -219,8 +209,30 @@ void CMonsterMaker::MakeMonster( void )
 	if( count )
 	{
 		// don't build a stack of monsters!
-		return;
+		bool bAllDead = true;
+		for ( int i = 0; i < count; i++ )
+		{
+			if ( pList[i]->IsAlive() )	// Don't count dead monsters
+				bAllDead = false;
+		}
+		// don't build a stack of monsters if there are alive monsters nearby!
+		if (!bAllDead)
+			return;
 	}
+
+	// If env_warpball then create teleport effect
+	if ( m_fIsWarpBall == true)
+	{
+		CEnvWarpBall *pWarpBall = CEnvWarpBall::WarpBallCreate();
+		pWarpBall->pev->origin = DesiredOrigin;
+		pWarpBall->pev->angles = DesiredAngles;
+		SetBits( pWarpBall->pev->spawnflags, SF_AUTO_FIREONCE );
+		pWarpBall->Use( this, this, USE_ON, 1);
+
+		// if monstermaker is a warpball and doesn't have children class specified, play effect only
+		if (FStringNull(m_iszMonsterClassname))
+ 			return;
+ 	}
 
 	pent = CREATE_NAMED_ENTITY( m_iszMonsterClassname );
 
@@ -332,4 +344,19 @@ void CMonsterMaker::DeathNotice( entvars_t *pevChild )
 	{
 		pevChild->owner = NULL;
 	}
+}
+
+void CMonsterMaker :: MonsterMakerInit( const char* ChildName, int MaxLiveChildren, int NumMonsters )
+{
+	m_cNumMonsters = NumMonsters;
+	m_iMaxLiveChildren = MaxLiveChildren;
+	m_iszMonsterClassname = MAKE_STRING( ChildName );
+	Spawn();
+}
+
+CMonsterMaker *CMonsterMaker::MonsterMakerCreate( const char* ChildName, int MaxLiveChildren, int NumMonsters )
+{
+	CMonsterMaker *pMonsterMaker = GetClassPtr( (CMonsterMaker *)NULL );
+	pMonsterMaker->MonsterMakerInit( ChildName, MaxLiveChildren, NumMonsters );
+	return pMonsterMaker;
 }

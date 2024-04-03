@@ -30,6 +30,7 @@
 #include "weapons.h"
 #include "func_break.h"
 #include "game.h"
+#include "gamerules.h"
 
 extern DLL_GLOBAL Vector		g_vecAttackDir;
 extern DLL_GLOBAL int			g_iSkillLevel;
@@ -551,7 +552,10 @@ void CBaseMonster::CallGibMonster( void )
 	}
 
 	if( ShouldFadeOnDeath() && !fade )
+	{
 		UTIL_Remove( this );
+		// DECAY BOTAI FIX TODO: object gets removed here when killed with "blast" power
+	}
 }
 
 /*
@@ -1480,6 +1484,12 @@ Vector CBaseEntity::FireBulletsPlayer( ULONG cShots, Vector vecSrc, Vector vecDi
 	ClearMultiDamage();
 	gMultiDamage.type = DMG_BULLET | DMG_NEVERGIB;
 
+	//
+	//  DECAY STATS!!! MISSES AND HITS GO THROUGH HERE
+	//
+	int ishotId = RANDOM_LONG(1, 1000);
+	g_pGameRules->BulletsFired( pevAttacker, cShots, iBulletType, ishotId );
+
 	for( ULONG iShot = 1; iShot <= cShots; iShot++ )
 	{
 		//Use player's random seed.
@@ -1500,6 +1510,8 @@ Vector CBaseEntity::FireBulletsPlayer( ULONG cShots, Vector vecSrc, Vector vecDi
 		if( tr.flFraction != 1.0f )
 		{
 			CBaseEntity *pEntity = CBaseEntity::Instance( tr.pHit );
+
+			g_pGameRules->BulletHit( pEntity, pevAttacker, ishotId );
 
 			if( iDamage )
 			{

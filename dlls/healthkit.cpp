@@ -23,6 +23,8 @@
 #include "items.h"
 #include "gamerules.h"
 #include "game.h"
+#include "actanimating.h"
+//#include "effects.h"
 
 extern int gmsgItemPickup;
 

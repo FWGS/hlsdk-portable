@@ -41,6 +41,10 @@ void EV_SnarkFire( struct event_args_s *args );
 
 void EV_TrainPitchAdjust( struct event_args_s *args );
 void EV_VehiclePitchAdjust( event_args_t *args );
+
+void EV_Vorti( struct event_args_s *args );
+void EV_FireVorti( struct event_args_s *args );
+void EV_SpinVorti( struct event_args_s *args );
 }
 
 /*
@@ -78,4 +82,7 @@ void Game_HookEvents( void )
 	gEngfuncs.pfnHookEvent( "events/tripfire.sc", EV_TripmineFire );
 	gEngfuncs.pfnHookEvent( "events/snarkfire.sc", EV_SnarkFire );
 	gEngfuncs.pfnHookEvent( "events/vehicle.sc", EV_VehiclePitchAdjust );
+	gEngfuncs.pfnHookEvent( "events/vorti.sc", EV_Vorti );
+	gEngfuncs.pfnHookEvent( "events/vortifire.sc", EV_FireVorti );
+	gEngfuncs.pfnHookEvent( "events/vortispin.sc", EV_SpinVorti );
 }

@@ -167,7 +167,7 @@ void CHudHealth::GetPainColor( int &r, int &g, int &b )
 #else
 	if( m_iHealth > 25 )
 	{
-		UnpackRGB( r, g, b, RGB_YELLOWISH );
+		UnpackRGB( r, g, b, gHUD.uColor );
 	}
 	else
 	{
@@ -178,6 +178,93 @@ void CHudHealth::GetPainColor( int &r, int &g, int &b )
 #endif
 }
 
+void CHudHealth::DrawAlienHealthBar( void )
+{
+	if ( m_HUD_alien == -1 )
+		return;
+
+	HSPRITE m_hSprite1;
+	HSPRITE m_hSprite2;
+	wrect_t *m_prc1;
+	wrect_t *m_prc2;
+
+	float m_fFade;
+	int	  m_iHeight, m_iWidth;		// width of the battery innards
+
+	m_hSprite1 = m_hSprite2 = 0;  // delaying get sprite handles until we know the sprites are loaded
+	m_prc1 = &gHUD.GetSpriteRect( m_HUD_alien /*HUD_suit_empty*/ );
+	m_prc2 = &gHUD.GetSpriteRect( m_HUD_alien /*HUD_suit_full*/ );
+	m_iHeight = m_prc2->bottom - m_prc1->top;
+	m_iWidth = m_prc2->right - m_prc1->left;
+	m_fFade = 0;
+
+	//=============================================
+	int r, g, b, x, y, a;
+	wrect_t rc;
+
+	rc = *m_prc2;
+	//rc.top  += m_iHeight * ((float)(100-(min(100,m_iHealth))) * 0.01);	// battery can go from 0 to 100 so * 0.01 goes from 0 to 1
+	rc.left  += m_iWidth * ((float)(100-(min(100,m_iHealth))) * 0.005);	// battery can go from 0 to 100 so * 0.01 goes from 0 to 1
+	rc.right  -= m_iWidth * ((float)(100-(min(100,m_iHealth))) * 0.005);	// battery can go from 0 to 100 so * 0.01 goes from 0 to 1
+
+	//UnpackRGB(r,g,b, gHUD.uColor);
+	r = 180;
+	g = 255;
+	b = 96;
+
+	// Has health changed? Flash the health #
+	if (m_fFade)
+	{
+		if (m_fFade > FADE_TIME)
+			m_fFade = FADE_TIME;
+
+		m_fFade -= (gHUD.m_flTimeDelta * 20);
+		if (m_fFade <= 0)
+		{
+			a = 128;
+			m_fFade = 0;
+		}
+
+		// Fade the health number back to dim
+
+		a = MIN_ALPHA +  (m_fFade/FADE_TIME) * 128;
+
+	}
+	else
+		a = MIN_ALPHA;
+
+	ScaleColors(r, g, b, a );
+
+	int iOffset = (m_prc1->bottom - m_prc1->top)/6;
+
+	y = ScreenHeight - gHUD.m_iFontHeight - gHUD.m_iFontHeight / 2;
+	x = ScreenWidth/2 - (m_prc1->right - m_prc1->left)/2;
+
+	// make sure we have the right sprite handles
+	if ( !m_hSprite1 )
+		m_hSprite1 = gHUD.GetSprite( m_HUD_alien );
+	if ( !m_hSprite2 )
+		m_hSprite2 = gHUD.GetSprite( m_HUD_alien );
+
+	SPR_Set(m_hSprite1, r, g, b );
+	//SPR_DrawAdditive( 0,  x, y - iOffset, m_prc1);
+	SPR_DrawAdditive( 0,  x - iOffset, y, m_prc1);
+
+	//if (rc.bottom > rc.top)
+	if (rc.right > rc.left)
+	{
+		SPR_Set(m_hSprite2, r, g, b );
+		//SPR_DrawAdditive( 0, x, y - iOffset + (rc.top - m_prc2->top), &rc);
+		SPR_DrawAdditive( 0, x - iOffset + (rc.left - m_prc2->left), y, &rc);
+	}
+
+	//x += (m_prc1->right - m_prc1->left);
+	x = 32;
+	x = gHUD.DrawHudNumber(x, y, DHN_3DIGITS | DHN_DRAWZERO, m_iHealth, r, g, b);
+
+	return;  //1
+}
+
 int CHudHealth::Draw( float flTime )
 {
 	int r, g, b;
@@ -186,6 +273,12 @@ int CHudHealth::Draw( float flTime )
 
 	if( ( gHUD.m_iHideHUDDisplay & HIDEHUD_HEALTH ) || gEngfuncs.IsSpectateOnly() )
 		return 1;
+
+	if( m_iFlags & HUD_ALIEN )
+	{
+		DrawAlienHealthBar();
+		return 1;
+	}
 
 	if( !m_hSprite )
 		m_hSprite = LoadSprite( PAIN_NAME );
@@ -233,7 +326,7 @@ int CHudHealth::Draw( float flTime )
 
 		int iHeight = gHUD.m_iFontHeight;
 		int iWidth = HealthWidth / 10;
-		UnpackRGB( r, g, b, RGB_YELLOWISH );
+		UnpackRGB( r, g, b, gHUD.uColor );
 		FillRGBA( x, y, iWidth, iHeight, r, g, b, a );
 	}
 
@@ -382,7 +475,7 @@ int CHudHealth::DrawDamage( float flTime )
 	if( !m_bitsDamage )
 		return 1;
 
-	UnpackRGB( r, g, b, RGB_YELLOWISH );
+	UnpackRGB( r, g, b, gHUD.uColor );
 
 	a = (int)( fabs( sin( flTime * 2.0f ) ) * 256.0f );
 

@@ -544,43 +544,6 @@ void CController::StartTask( Task_t *pTask )
 	}
 }
 
-Vector Intersect( Vector vecSrc, Vector vecDst, Vector vecMove, float flSpeed )
-{
-	Vector vecTo = vecDst - vecSrc;
-
-	float a = DotProduct( vecMove, vecMove ) - flSpeed * flSpeed;
-	float b = 0 * DotProduct( vecTo, vecMove ); // why does this work?
-	float c = DotProduct( vecTo, vecTo );
-	float t;
-
-	if( a == 0 )
-	{
-		t = c / ( flSpeed * flSpeed );
-	}
-	else
-	{
-		t = b * b - 4.0f * a * c;
-		t = sqrt( t ) / ( 2.0f * a );
-		float t1 = -b +t;
-		float t2 = -b -t;
-
-		if( t1 < 0 || t2 < t1 )
-			t = t2;
-		else
-			t = t1;
-	}
-
-	// ALERT( at_console, "Intersect %f\n", t );
-
-	if( t < 0.1f )
-		t = 0.1f;
-	if( t > 10.0f )
-		t = 10.0f;
-
-	Vector vecHit = vecTo + vecMove * t;
-	return vecHit.Normalize() * flSpeed;
-}
-
 int CController::LookupFloat()
 {
 	if( m_velocity.Length() < 32.0f )
@@ -642,7 +605,7 @@ void CController::RunTask( Task_t *pTask )
 				{
 					m_vecEstVelocity = m_vecEstVelocity * 0.8f;
 				}
-				vecDir = Intersect( vecSrc, m_hEnemy->BodyTarget( pev->origin ), m_vecEstVelocity, gSkillData.controllerSpeedBall );
+				vecDir = UTIL_Intersect( vecSrc, m_hEnemy->BodyTarget( pev->origin ), m_vecEstVelocity, gSkillData.controllerSpeedBall );
 				float delta = 0.03490f; // +-2 degree
 				vecDir = vecDir + Vector( RANDOM_FLOAT( -delta, delta ), RANDOM_FLOAT( -delta, delta ), RANDOM_FLOAT( -delta, delta ) ) * gSkillData.controllerSpeedBall;
 
@@ -728,7 +691,7 @@ Schedule_t *CController::GetSchedule( void )
 	{
 	case MONSTERSTATE_COMBAT:
 		{
-			// Vector vecTmp = Intersect( Vector( 0, 0, 0 ), Vector( 100, 4, 7 ), Vector( 2, 10, -3 ), 20.0f );
+			// Vector vecTmp = UTIL_Intersect( Vector( 0, 0, 0 ), Vector( 100, 4, 7 ), Vector( 2, 10, -3 ), 20.0f );
 
 			// dead enemy
 			if( HasConditions( bits_COND_LIGHT_DAMAGE ) )

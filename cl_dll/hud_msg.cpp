@@ -87,16 +87,75 @@ void CHud::MsgFunc_InitHUD( const char *pszName, int iSize, void *pbuf )
 	pFlare = NULL;	// Vit_amiN: clear egon's beam flare
 }
 
-int CHud::MsgFunc_GameMode( const char *pszName, int iSize, void *pbuf )
+void CHud::MsgFunc_Camera( const char *pszName, int iSize, void *pbuf )
 {
 	BEGIN_READ( pbuf, iSize );
-	m_Teamplay = READ_BYTE();
 
-	if( m_Teamplay )
-		ClientCmd( "richpresence_gamemode Teamplay\n" );
+	m_iCamMode = READ_BYTE();
+	m_vecCamPos.x = READ_COORD();
+	m_vecCamPos.y = READ_COORD();
+	m_vecCamPos.z = READ_COORD();
+
+	gHUD.DrawHudString( 100, 100, ScreenWidth, "Camera message received!", 255, 180, 0 );
+}
+
+int CHud::MsgFunc_GameMode( const char *pszName, int iSize, void *pbuf )
+{
+	gEngfuncs.pfnConsolePrint("--- MsgFunc_GameMode ---\n");
+
+	m_Teamplay = 0; //READ_BYTE();
+
+	BEGIN_READ( pbuf, iSize );
+	int bMode = READ_BYTE();
+
+	if ( bMode == 2 )
+	{
+		m_bAlienMode = true;
+		m_Health.m_iFlags |= HUD_ALIEN;
+		//m_TextMessage.m_iFlags |= HUD_ALIEN;
+		gEngfuncs.pfnConsolePrint("--- AlIEN SLAVE MODE ---\n");
+	}
 	else
-		ClientCmd( "richpresence_gamemode\n" );
-	ClientCmd( "richpresence_update\n" );
+		if ( bMode == 3 )
+		{
+			m_bAlienMode = false;
+			m_Health.m_iFlags &= ~HUD_ALIEN;
+			//m_TextMessage.m_iFlags &= ~HUD_ALIEN;
+			gEngfuncs.pfnConsolePrint("--- NORMAL MODE ---\n");
+		}
+
+	return 1;
+}
+
+int CHud::MsgFunc_DecayName( const char *spzName, int iSize, void *pbuf )
+{
+	BEGIN_READ( pbuf, iSize );
+	int iPlayerDecayId;
+
+	iPlayerDecayId = READ_BYTE();
+
+	char name[32];
+	sprintf( name, "Spare player" );
+
+	if ( iPlayerDecayId == 1 )
+	{
+		if ( m_bAlienMode )
+			sprintf( name, "X-8973" );
+		else
+			sprintf( name, "Gina" );
+	}
+	if ( iPlayerDecayId == 2 )
+	{
+		if ( m_bAlienMode )
+			sprintf( name, "R-4913" );
+		else
+			sprintf( name, "Colette" );
+	}
+
+	char buf[256];
+	sprintf(buf, "name \"%s\"\n", name);
+	gEngfuncs.pfnClientCmd(buf);
+
 	return 1;
 }
 

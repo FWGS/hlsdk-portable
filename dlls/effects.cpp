@@ -23,13 +23,170 @@
 #include "decals.h"
 #include "func_break.h"
 #include "shake.h"
+#include "animation.h"
+#include "gamerules.h"
+//#include "monstermaker.h"
 
 #define	SF_GIBSHOOTER_REPEATABLE		1 // allows a gibshooter to be refired
 
 #define SF_FUNNEL_REVERSE			1 // funnel effect repels particles instead of attracting them.
 
+#define SF_MIRROR_FINAL				0x0001 // final part of the lasermirror chain
+#define SF_MIRROR_FIREONCE			0x0002 // if global state is on, then fire our target only once
+
+extern int gmsgLensFlare;
+
 // Lightning target, just alias landmark
 LINK_ENTITY_TO_CLASS( info_target, CPointEntity )
+
+//==============================================================================
+//		Decay's displacer's teleport target entity
+//==============================================================================
+
+LINK_ENTITY_TO_CLASS( info_displacer_xen_target, CDisplacerTarget );
+
+void CDisplacerTarget::KeyValue( KeyValueData *pkvd )
+{
+	if (FStrEq(pkvd->szKeyName, "player_index"))
+	{
+		m_iPlayerIndex = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else
+		CPointEntity::KeyValue( pkvd );
+}
+
+//==============================================================================
+//		Decay's spawnflags setter helper entity
+//==============================================================================
+
+class CFlagHelper : public CPointEntity
+{
+public:
+	void	Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+};
+LINK_ENTITY_TO_CLASS( info_flaghelper, CFlagHelper );
+
+void CFlagHelper::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
+{
+	if ( FStringNull( pev->target ) )
+	  return;
+
+	CBaseEntity *pEnt = NULL;
+	pEnt = UTIL_FindEntityByTargetname( NULL, STRING( pev->target ) );
+	if ( pEnt )
+		pEnt->pev->spawnflags = this->pev->spawnflags;
+}
+
+//==============================================================================
+//		Decay's cheat helper entity
+//==============================================================================
+
+class CCheatHelper : public CPointEntity
+{
+public:
+	void	Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+	void	KeyValue( KeyValueData *pkvd );
+	void	CheckCode();
+
+	// consists of "udlr stcx" (up down left right  square triangle circle (x)cross )
+	string_t	m_sCheat1, target1;
+	string_t	m_sCheat2, target2;
+	char m_sListener[16];
+};
+LINK_ENTITY_TO_CLASS( info_cheathelper, CCheatHelper );
+
+void CCheatHelper::CheckCode()
+{
+	int i = 0;
+	while ( ( i < 16 ) && ( m_sListener[i] == 0 ) )
+		i++;
+
+	if ( i == 16 )
+		return;
+
+	char m_sCurrentCheat[16];
+	memset( &m_sCurrentCheat, 0, sizeof(m_sCurrentCheat) );
+	memmove( m_sCurrentCheat, m_sListener+i, 16-i );
+	ALERT( at_console, "Current code: '%s'\n", m_sCurrentCheat );
+
+	char m_sCurrentCompareCheat[16];
+
+
+	//memset( &m_sCurrentCompareCheat, 0, sizeof(m_sCurrentCompareCheat) );
+	//strncpy( m_sCurrentCompareCheat, m_sCurrentCheat, strlen( STRING( m_sCheat1 ) ) );
+
+	if ( strstr( m_sCurrentCheat, STRING( m_sCheat1 ) ) )
+	// if ( strcmp( m_sCurrentCompareCheat, STRING( m_sCheat1 ) ) == 0 )
+	{
+		// cheat_bonus entered
+		if ( !FStringNull( target1 ) )
+			FireTargets( STRING( target1 ), this, this, USE_TOGGLE, 0.0 );
+		memset( &m_sListener, 0, sizeof(m_sListener) );
+	}
+
+	//memset( &m_sCurrentCompareCheat, 0, sizeof(m_sCurrentCompareCheat) );
+	//strncpy( m_sCurrentCompareCheat, m_sCurrentCheat, strlen( STRING( m_sCheat2 ) ) );
+	if ( strstr( m_sCurrentCheat, STRING( m_sCheat2 ) ) )
+	//if ( strcmp( m_sCurrentCompareCheat, STRING( m_sCheat2 ) ) == 0 )
+	{
+		// cheat_alien entered
+		CDecayRules *g_pDecayRules;
+		g_pDecayRules = (CDecayRules*)g_pGameRules;
+		g_pDecayRules->unlockMissions( true );
+		g_pDecayRules->statsSave();
+
+		if ( !FStringNull( target1 ) )
+			FireTargets( STRING( target2 ), this, this, USE_TOGGLE, 0.0 );
+		memset( &m_sListener, 0, sizeof(m_sListener) );
+	}
+}
+
+void CCheatHelper::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
+{
+	if ( FStringNull( pCaller->pev->targetname ) )
+	  return;
+
+	static char sCallersCheat[32];
+
+	sprintf( sCallersCheat, "%s", STRING( pCaller->pev->targetname ));
+
+	// move all starting from 2 char to 1 char
+	memmove (m_sListener+1, m_sListener+2, 15);
+	m_sListener[15] = sCallersCheat[0];
+
+	CheckCode();
+}
+
+void CCheatHelper::KeyValue( KeyValueData *pkvd )
+{
+	if (FStrEq(pkvd->szKeyName, "cheat_bonus"))
+	{
+		m_sCheat1 = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	} else
+	if (FStrEq(pkvd->szKeyName, "cheat_alien"))
+	{
+		m_sCheat2 = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	} else
+	if (FStrEq(pkvd->szKeyName, "target1"))
+	{
+		target1 = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	} else
+	if (FStrEq(pkvd->szKeyName, "target2"))
+	{
+		target2 = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else
+		CPointEntity::KeyValue( pkvd );
+}
+
+//==============================================================================
+//		Bubbling entity
+//==============================================================================
 
 class CBubbling : public CBaseEntity
 {

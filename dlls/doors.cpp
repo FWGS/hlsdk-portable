@@ -268,6 +268,7 @@ LINK_ENTITY_TO_CLASS( func_door, CBaseDoor )
 // func_water - same as a door. 
 //
 LINK_ENTITY_TO_CLASS( func_water, CBaseDoor )
+LINK_ENTITY_TO_CLASS( func_lasermirror, CBaseDoor )
 
 void CBaseDoor::Spawn()
 {
@@ -551,8 +552,21 @@ void CBaseDoor::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE use
 {
 	m_hActivator = pActivator;
 	// if not ready to be used, ignore "use" command.
+
+	// Decay's changes - door should correctly receive USE_TYPE from trigger_relay
+	// close - godown
+	// open - goup
+
 	if( m_toggle_state == TS_AT_BOTTOM || ( FBitSet( pev->spawnflags, SF_DOOR_NO_AUTO_RETURN ) && m_toggle_state == TS_AT_TOP ) )
-		DoorActivate();
+	{
+		if ( (FBitSet(pev->spawnflags, SF_DOOR_NO_AUTO_RETURN)) && useType != USE_TOGGLE )
+		{
+			if ( (( useType == USE_OFF ) && (m_toggle_state == TS_AT_TOP)) || (( useType == USE_ON ) && (m_toggle_state == TS_AT_BOTTOM)) )
+				DoorActivate();
+		}
+		else
+			DoorActivate();
+	}
 }
 
 //
@@ -670,8 +684,10 @@ void CBaseDoor::DoorHitTop( void )
 		}
 	}
 
+	// Vyacheslav Dzhura TODO: think about logic here
 	// Fire the close target (if startopen is set, then "top" is closed) - netname is the close target
 	if( pev->netname && ( pev->spawnflags & SF_DOOR_START_OPEN ) )
+	//if ( pev->netname && m_toggle_state = TS_AT_BOTTOM )
 		FireTargets( STRING( pev->netname ), m_hActivator, this, USE_TOGGLE, 0 );
 
 	SUB_UseTargets( m_hActivator, USE_TOGGLE, 0 ); // this isn't finished

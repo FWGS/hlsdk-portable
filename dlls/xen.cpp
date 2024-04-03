@@ -17,11 +17,12 @@
 #include "cbase.h"
 #include "animation.h"
 #include "effects.h"
+#include "actanimating.h"
 
 #define XEN_PLANT_GLOW_SPRITE		"sprites/flare3.spr"
 #define XEN_PLANT_HIDE_TIME			5
 
-class CActAnimating : public CBaseAnimating
+/*class CActAnimating : public CBaseAnimating
 {
 public:
 	void SetActivity( Activity act );
@@ -55,6 +56,7 @@ void CActAnimating::SetActivity( Activity act )
 		ResetSequenceInfo();
 	}
 }
+*/
 
 class CXenPLight : public CActAnimating
 {

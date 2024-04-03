@@ -66,6 +66,7 @@ private:
 // These are the new entry points to entities. 
 LINK_ENTITY_TO_CLASS( info_player_deathmatch, CBaseDMStart )
 LINK_ENTITY_TO_CLASS( info_player_start, CPointEntity )
+LINK_ENTITY_TO_CLASS( info_player_coop, CPointEntity )	// for Decay to spawn players properly
 LINK_ENTITY_TO_CLASS( info_landmark, CPointEntity )
 
 void CBaseDMStart::KeyValue( KeyValueData *pkvd )

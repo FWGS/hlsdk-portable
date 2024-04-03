@@ -451,6 +451,7 @@ LINK_ENTITY_TO_CLASS( worldspawn, CWorld )
 #define SF_WORLD_FORCETEAM	0x0004		// Force teams
 
 extern DLL_GLOBAL BOOL		g_fGameOver;
+BOOL  g_startSuit;          // When level starts player will automatically receive a suit and game_player_equip will be targeted
 
 void CWorld::Spawn( void )
 {
@@ -626,18 +627,19 @@ void CWorld::Precache( void )
 	// g-cont. moved here to right restore global WaveHeight on save\restore level
 	CVAR_SET_FLOAT( "sv_wateramp", pev->scale );
 
+	//ALERT( at_console, "Chapter title variable set to: '%s'\n", STRING(pev->netname) );
 	if( pev->netname )
 	{
 		ALERT( at_aiconsole, "Chapter title: %s\n", STRING( pev->netname ) );
-		CBaseEntity *pEntity = CBaseEntity::Create( "env_message", g_vecZero, g_vecZero, NULL );
+		CBaseEntity *pEntity = CBaseEntity::Create( "env_message", g_vecZero, g_vecZero, edict() );
 		if( pEntity )
 		{
 			pEntity->SetThink( &CBaseEntity::SUB_CallUseToggle );
 			pEntity->pev->message = pev->netname;
 			pev->netname = 0;
-			pEntity->pev->nextthink = gpGlobals->time + 0.3f;
+			pEntity->pev->nextthink = gpGlobals->time + 1.3f;
 			pEntity->pev->spawnflags = SF_MESSAGE_ONCE;
-		}
+		} else ALERT( at_aiconsole, "Chapter title message entity was not created!\n");
 	}
 
 	if( pev->spawnflags & SF_WORLD_DARK )

@@ -254,6 +254,24 @@ int __MsgFunc_VGUIMenu( const char *pszName, int iSize, void *pbuf )
 	return 0;
 }
 
+int __MsgFunc_Notepad( const char *pszName, int iSize, void *pbuf )
+{
+#if USE_VGUI
+	if( gViewPort )
+		return gViewPort->MsgFunc_Notepad( pszName, iSize, pbuf );
+#endif
+	return 0;
+}
+
+int __MsgFunc_SparePlayer( const char *pszName, int iSize, void *pbuf )
+{
+#if USE_VGUI
+	if( gViewPort )
+		return gViewPort->MsgFunc_SparePlayer( pszName, iSize, pbuf );
+#endif
+	return 0;
+}
+
 #if USE_VGUI && !USE_NOVGUI_MOTD
 int __MsgFunc_MOTD(const char *pszName, int iSize, void *pbuf)
 {
@@ -451,6 +469,8 @@ void CHud::Init( void )
 	m_AmmoSecondary.Init();
 	m_TextMessage.Init();
 	m_StatusIcons.Init();
+	m_ModeIcon.Init();
+	m_AlienCrosshair.Init();
 #if USE_VGUI
 	GetClientVoiceMgr()->Init(&g_VoiceStatusHelper, (vgui::Panel**)&gViewPort);
 #endif
@@ -522,6 +542,8 @@ void CHud::VidInit( void )
 
 	m_hsprLogo = 0;	
 	m_hsprCursor = 0;
+
+	m_iLensIndex = 0;
 
 	if( ScreenWidth < 640 )
 		m_iRes = 320;
@@ -659,6 +681,8 @@ void CHud::VidInit( void )
 	m_AmmoSecondary.VidInit();
 	m_TextMessage.VidInit();
 	m_StatusIcons.VidInit();
+	m_ModeIcon.VidInit();
+	m_AlienCrosshair.VidInit();
 #if USE_VGUI
 	GetClientVoiceMgr()->VidInit();
 #endif

@@ -102,6 +102,7 @@ public:
 #define SNARK_WEIGHT		5
 #define SATCHEL_WEIGHT		-10
 #define TRIPMINE_WEIGHT		-10
+#define DISPLACER_WEIGHT    20
 
 // weapon clip/carry ammo capacities
 #define URANIUM_MAX_CARRY		100
@@ -134,6 +135,7 @@ public:
 #define SATCHEL_MAX_CLIP		WEAPON_NOCLIP
 #define TRIPMINE_MAX_CLIP		WEAPON_NOCLIP
 #define SNARK_MAX_CLIP			WEAPON_NOCLIP
+#define DISPLACER_MAX_CLIP      WEAPON_NOCLIP
 
 // the default amount of ammo that comes with each gun when it spawns
 #define GLOCK_DEFAULT_GIVE			17
@@ -1051,4 +1053,65 @@ public:
 private:
 	unsigned short m_usSnarkFire;
 };
+
+class CTeleBall: public CBaseMonster
+{
+public:
+	int		Save( CSave &save );
+	int		Restore( CRestore &restore );
+	static	TYPEDESCRIPTION m_SaveData[];
+
+	void Spawn( void );
+	void Precache( void );
+	void PlayEffect( Vector Origin, CBaseEntity *pEntity);
+
+	void EXPORT TeleportThink( void );//think when fly
+	void EXPORT TeleportKill( void ); //think when kill
+
+	void EXPORT TeleportTouch( CBaseEntity *pOther ); //touch 'n kill
+
+	CBeam *pBeam[5];
+	int ring_sprite;
+
+	Vector m_vecIdeal ;
+	EHANDLE m_hTouch ;
+};
+
+class CDisplacer : public CBasePlayerWeapon
+{
+public:
+	void Spawn( void );
+	void Precache( void );
+	int iItemSlot( ) { return 5; } //slot 5
+	int GetItemInfo(ItemInfo *p);
+
+	void PrimaryAttack( void );
+	void SecondaryAttack( void );
+	int AddToPlayer( CBasePlayer *pPlayer );
+
+	void Holster( int skiplocal = 0 );
+	void Reload( void );
+	void WeaponIdle( void );
+	void PlayEffect( Vector Origin);
+	BOOL Deploy( void );
+
+	void EXPORT SpinupThink( void );
+	void EXPORT FireThink( void );
+
+	BOOL PlayEmptySound( void );
+
+	/*
+	virtual BOOL UseDecrement( void )
+	{
+#if defined( CLIENT_WEAPONS )
+		return TRUE;
+#else
+		return FALSE;
+#endif
+	}*/
+
+private:
+	CBeam *pBeam;
+};
+
 #endif // WEAPONS_H

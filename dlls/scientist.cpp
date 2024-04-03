@@ -27,17 +27,35 @@
 #include	"animation.h"
 #include	"soundent.h"
 
+//
+//  Model bodies
+//
+
+#define		LOD_COUNT		1 // IMPORTANT: 4 for original Decay; 5 for Half-Life PS2
+
+#define		BODY_GROUP		0
+#define		BODY_LOD0		0
+
+#define		HEAD_GROUP		1
 #define NUM_SCIENTIST_HEADS		4 // four heads available for scientist model
 
 static cvar_t *g_psv_override_scientist_mdl;
 
 enum
 {
-	HEAD_GLASSES = 0,
-	HEAD_EINSTEIN = 1,
-	HEAD_LUTHER = 2,
-	HEAD_SLICK = 3
+	HEAD_GLASSES = 0 * LOD_COUNT,
+	HEAD_EINSTEIN = 1 * LOD_COUNT,
+	HEAD_LUTHER = 2 * LOD_COUNT,
+	HEAD_SLICK = 3 * LOD_COUNT
 };
+
+#define     NEEDLE_GROUP	2
+#define		NEEDLE_ON		1
+#define		NEEDLE_OFF		0
+
+//
+// Schedules
+//
 
 enum
 {
@@ -112,12 +130,13 @@ public:
 	virtual int Restore( CRestore &restore );
 	static TYPEDESCRIPTION m_SaveData[];
 
+	float m_painTime;
+
 	CUSTOM_SCHEDULES
 
 private:	
 	const char *GetScientistModel( void );
 
-	float m_painTime;
 	float m_healTime;
 	float m_fearTime;
 };
@@ -465,7 +484,7 @@ void CScientist::StartTask( Task_t *pTask )
 		//if( FOkToSpeak() )
 		Talk( 2 );
 		m_hTalkTarget = m_hTargetEnt;
-		PlaySentence( "SC_HEAL", 2, VOL_NORM, ATTN_IDLE );
+		PlaySentence( m_szGrp[TLK_HEAL], 2, VOL_NORM, ATTN_IDLE );
 		TaskComplete();
 		break;
 	case TASK_SCREAM:
@@ -486,9 +505,9 @@ void CScientist::StartTask( Task_t *pTask )
 			//The enemy can be null here. - Solokiller
 			//Discovered while testing the barnacle grapple on headcrabs with scientists in view.
 			if( m_hEnemy != 0 && m_hEnemy->IsPlayer() )
-				PlaySentence( "SC_PLFEAR", 5, VOL_NORM, ATTN_NORM );
+				PlaySentence( m_szGrp[TLK_PLFEAR], 5, VOL_NORM, ATTN_NORM );
 			else
-				PlaySentence( "SC_FEAR", 5, VOL_NORM, ATTN_NORM );
+				PlaySentence( m_szGrp[TLK_FEAR], 5, VOL_NORM, ATTN_NORM );
 		}
 		TaskComplete();
 		break;
@@ -637,14 +656,18 @@ void CScientist::HandleAnimEvent( MonsterEvent_t *pEvent )
 		break;
 	case SCIENTIST_AE_NEEDLEON:
 		{
-			int oldBody = pev->body;
-			pev->body = ( oldBody % NUM_SCIENTIST_HEADS ) + NUM_SCIENTIST_HEADS * 1;
+			//int oldBody = pev->body;
+			//pev->body = ( oldBody % NUM_SCIENTIST_HEADS ) + NUM_SCIENTIST_HEADS * 1;
+
+			SetBodygroup( NEEDLE_GROUP, NEEDLE_ON );
 		}
 		break;
 	case SCIENTIST_AE_NEEDLEOFF:
 		{
-			int oldBody = pev->body;
-			pev->body = ( oldBody % NUM_SCIENTIST_HEADS ) + NUM_SCIENTIST_HEADS * 0;
+			//int oldBody = pev->body;
+			//pev->body = ( oldBody % NUM_SCIENTIST_HEADS ) + NUM_SCIENTIST_HEADS * 0;
+
+			SetBodygroup( NEEDLE_GROUP, NEEDLE_OFF );
 		}
 		break;
 	default:
@@ -661,8 +684,14 @@ void CScientist::Spawn( void )
 	if( pev->body == -1 )
 	{
 		// -1 chooses a random head
-		pev->body = RANDOM_LONG( 0, NUM_SCIENTIST_HEADS - 1 );// pick a head, any head
+		//pev->body = RANDOM_LONG( 0, NUM_SCIENTIST_HEADS - 1 );// pick a head, any head
+
+		SetBodygroup( HEAD_GROUP, RANDOM_LONG(0, NUM_SCIENTIST_HEADS-1) * LOD_COUNT );
+	} else
+	{
+		SetBodygroup( HEAD_GROUP, pev->body * LOD_COUNT );
 	}
+	SetBodygroup( BODY_GROUP, BODY_LOD0 );
 
 	Precache();
 
@@ -685,7 +714,7 @@ void CScientist::Spawn( void )
 	pev->skin = 0;
 
 	// Luther is black, make his hands black
-	if( pev->body == HEAD_LUTHER )
+	if( GetBodygroup( HEAD_GROUP ) == HEAD_LUTHER )
 		pev->skin = 1;
 
 	MonsterInit();
@@ -741,7 +770,7 @@ void CScientist::TalkInit()
 	m_szGrp[TLK_MORTAL] = "SC_MORTAL";
 
 	// get voice for head
-	switch( pev->body % NUM_SCIENTIST_HEADS )
+	switch ( GetBodygroup( HEAD_GROUP ) )
 	{
 	default:
 	case HEAD_GLASSES:
@@ -1164,11 +1193,15 @@ void CDeadScientist::Spawn()
 	if( pev->body == -1 )
 	{
 		// -1 chooses a random head
-		pev->body = RANDOM_LONG( 0, NUM_SCIENTIST_HEADS - 1 );// pick a head, any head
+		SetBodygroup( HEAD_GROUP, RANDOM_LONG(0, NUM_SCIENTIST_HEADS-1) * LOD_COUNT );
+	} else
+	{
+		SetBodygroup( HEAD_GROUP, pev->body * LOD_COUNT );
 	}
+	SetBodygroup( BODY_GROUP, BODY_LOD0 );
 
 	// Luther is black, make his hands black
-	if( pev->body == HEAD_LUTHER )
+	if( GetBodygroup( HEAD_GROUP ) == HEAD_LUTHER )
 		pev->skin = 1;
 	else
 		pev->skin = 0;
@@ -1269,11 +1302,15 @@ void CSittingScientist::Spawn()
 	if( pev->body == -1 )
 	{
 		// -1 chooses a random head
-		pev->body = RANDOM_LONG( 0, NUM_SCIENTIST_HEADS - 1 );// pick a head, any head
+		SetBodygroup( HEAD_GROUP, RANDOM_LONG(0, NUM_SCIENTIST_HEADS-1) * LOD_COUNT );
+	} else
+	{
+		SetBodygroup( HEAD_GROUP, pev->body * LOD_COUNT );
 	}
+	SetBodygroup( BODY_GROUP, BODY_LOD0 );
 
 	// Luther is black, make his hands black
-	if( pev->body == HEAD_LUTHER )
+	if( GetBodygroup( HEAD_GROUP ) == HEAD_LUTHER )
 		pev->skin = 1;
 
 	m_baseSequence = LookupSequence( "sitlookleft" );

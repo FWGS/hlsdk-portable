@@ -28,6 +28,11 @@
 #include "gamerules.h"
 #include "weapons.h"
 #include "game.h"
+#include "actanimating.h"
+#include "effects.h"
+
+#define CHARGER_ACTIVE 0
+#define CHARGER_EMPTY 1
 
 class CRecharge : public CBaseToggle
 {

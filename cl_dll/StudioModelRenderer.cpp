@@ -189,6 +189,9 @@ void CStudioModelRenderer::StudioCalcBoneQuaterion( int frame, float s, mstudiob
 	vec3_t angle1, angle2;
 	mstudioanimvalue_t *panimvalue;
 
+	if( panim == NULL )
+		return;
+
 	for( j = 0; j < 3; j++ )
 	{
 		if( panim->offset[j + 3] == 0 )

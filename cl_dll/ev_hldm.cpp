@@ -71,6 +71,10 @@ void EV_SnarkFire( struct event_args_s *args );
 
 void EV_TrainPitchAdjust( struct event_args_s *args );
 void EV_VehiclePitchAdjust( event_args_t *args );
+
+void EV_Vorti( struct event_args_s *args );
+void EV_FireVorti( struct event_args_s *args );
+void EV_SpinVorti( struct event_args_s *args );
 }
 
 #define VECTOR_CONE_1DEGREES Vector( 0.00873f, 0.00873f, 0.00873f )

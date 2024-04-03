@@ -1000,6 +1000,9 @@ void CHGrunt::Spawn()
 
 	m_HackedGunPos = Vector( 0, 0, 55 );
 
+	SetBodygroup( LODS_GROUP, 0 );
+	SetBodygroup( HEAD_GROUP, HEAD_GRUNT );
+
 	if( pev->weapons == 0 )
 	{
 		// initialize to original values

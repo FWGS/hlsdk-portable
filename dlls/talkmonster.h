@@ -61,6 +61,11 @@ typedef enum
 	TLK_WOUND,
 	TLK_MORTAL,
 
+	// added for Decay
+	TLK_HEAL,
+	TLK_PLFEAR,
+	TLK_FEAR,
+
 	TLK_CGROUPS					// MUST be last entry
 } TALKGROUPNAMES;
 

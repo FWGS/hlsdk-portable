@@ -278,7 +278,7 @@ int CCineMonster::FindEntity( void )
 				m_hTargetEnt = pTarget;
 				return TRUE;
 			}
-			ALERT( at_console, "Found %s, but can't play!\n", STRING( m_iszEntity ) );
+			ALERT( at_console, "(%s::FindEntity) Found %s, but can't play!\n", STRING(pev->targetname), STRING( m_iszEntity ) );
 		}
 		pentTarget = FIND_ENTITY_BY_TARGETNAME( pentTarget, STRING( m_iszEntity ) );
 		pTarget = NULL;

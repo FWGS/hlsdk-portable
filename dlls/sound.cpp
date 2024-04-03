@@ -627,6 +627,10 @@ void CAmbientGeneric::ToggleUse( CBaseEntity *pActivator, CBaseEntity *pCaller, 
 
 		UTIL_EmitAmbientSound( ENT( pev ), pev->origin, szSoundFile, ( m_dpv.vol * 0.01f ), m_flAttenuation, 0, m_dpv.pitch );
 
+		// Decay: subtitles code
+		if ( FBitSet ( pev->spawnflags, AMBIENT_SHOWMESSAGE ) )
+			UTIL_ShowMessageAll( STRING(pev->message) ); //strings code
+
 		pev->nextthink = gpGlobals->time + 0.1f;
 	} 
 }

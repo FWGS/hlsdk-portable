@@ -16,6 +16,8 @@
 #if !defined(ITEMS_H)
 #define ITEMS_H
 
+extern BOOL g_startSuit;
+
 class CItem : public CBaseEntity
 {
 public:

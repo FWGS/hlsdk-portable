@@ -45,6 +45,8 @@ extern DLL_GLOBAL BOOL g_fDrawLines;
 int gEvilImpulse101;
 extern DLL_GLOBAL int g_iSkillLevel, gDisplayTitle;
 
+extern bool bSlaveCoop;
+
 BOOL gInitHUD = TRUE;
 
 extern void CopyToBodyQue( entvars_t *pev);
@@ -236,6 +238,16 @@ void LinkUserMessages( void )
 
 	gmsgStatusText = REG_USER_MSG( "StatusText", -1 );
 	gmsgStatusValue = REG_USER_MSG( "StatusValue", 3 );
+
+	gmsgLensFlare = REG_USER_MSG( "LensFlare", 1 );    //for sun effect
+	gmsgAimFrame = REG_USER_MSG( "AimFrame", 14 );     //for selection frame
+	gmsgNotepad = REG_USER_MSG( "Notepad", -1 );
+	gmsgChangeMode = REG_USER_MSG( "ChangeMode", 1 );
+	gmsgChangePlayer = REG_USER_MSG( "ChangePlr", 1 );
+	gmsgCamera = REG_USER_MSG( "Camera", 7 );
+	gmsgSparePlayer = REG_USER_MSG( "SparePlayer", 1 );
+	gmsgAlienState = REG_USER_MSG ( "AlienState", 1 );
+	gmsgUpdateDecayPlayerName = REG_USER_MSG( "DecayName", 1 );
 }
 
 LINK_ENTITY_TO_CLASS( player, CBasePlayer )
@@ -431,6 +443,9 @@ void CBasePlayer::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector ve
 
 int CBasePlayer::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )
 {
+	// DECAY STATS
+	g_pGameRules->PlayerDamaged( this, pevAttacker, flDamage, bitsDamageType );
+
 	// have suit diagnose the problem - ie: report damage type
 	int bitsDamage = bitsDamageType;
 	int ffound = TRUE;
@@ -811,6 +826,134 @@ void CBasePlayer::PackDeadPlayerItems( void )
 	RemoveAllItems( TRUE );// now strip off everything that wasn't handled by the code above.
 }
 
+void CBasePlayer::PackAllItems( void )
+{
+	int iWeaponRules;
+	int iAmmoRules;
+	int i;
+	CBasePlayerWeapon *rgpPackWeapons[ 20 ];// 20 hardcoded for now. How to determine exactly how many weapons we have?
+	int iPackAmmo[ MAX_AMMO_SLOTS + 1];
+	int iPW = 0;// index into packweapons array
+	int iPA = 0;// index into packammo array
+
+	memset(rgpPackWeapons, NULL, sizeof(rgpPackWeapons) );
+	memset(iPackAmmo, -1, sizeof(iPackAmmo) );
+
+	// get the game rules
+	/*iWeaponRules = g_pGameRules->DeadPlayerWeapons( this );
+ 	iAmmoRules = g_pGameRules->DeadPlayerAmmo( this );
+
+	if ( iWeaponRules == GR_PLR_DROP_GUN_NO && iAmmoRules == GR_PLR_DROP_AMMO_NO )
+	{
+		// nothing to pack. Remove the weapons and return. Don't call create on the box!
+		RemoveAllItems( TRUE );
+		return;
+	}*/
+
+	iWeaponRules = GR_PLR_DROP_GUN_ALL;
+	iAmmoRules = GR_PLR_DROP_AMMO_ALL;
+
+// go through all of the weapons and make a list of the ones to pack
+	for ( i = 0 ; i < MAX_ITEM_TYPES ; i++ )
+	{
+		if ( m_rgpPlayerItems[ i ] )
+		{
+			// there's a weapon here. Should I pack it?
+			CBasePlayerItem *pPlayerItem = m_rgpPlayerItems[ i ];
+
+			while ( pPlayerItem )
+			{
+				switch( iWeaponRules )
+				{
+				case GR_PLR_DROP_GUN_ACTIVE:
+					if ( m_pActiveItem && pPlayerItem == m_pActiveItem )
+					{
+						// this is the active item. Pack it.
+						rgpPackWeapons[ iPW++ ] = (CBasePlayerWeapon *)pPlayerItem;
+					}
+					break;
+
+				case GR_PLR_DROP_GUN_ALL:
+					rgpPackWeapons[ iPW++ ] = (CBasePlayerWeapon *)pPlayerItem;
+					break;
+
+				default:
+					break;
+				}
+
+				pPlayerItem = pPlayerItem->m_pNext;
+			}
+		}
+	}
+
+// now go through ammo and make a list of which types to pack.
+	if ( iAmmoRules != GR_PLR_DROP_AMMO_NO )
+	{
+		for ( i = 0 ; i < MAX_AMMO_SLOTS ; i++ )
+		{
+			if ( m_rgAmmo[ i ] > 0 )
+			{
+				// player has some ammo of this type.
+				switch ( iAmmoRules )
+				{
+				case GR_PLR_DROP_AMMO_ALL:
+					iPackAmmo[ iPA++ ] = i;
+					break;
+
+				case GR_PLR_DROP_AMMO_ACTIVE:
+					if ( m_pActiveItem && i == m_pActiveItem->PrimaryAmmoIndex() )
+					{
+						// this is the primary ammo type for the active weapon
+						iPackAmmo[ iPA++ ] = i;
+					}
+					else if ( m_pActiveItem && i == m_pActiveItem->SecondaryAmmoIndex() )
+					{
+						// this is the secondary ammo type for the active weapon
+						iPackAmmo[ iPA++ ] = i;
+					}
+					break;
+
+				default:
+					break;
+				}
+			}
+		}
+	}
+
+// create a box to pack the stuff into.
+	CWeaponBox *pWeaponBox = (CWeaponBox *)CBaseEntity::Create( "weaponbox", pev->origin + gpGlobals->v_forward * 2, pev->angles, edict() );
+
+	pWeaponBox->pev->angles.x = 0;// don't let weaponbox tilt.
+	pWeaponBox->pev->angles.z = 0;
+
+	pWeaponBox->SetThink( CWeaponBox::Kill );
+	pWeaponBox->pev->nextthink = gpGlobals->time + 120;
+
+// back these two lists up to their first elements
+	iPA = 0;
+	iPW = 0;
+
+// pack the ammo
+	while ( iPackAmmo[ iPA ] != -1 )
+	{
+		pWeaponBox->PackAmmo( MAKE_STRING( CBasePlayerItem::AmmoInfoArray[ iPackAmmo[ iPA ] ].pszName ), m_rgAmmo[ iPackAmmo[ iPA ] ] );
+		iPA++;
+	}
+
+// now pack all of the items in the lists
+	while ( rgpPackWeapons[ iPW ] )
+	{
+		// weapon unhooked from the player. Pack it into der box.
+		pWeaponBox->PackWeapon( rgpPackWeapons[ iPW ] );
+
+		iPW++;
+	}
+
+	pWeaponBox->pev->velocity = pev->velocity * 1.2;// weaponbox has player's velocity, then some.
+
+	RemoveAllItems( FALSE );// now strip off everything that wasn't handled by the code above.
+}
+
 void CBasePlayer::RemoveAllItems( BOOL removeSuit )
 {
 	int i;
@@ -964,6 +1107,7 @@ void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim )
 	int animDesired;
 	float speed;
 	char szAnim[64];
+	int m_iMode;
 
 	speed = pev->velocity.Length2D();
 
@@ -973,6 +1117,7 @@ void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim )
 		playerAnim = PLAYER_IDLE;
 	}
 
+	m_iMode = MODE_STAND;
 	switch( playerAnim )
 	{
 	case PLAYER_JUMP:
@@ -1089,6 +1234,7 @@ void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim )
 
 	if( FBitSet( pev->flags, FL_DUCKING ) )
 	{
+		m_iMode = MODE_CROUCH;
 		if( speed == 0 )
 		{
 			pev->gaitsequence = LookupActivity( ACT_CROUCHIDLE );
@@ -1101,6 +1247,7 @@ void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim )
 	}
 	else if( speed > 220 )
 	{
+		m_iMode = MODE_RUN;
 		pev->gaitsequence = LookupActivity( ACT_RUN );
 	}
 	else if( speed > 0 )
@@ -1112,6 +1259,12 @@ void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim )
 		// pev->gaitsequence = LookupActivity( ACT_WALK );
 		pev->gaitsequence = LookupSequence( "deep_idle" );
 	}
+
+	MESSAGE_BEGIN( MSG_ONE, gmsgChangeMode, NULL, pev);
+	  WRITE_BYTE( m_iMode );
+	MESSAGE_END();
+
+	//ALERT( at_console, "Set mode to %d\n", m_iMode );
 
 	// Already using the desired animation?
 	if( pev->sequence == animDesired )
@@ -1655,6 +1808,10 @@ void CBasePlayer::Jump()
 
 	// ClearBits( pev->flags, FL_ONGROUND );		// don't stairwalk
 
+	MESSAGE_BEGIN( MSG_ONE, gmsgChangeMode, NULL, pev);
+	  WRITE_BYTE( MODE_JUMP );
+	MESSAGE_END();
+
 	SetAnimation( PLAYER_JUMP );
 
 	if( m_fLongJump &&
@@ -1776,6 +1933,9 @@ void CBasePlayer::UpdateStatusBar()
 	int newSBarState[SBAR_END] = {0};
 	char sbuf0[SBAR_STRING_SIZE];
 	char sbuf1[ SBAR_STRING_SIZE ];
+
+	//Vyacheslav Dzhura: in Decay we need no StatusBar, just exit from here
+	//return;
 
 	strcpy( sbuf0, m_SbarString0 );
 	strcpy( sbuf1, m_SbarString1 );
@@ -2883,6 +3043,17 @@ ReturnSpot:
 	return pSpot->edict();
 }
 
+inline char *GET_INFOBUFFER( edict_t *e )
+{
+	return (*g_engfuncs.pfnGetInfoKeyBuffer)( e );
+}
+
+inline void SET_CLIENT_KEY_VALUE( int clientIndex, char *infobuffer,
+                                  char *key, char *value )
+{
+	(*g_engfuncs.pfnSetClientKeyValue)( clientIndex, infobuffer, key, value );
+}
+
 void CBasePlayer::Spawn( void )
 {
 	m_flStartCharge = gpGlobals->time;
@@ -2925,7 +3096,11 @@ void CBasePlayer::Spawn( void )
 	m_iStepLeft = 0;
 	m_flFieldOfView = 0.5f;// some monsters use this to determine whether or not the player is looking at them.
 
-	m_bloodColor = BLOOD_COLOR_RED;
+	if ( !bSlaveCoop )
+		m_bloodColor	= BLOOD_COLOR_RED;
+	else
+		m_bloodColor	= BLOOD_COLOR_YELLOW;
+
 	m_flNextAttack = UTIL_WeaponTimeBase();
 	StartSneaking();
 
@@ -2938,7 +3113,11 @@ void CBasePlayer::Spawn( void )
 	g_pGameRules->SetDefaultPlayerTeam( this );
 	g_pGameRules->GetPlayerSpawnSpot( this );
 
-	SET_MODEL( ENT( pev ), "models/player.mdl" );
+	if ( !bSlaveCoop )
+		SET_MODEL(ENT(pev), "models/player.mdl");
+	else
+		SET_MODEL(ENT(pev), "models/player/dm_slave/dm_slave.mdl");
+
 	g_ulModelIndexPlayer = pev->modelindex;
 	pev->sequence = LookupActivity( ACT_IDLE );
 
@@ -2977,6 +3156,79 @@ void CBasePlayer::Spawn( void )
 	m_flNextChatTime = gpGlobals->time;
 
 	g_pGameRules->PlayerSpawn( this );
+
+	//
+	// Decay: set head\skin for Decay players
+	// MOVED TO DECAY_GAMERULES.CPP
+
+    char *infobuffer = GET_INFOBUFFER( edict( ) );
+    int clientIndex = entindex( );
+
+	if (!bSlaveCoop)
+		SET_CLIENT_KEY_VALUE( clientIndex, infobuffer, "model", "ginacol" );
+	else
+		SET_CLIENT_KEY_VALUE( clientIndex, infobuffer, "model", "player/dm_slave/dm_slave" );
+
+    // model parts:
+	// 0: body 0: body
+	// 1: head 0: Colette
+	//         1: Gina
+
+	// ****** HEADS CHANGE *********
+	//for ( int i = 0; i < 2; i++ )
+	{
+		this->SetBodygroup( 0, 0 );
+		if ( this->m_iDecayId == 1 )
+		{
+			this->SetBodygroup( 1, 1 );
+			this->pev->skin = 1;
+		} else
+			if ( this->m_iDecayId == 2 )
+			{
+				this->SetBodygroup( 1, 0 );
+				this->pev->skin = 0;
+			}
+	}
+
+	//
+	// Decay: update HUD color to match player (Silver for Gina, Orange for Colette)
+	//
+
+	if ( gmsgChangePlayer != 0)
+	{
+		//MESSAGE_BEGIN( MSG_ALL, gmsgChangePlayer );
+		MESSAGE_BEGIN( MSG_ONE, gmsgChangePlayer, NULL, this->edict() );
+			WRITE_BYTE( m_iDecayId );
+		MESSAGE_END();
+	} else
+		ALERT( at_console, "Message gmsgChangePlayer not found in client.dll!\n" );
+
+	ALERT( at_console, "(CBasePlayer::Spawn) m_iDecay = %d\n", this->m_iDecayId );
+
+	/*if (this->m_iDecayId >= 3)
+	{
+		MESSAGE_BEGIN( MSG_ONE, gmsgSparePlayer, NULL,
+		//GetClassPtr((CBasePlayer *)this->pev)->pev
+		this->edict() );
+			WRITE_BYTE( 0 );
+		MESSAGE_END();
+	}*/
+
+	//
+	// end of Decay stuff
+	//
+
+	CBaseEntity	*pWeaponEntity = NULL;
+
+	if ( ( g_startSuit ) && ( !bSlaveCoop ) ) //if this flag is activated, then start level with suit and activate game_player_equip entity
+	{
+		GiveNamedItem( "item_suit" );
+
+		while ( pWeaponEntity = UTIL_FindEntityByClassname( pWeaponEntity, "game_player_equip" ))
+		{
+			pWeaponEntity->Touch( this );
+		}
+	}
 }
 
 void CBasePlayer::Precache( void )
@@ -3066,7 +3318,10 @@ int CBasePlayer::Restore( CRestore &restore )
 	pev->fixangle = TRUE;           // turn this way immediately
 
 	// Copied from spawn() for now
-	m_bloodColor = BLOOD_COLOR_RED;
+	if ( !bSlaveCoop )
+		m_bloodColor = BLOOD_COLOR_RED;
+	else
+		m_bloodColor = BLOOD_COLOR_YELLOW;
 
 	g_ulModelIndexPlayer = pev->modelindex;
 
@@ -3781,7 +4036,7 @@ int CBasePlayer::RemovePlayerItem( CBasePlayerItem *pItem, bool bCallHolster )
 	if( m_pActiveItem == pItem )
 	{
 		ResetAutoaim();
-		if( bCallHolster )
+		if( bCallHolster || !(pev->flags & FL_IMMUNE_WATER) )
 			pItem->Holster();
 		m_pActiveItem = NULL;
 		pev->viewmodel = 0;
@@ -4201,11 +4456,15 @@ void CBasePlayer::UpdateClientData( void )
 
 	SendAmmoUpdate();
 
-	// Update all the items
+	// Update all the items (weapon slots)
 	for( int i = 0; i < MAX_ITEM_TYPES; i++ )
 	{
 		if( m_rgpPlayerItems[i] )  // each item updates it's successors
+		{
+			//ALERT( at_console, "updating item %d! ", i );
+			//ALERT( at_console, "%s\n", m_rgpPlayerItems[i]->pszName );
 			m_rgpPlayerItems[i]->UpdateClientData( this );
+		}
 	}
 
 	// Cache and client weapon change

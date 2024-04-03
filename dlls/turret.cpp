@@ -940,7 +940,10 @@ void CBaseTurret::TurretDeath( void )
 		else
 			m_vecGoalAngles.x = -90;
 
-		SetTurretAnim( TURRET_ANIM_DIE ); 
+		SetTurretAnim( TURRET_ANIM_DIE );
+
+		// fixed for Decay - miniturrets now process TriggerConditions \ TriggerTargets
+		FCheckAITrigger();
 
 		EyeOn();
 	}

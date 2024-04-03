@@ -74,6 +74,7 @@ static CMultiplayGameMgrHelper g_GameMgrHelper;
 //*********************************************************
 CHalfLifeMultiplay::CHalfLifeMultiplay()
 {
+	ALERT( at_console, "Half-Life multiplayer\n");
 #if !NO_VOICEGAMEMGR
 	g_VoiceGameMgr.Init( &g_GameMgrHelper, gpGlobals->maxClients );
 #endif

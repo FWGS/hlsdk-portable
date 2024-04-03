@@ -192,15 +192,28 @@ class CItemSuit : public CItem
 	{
 		PRECACHE_MODEL( "models/w_suit.mdl" );
 	}
+	void KeyValue(KeyValueData *pkvd)
+	{
+		if (FStrEq(pkvd->szKeyName, "skin"))
+		{
+			pev->skin = atoi(pkvd->szValue);
+			pkvd->fHandled = TRUE;
+		}
+		else
+			CBaseEntity::KeyValue( pkvd );
+	}
 	BOOL MyTouch( CBasePlayer *pPlayer )
 	{
 		if( pPlayer->pev->weapons & ( 1<<WEAPON_SUIT ) )
 			return FALSE;
 
-		if( pev->spawnflags & SF_SUIT_SHORTLOGON )
-			EMIT_SOUND_SUIT( pPlayer->edict(), "!HEV_A0" );		// short version of suit logon,
-		else
-			EMIT_SOUND_SUIT( pPlayer->edict(), "!HEV_AAx" );	// long version of suit logon
+		if (!g_startSuit)
+		{
+			if( pev->spawnflags & SF_SUIT_SHORTLOGON )
+				EMIT_SOUND_SUIT( pPlayer->edict(), "!HEV_A0" );		// short version of suit logon,
+			else
+				EMIT_SOUND_SUIT( pPlayer->edict(), "!HEV_AAx" );	// long version of suit logon
+		}
 
 		pPlayer->pev->weapons |= ( 1 << WEAPON_SUIT );
 		return TRUE;
@@ -344,3 +357,426 @@ class CItemLongJump : public CItem
 };
 
 LINK_ENTITY_TO_CLASS( item_longjump, CItemLongJump )
+
+//
+//	Decay's item_slave_collar for mission ht11lasers (Gamma labs)
+//
+
+class CItemSlaveCollar : public CBaseEntity
+{
+public:
+	void	Spawn( void );
+	void	Precache( void );
+	void	EXPORT Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+	void	EXPORT ZapThink( void );
+	void    EXPORT OffThink( void );
+
+	bool	m_bIsOn;
+	int		m_iBeams;
+	CBeam *m_pBeam[8];	// ISLAVE_MAX_BEAMS
+
+	Vector	m_vecDir;
+	Vector  m_vecEnd;
+
+	virtual int		Save( CSave &save );
+	virtual int		Restore( CRestore &restore );
+	static	TYPEDESCRIPTION m_SaveData[];
+};
+LINK_ENTITY_TO_CLASS( item_slave_collar, CItemSlaveCollar );
+
+TYPEDESCRIPTION	CItemSlaveCollar::m_SaveData[] =
+{
+	DEFINE_FIELD( CItemSlaveCollar, m_bIsOn, FIELD_BOOLEAN ),
+	DEFINE_ARRAY( CItemSlaveCollar, m_pBeam, FIELD_CLASSPTR, 8 ),
+	DEFINE_FIELD( CItemSlaveCollar, m_iBeams, FIELD_INTEGER),
+	DEFINE_FIELD( CItemSlaveCollar, m_vecDir, FIELD_VECTOR),
+	DEFINE_FIELD( CItemSlaveCollar, m_vecEnd, FIELD_VECTOR),
+};
+IMPLEMENT_SAVERESTORE( CItemSlaveCollar, CBaseEntity );
+
+void	CItemSlaveCollar::Spawn( void )
+{
+    Precache();
+	SET_MODEL(ENT(pev), "models/collar_test.mdl");
+
+	UTIL_MakeAimVectors( pev->angles );
+
+	m_vecDir = gpGlobals->v_forward;
+	m_vecEnd = pev->origin + m_vecDir * 2048;
+
+	for ( m_iBeams = 0; m_iBeams < 2; m_iBeams++ )
+	{
+		m_pBeam[m_iBeams] = CBeam::BeamCreate( "sprites/lgtning.spr", 50 );
+		m_pBeam[m_iBeams]->pev->effects |= EF_NODRAW;
+	}
+
+	if (FBitSet(pev->spawnflags, 1)) // Start on
+	{
+		m_bIsOn = true;
+		SetThink(ZapThink);	// start zapping
+		pev->nextthink = gpGlobals->time;
+	}
+}
+
+void	CItemSlaveCollar::Precache( void )
+{
+	PRECACHE_MODEL( "models/collar_test.mdl" );
+	PRECACHE_SOUND( "weapons/electro4.wav" );
+	PRECACHE_SOUND( "debris/zap4.wav" );
+}
+
+void	CItemSlaveCollar::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
+{
+	if ( useType == USE_TOGGLE )
+		m_bIsOn = !m_bIsOn;
+	if ( useType == USE_ON )
+		m_bIsOn = true;
+	if ( useType == USE_OFF )
+		m_bIsOn = false;
+
+	if ( m_bIsOn )
+		SetThink( ZapThink );
+	else
+		SetThink( OffThink );
+	pev->nextthink = gpGlobals->time + 0.01;
+}
+
+void    CItemSlaveCollar::OffThink( void )
+{
+	for ( m_iBeams = 0; m_iBeams < 2; m_iBeams++ )
+	{
+		m_pBeam[m_iBeams]->pev->effects |= EF_NODRAW;
+	}
+}
+
+void	CItemSlaveCollar::ZapThink( void )
+{
+	// create alien slave beam here
+	//ALERT( at_console, "ZapThink!\n" );
+
+	TraceResult tr;
+	UTIL_TraceLine( pev->origin, m_vecEnd, ignore_monsters, ENT( pev ), &tr ); // dont_ignore_monsters
+	float	m_flBeamLength = tr.flFraction;
+
+	UTIL_EmitAmbientSound( ENT(pev), tr.vecEndPos, "debris/zap4.wav", 0.5, ATTN_NORM, 0, RANDOM_LONG( 140, 160 ) );
+
+	Vector vecTmpEnd = pev->origin + m_vecDir * 2048 * m_flBeamLength;
+	tr.vecEndPos.z += 50;
+
+	UTIL_Sparks( tr.vecEndPos );
+	//if ( !tr.pHit )
+	DecalGunshot( &tr, BULLET_PLAYER_CROWBAR );
+	//UTIL_DecalTrace( &tr, DECAL_BIGSHOT1 + RANDOM_LONG(0,4) );
+
+	for ( m_iBeams = 0; m_iBeams < 2; m_iBeams++ )
+	{
+		m_pBeam[m_iBeams]->pev->effects &= ~EF_NODRAW;
+		m_pBeam[m_iBeams]->PointEntInit( vecTmpEnd, entindex() );
+		m_pBeam[m_iBeams]->SetEndAttachment( m_iBeams + 1 );
+		m_pBeam[m_iBeams]->SetStartPos( tr.vecEndPos );
+		m_pBeam[m_iBeams]->SetColor( 180, 255, 96 );
+		m_pBeam[m_iBeams]->SetBrightness( 255 );
+		m_pBeam[m_iBeams]->SetNoise( 20 );
+
+		/*
+			pEntity = CBaseEntity::Instance(tr.pHit);
+			if (pEntity != NULL && pEntity->pev->takedamage)
+			{
+				pEntity->TraceAttack( pev, gSkillData.slaveDmgZap, vecAim, &tr, DMG_SHOCK );
+			}
+		*/
+	}
+	UTIL_EmitAmbientSound( ENT(pev), tr.vecEndPos, "weapons/electro4.wav", 0.5, ATTN_NORM, 0, RANDOM_LONG( 140, 160 ) );
+	pev->nextthink = gpGlobals->time + 5;
+}
+
+//
+// Decay's focus emitter code below
+//
+
+//
+//	Decay's item_focusemitter for mission ht12fubar (Gamma labs)
+//
+
+class CFocusEmitter : public CActAnimating
+{
+public:
+	void	Spawn( void );
+	void	Precache( void );
+	void	EXPORT Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+	void    EXPORT EmitterThink( void );
+	void	EXPORT DyingThink( void );
+	void	KeyValue(KeyValueData *pkvd);
+	void    LookAt( Vector inputangles );
+	int  TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType );
+	void Killed( entvars_t *pevAttacker, int iGib );
+
+	bool	m_bIsOn;
+
+	Vector	m_vecDir;
+	Vector  m_vecEnd;
+	Vector  m_angGun;
+
+	int	m_iszDeployedTarget;
+	int	m_iszDeathTarget;
+	int m_iszLaserTarget;
+	CBeam	*bWhiteBeam;
+
+	virtual int		Save( CSave &save );
+	virtual int		Restore( CRestore &restore );
+	static	TYPEDESCRIPTION m_SaveData[];
+};
+
+LINK_ENTITY_TO_CLASS( item_focusemitter, CFocusEmitter );
+
+TYPEDESCRIPTION	CFocusEmitter::m_SaveData[] =
+{
+	DEFINE_FIELD( CFocusEmitter, m_bIsOn, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CFocusEmitter, m_vecDir, FIELD_VECTOR),
+	DEFINE_FIELD( CFocusEmitter, m_vecEnd, FIELD_VECTOR),
+	DEFINE_FIELD( CFocusEmitter, m_iszDeployedTarget, FIELD_INTEGER),
+	DEFINE_FIELD( CFocusEmitter, m_iszDeathTarget, FIELD_INTEGER),
+	DEFINE_FIELD( CFocusEmitter, m_iszLaserTarget, FIELD_INTEGER),
+	DEFINE_FIELD( CFocusEmitter, bWhiteBeam, FIELD_CLASSPTR ),
+};
+IMPLEMENT_SAVERESTORE( CFocusEmitter, CBaseEntity );
+
+void	CFocusEmitter::KeyValue(KeyValueData *pkvd)
+{
+	if (FStrEq(pkvd->szKeyName, "deploy_target"))
+	{
+		     m_iszDeployedTarget = ALLOC_STRING(pkvd->szValue);
+			 pkvd->fHandled = TRUE;
+	}
+	if (FStrEq(pkvd->szKeyName, "death_target"))
+	{
+		     m_iszDeathTarget = ALLOC_STRING(pkvd->szValue);
+			 pkvd->fHandled = TRUE;
+	}
+	if (FStrEq(pkvd->szKeyName, "lasertarget"))
+	{
+		     m_iszLaserTarget = ALLOC_STRING(pkvd->szValue);
+			 pkvd->fHandled = TRUE;
+	}
+	else
+       CBaseEntity::KeyValue( pkvd );
+}
+
+void	CFocusEmitter::Spawn( void )
+{
+    Precache();
+	SET_MODEL(ENT(pev), "models/focus_emitter.mdl");
+
+	pev->takedamage		= DAMAGE_YES;
+	pev->health			= 150*4; // 4 HVR shots
+	pev->solid			= SOLID_BBOX;
+	pev->flags		   |= FL_MONSTER;
+	UTIL_SetSize( pev, Vector(-30,-30,0), Vector(30,30,700));
+
+	SetBodygroup( 1, 2 );
+
+	SetSequence( seqEmitterClosed );
+	SetThink( EmitterThink );
+	pev->nextthink = gpGlobals->time;
+
+	CBaseEntity *LasTarget;
+	LasTarget = UTIL_FindEntityByTargetname( NULL, STRING( m_iszLaserTarget ));
+	if (!LasTarget)
+		LasTarget = this;
+	bWhiteBeam = CBeam::BeamCreate( "sprites/lgtning.spr", 50 );
+	bWhiteBeam->PointEntInit( LasTarget->pev->origin, entindex( )  );
+	bWhiteBeam->SetEndAttachment( 2 );
+	bWhiteBeam->SetColor( 255, 255, 255 );
+	bWhiteBeam->SetScrollRate( 35 );
+	bWhiteBeam->SetNoise( 3 );
+	bWhiteBeam->pev->effects |= EF_NODRAW;
+
+	if (FBitSet(pev->spawnflags, 1)) // Start on
+	{
+		m_bIsOn = true;
+		SetSequence( seqEmitterIdleOpen );
+		bWhiteBeam->pev->effects &= ~EF_NODRAW;
+		pev->nextthink = gpGlobals->time;
+	}
+}
+
+void	CFocusEmitter::Precache( void )
+{
+	PRECACHE_MODEL( "models/focus_emitter.mdl" );
+	PRECACHE_MODEL( "sprites/lgtning.spr" );
+	PRECACHE_SOUND( "debris/beamstart4.wav" );
+}
+
+void	CFocusEmitter::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
+{
+	if (m_bIsOn)
+		return;
+
+    SetSequence( seqEmitterDeploy );
+	m_bIsOn = true;
+}
+
+void	CFocusEmitter::EmitterThink( void )
+{
+	StudioFrameAdvance();
+	pev->nextthink = gpGlobals->time + 0.1;
+
+	//CBaseEntity *pPlayer;
+	//pPlayer = UTIL_FindEntityByClassname( NULL, "player" );
+	//if (pPlayer)
+	//	LookAt( pPlayer->pev->origin );
+
+	switch( GetSequence() )
+	{
+	case seqEmitterClosed:	 // 0 - still
+		break;
+	case seqEmitterDeploy:	 // 1 - slosh
+		if ( m_fSequenceFinished )
+		{
+			SetSequence( seqEmitterIdleOpen );
+			FireTargets( STRING( m_iszDeployedTarget ), this, this, USE_ON, 1.0 );
+			bWhiteBeam->pev->effects &= ~EF_NODRAW;
+			UTIL_EmitAmbientSound( ENT(pev), pev->origin, "debris/beamstart4.wav", 0.5, ATTN_NORM, 0, RANDOM_LONG( 140, 160 ) );
+			UTIL_ScreenFadeAll( Vector( 255, 255, 255), 1.0, 0.1, 150, 0 );
+		}
+		break;
+	case seqEmitterIdleOpen:
+		if (pev->health < 150*3)
+			SetSequence( seqEmitterBroken1);
+		break;
+	case seqEmitterBroken1:
+		if (pev->health < 150*2)
+			SetSequence( seqEmitterBroken2);
+		break;
+	case seqEmitterBroken2: // 2 - to rest
+		//if (pev->health = 0)
+		//	SetSequence( seqEmitterDeath );
+		break;
+	case seqEmitterDeath:
+		// random explosions
+		MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, pev->origin );
+			WRITE_BYTE( TE_EXPLOSION);		// This just makes a dynamic light now
+			WRITE_COORD( pev->origin.x + RANDOM_FLOAT( -150, 150 ));
+			WRITE_COORD( pev->origin.y + RANDOM_FLOAT( -150, 150 ));
+			WRITE_COORD( pev->origin.z + RANDOM_FLOAT( -150, -50 ));
+			WRITE_SHORT( g_sModelIndexFireball );
+			WRITE_BYTE( RANDOM_LONG(0,29) + 30  ); // scale * 10
+			WRITE_BYTE( 12  ); // framerate
+			WRITE_BYTE( TE_EXPLFLAG_NONE );
+		MESSAGE_END();
+		if ( m_fSequenceFinished )
+		{
+			SetThink( DyingThink );
+			pev->nextthink = gpGlobals->time + 0.1;
+		}
+		break;
+	default:
+		break;
+	}
+}
+
+void	CFocusEmitter::DyingThink( void )
+{
+	// lots of smoke
+	MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, pev->origin );
+		WRITE_BYTE( TE_SMOKE );
+		WRITE_COORD( pev->origin.x + RANDOM_FLOAT( -150, 150 ) );
+		WRITE_COORD( pev->origin.y + RANDOM_FLOAT( -150, 150 ) );
+		WRITE_COORD( pev->origin.z + 200 + RANDOM_FLOAT( -150, -50 ) );
+		WRITE_SHORT( g_sModelIndexSmoke );
+		WRITE_BYTE( 50 );  // scale * 10
+		WRITE_BYTE( 10 );  // framerate
+	MESSAGE_END();
+
+	pev->nextthink = gpGlobals->time + 0.1;
+}
+
+void CFocusEmitter :: Killed( entvars_t *pevAttacker, int iGib )
+{
+	pev->health = 0;
+	pev->takedamage = DAMAGE_NO;
+	bWhiteBeam->pev->effects |= EF_NODRAW;
+	FireTargets( STRING( m_iszDeathTarget ), this, this, USE_TOGGLE, 1.0 );
+	SetSequence( seqEmitterDeath );
+	pev->nextthink = gpGlobals->time + 0.1;
+
+	//m_flDieCounter = gpGlobals->time + 2.5;
+
+	//FireTargets( STRING(m_iszDeathTarget), this, this, USE_TOGGLE, 1.0 );
+}
+
+void	CFocusEmitter::LookAt( Vector inputangles )
+{
+	UTIL_MakeAimVectors( pev->angles );
+
+	Vector posGun, angGun;
+	GetAttachment( 2, posGun, angGun );
+
+	Vector vecTarget = (inputangles - posGun).Normalize( );
+
+	Vector vecOut;
+
+	vecOut.x = DotProduct( gpGlobals->v_forward, vecTarget );
+	vecOut.y = -DotProduct( gpGlobals->v_right, vecTarget );
+	vecOut.z = DotProduct( gpGlobals->v_up, vecTarget );
+
+	Vector angles = UTIL_VecToAngles (vecOut);
+
+	angles.x = -angles.x;
+	if (angles.x > 180)
+		angles.x = angles.x - 360;
+	if (angles.x < -180)
+		angles.x = angles.x + 360;
+
+	m_angGun.x = angles.x;
+	m_angGun.y = angles.y;
+/*
+	if (angles.x > m_angGun.x)
+		m_angGun.x = min( angles.x, m_angGun.x + 12 );
+	if (angles.x < m_angGun.x)
+		m_angGun.x = max( angles.x, m_angGun.x - 12 );
+	if (angles.y > m_angGun.y)
+		m_angGun.y = min( angles.y, m_angGun.y + 12 );
+	if (angles.y < m_angGun.y)
+		m_angGun.y = max( angles.y, m_angGun.y - 12 );
+*/
+	m_angGun.y = SetBoneController( 0, m_angGun.y );
+	m_angGun.x = SetBoneController( 1, m_angGun.x );
+}
+
+int CFocusEmitter :: TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType )
+{
+	if (pevInflictor->owner == edict())
+		return 0;
+
+	if (bitsDamageType & DMG_BLAST)
+	{
+		flDamage *= 2;
+	}
+
+	// ALERT( at_console, "%.0f\n", flDamage );
+	return CBaseEntity::TakeDamage(  pevInflictor, pevAttacker, flDamage, bitsDamageType );
+}
+
+//
+// Emitter target
+//
+
+class CEmitterTarget : public CBaseEntity
+{
+public:
+	void Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+};
+
+void CEmitterTarget :: Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
+{
+	// TODO: find emitter, call LookAt(this)
+	CFocusEmitter *pEmitter; // = NULL;
+	pEmitter = (CFocusEmitter*)UTIL_FindEntityByClassname( NULL, "item_focusemitter" );
+	if (pEmitter)
+		pEmitter->LookAt( pev->origin );
+
+	FireTargets( STRING(pev->target), this, this, USE_TOGGLE, 0.0 );
+	ALERT( at_console, "info_emittertarget called Use! Firing %s\n", STRING(pev->target) );
+}
+LINK_ENTITY_TO_CLASS( info_emittertarget, CEmitterTarget );

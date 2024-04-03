@@ -317,6 +317,14 @@ CGameRules *InstallGameRules( void )
 {
 	SERVER_COMMAND( "exec game.cfg\n" );
 	SERVER_EXECUTE();
+	ALERT( at_console, "Installing game rule... ");
+//	ALERT( at_console, "Priest damaged - took %f hit points!\n", flDamage);
+
+	if (bDecay)
+	{
+		// Decay game rules
+		return new CDecayRules;
+	}
 
 	if( !gpGlobals->deathmatch )
 	{

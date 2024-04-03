@@ -325,4 +325,105 @@ public:
 	string_t	m_iszSpriteName;
 	Vector	m_firePosition;
 };
+
+class CFuncFrame : public CBaseEntity
+{
+public:
+	void	Spawn( void );
+	void	KeyValue( KeyValueData *pkvd );
+
+	int     m_iKind;
+};
+
+#define SF_AUTO_FIREONCE		0x0001
+
+class CEnvWarpBall : public CBaseEntity
+{
+public:
+	void	KeyValue( KeyValueData *pkvd );
+	void	Precache( void );
+	void	Spawn( void ) { Precache(); }
+	void	Think( void );
+	void	Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+	virtual int	ObjectCaps( void ) { return CBaseEntity :: ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
+	static CEnvWarpBall *WarpBallCreate();
+
+	//string_t m_iszMonsterClassname; // classname of the monster(s) that will be created.
+	string_t m_iszWarpTarget;
+};
+
+class CDisplacerTarget : public CPointEntity
+{
+public:
+	void KeyValue( KeyValueData *pkvd );
+
+	int m_iPlayerIndex;
+};
+
+class CObjModel : public CBaseEntity
+{
+public:
+    void Spawn( void );
+	void Precache( void );
+	void KeyValue( KeyValueData *pkvd);
+
+	int m_iSkin, m_iScale, m_iBody, m_iBodyGroup, m_iSequence;
+
+	float SetBoneController(int iController, float flValue );
+	void   ObjModelInit( const char *pModelName, int skin, int scale, int body, int bodygroup );
+	static CObjModel *ObjModelCreate( const char *pModelName, int skin, int scale, int body, int bodygroup );
+};
+
+class CEnvLaserMirror : public CBaseEntity
+{
+public:
+	virtual int	ObjectCaps( void ) { return (CBaseEntity :: ObjectCaps() & ~FCAP_ACROSS_TRANSITION) | FCAP_DIRECTIONAL_USE; }
+	void	Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+    void Precache( void );
+	void Spawn( void );
+	void KeyValue( KeyValueData *pkvd );
+	void CheckTargets(bool DoActivate);
+
+	int m_iszTargetUnlocked;
+	int m_iszTargetLocked;
+	bool bStateOn;
+	string_t m_globalstate;
+	int m_iUseStateMode;
+	int m_iSearchDistance;
+	byte bUsedCount;
+
+	virtual int		Save( CSave &save );
+	virtual int		Restore( CRestore &restore );
+	static	TYPEDESCRIPTION m_SaveData[];
+};
+
+class CEnvMirroredLaser : public CBaseEntity
+{
+public:
+	CBeam *pBeam[15]; // 15 reflections max
+	CEnvLaserMirror *pMirrors[15];
+	int iBeamCount;
+	int iMirrorCount;
+	bool bActive;
+
+	//Vector		m_vecDir;
+	Vector		m_vecEnd;
+	int iMaxStep;
+	int m_iSearchDistance;
+	int m_iPrimarySearchDistance;
+
+	virtual int		Save( CSave &save );
+	virtual int		Restore( CRestore &restore );
+	static	TYPEDESCRIPTION m_SaveData[];
+
+	//void Activate( void );
+	void Spawn( void );
+	void RebuildPath( void );
+	void EXPORT ThinkOn( void );
+	void KeyValue( KeyValueData *pkvd );
+	void Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+	void ReColorLasers( void );
+};
+
+
 #endif		//EFFECTS_H

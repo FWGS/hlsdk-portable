@@ -104,10 +104,108 @@ void CFrictionModifier::KeyValue( KeyValueData *pkvd )
 		CBaseEntity::KeyValue( pkvd );
 }
 
-// This trigger will fire when the level spawns (or respawns if not fire once)
+// This trigger will fire when the client spawns in game world, just after the HUD INIT
 // It will check a global state before firing.  It supports delay and killtargets
 
 #define SF_AUTO_FIREONCE		0x0001
+
+class CPlayerSpawnTrigger : public CBaseDelay
+{
+public:
+	void KeyValue( KeyValueData *pkvd );
+	void Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+	void Spawn( void );
+
+	int ObjectCaps( void ) { return CBaseDelay::ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
+	virtual int		Save( CSave &save );
+	virtual int		Restore( CRestore &restore );
+
+	static	TYPEDESCRIPTION m_SaveData[];
+
+private:
+	int			m_globalstate;
+	int			m_iPlayerIndex;
+	USE_TYPE	triggerType;
+};
+LINK_ENTITY_TO_CLASS( trigger_clientspawn, CPlayerSpawnTrigger );
+
+TYPEDESCRIPTION	CPlayerSpawnTrigger::m_SaveData[] =
+{
+	DEFINE_FIELD( CPlayerSpawnTrigger, m_globalstate, FIELD_STRING ),
+	DEFINE_FIELD( CPlayerSpawnTrigger, m_iPlayerIndex, FIELD_INTEGER ),
+	DEFINE_FIELD( CPlayerSpawnTrigger, triggerType, FIELD_INTEGER ),
+};
+
+IMPLEMENT_SAVERESTORE(CPlayerSpawnTrigger, CBaseDelay);
+
+void CPlayerSpawnTrigger::Spawn( void )
+{
+
+}
+
+void CPlayerSpawnTrigger::KeyValue( KeyValueData *pkvd )
+{
+	if (FStrEq(pkvd->szKeyName, "globalstate"))
+	{
+		m_globalstate = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "player_index"))
+	{
+		m_iPlayerIndex = atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "triggerstate"))
+	{
+		int type = atoi( pkvd->szValue );
+		switch( type )
+		{
+		case 0:
+			triggerType = USE_OFF;
+			break;
+		case 2:
+			triggerType = USE_TOGGLE;
+			break;
+		default:
+			triggerType = USE_ON;
+			break;
+		}
+		pkvd->fHandled = TRUE;
+	}
+	else
+		CBaseDelay::KeyValue( pkvd );
+}
+
+void CPlayerSpawnTrigger::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
+{
+	if ( !m_globalstate || gGlobalState.EntityGetState( m_globalstate ) == GLOBAL_ON )
+	{
+		if ( pev->spawnflags & SF_SPECIFICPLAYER )
+		{
+			if ( pActivator )
+				if (pActivator->IsPlayer())
+				{
+					CBasePlayer *g_pPlayer;
+					g_pPlayer = (CBasePlayer*)pActivator;
+
+					if (m_iPlayerIndex != 0)
+					{	// check if Gina or Colette
+						if (g_pPlayer->m_iDecayId != m_iPlayerIndex)
+							return;
+					}
+				}
+		}
+
+		SUB_UseTargets( this, triggerType, 0 );
+
+		if ( pev->spawnflags & SF_AUTO_FIREONCE )
+			UTIL_Remove( this );
+	}
+}
+
+// This trigger will fire when the level spawns (or respawns if not fire once)
+// It will check a global state before firing.  It supports delay and killtargets
+
 
 class CAutoTrigger : public CBaseDelay
 {
@@ -173,7 +271,7 @@ void CAutoTrigger::Spawn( void )
 
 void CAutoTrigger::Precache( void )
 {
-	pev->nextthink = gpGlobals->time + 0.1f;
+	pev->nextthink = gpGlobals->time + 0.1f; // m_flDelay used automatically in SUB_UseTargets
 }
 
 void CAutoTrigger::Think( void )
@@ -185,6 +283,137 @@ void CAutoTrigger::Think( void )
 			UTIL_Remove( this );
 	}
 }
+
+//
+// This trigger will fire when the level spawns (or respawns if not fire once)
+// It will check a global state before firing.  It supports delay and killtargets
+//
+
+class CTriggerAutoBot : public CBaseDelay
+{
+public:
+	void KeyValue( KeyValueData *pkvd );
+	void Spawn( void );
+	void Precache( void );
+	void Think( void );
+
+	int ObjectCaps( void ) { return CBaseDelay::ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
+};
+LINK_ENTITY_TO_CLASS( trigger_autobot, CTriggerAutoBot );
+
+void CTriggerAutoBot::KeyValue( KeyValueData *pkvd )
+{
+	CBaseDelay::KeyValue( pkvd );
+}
+
+
+void CTriggerAutoBot::Spawn( void )
+{
+	Precache();
+}
+
+
+void CTriggerAutoBot::Precache( void )
+{
+	pev->nextthink = gpGlobals->time + 9.0;
+}
+
+
+void CTriggerAutoBot::Think( void )
+{
+	if (!bDecay)
+		return;
+
+	if (!g_pGameRules->IsCoOp())
+		return;
+
+	CDecayRules *g_pDecayRules;
+	g_pDecayRules = (CDecayRules*)g_pGameRules;
+	if (g_pDecayRules->PlayersCount == 1)
+	{
+        char cmd[40];
+        sprintf(cmd, "addbot\n" );
+        SERVER_COMMAND(cmd);
+	}
+
+	UTIL_Remove( this );
+}
+
+//
+// fade screen and call endsection upon level spawn if mission is locked
+//
+
+LINK_ENTITY_TO_CLASS( trigger_lockedmission, CTriggerLockedMission );
+
+void CTriggerLockedMission::Spawn( void )
+{
+	pev->nextthink = 0;
+	pev->message = ALLOC_STRING( "DYLOCKED" );
+	m_flDelay = 7;
+}
+
+void CTriggerLockedMission::Lock( void )
+{
+	CBasePlayer *client;
+	client = NULL;
+	while ( ((client = (CBasePlayer*)UTIL_FindEntityByClassname( client, "player" )) != NULL) && (!FNullEnt(client->edict())) )
+	{
+		if ( !client->pev )
+			continue;
+		if ( !(client->IsNetClient()) )	// Not a client ? (should never be true)
+			continue;
+		client->EnableControl(FALSE);
+	}
+	UTIL_ScreenFadeAll( Vector(0, 0, 0), 7, 3, 255, FFADE_OUT );
+	UTIL_ShowMessageAll( STRING(pev->message) );
+
+	pev->nextthink = gpGlobals->time + 7;
+}
+
+void CTriggerLockedMission::Think( void )
+{
+	if ( pev->message )
+		g_engfuncs.pfnEndSection(STRING(pev->message));
+	else
+		g_engfuncs.pfnEndSection( "Decay" );
+}
+
+//
+// trigger for kicking the players (bots)
+//
+
+LINK_ENTITY_TO_CLASS( trigger_kicker, CTriggerKicker );
+
+void CTriggerKicker::Spawn( void )
+{
+	pev->nextthink = 0;
+	m_flDelay = 3;
+}
+
+void CTriggerKicker::KickPlayer( CBasePlayer *pKickMe )
+{
+	ALERT( at_console, "Going to kick spare player %s!\n", STRING( pKickMe->pev->netname) );
+	pPlayerToKick = pKickMe;
+	pev->nextthink = gpGlobals->time + m_flDelay;
+	// TODO: send message to player to display Decay Spare player screen here?
+}
+
+void CTriggerKicker::Think( void )
+{
+	if (!bDecay)
+		return;
+
+	if (!g_pGameRules->IsCoOp())
+		return;
+
+    char cmd[128];
+    sprintf(cmd, "kick \"%s\"\n", STRING(pPlayerToKick->pev->netname) );
+    SERVER_COMMAND(cmd);
+
+	UTIL_Remove( this );
+}
+
+// end of kicker code
 
 #define SF_RELAY_FIREONCE		0x0001
 
@@ -385,7 +614,19 @@ void CMultiManager::ManagerThink( void )
 	time = gpGlobals->time - m_startTime;
 	while( m_index < m_cTargets && m_flTargetDelay[m_index] <= time )
 	{
-		FireTargets( STRING( m_iTargetName[m_index] ), m_hActivator, this, USE_TOGGLE, 0 );
+		if ( pev->spawnflags & SF_MM_KILLTARGETS )
+		{
+	        CBaseEntity *pEntity = NULL;
+			while (pEntity = UTIL_FindEntityByTargetname(pEntity, STRING( m_iTargetName[ m_index ] )))
+			{
+				//ALERT( at_console, "Killing %s...\n", STRING( m_iTargetName[ m_index ] ) );
+				UTIL_Remove( pEntity );
+			}
+		} else
+		{
+			FireTargets( STRING( m_iTargetName[ m_index ] ), m_hActivator, this, USE_TOGGLE, 0 );
+		}
+
 		m_index++;
 	}
 
@@ -482,6 +723,11 @@ void CRenderFxManager::Spawn( void )
 	pev->solid = SOLID_NOT;
 }
 
+inline edict_t *FIND_ENTITY_BY_NETNAME(edict_t *entStart, const char *pszName)
+{
+	return FIND_ENTITY_BY_STRING(entStart, "netname", pszName);
+}
+
 void CRenderFxManager::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
 	if( !FStringNull( pev->target ) )
@@ -541,6 +787,10 @@ void CRenderFxManager::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_T
 class CBaseTrigger : public CBaseToggle
 {
 public:
+	int	m_iPlayersInside;			//TODO: implement saverestore
+	byte m_bCurrentPlayer, m_bPreviousPlayer;
+	float m_flLastTouch;
+
 	void EXPORT TeleportTouch( CBaseEntity *pOther );
 	void KeyValue( KeyValueData *pkvd );
 	void EXPORT MultiTouch( CBaseEntity *pOther );
@@ -612,6 +862,7 @@ public:
 };
 
 LINK_ENTITY_TO_CLASS( trigger_hurt, CTriggerHurt )
+LINK_ENTITY_TO_CLASS( trigger_new_hurt, CTriggerHurt )
 
 //
 // trigger_monsterjump
@@ -911,6 +1162,30 @@ void CTriggerHurt::RadiationThink( void )
 //
 void CBaseTrigger::ToggleUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
+	//Decay's trigger_new_hurt used only mission ht04dampen
+	bool m_bIsNewHurt = !strcmp(STRING(pev->classname), "trigger_new_hurt");
+	if ( m_bIsNewHurt )
+	{
+		bool m_bIsOn = ( pev->solid == SOLID_TRIGGER );
+
+		if ( useType == USE_TOGGLE )
+			m_bIsOn = !m_bIsOn;
+		if ( useType == USE_ON )
+			m_bIsOn = true;
+		if ( useType == USE_OFF )
+			m_bIsOn = false;
+
+		if ( m_bIsOn )
+		{
+			pev->solid = SOLID_TRIGGER;
+			gpGlobals->force_retouch++;
+		} else
+			pev->solid = SOLID_NOT;
+
+		UTIL_SetOrigin( pev, pev->origin );
+		return;
+	}
+
 	if( pev->solid == SOLID_NOT )
 	{
 		// if the trigger is off, turn it on
@@ -1144,6 +1419,17 @@ void CTriggerOnce::Spawn( void )
 
 void CBaseTrigger::MultiTouch( CBaseEntity *pOther )
 {
+	if (pOther->IsPlayer())
+	{
+		CBasePlayer *g_pPlayer;
+		g_pPlayer = (CBasePlayer*)pOther;
+		//uncommentme
+		//ALERT( at_console, "(%s) inside %d need %d\n", STRING(pev->targetname), g_pPlayer->m_iDecayId, m_iPlayerIndex );
+
+		//DECAY debug:
+		//ALERT( at_console, "trigger %s targets %s\n", STRING(pev->targetname), STRING(pev->target) );
+	}
+
 	entvars_t *pevToucher;
 
 	pevToucher = pOther->pev;
@@ -1163,7 +1449,60 @@ void CBaseTrigger::MultiTouch( CBaseEntity *pOther )
 				return;         // not facing the right way
 		}
 #endif
+		// Decay's specific player check
+		// DONE: bug found - when player 1 enters trigger, then exists and player 2 enters trigger
+		// it acts as if they both where here! :) How to solve that???
+		if ( pev->spawnflags & SF_SPECIFICPLAYER )
+		{
+			if (pOther->IsPlayer())
+			{
+				CBasePlayer *g_pPlayer;
+				g_pPlayer = (CBasePlayer*)pOther;
+
+				if (m_iPlayerIndex != 0)
+				{	// check if Gina or Colette
+					if (g_pPlayer->m_iDecayId != m_iPlayerIndex)
+						return;
+				} else
+				{	// check if both are inside
+
+					m_bPreviousPlayer = m_bCurrentPlayer;
+					m_bCurrentPlayer = g_pPlayer->m_iDecayId;
+
+					SetBits( m_iPlayersInside, g_pPlayer->m_iDecayId);
+
+					byte m_bAnotherPlayer;
+					if ( m_bCurrentPlayer == 1)
+						m_bAnotherPlayer = 2;
+					else
+						m_bAnotherPlayer = 1;
+
+					if (m_flLastTouch < gpGlobals->time - 0.1)
+						ClearBits( m_iPlayersInside, m_bAnotherPlayer );
+					m_flLastTouch = gpGlobals->time;
+
+					//m_iPlayersInside = m_iPlayersInside & g_pPlayer->m_iDecayId;
+					if (!(m_iPlayersInside & PF_PLAYER1) || !(m_iPlayersInside & PF_PLAYER2))
+						return;
+
+					/*if ( m_bCurrentPlayer == m_bPreviousPlayer )
+					{
+						ClearBits( m_iPlayersInside, m_bAnotherPlayer );
+						return;
+					}*/
+				}
+				//m_flWait = -1;
+			}
+		}
 		ActivateMultiTrigger( pOther );
+		//if ( pev->spawnflags & SF_SPECIFICPLAYER )
+		//	if (m_iPlayerIndex == 0)
+		//		m_iPlayersInside = 0;
+
+
+		//if ( pev->spawnflags & SF_SPECIFICPLAYER )
+		//	SetTouch( NULL );
+		m_iPlayersInside = 0;
 	}
 }
 
@@ -1239,10 +1578,15 @@ void CBaseTrigger::CounterUse( CBaseEntity *pActivator, CBaseEntity *pCaller, US
 	m_cTriggersLeft--;
 	m_hActivator = pActivator;
 
+	ALERT( at_console, "(trigger_counter::%s) used, left: %d\n", STRING( this->pev->classname ), m_cTriggersLeft );
+
 	if( m_cTriggersLeft < 0 )
 		return;
 
-	BOOL fTellActivator =
+	if (m_cTriggersLeft != 0)
+		return;
+
+	/*BOOL fTellActivator =
 		( m_hActivator != 0 ) &&
 		m_hActivator->IsPlayer() &&
 		!FBitSet( pev->spawnflags, SPAWNFLAG_NOMESSAGE );
@@ -1272,9 +1616,22 @@ void CBaseTrigger::CounterUse( CBaseEntity *pActivator, CBaseEntity *pCaller, US
 
 	// !!!UNDONE: I don't think we want these Quakesque messages
 	if( fTellActivator )
-		ALERT( at_console, "Sequence completed!" );
+		ALERT( at_console, "Sequence completed!" );*/
 
-	ActivateMultiTrigger( m_hActivator );
+	ALERT( at_console, "(trigger_counter::%s) sequence done! Firing %s\n", STRING( this->pev->classname ), STRING( this->pev->target ) );
+
+	if ( m_hActivator )	// Vyacheslav Dzhura: trigger_counter issue - access violation when counter activated by func_breakable
+		ActivateMultiTrigger( m_hActivator );
+	else
+		ActivateMultiTrigger( pCaller );
+
+	if (m_iszKillTarget)
+	{
+		ALERT(at_console, "%s\n", STRING( m_iszKillTarget ));
+		CBaseEntity *pEntity = NULL;
+		pEntity = UTIL_FindEntityByTargetname(pEntity, STRING( m_iszKillTarget ));
+		UTIL_Remove( pEntity );
+	}
 }
 
 /*QUAKED trigger_counter (.5 .5 .5) ? nomessage
@@ -1926,9 +2283,24 @@ void CBaseTrigger::TeleportTouch( CBaseEntity *pOther )
 		}
 	}
 
-	pentTarget = FIND_ENTITY_BY_TARGETNAME( pentTarget, STRING( pev->target ) );
-	if( FNullEnt( pentTarget ) )
-	   return;	
+	if ( pev->spawnflags & SF_SPECIFICPLAYER )
+	{
+		if (pOther->IsPlayer())
+		{
+			CBasePlayer *g_pPlayer;
+			g_pPlayer = (CBasePlayer*)pOther;
+
+			if (m_iPlayerIndex != 0)
+			{	// check if Gina or Colette
+				if (g_pPlayer->m_iDecayId != m_iPlayerIndex)
+					return;
+			} // Vyacheslav Dzhura: no need in "else", check if both are inside can't be applied for teleport
+		}
+	}
+
+	pentTarget = FIND_ENTITY_BY_TARGETNAME( pentTarget, STRING(pev->target) );
+	if (FNullEnt(pentTarget))
+	   return;
 
 	Vector tmp = VARS( pentTarget )->origin;
 
@@ -2048,8 +2420,29 @@ void CTriggerEndSection::EndSectionUse( CBaseEntity *pActivator, CBaseEntity *pC
 
 	if( pev->message )
 	{
-		g_engfuncs.pfnEndSection( STRING( pev->message ) );
+		if (!IS_DEDICATED_SERVER())
+			g_engfuncs.pfnEndSection(STRING(pev->message));
+		else
+		{
+			//
+			// FOR DEDICATED SERVER, SKIP TO THE FIRST MISSION
+			//
+
+			static char szNextMap[128];
+			sprintf( szNextMap, "null" );
+
+			if (g_pGameRules->IsCoOp())
+			{
+				CDecayRules *g_pDecayRules = (CDecayRules*)g_pGameRules;
+				sprintf( szNextMap, g_pDecayRules->getDecayMapName( 1 ) );
+			}
+			bool bHasNextMap = ( strcmp( szNextMap, "null" ) != 0 );
+
+			if ( bHasNextMap )
+				CHANGE_LEVEL( szNextMap, NULL );
+		}
 	}
+
 	UTIL_Remove( this );
 }
 

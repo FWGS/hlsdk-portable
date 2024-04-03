@@ -58,6 +58,8 @@ class DragNDropPanel;
 class CTransparentPanel;
 class CClassMenuPanel;
 class CTeamMenuPanel;
+class CNotepad;
+class CSparePlayerWindow;
 class TeamFortressViewport;
 
 char *GetVGUITGAName( const char *pszName );
@@ -551,6 +553,8 @@ public:
 
 	int		CreateCommandMenu( const char * menuFile, int direction, int yOffset, bool flatDesign, float flButtonSizeX, float flButtonSizeY, int xOffset );
 	void	CreateScoreBoard( void );
+	void	CreateNotepad( void );
+	void	CreateSparePlayerWindow( void );
 	CommandButton * CreateCustomButton( char *pButtonText, char * pButtonName, int  iYOffset );
 	CCommandMenu *	CreateDisguiseSubmenu( CommandButton *pButton, CCommandMenu *pParentMenu, const char *commandText, int iYOffset, int iXOffset = 0 );
 
@@ -616,6 +620,8 @@ public:
 	int MsgFunc_TeamInfo( const char *pszName, int iSize, void *pbuf );
 	int MsgFunc_Spectator( const char *pszName, int iSize, void *pbuf );
 	int MsgFunc_AllowSpec( const char *pszName, int iSize, void *pbuf );
+	int MsgFunc_Notepad( const char *pszName, int iSize, void *pbuf );
+	int MsgFunc_SparePlayer( const char *pszName, int iSize, void *pbuf );
 	int MsgFunc_SpecFade( const char *pszName, int iSize, void *pbuf );	
 	int MsgFunc_ResetFade( const char *pszName, int iSize, void *pbuf );	
 

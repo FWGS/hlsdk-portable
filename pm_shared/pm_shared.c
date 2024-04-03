@@ -1962,6 +1962,7 @@ void PM_UnDuck( void )
 
 	VectorCopy( pmove->origin, newOrigin );
 
+	/*
 	if( pmove->onground != -1 )
 	{
 		for( i = 0; i < 3; i++ )

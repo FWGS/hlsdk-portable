@@ -320,6 +320,11 @@ void W_Precache( void )
 	// 9mm ammo box
 	UTIL_PrecacheOther( "ammo_9mmbox" );
 
+	// displacer
+	UTIL_PrecacheOtherWeapon( "weapon_displacer" );
+
+	UTIL_PrecacheOtherWeapon( "weapon_vorti" );
+
 #if !OEM_BUILD && !HLDEMO_BUILD
 	// python
 	UTIL_PrecacheOtherWeapon( "weapon_357" );
@@ -428,11 +433,33 @@ void CBasePlayerItem::SetObjectCollisionBox( void )
 	pev->absmax = pev->origin + Vector( 24, 24, 16 ); 
 }
 
+void CBasePlayerItem :: KeyValue( KeyValueData *pkvd )
+{
+	if (FStrEq(pkvd->szKeyName, "player_index"))
+	{
+		DecayPlayerIndex = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else
+	{
+		CBaseDelay::KeyValue( pkvd );
+	}
+}
+
 //=========================================================
 // Sets up movetype, size, solidtype for a new weapon. 
 //=========================================================
 void CBasePlayerItem::FallInit( void )
 {
+	if (pev->spawnflags & 1)
+	{
+		pev->solid = SOLID_TRIGGER;
+		UTIL_SetOrigin( pev, pev->origin );// link into world.
+		SetTouch (DefaultTouch);
+		SetThink (NULL);
+		return;
+	}
+
 	pev->movetype = MOVETYPE_TOSS;
 	pev->solid = SOLID_BBOX;
 
@@ -826,7 +853,15 @@ int CBasePlayerWeapon::UpdateClientData( CBasePlayer *pPlayer )
 	}
 
 	if( m_pNext )
-		m_pNext->UpdateClientData( pPlayer );
+	{
+		if ( m_pNext->m_iId >= 0 )
+			m_pNext->UpdateClientData( pPlayer );
+		else
+		{
+			ALERT( at_console, "'%s'->m_pNext sends to invalid class!\n", this->pszName );
+			return 0;
+		}
+	}
 
 	return 1;
 }
@@ -1246,7 +1281,14 @@ void CWeaponBox::Precache( void )
 //=========================================================
 void CWeaponBox::KeyValue( KeyValueData *pkvd )
 {
-	if( m_cAmmoTypes < MAX_AMMO_SLOTS )
+	if ( FStrEq(pkvd->szKeyName, "player_index") )
+	{
+		m_iPlayerIndex = atoi( pkvd->szValue );
+		pkvd->fHandled = true;
+		return;
+	}
+
+	if (( m_cAmmoTypes < MAX_AMMO_SLOTS ) && (!FStrEq(pkvd->szKeyName, "player_index")))
 	{
 		PackAmmo( ALLOC_STRING( pkvd->szKeyName ), atoi( pkvd->szValue ) );
 		m_cAmmoTypes++;// count this new ammo type.

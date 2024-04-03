@@ -377,12 +377,12 @@ void CBarney::HandleAnimEvent( MonsterEvent_t *pEvent )
 		break;
 	case BARNEY_AE_DRAW:
 		// barney's bodygroup switches here so he can pull gun from holster
-		pev->body = BARNEY_BODY_GUNDRAWN;
+		SetBodygroup( GUN_GROUP, BARNEY_BODY_GUNDRAWN );
 		m_fGunDrawn = TRUE;
 		break;
 	case BARNEY_AE_HOLSTER:
 		// change bodygroup to replace gun in holster
-		pev->body = BARNEY_BODY_GUNHOLSTERED;
+		SetBodygroup( GUN_GROUP, BARNEY_BODY_GUNHOLSTERED );
 		m_fGunDrawn = FALSE;
 		break;
 	default:
@@ -609,13 +609,13 @@ void CBarney::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir
 
 void CBarney::Killed( entvars_t *pevAttacker, int iGib )
 {
-	if( pev->body < BARNEY_BODY_GUNGONE )
+	if( GetBodygroup( GUN_GROUP ) < BARNEY_BODY_GUNGONE )
 	{
 		// drop the gun!
 		Vector vecGunPos;
 		Vector vecGunAngles;
 
-		pev->body = BARNEY_BODY_GUNGONE;
+		SetBodygroup( GUN_GROUP, BARNEY_BODY_GUNGONE );
 
 		GetAttachment( 0, vecGunPos, vecGunAngles );
 
