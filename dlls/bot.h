@@ -103,7 +103,7 @@ class CBot : public CBasePlayer //Derive a bot class from CBasePlayer
       int    wander_dir;      // randomly wander left or right
       float  f_pause_time;    // timeout for periods when the bot pauses
       float  f_find_item;     // timeout for not looking for items
-      char   model_name[20];
+      char   model_name[64];
       int    bot_model;
       int    bot_skill;       // bot skill level (0=very good, 4=very bad)
       float  f_pain_time;     // time when pain sound can be spoken
