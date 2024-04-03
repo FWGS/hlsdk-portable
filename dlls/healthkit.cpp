@@ -321,7 +321,7 @@ void CMdlWallHealthTank::Spawn()
 	SetBoneController( 0, 0 );	// -11 to 0 (empty to full)
 
 	SetSequence( seq_Still );
-	SetThink( TankThink );
+	SetThink( &CMdlWallHealthTank::TankThink );
 
 	if (g_pGameRules->IsCoOp() )
 	{
@@ -487,7 +487,7 @@ void CMdlWallHealth::Spawn()
 	// 180..360 - ang 90 use -270
 
 	SetSequence( seq_Inactive );
-	SetThink(ChargerThink);
+	SetThink(&CMdlWallHealth::ChargerThink);
 	pev->nextthink = gpGlobals->time + 0.1;
 }
 
@@ -681,7 +681,7 @@ void CMdlWallHealth::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYP
 
 	pFluidTank->StartUse();
 	pev->nextthink = gpGlobals->time + 0.25; // pev->ltime
-	SetThink(Off);
+	SetThink(&CMdlWallHealth::Off);
 
 	// start the give shot sequence and do not use until it's finished
 	if (GetSequence() != seq_GiveShot)
@@ -729,13 +729,13 @@ void CMdlWallHealth::Recharge(void)
 	EMIT_SOUND(ENT(pev), CHAN_ITEM, "items/medshot4.wav", 1.0, ATTN_NORM );
 	m_iJuice = gSkillData.healthchargerCapacity;
 	pev->skin = HEALTHSTATION_FULL;	// set the active skin			
-	SetThink( ChargerThink );
+	SetThink( &CMdlWallHealth::ChargerThink );
 }
 
 void CMdlWallHealth::Off(void)
 {
 	m_flStopCharge = gpGlobals->time + 0.25;
-	SetThink( ChargerThink );
+	SetThink( &CMdlWallHealth::ChargerThink );
 	pev->nextthink = gpGlobals->time + 0.01;
 
 	// Stop looping sound.
@@ -747,10 +747,10 @@ void CMdlWallHealth::Off(void)
 	if ((!m_iJuice) &&  ( ( m_iReactivate = g_pGameRules->FlHealthChargerRechargeTime() ) > 0) )
 	{
 		pev->nextthink = pev->ltime + m_iReactivate;
-		SetThink(Recharge);
+		SetThink(&CMdlWallHealth::Recharge);
 	}
 	//else
-	//	SetThink( SUB_DoNothing );
+	//	SetThink( &CMdlWallHealth::SUB_DoNothing );
 }
 
 void CMdlWallHealth::TurnOff( void )

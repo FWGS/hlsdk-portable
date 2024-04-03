@@ -180,14 +180,14 @@ void CAlienFlyer :: Spawn( void )
 
 	if (pev->spawnflags & SF_WAITFORTRIGGER)
 	{
-		SetUse( StartupUse );
+		SetUse( &CAlienFlyer::StartupUse );
 		m_activated = false;
 		pev->effects |= EF_NODRAW;
 	}
 	else
 	{
-		SetThink( HuntThink );
-		SetTouch( FlyTouch );
+		SetThink( &CAlienFlyer::HuntThink );
+		SetTouch( &CAlienFlyer::FlyTouch );
 		pev->nextthink = gpGlobals->time + 1.0;
 		m_activated = true;
 	}
@@ -222,7 +222,7 @@ void CAlienFlyer::Activate( void )
 		if ( FStringNull(pev->targetname) )
 		{	// not triggered, so start immediately
 			pev->nextthink = pev->ltime + 0.1;
-			SetThink( HuntThink );
+			SetThink( &CAlienFlyer::HuntThink );
 		}
 		else
 			pev->spawnflags |= SF_TRAIN_WAIT_RETRIGGER;
@@ -253,8 +253,8 @@ void CAlienFlyer::NullThink( void )
 void CAlienFlyer::StartupUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
 	pev->effects &= ~EF_NODRAW;
-	SetThink( HuntThink );
-	SetTouch( FlyTouch );
+	SetThink( &CAlienFlyer::HuntThink );
+	SetTouch( &CAlienFlyer::FlyTouch );
 	pev->nextthink = gpGlobals->time + 0.1;
 	SetUse( NULL );
 }
@@ -274,8 +274,8 @@ void CAlienFlyer :: Killed( entvars_t *pevAttacker, int iGib )
 	pev->gravity = 0.3;
 
 	UTIL_SetSize( pev, Vector( -32, -32, -64), Vector( 32, 32, 0) );
-	SetThink( DyingThink );
-	SetTouch( CrashTouch );
+	SetThink( &CAlienFlyer::DyingThink );
+	SetTouch( &CAlienFlyer::CrashTouch );
 	pev->nextthink = gpGlobals->time + 0.1;
 	pev->health = 0;
 	pev->takedamage = DAMAGE_NO;
@@ -428,7 +428,7 @@ void CAlienFlyer :: DyingThink( void )
 			WRITE_BYTE( BREAK_FLESH );
 		MESSAGE_END();
 
-		SetThink( SUB_Remove );
+		SetThink( &CAlienFlyer::SUB_Remove );
 		pev->nextthink = gpGlobals->time + 0.1;
 	}
 }

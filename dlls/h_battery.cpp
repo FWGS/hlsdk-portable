@@ -382,7 +382,7 @@ void CMdlCharger::Spawn()
 
 	SetSequence( seqCharge_Inactive );
 
-	SetThink(ChargerThink);
+	SetThink(&CMdlCharger::ChargerThink);
 
 	if (g_pGameRules->IsCoOp() )
 	{
@@ -580,7 +580,7 @@ void CMdlCharger::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE u
 
 	//pFluidTank->StartUse();
 	pev->nextthink = gpGlobals->time + 0.25; // pev->ltime
-	SetThink(Off);
+	SetThink(&CMdlCharger::Off);
 
 	// start the give shot sequence and do not use until it's finished
 	if (GetSequence() != seqCharge_GiveShot)
@@ -635,13 +635,13 @@ void CMdlCharger::Recharge(void)
 	//EMIT_SOUND(ENT(pev), CHAN_ITEM, "items/medshot4.wav", 1.0, ATTN_NORM );
 	m_iJuice = gSkillData.suitchargerCapacity;
 	pev->skin = CHARGER_ACTIVE;	// set the active skin			
-	SetThink( ChargerThink );
+	SetThink( &CMdlCharger::ChargerThink );
 }
 
 void CMdlCharger::Off(void)
 {
 	m_flStopCharge = gpGlobals->time + 0.25;
-	SetThink( ChargerThink );
+	SetThink( &CMdlCharger::ChargerThink );
 	pev->nextthink = gpGlobals->time + 0.01;
 
 	// Stop looping sound.
@@ -653,10 +653,10 @@ void CMdlCharger::Off(void)
 	if ((!m_iJuice) &&  ( ( m_iReactivate = g_pGameRules->FlHEVChargerRechargeTime() ) > 0) )
 	{
 		pev->nextthink = pev->ltime + m_iReactivate;
-		SetThink( Recharge );
+		SetThink( &CMdlCharger::Recharge );
 	}
 	//else
-	//	SetThink( SUB_DoNothing );
+	//	SetThink( &CMdlCharger::SUB_DoNothing );
 
 	SetSequence( seqCharge_RetractShot );
 }

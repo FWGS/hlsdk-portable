@@ -1542,7 +1542,7 @@ void CWheelChairScientist :: Spawn( )
 	m_afCapability		= bits_CAP_HEAR | bits_CAP_TURN_HEAD | bits_CAP_DOORS_GROUP;
 
 	MonsterInit();
-	SetUse( FollowerUse );
+	SetUse( &CTalkMonster::FollowerUse );
 }
 
 void CWheelChairScientist :: Precache( void )
@@ -1664,7 +1664,7 @@ void CRosenberg :: Spawn( )
 	SetBodygroup( HEAD_GROUP, 0 );
 
 	MonsterInit();
-	SetUse( FollowerUse );
+	SetUse( &CTalkMonster::FollowerUse );
 }
 
 void CRosenberg :: Precache( void )

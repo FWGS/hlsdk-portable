@@ -63,7 +63,7 @@ TYPEDESCRIPTION	CTeleBall::m_SaveData[] =
 
 IMPLEMENT_SAVERESTORE( CTeleBall, CBaseMonster );
 
-void CTeleBall :: Spawn( void )
+void CTeleBall::Spawn( void )
 {
 	Precache( );
 	
@@ -83,8 +83,8 @@ void CTeleBall :: Spawn( void )
     UTIL_SetSize(pev, Vector( 0, 0, 0), Vector(0, 0, 0));
 	UTIL_SetOrigin( pev, pev->origin );
 	
-	SetThink( TeleportThink );
-    SetTouch( TeleportTouch );
+	SetThink( &CTeleBall::TeleportThink );
+    SetTouch( &CTeleBall::TeleportTouch );
 	EMIT_SOUND(ENT(pev), CHAN_ITEM, "weapons/displacer_fire.wav", 1, ATTN_NORM);
 	
 	int i;
@@ -98,7 +98,7 @@ void CTeleBall :: Spawn( void )
 		pBeam[i]->SetBrightness( 120 );//was 150
 		pBeam[i]->SetWidth( 45 );
 		pBeam[i]->SetScrollRate( 35 );
-		pBeam[i]->SetThink( SUB_Remove );
+		pBeam[i]->SetThink( &CBeam::SUB_Remove );
 		pBeam[i]->pev->nextthink = 0; //was gpGlobals->time + 1
 	}
 	
@@ -141,7 +141,7 @@ void CTeleBall:: PlayEffect( Vector Origin, CBaseEntity *pEntity )
 			pBeam[i]->SetBrightness( 150 );
 			pBeam[i]->SetWidth( 18 );
 			pBeam[i]->SetScrollRate( 35 );
-			pBeam[i]->SetThink( SUB_Remove );
+			pBeam[i]->SetThink( &CBeam::SUB_Remove );
 			pBeam[i]->pev->nextthink = gpGlobals->time + 1; //was 0.1
 		}
 	}
@@ -217,7 +217,7 @@ void CTeleBall::TeleportTouch( CBaseEntity *pOther )
 	SetTouch( NULL );
 	pev->velocity = Vector( 0, 0, 0 ); //stop energy ball, otherwise it will "slide"
 	
-	SetThink(TeleportKill);
+	SetThink(&CTeleBall::TeleportKill);
 	pev->nextthink = gpGlobals->time+0.2; //allows energy ball to stay alive after it touched something
 }
 
@@ -295,7 +295,7 @@ void CTeleBall::TeleportKill( void )
 	}
 	
 	for (int i=1;i<5;i++) UTIL_Remove( pBeam[i] ); //remove beams
-    SetThink ( SUB_Remove );
+    SetThink ( &CTeleBall::SUB_Remove );
 	pev->nextthink = 0.2;
 }
 
@@ -395,7 +395,7 @@ void CDisplacer::SpinupThink( void )
 		return;
 	}
 
-	SetThink(FireThink); 
+	SetThink(&CDisplacer::FireThink);
 	pev->nextthink=gpGlobals->time + 1.0;
 	//m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 3.0;
 }
@@ -426,7 +426,7 @@ void CDisplacer::FireThink( void )
 
 void CDisplacer::PrimaryAttack( void )
 {
-	SetThink(SpinupThink); 
+	SetThink(&CDisplacer::SpinupThink);
 	pev->nextthink=gpGlobals->time + 0.1;
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 1.5;
 }
@@ -533,7 +533,7 @@ void CDisplacer::PlayEffect( Vector Origin )
 			pBeam[i]->SetBrightness( 150 );
 			pBeam[i]->SetWidth( 18 );
 			pBeam[i]->SetScrollRate( 35 );
-			pBeam[i]->SetThink( SUB_Remove );
+			pBeam[i]->SetThink( &CBeam::SUB_Remove );
 			pBeam[i]->pev->nextthink = gpGlobals->time + 1; //was 0.1
 		}
 	}

@@ -17,6 +17,14 @@
 // Author: Vyacheslav Dzhura ( slava.dzhura@gmail.com ; slava.dzhura@protonmail.com )
 // (C) 2008
 //
+#ifdef XASH_WIN32
+#include <windows.h>
+#else
+#include <unistd.h>
+#include <sys/stat.h>
+#define MAX_COMPUTERNAME_LENGTH 64 // random number
+#endif
+
 #include	"extdll.h"
 #include	"util.h"
 #include	"cbase.h"
@@ -96,7 +104,7 @@ inline char *GET_INFOBUFFER( edict_t *e )
 }
 
 inline void SET_CLIENT_KEY_VALUE( int clientIndex, char *infobuffer,
-                                  char *key, char *value )
+                                  const char *key, const char *value )
 {
    (*g_engfuncs.pfnSetClientKeyValue)( clientIndex, infobuffer, key, value );
 }
@@ -112,7 +120,7 @@ int getMapEntryId( int desiredId )
 	return -1;
 }
 
-int findMapId( static char* szMapName )
+int findMapId( char* szMapName )
 {
     int mapCount = sizeof(decayMaps)/sizeof(decayMaps[0]);
 
@@ -163,14 +171,24 @@ void CDecayRules::SetAlienMode( bool bMode )
 //	ALERT( at_console, "Decay (alien mode = %d)\n", bSlaveCoop);
 }
 
+static void Platform_GetComputerName( char *buffer, size_t buffersize )
+{
+#if XASH_WIN32
+	DWORD size = buffersize;
+	GetComputerName( buffer, &size );
+#else
+	gethostname( buffer, buffersize);
+	buffer[buffersize - 1] = 0; // unspecified by POSIX if truncated name will be null-terminated
+#endif
+}
+
+
 //=========================================================
 //=========================================================
 CDecayRules::CDecayRules( void )
 {
 	char buffer[MAX_COMPUTERNAME_LENGTH+1];
-	DWORD size;
-	size=sizeof(buffer);
-	GetComputerName(buffer,&size);
+	Platform_GetComputerName( buffer, sizeof( buffer ));
 
 	m_iMagicWord1 = 0;
 
@@ -187,10 +205,10 @@ CDecayRules::CDecayRules( void )
 
 	statsLoad();
 
-	memset( &this->pStats[0], 0, sizeof t_playerStats );
-	memset( &this->pStats[1], 0, sizeof t_playerStats );
-	memset( &this->pStats[2], 0, sizeof t_playerStats );
-	memset( &this->pStats[3], 0, sizeof t_playerStats );	
+	memset( &this->pStats[0], 0, sizeof( t_playerStats ));
+	memset( &this->pStats[1], 0, sizeof( t_playerStats ));
+	memset( &this->pStats[2], 0, sizeof( t_playerStats ));
+	memset( &this->pStats[3], 0, sizeof( t_playerStats ));
 
 	int curMapId = this->getDecayMapId();
 	if ( curMapId != -1 )
@@ -322,11 +340,8 @@ void CDecayRules::statsSave()
 	byte bEntryCount = 0;
 
 /*********/
-		char buffer[MAX_COMPUTERNAME_LENGTH+1];
-	DWORD size;
-	size=sizeof(buffer);
-	GetComputerName(buffer,&size);
-
+	char buffer[MAX_COMPUTERNAME_LENGTH+1];
+	Platform_GetComputerName( buffer, sizeof( buffer ));
 	m_iMagicWord1 = 0;
 
 	int cnl = strlen(buffer);
@@ -442,7 +457,11 @@ void CDecayRules::statsExportXml( void )
 	char	szFilename[MAX_PATH];
 	GET_GAME_DIR( szFilename );
 	strcat( szFilename, "/manual" );
+#if XASH_WIN32
 	CreateDirectory( szFilename, NULL );
+#else
+	mkdir( szFilename, 0777 );
+#endif
 	strcat( szFilename, "/stats.xml" );
 
 	FILE *fp;
@@ -910,9 +929,7 @@ int CDecayRules :: getDecayMapId()
 void CDecayRules :: savePlayerStats( int playerId, int finalGrade, int damageGrade, int killsGrade, int accuracyGrade )
 {
 	char buffer[MAX_COMPUTERNAME_LENGTH+1];
-	DWORD size;
-	size=sizeof(buffer);
-	GetComputerName(buffer,&size);
+	Platform_GetComputerName( buffer, sizeof( buffer ));
 
 	m_iMagicWord1 = 0;
 
@@ -1271,7 +1288,7 @@ void CopyWeaponsAndAmmo(CBasePlayer *PlayerFrom, CBasePlayer *PlayerTo, bool bDu
 					pNextWeapon = pWeapon->m_pNext;
 
 					// problem here moving from tmpPlayer to player 2!!!
-					if ( !pWeapon->m_pPlayer->RemovePlayerItem( pWeapon ) )
+					if ( !pWeapon->m_pPlayer->RemovePlayerItem( pWeapon, false ) )
 					{
 						ALERT( at_console, "problems removing weapon\n" );
 					}

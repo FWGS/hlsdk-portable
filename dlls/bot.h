@@ -36,8 +36,8 @@
 
 typedef struct  // used in checking if bot can pick up ammo
 {
-   char *ammo_name;
-   char *weapon_name;
+   const char *ammo_name;
+   const char *weapon_name;
    int max_carry;
 } ammo_check_t;
 

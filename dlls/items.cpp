@@ -413,7 +413,7 @@ void	CItemSlaveCollar::Spawn( void )
 	if (FBitSet(pev->spawnflags, 1)) // Start on
 	{
 		m_bIsOn = true;
-		SetThink(ZapThink);	// start zapping
+		SetThink(&CItemSlaveCollar::ZapThink);	// start zapping
 		pev->nextthink = gpGlobals->time;
 	}
 }
@@ -435,9 +435,9 @@ void	CItemSlaveCollar::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_T
 		m_bIsOn = false;
 
 	if ( m_bIsOn )
-		SetThink( ZapThink );
+		SetThink( &CItemSlaveCollar::ZapThink );
 	else
-		SetThink( OffThink );
+		SetThink( &CItemSlaveCollar::OffThink );
 	pev->nextthink = gpGlobals->time + 0.01;
 }
 
@@ -576,7 +576,7 @@ void	CFocusEmitter::Spawn( void )
 	SetBodygroup( 1, 2 );
 
 	SetSequence( seqEmitterClosed );
-	SetThink( EmitterThink );
+	SetThink( &CFocusEmitter::EmitterThink );
 	pev->nextthink = gpGlobals->time;
 
 	CBaseEntity *LasTarget;
@@ -666,7 +666,7 @@ void	CFocusEmitter::EmitterThink( void )
 		MESSAGE_END();
 		if ( m_fSequenceFinished )
 		{
-			SetThink( DyingThink );
+			SetThink( &CFocusEmitter::DyingThink );
 			pev->nextthink = gpGlobals->time + 0.1;
 		}
 		break;

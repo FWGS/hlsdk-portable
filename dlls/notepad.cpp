@@ -100,7 +100,7 @@ void CNotepad::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useT
 
 
 	pev->nextthink = pev->ltime + 0.25;
-	SetThink(Off);
+	SetThink(&CNotepad::Off);
 
 	// Time to recharge yet?
 
@@ -108,7 +108,7 @@ void CNotepad::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useT
 		return;
 
 	MESSAGE_BEGIN( MSG_ONE, gmsgNotepad, NULL, GetClassPtr((CBasePlayer *)pActivator->pev)->pev );
-		WRITE_STRING( (char[256])m_iszText  );
+		WRITE_STRING( m_iszText  );
 		WRITE_BYTE( m_iTitle );
 	MESSAGE_END();
 	
@@ -119,7 +119,7 @@ void CNotepad::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useT
 void CNotepad::Recharge(void)
 {
 	pev->frame = 0;			
-	SetThink( SUB_DoNothing );
+	SetThink( &CNotepad::SUB_DoNothing );
 }
 
 void CNotepad::Off(void)
@@ -129,8 +129,8 @@ void CNotepad::Off(void)
 	if ((!m_iJuice) &&  ( ( m_iReactivate = g_pGameRules->FlHealthChargerRechargeTime() ) > 0) )
 	{
 		pev->nextthink = pev->ltime + m_iReactivate;
-		SetThink(Recharge);
+		SetThink(&CNotepad::Recharge);
 	}
 	else
-		SetThink( SUB_DoNothing );
+		SetThink( &CNotepad::SUB_DoNothing );
 }

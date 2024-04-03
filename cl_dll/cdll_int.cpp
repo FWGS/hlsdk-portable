@@ -311,14 +311,6 @@ redraw the HUD.
 
 int DLLEXPORT HUD_Redraw( float time, int intermission )
 {
-	// check if we are in OpenGl mode
-    if (IEngineStudio.IsHardware() == 1)
-	{
-  	    //RenderScreenGlow(); // SCREEN GLOW
-		if (gHUD.m_iCamMode == CAM_ON)
-			RenderCameraEffect();
-	}
-    
 	gHUD.Redraw( time, intermission );
 
 	return 1;

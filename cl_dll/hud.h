@@ -705,7 +705,7 @@ public:
 	int  _cdecl MsgFunc_Concuss( const char *pszName, int iSize, void *pbuf );
 	int  _cdecl MsgFunc_LensFlare( const char *pszName, int iSize, void *pbuf );
 	int  _cdecl MsgFunc_AimFrame( const char *pszName, int iSize, void *pbuf );
-	int  _cdecl MsgFunc_Camera( const char *pszName, int iSize, void *pbuf );
+	void  _cdecl MsgFunc_Camera( const char *pszName, int iSize, void *pbuf );
 	int  _cdecl MsgFunc_ChangePlayer( const char *pszName, int iSize, void *pbuf );
 
 	// Screen information

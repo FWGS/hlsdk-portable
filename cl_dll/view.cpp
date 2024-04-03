@@ -424,12 +424,14 @@ void V_CalcNormalRefdef( struct ref_params_s *pparams )
 	cl_entity_t *pwater;
 
 	// SKY START
-	static struct model_t *savedviewmodel;
+	static model_t *savedviewmodel;
 
 	//LRC - if this is the second pass through, then we've just drawn the sky, and now we're setting up the normal view.
 	if( pparams->nextView == 1 )
 	{
-		GrabCameraTexture();
+		// a1ba: as whole custom rendering code is commented out in original
+		// it wasn't merged here
+		// GrabCameraTexture();
 		view = gEngfuncs.GetViewModel();
 		view->model = savedviewmodel;
 		pparams->viewangles[0] = v_angles.x;

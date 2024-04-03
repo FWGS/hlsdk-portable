@@ -93,7 +93,7 @@ void CEyeScanner::Spawn( void )
 	UTIL_SetSize( pev, Vector(-8,-8,0), Vector(8,8,32));
 	SetActivity( ACT_CROUCHIDLE );
 
-	SetThink ( ScannerThink );
+	SetThink ( &CEyeScanner::ScannerThink );
 	pev->nextthink = gpGlobals->time + 0.1;
 	//pev->frame = RANDOM_FLOAT(0,255);
 }
@@ -196,7 +196,7 @@ void CEyeScanner :: Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE
 	m_iCheckLoop = 0;
 	m_iCheckFrame = 1;
 	m_bState = FALSE;
-	SetThink( UseThink );
+	SetThink( &CEyeScanner::UseThink );
 	pev->nextthink = gpGlobals->time + 1.5;
 }
 
@@ -219,7 +219,7 @@ void CEyeScanner :: UseThink( void )
 			EMIT_SOUND( ENT(pev), CHAN_ITEM, sndScannerDeny, 0.85, ATTN_NORM );
 		}
 
-		SetThink( ScannerThink );
+		SetThink( &CEyeScanner::ScannerThink );
 		pev->skin = 0;
 		return;
 	}

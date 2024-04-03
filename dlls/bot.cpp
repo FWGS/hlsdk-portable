@@ -63,11 +63,11 @@ BOOL skin_used[MAX_SKINS] = {
    FALSE };
 
 // store the names of the models...
-char *bot_skins[MAX_SKINS] = {
+const char *bot_skins[MAX_SKINS] = {
    "ginacol", "player/dm_slave/dm_slave" };
 
 // store the player names for each of the models...
-char *bot_names[MAX_SKINS] = {
+const char *bot_names[MAX_SKINS] = {
    "Colette", "R-4913" };
 
 // sounds for TakeDamage speaking effects...
@@ -96,13 +96,13 @@ inline char *GET_INFOBUFFER( edict_t *e )
    return (*g_engfuncs.pfnGetInfoKeyBuffer)( e );
 }
 
-inline char *GET_INFO_KEY_VALUE( char *infobuffer, char *key )
+inline char *GET_INFO_KEY_VALUE( char *infobuffer, const char *key )
 {
    return (g_engfuncs.pfnInfoKeyValue( infobuffer, key ));
 }
 
 inline void SET_CLIENT_KEY_VALUE( int clientIndex, char *infobuffer,
-                                  char *key, char *value )
+                                  const char *key, const char *value )
 {
    (*g_engfuncs.pfnSetClientKeyValue)( clientIndex, infobuffer, key, value );
 }

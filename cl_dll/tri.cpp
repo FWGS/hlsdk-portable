@@ -5,8 +5,6 @@
 // $NoKeywords: $
 //=============================================================================
 
-#include <windows.h>
-//#include <gl/gl.h>
 #include "hud.h"
 #include "cl_util.h"
 

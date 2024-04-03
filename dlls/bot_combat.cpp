@@ -113,7 +113,7 @@ ammo_check_t ammo_check[] = {
 
 typedef struct
 {
-	char *enemy_name;
+	const char *enemy_name;
 	byte enemy_id;
 	byte preferred_weapons_id[3];
 } enemy_weapon_check_t;

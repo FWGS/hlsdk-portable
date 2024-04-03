@@ -276,7 +276,7 @@ void CFuncSpriteTrain:: Next( void )
 				}
 			}
 		}
-		SetThink( Next );
+		SetThink( &CFuncSpriteTrain::Next );
 		NextThink( pev->ltime + time, TRUE );
 	}
 	else	// end of path, stop
@@ -297,7 +297,7 @@ void CFuncSpriteTrain:: Next( void )
 			// no, how long to get there?
 			time = distance / m_oldSpeed;
 			pev->velocity = pev->velocity * (m_oldSpeed / distance);
-			SetThink( DeadEnd );
+			SetThink( &CFuncSpriteTrain::DeadEnd );
 			NextThink( pev->ltime + time, FALSE );
 		}
 		else
@@ -418,7 +418,7 @@ void  CFuncSpriteTrain :: Find( void )
 		pev->angles.x = 0;
     UTIL_SetOrigin( pev, nextPos );
 	NextThink( pev->ltime + 0.1, FALSE );
-	SetThink( Next );
+	SetThink( &CFuncSpriteTrain::Next );
 	pev->speed = m_startSpeed;
 }
 
@@ -466,14 +466,14 @@ void CFuncSpriteTrain :: NearestPath( void )
 	if ( pev->speed != 0 )
 	{
 		NextThink( pev->ltime + 0.1, FALSE );
-		SetThink( Next );
+		SetThink( &CFuncSpriteTrain::Next );
 	}
 }
 
 void CFuncSpriteTrain ::OverrideReset( void )
 {
 	NextThink( pev->ltime + 0.1, FALSE );
-	SetThink( NearestPath );
+	SetThink( &CFuncSpriteTrain::NearestPath );
 }
 
 void CFuncSpriteTrain ::Animate( float frames )
@@ -518,7 +518,7 @@ void CFuncSpriteTrain :: Spawn( void )
 	m_maxFrame = (float) MODEL_FRAMES( pev->modelindex ) - 1;
 
 	NextThink( pev->ltime + 0.1, FALSE );
-	SetThink( Find );
+	SetThink( &CFuncSpriteTrain::Find );
 }
 
 void CFuncSpriteTrain :: Precache( void )

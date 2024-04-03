@@ -42,7 +42,7 @@
 // START BOT
 #include "bot.h"
 
-void BotCreate(const char *skin, const char *name, const char skill);
+void BotCreate(const char *skin, const char *name, const char *skill);
 extern int f_Observer;	// flag for observer mode
 extern int f_botskill;	// default bot skill level
 extern int f_botdontshoot;	// flag to disable targeting other ots
@@ -1101,7 +1101,7 @@ void StartFrame( void )
 			// respawn 1 bot then wait a while (otherwise engine crashes)
 			BotCreate(bot_respawn[index].skin,
 					  bot_respawn[index].name,
-			 bot_respawn[index].skill);
+					  bot_respawn[index].skill);
 
 			respawn_time = gpGlobals->time + 1.0;  // set next respawn time
 		}

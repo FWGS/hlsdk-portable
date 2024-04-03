@@ -37,7 +37,7 @@ int CHudMessage::Init( void )
 	HOOK_MESSAGE( HudText );
 	HOOK_MESSAGE( GameTitle );
 
-	iFlags |= HUD_ALIEN;
+	m_iFlags |= HUD_ALIEN;
 
 	gHUD.AddHudElem( this );
 

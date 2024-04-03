@@ -1,0 +1,21 @@
+How to play
+Single player game
+Decay doesn't have usual single player mode as Half-Life has - it creates local LAN server instead and adds controllable bot (switch with "G" button) as second player. So to start playing "singleplayer" Decay you should use "Play Decay" menu and start server for "dy_accident1" map. Bot doesn’t have any clever AI, it can merely protect itself, so you have to use the player switching frequently.
+Be aware that you can't choose any other map from the start - they all are locked by default, as in original PlayStation(r)2 version of the game, and are opened as you progress through the game. 
+The other important note is that Decay doesn't allow any game saves (as original game) so if you are killed, the mission is automatically restarted. The only saved info is your progress through the levels and stats, which is done automatically upon mission completion. You can view your stats either by opening decay\manual\stats.xml or using shortcut in Decay’s Start Menu folder.
+Internet game - details for how to set up server
+Half-Life: Decay is a 2 person game and you can play not only with bot but with your friend. You can easily set up home LAN server and your friend will be able to join the game immediately, but with the Internet game it's all a bit other. The only way to do this is to have one of the 2 people host the server.
+1.	Go to tools, and download dedicated server ( under the tools tab in steam). It's only like 20 mb. 
+2.	COPY your Decay folder (from your Half-Life folder under you SteamApps folder). example - " C:\program files\SteamApps\[YOURACCOUNT]\half-life\decay" into the dedicated server folder. example- " C:\program files\SteamApps\[YOURACCOUNT]\dedicated server\half-life\decay" 
+3.	Open dedicated server, and you'll get a GUI menu. Change the values as follows 
+A.	Open the top dropdown box and make the game Decay 
+B.	The server name can be whatever you want it to be 
+C.	Map can be whatever, you can always change it in game 
+D.	Make sure the network is set to internet, or no one can join your game 
+E.	Make sure Max players is 3. no more, no less ( VERY IMPORTANT ). 
+F.	UDP port - 27015 is fine, don’t change it unless you know what you are doing ( there is no need to change it what so ever ). 
+G.	RCON Password- you have to have one, but it can be anything ( its the password that controls the server). 
+H.	Valve Anti Cheat should be selected, but it doesn’t need to be. 
+4.	After you hit start server, the game will be up 
+5.	To join the game, start up decay, and look for the server, BUT don’t look for it under the internet tab, it will be under the LAN tab for you, but everyone else will see it under Internet 
+6.	Join in and have fun 

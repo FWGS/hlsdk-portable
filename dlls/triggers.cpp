@@ -30,7 +30,9 @@
 #include "shake.h"			// trigger_enddecay fading constants
 #include "effects.h"		// env_render can use instance of CEnvMirroredLaser
 #include "triggers.h"
+#if XASH_WIN32 // a1ba: bruh
 #include "shellapi.h"
+#endif
 
 #define	SF_TRIGGER_PUSH_START_OFF	2//spawnflag that makes trigger_push spawn turned OFF
 #define SF_TRIGGER_HURT_TARGETONCE	1// Only fire hurt target once
@@ -617,7 +619,7 @@ void CMultiManager::ManagerThink( void )
 		if ( pev->spawnflags & SF_MM_KILLTARGETS )
 		{
 	        CBaseEntity *pEntity = NULL;
-			while (pEntity = UTIL_FindEntityByTargetname(pEntity, STRING( m_iTargetName[ m_index ] )))
+			while ((pEntity = UTIL_FindEntityByTargetname(pEntity, STRING( m_iTargetName[ m_index ] ))))
 			{
 				//ALERT( at_console, "Killing %s...\n", STRING( m_iTargetName[ m_index ] ) );
 				UTIL_Remove( pEntity );
@@ -1906,7 +1908,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 Vyacheslav Dzhura: 8/9/2008
 DONE: COMMENTED - EXPERIMENTAL!!!!!!!!
 */
-	if ( g_pGameRules->IsCoOp )
+	if ( g_pGameRules->IsCoOp( ))
 	{
 		char cmd[128];
 		sprintf( cmd, "changelevel %s %s\n", st_szNextMap, st_szNextSpot );
@@ -2409,8 +2411,10 @@ void CTriggerEndSection::EndSectionUse( CBaseEntity *pActivator, CBaseEntity *pC
 	for( i = 0; i < strlen( szFilename2 ); i++)
 		if ( szFilename2[i] == '/' ) szFilename2[i] = '\\';
 
+#if XASH_WIN32 // a1ba: BRUH
 	if (!IS_DEDICATED_SERVER())
 	  ShellExecute( GetActiveWindow(), "open", "iexplore", szFilename, szFilename2, SW_MAXIMIZE);
+#endif // XASH_WIN32
 
 	// Only save on clients
 	if( pActivator && !pActivator->IsNetClient() )
@@ -2891,11 +2895,11 @@ void CTriggerEndDecay::Spawn( void )
 
 	InitTrigger();
 
-	SetThink( SUB_DoNothing );
-	SetUse ( EndDecayUse );
+	SetThink( &CTriggerEndDecay::SUB_DoNothing );
+	SetUse ( &CTriggerEndDecay::EndDecayUse );
 	// If it is a "use only" trigger, then don't set the touch function.
 	if ( ! (pev->spawnflags & SF_ENDSECTION_USEONLY) )
-		SetTouch( EndDecayTouch );
+		SetTouch( &CTriggerEndDecay::EndDecayTouch );
 }
 /*
 
@@ -3002,7 +3006,7 @@ void CTriggerEndDecay::EndDecayUse( CBaseEntity *pActivator, CBaseEntity *pCalle
 	UTIL_ShowMessageAll( STRING(pev->message) );
 
 	pev->nextthink = gpGlobals->time + 7;
-	SetThink( EndDecayThink );
+	SetThink( &CTriggerEndDecay::EndDecayThink );
 }
 
 void CTriggerEndDecay::EndDecayThink( void )

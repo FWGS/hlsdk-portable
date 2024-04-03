@@ -77,11 +77,13 @@ set (CLDLL_SOURCES
 	../dlls/squeakgrenade.cpp
 	../dlls/tripmine.cpp
 	../dlls/glock.cpp
+	../dlls/vorti.cpp
 	ev_hldm.cpp
 	hl/hl_baseentity.cpp
 	hl/hl_events.cpp
 	hl/hl_objects.cpp
 	hl/hl_weapons.cpp
+	aliencrosshair.cpp
 	ammo.cpp
 	ammo_secondary.cpp
 	ammohistory.cpp
@@ -132,12 +134,14 @@ if (USE_VGUI)
 		vgui_ConsolePanel.cpp
 		vgui_ControlConfigPanel.cpp
 		vgui_CustomObjects.cpp
+		vgui_DecaySparePlayer.cpp
 		vgui_MOTDWindow.cpp
 		vgui_SchemeManager.cpp
 		vgui_ScorePanel.cpp
 		vgui_TeamFortressViewport.cpp
 		vgui_SpectatorPanel.cpp
 		vgui_teammenu.cpp
+		vgui_notepad.cpp
 		voice_status.cpp
 		../game_shared/vgui_checkbutton2.cpp
 		../game_shared/vgui_grid.cpp

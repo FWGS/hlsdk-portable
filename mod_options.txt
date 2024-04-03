@@ -11,7 +11,7 @@ SATCHEL_OLD_BEHAVIOUR=OFF # Old pre-HL 25th satchel's behaviour
 OEM_BUILD=OFF # OEM Build
 HLDEMO_BUILD=OFF # Demo Build
 
-GAMEDIR=valve # Gamedir path
+GAMEDIR=decay # Gamedir path
 SERVER_INSTALL_DIR=dlls # Where put server dll
 CLIENT_INSTALL_DIR=cl_dlls # Where put client dll 
-SERVER_LIBRARY_NAME=hl # Library name for PC platforms
+SERVER_LIBRARY_NAME=decay # Library name for PC platforms

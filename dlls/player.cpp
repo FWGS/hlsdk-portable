@@ -189,7 +189,15 @@ int gmsgSetFOV = 0;
 int gmsgShowMenu = 0;
 int gmsgGeigerRange = 0;
 int gmsgTeamNames = 0;
-
+int gmsgLensFlare = 0;
+int gmsgAimFrame = 0;
+int gmsgNotepad = 0;
+int gmsgChangeMode = 0;
+int gmsgCamera = 0;
+int gmsgChangePlayer = 0;
+int gmsgSparePlayer = 0;
+int gmsgAlienState = 0;
+int gmsgUpdateDecayPlayerName = 0;
 int gmsgStatusText = 0;
 int gmsgStatusValue = 0;
 
@@ -926,7 +934,7 @@ void CBasePlayer::PackAllItems( void )
 	pWeaponBox->pev->angles.x = 0;// don't let weaponbox tilt.
 	pWeaponBox->pev->angles.z = 0;
 
-	pWeaponBox->SetThink( CWeaponBox::Kill );
+	pWeaponBox->SetThink( &CWeaponBox::Kill );
 	pWeaponBox->pev->nextthink = gpGlobals->time + 120;
 
 // back these two lists up to their first elements
@@ -3049,7 +3057,7 @@ inline char *GET_INFOBUFFER( edict_t *e )
 }
 
 inline void SET_CLIENT_KEY_VALUE( int clientIndex, char *infobuffer,
-                                  char *key, char *value )
+                                  const char *key, const char *value )
 {
 	(*g_engfuncs.pfnSetClientKeyValue)( clientIndex, infobuffer, key, value );
 }
@@ -3224,7 +3232,7 @@ void CBasePlayer::Spawn( void )
 	{
 		GiveNamedItem( "item_suit" );
 
-		while ( pWeaponEntity = UTIL_FindEntityByClassname( pWeaponEntity, "game_player_equip" ))
+		while(( pWeaponEntity = UTIL_FindEntityByClassname( pWeaponEntity, "game_player_equip" )))
 		{
 			pWeaponEntity->Touch( this );
 		}
@@ -3700,16 +3708,6 @@ void CBasePlayer::ForceClientDllUpdate( void )
 	m_fKnownItem = FALSE;    // Force weaponinit messages.
 	m_fInitHUD = TRUE;		// Force HUD gmsgResetHUD message
 	memset( m_rgAmmoLast, 0, sizeof( m_rgAmmoLast )); // a1ba: Force update AmmoX
-
-int gmsgLensFlare = 0;
-int gmsgAimFrame = 0;
-int gmsgNotepad = 0;
-int gmsgChangeMode = 0;
-int gmsgCamera = 0;
-int gmsgChangePlayer = 0;
-int gmsgSparePlayer = 0;
-int gmsgAlienState = 0;
-int gmsgUpdateDecayPlayerName = 0;
 
 	// Now force all the necessary messages
 	//  to be sent.

@@ -131,7 +131,7 @@ void CVortiHands::PrimaryAttack()
 
 	if (! Swing( 1 ))
 	{
-		SetThink( SwingAgain );
+		SetThink( &CVortiHands::SwingAgain );
 		pev->nextthink = gpGlobals->time + 0.1;
 	}
 }
@@ -294,7 +294,7 @@ int CVortiHands::Swing( int fFirst )
 #endif
 		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.25;
 		
-		SetThink( Smack );
+		SetThink( &CVortiHands::Smack );
 		pev->nextthink = UTIL_WeaponTimeBase() + 0.2;
 
 		

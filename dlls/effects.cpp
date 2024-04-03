@@ -2596,7 +2596,7 @@ void CEnvDLight::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE us
 
 	if (pev->spawnflags & SF_DLIGHT_ONLYONCE)
 	{
-		SetThink( SUB_Remove );
+		SetThink( &CEnvDLight::SUB_Remove );
 		pev->nextthink = 0;
 	}
 }
@@ -2829,7 +2829,7 @@ void CEnvWarpBall::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE 
 			pBeam[i]->SetBrightness( 150 );
 			pBeam[i]->SetWidth( 18 );
 			pBeam[i]->SetScrollRate( 35 );
-			pBeam[i]->SetThink( SUB_Remove );
+			pBeam[i]->SetThink( &CBeam::SUB_Remove );
 			pBeam[i]->pev->nextthink = gpGlobals->time + 1; //was 0.1
 		}
 	}
@@ -3038,7 +3038,7 @@ void CEnvShockwave::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE
 	
 	if (!(pev->spawnflags & SF_SHOCKWAVE_REPEATABLE))
 	{
-		SetThink( SUB_Remove );
+		SetThink( &CEnvShockwave::SUB_Remove );
 		pev->nextthink = 0;
 	}
 }
@@ -3082,7 +3082,7 @@ void CEnvRTCamera :: Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYP
 		bActive = !bActive;
 		if (bActive)
 		{
-			SetThink( ThinkOn );
+			SetThink( &CEnvRTCamera::ThinkOn );
 			pev->nextthink = gpGlobals->time + 1.0;
 		} else
 		{

@@ -455,7 +455,7 @@ void CBasePlayerItem::FallInit( void )
 	{
 		pev->solid = SOLID_TRIGGER;
 		UTIL_SetOrigin( pev, pev->origin );// link into world.
-		SetTouch (DefaultTouch);
+		SetTouch (&CBasePlayerItem::DefaultTouch);
 		SetThink (NULL);
 		return;
 	}
@@ -858,7 +858,7 @@ int CBasePlayerWeapon::UpdateClientData( CBasePlayer *pPlayer )
 			m_pNext->UpdateClientData( pPlayer );
 		else
 		{
-			ALERT( at_console, "'%s'->m_pNext sends to invalid class!\n", this->pszName );
+			ALERT( at_console, "'%s'->m_pNext sends to invalid class!\n", this->pszName() );
 			return 0;
 		}
 	}
