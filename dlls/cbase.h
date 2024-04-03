@@ -93,6 +93,8 @@ typedef void(CBaseEntity::*BASEPTR)( void );
 typedef void(CBaseEntity::*ENTITYFUNCPTR)( CBaseEntity *pOther );
 typedef void(CBaseEntity::*USEPTR)( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
 
+extern BOOL g_startSuit;
+
 // For CLASSIFY
 #define	CLASS_NONE			0
 #define CLASS_MACHINE			1
@@ -118,6 +120,7 @@ class CBasePlayerItem;
 class CSquadMonster;
 
 #define	SF_NORESPAWN	( 1 << 30 )// !!!set this bit on guns and stuff that should never respawn.
+#define SF_SPECIFICPLAYER	256  	// Decay's flag which indicates that trigger should check player activator's index
 
 //
 // EHANDLE. Safe way to point to CBaseEntities who may die between frames
@@ -414,7 +417,7 @@ void PlayLockSounds( entvars_t *pev, locksound_t *pls, int flocked, int fbutton 
 // MultiSouce
 //
 
-#define MAX_MULTI_TARGETS	16 // maximum number of targets a single multi_manager entity may be assigned.
+#define MAX_MULTI_TARGETS	32 // was 16 - maximum number of targets a single multi_manager entity may be assigned.
 #define MS_MAX_TARGETS		32
 
 class CMultiSource : public CPointEntity
@@ -522,6 +525,8 @@ public:
 	void (CBaseToggle::*m_pfnCallWhenMoveDone)(void);
 	Vector				m_vecFinalDest;
 	Vector				m_vecFinalAngle;
+
+	int					m_iPlayerIndex;			// Decay's player index
 
 	int					m_bitsDamageInflict;	// DMG_ damage type that the door or tigger does
 
@@ -797,5 +802,7 @@ public:
 	void Spawn( void );
 	void Precache( void );
 	void KeyValue( KeyValueData *pkvd );
+
+	bool m_bSlaveCoop;
 };
 #endif

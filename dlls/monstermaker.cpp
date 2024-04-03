@@ -72,6 +72,8 @@ TYPEDESCRIPTION	CMonsterMaker::m_SaveData[] =
 	DEFINE_FIELD( CMonsterMaker, m_iMaxLiveChildren, FIELD_INTEGER ),
 	DEFINE_FIELD( CMonsterMaker, m_fActive, FIELD_BOOLEAN ),
 	DEFINE_FIELD( CMonsterMaker, m_fFadeChildren, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CMonsterMaker, m_fIsWarpBall, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CMonsterMaker, m_cTotalMonstersCount, FIELD_INTEGER ),
 };
 
 IMPLEMENT_SAVERESTORE( CMonsterMaker, CBaseMonster )
@@ -93,13 +95,32 @@ void CMonsterMaker::KeyValue( KeyValueData *pkvd )
 		m_iszMonsterClassname = ALLOC_STRING( pkvd->szValue );
 		pkvd->fHandled = TRUE;
 	}
+	else if ( FStrEq(pkvd->szKeyName, "warptarget") || FStrEq(pkvd->szKeyName, "makertarget") || FStrEq(pkvd->szKeyName, "warp_target") )
+	{
+		m_iszWarpTarget = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if ( FStrEq(pkvd->szKeyName, "monsterspawnflags") ) 	// monsterspawnflags
+	{
+		m_iChildrenSpawnflags = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	// radius
+	// damage_delay
 	else
 		CBaseMonster::KeyValue( pkvd );
 }
 
 void CMonsterMaker::Spawn()
 {
+	//ALERT( at_console, "CMonsterMaker::Spawn\n");
+	m_fIsWarpBall = !strcmp(STRING(pev->classname), "env_warpball");
+
 	pev->solid = SOLID_NOT;
+
+	// for WarpBall to function correctly - it's spawnflag is another then same in monstermaker
+	if ( m_fIsWarpBall && FBitSet ( pev->spawnflags, SF_WARPBALL_ONCE )) // flag bit 1
+		SetBits ( pev->spawnflags, SF_MONSTERMAKER_FIREONCE );			 // flag bit 16
 
 	m_cLiveChildren = 0;
 	Precache();
@@ -149,9 +170,20 @@ void CMonsterMaker::Spawn()
 
 void CMonsterMaker::Precache( void )
 {
+	//ALERT( at_console, "%s::Precache\n", STRING(pev->classname));
+
 	CBaseMonster::Precache();
 
+	if (m_fIsWarpBall)
+	{
+		m_flDelay = 5;
+		UTIL_PrecacheOther( "effect_warpball" );
+	}
+
+	if (FStringNull( m_iszMonsterClassname ) != true)
 	UTIL_PrecacheOther( STRING( m_iszMonsterClassname ) );
+	else
+		ALERT( at_console, "CMonsterMaker without a children name!\n");
 }
 
 //=========================================================
@@ -206,8 +238,9 @@ void CMonsterMaker::MakeMonster( void )
 	}
 
 	pevCreate = VARS( pent );
-	pevCreate->origin = pev->origin;
-	pevCreate->angles = pev->angles;
+	pevCreate->origin = DesiredOrigin;
+	pevCreate->angles = DesiredAngles;
+	pevCreate->spawnflags = m_iChildrenSpawnflags;
 	SetBits( pevCreate->spawnflags, SF_MONSTER_FALL_TO_GROUND );
 
 	// Children hit monsterclip brushes
@@ -228,9 +261,20 @@ void CMonsterMaker::MakeMonster( void )
 
 	if( m_cNumMonsters == 0 )
 	{
-		// Disable this forever.  Don't kill it because it still gets death notices
+		// FIXME: do we need this comment? "Disable this forever.  Don't kill it because it still gets death notices"
+		//m_cNumMonsters = m_cTotalMonstersCount;
+		//m_fActive = FALSE;
 		SetThink( NULL );
 		SetUse( NULL );
+	}
+
+	if ( !FBitSet ( pev->spawnflags, SF_MONSTERMAKER_CYCLIC ) )
+	{
+		if ( FBitSet ( pev->spawnflags, SF_MONSTERMAKER_FIREONCE ) )
+		{
+			//ALERT( at_console, "Removing MakeMonster\n");
+			UTIL_Remove( this );
+		}
 	}
 }
 
@@ -270,6 +314,8 @@ void CMonsterMaker::ToggleUse( CBaseEntity *pActivator, CBaseEntity *pCaller, US
 //=========================================================
 void CMonsterMaker::MakerThink( void )
 {
+	//ALERT( at_console, "CMonsterMaker::MakerThink\n");
+
 	pev->nextthink = gpGlobals->time + m_flDelay;
 
 	MakeMonster();

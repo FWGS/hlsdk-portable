@@ -579,6 +579,9 @@ void CBaseMonster::Killed( entvars_t *pevAttacker, int iGib )
 	// Make sure this condition is fired too (TakeDamage breaks out before this happens on death)
 	SetConditions( bits_COND_LIGHT_DAMAGE );
 
+	// DECAY STATS: tell game rules about killed monster
+	g_pGameRules->MonsterKilled( pevAttacker, &this->edict()->v );
+	
 	// tell owner ( if any ) that we're dead.This is mostly for MonsterMaker functionality.
 	CBaseEntity *pOwner = CBaseEntity::Instance( pev->owner );
 	if( pOwner )

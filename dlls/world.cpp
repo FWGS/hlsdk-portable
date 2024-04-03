@@ -41,6 +41,8 @@ extern CBaseEntity				*g_pLastSpawn;
 DLL_GLOBAL edict_t				*g_pBodyQueueHead;
 CGlobalState					gGlobalState;
 extern DLL_GLOBAL int				gDisplayTitle;
+bool bDecay = false;
+bool bSlaveCoop = false;
 
 extern void W_Precache( void );
 
@@ -477,6 +479,23 @@ void CWorld::Precache( void )
 
 	g_pGameRules = InstallGameRules();
 
+	if (bDecay)
+	{
+		if (m_bSlaveCoop) // if was initialized using KeyValue call
+			bSlaveCoop = m_bSlaveCoop;
+		else			  // otherwise NULL, thus no alien mode
+			bSlaveCoop = false;
+
+		CDecayRules *g_pDecayRules;
+		g_pDecayRules = (CDecayRules*)g_pGameRules;
+		g_pDecayRules->SetAlienMode( bSlaveCoop );
+
+		CBaseEntity *pEntity;
+		pEntity = CBaseEntity::Create( "trigger_autobot", g_vecZero, g_vecZero, edict() );
+		if ( !pEntity )
+			ALERT( at_aiconsole, "Autobot entity was not created!\n");
+	}
+
 	//!!!UNDONE why is there so much Spawn code in the Precache function? I'll just keep it here 
 
 	///!!!LATER - do we want a sound ent in deathmatch? (sjb)
@@ -710,6 +729,30 @@ void CWorld::KeyValue( KeyValueData *pkvd )
 		if( atoi( pkvd->szValue ) )
 		{
 			pev->spawnflags |= SF_WORLD_FORCETEAM;
+		}
+		pkvd->fHandled = TRUE;
+	}
+	else if ( FStrEq(pkvd->szKeyName, "startsuit") )
+	{
+		if ( atoi(pkvd->szValue) )
+		{
+			g_startSuit = atoi(pkvd->szValue);
+		}
+		pkvd->fHandled = TRUE;
+	}
+	else if ( FStrEq(pkvd->szKeyName, "decay") )
+	{
+		if ( atoi(pkvd->szValue) )
+		{
+			bDecay = atoi(pkvd->szValue);
+		}
+		pkvd->fHandled = TRUE;
+	}
+	else if ( FStrEq(pkvd->szKeyName, "slavecoop") )
+	{
+		if ( atoi(pkvd->szValue) )
+		{
+			m_bSlaveCoop = atoi(pkvd->szValue);
 		}
 		pkvd->fHandled = TRUE;
 	}

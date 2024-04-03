@@ -53,6 +53,8 @@ extern cvar_t allow_spectators;
 extern cvar_t multibyte_only;
 
 extern int g_teamplay;
+BOOL botadded = false;
+extern bool bSlaveCoop;
 
 void LinkUserMessages( void );
 
@@ -82,6 +84,43 @@ called when a player connects to a server
 */
 BOOL ClientConnect( edict_t *pEntity, const char *pszName, const char *pszAddress, char szRejectReason[128] )
 {
+    int i;
+    int count = 0;
+
+    // check if this is NOT a bot joining the server...
+    if (strcmp(pszAddress, "127.0.0.1") != 0)
+    {
+       // don't try to add bots for 30 seconds, give client time to get added
+       bot_check_time = gpGlobals->time + 30.0;
+
+       for (i=0; i < 32; i++)
+       {
+          if (bot_respawn[i].is_used)  // count the number of bots in use
+             count++;
+       }
+
+       // if there are currently more than the minimum number of bots running
+       // then kick one of the bots off the server...
+       if ((min_bots != 0) && (count > min_bots))
+       {
+          for (i=0; i < 32; i++)
+          {
+             if (bot_respawn[i].is_used)  // is this slot used?
+             {
+                char cmd[40];
+
+                sprintf(cmd, "kick \"%s\"\n", bot_respawn[i].name);
+
+                bot_respawn[i].state = BOT_IDLE;
+
+                SERVER_COMMAND(cmd);  // kick the bot using (kick "name")
+
+                break;
+             }
+          }
+       }
+    }
+
 	return g_pGameRules->ClientConnected( pEntity, pszName, pszAddress, szRejectReason );
 
 // a client connecting during an intermission can cause problems
@@ -690,11 +729,14 @@ void ClientUserInfoChanged( edict_t *pEntity, char *infobuffer )
 		}
 		else
 		{
-			UTIL_LogPrintf( "\"%s<%i><%s><%i>\" changed name to \"%s\"\n", 
+			// TODO: crashes here when changing name during gameplay
+			UTIL_LogPrintf( "\"%s\" changed name to \"%s\"\n", 
+			//UTIL_LogPrintf( "\"%s<%i><%s><%s>\" changed name to \"%s\"\n", 
 				STRING( pEntity->v.netname ), 
-				GETPLAYERUSERID( pEntity ), 
-				GETPLAYERAUTHID( pEntity ),
-				GETPLAYERUSERID( pEntity ), 
+			//	GETPLAYERUSERID( pEntity ), 
+			//	GETPLAYERAUTHID( pEntity ),
+				//GETPLAYERUSERID( pEntity ), 
+			//	g_engfuncs.pfnInfoKeyValue( infobuffer, "model" ),
 				g_engfuncs.pfnInfoKeyValue( infobuffer, "name" ) );
 		}
 	}
@@ -947,7 +989,7 @@ const char *GetGameDescription()
 	if( g_pGameRules ) // this function may be called before the world has spawned, and the game rules initialized
 		return g_pGameRules->GetGameDescription();
 	else
-		return "Half-Life";
+		return "Decay";
 }
 
 /*

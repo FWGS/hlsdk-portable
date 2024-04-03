@@ -1969,6 +1969,15 @@ void PM_UnDuck( void )
 			newOrigin[i] += ( pmove->player_mins[1][i] - pmove->player_mins[0][i] );
 		}
 	}
+	*/
+	if ( pmove->onground != -1 && pmove->flags & FL_DUCKING && pmove->bInDuck == false)
+	{
+		for ( i = 0; i < 3; i++ )
+		{
+			newOrigin[i] += ( pmove->player_mins[1][i] - pmove->player_mins[0][i] );
+		}
+	}
+
 
 	trace = pmove->PM_PlayerTrace( newOrigin, newOrigin, PM_NORMAL, -1 );
 

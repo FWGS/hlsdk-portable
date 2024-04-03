@@ -25,6 +25,7 @@
 #define RGB_YELLOWISH 0x00FFA000 //255,160,0
 #define RGB_REDISH 0x00FF1010 //255,160,0
 #define RGB_GREENISH 0x0000A000 //0,160,0
+#define RGB_SILVERISH 0x00D4D4D4 //
 
 #include "wrect.h"
 #include "cl_dll.h"
@@ -58,6 +59,7 @@ typedef struct cvar_s cvar_t;
 
 #define HUD_ACTIVE	1
 #define HUD_INTERMISSION 2
+#define HUD_ALIEN 4
 
 #define MAX_PLAYER_NAME_LENGTH		32
 
@@ -424,6 +426,54 @@ private:
 //
 //-----------------------------------------------------
 //
+
+class CHudModeIcon: public CHudBase
+{
+public:
+	int Init( void );
+	int VidInit( void );
+	int Draw(float flTime);
+	void Reset( void );
+	int MsgFunc_ChangeMode(const char *pszName,  int iSize, void *pbuf );
+	
+private:
+	HSPRITE m_hSpriteStand;
+	HSPRITE m_hSpriteRun;
+	HSPRITE m_hSpriteCrouch;
+	HSPRITE m_hSpriteJump;
+	HSPRITE m_hActiveSprite;
+	
+	wrect_t *m_prcStand; 
+    wrect_t *m_prcRun;
+    wrect_t *m_prcCrouch;
+    wrect_t *m_prcJump;
+    wrect_t *m_prcActiveRect;
+
+	int	  m_fMode;
+};
+
+class CHudAlienCrosshair: public CHudBase
+{
+public:
+	int Init( void );
+	int VidInit( void );
+	int Draw(float flTime);
+	void Reset( void );
+	int MsgFunc_AlienState(const char *pszName,  int iSize, void *pbuf );
+	
+private:
+	HSPRITE m_hCrosshair[4];
+	wrect_t *m_prcCrosshair[4]; 
+
+    HSPRITE m_hActiveSprite;
+	wrect_t *m_prcActiveRect;
+
+	int	  m_iState;
+};
+
+//
+//-----------------------------------------------------
+//
 const int maxHUDMessages = 16;
 struct message_parms_t
 {
@@ -542,7 +592,16 @@ private:
 	int							m_iSpriteCountAllRes;
 	float						m_flMouseSensitivity;
 	int							m_iConcussionEffect; 
+    HSPRITE                 	m_hsprLens[9];//lens flare sprite data
+    HSPRITE	                    m_hsprFrame;
+	int                         m_iLensIndex;
+	int                         m_iFrameIndex;//index of entity to draw frame around
+	int                         m_iFrameKind; //frame hint index in names array
+	int                         m_iFrameSize;
+	const model_s               *pFrameTexture;//frame texture for tri_api
 
+    //vec3_t                      m_vAimFrameCoords; //for selection frame
+	//vec3_t                      m_vAimFrameMaxs;   //for selection frame
 public:
 	HSPRITE						m_hsprCursor;
 	float m_flTime;	   // the current client time
@@ -557,6 +616,17 @@ public:
 	int		m_iRes;
 	cvar_t  *m_pCvarStealMouse;
 	cvar_t	*m_pCvarDraw;
+	Vector  m_vecCamPos; // CAM
+	int     m_iCamMode; // CAM
+	unsigned long uColor;
+
+    // TEXTURES
+    unsigned int g_uiScreenTex;
+    unsigned int g_uiGlowTex;
+	unsigned int g_uiCameraTex;
+
+    vec3_t                      m_vAimFrameCoords; //for selection frame
+	vec3_t                      m_vAimFrameMaxs;   //for selection frame
 
 	int m_iFontHeight;
 	int DrawHudNumber( int x, int y, int iFlags, int iNumber, int r, int g, int b );
@@ -635,6 +705,7 @@ public:
 	int	m_iWeaponBits;
 	int	m_fPlayerDead;
 	int m_iIntermission;
+	bool m_bAlienMode;
 
 	// sprite indexes
 	int m_HUD_number_0;

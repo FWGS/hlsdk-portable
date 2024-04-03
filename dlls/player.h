@@ -226,7 +226,9 @@ public:
 	virtual int		Restore( CRestore &restore );
 	void RenewItems(void);
 	void PackDeadPlayerItems( void );
+	void PackAllItems( void );
 	void RemoveAllItems( BOOL removeSuit );
+	void SetDecayPlayerIndex( int Id );
 	BOOL SwitchWeapon( CBasePlayerItem *pWeapon );
 
 	// JOHN:  sends custom messages if player HUD data has changed  (eg health, ammo)
@@ -298,6 +300,7 @@ public:
 	void ResetAutoaim( void );
 	Vector GetAutoaimVector( float flDelta  );
 	Vector AutoaimDeflection( Vector &vecSrc, float flDist, float flDelta  );
+    void AutoaimFrame( Vector &vecSrc, float flDist, float flDelta  ); // Draw selection frame around objects
 
 	void ForceClientDllUpdate( void );  // Forces all client .dll specific data to be resent to client.
 
@@ -325,6 +328,7 @@ public:
 	void SetPrefsFromUserinfo( char *infobuffer );
 
 	float m_flNextChatTime;
+	int	m_iDecayId;  // Decay player index
 
 	int m_iAutoWepSwitch;
 

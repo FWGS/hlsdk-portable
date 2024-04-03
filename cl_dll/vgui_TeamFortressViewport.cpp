@@ -513,6 +513,8 @@ TeamFortressViewport::TeamFortressViewport( int x, int y, int wide, int tall ) :
 	m_pSpectatorPanel = NULL;
 	m_pCurrentMenu = NULL;
 	m_pCurrentCommandMenu = NULL;
+    m_pNotepad = NULL;
+	m_pSparePlayerWindow = NULL;
 
 	Initialize();
 	addInputSignal( new CViewPortInputHandler );
@@ -567,6 +569,8 @@ TeamFortressViewport::TeamFortressViewport( int x, int y, int wide, int tall ) :
 	App::getInstance()->setScheme( pScheme );
 
 	// VGUI MENUS
+	CreateNotepad();
+	CreateSparePlayerWindow();
 	CreateTeamMenu();
 	CreateClassMenu();
 	CreateSpectatorMenu();
@@ -617,6 +621,14 @@ void TeamFortressViewport::Initialize( void )
 	{
 		// Spectator menu doesn't need initializing
 		m_pSpectatorPanel->setVisible( false );
+	}
+	if (m_pNotepad)
+	{
+		m_pNotepad->Initialize();
+	}
+	if (m_pSparePlayerWindow)
+	{
+		m_pSparePlayerWindow->Initialize();
 	}
 
 	// Make sure all menus are hidden
@@ -1461,6 +1473,29 @@ CMenuPanel *TeamFortressViewport::CreateTextWindow( int iTextToShow )
 
 //================================================================
 // VGUI Menus
+void TeamFortressViewport::DisplayNotepad( char* szText, int iTitle )
+{
+	// Don't open window in demo playback
+	if ( gEngfuncs.pDemoAPI->IsPlayingback() )
+		return;
+
+	if (m_pCurrentMenu)
+	{
+		CMenuPanel *pMenu = m_pCurrentMenu;
+		while (pMenu != NULL)
+		{
+			if (pMenu->GetMenuID() == MENU_NOTEPAD )
+				return;
+			pMenu = pMenu->GetNextMenu();
+		}
+	}
+
+	strcpy(m_pNotepad->szText, szText);
+    sprintf(m_pNotepad->szTitle,"#NotepadHeader%i",iTitle);
+
+	ShowNotepad();
+}
+
 void TeamFortressViewport::ShowVGUIMenu( int iMenu )
 {
 	CMenuPanel *pNewMenu = NULL;
@@ -1513,6 +1548,10 @@ void TeamFortressViewport::ShowVGUIMenu( int iMenu )
 	case MENU_CLASS:
 		pNewMenu = ShowClassMenu();
 		break;
+	//case MENU_NOTEPAD:
+	//	m_pNotepad->Reset();
+	//	pNewMenu = m_pNotepad;
+	//	break;
 
 	default:
 		break;
@@ -1611,6 +1650,63 @@ void TeamFortressViewport::CreateTeamMenu()
 	m_pTeamMenu = new CTeamMenuPanel( 100, false, 0, 0, ScreenWidth, ScreenHeight );
 	m_pTeamMenu->setParent( this );
 	m_pTeamMenu->setVisible( false );
+}
+
+//======================================================================================
+// NOTEPAD
+//======================================================================================
+// Bring up the Notepad
+void TeamFortressViewport::ShowNotepad()
+{
+	if (m_pNotepad)
+	{
+		m_pNotepad->SetMenuID( MENU_NOTEPAD );
+		m_pNotepad->SetActive( true );
+		m_pNotepad->setParent( this );
+
+        m_pCurrentMenu = m_pNotepad;
+        m_pCurrentMenu->Reset();
+		m_pCurrentMenu->Open();
+	}
+	UpdateCursorState();
+}
+
+void TeamFortressViewport::ShowSparePlayerWindow()
+{
+	if (m_pSparePlayerWindow)
+	{
+		m_pSparePlayerWindow->SetMenuID( MENU_SPAREPLAYERWINDOW );
+		m_pSparePlayerWindow->SetActive( true );
+		m_pSparePlayerWindow->setParent( this );
+
+        m_pCurrentMenu = m_pSparePlayerWindow;
+        m_pCurrentMenu->Reset();
+		m_pCurrentMenu->Open();
+	}
+	UpdateCursorState();
+}
+
+bool TeamFortressViewport::IsNotepadVisible( void )
+{
+	if (m_pNotepad)
+		return m_pNotepad->isVisible();
+	
+	return false;
+}
+
+void TeamFortressViewport::CreateNotepad()
+{
+	// Create the panel
+	m_pNotepad = new CNotepad(100, false, 0, 0, ScreenWidth, ScreenHeight);
+	m_pNotepad->setParent( this );
+	m_pNotepad->setVisible( false );
+}
+
+void TeamFortressViewport::CreateSparePlayerWindow( void )
+{
+	m_pSparePlayerWindow = new CSparePlayerWindow(100, false, 0, 0, ScreenWidth, ScreenHeight);
+	m_pSparePlayerWindow->setParent( this );
+	m_pSparePlayerWindow->setVisible( false );
 }
 
 //======================================================================================
@@ -1986,6 +2082,33 @@ int TeamFortressViewport::MsgFunc_VGUIMenu( const char *pszName, int iSize, void
 
 	// Bring up the menu6
 	ShowVGUIMenu( iMenu );
+
+	return 1;
+}
+
+int TeamFortressViewport::MsgFunc_Notepad( const char *pszName, int iSize, void *pbuf )
+{
+	BEGIN_READ( pbuf, iSize );
+
+	char* szText;
+	int iTitle;
+	
+	szText = READ_STRING();
+	iTitle = READ_BYTE();
+
+	DisplayNotepad( szText, iTitle );
+
+	return 1;
+}
+
+int TeamFortressViewport::MsgFunc_SparePlayer( const char *pszName, int iSize, void *pbuf )
+{
+	BEGIN_READ( pbuf, iSize );
+
+	int iPlayerId;
+	
+	iPlayerId = READ_BYTE();
+	ShowSparePlayerWindow();
 
 	return 1;
 }

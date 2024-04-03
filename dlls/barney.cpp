@@ -36,9 +36,11 @@
 #define		BARNEY_AE_SHOOT		( 3 )
 #define		BARNEY_AE_HOLSTER	( 4 )
 
+#define GUN_GROUP	1
+
 #define	BARNEY_BODY_GUNHOLSTERED	0
-#define	BARNEY_BODY_GUNDRAWN		1
-#define BARNEY_BODY_GUNGONE		2
+#define	BARNEY_BODY_GUNDRAWN		1 * 3  // * 3 for Decay
+#define BARNEY_BODY_GUNGONE			2 * 3  // because of LODS
 
 class CBarney : public CTalkMonster
 {
@@ -406,7 +408,8 @@ void CBarney::Spawn()
 	m_flFieldOfView = VIEW_FIELD_WIDE; // NOTE: we need a wide field of view so npc will notice player and say hello
 	m_MonsterState = MONSTERSTATE_NONE;
 
-	pev->body = 0; // gun in holster
+	//pev->body			= 0; // gun in holster
+	SetBodygroup( GUN_GROUP, 0 );
 	m_fGunDrawn = FALSE;
 
 	m_afCapability = bits_CAP_HEAR | bits_CAP_TURN_HEAD | bits_CAP_DOORS_GROUP;

@@ -12,6 +12,11 @@
 *   without written permission from Valve LLC.
 *
 ****/
+/***
+*
+*	(C) 2008 Vyacheslav Dzhura
+*
+****/
 //
 //  hud_msg.cpp
 //

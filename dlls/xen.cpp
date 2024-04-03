@@ -278,7 +278,6 @@ void CXenTree::Spawn( void )
 	SET_MODEL( ENT( pev ), "models/tree.mdl" );
 	pev->movetype = MOVETYPE_NONE;
 	pev->solid = SOLID_BBOX;
-
 	pev->takedamage = DAMAGE_YES;
 
 	UTIL_SetSize( pev, Vector( -30, -30, 0 ), Vector( 30, 30, 188 ) );

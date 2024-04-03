@@ -94,6 +94,80 @@ void CHud::Think( void )
 	}
 }
 
+void ReturnFrameHint(char* szHint,int Id)
+{
+	switch(Id){
+	case 0:
+		sprintf(szHint,"Button");
+		break;
+	case 1:
+		sprintf(szHint,"Object");
+		break;
+	case 2:
+        sprintf(szHint,"Item");
+		break;
+	case 3:
+		sprintf(szHint,"File");
+		break;
+	case 4:
+		sprintf(szHint,"Documents");
+		break;
+    case 5:
+		sprintf(szHint,"Book");
+		break;
+	case 6:
+		sprintf(szHint,"Monitor");
+		break;
+	case 7:
+		sprintf(szHint,"Computer");
+		break;
+	case 8:
+		sprintf(szHint,"Compact Disc");
+		break;
+	case 9:
+		sprintf(szHint,"Extinguisher");
+		break;
+    case 10:
+		sprintf(szHint,"Security Card");
+		break;
+    case 11:
+		sprintf(szHint,"Key");
+		break;
+	case 12:
+		sprintf(szHint,"Syringe");
+		break;
+	case 13:
+		sprintf(szHint,"Cleansuit");
+		break;
+    case 14:
+		sprintf(szHint,"Wrench");
+		break;
+	case 15:
+        sprintf(szHint,"Retinal Scanner");
+		break;
+	case 16:
+		sprintf(szHint,"Health Charger");
+		break;
+	case 17:
+		sprintf(szHint,"HEV Charger");
+		break;
+	default:
+        sprintf(szHint,"Unknown");
+	}
+}
+
+void DrawFrameCorner(int x,int y,int u1,int u2,int u3,int u4,int v1,int v2,int v3,int v4)
+{
+	gEngfuncs.pTriAPI->TexCoord2f( u1, v1 );
+	gEngfuncs.pTriAPI->Vertex3f( x, y, 0.0 );
+	gEngfuncs.pTriAPI->TexCoord2f( u2, v2 );
+	gEngfuncs.pTriAPI->Vertex3f( x, y+g_iFrameSize, 0.0 );
+	gEngfuncs.pTriAPI->TexCoord2f( u3, v3 );
+	gEngfuncs.pTriAPI->Vertex3f(  x+g_iFrameSize, y+g_iFrameSize, 0.0 );
+	gEngfuncs.pTriAPI->TexCoord2f( u4, v4 );
+	gEngfuncs.pTriAPI->Vertex3f(  x+g_iFrameSize, y, 0.0  );
+}
+
 // Redraw
 // step through the local data,  placing the appropriate graphics & text as appropriate
 // returns 1 if they've changed, 0 otherwise
@@ -170,6 +244,12 @@ int CHud::Redraw( float flTime, int intermission )
 				if( pList->p->m_iFlags & HUD_INTERMISSION )
 					pList->p->Draw( flTime );
 			}
+			} else
+			{  // alien mode!!!
+				if ( pList->p->m_iFlags & HUD_ALIEN )
+					if ( (pList->p->m_iFlags & HUD_ACTIVE) && !(m_iHideHUDDisplay & HIDEHUD_ALL) )
+						pList->p->Draw( flTime );
+			}
 
 			pList = pList->pNext;
 		}
@@ -194,6 +274,137 @@ int CHud::Redraw( float flTime, int intermission )
 		i = grgLogoFrame[iFrame] - 1;
 
 		SPR_DrawAdditive( i, x, y, NULL );
+	}
+
+	// draw selection frame around entity
+	if (m_iFrameIndex !=0)
+	{
+        vec3_t v_center, v_maxs;
+		
+		gEngfuncs.pTriAPI->WorldToScreen(m_vAimFrameCoords,v_center);
+		gEngfuncs.pTriAPI->WorldToScreen(m_vAimFrameMaxs,v_maxs);
+		
+		v_center[0] = XPROJECT(v_center[0]);
+		v_center[1] = YPROJECT(v_center[1]);
+		v_center[2] = 0.0f;
+		v_maxs[0] = XPROJECT(v_maxs[0]);
+		v_maxs[1] = YPROJECT(v_maxs[1]);
+		v_maxs[2] = 0.0f;
+
+		g_iFrameSize = m_iFrameSize;
+
+		gEngfuncs.pTriAPI->SpriteTexture( (struct model_s *)pFrameTexture, 0 );
+		gEngfuncs.pTriAPI->RenderMode( kRenderTransAdd );
+        gEngfuncs.pTriAPI->Begin( TRI_QUADS ); 
+		
+		if (v_center[0]>v_maxs[0])
+		{
+			//right bottom
+			DrawFrameCorner(v_center[0],v_center[1],1,1,0,0,1,0,0,1);
+			//left bottom
+			DrawFrameCorner(v_center[0]-(v_center[0]-v_maxs[0]),v_center[1],1,0,0,1,0,0,1,1);
+			//left up
+			DrawFrameCorner(v_maxs[0], v_maxs[1],0,0,1,1,0,1,1,0);
+			//left right
+			DrawFrameCorner(v_maxs[0]+(v_center[0]-v_maxs[0]),v_maxs[1],0,1,1,0,1,1,0,0);
+		}
+		else
+		{
+			//right bottom
+			DrawFrameCorner(v_center[0],v_center[1],1,0,0,1,0,0,1,1);
+			//left bottom
+			DrawFrameCorner(v_center[0]-(v_center[0]-v_maxs[0]),v_center[1],1,1,0,0,1,0,0,1);
+			//left up
+			DrawFrameCorner(v_maxs[0],v_maxs[1],0,1,1,0,1,1,0,0);
+			//left right
+			DrawFrameCorner(v_maxs[0]+(v_center[0]-v_maxs[0]),v_maxs[1],0,0,1,1,0,1,1,0);
+		}
+		gEngfuncs.pTriAPI->End();
+		gEngfuncs.pTriAPI->RenderMode( kRenderNormal );
+
+		//to make that working, modify in decay.dll player.cpp blank message value of frame kind to -1
+		//if (!m_iFrameKind==-1)
+		if (m_iFrameKind != -1)
+		{
+			char szMes[25];
+			ReturnFrameHint(szMes,m_iFrameKind);
+			gHUD.DrawHudString( v_maxs[0]+5, v_maxs[1]+4, ScreenWidth, szMes, 255, 180, 0 );
+		}
+	}
+
+	/*
+	char szMes[255];
+	if ( m_bAlienMode )
+	  sprintf( szMes, "Alien slave (vortigaunt) mode on" ); 
+	else
+	  sprintf( szMes, "Normal mode" );
+  */
+
+	//ReturnFrameHint(szMes,m_iFrameKind);
+//	gHUD.DrawHudString( 10, 10, 512, szMes, 255, 180, 0 );
+
+	//draw sun
+    if (m_iLensIndex !=0)
+	{
+		vec3_t screen,ors;
+		float tN[9];
+		tN[0]=1.0;
+		tN[1]=0.8;
+		tN[2]=0.7;
+		tN[3]=0.5;
+		tN[4]=0.4;
+        tN[5]=0.25;
+		tN[6]=0.1;
+		tN[7]=-0.1;
+		tN[8]=-0.2;
+		
+		cl_entity_t *ent = gEngfuncs.GetEntityByIndex(m_iLensIndex);
+		if (ent)
+		{
+			vec3_t  forward, right, up;
+	        AngleVectors ( ent->angles, forward, right, up );//get f/r/u vectors
+
+			pmtrace_t tr;
+			gEngfuncs.pEventAPI->EV_SetTraceHull( 2 );
+			gEngfuncs.pEventAPI->EV_PlayerTrace( (float *)&v_origin, v_origin + (forward+up)/2 * 8192, PM_GLASS_IGNORE, -1, &tr );
+			//pmtrace_t tr = *(gEngfuncs.PM_TraceLine( (float *)&v_origin, v_origin + (forward+up)/2 * 8192, 0, 2, -1 )); // PM_GLASS_IGNORE
+			if (gEngfuncs.PM_PointContents( tr.endpos, NULL )!=CONTENTS_SKY)
+			{
+				return 0;
+			}
+
+			if (!gEngfuncs.pTriAPI->WorldToScreen(tr.endpos,ors)) 
+			{
+				int LWidth, LHeight;
+				LWidth = NULL;
+				LHeight = NULL;
+				
+				ors[0] = XPROJECT(ors[0]);
+				ors[1] = YPROJECT(ors[1]);
+				ors[2] = 0.0f;
+				
+				if (ors[0]<0 || ors[0]>ScreenWidth) return 0;
+				if (ors[1]<0 || ors[1]>ScreenHeight) return 0;
+				
+				for (int i=0;i<9;i++)
+				{
+					if (i!=0) 
+						SPR_Set(m_hsprLens[i], 50, 50, 50); //was 250 
+					else 
+						SPR_Set(m_hsprLens[i], 100, 100, 100); //make sun brighter then other lens
+					LWidth = SPR_Width(m_hsprLens[i],0);
+					LHeight = SPR_Height(m_hsprLens[i],0);
+					
+					screen=ors;
+					screen[0] = ScreenWidth/2+(screen[0]-ScreenWidth/2)*tN[i];
+					screen[1] = ScreenHeight/2+(screen[1]-ScreenHeight/2)*tN[i];
+					screen[0] = screen[0]-(LWidth/2);
+					screen[1] = screen[1]-(LHeight/2);
+					
+					SPR_DrawAdditive(0, screen[0],screen[1], NULL);
+				}
+			}
+		}
 	}
 
 	/*

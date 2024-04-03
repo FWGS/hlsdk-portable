@@ -575,6 +575,12 @@ public:
 	void HideScoreBoard( void );
 	bool IsScoreBoardVisible( void );
 
+    void ShowNotepad( void );
+	bool IsNotepadVisible( void );
+    void DisplayNotepad( char* szText, int iTitle );
+
+	void ShowSparePlayerWindow( void );
+
 	bool AllowedToPrintText( void );
 
 	void ShowVGUIMenu( int iMenu );
@@ -634,6 +640,8 @@ public:
 	CClassMenuPanel	*m_pClassMenu;
 	ScorePanel		*m_pScoreBoard;
 	SpectatorPanel *m_pSpectatorPanel;
+	CNotepad        *m_pNotepad;
+	CSparePlayerWindow *m_pSparePlayerWindow;
 	char			m_szServerName[ MAX_SERVERNAME_LENGTH ];
 };
 
@@ -1659,6 +1667,48 @@ public:
 		CMenuPanel::Reset();
 		m_iCurrentInfo = 0;
 	}
+};
+
+class CSparePlayerWindow : public CMenuPanel
+{
+public:
+	CTransparentPanel	*m_pWindow;
+	TextPanel			*m_pMemo;
+    Label               *m_pTitle;
+	CImageLabel			*m_pImage;
+
+	char szText[256];
+    char szTitle[256];
+public:
+	CSparePlayerWindow(int iTrans, int iRemoveMe, int x,int y,int wide,int tall);
+
+	virtual bool SlotInput( int iSlot );
+	virtual void Open( void );
+	virtual void Update( void );
+
+	virtual void Initialize( void );
+};
+
+class CNotepad : public CMenuPanel
+{
+public:
+	ScrollPanel         *m_pScrollPanel;
+	CTransparentPanel	*m_pNotepadWindow;
+	TextPanel			*m_pBriefing;
+	CommandButton		*m_pCancelButton;
+    Label               *m_pTitle;
+	CImageLabel			*m_pImage;
+
+	char szText[256];
+    char szTitle[256];
+public:
+	CNotepad(int iTrans, int iRemoveMe, int x,int y,int wide,int tall);
+
+	virtual bool SlotInput( int iSlot );
+	virtual void Open( void );
+	virtual void Update( void );
+
+	virtual void Initialize( void );
 };
 
 //=========================================================

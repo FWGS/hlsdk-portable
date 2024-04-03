@@ -32,6 +32,7 @@ DLL_GLOBAL CGameRules *g_pGameRules = NULL;
 extern DLL_GLOBAL BOOL g_fGameOver;
 extern int gmsgDeathMsg;	// client dll messages
 extern int gmsgMOTD;
+extern bool bDecay;
 
 int g_teamplay = 0;
 

@@ -55,6 +55,7 @@ vec3_t previousorigin;
 // HLDM Weapon placeholder entities.
 CGlock g_Glock;
 CCrowbar g_Crowbar;
+CVortiHands g_VortiHands;
 CPython g_Python;
 CMP5 g_Mp5;
 CCrossbow g_Crossbow;
@@ -725,6 +726,7 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 		case WEAPON_SNARK:
 			pWeapon = &g_Snark;
 			break;
+
 	}
 
 	// Store pointer to our destination entity_state_t so we can get our origin, etc. from it

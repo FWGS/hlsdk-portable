@@ -252,6 +252,13 @@ public:
 	// Teamplay stuff	
 	virtual const char *GetTeamID( CBaseEntity *pEntity ) {return "";};
 	virtual int PlayerRelationship( CBaseEntity *pPlayer, CBaseEntity *pTarget );
+
+// Decay stats
+	virtual void MonsterKilled( entvars_t *pKiller, entvars_t *pVictim ) {};
+	virtual void PlayerDamaged( CBasePlayer *pPlayer, entvars_t *pevAttacker, float flDamage, int bitsDamageType ) {};
+	virtual void BulletsFired( entvars_t *pevAttacker, ULONG cShots, int iBulletType, int iShotId ) {}; 
+	virtual void BulletHit( CBaseEntity *pEntity, entvars_t *pevAttacker, int iShotId  ) {};
+	virtual void savePlayerStats( int playerId, int finalGrade, int damageGrade, int killsGrade, int accuracyGrade ) {};
 };
 
 //=========================================================
@@ -354,6 +361,13 @@ public:
 
 	// Immediately end a multiplayer game
 	virtual void EndMultiplayerGame( void ) { GoToIntermission(); }
+
+// Decay stats
+	virtual void MonsterKilled( entvars_t *pKiller, entvars_t *pVictim ) {};
+	virtual void PlayerDamaged( CBasePlayer *pPlayer, entvars_t *pevAttacker, float flDamage, int bitsDamageType ) {};
+	virtual void BulletsFired( entvars_t *pevAttacker, ULONG cShots, int iBulletType, int iShotId ) {}; 
+	virtual void BulletHit( CBaseEntity *pEntity, entvars_t *pevAttacker, int iShotId  ) {};
+	virtual void savePlayerStats( int playerId, int finalGrade, int damageGrade, int killsGrade, int accuracyGrade ) {};
 
 protected:
 	virtual void ChangeLevel( void );

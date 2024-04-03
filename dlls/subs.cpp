@@ -342,6 +342,7 @@ TYPEDESCRIPTION	CBaseToggle::m_SaveData[] =
 	DEFINE_FIELD( CBaseToggle, m_vecFinalAngle, FIELD_VECTOR ),
 	DEFINE_FIELD( CBaseToggle, m_sMaster, FIELD_STRING),
 	DEFINE_FIELD( CBaseToggle, m_bitsDamageInflict, FIELD_INTEGER ),	// damage type inflicted
+	DEFINE_FIELD( CBaseToggle, m_iPlayerIndex, FIELD_INTEGER ),			// Decay's player index
 };
 
 IMPLEMENT_SAVERESTORE( CBaseToggle, CBaseAnimating )

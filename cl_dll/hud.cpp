@@ -139,6 +139,33 @@ int __MsgFunc_GameMode( const char *pszName, int iSize, void *pbuf )
 	return gHUD.MsgFunc_GameMode( pszName, iSize, pbuf );
 }
 
+int __MsgFunc_DecayName(const char *pszName, int iSize, void *pbuf )
+{
+	return gHUD.MsgFunc_DecayName( pszName, iSize, pbuf );
+}
+
+int __MsgFunc_LensFlare(const char *pszName, int iSize, void *pbuf)
+{
+    return gHUD.MsgFunc_LensFlare(pszName, iSize, pbuf );
+}
+
+int __MsgFunc_AimFrame(const char *pszName, int iSize, void *pbuf)
+{
+    return gHUD.MsgFunc_AimFrame(pszName, iSize, pbuf );
+}
+
+int __MsgFunc_ChangePlr(const char *pszName, int iSize, void *pbuf )
+{
+	gHUD.MsgFunc_ChangePlayer(pszName, iSize, pbuf );
+	return 1;
+}
+
+int __MsgFunc_Camera(const char *pszName, int iSize, void *pbuf)
+{
+	gHUD.MsgFunc_Camera( pszName, iSize, pbuf );
+	return 1;
+}
+
 // TFFree Command Menu
 void __CmdFunc_OpenCommandMenu( void )
 {
@@ -331,6 +358,8 @@ void CHud::Init( void )
 	HOOK_MESSAGE( ViewMode );
 	HOOK_MESSAGE( SetFOV );
 	HOOK_MESSAGE( Concuss );
+	HOOK_MESSAGE( Camera );
+	HOOK_MESSAGE( DecayName );
 
 	// TFFree CommandMenu
 	HOOK_COMMAND( "+commandmenu", OpenCommandMenu );
@@ -364,8 +393,14 @@ void CHud::Init( void )
 	HOOK_MESSAGE( ResetFade );
 #endif
 
+    HOOK_MESSAGE( LensFlare );
+    HOOK_MESSAGE( AimFrame );
+	HOOK_MESSAGE( ChangePlr );
+
 	// VGUI Menus
 	HOOK_MESSAGE( VGUIMenu );
+	HOOK_MESSAGE( Notepad );
+	HOOK_MESSAGE( SparePlayer );
 
 	CVAR_CREATE( "hud_classautokill", "1", FCVAR_ARCHIVE | FCVAR_USERINFO );		// controls whether or not to suicide immediately on TF class switch
 	CVAR_CREATE( "hud_takesshots", "0", FCVAR_ARCHIVE );		// controls whether or not to automatically take screenshots at the end of a round
@@ -373,6 +408,8 @@ void CHud::Init( void )
 
 	m_iLogo = 0;
 	m_iFOV = 0;
+    m_iLensIndex = 0;
+    m_iFrameIndex = 0;
 
 	CVAR_CREATE( "zoom_sensitivity_ratio", "1.2", FCVAR_ARCHIVE );
 	CVAR_CREATE( "cl_autowepswitch", "1", FCVAR_ARCHIVE | FCVAR_USERINFO );
@@ -474,6 +511,9 @@ void CHud::VidInit( void )
 	int j;
 	m_scrinfo.iSize = sizeof(m_scrinfo);
 	GetScreenInfo( &m_scrinfo );
+
+	// Set HUD color
+	uColor = RGB_YELLOWISH;
 
 	// ----------
 	// Load Sprites
@@ -590,6 +630,20 @@ void CHud::VidInit( void )
 
 	m_iFontHeight = m_rgrcRects[m_HUD_number_0].bottom - m_rgrcRects[m_HUD_number_0].top;
 
+	//load sprites for lens flare effect and for selection frame
+	for (int i=0;i<9;i++)
+	{
+		m_hsprLens[i] = NULL;
+		
+		char szName[32];
+		sprintf(szName, "sprites/lens_%d.spr",i);
+		if (m_hsprLens[i] == 0)
+			m_hsprLens[i] = LoadSprite(szName);
+	}
+    m_hsprFrame = LoadSprite("sprites/bracket.spr");
+    m_iFrameSize = SPR_Width(m_hsprFrame,0);
+	pFrameTexture = gEngfuncs.GetSpritePointer( m_hsprFrame );
+
 	m_Ammo.VidInit();
 	m_Health.VidInit();
 	m_Spectator.VidInit();
@@ -622,6 +676,46 @@ int CHud::MsgFunc_Logo( const char *pszName,  int iSize, void *pbuf )
 
 	// update Train data
 	m_iLogo = READ_BYTE();
+
+	return 1;
+}
+
+int CHud::MsgFunc_LensFlare(const char *pszName, int iSize, void *pbuf)
+{
+    BEGIN_READ( pbuf, iSize );
+
+	m_iLensIndex = READ_BYTE();
+
+	return 1;
+}
+
+int CHud::MsgFunc_AimFrame(const char *pszName, int iSize, void *pbuf)
+{
+    BEGIN_READ( pbuf, iSize );
+	
+	m_iFrameIndex = READ_BYTE();
+    m_iFrameKind  = READ_BYTE();
+	
+	m_vAimFrameCoords.x = READ_COORD();
+	m_vAimFrameCoords.y = READ_COORD();
+	m_vAimFrameCoords.z = READ_COORD();
+	
+    m_vAimFrameMaxs.x   = READ_COORD();
+	m_vAimFrameMaxs.y   = READ_COORD();
+	m_vAimFrameMaxs.z   = READ_COORD();
+	
+	return 1;
+}
+
+int CHud::MsgFunc_ChangePlayer(const char *pszName, int iSize, void *pbuf )
+{
+	BEGIN_READ( pbuf, iSize );
+	int m_iDecayId = READ_BYTE();
+
+	if (m_iDecayId == 1)
+		uColor = RGB_SILVERISH;
+	else
+		uColor = RGB_YELLOWISH;
 
 	return 1;
 }

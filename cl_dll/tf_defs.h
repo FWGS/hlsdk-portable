@@ -1106,8 +1106,9 @@ float already_chosen_map;
 #define MENU_CLASSHELP				6
 #define MENU_CLASSHELP2 			7
 #define MENU_REPEATHELP 			8
-
 #define MENU_SPECHELP				9
+#define MENU_NOTEPAD                10
+#define MENU_SPAREPLAYERWINDOW		11
 
 
 #define MENU_SPY					12

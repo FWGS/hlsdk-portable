@@ -1466,3 +1466,242 @@ int CSittingScientist::FIdleSpeak( void )
 	CTalkMonster::g_talkWaitTime = 0;
 	return FALSE;
 }
+
+//=========================================================
+// Doctor Keller
+// monster_wheelchair
+//=========================================================
+
+class CWheelChairScientist : public CScientist // kdb: changed from public CBaseMonster so he can speak
+{
+public:
+	void Spawn( void );
+	void  Precache( void );
+	int FIdleSpeak( void );
+	void PainSound( void );
+	void TalkInit( void );
+	BOOL	CanHeal( void );
+};
+
+LINK_ENTITY_TO_CLASS( monster_wheelchair, CWheelChairScientist );
+
+void CWheelChairScientist :: Spawn( )
+{
+	Precache();
+	SET_MODEL(ENT(pev), "models/wheelchair_sci.mdl");
+
+	UTIL_SetSize(pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX);
+
+	pev->solid			= SOLID_SLIDEBOX;
+	pev->movetype		= MOVETYPE_STEP;
+	m_bloodColor		= BLOOD_COLOR_RED;
+	pev->health			= gSkillData.barneyHealth;
+	pev->view_ofs		= Vector ( 0, 0, 50 );// position of the eyes relative to monster's origin.
+	m_flFieldOfView		= VIEW_FIELD_WIDE; // NOTE: we need a wide field of view so npc will notice player and say hello
+	m_MonsterState		= MONSTERSTATE_NONE;
+
+	pev->body			= 0; // gun in holster
+
+	m_afCapability		= bits_CAP_HEAR | bits_CAP_TURN_HEAD | bits_CAP_DOORS_GROUP;
+
+	MonsterInit();
+	SetUse( FollowerUse );
+}
+
+void CWheelChairScientist :: Precache( void )
+{
+	PRECACHE_MODEL("models/wheelchair_sci.mdl");
+
+	PRECACHE_SOUND("keller/dk_pain1.wav");
+	PRECACHE_SOUND("keller/dk_pain2.wav");
+	PRECACHE_SOUND("keller/dk_pain3.wav");
+	PRECACHE_SOUND("keller/dk_pain4.wav");
+	PRECACHE_SOUND("keller/dk_pain5.wav");
+	PRECACHE_SOUND("keller/dk_pain6.wav");
+	PRECACHE_SOUND("keller/dk_pain7.wav");
+
+	PRECACHE_SOUND("wheelchair/wheelchair_jog.wav");
+	PRECACHE_SOUND("wheelchair/wheelchair_run.wav");
+	PRECACHE_SOUND("wheelchair/wheelchair_walk.wav");
+	
+	TalkInit();
+	CTalkMonster::Precache();
+}
+
+int CWheelChairScientist :: FIdleSpeak( void )
+{
+	return -1;
+}
+
+BOOL CWheelChairScientist :: CanHeal( void )
+{
+	return FALSE;
+}
+
+void CWheelChairScientist :: PainSound( void )
+{
+	if (gpGlobals->time < m_painTime )
+		return;
+	
+	m_painTime = gpGlobals->time + RANDOM_FLOAT(0.5, 0.75);
+
+	switch (RANDOM_LONG(0,6))
+	{
+	case 0: EMIT_SOUND_DYN( ENT(pev), CHAN_VOICE, "keller/dk_pain1.wav", 1, ATTN_NORM, 0, GetVoicePitch()); break;
+	case 1: EMIT_SOUND_DYN( ENT(pev), CHAN_VOICE, "keller/dk_pain2.wav", 1, ATTN_NORM, 0, GetVoicePitch()); break;
+	case 2: EMIT_SOUND_DYN( ENT(pev), CHAN_VOICE, "keller/dk_pain3.wav", 1, ATTN_NORM, 0, GetVoicePitch()); break;
+	case 3: EMIT_SOUND_DYN( ENT(pev), CHAN_VOICE, "keller/dk_pain4.wav", 1, ATTN_NORM, 0, GetVoicePitch()); break;
+	case 4: EMIT_SOUND_DYN( ENT(pev), CHAN_VOICE, "keller/dk_pain5.wav", 1, ATTN_NORM, 0, GetVoicePitch()); break;
+	case 5: EMIT_SOUND_DYN( ENT(pev), CHAN_VOICE, "keller/dk_pain6.wav", 1, ATTN_NORM, 0, GetVoicePitch()); break;
+	case 6: EMIT_SOUND_DYN( ENT(pev), CHAN_VOICE, "keller/dk_pain7.wav", 1, ATTN_NORM, 0, GetVoicePitch()); break;
+	}
+}
+
+void CWheelChairScientist :: TalkInit()
+{
+	CTalkMonster::TalkInit();
+
+	// Keller's speach group names (group names are in sentences.txt)
+
+	m_szGrp[TLK_ANSWER]  =	NULL;
+	m_szGrp[TLK_QUESTION] =	NULL;
+	m_szGrp[TLK_IDLE] =		"DK_IDLE";
+	m_szGrp[TLK_STARE] =	"DK_STARE";
+	m_szGrp[TLK_HELLO] =	"DK_HELLO";
+	
+	m_szGrp[TLK_FEAR] = "DK_FEAR";
+	m_szGrp[TLK_PLFEAR] = "DK_PLFEAR";
+	m_szGrp[TLK_HEAL] = NULL;
+
+	m_szGrp[TLK_USE] =		"DK_OK";
+	m_szGrp[TLK_UNUSE] =	"DK_WAIT";
+	m_szGrp[TLK_STOP] =		"DK_STOP";
+	m_szGrp[TLK_NOSHOOT] =	"DK_SCARED";
+
+	m_szGrp[TLK_PLHURT1] =	NULL;
+	m_szGrp[TLK_PLHURT2] =	NULL; 
+	m_szGrp[TLK_PLHURT3] =	NULL;
+
+	m_szGrp[TLK_WOUND] =	NULL;
+	m_szGrp[TLK_MORTAL] =	NULL;
+
+	// get voice for head
+	m_voicePitch = 100; 
+}
+
+//=========================================================
+// Doctor Rosenberg
+// monster_rosenberg
+//=========================================================
+
+class CRosenberg : public CScientist // kdb: changed from public CBaseMonster so he can speak
+{
+public:
+	void Spawn( void );
+	void  Precache( void );
+	void PainSound( void );
+	void TalkInit( void );
+	int FIdleSpeak( void );
+};
+
+LINK_ENTITY_TO_CLASS( monster_rosenberg, CRosenberg );
+
+void CRosenberg :: Spawn( )
+{
+	Precache();
+	SET_MODEL(ENT(pev), "models/scientist_rosenberg.mdl");
+
+	UTIL_SetSize(pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX);
+
+	pev->solid			= SOLID_SLIDEBOX;
+	pev->movetype		= MOVETYPE_STEP;
+	m_bloodColor		= BLOOD_COLOR_RED;
+	pev->health			= gSkillData.barneyHealth+10;
+	pev->view_ofs		= Vector ( 0, 0, 50 );// position of the eyes relative to monster's origin.
+	m_flFieldOfView		= VIEW_FIELD_WIDE; // NOTE: we need a wide field of view so npc will notice player and say hello
+	m_MonsterState		= MONSTERSTATE_NONE;
+
+	m_afCapability		= bits_CAP_HEAR | bits_CAP_TURN_HEAD | bits_CAP_DOORS_GROUP;
+
+	SetBodygroup( BODY_GROUP, BODY_LOD0 );
+	SetBodygroup( HEAD_GROUP, 0 );
+
+	MonsterInit();
+	SetUse( FollowerUse );
+}
+
+void CRosenberg :: Precache( void )
+{
+	PRECACHE_MODEL("models/scientist_rosenberg.mdl");
+
+	PRECACHE_SOUND("rosenberg/ro_pain0.wav");
+	PRECACHE_SOUND("rosenberg/ro_pain1.wav");
+	PRECACHE_SOUND("rosenberg/ro_pain2.wav");
+	PRECACHE_SOUND("rosenberg/ro_pain3.wav");
+	PRECACHE_SOUND("rosenberg/ro_pain4.wav");
+	PRECACHE_SOUND("rosenberg/ro_pain5.wav");
+	PRECACHE_SOUND("rosenberg/ro_pain6.wav");
+	PRECACHE_SOUND("rosenberg/ro_pain7.wav");
+	PRECACHE_SOUND("rosenberg/ro_pain8.wav");
+
+	TalkInit();
+	CTalkMonster::Precache();
+}
+
+void CRosenberg :: PainSound( void )
+{
+	if (gpGlobals->time < m_painTime )
+		return;
+	
+	m_painTime = gpGlobals->time + RANDOM_FLOAT(0.5, 0.75);
+
+	switch (RANDOM_LONG(0,8))
+	{
+	case 0: EMIT_SOUND_DYN( ENT(pev), CHAN_VOICE, "rosenberg/ro_pain0.wav", 1, ATTN_NORM, 0, GetVoicePitch()); break;
+	case 1: EMIT_SOUND_DYN( ENT(pev), CHAN_VOICE, "rosenberg/ro_pain1.wav", 1, ATTN_NORM, 0, GetVoicePitch()); break;
+	case 2: EMIT_SOUND_DYN( ENT(pev), CHAN_VOICE, "rosenberg/ro_pain2.wav", 1, ATTN_NORM, 0, GetVoicePitch()); break;
+	case 3: EMIT_SOUND_DYN( ENT(pev), CHAN_VOICE, "rosenberg/ro_pain3.wav", 1, ATTN_NORM, 0, GetVoicePitch()); break;
+	case 4: EMIT_SOUND_DYN( ENT(pev), CHAN_VOICE, "rosenberg/ro_pain4.wav", 1, ATTN_NORM, 0, GetVoicePitch()); break;
+	case 5: EMIT_SOUND_DYN( ENT(pev), CHAN_VOICE, "rosenberg/ro_pain5.wav", 1, ATTN_NORM, 0, GetVoicePitch()); break;
+	case 6: EMIT_SOUND_DYN( ENT(pev), CHAN_VOICE, "rosenberg/ro_pain6.wav", 1, ATTN_NORM, 0, GetVoicePitch()); break;
+	case 7: EMIT_SOUND_DYN( ENT(pev), CHAN_VOICE, "rosenberg/ro_pain7.wav", 1, ATTN_NORM, 0, GetVoicePitch()); break;
+	case 8: EMIT_SOUND_DYN( ENT(pev), CHAN_VOICE, "rosenberg/ro_pain8.wav", 1, ATTN_NORM, 0, GetVoicePitch()); break;
+	}
+}
+
+void CRosenberg :: TalkInit()
+{
+	CTalkMonster::TalkInit();
+
+	// Rosenberg's speach group names (group names are in sentences.txt)
+	
+	m_szGrp[TLK_ANSWER]  =	NULL;
+	m_szGrp[TLK_QUESTION] =	NULL;
+	m_szGrp[TLK_IDLE] =		NULL;
+	m_szGrp[TLK_STARE] =	NULL;
+	m_szGrp[TLK_HELLO] =	NULL;
+	
+	m_szGrp[TLK_FEAR] = "RO_FEAR";
+	m_szGrp[TLK_PLFEAR] = "RO_PLFEAR";
+	m_szGrp[TLK_HEAL] = "RO_HEAL";
+
+	m_szGrp[TLK_USE] =		"RO_OK";
+	m_szGrp[TLK_UNUSE] =	"RO_WAIT";
+	m_szGrp[TLK_STOP] =		"RO_STOP";
+	m_szGrp[TLK_NOSHOOT] =	"RO_SCARED";
+
+	m_szGrp[TLK_PLHURT1] =	"!RO_CUREA";
+	m_szGrp[TLK_PLHURT2] =	"!RO_CUREB"; 
+	m_szGrp[TLK_PLHURT3] =	"!RO_CUREC";
+
+	m_szGrp[TLK_WOUND] =	"RO_WOUND";
+	m_szGrp[TLK_MORTAL] =	"RO_MORTAL";
+
+	// get voice for head
+	m_voicePitch = 100; 
+}
+
+int CRosenberg::FIdleSpeak( void )
+{
+	return -1;
+}

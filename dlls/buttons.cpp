@@ -156,6 +156,7 @@ void CMultiSource::KeyValue( KeyValueData *pkvd )
 }
 
 #define SF_MULTI_INIT		1
+#define SF_MULTI_NO_TOGGLE  2
 
 void CMultiSource::Spawn()
 { 
@@ -964,6 +965,7 @@ public:
 	vec3_t m_start;
 	vec3_t m_end;
 	int m_sounds;
+	string_t m_iszEndLockTarget;
 };
 
 TYPEDESCRIPTION CMomentaryRotButton::m_SaveData[] =
@@ -974,6 +976,7 @@ TYPEDESCRIPTION CMomentaryRotButton::m_SaveData[] =
 	DEFINE_FIELD( CMomentaryRotButton, m_start, FIELD_VECTOR ),
 	DEFINE_FIELD( CMomentaryRotButton, m_end, FIELD_VECTOR ),
 	DEFINE_FIELD( CMomentaryRotButton, m_sounds, FIELD_INTEGER ),
+	DEFINE_FIELD( CMomentaryRotButton, m_iszEndLockTarget, FIELD_STRING ),
 };
 
 IMPLEMENT_SAVERESTORE( CMomentaryRotButton, CBaseToggle )
@@ -1028,6 +1031,11 @@ void CMomentaryRotButton::KeyValue( KeyValueData *pkvd )
 		m_sounds = atoi( pkvd->szValue );
 		pkvd->fHandled = TRUE;
 	}
+	else if (FStrEq(pkvd->szKeyName, "endlocktarget"))
+	{
+		m_iszEndLockTarget = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
 	else
 		CBaseToggle::KeyValue( pkvd );
 }
@@ -1042,6 +1050,14 @@ void CMomentaryRotButton::PlaySound( void )
 // current, not future position.
 void CMomentaryRotButton::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
+	// Vyacheslav Dzhura: in Decay there are momentary buttons with MASTER field
+	if (!UTIL_IsMasterTriggered(m_sMaster, pActivator))
+	{
+		// play button locked sound
+		// PlayLockSounds(pev, &m_ls, TRUE, TRUE);
+		return;
+	}
+
 	pev->ideal_yaw = CBaseToggle::AxisDelta( pev->spawnflags, pev->angles, m_start ) / m_flMoveDistance;
 
 	UpdateAllButtons( pev->ideal_yaw, 1 );
@@ -1092,6 +1108,19 @@ void CMomentaryRotButton::UpdateSelf( float value )
 	{
 		pev->avelocity = g_vecZero;
 		pev->angles = m_end;
+
+		// Vyacheslav Dzhura: off the button if we have locked target specified
+/*		if (!FStringNull( m_iszEndLockTarget ))
+		{
+			//CBaseEntity	*m_pGoalEnt;
+			//m_pGoalEnt = UTIL_FindEntityByTargetname( NULL, STRING( m_iszEndLockTarget ) );
+			//if (m_pGoalEnt)
+			//{
+				FireTargets(STRING( m_iszEndLockTarget ), this, this, USE_TOGGLE, 0);
+				SetThink( Off );
+			//}
+		}*/ 
+
 		return;
 	}
 	else if( m_direction < 0 && value <= 0.0f )
@@ -1145,6 +1174,8 @@ void CMomentaryRotButton::Off( void )
 	}
 	else
 		SetThink( NULL );
+
+//	if (m_flMoveDistance
 }
 
 void CMomentaryRotButton::Return( void )

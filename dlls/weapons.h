@@ -78,6 +78,8 @@ public:
 #define WEAPON_TRIPMINE			13
 #define	WEAPON_SATCHEL			14
 #define	WEAPON_SNARK			15
+#define WEAPON_DISPLACER        16
+#define WEAPON_VORTI			17
 
 #define WEAPON_ALLWEAPONS		(~(1<<WEAPON_SUIT))
 
@@ -149,6 +151,7 @@ public:
 #define TRIPMINE_DEFAULT_GIVE		1
 #define SNARK_DEFAULT_GIVE			5
 #define HIVEHAND_DEFAULT_GIVE		8
+#define DISPLACER_DEFAULT_GIVE      60
 
 // The amount of ammo given to a player by an ammo item.
 #define AMMO_URANIUMBOX_GIVE	20
@@ -258,8 +261,11 @@ public:
 	CBasePlayer	*m_pPlayer;
 	CBasePlayerItem *m_pNext;
 	int		m_iId;												// WEAPON_???
+	int		DecayPlayerIndex;
 
 	virtual int iItemSlot( void ) { return 0; }			// return 0 to MAX_ITEMS_SLOTS, used in hud
+
+	virtual void	KeyValue( KeyValueData* pkvd);      // to read player_index property
 
 	int			iItemPosition( void ) { return ItemInfoArray[ m_iId ].iPosition; }
 	const char	*pszAmmo1( void )	{ return ItemInfoArray[ m_iId ].pszAmmo1; }
@@ -448,6 +454,7 @@ public:
 	int	m_rgAmmo[MAX_AMMO_SLOTS];// ammo quantities
 
 	int m_cAmmoTypes;// how many ammo types packed into this box (if packed by a level designer)
+	int m_iPlayerIndex; // Decay: player who can pickup this weaponbox 0 - both 1 - Gina 2 - Colette
 };
 
 #if CLIENT_DLL
@@ -518,6 +525,49 @@ public:
 	}
 private:
 	unsigned short m_usCrowbar;
+};
+
+class CVortiHands : public CBasePlayerWeapon
+{
+public:
+	void Spawn( void );
+	void Precache( void );
+	int iItemSlot( void ) { return 1; }
+	void EXPORT SwingAgain( void );
+	void EXPORT Smack( void );
+	int GetItemInfo(ItemInfo *p);
+
+	void PrimaryAttack( void );
+	void SecondaryAttack( void );
+	void WeaponIdle( void );
+
+	void StartFire( void );
+	void Fire( Vector vecOrigSrc, Vector vecDir, float flDamage );
+
+	float GetFullChargeTime( void );
+	int Swing( int fFirst );
+	BOOL Deploy( void );
+	void Holster( int skiplocal = 0 );
+	
+	// was this weapon just fired primary or secondary?
+	// we need to know so we can pick the right set of effects. 
+	BOOL m_fPrimaryFire;
+	int m_iSwing;
+	int m_iSoundState; // don't save this
+	TraceResult m_trHit;
+
+	virtual BOOL UseDecrement( void )
+	{  
+#if defined( CLIENT_WEAPONS )
+		return TRUE;
+#else
+		return FALSE;
+#endif
+	}
+private:
+	unsigned short m_usVorti;
+	unsigned short m_usVortiFire;
+	unsigned short m_usVortiSpin;
 };
 
 class CPython : public CBasePlayerWeapon

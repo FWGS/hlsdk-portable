@@ -53,7 +53,7 @@ extern DLL_GLOBAL int		g_iSkillLevel;
 #define GRUNT_ATTN						ATTN_NORM	// attenutation of grunt sentences
 #define HGRUNT_LIMP_HEALTH				20
 #define HGRUNT_DMG_HEADSHOT				( DMG_BULLET | DMG_CLUB )	// damage types that can kill a grunt with a single headshot.
-#define HGRUNT_NUM_HEADS				2 // how many grunt heads are there? 
+#define HGRUNT_NUM_HEADS				4 // how many grunt heads are there? 
 #define HGRUNT_MINIMUM_HEADSHOT_DAMAGE			15 // must do at least this much damage in one shot to head to score a headshot kill
 #define	HGRUNT_SENTENCE_VOLUME				(float)0.35 // volume of grunt sentences
 
@@ -62,15 +62,18 @@ extern DLL_GLOBAL int		g_iSkillLevel;
 #define HGRUNT_GRENADELAUNCHER			( 1 << 2)
 #define HGRUNT_SHOTGUN				( 1 << 3)
 
+#define LODS_GROUP					0
 #define HEAD_GROUP					1
-#define HEAD_GRUNT					0
-#define HEAD_COMMANDER					1
-#define HEAD_SHOTGUN					2
-#define HEAD_M203					3
 #define GUN_GROUP					2
+
+#define HEAD_GRUNT					0
+#define HEAD_COMMANDER				1// * 3
+#define HEAD_SHOTGUN				2// * 3
+#define HEAD_M203					3// * 3
+
 #define GUN_MP5						0
-#define GUN_SHOTGUN					1
-#define GUN_NONE					2
+#define GUN_SHOTGUN					1// * 3
+#define GUN_NONE					2// * 3
 
 //=========================================================
 // Monster's Anim Events Go Here

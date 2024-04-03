@@ -77,6 +77,93 @@ void U_Srand( unsigned int seed )
 
 /*
 =====================
+UTIL_Intersect - moved here from controller.cpp and priest.cpp
+=====================
+*/
+
+Vector UTIL_Intersect( Vector vecSrc, Vector vecDst, Vector vecMove, float flSpeed )
+{
+	Vector vecTo = vecDst - vecSrc;
+
+	float a = DotProduct( vecMove, vecMove ) - flSpeed * flSpeed;
+	float b = 0 * DotProduct(vecTo, vecMove); // why does this work?
+	float c = DotProduct( vecTo, vecTo );
+
+	float t;
+	if (a == 0)
+	{
+		t = c / (flSpeed * flSpeed);
+	}
+	else
+	{
+		t = b * b - 4 * a * c;
+		t = sqrt( t ) / (2.0 * a);
+		float t1 = -b +t;
+		float t2 = -b -t;
+
+		if (t1 < 0 || t2 < t1)
+			t = t2;
+		else
+			t = t1;
+	}
+
+	// ALERT( at_console, "Intersect %f\n", t );
+
+	if (t < 0.1)
+		t = 0.1;
+	if (t > 10.0)
+		t = 10.0;
+
+	Vector vecHit = vecTo + vecMove * t;
+	return vecHit.Normalize( ) * flSpeed;
+}
+
+void FindHullIntersection( const Vector &vecSrc, TraceResult &tr, float *mins, float *maxs, edict_t *pEntity )
+{
+	int			i, j, k;
+	float		distance;
+	float		*minmaxs[2] = {mins, maxs};
+	TraceResult tmpTrace;
+	Vector		vecHullEnd = tr.vecEndPos;
+	Vector		vecEnd;
+
+	distance = 1e6f;
+
+	vecHullEnd = vecSrc + ((vecHullEnd - vecSrc)*2);
+	UTIL_TraceLine( vecSrc, vecHullEnd, dont_ignore_monsters, pEntity, &tmpTrace );
+	if ( tmpTrace.flFraction < 1.0 )
+	{
+		tr = tmpTrace;
+		return;
+	}
+
+	for ( i = 0; i < 2; i++ )
+	{
+		for ( j = 0; j < 2; j++ )
+		{
+			for ( k = 0; k < 2; k++ )
+			{
+				vecEnd.x = vecHullEnd.x + minmaxs[i][0];
+				vecEnd.y = vecHullEnd.y + minmaxs[j][1];
+				vecEnd.z = vecHullEnd.z + minmaxs[k][2];
+
+				UTIL_TraceLine( vecSrc, vecEnd, dont_ignore_monsters, pEntity, &tmpTrace );
+				if ( tmpTrace.flFraction < 1.0 )
+				{
+					float thisDistance = (tmpTrace.vecEndPos - vecSrc).Length();
+					if ( thisDistance < distance )
+					{
+						tr = tmpTrace;
+						distance = thisDistance;
+					}
+				}
+			}
+		}
+	}
+}
+
+/*
+=====================
 UTIL_SharedRandomLong
 =====================
 */

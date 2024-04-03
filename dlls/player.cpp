@@ -67,6 +67,11 @@ extern CGraph WorldGraph;
 #define	FLASH_DRAIN_TIME	 1.2f //100 units/3 minutes
 #define	FLASH_CHARGE_TIME	 0.2f // 100 units/20 seconds  (seconds per unit)
 
+#define MODE_STAND      0
+#define MODE_RUN        1
+#define MODE_CROUCH     2
+#define MODE_JUMP       3
+
 // Global Savedata for player
 TYPEDESCRIPTION	CBasePlayer::m_playerSaveData[] =
 {
@@ -116,6 +121,7 @@ TYPEDESCRIPTION	CBasePlayer::m_playerSaveData[] =
 	DEFINE_FIELD( CBasePlayer, m_pTank, FIELD_EHANDLE ),
 	DEFINE_FIELD( CBasePlayer, m_iHideHUD, FIELD_INTEGER ),
 	DEFINE_FIELD( CBasePlayer, m_iFOV, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_iDecayId, FIELD_INTEGER ),
 
 	//DEFINE_FIELD( CBasePlayer, m_fDeadTime, FIELD_FLOAT ), // only used in multiplayer games
 	//DEFINE_FIELD( CBasePlayer, m_fGameHUDInitialized, FIELD_INTEGER ), // only used in multiplayer games
@@ -3440,7 +3446,15 @@ void CBasePlayer::ForceClientDllUpdate( void )
 	m_fInitHUD = TRUE;		// Force HUD gmsgResetHUD message
 	memset( m_rgAmmoLast, 0, sizeof( m_rgAmmoLast )); // a1ba: Force update AmmoX
 
-
+int gmsgLensFlare = 0;
+int gmsgAimFrame = 0;
+int gmsgNotepad = 0;
+int gmsgChangeMode = 0;
+int gmsgCamera = 0;
+int gmsgChangePlayer = 0;
+int gmsgSparePlayer = 0;
+int gmsgAlienState = 0;
+int gmsgUpdateDecayPlayerName = 0;
 
 	// Now force all the necessary messages
 	//  to be sent.
@@ -4363,6 +4377,7 @@ Vector CBasePlayer::GetAutoaimVector( float flDelta )
 	// ALERT( at_console, "%f %f\n", angles.x, angles.y );
 
 	UTIL_MakeVectors( pev->v_angle + pev->punchangle + m_vecAutoAim );
+	//AutoaimFrame(vecSrc, flDist, flDelta); //draw selection frame around objects
 	return gpGlobals->v_forward;
 }
 
@@ -4493,6 +4508,94 @@ void CBasePlayer::ResetAutoaim()
 		SET_CROSSHAIRANGLE( edict(), 0, 0 );
 	}
 	m_fOnTarget = FALSE;
+}
+
+void CBasePlayer :: AutoaimFrame( Vector &vecSrc, float flDist, float flDelta  )
+{
+	edict_t		*pEdict = g_engfuncs.pfnPEntityOfEntIndex( 1 );
+	CBaseEntity	*pEntity;
+	float		bestdot;
+	Vector		bestdir;
+	TraceResult tr;
+		
+	MESSAGE_BEGIN( MSG_ALL, gmsgAimFrame);
+	  WRITE_BYTE( 0 );
+      WRITE_BYTE( 0.0 );
+	  WRITE_COORD( 0.0 );
+	  WRITE_COORD( 0.0 );
+	  WRITE_COORD( 0.0 );
+	  WRITE_COORD( 0.0 );
+	  WRITE_COORD( 0.0 );
+	  WRITE_COORD( 0.0 );
+	MESSAGE_END();
+	
+	UTIL_MakeVectors( pev->v_angle + pev->punchangle + m_vecAutoAim );
+	
+	// try all possible entities
+	bestdot = flDelta; // +- 10 degrees
+
+	UTIL_TraceLine( vecSrc, vecSrc + bestdir * flDist, dont_ignore_monsters, edict(), &tr );
+	for ( int i = 1; i < gpGlobals->maxEntities; i++, pEdict++ )
+	{
+		Vector center;
+		Vector dir;
+		float dot;
+		
+		if ( pEdict->free )	// Not in use
+			continue;
+		
+		if (pEdict == edict())
+			continue;
+		
+		if ( !g_pGameRules->ShouldAutoAim( this, pEdict ) )
+			continue; 
+		
+		pEntity = Instance( pEdict );
+		if (pEntity == NULL)
+			continue;      
+		
+		center = pEntity->BodyTarget( vecSrc );
+		
+		dir = (center - vecSrc).Normalize( );
+		
+		// make sure it's in front of the player
+		if (DotProduct (dir, gpGlobals->v_forward ) < 0)
+			continue;
+		
+		dot = fabs( DotProduct (dir, gpGlobals->v_right ) ) 
+			+ fabs( DotProduct (dir, gpGlobals->v_up ) ) * 0.5;
+		
+		// tweek for distance
+		dot *= 1.0 + 0.2 * ((center - vecSrc).Length() / flDist);
+		
+		if (dot > bestdot)
+			continue;	// to far to turn
+		
+		UTIL_TraceLine( vecSrc, center, dont_ignore_monsters, edict(), &tr );
+		if (tr.flFraction != 1.0 && tr.pHit != pEdict)
+		{
+			continue;
+		}
+
+    	if (!FClassnameIs(pEntity->pev,"func_frame")) continue;
+		
+		CFuncFrame* pFrame = (CFuncFrame*)CBaseEntity::Instance(pEdict);		
+		//ALERT( at_console, "Kind is %d\n", pFrame->m_iKind);
+		
+		if ((vecSrc-center).Length() < 200) //was 50
+		{
+		MESSAGE_BEGIN( MSG_ALL, gmsgAimFrame);
+		  WRITE_BYTE( pEntity->entindex() );
+          WRITE_BYTE( pFrame->m_iKind );
+		  WRITE_COORD( pEntity->pev->mins.x );
+		  WRITE_COORD( pEntity->pev->mins.y );
+		  WRITE_COORD( pEntity->pev->mins.z );
+		  WRITE_COORD( pEntity->pev->maxs.x );
+		  WRITE_COORD( pEntity->pev->maxs.y );
+		  WRITE_COORD( pEntity->pev->maxs.z );
+		MESSAGE_END();
+		}
+	}
 }
 
 /*
@@ -4714,8 +4817,24 @@ BOOL CBasePlayer::SwitchWeapon( CBasePlayerItem *pWeapon )
 }
 
 //=========================================================
+//  Set Decay's player index
+//=========================================================
+void CBasePlayer::SetDecayPlayerIndex( int Id )
+{
+  m_iDecayId = Id;
+}
+
+//=========================================================
 // Dead HEV suit prop
 //=========================================================
+
+#define PLAYER_LODS 4
+
+#define HEAD_GROUP 1
+#define HEAD_GORDON 0
+#define HEAD_HELMET 1
+
+
 class CDeadHEV : public CBaseMonster
 {
 public:
@@ -4763,7 +4882,8 @@ void CDeadHEV::Spawn( void )
 	pev->effects = 0;
 	pev->yaw_speed = 8;
 	pev->sequence = 0;
-	pev->body = 1;
+	//pev->body			= 1;
+	SetBodygroup( HEAD_GROUP, HEAD_HELMET * PLAYER_LODS );
 	m_bloodColor = BLOOD_COLOR_RED;
 
 	pev->sequence = LookupSequence( m_szPoses[m_iPose] );

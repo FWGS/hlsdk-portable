@@ -408,6 +408,7 @@ extern DLL_GLOBAL const Vector g_vecZero;
 #define AMBIENT_SOUND_LARGERADIUS		8
 #define AMBIENT_SOUND_START_SILENT		16
 #define AMBIENT_SOUND_NOT_LOOPING		32
+#define AMBIENT_SHOWMESSAGE				512 // Decay: strings code 
 
 #define SPEAKER_START_SILENT			1	// wait for trigger 'on' to start announcements
 

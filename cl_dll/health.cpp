@@ -88,8 +88,9 @@ int CHudHealth::VidInit( void )
 {
 	m_hSprite = 0;
 
-	m_HUD_dmg_bio = gHUD.GetSpriteIndex( "dmg_bio" ) + 1;
+	m_HUD_dmg_bio = gHUD.GetSpriteIndex( "dmg_bio" );// + 1;
 	m_HUD_cross = gHUD.GetSpriteIndex( "cross" );
+	m_HUD_alien = gHUD.GetSpriteIndex( "islave_health" );
 
 	giDmgHeight = gHUD.GetSpriteRect( m_HUD_dmg_bio ).right - gHUD.GetSpriteRect( m_HUD_dmg_bio ).left;
 	giDmgWidth = gHUD.GetSpriteRect( m_HUD_dmg_bio ).bottom - gHUD.GetSpriteRect( m_HUD_dmg_bio ).top;

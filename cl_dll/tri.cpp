@@ -5,13 +5,14 @@
 // $NoKeywords: $
 //=============================================================================
 
-// Triangle rendering, if any
-
+#include <windows.h>
+//#include <gl/gl.h>
 #include "hud.h"
 #include "cl_util.h"
 
 // Triangle rendering apis are in gEngfuncs.pTriAPI
 
+//#include "com_model.h"
 #include "const.h"
 #include "entity_state.h"
 #include "cl_entity.h"

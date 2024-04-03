@@ -33,6 +33,7 @@ extern DLL_GLOBAL BOOL		g_fGameOver;
 
 CHalfLifeTeamplay::CHalfLifeTeamplay()
 {
+	ALERT( at_console, "Half-Life multiplayer teamplay\n");
 	m_DisableDeathMessages = FALSE;
 	m_DisableDeathPenalty = FALSE;
 

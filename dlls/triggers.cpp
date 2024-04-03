@@ -27,6 +27,10 @@
 #include "saverestore.h"
 #include "trains.h"			// trigger_camera has train functionality
 #include "gamerules.h"
+#include "shake.h"			// trigger_enddecay fading constants
+#include "effects.h"		// env_render can use instance of CEnvMirroredLaser
+#include "triggers.h"
+#include "shellapi.h"
 
 #define	SF_TRIGGER_PUSH_START_OFF	2//spawnflag that makes trigger_push spawn turned OFF
 #define SF_TRIGGER_HURT_TARGETONCE	1// Only fire hurt target once
@@ -34,8 +38,14 @@
 #define	SF_TRIGGER_HURT_NO_CLIENTS	8//spawnflag that makes trigger_push spawn turned OFF
 #define SF_TRIGGER_HURT_CLIENTONLYFIRE	16// trigger hurt will only fire its target if it is hurting a client
 #define SF_TRIGGER_HURT_CLIENTONLYTOUCH 32// only clients may touch this trigger.
+#define SF_MM_KILLTARGETS    		    2
+
+// to help trigger entites define who is standing inside
+#define PF_PLAYER1	1
+#define PF_PLAYER2  2
 
 extern DLL_GLOBAL BOOL		g_fGameOver;
+extern bool bDecay;
 
 extern void SetMovedir(entvars_t* pev);
 extern Vector VecBModelOrigin( entvars_t* pevBModel );
@@ -457,6 +467,7 @@ void CMultiManager::ManagerReport( void )
 #define SF_RENDER_MASKMODE	( 1 << 2 )
 #define SF_RENDER_MASKCOLOR	( 1 << 3 )
 
+// TODO: it is rather slow using NETNAME to set renderfx, need to make list of those entities on level load
 class CRenderFxManager : public CBaseEntity
 {
 public:
@@ -491,6 +502,38 @@ void CRenderFxManager::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_T
 				pevTarget->rendermode = pev->rendermode;
 			if( !FBitSet( pev->spawnflags, SF_RENDER_MASKCOLOR ) )
 				pevTarget->rendercolor = pev->rendercolor;
+		}
+	} else
+	if (!FStringNull(pev->netname))
+	{
+		edict_t* pentTarget	= NULL;
+		while ( 1 )
+		{
+			pentTarget = FIND_ENTITY_BY_NETNAME(pentTarget, STRING(pev->netname));
+			if (FNullEnt(pentTarget))
+				break;
+
+			// other env_renders also have netname specified, and we must not touch them, so:
+			// if classname<>env_render then
+			//   do smthng
+			if (FClassnameIs(pentTarget, "env_render"))
+				break;
+
+			entvars_t *pevTarget = VARS( pentTarget );
+			if ( !FBitSet( pev->spawnflags, SF_RENDER_MASKFX ) )
+				pevTarget->renderfx = pev->renderfx;
+			if ( !FBitSet( pev->spawnflags, SF_RENDER_MASKAMT ) )
+				pevTarget->renderamt = pev->renderamt;
+			if ( !FBitSet( pev->spawnflags, SF_RENDER_MASKMODE ) )
+				pevTarget->rendermode = pev->rendermode;
+			if ( !FBitSet( pev->spawnflags, SF_RENDER_MASKCOLOR ) )
+				pevTarget->rendercolor = pev->rendercolor;
+
+			if (FClassnameIs(pentTarget, "env_mirroredlaser"))
+			{
+				CEnvMirroredLaser* pLaser = (CEnvMirroredLaser*)CBaseEntity::Instance(pentTarget);
+				pLaser->ReColorLasers();
+			}
 		}
 	}
 }
@@ -550,6 +593,11 @@ void CBaseTrigger::KeyValue( KeyValueData *pkvd )
 	else if( FStrEq( pkvd->szKeyName, "damagetype" ) )
 	{
 		m_bitsDamageInflict = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "player_index"))
+	{
+		m_iPlayerIndex = atoi(pkvd->szValue);
 		pkvd->fHandled = TRUE;
 	}
 	else
@@ -1496,6 +1544,17 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 	}
 	//ALERT( at_console, "Level touches %d levels\n", ChangeList( levels, 16 ) );
 	ALERT( at_console, "CHANGE LEVEL: %s %s\n", st_szNextMap, st_szNextSpot );
+
+/*
+Vyacheslav Dzhura: 8/9/2008
+DONE: COMMENTED - EXPERIMENTAL!!!!!!!!
+*/
+	if ( g_pGameRules->IsCoOp )
+	{
+		char cmd[128];
+		sprintf( cmd, "changelevel %s %s\n", st_szNextMap, st_szNextSpot );
+		SERVER_COMMAND( cmd );
+	} else
 	CHANGE_LEVEL( st_szNextMap, st_szNextSpot );
 }
 
@@ -1962,6 +2021,25 @@ LINK_ENTITY_TO_CLASS( trigger_endsection, CTriggerEndSection )
 
 void CTriggerEndSection::EndSectionUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
+	char	szFilename[MAX_PATH];
+	GET_GAME_DIR( szFilename );
+	strcat( szFilename, "\\manual\\credits.xml" );
+
+	char	szFilename2[MAX_PATH];
+	GET_GAME_DIR( szFilename2 );
+	strcat( szFilename2, "\\manual" );
+
+	int i;
+	
+	for( i = 0; i < strlen( szFilename ); i++)
+		if ( szFilename[i] == '/' ) szFilename[i] = '\\';
+
+	for( i = 0; i < strlen( szFilename2 ); i++)
+		if ( szFilename2[i] == '/' ) szFilename2[i] = '\\';
+
+	if (!IS_DEDICATED_SERVER())
+	  ShellExecute( GetActiveWindow(), "open", "iexplore", szFilename, szFilename2, SW_MAXIMIZE);
+
 	// Only save on clients
 	if( pActivator && !pActivator->IsNetClient() )
 		return;
@@ -2385,4 +2463,593 @@ void CTriggerCamera::Move()
 
 	float fraction = 2 * gpGlobals->frametime;
 	pev->velocity = ( ( pev->movedir * pev->speed ) * fraction ) + ( pev->velocity * ( 1 - fraction ) );
+}
+
+//
+// TRIGGER_ENDDECAY
+//
+
+class CTriggerEndDecay : public CBaseTrigger
+{
+//private:
+//	int	m_iPhase;
+public:
+	void Spawn( void );
+	void EXPORT EndDecayTouch( CBaseEntity *pOther );
+	void KeyValue( KeyValueData *pkvd );
+	void EXPORT EndDecayUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+	void EXPORT EndDecayThink( void );
+
+	bool bIsFinal;
+	bool bUsed;
+	t_playerStats stats[3];
+};
+LINK_ENTITY_TO_CLASS( trigger_enddecay, CTriggerEndDecay );
+
+void CTriggerEndDecay::Spawn( void )
+{
+	bUsed = false;
+
+	if ( g_pGameRules->IsDeathmatch() )
+	{
+		REMOVE_ENTITY( ENT(pev) );
+		return;
+	}
+
+	InitTrigger();
+
+	SetThink( SUB_DoNothing );
+	SetUse ( EndDecayUse );
+	// If it is a "use only" trigger, then don't set the touch function.
+	if ( ! (pev->spawnflags & SF_ENDSECTION_USEONLY) )
+		SetTouch( EndDecayTouch );
+}
+/*
+
+MOVED TO: decay_gamerules.cpp
+
+char getGradeChar( int grade )
+{
+	char gradeChar;
+	switch ( grade ) 
+	{
+		case 3: 
+			gradeChar = 'D';
+			break;
+		case 2:
+			gradeChar = 'C';
+			break;
+		case 1:
+			gradeChar = 'B';
+			break;
+		case 0:
+			gradeChar = 'A';
+			break;
+		default:
+			gradeChar = 'D';
+			break;
+	}
+	return gradeChar;
+}
+*/
+void CTriggerEndDecay::EndDecayUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
+{
+	// Only save on clients
+	//if ( pActivator && !pActivator->IsNetClient() )
+	//	return;
+    
+	SetUse( NULL );
+
+	/*while (pActivator = UTIL_FindEntityByClassname(pActivator, "player"))
+	{
+		((CBasePlayer *)((CBaseEntity *)pActivator))->EnableControl(FALSE);
+	}*/
+
+	CBasePlayer *client;
+	client = NULL;
+	while ( ((client = (CBasePlayer*)UTIL_FindEntityByClassname( client, "player" )) != NULL) && (!FNullEnt(client->edict())) ) 
+	{
+		if ( !client->pev )
+			continue;
+		if ( !(client->IsNetClient()) )	// Not a client ? (should never be true)
+			continue;
+		client->EnableControl(FALSE);
+	}
+
+	CDecayRules *g_pDecayRules = (CDecayRules*)g_pGameRules;
+
+	// our players should have DecayId of 1 or 2, so "loop" between these two numbers only
+	if ( this->bIsFinal == true )
+	{
+		int damageGrade;
+		int killsGrade;
+		int accuracyGrade;
+
+		char gradeChar[8];
+		memset( gradeChar, 0, sizeof( gradeChar ) );
+
+		damageGrade = killsGrade = accuracyGrade = 3; // by default "D" to all categories
+
+		for (int i = 1; i <= 2; i++ ) 
+		{
+			t_playerStats *curStats = &g_pDecayRules->pStats[i];
+
+			// compute accuracy
+			if ( ( curStats->shots * 100 ) != 0 ) 
+				curStats->accuracy = (float)curStats->hits / (float)curStats->shots * 100;
+			else
+				curStats->accuracy = 0;
+
+			// go through grade values for C,B,A
+			for (int j = 2; j >= 0; j-- )
+			{
+				if ( curStats->damage <= stats[j].damage )
+					damageGrade = j;
+				if ( curStats->kills >= stats[j].kills )
+					killsGrade = j;
+
+				if ( curStats->accuracy >= stats[j].accuracy )
+				  accuracyGrade = j;
+			}
+
+			if ( curStats->accuracy == 0 ) // not a single shot!!!
+				accuracyGrade = 3;
+
+			int finalGrade = ( damageGrade + killsGrade + accuracyGrade ) / 3;
+			g_pDecayRules->savePlayerStats( i, finalGrade, damageGrade, killsGrade, accuracyGrade );
+			gradeChar[i] = g_pDecayRules->getGradeChar( finalGrade );
+		}
+
+		char buf[256];
+		sprintf( buf, "Player 1 grade: %c\nPlayer 2 grade: %c", gradeChar[1], gradeChar[2] );
+		UTIL_ShowMessageAll( buf );
+	}
+
+	UTIL_ScreenFadeAll( Vector(0, 0, 0), 7, 3, 255, FFADE_OUT );
+	UTIL_ShowMessageAll( STRING(pev->message) );
+
+	pev->nextthink = gpGlobals->time + 7;
+	SetThink( EndDecayThink );
+}
+
+void CTriggerEndDecay::EndDecayThink( void )
+{
+
+//********************************************************************************
+// Theoretically we should go there after level-end dialog which should be called
+// from client.dll from EndDecayUse, then player should choose next mission, read
+// it's briefing and continue game on that level, or restart current or exit the 
+// game. Callback is done via console commands which are intercepted in this dll
+// in clien.cpp file which then could call methods of this trigger_enddecay
+//********************************************************************************
+
+	if ( bUsed == true )
+		return;
+/*
+	if ( pev->spawnflags & 2 )
+	{
+		bUsed = true;
+		return;
+	}
+*/
+	static char szNextMap[128];
+	sprintf( szNextMap, "null" );
+
+	if (g_pGameRules->IsCoOp())
+	{
+		CDecayRules *g_pDecayRules = (CDecayRules*)g_pGameRules;
+	    sprintf( szNextMap, g_pDecayRules->getDecayNextMap() );
+	}
+
+	//if ( pev->message )
+	//	g_engfuncs.pfnEndSection(STRING(pev->message));
+
+	bool bHasNextMap = ( strcmp( szNextMap, "null" ) != 0 ); 
+
+
+	if ( this->bIsFinal )
+	{
+		if ( ( bHasNextMap == true ) && ( pev->spawnflags & 2 ) == false )
+			CHANGE_LEVEL( szNextMap, NULL );
+		else
+		{
+			if ( ( pev->spawnflags & 2 ) == false )
+			{
+				if ( pev->message )
+					g_engfuncs.pfnEndSection(STRING(pev->message));
+				else
+					g_engfuncs.pfnEndSection( "Decay" );
+			} // else map should be ended somehow via it's entities login
+		}
+	} else
+	{
+		// do restart of server
+		char cmd[128];
+		sprintf( cmd, "restart\n" );
+		SERVER_COMMAND( cmd );
+	}
+
+/*
+	if ( ( strcmp( szNextMap, "null" ) != 0 ) && ( this->bIsFinal == true ) )
+	    CHANGE_LEVEL( szNextMap, NULL );
+	else {
+		int mapId = g_pDecayRules->getDecayMapId();
+
+		if ( ( mapId == 11 ) || ( mapId == 12 ) ) // do not restart server for dy_outro or dy_alien
+		{
+			if ( pev->message )
+				g_engfuncs.pfnEndSection(STRING(pev->message));
+			else
+				g_engfuncs.pfnEndSection( "Decay" );
+		} else
+		{
+			// do restart of server
+			char cmd[128];
+			sprintf( cmd, "restart\n" );
+			SERVER_COMMAND( cmd );
+		}
+	}
+*/
+	// TODO: send here message to client.dll to popup level stats dialog
+	// TODO: do we need this here?
+	// pev->nextthink = gpGlobals->time + 10.0;
+	// SetThink( SUB_DoNothing );
+	bUsed = true;
+	//UTIL_Remove( this );
+}
+
+void CTriggerEndDecay::EndDecayTouch( CBaseEntity *pOther )
+{
+	// Only save on clients
+	if ( !pOther->IsNetClient() )
+	  return;
+    
+	SetTouch( NULL );
+	Use( pOther, pOther, USE_ON, 1 );
+	// same as use below
+}
+
+void CTriggerEndDecay :: KeyValue( KeyValueData *pkvd )
+{
+	if (FStrEq(pkvd->szKeyName, "success"))
+	{
+		if (atoi( pkvd->szValue ) == 1)
+			this->bIsFinal = true;
+		else
+			this->bIsFinal = false;
+		pkvd->fHandled = TRUE;
+	} else
+
+	//
+	//	WOUNDS (DAMAGE)
+	//
+	if (FStrEq(pkvd->szKeyName, "woundsa"))
+	{
+		this->stats[0].damage = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	} else
+
+	if (FStrEq(pkvd->szKeyName, "woundsb"))
+	{
+		this->stats[1].damage = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	} else
+	if (FStrEq(pkvd->szKeyName, "woundsc"))
+	{
+		this->stats[2].damage = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	} else
+
+	//
+	//  KILLS
+	//
+	if (FStrEq(pkvd->szKeyName, "killsa"))
+	{
+		this->stats[0].kills = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	} else
+	if (FStrEq(pkvd->szKeyName, "killsb"))
+	{
+		this->stats[1].kills = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	} else
+	if (FStrEq(pkvd->szKeyName, "killsc"))
+	{
+		this->stats[2].kills = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	} else
+
+	//
+	//	ACCURACY
+	//
+	if (FStrEq(pkvd->szKeyName, "accuracya"))
+	{
+		this->stats[0].accuracy = atof( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	} else
+	if (FStrEq(pkvd->szKeyName, "accuracyb"))
+	{
+		this->stats[1].accuracy = atof( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	} else
+	if (FStrEq(pkvd->szKeyName, "accuracyc"))
+	{
+		this->stats[2].accuracy = atof( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	} else
+
+	if (FStrEq(pkvd->szKeyName, "section"))
+	{
+//		m_iszSectionName = ALLOC_STRING( pkvd->szValue );
+		// Store this in message so we don't have to write save/restore for this ent
+		pev->message = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else
+		CBaseTrigger::KeyValue( pkvd );
+}
+
+//
+//	TRIGGER_PLAYERFREEZE (based on code from Spirit of Half-Life SDK)
+//
+
+class CPlayerFreeze: public CBaseDelay
+{
+	void Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+	void Think( void );
+	EHANDLE m_hActivator;
+};
+
+void CPlayerFreeze::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
+{
+	CBasePlayer *client;
+	client = NULL;
+	while ( ((client = (CBasePlayer*)UTIL_FindEntityByClassname( client, "player" )) != NULL) && (!FNullEnt(client->edict())) ) 
+	{
+		if ( !client->pev )
+			continue;
+		
+	//	if ( client->edict() == pEntity )
+	//		continue;
+
+	//	if ( !(client->IsNetClient()) )	// Not a client ? (should never be true)
+	//		continue;
+
+		if (client->pev->flags & FL_FROZEN)
+			client->EnableControl(TRUE);
+		else
+			client->EnableControl(FALSE);
+	}
+
+	/*
+ 	pActivator = UTIL_FindEntityByClassname(NULL, "player");
+	if (pActivator->pev->flags & FL_FROZEN)
+	  ((CBasePlayer *)((CBaseEntity *)pActivator))->EnableControl(TRUE);
+	else
+	  ((CBasePlayer *)((CBaseEntity *)pActivator))->EnableControl(FALSE);
+    */
+
+		/*if (pActivator && pActivator->pev->flags & FL_CLIENT)
+		{
+			if (pActivator->pev->flags & FL_FROZEN)
+			{
+				// unfreeze him
+				((CBasePlayer *)((CBaseEntity *)pActivator))->EnableControl(TRUE);
+				m_hActivator = NULL;
+				SetThink( SUB_DoNothing );
+			}
+			else
+			{
+				// freeze him
+				((CBasePlayer *)((CBaseEntity *)pActivator))->EnableControl(FALSE);
+				if (m_flDelay)
+				{
+					m_hActivator = pActivator;
+					pev->nextthink = gpGlobals->time + m_flDelay;
+				}
+			}
+		}*/
+}
+
+void CPlayerFreeze::Think ( void )
+{
+	Use(m_hActivator, this, USE_ON, 0);
+}
+
+LINK_ENTITY_TO_CLASS( trigger_playerfreeze, CPlayerFreeze );
+
+//
+//	trigger_random
+//
+
+class CTriggerRandom : public CBaseDelay
+{
+public:
+	void KeyValue( KeyValueData *pkvd );
+	void Spawn( void );
+	void Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+
+	int ObjectCaps( void ) { return CBaseDelay::ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
+	virtual int		Save( CSave &save );
+	virtual int		Restore( CRestore &restore );
+
+	static	TYPEDESCRIPTION m_SaveData[];
+
+private:
+	int		m_iRandomRange;
+	float   m_flProbability;
+};
+LINK_ENTITY_TO_CLASS( trigger_random, CTriggerRandom );
+
+TYPEDESCRIPTION	CTriggerRandom::m_SaveData[] = 
+{
+	DEFINE_FIELD( CTriggerRandom, m_iRandomRange, FIELD_INTEGER ),
+	DEFINE_FIELD( CTriggerRandom, m_flProbability, FIELD_FLOAT ),
+};
+
+IMPLEMENT_SAVERESTORE(CTriggerRandom,CBaseDelay);
+
+void CTriggerRandom::KeyValue( KeyValueData *pkvd )
+{
+	if (FStrEq(pkvd->szKeyName, "randomrange"))
+	{
+		m_iRandomRange = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	} else
+	if (FStrEq(pkvd->szKeyName, "probability"))
+	{
+		m_flProbability = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else
+		CBaseDelay::KeyValue( pkvd );
+}
+
+
+void CTriggerRandom::Spawn( void )
+{
+}
+
+void CTriggerRandom::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
+{
+	int FireId = RANDOM_LONG(0, m_iRandomRange-1); // was 1, m_iRandomRange
+	//SUB_UseTargets( this, USE_ON, 0 );
+	
+	char m_iszFireTarget[60];
+	sprintf( m_iszFireTarget, "%s%d", STRING( pev->target ), FireId);
+
+	CBaseEntity *pEnt = NULL;
+	bool bFoundRandomTarget = false;
+	while ((pEnt = UTIL_FindEntityByTargetname( pEnt, m_iszFireTarget )) != NULL)
+	{
+		pEnt->Use( pActivator, pCaller, useType, value );
+		bFoundRandomTarget = true;
+	}
+
+	if ( !bFoundRandomTarget )
+		ALERT( at_console, "Randomly found entity `%s` not found!\n", m_iszFireTarget );
+
+	/*
+	CBaseEntity *pTarget = UTIL_FindEntityByTargetname( NULL, m_iszFireTarget );
+	if ( pTarget )
+		pTarget->Use( pActivator, pCaller, useType, value );
+	else
+		ALERT( at_console, "Randomly found entity %s not found!\n", m_iszFireTarget );
+	*/
+
+	//if ( pev->spawnflags & SF_RELAY_FIREONCE )
+	//	UTIL_Remove( this );
+}
+
+//
+//	trigger_bit and trigger_bit_counter (used in ht11lasers)
+//
+
+typedef struct
+{
+	bool Bits[8];
+} TBitArray;
+
+TBitArray ByteToArray(byte Number)
+{
+	int i;
+	byte fl = 1;
+	TBitArray MyArr;
+	for (i = 0; i < 8; i++, fl = fl << 1) {
+		MyArr.Bits[i] = Number & fl;
+	}
+	return MyArr;
+}
+
+byte ArrayToByte(TBitArray A)
+{
+	int i;
+	byte fl = 1;
+	byte Result;
+	for (i = 0; i < 8; i++, fl = fl << 1) {
+		if (A.Bits[i]) {
+				Result = Result | fl;
+		}
+	}
+	return Result;
+}
+
+class CTriggerBit : public CBaseDelay 
+{
+	void	Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+};
+LINK_ENTITY_TO_CLASS( trigger_bit, CTriggerBit );
+
+void CTriggerBit::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
+{
+	SUB_UseTargets( this, USE_TOGGLE, 1.0 );
+}
+
+class CTriggerBitCounter : public CBaseDelay
+{
+public:
+	void KeyValue( KeyValueData *pkvd );
+	//void Spawn( void );
+	//void Precache( void );
+	void Think( void );
+
+	// use code, which will operates the bits
+	// use activators skin field as bit which we need to toggle
+	void	Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+
+	int ObjectCaps( void ) { return CBaseDelay::ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
+	
+	int m_iTriggerMask;
+
+	virtual int		Save( CSave &save );
+	virtual int		Restore( CRestore &restore );
+	static	TYPEDESCRIPTION m_SaveData[];
+};
+LINK_ENTITY_TO_CLASS( trigger_bit_counter, CTriggerBitCounter );
+
+TYPEDESCRIPTION	CTriggerBitCounter::m_SaveData[] = 
+{
+	DEFINE_FIELD( CTriggerBitCounter, m_iTriggerMask, FIELD_INTEGER ),
+};
+
+IMPLEMENT_SAVERESTORE(CTriggerBitCounter, CBaseDelay);
+
+void CTriggerBitCounter::KeyValue( KeyValueData *pkvd )
+{
+	if (FStrEq(pkvd->szKeyName, "triggermask"))
+	{
+		m_iTriggerMask = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else
+		CBaseDelay::KeyValue( pkvd );
+}
+
+void CTriggerBitCounter::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
+{
+	//uncommentme
+	//ALERT( at_console, "trigger_bit_counter used! bit id received %d\n", pActivator->pev->skin );
+
+	int m_iDesiredBit = pActivator->pev->skin;
+	ASSERT( m_iDesiredBit<=8 );
+
+	TBitArray MyArr = ByteToArray( pev->skin );
+	MyArr.Bits[m_iDesiredBit-1] = !MyArr.Bits[m_iDesiredBit-1];
+	pev->skin = ArrayToByte(MyArr);
+	if ( pev->skin == m_iTriggerMask )
+	{
+		ALERT( at_console, "trigger_bit_counter used! bit id received %d target %s\n", pActivator->pev->skin, STRING(pev->target) );
+		SUB_UseTargets( this, USE_ON, 0 );
+	}
+}
+
+void CTriggerBitCounter::Think( void )
+{
+/*	if ( !m_globalstate || gGlobalState.EntityGetState( m_globalstate ) == GLOBAL_ON )
+	{
+		SUB_UseTargets( this, triggerType, 0 );
+		if ( pev->spawnflags & SF_AUTO_FIREONCE )
+			UTIL_Remove( this );
+	}
+*/
 }

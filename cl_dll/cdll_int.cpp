@@ -79,6 +79,15 @@ void	DLLEXPORT HUD_VoiceStatus(int entindex, qboolean bTalking);
 void	DLLEXPORT HUD_DirectorMessage( int iSize, void *pbuf );
 void DLLEXPORT HUD_MobilityInterface( mobile_engfuncs_t *gpMobileEngfuncs );
 }
+/*
+// SCREEN GLOW
+extern bool InitScreenGlow();
+extern void RenderScreenGlow();
+*/
+// CAMERA EFFECT
+extern bool InitCameraEffect();
+extern void RenderCameraEffect();
+extern void GrabCameraTexture();
 
 /*
 ================================
@@ -302,6 +311,14 @@ redraw the HUD.
 
 int DLLEXPORT HUD_Redraw( float time, int intermission )
 {
+	// check if we are in OpenGl mode
+    if (IEngineStudio.IsHardware() == 1)
+	{
+  	    //RenderScreenGlow(); // SCREEN GLOW
+		if (gHUD.m_iCamMode == CAM_ON)
+			RenderCameraEffect();
+	}
+    
 	gHUD.Redraw( time, intermission );
 
 	return 1;

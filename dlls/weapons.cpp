@@ -396,6 +396,7 @@ TYPEDESCRIPTION	CBasePlayerItem::m_SaveData[] =
 	DEFINE_FIELD( CBasePlayerItem, m_iId, FIELD_INTEGER ),
 	// DEFINE_FIELD( CBasePlayerItem, m_iIdPrimary, FIELD_INTEGER ),
 	// DEFINE_FIELD( CBasePlayerItem, m_iIdSecondary, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayerItem, DecayPlayerIndex, FIELD_INTEGER ),
 };
 
 IMPLEMENT_SAVERESTORE( CBasePlayerItem, CBaseAnimating )
@@ -1228,6 +1229,7 @@ TYPEDESCRIPTION	CWeaponBox::m_SaveData[] =
 	DEFINE_ARRAY( CWeaponBox, m_rgiszAmmo, FIELD_STRING, MAX_AMMO_SLOTS ),
 	DEFINE_ARRAY( CWeaponBox, m_rgpPlayerItems, FIELD_CLASSPTR, MAX_ITEM_TYPES ),
 	DEFINE_FIELD( CWeaponBox, m_cAmmoTypes, FIELD_INTEGER ),
+	DEFINE_FIELD( CWeaponBox, m_iPlayerIndex, FIELD_INTEGER ),
 };
 
 IMPLEMENT_SAVERESTORE( CWeaponBox, CBaseEntity )
@@ -1263,6 +1265,9 @@ void CWeaponBox::KeyValue( KeyValueData *pkvd )
 void CWeaponBox::Spawn( void )
 {
 	Precache();
+
+	if (!m_iPlayerIndex)
+		m_iPlayerIndex = 0;
 
 	pev->movetype = MOVETYPE_TOSS;
 	pev->solid = SOLID_TRIGGER;
@@ -1334,6 +1339,13 @@ void CWeaponBox::Touch( CBaseEntity *pOther )
 	}
 
 	CBasePlayer *pPlayer = (CBasePlayer *)pOther;
+
+	if (m_iPlayerIndex != 0)
+	{
+		if (pPlayer->m_iDecayId	!= this->m_iPlayerIndex)
+			return;
+	}
+
 	int i;
 
 	// dole out ammo

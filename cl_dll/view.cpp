@@ -63,6 +63,7 @@ void VectorAngles( const float *forward, float *angles );
 #include "com_model.h"
 
 extern engine_studio_api_t IEngineStudio;
+extern void GrabCameraTexture();
 
 /*
 The view is allowed to move slightly from it's true position for bobbing,
@@ -435,6 +436,15 @@ void V_CalcNormalRefdef( struct ref_params_s *pparams )
 	// view is the weapon model (only visible from inside body)
 	view = gEngfuncs.GetViewModel();
 
+	//SKY START
+	//LRC - don't show weapon models when we're drawing the sky.
+	if (gHUD.m_iCamMode == CAM_ON)
+	{
+		savedviewmodel = view->model;
+		view->model = NULL;
+	}
+	//SKY END
+
 	// transform the view offset by the model's matrix to get the offset from
 	// model origin for the view
 	bob = V_CalcBob( pparams );
@@ -780,6 +790,18 @@ void V_CalcNormalRefdef( struct ref_params_s *pparams )
 	lasttime = pparams->time;
 
 	v_origin = pparams->vieworg;
+
+	// SKY START
+	// LRC - override the view position if we're drawing a sky, rather than the player's view
+	if (gHUD.m_iCamMode == CAM_ON && pparams->nextView == 0)
+	{
+		pparams->vieworg[0] = gHUD.m_vecCamPos.x;
+		pparams->vieworg[1] = gHUD.m_vecCamPos.y;
+		pparams->vieworg[2] = gHUD.m_vecCamPos.z;
+		//pparams->viewangles[0]
+		pparams->nextView = 1;
+	}
+	// SKY END
 }
 
 void V_SmoothInterpolateAngles( float * startAngle, float * endAngle, float * finalAngle, float degreesPerSec )

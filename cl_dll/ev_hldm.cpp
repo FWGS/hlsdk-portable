@@ -1696,6 +1696,287 @@ void EV_SnarkFire( event_args_t *args )
 //	   SQUEAK END
 //======================
 
+//======================
+//	   VORTI START
+//======================
+
+enum vorti_e {
+	SLAVE_IDLE1 = 0,
+	SLAVE_IDLE2,
+	SLAVE_ATTACK1HIT,
+	SLAVE_ATTACK1MISS,
+	SLAVE_ATTACK2MISS,
+	SLAVE_ATTACK2HIT,
+	SLAVE_ATTACK3MISS,
+	SLAVE_ATTACK3HIT,
+
+	SLAVE_CHARGE,
+	SLAVE_CHARGE_LOOP,
+	SLAVE_ZAP,
+	SLAVE_RETURN
+};
+
+int g_iVortSwing;
+
+//Only predict the miss sounds, hit sounds are still played 
+//server side, so players don't get the wrong idea.
+void EV_Vorti( event_args_t *args )
+{
+	int idx;
+	vec3_t origin;
+	vec3_t angles;
+	vec3_t velocity;
+
+	idx = args->entindex;
+	VectorCopy( args->origin, origin );
+	
+	//Play Swing sound
+	gEngfuncs.pEventAPI->EV_PlaySound( idx, origin, CHAN_WEAPON, "zombie/claw_miss1.wav", 1, ATTN_NORM, 0, PITCH_NORM); 
+
+	if ( EV_IsLocal( idx ) )
+	{
+		gEngfuncs.pEventAPI->EV_WeaponAnimation( SLAVE_ATTACK1MISS, 1 );
+
+		switch( (g_iVortSwing++) % 3 )
+		{
+			case 0:
+				gEngfuncs.pEventAPI->EV_WeaponAnimation ( SLAVE_ATTACK1MISS, 1 ); break;
+			case 1:
+				gEngfuncs.pEventAPI->EV_WeaponAnimation ( SLAVE_ATTACK2MISS, 1 ); break;
+			case 2:
+				gEngfuncs.pEventAPI->EV_WeaponAnimation ( SLAVE_ATTACK3MISS, 1 ); break;
+		}
+	}
+}
+
+/*
+			float r = 255.0f;
+			float g = 180.0f;
+			float b = 96.0f;
+
+			  R_BeamEntPoint:
+				int startEnt, 
+				float * end, 
+				int modelIndex, 
+				float life, 
+				float width, 
+				float amplitude, 
+				float brightness, 
+				float speed, 
+				int startFrame, 
+				float framerate, 
+				float r, float g, float b
+			
+			pVortiBeam = gEngfuncs.pEfxAPI->R_BeamEntPoint ( idx | 0x1000, tr.endpos, iBeamModelIndex, 
+				99999, ///life 
+				2.0, //width
+				0.4, // ampl 
+				64 / 255, //bright 
+				55, //speed 
+				0, 0, 
+				r, g, b );
+*/
+
+//#define SND_CHANGE_PITCH	(1<<7)		// duplicated in protocol.h change sound pitch
+
+void EV_SpinVorti( event_args_t *args )
+{
+	int idx;
+	vec3_t origin;
+	vec3_t angles;
+	vec3_t velocity;
+	int iSoundState = 0;
+
+	int pitch;
+
+	idx = args->entindex;
+	VectorCopy( args->origin, origin );
+	VectorCopy( args->angles, angles );
+	VectorCopy( args->velocity, velocity );
+
+	pitch = args->iparam1;
+
+	//iSoundState = args->bparam1 ? SND_CHANGE_PITCH : 0;
+
+	gEngfuncs.pEventAPI->EV_PlaySound( idx, origin, CHAN_WEAPON, "debris/zap1.wav", 1.0, ATTN_NORM, iSoundState, pitch );
+}
+
+/*
+==============================
+EV_StopPreviousGauss
+
+==============================
+*/
+void EV_StopPreviousVorti( int idx )
+{
+	// Make sure we don't have a gauss spin event in the queue for this guy
+	gEngfuncs.pEventAPI->EV_KillEvents( idx, "events/vortispin.sc" );
+	gEngfuncs.pEventAPI->EV_StopSound( idx, CHAN_WEAPON, "debris/zap1.wav" );
+}
+
+void EV_FireVorti( event_args_t *args )
+{
+	int idx;
+	vec3_t origin;
+	vec3_t angles;
+	vec3_t velocity;
+	float flDamage = args->fparam1;
+	int primaryfire = args->bparam1;
+
+	int m_fPrimaryFire = args->bparam1;
+	int m_iWeaponVolume = GAUSS_PRIMARY_FIRE_VOLUME;
+	vec3_t vecSrc;
+	vec3_t vecDest;
+	edict_t		*pentIgnore;
+	pmtrace_t tr, beam_tr;
+	float flMaxFrac = 1.0;
+	int	nTotal = 0;
+	int fHasPunched = 0;
+	int fFirstBeam = 1;
+	int	nMaxHits = 1;
+	physent_t *pEntity;
+	int m_iBeam, m_iGlow, m_iBalls;
+	vec3_t up, right, forward;
+
+	idx = args->entindex;
+	VectorCopy( args->origin, origin );
+	VectorCopy( args->angles, angles );
+	VectorCopy( args->velocity, velocity );
+
+	if ( args->bparam2 )
+	{
+		EV_StopPreviousVorti( idx );
+		return;
+	}
+
+	//Con_Printf( "Firing vorti with %f\n", flDamage );
+	EV_GetGunPosition( args, vecSrc, origin );
+
+	m_iBeam = gEngfuncs.pEventAPI->EV_FindModelIndex( "sprites/lgtning.spr" );
+	m_iBalls = m_iGlow = gEngfuncs.pEventAPI->EV_FindModelIndex( "sprites/hotglow.spr" );
+	
+	AngleVectors( angles, forward, right, up );
+
+	VectorMA( vecSrc, 8192, forward, vecDest );
+
+	if ( EV_IsLocal( idx ) )
+	{
+		V_PunchAxis( 0, -2.0 );
+		gEngfuncs.pEventAPI->EV_WeaponAnimation( SLAVE_ZAP, 2 );
+
+		if ( m_fPrimaryFire == false )
+			 g_flApplyVel = flDamage;	
+			 
+	}
+
+	gEngfuncs.pEventAPI->EV_PlaySound( idx, origin, CHAN_WEAPON, "weapons/electro4.wav", 0.5 + flDamage * (1.0 / 400.0), ATTN_NORM, 0, 85 + gEngfuncs.pfnRandomLong( 0, 0x1f ) );
+
+	while (flDamage > 10 && nMaxHits > 0)
+	{
+		nMaxHits--;
+
+		gEngfuncs.pEventAPI->EV_SetUpPlayerPrediction( false, true );
+		
+		// Store off the old count
+		gEngfuncs.pEventAPI->EV_PushPMStates();
+	
+		// Now add in all of the players.
+		gEngfuncs.pEventAPI->EV_SetSolidPlayers ( idx - 1 );	
+
+		gEngfuncs.pEventAPI->EV_SetTraceHull( 2 );
+		gEngfuncs.pEventAPI->EV_PlayerTrace( vecSrc, vecDest, PM_STUDIO_BOX, -1, &tr );
+
+		gEngfuncs.pEventAPI->EV_PopPMStates();
+
+		if ( tr.allsolid )
+			break;
+
+		if ( EV_IsLocal( idx ) )
+		{
+			// Add muzzle flash to current weapon model
+			EV_MuzzleFlash();
+		}
+		fFirstBeam = 0;
+
+		gEngfuncs.pEfxAPI->R_BeamEntPoint( 
+			idx | 0x1000,
+			tr.endpos,
+			m_iBeam,
+			0.3,
+			3.0,
+			0.5, // noise
+			1.0,
+			55,
+			0,
+			0,
+			0.5, 1, 0//180, 255, 96
+		);
+
+		gEngfuncs.pEfxAPI->R_BeamEntPoint( 
+			idx | 0x2000,
+			tr.endpos,
+			m_iBeam,
+			0.3,
+			3.0,
+			0.5, // noise
+			1.0,
+			55,
+			0,
+			0,
+			0.5, 1, 0//180, 255, 96
+		);
+
+		pEntity = gEngfuncs.pEventAPI->EV_GetPhysent( tr.ent );
+		if ( pEntity == NULL )
+			break;
+
+		if ( pEntity->solid == SOLID_BSP )
+		{
+			float n;
+
+			pentIgnore = NULL;
+
+			n = -DotProduct( tr.plane.normal, forward );
+
+			// tunnel
+			EV_HLDM_DecalGunshot( &tr, BULLET_MONSTER_12MM );
+
+			//gEngfuncs.pEfxAPI->R_TempSprite( tr.endpos, vec3_origin, 1.0, m_iGlow, kRenderGlow, kRenderFxNoDissipation, flDamage / 255.0, 6.0, FTENT_FADEOUT );
+
+			//gEngfuncs.pEfxAPI->R_FunnelSprite( tr.endpos, m_iGlow, false );
+			gEngfuncs.pEfxAPI->R_SparkShower( tr.endpos );
+
+			// limit it to one hole punch
+			if (fHasPunched)
+			{
+				break;
+			}
+			fHasPunched = 1;
+			
+			{
+				// slug doesn't punch through ever with primary 
+				// fire, so leave a little glowy bit and make some balls
+				//gEngfuncs.pEfxAPI->R_TempSprite( tr.endpos, vec3_origin, 0.2, m_iGlow, kRenderGlow, kRenderFxNoDissipation, 200.0 / 255.0, 0.3, FTENT_FADEOUT );
+
+				vec3_t fwd;
+				VectorAdd( tr.endpos, tr.plane.normal, fwd );
+				//gEngfuncs.pEfxAPI->R_Sprite_Trail( TE_SPRITETRAIL, tr.endpos, fwd, m_iBalls, 8, 0.6, gEngfuncs.pfnRandomFloat( 10, 20 ) / 100.0, 100,
+				//	255, 200 );
+			}
+
+			flDamage = 0;
+		}
+		else
+		{
+			VectorAdd( tr.endpos, forward, vecSrc );
+		}
+	}
+}
+
+//======================
+//	   VORTI END 
+//======================
+
 void EV_TrainPitchAdjust( event_args_t *args )
 {
 	int idx;

@@ -898,7 +898,7 @@ int CHudAmmo::Draw( float flTime )
 
 			x += AmmoWidth / 2;
 
-			UnpackRGB( r,g,b, RGB_YELLOWISH );
+				UnpackRGB( r,g,b, gHUD.uColor );
 
 			// draw the | bar
 			FillRGBA( x, y, iBarWidth, gHUD.m_iFontHeight, r, g, b, a );

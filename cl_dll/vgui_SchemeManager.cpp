@@ -269,7 +269,7 @@ CSchemeManager::CSchemeManager( int xRes, int yRes )
 				}
 				if ( !pScheme->fontName[0] )
 				{
-					strcpy( pScheme->fontName, "Arial" );
+					strcpy( pScheme->fontName, "Trebuchet MS" );  // Vyacheslav Dzhura: was Arial
 				}
 			}
 
@@ -353,7 +353,7 @@ buildDefaultFont:
 	{
 		currentScheme = 0;
 		strcpy( tmpSchemes[0].schemeName, "Default Scheme" );
-		strcpy( tmpSchemes[0].fontName, "Arial" );
+		strcpy( tmpSchemes[0].fontName, "Trebuchet MS" ); //Hoaxer: was Arial
 		tmpSchemes[0].fontSize = 0;
 		tmpSchemes[0].fgColor[0] = tmpSchemes[0].fgColor[1] = tmpSchemes[0].fgColor[2] = tmpSchemes[0].fgColor[3] = 255;
 		tmpSchemes[0].armedFgColor[0] = tmpSchemes[0].armedFgColor[1] = tmpSchemes[0].armedFgColor[2] = tmpSchemes[0].armedFgColor[3] = 255;

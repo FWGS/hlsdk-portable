@@ -28,6 +28,15 @@
 #include "skill.h"
 #include "items.h"
 #include "gamerules.h"
+#include "decals.h"
+#include "actanimating.h"
+
+#define seqEmitterClosed   0
+#define seqEmitterDeploy   1
+#define seqEmitterIdleOpen 2
+#define seqEmitterBroken1  3
+#define seqEmitterBroken2  4
+#define seqEmitterDeath    5
 
 extern int gmsgItemPickup;
 
