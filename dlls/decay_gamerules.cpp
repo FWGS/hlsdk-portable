@@ -24,7 +24,7 @@
 #include <sys/stat.h>
 #define MAX_COMPUTERNAME_LENGTH 64 // random number
 #endif
-
+#include <errno.h>
 #include	"extdll.h"
 #include	"util.h"
 #include	"cbase.h"
@@ -308,6 +308,15 @@ void CDecayRules::statsLoad()
 		ALERT( at_console, "(load game) failed, file is invalid!!!\n" );
 }
 
+static void Platform_CreateDirectory( const char *szFilename )
+{
+#if XASH_WIN32
+	CreateDirectory( szFilename, NULL );
+#else
+	mkdir( szFilename, 0777 );
+#endif
+}
+
 void CDecayRules::statsSave()
 {
 	FILE	*file;
@@ -315,13 +324,16 @@ void CDecayRules::statsSave()
 
 	char	szFilename[MAX_PATH];
 	GET_GAME_DIR( szFilename );
-	strcat( szFilename, "/save/save0.sv2" );
+	strcat( szFilename, "/save" );
+	Platform_CreateDirectory( szFilename );
+	strcat( szFilename, "/save0.sv2" );
 
+	// TODO: replace with fs_stdio interface
 	file = fopen ( szFilename, "wb" );
 
 	if ( !file )
 	{
-		ALERT( at_console, "(save game) failed to create!!!\n" );
+		ALERT( at_console, "(save game) failed to create %s: %s!!!\n", szFilename, strerror( errno ));
 		return;
 	}
 
@@ -455,18 +467,18 @@ void CDecayRules::statsExportXml( void )
 	char	szFilename[MAX_PATH];
 	GET_GAME_DIR( szFilename );
 	strcat( szFilename, "/manual" );
-#if XASH_WIN32
-	CreateDirectory( szFilename, NULL );
-#else
-	mkdir( szFilename, 0777 );
-#endif
+	Platform_CreateDirectory( szFilename );
 	strcat( szFilename, "/stats.xml" );
 
 	FILE *fp;
 
+	// TODO: replace with fs_stdio interface
 	fp = fopen( szFilename, "w" );
 	if ( !fp )
+	{
+		ALERT( at_console, "failed to export stats %s: %s", szFilename, strerror( errno ));
 		return;
+	}
 
     int mapCount = sizeof(decayMaps)/sizeof(decayMaps[0]);
 
