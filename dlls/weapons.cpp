@@ -1125,7 +1125,7 @@ void CBasePlayerAmmo::Materialize( void )
 
 void CBasePlayerAmmo::DefaultTouch( CBaseEntity *pOther )
 {
-	if( !pOther->IsPlayer() || IsPlayerBusting( pOther ))
+	if( !pOther->IsPlayer() || IsPlayerBusting( pOther ) || g_pGameRules->IsAlienMode( ))
 	{
 		return;
 	}
