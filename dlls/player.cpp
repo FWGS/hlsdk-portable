@@ -45,8 +45,6 @@ extern DLL_GLOBAL BOOL g_fDrawLines;
 int gEvilImpulse101;
 extern DLL_GLOBAL int g_iSkillLevel, gDisplayTitle;
 
-extern bool bSlaveCoop;
-
 BOOL gInitHUD = TRUE;
 
 extern void CopyToBodyQue( entvars_t *pev);
@@ -3104,7 +3102,7 @@ void CBasePlayer::Spawn( void )
 	m_iStepLeft = 0;
 	m_flFieldOfView = 0.5f;// some monsters use this to determine whether or not the player is looking at them.
 
-	if ( !bSlaveCoop )
+	if( !g_pGameRules->IsAlienMode( ))
 		m_bloodColor	= BLOOD_COLOR_RED;
 	else
 		m_bloodColor	= BLOOD_COLOR_YELLOW;
@@ -3121,7 +3119,7 @@ void CBasePlayer::Spawn( void )
 	g_pGameRules->SetDefaultPlayerTeam( this );
 	g_pGameRules->GetPlayerSpawnSpot( this );
 
-	if ( !bSlaveCoop )
+	if ( !g_pGameRules->IsAlienMode( ) )
 		SET_MODEL(ENT(pev), "models/player.mdl");
 	else
 		SET_MODEL(ENT(pev), "models/player/dm_slave/dm_slave.mdl");
@@ -3172,7 +3170,7 @@ void CBasePlayer::Spawn( void )
     char *infobuffer = GET_INFOBUFFER( edict( ) );
     int clientIndex = entindex( );
 
-	if (!bSlaveCoop)
+	if (!g_pGameRules->IsAlienMode( ))
 		SET_CLIENT_KEY_VALUE( clientIndex, infobuffer, "model", "ginacol" );
 	else
 		SET_CLIENT_KEY_VALUE( clientIndex, infobuffer, "model", "player/dm_slave/dm_slave" );
@@ -3228,7 +3226,7 @@ void CBasePlayer::Spawn( void )
 
 	CBaseEntity	*pWeaponEntity = NULL;
 
-	if ( ( g_startSuit ) && ( !bSlaveCoop ) ) //if this flag is activated, then start level with suit and activate game_player_equip entity
+	if ( ( g_startSuit ) && ( !g_pGameRules->IsAlienMode( ) ) ) //if this flag is activated, then start level with suit and activate game_player_equip entity
 	{
 		GiveNamedItem( "item_suit" );
 
@@ -3326,7 +3324,7 @@ int CBasePlayer::Restore( CRestore &restore )
 	pev->fixangle = TRUE;           // turn this way immediately
 
 	// Copied from spawn() for now
-	if ( !bSlaveCoop )
+	if ( !g_pGameRules->IsAlienMode( ) )
 		m_bloodColor = BLOOD_COLOR_RED;
 	else
 		m_bloodColor = BLOOD_COLOR_YELLOW;

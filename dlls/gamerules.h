@@ -170,6 +170,10 @@ public:
 	virtual void BulletsFired( entvars_t *pevAttacker, ULONG cShots, int iBulletType, int iShotId ) {};
 	virtual void BulletHit( CBaseEntity *pEntity, entvars_t *pevAttacker, int iShotId  ) {};
 	virtual void savePlayerStats( int playerId, int finalGrade, int damageGrade, int killsGrade, int accuracyGrade ) {};
+
+	// a1ba: get alien mode status for decay
+	virtual void SetAlienMode( bool ) { }
+	virtual bool IsAlienMode( void ) { return false; }
 };
 
 extern CGameRules *InstallGameRules( void );
@@ -524,7 +528,7 @@ public:
 	t_playerStats pStats[8];
 	bool m_bAlienMode;
 	void ChangePlayer();
-	void SetAlienMode( bool bMode );
+	virtual void SetAlienMode( bool bMode );
 
 	int getDecayMapId();
 	char *getDecayNextMap();
@@ -544,6 +548,8 @@ public:
 	virtual void savePlayerStats( int playerId, int finalGrade, int damageGrade, int killsGrade, int accuracyGrade );
 	virtual void UpdateGameMode( CBasePlayer *pPlayer );
 	virtual void ClientUserInfoChanged( CBasePlayer *pPlayer, char *infobuffer );
+
+	virtual bool IsAlienMode( void ) { return m_bAlienMode; }
 };
 
 extern DLL_GLOBAL CGameRules *g_pGameRules;

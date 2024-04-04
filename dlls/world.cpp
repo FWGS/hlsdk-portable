@@ -42,7 +42,6 @@ DLL_GLOBAL edict_t				*g_pBodyQueueHead;
 CGlobalState					gGlobalState;
 extern DLL_GLOBAL int				gDisplayTitle;
 bool bDecay = false;
-bool bSlaveCoop = false;
 
 extern void W_Precache( void );
 
@@ -456,6 +455,7 @@ BOOL  g_startSuit;          // When level starts player will automatically recei
 void CWorld::Spawn( void )
 {
 	g_fGameOver = FALSE;
+	m_bSlaveCoop = false;
 	Precache();
 }
 
@@ -480,16 +480,9 @@ void CWorld::Precache( void )
 
 	g_pGameRules = InstallGameRules();
 
-	if (bDecay)
+	if( bDecay )
 	{
-		if (m_bSlaveCoop) // if was initialized using KeyValue call
-			bSlaveCoop = m_bSlaveCoop;
-		else			  // otherwise NULL, thus no alien mode
-			bSlaveCoop = false;
-
-		CDecayRules *g_pDecayRules;
-		g_pDecayRules = (CDecayRules*)g_pGameRules;
-		g_pDecayRules->SetAlienMode( bSlaveCoop );
+		g_pGameRules->SetAlienMode( m_bSlaveCoop );
 
 		CBaseEntity *pEntity;
 		pEntity = CBaseEntity::Create( "trigger_autobot", g_vecZero, g_vecZero, edict() );
@@ -744,18 +737,12 @@ void CWorld::KeyValue( KeyValueData *pkvd )
 	}
 	else if ( FStrEq(pkvd->szKeyName, "decay") )
 	{
-		if ( atoi(pkvd->szValue) )
-		{
-			bDecay = atoi(pkvd->szValue);
-		}
+		bDecay = atoi( pkvd->szValue );
 		pkvd->fHandled = TRUE;
 	}
 	else if ( FStrEq(pkvd->szKeyName, "slavecoop") )
 	{
-		if ( atoi(pkvd->szValue) )
-		{
-			m_bSlaveCoop = atoi(pkvd->szValue);
-		}
+		m_bSlaveCoop = atoi( pkvd->szValue );
 		pkvd->fHandled = TRUE;
 	}
 	else

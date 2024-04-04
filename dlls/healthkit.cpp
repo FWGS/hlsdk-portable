@@ -323,16 +323,10 @@ void CMdlWallHealthTank::Spawn()
 	SetSequence( seq_Still );
 	SetThink( &CMdlWallHealthTank::TankThink );
 
-	if (g_pGameRules->IsCoOp() )
+	if( g_pGameRules->IsAlienMode( ))
 	{
-		CDecayRules *g_pDecayRules;
-		g_pDecayRules = (CDecayRules*)g_pGameRules;
-
-		if ( g_pDecayRules->m_bAlienMode == true )
-		{
-			SetThink( NULL );
-			SetUse( NULL );
-		}
+		SetThink( NULL );
+		SetUse( NULL );
 	}
 
 	pev->nextthink = gpGlobals->time + 0.1;

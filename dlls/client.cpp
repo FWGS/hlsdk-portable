@@ -66,7 +66,6 @@ extern cvar_t multibyte_only;
 
 extern int g_teamplay;
 BOOL botadded = false;
-extern bool bSlaveCoop;
 
 void LinkUserMessages( void );
 
@@ -684,7 +683,7 @@ void ClientCommand( edict_t *pEntity )
 		if (!IS_DEDICATED_SERVER())
 		{
 			//If user types "addbot" in console, add a bot with skin and name
-			if (!bSlaveCoop)
+			if (!g_pGameRules->IsAlienMode( ))
 				BotCreate("ginacol", "Colette", 0);	// CMD_ARGV(1), CMD_ARGV(2), CMD_ARGV(3)
 			else
 				BotCreate("player/dm_slave/dm_slave", "R-4913", 0);
@@ -694,7 +693,7 @@ void ClientCommand( edict_t *pEntity )
 	}
 	else if (FStrEq(pcmd, "debugbot" ))
 	{
-		if (!bSlaveCoop)
+		if (!g_pGameRules->IsAlienMode( ))
 			BotCreate("ginacol", "Colette", 0);	// CMD_ARGV(1), CMD_ARGV(2), CMD_ARGV(3)
 		else
 			BotCreate("player/dm_slave/dm_slave", "R-4913", 0);

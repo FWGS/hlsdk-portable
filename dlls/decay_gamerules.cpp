@@ -47,7 +47,6 @@ extern int gmsgGameMode;
 extern int gmsgSparePlayer;
 extern int gmsgUpdateDecayPlayerName;
 extern respawn_t bot_respawn[32];
-extern bool bSlaveCoop;
 
 bool bStatsLoaded = false;
 int	m_iMagicWord1 = 159123512;
@@ -168,7 +167,6 @@ char *CDecayRules::getDecayMapName( int mapId )
 void CDecayRules::SetAlienMode( bool bMode )
 {
 	this->m_bAlienMode = bMode;
-//	ALERT( at_console, "Decay (alien mode = %d)\n", bSlaveCoop);
 }
 
 static void Platform_GetComputerName( char *buffer, size_t buffersize )
