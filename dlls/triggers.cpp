@@ -333,9 +333,7 @@ void CTriggerAutoBot::Think( void )
 	g_pDecayRules = (CDecayRules*)g_pGameRules;
 	if (g_pDecayRules->PlayersCount == 1)
 	{
-        char cmd[40];
-        sprintf(cmd, "addbot\n" );
-        SERVER_COMMAND(cmd);
+		SERVER_COMMAND( "addbot\n" );
 	}
 
 	UTIL_Remove( this );
@@ -408,9 +406,9 @@ void CTriggerKicker::Think( void )
 	if (!g_pGameRules->IsCoOp())
 		return;
 
-    char cmd[128];
-    sprintf(cmd, "kick \"%s\"\n", STRING(pPlayerToKick->pev->netname) );
-    SERVER_COMMAND(cmd);
+	char cmd[128];
+	snprintf( cmd, sizeof( cmd ), "kick \"%s\"\n", STRING( pPlayerToKick->pev->netname ));
+	SERVER_COMMAND(cmd);
 
 	UTIL_Remove( this );
 }
