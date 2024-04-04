@@ -56,6 +56,7 @@
 
 #include "shake.h"
 #include "screenfade.h"
+#include "tf_defs.h"
 
 void IN_SetVisibleMouse(bool visible);
 class CCommandMenu;

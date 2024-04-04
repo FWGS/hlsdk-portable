@@ -20,7 +20,7 @@
 #include "VGUI_Font.h"
 #include "VGUI_ScrollPanel.h"
 #include "VGUI_TextImage.h"
-#include "VGUI_loadtga.h"
+#include "vgui_loadtga.h"
 
 #include "hud.h"
 #include "cl_util.h"
