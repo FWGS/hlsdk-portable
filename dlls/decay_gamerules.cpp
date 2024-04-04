@@ -17,6 +17,7 @@
 // Author: Vyacheslav Dzhura ( slava.dzhura@gmail.com ; slava.dzhura@protonmail.com )
 // (C) 2008
 //
+#include "build.h" // for XASH_WIN32 checks
 #ifdef XASH_WIN32
 #include <windows.h>
 #else
