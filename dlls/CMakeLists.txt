@@ -191,6 +191,7 @@ if(NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Android")
 endif()
 
 if(MSVC)
+	target_link_libraries(${SVDLL_LIBRARY} user32.dll shell32.dll)
 	set_property(TARGET ${SVDLL_LIBRARY} PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 endif()
 

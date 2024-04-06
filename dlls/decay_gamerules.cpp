@@ -17,6 +17,14 @@
 // Author: Vyacheslav Dzhura ( slava.dzhura@gmail.com ; slava.dzhura@protonmail.com )
 // (C) 2008
 //
+#include	"build.h"
+#if !XASH_WIN32
+#include	<unistd.h>	// gethostname
+#include	<sys/stat.h>	// mkdir
+#define		MAX_COMPUTERNAME_LENGTH 64 // random number
+#endif // !XASH_WIN32
+#include	<errno.h>
+
 #include	"extdll.h"
 #include	"util.h"
 #include	"cbase.h"
@@ -28,14 +36,6 @@
 #include	"client.h"
 #include	"bot.h"
 #include	"triggers.h"
-#ifdef XASH_WIN32
-#include <windows.h>
-#else
-#include <unistd.h>
-#include <sys/stat.h>
-#define MAX_COMPUTERNAME_LENGTH 64 // random number
-#endif
-#include <errno.h>
 
 extern DLL_GLOBAL CGameRules	*g_pGameRules;
 extern DLL_GLOBAL BOOL	g_fGameOver;

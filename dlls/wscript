@@ -14,6 +14,8 @@ def configure(conf):
 		# Without this, the lookup for this function fails.
 		hlDefNode = conf.path.find_resource("./hl.def")
 
+		conf.check_libs_msvc('shell32 user32')
+
 		if hlDefNode is not None:
 			conf.env.append_value('LINKFLAGS', '/def:%s' % hlDefNode.abspath())
 		else:
@@ -50,6 +52,7 @@ def build(bld):
 		target   = bld.env.SERVER_LIBRARY_NAME + bld.env.POSTFIX,
 		name     = 'server',
 		features = 'c cxx',
+		use      = 'SHELL32 USER32',
 		includes = includes,
 		defines  = defines,
 		install_path = install_path,
