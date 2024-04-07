@@ -30,7 +30,7 @@ def configure(conf):
 	else:
 		conf.env.GOLDSOURCE_SUPPORT = False
 
-	if conf.env.GOLDSOURCE_SUPPORT:
+	if conf.env.GOLDSOURCE_SUPPORT and not conf.env.DEST_OS == 'win32':
 		conf.check_cc(lib='dl')
 
 	if conf.env.USE_VGUI:
