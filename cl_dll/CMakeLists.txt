@@ -145,7 +145,7 @@ set (CLDLL_SOURCES
 #	hs/test.cpp
 #	hs/testext.cpp
 	hs/timer.cpp
-
+	../game_shared/vcs_info.cpp
 )
 
 if (USE_VGUI)
