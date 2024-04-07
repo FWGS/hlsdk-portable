@@ -194,6 +194,7 @@ set (SVDLL_SOURCES
 	../pm_shared/pm_debug.c
 	../pm_shared/pm_math.c
 	../pm_shared/pm_shared.c
+	../game_shared/vcs_info.cpp
 )
 
 if(NOT MSVC)
