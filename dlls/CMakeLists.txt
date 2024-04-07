@@ -177,6 +177,7 @@ set (SVDLL_SOURCES
 	zx/zombie_barney.cpp
 	zx/zombie_gus.cpp
 	zx/zombie_soldier.cpp
+	../game_shared/vcs_info.cpp
 )
 
 include_directories (. wpn_shared ../common ../engine ../pm_shared ../game_shared ../public zx)

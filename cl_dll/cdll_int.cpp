@@ -43,6 +43,7 @@ extern "C"
 }
 
 #include <string.h>
+#include "vcs_info.h"
 
 cl_enginefunc_t gEngfuncs;
 CHud gHUD;
@@ -171,6 +172,9 @@ int DLLEXPORT Initialize( cl_enginefunc_t *pEnginefuncs, int iVersion )
 	}
 
 	EV_HookEvents();
+
+	gEngfuncs.pfnRegisterVariable( "cl_game_build_commit", g_VCSInfo_Commit, 0 );
+	gEngfuncs.pfnRegisterVariable( "cl_game_build_branch", g_VCSInfo_Branch, 0 );
 
 	return 1;
 }

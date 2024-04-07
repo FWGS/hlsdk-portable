@@ -16,6 +16,10 @@
 #include "eiface.h"
 #include "util.h"
 #include "game.h"
+#include "vcs_info.h"
+
+static cvar_t build_commit = { "sv_game_build_commit", g_VCSInfo_Commit };
+static cvar_t build_branch = { "sv_game_build_branch", g_VCSInfo_Commit };
 
 cvar_t devlight		= { "dev_light", "0" };
 cvar_t displaysoundlist = {"displaysoundlist","0"};
@@ -608,6 +612,10 @@ void GameDLLInit( void )
 	CVAR_REGISTER( &minecolorred );
 	CVAR_REGISTER( &minecolorgreen );
 	CVAR_REGISTER( &minecolorblue );
+
+	CVAR_REGISTER( &build_commit );
+	CVAR_REGISTER( &build_branch );
+
 	CVAR_REGISTER( &displaysoundlist );
 	CVAR_REGISTER( &allow_spectators );
 
