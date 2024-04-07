@@ -154,6 +154,7 @@ set (SVDLL_SOURCES
 	visitors/massn.cpp
 	visitors/pipe.cpp
 	visitors/sniper.cpp
+	../game_shared/vcs_info.cpp
 )
 	
 include_directories (. wpn_shared ../common ../engine ../pm_shared ../game_shared ../public visitors )
