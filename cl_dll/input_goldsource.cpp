@@ -236,10 +236,9 @@ DWORD dwAxisFlags[JOY_MAX_AXES] =
 
 DWORD   dwAxisMap[ JOY_MAX_AXES ];
 DWORD   dwControlMap[ JOY_MAX_AXES ];
-#if !XASH_WIN32
 int pdwRawValue[ JOY_MAX_AXES ];
-#else
-PDWORD pdwRawValue[ JOY_MAX_AXES ];
+#if XASH_WIN32
+PDWORD pdwRawValue_windows[ JOY_MAX_AXES ];
 #endif
 
 DWORD joy_oldbuttonstate, joy_oldpovstate;
@@ -990,7 +989,7 @@ void GoldSourceInput::IN_ClearStates (void)
 IN_StartupJoystick
 ===============
 */
-void IN_StartupJoystick (void)
+void GoldSourceInput::IN_StartupJoystick (void)
 {
 	// abort startup if user requests no joystick
 	if ( gEngfuncs.CheckParm ("-nojoy", NULL ) )
@@ -998,39 +997,42 @@ void IN_StartupJoystick (void)
 
 	// assume no joystick
 	joy_avail = 0;
-#if !XASH_WIN32
-	int nJoysticks = safe_pfnSDL_NumJoysticks();
-	if ( nJoysticks > 0 )
+	if (UseSDL2Joystick())
 	{
-		for ( int i = 0; i < nJoysticks; i++ )
+		int nJoysticks = safe_pfnSDL_NumJoysticks();
+		if ( nJoysticks > 0 )
 		{
-			if ( safe_pfnSDL_IsGameController( i ) )
+			for ( int i = 0; i < nJoysticks; i++ )
 			{
-				s_pJoystick = safe_pfnSDL_GameControllerOpen( i );
-				if ( s_pJoystick )
+				if ( safe_pfnSDL_IsGameController( i ) )
 				{
-					//save the joystick's number of buttons and POV status
-					joy_numbuttons = SDL_CONTROLLER_BUTTON_MAX;
-					joy_haspov = 0;
+					s_pJoystick = safe_pfnSDL_GameControllerOpen( i );
+					if ( s_pJoystick )
+					{
+						//save the joystick's number of buttons and POV status
+						joy_numbuttons = SDL_CONTROLLER_BUTTON_MAX;
+						joy_haspov = 0;
 
-					// old button and POV states default to no buttons pressed
-					joy_oldbuttonstate = joy_oldpovstate = 0;
+						// old button and POV states default to no buttons pressed
+						joy_oldbuttonstate = joy_oldpovstate = 0;
 
-					// mark the joystick as available and advanced initialization not completed
-					// this is needed as cvars are not available during initialization
-					gEngfuncs.Con_Printf ("joystick found\n\n", safe_pfnSDL_GameControllerName(s_pJoystick));
-					joy_avail = 1;
-					joy_advancedinit = 0;
-					break;
+						// mark the joystick as available and advanced initialization not completed
+						// this is needed as cvars are not available during initialization
+						gEngfuncs.Con_Printf ("joystick found\n\n", safe_pfnSDL_GameControllerName(s_pJoystick));
+						joy_avail = 1;
+						joy_advancedinit = 0;
+						break;
+					}
 				}
 			}
 		}
+		else
+		{
+			gEngfuncs.Con_DPrintf ("joystick not found -- driver not present\n\n");
+		}
+		return;
 	}
-	else
-	{
-		gEngfuncs.Con_DPrintf ("joystick not found -- driver not present\n\n");
-	}
-#elif XASH_WIN32
+#if XASH_WIN32
 	int numdevs;
 	JOYCAPS jc;
 	MMRESULT mmr;
@@ -1085,7 +1087,6 @@ void IN_StartupJoystick (void)
 #endif
 }
 
-#if !XASH_WIN32
 int RawValuePointer (int axis)
 {
 	switch (axis)
@@ -1102,8 +1103,8 @@ int RawValuePointer (int axis)
 
 	}
 }
-#else
-PDWORD RawValuePointer (int axis)
+#if XASH_WIN32
+PDWORD RawValuePointer_windows(int axis)
 {
 	switch (axis)
 	{
@@ -1130,7 +1131,12 @@ PDWORD RawValuePointer (int axis)
 Joy_AdvancedUpdate_f
 ===========
 */
-void Joy_AdvancedUpdate_f (void)
+void Joy_AdvancedUpdate_f(void)
+{
+    CurrentMouseInput()->Joy_AdvancedUpdate();
+}
+
+void GoldSourceInput::Joy_AdvancedUpdate(void)
 {
 
 	// called once by IN_ReadJoystick and by user whenever an update is needed
@@ -1143,7 +1149,16 @@ void Joy_AdvancedUpdate_f (void)
 	{
 		dwAxisMap[i] = AxisNada;
 		dwControlMap[i] = JOY_ABSOLUTE_AXIS;
-		pdwRawValue[i] = RawValuePointer(i);
+		if (UseSDL2Joystick())
+		{
+			pdwRawValue[i] = RawValuePointer(i);
+		}
+#if XASH_WIN32
+		else
+		{
+			pdwRawValue_windows[i] = RawValuePointer_windows(i);
+		}
+#endif
 	}
 
 	if( joy_advanced->value == 0.0)
@@ -1186,18 +1201,25 @@ void Joy_AdvancedUpdate_f (void)
 	}
 
 #if XASH_WIN32
-	// compute the axes to collect from DirectInput
-	joy_flags = JOY_RETURNCENTERED | JOY_RETURNBUTTONS | JOY_RETURNPOV;
-	for (i = 0; i < JOY_MAX_AXES; i++)
+	if (!UseSDL2Joystick())
 	{
-		if (dwAxisMap[i] != AxisNada)
+		// compute the axes to collect from DirectInput
+		joy_flags = JOY_RETURNCENTERED | JOY_RETURNBUTTONS | JOY_RETURNPOV;
+		for (i = 0; i < JOY_MAX_AXES; i++)
 		{
-			joy_flags |= dwAxisFlags[i];
+			if (dwAxisMap[i] != AxisNada)
+			{
+				joy_flags |= dwAxisFlags[i];
+			}
 		}
 	}
 #endif
 }
 
+bool GoldSourceInput::UseSDL2Joystick()
+{
+	return sdl2Lib != NULL;
+}
 
 /*
 ===========
@@ -1217,22 +1239,27 @@ void GoldSourceInput::IN_Commands (void)
 
 	// loop through the joystick buttons
 	// key a joystick event or auxillary event for higher number buttons for each state change
-#if !XASH_WIN32
-	buttonstate = 0;
-	for ( i = 0; i < SDL_CONTROLLER_BUTTON_MAX; i++ )
-	{
-		if ( safe_pfnSDL_GameControllerGetButton( s_pJoystick, (SDL_GameControllerButton)i ) )
-		{
-			buttonstate |= 1<<i;
-		}
-	}
+    if (UseSDL2Joystick())
+    {
+        buttonstate = 0;
+        for ( i = 0; i < SDL_CONTROLLER_BUTTON_MAX; i++ )
+        {
+            if ( safe_pfnSDL_GameControllerGetButton( s_pJoystick, (SDL_GameControllerButton)i ) )
+            {
+                buttonstate |= 1<<i;
+            }
+        }
 
-	for (i = 0; i < JOY_MAX_AXES; i++)
-	{
-		pdwRawValue[i] = RawValuePointer(i);
-	}
-#else
-	buttonstate = ji.dwButtons;
+        for (i = 0; i < JOY_MAX_AXES; i++)
+        {
+            pdwRawValue[i] = RawValuePointer(i);
+        }
+    }
+#if XASH_WIN32
+    else
+    {
+        buttonstate = ji.dwButtons;
+    }
 #endif
 
 	for (i=0 ; i < (int)joy_numbuttons ; i++)
@@ -1258,16 +1285,19 @@ void GoldSourceInput::IN_Commands (void)
 		// direction to another without going through the center position
 		povstate = 0;
 #if XASH_WIN32
-		if(ji.dwPOV != JOY_POVCENTERED)
+		if (!UseSDL2Joystick())
 		{
-			if (ji.dwPOV == JOY_POVFORWARD)
-				povstate |= 0x01;
-			if (ji.dwPOV == JOY_POVRIGHT)
-				povstate |= 0x02;
-			if (ji.dwPOV == JOY_POVBACKWARD)
-				povstate |= 0x04;
-			if (ji.dwPOV == JOY_POVLEFT)
-				povstate |= 0x08;
+			if(ji.dwPOV != JOY_POVCENTERED)
+			{
+				if (ji.dwPOV == JOY_POVFORWARD)
+					povstate |= 0x01;
+				if (ji.dwPOV == JOY_POVRIGHT)
+					povstate |= 0x02;
+				if (ji.dwPOV == JOY_POVBACKWARD)
+					povstate |= 0x04;
+				if (ji.dwPOV == JOY_POVLEFT)
+					povstate |= 0x08;
+			}
 		}
 #endif
 		// determine which bits have changed and key an auxillary event for each change
@@ -1293,12 +1323,14 @@ void GoldSourceInput::IN_Commands (void)
 IN_ReadJoystick
 ===============
 */
-int IN_ReadJoystick (void)
+int GoldSourceInput::IN_ReadJoystick (void)
 {
-#if !XASH_WIN32
-	safe_pfnSDL_JoystickUpdate();
-	return 1;
-#elif XASH_WIN32
+    if (UseSDL2Joystick())
+    {
+        safe_pfnSDL_JoystickUpdate();
+        return 1;
+    }
+#if XASH_WIN32
 	memset (&ji, 0, sizeof(ji));
 	ji.dwSize = sizeof(ji);
 	ji.dwFlags = joy_flags;
@@ -1334,7 +1366,7 @@ int IN_ReadJoystick (void)
 IN_JoyMove
 ===========
 */
-void IN_JoyMove ( float frametime, usercmd_t *cmd )
+void GoldSourceInput::IN_JoyMove ( float frametime, usercmd_t *cmd )
 {
 	float   speed, aspeed;
 	float   fAxisValue, fTemp;
@@ -1348,7 +1380,7 @@ void IN_JoyMove ( float frametime, usercmd_t *cmd )
 	// this is needed as cvars are not available at initialization time
 	if( joy_advancedinit != 1 )
 	{
-		Joy_AdvancedUpdate_f();
+		Joy_AdvancedUpdate();
 		joy_advancedinit = 1;
 	}
 
@@ -1375,11 +1407,16 @@ void IN_JoyMove ( float frametime, usercmd_t *cmd )
 	for (i = 0; i < JOY_MAX_AXES; i++)
 	{
 		// get the floating point zero-centered, potentially-inverted data for the current axis
-#if !XASH_WIN32
-		fAxisValue = (float)pdwRawValue[i];
-#elif XASH_WIN32
-		fAxisValue = (float) *pdwRawValue[i];
-		fAxisValue -= 32768.0;
+		if (UseSDL2Joystick())
+		{
+			fAxisValue = (float)pdwRawValue[i];
+		}
+#if XASH_WIN32
+		else
+		{
+			fAxisValue = (float) *pdwRawValue_windows[i];
+			fAxisValue -= 32768.0;
+		}
 #endif
 
 		if (joy_wwhack2->value != 0.0)

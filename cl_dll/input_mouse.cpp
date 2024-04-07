@@ -86,3 +86,8 @@ void IN_ResetMouse()
 {
 	currentInput->IN_ResetMouse();
 }
+
+AbstractInput* CurrentMouseInput()
+{
+    return currentInput;
+}
