@@ -770,7 +770,7 @@ BOOL CApache::FireGun()
 	GetAttachment( 0, posBarrel, angBarrel );
 	Vector vecGun = ( posBarrel - posGun ).Normalize();
 
-	if( DotProduct( vecGun, vecTarget ) > 0.98f && !( ( ++m_iShots ) % 2 ) )
+	if( DotProduct( vecGun, vecTarget ) > 0.98f && !( m_iShots++ % 2 ))
 	{
 #if 1
 		FireBullets( 1, posGun, vecGun, VECTOR_CONE_4DEGREES, 8192, BULLET_MONSTER_12MM, 1 );
