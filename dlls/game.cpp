@@ -16,6 +16,10 @@
 #include "eiface.h"
 #include "util.h"
 #include "game.h"
+#include "vcs_info.h"
+
+static cvar_t build_commit = { "sv_game_build_commit", g_VCSInfo_Commit };
+static cvar_t build_branch = { "sv_game_build_branch", g_VCSInfo_Commit };
 
 //++ BulliT
 #include "agglobal.h"
@@ -483,6 +487,9 @@ void GameDLLInit( void )
 
 	// QUAKECLASSIC
 	CVAR_REGISTER( &rj );
+
+	CVAR_REGISTER( &build_commit );
+	CVAR_REGISTER( &build_branch );
 
 	CVAR_REGISTER( &displaysoundlist );
 	CVAR_REGISTER( &allow_spectators );
