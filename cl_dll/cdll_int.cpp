@@ -48,6 +48,7 @@ extern "C"
 }
 
 #include <string.h>
+#include "vcs_info.h"
 
 cl_enginefunc_t gEngfuncs;
 //++ BulliT
@@ -192,6 +193,9 @@ int DLLEXPORT Initialize( cl_enginefunc_t *pEnginefuncs, int iVersion )
 	g_Wallhack.SetHLAddressToValidate( (DWORD)pFromModuleAddress );
 #endif
 //-- Martin Webrant
+
+	gEngfuncs.pfnRegisterVariable( "cl_game_build_commit", g_VCSInfo_Commit, 0 );
+	gEngfuncs.pfnRegisterVariable( "cl_game_build_branch", g_VCSInfo_Branch, 0 );
 
 	return 1;
 }

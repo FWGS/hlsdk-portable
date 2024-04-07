@@ -55,7 +55,11 @@ def configure(conf):
 	if conf.env.COMPILER_CC == 'msvc':
 		conf.load('msvc_pdb')
 
-	conf.load('msvs msdev subproject clang_compilation_database strip_on_install enforce_pic')
+	conf.load('msvs msdev subproject clang_compilation_database strip_on_install enforce_pic gitversion')
+	if conf.env.GIT_VERSION:
+		conf.define('XASH_BUILD_COMMIT', conf.env.GIT_VERSION)
+	if conf.env.GIT_BRANCH:
+		conf.define('XASH_BUILD_BRANCH', conf.env.GIT_BRANCH)
 
 	enforce_pic = True # modern defaults
 	conf.check_pic(enforce_pic)
