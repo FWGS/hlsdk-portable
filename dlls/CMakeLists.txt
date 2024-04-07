@@ -154,6 +154,7 @@ set (SVDLL_SOURCES
 	poke646/nail.cpp
 	poke646/robocop.cpp
 	poke646/xsbeam.cpp
+	../game_shared/vcs_info.cpp
 )
 	
 include_directories (. wpn_shared poke646 ../common ../engine ../pm_shared ../game_shared ../public)
