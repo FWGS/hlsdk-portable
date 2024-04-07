@@ -427,7 +427,7 @@ void CZombie::RunAI( void )
 
 	if( pev->spawnflags & SF_ZOMBIE_FASTMODE )
 	{
-		if( pev->gaitsequence == ACT_WALK )
+		if( m_Activity == ACT_WALK )
 		{
 			pev->framerate = 1.5;
 		}
