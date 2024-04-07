@@ -130,7 +130,9 @@ set (CLDLL_SOURCES
 	train.cpp
 	tri.cpp
 	util.cpp
-	view.cpp)
+	view.cpp
+	../game_shared/vcs_info.cpp
+)
 
 if (USE_VGUI)
 	list(APPEND CLDLL_SOURCES
