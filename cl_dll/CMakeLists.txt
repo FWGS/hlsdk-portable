@@ -124,7 +124,9 @@ set (CLDLL_SOURCES
 	tri.cpp
 	util.cpp
 	view.cpp
-	TheGate/scope.cpp)
+	TheGate/scope.cpp
+	../game_shared/vcs_info.cpp
+)
 
 if (USE_VGUI)
 	list(APPEND CLDLL_SOURCES
