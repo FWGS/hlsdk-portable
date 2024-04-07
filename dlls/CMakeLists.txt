@@ -150,6 +150,7 @@ set (SVDLL_SOURCES
 	poke646/mp3.cpp
 	poke646/robocop.cpp
 	vendetta/par21.cpp
+	../game_shared/vcs_info.cpp
 )
 
 include_directories (. wpn_shared poke646 ../common ../engine ../pm_shared ../game_shared ../public)
