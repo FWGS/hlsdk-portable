@@ -99,7 +99,7 @@ float EV_HLDM_PlayTextureSound( int idx, pmtrace_t *ptr, float *vecSrc, float *v
 
 	// Player
 	if( ( entity >= 1 && entity <= gEngfuncs.GetMaxClients() )
-	    || ( ( ent = gEngfuncs.GetEntityByIndex( entity )) && ( ent->curstate.eflags & EFLAG_MONSTER )))
+	    || ( ( ent = gEngfuncs.GetEntityByIndex( entity )) && ( ent->curstate.eflags & EFLAG_FLESH_SOUND )))
 	{
 		// hit body
 		chTextureType = CHAR_TEX_FLESH;
