@@ -166,6 +166,10 @@ endif()
 
 include_directories (. hl/ ../dlls ../dlls/wpn_shared ../common ../engine ../pm_shared ../game_shared ../public ../dlls/visitors)
 
+if (WIN32)
+	include_directories (../external/)
+endif()
+
 if (USE_VGUI)
 	SET(CMAKE_SKIP_RPATH TRUE)
 	link_directories(${CMAKE_SOURCE_DIR}/vgui_support/vgui-dev/lib)
