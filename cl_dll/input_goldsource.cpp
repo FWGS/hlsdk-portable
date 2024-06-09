@@ -811,6 +811,11 @@ void GoldSourceInput::IN_GetMouseDelta( int *pOutX, int *pOutY)
 		mx = my = 0;
 	}
 
+	if (ignoreNextDelta)
+	{
+		ignoreNextDelta = false;
+		mx = my = 0;
+	}
 	if(pOutX) *pOutX = mx;
 	if(pOutY) *pOutY = my;
 }
@@ -1585,6 +1590,7 @@ IN_Init
 */
 void GoldSourceInput::IN_Init (void)
 {
+	ignoreNextDelta = false;
 	m_filter				= gEngfuncs.pfnRegisterVariable ( "m_filter","0", FCVAR_ARCHIVE );
 	sensitivity			 = gEngfuncs.pfnRegisterVariable ( "sensitivity","3", FCVAR_ARCHIVE ); // user mouse sensitivity setting.
 
@@ -1683,6 +1689,11 @@ void GoldSourceInput::IN_Init (void)
 
 	IN_StartupMouse ();
 	IN_StartupJoystick ();
+}
+
+void GoldSourceInput::IgnoreNextMouseDelta()
+{
+	ignoreNextDelta = true;
 }
 
 #endif
