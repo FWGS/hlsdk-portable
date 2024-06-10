@@ -87,7 +87,12 @@ void IN_ResetMouse()
 	currentInput->IN_ResetMouse();
 }
 
+void IgnoreNextMouseDelta()
+{
+	currentInput->IgnoreNextMouseDelta();
+}
+
 AbstractInput* CurrentMouseInput()
 {
-    return currentInput;
+	return currentInput;
 }
