@@ -58,6 +58,8 @@
 #include "screenfade.h"
 
 void IN_SetVisibleMouse(bool visible);
+void IgnoreNextMouseDelta();
+
 class CCommandMenu;
 
 // Scoreboard positions
@@ -1672,6 +1674,7 @@ void TeamFortressViewport::UpdateCursorState()
 	if( m_pSpectatorPanel->m_menuVisible || m_pCurrentMenu || m_pTeamMenu->isVisible() || GetClientVoiceMgr()->IsInSquelchMode() )
 	{
 		IN_SetVisibleMouse(true);
+		IgnoreNextMouseDelta();
 		App::getInstance()->setCursorOveride( App::getInstance()->getScheme()->getCursor(Scheme::scu_arrow) );
 		return;
 	}
@@ -1681,6 +1684,7 @@ void TeamFortressViewport::UpdateCursorState()
 		if( gHUD.m_pCvarStealMouse->value != 0.0f )
 		{
 			IN_SetVisibleMouse(true);
+			IgnoreNextMouseDelta();
 			App::getInstance()->setCursorOveride( App::getInstance()->getScheme()->getCursor(Scheme::scu_arrow) );
 			return;
 		}
