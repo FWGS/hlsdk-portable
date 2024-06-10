@@ -26,10 +26,11 @@ def build(bld):
 
 	source = bld.path.ant_glob('**/*.cpp', excl=excluded_files)
 	source += bld.path.parent.ant_glob('pm_shared/*.c')
+	source += ['../game_shared/vcs_info.cpp']
 
 	defines = []
 	if bld.env.USE_VOICEMGR:
-		source += bld.path.parent.ant_glob('game_shared/voice_gamemgr.cpp')
+		source += ['../game_shared/voice_gamemgr.cpp']
 	else:
 		defines += ['NO_VOICEGAMEMGR']
 

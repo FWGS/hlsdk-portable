@@ -19,6 +19,9 @@ public:
 	virtual void IN_Commands( void ) = 0;
 	virtual void IN_Shutdown( void ) = 0;
 	virtual void IN_Init( void ) = 0;
+	virtual void IN_ResetMouse( void ) = 0;
+	virtual void Joy_AdvancedUpdate( void ) = 0;
+	virtual void IgnoreNextMouseDelta() = 0;
 };
 
 class FWGSInput : public AbstractInput
@@ -35,6 +38,9 @@ public:
 	virtual void IN_Commands( void );
 	virtual void IN_Shutdown( void );
 	virtual void IN_Init( void );
+	virtual void IN_ResetMouse( void ) {}
+	virtual void Joy_AdvancedUpdate( void ) {}
+	virtual void IgnoreNextMouseDelta() {}
 
 protected:
 	float ac_forwardmove;
@@ -76,11 +82,18 @@ public:
 	virtual void IN_Commands( void );
 	virtual void IN_Shutdown( void );
 	virtual void IN_Init( void );
+	virtual void IN_ResetMouse( void );
+	virtual void Joy_AdvancedUpdate( void );
+	virtual void IgnoreNextMouseDelta();
 
 protected:
 	void IN_GetMouseDelta( int *pOutX, int *pOutY);
 	void IN_MouseMove ( float frametime, usercmd_t *cmd);
 	void IN_StartupMouse (void);
+	void IN_StartupJoystick (void);
+	int IN_ReadJoystick (void);
+	void IN_JoyMove ( float frametime, usercmd_t *cmd );
+	bool UseSDL2Joystick();
 
 	int         mouse_buttons;
 	int         mouse_oldbuttonstate;
@@ -88,7 +101,10 @@ protected:
 	int         old_mouse_x, old_mouse_y, mx_accum, my_accum;
 	int         mouseinitialized;
 	void* sdl2Lib;
+	bool ignoreNextDelta;
 };
 #endif
+
+AbstractInput* CurrentMouseInput();
 
 #endif

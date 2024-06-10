@@ -1952,11 +1952,11 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 	    && Entity->Classify() != CLASS_NONE
 	    && Entity->Classify() != CLASS_MACHINE )
 	{
-		SetBits( state->eflags, EFLAG_MONSTER );
+		SetBits( state->eflags, EFLAG_FLESH_SOUND );
 	}
 	else
 	{
-		ClearBits( state->eflags, EFLAG_SLERP | EFLAG_MONSTER );
+		ClearBits( state->eflags, EFLAG_SLERP | EFLAG_FLESH_SOUND );
 	}
 
 	return 1;
