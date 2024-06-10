@@ -813,6 +813,11 @@ void GoldSourceInput::IN_GetMouseDelta( int *pOutX, int *pOutY)
 		mx = my = 0;
 	}
 
+	if (ignoreNextDelta)
+	{
+		ignoreNextDelta = false;
+		mx = my = 0;
+	}
 	if(pOutX) *pOutX = mx;
 	if(pOutY) *pOutY = my;
 }
@@ -897,7 +902,12 @@ void GoldSourceInput::IN_MouseMove ( float frametime, usercmd_t *cmd)
 		if ( (in_mlook.state & 1) && !(in_strafe.state & 1))
 		{
 			/*
-			viewangles[PITCH] += m_pitch->value * mouse_y;
+#if !USE_VGUI || USE_NOVGUI_MOTD
+			if( gHUD.m_MOTD.m_bShow )
+				gHUD.m_MOTD.scroll += m_pitch->value * mouse_y;
+			else
+#endif
+				viewangles[PITCH] += m_pitch->value * mouse_y;
 			if (viewangles[PITCH] > cl_pitchdown->value)
 				viewangles[PITCH] = cl_pitchdown->value;
 			if (viewangles[PITCH] < -cl_pitchup->value)
@@ -1605,6 +1615,7 @@ IN_Init
 */
 void GoldSourceInput::IN_Init (void)
 {
+	ignoreNextDelta = false;
 	m_filter				= gEngfuncs.pfnRegisterVariable ( "m_filter","0", FCVAR_ARCHIVE );
 	sensitivity			 = gEngfuncs.pfnRegisterVariable ( "sensitivity","3", FCVAR_ARCHIVE ); // user mouse sensitivity setting.
 
@@ -1703,6 +1714,11 @@ void GoldSourceInput::IN_Init (void)
 
 	IN_StartupMouse ();
 	IN_StartupJoystick ();
+}
+
+void GoldSourceInput::IgnoreNextMouseDelta()
+{
+	ignoreNextDelta = true;
 }
 
 #endif
