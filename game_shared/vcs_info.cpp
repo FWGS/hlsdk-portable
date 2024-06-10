@@ -9,5 +9,5 @@ const char *g_VCSInfo_Commit = "unknown-commit";
 #ifdef XASH_BUILD_BRANCH
 const char *g_VCSInfo_Branch = XASH_BUILD_BRANCH;
 #else
-const char *g_VCSInfo_Branch = "unknown-commit";
+const char *g_VCSInfo_Branch = "unknown-branch";
 #endif
