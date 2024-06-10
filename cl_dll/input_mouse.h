@@ -21,6 +21,7 @@ public:
 	virtual void IN_Init( void ) = 0;
 	virtual void IN_ResetMouse( void ) = 0;
 	virtual void Joy_AdvancedUpdate( void ) = 0;
+	virtual void IgnoreNextMouseDelta() = 0;
 };
 
 class FWGSInput : public AbstractInput
@@ -39,6 +40,7 @@ public:
 	virtual void IN_Init( void );
 	virtual void IN_ResetMouse( void ) {}
 	virtual void Joy_AdvancedUpdate( void ) {}
+	virtual void IgnoreNextMouseDelta() {}
 
 protected:
 	float ac_forwardmove;
@@ -82,6 +84,7 @@ public:
 	virtual void IN_Init( void );
 	virtual void IN_ResetMouse( void );
 	virtual void Joy_AdvancedUpdate( void );
+	virtual void IgnoreNextMouseDelta();
 
 protected:
 	void IN_GetMouseDelta( int *pOutX, int *pOutY);
@@ -98,6 +101,7 @@ protected:
 	int         old_mouse_x, old_mouse_y, mx_accum, my_accum;
 	int         mouseinitialized;
 	void* sdl2Lib;
+	bool ignoreNextDelta;
 };
 #endif
 
