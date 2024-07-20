@@ -170,6 +170,8 @@ int CHud::Redraw( float flTime, int intermission )
 	// if no redrawing is necessary
 	// return 0;
 
+	m_iHudNumbersYOffset = IsHL25() ? m_iFontHeight * 0.2 : 0;
+
 	if( m_pCvarDraw->value )
 	{
 		HUDLIST *pList = m_pHudList;
