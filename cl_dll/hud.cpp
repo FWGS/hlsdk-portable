@@ -379,6 +379,7 @@ void CHud::Init( void )
 	default_fov = CVAR_CREATE( "default_fov", "90", FCVAR_ARCHIVE );
 	m_pCvarStealMouse = CVAR_CREATE( "hud_capturemouse", "1", FCVAR_ARCHIVE );
 	m_pCvarDraw = CVAR_CREATE( "hud_draw", "1", FCVAR_ARCHIVE );
+	m_pAllowHD = CVAR_CREATE ( "hud_allow_hd", "1", FCVAR_ARCHIVE );
 	cl_lw = gEngfuncs.pfnGetCvarPointer( "cl_lw" );
 	cl_viewbob = CVAR_CREATE( "cl_viewbob", "1", FCVAR_ARCHIVE );
 
@@ -484,16 +485,28 @@ void CHud::VidInit( void )
 	m_hsprLogo = 0;	
 	m_hsprCursor = 0;
 
-	if( ScreenWidth < 640 )
-		m_iRes = 320;
-	else
-		m_iRes = 640;
+	// a1ba: don't break the loading order here and
+	// don't cause memory leak but check
+	// maximum HUD sprite resolution we have
+	m_iMaxRes = 640;
+	client_sprite_t *pSpriteList = m_pSpriteList ? m_pSpriteList :
+		SPR_GetList( "sprites/hud.txt", &m_iSpriteCountAllRes );
+	if( pSpriteList )
+	{
+		for( int i = 0; i < m_iSpriteCountAllRes; i++ )
+		{
+			if( m_iMaxRes < pSpriteList[i].iRes )
+				m_iMaxRes = pSpriteList[i].iRes;
+		}
+	}
+
+	m_iRes = GetSpriteRes( ScreenWidth, ScreenHeight );
 
 	// Only load this once
 	if( !m_pSpriteList )
 	{
 		// we need to load the hud.txt, and all sprites within
-		m_pSpriteList = SPR_GetList( "sprites/hud.txt", &m_iSpriteCountAllRes );
+		m_pSpriteList = pSpriteList;
 
 		if( m_pSpriteList )
 		{
