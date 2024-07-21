@@ -95,6 +95,12 @@ int CHudBattery::Draw( float flTime )
 	int MGSX = ( gHUD.GetSpriteRect( m_HUD_mgs3suitbar ).right - gHUD.GetSpriteRect( m_HUD_mgs3suitbar ).left ) / 10; //Needs 20. It's 104
 	int MGSY = ScreenHeight - 45;
 	int iOffset2 = m_iWidth * ( 1.0f - m_flBat );	//32 * ( 1 - 1 ) = 0
+	/*y = ScreenHeight - gHUD.m_iFontHeight - gHUD.m_iFontHeight / 2;
+
+	if( gHUD.IsHL25( )) // a1ba: HL25 style
+		x = ( m_prc1->right - m_prc1->left ) * 3;
+	else
+		x = ScreenWidth / 5;*/
 
 	if( iOffset2 < m_iWidth )
 	{
@@ -109,7 +115,7 @@ int CHudBattery::Draw( float flTime )
 	}
 
 	//x += ( m_prc1->right - m_prc1->left );
-	//x = gHUD.DrawHudNumber( x, y, DHN_3DIGITS | DHN_DRAWZERO, m_iBat, r, g, b );
+	//x = gHUD.DrawHudNumber( x, y + gHUD.m_iHudNumbersYOffset, DHN_3DIGITS | DHN_DRAWZERO, m_iBat, r, g, b );
 
 	return 1;
 }

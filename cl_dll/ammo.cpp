@@ -75,10 +75,7 @@ void WeaponsResource::LoadWeaponSprites( WEAPON *pWeapon )
 {
 	int i, iRes;
 
-	if( ScreenWidth < 640 )
-		iRes = 320;
-	else
-		iRes = 640;
+	iRes = GetSpriteRes( ScreenWidth, ScreenHeight );
 
 	char sz[256];
 
@@ -337,21 +334,24 @@ int CHudAmmo::VidInit( void )
 
 	m_HUD_duckhunt2 = gHUD.GetSpriteIndex( "duckhunt2" );
 
-	gHR.iHistoryGap = Q_max( gHR.iHistoryGap, gHUD.GetSpriteRect( m_HUD_bucket0 ).bottom - gHUD.GetSpriteRect( m_HUD_bucket0 ).top );
+	gHR.iHistoryGap = gHUD.GetSpriteRect( m_HUD_bucket0 ).bottom - gHUD.GetSpriteRect( m_HUD_bucket0 ).top;
 
 	// If we've already loaded weapons, let's get new sprites
 	gWR.LoadAllWeaponSprites();
 
-	if( ScreenWidth >= 640 )
-	{
-		giABWidth = 20;
-		giABHeight = 4;
-	}
+	const int res = GetSpriteRes( ScreenWidth, ScreenHeight );
+	int factor;
+	if( res >= 2560 )
+		factor = 4;
+	else if( res >= 1280 )
+		factor = 3;
+	else if( res >= 640 )
+		factor = 2;
 	else
-	{
-		giABWidth = 10;
-		giABHeight = 2;
-	}
+		factor = 1;
+
+	giABWidth = 10 * factor;
+	giABHeight = 2 * factor;
 
 	return 1;
 }
@@ -890,6 +890,7 @@ int CHudAmmo::Draw( float flTime )
 
 	// Does this weapon have a clip?
 	y = ScreenHeight - gHUD.m_iFontHeight - gHUD.m_iFontHeight / 2;
+	y += gHUD.m_iHudNumbersYOffset; // a1ba: fix HL25 HUD vertical inconsistensy
 
 	// Does weapon have any ammo at all?
 	if( m_pWeapon->iAmmoType > 0 && m_pWeapon->hDuckHunt == 0 )
