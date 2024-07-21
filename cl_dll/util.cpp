@@ -123,13 +123,8 @@ void VectorMA( const float *veca, float scale, const float *vecb, float *vecc )
 
 HSPRITE LoadSprite( const char *pszName )
 {
-	int i;
+	int i = GetSpriteRes( ScreenWidth, ScreenHeight );
 	char sz[256];
-
-	if( ScreenWidth < 640 )
-		i = 320;
-	else
-		i = 640;
 
 	sprintf( sz, pszName, i );
 
