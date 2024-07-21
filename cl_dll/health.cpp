@@ -236,7 +236,7 @@ int CHudHealth::Draw( float flTime )
 	x = CrossWidth + 20;
 	y = ScreenHeight - gHUD.m_iFontHeight - 10;
 
-	gHUD.DrawHudNumber( x, y, DHN_3DIGITS | DHN_DRAWZERO, m_iHealth, r, g, b );
+	gHUD.DrawHudNumber( x, y + gHUD.m_iHudNumbersYOffset, DHN_3DIGITS | DHN_DRAWZERO, m_iHealth, r, g, b );
 
 	DrawDamage( flTime );
 	return DrawPain( flTime );
