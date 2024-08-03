@@ -20,6 +20,10 @@
 #include "exportdef.h"
 #include "cvardef.h"
 
+#if USE_VGUI2
+#include "vgui2/vgui2_utils.h"
+#endif
+
 #if !defined(TRUE)
 #define TRUE 1
 #define FALSE 0
@@ -102,7 +106,11 @@ inline client_textmessage_t *TextMessageGet( const char *pName )
 
 inline int TextMessageDrawChar( int x, int y, int number, int r, int g, int b ) 
 {
-	return gEngfuncs.pfnDrawCharacter( x, y, number, r, g, b ); 
+#if USE_VGUI2
+	return VGUI2_DrawCharacter(x, y, number, r, g, b);
+#else
+	return gEngfuncs.pfnDrawCharacter( x, y, number, r, g, b );
+#endif
 }
 
 inline int DrawConsoleString( int x, int y, const char *string )
