@@ -26,7 +26,9 @@ def options(opt):
 	grp = opt.add_option_group('Common options')
 
 	grp.add_option('-8', '--64bits', action = 'store_true', dest = 'ALLOW64', default = False,
-		help = 'allow targetting 64-bit engine(Linux/Windows/OSX x86 only) [default: %(default)s]')
+		help = 'allow targetting 64-bit libs (Linux/Windows/OSX x86 only) [default: %(default)s]')
+	grp.add_option('-4', '--32bits', action = 'store_true', dest = 'FORCE32', default = False,
+		help = 'force targetting 32-bit libs, usually unneeded [default: %(default)s]')
 	grp.add_option('--disable-werror', action = 'store_true', dest = 'DISABLE_WERROR', default = False,
 		help = 'disable compilation abort on warning')
 	grp.add_option('--enable-voicemgr', action = 'store_true', dest = 'USE_VOICEMGR', default = False,
@@ -66,12 +68,13 @@ def configure(conf):
 
 	# We restrict 64-bit builds ONLY for Win/Linux/OSX running on Intel architecture
 	# Because compatibility with original GoldSrc
-	if conf.env.DEST_OS in ['win32', 'linux', 'darwin'] and conf.env.DEST_CPU == 'x86_64':
+	if conf.env.DEST_OS in ['win32', 'linux'] and conf.env.DEST_CPU == 'x86_64':
 		conf.env.BIT32_MANDATORY = not conf.options.ALLOW64
-		if conf.env.BIT32_MANDATORY:
-			Logs.info('WARNING: will build game for 32-bit target')
 	else:
-		conf.env.BIT32_MANDATORY = False
+		conf.env.BIT32_MANDATORY = conf.options.FORCE32
+
+	if conf.env.BIT32_MANDATORY:
+		Logs.info('WARNING: will build game for 32-bit target')
 
 	conf.load('force_32bit')
 
