@@ -149,11 +149,11 @@ int __MsgFunc_PlayMP3( const char *pszName, int iSize, void *pbuf )
 
 	if( !IsXashFWGS( ))
 	{
-		sprintf( cmd, "mp3 loop %s\n", pszSound );
+		sprintf( cmd, "mp3 play %s\n", pszSound );
 		gEngfuncs.pfnClientCmd( cmd );
 	}
 	else
-		gEngfuncs.pfnPrimeMusicStream( pszSound, 1 );
+		gEngfuncs.pfnPrimeMusicStream( pszSound, 0 );
 
         return 1;
 }
