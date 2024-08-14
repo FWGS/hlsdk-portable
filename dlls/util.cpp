@@ -314,10 +314,10 @@ edict_t *DBG_EntOfVars( const entvars_t *pev )
 {
 	if( pev->pContainingEntity != NULL )
 		return pev->pContainingEntity;
-	ALERT( at_console, "entvars_t pContainingEntity is NULL, calling into engine" );
+	ALERT( at_console, "entvars_t pContainingEntity is NULL, calling into engine\n" );
 	edict_t *pent = (*g_engfuncs.pfnFindEntityByVars)( (entvars_t*)pev );
 	if( pent == NULL )
-		ALERT( at_console, "DAMN!  Even the engine couldn't FindEntityByVars!" );
+		ALERT( at_console, "DAMN!  Even the engine couldn't FindEntityByVars!\n" );
 	( (entvars_t *)pev )->pContainingEntity = pent;
 	return pent;
 }
@@ -1748,7 +1748,7 @@ unsigned short CSaveRestoreBuffer::TokenHash( const char *pszToken )
 	static int tokensparsed = 0;
 	tokensparsed++;
 	if( !m_pdata->tokenCount || !m_pdata->pTokens )
-		ALERT( at_error, "No token table array in TokenHash()!" );
+		ALERT( at_error, "No token table array in TokenHash()!\n" );
 #endif
 	for( int i = 0; i < m_pdata->tokenCount; i++ )
 	{
@@ -1757,7 +1757,7 @@ unsigned short CSaveRestoreBuffer::TokenHash( const char *pszToken )
 		if( i > 50 && !beentheredonethat )
 		{
 			beentheredonethat = TRUE;
-			ALERT( at_error, "CSaveRestoreBuffer :: TokenHash() is getting too full!" );
+			ALERT( at_error, "CSaveRestoreBuffer :: TokenHash() is getting too full!\n" );
 		}
 #endif
 		int index = hash + i;
@@ -1773,7 +1773,7 @@ unsigned short CSaveRestoreBuffer::TokenHash( const char *pszToken )
 
 	// Token hash table full!!! 
 	// [Consider doing overflow table(s) after the main table & limiting linear hash table search]
-	ALERT( at_error, "CSaveRestoreBuffer :: TokenHash() is COMPLETELY FULL!" );
+	ALERT( at_error, "CSaveRestoreBuffer :: TokenHash() is COMPLETELY FULL!\n" );
 	return 0;
 }
 
@@ -2086,7 +2086,7 @@ void CSave::BufferHeader( const char *pname, int size )
 {
 	short hashvalue = TokenHash( pname );
 	if( size > 1 << ( sizeof(short) * 8 ) )
-		ALERT( at_error, "CSave :: BufferHeader() size parameter exceeds 'short'!" );
+		ALERT( at_error, "CSave :: BufferHeader() size parameter exceeds 'short'!\n" );
 	BufferData( (const char *)&size, sizeof(short) );
 	BufferData( (const char *)&hashvalue, sizeof(short) );
 }
@@ -2098,7 +2098,7 @@ void CSave::BufferData( const char *pdata, int size )
 
 	if( m_pdata->size + size > m_pdata->bufferSize )
 	{
-		ALERT( at_error, "Save/Restore overflow!" );
+		ALERT( at_error, "Save/Restore overflow!\n" );
 		m_pdata->size = m_pdata->bufferSize;
 		return;
 	}
@@ -2404,7 +2404,7 @@ void CRestore::BufferReadBytes( char *pOutput, int size )
 
 	if( ( m_pdata->size + size ) > m_pdata->bufferSize )
 	{
-		ALERT( at_error, "Restore overflow!" );
+		ALERT( at_error, "Restore overflow!\n" );
 		m_pdata->size = m_pdata->bufferSize;
 		return;
 	}
