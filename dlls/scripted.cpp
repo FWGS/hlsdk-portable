@@ -429,7 +429,7 @@ void CCineAI::PossessEntity( void )
 			pTarget->pev->flags &= ~FL_ONGROUND;
 			break;
 		default:
-			ALERT( at_aiconsole, "aiscript:  invalid Move To Position value!" );
+			ALERT( at_aiconsole, "aiscript:  invalid Move To Position value!\n" );
 			break;
 		}
 
