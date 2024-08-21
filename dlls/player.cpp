@@ -3015,7 +3015,7 @@ ReturnSpot:
 			}
 			if( FNullEnt( pSpot ) ) // if failed..
 			{
-				ALERT( at_error, "PutClientInServer: no info_player_start on level" );
+				ALERT( at_error, "PutClientInServer: no info_player_start on level\n" );
 				return INDEXENT( 0 ); // Foreign or unknown spawns.
 			}
 		}
