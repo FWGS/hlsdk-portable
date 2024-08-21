@@ -503,13 +503,15 @@ def options(opt):
 	xc.add_option('--android', action='store', dest='ANDROID_OPTS', default=None,
 		help='enable building for android, format: --android=<arch>,<toolchain>,<api>, example: --android=armeabi-v7a-hard,4.9,9')
 	xc.add_option('--enable-magx', action='store_true', dest='MAGX', default=False,
-		help='enable building for Motorola MAGX [default: %default]')
+		help='enable building for Motorola MAGX [default: %(default)s]')
 	xc.add_option('--enable-msvc-wine', action='store_true', dest='MSVC_WINE', default=False,
-		help='enable building with MSVC using Wine [default: %default]')
+		help='enable building with MSVC using Wine [default: %(default)s]')
 	xc.add_option('--nswitch', action='store_true', dest='NSWITCH', default = False,
-		help ='enable building for Nintendo Switch [default: %default]')
+		help='enable building for Nintendo Switch [default: %(default)s]')
 	xc.add_option('--psvita', action='store_true', dest='PSVITA', default = False,
-		help ='enable building for PlayStation Vita [default: %default]')
+		help='enable building for PlayStation Vita [default: %(default)s]')
+	xc.add_option('--sailfish', action='store', dest='SAILFISH', default = None,
+		help='enable building for Sailfish/Aurora')
 
 def configure(conf):
 	if conf.options.ANDROID_OPTS:
@@ -593,6 +595,7 @@ def configure(conf):
 
 	conf.env.MAGX = conf.options.MAGX
 	conf.env.MSVC_WINE = conf.options.MSVC_WINE
+	conf.env.SAILFISH = conf.options.SAILFISH
 	MACRO_TO_DESTOS = OrderedDict({ '__ANDROID__' : 'android', '__SWITCH__' : 'nswitch', '__vita__' : 'psvita' })
 	for k in c_config.MACRO_TO_DESTOS:
 		MACRO_TO_DESTOS[k] = c_config.MACRO_TO_DESTOS[k] # ordering is important

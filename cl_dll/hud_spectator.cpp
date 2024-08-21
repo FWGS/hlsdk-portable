@@ -308,7 +308,7 @@ int UTIL_FindEntityInMap( const char *name, float *origin, float *angle )
 	
 			if( token[0] == '}' )
 			{
-				gEngfuncs.Con_DPrintf( "UTIL_FindEntityInMap: closing brace without data" );
+				gEngfuncs.Con_DPrintf( "UTIL_FindEntityInMap: closing brace without data\n" );
 				return 0;
 			}
 
