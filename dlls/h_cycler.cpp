@@ -98,7 +98,7 @@ void CCycler::GenericCyclerSpawn( const char *szModel, Vector vecMin, Vector vec
 {
 	if( !szModel || !*szModel )
 	{
-		ALERT( at_error, "cycler at %.0f %.0f %0.f missing modelname", (double)pev->origin.x, (double)pev->origin.y, (double)pev->origin.z );
+		ALERT( at_error, "cycler at %.0f %.0f %0.f missing modelname\n", (double)pev->origin.x, (double)pev->origin.y, (double)pev->origin.z );
 		REMOVE_ENTITY( ENT( pev ) );
 		return;
 	}

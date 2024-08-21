@@ -2098,7 +2098,7 @@ void CBaseMonster::StartMonster( void )
 
 		if( !m_pGoalEnt )
 		{
-			ALERT( at_error, "ReadyMonster()--%s couldn't find target %s", STRING( pev->classname ), STRING( pev->target ) );
+			ALERT( at_error, "ReadyMonster()--%s couldn't find target %s\n", STRING( pev->classname ), STRING( pev->target ) );
 		}
 		else
 		{
@@ -2110,7 +2110,7 @@ void CBaseMonster::StartMonster( void )
 			// At this point, we expect only a path_corner as initial goal
 			if( !FClassnameIs( m_pGoalEnt->pev, "path_corner" ) )
 			{
-				ALERT( at_warning, "ReadyMonster--monster's initial goal '%s' is not a path_corner", STRING( pev->target ) );
+				ALERT( at_warning, "ReadyMonster--monster's initial goal '%s' is not a path_corner\n", STRING( pev->target ) );
 			}
 #endif
 			// set the monster up to walk a path corner path. 

@@ -300,7 +300,7 @@ void COsprey::UpdateGoal()
 	}
 	else
 	{
-		ALERT( at_console, "osprey missing target" );
+		ALERT( at_console, "osprey missing target\n" );
 	}
 }
 
