@@ -3173,16 +3173,16 @@ void CTriggerCounter::CounterUse( CBaseEntity *pActivator, CBaseEntity *pCaller,
 			switch( m_cTriggersLeft )
 			{
 			case 1:
-				ALERT( at_console, "Only 1 more to go..." );
+				ALERT( at_console, "Only 1 more to go...\n" );
 				break;
 			case 2:
-				ALERT( at_console, "Only 2 more to go..." );
+				ALERT( at_console, "Only 2 more to go...\n" );
 				break;
 			case 3:
-				ALERT( at_console, "Only 3 more to go..." );
+				ALERT( at_console, "Only 3 more to go...\n" );
 				break;
 			default:
-				ALERT( at_console, "There are more to go..." );
+				ALERT( at_console, "There are more to go...\n" );
 				break;
 			}
 		}
@@ -3191,7 +3191,7 @@ void CTriggerCounter::CounterUse( CBaseEntity *pActivator, CBaseEntity *pCaller,
 
 	// !!!UNDONE: I don't think we want these Quakesque messages
 	if( fTellActivator )
-		ALERT( at_console, "Sequence completed!" );
+		ALERT( at_console, "Sequence completed!\n" );
 
 	ActivateMultiTrigger( m_hActivator );
 }
@@ -3332,7 +3332,7 @@ When the player touches this, he gets sent to the map listed in the "map" variab
 void CChangeLevel::Spawn( void )
 {
 	if( FStrEq( m_szMapName, "" ) )
-		ALERT( at_console, "a trigger_changelevel doesn't have a map" );
+		ALERT( at_console, "a trigger_changelevel doesn't have a map\n" );
 
 	if( FStrEq( m_szLandmarkName, "" ) )
 		ALERT( at_console, "trigger_changelevel to %s doesn't have a landmark\n", m_szMapName );
@@ -3597,7 +3597,7 @@ int CChangeLevel::ChangeList( LEVELLIST *pLevelList, int maxList )
 							entityFlags[entityCount] = flags;
 							entityCount++;
 							if( entityCount > MAX_ENTITY )
-								ALERT( at_error, "Too many entities across a transition!" );
+								ALERT( at_error, "Too many entities across a transition!\n" );
 						}
 						//else
 						//	ALERT( at_console, "Failed %s\n", STRING( pEntity->pev->classname ) );
