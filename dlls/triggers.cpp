@@ -1067,7 +1067,7 @@ void CTriggerMultiple::Spawn( void )
 	if( pev->health > 0 )
 		{
 		if( FBitSet( pev->spawnflags, SPAWNFLAG_NOTOUCH ) )
-			ALERT( at_error, "trigger_multiple spawn: health and notouch don't make sense" );
+			ALERT( at_error, "trigger_multiple spawn: health and notouch don't make sense\n" );
 		pev->max_health = pev->health;
 UNDONE: where to get pfnDie from?
 		pev->pfnDie = multi_killed;
@@ -1220,16 +1220,16 @@ void CBaseTrigger::CounterUse( CBaseEntity *pActivator, CBaseEntity *pCaller, US
 			switch( m_cTriggersLeft )
 			{
 			case 1:
-				ALERT( at_console, "Only 1 more to go..." );
+				ALERT( at_console, "Only 1 more to go...\n" );
 				break;
 			case 2:
-				ALERT( at_console, "Only 2 more to go..." );
+				ALERT( at_console, "Only 2 more to go...\n" );
 				break;
 			case 3:
-				ALERT( at_console, "Only 3 more to go..." );
+				ALERT( at_console, "Only 3 more to go...\n" );
 				break;
 			default:
-				ALERT( at_console, "There are more to go..." );
+				ALERT( at_console, "There are more to go...\n" );
 				break;
 			}
 		}
@@ -1238,7 +1238,7 @@ void CBaseTrigger::CounterUse( CBaseEntity *pActivator, CBaseEntity *pCaller, US
 
 	// !!!UNDONE: I don't think we want these Quakesque messages
 	if( fTellActivator )
-		ALERT( at_console, "Sequence completed!" );
+		ALERT( at_console, "Sequence completed!\n" );
 
 	ActivateMultiTrigger( m_hActivator );
 }
@@ -1415,7 +1415,7 @@ void CChangeLevel::Spawn( void )
 	m_coopData.bitsTouchCount = 0;
 	m_coopData.fUsed = false;
 	if( FStrEq( m_szMapName, "" ) )
-		ALERT( at_console, "a trigger_changelevel doesn't have a map" );
+		ALERT( at_console, "a trigger_changelevel doesn't have a map\n" );
 
 	if( FStrEq( m_szLandmarkName, "" ) )
 		ALERT( at_console, "trigger_changelevel to %s doesn't have a landmark\n", m_szMapName );
