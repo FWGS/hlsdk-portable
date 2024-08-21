@@ -21,12 +21,14 @@ def get_taskgen_count(self):
 	return idx
 
 def options(opt):
-	opt.load('reconfigure compiler_optimizations xcompile compiler_cxx compiler_c clang_compilation_database strip_on_install msdev msvs msvc subproject')
+	opt.load('reconfigure compiler_optimizations xcompile compiler_cxx compiler_c clang_compilation_database strip_on_install msdev msvs subproject')
 
 	grp = opt.add_option_group('Common options')
 
 	grp.add_option('-8', '--64bits', action = 'store_true', dest = 'ALLOW64', default = False,
-		help = 'allow targetting 64-bit engine(Linux/Windows/OSX x86 only) [default: %default]')
+		help = 'allow targetting 64-bit libs (Linux/Windows/OSX x86 only) [default: %(default)s]')
+	grp.add_option('-4', '--32bits', action = 'store_true', dest = 'FORCE32', default = False,
+		help = 'force targetting 32-bit libs, usually unneeded [default: %(default)s]')
 	grp.add_option('--disable-werror', action = 'store_true', dest = 'DISABLE_WERROR', default = False,
 		help = 'disable compilation abort on warning')
 	grp.add_option('--enable-voicemgr', action = 'store_true', dest = 'USE_VOICEMGR', default = False,
@@ -66,12 +68,13 @@ def configure(conf):
 
 	# We restrict 64-bit builds ONLY for Win/Linux/OSX running on Intel architecture
 	# Because compatibility with original GoldSrc
-	if conf.env.DEST_OS in ['win32', 'linux', 'darwin'] and conf.env.DEST_CPU == 'x86_64':
+	if conf.env.DEST_OS in ['win32', 'linux'] and conf.env.DEST_CPU == 'x86_64':
 		conf.env.BIT32_MANDATORY = not conf.options.ALLOW64
-		if conf.env.BIT32_MANDATORY:
-			Logs.info('WARNING: will build game for 32-bit target')
 	else:
-		conf.env.BIT32_MANDATORY = False
+		conf.env.BIT32_MANDATORY = conf.options.FORCE32
+
+	if conf.env.BIT32_MANDATORY:
+		Logs.info('WARNING: will build game for 32-bit target')
 
 	conf.load('force_32bit')
 
@@ -212,7 +215,7 @@ def configure(conf):
 		conf.define('LINUX', True)
 
 	conf.msg(msg='-> processing mod options', result='...', color='BLUE')
-	regex = re.compile('^([A-Za-z0-9_-]+)=([A-Za-z0-9_-]+)\ \#\ (.*)$')
+	regex = re.compile('^([A-Za-z0-9_-]+)=([A-Za-z0-9_-]+) # (.*)$')
 	with open(str(conf.path.make_node('mod_options.txt'))) as fd:
 		lines = fd.readlines()
 	for line in lines:
