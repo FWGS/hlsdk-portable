@@ -1583,7 +1583,7 @@ static int gSizes[FIELD_TYPECOUNT] =
 	sizeof(string_t),		// FIELD_STRING
 	sizeof(void*),		// FIELD_ENTITY
 	sizeof(void*),		// FIELD_CLASSPTR
-	sizeof(void*),		// FIELD_EHANDLE
+	sizeof(EHANDLE),	// FIELD_EHANDLE
 	sizeof(void*),		// FIELD_entvars_t
 	sizeof(void*),		// FIELD_EDICT
 	sizeof(float) * 3,	// FIELD_VECTOR
