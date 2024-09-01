@@ -501,7 +501,7 @@ void ClientCommand( edict_t *pEntity )
 	{
 		if( g_enable_cheats->value != 0 )
 		{
-			int iszItem = ALLOC_STRING( CMD_ARGV( 1 ) );	// Make a copy of the classname
+			string_t iszItem = ALLOC_STRING( CMD_ARGV( 1 ) );	// Make a copy of the classname
 			GetClassPtr( (CBasePlayer *)pev )->GiveNamedItem( STRING( iszItem ) );
 		}
 	}

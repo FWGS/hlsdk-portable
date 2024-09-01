@@ -345,7 +345,7 @@ void CMultiManager::Spawn( void )
 			if( m_flTargetDelay[i] < m_flTargetDelay[i - 1] )
 			{
 				// Swap out of order elements
-				int name = m_iTargetName[i];
+				string_t name = m_iTargetName[i];
 				float delay = m_flTargetDelay[i];
 				m_iTargetName[i] = m_iTargetName[i - 1];
 				m_flTargetDelay[i] = m_flTargetDelay[i - 1];

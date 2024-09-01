@@ -166,7 +166,7 @@ inline BOOL FNullEnt(entvars_t* pev)				{ return pev == NULL || FNullEnt(OFFSET(
 
 // Testing strings for nullity
 #define iStringNull 0
-inline BOOL FStringNull(int iString)			{ return iString == iStringNull; }
+inline BOOL FStringNull(string_t iString)			{ return iString == iStringNull; }
 
 #define cchMapNameMost 32
 

@@ -305,7 +305,7 @@ public:
 	void SecondaryAttack( void );
 	BOOL Deploy( void );
 	void Holster( int skiplocal = 0 );
-	int m_iszModel;
+	string_t m_iszModel;
 	int m_iModel;
 };
 

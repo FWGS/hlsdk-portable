@@ -182,7 +182,7 @@ public:
 	Schedule_t *GetScheduleOfType( int Type );
 	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType );
 
-	void NodeStart( int iszNextNode );
+	void NodeStart( string_t iszNextNode );
 	void NodeReach( void );
 	BOOL ShouldGoToNode( void );
 
@@ -191,7 +191,7 @@ public:
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
 	void LayHeadcrab( void );
 
-	int GetNodeSequence( void )
+	string_t GetNodeSequence( void )
 	{
 		CBaseEntity *pTarget = m_hTargetEnt;
 		if( pTarget )
@@ -201,7 +201,7 @@ public:
 		return 0;
 	}
 
-	int GetNodePresequence( void )
+	string_t GetNodePresequence( void )
 	{
 		CInfoBM *pTarget = (CInfoBM *)(CBaseEntity *)m_hTargetEnt;
 		if( pTarget )
@@ -682,7 +682,7 @@ void CBigMomma::Activate( void )
 		Remember( bits_MEMORY_ADVANCE_NODE );	// Start 'er up
 }
 
-void CBigMomma::NodeStart( int iszNextNode )
+void CBigMomma::NodeStart( string_t iszNextNode )
 {
 	pev->netname = iszNextNode;
 
@@ -904,16 +904,16 @@ void CBigMomma::StartTask( Task_t *pTask )
 	case TASK_PLAY_NODE_PRESEQUENCE:
 	case TASK_PLAY_NODE_SEQUENCE:
 		{
-			int sequence;
+			string_t sequence_string;
 			if( pTask->iTask == TASK_PLAY_NODE_SEQUENCE )
-				sequence = GetNodeSequence();
+				sequence_string = GetNodeSequence();
 			else
-				sequence = GetNodePresequence();
+				sequence_string = GetNodePresequence();
 
-			ALERT( at_aiconsole, "BM: Playing node sequence %s\n", STRING( sequence ) );
-			if( sequence )
+			ALERT( at_aiconsole, "BM: Playing node sequence %s\n", STRING( sequence_string ) );
+			if( sequence_string )
 			{
-				sequence = LookupSequence( STRING( sequence ) );
+				int sequence = LookupSequence( STRING( sequence_string ) );
 				if( sequence != -1 )
 				{
 					pev->sequence = sequence;
