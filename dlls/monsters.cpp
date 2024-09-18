@@ -2034,8 +2034,6 @@ void CBaseMonster::MonsterInit( void )
 	SetThink( &CBaseMonster::MonsterInitThink );
 	pev->nextthink = gpGlobals->time + 0.1f;
 	SetUse( &CBaseMonster::MonsterUse );
-
-	m_flLastYawTime = gpGlobals->time;
 }
 
 //=========================================================
@@ -2523,9 +2521,12 @@ float CBaseMonster::ChangeYaw( int yawSpeed )
 	{
 		if( monsteryawspeedfix.value )
 		{
-			float delta;
+			if( m_flLastYawTime == 0.f )
+				m_flLastYawTime = gpGlobals->time - gpGlobals->frametime;
 
-			delta = Q_min( gpGlobals->time - m_flLastYawTime, 0.25f );
+			float delta = Q_min( gpGlobals->time - m_flLastYawTime, 0.25f );
+
+			m_flLastYawTime = gpGlobals->time;
 
 			speed = (float)yawSpeed * delta * 2;
 		}
@@ -2574,8 +2575,6 @@ float CBaseMonster::ChangeYaw( int yawSpeed )
 	}
 	else
 		move = 0;
-
-	m_flLastYawTime = gpGlobals->time;
 
 	return move;
 }

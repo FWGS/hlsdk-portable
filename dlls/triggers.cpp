@@ -319,7 +319,7 @@ void CMultiManager::KeyValue( KeyValueData *pkvd )
 		{
 			char tmp[128];
 
-			UTIL_StripToken( pkvd->szKeyName, tmp );
+			UTIL_StripToken( pkvd->szKeyName, tmp, sizeof( tmp ));
 			m_iTargetName[m_cTargets] = ALLOC_STRING( tmp );
 			m_flTargetDelay[m_cTargets] = atof( pkvd->szValue );
 			m_cTargets++;
