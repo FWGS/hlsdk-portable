@@ -59,7 +59,7 @@ public:
 	void	WriteTime( const char *pname, const float *value, int count );	// Save a float (timevalue)
 	void	WriteData( const char *pname, int size, const char *pdata );		// Save a binary data block
 	void	WriteString( const char *pname, const char *pstring );			// Save a null-terminated string
-	void	WriteString( const char *pname, const int *stringId, int count );	// Save a null-terminated string (engine string)
+	void	WriteString( const char *pname, const string_t *stringId, int count );	// Save a null-terminated string (engine string)
 	void	WriteVector( const char *pname, const Vector &value );				// Save a vector
 	void	WriteVector( const char *pname, const float *value, int count );	// Save a vector
 	void	WritePositionVector( const char *pname, const Vector &value );		// Offset for landmark if necessary
