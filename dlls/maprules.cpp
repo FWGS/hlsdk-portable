@@ -169,7 +169,7 @@ void CGameScore::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE us
 		return;
 
 	// Only players can use this
-	if( pActivator->IsPlayer() )
+	if( pActivator && pActivator->IsPlayer() )
 	{
 		if( AwardToTeam() )
 		{
