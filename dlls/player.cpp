@@ -2794,6 +2794,8 @@ edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer )
 	CBaseEntity *pSpot;
 	edict_t *player;
 
+	int nNumRandomSpawnsToTry = 10;
+
 	player = pPlayer->edict();
 
 	// choose a info_player_deathmatch point
@@ -2808,9 +2810,18 @@ edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer )
 	}
 	else if( g_pGameRules->IsDeathmatch() )
 	{
+		if( !g_pLastSpawn )
+		{
+			nNumRandomSpawnsToTry = 0;
+			CBaseEntity* pEnt = 0;
+
+			while( ( pEnt = UTIL_FindEntityByClassname( 0, "info_player_deathmatch" )))
+				nNumRandomSpawnsToTry++;
+		}
+
 		pSpot = g_pLastSpawn;
 		// Randomize the start spot
-		for( int i = RANDOM_LONG( 1, 9 ); i > 0; i-- )
+		for( int i = RANDOM_LONG( 1, nNumRandomSpawnsToTry - 1 ); i > 0; i-- )
 			pSpot = UTIL_FindEntityByClassname( pSpot, "info_player_deathmatch" );
 		if( FNullEnt( pSpot ) )  // skip over the null point
 			pSpot = UTIL_FindEntityByClassname( pSpot, "info_player_deathmatch" );
