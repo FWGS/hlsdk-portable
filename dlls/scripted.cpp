@@ -1064,7 +1064,6 @@ void CScriptedSentence::DelayThink( void )
 
 BOOL CScriptedSentence::AcceptableSpeaker( CBaseToggle *pTarget )
 {
-	CBaseMonster *pMonster;
 	EHANDLE hTarget;
 
 	if( pTarget )
@@ -1073,7 +1072,7 @@ BOOL CScriptedSentence::AcceptableSpeaker( CBaseToggle *pTarget )
 
 		if( hTarget != 0 )
 		{
-			CBaseMonster *pMonster = (CBaseMonster*)( (CBaseEntity*)hTarget );
+			CBaseMonster* pMonster = (CBaseMonster*)( (CBaseEntity*)hTarget );
 			if( pev->spawnflags & SF_SENTENCE_FOLLOWERS )
 			{
 				if( pMonster->m_hTargetEnt == 0 || !pMonster->m_hTargetEnt->IsPlayer() )
