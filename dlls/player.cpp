@@ -2815,7 +2815,7 @@ edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer )
 			nNumRandomSpawnsToTry = 0;
 			CBaseEntity* pEnt = 0;
 
-			while( ( pEnt = UTIL_FindEntityByClassname( 0, "info_player_deathmatch" )))
+			while( ( pEnt = UTIL_FindEntityByClassname( pEnt, "info_player_deathmatch" )))
 				nNumRandomSpawnsToTry++;
 		}
 
