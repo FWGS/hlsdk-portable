@@ -98,7 +98,9 @@ bool bIsMultiplayer( void )
 //Just loads a v_ model.
 void LoadVModel( const char *szViewModel, CBasePlayer *m_pPlayer )
 {
-	gEngfuncs.CL_LoadModel( szViewModel, &m_pPlayer->pev->viewmodel );
+	int index = m_pPlayer->pev->viewmodel.ExplicitInt();
+	gEngfuncs.CL_LoadModel( szViewModel, &index );
+	m_pPlayer->pev->viewmodel = index;
 }
 
 /*
@@ -213,7 +215,9 @@ BOOL CBasePlayerWeapon::DefaultDeploy( const char *szViewModel, const char *szWe
 	if( !CanDeploy() )
 		return FALSE;
 
-	gEngfuncs.CL_LoadModel( szViewModel, &m_pPlayer->pev->viewmodel );
+	int index = m_pPlayer->pev->viewmodel.ExplicitInt();
+	gEngfuncs.CL_LoadModel( szViewModel, &index );
+	m_pPlayer->pev->viewmodel = index;
 
 	SendWeaponAnim( iAnim, skiplocal, body );
 
@@ -878,7 +882,7 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 	}
 
 	// Copy in results of prediction code
-	to->client.viewmodel = player.pev->viewmodel;
+	to->client.viewmodel = player.pev->viewmodel.ExplicitInt();
 	to->client.fov = player.pev->fov;
 	to->client.weaponanim = player.pev->weaponanim;
 	to->client.m_flNextAttack = player.m_flNextAttack;

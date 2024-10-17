@@ -471,9 +471,9 @@ void CCineMonster::CineThink( void )
 }
 
 // lookup a sequence name and setup the target monster to play it
-BOOL CCineMonster::StartSequence( CBaseMonster *pTarget, int iszSeq, BOOL completeOnEmpty )
+BOOL CCineMonster::StartSequence( CBaseMonster *pTarget, string_t iszSeq, BOOL completeOnEmpty )
 {
-	if( !iszSeq && completeOnEmpty )
+	if( FStringNull( iszSeq ) && completeOnEmpty )
 	{
 		SequenceDone( pTarget );
 		return FALSE;
@@ -503,9 +503,9 @@ BOOL CCineMonster::StartSequence( CBaseMonster *pTarget, int iszSeq, BOOL comple
 // lookup a sequence name and setup the target monster to play it
 // overridden for CCineAI because it's ok for them to not have an animation sequence
 // for the monster to play. For a regular Scripted Sequence, that situation is an error.
-BOOL CCineAI::StartSequence( CBaseMonster *pTarget, int iszSeq, BOOL completeOnEmpty )
+BOOL CCineAI::StartSequence( CBaseMonster *pTarget, string_t iszSeq, BOOL completeOnEmpty )
 {
-	if( iszSeq == 0 && completeOnEmpty )
+	if( FStringNull( iszSeq ) && completeOnEmpty )
 	{
 		// no sequence was provided. Just let the monster proceed, however, we still have to fire any Sequence target
 		// and remove any non-repeatable CineAI entities here ( because there is code elsewhere that handles those tasks, but
