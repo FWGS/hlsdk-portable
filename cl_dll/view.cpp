@@ -1506,10 +1506,10 @@ void V_CalcSpectatorRefdef( struct ref_params_s * pparams )
 	{
 		// second renderer cycle, inset window
 		// set inset parameters
-		pparams->viewport[0] = XRES( gHUD.m_Spectator.m_OverviewData.insetWindowX );	// change viewport to inset window
-		pparams->viewport[1] = YRES( gHUD.m_Spectator.m_OverviewData.insetWindowY );
-		pparams->viewport[2] = XRES( gHUD.m_Spectator.m_OverviewData.insetWindowWidth );
-		pparams->viewport[3] = YRES( gHUD.m_Spectator.m_OverviewData.insetWindowHeight );
+		pparams->viewport[0] = XRES_HD( gHUD.m_Spectator.m_OverviewData.insetWindowX );	// change viewport to inset window
+		pparams->viewport[1] = YRES_HD( gHUD.m_Spectator.m_OverviewData.insetWindowY );
+		pparams->viewport[2] = XRES_HD( gHUD.m_Spectator.m_OverviewData.insetWindowWidth );
+		pparams->viewport[3] = YRES_HD( gHUD.m_Spectator.m_OverviewData.insetWindowHeight );
 		pparams->nextView = 0;	// on further view
 
 		// override some settings in certain modes
@@ -1621,7 +1621,7 @@ void V_Init( void )
 	v_centerspeed = gEngfuncs.pfnRegisterVariable( "v_centerspeed","500", 0 );
 
 	cl_bobcycle = gEngfuncs.pfnRegisterVariable( "cl_bobcycle","0.8", 0 );// best default for my experimental gun wag (sjb)
-	cl_bob = gEngfuncs.pfnRegisterVariable( "cl_bob","0.01", 0 );// best default for my experimental gun wag (sjb)
+	cl_bob = gEngfuncs.pfnRegisterVariable( "cl_bob","0.01", FCVAR_ARCHIVE );// best default for my experimental gun wag (sjb)
 	cl_bobup = gEngfuncs.pfnRegisterVariable( "cl_bobup","0.5", 0 );
 	cl_waterdist = gEngfuncs.pfnRegisterVariable( "cl_waterdist","4", 0 );
 	cl_chasedist = gEngfuncs.pfnRegisterVariable( "cl_chasedist","112", 0 );
