@@ -1220,7 +1220,7 @@ client_sprite_t *GetSpriteList( client_sprite_t *pList, const char *psz, int iRe
 
 	while( i-- )
 	{
-		if( ( !strcmp( psz, p->szName ) ) && ( p->iRes == iRes ) )
+		if( p->iRes == iRes && !strcmp( psz, p->szName ))
 			return p;
 		p++;
 	}

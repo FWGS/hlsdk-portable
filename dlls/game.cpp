@@ -57,10 +57,11 @@ cvar_t multibyte_only = { "mp_multibyte_only", "0", FCVAR_SERVER };
 cvar_t mp_chattime	= { "mp_chattime","10", FCVAR_SERVER };
 
 // Engine Cvars
-cvar_t *g_psv_gravity = NULL;
-cvar_t *g_psv_aim = NULL;
-cvar_t *g_footsteps = NULL;
-cvar_t *g_enable_cheats = NULL;
+cvar_t *g_psv_gravity;
+cvar_t *g_psv_aim;
+cvar_t *g_psv_allow_autoaim;
+cvar_t *g_footsteps;
+cvar_t *g_enable_cheats;
 
 cvar_t *g_psv_developer;
 
@@ -476,6 +477,7 @@ void GameDLLInit( void )
 {
 	g_psv_gravity = CVAR_GET_POINTER( "sv_gravity" );
 	g_psv_aim = CVAR_GET_POINTER( "sv_aim" );
+	g_psv_allow_autoaim = CVAR_GET_POINTER( "sv_allow_autoaim" );
 	g_footsteps = CVAR_GET_POINTER( "mp_footsteps" );
 
 	g_psv_developer = CVAR_GET_POINTER( "developer" );
