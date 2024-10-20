@@ -1306,7 +1306,8 @@ int ReloadMapCycleFile( const char *filename, mapcycle_t *cycle )
 			if( com_token[0] == '\0' )
 				break;
 
-			strcpy( szMap, com_token );
+			strncpy( szMap, com_token, sizeof( szMap ) - 1 );
+			szMap[sizeof( szMap ) - 1] = '\0';
 
 			// Any more tokens on this line?
 			if( COM_TokenWaiting( pFileList ) )
@@ -1316,7 +1317,8 @@ int ReloadMapCycleFile( const char *filename, mapcycle_t *cycle )
 				if( com_token[0] != '\0' )
 				{
 					hasbuffer = 1;
-					strcpy( szBuffer, com_token );
+					strncpy( szBuffer, com_token, sizeof( szBuffer ) - 1 );
+					szBuffer[sizeof( szBuffer ) - 1] = '\0';
 				}
 			}
 
