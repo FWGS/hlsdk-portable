@@ -19,7 +19,7 @@
 #include "vcs_info.h"
 
 static cvar_t build_commit = { "sv_game_build_commit", g_VCSInfo_Commit };
-static cvar_t build_branch = { "sv_game_build_branch", g_VCSInfo_Commit };
+static cvar_t build_branch = { "sv_game_build_branch", g_VCSInfo_Branch };
 
 cvar_t displaysoundlist = {"displaysoundlist","0"};
 
