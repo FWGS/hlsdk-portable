@@ -64,6 +64,7 @@ jobs:
       run: |
         mkdir -p build/cl_dll
         cp vgui_support/vgui-dev/lib/vgui.so build/cl_dll
+        cp vgui_support/vgui-dev/lib/vgui.so build
     - name: Build on Linux
       if: startsWith(matrix.os, 'ubuntu')
       run: |
