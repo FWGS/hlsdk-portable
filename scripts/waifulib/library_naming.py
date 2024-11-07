@@ -60,6 +60,8 @@ DEFINES = [
 'XASH_X86',
 'XASH_NSWITCH',
 'XASH_PSVITA',
+'XASH_WASI',
+'XASH_SUNOS',
 ]
 
 def configure(conf):
@@ -97,6 +99,10 @@ def configure(conf):
 		buildos = "psvita"
 	elif conf.env.XASH_IRIX:
 		buildos = "irix"
+	elif conf.env.XASH_WASI:
+		buildos = "wasi"
+	elif conf.env.XASH_SUNOS:
+		buildos = "sunos"
 	else:
 		conf.fatal("Place your operating system name in build.h and library_naming.py!\n"
 			"If this is a mistake, try to fix conditions above and report a bug")
