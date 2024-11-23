@@ -20,6 +20,7 @@ jobs:
     env:
       CC: ${{ matrix.cc }}
       CXX: ${{ matrix.cxx }}
+      STEAMRT_SNAPSHOT: latest-steam-client-general-availability
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -38,10 +39,10 @@ jobs:
       uses: actions/cache@v4
       with:
         path: com.valvesoftware.SteamRuntime.Sdk-i386-scout-sysroot.tar.gz
-        key: ${{ runner.os }}-steam-runtime
+        key: steam-runtime-${{ env.STEAMRT_SNAPSHOT }}
     - name: Download steam-runtime
       if: startsWith(matrix.os, 'ubuntu') && steps.cache-steam-runtime.outputs.cache-hit != 'true'
-      run: wget --no-verbose https://repo.steampowered.com/steamrt-images-scout/snapshots/0.20210610.0/com.valvesoftware.SteamRuntime.Sdk-i386-scout-sysroot.tar.gz
+      run: wget --no-verbose https://repo.steampowered.com/steamrt-images-scout/snapshots/${{ env.STEAMRT_SNAPSHOT }}/com.valvesoftware.SteamRuntime.Sdk-i386-scout-sysroot.tar.gz
     - name: Install steam runtime
       if: startsWith(matrix.os, 'ubuntu')
       run: |
