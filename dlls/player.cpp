@@ -120,6 +120,7 @@ TYPEDESCRIPTION	CBasePlayer::m_playerSaveData[] =
 	DEFINE_FIELD( CBasePlayer, m_iFOV, FIELD_INTEGER ),
 
 	DEFINE_FIELD(CBasePlayer, m_fInXen, FIELD_BOOLEAN),
+	DEFINE_FIELD(CBasePlayer, m_DisplacerReturn, FIELD_VECTOR),
 	DEFINE_FIELD(CBasePlayer, m_pRope, FIELD_CLASSPTR),
 
 	//DEFINE_FIELD( CBasePlayer, m_fDeadTime, FIELD_FLOAT ), // only used in multiplayer games

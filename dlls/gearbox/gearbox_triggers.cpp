@@ -39,6 +39,7 @@ class CTriggerXenReturn : public CTriggerTeleport
 public:
 	void Spawn(void);
 	void EXPORT TeleportTouch(CBaseEntity *pOther);
+	CBaseEntity* GetEarthTarget(CBaseEntity* pOther);
 };
 
 
@@ -55,7 +56,6 @@ void CTriggerXenReturn::Spawn(void)
 void CTriggerXenReturn::TeleportTouch(CBaseEntity* pOther)
 {
 	entvars_t* pevToucher = pOther->pev;
-	edict_t	*pentTarget = NULL;
 
 	// Only teleport monsters or clients
 	if (!FBitSet(pevToucher->flags, FL_CLIENT | FL_MONSTER))
@@ -80,11 +80,11 @@ void CTriggerXenReturn::TeleportTouch(CBaseEntity* pOther)
 		}
 	}
 
-	pentTarget = FIND_ENTITY_BY_CLASSNAME(pentTarget, "info_displacer_earth_target");
-	if (FNullEnt(pentTarget))
+	CBaseEntity* pTarget = GetEarthTarget(pOther);
+	if (!pTarget)
 		return;
 
-	Vector tmp = VARS(pentTarget)->origin;
+	Vector tmp = pTarget->pev->origin;
 
 	if (pOther->IsPlayer())
 	{
@@ -97,11 +97,11 @@ void CTriggerXenReturn::TeleportTouch(CBaseEntity* pOther)
 
 	UTIL_SetOrigin(pevToucher, tmp);
 
-	pevToucher->angles = pentTarget->v.angles;
+	pevToucher->angles = pTarget->pev->angles;
 
 	if (pOther->IsPlayer())
 	{
-		pevToucher->v_angle = pentTarget->v.angles;
+		pevToucher->v_angle = pTarget->pev->angles;
 	}
 
 	pevToucher->fixangle = TRUE;
@@ -119,6 +119,36 @@ void CTriggerXenReturn::TeleportTouch(CBaseEntity* pOther)
 
 	// Play teleport sound.
 	EMIT_SOUND(ENT(pOther->pev), CHAN_STATIC, "debris/beamstart7.wav", 1, ATTN_NORM );
+}
+
+CBaseEntity* CTriggerXenReturn::GetEarthTarget(CBaseEntity* pOther)
+{
+	float flMinDist = 8192;
+	CBaseEntity* pEarthTarget = NULL;
+	CBasePlayer* pPlayer = NULL;
+	if (pOther && pOther->IsPlayer())
+	{
+		pPlayer = (CBasePlayer*)pOther;
+	}
+	CBaseEntity* pDestination = NULL;
+	while ((pDestination = UTIL_FindEntityByClassname(pDestination, "info_displacer_earth_target")) != NULL)
+	{
+		if (pPlayer)
+		{
+			const float flDist = (pPlayer->m_DisplacerReturn - pDestination->pev->origin).Length();
+			if (flDist <= flMinDist)
+			{
+				pEarthTarget = pDestination;
+				flMinDist = flDist;
+			}
+		}
+		else
+		{
+			pEarthTarget = pDestination;
+			break;
+		}
+	}
+	return pEarthTarget;
 }
 
 //=========================================================
