@@ -727,9 +727,9 @@ void CHudSpectator::DirectorMessage( int iSize, void *pbuf )
 			v1[1] = READ_COORD();
 			v1[2] = READ_COORD();	// vJumpOrigin
 
-			v1[0] = READ_COORD();	// view angle
-			v1[1] = READ_COORD();	// vJumpAngles
-			v1[2] = READ_COORD();
+			v2[0] = READ_COORD();	// view angle
+			v2[1] = READ_COORD();	// vJumpAngles
+			v2[2] = READ_COORD();
 
 			f1    = READ_BYTE();	// fov
 			i1    = READ_WORD();	// target
