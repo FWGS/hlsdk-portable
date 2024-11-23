@@ -48,7 +48,7 @@ def configure(conf):
 		conf.env.MSVC_SUBSYSTEM = 'WINDOWS'
 
 	# Load compilers early
-	conf.load('xcompile compiler_c compiler_cxx')
+	conf.load('xcompile compiler_c compiler_cxx gccdeps')
 
 	# HACKHACK: override msvc DEST_CPU value by something that we understand
 	if conf.env.DEST_CPU == 'amd64':
@@ -63,8 +63,7 @@ def configure(conf):
 	if conf.env.GIT_BRANCH:
 		conf.define('XASH_BUILD_BRANCH', conf.env.GIT_BRANCH)
 
-	enforce_pic = True # modern defaults
-	conf.check_pic(enforce_pic)
+	conf.check_pic(True) # modern defaults
 
 	# We restrict 64-bit builds ONLY for Win/Linux/OSX running on Intel architecture
 	# Because compatibility with original GoldSrc
