@@ -340,6 +340,7 @@ public:
 	// Op4 player attributes.
 	//
 	BOOL	m_fInXen;
+	Vector m_DisplacerReturn;
 
 	friend class CDisplacer;
 	friend class CTriggerXenReturn;

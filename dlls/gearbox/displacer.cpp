@@ -572,7 +572,7 @@ void CDisplacer::Teleport( void )
 	if( pTarget )
 		tmp = pTarget->pev->origin;
 
-	if( pTarget && /*HACK*/( tmp != Vector( 0, 0, 0 )/*HACK*/ ) )
+	if( pTarget )
 	{
 		if( (m_pPlayer->m_afPhysicsFlags & PFLAG_ONROPE) )
 			m_pPlayer->LetGoRope();
@@ -592,6 +592,7 @@ void CDisplacer::Teleport( void )
 		tmp.z+=37;
 
 		m_pPlayer->pev->flags &= ~FL_ONGROUND;
+		m_pPlayer->m_DisplacerReturn = m_pPlayer->pev->origin;
 
 		UTIL_SetOrigin(m_pPlayer->pev, tmp);
 
