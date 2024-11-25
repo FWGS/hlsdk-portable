@@ -23,6 +23,8 @@
 #include "netadr.h"
 #include "parsemsg.h"
 
+#include "Exports.h"
+
 #if USE_VGUI
 #include "vgui_int.h"
 #include "vgui_TeamFortressViewport.h"
@@ -34,6 +36,10 @@
 #include "VGUI_Panel.h"
 #include "VGUI_App.h"
 #endif
+#endif
+
+#if USE_VGUI2
+#include "vgui2/vgui2_utils.h"
 #endif
 
 extern "C"
@@ -293,6 +299,9 @@ void DLLEXPORT HUD_Init( void )
 #if USE_VGUI
 	Scheme_Init();
 #endif
+#if USE_VGUI2
+	VGUI2_Init();
+#endif
 }
 
 /*
@@ -414,6 +423,71 @@ bool HUD_MessageBox( const char *msg )
 
 	return false;
 }
+
+#if USE_VGUI2
+extern "C" DLLEXPORT void *ClientFactory() {
+	return NULL;
+}
+
+extern "C" void DLLEXPORT F(void *data) {
+	cldll_func_t *exports = reinterpret_cast<cldll_func_t *>(data);
+
+	cldll_func_t functions = {
+		Initialize,
+		HUD_Init,
+		HUD_VidInit,
+		HUD_Redraw,
+		HUD_UpdateClientData,
+		HUD_Reset,
+		HUD_PlayerMove,
+		HUD_PlayerMoveInit,
+		HUD_PlayerMoveTexture,
+		IN_ActivateMouse,
+		IN_DeactivateMouse,
+		IN_MouseEvent,
+		IN_ClearStates,
+		IN_Accumulate,
+		CL_CreateMove,
+		CL_IsThirdPerson,
+		CL_CameraOffset,
+		KB_Find,
+		CAM_Think,
+		V_CalcRefdef,
+		HUD_AddEntity,
+		HUD_CreateEntities,
+		HUD_DrawNormalTriangles,
+		HUD_DrawTransparentTriangles,
+		HUD_StudioEvent,
+		HUD_PostRunCmd,
+		HUD_Shutdown,
+		HUD_TxferLocalOverrides,
+		HUD_ProcessPlayerState,
+		HUD_TxferPredictionData,
+		Demo_ReadBuffer,
+		HUD_ConnectionlessPacket,
+		HUD_GetHullBounds,
+		HUD_Frame,
+		HUD_Key_Event,
+		HUD_TempEntUpdate,
+		HUD_GetUserEntity,
+		HUD_VoiceStatus,
+		HUD_DirectorMessage,
+		HUD_GetStudioModelInterface,
+#if USE_VGUI
+		HUD_ChatInputPosition,
+#else
+		NULL,
+#endif
+		NULL,
+		ClientFactory,
+#if !GOLDSOURCE_SUPPORT
+		// TODO: How many Xash3D-specific exports are there?
+#endif
+	};
+
+	*exports = functions;
+}
+#endif
 
 bool IsXashFWGS()
 {
