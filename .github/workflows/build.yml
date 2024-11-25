@@ -87,6 +87,13 @@ jobs:
       shell: bash
       run: echo "gamedir=$(grep build/CMakeCache.txt -Ee 'GAMEDIR:STRING=[a-z]+' | cut -d '=' -f 2)" >> $GITHUB_OUTPUT
       id: extract_gamedir
+    - name: Delete .lib files from dist
+      if: startsWith(matrix.os, 'windows')
+      run: |
+        Remove-Item -Force -Path dist/${{ steps.extract_gamedir.outputs.gamedir }}/cl_dlls/client.lib
+        Remove-Item -Force -Path dist/${{ steps.extract_gamedir.outputs.gamedir }}/dlls/*.lib
+        Remove-Item -Force -Path dist-vgui/${{ steps.extract_gamedir.outputs.gamedir }}/cl_dlls/client.lib
+        Remove-Item -Force -Path dist-vgui/${{ steps.extract_gamedir.outputs.gamedir }}/dlls/*.lib
     - name: Upload linux artifact
       if: startsWith(matrix.os, 'ubuntu') && matrix.cc == 'gcc'
       uses: actions/upload-artifact@v4

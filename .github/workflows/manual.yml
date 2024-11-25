@@ -102,7 +102,7 @@ jobs:
       if: startsWith(matrix.os, 'windows')
       run: |
         Remove-Item -Force -Path dist/${{ steps.extract_gamedir.outputs.gamedir }}/cl_dlls/client.lib
-        Remove-Item -Force -Path dist/${{ steps.extract_gamedir.outputs.gamedir }}/dlls/hl.lib
+        Remove-Item -Force -Path dist/${{ steps.extract_gamedir.outputs.gamedir }}/dlls/*.lib
     - name: Upload linux artifact
       if: startsWith(matrix.os, 'ubuntu')
       uses: actions/upload-artifact@v4
