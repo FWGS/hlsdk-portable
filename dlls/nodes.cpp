@@ -24,6 +24,7 @@
 #include	"nodes_compat.h"
 #include	"animation.h"
 #include	"doors.h"
+#include	"game.h"
 
 #define	HULL_STEP_SIZE 16// how far the test hull moves on each step
 #define	NODE_HEIGHT	8	// how high to lift nodes off the ground after we drop them all (make stair/ramp mapping easier)
@@ -1534,7 +1535,8 @@ void CTestHull::Spawn( entvars_t *pevMasterNode )
 //=========================================================
 void CTestHull::DropDelay( void )
 {
-	UTIL_CenterPrintAll( "Node Graph out of Date. Rebuilding..." );
+	if (g_psv_developer && g_psv_developer->value)
+		UTIL_CenterPrintAll( "Node Graph out of Date. Rebuilding..." );
 
 	UTIL_SetOrigin( VARS( pev ), WorldGraph.m_pNodes[0].m_vecOrigin );
 
