@@ -17,6 +17,7 @@
 #include "voice_status.h"
 #include "r_efx.h"
 #include "entity_types.h"
+#include <cmath>
 
 #if USE_VGUI
 #include "VGUI_ActionSignal.h"
@@ -385,6 +386,58 @@ void CVoiceStatus::DrawNoVguiSpeakerIcon(int xpos, int ypos, int playerIndex)
 	SPR_Set(m_VoiceHeadModel, r, g, b);
 	SPR_DrawAdditive(0, xpos, ypos, &rc);
 }
+
+#if !USE_VGUI
+int CVoiceStatus::Draw(float time)
+{
+	char str[256];
+	cl_entity_t *localPlayer = gEngfuncs.GetLocalPlayer();
+
+	int xpos = 10;
+	int ypos = ScreenHeight / 2;
+	int voiceHeight = 30;
+	wrect_t rc;
+
+	int iColor = static_cast<int>((sin(time * 5) * 127) + 128);
+
+	if (IsPlayerSpeaking(localPlayer->index))
+    {
+		SPR_Set(m_VoiceHeadModel, iColor, 255, iColor);
+		SPR_DrawAdditive(0, ScreenWidth - 60, ScreenHeight - gHUD.m_iFontHeight*3 - 6, &rc);
+	}
+
+	gHUD.GetAllPlayersInfo();
+
+	if (gHUD.m_Scoreboard.m_iShowscoresHeld)
+		return 1;
+
+	for (int i = 1; i <= MAX_VOICE_SPEAKERS; i++)
+	{
+		if (!IsPlayerSpeaking(i))
+			continue;
+
+		cl_entity_t *pClient = gEngfuncs.GetEntityByIndex(i);
+
+		if (pClient == localPlayer && !CVAR_GET_FLOAT("voice_loopback"))
+			continue;
+
+		sprintf(str, "%s %s", (pClient == localPlayer) ? "[ You ]" : "", g_PlayerInfoList[i].name);
+
+		int x = gHUD.DrawHudStringLen(str);
+
+		gHUD.DrawDarkRectangle(xpos - 5, ypos, xpos + x + 40, voiceHeight);
+		gHUD.DrawHudString(xpos, ypos + 6, ScreenWidth, str, 255, 140, 0);
+
+        SPR_Set(m_VoiceHeadModel, iColor, 255, iColor);
+        SPR_DrawAdditive(0, xpos + x + 10, ypos, &rc);
+
+		ypos += voiceHeight;
+    }
+
+    return 1;
+}
+
+#endif
 
 void CVoiceStatus::UpdateSpeakerStatus( int entindex, qboolean bTalking )
 {

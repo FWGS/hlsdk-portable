@@ -127,6 +127,9 @@ public:
 	// Draw speaker icon without using vgui
 	void	DrawNoVguiSpeakerIcon( int x, int y ,int playerIndex);
 
+#if !USE_VGUI
+	int		Draw(float time);
+#endif
 	// Called when the server registers a change to who this client can hear.
 	void	HandleVoiceMaskMsg(int iSize, void *pbuf);
 
