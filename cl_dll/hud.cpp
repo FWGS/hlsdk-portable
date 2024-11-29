@@ -430,11 +430,11 @@ void CHud::Init( void )
 	m_AmmoSecondary.Init();
 	m_TextMessage.Init();
 	m_StatusIcons.Init();
-	GetClientVoiceMgr()->Init(&g_VoiceStatusHelper
-#ifdef USE_VGUI
-	, (vgui::Panel**)&gViewPort
+#if USE_VGUI
+	GetClientVoiceMgr()->Init(&g_VoiceStatusHelper, (vgui::Panel**)&gViewPort);
+#else
+	GetClientVoiceMgr()->Init(&g_VoiceStatusHelper);
 #endif
-	);
 
 #if !USE_VGUI || USE_NOVGUI_MOTD
 	m_MOTD.Init();

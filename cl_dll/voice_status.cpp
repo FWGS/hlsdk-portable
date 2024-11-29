@@ -163,11 +163,11 @@ CVoiceStatus::~CVoiceStatus()
 	}
 }
 
-int CVoiceStatus::Init(IVoiceStatusHelper *pHelper
 #if USE_VGUI
-, Panel **pParentPanel
+int CVoiceStatus::Init( IVoiceStatusHelper *pHelper, Panel **pParentPanel )
+#else
+int CVoiceStatus::Init( IVoiceStatusHelper *pHelper )
 #endif
-)
 {
 	// Setup the voice_modenable cvar.
 	gEngfuncs.pfnRegisterVariable("voice_modenable", "1", FCVAR_ARCHIVE);
