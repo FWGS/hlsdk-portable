@@ -103,6 +103,7 @@ We have a minimum width of 1-320 - we could have the field widths scale with it?
 #define PING_RANGE_MAX	295
 #define PL_RANGE_MIN 315
 #define PL_RANGE_MAX 375
+#define SPEAKER_POS 40
 
 int SCOREBOARD_WIDTH = 320;
 
@@ -425,6 +426,9 @@ int CHudScoreboard::DrawPlayers( int xpos_rel, float list_slot, int nameoffset, 
 			// overlay the background in blue,  then draw the score text over it
 			FillRGBA( xpos - 5, ypos, FAR_RIGHT, ROW_GAP, 0, 0, 255, 70 );
 		}
+
+		// draw speaker icon
+		GetClientVoiceMgr()->DrawNoVguiSpeakerIcon( xpos - SPEAKER_POS, ypos - 5, best_player);
 
 		// draw their name (left to right)
 		DrawUtfString( xpos + nameoffset, ypos, NAME_RANGE_MAX + xpos_rel, pl_info->name, r, g, b );

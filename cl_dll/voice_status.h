@@ -124,6 +124,9 @@ public:
 	// Call from the HUD_CreateEntities function so it can add sprites above player heads.
 	void	CreateEntities();
 
+	// Draw speaker icon without using vgui
+	void	DrawNoVguiSpeakerIcon( int x, int y ,int playerIndex);
+
 	// Called when the server registers a change to who this client can hear.
 	void	HandleVoiceMaskMsg(int iSize, void *pbuf);
 

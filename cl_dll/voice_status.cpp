@@ -375,6 +375,17 @@ void CVoiceStatus::CreateEntities()
 	}
 }
 
+void CVoiceStatus::DrawNoVguiSpeakerIcon(int xpos, int ypos, int playerIndex)
+{
+	int r, g, b;
+	bool isSpeaking = IsPlayerSpeaking(playerIndex);
+	r = g = b = isSpeaking ? 255 : 80;
+
+	wrect_t rc;
+	SPR_Set(m_VoiceHeadModel, r, g, b);
+	SPR_DrawAdditive(0, xpos, ypos, &rc);
+}
+
 void CVoiceStatus::UpdateSpeakerStatus( int entindex, qboolean bTalking )
 {
 	cvar_t *pVoiceLoopback = NULL;
