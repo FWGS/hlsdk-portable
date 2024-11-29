@@ -17,7 +17,6 @@
 #include "voice_status.h"
 #include "r_efx.h"
 #include "entity_types.h"
-#include <cmath>
 
 #if USE_VGUI
 #include "VGUI_ActionSignal.h"
