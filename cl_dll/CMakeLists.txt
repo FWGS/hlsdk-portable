@@ -142,7 +142,6 @@ if (USE_VGUI)
 		vgui_TeamFortressViewport.cpp
 		vgui_SpectatorPanel.cpp
 		vgui_teammenu.cpp
-		voice_status.cpp
 		../game_shared/vgui_checkbutton2.cpp
 		../game_shared/vgui_grid.cpp
 		../game_shared/vgui_helpers.cpp
