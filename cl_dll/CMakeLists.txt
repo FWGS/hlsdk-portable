@@ -124,6 +124,8 @@ set (CLDLL_SOURCES
 	tri.cpp
 	util.cpp
 	view.cpp
+	voice_status.cpp
+	../game_shared/voice_banmgr.cpp
 	../game_shared/vcs_info.cpp
 )
 
@@ -148,7 +150,6 @@ if (USE_VGUI)
 		../game_shared/vgui_loadtga.cpp
 		../game_shared/vgui_scrollbar2.cpp
 		../game_shared/vgui_slider2.cpp
-		../game_shared/voice_banmgr.cpp
 		)
 	if (USE_NOVGUI_MOTD)
 		list(APPEND CLDLL_SOURCES MOTD.cpp)

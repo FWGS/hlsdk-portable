@@ -354,9 +354,9 @@ Called by engine every frame that client .dll is loaded
 
 void DLLEXPORT HUD_Frame( double time )
 {
-#if USE_VGUI
 	GetClientVoiceMgr()->Frame(time);
-#elif USE_FAKE_VGUI
+
+#if USE_FAKE_VGUI
 	if (!gViewPort)
 		gEngfuncs.VGui_ViewportPaintBackground(HUD_GetRect());
 #else
@@ -374,9 +374,7 @@ Called when a player starts or stops talking.
 
 void DLLEXPORT HUD_VoiceStatus( int entindex, qboolean bTalking )
 {
-#if USE_VGUI
 	GetClientVoiceMgr()->UpdateSpeakerStatus(entindex, bTalking);
-#endif
 }
 
 /*

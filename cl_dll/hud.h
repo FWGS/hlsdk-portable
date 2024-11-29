@@ -93,9 +93,7 @@ struct HUDLIST
 
 //
 //-----------------------------------------------------
-#if USE_VGUI
 #include "voice_status.h" // base voice handling class
-#endif
 #include "hud_spectator.h"
 
 //
