@@ -57,9 +57,16 @@ extern "C" void DLLEXPORT EXPORT2 GiveFnptrsToDll( enginefuncs_t *pengfuncsFromE
 	memcpy( &g_engfuncs, pengfuncsFromEngine, sizeof(enginefuncs_t) );
 	gpGlobals = pGlobals;
 #ifdef MOBILE_HACKS
-	char szGameFolder[64];
+	char szGameFolder[256];
+	char *pszGameDir;
 
 	(*g_engfuncs.pfnGetGameDir)( szGameFolder );
+
+	pszGameDir = strrchr( szGameFolder, '/' );
+	if( !pszGameDir )
+		pszGameDir = strrchr( szGameFolder, '\\' ); // unlikely, we don't use backslashes anymore
+	if( !pszGameDir )
+		pszGameDir = szGameFolder;
 
 	if( FStrEq( szGameFolder, "aom" ) )
 	{
