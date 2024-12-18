@@ -16,6 +16,7 @@
 #include	"extdll.h"
 #include	"util.h"
 #include	"cbase.h"
+#include        "game.h"
 #include	"monsters.h"
 #include	"schedule.h"
 #include	"flyingmonster.h"
@@ -83,7 +84,7 @@ void CFlyingMonster::Stop( void )
 	m_vecTravel = g_vecZero;
 }
 
-float CFlyingMonster::ChangeYaw( int speed )
+float CFlyingMonster::ChangeYaw( int yawSpeed )
 {
 	if( pev->movetype == MOVETYPE_FLY )
 	{
@@ -97,9 +98,25 @@ float CFlyingMonster::ChangeYaw( int speed )
 			else if( diff > 20.0f )
 				target = -90.0f;
 		}
-		pev->angles.z = UTIL_Approach( target, pev->angles.z, 220.0f * gpGlobals->frametime );
+
+		float speed = 220.f;
+
+		if( monsteryawspeedfix.value )
+		{
+			if( m_flLastZYawTime == 0.f )
+				m_flLastZYawTime = gpGlobals->time - gpGlobals->frametime;
+
+			float delta = Q_min( gpGlobals->time - m_flLastZYawTime, 0.25f );
+			m_flLastZYawTime = gpGlobals->time;
+
+			speed *= delta;
+		}
+		else
+			speed *= gpGlobals->frametime;
+
+		pev->angles.z = UTIL_Approach( target, pev->angles.z, speed );
 	}
-	return CBaseMonster::ChangeYaw( speed );
+	return CBaseMonster::ChangeYaw( yawSpeed );
 }
 
 void CFlyingMonster::Killed( entvars_t *pevAttacker, int iGib )

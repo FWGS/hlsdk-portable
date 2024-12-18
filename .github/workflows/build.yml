@@ -20,6 +20,7 @@ jobs:
     env:
       CC: ${{ matrix.cc }}
       CXX: ${{ matrix.cxx }}
+      STEAMRT_SNAPSHOT: latest-steam-client-general-availability
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -38,10 +39,10 @@ jobs:
       uses: actions/cache@v4
       with:
         path: com.valvesoftware.SteamRuntime.Sdk-i386-scout-sysroot.tar.gz
-        key: ${{ runner.os }}-steam-runtime
+        key: steam-runtime-${{ env.STEAMRT_SNAPSHOT }}
     - name: Download steam-runtime
       if: startsWith(matrix.os, 'ubuntu') && steps.cache-steam-runtime.outputs.cache-hit != 'true'
-      run: wget --no-verbose https://repo.steampowered.com/steamrt-images-scout/snapshots/0.20210610.0/com.valvesoftware.SteamRuntime.Sdk-i386-scout-sysroot.tar.gz
+      run: wget --no-verbose https://repo.steampowered.com/steamrt-images-scout/snapshots/${{ env.STEAMRT_SNAPSHOT }}/com.valvesoftware.SteamRuntime.Sdk-i386-scout-sysroot.tar.gz
     - name: Install steam runtime
       if: startsWith(matrix.os, 'ubuntu')
       run: |
@@ -52,14 +53,15 @@ jobs:
     - name: Build on Linux
       if: startsWith(matrix.os, 'ubuntu')
       run: |
-        schroot --chroot steamrt_scout_i386 -- cmake -DCMAKE_BUILD_TYPE=Release -DPOLLY=ON -B build -S . -DCMAKE_EXE_LINKER_FLAGS="-Wl,--no-undefined" -DCMAKE_INSTALL_PREFIX="$PWD/dist"
+        schroot --chroot steamrt_scout_i386 -- cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DPOLLY=ON -B build -S . -DCMAKE_EXE_LINKER_FLAGS="-Wl,--no-undefined" -DCMAKE_INSTALL_PREFIX="$PWD/dist"
         schroot --chroot steamrt_scout_i386 -- cmake --build build --target all
         schroot --chroot steamrt_scout_i386 -- cmake --build build --target install
     - name: Build on Linux with vgui
       if: startsWith(matrix.os, 'ubuntu') && startsWith(matrix.cc, 'gcc')
       run: |
-        schroot --chroot steamrt_scout_i386 -- cmake -DCMAKE_BUILD_TYPE=Release -DPOLLY=ON -B build-vgui -S . -DCMAKE_EXE_LINKER_FLAGS="-Wl,--no-undefined" -DUSE_VGUI=ON -DCMAKE_INSTALL_PREFIX="$PWD/dist-vgui"
+        schroot --chroot steamrt_scout_i386 -- cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DPOLLY=ON -B build-vgui -S . -DCMAKE_EXE_LINKER_FLAGS="-Wl,--no-undefined" -DUSE_VGUI=ON -DCMAKE_INSTALL_PREFIX="$PWD/dist-vgui"
         cp vgui_support/vgui-dev/lib/vgui.so build-vgui/cl_dll
+        cp vgui_support/vgui-dev/lib/vgui.so build-vgui
         schroot --chroot steamrt_scout_i386 -- cmake --build build-vgui --target all
         schroot --chroot steamrt_scout_i386 -- cmake --build build-vgui --target install
 

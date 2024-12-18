@@ -15,6 +15,10 @@ on:
         options:
         - 'OFF'
         - 'ON'
+      steamrt_snapshot:
+        type: string
+        description: SteamRT Snapshot
+        default: 'latest-steam-client-general-availability'
 jobs:
   build:
     runs-on: ${{ matrix.os }}
@@ -48,10 +52,10 @@ jobs:
       uses: actions/cache@v4
       with:
         path: com.valvesoftware.SteamRuntime.Sdk-i386-scout-sysroot.tar.gz
-        key: ${{ runner.os }}-steam-runtime
+        key: steam-runtime-${{ github.event.inputs.steamrt_snapshot }}
     - name: Download steam-runtime
       if: startsWith(matrix.os, 'ubuntu') && steps.cache-steam-runtime.outputs.cache-hit != 'true'
-      run: wget --no-verbose https://repo.steampowered.com/steamrt-images-scout/snapshots/0.20210610.0/com.valvesoftware.SteamRuntime.Sdk-i386-scout-sysroot.tar.gz
+      run: wget --no-verbose https://repo.steampowered.com/steamrt-images-scout/snapshots/${{ github.event.inputs.steamrt_snapshot }}/com.valvesoftware.SteamRuntime.Sdk-i386-scout-sysroot.tar.gz
     - name: Install steam runtime
       if: startsWith(matrix.os, 'ubuntu')
       run: |
@@ -64,10 +68,11 @@ jobs:
       run: |
         mkdir -p build/cl_dll
         cp vgui_support/vgui-dev/lib/vgui.so build/cl_dll
+        cp vgui_support/vgui-dev/lib/vgui.so build
     - name: Build on Linux
       if: startsWith(matrix.os, 'ubuntu')
       run: |
-        schroot --chroot steamrt_scout_i386 -- cmake -B build -S . -DCMAKE_EXE_LINKER_FLAGS="-Wl,--no-undefined" -DCMAKE_BUILD_TYPE=${{ github.event.inputs.buildtype }} -DCMAKE_INSTALL_PREFIX="$PWD/dist" -DUSE_VGUI=${{ github.event.inputs.usevgui }}
+        schroot --chroot steamrt_scout_i386 -- cmake -GNinja -B build -S . -DCMAKE_EXE_LINKER_FLAGS="-Wl,--no-undefined" -DCMAKE_BUILD_TYPE=${{ github.event.inputs.buildtype }} -DCMAKE_INSTALL_PREFIX="$PWD/dist" -DUSE_VGUI=${{ github.event.inputs.usevgui }}
         schroot --chroot steamrt_scout_i386 -- cmake --build build --target all
         schroot --chroot steamrt_scout_i386 -- cmake --build build --target install
 
@@ -93,11 +98,6 @@ jobs:
       run: |
         copy build/cl_dll/Debug/client.pdb dist/${{ steps.extract_gamedir.outputs.gamedir }}/cl_dlls/
         copy build/dlls/Debug/hl.pdb dist/${{ steps.extract_gamedir.outputs.gamedir }}/dlls/
-    - name: Delete .lib files from dist
-      if: startsWith(matrix.os, 'windows')
-      run: |
-        Remove-Item -Force -Path dist/${{ steps.extract_gamedir.outputs.gamedir }}/cl_dlls/client.lib
-        Remove-Item -Force -Path dist/${{ steps.extract_gamedir.outputs.gamedir }}/dlls/hl.lib
     - name: Upload linux artifact
       if: startsWith(matrix.os, 'ubuntu')
       uses: actions/upload-artifact@v4

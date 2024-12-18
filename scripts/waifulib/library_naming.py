@@ -60,6 +60,8 @@ DEFINES = [
 'XASH_X86',
 'XASH_NSWITCH',
 'XASH_PSVITA',
+'XASH_WASI',
+'XASH_SUNOS',
 ]
 
 def configure(conf):
@@ -75,8 +77,12 @@ def configure(conf):
 	# engine/common/build.c
 	if conf.env.XASH_ANDROID:
 		buildos = "android"
-	elif conf.env.XASH_WIN32 or conf.env.XASH_LINUX or conf.env.XASH_APPLE:
-		buildos = "" # no prefix for default OS
+	elif conf.env.XASH_WIN32:
+		buildos = "win32"
+	elif conf.env.XASH_LINUX:
+		buildos = "linux"
+	elif conf.env.XASH_APPLE:
+		buildos = "apple"
 	elif conf.env.XASH_FREEBSD:
 		buildos = "freebsd"
 	elif conf.env.XASH_NETBSD:
@@ -97,6 +103,10 @@ def configure(conf):
 		buildos = "psvita"
 	elif conf.env.XASH_IRIX:
 		buildos = "irix"
+	elif conf.env.XASH_WASI:
+		buildos = "wasi"
+	elif conf.env.XASH_SUNOS:
+		buildos = "sunos"
 	else:
 		conf.fatal("Place your operating system name in build.h and library_naming.py!\n"
 			"If this is a mistake, try to fix conditions above and report a bug")
@@ -104,10 +114,7 @@ def configure(conf):
 	if conf.env.XASH_AMD64:
 		buildarch = "amd64"
 	elif conf.env.XASH_X86:
-		if conf.env.XASH_WIN32 or conf.env.XASH_LINUX or conf.env.XASH_APPLE:
-			buildarch = ""
-		else:
-			buildarch = "i386"
+		buildarch = "i386"
 	elif conf.env.XASH_ARM and conf.env.XASH_64BIT:
 		buildarch = "arm64"
 	elif conf.env.XASH_ARM:
@@ -159,6 +166,14 @@ def configure(conf):
 	else:
 		raise conf.fatal("Place your architecture name in build.h and library_naming.py!\n"
 			"If this is a mistake, try to fix conditions above and report a bug")
+
+	node = conf.bldnode.make_node('true_postfix.txt')
+	node.write('%s-%s' % (buildos, buildarch))
+
+	if not conf.env.XASH_ANDROID and (conf.env.XASH_WIN32 or conf.env.XASH_LINUX or conf.env.XASH_APPLE):
+		buildos = ''
+		if conf.env.XASH_X86:
+			buildarch = ''
 
 	conf.env.revert()
 
