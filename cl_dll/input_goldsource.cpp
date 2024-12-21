@@ -1617,7 +1617,7 @@ void GoldSourceInput::IN_Init (void)
 {
 	ignoreNextDelta = false;
 	m_filter				= gEngfuncs.pfnRegisterVariable ( "m_filter","0", FCVAR_ARCHIVE );
-	sensitivity			 = gEngfuncs.pfnRegisterVariable ( "sensitivity","3", FCVAR_ARCHIVE ); // user mouse sensitivity setting.
+	sensitivity			 = gEngfuncs.pfnRegisterVariable ( "sensitivity","3", FCVAR_ARCHIVE | FCVAR_FILTERSTUFFTEXT ); // user mouse sensitivity setting.
 
 	in_joystick			 = gEngfuncs.pfnRegisterVariable ( "joystick","0", FCVAR_ARCHIVE );
 	joy_name				= gEngfuncs.pfnRegisterVariable ( "joyname", "joystick", 0 );
@@ -1638,6 +1638,11 @@ void GoldSourceInput::IN_Init (void)
 	joy_yawsensitivity		= gEngfuncs.pfnRegisterVariable ( "joyyawsensitivity", "-1.0", 0 );
 	joy_wwhack1				= gEngfuncs.pfnRegisterVariable ( "joywwhack1", "0.0", 0 );
 	joy_wwhack2				= gEngfuncs.pfnRegisterVariable ( "joywwhack2", "0.0", 0 );
+
+	// HL25 checks this cvar and if it doesn't exist or set to zero
+	// it will lock any usage of gamepads
+	// see: https://github.com/ValveSoftware/halflife/issues/3621
+	gEngfuncs.pfnRegisterVariable( "joysupported", "1", 0 );
 
 	m_customaccel			= gEngfuncs.pfnRegisterVariable ( "m_customaccel", "0", FCVAR_ARCHIVE );
 	m_customaccel_scale		= gEngfuncs.pfnRegisterVariable ( "m_customaccel_scale", "0.04", FCVAR_ARCHIVE );
