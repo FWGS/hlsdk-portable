@@ -20,6 +20,7 @@ def options(opt):
 	opt.load('vgui')
 
 def configure(conf):
+	conf.options.VGUI_DEV = os.path.join('vgui_support', 'vgui-dev') # vgui is in submodule
 	conf.env.USE_VGUI = conf.options.USE_VGUI
 	conf.env.USE_NOVGUI_MOTD = conf.options.USE_NOVGUI_MOTD
 	conf.env.USE_NOVGUI_SCOREBOARD = conf.options.USE_NOVGUI_SCOREBOARD
@@ -121,7 +122,6 @@ def build(bld):
 		defines  = defines,
 		use      = libs,
 		install_path = install_path,
-		subsystem = bld.env.MSVC_SUBSYSTEM,
 		idx = bld.get_taskgen_count()
 	)
 
