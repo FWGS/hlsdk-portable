@@ -816,21 +816,35 @@ void CBasePlayer::PackDeadPlayerItems( void )
 	}
 	else
 	{
-		// pack the ammo
-		while( iPackAmmo[iPA] != -1 )
+		bool bPackItems = true;
+		if ( iAmmoRules == GR_PLR_DROP_AMMO_ACTIVE && iWeaponRules == GR_PLR_DROP_GUN_ACTIVE )
 		{
-			pWeaponBox->PackAmmo( MAKE_STRING( CBasePlayerItem::AmmoInfoArray[iPackAmmo[iPA]].pszName ), m_rgAmmo[iPackAmmo[iPA]] );
-			iPA++;
+			if ( rgpPackWeapons[0] == NULL
+				|| ( FClassnameIs( rgpPackWeapons[0]->pev, "weapon_satchel" ) && ( iPackAmmo[0] == -1 || ( m_rgAmmo[iPackAmmo[0]] == 0 ) ) ) )
+			{
+				bPackItems = false;
+			}
 		}
 
-		// now pack all of the items in the lists
-		while( rgpPackWeapons[iPW] )
+		if ( bPackItems )
 		{
-			// weapon unhooked from the player. Pack it into der box.
-			pWeaponBox->PackWeapon( rgpPackWeapons[iPW] );
+			// pack the ammo
+			while( iPackAmmo[iPA] != -1 )
+			{
+				pWeaponBox->PackAmmo( MAKE_STRING( CBasePlayerItem::AmmoInfoArray[iPackAmmo[iPA]].pszName ), m_rgAmmo[iPackAmmo[iPA]] );
+				iPA++;
+			}
 
-			iPW++;
+			// now pack all of the items in the lists
+			while( rgpPackWeapons[iPW] )
+			{
+				// weapon unhooked from the player. Pack it into der box.
+				pWeaponBox->PackWeapon( rgpPackWeapons[iPW] );
+
+				iPW++;
+			}
 		}
+
 		pWeaponBox->pev->velocity = pev->velocity * 1.2f;// weaponbox has player's velocity, then some.
 	}
 	RemoveAllItems( TRUE );// now strip off everything that wasn't handled by the code above.
