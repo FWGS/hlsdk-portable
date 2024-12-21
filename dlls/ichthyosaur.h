@@ -92,6 +92,9 @@ public:
 
 	float m_flNextAlert;
 
+	float m_flLastPitchTime;	// Last frame time pitch was changed
+        float m_flLastZYawTime;		// Last frame time Z was changed when yaw was changed
+
 	static const char *pIdleSounds[];
 	static const char *pAlertSounds[];
 	static const char *pAttackSounds[];
