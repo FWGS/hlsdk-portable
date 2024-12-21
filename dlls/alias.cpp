@@ -127,7 +127,7 @@ void CInfoGroup :: KeyValue( KeyValueData *pkvd )
 	else if ( m_cMembers < MAX_MULTI_TARGETS )
 	{
 		char tmp[128];
-		UTIL_StripToken( pkvd->szKeyName, tmp );
+		UTIL_StripToken( pkvd->szKeyName, tmp, sizeof(tmp) );
 		m_iszMemberName [ m_cMembers ] = ALLOC_STRING( tmp );
 		m_iszMemberValue [ m_cMembers ] = ALLOC_STRING (pkvd->szValue);
 		m_cMembers++;
@@ -218,7 +218,7 @@ void CMultiAlias :: KeyValue( KeyValueData *pkvd )
 	else if ( m_cTargets < MAX_MULTI_TARGETS )
 	{
 		char tmp[128];
-		UTIL_StripToken( pkvd->szKeyName, tmp );
+		UTIL_StripToken( pkvd->szKeyName, tmp, sizeof(tmp) );
 
 		m_iszTargets [ m_cTargets ] = ALLOC_STRING( tmp );
 		m_iValues [ m_cTargets ] = atoi( pkvd->szValue );
