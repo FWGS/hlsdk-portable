@@ -1614,6 +1614,11 @@ void GoldSourceInput::IN_Init (void)
 	joy_wwhack1				= gEngfuncs.pfnRegisterVariable ( "joywwhack1", "0.0", 0 );
 	joy_wwhack2				= gEngfuncs.pfnRegisterVariable ( "joywwhack2", "0.0", 0 );
 
+	// HL25 checks this cvar and if it doesn't exist or set to zero
+	// it will lock any usage of gamepads
+	// see: https://github.com/ValveSoftware/halflife/issues/3621
+	gEngfuncs.pfnRegisterVariable( "joysupported", "1", 0 );
+
 	m_customaccel			= gEngfuncs.pfnRegisterVariable ( "m_customaccel", "0", FCVAR_ARCHIVE );
 	m_customaccel_scale		= gEngfuncs.pfnRegisterVariable ( "m_customaccel_scale", "0.04", FCVAR_ARCHIVE );
 	m_customaccel_max		= gEngfuncs.pfnRegisterVariable ( "m_customaccel_max", "0", FCVAR_ARCHIVE );
