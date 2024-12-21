@@ -37,7 +37,7 @@ int CGraph::FindNearestNode( const Vector &vecOrigin, int afNodeTypes ) { return
 /*********************************************************/
 
 void CBaseMonster::ReportAIState( void ) { }
-float CBaseMonster::ChangeYaw( int speed ) { return 0; }
+float CBaseMonster::ChangeYaw( int yawSpeed ) { return 0; }
 void CBaseMonster::MakeIdealYaw( Vector vecTarget ) { }
 
 void CBaseMonster::CorpseFallThink( void )

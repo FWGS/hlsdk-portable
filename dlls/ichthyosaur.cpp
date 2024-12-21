@@ -21,6 +21,7 @@
 #include	"extdll.h"
 #include	"util.h"
 #include	"cbase.h"
+#include        "game.h"
 #include	"monsters.h"
 #include	"schedule.h"
 #include	"flyingmonster.h"
@@ -76,7 +77,7 @@ public:
 	BOOL CheckMeleeAttack1( float flDot, float flDist );
 	BOOL CheckRangeAttack1( float flDot, float flDist );
 
-	float ChangeYaw( int speed );
+	float ChangeYaw( int yawSpeed );
 	Activity GetStoppedActivity( void );
 
 	void Move( float flInterval );
@@ -88,7 +89,7 @@ public:
 
 	float VectorToPitch( const Vector &vec );
 	float FlPitchDiff( void );
-	float ChangePitch( int speed );
+	float ChangePitch( int pitchSpeed );
 
 	Vector m_SaveVelocity;
 	float m_idealDist;
@@ -105,6 +106,9 @@ public:
 	CBeam *m_pBeam;
 
 	float m_flNextAlert;
+
+	float m_flLastPitchTime;	// Last frame time pitch was changed
+	float m_flLastZYawTime;		// Last frame time Z was changed when yaw was changed
 
 	static const char *pIdleSounds[];
 	static const char *pAlertSounds[];
@@ -780,7 +784,7 @@ float CIchthyosaur::FlPitchDiff( void )
 	return flPitchDiff;
 }
 
-float CIchthyosaur::ChangePitch( int speed )
+float CIchthyosaur::ChangePitch( int pitchSpeed )
 {
 	if( pev->movetype == MOVETYPE_FLY )
 	{
@@ -793,12 +797,28 @@ float CIchthyosaur::ChangePitch( int speed )
 			else if( diff > 20 )
 				target = -45;
 		}
-		pev->angles.x = UTIL_Approach(target, pev->angles.x, 220.0f * 0.1f );
+
+		float speed = 220.f;
+
+                if( monsteryawspeedfix.value )
+                {
+                        if( m_flLastPitchTime == 0.f )
+                                m_flLastPitchTime = gpGlobals->time - gpGlobals->frametime;
+
+                        float delta = Q_min( gpGlobals->time - m_flLastPitchTime, 0.25f );
+                        m_flLastPitchTime = gpGlobals->time;
+
+                        speed *= delta;
+                }
+                else
+                        speed *= 0.1f;
+
+		pev->angles.x = UTIL_Approach(target, pev->angles.x, speed );
 	}
 	return 0;
 }
 
-float CIchthyosaur::ChangeYaw( int speed )
+float CIchthyosaur::ChangeYaw( int yawSpeed )
 {
 	if( pev->movetype == MOVETYPE_FLY )
 	{
@@ -812,9 +832,25 @@ float CIchthyosaur::ChangeYaw( int speed )
 			else if( diff > 20 )
 				target = -20;
 		}
-		pev->angles.z = UTIL_Approach( target, pev->angles.z, 220.0f * 0.1f );
+
+		float speed = 220.f;
+
+                if( monsteryawspeedfix.value )
+                {
+                        if( m_flLastZYawTime == 0.f )
+                                m_flLastZYawTime = gpGlobals->time - gpGlobals->frametime;
+
+                        float delta = Q_min( gpGlobals->time - m_flLastZYawTime, 0.25f );
+                        m_flLastZYawTime = gpGlobals->time;
+
+                        speed *= delta;
+                }
+                else
+                        speed *= 0.1f;
+
+		pev->angles.z = UTIL_Approach( target, pev->angles.z, speed );
 	}
-	return CFlyingMonster::ChangeYaw( speed );
+	return CFlyingMonster::ChangeYaw( yawSpeed );
 }
 
 Activity CIchthyosaur::GetStoppedActivity( void )
