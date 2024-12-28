@@ -860,7 +860,8 @@ void CBasePlayer::RemoveAllItems( BOOL removeSuit )
 		pev->weapons &= ~WEAPON_ALLWEAPONS;
 
 	// Turn off flashlight
-	ClearBits( pev->effects, EF_DIMLIGHT );
+	if (removeSuit)
+		ClearBits( pev->effects, EF_DIMLIGHT );
 
 	for( i = 0; i < MAX_AMMO_SLOTS; i++ )
 		m_rgAmmo[i] = 0;
