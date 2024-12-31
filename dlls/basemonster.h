@@ -129,7 +129,7 @@ public:
 	virtual BOOL ShouldFadeOnDeath( void );
 
 	// Basic Monster AI functions
-	virtual float ChangeYaw( int speed );
+	virtual float ChangeYaw( int yawSpeed );
 	float VecToYaw( Vector vecDir );
 	float FlYawDiff( void ); 
 
