@@ -122,7 +122,7 @@ BOOL HLGetNextBestWeapon(CBasePlayer *pPlayer, CBasePlayerItem *pCurrentWeapon )
 
 		while( pCheck )
 		{
-			if( !FBitSet( pCheck->iFlags(), ITEM_FLAG_NOCHOICE ))
+			if( !FBitSet( pCheck->iFlags(), ITEM_FLAG_NOAUTOSWITCHTO ))
 			{
 				if( pPlayer->GetWeaponWeight( pCheck ) > -1 && pPlayer->GetWeaponWeight( pCheck ) == pPlayer->GetWeaponWeight( pCurrentWeapon ) && pCheck != pCurrentWeapon )
 				{

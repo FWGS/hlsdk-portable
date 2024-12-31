@@ -134,7 +134,7 @@ endif()
 
 if(CMAKE_SIZEOF_VOID_P EQUAL 8 AND NOT 64BIT)
 	if(MSVC)
-		error("UNDONE: set 32 build flags")
+		message(FATAL_ERROR "Add \"-D64BIT=ON\" to build 64-bit version of SDK or add \"-A Win32\" if you want to build a 32-bit version")
 	else()
 		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32")
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32")

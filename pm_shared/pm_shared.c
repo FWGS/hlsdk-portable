@@ -949,7 +949,10 @@ int PM_FlyMove( void )
 
 		// modify original_velocity so it parallels all of the clip planes
 		//
-		if( pmove->movetype == MOVETYPE_WALK && ( ( pmove->onground == -1 ) || ( pmove->friction != 1 ) ) )	// relfect player velocity
+		// reflect player velocity
+		// Only give this a try for first impact plane because you can get yourself stuck in an acute corner by jumping in place
+		// and pressing forward and nobody was really using this bounce/reflection feature anyway...
+		if( numplanes == 1 && pmove->movetype == MOVETYPE_WALK && ( ( pmove->onground == -1 ) || ( pmove->friction != 1 )))
 		{
 			for( i = 0; i < numplanes; i++ )
 			{
@@ -2867,6 +2870,15 @@ void PM_CheckParamters( void )
 		pmove->maxspeed = min( maxspeed, pmove->maxspeed );
 	}
 
+	// Slow down, I'm pulling it! (a box maybe) but only when I'm standing on ground
+	//
+	// JoshA: Moved this to CheckParamters rather than working on the velocity,
+	// as otherwise it affects every integration step incorrectly.
+	if( ( pmove->onground != -1 ) && ( pmove->cmd.buttons & IN_USE ))
+	{
+		pmove->maxspeed *= 1.0f / 3.0f;
+	}
+
 	if( ( spd != 0.0f ) && ( spd > pmove->maxspeed ) )
 	{
 		float fRatio = pmove->maxspeed / spd;
@@ -2987,7 +2999,11 @@ void PM_PlayerMove( qboolean server )
 	{
 		if( PM_CheckStuck() )
 		{
-			return;  // Can't move, we're stuck
+			// Let the user try to duck to get unstuck
+			PM_Duck();
+
+			if( PM_CheckStuck() )
+				return;  // Can't move, we're stuck
 		}
 	}
 
@@ -3031,12 +3047,6 @@ void PM_PlayerMove( qboolean server )
 			//  it will be set immediately again next frame if necessary
 			pmove->movetype = MOVETYPE_WALK;
 		}
-	}
-
-	// Slow down, I'm pulling it! (a box maybe) but only when I'm standing on ground
-	if( ( pmove->onground != -1 ) && ( pmove->cmd.buttons & IN_USE ) )
-	{
-		VectorScale( pmove->velocity, 0.3, pmove->velocity );
 	}
 
 	// Handle movement

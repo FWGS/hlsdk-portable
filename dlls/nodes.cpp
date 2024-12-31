@@ -1590,7 +1590,7 @@ void CNodeEnt::Spawn( void )
 
 	if( WorldGraph.m_cNodes >= MAX_NODES )
 	{
-		ALERT( at_aiconsole, "cNodes > MAX_NODES\n" );
+		ALERT( at_aiconsole, "cNodes >= MAX_NODES\n" );
 		return;
 	}
 
