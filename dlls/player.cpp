@@ -860,7 +860,8 @@ void CBasePlayer::RemoveAllItems( BOOL removeSuit )
 		pev->weapons &= ~WEAPON_ALLWEAPONS;
 
 	// Turn off flashlight
-	ClearBits( pev->effects, EF_DIMLIGHT );
+	if (removeSuit)
+		ClearBits( pev->effects, EF_DIMLIGHT );
 
 	for( i = 0; i < MAX_AMMO_SLOTS; i++ )
 		m_rgAmmo[i] = 0;
@@ -3220,6 +3221,9 @@ void CBasePlayer::SelectItem( const char *pstr )
 	if( pItem == m_pActiveItem )
 		return;
 
+	if( !pItem->CanDeploy())
+		return;
+
 	ResetAutoaim();
 
 	// FIX, this needs to queue them up and delay
@@ -3249,6 +3253,9 @@ void CBasePlayer::SelectLastItem( void )
 	{
 		return;
 	}
+
+	if( !m_pLastItem->CanDeploy())
+		return;
 
 	ResetAutoaim();
 
