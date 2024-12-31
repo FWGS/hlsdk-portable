@@ -175,7 +175,7 @@ void CCrossbowBolt::BoltTouch( CBaseEntity *pOther )
 			pev->angles.z = RANDOM_LONG( 0, 360 );
 			pev->nextthink = gpGlobals->time + 10.0f;
 		}
-		else if( pOther->pev->movetype == MOVETYPE_PUSH || pOther->pev->movetype == MOVETYPE_PUSHSTEP )
+		else if( g_fIsXash3D && (pOther->pev->movetype == MOVETYPE_PUSH || pOther->pev->movetype == MOVETYPE_PUSHSTEP) )
 		{
 			Vector vecDir = pev->velocity.Normalize();
 			UTIL_SetOrigin( pev, pev->origin - vecDir * 12.0f );
@@ -186,12 +186,9 @@ void CCrossbowBolt::BoltTouch( CBaseEntity *pOther )
 			pev->angles.z = RANDOM_LONG( 0, 360 );
 			pev->nextthink = gpGlobals->time + 10.0f;			
 
-			if( g_fIsXash3D )
-			{
-				// g-cont. Setup movewith feature
-				pev->movetype = MOVETYPE_COMPOUND;	// set movewith type
-				pev->aiment = ENT( pOther->pev );	// set parent
-			}
+			// g-cont. Setup movewith feature
+			pev->movetype = MOVETYPE_COMPOUND;	// set movewith type
+			pev->aiment = ENT( pOther->pev );	// set parent
 		}
 
 		if( UTIL_PointContents( pev->origin ) != CONTENTS_WATER )
