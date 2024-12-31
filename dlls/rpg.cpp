@@ -517,7 +517,7 @@ int CRpg::GetItemInfo( ItemInfo *p )
 	p->iSlot = 5;
 	p->iPosition = 0;
 	p->iId = m_iId = WEAPON_RPG;
-	p->iFlags = ITEM_FLAG_NOCHOICE;
+	p->iFlags = ITEM_FLAG_NOAUTOSWITCHTO;
 	p->iWeight = RPG_WEIGHT;
 	p->weaponName = "Rocket Grenade Launcher Nuke";
 
