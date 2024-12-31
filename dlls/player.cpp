@@ -785,21 +785,35 @@ void CBasePlayer::PackDeadPlayerItems( void )
 	}
 	else
 	{
-		// pack the ammo
-		while( iPackAmmo[iPA] != -1 )
+		bool bPackItems = true;
+		if ( iAmmoRules == GR_PLR_DROP_AMMO_ACTIVE && iWeaponRules == GR_PLR_DROP_GUN_ACTIVE )
 		{
-			pWeaponBox->PackAmmo( MAKE_STRING( CBasePlayerItem::AmmoInfoArray[iPackAmmo[iPA]].pszName ), m_rgAmmo[iPackAmmo[iPA]] );
-			iPA++;
+			if ( rgpPackWeapons[0] == NULL
+				|| ( FClassnameIs( rgpPackWeapons[0]->pev, "weapon_satchel" ) && ( iPackAmmo[0] == -1 || ( m_rgAmmo[iPackAmmo[0]] == 0 ) ) ) )
+			{
+				bPackItems = false;
+			}
 		}
 
-		// now pack all of the items in the lists
-		while( rgpPackWeapons[iPW] )
+		if ( bPackItems )
 		{
-			// weapon unhooked from the player. Pack it into der box.
-			pWeaponBox->PackWeapon( rgpPackWeapons[iPW] );
+			// pack the ammo
+			while( iPackAmmo[iPA] != -1 )
+			{
+				pWeaponBox->PackAmmo( MAKE_STRING( CBasePlayerItem::AmmoInfoArray[iPackAmmo[iPA]].pszName ), m_rgAmmo[iPackAmmo[iPA]] );
+				iPA++;
+			}
 
-			iPW++;
+			// now pack all of the items in the lists
+			while( rgpPackWeapons[iPW] )
+			{
+				// weapon unhooked from the player. Pack it into der box.
+				pWeaponBox->PackWeapon( rgpPackWeapons[iPW] );
+
+				iPW++;
+			}
 		}
+
 		pWeaponBox->pev->velocity = pev->velocity * 1.2f;// weaponbox has player's velocity, then some.
 	}
 	RemoveAllItems( TRUE );// now strip off everything that wasn't handled by the code above.
@@ -846,7 +860,8 @@ void CBasePlayer::RemoveAllItems( BOOL removeSuit )
 		pev->weapons &= ~WEAPON_ALLWEAPONS;
 
 	// Turn off flashlight
-	ClearBits( pev->effects, EF_DIMLIGHT );
+	if (removeSuit)
+		ClearBits( pev->effects, EF_DIMLIGHT );
 
 	for( i = 0; i < MAX_AMMO_SLOTS; i++ )
 		m_rgAmmo[i] = 0;
@@ -2794,6 +2809,8 @@ edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer )
 	CBaseEntity *pSpot;
 	edict_t *player;
 
+	int nNumRandomSpawnsToTry = 10;
+
 	player = pPlayer->edict();
 
 	// choose a info_player_deathmatch point
@@ -2808,9 +2825,18 @@ edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer )
 	}
 	else if( g_pGameRules->IsDeathmatch() )
 	{
+		if( !g_pLastSpawn )
+		{
+			nNumRandomSpawnsToTry = 0;
+			CBaseEntity* pEnt = 0;
+
+			while( ( pEnt = UTIL_FindEntityByClassname( pEnt, "info_player_deathmatch" )))
+				nNumRandomSpawnsToTry++;
+		}
+
 		pSpot = g_pLastSpawn;
 		// Randomize the start spot
-		for( int i = RANDOM_LONG( 1, 9 ); i > 0; i-- )
+		for( int i = RANDOM_LONG( 1, nNumRandomSpawnsToTry - 1 ); i > 0; i-- )
 			pSpot = UTIL_FindEntityByClassname( pSpot, "info_player_deathmatch" );
 		if( FNullEnt( pSpot ) )  // skip over the null point
 			pSpot = UTIL_FindEntityByClassname( pSpot, "info_player_deathmatch" );
@@ -3178,6 +3204,9 @@ void CBasePlayer::SelectItem( const char *pstr )
 	if( pItem == m_pActiveItem )
 		return;
 
+	if( !pItem->CanDeploy())
+		return;
+
 	ResetAutoaim();
 
 	// FIX, this needs to queue them up and delay
@@ -3207,6 +3236,9 @@ void CBasePlayer::SelectLastItem( void )
 	{
 		return;
 	}
+
+	if( !m_pLastItem->CanDeploy())
+		return;
 
 	ResetAutoaim();
 
@@ -4351,7 +4383,7 @@ Vector CBasePlayer::GetAutoaimVector( float flDelta )
 	// m_vecAutoAim = m_vecAutoAim * 0.99;
 
 	// Don't send across network if sv_aim is 0
-	if( g_psv_aim->value != 0 )
+	if( g_psv_aim->value && g_psv_allow_autoaim && g_psv_allow_autoaim->value )
 	{
 		if( m_vecAutoAim.x != m_lastx || m_vecAutoAim.y != m_lasty )
 		{
@@ -4377,7 +4409,7 @@ Vector CBasePlayer::AutoaimDeflection( Vector &vecSrc, float flDist, float flDel
 	edict_t *bestent;
 	TraceResult tr;
 
-	if( g_psv_aim->value == 0 )
+	if( !( g_psv_aim->value && g_psv_allow_autoaim && g_psv_allow_autoaim->value ))
 	{
 		m_fOnTarget = FALSE;
 		return g_vecZero;
