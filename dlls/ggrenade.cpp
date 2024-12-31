@@ -427,7 +427,7 @@ CGrenade *CGrenade::ShootTimed( entvars_t *pevOwner, Vector vecStart, Vector vec
 	pGrenade->pev->gravity = 0.5f;
 	pGrenade->pev->friction = 0.8f;
 
-	pGrenade->pev->dmg = 100;
+	pGrenade->pev->dmg = gSkillData.plrDmgHandGrenade;
 
 	return pGrenade;
 }
