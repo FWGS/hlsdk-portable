@@ -804,6 +804,10 @@ void CGamePlayerEquip::EquipPlayer( CBaseEntity *pEntity )
 	{
 		if( !m_weaponNames[i] )
 			break;
+
+		if( g_pGameRules->IsBustingGame() && !strcmp( STRING( m_weaponNames[i] ), "weapon_egon" ))
+			continue;
+
 		for( int j = 0; j < m_weaponCount[i]; j++ )
 		{
  			pPlayer->GiveNamedItem( STRING( m_weaponNames[i] ) );
