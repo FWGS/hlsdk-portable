@@ -43,6 +43,18 @@ int g_iUser3 = 0;
 
 #if USE_VGUI
 #include "vgui_ScorePanel.h"
+#endif
+
+// Team Colors
+int iNumberOfTeamColors = 5;
+int iTeamColors[5][3] =
+{
+	{ 255, 170, 0 },	// HL orange (default)
+	{ 125, 165, 210 },	// Blue
+	{ 200, 90, 70 },	// Red
+	{ 225, 205, 45 },	// Yellow
+	{ 145, 215, 140 },	// Green
+};
 
 class CHLVoiceStatusHelper : public IVoiceStatusHelper
 {
@@ -68,16 +80,19 @@ public:
 		}
 	}
 
+#if USE_VGUI
 	virtual void UpdateCursorState()
 	{
 		gViewPort->UpdateCursorState();
 	}
+#endif
 
 	virtual int	GetAckIconHeight()
 	{
 		return ScreenHeight - gHUD.m_iFontHeight*3 - 6;
 	}
 
+#if USE_VGUI
 	virtual bool			CanShowSpeakerLabels()
 	{
 		if( gViewPort && gViewPort->m_pScoreBoard )
@@ -85,9 +100,9 @@ public:
 		else
 			return false;
 	}
+#endif
 };
 static CHLVoiceStatusHelper g_VoiceStatusHelper;
-#endif
 
 cvar_t *hud_textmode;
 float g_hud_text_color[3];
@@ -417,6 +432,8 @@ void CHud::Init( void )
 	m_StatusIcons.Init();
 #if USE_VGUI
 	GetClientVoiceMgr()->Init(&g_VoiceStatusHelper, (vgui::Panel**)&gViewPort);
+#else
+	GetClientVoiceMgr()->Init(&g_VoiceStatusHelper);
 #endif
 
 #if !USE_VGUI || USE_NOVGUI_MOTD
@@ -618,9 +635,7 @@ void CHud::VidInit( void )
 	m_AmmoSecondary.VidInit();
 	m_TextMessage.VidInit();
 	m_StatusIcons.VidInit();
-#if USE_VGUI
 	GetClientVoiceMgr()->VidInit();
-#endif
 #if !USE_VGUI || USE_NOVGUI_MOTD
 	m_MOTD.VidInit();
 #endif
