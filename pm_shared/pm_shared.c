@@ -2293,15 +2293,6 @@ void PM_CheckParamters( void )
 		pmove->maxspeed = min( maxspeed, pmove->maxspeed );
 	}
 
-	// Slow down, I'm pulling it! (a box maybe) but only when I'm standing on ground
-	//
-	// JoshA: Moved this to CheckParamters rather than working on the velocity,
-	// as otherwise it affects every integration step incorrectly.
-	if( ( pmove->onground != -1 ) && ( pmove->cmd.buttons & IN_USE ))
-	{
-		pmove->maxspeed *= 1.0f / 3.0f;
-	}
-
 	if( ( spd != 0.0f ) && ( spd > pmove->maxspeed ) )
 	{
 		float fRatio = pmove->maxspeed / spd;
@@ -2422,11 +2413,7 @@ void PM_PlayerMove( qboolean server )
 	{
 		if( PM_CheckStuck() )
 		{
-			// Let the user try to duck to get unstuck
-			PM_Duck();
-
-			if( PM_CheckStuck() )
-				return;  // Can't move, we're stuck
+			return;  // Can't move, we're stuck
 		}
 	}
 
@@ -2455,6 +2442,12 @@ void PM_PlayerMove( qboolean server )
 			//  it will be set immediately again next frame if necessary
 			pmove->movetype = MOVETYPE_WALK;
 		}
+	}
+
+	// Slow down, I'm pulling it! (a box maybe) but only when I'm standing on ground
+	if( ( pmove->onground != -1 ) && ( pmove->cmd.buttons & IN_USE ))
+	{
+		VectorScale( pmove->velocity, 0.3, pmove->velocity );
 	}
 
 	// Handle movement
