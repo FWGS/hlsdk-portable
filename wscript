@@ -40,8 +40,10 @@ def options(opt):
 	grp.add_option('--enable-voicemgr', action = 'store_true', dest = 'USE_VOICEMGR', default = False,
 		help = 'Enable VOICE MANAGER')
 
-	opt.add_subproject('dlls')
-	opt.add_subproject('cl_dll')
+	# a1ba: hidden option for CI
+	grp.add_option('--enable-msvcdeps', action='store_true', dest='MSVCDEPS', default=False, help='')
+
+	opt.add_subproject('cl_dll dlls')
 
 def configure(conf):
 	conf.load('fwgslib reconfigure compiler_optimizations')
@@ -54,6 +56,9 @@ def configure(conf):
 
 	# Load compilers early
 	conf.load('xcompile compiler_c compiler_cxx gccdeps')
+
+	if conf.options.MSVCDEPS:
+		conf.load('msvcdeps')
 
 	# HACKHACK: override msvc DEST_CPU value by something that we understand
 	if conf.env.DEST_CPU == 'amd64':
