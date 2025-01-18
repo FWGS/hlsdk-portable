@@ -484,7 +484,7 @@ int CBasePlayer::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 
 	// this cast to INT is critical!!! If a player ends up with 0.5 health, the engine will get that
 	// as an int (zero) and think the player is dead! (this will incite a clientside screentilt, etc)
-	fTookDamage = CBaseMonster::TakeDamage( pevInflictor, pevAttacker, (int)flDamage, bitsDamageType );
+	fTookDamage = CBaseMonster::TakeDamage( pevInflictor, pevAttacker, flDamage >= 0.0f ? floor(flDamage) : ceil(flDamage), bitsDamageType );
 
 	// reset damage time countdown for each type of time based damage player just sustained
 	{
@@ -3086,7 +3086,6 @@ void CBasePlayer::Precache( void )
 	m_flgeigerRange = 1000;
 	m_igeigerRangePrev = 1000;
 
-	m_bitsDamageType = 0;
 	m_bitsHUDDamage = -1;
 
 	m_iClientBattery = -1;
@@ -3099,6 +3098,8 @@ void CBasePlayer::Precache( void )
 	LinkUserMessages();
 
 	m_iUpdateTime = 5;  // won't update for 1/2 a second
+
+	m_nCustomSprayFrames = -1;
 
 	if( gInitHUD )
 		m_fInitHUD = TRUE;
