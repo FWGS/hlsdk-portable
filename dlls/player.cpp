@@ -2772,7 +2772,6 @@ void CBasePlayer::Precache( void )
 	m_flgeigerRange = 1000;
 	m_igeigerRangePrev = 1000;
 
-	m_bitsDamageType = 0;
 	m_bitsHUDDamage = -1;
 
 	m_iClientBattery = -1;
@@ -2785,6 +2784,8 @@ void CBasePlayer::Precache( void )
 	LinkUserMessages();
 
 	m_iUpdateTime = 5;  // won't update for 1/2 a second
+
+	m_nCustomSprayFrames = -1;
 
 	if( gInitHUD )
 		m_fInitHUD = TRUE;
