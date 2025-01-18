@@ -218,7 +218,7 @@ set_target_properties (${CLDLL_LIBRARY} PROPERTIES
 if(NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Android")
 	set(CLDLL_NAME "client")
 	set_target_properties(${CLDLL_LIBRARY} PROPERTIES
-		OUTPUT_NAME ${CLDLL_NAME}
+		OUTPUT_NAME "${CLDLL_NAME}${POSTFIX}"
 		PREFIX "")
 endif()
 
