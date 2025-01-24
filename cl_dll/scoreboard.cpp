@@ -27,8 +27,6 @@
 #include <stdio.h>
 
 cvar_t *cl_scoreboard_bg;
-cvar_t *cl_showpacketloss;
-
 
 #if USE_VGUI
 #include "vgui_TeamFortressViewport.h"
@@ -60,7 +58,6 @@ int CHudScoreboard::Init( void )
 	InitHUDData();
 
 	cl_scoreboard_bg = CVAR_CREATE( "cl_scoreboard_bg", "1", FCVAR_ARCHIVE );
-	cl_showpacketloss = CVAR_CREATE( "cl_showpacketloss", "0", FCVAR_ARCHIVE );
 
 	return 1;
 }
@@ -103,7 +100,7 @@ We have a minimum width of 1-320 - we could have the field widths scale with it?
 #define PING_RANGE_MAX	295
 #define PL_RANGE_MIN 315
 #define PL_RANGE_MAX 375
-#define SPEAKER_POS 40
+#define SPEAKER_POS 350
 
 int SCOREBOARD_WIDTH = 320;
 
@@ -125,16 +122,7 @@ int CHudScoreboard::Draw( float fTime )
 
 	GetAllPlayersInfo();
 
-	//  Packetloss removed on Kelly 'shipping nazi' Bailey's orders
-	if( cl_showpacketloss && cl_showpacketloss->value && ( ScreenWidth >= 400 ) )
-	{
-		can_show_packetloss = 1;
-		SCOREBOARD_WIDTH = ( ScreenWidth >= 520 ) ? ( 400 - NAME_RANGE_MODIFIER ) : 400;
-	}
-	else
-	{
-		SCOREBOARD_WIDTH = ( ScreenWidth >= 440 ) ? ( 320 - NAME_RANGE_MODIFIER ) : 320;
-	}
+	SCOREBOARD_WIDTH = ( ScreenWidth >= 520 ) ? ( 400 - NAME_RANGE_MODIFIER ) : 400;
 
 	// just sort the list on the fly
 	// list is sorted first by frags, then by deaths
@@ -145,10 +133,9 @@ int CHudScoreboard::Draw( float fTime )
 	int ypos = ROW_RANGE_MIN + ( list_slot * ROW_GAP );
 	int xpos = NAME_RANGE_MIN + xpos_rel;
 
-	FAR_RIGHT = can_show_packetloss ? PL_RANGE_MAX : PING_RANGE_MAX;
-	FAR_RIGHT += 5;
+	FAR_RIGHT = SPEAKER_POS + 5;
 
-	if( ( ScreenWidth >= 440 && !can_show_packetloss ) || ( ScreenWidth >= 520 && can_show_packetloss ) )
+	if( ( ScreenWidth >= 440 ) || ( ScreenWidth >= 520 ) )
 	{
 		xpos -= NAME_RANGE_MODIFIER;
 		FAR_RIGHT += NAME_RANGE_MODIFIER;
@@ -156,20 +143,17 @@ int CHudScoreboard::Draw( float fTime )
 
 	if( cl_scoreboard_bg && cl_scoreboard_bg->value )
 		gHUD.DrawDarkRectangle( xpos - 5, ypos - 5, FAR_RIGHT, ROW_RANGE_MAX );
+
 	if( !gHUD.m_Teamplay )
-		DrawUtfString( xpos, ypos, NAME_RANGE_MAX + xpos_rel, "Player", 255, 140, 0 );
+		gHUD.DrawHudString( xpos, ypos, ScreenWidth, CHudTextMessage::BufferedLocaliseTextString("#PLAYERS"), 255, 140, 0 );
 	else
-		DrawUtfString( xpos, ypos, NAME_RANGE_MAX + xpos_rel, "Teams", 255, 140, 0 );
+		gHUD.DrawHudString( xpos, ypos, ScreenWidth, CHudTextMessage::BufferedLocaliseTextString("#TEAMS"), 255, 140, 0 );
 
-	gHUD.DrawHudStringReverse( KILLS_RANGE_MAX + xpos_rel, ypos, 0, "kills", 255, 140, 0 );
-	DrawUtfString( DIVIDER_POS + xpos_rel, ypos, ScreenWidth, "/", 255, 140, 0 );
-	DrawUtfString( DEATHS_RANGE_MIN + xpos_rel + 5, ypos, ScreenWidth, "deaths", 255, 140, 0 );
-	DrawUtfString( PING_RANGE_MAX + xpos_rel - 35, ypos, ScreenWidth, "latency", 255, 140, 0 );
-
-	if( can_show_packetloss )
-	{
-		DrawUtfString( PL_RANGE_MAX + xpos_rel - 35, ypos, ScreenWidth, "pkt loss", 255, 140, 0 );
-	}
+	gHUD.DrawHudStringReverse( KILLS_RANGE_MAX + xpos_rel, ypos, 0, CHudTextMessage::BufferedLocaliseTextString("#SCORE"), 255, 140, 0 );
+	gHUD.DrawHudString( DIVIDER_POS + xpos_rel, ypos, ScreenWidth, "/", 255, 140, 0 );
+	gHUD.DrawHudString( DEATHS_RANGE_MIN + xpos_rel + 5, ypos, ScreenWidth, CHudTextMessage::BufferedLocaliseTextString("#DEATHS"), 255, 140, 0 );
+	gHUD.DrawHudStringReverse( PING_RANGE_MAX + xpos_rel + 15, ypos, 0, CHudTextMessage::BufferedLocaliseTextString("#LATENCY"), 255, 140, 0 );
+	gHUD.DrawHudStringReverse( SPEAKER_POS + xpos_rel + 15, ypos, 0, CHudTextMessage::BufferedLocaliseTextString("#VOICE"), 255, 140, 0 );
 
 	list_slot += 1.2f;
 	ypos = ROW_RANGE_MIN + ( list_slot * ROW_GAP );
@@ -306,19 +290,10 @@ int CHudScoreboard::Draw( float fTime )
 		// draw ping
 		// draw ping & packetloss
 		static char buf[64];
-		sprintf( buf, "%d", team_info->ping );
-		xpos = ( ( PING_RANGE_MAX - PING_RANGE_MIN ) / 2) + PING_RANGE_MIN + xpos_rel + 25;
+		sprintf( buf, "%d/%d", team_info->ping, team_info->packetloss );
+		xpos = ( ( PING_RANGE_MAX - PING_RANGE_MIN ) / 2) + PING_RANGE_MIN + xpos_rel + 40;
 		UnpackRGB( r, g, b, RGB_YELLOWISH );
-		gHUD.DrawHudStringReverse( xpos, ypos, xpos - 50, buf, r, g, b );
-
-		//  Packetloss removed on Kelly 'shipping nazi' Bailey's orders
-		if( can_show_packetloss )
-		{
-			xpos = ( ( PL_RANGE_MAX - PL_RANGE_MIN ) / 2) + PL_RANGE_MIN + xpos_rel + 25;
-
-			sprintf( buf, "  %d", team_info->packetloss );
-			DrawUtfString( xpos, ypos, xpos+50, buf, r, g, b );
-		}
+		gHUD.DrawHudStringReverse( xpos, ypos, 0, buf, r, g, b );
 
 		team_info->already_drawn = TRUE;  // set the already_drawn to be TRUE, so this team won't get drawn again
 		list_slot++;
@@ -339,24 +314,11 @@ extern float *GetClientColor( int client );
 // returns the ypos where it finishes drawing
 int CHudScoreboard::DrawPlayers( int xpos_rel, float list_slot, int nameoffset, const char *team )
 {
-	int can_show_packetloss = 0;
 	int FAR_RIGHT;
 
-	//  Packetloss removed on Kelly 'shipping nazi' Bailey's orders
-	if( cl_showpacketloss && cl_showpacketloss->value && ( ScreenWidth >= 400 ) )
-	{
-		can_show_packetloss = 1;
-		SCOREBOARD_WIDTH = 400;
-	}
-	else
-	{
-		SCOREBOARD_WIDTH = 320;
-	}
+	FAR_RIGHT = SPEAKER_POS + 5;
 
-	FAR_RIGHT = can_show_packetloss ? PL_RANGE_MAX : PING_RANGE_MAX;
-	FAR_RIGHT += 5;
-
-	if( ( ScreenWidth >= 440 && !can_show_packetloss ) || ( ScreenWidth >= 520 && can_show_packetloss ) )
+	if( ( ScreenWidth >= 440 ) || ( ScreenWidth >= 520 ) )
 	{
 		FAR_RIGHT += NAME_RANGE_MODIFIER;
 	}
@@ -400,7 +362,7 @@ int CHudScoreboard::DrawPlayers( int xpos_rel, float list_slot, int nameoffset, 
 
 		int xpos = NAME_RANGE_MIN + xpos_rel;
 
-		if( ( ScreenWidth >= 440 && !can_show_packetloss ) || ( ScreenWidth >= 520 && can_show_packetloss ) )
+		if( ( ScreenWidth >= 440 ) || ( ScreenWidth >= 520 ) )
 		{
 			xpos -= NAME_RANGE_MODIFIER;
 		}
@@ -427,9 +389,6 @@ int CHudScoreboard::DrawPlayers( int xpos_rel, float list_slot, int nameoffset, 
 			FillRGBA( xpos - 5, ypos, FAR_RIGHT, ROW_GAP, 0, 0, 255, 70 );
 		}
 
-		// draw speaker icon
-		GetClientVoiceMgr()->DrawNoVguiSpeakerIcon( xpos - SPEAKER_POS, ypos - 5, best_player);
-
 		// draw their name (left to right)
 		DrawUtfString( xpos + nameoffset, ypos, NAME_RANGE_MAX + xpos_rel, pl_info->name, r, g, b );
 
@@ -447,27 +406,13 @@ int CHudScoreboard::DrawPlayers( int xpos_rel, float list_slot, int nameoffset, 
 
 		// draw ping & packetloss
 		static char buf[64];
-		sprintf( buf, "%d", g_PlayerInfoList[best_player].ping );
-		xpos = ( ( PING_RANGE_MAX - PING_RANGE_MIN ) / 2 ) + PING_RANGE_MIN + xpos_rel + 25;
-		gHUD.DrawHudStringReverse( xpos, ypos, xpos - 50, buf, r, g, b );
+		sprintf( buf, "%d/%d", g_PlayerInfoList[best_player].ping, g_PlayerInfoList[best_player].packetloss );
+		xpos = ( ( PING_RANGE_MAX - PING_RANGE_MIN ) / 2 ) + PING_RANGE_MIN + xpos_rel + 40;
+		gHUD.DrawHudStringReverse( xpos, ypos, 0, buf, r, g, b );
 
-		//  Packetloss removed on Kelly 'shipping nazi' Bailey's orders
-		if( can_show_packetloss )
-		{
-			if( g_PlayerInfoList[best_player].packetloss >= 63 )
-			{
-				UnpackRGB( r, g, b, RGB_REDISH );
-				strcpy( buf, " !!!!" );
-			}
-			else
-			{
-				sprintf( buf, "  %d", g_PlayerInfoList[best_player].packetloss );
-			}
-
-			xpos = ( ( PL_RANGE_MAX - PL_RANGE_MIN ) / 2 ) + PL_RANGE_MIN + xpos_rel + 25;
-
-			DrawUtfString( xpos, ypos, xpos+50, buf, r, g, b );
-		}
+		// draw speaker icon
+		xpos = SPEAKER_POS + xpos_rel;
+		GetClientVoiceMgr()->DrawNoVguiSpeakerIcon( xpos - 20, ypos - 5, best_player);
 
 		pl_info->name = NULL;  // set the name to be NULL, so this client won't get drawn again
 		list_slot++;
