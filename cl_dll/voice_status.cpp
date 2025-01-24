@@ -377,13 +377,13 @@ void CVoiceStatus::CreateEntities()
 
 void CVoiceStatus::DrawNoVguiSpeakerIcon(int xpos, int ypos, int playerIndex)
 {
-	int r, g, b;
-	bool isSpeaking = IsPlayerSpeaking(playerIndex);
-	r = g = b = isSpeaking ? 255 : 80;
+	if (!IsPlayerSpeaking(playerIndex))
+		return;
 
-	wrect_t rc;
-	SPR_Set(m_VoiceHeadModel, r, g, b);
-	SPR_DrawAdditive(0, xpos, ypos, &rc);
+	int r, g, b;
+	UnpackRGB(r,g,b, RGB_YELLOWISH);
+	SPR_Set(m_VoiceHeadModel, r, g, b );
+	SPR_DrawAdditive( 0,  xpos, ypos, NULL);
 }
 
 #if !USE_VGUI
@@ -392,20 +392,14 @@ int CVoiceStatus::Draw(float time)
 	char str[256];
 	cl_entity_t *localPlayer = gEngfuncs.GetLocalPlayer();
 
-	int xpos = 10;
+	int xpos = ScreenWidth - 10;
 	int ypos = ScreenHeight / 2;
-	int voiceHeight = 30;
-	wrect_t rc;
-
-	int iColor = static_cast<int>((sin(time * 5) * 127) + 128);
-
-	if (IsPlayerSpeaking(localPlayer->index))
-    {
-		SPR_Set(m_VoiceHeadModel, iColor, 255, iColor);
-		SPR_DrawAdditive(0, ScreenWidth - 60, ScreenHeight - gHUD.m_iFontHeight*3 - 6, &rc);
-	}
+	int VoiceHeight = 32;
 
 	gHUD.GetAllPlayersInfo();
+
+	if (IsPlayerSpeaking(localPlayer->index))
+		DrawNoVguiSpeakerIcon(ScreenWidth - 60, ScreenHeight - gHUD.m_iFontHeight * 3 - 6, localPlayer->index);
 
 	if (gHUD.m_Scoreboard.m_iShowscoresHeld)
 		return 1;
@@ -420,20 +414,21 @@ int CVoiceStatus::Draw(float time)
 		if (pClient == localPlayer && !CVAR_GET_FLOAT("voice_loopback"))
 			continue;
 
-		sprintf(str, "%s %s", (pClient == localPlayer) ? "[ You ]" : "", g_PlayerInfoList[i].name);
+		sprintf(str, "%s", g_PlayerInfoList[i].name);
+		int PlNameLength = gHUD.DrawHudStringLen(str);
 
-		int x = gHUD.DrawHudStringLen(str);
+		int start_xpos = xpos - PlNameLength - 42;
+		int icon_xpos = start_xpos + PlNameLength + 8;
 
-		gHUD.DrawDarkRectangle(xpos - 5, ypos, xpos + x + 40, voiceHeight);
-		gHUD.DrawHudString(xpos, ypos + 6, ScreenWidth, str, 255, 140, 0);
+		gHUD.DrawDarkRectangle(start_xpos, ypos, PlNameLength + 42, VoiceHeight);
+		gHUD.DrawHudString(start_xpos + 4, ypos + 6, ScreenWidth, str, 255, 140, 0);
 
-		SPR_Set(m_VoiceHeadModel, iColor, 255, iColor);
-		SPR_DrawAdditive(0, xpos + x + 10, ypos, &rc);
+		DrawNoVguiSpeakerIcon(icon_xpos, ypos, i);
 
-		ypos += voiceHeight;
-    }
+		ypos += VoiceHeight;
+	}
 
-    return 1;
+	return 1;
 }
 #endif
 
