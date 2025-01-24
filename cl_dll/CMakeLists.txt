@@ -124,13 +124,13 @@ set (CLDLL_SOURCES
 	tri.cpp
 	util.cpp
 	view.cpp
-	voice_status.cpp
 	../game_shared/voice_banmgr.cpp
 	../game_shared/vcs_info.cpp
 )
 
 if (USE_VGUI)
 	list(APPEND CLDLL_SOURCES
+		voice_status.cpp
 		vgui_int.cpp
 		vgui_ClassMenu.cpp
 		vgui_ConsolePanel.cpp
@@ -159,7 +159,8 @@ if (USE_VGUI)
 else()
 	list(APPEND CLDLL_SOURCES
 		MOTD.cpp
-		scoreboard.cpp)
+		scoreboard.cpp
+		novgui_voice_status.cpp)
 endif()
 
 include_directories (. hl/ ../dlls ../dlls/wpn_shared ../common ../engine ../pm_shared ../game_shared ../public)

@@ -80,8 +80,15 @@ extern float *GetClientColor( int clientIndex );
 using namespace vgui;
 
 // Team Colors
-extern int iNumberOfTeamColors;
-extern int iTeamColors[5][3];
+int iNumberOfTeamColors = 5;
+int iTeamColors[5][3] =
+{
+	{ 255, 170, 0 },	// HL orange (default)
+	{ 125, 165, 210 },	// Blue
+	{ 200, 90, 70 },	// Red
+	{ 225, 205, 45 },	// Yellow
+	{ 145, 215, 140 },	// Green
+};
 
 // Used for Class specific buttons
 const char *sTFClasses[] =
