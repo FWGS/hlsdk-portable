@@ -417,6 +417,8 @@ void CHud::Init( void )
 	m_StatusIcons.Init();
 #if USE_VGUI
 	GetClientVoiceMgr()->Init(&g_VoiceStatusHelper, (vgui::Panel**)&gViewPort);
+#else
+	GetClientVoiceMgr()->Init();
 #endif
 
 #if !USE_VGUI || USE_NOVGUI_MOTD
@@ -618,9 +620,7 @@ void CHud::VidInit( void )
 	m_AmmoSecondary.VidInit();
 	m_TextMessage.VidInit();
 	m_StatusIcons.VidInit();
-#if USE_VGUI
 	GetClientVoiceMgr()->VidInit();
-#endif
 #if !USE_VGUI || USE_NOVGUI_MOTD
 	m_MOTD.VidInit();
 #endif
