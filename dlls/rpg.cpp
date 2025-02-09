@@ -564,7 +564,7 @@ void CRpg::UpdateSpot( void )
 #if !CLIENT_DLL
 	if( m_fSpotActive )
 	{
-		if (m_pPlayer->pev->viewmodel == 0)
+		if( FStringNull( m_pPlayer->pev->viewmodel ))
 			return;
 
 		if( !m_pSpot )

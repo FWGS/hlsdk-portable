@@ -39,7 +39,7 @@ public:
 	virtual int		Restore( CRestore &restore );
 	static	TYPEDESCRIPTION m_SaveData[];
 
-	void	SetMaster( int iszMaster ) { m_iszMaster = iszMaster; }
+	void	SetMaster( string_t iszMaster ) { m_iszMaster = iszMaster; }
 
 protected:
 	BOOL	CanFireForActivator( CBaseEntity *pActivator );

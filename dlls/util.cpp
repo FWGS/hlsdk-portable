@@ -1829,7 +1829,7 @@ void CSave::WriteString( const char *pname, const char *pdata )
 #endif
 }
 
-void CSave::WriteString( const char *pname, const int *stringId, int count )
+void CSave::WriteString( const char *pname, const string_t *stringId, int count )
 {
 	int i, size;
 #if TOKENIZE
