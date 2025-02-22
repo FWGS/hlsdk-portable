@@ -258,6 +258,7 @@ public:
 	int Intersects( CBaseEntity *pOther );
 	void MakeDormant( void );
 	int IsDormant( void );
+	BOOL IsLockedByMaster( void ) { return FALSE; }
 
 	static CBaseEntity *Instance( edict_t *pent )
 	{
