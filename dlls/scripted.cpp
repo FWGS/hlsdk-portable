@@ -1106,7 +1106,8 @@ CBaseToggle *CScriptedSentence::FindEntity( void )
 
 	while( !FNullEnt( pentTarget ) )
 	{
-		pTarget = (CBaseToggle*)CBaseEntity::Instance( pentTarget );
+		CBaseEntity *pEnt = CBaseEntity::Instance( pentTarget );
+		pTarget = pEnt ? pEnt->MyTogglePointer() : NULL;
 		if( pTarget != NULL )
 		{
 			if( AcceptableSpeaker( pTarget ) )
