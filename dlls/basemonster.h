@@ -106,6 +106,8 @@ public:
 	SCRIPTSTATE m_scriptState;		// internal cinematic state
 	CCineMonster *m_pCine;
 
+	float m_flLastYawTime;
+
 	virtual int Save( CSave &save ); 
 	virtual int Restore( CRestore &restore );
 	static TYPEDESCRIPTION m_SaveData[];
@@ -325,7 +327,5 @@ public:
 	BOOL CineCleanup();
 
 	CBaseEntity* DropItem( const char *pszItemName, const Vector &vecPos, const Vector &vecAng );// drop an item.
-
-	float m_flLastYawTime;
 };
 #endif // BASEMONSTER_H
