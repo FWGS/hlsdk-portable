@@ -44,12 +44,11 @@ public:
 
 	// Don't treat as a live target
 	virtual BOOL IsAlive( void ) { return FALSE; }
+	BOOL IsAllowedToSpeak( void ) { return TRUE; }
 
 	virtual int Save( CSave &save );
 	virtual int Restore( CRestore &restore );
 	static TYPEDESCRIPTION m_SaveData[];
-
-	BOOL IsAllowedToSpeak( void ) { return TRUE; }
 
 	int m_animate;
 };
