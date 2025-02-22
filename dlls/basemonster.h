@@ -120,7 +120,6 @@ public:
 	virtual int BloodColor( void ) { return m_bloodColor; }
 
 	virtual CBaseMonster *MyMonsterPointer( void ) { return this; }
-	virtual BOOL IsAllowedToSpeak( void ) { return IsAlive(); }
 	virtual void Look( int iDistance );// basic sight function for monsters
 	virtual void RunAI( void );// core ai function!	
 	void Listen( void );
@@ -188,6 +187,7 @@ public:
 	// virtual int CanPlaySequence( void ) { return ((m_pCine == NULL) && (m_MonsterState == MONSTERSTATE_NONE || m_MonsterState == MONSTERSTATE_IDLE || m_IdealMonsterState == MONSTERSTATE_IDLE)); }
 	virtual int CanPlaySequence( BOOL fDisregardState, int interruptLevel );
 	virtual int CanPlaySentence( BOOL fDisregardState ) { return IsAllowedToSpeak(); }
+	virtual BOOL IsAllowedToSpeak( void ) { return IsAlive(); }
 
 	Task_t *GetTask( void );
 	virtual MONSTERSTATE GetIdealState( void );

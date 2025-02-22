@@ -531,14 +531,8 @@ public:
 
 	static	TYPEDESCRIPTION m_SaveData[];
 
-	CBaseToggle *MyTogglePointer( void ) { return this; }
 	virtual int		GetToggleState( void ) { return m_toggle_state; }
 	virtual float	GetDelay( void ) { return m_flWait; }
-
-	virtual void PlaySentence( const char *pszSentence, float duration, float volume, float attenuation );
-	virtual void PlayScriptedSentence( const char *pszSentence, float duration, float volume, float attenuation, BOOL bConcurrent, CBaseEntity *pListener );
-	virtual void SentenceStop( void );
-	virtual BOOL IsAllowedToSpeak( void ) { return FALSE; }
 
 	// common member functions
 	void LinearMove( Vector	vecDest, float flSpeed );
@@ -546,6 +540,12 @@ public:
 	void AngularMove( Vector vecDestAngle, float flSpeed );
 	void EXPORT AngularMoveDone( void );
 	BOOL IsLockedByMaster( void );
+
+	CBaseToggle *MyTogglePointer( void ) { return this; }
+	virtual void PlaySentence( const char *pszSentence, float duration, float volume, float attenuation );
+	virtual void PlayScriptedSentence( const char *pszSentence, float duration, float volume, float attenuation, BOOL bConcurrent, CBaseEntity *pListener );
+	virtual void SentenceStop( void );
+	virtual BOOL IsAllowedToSpeak( void ) { return FALSE; }
 
 	static float		AxisValue( int flags, const Vector &angles );
 	static void			AxisDir( entvars_t *pev );
