@@ -1392,7 +1392,7 @@ float CBaseMonster::OpenDoorAndWait( entvars_t *pevDoor )
 
 	//ALERT( at_aiconsole, "A door. " );
 	CBaseEntity *pcbeDoor = CBaseEntity::Instance( pevDoor );
-	if( pcbeDoor )
+	if( pcbeDoor && !pcbeDoor->IsLockedByMaster() )
 	{
 		//ALERT( at_aiconsole, "unlocked! " );
 		pcbeDoor->Use( this, this, USE_ON, 0.0 );
