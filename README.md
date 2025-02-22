@@ -41,7 +41,7 @@ Bugfix-related server cvars:
 
 Other server cvars:
 
-- **mp_bhopcap**: if set to 1, enable bunny-hop.
+- **mp_bhopcap**: if set to 0, disable bunny-hop restriction.
 - **chargerfix**: if set to 1, wall-mounted health and battery chargers will play reject sounds if player has the full health or armor.
 - **corpsephysics**: if set to 1, corpses of killed monsters will fly a bit from an impact. It's a cut feature from Half-Life.
 
