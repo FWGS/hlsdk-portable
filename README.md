@@ -31,6 +31,11 @@ Bugfix-related macros that can be enabled during the compilation:
 - **HANDGRENADE_DEPLOY_FIX** makes handgrenade play draw animation after finishing a throw.
 - **WEAPONS_ANIMATION_TIMES_FIX** fixes deploy and idle animation times of some weapons.
 
+HL25-related macros that can be enabled during the compilation:
+
+- **SATCHEL_OLD_BEHAVIOUR** old pre-HL 25th satchel's behaviour.
+- **SPEAKABLE_TARGETS** makes speakable cycler and func_button(and breaks amxmodx plugins).
+
 Bugfix-related server cvars:
 
 - **satchelfix**: if set to 1, doors won't get blocked by satchels. Fixes an infamous exploit on `crossfire` map.

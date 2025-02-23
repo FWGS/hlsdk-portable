@@ -437,7 +437,7 @@ BOOL CBaseToggle::IsLockedByMaster( void )
 	else
 		return FALSE;
 }
-
+#if SPEAKABLE_TARGETS
 void CBaseToggle::PlaySentence( const char *pszSentence, float duration, float volume, float attenuation )
 {
 	if( pszSentence && IsAllowedToSpeak())
@@ -458,7 +458,7 @@ void CBaseToggle::SentenceStop( void )
 {
 	EMIT_SOUND( edict(), CHAN_VOICE, "common/null.wav", 1.0, ATTN_IDLE );
 }
-
+#endif
 /*
 =============
 AngularMove

@@ -188,9 +188,15 @@ public:
 	virtual void ScheduleChange( void ) {}
 	// virtual int CanPlaySequence( void ) { return ((m_pCine == NULL) && (m_MonsterState == MONSTERSTATE_NONE || m_MonsterState == MONSTERSTATE_IDLE || m_IdealMonsterState == MONSTERSTATE_IDLE)); }
 	virtual int CanPlaySequence( BOOL fDisregardState, int interruptLevel );
+#if SPEAKABLE_TARGETS
 	virtual int CanPlaySentence( BOOL fDisregardState ) { return IsAllowedToSpeak(); }
 	virtual BOOL IsAllowedToSpeak( void ) { return IsAlive(); }
-
+#else
+	virtual int CanPlaySentence( BOOL fDisregardState ) { return IsAlive(); }
+	virtual void PlaySentence( const char *pszSentence, float duration, float volume, float attenuation );
+	virtual void PlayScriptedSentence( const char *pszSentence, float duration, float volume, float attenuation, BOOL bConcurrent, CBaseEntity *pListener );
+	virtual void SentenceStop( void );
+#endif
 	Task_t *GetTask( void );
 	virtual MONSTERSTATE GetIdealState( void );
 	virtual void SetActivity( Activity NewActivity );
