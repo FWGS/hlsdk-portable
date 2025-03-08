@@ -44,12 +44,12 @@ public:
 
 	// Don't treat as a live target
 	virtual BOOL IsAlive( void ) { return FALSE; }
-
+#if SPEAKABLE_TARGETS
+	BOOL IsAllowedToSpeak( void ) { return TRUE; }
+#endif
 	virtual int Save( CSave &save );
 	virtual int Restore( CRestore &restore );
 	static TYPEDESCRIPTION m_SaveData[];
-
-	BOOL IsAllowedToSpeak( void ) { return TRUE; }
 
 	int m_animate;
 };

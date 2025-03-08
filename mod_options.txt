@@ -8,6 +8,7 @@ TRIPMINE_BEAM_DUPLICATION_FIX=OFF # Fix of tripmine beam duplication on level tr
 HANDGRENADE_DEPLOY_FIX=OFF # Handgrenade deploy animation fix after finishing a throw
 WEAPONS_ANIMATION_TIMES_FIX=OFF # Animation times fix for some weapons
 SATCHEL_OLD_BEHAVIOUR=OFF # Old pre-HL 25th satchel's behaviour
+SPEAKABLE_TARGETS=ON # speakable cycler and func_button(breaks amxmodx)
 OEM_BUILD=OFF # OEM Build
 HLDEMO_BUILD=OFF # Demo Build
 
