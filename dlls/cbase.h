@@ -191,7 +191,9 @@ public:
 	virtual int BloodColor( void ) { return DONT_BLEED; }
 	virtual void TraceBleed( float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType );
 	virtual BOOL IsTriggered( CBaseEntity *pActivator ) {return TRUE; }
+#if SPEAKABLE_TARGETS
 	virtual CBaseToggle *MyTogglePointer( void ) { return NULL; }
+#endif
 	virtual CBaseMonster *MyMonsterPointer( void ) { return NULL; }
 	virtual CSquadMonster *MySquadMonsterPointer( void ) { return NULL; }
 	virtual	int GetToggleState( void ) { return TS_AT_TOP; }
@@ -291,6 +293,7 @@ public:
 	int Intersects( CBaseEntity *pOther );
 	void MakeDormant( void );
 	int IsDormant( void );
+	BOOL IsLockedByMaster( void ) { return FALSE; }
 
 	static CBaseEntity *Instance( edict_t *pent )
 	{
@@ -570,14 +573,8 @@ public:
 
 	static	TYPEDESCRIPTION m_SaveData[];
 
-	CBaseToggle *MyTogglePointer( void ) { return this; }
 	virtual int		GetToggleState( void ) { return m_toggle_state; }
 	virtual float	GetDelay( void ) { return m_flWait; }
-
-	virtual void PlaySentence( const char *pszSentence, float duration, float volume, float attenuation );
-	virtual void PlayScriptedSentence( const char *pszSentence, float duration, float volume, float attenuation, BOOL bConcurrent, CBaseEntity *pListener );
-	virtual void SentenceStop( void );
-	virtual BOOL IsAllowedToSpeak( void ) { return FALSE; }
 
 	// common member functions
 	void LinearMove( Vector	vecDest, float flSpeed );
@@ -585,7 +582,13 @@ public:
 	void AngularMove( Vector vecDestAngle, float flSpeed );
 	void EXPORT AngularMoveDone( void );
 	BOOL IsLockedByMaster( void );
-
+#if SPEAKABLE_TARGETS
+	CBaseToggle *MyTogglePointer( void ) { return this; }
+	virtual void PlaySentence( const char *pszSentence, float duration, float volume, float attenuation );
+	virtual void PlayScriptedSentence( const char *pszSentence, float duration, float volume, float attenuation, BOOL bConcurrent, CBaseEntity *pListener );
+	virtual void SentenceStop( void );
+	virtual BOOL IsAllowedToSpeak( void ) { return FALSE; }
+#endif
 	static float		AxisValue( int flags, const Vector &angles );
 	static void			AxisDir( entvars_t *pev );
 	static float		AxisDelta( int flags, const Vector &angle1, const Vector &angle2 );
@@ -744,9 +747,9 @@ public:
 	static	TYPEDESCRIPTION m_SaveData[];
 	// Buttons that don't take damage can be IMPULSE used
 	virtual int ObjectCaps( void ) { return (CBaseToggle:: ObjectCaps() & ~FCAP_ACROSS_TRANSITION) | (pev->takedamage?0:FCAP_IMPULSE_USE); }
-
+#if SPEAKABLE_TARGETS
 	BOOL IsAllowedToSpeak( void ) { return TRUE; }
-
+#endif
 	BOOL m_fStayPushed;	// button stays pushed in until touched again?
 	BOOL m_fRotating;		// a rotating button?  default is a sliding button.
 
