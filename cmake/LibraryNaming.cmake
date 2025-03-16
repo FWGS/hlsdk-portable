@@ -195,4 +195,8 @@ else()
 	set(POSTFIX "")
 endif()
 
+if(CMAKE_SIZEOF_VOID_P AND NOT XASH_ARCH_ONLY_USES_ABI2)
+	set(POSTFIX "${POSTFIX}_st64")
+endif()
+
 message(STATUS "Library postfix: " ${POSTFIX})
