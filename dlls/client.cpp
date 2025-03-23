@@ -1331,7 +1331,7 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 	}
 	else
 	{
-		ClearBits( state->eflags, EFLAG_SLERP | EFLAG_FLESH_SOUND );
+		ClearBits( state->eflags, EFLAG_FLESH_SOUND );
 	}
 
 	return 1;
