@@ -325,7 +325,7 @@ void CGameText::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE use
 	}
 	else
 	{
-		if ( pActivator && pActivator->IsNetClient() )
+		if( pActivator && pActivator->IsNetClient() )
 		{
 			UTIL_HudMessage( pActivator, m_textParms, MessageGet() );
 		}
