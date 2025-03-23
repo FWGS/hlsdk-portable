@@ -1099,15 +1099,12 @@ void CScriptedSentence::DelayThink( void )
 
 BOOL CScriptedSentence::AcceptableSpeaker( CBaseToggle *pTarget )
 {
-	EHANDLE hTarget;
-
 	if( pTarget )
 	{
-		hTarget = pTarget->MyMonsterPointer();
+		CBaseMonster* pMonster = pTarget->MyMonsterPointer();
 
-		if( hTarget != 0 )
+		if( pMonster )
 		{
-			CBaseMonster* pMonster = (CBaseMonster*)( (CBaseEntity*)hTarget );
 			if( pev->spawnflags & SF_SENTENCE_FOLLOWERS )
 			{
 				if( pMonster->m_hTargetEnt == 0 || !pMonster->m_hTargetEnt->IsPlayer() )
@@ -1124,8 +1121,10 @@ BOOL CScriptedSentence::AcceptableSpeaker( CBaseToggle *pTarget )
 			if( pMonster->CanPlaySentence( override ) )
 				return TRUE;
 		}
+#if SPEAKABLE_TARGETS
 		else
 			return pTarget->IsAllowedToSpeak();
+#endif
 	}
 
 	return FALSE;
@@ -1142,7 +1141,11 @@ CBaseToggle *CScriptedSentence :: FindEntity( CBaseEntity *pActivator )
 
 	while ( pTarget )
 	{
-		peTarget = pTarget->MyTogglePointer( );
+#if SPEAKABLE_TARGETS
+		peTarget = pTarget->MyTogglePointer();
+#else
+		peTarget = pTarget->MyMonsterPointer();
+#endif
 		if( peTarget != NULL )
 		{
 			if( AcceptableSpeaker( peTarget ) )
@@ -1159,7 +1162,11 @@ CBaseToggle *CScriptedSentence :: FindEntity( CBaseEntity *pActivator )
 		{
 			if ( FBitSet( pTarget->pev->flags, FL_MONSTER ))
 			{
-				peTarget = pTarget->MyTogglePointer( );
+#if SPEAKABLE_TARGETS
+				peTarget = pTarget->MyTogglePointer();
+#else
+				peTarget = pTarget->MyMonsterPointer();
+#endif
 				if( AcceptableSpeaker( peTarget ) )
 					return peTarget;
 			}
@@ -1192,8 +1199,12 @@ BOOL CScriptedSentence::StartSentence( CBaseToggle *pTarget )
 
 		pListener = UTIL_FindEntityGeneric( STRING( m_iszListener ), pTarget->pev->origin, radius );
 	}
-
+#if SPEAKABLE_TARGETS
 	pTarget->PlayScriptedSentence( STRING( m_iszSentence ), m_flDuration,  m_flVolume, m_flAttenuation, bConcurrent, pListener );
+#else
+	CBaseMonster *pMonster = pTarget->MyMonsterPointer();
+	pMonster->PlayScriptedSentence( STRING( m_iszSentence ), m_flDuration,  m_flVolume, m_flAttenuation, bConcurrent, pListener );
+#endif
 	ALERT( at_aiconsole, "Playing sentence %s (%.1f)\n", STRING( m_iszSentence ), (double)m_flDuration );
 	SUB_UseTargets( NULL, USE_TOGGLE, 0 );
 	return TRUE;
