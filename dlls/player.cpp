@@ -2939,8 +2939,6 @@ void CBasePlayer::Precache( void )
 
 	m_iUpdateTime = 5;  // won't update for 1/2 a second
 
-	m_nCustomSprayFrames = -1;
-
 	if( gInitHUD )
 		m_fInitHUD = TRUE;
 
@@ -3024,6 +3022,8 @@ int CBasePlayer::Restore( CRestore &restore )
 #endif
 	if( m_flFlashLightTime == 0.0f )
 		m_flFlashLightTime = 1.0f;
+
+	m_nCustomSprayFrames = -1;
 
 	return status;
 }
