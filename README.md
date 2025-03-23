@@ -31,6 +31,11 @@ Bugfix-related macros that can be enabled during the compilation:
 - **HANDGRENADE_DEPLOY_FIX** makes handgrenade play draw animation after finishing a throw.
 - **WEAPONS_ANIMATION_TIMES_FIX** fixes deploy and idle animation times of some weapons.
 
+HL25-related macros that can be enabled during the compilation:
+
+- **SATCHEL_OLD_BEHAVIOUR** old pre-HL 25th satchel's behaviour.
+- **SPEAKABLE_TARGETS** makes speakable cycler and func_button(and breaks amxmodx plugins).
+
 Bugfix-related server cvars:
 
 - **satchelfix**: if set to 1, doors won't get blocked by satchels. Fixes an infamous exploit on `crossfire` map.
@@ -41,7 +46,7 @@ Bugfix-related server cvars:
 
 Other server cvars:
 
-- **mp_bhopcap**: if set to 1, enable bunny-hop.
+- **mp_bhopcap**: if set to 0, disable bunny-hop restriction.
 - **chargerfix**: if set to 1, wall-mounted health and battery chargers will play reject sounds if player has the full health or armor.
 - **corpsephysics**: if set to 1, corpses of killed monsters will fly a bit from an impact. It's a cut feature from Half-Life.
 
