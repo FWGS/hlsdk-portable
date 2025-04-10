@@ -16,9 +16,9 @@ macro(check_group_build_target symbol group)
 endmacro()
 
 # So there is a problem:
-# 1. Number of these symbols only grows, as we support more and more ports
-# 2. CMake was written by morons and can't check these symbols in parallel
-# 3. MSVC is very slow at everything (startup, parsing, generating error)
+# 1. Total number of these symbols only grows, as we support more and more ports
+# 2. CMake don't have a way to check symbols in parallel (similar to Waf's multicheck)
+# 3. MSVC is incredibly slow at everything (startup, parsing, generating error)
 
 # Solution: group these symbols and set variable if one of them was found
 # this way we can reorder to reorder them by most common configurations
@@ -36,7 +36,7 @@ endmacro()
 # grep '^#undef XASH' build.h | grep "XASH_RISCV_" |  awk '{ print "check_build_target(" $2 ")"}'
 # echo "endif()"
 
-# NOTE: Android must have priority over Linux to work correctly!
+# NOTE: Android must have priority over Linux to work correctly, as Android matches both Linux and it's own macros!
 
 set(CMAKE_REQUIRED_INCLUDES "${PROJECT_SOURCE_DIR}/public/")
 check_build_target(XASH_64BIT)
