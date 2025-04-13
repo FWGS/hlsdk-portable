@@ -3386,7 +3386,7 @@ void CBasePlayer::GiveNamedItem( const char *pszName )
 {
 	edict_t	*pent;
 
-	int istr = MAKE_STRING( pszName );
+	string_t istr = MAKE_STRING( pszName );
 
 	pent = CREATE_NAMED_ENTITY( istr );
 	if( FNullEnt( pent ) )

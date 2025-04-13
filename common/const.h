@@ -15,6 +15,9 @@
 #pragma once
 #if !defined(CONST_H)
 #define CONST_H
+
+#include <stddef.h> // ptrdiff_t
+
 //
 // Constants shared by the engine and dlls
 // This header file included by engine files and DLL files.
@@ -735,7 +738,38 @@ enum
 };
 
 typedef unsigned int		func_t;
-typedef int		string_t;
+
+#if __cplusplus
+class string_t
+{
+	ptrdiff_t offset;
+public:
+	// only construct from ptrdiff_t
+	string_t( ptrdiff_t offset ) : offset( offset ) {}
+	string_t() : offset( 0 ) {}
+
+	// as string_t sometimes used as a storage, we allow explicit conversion to an int
+	// as a method
+	int ExplicitInt()
+	{
+		return (int) offset;
+	}
+
+	// for null checks
+	operator bool() const { return offset != 0; }
+
+	// only convert to ptrdiff_t
+	operator ptrdiff_t() const
+	{
+		return offset;
+	}
+#if XASH_64BIT
+	operator int() const = delete;
+#endif
+};
+#else // ! __cplusplus
+typedef ptrdiff_t		string_t;
+#endif
 
 typedef unsigned char	byte;
 typedef unsigned short	word;

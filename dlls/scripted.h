@@ -70,7 +70,7 @@ public:
 
 	void ReleaseEntity( CBaseMonster *pEntity );
 	void CancelScript( void );
-	virtual BOOL StartSequence( CBaseMonster *pTarget, int iszSeq, BOOL completeOnEmpty );
+	virtual BOOL StartSequence( CBaseMonster *pTarget, string_t iszSeq, BOOL completeOnEmpty );
 	virtual BOOL FCanOverrideState ( void );
 	void SequenceDone ( CBaseMonster *pMonster );
 	virtual void FixScriptMonsterSchedule( CBaseMonster *pMonster );
@@ -98,7 +98,7 @@ public:
 
 class CCineAI : public CCineMonster
 {
-	BOOL StartSequence( CBaseMonster *pTarget, int iszSeq, BOOL completeOnEmpty );
+	BOOL StartSequence( CBaseMonster *pTarget, string_t iszSeq, BOOL completeOnEmpty );
 	void PossessEntity( void );
 	BOOL FCanOverrideState ( void );
 	virtual void FixScriptMonsterSchedule( CBaseMonster *pMonster );

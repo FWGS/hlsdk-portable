@@ -187,4 +187,7 @@ def configure(conf):
 	else:
 		conf.env.POSTFIX = ''
 
+	if conf.env.DEST_SIZEOF_VOID_P == 8 and not conf.env.XASH_ARCH_USES_ONLY_ABI2:
+		conf.env.POSTFIX += '_st64'
+
 	conf.end_msg(conf.env.POSTFIX)
