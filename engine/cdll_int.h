@@ -308,6 +308,8 @@ typedef struct cl_enginefuncs_s
 	int             (*pfnFilteredClientCmd)( const char *cmd );
 } cl_enginefunc_t;
 
+#include "APIProxy.h"
+
 #define CLDLL_INTERFACE_VERSION	7
 
 #if __cplusplus
