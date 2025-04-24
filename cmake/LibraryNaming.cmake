@@ -80,6 +80,9 @@ check_build_target(XASH_RISCV_DOUBLEFP)
 check_build_target(XASH_RISCV_SINGLEFP)
 check_build_target(XASH_RISCV_SOFTFP)
 endif()
+if(XASH_ANDROID)
+check_build_target(XASH_TERMUX)
+endif()
 unset(CMAKE_REQUIRED_INCLUDES)
 
 # engine/common/build.c
@@ -185,7 +188,7 @@ else()
 	message(SEND_ERROR "Place your architecture name here! If this is a mistake, try to fix conditions above and report a bug")
 endif()
 
-if(BUILDOS STREQUAL "android")
+if(BUILDOS STREQUAL "android" AND NOT XASH_TERMUX)
 	set(POSTFIX "") # force disable for Android, as Android ports aren't distributed in normal way and doesn't follow library naming
 elseif(BUILDOS AND BUILDARCH)
 	set(POSTFIX "_${BUILDOS}_${BUILDARCH}")
