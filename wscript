@@ -178,6 +178,13 @@ def configure(conf):
 		conf.env.append_unique('CXXFLAGS', cxxflags)
 
 	if conf.env.DEST_OS == 'android':
+		if conf.find_program('termux-info', mandatory=False):
+			conf.env.TERMUX = True
+			conf.define('__TERMUX__', 1)
+
+		if not conf.options.ANDROID_OPTS:
+			conf.check_cc(lib='m')
+
 		# LIB_M added in xcompile!
 		pass
 	elif conf.env.DEST_OS == 'win32':
