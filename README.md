@@ -153,6 +153,8 @@ cd dlls && compile.bat && cd ../cl_dll && compile.bat
 
 The official way to build Steam compatible games for Linux is through steam-runtime.
 
+*Note*: For RHEL-based distros you may be need to use system chroot or docker.
+
 Install schroot. On Ubuntu or Debian:
 
 ```
@@ -177,9 +179,16 @@ schroot --chroot steamrt_scout_i386 -- cmake --build build-in-steamrt
 
 ### Prerequisites
 
-Install C++ compilers, cmake and x86 development libraries for C, C++ and SDL2. On Ubuntu/Debian:
+Install C++ compilers, cmake and x86 development libraries for C, C++ and SDL2.
+
+#### Ubuntu/Debian:
 ```
 sudo apt install cmake build-essential gcc-multilib g++-multilib libsdl2-dev:i386
+```
+
+#### RedHat/Fedora/CentOS
+```
+sudo dnf install cmake gcc gcc-c++ glibc-devel.i686 SDL-devel.i686
 ```
 
 ### Building
