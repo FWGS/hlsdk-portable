@@ -66,13 +66,13 @@ set (CLDLL_SOURCES
 	3wave/CTF_FlagStatus.cpp
 	3wave/CTF_HudMessage.cpp
 	dmc/DMC_Teleporters.cpp
-        ev_hldm.cpp
-        ../dlls/dmc/quake_gun.cpp
-        ../dlls/dmc/quake_weapons_all.cpp
-        quake/quake_baseentity.cpp
-        quake/quake_events.cpp
-        quake/quake_objects.cpp
-        quake/quake_weapons.cpp
+	ev_hldm.cpp
+	../dlls/dmc/quake_gun.cpp
+	../dlls/dmc/quake_weapons_all.cpp
+	quake/quake_baseentity.cpp
+	quake/quake_events.cpp
+	quake/quake_objects.cpp
+	quake/quake_weapons.cpp
 	ammo.cpp
 	ammo_secondary.cpp
 	ammohistory.cpp
