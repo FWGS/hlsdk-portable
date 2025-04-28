@@ -491,11 +491,7 @@ void CBasePlayer::W_CycleWeaponReverseCommand()
 	{
 		BOOL bHaveAmmo = TRUE;
 
-		if (m_iQuakeWeapon == IT_EXTRA_WEAPON)
-		{
-			m_iQuakeWeapon = IT_LIGHTNING;
-		}
-		else if (m_iQuakeWeapon == IT_LIGHTNING)
+		if (m_iQuakeWeapon == IT_LIGHTNING)
 		{
 			m_iQuakeWeapon = IT_ROCKET_LAUNCHER;
 			if (m_iAmmoRockets < 1)
