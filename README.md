@@ -186,7 +186,7 @@ Install C++ compilers, cmake and x86 development libraries for C, C++ and SDL2.
 sudo apt install cmake build-essential gcc-multilib g++-multilib libsdl2-dev:i386
 ```
 
-#### RedHat/Fedora/CentOS
+#### RedHat/Fedora/CentOS:
 ```
 sudo dnf install cmake gcc gcc-c++ glibc-devel.i686 SDL-devel.i686
 ```
@@ -342,7 +342,7 @@ make -j
 
 ## Other platforms
 
-Building on other architectures (e.g x86_64 or arm) and POSIX-compliant OSes (e.g. FreeBSD) is supported.
+Building on other architectures (e.g. x86_64 or arm) and POSIX-compliant OSes (e.g. FreeBSD) is supported.
 
 ### Prerequisites
 
