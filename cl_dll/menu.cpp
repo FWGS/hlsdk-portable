@@ -165,26 +165,23 @@ int CHudMenu::MsgFunc_ShowMenu( const char *pszName, int iSize, void *pbuf )
 	{
 		if( !m_fWaitingForMore ) // this is the start of a new menu
 		{
-			strncpy( g_szPrelocalisedMenuString, READ_STRING(), MAX_MENU_STRING - 1 );
+			strlcpy( g_szPrelocalisedMenuString, READ_STRING(), MAX_MENU_STRING );
 		}
 		else
 		{
 			// append to the current menu string
-			strncat( g_szPrelocalisedMenuString, READ_STRING(), MAX_MENU_STRING - strlen( g_szPrelocalisedMenuString ) - 1 );
+			strlcat( g_szPrelocalisedMenuString, READ_STRING(), MAX_MENU_STRING );
 		}
-		g_szPrelocalisedMenuString[MAX_MENU_STRING - 1] = 0;  // ensure null termination (strncat/strncpy does not)
 
 		if( !NeedMore )
 		{
 			// we have the whole string, so we can localise it now
-			strncpy( g_szMenuString, gHUD.m_TextMessage.BufferedLocaliseTextString( g_szPrelocalisedMenuString ), MAX_MENU_STRING - 1 );
-			g_szMenuString[MAX_MENU_STRING - 1] = '\0';
+			strlcpy( g_szMenuString, gHUD.m_TextMessage.BufferedLocaliseTextString( g_szPrelocalisedMenuString ), MAX_MENU_STRING );
 
 			// Swap in characters
 			if( KB_ConvertString( g_szMenuString, &temp ) )
 			{
-				strncpy( g_szMenuString, temp, MAX_MENU_STRING - 1 );
-				g_szMenuString[MAX_MENU_STRING - 1] = '\0';
+				strlcpy( g_szMenuString, temp, MAX_MENU_STRING );
 				free( temp );
 			}
 		}

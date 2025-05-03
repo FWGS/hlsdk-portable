@@ -66,6 +66,16 @@ typedef int BOOL;
 #include <stdio.h>
 #include <stdlib.h>
 #include <stddef.h>
+#include "safe_snprintf.h"
+#ifndef __restrict
+#define	__restrict 
+#endif
+#if !HAVE_STRLCPY
+extern "C" size_t strlcpy(char * __restrict dst, const char * __restrict src, size_t dsize);
+#endif
+#if !HAVE_STRLCAT
+extern "C" size_t strlcat(char * __restrict dst, const char * __restrict src, size_t dsize);
+#endif
 #if HAVE_CMATH
 #include <cmath>
 #else
