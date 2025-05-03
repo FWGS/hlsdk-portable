@@ -167,15 +167,17 @@ void CAGrunt::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir
 
 			vecTracerDir = vecTracerDir * -512.0f;
 
+			Vector vecTracerEnd = ptr->vecEndPos + vecTracerDir;
+
 			MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, ptr->vecEndPos );
 			WRITE_BYTE( TE_TRACER );
 				WRITE_COORD( ptr->vecEndPos.x );
 				WRITE_COORD( ptr->vecEndPos.y );
 				WRITE_COORD( ptr->vecEndPos.z );
 
-				WRITE_COORD( vecTracerDir.x );
-				WRITE_COORD( vecTracerDir.y );
-				WRITE_COORD( vecTracerDir.z );
+				WRITE_COORD( vecTracerEnd.x );
+				WRITE_COORD( vecTracerEnd.y );
+				WRITE_COORD( vecTracerEnd.z );
 			MESSAGE_END();
 		}
 
