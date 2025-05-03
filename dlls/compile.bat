@@ -155,7 +155,12 @@ set SOURCES=gearbox/blkop_apache.cpp ^
 	xen.cpp ^
 	zombie.cpp ^
 	../game_shared/vcs_info.cpp ^
-	../pm_shared/pm_debug.c ../pm_shared/pm_math.c ../pm_shared/pm_shared.c
+	../pm_shared/pm_debug.c ^
+	../pm_shared/pm_math.c ^
+	../pm_shared/pm_shared.c ^
+	../public/safe_snprintf.c ^
+	../external/openbsd/strlcpy.c ^
+	../external/openbsd/strlcat.c
 set DEFINES=/DCLIENT_WEAPONS /Dsnprintf=_snprintf /DNO_VOICEGAMEMGR /DNDEBUG
 set LIBS=user32.lib
 set OUTNAME=hl.dll
