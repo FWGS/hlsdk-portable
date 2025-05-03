@@ -587,6 +587,26 @@ void IN_GetMousePos( int *mx, int *my )
 
 /*
 ===========
+IN_GetMouseSensitivity
+Get mouse sensitivity with sanitization
+===========
+*/
+float IN_GetMouseSensitivity()
+{
+	// Absurdly high sensitivity values can cause the game to hang, so clamp
+	if( sensitivity->value > 10000.0 )
+	{
+		gEngfuncs.Cvar_SetValue( "sensitivity", 10000.0 );
+	}
+	else if( sensitivity->value < 0.01 )
+	{
+		gEngfuncs.Cvar_SetValue( "sensitivity", 0.01 );
+	}
+	return sensitivity->value;
+}
+
+/*
+===========
 IN_ResetMouse
 
 FIXME: Call through to engine?
@@ -666,7 +686,7 @@ void IN_ScaleMouse( float *x, float *y )
 	float my = *y;
 
 	// This is the default sensitivity
-	float mouse_senstivity = ( gHUD.GetSensitivity() != 0 ) ? gHUD.GetSensitivity() : sensitivity->value;
+	float mouse_senstivity = ( gHUD.GetSensitivity() != 0 ) ? gHUD.GetSensitivity() : IN_GetMouseSensitivity();
 
 	// Using special accleration values
 	if ( m_customaccel->value != 0 )
