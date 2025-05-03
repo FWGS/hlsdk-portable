@@ -31,6 +31,7 @@ endif()
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 
 include(CheckIncludeFile)
+include(CheckFunctionExists)
 include(CheckCSourceCompiles)
 include(VSForceXPToolchain) # Force XP toolchain for Visual Studio
 include(CheckIPOSupported)
@@ -91,6 +92,9 @@ endif()
 #-----------------
 # MAIN BUILD CODE \
 ###################\
+
+CHECK_FUNCTION_EXISTS(strlcpy HAVE_STRLCPY)
+CHECK_FUNCTION_EXISTS(strlcat HAVE_STRLCAT)
 
 execute_process(COMMAND "git" "describe" "--dirty" "--always"
 	WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}

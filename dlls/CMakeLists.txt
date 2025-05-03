@@ -149,7 +149,22 @@ set (SVDLL_SOURCES
 	../pm_shared/pm_math.c
 	../pm_shared/pm_shared.c
 	../game_shared/vcs_info.cpp
+	../public/safe_snprintf.c
 )
+
+if (HAVE_STRLCPY)
+	add_definitions(-DHAVE_STRLCPY)
+else()
+	list(APPEND SVDLL_SOURCES
+		../external/openbsd/strlcpy.c)
+endif()
+
+if (HAVE_STRLCAT)
+	add_definitions(-DHAVE_STRLCAT)
+else()
+	list(APPEND SVDLL_SOURCES
+		../external/openbsd/strlcat.c)
+endif()
 
 include_directories (. wpn_shared ../common ../engine ../pm_shared ../game_shared ../public)
 

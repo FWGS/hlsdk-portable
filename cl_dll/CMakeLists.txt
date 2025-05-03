@@ -125,6 +125,7 @@ set (CLDLL_SOURCES
 	util.cpp
 	view.cpp
 	../game_shared/vcs_info.cpp
+	../public/safe_snprintf.c
 )
 
 if (USE_VGUI)
@@ -160,6 +161,20 @@ else()
 	list(APPEND CLDLL_SOURCES
 		MOTD.cpp
 		scoreboard.cpp)
+endif()
+
+if (HAVE_STRLCPY)
+	add_definitions(-DHAVE_STRLCPY)
+else()
+	list(APPEND CLDLL_SOURCES
+		../external/openbsd/strlcpy.c)
+endif()
+
+if (HAVE_STRLCAT)
+	add_definitions(-DHAVE_STRLCAT)
+else()
+	list(APPEND CLDLL_SOURCES
+		../external/openbsd/strlcat.c)
 endif()
 
 include_directories (. hl/ ../dlls ../dlls/wpn_shared ../common ../engine ../pm_shared ../game_shared ../public)

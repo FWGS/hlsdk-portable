@@ -14,6 +14,25 @@ default_prefix = '/'
 
 Context.Context.line_just = 60 # should fit for everything on 80x26
 
+STRLCPY_TEST = '''#include <string.h>
+int main(int argc, char **argv) { return strlcpy(argv[1], argv[2], 10); }'''
+
+STRLCAT_TEST = '''#include <string.h>
+int main(int argc, char **argv) { return strlcat(argv[1], argv[2], 10); }'''
+
+@Configure.conf
+def export_define(conf, define, value=1):
+	if not value:
+		return
+	if value is True:
+		value = 1 # so python won't define it as string True
+
+	conf.env.EXPORT_DEFINES_LIST += ['%s=%s' % (define, value)]
+
+@Configure.conf
+def simple_check(conf, fragment, msg, mandatory=False, **kw):
+	return conf.check_cc(fragment=fragment, msg='Checking for %s' % msg, mandatory=mandatory, **kw)
+
 @Configure.conf
 def get_taskgen_count(self):
 	try: idx = self.tg_idx_count
@@ -46,6 +65,7 @@ def options(opt):
 	opt.add_subproject('cl_dll dlls')
 
 def configure(conf):
+	conf.env.EXPORT_DEFINES_LIST = []
 	conf.load('fwgslib reconfigure compiler_optimizations')
 	if conf.options.ALLOW64:
 		conf.env.MSVC_TARGETS = ['x64']
@@ -74,6 +94,12 @@ def configure(conf):
 		conf.define('XASH_BUILD_BRANCH', conf.env.GIT_BRANCH)
 
 	conf.check_pic(True) # modern defaults
+	if conf.env.DEST_OS != 'win32':
+		def check_libc_extension(frag, msg, define):
+			conf.export_define(define, conf.simple_check(frag, msg, use='werror export'))
+
+		check_libc_extension(STRLCPY_TEST, 'strlcpy', 'HAVE_STRLCPY')
+		check_libc_extension(STRLCAT_TEST, 'strlcat', 'HAVE_STRLCAT')
 
 	# We restrict 64-bit builds ONLY for Win/Linux/OSX running on Intel architecture
 	# Because compatibility with original GoldSrc
