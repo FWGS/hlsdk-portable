@@ -39,6 +39,8 @@ Uint8 (*pfnSDL_GameControllerGetButton)(SDL_GameController*, SDL_GameControllerB
 void (*pfnSDL_JoystickUpdate)(void);
 const char* (*pfnSDL_GameControllerName)(SDL_GameController*);
 
+extern float IN_GetMouseSensitivity();
+
 int safe_pfnSDL_SetRelativeMouseMode(SDL_bool mode)
 {
 	if (pfnSDL_SetRelativeMouseMode)
@@ -583,26 +585,6 @@ Ask for mouse position from engine
 void IN_GetMousePos( int *mx, int *my )
 {
 	gEngfuncs.GetMousePosition( mx, my );
-}
-
-/*
-===========
-IN_GetMouseSensitivity
-Get mouse sensitivity with sanitization
-===========
-*/
-float IN_GetMouseSensitivity()
-{
-	// Absurdly high sensitivity values can cause the game to hang, so clamp
-	if( sensitivity->value > 10000.0 )
-	{
-		gEngfuncs.Cvar_SetValue( "sensitivity", 10000.0 );
-	}
-	else if( sensitivity->value < 0.01 )
-	{
-		gEngfuncs.Cvar_SetValue( "sensitivity", 0.01 );
-	}
-	return sensitivity->value;
 }
 
 /*
