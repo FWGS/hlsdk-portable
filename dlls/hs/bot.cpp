@@ -175,8 +175,7 @@ void BotCreate(const char *skin, const char *name, const char *skill)
    }
    else
    {
-      strncpy( c_skin, skin, BOT_SKIN_LEN);
-      c_skin[BOT_SKIN_LEN] = 0;  // make sure c_skin is null terminated
+      strlcpy( c_skin, skin, BOT_SKIN_LEN + 1);
    }
 
    for (i = 0; c_skin[i] != 0; i++)
@@ -196,8 +195,7 @@ void BotCreate(const char *skin, const char *name, const char *skill)
    {
       if ((name != NULL) && (*name != 0))
       {
-         strncpy( c_name, name, 31 );
-         c_name[31] = 0;  // make sure c_name is null terminated
+         strlcpy( c_name, name, 32 );
       }
       else
       {
@@ -240,8 +238,7 @@ void BotCreate(const char *skin, const char *name, const char *skill)
       }
 
       // copy the name of the model to the bot's name...
-      strncpy( c_name, skin, BOT_SKIN_LEN);
-      c_name[BOT_SKIN_LEN] = 0;  // make sure c_skin is null terminated
+      strlcpy( c_name, skin, BOT_SKIN_LEN + 1);
    }
 
    length = strlen(c_name);
