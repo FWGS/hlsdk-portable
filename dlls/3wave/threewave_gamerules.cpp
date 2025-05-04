@@ -98,8 +98,7 @@ CThreeWave::CThreeWave()
 	m_szTeamList[0] = 0;
 
 	// Cache this because the team code doesn't want to deal with changing this in the middle of a game
-	strncpy( m_szTeamList, teamlist.string, TEAMPLAY_TEAMLISTLENGTH - 1 );
-	m_szTeamList[TEAMPLAY_TEAMLISTLENGTH - 1] = '\0';
+	strlcpy( m_szTeamList, teamlist.string, TEAMPLAY_TEAMLISTLENGTH );
 
 	edict_t *pWorld = INDEXENT( 0 );
 	if( pWorld && pWorld->v.team )
@@ -109,8 +108,7 @@ CThreeWave::CThreeWave()
 			const char *pTeamList = STRING( pWorld->v.team );
 			if( pTeamList && strlen( pTeamList ) )
 			{
-				strncpy( m_szTeamList, pTeamList, TEAMPLAY_TEAMLISTLENGTH - 1 );
-				m_szTeamList[TEAMPLAY_TEAMLISTLENGTH - 1] = '\0';
+				strlcpy( m_szTeamList, pTeamList, TEAMPLAY_TEAMLISTLENGTH );
 			}
 		}
 	}
@@ -1428,8 +1426,7 @@ void CThreeWave::RecountTeams()
 					tm = num_teams;
 					num_teams++;
 					team_scores[tm] = 0;
-					strncpy( team_names[tm], pTeamName, MAX_TEAMNAME_LENGTH - 1 );
-					team_names[tm][MAX_TEAMNAME_LENGTH - 1] = '\0';
+					strlcpy( team_names[tm], pTeamName, MAX_TEAMNAME_LENGTH );
 				}
 			}
 
