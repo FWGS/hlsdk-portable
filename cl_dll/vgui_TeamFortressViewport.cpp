@@ -733,8 +733,7 @@ int TeamFortressViewport::CreateCommandMenu( const char *menuFile, int direction
 				}
 
 				// token should already be the bound key, or the custom name
-				strncpy( cCustom, token, sizeof(cCustom) - 1 );
-				cCustom[sizeof(cCustom) - 1] = '\0';
+				strlcpy( cCustom, token, sizeof( cCustom ));
 
 				// See if it's a custom button
 				if( !strcmp( cCustom, "CUSTOM" ) )
@@ -749,8 +748,7 @@ int TeamFortressViewport::CreateCommandMenu( const char *menuFile, int direction
 				{
 					// Get the mapname
 					pfile = gEngfuncs.COM_ParseFile( pfile, token );
-					strncpy( szMap, token, MAX_MAPNAME - 1 );
-					szMap[MAX_MAPNAME - 1] = '\0';
+					strlcpy( szMap, token, MAX_MAPNAME );
 
 					// Get the next token
 					pfile = gEngfuncs.COM_ParseFile( pfile, token );
@@ -776,21 +774,18 @@ int TeamFortressViewport::CreateCommandMenu( const char *menuFile, int direction
 				}
 
 				// Get the button bound key
-				strncpy( cBoundKey, token, 31 );
-				cBoundKey[31] = '\0';
+				strlcpy( cBoundKey, token, 32 );
 
 				// Get the button text
 				pfile = gEngfuncs.COM_ParseFile( pfile, token );
-				strncpy( cText, CHudTextMessage::BufferedLocaliseTextString( token ), 31 );	// Vit_amiN: localize button text
-				cText[31] = '\0';
+				strlcpy( cText, CHudTextMessage::BufferedLocaliseTextString( token ), 32 );	// Vit_amiN: localize button text
 
 				// save off the last button text we've come across (for error reporting)
 				strcpy( szLastButtonText, cText );
 
 				// Get the button command
 				pfile = gEngfuncs.COM_ParseFile( pfile, token );
-				strncpy( cCommand, token, cCommandLength - 1 );
-				cCommand[cCommandLength - 1] = '\0';
+				strlcpy( cCommand, token, cCommandLength );
 
 				iButtonY = ( BUTTON_SIZE_Y - 1 ) * m_pCurrentCommandMenu->GetNumButtons();
 			
@@ -1231,8 +1226,7 @@ void TeamFortressViewport::UpdateSpectatorPanel()
 			m_pSpectatorPanel->setVisible( true );	// show spectator panel, but
 			m_pSpectatorPanel->ShowMenu( false );	// dsiable all menus/buttons
 			
-			_snprintf( tempString, sizeof(tempString) - 1, "%c%s", HUD_PRINTCENTER, CHudTextMessage::BufferedLocaliseTextString( "#Spec_Duck" ) );
-			tempString[sizeof(tempString) - 1] = '\0';
+			safe_snprintf( tempString, sizeof( tempString ), "%c%s", HUD_PRINTCENTER, CHudTextMessage::BufferedLocaliseTextString( "#Spec_Duck" ) );
 
 			gHUD.m_TextMessage.MsgFunc_TextMsg( NULL, strlen( tempString ) + 1, tempString );
 		}
@@ -1258,8 +1252,7 @@ void TeamFortressViewport::UpdateSpectatorPanel()
 		// create player & health string
 		if( player && name )
 		{
-			strncpy( bottomText, name, sizeof(bottomText) - 1 );
-			bottomText[ sizeof(bottomText) - 1 ] = 0;
+			strlcpy( bottomText, name, sizeof( bottomText ));
 			pBottomText = bottomText;
 		}
 		else
@@ -1302,7 +1295,7 @@ void TeamFortressViewport::UpdateSpectatorPanel()
 		if( gEngfuncs.IsSpectateOnly() )
 		{
 			// in HLTV mode show number of spectators
-			_snprintf( szText, sizeof(szText) - 1, "%s: %d", CHudTextMessage::BufferedLocaliseTextString( "#Spectators" ), gHUD.m_Spectator.m_iSpectatorNumber );
+			safe_snprintf( szText, sizeof( szText ), "%s: %d", CHudTextMessage::BufferedLocaliseTextString( "#Spectators" ), gHUD.m_Spectator.m_iSpectatorNumber );
 		}
 		else
 		{
@@ -1311,10 +1304,8 @@ void TeamFortressViewport::UpdateSpectatorPanel()
 
 			COM_FileBase( gEngfuncs.pfnGetLevelName(), szMapName );
 
-			_snprintf( szText, sizeof(szText) - 1, "%s: %s",CHudTextMessage::BufferedLocaliseTextString( "#Spec_Map" ), szMapName );
+			safe_snprintf( szText, sizeof( szText ), "%s: %s",CHudTextMessage::BufferedLocaliseTextString( "#Spec_Map" ), szMapName );
 		}
-
-		szText[sizeof(szText) - 1] = '\0';
 
 		m_pSpectatorPanel->m_ExtraInfo->setText( szText );
 
@@ -1324,9 +1315,7 @@ void TeamFortressViewport::UpdateSpectatorPanel()
 		if( timer < 0 )
 			timer = 0;
 
-		_snprintf( szText, sizeof(szText) - 1, "%d:%02d\n", ( timer / 60 ), ( timer % 60 ) );
-
-		szText[sizeof(szText) - 1] = '\0';
+		safe_snprintf( szText, sizeof( szText ), "%d:%02d\n", ( timer / 60 ), ( timer % 60 ) );
 
 		m_pSpectatorPanel->m_CurrentTime->setText( szText ); */
 
@@ -1400,8 +1389,7 @@ CMenuPanel *TeamFortressViewport::CreateTextWindow( int iTextToShow )
 			strcpy( cTitle, "Half-Life" );
 		else
 		{
-			strncpy( cTitle, m_szServerName, MAX_TITLE_LENGTH - 1 );
-			cTitle[MAX_TITLE_LENGTH - 1] = '\0';
+			strlcpy( cTitle, m_szServerName, MAX_TITLE_LENGTH );
 		}
 
 		cText = m_szMOTD;
@@ -1449,8 +1437,7 @@ CMenuPanel *TeamFortressViewport::CreateTextWindow( int iTextToShow )
 
 		cText = pfile;
 
-		strncpy( cTitle, m_sMapName, MAX_TITLE_LENGTH - 1 );
-		cTitle[MAX_TITLE_LENGTH - 1] = 0;
+		strlcpy( cTitle, m_sMapName, MAX_TITLE_LENGTH );
 	}
 	else if( iTextToShow == SHOW_SPECHELP )
 	{
@@ -2080,10 +2067,7 @@ int TeamFortressViewport::MsgFunc_VGUIMenu( const char *pszName, int iSize, void
 
 	// Map briefing includes the name of the map (because it's sent down before the client knows what map it is)
 	if( iMenu == MENU_MAPBRIEFING )
-	{
-		strncpy( m_sMapName, READ_STRING(), sizeof(m_sMapName) - 1 );
-		m_sMapName[sizeof(m_sMapName) - 1] = '\0';
-	}
+		strlcpy( m_sMapName, READ_STRING(), sizeof( m_sMapName ));
 
 	// Bring up the menu6
 	ShowVGUIMenu( iMenu );
@@ -2127,10 +2111,7 @@ int TeamFortressViewport::MsgFunc_MOTD( const char *pszName, int iSize, void *pb
 
 	m_iGotAllMOTD = READ_BYTE();
 
-	int roomInArray = sizeof(m_szMOTD) - strlen( m_szMOTD ) - 1;
-
-	strncat( m_szMOTD, READ_STRING(), roomInArray >= 0 ? roomInArray : 0 );
-	m_szMOTD[sizeof(m_szMOTD) - 1] = '\0';
+	strlcat( m_szMOTD, READ_STRING(), sizeof( m_szMOTD ));
 
 	// don't show MOTD for HLTV spectators
 	if( m_iGotAllMOTD && !gEngfuncs.IsSpectateOnly() )
@@ -2166,8 +2147,7 @@ int TeamFortressViewport::MsgFunc_ServerName( const char *pszName, int iSize, vo
 {
 	BEGIN_READ( pbuf, iSize );
 
-	strncpy( m_szServerName, READ_STRING(), sizeof(m_szServerName) - 1 );
-	m_szServerName[sizeof(m_szServerName) - 1] = 0;
+	strlcpy( m_szServerName, READ_STRING(), sizeof( m_szServerName ));
 
 	return 1;
 }
@@ -2243,8 +2223,7 @@ int TeamFortressViewport::MsgFunc_TeamInfo( const char *pszName, int iSize, void
 	if( cl > 0 && cl <= MAX_PLAYERS )
 	{  
 		// set the players team
-		strncpy( g_PlayerExtraInfo[cl].teamname, READ_STRING(), MAX_TEAM_NAME - 1 );
-		g_PlayerExtraInfo[cl].teamname[MAX_TEAM_NAME - 1] = '\0';
+		strlcpy( g_PlayerExtraInfo[cl].teamname, READ_STRING(), MAX_TEAM_NAME );
 	}
 
 	// rebuild the list of teams
