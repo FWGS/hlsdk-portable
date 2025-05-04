@@ -56,6 +56,7 @@ DEFINES = [
 'XASH_RISCV_SINGLEFP',
 'XASH_RISCV_SOFTFP',
 'XASH_SERENITY',
+'XASH_TERMUX',
 'XASH_WIN32',
 'XASH_X86',
 'XASH_NSWITCH',
@@ -175,16 +176,16 @@ def configure(conf):
 		if conf.env.XASH_X86:
 			buildarch = ''
 
-	conf.env.revert()
-
-	if buildos == 'android':
+	if conf.env.XASH_ANDROID and not conf.env.XASH_TERMUX:
 		# force disable for Android, as Android ports aren't distributed in normal way and doesn't follow library naming
-		conf.env.POSTFIX = ''
+		postfix = ''
 	elif buildos != '' and buildarch != '':
-		conf.env.POSTFIX = '_%s_%s' % (buildos,buildarch)
+		postfix = '_%s_%s' % (buildos,buildarch)
 	elif buildarch != '':
-		conf.env.POSTFIX = '_%s' % buildarch
+		postfix = '_%s' % buildarch
 	else:
-		conf.env.POSTFIX = ''
+		postfix = ''
 
+	conf.env.revert()
+	conf.env.POSTFIX = postfix
 	conf.end_msg(conf.env.POSTFIX)

@@ -52,6 +52,26 @@ cvar_t	*cl_laddermode;
 int CL_IsDead( void );
 extern Vector dead_viewangles;
 
+/*
+===========
+IN_GetMouseSensitivity
+Get mouse sensitivity with sanitization
+===========
+*/
+float IN_GetMouseSensitivity()
+{
+	// Absurdly high sensitivity values can cause the game to hang, so clamp
+	if( sensitivity->value > 10000.0 )
+	{
+		gEngfuncs.Cvar_SetValue( "sensitivity", 10000.0 );
+	}
+	else if( sensitivity->value < 0.01 )
+	{
+		gEngfuncs.Cvar_SetValue( "sensitivity", 0.01 );
+	}
+	return sensitivity->value;
+}
+
 void IN_ToggleButtons( float forwardmove, float sidemove )
 {
 	static unsigned int moveflags = T | S;
@@ -179,17 +199,9 @@ void FWGSInput::IN_Move( float frametime, usercmd_t *cmd )
 
 	if( !iVisibleMouse )
 	{
-		if( gHUD.GetSensitivity() != 0 )
-		{
-			rel_yaw *= gHUD.GetSensitivity();
-			rel_pitch *= gHUD.GetSensitivity();
-		}
-		else
-		{
-			rel_yaw *= sensitivity->value;
-			rel_pitch *= sensitivity->value;
-		}
-
+		float mouse_sensitivity = gHUD.GetSensitivity() != 0 ? gHUD.GetSensitivity() : IN_GetMouseSensitivity();
+		rel_yaw *= mouse_sensitivity;
+		rel_pitch *= mouse_sensitivity;
 		viewangles[YAW] += rel_yaw;
 		if( fLadder )
 		{
