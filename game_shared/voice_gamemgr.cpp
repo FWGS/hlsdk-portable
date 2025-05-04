@@ -74,8 +74,10 @@ static void VoiceServerDebug( char const *pFmt, ... )
 		return;
 
 	va_start( marker, pFmt );
-	_vsnprintf( msg, sizeof(msg), pFmt, marker );
+	_vsnprintf( msg, sizeof( msg ) - 1, pFmt, marker );
 	va_end( marker );
+
+	msg[sizeof( msg ) - 1] = 0;
 
 	ALERT( at_console, "%s", msg );
 }
