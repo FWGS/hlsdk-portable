@@ -291,8 +291,7 @@ void FireTargets( const char *targetName, CBaseEntity *pActivator, CBaseEntity *
 				{
 					if (targetName[j] == ')')
 					{
-						strncpy(szBuf, targetName+i, j-i);
-						szBuf[j-i] = 0;
+						strlcpy(szBuf, targetName+i, j-i + 1);
 						pActivator = UTIL_FindEntityByTargetname(NULL, szBuf, inputActivator);
 						if (!pActivator)
 	{
@@ -310,8 +309,7 @@ void FireTargets( const char *targetName, CBaseEntity *pActivator, CBaseEntity *
 		}
 		if (!found) return; // no, it's not a locus specifier.
 
-		strncpy(szBuf, targetName, i-1);
-		szBuf[i-1] = 0;
+		strlcpy(szBuf, targetName, i);
 		targetName = szBuf;
 		pTarget = UTIL_FindEntityByTargetname(NULL, targetName, inputActivator);
 
