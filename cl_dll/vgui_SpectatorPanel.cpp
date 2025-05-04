@@ -275,8 +275,7 @@ void SpectatorPanel::ShowMenu( bool isVisible )
 		{
 			char string[64];
 
-			_snprintf( string, sizeof(string) - 1, "%c%s", HUD_PRINTCENTER, CHudTextMessage::BufferedLocaliseTextString( "#Spec_Duck" ) );
-			string[sizeof(string) - 1] = '\0';
+			safe_snprintf( string, sizeof( string ), "%c%s", HUD_PRINTCENTER, CHudTextMessage::BufferedLocaliseTextString( "#Spec_Duck" ) );
 
 			gHUD.m_TextMessage.MsgFunc_TextMsg( NULL, strlen( string ) + 1, string );
 		}
