@@ -438,19 +438,21 @@ void UTIL_Speak_2_l33t( char *szTarget, char *szOString )
 	const int MAX_L33T = 512;
 
 	int i = 0;
+	size_t len;
 	char szNewString[MAX_L33T] = "";
 	char szString[MAX_L33T] = "";
 	strcpy(szString, szOString);
 	int j;
 	BOOL match;
 
-	for (i=0; i<(int)strlen(szString); i++) 
+	len = strlen(szString);
+	for (i=0; i<(int)len; i++) 
 	{
 		szString[i] = toupper(szString[i]);
 	};
 
 	i = 0;
-	for (i=0; i<(int)strlen(szString); i++) 
+	for (i=0; i<(int)len; i++) 
 	{
 		match = false;
 		for(j=0; j<NUMSTRINGS; j++) 
@@ -465,7 +467,7 @@ void UTIL_Speak_2_l33t( char *szTarget, char *szOString )
 		}
 		if (!match)
 		{
-			strncat(szNewString, szString+i, 1);
+			strlcat(szNewString, szString+i, 2);
 		}
 	}
 	strcat(szTarget, szNewString);

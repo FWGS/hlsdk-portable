@@ -450,7 +450,7 @@ void CHalfLifeMultiplay :: BMOD_GiveGunsAndAmmo ( CBasePlayer *pPlayer )
 
 	// Give ammo
 	// make a copy because strtok is destructive
-	strncpy( itemlist, bm_ammo.string, 1024 );
+	strlcpy( itemlist, bm_ammo.string, sizeof( itemlist ));
 	pName = itemlist;
 	pName = strtok( pName, ";" );
 	while ( pName != NULL && *pName )
@@ -464,7 +464,7 @@ void CHalfLifeMultiplay :: BMOD_GiveGunsAndAmmo ( CBasePlayer *pPlayer )
 
 	// Give guns
 	// make a copy because strtok is destructive
-	strncpy( itemlist, bm_guns.string, 1024 );
+	strlcpy( itemlist, bm_guns.string, sizeof( itemlist ));
 	pName = itemlist;
 	pName = strtok( pName, ";" );
 	int guns = 0;
@@ -502,7 +502,7 @@ void CHalfLifeMultiplay :: BMOD_UpdateGuns ( void )
 
 	// guns
 	// make a copy because strtok is destructive
-	strncpy( itemlist, bm_guns.string, 1024 );
+	strlcpy( itemlist, bm_guns.string, sizeof( itemlist ));
 	pName = itemlist;
 	pName = strtok( pName, ";" );
 	while ( pName != NULL && *pName )
