@@ -169,14 +169,12 @@ int CHudTextMessage::MsgFunc_TextMsg( const char *pszName, int iSize, void *pbuf
 #define MSG_BUF_SIZE 128
 	char szBuf[6][MSG_BUF_SIZE];
 
-	strncpy( szBuf[0], LookupString( READ_STRING(), &msg_dest ), MSG_BUF_SIZE - 1 );
-	szBuf[0][MSG_BUF_SIZE - 1] = '\0';
+	strlcpy( szBuf[0], LookupString( READ_STRING(), &msg_dest ), MSG_BUF_SIZE );
 
 	for( int i = 1; i <= 4; i++ )
 	{
 		// keep reading strings and using C format strings for subsituting the strings into the localised text string
-		strncpy( szBuf[i], LookupString( READ_STRING() ), MSG_BUF_SIZE - 1 );
-		szBuf[i][MSG_BUF_SIZE - 1] = '\0';
+		strlcpy( szBuf[i], LookupString( READ_STRING() ), MSG_BUF_SIZE );
 		StripEndNewlineFromString( szBuf[i] ); // these strings are meant for subsitution into the main strings, so cull the automatic end newlines
 	}
 
@@ -190,24 +188,20 @@ int CHudTextMessage::MsgFunc_TextMsg( const char *pszName, int iSize, void *pbuf
 	switch( msg_dest )
 	{
 	case HUD_PRINTCENTER:
-		_snprintf( psz, MSG_BUF_SIZE, szBuf[0], szBuf[1], szBuf[2], szBuf[3], szBuf[4] );
-		psz[MSG_BUF_SIZE - 1] = '\0';
+		safe_snprintf( psz, MSG_BUF_SIZE, szBuf[0], szBuf[1], szBuf[2], szBuf[3], szBuf[4] );
 		CenterPrint( ConvertCRtoNL( psz ) );
 		break;
 	case HUD_PRINTNOTIFY:
 		psz[0] = 1;  // mark this message to go into the notify buffer
-		_snprintf( psz + 1, MSG_BUF_SIZE - 1, szBuf[0], szBuf[1], szBuf[2], szBuf[3], szBuf[4] );
-		psz[MSG_BUF_SIZE - 2] = '\0';
+		safe_snprintf( psz + 1, MSG_BUF_SIZE - 1, szBuf[0], szBuf[1], szBuf[2], szBuf[3], szBuf[4] );
 		ConsolePrint( ConvertCRtoNL( psz ) );
 		break;
 	case HUD_PRINTTALK:
-		_snprintf( psz, MSG_BUF_SIZE, szBuf[0], szBuf[1], szBuf[2], szBuf[3], szBuf[4] );
-		psz[MSG_BUF_SIZE - 1] = '\0';
+		safe_snprintf( psz, MSG_BUF_SIZE, szBuf[0], szBuf[1], szBuf[2], szBuf[3], szBuf[4] );
 		gHUD.m_SayText.SayTextPrint( ConvertCRtoNL( psz ), MSG_BUF_SIZE );
 		break;
 	case HUD_PRINTCONSOLE:
-		_snprintf( psz, MSG_BUF_SIZE, szBuf[0], szBuf[1], szBuf[2], szBuf[3], szBuf[4] );
-		psz[MSG_BUF_SIZE - 1] = '\0';
+		safe_snprintf( psz, MSG_BUF_SIZE, szBuf[0], szBuf[1], szBuf[2], szBuf[3], szBuf[4] );
 		ConsolePrint( ConvertCRtoNL( psz ) );
 		break;
 	}
