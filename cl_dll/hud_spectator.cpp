@@ -217,8 +217,7 @@ void UTIL_StringToVector( float * pVector, const char *pString )
 	char *pstr, *pfront, tempString[128];
 	int	j;
 
-	strncpy( tempString, pString, sizeof( tempString ) );
-	tempString[sizeof( tempString ) - 1] = '\0';
+	strlcpy( tempString, pString, sizeof( tempString ));
 
 	pstr = pfront = tempString;
 
@@ -748,8 +747,7 @@ void CHudSpectator::DirectorMessage( int iSize, void *pbuf )
 				msg->holdtime = READ_FLOAT();	// holdtime
 				msg->fxtime = READ_FLOAT();	// fxtime;
 
-				strncpy( m_HUDMessageText[m_lastHudMessage], READ_STRING(), 127 );
-				m_HUDMessageText[m_lastHudMessage][127] = 0;	// text 
+				strlcpy( m_HUDMessageText[m_lastHudMessage], READ_STRING(), 128 );
 
 				msg->pMessage = m_HUDMessageText[m_lastHudMessage];
 				msg->pName = "HUD_MESSAGE";
@@ -866,8 +864,7 @@ void CHudSpectator::FindNextPlayer( bool bReverse )
 	{
 		char cmdstring[256];
 		// forward command to server
-		_snprintf( cmdstring, sizeof( cmdstring ) - 1,"follownext %i", bReverse ? 1 : 0 );
-		cmdstring[sizeof( cmdstring ) - 1] = '\0';
+		safe_snprintf( cmdstring, sizeof( cmdstring ),"follownext %i", bReverse ? 1 : 0 );
 		gEngfuncs.pfnServerCmd( cmdstring );
 		return;
 	}
@@ -939,8 +936,7 @@ void CHudSpectator::FindPlayer( const char *name )
 	{
 		char cmdstring[256];
 		// forward command to server
-		_snprintf( cmdstring, sizeof( cmdstring ) - 1, "follow %s", name );
-		cmdstring[sizeof( cmdstring ) - 1] = '\0';
+		safe_snprintf( cmdstring, sizeof( cmdstring ), "follow %s", name );
 		gEngfuncs.pfnServerCmd( cmdstring );
 		return;
 	}
@@ -1132,8 +1128,7 @@ void CHudSpectator::SetModes( int iNewMainMode, int iNewInsetMode )
 		{
 			char cmdstring[256];
 			// forward command to server
-			_snprintf( cmdstring, sizeof( cmdstring ) - 1,"specmode %i", iNewMainMode );
-			cmdstring[sizeof( cmdstring ) - 1] = '\0';
+			safe_snprintf( cmdstring, sizeof( cmdstring ),"specmode %i", iNewMainMode );
 			gEngfuncs.pfnServerCmd( cmdstring );
 			return;
 		}
@@ -1827,8 +1822,7 @@ void CHudSpectator::CheckSettings()
 		{
 			// tell proxy our new chat mode
 			char chatcmd[256];
-			_snprintf( chatcmd, sizeof( chatcmd ) - 1, "ignoremsg %i", m_chatEnabled ? 0 : 1 );
-			chatcmd[sizeof( chatcmd ) - 1] = '\0';
+			safe_snprintf( chatcmd, sizeof( chatcmd ), "ignoremsg %i", m_chatEnabled ? 0 : 1 );
 			gEngfuncs.pfnServerCmd( chatcmd );
 		}
 	}

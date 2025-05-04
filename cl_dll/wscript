@@ -42,6 +42,7 @@ def configure(conf):
 def build(bld):
 	libs = []
 	defines = ['CLIENT_DLL']
+	defines += bld.env.EXPORT_DEFINES_LIST
 	includes = Utils.to_list('. hl/ ../dlls ../dlls/wpn_shared ../common ../engine ../pm_shared ../game_shared ../public dmc ../dlls/dmc ../dlls/dmc .. ../dlls/aghl ../dlls/3wave')
 
 	source = [
@@ -98,6 +99,7 @@ def build(bld):
 	'util.cpp',
 	'view.cpp',
 	'../game_shared/vcs_info.cpp',
+	'../public/safe_snprintf.c'
 	]
 
 	if bld.env.USE_VGUI:
@@ -152,7 +154,13 @@ def build(bld):
 		else:
 			libs += ['DL']
 
-	if bld.env.DEST_OS not in ['android', 'dos']:
+	if 'HAVE_STRLCPY=1' not in defines:
+		source += bld.path.parent.ant_glob('external/openbsd/strlcpy.c')
+
+	if 'HAVE_STRLCAT=1' not in defines:
+		source += bld.path.parent.ant_glob('external/openbsd/strlcat.c')
+
+	if bld.env.DEST_OS not in ['android', 'dos'] or bld.env.TERMUX:
 		install_path = os.path.join(bld.env.GAMEDIR, bld.env.CLIENT_INSTALL_DIR)
 	else:
 		install_path = bld.env.PREFIX

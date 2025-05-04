@@ -164,9 +164,24 @@ set (SVDLL_SOURCES
 	../pm_shared/pm_math.c
 	../pm_shared/pm_shared.c
 	../game_shared/vcs_info.cpp
+	../public/safe_snprintf.c
 )
-	
-include_directories (. wpn_shared ../common ../engine ../pm_shared ../game_shared ../public dmc aghl 3wave .. )
+
+if (HAVE_STRLCPY)
+	add_definitions(-DHAVE_STRLCPY)
+else()
+	list(APPEND SVDLL_SOURCES
+		../external/openbsd/strlcpy.c)
+endif()
+
+if (HAVE_STRLCAT)
+	add_definitions(-DHAVE_STRLCAT)
+else()
+	list(APPEND SVDLL_SOURCES
+		../external/openbsd/strlcat.c)
+endif()
+
+include_directories (. wpn_shared ../common ../engine ../pm_shared ../game_shared ../public dmc aghl 3wave ..)
 
 if(MSVC)
 	set(SVDLL_SOURCES
@@ -187,7 +202,7 @@ add_library (${SVDLL_LIBRARY} SHARED ${SVDLL_SOURCES})
 set_target_properties (${SVDLL_LIBRARY} PROPERTIES
 	POSITION_INDEPENDENT_CODE 1)
 
-if(NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Android")
+if(NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Android" OR XASH_TERMUX)
 	set(SVDLL_NAME "${SERVER_LIBRARY_NAME}")
 
 	set_target_properties(${SVDLL_LIBRARY} PROPERTIES
