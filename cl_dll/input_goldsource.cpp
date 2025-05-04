@@ -39,6 +39,8 @@ Uint8 (*pfnSDL_GameControllerGetButton)(SDL_GameController*, SDL_GameControllerB
 void (*pfnSDL_JoystickUpdate)(void);
 const char* (*pfnSDL_GameControllerName)(SDL_GameController*);
 
+extern float IN_GetMouseSensitivity();
+
 int safe_pfnSDL_SetRelativeMouseMode(SDL_bool mode)
 {
 	if (pfnSDL_SetRelativeMouseMode)
@@ -666,7 +668,7 @@ void IN_ScaleMouse( float *x, float *y )
 	float my = *y;
 
 	// This is the default sensitivity
-	float mouse_senstivity = ( gHUD.GetSensitivity() != 0 ) ? gHUD.GetSensitivity() : sensitivity->value;
+	float mouse_senstivity = ( gHUD.GetSensitivity() != 0 ) ? gHUD.GetSensitivity() : IN_GetMouseSensitivity();
 
 	// Using special accleration values
 	if ( m_customaccel->value != 0 )

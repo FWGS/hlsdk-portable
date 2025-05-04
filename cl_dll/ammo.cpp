@@ -645,8 +645,7 @@ int CHudAmmo::MsgFunc_WeaponList( const char *pszName, int iSize, void *pbuf )
 	
 	WEAPON Weapon;
 
-	strncpy( Weapon.szName, READ_STRING(), sizeof(Weapon.szName) );
-	Weapon.szName[sizeof(Weapon.szName) - 1] = '\0';
+	strlcpy( Weapon.szName, READ_STRING(), sizeof( Weapon.szName ));
 
 	Weapon.iAmmoType = (int)READ_CHAR();	
 	
