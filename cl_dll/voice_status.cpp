@@ -444,8 +444,7 @@ void CVoiceStatus::UpdateSpeakerStatus( int entindex, qboolean bTalking )
 						gEngfuncs.pfnGetPlayerInfo( entindex, &info );
 
 						char paddedName[512];
-						_snprintf( paddedName, sizeof( paddedName ) - 1, "%s   ", info.name );
-						paddedName[sizeof(paddedName) - 1] = '\0';
+						safe_snprintf( paddedName, sizeof( paddedName ), "%s   ", info.name );
 
 						int color[3];
 						m_pHelper->GetPlayerTextColor( entindex, color );
