@@ -5054,7 +5054,7 @@ void CTriggerChangeCVar::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE
 		}
 		else
 		{
-			strncpy(m_szStoredString, CVAR_GET_STRING(STRING(pev->netname)), 256);
+			strlcpy( m_szStoredString, CVAR_GET_STRING( STRING( pev->netname )), sizeof( m_szStoredString ));
 			sprintf( szCommand, "%s \"%s\"\n", STRING(pev->netname), STRING(pev->message) );
 			pev->spawnflags |= SF_CVAR_ACTIVE;
 
