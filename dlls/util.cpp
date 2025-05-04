@@ -802,8 +802,7 @@ void UTIL_HudMessage( CBaseEntity *pEntity, const hudtextparms_t &textparms, con
 		else
 		{
 			char tmp[512];
-			strncpy( tmp, pMessage, 511 );
-			tmp[511] = 0;
+			strlcpy( tmp, pMessage, sizeof( tmp ));
 			WRITE_STRING( tmp );
 		}
 	MESSAGE_END();
@@ -1339,8 +1338,7 @@ void UTIL_StringToVector( float *pVector, const char *pString )
 	char *pstr, *pfront, tempString[128];
 	int j;
 
-	strncpy( tempString, pString, sizeof( tempString ));
-	tempString[sizeof( tempString ) - 1] = '\0';
+	strlcpy( tempString, pString, sizeof( tempString ));
 	pstr = pfront = tempString;
 
 	for( j = 0; j < 3; j++ )			// lifted from pr_edict.c
@@ -1370,8 +1368,7 @@ void UTIL_StringToIntArray( int *pVector, int count, const char *pString )
 	char *pstr, *pfront, tempString[128];
 	int j;
 
-	strncpy( tempString, pString, sizeof( tempString ));
-	tempString[sizeof( tempString ) - 1] = '\0';
+	strlcpy( tempString, pString, sizeof( tempString ));
 	pstr = pfront = tempString;
 
 	for( j = 0; j < count; j++ )			// lifted from pr_edict.c

@@ -151,9 +151,24 @@ set (SVDLL_SOURCES
 	poke646/robocop.cpp
 	vendetta/par21.cpp
 	../game_shared/vcs_info.cpp
+	../public/safe_snprintf.c
 )
 
-include_directories (. wpn_shared poke646 ../common ../engine ../pm_shared ../game_shared ../public)
+if (HAVE_STRLCPY)
+	add_definitions(-DHAVE_STRLCPY)
+else()
+	list(APPEND SVDLL_SOURCES
+		../external/openbsd/strlcpy.c)
+endif()
+
+if (HAVE_STRLCAT)
+	add_definitions(-DHAVE_STRLCAT)
+else()
+	list(APPEND SVDLL_SOURCES
+		../external/openbsd/strlcat.c)
+endif()
+
+include_directories (. wpn_shared ../common ../engine ../pm_shared ../game_shared ../public poke646)
 
 if(MSVC)
 	set(SVDLL_SOURCES
@@ -174,7 +189,7 @@ add_library (${SVDLL_LIBRARY} SHARED ${SVDLL_SOURCES})
 set_target_properties (${SVDLL_LIBRARY} PROPERTIES
 	POSITION_INDEPENDENT_CODE 1)
 
-if(NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Android")
+if(NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Android" OR XASH_TERMUX)
 	set(SVDLL_NAME "${SERVER_LIBRARY_NAME}")
 
 	set_target_properties(${SVDLL_LIBRARY} PROPERTIES
