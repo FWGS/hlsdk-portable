@@ -193,13 +193,13 @@ Helper for trigger_autosave
 */
 void COOP_AutoSave( CBaseEntity *pPlayer )
 {
-	strncpy( g_CoopState.p.rgszSaveSlots[COOP_SAVE_AUTO2], g_CoopState.p.rgszSaveSlots[COOP_SAVE_AUTO1], 31 );
+	strlcpy( g_CoopState.p.rgszSaveSlots[COOP_SAVE_AUTO2], g_CoopState.p.rgszSaveSlots[COOP_SAVE_AUTO1], 32 );
 	g_CoopState.p.iLastAutoSave ^= 1;
-	snprintf( g_CoopState.p.rgszSaveSlots[COOP_SAVE_AUTO1], 31, "auto%d-%s", g_CoopState.p.iLastAutoSave, STRING( gpGlobals->mapname ) );
+	safe_snprintf( g_CoopState.p.rgszSaveSlots[COOP_SAVE_AUTO1], 32, "auto%d-%s", g_CoopState.p.iLastAutoSave, STRING( gpGlobals->mapname ) );
 	GGM_Save( g_CoopState.p.rgszSaveSlots[COOP_SAVE_AUTO1] );
 	memmove( &g_CoopState.pCurrentMap->p.rgCheckpoints[1], &g_CoopState.pCurrentMap->p.rgCheckpoints[0], sizeof ( g_CoopState.pCurrentMap->p.rgCheckpoints[0] ) * 3 );
 	g_CoopState.pCurrentMap->p.rgCheckpoints[0].flTime = gpGlobals->time;
-	snprintf( g_CoopState.pCurrentMap->p.rgCheckpoints[0].szDisplayName, 31,  "autosave %d", (int)( gpGlobals->time / 60 ) );
+	safe_snprintf( g_CoopState.pCurrentMap->p.rgCheckpoints[0].szDisplayName, 32,  "autosave %d", (int)( gpGlobals->time / 60 ) );
 	GGM_SavePosition( (CBasePlayer*)pPlayer, &g_CoopState.pCurrentMap->p.rgCheckpoints[0].pos );
 	UTIL_CoopPrintMessage("%s activated autosave!\n", GGM_PlayerName( pPlayer ) );
 }
@@ -233,7 +233,7 @@ static void COOP_CheckSaveSlots( void )
 		if( !g_CoopState.p.rgszSaveSlots[i] )
 			continue;
 
-		snprintf( fpath, 255, "%s" PATHSEP "%s.coop", path, g_CoopState.p.rgszSaveSlots[i] );
+		safe_snprintf( fpath, sizeof( fpath ), "%s" PATHSEP "%s.coop", path, g_CoopState.p.rgszSaveSlots[i] );
 		if( ( f = fopen( fpath, "rb" ) ) )
 			fclose( f );
 		else
@@ -280,7 +280,7 @@ void COOP_ClearSaves( void )
 			if( pszOldMap && !strncmp( entry->d_name + 6, pszOldMap, strlen( pszOldMap ) ) )
 				continue;
 
-			snprintf( fpath, 255, "%s" PATHSEP "%s", path, entry->d_name );
+			safe_snprintf( fpath, sizeof( fpath ), "%s" PATHSEP "%s", path, entry->d_name );
 			ALERT( at_console, "Removing %s\n", fpath );
 			remove( fpath );
 		}
@@ -300,14 +300,14 @@ void COOP_MapStartSave( void )
 {
 	char szSavename[32] = "";
 
-	snprintf( szSavename, 31, "start-%s", STRING( gpGlobals->mapname ) );
+	safe_snprintf( szSavename, sizeof( szSavename ), "start-%s", STRING( gpGlobals->mapname ) );
 
 	// moving to previous map and returning back should not trigger save
 	if( !strcmp( g_CoopState.p.rgszSaveSlots[COOP_SAVE_START1], szSavename ) || !strcmp( g_CoopState.p.rgszSaveSlots[COOP_SAVE_START2], szSavename ) )
 		return;
 
-	strncpy( g_CoopState.p.rgszSaveSlots[COOP_SAVE_START2], g_CoopState.p.rgszSaveSlots[COOP_SAVE_START1], 31 );
-	strncpy( g_CoopState.p.rgszSaveSlots[COOP_SAVE_START1], szSavename, 31 );
+	strlcpy( g_CoopState.p.rgszSaveSlots[COOP_SAVE_START2], g_CoopState.p.rgszSaveSlots[COOP_SAVE_START1], 32 );
+	strlcpy( g_CoopState.p.rgszSaveSlots[COOP_SAVE_START1], szSavename, 32 );
 	SERVER_COMMAND( UTIL_VarArgs( "wait;wait;ggm_save %s\n", g_CoopState.p.rgszSaveSlots[COOP_SAVE_START1] ) );
 }
 
@@ -351,9 +351,9 @@ void UTIL_CoopPlayerMessage( CBaseEntity *pPlayer, int channel, float time, unsi
 	char string[256];
 
 	va_start( argptr, format );
-	int len = vsnprintf( string, 256, format, argptr );
+	int len = vsnprintf( string, sizeof( string ), format, argptr );
 	va_end( argptr );
-	string[len] = 0;
+	string[sizeof( string ) - 1] = 0;
 	char *pstr = string;
 
 	// set line breaks
@@ -385,9 +385,9 @@ void UTIL_CoopHudMessage( int channel, float time, unsigned int color1, unsigned
 	char string[256];
 
 	va_start( argptr, format );
-	int len = vsnprintf( string, 256, format, argptr );
+	int len = vsnprintf( string, sizeof( string ), format, argptr );
 	va_end( argptr );
-	string[len] = 0;
+	string[sizeof( string ) - 1] = 0;
 	char *pstr = string;
 
 	// set line breaks
@@ -412,9 +412,9 @@ void UTIL_CoopPrintMessage( const char *format, ... )
 	char string[256] = "^2";
 
 	va_start( argptr, format );
-	int len = vsnprintf( string + 2, 253, format, argptr );
+	int len = vsnprintf( string + 2, 254, format, argptr );
 	va_end( argptr );
-	string[len+2] = 0;
+	string[sizeof( string ) - 1] = 0;
 	UTIL_ClientPrintAll( HUD_PRINTTALK, string );
 }
 
@@ -666,7 +666,7 @@ bool COOP_ProcessTransition( void )
 
 		pNewState->pNext = g_CoopState.pMapStates;
 		pNewState->p.vecOffset = Vector(0, 0, 0);
-		strncpy(pNewState->p.szMapName, STRING(gpGlobals->mapname), 31);
+		strlcpy(pNewState->p.szMapName, STRING(gpGlobals->mapname), 32);
 		g_CoopState.pMapStates = g_CoopState.pCurrentMap = pNewState;
 	}
 	return true;
@@ -683,9 +683,9 @@ set cross-level state
 void COOP_SetupLandmarkTransition( const char *szNextMap, const char *szNextSpot, Vector vecLandmarkOffset, struct GGMPosition *pPos )
 {
 	g_CoopState.landmarkTransition.fLoading = false;
-	strncpy(g_CoopState.landmarkTransition.szSourceMap, STRING(gpGlobals->mapname), 31 );
-	strncpy(g_CoopState.landmarkTransition.szTargetMap, szNextMap, 31 );
-	strncpy(g_CoopState.landmarkTransition.szLandmarkName, szNextSpot, 31 );
+	strlcpy(g_CoopState.landmarkTransition.szSourceMap, STRING(gpGlobals->mapname), 32 );
+	strlcpy(g_CoopState.landmarkTransition.szTargetMap, szNextMap, 32 );
+	strlcpy(g_CoopState.landmarkTransition.szLandmarkName, szNextSpot, 32 );
 	g_CoopState.landmarkTransition.vecLandmark = vecLandmarkOffset;
 	if( pPos )
 	{
@@ -764,7 +764,7 @@ void COOP_ServerActivate( void )
 		memset( &g_CoopState.p, 0, sizeof( g_CoopState.p ) );
 		pNewState->pNext = g_CoopState.pMapStates;
 		pNewState->p.vecOffset = Vector(0, 0, 0);
-		strncpy(pNewState->p.szMapName, STRING(gpGlobals->mapname), 31);
+		strlcpy(pNewState->p.szMapName, STRING(gpGlobals->mapname), 32);
 		g_CoopState.pMapStates = g_CoopState.pCurrentMap = pNewState;
 		GGM_ClearLists();
 	}
@@ -799,7 +799,7 @@ void COOP_ServerActivate( void )
 	{
 		memmove( &g_CoopState.pCurrentMap->p.rgCheckpoints[1], &g_CoopState.pCurrentMap->p.rgCheckpoints[0], sizeof ( g_CoopState.pCurrentMap->p.rgCheckpoints[0] ) * 3 );
 		g_CoopState.pCurrentMap->p.rgCheckpoints[0].flTime = gpGlobals->time;
-		snprintf( g_CoopState.pCurrentMap->p.rgCheckpoints[0].szDisplayName, 31,  "From %s", g_CoopState.landmarkTransition.szSourceMap );
+		safe_snprintf( g_CoopState.pCurrentMap->p.rgCheckpoints[0].szDisplayName, 32,  "From %s", g_CoopState.landmarkTransition.szSourceMap );
 		g_CoopState.pCurrentMap->p.rgCheckpoints[0].pos = g_CoopState.p.savedPos;
 	}
 	if( !g_CoopState.landmarkTransition.fLoading )
@@ -851,7 +851,7 @@ void COOP_NewCheckpoint( entvars_t *pevPlayer )
 		return;
 	memmove( &g_CoopState.pCurrentMap->p.rgCheckpoints[1], &g_CoopState.pCurrentMap->p.rgCheckpoints[0], sizeof ( g_CoopState.pCurrentMap->p.rgCheckpoints[0] ) * 3 );
 	g_CoopState.pCurrentMap->p.rgCheckpoints[0].flTime = gpGlobals->time;
-	snprintf( g_CoopState.pCurrentMap->p.rgCheckpoints[0].szDisplayName, 31,  "%5s %d", STRING( pevPlayer->netname ), (int)( gpGlobals->time / 60 ) );
+	safe_snprintf( g_CoopState.pCurrentMap->p.rgCheckpoints[0].szDisplayName, 32,  "%5s %d", STRING( pevPlayer->netname ), (int)( gpGlobals->time / 60 ) );
 	GGM_SavePosition( (CBasePlayer*)CBaseEntity::Instance( pevPlayer ), &g_CoopState.pCurrentMap->p.rgCheckpoints[0].pos );
 	UTIL_CoopPrintMessage("New checkpoint by %s!\n", STRING( pevPlayer->netname ) );
 }
@@ -1130,7 +1130,7 @@ bool COOP_ClientCommand( edict_t *pEntity )
 			else
 			{
 				char szCommand[32];
-				snprintf( szCommand, 31, "ggm_load %s", CMD_ARGV(1) );
+				safe_snprintf( szCommand, sizeof( szCommand ), "ggm_load %s", CMD_ARGV(1) );
 
 				GGM_StartVoteCommand( pPlayer, szCommand, UTIL_VarArgs("Load save %s", CMD_ARGV(1) ));
 			}

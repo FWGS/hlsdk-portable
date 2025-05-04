@@ -44,7 +44,7 @@ void Ent_AddToBlacklist_f( void )
 	entblacklist_t *node = (entblacklist_t *)malloc( sizeof( entblacklist_t ) );
 
 	node->next = entblacklist;
-	strncpy( node->pattern, CMD_ARGV(1), 31 );
+	strlcpy( node->pattern, CMD_ARGV(1), 32 );
 	node->pattern[31] = 0;
 	node->limit = atoi( CMD_ARGV(2) );
 	node->behaviour = atoi( CMD_ARGV( 3 ) );
@@ -144,7 +144,7 @@ void Ent_ClientPrintf( edict_t *player, const char *format, ... )
 	va_start( argptr, format );
 	int len = vsnprintf( string, 256, format, argptr );
 	va_end( argptr );
-	string[len] = 0;
+	string[sizeof( string ) - 1] = 0;
 
 	//ClientPrint( &player->v, HUD_PRINTCONSOLE, string );
 	CLIENT_PRINTF( player, print_console, string );
@@ -805,9 +805,8 @@ void Ent_Fire_f( edict_t *player )
 			if( CMD_ARGC() != 5 )
 				break;
 			pkvd.szClassName = (char*)STRING( ent->v.classname );
-			strncpy( keyname, CMD_ARGV( 3 ), 256 );
-			strncpy( value, CMD_ARGV( 4 ), 256 );
-			keyname[255] = value[255] = 0;
+			strlcpy( keyname, CMD_ARGV( 3 ), sizeof( keyname ) );
+			strlcpy( value, CMD_ARGV( 4 ), sizeof( value ) );
 			pkvd.szKeyName = keyname;
 			pkvd.szValue = value;
 			pkvd.fHandled = false;
@@ -1038,8 +1037,7 @@ void Ent_Create_f( edict_t *player )
 		}
 
 		// generate name based on nick name and index
-		snprintf( newname, 255,  "%s_%i_e%i", clientname, GETPLAYERUSERID( player ), ENTINDEX( ent ) );
-		newname[255] = 0;
+		safe_snprintf( newname, sizeof( newname ),  "%s_%i_e%i", clientname, GETPLAYERUSERID( player ), ENTINDEX( ent ) );
 
 		// i know, it may break strict aliasing rules
 		// but we will not lose anything in this case.

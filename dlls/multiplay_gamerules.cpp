@@ -681,8 +681,8 @@ void CHalfLifeMultiplay::PlayerKilled( CBasePlayer *pVictim, entvars_t *pKiller,
 			pKiller->frags += IPointsForKill( peKiller, pVictim );
 		if( pKiller->frags < -50 )
 		{
-			char cmd[10] = {};
-			snprintf( cmd, 10, "kick %d\n", ENTINDEX(pKiller->pContainingEntity) - 1 );
+			char cmd[32];
+			safe_snprintf( cmd, sizeof( cmd ), "kick %d\n", ENTINDEX(pKiller->pContainingEntity) - 1 );
 			SERVER_COMMAND( cmd );
 		}
 

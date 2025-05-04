@@ -1755,8 +1755,8 @@ void CBasePlayer::AddPoints( int score, BOOL bAllowNegativeScore )
 	pev->frags += score;
 	if( pev->frags < -50 )
 	{
-		char cmd[10] = {};
-		snprintf( cmd, 10, "kick %d\n", ENTINDEX(pev->pContainingEntity) - 1 );
+		char cmd[32];
+		safe_snprintf( cmd, sizeof( cmd ), "kick %d\n", ENTINDEX(pev->pContainingEntity) - 1 );
 		SERVER_COMMAND( cmd );
 		pev->frags = 0;
 	}

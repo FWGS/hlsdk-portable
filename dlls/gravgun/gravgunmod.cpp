@@ -175,8 +175,8 @@ void GGM_StartVoteCommand( CBasePlayer *pPlayer, const char *pszCommand, const c
 
 	g_Vote.iMode = VOTE_COMMAND;
 	g_Vote.pPlayer = pPlayer;
-	snprintf( g_Vote.szCommand, 255, "%s\n", pszCommand);
-	strncpy( g_Vote.szMessage, pszMessage, 255 );
+	safe_snprintf( g_Vote.szCommand, 256, "%s\n", pszCommand);
+	strlcpy( g_Vote.szMessage, pszMessage, 256 );
 
 	GGM_BroadcastVote();
 }
@@ -229,7 +229,7 @@ int GGM_ChangelevelVote( CBasePlayer *pPlayer, edict_t *pTrigger, const char *ps
 			g_Vote.pPlayer = pPlayer;
 			ALERT( at_logged, "coop: %s started vote changelevel for %s\n", GGM_PlayerName( pPlayer ), pszMapName );
 			UTIL_CoopPrintMessage( "%s^7 wants to change map ^1BACK to %s\n", GGM_PlayerName( pPlayer ), pszMapName );
-			snprintf(g_Vote.szMessage, 255, "Change map BACK TO %s?", pszMapName );
+			safe_snprintf(g_Vote.szMessage, 256, "Change map BACK TO %s?", pszMapName );
 			GGM_BroadcastVote();
 			pPlayer->m_ggm.iLocalConfirm = 0;
 			pPlayer->m_ggm.pChangeLevel = NULL;
@@ -723,9 +723,9 @@ void GGM_ChatPrintf( CBasePlayer *pPlayer, const char *format, ... )
 	char string[256];
 
 	va_start( argptr, format );
-	int len = vsnprintf( string, 256, format, argptr );
+	int len = vsnprintf( string, sizeof( string ), format, argptr );
 	va_end( argptr );
-	string[len] = 0;
+	string[sizeof( string ) - 1] = 0;
 
 	//ClientPrint( &player->v, HUD_PRINTCONSOLE, string );
 	CLIENT_PRINTF( pPlayer->edict(), print_chat, string );
@@ -773,7 +773,7 @@ const char *GGM_GetAuthID( CBasePlayer *pPlayer )
 		{
 			char *pUid;
 
-			snprintf( uid, 32, "IP_%s", ip );
+			safe_snprintf( uid, sizeof( uid ), "IP_%s", ip );
 
 			for( pUid = uid; *pUid; pUid++ )
 				if( *pUid == '.' ) *pUid = '_';
@@ -781,7 +781,7 @@ const char *GGM_GetAuthID( CBasePlayer *pPlayer )
 		else
 			return "UNKNOWN";
 	}
-	else strncpy( uid, authid, 32 );
+	else strlcpy( uid, authid, sizeof( uid ) );
 
 	if( GGM_FilterFileName( uid ) )
 		return uid;
@@ -922,7 +922,7 @@ void GGM_WritePersist( GGMPlayerState *pState )
 
 	pState->fNeedWrite = false;
 
-	snprintf( path, 63, "%s/ggm/registrations/%s", gamedir, pState->szUID );
+	safe_snprintf( path, sizeof( path ), "%s/ggm/registrations/%s", gamedir, pState->szUID );
 
 	f = fopen( path, "wb" );
 
@@ -949,7 +949,7 @@ void GGM_ReadPersist( GGMPlayerState *pState )
 	if( !pState->fRegistered )
 		return;
 
-	snprintf( path, 63, "%s/ggm/registrations/%s", gamedir, pState->szUID );
+	safe_snprintf( path, sizeof( path ), "%s/ggm/registrations/%s", gamedir, pState->szUID );
 
 	f = fopen( path, "rb" );
 
@@ -1136,7 +1136,7 @@ void GGM_ConnectSaveBot( void )
 {
 	edict_t *client0 = INDEXENT( 1 );
 	edict_t *bot = NULL;
-	char cmd[33] = "";
+	char cmd[33];
 	float health = client0->v.health;
 	int deadflag = client0->v.deadflag;
 	float zombietime_old;
@@ -1151,7 +1151,7 @@ void GGM_ConnectSaveBot( void )
 	if( g_engfuncs.pfnGetInfoKeyBuffer( client0 )[0] )
 		return;
 
-	snprintf( cmd, 32, "kick #%d\n", GETPLAYERUSERID( client0 ) );
+	safe_snprintf( cmd, sizeof( cmd ), "kick #%d\n", GETPLAYERUSERID( client0 ) );
 	SERVER_COMMAND(cmd);
 	SERVER_EXECUTE();
 	bot = g_engfuncs.pfnCreateFakeClient("_save_bot");
@@ -1181,7 +1181,7 @@ void GGM_Save( const char *savename )
 {
 	edict_t *client0 = INDEXENT( 1 );
 	edict_t *bot = NULL;
-	char cmd[33] = "";
+	char cmd[33];
 	float health = client0->v.health;
 	int deadflag = client0->v.deadflag;
 	float zombietime_old;
@@ -1211,7 +1211,7 @@ void GGM_Save( const char *savename )
 	// hack to make save work when client 0 not connected
 	if( fNeedKick )
 	{
-		snprintf( cmd, 32, "kick #%d\n", GETPLAYERUSERID( client0 ) );
+		safe_snprintf( cmd, sizeof( cmd ), "kick #%d\n", GETPLAYERUSERID( client0 ) );
 		SERVER_COMMAND(cmd);
 		SERVER_EXECUTE();
 		bot = g_engfuncs.pfnCreateFakeClient("_save_bot");
@@ -1221,7 +1221,7 @@ void GGM_Save( const char *savename )
 		bot->v.deadflag = 0;
 	}
 
-	snprintf( cmd, 32, "save %s\n", savename);
+	safe_snprintf( cmd, sizeof( cmd ), "save %s\n", savename);
 	SERVER_COMMAND(cmd);
 	if( bot )
 		SERVER_COMMAND( "kick _save_bot\n");
@@ -1230,11 +1230,11 @@ void GGM_Save( const char *savename )
 	client0->v.health = health;
 	if( zombietime )
 		zombietime->value = zombietime_old;
-	snprintf( cmd, 32, "%s/save/%s.players", gamedir, savename );
+	safe_snprintf( cmd, sizeof( cmd ), "%s/save/%s.players", gamedir, savename );
 	GGM_WritePlayers( cmd );
 	if( mp_coop.value )
 	{
-		snprintf( cmd, 32, "%s/save/%s.coop", gamedir, savename );
+		safe_snprintf( cmd, sizeof( cmd ), "%s/save/%s.coop", gamedir, savename );
 		COOP_WriteState( cmd );
 	}
 }
@@ -1247,7 +1247,7 @@ GGM_Save_f
 void GGM_Save_f( void )
 {
 	char savename[33] = "";
-	strncpy( savename, CMD_ARGV(1), 32);
+	strlcpy( savename, CMD_ARGV(1), sizeof( savename ));
 	GGM_Save( savename );
 }
 
@@ -1265,7 +1265,7 @@ void GGM_Load( const char *savename )
 	if( mp_coop.value )
 	{
 
-		snprintf( cmd, 32, "%s/save/%s.coop", gamedir, savename );
+		safe_snprintf( cmd, sizeof( cmd ), "%s/save/%s.coop", gamedir, savename );
 		if( !COOP_ReadState( cmd ) )
 		{
 			ALERT( at_error, "Failed to read gravgunmod coop state %s\n", cmd );
@@ -1273,14 +1273,14 @@ void GGM_Load( const char *savename )
 		}
 	}
 
-	snprintf( cmd, 32, "%s/save/%s.players", gamedir, savename );
+	safe_snprintf( cmd, sizeof( cmd ), "%s/save/%s.players", gamedir, savename );
 	if( !GGM_ReadPlayers( cmd ) )
 	{
 		ALERT( at_error, "Failed to read gravgunmod players state %s\n", cmd );
 		return;
 	}
 
-	snprintf( cmd, 32, "load %s\n", savename);
+	safe_snprintf( cmd, sizeof( cmd ), "load %s\n", savename);
 	SERVER_COMMAND( cmd );
 	SERVER_EXECUTE();
 
@@ -1294,7 +1294,7 @@ GGM_Load_f
 void GGM_Load_f( void )
 {
 	char savename[33] = "";
-	strncpy( savename, CMD_ARGV(1), 32);
+	strlcpy( savename, CMD_ARGV(1), sizeof( savename ));
 	GGM_Load( savename );
 }
 
@@ -1317,9 +1317,9 @@ struct GGMPlayerState *GGM_GetRegistration( const char *name )
 	else
 	{
 		FILE *f;
-		char path[64] = "";
+		char path[64];
 
-		snprintf( path, 63, "%s/ggm/registrations/%s", gamedir, name );
+		safe_snprintf( path, sizeof( path ), "%s/ggm/registrations/%s", gamedir, name );
 
 		f = fopen( path, "rb" );
 
@@ -1334,7 +1334,7 @@ struct GGMPlayerState *GGM_GetRegistration( const char *name )
 		pState->pNext = registered_list;
 		pState->fRegistered = true;
 		registered_list = pState;
-		strncpy( pState->szUID, name, 32 );
+		strlcpy( pState->szUID, name, 33 );
 		return pState;
 	}
 }
@@ -1372,9 +1372,9 @@ void GGM_WriteLogin( struct GGMLogin *pLogin )
 		return;
 
 	if( !GGM_FilterFileName( pLogin->f.szUID ) || !GGM_FilterFileName( pLogin->f.szName ) )
-		snprintf( path, 63,  "%s/ggm/logins/%d.%d", gamedir, GGM_HashString( pLogin->f.szUID ), GGM_HashString( pLogin->f.szName ) );
+		safe_snprintf( path, sizeof( path ),  "%s/ggm/logins/%d.%d", gamedir, GGM_HashString( pLogin->f.szUID ), GGM_HashString( pLogin->f.szName ) );
 	else
-		snprintf( path, 63, "%s/ggm/logins/%s.%s", gamedir, pLogin->f.szUID, pLogin->f.szName );
+		safe_snprintf( path, sizeof( path ), "%s/ggm/logins/%s.%s", gamedir, pLogin->f.szUID, pLogin->f.szName );
 
 	f = fopen( path, "wb" );
 
@@ -1408,9 +1408,9 @@ struct GGMLogin *GGM_LoadLogin( const char *uid, const char *name )
 	}
 
 	if( !GGM_FilterFileName( uid ) || !GGM_FilterFileName( name ) )
-		snprintf( path, 63,  "%s/ggm/logins/%d.%d", gamedir, GGM_HashString( uid ), GGM_HashString( name ) );
+		safe_snprintf( path, sizeof( path ),  "%s/ggm/logins/%d.%d", gamedir, GGM_HashString( uid ), GGM_HashString( name ) );
 	else
-		snprintf( path, 63, "%s/ggm/logins/%s.%s", gamedir, uid, name );
+		safe_snprintf( path, sizeof( path ), "%s/ggm/logins/%s.%s", gamedir, uid, name );
 
 	f = fopen( path, "rb" );
 
@@ -1474,8 +1474,7 @@ struct GGMPlayerState *GGM_GetState( const char *uid, const char *name )
 
 	pState = (struct GGMPlayerState*)calloc( 1, sizeof( struct GGMPlayerState ) );
 	memset( pState, 0, sizeof( struct GGMPlayerState ) );
-	strncpy( pState->szUID, uid, 32 );
-	pState->szUID[32] = 0;
+	strlcpy( pState->szUID, uid, 33 );
 	pState->pNext = anonymous_list;
 
 	for( int i = 0; i < ARRAYSIZE( rgpszBadNames ); i++ )
@@ -1514,7 +1513,7 @@ void GGM_SavePosition( CBasePlayer *pPlayer, struct GGMPosition *pos )
 	pos->vecOrigin = pPlayer->pev->origin;
 	pos->vecAngles = pPlayer->pev->angles;
 	pos->fDuck = !!(pPlayer->pev->flags & FL_DUCKING);
-	strncpy( pos->szMapName, STRING(gpGlobals->mapname), 31 );
+	strlcpy( pos->szMapName, STRING(gpGlobals->mapname), 32 );
 	CBaseEntity *pTrain = UTIL_CoopGetPlayerTrain(pPlayer);
 	if( pTrain )
 	{
@@ -1561,7 +1560,7 @@ void GGM_SaveState( CBasePlayer *pPlayer )
 	pState->t.flHealth = pPlayer->pev->health;
 	pState->t.flBattery = pPlayer->pev->armorvalue;
 	if(pPlayer->m_pActiveItem.Get())
-		strncpy( pState->t.szWeaponName, STRING(pPlayer->m_pActiveItem.Get()->v.classname), 31);
+		strlcpy( pState->t.szWeaponName, STRING(pPlayer->m_pActiveItem.Get()->v.classname), 32);
 
 
 	for( i = 0; i < MAX_ITEM_TYPES; i++ )
@@ -1570,7 +1569,7 @@ void GGM_SaveState( CBasePlayer *pPlayer )
 
 		while( pWeapon )
 		{
-			strncpy( pState->t.rgszWeapons[j], STRING(pWeapon->pev->classname), 31);
+			strlcpy( pState->t.rgszWeapons[j], STRING(pWeapon->pev->classname), 32);
 			pState->t.rgiClip[j] = pWeapon->m_iClip;
 			j++;
 			pWeapon = pWeapon->m_pNext;
@@ -1867,9 +1866,9 @@ void GGM_Logout( CBasePlayer *pPlayer )
 
 	// remove login record
 	if( !GGM_FilterFileName( uid ) || !GGM_FilterFileName( name ) )
-		snprintf( path, 63,  "%s/ggm/logins/%d.%d", gamedir, GGM_HashString( uid ), GGM_HashString( name ) );
+		safe_snprintf( path, sizeof( path ),  "%s/ggm/logins/%d.%d", gamedir, GGM_HashString( uid ), GGM_HashString( name ) );
 	else
-		snprintf( path, 63, "%s/ggm/logins/%s.%s", gamedir, uid, name );
+		safe_snprintf( path, sizeof( path ), "%s/ggm/logins/%s.%s", gamedir, uid, name );
 	remove(path);
 }
 
@@ -2007,10 +2006,10 @@ void GGM_Register( CBasePlayer *pPlayer, const char *name, const char *password 
 
 	pState = (struct GGMPlayerState*)calloc( 1, sizeof( struct GGMPlayerState ) );
 	memset( pState, 0, sizeof( struct GGMPlayerState ) );
-	strncpy( pState->szUID, name, 32 );
+	strlcpy( pState->szUID, name, 33 );
 	pState->szUID[32] = 0;
 	pState->fRegistered = true;
-	strncpy( pState->p.szPassword, password, 32 );
+	strlcpy( pState->p.szPassword, password, 33 );
 	GGM_Munge( pState->p.szPassword );
 	pState->p.szPassword[32] = 0;
 	pState->t = pPlayer->m_ggm.pState->t;
@@ -2019,8 +2018,8 @@ void GGM_Register( CBasePlayer *pPlayer, const char *name, const char *password 
 	GGM_WritePersist( pState );
 	pLogin = (struct GGMLogin*)calloc(1, sizeof( struct GGMLogin ) );
 	pLogin->pState = pState;
-	strncpy( pLogin->f.szName, STRING(pPlayer->pev->netname ), 32 );
-	strncpy( pLogin->f.szUID, pPlayer->m_ggm.pState->szUID, 32 );
+	strlcpy( pLogin->f.szName, STRING(pPlayer->pev->netname ), 33 );
+	strlcpy( pLogin->f.szUID, pPlayer->m_ggm.pState->szUID, 33 );
 	pLogin->pNext = login_list;
 	login_list = pLogin;
 	GGM_WriteLogin( pLogin );
@@ -2045,7 +2044,7 @@ void GGM_RegName_f( CBasePlayer *pPlayer )
 	if( !GGM_CheckUserName( pPlayer, CMD_ARGV(1), true ) )
 		return;
 
-	strncpy( pPlayer->m_ggm.fRegisterInput, CMD_ARGV(1), 31 );
+	strlcpy( pPlayer->m_ggm.fRegisterInput, CMD_ARGV(1), 32 );
 
 	CLIENT_COMMAND( pPlayer->edict(), "messagemode reg_Password\n");
 }
@@ -2130,7 +2129,7 @@ void GGM_Login( CBasePlayer *pPlayer, const char *name, const char *password )
 		}
 	}
 
-	strncpy( mpassword, password, 32 );
+	strlcpy( mpassword, password, 33 );
 	GGM_Munge( mpassword );
 
 	if( !pState || strncmp( mpassword, pState->p.szPassword, 32 ) )
@@ -2140,8 +2139,8 @@ void GGM_Login( CBasePlayer *pPlayer, const char *name, const char *password )
 	}
 	pLogin = (struct GGMLogin*)calloc(1, sizeof( struct GGMLogin ) );
 	pLogin->pState = pState;
-	strncpy( pLogin->f.szName, STRING(pPlayer->pev->netname ), 32 );
-	strncpy( pLogin->f.szUID, GGM_GetAuthID(pPlayer), 32 );
+	strlcpy( pLogin->f.szName, STRING(pPlayer->pev->netname ), 33 );
+	strlcpy( pLogin->f.szUID, GGM_GetAuthID(pPlayer), 33 );
 	pLogin->pNext = login_list;
 	login_list = pLogin;
 	GGM_WriteLogin( pLogin );
@@ -2185,7 +2184,7 @@ void GGM_LoginName_f( CBasePlayer *pPlayer )
 	if( !GGM_CheckUserName( pPlayer, CMD_ARGV(1), false ) )
 		return;
 
-	strncpy( pPlayer->m_ggm.fRegisterInput, CMD_ARGV(1), 31 );
+	strlcpy( pPlayer->m_ggm.fRegisterInput, CMD_ARGV(1), 32 );
 
 	CLIENT_COMMAND( pPlayer->edict(), "messagemode login_Password\n");
 }
@@ -2225,7 +2224,7 @@ void GGM_ChangePassword_f( CBasePlayer *pPlayer )
 	}
 	else if( CMD_ARGC() == 2 )
 	{
-		strncpy( pPlayer->m_ggm.pState->p.szPassword, CMD_ARGV(1), 32 );
+		strlcpy( pPlayer->m_ggm.pState->p.szPassword, CMD_ARGV(1), 33 );
 		GGM_Munge( pPlayer->m_ggm.pState->p.szPassword );
 		GGM_WritePersist( pPlayer->m_ggm.pState );
 	}
@@ -2509,8 +2508,8 @@ GGM_PlayerMenu &GGM_PlayerMenu::Add(const char *name, const char *command)
 		return *this;
 	}
 
-	strncpy( m_rgItems[m_iCount].szName, name, sizeof(m_rgItems[m_iCount].szName) - 1 );
-	strncpy( m_rgItems[m_iCount].szCommand, command, sizeof(m_rgItems[m_iCount].szCommand) - 1 );
+	strlcpy( m_rgItems[m_iCount].szName, name, sizeof( m_rgItems[m_iCount].szName ));
+	strlcpy( m_rgItems[m_iCount].szCommand, command, sizeof( m_rgItems[m_iCount].szCommand ));
 	m_iCount++;
 	return *this;
 }
@@ -2525,7 +2524,7 @@ GGM_PlayerMenu &GGM_PlayerMenu::SetTitle( const char *title )
 {
 	if( m_fShow )
 		return *this;
-	strncpy( m_sTitle, title, sizeof(m_sTitle) - 1);
+	strlcpy( m_sTitle, title, sizeof( m_sTitle ));
 	return *this;
 }
 GGM_PlayerMenu &GGM_PlayerMenu::New( const char *title, bool force )
@@ -2622,7 +2621,7 @@ bool GGM_MenuCommand( CBasePlayer *player, const char *name )
 	if( !GGM_FilterFileName( name ) )
 		return false;
 
-	strncat( buf, name, sizeof(buf) - 1 );
+	strlcat( buf, name, sizeof( buf ));
 
 	file = pFile = (char*)LOAD_FILE_FOR_ME( buf, NULL );
 
@@ -2673,7 +2672,7 @@ bool GGM_MOTDCommand( CBasePlayer *player, const char *name )
 	if( !GGM_FilterFileName( name ) )
 		return false;
 
-	strncat( buf, name, sizeof(buf) - 1 );
+	strlcat( buf, name, sizeof( buf ));
 
 	file = pFileList = (char*)LOAD_FILE_FOR_ME( buf, NULL );
 
@@ -2687,17 +2686,7 @@ bool GGM_MOTDCommand( CBasePlayer *player, const char *name )
 	{
 		char chunk[MAX_MOTD_CHUNK + 1];
 
-		if( strlen( pFileList ) < MAX_MOTD_CHUNK )
-		{
-			strcpy( chunk, pFileList );
-		}
-		else
-		{
-			strncpy( chunk, pFileList, MAX_MOTD_CHUNK );
-			chunk[MAX_MOTD_CHUNK] = 0;		// strncpy doesn't always append the null terminator
-		}
-
-		char_count += strlen( chunk );
+		char_count += strlcpy( chunk, pFileList, MAX_MOTD_CHUNK + 1 );;
 		if( char_count < MAX_MOTD_LENGTH )
 			pFileList = file + char_count;
 		else
@@ -2734,7 +2723,7 @@ bool GGM_HelpCommand( CBasePlayer *pPlayer, const char *name )
 
 	hudtextparms_t params;
 
-	strncat( buf, name, sizeof(buf) - 1 );
+	strlcat( buf, name, sizeof( buf ));
 
 	file = (char*)LOAD_FILE_FOR_ME( buf, NULL );
 
@@ -2936,9 +2925,9 @@ bool GGM_ClientCommand( CBasePlayer *pPlayer, const char *pCmd )
 	}
 	else if( FStrEq(pCmd, "client") )
 	{
-		char args[256] = {0};
-		strncpy(args, CMD_ARGS(),254);
-		strcat(args,"\n");
+		char args[256];
+		size_t len = strlcpy( args, CMD_ARGS(), sizeof( args ) - 1 );
+		strcpy( &args[len], "\n" );
 		CLIENT_COMMAND( pPlayer->edict(), args );
 		return true;
 	}
@@ -3064,9 +3053,9 @@ extern int gmsgSayText;
 
 void GGM_SayText( const char *line )
 {
-	char text[254] = {};
+	char text[256];
 
-	snprintf( text, sizeof( text ), "%s\n", line );
+	safe_snprintf( text, sizeof( text ), "%s\n", line );
 
 	MESSAGE_BEGIN( MSG_ALL, gmsgSayText, NULL );
 	WRITE_BYTE( ENTINDEX(0) );
