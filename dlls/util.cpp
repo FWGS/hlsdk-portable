@@ -746,8 +746,7 @@ CBaseEntity *UTIL_FollowGroupReference(CBaseEntity *pStartEntity, char* szGroupN
 		{
 			// recursive member-reference
 			// FIXME: we should probably check that i < MAX_ALIASNAME_LEN.
-			strncpy(szBuf,szMemberName,i);
-			szBuf[i] = 0;
+			strlcpy( szBuf, szMemberName, i + 1 );
 			szTail = &(szMemberName[i+1]);
 			szThisMember = szBuf;
 			break;
@@ -808,8 +807,7 @@ CBaseEntity *UTIL_FollowReference( CBaseEntity *pStartEntity, const char* szName
 		{
 			// yes, it looks like a reference through an info_group...
 			// FIXME: we should probably check that i < MAX_ALIASNAME_LEN.
-			strncpy(szRoot,szName,i);
-			szRoot[i] = 0;
+			strlcpy(szRoot, szName, i + 1 );
 			szMember = (char*)&szName[i+1];
 			//ALERT(at_console,"Following reference- group %s with member %s\n",szRoot,szMember);
 			pResult = UTIL_FollowGroupReference(pStartEntity, szRoot, szMember);
@@ -1422,8 +1420,7 @@ BOOL UTIL_IsMasterTriggered(string_t iszMaster, CBaseEntity *pActivator)
 					{
 						if (szMaster[j] == ')')
 						{
-							strncpy(szBuf, szMaster+i+1, (j-i)-1);
-							szBuf[(j-i)-1] = 0;
+							strlcpy( szBuf, szMaster + i + 1, j-i );
 							pActivator = UTIL_FindEntityByTargetname( NULL, szBuf );
 							found = true;
 							break;
@@ -1443,8 +1440,7 @@ BOOL UTIL_IsMasterTriggered(string_t iszMaster, CBaseEntity *pActivator)
 				return TRUE;
 			}
 
-			strncpy(szBuf, szMaster, i);
-			szBuf[i] = 0;
+			strlcpy( szBuf, szMaster, i + 1 );
 			pMaster = UTIL_FindEntityByTargetname( NULL, szBuf );
 		}
 
