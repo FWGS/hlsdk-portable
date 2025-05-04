@@ -42,6 +42,7 @@ def configure(conf):
 def build(bld):
 	libs = []
 	defines = ['CLIENT_DLL']
+	defines += bld.env.EXPORT_DEFINES_LIST
 	includes = ['.',
 		'../dlls',
 		'../common',
@@ -72,10 +73,11 @@ def build(bld):
 			'vgui_*.cpp',
 			'game_shared/vgui_*.cpp',
 			'game_shared/voice_banmgr.cpp']
-	
+
 	source = bld.path.ant_glob('**/*.cpp', excl=excluded_files)
 	source += bld.path.parent.ant_glob('game_shared/*.cpp', excl=excluded_files)
 	source += bld.path.parent.ant_glob([
+		'public/safe_snprintf.c',
 		'pm_shared/*.c',
 #		'dlls/crossbow.cpp',
 #		'dlls/crowbar.cpp',
@@ -106,7 +108,13 @@ def build(bld):
 		else:
 			libs += ['DL']
 
-	if bld.env.DEST_OS not in ['android', 'dos']:
+	if 'HAVE_STRLCPY=1' not in defines:
+		source += bld.path.parent.ant_glob('external/openbsd/strlcpy.c')
+
+	if 'HAVE_STRLCAT=1' not in defines:
+		source += bld.path.parent.ant_glob('external/openbsd/strlcat.c')
+
+	if bld.env.DEST_OS not in ['android', 'dos'] or bld.env.TERMUX:
 		install_path = os.path.join(bld.env.GAMEDIR, bld.env.CLIENT_INSTALL_DIR)
 	else:
 		install_path = bld.env.PREFIX
