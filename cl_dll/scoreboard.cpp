@@ -524,7 +524,7 @@ int CHudScoreboard::MsgFunc_TeamInfo( const char *pszName, int iSize, void *pbuf
 	if( cl > 0 && cl <= MAX_PLAYERS )
 	{
 		// set the players team
-		strncpy( g_PlayerExtraInfo[cl].teamname, READ_STRING(), MAX_TEAM_NAME - 1 );
+		strlcpy( g_PlayerExtraInfo[cl].teamname, READ_STRING(), MAX_TEAM_NAME );
 	}
 
 	// rebuild the list of teams
@@ -566,7 +566,7 @@ int CHudScoreboard::MsgFunc_TeamInfo( const char *pszName, int iSize, void *pbuf
 			}
 			m_iNumTeams = Q_max( j, m_iNumTeams );
 
-			strncpy( g_TeamInfo[j].name, g_PlayerExtraInfo[i].teamname, MAX_TEAM_NAME - 1 );
+			strlcpy( g_TeamInfo[j].name, g_PlayerExtraInfo[i].teamname, MAX_TEAM_NAME );
 			g_TeamInfo[j].players = 0;
 		}
 

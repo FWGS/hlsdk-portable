@@ -163,19 +163,18 @@ void ClientDisconnect( edict_t *pEntity )
 		switch( RANDOM_LONG( 0, 3 ) )
 		{
 			case 0:
-				_snprintf( text, sizeof(text) - 1, "- %s has busted the fuck out\n", STRING( pEntity->v.netname ) );
+				safe_snprintf( text, sizeof( text ), "- %s has busted the fuck out\n", STRING( pEntity->v.netname ) );
 				break;
 			case 1:
-				_snprintf( text, sizeof(text) - 1,"- %s has ran away\n", STRING( pEntity->v.netname ) );
+				safe_snprintf( text, sizeof( text ),"- %s has ran away\n", STRING( pEntity->v.netname ) );
 				break;
 			case 2:
-				_snprintf( text, sizeof(text) - 1, "- %s ragequitted.\n", STRING( pEntity->v.netname ) );
+				safe_snprintf( text, sizeof( text ), "- %s ragequitted.\n", STRING( pEntity->v.netname ) );
 				break;
 			case 3:
-				_snprintf( text, sizeof(text) - 1, "- %s is out.\n", STRING( pEntity->v.netname ) );
+				safe_snprintf( text, sizeof( text ), "- %s is out.\n", STRING( pEntity->v.netname ) );
 				break;
 		}
-		text[sizeof(text) - 1] = '\0';
 	}
 	MESSAGE_BEGIN( MSG_ALL, gmsgSayText, NULL );
 		WRITE_BYTE( ENTINDEX( pEntity ) );
@@ -428,14 +427,13 @@ void Host_Say( edict_t *pEntity, int teamonly )
 	{
 		if( CMD_ARGC() >= 2 )
 		{
-			_snprintf( szTemp, sizeof(szTemp) - 1, "%s %s", (char *)pcmd, (char *)CMD_ARGS() );
+			safe_snprintf( szTemp, sizeof( szTemp ), "%s %s", (char *)pcmd, (char *)CMD_ARGS() );
 		}
 		else
 		{
 			// Just a one word command, use the first word...sigh
-			strncpy( szTemp, (char *)pcmd, sizeof(szTemp) - 1 );
+			strlcpy( szTemp, (char *)pcmd, sizeof( szTemp ));
 		}
-		szTemp[sizeof(szTemp) - 1] = '\0';
 
 		p = szTemp;
 	}
@@ -465,12 +463,11 @@ void Host_Say( edict_t *pEntity, int teamonly )
 
 	// turn on color set 2  (color on,  no sound)
 	if( player->IsObserver() && ( teamonly ) )
-		_snprintf( text, sizeof(text) - 1, "[%d:%d %s] %c(SPEC) %s: ", stTimeNow->tm_hour, stTimeNow->tm_min, dd, 2, STRING( pEntity->v.netname ) );
+		safe_snprintf( text, sizeof( text ), "[%d:%d %s] %c(SPEC) %s: ", stTimeNow->tm_hour, stTimeNow->tm_min, dd, 2, STRING( pEntity->v.netname ) );
 	else if( teamonly )
-		_snprintf( text, sizeof(text) - 1, "[%d:%d %s] %c(TEAM) %s: ", stTimeNow->tm_hour, stTimeNow->tm_min, dd, 2, STRING( pEntity->v.netname ) );
+		safe_snprintf( text, sizeof( text ), "[%d:%d %s] %c(TEAM) %s: ", stTimeNow->tm_hour, stTimeNow->tm_min, dd, 2, STRING( pEntity->v.netname ) );
 	else
-		_snprintf( text, sizeof(text) - 1, "[%d:%d %s] %c%s: ", stTimeNow->tm_hour, stTimeNow->tm_min, dd, 2, STRING( pEntity->v.netname ) );
-	text[sizeof(text) - 1] = '\0';
+		safe_snprintf( text, sizeof( text ), "[%d:%d %s] %c%s: ", stTimeNow->tm_hour, stTimeNow->tm_min, dd, 2, STRING( pEntity->v.netname ) );
 
 	j = sizeof( text ) - 2 - strlen( text );  // -2 for /n and null terminator
 	if( (int)strlen( p ) > j )
@@ -893,8 +890,7 @@ void ClientUserInfoChanged( edict_t *pEntity, char *infobuffer )
 	{
 		char sName[256];
 		char *pName = g_engfuncs.pfnInfoKeyValue( infobuffer, "name" );
-		strncpy( sName, pName, sizeof(sName) - 1 );
-		sName[sizeof(sName) - 1] = '\0';
+		strlcpy( sName, pName, sizeof( sName ));
 
 		// First parse the name and remove any %'s
 		for( char *pApersand = sName; pApersand != NULL && *pApersand != 0; pApersand++ )
@@ -910,8 +906,7 @@ void ClientUserInfoChanged( edict_t *pEntity, char *infobuffer )
 		if( gpGlobals->maxClients > 1 )
 		{
 			char text[256];
-			_snprintf( text, sizeof(text) - 1, "* %s changed name to %s\n", STRING( pEntity->v.netname ), g_engfuncs.pfnInfoKeyValue( infobuffer, "name" ) );
-			text[sizeof(text) - 1] = '\0';
+			safe_snprintf( text, sizeof( text ), "* %s changed name to %s\n", STRING( pEntity->v.netname ), g_engfuncs.pfnInfoKeyValue( infobuffer, "name" ) );
 			MESSAGE_BEGIN( MSG_ALL, gmsgSayText, NULL );
 				WRITE_BYTE( ENTINDEX( pEntity ) );
 				WRITE_STRING( text );

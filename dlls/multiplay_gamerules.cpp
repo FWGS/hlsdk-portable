@@ -1451,8 +1451,7 @@ int ReloadMapCycleFile( const char *filename, mapcycle_t *cycle )
 			if( com_token[0] == '\0' )
 				break;
 
-			strncpy( szMap, com_token, sizeof( szMap ) - 1 );
-			szMap[sizeof( szMap ) - 1] = '\0';
+			strlcpy( szMap, com_token, sizeof( szMap ));
 
 			// Any more tokens on this line?
 			if( COM_TokenWaiting( pFileList ) )
@@ -1462,8 +1461,7 @@ int ReloadMapCycleFile( const char *filename, mapcycle_t *cycle )
 				if( com_token[0] != '\0' )
 				{
 					hasbuffer = 1;
-					strncpy( szBuffer, com_token, sizeof( szBuffer ) - 1 );
-					szBuffer[sizeof( szBuffer ) - 1] = '\0';
+					strlcpy( szBuffer, com_token, sizeof( szBuffer ));
 				}
 			}
 
@@ -1825,17 +1823,7 @@ void CHalfLifeMultiplay::SendMOTDToClient( edict_t *client )
 	{
 		char chunk[MAX_MOTD_CHUNK + 1];
 
-		if( strlen( pFileList ) < MAX_MOTD_CHUNK )
-		{
-			strcpy( chunk, pFileList );
-		}
-		else
-		{
-			strncpy( chunk, pFileList, MAX_MOTD_CHUNK );
-			chunk[MAX_MOTD_CHUNK] = 0;		// strncpy doesn't always append the null terminator
-		}
-
-		char_count += strlen( chunk );
+		char_count += strlcpy( chunk, pFileList, MAX_MOTD_CHUNK + 1 );
 		if( char_count < MAX_MOTD_LENGTH )
 			pFileList = aFileList + char_count; 
 		else
