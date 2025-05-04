@@ -153,6 +153,8 @@ cd dlls && compile.bat && cd ../cl_dll && compile.bat
 
 The official way to build Steam compatible games for Linux is through steam-runtime.
 
+*Note*: For RHEL-based distros you may be need to use system chroot or docker.
+
 Install schroot. On Ubuntu or Debian:
 
 ```
@@ -177,9 +179,16 @@ schroot --chroot steamrt_scout_i386 -- cmake --build build-in-steamrt
 
 ### Prerequisites
 
-Install C++ compilers, cmake and x86 development libraries for C, C++ and SDL2. On Ubuntu/Debian:
+Install C++ compilers, cmake and x86 development libraries for C, C++ and SDL2.
+
+#### Ubuntu/Debian:
 ```
 sudo apt install cmake build-essential gcc-multilib g++-multilib libsdl2-dev:i386
+```
+
+#### RedHat/Fedora/CentOS:
+```
+sudo dnf install cmake gcc gcc-c++ glibc-devel.i686 SDL-devel.i686
 ```
 
 ### Building
@@ -333,7 +342,7 @@ make -j
 
 ## Other platforms
 
-Building on other architectures (e.g x86_64 or arm) and POSIX-compliant OSes (e.g. FreeBSD) is supported.
+Building on other architectures (e.g. x86_64 or arm) and POSIX-compliant OSes (e.g. FreeBSD) is supported.
 
 ### Prerequisites
 
@@ -375,10 +384,16 @@ Some useful build options that can be set during the cmake step.
 * **64BIT** - allows to turn off/on 64-bit build. Set to **OFF** by default on x86_64 Windows, x86_64 Linux and 32-bit platforms, **ON** on other 64-bit platforms.
 * **USE_VGUI** - whether to use VGUI library. **OFF** by default. You need to init `vgui_support` submodule in order to build with VGUI.
 
-This list is incomplete. Look at `CMakeLists.txt` to see all available options.
+This list is incomplete. Look at `mod_options.txt` to see all available options and their default values.
 
 Prepend option names with `-D` when passing to cmake. Boolean options can take values **OFF** and **ON**. Example:
 
 ```
 cmake .. -DUSE_VGUI=ON -DGOLDSOURCE_SUPPORT=ON -DCROWBAR_IDLE_ANIM=ON -DCROWBAR_FIX_RAPID_CROWBAR=ON
 ```
+
+To add new build options for your mod, you can add them to `mod_options.txt` file in the following format:
+```
+<definition name>=<definition value> # <description>
+```
+If `definition value` set to `OFF` or `ON`, it will be considered as a boolean value. Otherwise it will be a string. Nor `definition name` nor `definition value` can have whitespace characters.
