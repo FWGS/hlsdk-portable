@@ -1627,7 +1627,6 @@ void CHalfLifeMultiplay::SendMOTDToClient( edict_t *client )
 {
 	// read from the MOTD.txt file
 	int length, char_count = 0;
-	size_t size;
 	char *pFileList;
 	char *aFileList = pFileList = (char*)LOAD_FILE_FOR_ME( CVAR_GET_STRING( "motdfile" ), &length );
 
@@ -1643,7 +1642,7 @@ void CHalfLifeMultiplay::SendMOTDToClient( edict_t *client )
 	{
 		char chunk[MAX_MOTD_CHUNK + 1];
 
-		size = strlcpy( chunk, pFileList, MAX_MOTD_CHUNK + 1 );
+		size_t size = strlcpy( chunk, pFileList, MAX_MOTD_CHUNK + 1 );
 		char_count += Q_min( size, MAX_MOTD_CHUNK );
 		if( char_count < MAX_MOTD_LENGTH )
 			pFileList = aFileList + char_count; 
