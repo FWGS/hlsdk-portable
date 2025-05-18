@@ -1641,7 +1641,8 @@ void CHalfLifeMultiplay::SendMOTDToClient( edict_t *client )
 	{
 		char chunk[MAX_MOTD_CHUNK + 1];
 
-		char_count += strlcpy( chunk, pFileList, MAX_MOTD_CHUNK + 1 );
+		size_t size = strlcpy( chunk, pFileList, MAX_MOTD_CHUNK + 1 );
+		char_count += Q_min( size, MAX_MOTD_CHUNK );
 		if( char_count < MAX_MOTD_LENGTH )
 			pFileList = aFileList + char_count; 
 		else
