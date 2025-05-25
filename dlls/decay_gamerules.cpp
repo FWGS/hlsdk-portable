@@ -154,13 +154,13 @@ bool canUnlockBonusMission()
 char *CDecayRules::getDecayMapName( int mapId )
 {
 	static char szMap[128];
-	sprintf( szMap, "null" );
+	strcpy( szMap, "null" );
 
 	int entryId = getMapEntryId( mapId );
 	if ( entryId == -1 )
 		return szMap;
 
-	sprintf( szMap, decayMaps[entryId].szName );
+	strcpy( szMap, decayMaps[entryId].szName );
 	return szMap;
 }
 
@@ -886,7 +886,7 @@ char* CDecayRules :: getDecayNextMap()
     int mapCount = sizeof(decayMaps)/sizeof(decayMaps[0]);
 
 	static char szNextMap[128];
-	sprintf( szNextMap, "null" );
+	strcpy( szNextMap, "null" );
 
 	char szMapName[ 128 ];
 	strcpy( szMapName, STRING(gpGlobals->mapname) );
@@ -901,7 +901,7 @@ char* CDecayRules :: getDecayNextMap()
 			
 				if ( nextMapEntryId != -1 )
 			    {
-			        sprintf( szNextMap, decayMaps[nextMapEntryId].szName );
+			        strcpy( szNextMap, decayMaps[nextMapEntryId].szName );
 					break;
 			    }
 			}

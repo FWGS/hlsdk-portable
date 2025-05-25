@@ -2431,12 +2431,12 @@ void CTriggerEndSection::EndSectionUse( CBaseEntity *pActivator, CBaseEntity *pC
 			//
 
 			static char szNextMap[128];
-			sprintf( szNextMap, "null" );
+			strcpy( szNextMap, "null" );
 
 			if (g_pGameRules->IsCoOp())
 			{
 				CDecayRules *g_pDecayRules = (CDecayRules*)g_pGameRules;
-				sprintf( szNextMap, g_pDecayRules->getDecayMapName( 1 ) );
+				strcpy( szNextMap, g_pDecayRules->getDecayMapName( 1 ) );
 			}
 			bool bHasNextMap = ( strcmp( szNextMap, "null" ) != 0 );
 
@@ -3028,12 +3028,12 @@ void CTriggerEndDecay::EndDecayThink( void )
 	}
 */
 	static char szNextMap[128];
-	sprintf( szNextMap, "null" );
+	strcpy( szNextMap, "null" );
 
 	if (g_pGameRules->IsCoOp())
 	{
 		CDecayRules *g_pDecayRules = (CDecayRules*)g_pGameRules;
-	    sprintf( szNextMap, g_pDecayRules->getDecayNextMap() );
+	    strcpy( szNextMap, g_pDecayRules->getDecayNextMap() );
 	}
 
 	//if ( pev->message )
@@ -3059,9 +3059,7 @@ void CTriggerEndDecay::EndDecayThink( void )
 	} else
 	{
 		// do restart of server
-		char cmd[128];
-		sprintf( cmd, "restart\n" );
-		SERVER_COMMAND( cmd );
+		SERVER_COMMAND( "restart\n" );
 	}
 
 /*
@@ -3079,9 +3077,7 @@ void CTriggerEndDecay::EndDecayThink( void )
 		} else
 		{
 			// do restart of server
-			char cmd[128];
-			sprintf( cmd, "restart\n" );
-			SERVER_COMMAND( cmd );
+			SERVER_COMMAND( "restart\n" );
 		}
 	}
 */
