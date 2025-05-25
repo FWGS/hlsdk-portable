@@ -2686,7 +2686,8 @@ bool GGM_MOTDCommand( CBasePlayer *player, const char *name )
 	{
 		char chunk[MAX_MOTD_CHUNK + 1];
 
-		char_count += strlcpy( chunk, pFileList, MAX_MOTD_CHUNK + 1 );;
+		size_t size = strlcpy( chunk, pFileList, MAX_MOTD_CHUNK + 1 );
+		char_count += Q_min( size, MAX_MOTD_CHUNK );
 		if( char_count < MAX_MOTD_LENGTH )
 			pFileList = file + char_count;
 		else
