@@ -149,7 +149,7 @@ void CCheatHelper::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE 
 
 	static char sCallersCheat[32];
 
-	sprintf( sCallersCheat, "%s", STRING( pCaller->pev->targetname ));
+	strcpy( sCallersCheat, STRING( pCaller->pev->targetname ));
 
 	// move all starting from 2 char to 1 char
 	memmove (m_sListener+1, m_sListener+2, 15);

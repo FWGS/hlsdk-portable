@@ -106,65 +106,28 @@ void CHud::Think( void )
 	}
 }
 
-void ReturnFrameHint(char* szHint,int Id)
+const char *ReturnFrameHint(int Id)
 {
 	switch(Id){
-	case 0:
-		sprintf(szHint,"Button");
-		break;
-	case 1:
-		sprintf(szHint,"Object");
-		break;
-	case 2:
-        sprintf(szHint,"Item");
-		break;
-	case 3:
-		sprintf(szHint,"File");
-		break;
-	case 4:
-		sprintf(szHint,"Documents");
-		break;
-    case 5:
-		sprintf(szHint,"Book");
-		break;
-	case 6:
-		sprintf(szHint,"Monitor");
-		break;
-	case 7:
-		sprintf(szHint,"Computer");
-		break;
-	case 8:
-		sprintf(szHint,"Compact Disc");
-		break;
-	case 9:
-		sprintf(szHint,"Extinguisher");
-		break;
-    case 10:
-		sprintf(szHint,"Security Card");
-		break;
-    case 11:
-		sprintf(szHint,"Key");
-		break;
-	case 12:
-		sprintf(szHint,"Syringe");
-		break;
-	case 13:
-		sprintf(szHint,"Cleansuit");
-		break;
-    case 14:
-		sprintf(szHint,"Wrench");
-		break;
-	case 15:
-        sprintf(szHint,"Retinal Scanner");
-		break;
-	case 16:
-		sprintf(szHint,"Health Charger");
-		break;
-	case 17:
-		sprintf(szHint,"HEV Charger");
-		break;
-	default:
-        sprintf(szHint,"Unknown");
+	case 0: return "Button";		
+	case 1: return "Object";
+	case 2: return "Item";
+	case 3: return "File";
+	case 4: return "Documents";
+	case 5: return "Book";
+	case 6: return "Monitor";
+	case 7: return "Computer";
+	case 8: return "Compact Disc";
+	case 9: return "Extinguisher";
+	case 10: return "Security Card";
+	case 11: return "Key";
+	case 12: return "Syringe";
+	case 13: return "Cleansuit";
+	case 14: return "Wrench";
+	case 15: return "Retinal Scanner";
+	case 16: return "Health Charger";
+	case 17: return "HEV Charger";
+	default: return "Unknown";
 	}
 }
 
@@ -341,9 +304,8 @@ int CHud::Redraw( float flTime, int intermission )
 		//if (!m_iFrameKind==-1)
 		if (m_iFrameKind != -1)
 		{
-			char szMes[25];
-			ReturnFrameHint(szMes,m_iFrameKind);
-			gHUD.DrawHudString( v_maxs[0]+5, v_maxs[1]+4, ScreenWidth, szMes, 255, 180, 0 );
+			const char* pszMes = ReturnFrameHint(m_iFrameKind);
+			gHUD.DrawHudString( v_maxs[0]+5, v_maxs[1]+4, ScreenWidth, pszMes, 255, 180, 0 );
 		}
 	}
 

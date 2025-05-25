@@ -134,25 +134,24 @@ int CHud::MsgFunc_DecayName( const char *spzName, int iSize, void *pbuf )
 
 	iPlayerDecayId = READ_BYTE();
 
-	char name[32];
-	sprintf( name, "Spare player" );
+	const char *name = "Spare player";
 
-	if ( iPlayerDecayId == 1 )
+	if( iPlayerDecayId == 1 )
 	{
-		if ( m_bAlienMode )
-			sprintf( name, "X-8973" );
+		if( m_bAlienMode )
+			name = "X-8973" ;
 		else
-			sprintf( name, "Gina" );
+			name = "Gina" ;
 	}
-	if ( iPlayerDecayId == 2 )
+	else if( iPlayerDecayId == 2 )
 	{
-		if ( m_bAlienMode )
-			sprintf( name, "R-4913" );
+		if( m_bAlienMode )
+			name = "R-4913";
 		else
-			sprintf( name, "Colette" );
+			name = "Colette";
 	}
 
-	char buf[256];
+	char buf[64];
 	sprintf(buf, "name \"%s\"\n", name);
 	gEngfuncs.pfnClientCmd(buf);
 

@@ -22,6 +22,7 @@ public:
 	virtual int		Save( CSave &save );
 	virtual int		Restore( CRestore &restore );
 
+	// It uses big array instead of ALLOC_STRING :(
 	char  m_iszText[256];
 	int   m_iTitle;
 
@@ -65,8 +66,9 @@ void CNotepad::KeyValue( KeyValueData *pkvd )
 	else
 		CBaseToggle::KeyValue( pkvd );
 
-	FStrEq(pkvd->szKeyName, "text");
-	sprintf(m_iszText, "%s", pkvd->szValue);
+	// Is it valid?
+	if( FStrEq( pkvd->szKeyName, "text" ))
+		strcpy( m_iszText, pkvd->szValue );
 }
 
 void CNotepad::Spawn()
