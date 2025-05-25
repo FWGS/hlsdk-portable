@@ -348,7 +348,7 @@ LINK_ENTITY_TO_CLASS( trigger_lockedmission, CTriggerLockedMission );
 void CTriggerLockedMission::Spawn( void )
 {
 	pev->nextthink = 0;
-	pev->message = ALLOC_STRING( "DYLOCKED" );
+	pev->message = MAKE_STRING( "DYLOCKED" );
 	m_flDelay = 7;
 }
 
