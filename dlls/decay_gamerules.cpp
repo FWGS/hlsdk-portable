@@ -1391,13 +1391,11 @@ void CDecayRules :: ChangePlayer( void )
 
 	infobuffer1 = GET_INFOBUFFER(  pPlayers[0]->edict( ) );
 	pName = g_engfuncs.pfnInfoKeyValue( infobuffer1, "model" );
-	strncpy( sName1, pName, sizeof(sName1) - 1 );
-	sName1[ sizeof(sName1) - 1 ] = '\0';
+	strlcpy( sName1, pName, sizeof( sName1 ));
 
     infobuffer2 = GET_INFOBUFFER(  pPlayers[1]->edict( ) );
 	pName = g_engfuncs.pfnInfoKeyValue( infobuffer2, "model" );
-	strncpy( sName2, pName, sizeof(sName2) - 1 );
-	sName2[ sizeof(sName2) - 1 ] = '\0';
+	strlcpy( sName2, pName, sizeof( sName2 ));
 
 	//sNameX contains model name without .mdl extensions
 	
