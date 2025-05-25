@@ -5599,17 +5599,8 @@ void CBasePlayer::ResetScore()
 void CBasePlayer::ChangeTeam( const char *pszNewTeam, bool bSendScores )
 {
 	//Save the teamname
-	if( TEAM_NAME_LENGTH > strlen( pszNewTeam ) )
-	{
-		strcpy( m_szTeamName, pszNewTeam );
-		AgStringToLower( m_szTeamName );
-	}
-	else
-	{
-		strncpy( m_szTeamName, pszNewTeam, TEAM_NAME_LENGTH - 1 );
-		m_szTeamName[TEAM_NAME_LENGTH - 1] = '\0';
-		AgStringToLower( m_szTeamName );
-	}
+	strlcpy( m_szTeamName, pszNewTeam, TEAM_NAME_LENGTH );
+	AgStringToLower( m_szTeamName );
 
 	//Change teamname
 	g_engfuncs.pfnSetClientKeyValue( entindex(), g_engfuncs.pfnGetInfoKeyBuffer( edict() ), "model", m_szTeamName );

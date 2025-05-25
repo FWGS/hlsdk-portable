@@ -303,7 +303,7 @@ void AgDOMControlPoint::ChangeControllingTeam( const char *szTeamName )
 	}
 
   // Change the owner of the control point
-  strncpy( m_szTeamName, szTeamName, sizeof(m_szTeamName) );
+  strlcpy( m_szTeamName, szTeamName, sizeof( m_szTeamName ));
 }
 
 void AgDOMControlPoint::Spawn ( void )
@@ -633,7 +633,7 @@ void AgDOMFileItemCache::Init()
     if (FStrEq( "item_dom_controlpoint", pFileItem->m_szName) && pEnt)
 	{
       AgDOMControlPoint *pCP = (AgDOMControlPoint*)pEnt;
-      strncpy( pCP->m_szLocation, pFileItem->m_szData1, sizeof(pCP->m_szLocation) );
+      strlcpy( pCP->m_szLocation, pFileItem->m_szData1, sizeof( pCP->m_szLocation ));
     }
 
   }

@@ -784,8 +784,7 @@ void AgGameRules::ClientUserInfoChanged(CBasePlayer *pPlayer, char *infobuffer )
   const char* pszModel = g_engfuncs.pfnInfoKeyValue( infobuffer, "model" );
   if (pszModel && strlen(pszModel) && 0 != strcmp(pPlayer->m_szModel,pszModel))
   {
-		strncpy(pPlayer->m_szModel, pszModel, sizeof(pPlayer->m_szModel) - 1);
-		pPlayer->m_szModel[sizeof(pPlayer->m_szModel) - 1] = '\0';
+		strlcpy( pPlayer->m_szModel, pszModel, sizeof( pPlayer->m_szModel ));
 
     MESSAGE_BEGIN( MSG_ALL, gmsgSpikeCheck);
 		  WRITE_STRING(pszModel);  
