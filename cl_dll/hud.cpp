@@ -666,7 +666,7 @@ void CHud::VidInit( void )
 	//load sprites for lens flare effect and for selection frame
 	for (int i=0;i<9;i++)
 	{
-		m_hsprLens[i] = NULL;
+		m_hsprLens[i] = 0;
 		
 		char szName[32];
 		sprintf(szName, "sprites/lens_%d.spr",i);

@@ -390,9 +390,7 @@ int CHud::Redraw( float flTime, int intermission )
 
 			if (!gEngfuncs.pTriAPI->WorldToScreen(tr.endpos,ors)) 
 			{
-				int LWidth, LHeight;
-				LWidth = NULL;
-				LHeight = NULL;
+				int LWidth = 0, LHeight = 0;
 				
 				ors[0] = XPROJECT(ors[0]);
 				ors[1] = YPROJECT(ors[1]);
