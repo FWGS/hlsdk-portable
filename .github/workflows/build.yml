@@ -14,7 +14,7 @@ jobs:
           - os: ubuntu-latest
             cc: clang
             cxx: clang++
-          - os: windows-2019
+          - os: windows-latest
             cc: cl
             cxx: cl
     env:
@@ -71,17 +71,17 @@ jobs:
     - name: Build on Windows
       if: startsWith(matrix.os, 'windows')
       run: |
-        cmake -G "Visual Studio 16 2019" -A Win32 -B build -DCMAKE_INSTALL_PREFIX="dist"
+        cmake -A Win32 -B build -DCMAKE_INSTALL_PREFIX="dist"
         msbuild -verbosity:normal /property:Configuration=Release build/INSTALL.vcxproj
     - name: Build on Windows x64
       if: startsWith(matrix.os, 'windows')
       run: |
-        cmake -G "Visual Studio 16 2019" -A x64 -B build64 -DCMAKE_INSTALL_PREFIX="dist64" -D64BIT=ON
+        cmake -A x64 -B build64 -DCMAKE_INSTALL_PREFIX="dist64" -D64BIT=ON
         msbuild -verbosity:normal /property:Configuration=Release /property:Platform=x64 build64/INSTALL.vcxproj
     - name: Build on Windows with vgui
       if: startsWith(matrix.os, 'windows')
       run: |
-        cmake -G "Visual Studio 16 2019" -A Win32 -B build -DUSE_VGUI=ON -DCMAKE_INSTALL_PREFIX="dist-vgui"
+        cmake -A Win32 -B build -DUSE_VGUI=ON -DCMAKE_INSTALL_PREFIX="dist-vgui"
         msbuild -verbosity:normal /property:Configuration=Release build/INSTALL.vcxproj
 
     - name: Extract branch name
