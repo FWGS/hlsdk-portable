@@ -53,7 +53,7 @@ class CSqueakGrenade : public CGrenade
 	int BloodColor( void ) { return BLOOD_COLOR_YELLOW; }
 	void Killed( entvars_t *pevAttacker, int iGib );
 	void GibMonster( void );
-
+	int IRelationship( CBaseEntity *pTarget );
 	virtual int Save( CSave &save ); 
 	virtual int Restore( CRestore &restore );
 
@@ -111,6 +111,21 @@ int CSqueakGrenade::Classify( void )
 	}
 
 	return CLASS_ALIEN_BIOWEAPON;
+}
+
+int CSqueakGrenade::IRelationship( CBaseEntity *pTarget )
+{
+	if( pTarget->Classify() == CLASS_ALIEN_MILITARY )
+	{
+		return R_DL;
+	}
+
+	if( pTarget->Classify() == CLASS_PLAYER_ALLY )
+	{
+		return R_AL;
+	}
+
+	return CBaseMonster::IRelationship( pTarget );
 }
 
 void CSqueakGrenade::Spawn( void )

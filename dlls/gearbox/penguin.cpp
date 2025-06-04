@@ -52,6 +52,7 @@ class CPenguinGrenade : public CGrenade
 	int  BloodColor(void) { return BLOOD_COLOR_RED; }
 	void Killed(entvars_t *pevAttacker, int iGib);
 	void GibMonster(void);
+	int IRelationship( CBaseEntity *pTarget );
 
 	virtual int		Save(CSave &save);
 	virtual int		Restore(CRestore &restore);
@@ -107,6 +108,21 @@ int CPenguinGrenade::Classify(void)
 	}
 
 	return CLASS_ALIEN_BIOWEAPON;
+}
+
+int CPenguinGrenade::IRelationship( CBaseEntity *pTarget )
+{
+	if( pTarget->Classify() == CLASS_ALIEN_MILITARY )
+	{
+		return R_DL;
+	}
+
+	if( pTarget->Classify() == CLASS_PLAYER_ALLY )
+	{
+		return R_AL;
+	}
+
+	return CBaseMonster::IRelationship( pTarget );
 }
 
 void CPenguinGrenade::Spawn(void)
