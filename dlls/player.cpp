@@ -2596,7 +2596,7 @@ void CBasePlayer::UpdatePlayerSound( void )
 	m_iWeaponVolume -= (int)( 250 * gpGlobals->frametime );
 	if( m_iWeaponVolume < 0 )
 	{
-		iVolume = 0;
+		m_iWeaponVolume = 0;
 	}
 
 	// if target volume is greater than the player sound's current volume, we paste the new volume in 
