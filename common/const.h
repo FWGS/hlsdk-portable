@@ -743,11 +743,10 @@ typedef unsigned short	word;
 #undef true
 #undef false
 
-#if !__cplusplus
-typedef enum { false, true }	qboolean;
-#else 
-typedef int qboolean;
+#if !__cplusplus &&  __STDC_VERSION__ < 202311L
+enum { false, true };
 #endif
+typedef int qboolean;
 
 typedef struct
 {
