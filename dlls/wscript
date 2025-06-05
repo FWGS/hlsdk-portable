@@ -57,7 +57,7 @@ def build(bld):
 		target   = bld.env.SERVER_LIBRARY_NAME + bld.env.POSTFIX,
 		name     = 'server',
 		features = 'c cxx',
-		cflags   = ['-fPIC'],
+		cflags   = ['-fPIC', '-fvisibility=hidden'],
 		linkflags = ['-s', 'SIDE_MODULE=1'],
 		includes = includes,
 		defines  = defines,
