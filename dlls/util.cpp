@@ -31,6 +31,63 @@
 #include "weapons.h"
 #include "gamerules.h"
 
+const char *seven[] =
+{
+	"you don't jump like a monkey",
+	"a rising column of smoke",
+	"guns exploding all around",
+	"the silhouette of a dog",
+	"candy corn chicken fetus",
+	"and fed you to the chickens",
+	"i leave the windows open",
+	"you are my favorite thing",
+	"it tantalizes me so",
+	"in the middle of a storm",
+	"i'm coming out of the booth",
+	"i don't need the influence",
+	"put it in your report, bill",
+	"frictionless, massless mormon",
+	"programmer's head on a stick",
+	"crazy customizable",
+	"nuclear bedtime story",
+	"the half-life of lime jello"
+};
+
+const char *five[] =
+{
+	"the growing yodas",
+	"a specific dick",
+	"nice vomiting spell",
+	"let's tease the weasels",
+	"a velvet codpiece",
+	"some quick goat thinking",
+	"random tuna head",
+	"gravity assist",
+	"miscellaneous",
+	"peas and hominy",
+	"liquid banana",
+	"digital squirrel",
+	"live mice sit on us",
+	"fresh air is so sweet",
+	"so what if I sweat",
+	"air conditioning",
+	"keeping us all cool",
+	"those creamy white thighs",
+	"i must escape it",
+	"do not send me porn",
+	"you have been a fool",
+	"evil evil boy",
+	"more bunny justice",
+	"anonymous nub",
+	"nub technology",
+	"white cotton panties",
+	"exploding midget",
+	"walking in memphis",
+	"colostomy bag",
+	"rebel boat rocker",
+	"i have to call chuck"
+};
+
 void UTIL_MuzzleLight( Vector vecSrc, float flRadius, byte r, byte g, byte b, float flTime, float flDecay )
 {
 	MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, vecSrc );
@@ -2493,4 +2550,30 @@ void UTIL_CleanSpawnPoint( Vector origin, float dist )
 			UTIL_SetOrigin(ent->pev, tr.vecEndPos );
 		}
 	}
+}
+
+void UTIL_Haiku( void )
+{
+	char text[256];
+
+	sprintf( text, "%s\n%s\n%s", five[(int)floor( RANDOM_FLOAT( 0, ARRAYSIZE( five )))], seven[(int)floor( RANDOM_FLOAT( 0, ARRAYSIZE( seven )))], five[(int)floor( RANDOM_FLOAT( 0, ARRAYSIZE( five )))]);
+	MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
+		WRITE_BYTE( TE_TEXTMESSAGE );
+		WRITE_BYTE( 0 );
+		WRITE_SHORT( FixedSigned16( -1, 1 << 13 ));
+		WRITE_SHORT( FixedSigned16( -1, 1 << 13 ));
+		WRITE_BYTE( 0 );
+		WRITE_BYTE( 128 );
+		WRITE_BYTE( 128 );
+		WRITE_BYTE( 128 );
+		WRITE_BYTE( 128 );
+		WRITE_BYTE( 255 );
+		WRITE_BYTE( 255 );
+		WRITE_BYTE( 255 );
+		WRITE_BYTE( 255 );
+		WRITE_SHORT( FixedUnsigned16( 1, 1 << 8 ));
+		WRITE_SHORT( FixedUnsigned16( 1, 1 << 8 ));
+		WRITE_SHORT( FixedUnsigned16( 1, 1 << 8 ));
+		WRITE_STRING( text );
+	MESSAGE_END();
 }

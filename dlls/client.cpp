@@ -562,6 +562,11 @@ void ClientCommand( edict_t *pEntity )
 	{
 		GetClassPtr( (CBasePlayer *)pev )->SelectLastItem();
 	}
+	else if( FStrEq( pcmd, "haiku" ))
+	{
+		if( !g_pGameRules->IsMultiplayer() )
+			UTIL_Haiku();
+	}
 	else if( FStrEq( pcmd, "spectate" ) ) // clients wants to become a spectator
 	{
 		CBasePlayer *pPlayer = GetClassPtr( (CBasePlayer *)pev );
