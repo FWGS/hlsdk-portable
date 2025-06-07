@@ -364,7 +364,6 @@ void W_Precache( void )
 	UTIL_PrecacheOtherWeapon( "weapon_displacer" );
 	UTIL_PrecacheOtherWeapon( "weapon_eagle" );
 	UTIL_PrecacheOtherWeapon( "weapon_grapple" );
-	UTIL_PrecacheOther( "grapple_tip" );
 	UTIL_PrecacheOtherWeapon( "weapon_knife" );
 	UTIL_PrecacheOtherWeapon( "weapon_m249" );
 	UTIL_PrecacheOther( "ammo_556" );
@@ -407,10 +406,6 @@ void W_Precache( void )
 	PRECACHE_SOUND( "weapons/bullet_hit2.wav" );	// hit by bullet
 
 	PRECACHE_SOUND( "items/weapondrop1.wav" );// weapon falls to the ground
-
-	// Used by spore grenades.
-	PRECACHE_MODEL( "models/spore.mdl" );
-	PRECACHE_SOUND( "weapons/splauncher_impact.wav" );//explosion aftermaths
 
 	PRECACHE_SOUND( "weapons/spore_hit1.wav" );//sporegrenade
 	PRECACHE_SOUND( "weapons/spore_hit2.wav" );//sporegrenade
