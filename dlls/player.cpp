@@ -3843,19 +3843,15 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		GiveNamedItem( "weapon_satchel" );
 		GiveNamedItem( "weapon_snark" );
 		GiveNamedItem( "weapon_hornetgun" );
-		GiveNamedItem( "weapon_displacer" );
 		GiveNamedItem( "weapon_eagle" );
-		GiveNamedItem( "weapon_grapple" );
+		GiveNamedItem( "weapon_sporelauncher" );
+		GiveNamedItem( "weapon_shockrifle" );
 		GiveNamedItem( "weapon_knife" );
 		GiveNamedItem( "weapon_m249" );
-		GiveNamedItem( "ammo_556" );
-		GiveNamedItem( "weapon_penguin" );
 		GiveNamedItem( "weapon_pipewrench" );
-		GiveNamedItem( "weapon_shockrifle" );
+		GiveNamedItem( "weapon_grapple" );
 		GiveNamedItem( "weapon_sniperrifle" );
-		GiveNamedItem( "ammo_762" );
-		GiveNamedItem( "weapon_sporelauncher" );
-		//GiveNamedItem( "ammo_spore" );
+		GiveNamedItem( "weapon_displacer" );
 #endif
 		gEvilImpulse101 = FALSE;
 		break;
