@@ -2551,3 +2551,29 @@ void UTIL_CleanSpawnPoint( Vector origin, float dist )
 		}
 	}
 }
+
+void UTIL_Haiku( void )
+{
+	char text[256];
+
+	sprintf( text, "%s\n%s\n%s", five[(int)floor( RANDOM_FLOAT( 0, ARRAYSIZE( five )))], seven[(int)floor( RANDOM_FLOAT( 0, ARRAYSIZE( seven )))], five[(int)floor( RANDOM_FLOAT( 0, ARRAYSIZE( five )))]);
+	MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
+		WRITE_BYTE( TE_TEXTMESSAGE );
+		WRITE_BYTE( 0 );
+		WRITE_SHORT( FixedSigned16( -1, 1 << 13 ));
+		WRITE_SHORT( FixedSigned16( -1, 1 << 13 ));
+		WRITE_BYTE( 0 );
+		WRITE_BYTE( 128 );
+		WRITE_BYTE( 128 );
+		WRITE_BYTE( 128 );
+		WRITE_BYTE( 128 );
+		WRITE_BYTE( 255 );
+		WRITE_BYTE( 255 );
+		WRITE_BYTE( 255 );
+		WRITE_BYTE( 255 );
+		WRITE_SHORT( FixedUnsigned16( 1, 1 << 8 ));
+		WRITE_SHORT( FixedUnsigned16( 1, 1 << 8 ));
+		WRITE_SHORT( FixedUnsigned16( 1, 1 << 8 ));
+		WRITE_STRING( text );
+	MESSAGE_END();
+}
