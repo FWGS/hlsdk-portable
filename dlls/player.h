@@ -108,9 +108,15 @@ public:
 	int					m_iWeaponFlash;// brightness of the weapon flash
 	float				m_flStopExtraSoundTime;
 
-	float				m_flFlashLightTime;	// Time until next battery draw/Recharge
-	int					m_iFlashBattery;		// Flashlight Battery Draw
+	// advanced NVG^M
+	BOOL				m_fNVG; // do they have it?
+	BOOL				m_fNVGActivated; // is it activated?
 
+	float				m_flNVGBattery;
+	float				m_flNVGUpdate;
+
+	float				m_flInfraredUpdate;
+	// advanced NVG
 	int					m_afButtonLast;
 	int					m_afButtonPressed;
 	int					m_afButtonReleased;
@@ -238,9 +244,9 @@ public:
 	virtual int		ObjectCaps( void ) { return CBaseMonster :: ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
 	virtual void	Precache( void );
 	BOOL			IsOnLadder( void );
-	BOOL			FlashlightIsOn( void );
-	void			FlashlightTurnOn( void );
-	void			FlashlightTurnOff( void );
+	void NVGCreateInfrared( BOOL fOn );
+	void NVGToggle( BOOL activate );
+	void NVGUpdate( void );
 
 	void UpdatePlayerSound ( void );
 	void DeathSound ( void );

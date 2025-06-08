@@ -70,9 +70,11 @@ extern CGraph WorldGraph;
 // Global Savedata for player
 TYPEDESCRIPTION	CBasePlayer::m_playerSaveData[] =
 {
-	DEFINE_FIELD( CBasePlayer, m_flFlashLightTime, FIELD_TIME ),
-	DEFINE_FIELD( CBasePlayer, m_iFlashBattery, FIELD_INTEGER ),
-
+	DEFINE_FIELD( CBasePlayer, m_fNVG, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CBasePlayer, m_fNVGActivated, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CBasePlayer, m_flNVGBattery, FIELD_TIME ),
+	DEFINE_FIELD( CBasePlayer, m_flNVGUpdate, FIELD_TIME ),
+	DEFINE_FIELD( CBasePlayer, m_flInfraredUpdate, FIELD_TIME ),
 	DEFINE_FIELD( CBasePlayer, m_afButtonLast, FIELD_INTEGER ),
 	DEFINE_FIELD( CBasePlayer, m_afButtonPressed, FIELD_INTEGER ),
 	DEFINE_FIELD( CBasePlayer, m_afButtonReleased, FIELD_INTEGER ),
@@ -149,8 +151,6 @@ int giPrecacheGrunt = 0;
 int gmsgShake = 0;
 int gmsgFade = 0;
 int gmsgSelAmmo = 0;
-int gmsgFlashlight = 0;
-int gmsgFlashBattery = 0;
 int gmsgResetHUD = 0;
 int gmsgInitHUD = 0;
 int gmsgShowGameTitle = 0;
@@ -179,14 +179,15 @@ int gmsgSayText = 0;
 int gmsgTextMsg = 0;
 int gmsgSetFOV = 0;
 int gmsgShowMenu = 0;
+// advanced NVG
+int gmsgNVG = 0;
+int gmsgNVGActivate = 0;
+// advanced NVG
 int gmsgGeigerRange = 0;
 int gmsgTeamNames = 0;
-
+int gmsgPlayMP3 = 0;
 int gmsgStatusText = 0;
 int gmsgStatusValue = 0;
-
-int gmsgNightvision = 0;
-int gmsgPlayMP3 = 0;
 
 void LinkUserMessages( void )
 {
@@ -199,8 +200,6 @@ void LinkUserMessages( void )
 	gmsgSelAmmo = REG_USER_MSG( "SelAmmo", sizeof(SelAmmo) );
 	gmsgCurWeapon = REG_USER_MSG( "CurWeapon", 3 );
 	gmsgGeigerRange = REG_USER_MSG( "Geiger", 1 );
-	gmsgFlashlight = REG_USER_MSG( "Flashlight", 2 );
-	gmsgFlashBattery = REG_USER_MSG( "FlashBat", 1 );
 	gmsgHealth = REG_USER_MSG( "Health", 1 );
 	gmsgDamage = REG_USER_MSG( "Damage", 12 );
 	gmsgBattery = REG_USER_MSG( "Battery", 2);
@@ -230,12 +229,14 @@ void LinkUserMessages( void )
 	gmsgFade = REG_USER_MSG( "ScreenFade", sizeof(ScreenFade) );
 	gmsgAmmoX = REG_USER_MSG( "AmmoX", 2 );
 	gmsgTeamNames = REG_USER_MSG( "TeamNames", -1 );
+// advanced NVG
+	gmsgNVG = REG_USER_MSG( "NVG", 2 );
+	gmsgNVGActivate = REG_USER_MSG( "NVGActivate", 2 );
+// advanced NVG
+	gmsgPlayMP3 = REG_USER_MSG( "PlayMP3", -1 );
 
 	gmsgStatusText = REG_USER_MSG( "StatusText", -1 );
 	gmsgStatusValue = REG_USER_MSG( "StatusValue", 3 );
-
-	gmsgNightvision = REG_USER_MSG( "Nightvision", 1 );
-	gmsgPlayMP3 = REG_USER_MSG( "PlayMP3", -1 );
 }
 
 LINK_ENTITY_TO_CLASS( player, CBasePlayer )
@@ -865,10 +866,6 @@ void CBasePlayer::RemoveAllItems( BOOL removeSuit )
 	else
 		pev->weapons &= ~WEAPON_ALLWEAPONS;
 
-	// Turn off flashlight
-	if (removeSuit)
-		ClearBits( pev->effects, EF_DIMLIGHT );
-
 	for( i = 0; i < MAX_AMMO_SLOTS; i++ )
 		m_rgAmmo[i] = 0;
 
@@ -905,6 +902,22 @@ void CBasePlayer::Killed( entvars_t *pevAttacker, int iGib )
 
 	if( m_pTank != 0 )
 		m_pTank->Use( this, this, USE_OFF, 0 );
+
+	// advanced NVG
+	// We don't want no NVG while dead
+	if( m_fNVG )
+	{
+		if( m_fNVGActivated )
+			NVGToggle( FALSE );    // deactivate the NVG if necessary...
+
+		m_fNVG = FALSE;        // ... and remove it
+
+		MESSAGE_BEGIN( MSG_ONE, gmsgNVG, NULL, pev );
+			WRITE_BYTE( 0 );    // we don't have NVG any more
+			WRITE_BYTE( 0 );
+		MESSAGE_END();
+	}
+	// advanced NVG
 
 	// this client isn't going to be thinking for a while, so reset the sound until they respawn
 	pSound = CSoundEnt::SoundPointerForIndex( CSoundEnt::ClientSoundIndex( edict() ) );
@@ -952,6 +965,17 @@ void CBasePlayer::Killed( entvars_t *pevAttacker, int iGib )
 
 	// UNDONE: Put this in, but add FFADE_PERMANENT and make fade time 8.8 instead of 4.12
 	// UTIL_ScreenFade( edict(), Vector( 128, 0, 0 ), 6, 15, 255, FFADE_OUT | FFADE_MODULATE );
+
+	m_fNVGActivated = 0;
+
+	if( m_fNVG )
+	{
+		m_fNVG = 0;
+		MESSAGE_BEGIN( MSG_ONE, gmsgNVG, NULL, pev );
+			WRITE_BYTE( 0 );
+			WRITE_BYTE( 0 );
+		MESSAGE_END();
+	}
 
 	if( g_pGameRules->IsMultiplayer())
 		pev->solid = SOLID_NOT;
@@ -1927,6 +1951,12 @@ void CBasePlayer::PreThink( void )
 		PlayerDeathThink();
 		return;
 	}
+
+	// advanced NVG
+	// update the NVG state
+	if( m_fNVG )
+		NVGUpdate();
+	// advanced NVG
 
 	// So the correct flags get sent to client asap.
 	//
@@ -2955,9 +2985,6 @@ void CBasePlayer::Spawn( void )
 	m_flNextAttack = UTIL_WeaponTimeBase();
 	StartSneaking();
 
-	m_iFlashBattery = 99;
-	m_flFlashLightTime = 1; // force first message
-
 	// dont let uninitialized value here hurt the player
 	m_flFallVelocity = 0;
 
@@ -3000,6 +3027,15 @@ void CBasePlayer::Spawn( void )
 
 	m_lastx = m_lasty = 0;
 
+// advanced NVG
+	m_fNVG = FALSE;
+	m_fNVGActivated = FALSE;
+	m_flNVGBattery = 100;
+	m_flNVGUpdate = gpGlobals->time;
+
+	m_flInfraredUpdate = gpGlobals->time;
+// advanced NVG
+
 	m_flNextChatTime = gpGlobals->time;
 
 	g_pGameRules->PlayerSpawn( this );
@@ -3035,8 +3071,6 @@ void CBasePlayer::Precache( void )
 	m_bitsHUDDamage = -1;
 
 	m_iClientBattery = -1;
-
-	m_flFlashLightTime = 1;
 
 	m_iTrain |= TRAIN_NEW;
 
@@ -3126,8 +3160,6 @@ int CBasePlayer::Restore( CRestore &restore )
 	//			Barring that, we clear it out here instead of using the incorrect restored time value.
 	m_flNextAttack = UTIL_WeaponTimeBase();
 #endif
-	if( m_flFlashLightTime == 0.0f )
-		m_flFlashLightTime = 1.0f;
 
 	m_nCustomSprayFrames = -1;
 
@@ -3421,49 +3453,107 @@ CBaseEntity *FindEntityForward( CBaseEntity *pMe )
 	return NULL;
 }
 
-BOOL CBasePlayer::FlashlightIsOn( void )
+void CBasePlayer::NVGToggle( BOOL activate )
 {
-	return FBitSet( pev->effects, EF_BRIGHTLIGHT );
-}
-
-void CBasePlayer::FlashlightTurnOn( void )
-{
-	if( !g_pGameRules->FAllowFlashlight() )
-	{
+	if( !m_fNVG )
 		return;
-	}
 
-	if( (pev->weapons & ( 1 << WEAPON_SUIT ) ) )
+	if( activate )
 	{
-		EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, SOUND_FLASHLIGHT_ON, 1.0, ATTN_NORM, 0, PITCH_NORM );
-		SetBits( pev->effects, EF_BRIGHTLIGHT );
-		MESSAGE_BEGIN( MSG_ONE, gmsgFlashlight, NULL, pev );
-			WRITE_BYTE( 1 );
-			WRITE_BYTE( m_iFlashBattery );
-		MESSAGE_END();
+		if( !m_fNVGActivated )
+		{
+			m_fNVGActivated = TRUE;
 
-		m_flFlashLightTime = FLASH_DRAIN_TIME + gpGlobals->time;
+			MESSAGE_BEGIN( MSG_ONE, gmsgNVGActivate, NULL, pev );
+                                WRITE_BYTE( 1 );
+                                WRITE_BYTE( m_flNVGBattery );
+                        MESSAGE_END();
 
-		MESSAGE_BEGIN( MSG_ONE, gmsgNightvision, NULL, pev );
-			WRITE_BYTE( 1 );
-		MESSAGE_END();
+			EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, SOUND_FLASHLIGHT_ON, 1.0, ATTN_NORM, 0, PITCH_NORM );
+		}
+	}
+	else
+	{
+		if( m_fNVGActivated )
+		{
+			m_fNVGActivated = FALSE;
+
+			MESSAGE_BEGIN( MSG_ONE, gmsgNVGActivate, NULL, pev );
+				WRITE_BYTE( 0 );
+				WRITE_BYTE( m_flNVGBattery );
+			MESSAGE_END();
+
+			NVGCreateInfrared( FALSE );
+			EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, SOUND_FLASHLIGHT_OFF, 1.0, ATTN_NORM, 0, PITCH_NORM );
+		}
 	}
 }
 
-void CBasePlayer::FlashlightTurnOff( void )
+void CBasePlayer::NVGCreateInfrared( BOOL fOn )
 {
-	EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, SOUND_FLASHLIGHT_OFF, 1.0, ATTN_NORM, 0, PITCH_NORM );
-	ClearBits( pev->effects, EF_BRIGHTLIGHT );
-	MESSAGE_BEGIN( MSG_ONE, gmsgFlashlight, NULL, pev );
-		WRITE_BYTE( 0 );
-		WRITE_BYTE( m_iFlashBattery );
-	MESSAGE_END();
+	int r = 0, life = 0;
 
-	m_flFlashLightTime = FLASH_CHARGE_TIME + gpGlobals->time;
+	if( fOn )
+	{
+		r = 150;
+		life = 255;
+		SetBits( pev->effects, EF_BRIGHTLIGHT );
+		m_flInfraredUpdate = gpGlobals->time + 24.5f;
+	}
+	else
+	{
+		ClearBits( pev->effects, EF_BRIGHTLIGHT );
+		m_flInfraredUpdate = gpGlobals->time;
+	}
 
-	MESSAGE_BEGIN( MSG_ONE, gmsgNightvision, NULL, pev );
-		WRITE_BYTE( 0 );
-	MESSAGE_END();
+	MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY, pev->origin, pev );
+                WRITE_BYTE( TE_ELIGHT );
+                WRITE_SHORT( entindex() );              // entity, attachment
+                WRITE_COORD( pev->origin.x );           // origin
+                WRITE_COORD( pev->origin.y );
+                WRITE_COORD( pev->origin.z );
+                WRITE_COORD( 2048 );     // radius
+                WRITE_BYTE( r );      // R
+                WRITE_BYTE( 0 );      // G
+                WRITE_BYTE( 0 );      // B
+                WRITE_BYTE( life );        // life * 10
+                WRITE_COORD( 0 ); // decay
+        MESSAGE_END();
+}
+
+void CBasePlayer::NVGUpdate( void )
+{
+	float flDelta = gpGlobals->time - m_flNVGUpdate;
+	m_flNVGUpdate = gpGlobals->time;
+
+	if( m_fNVGActivated )
+	{
+		m_flNVGBattery -= flDelta * NVG_DRAIN_PER_SECOND;
+
+		if( m_flNVGBattery <= 0 )
+		{
+			m_flNVGBattery = 0;
+			NVGToggle( FALSE );
+			m_fNVGActivated = 0;
+		}
+	}
+	else if( m_flNVGBattery < 100 )
+	{
+		m_flNVGBattery += flDelta * NVG_RECHARGE_PER_SECOND;
+
+		if( m_flNVGBattery > 100 )
+		{
+			m_flNVGBattery = 100;
+
+			MESSAGE_BEGIN( MSG_ONE, gmsgNVGActivate, NULL, pev );
+				WRITE_BYTE( 0 );
+				WRITE_BYTE( m_flNVGBattery );
+			MESSAGE_END();
+		}
+	}
+
+	if( m_fNVGActivated && m_flInfraredUpdate < gpGlobals->time )
+		NVGCreateInfrared( TRUE );
 }
 
 /*
@@ -3533,17 +3623,6 @@ void CBasePlayer::ImpulseCommands()
 
 		if(!iOn)
 			gmsgLogo = 0;
-		break;
-	case 100:
-        // temporary flashlight for level designers
-		if( FlashlightIsOn() )
-		{
-			FlashlightTurnOff();
-		}
-		else 
-		{
-			FlashlightTurnOn();
-		}
 		break;
 	case 201:
 		// paint decal
@@ -4013,7 +4092,6 @@ void CBasePlayer::UpdateClientData( void )
 {
 	if( m_fInitHUD )
 	{
-		BOOL bFlashLightStatus;
 		m_fInitHUD = FALSE;
 		gInitHUD = FALSE;
 
@@ -4038,18 +4116,6 @@ void CBasePlayer::UpdateClientData( void )
 		}
 
 		FireTargets( "game_playerspawn", this, this, USE_TOGGLE, 0 );
-
-		// Send flashlight status
-		bFlashLightStatus = FlashlightIsOn();
-
-		MESSAGE_BEGIN( MSG_ONE, gmsgFlashlight, NULL, pev );
-			WRITE_BYTE( bFlashLightStatus );
-			WRITE_BYTE( m_iFlashBattery );
-		MESSAGE_END();
-
-		MESSAGE_BEGIN( MSG_ONE, gmsgNightvision, NULL, pev );
-			WRITE_BYTE( bFlashLightStatus );
-		MESSAGE_END();
 
 		// Vit_amiN: the geiger state could run out of sync, too
 		MESSAGE_BEGIN( MSG_ONE, gmsgGeigerRange, NULL, pev );
@@ -4145,36 +4211,6 @@ void CBasePlayer::UpdateClientData( void )
 
 		// Clear off non-time-based damage indicators
 		m_bitsDamageType &= DMG_TIMEBASED;
-	}
-
-	// Update Flashlight
-	if( ( m_flFlashLightTime ) && ( m_flFlashLightTime <= gpGlobals->time ) )
-	{
-		if( FlashlightIsOn() )
-		{
-			if( m_iFlashBattery )
-			{
-				m_flFlashLightTime = FLASH_DRAIN_TIME + gpGlobals->time;
-				m_iFlashBattery--;
-
-				if( !m_iFlashBattery )
-					FlashlightTurnOff();
-			}
-		}
-		else
-		{
-			if( m_iFlashBattery < 100 )
-			{
-				m_flFlashLightTime = FLASH_CHARGE_TIME + gpGlobals->time;
-				m_iFlashBattery++;
-			}
-			else
-				m_flFlashLightTime = 0;
-		}
-
-		MESSAGE_BEGIN( MSG_ONE, gmsgFlashBattery, NULL, pev );
-			WRITE_BYTE( m_iFlashBattery );
-		MESSAGE_END();
 	}
 
 	if( m_iTrain & TRAIN_NEW )

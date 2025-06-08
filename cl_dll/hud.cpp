@@ -438,14 +438,14 @@ void CHud::Init( void )
 	m_Geiger.Init();
 	m_Train.Init();
 	m_Battery.Init();
-	m_Flash.Init();
+	//m_Flash.Init();
+	m_NVG.Init();
 	m_Message.Init();
 	m_StatusBar.Init();
 	m_DeathNotice.Init();
 	m_AmmoSecondary.Init();
 	m_TextMessage.Init();
 	m_StatusIcons.Init();
-	m_Nightvision.Init();
 #if USE_VGUI
 	GetClientVoiceMgr()->Init(&g_VoiceStatusHelper, (vgui::Panel**)&gViewPort);
 #endif
@@ -638,7 +638,8 @@ void CHud::VidInit( void )
 	m_Geiger.VidInit();
 	m_Train.VidInit();
 	m_Battery.VidInit();
-	m_Flash.VidInit();
+	//m_Flash.VidInit();
+	m_NVG.VidInit();
 	m_Message.VidInit();
 	m_StatusBar.VidInit();
 	m_DeathNotice.VidInit();
@@ -647,7 +648,6 @@ void CHud::VidInit( void )
 	m_AmmoSecondary.VidInit();
 	m_TextMessage.VidInit();
 	m_StatusIcons.VidInit();
-	m_Nightvision.VidInit();
 #if USE_VGUI
 	GetClientVoiceMgr()->VidInit();
 #endif

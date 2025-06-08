@@ -619,13 +619,8 @@ void ClientCommand( edict_t *pEntity )
 	else if( FStrEq( pcmd, "nightvision" ) )
 	{
 		CBasePlayer *pPlayer = GetClassPtr( (CBasePlayer *)pev );
-		if( pPlayer )
-		{
-			if( !pPlayer->FlashlightIsOn() )
-				pPlayer->FlashlightTurnOn();
-			else
-				pPlayer->FlashlightTurnOff();
-		}
+		if( pPlayer && pPlayer->m_fNVG )
+			pPlayer->NVGToggle( !pPlayer->m_fNVGActivated );
 	}
 	else if( FStrEq( pcmd, "VModEnable" ) )
 	{
@@ -920,9 +915,6 @@ void ClientPrecache( void )
 	PRECACHE_SOUND( "debris/glass2.wav" );
 	PRECACHE_SOUND( "debris/glass3.wav" );
 
-	PRECACHE_SOUND( SOUND_FLASHLIGHT_ON );
-	PRECACHE_SOUND( SOUND_FLASHLIGHT_OFF );
-
 	// player gib sounds
 	PRECACHE_SOUND( "common/bodysplat.wav" );
 
@@ -934,6 +926,8 @@ void ClientPrecache( void )
 	PRECACHE_SOUND( "player/pl_pain7.wav" );
 
 	PRECACHE_MODEL( "models/player.mdl" );
+	PRECACHE_SOUND( SOUND_FLASHLIGHT_ON );
+	PRECACHE_SOUND( SOUND_FLASHLIGHT_OFF );
 
 	// hud sounds
 	PRECACHE_SOUND( "common/wpn_hudoff.wav" );

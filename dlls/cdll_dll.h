@@ -42,4 +42,9 @@
 
 
 #define WEAPON_SUIT		31
+
+// advanced NVG^M
+#define NVG_DRAIN_PER_SECOND	0.75f
+#define NVG_RECHARGE_PER_SECOND	7.5f
+// advanced NVG
 #endif

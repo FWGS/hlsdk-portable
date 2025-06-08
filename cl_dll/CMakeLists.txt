@@ -63,7 +63,7 @@ if (USE_VGUI)
 endif()
 
 set (CLDLL_SOURCES 
-	blackops/nightvision.cpp
+	blackops/nvg.cpp
 	../dlls/crossbow.cpp 
 	../dlls/crowbar.cpp 
 	../dlls/egon.cpp 
@@ -94,7 +94,7 @@ set (CLDLL_SOURCES
 	entity.cpp
 	ev_common.cpp
 	events.cpp
-	flashlight.cpp
+#	flashlight.cpp
 	GameStudioModelRenderer.cpp
 	geiger.cpp
 	health.cpp

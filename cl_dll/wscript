@@ -53,7 +53,8 @@ def build(bld):
 	excluded_files = ['GameStudioModelRenderer_Sample.cpp',
 		'game_shared/voice_vgui_tweakdlg.cpp',
 		'game_shared/voice_gamemgr.cpp',
-		'game_shared/voice_status.cpp']
+		'game_shared/voice_status.cpp',
+		'flashlight.cpp']
 
 	if bld.env.USE_VGUI:
 		defines += ['USE_VGUI']
@@ -79,6 +80,7 @@ def build(bld):
 	source += bld.path.parent.ant_glob([
 		'public/safe_snprintf.c',
 		'pm_shared/*.c',
+		'blackops/nvg.cpp',
 		'dlls/crossbow.cpp',
 		'dlls/crowbar.cpp',
 		'dlls/egon.cpp',

@@ -203,6 +203,39 @@ private:
 	int m_iPos;
 };
 
+// advanced NVG
+//
+//-----------------------------------------------------
+//
+class CHudNVG: public CHudBase
+{
+public:
+	int Init( void );
+	int VidInit( void );
+	int Draw( float flTime );
+	int MsgFunc_NVG( const char *pszName, int iSize, void *pbuf );
+	int MsgFunc_NVGActivate( const char *pszName, int iSize, void *pbuf );
+
+private:
+	HSPRITE m_hFlicker;
+
+	HSPRITE m_hBatteryFull;
+	HSPRITE m_hBatteryEmpty;
+	wrect_t *m_prcBatteryFull;
+	wrect_t *m_prcBatteryEmpty;
+
+	int m_iBatteryY;
+	int m_iWidth;
+
+	int m_iNVG;
+	int m_iOn;
+	float m_flBattery;
+};
+// advanced NVG
+//
+//-----------------------------------------------------
+//
+
 #if !USE_VGUI || USE_NOVGUI_MOTD
 class CHudMOTD : public CHudBase
 {
@@ -532,18 +565,6 @@ private:
 //
 //-----------------------------------------------------
 //
-class CHudNightvision : public CHudBase
-{
-public:
-	int Init( void );
-	int VidInit( void );
-	int Draw( float flTime );
-	int MsgFunc_Nightvision( const char *pszName, int iSize, void *pbuf );
-};
-
-//
-//-----------------------------------------------------
-//
 class CHud
 {
 private:
@@ -617,7 +638,7 @@ public:
 	CHudGeiger		m_Geiger;
 	CHudBattery		m_Battery;
 	CHudTrain		m_Train;
-	CHudFlashlight	m_Flash;
+	//CHudFlashlight	m_Flash;
 	CHudMessage		m_Message;
 	CHudStatusBar   m_StatusBar;
 	CHudDeathNotice m_DeathNotice;
@@ -626,7 +647,7 @@ public:
 	CHudAmmoSecondary	m_AmmoSecondary;
 	CHudTextMessage m_TextMessage;
 	CHudStatusIcons m_StatusIcons;
-	CHudNightvision	m_Nightvision;
+	CHudNVG	m_NVG;
 #if !USE_VGUI || USE_NOVGUI_SCOREBOARD
 	CHudScoreboard	m_Scoreboard;
 #endif

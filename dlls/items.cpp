@@ -191,6 +191,8 @@ class CItemSuit : public CItem
 
 		EMIT_SOUND( pPlayer->edict(), CHAN_ITEM, "items/vest_pickup.wav", 1, ATTN_NORM );
 
+		pPlayer->GiveNamedItem( "item_nvg" );
+		pPlayer->pev->armorvalue = 50;
 		pPlayer->pev->weapons |= ( 1 << WEAPON_SUIT );
 		return TRUE;
 	}
@@ -333,3 +335,45 @@ class CItemLongJump : public CItem
 };
 
 LINK_ENTITY_TO_CLASS( item_longjump, CItemLongJump )
+
+extern int gmsgNVG;
+
+class CItemNVG : public CItem
+{
+	void Spawn( void )
+	{
+		Precache();
+		SET_MODEL( ENT( pev ), "models/w_longjump.mdl" );
+		CItem::Spawn();
+	}
+	void Precache( void )
+	{
+		PRECACHE_MODEL( "models/w_longjump.mdl" );
+		PRECACHE_SOUND( "buttons/blip1.wav" );
+	}
+	BOOL MyTouch( CBasePlayer *pPlayer )
+	{
+		if( pPlayer->m_fNVG )
+		{
+			return FALSE;
+		}
+
+		if( ( pPlayer->pev->weapons & ( 1 << WEAPON_SUIT )))
+		{
+			pPlayer->m_fNVG = TRUE;
+			MESSAGE_BEGIN( MSG_ONE, gmsgNVG, NULL, pPlayer->pev );
+				WRITE_BYTE( 1 );
+				WRITE_BYTE( pPlayer->m_flNVGBattery );
+			MESSAGE_END();
+			MESSAGE_BEGIN( MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev );
+				WRITE_STRING( STRING( pev->classname ) );
+			MESSAGE_END();
+
+			EMIT_SOUND( pPlayer->edict(), CHAN_ITEM, "buttons/blip1.wav", 1, ATTN_NORM );
+			return TRUE;
+		}
+		return FALSE;
+	}
+};
+
+LINK_ENTITY_TO_CLASS( item_nvg, CItemNVG )
