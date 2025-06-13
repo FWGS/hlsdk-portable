@@ -35,3 +35,4 @@ void CGraph::ShowNodeConnections( int iNode ) { }
 int CGraph::FindNearestNode( const Vector &vecOrigin, int afNodeTypes ) { return 0; }
 
 /*********************************************************/
+

@@ -827,7 +827,7 @@ void V_GetChaseOrigin( float * angles, float * origin, float distance, qboolean 
 	vec3_t vecEnd;
 	vec3_t forward;
 	vec3_t vecStart;
-	pmtrace_t *trace;
+	pmtrace_t *trace = 0;
 
 	// Trace back from the target using the player's view angles
 	AngleVectors( angles, forward, NULL, NULL );
@@ -858,7 +858,7 @@ void V_GetChaseOrigin( float * angles, float * origin, float distance, qboolean 
 			}
 		}
 	}
-
+	assert( trace );
 /*	if( ent )
 	{
 		gEngfuncs.Con_Printf( "Trace loops %i , entity %i, model %s, solid %i\n",(8-maxLoops),ent->curstate.number, ent->model->name , ent->curstate.solid );
