@@ -210,10 +210,10 @@ int CHud::DrawHudStringCTF( int xpos, int ypos, int iMaxX, char *szIt, int r, in
 	// draw the string until we hit the null character or a newline character
 	for( ; *szIt != 0 && *szIt != '\n'; szIt++ )
 	{
-		int next;// = xpos + gHUD.m_scrinfo.charWidths[*szIt]; // variable-width fonts look cool
+		int next = 0;// = xpos + gHUD.m_scrinfo.charWidths[*szIt]; // variable-width fonts look cool
 
-		if( next > iMaxX )
-			return xpos;
+		/*if( next > iMaxX )
+			return xpos;*/
 
 		if( *szIt == '\\' )
 		{
@@ -292,14 +292,14 @@ int CHud::DrawHudStringCTF( int xpos, int ypos, int iMaxX, char *szIt, int r, in
 			if( Color == 5 )
 				TextMessageDrawChar( xpos, ypos, *szIt, 198, 221, 66 );
 			if( Color == 6 )
-
+				TextMessageDrawChar( xpos, ypos, *szIt, 136, 136, 136 );
 			next = xpos + gHUD.m_scrinfo.charWidths[(unsigned char)*szIt];
 		}
-		/*else if( Color > 0 && WantColor == 1 )
+		else if( Color > 0 && WantColor == 1 )
 		{
 			//next = xpos + ( gHUD.m_scrinfo.charWidths[*szIt] * 2 ); // variable-width fonts look cool
 			WantColor = 0;
-		}*/
+		}
 
 		xpos = next;
         }
