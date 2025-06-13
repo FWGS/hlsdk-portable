@@ -206,11 +206,14 @@ void CTeleBall::TeleportTouch( CBaseEntity *pOther )
 			{
 				for ( int i = RANDOM_LONG(1,count); i > 0; i-- ) //Randomize teleport spot
 					pSpot = UTIL_FindEntityByClassname( pSpot, "info_player_deathmatch" );
-				Vector tmp = pSpot->pev->origin;
-				//tmp.z -= pOther->pev->mins.z;
-				//tmp.z++;
-				UTIL_SetOrigin( pOther->pev, tmp ); //teleport player
-				PlayEffect( tmp, pOther);
+				if( pSpot )
+				{
+					Vector tmp = pSpot->pev->origin;
+					//tmp.z -= pOther->pev->mins.z;
+					//tmp.z++;
+					UTIL_SetOrigin( pOther->pev, tmp ); //teleport player
+					PlayEffect( tmp, pOther);
+				}
 			}
 		}
 	}
@@ -453,16 +456,18 @@ void CDisplacer::SecondaryAttack( void )
 			{
 				for ( int i = RANDOM_LONG(1,count); i > 0; i-- ) //Randomize teleport spot
 					pSpot = UTIL_FindEntityByClassname( pSpot, "info_player_deathmatch" );
+				if( pSpot )
+				{
+					//spawn CTeleBall here
+					CTeleBall *pEntity = (CTeleBall *)Create( "displacer_teleporter", pev->origin, m_pPlayer->pev->angles, m_pPlayer->edict() );
+					pEntity->pev->owner = m_pPlayer->edict();
+					pEntity->pev->velocity = -gpGlobals->v_up * 150;
+					//
+					UTIL_SetOrigin( m_pPlayer->pev, pSpot->pev->origin );
+					m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] -= 60;
 				
-				//spawn CTeleBall here
-				CTeleBall *pEntity = (CTeleBall *)Create( "displacer_teleporter", pev->origin, m_pPlayer->pev->angles, m_pPlayer->edict() );
-				pEntity->pev->owner = m_pPlayer->edict();
-				pEntity->pev->velocity = -gpGlobals->v_up * 150;
-				//
-				UTIL_SetOrigin( m_pPlayer->pev, pSpot->pev->origin );
-				m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] -= 60;
-				
-				PlayEffect( pSpot->pev->origin ); 
+					PlayEffect( pSpot->pev->origin );
+				}
 			}
 		}
 		else 
