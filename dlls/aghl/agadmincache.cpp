@@ -68,7 +68,10 @@ void AgAdminCache::Load()
   AgAdmin* pAdmin = new AgAdmin;
   int iRead = fread(szData,sizeof(char),sizeof(szData)-2,pFile);
   if (0 >= iRead)
+  {
+    fclose(pFile);
     return;
+  }
   szData[iRead] = '\0';
 
   char* pszParse = NULL;

@@ -689,7 +689,7 @@ void AgCTFFlag::Materialize( void )
 
 BOOL AgCTFFlag::MyTouch( CBasePlayer *pPlayer )
 {
-	char szText[201];
+	char szText[201] = "";
 
 	// Can only carry one flag and can not pickup own flag
 	if (FStrEq(CTF_TEAM1_NAME, m_szTeamName))
@@ -818,9 +818,11 @@ BOOL AgCTFFlag::MyTouch( CBasePlayer *pPlayer )
 			sprintf(szText, "%s got the %s flag!\n", STRING(pPlayer->pev->netname), CTF_TEAM2_NAME);
     }
 
-    AgConsole(szText);
-		UTIL_ClientPrintAll( HUD_PRINTCENTER, szText );
-
+    if( szText[0] != '\0' )
+    {
+       AgConsole(szText);
+       UTIL_ClientPrintAll( HUD_PRINTCENTER, szText );
+    }
     for ( int i = 1; i <= gpGlobals->maxClients; i++ )
     {
       CBasePlayer* pPlayerLoop = AgPlayerByIndex(i);
@@ -908,7 +910,7 @@ void AgCTFFlag::Think( void )
 	if (m_bDropped && m_fNextReset <= gpGlobals->time)
 	{
 		//Let all players know that the flag has been returned
-		char szText[201];
+		char szText[201] = "";
 
 		if (FStrEq(CTF_TEAM1_NAME, m_szTeamName))
 		{
@@ -928,9 +930,11 @@ void AgCTFFlag::Think( void )
         WRITE_BYTE( RedFlagReturned );
       MESSAGE_END();
 		}
-
-    AgConsole(szText);
-		UTIL_ClientPrintAll( HUD_PRINTCENTER, szText );
+		if(szText[0] != '\0')
+		{
+                	AgConsole(szText);
+			UTIL_ClientPrintAll( HUD_PRINTCENTER, szText );
+		}
 		UTIL_Remove( this );
 		return;
 	}
