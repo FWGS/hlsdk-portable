@@ -53,6 +53,18 @@ int CHudNVG::VidInit(void)
 
 int CHudNVG::Draw(float fTime)
 {
+	static bool show = ( gHUD.m_iHideHUDDisplay & ( HIDEHUD_FLASHLIGHT | HIDEHUD_ALL ) );
+	if( show != !( gHUD.m_iHideHUDDisplay & ( HIDEHUD_FLASHLIGHT | HIDEHUD_ALL ) ) )
+	{
+		show = !( gHUD.m_iHideHUDDisplay & ( HIDEHUD_FLASHLIGHT | HIDEHUD_ALL ) );
+		if( gMobileEngfuncs )
+		{
+			gMobileEngfuncs->pfnTouchHideButtons( "flashlight", !show );
+		}
+	}
+	if( !show )
+		return 1;
+
     // draw the battery
     if (m_iNVG) {
         int r, g, b, x, y, a, offset;
