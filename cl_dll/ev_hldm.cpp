@@ -535,14 +535,14 @@ void EV_HLDM_BulletFlyBySound( int idx, vec3_t start, vec3_t end )
 	if( !EV_IsLocal( idx ) )
 	{
 #ifdef CORE_DEBUG
-		gEngfuncs.Con_Printf( "EV_HLDM->EV_HLDM_BulletFlyBySound, we arent the one firing,
+		gEngfuncs.Con_Printf( "EV_HLDM->EV_HLDM_BulletFlyBySound, we arent the one firing, \
 		lets check if the bullet passed us?\n" );
 #endif
 		// did the bullet just pass our radius based on our origin?
 		if( EV_PointLineIntersect( start, end, pthisplayer->origin, 150, soundPoint ) )
 		{
 #ifdef CORE_DEBUG
-			gEngfuncs.Con_Printf( "EV_HLDM->EV_HLDM_BulletFlyBySound, the bullet actually
+			gEngfuncs.Con_Printf( "EV_HLDM->EV_HLDM_BulletFlyBySound, the bullet actually \
 			did (PLI=true)...randomize sound?\n" );
 #endif
 			// if so play flyby sound

@@ -406,21 +406,21 @@ BOOL CHTorch :: CheckMeleeAttack1 ( float flDot, float flDist )
 {
 	CBaseMonster *pEnemy;
 
-	if ( m_hEnemy != 0 )
+	if( m_hEnemy != 0 )
 	{
 		pEnemy = m_hEnemy->MyMonsterPointer();
 
-		if ( !pEnemy )
+		if( !pEnemy )
 		{
 			return FALSE;
 		}
-	}
-
-	if ( flDist <= 64 && flDot >= 0.7f	&& 
-		 pEnemy->Classify() != CLASS_ALIEN_BIOWEAPON &&
-		 pEnemy->Classify() != CLASS_PLAYER_BIOWEAPON )
-	{
-		return TRUE;
+	
+		if( flDist <= 64 && flDot >= 0.7f && 
+			pEnemy->Classify() != CLASS_ALIEN_BIOWEAPON &&
+			pEnemy->Classify() != CLASS_PLAYER_BIOWEAPON )
+		{
+			return TRUE;
+		}
 	}
 	return FALSE;
 }
