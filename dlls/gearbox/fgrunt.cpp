@@ -2909,6 +2909,8 @@ Schedule_t *CHFGrunt :: GetSchedule ( void )
 		// try to say something about smells
 		TrySmellTalk();
 		break;
+	default:
+		break;
 	}
 
 	return CTalkMonster :: GetSchedule();
@@ -3748,6 +3750,9 @@ Schedule_t *CMedic::GetSchedule()
 				return GetScheduleOfType(SCHED_MEDIC_HEAL);
 			}
 		}
+		break;
+	default:
+		break;
 	}
 	return CHFGrunt::GetSchedule();
 }

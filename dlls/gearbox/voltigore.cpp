@@ -941,6 +941,8 @@ Schedule_t *CVoltigore::GetSchedule(void)
 
 		break;
 	}
+	default:
+		break;
 	}
 
 	return CBaseMonster::GetSchedule();

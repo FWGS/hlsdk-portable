@@ -952,6 +952,8 @@ Schedule_t *CStrooper::GetSchedule(void)
 			return GetScheduleOfType(SCHED_STROOPER_ESTABLISH_LINE_OF_FIRE);
 		}
 	}
+	default:
+		break;
 	}
 
 	// no special cases here, call the base class
