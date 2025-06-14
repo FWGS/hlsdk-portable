@@ -629,8 +629,6 @@ void CHalfLifeMultiplay::PlayerSpawn( CBasePlayer *pPlayer )
 
 	addDefault = TRUE;
 
-	CBasePlayer *m_pPlayer;
-
 	while( ( pWeaponEntity = UTIL_FindEntityByClassname( pWeaponEntity, "game_player_equip" ) ) )
 	{
 		pWeaponEntity->Touch( pPlayer );
@@ -639,7 +637,7 @@ void CHalfLifeMultiplay::PlayerSpawn( CBasePlayer *pPlayer )
 
 	if( IsChristmas( true ) )
 	{	// This will never use mp_christmas, cant cheat presents ;)
-		EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_VOICE, "misc/b2.wav", 0.8, ATTN_NORM );
+		EMIT_SOUND( ENT( pPlayer->pev ), CHAN_VOICE, "misc/b2.wav", 0.8, ATTN_NORM );
 		ClientPrint( pPlayer->pev, HUD_PRINTCENTER, "MERRY CHRISTMAS!\nHave a shotgun and a bow!" ); //digamos al cliente
 		pPlayer->GiveNamedItem( "weapon_shotgun" );
 		pPlayer->GiveNamedItem( "weapon_bow" );
