@@ -1,4 +1,4 @@
-package su.xash.hlsdk;
+package su.xash.bot10;
 
 import android.app.Activity;
 import android.content.ComponentName;

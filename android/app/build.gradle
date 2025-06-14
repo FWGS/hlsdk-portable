@@ -2,14 +2,14 @@ import java.time.LocalDateTime
 import java.time.Month
 import java.time.temporal.ChronoUnit
 
-apply plugin: 'com.android.application'
+apply plugin: 'su.xash.bot10'
 
 android {
     ndkVersion '26.1.10909125'
     namespace 'com.example.hlsdk'
 
     defaultConfig {
-        applicationId 'com.example.hlsdk'
+        applicationId 'su.xash.bot10'
         versionName '1.0'
         versionCode getBuildNum()
         minSdkVersion 3

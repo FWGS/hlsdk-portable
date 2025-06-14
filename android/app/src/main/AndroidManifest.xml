@@ -5,7 +5,7 @@
     <application
         android:forceQueryable="true"
         android:icon="@android:mipmap/sym_def_app_icon"
-        android:label="hlsdk-portable"
+        android:label="Botman's bot # 10"
         tools:targetApi="r">
 
         <meta-data
@@ -13,7 +13,7 @@
             android:value="valve" />
 
         <activity
-            android:name="su.xash.hlsdk.MainActivity"
+            android:name="su.xash.bot10.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
