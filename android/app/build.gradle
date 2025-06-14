@@ -6,10 +6,10 @@ apply plugin: 'com.android.application'
 
 android {
     ndkVersion '26.1.10909125'
-    namespace 'com.example.hlsdk'
+    namespace 'su.xash.hunger'
 
     defaultConfig {
-        applicationId 'com.example.hlsdk'
+        applicationId 'su.xash.hunger'
         versionName '1.0'
         versionCode getBuildNum()
         minSdkVersion 3
