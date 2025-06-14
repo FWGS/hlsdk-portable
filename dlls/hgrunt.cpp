@@ -289,12 +289,11 @@ void CHGrunt::GibMonster( void )
 		if( FBitSet( pev->weapons, HGRUNT_9MMAR ) )
 		{
 			pGun = DropItem( "weapon_par21", vecGunPos, vecGunAngles );
-		}
-
-		if( pGun )
-		{
-			pGun->pev->velocity = Vector( RANDOM_FLOAT( -100, 100 ), RANDOM_FLOAT( -100, 100 ), RANDOM_FLOAT( 200, 300 ) );
-			pGun->pev->avelocity = Vector( 0, RANDOM_FLOAT( 200, 400 ), 0 );
+			if( pGun )
+			{
+				pGun->pev->velocity = Vector( RANDOM_FLOAT( -100, 100 ), RANDOM_FLOAT( -100, 100 ), RANDOM_FLOAT( 200, 300 ) );
+				pGun->pev->avelocity = Vector( 0, RANDOM_FLOAT( 200, 400 ), 0 );
+			}
 		}
 
 		if( FBitSet( pev->weapons, HGRUNT_GRENADELAUNCHER ) )
