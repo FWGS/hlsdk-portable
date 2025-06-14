@@ -230,7 +230,7 @@ CBaseEntity *CBaseMonster::BestVisibleEnemy( void )
 				// currently think is the best visible enemy. No need to do 
 				// a distance check, just get mad at this one for now.
 				iBestRelationship = IRelationship( pNextEnt );
-				(int)iNearest = ( pNextEnt->pev->origin - pev->origin ).Length();
+				iNearest = ( pNextEnt->pev->origin - pev->origin ).Length();
 				pReturn = pNextEnt;
 			}
 			else if( IRelationship( pNextEnt ) == iBestRelationship )
@@ -238,7 +238,7 @@ CBaseEntity *CBaseMonster::BestVisibleEnemy( void )
 				// this entity is disliked just as much as the entity that
 				// we currently think is the best visible enemy, so we only
 				// get mad at it if it is closer.
-				(int)iDist = ( pNextEnt->pev->origin - pev->origin ).Length();
+				iDist = ( pNextEnt->pev->origin - pev->origin ).Length();
 
 				if( iDist <= iNearest )
 				{
