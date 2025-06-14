@@ -1073,11 +1073,17 @@ bool GGM_ReadPlayers( const char *path )
 	GGM_ClearLists();
 
 	if( !fread( &tsize, 4, 1, f ) )
+	{
+		fclose( f );
 		return false;
+	}
 
 	// do not allow shrink structure
 	if( tsize > sizeof( struct GGMTempState ) )
+	{
+		fclose( f );
 		return false;
+	}
 
 	while( true )
 	{
@@ -1139,7 +1145,7 @@ void GGM_ConnectSaveBot( void )
 	char cmd[33];
 	float health = client0->v.health;
 	int deadflag = client0->v.deadflag;
-	float zombietime_old;
+	float zombietime_old = 0;
 	SERVER_EXECUTE();
 
 	// save even with dead player
