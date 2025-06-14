@@ -889,7 +889,7 @@ void V_GetChaseOrigin( float * angles, float * origin, float distance, float * r
 	vec3_t vecEnd;
 	vec3_t forward;
 	vec3_t vecStart;
-	pmtrace_t *trace;
+	pmtrace_t *trace = 0;
 	int maxLoops = 8;
 
 	int ignoreent = -1;	// first, ignore no entity
@@ -936,7 +936,7 @@ void V_GetChaseOrigin( float * angles, float * origin, float distance, float * r
 
 		maxLoops--;
 	}
-
+	assert( trace );
 /*	if( ent )
 	{
 		gEngfuncs.Con_Printf( "Trace loops %i , entity %i, model %s, solid %i\n",(8-maxLoops),ent->curstate.number, ent->model->name , ent->curstate.solid );
