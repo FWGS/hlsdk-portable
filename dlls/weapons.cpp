@@ -495,14 +495,14 @@ void CBasePlayerItem::FallThink( void )
 		SetThink( NULL );
 	}
 
-	if( g_pGameRules->IsBustingGame())
+	/*if( g_pGameRules->IsBustingGame())
 	{
 		if( !FNullEnt( pev->owner ))
 			return;
 
 		if( FClassnameIs( pev, "weapon_egon" ))
 			UTIL_Remove( this );
-	}
+	}*/
 }
 
 //=========================================================
@@ -1115,7 +1115,7 @@ void CBasePlayerAmmo::Materialize( void )
 
 void CBasePlayerAmmo::DefaultTouch( CBaseEntity *pOther )
 {
-	if( !pOther->IsPlayer() || IsPlayerBusting( pOther ))
+	if( !pOther->IsPlayer() /*|| IsPlayerBusting( pOther )*/)
 	{
 		return;
 	}

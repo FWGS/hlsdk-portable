@@ -762,7 +762,7 @@ void CBasePlayer::PackDeadPlayerItems( void )
 	iPA = 0;
 	iPW = 0;
 
-	if( g_pGameRules->IsBustingGame())
+	/*if( g_pGameRules->IsBustingGame())
 	{
 		while( rgpPackWeapons[iPW] )
 		{
@@ -780,7 +780,7 @@ void CBasePlayer::PackDeadPlayerItems( void )
 			iPW++;
 		}
 	}
-	else
+	else*/
 	{
 		bool bPackItems = true;
 		if ( iAmmoRules == GR_PLR_DROP_AMMO_ACTIVE && iWeaponRules == GR_PLR_DROP_GUN_ACTIVE )

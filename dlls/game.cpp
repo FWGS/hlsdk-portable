@@ -462,7 +462,7 @@ cvar_t	sk_player_leg3	= { "sk_player_leg3","1" };
 // END Cvars for Skill Level settings
 
 cvar_t sv_pushable_fixed_tick_fudge = { "sv_pushable_fixed_tick_fudge", "15" };
-cvar_t sv_busters = { "sv_busters", "0" };
+//cvar_t sv_busters = { "sv_busters", "0" };
 
 // Register your console variables here
 // This gets called one time when the game is initialied
@@ -513,7 +513,7 @@ void GameDLLInit( void )
 	CVAR_REGISTER( &multibyte_only );
 
 	CVAR_REGISTER( &mp_chattime );
-	CVAR_REGISTER( &sv_busters );
+	//CVAR_REGISTER( &sv_busters );
 
 
 // REGISTER CVARS FOR SKILL LEVEL STUFF

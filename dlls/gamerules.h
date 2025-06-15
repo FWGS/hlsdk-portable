@@ -162,7 +162,7 @@ public:
 
 	// Immediately end a multiplayer game
 	virtual void EndMultiplayerGame( void ) {}
-	virtual BOOL IsBustingGame( void ){ return FALSE; };
+	//virtual BOOL IsBustingGame( void ){ return FALSE; };
 };
 
 extern CGameRules *InstallGameRules( void );
@@ -362,7 +362,7 @@ protected:
 	BOOL m_iEndIntermissionButtonHit;
 	void SendMOTDToClient( edict_t *client );
 };
-
+/*
 bool IsPlayerBusting( CBaseEntity *pPlayer );
 BOOL BustingCanHaveItem( CBasePlayer *pPlayer, CBaseEntity *pItem );
 
@@ -387,6 +387,6 @@ public:
 protected:
 	float m_flEgonBustingCheckTime;
 };
-
+*/
 extern DLL_GLOBAL CGameRules *g_pGameRules;
 #endif // GAMERULES_H
