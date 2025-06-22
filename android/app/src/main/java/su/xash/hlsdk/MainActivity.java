@@ -1,4 +1,4 @@
-package su.xash.hlsdk;
+package su.xash.op4;
 
 import android.app.Activity;
 import android.content.ComponentName;
@@ -21,7 +21,7 @@ public class MainActivity extends Activity {
                 pkg = "su.xash.engine";
                 getPackageManager().getPackageInfo(pkg, 0);
             } catch (PackageManager.NameNotFoundException ex) {
-                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=su.xash.engine")).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/FWGS/xash3d-fwgs/releases/tag/continuous")).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
                 finish();
                 return;
             }
@@ -29,7 +29,7 @@ public class MainActivity extends Activity {
 
         startActivity(new Intent().setComponent(new ComponentName(pkg, "su.xash.engine.XashActivity"))
                 .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                .putExtra("gamedir", "valve")
+                .putExtra("gamedir", "gearbox")
                 .putExtra("gamelibdir", getApplicationInfo().nativeLibraryDir)
                 .putExtra("package", getPackageName()));
         finish();
