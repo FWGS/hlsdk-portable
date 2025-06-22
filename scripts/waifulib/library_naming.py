@@ -62,6 +62,7 @@ DEFINES = [
 'XASH_NSWITCH',
 'XASH_PSVITA',
 'XASH_WASI',
+'XASH_WASM',
 'XASH_SUNOS',
 ]
 
@@ -164,6 +165,12 @@ def configure(conf):
 			buildarch += "64"
 		if conf.env.XASH_LITTLE_ENDIAN:
 			buildarch += "el"
+	elif conf.env.XASH_WASM:
+		buildarch = "wasm"
+		if conf.env.XASH_64BIT:
+			buildarch += "64"
+		else:
+			buildarch += "32"
 	else:
 		raise conf.fatal("Place your architecture name in build.h and library_naming.py!\n"
 			"If this is a mistake, try to fix conditions above and report a bug")
