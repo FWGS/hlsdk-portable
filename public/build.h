@@ -97,8 +97,6 @@ Then you can use another oneliner to query all variables:
 //================================================================
 #if defined _WIN32
 	#define XASH_WIN32 1
-#elif defined __EMSCRIPTEN__
-	#define XASH_EMSCRIPTEN 1
 #elif defined __WATCOMC__ && defined __DOS__
 	#define XASH_DOS4GW 1
 #else // POSIX compatible
@@ -137,6 +135,8 @@ Then you can use another oneliner to query all variables:
 		#define XASH_WASI 1
 	#elif defined __sun__
 		#define XASH_SUNOS 1
+	#elif defined __EMSCRIPTEN__
+		#define XASH_EMSCRIPTEN 1
 	#else
 		#error
 	#endif
@@ -194,8 +194,9 @@ Then you can use another oneliner to query all variables:
 	#define XASH_ARM   8
 #elif defined __mips__
 	#define XASH_MIPS 1
-#elif defined __EMSCRIPTEN__
-	#define XASH_JS 1
+// commented out to avoid misdetection, modern Emscripten versions target WASM only
+//#elif defined __EMSCRIPTEN__
+//	#define XASH_JS 1
 #elif defined __e2k__
 	#define XASH_64BIT 1
 	#define XASH_E2K 1
