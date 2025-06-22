@@ -35,7 +35,13 @@ enum katana_e
 	KATANA_ATTACK2MISS,
 	KATANA_ATTACK2HIT,
 	KATANA_ATTACK3MISS,
+#if !CROWBAR_IDLE_ANIM
 	KATANA_ATTACK3HIT
+#else
+	KATANA_ATTACK3HIT,
+	KATANA_IDLE2,
+	KATANA_IDLE3
+#endif
 };
 
 LINK_ENTITY_TO_CLASS( weapon_katana, CKatana )
@@ -215,6 +221,9 @@ int CKatana::Swing( int fFirst )
 			// miss
 			m_flNextPrimaryAttack = GetNextAttackDelay( 0.6f );
 
+#if CROWBAR_IDLE_ANIM
+			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
+#endif
 			// player "shoot" animation
 			m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
 		}
@@ -243,7 +252,7 @@ int CKatana::Swing( int fFirst )
 		CBaseEntity *pEntity = CBaseEntity::Instance( tr.pHit );
 
 		// play thwack, smack, or dong sound
-		float flVol = 1.0;
+		float flVol = 1.0f;
 		int fHitWorld = TRUE;
 
 		if( pEntity )
@@ -278,7 +287,7 @@ int CKatana::Swing( int fFirst )
 					return TRUE;
 				}
 				else
-					flVol = 0.1;
+					flVol = 0.1f;
 
 				fHitWorld = FALSE;
 			}
@@ -321,6 +330,9 @@ int CKatana::Swing( int fFirst )
 #endif
 		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.6f;
 	}
+#if CROWBAR_IDLE_ANIM
+	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
+#endif
 	return fDidHit;
 }
 
@@ -332,3 +344,33 @@ void CKatana::SecondaryAttack( void )
 #endif
 	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 2.0f;
 }
+
+#if CROWBAR_IDLE_ANIM
+void CKatana::WeaponIdle( void )
+{
+	if( m_flTimeWeaponIdle < UTIL_WeaponTimeBase() )
+	{
+		int iAnim;
+		float flRand = UTIL_SharedRandomFloat( m_pPlayer->random_seed, 0, 1 );
+		if( flRand > 0.9f )
+		{
+			iAnim = KATANA_IDLE2;
+			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 160.0f / 30.0f;
+		}
+		else
+		{
+			if( flRand > 0.5f )
+			{
+				iAnim = KATANA_IDLE;
+				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 70.0f / 25.0f;
+			}
+			else
+			{
+				iAnim = KATANA_IDLE3;
+				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 160.0f / 30.0f;
+			}
+		}
+		SendWeaponAnim( iAnim );
+	}
+}
+#endif
