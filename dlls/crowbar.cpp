@@ -37,10 +37,11 @@ enum crowbar_e
 	CROWBAR_ATTACK2MISS,
 	CROWBAR_ATTACK2HIT,
 	CROWBAR_ATTACK3MISS,
-#if !CROWBAR_IDLE_ANIM	
-	CROWBAR_ATTACK3HIT
-#else
 	CROWBAR_ATTACK3HIT,
+#if !CROWBAR_IDLE_ANIM
+	CROWBAR_TAUNT
+#else
+	CROWBAR_TAUNT,
 	CROWBAR_IDLE2,
 	CROWBAR_IDLE3
 #endif
@@ -162,6 +163,16 @@ void CCrowbar::PrimaryAttack()
 		pev->nextthink = gpGlobals->time + 0.1f;
 #endif
 	}
+}
+
+void CCrowbar::SecondaryAttack( void )
+{
+#if !CLIENT_DLL
+	SENTENCEG_PlayRndSz( ENT( pev ), "PL_TAUNT", 1, ATTN_NORM, 0, PITCH_NORM );
+#endif
+	SendWeaponAnim( CROWBAR_TAUNT );
+	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 2.0f;
+	m_pPlayer->m_iWeaponVolume = CROWBAR_WALLHIT_VOLUME;
 }
 
 void CCrowbar::Smack()
