@@ -227,6 +227,9 @@ void CGameRules::RefreshSkillData ( void )
 	// Crowbar whack
 	gSkillData.plrDmgCrowbar = GetSkillCvar( "sk_plr_crowbar" );
 
+	// Scihead whack
+	gSkillData.plrDmgScihead = GetSkillCvar( "sk_plr_scihead" );
+
 	// Glock Round
 	gSkillData.plrDmg9MM = GetSkillCvar( "sk_plr_9mm_bullet" );
 
@@ -264,6 +267,9 @@ void CGameRules::RefreshSkillData ( void )
 
 	// Tripmine
 	gSkillData.plrDmgTripmine = GetSkillCvar( "sk_plr_tripmine" );
+
+	// Cluster Grenade
+	gSkillData.plrDmgClusterGrenade = GetSkillCvar( "sk_plr_cluster_grenade" );
 
 	// MONSTER WEAPONS
 	gSkillData.monDmg12MM = GetSkillCvar( "sk_12mm_bullet" );
