@@ -21,6 +21,7 @@
 static cvar_t build_commit = { "sv_game_build_commit", g_VCSInfo_Commit };
 static cvar_t build_branch = { "sv_game_build_branch", g_VCSInfo_Branch };
 
+cvar_t rockbarversion = { "Rocket_Crowbar_Version", "19" };
 cvar_t displaysoundlist = {"displaysoundlist","0"};
 
 // multiplayer server rules
@@ -49,6 +50,51 @@ cvar_t teamlist		= { "mp_teamlist","hgrunt;scientist", FCVAR_SERVER };
 cvar_t teamoverride	= { "mp_teamoverride","1" };
 cvar_t defaultteam	= { "mp_defaultteam","0" };
 cvar_t allowmonsters	= { "mp_allowmonsters","0", FCVAR_SERVER };
+cvar_t ctf		= { "mp_ctf", "1" };
+cvar_t ctfreturntime	= { "mp_flag_return_time", "60" };
+cvar_t ctfppc		= { "mp_points_per_capture", "10" };
+cvar_t curses		= { "mp_curses", "0" };
+cvar_t tannoy		= { "mp_teamannoy", "1" };
+cvar_t tvelo		= { "mp_teampush", "0" };
+cvar_t scikillfest	= { "mp_scikill", "0" };
+cvar_t allowrifts	= { "mp_allowrifts", "1" };
+cvar_t allowiso		= { "mp_allowiso", "1" };
+cvar_t allownuke	= { "mp_allownukes", "1" };
+cvar_t allowgive	= { "sv_allowgives", "1" };
+cvar_t pregameobserver	= { "sv_pregameobserver", "1" };
+cvar_t ingameobserver	= { "sv_ingameobservers", "1" };
+cvar_t kickfract	= { "sv_kickfract", "0.66" };
+cvar_t kickbantime	= { "sv_kickbantime", "10" };
+cvar_t mapfract		= { "sv_mapfract", "0.51" };
+cvar_t votefreq		= { "sv_votefreq", "120" };
+cvar_t monsterspawn	= { "sv_monspawn", "0" };
+cvar_t chlevelwks	= { "sv_chglevel", "0" };
+cvar_t noexit		= { "sv_noexit", "1" };
+cvar_t ceasefire	= { "sv_ceasefire", "0" };
+cvar_t prefsfile	= { "sv_prefsfile", "rc.ini" };
+cvar_t pcall		= { "sv_pcall", "0" };
+cvar_t pcst		= { "sv_pcstuff", "0" };
+cvar_t loyalnpcs	= { "sv_loyalnpcs", "0" };
+cvar_t ignplayer	= { "sv_ignoreplayer", "0" };
+cvar_t serverclient	= { "sv_serverclient", "-1" };
+cvar_t mapcfg		= { "sv_mapcfg", "1" };
+cvar_t lowlag		= { "sv_lowlag", "0" };
+cvar_t deathballs	= { "mp_deathballs", "0" };
+cvar_t deathballsonly	= { "mp_deathballsonly", "0" };
+cvar_t drvapache	= { "mp_driveapache", "1" };
+cvar_t drvgarg		= { "mp_drivegarg", "2" };
+cvar_t drvassassin	= { "mp_driveassassin", "2" };
+cvar_t drvicky		= { "mp_driveicky", "2" };
+cvar_t drvpanth		= { "mp_drivepanth", "2" };
+cvar_t drvhe		= { "mp_drivehoundeye", "2" };
+cvar_t drvslave		= { "mp_driveslave", "2" };
+cvar_t drvturret	= { "mp_driveturret", "1" };
+cvar_t drvbm		= { "mp_drivebm", "2" };
+cvar_t drvagrunt	= { "mp_driveagrunt", "2" };
+cvar_t drvcontroll	= { "mp_drivecontroller", "2" };
+cvar_t drvsquid		= { "mp_drivebullsquid", "2" };
+cvar_t transform	= { "sv_allowtransform", "0" };
+cvar_t globaleject	= { "sv_allowglobaleject", "0" };
 cvar_t bhopcap		= { "mp_bhopcap", "1", FCVAR_SERVER };
 
 cvar_t allow_spectators = { "allow_spectators", "0", FCVAR_SERVER };	// 0 prevents players from being spectators
@@ -479,12 +525,14 @@ void GameDLLInit( void )
 	CVAR_REGISTER( &build_commit );
 	CVAR_REGISTER( &build_branch );
 
+	CVAR_REGISTER( &rockbarversion );
 	CVAR_REGISTER( &displaysoundlist );
 	CVAR_REGISTER( &allow_spectators );
 
 	CVAR_REGISTER( &teamplay );
 	CVAR_REGISTER( &fraglimit );
 	CVAR_REGISTER( &timelimit );
+	CVAR_REGISTER( &prefsfile );
 
 	CVAR_REGISTER( &fragsleft );
 	CVAR_REGISTER( &timeleft );
@@ -507,6 +555,50 @@ void GameDLLInit( void )
 	CVAR_REGISTER( &teamoverride );
 	CVAR_REGISTER( &defaultteam );
 	CVAR_REGISTER( &allowmonsters );
+	CVAR_REGISTER( &allowrifts );
+	CVAR_REGISTER( &allowiso );
+	CVAR_REGISTER( &allownuke );
+	CVAR_REGISTER( &ctf );
+	CVAR_REGISTER( &ctfreturntime );
+	CVAR_REGISTER( &ctfppc );
+	CVAR_REGISTER( &curses );
+	CVAR_REGISTER( &tannoy );
+	CVAR_REGISTER( &tvelo );
+	CVAR_REGISTER( &monsterspawn );
+	CVAR_REGISTER( &chlevelwks );
+	CVAR_REGISTER( &noexit );
+	CVAR_REGISTER( &allowgive );
+	CVAR_REGISTER( &ceasefire );
+	CVAR_REGISTER( &scikillfest );
+	CVAR_REGISTER( &deathballs );
+	CVAR_REGISTER( &deathballsonly );
+	CVAR_REGISTER( &pregameobserver );
+	CVAR_REGISTER( &ingameobserver );
+	CVAR_REGISTER( &kickfract );
+	CVAR_REGISTER( &kickbantime );
+	CVAR_REGISTER( &mapfract );
+	CVAR_REGISTER( &votefreq );
+	CVAR_REGISTER( &pcst );
+	CVAR_REGISTER( &pcall );
+	CVAR_REGISTER( &loyalnpcs );
+	CVAR_REGISTER( &ignplayer );
+	CVAR_REGISTER( &serverclient );
+	CVAR_REGISTER( &mapcfg );
+	CVAR_REGISTER( &lowlag );
+	CVAR_REGISTER( &drvapache );
+	CVAR_REGISTER( &drvgarg );
+	CVAR_REGISTER( &drvassassin );
+	CVAR_REGISTER( &drvicky );
+	CVAR_REGISTER( &drvpanth );
+	CVAR_REGISTER( &drvhe );
+	CVAR_REGISTER( &drvslave );
+	CVAR_REGISTER( &drvturret );
+	CVAR_REGISTER( &drvbm );
+	CVAR_REGISTER( &drvagrunt );
+	CVAR_REGISTER( &drvcontroll );
+	CVAR_REGISTER( &drvsquid );
+	CVAR_REGISTER( &transform );
+	CVAR_REGISTER( &globaleject );
 	CVAR_REGISTER( &bhopcap );
 	CVAR_REGISTER( &multibyte_only );
 
