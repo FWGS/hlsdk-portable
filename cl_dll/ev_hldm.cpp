@@ -68,6 +68,7 @@ void EV_EgonStop( struct event_args_s *args );
 void EV_HornetGunFire( struct event_args_s *args );
 void EV_TripmineFire( struct event_args_s *args );
 void EV_SnarkFire( struct event_args_s *args );
+void EV_Scihead( struct event_args_s *args );
 
 void EV_TrainPitchAdjust( struct event_args_s *args );
 void EV_VehiclePitchAdjust( event_args_t *args );
@@ -1695,6 +1696,65 @@ void EV_SnarkFire( event_args_t *args )
 }
 //======================
 //	   SQUEAK END
+//======================
+
+//======================
+//	   SCIHEAD START
+//======================
+enum scihead_e
+{
+	SCIHEAD_IDLE = 0,
+	SCIHEAD_DRAW,
+	SCIHEAD_HOLSTER,
+	SCIHEAD_ATTACK1HIT,
+	SCIHEAD_ATTACK1MISS,
+	SCIHEAD_ATTACK2MISS,
+	SCIHEAD_ATTACK2HIT,
+	SCIHEAD_ATTACK3MISS,
+#if !CROWBAR_IDLE_ANIM
+	SCIHEAD_ATTACK3HIT
+#else
+	SCIHEAD_ATTACK3HIT,
+	SCIHEAD_IDLE2,
+	SCIHEAD_IDLE3
+#endif
+};
+
+int g_iSwing1;
+
+//Only predict the miss sounds, hit sounds are still played 
+//server side, so players don't get the wrong idea.
+void EV_Scihead( event_args_t *args )
+{
+	int idx;
+	vec3_t origin;
+	//vec3_t angles;
+	//vec3_t velocity;
+
+	idx = args->entindex;
+	VectorCopy( args->origin, origin );
+	
+	//Play Swing sound
+	gEngfuncs.pEventAPI->EV_PlaySound( idx, origin, CHAN_WEAPON, "weapons/cbar_miss1.wav", 1, ATTN_NORM, 0, PITCH_NORM ); 
+
+	if( EV_IsLocal( idx ) )
+	{
+		switch( (g_iSwing1++) % 3 )
+		{
+			case 0:
+				gEngfuncs.pEventAPI->EV_WeaponAnimation( SCIHEAD_ATTACK1MISS, 0 );
+				break;
+			case 1:
+				gEngfuncs.pEventAPI->EV_WeaponAnimation( SCIHEAD_ATTACK2MISS, 0 );
+				break;
+			case 2:
+				gEngfuncs.pEventAPI->EV_WeaponAnimation( SCIHEAD_ATTACK3MISS, 0 );
+				break;
+		}
+	}
+}
+//======================
+//	   SCIHEAD END 
 //======================
 
 void EV_TrainPitchAdjust( event_args_t *args )
