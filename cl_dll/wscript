@@ -93,7 +93,8 @@ def build(bld):
 		'dlls/shotgun.cpp',
 		'dlls/squeakgrenade.cpp',
 		'dlls/tripmine.cpp',
-		'dlls/cracklife/scihead.cpp'
+		'dlls/cracklife/scihead.cpp',
+		'dlls/cracklife/clustergrenade.cpp'
 	])
 
 

@@ -146,6 +146,7 @@ set (SVDLL_SOURCES
 	xen.cpp
 	zombie.cpp
 	cracklife/scihead.cpp
+	cracklife/clustergrenade.cpp
 	../pm_shared/pm_debug.c
 	../pm_shared/pm_math.c
 	../pm_shared/pm_shared.c

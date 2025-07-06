@@ -3601,6 +3601,7 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		GiveNamedItem( "weapon_handgrenade" );
 		GiveNamedItem( "weapon_tripmine" );
 		GiveNamedItem( "weapon_scihead" );
+		GiveNamedItem( "weapon_clustergrenade" );
 #if !OEM_BUILD
 		GiveNamedItem( "weapon_357" );
 		GiveNamedItem( "ammo_357" );
