@@ -1369,8 +1369,8 @@ enum EGON_FIREMODE
 };
 
 #define	EGON_PRIMARY_VOLUME		450
-#define EGON_BEAM_SPRITE		"sprites/xbeam1.spr"
-#define EGON_FLARE_SPRITE		"sprites/XSpark1.spr"
+#define EGON_BEAM_SPRITE		"sprites/shit.spr"
+#define EGON_FLARE_SPRITE		"sprites/shit.spr"
 #define EGON_SOUND_OFF			"weapons/egon_off1.wav"
 #define EGON_SOUND_RUN			"weapons/egon_run3.wav"
 #define EGON_SOUND_STARTUP		"weapons/egon_windup2.wav"
