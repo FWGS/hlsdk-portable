@@ -145,6 +145,36 @@ set (SVDLL_SOURCES
 	world.cpp
 	xen.cpp
 	zombie.cpp
+	RockCrowbar/Preff.cpp
+	RockCrowbar/auth_stuff.cpp
+	RockCrowbar/bot_prefs.cpp
+	RockCrowbar/corpse.cpp
+	RockCrowbar/curses.cpp
+	RockCrowbar/deathballs.cpp
+	RockCrowbar/driveagrunt.cpp
+	RockCrowbar/driveapache.cpp
+	RockCrowbar/driveaslave.cpp
+	RockCrowbar/driveassassin.cpp
+	RockCrowbar/drivebm.cpp
+	RockCrowbar/drivebullsquid.cpp
+	RockCrowbar/drivechum.cpp
+	RockCrowbar/drivecontroll.cpp
+	RockCrowbar/driveent.cpp
+	RockCrowbar/drivegarg.cpp
+	RockCrowbar/drivehc.cpp
+	RockCrowbar/drivehoundeye.cpp
+	RockCrowbar/driveicky.cpp
+	RockCrowbar/drivepanth.cpp
+	RockCrowbar/driveturret.cpp
+	RockCrowbar/flag.cpp
+	RockCrowbar/levelcustom.cpp
+	RockCrowbar/mdhash.cpp
+	RockCrowbar/nm.cpp
+	RockCrowbar/pointexplo.cpp
+	RockCrowbar/pregame.cpp
+	RockCrowbar/vote_kick.cpp
+	RockCrowbar/vote_map.cpp
+	RockCrowbar/wog.cpp
 	../pm_shared/pm_debug.c
 	../pm_shared/pm_math.c
 	../pm_shared/pm_shared.c
