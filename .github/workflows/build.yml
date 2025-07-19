@@ -65,24 +65,36 @@ jobs:
         schroot --chroot steamrt_scout_i386 -- cmake --build build-vgui --target all
         schroot --chroot steamrt_scout_i386 -- cmake --build build-vgui --target install
 
-    - name: Add msbuild to PATH
+    - name: Set developer command prompt for Windows x86
       if: startsWith(matrix.os, 'windows')
-      uses: microsoft/setup-msbuild@v2
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x86
+
     - name: Build on Windows
       if: startsWith(matrix.os, 'windows')
       run: |
-        cmake -A Win32 -B build -DCMAKE_INSTALL_PREFIX="dist"
-        msbuild -verbosity:normal /property:Configuration=Release build/INSTALL.vcxproj
-    - name: Build on Windows x64
-      if: startsWith(matrix.os, 'windows')
-      run: |
-        cmake -A x64 -B build64 -DCMAKE_INSTALL_PREFIX="dist64" -D64BIT=ON
-        msbuild -verbosity:normal /property:Configuration=Release /property:Platform=x64 build64/INSTALL.vcxproj
+        cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -B build -S . -DCMAKE_INSTALL_PREFIX="dist"
+        cmake --build build --target all
+        cmake --build build --target install
     - name: Build on Windows with vgui
       if: startsWith(matrix.os, 'windows')
       run: |
-        cmake -A Win32 -B build -DUSE_VGUI=ON -DCMAKE_INSTALL_PREFIX="dist-vgui"
-        msbuild -verbosity:normal /property:Configuration=Release build/INSTALL.vcxproj
+        cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -B build -S . -DUSE_VGUI=ON -DCMAKE_INSTALL_PREFIX="dist-vgui"
+        cmake --build build --target all
+        cmake --build build --target install
+
+    - name: Set developer command prompt for Windows x86_64
+      if: startsWith(matrix.os, 'windows')
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x64
+    - name: Build on Windows x64
+      if: startsWith(matrix.os, 'windows')
+      run: |
+        cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -B build64 -S . -DCMAKE_INSTALL_PREFIX="dist64" -D64BIT=ON
+        cmake --build build64 --target all
+        cmake --build build64 --target install
 
     - name: Extract branch name
       shell: bash
