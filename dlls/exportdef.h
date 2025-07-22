@@ -9,7 +9,12 @@
 	#endif
 #else
 	#if __GNUC__ >= 4
-		#define EXPORT __attribute__ ((visibility ("default")))
+		#if defined(__EMSCRIPTEN__)
+			#include <emscripten.h>
+			#define EXPORT EMSCRIPTEN_KEEPALIVE
+		#else
+			#define EXPORT __attribute__ ((visibility ("default")))
+		#endif
 	#else
 		#define EXPORT
 	#endif

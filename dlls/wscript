@@ -55,6 +55,8 @@ def build(bld):
 	bld.shlib(
 		source   = source,
 		target   = bld.env.SERVER_LIBRARY_NAME + bld.env.POSTFIX,
+		cflags   = ['-fPIC'],
+		linkflags = ['-s', 'SIDE_MODULE=1'],
 		name     = 'server',
 		features = 'c cxx',
 		includes = includes,

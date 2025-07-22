@@ -122,6 +122,8 @@ def build(bld):
 	bld.shlib(
 		source   = source,
 		target   = 'client' + bld.env.POSTFIX,
+		cflags   = ['-fPIC'],
+		linkflags = ['-s', 'SIDE_MODULE=1'],
 		name     = 'client',
 		features = 'c cxx',
 		includes = includes,
