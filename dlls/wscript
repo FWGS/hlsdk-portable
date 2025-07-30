@@ -59,6 +59,7 @@ def build(bld):
 		features = 'c cxx',
 		includes = includes,
 		defines  = defines,
+		use      = 'vcs_info',
 		install_path = install_path,
 		idx = bld.get_taskgen_count()
 	)
