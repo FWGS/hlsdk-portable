@@ -24,7 +24,6 @@ def build(bld):
 
 	source = bld.path.ant_glob('**/*.cpp', excl=excluded_files)
 	source += bld.path.parent.ant_glob(['pm_shared/*.c', 'public/safe_snprintf.c'])
-	source += ['../game_shared/vcs_info.cpp']
 
 	defines = bld.env.EXPORT_DEFINES_LIST
 	if 'HAVE_STRLCPY=1' not in defines:
