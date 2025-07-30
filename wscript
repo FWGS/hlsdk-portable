@@ -61,6 +61,7 @@ def options(opt):
 
 	# a1ba: hidden option for CI
 	grp.add_option('--enable-msvcdeps', action='store_true', dest='MSVCDEPS', default=False, help='')
+	grp.add_option('--enable-wafcache', action='store_true', dest='WAFCACHE', default=False, help='')
 
 	opt.add_subproject('cl_dll dlls')
 
@@ -290,6 +291,9 @@ def configure(conf):
 	conf.add_subproject('cl_dll')
 
 def build(bld):
+	if bld.options.WAFCACHE:
+		bld.load('wafcache')
+
 	if bld.is_install and not bld.options.destdir:
 		bld.fatal('Set the install destination directory using --destdir option')
 
