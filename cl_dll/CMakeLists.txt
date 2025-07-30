@@ -124,7 +124,6 @@ set (CLDLL_SOURCES
 	tri.cpp
 	util.cpp
 	view.cpp
-	../game_shared/vcs_info.cpp
 	../public/safe_snprintf.c
 )
 
@@ -199,6 +198,7 @@ if(USE_VOICEMGR)
 endif()
 
 add_library (${CLDLL_LIBRARY} SHARED ${CLDLL_SOURCES})
+target_link_libraries(${CLDLL_LIBRARY} vcs_info)
 
 if (GOLDSOURCE_SUPPORT)
 	target_link_libraries( ${CLDLL_LIBRARY} ${CMAKE_DL_LIBS} )
