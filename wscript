@@ -58,6 +58,8 @@ def options(opt):
 		help = 'disable compilation abort on warning')
 	grp.add_option('--enable-voicemgr', action = 'store_true', dest = 'USE_VOICEMGR', default = False,
 		help = 'Enable VOICE MANAGER')
+	grp.add_option('--enable-android-apk', action = 'store_true', dest = 'ANDROID_APK', default = False,
+		help = 'Enable Android APK styled libraries deploy')
 
 	# a1ba: hidden option for CI
 	grp.add_option('--enable-msvcdeps', action='store_true', dest='MSVCDEPS', default=False, help='')
@@ -274,13 +276,9 @@ def configure(conf):
 	if conf.env.HLDEMO_BUILD and conf.env.OEM_BUILD:
 		conf.fatal('Don\'t mix Demo and OEM builds!')
 
-	# force to use server library name
-	if conf.env.DEST_OS == 'android' and not conf.env.TERMUX:
-		conf.env.SERVER_LIBRARY_NAME = 'server' # can't be any other name, until specified
-	else:
-		# strip lib from pattern
-		if conf.env.cxxshlib_PATTERN.startswith('lib'):
-			conf.env.cxxshlib_PATTERN = conf.env.cxxshlib_PATTERN[3:]
+	# strip lib from pattern
+	if conf.env.cxxshlib_PATTERN.startswith('lib'):
+		conf.env.cxxshlib_PATTERN = conf.env.cxxshlib_PATTERN[3:]
 
 	conf.load('library_naming')
 	conf.add_subproject('game_shared dlls cl_dll')
