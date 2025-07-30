@@ -10,5 +10,5 @@ def configure(conf):
 		conf.define('XASH_BUILD_BRANCH', conf.env.GIT_BRANCH)
 
 def build(bld):
-	bld.stlib(source = 'vcs_info.cpp', target = 'vcs_info', includes = '.')
+	bld.stlib(source = 'vcs_info.c', target = 'vcs_info', includes = '.')
 

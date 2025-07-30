@@ -21,4 +21,4 @@ endif()
 
 
 include_directories(.)
-add_library(vcs_info STATIC vcs_info.cpp)
+add_library(vcs_info STATIC vcs_info.c)
