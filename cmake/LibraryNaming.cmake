@@ -195,9 +195,7 @@ else()
 	message(SEND_ERROR "Place your architecture name here! If this is a mistake, try to fix conditions above and report a bug")
 endif()
 
-if(BUILDOS STREQUAL "android" AND NOT XASH_TERMUX)
-	set(POSTFIX "") # force disable for Android, as Android ports aren't distributed in normal way and doesn't follow library naming
-elseif(BUILDOS AND BUILDARCH)
+if(BUILDOS AND BUILDARCH)
 	set(POSTFIX "_${BUILDOS}_${BUILDARCH}")
 elseif(BUILDARCH)
 	set(POSTFIX "_${BUILDARCH}")
