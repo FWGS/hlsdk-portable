@@ -150,7 +150,6 @@ set (SVDLL_SOURCES
 	../pm_shared/pm_debug.c
 	../pm_shared/pm_math.c
 	../pm_shared/pm_shared.c
-	../game_shared/vcs_info.cpp
 	../public/safe_snprintf.c
 )
 
@@ -185,6 +184,7 @@ else()
 endif()
 
 add_library (${SVDLL_LIBRARY} SHARED ${SVDLL_SOURCES})
+target_link_libraries(${SVDLL_LIBRARY} vcs_info)
 
 set_target_properties (${SVDLL_LIBRARY} PROPERTIES
 	POSITION_INDEPENDENT_CODE 1)

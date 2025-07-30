@@ -23,14 +23,12 @@ AngleMatrix
 
 ====================
 */
-#if XASH_SIMD_NEON
-static const uint32x4_t AngleMatrix_sign0 = vsetq_lane_u32(0x80000000, vdupq_n_u32(0), 0);
-static const uint32x4_t AngleMatrix_sign1 = vsetq_lane_u32(0x80000000, vdupq_n_u32(0), 1);
-static const uint32x4_t AngleMatrix_sign2 = vsetq_lane_u32(0x80000000, vdupq_n_u32(0), 2);
-#endif
 void AngleMatrix( const float *angles, float (*matrix)[4] )
 {
 #if XASH_SIMD_NEON
+	static const uint32x4_t AngleMatrix_sign0 = vsetq_lane_u32(0x80000000, vdupq_n_u32(0), 0);
+	static const uint32x4_t AngleMatrix_sign1 = vsetq_lane_u32(0x80000000, vdupq_n_u32(0), 1);
+	static const uint32x4_t AngleMatrix_sign2 = vsetq_lane_u32(0x80000000, vdupq_n_u32(0), 2);
 	float32x4x3_t out_reg;
 	float32x4_t angles_reg = {};
 	memcpy(&angles_reg, angles, sizeof(float) * 3);
