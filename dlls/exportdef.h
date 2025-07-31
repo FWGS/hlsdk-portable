@@ -9,7 +9,11 @@
 	#endif
 #else
 	#if __GNUC__ >= 4
-		#define EXPORT __attribute__ ((visibility ("default")))
+		#if __EMSCRIPTEN__
+			#define EXPORT __attribute__ ((used)) //tell llvm to keep this export, see EMSCRIPTEN_KEEPALIVE
+		#else
+			#define EXPORT __attribute__ ((visibility ("default")))
+		#endif
 	#else
 		#define EXPORT
 	#endif
