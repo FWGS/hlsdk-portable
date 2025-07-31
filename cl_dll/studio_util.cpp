@@ -11,7 +11,7 @@
 #include "com_model.h"
 #include "studio_util.h"
 #include "build.h"
-#if XASH_ARMv8
+#if 0 // XASH_ARMv8 // It looks broken.
 #define XASH_SIMD_NEON 1
 #include <arm_neon.h>
 #include "neon_mathfun.h"
