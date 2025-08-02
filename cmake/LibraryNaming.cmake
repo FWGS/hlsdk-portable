@@ -204,3 +204,12 @@ else()
 endif()
 
 message(STATUS "Library postfix: " ${POSTFIX})
+
+macro(set_target_postfix target)
+	set_target_properties(${target} PROPERTIES OUTPUT_NAME "${target}${POSTFIX}" PREFIX "")
+endmacro()
+
+macro(set_target_postfix_with_name target name)
+	set_target_properties(${target} PROPERTIES OUTPUT_NAME "${name}${POSTFIX}" PREFIX "")
+endmacro()
+
