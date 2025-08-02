@@ -197,13 +197,9 @@ else()
 	set(SVDLL_NAME "${SERVER_LIBRARY_NAME}")
 endif()
 
-set_target_properties(${SVDLL_LIBRARY} PROPERTIES
-	OUTPUT_NAME "${SVDLL_NAME}${POSTFIX}"
-	PREFIX "")
+set_target_postfix_with_name(${SVDLL_LIBRARY} ${SVDLL_NAME})
 
-if(MSVC)
-	set_property(TARGET ${SVDLL_LIBRARY} PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-endif()
+set_property(TARGET ${SVDLL_LIBRARY} PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
 if(HAVE_LTO)
 	set_property(TARGET ${SVDLL_LIBRARY} PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)

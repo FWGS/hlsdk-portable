@@ -227,14 +227,9 @@ endif()
 set_target_properties (${CLDLL_LIBRARY} PROPERTIES
 	POSITION_INDEPENDENT_CODE 1)
 
-set(CLDLL_NAME "client")
-set_target_properties(${CLDLL_LIBRARY} PROPERTIES
-	OUTPUT_NAME "${CLDLL_NAME}${POSTFIX}"
-	PREFIX "")
+set_target_postfix(${CLDLL_LIBRARY})
 
-if(MSVC)
-	set_property(TARGET ${CLDLL_LIBRARY} PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-endif()
+set_property(TARGET ${CLDLL_LIBRARY} PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
 if(HAVE_LTO)
 	set_property(TARGET ${CLDLL_LIBRARY} PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
