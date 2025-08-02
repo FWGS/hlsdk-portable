@@ -96,24 +96,6 @@ endif()
 CHECK_FUNCTION_EXISTS(strlcpy HAVE_STRLCPY)
 CHECK_FUNCTION_EXISTS(strlcat HAVE_STRLCAT)
 
-execute_process(COMMAND "git" "describe" "--dirty" "--always"
-	WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-        OUTPUT_VARIABLE GIT_VERSION
-        OUTPUT_STRIP_TRAILING_WHITESPACE)
-
-execute_process(COMMAND "git" "rev-parse" "--abbrev-ref" "HEAD"
-	WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-        OUTPUT_VARIABLE GIT_BRANCH
-        OUTPUT_STRIP_TRAILING_WHITESPACE)
-
-if(GIT_VERSION)
-	add_definitions(-DXASH_BUILD_COMMIT="${GIT_VERSION}")
-endif()
-
-if(GIT_BRANCH)
-	add_definitions(-DXASH_BUILD_BRANCH="${GIT_BRANCH}")
-endif()
-
 file(STRINGS "mod_options.txt" MOD_OPTIONS_STRINGS REGEX "^([A-Za-z0-9_-]+)=([A-Za-z0-9_-]+)\ \#\ (.*)$")
 foreach(LINE IN LISTS MOD_OPTIONS_STRINGS)
 	# file() itself doesn't populate CMAKE_MATCH_<n>, so
@@ -214,6 +196,8 @@ if(HAVE_TGMATH_H)
 		add_definitions(-DHAVE_TGMATH_H)
 	endif()
 endif()
+
+add_subdirectory(game_shared)
 
 if(BUILD_CLIENT)
 	message(STATUS "Building client enabled")

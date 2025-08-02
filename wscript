@@ -61,6 +61,7 @@ def options(opt):
 
 	# a1ba: hidden option for CI
 	grp.add_option('--enable-msvcdeps', action='store_true', dest='MSVCDEPS', default=False, help='')
+	grp.add_option('--enable-wafcache', action='store_true', dest='WAFCACHE', default=False, help='')
 
 	opt.add_subproject('cl_dll dlls')
 
@@ -87,11 +88,7 @@ def configure(conf):
 	if conf.env.COMPILER_CC == 'msvc':
 		conf.load('msvc_pdb')
 
-	conf.load('msvs msdev subproject clang_compilation_database strip_on_install enforce_pic gitversion')
-	if conf.env.GIT_VERSION:
-		conf.define('XASH_BUILD_COMMIT', conf.env.GIT_VERSION)
-	if conf.env.GIT_BRANCH:
-		conf.define('XASH_BUILD_BRANCH', conf.env.GIT_BRANCH)
+	conf.load('msvs msdev subproject clang_compilation_database strip_on_install enforce_pic')
 
 	conf.check_pic(True) # modern defaults
 	if conf.env.DEST_OS != 'win32':
@@ -286,10 +283,12 @@ def configure(conf):
 			conf.env.cxxshlib_PATTERN = conf.env.cxxshlib_PATTERN[3:]
 
 	conf.load('library_naming')
-	conf.add_subproject('dlls')
-	conf.add_subproject('cl_dll')
+	conf.add_subproject('game_shared dlls cl_dll')
 
 def build(bld):
+	if bld.options.WAFCACHE:
+		bld.load('wafcache')
+
 	if bld.is_install and not bld.options.destdir:
 		bld.fatal('Set the install destination directory using --destdir option')
 
@@ -298,5 +297,4 @@ def build(bld):
 		excl='*.user configuration.py .lock* *conf_check_*/** config.log %s/*' % Build.CACHE_DIR,
 		quiet=True, generator=True)
 
-	bld.add_subproject('dlls')
-	bld.add_subproject('cl_dll')
+	bld.add_subproject('game_shared dlls cl_dll')

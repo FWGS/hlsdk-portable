@@ -23,8 +23,7 @@ def build(bld):
 	excluded_files = ['mpstubb.cpp', 'stats.cpp', 'Wxdebug.cpp']
 
 	source = bld.path.ant_glob('**/*.cpp', excl=excluded_files)
-	source += bld.path.parent.ant_glob('pm_shared/*.c', 'public/safe_snprintf.c')
-	source += ['../game_shared/vcs_info.cpp']
+	source += bld.path.parent.ant_glob(['pm_shared/*.c', 'public/safe_snprintf.c'])
 
 	defines = bld.env.EXPORT_DEFINES_LIST
 	if 'HAVE_STRLCPY=1' not in defines:
@@ -59,6 +58,7 @@ def build(bld):
 		features = 'c cxx',
 		includes = includes,
 		defines  = defines,
+		use      = 'vcs_info',
 		install_path = install_path,
 		idx = bld.get_taskgen_count()
 	)

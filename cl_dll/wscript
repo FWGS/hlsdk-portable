@@ -40,7 +40,7 @@ def configure(conf):
 			conf.fatal('VGUI was enabled but VGUI cannot be used')
 
 def build(bld):
-	libs = []
+	libs = ['vcs_info']
 	defines = ['CLIENT_DLL']
 	defines += bld.env.EXPORT_DEFINES_LIST
 	includes = ['.',
