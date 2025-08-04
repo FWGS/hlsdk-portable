@@ -183,10 +183,7 @@ def configure(conf):
 		if conf.env.XASH_X86:
 			buildarch = ''
 
-	if conf.env.XASH_ANDROID and not conf.env.XASH_TERMUX:
-		# force disable for Android, as Android ports aren't distributed in normal way and doesn't follow library naming
-		postfix = ''
-	elif buildos != '' and buildarch != '':
+	if buildos != '' and buildarch != '':
 		postfix = '_%s_%s' % (buildos,buildarch)
 	elif buildarch != '':
 		postfix = '_%s' % buildarch
