@@ -1,3 +1,4 @@
+include_guard(GLOBAL)
 include(CheckSymbolExists)
 
 macro(check_build_target symbol)
@@ -195,9 +196,7 @@ else()
 	message(SEND_ERROR "Place your architecture name here! If this is a mistake, try to fix conditions above and report a bug")
 endif()
 
-if(BUILDOS STREQUAL "android" AND NOT XASH_TERMUX)
-	set(POSTFIX "") # force disable for Android, as Android ports aren't distributed in normal way and doesn't follow library naming
-elseif(BUILDOS AND BUILDARCH)
+if(BUILDOS AND BUILDARCH)
 	set(POSTFIX "_${BUILDOS}_${BUILDARCH}")
 elseif(BUILDARCH)
 	set(POSTFIX "_${BUILDARCH}")
@@ -206,3 +205,12 @@ else()
 endif()
 
 message(STATUS "Library postfix: " ${POSTFIX})
+
+macro(set_target_postfix target)
+	set_target_properties(${target} PROPERTIES OUTPUT_NAME "${target}${POSTFIX}" PREFIX "")
+endmacro()
+
+macro(set_target_postfix_with_name target name)
+	set_target_properties(${target} PROPERTIES OUTPUT_NAME "${name}${POSTFIX}" PREFIX "")
+endmacro()
+
