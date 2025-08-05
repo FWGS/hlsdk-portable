@@ -32,7 +32,7 @@ ANDROID_NDK_API_MIN = {
 	23: 16,
 	25: 19,
 	27: 19,
-	28: 19,
+	28: 21,
 } # minimal API level ndk revision supports
 
 ANDROID_STPCPY_API_MIN = 21 # stpcpy() introduced in SDK 21
@@ -541,16 +541,10 @@ def options(opt):
 		help='enable building for Sailfish/Aurora')
 	xc.add_option('--emscripten', action='store_true', dest='EMSCRIPTEN', default = None,
 		help='enable building for Emscripten')
-	xc.add_option('--enable-cross-compile-env', action='store_true', dest='CROSS_COMPILE_ENV', default=None,
-		help='like Kbuild (Linux kernel buildsystem), set toolchain from CROSS_COMPILE variable [default: %(default)s]')
 
 def configure(conf):
-	if conf.options.CROSS_COMPILE_ENV:
-		try:
-			toolchain_path = conf.environ['CROSS_COMPILE']
-		except KeyError:
-			conf.fatal('Set CROSS_COMPILE environment variable to toolchain prefix (usually in form of path and triplet, ending with -)')
-
+	if 'CROSS_COMPILE' in conf.environ:
+		toolchain_path = conf.environ['CROSS_COMPILE']
 		conf.environ['CC'] = toolchain_path + 'cc'
 		conf.environ['CXX'] = toolchain_path + 'c++'
 		conf.environ['STRIP'] = toolchain_path + 'strip'

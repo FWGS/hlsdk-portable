@@ -58,6 +58,8 @@ def options(opt):
 		help = 'disable compilation abort on warning')
 	grp.add_option('--enable-voicemgr', action = 'store_true', dest = 'USE_VOICEMGR', default = False,
 		help = 'Enable VOICE MANAGER')
+	grp.add_option('--enable-android-apk', action = 'store_true', dest = 'ANDROID_APK', default = False,
+		help = 'Enable Android APK styled libraries deploy')
 
 	# a1ba: hidden option for CI
 	grp.add_option('--enable-msvcdeps', action='store_true', dest='MSVCDEPS', default=False, help='')
@@ -88,11 +90,7 @@ def configure(conf):
 	if conf.env.COMPILER_CC == 'msvc':
 		conf.load('msvc_pdb')
 
-	conf.load('msvs msdev subproject clang_compilation_database strip_on_install enforce_pic gitversion')
-	if conf.env.GIT_VERSION:
-		conf.define('XASH_BUILD_COMMIT', conf.env.GIT_VERSION)
-	if conf.env.GIT_BRANCH:
-		conf.define('XASH_BUILD_BRANCH', conf.env.GIT_BRANCH)
+	conf.load('msvs msdev subproject clang_compilation_database strip_on_install enforce_pic')
 
 	conf.check_pic(True) # modern defaults
 	if conf.env.DEST_OS != 'win32':
@@ -278,17 +276,12 @@ def configure(conf):
 	if conf.env.HLDEMO_BUILD and conf.env.OEM_BUILD:
 		conf.fatal('Don\'t mix Demo and OEM builds!')
 
-	# force to use server library name
-	if conf.env.DEST_OS == 'android' and not conf.env.TERMUX:
-		conf.env.SERVER_LIBRARY_NAME = 'server' # can't be any other name, until specified
-	else:
-		# strip lib from pattern
-		if conf.env.cxxshlib_PATTERN.startswith('lib'):
-			conf.env.cxxshlib_PATTERN = conf.env.cxxshlib_PATTERN[3:]
+	# strip lib from pattern
+	if conf.env.cxxshlib_PATTERN.startswith('lib'):
+		conf.env.cxxshlib_PATTERN = conf.env.cxxshlib_PATTERN[3:]
 
 	conf.load('library_naming')
-	conf.add_subproject('dlls')
-	conf.add_subproject('cl_dll')
+	conf.add_subproject('game_shared dlls cl_dll')
 
 def build(bld):
 	if bld.options.WAFCACHE:
@@ -302,5 +295,4 @@ def build(bld):
 		excl='*.user configuration.py .lock* *conf_check_*/** config.log %s/*' % Build.CACHE_DIR,
 		quiet=True, generator=True)
 
-	bld.add_subproject('dlls')
-	bld.add_subproject('cl_dll')
+	bld.add_subproject('game_shared dlls cl_dll')
