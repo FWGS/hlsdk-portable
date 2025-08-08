@@ -78,10 +78,17 @@ def configure(conf):
 		conf.env.MSVC_TARGETS = ['x86']
 
 	# Load compilers early
-	conf.load('xcompile compiler_c compiler_cxx gccdeps')
+	conf.load('xcompile compiler_c compiler_cxx')
 
-	if conf.options.MSVCDEPS:
-		conf.load('msvcdeps')
+	# Disable compiler-backed dependency calculation with caching
+	# bug: https://gitlab.com/ita1024/waf/-/issues/2478
+	if not conf.options.WAFCACHE:
+		conf.load('gccdeps')
+
+		if conf.options.MSVCDEPS:
+			conf.load('msvcdeps')
+
+	conf.env.WAFCACHE = conf.options.WAFCACHE
 
 	# HACKHACK: override msvc DEST_CPU value by something that we understand
 	if conf.env.DEST_CPU == 'amd64':
@@ -277,14 +284,15 @@ def configure(conf):
 		conf.fatal('Don\'t mix Demo and OEM builds!')
 
 	# strip lib from pattern
-	if conf.env.cxxshlib_PATTERN.startswith('lib'):
-		conf.env.cxxshlib_PATTERN = conf.env.cxxshlib_PATTERN[3:]
+	if conf.env.DEST_OS != 'android':
+		if conf.env.cxxshlib_PATTERN.startswith('lib'):
+			conf.env.cxxshlib_PATTERN = conf.env.cxxshlib_PATTERN[3:]
 
 	conf.load('library_naming')
 	conf.add_subproject('game_shared dlls cl_dll')
 
 def build(bld):
-	if bld.options.WAFCACHE:
+	if bld.env.WAFCACHE:
 		bld.load('wafcache')
 
 	if bld.is_install and not bld.options.destdir:
