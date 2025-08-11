@@ -489,4 +489,86 @@ void CGrenade::UseSatchelCharges( entvars_t *pevOwner, SATCHELCODE code )
 	}
 }
 
+CGrenade *CGrenade::ClusterShootTimed( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity, float time )
+{
+	CGrenade *pGrenade = GetClassPtr( (CGrenade *)NULL );
+	pGrenade->Spawn();
+	UTIL_SetOrigin( pGrenade->pev, vecStart );
+	pGrenade->pev->velocity = vecVelocity;
+	pGrenade->pev->angles = UTIL_VecToAngles( pGrenade->pev->velocity );
+	pGrenade->pev->owner = ENT( pevOwner );
+
+	pGrenade->SetTouch( &CGrenade::BounceTouch );   // Bounce if touched
+
+	// Take one second off of the desired detonation time and set the think to PreDetonate. PreDetonate
+	// will insert a DANGER sound into the world sound list and delay detonation for one second so that
+	// the grenade explodes after the exact amount of time specified in the call to ShootTimed().
+
+	pGrenade->pev->dmgtime = gpGlobals->time + time;
+	pGrenade->SetThink( &CGrenade::ClusterTumbleThink );
+	pGrenade->pev->nextthink = gpGlobals->time + 0.1f;
+	if( time < 0.1f )
+	{
+		pGrenade->pev->nextthink = gpGlobals->time;
+		pGrenade->pev->velocity = Vector( 0, 0, 0 );
+	}
+
+	SET_MODEL( ENT( pGrenade->pev ), "models/w_grenade.mdl" );
+	pGrenade->pev->sequence = RANDOM_LONG( 3, 6 );
+	pGrenade->ResetSequenceInfo();
+	pGrenade->pev->framerate = 1.0f;
+
+	// Tumble through the air
+	// pGrenade->pev->avelocity.x = -400;
+
+	pGrenade->pev->gravity = 0.5f;
+	pGrenade->pev->friction = 0.8f;
+
+	pGrenade->pev->dmg = gSkillData.plrDmgClusterGrenade;
+
+	return pGrenade;
+}
+
+void CGrenade::ClusterTumbleThink( void )
+{
+	if( !IsInWorld() )
+	{
+		UTIL_Remove( this );
+		return;
+	}
+
+	StudioFrameAdvance();
+	pev->nextthink = gpGlobals->time + 0.1f;
+
+	if( pev->dmgtime - 1 < gpGlobals->time )
+	{
+		CSoundEnt::InsertSound( bits_SOUND_DANGER, pev->origin + pev->velocity * ( pev->dmgtime - gpGlobals->time ), 400, 0.1 );
+	}
+
+	if( pev->dmgtime <= gpGlobals->time )
+	{
+		SetThink( &CGrenade::ClusterDetonate );
+	}
+	if( pev->waterlevel != 0 )
+	{
+		pev->velocity = pev->velocity * 0.5f;
+		pev->framerate = 0.2f;
+	}
+}
+
+void CGrenade::ClusterDetonate( void )
+{
+	TraceResult tr;
+	Vector vecSpot;// trace starts here!
+
+	vecSpot = pev->origin + Vector( 0, 0, 8 );
+	UTIL_TraceLine( vecSpot, vecSpot + Vector( 0, 0, -40 ), ignore_monsters, ENT(pev), &tr );
+
+	Explode( &tr, DMG_BLAST );
+
+	for( int i = 0; i < 6; i++ )
+		CGrenade::ShootTimed( pev, pev->origin + gpGlobals->v_forward * RANDOM_LONG( -200, 200 )
+		    - gpGlobals->v_right * RANDOM_LONG( -200, 200 ) + gpGlobals->v_up * RANDOM_LONG( -200, 200 ),
+		    gpGlobals->v_forward * RANDOM_LONG( 5, 10 ), RANDOM_FLOAT( 1.0f, 2.0f ));
+}
 //======================end grenade

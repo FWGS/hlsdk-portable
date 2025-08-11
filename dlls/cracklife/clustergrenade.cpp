@@ -155,7 +155,7 @@ void CClusterGrenade::WeaponIdle( void )
 		if( time < 0.0f )
 			time = 0.0f;
 
-		CGrenade::ShootTimed( m_pPlayer->pev, vecSrc, vecThrow, time );
+		CGrenade::ClusterShootTimed( m_pPlayer->pev, vecSrc, vecThrow, time );
 
 		if( flVel < 500.0f )
 		{
