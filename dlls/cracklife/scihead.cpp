@@ -100,7 +100,7 @@ int CScihead::AddToPlayer( CBasePlayer *pPlayer )
 
 BOOL CScihead::Deploy()
 {
-	return DefaultDeploy( "models/v_scihead.mdl", "models/p_crowbar.mdl", SCIHEAD_DRAW, "scihead" );
+	return DefaultDeploy( "models/v_scihead.mdl", "models/p_crowbar.mdl", SCIHEAD_DRAW, "crowbar" );
 }
 
 void CScihead::Holster( int skiplocal /* = 0 */ )
