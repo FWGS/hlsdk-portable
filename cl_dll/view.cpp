@@ -1329,7 +1329,7 @@ int V_FindViewModelByWeaponModel( int weaponindex )
 		{ "models/p_crowbar.mdl",	"models/v_crowbar.mdl" },
 		{ "models/p_egon.mdl",		"models/v_egon.mdl" },
 		{ "models/p_gauss.mdl",		"models/v_gauss.mdl" },
-		{ "models/p_9mmhandgun.mdl",	"models/v_9mmhandgun.mdl" },
+		{ "models/p__9mmhandgun.mdl",	"models/v_9mmhandgun.mdl" },
 		{ "models/p_grenade.mdl",	"models/v_grenade.mdl" },
 		{ "models/p_hgun.mdl",		"models/v_hgun.mdl" },
 		{ "models/p_9mmAR.mdl",		"models/v_9mmAR.mdl" },
