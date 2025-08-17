@@ -64,6 +64,7 @@ DEFINES = [
 'XASH_WASI',
 'XASH_WASM',
 'XASH_SUNOS',
+'XASH_HURD',
 ]
 
 def configure(conf):
@@ -109,6 +110,8 @@ def configure(conf):
 		buildos = "wasi"
 	elif conf.env.XASH_SUNOS:
 		buildos = "sunos"
+	elif conf.env.XASH_HURD:
+		buildos = "hurd"
 	else:
 		conf.fatal("Place your operating system name in build.h and library_naming.py!\n"
 			"If this is a mistake, try to fix conditions above and report a bug")
