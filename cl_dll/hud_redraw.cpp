@@ -124,6 +124,11 @@ int CHud::Redraw( float flTime, int intermission )
 			gViewPort->HideCommandMenu();
 			gViewPort->HideScoreBoard();
 			gViewPort->UpdateSpectatorPanel();
+//++ BulliT
+			//Stop recording the demo.
+			if( gEngfuncs.pDemoAPI->IsRecording() )
+				gEngfuncs.pfnClientCmd( "stop\n" );
+//-- Martin Webrant
 		}
 		else if( !m_iIntermission && intermission )
 		{
@@ -137,6 +142,12 @@ int CHud::Redraw( float flTime, int intermission )
 			// Take a screenshot if the client's got the cvar set
 			if( CVAR_GET_FLOAT( "hud_takesshots" ) != 0 )
 				m_flShotTime = flTime + 1.0;	// Take a screenshot in a second
+
+//++ BulliT
+			AgMatchReport Report;
+			Report.Save();
+//-- Martin Webrant
+
 		}
 	}
 #else
