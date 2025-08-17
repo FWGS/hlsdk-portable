@@ -151,7 +151,7 @@ int CHud::Redraw( float flTime, int intermission )
 		}
 	}
 #else
-	if( !m_iIntermission && intermission )
+	if( m_iIntermission && !intermission )
 	{
 //++ BulliT
 		//Stop recording the demo.
