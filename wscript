@@ -284,8 +284,9 @@ def configure(conf):
 		conf.fatal('Don\'t mix Demo and OEM builds!')
 
 	# strip lib from pattern
-	if conf.env.cxxshlib_PATTERN.startswith('lib'):
-		conf.env.cxxshlib_PATTERN = conf.env.cxxshlib_PATTERN[3:]
+	if conf.env.DEST_OS != 'android':
+		if conf.env.cxxshlib_PATTERN.startswith('lib'):
+			conf.env.cxxshlib_PATTERN = conf.env.cxxshlib_PATTERN[3:]
 
 	conf.load('library_naming')
 	conf.add_subproject('game_shared dlls cl_dll')
