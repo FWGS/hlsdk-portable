@@ -135,3 +135,45 @@ jobs:
         name: hlsdk-${{ steps.extract_branch.outputs.branch }}-windows-vgui
         path: dist-vgui/${{ steps.extract_gamedir.outputs.gamedir }}
 
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - name: Fetch artifacts
+        if: ${{ github.event_name == 'push' && !github.event.pull_request }}
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+
+      - name: Remove old release
+        uses: dev-drprasad/delete-tag-and-release@v0.2.1
+        if: ${{ github.event_name == 'push' && !github.event.pull_request }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: continuous-${{ github.ref_name }}
+          delete_release: true
+
+      - name: Prepare release
+        if: ${{ github.event_name == 'push' && !github.event.pull_request }}
+        continue-on-error: true
+        run: |
+          cd artifacts/
+          for i in hlsdk-*; do
+            zip -r "$i" "$i"
+            rm -rf "$i"
+          done
+          cd ..
+          sleep 20s
+
+      - name: Upload new release
+        if: ${{ github.event_name == 'push' && !github.event.pull_request }}
+        uses: softprops/action-gh-release@v0.1.15
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          files: artifacts/hlsdk-*.zip
+          tag_name: continuous-${{ github.ref_name }}
+          draft: false
+          prerelease: true
+          name: hlsdk-portable ${{ github.ref_name }} development build
