@@ -150,7 +150,6 @@ set (SVDLL_SOURCES
 	poke646/mp3.cpp
 	poke646/robocop.cpp
 	vendetta/par21.cpp
-	../game_shared/vcs_info.cpp
 	../public/safe_snprintf.c
 )
 
@@ -185,31 +184,34 @@ else()
 endif()
 
 add_library (${SVDLL_LIBRARY} SHARED ${SVDLL_SOURCES})
+target_link_libraries(${SVDLL_LIBRARY} vcs_info)
 
-set_target_properties (${SVDLL_LIBRARY} PROPERTIES
-	POSITION_INDEPENDENT_CODE 1)
+set_target_properties (${SVDLL_LIBRARY} PROPERTIES POSITION_INDEPENDENT_CODE 1)
 
-if(NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Android" OR XASH_TERMUX)
+if(APPLE AND NOT "${SERVER_LIBRARY_NAME_OSX}" STREQUAL "")
+	# on Apple platforms we always use gamedll_osx liblist/gameinfo key, if it's set
+	set(SVDLL_NAME "${SERVER_LIBRARY_NAME_OSX}")
+elseif(NOT WIN32 AND NOT "${SERVER_LIBRARY_NAME_LINUX}" STREQUAL "")
+	# on non-Windows platforms we use gamedll_linux liblist/gameinfo key, if it's set
+	set(SVDLL_NAME "${SERVER_LIBRARY_NAME_LINUX}")
+else()
+	# on Windows or if no gamedll_osx or gamedll_linux is set, use default gamedll key
 	set(SVDLL_NAME "${SERVER_LIBRARY_NAME}")
-
-	set_target_properties(${SVDLL_LIBRARY} PROPERTIES
-		OUTPUT_NAME "${SVDLL_NAME}${POSTFIX}"
-		PREFIX "")
 endif()
 
-if(MSVC)
-	set_property(TARGET ${SVDLL_LIBRARY} PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-endif()
+set_target_postfix_with_name(${SVDLL_LIBRARY} ${SVDLL_NAME})
+
+set_property(TARGET ${SVDLL_LIBRARY} PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
 if(HAVE_LTO)
 	set_property(TARGET ${SVDLL_LIBRARY} PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
 endif()
 
-install( TARGETS ${SVDLL_LIBRARY}
+install(TARGETS ${SVDLL_LIBRARY}
 	RUNTIME DESTINATION "${GAMEDIR}/${SERVER_INSTALL_DIR}/"
 	LIBRARY DESTINATION "${GAMEDIR}/${SERVER_INSTALL_DIR}/"
 	PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
-	    GROUP_READ GROUP_EXECUTE
+		GROUP_READ GROUP_EXECUTE
 		WORLD_READ WORLD_EXECUTE)
 
 if(CMAKE_BUILD_TYPE MATCHES "Release" AND NOT WIN32)
