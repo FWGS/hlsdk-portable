@@ -248,7 +248,7 @@ void BotCreate(const char *skin, const char *name, const char *skill)
          for (j = i; j < length; j++)  // shuffle chars left (and null)
             c_name[j] = c_name[j+1];
          length--;
-      }               
+      }
    }
 
    skill_level = 0;
@@ -291,6 +291,7 @@ void BotCreate(const char *skin, const char *name, const char *skill)
       sprintf(c_index, "%d", index);
 
       bot_respawn[index].is_used = TRUE;  // this slot is used
+      bot_respawn[index].state = BOT_IS_RESPAWNING;
 
       // don't store the name here, it might change if same as another
       strcpy(bot_respawn[index].skin, c_skin);
@@ -334,7 +335,8 @@ void CBot::Spawn( )
    // get the bot's name and save it in respawn array...
    strcpy(bot_respawn[respawn_index].name, STRING(pev->netname));
 
-   bot_respawn[respawn_index].state = BOT_IDLE;
+   bot_respawn[respawn_index].is_used = TRUE;
+   bot_respawn[respawn_index].state = BOT_IS_RESPAWNING;
 
    pev->ideal_yaw = pev->v_angle.y;
    pev->yaw_speed = BOT_YAW_SPEED;
@@ -574,7 +576,7 @@ float CBot::BotChangeYaw( float speed )
 
    // turn from the current v_angle yaw to the ideal_yaw by selecting
    // the quickest way to turn to face that direction
-   
+
    current = pev->v_angle.y;
    ideal = pev->ideal_yaw;
 
@@ -1764,8 +1766,6 @@ void CBot::BotThink( void )
       pev->health = 0;
       pev->deadflag = DEAD_DEAD;  // make the kicked bot be dead
 
-      bot_respawn[respawn_index].is_used = FALSE;  // this slot is now free
-      bot_respawn[respawn_index].state = BOT_IDLE;
       respawn_index = -1;  // indicate no slot used
 
       // fall through to next if statement (respawn_index will be -1)
@@ -1982,7 +1982,7 @@ void CBot::BotThink( void )
             {
                // if there was a wall on the left over 1/2 a second ago then
                // 20% of the time randomly turn between 45 and 60 degrees
-           
+
                if ((f_wall_on_left != 0) &&
                    (f_wall_on_left <= gpGlobals->time - 0.5) &&
                    (RANDOM_LONG(1, 100) <= 20))
@@ -2042,7 +2042,7 @@ void CBot::BotThink( void )
             else if ((moved_distance <= 1) && (!bot_was_paused))
             {
                // the bot must be stuck!
-            
+
                if (BotCanJumpUp( ))  // can the bot jump onto something?
                {
                   pev->button |= IN_JUMP;  // jump up and move forward
@@ -2103,4 +2103,3 @@ void CBot::BotThink( void )
                                 gpGlobals->frametime * 1000 );
    // TheFatal - END
 }
-
