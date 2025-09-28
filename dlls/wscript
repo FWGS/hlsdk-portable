@@ -68,10 +68,9 @@ def build(bld):
 		target   = server_dll_name + bld.env.POSTFIX,
 		name     = 'server',
 		features = 'c cxx',
-		use      = 'SHELL32 USER32',
+		use      = 'SHELL32 USER32 vcs_info',
 		includes = includes,
 		defines  = defines,
-		use      = 'vcs_info',
 		install_path = install_path,
 		idx = bld.get_taskgen_count()
 	)
