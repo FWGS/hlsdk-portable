@@ -3138,10 +3138,12 @@ void CEnvMirroredLaser :: Spawn()
 	iBeamCount = -1;
 	iMirrorCount = -1;
 	
-	if ((!m_iSearchDistance) || (m_iSearchDistance == 0))
+	if (!m_iSearchDistance)
 		m_iSearchDistance = 1024;
 
-	if ((!iMaxStep) || (iMaxStep))
+	// a1ba: the only map using this entity is dy_lasers.bsp and it sets maxstep to 12
+	// original code always set it 12, regardless of the set value, due to a possible typo
+	if (!iMaxStep)
 		iMaxStep = 12;
 }
 
