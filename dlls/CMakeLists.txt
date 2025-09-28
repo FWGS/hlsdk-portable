@@ -208,7 +208,7 @@ else()
 	set(SVDLL_NAME "${SERVER_LIBRARY_NAME}")
 endif()
 
-if(MSVC)
+if(WIN32)
 	target_link_libraries(${SVDLL_LIBRARY} user32.dll shell32.dll)
 endif()
 set_target_postfix_with_name(${SVDLL_LIBRARY} ${SVDLL_NAME})
