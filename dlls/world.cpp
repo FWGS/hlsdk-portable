@@ -455,7 +455,6 @@ BOOL  g_startSuit;          // When level starts player will automatically recei
 void CWorld::Spawn( void )
 {
 	g_fGameOver = FALSE;
-	m_bSlaveCoop = false;
 	Precache();
 }
 
