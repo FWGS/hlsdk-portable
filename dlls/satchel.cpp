@@ -343,7 +343,8 @@ void CSatchel::Holster( int skiplocal /* = 0 */ )
 	if( !m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] && m_chargeReady != SATCHEL_READY )
 	{
 		m_pPlayer->pev->weapons &= ~( 1 << WEAPON_SATCHEL );
-		DestroyItem();
+		SetThink( &CSatchel::DestroyItem );
+		pev->nextthink = gpGlobals->time + 0.1;
 	}
 }
 
