@@ -6,10 +6,10 @@ apply plugin: 'com.android.application'
 
 android {
     ndkVersion '26.1.10909125'
-    namespace 'com.xash.delta'
+    namespace 'su.xash.delta_particles'
 
     defaultConfig {
-        applicationId 'com.xash.delta'
+        applicationId 'su.xash.delta_particles'
         versionName '1.0'
         versionCode getBuildNum()
         minSdkVersion 3
