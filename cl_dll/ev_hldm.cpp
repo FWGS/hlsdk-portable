@@ -435,7 +435,7 @@ void EV_CreateShotSmoke(int type, Vector origin, Vector dir, int speed, float sc
 {
 	TEMPENTITY *te = NULL;
 	void ( *callback )( struct tempent_s *ent, float frametime, float currenttime ) = NULL;
-	model_t* wallPuffSprite = nullptr;
+	model_t* wallPuffSprite = NULL;
 
 	switch( type )
 	{

@@ -1742,7 +1742,7 @@ int CBaseMonster :: FTriangulate ( const Vector &vecStart , const Vector &vecEnd
 		}
 		else if (n>1)
 		{
-			if( CheckLocalMove( vecRight, vecFarSide, pTargetEnt, nullptr ) == LOCALMOVE_VALID )
+			if( CheckLocalMove( vecRight, vecFarSide, pTargetEnt, NULL ) == LOCALMOVE_VALID )
 			{
 				result = FTriangulate(vecStart, vecRight, localMoveDist, pTargetEnt, pApexes, n-1, tries - 2, true);
 				if (result)
@@ -1771,7 +1771,7 @@ int CBaseMonster :: FTriangulate ( const Vector &vecStart , const Vector &vecEnd
 		}
 		else if (n > 1)
 		{
-			if( CheckLocalMove( vecLeft, vecFarSide, pTargetEnt, nullptr ) == LOCALMOVE_VALID )
+			if( CheckLocalMove( vecLeft, vecFarSide, pTargetEnt, NULL ) == LOCALMOVE_VALID )
 			{
 				result = FTriangulate(vecStart, vecLeft, localMoveDist, pTargetEnt, pApexes, n-1, tries - 2, true);
 				if (result)
