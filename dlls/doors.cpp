@@ -892,7 +892,7 @@ void CRotDoor::Spawn( void )
 	{	
 		// swap pos1 and pos2, put door at pos2, invert movement direction
 		pev->angles = m_vecAngle2;
-		Vector vecSav = m_vecAngle1;
+		Vector vecSav = m_vecAngle2;
 		m_vecAngle2 = m_vecAngle1;
 		m_vecAngle1 = vecSav;
 		pev->movedir = pev->movedir * -1.0f;
