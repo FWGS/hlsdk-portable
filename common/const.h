@@ -111,9 +111,10 @@
 #define EF_NOINTERP			32	// don't interpolate the next frame
 #define EF_LIGHT			64	// rocket flare glow sprite
 #define EF_NODRAW			128	// don't draw entity
-#define EF_NIGHTVISION			256	// player nightvision
-#define EF_SNIPERLASER			512	// sniper laser effect
-#define EF_FIBERCAMERA			1024	// fiber camera
+//#define EF_NIGHTVISION			256	// player nightvision
+#define EF_MODEL_SKY		256
+#define EF_SNIPERLASER		512	// sniper laser effect
+#define EF_FIBERCAMERA		1024	// fiber camera
 
 
 #define EF_NOREFLECT		(1<<24)	// Entity won't reflecting in mirrors

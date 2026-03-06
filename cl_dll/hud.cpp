@@ -30,6 +30,19 @@
 #include "vgui_int.h"
 #include "vgui_TeamFortressViewport.h"
 #endif
+#include "steam_integration.h"
+
+#include "r_studioint.h"
+extern engine_studio_api_t IEngineStudio;
+
+cvar_t *cl_rollspeed;
+cvar_t *cl_rollangle;
+cvar_t *cl_strafing;
+
+cvar_t *cl_subtitles = NULL;
+
+cvar_t *hud_renderer = NULL;
+cvar_t *hud_scale = NULL;
 
 #include "demo.h"
 #include "demo_api.h"
@@ -100,6 +113,14 @@ extern client_sprite_t *GetSpriteList( client_sprite_t *pList, const char *psz, 
 extern cvar_t *sensitivity;
 cvar_t *cl_lw = NULL;
 cvar_t *cl_viewbob = NULL;
+
+cvar_t* cl_flashlight_custom = NULL;
+cvar_t* cl_flashlight_radius = NULL;
+cvar_t* cl_flashlight_fade_distance = NULL;
+cvar_t *cl_nvgradius = NULL;
+cvar_t* cl_weapon_wallpuff = NULL;
+
+cvar_t *cl_fake_achievements = NULL;
 
 void ShutdownInput( void );
 
@@ -363,6 +384,23 @@ int __MsgFunc_AllowSpec( const char *pszName, int iSize, void *pbuf )
 #endif
 	return 0;
 }
+
+int __MsgFunc_Achievement(const char *pszName, int iSize, void *pbuf)
+{
+	BEGIN_READ( pbuf, iSize );
+	const char* achievementId = READ_STRING();
+	if (cl_fake_achievements && cl_fake_achievements->value)
+	{
+		char buf[256];
+		_snprintf(buf, sizeof(buf), "Faking \"%s\"", achievementId);
+		gEngfuncs.pfnCenterPrint(buf);
+	}
+	else
+	{
+		SetAchievement(achievementId);
+	}
+	return 0;
+}
  
 // This is called every time the DLL is loaded
 void CHud::Init( void )
@@ -419,6 +457,8 @@ void CHud::Init( void )
 	HOOK_MESSAGE( ResetFade );
 #endif
 
+	HOOK_MESSAGE( Achievement );
+
 	// VGUI Menus
 	HOOK_MESSAGE( VGUIMenu );
 
@@ -426,9 +466,14 @@ void CHud::Init( void )
 	CVAR_CREATE( "hud_takesshots", "0", FCVAR_ARCHIVE );		// controls whether or not to automatically take screenshots at the end of a round
 	hud_textmode = CVAR_CREATE ( "hud_textmode", "0", FCVAR_ARCHIVE );
 
+	cl_rollangle = gEngfuncs.pfnRegisterVariable ( "cl_rollangle", "0.65", FCVAR_CLIENTDLL|FCVAR_ARCHIVE );
+	cl_rollspeed = gEngfuncs.pfnRegisterVariable ( "cl_rollspeed", "300", FCVAR_CLIENTDLL|FCVAR_ARCHIVE );
+	cl_strafing = gEngfuncs.pfnRegisterVariable ( "cl_strafing", "1", FCVAR_CLIENTDLL|FCVAR_ARCHIVE );
+
 	m_iLogo = 0;
 	m_iFOV = 0;
-	m_iHUDColor = 0x00FFA000; //255,160,0 -- LRC
+	m_iHUDColor = 0x00FFFFFF; //100, 0, 225 -- LRC
+	m_iHUDColor2 = 0x004B00A8; //75, 0, 168 -- LRC
 
 	CVAR_CREATE( "zoom_sensitivity_ratio", "1.2", FCVAR_ARCHIVE );
 	CVAR_CREATE( "cl_autowepswitch", "1", FCVAR_ARCHIVE | FCVAR_USERINFO );
@@ -438,6 +483,25 @@ void CHud::Init( void )
 	m_pAllowHD = CVAR_CREATE ( "hud_allow_hd", "1", FCVAR_ARCHIVE );
 	cl_lw = gEngfuncs.pfnGetCvarPointer( "cl_lw" );
 	cl_viewbob = CVAR_CREATE( "cl_viewbob", "1", FCVAR_ARCHIVE );
+	m_pCvarCrosshair = gEngfuncs.pfnGetCvarPointer( "crosshair" );
+
+	cl_subtitles = CVAR_CREATE( "cl_subtitles", "1", FCVAR_ARCHIVE );
+
+	cl_flashlight_custom = CVAR_CREATE( "cl_flashlight_custom", "1", FCVAR_CLIENTDLL|FCVAR_ARCHIVE );
+	cl_flashlight_radius = CVAR_CREATE( "cl_flashlight_radius", "100", FCVAR_CLIENTDLL|FCVAR_ARCHIVE );
+	cl_flashlight_fade_distance = CVAR_CREATE( "cl_flashlight_fade_distance", "600", FCVAR_CLIENTDLL|FCVAR_ARCHIVE );
+	cl_nvgradius = CVAR_CREATE( "cl_nvgradius", "450", FCVAR_CLIENTDLL|FCVAR_ARCHIVE );
+	cl_weapon_wallpuff = CVAR_CREATE( "cl_weapon_wallpuff", "1", FCVAR_CLIENTDLL|FCVAR_ARCHIVE );
+
+	cl_fake_achievements = CVAR_CREATE( "cl_fake_achievements", "0", FCVAR_CLIENTDLL|FCVAR_ARCHIVE );
+
+	hasHudScaleInEngine = gEngfuncs.pfnGetCvarPointer( "hud_scale" ) != NULL;
+
+	if (!hasHudScaleInEngine)
+	{
+		hud_renderer = CVAR_CREATE("hud_renderer", "1.0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
+		hud_scale = CVAR_CREATE("hud_scale", "0.0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
+	}
 
 	m_pSpriteList = NULL;
 	m_pShinySurface = NULL; //LRC
@@ -488,6 +552,9 @@ void CHud::Init( void )
 	m_Particle.Init(); // (LRC) -- 30/08/02 November235: Particles to Order
 	m_Menu.Init();
 
+	m_Caption.Init();
+	m_Nightvision.Init();
+
 	MsgFunc_ResetHUD( 0, 0, NULL );
 	ClientCmd( "richpresence_gamemode\n" );
 	ClientCmd( "richpresence_update\n" );
@@ -533,11 +600,22 @@ int CHud::GetSpriteIndex( const char *SpriteName )
 	return -1; // invalid sprite
 }
 
+void CHud::LoadWallPuffSprites()
+{
+	const char* wallPuffPaths[sizeof(wallPuffs)/sizeof(wallPuffs[0])] = {"sprites/wall_puff1.spr"};
+	for (int i=0; i<sizeof(wallPuffs)/sizeof(wallPuffs[0]); ++i)
+	{
+		wallPuffs[i] = const_cast<model_t*>(gEngfuncs.GetSpritePointer(gEngfuncs.pfnSPR_Load(wallPuffPaths[i])));
+	}
+}
+
 void CHud::VidInit( void )
 {
 #ifdef ENGINE_DEBUG
 	CONPRINT("## CHud::VidInit\n");
 #endif
+	m_iHardwareMode = IEngineStudio.IsHardware();
+
 	int j;
 	m_scrinfo.iSize = sizeof(m_scrinfo);
 	GetScreenInfo( &m_scrinfo );
@@ -653,6 +731,8 @@ void CHud::VidInit( void )
 	// assumption: number_1, number_2, etc, are all listed and loaded sequentially
 	m_HUD_number_0 = GetSpriteIndex( "number_0" );
 
+	LoadWallPuffSprites();
+
 	if( m_HUD_number_0 == -1 )
 	{
 		const char *msg = "There is something wrong with your game data! Please, reinstall\n";
@@ -683,6 +763,8 @@ void CHud::VidInit( void )
 	m_TextMessage.VidInit();
 	m_StatusIcons.VidInit();
 	m_Particle.VidInit(); // (LRC) -- 30/08/02 November235: Particles to Order
+	m_Caption.VidInit();
+	m_Nightvision.VidInit();
 #if USE_VGUI
 	GetClientVoiceMgr()->VidInit();
 #endif

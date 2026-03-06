@@ -4,13 +4,13 @@
 
     <application
         android:forceQueryable="true"
-        android:icon="@android:mipmap/sym_def_app_icon"
-        android:label="hlsdk-portable"
+        android:icon="@mipmap/ic_launcher_foreground"
+        android:label="Delta Particles"
         tools:targetApi="r">
 
         <meta-data
             android:name="su.xash.engine.gamedir"
-            android:value="valve" />
+            android:value="delta_particles" />
 
         <activity
             android:name="su.xash.hlsdk.MainActivity"

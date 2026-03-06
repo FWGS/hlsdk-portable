@@ -518,7 +518,10 @@ void CWorld::Precache( void )
 	PRECACHE_SOUND( "common/null.wav" );// clears sound channels
 
 	PRECACHE_SOUND( "items/suitchargeok1.wav" );//!!! temporary sound for respawning weapons.
-	PRECACHE_SOUND( "items/gunpickup2.wav" );// player picks up a gun.
+	PRECACHE_SOUND("items/gunpickup1.wav");
+	PRECACHE_SOUND("items/gunpickup2.wav");
+	PRECACHE_SOUND("items/gunpickup3.wav");
+	PRECACHE_SOUND("items/gunpickup4.wav");// player picks up a gun.
 
 	PRECACHE_SOUND( "common/bodydrop3.wav" );// dead bodies hitting the ground (animation events)
 	PRECACHE_SOUND( "common/bodydrop4.wav" );
@@ -706,5 +709,68 @@ void CWorld::KeyValue( KeyValueData *pkvd )
 //LRC- ends
 	else
 		CBaseEntity::KeyValue( pkvd );
+}
+
+struct TitleCommet
+{
+	const char* mapname;
+	const char* titlename;
+};
+
+TitleCommet gTitleComments[] =
+{
+	// default Half-Life map titles
+	// ordering is important
+	// strings hw.so| grep T0A0TITLE -B 50 -A 150
+	{ "DB1", "#DELTATITLE" },
+	{ "ES2", "#SURFACETITLE" },
+	{ "NS3", "#NSHIFTTITLE" },
+	{ "XEN4", "#XENTITLE" },
+	{ "ENDMOD", "#ENDTITLE" },
+};
+
+/*
+=============
+SV_SaveGameComment
+Exporting this allows to replace the engine function.
+=============
+*/
+extern "C" EXPORT void SV_SaveGameComment(char* text, int maxlength)
+{
+	const char* pName = NULL;
+
+	text[0] = '\0'; // clear
+
+	unsigned long i;
+	const char* mapname = STRING(gpGlobals->mapname);
+
+	for (i = 0; i < ARRAYSIZE(gTitleComments); i++)
+	{
+		// compare if strings are equal at beginning
+		int len = strlen(gTitleComments[i].mapname);
+		if (!strnicmp(mapname, gTitleComments[i].mapname, len))
+		{
+			pName = gTitleComments[i].titlename;
+			break;
+		}
+	}
+
+	if (!pName)
+	{
+		entvars_t* pevWorld = VARS(INDEXENT(0));
+
+		if (pevWorld->message != 0)
+		{
+			// trying to extract message from the world
+			pName = STRING(pevWorld->message);
+		}
+		else
+		{
+			// or use mapname
+			pName = STRING(gpGlobals->mapname);
+		}
+	}
+
+	_snprintf(text, maxlength, "%-64.64s %02d:%02d", pName, (int)(gpGlobals->time / 60.0), (int)fmod(gpGlobals->time, 60.0));
 }
 

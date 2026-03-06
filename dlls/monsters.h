@@ -103,6 +103,7 @@ BOOL FBoxVisible( entvars_t *pevLooker, entvars_t *pevTarget, Vector &vecTargetO
 #define bits_MEMORY_MOVE_FAILED			( 1 << 5 )// Movement has already failed
 #define bits_MEMORY_FLINCHED			( 1 << 6 )// Has already flinched
 #define bits_MEMORY_KILLED				( 1 << 7 )// HACKHACK -- remember that I've already called my Killed()
+#define bits_MEMORY_BLOCKER_IS_ENEMY	( 1 << 11 )
 #define bits_MEMORY_CUSTOM4				( 1 << 28 )	// Monster-specific memory
 #define bits_MEMORY_CUSTOM3				( 1 << 29 )	// Monster-specific memory
 #define bits_MEMORY_CUSTOM2				( 1 << 30 )	// Monster-specific memory
@@ -154,6 +155,7 @@ public:
 	static void SpawnHeadGib( entvars_t *pevVictim );
 	static	void SpawnHeadGib( entvars_t *pevVictim, const char *szGibModel );
 	static void SpawnRandomGibs( entvars_t *pevVictim, int cGibs, int human );
+	static	void SpawnTreeGibs(entvars_t* pevVictim, int cGibs);
 	static	void SpawnRandomGibs( entvars_t *pevVictim, int cGibs, int notfirst, const char *szGibModel ); //LRC
 	static void SpawnStickyGibs( entvars_t *pevVictim, Vector vecOrigin, int cGibs );
 

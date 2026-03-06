@@ -48,6 +48,10 @@ void CBaseMonster::SetState( MONSTERSTATE State )
 			ALERT( at_aiconsole, "Stripped\n" );
 		}
 		break;
+	case MONSTERSTATE_DEAD:
+		if (m_MonsterState != State)
+			OnDying();
+		break;
 	default:
 		break;
 	}
@@ -110,6 +114,7 @@ void CBaseMonster::RunAI( void )
 	// we throw them out cause we don't want them sitting around through the lifespan of a schedule
 	// that doesn't use them. 
 	m_afConditions &= ~( bits_COND_LIGHT_DAMAGE | bits_COND_HEAVY_DAMAGE );
+	Forget(bits_MEMORY_BLOCKER_IS_ENEMY);
 }
 
 //=========================================================

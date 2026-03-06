@@ -307,6 +307,7 @@ TYPEDESCRIPTION	gEntvarsDescription[] =
 	DEFINE_ENTITY_FIELD( air_finished, FIELD_TIME ),
 	DEFINE_ENTITY_FIELD( pain_finished, FIELD_TIME ),
 	DEFINE_ENTITY_FIELD( radsuit_finished, FIELD_TIME ),
+	DEFINE_ENTITY_FIELD( iuser4, FIELD_INTEGER ),
 };
 
 #define ENTVARS_COUNT		( sizeof(gEntvarsDescription) / sizeof(gEntvarsDescription[0]) )
@@ -1090,6 +1091,26 @@ void UTIL_HudMessageAll( const hudtextparms_t &textparms, const char *pMessage )
 		if( pPlayer )
 			UTIL_HudMessage( pPlayer, textparms, pMessage );
 	}
+}
+
+extern int gmsgCaption;
+void UTIL_ShowCaption(const char *messageId, int holdTime, bool radio)
+{
+	if (!messageId || !*messageId)
+		return;
+	if (*messageId == '!')
+	{
+		messageId = messageId+1;
+	}
+
+	if (holdTime > 255)
+		holdTime = 255;
+
+	MESSAGE_BEGIN( MSG_ALL, gmsgCaption );
+		WRITE_BYTE(holdTime);
+		WRITE_BYTE(radio ? 1 : 0);
+		WRITE_STRING(messageId);
+	MESSAGE_END();
 }
 				 
 extern int gmsgTextMsg, gmsgSayText;
@@ -2852,6 +2873,59 @@ void CRestore::BufferReadBytes( char *pOutput, int size )
 		memcpy( pOutput, m_pdata->pCurrentData, size );
 	m_pdata->pCurrentData += size;
 	m_pdata->size += size;
+}
+
+void UTIL_SetModel( edict_t *e, const char *model )
+{
+    if (!model || !*model) //model not specified ???
+    {
+        ALERT(at_console, "Error! Model not specified\n" );
+        PRECACHE_MODEL( "models/error.mdl");
+        SET_MODEL( e, "models/error.mdl" );
+        return;
+    }
+    
+    int length;
+    const char *pFile = (char*)LOAD_FILE_FOR_ME( (char*)model, &length );
+    
+    if (pFile && length)
+    {
+        
+        FREE_FILE( (char *)pFile );
+        PRECACHE_MODEL( (char*)model);
+        SET_MODEL( e, model );
+    }
+    else //invalid path ?
+    {
+        FREE_FILE( (char *)pFile );
+        ALERT(at_console, "Error! Model %s not found\n", model );
+        PRECACHE_MODEL( "models/error.mdl");
+        SET_MODEL( e, "models/error.mdl" );
+        return;
+    }
+}
+
+int UTIL_PrecacheModel( char* s )
+{
+    if (FStringNull(MAKE_STRING(s))) //model not specified ???
+        return NULL;
+    
+    int length;
+    int model;
+    char *pFile = (char*)LOAD_FILE_FOR_ME( (char*)s, &length );
+    
+    if (pFile && length)
+    {
+        FREE_FILE( pFile );
+        model = PRECACHE_MODEL( (char*)s);
+    }
+    else
+    {
+        FREE_FILE( (char *)pFile );
+        model = PRECACHE_MODEL( "models/error.mdl" );
+    }
+    return model;
+    
 }
 
 void CRestore::BufferSkipBytes( int bytes )

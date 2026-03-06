@@ -136,6 +136,17 @@ int CHudMessage::YPosition( float y, int height )
 
 void CHudMessage::MessageScanNextChar( void )
 {
+	SetColorParams(false);
+
+	if ( m_parms.pMessage->effect == 1 && m_parms.charTime != 0 )
+	{
+		if ( m_parms.x >= 0 && m_parms.y >= 0 && (m_parms.x + gHUD.m_scrinfo.charWidths[ m_parms.text ]) <= ScreenWidth )
+			TextMessageDrawChar( m_parms.x, m_parms.y, m_parms.text, m_parms.pMessage->r2, m_parms.pMessage->g2, m_parms.pMessage->b2 );
+	}
+}
+
+void CHudMessage::SetColorParams( bool consoleFont )
+{
 	int srcRed, srcGreen, srcBlue, destRed = 0, destGreen = 0, destBlue = 0;
 	int blend;
 
@@ -158,6 +169,13 @@ void CHudMessage::MessageScanNextChar( void )
 		{
 			srcRed = srcGreen = srcBlue = 0;
 			blend = 0;	// pure source
+			if (consoleFont)
+			{
+				blend = 160;
+				destRed = m_parms.pMessage->r2;
+				destGreen = m_parms.pMessage->g2;
+				destBlue = m_parms.pMessage->b2;
+			}
 		}
 		else
 		{
@@ -187,15 +205,14 @@ void CHudMessage::MessageScanNextChar( void )
 	else if( blend < 0 )
 		blend = 0;
 
+	if (consoleFont && blend > 96)
+	{
+		blend = 96;
+	}
+
 	m_parms.r = ( ( srcRed * ( 255 - blend ) ) + ( destRed * blend ) ) >> 8;
 	m_parms.g = ( ( srcGreen * (255 - blend ) ) + ( destGreen * blend ) ) >> 8;
 	m_parms.b = ( ( srcBlue * ( 255 - blend ) ) + ( destBlue * blend ) ) >> 8;
-
-	if( m_parms.pMessage->effect == 1 && m_parms.charTime != 0 )
-	{
-		if( m_parms.x >= 0 && m_parms.y >= 0 && ( m_parms.x + gHUD.m_scrinfo.charWidths[m_parms.text] ) <= ScreenWidth )
-			TextMessageDrawChar( m_parms.x, m_parms.y, m_parms.text, m_parms.pMessage->r2, m_parms.pMessage->g2, m_parms.pMessage->b2 );
-	}
 }
 
 void CHudMessage::MessageScanStart( void )
@@ -237,12 +254,103 @@ void CHudMessage::MessageScanStart( void )
 	}
 }
 
+static bool Q_IsValidUChar32( unsigned int uVal )
+{
+	return ( uVal < 0x110000u ) && ( (uVal - 0x00D800u) > 0x7FFu ) && ( (uVal & 0xFFFFu) < 0xFFFEu ) && ( ( uVal - 0x00FDD0u ) > 0x1Fu );
+}
+
+static int Q_UTF8ToUChar32( const char *pUTF8_, unsigned int &uValueOut, bool &bErrorOut )
+{
+	const unsigned char *pUTF8 = (const unsigned char *)pUTF8_;
+
+	int nBytes = 1;
+	unsigned int uValue = pUTF8[0];
+	unsigned int uMinValue = 0;
+
+	// 0....... single byte
+	if ( uValue < 0x80 )
+		goto decodeFinishedNoCheck;
+
+	// Expecting at least a two-byte sequence with 0xC0 <= first <= 0xF7 (110...... and 11110...)
+	if ( (uValue - 0xC0u) > 0x37u || ( pUTF8[1] & 0xC0 ) != 0x80 )
+		goto decodeError;
+
+	uValue = (uValue << 6) - (0xC0 << 6) + pUTF8[1] - 0x80;
+	nBytes = 2;
+	uMinValue = 0x80;
+
+	// 110..... two-byte lead byte
+	if ( !( uValue & (0x20 << 6) ) )
+		goto decodeFinished;
+
+	// Expecting at least a three-byte sequence
+	if ( ( pUTF8[2] & 0xC0 ) != 0x80 )
+		goto decodeError;
+
+	uValue = (uValue << 6) - (0x20 << 12) + pUTF8[2] - 0x80;
+	nBytes = 3;
+	uMinValue = 0x800;
+
+	// 1110.... three-byte lead byte
+	if ( !( uValue & (0x10 << 12) ) )
+		goto decodeFinishedMaybeCESU8;
+
+	// Expecting a four-byte sequence, longest permissible in UTF-8
+	if ( ( pUTF8[3] & 0xC0 ) != 0x80 )
+		goto decodeError;
+
+	uValue = (uValue << 6) - (0x10 << 18) + pUTF8[3] - 0x80;
+	nBytes = 4;
+	uMinValue = 0x10000;
+
+	// 11110... four-byte lead byte. fall through to finished.
+
+decodeFinished:
+	if ( uValue >= uMinValue && Q_IsValidUChar32( uValue ) )
+	{
+decodeFinishedNoCheck:
+	uValueOut = uValue;
+	bErrorOut = false;
+	return nBytes;
+	}
+decodeError:
+	uValueOut = '?';
+	bErrorOut = true;
+	return nBytes;
+
+decodeFinishedMaybeCESU8:
+	// Do we have a full UTF-16 surrogate pair that's been UTF-8 encoded afterwards?
+	// That is, do we have 0xD800-0xDBFF followed by 0xDC00-0xDFFF? If so, decode it all.
+	if ( ( uValue - 0xD800u ) < 0x400u && pUTF8[3] == 0xED && (unsigned char)( pUTF8[4] - 0xB0 ) < 0x10 && ( pUTF8[5] & 0xC0 ) == 0x80 )
+	{
+		uValue = 0x10000 + ( ( uValue - 0xD800u ) << 10 ) + ( (unsigned char)( pUTF8[4] - 0xB0 ) << 6 ) + pUTF8[5] - 0x80;
+		nBytes = 6;
+		uMinValue = 0x10000;
+	}
+	goto decodeFinished;
+}
+
+static bool Q_UnicodeValidate( const char *pUTF8 )
+{
+	bool bError = false;
+	while ( *pUTF8 )
+	{
+		unsigned int uVal;
+		// Our UTF-8 decoder silently fixes up 6-byte CESU-8 (improperly re-encoded UTF-16) sequences.
+		// However, these are technically not valid UTF-8. So if we eat 6 bytes at once, it's an error.
+		int nCharSize = Q_UTF8ToUChar32( pUTF8, uVal, bError );
+		if ( bError || nCharSize == 6 )
+			return false;
+		pUTF8 += nCharSize;
+	}
+	return true;
+}
 
 void CHudMessage::MessageDrawScan( client_textmessage_t *pMessage, float time )
 {
 	int i, j, length, width;
 	const char *pText;
-	const char *pLineStart;
+	unsigned char line[80];
 
 	pText = pMessage->pMessage;
 	// Count lines
@@ -252,22 +360,58 @@ void CHudMessage::MessageDrawScan( client_textmessage_t *pMessage, float time )
 	length = 0;
 	width = 0;
 	m_parms.totalWidth = 0;
-	while( *pText )
+	m_parms.totalHeight = 0;
+
+	char consoleStringBuf[512] = {0};
+	unsigned int consoleBufIndex = 0;
+
+	bool useConsoleFont = false;
+	const char* pCheck = pText;
+	while(*pCheck)
 	{
-		if( *pText == '\n' )
+		if (*pCheck > 127 || *pCheck < 0)
+		{
+			useConsoleFont = Q_UnicodeValidate(pCheck);
+			break;
+		}
+		pCheck++;
+	}
+
+	while ( *pText )
+	{
+		if ( *pText == '\n' )
 		{
 			m_parms.lines++;
-			if( width > m_parms.totalWidth )
+			if (useConsoleFont)
+			{
+				consoleStringBuf[consoleBufIndex] = '\0';
+				consoleBufIndex = 0;
+
+				int height;
+				gEngfuncs.pfnDrawConsoleStringLen(consoleStringBuf, &width, &height);
+				m_parms.totalHeight += height;
+			}
+			if ( width > m_parms.totalWidth )
 				m_parms.totalWidth = width;
 			width = 0;
 		}
 		else
-			width += gHUD.m_scrinfo.charWidths[(unsigned char)*pText];
+		{
+			if (useConsoleFont) {
+				if (consoleBufIndex < sizeof(consoleStringBuf)-1)
+					consoleStringBuf[consoleBufIndex++] = *pText;
+			} else {
+				width += gHUD.m_scrinfo.charWidths[*pText];
+			}
+		}
 		pText++;
 		length++;
 	}
 	m_parms.length = length;
-	m_parms.totalHeight = ( m_parms.lines * gHUD.m_scrinfo.iCharHeight );
+	if (!useConsoleFont)
+	{
+		m_parms.totalHeight = (m_parms.lines * gHUD.m_scrinfo.iCharHeight);
+	}
 
 	m_parms.y = YPosition( pMessage->y, m_parms.totalHeight );
 	pText = pMessage->pMessage;
@@ -276,34 +420,63 @@ void CHudMessage::MessageDrawScan( client_textmessage_t *pMessage, float time )
 
 	MessageScanStart();
 
-	for( i = 0; i < m_parms.lines; i++ )
+	consoleBufIndex = 0;
+	for ( i = 0; i < m_parms.lines; i++ )
 	{
 		m_parms.lineLength = 0;
 		m_parms.width = 0;
-		pLineStart = pText;
-		while( *pText && *pText != '\n' )
+		while ( *pText && *pText != '\n' )
 		{
 			unsigned char c = *pText;
-			m_parms.width += gHUD.m_scrinfo.charWidths[c];
+			if (!useConsoleFont)
+				line[m_parms.lineLength] = c;
+			if (useConsoleFont)
+			{
+				if (consoleBufIndex < sizeof(consoleStringBuf)-1)
+					consoleStringBuf[consoleBufIndex++] = *pText;
+			}
+			else
+			{
+				m_parms.width += gHUD.m_scrinfo.charWidths[c];
+			}
 			m_parms.lineLength++;
 			pText++;
 		}
 		pText++;		// Skip LF
+		if (!useConsoleFont)
+			line[m_parms.lineLength] = 0;
+
+		int strHeight;
+		if (useConsoleFont) {
+			consoleStringBuf[consoleBufIndex] = '\0';
+			consoleBufIndex = 0;
+
+			int strLength;
+			gEngfuncs.pfnDrawConsoleStringLen( consoleStringBuf, &strLength, &strHeight );
+			m_parms.width = strLength;
+		} else {
+			strHeight = gHUD.m_scrinfo.iCharHeight;
+		}
 
 		m_parms.x = XPosition( pMessage->x, m_parms.width, m_parms.totalWidth );
 
-		for( j = 0; j < m_parms.lineLength; j++ )
-		{
-			m_parms.text = (unsigned char)pLineStart[j];
-			int next = m_parms.x + gHUD.m_scrinfo.charWidths[m_parms.text];
-			MessageScanNextChar();
+		if (useConsoleFont) {
+			SetColorParams(true);
+			gEngfuncs.pfnDrawSetTextColor(m_parms.r/255.0f, m_parms.g/255.0f, m_parms.b/255.0f);
+			gEngfuncs.pfnDrawConsoleString(m_parms.x, m_parms.y, consoleStringBuf);
+		} else {
+			for ( j = 0; j < m_parms.lineLength; j++ )
+			{
+				m_parms.text = line[j];
+				int next = m_parms.x + gHUD.m_scrinfo.charWidths[ m_parms.text ];
+				MessageScanNextChar();
 
-			if( m_parms.x >= 0 && m_parms.y >= 0 && next <= ScreenWidth )
-				TextMessageDrawChar( m_parms.x, m_parms.y, m_parms.text, m_parms.r, m_parms.g, m_parms.b );
-			m_parms.x = next;
+				if ( m_parms.x >= 0 && m_parms.y >= 0 && next <= ScreenWidth )
+					TextMessageDrawChar( m_parms.x, m_parms.y, m_parms.text, m_parms.r, m_parms.g, m_parms.b );
+				m_parms.x = next;
+			}
 		}
-
-		m_parms.y += gHUD.m_scrinfo.iCharHeight;
+		m_parms.y += strHeight;
 	}
 }
 

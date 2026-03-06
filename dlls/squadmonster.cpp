@@ -443,7 +443,7 @@ void CSquadMonster::StartMonster( void )
 
 BOOL CSquadMonster :: NoFriendlyFire( void )
 {
-	return NoFriendlyFire( FALSE ); //default: don't like the player
+	return NoFriendlyFire( Classify() == CLASS_PLAYER_ALLY ); //default: don't like the player
 }
 
 //=========================================================
@@ -499,18 +499,21 @@ BOOL CSquadMonster :: NoFriendlyFire( BOOL playerAlly )
 	ALERT( at_console, "RightPlane: %f %f %f : %f\n", rightPlane.m_vecNormal.x, rightPlane.m_vecNormal.y, rightPlane.m_vecNormal.z, rightPlane.m_flDist );
 	ALERT( at_console, "BackPlane: %f %f %f : %f\n", backPlane.m_vecNormal.x, backPlane.m_vecNormal.y, backPlane.m_vecNormal.z, backPlane.m_flDist );
 */
-	CSquadMonster *pSquadLeader = MySquadLeader();
-	for( int i = 0; i < MAX_SQUAD_MEMBERS; i++ )
+	if (InSquad())
 	{
-		CSquadMonster *pMember = pSquadLeader->MySquadMember( i );
-		if( pMember && pMember != this )
+		CSquadMonster *pSquadLeader = MySquadLeader();
+		for( int i = 0; i < MAX_SQUAD_MEMBERS; i++ )
 		{
-			if( backPlane.PointInFront( pMember->pev->origin ) &&
-				leftPlane.PointInFront( pMember->pev->origin ) &&
-				rightPlane.PointInFront( pMember->pev->origin ) )
+			CSquadMonster *pMember = pSquadLeader->MySquadMember( i );
+			if( pMember && pMember != this )
 			{
-				// this guy is in the check volume! Don't shoot!
-				return FALSE;
+				if( backPlane.PointInFront( pMember->pev->origin ) &&
+					leftPlane.PointInFront( pMember->pev->origin ) &&
+					rightPlane.PointInFront( pMember->pev->origin ) )
+				{
+					// this guy is in the check volume! Don't shoot!
+					return FALSE;
+				}
 			}
 		}
 	}
@@ -524,7 +527,16 @@ BOOL CSquadMonster :: NoFriendlyFire( BOOL playerAlly )
 			rightPlane.PointInFront ( pentPlayer->v.origin ) )
 		{
 			// the player is in the check volume! Don't shoot!
-			return FALSE;
+			if ((m_hEnemy->pev->origin - pev->origin).Length2D() > (pentPlayer->v.origin - pev->origin).Length2D())
+			{
+				//ALERT(at_aiconsole, "%s: Ally player is between enemy (%s) and myself. Don't shoot!\n", STRING(pev->classname), STRING(m_hEnemy->pev->classname));
+				return FALSE;
+			}
+			else if (m_hEnemy->pev->deadflag == DEAD_DYING)
+			{
+				//ALERT(at_aiconsole, "%s: Enemy (%s) is dying and player is behind it. Stop shooting!\n", STRING(pev->classname), STRING(m_hEnemy->pev->classname));
+				return FALSE;
+			}
 		}
 	}
 
@@ -609,16 +621,31 @@ BOOL CSquadMonster::SquadEnemySplit( void )
 //=========================================================
 BOOL CSquadMonster::SquadMemberInRange( const Vector &vecLocation, float flDist )
 {
-	if( !InSquad() )
-		return FALSE;
-
-	CSquadMonster *pSquadLeader = MySquadLeader();
-
-	for( int i = 0; i < MAX_SQUAD_MEMBERS; i++ )
+	if (InSquad())
 	{
-		CSquadMonster *pSquadMember = pSquadLeader->MySquadMember( i );
-		if( pSquadMember && ( vecLocation - pSquadMember->pev->origin ).Length2D() <= flDist )
-			return TRUE;
+		CSquadMonster *pSquadLeader = MySquadLeader();
+
+		for( int i = 0; i < MAX_SQUAD_MEMBERS; i++ )
+		{
+			CSquadMonster *pSquadMember = pSquadLeader->MySquadMember( i );
+			if( pSquadMember && ( vecLocation - pSquadMember->pev->origin ).Length2D() <= flDist )
+				return TRUE;
+		}
+	}
+	if (Classify() == CLASS_PLAYER_ALLY)
+	{
+		for (int k = 1; k <= gpGlobals->maxClients; k++)
+		{
+			CBaseEntity* pPlayer = UTIL_PlayerByIndex(k);
+			if (pPlayer && pPlayer->IsPlayer() && IRelationship(pPlayer) == R_AL && pPlayer->IsAlive())
+			{
+				if ((vecLocation - pPlayer->pev->origin).Length2D() <= flDist)
+				{
+					//ALERT(at_console, "%s: Ally player in radius!\n", STRING(pev->classname));
+					return TRUE;
+				}
+			}
+		}
 	}
 	return FALSE;
 }

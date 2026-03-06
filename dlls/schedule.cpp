@@ -448,6 +448,10 @@ void CBaseMonster::RunTask( Task_t *pTask )
 		}
 	case TASK_DIE:
 		{
+			if ( pev->frame >= 50 )
+			{
+				pev->iuser3 = -1;
+			}
 			if( m_fSequenceFinished && pev->frame >= 255 )
 			{
 				pev->deadflag = DEAD_DEAD;
@@ -1363,7 +1367,7 @@ void CBaseMonster::StartTask( Task_t *pTask )
 				// Plant on script
 				// LRC - if it's a teleport script, do the turn too
 				if (m_pCine->m_fMoveTo == 4 || m_pCine->m_fMoveTo == 6)
-			{
+				{
 					if (m_pCine->m_fTurnType == 0) //LRC
 						pev->angles.y = m_hTargetEnt->pev->angles.y;
 					else if (m_pCine->m_fTurnType == 1)
@@ -1376,6 +1380,8 @@ void CBaseMonster::StartTask( Task_t *pTask )
 
 				if (m_pCine->m_fMoveTo != 6)
 					pev->origin = m_pGoalEnt->pev->origin;
+				if (m_pCine->m_fMoveTo == 4)
+					UTIL_SetOrigin(this, pev->origin);
 			}
 
 			TaskComplete();

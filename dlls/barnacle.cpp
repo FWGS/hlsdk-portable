@@ -21,6 +21,7 @@
 #include	"cbase.h"
 #include	"monsters.h"
 #include	"schedule.h"
+#include	"weapons.h"
 
 #define	BARNACLE_BODY_HEIGHT	44 // how 'tall' the barnacle's model is.
 #define BARNACLE_PULL_SPEED		8
@@ -43,6 +44,7 @@ public:
 	void EXPORT WaitTillDead( void );
 	void Killed( entvars_t *pevAttacker, int iGib );
 	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
+	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType);
 	virtual int Save( CSave &save );
 	virtual int Restore( CRestore &restore );
 	static TYPEDESCRIPTION m_SaveData[];
@@ -53,6 +55,7 @@ public:
 	int m_cGibs;		// barnacle loads up on gibs each time it kills something.
 	BOOL m_fTongueExtended;
 	BOOL m_fLiftingPrey;
+	int BuckshotCount;
 	float m_flTongueAdj;
 
 	// FIXME: need a custom barnacle model with non-generic hitgroup
@@ -153,7 +156,25 @@ int CBarnacle::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, floa
 		flDamage = pev->health;
 	}
 
+	if ( BuckshotCount >= 6 || flDamage >= 30 )	// enough shells or enough damage
+	{
+		pev->body = 1;	// gib the barnacle
+
+		CGib::SpawnRandomGibs( pev, 2, 1 ); // more meat!
+		GibHeadMonster ( Vector (pev->origin.x, pev->origin.y, pev->origin.z - 40), FALSE );
+	}
+
+	BuckshotCount = 0;
+
 	return CBaseMonster::TakeDamage( pevInflictor, pevAttacker, flDamage, bitsDamageType );
+}
+
+void CBarnacle :: TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType)
+{
+	if ( (bitsDamageType & DMG_BULLET) && flDamage == gSkillData.plrDmgBuckshot )
+		BuckshotCount++;
+
+	CBaseMonster::TraceAttack( pevAttacker, flDamage, vecDir, ptr, bitsDamageType );
 }
 
 //=========================================================
@@ -351,6 +372,11 @@ void CBarnacle::BarnacleThink( void )
 void CBarnacle::Killed( entvars_t *pevAttacker, int iGib )
 {
 	CBaseMonster *pVictim;
+
+	if (pev->takedamage != DAMAGE_NO)
+	{
+		Fragged(pevAttacker);
+	}
 
 	pev->solid = SOLID_NOT;
 	pev->takedamage = DAMAGE_NO;

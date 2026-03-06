@@ -931,3 +931,35 @@ void CGamePlayerTeam::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TY
 		UTIL_Remove( this );
 	}
 }
+
+class CGameAchievement : public CPointEntity
+{
+public:
+	void Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
+};
+
+LINK_ENTITY_TO_CLASS(game_achievement, CGameAchievement);
+
+extern int gmsgAchievement;
+
+void CGameAchievement::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
+{
+	CBasePlayer* pPlayer = NULL;
+	if (g_pGameRules->IsMultiplayer())
+	{
+		if (pActivator && pActivator->IsPlayer())
+			pPlayer = (CBasePlayer*)pActivator;
+	}
+	else
+	{
+		pPlayer = (CBasePlayer*)CBaseEntity::Instance(g_engfuncs.pfnPEntityOfEntIndex(1));
+	}
+
+	if (gmsgAchievement && pPlayer && pPlayer->IsNetClient())
+	{
+		MESSAGE_BEGIN(MSG_ONE, gmsgAchievement, NULL, pPlayer->edict());
+		WRITE_STRING(STRING(pev->message));
+		MESSAGE_END();
+		UTIL_Remove(this);
+	}
+}

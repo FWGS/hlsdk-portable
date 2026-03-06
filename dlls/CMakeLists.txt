@@ -46,6 +46,7 @@ endif()
 
 set (SVDLL_SOURCES
 	agrunt.cpp
+	ammobox.cpp
 	airtank.cpp
 	aflock.cpp
 	alias.cpp
@@ -67,9 +68,11 @@ set (SVDLL_SOURCES
 	crowbar.cpp
 	defaultai.cpp
 	doors.cpp
+	desert_eagle.cpp
 	effects.cpp
 	egon.cpp
 	explode.cpp
+	female_npc.cpp
 	flyingmonster.cpp
 	func_break.cpp
 	func_tank.cpp
@@ -113,14 +116,17 @@ set (SVDLL_SOURCES
 	nodes.cpp
 	observer.cpp
 	osprey.cpp
+	otis.cpp
 	pathcorner.cpp
 	plane.cpp
 	plats.cpp
 	player.cpp
 	playermonster.cpp
+	pipewrench.cpp
 	python.cpp
 	rat.cpp
 	roach.cpp
+	robotic_infantry.cpp
 	rpg.cpp
 	satchel.cpp
 	schedule.cpp
@@ -131,12 +137,15 @@ set (SVDLL_SOURCES
 	skill.cpp
 	sound.cpp
 	soundent.cpp
+	smg.cpp
+	sniperrifle.cpp
 	spectator.cpp
 	squadmonster.cpp
 	squeakgrenade.cpp
 	subs.cpp
 	talkmonster.cpp
 	teamplay_gamerules.cpp
+	technician.cpp
 	tempmonster.cpp
 	tentacle.cpp
 	triggers.cpp

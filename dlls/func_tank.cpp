@@ -664,7 +664,7 @@ CBaseEntity *CFuncTank:: BestVisibleEnemy ( void )
 	int			iNearest;
 	int			iDist;
 	int			iBestRelationship;
-	int			iLookDist = m_maxRange?m_maxRange:512; //thanks to Waldo for this.
+	int			iLookDist = m_maxRange?m_maxRange:8192; //thanks to Waldo for this.
 
 	iNearest = 8192;// so first visible entity will become the closest.
 	pReturn = NULL;

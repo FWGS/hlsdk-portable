@@ -218,80 +218,30 @@ entvars_t *CGraph::LinkEntForLink( CLink *pLink, CNode *pNode )
 //=========================================================
 int CGraph::HandleLinkEnt( int iNode, entvars_t *pevLinkEnt, int afCapMask, NODEQUERY queryType )
 {
-	edict_t  *pentWorld;
-	//edict_t *pentWorld;
-	CBaseEntity *pDoor;
-	TraceResult tr;
-
-	if( !m_fGraphPresent || !m_fGraphPointersSet )
-	{
-		// protect us in the case that the node graph isn't available
-		ALERT( at_aiconsole, "Graph not ready!\n" );
-		return FALSE;
+	if ( !m_fGraphPresent || !m_fGraphPointersSet )
+	{// protect us in the case that the node graph isn't available
+		ALERT ( at_aiconsole, "Graph not ready!\n" );
+		return NLE_PROHIBIT;
 	}
 
-	if( FNullEnt( pevLinkEnt ) )
+	if ( FNullEnt ( pevLinkEnt ) )
 	{
-		ALERT( at_aiconsole, "dead path ent!\n" );
-		return TRUE;
+		ALERT ( at_aiconsole, "dead path ent!\n" );
+		return NLE_ALLOW;
 	}
-	//pentWorld = NULL;
 
-	// func_door
-	if( FClassnameIs( pevLinkEnt, "func_door" ) || FClassnameIs( pevLinkEnt, "func_door_rotating" ) )
+	CBaseEntity *pObstacle = CBaseEntity::Instance( pevLinkEnt );
+	if (pObstacle)
 	{
-		// ent is a door.
-		pDoor = ( CBaseEntity::Instance( pevLinkEnt ) );
-
-		if( ( pevLinkEnt->spawnflags & SF_DOOR_USE_ONLY ) ) 
-		{
-			// door is use only.
-			if( ( afCapMask & bits_CAP_OPEN_DOORS ) )
-			{
-				// let monster right through if he can open doors
-				return TRUE;
-			}
-			else 
-			{
-				// monster should try for it if the door is open and looks as if it will stay that way
-				if( pDoor->GetToggleState()== TS_AT_TOP && ( pevLinkEnt->spawnflags & SF_DOOR_NO_AUTO_RETURN ) )
-				{
-					return TRUE;
-				}
-
-				return FALSE;
-			}
-		}
-		else 
-		{
-			// door must be opened with a button or trigger field.
-
-			// monster should try for it if the door is open and looks as if it will stay that way
-			if( pDoor->GetToggleState() == TS_AT_TOP && ( pevLinkEnt->spawnflags & SF_DOOR_NO_AUTO_RETURN ) )
-			{
-				return TRUE;
-			}
-			if( ( afCapMask & bits_CAP_OPEN_DOORS ) )
-			{
-				if( !( pevLinkEnt->spawnflags & SF_DOOR_NOMONSTERS ) || queryType == NODEGRAPH_STATIC )
-					return TRUE;
-			}
-
-			return FALSE;
-		}
-	}
-	// func_breakable
-	else if( FClassnameIs( pevLinkEnt, "func_breakable" ) && queryType == NODEGRAPH_STATIC )
-	{
-		return TRUE;
+		return pObstacle->HandleLinkEnt(afCapMask, queryType == NODEGRAPH_STATIC);
 	}
 	else
 	{
-		ALERT( at_aiconsole, "Unhandled Ent in Path %s\n", STRING( pevLinkEnt->classname ) );
-		return FALSE;
+		// This should never happen as link ents are set to null on UpdateOnRemove
+		ALERT( at_aiconsole, "Graph link has non-null pevLinkEnt, but could not get the instance! (was deleted?)" );
 	}
 
-	return FALSE;
+	return NLE_PROHIBIT;
 }
 
 #if 0
@@ -586,7 +536,7 @@ int CGraph::NextNodeInRoute( int iCurrentNode, int iDest, int iHull, int iCap )
 // find a path usable by a monster with those capabilities
 // returns the number of nodes copied into supplied array
 //=========================================================
-int CGraph::FindShortestPath( int *piPath, int iStart, int iDest, int iHull, int afCapMask )
+int CGraph :: FindShortestPath (int *piPath, int pathSize, int iStart, int iDest, int iHull, int afCapMask, bool dynamic)
 {
 	int iVisitNode;
 	int iCurrentNode;
@@ -616,7 +566,7 @@ int CGraph::FindShortestPath( int *piPath, int iStart, int iDest, int iHull, int
 
 	// Is routing information present.
 	//
-	if( m_fRoutingComplete )
+	if (!dynamic && m_fRoutingComplete)
 	{
 		int iCap = CapIndex( afCapMask );
 
@@ -708,7 +658,7 @@ int CGraph::FindShortestPath( int *piPath, int iStart, int iDest, int iHull, int
 				if( m_pLinkPool[m_pNodes[iCurrentNode].m_iFirstLink + i].m_pLinkEnt != NULL )
 				{
 					// there's a brush ent in the way! Don't mark this node or put it into the queue unless the monster can negotiate it
-					if( !HandleLinkEnt( iCurrentNode, m_pLinkPool[m_pNodes[iCurrentNode].m_iFirstLink + i].m_pLinkEnt, afCapMask, NODEGRAPH_STATIC ) )
+					if ( !HandleLinkEnt ( iCurrentNode, m_pLinkPool[ m_pNodes[ iCurrentNode ].m_iFirstLink + i ].m_pLinkEnt, afCapMask, dynamic ? NODEGRAPH_DYNAMIC : NODEGRAPH_STATIC ) )
 					{
 						// monster should not try to go this way.
 						continue;
@@ -745,7 +695,8 @@ int CGraph::FindShortestPath( int *piPath, int iStart, int iDest, int iHull, int
 		iCurrentNode = iDest;
 		for( i = iNumPathNodes - 1; i >= 0; i-- )
 		{
-			piPath[i] = iCurrentNode;
+			if (i < pathSize)
+				piPath[i] = iCurrentNode;
 			iCurrentNode = m_pNodes[iCurrentNode].m_iPreviousNode;
 		}
 	}
@@ -827,6 +778,7 @@ void inline UpdateRange( int &minValue, int &maxValue, int Goal, int Best )
 
 void CGraph::CheckNode( Vector vecOrigin, int iNode )
 {
+	extern cvar_t findnearestnodefix;
 	// Have we already seen this point before?.
 	//
 	if( m_di[iNode].m_CheckedEvent == m_CheckedCounter )
@@ -839,9 +791,12 @@ void CGraph::CheckNode( Vector vecOrigin, int iNode )
 	if( flDist < m_flShortest )
 	{
 		TraceResult tr;
+		Vector vecStart = vecOrigin;
+		if (findnearestnodefix.value)
+			vecStart.z += NODE_HEIGHT;
 
 		// make sure that vecOrigin can trace to this node!
-		UTIL_TraceLine( vecOrigin, m_pNodes[iNode].m_vecOriginPeek, ignore_monsters, 0, &tr );
+		UTIL_TraceLine ( vecStart, m_pNodes[ iNode ].m_vecOriginPeek, ignore_monsters, 0, &tr );
 
 		if( tr.flFraction == 1.0f )
 		{
@@ -1180,6 +1135,15 @@ void CGraph::ShowNodeConnections( int iNode )
 	}
 }
 
+static void ResetMonsterclip()
+{
+	CBaseEntity* pMonsterclip = NULL;
+	while ( (pMonsterclip = UTIL_FindEntityByClassname(pMonsterclip, "func_monsterclip")) != 0 ) {
+		SetBits(pMonsterclip->pev->flags, FL_MONSTERCLIP);
+		ClearBits(pMonsterclip->pev->flags, FL_WORLDBRUSH);
+	}
+}
+
 //=========================================================
 // CGraph - LinkVisibleNodes - the first, most basic
 // function of node graph creation, this connects every
@@ -1229,6 +1193,12 @@ int CGraph::LinkVisibleNodes( CLink *pLinkPool, FILE *file, int *piBadNode )
 	// this lets us keep an eye on MAX_NODE_INITIAL_LINKS to ensure that we are
 	// being generous enough.
 	cMaxInitialLinks = 0;
+
+	CBaseEntity* pMonsterclip = NULL;
+	while ( (pMonsterclip = UTIL_FindEntityByClassname(pMonsterclip, "func_monsterclip")) != 0 ) {
+		ClearBits(pMonsterclip->pev->flags, FL_MONSTERCLIP);
+		SetBits(pMonsterclip->pev->flags, FL_WORLDBRUSH);
+	}
 
 	for( i = 0; i < m_cNodes; i++ )
 	{
@@ -1345,6 +1315,8 @@ int CGraph::LinkVisibleNodes( CLink *pLinkPool, FILE *file, int *piBadNode )
 				ALERT( at_aiconsole, "**LinkVisibleNodes:\nNode %d has NodeLinks > MAX_NODE_INITIAL_LINKS", i );
 				fprintf( file, "** NODE %d HAS NodeLinks > MAX_NODE_INITIAL_LINKS **\n", i );
 				*piBadNode = i;
+
+				ResetMonsterclip();
 				return FALSE;
 			}
 			else if( cTotalLinks > MAX_NODE_INITIAL_LINKS * m_cNodes )
@@ -1352,6 +1324,8 @@ int CGraph::LinkVisibleNodes( CLink *pLinkPool, FILE *file, int *piBadNode )
 				// this is paranoia
 				ALERT( at_aiconsole, "**LinkVisibleNodes:\nTotalLinks > MAX_NODE_INITIAL_LINKS * NUMNODES" );
 				*piBadNode = i;
+
+				ResetMonsterclip();
 				return FALSE;
 			}
 
@@ -1376,6 +1350,8 @@ int CGraph::LinkVisibleNodes( CLink *pLinkPool, FILE *file, int *piBadNode )
 			fprintf( file, "----------------------------------------------------------------------------\n" );
 		}
 	}
+
+	ResetMonsterclip();
 
 	fprintf( file, "\n%4d Total Initial Connections - %4d Maximum connections for a single node.\n", cTotalLinks, cMaxInitialLinks );
 	fprintf( file, "----------------------------------------------------------------------------\n\n\n" );
@@ -1643,6 +1619,14 @@ void CTestHull::CallBuildNodeGraph( void )
 	// Undo TOUCH HACK
 }
 
+static void ResetWallToggle()
+{
+	CBaseEntity* pWallToggle = NULL;
+	while ( (pWallToggle = UTIL_FindEntityByClassname(pWallToggle, "func_wall_toggle")) != 0 ) {
+		SetBits(pWallToggle->pev->flags, FL_WORLDBRUSH);
+	}
+}
+
 //=========================================================
 // BuildNodeGraph - think function called by the empty walk
 // hull that is spawned by the first node to spawn. This
@@ -1825,7 +1809,12 @@ void CTestHull::BuildNodeGraph( void )
 	// send the walkhull to all of this node's connections now. We'll do this here since
 	// so much of it relies on being able to control the test hull.
 	fprintf( file, "----------------------------------------------------------------------------\n" );
-	fprintf( file, "Walk Rejection:\n");	
+	fprintf( file, "Walk Rejection:\n");
+
+	CBaseEntity* pWallToggle = NULL;
+	while ( (pWallToggle = UTIL_FindEntityByClassname(pWallToggle, "func_wall_toggle")) != 0 ) {
+		ClearBits(pWallToggle->pev->flags, FL_WORLDBRUSH);
+	}
 
 	for( i = 0; i < WorldGraph.m_cNodes; i++ )
 	{
@@ -2134,7 +2123,7 @@ void CTestHull::PathFind( void )
 		return;
 	}
 
-	iPathSize = WorldGraph.FindShortestPath( iPath, 0, 19, 0, 0 ); // UNDONE use hull constant
+	iPathSize = WorldGraph.FindShortestPath ( iPath, ARRAYSIZE(iPath), 0, 19, 0, 0 ); // UNDONE use hull constant
 
 	if( !iPathSize )
 	{
@@ -3177,7 +3166,7 @@ void CGraph::ComputeStaticRoutingTables( void )
 						if( Routes[FROM_TO( iFrom, iTo )] != -1 )
 							continue;
 
-						int cPathSize = FindShortestPath( pMyPath, iFrom, iTo, iHull, iCapMask );
+						int cPathSize = FindShortestPath(pMyPath, m_cNodes, iFrom, iTo, iHull, iCapMask);
 
 						// Use the computed path to update the routing table.
 						//
@@ -3465,9 +3454,9 @@ void CGraph::TestRoutingTables( void )
 					for( int iTo = 0; iTo < m_cNodes; iTo++ )
 					{
 						m_fRoutingComplete = FALSE;
-						int cPathSize1 = FindShortestPath( pMyPath, iFrom, iTo, iHull, iCapMask );
+						int cPathSize1 = FindShortestPath(pMyPath, m_cNodes, iFrom, iTo, iHull, iCapMask);
 						m_fRoutingComplete = TRUE;
-						int cPathSize2 = FindShortestPath( pMyPath2, iFrom, iTo, iHull, iCapMask );
+						int cPathSize2 = FindShortestPath(pMyPath2, m_cNodes, iFrom, iTo, iHull, iCapMask);
 
 						// Unless we can look at the entire path, we can verify that it's correct.
 						//
@@ -3545,9 +3534,9 @@ void CGraph::TestRoutingTables( void )
 							}
 							ALERT( at_aiconsole, "\n" );
 							m_fRoutingComplete = FALSE;
-							cPathSize1 = FindShortestPath( pMyPath, iFrom, iTo, iHull, iCapMask );
+							cPathSize1 = FindShortestPath(pMyPath, m_cNodes, iFrom, iTo, iHull, iCapMask);
 							m_fRoutingComplete = TRUE;
-							cPathSize2 = FindShortestPath( pMyPath2, iFrom, iTo, iHull, iCapMask );
+							cPathSize2 = FindShortestPath(pMyPath2, m_cNodes, iFrom, iTo, iHull, iCapMask);
 							goto EnoughSaid;
 						}
 					}

@@ -145,7 +145,10 @@ void CHalfLifeMultiplay::RefreshSkillData( void )
 	gSkillData.suitchargerCapacity = 30;
 
 	// Crowbar whack
-	gSkillData.plrDmgCrowbar = 25;
+	gSkillData.plrDmgCrowbar = 10;
+
+	// Pipewrench whack
+	gSkillData.plrDmgPipewrench = 20;
 
 	// Glock Round
 	gSkillData.plrDmg9MM = 12;
@@ -153,8 +156,17 @@ void CHalfLifeMultiplay::RefreshSkillData( void )
 	// 357 Round
 	gSkillData.plrDmg357 = 50;
 
+	// 44 Round
+	gSkillData.plrDmg357 = 60;
+
 	// MP5 Round
-	gSkillData.plrDmgMP5 = 12;
+	gSkillData.plrDmgMP5 = 10;
+
+	// SMG Round
+	gSkillData.plrDmg45ACP = 7;
+
+	// Sniperrifle Round
+	gSkillData.plrDmg14MM = 150;
 
 	// M203 grenade
 	gSkillData.plrDmgM203Grenade = 100;

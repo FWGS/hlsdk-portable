@@ -435,3 +435,396 @@ void CHornet::DieTouch( CBaseEntity *pOther )
 	SetThink( &CHornet::SUB_Remove );
 	SetNextThink( 1.0f );// stick around long enough for the sound to finish!
 }
+
+// HORNET HIVE
+
+#define SF_HORNETNEST_OFF 1
+
+#define HORNETHIVE_RANGE 640.0f // Player detection range
+#define HORNETHIVE_FIRE_RATE 0.5f // Fire hornets every n seconds
+
+class CHornetHive : public CPointEntity
+{
+public:
+	void Precache();
+	void Spawn();
+	void Think();
+	void Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
+
+	STATE GetState() {
+		if (pev->spawnflags & SF_HORNETNEST_OFF)
+			return STATE_OFF;
+		return STATE_ON;
+	}
+	bool IsActive() {
+		return GetState() == STATE_ON;
+	}
+};
+
+LINK_ENTITY_TO_CLASS(env_hornethive, CHornetHive)
+
+void CHornetHive::Precache()
+{
+	UTIL_PrecacheOther("hornet");
+
+	PRECACHE_SOUND("agrunt/ag_fire1.wav");
+	PRECACHE_SOUND("agrunt/ag_fire2.wav");
+	PRECACHE_SOUND("agrunt/ag_fire3.wav");
+}
+
+void CHornetHive::Spawn()
+{
+	Precache();
+	pev->solid = SOLID_NOT;
+	SetNextThink(0.3f);
+}
+
+void CHornetHive::Think()
+{
+	if (!IsActive())
+		return;
+
+	SetNextThink(0.5f);
+
+	edict_t* pPlayer = FIND_CLIENT_IN_PVS(edict());
+	if (FNullEnt(pPlayer))
+	{
+		SetNextThink(2.0f);
+		return;
+	}
+
+	const Vector nestPosition = pev->origin;
+	const Vector targetPosition = pPlayer->v.origin + pPlayer->v.view_ofs;
+	const float range = (targetPosition - nestPosition).Length();
+	if (range > HORNETHIVE_RANGE)
+		return;
+
+	TraceResult tr;
+	UTIL_TraceLine(nestPosition, targetPosition, dont_ignore_monsters, edict(), &tr);
+
+	if (tr.flFraction == 1.0f || tr.pHit == pPlayer)
+	{
+		Vector enemyPosition = pPlayer->v.origin;
+		if (pPlayer->v.velocity != g_vecZero)
+		{
+			enemyPosition = enemyPosition - pPlayer->v.velocity * RANDOM_FLOAT(-0.05f, 0.0f);
+		}
+
+		Vector vecDirToEnemy = (enemyPosition - nestPosition).Normalize();
+
+		CHornet* pHornet = (CHornet*)CBaseEntity::Create("hornet", nestPosition, UTIL_VecToAngles(vecDirToEnemy), edict());
+		pHornet->pev->velocity = vecDirToEnemy * 300.0f;
+
+		switch (RANDOM_LONG(0, 2))
+		{
+		case 0:
+			EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "agrunt/ag_fire1.wav", 1.0, ATTN_NORM, 0, 100);
+			break;
+		case 1:
+			EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "agrunt/ag_fire2.wav", 1.0, ATTN_NORM, 0, 100);
+			break;
+		case 2:
+			EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "agrunt/ag_fire3.wav", 1.0, ATTN_NORM, 0, 100);
+			break;
+		}
+
+		pHornet->m_hEnemy = CBaseEntity::Instance(pPlayer);
+
+		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pev->origin);
+		WRITE_BYTE(TE_SPRITE);
+		WRITE_COORD(pev->origin.x);	// pos
+		WRITE_COORD(pev->origin.y);
+		WRITE_COORD(pev->origin.z);
+		WRITE_SHORT(iHornetPuff);		// model
+		WRITE_BYTE(6);				// size * 10
+		WRITE_BYTE(128);			// brightness
+		MESSAGE_END();
+
+		SetNextThink(HORNETHIVE_FIRE_RATE);
+	}
+}
+
+void CHornetHive::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
+{
+	if (!ShouldToggle(useType))
+		return;
+	if (IsActive())
+	{
+		pev->spawnflags |= SF_HORNETNEST_OFF;
+	}
+	else
+	{
+		pev->spawnflags &= SF_HORNETNEST_OFF;
+		SetNextThink(0.1f);
+	}
+}
+
+#define HORNET_COMFORT_DIST 16
+#define HORNET_FLY_MAXSPEED 120.0f
+#define HORNET_FLY_ACCEL 40.0f
+#define HORNET_FRAMETIME 0.1f
+#define HORNET_FLY_VERTICALSPEED (HORNET_COMFORT_DIST * 0.5f)
+
+class CEnvHornet : public CBaseAnimating
+{
+public:
+	void Precache();
+	void Spawn();
+
+	void EXPORT FlyThink();
+	void EXPORT FallThink();
+
+	void EXPORT HornetUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
+
+	STATE GetState() {
+		if (pev->movetype == MOVETYPE_FLY)
+			return STATE_ON;
+		return STATE_OFF;
+	}
+
+	void PlayBuzzSound();
+
+	Vector m_center;
+	Vector m_wanderTarget;
+	int m_iHornetType;
+	float m_verticalSpeed;
+	BOOL m_wanderingOff;
+
+	float m_nextTrailTime;
+
+	int iHornetTrail;
+	int iHornetPuff;
+
+	virtual int Save(CSave& save);
+	virtual int Restore(CRestore& restore);
+	static TYPEDESCRIPTION m_SaveData[];
+};
+
+LINK_ENTITY_TO_CLASS(env_hornet, CEnvHornet)
+
+TYPEDESCRIPTION	CEnvHornet::m_SaveData[] =
+{
+	DEFINE_FIELD(CEnvHornet, m_center, FIELD_VECTOR),
+	DEFINE_FIELD(CEnvHornet, m_wanderTarget, FIELD_VECTOR),
+	DEFINE_FIELD(CEnvHornet, m_iHornetType, FIELD_INTEGER),
+	DEFINE_FIELD(CEnvHornet, m_verticalSpeed, FIELD_FLOAT),
+	DEFINE_FIELD(CEnvHornet, m_wanderingOff, FIELD_BOOLEAN),
+};
+
+IMPLEMENT_SAVERESTORE(CEnvHornet, CBaseAnimating)
+
+void CEnvHornet::Precache()
+{
+	PRECACHE_MODEL("models/hornet.mdl");
+
+	PRECACHE_SOUND("hornet/ag_buzz1.wav");
+	PRECACHE_SOUND("hornet/ag_buzz2.wav");
+	PRECACHE_SOUND("hornet/ag_buzz3.wav");
+
+	iHornetTrail = PRECACHE_MODEL("sprites/laserbeam.spr");
+	iHornetPuff = PRECACHE_MODEL("sprites/muz1.spr");
+	m_nextTrailTime = gpGlobals->time + 0.1f;
+}
+
+void CEnvHornet::Spawn()
+{
+	Precache();
+
+	pev->movetype = MOVETYPE_FLY;
+	pev->solid = SOLID_NOT;
+	pev->takedamage = DAMAGE_NO;
+
+	SET_MODEL(ENT(pev), "models/hornet.mdl");
+	UTIL_SetSize(pev, Vector(-4, -4, -4), Vector(4, 4, 4));
+
+	m_center = pev->origin;
+	pev->speed = HORNET_FLY_MAXSPEED;
+	m_verticalSpeed = RANDOM_LONG(0, 1) ? HORNET_FLY_VERTICALSPEED : -HORNET_FLY_VERTICALSPEED;
+
+	m_iHornetType = RANDOM_LONG(0, 1);
+
+	SetUse(&CEnvHornet::HornetUse);
+	SetThink(&CEnvHornet::FlyThink);
+	SetNextThink(0.1f);
+	ResetSequenceInfo();
+}
+
+void CEnvHornet::FlyThink()
+{
+	if (FNullEnt(FIND_CLIENT_IN_PVS(edict())))
+	{
+		SetNextThink(1.0f);
+		return;
+	}
+
+	if (RANDOM_LONG(0, 15) == 0)
+		PlayBuzzSound();
+
+	UTIL_MakeVectors(pev->angles);
+
+	const Vector vecToCenter = (m_center - pev->origin);
+	const float wanderingDist = vecToCenter.Length2D();
+
+	if (wanderingDist < HORNET_COMFORT_DIST)
+	{
+		if (m_wanderingOff)
+		{
+			pev->avelocity.y = 0;
+			m_wanderingOff = FALSE;
+		}
+		pev->speed = UTIL_Approach(HORNET_FLY_MAXSPEED, pev->speed, HORNET_FLY_ACCEL * HORNET_FRAMETIME);
+		pev->velocity = gpGlobals->v_forward * pev->speed;
+	}
+	else
+	{
+		if (!m_wanderingOff)
+		{
+			m_wanderingOff = TRUE;
+			m_wanderTarget = m_center;
+
+			pev->speed = HORNET_FLY_MAXSPEED * RANDOM_FLOAT(0.5f, 0.6f);
+			pev->yaw_speed = RANDOM_FLOAT(250, 300);
+		}
+
+		const Vector vecToWanderTarget = (m_wanderTarget - pev->origin);
+		const float targetYaw = UTIL_VecToYaw(vecToWanderTarget);
+
+		const float currentYaw = UTIL_AngleMod(pev->angles.y);
+		const float yawDiff = UTIL_AngleDiff(targetYaw, currentYaw);
+		if (yawDiff < 0)
+		{
+			pev->avelocity.y = Q_min(-pev->yaw_speed, yawDiff);
+		}
+		else
+		{
+			pev->avelocity.y = Q_max(pev->yaw_speed, yawDiff);
+		}
+		pev->velocity = gpGlobals->v_forward * pev->speed;
+
+		//ALERT(at_console, "Speed :%f. Dist to target: %f\n", pev->velocity.Length2D(), vecToWanderTarget.Length2D());
+	}
+
+	float targetVerticalSpeed;
+	if (pev->origin.z >= m_center.z + HORNET_COMFORT_DIST)
+	{
+		targetVerticalSpeed = -HORNET_FLY_VERTICALSPEED;
+	}
+	else if (pev->origin.z < m_center.z - HORNET_COMFORT_DIST)
+	{
+		targetVerticalSpeed = HORNET_FLY_VERTICALSPEED;
+	}
+	else if (m_verticalSpeed >= 0)
+	{
+		targetVerticalSpeed = HORNET_FLY_VERTICALSPEED;
+	}
+	else
+	{
+		targetVerticalSpeed = -HORNET_FLY_VERTICALSPEED;
+	}
+
+	m_verticalSpeed = UTIL_Approach(targetVerticalSpeed, m_verticalSpeed, HORNET_FLY_VERTICALSPEED * HORNET_FRAMETIME);
+
+	pev->velocity.z = m_verticalSpeed;
+
+	if (gpGlobals->time > m_nextTrailTime)
+	{
+		const int life = 10;
+		m_nextTrailTime = gpGlobals->time + life * 0.1f;
+
+		MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
+		WRITE_BYTE(TE_BEAMFOLLOW);
+		WRITE_SHORT(entindex());	// entity
+		WRITE_SHORT(iHornetTrail);	// model
+		WRITE_BYTE(life); // life
+		WRITE_BYTE(2);  // width
+
+		switch (m_iHornetType)
+		{
+		case HORNET_TYPE_RED:
+			WRITE_BYTE(179);   // r, g, b
+			WRITE_BYTE(39);   // r, g, b
+			WRITE_BYTE(14);   // r, g, b
+			break;
+		case HORNET_TYPE_ORANGE:
+			WRITE_BYTE(255);   // r, g, b
+			WRITE_BYTE(128);   // r, g, b
+			WRITE_BYTE(0);   // r, g, b
+			break;
+		}
+
+		WRITE_BYTE(128);	// brightness
+		MESSAGE_END();
+	}
+
+	StudioFrameAdvance();
+	SetNextThink(HORNET_FRAMETIME);
+}
+
+void CEnvHornet::HornetUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
+{
+	if (!ShouldToggle(useType))
+		return;
+	if (GetState() == STATE_ON)
+	{
+		MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
+		WRITE_BYTE(TE_KILLBEAM);
+		WRITE_SHORT(entindex());
+		MESSAGE_END();
+
+		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pev->origin);
+		WRITE_BYTE(TE_SPRITE);
+		WRITE_COORD(pev->origin.x);	// pos
+		WRITE_COORD(pev->origin.y);
+		WRITE_COORD(pev->origin.z);
+		WRITE_SHORT(iHornetPuff);		// model
+		WRITE_BYTE(2);				// size * 10
+		WRITE_BYTE(128);			// brightness
+		MESSAGE_END();
+
+		pev->gravity = 0.5f;
+		pev->movetype = MOVETYPE_TOSS;
+
+		pev->frame = 0;
+		ResetSequenceInfo();
+		pev->framerate = 0;
+
+		pev->velocity = g_vecZero;
+
+		UTIL_SetOrigin(this, pev->origin);
+		UTIL_SetSize(pev, Vector(0, 0, 0), Vector(0, 0, 0));
+
+		SetNextThink(0.0f);
+		SetThink(&CEnvHornet::FallThink);
+
+		SetUse(NULL);
+	}
+}
+
+void CEnvHornet::FallThink()
+{
+	SetNextThink(0.1f);
+
+	if (pev->flags & FL_ONGROUND)
+	{
+		SetThink(&CBaseEntity::SUB_StartFadeOut);
+	}
+}
+
+void CEnvHornet::PlayBuzzSound()
+{
+	const float volume = 0.6f;
+	const int pitch = RANDOM_LONG(85, 95);
+
+	switch (RANDOM_LONG(0, 2))
+	{
+	case 0:
+		EMIT_SOUND_DYN(ENT(pev), volume, "hornet/ag_buzz1.wav", volume, ATTN_STATIC, 0, pitch);
+		break;
+	case 1:
+		EMIT_SOUND_DYN(ENT(pev), volume, "hornet/ag_buzz2.wav", volume, ATTN_STATIC, 0, pitch);
+		break;
+	case 2:
+		EMIT_SOUND_DYN(ENT(pev), volume, "hornet/ag_buzz3.wav", volume, ATTN_STATIC, 0, pitch);
+		break;
+	}
+}

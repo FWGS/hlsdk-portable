@@ -65,15 +65,19 @@ endif()
 set (CLDLL_SOURCES
 	../dlls/crossbow.cpp
 	../dlls/crowbar.cpp
+	../dlls/desert_eagle.cpp
 	../dlls/egon.cpp
 	../dlls/gauss.cpp
 	../dlls/handgrenade.cpp
 	../dlls/hornetgun.cpp
 	../dlls/mp5.cpp
+	../dlls/pipewrench.cpp
 	../dlls/python.cpp
 	../dlls/rpg.cpp
 	../dlls/satchel.cpp
 	../dlls/shotgun.cpp
+	../dlls/smg.cpp
+	../dlls/sniperrifle.cpp
 	../dlls/squeakgrenade.cpp
 	../dlls/tripmine.cpp
 	../dlls/glock.cpp
@@ -98,10 +102,12 @@ set (CLDLL_SOURCES
 	geiger.cpp
 	health.cpp
 	hud.cpp
+	hud_sprite.cpp
 	hud_msg.cpp
 	hud_redraw.cpp
 	hud_spectator.cpp
 	hud_update.cpp
+	hud_caption.cpp
 	in_camera.cpp
 	input.cpp
 	input_goldsource.cpp
@@ -120,6 +126,7 @@ set (CLDLL_SOURCES
 	saytext.cpp
 	status_icons.cpp
 	statusbar.cpp
+	steam_integration.cpp
 	studio_util.cpp
 	StudioModelRenderer.cpp
 	text_message.cpp

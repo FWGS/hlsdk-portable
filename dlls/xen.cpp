@@ -17,9 +17,15 @@
 #include "cbase.h"
 #include "animation.h"
 #include "effects.h"
+#include "weapons.h"
+#include "monsters.h"
+#include "player.h"
+#include "ach_counters.h"
 
 #define XEN_PLANT_GLOW_SPRITE		"sprites/flare3.spr"
 #define XEN_PLANT_HIDE_TIME			5
+
+extern DLL_GLOBAL Vector		g_vecAttackDir;
 
 class CActAnimating : public CBaseAnimating
 {
@@ -94,7 +100,7 @@ void CXenPLight::Spawn( void )
 
 	UTIL_SetSize( pev, Vector( -80, -80, 0 ), Vector( 80, 80, 32 ) );
 	SetActivity( ACT_IDLE );
-	SetNextThink( 0.1f );
+	pev->nextthink = gpGlobals->time + 0.1;
 	pev->frame = RANDOM_FLOAT( 0, 255 );
 
 	m_pGlow = CSprite::SpriteCreate( XEN_PLANT_GLOW_SPRITE, pev->origin + Vector( 0, 0, ( pev->mins.z + pev->maxs.z ) * 0.5f ), FALSE );
@@ -111,7 +117,7 @@ void CXenPLight::Precache( void )
 void CXenPLight::Think( void )
 {
 	StudioFrameAdvance();
-	SetNextThink( 0.1f );
+	pev->nextthink = gpGlobals->time + 0.1;
 
 	switch( GetActivity() )
 	{
@@ -246,7 +252,8 @@ public:
 	void Precache( void );
 	void Touch( CBaseEntity *pOther );
 	void Think( void );
-	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType ) { Attack(); return 0; }
+	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
+	void Killed( entvars_t *pevAttacker, int iGib );
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
 	void Attack( void );	
 	int Classify( void ) { return CLASS_BARNACLE; }
@@ -254,6 +261,8 @@ public:
 	virtual int Save( CSave &save );
 	virtual int Restore( CRestore &restore );
 	static TYPEDESCRIPTION m_SaveData[];
+
+	virtual int BloodColor( void ) { return BLOOD_COLOR_YELLOW; }
 
 	static const char *pAttackHitSounds[];
 	static const char *pAttackMissSounds[];
@@ -283,9 +292,11 @@ void CXenTree::Spawn( void )
 
 	UTIL_SetSize( pev, Vector( -30, -30, 0 ), Vector( 30, 30, 188 ) );
 	SetActivity( ACT_IDLE );
-	SetNextThink( 0.1f );
+	pev->nextthink = gpGlobals->time + 0.1;
 	pev->frame = RANDOM_FLOAT( 0, 255 );
 	pev->framerate = RANDOM_FLOAT( 0.7f, 1.4f );
+
+	pev->health = 100;
 
 	Vector triggerPosition;
 	UTIL_MakeVectorsPrivate( pev->angles, triggerPosition, NULL, NULL );
@@ -311,9 +322,14 @@ const char *CXenTree::pAttackMissSounds[] =
 void CXenTree::Precache( void )
 {
 	PRECACHE_MODEL( "models/tree.mdl" );
+	PRECACHE_MODEL( "models/tree_destroyed.mdl" );
+	PRECACHE_MODEL( "models/tree_gibs.mdl" );
 	PRECACHE_MODEL( XEN_PLANT_GLOW_SPRITE );
 	PRECACHE_SOUND_ARRAY( pAttackHitSounds );
 	PRECACHE_SOUND_ARRAY( pAttackMissSounds );
+
+	PRECACHE_SOUND("debris/bustflesh1.wav");
+	PRECACHE_SOUND("debris/bustflesh2.wav");
 }
 
 void CXenTree::Touch( CBaseEntity *pOther )
@@ -321,11 +337,135 @@ void CXenTree::Touch( CBaseEntity *pOther )
 	if( !pOther->IsPlayer() && FClassnameIs( pOther->pev, "monster_bigmomma" ) )
 		return;
 
+	if (pev->deadflag == DEAD_DEAD)
+		return;
+
 	Attack();
+}
+
+int CXenTree :: TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType )
+{
+	Vector	vecTemp;
+
+	// if Attacker == Inflictor, the attack was a melee or other instant-hit attack.
+	// (that is, no actual entity projectile was involved in the attack so use the shooter's origin). 
+	if ( pevAttacker == pevInflictor )	
+	{
+		vecTemp = pevInflictor->origin - ( pev->absmin + ( pev->size * 0.5 ) );
+		
+		// if a client hit the breakable with a crowbar, and breakable is crowbar-sensitive, break it now.
+		if ( FBitSet ( pevAttacker->flags, FL_CLIENT ) &&
+				 FBitSet ( pev->spawnflags, SF_BREAK_CROWBAR ) && (bitsDamageType & DMG_CLUB))
+			flDamage = pev->health;
+	}
+	else
+	// an actual missile was involved.
+	{
+		vecTemp = pevInflictor->origin - ( pev->absmin + ( pev->size * 0.5 ) );
+	}
+
+	if ( bitsDamageType & DMG_BULLET && flDamage <= 10 )
+		flDamage *= 0.1;
+
+	if ( bitsDamageType & DMG_BLAST || flDamage >= 50 )
+		flDamage *= 2;
+
+// this global is still used for glass and other non-monster killables, along with decals.
+	g_vecAttackDir = vecTemp.Normalize();
+		
+// do the damage
+	pev->health -= flDamage;
+
+	if (pev->health <= 0) 
+	{
+		EMIT_SOUND(ENT(pev), CHAN_BODY, "common/bodysplat.wav", 1, ATTN_NORM);
+
+		MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, pev->origin );
+			WRITE_BYTE( TE_BLOODSPRITE );
+			WRITE_COORD( pev->origin.x );								// pos
+			WRITE_COORD( pev->origin.y );
+			WRITE_COORD( pev->origin.z + 64 );
+			WRITE_SHORT( g_sModelIndexBloodSpray );				// initial sprite model
+			WRITE_SHORT( g_sModelIndexBloodDrop );				// droplet sprite models
+			WRITE_BYTE( BLOOD_COLOR_YELLOW );							// color index into host_basepal
+			WRITE_BYTE( 16 );									// size
+		MESSAGE_END();
+
+		for (int i = 1; i <= 3; i++ ) 
+		{
+		MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, pev->origin );
+			WRITE_BYTE( TE_BLOODSTREAM );
+			WRITE_COORD( pev->origin.x + RANDOM_FLOAT ( -10, 10 ));
+			WRITE_COORD( pev->origin.y + RANDOM_FLOAT ( -10, 10 ));
+			WRITE_COORD( pev->origin.z + 64 );
+			WRITE_COORD( RANDOM_FLOAT ( -10, 10 ));
+			WRITE_COORD( RANDOM_FLOAT ( -10, 10 ));
+			WRITE_COORD( RANDOM_FLOAT ( 16, 250 ));
+			WRITE_BYTE( BLOOD_COLOR_YELLOW );
+			WRITE_BYTE( RANDOM_FLOAT ( 80, 150 ));
+		MESSAGE_END();
+		}
+
+		Killed( pevAttacker, GIB_NORMAL );
+		//Die();
+		return 0;
+	}
+
+	Attack();
+	return 1;
+}
+
+void CXenTree :: Killed( entvars_t *pevAttacker, int iGib )
+{
+	if (pev->takedamage != DAMAGE_NO)
+	{
+		Fragged(pevAttacker);
+	}
+
+	pev->takedamage = DAMAGE_NO;
+	pev->deadflag = DEAD_DEAD;
+
+	switch ( RANDOM_LONG(0,1) )
+	{
+		case 0:	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "debris/bustflesh1.wav", 1.0, ATTN_NORM, 0, 95 + RANDOM_LONG(0,29));break;
+		case 1:	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "debris/bustflesh2.wav", 1.0, ATTN_NORM, 0, 95 + RANDOM_LONG(0,29)); break;
+	}
+
+	SET_MODEL( ENT(pev), "models/tree_destroyed.mdl" );
+
+	switch ( RANDOM_LONG(0,4) )
+	{
+		case 0:	pev->body = 0;break;
+		case 1:	pev->body = 1;break;
+		case 2:	pev->body = 2;break;
+		case 3:	pev->body = 3;break;
+		case 4:	pev->body = 4;break;
+	}
+
+	CGib::SpawnTreeGibs( pev, 5 );	// Throw alien gibs
+
+	CBasePlayer* pPlayer = CBasePlayer::PlayerInstance(pevAttacker);
+	if (pPlayer)
+	{
+		pPlayer->m_treesKilled++;
+		if (pPlayer->m_treesKilled == ACH_PUNISHMENT_COUNT)
+		{
+			pPlayer->SetAchievement("ACH_PUNISHMENT");
+		}
+		else if (pPlayer->m_treesKilled == ACH_DEFORESTATION_COUNT)
+		{
+			pPlayer->SetAchievement("ACH_DEFORESTATION");
+		}
+	}
+
+	//UTIL_Remove( this );
 }
 
 void CXenTree::Attack( void )
 {
+	if (pev->deadflag == DEAD_DEAD)
+		return;
+
 	if( GetActivity() == ACT_IDLE )
 	{
 		SetActivity( ACT_MELEE_ATTACK1 );
@@ -375,7 +515,7 @@ void CXenTree::HandleAnimEvent( MonsterEvent_t *pEvent )
 void CXenTree::Think( void )
 {
 	float flInterval = StudioFrameAdvance();
-	SetNextThink( 0.1f );
+	pev->nextthink = gpGlobals->time + 0.1;
 	DispatchAnimEvents( flInterval );
 
 	switch( GetActivity() )

@@ -146,15 +146,6 @@ void CMonsterMaker::Spawn()
 		SetThink( &CMonsterMaker::MakerThink );
 	}
 
-	if ( m_cNumMonsters == 1 || (m_cNumMonsters != -1 && pev->spawnflags & SF_MONSTERMAKER_LEAVECORPSE ))
-	{
-		m_fFadeChildren = FALSE;
-	}
-	else
-	{
-		m_fFadeChildren = TRUE;
-	}
-
 	m_flGround = 0;
 }
 
@@ -192,10 +183,14 @@ void CMonsterMaker::TryMakeMonster( void )
 
 	CBaseEntity *pList[2];
 	int count = UTIL_EntitiesInBox( pList, 2, mins, maxs, FL_CLIENT | FL_MONSTER );
-	if( count )
+	for (int i = 0; i < count; ++i)
 	{
-		// don't build a stack of monsters!
-		return;
+		// Dead bodies don't block spawn
+		if (pList[i]->pev->deadflag != DEAD_DEAD)
+		{
+			// don't build a stack of monsters!
+			return;
+		}
 	}
 
 	if (m_fSpawnDelay)
@@ -346,6 +341,15 @@ void CMonsterMaker::DeathNotice( entvars_t *pevChild )
 {
 	// ok, we've gotten the deathnotice from our child, now clear out its owner if we don't want it to fade.
 	m_cLiveChildren--;
+
+	if ( pev->spawnflags & SF_MONSTERMAKER_LEAVECORPSE )
+	{
+		m_fFadeChildren = FALSE;
+	}
+	else
+	{
+		m_fFadeChildren = TRUE;
+	}
 
 	if( !m_fFadeChildren )
 	{

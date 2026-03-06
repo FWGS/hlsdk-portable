@@ -220,6 +220,12 @@ typedef enum
 	TS_GOING_DOWN
 } TOGGLE_STATE;
 
+typedef enum {
+	NLE_PROHIBIT = 0,
+	NLE_ALLOW,
+	NLE_NEEDS_INPUT
+} NODE_LINKENT;
+
 // Misc useful
 inline BOOL FStrEq(const char*sz1, const char*sz2)
 {
@@ -408,6 +414,8 @@ extern void			UTIL_LogPrintf( const char *fmt, ... );
 extern float UTIL_DotPoints ( const Vector &vecSrc, const Vector &vecCheck, const Vector &vecDir );
 
 extern void UTIL_StripToken( const char *pKey, char *pDest, int nLen );// for redundant keynames
+
+extern void UTIL_ShowCaption(const char* messageId, int holdTime, bool radio);
 
 // Misc functions
 extern void SetMovedir(entvars_t* pev);
@@ -604,6 +612,10 @@ float UTIL_SharedRandomFloat( unsigned int seed, float low, float high );
 float UTIL_WeaponTimeBase( void );
 int GetStdLightStyle (int iStyle); //LRC- declared here so it can be used by everything that
 									// needs to deal with the standard lightstyles.
+
+void UTIL_SetModel( edict_t *e, const char *model );
+int UTIL_PrecacheModel( char* s );
+									
 // LRC- for aliases and groups
 CBaseEntity* UTIL_FollowReference( CBaseEntity* pStartEntity, const char* szName );
 #endif // UTIL_H

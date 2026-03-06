@@ -32,6 +32,8 @@ extern "C"
 #include "vgui_TeamFortressViewport.h"
 #endif
 
+#include "steam_integration.h"
+
 extern "C" 
 {
 	struct kbutton_s DLLEXPORT *KB_Find( const char *name );
@@ -1129,6 +1131,9 @@ void InitInput( void )
 	cl_yawspeed		= gEngfuncs.pfnRegisterVariable( "cl_yawspeed", "210", 0 );
 	cl_pitchspeed		= gEngfuncs.pfnRegisterVariable( "cl_pitchspeed", "225", 0 );
 	cl_upspeed		= gEngfuncs.pfnRegisterVariable( "cl_upspeed", "320", 0 );
+	cl_forwardspeed		= gEngfuncs.pfnRegisterVariable ( "cl_forwardspeed", "230", FCVAR_ARCHIVE );
+	cl_backspeed		= gEngfuncs.pfnRegisterVariable ( "cl_backspeed", "200", FCVAR_ARCHIVE );
+	cl_sidespeed		= gEngfuncs.pfnRegisterVariable ( "cl_sidespeed", "230", 0 );
 	cl_forwardspeed		= gEngfuncs.pfnRegisterVariable( "cl_forwardspeed", "400", FCVAR_ARCHIVE );
 	cl_backspeed		= gEngfuncs.pfnRegisterVariable( "cl_backspeed", "400", FCVAR_ARCHIVE );
 	cl_sidespeed		= gEngfuncs.pfnRegisterVariable( "cl_sidespeed", "400", 0 );
@@ -1167,4 +1172,5 @@ void ShutdownInput( void )
 void DLLEXPORT HUD_Shutdown( void )
 {
 	ShutdownInput();
+	ShutdownSteam();
 }

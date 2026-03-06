@@ -38,6 +38,8 @@ public:
 	void Precache( void );
 	virtual void PostSpawn( void );
 	virtual void KeyValue( KeyValueData *pkvd );
+	float InputByMonster(CBaseMonster* pMonster);
+	NODE_LINKENT HandleLinkEnt(int afCapMask, bool nodeQueryStatic);
 	virtual void Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
 	virtual void Blocked( CBaseEntity *pOther );
 
@@ -712,6 +714,65 @@ void CBaseDoor::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE use
 		return;
 
 		DoorActivate();
+}
+
+float CBaseDoor::InputByMonster(CBaseMonster *pMonster)
+{
+	if (FBitSet(pev->spawnflags, SF_DOOR_NOMONSTERS))
+		return 0.0f;
+
+	BOOL originalMode = m_iOnOffMode;
+	m_iOnOffMode = TRUE;
+	Use(pMonster, pMonster, USE_ON, 0.0f);
+	m_iOnOffMode = originalMode;
+	return pev->nextthink - pev->ltime;
+}
+
+NODE_LINKENT CBaseDoor::HandleLinkEnt(int afCapMask, bool nodeQueryStatic)
+{
+	if (nodeQueryStatic) {
+		return NLE_ALLOW;
+	}
+
+	const int toggleState = GetToggleState();
+
+	// monster should try for it if the door is open and looks as if it will stay that way
+	if( toggleState == TS_AT_TOP && (( pev->spawnflags & SF_DOOR_NO_AUTO_RETURN ) || (m_flWait == -1.0f)) )
+	{
+		return NLE_ALLOW;
+	}
+
+	if (!UTIL_IsMasterTriggered( m_sMaster, this )) {
+		return NLE_PROHIBIT;
+	}
+
+	if( ( pev->spawnflags & SF_DOOR_USE_ONLY ) )
+	{
+		// door is use only.
+		if( ( afCapMask & bits_CAP_OPEN_DOORS ) )
+		{
+			// let monster right through if he can open doors
+			if (!( pev->spawnflags & SF_DOOR_NOMONSTERS ))
+				return NLE_NEEDS_INPUT;
+		}
+		return NLE_PROHIBIT;
+	}
+	else
+	{
+		// door must be opened with a button or trigger field.
+		if( ( afCapMask & bits_CAP_OPEN_DOORS ) )
+		{
+			if (!FStringNull(pev->targetname) && !FBitSet(pev->spawnflags, SF_DOOR_FORCETOUCHABLE))
+			{
+				return NLE_PROHIBIT;
+			}
+			if( !( pev->spawnflags & SF_DOOR_NOMONSTERS ) ) {
+				return NLE_NEEDS_INPUT;
+			}
+		}
+
+		return NLE_PROHIBIT;
+	}
 }
 
 //

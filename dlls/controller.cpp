@@ -27,6 +27,8 @@
 #include	"weapons.h"
 #include	"squadmonster.h"
 #include	"scripted.h"
+#include	"player.h"
+#include	"ach_counters.h"
 
 //=========================================================
 // Monster's Anim Events Go Here
@@ -70,6 +72,9 @@ public:
 	void SetActivity( Activity NewActivity );
 	BOOL ShouldAdvanceRoute( float flWaypointDist );
 	int LookupFloat();
+	int BuckshotCount;
+	BOOL HeadGibbed;
+	Vector HeadPos;
 
 	float m_flNextFlinch;
 
@@ -88,6 +93,7 @@ public:
 	static const char *pPainSounds[];
 	static const char *pDeathSounds[];
 
+	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType);
 	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
 	void Killed( entvars_t *pevAttacker, int iGib );
 	void GibMonster( void );
@@ -183,7 +189,34 @@ int CController::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 	// HACK HACK -- until we fix this.
 	if( IsAlive() )
 		PainSound();
-	return CBaseMonster::TakeDamage( pevInflictor, pevAttacker, flDamage, bitsDamageType );
+
+	if ( !HeadGibbed && (pev->health <= flDamage && BuckshotCount >= 6) ) // separate for shotgun =/, TraceAttack doesn't work correctly
+	{
+		pev->body = 1;
+
+		GibHeadMonster( HeadPos, FALSE );
+		HeadGibbed = TRUE;
+		ScoreForHeadGib(pevAttacker);
+	}
+
+	BuckshotCount = 0;
+	const bool wasAlive = !HasMemory(bits_MEMORY_KILLED);
+	const int result = CBaseMonster::TakeDamage( pevInflictor, pevAttacker, flDamage, bitsDamageType );
+	const bool isDeadNow = HasMemory(bits_MEMORY_KILLED);
+	if (wasAlive && isDeadNow && 
+		pevInflictor && FClassnameIs(pevInflictor, "grenade") && FBitSet(pevInflictor->spawnflags, SF_GRENADE_IS_CONTACT))
+	{
+		CBasePlayer* pPlayer = CBasePlayer::PlayerInstance(pevAttacker);
+		if (pPlayer)
+		{
+			pPlayer->m_controllersKilledByAR++;
+			if (pPlayer->m_controllersKilledByAR == ACH_SHOOTER_VETERAN_COUNT)
+			{
+				pPlayer->SetAchievement("ACH_SHOOTER_VETERAN");
+			}
+		}
+	}
+	return result;
 }
 
 void CController::Killed( entvars_t *pevAttacker, int iGib )
@@ -350,6 +383,30 @@ void CController::HandleAnimEvent( MonsterEvent_t *pEvent )
 			CBaseMonster::HandleAnimEvent( pEvent );
 			break;
 	}
+}
+
+void CController :: TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType)
+{
+	if	( ptr->iHitgroup == 10 )
+	{
+		if ( (bitsDamageType & DMG_BULLET) && flDamage == gSkillData.plrDmgBuckshot )
+			BuckshotCount++;
+		
+		HeadPos = ptr->vecEndPos;
+		ptr->iHitgroup = HITGROUP_HEAD;
+		flDamage = flDamage / gSkillData.monHead;
+
+		if ( !HeadGibbed && pev->health <= flDamage * gSkillData.monHead && flDamage * gSkillData.monHead >= 10 )
+		{
+			pev->body = 1;
+
+			GibHeadMonster( ptr->vecEndPos, FALSE );
+			HeadGibbed = TRUE;
+			ScoreForHeadGib(pevAttacker);
+		}
+	}
+	
+	CSquadMonster::TraceAttack( pevAttacker, flDamage, vecDir, ptr, bitsDamageType );
 }
 
 //=========================================================

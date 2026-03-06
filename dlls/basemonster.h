@@ -97,7 +97,8 @@ public:
 	float m_flDistTooFar;	// if enemy farther away than this, bits_COND_ENEMY_TOOFAR set in CheckEnemy
 	float m_flDistLook;	// distance monster sees (Default 2048)
 
-	int m_iTriggerCondition;// for scripted AI, this is the condition that will cause the activation of the monster's TriggerTarget
+	short m_iTriggerCondition;// for scripted AI, this is the condition that will cause the activation of the monster's TriggerTarget
+	short m_iTriggerAltCondition;
 	string_t m_iszTriggerTarget;// name of target that should be fired. 
 
 	Vector m_HackedGunPos;	// HACK until we can query end of gun
@@ -133,6 +134,7 @@ public:
 	void Listen( void );
 
 	virtual BOOL IsAlive( void ) { return ( pev->deadflag != DEAD_DEAD ); }
+	BOOL IsFullyAlive();
 	virtual BOOL ShouldFadeOnDeath( void );
 
 	// Basic Monster AI functions
@@ -231,7 +233,7 @@ public:
 	BOOL FRouteClear( void );
 	void RouteSimplify( CBaseEntity *pTargetEnt );
 	void AdvanceRoute( float distance );
-	virtual BOOL FTriangulate( const Vector &vecStart , const Vector &vecEnd, float flDist, CBaseEntity *pTargetEnt, Vector *pApex );
+	virtual int FTriangulate ( const Vector &vecStart , const Vector &vecEnd, float flDist, CBaseEntity *pTargetEnt, Vector *pApexes, int n = 1, int tries = 8, bool recursive = false );
 	void MakeIdealYaw( Vector vecTarget );
 	virtual void SetYawSpeed( void ) { return; };// allows different yaw_speeds for each activity
 	BOOL BuildRoute( const Vector &vecGoal, int iMoveFlag, CBaseEntity *pTarget );
@@ -285,6 +287,7 @@ public:
 	BOOL FacingIdeal( void );
 
 	BOOL FCheckAITrigger( void );// checks and, if necessary, fires the monster's trigger target. 
+	BOOL FCheckAITrigger( short condition );// checks and, if necessary, fires the monster's trigger target.
 	BOOL NoFriendlyFire( void );
 
 	BOOL BBoxFlat( void );
@@ -301,7 +304,9 @@ public:
 	virtual Activity GetDeathActivity( void );
 	Activity GetSmallFlinchActivity( void );
 	virtual void Killed( entvars_t *pevAttacker, int iGib );
+	virtual void OnDying() {}
 	virtual void GibMonster( void );
+	virtual void GibHeadMonster( Vector headPosition, BOOL Head );
 	BOOL ShouldGibMonster( int iGib );
 	void CallGibMonster( void );
 	virtual int		HasCustomGibs( void ) { return FALSE; } //LRC
@@ -350,5 +355,7 @@ public:
 		/*ALERT(at_console, "monster CR: %f/%f = %f\n", pev->health, pev->max_health, pev->health / pev->max_health);*/
 		return pev->health / pev->max_health;
 	}
+
+	void ScoreForHeadGib(entvars_t* pevAttacker);
 };
 #endif // BASEMONSTER_H

@@ -123,6 +123,11 @@ void CCineMonster::KeyValue( KeyValueData *pkvd )
 		m_fRepeatFrame = atof( pkvd->szValue );
 		pkvd->fHandled = TRUE;
 	}
+	else if ( FStrEq( pkvd->szKeyName, "m_interruptionPolicy" ) )
+	{
+		m_interruptionPolicy = (short)atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
 	else if( FStrEq( pkvd->szKeyName, "m_iFinishSchedule" ) )
 	{
 		m_iFinishSchedule = atoi( pkvd->szValue );
@@ -167,6 +172,7 @@ TYPEDESCRIPTION	CCineMonster::m_SaveData[] =
 	DEFINE_FIELD( CCineMonster, m_iRepeats, FIELD_INTEGER ),
 	DEFINE_FIELD( CCineMonster, m_iRepeatsLeft, FIELD_INTEGER ),
 	DEFINE_FIELD( CCineMonster, m_fRepeatFrame, FIELD_FLOAT ),
+	DEFINE_FIELD( CCineMonster, m_interruptionPolicy, FIELD_SHORT ),
 	DEFINE_FIELD( CCineMonster, m_iPriority, FIELD_INTEGER ),
 };
 
@@ -196,7 +202,7 @@ void CCineMonster::Spawn( void )
 		SetThink( &CCineMonster::InitIdleThink );
 		SetNextThink( 1.0f );
 	}
-	if( pev->spawnflags & SF_SCRIPT_NOINTERRUPT )
+	if( ForcedNoInterruptions() )
 		m_interruptable = FALSE;
 	else
 		m_interruptable = TRUE;
@@ -587,9 +593,14 @@ BOOL CBaseMonster::ExitScriptedSequence()
 	return TRUE;
 }
 
+bool CCineMonster::ForcedNoInterruptions()
+{
+	return (pev->spawnflags & SF_SCRIPT_NOINTERRUPT) || m_interruptionPolicy == SCRIPT_INTERRUPTION_POLICY_NO_INTERRUPTIONS;
+}
+
 void CCineMonster::AllowInterrupt( BOOL fAllow )
 {
-	if( pev->spawnflags & SF_SCRIPT_NOINTERRUPT )
+	if( ForcedNoInterruptions() )
 		return;
 	m_interruptable = fAllow;
 }
@@ -605,6 +616,11 @@ BOOL CCineMonster::CanInterrupt( void )
 		return TRUE;
 
 	return FALSE;
+}
+
+bool CCineMonster::CanInterruptByPlayerCall()
+{
+	return m_interruptionPolicy != SCRIPT_INTERRUPTION_POLICY_ONLY_DEATH && CanInterrupt();
 }
 
 int CCineMonster::IgnoreConditions( void )
@@ -826,6 +842,12 @@ BOOL CBaseMonster::CineCleanup()
 			pev->origin.x = new_origin.x;
 			pev->origin.y = new_origin.y;
 			pev->origin.z += 1;
+
+			if (FBitSet(pOldCine->pev->spawnflags, SF_SCRIPT_APPLYNEWANGLES))
+			{
+				pev->angles = new_angle;
+				pev->ideal_yaw = UTIL_AngleMod( pev->angles.y );
+			}
 
 			pev->flags |= FL_ONGROUND;
 			int drop = DROP_TO_FLOOR( ENT( pev ) );
@@ -1185,6 +1207,7 @@ BOOL CScriptedSentence::StartSentence( CBaseToggle *pTarget )
 
 		pListener = UTIL_FindEntityGeneric( STRING( m_iszListener ), pTarget->pev->origin, radius );
 	}
+	UTIL_ShowCaption(STRING( m_iszSentence ), ceil(m_flDuration)+1, false);
 #if SPEAKABLE_TARGETS
 	pTarget->PlayScriptedSentence( STRING( m_iszSentence ), m_flDuration,  m_flVolume, m_flAttenuation, bConcurrent, pListener );
 #else

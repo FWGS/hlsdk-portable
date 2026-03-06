@@ -27,6 +27,7 @@
 #include	"scripted.h"
 #include	"weapons.h"
 #include	"soundent.h"
+#include	"plane.h"
 
 //=========================================================
 // Monster's Anim Events Go Here
@@ -40,6 +41,13 @@
 #define	BARNEY_BODY_GUNDRAWN		1
 #define BARNEY_BODY_GUNGONE		2
 
+#define bits_COND_BARNEY_NOFIRE  ( bits_COND_SPECIAL1 )
+
+enum
+{
+    TASK_BARNEY_CHECK_FIRE = LAST_COMMON_TASK + 1,
+};
+
 class CBarney : public CTalkMonster
 {
 public:
@@ -49,14 +57,18 @@ public:
 	int ISoundMask( void );
 	void BarneyFirePistol( void );
 	void AlertSound( void );
+	void GibMonster ( void );
 	int Classify( void );
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
 
 	void RunTask( Task_t *pTask );
 	void StartTask( Task_t *pTask );
 	virtual int ObjectCaps( void ) { return CTalkMonster :: ObjectCaps() | FCAP_IMPULSE_USE; }
+	int BuckshotCount;
 	int TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
 	BOOL CheckRangeAttack1( float flDot, float flDist );
+	BOOL HeadGibbed;
+	Vector HeadPos;
 
 	void DeclineFollowing( void );
 
@@ -73,9 +85,13 @@ public:
 	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType);
 	void Killed( entvars_t *pevAttacker, int iGib );
 
+	BOOL NoFriendlyFire();
+
 	virtual int Save( CSave &save );
 	virtual int Restore( CRestore &restore );
 	static TYPEDESCRIPTION m_SaveData[];
+
+	int		m_iBrassShell;
 
 	int		m_iBaseBody; //LRC - for barneys with different bodies
 	BOOL m_fGunDrawn;
@@ -93,7 +109,6 @@ LINK_ENTITY_TO_CLASS( monster_barney, CBarney )
 
 TYPEDESCRIPTION	CBarney::m_SaveData[] =
 {
-	DEFINE_FIELD( CBarney, m_iBaseBody, FIELD_INTEGER ), //LRC
 	DEFINE_FIELD( CBarney, m_fGunDrawn, FIELD_BOOLEAN ),
 	DEFINE_FIELD( CBarney, m_painTime, FIELD_TIME ),
 	DEFINE_FIELD( CBarney, m_checkAttackTime, FIELD_TIME ),
@@ -203,19 +218,57 @@ Schedule_t slIdleBaStand[] =
 	},
 };
 
+// primary range attack
+Task_t tlBaRangeAttack1[] =
+{
+	{ TASK_STOP_MOVING, 0 },
+	{ TASK_FACE_ENEMY, (float)0 },
+	{ TASK_BARNEY_CHECK_FIRE, (float)0 },
+	{ TASK_RANGE_ATTACK1, (float)0 },
+};
+
+Schedule_t slBaRangeAttack1[] =
+{
+	{
+		tlBaRangeAttack1,
+		ARRAYSIZE( tlBaRangeAttack1 ),
+		bits_COND_NEW_ENEMY |
+		bits_COND_ENEMY_DEAD |
+		bits_COND_LIGHT_DAMAGE |
+		bits_COND_HEAVY_DAMAGE |
+		bits_COND_ENEMY_OCCLUDED |
+		bits_COND_NO_AMMO_LOADED |
+		bits_COND_BARNEY_NOFIRE |
+		bits_COND_HEAR_SOUND,
+		bits_SOUND_DANGER,
+		"Range Attack1"
+	},
+};
+
 DEFINE_CUSTOM_SCHEDULES( CBarney )
 {
 	slBaFollow,
 	slBarneyEnemyDraw,
 	slBaFaceTarget,
 	slIdleBaStand,
+	slBaRangeAttack1,
 };
 
 IMPLEMENT_CUSTOM_SCHEDULES( CBarney, CTalkMonster )
 
 void CBarney::StartTask( Task_t *pTask )
 {
-	CTalkMonster::StartTask( pTask );	
+	switch ( pTask->iTask ) {
+	case TASK_BARNEY_CHECK_FIRE:
+		if( !NoFriendlyFire() )
+		{
+			SetConditions( bits_COND_BARNEY_NOFIRE );
+		}
+		TaskComplete();
+		break;
+	default:
+		CTalkMonster::StartTask( pTask );
+	}
 }
 
 void CBarney::RunTask( Task_t *pTask )
@@ -266,7 +319,7 @@ void CBarney::AlertSound( void )
 {
 	if( m_hEnemy != 0 )
 	{
-		if( FOkToSpeak() )
+		if ( FOkToSpeak(SPEAK_DISREGARD_ENEMY) )
 		{
 			if( m_iszSpeakAs )
 			{
@@ -295,16 +348,16 @@ void CBarney::SetYawSpeed( void )
 	switch ( m_Activity )
 	{
 	case ACT_IDLE:		
-		ys = 70;
+		ys = 110;
 		break;
 	case ACT_WALK:
-		ys = 70;
+		ys = 110;
 		break;
 	case ACT_RUN:
-		ys = 90;
+		ys = 110;
 		break;
 	default:
-		ys = 70;
+		ys = 110;
 		break;
 	}
 
@@ -364,6 +417,10 @@ void CBarney::BarneyFirePistol( void )
 	}
 	else
 	{
+		UTIL_MakeVectors ( pev->angles );
+
+		Vector	vecShellVelocity = gpGlobals->v_right * RANDOM_FLOAT(40,90) + gpGlobals->v_up * RANDOM_FLOAT(75,200) + gpGlobals->v_forward * RANDOM_FLOAT(-40, 40);
+		EjectBrass ( vecShootOrigin - vecShootDir * 24, vecShellVelocity, pev->angles.y, m_iBrassShell, TE_BOUNCE_SHELL); 
 		FireBullets( 1, vecShootOrigin, vecShootDir, VECTOR_CONE_2DEGREES, 1024, BULLET_MONSTER_9MM );
 
 		int pitchShift = RANDOM_LONG( 0, 20 );
@@ -373,7 +430,7 @@ void CBarney::BarneyFirePistol( void )
 			pitchShift = 0;
 		else
 			pitchShift -= 5;
-		EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, "barney/ba_attack2.wav", 1, ATTN_NORM, 0, 100 + pitchShift );
+		EMIT_SOUND_DYN( ENT(pev), CHAN_WEAPON, "weapons/pl_gun3.wav", 1, ATTN_NORM, 0, 100 + pitchShift );
 	}
 
 	CSoundEnt::InsertSound( bits_SOUND_COMBAT, pev->origin, 384, 0.3f );
@@ -396,13 +453,11 @@ void CBarney::HandleAnimEvent( MonsterEvent_t *pEvent )
 		BarneyFirePistol();
 		break;
 	case BARNEY_AE_DRAW:
-		// barney's bodygroup switches here so he can pull gun from holster
-		pev->body = m_iBaseBody + BARNEY_BODY_GUNDRAWN;
+		SetBodygroup( 1, 1 );
 		m_fGunDrawn = TRUE;
 		break;
 	case BARNEY_AE_HOLSTER:
-		// change bodygroup to replace gun in holster
-		pev->body = m_iBaseBody + BARNEY_BODY_GUNHOLSTERED;
+		SetBodygroup( 1, 0 );
 		m_fGunDrawn = FALSE;
 		break;
 	default:
@@ -432,8 +487,7 @@ void CBarney::Spawn()
 	m_flFieldOfView = VIEW_FIELD_WIDE; // NOTE: we need a wide field of view so npc will notice player and say hello
 	m_MonsterState = MONSTERSTATE_NONE;
 
-	m_iBaseBody = pev->body; //LRC
-	pev->body			= m_iBaseBody + BARNEY_BODY_GUNHOLSTERED; // gun in holster
+	SetBodygroup( 1, 0 ); // gun in holster
 	m_fGunDrawn = FALSE;
 
 	m_afCapability = bits_CAP_HEAR | bits_CAP_TURN_HEAD | bits_CAP_DOORS_GROUP;
@@ -452,8 +506,7 @@ void CBarney::Precache()
 	else
 		PRECACHE_MODEL( "models/barney.mdl" );
 
-	PRECACHE_SOUND( "barney/ba_attack1.wav" );
-	PRECACHE_SOUND( "barney/ba_attack2.wav" );
+	PRECACHE_SOUND( "weapons/pl_gun3.wav" );
 
 	PRECACHE_SOUND( "barney/ba_pain1.wav" );
 	PRECACHE_SOUND( "barney/ba_pain2.wav" );
@@ -462,6 +515,8 @@ void CBarney::Precache()
 	PRECACHE_SOUND( "barney/ba_die1.wav" );
 	PRECACHE_SOUND( "barney/ba_die2.wav" );
 	PRECACHE_SOUND( "barney/ba_die3.wav" );
+
+	m_iBrassShell = PRECACHE_MODEL ("models/shell.mdl"); // Brass a shell.
 
 	// every new barney must call this, otherwise
 	// when a level is loaded, nobody will talk (time is reset to 0)
@@ -503,8 +558,8 @@ void CBarney::TalkInit()
 		m_szGrp[TLK_PLHURT2] = "!BA_CUREB";
 		m_szGrp[TLK_PLHURT3] = "!BA_CUREC";
 
-		m_szGrp[TLK_PHELLO] = NULL;	//"BA_PHELLO";		// UNDONE
-		m_szGrp[TLK_PIDLE] = NULL;	//"BA_PIDLE";			// UNDONE
+		m_szGrp[TLK_PHELLO] =	"BA_HELLO";	//"BA_PHELLO";		// UNDONE
+		m_szGrp[TLK_PIDLE] =	"BA_IDLE";	//"BA_PIDLE";			// UNDONE
 		m_szGrp[TLK_PQUESTION] = "BA_PQUEST";		// UNDONE
 
 		m_szGrp[TLK_SMELL] = "BA_SMELL";
@@ -605,6 +660,15 @@ int CBarney::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float 
 		}
 	}
 
+	if ( !HeadGibbed && (pev->health <= flDamage && BuckshotCount >= 5) ) // Hack to handle shotgun shells as each shell is a separate TraceAttack
+	{
+		SetBodygroup( 0, 1);
+
+		GibHeadMonster( HeadPos, TRUE );
+		HeadGibbed = TRUE;
+	}
+
+	BuckshotCount = 0;
 	return ret;
 }
 
@@ -666,29 +730,52 @@ void CBarney::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir
 		if( bitsDamageType & ( DMG_BULLET | DMG_SLASH | DMG_CLUB ) )
 		{
 			flDamage -= 20.0f;
-			if( flDamage <= 0.0f )
+			if (flDamage <= 0 && !HeadGibbed)
 			{
 				UTIL_Ricochet( ptr->vecEndPos, 1.0f );
 				flDamage = 0.01f;
 			}
+			else
+				ptr->iHitgroup = HITGROUP_HEAD;
 		}
-
-		// always a head shot
-		ptr->iHitgroup = HITGROUP_HEAD;
 		break;
+	}
+
+	if	( ptr->iHitgroup == 1 )
+	{
+		if ( (bitsDamageType & DMG_BULLET) && flDamage == gSkillData.plrDmgBuckshot )
+			BuckshotCount++;
+
+		Vector HeadPos = ptr->vecEndPos;
+
+		if ( pev->health <= flDamage * gSkillData.monHead && flDamage >= 20 && !HeadGibbed )
+		{
+			SetBodygroup( 0, 1);
+
+			GibHeadMonster( ptr->vecEndPos, TRUE );
+			HeadGibbed = TRUE;
+		}
 	}
 
 	CTalkMonster::TraceAttack( pevAttacker, flDamage, vecDir, ptr, bitsDamageType );
 }
 
+void CBarney :: GibMonster ( void )
+{
+	if ( !HeadGibbed )
+		GibHeadMonster( Vector ( pev->origin.x, pev->origin.y, pev->origin.z + 32 ), TRUE );	
+			 
+	CTalkMonster :: GibMonster( );
+}
+
 void CBarney::Killed( entvars_t *pevAttacker, int iGib )
 {
-	if ( pev->body < m_iBaseBody + BARNEY_BODY_GUNGONE && !(pev->spawnflags & SF_MONSTER_NO_WPN_DROP))
+	if ( !(pev->spawnflags & SF_MONSTER_NO_WPN_DROP) && GetBodygroup( 1 ) != 2 )
 	{// drop the gun!
 		Vector vecGunPos;
 		Vector vecGunAngles;
 
-		pev->body = m_iBaseBody + BARNEY_BODY_GUNGONE;
+		SetBodygroup( 1, 2 );
 
 		GetAttachment( 0, vecGunPos, vecGunAngles );
 
@@ -742,7 +829,9 @@ Schedule_t *CBarney::GetScheduleOfType( int Type )
 			return slIdleBaStand;
 		}
 		else
-			return psched;	
+			return psched;
+	case SCHED_RANGE_ATTACK1:
+		return slBaRangeAttack1;
 	}
 
 	return CTalkMonster::GetScheduleOfType( Type );
@@ -855,6 +944,65 @@ void CBarney::DeclineFollowing( void )
 	PlaySentence( m_szGrp[TLK_DECLINE], 2, VOL_NORM, ATTN_NORM ); //LRC
 }
 
+BOOL CBarney::NoFriendlyFire()
+{
+	if( m_hEnemy != 0 )
+	{
+		UTIL_MakeVectors( UTIL_VecToAngles( m_hEnemy->Center() - pev->origin ) );
+	}
+	else
+	{
+		// if there's no enemy, pretend there's a friendly in the way, so the npc won't shoot.
+		return FALSE;
+	}
+
+	CPlane backPlane;
+	CPlane leftPlane;
+	CPlane rightPlane;
+
+	Vector vecLeftSide;
+	Vector vecRightSide;
+	Vector v_left;
+	Vector v_dir;
+
+	v_dir = gpGlobals->v_right * ( pev->size.x * 1.5f );
+	vecLeftSide = pev->origin - v_dir;
+	vecRightSide = pev->origin + v_dir;
+
+	v_left = gpGlobals->v_right * -1.0f;
+
+	leftPlane.InitializePlane( gpGlobals->v_right, vecLeftSide );
+	rightPlane.InitializePlane( v_left, vecRightSide );
+	backPlane.InitializePlane( gpGlobals->v_forward, pev->origin );
+
+	for( int k = 1; k <= gpGlobals->maxClients; k++ )
+	{
+		CBaseEntity* pPlayer = UTIL_PlayerByIndex(k);
+		if (pPlayer && pPlayer->IsPlayer() && IRelationship(pPlayer) == R_AL && pPlayer->IsAlive())
+		{
+			if( backPlane.PointInFront( pPlayer->pev->origin ) &&
+				leftPlane.PointInFront( pPlayer->pev->origin ) &&
+				rightPlane.PointInFront( pPlayer->pev->origin ) )
+			{
+				//ALERT(at_aiconsole, "%s: Ally player at fire plane!\n", STRING(pev->classname));
+				// player is in the check volume! Don't shoot!
+				if ((m_hEnemy->pev->origin - pev->origin).Length2D() > (pPlayer->pev->origin - pev->origin).Length2D())
+				{
+					//ALERT(at_aiconsole, "%s: Ally player is between enemy (%s) and myself. Don't shoot!\n", STRING(pev->classname), STRING(m_hEnemy->pev->classname));
+					return FALSE;
+				}
+				else if (m_hEnemy->pev->deadflag == DEAD_DYING)
+				{
+					//ALERT(at_aiconsole, "%s: Enemy (%s) is dying and player is behind it. Stop shooting!\n", STRING(pev->classname), STRING(m_hEnemy->pev->classname));
+					return FALSE;
+				}
+			}
+		}
+	}
+
+	return TRUE;
+}
+
 //=========================================================
 // DEAD BARNEY PROP
 //
@@ -869,6 +1017,7 @@ class CDeadBarney : public CBaseMonster
 {
 public:
 	void Spawn( void );
+	void GibMonster (void );
 	int Classify( void ) { return CLASS_PLAYER_ALLY; }
 
 	void KeyValue( KeyValueData *pkvd );
@@ -914,4 +1063,10 @@ void CDeadBarney::Spawn()
 	pev->health = 8;//gSkillData.barneyHealth;
 
 	MonsterInitDead();
+}
+
+void CDeadBarney :: GibMonster ( void )
+{
+	GibHeadMonster( Vector ( pev->origin.x, pev->origin.y, pev->origin.z + 16 ), TRUE );				 
+	CBaseMonster :: GibMonster( );
 }

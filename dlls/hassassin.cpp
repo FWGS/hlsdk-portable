@@ -81,6 +81,10 @@ public:
 	void RunTask( Task_t *pTask );
 	void DeathSound( void );
 	void IdleSound( void );
+	void GibMonster(void);
+	void TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType);
+	int TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
+
 	CUSTOM_SCHEDULES
 
 	int Save( CSave &save ); 
@@ -92,16 +96,26 @@ public:
 
 	float m_flNextJump;
 	Vector m_vecJumpVelocity;
+	Vector HeadPos;
 
 	float m_flNextGrenadeCheck;
 	Vector	m_vecTossVelocity;
 	BOOL m_fThrowGrenade;
+	BOOL	HeadGibbed;
+	int		BuckshotCount;
 
 	int m_iTargetRanderamt;
 
 	int m_iFrustration;
 
 	int m_iShell;
+
+	int InvisOpacity() const {
+		if (g_iSkillLevel == SKILL_HARD)
+			return 20;
+		else
+			return 150;
+	}
 };
 
 LINK_ENTITY_TO_CLASS( monster_human_assassin, CHAssassin )
@@ -129,6 +143,14 @@ IMPLEMENT_SAVERESTORE( CHAssassin, CBaseMonster )
 //=========================================================
 void CHAssassin::DeathSound( void )
 {
+	Vector	vecGunPos;
+	Vector	vecGunAngles;
+
+	GetAttachment( 0, vecGunPos, vecGunAngles );
+
+	// switch to body group with no gun.
+	SetBodygroup( 1, 1);
+	DropItem( "weapon_smg", vecGunPos, vecGunAngles );
 }
 
 //=========================================================
@@ -157,6 +179,78 @@ int CHAssassin::ISoundMask( void )
 int CHAssassin::Classify( void )
 {
 	return m_iClass?m_iClass:CLASS_HUMAN_MILITARY;
+}
+
+void CHAssassin :: TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType)
+{
+	if	( ptr->iHitgroup == 1 )
+	{
+		if ( (bitsDamageType & DMG_BULLET) && flDamage == gSkillData.plrDmgBuckshot )
+			BuckshotCount++;
+
+		Vector HeadPos = ptr->vecEndPos;
+
+		if ( pev->health <= flDamage * gSkillData.monHead && flDamage >= 30 && !HeadGibbed )
+		{
+			SetBodygroup( 0, 1);
+
+			GibHeadMonster( ptr->vecEndPos, TRUE );
+			HeadGibbed = TRUE;
+			ScoreForHeadGib(pevAttacker);
+		}
+	}
+
+	CBaseMonster::TraceAttack( pevAttacker, flDamage, vecDir, ptr, bitsDamageType );
+}
+
+//=========================================================
+// TakeDamage - overridden for the grunt because the grunt
+// needs to forget that he is in cover if he's hurt. (Obviously
+// not in a safe place anymore).
+//=========================================================
+int CHAssassin :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )
+{
+	Forget( bits_MEMORY_INCOVER );
+
+	if ( !HeadGibbed && (pev->health <= flDamage && BuckshotCount >= 5) ) // Hack to handle shotgun shells as each shell is a separate TraceAttack
+	{
+		SetBodygroup( 0, 1);
+
+		GibHeadMonster( HeadPos, TRUE );
+		HeadGibbed = TRUE;
+		ScoreForHeadGib(pevAttacker);
+	}
+
+	BuckshotCount = 0;
+	return CBaseMonster :: TakeDamage ( pevInflictor, pevAttacker, flDamage, bitsDamageType );
+}
+
+//=========================================================
+// GibMonster - make gun fly through the air.
+//=========================================================
+void CHAssassin :: GibMonster ( void )
+{
+	Vector	vecGunPos;
+	Vector	vecGunAngles;
+
+	if ( GetBodygroup( 1 ) != 1 && !(pev->spawnflags & SF_MONSTER_NO_WPN_DROP))
+	{// throw a gun if has one
+		GetAttachment( 0, vecGunPos, vecGunAngles );
+		
+		CBaseEntity *pGun;
+		pGun = DropItem( "weapon_smg", vecGunPos, vecGunAngles );
+
+		if ( pGun )
+		{
+			pGun->pev->velocity = Vector (RANDOM_FLOAT(-100,100), RANDOM_FLOAT(-100,100), RANDOM_FLOAT(200,300));
+			pGun->pev->avelocity = Vector ( 0, RANDOM_FLOAT( 200, 400 ), 0 );
+		}
+	}
+
+	if ( !HeadGibbed )	
+	GibHeadMonster( Vector ( pev->origin.x, pev->origin.y, pev->origin.z + 32 ), TRUE );
+
+	CBaseMonster :: GibMonster();
 }
 
 //=========================================================
@@ -212,15 +306,7 @@ void CHAssassin::Shoot( void )
 	EjectBrass( pev->origin + gpGlobals->v_up * 32 + gpGlobals->v_forward * 12, vecShellVelocity, pev->angles.y, m_iShell, TE_BOUNCE_SHELL ); 
 	FireBullets( 1, vecShootOrigin, vecShootDir, Vector( m_flDiviation, m_flDiviation, m_flDiviation ), 2048, BULLET_MONSTER_9MM ); // shoot +-8 degrees
 
-	switch( RANDOM_LONG( 0, 1 ) )
-	{
-	case 0:
-		EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "weapons/pl_gun1.wav", RANDOM_FLOAT( 0.6f, 0.8f ), ATTN_NORM );
-		break;
-	case 1:
-		EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "weapons/pl_gun2.wav", RANDOM_FLOAT( 0.6f, 0.8f ), ATTN_NORM );
-		break;
-	}
+	EMIT_SOUND(ENT(pev), CHAN_WEAPON, "weapons/smg_fire2.wav", RANDOM_FLOAT(0.6, 0.8), ATTN_NORM);
 
 	pev->effects |= EF_MUZZLEFLASH;
 
@@ -341,8 +427,7 @@ void CHAssassin::Spawn()
 
 	m_HackedGunPos		= Vector( 0, 24, 48 );
 
-	m_iTargetRanderamt	= 20;
-	pev->renderamt		= 20;
+	pev->renderamt		= m_iTargetRanderamt = InvisOpacity();
 	pev->rendermode		= kRenderTransTexture;
 
 	MonsterInit();
@@ -358,8 +443,12 @@ void CHAssassin::Precache()
 	else
 		PRECACHE_MODEL( "models/hassassin.mdl" );
 
-	PRECACHE_SOUND( "weapons/pl_gun1.wav" );
-	PRECACHE_SOUND( "weapons/pl_gun2.wav" );
+	PRECACHE_SOUND("weapons/smg_fire2.wav");
+
+	PRECACHE_SOUND("fassassin/fassassin_step1.wav");
+	PRECACHE_SOUND("fassassin/fassassin_step2.wav");
+	PRECACHE_SOUND("fassassin/fassassin_step3.wav");
+	PRECACHE_SOUND("fassassin/fassassin_step4.wav");
 
 	PRECACHE_SOUND( "debris/beamstart1.wav" );
 
@@ -740,11 +829,10 @@ void CHAssassin::RunAI( void )
 	CBaseMonster::RunAI();
 
 	// always visible if moving
-	// always visible is not on hard
-	if( g_iSkillLevel != SKILL_HARD || m_hEnemy == 0 || pev->deadflag != DEAD_NO || m_Activity == ACT_RUN || m_Activity == ACT_WALK || !( pev->flags & FL_ONGROUND ) )
+	if ( m_hEnemy == NULL || pev->deadflag != DEAD_NO || m_Activity == ACT_RUN || m_Activity == ACT_WALK || !(pev->flags & FL_ONGROUND))
 		m_iTargetRanderamt = 255;
 	else
-		m_iTargetRanderamt = 20;
+		m_iTargetRanderamt = InvisOpacity();
 
 	if( pev->renderamt > m_iTargetRanderamt )
 	{
@@ -767,24 +855,6 @@ void CHAssassin::RunAI( void )
 	{
 		static int iStep = 0;
 		iStep = !iStep;
-		if( iStep )
-		{
-			switch( RANDOM_LONG( 0, 3 ) )
-			{
-			case 0:
-				EMIT_SOUND( ENT( pev ), CHAN_BODY, "player/pl_step1.wav", 0.5, ATTN_NORM );
-				break;
-			case 1:
-				EMIT_SOUND( ENT( pev ), CHAN_BODY, "player/pl_step3.wav", 0.5, ATTN_NORM );
-				break;
-			case 2:
-				EMIT_SOUND( ENT( pev ), CHAN_BODY, "player/pl_step2.wav", 0.5, ATTN_NORM );
-				break;
-			case 3:
-				EMIT_SOUND( ENT( pev ), CHAN_BODY, "player/pl_step4.wav", 0.5, ATTN_NORM );
-				break;
-			}
-		}
 	}
 }
 

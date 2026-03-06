@@ -430,12 +430,14 @@ int CTripmine::GetItemInfo( ItemInfo *p )
 
 BOOL CTripmine::Deploy()
 {
+	g_engfuncs.pfnSetClientMaxspeed(m_pPlayer->edict(), 230 );
 	pev->body = 0;
 	return DefaultDeploy( "models/v_tripmine.mdl", "models/p_tripmine.mdl", TRIPMINE_DRAW, "trip" );
 }
 
 void CTripmine::Holster( int skiplocal /* = 0 */ )
 {
+	g_engfuncs.pfnSetClientMaxspeed(m_pPlayer->edict(), 230 );
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5f;
 
 	if( !m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] )

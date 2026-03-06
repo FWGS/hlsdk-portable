@@ -42,8 +42,8 @@ const char *CBreakable::pSpawnObjects[] =
 	"item_healthkit",	// 2
 	"weapon_9mmhandgun",	// 3
 	"ammo_9mmclip",		// 4
-	"weapon_9mmAR",		// 5
-	"ammo_9mmAR",		// 6
+	"weapon_m4a1",		// 5
+	"ammo_556mmclip",	// 6
 	"ammo_ARgrenades",	// 7
 	"weapon_shotgun",	// 8
 	"ammo_buckshot",	// 9
@@ -59,6 +59,12 @@ const char *CBreakable::pSpawnObjects[] =
 	"weapon_satchel",	// 19
 	"weapon_snark",		// 20
 	"weapon_hornetgun",	// 21
+	"weapon_44desert_eagle",	// 22
+	"ammo_44clip",		// 23
+	"weapon_smg",		// 24
+	"ammo_45ACPclip",	// 25
+	"ammo_weapon_barrett_m82a1",	// 25	
+	"ammo_14mmclip",	// 27
 };
 
 void CBreakable::KeyValue( KeyValueData* pkvd )
@@ -268,6 +274,13 @@ const char *CBreakable::pSoundsGlass[] =
 	"debris/glass3.wav",
 };
 
+const char *CBreakable::pSoundsShells[] = 
+{
+	"player/pl_shell1.wav",
+	"player/pl_shell2.wav",
+	"player/pl_shell3.wav",
+};
+
 const char **CBreakable::MaterialSoundList( Materials precacheMaterial, int &soundCount )
 {
 	const char	**pSoundList = NULL;
@@ -291,6 +304,10 @@ const char **CBreakable::MaterialSoundList( Materials precacheMaterial, int &sou
 	case matMetal:
 		pSoundList = pSoundsMetal;
 		soundCount = ARRAYSIZE( pSoundsMetal );
+		break;
+	case matShells:
+		pSoundList = pSoundsShells;
+		soundCount = ARRAYSIZE(pSoundsShells);
 		break;
 	case matCinderBlock:
 	case matRocks:
@@ -386,6 +403,11 @@ void CBreakable::Precache( void )
 		pGibName = "models/ceilinggibs.mdl";
 
 		PRECACHE_SOUND( "debris/bustceiling.wav" );  
+		break;
+	case matShells:
+		PRECACHE_SOUND("player/pl_shell1.wav");
+		PRECACHE_SOUND("player/pl_shell2.wav");
+		PRECACHE_SOUND("player/pl_shell3.wav");
 		break;
 	case matNone:
 	case matLastMaterial:
@@ -613,6 +635,14 @@ void CBreakable::RespawnFadeThink ( void )
 	{
 		pev->rendermode = m_iInitialRenderMode;
 	}
+}
+
+NODE_LINKENT CBreakable::HandleLinkEnt(int afCapMask, bool nodeQueryStatic)
+{
+	if (nodeQueryStatic) {
+		return NLE_ALLOW;
+	}
+	return NLE_PROHIBIT;
 }
 
 void CBreakable::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType )
@@ -961,6 +991,7 @@ public:
 	void Move( CBaseEntity *pMover, int push );
 	void KeyValue( KeyValueData *pkvd );
 	void Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+	NODE_LINKENT HandleLinkEnt(int afCapMask, bool nodeQueryStatic);
 	void EXPORT StopSound( void );
 	//virtual void	SetActivator( CBaseEntity *pActivator ) { m_pPusher = pActivator; }
 
@@ -1086,6 +1117,16 @@ void CPushable::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE use
 
 	if( pActivator->pev->velocity != g_vecZero )
 		Move( pActivator, 0 );
+}
+
+NODE_LINKENT CPushable::HandleLinkEnt(int afCapMask, bool nodeQueryStatic)
+{
+	if (nodeQueryStatic) {
+		return NLE_ALLOW;
+	}
+	else {
+		return NLE_PROHIBIT;
+	}
 }
 
 void CPushable::Touch( CBaseEntity *pOther )

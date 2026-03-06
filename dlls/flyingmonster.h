@@ -21,7 +21,6 @@ class CFlyingMonster : public CBaseMonster
 {
 public:
 	int 		CheckLocalMove( const Vector &vecStart, const Vector &vecEnd, CBaseEntity *pTarget, float *pflDist );// check validity of a straight move through space
-	BOOL		FTriangulate( const Vector &vecStart, const Vector &vecEnd, float flDist, CBaseEntity *pTargetEnt, Vector *pApex );
 	Activity	GetStoppedActivity( void );
 	void		Killed( entvars_t *pevAttacker, int iGib );
 	void		Stop( void );

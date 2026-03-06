@@ -611,6 +611,9 @@ void CAmbientGeneric::ToggleUse( CBaseEntity *pActivator, CBaseEntity *pCaller, 
 			return;
 	}
 
+	if (!m_fLooping)
+        UTIL_ShowCaption(szSoundFile, 0, false);
+
 	// Directly change pitch if arg passed. Only works if sound is already playing.
 	if( useType == USE_SET && m_fActive )		// Momentary buttons will pass down a float in here
 	{
@@ -924,7 +927,7 @@ public:
 	static TYPEDESCRIPTION m_SaveData[];
 
 	float m_flRadius;
-	float m_flRoomtype;
+	int m_Roomtype;
 };
 
 LINK_ENTITY_TO_CLASS( env_sound, CEnvSound )
@@ -932,7 +935,7 @@ LINK_ENTITY_TO_CLASS( env_sound, CEnvSound )
 TYPEDESCRIPTION	CEnvSound::m_SaveData[] =
 {
 	DEFINE_FIELD( CEnvSound, m_flRadius, FIELD_FLOAT ),
-	DEFINE_FIELD( CEnvSound, m_flRoomtype, FIELD_FLOAT ),
+	DEFINE_FIELD( CEnvSound, m_Roomtype, FIELD_INTEGER),
 };
 
 IMPLEMENT_SAVERESTORE( CEnvSound, CPointEntity )
@@ -946,7 +949,7 @@ void CEnvSound::KeyValue( KeyValueData *pkvd )
 	}
 	if( FStrEq( pkvd->szKeyName, "roomtype" ) )
 	{
-		m_flRoomtype = atof( pkvd->szValue );
+		m_Roomtype = atoi( pkvd->szValue );
 		pkvd->fHandled = TRUE;
 	}
 }
@@ -1012,7 +1015,7 @@ void CEnvSound::Think( void )
 	{
 		// this is the entity currently affecting player, check
 		// for validity
-		if( pPlayer->m_flSndRoomtype != 0 && pPlayer->m_flSndRange != 0 )
+		if( pPlayer->m_SndRoomtype != 0 && pPlayer->m_flSndRange != 0 )
 		{
 			// we're looking at a valid sound entity affecting
 			// player, make sure it's still valid, update range
@@ -1028,7 +1031,7 @@ void CEnvSound::Think( void )
 				// NOTE: we do not actually change the player's room_type
 				// NOTE: until we have a new valid room_type to change it to.
 				pPlayer->m_flSndRange = 0;
-				pPlayer->m_flSndRoomtype = 0;
+				pPlayer->m_pentSndLast = 0;
 				goto env_sound_Think_slow;
 			}
 		}
@@ -1048,18 +1051,10 @@ void CEnvSound::Think( void )
 		{
 			// new entity is closer to player, so it wins.
 			pPlayer->m_pentSndLast = ENT( pev );
-			pPlayer->m_flSndRoomtype = m_flRoomtype;
+			pPlayer->m_SndRoomtype = m_Roomtype;
 			pPlayer->m_flSndRange = flRange;
 
-			// send room_type command to player's server.
-			// this should be a rare event - once per change of room_type
-			// only!
-
-			//CLIENT_COMMAND( pentPlayer, "room_type %f", m_flRoomtype );
-
-			MESSAGE_BEGIN( MSG_ONE, SVC_ROOMTYPE, NULL, pentPlayer );		// use the magic #1 for "one client"
-				WRITE_SHORT( (short)m_flRoomtype );					// sequence number
-			MESSAGE_END();
+			// New room type is sent to player in CBasePlayer::UpdateClientData.
 
 			// crank up nextthink rate for new active sound entity
 			// by falling through to think_fast...
@@ -1072,10 +1067,10 @@ void CEnvSound::Think( void )
 	// not in range. do nothing, fall through to think_fast...
 
 env_sound_Think_fast:
-	SetNextThink( 0.25f );
+	SetNextThink( 0.1f );
 	return;
 env_sound_Think_slow:
-	SetNextThink( 0.75f );
+	SetNextThink( 0.2f );
 	return;
 }
 
@@ -1144,7 +1139,7 @@ void CTriggerSound :: Touch( CBaseEntity *pOther )
 		if (pPlayer->m_pentSndLast != this->edict())
 		{
 			pPlayer->m_pentSndLast = ENT(pev);
-			pPlayer->m_flSndRoomtype = m_flRoomtype;
+			pPlayer->m_SndRoomtype = m_flRoomtype;
 			pPlayer->m_flSndRange = 0;
 
 			MESSAGE_BEGIN( MSG_ONE, SVC_ROOMTYPE, NULL, pPlayer->edict() );		// use the magic #1 for "one client"
@@ -1723,7 +1718,7 @@ float TEXTURETYPE_PlaySound( TraceResult *ptr,  Vector vecSrc, Vector vecEnd, in
 
 	chTextureType = 0;
 
-	if( pEntity && pEntity->Classify() != CLASS_NONE && pEntity->Classify() != CLASS_MACHINE )
+	if	( pEntity && pEntity->Classify() != CLASS_NONE && !pEntity->IsMachine() )
 		// hit body
 		chTextureType = CHAR_TEX_FLESH;
 	else

@@ -68,6 +68,11 @@ CHandGrenade g_HandGren;
 CSatchel g_Satchel;
 CTripmine g_Tripmine;
 CSqueak g_Snark;
+// Half-Life Delta placeholder entities.
+CPipeWrench g_PipeWrench;
+CSniperrifle g_Sniperrifle;
+CDeagle g_Deagle;
+CSMG g_Smg;
 
 /*
 ======================
@@ -259,6 +264,34 @@ void CBasePlayerWeapon::ResetEmptySound( void )
 	m_iPlayEmptySound = 1;
 }
 
+//==========================================
+// XaeroX: Check for pending brass shells
+//==========================================
+static void CheckForPendingBrassShells( int weaponId )
+{
+	cl_entity_t *view = gEngfuncs.GetViewModel();
+	if ( view && view->curstate.iuser4 > 0 ) {
+		// eject the remaining brass shells, if any
+		switch ( weaponId ) {
+		case WEAPON_SHOTGUN:
+			{
+				float *ShellOrigin = (float*)&view->attachment[1];
+				float endpos[] = { 0.0f, v_angles[1], 0.0f };
+				for ( int i = 0; i < view->curstate.iuser4; ++i ) {
+					float *ShellVelocity = ( i == 0 ) ? (float*)&view->curstate.vuser1 : (float*)&view->curstate.vuser2;
+					gEngfuncs.pEfxAPI->R_TempModel( ShellOrigin, ShellVelocity, endpos, 2.5f, 
+													gEngfuncs.pEventAPI->EV_FindModelIndex( "models/shotgunshell.mdl" ), 
+													TE_BOUNCE_SHOTSHELL );
+				}
+			}
+			break;
+		default:
+			break;
+		}
+		view->curstate.iuser4 = 0;
+	}
+}
+
 /*
 =====================
 CBasePlayerWeapon::Holster
@@ -267,7 +300,10 @@ Put away weapon
 =====================
 */
 void CBasePlayerWeapon::Holster( int skiplocal /* = 0 */ )
-{ 
+{
+	// XaeroX
+	CheckForPendingBrassShells( m_iId );
+
 	m_fInReload = FALSE; // cancel any reload in progress.
 	g_irunninggausspred = false;
 	m_pPlayer->pev->viewmodel = 0; 
@@ -632,6 +668,7 @@ void HUD_InitClientWeapons( void )
 	// Allocate slot(s) for each weapon that we are going to be predicting
 	HUD_PrepEntity( &g_Glock, &player );
 	HUD_PrepEntity( &g_Crowbar, &player );
+	HUD_PrepEntity( &g_PipeWrench, &player );
 	HUD_PrepEntity( &g_Python, &player );
 	HUD_PrepEntity( &g_Mp5, &player );
 	HUD_PrepEntity( &g_Crossbow, &player );
@@ -644,6 +681,9 @@ void HUD_InitClientWeapons( void )
 	HUD_PrepEntity( &g_Satchel, &player );
 	HUD_PrepEntity( &g_Tripmine, &player );
 	HUD_PrepEntity( &g_Snark, &player );
+	HUD_PrepEntity( &g_Sniperrifle	, &player );
+	HUD_PrepEntity( &g_Deagle	, &player );
+	HUD_PrepEntity( &g_Smg	, &player );
 }
 
 /*
@@ -703,6 +743,11 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 	// Get current clock
 	gpGlobals->time = time;
 
+	// XaeroX 
+	// check for unpredicted weapon change
+	if ( player.m_pActiveItem && player.m_pActiveItem->m_iId != from->client.m_iId )
+		CheckForPendingBrassShells( player.m_pActiveItem->m_iId );
+
 	// Fill in data based on selected weapon
 	// FIXME, make this a method in each weapon?  where you pass in an entity_state_t *?
 	switch( from->client.m_iId )
@@ -748,6 +793,24 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 			break;
 		case WEAPON_SNARK:
 			pWeapon = &g_Snark;
+			break;
+
+		// Delta Particles Weapons
+
+		case WEAPON_PIPEWRENCH:
+			pWeapon = &g_PipeWrench;
+			break;
+
+		case WEAPON_BARRETT_M82A1:
+			pWeapon = &g_Sniperrifle;
+			break;
+
+		case WEAPON_44DESERT_EAGLE:
+			pWeapon = &g_Deagle;
+			break;
+
+		case WEAPON_SMG:
+			pWeapon = &g_Smg;
 			break;
 	}
 
@@ -846,6 +909,10 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 	player.ammo_uranium = (int)from->client.ammo_cells;
 	player.ammo_hornets = (int)from->client.vuser2[0];
 	player.ammo_rockets = (int)from->client.ammo_rockets;
+	player.ammo_44 = (int)from->client.vuser2[0];
+	player.ammo_14mm = (int)from->client.vuser2[0];
+	player.ammo_556mm = (int)from->client.vuser2[1];
+	player.ammo_45ACP = (int)from->client.vuser2[2];
 
 	// Point to current weapon object
 	if( from->client.m_iId )
@@ -857,6 +924,11 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 	{
 		( (CRpg *)player.m_pActiveItem )->m_fSpotActive = (int)from->client.vuser2[1];
 		( (CRpg *)player.m_pActiveItem )->m_cActiveRockets = (int)from->client.vuser2[2];
+	}
+
+	if (player.m_pActiveItem->m_iId == WEAPON_PYTHON)
+	{
+		((CPython*)player.m_pActiveItem)->m_fSpotActive = (int)from->client.vuser2[1];
 	}
 
 	// Don't go firing anything if we have died.
@@ -913,6 +985,10 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 	//HL Weapons
 	to->client.vuser1[0] = player.ammo_9mm;
 	to->client.vuser1[1] = player.ammo_357;
+	to->client.vuser2[0] = player.ammo_44;
+	to->client.vuser2[0] = player.ammo_14mm;
+	to->client.vuser2[1] = player.ammo_556mm;
+	to->client.vuser2[2] = player.ammo_45ACP;
 	to->client.vuser1[2] = player.ammo_argrens;
 
 	to->client.ammo_nails = player.ammo_bolts;
@@ -925,6 +1001,11 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 	{
 		to->client.vuser2[1] = ( (CRpg *)player.m_pActiveItem)->m_fSpotActive;
 		to->client.vuser2[2] = ( (CRpg *)player.m_pActiveItem)->m_cActiveRockets;
+	}
+
+	if (player.m_pActiveItem->m_iId == WEAPON_PYTHON)
+	{
+		from->client.vuser2[1] = ((CPython*)player.m_pActiveItem)->m_fSpotActive;
 	}
 
 	// Make sure that weapon animation matches what the game .dll is telling us

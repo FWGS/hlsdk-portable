@@ -58,6 +58,9 @@ const char *CTalkMonster::m_szFriends[TLK_CFRIENDS] =
 	"monster_barney",
 	"monster_scientist",
 	"monster_sitting_scientist",
+	"monster_otis",
+	"monster_technician",
+	"monster_diana_hayes",
 };
 
 //=========================================================
@@ -71,7 +74,7 @@ Task_t tlIdleResponse[] =
 	{ TASK_TLK_RESPOND, 0.0f },	// Wait and then say my response
 	{ TASK_TLK_IDEALYAW, 0.0f },	// look at who I'm talking to
 	{ TASK_FACE_IDEAL, 0.0f }, 
-	{ TASK_SET_ACTIVITY, (float)ACT_SIGNAL3 },
+	{ TASK_SET_ACTIVITY, (float)ACT_IDLE },
 	{ TASK_TLK_EYECONTACT, 0.0f },	// Wait until speaker is done
 };
 
@@ -93,7 +96,7 @@ Task_t tlIdleSpeak[] =
 	{ TASK_TLK_SPEAK, 0.0f },// question or remark
 	{ TASK_TLK_IDEALYAW, 0.0f },// look at who I'm talking to
 	{ TASK_FACE_IDEAL, 0.0f },
-	{ TASK_SET_ACTIVITY, (float)ACT_SIGNAL3	},
+	{ TASK_SET_ACTIVITY, (float)ACT_IDLE },
 	{ TASK_TLK_EYECONTACT, 0.0f },
 	{ TASK_WAIT_RANDOM, 0.5f },
 };
@@ -114,7 +117,7 @@ Schedule_t slIdleSpeak[] =
 
 Task_t	tlIdleSpeakWait[] =
 {
-	{ TASK_SET_ACTIVITY, (float)ACT_SIGNAL3 },// Stop and talk
+	{ TASK_SET_ACTIVITY, (float)ACT_IDLE },// Stop and talk
 	{ TASK_TLK_SPEAK, 0.0f },// question or remark
 	{ TASK_TLK_EYECONTACT, 0.0f },// 
 	{ TASK_WAIT, 2.0f },// wait - used when sci is in 'use' mode to keep head turned
@@ -136,7 +139,7 @@ Schedule_t slIdleSpeakWait[] =
 
 Task_t tlIdleHello[] =
 {
-	{ TASK_SET_ACTIVITY, (float)ACT_SIGNAL3 },// Stop and talk
+	{ TASK_SET_ACTIVITY, (float)ACT_IDLE },// Stop and talk
 	{ TASK_TLK_HELLO, 0.0f },// Try to say hello to player
 	{ TASK_TLK_EYECONTACT, 0.0f },
 	{ TASK_WAIT, 0.5f },// wait a bit
@@ -261,7 +264,7 @@ Task_t tlTlkIdleWatchClientStare[] =
 	{ TASK_TLK_STARE, 0.0f },
 	{ TASK_TLK_IDEALYAW, 0.0f },// look at who I'm talking to
 	{ TASK_FACE_IDEAL, 0.0f }, 
-	{ TASK_SET_ACTIVITY, (float)ACT_SIGNAL3 },
+	{ TASK_SET_ACTIVITY, (float)ACT_IDLE },
 	{ TASK_TLK_EYECONTACT, 0.0f },
 };
 
@@ -314,7 +317,7 @@ Task_t	tlTlkIdleEyecontact[] =
 {
 	{ TASK_TLK_IDEALYAW, 0.0f },// look at who I'm talking to
 	{ TASK_FACE_IDEAL, 0.0f }, 
-	{ TASK_SET_ACTIVITY, (float)ACT_SIGNAL3 },
+	{ TASK_SET_ACTIVITY, (float)ACT_IDLE },
 	{ TASK_TLK_EYECONTACT, 0.0f },// Wait until speaker is done
 };
 
@@ -351,11 +354,11 @@ IMPLEMENT_CUSTOM_SCHEDULES( CTalkMonster, CBaseMonster )
 
 void CTalkMonster::SetActivity( Activity newActivity )
 {
-	if( newActivity == ACT_IDLE && IsTalking() )
+	/*if (newActivity == ACT_IDLE && IsTalking() )
 		newActivity = ACT_SIGNAL3;
 
-	if( newActivity == ACT_SIGNAL3 && ( LookupActivity( ACT_SIGNAL3 ) == ACTIVITY_NOT_AVAILABLE ) )
-		newActivity = ACT_IDLE;
+	if ( newActivity == ACT_SIGNAL3 && (LookupActivity ( ACT_SIGNAL3 ) == ACTIVITY_NOT_AVAILABLE))
+		newActivity = ACT_IDLE;*/
 
 	CBaseMonster::SetActivity( newActivity );
 }
@@ -416,7 +419,8 @@ void CTalkMonster::StartTask( Task_t *pTask )
 		break;
 	case TASK_TLK_HEADRESET:
 		// reset head position after looking at something
-		m_hTalkTarget = NULL;
+		if (!IsTalking())
+			m_hTalkTarget = NULL;
 		TaskComplete();
 		break;
 	case TASK_TLK_STOPSHOOTING:
@@ -897,6 +901,9 @@ void CTalkMonster::Touch( CBaseEntity *pOther )
 		if( m_afMemory & bits_MEMORY_PROVOKED )
 			return;
 
+		if (FBitSet(pev->spawnflags, SF_MONSTER_IGNORE_PLAYER_PUSH))
+			return;
+
 		// Stay put during speech
 		if( IsTalking() )
 			return;
@@ -905,9 +912,12 @@ void CTalkMonster::Touch( CBaseEntity *pOther )
 		float speed = fabs( pOther->pev->velocity.x ) + fabs( pOther->pev->velocity.y );
 		if( speed > 50.0f )
 		{
-			SetConditions( bits_COND_CLIENT_PUSH );
-			if ( m_MonsterState != MONSTERSTATE_SCRIPT )
-				MakeIdealYaw( pOther->pev->origin );
+			if (m_pSchedule != NULL && (m_pSchedule->iInterruptMask & bits_COND_CLIENT_PUSH))
+			{
+				SetConditions( bits_COND_CLIENT_PUSH );
+				if ( m_MonsterState != MONSTERSTATE_SCRIPT )
+					MakeIdealYaw( pOther->pev->origin );
+			}
 		}
 	}
 }
@@ -924,7 +934,7 @@ void CTalkMonster::IdleRespond( void )
 	PlaySentence( m_szGrp[TLK_ANSWER], RANDOM_FLOAT( 2.8f, 3.2f ), VOL_NORM, ATTN_IDLE );
 }
 
-int CTalkMonster::FOkToSpeak( void )
+int CTalkMonster :: FOkToSpeak( int speakFlags )
 {
 	// if in the grip of a barnacle, don't speak
 	if( m_MonsterState == MONSTERSTATE_PRONE || m_IdealMonsterState == MONSTERSTATE_PRONE )
@@ -953,7 +963,7 @@ int CTalkMonster::FOkToSpeak( void )
 		return FALSE;
 
 	// don't talk if you're in combat
-	if( m_hEnemy != 0 && FVisible( m_hEnemy ) )
+	if (!FBitSet(speakFlags, SPEAK_DISREGARD_ENEMY) && m_hEnemy != NULL && FVisible( m_hEnemy ))
 		return FALSE;
 
 	return TRUE;
@@ -1408,7 +1418,7 @@ BOOL CTalkMonster::CanFollow( void )
 	{
 		if( !m_pCine )
 			return FALSE;
-		if( !m_pCine->CanInterrupt() )
+		if( !m_pCine->CanInterruptByPlayerCall() )
 			return FALSE;
 	}
 

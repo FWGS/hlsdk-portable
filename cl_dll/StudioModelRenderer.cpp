@@ -471,6 +471,10 @@ void CStudioModelRenderer::StudioSetUpTransform( int trivial_accept )
 	{
 		float f = 0;
 		float d;
+		mstudioseqdesc_t* pseqdesc;//acess to studio flags
+		pseqdesc = (mstudioseqdesc_t*)((byte*)m_pStudioHeader
+			+ m_pStudioHeader->seqindex) + m_pCurrentEntity->curstate.
+			sequence;
 
 		// don't do it if the goalstarttime hasn't updated in a while.
 
@@ -494,10 +498,8 @@ void CStudioModelRenderer::StudioSetUpTransform( int trivial_accept )
 			f = 0.0f;
 		}
 
-		for( i = 0; i < 3; i++ )
-		{
-			modelpos[i] += ( m_pCurrentEntity->origin[i] - m_pCurrentEntity->latched.prevorigin[i] ) * f;
-		}
+		if (pseqdesc->motiontype & STUDIO_LX || m_pCurrentEntity->curstate.eflags & EFLAG_SLERP)
+			for (i = 0; i < 3; i++) modelpos[i] += (m_pCurrentEntity->origin[i] - m_pCurrentEntity->latched.prevorigin[i]) * f;
 
 		// NOTE:  Because multiplayer lag can be relatively large, we don't want to cap
 		//  f at 1.5 anymore.

@@ -180,6 +180,7 @@ void CLeech::Spawn( void )
 	UTIL_SetSize( pev, Vector( -1, -1, 0 ), Vector( 1, 1, 2 ) );
 	// Don't push the minz down too much or the water check will fail because this entity is really point-sized
 	pev->solid = SOLID_SLIDEBOX;
+	pev->flags |= FL_MONSTER | FL_FLY;
 	pev->movetype = MOVETYPE_FLY;
 	SetBits( pev->flags, FL_SWIM );
 	if (pev->health == 0)

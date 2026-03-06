@@ -146,6 +146,12 @@ void CGameRules::RefreshSkillData ( void )
 	// Barney
 	gSkillData.barneyHealth = GetSkillCvar( "sk_barney_health" );
 
+	// Diana
+	gSkillData.dianaHealth = GetSkillCvar("sk_diana_health");
+
+	// Otis
+	gSkillData.otisHealth = GetSkillCvar("sk_otis_health");
+
 	// Big Momma
 	gSkillData.bigmommaHealthFactor = GetSkillCvar( "sk_bigmomma_health_factor" );
 	gSkillData.bigmommaDmgSlash = GetSkillCvar( "sk_bigmomma_dmg_slash" );
@@ -176,6 +182,9 @@ void CGameRules::RefreshSkillData ( void )
 	gSkillData.hgruntDmgKick = GetSkillCvar( "sk_hgrunt_kick" );
 	gSkillData.hgruntShotgunPellets = GetSkillCvar( "sk_hgrunt_pellets" );
 	gSkillData.hgruntGrenadeSpeed = GetSkillCvar( "sk_hgrunt_gspeed" );
+
+	// Robotic Infantry 
+	gSkillData.rinfantryHealth = GetSkillCvar("sk_rinfantry_health");
 
 	// Houndeye
 	gSkillData.houndeyeHealth = GetSkillCvar( "sk_houndeye_health" );
@@ -219,6 +228,16 @@ void CGameRules::RefreshSkillData ( void )
 	gSkillData.zombieDmgOneSlash = GetSkillCvar( "sk_zombie_dmg_one_slash" );
 	gSkillData.zombieDmgBothSlash = GetSkillCvar( "sk_zombie_dmg_both_slash" );
 
+	// Zombie Barney
+	gSkillData.zombiebarneyHealth = GetSkillCvar( "sk_zombie_barney_health");
+	gSkillData.zombiebarneyDmgOneSlash = GetSkillCvar( "sk_zombie_barney_dmg_one_slash");
+	gSkillData.zombiebarneyDmgBothSlash = GetSkillCvar( "sk_zombie_barney_dmg_both_slash");
+
+	// Zombie Soldier
+	gSkillData.zombiesoldierHealth = GetSkillCvar( "sk_zombie_soldier_health");
+	gSkillData.zombiesoldierDmgOneSlash = GetSkillCvar( "sk_zombie_soldier_dmg_one_slash");
+	gSkillData.zombiesoldierDmgBothSlash = GetSkillCvar( "sk_zombie_soldier_dmg_both_slash");
+
 	//Turret
 	gSkillData.turretHealth = GetSkillCvar( "sk_turret_health" );
 
@@ -233,14 +252,26 @@ void CGameRules::RefreshSkillData ( void )
 	// Crowbar whack
 	gSkillData.plrDmgCrowbar = GetSkillCvar( "sk_plr_crowbar" );
 
+	// Pipewrench whack
+	gSkillData.plrDmgPipewrench = GetSkillCvar( "sk_plr_pipewrench");
+
 	// Glock Round
 	gSkillData.plrDmg9MM = GetSkillCvar( "sk_plr_9mm_bullet" );
 
 	// 357 Round
 	gSkillData.plrDmg357 = GetSkillCvar( "sk_plr_357_bullet" );
 
+	// 44Deagle Round
+	gSkillData.plrDmg44 = GetSkillCvar( "sk_plr_44_bullet");
+
 	// MP5 Round
 	gSkillData.plrDmgMP5 = GetSkillCvar( "sk_plr_9mmAR_bullet" );
+
+	// 14MM Round
+	gSkillData.plrDmg14MM = GetSkillCvar( "sk_plr_14mm_bullet");
+	
+	// SMG Round
+	gSkillData.plrDmg45ACP = GetSkillCvar( "sk_plr_45ACP_bullet");
 
 	// M203 grenade
 	gSkillData.plrDmgM203Grenade = GetSkillCvar( "sk_plr_9mmAR_grenade" );
@@ -275,6 +306,7 @@ void CGameRules::RefreshSkillData ( void )
 	gSkillData.monDmg12MM = GetSkillCvar( "sk_12mm_bullet" );
 	gSkillData.monDmgMP5 = GetSkillCvar ("sk_9mmAR_bullet" );
 	gSkillData.monDmg9MM = GetSkillCvar( "sk_9mm_bullet" );
+	gSkillData.monDmgDeagle = GetSkillCvar( "sk_otis_damage");
 
 	// MONSTER HORNET
 	gSkillData.monDmgHornet = GetSkillCvar( "sk_hornet_dmg" );

@@ -2695,7 +2695,7 @@ public:
 	void		Stop( void );
 
 	int		BloodColor( void ) { return DONT_BLEED; }
-	int		Classify( void ) { return CLASS_MACHINE; }
+	int		DefaultClassify( void ) { return CLASS_MACHINE; }
 	int		TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
 	void		Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
 	Vector		BodyTarget( const Vector &posSrc ) { return pev->origin; }

@@ -174,7 +174,9 @@ public:
 
 	// path corners
 	CBaseEntity *m_pGoalEnt;// path corner we are heading towards
-	CBaseEntity *m_pLink;// used for temporary link-list operations. 
+	CBaseEntity *m_pLink;// used for temporary link-list operations.
+
+	byte m_EFlags;
 
 	CBaseEntity			*m_pMoveWith; // LRC- the entity I move with.
 	int					m_MoveWith;	//LRC- Name of that entity
@@ -286,6 +288,7 @@ public:
 	virtual int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
 	virtual int TakeHealth( float flHealth, int bitsDamageType );
 	virtual void Killed( entvars_t *pevAttacker, int iGib );
+	void Fragged( entvars_t *pevAttacker );
 	virtual int BloodColor( void ) { return DONT_BLEED; }
 	virtual void TraceBleed( float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType );
 //LRC- superceded by GetState ( pActivator ).
@@ -456,6 +459,7 @@ public:
 	virtual	BOOL FVisible( CBaseEntity *pEntity );
 	virtual	BOOL FVisible( const Vector &vecOrigin );
 
+	virtual BOOL IsMachine() { return Classify() == CLASS_MACHINE; }
 	//We use this variables to store each ammo count.
 	int ammo_9mm;
 	int ammo_357;
@@ -465,6 +469,11 @@ public:
 	int ammo_uranium;
 	int ammo_hornets;
 	int ammo_argrens;
+	//Half-Life Delta ammo
+	int ammo_556mm;
+	int ammo_14mm;
+	int ammo_44;
+	int ammo_45ACP;
 	//Special stuff for grenades and satchels.
 	float m_flStartThrow;
 	float m_flReleaseThrow;
@@ -473,6 +482,9 @@ public:
 
 	enum EGON_FIRESTATE { FIRE_OFF, FIRE_CHARGE };
 	int m_fireState;
+
+	virtual float InputByMonster(CBaseMonster* pMonster) { return 0.0f; }
+	virtual NODE_LINKENT HandleLinkEnt(int afCapMask, bool nodeQueryStatic) { return NLE_PROHIBIT; }
 };
 
 //LRC- moved here from player.cpp. I'd put it in util.h with its friends, but it needs CBaseEntity to be declared.
@@ -722,6 +734,8 @@ public:
 
 #define bits_CAP_DOORS_GROUP    (bits_CAP_USE | bits_CAP_AUTO_DOORS | bits_CAP_OPEN_DOORS)
 
+#define bits_CAP_MONSTERCLIPPED ( 1 << 31 )
+
 // used by suit voice to indicate damage sustained and repaired type to player
 
 // instant damage
@@ -753,6 +767,9 @@ public:
 #define DMG_SLOWBURN		(1 << 21)	// in an oven
 #define DMG_SLOWFREEZE		(1 << 22)	// in a subzero freezer
 #define DMG_MORTAR			(1 << 23)	// Hit by air raid (done to distinguish grenade from mortar)
+
+// Additional flags
+#define DMG_NO_PUNCH	(1 << 28)
 
 // these are the damage types that are allowed to gib corpses
 #define DMG_GIB_CORPSE		( DMG_CRUSH | DMG_FALL | DMG_BLAST | DMG_SONIC | DMG_CLUB )

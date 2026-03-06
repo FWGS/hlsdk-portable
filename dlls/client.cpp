@@ -42,6 +42,7 @@
 #include "netadr.h"
 #include "movewith.h"
 #include "pm_shared.h"
+#include "ach_counters.h"
 
 extern DLL_GLOBAL ULONG		g_ulModelIndexPlayer;
 extern DLL_GLOBAL BOOL		g_fGameOver;
@@ -584,6 +585,22 @@ void ClientCommand( edict_t *pEntity )
 	{
 		GetClassPtr( (CBasePlayer *)pev )->SelectLastItem();
 	}
+	else if( FStrEq( pcmd, "nightvision" ) )
+	{
+		GetClassPtr( (CBasePlayer *)pev )->NVGToggle();
+	}
+	else if ( FStrEq( pcmd, "ach_progress" ) )
+	{
+		CBasePlayer* pPlayer = GetClassPtr( (CBasePlayer *)pev );
+		ALERT(at_console, "Soda drunk: %d\n", (int)pPlayer->m_sodaDrunkCount);
+		ALERT(at_console, "Decapacitated enemies: %d\n", (int)pPlayer->m_decapitatedCount);
+		ALERT(at_console, "Controllers killed by underbarrel grenade: %d\n", (int)pPlayer->m_controllersKilledByAR);
+		ALERT(at_console, "Xen Trees destroyed: %d\n", (int)pPlayer->m_treesKilled);
+		ALERT(at_console, "Times got armor from technician: %d\n", (int)pPlayer->m_technicianCharges);
+		ALERT(at_console, "Robotic infantry killed with melee weapon: %d\n", (int)pPlayer->m_robotsKilledByMelee);
+		ALERT(at_console, "Headcrabs killed with a sniperrifle: %d\n", (int)pPlayer->m_headcrabsKilledBySniper);
+		ALERT(at_console, "High noon progress: %d\n", (int)pPlayer->m_highNoonKills);
+	}
 	else if( FStrEq( pcmd, "spectate" ) ) // clients wants to become a spectator
 	{
 		CBasePlayer *pPlayer = GetClassPtr( (CBasePlayer *)pev );
@@ -886,6 +903,11 @@ void ClientPrecache( void )
 	PRECACHE_SOUND( "player/pl_dirt3.wav" );
 	PRECACHE_SOUND( "player/pl_dirt4.wav" );
 
+	PRECACHE_SOUND("flesh/flesh1.wav");
+	PRECACHE_SOUND("flesh/flesh2.wav");
+	PRECACHE_SOUND("flesh/flesh3.wav");
+	PRECACHE_SOUND("flesh/flesh4.wav");
+
 	PRECACHE_SOUND( "player/pl_duct1.wav" );		// walk in duct
 	PRECACHE_SOUND( "player/pl_duct2.wav" );
 	PRECACHE_SOUND( "player/pl_duct3.wav" );
@@ -930,6 +952,10 @@ void ClientPrecache( void )
 
 	PRECACHE_SOUND( "plats/vehicle_ignition.wav" );
 
+	PRECACHE_SOUND("buttons/spark1.wav");
+	PRECACHE_SOUND("buttons/spark2.wav");
+	PRECACHE_SOUND("buttons/spark3.wav");
+	PRECACHE_SOUND("buttons/spark4.wav");
 	PRECACHE_SOUND( "buttons/spark5.wav" );		// hit computer texture
 	PRECACHE_SOUND( "buttons/spark6.wav" );
 	PRECACHE_SOUND( "debris/glass1.wav" );
@@ -938,6 +964,9 @@ void ClientPrecache( void )
 
 	PRECACHE_SOUND( SOUND_FLASHLIGHT_ON );
 	PRECACHE_SOUND( SOUND_FLASHLIGHT_OFF );
+
+	PRECACHE_SOUND( SOUND_NVG_ON );
+	PRECACHE_SOUND( SOUND_NVG_OFF );
 
 	// player gib sounds
 	PRECACHE_SOUND( "common/bodysplat.wav" );
@@ -1180,7 +1209,7 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 
 	// Ignore if not the host and not touching a PVS/PAS leaf
 	// If pSet is NULL, then the test will always succeed and the entity will be added to the update
-	if( ent != host )
+	if ( ent != host && !FBitSet(ent->v.effects, EF_MODEL_SKY) )
 	{
 		if( !ENGINE_CHECK_VISIBILITY( (const struct edict_s *)ent, pSet ) )
 		{
@@ -1262,17 +1291,17 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 
 	state->skin = ent->v.skin;
 	state->effects = ent->v.effects;
+	state->iuser1 = ent->v.iuser1;
 
 	// This non-player entity is being moved by the game .dll and not the physics simulation system
 	//  make sure that we interpolate it's position on the client if it moves
-	if( !player &&
-		 ent->v.animtime &&
-		 ent->v.velocity[0] == 0 && 
-		 ent->v.velocity[1] == 0 && 
-		 ent->v.velocity[2] == 0 )
-	{
+	if(ent->v.flags & FL_FLY )
 		state->eflags |= EFLAG_SLERP;
-	}
+	else    state->eflags &= ~EFLAG_SLERP;
+    
+	CBaseEntity* pEntity = (CBaseEntity*)GET_PRIVATE(ent);
+	if (pEntity)
+		state->eflags |= pEntity->m_EFlags;
 
 	state->scale		= ent->v.scale;
 	state->solid		= ent->v.solid;
@@ -1818,6 +1847,10 @@ void UpdateClientData( const struct edict_s *ent, int sendweapons, struct client
 			cd->ammo_rockets = pl->ammo_rockets;
 			cd->ammo_cells = pl->ammo_uranium;
 			cd->vuser2.x = pl->ammo_hornets;
+			cd->vuser2.x = pl->ammo_14mm;
+			cd->vuser2.x = pl->ammo_44;
+			cd->vuser2.y = pl->ammo_556mm;
+			cd->vuser2.z = pl->ammo_45ACP;
 
 			if( pl->m_pActiveItem )
 			{
@@ -1834,6 +1867,11 @@ void UpdateClientData( const struct edict_s *ent, int sendweapons, struct client
 					cd->vuser4.x = gun->m_iPrimaryAmmoType;
 					cd->vuser4.y = pl->m_rgAmmo[gun->m_iPrimaryAmmoType];
 					cd->vuser4.z = pl->m_rgAmmo[gun->m_iSecondaryAmmoType];
+
+					if (pl->m_pActiveItem->m_iId == WEAPON_PYTHON)
+					{
+						cd->vuser2.y = ((CPython*)pl->m_pActiveItem)->m_fSpotActive;
+					}
 
 					if( pl->m_pActiveItem->m_iId == WEAPON_RPG )
 					{

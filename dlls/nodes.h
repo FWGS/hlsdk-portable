@@ -170,7 +170,7 @@ public:
 	// functions to create the graph
 	int		LinkVisibleNodes ( CLink *pLinkPool, FILE *file, int *piBadNode );
 	int		RejectInlineLinks ( CLink *pLinkPool, FILE *file );
-	int		FindShortestPath ( int *piPath, int iStart, int iDest, int iHull, int afCapMask);
+	int		FindShortestPath ( int *piPath, int pathSize, int iStart, int iDest, int iHull, int afCapMask, bool dynamic = false );
 	int		FindNearestNode ( const Vector &vecOrigin, CBaseEntity *pEntity );
 	int		FindNearestNode ( const Vector &vecOrigin, int afNodeTypes );
 	//int		FindNearestLink ( const Vector &vecTestPoint, int *piNearestLink, BOOL *pfAlongLine );

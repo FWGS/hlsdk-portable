@@ -19,9 +19,12 @@
 //
 
 #include "hud.h"
+#include "hud_sprite.h"
 #include "cl_util.h"
 #include "netadr.h"
 #include "parsemsg.h"
+
+#include "steam_integration.h"
 
 #if USE_VGUI
 #include "vgui_int.h"
@@ -273,6 +276,9 @@ int DLLEXPORT HUD_VidInit( void )
 #elif USE_VGUI
 	VGui_Startup();
 #endif
+
+	ScaledRenderer::Instance().HUD_VidInit();
+
 	return 1;
 }
 
@@ -288,11 +294,14 @@ the hud variables.
 
 void DLLEXPORT HUD_Init( void )
 {
+	InitSteam();
 	InitInput();
 	gHUD.Init();
 #if USE_VGUI
 	Scheme_Init();
 #endif
+
+	ScaledRenderer::Instance().HUD_Init();
 }
 
 /*
@@ -304,8 +313,12 @@ redraw the HUD.
 ===========================
 */
 
+extern void DrawFlashlight();
 int DLLEXPORT HUD_Redraw( float time, int intermission )
 {
+	if (gHUD.m_bFlashlight)
+		DrawFlashlight();
+
 	gHUD.Redraw( time, intermission );
 
 	return 1;
@@ -354,6 +367,13 @@ Called by engine every frame that client .dll is loaded
 
 void DLLEXPORT HUD_Frame( double time )
 {
+	// We're too lazy to make new weapons work properly with predicting at the moment. Just forcibly disable it.
+	extern cvar_t* cl_lw;
+	if (cl_lw && cl_lw->value)
+	{
+		gEngfuncs.Cvar_SetValue("cl_lw", 0.0f);
+	}
+
 #if USE_VGUI
 	GetClientVoiceMgr()->Frame(time);
 #elif USE_FAKE_VGUI
@@ -362,6 +382,10 @@ void DLLEXPORT HUD_Frame( double time )
 #else
 	gEngfuncs.VGui_ViewportPaintBackground(HUD_GetRect());
 #endif
+
+	ScaledRenderer::Instance().HUD_Frame(time);
+
+	SteamRunCallbacks();
 }
 
 /*

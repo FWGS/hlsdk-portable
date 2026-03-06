@@ -204,6 +204,8 @@ void CRpgRocket::Precache( void )
 	PRECACHE_MODEL( "models/rpgrocket.mdl" );
 	m_iTrail = PRECACHE_MODEL( "sprites/smoke.spr" );
 	PRECACHE_SOUND( "weapons/rocket1.wav" );
+	PRECACHE_SOUND("weapons/rocket_laser_on.wav");
+	PRECACHE_SOUND("weapons/rocket_laser_off.wav");
 }
 
 void CRpgRocket::IgniteThink( void )
@@ -358,7 +360,8 @@ void CRpg::Reload( void )
 #endif
 
 	if( m_iClip == 0 )
-		iResult = DefaultReload( RPG_MAX_CLIP, RPG_RELOAD, 2 );
+		iResult = DefaultReload( RPG_MAX_CLIP, RPG_RELOAD, 1.45 );
+		m_flNextPrimaryAttack = m_flNextSecondaryAttack = 2;
 
 	if( iResult )
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
@@ -437,6 +440,8 @@ int CRpg::AddToPlayer( CBasePlayer *pPlayer )
 
 BOOL CRpg::Deploy()
 {
+	g_engfuncs.pfnSetClientMaxspeed(m_pPlayer->edict(), 230 );
+	m_flNextPrimaryAttack = 0.5;
 	if( m_iClip == 0 )
 	{
 		return DefaultDeploy( "models/v_rpg.mdl", "models/p_rpg.mdl", RPG_DRAW_UL, "rpg" );
@@ -458,9 +463,10 @@ BOOL CRpg::CanHolster( void )
 
 void CRpg::Holster( int skiplocal /* = 0 */ )
 {
+	g_engfuncs.pfnSetClientMaxspeed(m_pPlayer->edict(), 230 );
 	m_fInReload = FALSE;// cancel any reload in progress.
 
-	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5f;
+	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.35;
 
 	SendWeaponAnim( RPG_HOLSTER1 );
 
@@ -481,8 +487,8 @@ void CRpg::PrimaryAttack()
 		m_pPlayer->m_iWeaponFlash = BRIGHT_GUN_FLASH;
 
 #if !CLIENT_DLL
-		// player "shoot" animation
-		m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
+		UTIL_ScreenShake( pev->origin, 7, 150.0, 0.5, 120 ); 
+		m_pPlayer->SetAnimation( PLAYER_ATTACK1 );		// player "shoot" animation
 
 		UTIL_MakeVectors( m_pPlayer->pev->v_angle );
 		Vector vecSrc = m_pPlayer->GetGunPosition() + gpGlobals->v_forward * 16.0f + gpGlobals->v_right * 8.0f + gpGlobals->v_up * -8.0f;
@@ -514,7 +520,7 @@ void CRpg::PrimaryAttack()
 	else
 	{
 		PlayEmptySound();
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.2f;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.4f;
 	}
 	UpdateSpot();
 }
@@ -526,11 +532,15 @@ void CRpg::SecondaryAttack()
 #if !CLIENT_DLL
 	if( !m_fSpotActive && m_pSpot )
 	{
+		EMIT_SOUND(ENT(m_pPlayer->pev), CHAN_WEAPON, "weapons/rocket_laser_off.wav", 1.0, ATTN_NORM);
+
 		m_pSpot->Killed( NULL, GIB_NORMAL );
 		m_pSpot = NULL;
 	}
+	else
+		EMIT_SOUND(ENT(m_pPlayer->pev), CHAN_WEAPON, "weapons/rocket_laser_on.wav", 1.0, ATTN_NORM);
 #endif
-	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.2f;
+	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.35f;
 }
 
 void CRpg::WeaponIdle( void )
@@ -612,7 +622,7 @@ class CRpgAmmo : public CBasePlayerAmmo
 	void Precache( void )
 	{
 		PRECACHE_MODEL( "models/w_rpgammo.mdl" );
-		PRECACHE_SOUND( "items/9mmclip1.wav" );
+		PRECACHE_SOUND("items/rocket_pickup.wav");
 	}
 	BOOL AddAmmo( CBaseEntity *pOther ) 
 	{ 
@@ -633,7 +643,7 @@ class CRpgAmmo : public CBasePlayerAmmo
 
 		if( pOther->GiveAmmo( iGive, "rockets", ROCKET_MAX_CARRY ) != -1 )
 		{
-			EMIT_SOUND( ENT( pev ), CHAN_ITEM, "items/9mmclip1.wav", 1, ATTN_NORM );
+			EMIT_SOUND(ENT(pev), CHAN_ITEM, "items/rocket_pickup.wav", 1, ATTN_NORM);
 			return TRUE;
 		}
 		return FALSE;

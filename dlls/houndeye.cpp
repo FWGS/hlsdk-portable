@@ -93,11 +93,16 @@ public:
 	void PrescheduleThink( void );
 	void SetActivity( Activity NewActivity );
 	void WriteBeamColor( void );
+	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
+	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType);
 	BOOL CheckRangeAttack1( float flDot, float flDist );
 	BOOL FValidateHintType( short sHint );
 	BOOL FCanActiveIdle( void );
+	int BuckshotCount;
 	Schedule_t *GetScheduleOfType( int Type );
 	Schedule_t *GetSchedule( void );
+	BOOL HeadGibbed;
+	Vector HeadPos;
 
 	int Save( CSave &save );
 	int Restore( CRestore &restore );
@@ -378,6 +383,9 @@ void CHoundeye::Precache()
 	PRECACHE_SOUND( "houndeye/he_blast1.wav" );
 	PRECACHE_SOUND( "houndeye/he_blast2.wav" );
 	PRECACHE_SOUND( "houndeye/he_blast3.wav" );
+
+	PRECACHE_SOUND("houndeye/he_footstep1.wav");
+	PRECACHE_SOUND("houndeye/he_footstep2.wav");
 
 	m_iSpriteTexture = PRECACHE_MODEL( "sprites/shockwave.spr" );
 }	
@@ -766,6 +774,49 @@ void CHoundeye::StartTask( Task_t *pTask )
 			break;
 		}
 	}
+}
+
+void CHoundeye :: TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType)
+{
+	if ( (bitsDamageType & DMG_BULLET) && flDamage == gSkillData.plrDmgBuckshot )
+		BuckshotCount++;
+
+	HeadPos = ptr->vecEndPos;
+		
+	if ( bitsDamageType & DMG_BULLET && flDamage == gSkillData.plrDmg14MM )
+		GibMonster();
+	else
+	{
+		if ( ptr->iHitgroup == 10 && pev->health <= flDamage && !HeadGibbed && flDamage >= 10 )
+		{
+			ptr->iHitgroup = HITGROUP_HEAD;
+			flDamage *= gSkillData.monHead; 
+			pev->body = 1;
+			GibHeadMonster( ptr->vecEndPos, FALSE );
+			HeadGibbed = TRUE;
+			ScoreForHeadGib(pevAttacker);
+			BuckshotCount = 0;
+		}
+	}
+
+	CBaseMonster::TraceAttack( pevAttacker, flDamage, vecDir, ptr, bitsDamageType );
+}
+
+int CHoundeye :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )
+{
+	if ( BuckshotCount >= 6 )
+		GibMonster();
+	if	(BuckshotCount >= 4 && BuckshotCount < 6 && !HeadGibbed)
+	{
+		flDamage = pev->health;
+		pev->body = 1;
+		GibHeadMonster( HeadPos, FALSE );
+		HeadGibbed = TRUE;
+		ScoreForHeadGib(pevAttacker);
+	}
+
+	BuckshotCount = 0;
+	return CBaseMonster::TakeDamage( pevInflictor, pevAttacker, flDamage, bitsDamageType );
 }
 
 //=========================================================

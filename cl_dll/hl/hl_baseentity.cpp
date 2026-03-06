@@ -62,6 +62,7 @@ void CBaseEntity::InitMoveWith( void ) { } //LRC
 void CBaseEntity::SetNextThink( float delay, BOOL correctSpeed ) { }//LRC
 void CBaseEntity::AbsoluteNextThink( float time, BOOL correctSpeed ) { }//LRC
 void CBaseEntity::ThinkCorrection( ) { }//LRC
+void CBaseMonster::GibHeadMonster( class Vector, int) { }
 
 // CBaseDelay Stubs
 void CBaseDelay::KeyValue( struct KeyValueData_s * ) { }
@@ -160,7 +161,7 @@ void CBaseMonster::AdvanceRoute( float distance ) { }
 int CBaseMonster::RouteClassify( int iMoveFlag ) { return 0; }
 BOOL CBaseMonster::BuildRoute( const Vector &vecGoal, int iMoveFlag, CBaseEntity *pTarget ) { return FALSE; }
 void CBaseMonster::InsertWaypoint( Vector vecLocation, int afMoveFlags ) { }
-BOOL CBaseMonster::FTriangulate( const Vector &vecStart , const Vector &vecEnd, float flDist, CBaseEntity *pTargetEnt, Vector *pApex ) { return FALSE; }
+int CBaseMonster :: FTriangulate ( const Vector &vecStart , const Vector &vecEnd, float flDist, CBaseEntity *pTargetEnt, Vector *pApexes, int n, int tries, bool recursive ) { return 0; }
 void CBaseMonster::Move( float flInterval ) { }
 BOOL CBaseMonster::ShouldAdvanceRoute( float flWaypointDist ) { return FALSE; }
 void CBaseMonster::MoveExecute( CBaseEntity *pTargetEnt, const Vector &vecDir, float flInterval ) { }
@@ -208,6 +209,7 @@ int CBaseMonster::FindHintNode( void ) { return NO_NODE; }
 void CBaseMonster::ReportAIState( void ) { }
 void CBaseMonster::KeyValue( KeyValueData *pkvd ) { }
 BOOL CBaseMonster::FCheckAITrigger( void ) { return FALSE; }
+BOOL CBaseMonster :: FCheckAITrigger ( short ) { return FALSE; }
 int CBaseMonster :: CanPlaySequence( int interruptLevel ) { return FALSE; } //LRC - prototype changed
 BOOL CBaseMonster::FindLateralCover( const Vector &vecThreat, const Vector &vecViewOffset ) { return FALSE; }
 Vector CBaseMonster::ShootAtEnemy( const Vector &shootOrigin ) { return g_vecZero; }
@@ -284,7 +286,7 @@ void CBasePlayer::SelectPrevItem( int iItem ) { }
 CBaseEntity *FindEntityForward( CBaseEntity *pMe ) { return NULL; }
 BOOL CBasePlayer::FlashlightIsOn( void ) { return FALSE; }
 void CBasePlayer::FlashlightTurnOn( void ) { }
-void CBasePlayer::FlashlightTurnOff( void ) { }
+void CBasePlayer :: FlashlightTurnOff( bool playOffSound ) { }
 void CBasePlayer::ForceClientDllUpdate( void ) { }
 void CBasePlayer::ImpulseCommands() { }
 void CBasePlayer::CheatImpulseCommands( int iImpulse ) { }

@@ -140,7 +140,7 @@ void EV_EjectBrass( float *origin, float *velocity, float rotation, int model, i
 	vec3_t endpos;
 	VectorClear( endpos );
 	endpos[1] = rotation;
-	gEngfuncs.pEfxAPI->R_TempModel( origin, velocity, endpos, 2.5, model, soundtype );
+	gEngfuncs.pEfxAPI->R_TempModel( origin, velocity, endpos, 25.0, model, soundtype );
 }
 
 /*
@@ -175,8 +175,8 @@ void EV_GetDefaultShellInfo( event_args_t *args, float *origin, float *velocity,
 		}
 	}
 
-	fR = gEngfuncs.pfnRandomFloat( 50, 70 );
-	fU = gEngfuncs.pfnRandomFloat( 100, 150 );
+	fR = gEngfuncs.pfnRandomFloat( 170, 200 );
+	fU = gEngfuncs.pfnRandomFloat( 0, 15 );
 
 	for( i = 0; i < 3; i++ )
 	{

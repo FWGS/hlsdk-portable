@@ -249,6 +249,7 @@ void CTentacle::Spawn()
 	pev->effects = 0;
 	pev->health = 75;
 	pev->sequence = 0;
+	m_EFlags |= EFLAG_SLERP;
 
 	SET_MODEL( ENT( pev ), "models/tentacle2.mdl" );
 	UTIL_SetSize( pev, Vector( -32, -32, 0 ), Vector( 32, 32, 64 ) );
@@ -1015,7 +1016,7 @@ void CTentacleMaw::Spawn()
 	pev->movetype = MOVETYPE_STEP;
 	pev->effects = 0;
 	pev->health = 75;
-	pev->yaw_speed = 8;
+	pev->yaw_speed = 60;
 	pev->sequence = 0;
 
 	pev->angles.x = 90;

@@ -23,15 +23,14 @@
 
 #define	HANDGRENADE_PRIMARY_VOLUME		450
 
-enum handgrenade_e
-{
+enum handgrenade_e {
 	HANDGRENADE_IDLE = 0,
 	HANDGRENADE_FIDGET,
 	HANDGRENADE_PINPULL,
 	HANDGRENADE_THROW1,	// toss
-	HANDGRENADE_THROW2,	// medium
-	HANDGRENADE_THROW3,	// hard
+	HANDGRENADE_THROW_NEW,
 	HANDGRENADE_HOLSTER,
+	HANDGRENADE_HOLSTER2, // player isn't carrying any grenades
 	HANDGRENADE_DRAW
 };
 
@@ -56,6 +55,8 @@ void CHandGrenade::Precache( void )
 	PRECACHE_MODEL( "models/w_grenade.mdl" );
 	PRECACHE_MODEL( "models/v_grenade.mdl" );
 	PRECACHE_MODEL( "models/p_grenade.mdl" );
+
+	PRECACHE_SOUND("weapons/he_pinpull.wav");
 }
 
 int CHandGrenade::GetItemInfo( ItemInfo *p )
@@ -77,6 +78,7 @@ int CHandGrenade::GetItemInfo( ItemInfo *p )
 
 BOOL CHandGrenade::Deploy()
 {
+	g_engfuncs.pfnSetClientMaxspeed(m_pPlayer->edict(), 230);
 	m_flReleaseThrow = -1;
 	return DefaultDeploy( "models/v_grenade.mdl", "models/p_grenade.mdl", HANDGRENADE_DRAW, "crowbar" );
 }
@@ -89,18 +91,16 @@ BOOL CHandGrenade::CanHolster( void )
 
 void CHandGrenade::Holster( int skiplocal /* = 0 */ )
 {
-	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5f;
+	g_engfuncs.pfnSetClientMaxspeed(m_pPlayer->edict(), 230);
+	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.56f;
 
-	if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] )
-	{
+	if (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] >= 1)
 		SendWeaponAnim( HANDGRENADE_HOLSTER );
-	}
-	else
+
+	if( m_flStartThrow )
 	{
-		// no more grenades!
-		m_pPlayer->pev->weapons &= ~( 1 << WEAPON_HANDGRENADE );
-		SetThink(&CHandGrenade:: DestroyItem );
-		SetNextThink( 0.1f );
+		m_flStartThrow = 0.0f;
+		m_flReleaseThrow = 0.0f;
 	}
 
 	EMIT_SOUND( ENT( m_pPlayer->pev ), CHAN_WEAPON, "common/null.wav", 1.0f, ATTN_NORM );
@@ -114,7 +114,7 @@ void CHandGrenade::PrimaryAttack()
 		m_flReleaseThrow = 0.0f;
 
 		SendWeaponAnim( HANDGRENADE_PINPULL );
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.5f;
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.85f;
 	}
 }
 
@@ -152,17 +152,13 @@ void CHandGrenade::WeaponIdle( void )
 
 		CGrenade::ShootTimed( m_pPlayer->pev, vecSrc, vecThrow, time );
 
-		if( flVel < 500.0f )
+		if ( m_pPlayer->m_rgAmmo[ m_iPrimaryAmmoType ] == 1 )
 		{
 			SendWeaponAnim( HANDGRENADE_THROW1 );
 		}
-		else if( flVel < 1000.0f )
-		{
-			SendWeaponAnim( HANDGRENADE_THROW2 );
-		}
 		else
 		{
-			SendWeaponAnim( HANDGRENADE_THROW3 );
+			SendWeaponAnim( HANDGRENADE_THROW_NEW );
 		}
 
 		// player "shoot" animation
@@ -172,8 +168,8 @@ void CHandGrenade::WeaponIdle( void )
 		m_flReleaseThrow = 0.0f;
 #endif
 		m_flStartThrow = 0.0f;
-		m_flNextPrimaryAttack = GetNextAttackDelay( 0.5f );
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.5f;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.95;
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.95;
 
 		m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]--;
 
@@ -184,25 +180,6 @@ void CHandGrenade::WeaponIdle( void )
 			// animation, weapon idle will automatically retire the weapon for us.
 			m_flTimeWeaponIdle = m_flNextSecondaryAttack = m_flNextPrimaryAttack = GetNextAttackDelay( 0.5f );// ensure that the animation can finish playing
 		}
-		return;
-	}
-	else if( m_flReleaseThrow > 0.0f )
-	{
-		// we've finished the throw, restart.
-		m_flStartThrow = 0.0f;
-
-		if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] )
-		{
-			SendWeaponAnim( HANDGRENADE_DRAW );
-		}
-		else
-		{
-			RetireWeapon();
-			return;
-		}
-
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10.0f, 15.0f );
-		m_flReleaseThrow = -1.0f;
 		return;
 	}
 

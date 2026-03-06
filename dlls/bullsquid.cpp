@@ -201,6 +201,11 @@ public:
 	void AttackSound( void );
 	void StartTask( Task_t *pTask );
 	void RunTask( Task_t *pTask );
+	void TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType);
+	int BuckshotCount;
+	BOOL HeadGibbed;
+	Vector	HeadPos;
+
 	BOOL CheckMeleeAttack1( float flDot, float flDist );
 	BOOL CheckMeleeAttack2( float flDot, float flDist );
 	BOOL CheckRangeAttack1( float flDot, float flDist );
@@ -310,6 +315,18 @@ int CBullsquid::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, flo
 		// don't forget about headcrabs if it was a headcrab that hurt the squid.
 		m_flLastHurtTime = gpGlobals->time;
 	}
+
+	if ( !HeadGibbed && pev->health <= flDamage && BuckshotCount >= 6 )
+	{
+		pev->body = 1;
+		flDamage = pev->health;
+
+		GibHeadMonster( HeadPos, FALSE );
+		HeadGibbed = TRUE;
+		ScoreForHeadGib(pevAttacker);
+	}
+
+	BuckshotCount = 0;
 
 	return CBaseMonster::TakeDamage( pevInflictor, pevAttacker, flDamage, bitsDamageType );
 }
@@ -509,21 +526,10 @@ void CBullsquid::SetYawSpeed( void )
 
 	switch( m_Activity )
 	{
-	case ACT_WALK:
-		ys = 90;
-		break;
-	case ACT_RUN:
-		ys = 90;
-		break;
-	case ACT_IDLE:
-		ys = 90;
-		break;
-	case ACT_RANGE_ATTACK1:
-		ys = 90;
-		break;
-	default:
-		ys = 90;
-		break;
+	case	ACT_WALK:			ys = 120;	break;
+	case	ACT_RUN:			ys = 120;	break;
+	case	ACT_IDLE:			ys = 120;	break;
+	case	ACT_RANGE_ATTACK1:	ys = 120;	break;
 	}
 
 	pev->yaw_speed = ys;
@@ -675,6 +681,31 @@ void CBullsquid::HandleAnimEvent( MonsterEvent_t *pEvent )
 	}
 }
 
+void CBullsquid :: TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType)
+{
+	if	( ptr->iHitgroup == 10 )
+	{
+		if ( (bitsDamageType & DMG_BULLET) && flDamage == gSkillData.plrDmgBuckshot )
+			BuckshotCount++;
+
+		HeadPos = ptr->vecEndPos;
+		ptr->iHitgroup = HITGROUP_HEAD;
+
+		if ( !HeadGibbed && (bitsDamageType & DMG_BULLET) && (pev->health <= flDamage) && (flDamage >= 75) )
+		{
+			pev->body = 1;
+
+			GibHeadMonster( ptr->vecEndPos, FALSE );
+			HeadGibbed = TRUE;
+			ScoreForHeadGib(pevAttacker);
+		}
+	
+		flDamage /= gSkillData.monHead;
+	}
+	
+	CBaseMonster::TraceAttack( pevAttacker, flDamage, vecDir, ptr, bitsDamageType );
+}
+
 //=========================================================
 // Spawn
 //=========================================================
@@ -748,6 +779,10 @@ void CBullsquid::Precache()
 
 	PRECACHE_SOUND( "bullchicken/bc_spithit1.wav" );
 	PRECACHE_SOUND( "bullchicken/bc_spithit2.wav" );
+
+	PRECACHE_SOUND("bullchicken/bc_step1.wav");
+	PRECACHE_SOUND("bullchicken/bc_step2.wav");
+	PRECACHE_SOUND("aslave/slv_step3.wav");
 }
 
 //=========================================================

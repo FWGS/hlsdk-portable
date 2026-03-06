@@ -290,6 +290,7 @@ void CNihilanth::Spawn( void )
 
 	pev->flags		|= FL_MONSTER;
 	pev->takedamage		= DAMAGE_AIM;
+	pev->flags |= FL_MONSTER | FL_FLY;
 	if (pev->health == 0)
 		pev->health		= gSkillData.nihilanthHealth;
 	pev->view_ofs		= Vector( 0, 0, 300 );

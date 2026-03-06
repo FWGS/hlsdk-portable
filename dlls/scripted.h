@@ -30,6 +30,7 @@
 #define SF_SCRIPT_NOSCRIPTMOVEMENT	128
 #define SF_SCRIPT_STAYDEAD			256 // LRC- signifies that the animation kills the monster
 										// (needed because the monster animations don't use AnimEvent 1000 properly)
+#define SF_SCRIPT_APPLYNEWANGLES	512
 
 #define SCRIPT_BREAK_CONDITIONS		(bits_COND_LIGHT_DAMAGE|bits_COND_HEAVY_DAMAGE)
 
@@ -38,6 +39,13 @@
 #define SS_INTERRUPT_ALERT		0x1
 #define SS_INTERRUPT_ANYSTATE	0x2
 #define SS_INTERRUPT_SCRIPTS	0x4
+
+enum
+{
+	SCRIPT_INTERRUPTION_POLICY_ONLY_DEATH = 0,
+	SCRIPT_INTERRUPTION_POLICY_NO_INTERRUPTIONS = 1,
+	SCRIPT_INTERRUPTION_POLICY_ANY_DAMAGE = 2,
+};
 
 // when a monster finishes an AI scripted sequence, we can choose
 // a schedule to place them in. These defines are the aliases to
@@ -93,7 +101,9 @@ public:
 	virtual BOOL StartSequence( CBaseMonster *pTarget, int iszSeq, BOOL completeOnEmpty );
 	void SequenceDone ( CBaseMonster *pMonster );
 	virtual void FixScriptMonsterSchedule( CBaseMonster *pMonster );
+	bool ForcedNoInterruptions();
 	BOOL	CanInterrupt( void );
+	bool	CanInterruptByPlayerCall();
 	void	AllowInterrupt( BOOL fAllow );
 	int		IgnoreConditions( void );
 
@@ -113,6 +123,7 @@ public:
 	int m_iRepeatsLeft; //LRC
 	float m_fRepeatFrame; //LRC
 	int m_iPriority; //LRC
+	short m_interruptionPolicy;
 
 	int m_iDelay;
 	float m_startTime;

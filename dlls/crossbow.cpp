@@ -290,6 +290,8 @@ void CCrossbow::Precache( void )
 
 	m_usCrossbow = PRECACHE_EVENT( 1, "events/crossbow1.sc" );
 	m_usCrossbow2 = PRECACHE_EVENT( 1, "events/crossbow2.sc" );
+
+	m_flUnzoomTime = 0;
 }
 
 int CCrossbow::GetItemInfo( ItemInfo *p )
@@ -301,7 +303,7 @@ int CCrossbow::GetItemInfo( ItemInfo *p )
 	p->iMaxAmmo2 = -1;
 	p->iMaxClip = CROSSBOW_MAX_CLIP;
 	p->iSlot = 2;
-	p->iPosition = 2;
+	p->iPosition = 5;
 	p->iId = WEAPON_CROSSBOW;
 	p->iFlags = 0;
 	p->iWeight = CROSSBOW_WEIGHT;
@@ -333,6 +335,7 @@ void CCrossbow::Holster( int skiplocal /* = 0 */ )
 
 void CCrossbow::PrimaryAttack( void )
 {
+	m_flUnzoomTime = gpGlobals->time + 0.25;
 #if CLIENT_DLL
 	if( m_fInZoom && bIsMultiplayer() )
 #else
@@ -526,6 +529,16 @@ void CCrossbow::WeaponIdle( void )
 			}
 			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
 		}
+	}
+}
+
+void CCrossbow::WeaponTick()
+{
+	if (m_fInZoom && m_flUnzoomTime && m_flUnzoomTime < gpGlobals->time) 
+	{
+		m_pPlayer->pev->fov = m_pPlayer->m_iFOV = 0; // 0 means reset to default fov
+		m_fInZoom = 0;
+		m_flUnzoomTime = 0;
 	}
 }
 

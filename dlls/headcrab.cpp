@@ -22,6 +22,9 @@
 #include	"monsters.h"
 #include	"schedule.h"
 #include	"game.h"
+#include	"weapons.h"
+#include	"player.h"
+#include	"ach_counters.h"
 
 //=========================================================
 // Monster's Anim Events Go Here
@@ -87,10 +90,12 @@ public:
 	void AlertSound( void );
 	void PrescheduleThink( void );
 	int  Classify ( void );
+	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
+	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType);
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
 	BOOL CheckRangeAttack1 ( float flDot, float flDist );
 	BOOL CheckRangeAttack2 ( float flDot, float flDist );
-	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
+	int BuckshotCount;
 
 	virtual float GetDamageAmount( void ) { return gSkillData.headcrabDmgBite; }
 	virtual int GetVoicePitch( void ) { return 100; }
@@ -189,21 +194,21 @@ void CHeadCrab::SetYawSpeed( void )
 	switch( m_Activity )
 	{
 	case ACT_IDLE:	
-		ys = 30;
+		ys = 100;
 		break;
 	case ACT_RUN:
 	case ACT_WALK:
-		ys = 20;
+		ys = 120;
 		break;
 	case ACT_TURN_LEFT:
 	case ACT_TURN_RIGHT:
-		ys = 60;
+		ys = 120;
 		break;
 	case ACT_RANGE_ATTACK1:
-		ys = 30;
+		ys = 70;
 		break;
 	default:
-		ys = 30;
+		ys = 130;
 		break;
 	}
 
@@ -313,6 +318,11 @@ void CHeadCrab::Precache()
 	PRECACHE_SOUND_ARRAY( pDeathSounds );
 	PRECACHE_SOUND_ARRAY( pBiteSounds );
 
+	PRECACHE_SOUND("headcrab/hc_step1.wav");
+	PRECACHE_SOUND("headcrab/hc_step2.wav");
+	PRECACHE_SOUND("headcrab/hc_step3.wav");
+	PRECACHE_SOUND("headcrab/hc_step4.wav");
+
 	if (pev->model)
 		PRECACHE_MODEL(STRING(pev->model)); //LRC
 	else
@@ -369,6 +379,14 @@ void CHeadCrab::LeapTouch( CBaseEntity *pOther )
 	}
 
 	SetTouch( NULL );
+}
+
+void CHeadCrab :: TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType)
+{
+	if ( (bitsDamageType & DMG_BULLET) && flDamage == gSkillData.plrDmgBuckshot)
+		BuckshotCount++;
+
+	CBaseMonster::TraceAttack( pevAttacker, flDamage, vecDir, ptr, bitsDamageType );
 }
 
 //=========================================================
@@ -437,7 +455,26 @@ int CHeadCrab::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, floa
 	if( bitsDamageType & DMG_ACID )
 		flDamage = 0;
 
-	return CBaseMonster::TakeDamage( pevInflictor, pevAttacker, flDamage, bitsDamageType );
+	if ( BuckshotCount >= 5 || ((bitsDamageType & DMG_BULLET) && flDamage >= 10) )
+		GibMonster();
+
+	BuckshotCount = 0;
+	const bool wasAlive = !HasMemory(bits_MEMORY_KILLED);
+	const int result = CBaseMonster::TakeDamage( pevInflictor, pevAttacker, flDamage, bitsDamageType );
+	const bool isDeadNow = HasMemory(bits_MEMORY_KILLED);
+	if (wasAlive && isDeadNow)
+	{
+		CBasePlayer* pPlayer = CBasePlayer::PlayerInstance(pevAttacker);
+		if (pPlayer && pPlayer->m_pActiveItem && pPlayer->m_pActiveItem->m_iId == WEAPON_BARRETT_M82A1)
+		{
+			pPlayer->m_headcrabsKilledBySniper++;
+			if (pPlayer->m_headcrabsKilledBySniper == ACH_WASTE_AMMO_COUNT)
+			{
+				pPlayer->SetAchievement("ACH_WASTE_AMMO");	
+			}
+		}
+	}
+	return result;
 }
 
 #define CRAB_ATTN_IDLE (float)1.5
@@ -506,10 +543,7 @@ LINK_ENTITY_TO_CLASS( monster_babycrab, CBabyCrab )
 void CBabyCrab::Spawn( void )
 {
 	CHeadCrab::Spawn();
-	if (pev->model)
-		SET_MODEL(ENT(pev), STRING(pev->model)); //LRC
-	else
-		SET_MODEL( ENT( pev ), "models/baby_headcrab.mdl" );
+	SET_MODEL( ENT( pev ), "models/baby_headcrab.mdl" );
 	pev->rendermode = kRenderTransTexture;
 	pev->renderamt = 192;
 	UTIL_SetSize( pev, Vector( -12, -12, 0 ), Vector( 12, 12, 24 ) );
@@ -519,10 +553,7 @@ void CBabyCrab::Spawn( void )
 
 void CBabyCrab::Precache( void )
 {
-	if (pev->model)
-		PRECACHE_MODEL(STRING(pev->model)); //LRC
-	else
-		PRECACHE_MODEL( "models/baby_headcrab.mdl" );
+	PRECACHE_MODEL( "models/baby_headcrab.mdl" );
 	CHeadCrab::Precache();
 }
 

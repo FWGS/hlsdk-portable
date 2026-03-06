@@ -709,7 +709,7 @@ void CGargantua::SetYawSpeed( void )
 	switch ( m_Activity )
 	{
 	case ACT_IDLE:
-		ys = 60;
+		ys = 130;
 		break;
 	case ACT_TURN_LEFT:
 	case ACT_TURN_RIGHT:
@@ -717,10 +717,10 @@ void CGargantua::SetYawSpeed( void )
 		break;
 	case ACT_WALK:
 	case ACT_RUN:
-		ys = 60;
+		ys = 130;
 		break;
 	default:
-		ys = 60;
+		ys = 130;
 		break;
 	}
 
@@ -810,6 +810,9 @@ void CGargantua::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vec
 		CBaseMonster::TraceAttack( pevAttacker, flDamage, vecDir, ptr, bitsDamageType );
 		return;
 	}
+
+	if( ptr->iHitgroup == 10 && ( bitsDamageType & (DMG_CLUB|DMG_BULLET) ) )
+		flDamage = 0.1;
 
 	// UNDONE: Hit group specific damage?
 	if( bitsDamageType & ( GARG_DAMAGE | DMG_BLAST ) )

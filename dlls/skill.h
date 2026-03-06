@@ -31,6 +31,10 @@ struct skilldata_t
 
 	float barneyHealth;
 
+	float otisHealth;
+
+	float dianaHealth;
+
 	float bigmommaHealthFactor;		// Multiply each node's health by this
 	float bigmommaDmgSlash;			// melee attack damage
 	float bigmommaDmgBlast;			// mortar attack damage
@@ -55,6 +59,8 @@ struct skilldata_t
 	float hgruntDmgKick;
 	float hgruntShotgunPellets;
 	float hgruntGrenadeSpeed;
+
+	float rinfantryHealth;
 
 	float houndeyeHealth;
 	float houndeyeDmgBlast;
@@ -88,14 +94,26 @@ struct skilldata_t
 	float zombieDmgOneSlash;
 	float zombieDmgBothSlash;
 
+	float zombiebarneyHealth;
+	float zombiebarneyDmgOneSlash;
+	float zombiebarneyDmgBothSlash;
+
+	float zombiesoldierHealth;
+	float zombiesoldierDmgOneSlash;
+	float zombiesoldierDmgBothSlash;
+
 	float turretHealth;
 	float miniturretHealth;
 	float sentryHealth;
 
 	// Player Weapons
 	float plrDmgCrowbar;
+	float plrDmgPipewrench;
 	float plrDmg9MM;
+	float plrDmg14MM;
 	float plrDmg357;
+	float plrDmg44;
+	float plrDmg45ACP;
 	float plrDmgMP5;
 	float plrDmgM203Grenade;
 	float plrDmgBuckshot;
@@ -115,6 +133,7 @@ struct skilldata_t
 	float monDmgMP5;
 	float monDmg12MM;
 	float monDmgHornet;
+	float monDmgDeagle;
 
 	// health/suit charge
 	float suitchargerCapacity;

@@ -418,10 +418,10 @@ void CBigMomma::SetYawSpeed( void )
 	switch( m_Activity )
 	{
 	case ACT_IDLE:
-		ys = 100;
+		ys = 150;
 		break;
 	default:
-		ys = 90;
+		ys = 150;
 		break;
 	}
 	pev->yaw_speed = ys;
@@ -552,7 +552,7 @@ void CBigMomma::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecD
 
 		flDamage = 0.1f;// don't hurt the monster much, but allow bits_COND_LIGHT_DAMAGE to be generated
 	}
-	else if( gpGlobals->time > m_painSoundTime )
+	else if( !HasMemory(bits_MEMORY_KILLED) && gpGlobals->time > m_painSoundTime )
 	{
 		m_painSoundTime = gpGlobals->time + RANDOM_LONG( 1, 3 );
 		EMIT_SOUND_ARRAY_DYN( CHAN_VOICE, pPainSounds );
@@ -563,6 +563,12 @@ void CBigMomma::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecD
 
 int CBigMomma::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )
 {
+	//	if ( bitsDamageType & DMG_ENERGYBEAM )
+	//	flDamage = 20;
+
+	if ( flDamage > 200 ) //ограничение урона, чтоб не убивало за 3-4 выстрела из LightGun
+		flDamage = 200;
+
 	// Don't take any acid damage -- BigMomma's mortar is acid
 	if( bitsDamageType & DMG_ACID )
 		flDamage = 0.0f;
