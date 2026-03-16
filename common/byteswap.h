@@ -44,16 +44,50 @@ inline float Byteswap( float n )
 	return SwapFloat( n );
 }
 
+template<typename T>
+inline T UByteswap( T& n )
+{
+	T u;
+	memcpy(&u, &n, sizeof(u) );
+	switch ( sizeof(u) )
+	{
+		case 2: return Swap16( u );
+		case 4: return Swap32( u );
+	}
+}
+
+template<>
+inline float UByteswap( float& n )
+{
+	float u;
+	memcpy(&u, &n, sizeof(u) );
+	return SwapFloat( u );
+}
+
+
+template<typename T>
+inline void UByteswapSW( T& n )
+{
+	T u = UByteswap( n );
+	memcpy(&n, &u, sizeof(u) );
+}
+
 #ifdef XASH_BIG_ENDIAN
 	#define LittleToHost( x )   Byteswap( x )
 	#define LittleToHostSW( x ) ( x = Byteswap( x ) )
 	#define BigToHost( x ) ( x )
 	#define BigToHostSW( x )
+	// Unaligned data macros
+	#define ULittleToHost( x )   UByteswap( x )
+	#define ULittleToHostSW( x ) UByteswapSW( x )
 #else
 	#define LittleToHost( x ) ( x )
 	#define LittleToHostSW( x )
 	#define BigToHost( x )   Byteswap( x )
 	#define BigToHostSW( x ) ( x = Byteswap( x ) )
+	// As-is there are no little endian platforms that need these
+	#define ULittleToHost( x )   LittleToHost( x )
+	#define ULittleToHostSW( x ) LittleToHostSW( x )
 #endif
 
 #endif

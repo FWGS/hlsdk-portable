@@ -2114,10 +2114,10 @@ void CSave::BufferData( const char *pdata, int size, int typesize )
 			switch ( typesize )
 			{
 				case 2:
-					LittleToHostSW( *(uint16_t *)( m_pdata->pCurrentData + i ) );
+					ULittleToHostSW( *(uint16_t *)( m_pdata->pCurrentData + i ) );
 					break;
 				case 4:
-					LittleToHostSW( *(uint32_t *)( m_pdata->pCurrentData + i ) );
+					ULittleToHostSW( *(uint32_t *)( m_pdata->pCurrentData + i ) );
 					break;
 			}
 		}
@@ -2169,12 +2169,12 @@ int CRestore::ReadField( void *pBaseData, TYPEDESCRIPTION *pFields, int fieldCou
 					case FIELD_TIME:
 					#if __VFP_FP__
 						memcpy( &timeData, pInputData, 4 );
-						LittleToHostSW( timeData );
+						ULittleToHostSW( timeData );
 						// Re-base time variables
 						timeData += time;
 						memcpy( pOutputData, &timeData, 4 );
 					#else
-						timeData = LittleToHost( *(float *)pInputData );
+						timeData = ULittleToHost( *(float *)pInputData );
 						// Re-base time variables
 						timeData += time;
 						*( (float *)pOutputData ) = timeData;
@@ -2216,7 +2216,7 @@ int CRestore::ReadField( void *pBaseData, TYPEDESCRIPTION *pFields, int fieldCou
 						}
 						break;
 					case FIELD_EVARS:
-						entityIndex = LittleToHost( *( int *)pInputData );
+						entityIndex = ULittleToHost( *( int *)pInputData );
 						pent = EntityFromIndex( entityIndex );
 						if( pent )
 							*( (entvars_t **)pOutputData ) = VARS( pent );
@@ -2224,7 +2224,7 @@ int CRestore::ReadField( void *pBaseData, TYPEDESCRIPTION *pFields, int fieldCou
 							*( (entvars_t **)pOutputData ) = NULL;
 						break;
 					case FIELD_CLASSPTR:
-						entityIndex = LittleToHost( *( int *)pInputData );
+						entityIndex = ULittleToHost( *( int *)pInputData );
 						pent = EntityFromIndex( entityIndex );
 						if( pent )
 							*( (CBaseEntity **)pOutputData ) = CBaseEntity::Instance( pent );
@@ -2232,14 +2232,14 @@ int CRestore::ReadField( void *pBaseData, TYPEDESCRIPTION *pFields, int fieldCou
 							*( (CBaseEntity **)pOutputData ) = NULL;
 						break;
 					case FIELD_EDICT:
-						entityIndex = LittleToHost( *(int *)pInputData );
+						entityIndex = ULittleToHost( *(int *)pInputData );
 						pent = EntityFromIndex( entityIndex );
 						*( (edict_t **)pOutputData ) = pent;
 						break;
 					case FIELD_EHANDLE:
 						// Input and Output sizes are different!
 						pInputData = (char*)pData + j * gInputSizes[pTest->fieldType];
-						entityIndex = LittleToHost( *(int *)pInputData );
+						entityIndex = ULittleToHost( *(int *)pInputData );
 						pent = EntityFromIndex( entityIndex );
 						if( pent )
 							*( (EHANDLE *)pOutputData ) = CBaseEntity::Instance( pent );
@@ -2247,7 +2247,7 @@ int CRestore::ReadField( void *pBaseData, TYPEDESCRIPTION *pFields, int fieldCou
 							*( (EHANDLE *)pOutputData ) = NULL;
 						break;
 					case FIELD_ENTITY:
-						entityIndex = LittleToHost( *(int *)pInputData );
+						entityIndex = ULittleToHost( *(int *)pInputData );
 						pent = EntityFromIndex( entityIndex );
 						if( pent )
 							*( (EOFFSET *)pOutputData ) = OFFSET( pent );
@@ -2257,13 +2257,13 @@ int CRestore::ReadField( void *pBaseData, TYPEDESCRIPTION *pFields, int fieldCou
 					case FIELD_VECTOR:
 						#if __VFP_FP__
 						memcpy( pOutputData, pInputData, sizeof( Vector ) );
-						LittleToHostSW( ( (float*)pOutputData)[0] );
-						LittleToHostSW( ( (float*)pOutputData)[1] );
-						LittleToHostSW( ( (float*)pOutputData)[2] );
+						ULittleToHostSW( ( (float*)pOutputData)[0] );
+						ULittleToHostSW( ( (float*)pOutputData)[1] );
+						ULittleToHostSW( ( (float*)pOutputData)[2] );
 						#else
-						( (float *)pOutputData )[0] = LittleToHost( ( (float *)pInputData )[0] );
-						( (float *)pOutputData )[1] = LittleToHost( ( (float *)pInputData )[1] );
-						( (float *)pOutputData )[2] = LittleToHost( ( (float *)pInputData )[2] );
+						( (float *)pOutputData )[0] = ULittleToHost( ( (float *)pInputData )[0] );
+						( (float *)pOutputData )[1] = ULittleToHost( ( (float *)pInputData )[1] );
+						( (float *)pOutputData )[2] = ULittleToHost( ( (float *)pInputData )[2] );
 						#endif
 						break;
 					case FIELD_POSITION_VECTOR:
@@ -2278,23 +2278,23 @@ int CRestore::ReadField( void *pBaseData, TYPEDESCRIPTION *pFields, int fieldCou
 							memcpy( pOutputData, &tmp, sizeof( Vector ) );
 						}
 						#else
-						( (float *)pOutputData )[0] = LittleToHost( ( (float *)pInputData )[0] ) + position.x;
-						( (float *)pOutputData )[1] = LittleToHost( ( (float *)pInputData )[1] ) + position.y;
-						( (float *)pOutputData )[2] = LittleToHost( ( (float *)pInputData )[2] ) + position.z;
+						( (float *)pOutputData )[0] = ULittleToHost( ( (float *)pInputData )[0] ) + position.x;
+						( (float *)pOutputData )[1] = ULittleToHost( ( (float *)pInputData )[1] ) + position.y;
+						( (float *)pOutputData )[2] = ULittleToHost( ( (float *)pInputData )[2] ) + position.z;
 						#endif
 						break;
 					case FIELD_BOOLEAN:
 					case FIELD_INTEGER:
-						*( (int *)pOutputData ) = LittleToHost( *(int *)pInputData );
+						*( (int *)pOutputData ) = ULittleToHost( *(int *)pInputData );
 						break;
 					case FIELD_SHORT:
-						*( (short *)pOutputData ) = LittleToHost( *(short *)pInputData );
+						*( (short *)pOutputData ) = ULittleToHost( *(short *)pInputData );
 						break;
 					case FIELD_CHARACTER:
 						*( (char *)pOutputData ) = *(char *)pInputData;
 						break;
 					case FIELD_POINTER:
-						*( (void**)pOutputData ) = (void*)LittleToHost( *(int *)pInputData );
+						*( (void**)pOutputData ) = (void*)ULittleToHost( *(int *)pInputData );
 						break;
 					case FIELD_FUNCTION:
 						if( ( (char *)pInputData )[0] == '\0' )
