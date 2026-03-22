@@ -188,7 +188,7 @@ sudo apt install cmake build-essential gcc-multilib g++-multilib libsdl2-dev:i38
 
 #### RedHat/Fedora/CentOS:
 ```
-sudo dnf install cmake gcc gcc-c++ glibc-devel.i686 SDL-devel.i686
+sudo dnf install cmake gcc gcc-c++ glibc-devel.i686 SDL2-devel.i686
 ```
 
 ### Building
