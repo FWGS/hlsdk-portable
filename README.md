@@ -136,17 +136,6 @@ cmake -G "Visual Studio 16 2019" -A Win32 -B build
 
 After the configuration step, `HLSDK-PORTABLE.sln` should appear in the `build` directory. You can open this solution in Visual Studio and continue developing there.
 
-## Windows x86. Using Microsoft Visual Studio 6
-
-Microsoft Visual Studio 6 is very old, but if you still have it installed, you can use it to build this hlsdk. There are no project files, but two `.bat` files, for server and client libraries. They require variable **MSVCDir** to be set to the installation path of Visual Studio:
-
-```
-set MSVCDir=C:\Program Files\Microsoft Visual Studio
-cd dlls && compile.bat && cd ../cl_dll && compile.bat
-```
-
-`hl.dll` and `client.dll` will appear in `dlls/` and `cl_dll/` diretories. The libraries built with msvc6 should be compatible with Windows XP.
-
 ## Linux x86. Portable steam-compatible build using Steam Runtime in chroot
 
 ### Prerequisites
