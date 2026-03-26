@@ -31,6 +31,7 @@
 #include "weapons.h"
 #include "gamerules.h"
 #include "soundent.h"
+#include "byteswap.h"
 
 void UTIL_CreateWarpball( edict_t *ent, Vector vecSrc, float spawnVol, float spawnSoundRad, int beamCount, int spawnType, float spriteScale, int lightRad )
 {
@@ -1986,17 +1987,17 @@ void CSave::WriteData( const char *pname, int size, const char *pdata )
 
 void CSave::WriteShort( const char *pname, const short *data, int count )
 {
-	BufferField( pname, sizeof(short) * count, (const char *)data );
+	BufferField( pname, sizeof(short) * count, (const char *)data, sizeof(short) );
 }
 
 void CSave::WriteInt( const char *pname, const int *data, int count )
 {
-	BufferField( pname, sizeof(int) * count, (const char *)data );
+	BufferField( pname, sizeof(int) * count, (const char *)data, sizeof(int) );
 }
 
 void CSave::WriteFloat( const char *pname, const float *data, int count )
 {
-	BufferField( pname, sizeof(float) * count, (const char *)data );
+	BufferField( pname, sizeof(float) * count, (const char *)data, sizeof(float) );
 }
 
 void CSave::WriteTime( const char *pname, const float *data, int count )
@@ -2014,7 +2015,7 @@ void CSave::WriteTime( const char *pname, const float *data, int count )
 		if( m_pdata )
 			tmp -= m_pdata->time;
 
-		BufferData( (const char *)&tmp, sizeof(float) );
+		BufferData( (const char *)&tmp, sizeof(float), sizeof(float) );
 		data ++;
 	}
 }
@@ -2062,7 +2063,7 @@ void CSave::WriteVector( const char *pname, const Vector &value )
 void CSave::WriteVector( const char *pname, const float *value, int count )
 {
 	BufferHeader( pname, sizeof(float) * 3 * count );
-	BufferData( (const char *)value, sizeof(float) * 3 * count );
+	BufferData( (const char *)value, sizeof(float) * 3 * count, sizeof(float) );
 }
 
 void CSave::WritePositionVector( const char *pname, const Vector &value )
@@ -2089,7 +2090,7 @@ void CSave::WritePositionVector( const char *pname, const float *value, int coun
 		if( m_pdata && m_pdata->fUseLandmark )
 			tmp = tmp - m_pdata->vecLandmarkOffset;
 
-		BufferData( (const char *)&tmp.x, sizeof(float) * 3 );
+		BufferData( (const char *)&tmp.x, sizeof(float) * 3, sizeof(float) );
 		value += 3;
 	}
 }
@@ -2240,7 +2241,7 @@ int CSave::WriteFields( const char *pname, void *pBaseData, TYPEDESCRIPTION *pFi
 			WriteInt( pTest->fieldName, (int *)pOutputData, pTest->fieldSize );
 			break;
 		case FIELD_SHORT:
-			WriteData( pTest->fieldName, 2 * pTest->fieldSize, ( (char *)pOutputData ) );
+			WriteShort( pTest->fieldName, (short *)pOutputData, pTest->fieldSize );
 			break;
 		case FIELD_CHARACTER:
 			WriteData( pTest->fieldName, pTest->fieldSize, ( (char *)pOutputData ) );
@@ -2278,10 +2279,10 @@ int CSave::DataEmpty( const char *pdata, int size )
 	return 1;
 }
 
-void CSave::BufferField( const char *pname, int size, const char *pdata )
+void CSave::BufferField( const char *pname, int size, const char *pdata, int typesize )
 {
 	BufferHeader( pname, size );
-	BufferData( pdata, size );
+	BufferData( pdata, size, typesize );
 }
 
 void CSave::BufferHeader( const char *pname, int size )
@@ -2289,11 +2290,13 @@ void CSave::BufferHeader( const char *pname, int size )
 	short hashvalue = TokenHash( pname );
 	if( size > 1 << ( sizeof(short) * 8 ) )
 		ALERT( at_error, "CSave :: BufferHeader() size parameter exceeds 'short'!\n" );
-	BufferData( (const char *)&size, sizeof(short) );
-	BufferData( (const char *)&hashvalue, sizeof(short) );
+
+	short shortsize = size;
+	BufferData( (const char *)&shortsize, sizeof(short), sizeof(short) );
+	BufferData( (const char *)&hashvalue, sizeof(short), sizeof(short) );
 }
 
-void CSave::BufferData( const char *pdata, int size )
+void CSave::BufferData( const char *pdata, int size, int typesize )
 {
 	if( !m_pdata )
 		return;
@@ -2306,6 +2309,23 @@ void CSave::BufferData( const char *pdata, int size )
 	}
 
 	memcpy( m_pdata->pCurrentData, pdata, size );
+
+	if ( typesize > 1 )
+	{
+		for ( int i = 0; i < size; i += typesize )
+		{
+			switch ( typesize )
+			{
+				case 2:
+					ULittleToHostSW( *(uint16_t *)( m_pdata->pCurrentData + i ) );
+					break;
+				case 4:
+					ULittleToHostSW( *(uint32_t *)( m_pdata->pCurrentData + i ) );
+					break;
+			}
+		}
+	}
+
 	m_pdata->pCurrentData += size;
 	m_pdata->size += size;
 }
@@ -2352,11 +2372,12 @@ int CRestore::ReadField( void *pBaseData, TYPEDESCRIPTION *pFields, int fieldCou
 					case FIELD_TIME:
 					#if __VFP_FP__
 						memcpy( &timeData, pInputData, 4 );
+						ULittleToHostSW( timeData );
 						// Re-base time variables
 						timeData += time;
 						memcpy( pOutputData, &timeData, 4 );
 					#else
-						timeData = *(float *)pInputData;
+						timeData = ULittleToHost( *(float *)pInputData );
 						// Re-base time variables
 						timeData += time;
 						*( (float *)pOutputData ) = timeData;
@@ -2364,6 +2385,7 @@ int CRestore::ReadField( void *pBaseData, TYPEDESCRIPTION *pFields, int fieldCou
 						break;
 					case FIELD_FLOAT:
 						memcpy( pOutputData, pInputData, 4 );
+						LittleToHostSW( *( (float *)pOutputData ) );
 						break;
 					case FIELD_MODELNAME:
 					case FIELD_SOUNDNAME:
@@ -2397,7 +2419,7 @@ int CRestore::ReadField( void *pBaseData, TYPEDESCRIPTION *pFields, int fieldCou
 						}
 						break;
 					case FIELD_EVARS:
-						entityIndex = *( int *)pInputData;
+						entityIndex = ULittleToHost( *( int *)pInputData );
 						pent = EntityFromIndex( entityIndex );
 						if( pent )
 							*( (entvars_t **)pOutputData ) = VARS( pent );
@@ -2405,7 +2427,7 @@ int CRestore::ReadField( void *pBaseData, TYPEDESCRIPTION *pFields, int fieldCou
 							*( (entvars_t **)pOutputData ) = NULL;
 						break;
 					case FIELD_CLASSPTR:
-						entityIndex = *( int *)pInputData;
+						entityIndex = ULittleToHost( *( int *)pInputData );
 						pent = EntityFromIndex( entityIndex );
 						if( pent )
 							*( (CBaseEntity **)pOutputData ) = CBaseEntity::Instance( pent );
@@ -2413,14 +2435,14 @@ int CRestore::ReadField( void *pBaseData, TYPEDESCRIPTION *pFields, int fieldCou
 							*( (CBaseEntity **)pOutputData ) = NULL;
 						break;
 					case FIELD_EDICT:
-						entityIndex = *(int *)pInputData;
+						entityIndex = ULittleToHost( *(int *)pInputData );
 						pent = EntityFromIndex( entityIndex );
 						*( (edict_t **)pOutputData ) = pent;
 						break;
 					case FIELD_EHANDLE:
 						// Input and Output sizes are different!
 						pInputData = (char*)pData + j * gInputSizes[pTest->fieldType];
-						entityIndex = *(int *)pInputData;
+						entityIndex = ULittleToHost( *(int *)pInputData );
 						pent = EntityFromIndex( entityIndex );
 						if( pent )
 							*( (EHANDLE *)pOutputData ) = CBaseEntity::Instance( pent );
@@ -2428,7 +2450,7 @@ int CRestore::ReadField( void *pBaseData, TYPEDESCRIPTION *pFields, int fieldCou
 							*( (EHANDLE *)pOutputData ) = NULL;
 						break;
 					case FIELD_ENTITY:
-						entityIndex = *(int *)pInputData;
+						entityIndex = ULittleToHost( *(int *)pInputData );
 						pent = EntityFromIndex( entityIndex );
 						if( pent )
 							*( (EOFFSET *)pOutputData ) = OFFSET( pent );
@@ -2438,10 +2460,13 @@ int CRestore::ReadField( void *pBaseData, TYPEDESCRIPTION *pFields, int fieldCou
 					case FIELD_VECTOR:
 						#if __VFP_FP__
 						memcpy( pOutputData, pInputData, sizeof( Vector ) );
+						ULittleToHostSW( ( (float*)pOutputData)[0] );
+						ULittleToHostSW( ( (float*)pOutputData)[1] );
+						ULittleToHostSW( ( (float*)pOutputData)[2] );
 						#else
-						( (float *)pOutputData )[0] = ( (float *)pInputData )[0];
-						( (float *)pOutputData )[1] = ( (float *)pInputData )[1];
-						( (float *)pOutputData )[2] = ( (float *)pInputData )[2];
+						( (float *)pOutputData )[0] = ULittleToHost( ( (float *)pInputData )[0] );
+						( (float *)pOutputData )[1] = ULittleToHost( ( (float *)pInputData )[1] );
+						( (float *)pOutputData )[2] = ULittleToHost( ( (float *)pInputData )[2] );
 						#endif
 						break;
 					case FIELD_POSITION_VECTOR:
@@ -2449,27 +2474,30 @@ int CRestore::ReadField( void *pBaseData, TYPEDESCRIPTION *pFields, int fieldCou
 						{
 							Vector tmp;
 							memcpy( &tmp, pInputData, sizeof( Vector ) );
+							LittleToHostSW( tmp.x );
+							LittleToHostSW( tmp.y );
+							LittleToHostSW( tmp.z );
 							tmp = tmp + position;
 							memcpy( pOutputData, &tmp, sizeof( Vector ) );
 						}
 						#else
-						( (float *)pOutputData )[0] = ( (float *)pInputData )[0] + position.x;
-						( (float *)pOutputData )[1] = ( (float *)pInputData )[1] + position.y;
-						( (float *)pOutputData )[2] = ( (float *)pInputData )[2] + position.z;
+						( (float *)pOutputData )[0] = ULittleToHost( ( (float *)pInputData )[0] ) + position.x;
+						( (float *)pOutputData )[1] = ULittleToHost( ( (float *)pInputData )[1] ) + position.y;
+						( (float *)pOutputData )[2] = ULittleToHost( ( (float *)pInputData )[2] ) + position.z;
 						#endif
 						break;
 					case FIELD_BOOLEAN:
 					case FIELD_INTEGER:
-						*( (int *)pOutputData ) = *(int *)pInputData;
+						*( (int *)pOutputData ) = ULittleToHost( *(int *)pInputData );
 						break;
 					case FIELD_SHORT:
-						*( (short *)pOutputData ) = *(short *)pInputData;
+						*( (short *)pOutputData ) = ULittleToHost( *(short *)pInputData );
 						break;
 					case FIELD_CHARACTER:
 						*( (char *)pOutputData ) = *(char *)pInputData;
 						break;
 					case FIELD_POINTER:
-						*( (void**)pOutputData ) = *(void **)pInputData;
+						*( (void**)pOutputData ) = (void*)ULittleToHost( *(int *)pInputData );
 						break;
 					case FIELD_FUNCTION:
 						if( ( (char *)pInputData )[0] == '\0' )
@@ -2557,7 +2585,7 @@ short CRestore::ReadShort( void )
 
 	BufferReadBytes( (char *)&tmp, sizeof(short) );
 
-	return tmp;
+	return LittleToHost( tmp );
 }
 
 int CRestore::ReadInt( void )
@@ -2566,7 +2594,7 @@ int CRestore::ReadInt( void )
 
 	BufferReadBytes( (char *)&tmp, sizeof(int) );
 
-	return tmp;
+	return LittleToHost( tmp );
 }
 
 int CRestore::ReadNamedInt( const char *pName )
@@ -2574,7 +2602,7 @@ int CRestore::ReadNamedInt( const char *pName )
 	HEADER header;
 
 	BufferReadHeader( &header );
-	return ( (int *)header.pData )[0];
+	return LittleToHost( ( (int *)header.pData )[0] );
 }
 
 char *CRestore::ReadNamedString( const char *pName )
