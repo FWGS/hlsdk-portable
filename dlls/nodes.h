@@ -212,6 +212,11 @@ public:
 		return 0; 
 	}
 
+	void	ByteswapGraph();
+	void	ByteswapNodes();
+	void	ByteswapLinks();
+	void	ByteswapDistInfo();
+	void	ByteswapHashLinks();
 
 	inline	CNode &Node( int i )
 	{

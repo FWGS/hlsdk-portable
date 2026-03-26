@@ -79,6 +79,12 @@ To clone the repository with git type in Git Bash (on Windows) or in terminal (o
 git clone --recursive https://github.com/FWGS/hlsdk-portable
 ```
 
+# CI Builds
+
+Fresh builds is always available in [artifacts](https://github.com/FWGS/hlsdk-portable/actions) for most common platforms and you can download it if you logged in to github.
+
+Builds for all branches and more platforms eventually updates into [hlsdk-mega-build](https://github.com/FWGS/hlsdk-mega-build/releases/tag/continuous) repository.
+
 # Build Instructions
 
 ## Windows x86.
@@ -136,17 +142,6 @@ cmake -G "Visual Studio 16 2019" -A Win32 -B build
 
 After the configuration step, `HLSDK-PORTABLE.sln` should appear in the `build` directory. You can open this solution in Visual Studio and continue developing there.
 
-## Windows x86. Using Microsoft Visual Studio 6
-
-Microsoft Visual Studio 6 is very old, but if you still have it installed, you can use it to build this hlsdk. There are no project files, but two `.bat` files, for server and client libraries. They require variable **MSVCDir** to be set to the installation path of Visual Studio:
-
-```
-set MSVCDir=C:\Program Files\Microsoft Visual Studio
-cd dlls && compile.bat && cd ../cl_dll && compile.bat
-```
-
-`hl.dll` and `client.dll` will appear in `dlls/` and `cl_dll/` diretories. The libraries built with msvc6 should be compatible with Windows XP.
-
 ## Linux x86. Portable steam-compatible build using Steam Runtime in chroot
 
 ### Prerequisites
@@ -188,7 +183,7 @@ sudo apt install cmake build-essential gcc-multilib g++-multilib libsdl2-dev:i38
 
 #### RedHat/Fedora/CentOS:
 ```
-sudo dnf install cmake gcc gcc-c++ glibc-devel.i686 SDL-devel.i686
+sudo dnf install cmake gcc gcc-c++ glibc-devel.i686 SDL2-devel.i686
 ```
 
 ### Building
