@@ -1,5 +1,5 @@
 #  enter command to build launcher:
-#      bash build.sh
+#      bash termuxbuild.sh
 
 # IMPORTANT: LAUNCH THIS SCRIPT ONLY FROM
 # SCRIPT LOCATION, OR YOU WILL FAIL BUILD
@@ -8,25 +8,17 @@
 #
 # edit libname variable, for exammple LIBNAME=mylib
 #
-# open in nano app/src/main/java/su/xash/hlsdk/MainActivity.java
-# and add .putExtra("argv", "-console -dll @mylib") line in code, so launcher
-# will launch your library instead of default hl lib, also replace mylib with
-# your LIBNAME variable, for example .putExtra("argv", "-console -dll @mymod")
-#
 # replace su.xash.hlsdk with your package name(for example su.xash.mymod)
 # in this script and in AndroidManifest.xml file
 # and do the same in app/src/main/java/su/xash/hlsdk/MainActivity.java
 # (you should also replace su/xash/hlsdk folders name regarding your package name
 # example: su/xash/mymod
 #
-# add android.jar file and build folder in .gitignore file before pushing changes
-# if you forked this repo and you want to push it to github
-#
 # if you see cmake build failed: toolchain not found error,
 # you should delete build directory in hlsdk
 #
 # if downloading/extrscting process of ndk was interrupted,
-# delete bit ndk directory and ndk archive file and try again,
+# delete ndk directory and ndk archive file and try again,
 # for android.jar same rule
 #
 
@@ -50,7 +42,7 @@ TOOLS="aapt dx javac cmake apksigner"
 JF="-Xlint:deprecation -source 1.8 -target 1.8\
 	-bootclasspath ${RT}\
 	-classpath ${AJAR} -d build/obj"
-JTF=${WPATH}/java/su/xash/hlsdk/MainActivity.java
+JTF=${WPATH}/java/su/xash/mymod/MainActivity.java
 #java
 
 #dx
@@ -69,14 +61,14 @@ APF=" -I ${AJAR} -f -M build/AndroidManifest.xml \
 ##########
 set -e
 
-for n in aapt dx javac cmake apksigner 7z
+for n in aapt dx javac cmake apksigner 7z build-essential
 do
 if command -v $n >/dev/null 2>&1; then
     echo "$n found"
 else
     echo "$n not found, trying to install tools"
 #    exit 1
-yes | apt install aapt dx openjdk-21 cmake apksigner
+yes | apt install aapt dx openjdk-21 cmake apksigner build-essential
 fi
 done
 
@@ -139,7 +131,7 @@ cd android
 fi
 
 cp ${WPATH}/AndroidManifest.xml build
-sed -i '/<manifest/apackage="su.xash.hlsdk"' build/AndroidManifest.xml
+sed -i '/<manifest/apackage="su.xash.mymod"' build/AndroidManifest.xml
 sed -i '/<\/queries>/a<uses-sdk android:minSdkVersion="3" android:targetSdkVersion="34"\/>' build/AndroidManifest.xml
 #default manifest file not containing this lines, so we just copying into it
 #replace su.xash.hlsdk with your package name, for example su.xash.mymod

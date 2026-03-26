@@ -13,7 +13,7 @@
             android:value="valve" />
 
         <activity
-            android:name="su.xash.hlsdk.MainActivity"
+            android:name="su.xash.mymod.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
