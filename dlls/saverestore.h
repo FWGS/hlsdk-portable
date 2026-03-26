@@ -70,9 +70,9 @@ public:
 
 private:
 	int		DataEmpty( const char *pdata, int size );
-	void	BufferField( const char *pname, int size, const char *pdata );
+	void	BufferField( const char *pname, int size, const char *pdata, int typesize = -1 );
 	void	BufferString( char *pdata, int len );
-	void	BufferData( const char *pdata, int size );
+	void	BufferData( const char *pdata, int size, int typesize = -1 );
 	void	BufferHeader( const char *pname, int size );
 };
 
