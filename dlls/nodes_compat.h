@@ -8,6 +8,7 @@
 #if _GRAPH_VERSION != _GRAPH_VERSION_RETAIL
 
 #include "stdint.h"
+#include "byteswap.h"
 
 typedef int32_t PTR32;
 
@@ -57,14 +58,31 @@ public:
 		other->m_pLinkPool = NULL;
 		other->m_pRouteInfo = NULL;
 
-		other->m_cNodes	= m_cNodes;
-		other->m_cLinks	= m_cLinks;
-		other->m_nRouteInfo	= m_nRouteInfo;
+		other->m_cNodes	= LittleToHost( m_cNodes );
+		other->m_cLinks	= LittleToHost( m_cLinks );
+		other->m_nRouteInfo	= LittleToHost( m_nRouteInfo );
 
 		other->m_di = NULL;
 
 		memcpy( (void *) &other->m_RangeStart, (void *) m_RangeStart,
 				offsetof(class CGraph, m_pHashLinks) - offsetof(class CGraph, m_RangeStart) );
+
+		for ( int i = 0; i < ARRAYSIZE( other->m_RegionMin ); i++ )
+		{
+			for ( int j = 0; j < ARRAYSIZE( other->m_RangeStart[i] ); j++ )
+			{
+				LittleToHostSW( other->m_RangeStart[i][j] );
+				LittleToHostSW( other->m_RangeEnd[i][j] );
+			}
+			
+			LittleToHostSW( other->m_RegionMin[i] );
+			LittleToHostSW( other->m_RegionMax[i] );
+		}
+
+		for ( int i = 0; i < ARRAYSIZE( other->m_HashPrimes ); i++ )
+		{
+			LittleToHostSW( other->m_HashPrimes[i] );
+		}
 
 #if 0	          // replacement routine in case a change in CGraph breaks the above memcpy
 		for (int i = 0; i < 3; ++i)
@@ -105,7 +123,7 @@ public:
 #endif
 
 		other->m_pHashLinks = NULL;
-		other->m_nHashLinks	= m_nHashLinks;
+		other->m_nHashLinks	= LittleToHost( m_nHashLinks );
 
 		other->m_iLastActiveIdleSearch	= m_iLastActiveIdleSearch;
 
@@ -128,14 +146,14 @@ public:
 	float	m_flWeight;
 
 	void copyOverTo(CLink* other) {
-		other->m_iSrcNode	= m_iSrcNode;
-		other->m_iDestNode	= m_iDestNode	;
+		other->m_iSrcNode	= LittleToHost( m_iSrcNode );
+		other->m_iDestNode	= LittleToHost( m_iDestNode );
 		other->m_pLinkEnt	= NULL;
 		for (int i = 0; i < 4; ++i)
 			other->m_szLinkEntModelname[i]	= m_szLinkEntModelname[i];
 //		m_szLinkEntModelname[ 4 ]
-		other->m_afLinkInfo	= m_afLinkInfo;
-		other->m_flWeight	= m_flWeight;
+		other->m_afLinkInfo	= LittleToHost( m_afLinkInfo );
+		other->m_flWeight	= LittleToHost( m_flWeight );
 	}
 };
 
