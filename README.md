@@ -79,6 +79,12 @@ To clone the repository with git type in Git Bash (on Windows) or in terminal (o
 git clone --recursive https://github.com/FWGS/hlsdk-portable
 ```
 
+# CI Builds
+
+Fresh builds is always available in [artifacts](https://github.com/FWGS/hlsdk-portable/actions) for most common platforms and you can download it if you logged in to github.
+
+Builds for all branches and more platforms eventually updates into [hlsdk-mega-build](https://github.com/FWGS/hlsdk-mega-build/releases/tag/continuous) repository.
+
 # Build Instructions
 
 ## Windows x86.
