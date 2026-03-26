@@ -65,6 +65,7 @@ DEFINES = [
 'XASH_WASM',
 'XASH_SUNOS',
 'XASH_HURD',
+'XASH_S390X',
 ]
 
 def configure(conf):
@@ -174,6 +175,8 @@ def configure(conf):
 			buildarch += "64"
 		else:
 			buildarch += "32"
+	elif conf.env.XASH_S390X:
+		buildarch = "s390x"
 	else:
 		raise conf.fatal("Place your architecture name in build.h and library_naming.py!\n"
 			"If this is a mistake, try to fix conditions above and report a bug")
