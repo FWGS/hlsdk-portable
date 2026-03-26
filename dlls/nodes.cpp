@@ -24,6 +24,7 @@
 #include	"nodes_compat.h"
 #include	"animation.h"
 #include	"doors.h"
+#include	"byteswap.h"
 
 #define	HULL_STEP_SIZE 16// how far the test hull moves on each step
 #define	NODE_HEIGHT	8	// how high to lift nodes off the ground after we drop them all (make stair/ramp mapping easier)
@@ -2396,7 +2397,7 @@ int CGraph::FLoadGraph( const char *szMapName )
 	length -= sizeof(int);
 	if( length < 0 )
 		goto ShortFile;
-	iVersion = *(int *) pMemFile;
+	iVersion = LittleToHost( *(int *) pMemFile );
 	pMemFile += sizeof(int);
 
 	if( iVersion == GRAPH_VERSION || iVersion == GRAPH_VERSION_RETAIL )
@@ -2418,6 +2419,8 @@ int CGraph::FLoadGraph( const char *szMapName )
 			m_di = NULL;
 			m_pRouteInfo = NULL;
 			m_pHashLinks = NULL;
+
+			ByteswapGraph();
 		}
 #if _GRAPH_VERSION != _GRAPH_VERSION_RETAIL
 		else
@@ -2449,6 +2452,8 @@ int CGraph::FLoadGraph( const char *szMapName )
 		memcpy( m_pNodes, pMemFile, sizeof(CNode) * m_cNodes );
 		pMemFile += sizeof(CNode) * m_cNodes;
 
+		ByteswapNodes();
+
 		// Malloc for the link pool
 		//
 		m_pLinkPool = (CLink *)calloc( sizeof(CLink), m_cLinks );
@@ -2468,6 +2473,8 @@ int CGraph::FLoadGraph( const char *szMapName )
 				goto ShortFile;
 			memcpy( m_pLinkPool, pMemFile, sizeof(CLink) * m_cLinks );
 			pMemFile += sizeof(CLink) * m_cLinks;
+
+			ByteswapLinks();
 		}
 #if _GRAPH_VERSION != _GRAPH_VERSION_RETAIL
 		else
@@ -2500,6 +2507,8 @@ int CGraph::FLoadGraph( const char *szMapName )
 			goto ShortFile;
 		memcpy( m_di, pMemFile, sizeof(DIST_INFO) * m_cNodes );
 		pMemFile += sizeof(DIST_INFO) * m_cNodes;
+
+		ByteswapDistInfo();
 
 		// Malloc for the routing info.
 		//
@@ -2542,6 +2551,8 @@ int CGraph::FLoadGraph( const char *szMapName )
 		memcpy( m_pHashLinks, pMemFile, sizeof(short) * m_nHashLinks );
 		// pMemFile += sizeof(short) * m_nHashLinks;
 
+		ByteswapHashLinks();
+
 		// Set the graph present flag, clear the pointers set flag
 		//
 		m_fGraphPresent = TRUE;
@@ -2576,7 +2587,7 @@ NoMemory:
 //=========================================================
 int CGraph::FSaveGraph( const char *szMapName )
 {
-	int iVersion = GRAPH_VERSION;
+	int iVersion = LittleToHost( GRAPH_VERSION );
 	char szFilename[MAX_PATH];
 	FILE *file;
 
@@ -2613,16 +2624,29 @@ int CGraph::FSaveGraph( const char *szMapName )
 		// write the version
 		fwrite( &iVersion, sizeof(int), 1, file );
 
+		ByteswapGraph();
+
 		// write the CGraph class
 		fwrite( this, sizeof(CGraph), 1, file );
+
+		ByteswapGraph();
+		ByteswapNodes();
 
 		// write the nodes
 		fwrite( m_pNodes, sizeof(CNode), m_cNodes, file );
 
+		ByteswapNodes();
+		ByteswapLinks();
+
 		// write the links
 		fwrite( m_pLinkPool, sizeof(CLink), m_cLinks, file );
 
+		ByteswapLinks();
+		ByteswapDistInfo();
+
 		fwrite( m_di, sizeof(DIST_INFO), m_cNodes, file );
+
+		ByteswapDistInfo();
 
 		// Write the route info.
 		//
@@ -2633,7 +2657,11 @@ int CGraph::FSaveGraph( const char *szMapName )
 
 		if( m_pHashLinks && m_nHashLinks )
 		{
+			ByteswapHashLinks();
+
 			fwrite( m_pHashLinks, sizeof(short), m_nHashLinks, file );
+
+			ByteswapHashLinks();
 		}
 		fclose( file );
 		return TRUE;
@@ -3562,6 +3590,91 @@ EnoughSaid:
 	pMyPath = 0;
 	pMyPath2 = 0;
 }
+
+void CGraph::ByteswapGraph()
+{
+	LittleToHostSW( m_cNodes );
+	LittleToHostSW( m_cLinks );
+	LittleToHostSW( m_nRouteInfo );
+
+	for ( int i = 0; i < ARRAYSIZE( m_RangeStart ); i++ )
+	{
+		for ( int j = 0; j < ARRAYSIZE( m_RangeStart[i] ); j++ )
+		{
+			LittleToHostSW( m_RangeStart[i][j] );
+			LittleToHostSW( m_RangeEnd[i][j] );
+		}
+		
+		LittleToHostSW( m_RegionMin[i] );
+		LittleToHostSW( m_RegionMax[i] );
+	}
+
+	LittleToHostSW( m_nHashLinks );
+
+	for ( int i = 0; i < ARRAYSIZE( m_HashPrimes ); i++ )
+	{
+		LittleToHostSW( m_HashPrimes[i] );
+	}
+}
+
+void CGraph::ByteswapNodes()
+{
+	for ( int i = 0; i < m_cNodes; i++ )
+	{
+		LittleToHostSW( m_pNodes[i].m_vecOrigin.x );
+		LittleToHostSW( m_pNodes[i].m_vecOrigin.y );
+		LittleToHostSW( m_pNodes[i].m_vecOrigin.z );
+		LittleToHostSW( m_pNodes[i].m_vecOriginPeek.x );
+		LittleToHostSW( m_pNodes[i].m_vecOriginPeek.y );
+		LittleToHostSW( m_pNodes[i].m_vecOriginPeek.z );
+		LittleToHostSW( m_pNodes[i].m_afNodeInfo );
+		LittleToHostSW( m_pNodes[i].m_cNumLinks );
+		LittleToHostSW( m_pNodes[i].m_iFirstLink );
+		
+		for ( int j = 0; j < ARRAYSIZE( m_pNodes[i].m_pNextBestNode ); j++ )
+		{
+			LittleToHostSW( m_pNodes[i].m_pNextBestNode[j][0] );
+			LittleToHostSW( m_pNodes[i].m_pNextBestNode[j][1] );
+		}
+		
+		LittleToHostSW( m_pNodes[i].m_flClosestSoFar );
+		LittleToHostSW( m_pNodes[i].m_iPreviousNode );
+		LittleToHostSW( m_pNodes[i].m_sHintType );
+		LittleToHostSW( m_pNodes[i].m_sHintActivity );
+		LittleToHostSW( m_pNodes[i].m_flHintYaw );
+	}
+}
+
+void CGraph::ByteswapLinks()
+{
+	for ( int i = 0; i < m_cLinks; i++ )
+	{
+		LittleToHostSW( m_pLinkPool[i].m_iSrcNode );
+		LittleToHostSW( m_pLinkPool[i].m_iDestNode );
+		LittleToHostSW( m_pLinkPool[i].m_afLinkInfo );
+		LittleToHostSW( m_pLinkPool[i].m_flWeight );
+	}
+}
+
+void CGraph::ByteswapDistInfo()
+{
+	for ( int i = 0; i < m_cNodes; i++ )
+	{
+		LittleToHostSW( m_di[i].m_SortedBy[0] );
+		LittleToHostSW( m_di[i].m_SortedBy[1] );
+		LittleToHostSW( m_di[i].m_SortedBy[2] );
+		LittleToHostSW( m_di[i].m_CheckedEvent );
+	}
+}
+
+void CGraph::ByteswapHashLinks()
+{
+	for ( int i = 0; i < m_nHashLinks; i++ )
+	{
+		LittleToHostSW( m_pHashLinks[i] );
+	}
+}
+
 
 //=========================================================
 // CNodeViewer - Draws a graph of the shorted path from all nodes
