@@ -17,6 +17,7 @@
 #include "cl_entity.h"
 #include "dlight.h"
 #include "triangleapi.h"
+#include "eiface.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -26,6 +27,8 @@
 
 #include "StudioModelRenderer.h"
 #include "GameStudioModelRenderer.h"
+
+#include "byteswap.h"
 
 // Global engine <-> studio model rendering code interface
 engine_studio_api_t IEngineStudio;
@@ -213,30 +216,30 @@ void CStudioModelRenderer::StudioCalcBoneQuaterion( int frame, float s, mstudiob
 			// Bah, missing blend!
 			if( panimvalue->num.valid > k )
 			{
-				angle1[j] = panimvalue[k + 1].value;
+				angle1[j] = LittleToHost( panimvalue[k + 1].value );
 
 				if( panimvalue->num.valid > k + 1 )
 				{
-					angle2[j] = panimvalue[k + 2].value;
+					angle2[j] = LittleToHost( panimvalue[k + 2].value );
 				}
 				else
 				{
 					if( panimvalue->num.total > k + 1 )
 						angle2[j] = angle1[j];
 					else
-						angle2[j] = panimvalue[panimvalue->num.valid + 2].value;
+						angle2[j] = LittleToHost( panimvalue[panimvalue->num.valid + 2].value );
 				}
 			}
 			else
 			{
-				angle1[j] = panimvalue[panimvalue->num.valid].value;
+				angle1[j] = LittleToHost( panimvalue[panimvalue->num.valid].value );
 				if( panimvalue->num.total > k + 1 )
 				{
 					angle2[j] = angle1[j];
 				}
 				else
 				{
-					angle2[j] = panimvalue[panimvalue->num.valid + 2].value;
+					angle2[j] = LittleToHost( panimvalue[panimvalue->num.valid + 2].value );
 				}
 			}
 			angle1[j] = pbone->value[j+3] + angle1[j] * pbone->scale[j + 3];
@@ -303,11 +306,11 @@ void CStudioModelRenderer::StudioCalcBonePosition( int frame, float s, mstudiobo
 				// and there's more data in the span
 				if( panimvalue->num.valid > k + 1 )
 				{
-					pos[j] += ( panimvalue[k + 1].value * ( 1.0f - s ) + s * panimvalue[k + 2].value ) * pbone->scale[j];
+					pos[j] += ( LittleToHost( panimvalue[k + 1].value ) * ( 1.0f - s ) + s * LittleToHost( panimvalue[k + 2].value ) ) * pbone->scale[j];
 				}
 				else
 				{
-					pos[j] += panimvalue[k + 1].value * pbone->scale[j];
+					pos[j] += LittleToHost( panimvalue[k + 1].value ) * pbone->scale[j];
 				}
 			}
 			else
@@ -315,11 +318,11 @@ void CStudioModelRenderer::StudioCalcBonePosition( int frame, float s, mstudiobo
 				// are we at the end of the repeating values section and there's another section with data?
 				if( panimvalue->num.total <= k + 1 )
 				{
-					pos[j] += ( panimvalue[panimvalue->num.valid].value * ( 1.0f - s ) + s * panimvalue[panimvalue->num.valid + 2].value ) * pbone->scale[j];
+					pos[j] += ( LittleToHost( panimvalue[panimvalue->num.valid].value ) * ( 1.0f - s ) + s * LittleToHost( panimvalue[panimvalue->num.valid + 2].value ) ) * pbone->scale[j];
 				}
 				else
 				{
-					pos[j] += panimvalue[panimvalue->num.valid].value * pbone->scale[j];
+					pos[j] += LittleToHost( panimvalue[panimvalue->num.valid].value ) * pbone->scale[j];
 				}
 			}
 		}
@@ -404,8 +407,28 @@ mstudioanim_t *CStudioModelRenderer::StudioGetAnim( model_t *m_pSubModel, mstudi
 
 	if( !IEngineStudio.Cache_Check( (struct cache_user_s *)&( paSequences[pseqdesc->seqgroup] ) ) )
 	{
+		mstudioseqdesc_t *pseqdesc2 = (mstudioseqdesc_t *)( (byte *)m_pStudioHeader + m_pStudioHeader->seqindex );
 		gEngfuncs.Con_DPrintf("loading %s\n", pseqgroup->name );
 		IEngineStudio.LoadCacheFile( pseqgroup->name, (struct cache_user_s *)&paSequences[pseqdesc->seqgroup] );
+		
+		for ( int i = 0; i < m_pStudioHeader->numseq; i++ )
+		{
+			if ( pseqdesc2[i].seqgroup == pseqdesc->seqgroup )
+			{
+				mstudioanim_t *panim = (mstudioanim_t *)( (byte *)paSequences[pseqdesc->seqgroup].data + pseqdesc2[i].animindex );
+				for ( int j = 0; j < pseqdesc2[i].numblends; j++ )
+				{
+					for ( int k = 0; k < m_pStudioHeader->numbones; k++ )
+					{
+						for ( int l = 0; l < ARRAYSIZE( panim->offset ); l++ )
+						{
+							LittleToHostSW( panim->offset[l] );
+						}
+						panim++;
+					}
+				}
+			}
+		}
 	}
 	return (mstudioanim_t *)( (byte *)paSequences[pseqdesc->seqgroup].data + pseqdesc->animindex );
 }
