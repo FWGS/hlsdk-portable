@@ -605,6 +605,10 @@ void ClientCommand( edict_t *pEntity )
 		if( pPlayer->IsObserver() )
 			pPlayer->Observer_FindNextPlayer( atoi( CMD_ARGV( 1 ) ) ? true : false );
 	}
+	else if (FStrEq(pcmd, "cl_version"))
+	{
+		ClientPrint(pev, HUD_PRINTNOTIFY, "Half-Life: Insecure\nVersion 1.5\nTEST BUILD\n");
+	}
 	else if( g_pGameRules->ClientCommand( GetClassPtr( (CBasePlayer *)pev ), pcmd ) )
 	{
 		// MenuSelect returns true only if the command is properly handled,  so don't print a warning
@@ -1683,6 +1687,8 @@ int GetWeaponData( struct edict_s *player, struct weapon_data_s *info )
 						item->iuser1			= gun->m_chargeReady;
 						item->iuser2			= gun->m_fInAttack;
 						item->iuser3			= gun->m_fireState;
+
+						gun->GetWeaponData(*item);
 
 						//item->m_flPumpTime		= max( gun->m_flPumpTime, -0.001 );
 					}

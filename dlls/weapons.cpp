@@ -165,10 +165,15 @@ void DecalGunshot( TraceResult *pTrace, int iBulletType )
 		{
 		case BULLET_PLAYER_9MM:
 		case BULLET_MONSTER_9MM:
+		case BULLET_PLAYER_556:
+		case BULLET_PLAYER_762:
+		case BULLET_MONSTER_556:
+		case BULLET_MONSTER_762:
 		case BULLET_PLAYER_MP5:
 		case BULLET_MONSTER_MP5:
 		case BULLET_PLAYER_BUCKSHOT:
 		case BULLET_PLAYER_357:
+		case BULLET_PLAYER_EAGLE:
 		default:
 			// smoke and decal
 			UTIL_GunshotDecalTrace( pTrace, DamageDecal( pEntity, DMG_BULLET ) );
@@ -223,10 +228,8 @@ void ExplodeModel( const Vector &vecOrigin, float speed, int model, int count )
 }
 #endif
 
-int giAmmoIndex = 0;
-
 // Precaches the ammo and queues the ammo info for sending to clients
-void AddAmmoNameToAmmoRegistry( const char *szAmmoname )
+void AddAmmoNameToAmmoRegistry(const char* szAmmoname, const char* weaponName)
 {
 	// make sure it's not already in the registry
 	for( int i = 0; i < MAX_AMMO_SLOTS; i++ )
@@ -245,6 +248,7 @@ void AddAmmoNameToAmmoRegistry( const char *szAmmoname )
 
 	CBasePlayerItem::AmmoInfoArray[giAmmoIndex].pszName = szAmmoname;
 	CBasePlayerItem::AmmoInfoArray[giAmmoIndex].iId = giAmmoIndex;   // yes, this info is redundant
+	CBasePlayerItem::AmmoInfoArray[giAmmoIndex].WeaponName = weaponName;
 }
 
 // Precaches the weapon and queues the weapon info for sending to clients
@@ -269,14 +273,16 @@ void UTIL_PrecacheOtherWeapon( const char *szClassname )
 		{
 			CBasePlayerItem::ItemInfoArray[II.iId] = II;
 
+			const char* weaponName = ((II.iFlags & ITEM_FLAG_EXHAUSTIBLE) != 0) ? STRING(pEntity->pev->classname) : nullptr;
+
 			if( II.pszAmmo1 && *II.pszAmmo1 )
 			{
-				AddAmmoNameToAmmoRegistry( II.pszAmmo1 );
+				AddAmmoNameToAmmoRegistry( II.pszAmmo1, weaponName );
 			}
 
 			if( II.pszAmmo2 && *II.pszAmmo2 )
 			{
-				AddAmmoNameToAmmoRegistry( II.pszAmmo2 );
+				AddAmmoNameToAmmoRegistry( II.pszAmmo2, weaponName );
 			}
 		}
 	}
@@ -294,12 +300,17 @@ void W_Precache( void )
 	// custom items...
 
 	// common world objects
-	UTIL_PrecacheOther( "item_suit" );
-	UTIL_PrecacheOther( "item_healthkit" );
-	UTIL_PrecacheOther( "item_battery" );
-	UTIL_PrecacheOther( "item_antidote" );
-	UTIL_PrecacheOther( "item_security" );
-	UTIL_PrecacheOther( "item_longjump" );
+	UTIL_PrecacheOther("item_suit");
+	UTIL_PrecacheOther("item_battery");
+	UTIL_PrecacheOther("item_flashlight");
+	UTIL_PrecacheOther("item_armorvest");
+	UTIL_PrecacheOther("item_armorplate");
+	UTIL_PrecacheOther("item_helmet");
+	UTIL_PrecacheOther("item_antidote");
+	UTIL_PrecacheOther("item_keycard");
+	UTIL_PrecacheOther("item_redcard");
+	UTIL_PrecacheOther("item_longjump");
+	UTIL_PrecacheOther("item_c4");
 
 	// shotgun
 	UTIL_PrecacheOtherWeapon( "weapon_shotgun" );
@@ -307,6 +318,9 @@ void W_Precache( void )
 
 	// crowbar
 	UTIL_PrecacheOtherWeapon( "weapon_crowbar" );
+
+	// knife
+	UTIL_PrecacheOtherWeapon("weapon_knife");
 
 	// glock
 	UTIL_PrecacheOtherWeapon( "weapon_9mmhandgun" );
@@ -324,6 +338,9 @@ void W_Precache( void )
 	// python
 	UTIL_PrecacheOtherWeapon( "weapon_357" );
 	UTIL_PrecacheOther( "ammo_357" );
+
+	// eagle
+	UTIL_PrecacheOtherWeapon("weapon_eagle");
 
 	// gauss
 	UTIL_PrecacheOtherWeapon( "weapon_gauss" );
@@ -354,6 +371,17 @@ void W_Precache( void )
 
 	// hornetgun
 	UTIL_PrecacheOtherWeapon( "weapon_hornetgun" );
+
+	// m249 saw
+	UTIL_PrecacheOtherWeapon("weapon_m249");
+	UTIL_PrecacheOther("ammo_556");	
+	
+	// sniper rifle
+	UTIL_PrecacheOtherWeapon("weapon_sniperrifle");
+	UTIL_PrecacheOther("ammo_762");
+
+	// penguin grenade
+	UTIL_PrecacheOtherWeapon("weapon_penguin");
 
 	if( g_pGameRules->IsDeathmatch() )
 	{
@@ -1622,6 +1650,7 @@ TYPEDESCRIPTION	CShotgun::m_SaveData[] =
 
 IMPLEMENT_SAVERESTORE( CShotgun, CBasePlayerWeapon )
 
+/*
 TYPEDESCRIPTION	CGauss::m_SaveData[] =
 {
 	DEFINE_FIELD( CGauss, m_fInAttack, FIELD_INTEGER ),
@@ -1632,6 +1661,7 @@ TYPEDESCRIPTION	CGauss::m_SaveData[] =
 };
 
 IMPLEMENT_SAVERESTORE( CGauss, CBasePlayerWeapon )
+*/
 
 TYPEDESCRIPTION	CEgon::m_SaveData[] =
 {
@@ -1647,17 +1677,39 @@ TYPEDESCRIPTION	CEgon::m_SaveData[] =
 
 IMPLEMENT_SAVERESTORE( CEgon, CBasePlayerWeapon )
 
-TYPEDESCRIPTION CHgun::m_SaveData[] =
+/*TYPEDESCRIPTION CHgun::m_SaveData[] =
 {
 	DEFINE_FIELD( CHgun, m_flRechargeTime, FIELD_TIME ),
 	DEFINE_FIELD( CHgun, m_iFirePhase, FIELD_INTEGER ),
 };
 
 IMPLEMENT_SAVERESTORE( CHgun, CBasePlayerWeapon )
-
+*/
 TYPEDESCRIPTION	CSatchel::m_SaveData[] = 
 {
 	DEFINE_FIELD( CSatchel, m_chargeReady, FIELD_INTEGER ),
 };
 
 IMPLEMENT_SAVERESTORE( CSatchel, CBasePlayerWeapon )
+
+TYPEDESCRIPTION CGaussMK2::m_SaveData[] =
+	{
+		DEFINE_FIELD(CGaussMK2, m_fInAttack, FIELD_INTEGER),
+		//	DEFINE_FIELD( CGaussMK2, m_flStartCharge, FIELD_TIME ),
+		//	DEFINE_FIELD( CGaussMK2, m_flPlayAftershock, FIELD_TIME ),
+		//	DEFINE_FIELD( CGaussMK2, m_flNextAmmoBurn, FIELD_TIME ),
+		DEFINE_FIELD(CGaussMK2, m_fPrimaryFire, FIELD_BOOLEAN),
+};
+IMPLEMENT_SAVERESTORE(CGaussMK2, CBasePlayerWeapon);
+
+TYPEDESCRIPTION	CKnife::m_SaveData[] =
+{
+	DEFINE_FIELD(CKnife, m_fInAttack, FIELD_INTEGER),
+};
+IMPLEMENT_SAVERESTORE(CKnife, CBasePlayerWeapon);
+
+TYPEDESCRIPTION CEagle::m_SaveData[] =
+{
+	DEFINE_FIELD(CEagle, m_fSpotActive, FIELD_BOOLEAN),
+};
+IMPLEMENT_SAVERESTORE(CEagle, CBasePlayerWeapon);

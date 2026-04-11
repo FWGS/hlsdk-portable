@@ -351,20 +351,20 @@ void CHudAmmo::Think( void )
 	if( gHUD.m_fPlayerDead )
 		return;
 
-	if( gHUD.m_iWeaponBits != gWR.iOldWeaponBits )
+	if (gHUD.m_iWeaponBits != gWR.iOldWeaponBits)
 	{
 		gWR.iOldWeaponBits = gHUD.m_iWeaponBits;
 
-		for( int i = MAX_WEAPONS-1; i > 0; i-- )
+		for (int i = MAX_WEAPONS - 1; i > 0; i--)
 		{
-			WEAPON *p = gWR.GetWeapon( i );
+			WEAPON* p = gWR.GetWeapon(i);
 
-			if( p && p->iId )
+			if (p && WEAPON_NONE != p->iId)
 			{
-				if( gHUD.m_iWeaponBits & ( 1 << p->iId ) )
-					gWR.PickupWeapon( p );
+				if (gHUD.HasWeapon(p->iId))
+					gWR.PickupWeapon(p);
 				else
-					gWR.DropWeapon( p );
+					gWR.DropWeapon(p);
 			}
 		}
 	}
@@ -428,10 +428,11 @@ void WeaponsResource::SelectSlot( int iSlot, int fAdvance, int iDirection )
 	if( gHUD.m_fPlayerDead || gHUD.m_iHideHUDDisplay & ( HIDEHUD_WEAPONS | HIDEHUD_ALL ) )
 		return;
 
-	if ( !( gHUD.m_iWeaponBits & ( 1 << ( WEAPON_SUIT ) ) ) )
+	
+	if (!gHUD.HasSuit())
 		return;
 
-	if( ! ( gHUD.m_iWeaponBits & ~( 1 << ( WEAPON_SUIT ) ) ) )
+	if (!gHUD.HasAnyWeapons())
 		return;
 
 	WEAPON *p = NULL;
@@ -853,7 +854,7 @@ int CHudAmmo::Draw( float flTime )
 	int a, x, y, r, g, b;
 	int AmmoWidth;
 
-	if( !( gHUD.m_iWeaponBits & ( 1 << ( WEAPON_SUIT ) ) ) )
+	if (!gHUD.HasSuit())
 		return 1;
 
 	if( ( gHUD.m_iHideHUDDisplay & ( HIDEHUD_WEAPONS | HIDEHUD_ALL ) ) )

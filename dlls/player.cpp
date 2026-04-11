@@ -96,6 +96,7 @@ TYPEDESCRIPTION	CBasePlayer::m_playerSaveData[] =
 	DEFINE_ARRAY( CBasePlayer, m_rgpPlayerItems, FIELD_CLASSPTR, MAX_ITEM_TYPES ),
 	DEFINE_FIELD( CBasePlayer, m_pActiveItem, FIELD_CLASSPTR ),
 	DEFINE_FIELD( CBasePlayer, m_pLastItem, FIELD_CLASSPTR ),
+	DEFINE_FIELD( CBasePlayer, m_WeaponBits, FIELD_INT64 ),
 
 	DEFINE_ARRAY( CBasePlayer, m_rgAmmo, FIELD_INTEGER, MAX_AMMO_SLOTS ),
 	DEFINE_FIELD( CBasePlayer, m_idrowndmg, FIELD_INTEGER ),
@@ -185,6 +186,8 @@ int gmsgTeamNames = 0;
 int gmsgStatusText = 0;
 int gmsgStatusValue = 0;
 
+int gmsgWeapons = 0;
+
 void LinkUserMessages( void )
 {
 	// Already taken care of?
@@ -230,6 +233,8 @@ void LinkUserMessages( void )
 
 	gmsgStatusText = REG_USER_MSG( "StatusText", -1 );
 	gmsgStatusValue = REG_USER_MSG( "StatusValue", 3 );
+
+	gmsgWeapons = REG_USER_MSG("Weapons", 8);
 }
 
 LINK_ENTITY_TO_CLASS( player, CBasePlayer )
@@ -854,14 +859,18 @@ void CBasePlayer::RemoveAllItems( BOOL removeSuit )
 	pev->viewmodel = 0;
 	pev->weaponmodel = 0;
 
-	if( removeSuit )
-		pev->weapons = 0;
-	else
-		pev->weapons &= ~WEAPON_ALLWEAPONS;
+	m_WeaponBits = 0ULL;
+
+	if (removeSuit)
+	{ 
+		SetSuit(true);
+	}
 
 	// Turn off flashlight
-	if (removeSuit)
-		ClearBits( pev->effects, EF_DIMLIGHT );
+	if (FlashlightIsOn() == true)
+	{
+		FlashlightTurnOff();
+	}
 
 	for( i = 0; i < MAX_AMMO_SLOTS; i++ )
 		m_rgAmmo[i] = 0;
@@ -1474,7 +1483,7 @@ void CBasePlayer::StartObserver( Vector vecPosition, Vector vecViewAngle )
 	MESSAGE_END();
 
 	// Setup flags
-	m_iHideHUD = ( HIDEHUD_HEALTH | HIDEHUD_FLASHLIGHT | HIDEHUD_WEAPONS );
+	m_iHideHUD = ( HIDEHUD_HEALTH | HIDEHUD_WEAPONS );
 	m_afPhysicsFlags |= PFLAG_OBSERVER;
 	pev->effects = EF_NODRAW;
 	pev->view_ofs = g_vecZero;
@@ -2329,7 +2338,7 @@ void CBasePlayer::CheckSuitUpdate()
 	int isearch = m_iSuitPlayNext;
 
 	// Ignore suit updates if no suit
-	if( !( pev->weapons & ( 1 << WEAPON_SUIT ) ) )
+	if (!HasSuit())
 		return;
 
 	// if in range of radiation source, ping geiger counter
@@ -2390,7 +2399,7 @@ void CBasePlayer::SetSuitUpdate( const char *name, int fgroup, int iNoRepeatTime
 	int iempty = -1;
 
 	// Ignore suit updates if no suit
-	if( !( pev->weapons & ( 1 << WEAPON_SUIT ) ) )
+	if (!HasSuit())
 		return;
 
 	if( g_pGameRules->IsMultiplayer() )
@@ -3427,7 +3436,7 @@ void CBasePlayer::FlashlightTurnOn( void )
 		return;
 	}
 
-	if( (pev->weapons & ( 1 << WEAPON_SUIT ) ) )
+	if( HasFlashlight() )
 	{
 		EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, SOUND_FLASHLIGHT_ON, 1.0, ATTN_NORM, 0, PITCH_NORM );
 		SetBits( pev->effects, EF_DIMLIGHT );
@@ -3467,6 +3476,7 @@ void CBasePlayer::ForceClientDllUpdate( void )
 	m_iClientBattery = -1;
 	m_iClientHideHUD = -1;	// Vit_amiN: forcing to update
 	m_iClientFOV = -1;	// Vit_amiN: force client weapons to be sent
+	m_ClientWeaponBits = 0;
 	m_iTrain |= TRAIN_NEW;  // Force new train message.
 	m_fWeapon = FALSE;          // Force weapon send
 	m_fKnownItem = FALSE;    // Force weaponinit messages.
@@ -3588,32 +3598,33 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		break;
 	case 101:
 		gEvilImpulse101 = TRUE;
-		GiveNamedItem( "item_suit" );
-		GiveNamedItem( "item_battery" );
-		GiveNamedItem( "weapon_crowbar" );
-		GiveNamedItem( "weapon_9mmhandgun" );
-		GiveNamedItem( "ammo_9mmclip" );
-		GiveNamedItem( "weapon_shotgun" );
-		GiveNamedItem( "ammo_buckshot" );
-		GiveNamedItem( "weapon_9mmAR" );
-		GiveNamedItem( "ammo_9mmAR" );
-		GiveNamedItem( "ammo_ARgrenades" );
-		GiveNamedItem( "weapon_handgrenade" );
-		GiveNamedItem( "weapon_tripmine" );
-#if !OEM_BUILD
-		GiveNamedItem( "weapon_357" );
-		GiveNamedItem( "ammo_357" );
-		GiveNamedItem( "weapon_crossbow" );
-		GiveNamedItem( "ammo_crossbow" );
-		GiveNamedItem( "weapon_egon" );
-		GiveNamedItem( "weapon_gauss" );
-		GiveNamedItem( "ammo_gaussclip" );
-		GiveNamedItem( "weapon_rpg" );
-		GiveNamedItem( "ammo_rpgclip" );
-		GiveNamedItem( "weapon_satchel" );
-		GiveNamedItem( "weapon_snark" );
-		GiveNamedItem( "weapon_hornetgun" );
-#endif
+		SetFlashlight(true); // give flashlight through weapon bit
+		GiveNamedItem("item_armorplate");
+		GiveNamedItem("weapon_m249");
+		GiveNamedItem("weapon_sniperrifle");
+		GiveNamedItem("weapon_knife");
+		GiveNamedItem("weapon_9mmhandgun");
+		GiveNamedItem("ammo_9mmclip");
+		GiveNamedItem("weapon_shotgun");
+		GiveNamedItem("ammo_buckshot");
+		GiveNamedItem("weapon_9mmAR");
+		GiveNamedItem("ammo_9mmAR");
+		GiveNamedItem("ammo_ARgrenades");
+		GiveNamedItem("weapon_handgrenade");
+		GiveNamedItem("weapon_tripmine");
+		GiveNamedItem("weapon_357");
+		GiveNamedItem("weapon_eagle");
+		GiveNamedItem("ammo_357");
+		GiveNamedItem("weapon_crossbow");
+		GiveNamedItem("ammo_crossbow");
+		GiveNamedItem("weapon_egon");
+		GiveNamedItem("weapon_gauss");
+		GiveNamedItem("ammo_gaussclip");
+		GiveNamedItem("weapon_rpg");
+		GiveNamedItem("ammo_rpgclip");
+		GiveNamedItem("weapon_satchel");
+		GiveNamedItem("weapon_snark");
+		GiveNamedItem("weapon_hornetgun");
 		gEvilImpulse101 = FALSE;
 		break;
 	case 102:
@@ -3997,6 +4008,8 @@ reflecting all of the HUD state info.
 */
 void CBasePlayer::UpdateClientData( void )
 {
+	const bool fullHUDInitRequired = m_fInitHUD != false;
+
 	if( m_fInitHUD )
 	{
 		m_fInitHUD = FALSE;
@@ -4089,6 +4102,19 @@ void CBasePlayer::UpdateClientData( void )
 		// send "health" update message
 		MESSAGE_BEGIN( MSG_ONE, gmsgBattery, NULL, pev );
 			WRITE_SHORT( (int)pev->armorvalue );
+		MESSAGE_END();
+	}
+
+	if (m_WeaponBits != m_ClientWeaponBits)
+	{
+		m_ClientWeaponBits = m_WeaponBits;
+
+		const int lowerBits = m_WeaponBits & 0xFFFFFFFF;
+		const int upperBits = (m_WeaponBits >> 32) & 0xFFFFFFFF;
+
+		MESSAGE_BEGIN(MSG_ONE, gmsgWeapons, nullptr, pev);
+		WRITE_LONG(lowerBits);
+		WRITE_LONG(upperBits);
 		MESSAGE_END();
 	}
 
@@ -4195,7 +4221,7 @@ void CBasePlayer::UpdateClientData( void )
 		{
 			ItemInfo& II = CBasePlayerItem::ItemInfoArray[i];
 
-			if( !II.iId )
+			if (WEAPON_NONE == II.iId)
 				continue;
 
 			const char *pszName;
@@ -4225,6 +4251,18 @@ void CBasePlayer::UpdateClientData( void )
 	{
 		if( m_rgpPlayerItems[i] )  // each item updates it's successors
 			m_rgpPlayerItems[i]->UpdateClientData( this );
+	}
+
+	//Active item is becoming null, or we're sending all HUD state to client
+	//Only if we're not in Observer mode, which uses the target player's weapon
+	if (pev->iuser1 == OBS_NONE && !m_pActiveItem && ((m_pClientActiveItem != m_pActiveItem) || fullHUDInitRequired))
+	{
+		//Tell ammo hud that we have no weapon selected
+		MESSAGE_BEGIN(MSG_ONE, gmsgCurWeapon, NULL, pev);
+		WRITE_BYTE(0);
+		WRITE_BYTE(0);
+		WRITE_BYTE(0);
+		MESSAGE_END();
 	}
 
 	// Cache and client weapon change
@@ -4746,6 +4784,27 @@ BOOL CBasePlayer::SwitchWeapon( CBasePlayerItem *pWeapon )
 	return TRUE;
 }
 
+void CBasePlayer::EquipWeapon()
+{
+	if (m_pActiveItem)
+	{
+		if ((!FStringNull(pev->viewmodel) || !FStringNull(pev->weaponmodel)))
+		{
+			//Already have a weapon equipped and deployed.
+			return;
+		}
+
+		//Have a weapon equipped, but not deployed.
+		if (m_pActiveItem->CanDeploy() && m_pActiveItem->Deploy())
+		{
+			return;
+		}
+	}
+
+	//No weapon equipped or couldn't deploy it, find a suitable alternative.
+	g_pGameRules->GetNextBestWeapon(this, m_pActiveItem);
+}
+
 //=========================================================
 // Dead HEV suit prop
 //=========================================================
@@ -4814,6 +4873,8 @@ void CDeadHEV::Spawn( void )
 	MonsterInitDead();
 }
 
+#define SF_STRIP_HALFHEALTH		1
+
 class CStripWeapons : public CPointEntity
 {
 public:
@@ -4838,7 +4899,22 @@ void CStripWeapons::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE
 	}
 
 	if( pPlayer )
-		pPlayer->RemoveAllItems( FALSE );
+	{
+		// Insecure: On map insecure01c, the player gets knocked
+		// out of the subway tram during the Xen assault.
+		// so, take out 50% of his/her health, and remove the 
+		// armor and weapons.
+		if (pev->spawnflags & SF_STRIP_HALFHEALTH)
+		{
+			pPlayer->RemoveAllItems(true);
+			pPlayer->pev->health = 50;
+			pPlayer->pev->armorvalue = 0;
+		}
+		else
+		{
+			pPlayer->RemoveAllItems(true);
+		}
+	}
 }
 
 class CRevertSaved : public CPointEntity

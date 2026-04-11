@@ -32,6 +32,8 @@
 #include "gamerules.h"
 #include "byteswap.h"
 
+#include <cstdint>
+
 float UTIL_WeaponTimeBase( void )
 {
 #if CLIENT_WEAPONS
@@ -1601,6 +1603,7 @@ static int gSizes[FIELD_TYPECOUNT] =
 	sizeof(float),		// FIELD_TIME
 	sizeof(int),		// FIELD_MODELNAME
 	sizeof(int),		// FIELD_SOUNDNAME
+	sizeof(std::uint64_t), //FIELD_INT64
 };
 
 // entities has different store size
@@ -1628,6 +1631,7 @@ static int gInputSizes[FIELD_TYPECOUNT] =
 	sizeof(float),		// FIELD_TIME
 	sizeof(int),		// FIELD_MODELNAME
 	sizeof(int),		// FIELD_SOUNDNAME
+	sizeof(std::uint64_t), //FIELD_INT64
 };
 
 // Base class includes common SAVERESTOREDATA pointer, and manages the entity table
@@ -2037,6 +2041,9 @@ int CSave::WriteFields( const char *pname, void *pBaseData, TYPEDESCRIPTION *pFi
 		case FIELD_INTEGER:
 			WriteInt( pTest->fieldName, (int *)pOutputData, pTest->fieldSize );
 			break;
+		case FIELD_INT64:
+			WriteData(pTest->fieldName, sizeof(std::uint64_t) * pTest->fieldSize, ((char*)pOutputData));
+			break;
 		case FIELD_SHORT:
 			WriteShort( pTest->fieldName, (short *)pOutputData, pTest->fieldSize );
 			break;
@@ -2287,6 +2294,9 @@ int CRestore::ReadField( void *pBaseData, TYPEDESCRIPTION *pFields, int fieldCou
 					case FIELD_INTEGER:
 						*( (int *)pOutputData ) = ULittleToHost( *(int *)pInputData );
 						break;
+					case FIELD_INT64:
+						*((std::uint64_t*)pOutputData) = *(std::uint64_t*)pInputData;
+						break;
 					case FIELD_SHORT:
 						*( (short *)pOutputData ) = ULittleToHost( *(short *)pInputData );
 						break;
@@ -2482,4 +2492,14 @@ int CRestore::BufferCheckZString( const char *string )
 			return 1;
 	}
 	return 0;
+}
+
+edict_t* UTIL_GetEntityList()
+{
+	return g_engfuncs.pfnPEntityOfEntOffset(0);
+}
+
+CBaseEntity* UTIL_GetLocalPlayer()
+{
+	return UTIL_PlayerByIndex(1);
 }

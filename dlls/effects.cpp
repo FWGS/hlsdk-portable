@@ -2226,3 +2226,335 @@ void CItemSoda::CanTouch( CBaseEntity *pOther )
 	SetThink( &CBaseEntity::SUB_Remove );
 	pev->nextthink = gpGlobals->time;
 }
+
+//
+// Spirit of Half-Life's env_model
+// Slightly modified to toggle visible/invisible.
+//
+
+#define SF_ENVMODEL_OFF			1
+#define SF_ENVMODEL_DROPTOFLOOR	2
+#define SF_ENVMODEL_SOLID		4
+
+class CEnvModel : public CBaseAnimating
+{
+	void Spawn(void);
+	void Precache(void);
+	void EXPORT Think(void);
+	void KeyValue(KeyValueData* pkvd);
+
+	void TurnOn();
+	void TurnOff();
+	bool IsOn();
+	void Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value) override;
+
+	virtual int	ObjectCaps(void) { return CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
+
+	virtual int Save( CSave &save );
+	virtual int Restore( CRestore &restore );
+	static TYPEDESCRIPTION m_SaveData[];
+
+	void SetSequence(void);
+
+	string_t m_iszSequence_On;
+	int m_iAction_On;
+};
+
+LINK_ENTITY_TO_CLASS(env_model, CEnvModel);
+
+TYPEDESCRIPTION CEnvModel::m_SaveData[] =
+{
+	DEFINE_FIELD(CEnvModel, m_iszSequence_On, FIELD_STRING),
+	DEFINE_FIELD(CEnvModel, m_iAction_On, FIELD_INTEGER),
+};
+
+IMPLEMENT_SAVERESTORE(CEnvModel, CBaseAnimating);
+
+
+void CEnvModel::KeyValue(KeyValueData* pkvd)
+{
+	if (FStrEq(pkvd->szKeyName, "m_iszSequence_On"))
+	{
+		m_iszSequence_On = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = true;
+	}
+	else if (FStrEq(pkvd->szKeyName, "m_iAction_On"))
+	{
+		m_iAction_On = atoi(pkvd->szValue);
+		pkvd->fHandled = true;
+	}
+
+	return CBaseAnimating::KeyValue(pkvd);
+}
+
+void CEnvModel::Spawn(void)
+{
+	Precache();
+	SET_MODEL(ENT(pev), STRING(pev->model));
+	UTIL_SetOrigin(pev, pev->origin);
+
+	if (pev->spawnflags & SF_ENVMODEL_SOLID)
+	{
+		pev->solid = SOLID_SLIDEBOX;
+		UTIL_SetSize(pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX);
+	}
+
+	if (pev->spawnflags & SF_ENVMODEL_DROPTOFLOOR)
+	{
+		pev->origin.z += 1;
+		DROP_TO_FLOOR(ENT(pev));
+	}
+
+	SetBoneController(0, 0);
+	SetBoneController(1, 0);
+
+	SetSequence();
+
+	pev->nextthink = gpGlobals->time + (0.1);
+
+	if (pev->spawnflags & SF_ENVMODEL_OFF)
+		TurnOff();
+}
+
+void CEnvModel::Precache(void)
+{
+	PRECACHE_MODEL((char*)STRING(pev->model));
+}
+
+bool CEnvModel::IsOn()
+{
+	if ((pev->effects & EF_NODRAW) != 0)
+		return false;
+	return true;
+}
+
+
+void CEnvModel::TurnOff()
+{
+	pev->effects |= EF_NODRAW;
+}
+
+
+void CEnvModel::TurnOn()
+{
+	pev->effects &= ~EF_NODRAW;
+}
+
+
+void CEnvModel::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
+{
+	bool active = IsOn();
+
+	if (!ShouldToggle(useType, active))
+		return;
+	if (active)
+	{
+		TurnOff();
+	}
+	else
+	{
+		TurnOn();
+	}
+}
+
+void CEnvModel::Think(void)
+{
+	StudioFrameAdvance(); // set m_fSequenceFinished if necessary
+
+	if (m_fSequenceFinished && !m_fSequenceLoops)
+	{
+		SetSequence();
+	}
+	pev->nextthink = gpGlobals->time + (0.1);
+}
+
+void CEnvModel::SetSequence(void)
+{
+	int iszSeq;
+
+	iszSeq = m_iszSequence_On;
+
+	if (!iszSeq)
+		return;
+	pev->sequence = LookupSequence(STRING(iszSeq));
+
+	if (pev->sequence == -1)
+	{
+		pev->sequence = 0;
+	}
+
+	pev->frame = 0;
+	ResetSequenceInfo();
+
+	m_fSequenceLoops = 0;
+
+	if (m_iAction_On == 1)
+		m_fSequenceLoops = 1;
+	else
+		m_fSequenceLoops = 0;
+}
+
+//
+// Special env_laser for the Xen levels
+// Don't kill any monsters, just kill the player
+// and damage func_guntarget's to open doors.
+//
+
+LINK_ENTITY_TO_CLASS(env_laser_xen, CXenLaser);
+
+TYPEDESCRIPTION CXenLaser::m_SaveData[] =
+{
+	DEFINE_FIELD(CXenLaser, m_pSprite, FIELD_CLASSPTR),
+	DEFINE_FIELD(CXenLaser, m_iszSpriteName, FIELD_STRING),
+	DEFINE_FIELD(CXenLaser, m_firePosition, FIELD_POSITION_VECTOR),
+};
+
+IMPLEMENT_SAVERESTORE(CXenLaser, CLaser);
+
+void CXenLaser::Spawn()
+{
+	if (FStringNull(pev->model))
+	{
+		SetThink(&CLaser::SUB_Remove);
+		return;
+	}
+	pev->solid = SOLID_NOT; // Remove model & collisions
+	Precache();
+
+	SetThink(&CXenLaser::StrikeThink);
+	pev->flags |= FL_CUSTOMENTITY;
+
+	PointsInit(pev->origin, pev->origin);
+
+	if (!m_pSprite && !FStringNull(m_iszSpriteName))
+		m_pSprite = CSprite::SpriteCreate(STRING(m_iszSpriteName), pev->origin, true);
+	else
+		m_pSprite = NULL;
+
+	if (m_pSprite)
+		m_pSprite->SetTransparency(kRenderGlow, pev->rendercolor.x, pev->rendercolor.y, pev->rendercolor.z, pev->renderamt, pev->renderfx);
+
+	if (!FStringNull(pev->targetname) && (pev->spawnflags & SF_BEAM_STARTON) == 0)
+		CLaser::TurnOff();
+	else
+		CLaser::TurnOn();
+}
+
+void CXenLaser::Precache()
+{
+	pev->modelindex = PRECACHE_MODEL((char*)STRING(pev->model));
+	if (!FStringNull(m_iszSpriteName))
+		PRECACHE_MODEL((char*)STRING(m_iszSpriteName));
+}
+
+void CXenLaser::KeyValue(KeyValueData* pkvd)
+{
+	return CLaser::KeyValue(pkvd);
+}
+
+void CXenLaser::StrikeThink()
+{
+	CBaseEntity* pEnd = RandomTargetname(STRING(pev->message));
+
+	if (pEnd)
+		m_firePosition = pEnd->pev->origin;
+
+	TraceResult tr;
+
+	UTIL_TraceLine(pev->origin, m_firePosition, dont_ignore_monsters, NULL, &tr);
+	FireAtPoint(tr);
+	pev->nextthink = gpGlobals->time + 0.1;
+}
+
+void CXenLaser::FireAtPoint(TraceResult& tr)
+{
+	SetEndPos(tr.vecEndPos);
+	if (m_pSprite)
+		UTIL_SetOrigin(m_pSprite->pev, tr.vecEndPos);
+
+	XenBeamDamage(&tr);
+	DoSparks(GetStartPos(), tr.vecEndPos);
+}
+
+void CXenLaser::XenBeamDamage(TraceResult* ptr)
+{
+	CBeam::RelinkBeam();
+	if (ptr->flFraction != 1.0 && ptr->pHit != NULL)
+	{
+		CBaseEntity* pHit = CBaseEntity::Instance(ptr->pHit);
+		if (pHit)
+		{
+			ClearMultiDamage();
+
+			if (pHit->IsPlayer() 
+				|| (FClassnameIs(pHit->pev, "func_guntarget")) 
+				|| (FClassnameIs(pHit->pev, "func_breakable")))
+			{
+				pHit->TraceAttack(pev, pev->dmg * (gpGlobals->time - pev->dmgtime), (ptr->vecEndPos - pev->origin).Normalize(), ptr, DMG_ENERGYBEAM);
+			}
+			ApplyMultiDamage(pev, pev);
+
+			if ((pev->spawnflags & SF_BEAM_DECALS) != 0)
+			{
+				if (pHit->IsBSPModel())
+					UTIL_DecalTrace(ptr, DECAL_BIGSHOT1 + RANDOM_LONG(0, 4));
+			}
+		}
+	}
+	pev->dmgtime = gpGlobals->time;
+}
+
+//
+// env_nukewave -- A nuke wave effect for the ending.
+//
+
+class CEnvNukeWave : public CBaseEntity
+{
+public:
+	void Spawn() override;
+	void Precache() override;
+	void Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
+
+	int m_iWave;
+};
+
+LINK_ENTITY_TO_CLASS(env_nukewave, CEnvNukeWave);
+
+void CEnvNukeWave::Precache()
+{
+	m_iWave = PRECACHE_MODEL("sprites/shockwave.spr");
+}
+
+void CEnvNukeWave::Spawn()
+{
+	Precache();
+
+	pev->solid = SOLID_NOT;
+	pev->effects = EF_NODRAW;
+
+	pev->movetype = MOVETYPE_NONE;
+}
+
+void CEnvNukeWave::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
+{
+	MESSAGE_BEGIN(MSG_PAS, SVC_TEMPENTITY, pev->origin);
+	WRITE_BYTE(TE_BEAMCYLINDER);
+	WRITE_COORD(pev->origin.x);
+	WRITE_COORD(pev->origin.y);
+	WRITE_COORD(pev->origin.z);
+	WRITE_COORD(pev->origin.x);
+	WRITE_COORD(pev->origin.y);
+	WRITE_COORD(3000); // reach damage radius over .3 seconds
+	WRITE_SHORT(m_iWave);
+	WRITE_BYTE(0);	// startframe
+	WRITE_BYTE(0);	// framerate
+	WRITE_BYTE(20);	// life
+	WRITE_BYTE(255); // width
+	WRITE_BYTE(0);	// noise
+	WRITE_BYTE(255);
+	WRITE_BYTE(184);
+	WRITE_BYTE(56);
+	WRITE_BYTE(200); //brightness
+	WRITE_BYTE(0);	 // speed
+	MESSAGE_END();
+}

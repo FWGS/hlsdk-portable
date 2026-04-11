@@ -77,11 +77,21 @@ set (CLDLL_SOURCES
 	../dlls/squeakgrenade.cpp
 	../dlls/tripmine.cpp
 	../dlls/glock.cpp
+	../dlls/insecure/eagle.cpp
+	../dlls/insecure/gauss_new.cpp
+	../dlls/insecure/hornetgun_new.cpp
+	../dlls/insecure/knife.cpp
+	../dlls/insecure/m249.cpp
+	../dlls/insecure/penguingrenade.cpp
+	../dlls/insecure/sniperrifle.cpp
 	ev_hldm.cpp
 	hl/hl_baseentity.cpp
 	hl/hl_events.cpp
 	hl/hl_objects.cpp
 	hl/hl_weapons.cpp
+	insecure/c4.cpp
+	insecure/keycard.cpp
+	insecure/redcard.cpp
 	ammo.cpp
 	ammo_secondary.cpp
 	ammohistory.cpp

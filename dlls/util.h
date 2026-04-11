@@ -570,4 +570,35 @@ int UTIL_SharedRandomLong( unsigned int seed, int low, int high );
 float UTIL_SharedRandomFloat( unsigned int seed, float low, float high );
 
 float UTIL_WeaponTimeBase( void );
+
+/**
+*	@brief Gets the list of entities.
+*	Will return @c nullptr if there is no map loaded.
+*/
+edict_t* UTIL_GetEntityList();
+
+/**
+*	@brief Gets the local player in singleplayer, or @c nullptr in multiplayer.
+*/
+CBaseEntity* UTIL_GetLocalPlayer();
+
+/**
+*	@brief Helper type to run a function when the helper is destroyed.
+*	Useful for running cleanup on scope exit and function return.
+*/
+template <typename Func>
+struct CallOnDestroy
+{
+	const Func Function;
+
+	explicit CallOnDestroy(Func&& function)
+		: Function(function)
+	{
+	}
+
+	~CallOnDestroy()
+	{
+		Function();
+	}
+};
 #endif // UTIL_H

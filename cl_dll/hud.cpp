@@ -134,6 +134,11 @@ int __MsgFunc_Concuss( const char *pszName, int iSize, void *pbuf )
 	return gHUD.MsgFunc_Concuss( pszName, iSize, pbuf );
 }
 
+int __MsgFunc_Weapons(const char* pszName, int iSize, void* pbuf)
+{
+	return gHUD.MsgFunc_Weapons( pszName, iSize, pbuf );
+}
+
 int __MsgFunc_GameMode( const char *pszName, int iSize, void *pbuf )
 {
 	return gHUD.MsgFunc_GameMode( pszName, iSize, pbuf );
@@ -331,6 +336,7 @@ void CHud::Init( void )
 	HOOK_MESSAGE( ViewMode );
 	HOOK_MESSAGE( SetFOV );
 	HOOK_MESSAGE( Concuss );
+	HOOK_MESSAGE( Weapons );
 
 	// TFFree CommandMenu
 	HOOK_COMMAND( "+commandmenu", OpenCommandMenu );
@@ -409,6 +415,9 @@ void CHud::Init( void )
 	m_Train.Init();
 	m_Battery.Init();
 	m_Flash.Init();
+	m_Keycard.Init();
+	m_Redcard.Init();
+	m_C4.Init();
 	m_Message.Init();
 	m_StatusBar.Init();
 	m_DeathNotice.Init();
@@ -608,6 +617,9 @@ void CHud::VidInit( void )
 	m_Train.VidInit();
 	m_Battery.VidInit();
 	m_Flash.VidInit();
+	m_Keycard.VidInit();
+	m_Redcard.VidInit();
+	m_C4.VidInit();
 	m_Message.VidInit();
 	m_StatusBar.VidInit();
 	m_DeathNotice.VidInit();

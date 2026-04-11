@@ -185,6 +185,7 @@ class CItemSuit : public CItem
 	}
 	BOOL MyTouch( CBasePlayer *pPlayer )
 	{
+		/*
 		if( pPlayer->pev->weapons & ( 1<<WEAPON_SUIT ) )
 			return FALSE;
 
@@ -194,7 +195,8 @@ class CItemSuit : public CItem
 			EMIT_SOUND_SUIT( pPlayer->edict(), "!HEV_AAx" );	// long version of suit logon
 
 		pPlayer->pev->weapons |= ( 1 << WEAPON_SUIT );
-		return TRUE;
+		return TRUE;*/
+		return FALSE;
 	}
 };
 
@@ -215,6 +217,7 @@ class CItemBattery : public CItem
 	}
 	BOOL MyTouch( CBasePlayer *pPlayer )
 	{
+		/*
 		if( pPlayer->pev->deadflag != DEAD_NO )
 		{
 			return FALSE;
@@ -248,6 +251,7 @@ class CItemBattery : public CItem
 			pPlayer->SetSuitUpdate( szcharge, FALSE, SUIT_NEXT_IN_30SEC);
 			return TRUE;
 		}
+		*/
 		return FALSE;
 	}
 };
@@ -312,6 +316,7 @@ class CItemLongJump : public CItem
 	}
 	BOOL MyTouch( CBasePlayer *pPlayer )
 	{
+		/*
 		if( pPlayer->m_fLongJump )
 		{
 			return FALSE;
@@ -330,8 +335,347 @@ class CItemLongJump : public CItem
 			EMIT_SOUND_SUIT( pPlayer->edict(), "!HEV_A1" );	// Play the longjump sound UNDONE: Kelly? correct sound?
 			return TRUE;		
 		}
+		*/
 		return FALSE;
 	}
 };
 
 LINK_ENTITY_TO_CLASS( item_longjump, CItemLongJump )
+
+//
+// Half-Life: Insecure Items
+//
+
+class CItemArmorVest : public CItem
+{
+	void Spawn()
+	{
+		Precache();
+		SET_MODEL(ENT(pev), "models/barney_vest.mdl");
+		CItem::Spawn();
+	}
+	void Precache()
+	{
+		PRECACHE_MODEL("models/barney_vest.mdl");
+		PRECACHE_SOUND("items/gunpickup2.wav");
+	}
+	BOOL MyTouch(CBasePlayer* pPlayer)
+	{
+		if (pPlayer->pev->deadflag != DEAD_NO)
+		{
+			return FALSE;
+		}
+
+		if ((pPlayer->pev->armorvalue < MAX_NORMAL_BATTERY) &&
+			pPlayer->HasSuit())
+		{
+			pPlayer->pev->armorvalue += 60;
+			pPlayer->pev->armorvalue = Q_min(pPlayer->pev->armorvalue, MAX_NORMAL_BATTERY);
+
+			EMIT_SOUND(pPlayer->edict(), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM);
+
+			MESSAGE_BEGIN(MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev);
+			WRITE_STRING(STRING(pev->classname));
+			MESSAGE_END();
+
+			return TRUE;
+		}
+		return FALSE;
+	}
+};
+
+LINK_ENTITY_TO_CLASS(item_armorvest, CItemArmorVest);
+
+class CItemHelmet : public CItem
+{
+	void Spawn()
+	{
+		Precache();
+		SET_MODEL(ENT(pev), "models/barney_helmet.mdl");
+		CItem::Spawn();
+	}
+	void Precache()
+	{
+		PRECACHE_MODEL("models/barney_helmet.mdl");
+		PRECACHE_SOUND("items/gunpickup2.wav");
+	}
+	BOOL MyTouch(CBasePlayer* pPlayer)
+	{
+		if (pPlayer->pev->deadflag != DEAD_NO)
+		{
+			return FALSE;
+		}
+
+		if ((pPlayer->pev->armorvalue < MAX_NORMAL_BATTERY) &&
+			pPlayer->HasSuit())
+		{
+			pPlayer->pev->armorvalue += 40;
+			pPlayer->pev->armorvalue = Q_min(pPlayer->pev->armorvalue, MAX_NORMAL_BATTERY);
+
+			EMIT_SOUND(pPlayer->edict(), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM);
+
+			MESSAGE_BEGIN(MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev);
+			WRITE_STRING(STRING(pev->classname));
+			MESSAGE_END();
+
+			return true;
+		}
+		return false;
+	}
+};
+
+LINK_ENTITY_TO_CLASS(item_helmet, CItemHelmet);
+
+class CItemArmorPlate : public CItem
+{
+	void Spawn()
+	{
+		Precache();
+		SET_MODEL(ENT(pev), "models/w_plate.mdl");
+		CItem::Spawn();
+	}
+	void Precache()
+	{
+		PRECACHE_MODEL("models/w_plate.mdl");
+		PRECACHE_SOUND("items/gunpickup2.wav");
+	}
+	BOOL MyTouch(CBasePlayer* pPlayer)
+	{
+		if (pPlayer->pev->deadflag != DEAD_NO)
+		{
+			return FALSE;
+		}
+
+		if ((pPlayer->pev->armorvalue < MAX_NORMAL_BATTERY) &&
+			pPlayer->HasSuit())
+		{
+			pPlayer->pev->armorvalue += 20;
+			pPlayer->pev->armorvalue = Q_min(pPlayer->pev->armorvalue, MAX_NORMAL_BATTERY);
+
+			EMIT_SOUND(pPlayer->edict(), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM);
+
+			MESSAGE_BEGIN(MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev);
+			WRITE_STRING(STRING(pev->classname));
+			MESSAGE_END();
+
+			return TRUE;
+		}
+		return FALSE;
+	}
+};
+
+LINK_ENTITY_TO_CLASS(item_armorplate, CItemArmorPlate);
+
+class CItemFlashlight : public CItem
+{
+	void Spawn()
+	{
+		Precache();
+		SET_MODEL(ENT(pev), "models/w_flashlight.mdl");
+
+		m_pGlow = CSprite::SpriteCreate("sprites/glow03.spr", pev->origin + Vector(0, 0, (pev->mins.z + pev->maxs.z) * 0.5), false);
+		m_pGlow->SetTransparency(kRenderGlow, 255, 255, 255, 255, kRenderFxNoDissipation);
+		m_pGlow->SetScale(0.4);
+		m_pGlow->SetAttachment(edict(), 1);
+
+		CItem::Spawn();
+	}
+	void Precache()
+	{
+		PRECACHE_MODEL("models/w_flashlight.mdl");
+		PRECACHE_MODEL("sprites/glow03.spr");
+		PRECACHE_SOUND("items/gunpickup2.wav");
+	}
+	BOOL MyTouch(CBasePlayer* pPlayer)
+	{
+		if (pPlayer->HasFlashlight())
+			return FALSE;
+
+		EMIT_SOUND(pPlayer->edict(), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM);
+
+		MESSAGE_BEGIN(MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev);
+		WRITE_STRING(STRING(pev->classname));
+		MESSAGE_END();
+
+		if (m_pGlow)
+			m_pGlow->pev->effects |= EF_NODRAW;
+
+		pPlayer->SetFlashlight(true);
+		return TRUE;
+	}
+
+	virtual int Save( CSave &save );
+	virtual int Restore( CRestore &restore );
+	static TYPEDESCRIPTION m_SaveData[];
+
+private:
+	CSprite* m_pGlow;
+};
+
+LINK_ENTITY_TO_CLASS(item_flashlight, CItemFlashlight);
+
+class CItemKeycard : public CItem
+{
+	void Spawn()
+	{
+		Precache();
+		SET_MODEL(ENT(pev), "models/w_security.mdl");
+
+		m_pGlow = CSprite::SpriteCreate("sprites/flare3.spr", pev->origin + Vector(0, 0, (pev->mins.z + pev->maxs.z) * 0.5), false);
+		m_pGlow->SetTransparency(kRenderGlow, 66, 135, 245, 255, kRenderFxNoDissipation);
+		m_pGlow->SetAttachment(edict(), 1);
+
+		CItem::Spawn();
+	}
+	void Precache()
+	{
+		PRECACHE_MODEL("models/w_security.mdl");
+		PRECACHE_MODEL("sprites/flare3.spr");
+		PRECACHE_SOUND("items/gunpickup2.wav");
+	}
+	BOOL MyTouch(CBasePlayer* pPlayer)
+	{
+		if (pPlayer->HasKeycard())
+			return FALSE;
+
+		EMIT_SOUND(pPlayer->edict(), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM);
+
+		MESSAGE_BEGIN(MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev);
+		WRITE_STRING(STRING(pev->classname));
+		MESSAGE_END();
+
+		if (m_pGlow)
+			m_pGlow->pev->effects |= EF_NODRAW;
+
+		pPlayer->ToggleKeycard(true);
+		return TRUE;
+	}
+
+	virtual int Save( CSave &save );
+	virtual int Restore( CRestore &restore );
+	static TYPEDESCRIPTION m_SaveData[];
+
+private:
+	CSprite* m_pGlow;
+};
+
+LINK_ENTITY_TO_CLASS(item_keycard, CItemKeycard);
+
+class CItemRedcard : public CItem
+{
+	void Spawn()
+	{
+		Precache();
+		SET_MODEL(ENT(pev), "models/w_security_red.mdl");
+
+		m_pGlow = CSprite::SpriteCreate("sprites/flare3.spr", pev->origin + Vector(0, 0, (pev->mins.z + pev->maxs.z) * 0.5), false);
+		m_pGlow->SetTransparency(kRenderGlow, 250, 60, 60, 255, kRenderFxNoDissipation);
+		m_pGlow->SetAttachment(edict(), 1);
+
+		CItem::Spawn();
+	}
+	void Precache()
+	{
+		PRECACHE_MODEL("models/w_security_red.mdl");
+		PRECACHE_MODEL("sprites/flare3.spr");
+		PRECACHE_SOUND("items/gunpickup2.wav");
+	}
+	BOOL MyTouch(CBasePlayer* pPlayer)
+	{
+		if (pPlayer->HasRedKeycard())
+			return FALSE;
+
+		EMIT_SOUND(pPlayer->edict(), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM);
+
+		MESSAGE_BEGIN(MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev);
+		WRITE_STRING(STRING(pev->classname));
+		MESSAGE_END();
+
+		if (m_pGlow)
+			m_pGlow->pev->effects |= EF_NODRAW;
+
+		pPlayer->ToggleRedKeycard(true);
+		return TRUE;
+	}
+
+	virtual int Save( CSave &save );
+	virtual int Restore( CRestore &restore );
+	static TYPEDESCRIPTION m_SaveData[];
+
+private:
+	CSprite* m_pGlow;
+};
+
+LINK_ENTITY_TO_CLASS(item_redcard, CItemRedcard);
+
+class CItemC4 : public CItem
+{
+	void Spawn()
+	{
+		Precache();
+		SET_MODEL(ENT(pev), "models/w_c4.mdl");
+		
+		m_pGlow = CSprite::SpriteCreate("sprites/glow01.spr", pev->origin + Vector(0, 0, (pev->mins.z + pev->maxs.z) * 0.5), false);
+		m_pGlow->SetTransparency(kRenderGlow, 255, 0, 0, 255, kRenderFxNoDissipation);
+		m_pGlow->SetScale(0.10);
+		m_pGlow->SetAttachment(edict(), 1);
+		
+		CItem::Spawn();
+	}
+	void Precache()
+	{
+		PRECACHE_MODEL("models/w_c4.mdl");
+		PRECACHE_MODEL("sprites/glow01.spr");
+		PRECACHE_SOUND("items/gunpickup2.wav");
+	}
+	BOOL MyTouch(CBasePlayer* pPlayer)
+	{
+		if (pPlayer->HasC4())
+			return FALSE;
+
+		EMIT_SOUND(pPlayer->edict(), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM);
+
+		MESSAGE_BEGIN(MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev);
+		WRITE_STRING(STRING(pev->classname));
+		MESSAGE_END();
+
+		if (m_pGlow)
+			m_pGlow->pev->effects |= EF_NODRAW;
+
+		pPlayer->ToggleC4(true);
+		return TRUE;
+	}
+
+	virtual int Save( CSave &save );
+	virtual int Restore( CRestore &restore );
+	static TYPEDESCRIPTION m_SaveData[];
+
+private:
+	CSprite* m_pGlow;
+};
+
+LINK_ENTITY_TO_CLASS(item_c4, CItemC4);
+
+TYPEDESCRIPTION CItemC4::m_SaveData[] =
+{
+	DEFINE_FIELD(CItemC4, m_pGlow, FIELD_CLASSPTR),
+};
+IMPLEMENT_SAVERESTORE(CItemC4, CBaseEntity);
+
+TYPEDESCRIPTION CItemKeycard::m_SaveData[] =
+{
+	DEFINE_FIELD(CItemKeycard, m_pGlow, FIELD_CLASSPTR),
+};
+IMPLEMENT_SAVERESTORE(CItemKeycard, CBaseEntity);
+
+TYPEDESCRIPTION CItemRedcard::m_SaveData[] =
+{
+	DEFINE_FIELD(CItemRedcard, m_pGlow, FIELD_CLASSPTR),
+};
+IMPLEMENT_SAVERESTORE(CItemRedcard, CBaseEntity);
+
+TYPEDESCRIPTION CItemFlashlight::m_SaveData[] =
+{
+	DEFINE_FIELD(CItemFlashlight, m_pGlow, FIELD_CLASSPTR),
+};
+IMPLEMENT_SAVERESTORE(CItemFlashlight, CBaseEntity);

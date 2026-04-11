@@ -60,13 +60,18 @@ CMP5 g_Mp5;
 CCrossbow g_Crossbow;
 CShotgun g_Shotgun;
 CRpg g_Rpg;
-CGauss g_Gauss;
+CGaussMK2 g_Gauss;
 CEgon g_Egon;
-CHgun g_HGun;
+CHgunPoison g_HGun;
 CHandGrenade g_HandGren;
 CSatchel g_Satchel;
 CTripmine g_Tripmine;
 CSqueak g_Snark;
+CKnife g_Knife;
+CEagle g_Eagle;
+CM249 g_M249;
+CSniperRifle g_Sniper;
+CPenguin g_Penguin;
 
 /*
 ======================
@@ -109,23 +114,39 @@ Links the raw entity to an entvars_s holder.  If a player is passed in as the ow
 we set up the m_pPlayer field.
 =====================
 */
-void HUD_PrepEntity( CBaseEntity *pEntity, CBasePlayer *pWeaponOwner )
+void HUD_PrepEntity(CBaseEntity* pEntity, CBasePlayer* pWeaponOwner)
 {
-	memset( &ev[num_ents], 0, sizeof(entvars_t) );
+	memset(&ev[num_ents], 0, sizeof(entvars_t));
 	pEntity->pev = &ev[num_ents++];
 
 	pEntity->Precache();
 	pEntity->Spawn();
 
-	if( pWeaponOwner )
+	if (pWeaponOwner)
 	{
 		ItemInfo info;
 
-		( (CBasePlayerWeapon *)pEntity )->m_pPlayer = pWeaponOwner;
+		memset(&info, 0, sizeof(info));
 
-		( (CBasePlayerWeapon *)pEntity )->GetItemInfo( &info );
+		((CBasePlayerWeapon*)pEntity)->m_pPlayer = pWeaponOwner;
 
-		g_pWpns[info.iId] = (CBasePlayerWeapon *)pEntity;
+		((CBasePlayerWeapon*)pEntity)->GetItemInfo(&info);
+
+		CBasePlayerItem::ItemInfoArray[info.iId] = info;
+
+		const char* weaponName = ((info.iFlags & ITEM_FLAG_EXHAUSTIBLE) != 0) ? STRING(pEntity->pev->classname) : nullptr;
+
+		if (info.pszAmmo1 && '\0' != *info.pszAmmo1)
+		{
+			AddAmmoNameToAmmoRegistry(info.pszAmmo1, weaponName);
+		}
+
+		if (info.pszAmmo2 && '\0' != *info.pszAmmo2)
+		{
+			AddAmmoNameToAmmoRegistry(info.pszAmmo2, weaponName);
+		}
+
+		g_pWpns[info.iId] = (CBasePlayerWeapon*)pEntity;
 	}
 }
 
@@ -606,20 +627,25 @@ void HUD_InitClientWeapons( void )
 	HUD_PrepEntity( &player, NULL );
 
 	// Allocate slot(s) for each weapon that we are going to be predicting
-	HUD_PrepEntity( &g_Glock, &player );
-	HUD_PrepEntity( &g_Crowbar, &player );
-	HUD_PrepEntity( &g_Python, &player );
-	HUD_PrepEntity( &g_Mp5, &player );
-	HUD_PrepEntity( &g_Crossbow, &player );
-	HUD_PrepEntity( &g_Shotgun, &player );
-	HUD_PrepEntity( &g_Rpg, &player );
-	HUD_PrepEntity( &g_Gauss, &player );
-	HUD_PrepEntity( &g_Egon, &player );
-	HUD_PrepEntity( &g_HGun, &player );
-	HUD_PrepEntity( &g_HandGren, &player );
-	HUD_PrepEntity( &g_Satchel, &player );
-	HUD_PrepEntity( &g_Tripmine, &player );
-	HUD_PrepEntity( &g_Snark, &player );
+	HUD_PrepEntity(&g_Glock, &player);
+	HUD_PrepEntity(&g_Crowbar, &player);
+	HUD_PrepEntity(&g_Python, &player);
+	HUD_PrepEntity(&g_Mp5, &player);
+	HUD_PrepEntity(&g_Crossbow, &player);
+	HUD_PrepEntity(&g_Shotgun, &player);
+	HUD_PrepEntity(&g_Rpg, &player);
+	HUD_PrepEntity(&g_Gauss, &player);
+	HUD_PrepEntity(&g_Egon, &player);
+	HUD_PrepEntity(&g_HGun, &player);
+	HUD_PrepEntity(&g_HandGren, &player);
+	HUD_PrepEntity(&g_Satchel, &player);
+	HUD_PrepEntity(&g_Tripmine, &player);
+	HUD_PrepEntity(&g_Snark, &player);
+	HUD_PrepEntity(&g_Knife, &player);
+	HUD_PrepEntity(&g_Eagle, &player);
+	HUD_PrepEntity(&g_M249, &player);
+	HUD_PrepEntity(&g_Sniper, &player);
+	HUD_PrepEntity(&g_Penguin, &player);
 }
 
 /*
@@ -681,49 +707,82 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 
 	// Fill in data based on selected weapon
 	// FIXME, make this a method in each weapon?  where you pass in an entity_state_t *?
-	switch( from->client.m_iId )
+	switch (from->client.m_iId)
 	{
 		case WEAPON_CROWBAR:
 			pWeapon = &g_Crowbar;
+			break;	
+		
+		case WEAPON_KNIFE:
+			pWeapon = &g_Knife;
 			break;
+
 		case WEAPON_GLOCK:
 			pWeapon = &g_Glock;
 			break;
+
 		case WEAPON_PYTHON:
 			pWeapon = &g_Python;
+			break;	
+		
+		case WEAPON_EAGLE:
+			pWeapon = &g_Eagle;
 			break;
+
 		case WEAPON_MP5:
 			pWeapon = &g_Mp5;
 			break;
+
 		case WEAPON_CROSSBOW:
 			pWeapon = &g_Crossbow;
 			break;
+
 		case WEAPON_SHOTGUN:
 			pWeapon = &g_Shotgun;
 			break;
+
 		case WEAPON_RPG:
 			pWeapon = &g_Rpg;
 			break;
+
 		case WEAPON_GAUSS:
 			pWeapon = &g_Gauss;
 			break;
+
 		case WEAPON_EGON:
 			pWeapon = &g_Egon;
 			break;
+
 		case WEAPON_HORNETGUN:
 			pWeapon = &g_HGun;
 			break;
+
 		case WEAPON_HANDGRENADE:
 			pWeapon = &g_HandGren;
 			break;
+
 		case WEAPON_SATCHEL:
 			pWeapon = &g_Satchel;
 			break;
+
 		case WEAPON_TRIPMINE:
 			pWeapon = &g_Tripmine;
 			break;
+
 		case WEAPON_SNARK:
 			pWeapon = &g_Snark;
+			break;	
+		
+		case WEAPON_M249:
+			pWeapon = &g_M249;
+			break;	
+		
+		case WEAPON_SNIPERRIFLE:
+			pWeapon = &g_Sniper;
+			break;
+
+		case WEAPON_PENGUIN:
+			pWeapon = &g_Penguin;
 			break;
 	}
 
@@ -780,6 +839,8 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 		pCurrent->m_iPrimaryAmmoType = (int)from->client.vuser4[0];
 		player.m_rgAmmo[pCurrent->m_iPrimaryAmmoType] = (int)from->client.vuser4[1];
 		player.m_rgAmmo[pCurrent->m_iSecondaryAmmoType] = (int)from->client.vuser4[2];
+
+		pCurrent->SetWeaponData(*pfrom);
 	}
 
 	// For random weapon events, use this seed to seed random # generator
@@ -956,6 +1017,10 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 		to->client.vuser4[1] = player.m_rgAmmo[pCurrent->m_iPrimaryAmmoType];
 		to->client.vuser4[2] = player.m_rgAmmo[pCurrent->m_iSecondaryAmmoType];
 
+		pCurrent->DecrementTimers();
+
+		pCurrent->GetWeaponData(*pto);
+		
 /*		if( pto->m_flPumpTime != -9999.0f )
 		{
 			pto->m_flPumpTime -= cmd->msec / 1000.0f;

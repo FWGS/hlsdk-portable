@@ -46,8 +46,8 @@ public:
 		memset( riAmmo, 0, sizeof riAmmo );
 	}
 
-///// WEAPON /////
-	int			iOldWeaponBits;
+	///// WEAPON /////
+	std::uint64_t iOldWeaponBits;
 
 	WEAPON *GetWeapon( int iId ) { return &rgWeapons[iId]; }
 	void AddWeapon( WEAPON *wp ) 
@@ -85,7 +85,7 @@ public:
 
 	int HasAmmo( WEAPON *p );
 
-///// AMMO /////
+	///// AMMO /////
 	AMMO GetAmmo( int iId ) { return iId; }
 
 	void SetAmmo( int iId, int iCount ) { riAmmo[ iId ] = iCount;	}

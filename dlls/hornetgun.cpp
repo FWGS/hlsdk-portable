@@ -24,6 +24,7 @@
 #include "hornet.h"
 #include "gamerules.h"
 
+#if 0
 enum hgun_e
 {
 	HGUN_IDLE1 = 0,
@@ -301,4 +302,5 @@ void CHgun::WeaponIdle( void )
 	}
 	SendWeaponAnim( iAnim );
 }
+#endif
 #endif

@@ -105,68 +105,13 @@ void CRecharge::Precache()
 }
 
 void CRecharge::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
-{ 
-	// Make sure that we have a caller
-	if( !pActivator )
-		return;
-
-	// if it's not a player, ignore
-	if( !pActivator->IsPlayer() )
-		return;
-
-	// if there is no juice left, turn it off
-	if( m_iJuice <= 0 )
+{
+	// You don't have a hazard suit.
+	if (m_flSoundTime <= gpGlobals->time)
 	{
-		pev->frame = 1;			
-		Off();
+		m_flSoundTime = gpGlobals->time + 0.62;
+		EMIT_SOUND(ENT(pev), CHAN_ITEM, "items/suitchargeno1.wav", 0.85, ATTN_NORM);
 	}
-
-	// if the player doesn't have the suit, or there is no juice left, make the deny noise
-	if( ( m_iJuice <= 0 ) || ( !( pActivator->pev->weapons & ( 1 << WEAPON_SUIT ) ) ) || ( ( chargerfix.value ) && ( pActivator->pev->armorvalue == MAX_NORMAL_BATTERY ) ) )
-	{
-		if( m_flSoundTime <= gpGlobals->time )
-		{
-			m_flSoundTime = gpGlobals->time + 0.62f;
-			EMIT_SOUND( ENT( pev ), CHAN_ITEM, "items/suitchargeno1.wav", 0.85, ATTN_NORM );
-		}
-		return;
-	}
-
-	pev->nextthink = pev->ltime + 0.25f;
-	SetThink( &CRecharge::Off );
-
-	// Time to recharge yet?
-	if( m_flNextCharge >= gpGlobals->time )
-		return;
-
-	m_hActivator = pActivator;
-
-	// Play the on sound or the looping charging sound
-	if( !m_iOn )
-	{
-		m_iOn++;
-		EMIT_SOUND( ENT( pev ), CHAN_ITEM, "items/suitchargeok1.wav", 0.85, ATTN_NORM );
-		m_flSoundTime = 0.56f + gpGlobals->time;
-	}
-
-	if( ( m_iOn == 1 ) && ( m_flSoundTime <= gpGlobals->time ) )
-	{
-		m_iOn++;
-		EMIT_SOUND( ENT( pev ), CHAN_STATIC, "items/suitcharge1.wav", 0.85, ATTN_NORM );
-	}
-
-	// charge the player
-	if( m_hActivator->pev->armorvalue < 100 )
-	{
-		m_iJuice--;
-		m_hActivator->pev->armorvalue += 1;
-
-		if( m_hActivator->pev->armorvalue > 100 )
-			m_hActivator->pev->armorvalue = 100;
-	}
-
-	// govern the rate of charge
-	m_flNextCharge = gpGlobals->time + 0.1f;
 }
 
 void CRecharge::Recharge( void )

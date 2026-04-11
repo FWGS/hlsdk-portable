@@ -316,7 +316,7 @@ void SpawnBlood( Vector vecSpot, int bloodColor, float flDamage ) { }
 int DamageDecal( CBaseEntity *pEntity, int bitsDamageType ) { return 0; }
 void DecalGunshot( TraceResult *pTrace, int iBulletType ) { }
 void EjectBrass( const Vector &vecOrigin, const Vector &vecVelocity, float rotation, int model, int soundtype ) { }
-void AddAmmoNameToAmmoRegistry( const char *szAmmoname ) { }
+void AddAmmoNameToAmmoRegistry( const char *szAmmoname, const char* weaponName) { }
 int CBasePlayerItem::Restore( class CRestore & ) { return 1; }
 int CBasePlayerItem::Save( class CSave & ) { return 1; }
 int CBasePlayerWeapon::Restore( class CRestore & ) { return 1; }

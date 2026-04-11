@@ -325,4 +325,25 @@ public:
 	string_t	m_iszSpriteName;
 	Vector	m_firePosition;
 };
+
+class CXenLaser : public CLaser
+{
+public:
+	void Spawn();
+	void Precache();
+	void KeyValue(KeyValueData* pkvd);
+
+	void FireAtPoint(TraceResult& point);
+	void XenBeamDamage(TraceResult* ptr);
+	void EXPORT StrikeThink();
+
+	virtual int Save( CSave &save );
+	virtual int Restore( CRestore &restore );
+	static TYPEDESCRIPTION m_SaveData[];
+
+	CSprite* m_pSprite;
+	int m_iszSpriteName;
+	Vector m_firePosition;
+};
+
 #endif		//EFFECTS_H

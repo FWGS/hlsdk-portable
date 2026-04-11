@@ -27,6 +27,8 @@
 
 */
 
+#if 0
+
 #include	"extdll.h"
 #include	"plane.h"
 #include	"util.h"
@@ -2488,3 +2490,4 @@ void CDeadHGrunt::Spawn( void )
 
 	MonsterInitDead();
 }
+#endif
