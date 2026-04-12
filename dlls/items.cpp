@@ -418,9 +418,9 @@ class CItemHelmet : public CItem
 			WRITE_STRING(STRING(pev->classname));
 			MESSAGE_END();
 
-			return true;
+			return TRUE;
 		}
-		return false;
+		return FALSE;
 	}
 };
 

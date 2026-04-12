@@ -107,14 +107,14 @@ int CHudRedcard::GetRedcardPosition()
     }
 }
 
-int CHudRedcard::GetScreenPosition(int small, int medium, int large)
+int CHudRedcard::GetScreenPosition(int szSmall, int szMedium, int szLarge)
 {
     if (ScreenWidth < 640)
-        return small;
+        return szSmall;
     else if (ScreenWidth < 1280)
-        return small;
+        return szSmall;
     else if (ScreenWidth <= 2560)
-        return medium;
+        return szMedium;
     else
-        return large;
+        return szLarge;
 }

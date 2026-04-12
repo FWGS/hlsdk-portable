@@ -436,7 +436,7 @@ public:
 	int Draw(float flTime);
 	int MsgFunc_HudKeycard(const char* pszName, int iSize, void* pbuf);
 	int GetKeycardPosition();
-	int GetScreenPosition(int small, int medium, int large);
+	int GetScreenPosition(int szSmall, int szMedium, int szLarge);	
 private:
 	wrect_t m_prc1;
 	wrect_t m_prc2;
@@ -453,7 +453,7 @@ public:
 	int Draw(float flTime);
 	int MsgFunc_HudRedcard(const char* pszName, int iSize, void* pbuf);
 	int GetRedcardPosition();
-	int GetScreenPosition(int small, int medium, int large);
+	int GetScreenPosition(int szSmall, int szMedium, int szLarge);
 private:
 	wrect_t m_prc1;
 	wrect_t m_prc2;
@@ -470,7 +470,7 @@ public:
 	int Draw(float flTime);
 	int MsgFunc_HudC4(const char* pszName, int iSize, void* pbuf);
 	int GetC4Position();
-	int GetScreenPosition(int small, int medium, int large);
+	int GetScreenPosition(int szSmall, int szMedium, int szLarge);
 private:
 	wrect_t m_prc1;
 	wrect_t m_prc2;

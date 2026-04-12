@@ -32,7 +32,7 @@ float CGaussMK2::GetFullChargeTime()
 }
 
 #ifdef CLIENT_DLL
-extern bool g_irunninggausspred;
+extern int g_irunninggausspred;
 #endif
 
 void CGaussMK2::Spawn()
