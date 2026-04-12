@@ -138,12 +138,12 @@ void HUD_PrepEntity(CBaseEntity* pEntity, CBasePlayer* pWeaponOwner)
 
 		if (info.pszAmmo1 && '\0' != *info.pszAmmo1)
 		{
-			AddAmmoNameToAmmoRegistry(info.pszAmmo1, weaponName);
+			AddAmmoNameToAmmoRegistry(info.pszAmmo1);
 		}
 
 		if (info.pszAmmo2 && '\0' != *info.pszAmmo2)
 		{
-			AddAmmoNameToAmmoRegistry(info.pszAmmo2, weaponName);
+			AddAmmoNameToAmmoRegistry(info.pszAmmo2);
 		}
 
 		g_pWpns[info.iId] = (CBasePlayerWeapon*)pEntity;
@@ -703,7 +703,11 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 	HUD_InitClientWeapons();
 
 	// Get current clock
-	gpGlobals->time = time;
+	// Use actual time instead of prediction frame time because that time value breaks anything that uses absolute time values.
+	gpGlobals->time = gEngfuncs.GetClientTime(); //time;
+
+	//Lets weapons code use frametime to decrement timers and stuff.
+	gpGlobals->frametime = cmd->msec / 1000.0f;
 
 	// Fill in data based on selected weapon
 	// FIXME, make this a method in each weapon?  where you pass in an entity_state_t *?
@@ -1099,6 +1103,9 @@ be ignored
 void _DLLEXPORT HUD_PostRunCmd( struct local_state_s *from, struct local_state_s *to, struct usercmd_s *cmd, int runfuncs, double time, unsigned int random_seed )
 {
 	g_runfuncs = runfuncs;
+
+	//Event code depends on this stuff, so always initialize it.
+	HUD_InitClientWeapons();
 
 #if CLIENT_WEAPONS
 	if( cl_lw && cl_lw->value )

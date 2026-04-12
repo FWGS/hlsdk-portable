@@ -2493,13 +2493,3 @@ int CRestore::BufferCheckZString( const char *string )
 	}
 	return 0;
 }
-
-edict_t* UTIL_GetEntityList()
-{
-	return g_engfuncs.pfnPEntityOfEntOffset(0);
-}
-
-CBaseEntity* UTIL_GetLocalPlayer()
-{
-	return UTIL_PlayerByIndex(1);
-}

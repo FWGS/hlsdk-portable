@@ -206,7 +206,7 @@ float CHalfLifeRules::FlPlayerFallDamage( CBasePlayer *pPlayer )
 //=========================================================
 void CHalfLifeRules::PlayerSpawn( CBasePlayer *pPlayer )
 {
-	pPlayer->SetSuit(true);
+	pPlayer->SetSuit( TRUE );
 }
 
 //=========================================================

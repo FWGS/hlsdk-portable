@@ -228,8 +228,10 @@ void ExplodeModel( const Vector &vecOrigin, float speed, int model, int count )
 }
 #endif
 
+int giAmmoIndex = 0;
+
 // Precaches the ammo and queues the ammo info for sending to clients
-void AddAmmoNameToAmmoRegistry(const char* szAmmoname, const char* weaponName)
+void AddAmmoNameToAmmoRegistry(const char* szAmmoname)
 {
 	// make sure it's not already in the registry
 	for( int i = 0; i < MAX_AMMO_SLOTS; i++ )
@@ -248,7 +250,6 @@ void AddAmmoNameToAmmoRegistry(const char* szAmmoname, const char* weaponName)
 
 	CBasePlayerItem::AmmoInfoArray[giAmmoIndex].pszName = szAmmoname;
 	CBasePlayerItem::AmmoInfoArray[giAmmoIndex].iId = giAmmoIndex;   // yes, this info is redundant
-	CBasePlayerItem::AmmoInfoArray[giAmmoIndex].WeaponName = weaponName;
 }
 
 // Precaches the weapon and queues the weapon info for sending to clients
@@ -277,12 +278,12 @@ void UTIL_PrecacheOtherWeapon( const char *szClassname )
 
 			if( II.pszAmmo1 && *II.pszAmmo1 )
 			{
-				AddAmmoNameToAmmoRegistry( II.pszAmmo1, weaponName );
+				AddAmmoNameToAmmoRegistry( II.pszAmmo1 );
 			}
 
 			if( II.pszAmmo2 && *II.pszAmmo2 )
 			{
-				AddAmmoNameToAmmoRegistry( II.pszAmmo2, weaponName );
+				AddAmmoNameToAmmoRegistry( II.pszAmmo2 );
 			}
 		}
 	}
@@ -793,7 +794,7 @@ int CBasePlayerWeapon::AddToPlayer( CBasePlayer *pPlayer )
 {
 	int bResult = CBasePlayerItem::AddToPlayer( pPlayer );
 
-	pPlayer->pev->weapons |= ( 1 << m_iId );
+	pPlayer->SetWeaponBit( m_iId );
 
 	if( !m_iPrimaryAmmoType )
 	{

@@ -503,11 +503,7 @@ class CItemFlashlight : public CItem
 		pPlayer->SetFlashlight(true);
 		return TRUE;
 	}
-
-	virtual int Save( CSave &save );
-	virtual int Restore( CRestore &restore );
-	static TYPEDESCRIPTION m_SaveData[];
-
+	
 private:
 	CSprite* m_pGlow;
 };
@@ -550,10 +546,6 @@ class CItemKeycard : public CItem
 		pPlayer->ToggleKeycard(true);
 		return TRUE;
 	}
-
-	virtual int Save( CSave &save );
-	virtual int Restore( CRestore &restore );
-	static TYPEDESCRIPTION m_SaveData[];
 
 private:
 	CSprite* m_pGlow;
@@ -598,10 +590,6 @@ class CItemRedcard : public CItem
 		return TRUE;
 	}
 
-	virtual int Save( CSave &save );
-	virtual int Restore( CRestore &restore );
-	static TYPEDESCRIPTION m_SaveData[];
-
 private:
 	CSprite* m_pGlow;
 };
@@ -645,37 +633,8 @@ class CItemC4 : public CItem
 		pPlayer->ToggleC4(true);
 		return TRUE;
 	}
-
-	virtual int Save( CSave &save );
-	virtual int Restore( CRestore &restore );
-	static TYPEDESCRIPTION m_SaveData[];
-
 private:
 	CSprite* m_pGlow;
 };
 
 LINK_ENTITY_TO_CLASS(item_c4, CItemC4);
-
-TYPEDESCRIPTION CItemC4::m_SaveData[] =
-{
-	DEFINE_FIELD(CItemC4, m_pGlow, FIELD_CLASSPTR),
-};
-IMPLEMENT_SAVERESTORE(CItemC4, CBaseEntity);
-
-TYPEDESCRIPTION CItemKeycard::m_SaveData[] =
-{
-	DEFINE_FIELD(CItemKeycard, m_pGlow, FIELD_CLASSPTR),
-};
-IMPLEMENT_SAVERESTORE(CItemKeycard, CBaseEntity);
-
-TYPEDESCRIPTION CItemRedcard::m_SaveData[] =
-{
-	DEFINE_FIELD(CItemRedcard, m_pGlow, FIELD_CLASSPTR),
-};
-IMPLEMENT_SAVERESTORE(CItemRedcard, CBaseEntity);
-
-TYPEDESCRIPTION CItemFlashlight::m_SaveData[] =
-{
-	DEFINE_FIELD(CItemFlashlight, m_pGlow, FIELD_CLASSPTR),
-};
-IMPLEMENT_SAVERESTORE(CItemFlashlight, CBaseEntity);

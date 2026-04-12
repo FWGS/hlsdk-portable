@@ -235,33 +235,28 @@ public:
 	void RemoveAllItems( BOOL removeSuit );
 	BOOL SwitchWeapon( CBasePlayerItem *pWeapon );
 
-	/**
-	*	@brief Equips an appropriate weapon for the player if they don't have one equipped already.
-	*/
-	void EquipWeapon();
-
-	void SetWeaponBit(int id);
-	void ClearWeaponBit(int id);
+	void SetWeaponBit( int id );
+	void ClearWeaponBit( int id );
 
 	// Suit
 	bool HasSuit() const;
-	void SetSuit(bool hasSuit);
+	void SetSuit( BOOL hasSuit) ;
 
 	// Flashlight
 	bool HasFlashlight() const;
-	void SetFlashlight(bool hasFlash);
+	void SetFlashlight( BOOL hasFlash );
 
 	// Keycard
 	bool HasKeycard() const;
-	void ToggleKeycard(bool hasKey);
+	void ToggleKeycard(BOOL hasKey);
 
 	// Red Keycard
 	bool HasRedKeycard() const;
-	void ToggleRedKeycard(bool hasKey2);
+	void ToggleRedKeycard( BOOL hasKey2 );
 	
 	// C4
 	bool HasC4() const;
-	void ToggleC4(bool hasC4);
+	void ToggleC4( BOOL hasC4 );
 
 	// JOHN:  sends custom messages if player HUD data has changed  (eg health, ammo)
 	virtual void UpdateClientData( void );
@@ -365,103 +360,103 @@ public:
 	Vector m_vecLastViewAngles;
 };
 
-inline void CBasePlayer::SetWeaponBit(int id)
+inline void CBasePlayer::SetWeaponBit( int id )
 {
 	m_WeaponBits |= 1ULL << id;
 }
 
-inline void CBasePlayer::ClearWeaponBit(int id)
+inline void CBasePlayer::ClearWeaponBit( int id )
 {
-	m_WeaponBits &= ~(1ULL << id);
+	m_WeaponBits &= ~( 1ULL << id );
 }
 
 // Suit
 inline bool CBasePlayer::HasSuit() const
 {
-	return (m_WeaponBits & (1ULL << WEAPON_SUIT)) != 0;
+	return ( m_WeaponBits & ( 1ULL << WEAPON_SUIT ) );
 }
 
-inline void CBasePlayer::SetSuit(bool hasSuit)
+inline void CBasePlayer::SetSuit( BOOL hasSuit )
 {
-	if (hasSuit)
+	if ( hasSuit )
 	{
-		SetWeaponBit(WEAPON_SUIT);
+		SetWeaponBit( WEAPON_SUIT );
 	}
 	else
 	{
-		ClearWeaponBit(WEAPON_SUIT);
+		ClearWeaponBit( WEAPON_SUIT );
 	}
 }
 
 // Flashlight
 inline bool CBasePlayer::HasFlashlight() const
 {
-	return (m_WeaponBits & (1ULL << WEAPON_FLASHLIGHT)) != 0;
+	return ( m_WeaponBits & ( 1ULL << WEAPON_FLASHLIGHT ) );
 }
 
-inline void CBasePlayer::SetFlashlight(bool hasFlash)
+inline void CBasePlayer::SetFlashlight( BOOL hasFlash )
 {
-	if (hasFlash)
+	if ( hasFlash )
 	{
-		SetWeaponBit(WEAPON_FLASHLIGHT);
+		SetWeaponBit( WEAPON_FLASHLIGHT );
 	}
 	else
 	{
-		ClearWeaponBit(WEAPON_FLASHLIGHT);
+		ClearWeaponBit( WEAPON_FLASHLIGHT );
 	}
 }
 
 // Keycard
 inline bool CBasePlayer::HasKeycard() const
 {
-	return (m_WeaponBits & (1ULL << WEAPON_KEYCARD)) != 0;
+	return ( m_WeaponBits & ( 1ULL << WEAPON_KEYCARD ) );
 }
 
-inline void CBasePlayer::ToggleKeycard(bool hasKey)
+inline void CBasePlayer::ToggleKeycard( BOOL hasKey )
 {
-	if (hasKey)
+	if ( hasKey )
 	{
-		SetWeaponBit(WEAPON_KEYCARD);
+		SetWeaponBit( WEAPON_KEYCARD );
 	}
 	else
 	{
-		ClearWeaponBit(WEAPON_KEYCARD);
+		ClearWeaponBit( WEAPON_KEYCARD );
 	}
 }
 
 // Red Keycard
 inline bool CBasePlayer::HasRedKeycard() const
 {
-	return (m_WeaponBits & (1ULL << WEAPON_REDCARD)) != 0;
+	return ( m_WeaponBits & ( 1ULL << WEAPON_REDCARD ) );
 }
 
-inline void CBasePlayer::ToggleRedKeycard(bool hasKey2)
+inline void CBasePlayer::ToggleRedKeycard( BOOL hasKey2 )
 {
-	if (hasKey2)
+	if ( hasKey2 )
 	{
-		SetWeaponBit(WEAPON_REDCARD);
+		SetWeaponBit( WEAPON_REDCARD );
 	}
 	else
 	{
-		ClearWeaponBit(WEAPON_REDCARD);
+		ClearWeaponBit( WEAPON_REDCARD );
 	}
 }
 
 // C4
 inline bool CBasePlayer::HasC4() const
 {
-	return (m_WeaponBits & (1ULL << WEAPON_C4)) != 0;
+	return ( m_WeaponBits & ( 1ULL << WEAPON_C4 ) );
 }
 
-inline void CBasePlayer::ToggleC4(bool hasKey)
+inline void CBasePlayer::ToggleC4( BOOL hasKey )
 {
-	if (hasKey)
+	if ( hasKey )
 	{
-		SetWeaponBit(WEAPON_C4);
+		SetWeaponBit( WEAPON_C4 );
 	}
 	else
 	{
-		ClearWeaponBit(WEAPON_C4);
+		ClearWeaponBit( WEAPON_C4 );
 	}
 }
 

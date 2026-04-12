@@ -2393,47 +2393,22 @@ void CTriggerCamera::Move()
 class CTriggerPlayerFreeze : public CBaseDelay
 {
 public:
-	void Spawn( void );
-	void Use( CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value );
-
-	virtual int Save( CSave &save );
-	virtual int Restore( CRestore &restore );
-	static TYPEDESCRIPTION m_SaveData[];
-
-public:
-	bool m_bUnFrozen;
+	void Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+	int ObjectCaps( void ) { return CBaseDelay::ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
 };
 
-LINK_ENTITY_TO_CLASS(trigger_playerfreeze, CTriggerPlayerFreeze);
+LINK_ENTITY_TO_CLASS( trigger_playerfreeze, CTriggerPlayerFreeze )
 
-TYPEDESCRIPTION CTriggerPlayerFreeze::m_SaveData[] =
+void CTriggerPlayerFreeze::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
-	DEFINE_FIELD(CTriggerPlayerFreeze, m_bUnFrozen, FIELD_BOOLEAN),
-};
-IMPLEMENT_SAVERESTORE(CTriggerPlayerFreeze, CBaseDelay);
+	if( !pActivator || !pActivator->IsPlayer() )
+		pActivator = CBaseEntity::Instance( g_engfuncs.pfnPEntityOfEntIndex( 1 ) );
 
-void CTriggerPlayerFreeze::Spawn()
-{
-	if (g_pGameRules->IsDeathmatch())
-		REMOVE_ENTITY(edict());
+	if( pActivator->pev->flags & FL_FROZEN )
+		( (CBasePlayer*)( pActivator ) )->EnableControl( TRUE );
 	else
-		m_bUnFrozen = true;
-}
-
-void CTriggerPlayerFreeze::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
-{
-	m_bUnFrozen = !m_bUnFrozen;
-
-	//TODO: not made for multiplayer
-	auto pPlayer = static_cast<CBasePlayer*>(UTIL_GetLocalPlayer());
-
-	if (!pPlayer)
-	{
-		return;
-	}
-
-	pPlayer->EnableControl(m_bUnFrozen);
-}
+		( (CBasePlayer*)( pActivator ) )->EnableControl( FALSE );
+};
 
 //
 // Insecure: Triggers required to progress.

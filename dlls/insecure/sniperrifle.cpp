@@ -77,7 +77,6 @@ int CSniperRifle::GetItemInfo(ItemInfo* p)
 
 BOOL CSniperRifle::Deploy()
 {
-	// pev->body = 1;
 	return DefaultDeploy("models/v_m40a1.mdl", "models/p_m40a1.mdl", SNIPER_DRAW, "gauss");
 }
 
@@ -152,7 +151,7 @@ void CSniperRifle::PrimaryAttack()
 	vecDir = m_pPlayer->FireBulletsPlayer(1, vecSrc, vecAiming, VECTOR_CONE_SNIPER, 8192, BULLET_PLAYER_762, 0, 0, m_pPlayer->pev, m_pPlayer->random_seed);
 
 	int flags;
-#if defined(CLIENT_WEAPONS)
+#if CLIENT_WEAPONS
 	flags = FEV_NOTHOST;
 #else
 	flags = 0;

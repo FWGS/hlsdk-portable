@@ -216,16 +216,9 @@ typedef struct
 {
 	const char *pszName;
 	int iId;
-
-	/**
-	*	@brief For exhaustible weapons. If provided, and the player does not have this weapon in their inventory yet it will be given to them.
-	*/
-	const char* WeaponName = nullptr;
 } AmmoInfo;
 
-inline int giAmmoIndex = 0;
-
-void AddAmmoNameToAmmoRegistry(const char* szAmmoname, const char* weaponName);
+void AddAmmoNameToAmmoRegistry(const char* szAmmoname);
 
 // Items that the player has in their inventory that they can use
 class CBasePlayerItem : public CBaseAnimating

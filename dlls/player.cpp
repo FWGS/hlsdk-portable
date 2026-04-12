@@ -861,13 +861,13 @@ void CBasePlayer::RemoveAllItems( BOOL removeSuit )
 
 	m_WeaponBits = 0ULL;
 
-	if (removeSuit)
+	if ( removeSuit )
 	{ 
-		SetSuit(true);
+		SetSuit( TRUE );
 	}
 
 	// Turn off flashlight
-	if (FlashlightIsOn() == true)
+	if (FlashlightIsOn() == TRUE )
 	{
 		FlashlightTurnOff();
 	}
@@ -3598,33 +3598,36 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		break;
 	case 101:
 		gEvilImpulse101 = TRUE;
-		SetFlashlight(true); // give flashlight through weapon bit
-		GiveNamedItem("item_armorplate");
-		GiveNamedItem("weapon_m249");
-		GiveNamedItem("weapon_sniperrifle");
-		GiveNamedItem("weapon_knife");
-		GiveNamedItem("weapon_9mmhandgun");
-		GiveNamedItem("ammo_9mmclip");
-		GiveNamedItem("weapon_shotgun");
-		GiveNamedItem("ammo_buckshot");
-		GiveNamedItem("weapon_9mmAR");
-		GiveNamedItem("ammo_9mmAR");
-		GiveNamedItem("ammo_ARgrenades");
-		GiveNamedItem("weapon_handgrenade");
-		GiveNamedItem("weapon_tripmine");
-		GiveNamedItem("weapon_357");
-		GiveNamedItem("weapon_eagle");
-		GiveNamedItem("ammo_357");
-		GiveNamedItem("weapon_crossbow");
-		GiveNamedItem("ammo_crossbow");
-		GiveNamedItem("weapon_egon");
-		GiveNamedItem("weapon_gauss");
-		GiveNamedItem("ammo_gaussclip");
-		GiveNamedItem("weapon_rpg");
-		GiveNamedItem("ammo_rpgclip");
-		GiveNamedItem("weapon_satchel");
-		GiveNamedItem("weapon_snark");
-		GiveNamedItem("weapon_hornetgun");
+		
+		SetFlashlight( TRUE ); // give flashlight through weapon bit
+
+		GiveNamedItem( "item_armorplate" );
+		GiveNamedItem( "weapon_m249" );
+		GiveNamedItem( "weapon_sniperrifle" );
+		GiveNamedItem( "weapon_knife" );
+		GiveNamedItem( "weapon_9mmhandgun" );
+		GiveNamedItem( "ammo_9mmclip" );
+		GiveNamedItem( "weapon_shotgun" );
+		GiveNamedItem( "ammo_buckshot" );
+		GiveNamedItem( "weapon_9mmAR" );
+		GiveNamedItem( "ammo_9mmAR" );
+		GiveNamedItem( "ammo_ARgrenades" );
+		GiveNamedItem( "weapon_handgrenade" );
+		GiveNamedItem( "weapon_tripmine" );
+		GiveNamedItem( "weapon_357" );
+		GiveNamedItem( "weapon_eagle" );
+		GiveNamedItem( "ammo_357" );
+		GiveNamedItem( "weapon_crossbow" );
+		GiveNamedItem( "ammo_crossbow" );
+		GiveNamedItem( "weapon_egon" );
+		GiveNamedItem( "weapon_gauss" );
+		GiveNamedItem( "ammo_gaussclip" );
+		GiveNamedItem( "weapon_rpg" );
+		GiveNamedItem( "ammo_rpgclip" );
+		GiveNamedItem( "weapon_satchel" );
+		GiveNamedItem( "weapon_snark" );
+		GiveNamedItem( "weapon_hornetgun" );
+		
 		gEvilImpulse101 = FALSE;
 		break;
 	case 102:
@@ -4109,16 +4112,16 @@ void CBasePlayer::UpdateClientData( void )
 		MESSAGE_END();
 	}
 
-	if (m_WeaponBits != m_ClientWeaponBits)
+	if ( m_WeaponBits != m_ClientWeaponBits )
 	{
 		m_ClientWeaponBits = m_WeaponBits;
 
 		const int lowerBits = m_WeaponBits & 0xFFFFFFFF;
-		const int upperBits = (m_WeaponBits >> 32) & 0xFFFFFFFF;
+		const int upperBits = ( m_WeaponBits >> 32 ) & 0xFFFFFFFF;
 
-		MESSAGE_BEGIN(MSG_ONE, gmsgWeapons, nullptr, pev);
-		WRITE_LONG(lowerBits);
-		WRITE_LONG(upperBits);
+		MESSAGE_BEGIN( MSG_ONE, gmsgWeapons, NULL, pev );
+			WRITE_LONG( lowerBits );
+			WRITE_LONG( upperBits );
 		MESSAGE_END();
 	}
 
@@ -4786,27 +4789,6 @@ BOOL CBasePlayer::SwitchWeapon( CBasePlayerItem *pWeapon )
 	pWeapon->pev->oldbuttons = 0;
 
 	return TRUE;
-}
-
-void CBasePlayer::EquipWeapon()
-{
-	if (m_pActiveItem)
-	{
-		if ((!FStringNull(pev->viewmodel) || !FStringNull(pev->weaponmodel)))
-		{
-			//Already have a weapon equipped and deployed.
-			return;
-		}
-
-		//Have a weapon equipped, but not deployed.
-		if (m_pActiveItem->CanDeploy() && m_pActiveItem->Deploy())
-		{
-			return;
-		}
-	}
-
-	//No weapon equipped or couldn't deploy it, find a suitable alternative.
-	g_pGameRules->GetNextBestWeapon(this, m_pActiveItem);
 }
 
 #define SF_STRIP_HALFHEALTH		1
