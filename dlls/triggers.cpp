@@ -947,7 +947,7 @@ void CBaseTrigger::HurtTouch( CBaseEntity *pOther )
 		}
 	}
 
-	// If this is time_based damage (poison, radiation), override the pev->dmg with a 
+	// If this is time_based damage (poison, radiation), the pev->dmg with a 
 	// default for the given damage type.  Monsters only take time-based damage
 	// while touching the trigger.  Player continues taking damage for a while after
 	// leaving the trigger
@@ -2445,11 +2445,11 @@ void CTriggerPlayerFreeze::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, US
 class CTriggerSecurity : public CBaseTrigger
 {
 public:
-	void Spawn() override;
-	void Precache() override;
+	void Spawn();
+	void Precache();
 	void EXPORT UnlockTouch(CBaseEntity* pOther);
 	void EXPORT UsePanel(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
-	int ObjectCaps() override { return (CBaseToggle::ObjectCaps() | FCAP_CONTINUOUS_USE) & ~FCAP_ACROSS_TRANSITION; }
+	int ObjectCaps() { return (CBaseToggle::ObjectCaps() | FCAP_CONTINUOUS_USE) & ~FCAP_ACROSS_TRANSITION; }
 	float  m_flSoundTime;
 };
 LINK_ENTITY_TO_CLASS(trigger_security, CTriggerSecurity);
@@ -2512,11 +2512,11 @@ void CTriggerSecurity::UsePanel(CBaseEntity* pActivator, CBaseEntity* pCaller, U
 class CTriggerSecurityRed : public CBaseTrigger
 {
 public:
-	void Spawn() override;
-	void Precache() override;
+	void Spawn();
+	void Precache();
 	void EXPORT UnlockTouch(CBaseEntity* pOther);
 	void EXPORT UsePanel(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
-	int ObjectCaps() override { return (CBaseToggle::ObjectCaps() | FCAP_CONTINUOUS_USE) & ~FCAP_ACROSS_TRANSITION; }
+	int ObjectCaps() { return (CBaseToggle::ObjectCaps() | FCAP_CONTINUOUS_USE) & ~FCAP_ACROSS_TRANSITION; }
 	float  m_flSoundTime;
 };
 LINK_ENTITY_TO_CLASS(trigger_securityred, CTriggerSecurityRed);
@@ -2579,11 +2579,11 @@ void CTriggerSecurityRed::UsePanel(CBaseEntity* pActivator, CBaseEntity* pCaller
 class CTriggerC4 : public CBaseTrigger
 {
 public:
-	void Spawn() override;
-	void Precache() override;
+	void Spawn();
+	void Precache();
 	void EXPORT PlaceTouch(CBaseEntity* pOther);
 	void EXPORT UsePlant(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
-	int ObjectCaps() override { return (CBaseToggle::ObjectCaps() | FCAP_CONTINUOUS_USE) & ~FCAP_ACROSS_TRANSITION; }
+	int ObjectCaps() { return (CBaseToggle::ObjectCaps() | FCAP_CONTINUOUS_USE) & ~FCAP_ACROSS_TRANSITION; }
 };
 LINK_ENTITY_TO_CLASS(trigger_c4, CTriggerC4);
 

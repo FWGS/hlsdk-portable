@@ -37,27 +37,27 @@
 class CZombieHEV : public CBaseMonster
 {
 public:
-	void Spawn() override;
-	void Precache() override;
-	void SetYawSpeed() override;
-	int Classify() override;
-	void HandleAnimEvent(MonsterEvent_t* pEvent) override;
-	int IgnoreConditions() override;
+	void Spawn();
+	void Precache();
+	void SetYawSpeed();
+	int Classify();
+	void HandleAnimEvent(MonsterEvent_t* pEvent);
+	int IgnoreConditions();
 
 	float m_flNextFlinch;
 	float m_flNextTalk;
 
-	void PainSound() override;
-	void AlertSound() override;
-	void IdleSound() override;
-	void DeathSound() override;
+	void PainSound();
+	void AlertSound();
+	void IdleSound();
+	void DeathSound();
 	void AttackSound();
 	void IdleHEVSounds();
 
-	void TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType) override;
+	void TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType);
 
-	Schedule_t* GetSchedule() override;
-	Schedule_t* GetScheduleOfType(int Type) override;
+	Schedule_t* GetSchedule();
+	Schedule_t* GetScheduleOfType(int Type);
 
 	static const char* pAttackSounds[];
 	static const char* pIdleSounds[];
@@ -68,9 +68,9 @@ public:
 	static const char* pAttackMissSounds[];
 
 	// No range attacks
-	BOOL CheckRangeAttack1(float flDot, float flDist) override { return FALSE; }
-	BOOL CheckRangeAttack2(float flDot, float flDist) override { return FALSE; }
-	int TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType) override;
+	BOOL CheckRangeAttack1(float flDot, float flDist) { return FALSE; }
+	BOOL CheckRangeAttack2(float flDot, float flDist) { return FALSE; }
+	int TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
 };
 
 LINK_ENTITY_TO_CLASS(monster_zombie_hev, CZombieHEV);

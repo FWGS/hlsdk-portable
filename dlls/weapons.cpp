@@ -1101,18 +1101,19 @@ CBaseEntity* CBasePlayerAmmo::Respawn( void )
 	return this;
 }
 
+// Insecure: Since players go out of ammo for the Apache
+// helicopter fight, this should quietly respawn so they 
+// can never run out of ammo.
 void CBasePlayerAmmo::Materialize( void )
 {
-	if( pev->effects & EF_NODRAW )
+	if ( pev->effects & EF_NODRAW )
 	{
 		// changing from invisible state to visible.
-		EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, "items/suitchargeok1.wav", 1, ATTN_NORM, 0, 150 );
+		SUB_UseTargets( this, USE_ON, 0 ); // this only should be used for the env_model for ammo crates.
 		pev->effects &= ~EF_NODRAW;
-		pev->effects |= EF_MUZZLEFLASH;
 	}
 
 	SetTouch( &CBasePlayerAmmo::DefaultTouch );
-	SetThink( NULL );
 }
 
 void CBasePlayerAmmo::DefaultTouch( CBaseEntity *pOther )

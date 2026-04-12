@@ -69,6 +69,8 @@ set (SVDLL_SOURCES
 	insecure/penguingrenade.cpp  
 	insecure/twin_gonarch.cpp  
 	insecure/zombie_soldier.cpp
+	insecure/construction.cpp
+	insecure/deadhev.cpp
 	agrunt.cpp
 	airtank.cpp
 	aflock.cpp
