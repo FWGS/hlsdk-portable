@@ -20,9 +20,14 @@
 #include	"cbase.h"
 #include	"monsters.h"
 #include	"schedule.h"
+#include 	"soundent.h"
 
 // For holograms, make them not solid so the player can walk through them
 #define	SF_GENERICMONSTER_NOTSOLID					4 
+#define	SF_GENERICMONSTER_SCIENTIST					32
+#define	SF_GENERICMONSTER_BARNEY					64
+
+const int SF_GENERICMONSTER_CONTROLLER = 8;
 
 //=========================================================
 // Monster's Anim Events Go Here
@@ -37,6 +42,19 @@ public:
 	int Classify( void );
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
 	int ISoundMask( void );
+
+	void PlayScriptedSentence( const char* pszSentence, float duration, float volume, float attenuation, bool bConcurrent, CBaseEntity* pListener );
+
+	void MonsterThink( void );
+	void IdleHeadTurn( Vector& vecFriend );
+
+	void DeathSound( void );
+
+
+	float m_talkTime;
+	EHANDLE m_hTalkTarget;
+	float m_flIdealYaw;
+	float m_flCurrentYaw;
 };
 
 LINK_ENTITY_TO_CLASS( monster_generic, CGenericMonster )
@@ -62,7 +80,7 @@ void CGenericMonster::SetYawSpeed( void )
 	{
 	case ACT_IDLE:
 	default:
-		ys = 90;
+		ys = 100;
 	}
 
 	pev->yaw_speed = ys;
@@ -88,7 +106,7 @@ void CGenericMonster::HandleAnimEvent( MonsterEvent_t *pEvent )
 //=========================================================
 int CGenericMonster::ISoundMask( void )
 {
-	return 0;
+	return bits_SOUND_NONE;
 }
 
 //=========================================================
@@ -105,7 +123,9 @@ void CGenericMonster::Spawn()
 	else
 		UTIL_SetSize( pev, VEC_HULL_MIN, VEC_HULL_MAX);
 */
-	if( FStrEq( STRING( pev->model ), "models/player.mdl" ) || FStrEq( STRING( pev->model ), "models/holo.mdl" ) )
+	if ( FStrEq( STRING( pev->model ), "models/player.mdl" ) 
+		|| FStrEq( STRING( pev->model ), "models/holo.mdl" )
+		|| FStrEq( STRING( pev->model ), "models/cross.mdl" ) )
 		UTIL_SetSize( pev, VEC_HULL_MIN, VEC_HULL_MAX );
 	else
 		UTIL_SetSize( pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX );
@@ -131,9 +151,129 @@ void CGenericMonster::Spawn()
 //=========================================================
 void CGenericMonster::Precache()
 {
-	PRECACHE_MODEL( STRING( pev->model ) );
+	PRECACHE_MODEL( ( char* ) STRING( pev->model ) );
+
+	PRECACHE_SOUND( "scientist/sci_pain1.wav" );
+	PRECACHE_SOUND( "scientist/sci_pain2.wav" );
+	PRECACHE_SOUND( "scientist/sci_pain3.wav" );
+	PRECACHE_SOUND( "scientist/sci_pain4.wav" );
+	PRECACHE_SOUND( "scientist/sci_pain5.wav" );
+
+	PRECACHE_SOUND( "barney/ba_die1.wav" );
+	PRECACHE_SOUND( "barney/ba_die2.wav" );
+	PRECACHE_SOUND( "barney/ba_die3.wav" );
+
+	PRECACHE_SOUND( "ambience/loader_hydra1.wav" );
+	PRECACHE_SOUND( "ambience/loader_step1.wav" );
+
+	PRECACHE_SOUND( "gonarch/gon_step1.wav" );
+	PRECACHE_SOUND( "gonarch/gon_step2.wav" );
+	PRECACHE_SOUND( "gonarch/gon_step3.wav" );
+}
+
+void CGenericMonster::PlayScriptedSentence( const char* pszSentence, float duration, float volume, float attenuation, bool bConcurrent, CBaseEntity* pListener )
+{
+	m_talkTime = gpGlobals->time + duration;
+	PlaySentence( pszSentence, duration, volume, attenuation );
+
+	m_hTalkTarget = pListener;
+}
+
+void CGenericMonster::MonsterThink()
+{
+	if ( m_afCapability & bits_CAP_TURN_HEAD )
+	{
+		if ( m_hTalkTarget )
+		{
+			if ( gpGlobals->time > m_talkTime )
+			{
+				m_flIdealYaw = 0;
+				m_hTalkTarget = NULL;
+			}
+			else
+			{
+				IdleHeadTurn( m_hTalkTarget->pev->origin );
+			}
+		}
+
+		if ( m_flCurrentYaw != m_flIdealYaw )
+		{
+			if ( m_flCurrentYaw <= m_flIdealYaw )
+			{
+				m_flCurrentYaw += Q_min( 20.0, m_flIdealYaw - m_flCurrentYaw );
+			}
+			else
+			{
+				m_flCurrentYaw -= Q_min( 20.0, m_flCurrentYaw - m_flIdealYaw );
+			}
+
+			SetBoneController( 0, m_flCurrentYaw );
+		}
+	}
+
+	CBaseMonster::MonsterThink();
+}
+
+// turn head towards supplied origin
+void CGenericMonster::IdleHeadTurn( Vector& vecFriend )
+{
+	// turn head in desired direction only if ent has a turnable head
+	if ( m_afCapability & bits_CAP_TURN_HEAD )
+	{
+		float yaw = VecToYaw( vecFriend - pev->origin ) - pev->angles.y;
+
+		if ( yaw > 180 ) 
+			yaw -= 360;
+		if ( yaw < -180 ) 
+			yaw += 360;
+
+		// turn towards vector
+		m_flIdealYaw = yaw;
+	}
 }
 
 //=========================================================
 // AI Schedules Specific to this monster
 //=========================================================
+
+void CGenericMonster::DeathSound()
+{
+	// for some reason, scripting the death sound inside
+	// the maps doesn't work so here we go.
+	if ( pev->spawnflags & SF_GENERICMONSTER_SCIENTIST )
+	{
+		switch ( RANDOM_LONG( 0, 4 ) )
+		{
+		case 0:
+			EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, "scientist/sci_pain1.wav", 1, ATTN_NORM, 0, 100 );
+			break;
+		case 1:
+			EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, "scientist/sci_pain2.wav", 1, ATTN_NORM, 0, 100 );
+			break;
+		case 2:
+			EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, "scientist/sci_pain3.wav", 1, ATTN_NORM, 0, 100 );
+			break;
+		case 3:
+			EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, "scientist/sci_pain4.wav", 1, ATTN_NORM, 0, 100 );
+			break;
+		case 4:
+			EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, "scientist/sci_pain5.wav", 1, ATTN_NORM, 0, 100 );
+			break;
+		}
+	}
+	else if (pev->spawnflags & SF_GENERICMONSTER_BARNEY)
+	{
+		switch (RANDOM_LONG(0, 2))
+		{
+		case 0:
+			EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, "barney/ba_die1.wav", 1, ATTN_NORM, 0, 100 );
+			break;
+		case 1:
+			EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, "barney/ba_die2.wav", 1, ATTN_NORM, 0, 100 );
+			break;
+		case 2:
+			EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, "barney/ba_die3.wav", 1, ATTN_NORM, 0, 100 );
+			break;
+		}
+	}
+}
