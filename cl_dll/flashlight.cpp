@@ -111,7 +111,7 @@ int CHudFlashlight::Draw( float flTime )
 	if( gEngfuncs.IsSpectateOnly() )
 		return 1;
 
-	if (!gHUD.HasFlashlight())
+	if ( !gHUD.HasFlashlight() )
 		return 1;
 
 	if( m_fOn )

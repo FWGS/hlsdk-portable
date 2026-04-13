@@ -438,13 +438,13 @@ void CHud::DrawDarkRectangle( int x, int y, int wide, int tall )
 	FillRGBA( x, y + tall - 1, wide - 1, 1, 255, 140, 0, 255 );
 }
 
-int CHud::GetScreenPosition(int szSmall, int szMedium, int szLarge)
+int CHud::GetScreenPosition( int szSmall, int szMedium, int szLarge )
 {
-    if (ScreenWidth < 640)
+    if ( ScreenWidth < 640 )
         return szSmall;
-    else if (ScreenWidth < 1280)
+    else if ( ScreenWidth < 1280 )
         return szSmall;
-    else if (ScreenWidth <= 2560)
+    else if ( ScreenWidth <= 2560 )
         return szMedium;
     else
         return szLarge;

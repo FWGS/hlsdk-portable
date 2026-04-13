@@ -627,25 +627,25 @@ void HUD_InitClientWeapons( void )
 	HUD_PrepEntity( &player, NULL );
 
 	// Allocate slot(s) for each weapon that we are going to be predicting
-	HUD_PrepEntity(&g_Glock, &player);
-	HUD_PrepEntity(&g_Crowbar, &player);
-	HUD_PrepEntity(&g_Python, &player);
-	HUD_PrepEntity(&g_Mp5, &player);
-	HUD_PrepEntity(&g_Crossbow, &player);
-	HUD_PrepEntity(&g_Shotgun, &player);
-	HUD_PrepEntity(&g_Rpg, &player);
-	HUD_PrepEntity(&g_Gauss, &player);
-	HUD_PrepEntity(&g_Egon, &player);
-	HUD_PrepEntity(&g_HGun, &player);
-	HUD_PrepEntity(&g_HandGren, &player);
-	HUD_PrepEntity(&g_Satchel, &player);
-	HUD_PrepEntity(&g_Tripmine, &player);
-	HUD_PrepEntity(&g_Snark, &player);
-	HUD_PrepEntity(&g_Knife, &player);
-	HUD_PrepEntity(&g_Eagle, &player);
-	HUD_PrepEntity(&g_M249, &player);
-	HUD_PrepEntity(&g_Sniper, &player);
-	HUD_PrepEntity(&g_Penguin, &player);
+	HUD_PrepEntity( &g_Glock, &player );
+	HUD_PrepEntity( &g_Crowbar, &player );
+	HUD_PrepEntity( &g_Python, &player );
+	HUD_PrepEntity( &g_Mp5, &player );
+	HUD_PrepEntity( &g_Crossbow, &player );
+	HUD_PrepEntity( &g_Shotgun, &player );
+	HUD_PrepEntity( &g_Rpg, &player );
+	HUD_PrepEntity( &g_Gauss, &player );
+	HUD_PrepEntity( &g_Egon, &player );
+	HUD_PrepEntity( &g_HGun, &player );
+	HUD_PrepEntity( &g_HandGren, &player );
+	HUD_PrepEntity( &g_Satchel, &player );
+	HUD_PrepEntity( &g_Tripmine, &player );
+	HUD_PrepEntity( &g_Snark, &player );
+	HUD_PrepEntity( &g_Knife, &player );
+	HUD_PrepEntity( &g_Eagle, &player );
+	HUD_PrepEntity( &g_M249, &player );
+	HUD_PrepEntity( &g_Sniper, &player );
+	HUD_PrepEntity( &g_Penguin, &player );
 }
 
 /*

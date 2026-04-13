@@ -42,12 +42,12 @@ void EV_SnarkFire( struct event_args_s *args );
 void EV_TrainPitchAdjust( struct event_args_s *args );
 void EV_VehiclePitchAdjust( event_args_t *args );
 
-void EV_Knife(struct event_args_s *args);
-void EV_KnifeStab(struct event_args_s *args);
-void EV_FireEagle(struct event_args_s *args);
-void EV_FireM249(struct event_args_s *args);
-void EV_FireSniper(struct event_args_s *args);
-void EV_PenguinFire(struct event_args_s *args);
+void EV_Knife( struct event_args_s *args );
+void EV_KnifeStab( struct event_args_s *args );
+void EV_FireEagle( struct event_args_s *args );
+void EV_FireM249( struct event_args_s *args );
+void EV_FireSniper( struct event_args_s *args );
+void EV_PenguinFire( struct event_args_s *args );
 }
 
 /*

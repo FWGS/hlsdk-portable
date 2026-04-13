@@ -138,12 +138,12 @@ int CHud::MsgFunc_Concuss( const char *pszName, int iSize, void *pbuf )
 
 int CHud::MsgFunc_Weapons( const char* pszName, int iSize, void* pbuf )
 {
-	BEGIN_READ(pbuf, iSize);
+	BEGIN_READ( pbuf, iSize );
 
 	const std::uint64_t lowerBits = READ_LONG();
 	const std::uint64_t upperBits = READ_LONG();
 
-	m_iWeaponBits = lowerBits | (upperBits << 32ULL);
+	m_iWeaponBits = lowerBits | ( upperBits << 32ULL );
 
 	return 1;
 }

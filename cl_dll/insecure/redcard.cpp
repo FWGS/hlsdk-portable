@@ -20,53 +20,53 @@
 #include <string.h>
 #include <stdio.h>
 
-DECLARE_MESSAGE(m_Redcard, HudRedcard);
+DECLARE_MESSAGE( m_Redcard, HudRedcard );
 
-int CHudRedcard::Init(void)
+int CHudRedcard::Init( void )
 {
-	gHUD.AddHudElem(this);
+	gHUD.AddHudElem( this );
 
-	HOOK_MESSAGE(HudRedcard);
+	HOOK_MESSAGE( HudRedcard );
 
 	InitHUDData();
 
 	return 1;
 }
 
-void CHudRedcard::InitHUDData(void)
+void CHudRedcard::InitHUDData( void )
 {
 	m_iFlags |= HUD_ACTIVE;
 }
 
-int CHudRedcard::VidInit(void)
+int CHudRedcard::VidInit( void )
 {
-	m_HUD_sec_card_red = gHUD.GetSpriteIndex("sec_card_red");
+	m_HUD_sec_card_red = gHUD.GetSpriteIndex( "sec_card_red" );
 
-	m_hSprite = gHUD.GetSprite(m_HUD_sec_card_red);
+	m_hSprite = gHUD.GetSprite( m_HUD_sec_card_red );
 	return 1;
 }
 
-int CHudRedcard::MsgFunc_HudRedcard(const char* pszName, int iSize, void* pbuf)
+int CHudRedcard::MsgFunc_HudRedcard( const char* pszName, int iSize, void* pbuf )
 {
-	BEGIN_READ(pbuf, iSize);
+	BEGIN_READ( pbuf, iSize );
 	int x = READ_BYTE();
 	return 1;
 }
 
 int CHudRedcard::Draw(float flTime)
 {
-    int width = gHUD.GetSpriteRect(m_HUD_sec_card_red).right - gHUD.GetSpriteRect(m_HUD_sec_card_red).left;
-    int height = gHUD.GetSpriteRect(m_HUD_sec_card_red).bottom - gHUD.GetSpriteRect(m_HUD_sec_card_red).top;
+    int width = gHUD.GetSpriteRect( m_HUD_sec_card_red ).right - gHUD.GetSpriteRect( m_HUD_sec_card_red ).left;
+    int height = gHUD.GetSpriteRect( m_HUD_sec_card_red ).bottom - gHUD.GetSpriteRect( m_HUD_sec_card_red ).top;
     int x, y;
 
-    if (gHUD.m_iHideHUDDisplay & HIDEHUD_ALL || !gHUD.HasRedcard())
+    if ( gHUD.m_iHideHUDDisplay & HIDEHUD_ALL || !gHUD.HasRedcard() )
         return 1;
 
     int r, g, b;
-    UnpackRGB(r, g, b, RGB_REDISH);
+    UnpackRGB( r, g, b, RGB_REDISH );
 
     // Top right corner of the screen.
-    if (ScreenWidth > 2560)
+    if ( ScreenWidth > 2560 )
     {
         x = ScreenWidth - width - width / 2;
         y = height / 10;
@@ -77,32 +77,32 @@ int CHudRedcard::Draw(float flTime)
         y = height / 2;
     }
 
-    SPR_Set(m_hSprite, r, g, b);
+    SPR_Set( m_hSprite, r, g, b );
 
     y = GetRedcardPosition();
 
-    SPR_DrawAdditive(0, x, y, NULL);
+    SPR_DrawAdditive( 0, x, y, NULL );
 
     return 1;
 }
 
 int CHudRedcard::GetRedcardPosition()
 {
-    int height = gHUD.GetSpriteRect(m_HUD_sec_card_red).bottom - gHUD.GetSpriteRect(m_HUD_sec_card_red).top;
+    int height = gHUD.GetSpriteRect( m_HUD_sec_card_red ).bottom - gHUD.GetSpriteRect( m_HUD_sec_card_red ).top;
 
-    if (!gHUD.HasFlashlight() && !gHUD.HasC4())
+    if ( !gHUD.HasFlashlight() && !gHUD.HasC4() )
     {
         // If we don't have a flashlight, draw in its place.
         return height / 2;
     }
-    else if (gHUD.HasFlashlight() && gHUD.HasC4())
+    else if ( gHUD.HasFlashlight() && gHUD.HasC4() )
     {
         // If we have a flashlight AND C4
         // move a bit below it.
-        return gHUD.GetScreenPosition(88, 176, 264);
+        return gHUD.GetScreenPosition( 88, 176, 264 );
     }
     else
     {
-        return gHUD.GetScreenPosition(56, 112, 168);
+        return gHUD.GetScreenPosition( 56, 112, 168 );
     }
 }

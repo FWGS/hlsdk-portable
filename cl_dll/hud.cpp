@@ -134,7 +134,7 @@ int __MsgFunc_Concuss( const char *pszName, int iSize, void *pbuf )
 	return gHUD.MsgFunc_Concuss( pszName, iSize, pbuf );
 }
 
-int __MsgFunc_Weapons(const char* pszName, int iSize, void* pbuf)
+int __MsgFunc_Weapons( const char *pszName, int iSize, void *pbuf )
 {
 	return gHUD.MsgFunc_Weapons( pszName, iSize, pbuf );
 }

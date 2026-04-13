@@ -854,7 +854,7 @@ int CHudAmmo::Draw( float flTime )
 	int a, x, y, r, g, b;
 	int AmmoWidth;
 
-	if (!gHUD.HasSuit())
+	if ( !gHUD.HasSuit() )
 		return 1;
 
 	if( ( gHUD.m_iHideHUDDisplay & ( HIDEHUD_WEAPONS | HIDEHUD_ALL ) ) )
