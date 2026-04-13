@@ -23,6 +23,7 @@ public:
 	CBaseEntity *Respawn( void );
 	void EXPORT ItemTouch( CBaseEntity *pOther );
 	void EXPORT Materialize( void );
+	void EXPORT ToggleUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 	virtual BOOL MyTouch( CBasePlayer *pPlayer )
 	{
 		return FALSE;

@@ -32,6 +32,7 @@
 #define SF_TRIGGER_HURT_TARGETONCE	1// Only fire hurt target once
 #define	SF_TRIGGER_HURT_START_OFF	2//spawnflag that makes trigger_push spawn turned OFF
 #define	SF_TRIGGER_HURT_NO_CLIENTS	8//spawnflag that makes trigger_push spawn turned OFF
+#define SF_TRIGGER_PUSH_NO_CLIENTS 4	   //spawnflag that makes trigger_push spawn turned OFF
 #define SF_TRIGGER_HURT_CLIENTONLYFIRE	16// trigger hurt will only fire its target if it is hurting a client
 #define SF_TRIGGER_HURT_CLIENTONLYTOUCH 32// only clients may touch this trigger.
 
@@ -1805,7 +1806,17 @@ void CTriggerPush::Touch( CBaseEntity *pOther )
 	case MOVETYPE_PUSH:
 	case MOVETYPE_NOCLIP:
 	case MOVETYPE_FOLLOW:
+	case MOVETYPE_BOUNCE:
 		return;
+	}
+
+	// don't push players if set to no clients flag.
+	if (FBitSet(pev->spawnflags, SF_TRIGGER_PUSH_NO_CLIENTS)) 
+	{
+		if (FBitSet(pevToucher->flags, FL_CLIENT))
+		{
+			return;
+		}
 	}
 
 	if( pevToucher->solid != SOLID_NOT && pevToucher->solid != SOLID_BSP )
@@ -1945,6 +1956,33 @@ void CTriggerSave::SaveTouch( CBaseEntity *pOther )
 	SetTouch( NULL );
 	UTIL_Remove( this );
 	SERVER_COMMAND( "autosave\n" );
+}
+
+class CTargetAutosave: public CPointEntity
+{
+public:
+	void Spawn();
+	void Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
+};
+
+LINK_ENTITY_TO_CLASS(target_autosave, CTargetAutosave);
+
+void CTargetAutosave::Spawn()
+{
+	pev->solid = SOLID_NOT;
+	pev->movetype = MOVETYPE_NONE;
+
+	if (g_pGameRules->IsDeathmatch())
+	{
+		REMOVE_ENTITY(ENT(pev));
+		return;
+	}
+}
+
+void CTargetAutosave::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
+{
+	UTIL_Remove(this);
+	SERVER_COMMAND("autosave\n");
 }
 
 #define SF_ENDSECTION_USEONLY		0x0001

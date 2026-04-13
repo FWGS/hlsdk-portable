@@ -1371,6 +1371,10 @@ void CTalkMonster::FollowerUse( CBaseEntity *pActivator, CBaseEntity *pCaller, U
 		{
 			DeclineFollowing();
 		}
+		else if (pev->spawnflags & SF_MONSTER_NOT_FOLLOW)
+		{
+			DeclineFollowingAlt();
+		}
 		else if( CanFollow() )
 		{
 			LimitFollowers( pCaller, 1 );

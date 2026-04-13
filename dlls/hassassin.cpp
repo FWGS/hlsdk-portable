@@ -56,6 +56,7 @@ enum
 #define		ASSASSIN_AE_SHOOT1	1
 #define		ASSASSIN_AE_TOSS1	2
 #define		ASSASSIN_AE_JUMP	3
+#define 	ASSASSIN_AE_KICK 	4
 
 #define bits_MEMORY_BADJUMP		( bits_MEMORY_CUSTOM1 )
 
@@ -69,10 +70,12 @@ public:
 	int ISoundMask( void);
 	void Shoot( void );
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
+
+	CBaseEntity* Kick();
 	Schedule_t *GetSchedule( void );
 	Schedule_t *GetScheduleOfType( int Type );
 	BOOL CheckMeleeAttack1( float flDot, float flDist );	// jump
-	// BOOL CheckMeleeAttack2( float flDot, float flDist );
+	BOOL CheckMeleeAttack2( float flDot, float flDist );
 	BOOL CheckRangeAttack1( float flDot, float flDist );	// shoot
 	BOOL CheckRangeAttack2( float flDot, float flDist );	// throw grenade
 	void StartTask( Task_t *pTask );
@@ -155,7 +158,27 @@ int CHAssassin::ISoundMask( void )
 //=========================================================
 int CHAssassin::Classify( void )
 {
-	return CLASS_HUMAN_MILITARY;
+	return CLASS_HUMAN_ASSASSIN;
+}
+
+CBaseEntity* CHAssassin::Kick()
+{
+	TraceResult tr;
+
+	UTIL_MakeVectors( pev->angles );
+	Vector vecStart = pev->origin;
+	vecStart.z += pev->size.z * 0.5;
+	Vector vecEnd = vecStart + ( gpGlobals->v_forward * 70 );
+
+	UTIL_TraceHull( vecStart, vecEnd, dont_ignore_monsters, head_hull, ENT( pev ), &tr );
+
+	if ( tr.pHit )
+	{
+		CBaseEntity* pEntity = CBaseEntity::Instance( tr.pHit );
+		return pEntity;
+	}
+
+	return NULL;
 }
 
 //=========================================================
@@ -262,6 +285,20 @@ void CHAssassin::HandleAnimEvent( MonsterEvent_t *pEvent )
 			m_flNextJump = gpGlobals->time + 3.0f;
 		}
 		return;
+	case ASSASSIN_AE_KICK:
+		{
+			CBaseEntity* pHurt = Kick();
+
+			if ( pHurt )
+			{
+				// SOUND HERE!
+				UTIL_MakeVectors( pev->angles );
+				pHurt->pev->punchangle.x = 15;
+				pHurt->pev->velocity = pHurt->pev->velocity + gpGlobals->v_forward * 100 + gpGlobals->v_up * 50;
+				pHurt->TakeDamage( pev, pev, gSkillData.hgruntDmgKick, DMG_CLUB );
+			}
+		}
+		break;
 	default:
 		CBaseMonster::HandleAnimEvent( pEvent );
 		break;
@@ -308,6 +345,8 @@ void CHAssassin::Precache()
 	PRECACHE_SOUND( "weapons/pl_gun2.wav" );
 
 	PRECACHE_SOUND( "debris/beamstart1.wav" );
+	
+	PRECACHE_SOUND( "zombie/claw_miss2.wav" ); // because we use the basemonster SWIPE animation event
 
 	m_iShell = PRECACHE_MODEL( "models/shell.mdl" );// brass shell
 }	
@@ -622,6 +661,18 @@ BOOL CHAssassin::CheckMeleeAttack1( float flDot, float flDist )
 }
 
 //=========================================================
+// CheckMeleeAttack1
+//=========================================================
+BOOL CHAssassin::CheckMeleeAttack2( float flDot, float flDist )
+{
+	if ( flDist <= 64 && flDot >= 0.7 )
+	{
+		return TRUE;
+	}
+	return FALSE;
+}
+
+//=========================================================
 // CheckRangeAttack1  - drop a cap in their ass
 //
 //=========================================================
@@ -718,16 +769,16 @@ void CHAssassin::RunAI( void )
 			switch( RANDOM_LONG( 0, 3 ) )
 			{
 			case 0:
-				EMIT_SOUND( ENT( pev ), CHAN_BODY, "player/pl_step1.wav", 0.5, ATTN_NORM );
+				EMIT_SOUND( ENT( pev ), CHAN_BODY, "common/npc_step1.wav", 0.5, ATTN_NORM );
 				break;
 			case 1:
-				EMIT_SOUND( ENT( pev ), CHAN_BODY, "player/pl_step3.wav", 0.5, ATTN_NORM );
+				EMIT_SOUND( ENT( pev ), CHAN_BODY, "common/npc_step3.wav", 0.5, ATTN_NORM );
 				break;
 			case 2:
-				EMIT_SOUND( ENT( pev ), CHAN_BODY, "player/pl_step2.wav", 0.5, ATTN_NORM );
+				EMIT_SOUND( ENT( pev ), CHAN_BODY, "common/npc_step2.wav", 0.5, ATTN_NORM );
 				break;
 			case 3:
-				EMIT_SOUND( ENT( pev ), CHAN_BODY, "player/pl_step4.wav", 0.5, ATTN_NORM );
+				EMIT_SOUND( ENT( pev ), CHAN_BODY, "common/npc_step4.wav", 0.5, ATTN_NORM );
 				break;
 			}
 		}
@@ -888,6 +939,12 @@ Schedule_t *CHAssassin::GetSchedule( void )
 			{
 				// ALERT( at_console, "melee attack 1\n" );
 				return GetScheduleOfType( SCHED_MELEE_ATTACK1 );
+			}
+
+			// can kick
+			else if ( HasConditions( bits_COND_CAN_MELEE_ATTACK2 ) )
+			{
+				return GetScheduleOfType( SCHED_MELEE_ATTACK2 );
 			}
 
 			// throw grenade

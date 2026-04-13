@@ -332,12 +332,17 @@ void CBreakable::Precache( void )
 		PRECACHE_SOUND( "debris/bustconcrete1.wav" );
 		PRECACHE_SOUND( "debris/bustconcrete2.wav" );
 		break;
+	case matNone:
+		pGibName = "models/metalplategibs.mdl";
+
+		PRECACHE_SOUND( "debris/bustmetal1.wav" );
+		PRECACHE_SOUND( "debris/bustmetal2.wav" );
+		break;
 	case matCeilingTile:
 		pGibName = "models/ceilinggibs.mdl";
 
 		PRECACHE_SOUND( "debris/bustceiling.wav" );  
 		break;
-	case matNone:
 	case matLastMaterial:
 		break;
 	default:
@@ -666,6 +671,8 @@ void CBreakable::Die( void )
 		EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, "debris/bustceiling.wav", fvol, ATTN_NORM, 0, pitch );
 		break;
 	case matNone:
+		EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, "debris/bustmetal1.wav", fvol, ATTN_NORM, 0, pitch );
+		break;
 	case matLastMaterial:
 	case matUnbreakableGlass:
 		break;
@@ -683,39 +690,42 @@ void CBreakable::Die( void )
 	}
 
 	vecSpot = pev->origin + ( pev->mins + pev->maxs ) * 0.5f;
-	MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, vecSpot );
-		WRITE_BYTE( TE_BREAKMODEL );
+	if (! FBitSet( pev->spawnflags, SF_BREAK_NOGIB ) )
+	{
+		MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, vecSpot );
+			WRITE_BYTE( TE_BREAKMODEL );
 
-		// position
-		WRITE_COORD( vecSpot.x );
-		WRITE_COORD( vecSpot.y );
-		WRITE_COORD( vecSpot.z );
+			// position
+			WRITE_COORD( vecSpot.x );
+			WRITE_COORD( vecSpot.y );
+			WRITE_COORD( vecSpot.z );
 
-		// size
-		WRITE_COORD( pev->size.x );
-		WRITE_COORD( pev->size.y );
-		WRITE_COORD( pev->size.z );
+			// size
+			WRITE_COORD( pev->size.x );
+			WRITE_COORD( pev->size.y );
+			WRITE_COORD( pev->size.z );
 
-		// velocity
-		WRITE_COORD( vecVelocity.x ); 
-		WRITE_COORD( vecVelocity.y );
-		WRITE_COORD( vecVelocity.z );
+			// velocity
+			WRITE_COORD( vecVelocity.x ); 
+			WRITE_COORD( vecVelocity.y );
+			WRITE_COORD( vecVelocity.z );
 
-		// randomization
-		WRITE_BYTE( 10 );
+			// randomization
+			WRITE_BYTE( 10 );
 
-		// Model
-		WRITE_SHORT( m_idShard );	//model id#
+			// Model
+			WRITE_SHORT( m_idShard );	//model id#
 
-		// # of shards
-		WRITE_BYTE( 0 );	// let client decide
+			// # of shards
+			WRITE_BYTE( 0 );	// let client decide
 
-		// duration
-		WRITE_BYTE( 25 );// 2.5 seconds
+			// duration
+			WRITE_BYTE( 25 );// 2.5 seconds
 
-		// flags
-		WRITE_BYTE( cFlag );
-	MESSAGE_END();
+			// flags
+			WRITE_BYTE( cFlag );
+		MESSAGE_END();
+	}
 
 	/*float size = pev->size.x;
 	if( size < pev->size.y )

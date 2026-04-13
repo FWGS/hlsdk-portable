@@ -461,14 +461,30 @@ void CBasePlayerItem::SetObjectCollisionBox( void )
 //=========================================================
 void CBasePlayerItem::FallInit( void )
 {
-	pev->movetype = MOVETYPE_TOSS;
-	pev->solid = SOLID_BBOX;
+	if (pev->spawnflags & SF_ITEMS_NOGRAVITY)
+	{
+		pev->movetype = MOVETYPE_NONE;
+	}
+	else
+	{
+		pev->movetype = MOVETYPE_TOSS;
+	}
+
+	if (FBitSet(pev->spawnflags, SF_ITEMS_DISABLED)) // if flagged to Start Turned Off, make trigger nonsolid.
+		pev->solid = SOLID_NOT;
+	else
+		pev->solid = SOLID_TRIGGER;
 
 	UTIL_SetOrigin( pev, pev->origin );
 	UTIL_SetSize( pev, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ) );//pointsize until it lands on the ground.
 
 	SetTouch( &CBasePlayerItem::DefaultTouch );
 	SetThink( &CBasePlayerItem::FallThink );
+
+	if (!FStringNull(pev->targetname))
+	{
+		SetUse(&CBasePlayerItem::ToggleUse);
+	}
 
 	pev->nextthink = gpGlobals->time + 0.1f;
 }
@@ -515,6 +531,22 @@ void CBasePlayerItem::FallThink( void )
 	}
 }
 
+//
+// ToggleUse - If this is the USE function for a trigger, its state will toggle every time it's fired
+//
+void CBasePlayerItem::ToggleUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
+{
+	if (pev->solid == SOLID_NOT)
+	{
+		pev->solid = SOLID_TRIGGER;
+	}
+	else
+	{
+		pev->solid = SOLID_NOT;
+	}
+	UTIL_SetOrigin(pev, pev->origin);
+}
+
 //=========================================================
 // Materialize - make a CBasePlayerItem visible and tangible
 //=========================================================
@@ -523,9 +555,9 @@ void CBasePlayerItem::Materialize( void )
 	if( pev->effects & EF_NODRAW )
 	{
 		// changing from invisible state to visible.
-		EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, "items/suitchargeok1.wav", 1, ATTN_NORM, 0, 150 );
+		// EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, "items/suitchargeok1.wav", 1, ATTN_NORM, 0, 150 );
 		pev->effects &= ~EF_NODRAW;
-		pev->effects |= EF_MUZZLEFLASH;
+		// pev->effects |= EF_MUZZLEFLASH;
 	}
 
 	pev->solid = SOLID_TRIGGER;
@@ -561,7 +593,10 @@ void CBasePlayerItem::CheckRespawn( void )
 	switch( g_pGameRules->WeaponShouldRespawn( this ) )
 	{
 	case GR_WEAPON_RESPAWN_YES:
-		Respawn();
+		if ((pev->spawnflags & SF_AMMO_RESPAWN))
+		{
+			Respawn();
+		}
 		break;
 	case GR_WEAPON_RESPAWN_NO:
 		return;
@@ -581,6 +616,7 @@ CBaseEntity* CBasePlayerItem::Respawn( void )
 
 	if( pNewWeapon )
 	{
+		pNewWeapon->pev->spawnflags |= SF_AMMO_RESPAWN;
 		pNewWeapon->pev->effects |= EF_NODRAW;// invisible for now
 		pNewWeapon->SetTouch( NULL );// no touch
 		pNewWeapon->SetThink( &CBasePlayerItem::AttemptToMaterialize );
@@ -1081,16 +1117,34 @@ void CBasePlayerWeapon::Holster( int skiplocal /* = 0 */ )
 
 void CBasePlayerAmmo::Spawn( void )
 {
-	pev->movetype = MOVETYPE_TOSS;
-	pev->solid = SOLID_TRIGGER;
+	if (pev->spawnflags & SF_ITEMS_NOGRAVITY)
+	{
+		pev->movetype = MOVETYPE_NONE;
+	}
+	else
+	{
+		pev->movetype = MOVETYPE_TOSS;
+	}
+
+	if (FBitSet(pev->spawnflags, SF_ITEMS_DISABLED)) // if flagged to Start Turned Off, make trigger nonsolid.
+		pev->solid = SOLID_NOT;
+	else
+		pev->solid = SOLID_TRIGGER;
+
 	UTIL_SetSize( pev, Vector( -16, -16, 0 ), Vector( 16, 16, 16 ) );
 	UTIL_SetOrigin( pev, pev->origin );
+
+	if (!FStringNull(pev->targetname))
+	{
+		SetUse(&CBasePlayerItem::ToggleUse);
+	}
 
 	SetTouch( &CBasePlayerAmmo::DefaultTouch );
 }
 
 CBaseEntity* CBasePlayerAmmo::Respawn( void )
 {
+	pev->solid |= SOLID_NOT;
 	pev->effects |= EF_NODRAW;
 	SetTouch( NULL );
 
@@ -1126,7 +1180,7 @@ void CBasePlayerAmmo::DefaultTouch( CBaseEntity *pOther )
 
 	if( AddAmmo( pOther ) )
 	{
-		if( g_pGameRules->AmmoShouldRespawn( this ) == GR_AMMO_RESPAWN_YES )
+		if ((pev->spawnflags & SF_AMMO_RESPAWN))
 		{
 			Respawn();
 		}
@@ -1136,6 +1190,7 @@ void CBasePlayerAmmo::DefaultTouch( CBaseEntity *pOther )
 			SetThink( &CBaseEntity::SUB_Remove );
 			pev->nextthink = gpGlobals->time + 0.1f;
 		}
+		SUB_UseTargets(this, USE_OFF, 0); // this only should be used for the env_model for ammo crates.
 	}
 	else if( gEvilImpulse101 )
 	{

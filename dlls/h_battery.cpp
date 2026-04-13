@@ -17,6 +17,10 @@
 ===== h_battery.cpp ========================================================
 
   battery-related code
+  
+  INSECURE: This code is disabled because, well...
+  You're not wearing an HEV suit and suit chargers
+  are pointless.
 
 */
 

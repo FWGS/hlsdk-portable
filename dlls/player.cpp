@@ -146,7 +146,8 @@ TYPEDESCRIPTION	CBasePlayer::m_playerSaveData[] =
 	//DEFINE_FIELD( CBasePlayer, m_nCustomSprayFrames, FIELD_INTEGER ), // Don't need to restore
 };	
 
-int giPrecacheGrunt = 0;
+int giPrecacheSci = 0;
+int giPrecacheBa = 0;
 int gmsgShake = 0;
 int gmsgFade = 0;
 int gmsgSelAmmo = 0;
@@ -245,12 +246,12 @@ void CBasePlayer::Pain( void )
 
 	flRndSound = RANDOM_FLOAT( 0.0f, 1.0f ); 
 
-	if( flRndSound <= 0.33f )
-		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/pl_pain5.wav", 1, ATTN_NORM );
-	else if( flRndSound <= 0.66f )	
-		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/pl_pain6.wav", 1, ATTN_NORM );
+	if ( flRndSound <= 0.33 )
+		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "barney/ba_pain1.wav", 1, ATTN_NORM );
+	else if (flRndSound <= 0.66)
+		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "barney/ba_pain2.wav", 1, ATTN_NORM );
 	else
-		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/pl_pain7.wav", 1, ATTN_NORM );
+		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "barney/ba_pain3.wav", 1, ATTN_NORM );
 }
 
 Vector VecVelocityForDamage( float flDamage )
@@ -701,7 +702,7 @@ void CBasePlayer::PackDeadPlayerItems( void )
 					if( m_pActiveItem && pPlayerItem == m_pActiveItem )
 					{
 						// this is the active item. Pack it.
-						rgpPackWeapons[iPW] = (CBasePlayerWeapon *)pPlayerItem;
+						rgpPackWeapons[iPW++] = (CBasePlayerWeapon *)pPlayerItem;
 					}
 					break;
 				case GR_PLR_DROP_GUN_ALL:
@@ -1301,6 +1302,8 @@ void CBasePlayer::PlayerDeathThink( void )
 {
 	float flForward;
 
+	m_iHideHUD |= HIDEHUD_ALL;
+
 	if( FBitSet( pev->flags, FL_ONGROUND ) )
 	{
 		flForward = pev->velocity.Length() - 20;
@@ -1342,6 +1345,9 @@ void CBasePlayer::PlayerDeathThink( void )
 	// this prevents a bug where the dead body would go to a player's head if he walked over it while the dead player was clicking their button to respawn
 	if( pev->movetype != MOVETYPE_NONE && FBitSet( pev->flags, FL_ONGROUND ) )
 		pev->movetype = MOVETYPE_NONE;
+
+	if (pev->deadflag == DEAD_DYING)
+		pev->deadflag = DEAD_DEAD;
 
 	StopAnimation();
 
@@ -2671,7 +2677,12 @@ void CBasePlayer::PostThink()
 			if( flFallDamage > 0 )
 			{
 				TakeDamage( VARS( eoNullEntity ), VARS( eoNullEntity ), flFallDamage, DMG_FALL ); 
-				pev->punchangle.x = 0;
+				
+				// 25: Replicate WON's style (or PS2 port) view kick when taking fall damage.
+				pev->punchangle.z = 4;
+				pev->punchangle.x = 10;
+				if (RANDOM_LONG(0, 99) < 50)
+					pev->punchangle.z = -4;
 			}
 		}
 
@@ -3585,15 +3596,23 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 	switch( iImpulse )
 	{
 	case 76:
-		if( !giPrecacheGrunt )
+		if( !giPrecacheSci )
 		{
-			giPrecacheGrunt = 1;
-			ALERT( at_console, "You must now restart to use Grunt-o-matic.\n" );
+			giPrecacheSci = 1;
+			ALERT(at_console, "You must now restart to generate a scientist.\n");
+			Create("monster_scientist", pev->origin + gpGlobals->v_forward * 128, pev->angles);
+		}
+		break;
+	case 77:
+		if ( !giPrecacheBa )
+		{
+			giPrecacheBa = true;
+			ALERT(at_console, "You must now restart to generate a Barney.\n");
 		}
 		else
 		{
-			UTIL_MakeVectors( Vector( 0, pev->v_angle.y, 0 ) );
-			Create( "monster_human_grunt", pev->origin + gpGlobals->v_forward * 128, pev->angles );
+			UTIL_MakeVectors(Vector(0, pev->v_angle.y, 0));
+			Create("monster_barney", pev->origin + gpGlobals->v_forward * 128, pev->angles);
 		}
 		break;
 	case 101:
@@ -4341,10 +4360,23 @@ void CBasePlayer::SetPrefsFromUserinfo( char *infobuffer )
 
 void CBasePlayer::EnableControl( BOOL fControl )
 {
-	if( !fControl )
+	// FIXME: Make the player actually frozen. (e.g. shooting, switching weapons) 
+	if (!fControl)
+	{
+		if (m_pActiveItem)
+		{ 
+			m_pActiveItem->Holster();
+		}
 		pev->flags |= FL_FROZEN;
+	}
 	else
+	{
+		if (m_pActiveItem)
+		{
+			m_pActiveItem->Deploy();
+		}
 		pev->flags &= ~FL_FROZEN;
+	}
 }
 
 #define DOT_1DEGREE   0.9998476951564

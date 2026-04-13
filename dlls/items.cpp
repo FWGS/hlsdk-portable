@@ -88,17 +88,37 @@ void CWorldItem::Spawn( void )
 
 void CItem::Spawn( void )
 {
-	pev->movetype = MOVETYPE_TOSS;
-	pev->solid = SOLID_TRIGGER;
+	if (pev->spawnflags & SF_ITEMS_NOGRAVITY)
+	{
+		pev->movetype = MOVETYPE_NONE;
+	}
+	else
+	{
+		pev->movetype = MOVETYPE_TOSS;
+	}
+
+	if (FBitSet(pev->spawnflags, SF_ITEMS_DISABLED)) // if flagged to Start Turned Off, make trigger nonsolid.
+		pev->solid = SOLID_NOT;
+	else
+		pev->solid = SOLID_TRIGGER;
+
+	SetTouch( &CItem::ItemTouch );
 	UTIL_SetOrigin( pev, pev->origin );
 	UTIL_SetSize( pev, Vector( -16, -16, 0 ), Vector( 16, 16, 16 ) );
-	SetTouch( &CItem::ItemTouch );
 
-	if( DROP_TO_FLOOR(ENT( pev ) ) == 0 )
+	if (!FStringNull(pev->targetname))
 	{
-		ALERT(at_error, "Item %s fell out of level at %f,%f,%f\n", STRING( pev->classname ), (double)pev->origin.x, (double)pev->origin.y, (double)pev->origin.z);
-		UTIL_Remove( this );
-		return;
+		SetUse( &CItem::ToggleUse);
+	}
+
+	if (!pev->spawnflags & SF_ITEMS_NOGRAVITY)
+	{
+		if (DROP_TO_FLOOR(ENT(pev)) == 0)
+		{
+			ALERT(at_error, "Item %s fell out of level at %f,%f,%f", STRING(pev->classname), pev->origin.x, pev->origin.y, pev->origin.z);
+			UTIL_Remove(this);
+			return;
+		}
 	}
 }
 
@@ -160,7 +180,7 @@ void CItem::Materialize( void )
 	if( pev->effects & EF_NODRAW )
 	{
 		// changing from invisible state to visible.
-		EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, "items/suitchargeok1.wav", 1, ATTN_NORM, 0, 150 );
+		// EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, "items/suitchargeok1.wav", 1, ATTN_NORM, 0, 150 );
 		pev->effects &= ~EF_NODRAW;
 		pev->effects |= EF_MUZZLEFLASH;
 	}
@@ -169,7 +189,21 @@ void CItem::Materialize( void )
 	SetThink( NULL );
 }
 
-#define SF_SUIT_SHORTLOGON		0x0001
+//
+// ToggleUse - If this is the USE function for a trigger, its state will toggle every time it's fired
+//
+void CItem::ToggleUse( CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value )
+{
+	if ( pev->solid == SOLID_NOT )
+	{
+		pev->solid = SOLID_TRIGGER;
+	}
+	else
+	{
+		pev->solid = SOLID_NOT;
+	}
+	UTIL_SetOrigin( pev, pev->origin );
+}
 
 class CItemSuit : public CItem
 {
@@ -503,6 +537,10 @@ class CItemFlashlight : public CItem
 		pPlayer->SetFlashlight(true);
 		return TRUE;
 	}
+
+	inline int Save( CSave& save );
+	inline int Restore( CRestore& restore );
+	static TYPEDESCRIPTION m_SaveData[];
 	
 private:
 	CSprite* m_pGlow;
@@ -547,6 +585,10 @@ class CItemKeycard : public CItem
 		return TRUE;
 	}
 
+	inline int Save( CSave& save );
+	inline int Restore( CRestore& restore );
+	static TYPEDESCRIPTION m_SaveData[];
+
 private:
 	CSprite* m_pGlow;
 };
@@ -590,6 +632,10 @@ class CItemRedcard : public CItem
 		return TRUE;
 	}
 
+	inline int Save( CSave& save );
+	inline int Restore( CRestore& restore );
+	static TYPEDESCRIPTION m_SaveData[];
+
 private:
 	CSprite* m_pGlow;
 };
@@ -630,11 +676,40 @@ class CItemC4 : public CItem
 		if (m_pGlow)
 			m_pGlow->pev->effects |= EF_NODRAW;
 
-		pPlayer->ToggleC4(true);
+		pPlayer->ToggleC4( TRUE );
 		return TRUE;
 	}
+	
+	inline int Save( CSave& save );
+	inline int Restore( CRestore& restore );
+	static TYPEDESCRIPTION m_SaveData[];
+
 private:
 	CSprite* m_pGlow;
 };
 
 LINK_ENTITY_TO_CLASS(item_c4, CItemC4);
+
+TYPEDESCRIPTION CItemC4::m_SaveData[] =
+{
+	DEFINE_FIELD(CItemC4, m_pGlow, FIELD_CLASSPTR),
+};
+IMPLEMENT_SAVERESTORE(CItemC4, CBaseEntity);
+
+TYPEDESCRIPTION CItemKeycard::m_SaveData[] =
+{
+	DEFINE_FIELD(CItemKeycard, m_pGlow, FIELD_CLASSPTR),
+};
+IMPLEMENT_SAVERESTORE(CItemKeycard, CBaseEntity);
+
+TYPEDESCRIPTION CItemRedcard::m_SaveData[] =
+{
+	DEFINE_FIELD(CItemRedcard, m_pGlow, FIELD_CLASSPTR),
+};
+IMPLEMENT_SAVERESTORE(CItemRedcard, CBaseEntity);
+
+TYPEDESCRIPTION CItemFlashlight::m_SaveData[] =
+{
+	DEFINE_FIELD(CItemFlashlight, m_pGlow, FIELD_CLASSPTR),
+};
+IMPLEMENT_SAVERESTORE(CItemFlashlight, CBaseEntity);

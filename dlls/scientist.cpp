@@ -88,6 +88,7 @@ public:
 	Activity GetStoppedActivity( void );
 	int ISoundMask( void );
 	void DeclineFollowing( void );
+	void DeclineFollowingAlt( void );
 
 	float CoverRadius( void ) { return 1200; }		// Need more room for cover because scientists want to get far away!
 	BOOL DisregardEnemy( CBaseEntity *pEnemy ) { return !pEnemy->IsAlive() || ( gpGlobals->time - m_fearTime ) > 15; }
@@ -424,6 +425,11 @@ void CScientist::DeclineFollowing( void )
 	Talk( 10 );
 	m_hTalkTarget = m_hEnemy;
 	PlaySentence( "SC_POK", 2, VOL_NORM, ATTN_NORM );
+}
+
+void CScientist::DeclineFollowingAlt( void )
+{
+	m_hTalkTarget = m_hEnemy;
 }
 
 const char *CScientist::GetScientistModel( void )
@@ -1465,4 +1471,43 @@ int CSittingScientist::FIdleSpeak( void )
 	// never spoke
 	CTalkMonster::g_talkWaitTime = 0;
 	return FALSE;
+}
+
+//
+// SCIENTIST COMMANDER
+//
+class CScientistCommander : public CScientist
+{
+public:
+	void Spawn();
+	void Precache();
+	void SetYawSpeed();
+	int Classify();
+};
+LINK_ENTITY_TO_CLASS(monster_scientist_commander, CScientistCommander);
+
+void CScientistCommander::Spawn()
+{
+	CScientist::Spawn();
+	SET_MODEL(ENT(pev), "models/commander.mdl");
+	UTIL_SetSize(pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX);
+	pev->health = gSkillData.scientistHealth;
+	m_voicePitch = 100;
+}
+
+void CScientistCommander::Precache()
+{
+	PRECACHE_MODEL("models/commander.mdl");
+	CScientist::Precache();
+}
+
+
+void CScientistCommander::SetYawSpeed()
+{
+	pev->yaw_speed = 120;
+}
+
+int CScientistCommander::Classify()
+{
+	return CLASS_HUMAN_PASSIVE;
 }

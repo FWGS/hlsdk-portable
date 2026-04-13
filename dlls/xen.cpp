@@ -99,7 +99,7 @@ void CXenPLight::Spawn( void )
 
 	m_pGlow = CSprite::SpriteCreate( XEN_PLANT_GLOW_SPRITE, pev->origin + Vector( 0, 0, ( pev->mins.z + pev->maxs.z ) * 0.5f ), FALSE );
 	m_pGlow->SetTransparency( kRenderGlow, (int)pev->rendercolor.x, (int)pev->rendercolor.y, (int)pev->rendercolor.z, (int)pev->renderamt, (int)pev->renderfx );
-	m_pGlow->SetAttachment( edict(), 1 );
+	m_pGlow->SetAttachment( edict(), 2 );
 }
 
 void CXenPLight::Precache( void )
@@ -318,7 +318,7 @@ void CXenTree::Precache( void )
 
 void CXenTree::Touch( CBaseEntity *pOther )
 {
-	if( !pOther->IsPlayer() && FClassnameIs( pOther->pev, "monster_bigmomma" ) )
+	if( !pOther->IsPlayer() && FClassnameIs( pOther->pev, "monster_twin_gonarch" ) )
 		return;
 
 	Attack();

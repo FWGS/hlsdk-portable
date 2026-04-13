@@ -15,7 +15,7 @@
 #if !OEM_BUILD && !HLDEMO_BUILD
 
 //=========================================================
-// CONTROLLER
+// Controller -- workers for Nihilanth.
 //=========================================================
 
 #include	"extdll.h"
@@ -35,6 +35,7 @@
 #define	CONTROLLER_AE_SMALL_SHOOT		3
 #define CONTROLLER_AE_POWERUP_FULL		4
 #define CONTROLLER_AE_POWERUP_HALF		5
+#define CONTROLLER_AE_KILLED_FADE 		6
 
 #define CONTROLLER_FLINCH_DELAY			2		// at most one flinch every n secs
 
@@ -338,6 +339,27 @@ void CController::HandleAnimEvent( MonsterEvent_t *pEvent )
 			m_iBallTime[1] = gpGlobals->time + atoi( pEvent->options ) / 15.0f;
 		}
 		break;
+		case CONTROLLER_AE_KILLED_FADE:
+		{
+			EMIT_SOUND( ENT( pev ), CHAN_BODY, "debris/beamstart1.wav", 0.2, ATTN_NORM );
+
+			Vector vecSrc = pev->origin;
+			MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, vecSrc );
+			WRITE_BYTE( TE_DLIGHT );
+			WRITE_COORD( vecSrc.x );			 // X
+			WRITE_COORD( vecSrc.y );			 // Y
+			WRITE_COORD( vecSrc.z );			 // Z
+			WRITE_BYTE( 12 );					 // radius * 0.1
+			WRITE_BYTE( 224 );				 // r
+			WRITE_BYTE( 152 );				 // g
+			WRITE_BYTE( 96 );					 // b
+			WRITE_BYTE( 15 / pev->framerate); // time * 10
+			WRITE_BYTE( 0 );					 // decay * 0.1
+			MESSAGE_END();
+
+			FadeMonster();
+		}
+		break;
 		default:
 			CBaseMonster::HandleAnimEvent( pEvent );
 			break;
@@ -380,6 +402,9 @@ void CController::Precache()
 	PRECACHE_SOUND_ARRAY( pDeathSounds );
 
 	PRECACHE_MODEL( "sprites/xspark4.spr" );
+	PRECACHE_MODEL("sprites/tele1.spr");
+
+	PRECACHE_SOUND("debris/beamstart1.wav");
 
 	UTIL_PrecacheOther( "controller_energy_ball" );
 	UTIL_PrecacheOther( "controller_head_ball" );

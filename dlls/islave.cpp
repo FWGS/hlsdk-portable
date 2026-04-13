@@ -145,7 +145,10 @@ const char *CISlave::pDeathSounds[] =
 //=========================================================
 int CISlave::Classify( void )
 {
-	return CLASS_ALIEN_MILITARY;
+	if ( ( pev->spawnflags & SF_MONSTER_WAIT_UNTIL_PROVOKED ) != 0)
+		return CLASS_ALIEN_PASSIVE;
+	else
+		return CLASS_ALIEN_MILITARY;
 }
 
 int CISlave::IRelationship( CBaseEntity *pTarget )
@@ -379,7 +382,7 @@ void CISlave::HandleAnimEvent( MonsterEvent_t *pEvent )
 			}
 
 			EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, "debris/zap4.wav", 1, ATTN_NORM, 0, 100 + m_iBeams * 10 );
-			pev->skin = m_iBeams / 2;
+			// pev->skin = m_iBeams / 2;
 		}
 			break;
 		case ISLAVE_AE_ZAP_SHOOT:
@@ -520,6 +523,11 @@ void CISlave::Spawn()
 	m_flFieldOfView		= VIEW_FIELD_WIDE; // NOTE: we need a wide field of view so npc will notice player and say hello
 	m_MonsterState		= MONSTERSTATE_NONE;
 	m_afCapability		= bits_CAP_HEAR | bits_CAP_TURN_HEAD | bits_CAP_RANGE_ATTACK2 | bits_CAP_DOORS_GROUP;
+
+	if ( ( pev->spawnflags & SF_MONSTER_WAIT_UNTIL_PROVOKED ) != 0 )
+		pev->skin = 1;
+	else
+		pev->skin = 0;
 
 	m_voicePitch		= RANDOM_LONG( 85, 110 );
 

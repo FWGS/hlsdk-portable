@@ -811,6 +811,8 @@ int CBaseMonster::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, f
 	float	flTake;
 	Vector	vecDir;
 
+	byte bDuration = 0;
+
 	if( !pev->takedamage )
 		return 0;
 
@@ -1437,6 +1439,16 @@ void CBaseEntity::FireBullets( ULONG cShots, Vector vecSrc, Vector vecDirShootin
 					DecalGunshot( &tr, iBulletType );
 				}
 				break;
+			case BULLET_MONSTER_556:
+				pEntity->TraceAttack( pevAttacker, gSkillData.monDmg556, vecDir, &tr, DMG_BULLET) ;
+				TEXTURETYPE_PlaySound( &tr, vecSrc, vecEnd, iBulletType );
+				DecalGunshot( &tr, iBulletType) ;
+				break;			
+			case BULLET_MONSTER_762:
+				pEntity->TraceAttack( pevAttacker, gSkillData.monDmg762, vecDir, &tr, DMG_BULLET );
+				TEXTURETYPE_PlaySound( &tr, vecSrc, vecEnd, iBulletType );
+				DecalGunshot( &tr, iBulletType );
+				break;
 			case BULLET_NONE: // FIX
 				pEntity->TraceAttack( pevAttacker, 50, vecDir, &tr, DMG_CLUB );
 				TEXTURETYPE_PlaySound( &tr, vecSrc, vecEnd, iBulletType );
@@ -1512,16 +1524,66 @@ Vector CBaseEntity::FireBulletsPlayer( ULONG cShots, Vector vecSrc, Vector vecDi
 			default:
 			case BULLET_PLAYER_9MM:
 				pEntity->TraceAttack( pevAttacker, gSkillData.plrDmg9MM, vecDir, &tr, DMG_BULLET );
+				TEXTURETYPE_PlaySound( &tr, vecSrc, vecEnd, iBulletType );
 				break;
 			case BULLET_PLAYER_MP5:
 				pEntity->TraceAttack( pevAttacker, gSkillData.plrDmgMP5, vecDir, &tr, DMG_BULLET );
+				TEXTURETYPE_PlaySound( &tr, vecSrc, vecEnd, iBulletType );
 				break;
 			case BULLET_PLAYER_BUCKSHOT:
-				 // make distance based!
+				// make distance based!
 				pEntity->TraceAttack( pevAttacker, gSkillData.plrDmgBuckshot, vecDir, &tr, DMG_BULLET );
+				TEXTURETYPE_PlaySound( &tr, vecSrc, vecEnd, iBulletType );
 				break;
 			case BULLET_PLAYER_357:
 				pEntity->TraceAttack( pevAttacker, gSkillData.plrDmg357, vecDir, &tr, DMG_BULLET );
+				TEXTURETYPE_PlaySound( &tr, vecSrc, vecEnd, iBulletType );
+				break;
+			case BULLET_PLAYER_EAGLE:
+				pEntity->TraceAttack(pevAttacker, gSkillData.plrDmgEagle, vecDir, &tr, DMG_BULLET );
+				TEXTURETYPE_PlaySound( &tr, vecSrc, vecEnd, iBulletType );
+				DecalGunshot( &tr, iBulletType ); // hack for level transitions for the laser pointer
+				break;
+			case BULLET_PLAYER_556:
+				pEntity->TraceAttack(pevAttacker, gSkillData.plrDmg556, vecDir, &tr, DMG_BULLET );
+				TEXTURETYPE_PlaySound( &tr, vecSrc, vecEnd, iBulletType );
+				break;		
+			case BULLET_PLAYER_762:
+				pEntity->TraceAttack( pevAttacker, gSkillData.plrDmg762, vecDir, &tr, DMG_BULLET );
+				TEXTURETYPE_PlaySound( &tr, vecSrc, vecEnd, iBulletType );
+				if ( tr.pHit && tr.pHit->v.takedamage != DAMAGE_NO )
+				{
+					EMIT_SOUND_DYN( tr.pHit, CHAN_BODY, "weapons/xbow_hitbod2.wav", VOL_NORM, ATTN_NORM, 0, PITCH_NORM );
+					auto pHitEntity = Instance( tr.pHit );
+
+					if ( pHitEntity->BloodColor() != DONT_BLEED )
+					{
+						MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, EyePosition() );
+						WRITE_BYTE( TE_BLOODSTREAM );
+
+						WRITE_COORD( tr.vecEndPos.x );
+						WRITE_COORD( tr.vecEndPos.y );
+						WRITE_COORD( tr.vecEndPos.z );
+
+						const auto direction = vecSrc - tr.vecEndPos;
+
+						WRITE_COORD( direction.x );
+						WRITE_COORD( direction.y );
+						WRITE_COORD( direction.z );
+
+						if ( pHitEntity->BloodColor() == BLOOD_COLOR_RED )
+						{
+							WRITE_BYTE( 70 );
+						}
+						else
+						{
+							WRITE_BYTE( pHitEntity->BloodColor() );
+						}
+
+						WRITE_BYTE( 150 );
+						MESSAGE_END();
+					}
+				}
 				break;
 			case BULLET_NONE: // FIX
 				pEntity->TraceAttack( pevAttacker, 50, vecDir, &tr, DMG_CLUB );

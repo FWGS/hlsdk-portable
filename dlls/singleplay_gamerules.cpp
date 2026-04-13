@@ -31,6 +31,8 @@ extern int gmsgDeathMsg;	// client dll messages
 extern int gmsgScoreInfo;
 extern int gmsgMOTD;
 
+#define AMMO_RESPAWN_TIME 4
+
 //=========================================================
 //=========================================================
 CHalfLifeRules::CHalfLifeRules( void )
@@ -273,7 +275,7 @@ void CHalfLifeRules::PlayerGotWeapon( CBasePlayer *pPlayer, CBasePlayerItem *pWe
 //=========================================================
 float CHalfLifeRules::FlWeaponRespawnTime( CBasePlayerItem *pWeapon )
 {
-	return -1;
+	return gpGlobals->time + AMMO_RESPAWN_TIME;
 }
 
 //=========================================================
@@ -301,7 +303,7 @@ Vector CHalfLifeRules::VecWeaponRespawnSpot( CBasePlayerItem *pWeapon )
 //=========================================================
 int CHalfLifeRules::WeaponShouldRespawn( CBasePlayerItem *pWeapon )
 {
-	return GR_WEAPON_RESPAWN_NO;
+	return GR_WEAPON_RESPAWN_YES;
 }
 
 //=========================================================
@@ -365,7 +367,7 @@ int CHalfLifeRules::AmmoShouldRespawn( CBasePlayerAmmo *pAmmo )
 //=========================================================
 float CHalfLifeRules::FlAmmoRespawnTime( CBasePlayerAmmo *pAmmo )
 {
-	return -1;
+	return gpGlobals->time + AMMO_RESPAWN_TIME;
 }
 
 //=========================================================
