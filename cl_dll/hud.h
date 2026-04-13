@@ -436,7 +436,6 @@ public:
 	int Draw(float flTime);
 	int MsgFunc_HudKeycard(const char* pszName, int iSize, void* pbuf);
 	int GetKeycardPosition();
-	int GetScreenPosition(int szSmall, int szMedium, int szLarge);	
 private:
 	wrect_t m_prc1;
 	wrect_t m_prc2;
@@ -453,7 +452,6 @@ public:
 	int Draw(float flTime);
 	int MsgFunc_HudRedcard(const char* pszName, int iSize, void* pbuf);
 	int GetRedcardPosition();
-	int GetScreenPosition(int szSmall, int szMedium, int szLarge);
 private:
 	wrect_t m_prc1;
 	wrect_t m_prc2;
@@ -470,7 +468,6 @@ public:
 	int Draw(float flTime);
 	int MsgFunc_HudC4(const char* pszName, int iSize, void* pbuf);
 	int GetC4Position();
-	int GetScreenPosition(int szSmall, int szMedium, int szLarge);
 private:
 	wrect_t m_prc1;
 	wrect_t m_prc2;
@@ -628,6 +625,8 @@ public:
 	int GetNumWidth( int iNumber, int iFlags );
 	int DrawHudStringLen( const char *szIt );
 	void DrawDarkRectangle( int x, int y, int wide, int tall );
+	
+	int GetScreenPosition( int szSmall, int szMedium, int szLarge );
 
 	bool HasWeapon(int id) const
 	{

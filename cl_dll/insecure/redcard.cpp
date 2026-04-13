@@ -99,22 +99,10 @@ int CHudRedcard::GetRedcardPosition()
     {
         // If we have a flashlight AND C4
         // move a bit below it.
-        return GetScreenPosition(88, 176, 264);
+        return gHUD.GetScreenPosition(88, 176, 264);
     }
     else
     {
-        return GetScreenPosition(56, 112, 168);
+        return gHUD.GetScreenPosition(56, 112, 168);
     }
-}
-
-int CHudRedcard::GetScreenPosition(int szSmall, int szMedium, int szLarge)
-{
-    if (ScreenWidth < 640)
-        return szSmall;
-    else if (ScreenWidth < 1280)
-        return szSmall;
-    else if (ScreenWidth <= 2560)
-        return szMedium;
-    else
-        return szLarge;
 }

@@ -97,18 +97,6 @@ int CHudC4::GetC4Position()
     }
     else
     {
-        return GetScreenPosition(56, 112, 168);
+        return gHUD.GetScreenPosition(56, 112, 168);
     }
-}
-
-int CHudC4::GetScreenPosition(int szSmall, int szMedium, int szLarge)
-{
-    if (ScreenWidth < 640)
-        return szSmall;
-    else if (ScreenWidth < 1280)
-        return szSmall;
-    else if (ScreenWidth <= 2560)
-        return szMedium;
-    else
-        return szLarge;
 }

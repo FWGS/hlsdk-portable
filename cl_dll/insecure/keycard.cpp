@@ -101,38 +101,26 @@ int CHudKeycard::GetKeycardPosition()
     {
         // If we have all the items, move the element 32 pixels in 640 
         // further down with each item -- also scale with different resolutions.
-        return GetScreenPosition(120, 240, 360);
+        return gHUD.GetScreenPosition(120, 240, 360);
     }
     else if (gHUD.HasFlashlight() && gHUD.HasRedcard())
     {
 		// If we only have the flashlight and red keycard.
-        return GetScreenPosition(88, 176, 264);
+        return gHUD.GetScreenPosition(88, 176, 264);
     }
     else if (gHUD.HasFlashlight() && gHUD.HasC4())
     {
         // If we only have the flashlight and C4.
-        return GetScreenPosition(88, 176, 264);
+        return gHUD.GetScreenPosition(88, 176, 264);
     }
     else if (!gHUD.HasFlashlight() && gHUD.HasRedcard() && gHUD.HasC4())
     {
 		// If we only have the red keycard and C4.
-        return GetScreenPosition(88, 176, 264);
+        return gHUD.GetScreenPosition(88, 176, 264);
     }
     else
     {
 		// If we only have the flashlight.
-        return GetScreenPosition(56, 112, 168);
+        return gHUD.GetScreenPosition(56, 112, 168);
     }
-}
-
-int CHudKeycard::GetScreenPosition(int szSmall, int szMedium, int szLarge)
-{
-    if (ScreenWidth < 640)
-        return szSmall;
-    else if (ScreenWidth < 1280)
-        return szSmall;
-    else if (ScreenWidth <= 2560)
-        return szMedium;
-    else
-        return szLarge;
 }
