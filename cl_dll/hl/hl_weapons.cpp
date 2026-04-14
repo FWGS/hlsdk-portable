@@ -114,23 +114,24 @@ Links the raw entity to an entvars_s holder.  If a player is passed in as the ow
 we set up the m_pPlayer field.
 =====================
 */
-void HUD_PrepEntity(CBaseEntity* pEntity, CBasePlayer* pWeaponOwner)
+void HUD_PrepEntity( CBaseEntity *pEntity, CBasePlayer *pWeaponOwner )
 {
-	memset(&ev[num_ents], 0, sizeof(entvars_t));
+	memset( &ev[num_ents], 0, sizeof(entvars_t) );
 	pEntity->pev = &ev[num_ents++];
 
 	pEntity->Precache();
 	pEntity->Spawn();
 
-	if (pWeaponOwner)
+	if( pWeaponOwner )
 	{
 		ItemInfo info;
 
 		memset(&info, 0, sizeof(info));
 
-		((CBasePlayerWeapon*)pEntity)->m_pPlayer = pWeaponOwner;
+		( (CBasePlayerWeapon *)pEntity )->m_pPlayer = pWeaponOwner;
 
-		((CBasePlayerWeapon*)pEntity)->GetItemInfo(&info);
+		( (CBasePlayerWeapon *)pEntity )->GetItemInfo( &info );
+
 
 		CBasePlayerItem::ItemInfoArray[info.iId] = info;
 
@@ -146,7 +147,7 @@ void HUD_PrepEntity(CBaseEntity* pEntity, CBasePlayer* pWeaponOwner)
 			AddAmmoNameToAmmoRegistry(info.pszAmmo2);
 		}
 
-		g_pWpns[info.iId] = (CBasePlayerWeapon*)pEntity;
+		g_pWpns[info.iId] = (CBasePlayerWeapon *)pEntity;
 	}
 }
 
@@ -711,7 +712,7 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 
 	// Fill in data based on selected weapon
 	// FIXME, make this a method in each weapon?  where you pass in an entity_state_t *?
-	switch (from->client.m_iId)
+	switch( from->client.m_iId )
 	{
 		case WEAPON_CROWBAR:
 			pWeapon = &g_Crowbar;
