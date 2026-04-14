@@ -1240,11 +1240,6 @@ void CBaseMonster::SetActivity( Activity NewActivity )
 		ALERT( at_aiconsole, "%s has no sequence for act:%d\n", STRING( pev->classname ), NewActivity );
 		pev->sequence = 0;	// Set to the reset anim (if it's there)
 	}
-
-	m_Activity = NewActivity; // Go ahead and set this so it doesn't keep trying when the anim is not present
-
-	// In case someone calls this with something other than the ideal activity
-	m_IdealActivity = m_Activity;
 }
 
 //=========================================================
