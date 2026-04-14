@@ -351,20 +351,21 @@ void CHudAmmo::Think( void )
 	if( gHUD.m_fPlayerDead )
 		return;
 
-	if (gHUD.m_iWeaponBits != gWR.iOldWeaponBits)
+	
+	if( gHUD.m_iWeaponBits != gWR.iOldWeaponBits )
 	{
 		gWR.iOldWeaponBits = gHUD.m_iWeaponBits;
 
-		for (int i = MAX_WEAPONS - 1; i > 0; i--)
+		for( int i = MAX_WEAPONS-1; i > 0; i-- )
 		{
-			WEAPON* p = gWR.GetWeapon(i);
+			WEAPON *p = gWR.GetWeapon( i );
 
-			if (p && WEAPON_NONE != p->iId)
+			if( p && p->iId )
 			{
-				if (gHUD.HasWeapon(p->iId))
-					gWR.PickupWeapon(p);
+				if( gHUD.m_iWeaponBits & ( 1 << p->iId ) )
+					gWR.PickupWeapon( p );
 				else
-					gWR.DropWeapon(p);
+					gWR.DropWeapon( p );
 			}
 		}
 	}
@@ -429,10 +430,10 @@ void WeaponsResource::SelectSlot( int iSlot, int fAdvance, int iDirection )
 		return;
 
 	
-	if (!gHUD.HasSuit())
+	if ( !gHUD.HasSuit() )
 		return;
 
-	if (!gHUD.HasAnyWeapons())
+	if ( !gHUD.HasAnyWeapons() )
 		return;
 
 	WEAPON *p = NULL;

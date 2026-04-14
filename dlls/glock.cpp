@@ -110,7 +110,7 @@ void CGlock::Holster()
 
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
 
-	SendWeaponAnim(GLOCK_HOLSTER);
+	SendWeaponAnim( GLOCK_HOLSTER );
 }
 
 void CGlock::SecondaryAttack( void )

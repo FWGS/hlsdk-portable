@@ -116,7 +116,7 @@ BOOL CShotgun::Deploy()
 void CShotgun::Holster()
 {
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
-	SendWeaponAnim(SHOTGUN_HOLSTER);
+	SendWeaponAnim( SHOTGUN_HOLSTER );
 }
 
 void CShotgun::PrimaryAttack()
@@ -401,25 +401,25 @@ LINK_ENTITY_TO_CLASS( ammo_buckshot, CShotgunAmmo )
 
 class CShellAmmo : public CBasePlayerAmmo
 {
-	void Spawn()
+	void Spawn( void )
 	{
 		Precache();
-		SET_MODEL(ENT(pev), "models/w_shotshell.mdl");
+		SET_MODEL( ENT( pev ), "models/w_shotshell.mdl" );
 		CBasePlayerAmmo::Spawn();
 	}
-	void Precache()
+	void Precache( void )
 	{
-		PRECACHE_MODEL("models/w_shotshell.mdl");
-		PRECACHE_SOUND("items/9mmclip1.wav");
+		PRECACHE_MODEL( "models/w_shotshell.mdl" );
+		PRECACHE_SOUND( "items/9mmclip1.wav" );
 	}
-	BOOL AddAmmo(CBaseEntity* pOther)
+	BOOL AddAmmo( CBaseEntity* pOther )
 	{
-		if (pOther->GiveAmmo(3, "buckshot", BUCKSHOT_MAX_CARRY) != -1)
+		if ( pOther->GiveAmmo( 3, "buckshot", BUCKSHOT_MAX_CARRY ) != -1 )
 		{
-			EMIT_SOUND(ENT(pev), CHAN_ITEM, "items/9mmclip1.wav", 1, ATTN_NORM);
+			EMIT_SOUND( ENT( pev ), CHAN_ITEM, "items/9mmclip1.wav", 1, ATTN_NORM );
 			return TRUE;
 		}
 		return FALSE;
 	}
 };
-LINK_ENTITY_TO_CLASS(ammo_shotshell, CShellAmmo);
+LINK_ENTITY_TO_CLASS( ammo_shotshell, CShellAmmo );

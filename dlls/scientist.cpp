@@ -1479,35 +1479,35 @@ int CSittingScientist::FIdleSpeak( void )
 class CScientistCommander : public CScientist
 {
 public:
-	void Spawn();
-	void Precache();
-	void SetYawSpeed();
-	int Classify();
+	void Spawn( void );
+	void Precache( void );
+	void SetYawSpeed( void );
+	int Classify( void );
 };
-LINK_ENTITY_TO_CLASS(monster_scientist_commander, CScientistCommander);
+LINK_ENTITY_TO_CLASS( monster_scientist_commander, CScientistCommander );
 
-void CScientistCommander::Spawn()
+void CScientistCommander::Spawn( void )
 {
 	CScientist::Spawn();
-	SET_MODEL(ENT(pev), "models/commander.mdl");
-	UTIL_SetSize(pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX);
+	SET_MODEL( ENT( pev ), "models/commander.mdl" );
+	UTIL_SetSize( pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX );
 	pev->health = gSkillData.scientistHealth;
 	m_voicePitch = 100;
 }
 
-void CScientistCommander::Precache()
+void CScientistCommander::Precache( void )
 {
-	PRECACHE_MODEL("models/commander.mdl");
+	PRECACHE_MODEL( "models/commander.mdl" );
 	CScientist::Precache();
 }
 
 
-void CScientistCommander::SetYawSpeed()
+void CScientistCommander::SetYawSpeed( void )
 {
 	pev->yaw_speed = 120;
 }
 
-int CScientistCommander::Classify()
+int CScientistCommander::Classify( void )
 {
 	return CLASS_HUMAN_PASSIVE;
 }

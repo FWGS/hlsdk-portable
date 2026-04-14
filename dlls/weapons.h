@@ -218,7 +218,7 @@ typedef struct
 	int iId;
 } AmmoInfo;
 
-void AddAmmoNameToAmmoRegistry(const char* szAmmoname);
+void AddAmmoNameToAmmoRegistry( const char* szAmmoname );
 
 // Items that the player has in their inventory that they can use
 class CBasePlayerItem : public CBaseAnimating
@@ -237,7 +237,7 @@ public:
 	void EXPORT DefaultTouch( CBaseEntity *pOther );	// default weapon touch
 	void EXPORT FallThink ( void );// when an item is first spawned, this think is run to determine when the object has hit the ground.
 	void EXPORT Materialize( void );// make a weapon visible and tangible
-	void EXPORT ToggleUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
+	void EXPORT ToggleUse( CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value );
 	void EXPORT AttemptToMaterialize( void );  // the weapon desires to become visible and tangible, if the game rules allow for it
 	CBaseEntity* Respawn ( void );// copy a weapon
 	void FallInit( void );
@@ -265,9 +265,9 @@ public:
 
 	virtual CBasePlayerItem *GetWeaponPtr( void ) { return NULL; };
 
-	virtual void GetWeaponData(weapon_data_t& data) {}
+	virtual void GetWeaponData( weapon_data_t& data ) {}
 
-	virtual void SetWeaponData(const weapon_data_t& data) {}
+	virtual void SetWeaponData( const weapon_data_t& data ) {}
 
 	virtual void DecrementTimers() {}
 
@@ -379,7 +379,7 @@ class CBasePlayerAmmo : public CBaseEntity
 public:
 	virtual void Spawn( void );
 	void EXPORT DefaultTouch( CBaseEntity *pOther ); // default weapon touch
-	void EXPORT ToggleUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
+	void EXPORT ToggleUse( CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value );
 	virtual BOOL AddAmmo( CBaseEntity *pOther ) { return TRUE; };
 
 	CBaseEntity* Respawn( void );
@@ -415,7 +415,7 @@ typedef struct
 
 extern MULTIDAMAGE gMultiDamage;
 
-void FindHullIntersection(const Vector& vecSrc, TraceResult& tr, const Vector& mins, const Vector& maxs, edict_t* pEntity);
+void FindHullIntersection( const Vector& vecSrc, TraceResult& tr, const Vector& mins, const Vector& maxs, edict_t* pEntity );
 
 #define LOUD_GUN_VOLUME			1000
 #define NORMAL_GUN_VOLUME		600
@@ -1097,7 +1097,7 @@ private:
 
 class CEagleLaser : public CBaseEntity
 {
-	void Spawn(	void );
+	void Spawn( void );
 	void Precache( void );
 
 	int ObjectCaps( void ) { return FCAP_DONT_SAVE; }
@@ -1128,13 +1128,13 @@ class CEagle : public CBasePlayerWeapon
 {
 public:
 #if !CLIENT_DLL
-	int		Save( CSave &save );
-	int		Restore( CRestore &restore );
+	int	Save( CSave &save );
+	int	Restore( CRestore &restore );
 	static	TYPEDESCRIPTION m_SaveData[];
 #endif
 
-	void Spawn();
-	void Precache();
+	void Spawn( void );
+	void Precache( void );
 	int iItemSlot() { return 2; }
 	int GetItemInfo( ItemInfo* p );
 
@@ -1306,19 +1306,19 @@ enum hgun_e
 class CHgunPoison : public CBasePlayerWeapon
 {
 public:
-	void Spawn();
-	void Precache();
-	int iItemSlot() { return 4; }
-	int GetItemInfo(ItemInfo* p);
+	void Spawn( void );
+	void Precache( void );
+	int iItemSlot( void ) { return 4; }
+	int GetItemInfo( ItemInfo* p );
 	BOOL AddToPlayer(CBasePlayer* pPlayer);
 
-	void PrimaryAttack();
-	void SecondaryAttack();
-	BOOL Deploy();
-	BOOL IsUseable();
+	void PrimaryAttack( void );
+	void SecondaryAttack( void );
+	BOOL Deploy( void );
+	BOOL IsUseable( void );
 	void Holster( int skiplocal = 0 );
-	void Reload();
-	void WeaponIdle();
+	void Reload( void );
+	void WeaponIdle( void );
 	float m_flNextAnimTime;
 
 	float m_flRechargeTime;
@@ -1363,20 +1363,20 @@ public:
 	static TYPEDESCRIPTION m_SaveData[];
 #endif
 
-	void Spawn();
-	void Precache();
-	int iItemSlot() { return 4; }
+	void Spawn( void );
+	void Precache( void );
+	int iItemSlot( void ) { return 4; }
 	int GetItemInfo(ItemInfo* p);
 
-	BOOL Deploy();
+	BOOL Deploy( void );
 	void Holster( int skiplocal = 0 );
 
-	void PrimaryAttack();
-	void SecondaryAttack() { return; }
-	void WeaponIdle();
+	void PrimaryAttack( void );
+	void SecondaryAttack( void ) { return; }
+	void WeaponIdle( void );
 
-	void StartFire();
-	void Fire(Vector vecOrigSrc, Vector vecDirShooting, float flDamage);
+	void StartFire( void );
+	void Fire( Vector vecOrigSrc, Vector vecDirShooting, float flDamage );
 	float GetFullChargeTime();
 	int m_iBalls;
 	int m_iGlow;
@@ -1397,7 +1397,7 @@ public:
 	}
 
 private:
-	void SendStopEvent(bool sendToHost);
+	void SendStopEvent( bool sendToHost );
 
 private:
 	unsigned short m_usGaussFire;

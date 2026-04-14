@@ -844,7 +844,7 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 		player.m_rgAmmo[pCurrent->m_iPrimaryAmmoType] = (int)from->client.vuser4[1];
 		player.m_rgAmmo[pCurrent->m_iSecondaryAmmoType] = (int)from->client.vuser4[2];
 
-		pCurrent->SetWeaponData(*pfrom);
+		pCurrent->SetWeaponData( *pfrom );
 	}
 
 	// For random weapon events, use this seed to seed random # generator
@@ -1023,7 +1023,7 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 
 		pCurrent->DecrementTimers();
 
-		pCurrent->GetWeaponData(*pto);
+		pCurrent->GetWeaponData( *pto );
 		
 /*		if( pto->m_flPumpTime != -9999.0f )
 		{

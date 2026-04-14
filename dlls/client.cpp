@@ -606,9 +606,9 @@ void ClientCommand( edict_t *pEntity )
 		if( pPlayer->IsObserver() )
 			pPlayer->Observer_FindNextPlayer( atoi( CMD_ARGV( 1 ) ) ? true : false );
 	}
-	else if (FStrEq(pcmd, "cl_version"))
+	else if ( FStrEq( pcmd, "cl_version" ) )
 	{
-		ClientPrint(pev, HUD_PRINTNOTIFY, "Half-Life: Insecure\nVersion 1.5\nTEST BUILD\n");
+		ClientPrint( pev, HUD_PRINTNOTIFY, "Half-Life: Insecure\nVersion 1.5\nTEST BUILD\n" );
 	}
 	else if( g_pGameRules->ClientCommand( GetClassPtr( (CBasePlayer *)pev ), pcmd ) )
 	{

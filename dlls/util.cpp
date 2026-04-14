@@ -2042,7 +2042,7 @@ int CSave::WriteFields( const char *pname, void *pBaseData, TYPEDESCRIPTION *pFi
 			WriteInt( pTest->fieldName, (int *)pOutputData, pTest->fieldSize );
 			break;
 		case FIELD_INT64:
-			WriteData(pTest->fieldName, sizeof(std::uint64_t) * pTest->fieldSize, ((char*)pOutputData));
+			WriteData( pTest->fieldName, sizeof(std::uint64_t) * pTest->fieldSize, ( ( char* )pOutputData ) );
 			break;
 		case FIELD_SHORT:
 			WriteShort( pTest->fieldName, (short *)pOutputData, pTest->fieldSize );
@@ -2295,7 +2295,7 @@ int CRestore::ReadField( void *pBaseData, TYPEDESCRIPTION *pFields, int fieldCou
 						*( (int *)pOutputData ) = ULittleToHost( *(int *)pInputData );
 						break;
 					case FIELD_INT64:
-						*((std::uint64_t*)pOutputData) = *(std::uint64_t*)pInputData;
+						*( ( std::uint64_t* )pOutputData ) = *( std::uint64_t* )pInputData;
 						break;
 					case FIELD_SHORT:
 						*( (short *)pOutputData ) = ULittleToHost( *(short *)pInputData );

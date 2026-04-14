@@ -250,12 +250,12 @@ class CHandGrenadeAmmo : public CBasePlayerAmmo
 	}
 	BOOL AddAmmo( CBaseEntity* pOther )
 	{
-		if ( pOther->GiveAmmo( HANDGRENADE_DEFAULT_GIVE, "Hand Grenade", HANDGRENADE_MAX_CARRY ) != -1)
+		if ( pOther->GiveAmmo( HANDGRENADE_DEFAULT_GIVE, "Hand Grenade", HANDGRENADE_MAX_CARRY ) != -1 )
 		{
-			EMIT_SOUND(ENT(pev), CHAN_ITEM, "items/9mmclip1.wav", 1, ATTN_NORM);
+			EMIT_SOUND( ENT( pev ), CHAN_ITEM, "items/9mmclip1.wav", 1, ATTN_NORM );
 			return TRUE;
 		}
 		return FALSE;
 	}
 };
-LINK_ENTITY_TO_CLASS(ammo_handgrenade, CHandGrenadeAmmo);
+LINK_ENTITY_TO_CLASS( ammo_handgrenade, CHandGrenadeAmmo );

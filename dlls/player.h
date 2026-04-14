@@ -248,7 +248,7 @@ public:
 
 	// Keycard
 	bool HasKeycard() const;
-	void ToggleKeycard(BOOL hasKey);
+	void ToggleKeycard( BOOL hasKey );
 
 	// Red Keycard
 	bool HasRedKeycard() const;

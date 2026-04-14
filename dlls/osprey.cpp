@@ -787,18 +787,18 @@ void COsprey::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir
 class CCineOsprey : public CBaseMonster
 {
 public:
-	void Spawn();
-	void Precache();
-	int  Classify();
-	int TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType) override;
+	void Spawn( void );
+	void Precache( void );
+	int  Classify( void );
+	int TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType );
 };
-LINK_ENTITY_TO_CLASS(monster_cine_osprey, CCineOsprey);
+LINK_ENTITY_TO_CLASS( monster_cine_osprey, CCineOsprey );
 
 //=========================================================
 // Classify - indicates this monster's place in the 
 // relationship table.
 //=========================================================
-int	CCineOsprey::Classify()
+int	CCineOsprey::Classify( void )
 {
 	return	CLASS_NONE;
 }
@@ -806,19 +806,19 @@ int	CCineOsprey::Classify()
 //=========================================================
 // Spawn
 //=========================================================
-void CCineOsprey::Spawn()
+void CCineOsprey::Spawn( void )
 {
 	Precache();
 
-	SET_MODEL(ENT(pev), "models/cine_osprey.mdl");
-	UTIL_SetSize(pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX);
+	SET_MODEL( ENT( pev ), "models/cine_osprey.mdl" );
+	UTIL_SetSize( pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX );
 
 	pev->solid = SOLID_SLIDEBOX;
 	pev->movetype = MOVETYPE_STEP;
 	m_bloodColor = DONT_BLEED;
 	pev->health = 100;
 	pev->takedamage = DAMAGE_NO;
-	pev->view_ofs = Vector(0, 0, 0);// position of the eyes relative to monster's origin.
+	pev->view_ofs = Vector( 0, 0, 0 );// position of the eyes relative to monster's origin.
 	m_flFieldOfView = 0.5;// indicates the width of this monster's forward view cone ( as a dotproduct result )
 	m_MonsterState = MONSTERSTATE_NONE;
 
@@ -828,26 +828,26 @@ void CCineOsprey::Spawn()
 //=========================================================
 // Precache - precaches all resources this monster needs
 //=========================================================
-void CCineOsprey::Precache()
+void CCineOsprey::Precache( void )
 {
-	PRECACHE_MODEL("models/cine_osprey.mdl");
+	PRECACHE_MODEL( "models/cine_osprey.mdl" );
 }
 
 //=========================================================
 // Override all damage
 //=========================================================
-int CCineOsprey::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType)
+int CCineOsprey::TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType )
 {
 	pev->health = pev->max_health / 2; // always trigger the 50% damage aitrigger
 
-	if (flDamage > 0)
+	if ( flDamage > 0 )
 	{
-		SetConditions(bits_COND_LIGHT_DAMAGE);
+		SetConditions( bits_COND_LIGHT_DAMAGE );
 	}
 
-	if (flDamage >= 20)
+	if ( flDamage >= 20 )
 	{
-		SetConditions(bits_COND_HEAVY_DAMAGE);
+		SetConditions( bits_COND_HEAVY_DAMAGE );
 	}
 	return TRUE;
 }

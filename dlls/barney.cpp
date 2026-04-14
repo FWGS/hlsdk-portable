@@ -48,7 +48,7 @@ public:
 	void Precache( void );
 	void SetYawSpeed( void );
 	int ISoundMask( void );
-	void Glock();
+	void Glock( void );
 	void AlertSound( void );
 	int Classify( void );
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
@@ -187,48 +187,38 @@ Schedule_t slBaFaceTarget[] =
 
 Task_t tlBaHideReload[] =
 {
-	{TASK_STOP_MOVING, (float)0},
-	{TASK_SET_FAIL_SCHEDULE, (float)SCHED_RELOAD},
-	{TASK_FIND_NEAR_NODE_COVER_FROM_ENEMY, (float)0},
-	{TASK_RUN_PATH, (float)0},
-	{TASK_WAIT_FOR_MOVEMENT, (float)0},
-	{TASK_REMEMBER, (float)bits_MEMORY_INCOVER},
-	{TASK_FACE_ENEMY, (float)0},
-	{TASK_PLAY_SEQUENCE, (float)ACT_RELOAD},
+	{ TASK_STOP_MOVING, ( float ) 0 },
+	{ TASK_SET_FAIL_SCHEDULE, ( float ) SCHED_RELOAD} ,
+	{ TASK_FIND_NEAR_NODE_COVER_FROM_ENEMY, ( float ) 0 },
+	{ TASK_RUN_PATH, ( float ) 0 },
+	{ TASK_WAIT_FOR_MOVEMENT, ( float ) 0 },
+	{ TASK_REMEMBER, ( float ) bits_MEMORY_INCOVER },
+	{ TASK_FACE_ENEMY, ( float ) 0 },
+	{ TASK_PLAY_SEQUENCE, ( float ) ACT_RELOAD },
 };
 
 Task_t tlBaLowAmmoReload[] =
 {
-	{TASK_STOP_MOVING, (float)0},
-	{TASK_PLAY_SEQUENCE, (float)ACT_RELOAD},
+	{ TASK_STOP_MOVING, ( float ) 0 },
+	{ TASK_PLAY_SEQUENCE, ( float ) ACT_RELOAD },
 };
 
 Schedule_t slBaHideReload[] =
 {
-	{tlBaHideReload,
-		ARRAYSIZE(tlBaHideReload),
-		bits_COND_HEAVY_DAMAGE |
-			bits_COND_HEAR_SOUND,
-
-		bits_SOUND_DANGER,
-		"BarneyHideReload"} };
+	{ tlBaHideReload, ARRAYSIZE( tlBaHideReload ), bits_COND_HEAVY_DAMAGE | bits_COND_HEAR_SOUND, bits_SOUND_DANGER, "BarneyHideReload" } 
+};
 
 Schedule_t slBaLowAmmoReload[] =
 {
-	{tlBaLowAmmoReload,
-		ARRAYSIZE(tlBaLowAmmoReload),
-		bits_COND_HEAVY_DAMAGE |
-			bits_COND_HEAR_SOUND,
-
-		bits_SOUND_DANGER,
-		"BarneyReload"} };
+	{ tlBaLowAmmoReload, ARRAYSIZE(tlBaLowAmmoReload), bits_COND_HEAVY_DAMAGE | bits_COND_HEAR_SOUND, bits_SOUND_DANGER, "BarneyReload" } 
+};
 
 Task_t tlIdleBaStand[] =
 {
 	{ TASK_STOP_MOVING, 0 },
-	{ TASK_SET_ACTIVITY, (float)ACT_IDLE },
-	{ TASK_WAIT, (float)2 }, // repick IDLESTAND every two seconds.
-	{ TASK_TLK_HEADRESET, (float)0 }, // reset head position
+	{ TASK_SET_ACTIVITY, ( float ) ACT_IDLE },
+	{ TASK_WAIT, ( float ) 2 }, // repick IDLESTAND every two seconds.
+	{ TASK_TLK_HEADRESET, ( float ) 0 }, // reset head position
 };
 
 Schedule_t slIdleBaStand[] =
@@ -269,14 +259,14 @@ void CBarney::StartTask( Task_t *pTask )
 {
 	m_iTaskStatus = TASKSTATUS_RUNNING;
 
-	switch (pTask->iTask)
+	switch ( pTask->iTask )
 	{
 	case TASK_RELOAD:
 		m_IdealActivity = ACT_RELOAD;
 		break;
 
 	default:
-		CTalkMonster::StartTask(pTask);
+		CTalkMonster::StartTask( pTask );
 	break;
 	}	
 }
@@ -392,11 +382,11 @@ BOOL CBarney::CheckRangeAttack1( float flDot, float flDist )
 	return FALSE;
 }
 
-void CBarney::CheckAmmo()
+void CBarney::CheckAmmo( void)
 {
-	if (m_cAmmoLoaded <= 0)
+	if ( m_cAmmoLoaded <= 0 )
 	{
-		SetConditions(bits_COND_NO_AMMO_LOADED);
+		SetConditions( bits_COND_NO_AMMO_LOADED );
 	}
 }
 
@@ -428,10 +418,10 @@ void CBarney::Glock( void )
 
 	CSoundEnt::InsertSound( bits_SOUND_COMBAT, pev->origin, 384, 0.3f );
 
-	//ALERT(at_console, "%d", m_cAmmoLoaded);
+	// ALERT(at_console, "%d", m_cAmmoLoaded);
 
 	// Don't take ammo if he's on a scripted sequence
-	if (m_MonsterState != MONSTERSTATE_SCRIPT)
+	if ( m_MonsterState != MONSTERSTATE_SCRIPT )
 		m_cAmmoLoaded--;
 }
 
@@ -515,7 +505,7 @@ void CBarney::Precache()
 	PRECACHE_SOUND( "barney/ba_die2.wav" );
 	PRECACHE_SOUND( "barney/ba_die3.wav" );
 
-	PRECACHE_SOUND("hgrunt/gr_reload1.wav");
+	PRECACHE_SOUND( "hgrunt/gr_reload1.wav" );
 
 	// every new barney must call this, otherwise
 	// when a level is loaded, nobody will talk (time is reset to 0)
@@ -797,14 +787,14 @@ Schedule_t *CBarney::GetSchedule( void )
 			if( !m_fGunDrawn )
 				return GetScheduleOfType( SCHED_ARM_WEAPON );
 
-			if (HasConditions(bits_COND_NO_AMMO_LOADED))
+			if ( HasConditions( bits_COND_NO_AMMO_LOADED ) )
 			{
 				// i'm with the player so he should cover me while i'm reloading
-				if (IsFollowing())
-					return GetScheduleOfType(SCHED_BARNEY_LOW_AMMO_RELOAD);
+				if ( IsFollowing() )
+					return GetScheduleOfType( SCHED_BARNEY_LOW_AMMO_RELOAD );
 				else
 					// well shit i'm on my own, run to cover and reload
-					return GetScheduleOfType(SCHED_BARNEY_COVER_AND_RELOAD);
+					return GetScheduleOfType( SCHED_BARNEY_COVER_AND_RELOAD );
 			}
 			
 			if( HasConditions( bits_COND_HEAVY_DAMAGE ) )
@@ -814,16 +804,16 @@ Schedule_t *CBarney::GetSchedule( void )
 	case MONSTERSTATE_ALERT:	
 	{
 		// this is for the reload activity to work when is following the player.
-		if (m_cAmmoLoaded <= 10)
+		if ( m_cAmmoLoaded <= 10)
 		{
 			// reload if i'm on low ammo.
-			return GetScheduleOfType(SCHED_BARNEY_LOW_AMMO_RELOAD);
+			return GetScheduleOfType( SCHED_BARNEY_LOW_AMMO_RELOAD );
 		}
-		if (HasConditions(bits_COND_CLIENT_PUSH))
+		if ( HasConditions( bits_COND_CLIENT_PUSH ) )
 		{
-			return GetScheduleOfType(SCHED_MOVE_AWAY_FOLLOW);
+			return GetScheduleOfType( SCHED_MOVE_AWAY_FOLLOW );
 		}
-		return GetScheduleOfType(SCHED_TARGET_FACE);
+		return GetScheduleOfType( SCHED_TARGET_FACE );
 	}
 	break;
 	case MONSTERSTATE_IDLE:
@@ -876,7 +866,7 @@ void CBarney::DeclineFollowing( void )
 	PlaySentence( "BA_POK", 2, VOL_NORM, ATTN_NORM );
 }
 
-void CBarney::DeclineFollowingAlt()
+void CBarney::DeclineFollowingAlt( void)
 {
 
 }

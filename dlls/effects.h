@@ -331,10 +331,10 @@ class CXenLaser : public CLaser
 public:
 	void Spawn();
 	void Precache();
-	void KeyValue(KeyValueData* pkvd);
+	void KeyValue( KeyValueData* pkvd );
 
-	void FireAtPoint(TraceResult& point);
-	void XenBeamDamage(TraceResult* ptr);
+	void FireAtPoint( TraceResult& point );
+	void XenBeamDamage( TraceResult* ptr );
 	void EXPORT StrikeThink();
 
 	virtual int Save( CSave &save );

@@ -247,14 +247,14 @@ BOOL CBaseMonster::HasAlienGibs( void )
 {
 	int myClass = Classify();
 
-	if (myClass == CLASS_ALIEN_MILITARY ||
+	if ( myClass == CLASS_ALIEN_MILITARY ||
 		myClass == CLASS_ALIEN_MONSTER ||
 		myClass == CLASS_ALIEN_PASSIVE ||
 		myClass == CLASS_INSECT ||
 		myClass == CLASS_ALIEN_PREDATOR ||
 		myClass == CLASS_ALIEN_SLAVE_EMPOWERED ||
 		myClass == CLASS_GONARCH ||
-		myClass == CLASS_ALIEN_PREY)
+		myClass == CLASS_ALIEN_PREY )
 
 		return TRUE;
 
@@ -1540,12 +1540,12 @@ Vector CBaseEntity::FireBulletsPlayer( ULONG cShots, Vector vecSrc, Vector vecDi
 				TEXTURETYPE_PlaySound( &tr, vecSrc, vecEnd, iBulletType );
 				break;
 			case BULLET_PLAYER_EAGLE:
-				pEntity->TraceAttack(pevAttacker, gSkillData.plrDmgEagle, vecDir, &tr, DMG_BULLET );
+				pEntity->TraceAttack( pevAttacker, gSkillData.plrDmgEagle, vecDir, &tr, DMG_BULLET );
 				TEXTURETYPE_PlaySound( &tr, vecSrc, vecEnd, iBulletType );
 				DecalGunshot( &tr, iBulletType ); // hack for level transitions for the laser pointer
 				break;
 			case BULLET_PLAYER_556:
-				pEntity->TraceAttack(pevAttacker, gSkillData.plrDmg556, vecDir, &tr, DMG_BULLET );
+				pEntity->TraceAttack( pevAttacker, gSkillData.plrDmg556, vecDir, &tr, DMG_BULLET );
 				TEXTURETYPE_PlaySound( &tr, vecSrc, vecEnd, iBulletType );
 				break;		
 			case BULLET_PLAYER_762:

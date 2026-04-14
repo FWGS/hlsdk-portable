@@ -274,7 +274,7 @@ void UTIL_PrecacheOtherWeapon( const char *szClassname )
 		{
 			CBasePlayerItem::ItemInfoArray[II.iId] = II;
 
-			const char* weaponName = ((II.iFlags & ITEM_FLAG_EXHAUSTIBLE) != 0) ? STRING(pEntity->pev->classname) : nullptr;
+			const char* weaponName = ( ( II.iFlags & ITEM_FLAG_EXHAUSTIBLE ) != 0 ) ? STRING( pEntity->pev->classname ) : nullptr;
 
 			if( II.pszAmmo1 && *II.pszAmmo1 )
 			{
@@ -301,17 +301,17 @@ void W_Precache( void )
 	// custom items...
 
 	// common world objects
-	UTIL_PrecacheOther("item_suit");
-	UTIL_PrecacheOther("item_battery");
-	UTIL_PrecacheOther("item_flashlight");
-	UTIL_PrecacheOther("item_armorvest");
-	UTIL_PrecacheOther("item_armorplate");
-	UTIL_PrecacheOther("item_helmet");
-	UTIL_PrecacheOther("item_antidote");
-	UTIL_PrecacheOther("item_keycard");
-	UTIL_PrecacheOther("item_redcard");
-	UTIL_PrecacheOther("item_longjump");
-	UTIL_PrecacheOther("item_c4");
+	UTIL_PrecacheOther( "item_suit" );
+	UTIL_PrecacheOther( "item_battery" );
+	UTIL_PrecacheOther( "item_flashlight" );
+	UTIL_PrecacheOther( "item_armorvest" );
+	UTIL_PrecacheOther( "item_armorplate" );
+	UTIL_PrecacheOther( "item_helmet" );
+	UTIL_PrecacheOther( "item_antidote" );
+	UTIL_PrecacheOther( "item_keycard" );
+	UTIL_PrecacheOther( "item_redcard" );
+	UTIL_PrecacheOther( "item_longjump" );
+	UTIL_PrecacheOther( "item_c4" );
 
 	// shotgun
 	UTIL_PrecacheOtherWeapon( "weapon_shotgun" );
@@ -321,7 +321,7 @@ void W_Precache( void )
 	UTIL_PrecacheOtherWeapon( "weapon_crowbar" );
 
 	// knife
-	UTIL_PrecacheOtherWeapon("weapon_knife");
+	UTIL_PrecacheOtherWeapon( "weapon_knife" );
 
 	// glock
 	UTIL_PrecacheOtherWeapon( "weapon_9mmhandgun" );
@@ -374,15 +374,15 @@ void W_Precache( void )
 	UTIL_PrecacheOtherWeapon( "weapon_hornetgun" );
 
 	// m249 saw
-	UTIL_PrecacheOtherWeapon("weapon_m249");
-	UTIL_PrecacheOther("ammo_556");	
+	UTIL_PrecacheOtherWeapon( "weapon_m249" );
+	UTIL_PrecacheOther( "ammo_556" );	
 	
 	// sniper rifle
-	UTIL_PrecacheOtherWeapon("weapon_sniperrifle");
-	UTIL_PrecacheOther("ammo_762");
+	UTIL_PrecacheOtherWeapon( "weapon_sniperrifle" );
+	UTIL_PrecacheOther( "ammo_762" );
 
 	// penguin grenade
-	UTIL_PrecacheOtherWeapon("weapon_penguin");
+	UTIL_PrecacheOtherWeapon( "weapon_penguin" );
 
 	if( g_pGameRules->IsDeathmatch() )
 	{
@@ -461,7 +461,7 @@ void CBasePlayerItem::SetObjectCollisionBox( void )
 //=========================================================
 void CBasePlayerItem::FallInit( void )
 {
-	if (pev->spawnflags & SF_ITEMS_NOGRAVITY)
+	if ( pev->spawnflags & SF_ITEMS_NOGRAVITY )
 	{
 		pev->movetype = MOVETYPE_NONE;
 	}
@@ -470,7 +470,7 @@ void CBasePlayerItem::FallInit( void )
 		pev->movetype = MOVETYPE_TOSS;
 	}
 
-	if (FBitSet(pev->spawnflags, SF_ITEMS_DISABLED)) // if flagged to Start Turned Off, make trigger nonsolid.
+	if ( FBitSet( pev->spawnflags, SF_ITEMS_DISABLED ) ) // if flagged to Start Turned Off, make trigger nonsolid.
 		pev->solid = SOLID_NOT;
 	else
 		pev->solid = SOLID_TRIGGER;
@@ -481,9 +481,9 @@ void CBasePlayerItem::FallInit( void )
 	SetTouch( &CBasePlayerItem::DefaultTouch );
 	SetThink( &CBasePlayerItem::FallThink );
 
-	if (!FStringNull(pev->targetname))
+	if ( !FStringNull( pev->targetname ) )
 	{
-		SetUse(&CBasePlayerItem::ToggleUse);
+		SetUse( &CBasePlayerItem::ToggleUse );
 	}
 
 	pev->nextthink = gpGlobals->time + 0.1f;
@@ -534,9 +534,9 @@ void CBasePlayerItem::FallThink( void )
 //
 // ToggleUse - If this is the USE function for a trigger, its state will toggle every time it's fired
 //
-void CBasePlayerItem::ToggleUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
+void CBasePlayerItem::ToggleUse( CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value )
 {
-	if (pev->solid == SOLID_NOT)
+	if ( pev->solid == SOLID_NOT )
 	{
 		pev->solid = SOLID_TRIGGER;
 	}
@@ -544,7 +544,7 @@ void CBasePlayerItem::ToggleUse(CBaseEntity* pActivator, CBaseEntity* pCaller, U
 	{
 		pev->solid = SOLID_NOT;
 	}
-	UTIL_SetOrigin(pev, pev->origin);
+	UTIL_SetOrigin( pev, pev->origin );
 }
 
 //=========================================================
@@ -593,7 +593,7 @@ void CBasePlayerItem::CheckRespawn( void )
 	switch( g_pGameRules->WeaponShouldRespawn( this ) )
 	{
 	case GR_WEAPON_RESPAWN_YES:
-		if ((pev->spawnflags & SF_AMMO_RESPAWN))
+		if ( ( pev->spawnflags & SF_AMMO_RESPAWN ) )
 		{
 			Respawn();
 		}
@@ -1117,7 +1117,7 @@ void CBasePlayerWeapon::Holster( int skiplocal /* = 0 */ )
 
 void CBasePlayerAmmo::Spawn( void )
 {
-	if (pev->spawnflags & SF_ITEMS_NOGRAVITY)
+	if ( pev->spawnflags & SF_ITEMS_NOGRAVITY )
 	{
 		pev->movetype = MOVETYPE_NONE;
 	}
@@ -1126,7 +1126,7 @@ void CBasePlayerAmmo::Spawn( void )
 		pev->movetype = MOVETYPE_TOSS;
 	}
 
-	if (FBitSet(pev->spawnflags, SF_ITEMS_DISABLED)) // if flagged to Start Turned Off, make trigger nonsolid.
+	if ( FBitSet( pev->spawnflags, SF_ITEMS_DISABLED ) ) // if flagged to Start Turned Off, make trigger nonsolid.
 		pev->solid = SOLID_NOT;
 	else
 		pev->solid = SOLID_TRIGGER;
@@ -1134,9 +1134,9 @@ void CBasePlayerAmmo::Spawn( void )
 	UTIL_SetSize( pev, Vector( -16, -16, 0 ), Vector( 16, 16, 16 ) );
 	UTIL_SetOrigin( pev, pev->origin );
 
-	if (!FStringNull(pev->targetname))
+	if ( !FStringNull( pev->targetname ) )
 	{
-		SetUse(&CBasePlayerItem::ToggleUse);
+		SetUse( &CBasePlayerItem::ToggleUse );
 	}
 
 	SetTouch( &CBasePlayerAmmo::DefaultTouch );
@@ -1190,7 +1190,7 @@ void CBasePlayerAmmo::DefaultTouch( CBaseEntity *pOther )
 			SetThink( &CBaseEntity::SUB_Remove );
 			pev->nextthink = gpGlobals->time + 0.1f;
 		}
-		SUB_UseTargets(this, USE_OFF, 0); // this only should be used for the env_model for ammo crates.
+		SUB_UseTargets( this, USE_OFF, 0 ); // this only should be used for the env_model for ammo crates.
 	}
 	else if( gEvilImpulse101 )
 	{
@@ -1751,22 +1751,22 @@ IMPLEMENT_SAVERESTORE( CSatchel, CBasePlayerWeapon )
 
 TYPEDESCRIPTION CGaussMK2::m_SaveData[] =
 	{
-		DEFINE_FIELD(CGaussMK2, m_fInAttack, FIELD_INTEGER),
+		DEFINE_FIELD( CGaussMK2, m_fInAttack, FIELD_INTEGER ),
 		//	DEFINE_FIELD( CGaussMK2, m_flStartCharge, FIELD_TIME ),
 		//	DEFINE_FIELD( CGaussMK2, m_flPlayAftershock, FIELD_TIME ),
 		//	DEFINE_FIELD( CGaussMK2, m_flNextAmmoBurn, FIELD_TIME ),
-		DEFINE_FIELD(CGaussMK2, m_fPrimaryFire, FIELD_BOOLEAN),
+		DEFINE_FIELD( CGaussMK2, m_fPrimaryFire, FIELD_BOOLEAN ),
 };
-IMPLEMENT_SAVERESTORE(CGaussMK2, CBasePlayerWeapon);
+IMPLEMENT_SAVERESTORE( CGaussMK2, CBasePlayerWeapon );
 
 TYPEDESCRIPTION	CKnife::m_SaveData[] =
 {
-	DEFINE_FIELD(CKnife, m_fInAttack, FIELD_INTEGER),
+	DEFINE_FIELD( CKnife, m_fInAttack, FIELD_INTEGER ),
 };
-IMPLEMENT_SAVERESTORE(CKnife, CBasePlayerWeapon);
+IMPLEMENT_SAVERESTORE( CKnife, CBasePlayerWeapon );
 
 TYPEDESCRIPTION CEagle::m_SaveData[] =
 {
-	DEFINE_FIELD(CEagle, m_fSpotActive, FIELD_BOOLEAN),
+	DEFINE_FIELD( CEagle, m_fSpotActive, FIELD_BOOLEAN ),
 };
-IMPLEMENT_SAVERESTORE(CEagle, CBasePlayerWeapon);
+IMPLEMENT_SAVERESTORE( CEagle, CBasePlayerWeapon );

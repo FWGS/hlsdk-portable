@@ -172,23 +172,23 @@ void CGameRules::RefreshSkillData ( void )
 	gSkillData.hgruntGrenadeSpeed = GetSkillCvar( "sk_hgrunt_gspeed" );
 
 	// Massassin
-	gSkillData.massassinHealth = GetSkillCvar("sk_massassin_health");
-	gSkillData.massassinDmgKick = GetSkillCvar("sk_massassin_kick");
-	gSkillData.massassinGrenadeSpeed = GetSkillCvar("sk_massassin_gspeed");
+	gSkillData.massassinHealth = GetSkillCvar( "sk_massassin_health" );
+	gSkillData.massassinDmgKick = GetSkillCvar( "sk_massassin_kick" );
+	gSkillData.massassinGrenadeSpeed = GetSkillCvar( "sk_massassin_gspeed") ;
 
 	// Saw Gunner
-	gSkillData.sawGunnerHealth = GetSkillCvar("sk_saw_gunner_health");
-	gSkillData.sawGunnerDmgKick = GetSkillCvar("sk_saw_gunner_kick");
-	gSkillData.sawGunnerGrenadeSpeed = GetSkillCvar("sk_saw_gunner_gspeed");
+	gSkillData.sawGunnerHealth = GetSkillCvar( "sk_saw_gunner_health" );
+	gSkillData.sawGunnerDmgKick = GetSkillCvar( "sk_saw_gunner_kick" );
+	gSkillData.sawGunnerGrenadeSpeed = GetSkillCvar( "sk_saw_gunner_gspeed" );
 
 	// Houndeye
 	gSkillData.houndeyeHealth = GetSkillCvar( "sk_houndeye_health" );
 	gSkillData.houndeyeDmgBlast = GetSkillCvar( "sk_houndeye_dmg_blast" );
 
 	// Houndeye Explosive
-	gSkillData.houndeyeExpHealth = GetSkillCvar("sk_houndeye_explosive_health");
-	gSkillData.houndeyeExpDmgBlast = GetSkillCvar("sk_houndeye_explosive_dmg_blast");
-	gSkillData.houndeyeExpDmgRadius = GetSkillCvar("sk_houndeye_explosive_dmg_radius");
+	gSkillData.houndeyeExpHealth = GetSkillCvar( "sk_houndeye_explosive_health" );
+	gSkillData.houndeyeExpDmgBlast = GetSkillCvar( "sk_houndeye_explosive_dmg_blast" );
+	gSkillData.houndeyeExpDmgRadius = GetSkillCvar( "sk_houndeye_explosive_dmg_radius" );
 
 	// ISlave
 	gSkillData.slaveHealth = GetSkillCvar( "sk_islave_health" );
@@ -197,9 +197,9 @@ void CGameRules::RefreshSkillData ( void )
 	gSkillData.slaveDmgZap = GetSkillCvar( "sk_islave_dmg_zap" );
 
 	// Empowered ISlave
-	gSkillData.slaveEmpHealth = GetSkillCvar("sk_empowered_islave_health");
-	gSkillData.slaveEmpDmgZap = GetSkillCvar("sk_empowered_islave_dmg_zap");
-	gSkillData.slaveEmpDmgSonic = GetSkillCvar("sk_empowered_islave_dmg_sonic_wave");
+	gSkillData.slaveEmpHealth = GetSkillCvar( "sk_empowered_islave_health" );
+	gSkillData.slaveEmpDmgZap = GetSkillCvar( "sk_empowered_islave_dmg_zap" );
+	gSkillData.slaveEmpDmgSonic = GetSkillCvar( "sk_empowered_islave_dmg_sonic_wave" );
 
 	// Icthyosaur
 	gSkillData.ichthyosaurHealth = GetSkillCvar( "sk_ichthyosaur_health" );
@@ -217,10 +217,10 @@ void CGameRules::RefreshSkillData ( void )
 	gSkillData.controllerDmgBall = GetSkillCvar( "sk_controller_dmgball" );
 
 	// Controller Exterminator
-	gSkillData.controllerExtHealth = GetSkillCvar("sk_controller_exterminator_health");
-	gSkillData.controllerExtDmgZap = GetSkillCvar("sk_controller_exterminator_dmgzap");
-	gSkillData.controllerExtSpeedBall = GetSkillCvar("sk_controller_exterminator_speedball");
-	gSkillData.controllerExtDmgBall = GetSkillCvar("sk_controller_exterminator_dmgball");
+	gSkillData.controllerExtHealth = GetSkillCvar( "sk_controller_exterminator_health" );
+	gSkillData.controllerExtDmgZap = GetSkillCvar( "sk_controller_exterminator_dmgzap" );
+	gSkillData.controllerExtSpeedBall = GetSkillCvar( "sk_controller_exterminator_speedball" );
+	gSkillData.controllerExtDmgBall = GetSkillCvar( "sk_controller_exterminator_dmgball" );
 
 	// Nihilant
 	gSkillData.nihilanthHealth = GetSkillCvar( "sk_nihilanth_health" );
@@ -240,30 +240,30 @@ void CGameRules::RefreshSkillData ( void )
 	gSkillData.zombieDmgBothSlash = GetSkillCvar( "sk_zombie_dmg_both_slash" );
 
 	// Zombie Barney
-	gSkillData.zombieBarneyHealth = GetSkillCvar("sk_zombie_barney_health");
-	gSkillData.zombieBarneyDmgOneSlash = GetSkillCvar("sk_zombie_barney_dmg_one_slash");
-	gSkillData.zombieBarneyDmgBothSlash = GetSkillCvar("sk_zombie_barney_dmg_both_slash");
+	gSkillData.zombieBarneyHealth = GetSkillCvar( "sk_zombie_barney_health" );
+	gSkillData.zombieBarneyDmgOneSlash = GetSkillCvar( "sk_zombie_barney_dmg_one_slash" );
+	gSkillData.zombieBarneyDmgBothSlash = GetSkillCvar( "sk_zombie_barney_dmg_both_slash" );
 
 	// Zombie Soldier
-	gSkillData.zombieSoldierHealth = GetSkillCvar("sk_zombie_soldier_health");
-	gSkillData.zombieSoldierDmgOneSlash = GetSkillCvar("sk_zombie_soldier_dmg_one_slash");
-	gSkillData.zombieSoldierDmgBothSlash = GetSkillCvar("sk_zombie_soldier_dmg_both_slash");
+	gSkillData.zombieSoldierHealth = GetSkillCvar( "sk_zombie_soldier_health" );
+	gSkillData.zombieSoldierDmgOneSlash = GetSkillCvar( "sk_zombie_soldier_dmg_one_slash" );
+	gSkillData.zombieSoldierDmgBothSlash = GetSkillCvar( "sk_zombie_soldier_dmg_both_slash" );
 
 	// Zombie HEV
-	gSkillData.zombieHEVHealth = GetSkillCvar("sk_zombie_hev_health");
-	gSkillData.zombieHEVDmgOneSlash = GetSkillCvar("sk_zombie_hev_dmg_one_slash");
-	gSkillData.zombieHEVDmgBothSlash = GetSkillCvar("sk_zombie_hev_dmg_both_slash");
+	gSkillData.zombieHEVHealth = GetSkillCvar( "sk_zombie_hev_health" );
+	gSkillData.zombieHEVDmgOneSlash = GetSkillCvar( "sk_zombie_hev_dmg_one_slash" );
+	gSkillData.zombieHEVDmgBothSlash = GetSkillCvar( "sk_zombie_hev_dmg_both_slash" );
 
 	// Zombie Worker
-	gSkillData.zombieWorkerHealth = GetSkillCvar("sk_zombie_worker_health");
-	gSkillData.zombieWorkerDmgOneSlash = GetSkillCvar("sk_zombie_worker_dmg_one_slash");
-	gSkillData.zombieWorkerDmgBothSlash = GetSkillCvar("sk_zombie_worker_dmg_both_slash");
+	gSkillData.zombieWorkerHealth = GetSkillCvar( "sk_zombie_worker_health" );
+	gSkillData.zombieWorkerDmgOneSlash = GetSkillCvar( "sk_zombie_worker_dmg_one_slash" );
+	gSkillData.zombieWorkerDmgBothSlash = GetSkillCvar( "sk_zombie_worker_dmg_both_slash" );
 
 	// Gonome
-	gSkillData.gonomeHealth = GetSkillCvar("sk_gonome_health");
-	gSkillData.gonomeDmgOneSlash = GetSkillCvar("sk_gonome_dmg_one_slash");
-	gSkillData.gonomeDmgGuts = GetSkillCvar("sk_gonome_dmg_guts");
-	gSkillData.gonomeDmgOneBite = GetSkillCvar("sk_gonome_dmg_one_bite");
+	gSkillData.gonomeHealth = GetSkillCvar( "sk_gonome_health" );
+	gSkillData.gonomeDmgOneSlash = GetSkillCvar( "sk_gonome_dmg_one_slash" );
+	gSkillData.gonomeDmgGuts = GetSkillCvar( "sk_gonome_dmg_guts" );
+	gSkillData.gonomeDmgOneBite = GetSkillCvar( "sk_gonome_dmg_one_bite" );
 
 	//Turret
 	gSkillData.turretHealth = GetSkillCvar( "sk_turret_health" );
@@ -280,7 +280,7 @@ void CGameRules::RefreshSkillData ( void )
 	gSkillData.plrDmgCrowbar = GetSkillCvar( "sk_plr_crowbar" );
 
 	// Knife whack
-	gSkillData.plrDmgKnife = GetSkillCvar("sk_plr_knife");
+	gSkillData.plrDmgKnife = GetSkillCvar( "sk_plr_knife" );
 
 	// Glock Round
 	gSkillData.plrDmg9MM = GetSkillCvar( "sk_plr_9mm_bullet" );
@@ -289,13 +289,13 @@ void CGameRules::RefreshSkillData ( void )
 	gSkillData.plrDmg357 = GetSkillCvar( "sk_plr_357_bullet" );
 
 	// Eagle Round
-	gSkillData.plrDmgEagle = GetSkillCvar("sk_plr_eagle_bullet");	
+	gSkillData.plrDmgEagle = GetSkillCvar( "sk_plr_eagle_bullet" );	
 	
 	// 556 Round
-	gSkillData.plrDmg556 = GetSkillCvar("sk_plr_556_bullet");
+	gSkillData.plrDmg556 = GetSkillCvar( "sk_plr_556_bullet" );
 
 	// 762 Round
-	gSkillData.plrDmg762 = GetSkillCvar("sk_plr_762_bullet");
+	gSkillData.plrDmg762 = GetSkillCvar( "sk_plr_762_bullet" );
 
 	// MP5 Round
 	gSkillData.plrDmgMP5 = GetSkillCvar( "sk_plr_9mmAR_bullet" );
@@ -330,17 +330,17 @@ void CGameRules::RefreshSkillData ( void )
 	gSkillData.plrDmgTripmine = GetSkillCvar( "sk_plr_tripmine" );
 
 	// MONSTER WEAPONS
-	gSkillData.monDmg12MM = GetSkillCvar("sk_12mm_bullet");
-	gSkillData.monDmgMP5 = GetSkillCvar("sk_9mmAR_bullet");
-	gSkillData.monDmg9MM = GetSkillCvar("sk_9mm_bullet");
-	gSkillData.monDmg556 = GetSkillCvar("sk_556_bullet");
-	gSkillData.monDmg762 = GetSkillCvar("sk_762_bullet");
+	gSkillData.monDmg12MM = GetSkillCvar( "sk_12mm_bullet" );
+	gSkillData.monDmgMP5 = GetSkillCvar( "sk_9mmAR_bullet" );
+	gSkillData.monDmg9MM = GetSkillCvar( "sk_9mm_bullet" );
+	gSkillData.monDmg556 = GetSkillCvar( "sk_556_bullet" );
+	gSkillData.monDmg762 = GetSkillCvar( "sk_762_bullet" );
 
 	// MONSTER HORNET
 	gSkillData.monDmgHornet = GetSkillCvar( "sk_hornet_dmg" );
 
 	// PLAYER HORNET
-	gSkillData.plrDmgHornet = GetSkillCvar("sk_plr_hornet_dmg");
+	gSkillData.plrDmgHornet = GetSkillCvar( "sk_plr_hornet_dmg" );
 
 	// HEALTH/CHARGE
 	gSkillData.suitchargerCapacity = GetSkillCvar( "sk_suitcharger" );

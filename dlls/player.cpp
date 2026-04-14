@@ -1346,7 +1346,7 @@ void CBasePlayer::PlayerDeathThink( void )
 	if( pev->movetype != MOVETYPE_NONE && FBitSet( pev->flags, FL_ONGROUND ) )
 		pev->movetype = MOVETYPE_NONE;
 
-	if (pev->deadflag == DEAD_DYING)
+	if ( pev->deadflag == DEAD_DYING )
 		pev->deadflag = DEAD_DEAD;
 
 	StopAnimation();
@@ -2344,7 +2344,7 @@ void CBasePlayer::CheckSuitUpdate()
 	int isearch = m_iSuitPlayNext;
 
 	// Ignore suit updates if no suit
-	if (!HasSuit())
+	if ( !HasSuit() )
 		return;
 
 	// if in range of radiation source, ping geiger counter
@@ -2405,7 +2405,7 @@ void CBasePlayer::SetSuitUpdate( const char *name, int fgroup, int iNoRepeatTime
 	int iempty = -1;
 
 	// Ignore suit updates if no suit
-	if (!HasSuit())
+	if ( !HasSuit() )
 		return;
 
 	if( g_pGameRules->IsMultiplayer() )
@@ -3599,20 +3599,20 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		if( !giPrecacheSci )
 		{
 			giPrecacheSci = 1;
-			ALERT(at_console, "You must now restart to generate a scientist.\n");
-			Create("monster_scientist", pev->origin + gpGlobals->v_forward * 128, pev->angles);
+			ALERT( at_console, "You must now restart to generate a scientist.\n" );
+			Create( "monster_scientist", pev->origin + gpGlobals->v_forward * 128, pev->angles );
 		}
 		break;
 	case 77:
 		if ( !giPrecacheBa )
 		{
 			giPrecacheBa = true;
-			ALERT(at_console, "You must now restart to generate a Barney.\n");
+			ALERT( at_console, "You must now restart to generate a Barney.\n" );
 		}
 		else
 		{
 			UTIL_MakeVectors(Vector(0, pev->v_angle.y, 0));
-			Create("monster_barney", pev->origin + gpGlobals->v_forward * 128, pev->angles);
+			Create( "monster_barney", pev->origin + gpGlobals->v_forward * 128, pev->angles );
 		}
 		break;
 	case 101:
@@ -4247,7 +4247,7 @@ void CBasePlayer::UpdateClientData( void )
 		{
 			ItemInfo& II = CBasePlayerItem::ItemInfoArray[i];
 
-			if (WEAPON_NONE == II.iId)
+			if ( WEAPON_NONE == II.iId )
 				continue;
 
 			const char *pszName;
@@ -4281,13 +4281,13 @@ void CBasePlayer::UpdateClientData( void )
 
 	//Active item is becoming null, or we're sending all HUD state to client
 	//Only if we're not in Observer mode, which uses the target player's weapon
-	if (pev->iuser1 == OBS_NONE && !m_pActiveItem && ((m_pClientActiveItem != m_pActiveItem) || fullHUDInitRequired))
+	if ( pev->iuser1 == OBS_NONE && !m_pActiveItem && ( ( m_pClientActiveItem != m_pActiveItem ) || fullHUDInitRequired ) )
 	{
 		//Tell ammo hud that we have no weapon selected
-		MESSAGE_BEGIN(MSG_ONE, gmsgCurWeapon, NULL, pev);
-		WRITE_BYTE(0);
-		WRITE_BYTE(0);
-		WRITE_BYTE(0);
+		MESSAGE_BEGIN( MSG_ONE, gmsgCurWeapon, NULL, pev );
+		WRITE_BYTE( 0 );
+		WRITE_BYTE( 0 );
+		WRITE_BYTE( 0 );
 		MESSAGE_END();
 	}
 
@@ -4360,10 +4360,10 @@ void CBasePlayer::SetPrefsFromUserinfo( char *infobuffer )
 
 void CBasePlayer::EnableControl( BOOL fControl )
 {
-	// FIXME: Make the player actually frozen. (e.g. shooting, switching weapons) 
-	if (!fControl)
+	// FIXME: Make the player actually frozen. (e.g. shooting, switching weapons)
+	if ( !fControl )
 	{
-		if (m_pActiveItem)
+		if ( m_pActiveItem )
 		{ 
 			m_pActiveItem->Holster();
 		}
@@ -4371,7 +4371,7 @@ void CBasePlayer::EnableControl( BOOL fControl )
 	}
 	else
 	{
-		if (m_pActiveItem)
+		if ( m_pActiveItem )
 		{
 			m_pActiveItem->Deploy();
 		}
@@ -4854,15 +4854,15 @@ void CStripWeapons::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE
 		// out of the subway tram during the Xen assault.
 		// so, take out 50% of his/her health, and remove the 
 		// armor and weapons.
-		if (pev->spawnflags & SF_STRIP_HALFHEALTH)
+		if ( pev->spawnflags & SF_STRIP_HALFHEALTH )
 		{
-			pPlayer->RemoveAllItems(true);
+			pPlayer->RemoveAllItems( TRUE );
 			pPlayer->pev->health = 50;
 			pPlayer->pev->armorvalue = 0;
 		}
 		else
 		{
-			pPlayer->RemoveAllItems(true);
+			pPlayer->RemoveAllItems( TRUE );
 		}
 	}
 }

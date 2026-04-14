@@ -519,7 +519,7 @@ void CRpg::SecondaryAttack()
 void CRpg::WeaponIdle( void )
 {
 	// Reset when the player lets go of the trigger.
-	if ((m_pPlayer->pev->button & (IN_ATTACK | IN_ATTACK2)) == 0)
+	if ( ( m_pPlayer->pev->button & ( IN_ATTACK | IN_ATTACK2 ) ) == 0 )
 	{
 		ResetEmptySound();
 	}

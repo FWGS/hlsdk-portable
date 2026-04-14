@@ -720,7 +720,7 @@ void CBaseDoor::DoorHitBottom( void )
 	else // touchable door
 		SetTouch( &CBaseDoor::DoorTouch );
 
-	// SUB_UseTargets( m_hActivator, USE_TOGGLE, 0 ); // this isn't finished
+	SUB_UseTargets( m_hActivator, USE_TOGGLE, 0 ); // this isn't finished
 
 	// Fire the close target (if startopen is set, then "top" is closed) - netname is the close target
 	if( pev->netname && !( pev->spawnflags & SF_DOOR_START_OPEN ) )
