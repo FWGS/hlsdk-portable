@@ -92,7 +92,14 @@ def build(bld):
 		'dlls/satchel.cpp',
 		'dlls/shotgun.cpp',
 		'dlls/squeakgrenade.cpp',
-		'dlls/tripmine.cpp'
+		'dlls/tripmine.cpp',
+		'dlls/insecure/eagle.cpp',
+		'dlls/insecure/gauss_new.cpp',
+		'dlls/insecure/hornetgun_new.cpp',
+		'dlls/insecure/knife.cpp',
+		'dlls/insecure/m249.cpp',
+		'dlls/insecure/penguingrenade.cpp',
+		'dlls/insecure/sniperrifle.cpp'
 	])
 
 
