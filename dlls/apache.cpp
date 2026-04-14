@@ -179,6 +179,7 @@ void CApache::Precache( void )
 void CApache::NullThink( void )
 {
 	StudioFrameAdvance();
+	FCheckAITrigger();
 	pev->nextthink = gpGlobals->time + 0.5f;
 }
 
@@ -203,6 +204,7 @@ void CApache::Killed( entvars_t *pevAttacker, int iGib )
 	pev->nextthink = gpGlobals->time + 0.1f;
 	pev->health = 0;
 	pev->takedamage = DAMAGE_NO;
+	pev->deadflag = DEAD_DYING;
 
 	if( pev->spawnflags & SF_NOWRECKAGE )
 	{
@@ -224,6 +226,8 @@ void CApache::DyingThink( void )
 	// still falling?
 	if( m_flNextRocket > gpGlobals->time )
 	{
+		FCheckAITrigger();
+
 		// random explosions
 		MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, pev->origin );
 			WRITE_BYTE( TE_EXPLOSION );		// This just makes a dynamic light now
