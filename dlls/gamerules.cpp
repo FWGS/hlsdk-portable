@@ -134,11 +134,27 @@ void CGameRules::RefreshSkillData ( void )
 	gSkillData.agruntHealth = GetSkillCvar( "sk_agrunt_health" );
 	gSkillData.agruntDmgPunch = GetSkillCvar( "sk_agrunt_dmg_punch" );
 
+	//Agrunt (premature)
+	gSkillData.agruntPreHealth = GetSkillCvar("sk_agrunt_pre_health");
+	gSkillData.agruntPreDmgPunch = GetSkillCvar("sk_agrunt_pre_dmg_punch");
+
+	//Agrunt (poisonous)
+	gSkillData.agruntPoisonHealth = GetSkillCvar("sk_agrunt_alt_health");
+	gSkillData.agruntPoisonDmgPunch = GetSkillCvar("sk_agrunt_alt_dmg_punch");
+
 	// Apache 
 	gSkillData.apacheHealth = GetSkillCvar( "sk_apache_health" );
 
 	// Barney
 	gSkillData.barneyHealth = GetSkillCvar( "sk_barney_health" );
+
+	// Otis
+	gSkillData.otisHealth = GetSkillCvar("sk_otis_health");
+
+	// Baby Gargantua
+	gSkillData.bgargHealth = GetSkillCvar("sk_baby_gargantua_health");
+	gSkillData.bgargDmgSlash = GetSkillCvar("sk_baby_gargantua_dmg_slash");
+	gSkillData.bgargDmgFire = GetSkillCvar("sk_baby_gargantua_dmg_fire");
 
 	// Big Momma
 	gSkillData.bigmommaHealthFactor = GetSkillCvar( "sk_bigmomma_health_factor" );
@@ -146,6 +162,12 @@ void CGameRules::RefreshSkillData ( void )
 	gSkillData.bigmommaDmgBlast = GetSkillCvar( "sk_bigmomma_dmg_blast" );
 	gSkillData.bigmommaRadiusBlast = GetSkillCvar( "sk_bigmomma_radius_blast" );
 
+	// Twin Gonarch
+	gSkillData.twinGonarchHealthFactor = GetSkillCvar("sk_twin_gonarch_health_factor");
+	gSkillData.twinGonarchDmgSlash = GetSkillCvar("sk_twin_gonarch_dmg_slash");
+	gSkillData.twinGonarchDmgBlast = GetSkillCvar("sk_twin_gonarch_dmg_blast");
+	gSkillData.twinGonarchRadiusBlast = GetSkillCvar("sk_twin_gonarch_radius_blast");
+	
 	// Bullsquid
 	gSkillData.bullsquidHealth = GetSkillCvar( "sk_bullsquid_health" );
 	gSkillData.bullsquidDmgBite = GetSkillCvar( "sk_bullsquid_dmg_bite" );
