@@ -42,29 +42,29 @@
 class CISlaveEmpowered : public CBaseMonster
 {
 public:
-	void Spawn() override;
-	void Precache() override;
-	void SetYawSpeed() override;
-	int ISoundMask() override;
-	int Classify() override;
-	void HandleAnimEvent(MonsterEvent_t* pEvent) override;
-	BOOL CheckRangeAttack1(float flDot, float flDist) override;
-	BOOL CheckRangeAttack2(float flDot, float flDist) override;
-	BOOL CheckMeleeAttack1(float flDot, float flDist) override;
-	void TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType) override;
+	void Spawn();
+	void Precache();
+	void SetYawSpeed();
+	int ISoundMask();
+	int Classify();
+	void HandleAnimEvent(MonsterEvent_t* pEvent);
+	BOOL CheckRangeAttack1(float flDot, float flDist);
+	BOOL CheckRangeAttack2(float flDot, float flDist);
+	BOOL CheckMeleeAttack1(float flDot, float flDist);
+	void TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType);
 
-	void DeathSound() override;
-	void PainSound() override;
-	void AlertSound() override;
-	void IdleSound() override;
+	void DeathSound();
+	void PainSound();
+	void AlertSound();
+	void IdleSound();
 
 	void SonicAttack();
 
-	void Killed(entvars_t* pevAttacker, int iGib) override;
+	void Killed(entvars_t* pevAttacker, int iGib);
 
-	void StartTask(Task_t* pTask) override;
-	Schedule_t* GetSchedule() override;
-	Schedule_t* GetScheduleOfType(int Type) override;
+	void StartTask(Task_t* pTask);
+	Schedule_t* GetSchedule();
+	Schedule_t* GetScheduleOfType(int Type);
 	CUSTOM_SCHEDULES;
 
 	virtual int Save( CSave &save );

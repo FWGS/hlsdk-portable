@@ -427,18 +427,18 @@ void CGaussMK2::SendStopEvent(bool sendToHost)
 
 class CGaussMK2Ammo : public CBasePlayerAmmo
 {
-	void Spawn() override
+	void Spawn()
 	{
 		Precache();
 		SET_MODEL(ENT(pev), "models/w_gaussammo.mdl");
 		CBasePlayerAmmo::Spawn();
 	}
-	void Precache() override
+	void Precache()
 	{
 		PRECACHE_MODEL("models/w_gaussammo.mdl");
 		PRECACHE_SOUND("items/9mmclip1.wav");
 	}
-	BOOL AddAmmo(CBaseEntity* pOther) override
+	BOOL AddAmmo(CBaseEntity* pOther)
 	{
 		if (pOther->GiveAmmo(AMMO_URANIUMBOX_GIVE, "uranium", URANIUM_MAX_CARRY) != -1)
 		{

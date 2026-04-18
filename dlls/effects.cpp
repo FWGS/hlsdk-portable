@@ -381,7 +381,7 @@ public:
 
 	static CLightning* LightningCreate( const char* pSpriteName, int width )
 	{
-		auto lightning = GetClassPtr<CLightning>( NULL );
+		CLightning *lightning = GetClassPtr( (CLightning *)NULL );
 
 		lightning->BeamInit(pSpriteName, width);
 
@@ -2281,7 +2281,7 @@ public:
 
 	static CWarpBall* CreateWarpBall( Vector vecOrigin )
 	{
-		auto warpBall = GetClassPtr<CWarpBall>( NULL );
+		CWarpBall *warpBall = GetClassPtr( (CWarpBall *)NULL );
 
 		UTIL_SetOrigin( warpBall->pev, vecOrigin );
 
@@ -2387,7 +2387,7 @@ void CWarpBall::WarpBallUse( CBaseEntity* pActivator, CBaseEntity* pCaller, USE_
 	{
 		if ( !FStringNull( m_iszWarpTarget ) )
 		{
-			auto targetEntity = g_engfuncs.pfnFindEntityByString( 0, "targetname", STRING( m_iszWarpTarget ) );
+			edict_t* targetEntity = g_engfuncs.pfnFindEntityByString( 0, "targetname", STRING( m_iszWarpTarget ) );
 			if ( targetEntity )
 				UTIL_SetOrigin( pev, targetEntity->v.origin );
 		}

@@ -17,7 +17,6 @@
 #define PLAYER_H
 
 #include "pm_materials.h"
-#include <cstdint>
 
 #define PLAYER_FATAL_FALL_SPEED		1024// approx 60 feet
 #define PLAYER_MAX_SAFE_FALL_SPEED	580// approx 20 feet
@@ -176,10 +175,10 @@ public:
 	int			m_iFOV;			// field of view
 	int			m_iClientFOV;	// client's known FOV
 
-	std::uint64_t m_WeaponBits;
+	int m_WeaponBits;
 
 	//Not saved, used to update client.
-	std::uint64_t m_ClientWeaponBits;
+	int m_ClientWeaponBits;
 
 	// usable player items 
 	CBasePlayerItem	*m_rgpPlayerItems[MAX_ITEM_TYPES];
@@ -362,18 +361,18 @@ public:
 
 inline void CBasePlayer::SetWeaponBit( int id )
 {
-	m_WeaponBits |= 1ULL << id;
+	m_WeaponBits |= 1 << id;
 }
 
 inline void CBasePlayer::ClearWeaponBit( int id )
 {
-	m_WeaponBits &= ~( 1ULL << id );
+	m_WeaponBits &= ~( 1 << id );
 }
 
 // Suit
 inline bool CBasePlayer::HasSuit() const
 {
-	return ( m_WeaponBits & ( 1ULL << WEAPON_SUIT ) );
+	return ( m_WeaponBits & ( 1 << WEAPON_SUIT ) );
 }
 
 inline void CBasePlayer::SetSuit( BOOL hasSuit )
@@ -391,7 +390,7 @@ inline void CBasePlayer::SetSuit( BOOL hasSuit )
 // Flashlight
 inline bool CBasePlayer::HasFlashlight() const
 {
-	return ( m_WeaponBits & ( 1ULL << WEAPON_FLASHLIGHT ) );
+	return ( m_WeaponBits & ( 1 << WEAPON_FLASHLIGHT ) );
 }
 
 inline void CBasePlayer::SetFlashlight( BOOL hasFlash )
@@ -409,7 +408,7 @@ inline void CBasePlayer::SetFlashlight( BOOL hasFlash )
 // Keycard
 inline bool CBasePlayer::HasKeycard() const
 {
-	return ( m_WeaponBits & ( 1ULL << WEAPON_KEYCARD ) );
+	return ( m_WeaponBits & ( 1 << WEAPON_KEYCARD ) );
 }
 
 inline void CBasePlayer::ToggleKeycard( BOOL hasKey )
@@ -427,7 +426,7 @@ inline void CBasePlayer::ToggleKeycard( BOOL hasKey )
 // Red Keycard
 inline bool CBasePlayer::HasRedKeycard() const
 {
-	return ( m_WeaponBits & ( 1ULL << WEAPON_REDCARD ) );
+	return ( m_WeaponBits & ( 1 << WEAPON_REDCARD ) );
 }
 
 inline void CBasePlayer::ToggleRedKeycard( BOOL hasKey2 )
@@ -445,7 +444,7 @@ inline void CBasePlayer::ToggleRedKeycard( BOOL hasKey2 )
 // C4
 inline bool CBasePlayer::HasC4() const
 {
-	return ( m_WeaponBits & ( 1ULL << WEAPON_C4 ) );
+	return ( m_WeaponBits & ( 1 << WEAPON_C4 ) );
 }
 
 inline void CBasePlayer::ToggleC4( BOOL hasKey )

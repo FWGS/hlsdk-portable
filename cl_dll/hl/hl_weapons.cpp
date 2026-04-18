@@ -126,26 +126,9 @@ void HUD_PrepEntity( CBaseEntity *pEntity, CBasePlayer *pWeaponOwner )
 	{
 		ItemInfo info;
 
-		memset(&info, 0, sizeof(info));
-
 		( (CBasePlayerWeapon *)pEntity )->m_pPlayer = pWeaponOwner;
 
 		( (CBasePlayerWeapon *)pEntity )->GetItemInfo( &info );
-
-
-		CBasePlayerItem::ItemInfoArray[info.iId] = info;
-
-		const char* weaponName = ((info.iFlags & ITEM_FLAG_EXHAUSTIBLE) != 0) ? STRING(pEntity->pev->classname) : nullptr;
-
-		if (info.pszAmmo1 && '\0' != *info.pszAmmo1)
-		{
-			AddAmmoNameToAmmoRegistry(info.pszAmmo1);
-		}
-
-		if (info.pszAmmo2 && '\0' != *info.pszAmmo2)
-		{
-			AddAmmoNameToAmmoRegistry(info.pszAmmo2);
-		}
 
 		g_pWpns[info.iId] = (CBasePlayerWeapon *)pEntity;
 	}
@@ -704,11 +687,7 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 	HUD_InitClientWeapons();
 
 	// Get current clock
-	// Use actual time instead of prediction frame time because that time value breaks anything that uses absolute time values.
-	gpGlobals->time = gEngfuncs.GetClientTime(); //time;
-
-	//Lets weapons code use frametime to decrement timers and stuff.
-	gpGlobals->frametime = cmd->msec / 1000.0f;
+	gpGlobals->time = time;
 
 	// Fill in data based on selected weapon
 	// FIXME, make this a method in each weapon?  where you pass in an entity_state_t *?
@@ -717,75 +696,57 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 		case WEAPON_CROWBAR:
 			pWeapon = &g_Crowbar;
 			break;	
-		
 		case WEAPON_KNIFE:
 			pWeapon = &g_Knife;
 			break;
-
 		case WEAPON_GLOCK:
 			pWeapon = &g_Glock;
 			break;
-
 		case WEAPON_PYTHON:
 			pWeapon = &g_Python;
 			break;	
-		
 		case WEAPON_EAGLE:
 			pWeapon = &g_Eagle;
 			break;
-
 		case WEAPON_MP5:
 			pWeapon = &g_Mp5;
 			break;
-
 		case WEAPON_CROSSBOW:
 			pWeapon = &g_Crossbow;
 			break;
-
 		case WEAPON_SHOTGUN:
 			pWeapon = &g_Shotgun;
 			break;
-
 		case WEAPON_RPG:
 			pWeapon = &g_Rpg;
 			break;
-
 		case WEAPON_GAUSS:
 			pWeapon = &g_Gauss;
 			break;
-
 		case WEAPON_EGON:
 			pWeapon = &g_Egon;
 			break;
-
 		case WEAPON_HORNETGUN:
 			pWeapon = &g_HGun;
 			break;
-
 		case WEAPON_HANDGRENADE:
 			pWeapon = &g_HandGren;
 			break;
-
 		case WEAPON_SATCHEL:
 			pWeapon = &g_Satchel;
 			break;
-
 		case WEAPON_TRIPMINE:
 			pWeapon = &g_Tripmine;
 			break;
-
 		case WEAPON_SNARK:
 			pWeapon = &g_Snark;
 			break;	
-		
 		case WEAPON_M249:
 			pWeapon = &g_M249;
 			break;	
-		
 		case WEAPON_SNIPERRIFLE:
 			pWeapon = &g_Sniper;
 			break;
-
 		case WEAPON_PENGUIN:
 			pWeapon = &g_Penguin;
 			break;
@@ -844,8 +805,6 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 		pCurrent->m_iPrimaryAmmoType = (int)from->client.vuser4[0];
 		player.m_rgAmmo[pCurrent->m_iPrimaryAmmoType] = (int)from->client.vuser4[1];
 		player.m_rgAmmo[pCurrent->m_iSecondaryAmmoType] = (int)from->client.vuser4[2];
-
-		pCurrent->SetWeaponData( *pfrom );
 	}
 
 	// For random weapon events, use this seed to seed random # generator
@@ -1021,10 +980,6 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 		to->client.vuser4[0] = pCurrent->m_iPrimaryAmmoType;
 		to->client.vuser4[1] = player.m_rgAmmo[pCurrent->m_iPrimaryAmmoType];
 		to->client.vuser4[2] = player.m_rgAmmo[pCurrent->m_iSecondaryAmmoType];
-
-		pCurrent->DecrementTimers();
-
-		pCurrent->GetWeaponData( *pto );
 		
 /*		if( pto->m_flPumpTime != -9999.0f )
 		{
@@ -1104,9 +1059,6 @@ be ignored
 void _DLLEXPORT HUD_PostRunCmd( struct local_state_s *from, struct local_state_s *to, struct usercmd_s *cmd, int runfuncs, double time, unsigned int random_seed )
 {
 	g_runfuncs = runfuncs;
-
-	//Event code depends on this stuff, so always initialize it.
-	HUD_InitClientWeapons();
 
 #if CLIENT_WEAPONS
 	if( cl_lw && cl_lw->value )

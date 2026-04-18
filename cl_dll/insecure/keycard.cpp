@@ -89,7 +89,7 @@ int CHudKeycard::Draw(float flTime)
 
 int CHudKeycard::GetKeycardPosition()
 {
-    int height = gHUD.GetSpriteRect( m_HUD_sec_card).bottom - gHUD.GetSpriteRect(m_HUD_sec_card).top;
+    int height = gHUD.GetSpriteRect( m_HUD_sec_card ).bottom - gHUD.GetSpriteRect( m_HUD_sec_card ).top;
 
     if ( !gHUD.HasFlashlight() && !gHUD.HasRedcard() && !gHUD.HasC4() )
     {
@@ -97,7 +97,7 @@ int CHudKeycard::GetKeycardPosition()
 		// nor the C4, place it at the top.
         return height / 2;
     }
-    else if (   gHUD.HasFlashlight() && gHUD.HasRedcard() && gHUD.HasC4() )
+    else if ( gHUD.HasFlashlight() && gHUD.HasRedcard() && gHUD.HasC4() )
     {
         // If we have all the items, move the element 32 pixels in 640 
         // further down with each item -- also scale with different resolutions.

@@ -31,7 +31,6 @@
 #include "cl_dll.h"
 #include "ammo.h"
 #include "cvardef.h"
-#include <cstdint>
 
 #define DHN_DRAWZERO 1
 #define DHN_2DIGITS  2
@@ -628,40 +627,28 @@ public:
 	
 	int GetScreenPosition( int szSmall, int szMedium, int szLarge );
 
-	bool HasWeapon( int id ) const
-	{
-		return ( m_iWeaponBits & ( 1ULL << id ) ) != 0;
-	}
-
-	// Suit
-	bool HasSuit() const
-	{
-		return HasWeapon( WEAPON_SUIT );
-	}
 	// Flashlight
 	bool HasFlashlight() const
 	{
-		return HasWeapon( WEAPON_FLASHLIGHT );
-	}	
+		return ( m_iWeaponBits & ( 1 << WEAPON_FLASHLIGHT ) );
+	}
+		
 	// Keycard
 	bool HasKeycard() const
 	{
-		return HasWeapon( WEAPON_KEYCARD );
-	}	
+		return ( m_iWeaponBits & ( 1 << WEAPON_KEYCARD ) );
+	}
+
 	// Redcard
 	bool HasRedcard() const
 	{
-		return HasWeapon( WEAPON_REDCARD );
-	}	
+		return ( m_iWeaponBits & ( 1 << WEAPON_REDCARD ) );
+	}
+
 	// C4
 	bool HasC4() const
 	{
-		return HasWeapon( WEAPON_C4 );
-	}	
-
-	bool HasAnyWeapons() const
-	{
-		return ( m_iWeaponBits & ~static_cast<std::uint64_t>( WEAPON_SUIT ) ) != 0;
+		return ( m_iWeaponBits & ( 1 << WEAPON_C4 ) );
 	}
 
 private:
@@ -734,12 +721,13 @@ public:
 	void _cdecl MsgFunc_InitHUD( const char *pszName, int iSize, void *pbuf );
 	void _cdecl MsgFunc_ViewMode( const char *pszName, int iSize, void *pbuf );
 	int _cdecl MsgFunc_SetFOV( const char *pszName,  int iSize, void *pbuf );
-	int _cdecl MsgFunc_Concuss( const char *pszName, int iSize, void *pbuf );
+	int  _cdecl MsgFunc_Concuss( const char *pszName, int iSize, void *pbuf );
 	int _cdecl MsgFunc_Weapons( const char* pszName, int iSize, void* pbuf );
+	
 	// Screen information
 	SCREENINFO	m_scrinfo;
 
-	std::uint64_t m_iWeaponBits;
+	int m_iWeaponBits;
 	int	m_fPlayerDead;
 	int m_iIntermission;
 

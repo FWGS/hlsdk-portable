@@ -101,39 +101,39 @@ enum
 class CSawGunner : public CSquadMonster
 {
 public:
-	void Spawn() override;
-	void Precache() override;
-	void SetYawSpeed() override;
-	int Classify() override;
-	int ISoundMask() override;
-	void HandleAnimEvent(MonsterEvent_t* pEvent) override;
-	BOOL FCanCheckAttacks() override;
-	BOOL CheckMeleeAttack1(float flDot, float flDist) override;
-	BOOL CheckRangeAttack1(float flDot, float flDist) override;
-	BOOL CheckRangeAttack2(float flDot, float flDist) override;
-	void CheckAmmo() override;
-	void SetActivity(Activity NewActivity) override;
-	void StartTask(Task_t* pTask) override;
-	void RunTask(Task_t* pTask) override;
-	void DeathSound() override;
-	void PainSound() override;
-	void IdleSound() override;
-	Vector GetGunPosition() override;
+	void Spawn();
+	void Precache();
+	void SetYawSpeed();
+	int Classify();
+	int ISoundMask();
+	void HandleAnimEvent(MonsterEvent_t* pEvent);
+	BOOL FCanCheckAttacks();
+	BOOL CheckMeleeAttack1(float flDot, float flDist);
+	BOOL CheckRangeAttack1(float flDot, float flDist);
+	BOOL CheckRangeAttack2(float flDot, float flDist);
+	void CheckAmmo();
+	void SetActivity(Activity NewActivity);
+	void StartTask(Task_t* pTask);
+	void RunTask(Task_t* pTask);
+	void DeathSound();
+	void PainSound();
+	void IdleSound();
+	Vector GetGunPosition();
 	void Shoot();
-	void PrescheduleThink() override;
-	void GibMonster() override;
+	void PrescheduleThink();
+	void GibMonster();
 	void SpeakSentence();
 
 	virtual int Save( CSave &save );
 	virtual int Restore( CRestore &restore );
 
 	CBaseEntity* Kick();
-	Schedule_t* GetSchedule() override;
-	Schedule_t* GetScheduleOfType(int Type) override;
-	void TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType) override;
-	int TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType) override;
+	Schedule_t* GetSchedule();
+	Schedule_t* GetScheduleOfType(int Type);
+	void TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType);
+	int TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
 
-	int IRelationship(CBaseEntity* pTarget) override;
+	int IRelationship(CBaseEntity* pTarget);
 
 	bool FOkToSpeak();
 	void JustSpoke();
@@ -374,7 +374,7 @@ BOOL CSawGunner::FCanCheckAttacks()
 //=========================================================
 BOOL CSawGunner::CheckMeleeAttack1(float flDot, float flDist)
 {
-	CBaseMonster* pEnemy = nullptr;
+	CBaseMonster* pEnemy = NULL;
 
 	if (m_hEnemy != NULL)
 	{
@@ -2213,10 +2213,10 @@ Schedule_t* CSawGunner::GetScheduleOfType(int Type)
 class CDeadSawGunner : public CBaseMonster
 {
 public:
-	void Spawn() override;
-	int Classify() override { return CLASS_HUMAN_MILITARY; }
+	void Spawn();
+	int Classify() { return CLASS_HUMAN_MILITARY; }
 
-	void KeyValue(KeyValueData* pkvd) override;
+	void KeyValue(KeyValueData* pkvd);
 
 	int m_iPose; // which sequence to display	-- temporary, don't need to save
 	static const char* m_szPoses[3];

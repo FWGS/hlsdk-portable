@@ -94,7 +94,7 @@ void CGonomeGuts::Spawn()
 void CGonomeGuts::Touch(CBaseEntity* pOther)
 {
 	// splat sound
-	const auto iPitch = RANDOM_FLOAT(90, 110);
+	const float iPitch = RANDOM_FLOAT(90, 110);
 
 	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "bullchicken/bc_acid1.wav", 1, ATTN_NORM, 0, iPitch);
 
@@ -140,7 +140,7 @@ void CGonomeGuts::Animate()
 
 void CGonomeGuts::Shoot(entvars_t* pevOwner, Vector vecStart, Vector vecVelocity)
 {
-	auto pGuts = GetClassPtr<CGonomeGuts>(nullptr);
+	CGonomeGuts* pGuts = GetClassPtr((CGonomeGuts*)NULL);
 	pGuts->Spawn();
 
 	UTIL_SetOrigin(pGuts->pev, vecStart);
@@ -156,7 +156,7 @@ void CGonomeGuts::Shoot(entvars_t* pevOwner, Vector vecStart, Vector vecVelocity
 
 CGonomeGuts* CGonomeGuts::GonomeGutsCreate(const Vector& origin)
 {
-	auto pGuts = GetClassPtr<CGonomeGuts>(nullptr);
+	CGonomeGuts* pGuts = GetClassPtr((CGonomeGuts*)NULL);
 	pGuts->Spawn();
 
 	pGuts->pev->origin = origin;
@@ -187,17 +187,17 @@ public:
 	virtual int Restore( CRestore &restore );
 	static TYPEDESCRIPTION m_SaveData[];
 
-	void Spawn() override;
-	void Precache() override;
-	void SetYawSpeed() override;
-	int Classify() override;
+	void Spawn();
+	void Precache();
+	void SetYawSpeed();
+	int Classify();
 	void HandleAnimEvent(MonsterEvent_t* pEvent);
-	int IgnoreConditions() override;
+	int IgnoreConditions();
 
-	void PainSound() override;
-	void AlertSound() override;
-	void IdleSound() override;
-	void DeathSound() override;
+	void PainSound();
+	void AlertSound();
+	void IdleSound();
+	void DeathSound();
 
 	static const char* pIdleSounds[];
 	static const char* pAlertSounds[];
@@ -207,13 +207,13 @@ public:
 	static const char* pAttackMissSounds[];
 
 	// No range attacks
-	BOOL CheckRangeAttack1(float flDot, float flDist) override;
-	int TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType) override;
-	Schedule_t* GetScheduleOfType(int Type) override;
+	BOOL CheckRangeAttack1(float flDot, float flDist);
+	int TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
+	Schedule_t* GetScheduleOfType(int Type);
 
-	void Killed(entvars_t* pevAttacker, int iGib) override;
-	void StartTask(Task_t* pTask) override;
-	void SetActivity(Activity NewActivity) override;
+	void Killed(entvars_t* pevAttacker, int iGib);
+	void StartTask(Task_t* pTask);
+	void SetActivity(Activity NewActivity);
 
 	CUSTOM_SCHEDULES;
 
@@ -454,7 +454,7 @@ void CGonome::HandleAnimEvent(MonsterEvent_t* pEvent)
 			m_pGonomeGuts->pev->aiment = edict();
 			m_pGonomeGuts->pev->movetype = MOVETYPE_FOLLOW;
 
-			auto direction = (m_hEnemy->pev->origin + m_hEnemy->pev->view_ofs - vecGutsPos).Normalize();
+			Vector direction = (m_hEnemy->pev->origin + m_hEnemy->pev->view_ofs - vecGutsPos).Normalize();
 
 			direction = direction + Vector(
 				RANDOM_FLOAT(-0.05, 0.05),
@@ -481,7 +481,7 @@ void CGonome::HandleAnimEvent(MonsterEvent_t* pEvent)
 				m_pGonomeGuts = CGonomeGuts::GonomeGutsCreate(vecGutsPos);
 			}
 
-			auto direction = (m_hEnemy->pev->origin + m_hEnemy->pev->view_ofs - vecGutsPos).Normalize();
+			Vector direction = (m_hEnemy->pev->origin + m_hEnemy->pev->view_ofs - vecGutsPos).Normalize();
 
 			direction = direction + Vector(
 				RANDOM_FLOAT(-0.05, 0.05),
@@ -493,7 +493,7 @@ void CGonome::HandleAnimEvent(MonsterEvent_t* pEvent)
 			//Detach from owner
 			m_pGonomeGuts->pev->skin = 0;
 			m_pGonomeGuts->pev->body = 0;
-			m_pGonomeGuts->pev->aiment = nullptr;
+			m_pGonomeGuts->pev->aiment = NULL;
 			m_pGonomeGuts->pev->movetype = MOVETYPE_FLY;
 
 			m_pGonomeGuts->Launch(pev, vecGutsPos, direction * 900);
@@ -503,7 +503,7 @@ void CGonome::HandleAnimEvent(MonsterEvent_t* pEvent)
 			UTIL_Remove(m_pGonomeGuts);
 		}
 
-		m_pGonomeGuts = nullptr;
+		m_pGonomeGuts = NULL;
 	}
 	break;
 
@@ -583,7 +583,7 @@ void CGonome::Spawn()
 	m_afCapability = bits_CAP_DOORS_GROUP;
 
 	m_flNextThrowTime = gpGlobals->time;
-	m_pGonomeGuts = nullptr;
+	m_pGonomeGuts = NULL;
 
 	MonsterInit();
 }
@@ -708,7 +708,7 @@ void CGonome::Killed(entvars_t* pevAttacker, int iGib)
 	if (m_pGonomeGuts)
 	{
 		UTIL_Remove(m_pGonomeGuts);
-		m_pGonomeGuts = nullptr;
+		m_pGonomeGuts = NULL;
 	}
 
 	CBaseMonster::Killed(pevAttacker, iGib);
@@ -723,12 +723,12 @@ void CGonome::StartTask(Task_t* pTask)
 		if (m_pGonomeGuts)
 		{
 			UTIL_Remove(m_pGonomeGuts);
-			m_pGonomeGuts = nullptr;
+			m_pGonomeGuts = NULL;
 		}
 
 		UTIL_MakeVectors(pev->angles);
 
-		if (BuildRoute(m_vecEnemyLKP - 64 * gpGlobals->v_forward, 64, nullptr))
+		if (BuildRoute(m_vecEnemyLKP - 64 * gpGlobals->v_forward, 64, NULL))
 		{
 			TaskComplete();
 		}
@@ -753,7 +753,7 @@ void CGonome::SetActivity(Activity NewActivity)
 	if (NewActivity != ACT_RANGE_ATTACK1 && m_pGonomeGuts)
 	{
 		UTIL_Remove(m_pGonomeGuts);
-		m_pGonomeGuts = nullptr;
+		m_pGonomeGuts = NULL;
 	}
 
 	switch (NewActivity)

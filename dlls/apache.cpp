@@ -830,7 +830,7 @@ BOOL CApache::FireGun()
 	if( DotProduct( vecGun, vecTarget ) > 0.98f )
 	{
 #if 1
-		FireBullets( 1, posGun, vecGun, VECTOR_CONE_4DEGREES, 8192, BULLET_MONSTER_12MM, 1 );
+		FireBullets( 1, posGun, vecGun, VECTOR_CONE_2DEGREES, 8192, BULLET_MONSTER_12MM, 1 );
 		EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "turret/tu_fire1.wav", 1, 0.3f );
 #else
 		static float flNext;

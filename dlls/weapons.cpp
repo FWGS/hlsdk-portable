@@ -231,7 +231,7 @@ void ExplodeModel( const Vector &vecOrigin, float speed, int model, int count )
 int giAmmoIndex = 0;
 
 // Precaches the ammo and queues the ammo info for sending to clients
-void AddAmmoNameToAmmoRegistry(const char* szAmmoname)
+void AddAmmoNameToAmmoRegistry( const char *szAmmoname )
 {
 	// make sure it's not already in the registry
 	for( int i = 0; i < MAX_AMMO_SLOTS; i++ )
@@ -273,8 +273,6 @@ void UTIL_PrecacheOtherWeapon( const char *szClassname )
 		if( ( (CBasePlayerItem*)pEntity )->GetItemInfo( &II ) )
 		{
 			CBasePlayerItem::ItemInfoArray[II.iId] = II;
-
-			const char* weaponName = ( ( II.iFlags & ITEM_FLAG_EXHAUSTIBLE ) != 0 ) ? STRING( pEntity->pev->classname ) : nullptr;
 
 			if( II.pszAmmo1 && *II.pszAmmo1 )
 			{

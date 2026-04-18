@@ -32,7 +32,7 @@
 #define SF_TRIGGER_HURT_TARGETONCE	1// Only fire hurt target once
 #define	SF_TRIGGER_HURT_START_OFF	2//spawnflag that makes trigger_push spawn turned OFF
 #define	SF_TRIGGER_HURT_NO_CLIENTS	8//spawnflag that makes trigger_push spawn turned OFF
-#define SF_TRIGGER_PUSH_NO_CLIENTS 4	   //spawnflag that makes trigger_push spawn turned OFF
+#define SF_TRIGGER_PUSH_NO_CLIENTS 	4//spawnflag that makes trigger_push spawn turned OFF
 #define SF_TRIGGER_HURT_CLIENTONLYFIRE	16// trigger hurt will only fire its target if it is hurting a client
 #define SF_TRIGGER_HURT_CLIENTONLYTOUCH 32// only clients may touch this trigger.
 
@@ -2488,7 +2488,7 @@ void CTriggerSecurity::UnlockTouch( CBaseEntity* pOther )
 	if ( !pOther->IsPlayer() )
 		return;
 
-	auto player = static_cast<CBasePlayer*>( pOther );
+	CBasePlayer *player = GetClassPtr( (CBasePlayer *)pOther );
 
 	if ( !player->HasKeycard() )
 	{
@@ -2555,7 +2555,7 @@ void CTriggerSecurityRed::UnlockTouch( CBaseEntity* pOther )
 	if ( !pOther->IsPlayer() )
 		return;
 
-	auto player = static_cast<CBasePlayer*>(pOther);
+	CBasePlayer *player = GetClassPtr( (CBasePlayer *)pOther );
 
 	if ( !player->HasRedKeycard() )
 	{
@@ -2619,8 +2619,8 @@ void CTriggerC4::PlaceTouch( CBaseEntity* pOther )
 	if ( !pOther->IsPlayer() )
 		return;
 
-	auto player = static_cast<CBasePlayer*>( pOther );
-
+	CBasePlayer *player = GetClassPtr( (CBasePlayer *)pOther );
+	
 	if ( player->HasC4() )
 	{
 		// Emit the access granted sound, then take the keycard from the player.

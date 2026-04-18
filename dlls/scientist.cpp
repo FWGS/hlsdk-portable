@@ -1260,8 +1260,8 @@ void CSittingScientist::Spawn()
 
 	UTIL_SetSize( pev, Vector( -14, -14, 0 ), Vector( 14, 14, 36 ) );
 
-	pev->solid = SOLID_SLIDEBOX;
-	pev->movetype = MOVETYPE_STEP;
+	pev->solid = SOLID_BBOX;
+	pev->movetype = MOVETYPE_NONE;
 	pev->effects = 0;
 	pev->health = 50;
 	
@@ -1289,7 +1289,7 @@ void CSittingScientist::Spawn()
 	SetThink( &CSittingScientist::SittingThink );
 	pev->nextthink = gpGlobals->time + 0.1f;
 
-	DROP_TO_FLOOR( ENT( pev ) );
+	// DROP_TO_FLOOR( ENT( pev ) );
 }
 
 void CSittingScientist::Precache( void )

@@ -407,7 +407,7 @@ BOOL CHGrunt::FCanCheckAttacks()
 //=========================================================
 BOOL CHGrunt::CheckMeleeAttack1(float flDot, float flDist)
 {
-	CBaseMonster* pEnemy = nullptr;
+	CBaseMonster* pEnemy = NULL;
 
 	if (m_hEnemy != NULL)
 	{

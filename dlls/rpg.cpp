@@ -531,7 +531,7 @@ void CRpg::WeaponIdle( void )
 
 	if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] )
 	{
-		ResetEmptySound();
+		// ResetEmptySound();
 
 		int iAnim;
 		float flRand = UTIL_SharedRandomFloat( m_pPlayer->random_seed, 0.0f, 1.0f );
@@ -568,6 +568,12 @@ void CRpg::WeaponIdle( void )
 void CRpg::UpdateSpot( void )
 {
 #if !CLIENT_DLL
+	// Don't turn on the laser if we're in the middle of a reload.
+	if (m_fInReload)
+	{
+		return;
+	}
+
 	if( m_fSpotActive )
 	{
 		if (m_pPlayer->pev->viewmodel == 0)

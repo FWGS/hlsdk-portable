@@ -270,7 +270,7 @@ void CHAssassin::HandleAnimEvent( MonsterEvent_t *pEvent )
 			UTIL_MakeVectors( pev->angles );
 			CGrenade::ShootTimed( pev, pev->origin + gpGlobals->v_forward * 34 + Vector( 0, 0, 32 ), m_vecTossVelocity, 2.0 );
 
-			m_flNextGrenadeCheck = gpGlobals->time + 6.0f;// wait six seconds before even looking again to see if a grenade can be thrown.
+			m_flNextGrenadeCheck = gpGlobals->time + 20.0f;// wait six seconds before even looking again to see if a grenade can be thrown.
 			m_fThrowGrenade = FALSE;
 			// !!!LATER - when in a group, only try to throw grenade if ordered.
 		}
@@ -282,7 +282,7 @@ void CHAssassin::HandleAnimEvent( MonsterEvent_t *pEvent )
 			pev->movetype = MOVETYPE_TOSS;
 			pev->flags &= ~FL_ONGROUND;
 			pev->velocity = m_vecJumpVelocity;
-			m_flNextJump = gpGlobals->time + 3.0f;
+			m_flNextJump = gpGlobals->time + 10.0f;
 		}
 		return;
 	case ASSASSIN_AE_KICK:
@@ -636,7 +636,7 @@ IMPLEMENT_CUSTOM_SCHEDULES( CHAssassin, CBaseMonster )
 //=========================================================
 BOOL CHAssassin::CheckMeleeAttack1( float flDot, float flDist )
 {
-	if( m_flNextJump < gpGlobals->time && ( flDist <= 128.0f || HasMemory( bits_MEMORY_BADJUMP ) ) && m_hEnemy != 0 )
+	if( m_flNextJump < gpGlobals->time && ( flDist <= 64.0f || HasMemory( bits_MEMORY_BADJUMP ) ) && m_hEnemy != 0 )
 	{
 		TraceResult tr;
 
@@ -760,7 +760,7 @@ void CHAssassin::RunAI( void )
 			pev->rendermode = kRenderNormal;
 	}
 
-	if( m_Activity == ACT_RUN || m_Activity == ACT_WALK )
+	if( m_Activity == ACT_RUN )
 	{
 		static int iStep = 0;
 		iStep = !iStep;

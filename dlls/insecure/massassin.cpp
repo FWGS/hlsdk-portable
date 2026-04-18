@@ -296,7 +296,7 @@ BOOL CMAssassin::FCanCheckAttacks()
 //=========================================================
 BOOL CMAssassin::CheckMeleeAttack1(float flDot, float flDist)
 {
-	CBaseMonster* pEnemy = nullptr;
+	CBaseMonster* pEnemy = NULL;
 
 	if (m_hEnemy != NULL)
 	{

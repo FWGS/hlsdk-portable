@@ -390,7 +390,7 @@ void CHornetPoison::DieTouch(CBaseEntity* pOther)
 
 	//Only deal damage if the owner exists in this map.
 	//Hornets that transition without their owner (e.g. Alien Grunt) will otherwise pass a null pointer down to TakeDamage.
-	if (pOther && 0 != pOther->pev->takedamage && nullptr != pev->owner)
+	if (pOther && 0 != pOther->pev->takedamage && NULL != pev->owner)
 	{ // do the damage
 		pOther->TakeDamage(pev, VARS(pev->owner), pev->dmg, DMG_POISON);
 	}

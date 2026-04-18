@@ -26,7 +26,7 @@ class CDeadHEV : public CBaseMonster
 {
 public:
 	void Spawn();
-	int Classify() override { return CLASS_PLAYER_ALLY; }
+	int Classify() { return CLASS_PLAYER_ALLY; }
 
 	void KeyValue(KeyValueData* pkvd);
 

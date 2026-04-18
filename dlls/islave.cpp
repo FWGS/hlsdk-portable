@@ -48,7 +48,7 @@ public:
 	void SetYawSpeed( void );
 	int ISoundMask( void );
 	int Classify( void );
-	int IRelationship( CBaseEntity *pTarget );
+	// int IRelationship( CBaseEntity *pTarget );
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
 	BOOL CheckRangeAttack1( float flDot, float flDist );
 	BOOL CheckRangeAttack2( float flDot, float flDist );
@@ -151,13 +151,13 @@ int CISlave::Classify( void )
 		return CLASS_ALIEN_MILITARY;
 }
 
-int CISlave::IRelationship( CBaseEntity *pTarget )
+/*int CISlave::IRelationship( CBaseEntity *pTarget )
 {
 	if( ( pTarget->IsPlayer() ) )
 		if( ( pev->spawnflags & SF_MONSTER_WAIT_UNTIL_PROVOKED ) && ! ( m_afMemory & bits_MEMORY_PROVOKED ) )
 			return R_NO;
 	return CBaseMonster::IRelationship( pTarget );
-}
+}*/
 
 void CISlave::CallForHelp( const char *szClassname, float flDist, EHANDLE hEnemy, Vector &vecLocation )
 {
@@ -841,7 +841,7 @@ void CISlave::ClearBeams()
 		}
 	}
 	m_iBeams = 0;
-	pev->skin = 0;
+	// pev->skin = 0;
 
 	STOP_SOUND( ENT( pev ), CHAN_WEAPON, "debris/zap4.wav" );
 }

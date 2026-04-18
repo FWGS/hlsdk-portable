@@ -247,18 +247,18 @@ void CM249::WeaponIdle()
 
 class C556Ammo : public CBasePlayerAmmo
 {
-	void Spawn() override
+	void Spawn()
 	{
 		Precache();
 		SET_MODEL(ENT(pev), "models/w_saw_clip.mdl");
 		CBasePlayerAmmo::Spawn();
 	}
-	void Precache() override
+	void Precache()
 	{
 		PRECACHE_MODEL("models/w_saw_clip.mdl");
 		PRECACHE_SOUND("items/9mmclip1.wav");
 	}
-	BOOL AddAmmo(CBaseEntity* pOther) override
+	BOOL AddAmmo(CBaseEntity* pOther)
 	{
 		BOOL bResult = (pOther->GiveAmmo(AMMO_556BOX_GIVE, "556", _556_MAX_CARRY) != -1);
 		if (bResult)

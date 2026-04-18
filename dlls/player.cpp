@@ -96,7 +96,7 @@ TYPEDESCRIPTION	CBasePlayer::m_playerSaveData[] =
 	DEFINE_ARRAY( CBasePlayer, m_rgpPlayerItems, FIELD_CLASSPTR, MAX_ITEM_TYPES ),
 	DEFINE_FIELD( CBasePlayer, m_pActiveItem, FIELD_CLASSPTR ),
 	DEFINE_FIELD( CBasePlayer, m_pLastItem, FIELD_CLASSPTR ),
-	DEFINE_FIELD( CBasePlayer, m_WeaponBits, FIELD_INT64 ),
+	DEFINE_FIELD( CBasePlayer, m_WeaponBits, FIELD_INTEGER ),
 
 	DEFINE_ARRAY( CBasePlayer, m_rgAmmo, FIELD_INTEGER, MAX_AMMO_SLOTS ),
 	DEFINE_FIELD( CBasePlayer, m_idrowndmg, FIELD_INTEGER ),
@@ -235,7 +235,7 @@ void LinkUserMessages( void )
 	gmsgStatusText = REG_USER_MSG( "StatusText", -1 );
 	gmsgStatusValue = REG_USER_MSG( "StatusValue", 3 );
 
-	gmsgWeapons = REG_USER_MSG("Weapons", 8);
+	gmsgWeapons = REG_USER_MSG("Weapons", 4);
 }
 
 LINK_ENTITY_TO_CLASS( player, CBasePlayer )
@@ -860,7 +860,7 @@ void CBasePlayer::RemoveAllItems( BOOL removeSuit )
 	pev->viewmodel = 0;
 	pev->weaponmodel = 0;
 
-	m_WeaponBits = 0ULL;
+	m_WeaponBits = 0;
 
 	if ( removeSuit )
 	{ 
@@ -4135,15 +4135,11 @@ void CBasePlayer::UpdateClientData( void )
 	{
 		m_ClientWeaponBits = m_WeaponBits;
 
-		const int lowerBits = m_WeaponBits & 0xFFFFFFFF;
-		const int upperBits = ( m_WeaponBits >> 32 ) & 0xFFFFFFFF;
-
 		MESSAGE_BEGIN( MSG_ONE, gmsgWeapons, NULL, pev );
-			WRITE_LONG( lowerBits );
-			WRITE_LONG( upperBits );
+			WRITE_LONG( (int)m_WeaponBits ); 
 		MESSAGE_END();
 	}
-
+	
 	if( pev->dmg_take || pev->dmg_save || m_bitsHUDDamage != m_bitsDamageType )
 	{
 		// Comes from inside me if not set

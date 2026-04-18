@@ -46,7 +46,7 @@ int CHud::MsgFunc_ResetHUD( const char *pszName, int iSize, void *pbuf )
 	}
 
 	//Reset weapon bits.
-	m_iWeaponBits = 0ULL;
+	m_iWeaponBits = 0;
 
 	// reset sensitivity
 	m_flMouseSensitivity = 0;
@@ -140,10 +140,7 @@ int CHud::MsgFunc_Weapons( const char* pszName, int iSize, void* pbuf )
 {
 	BEGIN_READ( pbuf, iSize );
 
-	const std::uint64_t lowerBits = READ_LONG();
-	const std::uint64_t upperBits = READ_LONG();
-
-	m_iWeaponBits = lowerBits | ( upperBits << 32ULL );
-
+	m_iWeaponBits = READ_LONG();
+	
 	return 1;
 }

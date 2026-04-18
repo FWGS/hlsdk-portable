@@ -228,18 +228,18 @@ void CSniperRifle::WeaponIdle()
 
 class C762Ammo : public CBasePlayerAmmo
 {
-	void Spawn() override
+	void Spawn()
 	{
 		Precache();
 		SET_MODEL(ENT(pev), "models/w_m40a1clip.mdl");
 		CBasePlayerAmmo::Spawn();
 	}
-	void Precache() override
+	void Precache()
 	{
 		PRECACHE_MODEL("models/w_m40a1clip.mdl");
 		PRECACHE_SOUND("items/9mmclip1.wav");
 	}
-	BOOL AddAmmo(CBaseEntity* pOther) override
+	BOOL AddAmmo(CBaseEntity* pOther)
 	{
 		if (pOther->GiveAmmo(AMMO_762CLIP_GIVE, "762", _762_MAX_CARRY) != -1)
 		{

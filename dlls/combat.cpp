@@ -236,6 +236,7 @@ BOOL CBaseMonster::HasHumanGibs( void )
 	if( myClass == CLASS_HUMAN_MILITARY ||
 		myClass == CLASS_PLAYER_ALLY ||
 		myClass == CLASS_HUMAN_PASSIVE ||
+		myClass == CLASS_HUMAN_ASSASSIN ||
 		myClass == CLASS_PLAYER )
 
 		 return TRUE;
@@ -1554,7 +1555,7 @@ Vector CBaseEntity::FireBulletsPlayer( ULONG cShots, Vector vecSrc, Vector vecDi
 				if ( tr.pHit && tr.pHit->v.takedamage != DAMAGE_NO )
 				{
 					EMIT_SOUND_DYN( tr.pHit, CHAN_BODY, "weapons/xbow_hitbod2.wav", VOL_NORM, ATTN_NORM, 0, PITCH_NORM );
-					auto pHitEntity = Instance( tr.pHit );
+					CBaseEntity* pHitEntity = Instance( tr.pHit );
 
 					if ( pHitEntity->BloodColor() != DONT_BLEED )
 					{
@@ -1565,7 +1566,7 @@ Vector CBaseEntity::FireBulletsPlayer( ULONG cShots, Vector vecSrc, Vector vecDi
 						WRITE_COORD( tr.vecEndPos.y );
 						WRITE_COORD( tr.vecEndPos.z );
 
-						const auto direction = vecSrc - tr.vecEndPos;
+						const Vector direction = vecSrc - tr.vecEndPos;
 
 						WRITE_COORD( direction.x );
 						WRITE_COORD( direction.y );

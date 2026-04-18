@@ -531,7 +531,7 @@ void CPenguin::PrimaryAttack()
 			m_pPlayer->SetAnimation(PLAYER_ATTACK1);
 
 #ifndef CLIENT_DLL
-			auto penguin = CBaseEntity::Create("monster_penguin", tr.vecEndPos, m_pPlayer->pev->v_angle, m_pPlayer->edict());
+			CBaseEntity* penguin = CBaseEntity::Create("monster_penguin", tr.vecEndPos, m_pPlayer->pev->v_angle, m_pPlayer->edict());
 
 			penguin->pev->velocity = m_pPlayer->pev->velocity + (gpGlobals->v_forward * 200);
 #endif
