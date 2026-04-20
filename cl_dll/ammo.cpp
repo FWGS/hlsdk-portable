@@ -351,6 +351,7 @@ void CHudAmmo::Think( void )
 	if( gHUD.m_fPlayerDead )
 		return;
 
+	
 	if( gHUD.m_iWeaponBits != gWR.iOldWeaponBits )
 	{
 		gWR.iOldWeaponBits = gHUD.m_iWeaponBits;
@@ -428,7 +429,8 @@ void WeaponsResource::SelectSlot( int iSlot, int fAdvance, int iDirection )
 	if( gHUD.m_fPlayerDead || gHUD.m_iHideHUDDisplay & ( HIDEHUD_WEAPONS | HIDEHUD_ALL ) )
 		return;
 
-	if ( !( gHUD.m_iWeaponBits & ( 1 << ( WEAPON_SUIT ) ) ) )
+	
+	if( !( gHUD.m_iWeaponBits & ( 1 << ( WEAPON_SUIT ) ) ) )
 		return;
 
 	if( ! ( gHUD.m_iWeaponBits & ~( 1 << ( WEAPON_SUIT ) ) ) )

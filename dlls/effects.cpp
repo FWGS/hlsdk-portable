@@ -379,6 +379,15 @@ public:
 
 	void BeamUpdateVars( void );
 
+	static CLightning* LightningCreate( const char* pSpriteName, int width )
+	{
+		CLightning *lightning = GetClassPtr( (CLightning *)NULL );
+
+		lightning->BeamInit(pSpriteName, width);
+
+		return lightning;
+	}
+
 	int	m_active;
 	string_t	m_iszStartEntity;
 	string_t	m_iszEndEntity;
@@ -1306,6 +1315,7 @@ public:
 	static TYPEDESCRIPTION m_SaveData[];
 
 	int m_iGibs;
+	int m_iType;
 	int m_iGibCapacity;
 	int m_iGibMaterial;
 	int m_iGibModelIndex;
@@ -1317,6 +1327,7 @@ public:
 TYPEDESCRIPTION CGibShooter::m_SaveData[] =
 {
 	DEFINE_FIELD( CGibShooter, m_iGibs, FIELD_INTEGER ),
+	DEFINE_FIELD( CGibShooter, m_iType, FIELD_INTEGER ),
 	DEFINE_FIELD( CGibShooter, m_iGibCapacity, FIELD_INTEGER ),
 	DEFINE_FIELD( CGibShooter, m_iGibMaterial, FIELD_INTEGER ),
 	DEFINE_FIELD( CGibShooter, m_iGibModelIndex, FIELD_INTEGER ),
@@ -1331,6 +1342,7 @@ LINK_ENTITY_TO_CLASS( gibshooter, CGibShooter )
 void CGibShooter::Precache( void )
 {
 	m_iGibModelIndex = PRECACHE_MODEL( "models/hgibs.mdl" );
+	PRECACHE_MODEL( "models/agibs.mdl" );
 }
 
 void CGibShooter::KeyValue( KeyValueData *pkvd )
@@ -1353,6 +1365,11 @@ void CGibShooter::KeyValue( KeyValueData *pkvd )
 	else if( FStrEq( pkvd->szKeyName, "m_flGibLife" ) )
 	{
 		m_flGibLife = atof( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}	
+	else if ( FStrEq( pkvd->szKeyName, "m_iType" ) )
+	{
+		m_iType = atof( pkvd->szValue );
 		pkvd->fHandled = TRUE;
 	}
 	else
@@ -1394,8 +1411,17 @@ CGib *CGibShooter::CreateGib( void )
 		return NULL;
 
 	CGib *pGib = GetClassPtr( (CGib *)NULL );
-	pGib->Spawn( "models/hgibs.mdl" );
-	pGib->m_bloodColor = BLOOD_COLOR_RED;
+	
+	if (m_iType == 1)
+	{
+		pGib->Spawn( "models/agibs.mdl" );
+		pGib->m_bloodColor = BLOOD_COLOR_GREEN;
+	}
+	else
+	{ 
+		pGib->Spawn( "models/hgibs.mdl" );
+		pGib->m_bloodColor = BLOOD_COLOR_RED;
+	}
 
 	if( pev->body <= 1 )
 	{
@@ -2225,4 +2251,603 @@ void CItemSoda::CanTouch( CBaseEntity *pOther )
 	SetTouch( NULL );
 	SetThink( &CBaseEntity::SUB_Remove );
 	pev->nextthink = gpGlobals->time;
+}
+
+//
+// Blue Shift's Xen Warpball entity
+//
+
+const int SF_WARPBALL_FIRE_ONCE = 1 << 0;
+const int SF_WARPBALL_DELAYED_DAMAGE = 1 << 1;
+
+//
+// Blue Shift's Xen Warpball entity
+//
+class CWarpBall : public CBaseEntity
+{
+public:
+	virtual int Save( CSave &save );
+	virtual int Restore( CRestore &restore );
+	static TYPEDESCRIPTION m_SaveData[];
+
+	int Classify() { return CLASS_NONE; }
+	void KeyValue( KeyValueData* pkvd) ;
+
+	void Spawn( void );
+	void Precache(void );
+
+	void EXPORT WarpBallUse( CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value );
+	void EXPORT BallThink();
+
+	static CWarpBall* CreateWarpBall( Vector vecOrigin )
+	{
+		CWarpBall *warpBall = GetClassPtr( (CWarpBall *)NULL );
+
+		UTIL_SetOrigin( warpBall->pev, vecOrigin );
+
+		warpBall->pev->classname = MAKE_STRING( "env_warpball" );
+		warpBall->Spawn();
+
+		return warpBall;
+	}
+
+	CLightning* m_pBeams;
+	CSprite* m_pSprite;
+	int m_iBeams;
+	float m_flLastTime;
+	float m_flMaxFrame;
+	float m_flBeamRadius;
+	string_t m_iszWarpTarget;
+	float m_flWarpStart;
+	float m_flDamageDelay;
+	float m_flTargetDelay;
+	bool m_fPlaying;
+	bool m_fDamageApplied;
+	bool m_fBeamsCleared;
+};
+
+LINK_ENTITY_TO_CLASS( env_warpball, CWarpBall );
+
+TYPEDESCRIPTION	CWarpBall::m_SaveData[] =
+{
+	DEFINE_FIELD( CWarpBall, m_iBeams, FIELD_INTEGER ),
+	DEFINE_FIELD( CWarpBall, m_flLastTime, FIELD_FLOAT ),
+	DEFINE_FIELD( CWarpBall, m_flMaxFrame, FIELD_FLOAT ),
+	DEFINE_FIELD( CWarpBall, m_flBeamRadius, FIELD_FLOAT ),
+	DEFINE_FIELD( CWarpBall, m_iszWarpTarget, FIELD_STRING ),
+	DEFINE_FIELD( CWarpBall, m_flWarpStart, FIELD_FLOAT ),
+	DEFINE_FIELD( CWarpBall, m_flDamageDelay, FIELD_FLOAT ),
+	DEFINE_FIELD( CWarpBall, m_flTargetDelay, FIELD_FLOAT ),
+	DEFINE_FIELD( CWarpBall, m_fPlaying, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CWarpBall, m_fDamageApplied, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CWarpBall, m_fBeamsCleared, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CWarpBall, m_pBeams, FIELD_CLASSPTR ),
+	DEFINE_FIELD( CWarpBall, m_pSprite, FIELD_CLASSPTR ),
+};
+
+IMPLEMENT_SAVERESTORE( CWarpBall, CBaseEntity );
+
+void CWarpBall::KeyValue(KeyValueData* pkvd)
+{
+	if ( FStrEq( "radius", pkvd->szKeyName ) )
+	{
+		m_flBeamRadius = atof( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq( "warp_target", pkvd->szKeyName ) )
+	{
+		m_iszWarpTarget = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if ( FStrEq( "damage_delay", pkvd->szKeyName ) )
+	{
+		m_flDamageDelay = atof( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else
+	{
+		pkvd->fHandled = FALSE;
+	}
+
+	return CBaseEntity::KeyValue( pkvd );
+}
+
+void CWarpBall::Precache( void)
+{
+	PRECACHE_MODEL( "sprites/Fexplo1.spr" );
+	PRECACHE_MODEL( "sprites/XFlare1.spr" );
+	PRECACHE_MODEL( "sprites/lgtning.spr" );
+	PRECACHE_SOUND( "debris/alien_teleport.wav" );
+}
+
+void CWarpBall::Spawn()
+{
+	Precache();
+
+	pev->movetype = MOVETYPE_NONE;
+	pev->solid = SOLID_NOT;
+
+	UTIL_SetOrigin( pev, pev->origin );
+	UTIL_SetSize( pev, g_vecZero, g_vecZero );
+
+	pev->rendermode = kRenderGlow;
+	pev->renderamt = 255;
+	pev->renderfx = kRenderFxNoDissipation;
+	pev->framerate = 10;
+
+	m_pSprite = CSprite::SpriteCreate( "sprites/Fexplo1.spr", pev->origin, true );
+	m_pSprite->TurnOff();
+
+	SetUse( &CWarpBall::WarpBallUse );
+}
+
+void CWarpBall::WarpBallUse( CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value )
+{
+	if ( !m_fPlaying )
+	{
+		if ( !FStringNull( m_iszWarpTarget ) )
+		{
+			edict_t* targetEntity = g_engfuncs.pfnFindEntityByString( 0, "targetname", STRING( m_iszWarpTarget ) );
+			if ( targetEntity )
+				UTIL_SetOrigin( pev, targetEntity->v.origin );
+		}
+
+		SET_MODEL( pev->pContainingEntity, "sprites/XFlare1.spr" );
+
+		m_flMaxFrame = MODEL_FRAMES( pev->modelindex ) - 1;
+
+		pev->rendercolor.x = 77;
+		pev->rendercolor.y = 210;
+		pev->rendercolor.z = 130;
+		pev->scale = 1.2;
+		pev->frame = 0;
+
+		if ( m_pSprite )
+		{
+			m_pSprite->pev->rendermode = kRenderGlow;
+			m_pSprite->pev->rendercolor.x = 77;
+			m_pSprite->pev->rendercolor.y = 210;
+			m_pSprite->pev->rendercolor.z = 130;
+			m_pSprite->pev->renderamt = 255;
+			m_pSprite->pev->renderfx = kRenderFxNoDissipation;
+			m_pSprite->pev->scale = 1;
+			m_pSprite->pev->framerate = 10;
+			m_pSprite->TurnOn();
+		}
+
+		if ( !m_pBeams )
+		{
+			m_pBeams = CLightning::LightningCreate( "sprites/lgtning.spr", 18 );
+
+			m_pBeams->m_iszSpriteName = MAKE_STRING( "sprites/lgtning.spr" );
+
+			m_pBeams->pev->origin = pev->origin;
+			UTIL_SetOrigin( m_pBeams->pev, pev->origin );
+
+			m_pBeams->m_restrike = -0.5;
+			m_pBeams->m_noiseAmplitude = 65;
+			m_pBeams->m_boltWidth = 18;
+			m_pBeams->m_life = 0.5;
+
+			m_pBeams->pev->rendercolor.x = 0;
+			m_pBeams->pev->rendercolor.y = 255;
+			m_pBeams->pev->rendercolor.z = 0;
+
+			m_pBeams->pev->spawnflags |= 0x20u;
+			m_pBeams->pev->spawnflags |= 2u;
+
+			m_pBeams->m_radius = m_flBeamRadius;
+			m_pBeams->m_iszStartEntity = pev->targetname;
+
+			m_pBeams->BeamUpdateVars();
+		}
+
+		if ( m_pBeams )
+		{
+			m_pBeams->pev->solid = 0;
+			m_pBeams->Precache();
+			m_pBeams->SetThink( &CLightning::StrikeThink );
+			m_pBeams->pev->nextthink = gpGlobals->time + 0.1;
+		}
+
+		SetThink( &CWarpBall::BallThink );
+		pev->nextthink = gpGlobals->time + 0.1;
+
+		m_flLastTime = gpGlobals->time;
+		m_fBeamsCleared = 0;
+		m_fPlaying = true;
+
+		if ( m_flDamageDelay == 0 )
+		{
+			::RadiusDamage( pev->origin, pev, pev, 300, 48, CLASS_NONE, DMG_SHOCK );
+			m_fDamageApplied = true;
+		}
+		else
+		{
+			m_fDamageApplied = false;
+		}
+
+		SUB_UseTargets( this, USE_TOGGLE, 0 );
+
+		UTIL_ScreenShake( pev->origin, 6, 160, 1.0, 1250 );
+
+		m_flWarpStart = gpGlobals->time;
+
+		EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "debris/alien_teleport.wav", 1.0, 0.4 );
+	}
+}
+
+void CWarpBall::BallThink()
+{
+	pev->frame = ( ( gpGlobals->time - m_flLastTime) * pev->framerate ) + pev->frame;
+
+	if ( pev->frame > m_flMaxFrame )
+	{
+		SET_MODEL(edict(), "");
+
+		SetThink(NULL);
+
+		if ( pev->spawnflags & SF_WARPBALL_FIRE_ONCE )
+			UTIL_Remove(this);
+
+		if ( m_pSprite )
+			m_pSprite->TurnOff();
+
+		m_fPlaying = false;
+	}
+	else
+	{
+		//TODO: this flag is probably supposed to be a "do radius damage" flag, but it isn't used in the Use method
+		if ( pev->spawnflags & SF_WARPBALL_DELAYED_DAMAGE
+			&& !m_fDamageApplied
+			&& ( gpGlobals->time - m_flWarpStart ) >= m_flDamageDelay )
+		{
+			::RadiusDamage( pev->origin, pev, pev, 300, 48, CLASS_NONE, DMG_SHOCK );
+			m_fDamageApplied = true;
+		}
+
+		if (m_pBeams)
+		{
+			if ( pev->frame >= ( m_flMaxFrame - 4.0 ) )
+			{
+				m_pBeams->SetThink( NULL );
+				m_pBeams->pev->nextthink = gpGlobals->time;
+			}
+		}
+
+		pev->nextthink = gpGlobals->time + 0.1;
+		m_flLastTime = gpGlobals->time;
+	}
+}
+
+//
+// Spirit of Half-Life's env_model
+// Slightly modified to toggle visible/invisible.
+//
+
+#define SF_ENVMODEL_OFF			1
+#define SF_ENVMODEL_DROPTOFLOOR	2
+#define SF_ENVMODEL_SOLID		4
+
+class CEnvModel : public CBaseAnimating
+{
+	void Spawn( void );
+	void Precache( void );
+	void EXPORT Think( void );
+	void KeyValue( KeyValueData* pkvd) ;
+
+	void TurnOn();
+	void TurnOff();
+	bool IsOn();
+	void Use( CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value );
+
+	virtual int	ObjectCaps( void ) { return CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
+
+	virtual int Save( CSave &save );
+	virtual int Restore( CRestore &restore );
+	static TYPEDESCRIPTION m_SaveData[];
+
+	void SetSequence( void );
+
+	string_t m_iszSequence_On;
+	int m_iAction_On;
+};
+
+LINK_ENTITY_TO_CLASS( env_model, CEnvModel );
+
+TYPEDESCRIPTION CEnvModel::m_SaveData[] =
+{
+	DEFINE_FIELD( CEnvModel, m_iszSequence_On, FIELD_STRING ),
+	DEFINE_FIELD( CEnvModel, m_iAction_On, FIELD_INTEGER ),
+};
+
+IMPLEMENT_SAVERESTORE( CEnvModel, CBaseAnimating );
+
+
+void CEnvModel::KeyValue( KeyValueData* pkvd )
+{
+	if ( FStrEq(pkvd->szKeyName, "m_iszSequence_On"))
+	{
+		m_iszSequence_On = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if ( FStrEq( pkvd->szKeyName, "m_iAction_On" ) )
+	{
+		m_iAction_On = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+
+	return CBaseAnimating::KeyValue( pkvd );
+}
+
+void CEnvModel::Spawn( void )
+{
+	Precache();
+	SET_MODEL( ENT( pev ), STRING( pev->model ) );
+	UTIL_SetOrigin( pev, pev->origin );
+
+	if ( pev->spawnflags & SF_ENVMODEL_SOLID )
+	{
+		pev->solid = SOLID_SLIDEBOX;
+		UTIL_SetSize( pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX );
+	}
+
+	if ( pev->spawnflags & SF_ENVMODEL_DROPTOFLOOR )
+	{
+		pev->origin.z += 1;
+		DROP_TO_FLOOR( ENT( pev ) );
+	}
+
+	SetBoneController( 0, 0 );
+	SetBoneController( 1, 0 );
+
+	SetSequence();
+
+	pev->nextthink = gpGlobals->time + (0.1);
+
+	if ( pev->spawnflags & SF_ENVMODEL_OFF )
+		TurnOff();
+}
+
+void CEnvModel::Precache(void)
+{
+	PRECACHE_MODEL( ( char* ) STRING( pev->model ) );
+}
+
+bool CEnvModel::IsOn()
+{
+	if ( ( pev->effects & EF_NODRAW ) != 0 )
+		return FALSE;
+	return TRUE;
+}
+
+
+void CEnvModel::TurnOff()
+{
+	pev->effects |= EF_NODRAW;
+}
+
+
+void CEnvModel::TurnOn()
+{
+	pev->effects &= ~EF_NODRAW;
+}
+
+
+void CEnvModel::Use( CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value )
+{
+	bool active = IsOn();
+
+	if ( !ShouldToggle( useType, active ) )
+		return;
+	if ( active )
+	{
+		TurnOff();
+	}
+	else
+	{
+		TurnOn();
+	}
+}
+
+void CEnvModel::Think( void )
+{
+	StudioFrameAdvance(); // set m_fSequenceFinished if necessary
+
+	if ( m_fSequenceFinished && !m_fSequenceLoops )
+	{
+		SetSequence();
+	}
+	pev->nextthink = gpGlobals->time + ( 0.1 );
+}
+
+void CEnvModel::SetSequence(void)
+{
+	int iszSeq;
+
+	iszSeq = m_iszSequence_On;
+
+	if ( !iszSeq )
+		return;
+	pev->sequence = LookupSequence(STRING(iszSeq));
+
+	if ( pev->sequence == -1 )
+	{
+		pev->sequence = 0;
+	}
+
+	pev->frame = 0;
+	ResetSequenceInfo();
+
+	m_fSequenceLoops = 0;
+
+	if ( m_iAction_On == 1 )
+		m_fSequenceLoops = 1;
+	else
+		m_fSequenceLoops = 0;
+}
+
+//
+// Special env_laser for the Xen levels
+// Don't kill any monsters, just kill the player
+// and damage func_guntarget's to open doors.
+//
+
+LINK_ENTITY_TO_CLASS( env_laser_xen, CXenLaser );
+
+TYPEDESCRIPTION CXenLaser::m_SaveData[] =
+{
+	DEFINE_FIELD( CXenLaser, m_pSprite, FIELD_CLASSPTR ),
+	DEFINE_FIELD( CXenLaser, m_iszSpriteName, FIELD_STRING ),
+	DEFINE_FIELD( CXenLaser, m_firePosition, FIELD_POSITION_VECTOR ),
+};
+
+IMPLEMENT_SAVERESTORE( CXenLaser, CLaser );
+
+void CXenLaser::Spawn()
+{
+	if ( FStringNull( pev->model ) )
+	{
+		SetThink( &CLaser::SUB_Remove );
+		return;
+	}
+	pev->solid = SOLID_NOT; // Remove model & collisions
+	Precache();
+
+	SetThink( &CXenLaser::StrikeThink );
+	pev->flags |= FL_CUSTOMENTITY;
+
+	PointsInit( pev->origin, pev->origin );
+
+	if ( !m_pSprite && !FStringNull( m_iszSpriteName ) )
+		m_pSprite = CSprite::SpriteCreate( STRING( m_iszSpriteName ), pev->origin, TRUE );
+	else
+		m_pSprite = NULL;
+
+	if ( m_pSprite )
+		m_pSprite->SetTransparency( kRenderGlow, pev->rendercolor.x, pev->rendercolor.y, pev->rendercolor.z, pev->renderamt, pev->renderfx );
+
+	if ( !FStringNull( pev->targetname ) && ( pev->spawnflags & SF_BEAM_STARTON ) == 0 )
+		CLaser::TurnOff();
+	else
+		CLaser::TurnOn();
+}
+
+void CXenLaser::Precache()
+{
+	pev->modelindex = PRECACHE_MODEL( ( char* )STRING( pev->model ));
+	if (!FStringNull( m_iszSpriteName ) )
+		PRECACHE_MODEL( (char*)STRING( m_iszSpriteName ) );
+}
+
+void CXenLaser::KeyValue( KeyValueData* pkvd )
+{
+	return CLaser::KeyValue( pkvd );
+}
+
+void CXenLaser::StrikeThink()
+{
+	CBaseEntity* pEnd = RandomTargetname( STRING( pev->message ) );
+
+	if ( pEnd )
+		m_firePosition = pEnd->pev->origin;
+
+	TraceResult tr;
+
+	UTIL_TraceLine( pev->origin, m_firePosition, dont_ignore_monsters, NULL, &tr );
+	FireAtPoint( tr );
+	pev->nextthink = gpGlobals->time + 0.1;
+}
+
+void CXenLaser::FireAtPoint( TraceResult& tr )
+{
+	SetEndPos( tr.vecEndPos );
+	if ( m_pSprite )
+		UTIL_SetOrigin( m_pSprite->pev, tr.vecEndPos );
+
+	XenBeamDamage( &tr );
+	DoSparks( GetStartPos(), tr.vecEndPos );
+}
+
+void CXenLaser::XenBeamDamage( TraceResult* ptr )
+{
+	CBeam::RelinkBeam();
+	if ( ptr->flFraction != 1.0 && ptr->pHit != NULL )
+	{
+		CBaseEntity* pHit = CBaseEntity::Instance( ptr->pHit );
+		if ( pHit )
+		{
+			ClearMultiDamage();
+
+			if ( pHit->IsPlayer() 
+				|| ( FClassnameIs( pHit->pev, "func_guntarget" ) ) 
+				|| ( FClassnameIs( pHit->pev, "func_breakable" ) ) )
+			{
+				pHit->TraceAttack( pev, pev->dmg * ( gpGlobals->time - pev->dmgtime ), ( ptr->vecEndPos - pev->origin ).Normalize(), ptr, DMG_ENERGYBEAM );
+			}
+			ApplyMultiDamage( pev, pev );
+
+			if (( pev->spawnflags & SF_BEAM_DECALS ) != 0)
+			{
+				if ( pHit->IsBSPModel() )
+					UTIL_DecalTrace( ptr, DECAL_BIGSHOT1 + RANDOM_LONG( 0, 4 ) );
+			}
+		}
+	}
+	pev->dmgtime = gpGlobals->time;
+}
+
+//
+// env_nukewave -- A nuke wave effect for the ending.
+//
+
+class CEnvNukeWave : public CBaseEntity
+{
+public:
+	void Spawn();
+	void Precache();
+	void Use( CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value );
+
+	int m_iWave;
+};
+
+LINK_ENTITY_TO_CLASS( env_nukewave, CEnvNukeWave );
+
+void CEnvNukeWave::Precache()
+{
+	m_iWave = PRECACHE_MODEL( "sprites/shockwave.spr" );
+}
+
+void CEnvNukeWave::Spawn()
+{
+	Precache();
+
+	pev->solid = SOLID_NOT;
+	pev->effects = EF_NODRAW;
+
+	pev->movetype = MOVETYPE_NONE;
+}
+
+void CEnvNukeWave::Use( CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value )
+{
+	MESSAGE_BEGIN( MSG_PAS, SVC_TEMPENTITY, pev->origin );
+		WRITE_BYTE( TE_BEAMCYLINDER );
+		WRITE_COORD( pev->origin.x );
+		WRITE_COORD( pev->origin.y );
+		WRITE_COORD( pev->origin.z );
+		WRITE_COORD( pev->origin.x );
+		WRITE_COORD( pev->origin.y );
+		WRITE_COORD( 3000 ); // reach damage radius over .3 seconds
+		WRITE_SHORT( m_iWave );
+		WRITE_BYTE( 0) ;	// startframe
+		WRITE_BYTE( 0 );	// framerate
+		WRITE_BYTE( 20 );	// life
+		WRITE_BYTE( 255 ); // width
+		WRITE_BYTE( 0 );	// noise
+		WRITE_BYTE( 255 );
+		WRITE_BYTE( 184 );
+		WRITE_BYTE( 56 );
+		WRITE_BYTE( 200 ); //brightness
+		WRITE_BYTE( 0 );	 // speed
+	MESSAGE_END();
 }

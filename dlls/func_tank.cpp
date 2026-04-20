@@ -35,7 +35,8 @@ enum TANKBULLET
 	TANK_BULLET_NONE = 0,
 	TANK_BULLET_9MM = 1,
 	TANK_BULLET_MP5 = 2,
-	TANK_BULLET_12MM = 3
+	TANK_BULLET_12MM = 3,
+	TANK_BULLET_762 = 4
 };
 
 //			Custom damage
@@ -732,6 +733,9 @@ void CFuncTankGun::Fire( const Vector &barrelEnd, const Vector &forward, entvars
 					break;
 				case TANK_BULLET_12MM:
 					FireBullets( 1, barrelEnd, forward, gTankSpread[m_spread], 4096, BULLET_MONSTER_12MM, 1, m_iBulletDamage, pevAttacker );
+					break;
+				case TANK_BULLET_762:
+					FireBullets( 1, barrelEnd, forward, gTankSpread[m_spread], 8192, BULLET_MONSTER_762, 1, m_iBulletDamage, pevAttacker );
 					break;
 				default:
 				case TANK_BULLET_NONE:

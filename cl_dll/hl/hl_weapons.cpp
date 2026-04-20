@@ -60,13 +60,18 @@ CMP5 g_Mp5;
 CCrossbow g_Crossbow;
 CShotgun g_Shotgun;
 CRpg g_Rpg;
-CGauss g_Gauss;
+CGaussMK2 g_Gauss;
 CEgon g_Egon;
-CHgun g_HGun;
+CHgunPoison g_HGun;
 CHandGrenade g_HandGren;
 CSatchel g_Satchel;
 CTripmine g_Tripmine;
 CSqueak g_Snark;
+CKnife g_Knife;
+CEagle g_Eagle;
+CM249 g_M249;
+CSniperRifle g_Sniper;
+CPenguin g_Penguin;
 
 /*
 ======================
@@ -620,6 +625,11 @@ void HUD_InitClientWeapons( void )
 	HUD_PrepEntity( &g_Satchel, &player );
 	HUD_PrepEntity( &g_Tripmine, &player );
 	HUD_PrepEntity( &g_Snark, &player );
+	HUD_PrepEntity( &g_Knife, &player );
+	HUD_PrepEntity( &g_Eagle, &player );
+	HUD_PrepEntity( &g_M249, &player );
+	HUD_PrepEntity( &g_Sniper, &player );
+	HUD_PrepEntity( &g_Penguin, &player );
 }
 
 /*
@@ -685,12 +695,18 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 	{
 		case WEAPON_CROWBAR:
 			pWeapon = &g_Crowbar;
+			break;	
+		case WEAPON_KNIFE:
+			pWeapon = &g_Knife;
 			break;
 		case WEAPON_GLOCK:
 			pWeapon = &g_Glock;
 			break;
 		case WEAPON_PYTHON:
 			pWeapon = &g_Python;
+			break;	
+		case WEAPON_EAGLE:
+			pWeapon = &g_Eagle;
 			break;
 		case WEAPON_MP5:
 			pWeapon = &g_Mp5;
@@ -724,6 +740,15 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 			break;
 		case WEAPON_SNARK:
 			pWeapon = &g_Snark;
+			break;	
+		case WEAPON_M249:
+			pWeapon = &g_M249;
+			break;	
+		case WEAPON_SNIPERRIFLE:
+			pWeapon = &g_Sniper;
+			break;
+		case WEAPON_PENGUIN:
+			pWeapon = &g_Penguin;
 			break;
 	}
 
@@ -955,7 +980,7 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 		to->client.vuser4[0] = pCurrent->m_iPrimaryAmmoType;
 		to->client.vuser4[1] = player.m_rgAmmo[pCurrent->m_iPrimaryAmmoType];
 		to->client.vuser4[2] = player.m_rgAmmo[pCurrent->m_iSecondaryAmmoType];
-
+		
 /*		if( pto->m_flPumpTime != -9999.0f )
 		{
 			pto->m_flPumpTime -= cmd->msec / 1000.0f;

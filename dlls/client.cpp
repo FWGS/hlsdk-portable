@@ -46,7 +46,8 @@ extern DLL_GLOBAL int		g_iSkillLevel;
 extern DLL_GLOBAL ULONG		g_ulFrameCount;
 
 extern void CopyToBodyQue( entvars_t* pev );
-extern int giPrecacheGrunt;
+extern int giPrecacheSci;
+extern int giPrecacheBa;
 extern int gmsgSayText;
 
 extern cvar_t allow_spectators;
@@ -172,7 +173,7 @@ void ClientKill( edict_t *pEntity )
 
 	// have the player kill themself
 	pev->health = 0;
-	pl->Killed( pev, GIB_NEVER );
+	pl->Killed( pev, GIB_ALWAYS );
 
 	//pev->modelindex = g_ulModelIndexPlayer;
 	//pev->frags -= 2;		// extra penalty
@@ -605,6 +606,10 @@ void ClientCommand( edict_t *pEntity )
 		if( pPlayer->IsObserver() )
 			pPlayer->Observer_FindNextPlayer( atoi( CMD_ARGV( 1 ) ) ? true : false );
 	}
+	else if ( FStrEq( pcmd, "cl_version" ) )
+	{
+		ClientPrint( pev, HUD_PRINTNOTIFY, "Half-Life: Insecure\nVersion 1.5\nTEST BUILD\n" );
+	}
 	else if( g_pGameRules->ClientCommand( GetClassPtr( (CBasePlayer *)pev ), pcmd ) )
 	{
 		// MenuSelect returns true only if the command is properly handled,  so don't print a warning
@@ -932,8 +937,10 @@ void ClientPrecache( void )
 	PRECACHE_SOUND( "player/geiger2.wav" );
 	PRECACHE_SOUND( "player/geiger1.wav" );
 
-	if( giPrecacheGrunt )
-		UTIL_PrecacheOther( "monster_human_grunt" );
+	if (giPrecacheSci)
+		UTIL_PrecacheOther("monster_scientist");
+	if (giPrecacheBa)
+		UTIL_PrecacheOther("monster_barney");
 }
 
 /*
@@ -1683,6 +1690,8 @@ int GetWeaponData( struct edict_s *player, struct weapon_data_s *info )
 						item->iuser1			= gun->m_chargeReady;
 						item->iuser2			= gun->m_fInAttack;
 						item->iuser3			= gun->m_fireState;
+
+						gun->GetWeaponData(*item);
 
 						//item->m_flPumpTime		= max( gun->m_flPumpTime, -0.001 );
 					}

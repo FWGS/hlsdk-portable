@@ -527,7 +527,8 @@ void CHalfLifeMultiplay::PlayerSpawn( CBasePlayer *pPlayer )
 	iOldAutoWepSwitch = pPlayer->m_iAutoWepSwitch;
 
 	pPlayer->m_iAutoWepSwitch = 1;
-	pPlayer->pev->weapons |= ( 1 << WEAPON_SUIT );
+	
+	pPlayer->SetSuit( TRUE );
 
 	addDefault = TRUE;
 
@@ -580,26 +581,15 @@ int CHalfLifeMultiplay::IPointsForKill( CBasePlayer *pAttacker, CBasePlayer *pKi
 //=========================================================
 void CHalfLifeMultiplay::PlayerKilled( CBasePlayer *pVictim, entvars_t *pKiller, entvars_t *pInflictor )
 {
-	CBasePlayer *peKiller = NULL;
-	CBaseEntity *ktmp = CBaseEntity::Instance( pKiller );
-	if( ktmp && (ktmp->Classify() == CLASS_PLAYER ) )
-		peKiller = (CBasePlayer*)ktmp;
-	else if( ktmp && ktmp->Classify() == CLASS_VEHICLE )
-	{
-		CBasePlayer *pDriver = (CBasePlayer *)( (CFuncVehicle *)ktmp )->m_pDriver;
-
-		if( pDriver != NULL )
-		{
-			pKiller = pDriver->pev;
-			peKiller = (CBasePlayer *)pDriver;
-		}
-	}
-
 	DeathNotice( pVictim, pKiller, pInflictor );
 
 	pVictim->m_iDeaths += 1;
 
 	FireTargets( "game_playerdie", pVictim, pVictim, USE_TOGGLE, 0 );
+	CBasePlayer* peKiller = NULL;
+	CBaseEntity* ktmp = CBaseEntity::Instance( pKiller );
+	if ( ktmp && ( ktmp->Classify() == CLASS_PLAYER ) )
+		peKiller = ( CBasePlayer* )ktmp;
 
 	if( pVictim->pev == pKiller )
 	{

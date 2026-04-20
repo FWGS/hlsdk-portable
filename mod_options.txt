@@ -12,13 +12,13 @@ SPEAKABLE_TARGETS=ON # Speakable cycler and func_button (breaks AMXModX offsets)
 OEM_BUILD=OFF # OEM Build
 HLDEMO_BUILD=OFF # Demo Build
 
-GAMEDIR=valve # Gamedir path
+GAMEDIR=insecure # Gamedir path
 
 # keys below must match liblist.gam/gameinfo.txt
 SERVER_INSTALL_DIR=dlls # Where to put server dll
 CLIENT_INSTALL_DIR=cl_dlls # Where to put client or menu dll
-SERVER_LIBRARY_NAME=hl # Default server dll name
+SERVER_LIBRARY_NAME=insecure # Default server dll name
 
 # Keep disabled until liblist.gam uses different name for OSX and Linux (e.g. Counter-Strike uses mp.dll on Windows and cs.so on Linux)
-#SERVER_LIBRARY_NAME_OSX=hl # Override server dll name for macOS
-#SERVER_LIBRARY_NAME_LINUX=hl # Override server dll name for Linux and other systems
+#SERVER_LIBRARY_NAME_OSX=insecure # Override server dll name for macOS
+#SERVER_LIBRARY_NAME_LINUX=insecure # Override server dll name for Linux and other systems

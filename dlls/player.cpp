@@ -96,6 +96,7 @@ TYPEDESCRIPTION	CBasePlayer::m_playerSaveData[] =
 	DEFINE_ARRAY( CBasePlayer, m_rgpPlayerItems, FIELD_CLASSPTR, MAX_ITEM_TYPES ),
 	DEFINE_FIELD( CBasePlayer, m_pActiveItem, FIELD_CLASSPTR ),
 	DEFINE_FIELD( CBasePlayer, m_pLastItem, FIELD_CLASSPTR ),
+	DEFINE_FIELD( CBasePlayer, m_WeaponBits, FIELD_INTEGER ),
 
 	DEFINE_ARRAY( CBasePlayer, m_rgAmmo, FIELD_INTEGER, MAX_AMMO_SLOTS ),
 	DEFINE_FIELD( CBasePlayer, m_idrowndmg, FIELD_INTEGER ),
@@ -145,7 +146,8 @@ TYPEDESCRIPTION	CBasePlayer::m_playerSaveData[] =
 	//DEFINE_FIELD( CBasePlayer, m_nCustomSprayFrames, FIELD_INTEGER ), // Don't need to restore
 };	
 
-int giPrecacheGrunt = 0;
+int giPrecacheSci = 0;
+int giPrecacheBa = 0;
 int gmsgShake = 0;
 int gmsgFade = 0;
 int gmsgSelAmmo = 0;
@@ -184,6 +186,8 @@ int gmsgTeamNames = 0;
 
 int gmsgStatusText = 0;
 int gmsgStatusValue = 0;
+
+int gmsgWeapons = 0;
 
 void LinkUserMessages( void )
 {
@@ -230,6 +234,8 @@ void LinkUserMessages( void )
 
 	gmsgStatusText = REG_USER_MSG( "StatusText", -1 );
 	gmsgStatusValue = REG_USER_MSG( "StatusValue", 3 );
+
+	gmsgWeapons = REG_USER_MSG("Weapons", 4);
 }
 
 LINK_ENTITY_TO_CLASS( player, CBasePlayer )
@@ -240,12 +246,12 @@ void CBasePlayer::Pain( void )
 
 	flRndSound = RANDOM_FLOAT( 0.0f, 1.0f ); 
 
-	if( flRndSound <= 0.33f )
-		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/pl_pain5.wav", 1, ATTN_NORM );
-	else if( flRndSound <= 0.66f )	
-		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/pl_pain6.wav", 1, ATTN_NORM );
+	if ( flRndSound <= 0.33 )
+		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "barney/ba_pain1.wav", 1, ATTN_NORM );
+	else if (flRndSound <= 0.66)
+		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "barney/ba_pain2.wav", 1, ATTN_NORM );
 	else
-		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/pl_pain7.wav", 1, ATTN_NORM );
+		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "barney/ba_pain3.wav", 1, ATTN_NORM );
 }
 
 Vector VecVelocityForDamage( float flDamage )
@@ -696,7 +702,7 @@ void CBasePlayer::PackDeadPlayerItems( void )
 					if( m_pActiveItem && pPlayerItem == m_pActiveItem )
 					{
 						// this is the active item. Pack it.
-						rgpPackWeapons[iPW] = (CBasePlayerWeapon *)pPlayerItem;
+						rgpPackWeapons[iPW++] = (CBasePlayerWeapon *)pPlayerItem;
 					}
 					break;
 				case GR_PLR_DROP_GUN_ALL:
@@ -854,14 +860,18 @@ void CBasePlayer::RemoveAllItems( BOOL removeSuit )
 	pev->viewmodel = 0;
 	pev->weaponmodel = 0;
 
-	if( removeSuit )
-		pev->weapons = 0;
-	else
-		pev->weapons &= ~WEAPON_ALLWEAPONS;
+	m_WeaponBits = 0;
+
+	if ( removeSuit )
+	{ 
+		SetSuit( TRUE );
+	}
 
 	// Turn off flashlight
-	if (removeSuit)
-		ClearBits( pev->effects, EF_DIMLIGHT );
+	if (FlashlightIsOn() == TRUE )
+	{
+		FlashlightTurnOff();
+	}
 
 	for( i = 0; i < MAX_AMMO_SLOTS; i++ )
 		m_rgAmmo[i] = 0;
@@ -1292,6 +1302,8 @@ void CBasePlayer::PlayerDeathThink( void )
 {
 	float flForward;
 
+	m_iHideHUD |= HIDEHUD_ALL;
+
 	if( FBitSet( pev->flags, FL_ONGROUND ) )
 	{
 		flForward = pev->velocity.Length() - 20;
@@ -1333,6 +1345,9 @@ void CBasePlayer::PlayerDeathThink( void )
 	// this prevents a bug where the dead body would go to a player's head if he walked over it while the dead player was clicking their button to respawn
 	if( pev->movetype != MOVETYPE_NONE && FBitSet( pev->flags, FL_ONGROUND ) )
 		pev->movetype = MOVETYPE_NONE;
+
+	if ( pev->deadflag == DEAD_DYING )
+		pev->deadflag = DEAD_DEAD;
 
 	StopAnimation();
 
@@ -1474,7 +1489,7 @@ void CBasePlayer::StartObserver( Vector vecPosition, Vector vecViewAngle )
 	MESSAGE_END();
 
 	// Setup flags
-	m_iHideHUD = ( HIDEHUD_HEALTH | HIDEHUD_FLASHLIGHT | HIDEHUD_WEAPONS );
+	m_iHideHUD = ( HIDEHUD_HEALTH | HIDEHUD_WEAPONS );
 	m_afPhysicsFlags |= PFLAG_OBSERVER;
 	pev->effects = EF_NODRAW;
 	pev->view_ofs = g_vecZero;
@@ -2329,7 +2344,7 @@ void CBasePlayer::CheckSuitUpdate()
 	int isearch = m_iSuitPlayNext;
 
 	// Ignore suit updates if no suit
-	if( !( pev->weapons & ( 1 << WEAPON_SUIT ) ) )
+	if ( !HasSuit() )
 		return;
 
 	// if in range of radiation source, ping geiger counter
@@ -2390,7 +2405,7 @@ void CBasePlayer::SetSuitUpdate( const char *name, int fgroup, int iNoRepeatTime
 	int iempty = -1;
 
 	// Ignore suit updates if no suit
-	if( !( pev->weapons & ( 1 << WEAPON_SUIT ) ) )
+	if ( !HasSuit() )
 		return;
 
 	if( g_pGameRules->IsMultiplayer() )
@@ -2662,7 +2677,12 @@ void CBasePlayer::PostThink()
 			if( flFallDamage > 0 )
 			{
 				TakeDamage( VARS( eoNullEntity ), VARS( eoNullEntity ), flFallDamage, DMG_FALL ); 
-				pev->punchangle.x = 0;
+				
+				// 25: Replicate WON's style (or PS2 port) view kick when taking fall damage.
+				pev->punchangle.z = 4;
+				pev->punchangle.x = 10;
+				if (RANDOM_LONG(0, 99) < 50)
+					pev->punchangle.z = -4;
 			}
 		}
 
@@ -3427,7 +3447,7 @@ void CBasePlayer::FlashlightTurnOn( void )
 		return;
 	}
 
-	if( (pev->weapons & ( 1 << WEAPON_SUIT ) ) )
+	if( HasFlashlight() )
 	{
 		EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, SOUND_FLASHLIGHT_ON, 1.0, ATTN_NORM, 0, PITCH_NORM );
 		SetBits( pev->effects, EF_DIMLIGHT );
@@ -3467,6 +3487,7 @@ void CBasePlayer::ForceClientDllUpdate( void )
 	m_iClientBattery = -1;
 	m_iClientHideHUD = -1;	// Vit_amiN: forcing to update
 	m_iClientFOV = -1;	// Vit_amiN: force client weapons to be sent
+	m_ClientWeaponBits = 0;
 	m_iTrain |= TRAIN_NEW;  // Force new train message.
 	m_fWeapon = FALSE;          // Force weapon send
 	m_fKnownItem = FALSE;    // Force weaponinit messages.
@@ -3575,22 +3596,34 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 	switch( iImpulse )
 	{
 	case 76:
-		if( !giPrecacheGrunt )
+		if( !giPrecacheSci )
 		{
-			giPrecacheGrunt = 1;
-			ALERT( at_console, "You must now restart to use Grunt-o-matic.\n" );
+			giPrecacheSci = 1;
+			ALERT( at_console, "You must now restart to generate a scientist.\n" );
+			Create( "monster_scientist", pev->origin + gpGlobals->v_forward * 128, pev->angles );
+		}
+		break;
+	case 77:
+		if ( !giPrecacheBa )
+		{
+			giPrecacheBa = true;
+			ALERT( at_console, "You must now restart to generate a Barney.\n" );
 		}
 		else
 		{
-			UTIL_MakeVectors( Vector( 0, pev->v_angle.y, 0 ) );
-			Create( "monster_human_grunt", pev->origin + gpGlobals->v_forward * 128, pev->angles );
+			UTIL_MakeVectors(Vector(0, pev->v_angle.y, 0));
+			Create( "monster_barney", pev->origin + gpGlobals->v_forward * 128, pev->angles );
 		}
 		break;
 	case 101:
 		gEvilImpulse101 = TRUE;
-		GiveNamedItem( "item_suit" );
-		GiveNamedItem( "item_battery" );
-		GiveNamedItem( "weapon_crowbar" );
+		
+		SetFlashlight( TRUE ); // give flashlight through weapon bit
+
+		GiveNamedItem( "item_armorplate" );
+		GiveNamedItem( "weapon_m249" );
+		GiveNamedItem( "weapon_sniperrifle" );
+		GiveNamedItem( "weapon_knife" );
 		GiveNamedItem( "weapon_9mmhandgun" );
 		GiveNamedItem( "ammo_9mmclip" );
 		GiveNamedItem( "weapon_shotgun" );
@@ -3600,8 +3633,8 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		GiveNamedItem( "ammo_ARgrenades" );
 		GiveNamedItem( "weapon_handgrenade" );
 		GiveNamedItem( "weapon_tripmine" );
-#if !OEM_BUILD
 		GiveNamedItem( "weapon_357" );
+		GiveNamedItem( "weapon_eagle" );
 		GiveNamedItem( "ammo_357" );
 		GiveNamedItem( "weapon_crossbow" );
 		GiveNamedItem( "ammo_crossbow" );
@@ -3613,7 +3646,7 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		GiveNamedItem( "weapon_satchel" );
 		GiveNamedItem( "weapon_snark" );
 		GiveNamedItem( "weapon_hornetgun" );
-#endif
+		
 		gEvilImpulse101 = FALSE;
 		break;
 	case 102:
@@ -3728,6 +3761,10 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 			if( pEntity->pev->takedamage )
 				pEntity->SetThink( &CBaseEntity::SUB_Remove );
 		}
+		break;
+	case 205: // Insecure: HURTME COMMAND
+		pev->health = 50;
+		pev->armorvalue = 0;
 		break;
 	}
 #endif	// HLDEMO_BUILD
@@ -3997,6 +4034,8 @@ reflecting all of the HUD state info.
 */
 void CBasePlayer::UpdateClientData( void )
 {
+	const bool fullHUDInitRequired = m_fInitHUD != false;
+
 	if( m_fInitHUD )
 	{
 		m_fInitHUD = FALSE;
@@ -4092,6 +4131,15 @@ void CBasePlayer::UpdateClientData( void )
 		MESSAGE_END();
 	}
 
+	if ( m_WeaponBits != m_ClientWeaponBits )
+	{
+		m_ClientWeaponBits = m_WeaponBits;
+
+		MESSAGE_BEGIN( MSG_ONE, gmsgWeapons, NULL, pev );
+			WRITE_LONG( (int)m_WeaponBits ); 
+		MESSAGE_END();
+	}
+	
 	if( pev->dmg_take || pev->dmg_save || m_bitsHUDDamage != m_bitsDamageType )
 	{
 		// Comes from inside me if not set
@@ -4195,7 +4243,7 @@ void CBasePlayer::UpdateClientData( void )
 		{
 			ItemInfo& II = CBasePlayerItem::ItemInfoArray[i];
 
-			if( !II.iId )
+			if ( WEAPON_NONE == II.iId )
 				continue;
 
 			const char *pszName;
@@ -4225,6 +4273,18 @@ void CBasePlayer::UpdateClientData( void )
 	{
 		if( m_rgpPlayerItems[i] )  // each item updates it's successors
 			m_rgpPlayerItems[i]->UpdateClientData( this );
+	}
+
+	//Active item is becoming null, or we're sending all HUD state to client
+	//Only if we're not in Observer mode, which uses the target player's weapon
+	if ( pev->iuser1 == OBS_NONE && !m_pActiveItem && ( ( m_pClientActiveItem != m_pActiveItem ) || fullHUDInitRequired ) )
+	{
+		//Tell ammo hud that we have no weapon selected
+		MESSAGE_BEGIN( MSG_ONE, gmsgCurWeapon, NULL, pev );
+		WRITE_BYTE( 0 );
+		WRITE_BYTE( 0 );
+		WRITE_BYTE( 0 );
+		MESSAGE_END();
 	}
 
 	// Cache and client weapon change
@@ -4296,10 +4356,23 @@ void CBasePlayer::SetPrefsFromUserinfo( char *infobuffer )
 
 void CBasePlayer::EnableControl( BOOL fControl )
 {
-	if( !fControl )
+	// FIXME: Make the player actually frozen. (e.g. shooting, switching weapons)
+	if ( !fControl )
+	{
+		if ( m_pActiveItem )
+		{ 
+			m_pActiveItem->Holster();
+		}
 		pev->flags |= FL_FROZEN;
+	}
 	else
+	{
+		if ( m_pActiveItem )
+		{
+			m_pActiveItem->Deploy();
+		}
 		pev->flags &= ~FL_FROZEN;
+	}
 }
 
 #define DOT_1DEGREE   0.9998476951564
@@ -4746,73 +4819,7 @@ BOOL CBasePlayer::SwitchWeapon( CBasePlayerItem *pWeapon )
 	return TRUE;
 }
 
-//=========================================================
-// Dead HEV suit prop
-//=========================================================
-class CDeadHEV : public CBaseMonster
-{
-public:
-	void Spawn( void );
-	int Classify( void )
-	{
-		return CLASS_HUMAN_MILITARY;
-	}
-
-	void KeyValue( KeyValueData *pkvd );
-
-	int m_iPose;// which sequence to display	-- temporary, don't need to save
-	static const char *m_szPoses[4];
-};
-
-const char *CDeadHEV::m_szPoses[] =
-{
-	"deadback",
-	"deadsitting",
-	"deadstomach",
-	"deadtable"
-};
-
-void CDeadHEV::KeyValue( KeyValueData *pkvd )
-{
-	if( FStrEq( pkvd->szKeyName, "pose" ) )
-	{
-		m_iPose = atoi( pkvd->szValue );
-		pkvd->fHandled = TRUE;
-	}
-	else
-		CBaseMonster::KeyValue( pkvd );
-}
-
-LINK_ENTITY_TO_CLASS( monster_hevsuit_dead, CDeadHEV )
-
-//=========================================================
-// ********** DeadHEV SPAWN **********
-//=========================================================
-void CDeadHEV::Spawn( void )
-{
-	PRECACHE_MODEL( "models/player.mdl" );
-	SET_MODEL( ENT( pev ), "models/player.mdl" );
-
-	pev->effects = 0;
-	pev->yaw_speed = 8;
-	pev->sequence = 0;
-	pev->body = 1;
-	m_bloodColor = BLOOD_COLOR_RED;
-
-	pev->sequence = LookupSequence( m_szPoses[m_iPose] );
-
-	if( pev->sequence == -1 )
-	{
-		ALERT( at_console, "Dead hevsuit with bad pose\n" );
-		pev->sequence = 0;
-		pev->effects = EF_BRIGHTFIELD;
-	}
-
-	// Corpses have less health
-	pev->health = 8;
-
-	MonsterInitDead();
-}
+#define SF_STRIP_HALFHEALTH		1
 
 class CStripWeapons : public CPointEntity
 {
@@ -4838,7 +4845,22 @@ void CStripWeapons::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE
 	}
 
 	if( pPlayer )
-		pPlayer->RemoveAllItems( FALSE );
+	{
+		// Insecure: On map insecure01c, the player gets knocked
+		// out of the subway tram during the Xen assault.
+		// so, take out 50% of his/her health, and remove the 
+		// armor and weapons.
+		if ( pev->spawnflags & SF_STRIP_HALFHEALTH )
+		{
+			pPlayer->RemoveAllItems( TRUE );
+			pPlayer->pev->health = 50;
+			pPlayer->pev->armorvalue = 0;
+		}
+		else
+		{
+			pPlayer->RemoveAllItems( TRUE );
+		}
+	}
 }
 
 class CRevertSaved : public CPointEntity

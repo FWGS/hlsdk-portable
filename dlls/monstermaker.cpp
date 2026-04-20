@@ -135,14 +135,8 @@ void CMonsterMaker::Spawn()
 		SetThink( &CMonsterMaker::MakerThink );
 	}
 
-	if( m_cNumMonsters == 1 )
-	{
-		m_fFadeChildren = FALSE;
-	}
-	else
-	{
-		m_fFadeChildren = TRUE;
-	}
+	// Unnecesary for now.
+	m_fFadeChildren = false;
 
 	m_flGround = 0;
 }
@@ -183,10 +177,12 @@ void CMonsterMaker::MakeMonster( void )
 	mins.z = m_flGround;
 
 	CBaseEntity *pList[2];
-	int count = UTIL_EntitiesInBox( pList, 2, mins, maxs, FL_CLIENT | FL_MONSTER );
+	int count = UTIL_EntitiesInBox( pList, 2, mins, maxs, FL_CLIENT );
 	if( count )
 	{
-		// don't build a stack of monsters!
+		// Insecure: Since the monster makers are usually placed with
+		// the env_warpball entity, it kills whatever it is occupying
+		// the space, but still, don't spawn if the player is on its place.
 		return;
 	}
 

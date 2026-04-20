@@ -434,8 +434,8 @@ void CSquadMonster::StartMonster( void )
 
 		if( IsLeader() && FClassnameIs( pev, "monster_human_grunt" ) )
 		{
-			SetBodygroup( 1, 1 ); // UNDONE: truly ugly hack
-			pev->skin = 0;
+			SetBodygroup( 1, 2 ); // UNDONE: truly ugly hack
+			pev->skin = RANDOM_LONG( 0, 1 );
 		}
 	}
 }

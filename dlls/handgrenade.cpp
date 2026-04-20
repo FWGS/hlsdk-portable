@@ -229,3 +229,33 @@ void CHandGrenade::WeaponIdle( void )
 		SendWeaponAnim( iAnim );
 	}
 }
+
+// shitty ass hack to fix hand grenade crates
+// since weapons can't respawn and toggle the
+// grenade model inside the crates but for some
+// reason it only works for ammo items.
+
+class CHandGrenadeAmmo : public CBasePlayerAmmo
+{
+	void Spawn()
+	{
+		Precache();
+		SET_MODEL( ENT( pev ), "models/w_grenade.mdl" );
+		CBasePlayerAmmo::Spawn();
+	}
+	void Precache()
+	{
+		PRECACHE_MODEL( "models/w_grenade.mdl" );
+		PRECACHE_SOUND( "items/9mmclip1.wav" );
+	}
+	BOOL AddAmmo( CBaseEntity* pOther )
+	{
+		if ( pOther->GiveAmmo( HANDGRENADE_DEFAULT_GIVE, "Hand Grenade", HANDGRENADE_MAX_CARRY ) != -1 )
+		{
+			EMIT_SOUND( ENT( pev ), CHAN_ITEM, "items/9mmclip1.wav", 1, ATTN_NORM );
+			return TRUE;
+		}
+		return FALSE;
+	}
+};
+LINK_ENTITY_TO_CLASS( ammo_handgrenade, CHandGrenadeAmmo );

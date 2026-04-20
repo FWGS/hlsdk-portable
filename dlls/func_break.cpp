@@ -35,30 +35,36 @@ extern DLL_GLOBAL Vector	g_vecAttackDir;
 // Just add more items to the bottom of this array and they will automagically be supported
 // This is done instead of just a classname in the FGD so we can control which entities can
 // be spawned, and still remain fairly flexible
-const char *CBreakable::pSpawnObjects[] =
+const char* CBreakable::pSpawnObjects[] =
 {
-	NULL,			// 0
-	"item_battery",		// 1
-	"item_healthkit",	// 2
-	"weapon_9mmhandgun",	// 3
-	"ammo_9mmclip",		// 4
-	"weapon_9mmAR",		// 5
-	"ammo_9mmAR",		// 6
-	"ammo_ARgrenades",	// 7
-	"weapon_shotgun",	// 8
-	"ammo_buckshot",	// 9
-	"weapon_crossbow",	// 10
-	"ammo_crossbow",	// 11
-	"weapon_357",		// 12
-	"ammo_357",		// 13
-	"weapon_rpg",		// 14
-	"ammo_rpgclip",		// 15
-	"ammo_gaussclip",	// 16
-	"weapon_handgrenade",	// 17
-	"weapon_tripmine",	// 18
-	"weapon_satchel",	// 19
-	"weapon_snark",		// 20
-	"weapon_hornetgun",	// 21
+	NULL,				  // 0
+	"item_battery",		  // 1
+	"item_healthkit",	  // 2
+	"weapon_9mmhandgun",  // 3
+	"ammo_9mmclip",		  // 4
+	"weapon_9mmAR",		  // 5
+	"ammo_9mmAR",		  // 6
+	"ammo_ARgrenades",	  // 7
+	"weapon_shotgun",	  // 8
+	"ammo_buckshot",	  // 9
+	"weapon_crossbow",	  // 10
+	"ammo_crossbow",	  // 11
+	"weapon_357",		  // 12
+	"ammo_357",			  // 13
+	"weapon_rpg",		  // 14
+	"ammo_rpgclip",		  // 15
+	"ammo_gaussclip",	  // 16
+	"weapon_handgrenade", // 17
+	"weapon_tripmine",	  // 18
+	"weapon_satchel",	  // 19
+	"weapon_snark",		  // 20
+	"weapon_hornetgun",	  // 21
+	"weapon_m249",	  // 22
+	"ammo_556",	  // 23
+	"weapon_sniperrifle",	  // 24
+	"ammo_762",	  // 25
+	"item_armorplate",	  // 26
+	"ammo_shotshell",	  // 27
 };
 
 void CBreakable::KeyValue( KeyValueData* pkvd )
@@ -326,12 +332,17 @@ void CBreakable::Precache( void )
 		PRECACHE_SOUND( "debris/bustconcrete1.wav" );
 		PRECACHE_SOUND( "debris/bustconcrete2.wav" );
 		break;
+	case matNone:
+		pGibName = "models/metalplategibs.mdl";
+
+		PRECACHE_SOUND( "debris/bustmetal1.wav" );
+		PRECACHE_SOUND( "debris/bustmetal2.wav" );
+		break;
 	case matCeilingTile:
 		pGibName = "models/ceilinggibs.mdl";
 
 		PRECACHE_SOUND( "debris/bustceiling.wav" );  
 		break;
-	case matNone:
 	case matLastMaterial:
 		break;
 	default:
@@ -660,6 +671,8 @@ void CBreakable::Die( void )
 		EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, "debris/bustceiling.wav", fvol, ATTN_NORM, 0, pitch );
 		break;
 	case matNone:
+		EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, "debris/bustmetal1.wav", fvol, ATTN_NORM, 0, pitch );
+		break;
 	case matLastMaterial:
 	case matUnbreakableGlass:
 		break;
@@ -677,39 +690,42 @@ void CBreakable::Die( void )
 	}
 
 	vecSpot = pev->origin + ( pev->mins + pev->maxs ) * 0.5f;
-	MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, vecSpot );
-		WRITE_BYTE( TE_BREAKMODEL );
+	if (! FBitSet( pev->spawnflags, SF_BREAK_NOGIB ) )
+	{
+		MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, vecSpot );
+			WRITE_BYTE( TE_BREAKMODEL );
 
-		// position
-		WRITE_COORD( vecSpot.x );
-		WRITE_COORD( vecSpot.y );
-		WRITE_COORD( vecSpot.z );
+			// position
+			WRITE_COORD( vecSpot.x );
+			WRITE_COORD( vecSpot.y );
+			WRITE_COORD( vecSpot.z );
 
-		// size
-		WRITE_COORD( pev->size.x );
-		WRITE_COORD( pev->size.y );
-		WRITE_COORD( pev->size.z );
+			// size
+			WRITE_COORD( pev->size.x );
+			WRITE_COORD( pev->size.y );
+			WRITE_COORD( pev->size.z );
 
-		// velocity
-		WRITE_COORD( vecVelocity.x ); 
-		WRITE_COORD( vecVelocity.y );
-		WRITE_COORD( vecVelocity.z );
+			// velocity
+			WRITE_COORD( vecVelocity.x ); 
+			WRITE_COORD( vecVelocity.y );
+			WRITE_COORD( vecVelocity.z );
 
-		// randomization
-		WRITE_BYTE( 10 );
+			// randomization
+			WRITE_BYTE( 10 );
 
-		// Model
-		WRITE_SHORT( m_idShard );	//model id#
+			// Model
+			WRITE_SHORT( m_idShard );	//model id#
 
-		// # of shards
-		WRITE_BYTE( 0 );	// let client decide
+			// # of shards
+			WRITE_BYTE( 0 );	// let client decide
 
-		// duration
-		WRITE_BYTE( 25 );// 2.5 seconds
+			// duration
+			WRITE_BYTE( 25 );// 2.5 seconds
 
-		// flags
-		WRITE_BYTE( cFlag );
-	MESSAGE_END();
+			// flags
+			WRITE_BYTE( cFlag );
+		MESSAGE_END();
+	}
 
 	/*float size = pev->size.x;
 	if( size < pev->size.y )

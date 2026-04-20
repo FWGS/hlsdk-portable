@@ -32,6 +32,7 @@
 #define SF_TRIGGER_HURT_TARGETONCE	1// Only fire hurt target once
 #define	SF_TRIGGER_HURT_START_OFF	2//spawnflag that makes trigger_push spawn turned OFF
 #define	SF_TRIGGER_HURT_NO_CLIENTS	8//spawnflag that makes trigger_push spawn turned OFF
+#define SF_TRIGGER_PUSH_NO_CLIENTS 	4//spawnflag that makes trigger_push spawn turned OFF
 #define SF_TRIGGER_HURT_CLIENTONLYFIRE	16// trigger hurt will only fire its target if it is hurting a client
 #define SF_TRIGGER_HURT_CLIENTONLYTOUCH 32// only clients may touch this trigger.
 
@@ -947,7 +948,7 @@ void CBaseTrigger::HurtTouch( CBaseEntity *pOther )
 		}
 	}
 
-	// If this is time_based damage (poison, radiation), override the pev->dmg with a 
+	// If this is time_based damage (poison, radiation), the pev->dmg with a 
 	// default for the given damage type.  Monsters only take time-based damage
 	// while touching the trigger.  Player continues taking damage for a while after
 	// leaving the trigger
@@ -1805,7 +1806,17 @@ void CTriggerPush::Touch( CBaseEntity *pOther )
 	case MOVETYPE_PUSH:
 	case MOVETYPE_NOCLIP:
 	case MOVETYPE_FOLLOW:
+	case MOVETYPE_BOUNCE:
 		return;
+	}
+
+	// don't push players if set to no clients flag.
+	if ( FBitSet( pev->spawnflags, SF_TRIGGER_PUSH_NO_CLIENTS ) ) 
+	{
+		if ( FBitSet( pevToucher->flags, FL_CLIENT ) )
+		{
+			return;
+		}
 	}
 
 	if( pevToucher->solid != SOLID_NOT && pevToucher->solid != SOLID_BSP )
@@ -1943,6 +1954,33 @@ void CTriggerSave::SaveTouch( CBaseEntity *pOther )
 		return;
 
 	SetTouch( NULL );
+	UTIL_Remove( this );
+	SERVER_COMMAND( "autosave\n" );
+}
+
+class CTargetAutosave: public CPointEntity
+{
+public:
+	void Spawn( void );
+	void Use( CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value );
+};
+
+LINK_ENTITY_TO_CLASS( target_autosave, CTargetAutosave );
+
+void CTargetAutosave::Spawn()
+{
+	pev->solid = SOLID_NOT;
+	pev->movetype = MOVETYPE_NONE;
+
+	if ( g_pGameRules->IsDeathmatch() )
+	{
+		REMOVE_ENTITY(ENT(pev));
+		return;
+	}
+}
+
+void CTargetAutosave::Use( CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value )
+{
 	UTIL_Remove( this );
 	SERVER_COMMAND( "autosave\n" );
 }
@@ -2385,4 +2423,220 @@ void CTriggerCamera::Move()
 
 	float fraction = 2 * gpGlobals->frametime;
 	pev->velocity = ( ( pev->movedir * pev->speed ) * fraction ) + ( pev->velocity * ( 1 - fraction ) );
+}
+
+//
+// Trigger PlayerFreeze
+//
+class CTriggerPlayerFreeze : public CBaseDelay
+{
+public:
+	void Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+	int ObjectCaps( void ) { return CBaseDelay::ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
+};
+
+LINK_ENTITY_TO_CLASS( trigger_playerfreeze, CTriggerPlayerFreeze )
+
+void CTriggerPlayerFreeze::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
+{
+	if( !pActivator || !pActivator->IsPlayer() )
+		pActivator = CBaseEntity::Instance( g_engfuncs.pfnPEntityOfEntIndex( 1 ) );
+
+	if( pActivator->pev->flags & FL_FROZEN )
+		( (CBasePlayer*)( pActivator ) )->EnableControl( TRUE );
+	else
+		( (CBasePlayer*)( pActivator ) )->EnableControl( FALSE );
+};
+
+//
+// Insecure: Triggers required to progress.
+//
+
+//
+// General keycard (BLUE, OPTIONAL)
+//
+class CTriggerSecurity : public CBaseTrigger
+{
+public:
+	void Spawn( void );
+	void Precache( void );
+	void EXPORT UnlockTouch( CBaseEntity* pOther);
+	void EXPORT UsePanel( CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value );
+	int ObjectCaps() { return ( CBaseToggle::ObjectCaps() | FCAP_CONTINUOUS_USE ) & ~FCAP_ACROSS_TRANSITION; }
+	float  m_flSoundTime;
+};
+LINK_ENTITY_TO_CLASS( trigger_security, CTriggerSecurity) ;
+
+void CTriggerSecurity::Precache( void )
+{
+	PRECACHE_SOUND( "buttons/button2.wav" );
+	PRECACHE_SOUND( "misc/keycard_granted.wav" );
+	PRECACHE_SOUND( "misc/keycard_denied.wav" );
+}
+
+void CTriggerSecurity::Spawn( void )
+{
+	Precache();
+	InitTrigger();
+	SetTouch( &CTriggerSecurity::UnlockTouch );
+	SetUse( &CTriggerSecurity::UsePanel );
+}
+
+void CTriggerSecurity::UnlockTouch( CBaseEntity* pOther )
+{
+	// if it's not a player, ignore
+	if ( !pOther->IsPlayer() )
+		return;
+
+	CBasePlayer *player = (CBasePlayer *)pOther;
+
+	if ( !player->HasKeycard() )
+	{
+		if ( m_flSoundTime <= gpGlobals->time )
+		{
+			m_flSoundTime = gpGlobals->time + 1.25;
+			EMIT_SOUND( ENT( pev ), CHAN_ITEM, "misc/keycard_denied.wav", 1.0, ATTN_NORM );
+		}
+		return;
+	}
+	else
+	{
+		// Emit the access granted sound, then take the keycard from the player.
+		EMIT_SOUND( ENT( pev ), CHAN_ITEM, "misc/keycard_granted.wav", 1.0, ATTN_NORM );
+		player->ClearWeaponBit( WEAPON_KEYCARD );
+
+		// Map: We take it from here
+		SUB_UseTargets( pOther, USE_TOGGLE, 0 );
+
+		// No use anymore, kill the trigger.
+		SetTouch( NULL );
+		UTIL_Remove( this );
+	}
+}
+
+void CTriggerSecurity::UsePanel( CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value )
+{
+	UnlockTouch( pActivator );
+}
+
+//
+// Restricted keycard (RED, IMPORTANT)
+//
+class CTriggerSecurityRed : public CBaseTrigger
+{
+public:
+	void Spawn( void );
+	void Precache( void );
+	void EXPORT UnlockTouch( CBaseEntity* pOther );
+	void EXPORT UsePanel( CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value );
+	int ObjectCaps() { return ( CBaseToggle::ObjectCaps() | FCAP_CONTINUOUS_USE ) & ~FCAP_ACROSS_TRANSITION; }
+	float  m_flSoundTime;
+};
+LINK_ENTITY_TO_CLASS( trigger_securityred, CTriggerSecurityRed );
+
+void CTriggerSecurityRed::Precache( void )
+{
+	PRECACHE_SOUND( "buttons/button2.wav" );
+	PRECACHE_SOUND( "misc/keycard_granted.wav" );
+	PRECACHE_SOUND( "misc/keycard_denied.wav" );
+}
+
+void CTriggerSecurityRed::Spawn( void )
+{
+	Precache();
+	InitTrigger();
+	SetTouch( &CTriggerSecurityRed::UnlockTouch );
+	SetUse( &CTriggerSecurityRed::UsePanel );
+}
+
+void CTriggerSecurityRed::UnlockTouch( CBaseEntity* pOther )
+{
+	// if it's not a player, ignore
+	if ( !pOther->IsPlayer() )
+		return;
+
+	CBasePlayer *player = (CBasePlayer *)pOther;
+
+	if ( !player->HasRedKeycard() )
+	{
+		if ( m_flSoundTime <= gpGlobals->time )
+		{
+			m_flSoundTime = gpGlobals->time + 1.25;
+			EMIT_SOUND( ENT( pev ), CHAN_ITEM, "misc/keycard_denied.wav", 1.0, ATTN_NORM );
+		}
+		return;
+	}
+	else
+	{
+		// Emit the access granted sound, then take the keycard from the player.
+		EMIT_SOUND( ENT( pev ), CHAN_ITEM, "misc/keycard_granted.wav", 1.0, ATTN_NORM );
+		player->ClearWeaponBit( WEAPON_REDCARD );
+
+		// Map: We take it from here.
+		SUB_UseTargets( pOther, USE_TOGGLE, 0 );
+
+		// No use anymore, kill the trigger.
+		SetTouch( NULL );
+		UTIL_Remove( this );
+	}
+}
+
+void CTriggerSecurityRed::UsePanel( CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value )
+{
+	UnlockTouch( pActivator );
+}
+
+//
+// C4 Trigger (IMPORTANT)
+//
+class CTriggerC4 : public CBaseTrigger
+{
+public:
+	void Spawn( void );
+	void Precache( void );
+	void EXPORT PlaceTouch( CBaseEntity* pOther );
+	void EXPORT UsePlant( CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value );
+	int ObjectCaps() { return ( CBaseToggle::ObjectCaps() | FCAP_CONTINUOUS_USE ) & ~FCAP_ACROSS_TRANSITION; }
+};
+LINK_ENTITY_TO_CLASS( trigger_c4, CTriggerC4 );
+
+void CTriggerC4::Precache( void )
+{
+	PRECACHE_SOUND( "weapons/c4_plant.wav" );
+}
+
+void CTriggerC4::Spawn( void )
+{
+	Precache();
+	InitTrigger();
+	SetTouch( &CTriggerC4::PlaceTouch );
+	SetUse( &CTriggerC4::UsePlant );
+}
+
+void CTriggerC4::PlaceTouch( CBaseEntity* pOther )
+{
+	// if it's not a player, ignore
+	if ( !pOther->IsPlayer() )
+		return;
+
+	CBasePlayer *player = (CBasePlayer *)pOther;
+	
+	if ( player->HasC4() )
+	{
+		// Emit the access granted sound, then take the keycard from the player.
+		EMIT_SOUND( ENT( player->pev ), CHAN_ITEM, "weapons/c4_plant.wav", 1.0, ATTN_NORM );
+		player->ClearWeaponBit( WEAPON_C4 );
+
+		// Map: We take it from here.
+		SUB_UseTargets( pOther, USE_TOGGLE, 0 );
+
+		// No use anymore, kill the trigger.
+		SetTouch( NULL );
+		UTIL_Remove( this );
+	}
+}
+
+void CTriggerC4::UsePlant( CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value )
+{
+	PlaceTouch( pActivator );
 }

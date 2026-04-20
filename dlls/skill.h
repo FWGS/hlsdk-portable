@@ -27,14 +27,31 @@ struct skilldata_t
 	float agruntHealth;
 	float agruntDmgPunch;
 
+	float agruntPoisonHealth;
+	float agruntPoisonDmgPunch;
+
+	float agruntPreHealth;
+	float agruntPreDmgPunch;
+
 	float apacheHealth;
 
 	float barneyHealth;
+	
+	float otisHealth;
 
 	float bigmommaHealthFactor;		// Multiply each node's health by this
 	float bigmommaDmgSlash;			// melee attack damage
 	float bigmommaDmgBlast;			// mortar attack damage
 	float bigmommaRadiusBlast;		// mortar attack radius
+
+	float twinGonarchHealthFactor; // Multiply each node's health by this
+	float twinGonarchDmgSlash;		// melee attack damage
+	float twinGonarchDmgBlast;		// mortar attack damage
+	float twinGonarchRadiusBlast;	// mortar attack radius
+
+	float bgargHealth;
+	float bgargDmgSlash;
+	float bgargDmgFire;
 
 	float bullsquidHealth;
 	float bullsquidDmgBite;
@@ -56,13 +73,29 @@ struct skilldata_t
 	float hgruntShotgunPellets;
 	float hgruntGrenadeSpeed;
 
+	float massassinHealth;
+	float massassinDmgKick;
+	float massassinGrenadeSpeed;
+
+	float sawGunnerHealth;
+	float sawGunnerDmgKick;
+	float sawGunnerGrenadeSpeed;
+
 	float houndeyeHealth;
 	float houndeyeDmgBlast;
+
+	float houndeyeExpHealth;
+	float houndeyeExpDmgBlast;
+	float houndeyeExpDmgRadius;
 
 	float slaveHealth;
 	float slaveDmgClaw;
 	float slaveDmgClawrake;
 	float slaveDmgZap;
+
+	float slaveEmpHealth;
+	float slaveEmpDmgZap;
+	float slaveEmpDmgSonic;
 
 	float ichthyosaurHealth;
 	float ichthyosaurDmgShake;
@@ -74,6 +107,11 @@ struct skilldata_t
 	float controllerDmgZap;
 	float controllerSpeedBall;
 	float controllerDmgBall;
+
+	float controllerExtHealth;
+	float controllerExtDmgZap;
+	float controllerExtSpeedBall;
+	float controllerExtDmgBall;
 
 	float nihilanthHealth;
 	float nihilanthZap;
@@ -88,14 +126,37 @@ struct skilldata_t
 	float zombieDmgOneSlash;
 	float zombieDmgBothSlash;
 
+	float zombieBarneyHealth;
+	float zombieBarneyDmgOneSlash;
+	float zombieBarneyDmgBothSlash;	
+	
+	float zombieSoldierHealth;
+	float zombieSoldierDmgOneSlash;
+	float zombieSoldierDmgBothSlash;
+
+	float zombieHEVHealth;
+	float zombieHEVDmgOneSlash;
+	float zombieHEVDmgBothSlash;
+
+	float zombieWorkerHealth;
+	float zombieWorkerDmgOneSlash;
+	float zombieWorkerDmgBothSlash;
+
+	float gonomeHealth;
+	float gonomeDmgOneSlash;
+	float gonomeDmgGuts;
+	float gonomeDmgOneBite;
+
 	float turretHealth;
 	float miniturretHealth;
 	float sentryHealth;
 
 	// Player Weapons
 	float plrDmgCrowbar;
+	float plrDmgKnife;
 	float plrDmg9MM;
 	float plrDmg357;
+	float plrDmgEagle;
 	float plrDmgMP5;
 	float plrDmgM203Grenade;
 	float plrDmgBuckshot;
@@ -109,12 +170,17 @@ struct skilldata_t
 	float plrDmgHandGrenade;
 	float plrDmgSatchel;
 	float plrDmgTripmine;
+	float plrDmg556;
+	float plrDmg762;
 	
 	// weapons shared by monsters
 	float monDmg9MM;
+	float monDmg556;
+	float monDmg762;
 	float monDmgMP5;
 	float monDmg12MM;
 	float monDmgHornet;
+	float monDmgHornetAlt;
 
 	// health/suit charge
 	float suitchargerCapacity;

@@ -110,9 +110,9 @@ int CHudBattery::Draw( float flTime )
 
 	y = ScreenHeight - gHUD.m_iFontHeight - gHUD.m_iFontHeight / 2;
 
-	if( gHUD.IsHL25( )) // a1ba: HL25 style
+	/*if( gHUD.IsHL25( )) // a1ba: HL25 style
 		x = ( m_prc1->right - m_prc1->left ) * 3;
-	else
+	else*/
 		x = ScreenWidth / 5;
 
 	// make sure we have the right sprite handles

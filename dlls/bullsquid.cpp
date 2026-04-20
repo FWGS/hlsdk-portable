@@ -208,7 +208,7 @@ public:
 	Schedule_t *GetSchedule( void );
 	Schedule_t *GetScheduleOfType( int Type );
 	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
-	int IRelationship( CBaseEntity *pTarget );
+	// int IRelationship( CBaseEntity *pTarget );
 	int IgnoreConditions( void );
 	MONSTERSTATE GetIdealState( void );
 
@@ -264,7 +264,7 @@ int CBullsquid::IgnoreConditions( void )
 // IRelationship - overridden for bullsquid so that it can
 // be made to ignore its love of headcrabs for a while.
 //=========================================================
-int CBullsquid::IRelationship( CBaseEntity *pTarget )
+/*int CBullsquid::IRelationship( CBaseEntity *pTarget )
 {
 	if( gpGlobals->time - m_flLastHurtTime < 5.0f && FClassnameIs( pTarget->pev, "monster_headcrab" ) )
 	{
@@ -274,7 +274,7 @@ int CBullsquid::IRelationship( CBaseEntity *pTarget )
 	}
 
 	return CBaseMonster::IRelationship( pTarget );
-}
+}*/
 
 //=========================================================
 // TakeDamage - overridden for bullsquid so we can keep track
@@ -1018,7 +1018,7 @@ Schedule_t *CBullsquid::GetSchedule( void )
 	{
 	case MONSTERSTATE_ALERT:
 		{
-			if( HasConditions( bits_COND_LIGHT_DAMAGE | bits_COND_HEAVY_DAMAGE ) )
+			if( HasConditions( bits_COND_HEAVY_DAMAGE ) )
 			{
 				return GetScheduleOfType( SCHED_SQUID_HURTHOP );
 			}

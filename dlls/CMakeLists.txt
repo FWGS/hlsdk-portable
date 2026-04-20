@@ -45,6 +45,32 @@ else()
 endif()
 
 set (SVDLL_SOURCES
+	insecure/agrunt_poisonous.cpp  
+	insecure/controller_exterminator.cpp  
+	insecure/gonome.cpp                
+	insecure/islave_empowered.cpp  
+	insecure/massassin.cpp       
+	insecure/saw_gunner.cpp    
+	insecure/zombie_barney.cpp   
+	insecure/zombie_worker.cpp
+	insecure/agrunt_premature.cpp  
+	insecure/eagle.cpp                    
+	insecure/hgrunt_new.cpp  
+	insecure/hornetgun_new.cpp      
+	insecure/knife.cpp             
+	insecure/otis.cpp            
+	insecure/sniperrifle.cpp   
+	insecure/zombie_hev.cpp
+	insecure/baby_gargantua.cpp    
+	insecure/gauss_new.cpp                
+	insecure/hornet_new.cpp  
+	insecure/houndeye_explosive.cpp  
+	insecure/m249.cpp              
+	insecure/penguingrenade.cpp  
+	insecure/twin_gonarch.cpp  
+	insecure/zombie_soldier.cpp
+	insecure/construction.cpp
+	insecure/deadhev.cpp
 	agrunt.cpp
 	airtank.cpp
 	aflock.cpp
@@ -165,7 +191,7 @@ else()
 		../external/openbsd/strlcat.c)
 endif()
 
-include_directories (. wpn_shared ../common ../engine ../pm_shared ../game_shared ../public)
+include_directories (. wpn_shared ../common ../engine ../pm_shared ../game_shared ../public insecure)
 
 if(MSVC)
 	set(SVDLL_SOURCES

@@ -52,6 +52,8 @@
 #define SF_MONSTER_PREDISASTER			256	//this is a predisaster scientist or barney. Influences how they speak.
 #define SF_MONSTER_FADECORPSE			512 // Fade out corpse after death
 #define SF_MONSTER_FALL_TO_GROUND		0x80000000
+#define SF_MONSTER_NOT_FOLLOW 1024          // Same as predisaster but these are for important characters and should not follow the player.
+
 
 // specialty spawnflags
 #define SF_MONSTER_TURRET_AUTOACTIVATE	32

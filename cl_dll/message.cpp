@@ -48,6 +48,8 @@ int CHudMessage::VidInit( void )
 {
 	m_HUD_title_half = gHUD.GetSpriteIndex( "title_half" );
 	m_HUD_title_life = gHUD.GetSpriteIndex( "title_life" );
+	m_HUD_title_ins1 = gHUD.GetSpriteIndex( "title_ins1" );
+	m_HUD_title_ins2 = gHUD.GetSpriteIndex( "title_ins2" );
 
 	return 1;
 }
@@ -342,6 +344,12 @@ int CHudMessage::Draw( float fTime )
 
 			SPR_Set( gHUD.GetSprite( m_HUD_title_life ), brightness * m_pGameTitle->r1, brightness * m_pGameTitle->g1, brightness * m_pGameTitle->b1 );
 			SPR_DrawAdditive( 0, x + halfWidth, y, &gHUD.GetSpriteRect( m_HUD_title_life ) );
+			
+			SPR_Set( gHUD.GetSprite( m_HUD_title_ins1), brightness * m_pGameTitle->r1, brightness * m_pGameTitle->g1, brightness * m_pGameTitle->b1 );
+			SPR_DrawAdditive( 0, x, y + fullHeight, &gHUD.GetSpriteRect( m_HUD_title_ins1 ) );
+
+			SPR_Set(gHUD.GetSprite(m_HUD_title_ins2), brightness * m_pGameTitle->r1, brightness * m_pGameTitle->g1, brightness * m_pGameTitle->b1);
+			SPR_DrawAdditive( 0, x + halfWidth, y + fullHeight, &gHUD.GetSpriteRect( m_HUD_title_ins2 ) );
 
 			drawn = 1;
 		}

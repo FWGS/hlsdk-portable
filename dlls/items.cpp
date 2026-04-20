@@ -88,17 +88,37 @@ void CWorldItem::Spawn( void )
 
 void CItem::Spawn( void )
 {
-	pev->movetype = MOVETYPE_TOSS;
-	pev->solid = SOLID_TRIGGER;
+	if ( pev->spawnflags & SF_ITEMS_NOGRAVITY )
+	{
+		pev->movetype = MOVETYPE_NONE;
+	}
+	else
+	{
+		pev->movetype = MOVETYPE_TOSS;
+	}
+
+	if ( FBitSet( pev->spawnflags, SF_ITEMS_DISABLED ) ) // if flagged to Start Turned Off, make trigger nonsolid.
+		pev->solid = SOLID_NOT;
+	else
+		pev->solid = SOLID_TRIGGER;
+
+	SetTouch( &CItem::ItemTouch );
 	UTIL_SetOrigin( pev, pev->origin );
 	UTIL_SetSize( pev, Vector( -16, -16, 0 ), Vector( 16, 16, 16 ) );
-	SetTouch( &CItem::ItemTouch );
 
-	if( DROP_TO_FLOOR(ENT( pev ) ) == 0 )
+	if (!FStringNull( pev->targetname ) )
 	{
-		ALERT(at_error, "Item %s fell out of level at %f,%f,%f\n", STRING( pev->classname ), (double)pev->origin.x, (double)pev->origin.y, (double)pev->origin.z);
-		UTIL_Remove( this );
-		return;
+		SetUse( &CItem::ToggleUse );
+	}
+
+	if ( !pev->spawnflags & SF_ITEMS_NOGRAVITY )
+	{
+		if ( DROP_TO_FLOOR(ENT(pev)) == 0 )
+		{
+			ALERT( at_error, "Item %s fell out of level at %f,%f,%f", STRING(pev->classname), pev->origin.x, pev->origin.y, pev->origin.z );
+			UTIL_Remove( this );
+			return;
+		}
 	}
 }
 
@@ -160,7 +180,7 @@ void CItem::Materialize( void )
 	if( pev->effects & EF_NODRAW )
 	{
 		// changing from invisible state to visible.
-		EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, "items/suitchargeok1.wav", 1, ATTN_NORM, 0, 150 );
+		// EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, "items/suitchargeok1.wav", 1, ATTN_NORM, 0, 150 );
 		pev->effects &= ~EF_NODRAW;
 		pev->effects |= EF_MUZZLEFLASH;
 	}
@@ -169,7 +189,21 @@ void CItem::Materialize( void )
 	SetThink( NULL );
 }
 
-#define SF_SUIT_SHORTLOGON		0x0001
+//
+// ToggleUse - If this is the USE function for a trigger, its state will toggle every time it's fired
+//
+void CItem::ToggleUse( CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value )
+{
+	if ( pev->solid == SOLID_NOT )
+	{
+		pev->solid = SOLID_TRIGGER;
+	}
+	else
+	{
+		pev->solid = SOLID_NOT;
+	}
+	UTIL_SetOrigin( pev, pev->origin );
+}
 
 class CItemSuit : public CItem
 {
@@ -185,6 +219,7 @@ class CItemSuit : public CItem
 	}
 	BOOL MyTouch( CBasePlayer *pPlayer )
 	{
+		/*
 		if( pPlayer->pev->weapons & ( 1<<WEAPON_SUIT ) )
 			return FALSE;
 
@@ -194,7 +229,8 @@ class CItemSuit : public CItem
 			EMIT_SOUND_SUIT( pPlayer->edict(), "!HEV_AAx" );	// long version of suit logon
 
 		pPlayer->pev->weapons |= ( 1 << WEAPON_SUIT );
-		return TRUE;
+		return TRUE;*/
+		return FALSE;
 	}
 };
 
@@ -215,6 +251,7 @@ class CItemBattery : public CItem
 	}
 	BOOL MyTouch( CBasePlayer *pPlayer )
 	{
+		/*
 		if( pPlayer->pev->deadflag != DEAD_NO )
 		{
 			return FALSE;
@@ -248,6 +285,7 @@ class CItemBattery : public CItem
 			pPlayer->SetSuitUpdate( szcharge, FALSE, SUIT_NEXT_IN_30SEC);
 			return TRUE;
 		}
+		*/
 		return FALSE;
 	}
 };
@@ -312,6 +350,7 @@ class CItemLongJump : public CItem
 	}
 	BOOL MyTouch( CBasePlayer *pPlayer )
 	{
+		/*
 		if( pPlayer->m_fLongJump )
 		{
 			return FALSE;
@@ -330,8 +369,347 @@ class CItemLongJump : public CItem
 			EMIT_SOUND_SUIT( pPlayer->edict(), "!HEV_A1" );	// Play the longjump sound UNDONE: Kelly? correct sound?
 			return TRUE;		
 		}
+		*/
 		return FALSE;
 	}
 };
 
 LINK_ENTITY_TO_CLASS( item_longjump, CItemLongJump )
+
+//
+// Half-Life: Insecure Items
+//
+
+class CItemArmorVest : public CItem
+{
+	void Spawn()
+	{
+		Precache();
+		SET_MODEL( ENT( pev ), "models/barney_vest.mdl" );
+		CItem::Spawn();
+	}
+	void Precache()
+	{
+		PRECACHE_MODEL( "models/barney_vest.mdl" );
+		PRECACHE_SOUND( "items/gunpickup2.wav" );
+	}
+	BOOL MyTouch( CBasePlayer* pPlayer )
+	{
+		if ( pPlayer->pev->deadflag != DEAD_NO )
+		{
+			return FALSE;
+		}
+
+		if ( ( pPlayer->pev->armorvalue < MAX_NORMAL_BATTERY ) &&
+			pPlayer->HasSuit() )
+		{
+			pPlayer->pev->armorvalue += 60;
+			pPlayer->pev->armorvalue = Q_min( pPlayer->pev->armorvalue, MAX_NORMAL_BATTERY );
+
+			EMIT_SOUND( pPlayer->edict(), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM );
+
+			MESSAGE_BEGIN( MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev );
+			WRITE_STRING( STRING( pev->classname ) );
+			MESSAGE_END();
+
+			return TRUE;
+		}
+		return FALSE;
+	}
+};
+
+LINK_ENTITY_TO_CLASS( item_armorvest, CItemArmorVest );
+
+class CItemHelmet : public CItem
+{
+	void Spawn()
+	{
+		Precache();
+		SET_MODEL( ENT( pev ), "models/barney_helmet.mdl" );
+		CItem::Spawn();
+	}
+	void Precache()
+	{
+		PRECACHE_MODEL( "models/barney_helmet.mdl" );
+		PRECACHE_SOUND( "items/gunpickup2.wav" );
+	}
+	BOOL MyTouch( CBasePlayer* pPlayer )
+	{
+		if ( pPlayer->pev->deadflag != DEAD_NO )
+		{
+			return FALSE;
+		}
+
+		if ( ( pPlayer->pev->armorvalue < MAX_NORMAL_BATTERY ) &&
+			pPlayer->HasSuit() )
+		{
+			pPlayer->pev->armorvalue += 40;
+			pPlayer->pev->armorvalue = Q_min( pPlayer->pev->armorvalue, MAX_NORMAL_BATTERY );
+
+			EMIT_SOUND( pPlayer->edict(), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM );
+
+			MESSAGE_BEGIN( MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev) ;
+			WRITE_STRING( STRING( pev->classname ) );
+			MESSAGE_END();
+
+			return TRUE;
+		}
+		return FALSE;
+	}
+};
+
+LINK_ENTITY_TO_CLASS( item_helmet, CItemHelmet );
+
+class CItemArmorPlate : public CItem
+{
+	void Spawn()
+	{
+		Precache();
+		SET_MODEL( ENT( pev ), "models/w_plate.mdl" );
+		CItem::Spawn();
+	}
+	void Precache()
+	{
+		PRECACHE_MODEL( "models/w_plate.mdl" );
+		PRECACHE_SOUND( "items/gunpickup2.wav" );
+	}
+	BOOL MyTouch( CBasePlayer* pPlayer )
+	{
+		if ( pPlayer->pev->deadflag != DEAD_NO )
+		{
+			return FALSE;
+		}
+
+		if ( ( pPlayer->pev->armorvalue < MAX_NORMAL_BATTERY ) &&
+			pPlayer->HasSuit() )
+		{
+			pPlayer->pev->armorvalue += 20;
+			pPlayer->pev->armorvalue = Q_min( pPlayer->pev->armorvalue, MAX_NORMAL_BATTERY );
+
+			EMIT_SOUND( pPlayer->edict(), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM );
+
+			MESSAGE_BEGIN( MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev );
+			WRITE_STRING( STRING( pev->classname ) );
+			MESSAGE_END();
+
+			return TRUE;
+		}
+		return FALSE;
+	}
+};
+
+LINK_ENTITY_TO_CLASS( item_armorplate, CItemArmorPlate );
+
+class CItemFlashlight : public CItem
+{
+	void Spawn()
+	{
+		Precache();
+		SET_MODEL( ENT( pev ), "models/w_flashlight.mdl" );
+
+		m_pGlow = CSprite::SpriteCreate( "sprites/glow03.spr", pev->origin + Vector( 0, 0, ( pev->mins.z + pev->maxs.z ) * 0.5 ), FALSE );
+		m_pGlow->SetTransparency( kRenderGlow, 255, 255, 255, 255, kRenderFxNoDissipation );
+		m_pGlow->SetScale( 0.4 );
+		m_pGlow->SetAttachment( edict(), 1 );
+
+		CItem::Spawn();
+	}
+	void Precache()
+	{
+		PRECACHE_MODEL( "models/w_flashlight.mdl" );
+		PRECACHE_MODEL( "sprites/glow03.spr" );
+		PRECACHE_SOUND( "items/gunpickup2.wav" );
+	}
+	BOOL MyTouch( CBasePlayer* pPlayer )
+	{
+		if ( pPlayer->HasFlashlight() )
+			return FALSE;
+
+		EMIT_SOUND( pPlayer->edict(), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM );
+
+		MESSAGE_BEGIN( MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev );
+		WRITE_STRING( STRING( pev->classname ) );
+		MESSAGE_END();
+
+		if ( m_pGlow )
+			m_pGlow->pev->effects |= EF_NODRAW;
+
+		pPlayer->SetFlashlight( TRUE );
+		return TRUE;
+	}
+
+	inline int Save( CSave& save );
+	inline int Restore( CRestore& restore );
+	static TYPEDESCRIPTION m_SaveData[];
+	
+private:
+	CSprite* m_pGlow;
+};
+
+LINK_ENTITY_TO_CLASS( item_flashlight, CItemFlashlight );
+
+class CItemKeycard : public CItem
+{
+	void Spawn()
+	{
+		Precache();
+		SET_MODEL( ENT( pev ), "models/w_security.mdl" );
+
+		m_pGlow = CSprite::SpriteCreate( "sprites/flare3.spr", pev->origin + Vector( 0, 0, (pev->mins.z + pev->maxs.z) * 0.5 ), FALSE );
+		m_pGlow->SetTransparency( kRenderGlow, 66, 135, 245, 255, kRenderFxNoDissipation );
+		m_pGlow->SetAttachment( edict(), 1 );
+
+		CItem::Spawn();
+	}
+	void Precache()
+	{
+		PRECACHE_MODEL( "models/w_security.mdl" );
+		PRECACHE_MODEL( "sprites/flare3.spr" );
+		PRECACHE_SOUND( "items/gunpickup2.wav" );
+	}
+	BOOL MyTouch(CBasePlayer* pPlayer)
+	{
+		if ( pPlayer->HasKeycard() )
+			return FALSE;
+
+		EMIT_SOUND( pPlayer->edict(), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM );
+
+		MESSAGE_BEGIN( MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev );
+		WRITE_STRING( STRING( pev->classname ) );
+		MESSAGE_END();
+
+		if ( m_pGlow )
+			m_pGlow->pev->effects |= EF_NODRAW;
+
+		pPlayer->ToggleKeycard( TRUE );
+		return TRUE;
+	}
+
+	inline int Save( CSave& save );
+	inline int Restore( CRestore& restore );
+	static TYPEDESCRIPTION m_SaveData[];
+
+private:
+	CSprite* m_pGlow;
+};
+
+LINK_ENTITY_TO_CLASS( item_keycard, CItemKeycard );
+
+class CItemRedcard : public CItem
+{
+	void Spawn()
+	{
+		Precache();
+		SET_MODEL( ENT( pev ), "models/w_security_red.mdl" );
+
+		m_pGlow = CSprite::SpriteCreate( "sprites/flare3.spr", pev->origin + Vector(0, 0, (pev->mins.z + pev->maxs.z) * 0.5), FALSE );
+		m_pGlow->SetTransparency( kRenderGlow, 250, 60, 60, 255, kRenderFxNoDissipation );
+		m_pGlow->SetAttachment( edict(), 1 );
+
+		CItem::Spawn();
+	}
+	void Precache()
+	{
+		PRECACHE_MODEL( "models/w_security_red.mdl" );
+		PRECACHE_MODEL( "sprites/flare3.spr" );
+		PRECACHE_SOUND( "items/gunpickup2.wav" );
+	}
+	BOOL MyTouch( CBasePlayer* pPlayer )
+	{
+		if ( pPlayer->HasRedKeycard() )
+			return FALSE;
+
+		EMIT_SOUND( pPlayer->edict(), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM );
+
+		MESSAGE_BEGIN( MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev );
+		WRITE_STRING( STRING( pev->classname ) );
+		MESSAGE_END();
+
+		if ( m_pGlow )
+			m_pGlow->pev->effects |= EF_NODRAW;
+
+		pPlayer->ToggleRedKeycard( TRUE );
+		return TRUE;
+	}
+
+	inline int Save( CSave& save );
+	inline int Restore( CRestore& restore );
+	static TYPEDESCRIPTION m_SaveData[];
+
+private:
+	CSprite* m_pGlow;
+};
+
+LINK_ENTITY_TO_CLASS( item_redcard, CItemRedcard );
+
+class CItemC4 : public CItem
+{
+	void Spawn()
+	{
+		Precache();
+		SET_MODEL( ENT( pev ), "models/w_c4.mdl" );
+		
+		m_pGlow = CSprite::SpriteCreate("sprites/glow01.spr", pev->origin + Vector(0, 0, ( pev->mins.z + pev->maxs.z ) * 0.5 ), FALSE );
+		m_pGlow->SetTransparency( kRenderGlow, 255, 0, 0, 255, kRenderFxNoDissipation );
+		m_pGlow->SetScale( 0.10 );
+		m_pGlow->SetAttachment( edict(), 1 );
+		
+		CItem::Spawn();
+	}
+	void Precache()
+	{
+		PRECACHE_MODEL( "models/w_c4.mdl" );
+		PRECACHE_MODEL( "sprites/glow01.spr" );
+		PRECACHE_SOUND( "items/gunpickup2.wav") ;
+	}
+	BOOL MyTouch( CBasePlayer* pPlayer )
+	{
+		if ( pPlayer->HasC4() )
+			return FALSE;
+
+		EMIT_SOUND( pPlayer->edict(), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM );
+
+		MESSAGE_BEGIN( MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev );
+		WRITE_STRING( STRING( pev->classname ) );
+		MESSAGE_END();
+
+		if ( m_pGlow )
+			m_pGlow->pev->effects |= EF_NODRAW;
+
+		pPlayer->ToggleC4( TRUE );
+		return TRUE;
+	}
+	
+	inline int Save( CSave& save );
+	inline int Restore( CRestore& restore );
+	static TYPEDESCRIPTION m_SaveData[];
+
+private:
+	CSprite* m_pGlow;
+};
+
+LINK_ENTITY_TO_CLASS( item_c4, CItemC4 );
+
+TYPEDESCRIPTION CItemC4::m_SaveData[] =
+{
+	DEFINE_FIELD( CItemC4, m_pGlow, FIELD_CLASSPTR ),
+};
+IMPLEMENT_SAVERESTORE( CItemC4, CBaseEntity );
+
+TYPEDESCRIPTION CItemKeycard::m_SaveData[] =
+{
+	DEFINE_FIELD( CItemKeycard, m_pGlow, FIELD_CLASSPTR ),
+};
+IMPLEMENT_SAVERESTORE( CItemKeycard, CBaseEntity );
+
+TYPEDESCRIPTION CItemRedcard::m_SaveData[] =
+{
+	DEFINE_FIELD( CItemRedcard, m_pGlow, FIELD_CLASSPTR ),
+};
+IMPLEMENT_SAVERESTORE( CItemRedcard, CBaseEntity );
+
+TYPEDESCRIPTION CItemFlashlight::m_SaveData[] =
+{
+	DEFINE_FIELD( CItemFlashlight, m_pGlow, FIELD_CLASSPTR ),
+};
+IMPLEMENT_SAVERESTORE( CItemFlashlight, CBaseEntity );

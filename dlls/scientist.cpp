@@ -88,6 +88,7 @@ public:
 	Activity GetStoppedActivity( void );
 	int ISoundMask( void );
 	void DeclineFollowing( void );
+	void DeclineFollowingAlt( void );
 
 	float CoverRadius( void ) { return 1200; }		// Need more room for cover because scientists want to get far away!
 	BOOL DisregardEnemy( CBaseEntity *pEnemy ) { return !pEnemy->IsAlive() || ( gpGlobals->time - m_fearTime ) > 15; }
@@ -424,6 +425,11 @@ void CScientist::DeclineFollowing( void )
 	Talk( 10 );
 	m_hTalkTarget = m_hEnemy;
 	PlaySentence( "SC_POK", 2, VOL_NORM, ATTN_NORM );
+}
+
+void CScientist::DeclineFollowingAlt( void )
+{
+	m_hTalkTarget = m_hEnemy;
 }
 
 const char *CScientist::GetScientistModel( void )
@@ -1254,8 +1260,8 @@ void CSittingScientist::Spawn()
 
 	UTIL_SetSize( pev, Vector( -14, -14, 0 ), Vector( 14, 14, 36 ) );
 
-	pev->solid = SOLID_SLIDEBOX;
-	pev->movetype = MOVETYPE_STEP;
+	pev->solid = SOLID_BBOX;
+	pev->movetype = MOVETYPE_NONE;
 	pev->effects = 0;
 	pev->health = 50;
 	
@@ -1283,7 +1289,7 @@ void CSittingScientist::Spawn()
 	SetThink( &CSittingScientist::SittingThink );
 	pev->nextthink = gpGlobals->time + 0.1f;
 
-	DROP_TO_FLOOR( ENT( pev ) );
+	// DROP_TO_FLOOR( ENT( pev ) );
 }
 
 void CSittingScientist::Precache( void )
@@ -1465,4 +1471,43 @@ int CSittingScientist::FIdleSpeak( void )
 	// never spoke
 	CTalkMonster::g_talkWaitTime = 0;
 	return FALSE;
+}
+
+//
+// SCIENTIST COMMANDER
+//
+class CScientistCommander : public CScientist
+{
+public:
+	void Spawn( void );
+	void Precache( void );
+	void SetYawSpeed( void );
+	int Classify( void );
+};
+LINK_ENTITY_TO_CLASS( monster_scientist_commander, CScientistCommander );
+
+void CScientistCommander::Spawn( void )
+{
+	CScientist::Spawn();
+	SET_MODEL( ENT( pev ), "models/commander.mdl" );
+	UTIL_SetSize( pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX );
+	pev->health = gSkillData.scientistHealth;
+	m_voicePitch = 100;
+}
+
+void CScientistCommander::Precache( void )
+{
+	PRECACHE_MODEL( "models/commander.mdl" );
+	CScientist::Precache();
+}
+
+
+void CScientistCommander::SetYawSpeed( void )
+{
+	pev->yaw_speed = 120;
+}
+
+int CScientistCommander::Classify( void )
+{
+	return CLASS_HUMAN_PASSIVE;
 }

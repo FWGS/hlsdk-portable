@@ -48,7 +48,7 @@ public:
 	void SetYawSpeed( void );
 	int ISoundMask( void );
 	int Classify( void );
-	int IRelationship( CBaseEntity *pTarget );
+	// int IRelationship( CBaseEntity *pTarget );
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
 	BOOL CheckRangeAttack1( float flDot, float flDist );
 	BOOL CheckRangeAttack2( float flDot, float flDist );
@@ -145,16 +145,19 @@ const char *CISlave::pDeathSounds[] =
 //=========================================================
 int CISlave::Classify( void )
 {
-	return CLASS_ALIEN_MILITARY;
+	if ( ( pev->spawnflags & SF_MONSTER_WAIT_UNTIL_PROVOKED ) != 0)
+		return CLASS_ALIEN_PASSIVE;
+	else
+		return CLASS_ALIEN_MILITARY;
 }
 
-int CISlave::IRelationship( CBaseEntity *pTarget )
+/*int CISlave::IRelationship( CBaseEntity *pTarget )
 {
 	if( ( pTarget->IsPlayer() ) )
 		if( ( pev->spawnflags & SF_MONSTER_WAIT_UNTIL_PROVOKED ) && ! ( m_afMemory & bits_MEMORY_PROVOKED ) )
 			return R_NO;
 	return CBaseMonster::IRelationship( pTarget );
-}
+}*/
 
 void CISlave::CallForHelp( const char *szClassname, float flDist, EHANDLE hEnemy, Vector &vecLocation )
 {
@@ -379,7 +382,7 @@ void CISlave::HandleAnimEvent( MonsterEvent_t *pEvent )
 			}
 
 			EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, "debris/zap4.wav", 1, ATTN_NORM, 0, 100 + m_iBeams * 10 );
-			pev->skin = m_iBeams / 2;
+			// pev->skin = m_iBeams / 2;
 		}
 			break;
 		case ISLAVE_AE_ZAP_SHOOT:
@@ -520,6 +523,11 @@ void CISlave::Spawn()
 	m_flFieldOfView		= VIEW_FIELD_WIDE; // NOTE: we need a wide field of view so npc will notice player and say hello
 	m_MonsterState		= MONSTERSTATE_NONE;
 	m_afCapability		= bits_CAP_HEAR | bits_CAP_TURN_HEAD | bits_CAP_RANGE_ATTACK2 | bits_CAP_DOORS_GROUP;
+
+	if ( ( pev->spawnflags & SF_MONSTER_WAIT_UNTIL_PROVOKED ) != 0 )
+		pev->skin = 1;
+	else
+		pev->skin = 0;
 
 	m_voicePitch		= RANDOM_LONG( 85, 110 );
 
@@ -833,7 +841,7 @@ void CISlave::ClearBeams()
 		}
 	}
 	m_iBeams = 0;
-	pev->skin = 0;
+	// pev->skin = 0;
 
 	STOP_SOUND( ENT( pev ), CHAN_WEAPON, "debris/zap4.wav" );
 }

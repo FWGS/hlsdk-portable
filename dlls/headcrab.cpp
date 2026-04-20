@@ -487,7 +487,9 @@ public:
 	void Spawn( void );
 	void Precache( void );
 	void SetYawSpeed( void );
-	float GetDamageAmount( void ) { return gSkillData.headcrabDmgBite * 0.3f; }
+	int Classify();
+	void Killed( entvars_t* pevAttacker, int iGib );
+	float GetDamageAmount() { return gSkillData.headcrabDmgBite * 0.1; }
 	BOOL CheckRangeAttack1( float flDot, float flDist );
 	Schedule_t *GetScheduleOfType ( int Type );
 	virtual int GetVoicePitch( void ) { return PITCH_NORM + RANDOM_LONG( 40, 50 ); }
@@ -501,7 +503,7 @@ void CBabyCrab::Spawn( void )
 	CHeadCrab::Spawn();
 	SET_MODEL( ENT( pev ), "models/baby_headcrab.mdl" );
 	pev->rendermode = kRenderTransTexture;
-	pev->renderamt = 192;
+	pev->renderamt = 255;
 	UTIL_SetSize( pev, Vector( -12, -12, 0 ), Vector( 12, 12, 24 ) );
 	
 	pev->health = gSkillData.headcrabHealth * 0.25f;	// less health than full grown
@@ -518,6 +520,12 @@ void CBabyCrab::SetYawSpeed( void )
 	pev->yaw_speed = 120;
 }
 
+int CBabyCrab::Classify()
+{
+	// override class from headcrabs as gonarch babies.
+	return CLASS_GONARCH;
+}
+
 BOOL CBabyCrab::CheckRangeAttack1( float flDot, float flDist )
 {
 	if( pev->flags & FL_ONGROUND )
@@ -531,6 +539,12 @@ BOOL CBabyCrab::CheckRangeAttack1( float flDot, float flDist )
 	}
 
 	return FALSE;
+}
+
+void CBabyCrab::Killed(entvars_t* pevAttacker, int iGib)
+{
+	pev->solid = SOLID_NOT;
+	CBaseMonster::Killed( pevAttacker, GIB_NEVER );
 }
 
 Schedule_t *CBabyCrab::GetScheduleOfType( int Type )

@@ -306,7 +306,7 @@ Task_t tlInvestigateSound[] =
 	{ TASK_STORE_LASTPOSITION, (float)0 },
 	{ TASK_GET_PATH_TO_BESTSOUND, (float)0 },
 	{ TASK_FACE_IDEAL, (float)0 },
-	{ TASK_WALK_PATH, (float)0 },
+	{ TASK_RUN_PATH, (float)0 },
 	{ TASK_WAIT_FOR_MOVEMENT, (float)0 },
 	{ TASK_PLAY_SEQUENCE, (float)ACT_IDLE },
 	{ TASK_WAIT, (float)10 },

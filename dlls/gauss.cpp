@@ -14,6 +14,8 @@
 ****/
 #if !OEM_BUILD && !HLDEMO_BUILD
 
+#if 0
+
 #include "extdll.h"
 #include "util.h"
 #include "cbase.h"
@@ -628,4 +630,5 @@ class CGaussAmmo : public CBasePlayerAmmo
 };
 
 LINK_ENTITY_TO_CLASS( ammo_gaussclip, CGaussAmmo )
+#endif
 #endif
