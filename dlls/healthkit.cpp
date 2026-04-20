@@ -180,7 +180,7 @@ void CWallHealth::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE u
 	if( !pActivator->IsPlayer() )
 		return;
 
-	CBasePlayer *player = GetClassPtr( (CBasePlayer *)pActivator );
+	CBasePlayer *player = (CBasePlayer *)pActivator;
 
 	// if there is no juice left, turn it off
 	if( m_iJuice <= 0 )

@@ -2488,7 +2488,7 @@ void CTriggerSecurity::UnlockTouch( CBaseEntity* pOther )
 	if ( !pOther->IsPlayer() )
 		return;
 
-	CBasePlayer *player = GetClassPtr( (CBasePlayer *)pOther );
+	CBasePlayer *player = (CBasePlayer *)pOther;
 
 	if ( !player->HasKeycard() )
 	{
@@ -2555,7 +2555,7 @@ void CTriggerSecurityRed::UnlockTouch( CBaseEntity* pOther )
 	if ( !pOther->IsPlayer() )
 		return;
 
-	CBasePlayer *player = GetClassPtr( (CBasePlayer *)pOther );
+	CBasePlayer *player = (CBasePlayer *)pOther;
 
 	if ( !player->HasRedKeycard() )
 	{
@@ -2619,7 +2619,7 @@ void CTriggerC4::PlaceTouch( CBaseEntity* pOther )
 	if ( !pOther->IsPlayer() )
 		return;
 
-	CBasePlayer *player = GetClassPtr( (CBasePlayer *)pOther );
+	CBasePlayer *player = (CBasePlayer *)pOther;
 	
 	if ( player->HasC4() )
 	{
