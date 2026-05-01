@@ -1303,9 +1303,20 @@ class CControllerZapBall : public CBaseMonster
 	void EXPORT ExplodeTouch( CBaseEntity *pOther );
 
 	EHANDLE m_hOwner;
+
+	virtual int Save( CSave &save );
+	virtual int Restore( CRestore &restore );
+	static TYPEDESCRIPTION m_SaveData[];
 };
 
 LINK_ENTITY_TO_CLASS( controller_energy_ball, CControllerZapBall )
+
+TYPEDESCRIPTION	CControllerZapBall::m_SaveData[] =
+{
+	DEFINE_FIELD( CControllerZapBall, m_hOwner, FIELD_EHANDLE ),
+};
+
+IMPLEMENT_SAVERESTORE( CControllerZapBall, CBaseMonster )
 
 void CControllerZapBall::Spawn( void )
 {
