@@ -15,8 +15,8 @@ Half-Life SDK for GoldSource & Xash3D with some bugfixes.
 - Brought back gluon flare in singleplayer. [Patch](https://github.com/FWGS/hlsdk-portable/commit/9d7ab6acf46a8b71ef119d9c252767865522d21d)
 - Hand grenades don't stay primed after holster, preventing detonation after weapon switch. [Patch](https://github.com/FWGS/hlsdk-portable/commit/6e1059026faa90c5bfe5e3b3f4f58fde398d4524)
 - Fixed flashlight battery appearing as depleted on restore.
-- Fixed a potential overflow when reading sentences.txt. [Patch](https://github.com/FWGS/hlsdk-xash3d/commit/cb51d2aa179f1eb622e08c1c07b053ccd49e40a5)
-- Fixed beam attachment invalidated on restore (that led to visual bugs). [Patch](https://github.com/FWGS/hlsdk-xash3d/commit/74b5543c83c5cdcb88e9254bacab08bc63c4c896)
+- Fixed a potential overflow when reading sentences.txt. [Patch](https://github.com/FWGS/hlsdk-portable/commit/cb51d2aa179f1eb622e08c1c07b053ccd49e40a5)
+- Fixed beam attachment invalidated on restore (that led to visual bugs). [Patch](https://github.com/FWGS/hlsdk-portable/commit/74b5543c83c5cdcb88e9254bacab08bc63c4c896)
 - Fixed alien controllers facing wrong direction in non-combat state. [Patch](https://github.com/FWGS/hlsdk-portable/commit/e51878c45b618f9b3920b46357545cbb47befeda)
 - Fixed weapon deploy animations not playing sometimes on fast switching between weapons. [Patch](https://github.com/FWGS/hlsdk-portable/commit/ed676a5413c2d26b2982e5b014e0731f0eda6a0d) [Patch2](https://github.com/FWGS/hlsdk-portable/commit/4053dca7a9cf999391cbd77224144da207e4540b)
 - Fixed tripmine sometimes having wrong body on pickup [Patch](https://github.com/FWGS/hlsdk-portable/commit/abf08e4520e3b6cd12a40f269f4a256cf8496227)
