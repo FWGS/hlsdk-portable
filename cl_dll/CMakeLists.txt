@@ -105,6 +105,7 @@ set (CLDLL_SOURCES
 	ammo.cpp
 	ammo_secondary.cpp
 	ammohistory.cpp
+	bank.cpp
 	battery.cpp
 	cdll_int.cpp
 	com_weapons.cpp
@@ -135,6 +136,7 @@ set (CLDLL_SOURCES
 	../pm_shared/pm_math.c
 	../pm_shared/pm_shared.c
 	saytext.cpp
+	shroud.cpp
 	status_icons.cpp
 	statusbar.cpp
 	studio_util.cpp
