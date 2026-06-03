@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="launch">BAŞLAT</string>
+    <string name="launch_parameters">KOMUT SATIRI ARGÜMANLARI</string>
+    <string name="info">HAKKINDA</string>
+    <string name="about_title">Hakkında</string>
+    <string name="about_text">"• Elinsrc'ye başlatıcı tasarımı için teşekkürler (Axion'un GitHub sayfasına bakın)
+• ZnQci'a Crack-Life Launcher için teşekkürler"</string>
+    <string name="axion_link">Axion\'nun GitHub Sayfası</string>
+    <string name="engine_not_found_title">Motor bulunamadı!</string>
+    <string name="engine_not_found_msg">Xash3D FWGS cihazınızda yüklü değil. GitHub\'dan indirmek ister misiniz?</string> 
+</resources>
