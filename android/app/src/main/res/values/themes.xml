@@ -1,0 +1,13 @@
+<resources>
+
+    <style name="Theme.App" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="colorPrimary">@color/hl_orange</item>
+        <item name="colorPrimaryDark">@color/hl_dark_grey</item>
+        <item name="colorSurface">@color/hl_grey</item>
+        <item name="colorSurfaceVariant">@color/hl_grey</item>
+        <item name="android:colorBackground">@color/hl_dark_grey</item>
+        <item name="colorControlNormal">@color/hl_orange</item>
+        <item name="colorOnPrimary">@color/hl_dark_grey</item>
+        <item name="colorSecondary">@color/hl_orange</item>
+    </style>
+</resources>

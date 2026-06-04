@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="launch">ЗАПУСТИТЬ</string>
+    <string name="launch_parameters">АРГУМЕНТЫ КОМАНДНОЙ СТРОКИ</string>
+    <string name="info">ИНФО</string>
+    <string name="about_title">Инфо</string>
+    <string name="engine_not_found_title">Движок не найден!</string>
+    <string name="engine_not_found_msg">Xash3D FWGS не установлен на вашем девайсе. Вы хотите скачать движок с GitHub?</string>
+</resources>

@@ -1,0 +1,86 @@
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    android:background="?android:colorBackground">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="8dp"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/launch_parameters"
+            app:startIconDrawable="@drawable/baseline_settings_24"
+            app:startIconTint="?attr/colorPrimary"
+            app:hintTextColor="?attr/colorPrimary"
+            app:boxBackgroundMode="outline">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/argvInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="-console -ref gl4es"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:gravity="end"
+        android:layout_gravity="bottom">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/infoButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/info"
+            android:textColor="@color/hl_orange"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
+            app:icon="@drawable/baseline_info_24"
+            app:iconTint="@color/hl_orange"
+            app:cornerRadius="16dp"
+            app:backgroundTint="@color/hl_grey"
+            app:iconPadding="8dp"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/runButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:text="@string/launch"
+            android:textColor="@color/hl_orange"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
+            app:icon="@drawable/baseline_play_arrow_24"
+            app:iconTint="@color/hl_orange"
+            app:cornerRadius="16dp"
+            app:backgroundTint="@color/hl_grey"
+            app:iconPadding="8dp"/>
+    </LinearLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

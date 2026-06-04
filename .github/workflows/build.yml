@@ -3,6 +3,44 @@ name: build
 on: [push, pull_request]
 
 jobs:
+  android:
+    name: Android
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Build Android
+        run: ./gradlew assembleDebug
+        working-directory: android
+
+      - name: Extract branch name
+        shell: bash
+        id: extract_branch
+        run: echo "branch=$(echo ${GITHUB_REF#refs/heads/} | tr '/' '_')" >> $GITHUB_OUTPUT
+
+      - name: Rename APK
+        run: mv android/app/build/outputs/apk/debug/app-debug.apk android/app/build/outputs/apk/debug/Axion-android.apk
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: Axion-${{ steps.extract_branch.outputs.branch }}-android
+          path: android/app/build/outputs/apk/debug/Axion-android.apk
+
   build:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -20,118 +58,159 @@ jobs:
     env:
       CC: ${{ matrix.cc }}
       CXX: ${{ matrix.cxx }}
-      STEAMRT_SNAPSHOT: latest-steam-client-general-availability
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-      with:
-        submodules: recursive
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          submodules: recursive
 
-    - name: Checkout steam-runtime
-      if: startsWith(matrix.os, 'ubuntu')
-      uses: actions/checkout@v4
-      with:
-        repository: ValveSoftware/steam-runtime
-        path: steam-runtime
-    - name: Cache steam-runtime
-      if: startsWith(matrix.os, 'ubuntu')
-      id: cache-steam-runtime
-      uses: actions/cache@v4
-      with:
-        path: com.valvesoftware.SteamRuntime.Sdk-i386-scout-sysroot.tar.gz
-        key: steam-runtime-${{ env.STEAMRT_SNAPSHOT }}
-    - name: Download steam-runtime
-      if: startsWith(matrix.os, 'ubuntu') && steps.cache-steam-runtime.outputs.cache-hit != 'true'
-      run: wget --no-verbose https://repo.steampowered.com/steamrt-images-scout/snapshots/${{ env.STEAMRT_SNAPSHOT }}/com.valvesoftware.SteamRuntime.Sdk-i386-scout-sysroot.tar.gz
-    - name: Install steam runtime
-      if: startsWith(matrix.os, 'ubuntu')
-      run: |
-        sudo apt update
-        ./steam-runtime/setup_chroot.sh --i386 --tarball ./com.valvesoftware.SteamRuntime.Sdk-i386-scout-sysroot.tar.gz
-        sudo sed -i 's/groups=sudo/groups=adm/g' /etc/schroot/chroot.d/steamrt_scout_i386.conf
+      - name: Install development tools
+        if: startsWith(matrix.os, 'ubuntu')
+        run: |
+          sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+          sudo dpkg --add-architecture i386
+          sudo apt update
+          sudo apt install aptitude
+          sudo aptitude --without-recommends install -y cmake build-essential gcc-multilib g++-multilib libsdl2-dev:i386 libgl1-mesa-dev:i386
 
-    - name: Build on Linux
-      if: startsWith(matrix.os, 'ubuntu')
-      run: |
-        schroot --chroot steamrt_scout_i386 -- cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DPOLLY=ON -B build -S . -DCMAKE_EXE_LINKER_FLAGS="-Wl,--no-undefined" -DCMAKE_INSTALL_PREFIX="$PWD/dist"
-        schroot --chroot steamrt_scout_i386 -- cmake --build build --target all
-        schroot --chroot steamrt_scout_i386 -- cmake --build build --target install
-    - name: Build on Linux with vgui
-      if: startsWith(matrix.os, 'ubuntu') && startsWith(matrix.cc, 'gcc')
-      run: |
-        schroot --chroot steamrt_scout_i386 -- cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DPOLLY=ON -B build-vgui -S . -DCMAKE_EXE_LINKER_FLAGS="-Wl,--no-undefined" -DUSE_VGUI=ON -DCMAKE_INSTALL_PREFIX="$PWD/dist-vgui"
-        cp vgui_support/vgui-dev/lib/vgui.so build-vgui/cl_dll
-        cp vgui_support/vgui-dev/lib/vgui.so build-vgui
-        schroot --chroot steamrt_scout_i386 -- cmake --build build-vgui --target all
-        schroot --chroot steamrt_scout_i386 -- cmake --build build-vgui --target install
+      - name: Build on Linux
+        if: startsWith(matrix.os, 'ubuntu')
+        run: |
+          cmake -B build -S . -DCMAKE_EXE_LINKER_FLAGS="-Wl,--no-undefined" -DCMAKE_INSTALL_PREFIX="$PWD/dist"
+          cmake --build build --target all
+          cmake --build build --target install
 
-    - name: Set developer command prompt for Windows x86
-      if: startsWith(matrix.os, 'windows')
-      uses: ilammy/msvc-dev-cmd@v1
-      with:
-        arch: x86
+      - name: Build on Linux x64
+        if: startsWith(matrix.os, 'ubuntu') && matrix.cc == 'gcc'
+        run: |
+          cmake -B build64 -S . -D64BIT=ON -DCMAKE_EXE_LINKER_FLAGS="-Wl,--no-undefined" -DCMAKE_INSTALL_PREFIX="$PWD/dist64"
+          cmake --build build64 --target all
+          cmake --build build64 --target install
 
-    - name: Build on Windows
-      if: startsWith(matrix.os, 'windows')
-      run: |
-        cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -B build -S . -DCMAKE_INSTALL_PREFIX="dist"
-        cmake --build build --target all
-        cmake --build build --target install
-    - name: Build on Windows with vgui
-      if: startsWith(matrix.os, 'windows')
-      run: |
-        cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -B build -S . -DUSE_VGUI=ON -DCMAKE_INSTALL_PREFIX="dist-vgui"
-        cmake --build build --target all
-        cmake --build build --target install
+      - name: Set developer command prompt for Windows x86
+        if: startsWith(matrix.os, 'windows')
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x86
 
-    - name: Set developer command prompt for Windows x86_64
-      if: startsWith(matrix.os, 'windows')
-      uses: ilammy/msvc-dev-cmd@v1
-      with:
-        arch: x64
-    - name: Build on Windows x64
-      if: startsWith(matrix.os, 'windows')
-      run: |
-        cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -B build64 -S . -DCMAKE_INSTALL_PREFIX="dist64" -D64BIT=ON
-        cmake --build build64 --target all
-        cmake --build build64 --target install
+      - name: Build on Windows
+        if: startsWith(matrix.os, 'windows')
+        run: |
+          cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -B build -S . -DCMAKE_INSTALL_PREFIX="dist"
+          cmake --build build --target all
+          cmake --build build --target install
 
-    - name: Extract branch name
-      shell: bash
-      run: echo "branch=$(echo ${GITHUB_REF#refs/heads/} | tr '/' '_')" >> $GITHUB_OUTPUT
-      id: extract_branch
-    - name: Extract gamedir
-      shell: bash
-      run: echo "gamedir=$(grep build/CMakeCache.txt -Ee 'GAMEDIR:STRING=[a-z]+' | cut -d '=' -f 2)" >> $GITHUB_OUTPUT
-      id: extract_gamedir
-    - name: Upload linux artifact
-      if: startsWith(matrix.os, 'ubuntu') && matrix.cc == 'gcc'
-      uses: actions/upload-artifact@v4
-      with:
-        name: hlsdk-${{ steps.extract_branch.outputs.branch }}-linux
-        path: dist/${{ steps.extract_gamedir.outputs.gamedir }}
-    - name: Upload linux artifact with vgui
-      if: startsWith(matrix.os, 'ubuntu') && matrix.cc == 'gcc'
-      uses: actions/upload-artifact@v4
-      with:
-        name: hlsdk-${{ steps.extract_branch.outputs.branch }}-linux-vgui
-        path: dist-vgui/${{ steps.extract_gamedir.outputs.gamedir }}
-    - name: Upload windows artifact
-      if: startsWith(matrix.os, 'windows')
-      uses: actions/upload-artifact@v4
-      with:
-        name: hlsdk-${{ steps.extract_branch.outputs.branch }}-windows
-        path: dist/${{ steps.extract_gamedir.outputs.gamedir }}
-    - name: Upload windows x64 artifact
-      if: startsWith(matrix.os, 'windows')
-      uses: actions/upload-artifact@v4
-      with:
-        name: hlsdk-${{ steps.extract_branch.outputs.branch }}-windows_x64
-        path: dist64/${{ steps.extract_gamedir.outputs.gamedir }}
-    - name: Upload windows artifact with vgui
-      if: startsWith(matrix.os, 'windows')
-      uses: actions/upload-artifact@v4
-      with:
-        name: hlsdk-${{ steps.extract_branch.outputs.branch }}-windows-vgui
-        path: dist-vgui/${{ steps.extract_gamedir.outputs.gamedir }}
+      - name: Set developer command prompt for Windows x86_64
+        if: startsWith(matrix.os, 'windows')
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
 
+      - name: Build on Windows x64
+        if: startsWith(matrix.os, 'windows')
+        run: |
+          cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -B build64 -S . -DCMAKE_INSTALL_PREFIX="dist64" -D64BIT=ON
+          cmake --build build64 --target all
+          cmake --build build64 --target install
+
+      - name: Extract branch name
+        shell: bash
+        id: extract_branch
+        run: echo "branch=$(echo ${GITHUB_REF#refs/heads/} | tr '/' '_')" >> $GITHUB_OUTPUT
+
+      - name: Extract gamedir
+        shell: bash
+        id: extract_gamedir
+        run: echo "gamedir=$(grep build/CMakeCache.txt -Ee 'GAMEDIR:STRING=[a-z]+' | cut -d '=' -f 2)" >> $GITHUB_OUTPUT
+
+      - name: Upload linux artifact
+        if: startsWith(matrix.os, 'ubuntu') && matrix.cc == 'gcc'
+        uses: actions/upload-artifact@v4
+        with:
+          name: Axion-${{ steps.extract_branch.outputs.branch }}-linux
+          path: dist/${{ steps.extract_gamedir.outputs.gamedir }}
+
+      - name: Upload linux x64 artifact
+        if: startsWith(matrix.os, 'ubuntu') && matrix.cc == 'gcc'
+        uses: actions/upload-artifact@v4
+        with:
+          name: Axion-${{ steps.extract_branch.outputs.branch }}-linux-x64
+          path: dist64/${{ steps.extract_gamedir.outputs.gamedir }}
+
+      - name: Upload windows artifact
+        if: startsWith(matrix.os, 'windows')
+        uses: actions/upload-artifact@v4
+        with:
+          name: Axion-${{ steps.extract_branch.outputs.branch }}-windows
+          path: dist/${{ steps.extract_gamedir.outputs.gamedir }}
+
+      - name: Upload windows x64 artifact
+        if: startsWith(matrix.os, 'windows')
+        uses: actions/upload-artifact@v4
+        with:
+          name: Axion-${{ steps.extract_branch.outputs.branch }}-windows-x64
+          path: dist64/${{ steps.extract_gamedir.outputs.gamedir }}
+
+  release:
+    name: Upload release
+    runs-on: ubuntu-latest
+    needs: [android, build]
+    if: ${{ github.event_name == 'push' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          submodules: recursive
+  
+      - name: Fetch artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+  
+      - name: Set tag name
+        run: |
+          if [ "${GITHUB_REF_NAME}" = "master" ]; then
+            TAG_NAME="continuous"
+          else
+            TAG_NAME="continuous-${GITHUB_REF_NAME}"
+          fi
+          RELEASE_NAME="Axion $TAG_NAME Build"
+          echo "TAG_NAME=$TAG_NAME" >> $GITHUB_ENV
+          echo "RELEASE_NAME=$RELEASE_NAME" >> $GITHUB_ENV
+  
+      - name: Remove old release if exists
+        run: |
+          if gh release list --repo ${{ github.repository }} | grep -q -e "$TAG_NAME"; then
+            echo "Deleting existing release $TAG_NAME"
+            gh release delete "$TAG_NAME" --yes --cleanup-tag --repo ${{ github.repository }}
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  
+      - name: List downloaded artifacts
+        run: |
+          echo "Listing all artifacts in artifacts/:"
+          ls -R artifacts/
+  
+      - name: Create archives
+        run: |
+          cd artifacts/
+          mkdir files
+          mv Axion-*-android/* files/
+          zip -j files/Axion-linux.zip Axion-*-linux/*/*
+          zip -j files/Axion-linux-x64.zip Axion-*-linux-x64/*/*
+          zip -j files/Axion-windows.zip Axion-*-windows/*/*
+          zip -j files/Axion-windows-x64.zip Axion-*-windows-x64/*/*
+          ls -R .
+          cd ../
+  
+      - name: Upload new release
+        run: |
+          gh release create "$TAG_NAME" \
+            --title "$RELEASE_NAME" \
+            --prerelease artifacts/files/* \
+            --repo ${{ github.repository }} \
+            --target ${{ github.sha }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
