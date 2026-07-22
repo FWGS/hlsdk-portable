@@ -460,8 +460,6 @@ void CHalfLifeMultiplay::InitHUD( CBasePlayer *pl )
 		WRITE_BYTE( ENTINDEX(pl->edict()) );
 		WRITE_SHORT( (int)pl->pev->frags );
 		WRITE_SHORT( pl->m_iDeaths );
-		WRITE_SHORT( 0 );
-		WRITE_SHORT( 0 );
 		WRITE_SHORT( GetTeamIndex( pl->m_szTeamName ) + 1 );
 	MESSAGE_END();
 
