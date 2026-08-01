@@ -45,7 +45,8 @@ def build(bld):
 		'../engine',
 		'../pm_shared',
 		'../game_shared',
-		'../public'
+		'../public',
+		'decay'
 	]
 
 	if bld.env.DEST_OS != 'dos' and not bld.env.ANDROID_APK:

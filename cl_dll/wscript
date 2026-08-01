@@ -71,6 +71,7 @@ def build(bld):
 		includes += ['../utils/fake_vgui/include']
 		excluded_files += ['voice_status.cpp',
 			'vgui_*.cpp',
+			'decay/vgui_*.cpp',
 			'game_shared/vgui_*.cpp',
 			'game_shared/voice_banmgr.cpp']
 
@@ -93,7 +94,7 @@ def build(bld):
 		'dlls/shotgun.cpp',
 		'dlls/squeakgrenade.cpp',
 		'dlls/tripmine.cpp',
-		'dlls/vorti.cpp',
+		'dlls/decay/vorti.cpp',
 	])
 
 
