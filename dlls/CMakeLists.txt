@@ -45,11 +45,21 @@ else()
 endif()
 
 set (SVDLL_SOURCES
-	actanimating.cpp
+	decay/actanimating.cpp
+	decay/alienflyer.cpp
+	decay/bot.cpp
+	decay/bot_combat.cpp
+	decay/chargers.cpp
+	decay/decay_gamerules.cpp
+	decay/displacer.cpp
+	decay/modeltrain.cpp
+	decay/notepad.cpp
+	decay/priest.cpp
+	decay/spritetrain.cpp
+	decay/vorti.cpp
 	agrunt.cpp
 	airtank.cpp
 	aflock.cpp
-	alienflyer.cpp
 	animating.cpp
 	animation.cpp
 	apache.cpp
@@ -58,8 +68,6 @@ set (SVDLL_SOURCES
 	bigmomma.cpp
 	bloater.cpp
 	bmodels.cpp
-	bot.cpp
-	bot_combat.cpp
 	bullsquid.cpp
 	buttons.cpp
 	cbase.cpp
@@ -68,9 +76,7 @@ set (SVDLL_SOURCES
 	controller.cpp
 	crossbow.cpp
 	crowbar.cpp
-	decay_gamerules.cpp
 	defaultai.cpp
-	displacer.cpp
 	doors.cpp
 	effects.cpp
 	egon.cpp
@@ -106,7 +112,6 @@ set (SVDLL_SOURCES
 	leech.cpp
 	lights.cpp
 	maprules.cpp
-	modeltrain.cpp
 	monstermaker.cpp
 	monsters.cpp
 	monsterstate.cpp
@@ -115,7 +120,6 @@ set (SVDLL_SOURCES
 	multiplay_gamerules.cpp
 	nihilanth.cpp
 	nodes.cpp
-	notepad.cpp
 	observer.cpp
 	osprey.cpp
 	pathcorner.cpp
@@ -123,7 +127,6 @@ set (SVDLL_SOURCES
 	plats.cpp
 	player.cpp
 	playermonster.cpp
-	priest.cpp
 	python.cpp
 	rat.cpp
 	roach.cpp
@@ -138,7 +141,6 @@ set (SVDLL_SOURCES
 	sound.cpp
 	soundent.cpp
 	spectator.cpp
-	spritetrain.cpp
 	squadmonster.cpp
 	squeakgrenade.cpp
 	subs.cpp
@@ -151,7 +153,6 @@ set (SVDLL_SOURCES
 	turret.cpp
 	util.cpp
 	vehicle.cpp
-	vorti.cpp
 	weapons.cpp
 	world.cpp
 	xen.cpp
@@ -176,7 +177,7 @@ else()
 		../external/openbsd/strlcat.c)
 endif()
 
-include_directories (. wpn_shared ../common ../engine ../pm_shared ../game_shared ../public)
+include_directories (. wpn_shared ../common ../engine ../pm_shared ../game_shared ../public decay)
 
 if(MSVC)
 	set(SVDLL_SOURCES
