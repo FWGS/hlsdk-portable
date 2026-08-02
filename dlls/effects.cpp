@@ -2440,6 +2440,7 @@ office_gibs.mdl
 */
 
 LINK_ENTITY_TO_CLASS( env_model, CObjModel );
+LINK_ENTITY_TO_CLASS( object_model, CObjModel );
 
 void CObjModel::KeyValue(KeyValueData *pkvd)
 {
