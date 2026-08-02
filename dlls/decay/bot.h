@@ -57,10 +57,10 @@ typedef struct  // used to respawn bot at end of round (time/frag limit)
 } respawn_t;
 
 #define GI_SND1 "gina/gina_attacked0.wav"
-#define GI_SND2 "gina/gina_attacked1.wav "
-#define GI_SND3 "gina/gina_pain1.wav "
-#define GI_SND4 "gina/gina_pain2.wav "
-#define GI_SND5 "gina/gina_pain3.wav "
+#define GI_SND2 "gina/gina_attacked1.wav"
+#define GI_SND3 "gina/gina_pain1.wav"
+#define GI_SND4 "gina/gina_pain2.wav"
+#define GI_SND5 "gina/gina_pain3.wav"
 
 #define CO_SND1 "colette/colette_attacked0.wav"
 #define CO_SND2 "colette/colette_attacked1.wav"
