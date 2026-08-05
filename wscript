@@ -288,8 +288,10 @@ def configure(conf):
 		if conf.env.cxxshlib_PATTERN.startswith('lib'):
 			conf.env.cxxshlib_PATTERN = conf.env.cxxshlib_PATTERN[3:]
 
+	conf.env.FREEVGUI_NO_INSTALL = True # prevents FreeVGUI from installing itself
+
 	conf.load('library_naming')
-	conf.add_subproject('game_shared dlls cl_dll')
+	conf.add_subproject('game_shared dlls freevgui cl_dll')
 
 def build(bld):
 	if bld.env.WAFCACHE:
@@ -303,4 +305,4 @@ def build(bld):
 		excl='*.user configuration.py .lock* *conf_check_*/** config.log %s/*' % Build.CACHE_DIR,
 		quiet=True, generator=True)
 
-	bld.add_subproject('game_shared dlls cl_dll')
+	bld.add_subproject('game_shared dlls freevgui cl_dll')
