@@ -209,6 +209,12 @@ add_subdirectory(game_shared)
 
 if(BUILD_CLIENT)
 	message(STATUS "Building client enabled")
+
+	if(USE_VGUI)
+		message(STATUS "VGUI support requested, so building FreeVGUI")
+		add_subdirectory(freevgui)
+	endif()
+
 	add_subdirectory(cl_dll)
 endif()
 

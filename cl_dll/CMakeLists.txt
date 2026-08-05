@@ -182,12 +182,14 @@ if (WIN32)
 	include_directories (../external/)
 endif()
 
+
+include_directories(../utils/vgui/include)
+
 if (USE_VGUI)
-	SET(CMAKE_SKIP_RPATH TRUE)
-	link_directories(${CMAKE_SOURCE_DIR}/vgui_support/vgui-dev/lib)
-	include_directories(../vgui_support/vgui-dev/include)
+	set(CMAKE_SKIP_RPATH TRUE) # ... why we do this?
 else()
-	include_directories(../utils/fake_vgui/include)
+	# now that we have freevgui, maybe we don't need this feature?
+	list(APPEND CL_DLL_SOURCES ../utils/fake_vgui/fake_vgui.cpp)
 endif()
 
 if(USE_VOICEMGR)
@@ -205,16 +207,7 @@ if (GOLDSOURCE_SUPPORT)
 endif()
 
 if (USE_VGUI)
-	if (WIN32)
-		add_library(vgui SHARED IMPORTED)
-		set_property(TARGET vgui PROPERTY IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/vgui_support/vgui-dev/lib/win32_vc6/vgui.dll")
-		set_property(TARGET vgui PROPERTY IMPORTED_IMPLIB "${CMAKE_SOURCE_DIR}/vgui_support/vgui-dev/lib/win32_vc6/vgui.lib")
-		target_link_libraries(${CLDLL_LIBRARY} vgui)
-	elseif(APPLE)
-		target_link_libraries(${CLDLL_LIBRARY} "-Wl,--no-undefined -L${CMAKE_SOURCE_DIR}/vgui_support/vgui-dev/lib vgui.dylib")
-	else()
-		target_link_libraries(${CLDLL_LIBRARY} :vgui.so)
-	endif()
+	target_link_libraries(${CLDLL_LIBRARY} vgui)
 endif()
 
 if(WIN32)
