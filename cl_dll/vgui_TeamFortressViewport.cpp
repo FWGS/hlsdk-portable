@@ -57,7 +57,8 @@
 #include "shake.h"
 #include "screenfade.h"
 
-void IN_SetVisibleMouse(bool visible);
+#include "input_mouse.h"
+
 void IgnoreNextMouseDelta();
 
 class CCommandMenu;
@@ -1660,7 +1661,7 @@ void TeamFortressViewport::UpdateCursorState()
 	// Need cursor if any VGUI window is up
 	if( m_pSpectatorPanel->m_menuVisible || m_pCurrentMenu || m_pTeamMenu->isVisible() || GetClientVoiceMgr()->IsInSquelchMode() )
 	{
-		IN_SetVisibleMouse(true);
+		CurrentMouseInput()->IN_SetVisibleMouse(true);
 		IgnoreNextMouseDelta();
 		App::getInstance()->setCursorOveride( App::getInstance()->getScheme()->getCursor(Scheme::scu_arrow) );
 		return;
@@ -1670,7 +1671,7 @@ void TeamFortressViewport::UpdateCursorState()
 		// commandmenu doesn't have cursor if hud_capturemouse is turned off
 		if( gHUD.m_pCvarStealMouse->value != 0.0f )
 		{
-			IN_SetVisibleMouse(true);
+			CurrentMouseInput()->IN_SetVisibleMouse(true);
 			IgnoreNextMouseDelta();
 			App::getInstance()->setCursorOveride( App::getInstance()->getScheme()->getCursor(Scheme::scu_arrow) );
 			return;
@@ -1678,7 +1679,7 @@ void TeamFortressViewport::UpdateCursorState()
 	}
 
 	App::getInstance()->setCursorOveride( App::getInstance()->getScheme()->getCursor(Scheme::scu_none) );
-	IN_SetVisibleMouse(false);
+	CurrentMouseInput()->IN_SetVisibleMouse(false);
 
 	// Don't reset mouse in demo playback
 	if( !gEngfuncs.pDemoAPI->IsPlayingback() )
