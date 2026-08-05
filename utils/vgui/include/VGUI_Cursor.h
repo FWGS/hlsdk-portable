@@ -34,22 +34,22 @@ public:
 		dc_sizeall,
 		dc_no,
 		dc_hand,
-		dc_last
+		dc_last,
 	};
 private:
 	int           _hotspot[2];
 	Bitmap*       _bitmap;
 	DefaultCursor _dc;
 public:
-	Cursor(DefaultCursor dc) {}
-	Cursor(Bitmap* bitmap,int hotspotX,int hotspotY) {}
+	Cursor(DefaultCursor dc);
+	Cursor(Bitmap* bitmap,int hotspotX,int hotspotY);
 public:
-	virtual void getHotspot(int& x,int& y) {}
+	virtual void getHotspot(int& x,int& y);
 private:
-	virtual void privateInit(Bitmap* bitmap,int hotspotX,int hotspotY) {}
+	virtual void privateInit(Bitmap* bitmap,int hotspotX,int hotspotY);
 public:
-	virtual Bitmap*       getBitmap() {return 0;}
-	virtual DefaultCursor getDefaultCursor() {return dc_none;}
+	virtual Bitmap*       getBitmap();
+	virtual DefaultCursor getDefaultCursor();
 };
 
 }

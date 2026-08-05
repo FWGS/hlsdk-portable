@@ -31,7 +31,7 @@ public:
 		sc_secondary1,
 		sc_secondary2,
 		sc_secondary3,
-		sc_last
+		sc_last,
 	};
 	enum SchemeFont
 	{
@@ -40,7 +40,7 @@ public:
 		sf_primary2,
 		sf_primary3,
 		sf_secondary1,
-		sf_last
+		sf_last,
 	};
 	enum SchemeCursor
 	{
@@ -58,17 +58,17 @@ public:
 		scu_sizeall,
 		scu_no,
 		scu_hand,
-		scu_last
+		scu_last,
 	};
 public:
-	Scheme() {}
+	Scheme();
 public:
-	virtual void    setColor(SchemeColor sc,int r,int g,int b,int a) {}
-	virtual void    getColor(SchemeColor sc,int& r,int& g,int& b,int& a) {}
-	virtual void    setFont(SchemeFont sf,Font* font) {}
-	virtual Font*   getFont(SchemeFont sf) {return 0;}
-	virtual void    setCursor(SchemeCursor sc,Cursor* cursor) {}
-	virtual Cursor* getCursor(SchemeCursor sc) {return 0;}
+	virtual void    setColor(SchemeColor sc,int r,int g,int b,int a);
+	virtual void    getColor(SchemeColor sc,int& r,int& g,int& b,int& a);
+	virtual void    setFont(SchemeFont sf,Font* font);
+	virtual Font*   getFont(SchemeFont sf);
+	virtual void    setCursor(SchemeCursor sc,Cursor* cursor);
+	virtual Cursor* getCursor(SchemeCursor sc);
 protected:
 	int     _color[sc_last][4];
     Font*   _font[sf_last];
