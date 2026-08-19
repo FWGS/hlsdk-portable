@@ -41,7 +41,6 @@ project (HLSDK-PORTABLE)
 #--------------
 # USER DEFINES \
 ################\
-option(USE_VGUI "Enable VGUI1." OFF)
 option(USE_NOVGUI_MOTD "Prefer non-VGUI MOTD when USE_VGUI is enabled" OFF)
 option(USE_NOVGUI_SCOREBOARD "Prefer non-VGUI Scoreboard when USE_VGUI is enabled" OFF)
 option(USE_VOICEMGR "Enable VOICE MANAGER." OFF)
@@ -86,8 +85,11 @@ if((WIN32 OR ${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
 	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "i586"
 	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "i686"))
 	option(GOLDSOURCE_SUPPORT "Build goldsource compatible client library" ON)
+	set(USE_STATIC_FREEVGUI OFF)
 else()
 	option(GOLDSOURCE_SUPPORT "Build goldsource compatible client library" OFF)
+	# no prebuilt vgui shared library exists here by default, so link FreeVGUI into the client
+	set(USE_STATIC_FREEVGUI ON)
 endif()
 
 #-----------------
@@ -210,11 +212,7 @@ add_subdirectory(game_shared)
 if(BUILD_CLIENT)
 	message(STATUS "Building client enabled")
 
-	if(USE_VGUI)
-		message(STATUS "VGUI support requested, so building FreeVGUI")
-		add_subdirectory(freevgui)
-	endif()
-
+	add_subdirectory(freevgui)
 	add_subdirectory(cl_dll)
 endif()
 

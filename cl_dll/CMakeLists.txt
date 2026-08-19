@@ -52,14 +52,12 @@ if (GOLDSOURCE_SUPPORT)
 	add_definitions(-DGOLDSOURCE_SUPPORT)
 endif()
 
-if (USE_VGUI)
-	add_definitions(-DUSE_VGUI)
-	if (USE_NOVGUI_MOTD)
-		add_definitions(-DUSE_NOVGUI_MOTD)
-	endif()
-	if (USE_NOVGUI_SCOREBOARD)
-		add_definitions(-DUSE_NOVGUI_SCOREBOARD)
-	endif()
+add_definitions(-DUSE_VGUI)
+if (USE_NOVGUI_MOTD)
+	add_definitions(-DUSE_NOVGUI_MOTD)
+endif()
+if (USE_NOVGUI_SCOREBOARD)
+	add_definitions(-DUSE_NOVGUI_SCOREBOARD)
 endif()
 
 set (CLDLL_SOURCES
@@ -127,39 +125,35 @@ set (CLDLL_SOURCES
 	../public/safe_snprintf.c
 )
 
-if (USE_VGUI)
-	list(APPEND CLDLL_SOURCES
-		vgui_int.cpp
-		vgui_ClassMenu.cpp
-		vgui_ConsolePanel.cpp
-		vgui_ControlConfigPanel.cpp
-		vgui_CustomObjects.cpp
-		vgui_MOTDWindow.cpp
-		vgui_SchemeManager.cpp
-		vgui_ScorePanel.cpp
-		vgui_TeamFortressViewport.cpp
-		vgui_SpectatorPanel.cpp
-		vgui_teammenu.cpp
-		voice_status.cpp
-		../game_shared/vgui_checkbutton2.cpp
-		../game_shared/vgui_grid.cpp
-		../game_shared/vgui_helpers.cpp
-		../game_shared/vgui_listbox.cpp
-		../game_shared/vgui_loadtga.cpp
-		../game_shared/vgui_scrollbar2.cpp
-		../game_shared/vgui_slider2.cpp
-		../game_shared/voice_banmgr.cpp
-		)
-	if (USE_NOVGUI_MOTD)
-		list(APPEND CLDLL_SOURCES MOTD.cpp)
-	endif()
-	if (USE_NOVGUI_SCOREBOARD)
-		list(APPEND CLDLL_SOURCES scoreboard.cpp)
-	endif()
-else()
-	list(APPEND CLDLL_SOURCES
-		MOTD.cpp
-		scoreboard.cpp)
+list(APPEND CLDLL_SOURCES
+	vgui_int.cpp
+	vgui_ClassMenu.cpp
+	vgui_ConsolePanel.cpp
+	vgui_ControlConfigPanel.cpp
+	vgui_CustomObjects.cpp
+	vgui_MOTDWindow.cpp
+	vgui_SchemeManager.cpp
+	vgui_ScorePanel.cpp
+	vgui_TeamFortressViewport.cpp
+	vgui_SpectatorPanel.cpp
+	vgui_teammenu.cpp
+	voice_status.cpp
+	../game_shared/vgui_checkbutton2.cpp
+	../game_shared/vgui_grid.cpp
+	../game_shared/vgui_helpers.cpp
+	../game_shared/vgui_listbox.cpp
+	../game_shared/vgui_loadtga.cpp
+	../game_shared/vgui_scrollbar2.cpp
+	../game_shared/vgui_slider2.cpp
+	../game_shared/voice_banmgr.cpp
+)
+
+if (USE_NOVGUI_MOTD)
+	list(APPEND CLDLL_SOURCES MOTD.cpp)
+endif()
+
+if (USE_NOVGUI_SCOREBOARD)
+	list(APPEND CLDLL_SOURCES scoreboard.cpp)
 endif()
 
 if (HAVE_STRLCPY)
@@ -185,13 +179,6 @@ endif()
 
 include_directories(../utils/vgui/include)
 
-if (USE_VGUI)
-	set(CMAKE_SKIP_RPATH TRUE) # ... why we do this?
-else()
-	# now that we have freevgui, maybe we don't need this feature?
-	list(APPEND CL_DLL_SOURCES ../utils/fake_vgui/fake_vgui.cpp)
-endif()
-
 if(USE_VOICEMGR)
 	#set(CLDLL_SOURCES
 	#	${CLDLL_SOURCES}
@@ -206,9 +193,7 @@ if (GOLDSOURCE_SUPPORT)
 	target_link_libraries( ${CLDLL_LIBRARY} ${CMAKE_DL_LIBS} )
 endif()
 
-if (USE_VGUI)
-	target_link_libraries(${CLDLL_LIBRARY} vgui)
-endif()
+target_link_libraries(${CLDLL_LIBRARY} vgui)
 
 if(WIN32)
 	target_link_libraries( ${CLDLL_LIBRARY} user32.lib )

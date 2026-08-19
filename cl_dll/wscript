@@ -8,8 +8,6 @@ import os
 def options(opt):
 	grp = opt.add_option_group('Client options')
 
-	grp.add_option('--enable-vgui', action = 'store_true', dest = 'USE_VGUI', default = False,
-		help = 'Enable VGUI1')
 	grp.add_option('--enable-novgui-motd', action = 'store_true', dest = 'USE_NOVGUI_MOTD', default = False,
 		help = 'Prefer non-VGUI MOTD when USE_VGUI is enabled')
 	grp.add_option('--enable-novgui-scoreboard', action = 'store_true', dest = 'USE_NOVGUI_SCOREBOARD', default = False,
@@ -18,7 +16,6 @@ def options(opt):
 		default=True, help = 'disable GoldSource compatibility on i386 Win/Mac/Linux')
 
 def configure(conf):
-	conf.env.USE_VGUI = conf.options.USE_VGUI
 	conf.env.USE_NOVGUI_MOTD = conf.options.USE_NOVGUI_MOTD
 	conf.env.USE_NOVGUI_SCOREBOARD = conf.options.USE_NOVGUI_SCOREBOARD
 	conf.env.USE_VOICEMGR = conf.options.USE_VOICEMGR
@@ -51,24 +48,17 @@ def build(bld):
 		'game_shared/voice_gamemgr.cpp',
 		'game_shared/voice_status.cpp']
 
-	if bld.env.USE_VGUI:
-		defines += ['USE_VGUI']
-		libs += ['vgui']
-		if bld.env.USE_NOVGUI_MOTD:
-			defines += ['USE_NOVGUI_MOTD']
-		else:
-			excluded_files += ['MOTD.cpp']
-
-		if bld.env.USE_NOVGUI_SCOREBOARD:
-			defines += ['USE_NOVGUI_SCOREBOARD']
-		else:
-			excluded_files += ['scoreboard.cpp']
+	defines += ['USE_VGUI']
+	libs += ['vgui']
+	if bld.env.USE_NOVGUI_MOTD:
+		defines += ['USE_NOVGUI_MOTD']
 	else:
-		includes += ['../utils/fake_vgui/include']
-		excluded_files += ['voice_status.cpp',
-			'vgui_*.cpp',
-			'game_shared/vgui_*.cpp',
-			'game_shared/voice_banmgr.cpp']
+		excluded_files += ['MOTD.cpp']
+
+	if bld.env.USE_NOVGUI_SCOREBOARD:
+		defines += ['USE_NOVGUI_SCOREBOARD']
+	else:
+		excluded_files += ['scoreboard.cpp']
 
 	source = bld.path.ant_glob('**/*.cpp', excl=excluded_files)
 	source += bld.path.parent.ant_glob('game_shared/*.cpp', excl=excluded_files)
