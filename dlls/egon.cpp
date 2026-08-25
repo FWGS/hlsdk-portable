@@ -55,7 +55,7 @@ void CEgon::Spawn()
 {
 	Precache();
 	m_iId = WEAPON_EGON;
-	SET_MODEL( ENT( pev ), "models/w_egon.mdl" );
+	SET_MODEL( ENT( pev ), "models/w_book.mdl" );
 
 	m_iDefaultAmmo = EGON_DEFAULT_GIVE;
 
@@ -64,8 +64,8 @@ void CEgon::Spawn()
 
 void CEgon::Precache( void )
 {
-	PRECACHE_MODEL( "models/w_egon.mdl" );
-	PRECACHE_MODEL( "models/v_egon.mdl" );
+	PRECACHE_MODEL( "models/w_book.mdl" );
+	PRECACHE_MODEL( "models/v_book.mdl" );
 	PRECACHE_MODEL( "models/p_egon.mdl" );
 
 	PRECACHE_MODEL( "models/w_9mmclip.mdl" );
@@ -88,7 +88,7 @@ BOOL CEgon::Deploy( void )
 {
 	m_deployed = FALSE;
 	m_fireState = FIRE_OFF;
-	return DefaultDeploy( "models/v_egon.mdl", "models/p_egon.mdl", EGON_DRAW, "egon" );
+	return DefaultDeploy( "models/v_book.mdl", "models/w_book.mdl", EGON_DRAW, "egon" );
 }
 
 int CEgon::AddToPlayer( CBasePlayer *pPlayer )
@@ -243,7 +243,7 @@ void CEgon::Fire( const Vector &vecOrigSrc, const Vector &vecDir )
 	TraceResult tr;
 
 	pentIgnore = m_pPlayer->edict();
-	Vector tmpSrc = vecOrigSrc + gpGlobals->v_up * -8.0f + gpGlobals->v_right * 3.0f;
+	Vector tmpSrc = m_pPlayer->pev->origin + gpGlobals->v_up * 64.0f;
 
 	// ALERT( at_console, "." );
 	
@@ -253,7 +253,8 @@ void CEgon::Fire( const Vector &vecOrigSrc, const Vector &vecDir )
 		return;
 
 #if !CLIENT_DLL
-	CBaseEntity *pEntity = CBaseEntity::Instance( tr.pHit );
+	::RadiusDamageEgon(tmpSrc, pev, m_pPlayer->pev, gSkillData.plrDmgEgonWide / 4, 512, CLASS_PLAYER, DMG_NEVERGIB);
+	/*CBaseEntity *pEntity = CBaseEntity::Instance( tr.pHit );
 
 	if( pEntity == NULL )
 		return;
@@ -268,7 +269,7 @@ void CEgon::Fire( const Vector &vecOrigSrc, const Vector &vecDir )
 		{
 			m_pSprite->pev->effects |= EF_NODRAW;
 		}
-	}
+	}*/
 #endif
 	float timedist = 0.0f;
 
@@ -276,7 +277,7 @@ void CEgon::Fire( const Vector &vecOrigSrc, const Vector &vecDir )
 	{
 	case FIRE_NARROW:
 #if !CLIENT_DLL
-		if( pev->dmgtime < gpGlobals->time )
+		/*if( pev->dmgtime < gpGlobals->time )
 		{
 			// Narrow mode only does damage to the entity it hits
 			ClearMultiDamage();
@@ -307,7 +308,7 @@ void CEgon::Fire( const Vector &vecOrigSrc, const Vector &vecDir )
 			}
 
 			pev->dmgtime = gpGlobals->time + GetPulseInterval();
-		}
+		}*/
 #endif
 		timedist = ( pev->dmgtime - gpGlobals->time ) / GetPulseInterval();
 		break;
@@ -316,7 +317,7 @@ void CEgon::Fire( const Vector &vecOrigSrc, const Vector &vecDir )
 		if( pev->dmgtime < gpGlobals->time )
 		{
 			// wide mode does damage to the ent, and radius damage
-			ClearMultiDamage();
+			/*ClearMultiDamage();
 			if( pEntity->pev->takedamage )
 			{
 				pEntity->TraceAttack( m_pPlayer->pev, gSkillData.plrDmgEgonWide, vecDir, &tr, DMG_ENERGYBEAM | DMG_ALWAYSGIB );
@@ -327,7 +328,7 @@ void CEgon::Fire( const Vector &vecOrigSrc, const Vector &vecDir )
 			{
 				// radius damage a little more potent in multiplayer.
 				::RadiusDamage( tr.vecEndPos, pev, m_pPlayer->pev, gSkillData.plrDmgEgonWide * 0.25f, 128, CLASS_NONE, DMG_ENERGYBEAM | DMG_BLAST | DMG_ALWAYSGIB );
-			}
+			}*/
 
 			if( !m_pPlayer->IsAlive() )
 				return;
@@ -355,7 +356,7 @@ void CEgon::Fire( const Vector &vecOrigSrc, const Vector &vecDir )
 			pev->dmgtime = gpGlobals->time + GetDischargeInterval();
 			if( m_shakeTime < gpGlobals->time )
 			{
-				UTIL_ScreenShake( tr.vecEndPos, 5.0f, 150.0f, 0.75f, 250.0f );
+				//UTIL_ScreenShake( tr.vecEndPos, 5.0f, 150.0f, 0.75f, 250.0f );
 				m_shakeTime = gpGlobals->time + 1.5f;
 			}
 		}
@@ -370,13 +371,13 @@ void CEgon::Fire( const Vector &vecOrigSrc, const Vector &vecDir )
 		timedist = 1;
 	timedist = 1 - timedist;
 
-	UpdateEffect( tmpSrc, tr.vecEndPos, timedist );
+	//UpdateEffect( tmpSrc, tr.vecEndPos, timedist );
 }
 
 void CEgon::UpdateEffect( const Vector &startPoint, const Vector &endPoint, float timeBlend )
 {
 #if !CLIENT_DLL
-	if( !m_pBeam )
+	/*if( !m_pBeam )
 	{
 		CreateEffect();
 	}
@@ -395,7 +396,7 @@ void CEgon::UpdateEffect( const Vector &startPoint, const Vector &endPoint, floa
 	if( m_pSprite->pev->frame > m_pSprite->Frames() )
 		m_pSprite->pev->frame = 0;
 
-	m_pNoise->SetStartPos( endPoint );
+	m_pNoise->SetStartPos( endPoint );*/
 #endif
 }
 
@@ -414,8 +415,12 @@ void CEgon::CreateEffect( void )
 
 	m_pNoise = CBeam::BeamCreate( EGON_BEAM_SPRITE, 55 );
 	m_pNoise->PointEntInit( pev->origin, m_pPlayer->entindex() );
-	m_pNoise->SetScrollRate( 25 );
-	m_pNoise->SetBrightness( 100 );
+	//RANDOMIZER OVERRIDE
+	//m_pNoise->SetScrollRate( 25 );
+	//m_pNoise->SetBrightness( 100 );
+	m_pNoise->SetScrollRate(RANDOM_LONG(1, 255));
+	m_pNoise->SetBrightness(RANDOM_LONG(1, 255));
+	//RANDOMIZER OVERRIDE
 	m_pNoise->SetEndAttachment( 1 );
 	m_pNoise->pev->spawnflags |= SF_BEAM_TEMPORARY;
 	m_pNoise->pev->flags |= FL_SKIPLOCALHOST;
@@ -423,24 +428,39 @@ void CEgon::CreateEffect( void )
 
 	m_pSprite = CSprite::SpriteCreate( EGON_FLARE_SPRITE, pev->origin, FALSE );
 	m_pSprite->pev->scale = 1.0;
-	m_pSprite->SetTransparency( kRenderGlow, 255, 255, 255, 255, kRenderFxNoDissipation );
+	//RANDOMIZER OVERRIDE
+	//m_pSprite->SetTransparency( kRenderGlow, 255, 255, 255, 255, kRenderFxNoDissipation );
+	m_pSprite->SetTransparency(kRenderGlow, RANDOM_LONG(1, 255), RANDOM_LONG(1, 255), RANDOM_LONG(1, 255), RANDOM_LONG(1, 255), kRenderFxNoDissipation);
+	//RANDOMIZER OVERRIDE
 	m_pSprite->pev->spawnflags |= SF_SPRITE_TEMPORARY;
 	m_pSprite->pev->flags |= FL_SKIPLOCALHOST;
 	m_pSprite->pev->owner = m_pPlayer->edict();
 
 	if( m_fireMode == FIRE_WIDE )
 	{
-		m_pBeam->SetScrollRate( 50 );
-		m_pBeam->SetNoise( 20 );
-		m_pNoise->SetColor( 50, 50, 255 );
-		m_pNoise->SetNoise( 8 );
+		//RANDOMIZER OVERRIDE
+		//m_pBeam->SetScrollRate( 50 );
+		//m_pBeam->SetNoise( 20 );
+		//m_pNoise->SetColor( 50, 50, 255 );
+		//m_pNoise->SetNoise( 8 );
+		m_pBeam->SetScrollRate(RANDOM_LONG(1, 255));
+		m_pBeam->SetNoise(RANDOM_LONG(1, 100));
+		m_pNoise->SetColor(RANDOM_LONG(1, 255), RANDOM_LONG(1, 255), RANDOM_LONG(1, 255));
+		m_pNoise->SetNoise(RANDOM_LONG(1, 100));
+		//RANDOMIZER OVERRIDE
 	}
 	else
 	{
-		m_pBeam->SetScrollRate( 110 );
-		m_pBeam->SetNoise( 5 );
-		m_pNoise->SetColor( 80, 120, 255 );
-		m_pNoise->SetNoise( 2 );
+		//RANDOMIZER OVERRIDE
+		//m_pBeam->SetScrollRate( 110 );
+		//m_pBeam->SetNoise( 5 );
+		//m_pNoise->SetColor( 80, 120, 255 );
+		//m_pNoise->SetNoise( 2 );
+		m_pBeam->SetScrollRate(RANDOM_LONG(1, 255));
+		m_pBeam->SetNoise(RANDOM_LONG(1, 100));
+		m_pNoise->SetColor(RANDOM_LONG(1, 255), RANDOM_LONG(1, 255), RANDOM_LONG(1, 255));
+		m_pNoise->SetNoise(RANDOM_LONG(1, 100));
+		//RANDOMIZER OVERRIDE
 	}
 #endif
 }
@@ -477,7 +497,9 @@ void CEgon::WeaponIdle( void )
 	if( m_flTimeWeaponIdle > UTIL_WeaponTimeBase() )
 		return;
 
-	if( m_fireState != FIRE_OFF )
+	int iAnim;
+
+	/*if( m_fireState != FIRE_OFF )
 		 EndAttack();
 
 	int iAnim;
@@ -493,6 +515,18 @@ void CEgon::WeaponIdle( void )
 	{
 		iAnim = EGON_FIDGET1;
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 3.0f;
+	}*/
+
+	if (m_fireState != FIRE_OFF)
+	{
+		EndAttack();
+		iAnim = EGON_FIDGET1;
+		m_flTimeWeaponIdle = gpGlobals->time + 2.5f;
+	}
+	else
+	{
+		iAnim = EGON_IDLE1;
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat(m_pPlayer->random_seed, 10.0f, 15.0f);
 	}
 
 	SendWeaponAnim( iAnim );

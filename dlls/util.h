@@ -259,6 +259,7 @@ extern void			UTIL_MakeInvVectors		( const Vector &vec, globalvars_t *pgv );
 
 extern void			UTIL_SetOrigin			( entvars_t* pev, const Vector &vecOrigin );
 extern void			UTIL_EmitAmbientSound	( edict_t *entity, const Vector &vecOrigin, const char *samp, float vol, float attenuation, int fFlags, int pitch );
+extern void			UTIL_EmitAmbientSoundMusic(edict_t *entity, const char *samp, float vol, float attenuation, int fFlags, int pitch);
 extern void			UTIL_ParticleEffect		( const Vector &vecOrigin, const Vector &vecDirection, ULONG ulColor, ULONG ulCount );
 extern void			UTIL_ScreenShake		( const Vector &center, float amplitude, float frequency, float duration, float radius );
 extern void			UTIL_ScreenShakeAll		( const Vector &center, float amplitude, float frequency, float duration );
@@ -408,6 +409,7 @@ extern DLL_GLOBAL const Vector g_vecZero;
 #define AMBIENT_SOUND_LARGERADIUS		8
 #define AMBIENT_SOUND_START_SILENT		16
 #define AMBIENT_SOUND_NOT_LOOPING		32
+#define AMBIENT_SOUND_MUSIC				64
 
 #define SPEAKER_START_SILENT			1	// wait for trigger 'on' to start announcements
 
@@ -459,6 +461,7 @@ extern DLL_GLOBAL const Vector g_vecZero;
 #define	SF_TRIGGER_ALLOWMONSTERS	1// monsters allowed to fire this trigger
 #define	SF_TRIGGER_NOCLIENTS		2// players not allowed to fire this trigger
 #define SF_TRIGGER_PUSHABLES		4// only pushables can fire this trigger
+#define SF_TRIGGER_BEER				8// Beer contest only
 
 // func breakable
 #define SF_BREAK_TRIGGER_ONLY	1// may only be broken by trigger

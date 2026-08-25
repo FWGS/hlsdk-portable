@@ -279,7 +279,19 @@ void CBaseMonster::GibMonster( void )
 	TraceResult	tr;
 	BOOL		gibbed = FALSE;
 
-	EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "common/bodysplat.wav", 1, ATTN_NORM );
+	if (RANDOM_LONG(0,1))
+		EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "common/bodysplat.wav", 1, ATTN_NORM );
+	else
+		EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "common/bodysplat2.wav", 1, ATTN_NORM );
+
+	if (FStrEq(STRING(gpGlobals->mapname), "survival"))
+	{
+		Vector vecGunAngles;
+		Vector vecGunPos;
+		//GetAttachment(0, vecGunPos, vecGunAngles);
+		vecGunPos = pev->origin;
+		GiveRandomDrop(vecGunPos, vecGunAngles,false);
+	}
 
 	// only humans throw skulls !!!UNDONE - eventually monsters will have their own sets of gibs
 	if( HasHumanGibs() )
@@ -501,6 +513,15 @@ void CBaseMonster::BecomeDead( void )
 		pev->origin.z += 2.0f;
 		pev->velocity = g_vecAttackDir * -1.0f;
 		pev->velocity = pev->velocity * RANDOM_FLOAT( 300.0f, 400.0f );
+	}
+
+	if (FStrEq(STRING(gpGlobals->mapname), "survival"))
+	{
+		Vector vecGunAngles;
+		Vector vecGunPos;
+		//GetAttachment(0, vecGunPos, vecGunAngles);
+		vecGunPos = pev->origin;
+		GiveRandomDrop(vecGunPos, vecGunAngles,false);
 	}
 
 }
@@ -852,9 +873,13 @@ int CBaseMonster::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, f
 		pev->dmg_take += flTake;
 
 		// check for godmode or invincibility
-		if( pev->flags & FL_GODMODE )
+		//UNCOMMENT THIS: SURVIVAL PREVENTION
+		if (FStrEq(STRING(gpGlobals->mapname), "survival"))
 		{
-			return 0;
+			if( pev->flags & FL_GODMODE )
+			{
+				return 0;
+			}
 		}
 	}
 
@@ -877,6 +902,16 @@ int CBaseMonster::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, f
 	if( pev->health <= 0 )
 	{
 		g_pevLastInflictor = pevInflictor;
+
+		if (bitsDamageType & DMG_SCIMMY)
+		{
+			EMIT_SOUND(ENT(pev), CHAN_VOICE, "weapons/scimitar_kill.wav", 1, ATTN_NORM);
+			Vector vecGunAngles;
+			Vector vecGunPos;
+			GetAttachment(0, vecGunPos, vecGunAngles);
+			GiveRandomDrop(vecGunPos, vecGunAngles,true);
+			Killed(pevAttacker, GIB_NORMAL);
+		}
 
 		if( bitsDamageType & DMG_ALWAYSGIB )
 		{
@@ -998,6 +1033,87 @@ float CBaseMonster::DamageForce( float damage )
 // RadiusDamage - this entity is exploding, or otherwise needs to inflict damage upon entities within a certain range.
 // 
 // only damage ents that can clearly be seen by the explosion!
+
+void RadiusDamageEgon(Vector vecSrc, entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, float flRadius, int iClassIgnore, int bitsDamageType)
+{
+	CBaseEntity *pEntity = NULL;
+	TraceResult	tr;
+	float		flAdjustedDamage, falloff;
+	Vector		vecSpot;
+
+	if (flRadius)
+		falloff = flDamage / flRadius;
+	else
+		falloff = 1.0;
+
+	int bInWater = (UTIL_PointContents(vecSrc) == CONTENTS_WATER);
+
+	vecSrc.z += 1;// in case grenade is lying on the ground
+
+	if (!pevAttacker)
+		pevAttacker = pevInflictor;
+
+	// iterate on all entities in the vicinity.
+	while ((pEntity = UTIL_FindEntityInSphere(pEntity, vecSrc, flRadius)) != NULL)
+	{
+		if (pEntity->pev->takedamage != DAMAGE_NO)
+		{
+			// UNDONE: this should check a damage mask, not an ignore
+			if (iClassIgnore != CLASS_NONE && pEntity->Classify() == iClassIgnore)
+			{// houndeyes don't hurt other houndeyes with their attack
+				continue;
+			}
+
+			if (pEntity->IsBSPModel() == TRUE)
+				continue;
+
+			if (pEntity->IsAlive() == false)
+				continue;
+
+			// blast's don't tavel into or out of water
+			if (bInWater && pEntity->pev->waterlevel == 0)
+				continue;
+			if (!bInWater && pEntity->pev->waterlevel == 3)
+				continue;
+
+			vecSpot = pEntity->BodyTarget(vecSrc);
+
+			UTIL_TraceLine(vecSrc, vecSpot, dont_ignore_monsters, ENT(pevInflictor), &tr);
+
+			if (tr.flFraction == 1.0 || tr.pHit == pEntity->edict())
+			{// the explosion can 'see' this entity, so hurt them!
+				if (tr.fStartSolid)
+				{
+					// if we're stuck inside them, fixup the position and distance
+					tr.vecEndPos = vecSrc;
+					tr.flFraction = 0.0;
+				}
+
+				// decrease damage for an ent that's farther from the bomb.
+				flAdjustedDamage = (vecSrc - tr.vecEndPos).Length() * falloff;
+				flAdjustedDamage = flDamage - flAdjustedDamage;
+
+				if (flAdjustedDamage < 0)
+				{
+					flAdjustedDamage = 0;
+				}
+
+				// ALERT( at_console, "hit %s\n", STRING( pEntity->pev->classname ) );
+				if (tr.flFraction != 1.0)
+				{
+					ClearMultiDamage();
+					pEntity->TraceAttack(pevInflictor, flAdjustedDamage, (tr.vecEndPos - vecSrc).Normalize(), &tr, bitsDamageType);
+					ApplyMultiDamage(pevInflictor, pevAttacker);
+				}
+				else
+				{
+					pEntity->TakeDamage(pevInflictor, pevAttacker, flAdjustedDamage, bitsDamageType);
+				}
+			}
+		}
+	}
+}
+
 void RadiusDamage( Vector vecSrc, entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, float flRadius, int iClassIgnore, int bitsDamageType )
 {
 	CBaseEntity *pEntity = NULL;

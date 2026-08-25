@@ -93,6 +93,174 @@ BOOL CHealthKit::MyTouch( CBasePlayer *pPlayer )
 	return FALSE;
 }
 
+//PIZZA
+
+class CPizza : public CItem
+{
+	void Spawn(void);
+	void Precache(void);
+	BOOL MyTouch(CBasePlayer *pPlayer);
+};
+
+LINK_ENTITY_TO_CLASS(item_pizza, CPizza);
+
+void CPizza::Spawn(void)
+{
+	Precache();
+	SET_MODEL(ENT(pev), "models/w_pizza.mdl");
+	UTIL_SetSize(pev, Vector(-16, -16, 0), Vector(16, 16, 16));
+
+	CItem::Spawn();
+}
+
+void CPizza::Precache(void)
+{
+	PRECACHE_MODEL("models/w_pizza.mdl");
+	PRECACHE_SOUND("items/eatpizza.wav");
+}
+
+BOOL CPizza::MyTouch(CBasePlayer *pPlayer)
+{
+	if (pPlayer->pev->deadflag != DEAD_NO)
+	{
+		return FALSE;
+	}
+
+	if (pPlayer->TakeHealth(gSkillData.healthkitCapacity, DMG_GENERIC))
+	{
+		MESSAGE_BEGIN(MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev);
+		WRITE_STRING(STRING(pev->classname));
+		MESSAGE_END();
+
+		EMIT_SOUND(ENT(pPlayer->pev), CHAN_ITEM, "items/eatpizza.wav", 1, ATTN_NORM);
+
+		if (g_pGameRules->ItemShouldRespawn(this))
+		{
+			Respawn();
+		}
+		else
+		{
+			UTIL_Remove(this);
+		}
+
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
+//PIZZA 2
+
+class CMidPizza : public CItem
+{
+	void Spawn(void);
+	void Precache(void);
+	BOOL MyTouch(CBasePlayer *pPlayer);
+};
+
+LINK_ENTITY_TO_CLASS(item_midpizza, CMidPizza);
+
+void CMidPizza::Spawn(void)
+{
+	Precache();
+	SET_MODEL(ENT(pev), "models/w_midpizza.mdl");
+	UTIL_SetSize(pev, Vector(-16, -16, 0), Vector(16, 16, 16));
+
+	CItem::Spawn();
+}
+
+void CMidPizza::Precache(void)
+{
+	PRECACHE_MODEL("models/w_midpizza.mdl");
+	PRECACHE_SOUND("items/eatpizza.wav");
+}
+
+BOOL CMidPizza::MyTouch(CBasePlayer *pPlayer)
+{
+	if (pPlayer->pev->deadflag != DEAD_NO)
+	{
+		return FALSE;
+	}
+
+	if (pPlayer->TakeHealth(50, DMG_GENERIC))
+	{
+		MESSAGE_BEGIN(MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev);
+		WRITE_STRING(STRING(pev->classname));
+		MESSAGE_END();
+
+		EMIT_SOUND(ENT(pPlayer->pev), CHAN_ITEM, "items/eatpizza.wav", 1, ATTN_NORM);
+
+		if (g_pGameRules->ItemShouldRespawn(this))
+		{
+			Respawn();
+		}
+		else
+		{
+			UTIL_Remove(this);
+		}
+
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
+//PIZZA 3
+
+class CBigPizza : public CItem
+{
+	void Spawn(void);
+	void Precache(void);
+	BOOL MyTouch(CBasePlayer *pPlayer);
+};
+
+LINK_ENTITY_TO_CLASS(item_bigpizza, CBigPizza);
+
+void CBigPizza::Spawn(void)
+{
+	Precache();
+	SET_MODEL(ENT(pev), "models/w_bigpizza.mdl");
+	UTIL_SetSize(pev, Vector(-16, -16, 0), Vector(16, 16, 16));
+
+	CItem::Spawn();
+}
+
+void CBigPizza::Precache(void)
+{
+	PRECACHE_MODEL("models/w_bigpizza.mdl");
+	PRECACHE_SOUND("items/eatpizza.wav");
+}
+
+BOOL CBigPizza::MyTouch(CBasePlayer *pPlayer)
+{
+	if (pPlayer->pev->deadflag != DEAD_NO)
+	{
+		return FALSE;
+	}
+
+	if (pPlayer->TakeHealth(100, DMG_GENERIC))
+	{
+		MESSAGE_BEGIN(MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev);
+		WRITE_STRING(STRING(pev->classname));
+		MESSAGE_END();
+
+		EMIT_SOUND(ENT(pPlayer->pev), CHAN_ITEM, "items/eatpizza.wav", 1, ATTN_NORM);
+
+		if (g_pGameRules->ItemShouldRespawn(this))
+		{
+			Respawn();
+		}
+		else
+		{
+			UTIL_Remove(this);
+		}
+
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
 //-------------------------------------------------------------
 // Wall mounted health kit
 //-------------------------------------------------------------

@@ -235,8 +235,16 @@ void CAmbientGeneric::Precache( void )
 	}
 	if( m_fActive )
 	{
-		UTIL_EmitAmbientSound( ENT( pev ), pev->origin, szSoundFile, 
-				( m_dpv.vol * 0.01f ), m_flAttenuation, SND_SPAWNING, m_dpv.pitch );
+		if (FBitSet(pev->spawnflags, AMBIENT_SOUND_MUSIC))
+		{
+			UTIL_EmitAmbientSoundMusic(ENT(pev), szSoundFile,
+				(m_dpv.vol * 0.01), m_flAttenuation, SND_SPAWNING, m_dpv.pitch);
+		}
+		else
+		{
+			UTIL_EmitAmbientSound( ENT( pev ), pev->origin, szSoundFile, 
+					( m_dpv.vol * 0.01f ), m_flAttenuation, SND_SPAWNING, m_dpv.pitch );
+		}
 
 		pev->nextthink = gpGlobals->time + 0.1f;
 	}
@@ -284,7 +292,13 @@ void CAmbientGeneric::RampThink( void )
 			m_dpv.spindown = 0;				// done with ramp down
 
 			// shut sound off
-			UTIL_EmitAmbientSound( ENT( pev ), pev->origin, szSoundFile, 
+			if (FBitSet(pev->spawnflags, AMBIENT_SOUND_MUSIC))
+			{
+				UTIL_EmitAmbientSoundMusic(ENT(pev), szSoundFile,
+					0, 0, SND_STOP, 0);
+			}
+			else
+				UTIL_EmitAmbientSound( ENT( pev ), pev->origin, szSoundFile, 
 					0, 0, SND_STOP, 0 );
 
 			// return without setting nextthink
@@ -328,7 +342,11 @@ void CAmbientGeneric::RampThink( void )
 			m_dpv.fadeout = 0;				// done with ramp down
 
 			// shut sound off
-			UTIL_EmitAmbientSound( ENT( pev ), pev->origin, szSoundFile, 
+			if (FBitSet(pev->spawnflags, AMBIENT_SOUND_MUSIC))
+				UTIL_EmitAmbientSoundMusic(ENT(pev), szSoundFile,
+					0, 0, SND_STOP, 0);
+			else
+				UTIL_EmitAmbientSound( ENT( pev ), pev->origin, szSoundFile, 
 					0, 0, SND_STOP, 0 );
 
 			// return without setting nextthink
@@ -432,7 +450,11 @@ void CAmbientGeneric::RampThink( void )
 		if( pitch == PITCH_NORM )
 			pitch = PITCH_NORM + 1; // don't send 'no pitch' !
 
-		UTIL_EmitAmbientSound( ENT( pev ), pev->origin, szSoundFile,
+		if (FBitSet(pev->spawnflags, AMBIENT_SOUND_MUSIC))
+			UTIL_EmitAmbientSoundMusic(ENT(pev), szSoundFile,
+				(vol * 0.01), m_flAttenuation, flags, pitch);
+		else
+			UTIL_EmitAmbientSound( ENT( pev ), pev->origin, szSoundFile,
 				( vol * 0.01f ), m_flAttenuation, flags, pitch );
 	}
 
@@ -555,7 +577,11 @@ void CAmbientGeneric::ToggleUse( CBaseEntity *pActivator, CBaseEntity *pCaller, 
 
 		m_dpv.pitch = (int)( fraction * 255.0f );
 
-		UTIL_EmitAmbientSound( ENT( pev ), pev->origin, szSoundFile, 0, 0, SND_CHANGE_PITCH, m_dpv.pitch );
+		if (FBitSet(pev->spawnflags, AMBIENT_SOUND_MUSIC))
+			UTIL_EmitAmbientSoundMusic(pActivator->edict(), szSoundFile,
+					0, 0, SND_CHANGE_PITCH, m_dpv.pitch);
+		else
+			UTIL_EmitAmbientSound( ENT( pev ), pev->origin, szSoundFile, 0, 0, SND_CHANGE_PITCH, m_dpv.pitch );
 		return;
 	}
 
@@ -605,7 +631,13 @@ void CAmbientGeneric::ToggleUse( CBaseEntity *pActivator, CBaseEntity *pCaller, 
 				pev->nextthink = gpGlobals->time + 0.1f;
 			}
 			else
-				UTIL_EmitAmbientSound( ENT( pev ), pev->origin, szSoundFile, 0, 0, SND_STOP, 0 );
+			{
+				if (FBitSet(pev->spawnflags, AMBIENT_SOUND_MUSIC))
+					UTIL_EmitAmbientSoundMusic(pActivator->edict(), szSoundFile,
+					0, 0, SND_STOP, 0);
+				else
+					UTIL_EmitAmbientSound( ENT( pev ), pev->origin, szSoundFile, 0, 0, SND_STOP, 0 );
+			}
 		}
 	}
 	else 
@@ -620,12 +652,19 @@ void CAmbientGeneric::ToggleUse( CBaseEntity *pActivator, CBaseEntity *pCaller, 
 			m_fActive = TRUE;
 		else
 			// shut sound off now - may be interrupting a long non-looping sound
-			UTIL_EmitAmbientSound( ENT( pev ), pev->origin, szSoundFile, 0, 0, SND_STOP, 0 );
+			if (FBitSet(pev->spawnflags, AMBIENT_SOUND_MUSIC))
+				UTIL_EmitAmbientSoundMusic(pActivator->edict(), szSoundFile, 0, 0, SND_STOP, 0);
+			else
+				UTIL_EmitAmbientSound( ENT( pev ), pev->origin, szSoundFile, 0, 0, SND_STOP, 0 );
 
 		// init all ramp params for startup
 		InitModulationParms();
 
-		UTIL_EmitAmbientSound( ENT( pev ), pev->origin, szSoundFile, ( m_dpv.vol * 0.01f ), m_flAttenuation, 0, m_dpv.pitch );
+		if (FBitSet(pev->spawnflags, AMBIENT_SOUND_MUSIC))
+			UTIL_EmitAmbientSoundMusic(pActivator->edict(), szSoundFile,
+				(m_dpv.vol * 0.01), ATTN_NONE, 0, m_dpv.pitch);
+		else
+			UTIL_EmitAmbientSound( ENT( pev ), pev->origin, szSoundFile, ( m_dpv.vol * 0.01f ), m_flAttenuation, 0, m_dpv.pitch );
 
 		pev->nextthink = gpGlobals->time + 0.1f;
 	} 
@@ -1481,7 +1520,7 @@ float TEXTURETYPE_PlaySound( TraceResult *ptr,  Vector vecSrc, Vector vecEnd, in
 
 	chTextureType = 0;
 
-	if( pEntity && pEntity->Classify() != CLASS_NONE && pEntity->Classify() != CLASS_MACHINE )
+	if( ( pEntity && pEntity->Classify() != CLASS_NONE && pEntity->Classify() != CLASS_MACHINE ) && ( !FClassnameIs( pEntity->pev, "monster_builtsentry" ) ) )
 		// hit body
 		chTextureType = CHAR_TEX_FLESH;
 	else

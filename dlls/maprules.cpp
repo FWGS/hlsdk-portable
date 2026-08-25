@@ -674,6 +674,7 @@ void CGameCounter::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE 
 	case USE_ON:
 	case USE_TOGGLE:
 		CountUp();
+		ALERT(at_console, "Game Counter %s: %f\n", STRING(pev->targetname), pev->frags);
 		break;
 	case USE_OFF:
 		CountDown();

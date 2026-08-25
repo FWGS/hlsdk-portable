@@ -42,6 +42,7 @@ CGraph WorldGraph;
 
 LINK_ENTITY_TO_CLASS( info_node, CNodeEnt )
 LINK_ENTITY_TO_CLASS( info_node_air, CNodeEnt )
+LINK_ENTITY_TO_CLASS( info_randspawner, CRandSpawner );
 
 #if __DOS__
 #include <direct.h>
@@ -1565,10 +1566,317 @@ void CNodeEnt::KeyValue( KeyValueData *pkvd )
 		CBaseEntity::KeyValue( pkvd );
 }
 
+
+bool CRandSpawner::IsPreDisasterMap()
+{
+	CBaseEntity *Player = UTIL_PlayerByIndex(1);
+	if (Player)
+	{
+		Playerpev = Player->pev;
+		if ((Player->pev->weapons & WEAPON_SUIT) <= 0)
+			return true;
+	}
+
+	edict_t *pentFind;
+
+	pentFind = FIND_ENTITY_BY_CLASSNAME(NULL, "monster_scientist");
+	while (!FNullEnt(pentFind))
+	{
+		CBaseEntity *pEnt = CBaseEntity::Instance(pentFind);
+		if (pEnt)
+		{
+			if ((pEnt->pev->spawnflags & SF_MONSTER_PREDISASTER) && (pEnt->isRandomized == false))
+			{
+				return true;
+			}
+		}
+		pentFind = FIND_ENTITY_BY_CLASSNAME(pentFind, "monster_scientist");
+	}
+	pentFind = FIND_ENTITY_BY_CLASSNAME(NULL, "monster_barney");
+	while (!FNullEnt(pentFind))
+	{
+		CBaseEntity *pEnt = CBaseEntity::Instance(pentFind);
+		if (pEnt)
+		{
+			if ((pEnt->pev->spawnflags & SF_MONSTER_PREDISASTER) && (pEnt->isRandomized == false))
+			{
+				return true;
+			}
+		}
+		pentFind = FIND_ENTITY_BY_CLASSNAME(pentFind, "monster_barney");
+	}
+
+	return false;
+}
+
+bool CRandSpawner::PlayerIsVisible(void)
+{
+	CBaseEntity *Player = UTIL_PlayerByIndex(1);
+	if (Player)
+	{
+		Playerpev = Player->pev;
+		if (FVisible(Playerpev->origin))
+			return true;
+	}
+
+	CBaseEntity *ent = NULL;
+
+	while ((ent = UTIL_FindEntityInSphere(ent, pev->origin, 1200)) != NULL)
+	{
+		CBaseMonster *entMonster = ent->MyMonsterPointer();
+		//m_iTriggerCondition
+		if (entMonster)
+		{
+			if (entMonster->m_iTriggerCondition != AITRIGGER_NONE)
+			{
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+void CRandSpawner::Spawn(void)
+{
+	//RANDOMIZER OVERRIDE
+	//First, check if non disaster map
+	//You can do this by finding if there is at least one monster that has the pre-disaster flag	
+	Precache();
+	chimpevent = false;
+	pev->movetype = MOVETYPE_NONE;
+	pev->view_ofs = Vector(0, 0, 50);// position of the eyes relative to monster's origin.
+	pev->solid = SOLID_NOT;// always solid_not 
+	SetThink(&CRandSpawner::SpawnNPC);
+	pev->nextthink = gpGlobals->time + 2;
+}
+
+void CRandSpawner::Precache(void)
+{
+	UTIL_PrecacheOther("monster_scientist");
+	UTIL_PrecacheOther("monster_barney");
+	UTIL_PrecacheOther("monster_human_grunt");
+	UTIL_PrecacheOther("monster_jman");
+	UTIL_PrecacheOther("monster_gus");
+	UTIL_PrecacheOther("monster_forklift");
+	UTIL_PrecacheOther("monster_camerasci");
+	UTIL_PrecacheOther("monster_cleansuit");
+	UTIL_PrecacheOther("monster_rocketgina");
+	UTIL_PrecacheOther("monster_fedorasci");
+	UTIL_PrecacheOther("monster_panther");
+	UTIL_PrecacheOther("monster_chicken");
+	UTIL_PrecacheOther("monster_monkey");
+	UTIL_PrecacheOther("monster_houndeye");
+	UTIL_PrecacheOther("monster_cowboy");
+	UTIL_PrecacheOther("monster_alien_slave");
+}
+
+void CRandSpawner::SpawnNPC(void)
+{
+	//RANDOMIZER OVERRIDE
+	//EXCLUDE MAPS
+	if ((strcmp(STRING(gpGlobals->mapname), "c0a0d") == 0) || (strcmp(STRING(gpGlobals->mapname), "c0a0e") == 0))
+	{
+		UTIL_Remove(this);
+		return;
+	}
+
+	if (CVAR_GET_FLOAT("chimpevent") == 1)
+	{
+		chimpevent = true;
+	}
+
+	if ((CVAR_GET_FLOAT("norandom") == 0) && (CVAR_GET_FLOAT("preventrandom") == 0) && !PlayerIsVisible())
+	{
+		int chances = RANDOM_LONG(0, 12);
+		if (IsPreDisasterMap())
+		{
+			switch (chances)
+			{
+				case 0:
+				{
+						  CBaseEntity *pReplacement = Create("monster_camerasci", pev->origin, pev->angles);
+						  pReplacement->pev->body = RANDOM_LONG(0, 5);
+						  pReplacement->SetRandomized(true);
+						  if (pReplacement->pev->body == 2)
+							  pReplacement->pev->skin = 1;
+						  pReplacement->pev->angles.y = RANDOM_LONG(1, 360);
+						  SetBits(pReplacement->pev->spawnflags, SF_MONSTER_PREDISASTER);
+						  SetBits(pReplacement->pev->spawnflags, SF_MONSTER_FADECORPSE);
+						  break;
+				}
+				case 1:
+				{
+						  CBaseEntity *pReplacement = Create("monster_jman", pev->origin, pev->angles);
+						  pReplacement->SetRandomized(true);
+						  break;
+				}
+				case 2:
+				{
+						  CBaseEntity *pReplacement = Create("monster_forklift", pev->origin, pev->angles);
+						  pReplacement->SetRandomized(true);
+						  pReplacement->pev->angles.y = RANDOM_LONG(1, 360);
+						  break;
+				}
+				case 3:
+				{
+						  CBaseEntity *pReplacement = Create("monster_gus", pev->origin, pev->angles);
+						  pReplacement->SetRandomized(true);
+						  pReplacement->pev->angles.y = RANDOM_LONG(1, 360);
+						  SetBits(pReplacement->pev->spawnflags, SF_MONSTER_PREDISASTER);
+						  SetBits(pReplacement->pev->spawnflags, SF_MONSTER_FADECORPSE);
+						  break;
+				}
+				default: break;
+			}
+		}
+		else
+		{
+			if (chimpevent)
+			{
+				CBaseEntity *pPlayer = UTIL_PlayerByIndex(1);
+				if (pPlayer)
+				{
+					if (pPlayer->chimpmessage == false)
+					{
+						pPlayer->chimpmessage = true;
+						edict_t *pClient;
+						UTIL_ShowMessage("CHIMPEVENT", pPlayer);
+						char string[64];
+						sprintf(string, "cd play %3d\n", 21);
+						CLIENT_COMMAND(pPlayer->edict(), string);
+					}
+				}			
+				CBaseEntity *pReplacement = Create("monster_monkey", pev->origin, pev->angles);
+				pReplacement->SetRandomized(true);
+				pReplacement->pev->angles.y = RANDOM_LONG(1, 360);
+				SetBits(pReplacement->pev->spawnflags, SF_MONSTER_FADECORPSE);
+			}
+			else
+			{
+				chances = RANDOM_LONG(0, 40);
+				switch (chances)
+				{
+				case 0:
+				{
+						  CBaseEntity *pReplacement = Create("monster_camerasci", pev->origin, pev->angles);
+						  pReplacement->pev->body = RANDOM_LONG(0, 5);
+						  pReplacement->SetRandomized(true);
+						  if (pReplacement->pev->body == 2)
+							  pReplacement->pev->skin = 1;
+						  pReplacement->pev->angles.y = RANDOM_LONG(1, 360);
+						  SetBits(pReplacement->pev->spawnflags, SF_MONSTER_PREDISASTER);
+						  SetBits(pReplacement->pev->spawnflags, SF_MONSTER_FADECORPSE);
+						  break;
+				}
+				case 1:
+				{
+						  CBaseEntity *pReplacement = Create("monster_jman", pev->origin, pev->angles);
+						  pReplacement->SetRandomized(true);
+						  break;
+				}
+				case 2:
+				{
+						  CBaseEntity *pReplacement = Create("monster_forklift", pev->origin, pev->angles);
+						  pReplacement->SetRandomized(true);
+						  pReplacement->pev->angles.y = RANDOM_LONG(1, 360);
+						  break;
+				}
+				case 3:
+				{
+						  CBaseEntity *pReplacement = Create("monster_cleansuit", pev->origin, pev->angles);
+						  pReplacement->SetRandomized(true);
+						  pReplacement->pev->angles.y = RANDOM_LONG(1, 360);
+						  SetBits(pReplacement->pev->spawnflags, SF_MONSTER_FADECORPSE);
+						  break;
+				}
+				case 4:
+				{
+						  CBaseEntity *pReplacement = Create("monster_scientist", pev->origin, pev->angles);
+						  pReplacement->pev->angles.y = RANDOM_LONG(1, 360);
+						  pReplacement->pev->body = RANDOM_LONG(0, 5);
+						  SetBits(pReplacement->pev->spawnflags, SF_MONSTER_FADECORPSE);
+						  if (pReplacement->pev->body == 2)
+							  pReplacement->pev->skin = 1;
+						  break;
+				}
+				case 5:
+				{
+						  CBaseEntity *pReplacement = Create("monster_barney", pev->origin, pev->angles);
+						  pReplacement->pev->angles.y = RANDOM_LONG(1, 360);
+						  SetBits(pReplacement->pev->spawnflags, SF_MONSTER_FADECORPSE);
+						  break;
+				}
+				case 6:
+				{
+						  CBaseEntity *pReplacement = Create("monster_fedorasci", pev->origin, pev->angles);
+						  pReplacement->pev->angles.y = RANDOM_LONG(1, 360);
+						  SetBits(pReplacement->pev->spawnflags, SF_MONSTER_FADECORPSE);
+						  break;
+				}
+				case 7:
+				{
+						  CBaseEntity *pReplacement = Create("monster_human_grunt", pev->origin, pev->angles);
+						  pReplacement->pev->angles.y = RANDOM_LONG(1, 360);
+						  SetBits(pReplacement->pev->spawnflags, SF_MONSTER_FADECORPSE);
+						  break;
+				}
+				case 8:
+				{
+						  CBaseEntity *pReplacement = Create("monster_rocketgina", pev->origin, pev->angles);
+						  pReplacement->pev->angles.y = RANDOM_LONG(1, 360);
+						  SetBits(pReplacement->pev->spawnflags, SF_MONSTER_FADECORPSE);
+						  break;
+				}
+				case 9:
+				{
+						  CBaseEntity *pReplacement = Create("monster_panther", pev->origin, pev->angles);
+						  pReplacement->pev->angles.y = RANDOM_LONG(1, 360);
+						  SetBits(pReplacement->pev->spawnflags, SF_MONSTER_FADECORPSE);
+						  break;
+				}
+				case 10:
+				{
+						   CBaseEntity *pReplacement = Create("monster_chicken", pev->origin, pev->angles);
+						   pReplacement->pev->angles.y = RANDOM_LONG(1, 360);
+						   break;
+				}
+				case 11:
+				{
+						   CBaseEntity *pReplacement = Create("monster_houndeye", pev->origin, pev->angles);
+						   pReplacement->pev->angles.y = RANDOM_LONG(1, 360);
+						   SetBits(pReplacement->pev->spawnflags, SF_MONSTER_FADECORPSE);
+						   break;
+				}
+				case 12:
+				{
+						   CBaseEntity *pReplacement = Create("monster_cowboy", pev->origin, pev->angles);
+						   pReplacement->pev->angles.y = RANDOM_LONG(1, 360);
+						   SetBits(pReplacement->pev->spawnflags, SF_MONSTER_FADECORPSE);
+						   break;
+				}
+				case 13:
+				{
+						   CBaseEntity *pReplacement = Create("monster_alien_slave", pev->origin, pev->angles);
+						   pReplacement->pev->angles.y = RANDOM_LONG(1, 360);
+						   SetBits(pReplacement->pev->spawnflags, SF_MONSTER_FADECORPSE);
+						   break;
+				}
+				default:break;
+				}
+			}
+		}
+	}
+	UTIL_Remove(this);
+}
+
 //=========================================================
 //=========================================================
 void CNodeEnt::Spawn( void )
 {
+	if ((CVAR_GET_FLOAT("norandom") == 0) && (CVAR_GET_FLOAT("preventrandom") == 0))
+		CBaseEntity *spwn = Create("info_randspawner", pev->origin, pev->angles);
+	
 	pev->movetype = MOVETYPE_NONE;
 	pev->solid = SOLID_NOT;// always solid_not 
 

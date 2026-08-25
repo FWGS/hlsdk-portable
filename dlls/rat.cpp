@@ -33,6 +33,7 @@ public:
 	void Precache( void );
 	void SetYawSpeed( void );
 	int Classify( void );
+	void Killed(entvars_t *pevAttacker, int iGib);
 };
 
 LINK_ENTITY_TO_CLASS( monster_rat, CRat )
@@ -43,7 +44,15 @@ LINK_ENTITY_TO_CLASS( monster_rat, CRat )
 //=========================================================
 int CRat::Classify( void )
 {
-	return CLASS_INSECT;
+	return CLASS_ALIEN_PREDATOR;
+}
+
+void CRat::Killed(entvars_t *pevAttacker, int iGib)
+{
+	EMIT_SOUND(ENT(pev), CHAN_ITEM, "common/bodysplat.wav", 1, ATTN_NORM);
+	CGib::SpawnRandomGibs(pev, 1, 1);
+	CBaseMonster::Killed(pevAttacker, iGib);
+	UTIL_Remove(this);
 }
 
 //=========================================================
@@ -73,14 +82,14 @@ void CRat::Spawn()
 	Precache();
 
 	SET_MODEL( ENT( pev ), "models/bigrat.mdl" );
-	UTIL_SetSize( pev, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ) );
+	UTIL_SetSize( pev, Vector( -12, -12, 0 ), Vector( 12, 12, 24 ) );
 
 	pev->solid = SOLID_SLIDEBOX;
 	pev->movetype = MOVETYPE_STEP;
 	m_bloodColor = BLOOD_COLOR_RED;
 	pev->health = 8;
 	pev->view_ofs = Vector( 0, 0, 6 );// position of the eyes relative to monster's origin.
-	m_flFieldOfView = 0.5;// indicates the width of this monster's forward view cone ( as a dotproduct result )
+	m_flFieldOfView = 0.9;// indicates the width of this monster's forward view cone ( as a dotproduct result )
 	m_MonsterState = MONSTERSTATE_NONE;
 
 	MonsterInit();

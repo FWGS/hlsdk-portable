@@ -212,6 +212,8 @@ public:
 	int IgnoreConditions( void );
 	MONSTERSTATE GetIdealState( void );
 
+	void Killed(entvars_t *pevAttacker, int iGib);
+
 	int Save( CSave &save ); 
 	int Restore( CRestore &restore );
 
@@ -457,6 +459,27 @@ void CBullsquid::IdleSound( void )
 //=========================================================
 void CBullsquid::PainSound( void )
 {
+	//SPECIAL HAPPENING
+	if (RANDOM_LONG(0, 8) == 0) //SPECIAL HAPPENING
+	{
+		switch (RANDOM_LONG(0, 10))
+		{
+		case 0: EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "generic/genericpain1.wav", 1, ATTN_NORM, 0, 100); break;
+		case 1: EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "generic/genericpain2.wav", 1, ATTN_NORM, 0, 100); break;
+		case 2: EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "generic/genericpain3.wav", 1, ATTN_NORM, 0, 100); break;
+		case 3: EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "generic/genericpain4.wav", 1, ATTN_NORM, 0, 100); break;
+		case 4: EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "generic/genericpain5.wav", 1, ATTN_NORM, 0, 100); break;
+		case 5: EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "generic/genericpain6.wav", 1, ATTN_NORM, 0, 100); break;
+		case 6: EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "generic/genericpain7.wav", 1, ATTN_NORM, 0, 100); break;
+		case 7: EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "generic/genericpain8.wav", 1, ATTN_NORM, 0, 100); break;
+		case 8: EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "generic/genericpain9.wav", 1, ATTN_NORM, 0, 100); break;
+		case 9: EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "generic/genericpain10.wav", 1, ATTN_NORM, 0, 100); break;
+		case 10: EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "generic/genericpain11.wav", 1, ATTN_NORM, 0, 100); break;
+		}
+		return;
+	}
+	//SPECIAL HAPPENING
+
 	int iPitch = RANDOM_LONG( 85, 120 );
 
 	switch( RANDOM_LONG( 0, 3 ) )
@@ -695,6 +718,8 @@ void CBullsquid::Precache()
 {
 	PRECACHE_MODEL( "models/bullsquid.mdl" );
 
+	UTIL_PrecacheOther("monster_chicken");
+
 	PRECACHE_MODEL( "sprites/bigspit.spr" );// spit projectile.
 
 	iSquidSpitSprite = PRECACHE_MODEL( "sprites/tinyspit.spr" );// client side spittle.
@@ -795,6 +820,15 @@ void CBullsquid::RunAI( void )
 			pev->framerate = 1.25f;
 		}
 	}
+}
+
+void CBullsquid::Killed(entvars_t *pevAttacker, int iGib)
+{
+	EMIT_SOUND(ENT(pev), CHAN_ITEM, "common/bodysplat.wav", 1, ATTN_NORM);
+	CGib::SpawnRandomGibs(pev, 6, 1);
+	CBaseMonster::Killed(pevAttacker, iGib);
+	UTIL_Remove(this);
+	Create("monster_chicken", pev->origin + gpGlobals->v_up * 12 + gpGlobals->v_forward * 12, pev->angles, NULL);
 }
 
 //========================================================

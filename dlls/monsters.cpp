@@ -1396,6 +1396,7 @@ float CBaseMonster::OpenDoorAndWait( entvars_t *pevDoor )
 	{
 		//ALERT( at_aiconsole, "unlocked! " );
 		pcbeDoor->Use( this, this, USE_ON, 0.0 );
+		SENTENCEG_PlayRndSz(edict(), "GN_LOCKPICK", 1.0, ATTN_IDLE, 0, 100);
 		//ALERT( at_aiconsole, "pevDoor->nextthink = %d ms\n", (int)( 1000 * pevDoor->nextthink ) );
 		//ALERT( at_aiconsole, "pevDoor->ltime = %d ms\n", (int)( 1000 * pevDoor->ltime ) );
 		//ALERT( at_aiconsole, "pev-> nextthink = %d ms\n", (int)( 1000 * pev->nextthink ) );
@@ -2067,6 +2068,10 @@ void CBaseMonster::StartMonster( void )
 		// Try to move the monster to make sure it's not stuck in a brush.
 		if( !WALK_MOVE( ENT( pev ), 0, 0, WALKMOVE_NORMAL ) )
 		{
+			if (isRandomized)
+			{
+				UTIL_Remove(this);
+			}
 			ALERT( at_error, "Monster %s stuck in wall--level design error\n", STRING( pev->classname ) );
 
 			if( g_psv_developer && g_psv_developer->value )
@@ -3400,4 +3405,66 @@ BOOL CBaseMonster::ShouldFadeOnDeath( void )
 		return TRUE;
 
 	return FALSE;
+}
+
+void CBaseMonster::AddShockEffect(float r, float g, float b, float size, float flShockDuration)
+{
+	if (pev->deadflag == DEAD_NO)
+	{
+		if (m_fShockEffect)
+		{
+			//m_flShockDuration += flShockDuration;
+		}
+		else
+		{
+			m_iOldRenderMode = pev->rendermode;
+			m_iOldRenderFX = pev->renderfx;
+			m_OldRenderColor.x = pev->rendercolor.x;
+			m_OldRenderColor.y = pev->rendercolor.y;
+			m_OldRenderColor.z = pev->rendercolor.z;
+			m_flOldRenderAmt = pev->renderamt;
+
+			pev->rendermode = kRenderNormal;
+
+			pev->renderfx = kRenderFxGlowShell;
+			pev->rendercolor.x = r;
+			pev->rendercolor.y = g;
+			pev->rendercolor.z = b;
+			pev->renderamt = size;
+
+			m_fShockEffect = true;
+			m_flShockDuration = flShockDuration;
+			m_flShockTime = gpGlobals->time;
+		}
+	}
+}
+
+void CBaseMonster::UpdateShockEffect()
+{
+	if (m_fShockEffect && (gpGlobals->time - m_flShockTime > m_flShockDuration))
+	{
+		pev->rendermode = m_iOldRenderMode;
+		pev->renderfx = m_iOldRenderFX;
+		pev->rendercolor.x = m_OldRenderColor.x;
+		pev->rendercolor.y = m_OldRenderColor.y;
+		pev->rendercolor.z = m_OldRenderColor.z;
+		pev->renderamt = m_flOldRenderAmt;
+		m_flShockDuration = 0;
+		m_fShockEffect = false;
+	}
+}
+
+void CBaseMonster::ClearShockEffect()
+{
+	if (m_fShockEffect)
+	{
+		pev->rendermode = m_iOldRenderMode;
+		pev->renderfx = m_iOldRenderFX;
+		pev->rendercolor.x = m_OldRenderColor.x;
+		pev->rendercolor.y = m_OldRenderColor.y;
+		pev->rendercolor.z = m_OldRenderColor.z;
+		pev->renderamt = m_flOldRenderAmt;
+		m_flShockDuration = 0;
+		m_fShockEffect = false;
+	}
 }

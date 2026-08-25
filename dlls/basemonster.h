@@ -44,6 +44,9 @@ public:
 	float m_flWaitFinished;// if we're told to wait, this is the time that the wait will be over.
 	float m_flMoveWaitFinished;
 
+	int	frozen = 0;
+	BOOL KnowPlayerPos = false;
+
 	Activity m_Activity;// what the monster is doing (animation)
 	Activity m_IdealActivity;// monster should switch to this activity
 
@@ -135,6 +138,10 @@ public:
 	float FlYawDiff( void ); 
 
 	float DamageForce( float damage );
+
+	//VENDOR
+	int SelectedItem = 0;
+	virtual int GetPaid(int amount) { return 0; };
 
 	// stuff written for new state machine
 	virtual void MonsterThink( void );
@@ -333,5 +340,18 @@ public:
 	BOOL CineCleanup();
 
 	CBaseEntity* DropItem( const char *pszItemName, const Vector &vecPos, const Vector &vecAng );// drop an item.
+
+	//Shock rifle shock effect
+	float m_flShockDuration;
+	float m_flShockTime;
+	int m_iOldRenderMode;
+	int m_iOldRenderFX;
+	Vector m_OldRenderColor;
+	float m_flOldRenderAmt;
+	bool m_fShockEffect;
+
+	void AddShockEffect(float r, float g, float b, float size, float flShockDuration);
+	void UpdateShockEffect();
+	void ClearShockEffect();
 };
 #endif // BASEMONSTER_H

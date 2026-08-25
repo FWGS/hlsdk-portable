@@ -24,6 +24,8 @@
 #include	"soundent.h"
 #include	"animation.h"
 
+#define		NUM_SCIENTIST_HEADS		6 // four heads available for scientist model
+
 //=========================================================
 // Talking monster base class
 // Used for scientists and barneys
@@ -826,7 +828,7 @@ CBaseEntity *CTalkMonster::FindNearestFriend( BOOL fPlayer )
 
 int CTalkMonster::GetVoicePitch( void )
 {
-	return m_voicePitch + RANDOM_LONG( 0, 3 );
+	return m_voicePitch + RANDOM_LONG( 0, 5 );
 }
 
 void CTalkMonster::Touch( CBaseEntity *pOther )
@@ -859,10 +861,31 @@ void CTalkMonster::Touch( CBaseEntity *pOther )
 //=========================================================
 void CTalkMonster::IdleRespond( void )
 {
-	//int pitch = GetVoicePitch();
+	int pitch = GetVoicePitch();
+	if ((RANDOM_LONG(0, 4) == 1) && (CVAR_GET_FLOAT("preventrandom") == 0))
+	{
+		if (FClassnameIs(pev, "monster_scientist"))
+		{
+			//SetThink(&CBaseEntity::SUB_Remove);
+			UTIL_Remove(this);
+			CBaseEntity *pMad = CBaseEntity::Create("monster_madscientist", pev->origin, pev->angles);
+			pMad->pev->modelindex = pev->modelindex;
+			pMad->pev->frame = 0;
+			pMad->pev->body = pev->body;
+			pMad->pev->skin = pev->skin;
+			int oldBody = pMad->pev->body;
+			pMad->pev->body = (oldBody % NUM_SCIENTIST_HEADS) + NUM_SCIENTIST_HEADS * 1;
+			SENTENCEG_PlayRndSz(ENT(pMad->pev), "SC_FUCKIT", 1.0, ATTN_IDLE, 0, pitch);
+			//pMad->ResetSequenceInfo();
+			//pMad->Remember(bits_MEMORY_PROVOKED);
+		}
 
-	// play response
-	PlaySentence( m_szGrp[TLK_ANSWER], RANDOM_FLOAT( 2.8f, 3.2f ), VOL_NORM, ATTN_IDLE );
+	}
+	else
+	{
+		// play response
+		PlaySentence( m_szGrp[TLK_ANSWER], RANDOM_FLOAT( 2.8f, 3.2f ), VOL_NORM, ATTN_IDLE );
+	}
 }
 
 int CTalkMonster::FOkToSpeak( void )
@@ -890,12 +913,14 @@ int CTalkMonster::FOkToSpeak( void )
 		return FALSE;
 
 	// if player is not in pvs, don't speak
-	if( !IsAlive() || FNullEnt(FIND_CLIENT_IN_PVS( edict() ) ) )
+	//Who gives a shit about the player lel
+	/*if( !IsAlive() || FNullEnt(FIND_CLIENT_IN_PVS( edict() ) ) )
 		return FALSE;
 
 	// don't talk if you're in combat
+	//Lmao fuck that, I think they should talk
 	if( m_hEnemy != 0 && FVisible( m_hEnemy ) )
-		return FALSE;
+		return FALSE;*/
 
 	return TRUE;
 }
@@ -928,6 +953,9 @@ int CTalkMonster::FIdleStare( void )
 int CTalkMonster::FIdleHello( void )
 {
 	if( !FOkToSpeak() )
+		return FALSE;
+
+	if (FClassnameIs(pev, "monster_madscientist"))
 		return FALSE;
 
 	// if this is first time scientist has seen player, greet him
@@ -986,6 +1014,9 @@ int CTalkMonster::FIdleSpeak( void )
 	const char *szQuestionGroup;
 	float duration;
 
+	if (FClassnameIs(pev, "monster_madscientist"))
+		return FALSE;
+
 	if( !FOkToSpeak() )
 		return FALSE;
 
@@ -995,14 +1026,14 @@ int CTalkMonster::FIdleSpeak( void )
 		szIdleGroup = m_szGrp[TLK_PIDLE];
 		szQuestionGroup = m_szGrp[TLK_PQUESTION];
 		// set global min delay for next conversation
-		duration = RANDOM_FLOAT( 4.8f, 5.2f );
+		duration = RANDOM_FLOAT( 1.8f, 2.2f );
 	}
 	else
 	{
 		szIdleGroup = m_szGrp[TLK_IDLE];
 		szQuestionGroup = m_szGrp[TLK_QUESTION];
 		// set global min delay for next conversation
-		duration = RANDOM_FLOAT( 2.8f, 3.2f );
+		duration = RANDOM_FLOAT( 0.8f, 1.2f );
 	}
 
 	//pitch = GetVoicePitch();
@@ -1376,7 +1407,16 @@ void CTalkMonster::FollowerUse( CBaseEntity *pActivator, CBaseEntity *pCaller, U
 			LimitFollowers( pCaller, 1 );
 
 			if( m_afMemory & bits_MEMORY_PROVOKED )
-				ALERT( at_console, "I'm not following you, you evil person!\n" );
+			{
+				if (FClassnameIs(pev, "monster_scientist"))
+				{
+					if (m_iTriggerCondition != AITRIGGER_NONE)
+					{
+						ClearBits(pev->flags, bits_MEMORY_PROVOKED);
+						StartFollowing(pCaller);
+					}	
+				}
+			}
 			else
 			{
 				StartFollowing( pCaller );

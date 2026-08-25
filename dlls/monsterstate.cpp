@@ -61,6 +61,30 @@ void CBaseMonster::SetState( MONSTERSTATE State )
 //=========================================================
 void CBaseMonster::RunAI( void )
 {
+	//CRACK LIFE TEST
+	if (frozen > 0)
+	{
+		if ((pev->health <= 0) || !IsAlive())
+		{
+			frozen = 0;
+			UpdateShockEffect();
+		}
+		else
+		{
+			frozen--;
+			//m_IdealActivity = GetSmallFlinchActivity();
+			//pev->sequence = LookupRandomSequence();
+			m_Activity = ACT_SMALL_FLINCH;
+			SetActivity(ACT_SMALL_FLINCH);
+			TakeDamage(pev, pev, 1, DMG_SHOCK);
+			ResetSequenceInfo();
+
+			if (frozen == 1)
+				UpdateShockEffect();
+			return;
+		}
+	}
+
 	// to test model's eye height
 	//UTIL_ParticleEffect ( pev->origin + pev->view_ofs, g_vecZero, 255, 10 );
 
@@ -110,6 +134,30 @@ void CBaseMonster::RunAI( void )
 	// we throw them out cause we don't want them sitting around through the lifespan of a schedule
 	// that doesn't use them. 
 	m_afConditions &= ~( bits_COND_LIGHT_DAMAGE | bits_COND_HEAVY_DAMAGE );
+
+	//MORE CRACK LIFE
+	if (KnowPlayerPos)
+	{
+		if (m_hEnemy == NULL && m_Activity == ACT_IDLE)
+		{
+			CBaseEntity *pPlayer = UTIL_PlayerByIndex(1);
+			if (pPlayer)
+			{
+				m_hTargetEnt = pPlayer;
+				m_hEnemy = pPlayer;
+				//m_MonsterState = MONSTERSTATE_COMBAT;
+				SetConditions(bits_COND_SEE_ENEMY | bits_COND_NEW_ENEMY);
+				MoveToTarget(ACT_RUN, 0.0);
+				/*if (!MoveToTarget(ACT_RUN, 0.0))
+				{
+					//m_hTargetEnt = NULL;
+					//m_hEnemy = NULL;
+					FindCover(pev->origin, pev->view_ofs, 0, 3000.0);
+					ALERT(at_console, "AI FINDS COVER INSTEAD: %d\n", pev);
+				}*/					
+			}
+		}
+	}
 }
 
 //=========================================================

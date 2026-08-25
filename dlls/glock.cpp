@@ -21,6 +21,136 @@
 #include "nodes.h"
 #include "player.h"
 
+#ifndef CLIENT_DLL
+#define BOLT_AIR_VELOCITY	1800
+#define BOLT_WATER_VELOCITY	1200
+
+
+class CPropglock : public CBaseEntity
+{
+	void Spawn(void);
+	void Precache(void);
+	int  Classify(void);
+	void EXPORT BubbleThink(void);
+	void EXPORT BoltTouch(CBaseEntity *pOther);
+	void EXPORT ExplodeThink(void);
+	int touchcounter = 0;
+
+	int m_iTrail;
+
+public:
+	static CPropglock *BoltCreate(void);
+};
+LINK_ENTITY_TO_CLASS(propglock, CPropglock);
+
+CPropglock *CPropglock::BoltCreate(void)
+{
+	// Create a new entity with CCrossbowBolt private data
+	CPropglock *pBolt = GetClassPtr((CPropglock *)NULL);
+	pBolt->pev->classname = MAKE_STRING("propglock");
+	pBolt->Spawn();
+	pBolt->touchcounter = 0;
+
+	return pBolt;
+}
+
+void CPropglock::Spawn()
+{
+	Precache();
+	pev->movetype = MOVETYPE_FLY;
+	pev->solid = SOLID_BBOX;
+
+	pev->gravity = 0.8;
+
+	SET_MODEL(ENT(pev), "models/w_9mmhandgun.mdl");
+
+	UTIL_SetOrigin(pev, pev->origin);
+	UTIL_SetSize(pev, Vector(-1, -2, -1), Vector(1, 2, 1));
+
+	SetTouch(&CPropglock::BoltTouch);
+	SetThink(&CPropglock::BubbleThink);
+	pev->nextthink = gpGlobals->time + 0.2;
+}
+
+
+void CPropglock::Precache()
+{
+	PRECACHE_MODEL("models/w_9mmhandgun.mdl");
+	PRECACHE_SOUND("items/gunpickup4.wav");
+	PRECACHE_SOUND("items/weapondrop1.wav");
+	m_iTrail = PRECACHE_MODEL("sprites/streak.spr");
+}
+
+
+int	CPropglock::Classify(void)
+{
+	return	CLASS_NONE;
+}
+
+void CPropglock::BoltTouch(CBaseEntity *pOther)
+{
+	pev->angles.x = 0;
+	pev->angles.z = 0;
+	touchcounter++;
+
+	if (touchcounter == 1)
+	{
+		SetThink(&CPropglock::ExplodeThink);
+		pev->nextthink = gpGlobals->time + 3;
+	}
+
+
+	if (touchcounter > 50)
+		UTIL_Remove(this);
+
+	if (pev->velocity.z == 0)
+	{
+		UTIL_Remove(this);
+	}
+
+	if (pOther->edict() == pev->owner)
+		return;
+	// pev->avelocity = Vector (300, 300, 300);
+
+	if (pev->flags & FL_ONGROUND)
+	{
+		// add a bit of static friction
+		pev->velocity = pev->velocity * 0.15;
+
+		if (pev->velocity <= Vector(1, 1, 1))
+		{
+			UTIL_Remove(this);
+		}
+	}
+	else
+	{
+		switch (RANDOM_LONG(0, 1))
+		{
+		case 0:
+			EMIT_SOUND_DYN(ENT(pev), CHAN_BODY, "items/gunpickup4.wav", 0.35, ATTN_NORM, 0, 98 + RANDOM_LONG(0, 7)); break;
+		case 1:
+			EMIT_SOUND_DYN(ENT(pev), CHAN_BODY, "items/weapondrop1.wav", 0.35, ATTN_NORM, 0, 98 + RANDOM_LONG(0, 7)); break;
+		}
+		
+	}
+}
+
+void CPropglock::BubbleThink(void)
+{
+	pev->nextthink = gpGlobals->time + 0.1;
+
+	if (pev->waterlevel == 0)
+		return;
+
+	UTIL_BubbleTrail(pev->origin - pev->velocity * 0.1, pev->origin, 1);
+}
+
+void CPropglock::ExplodeThink(void)
+{
+	UTIL_Remove(this);
+}
+#endif
+
 enum glock_e
 {
 	GLOCK_IDLE1 = 0,
@@ -32,7 +162,8 @@ enum glock_e
 	GLOCK_RELOAD_NOT_EMPTY,
 	GLOCK_DRAW,
 	GLOCK_HOLSTER,
-	GLOCK_ADD_SILENCER
+	GLOCK_ADD_SILENCER,
+	GLOCK_SHOOT2
 };
 
 LINK_ENTITY_TO_CLASS( weapon_glock, CGlock )
@@ -67,6 +198,8 @@ void CGlock::Precache( void )
 
 	m_usFireGlock1 = PRECACHE_EVENT( 1, "events/glock1.sc" );
 	m_usFireGlock2 = PRECACHE_EVENT( 1, "events/glock2.sc" );
+
+	UTIL_PrecacheOther("propglock");
 }
 
 int CGlock::GetItemInfo( ItemInfo *p )
@@ -106,12 +239,12 @@ BOOL CGlock::Deploy()
 
 void CGlock::SecondaryAttack( void )
 {
-	GlockFire( 0.1f, 0.2f, FALSE );
+	GlockFire( 0.02f, 0.1f, FALSE );
 }
 
 void CGlock::PrimaryAttack( void )
 {
-	GlockFire( 0.01f, 0.3f, TRUE );
+	GlockFire( 0.01f, 0.2f, TRUE );
 }
 
 void CGlock::GlockFire( float flSpread, float flCycleTime, BOOL fUseAutoAim )
@@ -177,6 +310,44 @@ void CGlock::GlockFire( float flSpread, float flCycleTime, BOOL fUseAutoAim )
 		m_pPlayer->SetSuitUpdate( "!HEV_AMO0", FALSE, 0 );
 
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
+
+	if (m_iClip % 2 == 0)
+		SendWeaponAnim(GLOCK_SHOOT);
+	else
+		SendWeaponAnim(GLOCK_SHOOT2);
+}
+
+
+void EXPORT CGlock::spawnprop(void)
+{
+#ifndef CLIENT_DLL
+	UTIL_MakeVectors(m_pPlayer->pev->angles);
+	for (int i = 0; i < 2; i++)
+	{
+		CPropglock *pBolt = CPropglock::BoltCreate();
+		if (i == 0)
+		{
+			pBolt->pev->origin = m_pPlayer->pev->origin + gpGlobals->v_up * 24 + gpGlobals->v_right * 8 + gpGlobals->v_forward * 8;
+		}
+		else
+		{
+			pBolt->pev->origin = m_pPlayer->pev->origin + gpGlobals->v_up * 24 - gpGlobals->v_right * 8 + gpGlobals->v_forward * 8;
+		}
+
+		pBolt->pev->movetype = MOVETYPE_BOUNCE;
+		pBolt->pev->gravity = 0.5;
+		pBolt->pev->friction = 0.8;
+		pBolt->pev->angles = m_pPlayer->pev->angles;
+		pBolt->pev->owner = m_pPlayer->edict();
+
+		pBolt->pev->velocity = m_pPlayer->pev->velocity + gpGlobals->v_forward * 64 + gpGlobals->v_up * 8 + gpGlobals->v_right * RANDOM_LONG(-8, 8);
+		pBolt->pev->speed = 12;
+
+		pBolt->pev->avelocity.x = -600;
+		pBolt->pev->avelocity.y = RANDOM_LONG(-300, 500);
+		pBolt->pev->avelocity.z = RANDOM_LONG(-100, 200);
+	}
+#endif
 }
 
 void CGlock::Reload( void )
@@ -194,6 +365,8 @@ void CGlock::Reload( void )
 	if( iResult )
 	{
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
+		pev->nextthink = gpGlobals->time + 0.2f;
+		SetThink(&CGlock::spawnprop);
 	}
 }
 

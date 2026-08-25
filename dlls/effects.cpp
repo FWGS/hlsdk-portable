@@ -1864,6 +1864,110 @@ void CShake::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useTyp
 	UTIL_ScreenShake( pev->origin, Amplitude(), Frequency(), Duration(), Radius() );
 }
 
+//PHONE CALL FROM BOGDANNOF!
+class CPhoneCall : public CPointEntity
+{
+public:
+	void	Spawn(void);
+	void	Precache(void);
+	void	Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value);
+	virtual int		Save(CSave &save);
+	virtual int		Restore(CRestore &restore);
+	void	KeyValue(KeyValueData *pkvd);
+	static	TYPEDESCRIPTION m_SaveData[];
+private:
+	void EXPORT RingThink(void);
+	int texttime;
+	int phonetime;
+	int phonedialog;
+};
+
+LINK_ENTITY_TO_CLASS(env_phonecall, CPhoneCall);
+
+TYPEDESCRIPTION	CPhoneCall::m_SaveData[] =
+{
+	DEFINE_FIELD(CPhoneCall, phonetime, FIELD_INTEGER),
+	DEFINE_FIELD(CPhoneCall, phonedialog, FIELD_INTEGER),
+};
+
+IMPLEMENT_SAVERESTORE(CPhoneCall, CBaseEntity);
+
+void CPhoneCall::Precache(void)
+{
+	PRECACHE_SOUND("player/phone.wav");
+}
+
+void CPhoneCall::Spawn(void)
+{
+	Precache();
+	pev->solid = SOLID_NOT;
+	pev->movetype = MOVETYPE_NONE;
+	pev->effects = 0;
+	pev->frame = 0;
+}
+
+
+void CPhoneCall::KeyValue(KeyValueData *pkvd)
+{
+	if (FStrEq(pkvd->szKeyName, "phonetime"))
+	{
+		phonetime = atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "phonedialog"))
+	{
+		phonedialog = atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else
+		CPointEntity::KeyValue(pkvd);
+}
+
+
+void CPhoneCall::Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value)
+{
+	CBaseEntity *pPlayer = UTIL_PlayerByIndex(1);
+	if (pPlayer)
+	{
+		if ((phonetime == 0) && (phonedialog == 0))
+		{
+			pPlayer->phonecalling = false;
+			pPlayer->phonetalktime = 0;
+			pPlayer->phonetalkdialog = 0;
+		}
+		else
+		{
+			pPlayer->phonecalling = true;
+			pPlayer->phonetalktime = phonetime;
+			pPlayer->phonetalkdialog = phonedialog;
+			pPlayer->phonetarget = pev->target;
+			EMIT_SOUND(pPlayer->edict(), CHAN_VOICE, "player/phone.wav", 1.0, pev->speed);
+			UTIL_ShowMessage("BOGCALL", pPlayer);
+			texttime = gpGlobals->time + 6;
+			SetThink(&CPhoneCall::RingThink);
+			pev->nextthink = gpGlobals->time + 3;
+		}
+	}
+}
+
+void CPhoneCall::RingThink(void)
+{
+	CBaseEntity *pPlayer = UTIL_PlayerByIndex(1);
+	if (pPlayer)
+	{
+		if (pPlayer->phonecalling == false)
+		{
+			UTIL_Remove(this);
+		}
+		else
+		{
+			EMIT_SOUND(pPlayer->edict(), CHAN_VOICE, "player/phone.wav", 1.0, pev->speed);
+			pev->nextthink = gpGlobals->time + 3;
+			if (gpGlobals->time > texttime)
+				UTIL_ShowMessage("BOGCALL", pPlayer);
+		}
+	}
+}
 
 class CFade : public CPointEntity
 {
@@ -2046,6 +2150,960 @@ void CMessage::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useT
 		UTIL_Remove( this );
 
 	SUB_UseTargets( this, USE_TOGGLE, 0 );
+}
+
+//ALERTER
+class CAlerter : public CPointEntity
+{
+public:
+	void	Spawn(void);
+	void	Precache(void);
+	void	Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value);
+	void	KeyValue(KeyValueData *pkvd);
+private:
+};
+
+LINK_ENTITY_TO_CLASS(env_alerter, CAlerter);
+
+
+void CAlerter::Spawn(void)
+{
+	Precache();
+
+	pev->solid = SOLID_NOT;
+	pev->movetype = MOVETYPE_NONE;
+
+	switch (pev->impulse)
+	{
+	case 1: // Medium radius
+		pev->speed = ATTN_STATIC;
+		break;
+
+	case 2:	// Large radius
+		pev->speed = ATTN_NORM;
+		break;
+
+	case 3:	//EVERYWHERE
+		pev->speed = ATTN_NONE;
+		break;
+
+	default:
+	case 0: // Small radius
+		pev->speed = ATTN_IDLE;
+		break;
+	}
+	pev->impulse = 0;
+
+	// No volume, use normal
+	if (pev->scale <= 0)
+		pev->scale = 1.0;
+}
+
+
+void CAlerter::Precache(void)
+{
+	if (pev->noise)
+		PRECACHE_SOUND((char *)STRING(pev->noise));
+}
+
+void CAlerter::KeyValue(KeyValueData *pkvd)
+{
+	if (FStrEq(pkvd->szKeyName, "messagesound"))
+	{
+		pev->noise = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "messagevolume"))
+	{
+		pev->scale = atof(pkvd->szValue) * 0.1;
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "messageattenuation"))
+	{
+		pev->impulse = atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else
+		CPointEntity::KeyValue(pkvd);
+}
+
+
+void CAlerter::Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value)
+{
+	CBaseEntity *pPlayer = NULL;
+
+	if (pActivator && pActivator->IsPlayer())
+		pPlayer = pActivator;
+	else
+	{
+		pPlayer = CBaseEntity::Instance(g_engfuncs.pfnPEntityOfEntIndex(1));
+	}
+
+	if (!pPlayer)
+		return;
+
+	CBaseEntity *pEnt = NULL;
+	const char* SearchEnt;
+	SearchEnt = STRING(pev->message);
+	while ((pEnt = UTIL_FindEntityByClassname(pEnt, SearchEnt)) != NULL)
+	{
+		CBaseMonster *pMonster = pEnt->MyMonsterPointer();
+		if (pMonster)
+		{
+			pMonster->KnowPlayerPos = true;
+			ALERT(at_console, "Shit happens...\n");
+		}
+	}
+}
+
+
+//
+//BEER CAN THROWING CONTEST
+//
+
+#define POINTS_BLUE		3
+#define POINTS_RED		6
+#define POINTS_BLACK	9
+
+#define PRIZE_SMALL		16
+#define PRIZE_MID		28
+#define PRIZE_GRAND		42
+
+class CBeerContest : public CPointEntity
+{
+public:
+	void	Spawn(void);
+	void	Precache(void);
+	void	Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value);
+	void	KeyValue(KeyValueData *pkvd);
+	virtual int		Save(CSave &save);
+	virtual int		Restore(CRestore &restore);
+	static	TYPEDESCRIPTION m_SaveData[];
+
+	void GetRoundResult(int newpoints);
+	void EXPORT NextRoundText(void);
+	void ShowContestMessage(const char *pString);
+	void TalkNPC(int lPoints);
+	void WinPrize(int Prize);
+	void GivePrize(Vector pOrigin,int prizetype);
+
+	string_t	CameraName;
+	string_t	MonsterName;
+	int		Round;
+	int		PrizeWon;
+	float	LastUsed;
+
+};
+
+LINK_ENTITY_TO_CLASS(env_beercontest, CBeerContest);
+
+
+TYPEDESCRIPTION	CBeerContest::m_SaveData[] =
+{
+	DEFINE_FIELD(CBeerContest, CameraName, FIELD_STRING),
+	DEFINE_FIELD(CBeerContest, MonsterName, FIELD_STRING),
+	DEFINE_FIELD(CBeerContest, PrizeWon, FIELD_INTEGER),
+};
+
+IMPLEMENT_SAVERESTORE(CBeerContest, CPointEntity);
+
+
+void CBeerContest::Spawn(void)
+{
+	Precache();
+
+	pev->solid = SOLID_NOT;
+	pev->movetype = MOVETYPE_NONE;
+
+	Round = 0;
+	LastUsed = 0;
+	PrizeWon = 0;
+	pev->iuser1 = 0;
+}
+
+void CBeerContest::Precache(void)
+{
+	PRECACHE_SOUND("buttons/normalblip.wav");
+	PRECACHE_SOUND("buttons/button2.wav");
+}
+
+void CBeerContest::KeyValue(KeyValueData *pkvd)
+{
+	if (FStrEq(pkvd->szKeyName, "CameraName"))
+	{
+		CameraName = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "MonsterName"))
+	{
+		MonsterName = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "Points"))
+	{
+		pev->iuser1 = atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else
+		CPointEntity::KeyValue(pkvd);
+}
+
+void CBeerContest::Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value)
+{
+	if (Round == 0)
+	{
+		if (!FClassnameIs(pActivator->pev, "player"))
+			return;
+	}
+	else
+	{
+		//if (FStrEq(STRING(pActivator->pev->targetname), "gamebutton"))
+		if (FClassnameIs(pActivator->pev, "player"))
+		{
+			ShowContestMessage("THE GAME IS ALREADY ACTIVE!");
+			return;
+		}
+	}
+
+	CBaseEntity *pPlayer = UTIL_PlayerByIndex(1);
+	if (pPlayer)
+	{
+		if (pActivator->pev->iuser2 == 1) //Player stepped into the boundaries
+		{
+			pev->iuser2 = 1;
+			return;
+		}
+
+		if (LastUsed >= gpGlobals->time)
+			return;
+
+		LastUsed = gpGlobals->time + 1.0;
+
+		if (Round == 0)
+		{
+			Round++;
+			char roundtxt[64];
+			sprintf(roundtxt, "GAME STARTED!", Round);
+			ShowContestMessage(roundtxt);
+			pev->iuser1 = 0; //iuser1 IS SCORE
+			EMIT_SOUND(pPlayer->edict(), CHAN_BODY, "buttons/normalblip.wav", 1.0, ATTN_NORM);
+		}
+		else
+		{
+			Round++;
+			if (pev->iuser2 != 1)
+			{
+				pev->iuser1 += pActivator->pev->dmg;
+				TalkNPC(pActivator->pev->dmg);
+			}
+			else
+			{
+				TalkNPC(0);
+			}
+
+			GetRoundResult(pActivator->pev->dmg);
+			EMIT_SOUND(pPlayer->edict(), CHAN_BODY, "buttons/normalblip.wav", 1.0, ATTN_NORM);
+		}		
+	}
+	SUB_UseTargets(this, USE_TOGGLE, 0);
+	pev->iuser2 = 0;
+}
+
+
+void CBeerContest::GetRoundResult(int newpoints)
+{
+	CBaseEntity *pEnt = NULL;
+	while ((pEnt = UTIL_FindEntityByTargetname(pEnt, STRING(CameraName))) != NULL)
+	{
+		pEnt->Use(pEnt, this, USE_TOGGLE, 0);
+	}
+
+	char pointstxt[128];
+	if (pev->iuser2 == 1)
+	{
+		sprintf(pointstxt, "ROUND SKIPPED!\nYOU STEPPED INTO THE BOUNDARIES!\nPOINTS GAINED: %d", newpoints);
+	}
+	else
+	{
+		sprintf(pointstxt, "POINTS GAINED: %d", newpoints);
+	}
+	ShowContestMessage(pointstxt);
+
+	
+	SetThink(&CBeerContest::NextRoundText);
+	pev->nextthink = gpGlobals->time + 3;
+}
+
+void CBeerContest::NextRoundText()
+{
+	char roundtxt[64];
+	if (Round > 6)
+	{
+		WinPrize(pev->iuser1);
+		Round = 0;
+	}
+	else
+	{
+		sprintf(roundtxt, "ROUND %d", Round);
+		ShowContestMessage(roundtxt);
+	}
+
+	//SetThink(NULL);
+}
+
+void CBeerContest::ShowContestMessage(const char *pString)
+{
+	hudtextparms_t	m_textParms;
+
+		m_textParms.channel = 1;
+
+		m_textParms.x = -1.0;
+
+		m_textParms.y = 0.8;
+
+		m_textParms.effect = 2;
+
+		m_textParms.r1 = 255;
+		m_textParms.g1 = 255;
+		m_textParms.b1 = 255;
+		m_textParms.a1 = 255;
+
+		m_textParms.r2 = 255;
+		m_textParms.g2 = 255;
+		m_textParms.b2 = 255;
+		m_textParms.a2 = 255;
+
+		m_textParms.fadeinTime = 0.01;
+
+		m_textParms.fadeoutTime = 0.01;
+
+		m_textParms.holdTime = 2.4;
+
+		m_textParms.fxTime = 0.01;
+
+	UTIL_HudMessageAll(m_textParms, pString);
+}
+
+void CBeerContest::TalkNPC(int lPoints)
+{
+	CBaseEntity *pEnt = NULL;
+	bool foundent = false;
+	while ((pEnt = UTIL_FindEntityByTargetname(pEnt, STRING(MonsterName))) != NULL)
+	{
+		foundent = true;
+		if (lPoints == POINTS_BLUE)
+			SENTENCEG_PlayRndSz(pEnt->edict(), "BEER_BLUE", 1.0, ATTN_NORM, 0, 85);
+		else if (lPoints == POINTS_RED)
+			SENTENCEG_PlayRndSz(pEnt->edict(), "BEER_RED", 1.0, ATTN_NORM, 0, 85);
+		else if (lPoints == POINTS_BLACK)
+			SENTENCEG_PlayRndSz(pEnt->edict(), "BEER_BLACK", 1.0, ATTN_NORM, 0, 85);
+		else
+			SENTENCEG_PlayRndSz(pEnt->edict(), "BEER_NONE", 1.0, ATTN_NORM, 0, 85);
+	}
+	if (!foundent)
+	{
+		UTIL_Remove(this);
+	}
+}
+
+void CBeerContest::WinPrize(int Prize)
+{
+	if (PrizeWon == 1)
+	{
+		Prize = PRIZE_MID;
+	}
+
+	char roundtxt[64];
+	bool foundent = false;
+	CBaseEntity *pEnt = NULL;
+	while ((pEnt = UTIL_FindEntityByTargetname(pEnt, STRING(MonsterName))) != NULL)
+	{
+		foundent = true;
+		if ((Prize >= PRIZE_SMALL) && (Prize < PRIZE_MID))
+		{
+			sprintf(roundtxt, "GAME OVER!\nTOTAL POINTS: %d\n\nYou've won a small prize!", pev->iuser1);
+			SENTENCEG_PlayRndSz(pEnt->edict(), "BEER_WIN", 1.0, ATTN_NORM, 0, 85);
+			UTIL_MakeVectors(pEnt->pev->angles);
+			GivePrize(pEnt->pev->origin + gpGlobals->v_up * 42 + gpGlobals->v_forward * 32,1);
+		}
+		else if ((Prize >= PRIZE_MID) && (Prize < PRIZE_GRAND))
+		{
+			sprintf(roundtxt, "GAME OVER!\nTOTAL POINTS: %d\n\nYou've won a medium prize!", pev->iuser1);
+			SENTENCEG_PlayRndSz(pEnt->edict(), "BEER_WIN", 1.0, ATTN_NORM, 0, 85);
+			UTIL_MakeVectors(pEnt->pev->angles);
+			GivePrize(pEnt->pev->origin + gpGlobals->v_up * 64 + gpGlobals->v_forward * 32, 2);
+		}	
+		else if (Prize >= PRIZE_GRAND)
+		{
+			PrizeWon = 1;
+			sprintf(roundtxt, "GAME OVER!\nTOTAL POINTS: %d\n\nGRAND PRIZE ACHIEVED!", pev->iuser1);
+			SENTENCEG_PlayRndSz(pEnt->edict(), "BEER_PRIZE", 1.0, ATTN_NORM, 0, 85);
+			UTIL_MakeVectors(pEnt->pev->angles);
+			GivePrize(pEnt->pev->origin + gpGlobals->v_up * 64 + gpGlobals->v_forward * 32, 3);
+		}
+		else
+		{
+			sprintf(roundtxt, "GAME OVER!\nTOTAL POINTS: %d\n\nYou did not win anything.", pev->iuser1);
+			SENTENCEG_PlayRndSz(pEnt->edict(), "BEER_NOTWIN", 1.0, ATTN_NORM, 0, 85);
+		}		
+	}
+	if (!foundent)
+	{
+		UTIL_Remove(this);
+	}
+	ShowContestMessage(roundtxt);
+}
+
+void CBeerContest::GivePrize(Vector pOrigin, int prizetype)
+{
+	switch (prizetype)
+	{
+		case 1:
+		{
+			CBaseEntity *pPrize = CBaseEntity::Create("ammo_sixpack", pOrigin, Vector(0,0,0), edict());
+			pPrize->pev->velocity = pPrize->pev->velocity + gpGlobals->v_forward * 32;
+			break;
+		}
+		case 2:
+		{
+			CBaseEntity *pPrize;
+			pPrize = CBaseEntity::Create("ammo_sixpack", pOrigin - gpGlobals->v_up * 10, Vector(0, 0, 0), edict());
+
+			switch (RANDOM_LONG(0, 2))
+			{
+				case 0:
+				{
+						  pPrize = CBaseEntity::Create("ammo_357", pOrigin, Vector(0, 0, 0), edict());
+						  pPrize->pev->velocity = pPrize->pev->velocity + gpGlobals->v_forward * 32;
+						  pPrize = CBaseEntity::Create("ammo_9mmAR", pOrigin, Vector(0, 0, 0), edict());
+						  pPrize->pev->velocity = pPrize->pev->velocity + gpGlobals->v_forward * 32;
+						  pPrize = CBaseEntity::Create("ammo_crossbow", pOrigin, Vector(0, 0, 0), edict());
+						  pPrize->pev->velocity = pPrize->pev->velocity + gpGlobals->v_forward * 32;
+						  pPrize = CBaseEntity::Create("ammo_gaussclip", pOrigin, Vector(0, 0, 0), edict());
+						  pPrize->pev->velocity = pPrize->pev->velocity + gpGlobals->v_forward * 32;
+						  pPrize = CBaseEntity::Create("ammo_buckshot", pOrigin, Vector(0, 0, 0), edict());
+						  pPrize->pev->velocity = pPrize->pev->velocity + gpGlobals->v_forward * 32;
+				}
+					break;
+				case 1:
+				{
+						  pPrize = CBaseEntity::Create("item_scorpionjacket", pOrigin, Vector(0, 0, 0), edict());
+						  pPrize->pev->velocity = pPrize->pev->velocity + gpGlobals->v_forward * 32;
+				}
+					break;
+				case 2:
+				{
+						  pPrize = CBaseEntity::Create("weapon_obamium", pOrigin, Vector(0, 0, 0), edict());
+						  pPrize->pev->velocity = pPrize->pev->velocity + gpGlobals->v_forward * 32;
+						  pPrize = CBaseEntity::Create("weapon_tripmine", pOrigin, Vector(0, 0, 0), edict());
+						  pPrize->pev->velocity = pPrize->pev->velocity + gpGlobals->v_forward * 32;
+						  pPrize = CBaseEntity::Create("weapon_handgrenade", pOrigin, Vector(0, 0, 0), edict());
+						  pPrize->pev->velocity = pPrize->pev->velocity + gpGlobals->v_forward * 32;
+						  pPrize = CBaseEntity::Create("weapon_satchel", pOrigin, Vector(0, 0, 0), edict());
+						  pPrize->pev->velocity = pPrize->pev->velocity + gpGlobals->v_forward * 32;
+						  pPrize = CBaseEntity::Create("weapon_banana", pOrigin, Vector(0, 0, 0), edict());
+						  pPrize->pev->velocity = pPrize->pev->velocity + gpGlobals->v_forward * 32;
+				}
+					break;
+			}
+			break;
+		}
+		case 3:
+		{
+			CBaseEntity *pPrize = CBaseEntity::Create("ammo_cashstack", pOrigin, Vector(0, 0, 0), edict());
+			pPrize->pev->velocity = pPrize->pev->velocity + gpGlobals->v_forward * 32;
+			break;
+		}
+	}
+}
+
+//
+//SURVIVAL
+//
+
+#define STATUS_CALM 0
+#define STATUS_FIGHT 1
+#define STATUS_PAUSE 2
+
+class CSurvival : public CPointEntity
+{
+public:
+	void	Spawn(void);
+	void	Precache(void);
+	void	Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value);
+	void	KeyValue(KeyValueData *pkvd);
+	void	EXPORT SurvivalTimer(void);
+	void	SpawnerWork(void);
+	int		Timer = 0;
+	int		Status;
+	int		Wave = 0;
+	int		PickTrack(void);
+private:
+};
+
+LINK_ENTITY_TO_CLASS(env_survival, CSurvival);
+
+
+void CSurvival::Spawn(void)
+{
+	Precache();
+	PRECACHE_SOUND("survival/wave1snd.wav");
+	PRECACHE_SOUND("survival/wave2snd.wav");
+	PRECACHE_SOUND("survival/wave3snd.wav");
+	PRECACHE_SOUND("survival/wave4snd.wav");
+	PRECACHE_SOUND("survival/wave5snd.wav");
+	PRECACHE_SOUND("survival/wave6snd.wav");
+	PRECACHE_SOUND("survival/wave7snd.wav");
+	PRECACHE_SOUND("survival/wave8snd.wav");
+	PRECACHE_SOUND("survival/wave9snd.wav");
+	PRECACHE_SOUND("survival/wave10snd.wav");
+
+	pev->solid = SOLID_NOT;
+	pev->movetype = MOVETYPE_NONE;
+
+	switch (pev->impulse)
+	{
+	case 1: // Medium radius
+		pev->speed = ATTN_STATIC;
+		break;
+
+	case 2:	// Large radius
+		pev->speed = ATTN_NORM;
+		break;
+
+	case 3:	//EVERYWHERE
+		pev->speed = ATTN_NONE;
+		break;
+
+	default:
+	case 0: // Small radius
+		pev->speed = ATTN_IDLE;
+		break;
+	}
+	pev->impulse = 0;
+
+	// No volume, use normal
+	if (pev->scale <= 0)
+		pev->scale = 1.0;
+
+	Timer = 0;
+	//Wave = 0;
+}
+
+
+void CSurvival::Precache(void)
+{
+	if (pev->noise)
+		PRECACHE_SOUND((char *)STRING(pev->noise));
+}
+
+void CSurvival::KeyValue(KeyValueData *pkvd)
+{
+	if (FStrEq(pkvd->szKeyName, "messagesound"))
+	{
+		pev->noise = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "messagevolume"))
+	{
+		pev->scale = atof(pkvd->szValue) * 0.1;
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "messageattenuation"))
+	{
+		pev->impulse = atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "startwave"))
+	{
+		Wave = atoi(pkvd->szValue) -1;
+		pkvd->fHandled = TRUE;
+	}
+	else
+		CPointEntity::KeyValue(pkvd);
+}
+
+
+void CSurvival::Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value)
+{
+	CBaseEntity *pPlayer = NULL;
+
+	if (pev->spawnflags & SF_MESSAGE_ALL)
+		UTIL_ShowMessageAll(STRING(pev->message));
+	else
+	{
+		if (pActivator && pActivator->IsPlayer())
+			pPlayer = pActivator;
+		else
+		{
+			pPlayer = CBaseEntity::Instance(g_engfuncs.pfnPEntityOfEntIndex(1));
+		}
+		if (pPlayer)
+			UTIL_ShowMessage(STRING(pev->message), pPlayer);
+	}
+	if (pev->noise)
+	{
+		EMIT_SOUND(edict(), CHAN_BODY, STRING(pev->noise), pev->scale, pev->speed);
+	}
+	if (pev->spawnflags & SF_MESSAGE_ONCE)
+		UTIL_Remove(this);
+
+	SUB_UseTargets(this, USE_TOGGLE, 0);
+
+	Status = STATUS_CALM;
+	Timer = 1;
+	//Wave = 0;
+
+	SetThink(&CSurvival::SurvivalTimer);
+	pev->nextthink = gpGlobals->time + 1;
+}
+
+void CSurvival::SpawnerWork()
+{
+	switch (Wave)
+	{
+		case 1:
+		{
+				CBaseEntity *pEnt = NULL;
+				while ((pEnt = UTIL_FindEntityByTargetname(pEnt, "VaxxSpawner")) != NULL)
+				{
+					pEnt->Use(pEnt, this, USE_TOGGLE, 0);
+				}
+		}
+		break;
+		case 2:
+		{
+				  CBaseEntity *pEnt = NULL;
+				  while ((pEnt = UTIL_FindEntityByTargetname(pEnt, "VaxxSpawner")) != NULL)
+				  {
+					  pEnt->Use(pEnt, this, USE_TOGGLE, 0);
+				  }
+				  pEnt = NULL;
+				  while ((pEnt = UTIL_FindEntityByTargetname(pEnt, "VaxxSpawner2")) != NULL)
+				  {
+					  pEnt->Use(pEnt, this, USE_TOGGLE, 0);
+				  }
+		}
+		break;
+		case 3:
+		{
+				  CBaseEntity *pEnt = NULL;
+				  while ((pEnt = UTIL_FindEntityByTargetname(pEnt, "VaxxSpawner")) != NULL)
+				  {
+					  pEnt->Use(pEnt, this, USE_TOGGLE, 0);
+				  }
+				  pEnt = NULL;
+				  while ((pEnt = UTIL_FindEntityByTargetname(pEnt, "UNBarnSpawner")) != NULL)
+				  {
+					  pEnt->Use(pEnt, this, USE_TOGGLE, 0);
+				  }
+		}
+		break;
+		case 4:
+		{
+				  CBaseEntity *pEnt = NULL;
+				  while ((pEnt = UTIL_FindEntityByTargetname(pEnt, "GinaSpawner")) != NULL)
+				  {
+					  pEnt->Use(pEnt, this, USE_TOGGLE, 0);
+				  }
+				  pEnt = NULL;
+				  while ((pEnt = UTIL_FindEntityByTargetname(pEnt, "UNBarnSpawner")) != NULL)
+				  {
+					  pEnt->Use(pEnt, this, USE_TOGGLE, 0);
+				  }
+		}
+		break;
+		case 5:
+		{
+				  CBaseEntity *pEnt = NULL;
+				  while ((pEnt = UTIL_FindEntityByTargetname(pEnt, "GinaSpawner")) != NULL)
+				  {
+					  pEnt->Use(pEnt, this, USE_TOGGLE, 0);
+				  }
+				  pEnt = NULL;
+				  while ((pEnt = UTIL_FindEntityByTargetname(pEnt, "UNBarnSpawner")) != NULL)
+				  {
+					  pEnt->Use(pEnt, this, USE_TOGGLE, 0);
+				  }
+				  pEnt = NULL;
+				  while ((pEnt = UTIL_FindEntityByTargetname(pEnt, "VaxxSpawner2")) != NULL)
+				  {
+					  pEnt->Use(pEnt, this, USE_TOGGLE, 0);
+				  }
+		}
+		break;
+		case 6:
+		{
+				  CBaseEntity *pEnt = NULL;
+				  while ((pEnt = UTIL_FindEntityByTargetname(pEnt, "GinaSpawner")) != NULL)
+				  {
+					  pEnt->Use(pEnt, this, USE_TOGGLE, 0);
+				  }
+				  pEnt = NULL;
+				  while ((pEnt = UTIL_FindEntityByTargetname(pEnt, "UNBarnSpawner")) != NULL)
+				  {
+					  pEnt->Use(pEnt, this, USE_TOGGLE, 0);
+				  }
+				  pEnt = NULL;
+				  while ((pEnt = UTIL_FindEntityByTargetname(pEnt, "CiaSpawner1")) != NULL)
+				  {
+					  pEnt->Use(pEnt, this, USE_TOGGLE, 0);
+				  }
+		}
+		break;
+		case 7:
+		{
+				  CBaseEntity *pEnt = NULL;
+				  while ((pEnt = UTIL_FindEntityByTargetname(pEnt, "VaxxSpawner2")) != NULL)
+				  {
+					  pEnt->Use(pEnt, this, USE_TOGGLE, 0);
+				  }
+				  pEnt = NULL;
+				  while ((pEnt = UTIL_FindEntityByTargetname(pEnt, "UNBarnSpawner")) != NULL)
+				  {
+					  pEnt->Use(pEnt, this, USE_TOGGLE, 0);
+				  }
+				  pEnt = NULL;
+				  while ((pEnt = UTIL_FindEntityByTargetname(pEnt, "CiaSpawner1")) != NULL)
+				  {
+					  pEnt->Use(pEnt, this, USE_TOGGLE, 0);
+				  }
+		}
+		break;
+		case 8:
+		{
+				  CBaseEntity *pEnt = NULL;
+				  while ((pEnt = UTIL_FindEntityByTargetname(pEnt, "extracleanspawner1")) != NULL)
+				  {
+					  pEnt->Use(pEnt, this, USE_TOGGLE, 0);
+				  }
+				  pEnt = NULL;
+				  while ((pEnt = UTIL_FindEntityByTargetname(pEnt, "VaxxSpawner")) != NULL)
+				  {
+					  pEnt->Use(pEnt, this, USE_TOGGLE, 0);
+				  }
+				  pEnt = NULL;
+				  while ((pEnt = UTIL_FindEntityByTargetname(pEnt, "CiaSpawner1")) != NULL)
+				  {
+					  pEnt->Use(pEnt, this, USE_TOGGLE, 0);
+				  }
+		}
+		break;
+		case 9:
+		{
+				  CBaseEntity *pEnt = NULL;
+				  while ((pEnt = UTIL_FindEntityByTargetname(pEnt, "extracleanspawner1")) != NULL)
+				  {
+					  pEnt->Use(pEnt, this, USE_TOGGLE, 0);
+				  }
+				  pEnt = NULL;
+				  while ((pEnt = UTIL_FindEntityByTargetname(pEnt, "UNBarnSpawner")) != NULL)
+				  {
+					  pEnt->Use(pEnt, this, USE_TOGGLE, 0);
+				  }
+				  pEnt = NULL;
+				  while ((pEnt = UTIL_FindEntityByTargetname(pEnt, "CiaSpawner1")) != NULL)
+				  {
+					  pEnt->Use(pEnt, this, USE_TOGGLE, 0);
+				  }
+		}
+		break;
+		case 10:
+		{
+				  CBaseEntity *pEnt = NULL;
+				  while ((pEnt = UTIL_FindEntityByTargetname(pEnt, "extracleanspawner1")) != NULL)
+				  {
+					  pEnt->Use(pEnt, this, USE_TOGGLE, 0);
+				  }
+				  pEnt = NULL;
+				  while ((pEnt = UTIL_FindEntityByTargetname(pEnt, "UNBarnSpawner")) != NULL)
+				  {
+					  pEnt->Use(pEnt, this, USE_TOGGLE, 0);
+				  }
+				  pEnt = NULL;
+				  while ((pEnt = UTIL_FindEntityByTargetname(pEnt, "CiaSpawner1")) != NULL)
+				  {
+					  pEnt->Use(pEnt, this, USE_TOGGLE, 0);
+				  }
+				  pEnt = NULL;
+				  while ((pEnt = UTIL_FindEntityByTargetname(pEnt, "helispawner")) != NULL)
+				  {
+					  pEnt->Use(pEnt, this, USE_TOGGLE, 0);
+				  }
+		}
+		break;
+	}
+}
+
+bool EnemiesExist()
+{
+	edict_t *pentFind;
+
+	pentFind = FIND_ENTITY_BY_TARGETNAME(NULL, "spawnedenemy");
+	while (!FNullEnt(pentFind))
+	{
+		CBaseEntity *pEnt = CBaseEntity::Instance(pentFind);
+		if (pEnt)
+		{
+			return true;
+		}
+		pentFind = FIND_ENTITY_BY_CLASSNAME(pentFind, "spawnedenemy");
+	}
+	pentFind = FIND_ENTITY_BY_TARGETNAME(NULL, "spawnedheli");
+	while (!FNullEnt(pentFind))
+	{
+		CBaseEntity *pEnt = CBaseEntity::Instance(pentFind);
+		if (pEnt)
+		{
+			return true;
+		}
+		pentFind = FIND_ENTITY_BY_CLASSNAME(pentFind, "spawnedheli");
+	}
+	return false;
+}
+
+int CSurvival::PickTrack()
+{
+	int track = 0;
+	switch (Wave)
+	{
+	case 1: track = 17; break;
+	case 2: track = 12; break;
+	case 3: track = 15; break;
+	case 4:
+	{
+			  int i = RANDOM_LONG(0, 2);
+			  if (i == 0)
+				  track = 4;
+			  else if (i==1)
+				  track = 11;
+			  else
+				  track = 14;
+	}
+	break;
+	case 5:
+	{
+			  if (RANDOM_LONG(0, 1))
+				  track = 5;
+			  else
+				  track = 20;
+	}
+	break;
+	case 6: track = 22; break;
+	case 7: track = 9; break;
+	case 8: track = 18; break;
+	case 9: track = 13; break;
+	case 10: track = 23; break;
+	}
+	return track;
+}
+
+void CSurvival::SurvivalTimer()
+{
+	if (Status == STATUS_CALM)
+	{
+		Timer--;
+		if (Timer <= 0)
+		{
+			if (Wave >= 10)
+			{
+				//winmm
+				CBaseEntity *pEnt = NULL;
+				while ((pEnt = UTIL_FindEntityByTargetname(pEnt, "winmm")) != NULL)
+				{
+					pEnt->Use(pEnt, this, USE_TOGGLE, 0);
+				}
+				SetThink(NULL);
+				UTIL_Remove(this);
+				return;
+			}
+			else
+			{
+				Status = STATUS_FIGHT;
+				char wavetext[64];
+				Wave++;
+				Timer = 125;
+				sprintf(wavetext, "WAVE %d", Wave);
+				UTIL_ShowMessageAll(wavetext);
+				SpawnerWork();
+				CBaseEntity *pPlayer = UTIL_PlayerByIndex(1);
+				if (pPlayer)
+				{
+					switch (Wave)
+					{
+					case 1: EMIT_SOUND(pPlayer->edict(), CHAN_VOICE, "survival/wave1snd.wav", 1.0, pev->speed); break;
+					case 2: EMIT_SOUND(pPlayer->edict(), CHAN_VOICE, "survival/wave2snd.wav", 1.0, pev->speed); break;
+					case 3: EMIT_SOUND(pPlayer->edict(), CHAN_VOICE, "survival/wave3snd.wav", 1.0, pev->speed); break;
+					case 4: EMIT_SOUND(pPlayer->edict(), CHAN_VOICE, "survival/wave4snd.wav", 1.0, pev->speed); break;
+					case 5: EMIT_SOUND(pPlayer->edict(), CHAN_VOICE, "survival/wave5snd.wav", 1.0, pev->speed); break;
+					case 6: EMIT_SOUND(pPlayer->edict(), CHAN_VOICE, "survival/wave6snd.wav", 1.0, pev->speed); break;
+					case 7: EMIT_SOUND(pPlayer->edict(), CHAN_VOICE, "survival/wave7snd.wav", 1.0, pev->speed); break;
+					case 8: EMIT_SOUND(pPlayer->edict(), CHAN_VOICE, "survival/wave8snd.wav", 1.0, pev->speed); break;
+					case 9: EMIT_SOUND(pPlayer->edict(), CHAN_VOICE, "survival/wave9snd.wav", 1.0, pev->speed); break;
+					case 10: EMIT_SOUND(pPlayer->edict(), CHAN_VOICE, "survival/wave10snd.wav", 1.0, pev->speed); break;
+					}
+				}
+			}	
+		}
+	}
+	if (Status == STATUS_FIGHT)
+	{
+		Timer--;
+		if (Timer == 115)
+		{
+			edict_t *pClient;
+
+			// manually find the single player. 
+			pClient = g_engfuncs.pfnPEntityOfEntIndex(1);
+
+			// Can't play if the client is not connected!
+			if (pClient)
+			{
+				char string[64];
+				
+				sprintf(string, "cd play %3d\n", PickTrack());
+				CLIENT_COMMAND(pClient, string);
+			}
+		}
+		else if (Timer <= 0)
+		{
+			SpawnerWork();
+			Status = STATUS_PAUSE;
+			Timer = 5;
+		}
+	}
+	if (Status == STATUS_PAUSE)
+	{
+		Timer--;
+		if (Timer <= 0)
+		{
+			if (EnemiesExist())
+			{
+				Timer = 5;
+			}
+			else
+			{
+				edict_t *pClient;
+
+				// manually find the single player. 
+				pClient = g_engfuncs.pfnPEntityOfEntIndex(1);
+
+				// Can't play if the client is not connected!
+				if (pClient)
+				{
+					char string[64];
+
+					sprintf(string, "cd play %3d\n", 7);
+					CLIENT_COMMAND(pClient, string);
+				}
+
+				UTIL_ShowMessageAll("WAVE CLEARED");
+				Timer = 10;
+				Status = STATUS_CALM;
+			}
+		}	
+	}
+	pev->nextthink = gpGlobals->time + 1;
 }
 
 //=========================================================

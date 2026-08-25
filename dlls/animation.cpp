@@ -183,6 +183,28 @@ int LookupSequence( void *pmodel, const char *label )
 	return -1;
 }
 
+int GetRandomSequence(void *pmodel)
+{
+	studiohdr_t *pstudiohdr;
+
+	pstudiohdr = (studiohdr_t *)pmodel;
+	if (!pstudiohdr)
+		return 0;
+
+	mstudioseqdesc_t	*pseqdesc;
+
+	pseqdesc = (mstudioseqdesc_t *)((byte *)pstudiohdr + pstudiohdr->seqindex);
+	//RANDOMIZER OVERRIDE
+	//for (int i = 0; i < pstudiohdr->numseq; i++)
+	//{
+	//	if (stricmp( pseqdesc[i].label, label ) == 0)
+	//		return i;
+	//}
+	//return -1;
+	return RANDOM_LONG(0, pstudiohdr->numseq);
+	//RANDOMIZER OVERRIDE
+}
+
 int IsSoundEvent( int eventNumber )
 {
 	if( eventNumber == SCRIPT_EVENT_SOUND || eventNumber == SCRIPT_EVENT_SOUND_VOICE )

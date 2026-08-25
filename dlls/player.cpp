@@ -117,6 +117,12 @@ TYPEDESCRIPTION	CBasePlayer::m_playerSaveData[] =
 	DEFINE_FIELD( CBasePlayer, m_iHideHUD, FIELD_INTEGER ),
 	DEFINE_FIELD( CBasePlayer, m_iFOV, FIELD_INTEGER ),
 
+	DEFINE_FIELD(CBasePlayer, phonecalling, FIELD_BOOLEAN),
+	DEFINE_FIELD(CBasePlayer, phonetalktime, FIELD_INTEGER),
+	DEFINE_FIELD(CBasePlayer, phonetarget, FIELD_STRING),
+	DEFINE_FIELD(CBasePlayer, phonetalkdialog, FIELD_INTEGER),
+	DEFINE_FIELD(CBasePlayer, shotgunfiretype, FIELD_INTEGER),
+
 	//DEFINE_FIELD( CBasePlayer, m_fDeadTime, FIELD_FLOAT ), // only used in multiplayer games
 	//DEFINE_FIELD( CBasePlayer, m_fGameHUDInitialized, FIELD_INTEGER ), // only used in multiplayer games
 	//DEFINE_FIELD( CBasePlayer, m_flStopExtraSoundTime, FIELD_TIME ),
@@ -194,7 +200,7 @@ void LinkUserMessages( void )
 	}
 
 	gmsgSelAmmo = REG_USER_MSG( "SelAmmo", sizeof(SelAmmo) );
-	gmsgCurWeapon = REG_USER_MSG( "CurWeapon", 3 );
+	gmsgCurWeapon = REG_USER_MSG( "CurWeapon", -1 );
 	gmsgGeigerRange = REG_USER_MSG( "Geiger", 1 );
 	gmsgFlashlight = REG_USER_MSG( "Flashlight", 2 );
 	gmsgFlashBattery = REG_USER_MSG( "FlashBat", 1 );
@@ -338,18 +344,32 @@ void CBasePlayer::DeathSound( void )
 	*/
 
 	// temporarily using pain sounds for death sounds
-	switch( RANDOM_LONG( 1, 5 ) )
+	switch( RANDOM_LONG( 1, 7 ) )
 	{
 	case 1: 
-		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/pl_pain5.wav", 1, ATTN_NORM );
+		UTIL_CenterPrintAll("HOLY FUCKING SHIT YOU SUCK!");
 		break;
 	case 2: 
-		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/pl_pain6.wav", 1, ATTN_NORM );
+		UTIL_CenterPrintAll("HOW CAN YOU SUCK SO BADLY!? JESUS FUCK!");
 		break;
 	case 3: 
-		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/pl_pain7.wav", 1, ATTN_NORM );
+		UTIL_CenterPrintAll("COPE, SEETHE, DILATE, TOUCH GRASS.");
+		break;
+	case 4:
+		UTIL_CenterPrintAll("JUST FUCKING END IT!");
+		break;
+	case 5:
+		UTIL_CenterPrintAll("TOP 10 FULL RETARD MOMENT RIGHT HERE!");
+		break;
+	case 6:
+		UTIL_CenterPrintAll("GET FUCKED LOL.");
+		break;
+	case 7:
+		UTIL_CenterPrintAll("LOG OFF, GO TELL REDDIT, KILL YOURSELF.");
 		break;
 	}
+
+	EMIT_SOUND(ENT(pev), CHAN_VOICE, "player/loser.wav", 1, ATTN_NORM);
 
 	// play one of the suit death alarms
 	EMIT_GROUPNAME_SUIT( ENT( pev ), "HEV_DEAD" );
@@ -875,7 +895,7 @@ void CBasePlayer::RemoveAllItems( BOOL removeSuit )
 	MESSAGE_BEGIN( MSG_ONE, gmsgCurWeapon, NULL, pev );
 		WRITE_BYTE( 0 );
 		WRITE_BYTE( 0 );
-		WRITE_BYTE( 0 );
+		WRITE_SHORT( 0 );
 	MESSAGE_END();
 }
 
@@ -934,7 +954,7 @@ void CBasePlayer::Killed( entvars_t *pevAttacker, int iGib )
 	MESSAGE_BEGIN( MSG_ONE, gmsgCurWeapon, NULL, pev );
 		WRITE_BYTE( 0 );
 		WRITE_BYTE( 0XFF );
-		WRITE_BYTE( 0xFF );
+		WRITE_SHORT( 0xFF );
 	MESSAGE_END();
 
 	// reset FOV
@@ -1150,6 +1170,7 @@ void CBasePlayer::TabulateAmmo()
 	ammo_rockets = AmmoInventory( GetAmmoIndex( "rockets" ) );
 	ammo_uranium = AmmoInventory( GetAmmoIndex( "uranium" ) );
 	ammo_hornets = AmmoInventory( GetAmmoIndex( "Hornets" ) );
+	ammo_claw = AmmoInventory(GetAmmoIndex("claw"));
 }
 
 /*
@@ -1273,6 +1294,12 @@ void CBasePlayer::WaterMove()
 	{
 		pev->dmgtime = gpGlobals->time + 1;
 		TakeDamage( VARS( eoNullEntity ), VARS( eoNullEntity ), 4 * pev->waterlevel, DMG_ACID );
+	}
+	else if (pev->watertype == CONTENT_SLUDGE)		// Slow player
+	{
+		pev->dmgtime = gpGlobals->time + 1;
+		pev->speed = pev->speed * 0.7;
+		pev->velocity = pev->velocity * 0.7;
 	}
 
 	if( !FBitSet( pev->flags, FL_INWATER ) )
@@ -1463,7 +1490,7 @@ void CBasePlayer::StartObserver( Vector vecPosition, Vector vecViewAngle )
 	MESSAGE_BEGIN( MSG_ONE, gmsgCurWeapon, NULL, pev );
 		WRITE_BYTE( 0 );
 		WRITE_BYTE( 0XFF );
-		WRITE_BYTE( 0xFF );
+		WRITE_SHORT( 0xFF );
 	MESSAGE_END();
 
 	// reset FOV
@@ -2606,6 +2633,13 @@ void CBasePlayer::UpdatePlayerSound( void )
 
 void CBasePlayer::PostThink()
 {
+	//UNCOMMENT THIS: SURVIVAL PREVENTION
+	if (FStrEq(STRING(gpGlobals->mapname), "survival"))
+	{
+		if (pev->movetype == MOVETYPE_NOCLIP)
+			Killed(pev, 5);
+	}
+
 	if( g_fGameOver )
 		goto pt_end;	// intermission or finale
 
@@ -2656,7 +2690,10 @@ void CBasePlayer::PostThink()
 			{
 				//splat
 				// note: play on item channel because we play footstep landing on body channel
-				EMIT_SOUND( ENT( pev ), CHAN_ITEM, "common/bodysplat.wav", 1, ATTN_NORM );
+				if (RANDOM_LONG(0, 1))
+					EMIT_SOUND( ENT( pev ), CHAN_ITEM, "common/bodysplat.wav", 1, ATTN_NORM );
+				else
+					EMIT_SOUND( ENT( pev ), CHAN_ITEM, "common/bodysplat2.wav", 1, ATTN_NORM );
 			}
 
 			if( flFallDamage > 0 )
@@ -2927,6 +2964,8 @@ void CBasePlayer::Spawn( void )
 	m_bitsDamageType = 0;
 	m_afPhysicsFlags = 0;
 	m_fLongJump = FALSE;// no longjump module. 
+	wandspelltype = 0; //Regular sparkles
+	shotgunfiretype = 0; //Regular shotgun
 
 	g_engfuncs.pfnSetPhysicsKeyValue( edict(), "slj", "0" );
 	g_engfuncs.pfnSetPhysicsKeyValue( edict(), "hl", "1" );
@@ -3569,6 +3608,12 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		return;
 	}
 
+	//PREVENT IMPULSE IF SURVIVAL
+	if (FStrEq(STRING(gpGlobals->mapname), "survival"))
+	{
+		return;
+	}
+
 	CBaseEntity *pEntity;
 	TraceResult tr;
 
@@ -3591,6 +3636,9 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		GiveNamedItem( "item_suit" );
 		GiveNamedItem( "item_battery" );
 		GiveNamedItem( "weapon_crowbar" );
+		GiveNamedItem( "weapon_wrench" );
+		GiveNamedItem( "weapon_banana" );
+		GiveNamedItem( "weapon_piwo" );
 		GiveNamedItem( "weapon_9mmhandgun" );
 		GiveNamedItem( "ammo_9mmclip" );
 		GiveNamedItem( "weapon_shotgun" );
@@ -3600,9 +3648,16 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		GiveNamedItem( "ammo_ARgrenades" );
 		GiveNamedItem( "weapon_handgrenade" );
 		GiveNamedItem( "weapon_tripmine" );
+		GiveNamedItem( "weapon_clawgun" );
+		GiveNamedItem( "weapon_obamium" );
+		GiveNamedItem( "weapon_sawnoff" );
+		GiveNamedItem( "weapon_money" );
+		GiveNamedItem( "weapon_phone" );
+		GiveNamedItem( "weapon_scimitar" );
 #if !OEM_BUILD
 		GiveNamedItem( "weapon_357" );
 		GiveNamedItem( "ammo_357" );
+		GiveNamedItem( "ammo_claw" );
 		GiveNamedItem( "weapon_crossbow" );
 		GiveNamedItem( "ammo_crossbow" );
 		GiveNamedItem( "weapon_egon" );
@@ -4966,3 +5021,30 @@ void CInfoIntermission::Think( void )
 }
 
 LINK_ENTITY_TO_CLASS( info_intermission, CInfoIntermission )
+
+//=========================================================
+// No random
+//=========================================================
+class CNoRandom :public CPointEntity
+{
+	void Spawn(void);
+	void Think(void);
+};
+
+void CNoRandom::Spawn(void)
+{
+	UTIL_SetOrigin(pev, pev->origin);
+	pev->solid = SOLID_NOT;
+	pev->effects = EF_NODRAW;
+	pev->v_angle = g_vecZero;
+
+	pev->nextthink = gpGlobals->time + 2;// let targets spawn!
+
+}
+
+void CNoRandom::Think(void)
+{
+	
+}
+
+LINK_ENTITY_TO_CLASS(info_norandom, CNoRandom);

@@ -502,6 +502,7 @@ public:
 	void KeyValue( KeyValueData *pkvd );
 	void EXPORT MultiTouch( CBaseEntity *pOther );
 	void EXPORT HurtTouch( CBaseEntity *pOther );
+	void EXPORT BeerTouch(CBaseEntity *pOther);
 	void EXPORT CDAudioTouch( CBaseEntity *pOther );
 	void ActivateMultiTrigger( CBaseEntity *pActivator );
 	void EXPORT MultiWaitOver( void );
@@ -550,6 +551,11 @@ void CBaseTrigger::KeyValue( KeyValueData *pkvd )
 	else if( FStrEq( pkvd->szKeyName, "damagetype" ) )
 	{
 		m_bitsDamageInflict = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "Points"))
+	{
+		pev->iuser1 = atoi(pkvd->szValue);
 		pkvd->fHandled = TRUE;
 	}
 	else
@@ -771,6 +777,46 @@ void CTargetCDAudio::Play( void )
 	UTIL_Remove( this );
 }
 
+class CGiveWeapon : public CPointEntity
+{
+public:
+	void			Spawn(void);
+	void			KeyValue(KeyValueData *pkvd);
+
+	virtual void	Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value);
+};
+
+LINK_ENTITY_TO_CLASS(player_giveitem, CGiveWeapon);
+
+void CGiveWeapon::KeyValue(KeyValueData *pkvd)
+{
+	if (FStrEq(pkvd->szKeyName, "weaponname"))
+	{
+		pev->message = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else
+		CPointEntity::KeyValue(pkvd);
+}
+
+void CGiveWeapon::Spawn(void)
+{
+	pev->solid = SOLID_NOT;
+	pev->movetype = MOVETYPE_NONE;
+
+	if (pev->scale > 0)
+		pev->nextthink = gpGlobals->time + 1.0;
+}
+
+void CGiveWeapon::Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value)
+{
+	CBaseEntity *pPlayer = UTIL_PlayerByIndex(1);
+	if (pPlayer)
+	{
+		CBaseEntity *pItem = CBaseEntity::Create((char*)STRING(pev->message), pPlayer->pev->origin, Vector(0,0,0), edict());
+	}
+}
+
 //=====================================
 //
 // trigger_hurt - hurts anything that touches it. if the trigger has a targetname, firing it will toggle state
@@ -877,6 +923,52 @@ void CBaseTrigger::ToggleUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE
 		pev->solid = SOLID_NOT;
 	}
 	UTIL_SetOrigin( pev, pev->origin );
+}
+
+void CBaseTrigger :: BeerTouch ( CBaseEntity *pOther )
+{
+	entvars_t	*pevToucher;
+
+	pevToucher = pOther->pev;
+
+	pev->iuser2 = 0; //Set to 0 if this round is legit
+	if ((pevToucher->flags & FL_CLIENT) && !(pev->spawnflags & SF_TRIGGER_NOCLIENTS))
+	{
+		pev->iuser2 = 1; //Set to 1 if this round is ruined cause the player stepped in
+		ActivateMultiTrigger(this);
+		return;
+	}
+
+	if (pev->spawnflags & SF_TRIGGER_BEER)
+	{
+		if (FClassnameIs(pOther->pev, "proppiwo"))
+		{
+			if ((pOther->pev->flags & FL_ONGROUND))
+			{
+				ActivateMultiTrigger(this);
+			}
+		}
+		return;
+	}
+
+	// Only touch clients, monsters, or pushables (depending on flags)
+	if (((pevToucher->flags & FL_CLIENT) && !(pev->spawnflags & SF_TRIGGER_NOCLIENTS)) ||
+		((pevToucher->flags & FL_MONSTER) && (pev->spawnflags & SF_TRIGGER_ALLOWMONSTERS)) ||
+		(pev->spawnflags & SF_TRIGGER_PUSHABLES) && FClassnameIs(pevToucher, "func_pushable"))
+	{
+
+#if 0
+		// if the trigger has an angles field, check player's facing direction
+		if (pev->movedir != g_vecZero)
+		{
+			UTIL_MakeVectors(pevToucher->angles);
+			if (DotProduct(gpGlobals->v_forward, pev->movedir) < 0)
+				return;         // not facing the right way
+		}
+#endif
+
+		ActivateMultiTrigger(pOther);
+	}
 }
 
 // When touched, a hurt trigger does DMG points of damage each half-second
@@ -1014,6 +1106,31 @@ void CBaseTrigger::HurtTouch( CBaseEntity *pOther )
 		SUB_UseTargets( pOther, USE_TOGGLE, 0 );
 		if( pev->spawnflags & SF_TRIGGER_HURT_TARGETONCE )
 			pev->target = 0;
+	}
+}
+
+//BEER CONTEST
+//EBIN BENIS HAHA POOP
+
+class CTriggerBeerTouch : public CBaseTrigger
+{
+public:
+	void Spawn(void);
+};
+
+LINK_ENTITY_TO_CLASS(trigger_beertouch, CTriggerBeerTouch);
+
+
+void CTriggerBeerTouch::Spawn(void)
+{
+	if (m_flWait == 0)
+		m_flWait = 0.2;
+
+	InitTrigger();
+
+	ASSERTSZ(pev->health == 0, "trigger_multiple with health");
+	{
+		SetTouch(&CBaseTrigger::BeerTouch);
 	}
 }
 

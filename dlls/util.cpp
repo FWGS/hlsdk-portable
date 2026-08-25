@@ -622,6 +622,24 @@ void UTIL_EmitAmbientSound( edict_t *entity, const Vector &vecOrigin, const char
 		EMIT_AMBIENT_SOUND( entity, rgfl, samp, vol, attenuation, fFlags, pitch );
 }
 
+void UTIL_EmitAmbientSoundMusic(edict_t *entity, const char *samp, float vol, float attenuation, int fFlags, int pitch)
+{
+	if (samp && *samp == '!')
+	{
+		char name[32];
+		if (SENTENCEG_Lookup(samp, name) >= 0)
+			if (fFlags & SND_STOP)
+				STOP_SOUND(entity, CHAN_STATIC, name);
+			else
+				EMIT_SOUND(entity, CHAN_STATIC, name, vol, attenuation);
+	}
+	else
+		if (fFlags & SND_STOP)
+			STOP_SOUND(entity, CHAN_STATIC, samp);
+		else
+			EMIT_SOUND(entity, CHAN_STATIC, samp, vol, attenuation);
+}
+
 static unsigned short FixedUnsigned16( float value, float scale )
 {
 	int output;

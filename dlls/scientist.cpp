@@ -26,18 +26,126 @@
 #include	"scripted.h"
 #include	"animation.h"
 #include	"soundent.h"
+#include	"weapons.h"
 
-#define NUM_SCIENTIST_HEADS		4 // four heads available for scientist model
+#define NUM_SCIENTIST_HEADS		10 // four heads available for scientist model
+enum { HEAD_GLASSES = 0, HEAD_EINSTEIN = 1, HEAD_LUTHER = 2, HEAD_SLICK = 3, HEAD_LUKA = 4, HEAD_VORT = 5, HEAD_GLASSES2 = 6, HEAD_EINSTEIN2 = 7, HEAD_LUTHER2 = 8, HEAD_SLICK2 = 9 };
+
+#define VENDOR_TYPE_WEP	0
+#define VENDOR_TYPE_CLOTHES 1
+#define VENDOR_TYPE_FOOD 2
+#define VENDOR_TYPE_TRINKET 4
+#define VENDOR_TYPE_WFOOD 5
+#define MAX_VENDOR_WEPS 7
+#define MAX_VENDOR_CLOTHES 3
+#define MAX_VENDOR_FOOD 3
+#define MAX_VENDOR_TRINKETS 6
+
+//WEAPONS
+const char* VendorItems[MAX_VENDOR_WEPS] = {
+"IKEA .357 - Price: 50$", 
+"Clawgun - Price: 35$", 
+"Sawn-off Shotgun - Price: 50$",
+"Chainsaw Launcher - Price: 100$",
+"Railgun - Price: 50$",
+"Magic Wand - Price : 80$",
+"Rune Scimitar - Price : 100$"
+};
+
+char* VendorItemNames[MAX_VENDOR_WEPS] = {
+	"weapon_357",
+	"weapon_clawgun",
+	"weapon_sawnoff",
+	"weapon_rpg",
+	"weapon_gauss",
+	"weapon_hornetgun",
+	"weapon_scimitar"
+};
+
+int VendorPrices[MAX_VENDOR_WEPS] =
+{
+	50,35,50,100,50,80,100
+};
+
+//CLOTHES
+const char* VendorClothes[MAX_VENDOR_CLOTHES] = {
+	"Battery - Price: 2$",
+	"Full HEV Charge - Price: 10$",
+	"Scorpion Jacket - Price: 15$"
+};
+
+char* VendorClothesNames[MAX_VENDOR_CLOTHES] = {
+	"item_battery",
+	"item_fullbattery",
+	"item_scorpionjacket"
+};
+
+int VendorClothesPrices[MAX_VENDOR_CLOTHES] =
+{
+	2, 10, 15
+};
+
+//FOOD
+const char* VendorFood[MAX_VENDOR_FOOD] = {
+	"Pizza - Price: 3$",
+	"Pizza 2: Electric Boogaloo - Price: 5$",
+	"Pizza 3: The Reckoning - Price: 9$"
+};
+
+char* VendorFoodNames[MAX_VENDOR_FOOD] = {
+	"item_pizza",
+	"item_midpizza",
+	"item_bigpizza"
+};
+
+int VendorFoodsPrices[MAX_VENDOR_FOOD] =
+{
+	3, 5, 9
+};
+
+//TRINKETS
+const char* VendorTrinkets[MAX_VENDOR_TRINKETS] = {
+	"Bepis - Price: 4$",
+	"Tripmine - Price: 2$",
+	"DO YOU SUCK DICKS? - Price: 3$",
+	"UPS Mail - Price: 2$",
+	"Banana - Price: 2$",
+	"Wrench - Price: 60$"
+};
+
+char* VendorTrinketNames[MAX_VENDOR_TRINKETS] = {
+	"weapon_handgrenade",
+	"weapon_tripmine",
+	"weapon_snark",
+	"weapon_satchel",
+	"weapon_banana",
+	"weapon_wrench"
+};
+
+int VendorTrinketPrices[MAX_VENDOR_TRINKETS] =
+{
+	4, 2, 3, 2, 2, 60
+};
+
+//WAGNER FOOD
+const char* VendorWFood[MAX_VENDOR_FOOD] = {
+	"Pizza - Price: 1$",
+	"Pizza 2: Electric Boogaloo - Price: 3$",
+	"Pizza 3: The Reckoning - Price: 5$"
+};
+
+char* VendorWFoodNames[MAX_VENDOR_FOOD] = {
+	"item_pizza",
+	"item_midpizza",
+	"item_bigpizza"
+};
+
+int VendorWFoodsPrices[MAX_VENDOR_FOOD] =
+{
+	1, 3, 5
+};
 
 static cvar_t *g_psv_override_scientist_mdl;
-
-enum
-{
-	HEAD_GLASSES = 0,
-	HEAD_EINSTEIN = 1,
-	HEAD_LUTHER = 2,
-	HEAD_SLICK = 3
-};
 
 enum
 {
@@ -66,6 +174,19 @@ enum
 #define		SCIENTIST_AE_HEAL	( 1 )
 #define		SCIENTIST_AE_NEEDLEON	( 2 )
 #define		SCIENTIST_AE_NEEDLEOFF	( 3 )
+#define		SCIENTIST_SUDOKU		( 420 )
+#define		SCIENTIST_DESPACITO		( 69 )
+#define		SCIENTIST_SHOCKED		( 74 )
+#define		SCIENTIST_EXPLODE		( 75 )
+#define		SCIENTIST_RAGE			( 101 )
+#define		SCIENTIST_RAGEHIT		( 102 )
+#define		SCIENTIST_STOPRAGE		( 103 )
+#define		SCIENTIST_GRAB			( 53  )
+#define		SCIENIST_DEATHSHOT		( 54  )
+#define		FATSCIENTIST_WATERCANON		( 105 )
+#define		FATSCIENTIST_WATERCANOFF		( 106 )
+#define		FATSCIENTIST_CUPON		( 107 )
+#define		FATSCIENTIST_CUPOFF		( 108 )
 
 //=======================================================
 // Scientist
@@ -88,12 +209,23 @@ public:
 	Activity GetStoppedActivity( void );
 	int ISoundMask( void );
 	void DeclineFollowing( void );
+	void SwitchVendorItem( int ItemType );
+	int FIdleSpeak(void);
+	void EXPORT CommitSudoku(void);
+	void Sudoku(void);
+	bool Suicidal = false;
+	bool BeingShocked;
+
+	int GetPaid(int amount);
+	void KeyValue(KeyValueData *pkvd);
+	int m_vendorType;
 
 	float CoverRadius( void ) { return 1200; }		// Need more room for cover because scientists want to get far away!
 	BOOL DisregardEnemy( CBaseEntity *pEnemy ) { return !pEnemy->IsAlive() || ( gpGlobals->time - m_fearTime ) > 15; }
 
 	BOOL CanHeal( void );
 	void Heal( void );
+	void Grab(void);
 	void Scream( void );
 
 	// Override these to set behavior
@@ -129,9 +261,68 @@ TYPEDESCRIPTION	CScientist::m_SaveData[] =
 	DEFINE_FIELD( CScientist, m_painTime, FIELD_TIME ),
 	DEFINE_FIELD( CScientist, m_healTime, FIELD_TIME ),
 	DEFINE_FIELD( CScientist, m_fearTime, FIELD_TIME ),
+	DEFINE_FIELD( CScientist, m_vendorType, FIELD_INTEGER),
 };
 
 IMPLEMENT_SAVERESTORE( CScientist, CTalkMonster )
+
+void CScientist::KeyValue(KeyValueData *pkvd)
+{
+	if (FStrEq(pkvd->szKeyName, "vendortype"))
+	{
+		m_vendorType = atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else
+		CBaseMonster::KeyValue(pkvd);
+}
+
+
+int CScientist::FIdleSpeak(void)
+{
+	// try to start a conversation, or make statement
+	int pitch;
+
+	if (!FOkToSpeak())
+		return FALSE;
+
+	// set global min delay for next conversation
+	//Lowered it so that they would be constantly shittalking
+	CTalkMonster::g_talkWaitTime = gpGlobals->time + RANDOM_FLOAT(1.8, 2.2);
+
+	pitch = GetVoicePitch();
+
+	// if there is a friend nearby to speak to, play sentence, set friend's response time, return
+
+	// try to talk to any standing or sitting scientists nearby
+	CBaseEntity *pentFriend = FindNearestFriend(FALSE);
+
+	//if (pentFriend && RANDOM_LONG(0,1))
+	if (pentFriend)
+	{
+		/*CTalkMonster *pTalkMonster = GetClassPtr((CTalkMonster *)pentFriend->pev);
+		pTalkMonster->SetAnswerQuestion(this);
+
+		IdleHeadTurn(pentFriend->pev->origin);
+		SENTENCEG_PlayRndSz(ENT(pev), m_szGrp[TLK_PQUESTION], 1.0, ATTN_IDLE, 0, pitch);
+		// set global min delay for next conversation
+		CTalkMonster::g_talkWaitTime = gpGlobals->time + RANDOM_FLOAT(1.8, 2.2);*/
+		return TRUE;
+	}
+
+	// otherwise, play an idle statement
+	//if (RANDOM_LONG(0,1))
+	//{
+	SENTENCEG_PlayRndSz(ENT(pev), m_szGrp[TLK_PIDLE], 1.0, ATTN_IDLE, 0, pitch);
+	// set global min delay for next conversation
+	CTalkMonster::g_talkWaitTime = gpGlobals->time + RANDOM_FLOAT(1.8, 2.2);
+	return TRUE;
+	//}//What if we allowed him to constantly chatter?
+
+	// never spoke
+	CTalkMonster::g_talkWaitTime = 0;
+	return FALSE;
+}
 
 //=========================================================
 // AI Schedules Specific to this monster
@@ -216,7 +407,7 @@ Schedule_t slStopFollowing[] =
 
 Task_t tlHeal[] =
 {
-	{ TASK_MOVE_TO_TARGET_RANGE, 50.0f },	// Move within 60 of target ent (client)
+	{ TASK_MOVE_TO_TARGET_RANGE, 70.0f },	// Move within 60 of target ent (client)
 	{ TASK_SET_FAIL_SCHEDULE, (float)SCHED_TARGET_CHASE },	// If you fail, catch up with that guy! (change this to put syringe away and then chase)
 	{ TASK_FACE_IDEAL, 0.0f },
 	{ TASK_SAY_HEAL, 0.0f },
@@ -419,12 +610,214 @@ DEFINE_CUSTOM_SCHEDULES( CScientist )
 
 IMPLEMENT_CUSTOM_SCHEDULES( CScientist, CTalkMonster )
 
+int CScientist::GetPaid(int amount)
+{
+	if (!FBitSet(pev->spawnflags, SF_MONSTER_VENDOR))
+		return 0;
+
+	switch (m_vendorType)
+	{
+	case VENDOR_TYPE_WEP:
+	{
+		if (amount < VendorPrices[SelectedItem])
+		{
+			UTIL_CenterPrintAll("Not enough money!");
+			PlaySentence("SC_VENDDECLINE", 2, VOL_NORM, ATTN_NORM);
+			return 0;
+		}
+		else
+		{
+			UTIL_CenterPrintAll("Item purchased!");
+			PlaySentence("SC_VENDBUY", 2, VOL_NORM, ATTN_NORM);
+
+			UTIL_MakeVectors(pev->angles);
+
+			CBaseEntity *pGun = DropItem(VendorItemNames[SelectedItem], pev->origin + gpGlobals->v_forward * 6 + gpGlobals->v_up * 64, pev->angles);
+			pGun->pev->velocity = pGun->pev->velocity + gpGlobals->v_forward * 128;
+
+			return VendorPrices[SelectedItem];
+		}
+
+		break;
+	}
+	case VENDOR_TYPE_CLOTHES:
+	{
+		if (amount < VendorClothesPrices[SelectedItem])
+		{
+			UTIL_CenterPrintAll("Not enough money!");
+			PlaySentence("SC_VENDDECLINE", 2, VOL_NORM, ATTN_NORM);
+			return 0;
+		}
+		else
+		{
+			UTIL_CenterPrintAll("Item purchased!");
+			PlaySentence("SC_VENDBUY", 2, VOL_NORM, ATTN_NORM);
+
+			UTIL_MakeVectors(pev->angles);
+
+			CBaseEntity *pGun = DropItem(VendorClothesNames[SelectedItem], pev->origin + gpGlobals->v_forward * 42 + gpGlobals->v_up * 64, pev->angles);
+			pGun->pev->velocity = pGun->pev->velocity + gpGlobals->v_forward * 128;
+
+			return VendorClothesPrices[SelectedItem];
+		}
+		break;
+	}
+	case VENDOR_TYPE_FOOD:
+	{
+		if (amount < VendorFoodsPrices[SelectedItem])
+		{
+			UTIL_CenterPrintAll("Not enough money!");
+			PlaySentence("SC_VENDDECLINE", 2, VOL_NORM, ATTN_NORM);
+			return 0;
+		}
+		else
+		{
+			UTIL_CenterPrintAll("Item purchased!");
+			PlaySentence("SC_VENDBUY", 2, VOL_NORM, ATTN_NORM);
+
+			UTIL_MakeVectors(pev->angles);
+
+			CBaseEntity *pGun = DropItem(VendorFoodNames[SelectedItem], pev->origin + gpGlobals->v_forward * 42 + gpGlobals->v_up * 64, pev->angles);
+			pGun->pev->velocity = pGun->pev->velocity + gpGlobals->v_forward * 128;
+
+			return VendorFoodsPrices[SelectedItem];
+		}
+		break;
+	}
+	case VENDOR_TYPE_TRINKET:
+	{
+		if (amount < VendorTrinketPrices[SelectedItem])
+		{
+			UTIL_CenterPrintAll("Not enough money!");
+			PlaySentence("SC_VENDDECLINE", 2, VOL_NORM, ATTN_NORM);
+			return 0;
+		}
+		else
+		{
+			UTIL_CenterPrintAll("Item purchased!");
+			PlaySentence("SC_VENDBUY", 2, VOL_NORM, ATTN_NORM);
+
+			UTIL_MakeVectors(pev->angles);
+
+			CBaseEntity *pGun = DropItem(VendorTrinketNames[SelectedItem], pev->origin + gpGlobals->v_forward * 42 + gpGlobals->v_up * 64, pev->angles);
+			pGun->pev->velocity = pGun->pev->velocity + gpGlobals->v_forward * 128;
+
+			return VendorTrinketPrices[SelectedItem];
+		}
+		break;
+	}
+	case VENDOR_TYPE_WFOOD:
+	{
+		if (amount < VendorWFoodsPrices[SelectedItem])
+		{
+			UTIL_CenterPrintAll("Not enough money!");
+			PlaySentence("SC_VENDDECLINE", 2, VOL_NORM, ATTN_NORM);
+			return 0;
+		}
+		else
+		{
+			UTIL_CenterPrintAll("Item purchased!");
+			PlaySentence("SC_VENDBUY", 2, VOL_NORM, ATTN_NORM);
+
+			UTIL_MakeVectors(pev->angles);
+
+			CBaseEntity *pGun = DropItem(VendorWFoodNames[SelectedItem], pev->origin + gpGlobals->v_forward * 42 + gpGlobals->v_up * 64, pev->angles);
+			pGun->pev->velocity = pGun->pev->velocity + gpGlobals->v_forward * 128;
+
+			return VendorWFoodsPrices[SelectedItem];
+		}
+		break;
+	}
+	default:
+		return 0; break;
+	}
+}
+
 void CScientist::DeclineFollowing( void )
 {
-	Talk( 10 );
-	m_hTalkTarget = m_hEnemy;
-	PlaySentence( "SC_POK", 2, VOL_NORM, ATTN_NORM );
+	if (FBitSet(pev->spawnflags, SF_MONSTER_VENDOR))
+	{
+		SwitchVendorItem(m_vendorType);
+		return;
+	}
+
+	if (BeingShocked)
+		return;
+	if (Suicidal)
+	{
+		int oldBody = pev->body;
+		pev->body = (oldBody % NUM_SCIENTIST_HEADS) + NUM_SCIENTIST_HEADS * 2;
+		ResetSequenceInfo();
+		CommitSudoku();
+	}
+	else
+	{
+		Talk( 10 );
+		m_hTalkTarget = m_hEnemy;
+		if (pev->body == HEAD_LUKA)
+			PlaySentence( "SC_POKL", 2, VOL_NORM, ATTN_NORM );
+		else
+			PlaySentence( "SC_POK", 2, VOL_NORM, ATTN_NORM );
+	}
 }
+
+void CScientist::SwitchVendorItem(int ItemType)
+{
+	switch (ItemType)
+	{
+	case VENDOR_TYPE_WEP:
+	{
+		if (SelectedItem >= MAX_VENDOR_WEPS - 1)
+			SelectedItem = 0;
+		else
+			SelectedItem += 1;
+		UTIL_CenterPrintAll(VendorItems[SelectedItem]);
+			  break;
+	}
+	case VENDOR_TYPE_CLOTHES:
+	{
+		if (SelectedItem >= MAX_VENDOR_CLOTHES -1)
+			SelectedItem = 0;
+		else
+			SelectedItem += 1;
+		UTIL_CenterPrintAll(VendorClothes[SelectedItem]);
+		break;
+	}
+	case VENDOR_TYPE_FOOD:
+	{
+		if (SelectedItem >= MAX_VENDOR_FOOD - 1)
+			SelectedItem = 0;
+		else
+			SelectedItem += 1;
+		UTIL_CenterPrintAll(VendorFood[SelectedItem]);
+		break;
+	}
+	case VENDOR_TYPE_TRINKET:
+	{
+		if (SelectedItem >= MAX_VENDOR_TRINKETS - 1)
+			SelectedItem = 0;
+		else
+			SelectedItem += 1;
+		UTIL_CenterPrintAll(VendorTrinkets[SelectedItem]);
+		break;
+	}
+	case VENDOR_TYPE_WFOOD:
+	{
+		if (SelectedItem >= MAX_VENDOR_FOOD - 1)
+			SelectedItem = 0;
+		else
+			SelectedItem += 1;
+		UTIL_CenterPrintAll(VendorWFood[SelectedItem]);
+		break;
+	}
+
+	default:
+		break;
+	}
+	
+	PlaySentence("SC_VEND", 2, VOL_NORM, ATTN_NORM);
+}
+
 
 const char *CScientist::GetScientistModel( void )
 {
@@ -493,7 +886,7 @@ void CScientist::StartTask( Task_t *pTask )
 		TaskComplete();
 		break;
 	case TASK_HEAL:
-		m_IdealActivity = ACT_MELEE_ATTACK1;
+		m_IdealActivity = ACT_BITE;
 		break;
 	case TASK_RUN_PATH_SCARED:
 		m_movementActivity = ACT_RUN_SCARED;
@@ -631,9 +1024,25 @@ void CScientist::SetYawSpeed( void )
 void CScientist::HandleAnimEvent( MonsterEvent_t *pEvent )
 {
 	switch( pEvent->event )
-	{		
+	{	
+	case SCIENIST_DEATHSHOT:
+		{
+			Vector target = m_hTargetEnt->pev->origin - pev->origin;
+			if (target.Length() > 150)
+				return;
+
+			if (m_hTargetEnt->IsPlayer())
+			{
+				EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "zombie/claw_strike1.wav", 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG(-5, 5));
+				m_hTargetEnt->TakeDamage(pev, pev, 300, DMG_PARALYZE);
+			}
+		}
+	case SCIENTIST_GRAB:
+		{
+		Grab();
+		}	
 	case SCIENTIST_AE_HEAL:		// Heal my target (if within range)
-		Heal();
+		//Heal();
 		break;
 	case SCIENTIST_AE_NEEDLEON:
 		{
@@ -647,9 +1056,121 @@ void CScientist::HandleAnimEvent( MonsterEvent_t *pEvent )
 			pev->body = ( oldBody % NUM_SCIENTIST_HEADS ) + NUM_SCIENTIST_HEADS * 0;
 		}
 		break;
+	case FATSCIENTIST_WATERCANON:
+		{
+		int oldBody = pev->body;
+		pev->body = 1;
+		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "newsounds/watercan.wav", 1, ATTN_NORM, 0, 100);
+		}
+		break;
+	case FATSCIENTIST_WATERCANOFF:
+		{
+		int oldBody = pev->body;
+		pev->body = 0;
+		}
+		break;
+		case FATSCIENTIST_CUPON:
+		{
+		int oldBody = pev->body;
+		pev->body = 2;
+		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "weapons/slurp.wav", 1, ATTN_NORM, 0, 100);
+		}
+		break;
+		case FATSCIENTIST_CUPOFF:
+		{
+		int oldBody = pev->body;
+		pev->body = 0;
+		}
+		break;
+	case SCIENTIST_DESPACITO:
+		{
+		int oldBody = pev->body;
+		pev->body = (oldBody % NUM_SCIENTIST_HEADS) + NUM_SCIENTIST_HEADS * 2;
+		ResetSequenceInfo();
+		CommitSudoku();
+		}
+		break;
+	case SCIENTIST_SUDOKU:
+		{
+		Sudoku();
+		}
+		break;
+	case SCIENTIST_SHOCKED:
+		{
+		BeingShocked = true;
+		SENTENCEG_PlayRndSz(ENT(pev), "SC_SHOCKED", 1.0, ATTN_NORM, 0, m_voicePitch);
+		pev->nextthink = gpGlobals->time + 6.9;
+		MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
+		WRITE_BYTE(TE_SMOKE);
+		WRITE_COORD(RANDOM_FLOAT(pev->absmin.x, pev->absmax.x));
+		WRITE_COORD(RANDOM_FLOAT(pev->absmin.y, pev->absmax.y));
+		WRITE_COORD(pev->origin.z);
+		WRITE_SHORT(g_sModelIndexSmoke);
+		WRITE_BYTE(25); // scale * 10
+		WRITE_BYTE(10); // framerate
+		MESSAGE_END();
+		CBeam *m_pBeam[3];
+		for (int i = 0; i < 3; i++)
+		{
+			m_pBeam[i] = CBeam::BeamCreate("sprites/lgtning.spr", 30);
+			if (!m_pBeam)
+				return;
+
+			m_pBeam[i]->PointsInit(pev->origin + gpGlobals->v_up * RANDOM_LONG(32, 64) + gpGlobals->v_right * RANDOM_LONG(-20, 20) - gpGlobals->v_forward * 15, pev->origin + gpGlobals->v_forward * 52 + gpGlobals->v_up * 40 + gpGlobals->v_right * RANDOM_LONG(-10, 10));
+			m_pBeam[i]->SetColor(20, 20, 255);
+			m_pBeam[i]->SetBrightness(255);
+			m_pBeam[i]->LiveForTime(7);
+			m_pBeam[i]->SetNoise(95);
+		}
+		}
+		break;
+	case SCIENTIST_EXPLODE:
+		{
+		CGrenade::ShootContact(pev, pev->origin, gpGlobals->v_up);
+		}
+		break;
+	case SCIENTIST_RAGE:
+		{
+		SENTENCEG_PlayRndSz(ENT(pev), "SC_RAGE", 1.0, ATTN_NORM, 0, m_voicePitch);
+		BeingShocked = true;
+		}
+		break;
+	case SCIENTIST_RAGEHIT:
+		{
+		UTIL_Sparks(pev->origin + gpGlobals->v_forward * 14 + gpGlobals->v_up * RANDOM_LONG(50, 72) + gpGlobals->v_right * RANDOM_LONG(-30, 30));
+		}
+		break;
+	case SCIENTIST_STOPRAGE:
+		{
+		BeingShocked = false;
+		}
+		break;
 	default:
 		CTalkMonster::HandleAnimEvent( pEvent );
 	}
+}
+
+void CScientist::CommitSudoku(void)
+{
+	
+	SENTENCEG_PlayRndSz(ENT(pev), "SC_DESPACITO", 1.0, ATTN_NORM, 0, m_voicePitch);
+	pev->sequence = LookupSequence("sudoku");
+	pev->frame = 0;
+	pev->framerate = 1;
+	ResetSequenceInfo();
+	pev->nextthink = gpGlobals->time + 2.3;
+}
+
+void CScientist::Sudoku(void)
+{
+	EMIT_SOUND_DYN(ENT(pev), CHAN_ITEM, "weapons/357_shot1.wav", 1, ATTN_NORM, 0, 100);
+	pev->effects = EF_MUZZLEFLASH;
+
+	TakeDamage(pev, pev, pev->health, DMG_BULLET);
+	SpawnBlood(pev->origin + gpGlobals->v_up * 64, BloodColor(), 100);// a little surface blood.
+	m_LastHitGroup = HITGROUP_HEAD;
+
+	CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, 384, 0.3);
 }
 
 //=========================================================
@@ -685,8 +1206,21 @@ void CScientist::Spawn( void )
 	pev->skin = 0;
 
 	// Luther is black, make his hands black
-	if( pev->body == HEAD_LUTHER )
+	if( pev->body == HEAD_LUTHER || pev->body == HEAD_LUTHER2 )
 		pev->skin = 1;
+
+		SelectedItem = 0;
+	if (m_iTriggerCondition == AITRIGGER_NONE)
+	{
+		if (FStringNull(pev->targetname) && (RANDOM_LONG(0, 4) == 1))
+			Suicidal = true;
+		else
+			Suicidal = false;
+	}
+
+	BeingShocked = false;
+
+	//AddShockEffect(255, 155, 155, 16, 15);
 
 	MonsterInit();
 	SetUse( &CTalkMonster::FollowerUse );
@@ -699,10 +1233,21 @@ void CScientist::Precache( void )
 {
 	PRECACHE_MODEL( GetScientistModel());
 	PRECACHE_SOUND( "scientist/sci_pain1.wav" );
+	PRECACHE_SOUND("common/bodydrop1.wav");
 	PRECACHE_SOUND( "scientist/sci_pain2.wav" );
 	PRECACHE_SOUND( "scientist/sci_pain3.wav" );
 	PRECACHE_SOUND( "scientist/sci_pain4.wav" );
 	PRECACHE_SOUND( "scientist/sci_pain5.wav" );
+
+	PRECACHE_SOUND("weapons/cbar_hitbod1.wav");
+	PRECACHE_SOUND("zombie/claw_strike1.wav");
+	PRECACHE_SOUND("zombie/claw_strike2.wav");
+	PRECACHE_SOUND("zombie/claw_strike3.wav");
+	PRECACHE_SOUND("zombie/claw_miss1.wav");
+	PRECACHE_SOUND("zombie/claw_miss2.wav");
+	PRECACHE_SOUND("weapons/slurp.wav");
+	PRECACHE_SOUND("weapons/357_shot1.wav");
+	PRECACHE_SOUND("scientist/shocked.wav");
 
 	// every new scientist must call this, otherwise
 	// when a level is loaded, nobody will talk (time is reset to 0)
@@ -756,6 +1301,12 @@ void CScientist::TalkInit()
 	case HEAD_SLICK:
 		m_voicePitch = 100;
 		break;	//slick
+	case HEAD_LUKA:		
+		m_voicePitch = 90;  
+		break;  //Lukashenko
+	case HEAD_VORT:		
+		m_voicePitch = 70; 
+		break;  //Vortigaunt
 	}
 }
 
@@ -765,6 +1316,22 @@ int CScientist::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, flo
 	{
 		Remember( bits_MEMORY_PROVOKED );
 		StopFollowing( TRUE );
+	}
+
+	if ((FClassnameIs(pevInflictor, "monster_madscientist") || FClassnameIs(pevInflictor, "monster_forklift")) || (FClassnameIs(pevInflictor, "monster_camerasci") && (RANDOM_LONG(0, 1) == 0)))
+	{
+		int pitch = GetVoicePitch();
+		SetThink(&CBaseEntity::SUB_Remove);
+		CBaseEntity *pMad = CBaseEntity::Create("monster_madscientist", pev->origin, pev->angles);
+		pMad->pev->targetname = pev->targetname;
+		pMad->pev->modelindex = pev->modelindex;
+		pMad->pev->frame = 0;
+		pMad->pev->body = pev->body;
+		pMad->pev->skin = pev->skin;
+		int oldBody = pMad->pev->body;
+		pMad->pev->body = (oldBody % NUM_SCIENTIST_HEADS) + NUM_SCIENTIST_HEADS * 1;
+		SENTENCEG_PlayRndSz(ENT(pMad->pev), "SC_FUCKIT", 1.0, ATTN_IDLE, 0, pitch);
+		pMad->pev->sequence = LookupSequence("pull_needle");
 	}
 
 	// make sure friends talk about it if player hurts scientist...
@@ -794,6 +1361,27 @@ void CScientist::PainSound( void )
 {
 	if( gpGlobals->time < m_painTime )
 		return;
+
+	//SPECIAL HAPPENING
+	if (RANDOM_LONG(0, 8) == 0) //SPECIAL HAPPENING
+	{
+		switch (RANDOM_LONG(0, 10))
+		{
+		case 0: EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "generic/genericpain1.wav", 1, ATTN_NORM, 0, 100); break;
+		case 1: EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "generic/genericpain2.wav", 1, ATTN_NORM, 0, 100); break;
+		case 2: EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "generic/genericpain3.wav", 1, ATTN_NORM, 0, 100); break;
+		case 3: EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "generic/genericpain4.wav", 1, ATTN_NORM, 0, 100); break;
+		case 4: EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "generic/genericpain5.wav", 1, ATTN_NORM, 0, 100); break;
+		case 5: EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "generic/genericpain6.wav", 1, ATTN_NORM, 0, 100); break;
+		case 6: EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "generic/genericpain7.wav", 1, ATTN_NORM, 0, 100); break;
+		case 7: EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "generic/genericpain8.wav", 1, ATTN_NORM, 0, 100); break;
+		case 8: EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "generic/genericpain9.wav", 1, ATTN_NORM, 0, 100); break;
+		case 9: EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "generic/genericpain10.wav", 1, ATTN_NORM, 0, 100); break;
+		case 10: EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "generic/genericpain11.wav", 1, ATTN_NORM, 0, 100); break;
+		}
+		return;
+	}
+	//SPECIAL HAPPENING
 
 	m_painTime = gpGlobals->time + RANDOM_FLOAT( 0.5f, 0.75f );
 
@@ -1071,6 +1659,15 @@ MONSTERSTATE CScientist::GetIdealState( void )
 
 BOOL CScientist::CanHeal( void )
 { 
+	if (Suicidal)
+	{
+		int oldBody = pev->body;
+		pev->body = (oldBody % NUM_SCIENTIST_HEADS) + NUM_SCIENTIST_HEADS * 2;
+		ResetSequenceInfo();
+		CommitSudoku();
+		return FALSE;
+	}
+
 	if( ( m_healTime > gpGlobals->time ) || ( m_hTargetEnt == 0 ) || ( m_hTargetEnt->pev->health > ( m_hTargetEnt->pev->max_health * 0.5f ) ) )
 		return FALSE;
 
@@ -1083,13 +1680,40 @@ void CScientist::Heal( void )
 		return;
 
 	Vector target = m_hTargetEnt->pev->origin - pev->origin;
-	if( target.Length() > 100.0f )
+	if( target.Length() > 150.0f )
 		return;
 
 	m_hTargetEnt->TakeHealth( gSkillData.scientistHeal, DMG_GENERIC );
+}
+
+void CScientist::Grab(void)
+{
+	if (!CanHeal())
+		return;
+
+	Vector target = m_hTargetEnt->pev->origin - pev->origin;
+	if( target.Length() > 100.0f )
+		return;
+
 	// Don't heal again for 1 minute
 	m_healTime = gpGlobals->time + 60;
+
+	if (m_hTargetEnt->IsPlayer())
+	{
+		m_hTargetEnt->TakeDamage(pev, pev, 1, DMG_PARALYZE);
+		m_hTalkTarget->pev->origin = pev->origin + gpGlobals->v_up * 44 + gpGlobals->v_forward * 28;
+		m_hTalkTarget->pev->angles = -pev->angles;
+		m_hTalkTarget->FBecomeProne();
+		m_hTalkTarget->pev->weapons = 0;
+		EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "common/bodydrop1.wav", 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG(-5, 5));
+		SENTENCEG_PlayRndSz(ENT(pev), "SC_DEATHSHOT", 1.0, ATTN_IDLE, 0, GetVoicePitch());
+		CBaseEntity *pEntity = Create("player_weaponstrip", m_hTalkTarget->pev->origin, m_hTalkTarget->pev->angles);
+		pEntity->Use(m_hTalkTarget, m_hTalkTarget, USE_SET, 1);
+
+		//m_hTargetEnt->TakeDamage(pev, pev, m_hTargetEnt->pev->health, DMG_PARALYZE);
+	}
 }
+
 
 int CScientist::FriendNumber( int arrayNumber )
 {
@@ -1432,7 +2056,8 @@ int CSittingScientist::FIdleSpeak( void )
 		return FALSE;
 
 	// set global min delay for next conversation
-	CTalkMonster::g_talkWaitTime = gpGlobals->time + RANDOM_FLOAT( 4.8, 5.2 );
+	//Lowered it so that they would be constantly shittalking
+	CTalkMonster::g_talkWaitTime = gpGlobals->time + RANDOM_FLOAT( 1.8, 2.2 );
 
 	pitch = GetVoicePitch();
 
@@ -1441,7 +2066,8 @@ int CSittingScientist::FIdleSpeak( void )
 	// try to talk to any standing or sitting scientists nearby
 	CBaseEntity *pentFriend = FindNearestFriend( FALSE );
 
-	if( pentFriend && RANDOM_LONG( 0, 1 ) )
+	//if( pentFriend && RANDOM_LONG( 0, 1 ) )
+	if (pentFriend)
 	{
 		CTalkMonster *pTalkMonster = GetClassPtr( (CTalkMonster *)pentFriend->pev );
 		pTalkMonster->SetAnswerQuestion( this );
@@ -1449,20 +2075,86 @@ int CSittingScientist::FIdleSpeak( void )
 		IdleHeadTurn( pentFriend->pev->origin );
 		SENTENCEG_PlayRndSz( ENT( pev ), m_szGrp[TLK_PQUESTION], 1.0, ATTN_IDLE, 0, pitch );
 		// set global min delay for next conversation
-		CTalkMonster::g_talkWaitTime = gpGlobals->time + RANDOM_FLOAT( 4.8, 5.2 );
+		CTalkMonster::g_talkWaitTime = gpGlobals->time + RANDOM_FLOAT( 1.8, 2.2 );
 		return TRUE;
 	}
 
 	// otherwise, play an idle statement
-	if( RANDOM_LONG( 0, 1 ) )
-	{
+	//if( RANDOM_LONG( 0, 1 ) )
+	//{
 		SENTENCEG_PlayRndSz( ENT( pev ), m_szGrp[TLK_PIDLE], 1.0, ATTN_IDLE, 0, pitch );
 		// set global min delay for next conversation
-		CTalkMonster::g_talkWaitTime = gpGlobals->time + RANDOM_FLOAT( 4.8, 5.2 );
+		CTalkMonster::g_talkWaitTime = gpGlobals->time + RANDOM_FLOAT( 1.8, 2.2 );
 		return TRUE;
-	}
+	//}//What if we allowed him to constantly chatter?
 
 	// never spoke
 	CTalkMonster::g_talkWaitTime = 0;
 	return FALSE;
+}
+
+class CFatScientist : public CScientist // kdb: changed from public CBaseMonster so he can speak
+{
+public:
+	void Spawn(void);
+	void SetYawSpeed(void);
+};
+
+LINK_ENTITY_TO_CLASS(monster_fatscientist, CFatScientist);
+
+//
+// ********** Scientist SPAWN **********
+//
+void CFatScientist::Spawn()
+{
+	PRECACHE_MODEL("models/fatscientist.mdl");
+	PRECACHE_SOUND("newsounds/watercan.wav");
+	PRECACHE_SOUND("weapons/slurp.wav");
+	TalkInit();
+	SET_MODEL(ENT(pev), "models/fatscientist.mdl");
+	UTIL_SetSize(pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX);
+
+	pev->solid = SOLID_SLIDEBOX;
+	pev->movetype = MOVETYPE_STEP;
+	m_bloodColor = BLOOD_COLOR_RED;
+	pev->health = gSkillData.scientistHealth;
+	pev->view_ofs = Vector(0, 0, 50);// position of the eyes relative to monster's origin.
+	m_flFieldOfView = 0.6; // NOTE: we need a wide field of view so scientists will notice player and say hello
+	m_MonsterState = MONSTERSTATE_NONE;
+
+	//	m_flDistTooFar		= 256.0;
+
+	m_afCapability = bits_CAP_HEAR | bits_CAP_TURN_HEAD | bits_CAP_OPEN_DOORS | bits_CAP_AUTO_DOORS | bits_CAP_USE;
+
+	// White hands
+	pev->skin = 0;
+
+	if (pev->body == -1)
+	{// -1 chooses a random head
+		pev->body = RANDOM_LONG(0, NUM_SCIENTIST_HEADS - 1);// pick a head, any head
+	}
+
+	// Luther is black, make his hands black
+	if (pev->body == HEAD_LUTHER || pev->body == HEAD_LUTHER2)
+		pev->skin = 1;
+
+
+	SelectedItem = 0;
+
+	if (FStringNull(pev->targetname) && (RANDOM_LONG(0, 4) == 1))
+		Suicidal = true;
+	else
+		Suicidal = false;
+
+	BeingShocked = false;
+
+	//AddShockEffect(255, 155, 155, 16, 15);
+
+	MonsterInit();
+	SetUse(&CTalkMonster::FollowerUse);
+}
+
+void CFatScientist::SetYawSpeed(void)
+{
+	pev->yaw_speed = 360;
 }
