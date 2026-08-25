@@ -328,7 +328,7 @@ void CLight::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useTyp
 		else
 				m_iState = STATE_ON;
 			break;
-		STATE_IN_USE:
+		case STATE_IN_USE:
 			break;
 		default:
 			break;
