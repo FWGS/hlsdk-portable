@@ -219,7 +219,6 @@ entvars_t *CGraph::LinkEntForLink( CLink *pLink, CNode *pNode )
 //=========================================================
 int CGraph::HandleLinkEnt( int iNode, entvars_t *pevLinkEnt, int afCapMask, NODEQUERY queryType )
 {
-	edict_t  *pentWorld;
 	//edict_t *pentWorld;
 	CBaseEntity *pDoor;
 	TraceResult tr;
