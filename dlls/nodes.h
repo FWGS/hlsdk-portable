@@ -278,9 +278,28 @@ class CNodeEnt : public CBaseEntity
 	void Spawn( void );
 	void KeyValue( KeyValueData *pkvd );
 	virtual int	ObjectCaps( void ) { return CBaseEntity :: ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
+	void EXPORT Randomizer(void);
 
 	short m_sHintType;
 	short m_sHintActivity;
+};
+
+//=========================================================
+// Randomizer spawner, is spawned on every node
+// But only a few spawners actually spawn, all of the are
+// later removed once the spawning is done
+// the delay is there to check the player weapons
+//=========================================================
+class CRandSpawner : public CBaseEntity
+{
+	void Spawn(void);
+	void EXPORT SpawnNPC(void);
+	void Precache(void);
+	bool IsPreDisasterMap(void);
+	bool PlayerIsVisible(void);
+	bool chimpevent = false;
+public:
+	entvars_t *Playerpev;
 };
 
 //=========================================================

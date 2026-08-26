@@ -826,11 +826,16 @@ void ClientPrecache( void )
 {
 	// setup precaches always needed
 	PRECACHE_SOUND( "player/sprayer.wav" );			// spray paint sound for PreAlpha
+	PRECACHE_SOUND("player/failsave.wav");
 
 	// PRECACHE_SOUND( "player/pl_jumpland2.wav" );		// UNDONE: play 2x step sound
 
 	PRECACHE_SOUND( "player/pl_fallpain2.wav" );
 	PRECACHE_SOUND( "player/pl_fallpain3.wav" );
+
+	PRECACHE_SOUND("gonarch/gon_step1.wav");
+	PRECACHE_SOUND("gonarch/gon_step2.wav");
+	PRECACHE_SOUND("gonarch/gon_step3.wav");
 
 	PRECACHE_SOUND( "player/pl_step1.wav" );		// walk on concrete
 	PRECACHE_SOUND( "player/pl_step2.wav" );
@@ -841,6 +846,26 @@ void ClientPrecache( void )
 	PRECACHE_SOUND( "common/npc_step2.wav" );
 	PRECACHE_SOUND( "common/npc_step3.wav" );
 	PRECACHE_SOUND( "common/npc_step4.wav" );
+
+	PRECACHE_SOUND("player/loser.wav");
+
+	PRECACHE_SOUND("zombie/claw_strike1.wav");
+	PRECACHE_SOUND("zombie/claw_strike2.wav");
+	PRECACHE_SOUND("zombie/claw_strike3.wav");
+	PRECACHE_SOUND("zombie/claw_miss1.wav");
+	PRECACHE_SOUND("zombie/claw_miss2.wav");
+
+	PRECACHE_SOUND("generic/genericpain1.wav");
+	PRECACHE_SOUND("generic/genericpain2.wav");
+	PRECACHE_SOUND("generic/genericpain3.wav");
+	PRECACHE_SOUND("generic/genericpain4.wav");
+	PRECACHE_SOUND("generic/genericpain5.wav");
+	PRECACHE_SOUND("generic/genericpain6.wav");
+	PRECACHE_SOUND("generic/genericpain7.wav");
+	PRECACHE_SOUND("generic/genericpain8.wav");
+	PRECACHE_SOUND("generic/genericpain9.wav");
+	PRECACHE_SOUND("generic/genericpain10.wav");
+	PRECACHE_SOUND("generic/genericpain11.wav");
 
 	PRECACHE_SOUND( "player/pl_metal1.wav" );		// walk on metal
 	PRECACHE_SOUND( "player/pl_metal2.wav" );
@@ -907,6 +932,7 @@ void ClientPrecache( void )
 
 	// player gib sounds
 	PRECACHE_SOUND( "common/bodysplat.wav" );
+	PRECACHE_SOUND("common/bodysplat2.wav");
 
 	// player pain sounds
 	PRECACHE_SOUND( "player/pl_pain2.wav" );

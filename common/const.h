@@ -617,6 +617,7 @@
 #define CONTENT_SLIME		-4
 #define CONTENT_LAVA		-5
 #define CONTENT_SKY			-6
+#define CONTENT_SLUDGE       -7
 
 // channels
 #define CHAN_AUTO			0

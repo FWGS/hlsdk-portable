@@ -66,6 +66,200 @@ int iAgruntMuzzleFlash;
 
 #define		AGRUNT_MELEE_DIST	100.0f
 
+#if !CLIENT_DLL
+class CAgruntSparkle : public CBaseEntity
+{
+	void Spawn(int type);
+	void Precache(void);
+	int  Classify(void);
+	void EXPORT BoltTouch(CBaseEntity *pOther);
+	int bolttype;
+	int m_iTrail;
+
+public:
+	static CAgruntSparkle *BoltCreate(int type);
+};
+LINK_ENTITY_TO_CLASS(agruntsparkle, CAgruntSparkle);
+
+CAgruntSparkle *CAgruntSparkle::BoltCreate(int type)
+{
+	// Create a new entity with CCrossbowBolt private data
+	CAgruntSparkle *pBolt = GetClassPtr((CAgruntSparkle *)NULL);
+	pBolt->pev->classname = MAKE_STRING("bolt");
+	pBolt->Spawn(type);
+	pBolt->bolttype = type;
+	return pBolt;
+}
+
+void CAgruntSparkle::Spawn(int type)
+{
+	Precache();
+	pev->movetype = MOVETYPE_FLY;
+	pev->solid = SOLID_BBOX;
+	SET_MODEL(ENT(pev), "sprites/muz4.spr");
+	pev->rendermode = kRenderTransColor;
+	pev->renderamt = 255;
+	pev->gravity = 0.1;
+	pev->frame = 0;
+	pev->framerate = 8;
+	if (type == 0)
+	{
+		pev->scale = 0.3;
+		UTIL_SetSize(pev, Vector(-3, -3, -3), Vector(3, 3, 3));
+	}
+	else if (type == 1)
+	{
+		pev->scale = 0.2;
+		UTIL_SetSize(pev, Vector(-0.2, -0.2, -0.2), Vector(0.2, 0.2, 0.2));
+	}
+	else
+	{
+		pev->scale = 0.8;
+		UTIL_SetSize(pev, Vector(-8, -8, -8), Vector(8, 8, 8));
+	}
+	// rocket trail
+	MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
+
+	WRITE_BYTE(TE_BEAMFOLLOW);
+	WRITE_SHORT(entindex());	// entity
+	WRITE_SHORT(m_iTrail);	// model
+	WRITE_BYTE(15); // life
+	WRITE_BYTE(3);  // width
+	WRITE_BYTE(245);   // r, g, b
+	WRITE_BYTE(45);   // r, g, b
+	WRITE_BYTE(215);   // r, g, b
+	WRITE_BYTE(255);	// brightness
+
+	MESSAGE_END();  // move PHS/PVS data sending into here (SEND_ALL, SEND_PVS, SEND_PHS)
+	pev->rendermode = kRenderTransAdd;
+	pev->rendercolor.x = 255;
+	pev->rendercolor.y = 255;
+	pev->rendercolor.z = rand() % 255;
+	pev->renderamt = 255;
+	pev->renderfx = kRenderFxNoDissipation;
+	SetTouch(&CAgruntSparkle::BoltTouch);
+	pev->nextthink = gpGlobals->time + 0.2;
+}
+
+void CAgruntSparkle::Precache()
+{
+	PRECACHE_MODEL("sprites/muz7.spr");
+	m_iTrail = PRECACHE_MODEL("sprites/muz4.spr");
+	PRECACHE_SOUND("buttons/spark4.wav");
+	PRECACHE_SOUND("buttons/spark5.wav");
+	PRECACHE_SOUND("buttons/spark6.wav");
+	UTIL_PrecacheOther("monster_rat");
+}
+
+
+int	CAgruntSparkle::Classify(void)
+{
+	return	CLASS_NONE;
+}
+
+void CAgruntSparkle::BoltTouch(CBaseEntity *pOther)
+{
+	if (FClassnameIs(pOther->pev, "bolt"))
+		return;
+
+	SetTouch(NULL);
+	SetThink(NULL);
+	UTIL_Remove(this);
+
+	switch (RANDOM_LONG(0, 2))
+	{
+	case 0: EMIT_SOUND(ENT(pev), CHAN_ITEM, "buttons/spark4.wav", 1, ATTN_NORM); break;
+	case 1:	EMIT_SOUND(ENT(pev), CHAN_ITEM, "buttons/spark5.wav", 1, ATTN_NORM); break;
+	case 2:	EMIT_SOUND(ENT(pev), CHAN_ITEM, "buttons/spark6.wav", 1, ATTN_NORM); break;
+	}
+	if (UTIL_PointContents(pev->origin) != CONTENTS_WATER)
+	{
+		UTIL_Sparks(pev->origin);
+	}
+	if (pOther->edict() == pev->owner)
+		return;
+	if (bolttype == 1)
+	{
+		TraceResult tr;
+		UTIL_TraceLine(pev->origin, pev->origin + Vector(0, 0, -32), ignore_monsters, ENT(pev), &tr);
+		MESSAGE_BEGIN(MSG_PAS, SVC_TEMPENTITY, pev->origin);
+		WRITE_BYTE(TE_EXPLOSION);		// This makes a dynamic light and the explosion sprites/sound
+		WRITE_COORD(pev->origin.x);	// Send to PAS because of the sound
+		WRITE_COORD(pev->origin.y);
+		WRITE_COORD(pev->origin.z);
+		WRITE_SHORT(g_sModelIndexFireball);
+		WRITE_BYTE(15); // scale * 10
+		WRITE_BYTE(30); // framerate
+		WRITE_BYTE(TE_EXPLFLAG_NONE);
+		MESSAGE_END();
+		RadiusDamage(pev->origin, pev, pev, 25, 85, CLASS_NONE, DMG_ENERGYBEAM);
+	}
+	if (pOther->pev->takedamage && !pOther->IsBSPModel())
+	{
+		if (bolttype == 2)
+		{
+			pOther->SetThink(&CBaseEntity::SUB_Remove);
+			CBaseEntity *pReplacement = Create("monster_rat", pOther->pev->origin, pOther->pev->angles);
+			pReplacement->pev->angles.y = RANDOM_LONG(1, 360);
+			MESSAGE_BEGIN(MSG_PAS, SVC_TEMPENTITY, pev->origin);
+			WRITE_BYTE(TE_IMPLOSION);
+			WRITE_COORD(pReplacement->pev->origin.x);
+			WRITE_COORD(pReplacement->pev->origin.y);
+			WRITE_COORD(pReplacement->pev->origin.z);
+			WRITE_BYTE(40);  // radius
+			WRITE_BYTE(25); // count
+			WRITE_BYTE(5); // life
+			MESSAGE_END();
+		}
+
+		TraceResult tr = UTIL_GetGlobalTrace();
+		entvars_t	*pevOwner;
+		pevOwner = VARS(pev->owner);
+		// UNDONE: this needs to call TraceAttack instead
+		ClearMultiDamage();
+		if (bolttype == 0)
+		{
+			CBaseMonster *pMonster = pOther->MyMonsterPointer();
+			if (pMonster->IsAlive() && pMonster->pev->health > 0)
+			{
+				pMonster->AddShockEffect(251, 45, 215, 16, 1);
+				pMonster->frozen = 25;
+			}
+			if (pOther->IsPlayer())
+				pOther->TraceAttack(pevOwner, 9, pev->velocity.Normalize(), &tr, DMG_ENERGYBEAM);
+			else
+				pOther->TraceAttack(pevOwner, 1, pev->velocity.Normalize(), &tr, DMG_ENERGYBEAM);
+		}
+		else
+		{
+			pOther->TraceAttack(pevOwner, 24, pev->velocity.Normalize(), &tr, DMG_ENERGYBEAM);
+		}
+		ApplyMultiDamage(pev, pevOwner);
+		pev->velocity = Vector(0, 0, 0);
+	}
+	else
+	{
+		TraceResult tr;
+		UTIL_TraceLine(pev->origin, pev->origin + pev->velocity.Normalize() * 64, ignore_monsters, ENT(pev), &tr);
+		// Pull out of the wall a bit
+		if (tr.flFraction != 1.0)
+		{
+			pev->origin = tr.vecEndPos + (tr.vecPlaneNormal * (pev->dmg - 24) * 0.02);
+		}
+
+		// draw decal
+		if (!(pev->spawnflags))
+		{
+			if (bolttype == 1)
+			{
+				UTIL_DecalTrace(&tr, 11);
+			}
+		}
+	}
+
+}
+#endif
+
 class CAGrunt : public CSquadMonster
 {
 public:
@@ -458,17 +652,31 @@ void CAGrunt::HandleAnimEvent( MonsterEvent_t *pEvent )
 				WRITE_BYTE( TE_SPRITE );
 				WRITE_COORD( vecArmPos.x );	// pos
 				WRITE_COORD( vecArmPos.y );	
-				WRITE_COORD( vecArmPos.z );	
+				WRITE_COORD( vecArmPos.z + 16 );	
 				WRITE_SHORT( iAgruntMuzzleFlash );		// model
 				WRITE_BYTE( 6 );				// size * 10
 				WRITE_BYTE( 128 );			// brightness
 			MESSAGE_END();
 
-			CBaseEntity *pHornet = CBaseEntity::Create( "hornet", vecArmPos, UTIL_VecToAngles( vecDirToEnemy ), edict() );
+			/*CBaseEntity *pHornet = CBaseEntity::Create( "hornet", vecArmPos, UTIL_VecToAngles( vecDirToEnemy ), edict() );
 			UTIL_MakeVectors( pHornet->pev->angles );
-			pHornet->pev->velocity = gpGlobals->v_forward * 300.0f;
+			pHornet->pev->velocity = gpGlobals->v_forward * 300.0f;*/
 
-			switch( RANDOM_LONG( 0, 2 ) )
+			UTIL_MakeVectors(pev->angles);
+			Vector vecDir = gpGlobals->v_forward;
+			Vector vecShootDir = ShootAtEnemy(vecArmPos + gpGlobals->v_up * 18 + gpGlobals->v_forward * 24);
+			EMIT_SOUND(ENT(pev), CHAN_WEAPON, "weapons/wand1.wav", 1, ATTN_NORM);
+#if !CLIENT_DLL
+			UTIL_ScreenShake(vecArmPos, 10.0, 1.0, 0.1, 1);
+			CAgruntSparkle *pBolt = CAgruntSparkle::BoltCreate(0);
+			pBolt->pev->origin = vecArmPos + gpGlobals->v_up * 18 + gpGlobals->v_forward * 24;
+			pBolt->pev->angles = pev->angles;
+			pBolt->pev->owner = edict();
+			pBolt->pev->velocity = vecShootDir * 1000;
+			pBolt->pev->speed = 1000;
+#endif
+
+			/*switch( RANDOM_LONG( 0, 2 ) )
 			{
 				case 0:
 					EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, "agrunt/ag_fire1.wav", 1.0, ATTN_NORM, 0, 100 );
@@ -486,7 +694,7 @@ void CAGrunt::HandleAnimEvent( MonsterEvent_t *pEvent )
 			if( pHornetMonster )
 			{
 				pHornetMonster->m_hEnemy = m_hEnemy;
-			}
+			}*/
 		}
 		break;
 	case AGRUNT_AE_LEFT_FOOT:
@@ -621,6 +829,7 @@ void CAGrunt::Precache()
 	PRECACHE_SOUND_ARRAY( pAlertSounds );
 
 	PRECACHE_SOUND( "hassault/hw_shoot1.wav" );
+	PRECACHE_SOUND("weapons/wand1.wav");
 
 	iAgruntMuzzleFlash = PRECACHE_MODEL( "sprites/muz4.spr" );
 

@@ -447,11 +447,29 @@ LINK_ENTITY_TO_CLASS( worldspawn, CWorld )
 #define SF_WORLD_DARK		0x0001		// Fade from black at startup
 #define SF_WORLD_TITLE		0x0002		// Display game title at startup
 #define SF_WORLD_FORCETEAM	0x0004		// Force teams
+#define SF_WORLD_STOPRANDOMIZER	0x0005		// Stop randomizer
 
 extern DLL_GLOBAL BOOL		g_fGameOver;
 
 void CWorld::Spawn( void )
 {
+	if (norandom == 1)
+	{
+		CVAR_SET_STRING("norandom", "1.0");
+		CVAR_SET_STRING("sv_cheats", "0");
+	}
+	else
+	{
+		CVAR_SET_STRING("norandom", "0.0");
+	}
+
+	if (preventrandom == 1)
+	{
+		CVAR_SET_STRING("preventrandom", "1.0");
+	}
+	else
+		CVAR_SET_STRING("preventrandom", "0.0");
+
 	g_fGameOver = FALSE;
 	Precache();
 }
@@ -459,6 +477,14 @@ void CWorld::Spawn( void )
 void CWorld::Precache( void )
 {
 	g_pLastSpawn = NULL;
+
+	if (preventrandom == 1)
+	{
+		CVAR_SET_STRING("preventrandom", "1.0");
+	}
+	else
+		CVAR_SET_STRING("preventrandom", "0.0");
+
 #if 1
 	CVAR_SET_STRING( "sv_gravity", "800" ); // 67ft/sec
 	CVAR_SET_STRING( "sv_stepsize", "18" );
@@ -650,11 +676,32 @@ void CWorld::Precache( void )
 //
 void CWorld::KeyValue( KeyValueData *pkvd )
 {
+	if (!FStrEq(STRING(gpGlobals->mapname), "survival"))
+		norandom = 0;
+
 	if( FStrEq( pkvd->szKeyName, "skyname" ) )
 	{
 		// Sent over net now.
 		CVAR_SET_STRING( "sv_skyname", pkvd->szValue );
 		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "allowrandomizer"))
+	{
+		pkvd->fHandled = TRUE;
+		norandom = atoi(pkvd->szValue);
+		//RANDOM CHIMP EVENT
+		int chimprand = RANDOM_LONG(0, 7);
+		if (chimprand == 0)
+		{
+			CVAR_SET_STRING("chimpevent", "1.0");
+		}
+		else
+			CVAR_SET_STRING("chimpevent", "0.0");
+	}
+	else if (FStrEq(pkvd->szKeyName, "preventrandom"))
+	{
+		pkvd->fHandled = TRUE;
+		preventrandom = atoi(pkvd->szValue);
 	}
 	else if( FStrEq( pkvd->szKeyName, "sounds" ) )
 	{

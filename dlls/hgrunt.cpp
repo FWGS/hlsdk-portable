@@ -262,7 +262,7 @@ void CHGrunt::SpeakSentence( void )
 //=========================================================
 int CHGrunt::IRelationship( CBaseEntity *pTarget )
 {
-	if( FClassnameIs( pTarget->pev, "monster_alien_grunt" ) || ( FClassnameIs( pTarget->pev,  "monster_gargantua" ) ) )
+	if( FClassnameIs( pTarget->pev, "monster_alien_grunt" ) || ( FClassnameIs( pTarget->pev,  "monster_gargantua" ) ) || ( FClassnameIs(pTarget->pev, "monster_monkey" ) ) )
 	{
 		return R_NM;
 	}
@@ -1165,6 +1165,27 @@ void CHGrunt::PainSound( void )
 			}
 		}
 #endif
+		//SPECIAL HAPPENING
+		if (RANDOM_LONG(0, 8) == 0) //SPECIAL HAPPENING
+		{
+			switch (RANDOM_LONG(0, 10))
+			{
+			case 0: EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "generic/genericpain1.wav", 1, ATTN_NORM, 0, 100); break;
+			case 1: EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "generic/genericpain2.wav", 1, ATTN_NORM, 0, 100); break;
+			case 2: EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "generic/genericpain3.wav", 1, ATTN_NORM, 0, 100); break;
+			case 3: EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "generic/genericpain4.wav", 1, ATTN_NORM, 0, 100); break;
+			case 4: EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "generic/genericpain5.wav", 1, ATTN_NORM, 0, 100); break;
+			case 5: EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "generic/genericpain6.wav", 1, ATTN_NORM, 0, 100); break;
+			case 6: EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "generic/genericpain7.wav", 1, ATTN_NORM, 0, 100); break;
+			case 7: EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "generic/genericpain8.wav", 1, ATTN_NORM, 0, 100); break;
+			case 8: EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "generic/genericpain9.wav", 1, ATTN_NORM, 0, 100); break;
+			case 9: EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "generic/genericpain10.wav", 1, ATTN_NORM, 0, 100); break;
+			case 10: EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "generic/genericpain11.wav", 1, ATTN_NORM, 0, 100); break;
+			}
+			return;
+		}
+		//SPECIAL HAPPENING
+
 		switch( RANDOM_LONG( 0, 6 ) )
 		{
 		case 0:	
@@ -1853,8 +1874,11 @@ void CHGrunt::SetActivity( Activity NewActivity )
 			}
 			else
 			{
+				if (RANDOM_LONG(0,2) != 0)
 				// get crouching shoot
-				iSequence = LookupSequence( "crouching_mp5" );
+					iSequence = LookupSequence( "crouching_mp5" );
+				else
+					iSequence = LookupSequence("hipfire_mp5");
 			}
 		}
 		else

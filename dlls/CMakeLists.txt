@@ -45,6 +45,54 @@ else()
 endif()
 
 set (SVDLL_SOURCES
+	CLAnniversary/badbarney.cpp
+	CLAnniversary/banana.cpp
+	CLAnniversary/bog.cpp
+	CLAnniversary/bowknight.cpp
+	CLAnniversary/camerasci.cpp
+	CLAnniversary/chicken.cpp
+	CLAnniversary/ciaman.cpp
+	CLAnniversary/clawgun.cpp
+	CLAnniversary/cleansuit.cpp
+	CLAnniversary/cowboy.cpp
+	CLAnniversary/dartsci.cpp
+	CLAnniversary/drill.cpp
+	CLAnniversary/eugene.cpp
+	CLAnniversary/extraclean.cpp
+	CLAnniversary/fatscientist.cpp
+	CLAnniversary/fedorasci.cpp
+	CLAnniversary/firebombsci.cpp
+	CLAnniversary/forklifft.cpp
+	CLAnniversary/georgedroid.cpp
+	CLAnniversary/ginastreamer.cpp
+	CLAnniversary/gonrider.cpp
+	CLAnniversary/Gus.cpp
+	CLAnniversary/jman.cpp
+	CLAnniversary/junglesci.cpp
+	CLAnniversary/madscientist.cpp
+	CLAnniversary/money.cpp
+	CLAnniversary/monkey.cpp
+	CLAnniversary/mopedgrunt.cpp
+	CLAnniversary/musketzombie.cpp
+	CLAnniversary/obamium.cpp
+	CLAnniversary/oetker.cpp
+	CLAnniversary/pajeet.cpp
+	CLAnniversary/panther.cpp
+	CLAnniversary/phone.cpp
+	CLAnniversary/piwo.cpp
+	CLAnniversary/rajesh.cpp
+	CLAnniversary/roboninja.cpp
+	CLAnniversary/robowizard.cpp
+	CLAnniversary/rocketgina.cpp
+	CLAnniversary/sawnoff.cpp
+	CLAnniversary/scimitar.cpp
+	CLAnniversary/scooter.cpp
+	CLAnniversary/shieldbarn.cpp
+	CLAnniversary/skibidiloader.cpp
+	CLAnniversary/unbarney.cpp
+	CLAnniversary/varg.cpp
+	CLAnniversary/whiteknight.cpp
+	CLAnniversary/wrench.cpp
 	agrunt.cpp
 	airtank.cpp
 	aflock.cpp

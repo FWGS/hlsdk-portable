@@ -100,6 +100,16 @@ void CItem::Spawn( void )
 		UTIL_Remove( this );
 		return;
 	}
+
+	//SURVIVAL MODE
+	if (!FStrEq(STRING(gpGlobals->mapname), "survival"))
+		SetThink(NULL);
+	else
+	{
+		survtimer = 0;
+		SetThink(&CBaseEntity::SurvivalItemTimer);
+		pev->nextthink = gpGlobals->time + 1;
+	}
 }
 
 extern int gEvilImpulse101;
@@ -253,6 +263,117 @@ class CItemBattery : public CItem
 };
 
 LINK_ENTITY_TO_CLASS( item_battery, CItemBattery )
+
+class CFullItemBattery : public CItem
+{
+	void Spawn(void)
+	{
+		Precache();
+		SET_MODEL(ENT(pev), "models/w_battery.mdl");
+		CItem::Spawn();
+	}
+	void Precache(void)
+	{
+		PRECACHE_MODEL("models/w_battery.mdl");
+		PRECACHE_SOUND("items/gunpickup2.wav");
+	}
+	BOOL MyTouch(CBasePlayer *pPlayer)
+	{
+		if (pPlayer->pev->deadflag != DEAD_NO)
+		{
+			return FALSE;
+		}
+
+		if ((pPlayer->pev->armorvalue < MAX_NORMAL_BATTERY) &&
+			(pPlayer->pev->weapons & (1 << WEAPON_SUIT)))
+		{
+			int pct;
+			char szcharge[64];
+
+			pPlayer->pev->armorvalue += 100;
+			pPlayer->pev->armorvalue = Q_min(pPlayer->pev->armorvalue, MAX_NORMAL_BATTERY);
+
+			EMIT_SOUND(pPlayer->edict(), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM);
+
+			MESSAGE_BEGIN(MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev);
+			WRITE_STRING(STRING(pev->classname));
+			MESSAGE_END();
+
+
+			// Suit reports new power level
+			// For some reason this wasn't working in release build -- round it.
+			pct = (int)((float)(pPlayer->pev->armorvalue * 100.0) * (1.0 / MAX_NORMAL_BATTERY) + 0.5);
+			pct = (pct / 5);
+			if (pct > 0)
+				pct--;
+
+			sprintf(szcharge, "!HEV_%1dP", pct);
+
+			//EMIT_SOUND_SUIT(ENT(pev), szcharge);
+			pPlayer->SetSuitUpdate(szcharge, FALSE, SUIT_NEXT_IN_30SEC);
+			return TRUE;
+		}
+		return FALSE;
+	}
+};
+
+LINK_ENTITY_TO_CLASS(item_fullbattery, CFullItemBattery);
+
+class CScorpionJacket : public CItem
+{
+	void Spawn(void)
+	{
+		Precache();
+		SET_MODEL(ENT(pev), "models/w_scorpionjacket.mdl");
+		UTIL_SetSize(pev, Vector(-16, -16, 0), Vector(16, 16, 16));
+		CItem::Spawn();
+	}
+	void Precache(void)
+	{
+		PRECACHE_MODEL("models/w_scorpionjacket.mdl");
+		PRECACHE_SOUND("items/gunpickup2.wav");
+	}
+	BOOL MyTouch(CBasePlayer *pPlayer)
+	{
+		if (pPlayer->pev->deadflag != DEAD_NO)
+		{
+			return FALSE;
+		}
+
+		if ((pPlayer->pev->armorvalue < 200) &&
+			(pPlayer->pev->weapons & (1 << WEAPON_SUIT)))
+		{
+			int pct;
+			char szcharge[64];
+
+			pPlayer->pev->armorvalue += 200;
+			pPlayer->pev->armorvalue = Q_min(pPlayer->pev->armorvalue, 200);
+
+			EMIT_SOUND(pPlayer->edict(), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM);
+
+			MESSAGE_BEGIN(MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev);
+			WRITE_STRING(STRING(pev->classname));
+			MESSAGE_END();
+
+
+			// Suit reports new power level
+			// For some reason this wasn't working in release build -- round it.
+			pct = (int)((float)(pPlayer->pev->armorvalue * 100.0) * (1.0 / 200) + 0.5);
+			pct = (pct / 5);
+			if (pct > 0)
+				pct--;
+
+			sprintf(szcharge, "!HEV_%1dP", pct);
+
+			//EMIT_SOUND_SUIT(ENT(pev), szcharge);
+			pPlayer->SetSuitUpdate(szcharge, FALSE, SUIT_NEXT_IN_30SEC);
+			return TRUE;
+		}
+		return FALSE;
+	}
+};
+
+LINK_ENTITY_TO_CLASS(item_scorpionjacket, CScorpionJacket);
 
 class CItemAntidote : public CItem
 {

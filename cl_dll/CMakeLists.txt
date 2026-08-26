@@ -77,6 +77,16 @@ set (CLDLL_SOURCES
 	../dlls/squeakgrenade.cpp
 	../dlls/tripmine.cpp
 	../dlls/glock.cpp
+	../dlls/CLAnniversary/banana.cpp
+	../dlls/CLAnniversary/clawgun.cpp
+	../dlls/CLAnniversary/scimitar.cpp
+	../dlls/CLAnniversary/obamium.cpp
+	../dlls/CLAnniversary/sawnoff.cpp
+	../dlls/CLAnniversary/money.cpp
+	../dlls/CLAnniversary/phone.cpp
+	../dlls/CLAnniversary/piwo.cpp
+	../dlls/CLAnniversary/wrench.cpp
+	CLAnniversary/bonzi.cpp
 	ev_hldm.cpp
 	hl/hl_baseentity.cpp
 	hl/hl_events.cpp

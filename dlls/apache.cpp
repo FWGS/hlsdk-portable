@@ -53,6 +53,8 @@ class CApache : public CBaseMonster
 	void EXPORT StartupUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
 	void EXPORT NullThink( void );
 
+	int IRelationship( CBaseEntity *pTarget );
+
 	void ShowDamage( void );
 	void Flight( void );
 	void FireRocket( void );
@@ -423,6 +425,14 @@ void CApache::CrashTouch( CBaseEntity *pOther )
 		m_flNextRocket = gpGlobals->time;
 		pev->nextthink = gpGlobals->time;
 	}
+}
+
+int CApache::IRelationship(CBaseEntity *pTarget)
+{
+	if (FClassnameIs(pTarget->pev, "monster_monkey"))
+		return R_HT;
+
+	return CBaseMonster::IRelationship(pTarget);
 }
 
 void CApache::GibMonster( void )

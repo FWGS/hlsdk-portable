@@ -105,6 +105,15 @@ int CBaseAnimating::LookupSequence( const char *label )
 
 //=========================================================
 //=========================================================
+int CBaseAnimating::LookupRandomSequence()
+{
+	void *pmodel = GET_MODEL_PTR(ENT(pev));
+
+	return ::GetRandomSequence(pmodel);
+}
+
+//=========================================================
+//=========================================================
 void CBaseAnimating::ResetSequenceInfo()
 {
 	void *pmodel = GET_MODEL_PTR( ENT( pev ) );

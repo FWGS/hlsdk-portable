@@ -35,10 +35,141 @@
 #define		BARNEY_AE_DRAW		( 2 )
 #define		BARNEY_AE_SHOOT		( 3 )
 #define		BARNEY_AE_HOLSTER	( 4 )
+#define		BARNEY_BAT_ATTACK	( 5 )
+#define		BARNEY_BAT_HOLSTER	( 11 )
+#define		BARNEY_BEER_CRACK	( 12 )
+#define		BARNEY_BEER_THROW	( 13 )
+#define		BARNEY_BEER_GET		( 8 )
 
 #define	BARNEY_BODY_GUNHOLSTERED	0
 #define	BARNEY_BODY_GUNDRAWN		1
-#define BARNEY_BODY_GUNGONE		2
+#define BARNEY_BODY_BAT				2
+#define BARNEY_BODY_PIWO			3
+#define BARNEY_BODY_GUNGONE			4
+
+#define BOLT_AIR_VELOCITY	1800
+#define BOLT_WATER_VELOCITY	1200
+
+#ifndef CLIENT_DLL
+class CBarnpiwo : public CBaseEntity
+{
+	void Spawn(void);
+	void Precache(void);
+	int  Classify(void);
+	void EXPORT BubbleThink(void);
+	void EXPORT BoltTouch(CBaseEntity *pOther);
+	void EXPORT ExplodeThink(void);
+	int touchcounter = 0;
+
+	int m_iTrail;
+
+public:
+	static CBarnpiwo *BoltCreate(void);
+};
+LINK_ENTITY_TO_CLASS(barnpiwo, CBarnpiwo);
+
+CBarnpiwo *CBarnpiwo::BoltCreate(void)
+{
+	// Create a new entity with CCrossbowBolt private data
+	CBarnpiwo *pBolt = GetClassPtr((CBarnpiwo *)NULL);
+	pBolt->pev->classname = MAKE_STRING("barnpiwo");
+	pBolt->Spawn();
+	pBolt->touchcounter = 0;
+
+	return pBolt;
+}
+
+void CBarnpiwo::Spawn()
+{
+	Precache();
+	pev->movetype = MOVETYPE_FLY;
+	pev->solid = SOLID_BBOX;
+
+	pev->gravity = 0.8;
+
+	SET_MODEL(ENT(pev), "models/w_piwo.mdl");
+
+	UTIL_SetOrigin(pev, pev->origin);
+	UTIL_SetSize(pev, Vector(-16, -16, 0), Vector(16, 16, 16));
+
+	SetTouch(&CBarnpiwo::BoltTouch);
+	SetThink(&CBarnpiwo::BubbleThink);
+	pev->nextthink = gpGlobals->time + 0.2;
+}
+
+
+void CBarnpiwo::Precache()
+{
+	PRECACHE_MODEL("models/w_piwo.mdl");
+	PRECACHE_SOUND("debris/can.wav");
+}
+
+
+int	CBarnpiwo::Classify(void)
+{
+	return	CLASS_NONE;
+}
+
+void CBarnpiwo::BoltTouch(CBaseEntity *pOther)
+{
+	//pev->angles.x = 0;
+	//pev->angles.z = 0;
+	touchcounter++;
+
+	if (touchcounter == 1)
+	{
+		SetThink(&CBarnpiwo::ExplodeThink);
+		pev->nextthink = gpGlobals->time + 3;
+	}
+
+
+	if (touchcounter > 100)
+		UTIL_Remove(this);
+
+	if (pev->velocity.z == 0)
+	{
+		UTIL_Remove(this);
+	}
+
+	if (pOther->edict() == pev->owner)
+		return;
+
+	if (FClassnameIs(pOther->pev, "player"))
+		return;
+
+	// pev->avelocity = Vector (300, 300, 300);
+
+	if (pev->flags & FL_ONGROUND)
+	{
+		// add a bit of static friction
+		pev->velocity = pev->velocity * 0.15;
+
+		if (pev->velocity <= Vector(1, 1, 1))
+		{
+			UTIL_Remove(this);
+		}
+	}
+	else
+	{
+		EMIT_SOUND_DYN(ENT(pev), CHAN_BODY, "debris/can.wav", 0.35, ATTN_IDLE, 0, 98 + RANDOM_LONG(0, 7));
+	}
+}
+
+void CBarnpiwo::BubbleThink(void)
+{
+	pev->nextthink = gpGlobals->time + 0.1;
+
+	if (pev->waterlevel == 0)
+		return;
+
+	UTIL_BubbleTrail(pev->origin - pev->velocity * 0.1, pev->origin, 1);
+}
+
+void CBarnpiwo::ExplodeThink(void)
+{
+	UTIL_Remove(this);
+}
+#endif
 
 class CBarney : public CTalkMonster
 {
@@ -51,12 +182,19 @@ public:
 	void AlertSound( void );
 	int Classify( void );
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
+	void GetBat(void);
+	void BarneyBatAttack(void);
+	void GetGun(void);
 
 	void RunTask( Task_t *pTask );
 	void StartTask( Task_t *pTask );
 	virtual int ObjectCaps( void ) { return CTalkMonster :: ObjectCaps() | FCAP_IMPULSE_USE; }
 	int TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
 	BOOL CheckRangeAttack1( float flDot, float flDist );
+	BOOL CheckMeleeAttack1(float flDot, float flDist);
+
+	static const char *pAttackHitSounds[];
+	static const char *pAttackMissSounds[];
 
 	void DeclineFollowing( void );
 
@@ -78,6 +216,7 @@ public:
 	static TYPEDESCRIPTION m_SaveData[];
 
 	BOOL m_fGunDrawn;
+	BOOL m_fBatDrawn;
 	float m_painTime;
 	float m_checkAttackTime;
 	BOOL m_lastAttackCheck;
@@ -93,6 +232,7 @@ LINK_ENTITY_TO_CLASS( monster_barney, CBarney )
 TYPEDESCRIPTION	CBarney::m_SaveData[] =
 {
 	DEFINE_FIELD( CBarney, m_fGunDrawn, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CBarney, m_fBatDrawn, FIELD_BOOLEAN ),
 	DEFINE_FIELD( CBarney, m_painTime, FIELD_TIME ),
 	DEFINE_FIELD( CBarney, m_checkAttackTime, FIELD_TIME ),
 	DEFINE_FIELD( CBarney, m_lastAttackCheck, FIELD_BOOLEAN ),
@@ -233,6 +373,19 @@ void CBarney::RunTask( Task_t *pTask )
 	}
 }
 
+const char *CBarney::pAttackHitSounds[] =
+{
+	"zombie/claw_strike1.wav",
+	"zombie/claw_strike2.wav",
+	"zombie/claw_strike3.wav",
+};
+
+const char *CBarney::pAttackMissSounds[] =
+{
+	"zombie/claw_miss1.wav",
+	"zombie/claw_miss2.wav",
+};
+
 //=========================================================
 // ISoundMask - returns a bit mask indicating which types
 // of sounds this monster regards. 
@@ -284,16 +437,16 @@ void CBarney::SetYawSpeed( void )
 	switch ( m_Activity )
 	{
 	case ACT_IDLE:		
-		ys = 70;
+		ys = 180;
 		break;
 	case ACT_WALK:
-		ys = 70;
+		ys = 270;
 		break;
 	case ACT_RUN:
-		ys = 90;
+		ys = 270;
 		break;
 	default:
-		ys = 70;
+		ys = 270;
 		break;
 	}
 
@@ -305,8 +458,13 @@ void CBarney::SetYawSpeed( void )
 //=========================================================
 BOOL CBarney::CheckRangeAttack1( float flDot, float flDist )
 {
-	if( flDist <= 1024.0f && flDot >= 0.5f )
+	if( flDist <= 1024.0f && flDot >= 0.5f && flDist >= 200.0f )
 	{
+		if (m_fBatDrawn)
+		{
+			GetBat();
+			return FALSE;
+		}
 		if( gpGlobals->time > m_checkAttackTime )
 		{
 			TraceResult tr;
@@ -324,7 +482,61 @@ BOOL CBarney::CheckRangeAttack1( float flDot, float flDist )
 		}
 		return m_lastAttackCheck;
 	}
+	else if (flDist < 200.0f)
+	{
+		if (!m_fBatDrawn)
+			GetBat();
+		else
+			return FALSE;
+	}
 	return FALSE;
+}
+
+BOOL CBarney::CheckMeleeAttack1(float flDot, float flDist)
+{
+	if (flDist <= 70.0f && flDot >= 0.7f && m_fBatDrawn)
+		return TRUE;
+	return FALSE;
+}
+
+
+void CBarney::GetBat(void)
+{
+	pev->sequence = LookupSequence("getbat");
+	pev->frame = 0;
+	pev->framerate = 1;
+	ResetSequenceInfo();
+	if (!m_fBatDrawn)
+	{
+		m_fBatDrawn = TRUE;
+		m_fGunDrawn = FALSE;
+		pev->body = BARNEY_BODY_BAT;
+	}
+	else
+	{
+		m_fBatDrawn = FALSE;
+		m_fGunDrawn = FALSE;
+		pev->body = BARNEY_BODY_GUNHOLSTERED;
+	}
+	//pev->nextthink = gpGlobals->time + 0.6;
+}
+
+
+void CBarney::BarneyBatAttack(void)
+{
+	// do stuff for this event.
+	CBaseEntity *pHurt = CheckTraceHullAttack(70.0f, 15.0f, DMG_CRUSH);
+	if (pHurt)
+	{
+		if (pHurt->pev->flags & (FL_MONSTER | FL_CLIENT))
+		{
+			pHurt->pev->punchangle.x = 5;
+			pHurt->pev->velocity = pHurt->pev->velocity + gpGlobals->v_forward * -100;
+		}
+		EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, pAttackHitSounds[RANDOM_LONG(0, ARRAYSIZE(pAttackHitSounds) - 1)], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG(-5, 5));
+	}
+	else
+		EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, pAttackMissSounds[RANDOM_LONG(0, ARRAYSIZE(pAttackMissSounds) - 1)], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG(-5, 5));
 }
 
 //=========================================================
@@ -375,6 +587,7 @@ void CBarney::HandleAnimEvent( MonsterEvent_t *pEvent )
 		break;
 	case BARNEY_AE_DRAW:
 		// barney's bodygroup switches here so he can pull gun from holster
+		m_fBatDrawn = false;
 		pev->body = BARNEY_BODY_GUNDRAWN;
 		m_fGunDrawn = TRUE;
 		break;
@@ -382,6 +595,67 @@ void CBarney::HandleAnimEvent( MonsterEvent_t *pEvent )
 		// change bodygroup to replace gun in holster
 		pev->body = BARNEY_BODY_GUNHOLSTERED;
 		m_fGunDrawn = FALSE;
+		break;
+	case BARNEY_BAT_HOLSTER:
+	{
+
+	}
+		break;
+
+	case BARNEY_BEER_GET:
+	{
+		pev->body = BARNEY_BODY_PIWO;
+		break;
+	}
+	case BARNEY_BEER_CRACK:
+	{
+		EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "weapons/piwo.wav", 0.5, ATTN_IDLE, 0, 100);
+		break;
+	}
+	case BARNEY_BEER_THROW:
+	{
+		if (m_fBatDrawn)
+			pev->body = BARNEY_BODY_BAT;
+		else if (m_fGunDrawn)
+			pev->body = BARNEY_BODY_GUNDRAWN;
+		else
+			pev->body = BARNEY_BODY_GUNHOLSTERED;
+
+		//THROW CAN HERE
+#ifndef CLIENT_DLL
+		UTIL_MakeVectors(pev->angles);
+		CBarnpiwo *pBolt = CBarnpiwo::BoltCreate();
+		pBolt->pev->origin = pev->origin + gpGlobals->v_up * 32 - gpGlobals->v_right * 16 + gpGlobals->v_forward * 8;
+
+		pBolt->pev->movetype = MOVETYPE_BOUNCE;
+		pBolt->pev->gravity = 0.5;
+		pBolt->pev->friction = 0.8;
+		pBolt->pev->angles = pev->angles;
+		pBolt->pev->owner = edict();
+
+		pBolt->pev->velocity = pev->velocity + gpGlobals->v_forward * 128 + gpGlobals->v_up * 24 + gpGlobals->v_right * 16;
+		pBolt->pev->speed = 12;
+
+		pBolt->pev->avelocity.x = -600;
+		pBolt->pev->avelocity.y = RANDOM_LONG(-300, 500);
+		pBolt->pev->avelocity.z = RANDOM_LONG(-100, 200);
+#endif
+		switch (RANDOM_LONG(0, 2))
+		{
+			case 0: 
+				EMIT_SOUND(ENT(pev), CHAN_VOICE, "generic/burp.wav", 0.5, ATTN_IDLE); 
+				break;
+			case 1: 
+				EMIT_SOUND(ENT(pev), CHAN_VOICE, "generic/burp2.wav", 0.5, ATTN_IDLE); 
+				break;
+			case 2: 
+				EMIT_SOUND(ENT(pev), CHAN_VOICE, "generic/burp3.wav", 0.5, ATTN_IDLE); 
+				break;
+		}
+		break;
+	}
+	case BARNEY_BAT_ATTACK:
+		BarneyBatAttack();
 		break;
 	default:
 		CTalkMonster::HandleAnimEvent( pEvent );
@@ -538,6 +812,27 @@ void CBarney::PainSound( void )
 {
 	if( gpGlobals->time < m_painTime )
 		return;
+
+	//SPECIAL HAPPENING
+	if (RANDOM_LONG(0, 8) == 0) //SPECIAL HAPPENING
+	{
+		switch (RANDOM_LONG(0, 10))
+		{
+		case 0: EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "generic/genericpain1.wav", 1, ATTN_NORM, 0, 100); break;
+		case 1: EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "generic/genericpain2.wav", 1, ATTN_NORM, 0, 100); break;
+		case 2: EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "generic/genericpain3.wav", 1, ATTN_NORM, 0, 100); break;
+		case 3: EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "generic/genericpain4.wav", 1, ATTN_NORM, 0, 100); break;
+		case 4: EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "generic/genericpain5.wav", 1, ATTN_NORM, 0, 100); break;
+		case 5: EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "generic/genericpain6.wav", 1, ATTN_NORM, 0, 100); break;
+		case 6: EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "generic/genericpain7.wav", 1, ATTN_NORM, 0, 100); break;
+		case 7: EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "generic/genericpain8.wav", 1, ATTN_NORM, 0, 100); break;
+		case 8: EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "generic/genericpain9.wav", 1, ATTN_NORM, 0, 100); break;
+		case 9: EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "generic/genericpain10.wav", 1, ATTN_NORM, 0, 100); break;
+		case 10: EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "generic/genericpain11.wav", 1, ATTN_NORM, 0, 100); break;
+		}
+		return;
+	}
+	//SPECIAL HAPPENING
 
 	m_painTime = gpGlobals->time + RANDOM_FLOAT( 0.5f, 0.75f );
 
@@ -706,7 +1001,7 @@ Schedule_t *CBarney::GetSchedule( void )
 				return GetScheduleOfType( SCHED_SMALL_FLINCH );
 
 			// wait for one schedule to draw gun
-			if( !m_fGunDrawn )
+			if( !m_fGunDrawn && !m_fBatDrawn )
 				return GetScheduleOfType( SCHED_ARM_WEAPON );
 
 			if( HasConditions( bits_COND_HEAVY_DAMAGE ) )

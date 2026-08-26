@@ -55,6 +55,13 @@ vec3_t previousorigin;
 // HLDM Weapon placeholder entities.
 CGlock g_Glock;
 CCrowbar g_Crowbar;
+CWrench g_Wrench;
+CPhone g_Phone;
+CMoney g_Money;
+CSawnoff g_Sawnoff;
+CObamium g_Obamium;
+CScimitar g_Scimitar;
+CClawgun g_Clawgun;
 CPython g_Python;
 CMP5 g_Mp5;
 CCrossbow g_Crossbow;
@@ -67,6 +74,8 @@ CHandGrenade g_HandGren;
 CSatchel g_Satchel;
 CTripmine g_Tripmine;
 CSqueak g_Snark;
+CBanana g_Banana;
+CPiwo g_Piwo;
 
 /*
 ======================
@@ -608,10 +617,17 @@ void HUD_InitClientWeapons( void )
 	// Allocate slot(s) for each weapon that we are going to be predicting
 	HUD_PrepEntity( &g_Glock, &player );
 	HUD_PrepEntity( &g_Crowbar, &player );
+	HUD_PrepEntity( &g_Wrench, &player );
+	HUD_PrepEntity( &g_Phone, &player );
+	HUD_PrepEntity( &g_Money, &player );
+	HUD_PrepEntity( &g_Obamium, &player );
+	HUD_PrepEntity( &g_Scimitar, &player );
+	HUD_PrepEntity(	&g_Clawgun, &player );
 	HUD_PrepEntity( &g_Python, &player );
 	HUD_PrepEntity( &g_Mp5, &player );
 	HUD_PrepEntity( &g_Crossbow, &player );
 	HUD_PrepEntity( &g_Shotgun, &player );
+	HUD_PrepEntity( &g_Sawnoff, &player );
 	HUD_PrepEntity( &g_Rpg, &player );
 	HUD_PrepEntity( &g_Gauss, &player );
 	HUD_PrepEntity( &g_Egon, &player );
@@ -620,6 +636,8 @@ void HUD_InitClientWeapons( void )
 	HUD_PrepEntity( &g_Satchel, &player );
 	HUD_PrepEntity( &g_Tripmine, &player );
 	HUD_PrepEntity( &g_Snark, &player );
+	HUD_PrepEntity( &g_Banana, &player );
+	HUD_PrepEntity( &g_Piwo, &player );
 }
 
 /*
@@ -686,6 +704,27 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 		case WEAPON_CROWBAR:
 			pWeapon = &g_Crowbar;
 			break;
+		case WEAPON_WRENCH:
+			pWeapon = &g_Wrench;
+			break;
+		case WEAPON_PHONE:
+			pWeapon = &g_Phone;
+			break;
+		case WEAPON_MONEY:
+			pWeapon = &g_Money;
+			break;
+		case WEAPON_SAWNOFF:
+			pWeapon = &g_Sawnoff;
+			break;
+		case WEAPON_OBAMIUM:
+			pWeapon = &g_Obamium;
+			break;
+		case WEAPON_SCIMITAR:
+			pWeapon = &g_Scimitar;
+			break;
+		case WEAPON_CLAWGUN:
+			pWeapon = &g_Clawgun;
+			break;
 		case WEAPON_GLOCK:
 			pWeapon = &g_Glock;
 			break;
@@ -724,6 +763,12 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 			break;
 		case WEAPON_SNARK:
 			pWeapon = &g_Snark;
+			break;
+		case WEAPON_BANANA:
+			pWeapon = &g_Banana;
+			break;
+		case WEAPON_PIWO:
+			pWeapon = &g_Piwo;
 			break;
 	}
 

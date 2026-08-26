@@ -224,7 +224,7 @@ void CISlave::IdleSound( void )
 		WRITE_BYTE( 0 );		// decay * 0.1
 	MESSAGE_END();
 
-	EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, "debris/zap1.wav", 1, ATTN_NORM, 0, 100 );
+	EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, "aslave/disco.wav", 1, ATTN_NORM, 0, 100 );
 #endif
 }
 
@@ -233,6 +233,26 @@ void CISlave::IdleSound( void )
 //=========================================================
 void CISlave::PainSound( void )
 {
+	//SPECIAL HAPPENING
+	if (RANDOM_LONG(0, 8) == 0) //SPECIAL HAPPENING
+	{
+		switch (RANDOM_LONG(0, 10))
+		{
+		case 0: EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "generic/genericpain1.wav", 1, ATTN_NORM, 0, 100); break;
+		case 1: EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "generic/genericpain2.wav", 1, ATTN_NORM, 0, 100); break;
+		case 2: EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "generic/genericpain3.wav", 1, ATTN_NORM, 0, 100); break;
+		case 3: EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "generic/genericpain4.wav", 1, ATTN_NORM, 0, 100); break;
+		case 4: EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "generic/genericpain5.wav", 1, ATTN_NORM, 0, 100); break;
+		case 5: EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "generic/genericpain6.wav", 1, ATTN_NORM, 0, 100); break;
+		case 6: EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "generic/genericpain7.wav", 1, ATTN_NORM, 0, 100); break;
+		case 7: EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "generic/genericpain8.wav", 1, ATTN_NORM, 0, 100); break;
+		case 8: EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "generic/genericpain9.wav", 1, ATTN_NORM, 0, 100); break;
+		case 9: EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "generic/genericpain10.wav", 1, ATTN_NORM, 0, 100); break;
+		case 10: EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "generic/genericpain11.wav", 1, ATTN_NORM, 0, 100); break;
+		}
+		return;
+	}
+	//SPECIAL HAPPENING
 	if( RANDOM_LONG( 0, 2 ) == 0 )
 	{
 		EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pPainSounds ), 1.0, ATTN_NORM, 0, m_voicePitch );
@@ -378,7 +398,7 @@ void CISlave::HandleAnimEvent( MonsterEvent_t *pEvent )
 				BeamGlow();
 			}
 
-			EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, "debris/zap4.wav", 1, ATTN_NORM, 0, 100 + m_iBeams * 10 );
+			EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, "aslave/disco.wav", 1, ATTN_NORM, 0, 100 + m_iBeams * 10 );
 			pev->skin = m_iBeams / 2;
 		}
 			break;
@@ -400,7 +420,7 @@ void CISlave::HandleAnimEvent( MonsterEvent_t *pEvent )
 					WackBeam( -1, pNew );
 					WackBeam( 1, pNew );
 					UTIL_Remove( m_hDead );
-					EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, "hassault/hw_shoot1.wav", 1, ATTN_NORM, 0, RANDOM_LONG( 130, 160 ) );
+					EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, "aslave/disco.wav", 1, ATTN_NORM, 0, RANDOM_LONG( 130, 160 ) );
 					/*
 					CBaseEntity *pEffect = Create( "test_effect", pNew->Center(), pev->angles );
 					pEffect->Use( this, this, USE_ON, 1 );
@@ -415,7 +435,7 @@ void CISlave::HandleAnimEvent( MonsterEvent_t *pEvent )
 			ZapBeam( -1 );
 			ZapBeam( 1 );
 
-			EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, "hassault/hw_shoot1.wav", 1, ATTN_NORM, 0, RANDOM_LONG( 130, 160 ) );
+			EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, "aslave/disco.wav", 1, ATTN_NORM, 0, RANDOM_LONG( 130, 160 ) );
 			// STOP_SOUND( ENT( pev ), CHAN_WEAPON, "debris/zap4.wav" );
 			ApplyMultiDamage( pev, pev );
 
@@ -533,6 +553,7 @@ void CISlave::Precache()
 {
 	PRECACHE_MODEL( "models/islave.mdl" );
 	PRECACHE_MODEL( "sprites/lgtning.spr" );
+	PRECACHE_SOUND("aslave/disco.wav");
 	PRECACHE_SOUND( "debris/zap1.wav" );
 	PRECACHE_SOUND( "debris/zap4.wav" );
 	PRECACHE_SOUND( "weapons/electro4.wav" );
@@ -729,7 +750,7 @@ void CISlave::ArmBeam( int side )
 	m_pBeam[m_iBeams]->PointEntInit( tr.vecEndPos, entindex() );
 	m_pBeam[m_iBeams]->SetEndAttachment( side < 0 ? 2 : 1 );
 	// m_pBeam[m_iBeams]->SetColor( 180, 255, 96 );
-	m_pBeam[m_iBeams]->SetColor( 96, 128, 16 );
+	m_pBeam[m_iBeams]->SetColor( 213, 0, 242 );
 	m_pBeam[m_iBeams]->SetBrightness( 64 );
 	m_pBeam[m_iBeams]->SetNoise( 80 );
 	m_pBeam[m_iBeams]->pev->spawnflags |= SF_BEAM_TEMPORARY; // Flag these to be destroyed on save/restore or level transition
@@ -774,7 +795,7 @@ void CISlave::WackBeam( int side, CBaseEntity *pEntity )
 
 	m_pBeam[m_iBeams]->PointEntInit( pEntity->Center(), entindex() );
 	m_pBeam[m_iBeams]->SetEndAttachment( side < 0 ? 2 : 1 );
-	m_pBeam[m_iBeams]->SetColor( 180, 255, 96 );
+	m_pBeam[m_iBeams]->SetColor( 213, 0, 242 );
 	m_pBeam[m_iBeams]->SetBrightness( 255 );
 	m_pBeam[m_iBeams]->SetNoise( 80 );
 	m_pBeam[m_iBeams]->pev->spawnflags |= SF_BEAM_TEMPORARY; // Flag these to be destroyed on save/restore or level transition
@@ -805,7 +826,7 @@ void CISlave::ZapBeam( int side )
 
 	m_pBeam[m_iBeams]->PointEntInit( tr.vecEndPos, entindex() );
 	m_pBeam[m_iBeams]->SetEndAttachment( side < 0 ? 2 : 1 );
-	m_pBeam[m_iBeams]->SetColor( 180, 255, 96 );
+	m_pBeam[m_iBeams]->SetColor( 213, 0, 242 );
 	m_pBeam[m_iBeams]->SetBrightness( 255 );
 	m_pBeam[m_iBeams]->SetNoise( 20 );
 	m_pBeam[m_iBeams]->pev->spawnflags |= SF_BEAM_TEMPORARY; // Flag these to be destroyed on save/restore or level transition
@@ -816,7 +837,7 @@ void CISlave::ZapBeam( int side )
 	{
 		pEntity->TraceAttack( pev, gSkillData.slaveDmgZap, vecAim, &tr, DMG_SHOCK );
 	}
-	UTIL_EmitAmbientSound( ENT( pev ), tr.vecEndPos, "weapons/electro4.wav", 0.5, ATTN_NORM, 0, RANDOM_LONG( 140, 160 ) );
+	UTIL_EmitAmbientSound( ENT( pev ), tr.vecEndPos, "aslave/disco.wav", 0.5, ATTN_NORM, 0, RANDOM_LONG( 140, 160 ) );
 }
 
 //=========================================================
@@ -835,5 +856,5 @@ void CISlave::ClearBeams()
 	m_iBeams = 0;
 	pev->skin = 0;
 
-	STOP_SOUND( ENT( pev ), CHAN_WEAPON, "debris/zap4.wav" );
+	STOP_SOUND( ENT( pev ), CHAN_WEAPON, "aslave/disco.wav" );
 }

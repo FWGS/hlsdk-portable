@@ -21,6 +21,9 @@
 #include	"decals.h"
 #include	"gamerules.h"
 #include	"game.h"
+#include	"monsters.h"
+#include	"effects.h"
+#include	"weapons.h"
 
 bool g_fIsXash3D = false;
 
@@ -257,6 +260,18 @@ void DispatchBlocked( edict_t *pentBlocked, edict_t *pentOther )
 void DispatchSave( edict_t *pent, SAVERESTOREDATA *pSaveData )
 {
 	CBaseEntity *pEntity = (CBaseEntity *)GET_PRIVATE( pent );
+
+	//PREVENT GAME SAVE IF SURVIVAL
+	if (FStrEq(STRING(gpGlobals->mapname), "survival"))
+	{
+		if (pEntity->IsPlayer())
+		{
+			UTIL_ShowMessageAll("THERE IS NO EASY WAY OUT ;)");
+			ALERT(at_error, "SAVING IS NOT ALLOWED ON SURVIVAL! CORRUPTING THE FILE!\n");
+			EMIT_SOUND(ENT(pEntity->pev), CHAN_VOICE, "player/failsave.wav", 1, ATTN_NORM);
+		}
+		return;
+	}
 
 	if( pEntity && pSaveData )
 	{
@@ -593,6 +608,7 @@ TYPEDESCRIPTION	CBaseEntity::m_SaveData[] =
 	DEFINE_FIELD( CBaseEntity, m_pfnTouch, FIELD_FUNCTION ),
 	DEFINE_FIELD( CBaseEntity, m_pfnUse, FIELD_FUNCTION ),
 	DEFINE_FIELD( CBaseEntity, m_pfnBlocked, FIELD_FUNCTION ),
+	DEFINE_FIELD( CBaseEntity, preventrandom, FIELD_INTEGER ),
 };
 
 int CBaseEntity::Save( CSave &save )
@@ -745,6 +761,69 @@ int CBaseEntity::ShouldToggle( USE_TYPE useType, BOOL currentState )
 	return 1;
 }
 
+void CBaseEntity::HangThink()
+{
+	CBeam *m_pBeam = CBeam::BeamCreate("sprites/rope.spr", 30);
+	if (!m_pBeam)
+		return;
+
+	TraceResult		tr;
+
+	Vector vecSrc = pev->origin + gpGlobals->v_up * (pev->size.z * 0.80);
+	Vector vecDir = gpGlobals->v_up * 2024;
+	vecDir = vecDir.Normalize();
+	UTIL_TraceLine(vecSrc, vecSrc + vecDir * 1024, ignore_monsters, ENT(pev), &tr);
+
+	m_pBeam->PointsInit(vecSrc, tr.vecEndPos);
+	m_pBeam->SetColor(255, 255, 255);
+	m_pBeam->SetBrightness(255);
+	m_pBeam->LiveForTime(0.1);
+	m_pBeam->SetNoise(0);
+
+	if ((tr.vecEndPos - pev->origin) )
+		pev->origin = pev->origin + gpGlobals->v_up * 2;
+
+	//TakeDamage(pev, pev, RANDOM_LONG(2, pev->health), DMG_CRUSH);
+	if (pev->health > 0)
+		pev->nextthink = gpGlobals->time + 0.1;
+	else
+	{
+		EMIT_SOUND(ENT(pev), CHAN_WEAPON, "common/bodysplat.wav", 1, ATTN_NORM);
+		if (BloodColor() == BLOOD_COLOR_RED)
+			CGib::SpawnRandomGibs(pev, 6, 1);
+		else if (BloodColor() == BLOOD_COLOR_GREEN)
+			CGib::SpawnRandomGibs(pev, 6, 0);
+		SetThink(NULL);
+		UTIL_Remove(m_pBeam);
+		UTIL_Remove(this);
+	}
+}
+
+void CBaseEntity::SlipThink()
+{
+	TakeDamage(pev, pev, RANDOM_LONG(2, pev->health), DMG_ALWAYSGIB);
+	if (pev->health > 0)
+		pev->nextthink = gpGlobals->time + 0.8;
+	else
+	{
+		if (RANDOM_LONG(0, 1))
+			EMIT_SOUND(ENT(pev), CHAN_WEAPON, "common/bodysplat.wav", 1, ATTN_NORM);
+		else
+			EMIT_SOUND(ENT(pev), CHAN_WEAPON, "common/bodysplat2.wav", 1, ATTN_NORM);
+		
+		UTIL_Remove(this);
+	}
+}
+
+void CBaseEntity :: SlipTouch(CBaseEntity *pOther)
+{
+	SlipCounter++;
+	if (SlipCounter >= 64)
+		TakeDamage(pev, pev, 300, DMG_FALL);
+	else
+		TakeDamage(pev, pev, 0.01, DMG_FALL);
+}
+
 int CBaseEntity::DamageDecal( int bitsDamageType )
 {
 	if( pev->rendermode == kRenderTransAlpha )
@@ -754,6 +833,135 @@ int CBaseEntity::DamageDecal( int bitsDamageType )
 		return DECAL_BPROOF1;
 
 	return DECAL_GUNSHOT1 + RANDOM_LONG( 0, 4 );
+}
+
+void CBaseEntity::GiveRandomDrop(const Vector &vecPos, const Vector &vecAng, bool onlyammo)
+{
+	char *pszItemName;
+
+	if (onlyammo)
+	{
+		switch (RANDOM_LONG(0, 17))
+		{
+		case 0: pszItemName = "ammo_9mmclip"; break;
+		case 1: pszItemName = "ammo_9mmAR"; break;
+		case 2: pszItemName = "ammo_ARgrenades"; break;
+		case 3: pszItemName = "ammo_buckshot"; break;
+		case 4: pszItemName = "weapon_handgrenade"; break;
+		case 5: pszItemName = "weapon_tripmine"; break;
+		case 6: pszItemName = "weapon_obamium"; break;
+		case 7: pszItemName = "weapon_banana"; break;
+		case 8: pszItemName = "ammo_357"; break;
+		case 9: pszItemName = "ammo_claw"; break;
+		case 10: pszItemName = "ammo_crossbow"; break;
+		case 11: pszItemName = "ammo_gaussclip"; break;
+		case 12: pszItemName = "ammo_rpgclip"; break;
+		case 13: pszItemName = "weapon_satchel"; break;
+		case 14: pszItemName = "weapon_snark"; break;
+		case 15: pszItemName = "item_battery"; break;
+		case 16: pszItemName = "item_healthkit"; break;
+		case 17: pszItemName = "weapon_piwo"; break;
+		}
+	}
+	else
+	{
+		switch (RANDOM_LONG(0, 28))
+		{
+		case 0: pszItemName = "ammo_9mmclip"; break;
+		case 1: pszItemName = "ammo_9mmAR"; break;
+		case 2: pszItemName = "ammo_ARgrenades"; break;
+		case 3: pszItemName = "ammo_buckshot"; break;
+		case 4: pszItemName = "weapon_handgrenade"; break;
+		case 5: pszItemName = "weapon_tripmine"; break;
+		case 6: pszItemName = "weapon_obamium"; break;
+		case 7: pszItemName = "weapon_banana"; break;
+		case 8: pszItemName = "ammo_357"; break;
+		case 9: pszItemName = "ammo_claw"; break;
+		case 10: pszItemName = "ammo_crossbow"; break;
+		case 11: pszItemName = "ammo_gaussclip"; break;
+		case 12: pszItemName = "ammo_rpgclip"; break;
+		case 13: pszItemName = "weapon_satchel"; break;
+		case 14: pszItemName = "weapon_snark"; break;
+		case 15: pszItemName = "item_battery"; break;
+		case 16: pszItemName = "item_healthkit"; break;
+		case 17: pszItemName = "weapon_9mmhandgun"; break;
+		case 18: pszItemName = "weapon_9mmAR"; break;
+		case 19: pszItemName = "weapon_python"; break;
+		case 20: pszItemName = "weapon_shotgun"; break;
+		case 21: pszItemName = "weapon_crossbow"; break;
+		case 22: pszItemName = "weapon_egon"; break;
+		case 23: pszItemName = "weapon_gauss"; break;
+		case 24: pszItemName = "weapon_rpg"; break;
+		case 25: pszItemName = "weapon_hornetgun"; break;
+		case 26: pszItemName = "weapon_clawgun"; break;
+		case 27: pszItemName = "weapon_sawnoff"; break;
+		case 28: pszItemName = "weapon_piwo"; break;
+		}
+	}
+
+	CBasePlayerItem *pItem = (CBasePlayerItem *)CBaseEntity::Create(pszItemName, vecPos, vecAng, edict());
+
+	if (pItem)
+	{
+		// do we want this behavior to be default?! (sjb)
+		pItem->pev->origin = pItem->pev->origin + gpGlobals->v_up * 16;
+		pItem->pev->velocity = pev->velocity + gpGlobals->v_up * 80 + gpGlobals->v_right*RANDOM_LONG(-150, 150) + gpGlobals->v_forward*RANDOM_LONG(-150, 150);
+		pItem->pev->avelocity = Vector(RANDOM_FLOAT(-100, 100), 0, 0);
+		pItem->pev->gravity = 0.6;
+	}
+	else
+	{
+		ALERT(at_console, "DropItem() - Didn't create %s!\n", pszItemName);
+	}
+	
+
+	//Drop additional health/battery
+	if (RANDOM_LONG(0, 4) == 0)
+	{
+		if (RANDOM_LONG(0, 1))
+			pszItemName = "item_healthkit";
+		else
+			pszItemName = "item_battery";
+		CBasePlayerItem *pItem = (CBasePlayerItem *)CBaseEntity::Create(pszItemName, vecPos, vecAng, edict());
+
+		if (pItem)
+		{
+			// do we want this behavior to be default?! (sjb)
+			pItem->pev->origin = pItem->pev->origin + gpGlobals->v_up * 16;
+			pItem->pev->velocity = pev->velocity + gpGlobals->v_up * 80 + gpGlobals->v_right*RANDOM_LONG(-150, 150) + gpGlobals->v_forward*RANDOM_LONG(-150, 150);
+			pItem->pev->avelocity = Vector(RANDOM_FLOAT(-100, 100), 0, 0);
+			pItem->pev->gravity = 0.6;
+		}
+		else
+		{
+			ALERT(at_console, "DropItem() - Didn't create %s!\n", pszItemName);
+		}
+	}
+}
+
+void CBaseEntity::SurvivalItemTimer(void)
+{
+	survtimer++;
+	if (survtimer >= 40)
+	{
+		Killed(pev, GIB_NEVER);
+	}
+	else
+	{
+		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pev->origin);
+		WRITE_BYTE(TE_DLIGHT);
+		WRITE_COORD(pev->origin.x);	// X
+		WRITE_COORD(pev->origin.y);	// Y
+		WRITE_COORD(pev->origin.z);	// Z
+		WRITE_BYTE(3);		// radius * 0.1
+		WRITE_BYTE(255);		// r
+		WRITE_BYTE(158);		// g
+		WRITE_BYTE(51);		// b
+		WRITE_BYTE(10);		// time * 10
+		WRITE_BYTE(0);		// decay * 0.1
+		MESSAGE_END();
+		pev->nextthink = gpGlobals->time + 1;
+	}
 }
 
 // NOTE: szName must be a pointer to constant memory, e.g. "monster_class" because the entity

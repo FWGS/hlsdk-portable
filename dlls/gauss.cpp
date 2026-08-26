@@ -25,6 +25,122 @@
 #include "shake.h"
 #include "gamerules.h"
 #include "game.h"
+#include "decals.h"
+
+#ifndef CLIENT_DLL
+class CKaboom : public CBaseEntity
+{
+	void Spawn(void);
+	void Precache(void);
+	int  Classify(void);
+	void EXPORT BubbleThink(void);
+	void EXPORT BoltTouch(CBaseEntity *pOther);
+	void EXPORT ExplodeThink(void);
+	
+
+	int m_iTrail;
+
+public:
+	static CKaboom *BoltCreate(void);
+	Vector ORIG_vecAim;
+};
+LINK_ENTITY_TO_CLASS(slave_kaboom, CKaboom);
+
+CKaboom *CKaboom::BoltCreate(void)
+{
+	// Create a new entity with CKaboom private data
+	CKaboom *pBolt = GetClassPtr((CKaboom *)NULL);
+	pBolt->pev->classname = MAKE_STRING("Kaboom");
+	pBolt->Spawn();
+
+	return pBolt;
+}
+
+void CKaboom::Spawn()
+{
+	Precache();
+	pev->movetype = MOVETYPE_NOCLIP;
+	pev->solid = SOLID_NOT;
+
+	pev->gravity = 0.01;
+
+	SET_MODEL(ENT(pev), "models/crossbow_bolt.mdl");
+
+	UTIL_SetOrigin(pev, pev->origin);
+	UTIL_SetSize(pev, Vector(0, 0, 0), Vector(0, 0, 0));
+
+	pev->renderamt = 0;
+	pev->rendermode = kRenderTransTexture;
+
+	// rocket trail
+	MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
+
+	WRITE_BYTE(TE_BEAMFOLLOW);
+	WRITE_SHORT(entindex());	// entity
+	WRITE_SHORT(m_iTrail);	// model
+	WRITE_BYTE(40); // life
+	WRITE_BYTE(5);  // width
+	WRITE_BYTE(0);   // r, g, b
+	WRITE_BYTE(110);   // r, g, b
+	WRITE_BYTE(255);   // r, g, b
+	WRITE_BYTE(255);	// brightness
+
+	MESSAGE_END();  // move PHS/PVS data sending into here (SEND_ALL, SEND_PVS, SEND_PHS)
+
+	SetTouch(&CKaboom::BoltTouch);
+	SetThink(&CKaboom::BubbleThink);
+	pev->nextthink = gpGlobals->time + 0.1;
+}
+
+
+void CKaboom::Precache()
+{
+	PRECACHE_MODEL("models/crossbow_bolt.mdl");
+	m_iTrail = PRECACHE_MODEL("sprites/streak.spr");
+}
+
+int	CKaboom::Classify(void)
+{
+	return	CLASS_NONE;
+}
+
+void CKaboom::BoltTouch(CBaseEntity *pOther)
+{
+	//SetTouch(NULL);
+	//SetThink(NULL);
+	/*MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pev->origin);
+	WRITE_BYTE(TE_EXPLOSION);		// This just makes a dynamic light now
+	WRITE_COORD(pev->origin.x);
+	WRITE_COORD(pev->origin.y);
+	WRITE_COORD(pev->origin.z);
+	WRITE_SHORT(g_sModelIndexFireball);
+	WRITE_BYTE(10); // scale * 10
+	WRITE_BYTE(12); // framerate
+	WRITE_BYTE(TE_EXPLFLAG_NONE);
+	MESSAGE_END();*/
+	if (pOther->IsBSPModel())
+		UTIL_Remove(this);
+}
+
+void CKaboom::BubbleThink(void)
+{
+	/*MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pev->origin);
+	WRITE_BYTE(TE_EXPLOSION);		// This just makes a dynamic light now
+	WRITE_COORD(pev->origin.x);
+	WRITE_COORD(pev->origin.y);
+	WRITE_COORD(pev->origin.z);
+	WRITE_SHORT(g_sModelIndexFireball);
+	WRITE_BYTE(10); // scale * 10
+	WRITE_BYTE(12); // framerate
+	WRITE_BYTE(TE_EXPLFLAG_NONE);
+	MESSAGE_END();*/
+	if (pev->origin == ORIG_vecAim)
+		UTIL_Remove(this);
+	pev->origin = ORIG_vecAim;
+	pev->nextthink = gpGlobals->time + 0.1;
+}
+
+#endif
 
 #define	GAUSS_PRIMARY_CHARGE_VOLUME	256// how loud gauss is while charging
 #define GAUSS_PRIMARY_FIRE_VOLUME	450// how loud gauss is when discharged
@@ -90,6 +206,7 @@ void CGauss::Precache( void )
 	m_iGlow = PRECACHE_MODEL( "sprites/hotglow.spr" );
 	m_iBalls = PRECACHE_MODEL( "sprites/hotglow.spr" );
 	m_iBeam = PRECACHE_MODEL( "sprites/smoke.spr" );
+	PRECACHE_MODEL("sprites/laserbeam.spr");
 
 	m_usGaussFire = PRECACHE_EVENT( 1, "events/gauss.sc" );
 	m_usGaussSpin = PRECACHE_EVENT( 1, "events/gaussspin.sc" );
@@ -150,7 +267,7 @@ void CGauss::PrimaryAttack()
 		return;
 	}
 
-	if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] < 2 )
+	if( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] < 5 )
 	{
 		PlayEmptySound();
 		m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5f;
@@ -160,14 +277,15 @@ void CGauss::PrimaryAttack()
 	m_pPlayer->m_iWeaponVolume = GAUSS_PRIMARY_FIRE_VOLUME;
 	m_fPrimaryFire = TRUE;
 
-	m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] -= 2;
+	m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] -= 5;
 
-	StartFire();
+	//StartFire();
+	FireBeam();
 	m_fInAttack = 0;
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.0f;
-	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.2f;
+	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 1.0f;
 }
-
+/*
 void CGauss::SecondaryAttack()
 {
 	if( m_pPlayer->m_flStartCharge > gpGlobals->time )
@@ -306,6 +424,7 @@ void CGauss::SecondaryAttack()
 		}
 	}
 }
+*/
 
 //=========================================================
 // StartFire- since all of this code has to run and then 
@@ -313,6 +432,82 @@ void CGauss::SecondaryAttack()
 // of weaponidle() and make its own function then to try to
 // merge this into Fire(), which has some identical variable names 
 //=========================================================
+void CGauss::FireBeam(void)
+{
+	m_pPlayer->SetAnimation(PLAYER_ATTACK1);
+	SendWeaponAnim(GAUSS_FIRE2);
+	EMIT_SOUND(ENT(pev), CHAN_WEAPON, "weapons/gauss2.wav", 1, ATTN_NORM);
+	
+	TraceResult tr;
+
+	Vector anglesAim = m_pPlayer->pev->v_angle;
+	UTIL_MakeVectors(anglesAim);
+	Vector vecSrc = m_pPlayer->GetGunPosition();
+	Vector vecDir = gpGlobals->v_forward;
+
+	UTIL_TraceLine(vecSrc, vecSrc + vecDir * 8192, dont_ignore_monsters, m_pPlayer->edict(), &tr);
+
+#ifndef CLIENT_DLL
+	CKaboom *pBolt = CKaboom::BoltCreate();
+	pBolt->ORIG_vecAim = tr.vecEndPos;
+	pBolt->pev->origin = vecSrc + gpGlobals->v_up * -14 + gpGlobals->v_right * 14;
+	pBolt->pev->angles = vecDir;
+	pBolt->pev->owner = edict();
+	UTIL_ScreenShake(m_pPlayer->pev->origin, 10.0, 1.0, 0.5, 1);
+
+	CBeam *m_pBeam = CBeam::BeamCreate("sprites/laserbeam.spr", 8);
+	if (!m_pBeam)
+		return;
+
+	m_pBeam->PointsInit(vecSrc + gpGlobals->v_forward * 24 + gpGlobals->v_up * -14 + gpGlobals->v_right * 14, tr.vecEndPos);
+	m_pBeam->SetColor(0, 110, 255);
+	m_pBeam->SetBrightness(255);
+	m_pBeam->SetWidth(40);
+	m_pBeam->LiveForTime(0.2);
+	UTIL_Sparks(tr.vecEndPos);
+	m_pBeam->SetNoise(0);
+
+
+	UTIL_DecalTrace(&tr, DECAL_SMALLSCORCH2);
+	
+	if (tr.pHit)
+	{
+		CBaseEntity *pEntity = CBaseEntity::Instance(tr.pHit);
+		if (pEntity != NULL && pEntity->pev->takedamage)
+		{
+			pEntity->TakeDamage(pev, pev, 35, DMG_ENERGYBEAM);
+			if (!pEntity->IsAlive())
+			{
+				MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, tr.vecEndPos);
+				WRITE_BYTE(TE_TELEPORT);
+				WRITE_COORD(tr.vecEndPos.x);	// pos
+				WRITE_COORD(tr.vecEndPos.y);
+				WRITE_COORD(tr.vecEndPos.z);
+				MESSAGE_END();
+			}
+		}
+		RadiusDamage(tr.vecEndPos, m_pPlayer->pev, m_pPlayer->pev, 64, 65, NULL, DMG_ENERGYBEAM);
+		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pev->origin);
+		WRITE_BYTE(TE_EXPLOSION);
+		WRITE_COORD(tr.vecEndPos.x);
+		WRITE_COORD(tr.vecEndPos.y);
+		WRITE_COORD(tr.vecEndPos.z);
+		if (!tr.fInWater)
+		{
+			WRITE_SHORT(g_sModelIndexFireball);
+		}
+		else
+		{
+			WRITE_SHORT(g_sModelIndexWExplosion);
+		}
+		WRITE_BYTE(15); // scale * 10
+		WRITE_BYTE(25); // framerate
+		WRITE_BYTE(TE_EXPLFLAG_NONE);
+		MESSAGE_END();
+	}
+#endif
+}
+
 void CGauss::StartFire( void )
 {
 	float flDamage;

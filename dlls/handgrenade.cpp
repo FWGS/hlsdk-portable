@@ -28,9 +28,7 @@ enum handgrenade_e
 	HANDGRENADE_IDLE = 0,
 	HANDGRENADE_FIDGET,
 	HANDGRENADE_PINPULL,
-	HANDGRENADE_THROW1,	// toss
-	HANDGRENADE_THROW2,	// medium
-	HANDGRENADE_THROW3,	// hard
+	HANDGRENADE_SPRAY,
 	HANDGRENADE_HOLSTER,
 	HANDGRENADE_DRAW
 };
@@ -56,6 +54,10 @@ void CHandGrenade::Precache( void )
 	PRECACHE_MODEL( "models/w_grenade.mdl" );
 	PRECACHE_MODEL( "models/v_grenade.mdl" );
 	PRECACHE_MODEL( "models/p_grenade.mdl" );
+
+	PRECACHE_SOUND("weapons/bepis.wav");
+
+	SGAcidSprite = PRECACHE_MODEL("sprites/tinyspit.spr");// client side spittle.
 }
 
 int CHandGrenade::GetItemInfo( ItemInfo *p )
@@ -84,7 +86,7 @@ BOOL CHandGrenade::Deploy()
 BOOL CHandGrenade::CanHolster( void )
 {
 	// can only holster hand grenades when not primed!
-	return ( m_flStartThrow == 0 );
+	return ( m_flStartThrow == 0 && (SprayHealth <= 0));
 }
 
 void CHandGrenade::Holster( int skiplocal /* = 0 */ )
@@ -113,7 +115,7 @@ void CHandGrenade::Holster( int skiplocal /* = 0 */ )
 
 void CHandGrenade::PrimaryAttack()
 {
-	if( !m_flStartThrow && m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] > 0 )
+	if( !m_flStartThrow && m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] > 0  && ( SprayHealth <= 0 ) )
 	{
 		m_flStartThrow = gpGlobals->time;
 		m_flReleaseThrow = 0.0f;
@@ -121,6 +123,41 @@ void CHandGrenade::PrimaryAttack()
 		SendWeaponAnim( HANDGRENADE_PINPULL );
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.5f;
 	}
+}
+
+void EXPORT CHandGrenade::Spray()
+{
+	if (SprayHealth > 0)
+	{
+		SprayHealth--;
+		SetThink(&CHandGrenade::Spray);
+		UTIL_MakeVectors(m_pPlayer->pev->v_angle);
+		Vector vecSrc = m_pPlayer->GetGunPosition() + gpGlobals->v_forward * 24 - gpGlobals->v_up * 6;
+		Vector vecAiming = gpGlobals->v_forward * 3;
+		TraceResult tr;
+		edict_t		*pentIgnore;
+		pentIgnore = m_pPlayer->edict();
+		UTIL_TraceLine(vecSrc, vecSrc + gpGlobals->v_forward * 176, dont_ignore_monsters, pentIgnore, &tr);
+		RadiusDamage(tr.vecEndPos, m_pPlayer->pev, m_pPlayer->pev, 5, 176, CLASS_PLAYER, DMG_NEVERGIB);
+
+#ifndef CLIENT_DLL
+		// spew the spittle temporary ents.
+		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, vecSrc);
+		WRITE_BYTE(TE_SPRITE_SPRAY);
+		WRITE_COORD(vecSrc.x);	// pos
+		WRITE_COORD(vecSrc.y);
+		WRITE_COORD(vecSrc.z);
+		WRITE_COORD(vecAiming.x);	// dir
+		WRITE_COORD(vecAiming.y);
+		WRITE_COORD(vecAiming.z);
+		WRITE_SHORT(SGAcidSprite);	// model
+		WRITE_BYTE(1);			// count
+		WRITE_BYTE(170);			// speed
+		WRITE_BYTE(65);			// noise ( client will divide by 100 )
+		MESSAGE_END();
+#endif
+	}
+	pev->nextthink = gpGlobals->time + 0.03;
 }
 
 void CHandGrenade::WeaponIdle( void )
@@ -155,7 +192,7 @@ void CHandGrenade::WeaponIdle( void )
 		if( time < 0.0f )
 			time = 0.0f;
 
-		CGrenade::ShootTimed( m_pPlayer->pev, vecSrc, vecThrow, time );
+		/*CGrenade::ShootTimed( m_pPlayer->pev, vecSrc, vecThrow, time );
 
 		if( flVel < 500.0f )
 		{
@@ -168,7 +205,14 @@ void CHandGrenade::WeaponIdle( void )
 		else
 		{
 			SendWeaponAnim( HANDGRENADE_THROW3 );
-		}
+		}*/
+
+		SendWeaponAnim( HANDGRENADE_SPRAY );
+
+		EMIT_SOUND(ENT(m_pPlayer->pev), CHAN_WEAPON, "weapons/bepis.wav", 1.0, ATTN_NORM);
+		SprayHealth = 50;
+		SetThink(&CHandGrenade::Spray);
+		pev->nextthink = gpGlobals->time + 0.01;
 
 		// player "shoot" animation
 		m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
@@ -177,8 +221,8 @@ void CHandGrenade::WeaponIdle( void )
 		m_flReleaseThrow = 0.0f;
 #endif
 		m_flStartThrow = 0.0f;
-		m_flNextPrimaryAttack = GetNextAttackDelay( 0.5f );
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.5f;
+		m_flNextPrimaryAttack = GetNextAttackDelay( 0.2f );
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 2.0f;
 
 		m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]--;
 

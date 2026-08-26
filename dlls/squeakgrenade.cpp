@@ -194,7 +194,10 @@ void CSqueakGrenade::Killed( entvars_t *pevAttacker, int iGib )
 
 void CSqueakGrenade::GibMonster( void )
 {
-	EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, "common/bodysplat.wav", 0.75f, ATTN_NORM, 0, 200 );
+	if (RANDOM_LONG(0, 1))
+		EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, "common/bodysplat.wav", 0.75f, ATTN_NORM, 0, 200 );
+	else
+		EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, "common/bodysplat2.wav", 0.75f, ATTN_NORM, 0, 255 );
 }
 
 void CSqueakGrenade::HuntThink( void )
@@ -430,9 +433,11 @@ void CSqueak::Precache( void )
 	PRECACHE_MODEL( "models/w_sqknest.mdl" );
 	PRECACHE_MODEL( "models/v_squeak.mdl" );
 	PRECACHE_MODEL( "models/p_squeak.mdl" );
+	PRECACHE_SOUND("weapons/drill.wav");
 	PRECACHE_SOUND( "squeek/sqk_hunt2.wav" );
 	PRECACHE_SOUND( "squeek/sqk_hunt3.wav" );
 	UTIL_PrecacheOther( "monster_snark" );
+	UTIL_PrecacheOther("monster_drill");
 
 	m_usSnarkFire = PRECACHE_EVENT( 1, "events/snarkfire.sc" );
 }
@@ -457,12 +462,7 @@ int CSqueak::GetItemInfo( ItemInfo *p )
 BOOL CSqueak::Deploy()
 {
 	// play hunt sound
-	float flRndSound = RANDOM_FLOAT( 0.0f, 1.0f );
-
-	if( flRndSound <= 0.5f )
-		EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, "squeek/sqk_hunt2.wav", 1, ATTN_NORM, 0, 100 );
-	else
-		EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, "squeek/sqk_hunt3.wav", 1, ATTN_NORM, 0, 100 );
+	EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, "weapons/drill.wav", 1, ATTN_NORM, 0, 100 );
 
 	m_pPlayer->m_iWeaponVolume = QUIET_GUN_VOLUME;
 
@@ -523,7 +523,7 @@ void CSqueak::PrimaryAttack()
 		forward = forward * flVel + gpGlobals->v_forward * ( 1 - flVel );
 
 		// find place to toss monster
-		UTIL_TraceLine( trace_origin + forward * 24.0f, trace_origin + gpGlobals->v_forward * 60.0f, dont_ignore_monsters, NULL, &tr );
+		UTIL_TraceLine( trace_origin + forward * 68, trace_origin + gpGlobals->v_forward * 128, dont_ignore_monsters, NULL, &tr );
 
 		int flags;
 #if CLIENT_WEAPONS
@@ -531,23 +531,27 @@ void CSqueak::PrimaryAttack()
 #else
 		flags = 0;
 #endif
-		PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usSnarkFire, 0.0f, g_vecZero, g_vecZero, 0.0f, 0.0f, 0, 0, 0, 0 );
+	    PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usSnarkFire, 0.0f, g_vecZero, g_vecZero, 0.0f, 0.0f, 0, 0, 0, 0 );
 
 		if( tr.fAllSolid == 0 && tr.fStartSolid == 0 && tr.flFraction > 0 )
 		{
 			// player "shoot" animation
 			m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
 #if !CLIENT_DLL
-			CBaseEntity *pSqueak = CBaseEntity::Create( "monster_snark", tr.vecEndPos, m_pPlayer->pev->v_angle, m_pPlayer->edict() );
-			pSqueak->pev->velocity = forward * 200.0f + m_pPlayer->pev->velocity;
+			CBaseEntity *pDrill = CBaseEntity::Create("monster_drill", tr.vecEndPos, m_pPlayer->pev->angles);
+			pDrill->pev->spawnflags |= SF_MONSTER_FALL_TO_GROUND;
+			pDrill->pev->velocity = gpGlobals->v_forward * 250;
+			pDrill->pev->angles.x = 0;
 #endif
 			// play hunt sound
-			float flRndSound = RANDOM_FLOAT( 0.0f, 1.0f );
+			/*float flRndSound = RANDOM_FLOAT( 0.0f, 1.0f );
 
 			if( flRndSound <= 0.5f )
 				EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, "squeek/sqk_hunt2.wav", 1, ATTN_NORM, 0, 105 );
 			else 
-				EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, "squeek/sqk_hunt3.wav", 1, ATTN_NORM, 0, 105 );
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, "squeek/sqk_hunt3.wav", 1, ATTN_NORM, 0, 105 );*/
+
+			EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, "weapons/drill.wav", 1, ATTN_NORM, 0, 100 );
 
 			m_pPlayer->m_iWeaponVolume = QUIET_GUN_VOLUME;
 

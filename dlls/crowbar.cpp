@@ -25,6 +25,168 @@
 #define	CROWBAR_BODYHIT_VOLUME 128
 #define	CROWBAR_WALLHIT_VOLUME 512
 
+#ifndef CLIENT_DLL
+#define BOLT_AIR_VELOCITY	1800
+#define BOLT_WATER_VELOCITY	1200
+
+
+class CThrowbar : public CBaseEntity
+{
+	void Spawn(void);
+	void Precache(void);
+	int  Classify(void);
+	void EXPORT BubbleThink(void);
+	void EXPORT BoltTouch(CBaseEntity *pOther);
+	void EXPORT ExplodeThink(void);
+	int touchcounter = 0;
+
+	int m_iTrail;
+
+public:
+	static CThrowbar *BoltCreate(void);
+};
+LINK_ENTITY_TO_CLASS(throwbar, CThrowbar);
+
+CThrowbar *CThrowbar::BoltCreate(void)
+{
+	// Create a new entity with CCrossbowBolt private data
+	CThrowbar *pBolt = GetClassPtr((CThrowbar *)NULL);
+	pBolt->pev->classname = MAKE_STRING("bolt");
+	pBolt->Spawn();
+	pBolt->touchcounter = 0;
+
+	return pBolt;
+}
+
+void CThrowbar::Spawn()
+{
+	Precache();
+	pev->movetype = MOVETYPE_FLY;
+	pev->solid = SOLID_BBOX;
+
+	pev->gravity = 0.8;
+
+	SET_MODEL(ENT(pev), "models/w_crowbar.mdl");
+
+	UTIL_SetOrigin(pev, pev->origin);
+	UTIL_SetSize(pev, Vector(-1, -2, -1), Vector(1, 2, 1));
+
+	SetTouch(&CThrowbar::BoltTouch);
+	SetThink(&CThrowbar::BubbleThink);
+	pev->nextthink = gpGlobals->time + 0.2;
+}
+
+
+void CThrowbar::Precache()
+{
+	PRECACHE_MODEL("models/w_crowbar.mdl");
+	m_iTrail = PRECACHE_MODEL("sprites/streak.spr");
+}
+
+
+int	CThrowbar::Classify(void)
+{
+	return	CLASS_NONE;
+}
+
+void CThrowbar::BoltTouch(CBaseEntity *pOther)
+{
+	pev->angles.x = 0;
+	pev->angles.z = 0;
+	touchcounter++;
+
+	if (touchcounter == 1)
+	{
+		SetThink(&CThrowbar::ExplodeThink);
+		pev->nextthink = gpGlobals->time + 3;
+	}
+	
+	
+	if (touchcounter > 50)
+		UTIL_Remove(this);
+
+	if (pev->velocity.z == 0)
+	{
+		UTIL_Remove(this);
+	}
+
+	if (pOther->edict() == pev->owner)
+		return;
+	// pev->avelocity = Vector (300, 300, 300);
+
+	if (pev->flags & FL_ONGROUND)
+	{
+		// add a bit of static friction
+		pev->velocity = pev->velocity * 0.15;
+
+		if (pev->velocity <= Vector(1, 1, 1))
+		{
+			UTIL_Remove(this);
+		}
+	}
+	else
+	{
+		EMIT_SOUND_DYN(ENT(pev), CHAN_BODY, "weapons/cbar_hit1.wav", 0.35, ATTN_NORM, 0, 98 + RANDOM_LONG(0, 7));
+	}
+
+	if (pOther->pev->takedamage)
+	{
+		UTIL_Remove(this);
+		TraceResult tr = UTIL_GetGlobalTrace();
+		entvars_t	*pevOwner;
+
+		pevOwner = VARS(pev->owner);
+
+		// UNDONE: this needs to call TraceAttack instead
+		ClearMultiDamage();
+
+		if (pOther->IsPlayer())
+		{
+			pOther->TraceAttack(pevOwner, 12, pev->velocity.Normalize(), &tr, DMG_NEVERGIB);
+		}
+		else
+		{
+			pOther->TraceAttack(pevOwner, 12, pev->velocity.Normalize(), &tr, DMG_BULLET | DMG_NEVERGIB);
+		}
+
+		ApplyMultiDamage(pev, pevOwner);
+
+		// play body "thwack" sound
+		switch (RANDOM_LONG(0, 1))
+		{
+		case 0:
+			EMIT_SOUND(ENT(pev), CHAN_BODY, "weapons/cbar_hitbod1.wav", 0.4, ATTN_NORM); break;
+		case 1:
+			EMIT_SOUND(ENT(pev), CHAN_BODY, "weapons/cbar_hitbod2.wav", 0.4, ATTN_NORM); break;
+		}
+
+	}
+	else
+	{
+		if (UTIL_PointContents(pev->origin) != CONTENTS_WATER)
+		{
+			UTIL_Sparks(pev->origin);
+		}
+	}
+
+}
+
+void CThrowbar::BubbleThink(void)
+{
+	pev->nextthink = gpGlobals->time + 0.1;
+
+	if (pev->waterlevel == 0)
+		return;
+
+	UTIL_BubbleTrail(pev->origin - pev->velocity * 0.1, pev->origin, 1);
+}
+
+void CThrowbar::ExplodeThink(void)
+{
+	UTIL_Remove(this);
+}
+#endif
+
 LINK_ENTITY_TO_CLASS( weapon_crowbar, CCrowbar )
 
 enum crowbar_e
@@ -38,9 +200,11 @@ enum crowbar_e
 	CROWBAR_ATTACK2HIT,
 	CROWBAR_ATTACK3MISS,
 #if !CROWBAR_IDLE_ANIM	
-	CROWBAR_ATTACK3HIT
+	CROWBAR_ATTACK3HIT,
+	CROWBAR_THROW,
 #else
 	CROWBAR_ATTACK3HIT,
+	CROWBAR_THROW,
 	CROWBAR_IDLE2,
 	CROWBAR_IDLE3
 #endif
@@ -164,6 +328,42 @@ void CCrowbar::PrimaryAttack()
 	}
 }
 
+void CCrowbar::SecondaryAttack()
+{
+	SendWeaponAnim(CROWBAR_THROW);
+	Vector anglesAim = m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle;
+	UTIL_MakeVectors(anglesAim);
+	anglesAim.x = -anglesAim.x;
+	Vector vecSrc = m_pPlayer->GetGunPosition() - gpGlobals->v_up * 2;
+	Vector vecDir = gpGlobals->v_forward;
+#ifndef CLIENT_DLL
+	CThrowbar *pBolt = CThrowbar::BoltCreate();
+	pBolt->pev->origin = vecSrc;
+	pBolt->pev->movetype = MOVETYPE_BOUNCE;
+	pBolt->pev->gravity = 0.5;
+	pBolt->pev->friction = 0.8;
+	pBolt->pev->angles = anglesAim;
+	pBolt->pev->owner = m_pPlayer->edict();
+
+	if (m_pPlayer->pev->waterlevel == 3)
+	{
+		pBolt->pev->velocity = vecDir * BOLT_WATER_VELOCITY;
+		pBolt->pev->speed = BOLT_WATER_VELOCITY;
+	}
+	else
+	{
+		pBolt->pev->velocity = vecDir * BOLT_AIR_VELOCITY;
+		pBolt->pev->speed = BOLT_AIR_VELOCITY;
+	}
+	pBolt->pev->avelocity.x = -600;
+	pBolt->pev->avelocity.y = RANDOM_LONG(-300, 500);
+	pBolt->pev->avelocity.z = RANDOM_LONG(-100, 200);
+#endif
+	m_flNextSecondaryAttack = GetNextAttackDelay( 0.3f );
+	m_flNextPrimaryAttack = GetNextAttackDelay( 0.3f );
+}
+
+
 void CCrowbar::Smack()
 {
 	DecalGunshot( &m_trHit, BULLET_PLAYER_CROWBAR );
@@ -213,7 +413,7 @@ int CCrowbar::Swing( int fFirst )
 		if( fFirst )
 		{
 			// miss
-			m_flNextPrimaryAttack = GetNextAttackDelay( 0.5 );
+			m_flNextPrimaryAttack = GetNextAttackDelay( 0.2f );
 #if CROWBAR_IDLE_ANIM
 			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
 #endif
@@ -270,7 +470,7 @@ int CCrowbar::Swing( int fFirst )
 			}
 			ApplyMultiDamage( m_pPlayer->pev, m_pPlayer->pev );
 
-			if( pEntity->Classify() != CLASS_NONE && pEntity->Classify() != CLASS_MACHINE )
+			if( ( pEntity->Classify() != CLASS_NONE && pEntity->Classify() != CLASS_MACHINE ) && ( !FClassnameIs( pEntity->pev, "monster_builtsentry" ) ) )
 			{
 				// play thwack or smack sound
 				switch( RANDOM_LONG( 0, 2 ) )
@@ -338,9 +538,9 @@ int CCrowbar::Swing( int fFirst )
 		pev->nextthink = gpGlobals->time + 0.2f;
 #endif
 #if CROWBAR_DELAY_FIX
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.25f;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.2f;
 #else
-		m_flNextPrimaryAttack = GetNextAttackDelay( 0.25f );
+		m_flNextPrimaryAttack = GetNextAttackDelay( 0.2f );
 #endif
 	}
 #if CROWBAR_IDLE_ANIM

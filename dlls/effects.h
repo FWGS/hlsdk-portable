@@ -108,6 +108,9 @@ public:
 		pev->nextthink = gpGlobals->time; 
 	}
 
+	inline void LiveForTime(float time) { SetThink(&CBaseEntity::SUB_Remove); pev->nextthink = gpGlobals->time + time; }
+	inline void	SetFlags(int flags) { pev->rendermode = (pev->rendermode & 0x0F) | (flags & 0xF0); }
+
 	void EXPORT AnimateUntilDead( void );
 
 	virtual int Save( CSave &save );

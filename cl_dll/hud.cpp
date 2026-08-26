@@ -370,6 +370,9 @@ void CHud::Init( void )
 	CVAR_CREATE( "hud_classautokill", "1", FCVAR_ARCHIVE | FCVAR_USERINFO );		// controls whether or not to suicide immediately on TF class switch
 	CVAR_CREATE( "hud_takesshots", "0", FCVAR_ARCHIVE );		// controls whether or not to automatically take screenshots at the end of a round
 	hud_textmode = CVAR_CREATE ( "hud_textmode", "0", FCVAR_ARCHIVE );
+	CVAR_CREATE( "norandom","0", 0 );
+	CVAR_CREATE( "preventrandom", "0", 0 );
+	CVAR_CREATE( "chimpevent", "0", 0 );
 
 	m_iLogo = 0;
 	m_iFOV = 0;
@@ -379,7 +382,7 @@ void CHud::Init( void )
 	default_fov = CVAR_CREATE( "default_fov", "90", FCVAR_ARCHIVE );
 	m_pCvarStealMouse = CVAR_CREATE( "hud_capturemouse", "1", FCVAR_ARCHIVE );
 	m_pCvarDraw = CVAR_CREATE( "hud_draw", "1", FCVAR_ARCHIVE );
-	m_pAllowHD = CVAR_CREATE ( "hud_allow_hd", "1", FCVAR_ARCHIVE );
+	m_pAllowHD = CVAR_CREATE ( "hud_allow_hd", "0", FCVAR_ARCHIVE );
 	cl_lw = gEngfuncs.pfnGetCvarPointer( "cl_lw" );
 	cl_viewbob = CVAR_CREATE( "cl_viewbob", "1", FCVAR_ARCHIVE );
 
@@ -408,6 +411,7 @@ void CHud::Init( void )
 	m_Geiger.Init();
 	m_Train.Init();
 	m_Battery.Init();
+	m_Bonzi.Init();
 	m_Flash.Init();
 	m_Message.Init();
 	m_StatusBar.Init();
@@ -606,6 +610,7 @@ void CHud::VidInit( void )
 	m_Spectator.VidInit();
 	m_Geiger.VidInit();
 	m_Train.VidInit();
+	m_Bonzi.VidInit();
 	m_Battery.VidInit();
 	m_Flash.VidInit();
 	m_Message.VidInit();

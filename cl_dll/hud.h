@@ -203,6 +203,23 @@ private:
 	int m_iPos;
 };
 
+//
+//-----------------------------------------------------
+//
+class CHudBonzi : public CHudBase
+{
+public:
+	int Init( void );
+	int VidInit( void );
+	int Draw( float flTime );
+	int MsgFunc_Bonzi( const char *pszName, int iSize, void *pbuf );
+
+private:
+	HSPRITE m_hSprite;
+	int m_iPos;
+};
+
+
 #if !USE_VGUI || USE_NOVGUI_MOTD
 class CHudMOTD : public CHudBase
 {
@@ -605,6 +622,7 @@ public:
 	CHudGeiger		m_Geiger;
 	CHudBattery		m_Battery;
 	CHudTrain		m_Train;
+	CHudBonzi		m_Bonzi;
 	CHudFlashlight	m_Flash;
 	CHudMessage		m_Message;
 	CHudStatusBar   m_StatusBar;

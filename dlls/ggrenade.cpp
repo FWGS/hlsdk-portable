@@ -108,16 +108,34 @@ void CGrenade::Explode( TraceResult *pTrace, int bitsDamageType )
 
 	//flRndSound = RANDOM_FLOAT( 0, 1 );
 
-	switch( RANDOM_LONG( 0, 2 ) )
+	switch( RANDOM_LONG( 0, 8 ) )
 	{
 		case 0:
-			EMIT_SOUND( ENT( pev ), CHAN_VOICE, "weapons/debris1.wav", 0.55, ATTN_NORM );
+			EMIT_SOUND( ENT( pev ), CHAN_VOICE, "weapons/debris1.wav", 0.95, ATTN_NORM );
 			break;
 		case 1:
-			EMIT_SOUND( ENT( pev ), CHAN_VOICE, "weapons/debris2.wav", 0.55, ATTN_NORM );
+			EMIT_SOUND( ENT( pev ), CHAN_VOICE, "weapons/debris2.wav", 0.95, ATTN_NORM );
 			break;
 		case 2:
-			EMIT_SOUND( ENT( pev ), CHAN_VOICE, "weapons/debris3.wav", 0.55, ATTN_NORM );
+			EMIT_SOUND( ENT( pev ), CHAN_VOICE, "weapons/debris3.wav", 0.95, ATTN_NORM );
+			break;
+		case 3:	
+			EMIT_SOUND( ENT( pev ), CHAN_VOICE, "weapons/debris4.wav", 0.95, ATTN_NORM );	
+			break;
+		case 4:	
+			EMIT_SOUND( ENT( pev ), CHAN_VOICE, "weapons/debris5.wav", 0.95, ATTN_NORM );	
+			break;
+		case 5:	
+			EMIT_SOUND( ENT( pev ), CHAN_VOICE, "weapons/debris6.wav", 0.95, ATTN_NORM );	
+			break;
+		case 6:	
+			EMIT_SOUND( ENT( pev ), CHAN_VOICE, "weapons/debris7.wav", 0.95, ATTN_NORM );	
+			break;
+		case 7:	
+			EMIT_SOUND( ENT( pev ), CHAN_VOICE, "weapons/debris8.wav", 0.95, ATTN_NORM );	
+			break;
+		case 8:	
+			EMIT_SOUND( ENT( pev ), CHAN_VOICE, "weapons/debris9.wav", 0.95, ATTN_NORM );	
 			break;
 	}
 
@@ -132,6 +150,170 @@ void CGrenade::Explode( TraceResult *pTrace, int bitsDamageType )
 		for( int i = 0; i < sparkCount; i++ )
 			Create( "spark_shower", pev->origin, pTrace->vecPlaneNormal, NULL );
 	}
+}
+
+#ifndef CLIENT_DLL
+class CFlame : public CBaseEntity
+{
+	void Spawn(void);
+	void Precache(void);
+	int  Classify(void);
+	void EXPORT FlameTouch(CBaseEntity *pOther);
+	void EXPORT FlameThink(void);
+
+	int m_maxFrame;
+	int life;
+
+public:
+	static CFlame *FlameCreate(void);
+};
+LINK_ENTITY_TO_CLASS(flame, CFlame);
+
+CFlame *CFlame::FlameCreate()
+{
+	// Create a new entity with CCrossbowBolt private data
+	CFlame *pFlame = GetClassPtr((CFlame *)NULL);
+	pFlame->pev->classname = MAKE_STRING("flame");
+	pFlame->Spawn();
+	return pFlame;
+}
+
+void CFlame::Spawn()
+{
+	Precache();
+	SET_MODEL(ENT(pev), "sprites/firebombflame.spr");
+	m_maxFrame = (float)MODEL_FRAMES(pev->modelindex) - 1;
+	pev->rendermode = kRenderTransColor;
+	pev->renderamt = 255;
+	pev->frame = 0;
+	pev->framerate = 8;
+	pev->scale = 0.5;
+
+	UTIL_SetSize(pev, Vector(-2, -2, -2), Vector(2, 2, 2));
+	pev->rendermode = kRenderTransAdd;
+	pev->rendercolor.x = 255;
+	pev->rendercolor.y = 255;
+	pev->rendercolor.z = rand() % 255;
+	pev->renderamt = 255;
+	pev->renderfx = kRenderFxNoDissipation;
+	SetTouch(&CFlame::FlameTouch);
+	SetThink(&CFlame::FlameThink);
+	pev->nextthink = gpGlobals->time + 0.1;
+	life = 50;
+}
+
+void CFlame::Precache()
+{
+	PRECACHE_MODEL("sprites/firebombflame.spr");
+}
+
+
+int	CFlame::Classify(void)
+{
+	return	CLASS_NONE;
+}
+
+void CFlame::FlameTouch(CBaseEntity *pOther)
+{
+	if (UTIL_PointContents(pev->origin) == CONTENTS_WATER)
+	{
+		SetTouch(NULL);
+		SetThink(NULL);
+		UTIL_Remove(this);
+	}
+	pev->velocity = pev->velocity * 0.96;
+
+	if (pOther->edict() == pev->owner)
+		return;
+
+}
+
+void CFlame::FlameThink(void)
+{
+	pev->nextthink = gpGlobals->time + 0.1;
+	life--;
+	if (pev->frame++)
+	{
+		if (pev->frame > m_maxFrame)
+		{
+			pev->frame = 0;
+		}
+	}
+
+	if (pev->waterlevel != 0 || life <= 0)
+	{
+		SetTouch(NULL);
+		SetThink(NULL);
+		UTIL_Remove(this);
+	}
+	Vector orig = pev->origin + gpGlobals->v_up * 64;
+	//orig.y = orig.y + 32;
+
+
+	if (life <= 45)
+		RadiusDamage(orig, pev, pev, 2, 64, CLASS_NONE, DMG_BURN);
+}
+
+#endif
+
+void CGrenade::ExplodeFirebomb(TraceResult *pTrace, int bitsDamageType)
+{
+	float		flRndSound;// sound randomizer
+
+	pev->model = iStringNull;//invisible
+	pev->solid = SOLID_NOT;// intangible
+
+	pev->takedamage = DAMAGE_NO;
+
+	// Pull out of the wall a bit
+	if (pTrace->flFraction != 1.0)
+	{
+		pev->origin = pTrace->vecEndPos + (pTrace->vecPlaneNormal * (pev->dmg - 24) * 0.02);
+	}
+
+	int iContents = UTIL_PointContents(pev->origin);
+
+	entvars_t *pevOwner;
+	if (pev->owner)
+		pevOwner = VARS(pev->owner);
+	else
+		pevOwner = NULL;
+
+	pev->owner = NULL; // can't traceline attack owner if this is set
+
+
+	if (RANDOM_FLOAT(0, 1) < 0.5)
+	{
+		UTIL_DecalTrace(pTrace, DECAL_SCORCH1);
+	}
+	else
+	{
+		UTIL_DecalTrace(pTrace, DECAL_SCORCH2);
+	}
+
+	flRndSound = RANDOM_FLOAT(0, 1);
+
+	EMIT_SOUND(ENT(pev), CHAN_WEAPON, "weapons/firebomb_break.wav", 1, ATTN_NORM);
+	EMIT_SOUND(ENT(pev), CHAN_VOICE, "weapons/firebomb_flame.wav", 1, ATTN_NORM);
+#ifndef CLIENT_DLL
+	CFlame *pFlame[24];
+	int flameoffset = 0;
+	for (int i = 0; i<24; i++)
+	{
+		flameoffset = i + 1;
+		if (i % 2 == 0)
+			flameoffset = -flameoffset;
+		pFlame[i] = CFlame::FlameCreate();
+		pFlame[i]->pev->origin = pev->origin;
+		pFlame[i]->pev->origin.z = pev->origin.z + 20;
+		pFlame[i]->pev->origin.x = pev->origin.x + flameoffset;
+		pFlame[i]->pev->solid = SOLID_TRIGGER;
+		pFlame[i]->pev->movetype = MOVETYPE_BOUNCE;
+		pFlame[i]->pev->gravity = 0.8;
+		pFlame[i]->pev->friction = 0.8;
+		pFlame[i]->pev->velocity = pFlame[i]->pev->velocity + gpGlobals->v_up * RANDOM_LONG(180, 250) + gpGlobals->v_right * RANDOM_LONG(-220, 220) + gpGlobals->v_forward * RANDOM_LONG(-220, 220);
+	}
+#endif
 }
 
 void CGrenade::Smoke( void )
@@ -175,6 +357,29 @@ void CGrenade::PreDetonate( void )
 	pev->nextthink = gpGlobals->time + 1;
 }
 
+void CGrenade::Fart(void)
+{
+	TraceResult tr;
+	Vector		vecSpot;// trace starts here!
+
+	vecSpot = pev->origin + Vector(0, 0, 8);
+	UTIL_TraceLine(vecSpot, vecSpot + Vector(0, 0, -40), ignore_monsters, ENT(pev), &tr);
+
+	Vector smook = pev->origin;
+	MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
+	WRITE_BYTE(TE_SMOKE);
+	WRITE_COORD(smook.x);
+	WRITE_COORD(smook.y);
+	WRITE_COORD(smook.z);
+	WRITE_SHORT(g_sModelIndexSmoke);
+	WRITE_BYTE(10); // scale * 10
+	WRITE_BYTE(10); // framerate
+	MESSAGE_END();
+	EMIT_SOUND(ENT(pev), CHAN_ITEM, "weapons/fart1.wav", 1, ATTN_NORM);
+	SetThink(NULL);
+	SetTouch(NULL);
+}
+
 void CGrenade::Detonate( void )
 {
 	TraceResult tr;
@@ -201,6 +406,25 @@ void CGrenade::ExplodeTouch( CBaseEntity *pOther )
 	UTIL_TraceLine( vecSpot, vecSpot + pev->velocity.Normalize() * 64, ignore_monsters, ENT( pev ), &tr );
 
 	Explode( &tr, DMG_BLAST );
+}
+
+//
+// Contact grenade, explode when it touches something
+// 
+void CGrenade::FirebombTouch(CBaseEntity *pOther)
+{
+	if (pev->classname == pOther->pev->classname)
+		return;
+	TraceResult tr;
+	Vector		vecSpot;// trace starts here!
+
+	pev->enemy = pOther->edict();
+
+	vecSpot = pev->origin - pev->velocity.Normalize() * 32;
+	UTIL_TraceLine(vecSpot, vecSpot + pev->velocity.Normalize() * 64, ignore_monsters, ENT(pev), &tr);
+
+	ExplodeFirebomb(&tr, DMG_BLAST);
+	UTIL_Remove(this);
 }
 
 void CGrenade::DangerSoundThink( void )
@@ -341,7 +565,7 @@ void CGrenade::TumbleThink( void )
 
 	if( pev->dmgtime <= gpGlobals->time )
 	{
-		SetThink( &CGrenade::Detonate );
+		SetThink( &CGrenade::Fart );
 	}
 	if( pev->waterlevel != 0 )
 	{
@@ -386,6 +610,33 @@ CGrenade *CGrenade::ShootContact( entvars_t *pevOwner, Vector vecStart, Vector v
 	pGrenade->SetTouch( &CGrenade::ExplodeTouch );
 
 	pGrenade->pev->dmg = gSkillData.plrDmgM203Grenade;
+
+	return pGrenade;
+}
+
+CGrenade *CGrenade::ShootFirebomb(entvars_t *pevOwner, Vector vecStart, Vector vecVelocity)
+{
+	CGrenade *pGrenade = GetClassPtr((CGrenade *)NULL);
+	pGrenade->Spawn();
+	SET_MODEL(ENT(pGrenade->pev), "models/firebomb.mdl");
+	// contact grenades arc lower
+	pGrenade->pev->gravity = 0.8;// lower gravity since grenade is aerodynamic and engine doesn't know it.
+	UTIL_SetOrigin(pGrenade->pev, vecStart);
+	pGrenade->pev->velocity = vecVelocity;
+	pGrenade->pev->angles = UTIL_VecToAngles(pGrenade->pev->velocity);
+	pGrenade->pev->owner = ENT(pevOwner);
+
+	// make monsters afaid of it while in the air
+	pGrenade->SetThink(&CGrenade::DangerSoundThink);
+	pGrenade->pev->nextthink = gpGlobals->time;
+
+	// Tumble in air
+	pGrenade->pev->avelocity.x = RANDOM_FLOAT(-100, -500);
+
+	// Explode on contact
+	pGrenade->SetTouch(&CGrenade::FirebombTouch);
+
+	pGrenade->pev->dmg = 15;
 
 	return pGrenade;
 }

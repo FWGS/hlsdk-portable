@@ -297,6 +297,11 @@ void W_Precache( void )
 	UTIL_PrecacheOther( "item_suit" );
 	UTIL_PrecacheOther( "item_healthkit" );
 	UTIL_PrecacheOther( "item_battery" );
+	UTIL_PrecacheOther( "item_fullbattery");
+	UTIL_PrecacheOther( "item_scorpionjacket");
+	UTIL_PrecacheOther( "item_pizza");
+	UTIL_PrecacheOther( "item_midpizza");
+	UTIL_PrecacheOther( "item_bigpizza");
 	UTIL_PrecacheOther( "item_antidote" );
 	UTIL_PrecacheOther( "item_security" );
 	UTIL_PrecacheOther( "item_longjump" );
@@ -307,6 +312,35 @@ void W_Precache( void )
 
 	// crowbar
 	UTIL_PrecacheOtherWeapon( "weapon_crowbar" );
+
+	// wrench
+	UTIL_PrecacheOtherWeapon("weapon_wrench");
+
+	// phone
+	UTIL_PrecacheOtherWeapon("weapon_phone");
+
+	// money
+	UTIL_PrecacheOtherWeapon("weapon_money");
+
+	// sawnoff
+	UTIL_PrecacheOtherWeapon("weapon_sawnoff");
+
+	// obamium
+	UTIL_PrecacheOtherWeapon("weapon_obamium");
+
+	// Rune scimmy for 15k gp
+	UTIL_PrecacheOtherWeapon("weapon_scimitar");
+
+	// banana
+	UTIL_PrecacheOtherWeapon("weapon_banana");
+
+	// Piwo
+	UTIL_PrecacheOtherWeapon("weapon_piwo");
+	UTIL_PrecacheOther("ammo_sixpack");
+
+	// clawgun
+	UTIL_PrecacheOtherWeapon("weapon_clawgun");
+	UTIL_PrecacheOther("ammo_claw");
 
 	// glock
 	UTIL_PrecacheOtherWeapon( "weapon_9mmhandgun" );
@@ -374,9 +408,18 @@ void W_Precache( void )
 	PRECACHE_MODEL( "models/grenade.mdl" );
 	PRECACHE_MODEL( "sprites/explode1.spr" );
 
+
+	PRECACHE_SOUND("weapons/fart1.wav"); // For grenade fart
 	PRECACHE_SOUND( "weapons/debris1.wav" );// explosion aftermaths
 	PRECACHE_SOUND( "weapons/debris2.wav" );// explosion aftermaths
 	PRECACHE_SOUND( "weapons/debris3.wav" );// explosion aftermaths
+	PRECACHE_SOUND ("weapons/debris4.wav");// explosion aftermaths
+	PRECACHE_SOUND ("weapons/debris5.wav");// explosion aftermaths
+	PRECACHE_SOUND("weapons/debris6.wav");// explosion aftermaths
+	PRECACHE_SOUND("weapons/debris7.wav");// explosion aftermaths
+	PRECACHE_SOUND("weapons/debris8.wav");// explosion aftermaths
+	PRECACHE_SOUND("weapons/debris9.wav");// explosion aftermaths
+
 
 	PRECACHE_SOUND( "weapons/grenade_hit1.wav" );//grenade
 	PRECACHE_SOUND( "weapons/grenade_hit2.wav" );//grenade
@@ -503,7 +546,17 @@ void CBasePlayerItem::Materialize( void )
 
 	UTIL_SetOrigin( pev, pev->origin );// link into world.
 	SetTouch( &CBasePlayerItem::DefaultTouch );
-	SetThink( NULL );
+	//SURVIVAL MODE
+	if( !FStrEq( STRING( gpGlobals->mapname ), "survival" ) )
+	{
+		SetThink( NULL );
+	}
+	else
+	{
+		survtimer = 0;
+		SetThink(&CBaseEntity::SurvivalItemTimer);
+		pev->nextthink = gpGlobals->time + 1;
+	}
 }
 
 //=========================================================
@@ -590,8 +643,12 @@ void CBasePlayerItem::DefaultTouch( CBaseEntity *pOther )
 
 	if( pOther->AddPlayerItem( this ) )
 	{
+		SetThink(NULL);
 		AttachToPlayer( pPlayer );
-		EMIT_SOUND( ENT( pPlayer->pev ), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM );
+		if (FClassnameIs(pev, "weapon_money"))
+			EMIT_SOUND(ENT(pPlayer->pev), CHAN_ITEM, "weapons/cash.wav", 1, ATTN_NORM);
+		else
+			EMIT_SOUND( ENT( pPlayer->pev ), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM );
 	}
 
 	SUB_UseTargets( pOther, USE_TOGGLE, 0 ); // UNDONE: when should this happen?
@@ -883,6 +940,9 @@ BOOL CBasePlayerWeapon::AddPrimaryAmmo( int iCount, char *szName, int iMaxClip, 
 		}
 	}
 
+	if (FClassnameIs(pev, "weapon_money"))
+		EMIT_SOUND(ENT(pev), CHAN_ITEM, "weapons/cash.wav", 1, ATTN_NORM);
+
 	return iIdAmmo > 0 ? TRUE : FALSE;
 }
 
@@ -1058,6 +1118,16 @@ void CBasePlayerAmmo::Spawn( void )
 	UTIL_SetOrigin( pev, pev->origin );
 
 	SetTouch( &CBasePlayerAmmo::DefaultTouch );
+
+	//SURVIVAL MODE
+	if (!FStrEq(STRING(gpGlobals->mapname), "survival"))
+		SetThink(NULL);
+	else
+	{
+		survtimer = 0;
+		SetThink(&CBaseEntity::SurvivalItemTimer);
+		pev->nextthink = gpGlobals->time + 1;
+	}
 }
 
 CBaseEntity* CBasePlayerAmmo::Respawn( void )
@@ -1084,7 +1154,15 @@ void CBasePlayerAmmo::Materialize( void )
 	}
 
 	SetTouch( &CBasePlayerAmmo::DefaultTouch );
-	SetThink( NULL );
+	//SURVIVAL MODE
+	if (!FStrEq(STRING(gpGlobals->mapname), "survival"))
+		SetThink( NULL );
+	else
+	{
+		survtimer = 0;
+		SetThink(&CBaseEntity::SurvivalItemTimer);
+		pev->nextthink = gpGlobals->time + 1;
+	}
 }
 
 void CBasePlayerAmmo::DefaultTouch( CBaseEntity *pOther )
@@ -1632,6 +1710,14 @@ TYPEDESCRIPTION	CGauss::m_SaveData[] =
 };
 
 IMPLEMENT_SAVERESTORE( CGauss, CBasePlayerWeapon )
+
+TYPEDESCRIPTION	CPhone::m_SaveData[] =
+{
+	DEFINE_FIELD(CPhone, CurrentDialog, FIELD_INTEGER),
+	DEFINE_FIELD(CPhone, IsTalking, FIELD_BOOLEAN),
+	DEFINE_FIELD(CPhone, IsCalling, FIELD_BOOLEAN),
+};
+IMPLEMENT_SAVERESTORE(CPhone, CBasePlayerWeapon);
 
 TYPEDESCRIPTION	CEgon::m_SaveData[] =
 {

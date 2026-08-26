@@ -153,6 +153,25 @@ public:
 	CBaseEntity *m_pGoalEnt;// path corner we are heading towards
 	CBaseEntity *m_pLink;// used for temporary link-list operations. 
 
+	void EXPORT HangThink(void);
+	void EXPORT SlipThink(void);
+	void EXPORT SlipTouch(CBaseEntity *pOther);
+	bool chimpmessage = false;
+
+	int survtimer = 0;
+	void EXPORT SurvivalItemTimer(void);
+
+	int SlipCounter = 0;
+	bool isRandomized = false;
+	void GiveRandomDrop(const Vector &vecPos, const Vector &vecAng, bool onlyammo);
+	bool killedbyscimmy = false;
+	int norandom = 0;
+	bool phonecalling = false;
+	string_t phonetarget;
+	int phonetalktime = 0;
+	int phonetalkdialog = 0;
+	int preventrandom = 0;
+
 	// initialization functions
 	virtual void Spawn( void ) { return; }
 	virtual void Precache( void ) { return; }
@@ -177,6 +196,7 @@ public:
 	virtual int TakeHealth( float flHealth, int bitsDamageType );
 	virtual void Killed( entvars_t *pevAttacker, int iGib );
 	virtual int BloodColor( void ) { return DONT_BLEED; }
+	virtual void SetRandomized(bool isrand) { isRandomized = isrand; };
 	virtual void TraceBleed( float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType );
 	virtual BOOL IsTriggered( CBaseEntity *pActivator ) {return TRUE; }
 #if SPEAKABLE_TARGETS
@@ -352,6 +372,7 @@ public:
 	int ammo_uranium;
 	int ammo_hornets;
 	int ammo_argrens;
+	int ammo_claw;
 	//Special stuff for grenades and satchels.
 	float m_flStartThrow;
 	float m_flReleaseThrow;
@@ -473,6 +494,7 @@ public:
 	int LookupActivity( int activity );
 	int LookupActivityHeaviest( int activity );
 	int LookupSequence( const char *label );
+	int LookupRandomSequence(void);
 	void ResetSequenceInfo();
 	void DispatchAnimEvents( float flFutureInterval = 0.1 ); // Handle events that have happend since last time called up until X seconds into the future
 	virtual void HandleAnimEvent( MonsterEvent_t *pEvent ) { return; };
@@ -621,9 +643,10 @@ public:
 #define DMG_SLOWBURN		(1 << 21)	// in an oven
 #define DMG_SLOWFREEZE		(1 << 22)	// in a subzero freezer
 #define DMG_MORTAR			(1 << 23)	// Hit by air raid (done to distinguish grenade from mortar)
+#define	DMG_SCIMMY			(1 << 24)	// Rune scimitar
 
 // these are the damage types that are allowed to gib corpses
-#define DMG_GIB_CORPSE		( DMG_CRUSH | DMG_FALL | DMG_BLAST | DMG_SONIC | DMG_CLUB )
+#define DMG_GIB_CORPSE		( DMG_CRUSH | DMG_FALL | DMG_BLAST | DMG_SONIC | DMG_CLUB | DMG_SCIMMY )
 
 // these are the damage types that have client hud art
 #define DMG_SHOWNHUD		(DMG_POISON | DMG_ACID | DMG_FREEZE | DMG_SLOWFREEZE | DMG_DROWN | DMG_BURN | DMG_SLOWBURN | DMG_NERVEGAS | DMG_RADIATION | DMG_SHOCK)
@@ -800,5 +823,6 @@ public:
 	void Spawn( void );
 	void Precache( void );
 	void KeyValue( KeyValueData *pkvd );
+	int norandom = 0;
 };
 #endif

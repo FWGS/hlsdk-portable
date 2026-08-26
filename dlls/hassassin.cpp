@@ -80,6 +80,7 @@ public:
 	void RunTask( Task_t *pTask );
 	void DeathSound( void );
 	void IdleSound( void );
+	int IRelationship(CBaseEntity *pTarget);
 	CUSTOM_SCHEDULES
 
 	int Save( CSave &save ); 
@@ -156,6 +157,14 @@ int CHAssassin::ISoundMask( void )
 int CHAssassin::Classify( void )
 {
 	return CLASS_HUMAN_MILITARY;
+}
+
+int CHAssassin::IRelationship(CBaseEntity *pTarget)
+{
+	if (FClassnameIs(pTarget->pev, "monster_monkey"))
+		return R_HT;
+
+	return CBaseMonster::IRelationship(pTarget);
 }
 
 //=========================================================
