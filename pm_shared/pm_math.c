@@ -13,6 +13,7 @@
 *
 ****/
 // pm_math.c -- math primitives
+#include <string.h>
 #include <math.h>
 #include "mathlib.h"
 #if HAVE_TGMATH_H
@@ -22,7 +23,7 @@
 #include "build.h"
 
 #if XASH_ARM >= 8
-#define XASH_SIMD_NEON
+#define XASH_SIMD_NEON 1
 #include <arm_neon.h>
 #include "neon_mathfun.h"
 #endif // XASH_ARM >= 8
@@ -121,12 +122,12 @@ void AngleVectorsTranspose( const vec3_t angles, vec3_t forward, vec3_t right, v
 void AngleMatrix( const float *angles, float (*matrix)[4] )
 {
 #if XASH_SIMD_NEON
-	static const uint32x4_t AngleMatrix_sign0 = vsetq_lane_u32( 0x80000000, vdupq_n_u32( 0 ), 0 );
-	static const uint32x4_t AngleMatrix_sign1 = vsetq_lane_u32( 0x80000000, vdupq_n_u32( 0 ), 1 );
-	static const uint32x4_t AngleMatrix_sign2 = vsetq_lane_u32( 0x80000000, vdupq_n_u32( 0 ), 2 );
+	static const uint32x4_t AngleMatrix_sign0 = { 0x80000000, 0x00000000, 0x00000000, 0x00000000 };
+	static const uint32x4_t AngleMatrix_sign1 = { 0x00000000, 0x80000000, 0x00000000, 0x00000000 };
+	static const uint32x4_t AngleMatrix_sign2 = { 0x00000000, 0x00000000, 0x80000000, 0x00000000 };
+
 	float32x4x3_t out_reg;
-	float32x4_t angles_reg = {};
-	memcpy( &angles_reg, angles, sizeof( float ) * 3 );
+	float32x4_t angles_reg = { angles[0], angles[1], angles[2], 0.0f };
 
 	float32x4x2_t sp_sy_sr_0_cp_cy_cr_1;
 	sincos_ps( vmulq_n_f32( angles_reg, ( M_PI * 2 / 360 )), &sp_sy_sr_0_cp_cy_cr_1.val[0], &sp_sy_sr_0_cp_cy_cr_1.val[1] );
@@ -294,8 +295,7 @@ float AngleBetweenVectors( const vec3_t v1, const vec3_t v2 )
 void VectorTransform( const vec3_t in1, float in2[3][4], vec3_t out )
 {
 #if XASH_SIMD_NEON
-	float32x4_t in1_reg = {};
-	memcpy( &in1_reg, in1, sizeof( float ) * 3 );
+	float32x4_t in1_reg = { in1[0], in1[1], in1[2], 0.0f };
 
 	float32x4x4_t in_t;
 	memcpy( &in_t, in2, sizeof( float ) * 3 * 4 );
@@ -317,13 +317,6 @@ void VectorTransform( const vec3_t in1, float in2[3][4], vec3_t out )
 
 int VectorCompare( const vec3_t v1, const vec3_t v2 )
 {
-#if XASH_SIMD_NEON
-	// is this really works?
-	float32x4_t v1_reg = {}, v2_reg = {};
-	memcpy( &v1_reg, v1, sizeof( float ) * 3 );
-	memcpy( &v2_reg, v2, sizeof( float ) * 3 );
-	return !vaddvq_u32( vceqq_f32( v1_reg, v2_reg ));
-#else
 	int i;
 
 	for( i = 0; i < 3; i++ )
@@ -331,7 +324,6 @@ int VectorCompare( const vec3_t v1, const vec3_t v2 )
 			return 0;
 
 	return 1;
-#endif
 }
 
 void VectorMA( const vec3_t veca, float scale, const vec3_t vecb, vec3_t vecc )
