@@ -134,4 +134,65 @@ jobs:
       with:
         name: hlsdk-${{ steps.extract_branch.outputs.branch }}-windows-vgui
         path: dist-vgui/${{ steps.extract_gamedir.outputs.gamedir }}
+  build-android:
+    name: Android
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
 
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install gcc-multilib g++-multilib cmake ninja-build
+
+      - name: Setup Java
+        uses: actions/setup-java@v3.6.0
+        with:
+          distribution: 'microsoft'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v2
+
+      - name: Build
+        run: ./gradlew assembleRelease
+        working-directory: android
+        env:
+          ANDROID_NDK_ROOT: /usr/local/lib/android/sdk/ndk/26.1.10909125
+
+      - name: Sign APK
+        uses: r0adkll/sign-android-release@v1
+        id: sign_apk
+        if: ${{ env.SIGNING_KEY != '' }}
+        with:
+          releaseDirectory: app/build/outputs/apk/release
+          signingKeyBase64: ${{ secrets.SIGNING_KEY }}
+          alias: ${{ secrets.ALIAS }}
+          keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
+          keyPassword: ${{ secrets.KEY_PASSWORD }}
+        env:
+          BUILD_TOOLS_VERSION: "34.0.0"
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+
+      - name: Extract branch name
+        shell: bash
+        run: echo "branch=$(echo ${GITHUB_REF#refs/heads/} | tr '/' '_')" >> $GITHUB_OUTPUT
+        id: extract_branch
+
+      - name: Upload artifacts (signed)
+        uses: actions/upload-artifact@v3
+        if: steps.sign_apk.outcome == 'success'
+        with:
+          name: hlsdk-${{ steps.extract_branch.outputs.branch }}-android
+          path: ${{ steps.sign_app.outputs.signedReleaseFile }}
+
+      - name: Upload artifacts (unsigned)
+        uses: actions/upload-artifact@v3
+        if: steps.sign_apk.outcome != 'success'
+        with:
+          name: hlsdk-${{ steps.extract_branch.outputs.branch }}-android
+          path: android/app/build/outputs/apk/release/*.apk
