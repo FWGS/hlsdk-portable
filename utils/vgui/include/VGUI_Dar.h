@@ -166,7 +166,7 @@ protected:
 	ELEMTYPE* _data;
 };
 
-#if XASH_WIN32
+#ifdef _WIN32
 //forward referencing all the template types used so they get exported
 template class VGUIAPI Dar<char>;
 template class VGUIAPI Dar<char*>;
