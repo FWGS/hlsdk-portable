@@ -25,6 +25,8 @@ cmake_minimum_required(VERSION 3.9)
 
 if(NOT ${CMAKE_VERSION} VERSION_LESS "3.15.0")
 	cmake_policy(SET CMP0091 NEW)
+	# use the static CRT for all targets
+	set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 endif()
 
 # Install custom module path

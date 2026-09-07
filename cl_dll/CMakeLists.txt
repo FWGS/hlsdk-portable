@@ -210,8 +210,6 @@ set_target_properties (${CLDLL_LIBRARY} PROPERTIES
 
 set_target_postfix(${CLDLL_LIBRARY})
 
-set_property(TARGET ${CLDLL_LIBRARY} PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-
 if(HAVE_LTO)
 	set_property(TARGET ${CLDLL_LIBRARY} PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
 endif()
