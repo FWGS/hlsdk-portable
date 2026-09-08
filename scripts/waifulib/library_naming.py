@@ -85,6 +85,8 @@ def configure(conf):
 		buildos = "win32"
 	elif conf.env.XASH_LINUX:
 		buildos = "linux"
+	elif conf.env.XASH_IOS:
+		buildos = "ios"
 	elif conf.env.XASH_APPLE:
 		buildos = "apple"
 	elif conf.env.XASH_FREEBSD:
@@ -184,7 +186,7 @@ def configure(conf):
 	node = conf.bldnode.make_node('true_postfix.txt')
 	node.write('%s-%s' % (buildos, buildarch))
 
-	if not conf.env.XASH_ANDROID and (conf.env.XASH_WIN32 or conf.env.XASH_LINUX or conf.env.XASH_APPLE):
+	if not conf.env.XASH_ANDROID and not conf.env.XASH_IOS and (conf.env.XASH_WIN32 or conf.env.XASH_LINUX or conf.env.XASH_APPLE):
 		buildos = ''
 		if conf.env.XASH_X86:
 			buildarch = ''
