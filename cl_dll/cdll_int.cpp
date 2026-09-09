@@ -51,6 +51,12 @@ TeamFortressViewport *gViewPort = NULL;
 #endif
 mobile_engfuncs_t *gMobileEngfuncs = NULL;
 
+#if defined( INTERNAL_VGUI_SUPPORT )
+// declare InitVGUISupportAPI so that linker doesn't remove it because nothing references it
+extern "C" void InitVGUISupportAPI( void *api );
+void *g_pKeepVGUISupport = (void *)InitVGUISupportAPI;
+#endif
+
 void InitInput( void );
 void EV_HookEvents( void );
 void IN_Commands( void );
