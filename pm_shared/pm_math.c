@@ -13,12 +13,21 @@
 *
 ****/
 // pm_math.c -- math primitives
+#include <string.h>
 #include <math.h>
 #include "mathlib.h"
 #if HAVE_TGMATH_H
 #include <tgmath.h>
 #endif
 #include "const.h"
+#include "build.h"
+
+#if XASH_ARM >= 8
+#define XASH_SIMD_NEON 1
+#include <arm_neon.h>
+#include "neon_mathfun.h"
+#endif // XASH_ARM >= 8
+
 
 // up / down
 #define	PITCH	0
@@ -36,7 +45,7 @@ int nanmask = 255 << 23;
 
 float anglemod( float a )
 {
-	a = ( 360.0f / 65536.0f ) * ( (int)( a * ( 65536.0f / 360.0f ) ) & 65535 );
+	a = ( 360.0f / 65536.0f ) * ( (int)( a * ( 65536.0f / 360.0f )) & 65535 );
 	return a;
 }
 
@@ -110,8 +119,43 @@ void AngleVectorsTranspose( const vec3_t angles, vec3_t forward, vec3_t right, v
 	}
 }
 
-void AngleMatrix( const vec3_t angles, float (*matrix)[4] )
+void AngleMatrix( const float *angles, float (*matrix)[4] )
 {
+#if XASH_SIMD_NEON
+	static const uint32x4_t AngleMatrix_sign0 = { 0x80000000, 0x00000000, 0x00000000, 0x00000000 };
+	static const uint32x4_t AngleMatrix_sign1 = { 0x00000000, 0x80000000, 0x00000000, 0x00000000 };
+	static const uint32x4_t AngleMatrix_sign2 = { 0x00000000, 0x00000000, 0x80000000, 0x00000000 };
+
+	float32x4x3_t out_reg;
+	float32x4_t angles_reg = { angles[0], angles[1], angles[2], 0.0f };
+
+	float32x4x2_t sp_sy_sr_0_cp_cy_cr_1;
+	sincos_ps( vmulq_n_f32( angles_reg, ( M_PI * 2 / 360 )), &sp_sy_sr_0_cp_cy_cr_1.val[0], &sp_sy_sr_0_cp_cy_cr_1.val[1] );
+
+	float32x4x2_t sp_sr_cp_cr_sy_0_cy_1 = vuzpq_f32( sp_sy_sr_0_cp_cy_cr_1.val[0], sp_sy_sr_0_cp_cy_cr_1.val[1] );
+	float32x4x2_t sp_cp_sy_cy_sr_cr_0_1 = vzipq_f32( sp_sy_sr_0_cp_cy_cr_1.val[0], sp_sy_sr_0_cp_cy_cr_1.val[1] );
+
+	float32x4_t _0_sr_cr_0 = vextq_f32( sp_sy_sr_0_cp_cy_cr_1.val[0], sp_cp_sy_cy_sr_cr_0_1.val[1], 3 );
+	float32x4_t cp_cr_sr_0 = vcombine_f32( vget_high_f32( sp_sr_cp_cr_sy_0_cy_1.val[0] ), vget_high_f32( sp_sy_sr_0_cp_cy_cr_1.val[0] ));
+	float32x4_t cy_sy_sy_0 = vcombine_f32( vrev64_f32( vget_high_f32( sp_cp_sy_cy_sr_cr_0_1.val[0] )), vget_low_f32( sp_sr_cp_cr_sy_0_cy_1.val[1] ));
+	float32x4_t sy_cy_cy_1 = vcombine_f32( vget_high_f32( sp_cp_sy_cy_sr_cr_0_1.val[0] ), vget_high_f32( sp_sr_cp_cr_sy_0_cy_1.val[1] ));
+
+	float32x4_t _0_srsp_crsp_0 = vmulq_laneq_f32( _0_sr_cr_0, sp_sy_sr_0_cp_cy_cr_1.val[0], 0 ); // *sp
+	out_reg.val[0] = vmulq_laneq_f32( _0_srsp_crsp_0, sp_sy_sr_0_cp_cy_cr_1.val[1], 1 ); // *cy
+	out_reg.val[1] = vmulq_laneq_f32( _0_srsp_crsp_0, sp_sy_sr_0_cp_cy_cr_1.val[0], 1 ); // *sy
+
+	cy_sy_sy_0 = vreinterpretq_f32_u32( veorq_u32( vreinterpretq_u32_f32( cy_sy_sy_0 ), AngleMatrix_sign1 ));
+	sy_cy_cy_1 = vreinterpretq_f32_u32( veorq_u32( vreinterpretq_u32_f32( sy_cy_cy_1 ), AngleMatrix_sign2 ));
+	out_reg.val[0] = vfmaq_f32( out_reg.val[0], cp_cr_sr_0, cy_sy_sy_0 );
+	out_reg.val[1] = vfmaq_f32( out_reg.val[1], cp_cr_sr_0, sy_cy_cy_1 );
+
+	float32x4_t cp_cr_0_1 = vcombine_f32( vget_high_f32( sp_sr_cp_cr_sy_0_cy_1.val[0] ), vget_high_f32( sp_cp_sy_cy_sr_cr_0_1.val[1] ));
+	float32x4_t _1_cp_cr_0 = vextq_f32( cp_cr_0_1, cp_cr_0_1, 3 );
+	out_reg.val[2] = vmulq_f32( sp_sr_cp_cr_sy_0_cy_1.val[0], _1_cp_cr_0 );
+	out_reg.val[2] = vreinterpretq_f32_u32( veorq_u32( vreinterpretq_u32_f32( out_reg.val[2] ), AngleMatrix_sign0 ));
+
+	memcpy( matrix, &out_reg, sizeof( float ) * 3 * 4 );
+#else
 	float angle;
 	float sr, sp, sy, cr, cp, cy;
 
@@ -125,19 +169,20 @@ void AngleMatrix( const vec3_t angles, float (*matrix)[4] )
 	sr = sin( angle );
 	cr = cos( angle );
 
-	// matrix = ( YAW * PITCH ) * ROLL
+	// matrix = (YAW * PITCH) * ROLL
 	matrix[0][0] = cp * cy;
 	matrix[1][0] = cp * sy;
 	matrix[2][0] = -sp;
 	matrix[0][1] = sr * sp * cy + cr * -sy;
 	matrix[1][1] = sr * sp * sy + cr * cy;
 	matrix[2][1] = sr * cp;
-	matrix[0][2] = ( cr * sp * cy + -sr * -sy );
-	matrix[1][2] = ( cr * sp * sy + -sr * cy );
+	matrix[0][2] = (cr * sp * cy + -sr * -sy);
+	matrix[1][2] = (cr * sp * sy + -sr* cy);
 	matrix[2][2] = cr * cp;
 	matrix[0][3] = 0.0f;
 	matrix[1][3] = 0.0f;
 	matrix[2][3] = 0.0f;
+#endif
 }
 
 void AngleIMatrix( const vec3_t angles, float matrix[3][4] )
@@ -241,7 +286,7 @@ float AngleBetweenVectors( const vec3_t v1, const vec3_t v2 )
 	if( !l1 || !l2 )
 		return 0.0f;
 
-	angle = acos( DotProduct( v1, v2 ) / ( l1 * l2 ) );
+	angle = acos( DotProduct( v1, v2 ) / ( l1 * l2 ));
 	angle = ( angle  * 180.0f ) / M_PI_F;
 
 	return angle;
@@ -249,9 +294,25 @@ float AngleBetweenVectors( const vec3_t v1, const vec3_t v2 )
 
 void VectorTransform( const vec3_t in1, float in2[3][4], vec3_t out )
 {
+#if XASH_SIMD_NEON
+	float32x4_t in1_reg = { in1[0], in1[1], in1[2], 0.0f };
+
+	float32x4x4_t in_t;
+	memcpy( &in_t, in2, sizeof( float ) * 3 * 4 );
+	//memset( &in_t.val[3], 0, sizeof( in_t.val[3] ) );
+	in_t = vld4q_f32((const float*)&in_t );
+
+	float32x4_t out_reg = in_t.val[3];
+	out_reg = vfmaq_laneq_f32( out_reg, in_t.val[0], in1_reg, 0 );
+	out_reg = vfmaq_laneq_f32( out_reg, in_t.val[1], in1_reg, 1 );
+	out_reg = vfmaq_laneq_f32( out_reg, in_t.val[2], in1_reg, 2 );
+
+	memcpy( out, &out_reg, sizeof( float ) * 3 );
+#else
 	out[0] = DotProduct( in1, in2[0] ) + in2[0][3];
 	out[1] = DotProduct( in1, in2[1] ) + in2[1][3];
 	out[2] = DotProduct( in1, in2[2] ) + in2[2][3];
+#endif
 }
 
 int VectorCompare( const vec3_t v1, const vec3_t v2 )
@@ -300,9 +361,25 @@ void _VectorCopy( vec3_t in, vec3_t out )
 
 void CrossProduct( const vec3_t v1, const vec3_t v2, vec3_t cross )
 {
+#if XASH_SIMD_NEON
+	float32x4_t v1_reg = {}, v2_reg = {};
+	memcpy( &v1_reg, v1, sizeof( float ) * 3 );
+	memcpy( &v2_reg, v2, sizeof( float ) * 3 );
+
+	float32x2_t xy_a = vget_low_f32( v1_reg );
+	float32x2_t xy_b = vget_low_f32( v2_reg );
+	float32x4_t yzxy_a = vcombine_f32( vext_f32( xy_a, vget_high_f32( v1_reg ), 1 ), xy_a ); // [aj, ak, ai, aj]
+	float32x4_t yzxy_b = vcombine_f32( vext_f32( xy_b, vget_high_f32( v2_reg ), 1 ), xy_b ); // [bj, bk, bi, bj]
+	float32x4_t zxyy_a = vextq_f32( yzxy_a, yzxy_a, 1 ); // [ak, ai, aj, aj]
+	float32x4_t zxyy_b = vextq_f32( yzxy_b, yzxy_b, 1 ); // [bk, ai, bj, bj]
+	float32x4_t cross_reg = vfmsq_f32( vmulq_f32( yzxy_a, zxyy_b ), zxyy_a, yzxy_b ); // [ajbk-akbj, akbi-aibk, aibj-ajbi, 0]
+
+	memcpy( cross, &cross_reg, sizeof( float ) * 3 );
+#else
 	cross[0] = v1[1] * v2[2] - v1[2] * v2[1];
 	cross[1] = v1[2] * v2[0] - v1[0] * v2[2];
 	cross[2] = v1[0] * v2[1] - v1[1] * v2[0];
+#endif
 }
 
 float Length( const vec3_t v )
