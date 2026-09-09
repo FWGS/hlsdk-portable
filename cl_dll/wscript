@@ -58,11 +58,12 @@ def build(bld):
 	if bld.env.USE_NOVGUI_MOTD:
 		defines += ['USE_NOVGUI_MOTD']
 	else:
-		includes += ['../utils/fake_vgui/include']
-		excluded_files += ['voice_status.cpp',
-			'vgui_*.cpp',
-			'game_shared/vgui_*.cpp',
-			'game_shared/voice_banmgr.cpp']
+		excluded_files += ['MOTD.cpp']
+
+	if bld.env.USE_NOVGUI_SCOREBOARD:
+		defines += ['USE_NOVGUI_SCOREBOARD']
+	else:
+		excluded_files += ['scoreboard.cpp']
 
 	source = bld.path.ant_glob('**/*.cpp', excl=excluded_files)
 	source += bld.path.parent.ant_glob('game_shared/*.cpp', excl=excluded_files)
