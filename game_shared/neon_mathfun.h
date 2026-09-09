@@ -224,7 +224,7 @@ inline v4sf exp_ps(v4sf x) {
    almost no extra price so both sin_ps and cos_ps make use of
    sincos_ps..
   */
-inline void sincos_ps(v4sf x, v4sf *ysin, v4sf *ycos) { // any x
+static inline void sincos_ps(v4sf x, v4sf *ysin, v4sf *ycos) { // any x
   v4sf y;
 
   v4su emm2;
