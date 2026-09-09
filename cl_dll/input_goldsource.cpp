@@ -421,7 +421,7 @@ void IN_SetMouseMode(bool enable)
 	}
 }
 
-void IN_SetVisibleMouse(bool visible)
+void GoldSourceInput::IN_SetVisibleMouse(bool visible)
 {
 #if XASH_WIN32
 	bool lockEntered = MouseThread_ActiveLock_Enter();
