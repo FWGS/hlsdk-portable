@@ -25,6 +25,8 @@ cmake_minimum_required(VERSION 3.9)
 
 if(NOT ${CMAKE_VERSION} VERSION_LESS "3.15.0")
 	cmake_policy(SET CMP0091 NEW)
+	# use the static CRT for all targets
+	set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 endif()
 
 # Install custom module path
@@ -41,7 +43,6 @@ project (HLSDK-PORTABLE)
 #--------------
 # USER DEFINES \
 ################\
-option(USE_VGUI "Enable VGUI1." OFF)
 option(USE_NOVGUI_MOTD "Prefer non-VGUI MOTD when USE_VGUI is enabled" OFF)
 option(USE_NOVGUI_SCOREBOARD "Prefer non-VGUI Scoreboard when USE_VGUI is enabled" OFF)
 option(USE_VOICEMGR "Enable VOICE MANAGER." OFF)
@@ -85,8 +86,11 @@ if((WIN32 OR ${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
 	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "i586"
 	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "i686"))
 	option(GOLDSOURCE_SUPPORT "Build goldsource compatible client library" ON)
+	set(USE_STATIC_FREEVGUI OFF)
 else()
 	option(GOLDSOURCE_SUPPORT "Build goldsource compatible client library" OFF)
+	# no prebuilt vgui shared library exists here by default, so link FreeVGUI into the client
+	set(USE_STATIC_FREEVGUI ON)
 endif()
 
 #-----------------
@@ -209,6 +213,8 @@ add_subdirectory(game_shared)
 if(BUILD_CLIENT)
 	message(STATUS "Building client enabled")
 	add_definitions(-DAG_USE_CHEATPROTECTION)
+
+	add_subdirectory(freevgui)
 	add_subdirectory(cl_dll)
 else()
 	add_definitions(-DAG_NO_CLIENT_DLL)
