@@ -167,6 +167,63 @@ void PM_SortTextures( void )
 	}
 }
 
+// ===================== MATERIAL TYPE DETECTION, MAIN ROUTINES ========================
+//
+// Used to detect the texture the player is standing on, map the
+// texture name to a material type.  Play footstep sound based
+// on material type.
+
+// open materials.txt,  get size, alloc space,
+// save in array.  Only works first time called,
+// ignored on subsequent calls.
+
+char *PM_memfgets( byte *pMemFile, int fileSize, int *pFilePos, char *pBuffer, int bufferSize )
+{
+	// Bullet-proofing
+	if( !pMemFile || !pBuffer || !pFilePos)
+		return NULL;
+
+	if( *pFilePos >= fileSize )
+		return NULL;
+
+	int i = *pFilePos;
+	int last = fileSize;
+
+	// fgets always NULL terminates, so only read bufferSize-1 characters
+	if( last - *pFilePos > ( bufferSize - 1 ) )
+		last = *pFilePos + ( bufferSize - 1 );
+
+	int stop = 0;
+
+	// Stop at the next newline (inclusive) or end of buffer
+	while( i < last && !stop )
+	{
+		if( pMemFile[i] == '\n' )
+			stop = 1;
+		i++;
+	}
+
+	// If we actually advanced the pointer, copy it over
+	if( i != *pFilePos )
+	{
+		// We read in size bytes
+		int size = i - *pFilePos;
+		// copy it out
+		memcpy( pBuffer, pMemFile + *pFilePos, sizeof(byte) * size );
+
+		// If the buffer isn't full, terminate (this is always true)
+		if( size < bufferSize )
+			pBuffer[size] = 0;
+
+		// Update file pointer
+		*pFilePos = i;
+		return pBuffer;
+	}
+
+	// No data read, bail
+	return NULL;
+}
+
 void PM_InitTextureTypes( void )
 {
 	char buffer[512];
@@ -190,7 +247,7 @@ void PM_InitTextureTypes( void )
 	memset( buffer, 0, sizeof( buffer ) );
 
 	// for each line in the file...
-	while( pmove->memfgets( pMemFile, fileSize, &filePos, buffer, 511 ) != NULL && (gcTextures < CTEXTURESMAX ) )
+	while( PM_memfgets( pMemFile, fileSize, &filePos, buffer, 511 ) != NULL && (gcTextures < CTEXTURESMAX ) )
 	{
 		// skip whitespace
 		i = 0;

@@ -56,15 +56,6 @@ jobs:
         schroot --chroot steamrt_scout_i386 -- cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DPOLLY=ON -B build -S . -DCMAKE_EXE_LINKER_FLAGS="-Wl,--no-undefined" -DCMAKE_INSTALL_PREFIX="$PWD/dist"
         schroot --chroot steamrt_scout_i386 -- cmake --build build --target all
         schroot --chroot steamrt_scout_i386 -- cmake --build build --target install
-    - name: Build on Linux with vgui
-      if: startsWith(matrix.os, 'ubuntu') && startsWith(matrix.cc, 'gcc')
-      run: |
-        schroot --chroot steamrt_scout_i386 -- cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DPOLLY=ON -B build-vgui -S . -DCMAKE_EXE_LINKER_FLAGS="-Wl,--no-undefined" -DUSE_VGUI=ON -DCMAKE_INSTALL_PREFIX="$PWD/dist-vgui"
-        cp vgui_support/vgui-dev/lib/vgui.so build-vgui/cl_dll
-        cp vgui_support/vgui-dev/lib/vgui.so build-vgui
-        schroot --chroot steamrt_scout_i386 -- cmake --build build-vgui --target all
-        schroot --chroot steamrt_scout_i386 -- cmake --build build-vgui --target install
-
     - name: Set developer command prompt for Windows x86
       if: startsWith(matrix.os, 'windows')
       uses: ilammy/msvc-dev-cmd@v1
@@ -75,12 +66,6 @@ jobs:
       if: startsWith(matrix.os, 'windows')
       run: |
         cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -B build -S . -DCMAKE_INSTALL_PREFIX="dist"
-        cmake --build build --target all
-        cmake --build build --target install
-    - name: Build on Windows with vgui
-      if: startsWith(matrix.os, 'windows')
-      run: |
-        cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -B build -S . -DUSE_VGUI=ON -DCMAKE_INSTALL_PREFIX="dist-vgui"
         cmake --build build --target all
         cmake --build build --target install
 
@@ -110,12 +95,6 @@ jobs:
       with:
         name: hlsdk-${{ steps.extract_branch.outputs.branch }}-linux
         path: dist/${{ steps.extract_gamedir.outputs.gamedir }}
-    - name: Upload linux artifact with vgui
-      if: startsWith(matrix.os, 'ubuntu') && matrix.cc == 'gcc'
-      uses: actions/upload-artifact@v4
-      with:
-        name: hlsdk-${{ steps.extract_branch.outputs.branch }}-linux-vgui
-        path: dist-vgui/${{ steps.extract_gamedir.outputs.gamedir }}
     - name: Upload windows artifact
       if: startsWith(matrix.os, 'windows')
       uses: actions/upload-artifact@v4
@@ -128,52 +107,3 @@ jobs:
       with:
         name: hlsdk-${{ steps.extract_branch.outputs.branch }}-windows_x64
         path: dist64/${{ steps.extract_gamedir.outputs.gamedir }}
-    - name: Upload windows artifact with vgui
-      if: startsWith(matrix.os, 'windows')
-      uses: actions/upload-artifact@v4
-      with:
-        name: hlsdk-${{ steps.extract_branch.outputs.branch }}-windows-vgui
-        path: dist-vgui/${{ steps.extract_gamedir.outputs.gamedir }}
-
-  release:
-    name: Release
-    runs-on: ubuntu-latest
-    needs: [build]
-    steps:
-      - name: Fetch artifacts
-        if: ${{ github.event_name == 'push' && !github.event.pull_request }}
-        uses: actions/download-artifact@v4
-        with:
-          path: artifacts/
-
-      - name: Remove old release
-        uses: dev-drprasad/delete-tag-and-release@v0.2.1
-        if: ${{ github.event_name == 'push' && !github.event.pull_request }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: continuous-${{ github.ref_name }}
-          delete_release: true
-
-      - name: Prepare release
-        if: ${{ github.event_name == 'push' && !github.event.pull_request }}
-        continue-on-error: true
-        run: |
-          cd artifacts/
-          for i in hlsdk-*; do
-            zip -r "$i" "$i"
-            rm -rf "$i"
-          done
-          cd ..
-          sleep 20s
-
-      - name: Upload new release
-        if: ${{ github.event_name == 'push' && !github.event.pull_request }}
-        uses: softprops/action-gh-release@v0.1.15
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          files: artifacts/hlsdk-*.zip
-          tag_name: continuous-${{ github.ref_name }}
-          draft: false
-          prerelease: true
-          name: hlsdk-portable ${{ github.ref_name }} development build

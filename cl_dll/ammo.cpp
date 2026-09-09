@@ -701,10 +701,10 @@ int CHudAmmo::MsgFunc_WeaponList( const char *pszName, int iSize, void *pbuf )
 		return 0;
 	if( Weapon.iAmmo2Type < -1 || Weapon.iAmmo2Type >= MAX_AMMO_TYPES )
 		return 0;
-	if( Weapon.iAmmoType >= 0 && Weapon.iMax1 == 0 )
+	/*if( Weapon.iAmmoType >= 0 && Weapon.iMax1 == 0 )
 		return 0;
 	if( Weapon.iAmmo2Type >= 0 && Weapon.iMax2 == 0 )
-		return 0;
+		return 0;*/
 
 	gWR.AddWeapon( &Weapon );
 

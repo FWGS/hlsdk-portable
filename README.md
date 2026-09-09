@@ -15,8 +15,8 @@ Half-Life SDK for GoldSource & Xash3D with some bugfixes.
 - Brought back gluon flare in singleplayer. [Patch](https://github.com/FWGS/hlsdk-portable/commit/9d7ab6acf46a8b71ef119d9c252767865522d21d)
 - Hand grenades don't stay primed after holster, preventing detonation after weapon switch. [Patch](https://github.com/FWGS/hlsdk-portable/commit/6e1059026faa90c5bfe5e3b3f4f58fde398d4524)
 - Fixed flashlight battery appearing as depleted on restore.
-- Fixed a potential overflow when reading sentences.txt. [Patch](https://github.com/FWGS/hlsdk-xash3d/commit/cb51d2aa179f1eb622e08c1c07b053ccd49e40a5)
-- Fixed beam attachment invalidated on restore (that led to visual bugs). [Patch](https://github.com/FWGS/hlsdk-xash3d/commit/74b5543c83c5cdcb88e9254bacab08bc63c4c896)
+- Fixed a potential overflow when reading sentences.txt. [Patch](https://github.com/FWGS/hlsdk-portable/commit/cb51d2aa179f1eb622e08c1c07b053ccd49e40a5)
+- Fixed beam attachment invalidated on restore (that led to visual bugs). [Patch](https://github.com/FWGS/hlsdk-portable/commit/74b5543c83c5cdcb88e9254bacab08bc63c4c896)
 - Fixed alien controllers facing wrong direction in non-combat state. [Patch](https://github.com/FWGS/hlsdk-portable/commit/e51878c45b618f9b3920b46357545cbb47befeda)
 - Fixed weapon deploy animations not playing sometimes on fast switching between weapons. [Patch](https://github.com/FWGS/hlsdk-portable/commit/ed676a5413c2d26b2982e5b014e0731f0eda6a0d) [Patch2](https://github.com/FWGS/hlsdk-portable/commit/4053dca7a9cf999391cbd77224144da207e4540b)
 - Fixed tripmine sometimes having wrong body on pickup [Patch](https://github.com/FWGS/hlsdk-portable/commit/abf08e4520e3b6cd12a40f269f4a256cf8496227)
@@ -79,6 +79,12 @@ To clone the repository with git type in Git Bash (on Windows) or in terminal (o
 git clone --recursive https://github.com/FWGS/hlsdk-portable
 ```
 
+# CI Builds
+
+Fresh builds is always available in [artifacts](https://github.com/FWGS/hlsdk-portable/actions) for most common platforms and you can download it if you logged in to github.
+
+Builds for all branches and more platforms eventually updates into [hlsdk-mega-build](https://github.com/FWGS/hlsdk-mega-build/releases/tag/continuous) repository.
+
 # Build Instructions
 
 ## Windows x86.
@@ -136,17 +142,6 @@ cmake -G "Visual Studio 16 2019" -A Win32 -B build
 
 After the configuration step, `HLSDK-PORTABLE.sln` should appear in the `build` directory. You can open this solution in Visual Studio and continue developing there.
 
-## Windows x86. Using Microsoft Visual Studio 6
-
-Microsoft Visual Studio 6 is very old, but if you still have it installed, you can use it to build this hlsdk. There are no project files, but two `.bat` files, for server and client libraries. They require variable **MSVCDir** to be set to the installation path of Visual Studio:
-
-```
-set MSVCDir=C:\Program Files\Microsoft Visual Studio
-cd dlls && compile.bat && cd ../cl_dll && compile.bat
-```
-
-`hl.dll` and `client.dll` will appear in `dlls/` and `cl_dll/` diretories. The libraries built with msvc6 should be compatible with Windows XP.
-
 ## Linux x86. Portable steam-compatible build using Steam Runtime in chroot
 
 ### Prerequisites
@@ -188,7 +183,7 @@ sudo apt install cmake build-essential gcc-multilib g++-multilib libsdl2-dev:i38
 
 #### RedHat/Fedora/CentOS:
 ```
-sudo dnf install cmake gcc gcc-c++ glibc-devel.i686 SDL-devel.i686
+sudo dnf install cmake gcc gcc-c++ glibc-devel.i686 SDL2-devel.i686
 ```
 
 ### Building

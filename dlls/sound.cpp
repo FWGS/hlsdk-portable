@@ -24,7 +24,7 @@
 #include "talkmonster.h"
 #include "gamerules.h"
 
-static char *memfgets( byte *pMemFile, int fileSize, int &filePos, char *pBuffer, int bufferSize );
+extern "C" char *PM_memfgets( byte *pMemFile, int fileSize, int *pFilePos, char *pBuffer, int bufferSize );
 
 // ==================== GENERIC AMBIENT SOUND ======================================
 
@@ -1260,7 +1260,7 @@ void SENTENCEG_Init()
 	memset( buffer, 0, 512 );
 	memset( szgroup, 0, 64 );
 	// for each line in the file...
-	while( memfgets( pMemFile, fileSize, filePos, buffer, 511 ) != NULL )
+	while( PM_memfgets( pMemFile, fileSize, &filePos, buffer, 511 ) != NULL )
 	{
 		// skip whitespace
 		i = 0;
@@ -1441,63 +1441,6 @@ void EMIT_GROUPNAME_SUIT( edict_t *entity, const char *groupname )
 
 	if( fvol > 0.05f )
 		SENTENCEG_PlayRndSz( entity, groupname, fvol, ATTN_NORM, 0, pitch );
-}
-
-// ===================== MATERIAL TYPE DETECTION, MAIN ROUTINES ========================
-// 
-// Used to detect the texture the player is standing on, map the
-// texture name to a material type.  Play footstep sound based
-// on material type.
-
-// open materials.txt,  get size, alloc space, 
-// save in array.  Only works first time called, 
-// ignored on subsequent calls.
-
-static char *memfgets( byte *pMemFile, int fileSize, int &filePos, char *pBuffer, int bufferSize )
-{
-	// Bullet-proofing
-	if( !pMemFile || !pBuffer )
-		return NULL;
-
-	if( filePos >= fileSize )
-		return NULL;
-
-	int i = filePos;
-	int last = fileSize;
-
-	// fgets always NULL terminates, so only read bufferSize-1 characters
-	if( last - filePos > ( bufferSize - 1 ) )
-		last = filePos + ( bufferSize - 1 );
-
-	int stop = 0;
-
-	// Stop at the next newline (inclusive) or end of buffer
-	while( i < last && !stop )
-	{
-		if( pMemFile[i] == '\n' )
-			stop = 1;
-		i++;
-	}
-
-	// If we actually advanced the pointer, copy it over
-	if( i != filePos )
-	{
-		// We read in size bytes
-		int size = i - filePos;
-		// copy it out
-		memcpy( pBuffer, pMemFile + filePos, sizeof(byte) * size );
-
-		// If the buffer isn't full, terminate (this is always true)
-		if( size < bufferSize )
-			pBuffer[size] = 0;
-
-		// Update file pointer
-		filePos = i;
-		return pBuffer;
-	}
-
-	// No data read, bail
-	return NULL;
 }
 
 // given texture name, find texture type
