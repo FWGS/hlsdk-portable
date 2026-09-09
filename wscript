@@ -288,8 +288,20 @@ def configure(conf):
 		if conf.env.cxxshlib_PATTERN.startswith('lib'):
 			conf.env.cxxshlib_PATTERN = conf.env.cxxshlib_PATTERN[3:]
 
+	conf.env.FREEVGUI_NO_INSTALL = True # prevents FreeVGUI from installing itself
+
+	if (conf.env.DEST_CPU == 'x86' or (conf.env.DEST_CPU == 'x86_64' and not conf.options.ALLOW64)) and conf.env.DEST_OS in ['win32', 'linux', 'darwin']:
+		conf.env.USE_STATIC_FREEVGUI = False
+	else:
+		# no prebuilt vgui shared library exists here by default, so link FreeVGUI into the client
+		conf.env.USE_STATIC_FREEVGUI = True
+
 	conf.load('library_naming')
+<<<<<<< HEAD
 	conf.add_subproject('game_shared dlls')
+=======
+	conf.add_subproject('game_shared dlls freevgui cl_dll')
+>>>>>>> master
 
 def build(bld):
 	if bld.env.WAFCACHE:
@@ -304,4 +316,3 @@ def build(bld):
 		quiet=True, generator=True)
 
 	bld.add_subproject('game_shared dlls')
-
