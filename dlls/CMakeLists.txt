@@ -247,8 +247,6 @@ endif()
 
 set_target_postfix_with_name(${SVDLL_LIBRARY} ${SVDLL_NAME})
 
-set_property(TARGET ${SVDLL_LIBRARY} PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-
 if(HAVE_LTO)
 	set_property(TARGET ${SVDLL_LIBRARY} PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
 endif()

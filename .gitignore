@@ -39,3 +39,6 @@ local.properties
 .project
 .classpath
 .settings
+
+#Finder cache
+.DS_Store
