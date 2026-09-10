@@ -227,14 +227,21 @@ int __MsgFunc_VGUIMenu( const char *pszName, int iSize, void *pbuf )
 	return 0;
 }
 
-#if USE_VGUI && !USE_NOVGUI_MOTD
 int __MsgFunc_MOTD(const char *pszName, int iSize, void *pbuf)
 {
-	if (gViewPort)
-		return gViewPort->MsgFunc_MOTD( pszName, iSize, pbuf );
-	return 0;
+	bool finished = gHUD.m_MOTD.HandleMOTDMessage(pszName, iSize, pbuf);
+	if (finished)
+	{
+		if (gHUD.UseVguiMOTD() && gViewPort)
+		{
+			gViewPort->ShowMOTD();
+			return 1;
+		}
+
+		gHUD.m_MOTD.m_bShow = true;
+	}
+	return 1;
 }
-#endif
 
 int __MsgFunc_BuildSt( const char *pszName, int iSize, void *pbuf )
 {
@@ -346,9 +353,7 @@ void CHud::Init( void )
 	HOOK_MESSAGE( RandomPC );
 	HOOK_MESSAGE( ServerName );
 
-#if USE_VGUI && !USE_NOVGUI_MOTD
 	HOOK_MESSAGE( MOTD );
-#endif
 
 #if USE_VGUI && !USE_NOVGUI_SCOREBOARD
 	HOOK_MESSAGE( ScoreInfo );
@@ -382,6 +387,8 @@ void CHud::Init( void )
 	m_pAllowHD = CVAR_CREATE ( "hud_allow_hd", "1", FCVAR_ARCHIVE );
 	cl_lw = gEngfuncs.pfnGetCvarPointer( "cl_lw" );
 	cl_viewbob = CVAR_CREATE( "cl_viewbob", "1", FCVAR_ARCHIVE );
+
+	m_pCvarMOTDVGUI = CVAR_CREATE("cl_motd_vgui", "1", FCVAR_ARCHIVE);
 
 	m_pSpriteList = NULL;
 
@@ -419,9 +426,7 @@ void CHud::Init( void )
 	GetClientVoiceMgr()->Init(&g_VoiceStatusHelper, (vgui::Panel**)&gViewPort);
 #endif
 
-#if !USE_VGUI || USE_NOVGUI_MOTD
 	m_MOTD.Init();
-#endif
 #if !USE_VGUI || USE_NOVGUI_SCOREBOARD
 	m_Scoreboard.Init();
 #endif
@@ -815,4 +820,9 @@ void CHud::GetAllPlayersInfo()
 #endif
 		}
 	}
+}
+
+bool CHud::UseVguiMOTD()
+{
+	return m_pCvarMOTDVGUI && m_pCvarMOTDVGUI->value;
 }

@@ -627,7 +627,6 @@ void TeamFortressViewport::Initialize( void )
 	HideCommandMenu();
 
 	// Clear out some data
-	m_iGotAllMOTD = true;
 	m_iRandomPC = false;
 	m_flScoreBoardLastUpdated = 0;
 	m_flSpectatorPanelLastUpdated = 0;
@@ -1380,7 +1379,7 @@ CMenuPanel *TeamFortressViewport::CreateTextWindow( int iTextToShow )
 			strlcpy( cTitle, m_szServerName, MAX_TITLE_LENGTH );
 		}
 
-		cText = m_szMOTD;
+		cText = gHUD.m_MOTD.m_szMOTD;
 	}
 	else if( iTextToShow == SHOW_MAPBRIEFING )
 	{
@@ -1979,24 +1978,13 @@ int TeamFortressViewport::MsgFunc_VGUIMenu( const char *pszName, int iSize, void
 	return 1;
 }
 
-int TeamFortressViewport::MsgFunc_MOTD( const char *pszName, int iSize, void *pbuf )
+void TeamFortressViewport::ShowMOTD()
 {
-	if( m_iGotAllMOTD )
-		m_szMOTD[0] = 0;
-
-	BEGIN_READ( pbuf, iSize );
-
-	m_iGotAllMOTD = READ_BYTE();
-
-	strlcat( m_szMOTD, READ_STRING(), sizeof( m_szMOTD ));
-
 	// don't show MOTD for HLTV spectators
-	if( m_iGotAllMOTD && !gEngfuncs.IsSpectateOnly() )
+	if( !gEngfuncs.IsSpectateOnly() )
 	{
 		ShowVGUIMenu( MENU_INTRO );
 	}
-
-	return 1;
 }
 
 int TeamFortressViewport::MsgFunc_BuildSt( const char *pszName, int iSize, void *pbuf )
