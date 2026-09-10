@@ -56,9 +56,6 @@ add_definitions(-DUSE_VGUI)
 if (USE_STATIC_FREEVGUI)
 	add_definitions(-DINTERNAL_VGUI_SUPPORT)
 endif()
-if (USE_NOVGUI_MOTD)
-	add_definitions(-DUSE_NOVGUI_MOTD)
-endif()
 if (USE_NOVGUI_SCOREBOARD)
 	add_definitions(-DUSE_NOVGUI_SCOREBOARD)
 endif()
@@ -111,6 +108,7 @@ set (CLDLL_SOURCES
 	interpolation.cpp
 	menu.cpp
 	message.cpp
+	MOTD.cpp
 	parsemsg.cpp
 	../pm_shared/pm_debug.c
 	../pm_shared/pm_math.c
@@ -150,10 +148,6 @@ list(APPEND CLDLL_SOURCES
 	../game_shared/vgui_slider2.cpp
 	../game_shared/voice_banmgr.cpp
 )
-
-if (USE_NOVGUI_MOTD)
-	list(APPEND CLDLL_SOURCES MOTD.cpp)
-endif()
 
 if (USE_NOVGUI_SCOREBOARD)
 	list(APPEND CLDLL_SOURCES scoreboard.cpp)
