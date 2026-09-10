@@ -624,9 +624,7 @@ void CHud::VidInit( void )
 #if USE_VGUI
 	GetClientVoiceMgr()->VidInit();
 #endif
-#if !USE_VGUI || USE_NOVGUI_MOTD
 	m_MOTD.VidInit();
-#endif
 #if !USE_VGUI || USE_NOVGUI_SCOREBOARD
 	m_Scoreboard.VidInit();
 #endif
