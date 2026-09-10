@@ -621,7 +621,7 @@ int CHudAmmo::MsgFunc_WeaponList( const char *pszName, int iSize, void *pbuf )
 	if( Weapon.iMax1 == 255 )
 		Weapon.iMax1 = -1;
 
-	Weapon.iAmmo2Type = READ_BYTE();
+	Weapon.iAmmo2Type = READ_CHAR();
 	Weapon.iMax2 = READ_BYTE();
 	if( Weapon.iMax2 == 255 )
 		Weapon.iMax2 = -1;
