@@ -29,10 +29,7 @@
 cvar_t *cl_scoreboard_bg;
 cvar_t *cl_showpacketloss;
 
-
-#if USE_VGUI
 #include "vgui_TeamFortressViewport.h"
-#endif
 
 DECLARE_COMMAND( m_Scoreboard, ShowScores )
 DECLARE_COMMAND( m_Scoreboard, HideScores )

@@ -28,9 +28,7 @@ extern "C"
 #include <string.h>
 #include <ctype.h>
 
-#if USE_VGUI
 #include "vgui_TeamFortressViewport.h"
-#endif
 
 extern "C" 
 {
@@ -381,10 +379,8 @@ Return 1 to allow engine to process the key, otherwise, act on it as needed
 */
 int DLLEXPORT HUD_Key_Event( int down, int keynum, const char *pszCurrentBinding )
 {
-#if USE_VGUI
 	if (gViewPort)
 		return gViewPort->KeyInput(down, keynum, pszCurrentBinding);
-#endif
 	return 1;
 }
 
@@ -866,11 +862,9 @@ void DLLEXPORT CL_CreateMove( float frametime, struct usercmd_s *cmd, int active
 	//
 	cmd->buttons = CL_ButtonBits( 1 );
 
-#if USE_VGUI
 	// If they're in a modal dialog, ignore the attack button.
 	if(GetClientVoiceMgr()->IsInSquelchMode())
 		cmd->buttons &= ~IN_ATTACK;
-#endif
 
 	// Using joystick?
 	if( in_joystick->value )

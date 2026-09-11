@@ -23,10 +23,8 @@
 #include <string.h>
 #include <stdio.h>
 #include "parsemsg.h"
-#if USE_VGUI
 #include "vgui_int.h"
 #include "vgui_TeamFortressViewport.h"
-#endif
 
 #include "demo.h"
 #include "demo_api.h"
@@ -41,7 +39,6 @@ int g_iUser1 = 0;
 int g_iUser2 = 0;
 int g_iUser3 = 0;
 
-#if USE_VGUI
 #include "vgui_ScorePanel.h"
 
 class CHLVoiceStatusHelper : public IVoiceStatusHelper
@@ -87,7 +84,6 @@ public:
 	}
 };
 static CHLVoiceStatusHelper g_VoiceStatusHelper;
-#endif
 
 cvar_t *hud_textmode;
 float g_hud_text_color[3];
@@ -142,88 +138,70 @@ int __MsgFunc_GameMode( const char *pszName, int iSize, void *pbuf )
 // TFFree Command Menu
 void __CmdFunc_OpenCommandMenu( void )
 {
-#if USE_VGUI
 	if ( gViewPort )
 	{
 		gViewPort->ShowCommandMenu( gViewPort->m_StandardMenu );
 	}
-#endif
 }
 
 // TFC "special" command
 void __CmdFunc_InputPlayerSpecial( void )
 {
-#if USE_VGUI
 	if ( gViewPort )
 	{
 		gViewPort->InputPlayerSpecial();
 	}
-#endif
 }
 
 void __CmdFunc_CloseCommandMenu( void )
 {
-#if USE_VGUI
 	if ( gViewPort )
 	{
 		gViewPort->InputSignalHideCommandMenu();
 	}
-#endif
 }
 
 void __CmdFunc_ForceCloseCommandMenu( void )
 {
-#if USE_VGUI
 	if ( gViewPort )
 	{
 		gViewPort->HideCommandMenu();
 	}
-#endif
 }
 
 // TFFree Command Menu Message Handlers
 int __MsgFunc_ValClass( const char *pszName, int iSize, void *pbuf )
 {
-#if USE_VGUI
 	if (gViewPort)
 			return gViewPort->MsgFunc_ValClass( pszName, iSize, pbuf );
-#endif
 	return 0;
 }
 
 int __MsgFunc_TeamNames( const char *pszName, int iSize, void *pbuf )
 {
-#if USE_VGUI
 	if (gViewPort)
 		return gViewPort->MsgFunc_TeamNames( pszName, iSize, pbuf );
-#endif
 	return 0;
 }
 
 int __MsgFunc_Feign( const char *pszName, int iSize, void *pbuf )
 {
-#if USE_VGUI
 	if (gViewPort)
 		return gViewPort->MsgFunc_Feign( pszName, iSize, pbuf );
-#endif
 	return 0;
 }
 
 int __MsgFunc_Detpack( const char *pszName, int iSize, void *pbuf )
 {
-#if USE_VGUI
 	if (gViewPort)
 		return gViewPort->MsgFunc_Detpack( pszName, iSize, pbuf );
-#endif
 	return 0;
 }
 
 int __MsgFunc_VGUIMenu( const char *pszName, int iSize, void *pbuf )
 {
-#if USE_VGUI
 	if (gViewPort)
 		return gViewPort->MsgFunc_VGUIMenu( pszName, iSize, pbuf );
-#endif
 	return 0;
 }
 
@@ -245,28 +223,22 @@ int __MsgFunc_MOTD(const char *pszName, int iSize, void *pbuf)
 
 int __MsgFunc_BuildSt( const char *pszName, int iSize, void *pbuf )
 {
-#if USE_VGUI
 	if (gViewPort)
 		return gViewPort->MsgFunc_BuildSt( pszName, iSize, pbuf );
-#endif
 	return 0;
 }
 
 int __MsgFunc_RandomPC( const char *pszName, int iSize, void *pbuf )
 {
-#if USE_VGUI
 	if (gViewPort)
 		return gViewPort->MsgFunc_RandomPC( pszName, iSize, pbuf );
-#endif
 	return 0;
 }
  
 int __MsgFunc_ServerName( const char *pszName, int iSize, void *pbuf )
 {
-#if USE_VGUI
 	if (gViewPort)
 		return gViewPort->MsgFunc_ServerName( pszName, iSize, pbuf );
-#endif
 	return 0;
 }
 
@@ -290,14 +262,11 @@ int __MsgFunc_TeamInfo(const char *pszName, int iSize, void *pbuf)
 
 int __MsgFunc_Spectator( const char *pszName, int iSize, void *pbuf )
 {
-#if USE_VGUI
 	if (gViewPort)
 		return gViewPort->MsgFunc_Spectator( pszName, iSize, pbuf );
-#endif
 	return 0;
 }
 
-#if USE_VGUI
 int __MsgFunc_SpecFade(const char *pszName, int iSize, void *pbuf)
 {
 	if (gViewPort)
@@ -312,14 +281,11 @@ int __MsgFunc_ResetFade(const char *pszName, int iSize, void *pbuf)
 	return 0;
 
 }
-#endif
 
 int __MsgFunc_AllowSpec( const char *pszName, int iSize, void *pbuf )
 {
-#if USE_VGUI
 	if (gViewPort)
 		return gViewPort->MsgFunc_AllowSpec( pszName, iSize, pbuf );
-#endif
 	return 0;
 }
  
@@ -357,10 +323,8 @@ void CHud::Init( void )
 	HOOK_MESSAGE( Spectator );
 	HOOK_MESSAGE( AllowSpec );
 
-#if USE_VGUI
 	HOOK_MESSAGE( SpecFade );
 	HOOK_MESSAGE( ResetFade );
-#endif
 
 	// VGUI Menus
 	HOOK_MESSAGE( VGUIMenu );
@@ -416,9 +380,7 @@ void CHud::Init( void )
 	m_AmmoSecondary.Init();
 	m_TextMessage.Init();
 	m_StatusIcons.Init();
-#if USE_VGUI
 	GetClientVoiceMgr()->Init(&g_VoiceStatusHelper, (vgui::Panel**)&gViewPort);
-#endif
 
 	m_MOTD.Init();
 	m_Scoreboard.Init();
@@ -613,9 +575,7 @@ void CHud::VidInit( void )
 	m_AmmoSecondary.VidInit();
 	m_TextMessage.VidInit();
 	m_StatusIcons.VidInit();
-#if USE_VGUI
 	GetClientVoiceMgr()->VidInit();
-#endif
 	m_MOTD.VidInit();
 	m_Scoreboard.VidInit();
 }
