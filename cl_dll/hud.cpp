@@ -270,28 +270,23 @@ int __MsgFunc_ServerName( const char *pszName, int iSize, void *pbuf )
 	return 0;
 }
 
-#if USE_VGUI && !USE_NOVGUI_SCOREBOARD
 int __MsgFunc_ScoreInfo(const char *pszName, int iSize, void *pbuf)
 {
-	if (gViewPort)
-		return gViewPort->MsgFunc_ScoreInfo( pszName, iSize, pbuf );
-	return 0;
+	return gHUD.m_Scoreboard.MsgFunc_ScoreInfo( pszName, iSize, pbuf );
 }
 
 int __MsgFunc_TeamScore(const char *pszName, int iSize, void *pbuf)
 {
-	if (gViewPort)
-		return gViewPort->MsgFunc_TeamScore( pszName, iSize, pbuf );
-	return 0;
+	return gHUD.m_Scoreboard.MsgFunc_TeamScore( pszName, iSize, pbuf );
 }
 
 int __MsgFunc_TeamInfo(const char *pszName, int iSize, void *pbuf)
 {
+	int result = gHUD.m_Scoreboard.MsgFunc_TeamInfo( pszName, iSize, pbuf );
 	if (gViewPort)
-		return gViewPort->MsgFunc_TeamInfo( pszName, iSize, pbuf );
-	return 0;
+		gViewPort->m_pScoreBoard->Update();
+	return result;
 }
-#endif
 
 int __MsgFunc_Spectator( const char *pszName, int iSize, void *pbuf )
 {
@@ -355,11 +350,9 @@ void CHud::Init( void )
 
 	HOOK_MESSAGE( MOTD );
 
-#if USE_VGUI && !USE_NOVGUI_SCOREBOARD
 	HOOK_MESSAGE( ScoreInfo );
 	HOOK_MESSAGE( TeamScore );
 	HOOK_MESSAGE( TeamInfo );
-#endif
 
 	HOOK_MESSAGE( Spectator );
 	HOOK_MESSAGE( AllowSpec );
@@ -389,6 +382,7 @@ void CHud::Init( void )
 	cl_viewbob = CVAR_CREATE( "cl_viewbob", "1", FCVAR_ARCHIVE );
 
 	m_pCvarMOTDVGUI = CVAR_CREATE("cl_motd_vgui", "1", FCVAR_ARCHIVE);
+	m_pCvarScoreboardVGUI = CVAR_CREATE("cl_scoreboard_vgui", "1", FCVAR_ARCHIVE);
 
 	m_pSpriteList = NULL;
 
@@ -427,9 +421,7 @@ void CHud::Init( void )
 #endif
 
 	m_MOTD.Init();
-#if !USE_VGUI || USE_NOVGUI_SCOREBOARD
 	m_Scoreboard.Init();
-#endif
 
 	m_Menu.Init();
 
@@ -625,9 +617,7 @@ void CHud::VidInit( void )
 	GetClientVoiceMgr()->VidInit();
 #endif
 	m_MOTD.VidInit();
-#if !USE_VGUI || USE_NOVGUI_SCOREBOARD
 	m_Scoreboard.VidInit();
-#endif
 }
 
 int CHud::MsgFunc_Logo( const char *pszName,  int iSize, void *pbuf )
@@ -809,13 +799,7 @@ void CHud::GetAllPlayersInfo()
 
 		if( g_PlayerInfoList[i].thisplayer )
 		{
-#if USE_VGUI
-			if(gViewPort)
-				gViewPort->m_pScoreBoard->m_iPlayerNum = i;
-#endif
-#if !USE_VGUI || USE_NOVGUI_SCOREBOARD
 			m_Scoreboard.m_iPlayerNum = i;  // !!!HACK: this should be initialized elsewhere... maybe gotten from the engine
-#endif
 		}
 	}
 }
@@ -823,4 +807,9 @@ void CHud::GetAllPlayersInfo()
 bool CHud::UseVguiMOTD()
 {
 	return m_pCvarMOTDVGUI && m_pCvarMOTDVGUI->value;
+}
+
+bool CHud::UseVguiScoreBoard()
+{
+	return m_pCvarScoreboardVGUI && m_pCvarScoreboardVGUI->value;
 }
