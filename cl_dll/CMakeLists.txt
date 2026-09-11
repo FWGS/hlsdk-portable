@@ -56,9 +56,6 @@ add_definitions(-DUSE_VGUI)
 if (USE_STATIC_FREEVGUI)
 	add_definitions(-DINTERNAL_VGUI_SUPPORT)
 endif()
-if (USE_NOVGUI_SCOREBOARD)
-	add_definitions(-DUSE_NOVGUI_SCOREBOARD)
-endif()
 
 set (CLDLL_SOURCES
 	../dlls/crossbow.cpp
@@ -114,6 +111,7 @@ set (CLDLL_SOURCES
 	../pm_shared/pm_math.c
 	../pm_shared/pm_shared.c
 	saytext.cpp
+	scoreboard.cpp
 	status_icons.cpp
 	statusbar.cpp
 	studio_util.cpp
@@ -148,10 +146,6 @@ list(APPEND CLDLL_SOURCES
 	../game_shared/vgui_slider2.cpp
 	../game_shared/voice_banmgr.cpp
 )
-
-if (USE_NOVGUI_SCOREBOARD)
-	list(APPEND CLDLL_SOURCES scoreboard.cpp)
-endif()
 
 if (HAVE_STRLCPY)
 	add_definitions(-DHAVE_STRLCPY)

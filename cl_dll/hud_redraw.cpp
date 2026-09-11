@@ -125,9 +125,8 @@ int CHud::Redraw( float flTime, int intermission )
 			m_iIntermission = intermission;
 			gViewPort->HideCommandMenu();
 			gViewPort->HideVGUIMenu();
-#if !USE_NOVGUI_SCOREBOARD
-			gViewPort->ShowScoreBoard();
-#endif
+			if (gHUD.UseVguiScoreBoard())
+				gViewPort->ShowScoreBoard();
 			gViewPort->UpdateSpectatorPanel();
 			// Take a screenshot if the client's got the cvar set
 			if( CVAR_GET_FLOAT( "hud_takesshots" ) != 0 )

@@ -558,8 +558,6 @@ public:
 
 	int	 KeyInput( int down, int keynum, const char *pszCurrentBinding );
 	void InputPlayerSpecial( void );
-	void GetAllPlayersInfo( void );
-	void DeathMsg( int killer, int victim );
 
 	void ShowCommandMenu(int menuIndex);
 	void InputSignalHideCommandMenu( void );
@@ -601,9 +599,6 @@ public:
 	int MsgFunc_BuildSt( const char *pszName, int iSize, void *pbuf );
 	int MsgFunc_RandomPC( const char *pszName, int iSize, void *pbuf );
 	int MsgFunc_ServerName( const char *pszName, int iSize, void *pbuf );
-	int MsgFunc_ScoreInfo( const char *pszName, int iSize, void *pbuf );
-	int MsgFunc_TeamScore( const char *pszName, int iSize, void *pbuf );
-	int MsgFunc_TeamInfo( const char *pszName, int iSize, void *pbuf );
 	int MsgFunc_Spectator( const char *pszName, int iSize, void *pbuf );
 	int MsgFunc_AllowSpec( const char *pszName, int iSize, void *pbuf );
 	int MsgFunc_SpecFade( const char *pszName, int iSize, void *pbuf );	
