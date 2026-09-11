@@ -23,9 +23,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#if USE_VGUI
 #include "vgui_TeamFortressViewport.h"
-#endif
 
 DECLARE_MESSAGE( m_DeathNotice, DeathMsg )
 
@@ -125,9 +123,7 @@ int CHudDeathNotice::Draw( float flTime )
 
 		// Only draw if the viewport will let me
 		// vgui dropped out
-#if USE_VGUI
 		if( gViewPort && gViewPort->AllowedToPrintText() )
-#endif
 		{
 			// Draw the death notice
 			y = YRES( DEATHNOTICE_TOP ) + 2 + ( gap * i );  //!!!

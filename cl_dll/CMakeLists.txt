@@ -52,7 +52,6 @@ if (GOLDSOURCE_SUPPORT)
 	add_definitions(-DGOLDSOURCE_SUPPORT)
 endif()
 
-add_definitions(-DUSE_VGUI)
 if (USE_STATIC_FREEVGUI)
 	add_definitions(-DINTERNAL_VGUI_SUPPORT)
 endif()
