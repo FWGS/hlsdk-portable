@@ -162,7 +162,7 @@ endif()
 
 include_directories (. hl/ ../dlls ../dlls/wpn_shared ../common ../engine ../pm_shared ../game_shared ../public)
 
-if (WIN32)
+if (GOLDSOURCE_SUPPORT)
 	include_directories (../external/)
 endif()
 
