@@ -95,9 +95,7 @@ struct HUDLIST
 
 //
 //-----------------------------------------------------
-#if USE_VGUI
 #include "voice_status.h" // base voice handling class
-#endif
 #include "hud_spectator.h"
 
 //
@@ -183,6 +181,7 @@ public:
 	int Init( void );
 	int VidInit( void );
 	int Draw( float flTime );
+	void Think();
 	int MsgFunc_Geiger( const char *pszName, int iSize, void *pbuf );
 	
 private:
@@ -205,7 +204,6 @@ private:
 	int m_iPos;
 };
 
-#if !USE_VGUI || USE_NOVGUI_MOTD
 class CHudMOTD : public CHudBase
 {
 public:
@@ -214,22 +212,20 @@ public:
 	int Draw( float flTime );
 	void Reset( void );
 
-	int MsgFunc_MOTD( const char *pszName, int iSize, void *pbuf );
+	bool HandleMOTDMessage( const char *pszName, int iSize, void *pbuf );
 	void Scroll( int dir );
 	void Scroll( float amount );
 	float scroll;
 	bool m_bShow;
 
+	char m_szMOTD[MAX_MOTD_LENGTH];
 protected:
 	static int MOTD_DISPLAY_TIME;
-	char m_szMOTD[MAX_MOTD_LENGTH];
 
 	int m_iLines;
 	int m_iMaxLength;
 };
-#endif
 
-#if !USE_VGUI || USE_NOVGUI_SCOREBOARD
 class CHudScoreboard : public CHudBase
 {
 public:
@@ -246,6 +242,9 @@ public:
 	int MsgFunc_TeamScores( const char *pszName, int iSize, void *pbuf );
 	int MsgFunc_TeamNames( const char *pszName, int iSize, void *pbuf );
 	void DeathMsg( int killer, int victim );
+	void RebuildTeams();
+	void UpdateTeams();
+	int BestTeam();
 
 	int m_iNumTeams;
 
@@ -253,10 +252,7 @@ public:
 	int m_fLastKillTime;
 	int m_iPlayerNum;
 	int m_iShowscoresHeld;
-
-	void GetAllPlayersInfo( void );
 };
-#endif
 
 //
 //-----------------------------------------------------
@@ -634,6 +630,9 @@ public:
     vec3_t                      m_vAimFrameCoords; //for selection frame
 	vec3_t                      m_vAimFrameMaxs;   //for selection frame
 
+	cvar_t  *m_pCvarMOTDVGUI;
+	cvar_t  *m_pCvarScoreboardVGUI;
+
 	int m_iFontHeight;
 	int DrawHudNumber( int x, int y, int iFlags, int iNumber, int r, int g, int b );
 	int DrawHudString( int x, int y, int iMaxX, const char *szString, int r, int g, int b );
@@ -688,12 +687,8 @@ public:
 	CHudStatusIcons m_StatusIcons;
 	CHudModeIcon m_ModeIcon;
 	CHudAlienCrosshair m_AlienCrosshair;
-#if !USE_VGUI || USE_NOVGUI_SCOREBOARD
 	CHudScoreboard	m_Scoreboard;
-#endif
-#if !USE_VGUI || USE_NOVGUI_MOTD
 	CHudMOTD	m_MOTD;
-#endif
 
 	void Init( void );
 	void VidInit( void );
@@ -725,6 +720,7 @@ public:
 	int	m_iWeaponBits;
 	int	m_fPlayerDead;
 	int m_iIntermission;
+	bool m_inScope;
 	bool m_bAlienMode;
 
 	// sprite indexes
@@ -737,6 +733,9 @@ public:
 	float GetSensitivity();
 
 	void GetAllPlayersInfo( void );
+
+	bool UseVguiMOTD();
+	bool UseVguiScoreBoard();
 };
 
 extern CHud gHUD;

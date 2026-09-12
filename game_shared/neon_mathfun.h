@@ -283,13 +283,13 @@ static inline void sincos_ps(v4sf x, v4sf *ysin, v4sf *ycos) { // any x
   *ycos = vbslq_f32(sign_mask_cos, yc, vnegq_f32(yc));
 }
 
-inline v4sf sin_ps(v4sf x) {
+static inline v4sf sin_ps(v4sf x) {
   v4sf ysin, ycos; 
   sincos_ps(x, &ysin, &ycos); 
   return ysin;
 }
 
-inline v4sf cos_ps(v4sf x) {
+static inline v4sf cos_ps(v4sf x) {
   v4sf ysin, ycos; 
   sincos_ps(x, &ysin, &ycos); 
   return ycos;
@@ -305,7 +305,7 @@ static const float asinf_lut[7] = {
         0.0022959648
 };
 
-inline void asincos_ps(float32x4_t x, float32x4_t* yasin, float32x4_t* yacos)
+static inline void asincos_ps(float32x4_t x, float32x4_t* yasin, float32x4_t* yacos)
 {
     float32x4_t one = vdupq_n_f32(1);
     float32x4_t negone = vdupq_n_f32(-1);
@@ -341,14 +341,14 @@ inline void asincos_ps(float32x4_t x, float32x4_t* yasin, float32x4_t* yacos)
     *yacos = vsubq_f32(m_pi_2, arcsinx);
 }
 
-inline float32x4_t asin_ps(float32x4_t x)
+static inline float32x4_t asin_ps(float32x4_t x)
 {
     float32x4_t yasin, yacos;
     asincos_ps(x, &yasin, &yacos);
     return yasin;
 }
 
-inline float32x4_t acos_ps(float32x4_t x)
+static inline float32x4_t acos_ps(float32x4_t x)
 {
     float32x4_t yasin, yacos;
     asincos_ps(x, &yasin, &yacos);

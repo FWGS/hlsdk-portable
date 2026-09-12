@@ -59,6 +59,7 @@ int CHud::MsgFunc_ResetHUD( const char *pszName, int iSize, void *pbuf )
 	// Vit_amiN: reset the FOV
 	m_iFOV = 0;	// default_fov
 	g_lastFOV = 0.0f;
+	m_inScope = false;
 
 	return 1;
 }
