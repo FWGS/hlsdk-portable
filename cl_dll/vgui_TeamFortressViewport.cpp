@@ -143,9 +143,9 @@ const char *sTFClassSelection[] =
 // Get the name of TGA file, based on GameDir
 char *GetVGUITGAName( const char *pszName )
 {
-	int i;
-	char sz[256]; 
-	static char gd[256]; 
+	int i, len;
+	char sz[256];
+	static char gd[256];
 	const char *gamedir;
 
 	if( ScreenWidth < 640 )
@@ -153,11 +153,11 @@ char *GetVGUITGAName( const char *pszName )
 	else
 		i = 640;
 
-	sprintf( sz, pszName, i );
+	safe_snprintf( sz, sizeof( sz ), pszName, i );
 
 	gamedir = gEngfuncs.pfnGetGameDirectory();
-	sprintf( gd, "%s/gfx/vgui/%s.tga", gamedir, sz );
-
+	len = safe_snprintf( gd, sizeof( gd ), "%s/gfx/vgui/%s.tga", gamedir, sz );
+	if( len < 0 ) return 0;
 	return gd;
 }
 
@@ -1277,7 +1277,7 @@ void TeamFortressViewport::UpdateSpectatorPanel()
 
 
 		// update extra info field
-		char szText[64];
+		char szText[256];
 
 		if( gEngfuncs.IsSpectateOnly() )
 		{

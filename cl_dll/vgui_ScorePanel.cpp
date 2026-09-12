@@ -733,30 +733,30 @@ void ScorePanel::mousePressed(MouseCode code, Panel* panel)
 			if (pl_info && pl_info->name && pl_info->name[0])
 			{
 				char string[256];
+				char string1[1024];
+				int len;
 				if (GetClientVoiceMgr()->IsPlayerBlocked(iPlayer))
 				{
-					char string1[1024];
-
 					// remove mute
-					GetClientVoiceMgr()->SetPlayerBlockedState(iPlayer, false);
+					GetClientVoiceMgr()->SetPlayerBlockedState( iPlayer, false );
 
-					sprintf( string1, CHudTextMessage::BufferedLocaliseTextString( "#Unmuted" ), pl_info->name );
-					sprintf( string, "%c** %s\n", HUD_PRINTTALK, string1 );
-
-					gHUD.m_TextMessage.MsgFunc_TextMsg(NULL, strlen(string)+1, string );
+					safe_snprintf( string1, sizeof( string1 ), CHudTextMessage::BufferedLocaliseTextString( "#Unmuted" ), pl_info->name );
+					len = safe_snprintf( string, sizeof( string ), "%c** %s\n", HUD_PRINTTALK, string1 );
 				}
 				else
 				{
-					char string1[1024];
-
 					// mute the player
-					GetClientVoiceMgr()->SetPlayerBlockedState(iPlayer, true);
+					GetClientVoiceMgr()->SetPlayerBlockedState( iPlayer, true );
 
-					sprintf( string1, CHudTextMessage::BufferedLocaliseTextString( "#Muted" ), pl_info->name );
-					sprintf( string, "%c** %s %s\n", HUD_PRINTTALK, string1, CHudTextMessage::BufferedLocaliseTextString( "#No_longer_hear_that_player" ) );
-
-					gHUD.m_TextMessage.MsgFunc_TextMsg(NULL, strlen(string)+1, string );
+					safe_snprintf( string1, sizeof( string1 ), CHudTextMessage::BufferedLocaliseTextString( "#Muted" ), pl_info->name );
+					len = safe_snprintf( string, sizeof( string ), "%c** %s %s\n", HUD_PRINTTALK, string1, CHudTextMessage::BufferedLocaliseTextString( "#No_longer_hear_that_player" ) );
 				}
+				if( len < 0 )
+				{
+					len = sizeof( string ) - 1;
+					strcpy( &string[sizeof( string ) - 2], "\n" );
+				}
+				gHUD.m_TextMessage.MsgFunc_TextMsg(NULL, len + 1, string );
 			}
 		}
 	}
