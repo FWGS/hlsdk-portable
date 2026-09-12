@@ -1,5 +1,10 @@
 version: 1.0.{build}
 
+skip_commits:
+  files:
+    - .github/workflows/**/
+    - README.md
+
 environment:
   matrix:
     - os: Visual Studio 2015

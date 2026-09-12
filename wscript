@@ -56,8 +56,6 @@ def options(opt):
 		help = 'force targetting 32-bit libs, usually unneeded [default: %(default)s]')
 	grp.add_option('--disable-werror', action = 'store_true', dest = 'DISABLE_WERROR', default = False,
 		help = 'disable compilation abort on warning')
-	grp.add_option('--enable-voicemgr', action = 'store_true', dest = 'USE_VOICEMGR', default = False,
-		help = 'Enable VOICE MANAGER')
 	grp.add_option('--enable-android-apk', action = 'store_true', dest = 'ANDROID_APK', default = False,
 		help = 'Enable Android APK styled libraries deploy')
 
