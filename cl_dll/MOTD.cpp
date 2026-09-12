@@ -26,17 +26,9 @@
 #include <string.h>
 #include <stdio.h>
 
-#if !USE_VGUI || USE_NOVGUI_MOTD
-DECLARE_MESSAGE( m_MOTD, MOTD )
-#endif
-
 int CHudMOTD::Init( void )
 {
 	gHUD.AddHudElem( this );
-
-#if !USE_VGUI || USE_NOVGUI_MOTD
-	HOOK_MESSAGE( MOTD );
-#endif
 
 	m_bShow = false;
 
@@ -126,7 +118,7 @@ int CHudMOTD::Draw( float fTime )
 	return 1;
 }
 
-int CHudMOTD::MsgFunc_MOTD( const char *pszName, int iSize, void *pbuf )
+bool CHudMOTD::HandleMOTDMessage( const char *pszName, int iSize, void *pbuf )
 {
 	if( m_iFlags & HUD_ACTIVE )
 	{
@@ -165,8 +157,7 @@ int CHudMOTD::MsgFunc_MOTD( const char *pszName, int iSize, void *pbuf )
 			m_iMaxLength = length;
 			// length = 0;
 		}
-		m_bShow = true;
 	}
 
-	return 1;
+	return is_finished ? true : false;
 }
