@@ -8,18 +8,10 @@ import os
 def options(opt):
 	grp = opt.add_option_group('Client options')
 
-	grp.add_option('--enable-novgui-motd', action = 'store_true', dest = 'USE_NOVGUI_MOTD', default = False,
-		help = 'Prefer non-VGUI MOTD when USE_VGUI is enabled')
-	grp.add_option('--enable-novgui-scoreboard', action = 'store_true', dest = 'USE_NOVGUI_SCOREBOARD', default = False,
-		help = 'Prefer non-VGUI Scoreboard when USE_VGUI is enabled')
 	grp.add_option('--disable-goldsrc-support', action = 'store_false', dest = 'GOLDSOURCE_SUPPORT',
 		default=True, help = 'disable GoldSource compatibility on i386 Win/Mac/Linux')
 
 def configure(conf):
-	conf.env.USE_NOVGUI_MOTD = conf.options.USE_NOVGUI_MOTD
-	conf.env.USE_NOVGUI_SCOREBOARD = conf.options.USE_NOVGUI_SCOREBOARD
-	conf.env.USE_VOICEMGR = conf.options.USE_VOICEMGR
-
 	if conf.env.DEST_OS in ['win32', 'linux', 'darwin'] and conf.env.DEST_CPU == 'x86':
 		conf.env.GOLDSOURCE_SUPPORT = conf.options.GOLDSOURCE_SUPPORT
 	else:
@@ -49,17 +41,7 @@ def build(bld):
 		'game_shared/voice_gamemgr.cpp',
 		'game_shared/voice_status.cpp']
 
-	defines += ['USE_VGUI']
 	libs += ['vgui']
-	if bld.env.USE_NOVGUI_MOTD:
-		defines += ['USE_NOVGUI_MOTD']
-	else:
-		excluded_files += ['MOTD.cpp']
-
-	if bld.env.USE_NOVGUI_SCOREBOARD:
-		defines += ['USE_NOVGUI_SCOREBOARD']
-	else:
-		excluded_files += ['scoreboard.cpp']
 
 	source = bld.path.ant_glob('**/*.cpp', excl=excluded_files)
 	source += bld.path.parent.ant_glob('game_shared/*.cpp', excl=excluded_files)
@@ -122,4 +104,3 @@ def build(bld):
 		install_path = install_path,
 		idx = bld.get_taskgen_count()
 	)
-

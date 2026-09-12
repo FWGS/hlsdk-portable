@@ -535,8 +535,11 @@ void COsprey::Killed( entvars_t *pevAttacker, int iGib )
 void COsprey::CrashTouch( CBaseEntity *pOther )
 {
 	// only crash if we hit something solid
-	if( pOther->pev->solid == SOLID_BSP )
+	switch(pOther->pev->solid)
 	{
+	case SOLID_BBOX:
+	case SOLID_SLIDEBOX:
+	case SOLID_BSP:
 		SetTouch( NULL );
 		m_startTime = gpGlobals->time;
 		pev->nextthink = gpGlobals->time;
@@ -553,6 +556,9 @@ void COsprey::CrashTouch( CBaseEntity *pOther )
 				FireTargets( STRING( m_iszTriggerTarget ), this, this, USE_TOGGLE, 0 );
 			}
 		}
+		break;
+	default:
+		break;
 	}
 }
 
