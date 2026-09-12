@@ -184,6 +184,9 @@ void CBaseMonster::BarnacleVictimBitten( entvars_t *pevBarnacle )
 //=========================================================
 void CBaseMonster::BarnacleVictimReleased( void )
 {
+	if (m_IdealMonsterState == MONSTERSTATE_DEAD)
+		return;
+
 	m_IdealMonsterState = MONSTERSTATE_IDLE;
 
 	pev->velocity = g_vecZero;
