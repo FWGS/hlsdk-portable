@@ -1187,10 +1187,10 @@ void CFlybee::Swim( )
 
 	Vector f, u, l, r, d;
 	f = DoProbe(start + PROBE_LENGTH   * Forward);
-	r = DoProbe(start + PROBE_LENGTH/3 * Forward+Right);
-	l = DoProbe(start + PROBE_LENGTH/3 * Forward-Right);
-	u = DoProbe(start + PROBE_LENGTH/3 * Forward+Up);
-	d = DoProbe(start + PROBE_LENGTH/3 * Forward-Up);
+	r = DoProbe(start + PROBE_LENGTH/3 * (Forward+Right));
+	l = DoProbe(start + PROBE_LENGTH/3 * (Forward-Right));
+	u = DoProbe(start + PROBE_LENGTH/3 * (Forward+Up));
+	d = DoProbe(start + PROBE_LENGTH/3 * (Forward-Up));
 
 	Vector SteeringVector = f+r+l+u+d;
 	m_SaveVelocity = (m_SaveVelocity + SteeringVector/2).Normalize();
