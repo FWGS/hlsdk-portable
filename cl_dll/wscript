@@ -12,8 +12,6 @@ def options(opt):
 		default=True, help = 'disable GoldSource compatibility on i386 Win/Mac/Linux')
 
 def configure(conf):
-	conf.env.USE_VOICEMGR = conf.options.USE_VOICEMGR
-
 	if conf.env.DEST_OS in ['win32', 'linux', 'darwin'] and conf.env.DEST_CPU == 'x86':
 		conf.env.GOLDSOURCE_SUPPORT = conf.options.GOLDSOURCE_SUPPORT
 	else:
@@ -103,4 +101,3 @@ def build(bld):
 		install_path = install_path,
 		idx = bld.get_taskgen_count()
 	)
-
