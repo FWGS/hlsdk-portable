@@ -335,6 +335,7 @@ void CHud::Init( void )
 
 	m_iLogo = 0;
 	m_iFOV = 0;
+	m_inScope = false;
 
 	CVAR_CREATE( "zoom_sensitivity_ratio", "1.2", FCVAR_ARCHIVE );
 	CVAR_CREATE( "cl_autowepswitch", "1", FCVAR_ARCHIVE | FCVAR_USERINFO );
@@ -686,9 +687,11 @@ int CHud::MsgFunc_SetFOV( const char *pszName,  int iSize, void *pbuf )
 	BEGIN_READ( pbuf, iSize );
 
 	int newfov = READ_BYTE();
-	int def_fov = CVAR_GET_FLOAT( "default_fov" );
+	int def_fov = default_fov->value;
 
 	g_lastFOV = newfov;
+
+	m_inScope = newfov != 0;
 
 	if( newfov == 0 )
 	{
