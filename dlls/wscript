@@ -23,7 +23,11 @@ def build(bld):
 	excluded_files = ['mpstubb.cpp', 'stats.cpp', 'Wxdebug.cpp', 'gearbox/gearbox_client.cpp']
 
 	source = bld.path.ant_glob('**/*.cpp', excl=excluded_files)
-	source += bld.path.parent.ant_glob(['pm_shared/*.c', 'public/safe_snprintf.c'])
+	source += bld.path.parent.ant_glob([
+					'pm_shared/*.c',
+					'public/safe_snprintf.c',
+					'game_shared/voice_gamemgr.cpp'
+					])
 
 	defines = bld.env.EXPORT_DEFINES_LIST
 	if 'HAVE_STRLCPY=1' not in defines:
@@ -31,11 +35,6 @@ def build(bld):
 
 	if 'HAVE_STRLCAT=1' not in defines:
 		source += bld.path.parent.ant_glob('external/openbsd/strlcat.c')
-
-	if bld.env.USE_VOICEMGR:
-		source += ['../game_shared/voice_gamemgr.cpp']
-	else:
-		defines += ['NO_VOICEGAMEMGR']
 
 	includes = [
 		'.',
@@ -73,4 +72,3 @@ def build(bld):
 		install_path = install_path,
 		idx = bld.get_taskgen_count()
 	)
-

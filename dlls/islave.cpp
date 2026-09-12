@@ -816,7 +816,7 @@ void CISlave::ZapBeam( int side )
 	pEntity = CBaseEntity::Instance( tr.pHit );
 	if( pEntity != NULL && pEntity->pev->takedamage )
 	{
-		pEntity->TraceAttack( pev, gSkillData.slaveDmgZap, vecAim, &tr, DMG_SHOCK );
+		pEntity->TraceAttack( pev, gSkillData.slaveDmgZap, vecAim.Normalize(), &tr, DMG_SHOCK );
 	}
 	UTIL_EmitAmbientSound( ENT( pev ), tr.vecEndPos, "weapons/electro4.wav", 0.5, ATTN_NORM, 0, RANDOM_LONG( 140, 160 ) );
 }

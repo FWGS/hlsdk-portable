@@ -266,17 +266,10 @@ private:
 	CLabelHeader*	GetPlayerEntry(int x, int y)	{return &m_PlayerEntries[x][y];}
 
 public:
-	
-	int				m_iNumTeams;
-	int				m_iPlayerNum;
-	int				m_iShowscoresHeld;
-
 	int				m_iRows;
 	int				m_iSortedRows[NUM_ROWS];
 	int				m_iIsATeam[NUM_ROWS];
 	bool			m_bHasBeenSorted[MAX_PLAYERS];
-	int				m_iLastKilledBy;
-	int				m_fLastKillTime;
 
 
 public:
@@ -287,11 +280,8 @@ public:
 
 	void SortTeams( void );
 	void SortPlayers( int iTeam, char *team );
-	void RebuildTeams( void );
 
 	void FillGrid();
-
-	void DeathMsg( int killer, int victim );
 
 	void Initialize( void );
 
