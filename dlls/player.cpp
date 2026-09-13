@@ -2996,6 +2996,8 @@ void CBasePlayer::Spawn( void )
 
 	m_flNextChatTime = gpGlobals->time;
 
+	SET_VIEW(edict(), edict());
+
 	g_pGameRules->PlayerSpawn( this );
 }
 
