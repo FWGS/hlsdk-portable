@@ -1521,7 +1521,7 @@ void CBasePlayer::StartObserver( Vector vecPosition, Vector vecViewAngle )
 	// Clear out the status bar
 	m_fInitHUD = TRUE;
 
-	pev->team = 0;
+	m_szTeamName[0] = '\0';
 	MESSAGE_BEGIN( MSG_ALL, gmsgTeamInfo );
 		WRITE_BYTE( ENTINDEX(edict()) );
 		WRITE_STRING( "" );
@@ -3037,6 +3037,8 @@ void CBasePlayer::Spawn( void )
 // advanced NVG
 
 	m_flNextChatTime = gpGlobals->time;
+
+	SET_VIEW(edict(), edict());
 
 	g_pGameRules->PlayerSpawn( this );
 }
