@@ -1,6 +1,16 @@
 name: build
 
-on: [push, pull_request]
+on:
+  push:
+    paths-ignore:
+      - 'appveyor.yml'
+      - 'README.md'
+      - '.github/workflows/manual.yml'
+  pull_request:
+    paths-ignore:
+      - 'appveyor.yml'
+      - 'README.md'
+      - '.github/workflows/manual.yml'
 
 jobs:
   build:

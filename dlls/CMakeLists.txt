@@ -149,6 +149,7 @@ set (SVDLL_SOURCES
 	xen.cpp
 	zombie.cpp
 	shall/shall_map_fixes.cpp
+	../game_shared/voice_gamemgr.cpp
 	../pm_shared/pm_debug.c
 	../pm_shared/pm_math.c
 	../pm_shared/pm_shared.c
@@ -175,14 +176,6 @@ if(MSVC)
 	set(SVDLL_SOURCES
 		${SVDLL_SOURCES}
 		hl.def)
-endif()
-
-if(USE_VOICEMGR)
-	set(SVDLL_SOURCES
-		${SVDLL_SOURCES}
-		../game_shared/voice_gamemgr.cpp)
-else()
-	add_definitions(-DNO_VOICEGAMEMGR)
 endif()
 
 add_library (${SVDLL_LIBRARY} SHARED ${SVDLL_SOURCES})

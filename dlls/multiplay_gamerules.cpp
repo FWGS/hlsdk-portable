@@ -27,9 +27,7 @@
 #include	"skill.h"
 #include	"game.h"
 #include	"items.h"
-#if !NO_VOICEGAMEMGR
 #include	"voice_gamemgr.h"
-#endif
 #include	"hltv.h"
 #include	"trains.h"
 
@@ -48,7 +46,6 @@ extern int g_teamplay;
 
 float g_flIntermissionStartTime = 0;
 
-#if !NO_VOICEGAMEMGR
 CVoiceGameMgr	g_VoiceGameMgr;
 
 class CMultiplayGameMgrHelper : public IVoiceGameMgrHelper
@@ -69,15 +66,12 @@ public:
 };
 
 static CMultiplayGameMgrHelper g_GameMgrHelper;
-#endif
 //*********************************************************
 // Rules for the half-life multiplayer game.
 //*********************************************************
 CHalfLifeMultiplay::CHalfLifeMultiplay()
 {
-#if !NO_VOICEGAMEMGR
 	g_VoiceGameMgr.Init( &g_GameMgrHelper, gpGlobals->maxClients );
-#endif
 	RefreshSkillData();
 	m_flIntermissionEndTime = 0;
 	g_flIntermissionStartTime = 0;
@@ -125,10 +119,8 @@ CHalfLifeMultiplay::CHalfLifeMultiplay()
 
 BOOL CHalfLifeMultiplay::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 {
-#if !NO_VOICEGAMEMGR
 	if( g_VoiceGameMgr.ClientCommand( pPlayer, pcmd ) )
 		return TRUE;
-#endif
 	return CGameRules::ClientCommand( pPlayer, pcmd );
 }
 
@@ -196,9 +188,7 @@ extern cvar_t mp_chattime;
 //=========================================================
 void CHalfLifeMultiplay::Think( void )
 {
-#if !NO_VOICEGAMEMGR
 	g_VoiceGameMgr.Update( gpGlobals->frametime );
-#endif
 
 	///// Check game rules /////
 	static int last_frags;
@@ -357,9 +347,7 @@ BOOL CHalfLifeMultiplay::GetNextBestWeapon( CBasePlayer *pPlayer, CBasePlayerIte
 //=========================================================
 BOOL CHalfLifeMultiplay::ClientConnected( edict_t *pEntity, const char *pszName, const char *pszAddress, char szRejectReason[128] )
 {
-#if !NO_VOICEGAMEMGR
 	g_VoiceGameMgr.ClientConnected( pEntity );
-#endif
 	return TRUE;
 }
 
