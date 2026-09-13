@@ -68,6 +68,10 @@ void CGrenade::Explode( TraceResult *pTrace, int bitsDamageType )
 
 	int iContents = UTIL_PointContents( pev->origin );
 
+	int exploScale = ( pev->dmg - 50 ) * 0.6f;
+	exploScale = Q_max(exploScale, 1);
+	exploScale = Q_min(exploScale, 255);
+
 	MESSAGE_BEGIN( MSG_PAS, SVC_TEMPENTITY, pev->origin );
 		WRITE_BYTE( TE_EXPLOSION );		// This makes a dynamic light and the explosion sprites/sound
 		WRITE_COORD( pev->origin.x );	// Send to PAS because of the sound
@@ -81,7 +85,7 @@ void CGrenade::Explode( TraceResult *pTrace, int bitsDamageType )
 		{
 			WRITE_SHORT( g_sModelIndexWExplosion );
 		}
-		WRITE_BYTE( ( pev->dmg - 50 ) * 0.6f ); // scale * 10
+		WRITE_BYTE( exploScale ); // scale * 10
 		WRITE_BYTE( 15 ); // framerate
 		WRITE_BYTE( TE_EXPLFLAG_NONE );
 	MESSAGE_END();
@@ -142,13 +146,17 @@ void CGrenade::Smoke( void )
 	}
 	else
 	{
+		int smokeScale = (int)( ( pev->dmg - 50 ) * 0.8f );
+		smokeScale = Q_max(smokeScale, 1);
+		smokeScale = Q_min(smokeScale, 255);
+
 		MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, pev->origin );
 			WRITE_BYTE( TE_SMOKE );
 			WRITE_COORD( pev->origin.x );
 			WRITE_COORD( pev->origin.y );
 			WRITE_COORD( pev->origin.z );
 			WRITE_SHORT( g_sModelIndexSmoke );
-			WRITE_BYTE( (int)( ( pev->dmg - 50 ) * 0.8f ) ); // scale * 10
+			WRITE_BYTE( smokeScale ); // scale * 10
 			WRITE_BYTE( 12 ); // framerate
 		MESSAGE_END();
 	}
