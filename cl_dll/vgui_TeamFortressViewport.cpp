@@ -143,9 +143,9 @@ const char *sTFClassSelection[] =
 // Get the name of TGA file, based on GameDir
 char *GetVGUITGAName( const char *pszName )
 {
-	int i;
-	char sz[256]; 
-	static char gd[256]; 
+	int i, len;
+	char sz[256];
+	static char gd[256];
 	const char *gamedir;
 
 	if( ScreenWidth < 640 )
@@ -153,11 +153,11 @@ char *GetVGUITGAName( const char *pszName )
 	else
 		i = 640;
 
-	sprintf( sz, pszName, i );
+	safe_snprintf( sz, sizeof( sz ), pszName, i );
 
 	gamedir = gEngfuncs.pfnGetGameDirectory();
-	sprintf( gd, "%s/gfx/vgui/%s.tga", gamedir, sz );
-
+	len = safe_snprintf( gd, sizeof( gd ), "%s/gfx/vgui/%s.tga", gamedir, sz );
+	if( len < 0 ) return 0;
 	return gd;
 }
 
@@ -627,7 +627,6 @@ void TeamFortressViewport::Initialize( void )
 	HideCommandMenu();
 
 	// Clear out some data
-	m_iGotAllMOTD = true;
 	m_iRandomPC = false;
 	m_flScoreBoardLastUpdated = 0;
 	m_flSpectatorPanelLastUpdated = 0;
@@ -1096,7 +1095,7 @@ void TeamFortressViewport::HideScoreBoard( void )
 	if( gHUD.m_iIntermission )
 		return;
 
-	if( m_pScoreBoard )
+	if( m_pScoreBoard && m_pScoreBoard->isVisible() )
 	{
 		m_pScoreBoard->setVisible( false );
 
@@ -1149,7 +1148,7 @@ void TeamFortressViewport::UpdatePlayerMenu(int menuIndex)
 
 	cl_entity_t * pEnt = NULL;
 	float flLabelSize = ( (ScreenWidth - (XRES ( CAMOPTIONS_BUTTON_X ) + 15)) - XRES ( 24 + 15 ) ) - XRES( (15 + OPTIONS_BUTTON_X + 15) + 38 );
-	gViewPort->GetAllPlayersInfo();
+	gHUD.GetAllPlayersInfo();
 
 
 	for (int i = 1; i < MAX_PLAYERS; i++ )
@@ -1278,7 +1277,7 @@ void TeamFortressViewport::UpdateSpectatorPanel()
 
 
 		// update extra info field
-		char szText[64];
+		char szText[256];
 
 		if( gEngfuncs.IsSpectateOnly() )
 		{
@@ -1380,7 +1379,7 @@ CMenuPanel *TeamFortressViewport::CreateTextWindow( int iTextToShow )
 			strlcpy( cTitle, m_szServerName, MAX_TITLE_LENGTH );
 		}
 
-		cText = m_szMOTD;
+		cText = gHUD.m_MOTD.m_szMOTD;
 	}
 	else if( iTextToShow == SHOW_MAPBRIEFING )
 	{
@@ -1694,17 +1693,6 @@ void TeamFortressViewport::UpdateHighlights()
 		m_pCurrentCommandMenu->MakeVisible( NULL );
 }
 
-void TeamFortressViewport::GetAllPlayersInfo( void )
-{
-	for( int i = 1; i < MAX_PLAYERS; i++ )
-	{
-		GetPlayerInfo( i, &g_PlayerInfoList[i] );
-
-		if( g_PlayerInfoList[i].thisplayer )
-			m_pScoreBoard->m_iPlayerNum = i;  // !!!HACK: this should be initialized elsewhere... maybe gotten from the engine
-	}
-}
-
 void TeamFortressViewport::paintBackground()
 {
 	int wide, tall;
@@ -1979,24 +1967,13 @@ int TeamFortressViewport::MsgFunc_VGUIMenu( const char *pszName, int iSize, void
 	return 1;
 }
 
-int TeamFortressViewport::MsgFunc_MOTD( const char *pszName, int iSize, void *pbuf )
+void TeamFortressViewport::ShowMOTD()
 {
-	if( m_iGotAllMOTD )
-		m_szMOTD[0] = 0;
-
-	BEGIN_READ( pbuf, iSize );
-
-	m_iGotAllMOTD = READ_BYTE();
-
-	strlcat( m_szMOTD, READ_STRING(), sizeof( m_szMOTD ));
-
 	// don't show MOTD for HLTV spectators
-	if( m_iGotAllMOTD && !gEngfuncs.IsSpectateOnly() )
+	if( !gEngfuncs.IsSpectateOnly() )
 	{
 		ShowVGUIMenu( MENU_INTRO );
 	}
-
-	return 1;
 }
 
 int TeamFortressViewport::MsgFunc_BuildSt( const char *pszName, int iSize, void *pbuf )
@@ -2027,91 +2004,6 @@ int TeamFortressViewport::MsgFunc_ServerName( const char *pszName, int iSize, vo
 	strlcpy( m_szServerName, READ_STRING(), sizeof( m_szServerName ));
 
 	return 1;
-}
-
-int TeamFortressViewport::MsgFunc_ScoreInfo( const char *pszName, int iSize, void *pbuf )
-{
-	BEGIN_READ( pbuf, iSize );
-	short cl = READ_BYTE();
-	short frags = READ_SHORT();
-	short deaths = READ_SHORT();
-	short playerclass = READ_SHORT();
-	short teamnumber = READ_SHORT();
-
-	if( cl > 0 && cl <= MAX_PLAYERS )
-	{
-		g_PlayerExtraInfo[cl].frags = frags;
-		g_PlayerExtraInfo[cl].deaths = deaths;
-		g_PlayerExtraInfo[cl].playerclass = playerclass;
-		g_PlayerExtraInfo[cl].teamnumber = teamnumber;
-
-		//Dont go bellow 0!
-		if( g_PlayerExtraInfo[cl].teamnumber < 0 )
-			 g_PlayerExtraInfo[cl].teamnumber = 0;
-
-		UpdateOnPlayerInfo();
-	}
-
-	return 1;
-}
-
-// Message handler for TeamScore message
-// accepts three values:
-//		string: team name
-//		short: teams kills
-//		short: teams deaths 
-// if this message is never received, then scores will simply be the combined totals of the players.
-int TeamFortressViewport::MsgFunc_TeamScore( const char *pszName, int iSize, void *pbuf )
-{
-	BEGIN_READ( pbuf, iSize );
-	char *TeamName = READ_STRING();
-
-	int i;
-	// find the team matching the name
-	for( i = 1; i <= m_pScoreBoard->m_iNumTeams; i++ )
-	{
-		if( !stricmp( TeamName, g_TeamInfo[i].name ) )
-			break;
-	}
-
-	if( i > m_pScoreBoard->m_iNumTeams )
-		return 1;
-
-	// use this new score data instead of combined player scoresw
-	g_TeamInfo[i].scores_overriden = TRUE;
-	g_TeamInfo[i].frags = READ_SHORT();
-	g_TeamInfo[i].deaths = READ_SHORT();
-
-	return 1;
-}
-
-// Message handler for TeamInfo message
-// accepts two values:
-//		byte: client number
-//		string: client team name
-int TeamFortressViewport::MsgFunc_TeamInfo( const char *pszName, int iSize, void *pbuf )
-{
-	if( !m_pScoreBoard )
-		return 1;
-
-	BEGIN_READ( pbuf, iSize );
-	short cl = READ_BYTE();
-	
-	if( cl > 0 && cl <= MAX_PLAYERS )
-	{  
-		// set the players team
-		strlcpy( g_PlayerExtraInfo[cl].teamname, READ_STRING(), MAX_TEAM_NAME );
-	}
-
-	// rebuild the list of teams
-	m_pScoreBoard->RebuildTeams();
-
-	return 1;
-}
-
-void TeamFortressViewport::DeathMsg( int killer, int victim )
-{
-	m_pScoreBoard->DeathMsg( killer, victim );
 }
 
 int TeamFortressViewport::MsgFunc_Spectator( const char *pszName, int iSize, void *pbuf )

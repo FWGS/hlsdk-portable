@@ -540,12 +540,18 @@ void COsprey::Killed( entvars_t *pevAttacker, int iGib )
 void COsprey::CrashTouch( CBaseEntity *pOther )
 {
 	// only crash if we hit something solid
-	if( pOther->pev->solid == SOLID_BSP )
+	switch(pOther->pev->solid)
 	{
+	case SOLID_BBOX:
+	case SOLID_SLIDEBOX:
+	case SOLID_BSP:
 		SetTouch( NULL );
 		m_startTime = gpGlobals->time;
 		SetNextThink( 0 );
 		m_velocity = pev->velocity;
+		break;
+	default:
+		break;
 	}
 }
 
