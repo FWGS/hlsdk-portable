@@ -143,7 +143,7 @@ void SpectatorMenu( void )
 
 void ToggleScores( void )
 {
-	if( gHUD.UseVguiMOTD() && gViewPort )
+	if( gHUD.UseVguiScoreBoard() && gViewPort )
 	{
 		if( gViewPort->IsScoreBoardVisible() )
 		{
