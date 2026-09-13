@@ -210,7 +210,9 @@ int CHudScoreboard::Draw( float fTime )
 		}
 
 		// draw their name (left to right)
-		DrawUtfString( xpos, ypos, NAME_RANGE_MAX + xpos_rel, team_info->name, r, g, b );
+		char teamHeader[MAX_TEAM_NAME + 128];
+		safe_snprintf(teamHeader, sizeof(teamHeader), "%s (%d %s)", team_info->name, team_info->players, team_info->players == 1 ? CHudTextMessage::BufferedLocaliseTextString( "#Player" ) : CHudTextMessage::BufferedLocaliseTextString( "#Player_plural" ));
+		DrawUtfString( xpos, ypos, NAME_RANGE_MAX + xpos_rel, teamHeader, r, g, b );
 
 		// draw kills (right to left)
 		xpos = KILLS_RANGE_MAX + xpos_rel;
