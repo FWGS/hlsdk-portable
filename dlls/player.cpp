@@ -2003,7 +2003,7 @@ void CBasePlayer::PreThink( void )
 			AgSay( this, "Match is on!", NULL, 8, 0.03, 0.15, 5 );
 
 		//Print gamemode text.
-		AgSay( this, AgGamename().c_str(), NULL, 6, 0.75, 0.10, 3 );
+		AgSay( this, AgGamename(), NULL, 6, 0.75, 0.10, 3 );
 
 		//Print settings.
 		char szSetting[256];
@@ -2018,7 +2018,7 @@ void CBasePlayer::PreThink( void )
 #else
 		MESSAGE_BEGIN( MSG_ONE_UNRELIABLE, gmsgSettings, NULL, pev );
 			WRITE_BYTE( (int)ag_match_running.value );
-			WRITE_STRING( AgGamename().c_str() );
+			WRITE_STRING( AgGamename() );
 			WRITE_BYTE( (int)CVAR_GET_FLOAT( "mp_timelimit" ) );
 			WRITE_BYTE( (int)CVAR_GET_FLOAT( "mp_fraglimit" ) );
 			WRITE_BYTE( (int)CVAR_GET_FLOAT( "mp_friendlyfire" ) );

@@ -43,18 +43,18 @@ void SetupGametype()
     g_GameType = INSTAGIB;
 }
 
-AgString AgGamename()
+const char *AgGamename()
 {
   if (g_pGame)
-    return g_pGame->m_sName;
+    return g_pGame->m_sName.c_str();
 
   return "Half-Life";
 }
 
-AgString AgGamedescription()
+const char *AgGamedescription()
 {
   if (g_pGame)
-    return g_pGame->m_sDescription;
+    return g_pGame->m_sDescription.c_str();
 
   return "Half-Life";
 }
