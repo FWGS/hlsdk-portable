@@ -27,9 +27,7 @@
 #include <stdio.h>
 
 #include "ammohistory.h"
-#if USE_VGUI
 #include "vgui_TeamFortressViewport.h"
-#endif
 //Haunter
 //#include "tri_scope.h"
 
@@ -626,7 +624,7 @@ int CHudAmmo::MsgFunc_CurWeapon( const char *pszName, int iSize, void *pbuf )
 
 	if( !( gHUD.m_iHideHUDDisplay & ( HIDEHUD_WEAPONS | HIDEHUD_ALL ) ) )
 	{
-		if( gHUD.m_iFOV >= 90 )
+		if( !gHUD.m_inScope )
 		{
 //			pTriScope->SetStatus(false);
 			// normal crosshairs
@@ -706,11 +704,9 @@ int CHudAmmo::MsgFunc_WeaponList( const char *pszName, int iSize, void *pbuf )
 // Slot button pressed
 void CHudAmmo::SlotInput( int iSlot )
 {
-#if USE_VGUI
 	// Let the Viewport use it first, for menus
 	if( gViewPort && gViewPort->SlotInput( iSlot ) )
 		return;
-#endif
 	gWR.SelectSlot(iSlot, FALSE, 1);
 }
 

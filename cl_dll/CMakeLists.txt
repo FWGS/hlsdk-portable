@@ -53,15 +53,8 @@ if (GOLDSOURCE_SUPPORT)
 	add_definitions(-DGOLDSOURCE_SUPPORT)
 endif()
 
-add_definitions(-DUSE_VGUI)
 if (USE_STATIC_FREEVGUI)
 	add_definitions(-DINTERNAL_VGUI_SUPPORT)
-endif()
-if (USE_NOVGUI_MOTD)
-	add_definitions(-DUSE_NOVGUI_MOTD)
-endif()
-if (USE_NOVGUI_SCOREBOARD)
-	add_definitions(-DUSE_NOVGUI_SCOREBOARD)
 endif()
 
 set (CLDLL_SOURCES
@@ -132,12 +125,14 @@ set (CLDLL_SOURCES
 	interpolation.cpp
 	menu.cpp
 	message.cpp
+	MOTD.cpp
 	parsemsg.cpp
 	../pm_shared/pm_debug.c
 	../pm_shared/pm_math.c
 	../pm_shared/pm_shared.c
 	saytext.cpp
 	shroud.cpp
+	scoreboard.cpp
 	status_icons.cpp
 	statusbar.cpp
 	studio_util.cpp
@@ -173,14 +168,6 @@ list(APPEND CLDLL_SOURCES
 	../game_shared/voice_banmgr.cpp
 )
 
-if (USE_NOVGUI_MOTD)
-	list(APPEND CLDLL_SOURCES MOTD.cpp)
-endif()
-
-if (USE_NOVGUI_SCOREBOARD)
-	list(APPEND CLDLL_SOURCES scoreboard.cpp)
-endif()
-
 if (HAVE_STRLCPY)
 	add_definitions(-DHAVE_STRLCPY)
 else()
@@ -197,19 +184,12 @@ endif()
 
 include_directories (. hl/ ../dlls ../dlls/wpn_shared ../common ../engine ../pm_shared ../game_shared ../public)
 
-if (WIN32)
+if (GOLDSOURCE_SUPPORT)
 	include_directories (../external/)
 endif()
 
 
 include_directories(../utils/vgui/include)
-
-if(USE_VOICEMGR)
-	#set(CLDLL_SOURCES
-	#	${CLDLL_SOURCES}
-	#	../game_shared/voice_banmgr.cpp
-	#	../game_shared/voice_status.cpp)
-endif()
 
 add_library (${CLDLL_LIBRARY} SHARED ${CLDLL_SOURCES})
 target_link_libraries(${CLDLL_LIBRARY} vcs_info)
