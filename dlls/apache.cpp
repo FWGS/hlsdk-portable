@@ -422,12 +422,18 @@ void CApache::FlyTouch( CBaseEntity *pOther )
 void CApache::CrashTouch( CBaseEntity *pOther )
 {
 	// only crash if we hit something solid
-	if( pOther->pev->solid == SOLID_BSP )
+	switch(pOther->pev->solid)
 	{
+	case SOLID_BBOX:
+	case SOLID_SLIDEBOX:
+	case SOLID_BSP:
 		SetTouch( NULL );
 		pev->deadflag = DEAD_DEAD;
 		m_flNextRocket = gpGlobals->time;
 		pev->nextthink = gpGlobals->time;
+		break;
+	default:
+		break;
 	}
 }
 
