@@ -19,9 +19,7 @@
 #define BLUE 2
 #define RED 1
 
-#if !NO_VOICEGAMEMGR
 #include "voice_gamemgr.h"
-#endif
 
 extern int gmsgCTFMsgs;
 extern int gmsgShowMenu;

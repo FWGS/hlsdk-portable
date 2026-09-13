@@ -56,7 +56,6 @@ extern unsigned short g_usCarried;
 extern edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer, bool bCheckDM );
 extern edict_t *RuneSelectSpawnPoint( void );
 
-#if !NO_VOICEGAMEMGR
 class CThreeWaveGameMgrHelper : public IVoiceGameMgrHelper
 {
 public:
@@ -66,7 +65,6 @@ public:
 	}
 };
 static CThreeWaveGameMgrHelper g_GameMgrHelper;
-#endif
 
 extern DLL_GLOBAL BOOL	g_fGameOver;
 
@@ -78,12 +76,12 @@ const char *GetTeamName( int team )
 	return sTeamNames[team];
 }
 
+#include "voice_gamemgr.h"
+extern CVoiceGameMgr g_VoiceGameMgr;
 CThreeWave::CThreeWave()
 {
-#if !NO_VOICEGAMEMGR
 	// CHalfLifeMultiplay already initialized it - just override its helper callback.
-	m_VoiceGameMgr.SetHelper( &g_GameMgrHelper );
-#endif
+	g_VoiceGameMgr.SetHelper( &g_GameMgrHelper );
 	m_DisableDeathMessages = FALSE;
 	m_DisableDeathPenalty = FALSE;
 
@@ -130,9 +128,7 @@ extern cvar_t timeleft, fragsleft;
 
 void CThreeWave::Think( void )
 {
-#if !NO_VOICEGAMEMGR
-	m_VoiceGameMgr.Update( gpGlobals->frametime );
-#endif
+	g_VoiceGameMgr.Update( gpGlobals->frametime );
 	///// Check game rules /////
 	static int last_frags;
 	static int last_time;
@@ -271,10 +267,8 @@ extern void DropRune( CBasePlayer *pPlayer );
 //=========================================================
 BOOL CThreeWave::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 {
-#if !NO_VOICEGAMEMGR
-	if( m_VoiceGameMgr.ClientCommand( pPlayer, pcmd ) )
+	if( g_VoiceGameMgr.ClientCommand( pPlayer, pcmd ) )
 		return TRUE;
-#endif
 	if( pPlayer->m_bHadFirstSpawn == false && g_bHaveMOTD )
 		pPlayer->m_bHadFirstSpawn = true;
 

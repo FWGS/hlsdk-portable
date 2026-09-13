@@ -516,10 +516,6 @@ private:
 	// Scheme handler
 	CSchemeManager m_SchemeManager;
 
-	// MOTD
-	int		m_iGotAllMOTD;
-	char	m_szMOTD[ MAX_MOTD_LENGTH ];
-
 	//  Command Menu Team buttons
 	CommandButton *m_pTeamButtons[6];
 	CommandButton *m_pDisguiseButtons[5];
@@ -562,8 +558,6 @@ public:
 
 	int	 KeyInput( int down, int keynum, const char *pszCurrentBinding );
 	void InputPlayerSpecial( void );
-	void GetAllPlayersInfo( void );
-	void DeathMsg( int killer, int victim );
 
 	void ShowCommandMenu(int menuIndex);
 	void InputSignalHideCommandMenu( void );
@@ -601,13 +595,10 @@ public:
 	int MsgFunc_Feign(const char *pszName, int iSize, void *pbuf );
 	int MsgFunc_Detpack(const char *pszName, int iSize, void *pbuf );
 	int MsgFunc_VGUIMenu(const char *pszName, int iSize, void *pbuf );
-	int MsgFunc_MOTD( const char *pszName, int iSize, void *pbuf );
+	void ShowMOTD();
 	int MsgFunc_BuildSt( const char *pszName, int iSize, void *pbuf );
 	int MsgFunc_RandomPC( const char *pszName, int iSize, void *pbuf );
 	int MsgFunc_ServerName( const char *pszName, int iSize, void *pbuf );
-	int MsgFunc_ScoreInfo( const char *pszName, int iSize, void *pbuf );
-	int MsgFunc_TeamScore( const char *pszName, int iSize, void *pbuf );
-	int MsgFunc_TeamInfo( const char *pszName, int iSize, void *pbuf );
 	int MsgFunc_Spectator( const char *pszName, int iSize, void *pbuf );
 	int MsgFunc_AllowSpec( const char *pszName, int iSize, void *pbuf );
 	int MsgFunc_SpecFade( const char *pszName, int iSize, void *pbuf );	

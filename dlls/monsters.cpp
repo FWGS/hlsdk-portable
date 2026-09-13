@@ -1,9 +1,9 @@
 /***
 *
 *	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
+*
+*	This product contains software technology licensed from Id
+*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
 *	All Rights Reserved.
 *
 *   This source code contains proprietary and confidential information of
@@ -25,7 +25,7 @@
 #include "cbase.h"
 #include "nodes.h"
 #include "monsters.h"
- 
+
 CBaseEntity* CBaseMonster :: CheckTraceHullAttack( float flDist, int iDamage, int iDmgType ) { return NULL; }
 void CBaseMonster :: Eat ( float flFullDuration ) { }
 BOOL CBaseMonster :: FShouldEat ( void ) { return TRUE; }
@@ -37,7 +37,7 @@ BOOL CBaseMonster :: FValidateHintType ( short sHint ) { return FALSE; }
 void CBaseMonster :: Look ( int iDistance ) { }
 int CBaseMonster :: ISoundMask ( void ) { return 0; }
 CSound* CBaseMonster :: PBestSound ( void ) { return NULL; }
-CSound* CBaseMonster :: PBestScent ( void ) { return NULL; } 
+CSound* CBaseMonster :: PBestScent ( void ) { return NULL; }
 void CBaseMonster :: MonsterThink ( void ) { }
 void CBaseMonster :: MonsterUse ( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value ) { }
 int CBaseMonster :: IgnoreConditions ( void ) { return 0; }
