@@ -869,7 +869,7 @@ void CISlave::ZapBeam( int side )
 			flDmg = gSkillData.aworkerDmgClaw;
 		else
 			flDmg = gSkillData.slaveDmgClaw;
-		pEntity->TraceAttack( pev, flDmg, vecAim, &tr, DMG_SHOCK );
+		pEntity->TraceAttack( pev, flDmg, vecAim.Normalize(), &tr, DMG_SHOCK );
 	}
 
 	if( FClassnameIs( pev, "monster_alien_worker" ) )
