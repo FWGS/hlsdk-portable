@@ -1405,6 +1405,8 @@ void CBaseEntity::FireBullets( ULONG cShots, Vector vecSrc, Vector vecDirShootin
 		{
 			CBaseEntity *pEntity = CBaseEntity::Instance( tr.pHit );
 
+			vecDir = vecDir.Normalize();
+
 			if( iDamage )
 			{
 				pEntity->TraceAttack( pevAttacker, iDamage, vecDir, &tr, DMG_BULLET | ( ( iDamage > 16 ) ? DMG_ALWAYSGIB : DMG_NEVERGIB ) );
@@ -1499,6 +1501,8 @@ Vector CBaseEntity::FireBulletsPlayer( ULONG cShots, Vector vecSrc, Vector vecDi
 		if( tr.flFraction != 1.0f )
 		{
 			CBaseEntity *pEntity = CBaseEntity::Instance( tr.pHit );
+
+			vecDir = vecDir.Normalize();
 
 			if( iDamage )
 			{
