@@ -31,9 +31,7 @@ extern "C"
 #include <string.h>
 #include <ctype.h>
 
-#if USE_VGUI
 #include "vgui_TeamFortressViewport.h"
-#endif
 
 extern "C" 
 {
@@ -392,10 +390,8 @@ Return 1 to allow engine to process the key, otherwise, act on it as needed
 */
 int DLLEXPORT HUD_Key_Event( int down, int keynum, const char *pszCurrentBinding )
 {
-#if USE_VGUI
 	if (gViewPort)
 		return gViewPort->KeyInput(down, keynum, pszCurrentBinding);
-#endif
 	return 1;
 }
 
@@ -666,27 +662,22 @@ void IN_Impulse( void )
 void IN_ScoreDown( void )
 {
 	KeyDown( &in_score );
-#if USE_VGUI && !USE_NOVGUI_SCOREBOARD
-	if ( gViewPort )
+	if ( gHUD.UseVguiScoreBoard() && gViewPort )
 	{
 		gViewPort->ShowScoreBoard();
+		return;
 	}
-#else
 	gHUD.m_Scoreboard.UserCmd_ShowScores();
-#endif
 }
 
 void IN_ScoreUp( void )
 {
 	KeyUp( &in_score );
-#if USE_VGUI && !USE_NOVGUI_SCOREBOARD
 	if ( gViewPort )
 	{
 		gViewPort->HideScoreBoard();
 	}
-#else
 	gHUD.m_Scoreboard.UserCmd_HideScores();
-#endif
 }
 
 void IN_MLookUp( void )
@@ -923,11 +914,9 @@ void DLLEXPORT CL_CreateMove( float frametime, struct usercmd_s *cmd, int active
 		}
 		s_jump_was_down_last_frame = ( ( cmd->buttons & IN_JUMP ) != 0 );
 	}
-#if USE_VGUI
 	// If they're in a modal dialog, ignore the attack button.
 	if(GetClientVoiceMgr()->IsInSquelchMode())
 		cmd->buttons &= ~IN_ATTACK;
-#endif
 
 	// Using joystick?
 	if( in_joystick->value )
@@ -983,11 +972,9 @@ int CL_ButtonBits( int bResetState )
 
 	if( in_attack.state & 3 )
 	{
-#if !USE_VGUI || USE_NOVGUI_MOTD
 		if( gHUD.m_MOTD.m_bShow )
 			gHUD.m_MOTD.Reset();
 		else
-#endif
 			bits |= IN_ATTACK;
 	}
 

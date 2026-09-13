@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2002, Valve LLC, All rights reserved. ============
+//========= Copyright (c) 1996-2002, Valve LLC, All rights reserved. ============
 //
 // Purpose: 
 //
@@ -218,7 +218,6 @@ private:
 	bool                _paintBorderEnabled;
 	bool                _paintBackgroundEnabled;
 	bool                _paintEnabled;
-friend class Panel;
 friend class App;
 friend class SurfaceBase;
 friend class Image;

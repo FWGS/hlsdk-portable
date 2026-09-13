@@ -16,19 +16,7 @@ DECLARE_MESSAGE(m_CTF, CTFFlag )
 int g_iPlayerFlag1 = 0;
 int g_iPlayerFlag2 = 0;
 
-// in VGUI builds the identical table is defined in vgui_TeamFortressViewport.cpp
-#if !USE_VGUI
-int iTeamColors[5][3] =
-{
-	{ 255, 170, 0 },	// HL orange (default)
-	{ 125, 165, 210 },	// Blue
-	{ 200, 90, 70 },	// Red
-	{ 225, 205, 45 },	// Yellow
-	{ 145, 215, 140 },	// Green
-};
-#else
 extern int iTeamColors[5][3];
-#endif
 
 int AgHudCTF::Init(void)
 {

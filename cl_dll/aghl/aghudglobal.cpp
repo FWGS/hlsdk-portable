@@ -45,12 +45,7 @@ DECLARE_COMMAND(m_Global, AgRecord);
 
 int       g_iPure = 1;
 unsigned char g_GameType = STANDARD;
-// in VGUI builds this is defined in vgui_TeamFortressViewport.cpp
-#if !USE_VGUI
-int iNumberOfTeamColors = 5;
-#else
 extern int iNumberOfTeamColors;
-#endif
 extern int iTeamColors[5][3];
 
 typedef map<int, AgString, less<int> > AgPlayerToAuthID;
@@ -108,7 +103,6 @@ int AgHudGlobal::Draw( float fTime )
 	}
 	// the scores overlay reads team info off the non-VGUI scoreboard,
 	// which doesn't exist when the VGUI ScorePanel is used
-#if !USE_VGUI || USE_NOVGUI_SCOREBOARD
 	if( g_pcl_scores->value < 1 )
 		return 1;
 
@@ -146,7 +140,7 @@ int AgHudGlobal::Draw( float fTime )
 		}
 	}
 	else
-		gHUD.m_Scoreboard.GetAllPlayersInfo();
+		gHUD.GetAllPlayersInfo();
 
 	for( int iRow = 0, iLines = 0; iLines < g_pcl_scores->value; iRow++ )
 	{
@@ -235,7 +229,6 @@ int AgHudGlobal::Draw( float fTime )
 			iLines++;
 		}
 	}
-#endif
 	return 1;
 }
 

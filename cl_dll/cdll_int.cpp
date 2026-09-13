@@ -29,18 +29,8 @@
 //-- Martin Webrant
 #include "parsemsg.h"
 
-#if USE_VGUI
 #include "vgui_int.h"
 #include "vgui_TeamFortressViewport.h"
-#endif
-
-#if GOLDSOURCE_SUPPORT && (XASH_WIN32 || XASH_LINUX || XASH_APPLE) && XASH_X86
-#define USE_FAKE_VGUI	!USE_VGUI
-#if USE_FAKE_VGUI
-#include "VGUI_Panel.h"
-#include "VGUI_App.h"
-#endif
-#endif
 
 extern "C"
 {
@@ -55,9 +45,7 @@ cl_enginefunc_t gEngfuncs;
 //irc::CIrcSession g_ircSession;
 //-- Martin Webrant
 CHud gHUD;
-#if USE_VGUI
 TeamFortressViewport *gViewPort = NULL;
-#endif
 mobile_engfuncs_t *gMobileEngfuncs = NULL;
 
 #if defined( INTERNAL_VGUI_SUPPORT )
@@ -234,48 +222,6 @@ int *HUD_GetRect( void )
 	return extent;
 }
 
-#if USE_FAKE_VGUI
-class TeamFortressViewport : public vgui::Panel
-{
-public:
-	TeamFortressViewport(int x,int y,int wide,int tall);
-	void Initialize( void );
-
-	virtual void paintBackground();
-	void *operator new( size_t stAllocateBlock );
-};
-
-static TeamFortressViewport* gViewPort = NULL;
-
-TeamFortressViewport::TeamFortressViewport(int x, int y, int wide, int tall) : Panel(x, y, wide, tall)
-{
-	gViewPort = this;
-	Initialize();
-}
-
-void TeamFortressViewport::Initialize()
-{
-	//vgui::App::getInstance()->setCursorOveride( vgui::App::getInstance()->getScheme()->getCursor(vgui::Scheme::scu_none) );
-}
-
-void TeamFortressViewport::paintBackground()
-{
-//	int wide, tall;
-//	getParent()->getSize( wide, tall );
-//	setSize( wide, tall );
-	int extents[4];
-	getParent()->getAbsExtents(extents[0],extents[1],extents[2],extents[3]);
-	gEngfuncs.VGui_ViewportPaintBackground(extents);
-}
-
-void *TeamFortressViewport::operator new( size_t stAllocateBlock )
-{
-	void *mem = ::operator new( stAllocateBlock );
-	memset( mem, 0, stAllocateBlock );
-	return mem;
-}
-#endif
-
 /*
 ==========================
 	HUD_VidInit
@@ -289,27 +235,9 @@ so the HUD can reinitialize itself.
 int DLLEXPORT HUD_VidInit( void )
 {
 	gHUD.VidInit();
-#if USE_FAKE_VGUI
-	vgui::Panel* root=(vgui::Panel*)gEngfuncs.VGui_GetPanel();
-	if (root) {
-		gEngfuncs.Con_Printf( "Root VGUI panel exists\n" );
-		root->setBgColor(128,128,0,0);
 
-		if (gViewPort != NULL)
-		{
-			gViewPort->Initialize();
-		}
-		else
-		{
-			gViewPort = new TeamFortressViewport(0,0,root->getWide(),root->getTall());
-			gViewPort->setParent(root);
-		}
-	} else {
-		gEngfuncs.Con_Printf( "Root VGUI panel does not exist\n" );
-	}
-#elif USE_VGUI
 	VGui_Startup();
-#endif
+
 	return 1;
 }
 
@@ -330,9 +258,7 @@ void DLLEXPORT HUD_Init( void )
 #if AG_USE_CHEATPROTECTION
 	g_VariableChecker.Activate();
 #endif //AG_USE_CHEATPROTECTION
-#if USE_VGUI
 	Scheme_Init();
-#endif
 }
 
 /*
@@ -398,14 +324,7 @@ void DLLEXPORT HUD_Frame( double time )
 #if AG_USE_CHEATPROTECTION
 	g_VariableChecker.Check();
 #endif //AG_USE_CHEATPROTECTION
-#if USE_VGUI
 	GetClientVoiceMgr()->Frame(time);
-#elif USE_FAKE_VGUI
-	if (!gViewPort)
-		gEngfuncs.VGui_ViewportPaintBackground(HUD_GetRect());
-#else
-	gEngfuncs.VGui_ViewportPaintBackground(HUD_GetRect());
-#endif
 }
 
 /*
@@ -418,9 +337,7 @@ Called when a player starts or stops talking.
 
 void DLLEXPORT HUD_VoiceStatus( int entindex, qboolean bTalking )
 {
-#if USE_VGUI
 	GetClientVoiceMgr()->UpdateSpeakerStatus(entindex, bTalking);
-#endif
 }
 
 /*

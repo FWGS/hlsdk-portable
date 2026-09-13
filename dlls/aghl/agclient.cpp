@@ -12,10 +12,8 @@
 #include "aggamerules.h"
 #include "agclient.h"
 
-#ifndef NO_VOICEGAMEMGR
 #include "voice_gamemgr.h"
 extern CVoiceGameMgr g_VoiceGameMgr;
-#endif
 
 #if AGMSGSTAT
 #include "agmsgstat.h"
@@ -651,11 +649,9 @@ void AgClient::Say(CBasePlayer* pPlayer, say_type Type )
       CBasePlayer* pPlayerLoop = AgPlayerByIndex(i);
       if (pPlayerLoop && pPlayerLoop->IsNetClient())
       {
-#ifndef NO_VOICEGAMEMGR
 		// can the receiver hear the sender? or has he muted him?
 		if ( g_VoiceGameMgr.PlayerHasBlockedPlayer( pPlayerLoop, pPlayer ) )
 			continue;
-#endif
         //Sort team messages. Only talk to team m8's that are spectators
         if ( (Team == Type || Close == Type )  
           && !pPlayerLoop->IsSpectator() && pPlayer != pPlayerLoop)
@@ -702,11 +698,9 @@ void AgClient::Say(CBasePlayer* pPlayer, say_type Type )
       CBasePlayer* pPlayerLoop = AgPlayerByIndex(i);
       if (pPlayerLoop && pPlayerLoop->IsNetClient())
       {
-#ifndef NO_VOICEGAMEMGR
 		// can the receiver hear the sender? or has he muted him?
 		if ( g_VoiceGameMgr.PlayerHasBlockedPlayer( pPlayerLoop, pPlayer ) )
 			continue;
-#endif
         if (Close == Type && pPlayer != pPlayerLoop)
         {
           //Check if team m8 is close enough.
