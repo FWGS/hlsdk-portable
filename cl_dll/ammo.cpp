@@ -27,9 +27,7 @@
 #include <stdio.h>
 
 #include "ammohistory.h"
-#if USE_VGUI
 #include "vgui_TeamFortressViewport.h"
-#endif
 
 WEAPON *gpActiveSel;	// NULL means off, 1 means just the menu bar, otherwise
 						// this points to the active weapon menu item
@@ -627,7 +625,7 @@ int CHudAmmo::MsgFunc_CurWeapon( const char *pszName, int iSize, void *pbuf )
 	{
         if (cl_ps2hl_oldsights->value != 0)
         {
-            if (gHUD.m_iFOV >= 90)
+            if( !gHUD.m_inScope )
             {
                 // normal crosshairs
                 if (fOnTarget && m_pWeapon->hAutoaim)
@@ -648,7 +646,7 @@ int CHudAmmo::MsgFunc_CurWeapon( const char *pszName, int iSize, void *pbuf )
         }
         else
         {
-            if (gHUD.m_iFOV >= 90)
+            if( !gHUD.m_inScope )
                 SetCrosshair(m_pWeapon->hCrosshair, m_pWeapon->rcCrosshair, 255, 255, 255);
             else
                 SetCrosshair(m_pWeapon->hZoomedCrosshair, m_pWeapon->rcZoomedCrosshair, 255, 255, 255);
@@ -717,11 +715,9 @@ int CHudAmmo::MsgFunc_WeaponList( const char *pszName, int iSize, void *pbuf )
 // Slot button pressed
 void CHudAmmo::SlotInput( int iSlot )
 {
-#if USE_VGUI
 	// Let the Viewport use it first, for menus
 	if( gViewPort && gViewPort->SlotInput( iSlot ) )
 		return;
-#endif
 	gWR.SelectSlot(iSlot, FALSE, 1);
 }
 
