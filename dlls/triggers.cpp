@@ -1119,6 +1119,39 @@ void CBaseTrigger::MultiTouch( CBaseEntity *pOther )
 	}
 }
 
+// Ported from XASHXT and refactoring for debugging purporse
+//=====================================================
+// trigger_command: activate a console command
+//=====================================================
+class CTriggerCommand : public CBaseEntity
+{
+public:
+	void Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+	virtual int ObjectCaps( void ) { return CBaseEntity :: ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
+};
+LINK_ENTITY_TO_CLASS( trigger_command, CTriggerCommand );
+void CTriggerCommand::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
+{
+	edict_t *pClient;
+	char szCommand[256];
+
+	if (pev->netname)
+	{
+		//ALERT( at_console, "Console command exec!" );
+		sprintf( szCommand, "%s\n", STRING( pev->netname ));
+		//SERVER_COMMAND( szCommand );
+
+		// manually find the single player.
+		pClient = g_engfuncs.pfnPEntityOfEntIndex( 1 );
+		// Can't play if the client is not connected!
+		if( !pClient )
+			return;
+
+		CLIENT_COMMAND( pClient, szCommand );
+	}
+}
+
+
 //
 // the trigger was just touched/killed/used
 // self.enemy should be set to the activator so it can be held through a delay
