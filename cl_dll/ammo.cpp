@@ -27,9 +27,7 @@
 #include <stdio.h>
 
 #include "ammohistory.h"
-#if USE_VGUI
 #include "vgui_TeamFortressViewport.h"
-#endif
 
 WEAPON *gpActiveSel;	// NULL means off, 1 means just the menu bar, otherwise
 						// this points to the active weapon menu item
@@ -75,10 +73,7 @@ void WeaponsResource::LoadWeaponSprites( WEAPON *pWeapon )
 {
 	int i, iRes;
 
-	if( ScreenWidth < 640 )
-		iRes = 320;
-	else
-		iRes = 640;
+	iRes = GetSpriteRes( ScreenWidth, ScreenHeight );
 
 	char sz[256];
 
@@ -323,21 +318,24 @@ int CHudAmmo::VidInit( void )
 	giBucketWidth = gHUD.GetSpriteRect( m_HUD_bucket0 ).right - gHUD.GetSpriteRect( m_HUD_bucket0 ).left;
 	giBucketHeight = gHUD.GetSpriteRect( m_HUD_bucket0 ).bottom - gHUD.GetSpriteRect( m_HUD_bucket0 ).top;
 
-	gHR.iHistoryGap = Q_max( gHR.iHistoryGap, gHUD.GetSpriteRect( m_HUD_bucket0 ).bottom - gHUD.GetSpriteRect( m_HUD_bucket0 ).top );
+	gHR.iHistoryGap = gHUD.GetSpriteRect( m_HUD_bucket0 ).bottom - gHUD.GetSpriteRect( m_HUD_bucket0 ).top;
 
 	// If we've already loaded weapons, let's get new sprites
 	gWR.LoadAllWeaponSprites();
 
-	if( ScreenWidth >= 640 )
-	{
-		giABWidth = 20;
-		giABHeight = 4;
-	}
+	const int res = GetSpriteRes( ScreenWidth, ScreenHeight );
+	int factor;
+	if( res >= 2560 )
+		factor = 4;
+	else if( res >= 1280 )
+		factor = 3;
+	else if( res >= 640 )
+		factor = 2;
 	else
-	{
-		giABWidth = 10;
-		giABHeight = 2;
-	}
+		factor = 1;
+
+	giABWidth = 10 * factor;
+	giABHeight = 2 * factor;
 
 	return 1;
 }
@@ -616,7 +614,7 @@ int CHudAmmo::MsgFunc_CurWeapon( const char *pszName, int iSize, void *pbuf )
 
 	if( !( gHUD.m_iHideHUDDisplay & ( HIDEHUD_WEAPONS | HIDEHUD_ALL ) ) )
 	{
-		if( gHUD.m_iFOV >= 90 )
+		if( !gHUD.m_inScope )
 		{
 			// normal crosshairs
 			if( fOnTarget && m_pWeapon->hAutoaim )
@@ -649,7 +647,8 @@ int CHudAmmo::MsgFunc_WeaponList( const char *pszName, int iSize, void *pbuf )
 	
 	WEAPON Weapon;
 
-	strcpy( Weapon.szName, READ_STRING() );
+	strlcpy( Weapon.szName, READ_STRING(), sizeof( Weapon.szName ));
+
 	Weapon.iAmmoType = (int)READ_CHAR();	
 	
 	Weapon.iMax1 = READ_BYTE();
@@ -667,6 +666,21 @@ int CHudAmmo::MsgFunc_WeaponList( const char *pszName, int iSize, void *pbuf )
 	Weapon.iFlags = READ_BYTE();
 	Weapon.iClip = 0;
 
+	if( Weapon.iId < 0 || Weapon.iId >= MAX_WEAPONS )
+		return 0;
+	if( Weapon.iSlot < 0 || Weapon.iSlot >= MAX_WEAPON_SLOTS + 1 )
+		return 0;
+	if( Weapon.iSlotPos < 0 || Weapon.iSlotPos >= MAX_WEAPON_POSITIONS + 1 )
+		return 0;
+	if( Weapon.iAmmoType < -1 || Weapon.iAmmoType >= MAX_AMMO_TYPES )
+		return 0;
+	if( Weapon.iAmmo2Type < -1 || Weapon.iAmmo2Type >= MAX_AMMO_TYPES )
+		return 0;
+	/*if( Weapon.iAmmoType >= 0 && Weapon.iMax1 == 0 )
+		return 0;
+	if( Weapon.iAmmo2Type >= 0 && Weapon.iMax2 == 0 )
+		return 0;*/
+
 	gWR.AddWeapon( &Weapon );
 
 	return 1;
@@ -678,11 +692,9 @@ int CHudAmmo::MsgFunc_WeaponList( const char *pszName, int iSize, void *pbuf )
 // Slot button pressed
 void CHudAmmo::SlotInput( int iSlot )
 {
-#if USE_VGUI
 	// Let the Viewport use it first, for menus
 	if( gViewPort && gViewPort->SlotInput( iSlot ) )
 		return;
-#endif
 	gWR.SelectSlot(iSlot, FALSE, 1);
 }
 
@@ -878,6 +890,7 @@ int CHudAmmo::Draw( float flTime )
 
 	// Does this weapon have a clip?
 	y = ScreenHeight - gHUD.m_iFontHeight - gHUD.m_iFontHeight / 2;
+	y += gHUD.m_iHudNumbersYOffset; // a1ba: fix HL25 HUD vertical inconsistensy
 
 	// Does weapon have any ammo at all?
 	if( m_pWeapon->iAmmoType > 0 )
@@ -1211,7 +1224,7 @@ client_sprite_t *GetSpriteList( client_sprite_t *pList, const char *psz, int iRe
 
 	while( i-- )
 	{
-		if( ( !strcmp( psz, p->szName ) ) && ( p->iRes == iRes ) )
+		if( p->iRes == iRes && !strcmp( psz, p->szName ))
 			return p;
 		p++;
 	}

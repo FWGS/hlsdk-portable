@@ -639,7 +639,7 @@ void CBaseButton::ButtonSpark( void )
 	SetThink( &CBaseButton::ButtonSpark );
 	pev->nextthink = pev->ltime + 0.1f + RANDOM_FLOAT( 0.0f, 1.5f );// spark again at random interval
 
-	DoSpark( pev, pev->mins );
+	DoSpark( pev, pev->absmin );
 }
 
 //

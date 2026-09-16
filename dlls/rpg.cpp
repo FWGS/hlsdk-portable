@@ -121,6 +121,25 @@ CRpgRocket *CRpgRocket::CreateRpgRocket( Vector vecOrigin, Vector vecAngles, CBa
 	return pRocket;
 }
 
+void CRpgRocket::Explode( TraceResult *pTrace, int bitsDamageType )
+{
+	if( CRpg *pLauncher = GetLauncher())
+	{
+		// my launcher is still around, tell it I'm dead.
+		pLauncher->m_cActiveRockets--;
+		m_hLauncher = 0;
+	}
+
+	STOP_SOUND( edict(), CHAN_VOICE, "weapons/rocket1.wav" );
+
+	CGrenade::Explode( pTrace, bitsDamageType );
+}
+
+CRpg *CRpgRocket::GetLauncher( void )
+{
+	return (CRpg*)( (CBaseEntity*)m_hLauncher );
+}
+
 //=========================================================
 //=========================================================
 void CRpgRocket::Spawn( void )
@@ -163,6 +182,7 @@ void CRpgRocket::Spawn( void )
 
 void CRpgRocket :: Precache( void )
 {
+<<<<<<< HEAD
 	PRECACHE_MODEL("models/rpgrocket.mdl");
 	PRECACHE_MODEL("models/rpg_electrocket.mdl");
 	PRECACHE_MODEL("models/rpg_nuclearrocket.mdl");
@@ -189,14 +209,18 @@ void CRpgRocket :: RocketTouch ( CBaseEntity *pOther ) //modif de Julien
 
 
 	//modif de Julien
-	if ( m_pTargetMonster != NULL && m_pLauncher && m_pLauncher->m_cActiveRockets == 1 )
+	if ( m_pTargetMonster != NULL && m_hLauncher && m_hLauncher->m_cActiveRockets == 1 )
 	{
 		if ( pOther == m_pTargetMonster )
-			m_pLauncher->UpdateCrosshair ( RPG_TEXT_TOUCHE );
+			m_hLauncher->UpdateCrosshair ( RPG_TEXT_TOUCHE );
 		else
-			m_pLauncher->UpdateCrosshair ( RPG_TEXT_MANQUE );
+			m_hLauncher->UpdateCrosshair ( RPG_TEXT_MANQUE );
 
-		m_pLauncher->m_cActiveRockets = 0;
+	if( CRpg *pLauncher = GetLauncher())
+	{
+		// my launcher is still around, tell it I'm dead.
+		pLauncher->m_cActiveRockets--;
+		m_hLauncher = 0;
 	}
 
 	// enflamme le gaz
@@ -582,13 +606,25 @@ void CRpgRocket::FollowThink( void )
 				m_pLauncher->m_cActiveRockets--; //lacked m_ before pLauncher
 			}
 			Detonate();
-		}
 	}
 
 	//modif de JUlien
 
 	if ( CBaseEntity::Instance( pev->owner )->IsPlayer() )
 		CSoundEnt::InsertSound ( bits_SOUND_DANGER, pev->origin, pev->velocity.Length( ), 0.1 );
+
+	if( CRpg *pLauncher = GetLauncher())
+	{
+		if( ( pev->origin - pLauncher->pev->origin ).Length() > 8192 || gpGlobals->time - m_flIgniteTime > 6.0f )
+		{
+			// my launcher is still around, tell it I'm dead.
+			pLauncher->m_cActiveRockets--;
+			m_hLauncher = 0;
+		}
+	}
+
+	if( UTIL_PointContents( pev->origin ) == CONTENTS_SKY )
+		Detonate();
 
 	pev->nextthink = gpGlobals->time + 0.1f;
 }
@@ -668,7 +704,7 @@ int CRpg::GetItemInfo( ItemInfo *p )
 	p->iSlot = 3;
 	p->iPosition = 0;
 	p->iId = m_iId = WEAPON_RPG;
-	p->iFlags = 0;
+	p->iFlags = ITEM_FLAG_NOAUTOSWITCHTO;
 	p->iWeight = RPG_WEIGHT;
 
 	return 1;
@@ -1022,6 +1058,19 @@ void CRpg::WeaponIdle( void )
 
 		m_flTimeWeaponIdle = gpGlobals->time - 0.1;		// pour charger une anim et changer le bodygroup
 		m_bRpgUpdate = 0;		// weaponidle, ca rafraichit, et c'est d
+/*		{
+			if( m_iClip == 0 )
+				iAnim = RPG_FIDGET_UL;
+			else
+				iAnim = RPG_FIDGET;
+#if WEAPONS_ANIMATION_TIMES_FIX
+			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 6.1f;
+#else
+			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 3.0f;
+#endif
+		}
+
+		SendWeaponAnim( iAnim );*/
 	}
 
 	// viseur

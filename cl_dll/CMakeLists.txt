@@ -22,7 +22,7 @@
 # SOFTWARE.
 #
 
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.9)
 project (CLDLL)
 
 set (CLDLL_LIBRARY client)
@@ -31,12 +31,20 @@ add_definitions(-DCLIENT_DLL)
 
 if(NOT MSVC)
 	add_compile_options(-fno-exceptions) # GCC/Clang flag
-	add_compile_options(-Wno-write-strings) # GCC/Clang flag
+	add_compile_options(-fno-rtti) # GCC/Clang flag
 	add_compile_options(-fvisibility=hidden) # GCC/Clang flag
 	add_definitions(-D_LINUX -DLINUX) # It seems enough for all non-Win32 systems
 	add_definitions(-Dstricmp=strcasecmp -Dstrnicmp=strncasecmp)
 	if(NOT MINGW)
 		add_definitions(-D_snprintf=snprintf -D_vsnprintf=vsnprintf)
+	endif()
+	if(CMAKE_BUILD_TYPE MATCHES "Release"
+		OR (CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo"
+		AND CMAKE_SYSTEM_NAME STREQUAL "Android"))
+		add_compile_options(-fno-unwind-tables -fno-asynchronous-unwind-tables) # GCC/Clang flag
+		add_compile_options(-fomit-frame-pointer) # GCC/Clang flag
+		add_compile_options(-ftree-vectorize) # GCC/Clang flag
+		add_compile_options(-funsafe-math-optimizations) # GCC/Clang flag
 	endif()
 else()
 	add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_DEPRECATE)
@@ -50,14 +58,8 @@ if (DISABLE_MINIAUDIO)
 	add_definitions(-DDISABLE_MINIAUDIO)
 endif()
 
-if (USE_VGUI)
-	add_definitions(-DUSE_VGUI)
-	if (USE_NOVGUI_MOTD)
-		add_definitions(-DUSE_NOVGUI_MOTD)
-	endif()
-	if (USE_NOVGUI_SCOREBOARD)
-		add_definitions(-DUSE_NOVGUI_SCOREBOARD)
-	endif()
+if (USE_STATIC_FREEVGUI)
+	add_definitions(-DINTERNAL_VGUI_SUPPORT)
 endif()
 
 set (CLDLL_SOURCES
@@ -105,100 +107,88 @@ set (CLDLL_SOURCES
 	input_goldsource.cpp #those three are needed for in_joystick and modern input
 	input_mouse.cpp
 	input_xash3d.cpp
+	interpolation.cpp
 	menu.cpp
 	message.cpp
-	overview.cpp
+	MOTD.cpp
 	parsemsg.cpp
 	parsemsg.h
 	../pm_shared/pm_debug.c
 	../pm_shared/pm_math.c
 	../pm_shared/pm_shared.c
 	saytext.cpp
+	scoreboard.cpp
 	status_icons.cpp
 	statusbar.cpp
 	text_message.cpp
 	train.cpp
 	tri.cpp
 	util.cpp
-	view.cpp)
+	view.cpp
+	../public/safe_snprintf.c
+)
 
-if (USE_VGUI)
-	list(APPEND CLDLL_SOURCES
-		vgui_int.cpp
-		vgui_ClassMenu.cpp
-		vgui_ConsolePanel.cpp
-		vgui_ControlConfigPanel.cpp
-		vgui_CustomObjects.cpp
-		vgui_MOTDWindow.cpp
-		vgui_SchemeManager.cpp
-		vgui_ScorePanel.cpp
-		vgui_TeamFortressViewport.cpp
-		vgui_SpectatorPanel.cpp
-		vgui_teammenu.cpp
-		voice_status.cpp
-		../game_shared/vgui_checkbutton2.cpp
-		../game_shared/vgui_grid.cpp
-		../game_shared/vgui_helpers.cpp
-		../game_shared/vgui_listbox.cpp
-		../game_shared/vgui_loadtga.cpp
-		../game_shared/vgui_scrollbar2.cpp
-		../game_shared/vgui_slider2.cpp
-		../game_shared/voice_banmgr.cpp
-		#modif de Roy
-		vgui_keypad.cpp
-		vgui_OrdiControl.cpp
-		vgui_OrdiMenu.cpp
-		vgui_radio.cpp
-		vgui_soin.cpp
-		#fin de modif de Roy
-		)
-	if (USE_NOVGUI_MOTD)
-		list(APPEND CLDLL_SOURCES MOTD.cpp)
-	endif()
-	if (USE_NOVGUI_SCOREBOARD)
-		list(APPEND CLDLL_SOURCES scoreboard.cpp)
-	endif()
+list(APPEND CLDLL_SOURCES
+	vgui_int.cpp
+	vgui_ClassMenu.cpp
+	vgui_ConsolePanel.cpp
+	vgui_ControlConfigPanel.cpp
+	vgui_CustomObjects.cpp
+	vgui_MOTDWindow.cpp
+	vgui_SchemeManager.cpp
+	vgui_ScorePanel.cpp
+	vgui_TeamFortressViewport.cpp
+	vgui_SpectatorPanel.cpp
+	vgui_teammenu.cpp
+	voice_status.cpp
+	../game_shared/vgui_checkbutton2.cpp
+	../game_shared/vgui_grid.cpp
+	../game_shared/vgui_helpers.cpp
+	../game_shared/vgui_listbox.cpp
+	../game_shared/vgui_loadtga.cpp
+	../game_shared/vgui_scrollbar2.cpp
+	../game_shared/vgui_slider2.cpp
+	../game_shared/voice_banmgr.cpp
+	#modif de Roy
+	vgui_keypad.cpp
+	vgui_OrdiControl.cpp
+	vgui_OrdiMenu.cpp
+	vgui_radio.cpp
+	vgui_soin.cpp
+	#fin de modif de Roy
+)
+
+if (HAVE_STRLCPY)
+	add_definitions(-DHAVE_STRLCPY)
 else()
 	list(APPEND CLDLL_SOURCES
-		MOTD.cpp
-		scoreboard.cpp)
+		../external/openbsd/strlcpy.c)
+endif()
+
+if (HAVE_STRLCAT)
+	add_definitions(-DHAVE_STRLCAT)
+else()
+	list(APPEND CLDLL_SOURCES
+		../external/openbsd/strlcat.c)
 endif()
 
 include_directories (. hl/ ../dlls ../dlls/wpn_shared ../common ../engine ../pm_shared ../game_shared ../public)
 
-if (USE_VGUI)
-	SET(CMAKE_SKIP_RPATH TRUE)
-	link_directories(${CMAKE_SOURCE_DIR}/vgui_support/vgui-dev/lib)
-	include_directories(../vgui_support/vgui-dev/include)
-else()
-	include_directories(../utils/false_vgui/include)
+if (GOLDSOURCE_SUPPORT)
+	include_directories (../external/)
 endif()
 
-if(USE_VOICEMGR)
-	#set(CLDLL_SOURCES
-	#	${CLDLL_SOURCES}
-	#	../game_shared/voice_banmgr.cpp
-	#	../game_shared/voice_status.cpp)
-endif()
+
+include_directories(../utils/vgui/include)
 
 add_library (${CLDLL_LIBRARY} SHARED ${CLDLL_SOURCES})
+target_link_libraries(${CLDLL_LIBRARY} vcs_info)
 
 if (GOLDSOURCE_SUPPORT)
 	target_link_libraries( ${CLDLL_LIBRARY} ${CMAKE_DL_LIBS} )
 endif()
 
-if (USE_VGUI)
-	if (WIN32)
-		add_library(vgui SHARED IMPORTED)
-		set_property(TARGET vgui PROPERTY IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/vgui_support/vgui-dev/lib/win32_vc6/vgui.dll")
-		set_property(TARGET vgui PROPERTY IMPORTED_IMPLIB "${CMAKE_SOURCE_DIR}/vgui_support/vgui-dev/lib/win32_vc6/vgui.lib")
-		target_link_libraries(${CLDLL_LIBRARY} vgui)
-	elseif(APPLE)
-		target_link_libraries(${CLDLL_LIBRARY} "-Wl,--no-undefined -L${CMAKE_SOURCE_DIR}/vgui_support/vgui-dev/lib vgui.dylib")
-	else()
-		target_link_libraries(${CLDLL_LIBRARY} :vgui.so)
-	endif()
-endif()
+target_link_libraries(${CLDLL_LIBRARY} vgui)
 
 if(WIN32)
 	target_link_libraries( ${CLDLL_LIBRARY} user32.lib )
@@ -210,19 +200,21 @@ endif()
 set_target_properties (${CLDLL_LIBRARY} PROPERTIES
 	POSITION_INDEPENDENT_CODE 1)
 
-if(NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Android")
-	set(CLDLL_NAME "client")
-	set_target_properties(${CLDLL_LIBRARY} PROPERTIES
-		OUTPUT_NAME ${CLDLL_NAME}
-		PREFIX "")
+set_target_postfix(${CLDLL_LIBRARY})
+
+if(HAVE_LTO)
+	set_property(TARGET ${CLDLL_LIBRARY} PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
 endif()
 
-if(MSVC)
-	set_property(TARGET ${CLDLL_LIBRARY} PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-endif()
-
-install( TARGETS ${CLDLL_LIBRARY}
-	DESTINATION "${GAMEDIR}/${CLIENT_INSTALL_DIR}/"
+install(TARGETS ${CLDLL_LIBRARY}
+	RUNTIME DESTINATION "${GAMEDIR}/${CLIENT_INSTALL_DIR}/"
+	LIBRARY DESTINATION "${GAMEDIR}/${CLIENT_INSTALL_DIR}/"
 	PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
-	    GROUP_READ GROUP_EXECUTE
-		WORLD_READ WORLD_EXECUTE )
+		GROUP_READ GROUP_EXECUTE
+		WORLD_READ WORLD_EXECUTE)
+
+if(CMAKE_BUILD_TYPE MATCHES "Release" AND NOT WIN32)
+	add_custom_command(TARGET ${CLDLL_LIBRARY}
+			POST_BUILD DEPENDS ${CLDLL_LIBRARY}
+			COMMAND ${CMAKE_STRIP} -s $<TARGET_FILE:${CLDLL_LIBRARY}>)
+endif()

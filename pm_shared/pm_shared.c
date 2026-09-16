@@ -31,8 +31,6 @@
 #include "pm_movevars.h"
 #include "pm_debug.h"
 
-int g_bhopcap = 1;
-
 #if CLIENT_DLL
 // Spectator Mode
 int iJumpSpectator;
@@ -120,6 +118,20 @@ static char grgchTextureType[CTEXTURESMAX];
 
 int g_onladder = 0;
 
+static void PM_InitTrace( trace_t *trace, const vec3_t end )
+{
+	memset( trace, 0, sizeof( *trace ));
+	VectorCopy( end, trace->endpos );
+	trace->allsolid = true;
+	trace->fraction = 1.0f;
+}
+
+static void PM_TraceModel( physent_t *pe, float *start, float *end, trace_t *trace )
+{
+	PM_InitTrace( trace, end );
+	pmove->PM_TraceModel(pe, start, end, trace);
+}
+
 void PM_SwapTextures( int i, int j )
 {
 	char chTemp;
@@ -155,7 +167,64 @@ void PM_SortTextures( void )
 	}
 }
 
-void PM_InitTextureTypes()
+// ===================== MATERIAL TYPE DETECTION, MAIN ROUTINES ========================
+//
+// Used to detect the texture the player is standing on, map the
+// texture name to a material type.  Play footstep sound based
+// on material type.
+
+// open materials.txt,  get size, alloc space,
+// save in array.  Only works first time called,
+// ignored on subsequent calls.
+
+char *PM_memfgets( byte *pMemFile, int fileSize, int *pFilePos, char *pBuffer, int bufferSize )
+{
+	// Bullet-proofing
+	if( !pMemFile || !pBuffer || !pFilePos)
+		return NULL;
+
+	if( *pFilePos >= fileSize )
+		return NULL;
+
+	int i = *pFilePos;
+	int last = fileSize;
+
+	// fgets always NULL terminates, so only read bufferSize-1 characters
+	if( last - *pFilePos > ( bufferSize - 1 ) )
+		last = *pFilePos + ( bufferSize - 1 );
+
+	int stop = 0;
+
+	// Stop at the next newline (inclusive) or end of buffer
+	while( i < last && !stop )
+	{
+		if( pMemFile[i] == '\n' )
+			stop = 1;
+		i++;
+	}
+
+	// If we actually advanced the pointer, copy it over
+	if( i != *pFilePos )
+	{
+		// We read in size bytes
+		int size = i - *pFilePos;
+		// copy it out
+		memcpy( pBuffer, pMemFile + *pFilePos, sizeof(byte) * size );
+
+		// If the buffer isn't full, terminate (this is always true)
+		if( size < bufferSize )
+			pBuffer[size] = 0;
+
+		// Update file pointer
+		*pFilePos = i;
+		return pBuffer;
+	}
+
+	// No data read, bail
+	return NULL;
+}
+
+void PM_InitTextureTypes( void )
 {
 	char buffer[512];
 	int i, j;
@@ -178,7 +247,7 @@ void PM_InitTextureTypes()
 	memset( buffer, 0, sizeof( buffer ) );
 
 	// for each line in the file...
-	while( pmove->memfgets( pMemFile, fileSize, &filePos, buffer, 511 ) != NULL && (gcTextures < CTEXTURESMAX ) )
+	while( PM_memfgets( pMemFile, fileSize, &filePos, buffer, 511 ) != NULL && (gcTextures < CTEXTURESMAX ) )
 	{
 		// skip whitespace
 		i = 0;
@@ -706,7 +775,7 @@ PM_CheckVelocity
 See if the player has a bogus velocity value.
 ================
 */
-void PM_CheckVelocity()
+void PM_CheckVelocity( void )
 {
 	int i;
 
@@ -783,7 +852,7 @@ int PM_ClipVelocity( vec3_t in, vec3_t normal, vec3_t out, float overbounce )
 	return blocked;
 }
 
-void PM_AddCorrectGravity()
+void PM_AddCorrectGravity( void )
 {
 	float ent_gravity;
 
@@ -804,7 +873,7 @@ void PM_AddCorrectGravity()
 	PM_CheckVelocity();
 }
 
-void PM_FixupGravityVelocity()
+void PM_FixupGravityVelocity( void )
 {
 	float ent_gravity;
 
@@ -934,7 +1003,10 @@ int PM_FlyMove( void )
 
 		// modify original_velocity so it parallels all of the clip planes
 		//
-		if( pmove->movetype == MOVETYPE_WALK && ( ( pmove->onground == -1 ) || ( pmove->friction != 1 ) ) )	// relfect player velocity
+		// reflect player velocity
+		// Only give this a try for first impact plane because you can get yourself stuck in an acute corner by jumping in place
+		// and pressing forward and nobody was really using this bounce/reflection feature anyway...
+		if( numplanes == 1 && pmove->movetype == MOVETYPE_WALK && ( ( pmove->onground == -1 ) || ( pmove->friction != 1 )))
 		{
 			for( i = 0; i < numplanes; i++ )
 			{
@@ -1058,7 +1130,7 @@ PM_WalkMove
 Only used by players.  Moves along the ground when player is a MOVETYPE_WALK.
 ======================
 */
-void PM_WalkMove()
+void PM_WalkMove( void )
 {
 	//int clip;
 	int oldonground;
@@ -1499,7 +1571,7 @@ PM_CheckWater
 Sets pmove->waterlevel and pmove->watertype values.
 =============
 */
-qboolean PM_CheckWater()
+qboolean PM_CheckWater( void )
 {
 	vec3_t point;
 	int cont;
@@ -1687,7 +1759,7 @@ int PM_CheckStuck( void )
 	//
 	// Deal with precision error in network.
 	//
-	if( !pmove->server )
+	if( !( pmove->server && pmove->multiplayer ))
 	{
 		// World or BSP model
 		if( ( hitent == 0 ) || ( pmove->physents[hitent].model != NULL ) )
@@ -2108,7 +2180,7 @@ void PM_LadderMove( physent_t *pLadder )
 		onFloor = false;
 
 	pmove->gravity = 0;
-	pmove->PM_TraceModel( pLadder, pmove->origin, ladderCenter, &trace );
+	PM_TraceModel(pLadder, pmove->origin, ladderCenter, &trace);
 	if( trace.fraction != 1.0f )
 	{
 		float forward = 0, right = 0;
@@ -2247,7 +2319,7 @@ PM_AddGravity
 
 ============
 */
-void PM_AddGravity()
+void PM_AddGravity( void )
 {
 	float ent_gravity;
 
@@ -2297,7 +2369,7 @@ PM_Physics_Toss()
 Dead player flying through air., e.g.
 ============
 */
-void PM_Physics_Toss()
+void PM_Physics_Toss( void )
 {
 	pmtrace_t trace;
 	vec3_t move;
@@ -2398,7 +2470,7 @@ PM_NoClip
 
 ====================
 */
-void PM_NoClip()
+void PM_NoClip( void )
 {
 	int i;
 	vec3_t wishvel;
@@ -2467,6 +2539,8 @@ PM_Jump
 void PM_Jump( void )
 {
 	int i;
+	qboolean bunnyjump = false;
+
 	qboolean tfc = false;
 
 	qboolean cansuperjump = false;
@@ -2550,16 +2624,23 @@ void PM_Jump( void )
 	// In the air now.
 	pmove->onground = -1;
 
-	if( g_bhopcap )
+	if( pmove->multiplayer )
+		bunnyjump = atoi( pmove->PM_Info_ValueForKey( pmove->physinfo, "bj" ) ) ? true : false;
+
+	if( !bunnyjump )
 		PM_PreventMegaBunnyJumping();
 
-	if( tfc )
+	// Don't play jump sounds while frozen.
+	if( !( pmove->flags & FL_FROZEN ))
 	{
-		pmove->PM_PlaySound( CHAN_BODY, "player/plyrjmp8.wav", 0.5, ATTN_NORM, 0, PITCH_NORM );
-	}
-	else
-	{
-		PM_PlayStepSound( PM_MapTextureTypeStepType( pmove->chtexturetype ), 1.0f );
+		if( tfc )
+		{
+			pmove->PM_PlaySound( CHAN_BODY, "player/plyrjmp8.wav", 0.5, ATTN_NORM, 0, PITCH_NORM );
+		}
+		else
+		{
+			PM_PlayStepSound( PM_MapTextureTypeStepType( pmove->chtexturetype ), 1.0f );
+		}
 	}
 
 	// See if user can super long jump?
@@ -2839,6 +2920,15 @@ void PM_CheckParamters( void )
 		pmove->maxspeed = min( maxspeed, pmove->maxspeed );
 	}
 
+	// Slow down, I'm pulling it! (a box maybe) but only when I'm standing on ground
+	//
+	// JoshA: Moved this to CheckParamters rather than working on the velocity,
+	// as otherwise it affects every integration step incorrectly.
+	if( ( pmove->onground != -1 ) && ( pmove->cmd.buttons & IN_USE ))
+	{
+		pmove->maxspeed *= 1.0f / 3.0f;
+	}
+
 	if( ( spd != 0.0f ) && ( spd > pmove->maxspeed ) )
 	{
 		float fRatio = pmove->maxspeed / spd;
@@ -2959,7 +3049,11 @@ void PM_PlayerMove( qboolean server )
 	{
 		if( PM_CheckStuck() )
 		{
-			return;  // Can't move, we're stuck
+			// Let the user try to duck to get unstuck
+			PM_Duck();
+
+			if( PM_CheckStuck() )
+				return;  // Can't move, we're stuck
 		}
 	}
 
@@ -3003,12 +3097,6 @@ void PM_PlayerMove( qboolean server )
 			//  it will be set immediately again next frame if necessary
 			pmove->movetype = MOVETYPE_WALK;
 		}
-	}
-
-	// Slow down, I'm pulling it! (a box maybe) but only when I'm standing on ground
-	if( ( pmove->onground != -1 ) && ( pmove->cmd.buttons & IN_USE ) )
-	{
-		VectorScale( pmove->velocity, 0.3, pmove->velocity );
 	}
 
 	// Handle movement
@@ -3305,7 +3393,8 @@ void PM_Move( struct playermove_s *ppmove, int server )
 	}
 
 	// Reset friction after each movement to FrictionModifier Triggers work still.
-	if( pmove->movetype == MOVETYPE_WALK )
+	// Use movevar to avoid lags with different clients and servers.
+	if( !( pmove->multiplayer && atoi( pmove->PM_Info_ValueForKey( pmove->physinfo, "fr" )) == 0 ) && pmove->movetype == MOVETYPE_WALK )
 	{
 		pmove->friction = 1.0f;
 	}

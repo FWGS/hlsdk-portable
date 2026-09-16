@@ -45,20 +45,21 @@ const char *sArrowFilenames[] =
 // Get the name of TGA file, without a gamedir
 char *GetTGANameForRes( const char *pszName, bool allCapitalsVGUI = false )
 {
-	int i;
-	char sz[256]; 
+	int i, len;
+	char sz[256];
 	static char gd[256];
- 
+
 	if( ScreenWidth < 640 )
 		i = 320;
 	else
 		i = 640;
 
-	sprintf( sz, pszName, i );
+	safe_snprintf( sz, sizeof( sz ), pszName, i );
 	if(!allCapitalsVGUI)
-		sprintf( gd, "gfx/vgui/%s.tga", sz );
+		len = safe_snprintf( gd, sizeof( gd ), "gfx/vgui/%s.tga", sz );
 	else
-		sprintf( gd, "gfx/VGUI/%s.tga", sz );
+		len = safe_snprintf( gd, sizeof( gd ), "gfx/VGUI/%s.tga", sz );
+	if( len < 0 ) return 0;
 	return gd;
 }
 
@@ -68,10 +69,13 @@ char *GetTGANameForRes( const char *pszName, bool allCapitalsVGUI = false )
 BitmapTGA *LoadTGAForRes( const char* pImageName )
 {
 	BitmapTGA	*pTGA;
+	char *TGAName;
 	char sz[256];
 
-	sprintf( sz, "%%d_%s", pImageName );
-	pTGA = vgui_LoadTGA( GetTGANameForRes( sz ) );
+	safe_snprintf( sz, sizeof( sz ), "%%d_%s", pImageName );
+	TGAName = GetTGANameForRes( sz );
+	if(!TGAName) return 0;
+	pTGA = vgui_LoadTGA( TGAName );
 	if(!pTGA) 
 		pTGA = vgui_LoadTGA( GetTGANameForRes( sz, true ) ); //Try all-captials
 
@@ -159,8 +163,7 @@ void CommandButton::RecalculateText( void )
 
 void CommandButton::setText( const char *text )
 {
-	strncpy( m_sMainText, text, MAX_BUTTON_SIZE );
-	m_sMainText[MAX_BUTTON_SIZE - 1] = 0;
+	strlcpy( m_sMainText, text, MAX_BUTTON_SIZE );
 
 	RecalculateText();
 }
@@ -309,21 +312,12 @@ int ClassButton::IsNotValid()
 		return false;
 	}
 
-	// Is it an illegal class?
-#ifdef _TFC
-	if( ( gViewPort->GetValidClasses( 0 ) & sTFValidClassInts[m_iPlayerClass] ) || ( gViewPort->GetValidClasses( g_iTeamNumber ) & sTFValidClassInts[m_iPlayerClass] ) )
-		return true;
-#endif
-
 	// Only check current class if they've got autokill on
 	bool bAutoKill = CVAR_GET_FLOAT( "hud_classautokill" ) != 0;
 	if( bAutoKill )
 	{	
 		// Is it the player's current class?
 		if ( 
-#ifdef _TFC
-			(gViewPort->IsRandomPC() && m_iPlayerClass == PC_RANDOM) || 
-#endif
 			(!gViewPort->IsRandomPC() && (m_iPlayerClass == g_iPlayerClass)) )
 			return true;
 	}
@@ -544,13 +538,11 @@ void CMenuHandler_StringCommandClassSelect::actionPerformed( Panel *panel )
 {
 	CMenuHandler_StringCommand::actionPerformed( panel );
 
-	// THIS IS NOW BEING DONE ON THE TFC SERVER TO AVOID KILLING SOMEONE THEN 
+	// THIS IS NOW BEING DONE ON THE TFC SERVER TO AVOID KILLING SOMEONE THEN
 	// HAVE THE SERVER SAY "SORRY...YOU CAN'T BE THAT CLASS".
 
-#if !defined _TFC
 	bool bAutoKill = CVAR_GET_FLOAT( "hud_classautokill" ) != 0;
 	if( bAutoKill && g_iPlayerClass != 0 )
 		gEngfuncs.pfnClientCmd( "kill" );
-#endif
 }
 

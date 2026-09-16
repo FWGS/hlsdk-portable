@@ -40,7 +40,7 @@ public:
 
 
 	void Explode( Vector vecSrc, Vector vecAim );
-	void Explode( TraceResult *pTrace, int bitsDamageType );
+	virtual void Explode( TraceResult *pTrace, int bitsDamageType );
 	void EXPORT Smoke( void );
 
 	void EXPORT BounceTouch( CBaseEntity *pOther );
@@ -103,8 +103,6 @@ public:
 
 #define WEAPON_SUIT				31	// ?????
 
-#define MAX_WEAPONS			32
-
 #define MAX_NORMAL_BATTERY	100
 
 // weapon weight factors (for auto-switching)   (-1 = noswitch)
@@ -117,7 +115,7 @@ public:
 #define RPG_WEIGHT			20
 #define GAUSS_WEIGHT		20
 #define EGON_WEIGHT			20
-#define HORNETGUN_WEIGHT	10
+#define HORNETGUN_WEIGHT	15
 #define HANDGRENADE_WEIGHT	5
 #define SNARK_WEIGHT		5
 #define SATCHEL_WEIGHT		-10
@@ -161,7 +159,6 @@ public:
 #define GLOCK_MAX_CLIP			17
 #define PYTHON_MAX_CLIP			12
 #define MP5_MAX_CLIP			50
-#define MP5_DEFAULT_AMMO		25
 #define SHOTGUN_MAX_CLIP		8
 #define CROSSBOW_MAX_CLIP		5
 #define RPG_MAX_CLIP			1
@@ -185,7 +182,7 @@ public:
 #define GLOCK_DEFAULT_GIVE			17
 #define PYTHON_DEFAULT_GIVE			12
 #define MP5_DEFAULT_GIVE			25
-#define MP5_DEFAULT_AMMO			25
+#define MP5_DEFAULT_GIVE_MP			MP5_MAX_CLIP
 #define MP5_M203_DEFAULT_GIVE		0
 #define SHOTGUN_DEFAULT_GIVE		12
 #define CROSSBOW_DEFAULT_GIVE		5
@@ -252,6 +249,7 @@ typedef	enum
 #define ITEM_FLAG_NOAUTOSWITCHEMPTY	4
 #define ITEM_FLAG_LIMITINWORLD		8
 #define ITEM_FLAG_EXHAUSTIBLE		16 // A player can totally exhaust their ammo supply and lose this weapon
+#define ITEM_FLAG_NOAUTOSWITCHTO	32
 
 #define WEAPON_IS_ONTARGET 0x40
 
@@ -775,6 +773,8 @@ public:
 	void EXPORT IgniteThink( void );
 	void EXPORT RocketTouch( CBaseEntity *pOther );
 	static CRpgRocket *CreateRpgRocket( Vector vecOrigin, Vector vecAngles, CBaseEntity *pOwner, CRpg *pLauncher );
+	void Explode( TraceResult *pTrace, int bitsDamageType );
+	inline CRpg *GetLauncher( void );
 
 	int m_iTrail;
 	float m_flIgniteTime;
@@ -843,13 +843,13 @@ public:
 	int AddToPlayer( CBasePlayer *pPlayer );
 
 	BOOL Deploy( void );
+	BOOL CanHolster( void );
 	void Holster( int skiplocal = 0 );
 
 	void UpdateEffect( const Vector &startPoint, const Vector &endPoint, float timeBlend );
 
 	void CreateEffect ( void );
 	void DestroyEffect ( void );
-
 	void EndAttack( void );
 	void Attack( void );
 	void PrimaryAttack( void );

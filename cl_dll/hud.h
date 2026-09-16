@@ -34,6 +34,7 @@
 #include "wrect.h"
 #include "cl_dll.h"
 #include "ammo.h"
+#include "cvardef.h"
 
 #define DHN_DRAWZERO 1
 #define DHN_2DIGITS  2
@@ -98,9 +99,7 @@ struct HUDLIST
 
 //
 //-----------------------------------------------------
-#if USE_VGUI
 #include "voice_status.h" // base voice handling class
-#endif
 #include "hud_spectator.h"
 
 //
@@ -185,6 +184,7 @@ public:
 	int Init( void );
 	int VidInit( void );
 	int Draw( float flTime );
+	void Think();
 	int MsgFunc_Geiger( const char *pszName, int iSize, void *pbuf );
 	
 private:
@@ -208,7 +208,6 @@ private:
 	int m_iPos;
 };
 
-#if !USE_VGUI || USE_NOVGUI_MOTD
 class CHudMOTD : public CHudBase
 {
 public:
@@ -217,22 +216,20 @@ public:
 	int Draw( float flTime );
 	void Reset( void );
 
-	int MsgFunc_MOTD( const char *pszName, int iSize, void *pbuf );
+	bool HandleMOTDMessage( const char *pszName, int iSize, void *pbuf );
 	void Scroll( int dir );
 	void Scroll( float amount );
 	float scroll;
 	bool m_bShow;
 
+	char m_szMOTD[MAX_MOTD_LENGTH];
 protected:
 	static int MOTD_DISPLAY_TIME;
-	char m_szMOTD[MAX_MOTD_LENGTH];
 
 	int m_iLines;
 	int m_iMaxLength;
 };
-#endif
 
-#if !USE_VGUI || USE_NOVGUI_SCOREBOARD
 class CHudScoreboard : public CHudBase
 {
 public:
@@ -249,6 +246,9 @@ public:
 	int MsgFunc_TeamScores( const char *pszName, int iSize, void *pbuf );
 	int MsgFunc_TeamNames( const char *pszName, int iSize, void *pbuf );
 	void DeathMsg( int killer, int victim );
+	void RebuildTeams();
+	void UpdateTeams();
+	int BestTeam();
 
 	int m_iNumTeams;
 
@@ -256,10 +256,7 @@ public:
 	int m_fLastKillTime;
 	int m_iPlayerNum;
 	int m_iShowscoresHeld;
-
-	void GetAllPlayersInfo( void );
 };
-#endif
 
 //
 //-----------------------------------------------------
@@ -1031,8 +1028,14 @@ public:
 	int		m_iFOV;
 	int		m_Teamplay;
 	int		m_iRes;
+	int		m_iMaxRes;
+	int		m_iHudNumbersYOffset;
 	cvar_t  *m_pCvarStealMouse;
 	cvar_t	*m_pCvarDraw;
+	cvar_t  *m_pAllowHD;
+
+	cvar_t  *m_pCvarMOTDVGUI;
+	cvar_t  *m_pCvarScoreboardVGUI;
 
 	int m_iFontHeight;
 	int DrawHudNumber( int x, int y, int iFlags, int iNumber, int r, int g, int b );
@@ -1060,6 +1063,13 @@ public:
 	wrect_t& GetSpriteRect( int index )
 	{
 		return m_rgrcRects[index];
+	}
+
+	inline bool IsHL25( void )
+	{
+		// a1ba: only HL25 have higher resolution HUD spritesheets
+		// and only accept HUD style changes if user has allowed HD sprites
+		return m_iMaxRes > 640 && m_pAllowHD->value;
 	}
 	
 	int GetSpriteIndex( const char *SpriteName );	// gets a sprite index, for use in the m_rghSprites[] array
@@ -1093,12 +1103,8 @@ public:
 	CHudTank m_HudTank;
 	CHudRadio m_HudRadio;
 
-#if !USE_VGUI || USE_NOVGUI_SCOREBOARD
 	CHudScoreboard	m_Scoreboard;
-#endif
-#if !USE_VGUI || USE_NOVGUI_MOTD
 	CHudMOTD	m_MOTD;
-#endif
 
 	void Init( void );
 	void VidInit( void );
@@ -1125,6 +1131,7 @@ public:
 	int	m_iWeaponBits;
 	int	m_fPlayerDead;
 	int m_iIntermission;
+	bool m_inScope;
 
 	// sprite indexes
 	int m_HUD_number_0;
@@ -1136,6 +1143,9 @@ public:
 	float GetSensitivity();
 
 	void GetAllPlayersInfo( void );
+
+	bool UseVguiMOTD();
+	bool UseVguiScoreBoard();
 };
 
 extern CHud gHUD;

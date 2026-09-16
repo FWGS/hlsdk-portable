@@ -9,7 +9,6 @@ from waflib import Utils
 import os
 
 def options(opt):
-	# stub
 	return
 
 def configure(conf):
@@ -19,132 +18,26 @@ def configure(conf):
 		hlDefNode = conf.path.find_resource("./hl.def")
 
 		if hlDefNode is not None:
-			conf.env.append_unique('LINKFLAGS', '/def:%s' % hlDefNode.abspath())
+			conf.env.append_value('LINKFLAGS', '/def:%s' % hlDefNode.abspath())
 		else:
 			conf.fatal("Could not find hl.def")
 
 def build(bld):
-	source = bld.path.parent.ant_glob([
-		'pm_shared/*.c',
-	])
+	excluded_files = ['mpstubb.cpp', 'stats.cpp', 'Wxdebug.cpp']
 
-	source += [
-		'aflock.cpp',
-		'agrunt.cpp',
-		'airtank.cpp',
-		'animating.cpp',
-		'animation.cpp',
-		'apache.cpp',
-		'barnacle.cpp',
-		'barney.cpp',
-		'bigmomma.cpp',
-		'bloater.cpp',
-		'bmodels.cpp',
-		'briquet.cpp',
-		'bullsquid.cpp',
-		'buttons.cpp',
-		'cbase.cpp',
-		'client.cpp',
-		'combat.cpp',
-		'controller.cpp',
-		'crowbar.cpp',
-		'defaultai.cpp',
-		'diablo.cpp',
-		'doors.cpp',
-		'effects.cpp',
-		'explode.cpp',
-		'fgrenade.cpp',
-		'flybee.cpp',
-		'flyingmonster.cpp',
-		'fog.cpp',
-		'fsniper.cpp',
-		'func_break.cpp',
-		'func_tank.cpp',
-		'func_vgui.cpp',
-		'game.cpp',
-		'gamerules.cpp',
-		'gargantua.cpp',
-		'gauss.cpp',
-		'genericmonster.cpp',
-		'ggrenade.cpp',
-		'globals.cpp',
-		'gman.cpp',
-		'h_ai.cpp',
-		'h_battery.cpp',
-		'h_cine.cpp',
-		'h_cycler.cpp',
-		'h_export.cpp',
-		'handgrenade.cpp',
-		'hassassin.cpp',
-		'headcrab.cpp',
-		'healthkit.cpp',
-		'hgrunt.cpp',
-		'glock.cpp',
-		'hornet.cpp',
-		'houndeye.cpp',
-		'ichthyosaur.cpp',
-		'irgun.cpp',
-		'islave.cpp',
-		'items.cpp',
-		'leech.cpp',
-		'lflammes.cpp',
-		'lights.cpp',
-		'luciole.cpp',
-		'm16.cpp',
-		'maprules.cpp',
-		'miroir.cpp',
-		'monstermaker.cpp',
-		'monsters.cpp',
-		'monsters.h',
-		'monsterstate.cpp',
-		'mortar.cpp',
-		'mp5.cpp',
-		'multiplay_gamerules.cpp',
-		'music.cpp',
-		'nihilanth.cpp',
-		'nodes.cpp',
-		'osprey.cpp',
-		'pathcorner.cpp',
-		'plane.cpp',
-		'plats.cpp',
-		'player.cpp',
-		'python.cpp',
-		'radiomsg.cpp',
-		'rat.cpp',
-		'roach.cpp',
-		'rpg.cpp',
-		'rpggrunt.cpp',
-		'satchel.cpp',
-		'schedule.cpp',
-		'scientist.cpp',
-		'scripted.cpp',
-		'shotgun.cpp',
-		'singleplay_gamerules.cpp',
-		'skill.cpp',
-		'sniper.cpp',
-		'sound.cpp',
-		'soundent.cpp',
-		'spectator.cpp',
-		'squadmonster.cpp',
-		'squeakgrenade.cpp',
-		'subs.cpp',
-		'supergun.cpp',
-		't_sub.cpp',
-		'talkmonster.cpp',
-		'tank.cpp',
-		'teamplay_gamerules.cpp',
-		'tempmonster.cpp',
-		'tentacle.cpp',
-		'triggers.cpp',
-		'tripmine.cpp',
-		'turret.cpp',
-		'util.cpp',
-		'util.h',
-		'weapons.cpp',
-		'world.cpp',
-		'xen.cpp',
-		'zombie.cpp'
-	]
+	source = bld.path.ant_glob('**/*.cpp', excl=excluded_files)
+	source += bld.path.parent.ant_glob([
+					'pm_shared/*.c',
+					'public/safe_snprintf.c',
+					'game_shared/voice_gamemgr.cpp'
+					])
+
+	defines = bld.env.EXPORT_DEFINES_LIST
+	if 'HAVE_STRLCPY=1' not in defines:
+		source += bld.path.parent.ant_glob('external/openbsd/strlcpy.c')
+
+	if 'HAVE_STRLCAT=1' not in defines:
+		source += bld.path.parent.ant_glob('external/openbsd/strlcat.c')
 
 	includes = [
 		'.',
@@ -155,32 +48,29 @@ def build(bld):
 		'../public'
 	]
 
-	defines = []
-
-	if bld.env.VOICEMGR:
-		source += bld.path.parent.ant_glob([
-		'game_shared/voice_gamemgr.cpp',
-		])
-	else:
-		defines += ['NO_VOICEGAMEMGR']
-
-	libs = []
-
-	if bld.env.DEST_OS not in ['android', 'dos']:
-		install_path = os.path.join(bld.env.GAMEDIR, bld.env.SERVER_DIR)
+	if bld.env.DEST_OS != 'dos' and not bld.env.ANDROID_APK:
+		install_path = os.path.join(bld.env.GAMEDIR, bld.env.SERVER_INSTALL_DIR)
 	else:
 		install_path = bld.env.PREFIX
 
+	if bld.env.DEST_OS == 'darwin' and bld.env.SERVER_LIBRARY_NAME_OSX:
+		# on Apple platforms we always use gamedll_osx liblist/gameinfo key, if it's set
+		server_dll_name = bld.env.SERVER_LIBRARY_NAME_OSX
+	elif bld.env.DEST_OS != 'win32' and bld.env.SERVER_LIBRARY_NAME_LINUX:
+		# on non-Windows platforms we use gamedll_linux liblist/gameinfo key, if it's set
+		server_dll_name = bld.env.SERVER_LIBRARY_NAME_LINUX
+	else:
+		# on Windows or if no gamedll_osx or gamedll_linux is set, use default gamedll key
+		server_dll_name = bld.env.SERVER_LIBRARY_NAME
+
 	bld.shlib(
 		source   = source,
-		target   = bld.env.SERVER_NAME + bld.env.POSTFIX,
+		target   = server_dll_name + bld.env.POSTFIX,
 		name     = 'server',
 		features = 'c cxx',
 		includes = includes,
 		defines  = defines,
-		use      = libs,
+		use      = 'vcs_info',
 		install_path = install_path,
-		subsystem = bld.env.MSVC_SUBSYSTEM,
-		idx      = bld.get_taskgen_count()
+		idx = bld.get_taskgen_count()
 	)
-

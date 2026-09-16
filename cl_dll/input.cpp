@@ -28,9 +28,7 @@ extern "C"
 #include <string.h>
 #include <ctype.h>
 
-#if USE_VGUI
 #include "vgui_TeamFortressViewport.h"
-#endif
 
 #include "crutches.h" //Load some code crutches for HLINVASION, modif de Roy
 #ifdef NOATTACKFIXPATH_INVASION_VGUI
@@ -386,10 +384,8 @@ Return 1 to allow engine to process the key, otherwise, act on it as needed
 */
 int DLLEXPORT HUD_Key_Event( int down, int keynum, const char *pszCurrentBinding )
 {
-#if USE_VGUI
 	if (gViewPort)
 		return gViewPort->KeyInput(down, keynum, pszCurrentBinding);
-#endif
 	return 1;
 }
 
@@ -658,27 +654,22 @@ void IN_Impulse( void )
 void IN_ScoreDown( void )
 {
 	KeyDown( &in_score );
-#if USE_VGUI && !USE_NOVGUI_SCOREBOARD
-	if ( gViewPort )
+	if ( gHUD.UseVguiScoreBoard() && gViewPort )
 	{
 		gViewPort->ShowScoreBoard();
+		return;
 	}
-#else
 	gHUD.m_Scoreboard.UserCmd_ShowScores();
-#endif
 }
 
 void IN_ScoreUp( void )
 {
 	KeyUp( &in_score );
-#if USE_VGUI && !USE_NOVGUI_SCOREBOARD
 	if ( gViewPort )
 	{
 		gViewPort->HideScoreBoard();
 	}
-#else
 	gHUD.m_Scoreboard.UserCmd_HideScores();
-#endif
 }
 
 void IN_MLookUp( void )
@@ -712,7 +703,6 @@ void IN_MedkitUp ( void )
 
 void IN_SoinDown ( void )
 {
-#if USE_VGUI
 
 	if ( gViewPort->m_pCurrentMenu && gViewPort->m_pCurrentMenu->GetMenuID() == MENU_RADIO )
 	{
@@ -735,16 +725,13 @@ void IN_SoinDown ( void )
 		gViewPort->UpdateCursorState();	
 
 	}
-#endif
 }
 void IN_SoinUp ( void )
 {
-#if USE_VGUI
 	if ( gViewPort )
 	{
 		gViewPort->HideTopMenu();
 	}
-#endif
 }
 
 
@@ -938,7 +925,6 @@ void DLLEXPORT CL_CreateMove( float frametime, struct usercmd_s *cmd, int active
 	//
 	cmd->buttons = CL_ButtonBits( 1 );
 
-#if USE_VGUI
 	// If they're in a modal dialog, ignore the attack button.
 	if(GetClientVoiceMgr()->IsInSquelchMode())
 		cmd->buttons &= ~IN_ATTACK;
@@ -946,7 +932,6 @@ void DLLEXPORT CL_CreateMove( float frametime, struct usercmd_s *cmd, int active
 	//gEngfuncs.Con_Printf ( "client.dll : hlinv_isAttackSuspended :  > %i\n", hlinv_isAttackSuspended );	//alertatconsole
 	if(hlinv_isAttackSuspended) //We need to prevent attacks while VGUI is active, modif de Roy
 		cmd->buttons &= ~IN_ATTACK;
-#endif
 #endif
 
 	// Using joystick?
@@ -1003,11 +988,9 @@ int CL_ButtonBits( int bResetState )
 
 	if( in_attack.state & 3 )
 	{
-#if !USE_VGUI || USE_NOVGUI_MOTD
 		if( gHUD.m_MOTD.m_bShow )
 			gHUD.m_MOTD.Reset();
 		else
-#endif
 			bits |= IN_ATTACK;
 	}
 

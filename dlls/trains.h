@@ -122,4 +122,89 @@ public:
 private:
 	unsigned short m_usAdjustPitch;
 };
+
+class CFuncVehicle: public CBaseEntity
+{
+public:
+	virtual void Spawn();
+	virtual void Precache();
+	virtual void Restart();
+	virtual void KeyValue( KeyValueData *pkvd );
+	virtual int Save( CSave &save );
+	virtual int Restore( CRestore &restore );
+	virtual int ObjectCaps() { return ( CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION ) | FCAP_DIRECTIONAL_USE; }
+	virtual int Classify();
+	virtual void OverrideReset();
+	virtual BOOL OnControls( entvars_t *pev );
+	virtual void Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+	virtual void Blocked( CBaseEntity *pOther );
+
+public:
+	void EXPORT Next();
+	void EXPORT Find();
+	void EXPORT NearestPath();
+	void EXPORT DeadEnd();
+
+	void NextThink( float thinkTime, BOOL alwaysThink );
+	void CollisionDetection();
+	void TerrainFollowing();
+	void CheckTurning();
+
+	void SetTrack( CPathTrack *track ) { m_ppath = track->Nearest( pev->origin ); }
+	void SetControls( entvars_t *pevControls );
+
+	void StopSound();
+	void UpdateSound();
+
+public:
+	static CFuncVehicle *Instance( edict_t *pent );
+	static TYPEDESCRIPTION m_SaveData[12];
+
+	CPathTrack *m_ppath;
+	float m_length;
+	float m_width;
+	float m_height;
+	float m_speed;
+	float m_dir;
+	float m_startSpeed;
+	Vector m_controlMins;
+	Vector m_controlMaxs;
+	int m_soundPlaying;
+	int m_sounds;
+	int m_acceleration;
+	float m_flVolume;
+	float m_flBank;
+	float m_oldSpeed;
+	int m_iTurnAngle;
+	float m_flSteeringWheelDecay;
+	float m_flAcceleratorDecay;
+	float m_flTurnStartTime;
+	float m_flLaunchTime;
+	float m_flLastNormalZ;
+	float m_flCanTurnNow;
+	float m_flUpdateSound;
+	Vector m_vFrontLeft;
+	Vector m_vFront;
+	Vector m_vFrontRight;
+	Vector m_vBackLeft;
+	Vector m_vBack;
+	Vector m_vBackRight;
+	Vector m_vSurfaceNormal;
+	Vector m_vVehicleDirection;
+	CBaseEntity *m_pDriver;
+
+private:
+	unsigned short m_usAdjustPitch;
+};
+
+class CFuncVehicleControls: public CBaseEntity
+{
+public:
+	virtual void Spawn();
+	virtual int ObjectCaps() { return CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
+
+public:
+	void EXPORT Find();
+};
+
 #endif

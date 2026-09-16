@@ -96,6 +96,7 @@ float v_cameraFocusAngle = 35.0f;
 int v_cameraMode = CAM_MODE_FOCUS;
 qboolean v_resetCamera = 1;
 
+vec3_t v_client_aimangles;
 vec3_t g_ev_punchangle;
 
 cvar_t	*scr_ofsx;
@@ -302,8 +303,11 @@ void V_CalcGunAngle( struct ref_params_s *pparams )
 	viewent->angles[PITCH] -= v_idlescale * sin( pparams->time * v_ipitch_cycle.value ) * ( v_ipitch_level.value * 0.5f );
 	viewent->angles[YAW] -= v_idlescale * sin( pparams->time * v_iyaw_cycle.value ) * v_iyaw_level.value;
 
-	VectorCopy( viewent->angles, viewent->curstate.angles );
-	VectorCopy( viewent->angles, viewent->latched.prevangles );
+	if( !( cl_viewbob && cl_viewbob->value ))
+	{
+		VectorCopy( viewent->angles, viewent->curstate.angles );
+		VectorCopy( viewent->angles, viewent->latched.prevangles );
+	}
 }
 
 /*
@@ -582,6 +586,7 @@ void V_CalcNormalRefdef( struct ref_params_s *pparams )
 	{
 		VectorCopy( pparams->cl_viewangles, view->angles );
 	}
+
 	// set up gun position
 	V_CalcGunAngle( pparams );
 
@@ -603,9 +608,6 @@ void V_CalcNormalRefdef( struct ref_params_s *pparams )
 	view->angles[YAW] -= bob * 0.5f;
 	view->angles[ROLL] -= bob * 1.0f;
 	view->angles[PITCH] -= bob * 0.3f;
-
-	if( cl_viewbob && cl_viewbob->value )
-		VectorCopy( view->angles, view->curstate.angles );
 
 	// pushing the view origin down off of the same X/Z plane as the ent's origin will give the
 	// gun a very nice 'shifting' effect when the player looks up/down. If there is a problem
@@ -732,6 +734,7 @@ void V_CalcNormalRefdef( struct ref_params_s *pparams )
 
 	// Store off v_angles before munging for third person
 	v_angles = pparams->viewangles;
+	v_client_aimangles = pparams->cl_viewangles;
 	v_lastAngles = pparams->viewangles;
 	//v_cl_angles = pparams->cl_viewangles;	// keep old user mouse angles !
 	if( CL_IsThirdPerson() )
@@ -741,7 +744,7 @@ void V_CalcNormalRefdef( struct ref_params_s *pparams )
 
 	// Apply this at all times
 	{
-		float pitch = camAngles[0];
+		float pitch = pparams->viewangles[0];
 
 		// Normalize angles
 		if( pitch > 180.0f )
@@ -772,6 +775,14 @@ void V_CalcNormalRefdef( struct ref_params_s *pparams )
 			// Store off overridden viewangles
 			v_angles = pparams->viewangles;
 		}
+	}
+
+	if( cl_viewbob && cl_viewbob->value )
+	{
+		VectorCopy( view->origin, view->curstate.origin );
+		VectorCopy( view->origin, view->latched.prevorigin );
+		VectorCopy( view->angles, view->curstate.angles );
+		VectorCopy( view->angles, view->latched.prevangles );
 	}
 
 	lasttime = pparams->time;
@@ -853,7 +864,7 @@ void V_GetChaseOrigin( float * angles, float * origin, float distance, float * r
 	vec3_t vecEnd;
 	vec3_t forward;
 	vec3_t vecStart;
-	pmtrace_t *trace;
+	pmtrace_t *trace = 0;
 	int maxLoops = 8;
 
 	int ignoreent = -1;	// first, ignore no entity
@@ -900,7 +911,7 @@ void V_GetChaseOrigin( float * angles, float * origin, float distance, float * r
 
 		maxLoops--;
 	}
-
+	assert( trace );
 /*	if( ent )
 	{
 		gEngfuncs.Con_Printf( "Trace loops %i , entity %i, model %s, solid %i\n",(8-maxLoops),ent->curstate.number, ent->model->name , ent->curstate.solid );
@@ -1480,6 +1491,8 @@ void V_CalcSpectatorRefdef( struct ref_params_s * pparams )
 			case OBS_ROAMING:
 				VectorCopy( v_cl_angles, v_angles );
 				VectorCopy( v_sim_org, v_origin );
+				// override values if director is active
+				gHUD.m_Spectator.GetDirectorCamera(v_origin, v_angles);
 				break;
 			case OBS_IN_EYE:
 				V_CalcNormalRefdef( pparams );
@@ -1503,10 +1516,10 @@ void V_CalcSpectatorRefdef( struct ref_params_s * pparams )
 	{
 		// second renderer cycle, inset window
 		// set inset parameters
-		pparams->viewport[0] = XRES( gHUD.m_Spectator.m_OverviewData.insetWindowX );	// change viewport to inset window
-		pparams->viewport[1] = YRES( gHUD.m_Spectator.m_OverviewData.insetWindowY );
-		pparams->viewport[2] = XRES( gHUD.m_Spectator.m_OverviewData.insetWindowWidth );
-		pparams->viewport[3] = YRES( gHUD.m_Spectator.m_OverviewData.insetWindowHeight );
+		pparams->viewport[0] = XRES_HD( gHUD.m_Spectator.m_OverviewData.insetWindowX );	// change viewport to inset window
+		pparams->viewport[1] = YRES_HD( gHUD.m_Spectator.m_OverviewData.insetWindowY );
+		pparams->viewport[2] = XRES_HD( gHUD.m_Spectator.m_OverviewData.insetWindowWidth );
+		pparams->viewport[3] = YRES_HD( gHUD.m_Spectator.m_OverviewData.insetWindowHeight );
 		pparams->nextView = 0;	// on further view
 
 		// override some settings in certain modes
@@ -1618,7 +1631,7 @@ void V_Init( void )
 	v_centerspeed = gEngfuncs.pfnRegisterVariable( "v_centerspeed","500", 0 );
 
 	cl_bobcycle = gEngfuncs.pfnRegisterVariable( "cl_bobcycle","0.8", 0 );// best default for my experimental gun wag (sjb)
-	cl_bob = gEngfuncs.pfnRegisterVariable( "cl_bob","0.01", 0 );// best default for my experimental gun wag (sjb)
+	cl_bob = gEngfuncs.pfnRegisterVariable( "cl_bob","0.01", FCVAR_ARCHIVE );// best default for my experimental gun wag (sjb)
 	cl_bobup = gEngfuncs.pfnRegisterVariable( "cl_bobup","0.5", 0 );
 	cl_waterdist = gEngfuncs.pfnRegisterVariable( "cl_waterdist","4", 0 );
 	cl_chasedist = gEngfuncs.pfnRegisterVariable( "cl_chasedist","112", 0 );

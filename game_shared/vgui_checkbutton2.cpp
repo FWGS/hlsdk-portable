@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2002, Valve LLC, All rights reserved. ============
+//========= Copyright (c) 1996-2002, Valve LLC, All rights reserved. ============
 //
 // Purpose: 
 //
@@ -96,8 +96,9 @@ void CCheckButton2::SetText( char const *pText, ... )
 
 	va_list marker;
 	va_start( marker, pText );
-	_vsnprintf( str, sizeof( str ), pText, marker );
+	_vsnprintf( str, sizeof( str ) - 1, pText, marker );
 	va_end( marker );
+	str[sizeof( str ) - 1] = 0;
 
 	m_Label.setText( str );
 	SetupControls();

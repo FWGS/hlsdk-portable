@@ -17,6 +17,7 @@
 #include "cl_entity.h"
 #include "dlight.h"
 #include "triangleapi.h"
+#include "byteswap.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -220,30 +221,30 @@ void CStudioModelRenderer::StudioCalcBoneQuaterion( int frame, float s, mstudiob
 			// Bah, missing blend!
 			if( panimvalue->num.valid > k )
 			{
-				angle1[j] = panimvalue[k + 1].value;
+				angle1[j] = Unaligned( panimvalue[k + 1].value );
 
 				if( panimvalue->num.valid > k + 1 )
 				{
-					angle2[j] = panimvalue[k + 2].value;
+					angle2[j] = Unaligned( panimvalue[k + 2].value );
 				}
 				else
 				{
 					if( panimvalue->num.total > k + 1 )
 						angle2[j] = angle1[j];
 					else
-						angle2[j] = panimvalue[panimvalue->num.valid + 2].value;
+						angle2[j] = Unaligned( panimvalue[panimvalue->num.valid + 2].value );
 				}
 			}
 			else
 			{
-				angle1[j] = panimvalue[panimvalue->num.valid].value;
+				angle1[j] = Unaligned( panimvalue[panimvalue->num.valid].value );
 				if( panimvalue->num.total > k + 1 )
 				{
 					angle2[j] = angle1[j];
 				}
 				else
 				{
-					angle2[j] = panimvalue[panimvalue->num.valid + 2].value;
+					angle2[j] = Unaligned( panimvalue[panimvalue->num.valid + 2].value );
 				}
 			}
 			angle1[j] = pbone->value[j+3] + angle1[j] * pbone->scale[j + 3];
@@ -310,11 +311,11 @@ void CStudioModelRenderer::StudioCalcBonePosition( int frame, float s, mstudiobo
 				// and there's more data in the span
 				if( panimvalue->num.valid > k + 1 )
 				{
-					pos[j] += ( panimvalue[k + 1].value * ( 1.0f - s ) + s * panimvalue[k + 2].value ) * pbone->scale[j];
+					pos[j] += ( Unaligned( panimvalue[k + 1].value ) * ( 1.0f - s ) + s * Unaligned( panimvalue[k + 2].value ) ) * pbone->scale[j];
 				}
 				else
 				{
-					pos[j] += panimvalue[k + 1].value * pbone->scale[j];
+					pos[j] += Unaligned( panimvalue[k + 1].value ) * pbone->scale[j];
 				}
 			}
 			else
@@ -322,11 +323,11 @@ void CStudioModelRenderer::StudioCalcBonePosition( int frame, float s, mstudiobo
 				// are we at the end of the repeating values section and there's another section with data?
 				if( panimvalue->num.total <= k + 1 )
 				{
-					pos[j] += ( panimvalue[panimvalue->num.valid].value * ( 1.0f - s ) + s * panimvalue[panimvalue->num.valid + 2].value ) * pbone->scale[j];
+					pos[j] += ( Unaligned( panimvalue[panimvalue->num.valid].value ) * ( 1.0f - s ) + s * Unaligned( panimvalue[panimvalue->num.valid + 2].value ) ) * pbone->scale[j];
 				}
 				else
 				{
-					pos[j] += panimvalue[panimvalue->num.valid].value * pbone->scale[j];
+					pos[j] += Unaligned( panimvalue[panimvalue->num.valid].value ) * pbone->scale[j];
 				}
 			}
 		}
@@ -346,7 +347,6 @@ StudioSlerpBones
 void CStudioModelRenderer::StudioSlerpBones( vec4_t q1[], float pos1[][3], vec4_t q2[], float pos2[][3], float s )
 {
 	int i;
-	vec4_t q3;
 	float s1;
 
 	if( s < 0.0f )
@@ -356,13 +356,28 @@ void CStudioModelRenderer::StudioSlerpBones( vec4_t q1[], float pos1[][3], vec4_
 
 	s1 = 1.0f - s;
 
+	switch (m_pStudioHeader->numbones % 4)
+	{
+	case 3:
+		QuaternionSlerp( q1[0], q2[0], s, q1[0] );
+		QuaternionSlerp( q1[1], q2[1], s, q1[1] );
+		QuaternionSlerp( q1[2], q2[2], s, q1[2] );
+		break;
+	case 2:
+		QuaternionSlerp( q1[0], q2[0], s, q1[0] );
+		QuaternionSlerp( q1[1], q2[1], s, q1[1] );
+		break;
+	case 1:
+		QuaternionSlerp( q1[0], q2[0], s, q1[0] );
+		break;
+	case 0:
+		break;
+	}
+	for ( i = m_pStudioHeader->numbones % 4; i < m_pStudioHeader->numbones; i += 4 )
+		QuaternionSlerpX4( q1 + i, q2 + i, s, q1 + i );
+
 	for( i = 0; i < m_pStudioHeader->numbones; i++ )
 	{
-		QuaternionSlerp( q1[i], q2[i], s, q3 );
-		q1[i][0] = q3[0];
-		q1[i][1] = q3[1];
-		q1[i][2] = q3[2];
-		q1[i][3] = q3[3];
 		pos1[i][0] = pos1[i][0] * s1 + pos2[i][0] * s;
 		pos1[i][1] = pos1[i][1] * s1 + pos2[i][1] * s;
 		pos1[i][2] = pos1[i][2] * s1 + pos2[i][2] * s;
@@ -400,6 +415,7 @@ mstudioanim_t *CStudioModelRenderer::StudioGetAnim( model_t *m_pSubModel, mstudi
 		gEngfuncs.Con_DPrintf("loading %s\n", pseqgroup->name );
 		IEngineStudio.LoadCacheFile( pseqgroup->name, (struct cache_user_s *)&paSequences[pseqdesc->seqgroup] );
 	}
+
 	return (mstudioanim_t *)( (byte *)paSequences[pseqdesc->seqgroup].data + pseqdesc->animindex );
 }
 

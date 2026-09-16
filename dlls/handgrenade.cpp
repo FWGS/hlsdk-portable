@@ -155,9 +155,9 @@ void CHandGrenade::WeaponIdle( void )
 		else
 			angThrow.x = -10 + angThrow.x * ((90 + 10) / 90.0);
 
-		float flVel = (90 - angThrow.x) * 4;
-		if (flVel > 500)
-			flVel = 500;
+		float flVel = ( 90.0f - angThrow.x ) * 6.5f;
+		if( flVel > 1000.0f )
+			flVel = 1000.0f;
 
 		UTIL_MakeVectors( angThrow );
 
@@ -188,9 +188,12 @@ void CHandGrenade::WeaponIdle( void )
 		// player "shoot" animation
 		m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
 
-		m_flStartThrow = 0;
-		m_flNextPrimaryAttack = gpGlobals->time + 0.5;
-		m_flTimeWeaponIdle = gpGlobals->time + 0.5;
+#if !HANDGRENADE_DEPLOY_FIX
+		m_flReleaseThrow = 0.0f;
+#endif
+		m_flStartThrow = 0.0f;
+		m_flNextPrimaryAttack = GetNextAttackDelay( 0.5f );
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.5f;
 
 		m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]--;
 

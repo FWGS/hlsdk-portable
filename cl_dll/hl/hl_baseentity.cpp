@@ -108,6 +108,8 @@ Vector UTIL_VecToAngles( const Vector &vec ){ return 0; }
 CSprite *CSprite::SpriteCreate( const char *pSpriteName, const Vector &origin, BOOL animate ) { return 0; }
 void CBeam::PointEntInit( const Vector &start, int endIndex ) { }
 CBeam *CBeam::BeamCreate( const char *pSpriteName, int width ) { return NULL; }
+const Vector &CBeam::GetStartPos( void ){ return g_vecZero; }
+const Vector &CBeam::GetEndPos( void ){ return g_vecZero; }
 void CSprite::Expand( float scaleSpeed, float fadeSpeed ) { }
 
 CBaseEntity* CBaseMonster::CheckTraceHullAttack( float flDist, int iDamage, int iDmgType ) { return NULL; }
@@ -207,9 +209,15 @@ BOOL CBaseMonster::FindLateralCover( const Vector &vecThreat, const Vector &vecV
 Vector CBaseMonster::ShootAtEnemy( const Vector &shootOrigin ) { return g_vecZero; }
 BOOL CBaseMonster::FacingIdeal( void ) { return FALSE; }
 BOOL CBaseMonster::FCanActiveIdle( void ) { return FALSE; }
+#if SPEAKABLE_TARGETS
+void CBaseToggle::PlaySentence( const char *pszSentence, float duration, float volume, float attenuation ) { }
+void CBaseToggle::PlayScriptedSentence( const char *pszSentence, float duration, float volume, float attenuation, BOOL bConcurrent, CBaseEntity *pListener ) { }
+void CBaseToggle::SentenceStop( void ) { }
+#else
 void CBaseMonster::PlaySentence( const char *pszSentence, float duration, float volume, float attenuation ) { }
 void CBaseMonster::PlayScriptedSentence( const char *pszSentence, float duration, float volume, float attenuation, BOOL bConcurrent, CBaseEntity *pListener ) { }
 void CBaseMonster::SentenceStop( void ) { }
+#endif
 void CBaseMonster::CorpseFallThink( void ) { }
 void CBaseMonster::MonsterInitDead( void ) { }
 BOOL CBaseMonster::BBoxFlat( void ) { return TRUE; }

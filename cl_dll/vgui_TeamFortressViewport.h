@@ -34,10 +34,7 @@
 #include "crutches.h" //Load some code crutches for HLINVASION, modif de Roy
 
 #define TF_DEFS_ONLY
-#ifdef _TFC
-#include "../tfc/tf_defs.h"
-#else
-#define PC_LASTCLASS 10
+#define PC_LASTCLASS 12
 #define PC_UNDEFINED 0
 #define MENU_DEFAULT				1
 #define MENU_TEAM 					2
@@ -48,7 +45,6 @@
 #define MENU_CLASSHELP2 			7
 #define MENU_REPEATHELP 			8
 #define MENU_SPECHELP				59 //modif de Julien
-#endif
 using namespace vgui;
 
 class Cursor;
@@ -542,10 +538,6 @@ private:
 	// Scheme handler
 	CSchemeManager m_SchemeManager;
 
-	// MOTD
-	int		m_iGotAllMOTD;
-	char	m_szMOTD[ MAX_MOTD_LENGTH ];
-
 	//  Command Menu Team buttons
 	CommandButton *m_pTeamButtons[6];
 	CommandButton *m_pDisguiseButtons[5];
@@ -588,8 +580,6 @@ public:
 
 	int	 KeyInput( int down, int keynum, const char *pszCurrentBinding );
 	void InputPlayerSpecial( void );
-	void GetAllPlayersInfo( void );
-	void DeathMsg( int killer, int victim );
 
 	void ShowCommandMenu(int menuIndex);
 	void InputSignalHideCommandMenu( void );
@@ -631,12 +621,10 @@ public:
 	int MsgFunc_Keypad(const char *pszName, int iSize, void *pbuf );//modif de Julien
 	int MsgFunc_Conveyor(const char *pszName, int iSize, void *pbuf );//modif de Julien
 	int MsgFunc_MOTD( const char *pszName, int iSize, void *pbuf );
+	void ShowMOTD();
 	int MsgFunc_BuildSt( const char *pszName, int iSize, void *pbuf );
 	int MsgFunc_RandomPC( const char *pszName, int iSize, void *pbuf );
 	int MsgFunc_ServerName( const char *pszName, int iSize, void *pbuf );
-	int MsgFunc_ScoreInfo( const char *pszName, int iSize, void *pbuf );
-	int MsgFunc_TeamScore( const char *pszName, int iSize, void *pbuf );
-	int MsgFunc_TeamInfo( const char *pszName, int iSize, void *pbuf );
 	int MsgFunc_Spectator( const char *pszName, int iSize, void *pbuf );
 	int MsgFunc_AllowSpec( const char *pszName, int iSize, void *pbuf );
 	int MsgFunc_SpecFade( const char *pszName, int iSize, void *pbuf );	
@@ -731,15 +719,13 @@ protected:
 public:
 	CMenuHandler_StringCommand( const char *pszCommand )
 	{
-		strncpy( m_pszCommand, pszCommand, MAX_COMMAND_SIZE - 1 );
-		m_pszCommand[MAX_COMMAND_SIZE - 1] = '\0';
+		strlcpy( m_pszCommand, pszCommand, MAX_COMMAND_SIZE );
 		m_iCloseVGUIMenu = false;
 	}
 
 	CMenuHandler_StringCommand( const char *pszCommand, int iClose )
 	{
-		strncpy( m_pszCommand, pszCommand, MAX_COMMAND_SIZE - 1 );
-		m_pszCommand[MAX_COMMAND_SIZE - 1] = '\0';
+		strlcpy( m_pszCommand, pszCommand, MAX_COMMAND_SIZE );
 		m_iCloseVGUIMenu = true;
 	}
 
@@ -928,8 +914,7 @@ protected:
 public:
 	CMenuHandler_SpectateFollow( char *player )
 	{
-		strncpy( m_szplayer, player, MAX_COMMAND_SIZE);
-		m_szplayer[MAX_COMMAND_SIZE-1] = '\0';
+		strlcpy( m_szplayer, player, MAX_COMMAND_SIZE );
 	}
 
 	virtual void actionPerformed(Panel* panel)
@@ -1109,12 +1094,6 @@ public:
 
 	virtual int IsNotValid()
 	{
-		// Only visible for spies
-#ifdef _TFC
-		if( g_iPlayerClass != PC_SPY )
-			return true;
-#endif
-
 		if( m_iFeignState == gViewPort->GetIsFeigning() )
 			return false;
 
@@ -1157,12 +1136,6 @@ public:
 
 	virtual int IsNotValid()
 	{
-#ifdef _TFC
-		// Only visible for spies
-		if( g_iPlayerClass != PC_SPY )
-			return true;
-#endif
-
 		// if it's not tied to a specific team, then always show (for spies)
 		if( !m_iValidTeamsBits )
 			return false;
@@ -1188,12 +1161,6 @@ public:
 
 	virtual int IsNotValid()
 	{
-#ifdef _TFC
-		// Only visible for demomen
-		if( g_iPlayerClass != PC_DEMOMAN )
-			return true;
-#endif
-
 		if( m_iDetpackState == gViewPort->GetIsSettingDetpack() )
 			return false;
 
@@ -1230,64 +1197,6 @@ public:
 
 	virtual int IsNotValid()
 	{
-#ifdef _TFC
-		// Only visible for engineers
-		if( g_iPlayerClass != PC_ENGINEER )
-			return true;
-
-		// If this isn't set, it's only active when they're not building
-		if( m_iBuildState & BUILDSTATE_BUILDING )
-		{
-			// Make sure the player's building
-			if( !( gViewPort->GetBuildState() & BS_BUILDING ) )
-				return true;
-		}
-		else
-		{
-			// Make sure the player's not building
-			if( gViewPort->GetBuildState() & BS_BUILDING )
-				return true;
-		}
-
-		if( m_iBuildState & BUILDSTATE_BASE )
-		{
-			// Only appear if we've got enough metal to build something, or something already built
-			if ( gViewPort->GetBuildState() & (BS_HAS_SENTRYGUN | BS_HAS_DISPENSER | BS_CANB_SENTRYGUN | BS_CANB_DISPENSER | BS_HAS_ENTRY_TELEPORTER | BS_HAS_EXIT_TELEPORTER | BS_CANB_ENTRY_TELEPORTER | BS_CANB_EXIT_TELEPORTER) )
-				return false;
-
-			return true;
-		}
-
-		// Must have a building
-		if( m_iBuildState & BUILDSTATE_HASBUILDING )
-		{
-			if( m_iBuildData == BuildButton::DISPENSER && !( gViewPort->GetBuildState() & BS_HAS_DISPENSER ) )
-				return true;
-
-			if( m_iBuildData == BuildButton::SENTRYGUN && !( gViewPort->GetBuildState() & BS_HAS_SENTRYGUN ) )
-				return true;
-			if ( m_iBuildData == BuildButton::ENTRY_TELEPORTER && !(gViewPort->GetBuildState() & BS_HAS_ENTRY_TELEPORTER) )
-				return true;
-			if ( m_iBuildData == BuildButton::EXIT_TELEPORTER && !(gViewPort->GetBuildState() & BS_HAS_EXIT_TELEPORTER) )
-				return true;
-		}
-
-		// Can build something
-		if( m_iBuildState & BUILDSTATE_CANBUILD )
-		{
-			// Make sure they've got the ammo and don't have one already
-			if( m_iBuildData == BuildButton::DISPENSER && ( gViewPort->GetBuildState() & BS_CANB_DISPENSER ) )
-				return false;
-			if( m_iBuildData == BuildButton::SENTRYGUN && ( gViewPort->GetBuildState() & BS_CANB_SENTRYGUN ) )
-				return false;
-			if ( m_iBuildData == BuildButton::ENTRY_TELEPORTER && (gViewPort->GetBuildState() & BS_CANB_ENTRY_TELEPORTER) )
-				return false;
-			if ( m_iBuildData == BuildButton::EXIT_TELEPORTER && (gViewPort->GetBuildState() & BS_CANB_EXIT_TELEPORTER) )
-				return false;
-
-			return true;
-		}
-#endif
 		return false;
 	}
 };

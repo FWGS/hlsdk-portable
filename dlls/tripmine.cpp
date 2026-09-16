@@ -82,7 +82,9 @@ TYPEDESCRIPTION	CTripmineGrenade::m_SaveData[] =
 	DEFINE_FIELD( CTripmineGrenade, m_vecEnd, FIELD_POSITION_VECTOR ),
 	DEFINE_FIELD( CTripmineGrenade, m_flBeamLength, FIELD_FLOAT ),
 	DEFINE_FIELD( CTripmineGrenade, m_hOwner, FIELD_EHANDLE ),
+#if !TRIPMINE_BEAM_DUPLICATION_FIX
 	DEFINE_FIELD( CTripmineGrenade, m_pBeam, FIELD_CLASSPTR ),
+#endif
 	DEFINE_FIELD( CTripmineGrenade, m_posOwner, FIELD_POSITION_VECTOR ),
 	DEFINE_FIELD( CTripmineGrenade, m_angleOwner, FIELD_VECTOR ),
 	DEFINE_FIELD( CTripmineGrenade, m_pRealOwner, FIELD_EDICT ),
@@ -256,6 +258,9 @@ void CTripmineGrenade::MakeBeam( void )
 	Vector vecTmpEnd = pev->origin + m_vecDir * 2048.0f * m_flBeamLength;
 
 	m_pBeam = CBeam::BeamCreate( g_pModelNameLaser, 10 );
+#if TRIPMINE_BEAM_DUPLICATION_FIX
+	m_pBeam->pev->spawnflags |= SF_BEAM_TEMPORARY;
+#endif
 	m_pBeam->PointEntInit( vecTmpEnd, entindex() );
 	m_pBeam->SetColor( 0, 214, 198 );
 	m_pBeam->SetScrollRate( 255 );
@@ -277,9 +282,23 @@ void CTripmineGrenade::BeamBreakThink( void )
 	// respawn detect. 
 	if( !m_pBeam )
 	{
+#if TRIPMINE_BEAM_DUPLICATION_FIX
+		// Use the same trace parameters as the original trace above so the right entity is hit.
+		TraceResult tr2;
+		UTIL_TraceLine( pev->origin + m_vecDir * 8.0f, pev->origin - m_vecDir * 32.0f, dont_ignore_monsters, ENT( pev ), &tr2 );
+#endif
 		MakeBeam();
+#if TRIPMINE_BEAM_DUPLICATION_FIX
+		if( tr2.pHit )
+		{
+			// reset owner too
+			pev->owner = tr2.pHit;
+			m_hOwner = CBaseEntity::Instance( tr2.pHit );
+		}
+#else
 		if( tr.pHit )
 			m_hOwner = CBaseEntity::Instance( tr.pHit );	// reset owner too
+#endif
 	}
 
 	if( fabs( m_flBeamLength - tr.flFraction ) > 0.001f )
@@ -359,7 +378,12 @@ void CTripmine::Spawn()
 	m_iId = WEAPON_TRIPMINE;
 	SET_MODEL( ENT( pev ), "models/v_tripmine.mdl" );
 	pev->frame = 0;
+
+#ifdef CLIENT_DLL
+	pev->body = 0;
+#else
 	pev->body = 3;
+#endif
 	pev->sequence = TRIPMINE_GROUND;
 	// ResetSequenceInfo();
 	pev->framerate = 0;
@@ -460,7 +484,7 @@ void CTripmine::PrimaryAttack( void )
 #else
 	flags = 0;
 #endif
-	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usTripFire, 0.0f, g_vecZero, g_vecZero, 0.0f, 0.0f, 0, 0, 0, 0 );
+	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usTripFire, 0.0f, g_vecZero, g_vecZero, 0.0f, 0.0f, 0, 0, m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] == 1, 0 );
 
 	if( tr.flFraction < 1.0f )
 	{
@@ -499,6 +523,8 @@ void CTripmine::PrimaryAttack( void )
 
 void CTripmine::WeaponIdle( void )
 {
+	pev->body = 0;
+
 	if( m_flTimeWeaponIdle > UTIL_WeaponTimeBase() )
 		return;
 

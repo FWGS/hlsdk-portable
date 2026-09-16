@@ -26,17 +26,9 @@
 #include <string.h>
 #include <stdio.h>
 
-#if !USE_VGUI || USE_NOVGUI_MOTD
-DECLARE_MESSAGE( m_MOTD, MOTD )
-#endif
-
 int CHudMOTD::Init( void )
 {
 	gHUD.AddHudElem( this );
-
-#if !USE_VGUI || USE_NOVGUI_MOTD
-	HOOK_MESSAGE( MOTD );
-#endif
 
 	m_bShow = false;
 
@@ -73,7 +65,7 @@ int CHudMOTD::Draw( float fTime )
 	//bool bScroll;
 	// find the top of where the MOTD should be drawn,  so the whole thing is centered in the screen
 	int ypos = ( ScreenHeight - LINE_HEIGHT * m_iLines ) / 2; // shift it up slightly
-	char *ch = m_szMOTD;
+	unsigned char *ch = (unsigned char*)m_szMOTD;
 	int xpos = ( ScreenWidth - gHUD.m_scrinfo.charWidths['M'] * m_iMaxLength ) / 2;
 	if( xpos < 30 )
 		xpos = 30;
@@ -95,11 +87,13 @@ int CHudMOTD::Draw( float fTime )
 	gHUD.DrawDarkRectangle( xpos - 5, ypos_r - 5, xmax - xpos + 10, height + 10 );
 	while( *ch )
 	{
-		char *next_line;
-		int line_length = 0;  // count the length of the current line
+		unsigned char *next_line;
 		for( next_line = ch; *next_line != '\n' && *next_line != 0; next_line++ )
-			line_length += gHUD.m_scrinfo.charWidths[*next_line];
-		char *top = next_line;
+			;
+		// int line_length = 0;  // count the length of the current line
+		// for( next_line = ch; *next_line != '\n' && *next_line != 0; next_line++ )
+		//	line_length += gHUD.m_scrinfo.charWidths[*next_line];
+		unsigned char *top = next_line;
 		if( *top == '\n' )
 			*top = 0;
 		else
@@ -107,7 +101,7 @@ int CHudMOTD::Draw( float fTime )
 
 		// find where to start drawing the line
 		if( ( ypos > ROW_RANGE_MIN ) && ( ypos + LINE_HEIGHT <= ypos_r + height ) )
-			DrawUtfString( xpos, ypos, xmax, ch, 255, 180, 0 );
+			DrawUtfString( xpos, ypos, xmax, (const char*)ch, 255, 180, 0 );
 
 		ypos += LINE_HEIGHT;
 
@@ -124,7 +118,7 @@ int CHudMOTD::Draw( float fTime )
 	return 1;
 }
 
-int CHudMOTD::MsgFunc_MOTD( const char *pszName, int iSize, void *pbuf )
+bool CHudMOTD::HandleMOTDMessage( const char *pszName, int iSize, void *pbuf )
 {
 	if( m_iFlags & HUD_ACTIVE )
 	{
@@ -134,7 +128,7 @@ int CHudMOTD::MsgFunc_MOTD( const char *pszName, int iSize, void *pbuf )
 	BEGIN_READ( pbuf, iSize );
 
 	int is_finished = READ_BYTE();
-	strncat( m_szMOTD, READ_STRING(), sizeof(m_szMOTD) - 1 );
+	strlcat( m_szMOTD, READ_STRING(), sizeof( m_szMOTD ));
 
 	if( is_finished )
 	{
@@ -163,8 +157,7 @@ int CHudMOTD::MsgFunc_MOTD( const char *pszName, int iSize, void *pbuf )
 			m_iMaxLength = length;
 			// length = 0;
 		}
-		m_bShow = true;
 	}
 
-	return 1;
+	return is_finished ? true : false;
 }

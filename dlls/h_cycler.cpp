@@ -44,7 +44,9 @@ public:
 
 	// Don't treat as a live target
 	virtual BOOL IsAlive( void ) { return FALSE; }
-
+#if SPEAKABLE_TARGETS
+	BOOL IsAllowedToSpeak( void ) { return TRUE; }
+#endif
 	virtual int Save( CSave &save );
 	virtual int Restore( CRestore &restore );
 	static TYPEDESCRIPTION m_SaveData[];
@@ -96,7 +98,7 @@ void CCycler::GenericCyclerSpawn( const char *szModel, Vector vecMin, Vector vec
 {
 	if( !szModel || !*szModel )
 	{
-		ALERT( at_error, "cycler at %.0f %.0f %0.f missing modelname", (double)pev->origin.x, (double)pev->origin.y, (double)pev->origin.z );
+		ALERT( at_error, "cycler at %.0f %.0f %0.f missing modelname\n", (double)pev->origin.x, (double)pev->origin.y, (double)pev->origin.z );
 		REMOVE_ENTITY( ENT( pev ) );
 		return;
 	}

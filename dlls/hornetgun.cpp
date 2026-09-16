@@ -137,7 +137,12 @@ void CHgun::PrimaryAttack()
 	CBaseEntity *pHornet = CBaseEntity::Create( "hornet", m_pPlayer->GetGunPosition() + gpGlobals->v_forward * 16.0f + gpGlobals->v_right * 8.0f + gpGlobals->v_up * -12.0f, m_pPlayer->pev->v_angle, m_pPlayer->edict() );
 	pHornet->pev->velocity = gpGlobals->v_forward * 300.0f;
 
-	m_flRechargeTime = gpGlobals->time + 0.5f;
+	float flRechargeTimePause = 0.5f;
+
+	if( g_pGameRules->IsMultiplayer() )
+		flRechargeTimePause = 0.3f;
+
+	m_flRechargeTime = gpGlobals->time + flRechargeTimePause;
 #endif
 	m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]--;
 	
@@ -223,8 +228,14 @@ void CHgun::SecondaryAttack( void )
 
 	pHornet->SetThink( &CHornet::StartDart );
 
-	m_flRechargeTime = gpGlobals->time + 0.5f;
+	float flRechargeTimePause = 0.5f;
+
+	if( g_pGameRules->IsMultiplayer() )
+		flRechargeTimePause = 0.3f;
+
+	m_flRechargeTime = gpGlobals->time + flRechargeTimePause;
 #endif
+
 	int flags;
 #if CLIENT_WEAPONS
 	flags = FEV_NOTHOST;
@@ -251,8 +262,16 @@ void CHgun::Reload( void )
 
 	while( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] < HORNET_MAX_CARRY && m_flRechargeTime < gpGlobals->time )
 	{
+		float flRechargeTimePause = 0.5f;
+#if CLIENT_DLL
+		if( bIsMultiplayer() )
+#else
+		if( g_pGameRules->IsMultiplayer() )
+#endif
+			flRechargeTimePause = 0.3f;
+
 		m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]++;
-		m_flRechargeTime += 0.5f;
+		m_flRechargeTime += flRechargeTimePause;
 	}
 }
 

@@ -212,11 +212,16 @@ public:
 		return 0; 
 	}
 
+	void	ByteswapGraph();
+	void	ByteswapNodes();
+	void	ByteswapLinks();
+	void	ByteswapDistInfo();
+	void	ByteswapHashLinks();
 
 	inline	CNode &Node( int i )
 	{
 #if _DEBUG
-		if ( !m_pNodes || i < 0 || i > m_cNodes )
+		if ( !m_pNodes || i < 0 || i >= m_cNodes )
 			ALERT( at_error, "Bad Node!\n" );
 #endif
 		return m_pNodes[i];
@@ -225,7 +230,7 @@ public:
 	inline	CLink &Link( int i )
 	{
 #if _DEBUG
-		if ( !m_pLinkPool || i < 0 || i > m_cLinks )
+		if ( !m_pLinkPool || i < 0 || i >= m_cLinks )
 			ALERT( at_error, "Bad link!\n" );
 #endif
 		return m_pLinkPool[i];

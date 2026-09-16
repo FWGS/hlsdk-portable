@@ -429,7 +429,7 @@ void CCineAI::PossessEntity( void )
 			pTarget->pev->flags &= ~FL_ONGROUND;
 			break;
 		default:
-			ALERT( at_aiconsole, "aiscript:  invalid Move To Position value!" );
+			ALERT( at_aiconsole, "aiscript:  invalid Move To Position value!\n" );
 			break;
 		}
 
@@ -902,9 +902,9 @@ public:
 	
 	static TYPEDESCRIPTION m_SaveData[];
 
-	CBaseMonster *FindEntity( void );
-	BOOL AcceptableSpeaker( CBaseMonster *pMonster );
-	BOOL StartSentence( CBaseMonster *pTarget );
+	CBaseToggle *FindEntity( void );
+	BOOL AcceptableSpeaker( CBaseToggle *pTarget );
+	BOOL StartSentence( CBaseToggle *pTarget );
 
 private:
 	string_t m_iszSentence;		// string index for idle animation
@@ -1083,10 +1083,10 @@ void CScriptedSentence::Spawn( void )
 
 void CScriptedSentence::FindThink( void )
 {
-	CBaseMonster *pMonster = FindEntity();
-	if( pMonster )
+	CBaseToggle *pTarget = FindEntity();
+	if( pTarget )
 	{
-		StartSentence( pMonster );
+		StartSentence( pTarget );
 		if( pev->spawnflags & SF_SENTENCE_ONCE )
 			UTIL_Remove( this );
 		SetThink( &CScriptedSentence::DelayThink );
@@ -1100,7 +1100,7 @@ void CScriptedSentence::FindThink( void )
 	}
 	else
 	{
-		//ALERT( at_console, "%s: can't find monster %s\n", STRING( m_iszSentence ), STRING( m_iszEntity ) );
+		//ALERT( at_console, "%s: can't find target %s\n", STRING( m_iszSentence ), STRING( m_iszEntity ) );
 		pev->nextthink = gpGlobals->time + m_flRepeat + 0.5f;
 	}
 }
@@ -1113,45 +1113,60 @@ void CScriptedSentence::DelayThink( void )
 	SetThink( &CScriptedSentence::FindThink );
 }
 
-BOOL CScriptedSentence::AcceptableSpeaker( CBaseMonster *pMonster )
+BOOL CScriptedSentence::AcceptableSpeaker( CBaseToggle *pTarget )
 {
-	if( pMonster )
+	if( pTarget )
 	{
-		if( pev->spawnflags & SF_SENTENCE_FOLLOWERS )
+		CBaseMonster* pMonster = pTarget->MyMonsterPointer();
+
+		if( pMonster )
 		{
-			if( pMonster->m_hTargetEnt == 0 || !pMonster->m_hTargetEnt->IsPlayer() )
-				return FALSE;
+			if( pev->spawnflags & SF_SENTENCE_FOLLOWERS )
+			{
+				if( pMonster->m_hTargetEnt == 0 || !pMonster->m_hTargetEnt->IsPlayer() )
+					return FALSE;
+			}
+
+			BOOL override;
+
+			if( pev->spawnflags & SF_SENTENCE_INTERRUPT )
+				override = TRUE;
+			else
+				override = FALSE;
+
+			if( pMonster->CanPlaySentence( override ) )
+				return TRUE;
 		}
-
-		BOOL override;
-
-		if( pev->spawnflags & SF_SENTENCE_INTERRUPT )
-			override = TRUE;
+#if SPEAKABLE_TARGETS
 		else
-			override = FALSE;
-
-		if( pMonster->CanPlaySentence( override ) )
-			return TRUE;
+			return pTarget->IsAllowedToSpeak();
+#endif
 	}
+
 	return FALSE;
 }
 
-CBaseMonster *CScriptedSentence::FindEntity( void )
+CBaseToggle *CScriptedSentence::FindEntity( void )
 {
 	edict_t *pentTarget;
-	CBaseMonster *pMonster;
+	CBaseToggle *pTarget;
 
 	pentTarget = FIND_ENTITY_BY_TARGETNAME( NULL, STRING( m_iszEntity ) );
-	pMonster = NULL;
+	pTarget = NULL;
 
 	while( !FNullEnt( pentTarget ) )
 	{
-		pMonster = GetMonsterPointer( pentTarget );
-		if( pMonster != NULL )
+		CBaseEntity *pEnt = CBaseEntity::Instance( pentTarget );
+#if SPEAKABLE_TARGETS
+		pTarget = pEnt ? pEnt->MyTogglePointer() : NULL;
+#else
+		pTarget = pEnt ? pEnt->MyMonsterPointer() : NULL;
+#endif
+		if( pTarget != NULL )
 		{
-			if( AcceptableSpeaker( pMonster ) )
-				return pMonster;
-			//ALERT( at_console, "%s (%s), not acceptable\n", STRING( pMonster->pev->classname ), STRING( pMonster->pev->targetname ) );
+			if( AcceptableSpeaker( pTarget ) )
+				return pTarget;
+			//ALERT( at_console, "%s (%s), not acceptable\n", STRING( pTarget->pev->classname ), STRING( pTarget->pev->targetname ) );
 		}
 		pentTarget = FIND_ENTITY_BY_TARGETNAME( pentTarget, STRING( m_iszEntity ) );
 	}
@@ -1163,9 +1178,13 @@ CBaseMonster *CScriptedSentence::FindEntity( void )
 		{
 			if( FBitSet( pEntity->pev->flags, FL_MONSTER ) )
 			{
-				pMonster = pEntity->MyMonsterPointer();
-				if( AcceptableSpeaker( pMonster ) )
-					return pMonster;
+#if SPEAKABLE_TARGETS
+				pTarget = pEntity->MyTogglePointer();
+#else
+				pTarget = pEntity->MyMonsterPointer();
+#endif
+				if( AcceptableSpeaker( pTarget ) )
+					return pTarget;
 			}
 		}
 	}
@@ -1173,7 +1192,7 @@ CBaseMonster *CScriptedSentence::FindEntity( void )
 	return NULL;
 }
 
-BOOL CScriptedSentence::StartSentence( CBaseMonster *pTarget )
+BOOL CScriptedSentence::StartSentence( CBaseToggle *pTarget )
 {
 	if( !pTarget )
 	{
@@ -1195,8 +1214,12 @@ BOOL CScriptedSentence::StartSentence( CBaseMonster *pTarget )
 
 		pListener = UTIL_FindEntityGeneric( STRING( m_iszListener ), pTarget->pev->origin, radius );
 	}
-
+#if SPEAKABLE_TARGETS
 	pTarget->PlayScriptedSentence( STRING( m_iszSentence ), m_flDuration,  m_flVolume, m_flAttenuation, bConcurrent, pListener );
+#else
+	CBaseMonster *pMonster = pTarget->MyMonsterPointer();
+	pMonster->PlayScriptedSentence( STRING( m_iszSentence ), m_flDuration,  m_flVolume, m_flAttenuation, bConcurrent, pListener );
+#endif
 	ALERT( at_aiconsole, "Playing sentence %s (%.1f)\n", STRING( m_iszSentence ), (double)m_flDuration );
 	SUB_UseTargets( NULL, USE_TOGGLE, 0 );
 	return TRUE;

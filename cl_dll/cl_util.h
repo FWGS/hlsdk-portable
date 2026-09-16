@@ -17,6 +17,7 @@
 //
 #if !defined(CL_UTIL_H)
 #define CL_UTIL_H
+#include <assert.h>
 #include "exportdef.h"
 #include "cvardef.h"
 
@@ -72,6 +73,8 @@ inline struct cvar_s *CVAR_CREATE( const char *cv, const char *val, const int fl
 //HLINVASION -- the following two lines were commented out originally.
 #define XRES(x)		( (int)( float(x) * ( (float)ScreenWidth / 640.0f ) + 0.5f ) )
 #define YRES(y)		( (int)( float(y) * ( (float)ScreenHeight / 480.0f ) + 0.5f ) )
+#define XRES_HD(x)      ( (int)( float(x) * Q_max(1.f, (float)ScreenWidth / 1280.f )))
+#define YRES_HD(y)	( (int)( float(y) * Q_max(1.f, (float)ScreenHeight / 720.f )))
 
 // use this to project world coordinates to screen coordinates
 #define XPROJECT(x)	( ( 1.0f + (x) ) * ScreenWidth * 0.5f )
@@ -154,6 +157,27 @@ inline void PlaySound( int iSound, float vol ) { gEngfuncs.pfnPlaySoundByIndex( 
 #define Q_min(a, b)  (((a) < (b)) ? (a) : (b))
 #define fabs(x)	   ((x) > 0 ? (x) : 0 - (x))
 
+inline int GetSpriteRes( int width, int height )
+{
+	int i;
+
+	if( width < 640 )
+		i = 320;
+	else if( width < 1280 || !gHUD.m_pAllowHD->value )
+		i = 640;
+	else
+	{
+		if( height <= 720 )
+			i = 640;
+		else if( width <= 2560 || height <= 1600 )
+			i = 1280;
+		else
+			i = 2560;
+	}
+
+	return Q_min( i, gHUD.m_iMaxRes );
+}
+
 void ScaleColors( int &r, int &g, int &b, int a );
 
 #define DotProduct(x, y) ((x)[0] * (y)[0] + (x)[1] * (y)[1] + (x)[2] * (y)[2])
@@ -167,7 +191,8 @@ void VectorScale( const float *in, float scale, float *out );
 float VectorNormalize( float *v );
 void VectorInverse( float *v );
 
-extern vec3_t vec3_origin;
+// extern vec3_t vec3_origin;
+extern float vec3_origin[3];
 
 // disable 'possible loss of data converting float to int' warning message
 #pragma warning( disable: 4244 )

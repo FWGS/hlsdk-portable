@@ -16,6 +16,7 @@
 #if !defined(PM_SHARED_H)
 #define PM_SHARED_H
 
+char *PM_memfgets( byte *pMemFile, int fileSize, int *pFilePos, char *pBuffer, int bufferSize );
 void PM_Init( struct playermove_s *ppmove );
 void PM_Move( struct playermove_s *ppmove, int server );
 char PM_FindTextureType( char *name );

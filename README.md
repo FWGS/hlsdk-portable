@@ -1,95 +1,393 @@
-# Half-life: Invasion
-## A French single-player mod by JujU, Yag, D.X.M., Fregman, Manu and the company.
+# Half-Life SDK for GoldSource and Xash3D [![Build Status](https://github.com/FWGS/hlsdk-portable/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/FWGS/hlsdk-portable/actions/workflows/build.yml) [![Windows Build Status](https://ci.appveyor.com/api/projects/status/github/FWGS/hlsdk-portable?svg=true)](https://ci.appveyor.com/project/a1batross/hlsdk-portable)
 
-This is a humble attempt by Uncle Roy to update the mod's source code
-to be compileable for modern Xash3d FWGS builds for GNU/Linux systems.
+Half-Life SDK for GoldSource & Xash3D with some bugfixes.
 
-The original source code can be obtained on the mod's ModDB page,
-and was released by JujU in 2015:
+<details><summary>Changelog</summary>
+<p>
 
-https://www.moddb.com/mods/half-life-invasion
+- Fixed an occasional bug when houndeyes stuck unable to do anything. Technical detail: now monster's `Activity` is set before the call to `SetYawSpeed`. [Patch](https://github.com/FWGS/hlsdk-portable/commit/467899b99aa225a95d90222137f18c141c929c86)
+- Monsters now play idle sounds as it's supposed by the code. Technical detail: the problem was a check for a wrong variable. [Patch](https://github.com/FWGS/hlsdk-portable/commit/9fc712da019a1ca646171e912209a993e7c43976)
+- Fixed a bug that caused talk monsters (scientists and security guards) to face a wrong direction during scripted sequence sometimes. [Patch](https://github.com/FWGS/hlsdk-portable/commit/3e2808de62e479e83068c075cb88b4f177f9acc7)
+- Fixed squad member removal. This bug affected houndeye attacks as their attack depends on percieved number of squad members. [Patch](https://github.com/FWGS/hlsdk-portable/commit/b4502f71336a08f3f2c72b7b061b2838a149a11b)
+- Scientists now react to smells. [Patch](https://github.com/FWGS/hlsdk-portable/commit/2de4e7ab003d5b1674d12525f5aefb1e57a49fa3)
+- Tau-cannon (gauss) plays idle animations.
+- Tau-cannon (gauss) beam color depends on the charge as it was before the prediction code was introduced in Half-Life. [Patch](https://github.com/FWGS/hlsdk-portable/commit/0a29ec49c8183ebb8da22a6d2ef395eae9c3dffe)
+- Brought back gluon flare in singleplayer. [Patch](https://github.com/FWGS/hlsdk-portable/commit/9d7ab6acf46a8b71ef119d9c252767865522d21d)
+- Hand grenades don't stay primed after holster, preventing detonation after weapon switch. [Patch](https://github.com/FWGS/hlsdk-portable/commit/6e1059026faa90c5bfe5e3b3f4f58fde398d4524)
+- Fixed flashlight battery appearing as depleted on restore.
+- Fixed a potential overflow when reading sentences.txt. [Patch](https://github.com/FWGS/hlsdk-portable/commit/cb51d2aa179f1eb622e08c1c07b053ccd49e40a5)
+- Fixed beam attachment invalidated on restore (that led to visual bugs). [Patch](https://github.com/FWGS/hlsdk-portable/commit/74b5543c83c5cdcb88e9254bacab08bc63c4c896)
+- Fixed alien controllers facing wrong direction in non-combat state. [Patch](https://github.com/FWGS/hlsdk-portable/commit/e51878c45b618f9b3920b46357545cbb47befeda)
+- Fixed weapon deploy animations not playing sometimes on fast switching between weapons. [Patch](https://github.com/FWGS/hlsdk-portable/commit/ed676a5413c2d26b2982e5b014e0731f0eda6a0d) [Patch2](https://github.com/FWGS/hlsdk-portable/commit/4053dca7a9cf999391cbd77224144da207e4540b)
+- Fixed tripmine sometimes having wrong body on pickup [Patch](https://github.com/FWGS/hlsdk-portable/commit/abf08e4520e3b6cd12a40f269f4a256cf8496227)
 
-https://www.moddb.com/mods/half-life-invasion/downloads/invasion-source-code
+Bugfix-related macros that can be enabled during the compilation:
 
-Obviously, this attempt didn't go as smoothly as originally planned,
-and a great lot of things needed to be updated, fixed or worked around,
-as the SDK has evolved and changed greatly since the mod's release
-circa 2001.
+- **CROWBAR_DELAY_FIX** fixes a bug when crowbar has a longer delay after the first hit.
+- **CROWBAR_FIX_RAPID_CROWBAR** fixes a "rapid crowbar" bug when hitting corpses of killed monsters.
+- **GAUSS_OVERCHARGE_FIX** fixes tau-cannon (gauss) charge sound not stopping after the overcharge.
+- **CROWBAR_IDLE_ANIM** makes crowbar play idle animations.
+- **TRIPMINE_BEAM_DUPLICATION_FIX** fixes tripmine's beam duplication on level transition.
+- **HANDGRENADE_DEPLOY_FIX** makes handgrenade play draw animation after finishing a throw.
+- **WEAPONS_ANIMATION_TIMES_FIX** fixes deploy and idle animation times of some weapons.
 
-While this version of the code compiles properly on Debian Linux 11 and
-allows one to play the mod from start to finish,
-and most of the things seem to work as they should, it is by no means
-ideal or polished. Many of my fixes may seem haphazard and some are perhaps
-not entirely necessary (although all of them work around specific issues
-I have encountered), so I've tried to use #define's where possible,
-to make it easy to undo my fixes and try different solutions. See cl_dll/crutches.h.
+HL25-related macros that can be enabled during the compilation:
 
-Also, many of JujU's original comments used non-UTF8 French enconding and were sadly
-partially lost in file processing. Luckily, referring to the original source code is
-always possible.
+- **SATCHEL_OLD_BEHAVIOUR** old pre-HL 25th satchel's behaviour.
+- **SPEAKABLE_TARGETS** makes speakable cycler and func_button(and breaks amxmodx plugins).
 
-STILL NEEDS CODE CLEAN-UP!!!
+Bugfix-related server cvars:
 
-## Known bugs
+- **satchelfix**: if set to 1, doors won't get blocked by satchels. Fixes an infamous exploit on `crossfire` map.
+- **explosionfix**: if set to 1, explosion damage won't propagate through thin bruses.
+- **selfgauss**: if set to 0, players won't hurt themselves with secondary attack when shooting thick brushes.
 
-Known bugs not fixed while upgrading \ recovering code:
--Sniper rifle still has no scope (black box with a transparent circle).
--Water Wave still doesn't work properly.
-Admittedly, neither seems to work with Xash3d (at least FWGS) even with original DLLs when run with Proton.
+*Note*: the macros and cvars were adjusted in [hlfixed](https://github.com/FWGS/hlsdk-portable/tree/hlfixed) branch (for further information read [this](https://github.com/FWGS/hlsdk-portable/wiki/HL-Fixed)). The bugfix macros are kept turned off in `master` branch to maintain the compatibility with vanilla servers and clients.
 
--Also, due to the nature of the tank sound fix, it's weapons produce no visible muzzle effect
-when the player's selected weapon is glock (see below).
+Other server cvars:
 
-### Bugs fixed
+- **mp_bhopcap**: if set to 0, disable bunny-hop restriction.
+- **chargerfix**: if set to 1, wall-mounted health and battery chargers will play reject sounds if player has the full health or armor.
+- **corpsephysics**: if set to 1, corpses of killed monsters will fly a bit from an impact. It's a cut feature from Half-Life.
 
-Things fixed while transferring code:
-- Reload animations, sounds, e.t.c on certain weapons (Beretta, Shotgun, Handgrenade) didn't work. Julien's original code for non-client based weapons was used with some necessary edits.
-- Sniper rifle zoom states didn't work, m_pPlayer->pev->fov needed to be equalized to m_pPlayer->m_iFOV.
-- VGUI used to hard-crash, partially fixed: CImageLables in vgui_OrdiControl that caused the crash were replaced with CommandButtons, skipTime added to keypad, OrdiMenu and OrdiControl in order to fix double mouse key presses, +1 added to radiomsg.cpp to fix the butts of the text messages, HUD health display didn't work due to Health Msg system receieving Battery-related data, fixed by manually re-coping a part of old code and paritioning it properly.
-- Also fixed .txt files and fonts not loading due to backslashes, VGUI folder name being written in capitals and such.
-- Music not playing fixed by creating Miniaudio (thanks @nekonomicon) and GStreamer implementations.
-- l2m3 has a green exploding tank, which has func_door's named tremble_1 and tremble_2, when activated they cause SegFault on any non GoldSource-compatible build. Don't know why yet. Fixed by replacing a multi-manager target with garbage names if the map name and targetname match, see triggers.cpp.
-- Tank used to have a weird sound (glock event playback) when primary attack is activated, fixed with m_iPlayerInTankExternal see hud_tank.cpp and hl_weapons.cpp.
-- IR gun didn't actually Infra-Red anything, fixed by transferring changes to StudioModelRenderer.cpp.
-- It was possible to fire while entering codes, e.t.c, fixed (see hlinv_isAttackSuspended).
-- Cameras on l3m3 (monster_camera) should not have Thinks and shouldn't have pSprite in m_SaveData, otherwise it crashes on save, on touch (trigger), e.t.c., fixed.
-- Trigger_gaz and IsInGaz have also been fixed by making them non-virtual, and moving IsInGaz function wholly to CBaseEntity, but making it return FALSE unless IsPlayer returns TRUE (which it never does, until it gets called from CBasePlayer instance).
+</p>
+</details>
 
-The mod is playable from start to finish, with the main obvious drawbacks being:
-- weapons may be 'clogged' on loading game (fixed by playing with whichever ones aren't clogged until they get unclogged, probably caused by DLL checksum failing after a recompile),
-- Water Waves are not drawn, so aren't sniper rifle scope sprites.
-- and the obvious < and > symbols instead of graphical arrows at the conveyor puzzle.
+<details><summary>Support for mods</summary>
+<p>
 
-## A word of warning about build systems besides cmake
+This repository contains (re-)implementations of some mods as separate branches derived from `master`. The list of supported mods can be found [here](https://github.com/FWGS/hlsdk-portable/wiki/Mods). Note that some branches are unstable and incomplete.
 
-WARNING! While I've tried editing the make files for other build systems,
-only cmake build was actually tested.
-Also, the mod won't work correctly with Android (due to lack of true VGUI),
-MSVC6 (haven't edited true VGUI compilation in, as IDK how to do that properly)
-and wscript (same reason).
-The premake5.lua was also edited and should, in theory, compile (as it contains
-VGUI compilation directives), but gstreamer wasn't edited in.
-If you can edit the VGUI in or fix any of those other build
-systems - you're more than welcome to do so!
+To get the mod branch locally run the following git command:
 
-## How to build
+```
+git fetch origin asheep:asheep
+```
 
-### CMake as the only tested way
+This is considering that you have set **FWGS/hlsdk-portable** as an `origin` remote and want to fetch `asheep` branch.
 
-	mkdir build
-	cd build
-	cmake ../ -DUSE_VGUI=1
-	make
+</p>
+</details>
 
-Must be built with -DUSE_VGUI=1 to work properly, as this mod makes heavy use of true-VGUI,
-also it builds with miniaudio by default, thus update the modules when clonning.
+# Obtaining source code
 
-A miniaudio music player implementation is used to allow music during gameplay,
-if it can not be used in your environment, it can be disabled with the use of:
--DDISABLE_MINIAUDIO=1 cmake option.
+Either clone the repository via [git](`https://git-scm.com/downloads`) or just download ZIP via **Code** button on github. The first option is more preferable as it also allows you to search through the repo history, switch between branches and clone the vgui submodule.
 
-The following will likely be necessary to compile a gold-source compatible (old xash, e.t.c) binaries:
-	
-	sudo apt install libsdl2-dev:i386
+To clone the repository with git type in Git Bash (on Windows) or in terminal (on Unix-like operating systems):
 
-(but this wants to install a ton of i386 dev packages)
+```
+git clone --recursive https://github.com/FWGS/hlsdk-portable
+```
+
+# CI Builds
+
+Fresh builds is always available in [artifacts](https://github.com/FWGS/hlsdk-portable/actions) for most common platforms and you can download it if you logged in to github.
+
+Builds for all branches and more platforms eventually updates into [hlsdk-mega-build](https://github.com/FWGS/hlsdk-mega-build/releases/tag/continuous) repository.
+
+# Build Instructions
+
+## Windows x86.
+
+### Prerequisites
+
+Install and run [Visual Studio Installer](https://visualstudio.microsoft.com/downloads/). The installer allows you to choose specific components. Select `Desktop development with C++`. You can untick everything you don't need in Installation details, but you must keep `MSVC` and corresponding Windows SDK (e.g. Windows 10 SDK or Windows 11 SDK) ticked. You may also keep `C++ CMake tools for Windows` ticked as you'll need **cmake**. Alternatively you can install **cmake** from the [cmake.org](https://cmake.org/download/) and during installation tick *Add to the PATH...*.
+
+### Opening command prompt
+
+If **cmake** was installed with Visual Studio Installer, you'll need to run `Developer command prompt for VS` via Windows `Start` menu. If **cmake** was installed with cmake installer, you can run the regular Windows `cmd`.
+
+Inside the prompt navigate to the hlsdk directory, using `cd` command, e.g.
+```
+cd C:\Users\username\projects\hlsdk-portable
+```
+
+Note: if hlsdk-portable is unpacked on another disk, nagivate there first:
+```
+D:
+cd projects\hlsdk-portable
+```
+
+### Building
+
+Сonfigure the project:
+```
+cmake -A Win32 -B build
+```
+Note that you must repeat the configuration step if you modify `CMakeLists.txt` files or want to reconfigure the project with different parameters.
+
+The next step is to compile the libraries:
+```
+cmake --build build --config Release
+```
+`hl.dll` and `client.dll` will appear in the `build/dlls/Release` and `build/cl_dll/Release` directories.
+
+If you have a mod and want to automatically install libraries to the mod directory, set **GAMEDIR** variable to the directory name and **CMAKE_INSTALL_PREFIX** to your Half-Life or Xash3D installation path:
+```
+cmake -A Win32 -B build -DGAMEDIR=mod -DCMAKE_INSTALL_PREFIX="C:\Program Files (x86)\Steam\steamapps\common\Half-Life"
+```
+Then call `cmake` with `--target install` parameter:
+```
+cmake --build build --config Release --target install
+```
+
+#### Choosing Visual Studio version
+
+You can explicitly choose a Visual Studio version on the configuration step by specifying cmake generator:
+```
+cmake -G "Visual Studio 16 2019" -A Win32 -B build
+```
+
+### Editing code in Visual Studio
+
+After the configuration step, `HLSDK-PORTABLE.sln` should appear in the `build` directory. You can open this solution in Visual Studio and continue developing there.
+
+## Linux x86. Portable steam-compatible build using Steam Runtime in chroot
+
+### Prerequisites
+
+The official way to build Steam compatible games for Linux is through steam-runtime.
+
+*Note*: For RHEL-based distros you may be need to use system chroot or docker.
+
+Install schroot. On Ubuntu or Debian:
+
+```
+sudo apt install schroot
+```
+
+Clone https://github.com/ValveSoftware/steam-runtime and follow instructions: [download](https://github.com/ValveSoftware/steam-runtime/blob/e014a74f60b45a861d38a867b1c81efe8484f77a/README.md#downloading-a-steam-runtime) and [setup](https://github.com/ValveSoftware/steam-runtime/blob/e014a74f60b45a861d38a867b1c81efe8484f77a/README.md#using-schroot) the chroot.
+
+```
+sudo ./setup_chroot.sh --i386 --tarball ./com.valvesoftware.SteamRuntime.Sdk-i386-scout-sysroot.tar.gz
+```
+
+### Building
+
+Now you can use cmake and make prepending the commands with `schroot --chroot steamrt_scout_i386 --`:
+```
+schroot --chroot steamrt_scout_i386 -- cmake -DCMAKE_BUILD_TYPE=Release -B build-in-steamrt -S .
+schroot --chroot steamrt_scout_i386 -- cmake --build build-in-steamrt
+```
+
+## Linux x86. Portable steam-compatible build without Steam Runtime
+
+### Prerequisites
+
+Install C++ compilers, cmake and x86 development libraries for C, C++ and SDL2.
+
+#### Ubuntu/Debian:
+```
+sudo apt install cmake build-essential gcc-multilib g++-multilib libsdl2-dev:i386
+```
+
+#### RedHat/Fedora/CentOS:
+```
+sudo dnf install cmake gcc gcc-c++ glibc-devel.i686 SDL2-devel.i686
+```
+
+### Building
+
+```
+cmake -DCMAKE_BUILD_TYPE=Release -B build -S .
+cmake --build build
+```
+
+Note that the libraries built this way might be not compatible with Steam Half-Life. If you have such issue you can configure it to build statically with c++ and gcc libraries:
+```
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -static-libstdc++ -static-libgcc" -B build -S .
+cmake --build build
+```
+
+Alternatively, you can avoid libstdc++/libgcc_s linking using small libsupc++ library and optimization build flags instead(Really just set Release build type and set C compiler as C++ compiler):
+```
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=cc -B build -S .
+cmake --build build
+```
+To ensure portability it's still better to build using Steam Runtime or another chroot of some older distro.
+
+## Linux x86. Portable steam-compatible build in your own chroot
+
+### Prerequisites
+
+Use the most suitable way for you to create an old distro 32-bit chroot. E.g. on Ubuntu/Debian you can use debootstrap.
+
+```
+sudo apt install debootstrap schroot
+sudo mkdir -p /var/choots
+sudo debootstrap --arch=i386 jessie /var/chroots/jessie-i386 # On Ubuntu type trusty instead of jessie
+sudo chroot /var/chroots/jessie-i386
+```
+
+```
+# inside chroot
+apt install cmake build-essential gcc-multilib g++-multilib libsdl2-dev
+exit
+```
+
+Create and adapt the following config in /etc/schroot/chroot.d/jessie.conf (you can choose a different name):
+
+```
+[jessie]
+type=directory
+description=Debian jessie i386
+directory=/var/chroots/jessie-i386/
+users=yourusername
+groups=adm
+root-groups=root
+preserve-environment=true
+personality=linux32
+```
+
+Insert your actual user name in place of `yourusername`.
+
+### Building
+
+Prepend any make or cmake call with `schroot -c jessie --`:
+```
+schroot --chroot jessie -- cmake -DCMAKE_BUILD_TYPE=Release -B build-in-chroot -S .
+schroot --chroot jessie -- cmake --build build-in-chroot
+```
+
+## Android
+1. Set up [Android Studio/Android SDK](https://developer.android.com/studio).
+
+### Android Studio
+Open the project located in the `android` folder and build.
+
+### Command-line
+```
+cd android
+./gradlew assembleRelease
+```
+
+### Customizing the build
+settings.gradle:
+* **rootProject.name** - project name displayed in Android Studio (optional).
+
+app/build.gradle:
+* **android->namespace** and **android->defaultConfig->applicationId** - set both to desired package name.
+* **getBuildNum** function - set **releaseDate** variable as desired.
+
+app/java/su/xash/hlsdk/MainActivity.java:
+* **.putExtra("gamedir", ...)** - set desired gamedir.
+
+src/main/AndroidManifest.xml:
+* **application->android:label** - set desired application name.
+* **su.xash.engine.gamedir** value - set to same as above.
+
+## Nintendo Switch
+
+### Prerequisites
+
+1. Set up [`dkp-pacman`](https://devkitpro.org/wiki/devkitPro_pacman).
+2. Install dependency packages:
+```
+sudo dkp-pacman -S switch-dev dkp-toolchain-vars switch-mesa switch-libdrm_nouveau switch-sdl2
+```
+3. Make sure the `DEVKITPRO` environment variable is set to the devkitPro SDK root:
+```
+export DEVKITPRO=/opt/devkitpro
+```
+4. Install libsolder:
+```
+source $DEVKITPRO/switchvars.sh
+git clone https://github.com/fgsfdsfgs/libsolder.git
+make -C libsolder install
+```
+
+### Building using CMake
+```
+mkdir build && cd build
+aarch64-none-elf-cmake -G"Unix Makefiles" -DCMAKE_PROJECT_HLSDK-PORTABLE_INCLUDE="$DEVKITPRO/portlibs/switch/share/SolderShim.cmake" ..
+make -j
+```
+
+### Building using waf
+```
+./waf configure -T release --nswitch
+./waf build
+```
+
+## PlayStation Vita
+
+### Prerequisites
+
+1. Set up [VitaSDK](https://vitasdk.org/).
+2. Install [vita-rtld](https://github.com/fgsfdsfgs/vita-rtld):
+   ```
+   git clone https://github.com/fgsfdsfgs/vita-rtld.git && cd vita-rtld
+   mkdir build && cd build
+   cmake -DCMAKE_BUILD_TYPE=Release ..
+   make -j2 install
+   ```
+
+### Building with waf:
+```
+./waf configure -T release --psvita
+./waf build
+```
+
+### Building with CMake:
+```
+mkdir build && cd build
+cmake -G"Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE="$VITASDK/share/vita.toolchain.cmake" -DCMAKE_PROJECT_HLSDK-PORTABLE_INCLUDE="$VITASDK/share/vrtld_shim.cmake" ..
+make -j
+```
+
+## Other platforms
+
+Building on other architectures (e.g. x86_64 or arm) and POSIX-compliant OSes (e.g. FreeBSD) is supported.
+
+### Prerequisites
+
+Install C and C++ compilers (like gcc or clang), cmake and make.
+
+### Building
+
+```
+cmake -DCMAKE_BUILD_TYPE=Release -B build -S .
+cmake --build build
+```
+
+Force 64-bit build:
+```
+cmake -DCMAKE_BUILD_TYPE=Release -D64BIT=1 -B build -S .
+cmake --build build
+```
+
+### Building with waf
+
+To use waf, you need to install python (2.7 minimum)
+
+```
+./waf configure -T release
+./waf
+```
+
+Force 64-bit build:
+```
+./waf configure -T release -8
+./waf
+```
+
+## Build options
+
+Some useful build options that can be set during the cmake step.
+
+* **GOLDSOURCE_SUPPORT** - allows to turn off/on the support for GoldSource input. Set to **ON** by default on x86 Windows and x86 Linux, **OFF** on other platforms.
+* **64BIT** - allows to turn off/on 64-bit build. Set to **OFF** by default on x86_64 Windows, x86_64 Linux and 32-bit platforms, **ON** on other 64-bit platforms.
+
+This list is incomplete. Look at `mod_options.txt` to see all available options and their default values.
+
+Prepend option names with `-D` when passing to cmake. Boolean options can take values **OFF** and **ON**. Example:
+
+```
+cmake .. -DGOLDSOURCE_SUPPORT=ON -DCROWBAR_IDLE_ANIM=ON -DCROWBAR_FIX_RAPID_CROWBAR=ON
+```
+
+To add new build options for your mod, you can add them to `mod_options.txt` file in the following format:
+```
+<definition name>=<definition value> # <description>
+```
+If `definition value` set to `OFF` or `ON`, it will be considered as a boolean value. Otherwise it will be a string. Nor `definition name` nor `definition value` can have whitespace characters.

@@ -48,15 +48,11 @@ extern DLL_GLOBAL ULONG		g_ulFrameCount;
 extern void CopyToBodyQue( entvars_t* pev );
 extern int giPrecacheGrunt;
 extern int gmsgSayText;
-extern int gmsgBhopcap;
 
 extern cvar_t allow_spectators;
 extern cvar_t multibyte_only;
 
 extern int g_teamplay;
-
-extern cvar_t bhopcap;
-extern "C" int g_bhopcap;
 
 // modif de Julien
 extern CBaseEntity *FindEntityForward( CBaseEntity *pMe );
@@ -116,7 +112,8 @@ void ClientDisconnect( edict_t *pEntity )
 
 	char text[256] = "";
 	if( pEntity->v.netname )
-		_snprintf( text, sizeof(text), "- %s has left the game\n", STRING( pEntity->v.netname ) );
+		safe_snprintf( text, sizeof( text ), "- %s has left the game\n", STRING( pEntity->v.netname ));
+
 	MESSAGE_BEGIN( MSG_ALL, gmsgSayText, NULL );
 		WRITE_BYTE( ENTINDEX( pEntity ) );
 		WRITE_STRING( text );
@@ -134,6 +131,7 @@ void ClientDisconnect( edict_t *pEntity )
 	pEntity->v.takedamage = DAMAGE_NO;// don't attract autoaim
 	pEntity->v.solid = SOLID_NOT;// nonsolid
 	pEntity->v.effects = 0;// clear any effects
+	pEntity->v.flags = 0;// clear any flags
 	UTIL_SetOrigin( &pEntity->v, pEntity->v.origin );
 
 	g_pGameRules->ClientDisconnected( pEntity );
@@ -215,10 +213,8 @@ void ClientPutInServer( edict_t *pEntity )
 	pPlayer->pev->iuser2 = 0;
 }
 
-#if !NO_VOICEGAMEMGR
 #include "voice_gamemgr.h"
 extern CVoiceGameMgr g_VoiceGameMgr;
-#endif
 
 //-----------------------------------------------------------------------------
 // Purpose: determine if a uchar32 represents a valid Unicode code point
@@ -359,13 +355,14 @@ void Host_Say( edict_t *pEntity, int teamonly )
 	{
 		if( CMD_ARGC() >= 2 )
 		{
-			sprintf( szTemp, "%s %s", (char *)pcmd, (char *)CMD_ARGS() );
+			safe_snprintf( szTemp, sizeof( szTemp ), "%s %s", (char *)pcmd, (char *)CMD_ARGS() );
 		}
 		else
 		{
 			// Just a one word command, use the first word...sigh
-			sprintf( szTemp, "%s", (char *)pcmd );
+			strlcpy( szTemp, (char *)pcmd, sizeof( szTemp ));
 		}
+
 		p = szTemp;
 	}
 
@@ -381,11 +378,11 @@ void Host_Say( edict_t *pEntity, int teamonly )
 
 	// turn on color set 2  (color on,  no sound)
 	if( player->IsObserver() && ( teamonly ) )
-		sprintf( text, "%c(SPEC) %s: ", 2, STRING( pEntity->v.netname ) );
+		safe_snprintf( text, sizeof( text ), "%c(SPEC) %s: ", 2, STRING( pEntity->v.netname ) );
 	else if( teamonly )
-		sprintf( text, "%c(TEAM) %s: ", 2, STRING( pEntity->v.netname ) );
+		safe_snprintf( text, sizeof( text ), "%c(TEAM) %s: ", 2, STRING( pEntity->v.netname ) );
 	else
-		sprintf( text, "%c%s: ", 2, STRING( pEntity->v.netname ) );
+		safe_snprintf( text, sizeof( text ), "%c%s: ", 2, STRING( pEntity->v.netname ) );
 
 	j = sizeof( text ) - 2 - strlen( text );  // -2 for /n and null terminator
 	if( (int)strlen( p ) > j )
@@ -412,11 +409,9 @@ void Host_Say( edict_t *pEntity, int teamonly )
 
 		if( !( client->IsNetClient() ) )	// Not a client ? (should never be true)
 			continue;
-#if !NO_VOICEGAMEMGR
 		// can the receiver hear the sender? or has he muted him?
 		if( g_VoiceGameMgr.PlayerHasBlockedPlayer( client, player ) )
 			continue;
-#endif
 		if( !player->IsObserver() && teamonly && g_pGameRules->PlayerRelationship( client, CBaseEntity::Instance( pEntity ) ) != GR_TEAMMATE )
 			continue;
 
@@ -789,8 +784,15 @@ void ClientCommand( edict_t *pEntity )
 
 		// check the length of the command (prevents crash)
 		// max total length is 192 ...and we're adding a string below ("Unknown command: %s\n")
-		strncpy( command, pcmd, 127 );
-		command[127] = '\0';
+		strlcpy( command, pcmd, sizeof( command ));
+
+		// First parse the name and remove any %'s
+		for( char *pApersand = command; *pApersand; pApersand++ )
+		{
+			// Replace it with a space
+			if( *pApersand == '%' )
+				*pApersand = ' ';
+		}
 
 		// tell the user they entered an unknown command
 		ClientPrint( &pEntity->v, HUD_PRINTCONSOLE, UTIL_VarArgs( "Unknown command: %s\n", command ) );
@@ -817,8 +819,7 @@ void ClientUserInfoChanged( edict_t *pEntity, char *infobuffer )
 	{
 		char sName[256];
 		char *pName = g_engfuncs.pfnInfoKeyValue( infobuffer, "name" );
-		strncpy( sName, pName, sizeof(sName) - 1 );
-		sName[sizeof(sName) - 1] = '\0';
+		strlcpy( sName, pName, sizeof( sName ));
 
 		// First parse the name and remove any %'s
 		for( char *pApersand = sName; pApersand != NULL && *pApersand != 0; pApersand++ )
@@ -834,7 +835,7 @@ void ClientUserInfoChanged( edict_t *pEntity, char *infobuffer )
 		if( gpGlobals->maxClients > 1 )
 		{
 			char text[256];
-			_snprintf( text, 256, "* %s changed name to %s\n", STRING( pEntity->v.netname ), g_engfuncs.pfnInfoKeyValue( infobuffer, "name" ) );
+			safe_snprintf( text, sizeof( text ), "* %s changed name to %s\n", STRING( pEntity->v.netname ), g_engfuncs.pfnInfoKeyValue( infobuffer, "name" ) );
 			MESSAGE_BEGIN( MSG_ALL, gmsgSayText, NULL );
 				WRITE_BYTE( ENTINDEX( pEntity ) );
 				WRITE_STRING( text );
@@ -901,7 +902,7 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 			continue;
 
 		// Clients aren't necessarily initialized until ClientPutInServer()
-		if( i < clientMax || !pEdictList[i].pvPrivateData )
+		if( (i > 0 && i <= clientMax) || !pEdictList[i].pvPrivateData )
 			continue;
 
 		pClass = CBaseEntity::Instance( &pEdictList[i] );
@@ -982,15 +983,6 @@ void StartFrame( void )
 
 	gpGlobals->teamplay = teamplay.value;
 	g_ulFrameCount++;
-
-	int oldBhopcap = g_bhopcap;
-	g_bhopcap = ( g_pGameRules->IsMultiplayer() && bhopcap.value != 0.0f ) ? 1 : 0;
-	if( g_bhopcap != oldBhopcap )
-	{
-		MESSAGE_BEGIN( MSG_ALL, gmsgBhopcap, NULL );
-			WRITE_BYTE( g_bhopcap );
-		MESSAGE_END();
-	}
 }
 
 void ClientPrecache( void )
@@ -1064,6 +1056,8 @@ void ClientPrecache( void )
 	PRECACHE_SOUND( "debris/wood3.wav" );
 
 	PRECACHE_SOUND( "plats/train_use1.wav" );		// use a train
+
+	PRECACHE_SOUND( "plats/vehicle_ignition.wav" );
 
 	PRECACHE_SOUND( "buttons/spark5.wav" );		// hit computer texture
 	PRECACHE_SOUND( "buttons/spark6.wav" );
@@ -1311,6 +1305,7 @@ we could also use the pas/ pvs that we set in SetupVisibility, if we wanted to. 
 int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *host, int hostflags, int player, unsigned char *pSet )
 {
 	int i;
+	CBaseEntity *Entity;
 
 	// don't send if flagged for NODRAW and it's not the host getting the message
 	if( ( ent->v.effects & EF_NODRAW ) && ( ent != host ) )
@@ -1497,7 +1492,16 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 		state->health		= (int)ent->v.health;
 	}
 
-
+	if( ( Entity = CBaseEntity::Instance( ent ))
+	    && Entity->Classify() != CLASS_NONE
+	    && Entity->Classify() != CLASS_MACHINE )
+	{
+		SetBits( state->eflags, EFLAG_FLESH_SOUND );
+	}
+	else
+	{
+		ClearBits( state->eflags, EFLAG_FLESH_SOUND );
+	}
 
 	return 1;
 }
@@ -1815,14 +1819,13 @@ void RegisterEncoders( void )
 
 int GetWeaponData( struct edict_s *player, struct weapon_data_s *info )
 {
+	memset( info, 0, MAX_WEAPONS * sizeof(weapon_data_t) );
 #if CLIENT_WEAPONS
 	int i;
 	weapon_data_t *item;
 	entvars_t *pev = &player->v;
 	CBasePlayer *pl = (CBasePlayer *)CBasePlayer::Instance( pev );
 	CBasePlayerWeapon *gun;
-
-	memset( info, 0, 32 * sizeof(weapon_data_t) );
 
 	if( !pl )
 		return 1;
@@ -1844,7 +1847,7 @@ int GetWeaponData( struct edict_s *player, struct weapon_data_s *info )
 					// Get The ID.
 					gun->GetItemInfo( &II );
 
-					if( II.iId >= 0 && II.iId < 32 )
+					if( II.iId >= 0 && II.iId < MAX_WEAPONS )
 					{
 						item = &info[II.iId];
 					 	
@@ -1870,8 +1873,6 @@ int GetWeaponData( struct edict_s *player, struct weapon_data_s *info )
 			}
 		}
 	}
-#else
-	memset( info, 0, 32 * sizeof(weapon_data_t) );
 #endif
 	return 1;
 }

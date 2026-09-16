@@ -25,9 +25,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#if USE_VGUI
 #include "vgui_TeamFortressViewport.h"
-#endif
 
 extern float *GetClientColor( int clientIndex );
 
@@ -99,11 +97,8 @@ int CHudSayText::Draw( float flTime )
 {
 	int y = Y_START;
 
-#if USE_VGUI
 	if( ( gViewPort && gViewPort->AllowedToPrintText() == FALSE ) || !m_HUD_saytext->value )
 		return 1;
-#endif
-
 
 	// make sure the scrolltime is within reasonable bounds,  to guard against the clock being reset
 	flScrollTime = Q_min( flScrollTime, flTime + m_HUD_saytext_time->value );
@@ -133,8 +128,7 @@ int CHudSayText::Draw( float flTime )
 				static char buf[MAX_PLAYER_NAME_LENGTH + 32];
 
 				// draw the first x characters in the player color
-				strncpy( buf, g_szLineBuffer[i], Q_min(g_iNameLengths[i], MAX_PLAYER_NAME_LENGTH + 32 ) );
-				buf[Q_min( g_iNameLengths[i], MAX_PLAYER_NAME_LENGTH + 31 )] = 0;
+				strlcpy( buf, g_szLineBuffer[i], Q_min(g_iNameLengths[i] + 1, MAX_PLAYER_NAME_LENGTH + 32 ) );
 				DrawSetTextColor( g_pflNameColors[i][0], g_pflNameColors[i][1], g_pflNameColors[i][2] );
 				int x = DrawConsoleString( LINE_START, y, buf );
 
@@ -166,16 +160,12 @@ int CHudSayText::MsgFunc_SayText( const char *pszName, int iSize, void *pbuf )
 
 void CHudSayText::SayTextPrint( const char *pszBuf, int iBufSize, int clientIndex )
 {
-#if USE_VGUI
 	if( gViewPort && gViewPort->AllowedToPrintText() == FALSE )
 	{
 		// Print it straight to the console
 		ConsolePrint( pszBuf );
 		return;
 	}
-#else
-	ConsolePrint( pszBuf );
-#endif
 
 	int i;
 	// find an empty string slot
@@ -212,7 +202,7 @@ void CHudSayText::SayTextPrint( const char *pszBuf, int iBufSize, int clientInde
 		}
 	}
 
-	strncpy( g_szLineBuffer[i], pszBuf, Q_max( iBufSize - 1, MAX_CHARS_PER_LINE - 1 ) );
+	strlcpy( g_szLineBuffer[i], pszBuf, Q_max( iBufSize, MAX_CHARS_PER_LINE ) );
 
 	// make sure the text fits in one line
 	EnsureTextFitsInOneLineAndWrapIfHaveTo( i );

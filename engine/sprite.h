@@ -28,11 +28,14 @@ SPRITE MODELS
 #define IDSPRITEHEADER	(('P'<<24)+('S'<<16)+('D'<<8)+'I')	// little-endian "IDSP"
 #define SPRITE_VERSION	2				// Half-Life sprites
 
+#if !defined(SYNCTYPE_T)
+#define SYNCTYPE_T
 typedef enum
 {
 	ST_SYNC = 0,
 	ST_RAND
 } synctype_t;
+#endif
 
 typedef enum
 {

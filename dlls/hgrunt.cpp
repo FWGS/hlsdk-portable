@@ -348,7 +348,7 @@ void CHGrunt::GibMonster( void )
 	Vector vecGunPos;
 	Vector vecGunAngles;
 
-	if( GetBodygroup( 2 ) != 2 )
+	if( GetBodygroup( GUN_GROUP ) != GUN_NONE )
 	{
 		// throw a gun if the grunt has one
 		GetAttachment( 0, vecGunPos, vecGunAngles );
@@ -748,8 +748,7 @@ void CHGrunt::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir
 	if( ptr->iHitgroup == 11 )
 	{
 		// make sure we're wearing one
-//		if( GetBodygroup( 1 ) == HEAD_GRUNT && ( bitsDamageType & (DMG_BULLET | DMG_SLASH | DMG_BLAST | DMG_CLUB ) ) )
-		if ( ( GetBodygroup( 1 ) == HEAD_GRUNT || GetBodygroup( 1 ) == HEAD_HELMET ) && (bitsDamageType & (DMG_BULLET | DMG_SLASH | DMG_BLAST | DMG_CLUB))) //modif de Julien
+		if ( ( GetBodygroup( HEAD_GROUP ) == HEAD_GRUNT || GetBodygroup( HEAD_GROUP ) == HEAD_HELMET ) && (bitsDamageType & (DMG_BULLET | DMG_SLASH | DMG_BLAST | DMG_CLUB))) //modif de Julien
 		{
 			// absorb damage
 			flDamage -= 20;
@@ -1124,45 +1123,46 @@ void CHGrunt::HandleAnimEvent( MonsterEvent_t *pEvent )
 	{
 		case HGRUNT_AE_DROP_GUN:
 		{
-			Vector vecGunPos;
-			Vector vecGunAngles;
-
-			GetAttachment( 0, vecGunPos, vecGunAngles );
-			// modif de Julien
-			if ( pev->spawnflags & SF_GRUNT_WEAPONORIGIN )
+			if( GetBodygroup( GUN_GROUP ) != GUN_NONE )
 			{
-				vecGunPos = pev->origin;
-			}
+				Vector vecGunPos;
+				Vector vecGunAngles;
 
-
-			// switch to body group with no gun.
-			SetBodygroup( GUN_GROUP, GUN_NONE );
-
-			// now spawn a gun.
-			if( FBitSet( pev->weapons, HGRUNT_SHOTGUN ) )
-			{
-				 CBaseEntity *pGun = DropItem( "weapon_shotgun", vecGunPos, vecGunAngles );
-
+				GetAttachment( 0, vecGunPos, vecGunAngles );
 				// modif de Julien
 				if ( pev->spawnflags & SF_GRUNT_WEAPONORIGIN )
-					pGun->pev->velocity = Vector (0,0,0);
+				{
+					vecGunPos = pev->origin;
+				}
 
-			}
-			else
-			{	
-				// modif de julien
-				CBasePlayerWeapon *pMp5 = (CBasePlayerWeapon*) DropItem( "weapon_9mmAR", vecGunPos, vecGunAngles );
-				pMp5->m_iDefaultAmmo = m_cAmmoLoaded == 0 ? 1 : m_cAmmoLoaded;
 
-				// modif de Julien
-				if ( pev->spawnflags & SF_GRUNT_WEAPONORIGIN )
-					pMp5->pev->velocity = Vector (0,0,0);
+				// switch to body group with no gun.
+				SetBodygroup( GUN_GROUP, GUN_NONE );
 
-			}
+				// now spawn a gun.
+				if( FBitSet( pev->weapons, HGRUNT_SHOTGUN ) )
+				{
+					 CBaseEntity *pGun = DropItem( "weapon_shotgun", vecGunPos, vecGunAngles );
 
-			if( FBitSet( pev->weapons, HGRUNT_GRENADELAUNCHER ) )
-			{
-				DropItem( "ammo_ARgrenades", BodyTarget( pev->origin ), vecGunAngles );
+					// modif de Julien
+					if ( pev->spawnflags & SF_GRUNT_WEAPONORIGIN )
+						pGun->pev->velocity = Vector (0,0,0);
+				}
+				else
+				{
+					// modif de julien
+					CBasePlayerWeapon *pMp5 = (CBasePlayerWeapon*) DropItem( "weapon_9mmAR", vecGunPos, vecGunAngles );
+					pMp5->m_iDefaultAmmo = m_cAmmoLoaded == 0 ? 1 : m_cAmmoLoaded;
+
+					// modif de Julien
+					if ( pev->spawnflags & SF_GRUNT_WEAPONORIGIN )
+						pMp5->pev->velocity = Vector (0,0,0);
+				}
+
+				if( FBitSet( pev->weapons, HGRUNT_GRENADELAUNCHER ) )
+				{
+					DropItem( "ammo_ARgrenades", BodyTarget( pev->origin ), vecGunAngles );
+				}
 			}
 		}
 			break;

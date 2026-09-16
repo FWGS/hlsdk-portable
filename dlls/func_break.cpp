@@ -26,6 +26,7 @@
 #include "func_break.h"
 #include "decals.h"
 #include "explode.h"
+#include "game.h"
 
 extern DLL_GLOBAL Vector	g_vecAttackDir;
 
@@ -906,6 +907,8 @@ public:
 	// breakables use an overridden takedamage
 	virtual int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
 
+	int DamageDecal(int bitsDamageType);
+
 	static TYPEDESCRIPTION m_SaveData[];
 
 	static const char *m_soundNames[3];
@@ -1040,11 +1043,26 @@ void CPushable::Move( CBaseEntity *pOther, int push )
 		return;
 	}
 
-	// g-cont. fix pushable acceleration bug (reverted as it used in mods)
 	if( pOther->IsPlayer() )
 	{
-		// Don't push unless the player is pushing forward and NOT use (pull)
-		if( push && !( pevToucher->button & ( IN_FORWARD | IN_USE ) ) )
+		if( pushablemode.value == -1 )
+		{
+			// Don't push unless the player is pushing forward and NOT use (pull)
+			if( push && !( pevToucher->button & ( IN_FORWARD | IN_USE )))
+				return;
+		}
+		// g-cont. fix pushable acceleration bug (now implemented as cvar)
+		else if( pushablemode.value != 0 )
+		{
+			// Allow player push when moving right, left and back too
+			if( push && !( pevToucher->button & ( IN_FORWARD | IN_MOVERIGHT | IN_MOVELEFT | IN_BACK )))
+				return;
+			// Require player walking back when applying '+use' on pushable
+			if( !push && !( pevToucher->button & ( IN_BACK )))
+				return;
+		}
+		// Don't push when +use pressed
+		else if( push && ( pevToucher->button & ( IN_USE )))
 			return;
 		playerTouch = 1;
 	}
@@ -1066,24 +1084,54 @@ void CPushable::Move( CBaseEntity *pOther, int push )
 	else 
 		factor = 0.25f;
 
+	if( pushablemode.value != 0 )
+	{
+		pev->velocity.x += pevToucher->velocity.x * factor;
+		pev->velocity.y += pevToucher->velocity.y * factor;
+	}
+	else
+	{ 
+		if( push )
+		{
+			pev->velocity.x += pevToucher->velocity.x * factor;
+			pev->velocity.y += pevToucher->velocity.y * factor;
+		}
+		else
+		{
+			// fix for pushable acceleration
+			if( sv_pushable_fixed_tick_fudge.value >= 0 )
+				factor *= ( sv_pushable_fixed_tick_fudge.value * gpGlobals->frametime );
 
-	pev->velocity.x += pevToucher->velocity.x * factor;
-	pev->velocity.y += pevToucher->velocity.y * factor;
+			if( fabs( pev->velocity.x ) < fabs( pevToucher->velocity.x - pevToucher->velocity.x * factor ))
+				pev->velocity.x += pevToucher->velocity.x * factor;
+			if( fabs( pev->velocity.y ) < fabs( pevToucher->velocity.y - pevToucher->velocity.y * factor ))
+				pev->velocity.y += pevToucher->velocity.y * factor;
+		}
+	}
 
 	float length = sqrt( pev->velocity.x * pev->velocity.x + pev->velocity.y * pev->velocity.y );
-	if( push && ( length > MaxSpeed() ) )
+	if( ( push && pushablemode.value != 0 )
+	    || pushablemode.value == 0 )
 	{
-		pev->velocity.x = (pev->velocity.x * MaxSpeed() / length );
-		pev->velocity.y = (pev->velocity.y * MaxSpeed() / length );
+		if( length > MaxSpeed())
+		{
+			pev->velocity.x = ( pev->velocity.x * MaxSpeed() / length );
+			pev->velocity.y = ( pev->velocity.y * MaxSpeed() / length );
+		}
 	}
+
 	if( playerTouch )
 	{
-		pevToucher->velocity.x = pev->velocity.x;
-		pevToucher->velocity.y = pev->velocity.y;
+		if( push || pushablemode.value != 0 )
+		{
+			pevToucher->velocity.x = pev->velocity.x;
+			pevToucher->velocity.y = pev->velocity.y;
+		}
+
 		if( ( gpGlobals->time - m_soundTime ) > 0.7f )
 		{
 			m_soundTime = gpGlobals->time;
-			if( length > 0 && FBitSet( pev->flags,FL_ONGROUND ) )
+			if( length > 0 && FBitSet( pev->flags, FL_ONGROUND ))
 			{
 				m_lastSound = RANDOM_LONG( 0, 2 );
 				EMIT_SOUND( ENT( pev ), CHAN_WEAPON, m_soundNames[m_lastSound], 0.5f, ATTN_NORM );
@@ -1111,4 +1159,12 @@ int CPushable::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, floa
 		return CBreakable::TakeDamage( pevInflictor, pevAttacker, flDamage, bitsDamageType );
 
 	return 1;
+}
+
+int CPushable::DamageDecal(int bitsDamageType)
+{
+	if (FBitSet(pev->spawnflags, SF_PUSH_BREAKABLE))
+		return CBreakable::DamageDecal(bitsDamageType);
+
+	return CBaseEntity::DamageDecal(bitsDamageType);
 }
