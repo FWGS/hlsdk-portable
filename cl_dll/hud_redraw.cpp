@@ -169,7 +169,7 @@ int CHud::Redraw( float flTime, int intermission )
 			m_iIntermission = intermission;
 			gViewPort->HideCommandMenu();
 			gViewPort->HideVGUIMenu();
-			if (gHUD.UseVguiScoreBoard())
+			if (UseVguiScoreBoard())
 				gViewPort->ShowScoreBoard();
 			gViewPort->UpdateSpectatorPanel();
 			// Take a screenshot if the client's got the cvar set
