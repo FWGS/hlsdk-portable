@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef ITEMS_H
+#if !defined(ITEMS_H)
 #define ITEMS_H
 
 class CItem : public CBaseEntity

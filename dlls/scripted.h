@@ -13,10 +13,10 @@
 *
 ****/
 #pragma once
-#ifndef SCRIPTED_H
+#if !defined(SCRIPTED_H)
 #define SCRIPTED_H
 
-#ifndef SCRIPTEVENT_H
+#if !defined(SCRIPTEVENT_H)
 #include "scriptevent.h"
 #endif
 

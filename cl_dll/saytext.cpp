@@ -25,6 +25,8 @@
 #include <string.h>
 #include <stdio.h>
 
+#include "vgui_TeamFortressViewport.h"
+
 extern float *GetClientColor( int clientIndex );
 
 #define MAX_LINES	5
@@ -95,6 +97,9 @@ int CHudSayText::Draw( float flTime )
 {
 	int y = Y_START;
 
+	if( ( gViewPort && gViewPort->AllowedToPrintText() == FALSE ) || !m_HUD_saytext->value )
+		return 1;
+
 	// make sure the scrolltime is within reasonable bounds,  to guard against the clock being reset
 	flScrollTime = Q_min( flScrollTime, flTime + m_HUD_saytext_time->value );
 
@@ -123,8 +128,7 @@ int CHudSayText::Draw( float flTime )
 				static char buf[MAX_PLAYER_NAME_LENGTH + 32];
 
 				// draw the first x characters in the player color
-				strncpy( buf, g_szLineBuffer[i], Q_min(g_iNameLengths[i], MAX_PLAYER_NAME_LENGTH + 32 ) );
-				buf[Q_min( g_iNameLengths[i], MAX_PLAYER_NAME_LENGTH + 31 )] = 0;
+				strlcpy( buf, g_szLineBuffer[i], Q_min(g_iNameLengths[i] + 1, MAX_PLAYER_NAME_LENGTH + 32 ) );
 				DrawSetTextColor( g_pflNameColors[i][0], g_pflNameColors[i][1], g_pflNameColors[i][2] );
 				int x = DrawConsoleString( LINE_START, y, buf );
 
@@ -156,9 +160,14 @@ int CHudSayText::MsgFunc_SayText( const char *pszName, int iSize, void *pbuf )
 
 void CHudSayText::SayTextPrint( const char *pszBuf, int iBufSize, int clientIndex )
 {
-	int i;
-	ConsolePrint( pszBuf );
+	if( gViewPort && gViewPort->AllowedToPrintText() == FALSE )
+	{
+		// Print it straight to the console
+		ConsolePrint( pszBuf );
+		return;
+	}
 
+	int i;
 	// find an empty string slot
 	for( i = 0; i < MAX_LINES; i++ )
 	{
@@ -193,7 +202,7 @@ void CHudSayText::SayTextPrint( const char *pszBuf, int iBufSize, int clientInde
 		}
 	}
 
-	strncpy( g_szLineBuffer[i], pszBuf, Q_max( iBufSize - 1, MAX_CHARS_PER_LINE - 1 ) );
+	strlcpy( g_szLineBuffer[i], pszBuf, Q_max( iBufSize, MAX_CHARS_PER_LINE ) );
 
 	// make sure the text fits in one line
 	EnsureTextFitsInOneLineAndWrapIfHaveTo( i );
@@ -259,7 +268,7 @@ void CHudSayText::EnsureTextFitsInOneLineAndWrapIfHaveTo( int line )
 				if( !last_break )
 					last_break = x - 1;
 
-				x = last_break;
+				// x = last_break;
 
 				// find an empty string slot
 				int j;

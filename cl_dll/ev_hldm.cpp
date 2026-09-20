@@ -56,20 +56,21 @@ void EV_FireTommy( struct event_args_s *args );
 void EV_FireRifle( struct event_args_s *args );
 
 void EV_TrainPitchAdjust( struct event_args_s *args );
+void EV_VehiclePitchAdjust( event_args_t *args );
 }
 
-#define VECTOR_CONE_1DEGREES Vector( 0.00873, 0.00873, 0.00873 )
-#define VECTOR_CONE_2DEGREES Vector( 0.01745, 0.01745, 0.01745 )
-#define VECTOR_CONE_3DEGREES Vector( 0.02618, 0.02618, 0.02618 )
-#define VECTOR_CONE_4DEGREES Vector( 0.03490, 0.03490, 0.03490 )
-#define VECTOR_CONE_5DEGREES Vector( 0.04362, 0.04362, 0.04362 )
-#define VECTOR_CONE_6DEGREES Vector( 0.05234, 0.05234, 0.05234 )
-#define VECTOR_CONE_7DEGREES Vector( 0.06105, 0.06105, 0.06105 )	
-#define VECTOR_CONE_8DEGREES Vector( 0.06976, 0.06976, 0.06976 )
-#define VECTOR_CONE_9DEGREES Vector( 0.07846, 0.07846, 0.07846 )
-#define VECTOR_CONE_10DEGREES Vector( 0.08716, 0.08716, 0.08716 )
-#define VECTOR_CONE_15DEGREES Vector( 0.13053, 0.13053, 0.13053 )
-#define VECTOR_CONE_20DEGREES Vector( 0.17365, 0.17365, 0.17365 )
+#define VECTOR_CONE_1DEGREES Vector( 0.00873f, 0.00873f, 0.00873f )
+#define VECTOR_CONE_2DEGREES Vector( 0.01745f, 0.01745f, 0.01745f )
+#define VECTOR_CONE_3DEGREES Vector( 0.02618f, 0.02618f, 0.02618f )
+#define VECTOR_CONE_4DEGREES Vector( 0.03490f, 0.03490f, 0.03490f )
+#define VECTOR_CONE_5DEGREES Vector( 0.04362f, 0.04362f, 0.04362f )
+#define VECTOR_CONE_6DEGREES Vector( 0.05234f, 0.05234f, 0.05234f )
+#define VECTOR_CONE_7DEGREES Vector( 0.06105f, 0.06105f, 0.06105f )	
+#define VECTOR_CONE_8DEGREES Vector( 0.06976f, 0.06976f, 0.06976f )
+#define VECTOR_CONE_9DEGREES Vector( 0.07846f, 0.07846f, 0.07846f )
+#define VECTOR_CONE_10DEGREES Vector( 0.08716f, 0.08716f, 0.08716f )
+#define VECTOR_CONE_15DEGREES Vector( 0.13053f, 0.13053f, 0.13053f )
+#define VECTOR_CONE_20DEGREES Vector( 0.17365f, 0.17365f, 0.17365f )
 
 #define SND_CHANGE_PITCH	(1 << 7)	// duplicated in protocol.h change sound pitch
 
@@ -86,6 +87,7 @@ float EV_HLDM_PlayTextureSound( int idx, pmtrace_t *ptr, float *vecSrc, float *v
 	int cnt;
 	float fattn = ATTN_NORM;
 	int entity;
+	cl_entity_t *ent;
 	char *pTextureName;
 	char texname[64];
 	char szbuffer[64];
@@ -97,7 +99,8 @@ float EV_HLDM_PlayTextureSound( int idx, pmtrace_t *ptr, float *vecSrc, float *v
 	chTextureType = 0;
 
 	// Player
-	if( entity >= 1 && entity <= gEngfuncs.GetMaxClients() )
+	if( ( entity >= 1 && entity <= gEngfuncs.GetMaxClients() )
+	    || ( ( ent = gEngfuncs.GetEntityByIndex( entity )) && ( ent->curstate.eflags & EFLAG_FLESH_SOUND )))
 	{
 		// hit body
 		chTextureType = CHAR_TEX_FLESH;
@@ -235,7 +238,7 @@ char *EV_HLDM_DamageDecal( physent_t *pe )
 	}
 	else if( pe->rendermode != kRenderNormal )
 	{
-		sprintf( decalname, "{bproof1" );
+		strcpy( decalname, "{bproof1" );
 	}
 	else
 	{
@@ -396,12 +399,12 @@ void EV_HLDM_FireBullets( int idx, float *forward, float *right, float *up, int 
 		gEngfuncs.pEventAPI->EV_SetSolidPlayers( idx - 1 );	
 
 		gEngfuncs.pEventAPI->EV_SetTraceHull( 2 );
-		gEngfuncs.pEventAPI->EV_PlayerTrace( vecSrc, vecEnd, PM_STUDIO_BOX, -1, &tr );
+		gEngfuncs.pEventAPI->EV_PlayerTrace( vecSrc, vecEnd, PM_NORMAL, -1, &tr );
 
 		tracer = EV_HLDM_CheckTracer( idx, vecSrc, tr.endpos, forward, right, iBulletType, iTracerFreq, tracerCount );
 
 		// do damage, paint decals
-		if( tr.fraction != 1.0 )
+		if( tr.fraction != 1.0f )
 		{
 			switch( iBulletType )
 			{
@@ -443,7 +446,8 @@ void EV_HLDM_FireBullets( int idx, float *forward, float *right, float *up, int 
 //======================
 //	  REVOLVER START
 //======================
-void EV_FireRevolver1( event_args_t *args )
+// Shared Revolver fire implementation for EV_FireRevolver1 and EV_FireRevolver2.
+static void EV_FireRevolver_Impl( event_args_t *args )
 {
 	int idx;
 	vec3_t origin;
@@ -470,7 +474,7 @@ void EV_FireRevolver1( event_args_t *args )
 	if( EV_IsLocal( idx ) )
 	{
 		EV_MuzzleFlash();
-		gEngfuncs.pEventAPI->EV_WeaponAnimation( REVOLVER_FIRE, 2 );
+		gEngfuncs.pEventAPI->EV_WeaponAnimation( REVOLVER_FIRE, 0 );
 		V_PunchAxis( 0, -2.0 );
 	}
 
@@ -492,61 +496,17 @@ void EV_FireRevolver1( event_args_t *args )
 
 	VectorCopy( forward, vecAiming );
 
-	EV_HLDM_FireBullets( idx, forward, right, up, 1, vecSrc, vecAiming, 8192, BULLET_PLAYER_9MM, 0, 0, args->fparam1, args->fparam2 );
+	EV_HLDM_FireBullets( idx, forward, right, up, 1, vecSrc, vecAiming, 8192, BULLET_PLAYER_9MM, 0, &g_tracerCount[idx - 1], args->fparam1, args->fparam2 );
+}
+
+void EV_FireRevolver1( event_args_t *args )
+{
+	EV_FireRevolver_Impl( args );
 }
 
 void EV_FireRevolver2( event_args_t *args )
 {
-	int idx;
-	vec3_t origin;
-	vec3_t angles;
-	vec3_t velocity;
-
-	vec3_t ShellVelocity;
-	vec3_t ShellOrigin;
-	int shell;
-	vec3_t vecSrc, vecAiming;
-	vec3_t vecSpread;
-	vec3_t up, right, forward;
-
-	idx = args->entindex;
-	VectorCopy( args->origin, origin );
-	VectorCopy( args->angles, angles );
-	VectorCopy( args->velocity, velocity );
-	int empty = args->bparam1;
-
-	AngleVectors( angles, forward, right, up );
-
-	shell = gEngfuncs.pEventAPI->EV_FindModelIndex( "models/shell.mdl" );// brass shell
-
-	if( EV_IsLocal( idx ) )
-	{
-		// Add muzzle flash to current weapon model
-		EV_MuzzleFlash();
-		gEngfuncs.pEventAPI->EV_WeaponAnimation( REVOLVER_FIRE, 2 );
-
-		V_PunchAxis( 0, -2.0 );
-	}
-
-	EV_GetDefaultShellInfo( args, origin, velocity, ShellVelocity, ShellOrigin, forward, right, up, 20, -12, 4 );
-
-	EV_EjectBrass ( ShellOrigin, ShellVelocity, angles[YAW], shell, TE_BOUNCE_SHELL ); 
-
-	if( gEngfuncs.pfnRandomLong( 0, 1 ) == 0 )
-	{
-		gEngfuncs.pEventAPI->EV_PlaySound( idx, origin, CHAN_WEAPON, "weapons/revolver_shot1.wav", gEngfuncs.pfnRandomFloat( 0.92, 1.0 ), ATTN_NORM, 0, 98 + gEngfuncs.pfnRandomLong( 0, 3 ) );
-	}
-	else
-	{
-		gEngfuncs.pEventAPI->EV_PlaySound( idx, origin, CHAN_WEAPON, "weapons/revolver_shot2.wav", gEngfuncs.pfnRandomFloat( 0.92, 1.0 ), ATTN_NORM, 0, 98 + gEngfuncs.pfnRandomLong( 0, 3 ) );
-	}
-	// gEngfuncs.pEventAPI->EV_PlaySound( idx, origin, CHAN_WEAPON, "weapons/pl_gun3.wav", gEngfuncs.pfnRandomFloat( 0.92, 1.0 ), ATTN_NORM, 0, 98 + gEngfuncs.pfnRandomLong( 0, 3 ) );
-
-	EV_GetGunPosition( args, vecSrc, origin );
-
-	VectorCopy( forward, vecAiming );
-
-	EV_HLDM_FireBullets( idx, forward, right, up, 1, vecSrc, vecAiming, 8192, BULLET_PLAYER_9MM, 0, &g_tracerCount[idx - 1], args->fparam1, args->fparam2 );
+	EV_FireRevolver_Impl( args );
 }
 //======================
 //	  REVOLVER END
@@ -567,7 +527,7 @@ void EV_FireShotGunDouble( event_args_t *args )
 	vec3_t ShellOrigin;
 	int shell;
 	vec3_t vecSrc, vecAiming;
-	vec3_t vecSpread;
+	//vec3_t vecSpread;
 	vec3_t up, right, forward;
 	//float flSpread = 0.01;
 
@@ -584,7 +544,7 @@ void EV_FireShotGunDouble( event_args_t *args )
 	{
 		// Add muzzle flash to current weapon model
 		EV_MuzzleFlash();
-		gEngfuncs.pEventAPI->EV_WeaponAnimation( SHOTGUN_FIRE, 2 );
+		gEngfuncs.pEventAPI->EV_WeaponAnimation( SHOTGUN_FIRE, 0 );
 		V_PunchAxis( 0, -10.0 );
 	}
 
@@ -621,7 +581,7 @@ void EV_FireShotGunSingle( event_args_t *args )
 	vec3_t ShellOrigin;
 	int shell;
 	vec3_t vecSrc, vecAiming;
-	vec3_t vecSpread;
+	//vec3_t vecSpread;
 	vec3_t up, right, forward;
 	//float flSpread = 0.01;
 
@@ -638,7 +598,7 @@ void EV_FireShotGunSingle( event_args_t *args )
 	{
 		// Add muzzle flash to current weapon model
 		EV_MuzzleFlash();
-		gEngfuncs.pEventAPI->EV_WeaponAnimation( SHOTGUN_FIRE2, 2 );
+		gEngfuncs.pEventAPI->EV_WeaponAnimation( SHOTGUN_FIRE2, 0 );
 
 		V_PunchAxis( 0, -5.0 );
 	}
@@ -695,7 +655,7 @@ void EV_FireMP5( event_args_t *args )
 	{
 		// Add muzzle flash to current weapon model
 		EV_MuzzleFlash();
-		gEngfuncs.pEventAPI->EV_WeaponAnimation( TOMMYGUN_FIRE1 + gEngfuncs.pfnRandomLong( 0, 1 ), 2 );
+		gEngfuncs.pEventAPI->EV_WeaponAnimation( TOMMYGUN_FIRE1 + gEngfuncs.pfnRandomLong( 0, 1 ), 0 );
 
 		V_PunchAxis( 0, gEngfuncs.pfnRandomFloat( -2, 2 ) );
 	}
@@ -717,14 +677,7 @@ void EV_FireMP5( event_args_t *args )
 	EV_GetGunPosition( args, vecSrc, origin );
 	VectorCopy( forward, vecAiming );
 
-	if( gEngfuncs.GetMaxClients() > 1 )
-	{
-		EV_HLDM_FireBullets( idx, forward, right, up, 1, vecSrc, vecAiming, 8192, BULLET_PLAYER_MP5, 2, &g_tracerCount[idx - 1], args->fparam1, args->fparam2 );
-	}
-	else
-	{
-		EV_HLDM_FireBullets( idx, forward, right, up, 1, vecSrc, vecAiming, 8192, BULLET_PLAYER_MP5, 2, &g_tracerCount[idx - 1], args->fparam1, args->fparam2 );
-	}
+	EV_HLDM_FireBullets( idx, forward, right, up, 1, vecSrc, vecAiming, 8192, BULLET_PLAYER_MP5, 2, &g_tracerCount[idx - 1], args->fparam1, args->fparam2 );
 }
 //======================
 //	   TOMMYGUN END
@@ -801,9 +754,9 @@ void EV_TrainPitchAdjust( event_args_t *args )
 	us_params = (unsigned short)args->iparam1;
 	stop = args->bparam1;
 
-	m_flVolume = (float)( us_params & 0x003f ) / 40.0;
+	m_flVolume = (float)( us_params & 0x003f ) / 40.0f;
 	noise = (int)( ( ( us_params ) >> 12 ) & 0x0007 );
-	pitch = (int)( 10.0 * (float)( ( us_params >> 6 ) & 0x003f ) );
+	pitch = (int)( 10.0f * (float)( ( us_params >> 6 ) & 0x003f ) );
 
 	switch( noise )
 	{
@@ -824,6 +777,65 @@ void EV_TrainPitchAdjust( event_args_t *args )
 		break;
 	case 6:
 		pszSound = "plats/ttrain7.wav";
+		break;
+	default:
+		// no sound
+		return;
+	}
+
+	if( stop )
+	{
+		gEngfuncs.pEventAPI->EV_StopSound( idx, CHAN_STATIC, pszSound );
+	}
+	else
+	{
+		gEngfuncs.pEventAPI->EV_PlaySound( idx, origin, CHAN_STATIC, pszSound, m_flVolume, ATTN_NORM, SND_CHANGE_PITCH, pitch );
+	}
+}
+
+void EV_VehiclePitchAdjust( event_args_t *args )
+{
+	int idx;
+	vec3_t origin;
+
+	unsigned short us_params;
+	int noise;
+	float m_flVolume;
+	int pitch;
+	int stop;
+
+	const char *pszSound;
+
+	idx = args->entindex;
+
+	VectorCopy( args->origin, origin );
+
+	us_params = (unsigned short)args->iparam1;
+	stop = args->bparam1;
+
+	m_flVolume = (float)( us_params & 0x003f ) / 40.0f;
+	noise = (int)( ( ( us_params ) >> 12 ) & 0x0007 );
+	pitch = (int)( 10.0f * (float)( ( us_params >> 6 ) & 0x003f ) );
+
+	switch( noise )
+	{
+	case 1:
+		pszSound = "plats/vehicle1.wav";
+		break;
+	case 2:
+		pszSound = "plats/vehicle2.wav";
+		break;
+	case 3:
+		pszSound = "plats/vehicle3.wav";
+		break;
+	case 4:
+		pszSound = "plats/vehicle4.wav";
+		break;
+	case 5:
+		pszSound = "plats/vehicle6.wav";
+		break;
+	case 6:
+		pszSound = "plats/vehicle7.wav";
 		break;
 	default:
 		// no sound

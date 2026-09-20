@@ -7,8 +7,7 @@
 *	All Rights Reserved.
 *
 ****/
-
-#ifndef __TF_DEFS_H
+#if !defined(__TF_DEFS_H)
 #define __TF_DEFS_H
 
 //===========================================================================
@@ -46,7 +45,7 @@
 // Debug Options
 //#define MAP_DEBUG                     // Debug for Map code. I suggest running in a hi-res
 										// mode and/or piping the output from the server to a file.
-#ifdef MAP_DEBUG
+#if MAP_DEBUG
 	#define MDEBUG(x) x
 #else
 	#define MDEBUG(x)
@@ -1155,7 +1154,7 @@ float already_chosen_map;
 #define TS_PRINT_LONG				2
 #define TS_PRINT_LONG_TO_ALL		3
 
-#ifndef TF_DEFS_ONLY
+#if !defined(TF_DEFS_ONLY)
 
 typedef struct
 {

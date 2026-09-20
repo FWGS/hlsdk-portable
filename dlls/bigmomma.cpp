@@ -12,7 +12,7 @@
 *   use or distribution of this code by or to any unlicensed person is illegal.
 *
 ****/
-#if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
+#if !OEM_BUILD && !HLDEMO_BUILD
 
 //=========================================================
 // monster template
@@ -113,8 +113,8 @@ IMPLEMENT_SAVERESTORE( CBMortar, CBaseEntity )
 #define bits_COND_NODE_SEQUENCE			( bits_COND_SPECIAL1 )		// pev->netname contains the name of a sequence to play
 
 // Attack distance constants
-#define	BIG_ATTACKDIST			170
-#define BIG_MORTARDIST			800
+#define	BIG_ATTACKDIST			170.0f
+#define BIG_MORTARDIST			800.0f
 #define BIG_MAXCHILDREN			20			// Max # of live headcrab children
 
 #define bits_MEMORY_CHILDPAIR		( bits_MEMORY_CUSTOM1 )
@@ -215,8 +215,8 @@ public:
 		if( m_crabTime < gpGlobals->time && m_crabCount < BIG_MAXCHILDREN )
 		{
 			// Don't spawn crabs inside each other
-			Vector mins = pev->origin - Vector( 32, 32, 0 );
-			Vector maxs = pev->origin + Vector( 32, 32, 0 );
+			Vector mins = pev->origin - Vector( 32.0f, 32.0f, 0.0f );
+			Vector maxs = pev->origin + Vector( 32.0f, 32.0f, 0.0f );
 
 			CBaseEntity *pList[2];
 			int count = UTIL_EntitiesInBox( pList, 2, mins, maxs, FL_MONSTER );
@@ -235,8 +235,8 @@ public:
 
 	void SetObjectCollisionBox( void )
 	{
-		pev->absmin = pev->origin + Vector( -95, -95, 0 );
-		pev->absmax = pev->origin + Vector( 95, 95, 190 );
+		pev->absmin = pev->origin + Vector( -95.0f, -95.0f, 0.0f );
+		pev->absmax = pev->origin + Vector( 95.0f, 95.0f, 190.0f );
 	}
 
 	BOOL CheckMeleeAttack1( float flDot, float flDist );	// Slash
@@ -378,6 +378,7 @@ void CBigMomma::SetYawSpeed( void )
 		break;
 	default:
 		ys = 90;
+		break;
 	}
 	pev->yaw_speed = ys;
 }
@@ -400,9 +401,9 @@ void CBigMomma::HandleAnimEvent( MonsterEvent_t *pEvent )
 
 			UTIL_MakeVectorsPrivate( pev->angles, forward, right, NULL );
 
-			Vector center = pev->origin + forward * 128;
-			Vector mins = center - Vector( 64, 64, 0 );
-			Vector maxs = center + Vector( 64, 64, 64 );
+			Vector center = pev->origin + forward * 128.0f;
+			Vector mins = center - Vector( 64.0f, 64.0f, 0.0f );
+			Vector maxs = center + Vector( 64.0f, 64.0f, 64.0f );
 
 			CBaseEntity *pList[8];
 			int count = UTIL_EntitiesInBox( pList, 8, mins, maxs, FL_MONSTER | FL_CLIENT );
@@ -420,22 +421,22 @@ void CBigMomma::HandleAnimEvent( MonsterEvent_t *pEvent )
 			if( pHurt )
 			{
 				pHurt->TakeDamage( pev, pev, gSkillData.bigmommaDmgSlash, DMG_CRUSH | DMG_SLASH );
-				pHurt->pev->punchangle.x = 15;
+				pHurt->pev->punchangle.x = 15.0f;
 				switch( pEvent->event )
 				{
 					case BIG_AE_MELEE_ATTACKBR:
-						pHurt->pev->velocity = pHurt->pev->velocity + ( forward * 150 ) + Vector( 0, 0, 250 ) - ( right * 200 );
+						pHurt->pev->velocity = pHurt->pev->velocity + ( forward * 150.0f ) + Vector( 0.0f, 0.0f, 250.0f ) - ( right * 200.0f );
 						break;
 					case BIG_AE_MELEE_ATTACKBL:
-						pHurt->pev->velocity = pHurt->pev->velocity + ( forward * 150 ) + Vector( 0, 0, 250 ) + ( right * 200 );
+						pHurt->pev->velocity = pHurt->pev->velocity + ( forward * 150.0f ) + Vector( 0.0f, 0.0f, 250.0f ) + ( right * 200.0f );
 						break;
 					case BIG_AE_MELEE_ATTACK1:
-						pHurt->pev->velocity = pHurt->pev->velocity + ( forward * 220 ) + Vector( 0, 0, 200 );
+						pHurt->pev->velocity = pHurt->pev->velocity + ( forward * 220.0f ) + Vector( 0.0f, 0.0f, 200.0f );
 						break;
 				}
 
 				pHurt->pev->flags &= ~FL_ONGROUND;
-				EMIT_SOUND_DYN( edict(), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pAttackHitSounds ), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
+				EMIT_SOUND_DYN( edict(), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pAttackHitSounds ), 1.0f, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
 			}
 		}
 		break;
@@ -475,10 +476,10 @@ void CBigMomma::HandleAnimEvent( MonsterEvent_t *pEvent )
 		case BIG_AE_JUMP_FORWARD:
 			ClearBits( pev->flags, FL_ONGROUND );
 
-			UTIL_SetOrigin (this, pev->origin + Vector ( 0 , 0 , 1) );// take her off ground so engine doesn't instantly reset onground 
+			UTIL_SetOrigin( this, pev->origin + Vector( 0.0f, 0.0f, 1.0f ) );// take her off ground so engine doesn't instantly reset onground 
 			UTIL_MakeVectors( pev->angles );
 
-			pev->velocity = (gpGlobals->v_forward * 200) + gpGlobals->v_up * 500;
+			pev->velocity = (gpGlobals->v_forward * 200.0f) + gpGlobals->v_up * 500.0f;
 			break;
 		case BIG_AE_EARLY_TARGET:
 			{
@@ -501,11 +502,11 @@ void CBigMomma::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecD
 		// didn't hit the sack?
 		if( pev->dmgtime != gpGlobals->time || ( RANDOM_LONG( 0, 10 ) < 1 ) )
 		{
-			UTIL_Ricochet( ptr->vecEndPos, RANDOM_FLOAT( 1, 2) );
+			UTIL_Ricochet( ptr->vecEndPos, RANDOM_FLOAT( 1.0f, 2.0f ) );
 			pev->dmgtime = gpGlobals->time;
 		}
 
-		flDamage = 0.1;// don't hurt the monster much, but allow bits_COND_LIGHT_DAMAGE to be generated
+		flDamage = 0.1f;// don't hurt the monster much, but allow bits_COND_LIGHT_DAMAGE to be generated
 	}
 	else if( gpGlobals->time > m_painSoundTime )
 	{
@@ -520,7 +521,7 @@ int CBigMomma::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, floa
 {
 	// Don't take any acid damage -- BigMomma's mortar is acid
 	if( bitsDamageType & DMG_ACID )
-		flDamage = 0;
+		flDamage = 0.0f;
 
 	if( !HasMemory( bits_MEMORY_PATH_FINISHED ) )
 	{
@@ -544,20 +545,20 @@ void CBigMomma::LayHeadcrab( void )
 	// Is this the second crab in a pair?
 	if( HasMemory( bits_MEMORY_CHILDPAIR ) )
 	{
-		m_crabTime = gpGlobals->time + RANDOM_FLOAT( 5, 10 );
+		m_crabTime = gpGlobals->time + RANDOM_FLOAT( 5.0f, 10.0f );
 		Forget( bits_MEMORY_CHILDPAIR );
 	}
 	else
 	{
-		m_crabTime = gpGlobals->time + RANDOM_FLOAT( 0.5, 2.5 );
+		m_crabTime = gpGlobals->time + RANDOM_FLOAT( 0.5f, 2.5f );
 		Remember( bits_MEMORY_CHILDPAIR );
 	}
 
 	TraceResult tr;
-	UTIL_TraceLine( pev->origin, pev->origin - Vector( 0, 0, 100 ), ignore_monsters, edict(), &tr );
+	UTIL_TraceLine( pev->origin, pev->origin - Vector( 0.0f, 0.0f, 100.0f ), ignore_monsters, edict(), &tr );
 	UTIL_DecalTrace( &tr, DECAL_MOMMABIRTH );
 
-	EMIT_SOUND_DYN( edict(), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pBirthSounds ), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
+	EMIT_SOUND_DYN( edict(), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pBirthSounds ), 1.0f, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
 	m_crabCount++;
 }
 
@@ -574,7 +575,7 @@ void CBigMomma::DeathNotice( entvars_t *pevChild )
 
 void CBigMomma::LaunchMortar( void )
 {
-	m_mortarTime = gpGlobals->time + RANDOM_FLOAT( 2, 15 );
+	m_mortarTime = gpGlobals->time + RANDOM_FLOAT( 2.0f, 15.0f );
 
 	Vector startPos = pev->origin;
 	startPos.z += 180;
@@ -598,8 +599,8 @@ void CBigMomma::LaunchMortar( void )
 
 	EMIT_SOUND_DYN( edict(), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pSackSounds ), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG( -5, 5 ) );
 	CBMortar *pBomb = CBMortar::Shoot( edict(), startPos, vecLaunch );
-	pBomb->pev->gravity = 1.0;
-	MortarSpray( startPos, Vector( 0, 0, 1 ), gSpitSprite, 24 );
+	pBomb->pev->gravity = 1.0f;
+	MortarSpray( startPos, Vector( 0.0f, 0.0f, 1.0f ), gSpitSprite, 24 );
 }
 
 //=========================================================
@@ -609,19 +610,19 @@ void CBigMomma::Spawn()
 {
 	Precache();
 
-	if (pev->model)
-		SET_MODEL(ENT(pev), STRING(pev->model)); //LRC
+	if( pev->model )
+		SET_MODEL( ENT( pev ), STRING( pev->model ) ); //LRC
 	else
 		SET_MODEL( ENT( pev ), "models/big_mom.mdl" );
-	UTIL_SetSize( pev, Vector( -32, -32, 0 ), Vector( 32, 32, 64 ) );
+	UTIL_SetSize( pev, Vector( -32.0f, -32.0f, 0.0f ), Vector( 32.0f, 32.0f, 64.0f ) );
 
 	pev->solid = SOLID_SLIDEBOX;
 	pev->movetype = MOVETYPE_STEP;
 	m_bloodColor = BLOOD_COLOR_GREEN;
 	if (pev->health == 0)
-		pev->health = 150 * gSkillData.bigmommaHealthFactor;
-	pev->view_ofs = Vector( 0, 0, 128 );// position of the eyes relative to monster's origin.
-	m_flFieldOfView = 0.3;// indicates the width of this monster's forward view cone ( as a dotproduct result )
+		pev->health = 150.0f * gSkillData.bigmommaHealthFactor;
+	pev->view_ofs = Vector( 0.0f, 0.0f, 128.0f );// position of the eyes relative to monster's origin.
+	m_flFieldOfView = 0.3f;// indicates the width of this monster's forward view cone ( as a dotproduct result )
 	m_MonsterState = MONSTERSTATE_NONE;
 
 	MonsterInit();
@@ -718,7 +719,7 @@ void CBigMomma::NodeReach( void )
 // Slash
 BOOL CBigMomma::CheckMeleeAttack1( float flDot, float flDist )
 {
-	if( flDot >= 0.7 )
+	if( flDot >= 0.7f )
 	{
 		if( flDist <= BIG_ATTACKDIST )
 			return TRUE;
@@ -742,8 +743,8 @@ BOOL CBigMomma::CheckRangeAttack1( float flDot, float flDist )
 		if( pEnemy )
 		{
 			Vector startPos = pev->origin;
-			startPos.z += 180;
-			pev->movedir = VecCheckSplatToss( pev, startPos, pEnemy->BodyTarget( pev->origin ), RANDOM_FLOAT( 150, 500 ) );
+			startPos.z += 180.0f;
+			pev->movedir = VecCheckSplatToss( pev, startPos, pEnemy->BodyTarget( pev->origin ), RANDOM_FLOAT( 150.0f, 500.0f ) );
 			if( pev->movedir != g_vecZero )
 				return TRUE;
 		}
@@ -920,7 +921,7 @@ void CBigMomma::StartTask( Task_t *pTask )
 	case TASK_NODE_DELAY:
 		m_nodeTime = gpGlobals->time + pTask->flData;
 		TaskComplete();
-		ALERT( at_aiconsole, "BM: FAIL! Delay %.2f\n", pTask->flData );
+		ALERT( at_aiconsole, "BM: FAIL! Delay %.2f\n", (double)pTask->flData );
 		break;
 	case TASK_PROCESS_NODE:
 		ALERT( at_aiconsole, "BM: Reached node %s\n", STRING( pev->netname ) );
@@ -961,7 +962,7 @@ void CBigMomma::StartTask( Task_t *pTask )
 		if( m_hTargetEnt->pev->spawnflags & SF_INFOBM_WAIT )
 			ALERT( at_aiconsole, "BM: Wait at node %s forever\n", STRING( pev->netname ) );
 		else
-			ALERT( at_aiconsole, "BM: Wait at node %s for %.2f\n", STRING( pev->netname ), GetNodeDelay() );
+			ALERT( at_aiconsole, "BM: Wait at node %s for %.2f\n", STRING( pev->netname ), (double)GetNodeDelay() );
 		break;
 
 
@@ -1033,8 +1034,10 @@ void CBigMomma::RunTask( Task_t *pTask )
 			return;
 
 		if( gpGlobals->time > m_flWaitFinished )
+		{
 			TaskComplete();
-		ALERT( at_aiconsole, "BM: The WAIT is over!\n" );
+			ALERT( at_aiconsole, "BM: The WAIT is over!\n" );
+		}
 		break;
 	case TASK_PLAY_NODE_PRESEQUENCE:
 	case TASK_PLAY_NODE_SEQUENCE:
@@ -1049,5 +1052,4 @@ void CBigMomma::RunTask( Task_t *pTask )
 		break;
 	}
 }
-
 #endif

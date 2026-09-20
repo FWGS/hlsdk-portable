@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef DEMO_API_H
+#if !defined(DEMO_API_H)
 #define DEMO_API_H
 
 typedef struct demo_api_s

@@ -20,7 +20,7 @@
 // CHud handles the message, calculation, and drawing the HUD
 //
 #pragma once
-#ifndef HUD_H
+#if !defined(HUD_H)
 #define HUD_H
 #define FOG_LIMIT 30000
 #define RGB_YELLOWISH 0x00FFA000 //255,160,0
@@ -32,6 +32,7 @@
 #include "wrect.h"
 #include "cl_dll.h"
 #include "ammo.h"
+#include "cvardef.h"
 
 #define DHN_DRAWZERO 1
 #define DHN_2DIGITS  2
@@ -66,6 +67,9 @@ typedef struct cvar_s cvar_t;
 
 #define	MAX_MOTD_LENGTH				1536
 
+#define MAX_SERVERNAME_LENGTH	64
+#define MAX_TEAMNAME_SIZE 32
+
 //
 //-----------------------------------------------------
 //
@@ -92,6 +96,7 @@ struct HUDLIST
 
 //
 //-----------------------------------------------------
+#include "voice_status.h" // base voice handling class
 #include "hud_spectator.h"
 #define _cdecl
 
@@ -178,6 +183,7 @@ public:
 	int Init( void );
 	int VidInit( void );
 	int Draw( float flTime );
+	void Think();
 	int MsgFunc_Geiger( const char *pszName, int iSize, void *pbuf );
 	
 private:
@@ -200,11 +206,6 @@ private:
 	int m_iPos;
 };
 
-//
-//-----------------------------------------------------
-//
-// REMOVED: Vgui has replaced this.
-//
 class CHudMOTD : public CHudBase
 {
 public:
@@ -213,15 +214,15 @@ public:
 	int Draw( float flTime );
 	void Reset( void );
 
-	int MsgFunc_MOTD( const char *pszName, int iSize, void *pbuf );
+	bool HandleMOTDMessage( const char *pszName, int iSize, void *pbuf );
 	void Scroll( int dir );
 	void Scroll( float amount );
 	float scroll;
 	bool m_bShow;
 
+	char m_szMOTD[MAX_MOTD_LENGTH];
 protected:
 	static int MOTD_DISPLAY_TIME;
-	char m_szMOTD[MAX_MOTD_LENGTH];
 
 	int m_iLines;
 	int m_iMaxLength;
@@ -243,6 +244,9 @@ public:
 	int MsgFunc_TeamScores( const char *pszName, int iSize, void *pbuf );
 	int MsgFunc_TeamNames( const char *pszName, int iSize, void *pbuf );
 	void DeathMsg( int killer, int victim );
+	void RebuildTeams();
+	void UpdateTeams();
+	int BestTeam();
 
 	int m_iNumTeams;
 
@@ -250,8 +254,6 @@ public:
 	int m_fLastKillTime;
 	int m_iPlayerNum;
 	int m_iShowscoresHeld;
-
-	void GetAllPlayersInfo( void );
 };
 
 //
@@ -286,41 +288,6 @@ protected:
 	// an array of colors...one color for each line
 	float *m_pflNameColors[MAX_STATUSBAR_LINES];
 };
-
-//
-//-----------------------------------------------------
-//
-// REMOVED: Vgui has replaced this.
-//
-/*
-class CHudScoreboard : public CHudBase
-{
-public:
-	int Init( void );
-	void InitHUDData( void );
-	int VidInit( void );
-	int Draw( float flTime );
-	int DrawPlayers( int xoffset, float listslot, int nameoffset = 0, char *team = NULL ); // returns the ypos where it finishes drawing
-	void UserCmd_ShowScores( void );
-	void UserCmd_HideScores( void );
-	int MsgFunc_ScoreInfo( const char *pszName, int iSize, void *pbuf );
-	int MsgFunc_TeamInfo( const char *pszName, int iSize, void *pbuf );
-	int MsgFunc_TeamScore( const char *pszName, int iSize, void *pbuf );
-	void DeathMsg( int killer, int victim );
-
-	int m_iNumTeams;
-
-	int m_iLastKilledBy;
-	int m_fLastKillTime;
-	int m_iPlayerNum;
-	int m_iShowscoresHeld;
-
-	void GetAllPlayersInfo( void );
-
-private:
-	struct cvar_s *cl_showpacketloss;
-};
-*/
 
 struct extra_player_info_t
 {
@@ -656,12 +623,17 @@ public:
 	int		m_iFOV;
 	int		m_Teamplay;
 	int		m_iRes;
-	float	m_flScale;
+	int		m_iMaxRes;
+        int		m_iHudNumbersYOffset;
 	cvar_t  *m_pCvarStealMouse;
 	cvar_t	*m_pCvarDraw;
+	cvar_t  *m_pAllowHD;
 	CShinySurface *m_pShinySurface; //LRC
 	Vector	m_vecSkyPos; //LRC
 	int		m_iSkyMode;  //LRC
+
+	cvar_t  *m_pCvarMOTDVGUI;
+	cvar_t  *m_pCvarScoreboardVGUI;
 
 	int m_iFontHeight;
 	int DrawHudNumber( int x, int y, int iFlags, int iNumber, int r, int g, int b );
@@ -692,6 +664,13 @@ public:
 	{
 		return m_rgrcRects[index];
 	}
+
+	inline bool IsHL25( void )
+	{
+		// a1ba: only HL25 have higher resolution HUD spritesheets
+		// and only accept HUD style changes if user has allowed HD sprites
+		return m_iMaxRes > 640 && m_pAllowHD->value;
+	}
 	
 	int GetSpriteIndex( const char *SpriteName );	// gets a sprite index, for use in the m_rghSprites[] array
 
@@ -712,9 +691,9 @@ public:
 	CHudAmmoSecondary	m_AmmoSecondary;
 	CHudTextMessage m_TextMessage;
 	CHudStatusIcons m_StatusIcons;
+	CHudParticle    m_Particle; // (LRC) -- 30/08/02 November235: Particles to Order
 	CHudScoreboard	m_Scoreboard;
 	CHudMOTD	m_MOTD;
-	CHudParticle	m_Particle; // (LRC) -- 30/08/02 November235: Particles to Order
 
 	void Init( void );
 	void VidInit( void );
@@ -747,6 +726,7 @@ public:
 	int	m_iWeaponBits;
 	int	m_fPlayerDead;
 	int m_iIntermission;
+	bool m_inScope;
 
 	// sprite indexes
 	int m_HUD_number_0;
@@ -756,6 +736,11 @@ public:
 	void AddHudElem( CHudBase *p );
 
 	float GetSensitivity();
+
+	void GetAllPlayersInfo( void );
+
+	bool UseVguiMOTD();
+	bool UseVguiScoreBoard();
 };
 
 extern CHud gHUD;

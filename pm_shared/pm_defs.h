@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef PM_DEFS_H
+#if !defined(PM_DEFS_H)
 #define PM_DEFS_H
 
 #define MAX_PHYSENTS	600		// Must have room for all entities in the world.
@@ -187,14 +187,14 @@ typedef struct playermove_s
 	void		(*PM_Particle)( float *origin, int color, float life, int zpos, int zvel );
 	int		(*PM_TestPlayerPosition)( float *pos, pmtrace_t *ptrace );
 	void		(*Con_NPrintf)( int idx, char *fmt, ... );
-	void		(*Con_DPrintf)( char *fmt, ... );
-	void		(*Con_Printf)( char *fmt, ... );
+	void		(*Con_DPrintf)( const char *fmt, ... );
+	void		(*Con_Printf)( const char *fmt, ... );
 	double		(*Sys_FloatTime)( void );
 	void		(*PM_StuckTouch)( int hitent, pmtrace_t *ptraceresult );
 	int		(*PM_PointContents)( float *p, int *truecontents /*filled in if this is non-null*/ );
 	int		(*PM_TruePointContents)( float *p );
 	int		(*PM_HullPointContents)( struct hull_s *hull, int num, float *p );   
-#ifdef __MINGW32__
+#if __MINGW32__
 	pmtrace_t		*(*PM_PlayerTrace_real)( pmtrace_t * retvalue, float *start, float *end, int traceFlags, int ignore_pe );
 
 #else
@@ -207,8 +207,8 @@ typedef struct playermove_s
 	void		(*PM_GetModelBounds)( struct model_s *mod, float *mins, float *maxs );
 	void		*(*PM_HullForBsp)( physent_t *pe, float *offset );
 	float		(*PM_TraceModel)( physent_t *pEnt, float *start, float *end, trace_t *trace );
-	int		(*COM_FileSize)( char *filename );
-	byte		*(*COM_LoadFile)( char *path, int usehunk, int *pLength );
+	int		(*COM_FileSize)( const char *filename );
+	byte		*(*COM_LoadFile)( const char *path, int usehunk, int *pLength );
 	void		(*COM_FreeFile)( void *buffer );
 	char		*(*memfgets)( byte *pMemFile, int fileSize, int *pFilePos, char *pBuffer, int bufferSize );
 
@@ -218,7 +218,7 @@ typedef struct playermove_s
 	void		(*PM_PlaySound)( int channel, const char *sample, float volume, float attenuation, int fFlags, int pitch );
 	const char	*(*PM_TraceTexture)( int ground, float *vstart, float *vend );
 	void		(*PM_PlaybackEventFull)( int flags, int clientindex, unsigned short eventindex, float delay, float *origin, float *angles, float fparam1, float fparam2, int iparam1, int iparam2, int bparam1, int bparam2 );
-#ifdef __MINGW32__
+#if __MINGW32__
 	pmtrace_t		*(*PM_PlayerTraceEx_real) (pmtrace_t *retvalue, float *start, float *end, int traceFlags, int (*pfnIgnore)( physent_t *pe ));
 #else
 	pmtrace_t		(*PM_PlayerTraceEx) (float *start, float *end, int traceFlags, int (*pfnIgnore)( physent_t *pe ));
@@ -228,7 +228,7 @@ typedef struct playermove_s
 	struct msurface_s	*(*PM_TraceSurface)( int ground, float *vstart, float *vend );
 } playermove_t;
 
-#ifdef __MINGW32__
+#if __MINGW32__
 static pmtrace_t _pm_globalresult, _pm_globaltmp;
 	static inline pmtrace_t PM_PlayerTrace_wrap( float *start, float *end, int traceFlags, int ignore_pe, playermove_t *pmove )
 	{

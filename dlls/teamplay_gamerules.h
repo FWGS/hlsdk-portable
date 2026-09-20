@@ -16,7 +16,7 @@
 // teamplay_gamerules.h
 //
 #pragma once
-#ifndef TEAMPLAY_GAMERULES_H
+#if !defined(TEAMPLAY_GAMERULES_H)
 #define TEAMPLAY_GAMERULES_H
 
 #define MAX_TEAMNAME_LENGTH		16

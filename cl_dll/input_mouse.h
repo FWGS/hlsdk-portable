@@ -1,5 +1,5 @@
 #pragma once
-#ifndef INPUT_MOUSE_H
+#if !defined(INPUT_MOUSE_H)
 #define INPUT_MOUSE_H
 #include "cl_dll.h"
 #include "usercmd.h"
@@ -19,6 +19,10 @@ public:
 	virtual void IN_Commands( void ) = 0;
 	virtual void IN_Shutdown( void ) = 0;
 	virtual void IN_Init( void ) = 0;
+	virtual void IN_ResetMouse( void ) = 0;
+	virtual void Joy_AdvancedUpdate( void ) = 0;
+	virtual void IgnoreNextMouseDelta() = 0;
+	virtual void IN_SetVisibleMouse( bool visible ) = 0;
 };
 
 class FWGSInput : public AbstractInput
@@ -35,6 +39,10 @@ public:
 	virtual void IN_Commands( void );
 	virtual void IN_Shutdown( void );
 	virtual void IN_Init( void );
+	virtual void IN_ResetMouse( void ) {}
+	virtual void Joy_AdvancedUpdate( void ) {}
+	virtual void IgnoreNextMouseDelta() {}
+	virtual void IN_SetVisibleMouse( bool visible ) {}
 
 protected:
 	float ac_forwardmove;
@@ -45,8 +53,23 @@ protected:
 };
 
 // No need for goldsource input support on the platforms that are not supported by GoldSource.
-#if defined(GOLDSOURCE_SUPPORT) && (defined(_WIN32) || defined(__linux__) || defined(__APPLE__)) && (defined(__i386) || defined(_M_IX86))
-#define SUPPORT_GOLDSOURCE_INPUT
+#if GOLDSOURCE_SUPPORT && ( XASH_WIN32 || ( XASH_LINUX && !XASH_ANDROID ) || XASH_APPLE ) && XASH_X86
+#define SUPPORT_GOLDSOURCE_INPUT	1
+
+#if XASH_WIN32
+#define HSPRITE WINDOWS_HSPRITE
+#include <windows.h>
+#undef HSPRITE
+#else
+typedef struct point_s
+{
+	int x;
+	int y;
+} POINT;
+#define GetCursorPos(x)
+#define SetCursorPos(x,y)
+#endif
+
 class GoldSourceInput : public AbstractInput
 {
 public:
@@ -61,11 +84,19 @@ public:
 	virtual void IN_Commands( void );
 	virtual void IN_Shutdown( void );
 	virtual void IN_Init( void );
+	virtual void IN_ResetMouse( void );
+	virtual void Joy_AdvancedUpdate( void );
+	virtual void IgnoreNextMouseDelta();
+	virtual void IN_SetVisibleMouse( bool visible );
 
 protected:
 	void IN_GetMouseDelta( int *pOutX, int *pOutY);
 	void IN_MouseMove ( float frametime, usercmd_t *cmd);
 	void IN_StartupMouse (void);
+	void IN_StartupJoystick (void);
+	int IN_ReadJoystick (void);
+	void IN_JoyMove ( float frametime, usercmd_t *cmd );
+	bool UseSDL2Joystick();
 
 	int         mouse_buttons;
 	int         mouse_oldbuttonstate;
@@ -73,7 +104,10 @@ protected:
 	int         old_mouse_x, old_mouse_y, mx_accum, my_accum;
 	int         mouseinitialized;
 	void* sdl2Lib;
+	bool ignoreNextDelta;
 };
 #endif
+
+AbstractInput* CurrentMouseInput();
 
 #endif

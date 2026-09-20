@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef ACTIVITYMAP_H
+#if !defined(ACTIVITYMAP_H)
 #define ACTIVITYMAP_H
 #define _A( a ) { a, #a }
 

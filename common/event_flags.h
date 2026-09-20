@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef EVENT_FLAGS_H
+#if !defined(EVENT_FLAGS_H)
 #define EVENT_FLAGS_H
 
 // Skip local host for event send.

@@ -28,6 +28,8 @@ extern "C"
 #include <string.h>
 #include <ctype.h>
 
+#include "vgui_TeamFortressViewport.h"
+
 extern "C" 
 {
 	struct kbutton_s DLLEXPORT *KB_Find( const char *name );
@@ -376,7 +378,9 @@ Return 1 to allow engine to process the key, otherwise, act on it as needed
 ============
 */
 int DLLEXPORT HUD_Key_Event( int down, int keynum, const char *pszCurrentBinding )
-{	
+{
+	if (gViewPort)
+		return gViewPort->KeyInput(down, keynum, pszCurrentBinding);
 	return 1;
 }
 
@@ -645,11 +649,22 @@ void IN_Impulse( void )
 void IN_ScoreDown( void )
 {
 	KeyDown( &in_score );
+	if ( gHUD.UseVguiScoreBoard() && gViewPort )
+	{
+		gViewPort->ShowScoreBoard();
+		return;
+	}
+	gHUD.m_Scoreboard.UserCmd_ShowScores();
 }
 
 void IN_ScoreUp( void )
 {
 	KeyUp( &in_score );
+	if ( gViewPort )
+	{
+		gViewPort->HideScoreBoard();
+	}
+	gHUD.m_Scoreboard.UserCmd_HideScores();
 }
 
 void IN_MLookUp( void )
@@ -819,7 +834,7 @@ void DLLEXPORT CL_CreateMove( float frametime, struct usercmd_s *cmd, int active
 
 		// clip to maxspeed
 		spd = gEngfuncs.GetClientMaxspeed();
-		if( spd != 0.0 )
+		if( spd != 0.0f )
 		{
 			// scale the 3 speeds so that the total velocity is not > cl.maxspeed
 			float fmov = sqrt( ( cmd->forwardmove * cmd->forwardmove ) + ( cmd->sidemove * cmd->sidemove ) + ( cmd->upmove * cmd->upmove ) );
@@ -846,6 +861,10 @@ void DLLEXPORT CL_CreateMove( float frametime, struct usercmd_s *cmd, int active
 	// set button and flag bits
 	//
 	cmd->buttons = CL_ButtonBits( 1 );
+
+	// If they're in a modal dialog, ignore the attack button.
+	if(GetClientVoiceMgr()->IsInSquelchMode())
+		cmd->buttons &= ~IN_ATTACK;
 
 	// Using joystick?
 	if( in_joystick->value )
@@ -1082,6 +1101,10 @@ void InitInput( void )
 	gEngfuncs.pfnAddCommand( "-reload", IN_ReloadUp );
 	gEngfuncs.pfnAddCommand( "+alt1", IN_Alt1Down );
 	gEngfuncs.pfnAddCommand( "-alt1", IN_Alt1Up );
+	gEngfuncs.pfnAddCommand( "+score", IN_ScoreDown );
+	gEngfuncs.pfnAddCommand( "-score", IN_ScoreUp );
+	gEngfuncs.pfnAddCommand( "+showscores", IN_ScoreDown );
+	gEngfuncs.pfnAddCommand( "-showscores", IN_ScoreUp );
 	gEngfuncs.pfnAddCommand( "+graph", IN_GraphDown );
 	gEngfuncs.pfnAddCommand( "-graph", IN_GraphUp );
 	gEngfuncs.pfnAddCommand( "+break", IN_BreakDown );

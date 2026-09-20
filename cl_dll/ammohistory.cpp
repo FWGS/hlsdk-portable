@@ -131,7 +131,7 @@ int HistoryResource::DrawAmmoHistory( float flTime )
 
 				// Draw the pic
 				int ypos = ScreenHeight - (AMMO_PICKUP_PICK_HEIGHT + (AMMO_PICKUP_GAP * i));
-				int xpos = ScreenWidth - 24;
+				int xpos = ScreenWidth - (rcPic.right - rcPic.left);
 				if( spr && *spr )    // weapon isn't loaded yet so just don't draw the pic
 				{
 					// the dll has to make sure it has sent info the weapons you need
@@ -142,7 +142,7 @@ int HistoryResource::DrawAmmoHistory( float flTime )
 				// do not draw black console string
 				if( !( ( hud_textmode->value == 2 ) && ( scale < 200 ) ) )
 					// Draw the number
-					gHUD.DrawHudNumberString( xpos - 10, ypos, xpos - 100, rgAmmoHistory[i].iCount, r, g, b );
+					gHUD.DrawHudNumberString( xpos - 14, ypos, xpos - 104, rgAmmoHistory[i].iCount, r, g, b );
 			}
 			else if( rgAmmoHistory[i].type == HISTSLOT_WEAP )
 			{

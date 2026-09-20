@@ -8,7 +8,7 @@
 // Camera.h  --  defines and such for a 3rd person camera
 // NOTE: must include quakedef.h first
 #pragma once
-#ifndef _CAMERA_H_
+#if !defined(_CAMERA_H_)
 #define _CAMERA_H_
 
 // pitch, yaw, dist

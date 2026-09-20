@@ -33,7 +33,7 @@ private:
 
 LINK_ENTITY_TO_CLASS( monster_furniture, CFurniture );
 
-TYPEDESCRIPTION	CFurniture::m_SaveData[] = 
+TYPEDESCRIPTION	CFurniture::m_SaveData[] =
 {
 	DEFINE_FIELD( CFurniture, m_vecSize, FIELD_VECTOR),
 };
@@ -68,7 +68,7 @@ void CFurniture :: KeyValue( KeyValueData *pkvd )
 //=========================================================
 void CFurniture :: Spawn( )
 {
-	PRECACHE_MODEL((char *)STRING(pev->model));
+	PRECACHE_MODEL(STRING(pev->model));
 	SET_MODEL(ENT(pev),	STRING(pev->model));
 
 	//pev->movetype	= MOVETYPE_NONE;

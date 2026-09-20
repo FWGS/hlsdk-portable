@@ -26,7 +26,7 @@ Vector VecCheckSplatToss( entvars_t *pev, const Vector &vecSpot1, Vector vecSpot
 	Vector			vecScale;
 	Vector			vecGrenadeVel;
 	Vector			vecTemp;
-	float			flGravity = g_psv_gravity->value;
+	float			flGravity = Q_max( g_psv_gravity->value, 0.1f );
 
 	// calculate the midpoint and apex of the 'triangle'
 	vecMidPoint = vecSpot1 + (vecSpot2 - vecSpot1) * 0.5;
@@ -51,7 +51,6 @@ Vector VecCheckSplatToss( entvars_t *pev, const Vector &vecSpot1, Vector vecSpot
 	float time = speed / flGravity;
 	vecGrenadeVel = (vecSpot2 - vecSpot1);
 	vecGrenadeVel.z = 0;
-	float distance = vecGrenadeVel.Length();
 	
 	// Travel half the distance to the target in that time (apex is at the midpoint)
 	vecGrenadeVel = vecGrenadeVel * ( 0.5 / time );
@@ -102,7 +101,7 @@ void CBMortar:: Spawn( void )
 
 	UTIL_SetSize( pev, Vector( 0, 0, 0), Vector(0, 0, 0) );
 
-	m_maxFrame = (float) MODEL_FRAMES( pev->modelindex ) - 1;
+	m_maxFrame = MODEL_FRAMES( pev->modelindex ) - 1;
 	pev->dmgtime = gpGlobals->time + 0.4;
 }
 

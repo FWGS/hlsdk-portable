@@ -34,9 +34,7 @@ int UseTexture(HSPRITE &hsprSpr, char * str)
 {
 	if (hsprSpr == 0)
 	{
-		char sz[256];
-		sprintf( sz, "%s", str );
-		hsprSpr = SPR_Load( sz );
+		hsprSpr = SPR_Load( str );
 	}
 
 	return gEngfuncs.pTriAPI->SpriteTexture( (struct model_s *)gEngfuncs.GetSpritePointer( hsprSpr ), 0 );
@@ -54,7 +52,7 @@ CShinySurface::CShinySurface( float fScale, float fAlpha, float fMinX, float fMa
 	m_fMaxX = fMaxX; m_fMaxY = fMaxY;
 	m_fZ = fZ;
 	m_hsprSprite = 0;
-	sprintf( m_szSprite, "%s", szSprite );
+	strcpy( m_szSprite, szSprite );
 	m_pNext = NULL;
 }
 
@@ -105,13 +103,13 @@ void CShinySurface::Draw(const vec3_t &org)
 //	gEngfuncs.pTriAPI->Color4f( 1.0, 1.0, 1.0, m_fAlpha );
 	gEngfuncs.pTriAPI->Begin( TRI_QUADS );
 		gEngfuncs.pTriAPI->TexCoord2f(	fMinTX,		fMinTY					);
-		gEngfuncs.pTriAPI->Vertex3f  (	m_fMinX,	m_fMinY,	m_fZ+0.02	); // add 0.02 to avoid z-buffer problems
+		gEngfuncs.pTriAPI->Vertex3f  (	m_fMinX,	m_fMinY,	m_fZ+0.02f	); // add 0.02 to avoid z-buffer problems
 		gEngfuncs.pTriAPI->TexCoord2f(	fMinTX,		fMaxTY					);
-		gEngfuncs.pTriAPI->Vertex3f  (	m_fMinX,	m_fMaxY,	m_fZ+0.02	);
+		gEngfuncs.pTriAPI->Vertex3f  (	m_fMinX,	m_fMaxY,	m_fZ+0.02f	);
 		gEngfuncs.pTriAPI->TexCoord2f(	fMaxTX,		fMaxTY					);
-		gEngfuncs.pTriAPI->Vertex3f  (	m_fMaxX,	m_fMaxY,	m_fZ+0.02	);
+		gEngfuncs.pTriAPI->Vertex3f  (	m_fMaxX,	m_fMaxY,	m_fZ+0.02f	);
 		gEngfuncs.pTriAPI->TexCoord2f(	fMaxTX,		fMinTY					);
-		gEngfuncs.pTriAPI->Vertex3f  (	m_fMaxX,	m_fMinY,	m_fZ+0.02	);
+		gEngfuncs.pTriAPI->Vertex3f  (	m_fMaxX,	m_fMinY,	m_fZ+0.02f	);
 	gEngfuncs.pTriAPI->End();
 }
 
@@ -121,8 +119,8 @@ void CShinySurface::Draw(const vec3_t &org)
 
 
 //LRCT
-//#define TEST_IT
-#if defined( TEST_IT )
+//#define TEST_IT	1
+#if TEST_IT
 
 /*
 =================
@@ -148,10 +146,8 @@ void Draw_Triangles( void )
 
 	if( gHUD.m_hsprCursor == 0 )
 	{
-		char sz[256];
-//LRCT		sprintf( sz, "sprites/cursor.spr" );
-		sprintf( sz, "sprites/bubble.spr" ); //LRCT
-		gHUD.m_hsprCursor = SPR_Load( sz );
+//LRCT		gHUD.m_hsprCursor = SPR_Load( "sprites/cursor.spr" );
+		gHUD.m_hsprCursor = SPR_Load( "sprites/bubble.spr" ); //LRCT
 	}
 
 	if( !gEngfuncs.pTriAPI->SpriteTexture( (struct model_s *)gEngfuncs.GetSpritePointer( gHUD.m_hsprCursor ), 0 ) )
@@ -192,6 +188,10 @@ void BlackFog ( void )
 	//Not in water and we want fog.
 	static float fColorBlack[3] = {0,0,0};
 	bool bFog = g_iWaterLevel < 2 && g_fStartDist > 0 && g_fEndDist > 0;
+
+	if( g_fEndDist > 0 )
+		gEngfuncs.pTriAPI->FogParams( 0.0005f, true );
+
 	if (bFog)
 		gEngfuncs.pTriAPI->Fog ( fColorBlack, g_fStartDist, g_fEndDist, bFog );
 	else
@@ -218,7 +218,7 @@ Non-transparent triangles-- add them here
 void DLLEXPORT HUD_DrawNormalTriangles( void )
 {
 	gHUD.m_Spectator.DrawOverview();
-#if defined( TEST_IT )
+#if TEST_IT
 //	Draw_Triangles();
 #endif
 }
@@ -248,7 +248,7 @@ void DLLEXPORT HUD_DrawTransparentTriangles( void )
 	// LRC: draw and update particle systems
 	g_pParticleSystems->UpdateSystems(fTime - fOldTime);
 
-#if defined( TEST_IT )
+#if TEST_IT
 //	Draw_Triangles();
 #endif
 }

@@ -12,10 +12,11 @@
 *   use or distribution of this code by or to any unlicensed person is illegal.
 *
 ****/
-#ifndef TALKMONSTER_H
+#pragma once
+#if !defined(TALKMONSTER_H)
 #define TALKMONSTER_H
 
-#ifndef MONSTERS_H
+#if !defined(MONSTERS_H)
 #include "monsters.h"
 #endif
 
@@ -24,7 +25,7 @@
 // Used for scientists and barneys
 //=========================================================
 
-#define TALKRANGE_MIN 500.0				// don't talk to anyone farther away than this
+#define TALKRANGE_MIN 500.0f				// don't talk to anyone farther away than this
 
 #define TLK_STARE_DIST	128				// anyone closer than this and looking at me is probably staring at me.
 
@@ -165,8 +166,8 @@ public:
 	float		m_useTime;						// Don't allow +USE until this time
 	string_t		m_iszUse;						// Custom +USE sentence group (follow)
 	string_t		m_iszUnUse;						// Custom +USE sentence group (stop following)
-	int			m_iszDecline;					// Custom +USE sentence group (refuse to follow) LRC
-	int			m_iszSpeakAs;					// Change the prefix for all this monster's speeches LRC
+	string_t		m_iszDecline;					// Custom +USE sentence group (refuse to follow) LRC
+	string_t		m_iszSpeakAs;					// Change the prefix for all this monster's speeches LRC
 
 	float		m_flLastSaidSmelled;// last time we talked about something that stinks
 	float		m_flStopTalkTime;// when in the future that I'll be done saying this sentence.

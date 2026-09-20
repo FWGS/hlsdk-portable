@@ -114,6 +114,7 @@ class CRuleBrushEntity : public CRuleEntity
 {
 public:
 	void		Spawn( void );
+	int ObjectCaps() { return CRuleEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
 
 private:
 };
@@ -172,7 +173,7 @@ void CGameScore::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE us
 		return;
 
 	// Only players can use this
-	if( pActivator->IsPlayer() )
+	if( pActivator && pActivator->IsPlayer() )
 	{
 		if( AwardToTeam() )
 		{
@@ -324,7 +325,7 @@ void CGameText::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE use
 	}
 	else
 	{
-		if ( pActivator && pActivator->IsNetClient() )
+		if( pActivator && pActivator->IsNetClient() )
 		{
 			UTIL_HudMessage( pActivator, m_textParms, MessageGet() );
 		}
@@ -817,7 +818,7 @@ void CGamePlayerEquip::KeyValue( KeyValueData *pkvd )
 			{
 				char tmp[128];
 
-				UTIL_StripToken( pkvd->szKeyName, tmp );
+				UTIL_StripToken( pkvd->szKeyName, tmp, sizeof( tmp ));
 
 				m_weaponNames[i] = ALLOC_STRING( tmp );
 				m_weaponCount[i] = atoi( pkvd->szValue );
@@ -856,6 +857,10 @@ void CGamePlayerEquip::EquipPlayer( CBaseEntity *pEntity )
 	{
 		if( !m_weaponNames[i] )
 			break;
+
+		if( g_pGameRules->IsBustingGame() && !strcmp( STRING( m_weaponNames[i] ), "weapon_egon" ))
+			continue;
+
 		for( int j = 0; j < m_weaponCount[i]; j++ )
 		{
  			pPlayer->GiveNamedItem( STRING( m_weaponNames[i] ) );

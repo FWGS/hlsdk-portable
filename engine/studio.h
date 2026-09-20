@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef STUDIO_H
+#if !defined(STUDIO_H)
 #define STUDIO_H
 
 /*
@@ -201,7 +201,7 @@ typedef struct
 	vec3_t		bbmax;		
 } mstudiobbox_t;
 
-#ifndef CACHE_USER
+#if !defined(CACHE_USER)
 #define CACHE_USER
 typedef struct cache_user_s
 {

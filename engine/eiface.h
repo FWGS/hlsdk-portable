@@ -13,10 +13,10 @@
 *
 ****/
 #pragma once
-#ifndef EIFACE_H
+#if !defined(EIFACE_H)
 #define EIFACE_H
 
-#ifdef HLDEMO_BUILD
+#if HLDEMO_BUILD
 #define INTERFACE_VERSION       	001
 #else  // !HLDEMO_BUILD, i.e., regular version of HL
 #define INTERFACE_VERSION		140
@@ -268,6 +268,9 @@ typedef struct enginefuncs_s
 	void	(*pfnQueryClientCvarValue)( const edict_t *player, const char *cvarName );
 	void	(*pfnQueryClientCvarValue2)( const edict_t *player, const char *cvarName, int requestID );
 	int	(*CheckParm)( char *parm, char **ppnext );
+
+	// added in 8279
+	edict_t* (*pfnPEntityOfEntIndexAllEntities)( int iEntIndex );
 } enginefuncs_t;
 // ONLY ADD NEW FUNCTIONS TO THE END OF THIS STRUCT.  INTERFACE VERSION IS FROZEN AT 138
 	
@@ -355,7 +358,7 @@ typedef enum _fieldtypes
 	FIELD_TYPECOUNT		// MUST BE LAST
 } FIELDTYPE;
 
-#if !defined(offsetof) && !defined(__GNUC__)
+#if !defined(offsetof) && !__GNUC__
 #define offsetof(s,m)	(size_t)&(((s *)0)->m)
 #endif
 
@@ -380,7 +383,7 @@ typedef struct
 	short		flags;
 } TYPEDESCRIPTION;
 
-#ifndef ARRAYSIZE
+#if !defined(ARRAYSIZE)
 #define ARRAYSIZE(p)	(sizeof(p)/sizeof(p[0]))
 #endif
 

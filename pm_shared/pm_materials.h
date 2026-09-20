@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef PM_MATERIALS_H
+#if !defined(PM_MATERIALS_H)
 #define PM_MATERIALS_H
 
 #define CBTEXTURENAMEMAX		13 		// only load first n chars of name

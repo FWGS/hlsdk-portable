@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef BEAMDEF_H
+#if !defined(BEAMDEF_H)
 #define BEAMDEF_H
 
 #define FBEAM_STARTENTITY		0x00000001

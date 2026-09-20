@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef CONST_H
+#if !defined(CONST_H)
 #define CONST_H
 //
 // Constants shared by the engine and dlls
@@ -127,7 +127,8 @@
 
 // entity flags
 #define EFLAG_SLERP			1	// do studio interpolation of this entity
-		
+#define EFLAG_FLESH_SOUND		2
+
 //
 // temp entity events
 //
@@ -749,11 +750,10 @@ typedef unsigned short	word;
 #undef true
 #undef false
 
-#ifndef __cplusplus
-typedef enum { false, true }	qboolean;
-#else 
-typedef int qboolean;
+#if !__cplusplus &&  __STDC_VERSION__ < 202311L
+enum { false, true };
 #endif
+typedef int qboolean;
 
 typedef struct
 {

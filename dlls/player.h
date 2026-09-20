@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef PLAYER_H
+#if !defined(PLAYER_H)
 #define PLAYER_H
 
 #include "pm_materials.h"
@@ -205,7 +205,7 @@ public:
 	Vector				m_vecAutoAim;
 	BOOL				m_fOnTarget;
 	int					m_iDeaths;
-	float				m_iRespawnFrames;	// used in PlayerDeathThink() to make sure players can always respawn
+	float				m_flRespawnTimer;	// used in PlayerDeathThink() to make sure players can always respawn
 
 	int m_lastx, m_lasty;  // These are the previous update's crosshair angles, DON"T SAVE/RESTORE
 
@@ -285,6 +285,7 @@ public:
 	void DropPlayerItem ( char *pszItemName );
 	BOOL HasPlayerItem( CBasePlayerItem *pCheckItem );
 	BOOL HasNamedPlayerItem( const char *pszItemName );
+	BOOL HasPlayerItemFromID( int nID );
 	BOOL HasWeapons( void );// do I have ANY weapons?
 	void SelectPrevItem( int iItem );
 	void SelectNextItem( int iItem );
@@ -334,7 +335,7 @@ public:
 	float m_flPlayAftershock;
 	float m_flNextAmmoBurn;// while charging, when to absorb another unit of player's ammo?
 
-	//Player ID
+	// Player ID
 	void InitStatusBar( void );
 	void UpdateStatusBar( void );
 	int m_izSBarState[SBAR_END];
@@ -343,11 +344,13 @@ public:
 	char m_SbarString0[SBAR_STRING_SIZE];
 	char m_SbarString1[SBAR_STRING_SIZE];
 
+	void SetPrefsFromUserinfo( char *infobuffer );
+
 	float m_flNextChatTime;
 
-	Vector m_vecLastViewAngles;
+	int m_iAutoWepSwitch;
 
-	bool m_bSentBhopcap; // If false, the player just joined and needs a bhopcap message.
+	Vector m_vecLastViewAngles;
 };
 
 #define AUTOAIM_2DEGREES  0.0348994967025

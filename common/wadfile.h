@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef WADFILE_H
+#if !defined(WADFILE_H)
 #define WADFILE_H
 
 /*

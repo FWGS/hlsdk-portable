@@ -18,7 +18,7 @@
 // lists.
 //=========================================================
 #pragma once
-#ifndef SOUNDENT_H
+#if !defined(SOUNDENT_H)
 #define SOUNDENT_H
 
 #define	MAX_WORLD_SOUNDS	64 // maximum number of sounds handled by the world at one time.

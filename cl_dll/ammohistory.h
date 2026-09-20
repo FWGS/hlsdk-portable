@@ -16,7 +16,7 @@
 // ammohistory.h
 //
 #pragma once
-#ifndef AMMOHISTORY_H
+#if !defined(AMMOHISTORY_H)
 #define AMMOHISTORY_H
 
 // this is the max number of items in each bucket
@@ -127,6 +127,7 @@ public:
 	void Reset( void )
 	{
 		memset( rgAmmoHistory, 0, sizeof rgAmmoHistory );
+		iCurrentHistorySlot = 0;
 	}
 
 	int iHistoryGap;

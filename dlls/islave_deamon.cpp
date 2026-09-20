@@ -242,7 +242,7 @@ void CISlave :: PainSound( void )
 {
 	if (RANDOM_LONG( 0, 2 ) == 0)
 	{
-		EMIT_SOUND_DYN ( ENT(pev), CHAN_WEAPON, pPainSounds[ RANDOM_LONG(0,ARRAYSIZE(pPainSounds)-1) ], 1.0, ATTN_NORM, 0, m_voicePitch );
+		EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pPainSounds ), 1.0, ATTN_NORM, 0, m_voicePitch );
 	}
 }
 
@@ -252,7 +252,7 @@ void CISlave :: PainSound( void )
 
 void CISlave :: DeathSound( void )
 {
-	EMIT_SOUND_DYN ( ENT(pev), CHAN_WEAPON, pDeathSounds[ RANDOM_LONG(0,ARRAYSIZE(pDeathSounds)-1) ], 1.0, ATTN_NORM, 0, m_voicePitch );
+	EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pDeathSounds ), 1.0, ATTN_NORM, 0, m_voicePitch );
 }
 
 
@@ -325,12 +325,12 @@ void CISlave :: HandleAnimEvent( MonsterEvent_t *pEvent )
 					pHurt->pev->punchangle.x = 5;
 				}
 				// Play a random attack hit sound
-				EMIT_SOUND_DYN ( ENT(pev), CHAN_WEAPON, pAttackHitSounds[ RANDOM_LONG(0,ARRAYSIZE(pAttackHitSounds)-1) ], 1.0, ATTN_NORM, 0, m_voicePitch );
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pAttackHitSounds ), 1.0, ATTN_NORM, 0, m_voicePitch );
 			}
 			else
 			{
 				// Play a random attack miss sound
-				EMIT_SOUND_DYN ( ENT(pev), CHAN_WEAPON, pAttackMissSounds[ RANDOM_LONG(0,ARRAYSIZE(pAttackMissSounds)-1) ], 1.0, ATTN_NORM, 0, m_voicePitch );
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pAttackMissSounds ), 1.0, ATTN_NORM, 0, m_voicePitch );
 			}
 		}
 		break;
@@ -345,11 +345,11 @@ void CISlave :: HandleAnimEvent( MonsterEvent_t *pEvent )
 					pHurt->pev->punchangle.z = -18;
 					pHurt->pev->punchangle.x = 5;
 				}
-				EMIT_SOUND_DYN ( ENT(pev), CHAN_WEAPON, pAttackHitSounds[ RANDOM_LONG(0,ARRAYSIZE(pAttackHitSounds)-1) ], 1.0, ATTN_NORM, 0, m_voicePitch );
+				EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pAttackHitSounds ), 1.0, ATTN_NORM, 0, m_voicePitch );
 			}
 			else
 			{
-				EMIT_SOUND_DYN ( ENT(pev), CHAN_WEAPON, pAttackMissSounds[ RANDOM_LONG(0,ARRAYSIZE(pAttackMissSounds)-1) ], 1.0, ATTN_NORM, 0, m_voicePitch );
+				EMIT_SOUND_DYN( ENT(pev), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pAttackMissSounds ), 1.0, ATTN_NORM, 0, m_voicePitch );
 			}
 		}
 		break;
@@ -483,8 +483,8 @@ BOOL CISlave :: CheckRangeAttack2 ( float flDot, float flDist )
 	{
 		TraceResult tr;
 
-		UTIL_TraceLine( EyePosition( ), pEntity->EyePosition( ), ignore_monsters, ENT(pev), &tr );
-		if (tr.flFraction == 1.0 || tr.pHit == pEntity->edict())
+		UTIL_TraceLine( EyePosition(), pEntity->EyePosition(), ignore_monsters, ENT( pev ), &tr );
+		if( tr.flFraction == 1.0f || tr.pHit == pEntity->edict() )
 		{
 			if (pEntity->pev->deadflag == DEAD_DEAD)
 			{
@@ -554,8 +554,6 @@ void CISlave :: Spawn()
 //=========================================================
 void CISlave :: Precache()
 {
-	int i;
-
 	if (pev->model)
 	        PRECACHE_MODEL(STRING(pev->model)); //LRC
 	else
@@ -569,17 +567,10 @@ void CISlave :: Precache()
 	PRECACHE_SOUND("headcrab/hc_headbite.wav");
 	PRECACHE_SOUND("weapons/cbar_miss1.wav");
 
-	for ( i = 0; i < ARRAYSIZE( pAttackHitSounds ); i++ )
-		PRECACHE_SOUND((char *)pAttackHitSounds[i]);
-
-	for ( i = 0; i < ARRAYSIZE( pAttackMissSounds ); i++ )
-		PRECACHE_SOUND((char *)pAttackMissSounds[i]);
-
-	for ( i = 0; i < ARRAYSIZE( pPainSounds ); i++ )
-		PRECACHE_SOUND((char *)pPainSounds[i]);
-
-	for ( i = 0; i < ARRAYSIZE( pDeathSounds ); i++ )
-		PRECACHE_SOUND((char *)pDeathSounds[i]);
+	PRECACHE_SOUND_ARRAY( pAttackHitSounds );
+	PRECACHE_SOUND_ARRAY( pAttackMissSounds );
+	PRECACHE_SOUND_ARRAY( pPainSounds );
+	PRECACHE_SOUND_ARRAY( pDeathSounds );
 
 	UTIL_PrecacheOther( "test_effect" );
 }	
@@ -676,10 +667,13 @@ Schedule_t *CISlave :: GetSchedule( void )
 
 		ASSERT( pSound != NULL );
 
-		if ( pSound && (pSound->m_iType & bits_SOUND_DANGER) )
-			return GetScheduleOfType( SCHED_TAKE_COVER_FROM_BEST_SOUND );
-		if ( pSound->m_iType & bits_SOUND_COMBAT )
-			m_afMemory |= bits_MEMORY_PROVOKED;
+		if( pSound )
+		{
+			if( pSound->m_iType & bits_SOUND_DANGER )
+				return GetScheduleOfType( SCHED_TAKE_COVER_FROM_BEST_SOUND );
+			if( pSound->m_iType & bits_SOUND_COMBAT )
+				m_afMemory |= bits_MEMORY_PROVOKED;
+		}
 	}
 
 	switch (m_MonsterState)
@@ -763,7 +757,7 @@ void CISlave :: ArmBeam( int side )
 	}
 
 	// Couldn't find anything close enough
-	if ( flDist == 1.0 )
+	if( flDist == 1.0f )
 		return;
 
 	DecalGunshot( &tr, BULLET_PLAYER_CROWBAR );
@@ -778,6 +772,7 @@ void CISlave :: ArmBeam( int side )
 	m_pBeam[m_iBeams]->SetColor( 96, 128, 16 );
 	m_pBeam[m_iBeams]->SetBrightness( 64 );
 	m_pBeam[m_iBeams]->SetNoise( 80 );
+	m_pBeam[m_iBeams]->pev->spawnflags |= SF_BEAM_TEMPORARY; // Flag these to be destroyed on save/restore or level transition
 	m_iBeams++;
 }
 
@@ -824,6 +819,7 @@ void CISlave :: WackBeam( int side, CBaseEntity *pEntity )
 	m_pBeam[m_iBeams]->SetColor( 180, 255, 96 );
 	m_pBeam[m_iBeams]->SetBrightness( 255 );
 	m_pBeam[m_iBeams]->SetNoise( 80 );
+	m_pBeam[m_iBeams]->pev->spawnflags |= SF_BEAM_TEMPORARY; // Flag these to be destroyed on save/restore or level transition
 	m_iBeams++;
 }
 
@@ -854,12 +850,13 @@ void CISlave :: ZapBeam( int side )
 	m_pBeam[m_iBeams]->SetColor( 180, 255, 96 );
 	m_pBeam[m_iBeams]->SetBrightness( 255 );
 	m_pBeam[m_iBeams]->SetNoise( 20 );
+	m_pBeam[m_iBeams]->pev->spawnflags |= SF_BEAM_TEMPORARY; // Flag these to be destroyed on save/restore or level transition
 	m_iBeams++;
 
 	pEntity = CBaseEntity::Instance(tr.pHit);
 	if (pEntity != NULL && pEntity->pev->takedamage)
 	{
-		pEntity->TraceAttack( pev, gSkillData.slaveDmgZap, vecAim, &tr, DMG_SHOCK );
+		pEntity->TraceAttack( pev, gSkillData.slaveDmgZap, vecAim.Normalize(), &tr, DMG_SHOCK );
 	}
 	UTIL_EmitAmbientSound( ENT(pev), tr.vecEndPos, "weapons/electro4.wav", 0.5, ATTN_NORM, 0, RANDOM_LONG( 140, 160 ) );
 }

@@ -380,7 +380,7 @@ void CTriggerRotTest::Think( void )
 //		ALERT(at_console, "vecTemp = %.2f %.2f %.2f\n", vecTemp.x, vecTemp.y, vecTemp.z);
 //		ALERT(at_console, "Set Marker = %.2f %.2f %.2f\n", m_pMarker->pev->origin.x, m_pMarker->pev->origin.y, m_pMarker->pev->origin.z);
 	}
-	pev->sanity += pev->armortype * 0.1;
+	pev->sanity += pev->armortype * 0.1f;
 	SetNextThink( 0.1 );
 }
 
@@ -473,7 +473,7 @@ void CMultiManager::KeyValue( KeyValueData *pkvd )
 		{
 			char tmp[128];
 
-			UTIL_StripToken( pkvd->szKeyName, tmp );
+			UTIL_StripToken( pkvd->szKeyName, tmp, sizeof( tmp ));
 			m_iTargetName[m_cTargets] = ALLOC_STRING( tmp );
 			m_flTargetDelay[m_cTargets] = atof( pkvd->szValue );
 			m_cTargets++;
@@ -938,7 +938,7 @@ void CStateWatcher :: KeyValue( KeyValueData *pkvd )
 		// this assumes that additional fields are targetnames and their values are delay values.
 		if ( m_cTargets < MAX_MULTI_TARGETS )
 		{
-			UTIL_StripToken( pkvd->szKeyName, tmp );
+			UTIL_StripToken( pkvd->szKeyName, tmp, sizeof(tmp) );
 			m_iTargetName [ m_cTargets ] = ALLOC_STRING( tmp );
 			m_cTargets++;
 			pkvd->fHandled = TRUE;
@@ -1137,7 +1137,7 @@ void CWatcherCount :: Think ( void )
 		pCurrent = UTIL_FindEntityByTargetname( pCurrent, STRING(pev->noise) );
 	}
 
-	if (pev->spawnflags & SF_WRCOUNT_STARTED)
+	if( pev->spawnflags & SF_WRCOUNT_STARTED )
 	{
 		if (iCount > pev->frags)
 		{
@@ -1189,6 +1189,7 @@ IMPLEMENT_SAVERESTORE(CRenderFxFader,CBaseEntity);
 void CRenderFxFader :: Spawn( void )
 {
 	SetThink(&CRenderFxFader :: FadeThink );
+	pev->classname = MAKE_STRING("render_fader");
 }
 
 void CRenderFxFader :: FadeThink( void )
@@ -1264,24 +1265,24 @@ void CRenderFxManager::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_T
 		}
 	}
 
-	if (pev->spawnflags & SF_RENDER_ONLYONCE)
+	if( pev->spawnflags & SF_RENDER_ONLYONCE )
 	{
-		SetThink(&CRenderFxManager ::SUB_Remove);
-		SetNextThink(0.1);
+		SetThink( &CRenderFxManager::SUB_Remove );
+		SetNextThink( 0.1f );
 	}
 }
 
 void CRenderFxManager::Affect( CBaseEntity *pTarget, BOOL bIsFirst, CBaseEntity *pActivator )
-		{
+{
 	entvars_t *pevTarget = pTarget->pev;
 
 	float fAmtFactor = 1;
 	if ( pev->message && !FBitSet( pev->spawnflags, SF_RENDER_MASKAMT ) )
 		fAmtFactor = CalcLocus_Ratio(pActivator, STRING(pev->message));
 
-			if( !FBitSet( pev->spawnflags, SF_RENDER_MASKFX ) )
-				pevTarget->renderfx = pev->renderfx;
-			if( !FBitSet( pev->spawnflags, SF_RENDER_MASKMODE ) )
+	if( !FBitSet( pev->spawnflags, SF_RENDER_MASKFX ) )
+		pevTarget->renderfx = pev->renderfx;
+	if( !FBitSet( pev->spawnflags, SF_RENDER_MASKMODE ) )
 	{
 		//LRC - amt is often 0 when mode is normal. Set it to be fully visible, for fade purposes.
 		if (pev->frags && pevTarget->renderamt == 0 && pevTarget->rendermode == kRenderNormal)
@@ -1292,8 +1293,8 @@ void CRenderFxManager::Affect( CBaseEntity *pTarget, BOOL bIsFirst, CBaseEntity 
 	{
 		if ( !FBitSet( pev->spawnflags, SF_RENDER_MASKAMT ) )
 			pevTarget->renderamt = pev->renderamt * fAmtFactor;
-			if( !FBitSet( pev->spawnflags, SF_RENDER_MASKCOLOR ) )
-				pevTarget->rendercolor = pev->rendercolor;
+		if( !FBitSet( pev->spawnflags, SF_RENDER_MASKCOLOR ) )
+			pevTarget->rendercolor = pev->rendercolor;
 		if ( pev->scale )
 			pevTarget->scale = pev->scale;
 
@@ -1959,11 +1960,9 @@ void CTriggerHurt :: KeyValue( KeyValueData *pkvd )
 	else if (FStrEq(pkvd->szKeyName, "cangib"))
 	{
 		switch (atoi(pkvd->szValue))
-	{
-		case 1:
-			m_bitsDamageInflict |= DMG_ALWAYSGIB;
-		case 2:
-			m_bitsDamageInflict |= DMG_NEVERGIB;
+		{
+		case 1: m_bitsDamageInflict |= DMG_ALWAYSGIB;break;
+		case 2: m_bitsDamageInflict |= DMG_NEVERGIB;break;
 		}
 		pkvd->fHandled = TRUE;
 	}
@@ -2120,7 +2119,7 @@ void CTriggerHurt :: HurtTouch ( CBaseEntity *pOther )
 	// while touching the trigger.  Player continues taking damage for a while after
 	// leaving the trigger
 
-	fldmg = pev->dmg * 0.5;	// 0.5 seconds worth of damage, pev->dmg is damage/second
+	fldmg = pev->dmg * 0.5f;	// 0.5 seconds worth of damage, pev->dmg is damage/second
 
 
 	// JAY: Cut this because it wasn't fully realized.  Damage is simpler now.
@@ -2139,7 +2138,12 @@ void CTriggerHurt :: HurtTouch ( CBaseEntity *pOther )
 #endif
 
 	if ( fldmg < 0 )
-		pOther->TakeHealth( -fldmg, m_bitsDamageInflict );
+	{
+		if( !( g_pGameRules->IsMultiplayer()
+		    && pOther->IsPlayer()
+		    && pOther->pev->deadflag ))
+			pOther->TakeHealth( -fldmg, m_bitsDamageInflict );
+	}
 	else
 		pOther->TakeDamage( pev, pev, fldmg, m_bitsDamageInflict );
 
@@ -2147,7 +2151,7 @@ void CTriggerHurt :: HurtTouch ( CBaseEntity *pOther )
 	pev->pain_finished = gpGlobals->time;
 
 	// Apply damage every half second
-	pev->dmgtime = gpGlobals->time + 0.5;// half second delay until this trigger can hurt toucher again
+	pev->dmgtime = gpGlobals->time + 0.5f;// half second delay until this trigger can hurt toucher again
 
   
 	
@@ -2344,8 +2348,8 @@ void CTriggerHurt :: RadiationThink( void )
 	origin = pev->origin;
 	view_ofs = pev->view_ofs;
 
-	pev->origin = (pev->absmin + pev->absmax) * 0.5;
-	pev->view_ofs = pev->view_ofs * 0.0;
+	pev->origin = (pev->absmin + pev->absmax) * 0.5f;
+	pev->view_ofs = pev->view_ofs * 0.0f;
 
 	pentPlayer = FIND_CLIENT_IN_PVS(edict());
 
@@ -2363,9 +2367,9 @@ void CTriggerHurt :: RadiationThink( void )
 
 		// get range to player;
 
-		vecSpot1 = (pev->absmin + pev->absmax) * 0.5;
-		vecSpot2 = (pevTarget->absmin + pevTarget->absmax) * 0.5;
-		
+		vecSpot1 = (pev->absmin + pev->absmax) * 0.5f;
+		vecSpot2 = (pevTarget->absmin + pevTarget->absmax) * 0.5f;
+
 		vecRange = vecSpot1 - vecSpot2;
 		flRange = vecRange.Length();
 
@@ -2377,7 +2381,7 @@ void CTriggerHurt :: RadiationThink( void )
 			pPlayer->m_flgeigerRange = flRange;
 	}
 
-	SetNextThink( 0.25 );
+	SetNextThink( 0.25f );
 }
 
 //=====================================
@@ -2430,7 +2434,7 @@ void CTriggerHevCharge :: ChargeTouch ( CBaseEntity *pOther )
 	//FIXME: add in the multiplayer fix, from trigger_hurt?
 	if ( pev->dmgtime > gpGlobals->time )
 		return;
-	pev->dmgtime = gpGlobals->time + 0.5;// half second delay until this trigger can hurt toucher again
+	pev->dmgtime = gpGlobals->time + 0.5f;// half second delay until this trigger can hurt toucher again
 
 	int iNewArmor = pOther->pev->armorvalue + pev->frags;
 	if (iNewArmor > MAX_NORMAL_BATTERY) iNewArmor = MAX_NORMAL_BATTERY;
@@ -2473,7 +2477,7 @@ void CTriggerHevCharge :: AnnounceThink ( )
 
 	// Suit reports new power level
 	// For some reason this wasn't working in release build -- round it.
-	pct = (int)( (float)(pPlayer->pev->armorvalue * 100.0) * (1.0/MAX_NORMAL_BATTERY) + 0.5);
+	pct = (int)( (float)(pPlayer->pev->armorvalue * 100.0f) * (1.0f/MAX_NORMAL_BATTERY) + 0.5f);
 	pct = (pct / 5);
 	if (pct > 0)
 	pct--;
@@ -3058,16 +3062,16 @@ void CTriggerCounter::CounterUse( CBaseEntity *pActivator, CBaseEntity *pCaller,
 			switch( m_cTriggersLeft )
 			{
 			case 1:
-				ALERT( at_console, "Only 1 more to go..." );
+				ALERT( at_console, "Only 1 more to go...\n" );
 				break;
 			case 2:
-				ALERT( at_console, "Only 2 more to go..." );
+				ALERT( at_console, "Only 2 more to go...\n" );
 				break;
 			case 3:
-				ALERT( at_console, "Only 3 more to go..." );
+				ALERT( at_console, "Only 3 more to go...\n" );
 				break;
 			default:
-				ALERT( at_console, "There are more to go..." );
+				ALERT( at_console, "There are more to go...\n" );
 				break;
 			}
 		}
@@ -3076,7 +3080,7 @@ void CTriggerCounter::CounterUse( CBaseEntity *pActivator, CBaseEntity *pCaller,
 
 	// !!!UNDONE: I don't think we want these Quakesque messages
 	if( fTellActivator )
-		ALERT( at_console, "Sequence completed!" );
+		ALERT( at_console, "Sequence completed!\n" );
 
 	ActivateMultiTrigger( m_hActivator );
 }
@@ -3185,7 +3189,7 @@ When the player touches this, he gets sent to the map listed in the "map" variab
 void CChangeLevel::Spawn( void )
 {
 	if( FStrEq( m_szMapName, "" ) )
-		ALERT( at_console, "a trigger_changelevel doesn't have a map" );
+		ALERT( at_console, "a trigger_changelevel doesn't have a map\n" );
 
 	if( FStrEq( m_szLandmarkName, "" ) )
 		ALERT( at_console, "trigger_changelevel to %s doesn't have a landmark\n", m_szMapName );
@@ -3450,7 +3454,7 @@ int CChangeLevel::ChangeList( LEVELLIST *pLevelList, int maxList )
 							entityFlags[entityCount] = flags;
 							entityCount++;
 							if( entityCount > MAX_ENTITY )
-								ALERT( at_error, "Too many entities across a transition!" );
+								ALERT( at_error, "Too many entities across a transition!\n" );
 						}
 						//else
 						//	ALERT( at_console, "Failed %s\n", STRING( pEntity->pev->classname ) );
@@ -3734,7 +3738,7 @@ void CTriggerOnSight :: Spawn( void )
 
 	if (pev->max_health > 0)
 		{
-		pev->health = cos(pev->max_health/2 * M_PI/180.0);
+		pev->health = cos(pev->max_health/2 * M_PI_F/180.0f);
 //		ALERT(at_console, "Cosine is %f\n", pev->health);
 	}
 		}
@@ -3870,7 +3874,7 @@ BOOL CTriggerOnSight :: CanSee(CBaseEntity *pLooker, CBaseEntity *pSeen)
 			UTIL_TraceLine( pLooker->EyePosition(), pSeen->pev->origin, ignore_monsters, ignore_glass, pLooker->edict(), &tr );
 		else
 			UTIL_TraceLine( pLooker->EyePosition(), pSeen->pev->origin, ignore_monsters, dont_ignore_glass, pLooker->edict(), &tr );
-		if (tr.flFraction < 1.0 && tr.pHit != pSeen->edict())
+		if (tr.flFraction < 1.0f && tr.pHit != pSeen->edict())
 			return FALSE;
 	}
 
@@ -4340,7 +4344,7 @@ void CTriggerMotion::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYP
 //===========================================================
 //LRC- motion_manager
 //===========================================================
-LINK_ENTITY_TO_CLASS( motion_thread, CPointEntity );
+LINK_ENTITY_TO_CLASS( motion_thread, CMotionThread );
 
 TYPEDESCRIPTION	CMotionThread::m_SaveData[] = 
 {
@@ -4353,6 +4357,11 @@ TYPEDESCRIPTION	CMotionThread::m_SaveData[] =
 };
 
 IMPLEMENT_SAVERESTORE(CMotionThread,CPointEntity);
+
+void CMotionThread::Spawn() //AJH
+{
+	pev->classname = MAKE_STRING("motion_thread"); //We need this for save/restore to work
+}
 
 void CMotionThread::Think( void )
 {
@@ -4545,6 +4554,7 @@ void CMotionManager::Affect( CBaseEntity *pTarget, CBaseEntity *pActivator )
 
 	CMotionThread *pThread = GetClassPtr( (CMotionThread*)NULL );
 	if (pThread == NULL) return; //error?
+	pThread->Spawn();
 	pThread->m_hLocus = pActivator;
 	pThread->m_hTarget = pTarget;
 	pThread->m_iszPosition = m_iszPosition;
@@ -4689,20 +4699,22 @@ IMPLEMENT_SAVERESTORE(CTriggerChangeCVar,CBaseEntity);
 void CTriggerChangeCVar::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
 	char szCommand[256];
-
+	int len;
 	if (!(pev->netname)) return;
 
 	if (ShouldToggle(useType, pev->spawnflags & SF_CVAR_ACTIVE))
 	{
 		if (pev->spawnflags & SF_CVAR_ACTIVE)
 		{
-			sprintf( szCommand, "%s \"%s\"\n",  STRING(pev->netname), m_szStoredString );
+			len = safe_snprintf( szCommand, sizeof( szCommand ),"%s \"%s\"\n",  STRING(pev->netname), m_szStoredString );
+			if( len < 0 ) strcpy( &szCommand[sizeof( szCommand )-3], "\"\n" );
 			pev->spawnflags &= ~SF_CVAR_ACTIVE;
 		}
 		else
 		{
-			strncpy(m_szStoredString, CVAR_GET_STRING(STRING(pev->netname)), 256);
-			sprintf( szCommand, "%s \"%s\"\n", STRING(pev->netname), STRING(pev->message) );
+			strlcpy( m_szStoredString, CVAR_GET_STRING( STRING( pev->netname )), sizeof( m_szStoredString ));
+			len = safe_snprintf( szCommand, sizeof( szCommand ), "%s \"%s\"\n", STRING(pev->netname), STRING(pev->message) );
+			if( len < 0 ) strcpy( &szCommand[sizeof( szCommand )-3], "\"\n" );
 			pev->spawnflags |= SF_CVAR_ACTIVE;
 
 			if (pev->sanity >= 0)
@@ -4717,10 +4729,11 @@ void CTriggerChangeCVar::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE
 void CTriggerChangeCVar::Think( void )
 {
 	char szCommand[256];
-
+	int len;
 	if (pev->spawnflags & SF_CVAR_ACTIVE)
 	{
-		sprintf( szCommand, "%s %s\n", STRING(pev->netname), m_szStoredString );
+		len = safe_snprintf( szCommand, sizeof( szCommand ), "%s %s\n", STRING(pev->netname), m_szStoredString );
+		if( len < 0 ) strcpy( &szCommand[sizeof( szCommand )-2], "\n" );
 		SERVER_COMMAND( szCommand );
 		pev->spawnflags &= ~SF_CVAR_ACTIVE;
 	}	
@@ -4980,13 +4993,13 @@ void CTriggerCamera::FollowTarget()
 	if( dy > 180 ) 
 		dy = dy - 360;
 
-	pev->avelocity.x = dx * 40 * gpGlobals->frametime;
-	pev->avelocity.y = dy * 40 * gpGlobals->frametime;
+	pev->avelocity.x = dx * 40 * 0.01f;
+	pev->avelocity.y = dy * 40 * 0.01f;
 
 	if( !( FBitSet( pev->spawnflags, SF_CAMERA_PLAYER_TAKECONTROL ) ) )
 	{
-		pev->velocity = pev->velocity * 0.8;
-		if (pev->velocity.Length( ) < 10.0) //LRC- whyyyyyy???
+		pev->velocity = pev->velocity * 0.8f;
+		if( pev->velocity.Length() < 10.0f ) //LRC- whyyyyyy???
 			pev->velocity = g_vecZero;
 	}
 

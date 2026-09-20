@@ -78,7 +78,7 @@ int CHudBattery::Draw( float flTime )
 	wrect_t rc;
 
 	rc = *m_prc2;
-	rc.top  += m_iHeight * ( (float)( 100 - ( Q_min( 100, m_iBat ) ) ) * 0.01 );	// battery can go from 0 to 100 so * 0.01 goes from 0 to 1
+	rc.top  += m_iHeight * ( (float)( 100 - ( Q_min( 100, m_iBat ) ) ) * 0.01f );	// battery can go from 0 to 100 so * 0.01 goes from 0 to 1
 
 	UnpackRGB(r,g,b, gHUD.m_iHUDColor);
 
@@ -91,7 +91,7 @@ int CHudBattery::Draw( float flTime )
 		if( m_fFade > FADE_TIME )
 			m_fFade = FADE_TIME;
 
-		m_fFade -= ( gHUD.m_flTimeDelta * 20 );
+		m_fFade -= ( (float)gHUD.m_flTimeDelta * 20.0f );
 		if( m_fFade <= 0 )
 		{
 			a = 128;
@@ -109,7 +109,11 @@ int CHudBattery::Draw( float flTime )
 	int iOffset = ( m_prc1->bottom - m_prc1->top ) / 6;
 
 	y = ScreenHeight - gHUD.m_iFontHeight - gHUD.m_iFontHeight / 2;
-	x = ScreenWidth / 5;
+
+	if( gHUD.IsHL25( )) // a1ba: HL25 style
+		x = ( m_prc1->right - m_prc1->left ) * 3;
+	else
+		x = ScreenWidth / 5;
 
 	// make sure we have the right sprite handles
 	if( !m_hSprite1 )
@@ -127,7 +131,7 @@ int CHudBattery::Draw( float flTime )
 	}
 
 	x += ( m_prc1->right - m_prc1->left );
-	x = gHUD.DrawHudNumber( x, y, DHN_3DIGITS | DHN_DRAWZERO, m_iBat, r, g, b );
+	x = gHUD.DrawHudNumber( x, y + gHUD.m_iHudNumbersYOffset, DHN_3DIGITS | DHN_DRAWZERO, m_iBat, r, g, b );
 
 	return 1;
 }

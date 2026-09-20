@@ -20,22 +20,29 @@
 # SOFTWARE.
 #
 
-cmake_minimum_required(VERSION 2.6.0)
+cmake_minimum_required(VERSION 3.9)
 project (CLDLL)
 
 set (CLDLL_LIBRARY client)
 
-
-add_definitions(-DCLIENT_WEAPONS -DCLIENT_DLL)
+add_definitions(-DCLIENT_DLL)
 
 if(NOT MSVC)
 	add_compile_options(-fno-exceptions) # GCC/Clang flag
-	add_compile_options(-Wno-write-strings) # GCC/Clang flag
+	add_compile_options(-fno-rtti) # GCC/Clang flag
 	add_compile_options(-fvisibility=hidden) # GCC/Clang flag
 	add_definitions(-D_LINUX -DLINUX) # It seems enough for all non-Win32 systems
 	add_definitions(-Dstricmp=strcasecmp -Dstrnicmp=strncasecmp)
 	if(NOT MINGW)
 		add_definitions(-D_snprintf=snprintf -D_vsnprintf=vsnprintf)
+	endif()
+	if(CMAKE_BUILD_TYPE MATCHES "Release"
+		OR (CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo"
+		AND CMAKE_SYSTEM_NAME STREQUAL "Android"))
+		add_compile_options(-fno-unwind-tables -fno-asynchronous-unwind-tables) # GCC/Clang flag
+		add_compile_options(-fomit-frame-pointer) # GCC/Clang flag
+		add_compile_options(-ftree-vectorize) # GCC/Clang flag
+		add_compile_options(-funsafe-math-optimizations) # GCC/Clang flag
 	endif()
 else()
 	add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_DEPRECATE)
@@ -45,6 +52,9 @@ if (GOLDSOURCE_SUPPORT)
 	add_definitions(-DGOLDSOURCE_SUPPORT)
 endif()
 
+if (USE_STATIC_FREEVGUI)
+	add_definitions(-DINTERNAL_VGUI_SUPPORT)
+endif()
 
 set (CLDLL_SOURCES
 	../dlls/crossbow.cpp
@@ -91,9 +101,10 @@ set (CLDLL_SOURCES
 	input_goldsource.cpp
 	input_mouse.cpp
 	input_xash3d.cpp
+	interpolation.cpp
 	menu.cpp
 	message.cpp
-	overview.cpp
+	MOTD.cpp
 	parsemsg.cpp
 	particlemgr.cpp
 	particlemsg.cpp
@@ -102,6 +113,7 @@ set (CLDLL_SOURCES
 	../pm_shared/pm_math.c
 	../pm_shared/pm_shared.c
 	saytext.cpp
+	scoreboard.cpp
 	status_icons.cpp
 	statusbar.cpp
 	studio_util.cpp
@@ -111,39 +123,89 @@ set (CLDLL_SOURCES
 	tri.cpp
 	util.cpp
 	view.cpp
-	scoreboard.cpp
-	MOTD.cpp)
+	../public/safe_snprintf.c
+)
 
-include_directories (. hl/ ../dlls ../dlls/wpn_shared ../common ../engine ../pm_shared ../game_shared ../public ../utils/false_vgui/include)
+list(APPEND CLDLL_SOURCES
+	vgui_int.cpp
+	vgui_ClassMenu.cpp
+	vgui_ConsolePanel.cpp
+	vgui_ControlConfigPanel.cpp
+	vgui_CustomObjects.cpp
+	vgui_MOTDWindow.cpp
+	vgui_SchemeManager.cpp
+	vgui_ScorePanel.cpp
+	vgui_TeamFortressViewport.cpp
+	vgui_SpectatorPanel.cpp
+	vgui_teammenu.cpp
+	voice_status.cpp
+	../game_shared/vgui_checkbutton2.cpp
+	../game_shared/vgui_grid.cpp
+	../game_shared/vgui_helpers.cpp
+	../game_shared/vgui_listbox.cpp
+	../game_shared/vgui_loadtga.cpp
+	../game_shared/vgui_scrollbar2.cpp
+	../game_shared/vgui_slider2.cpp
+	../game_shared/voice_banmgr.cpp
+)
 
-if(USE_VOICEMGR)
-	#set(CLDLL_SOURCES
-	#	${CLDLL_SOURCES}
-	#	../game_shared/voice_banmgr.cpp
-	#	../game_shared/voice_status.cpp)
+if (HAVE_STRLCPY)
+	add_definitions(-DHAVE_STRLCPY)
+else()
+	list(APPEND CLDLL_SOURCES
+		../external/openbsd/strlcpy.c)
 endif()
 
+if (HAVE_STRLCAT)
+	add_definitions(-DHAVE_STRLCAT)
+else()
+	list(APPEND CLDLL_SOURCES
+		../external/openbsd/strlcat.c)
+endif()
+
+include_directories (. hl/ ../dlls ../dlls/wpn_shared ../common ../engine ../pm_shared ../game_shared ../public)
+
+if (GOLDSOURCE_SUPPORT)
+	include_directories (../external/)
+endif()
+
+
+include_directories(../utils/vgui/include)
+
 add_library (${CLDLL_LIBRARY} SHARED ${CLDLL_SOURCES})
+target_link_libraries(${CLDLL_LIBRARY} vcs_info)
+
 if (GOLDSOURCE_SUPPORT)
 	target_link_libraries( ${CLDLL_LIBRARY} ${CMAKE_DL_LIBS} )
+endif()
+
+target_link_libraries(${CLDLL_LIBRARY} vgui)
+
+if(WIN32)
+	target_link_libraries( ${CLDLL_LIBRARY} user32.lib )
+	if (GOLDSOURCE_SUPPORT)
+		target_link_libraries( ${CLDLL_LIBRARY} winmm.lib )
+	endif()
 endif()
 
 set_target_properties (${CLDLL_LIBRARY} PROPERTIES
 	POSITION_INDEPENDENT_CODE 1)
 
-if(APPLE OR WIN32 OR ${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-	set(CLDLL_NAME "client")
-	if(64BIT)
-		set(CLDLL_NAME "client64")
-	endif()
+set_target_postfix(${CLDLL_LIBRARY})
 
-	set_target_properties(${CLDLL_LIBRARY} PROPERTIES
-		OUTPUT_NAME ${CLDLL_NAME}
-		PREFIX "")
+if(HAVE_LTO)
+	set_property(TARGET ${CLDLL_LIBRARY} PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
 endif()
 
-install( TARGETS ${CLDLL_LIBRARY}
-	DESTINATION "${GAMEDIR}/${CLIENT_INSTALL_DIR}/"
+install(TARGETS ${CLDLL_LIBRARY}
+	RUNTIME DESTINATION "${GAMEDIR}/${CLIENT_INSTALL_DIR}/"
+	LIBRARY DESTINATION "${GAMEDIR}/${CLIENT_INSTALL_DIR}/"
 	PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
-	    GROUP_READ GROUP_EXECUTE
-		WORLD_READ WORLD_EXECUTE )
+		GROUP_READ GROUP_EXECUTE
+		WORLD_READ WORLD_EXECUTE)
+
+if(CMAKE_BUILD_TYPE MATCHES "Release" AND NOT WIN32)
+	add_custom_command(TARGET ${CLDLL_LIBRARY}
+			POST_BUILD DEPENDS ${CLDLL_LIBRARY}
+			COMMAND ${CMAKE_STRIP} -s $<TARGET_FILE:${CLDLL_LIBRARY}>)
+endif()

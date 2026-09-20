@@ -137,7 +137,7 @@ void HUD_PlaybackEvent( int flags, const edict_t *pInvoker, unsigned short event
 
 	// Weapon prediction events are assumed to occur at the player's origin
 	org			= g_finalstate->playerstate.origin;
-	ang			= v_angles;
+	ang			= v_client_aimangles;
 	gEngfuncs.pfnPlaybackEvent( flags, pInvoker, eventindex, delay, org, ang, fparam1, fparam2, iparam1, iparam2, bparam1, bparam2 );
 }
 
@@ -161,7 +161,7 @@ Always 0.0 on client, even if not predicting weapons ( won't get called
 */
 float UTIL_WeaponTimeBase( void )
 {
-	return 0.0;
+	return 0.0f;
 }
 
 static unsigned int glSeed = 0; 
@@ -254,7 +254,7 @@ float UTIL_SharedRandomFloat( unsigned int seed, float low, float high )
 
 		tensixrand = U_Random() & 65535;
 
-		offset = (float)tensixrand / 65536.0;
+		offset = (float)tensixrand / 65536.0f;
 
 		return ( low + offset * range );
 	}

@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef EDICT_H
+#if !defined(EDICT_H)
 #define EDICT_H
 
 #define MAX_ENT_LEAFS	48

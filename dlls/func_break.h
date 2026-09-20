@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef FUNC_BREAK_H
+#if !defined(FUNC_BREAK_H)
 #define FUNC_BREAK_H
 
 typedef enum

@@ -21,6 +21,7 @@
 #include	"player.h"
 #include	"weapons.h"
 #include	"pm_shared.h"
+#include	"gamerules.h"
 
 extern int gmsgCurWeapon;
 extern int gmsgSetFOV;
@@ -103,7 +104,7 @@ void CBasePlayer::Observer_HandleButtons()
 		else
 			Observer_SetMode( OBS_CHASE_FREE );	// don't use OBS_CHASE_LOCKED anymore
 
-		m_flNextObserverInput = gpGlobals->time + 0.2;
+		m_flNextObserverInput = gpGlobals->time + 0.2f;
 	}
 
 	// Attack moves to the next player
@@ -111,7 +112,7 @@ void CBasePlayer::Observer_HandleButtons()
 	{
 		Observer_FindNextPlayer( false );
 
-		m_flNextObserverInput = gpGlobals->time + 0.2;
+		m_flNextObserverInput = gpGlobals->time + 0.2f;
 	}
 
 	// Attack2 moves to the prev player
@@ -119,7 +120,7 @@ void CBasePlayer::Observer_HandleButtons()
 	{
 		Observer_FindNextPlayer( true );
 
-		m_flNextObserverInput = gpGlobals->time + 0.2;
+		m_flNextObserverInput = gpGlobals->time + 0.2f;
 	}
 }
 
@@ -278,6 +279,7 @@ void CBasePlayer::StopObserver()
 	m_iHideHUD = 0;
 
 	GetClassPtr( (CBasePlayer *)pev )->Spawn();
+	g_pGameRules->SetDefaultPlayerTeam( this );
 	pev->nextthink = -1;
 
 	// Update Team Status

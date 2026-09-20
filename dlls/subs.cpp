@@ -291,8 +291,7 @@ void FireTargets( const char *targetName, CBaseEntity *pActivator, CBaseEntity *
 				{
 					if (targetName[j] == ')')
 					{
-						strncpy(szBuf, targetName+i, j-i);
-						szBuf[j-i] = 0;
+						strlcpy(szBuf, targetName+i, j-i + 1);
 						pActivator = UTIL_FindEntityByTargetname(NULL, szBuf, inputActivator);
 						if (!pActivator)
 	{
@@ -310,8 +309,7 @@ void FireTargets( const char *targetName, CBaseEntity *pActivator, CBaseEntity *
 		}
 		if (!found) return; // no, it's not a locus specifier.
 
-		strncpy(szBuf, targetName, i-1);
-		szBuf[i-1] = 0;
+		strlcpy(szBuf, targetName, i);
 		targetName = szBuf;
 		pTarget = UTIL_FindEntityByTargetname(NULL, targetName, inputActivator);
 
@@ -366,7 +364,7 @@ void CBaseDelay::SUB_UseTargets( CBaseEntity *pActivator, USE_TYPE useType, floa
 		// Save the useType
 		pTemp->pev->button = (int)useType;
 		pTemp->m_iszKillTarget = m_iszKillTarget;
-		pTemp->m_flDelay = 0; // prevent "recursion"
+		pTemp->m_flDelay = 0.0f; // prevent "recursion"
 		pTemp->pev->target = pev->target;
 
 		//LRC - Valve had a hacked thing here to avoid breaking
@@ -566,13 +564,6 @@ void CBaseToggle :: LinearMoveNow( void )
 	// divide vector length by speed to get time to reach dest
 	float flTravelTime = vecDestDelta.Length() / m_flLinearMoveSpeed;
 
-	if( flTravelTime < 0.05 )
-	{
-		UTIL_SetOrigin( this, m_vecFinalDest );
-		LinearMoveDone();
-		return;
-	}
-
 	// set nextthink to trigger a call to LinearMoveDone when dest is reached
 	SetNextThink( flTravelTime, TRUE );
 	SetThink( &CBaseToggle::LinearMoveDone );
@@ -596,7 +587,7 @@ After moving, set origin to exact final destination, call "move done" function
 		vecDiff = (m_vecFinalDest + m_pMoveWith->pev->origin) - pev->origin;
 	else
 		vecDiff = m_vecFinalDest - pev->origin;
-	if (vecDiff.Length() > 0.05) //pev->velocity.Length())
+	if( vecDiff.Length() > 0.05f ) //pev->velocity.Length())
 	{
 		// HACK: not there yet, try waiting one more frame.
 		ALERT(at_console,"Rejecting difference %f\n",vecDiff.Length());
@@ -658,10 +649,32 @@ STATE CBaseToggle :: GetState ( void )
 		case TS_AT_BOTTOM:	return STATE_OFF;
 		case TS_GOING_UP:	return STATE_TURN_ON;
 		case TS_GOING_DOWN:	return STATE_TURN_OFF;
-		default:			return STATE_OFF; // This should never happen.
+		default:		return STATE_OFF; // This should never happen.
 	}
 };
 
+#if SPEAKABLE_TARGETS
+void CBaseToggle::PlaySentence( const char *pszSentence, float duration, float volume, float attenuation )
+{
+	if( pszSentence && IsAllowedToSpeak())
+	{
+		if( pszSentence[0] == '!' )
+			EMIT_SOUND_DYN( edict(), CHAN_VOICE, pszSentence, volume, attenuation, 0, PITCH_NORM );
+		else
+			SENTENCEG_PlayRndSz( edict(), pszSentence, volume, attenuation, 0, PITCH_NORM );
+	}
+}
+
+void CBaseToggle::PlayScriptedSentence( const char *pszSentence, float duration, float volume, float attenuation, BOOL bConcurrent, CBaseEntity *pListener )
+{
+	PlaySentence( pszSentence, duration, volume, attenuation );
+}
+
+void CBaseToggle::SentenceStop( void )
+{
+	EMIT_SOUND( edict(), CHAN_VOICE, "common/null.wav", 1.0, ATTN_IDLE );
+}
+#endif
 /*
 =============
 AngularMove

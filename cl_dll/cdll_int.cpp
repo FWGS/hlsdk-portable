@@ -23,11 +23,8 @@
 #include "netadr.h"
 #include "parsemsg.h"
 
-#if defined(GOLDSOURCE_SUPPORT) && (defined(_WIN32) || defined(__linux__) || defined(__APPLE__)) && (defined(__i386) || defined(_M_IX86))
-#define USE_VGUI_FOR_GOLDSOURCE_SUPPORT
-#include "VGUI_Panel.h"
-#include "VGUI_App.h"
-#endif
+#include "vgui_int.h"
+#include "vgui_TeamFortressViewport.h"
 
 extern "C"
 {
@@ -35,33 +32,22 @@ extern "C"
 }
 
 #include <string.h>
+#include "vcs_info.h"
 
 cl_enginefunc_t gEngfuncs;
 CHud gHUD;
-/*hud_player_info_t		g_PlayerInfoList[MAX_PLAYERS+1];	// player info from the engine
-extra_player_info_t		g_PlayerExtraInfo[MAX_PLAYERS+1];	// additional player info sent directly to the client dll
-team_info_t		g_TeamInfo[MAX_TEAMS+1];
-int g_iUser1;
-int g_iUser2;
-int g_iUser3;
-int g_iTeamNumber;
-int g_iPlayerClass;*/
-
+TeamFortressViewport *gViewPort = NULL;
 mobile_engfuncs_t *gMobileEngfuncs = NULL;
 
-extern "C" int g_bhopcap;
+#if defined( INTERNAL_VGUI_SUPPORT )
+// declare InitVGUISupportAPI so that linker doesn't remove it because nothing references it
+extern "C" void InitVGUISupportAPI( void *api );
+void *g_pKeepVGUISupport = (void *)InitVGUISupportAPI;
+#endif
+
 void InitInput( void );
 void EV_HookEvents( void );
 void IN_Commands( void );
-
-int __MsgFunc_Bhopcap( const char *pszName, int iSize, void *pbuf )
-{
-	BEGIN_READ( pbuf, iSize );
-
-	g_bhopcap = READ_BYTE();
-
-	return 1;
-}
 
 /*
 ========================== 
@@ -86,7 +72,7 @@ int		DLLEXPORT HUD_GetHullBounds( int hullnumber, float *mins, float *maxs );
 void	DLLEXPORT HUD_Frame( double time );
 void	DLLEXPORT HUD_VoiceStatus(int entindex, qboolean bTalking);
 void	DLLEXPORT HUD_DirectorMessage( int iSize, void *pbuf );
-void DLLEXPORT HUD_MobilityInterface( mobile_engfuncs_t *gpMobileEngfuncs );
+int DLLEXPORT HUD_MobilityInterface( mobile_engfuncs_t *gpMobileEngfuncs );
 }
 
 /*
@@ -133,7 +119,7 @@ HUD_ConnectionlessPacket
 int DLLEXPORT HUD_ConnectionlessPacket( const struct netadr_s *net_from, const char *args, char *response_buffer, int *response_buffer_size )
 {
 	// Parse stuff from args
-	int max_buffer_size = *response_buffer_size;
+	// int max_buffer_size = *response_buffer_size;
 
 	// Zero it out since we aren't going to respond.
 	// If we wanted to response, we'd write data into response_buffer
@@ -166,9 +152,22 @@ int DLLEXPORT Initialize( cl_enginefunc_t *pEnginefuncs, int iVersion )
 	if( iVersion != CLDLL_INTERFACE_VERSION )
 		return 0;
 
-	memcpy( &gEngfuncs, pEnginefuncs, sizeof(cl_enginefunc_t) );
+	// for now filterstuffcmd is last in the engine interface
+	memcpy( &gEngfuncs, pEnginefuncs, sizeof(cl_enginefunc_t) - sizeof( void * ) );
+
+	if( gEngfuncs.pfnGetCvarPointer( "cl_filterstuffcmd" ) == 0 )
+	{
+		gEngfuncs.pfnFilteredClientCmd = gEngfuncs.pfnClientCmd;
+	}
+	else
+	{
+		gEngfuncs.pfnFilteredClientCmd = pEnginefuncs->pfnFilteredClientCmd;
+	}
 
 	EV_HookEvents();
+
+	gEngfuncs.pfnRegisterVariable( "cl_game_build_commit", g_VCSInfo_Commit, 0 );
+	gEngfuncs.pfnRegisterVariable( "cl_game_build_branch", g_VCSInfo_Branch, 0 );
 
 	return 1;
 }
@@ -192,48 +191,6 @@ int *HUD_GetRect( void )
 	return extent;
 }
 
-#ifdef USE_VGUI_FOR_GOLDSOURCE_SUPPORT
-class TeamFortressViewport : public vgui::Panel
-{
-public:
-	TeamFortressViewport(int x,int y,int wide,int tall);
-	void Initialize( void );
-
-	virtual void paintBackground();
-	void *operator new( size_t stAllocateBlock );
-};
-
-static TeamFortressViewport* gViewPort = NULL;
-
-TeamFortressViewport::TeamFortressViewport(int x, int y, int wide, int tall) : Panel(x, y, wide, tall)
-{
-	gViewPort = this;
-	Initialize();
-}
-
-void TeamFortressViewport::Initialize()
-{
-	//vgui::App::getInstance()->setCursorOveride( vgui::App::getInstance()->getScheme()->getCursor(vgui::Scheme::scu_none) );
-}
-
-void TeamFortressViewport::paintBackground()
-{
-//	int wide, tall;
-//	getParent()->getSize( wide, tall );
-//	setSize( wide, tall );
-	int extents[4];
-	getParent()->getAbsExtents(extents[0],extents[1],extents[2],extents[3]);
-	gEngfuncs.VGui_ViewportPaintBackground(extents);
-}
-
-void *TeamFortressViewport::operator new( size_t stAllocateBlock )
-{
-	void *mem = ::operator new( stAllocateBlock );
-	memset( mem, 0, stAllocateBlock );
-	return mem;
-}
-#endif
-
 /*
 ==========================
 	HUD_VidInit
@@ -247,25 +204,9 @@ so the HUD can reinitialize itself.
 int DLLEXPORT HUD_VidInit( void )
 {
 	gHUD.VidInit();
-#ifdef USE_VGUI_FOR_GOLDSOURCE_SUPPORT
-	vgui::Panel* root=(vgui::Panel*)gEngfuncs.VGui_GetPanel();
-	if (root) {
-		gEngfuncs.Con_Printf( "Root VGUI panel exists\n" );
-		root->setBgColor(128,128,0,0);
 
-		if (gViewPort != NULL)
-		{
-			gViewPort->Initialize();
-		}
-		else
-		{
-			gViewPort = new TeamFortressViewport(0,0,root->getWide(),root->getTall());
-			gViewPort->setParent(root);
-		}
-	} else {
-		gEngfuncs.Con_Printf( "Root VGUI panel does not exist\n" );
-	}
-#endif
+	VGui_Startup();
+
 	return 1;
 }
 
@@ -283,8 +224,7 @@ void DLLEXPORT HUD_Init( void )
 {
 	InitInput();
 	gHUD.Init();
-
-	gEngfuncs.pfnHookUserMsg( "Bhopcap", __MsgFunc_Bhopcap );
+	Scheme_Init();
 }
 
 /*
@@ -346,12 +286,7 @@ Called by engine every frame that client .dll is loaded
 
 void DLLEXPORT HUD_Frame( double time )
 {
-#ifdef USE_VGUI_FOR_GOLDSOURCE_SUPPORT
-	if (!gViewPort)
-		gEngfuncs.VGui_ViewportPaintBackground(HUD_GetRect());
-#else
-	gEngfuncs.VGui_ViewportPaintBackground(HUD_GetRect());
-#endif
+	GetClientVoiceMgr()->Frame(time);
 }
 
 /*
@@ -364,7 +299,7 @@ Called when a player starts or stops talking.
 
 void DLLEXPORT HUD_VoiceStatus( int entindex, qboolean bTalking )
 {
-
+	GetClientVoiceMgr()->UpdateSpeakerStatus(entindex, bTalking);
 }
 
 /*
@@ -380,11 +315,12 @@ void DLLEXPORT HUD_DirectorMessage( int iSize, void *pbuf )
 	 gHUD.m_Spectator.DirectorMessage( iSize, pbuf );
 }
 
-void DLLEXPORT HUD_MobilityInterface( mobile_engfuncs_t *gpMobileEngfuncs )
+int DLLEXPORT HUD_MobilityInterface( mobile_engfuncs_t *gpMobileEngfuncs )
 {
 	if( gpMobileEngfuncs->version != MOBILITY_API_VERSION )
-		return;
+		return 1;
 	gMobileEngfuncs = gpMobileEngfuncs;
+	return 0;
 }
 
 bool HUD_MessageBox( const char *msg )

@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef NETADR_H
+#if !defined(NETADR_H)
 #define NETADR_H
 
 typedef enum

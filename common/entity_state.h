@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef ENTITY_STATE_H
+#if !defined(ENTITY_STATE_H)
 #define ENTITY_STATE_H
 
 // For entityType below

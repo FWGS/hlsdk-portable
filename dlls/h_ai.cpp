@@ -62,7 +62,7 @@ BOOL FBoxVisible( entvars_t *pevLooker, entvars_t *pevTarget, Vector &vecTargetO
 
 		UTIL_TraceLine( vecLookerOrigin, vecTarget, ignore_monsters, ignore_glass, ENT( pevLooker )/*pentIgnore*/, &tr );
 
-		if( tr.flFraction == 1.0 )
+		if( tr.flFraction == 1.0f )
 		{
 			vecTargetOrigin = vecTarget;
 			return TRUE;// line of sight is valid.
@@ -120,10 +120,10 @@ Vector VecCheckToss( entvars_t *pev, const Vector &vecSpot1, Vector vecSpot2, fl
 	float distance2 = vecMidPoint.z - vecSpot2.z;
 
 	// How long will it take for the grenade to travel this distance
-	float time1 = sqrt( distance1 / ( 0.5 * flGravity ) );
-	float time2 = sqrt( distance2 / ( 0.5 * flGravity ) );
+	float time1 = sqrt( distance1 / ( 0.5f * flGravity ) );
+	float time2 = sqrt( distance2 / ( 0.5f * flGravity ) );
 
-	if( time1 < 0.1 )
+	if( time1 < 0.1f )
 	{
 		// too close
 		return g_vecZero;
@@ -139,7 +139,7 @@ Vector VecCheckToss( entvars_t *pev, const Vector &vecSpot1, Vector vecSpot2, fl
 	vecApex.z = vecMidPoint.z;
 
 	UTIL_TraceLine( vecSpot1, vecApex, dont_ignore_monsters, ENT( pev ), &tr );
-	if( tr.flFraction != 1.0 )
+	if( tr.flFraction != 1.0f )
 	{
 		// fail!
 		return g_vecZero;
@@ -147,7 +147,7 @@ Vector VecCheckToss( entvars_t *pev, const Vector &vecSpot1, Vector vecSpot2, fl
 
 	// UNDONE: either ignore monsters or change it to not care if we hit our enemy
 	UTIL_TraceLine( vecSpot2, vecApex, ignore_monsters, ENT( pev ), &tr ); 
-	if( tr.flFraction != 1.0 )
+	if( tr.flFraction != 1.0f )
 	{
 		// fail!
 		return g_vecZero;
@@ -168,24 +168,24 @@ Vector VecCheckThrow( entvars_t *pev, const Vector &vecSpot1, Vector vecSpot2, f
 
 	// throw at a constant time
 	float time = vecGrenadeVel.Length() / flSpeed;
-	vecGrenadeVel = vecGrenadeVel * ( 1.0 / time );
+	vecGrenadeVel = vecGrenadeVel * ( 1.0f / time );
 
 	// adjust upward toss to compensate for gravity loss
-	vecGrenadeVel.z += flGravity * time * 0.5;
+	vecGrenadeVel.z += flGravity * time * 0.5f;
 
-	Vector vecApex = vecSpot1 + ( vecSpot2 - vecSpot1 ) * 0.5;
-	vecApex.z += 0.5 * flGravity * ( time * 0.5 ) * ( time * 0.5 );
+	Vector vecApex = vecSpot1 + ( vecSpot2 - vecSpot1 ) * 0.5f;
+	vecApex.z += 0.5f * flGravity * ( time * 0.5f ) * ( time * 0.5f );
 
 	TraceResult tr;
 	UTIL_TraceLine( vecSpot1, vecApex, dont_ignore_monsters, ENT( pev ), &tr );
-	if( tr.flFraction != 1.0 )
+	if( tr.flFraction != 1.0f )
 	{
 		// fail!
 		return g_vecZero;
 	}
 
 	UTIL_TraceLine( vecSpot2, vecApex, ignore_monsters, ENT( pev ), &tr );
-	if( tr.flFraction != 1.0 )
+	if( tr.flFraction != 1.0f )
 	{
 		// fail!
 		return g_vecZero;

@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef ENTITY_TYPES_H
+#if !defined(ENTITY_TYPES_H)
 #define ENTITY_TYPES_H
 
 #define ET_NORMAL		0

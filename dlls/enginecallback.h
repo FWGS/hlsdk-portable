@@ -12,10 +12,9 @@
 *   without written permission from Valve LLC.
 *
 ****/
-#ifndef ENGINECALLBACK_H
-#define ENGINECALLBACK_H
-
 #pragma once
+#if !defined(ENGINECALLBACK_H)
+#define ENGINECALLBACK_H
 
 #include "event_flags.h"
 

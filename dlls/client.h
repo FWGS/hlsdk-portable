@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef CLIENT_H
+#if !defined(CLIENT_H)
 #define CLIENT_H
 
 extern void respawn( entvars_t *pev, BOOL fCopyCorpse );

@@ -16,7 +16,7 @@
 // Hornets
 //=========================================================
 #pragma once
-#ifndef HORNET_H
+#if !defined(HORNET_H)
 #define HORNET_H
 //=========================================================
 // Hornet Defines

@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef CL_ENTITY_H
+#if !defined(CL_ENTITY_H)
 #define CL_ENTITY_H
 
 typedef struct efrag_s

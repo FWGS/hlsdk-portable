@@ -20,42 +20,124 @@
 # SOFTWARE.
 #
 
-cmake_minimum_required(VERSION 2.6.0)
+# 3.9 added captures in if(MATCHES)
+cmake_minimum_required(VERSION 3.9)
+
+if(NOT ${CMAKE_VERSION} VERSION_LESS "3.15.0")
+	cmake_policy(SET CMP0091 NEW)
+	# use the static CRT for all targets
+	set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+endif()
 
 # Install custom module path
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 
+include(CheckIncludeFile)
+include(CheckFunctionExists)
+include(CheckCSourceCompiles)
 include(VSForceXPToolchain) # Force XP toolchain for Visual Studio
+include(CheckIPOSupported)
 
-project (HLSDK-XASH3D)
+project (HLSDK-PORTABLE)
 
 #--------------
 # USER DEFINES \
 ################\
-option(USE_VGUI "Enable VGUI1. UNDONE" OFF)
-option(USE_VGUI2 "Enable VGUI2. UNDONE" OFF)
-option(USE_VOICEMGR "Enable VOICE MANAGER." OFF)
 option(BUILD_CLIENT "Build client dll" ON)
 option(BUILD_SERVER "Build server dll" ON)
-option(GOLDSOURCE_SUPPORT "Build goldsource compatible client library" OFF)
-option(64BIT "Disable auto -m32 appending to compiler flags" OFF)
-set(GAMEDIR "valve" CACHE STRING "Gamedir path")
-set(SERVER_INSTALL_DIR "dlls" CACHE STRING "Where put server dll")
-set(CLIENT_INSTALL_DIR "cl_dlls" CACHE STRING "Where put client dll")
-set(SERVER_LIBRARY_NAME "hl" CACHE STRING "Library name for Linux/MacOS/Windows")
+option(LTO "Enable interprocedural optimization" OFF)
+option(POLLY "Enable pollyhedral optimization" OFF)
+option(ANDROID_APK "Enable APK styled deploy" OFF)
+
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+	set(CMAKE_INSTALL_PREFIX "")
+endif()
+
+if(CMAKE_SIZEOF_VOID_P EQUAL 4 OR
+	((WIN32 OR ${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+	AND (CMAKE_SYSTEM_PROCESSOR STREQUAL "x64"
+	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "X64"
+	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64"
+	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "X86_64"
+	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "amd64"
+	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "AMD64"
+	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "EM64T")))
+	option(64BIT "Disable auto -m32 appending to compiler flags" OFF)
+else()
+	option(64BIT "Disable auto -m32 appending to compiler flags" ON)
+endif()
+
+# It seems CMAKE_SYSTEM_PROCESSOR parameter completely useless for APPLE platform,
+# so may need to set options here manually.
+if((WIN32 OR ${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+	AND (((CMAKE_SYSTEM_PROCESSOR STREQUAL "x64"
+	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "X64"
+	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64"
+	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "X86_64"
+	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "amd64"
+	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "AMD64"
+	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "EM64T") AND NOT 64BIT)
+	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "x86"
+	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "X86"
+	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "i386"
+	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "i486"
+	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "i586"
+	OR CMAKE_SYSTEM_PROCESSOR STREQUAL "i686"))
+	option(GOLDSOURCE_SUPPORT "Build goldsource compatible client library" ON)
+	set(USE_STATIC_FREEVGUI OFF)
+else()
+	option(GOLDSOURCE_SUPPORT "Build goldsource compatible client library" OFF)
+	# no prebuilt vgui shared library exists here by default, so link FreeVGUI into the client
+	set(USE_STATIC_FREEVGUI ON)
+endif()
 
 #-----------------
 # MAIN BUILD CODE \
 ###################\
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
+CHECK_FUNCTION_EXISTS(strlcpy HAVE_STRLCPY)
+CHECK_FUNCTION_EXISTS(strlcat HAVE_STRLCAT)
+
+file(STRINGS "mod_options.txt" MOD_OPTIONS_STRINGS REGEX "^([A-Za-z0-9_-]+)=([A-Za-z0-9_-]+)\ \#\ (.*)$")
+foreach(LINE IN LISTS MOD_OPTIONS_STRINGS)
+	# file() itself doesn't populate CMAKE_MATCH_<n>, so
+	# reparse the string
+
+	if(${LINE} MATCHES "^([A-Za-z0-9_-]+)=([A-Za-z0-9_-]+)\ \#\ (.*)$")
+		# detect boolean options
+		if(${CMAKE_MATCH_2} STREQUAL "ON" OR ${CMAKE_MATCH_2} STREQUAL "OFF")
+			option(${CMAKE_MATCH_1} "${CMAKE_MATCH_3}" ${CMAKE_MATCH_2})
+
+			# let's check it here as well
+			if(${CMAKE_MATCH_1})
+				message(STATUS ${CMAKE_MATCH_3} " is enabled")
+				add_definitions(-D${CMAKE_MATCH_1})
+			else()
+				message(STATUS ${CMAKE_MATCH_3} " is disabled")
+			endif()
+		else()
+			message(STATUS ${CMAKE_MATCH_3} " set to " ${CMAKE_MATCH_2})
+			set(${CMAKE_MATCH_1} "${CMAKE_MATCH_2}" CACHE STRING "${CMAKE_MATCH_3}")
+		endif()
+	endif()
+endforeach()
+
+if(ANDROID_APK)
+	set(GAMEDIR ".")
+	set(SERVER_INSTALL_DIR ".")
+	set(CLIENT_INSTALL_DIR ".")
+endif()
+
+if(HLDEMO_BUILD AND OEM_BUILD)
+	message(FATAL_ERROR "Don't mix Demo and OEM builds!")
+endif()
 
 if(CMAKE_SIZEOF_VOID_P EQUAL 8 AND NOT 64BIT)
 	if(MSVC)
-		error("UNDONE: set 32 build flags")
+		message(FATAL_ERROR "Add \"-D64BIT=ON\" to build 64-bit version of SDK or add \"-A Win32\" if you want to build a 32-bit version")
 	else()
 		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32")
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_C_FLAGS}")
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32")
 		set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -m32")
 	endif()
 	set(CMAKE_SIZEOF_VOID_P 4)
@@ -65,7 +147,22 @@ if(64BIT AND CMAKE_SIZEOF_VOID_P EQUAL 4)
 	message(FATAL_ERROR "You enabled XASH_64BIT, but compiler can't create 64 bit code!")
 endif()
 
-if(64BIT)
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Android")
+	find_program(TERMUX_INFO termux-info)
+	if(NOT TERMUX_INFO)
+		# no-op
+	else()
+		# set through flags because otherwise macro won't be seen in tests
+		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D__TERMUX__=1")
+		set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -D__TERMUX__=1")
+	endif()
+endif()
+
+# Xash3D FWGS Library Naming Scheme compliance
+# see documentation: https://github.com/FWGS/xash3d-fwgs/blob/master/Documentation/extensions/library-naming.md
+include(LibraryNaming)
+
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
 	message(STATUS "Building for 64 Bit")
 else()
 	message(STATUS "Building for 32 Bit")
@@ -76,29 +173,61 @@ if (MINGW)
 	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--add-stdcall-alias")
 endif()
 
-# add_compile_options for older cmake versions
-if(${CMAKE_VERSION} VERSION_LESS "3.0.2")
-	macro(add_compile_options)
-		set(list_var "${ARGV}")
-		foreach(arg IN LISTS list_var)
-			set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${arg}")
-		endforeach()
-	endmacro()
+if(NOT MSVC)
+	#add_compile_options(-Wempty-body) # GCC/Clang flag
+	add_compile_options(-Wreturn-type) # GCC/Clang flag
+else()
+	add_definitions(-D_CRT_SILENCE_NONCONFORMING_TGMATH_H)
 endif()
 
-if(NOT MSVC)
-	add_compile_options(-Wempty-body) # GCC/Clang flag
-	add_compile_options(-Wreturn-type) # GCC/Clang flag
+if(VITA)
+	add_compile_options(-fno-use-cxa-atexit)
 endif()
+
+if(LTO)
+	check_ipo_supported(RESULT HAVE_LTO OUTPUT LTO_ERROR)
+	if(HAVE_LTO)
+		message(STATUS "IPO / LTO enabled")
+	else()
+		message(STATUS "IPO / LTO not supported: ${LTO_ERROR}")
+	endif()
+endif()
+
+check_include_file("tgmath.h" HAVE_TGMATH_H)
+if(HAVE_TGMATH_H)
+	if(NOT MSVC)
+		set(CMAKE_REQUIRED_LIBRARIES "m")
+	endif()
+	check_c_source_compiles("#include <tgmath.h>
+	const float val = 2, val2 = 3;
+	int main(){ return (int)(-asin(val) + cos(val2)); }" HAVE_VALID_TGMATH_H )
+	if(${HAVE_VALID_TGMATH_H})
+		add_definitions(-DHAVE_TGMATH_H)
+	endif()
+endif()
+
+add_subdirectory(game_shared)
 
 if(BUILD_CLIENT)
+	message(STATUS "Building client enabled")
+
+	add_subdirectory(freevgui)
 	add_subdirectory(cl_dll)
 endif()
 
 if(BUILD_SERVER)
+	message(STATUS "Building server enabled")
 	add_subdirectory(dlls)
 endif()
 
 if(NOT BUILD_SERVER AND NOT BUILD_CLIENT)
-	error("Nothing to build")
+	message(FATAL_ERROR "Nothing to build")
+endif()
+
+if(POLLY)
+	if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+		add_compile_options(-mllvm -polly)
+	elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+		add_compile_options(-fgraphite-identity -floop-interchange -floop-block)
+	endif()
 endif()

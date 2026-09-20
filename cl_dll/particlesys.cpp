@@ -263,7 +263,7 @@ ParticleType *ParticleSystem::GetType( const char *szName )
 ParticleType *ParticleSystem::AddPlaceholderType( const char *szName )
 {
 	m_pFirstType = new ParticleType( m_pFirstType );
-	strncpy(m_pFirstType->m_szName, szName, sizeof(m_pFirstType->m_szName) );
+	strlcpy(m_pFirstType->m_szName, szName, sizeof( m_pFirstType->m_szName ));
 	return m_pFirstType;
 }
 
@@ -285,8 +285,7 @@ ParticleType *ParticleSystem::ParseType( char *&szFile )
 		if ( !stricmp( szToken, "name" ) )
 		{
 			szFile = gEngfuncs.COM_ParseFile(szFile,szToken);
-			strncpy(pType->m_szName, szToken, sizeof(pType->m_szName) );
-
+			strlcpy(pType->m_szName, szToken, sizeof( pType->m_szName ));
 			ParticleType *pTemp = GetType(szToken);
 			if (pTemp)
 			{

@@ -8,7 +8,7 @@
 // squad.h
 //=========================================================
 #pragma once
-#ifndef SQUAD_H
+#if !defined(SQUAD_H)
 #define SQUAD_H
 
 // these are special group roles that are assigned to members when the group is formed.

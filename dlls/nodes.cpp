@@ -27,6 +27,7 @@
 #include	"nodes_compat.h"
 #include	"animation.h"
 #include	"doors.h"
+#include	"byteswap.h"
 
 #define	HULL_STEP_SIZE 16// how far the test hull moves on each step
 #define	NODE_HEIGHT	8	// how high to lift nodes off the ground after we drop them all (make stair/ramp mapping easier)
@@ -45,7 +46,10 @@ CGraph WorldGraph;
 LINK_ENTITY_TO_CLASS( info_node, CNodeEnt )
 LINK_ENTITY_TO_CLASS( info_node_air, CNodeEnt )
 
-#if !defined _WIN32
+#if __DOS__
+#include <direct.h>
+#define CreateDirectoryA(p, n) mkdir(p)
+#elif !_WIN32
 #include <unistd.h>
 #include <sys/stat.h>
 #define CreateDirectoryA(p, n) mkdir(p, 0777)
@@ -215,7 +219,6 @@ entvars_t *CGraph::LinkEntForLink( CLink *pLink, CNode *pNode )
 //=========================================================
 int CGraph::HandleLinkEnt( int iNode, entvars_t *pevLinkEnt, int afCapMask, NODEQUERY queryType )
 {
-	edict_t  *pentWorld;
 	//edict_t *pentWorld;
 	CBaseEntity *pDoor;
 	TraceResult tr;
@@ -670,7 +673,7 @@ int CGraph::FindShortestPath( int *piPath, int iStart, int iDest, int iHull, int
 		//
 		for ( i = 0; i < m_cNodes; i++)
 		{
-			m_pNodes[i].m_flClosestSoFar = -1.0;
+			m_pNodes[i].m_flClosestSoFar = -1.0f;
 		}
 
 		m_pNodes[iStart].m_flClosestSoFar = 0.0;
@@ -712,8 +715,8 @@ int CGraph::FindShortestPath( int *piPath, int iStart, int iDest, int iHull, int
 					}
 				}
 				float flOurDistance = flCurrentDistance + m_pLinkPool[m_pNodes[iCurrentNode].m_iFirstLink + i].m_flWeight;
-				if(  m_pNodes[iVisitNode].m_flClosestSoFar < -0.5
-				   || flOurDistance < m_pNodes[iVisitNode].m_flClosestSoFar - 0.001 )
+				if(  m_pNodes[iVisitNode].m_flClosestSoFar < -0.5f
+				   || flOurDistance < m_pNodes[iVisitNode].m_flClosestSoFar - 0.001f )
 				{
 					m_pNodes[iVisitNode].m_flClosestSoFar = flOurDistance;
 					m_pNodes[iVisitNode].m_iPreviousNode = iCurrentNode;
@@ -722,7 +725,7 @@ int CGraph::FindShortestPath( int *piPath, int iStart, int iDest, int iHull, int
 				}
 			}
 		}
-		if( m_pNodes[iDest].m_flClosestSoFar < -0.5 )
+		if( m_pNodes[iDest].m_flClosestSoFar < -0.5f )
 		{
 			// Destination is unreachable, no path found.
 			return 0;
@@ -840,7 +843,7 @@ void CGraph::CheckNode( Vector vecOrigin, int iNode )
 		// make sure that vecOrigin can trace to this node!
 		UTIL_TraceLine( vecOrigin, m_pNodes[iNode].m_vecOriginPeek, ignore_monsters, 0, &tr );
 
-		if( tr.flFraction == 1.0 )
+		if( tr.flFraction == 1.0f )
 		{
 			m_iNearest = iNode;
 			m_flShortest = flDist;
@@ -910,7 +913,7 @@ int CGraph::FindNearestNode( const Vector &vecOrigin, int afNodeTypes )
 	}
 
 	m_iNearest = -1;
-	m_flShortest = 999999.0; // just a big number.
+	m_flShortest = 999999.0f; // just a big number.
 
 	// If we can find a visible point, then let CalcBounds set the limits, but if
 	// we have no visible point at all to start with, then don't restrict the limits.
@@ -1279,7 +1282,7 @@ int CGraph::LinkVisibleNodes( CLink *pLinkPool, FILE *file, int *piBadNode )
 			if( tr.fStartSolid )
 				continue;
 
-			if( tr.flFraction != 1.0 )
+			if( tr.flFraction != 1.0f )
 			{
 				// trace hit a brush ent, trace backwards to make sure that this ent is the only thing in the way.
 				pTraceEnt = tr.pHit;// store the ent that the trace hit, for comparison
@@ -1445,14 +1448,14 @@ int CGraph::RejectInlineLinks( CLink *pLinkPool, FILE *file )
 				flDistToTestNode = vec2DirToTestNode.Length();
 				vec2DirToTestNode = vec2DirToTestNode.Normalize();
 
-				if( DotProduct( vec2DirToCheckNode, vec2DirToTestNode ) >= 0.998 )
+				if( DotProduct( vec2DirToCheckNode, vec2DirToTestNode ) >= 0.998f )
 				{
 					// there's a chance that TestNode intersects the line to CheckNode. If so, we should disconnect the link to CheckNode. 
 					if( flDistToTestNode < flDistToCheckNode )
 					{
 						if( file )
 						{
-							fprintf( file, "REJECTED NODE %3d through Node %3d, Dot = %8f\n", pLinkPool[pSrcNode->m_iFirstLink + j].m_iDestNode, pLinkPool[pSrcNode->m_iFirstLink + k].m_iDestNode, DotProduct( vec2DirToCheckNode, vec2DirToTestNode ) );
+							fprintf( file, "REJECTED NODE %3d through Node %3d, Dot = %8f\n", pLinkPool[pSrcNode->m_iFirstLink + j].m_iDestNode, pLinkPool[pSrcNode->m_iFirstLink + k].m_iDestNode, (double)DotProduct( vec2DirToCheckNode, vec2DirToTestNode ) );
 						}
 
 						pLinkPool[pSrcNode->m_iFirstLink + j] = pLinkPool[pSrcNode->m_iFirstLink + ( pSrcNode->m_cNumLinks - 1 )];
@@ -1518,7 +1521,7 @@ void CTestHull::Spawn( entvars_t *pevMasterNode )
 	else
 	{
 		SetThink( &CTestHull::DropDelay );
-		SetNextThink( 1 );
+		SetNextThink( 1.0f );
 	}
 
 	// Make this invisible
@@ -1539,7 +1542,7 @@ void CTestHull::DropDelay( void )
 
 	SetThink( &CTestHull::CallBuildNodeGraph );
 
-	SetNextThink( 1 );
+	SetNextThink( 1.0f );
 }
 
 //=========================================================
@@ -1586,7 +1589,8 @@ void CNodeEnt::Spawn( void )
 
 	if( WorldGraph.m_cNodes >= MAX_NODES )
 	{
-		ALERT( at_aiconsole, "cNodes > MAX_NODES\n" );
+		ALERT( at_aiconsole, "cNodes >= MAX_NODES\n" );
+		REMOVE_ENTITY( edict() );
 		return;
 	}
 
@@ -1625,7 +1629,7 @@ void CTestHull::ShowBadNode( void )
 	UTIL_ParticleEffect( pev->origin + gpGlobals->v_right * 64, g_vecZero, 255, 25 );
 	UTIL_ParticleEffect( pev->origin - gpGlobals->v_right * 64, g_vecZero, 255, 25 );
 
-	SetNextThink( 0.1 );
+	SetNextThink( 0.1f );
 }
 
 extern BOOL gTouchDisabled;
@@ -1739,7 +1743,7 @@ void CTestHull::BuildNodeGraph( void )
 		fprintf( file, "Location      %4d,%4d,%4d\n",(int)WorldGraph.m_pNodes[i].m_vecOrigin.x, (int)WorldGraph.m_pNodes[i].m_vecOrigin.y, (int)WorldGraph.m_pNodes[i].m_vecOrigin.z );
 		fprintf( file, "HintType:     %4d\n", WorldGraph.m_pNodes[i].m_sHintType );
 		fprintf( file, "HintActivity: %4d\n", WorldGraph.m_pNodes[i].m_sHintActivity );
-		fprintf( file, "HintYaw:      %4f\n", WorldGraph.m_pNodes[i].m_flHintYaw );
+		fprintf( file, "HintYaw:      %4f\n", (double)WorldGraph.m_pNodes[i].m_flHintYaw );
 		fprintf( file, "-------------------------------------------------------------------------------\n" );
 	}
 	fprintf( file, "\n\n" );
@@ -1961,7 +1965,7 @@ void CTestHull::BuildNodeGraph( void )
 					TraceResult tr;
 
 					UTIL_TraceHull( pSrcNode->m_vecOrigin + Vector( 0, 0, 32 ), pDestNode->m_vecOriginPeek + Vector( 0, 0, 32 ), ignore_monsters, large_hull, ENT( pev ), &tr );
-					if( tr.fStartSolid || tr.flFraction < 1.0 )
+					if( tr.fStartSolid || tr.flFraction < 1.0f )
 					{
 						pTempPool[pSrcNode->m_iFirstLink + j].m_afLinkInfo &= ~bits_LINK_FLY_HULL;
 					}
@@ -2059,7 +2063,7 @@ void CTestHull::BuildNodeGraph( void )
 		fprintf( file, "\nAll Connections are Paired!\n" );
 	}
 
-#ifdef _MSC_VER
+#if _MSC_VER
 #define SIZET_FMT "%Iu"
 #else
 #define SIZET_FMT "%zu"
@@ -2394,7 +2398,7 @@ int CGraph::FLoadGraph( const char *szMapName )
 	length -= sizeof(int);
 	if( length < 0 )
 		goto ShortFile;
-	iVersion = *(int *) pMemFile;
+	iVersion = LittleToHost( *(int *) pMemFile );
 	pMemFile += sizeof(int);
 
 	if( iVersion == GRAPH_VERSION || iVersion == GRAPH_VERSION_RETAIL )
@@ -2416,6 +2420,8 @@ int CGraph::FLoadGraph( const char *szMapName )
 			m_di = NULL;
 			m_pRouteInfo = NULL;
 			m_pHashLinks = NULL;
+
+			ByteswapGraph();
 		}
 #if _GRAPH_VERSION != _GRAPH_VERSION_RETAIL
 		else
@@ -2447,6 +2453,8 @@ int CGraph::FLoadGraph( const char *szMapName )
 		memcpy( m_pNodes, pMemFile, sizeof(CNode) * m_cNodes );
 		pMemFile += sizeof(CNode) * m_cNodes;
 
+		ByteswapNodes();
+
 		// Malloc for the link pool
 		//
 		m_pLinkPool = (CLink *)calloc( sizeof(CLink), m_cLinks );
@@ -2466,6 +2474,8 @@ int CGraph::FLoadGraph( const char *szMapName )
 				goto ShortFile;
 			memcpy( m_pLinkPool, pMemFile, sizeof(CLink) * m_cLinks );
 			pMemFile += sizeof(CLink) * m_cLinks;
+
+			ByteswapLinks();
 		}
 #if _GRAPH_VERSION != _GRAPH_VERSION_RETAIL
 		else
@@ -2474,7 +2484,10 @@ int CGraph::FLoadGraph( const char *szMapName )
 			length -= sizeof(CLink_Retail) * m_cLinks;
 			if( length < 0 )
 				goto ShortFile;
-			reinterpret_cast<CLink_Retail*>(pMemFile) -> copyOverTo(m_pLinkPool);
+			for (int j = 0; j < m_cLinks; ++j)
+			{
+				reinterpret_cast<CLink_Retail*>(pMemFile + sizeof(CLink_Retail) * j) -> copyOverTo(m_pLinkPool + j);
+			}
 			pMemFile += sizeof(CLink_Retail) * m_cLinks;
 		}
 #endif
@@ -2495,6 +2508,8 @@ int CGraph::FLoadGraph( const char *szMapName )
 			goto ShortFile;
 		memcpy( m_di, pMemFile, sizeof(DIST_INFO) * m_cNodes );
 		pMemFile += sizeof(DIST_INFO) * m_cNodes;
+
+		ByteswapDistInfo();
 
 		// Malloc for the routing info.
 		//
@@ -2535,7 +2550,9 @@ int CGraph::FLoadGraph( const char *szMapName )
 		if( length < 0 )
 			goto ShortFile;
 		memcpy( m_pHashLinks, pMemFile, sizeof(short) * m_nHashLinks );
-		pMemFile += sizeof(short) * m_nHashLinks;
+		// pMemFile += sizeof(short) * m_nHashLinks;
+
+		ByteswapHashLinks();
 
 		// Set the graph present flag, clear the pointers set flag
 		//
@@ -2571,7 +2588,7 @@ NoMemory:
 //=========================================================
 int CGraph::FSaveGraph( const char *szMapName )
 {
-	int iVersion = GRAPH_VERSION;
+	int iVersion = LittleToHost( GRAPH_VERSION );
 	char szFilename[MAX_PATH];
 	FILE *file;
 
@@ -2608,16 +2625,29 @@ int CGraph::FSaveGraph( const char *szMapName )
 		// write the version
 		fwrite( &iVersion, sizeof(int), 1, file );
 
+		ByteswapGraph();
+
 		// write the CGraph class
 		fwrite( this, sizeof(CGraph), 1, file );
+
+		ByteswapGraph();
+		ByteswapNodes();
 
 		// write the nodes
 		fwrite( m_pNodes, sizeof(CNode), m_cNodes, file );
 
+		ByteswapNodes();
+		ByteswapLinks();
+
 		// write the links
 		fwrite( m_pLinkPool, sizeof(CLink), m_cLinks, file );
 
+		ByteswapLinks();
+		ByteswapDistInfo();
+
 		fwrite( m_di, sizeof(DIST_INFO), m_cNodes, file );
+
+		ByteswapDistInfo();
 
 		// Write the route info.
 		//
@@ -2628,7 +2658,11 @@ int CGraph::FSaveGraph( const char *szMapName )
 
 		if( m_pHashLinks && m_nHashLinks )
 		{
+			ByteswapHashLinks();
+
 			fwrite( m_pHashLinks, sizeof(short), m_nHashLinks, file );
+
+			ByteswapHashLinks();
 		}
 		fclose( file );
 		return TRUE;
@@ -3519,7 +3553,7 @@ void CGraph::TestRoutingTables( void )
 								ALERT( at_aiconsole, "No link.\n" );
 							}
 						}
-						if( fabs( flDistance1 - flDistance2 ) > 0.10 )
+						if( fabs( flDistance1 - flDistance2 ) > 0.1f )
 						{
 #else
 						if( cPathSize1 != cPathSize2 || memcmp( pMyPath, pMyPath2, sizeof(int) * cPathSize1 ) != 0 )
@@ -3557,6 +3591,91 @@ EnoughSaid:
 	pMyPath = 0;
 	pMyPath2 = 0;
 }
+
+void CGraph::ByteswapGraph()
+{
+	LittleToHostSW( m_cNodes );
+	LittleToHostSW( m_cLinks );
+	LittleToHostSW( m_nRouteInfo );
+
+	for ( int i = 0; i < ARRAYSIZE( m_RangeStart ); i++ )
+	{
+		for ( int j = 0; j < ARRAYSIZE( m_RangeStart[i] ); j++ )
+		{
+			LittleToHostSW( m_RangeStart[i][j] );
+			LittleToHostSW( m_RangeEnd[i][j] );
+		}
+		
+		LittleToHostSW( m_RegionMin[i] );
+		LittleToHostSW( m_RegionMax[i] );
+	}
+
+	LittleToHostSW( m_nHashLinks );
+
+	for ( int i = 0; i < ARRAYSIZE( m_HashPrimes ); i++ )
+	{
+		LittleToHostSW( m_HashPrimes[i] );
+	}
+}
+
+void CGraph::ByteswapNodes()
+{
+	for ( int i = 0; i < m_cNodes; i++ )
+	{
+		LittleToHostSW( m_pNodes[i].m_vecOrigin.x );
+		LittleToHostSW( m_pNodes[i].m_vecOrigin.y );
+		LittleToHostSW( m_pNodes[i].m_vecOrigin.z );
+		LittleToHostSW( m_pNodes[i].m_vecOriginPeek.x );
+		LittleToHostSW( m_pNodes[i].m_vecOriginPeek.y );
+		LittleToHostSW( m_pNodes[i].m_vecOriginPeek.z );
+		LittleToHostSW( m_pNodes[i].m_afNodeInfo );
+		LittleToHostSW( m_pNodes[i].m_cNumLinks );
+		LittleToHostSW( m_pNodes[i].m_iFirstLink );
+		
+		for ( int j = 0; j < ARRAYSIZE( m_pNodes[i].m_pNextBestNode ); j++ )
+		{
+			LittleToHostSW( m_pNodes[i].m_pNextBestNode[j][0] );
+			LittleToHostSW( m_pNodes[i].m_pNextBestNode[j][1] );
+		}
+		
+		LittleToHostSW( m_pNodes[i].m_flClosestSoFar );
+		LittleToHostSW( m_pNodes[i].m_iPreviousNode );
+		LittleToHostSW( m_pNodes[i].m_sHintType );
+		LittleToHostSW( m_pNodes[i].m_sHintActivity );
+		LittleToHostSW( m_pNodes[i].m_flHintYaw );
+	}
+}
+
+void CGraph::ByteswapLinks()
+{
+	for ( int i = 0; i < m_cLinks; i++ )
+	{
+		LittleToHostSW( m_pLinkPool[i].m_iSrcNode );
+		LittleToHostSW( m_pLinkPool[i].m_iDestNode );
+		LittleToHostSW( m_pLinkPool[i].m_afLinkInfo );
+		LittleToHostSW( m_pLinkPool[i].m_flWeight );
+	}
+}
+
+void CGraph::ByteswapDistInfo()
+{
+	for ( int i = 0; i < m_cNodes; i++ )
+	{
+		LittleToHostSW( m_di[i].m_SortedBy[0] );
+		LittleToHostSW( m_di[i].m_SortedBy[1] );
+		LittleToHostSW( m_di[i].m_SortedBy[2] );
+		LittleToHostSW( m_di[i].m_CheckedEvent );
+	}
+}
+
+void CGraph::ByteswapHashLinks()
+{
+	for ( int i = 0; i < m_nHashLinks; i++ )
+	{
+		LittleToHostSW( m_pHashLinks[i] );
+	}
+}
+
 
 //=========================================================
 // CNodeViewer - Draws a graph of the shorted path from all nodes
@@ -3643,7 +3762,7 @@ void CNodeViewer::Spawn()
 		int start = 0;
 		int end;
 		do{
-			end = m_nVisited;
+			// end = m_nVisited;
 			// ALERT( at_console, "%d :", m_nVisited );
 			for( end = m_nVisited; start < end; start++ )
 			{

@@ -10,7 +10,7 @@ cvar_t  *in_joystick;
 
 FWGSInput fwgsInput;
 
-#ifdef SUPPORT_GOLDSOURCE_INPUT
+#if SUPPORT_GOLDSOURCE_INPUT
 GoldSourceInput goldSourceInput;
 AbstractInput* currentInput = &goldSourceInput;
 #else
@@ -68,7 +68,7 @@ void IN_Shutdown( void )
 
 void IN_Init( void )
 {
-#ifdef SUPPORT_GOLDSOURCE_INPUT
+#if SUPPORT_GOLDSOURCE_INPUT
 	if (IsXashFWGS()) {
 		gEngfuncs.Con_Printf( "FWGS Xash3D input is in use\n" );
 		currentInput = &fwgsInput;
@@ -80,4 +80,19 @@ void IN_Init( void )
 	currentInput = &fwgsInput;
 #endif
 	currentInput->IN_Init();
+}
+
+void IN_ResetMouse()
+{
+	currentInput->IN_ResetMouse();
+}
+
+void IgnoreNextMouseDelta()
+{
+	currentInput->IgnoreNextMouseDelta();
+}
+
+AbstractInput* CurrentMouseInput()
+{
+	return currentInput;
 }

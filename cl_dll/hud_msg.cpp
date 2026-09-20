@@ -62,6 +62,7 @@ int CHud::MsgFunc_ResetHUD( const char *pszName, int iSize, void *pbuf )
 	// Vit_amiN: reset the FOV
 	m_iFOV = 0;	// default_fov
 	g_lastFOV = 0.0f;
+	m_inScope = false;
 
 	return 1;
 }
@@ -156,7 +157,7 @@ void CHud :: MsgFunc_KeyedDLight( const char *pszName, int iSize, void *pbuf )
 	else
 	{
 		// never die
-		dl->die = gEngfuncs.GetClientTime() + 1E6;
+		dl->die = gEngfuncs.GetClientTime() + (float)1E6;
 
 		dl->origin[0] = READ_COORD();
 		dl->origin[1] = READ_COORD();
@@ -207,6 +208,11 @@ int CHud::MsgFunc_GameMode( const char *pszName, int iSize, void *pbuf )
 	BEGIN_READ( pbuf, iSize );
 	m_Teamplay = READ_BYTE();
 
+	if( m_Teamplay )
+		ClientCmd( "richpresence_gamemode Teamplay\n" );
+	else
+		ClientCmd( "richpresence_gamemode\n" );
+	ClientCmd( "richpresence_update\n" );
 	return 1;
 }
 

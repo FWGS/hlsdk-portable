@@ -404,6 +404,11 @@ void CGameRules::RefreshSkillData ( void )
 	gSkillData.plrArm = GetSkillCvar( "sk_player_arm" );
 }
 
+void CGameRules::ClientUserInfoChanged( CBasePlayer *pPlayer, char *infobuffer )
+{
+	pPlayer->SetPrefsFromUserinfo( infobuffer );
+}
+
 //=========================================================
 // instantiate the proper game rules object
 //=========================================================
@@ -426,6 +431,11 @@ CGameRules *InstallGameRules( void )
 			// teamplay
 			g_teamplay = 1;
 			return new CHalfLifeTeamplay;
+		}
+		if( sv_busters.value > 0 )
+		{
+			g_teamplay = 0;
+			return new CMultiplayBusters;
 		}
 		if( (int)gpGlobals->deathmatch == 1 )
 		{

@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef CBASE_H
+#if !defined(CBASE_H)
 #define CBASE_H
 /*
 
@@ -58,7 +58,7 @@ CBaseEntity
 #include "saverestore.h"
 #include "schedule.h"
 
-#ifndef MONSTEREVENT_H
+#if !defined(MONSTEREVENT_H)
 #include "monsterevent.h"
 #endif
 
@@ -68,7 +68,11 @@ CBaseEntity
 
 extern "C" EXPORT int GetEntityAPI( DLL_FUNCTIONS *pFunctionTable, int interfaceVersion );
 extern "C" EXPORT int GetEntityAPI2( DLL_FUNCTIONS *pFunctionTable, int *interfaceVersion );
-extern "C" EXPORT int Server_GetPhysicsInterface( int iVersion, server_physics_api_t *pfuncsFromEngine, physics_interface_t *pFunctionTable );
+// TODO: replace this by actual definitions from physint.h
+typedef void *server_physics_api_t;
+typedef void *physics_interface_t;
+extern "C" EXPORT int Server_GetPhysicsInterface( int version, server_physics_api_t *api, physics_interface_t *interface );
+extern bool g_fIsXash3D;
 
 extern int DispatchSpawn( edict_t *pent );
 extern void DispatchKeyValue( edict_t *pentKeyvalue, KeyValueData *pkvd );
@@ -129,9 +133,11 @@ typedef void(CBaseEntity::*USEPTR)( CBaseEntity *pActivator, CBaseEntity *pCalle
 #define CLASS_FACTION_A			17 //LRC - very simple new classes, for use with Behaves As
 #define CLASS_FACTION_B			18
 #define CLASS_FACTION_C			19
+#define CLASS_VEHICLE                   20
 #define	CLASS_BARNACLE			99 // special because no one pays attention to it, and it eats a wide cross-section of creatures.
 
 class CBaseEntity;
+class CBaseToggle;
 class CBaseMonster;
 class CBasePlayerItem;
 class CSquadMonster;
@@ -287,6 +293,9 @@ public:
 	virtual void TraceBleed( float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType );
 //LRC- superceded by GetState ( pActivator ).
 //	virtual BOOL    IsTriggered( CBaseEntity *pActivator ) {return TRUE;}
+#if SPEAKABLE_TARGETS
+	virtual CBaseToggle *MyTogglePointer( void ) { return NULL; }
+#endif
 	virtual CBaseMonster *MyMonsterPointer( void ) { return NULL; }
 	virtual CSquadMonster *MySquadMonsterPointer( void ) { return NULL; }
 	virtual	int GetToggleState( void ) { return TS_AT_TOP; }
@@ -308,7 +317,7 @@ public:
 	virtual BOOL IsAlive( void ) { return (pev->deadflag == DEAD_NO) && pev->health > 0; }
 	virtual BOOL IsBSPModel( void ) { return pev->solid == SOLID_BSP || pev->movetype == MOVETYPE_PUSHSTEP; }
 	virtual BOOL ReflectGauss( void ) { return ( IsBSPModel() && !pev->takedamage ); }
-	virtual BOOL HasTarget( string_t targetname ) { return FStrEq(STRING(targetname), STRING(pev->targetname) ); }
+	virtual BOOL HasTarget( string_t targetname ) { return FStrEq(STRING(targetname), STRING(pev->target) ); }
 	virtual BOOL IsInWorld( void );
 	virtual	BOOL IsPlayer( void ) { return FALSE; }
 	virtual BOOL IsNetClient( void ) { return FALSE; }
@@ -396,7 +405,7 @@ public:
 	}
 
 	// Ugly code to lookup all functions to make sure they are exported when set.
-#ifdef _DEBUG
+#if _DEBUG
 	void FunctionCheck( void *pFunction, char *name ) 
 	{ 
 		if( pFunction && !NAME_FOR_FUNCTION( pFunction ) )
@@ -479,12 +488,13 @@ inline BOOL FNullEnt( CBaseEntity *ent )	{ return ent == NULL || FNullEnt( ent->
 // Normally it's illegal to cast a pointer to a member function of a derived class to a pointer to a 
 // member function of a base class.  static_cast is a sleezy way around that problem.
 
-#ifdef _DEBUG
+#if _DEBUG
 
 #define SetThink( a ) ThinkSet( static_cast <void (CBaseEntity::*)(void)> (a), #a )
 #define SetTouch( a ) TouchSet( static_cast <void (CBaseEntity::*)(CBaseEntity *)> (a), #a )
 #define SetUse( a ) UseSet( static_cast <void (CBaseEntity::*)(	CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )> (a), #a )
 #define SetBlocked( a ) BlockedSet( static_cast <void (CBaseEntity::*)(CBaseEntity *)> (a), #a )
+#define ResetThink() SetThink(NULL)
 
 #else
 
@@ -670,7 +680,13 @@ public:
 	void EXPORT AngularMoveDone( void );
 	void EXPORT AngularMoveDoneNow( void );
 	BOOL IsLockedByMaster( void );
-
+#if SPEAKABLE_TARGETS
+	CBaseToggle *MyTogglePointer( void ) { return this; }
+	virtual void PlaySentence( const char *pszSentence, float duration, float volume, float attenuation );
+	virtual void PlayScriptedSentence( const char *pszSentence, float duration, float volume, float attenuation, BOOL bConcurrent, CBaseEntity *pListener );
+	virtual void SentenceStop( void );
+	virtual BOOL IsAllowedToSpeak( void ) { return FALSE; }
+#endif
 	static float		AxisValue( int flags, const Vector &angles );
 	static void			AxisDir( entvars_t *pev );
 	static float		AxisDelta( int flags, const Vector &angle1, const Vector &angle2 );
@@ -832,6 +848,9 @@ public:
 	static	TYPEDESCRIPTION m_SaveData[];
 	virtual int	ObjectCaps( void );
 
+#if SPEAKABLE_TARGETS
+	BOOL IsAllowedToSpeak( void ) { return TRUE; }
+#endif
 	BOOL m_fStayPushed;	// button stays pushed in until touched again?
 	BOOL m_fRotating;		// a rotating button?  default is a sliding button.
 

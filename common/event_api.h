@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef EVENT_API_H
+#if !defined(EVENT_API_H)
 #define EVENT_API_H
 
 #define EVENT_API_VERSION	1

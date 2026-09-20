@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef R_STUDIOINT_H
+#if !defined(R_STUDIOINT_H)
 #define R_STUDIOINT_H
 
 #define STUDIO_INTERFACE_VERSION 1

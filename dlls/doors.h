@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef DOORS_H
+#if !defined(DOORS_H)
 #define DOORS_H
 
 // doors

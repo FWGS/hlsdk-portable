@@ -12,8 +12,8 @@
 *   without written permission from Valve LLC.
 *
 ****/
-
-#ifndef MONSTEREVENT_H
+#pragma once
+#if !defined(MONSTEREVENT_H)
 #define MONSTEREVENT_H
 
 typedef struct

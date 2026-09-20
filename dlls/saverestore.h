@@ -14,7 +14,7 @@
 ****/
 // Implementation in UTIL.CPP
 #pragma once
-#ifndef SAVERESTORE_H
+#if !defined(SAVERESTORE_H)
 #define SAVERESTORE_H
 
 class CBaseEntity;
@@ -74,9 +74,9 @@ public:
 
 private:
 	int		DataEmpty( const char *pdata, int size );
-	void	BufferField( const char *pname, int size, const char *pdata );
+	void	BufferField( const char *pname, int size, const char *pdata, int typesize = -1 );
 	void	BufferString( char *pdata, int len );
-	void	BufferData( const char *pdata, int size );
+	void	BufferData( const char *pdata, int size, int typesize = -1 );
 	void	BufferHeader( const char *pname, int size );
 };
 
@@ -164,7 +164,7 @@ public:
 	int				Restore( CRestore &restore );
 	static TYPEDESCRIPTION m_SaveData[];
 
-//#ifdef _DEBUG
+//#if _DEBUG
 	void			DumpGlobals( void );
 //#endif
 

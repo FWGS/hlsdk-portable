@@ -46,6 +46,26 @@ cvar_t	*cl_laddermode;
 int CL_IsDead( void );
 extern Vector dead_viewangles;
 
+/*
+===========
+IN_GetMouseSensitivity
+Get mouse sensitivity with sanitization
+===========
+*/
+float IN_GetMouseSensitivity()
+{
+	// Absurdly high sensitivity values can cause the game to hang, so clamp
+	if( sensitivity->value > 10000.0 )
+	{
+		gEngfuncs.Cvar_SetValue( "sensitivity", 10000.0 );
+	}
+	else if( sensitivity->value < 0.01 )
+	{
+		gEngfuncs.Cvar_SetValue( "sensitivity", 0.01 );
+	}
+	return sensitivity->value;
+}
+
 void IN_ToggleButtons( float forwardmove, float sidemove )
 {
 	static unsigned int moveflags = T | S;
@@ -82,42 +102,42 @@ void IN_ToggleButtons( float forwardmove, float sidemove )
 		}
 	}
 
-	if( forwardmove > 0.7 && !( moveflags & F ) )
+	if( forwardmove > 0.7f && !( moveflags & F ) )
 	{
 		moveflags |= F;
 		in_forward.state |= BUTTON_DOWN;
 	}
-	if( forwardmove < 0.7 && ( moveflags & F ) )
+	if( forwardmove < 0.7f && ( moveflags & F ) )
 	{
 		moveflags &= ~F;
 		in_forward.state &= ~BUTTON_DOWN;
 	}
-	if( forwardmove < -0.7 && !( moveflags & B ) )
+	if( forwardmove < -0.7f && !( moveflags & B ) )
 	{
 		moveflags |= B;
 		in_back.state |= BUTTON_DOWN;
 	}
-	if( forwardmove > -0.7 && ( moveflags & B ) )
+	if( forwardmove > -0.7f && ( moveflags & B ) )
 	{
 		moveflags &= ~B;
 		in_back.state &= ~BUTTON_DOWN;
 	}
-	if( sidemove > 0.9 && !( moveflags & R ) )
+	if( sidemove > 0.9f && !( moveflags & R ) )
 	{
 		moveflags |= R;
 		in_moveright.state |= BUTTON_DOWN;
 	}
-	if( sidemove < 0.9 && ( moveflags & R ) )
+	if( sidemove < 0.9f && ( moveflags & R ) )
 	{
 		moveflags &= ~R;
 		in_moveright.state &= ~BUTTON_DOWN;
 	}
-	if( sidemove < -0.9 && !( moveflags & L ) )
+	if( sidemove < -0.9f && !( moveflags & L ) )
 	{
 		moveflags |= L;
 		in_moveleft.state |= BUTTON_DOWN;
 	}
-	if( sidemove > -0.9 && ( moveflags & L ) )
+	if( sidemove > -0.9f && ( moveflags & L ) )
 	{
 		moveflags &= ~L;
 		in_moveleft.state &= ~BUTTON_DOWN;
@@ -170,16 +190,9 @@ void FWGSInput::IN_Move( float frametime, usercmd_t *cmd )
 	{
 		gEngfuncs.GetViewAngles( viewangles );
 	}
-	if( gHUD.GetSensitivity() != 0 )
-	{
-		rel_yaw *= gHUD.GetSensitivity();
-		rel_pitch *= gHUD.GetSensitivity();
-	}
-	else
-	{
-		rel_yaw *= sensitivity->value;
-		rel_pitch *= sensitivity->value;
-	}
+	float mouse_sensitivity = gHUD.GetSensitivity() != 0 ? gHUD.GetSensitivity() : IN_GetMouseSensitivity();
+	rel_yaw *= mouse_sensitivity;
+	rel_pitch *= mouse_sensitivity;
 	viewangles[YAW] += rel_yaw;
 	if( fLadder )
 	{
@@ -278,7 +291,7 @@ void FWGSInput::IN_Shutdown( void )
 // Register cvars and reset data
 void FWGSInput::IN_Init( void )
 {
-	sensitivity = gEngfuncs.pfnRegisterVariable( "sensitivity", "3", FCVAR_ARCHIVE );
+	sensitivity = gEngfuncs.pfnRegisterVariable( "sensitivity", "3", FCVAR_ARCHIVE | FCVAR_FILTERSTUFFTEXT );
 	in_joystick = gEngfuncs.pfnRegisterVariable( "joystick", "0", FCVAR_ARCHIVE );
 	cl_laddermode = gEngfuncs.pfnRegisterVariable( "cl_laddermode", "2", FCVAR_ARCHIVE );
 	ac_forwardmove = ac_sidemove = rel_yaw = rel_pitch = 0;

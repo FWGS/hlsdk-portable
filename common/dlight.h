@@ -13,7 +13,7 @@
 *
 ****/
 #pragma once
-#ifndef DLIGHT_H
+#if !defined(DLIGHT_H)
 #define DLIGHT_H
 
 typedef struct dlight_s

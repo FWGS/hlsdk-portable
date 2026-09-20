@@ -16,7 +16,7 @@
 //  parsemsg.h
 //
 #pragma once
-#ifndef PARSEMSG_H
+#if !defined(PARSEMSG_H)
 #define PARSEMSG_H
 
 #define ASSERT( x )
